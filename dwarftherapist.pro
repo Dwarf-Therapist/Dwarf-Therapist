@@ -1,4 +1,4 @@
-TARGET = DwarfOverlord
+TARGET = DwarfTherapist
 VERSION = 0.0.1
 MOC_DIR = tmp
 UI_DIR = ui
