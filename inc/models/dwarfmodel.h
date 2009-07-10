@@ -1,7 +1,14 @@
 #ifndef DWARFMODEL_H
 #define DWARFMODEL_H
-#include <QAbstractItemModel>
 
-class DwarfModel : public QAbstractItemModel {
+#include <QStandardItemModel>
+
+class DwarfModel : public QStandardItemModel {
+	Q_OBJECT
+public:
+	DwarfModel(QObject *parent = 0);
+	//virtual ~DwarfModel();
+
+
 };
 #endif

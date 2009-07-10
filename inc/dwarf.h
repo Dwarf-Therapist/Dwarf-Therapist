@@ -2,7 +2,7 @@
 #define DWARF_H
 
 #include <QObject>
-#include "dfinstance.h"
+class DFInstance;
 
 class Dwarf : public QObject
 {
@@ -20,6 +20,8 @@ private:
 	DFInstance *m_df;
 	int m_address;
 	int m_race_id;
+	QString read_last_name();
+
 	QString m_first_name;
 	QString m_last_name;
 	QString m_nick_name;

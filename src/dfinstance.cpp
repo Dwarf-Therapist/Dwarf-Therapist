@@ -1,6 +1,6 @@
 #include <QtDebug>
 #include <QApplication>
-#include <QProgressDialog>
+#include <QVector>
 #include <QByteArrayMatcher>
 #include <windows.h>
 #include <psapi.h>
@@ -44,21 +44,6 @@ DFInstance::DFInstance(DWORD pid, HWND hwnd, QObject* parent)
 
     m_memory_correction = (int)m_base_addr - 0x0400000;
     qDebug() << "memory correction " << m_memory_correction;
-
-	
-	
-	QVector<int> creatures = enumerate_vector(0x013ab3cc);
-	if (creatures.size() > 0) {
-		for (int offset=0; offset < creatures.size(); ++offset) {
-			Dwarf *d = Dwarf::get_dwarf(this, creatures[offset]);
-			if (d) {
-				qDebug() << "CREATURE" << offset << d->to_string();
-			} else {
-				qWarning() << "BOGUS CREATURE" << offset;
-			}
-		}
-	}
-	qDebug() << "finished reading creature vector";
 }
 
 DFInstance::~DFInstance() {
@@ -291,4 +276,25 @@ DFInstance* DFInstance::find_running_copy(QObject *parent) {
     qDebug() << "PID is: " << pid;
 
     return new DFInstance(pid, hwnd, parent);
+}
+
+QVector<Dwarf*> DFInstance::load_dwarves() {
+	int a = 0x223b3cc;
+	int b = 0x223b354;
+	int c = 0x013ab3cc; // from work
+	QVector<Dwarf*> dwarves;
+	QVector<int> creatures = enumerate_vector(a);
+	if (creatures.size() > 0) {
+		for (int offset=0; offset < creatures.size(); ++offset) {
+			Dwarf *d = Dwarf::get_dwarf(this, creatures[offset]);
+			if (d) {
+				dwarves.append(d);
+				qDebug() << "CREATURE" << offset << d->to_string();
+			} else {
+				qWarning() << "BOGUS CREATURE" << offset;
+			}
+		}
+	}
+	qDebug() << "finished reading creature vector";
+	return dwarves;
 }

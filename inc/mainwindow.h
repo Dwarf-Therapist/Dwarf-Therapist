@@ -1,7 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtGui/QMainWindow>
+#include <QMainWindow>
+#include <QLabel>
 #include "dfinstance.h"
 
 namespace Ui
@@ -19,13 +20,12 @@ public:
 
     public slots:
         void connect_to_df();
-        void read_memory();
-        void dump_mem();
-        void search_dump();
+		void read_dwarves();
 
 private:
     Ui::MainWindow *ui;
     DFInstance *m_df;
+	QLabel *m_lbl_status;
 
     private slots:
         void set_interface_enabled(bool);

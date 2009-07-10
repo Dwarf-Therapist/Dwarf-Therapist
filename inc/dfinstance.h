@@ -5,6 +5,8 @@
 #include <windows.h>
 #include <QObject>
 
+#include "dwarf.h"
+
 class DFInstance : public QObject {
 private:
 	Q_OBJECT
@@ -25,6 +27,7 @@ public:
 
     QString get_base_address();
     uint find_creature_vector();
+	QVector<Dwarf*> DFInstance::load_dwarves();
 
     public slots:
         void cancel_scan() {
