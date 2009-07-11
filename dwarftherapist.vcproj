@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="."
-			IntermediateDirectory="debug\"
+			OutputDirectory="$(SolutionDir)\bin\debug"
+			IntermediateDirectory="$(SolutionDIr)\bin\debug"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -53,8 +53,6 @@
 				BufferSecurityCheck="false"
 				TreatWChar_tAsBuiltInType="false"
 				RuntimeTypeInfo="true"
-				AssemblerListingLocation="debug\"
-				ObjectFile="debug\"
 				ProgramDataBaseFileName=".\"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -221,6 +219,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\gamedatareader.cpp"
+				>
+			</File>
+			<File
 				RelativePath="src\main.cpp"
 				>
 			</File>
@@ -313,6 +315,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\inc\gamedatareader.h"
+				>
+			</File>
+			<File
 				RelativePath="inc\mainwindow.h"
 				>
 				<FileConfiguration
@@ -401,72 +407,6 @@
 			UniqueIdentifier="{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}"
 			>
 			<File
-				RelativePath="debug\DwarfTherapist_resource.res"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Performing Custom Build Step"
-						CommandLine=""
-						AdditionalDependencies=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Performing Custom Build Step"
-						CommandLine=""
-						AdditionalDependencies=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="release\DwarfTherapist_resource.res"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Performing Custom Build Step"
-						CommandLine=""
-						AdditionalDependencies=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Performing Custom Build Step"
-						CommandLine=""
-						AdditionalDependencies=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\Debug\moc_dfinstance.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\Release\moc_dfinstance.cpp"
 				>
 				<FileConfiguration
@@ -479,15 +419,8 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\Debug\moc_dwarf.cpp"
+				RelativePath=".\Debug\moc_dfinstance.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					ExcludedFromBuild="true"
@@ -508,8 +441,13 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\Debug\moc_dwarf.cpp"
+				>
 				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -541,25 +479,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\Debug\moc_mainwindow.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\Release\moc_mainwindow.cpp"
 				>
 				<FileConfiguration
@@ -570,16 +489,9 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="debug\qrc_images.cpp"
+				RelativePath=".\Debug\moc_mainwindow.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -595,6 +507,18 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="debug\qrc_images.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -695,19 +619,15 @@
 				</FileConfiguration>
 			</File>
 		</Filter>
-		<File
-			RelativePath="c:\CODE\dwarftherapist\DwarfTherapist_resource.rc"
-			>
-		</File>
 	</Files>
 	<Globals>
 		<Global
 			Name="QtVersion"
-			Value="4.5.0-desktop-vc"
+			Value="4.5.0"
 		/>
 		<Global
 			Name="QtVersion Win32"
-			Value="4.5.0-desktop-vc"
+			Value="4.5.0"
 		/>
 	</Globals>
 </VisualStudioProject>

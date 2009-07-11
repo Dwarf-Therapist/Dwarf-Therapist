@@ -9,6 +9,7 @@
 #include "dfinstance.h"
 #include "dwarf.h"
 #include "utils.h"
+#include "gamedatareader.h"
 
 
 DFInstance::DFInstance(DWORD pid, HWND hwnd, QObject* parent)
@@ -72,11 +73,6 @@ int DFInstance::calculate_checksum() {
 	return timestamp;
 }
 
-
-QString DFInstance::get_base_address() {
-    return QString("%1").arg((int)m_base_addr);
-}
-
 QString DFInstance::read_string(int address) {
     uint bytes_read = 0;
     int len = read_int32(address + STRING_LENGTH_OFFSET, bytes_read);
@@ -102,6 +98,14 @@ short DFInstance::read_short(int start_address, uint &bytes_read) {
     ReadProcessMemory(m_proc, (LPCVOID)start_address, &val, sizeof(short), (DWORD*)&bytes_read);
     //qDebug() << "Read from " << start_address << "OK?" << ok <<  " bytes read: " << bytes_read << " VAL " << hex << val;
     return val;
+}
+
+ushort DFInstance::read_ushort(int start_address, uint &bytes_read) {
+	ushort val = 0;
+	bytes_read = 0;
+	ReadProcessMemory(m_proc, (LPCVOID)start_address, &val, sizeof(ushort), (DWORD*)&bytes_read);
+	//qDebug() << "Read from " << start_address << "OK?" << ok <<  " bytes read: " << bytes_read << " VAL " << hex << val;
+	return val;
 }
 
 int DFInstance::read_int32(int start_address, uint &bytes_read) {
@@ -208,11 +212,10 @@ QVector<int> DFInstance::enumerate_vector(int address) {
 	}
 	return addresses;
 }
-
+/*
 QVector<QVector<int> > DFInstance::cross_product(QVector<QVector<int> > addresses, int index) {
     QVector<QVector<int> > out;
-    return out;
-    /*
+
     if (index >= addresses.size()) {
         QVector<int> foo;
         foo.reserve(index);
@@ -227,9 +230,9 @@ QVector<QVector<int> > DFInstance::cross_product(QVector<QVector<int> > addresse
         }
     }
     return out;
-    */
-}
 
+}
+*/
 /*
 public IEnumerable<int[]> CrossProduct( List<int>[] addresses, int idx )
 {
@@ -266,8 +269,8 @@ int DFInstance::find_language_vector() {
             needle = encode_int(word_list);
             foreach(int word_list_ptr, scan_mem_find_all(needle, lang_vector_low_cutoff + m_memory_correction,
                                                          lang_vector_high_cutoff + m_memory_correction)) {
-                qDebug() << "LANGUAGE VECTOR IS AT" << hex << word_list_ptr - 0x4;
-                language_vector_address = word_list_ptr - 0x4;
+                language_vector_address = word_list_ptr - 0x4 - m_memory_correction;
+				qDebug() << "LANGUAGE VECTOR IS AT" << hex << language_vector_address;
             }
         }
     }
@@ -303,7 +306,7 @@ int DFInstance::find_translation_vector() {
                         foreach(int translations_list_ptr, scan_mem_find_all(needle,
                                                                              translation_vector_low_cutoff,
                                                                              translation_vector_high_cutoff)) {
-                            translation_vector_address = translations_list_ptr - 4;
+                            translation_vector_address = translations_list_ptr - 4 - m_memory_correction;
                             qDebug() << "FOUND TRANSLATIONS VECTOR" << hex << translation_vector_address;
                         }
                     }
@@ -317,9 +320,10 @@ int DFInstance::find_translation_vector() {
 
 int DFInstance::find_creature_vector() {
     // TODO: move to config
-    int creature_vector_low_cutoff = 0x01300000 + m_memory_correction;
-    int creature_vector_high_cutoff = 0x01700000 + m_memory_correction;
-    int dwarf_nickname_offset = 0x001C;
+	GameDataReader *gdr = GameDataReader::ptr();
+    int low_cutoff = gdr->get_int_for_key("ram_guesser/creature_vector_low_cutoff") + m_memory_correction;
+    int high_cutoff = gdr->get_int_for_key("ram_guesser/creature_vector_high_cutoff")+ m_memory_correction;
+    int dwarf_nickname_offset = gdr->get_dwarf_offset("nick_name");
     QByteArray custom_nickname("FirstCreature");
     QByteArray custom_profession("FirstProfession");
 
@@ -333,13 +337,9 @@ int DFInstance::find_creature_vector() {
 
 
     int creature_vector_address = -1;
-    /*
-
-    TURN THIS BACK ON!
-
     emit scan_message(tr("Scanning for known nickname"));
     QByteArray needle(custom_nickname);
-    int dwarf;
+    int dwarf = 0;
     foreach(int nickname, scan_mem_find_all(needle, 0, m_memory_size)) {
         qDebug() << "FOUND NICKNAME" << hex << nickname;
         emit scan_message(tr("Scanning for dwarf objects"));
@@ -348,8 +348,8 @@ int DFInstance::find_creature_vector() {
             qDebug() << "FOUND DWARF" << hex << dwarf;
             emit scan_message(tr("Scanning for dwarf vector pointer"));
             needle = encode_int(dwarf); // since this is the first dwarf, it should also be the dwarf vector
-            foreach(int vector_ptr, scan_mem_find_all(needle, creature_vector_low_cutoff, creature_vector_high_cutoff)) {
-                creature_vector_address = vector_ptr - 0x4;
+            foreach(int vector_ptr, scan_mem_find_all(needle, low_cutoff, high_cutoff)) {
+                creature_vector_address = vector_ptr - 0x4 - m_memory_correction;
                 qDebug() << "FOUND CREATURE VECTOR" << hex << creature_vector_address;
             }
         }
@@ -360,7 +360,7 @@ int DFInstance::find_creature_vector() {
         qDebug() << "Custom Profession Offset" << prof - dwarf - 4;
     }
 
-    */
+    return creature_vector_address;
 
     QVector<QByteArray> patterns;
     patterns.append(skillpattern_miner);
@@ -425,12 +425,11 @@ DFInstance* DFInstance::find_running_copy(QObject *parent) {
 }
 
 QVector<Dwarf*> DFInstance::load_dwarves() {
-	int a = 0x223b3cc; // home 1
-	int b = 0x223b354; // home 2
-	int c = 0x013ab3cc; // from work
-	int d = 0x0151b354; // from file
+	
+	int creature_vector = GameDataReader::ptr()->get_address("creature_vector");
+	qDebug() << "starting with creature vector" << hex << creature_vector;
 	QVector<Dwarf*> dwarves;
-	QVector<int> creatures = enumerate_vector(d + m_memory_correction);
+	QVector<int> creatures = enumerate_vector(creature_vector + m_memory_correction);
 	if (creatures.size() > 0) {
 		for (int offset=0; offset < creatures.size(); ++offset) {
 			Dwarf *d = Dwarf::get_dwarf(this, creatures[offset]);

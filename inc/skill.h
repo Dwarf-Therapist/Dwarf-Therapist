@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QStringList>
+#include "GameDataReader.h"
 
 class Skill
 {
@@ -14,28 +15,31 @@ public:
 	{
 	}
 	 
-    Skill(short id, short exp, short rating)
+    Skill(short id, ushort exp, short rating)
         : m_id(id)
         , m_exp(exp)
         , m_rating(rating)
     {
     }
 
-    QString rating_name(short rating) {
-		QString name_str = "Dabbling,Novice,,Competent,Skilled,Proficient,Talented,Adept,Expert,Professional,Accomplished,Great,Master,High Master,Grand Master,Legendary";
-		QStringList names = name_str.split(",");
-        if (rating < names.length()) {
-            return names[rating];
-        }
-        return "Legendary";
-    }
+	short id() {return m_id;}
+	short rating() {return m_rating;}
 
     QString to_string() {
-        return QString("%1 SKILL%2 (%3)").arg(rating_name(m_rating)).arg(m_id).arg(m_exp);
+		GameDataReader *gdr = GameDataReader::ptr();
+		QString out;
+		QString level = gdr->get_skill_level_name(m_rating);
+		
+		if (!level.isEmpty()) {
+			out += level;
+			out += " ";
+		}
+		out += gdr->get_skill_name(m_id);
+        return out + QString("(%3exp)").arg(m_exp);
     }
 private:
     short m_id;
-    short m_exp;
+    ushort m_exp;
     short m_rating;
 };
 

@@ -1,73 +1,61 @@
+#include <QVector>
 #include "dwarf.h"
 #include "dfinstance.h"
 #include "skill.h"
-#include <QVector>
+#include "gamedatareader.h"
 
 Dwarf::Dwarf(DFInstance *df, int address, QObject *parent)
 	: QObject(parent)
 	, m_df(df)
 	, m_address(address)
-    //, m_skills(QVector<Skill>)
+	, m_labors(new char[102])
 {
-	/*
-	<Offset Name="Creature.FirstName" Value="0x0000" /> 
-	<Offset Name="Creature.NickName" Value="0x001C" /> 
-	<Offset Name="Creature.LastName" Value="0x0038" /> 
-	<Offset Name="Creature.CustomProfession" Value="0x006c" /> 
-	<Offset Name="Creature.Profession" Value="0x0088" /> 
-	<Offset Name="Creature.Race" Value="0x008C" /> 
-	<Offset Name="Creature.Flags1" Value="0x00FC" /> 
-	<Offset Name="Creature.Flags2" Value="0x0100" /> 
-	<Offset Name="Creature.ID" Value="0x010C" /> 
-	<Offset Name="Creature.Strength" Value="0x04f0" /> 
-	<Offset Name="Creature.Agility" Value="0x04f4" /> 
-	<Offset Name="Creature.Toughness" Value="0x04f8" /> 
-	<Offset Name="Creature.SkillVector" Value="0x0504" /> 
-	<Offset Name="Creature.Labors" Value="0x0544" /> 
-	*/
+	refresh_data();
+}
+
+void Dwarf::refresh_data() {
+	GameDataReader *gdr = GameDataReader::ptr();
 	uint bytes_read = 0;
 
-	m_first_name = df->read_string(address);
+	m_first_name = m_df->read_string(m_address + gdr->get_dwarf_offset("first_name"));
 	if (m_first_name.size() > 1)
 		m_first_name[0] = m_first_name[0].toUpper();
 	
-	m_nick_name = df->read_string(address + 0x001C);
-    m_last_name = read_last_name(address + 0x0038);
-	m_custom_profession = df->read_string(address + 0x006C);
-	m_race_id = df->read_int32(address + 0x008C, bytes_read);
-    m_skills = read_skills(address + 0x0504);
+	m_nick_name = m_df->read_string(m_address + gdr->get_dwarf_offset("nick_name"));
+    m_last_name = read_last_name(m_address + gdr->get_dwarf_offset("last_name"));
+	m_custom_profession = m_df->read_string(m_address + gdr->get_dwarf_offset("custom_profession"));
+	m_race_id = m_df->read_int32(m_address + gdr->get_dwarf_offset("race"), bytes_read);
+    m_skills = read_skills(m_address + gdr->get_dwarf_offset("skills"));
+	m_profession = read_professtion(m_address + gdr->get_dwarf_offset("profession"));
+	m_strength = m_df->read_int32(m_address + gdr->get_dwarf_offset("strength"), bytes_read);
+	m_toughness = m_df->read_int32(m_address + gdr->get_dwarf_offset("toughness"), bytes_read);
+	m_agility = m_df->read_int32(m_address + gdr->get_dwarf_offset("agility"), bytes_read);
+	read_labors(m_address + gdr->get_dwarf_offset("labors"));
 }
 
 Dwarf::~Dwarf() {
+	delete[] m_labors;
 }
 
 Dwarf *Dwarf::get_dwarf(DFInstance *df, int address) {
+	GameDataReader *gdr = GameDataReader::ptr();
 	uint bytes_read = 0;
-	if ((df->read_int32(address + 0x00FC, bytes_read) & 0x08C0) > 0) {
+	if ((df->read_int32(address + gdr->get_dwarf_offset("flags1"), bytes_read) & gdr->get_int_for_key("flags/flags1.invalidate")) > 0) {
 		return 0;
 	}
-	
-	//if( ( memoryAccess.ReadInt32( address + memoryLayout["Creature.Flags1"] ) & memoryLayout["Creature.Flags1.Invalidate"] ) > 0)
-    //	return false;
-
-	if ((df->read_int32(address + 0x0100, bytes_read) & 0x0080) > 0) {
+	if ((df->read_int32(address + gdr->get_dwarf_offset("flags2"), bytes_read) & gdr->get_int_for_key("flags/flags2.invalidate")) > 0) {
 		return 0;
 	}
-	
-	//if( ( memoryAccess.ReadInt32( address + memoryLayout["Creature.Flags2"] ) & memoryLayout["Creature.Flags2.Invalidate"] ) > 0 )
-	//	return false;
-
-	if ((df->read_int32(address + 0x008C, bytes_read)) != 166) {
+	if ((df->read_int32(address + gdr->get_dwarf_offset("race"), bytes_read)) != 166) {
 		return 0;
 	}
 	//if( memoryAccess.ReadInt32( address + memoryLayout["Creature.Race"] ) != actualDwarfRaceId )
 	//	return false;
-
 	return new Dwarf(df, address, df);
 }
 
 QString Dwarf::to_string() {
-    return QString("%1, %4").arg(nice_name(), m_custom_profession);
+	return QString("%1, %2 STR:%3 AGI:%4 TOU:%5").arg(nice_name(), m_profession).arg(m_strength).arg(m_agility).arg(m_toughness);
 }
 
 QString Dwarf::nice_name() {
@@ -80,10 +68,11 @@ QString Dwarf::nice_name() {
 
 QString Dwarf::read_last_name(int address) {
     // TODO: move to config
-    int word_table = 0x0058;
+	GameDataReader *gdr = GameDataReader::ptr();
+    int word_table = gdr->get_offset("word_table");
     uint bytes_read = 0;
-    int actual_lang_table = m_df->read_int32(0x013f15c8 + 4, bytes_read);
-    int translations_ptr = m_df->read_int32(0x013f15f8 + 4, bytes_read);
+    int actual_lang_table = m_df->read_int32(gdr->get_address("language_vector") + m_df->get_memory_correction() + 4, bytes_read);
+    int translations_ptr = m_df->read_int32(gdr->get_address("translation_vector") + m_df->get_memory_correction() + 4, bytes_read);
     int translation_ptr = m_df->read_int32(translations_ptr, bytes_read);
     int actual_dwarf_translation_table = m_df->read_int32(translation_ptr + word_table, bytes_read);
 
@@ -109,16 +98,34 @@ QVector<Skill> Dwarf::read_skills(int address) {
     uint bytes_read = 0;
 	foreach(int addr, m_df->enumerate_vector(address)) {
         short type = m_df->read_short(addr, bytes_read);
-        short experience = m_df->read_short(addr + 2, bytes_read);
+        ushort experience = m_df->read_ushort(addr + 2, bytes_read);
         short rating = m_df->read_short(addr + 4, bytes_read);
-		Skill s(type, rating, experience);
+		Skill s(type, experience, rating);
         skills.append(s);
     }
 	return skills;
 }
 
-/*protected Labors ReadLabors( int address )
-{
-    byte[] labors = memoryAccess.ReadMemory( address, 102 );
-    return new Labors( labors );
-}*/
+short Dwarf::get_rating_for_skill(int labor_id) {
+	foreach(Skill s, m_skills) {
+		if (s.id() == labor_id) {
+			return s.rating();
+		}
+	}
+	return 0;
+}
+
+QString Dwarf::read_professtion(int address) {
+	if (!m_custom_profession.isEmpty()) {
+		return m_custom_profession; 
+	}
+	
+	char buffer[1];
+	int bytes_read = m_df->read_raw(address, 1, &buffer[0]);
+	return GameDataReader::ptr()->get_profession_name((int)buffer[0]);
+}
+
+void Dwarf::read_labors(int address) {
+	memset(m_labors, 0, 102);
+	int bytes_read = m_df->read_raw(address, 102, &m_labors[0]);
+}

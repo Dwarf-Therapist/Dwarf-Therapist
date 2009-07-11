@@ -1,6 +1,7 @@
 #include <QMessageBox>
 #include <QLabel>
 #include <QProgressDialog>
+#include <QSettings>
 
 #include <QtDebug>
 
@@ -13,8 +14,12 @@ MainWindow::MainWindow(QWidget *parent)
     ,ui(new Ui::MainWindow)
     ,m_df(0)
     ,m_lbl_status(0)
+	,m_settings(0)
 {
     ui->setupUi(this);
+
+	m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "UDP Software", "Dwarf Therapist", this);
+	read_settings();
 
 	m_lbl_status = new QLabel(tr("not connected"), statusBar());
 	statusBar()->addPermanentWidget(m_lbl_status, 0);
@@ -24,6 +29,38 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::read_settings() {
+	// Geometry
+	m_settings->beginGroup("window");
+	QByteArray geom = m_settings->value("geometry").toByteArray();
+	if (!geom.isEmpty()) {
+		restoreGeometry(geom);
+	}
+	// Toolbars etc... 
+	QByteArray state = m_settings->value("state").toByteArray();
+	if (!state.isEmpty()) {
+		restoreState(state);
+	}
+	m_settings->endGroup();
+
+}
+
+void MainWindow::write_settings() {
+	if (m_settings) {
+		QByteArray geom = saveGeometry();
+		QByteArray state = saveState();
+		m_settings->beginGroup("window");
+		m_settings->setValue("geometry", QVariant(geom));
+		m_settings->setValue("state", QVariant(state));
+		m_settings->endGroup();
+	}
+}
+
+void MainWindow::closeEvent(QCloseEvent *evt) {
+	write_settings();
+	QWidget::closeEvent(evt);
 }
 
 void MainWindow::connect_to_df() {
@@ -44,6 +81,7 @@ void MainWindow::connect_to_df() {
 }
 
 void MainWindow::read_dwarves() {
+	GameDataReader *gdr = GameDataReader::ptr();
 	QVector<Dwarf*> dwarves = m_df->load_dwarves();
 
 	DwarfModel *m = new DwarfModel(this);
@@ -58,6 +96,14 @@ void MainWindow::read_dwarves() {
 		skills->setText(out);
 		m->setItem(i, 0, name);
 		m->setItem(i, 1, skills);
+		for (int j=0; j < 102; ++j) {
+			bool enabled = dwarves[i]->is_labor_enabled(j);
+			QStandardItem *tmp = new QStandardItem(QString::number(dwarves[i]->get_rating_for_skill(j)));
+			tmp->setToolTip(gdr->get_skill_name(j));
+			tmp->setCheckable(true);
+			tmp->setCheckState(enabled ? Qt::Checked : Qt::Unchecked);
+			m->setItem(i, j+2, tmp);
+		}
 	}
 	ui->tbl_main->setModel(m);
 
@@ -67,12 +113,6 @@ void MainWindow::set_interface_enabled(bool enabled) {
 	ui->act_connect_to_DF->setEnabled(!enabled);
 	ui->act_read_dwarves->setEnabled(enabled);
 	ui->act_scan_memory->setEnabled(enabled);
-    /*
-	ui->btn_read->setEnabled(enabled);
-    ui->btn_dump->setEnabled(enabled);
-    ui->edit_s_address->setEnabled(enabled);
-    ui->edit_e_address->setEnabled(enabled);
-    */
 }
 
 void MainWindow::scan_memory() {
@@ -83,12 +123,14 @@ void MainWindow::scan_memory() {
     connect(pd, SIGNAL(canceled()), m_df, SLOT(cancel_scan()));
     pd->show();
 
-    //int language_addr = m_df->find_language_vector();
-    //int translation_addr = m_df->find_translation_vector();
+    int language_addr = m_df->find_language_vector();
+    int translation_addr = m_df->find_translation_vector();
     int creature_addr = m_df->find_creature_vector();
 	pd->deleteLater();
 
-    //qDebug() << "LANGUAGE VECTOR:   " << hex << language_addr;
-    //qDebug() << "TRANSLATION VECTOR:" << hex << translation_addr;
+    qDebug() << "LANGUAGE VECTOR:   " << hex << language_addr;
+    qDebug() << "TRANSLATION VECTOR:" << hex << translation_addr;
     qDebug() << "CREATURE VECTOR:   " << hex << creature_addr;
 }
+
+

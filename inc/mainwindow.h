@@ -1,8 +1,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QLabel>
+#include <QtCore>
+#include <QtGui>
+
 #include "dfinstance.h"
 
 namespace Ui
@@ -27,6 +28,12 @@ private:
     Ui::MainWindow *ui;
     DFInstance *m_df;
 	QLabel *m_lbl_status;
+	QSettings *m_settings;
+
+	void closeEvent(QCloseEvent *evt); // override;
+
+	void read_settings();
+	void write_settings();
 
     private slots:
         void set_interface_enabled(bool);

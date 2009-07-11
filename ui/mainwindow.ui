@@ -17,6 +17,12 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QTableView" name="tbl_main">
+      <property name="contextMenuPolicy">
+       <enum>Qt::ActionsContextMenu</enum>
+      </property>
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
       <property name="selectionMode">
        <enum>QAbstractItemView::SingleSelection</enum>
       </property>
@@ -26,10 +32,13 @@
       <property name="sortingEnabled">
        <bool>false</bool>
       </property>
-      <attribute name="verticalHeaderVisible">
+      <attribute name="horizontalHeaderStretchLastSection">
        <bool>true</bool>
       </attribute>
       <attribute name="verticalHeaderVisible">
+       <bool>true</bool>
+      </attribute>
+      <attribute name="horizontalHeaderStretchLastSection">
        <bool>true</bool>
       </attribute>
      </widget>

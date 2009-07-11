@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Fri Jul 10 17:59:50 2009
+** Created: Sat Jul 11 01:36:51 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -75,9 +75,12 @@ public:
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         tbl_main = new QTableView(main_widget);
         tbl_main->setObjectName(QString::fromUtf8("tbl_main"));
+        tbl_main->setContextMenuPolicy(Qt::ActionsContextMenu);
+        tbl_main->setAlternatingRowColors(true);
         tbl_main->setSelectionMode(QAbstractItemView::SingleSelection);
         tbl_main->setSelectionBehavior(QAbstractItemView::SelectRows);
         tbl_main->setSortingEnabled(false);
+        tbl_main->horizontalHeader()->setStretchLastSection(true);
         tbl_main->verticalHeader()->setVisible(true);
 
         verticalLayout->addWidget(tbl_main);

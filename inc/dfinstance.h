@@ -21,12 +21,14 @@ public:
     static DFInstance* find_running_copy(QObject *parent=0);
 
     // accessors
-    QString get_base_address();
+	int get_memory_correction() {return m_memory_correction;}
+	int get_base_address() {return m_base_addr;}
     
     // brute force memory scanning methods
     QVector<int> enumerate_vector(int address);
     char read_char(int start_address, uint &bytes_read);
     short read_short(int start_address, uint &bytes_read);
+	ushort read_ushort(int start_address, uint &bytes_read);
     int read_int32(int start_address, uint &bytes_read);
     int read_raw(int start_address, int bytes, char *buffer);
     int scan_mem(QByteArray &needle, int start_address, int end_address, bool &ok);
