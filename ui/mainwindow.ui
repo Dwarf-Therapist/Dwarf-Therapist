@@ -27,10 +27,10 @@
        <bool>false</bool>
       </property>
       <attribute name="verticalHeaderVisible">
-       <bool>false</bool>
+       <bool>true</bool>
       </attribute>
       <attribute name="verticalHeaderVisible">
-       <bool>false</bool>
+       <bool>true</bool>
       </attribute>
      </widget>
     </item>
@@ -51,6 +51,7 @@
     </property>
     <addaction name="act_connect_to_DF"/>
     <addaction name="act_read_dwarves"/>
+    <addaction name="act_scan_memory"/>
     <addaction name="separator"/>
     <addaction name="act_exit"/>
    </widget>
@@ -78,10 +79,13 @@
      <normaloff>:/img/img/connect.png</normaloff>:/img/img/connect.png</iconset>
    </property>
    <property name="text">
-    <string>Connect To DF</string>
+    <string>&amp;Connect To DF</string>
    </property>
    <property name="toolTip">
-    <string>Attemp connecting to a running copy of Dwarf Fortress</string>
+    <string>Attempt connecting to a running copy of Dwarf Fortress</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
    </property>
   </action>
   <action name="act_exit">
@@ -115,6 +119,20 @@
    <property name="toolTip">
     <string>Read the stuff...</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="act_scan_memory">
+   <property name="text">
+    <string>Scan Memory</string>
+   </property>
+   <property name="toolTip">
+    <string>Map out the RAM of Dwarf Fortress looking for known values</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
+   </property>
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
@@ -124,7 +142,7 @@
  <connections>
   <connection>
    <sender>act_connect_to_DF</sender>
-   <signal>activated()</signal>
+   <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>connect_to_df()</slot>
    <hints>
@@ -140,7 +158,7 @@
   </connection>
   <connection>
    <sender>act_exit</sender>
-   <signal>activated()</signal>
+   <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>close()</slot>
    <hints>
@@ -156,7 +174,7 @@
   </connection>
   <connection>
    <sender>act_read_dwarves</sender>
-   <signal>activated()</signal>
+   <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>read_dwarves()</slot>
    <hints>
@@ -170,9 +188,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_scan_memory</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>scan_memory()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>205</x>
+     <y>230</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
   <slot>read_dwarves()</slot>
+  <slot>scan_memory()</slot>
  </slots>
 </ui>

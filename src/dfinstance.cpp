@@ -8,6 +8,7 @@
 #include "win_structs.h"
 #include "dfinstance.h"
 #include "dwarf.h"
+#include "utils.h"
 
 
 DFInstance::DFInstance(DWORD pid, HWND hwnd, QObject* parent)
@@ -71,16 +72,6 @@ int DFInstance::calculate_checksum() {
 	return timestamp;
 }
 
-QByteArray DFInstance::encode_int(uint addr) {
-    char bytes[4];
-    bytes[0] = (char)addr;
-    bytes[1] = (char)(addr >> 8);
-    bytes[2] = (char)(addr >> 16);
-    bytes[3] = (char)(addr >> 24);
-
-    QByteArray arr(bytes, 4);
-    return arr;
-}
 
 QString DFInstance::get_base_address() {
     return QString("%1").arg((int)m_base_addr);
@@ -103,6 +94,14 @@ QString DFInstance::read_string(int address) {
 	QString ret_val = QString::fromAscii(buffer, bytes_read);
     delete[] buffer;
     return ret_val;
+}
+
+short DFInstance::read_short(int start_address, uint &bytes_read) {
+    short val = 0;
+    bytes_read = 0;
+    ReadProcessMemory(m_proc, (LPCVOID)start_address, &val, sizeof(short), (DWORD*)&bytes_read);
+    //qDebug() << "Read from " << start_address << "OK?" << ok <<  " bytes read: " << bytes_read << " VAL " << hex << val;
+    return val;
 }
 
 int DFInstance::read_int32(int start_address, uint &bytes_read) {
@@ -179,10 +178,11 @@ int DFInstance::scan_mem(QByteArray &needle, int start_address, int end_address,
             //qDebug() << "FOUND" << needle << "at" << hex << ptr + idx;
             ok = true;
             //delete[] buffer;
-            emit scan_progress(total_steps);
+            emit scan_progress(total_steps-1); // don't finish it all the way
             return ptr + idx;
         }
         emit scan_progress(i);
+        qApp->processEvents();
     }
     //delete[] buffer;
     ok = false;
@@ -209,59 +209,205 @@ QVector<int> DFInstance::enumerate_vector(int address) {
 	return addresses;
 }
 
-uint DFInstance::find_creature_vector() {
-	QByteArray needle("FirstCreature");
-    QVector<int> v_names = scan_mem_find_all(needle, 0, m_memory_size + m_base_addr);
-    if (v_names.size() > 0) {
-		for (int i=0; i < v_names.size(); ++i) {
-			int dwarf_nickname = v_names[i];
-			QString nick = read_string(dwarf_nickname);
-			//qDebug() << "first creature found at" << dwarf_nickname;
-
-			int dwarf = dwarf_nickname - 0x001C - 4; // get the pointer to this dwarf object
-			//qDebug() << "dwarf pointer 0: " << hex << dwarf;
-			Dwarf *d = Dwarf::get_dwarf(this, dwarf);
-			if (d) {
-				qDebug() << "FOUND A DWARF!" << d->to_string();
-			}
-
-			QByteArray needle = encode_int(dwarf);
-			QVector<int> addresses = scan_mem_find_all(needle, 0, m_memory_size);
-			if (addresses.size() > 0) {
-				for (int j = 0; j < addresses.size(); ++j) {
-					uint addr = addresses[j];
-					//qDebug() << "possible dwarf pointer match at" << hex << addr;
-				
-					uint dwarf_list = addr;
-					needle = encode_int(dwarf_list);
-
-					QVector<int> list_ptr_matches = scan_mem_find_all(needle, 0x01300000 + m_memory_correction, 0x01700000 + m_memory_correction);
-					if (list_ptr_matches.size() > 0) {
-						for (int k = 0; k < list_ptr_matches.size(); ++k) {
-							qDebug() << "+++++ Possible CreatureVector +++++" << hex << list_ptr_matches[k] - 0x4;
-							QVector<int> creatures = enumerate_vector(list_ptr_matches[k] - 0x4);
-							if (creatures.size() > 0) {
-								for (int offset=0; offset < creatures.size(); ++offset) {
-									Dwarf *d = Dwarf::get_dwarf(this, creatures[offset]);
-									if (d) {
-										qDebug() << "CREATURE" << offset << d->to_string();
-									} else {
-										qWarning() << "BOGUS CREATURE" << offset;
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
+QVector<QVector<int> > DFInstance::cross_product(QVector<QVector<int> > addresses, int index) {
+    QVector<QVector<int> > out;
+    return out;
+    /*
+    if (index >= addresses.size()) {
+        QVector<int> foo;
+        foo.reserve(index);
+        out.append(foo);
+        return out;
     } else {
-        qWarning() << "unable to find first creature";
+        foreach(int i, addresses[index]) {
+            foreach(QVector<int> p, cross_product(addresses, index + 1)) {
+                p[index] = i;
+                return p;
+            }
+        }
     }
-	qDebug() << "all done with creature scan";
-    return 9;
+    return out;
+    */
 }
 
+/*
+public IEnumerable<int[]> CrossProduct( List<int>[] addresses, int idx )
+{
+    if( idx >= addresses.Length ) {
+        yield return new int[idx];
+    } else {
+        foreach( int i in addresses[idx] ) {
+            foreach( int[] p in CrossProduct( addresses, idx + 1 ) ) {
+                p[idx] = i;
+                yield return p;
+            }
+        }
+    }
+}*/
+
+int DFInstance::find_language_vector() {
+    // TODO: move to config
+    int language_word_number = 1373;
+    int lang_vector_low_cutoff = 0x01500000;
+    int lang_vector_high_cutoff = 0x015D0000;
+    QByteArray needle("LANCER");
+
+
+    int language_vector_address = -1; // return val
+    emit scan_message(tr("Scanning for known word"));
+    foreach(int word_addr, scan_mem_find_all(needle, 0, m_memory_size)) {
+        emit scan_message(tr("Scanning for word pointer"));
+        qDebug() << "FOUND WORD" << hex << word_addr;
+        needle = encode_int(word_addr - 4);
+        foreach(int word_addr_ptr, scan_mem_find_all(needle, 0, m_memory_size)) {
+            emit scan_message(tr("Scanning for language vector"));
+            qDebug() << "FOUND WORD PTR" << hex << word_addr_ptr;
+            int word_list = word_addr_ptr - (language_word_number * 4);
+            needle = encode_int(word_list);
+            foreach(int word_list_ptr, scan_mem_find_all(needle, lang_vector_low_cutoff + m_memory_correction,
+                                                         lang_vector_high_cutoff + m_memory_correction)) {
+                qDebug() << "LANGUAGE VECTOR IS AT" << hex << word_list_ptr - 0x4;
+                language_vector_address = word_list_ptr - 0x4;
+            }
+        }
+    }
+    qDebug() << "all done with language scan";
+    return language_vector_address;
+}
+
+int DFInstance::find_translation_vector() {
+    // TODO: move to config
+    int translation_vector_low_cutoff = 0x01500000 + m_memory_correction;
+    int translation_vector_high_cutoff = 0x015D0000 + m_memory_correction;
+    int translation_word_number = 1373;
+    int translation_number = 0;
+    QByteArray translation_word("kivish");
+    QByteArray translation_name("DWARF");
+
+    int translation_vector_address = -1; //return val;
+    emit scan_message(tr("Scanning for translation vector"));
+    QByteArray needle(translation_word);
+    foreach(int word, scan_mem_find_all(translation_word, 0, m_memory_size)) {
+        needle = encode_int(word - 4);
+        foreach(int word_ptr, scan_mem_find_all(needle, 0, m_memory_size)) {
+            needle = encode_int(word_ptr - (translation_word_number * 4));
+            foreach(int word_list_ptr, scan_mem_find_all(needle, 0, m_memory_size)) {
+                needle = translation_name;
+                foreach(int dwarf_translation_name, scan_mem_find_all(needle, word_list_ptr - 0x1000, word_list_ptr)) {
+                    dwarf_translation_name -= 4;
+                    qDebug() << "FOUND TRANSLATION WORD TABLE" << hex << word_list_ptr - dwarf_translation_name;
+                    needle = encode_int(dwarf_translation_name);
+                    foreach(int dwarf_translation_ptr, scan_mem_find_all(needle, 0, m_memory_size)) {
+                        int translations_list = dwarf_translation_ptr - (translation_number * 4);
+                        needle = encode_int(translations_list);
+                        foreach(int translations_list_ptr, scan_mem_find_all(needle,
+                                                                             translation_vector_low_cutoff,
+                                                                             translation_vector_high_cutoff)) {
+                            translation_vector_address = translations_list_ptr - 4;
+                            qDebug() << "FOUND TRANSLATIONS VECTOR" << hex << translation_vector_address;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    qDebug() << "all done with translation scan";
+    return translation_vector_address;
+}
+
+int DFInstance::find_creature_vector() {
+    // TODO: move to config
+    int creature_vector_low_cutoff = 0x01300000 + m_memory_correction;
+    int creature_vector_high_cutoff = 0x01700000 + m_memory_correction;
+    int dwarf_nickname_offset = 0x001C;
+    QByteArray custom_nickname("FirstCreature");
+    QByteArray custom_profession("FirstProfession");
+
+    QByteArray skillpattern_miner = encode_skillpattern(0, 3340, 4);
+    QByteArray skillpattern_metalsmith = encode_skillpattern(29, 0, 2);
+    QByteArray skillpattern_swordsman = encode_skillpattern(40, 462, 3);
+    QByteArray skillpattern_pump_operator = encode_skillpattern(65, 462, 1);
+
+	uchar foo[6] = {0x00, 0x00, 0x0C, 0x0D, 0x04, 0x00};
+	skillpattern_miner = QByteArray((char*)&foo, 6);
+
+
+    int creature_vector_address = -1;
+    /*
+
+    TURN THIS BACK ON!
+
+    emit scan_message(tr("Scanning for known nickname"));
+    QByteArray needle(custom_nickname);
+    int dwarf;
+    foreach(int nickname, scan_mem_find_all(needle, 0, m_memory_size)) {
+        qDebug() << "FOUND NICKNAME" << hex << nickname;
+        emit scan_message(tr("Scanning for dwarf objects"));
+        needle = encode_int(nickname - dwarf_nickname_offset - 4); // should be the address of this dwarf
+        foreach(int dwarf, scan_mem_find_all(needle, 0, m_memory_size)) {
+            qDebug() << "FOUND DWARF" << hex << dwarf;
+            emit scan_message(tr("Scanning for dwarf vector pointer"));
+            needle = encode_int(dwarf); // since this is the first dwarf, it should also be the dwarf vector
+            foreach(int vector_ptr, scan_mem_find_all(needle, creature_vector_low_cutoff, creature_vector_high_cutoff)) {
+                creature_vector_address = vector_ptr - 0x4;
+                qDebug() << "FOUND CREATURE VECTOR" << hex << creature_vector_address;
+            }
+        }
+    }
+
+    needle = custom_profession;
+    foreach(int prof, scan_mem_find_all(needle, dwarf, dwarf + 0x1000)) {
+        qDebug() << "Custom Profession Offset" << prof - dwarf - 4;
+    }
+
+    */
+
+    QVector<QByteArray> patterns;
+    patterns.append(skillpattern_miner);
+    patterns.append(skillpattern_metalsmith);
+    patterns.append(skillpattern_swordsman);
+    patterns.append(skillpattern_pump_operator);
+
+    QVector< QVector<int> > addresses;
+    addresses.reserve(patterns.size());
+    for (int i = 0; i < 4; ++i) {
+        QVector<int> lst;
+        emit scan_message("scanning for skill pattern" + QString::number(i));
+		foreach(int skill, scan_mem_find_all(patterns[i], 0, m_memory_size + m_base_addr - m_memory_correction)) {
+            qDebug() << "FOUND SKILL PATTERN" << i << by_char(patterns[i]) << "AT" << hex << skill;
+            lst.append(skill);
+        }
+		addresses.append(lst);
+		break;
+    }
+    /*
+                List<int>[] addresses = new List<int>[config.SkillPatterns.Length];
+                for( int i = 0; i < config.SkillPatterns.Length; i++ ) {
+                    List<int> list = new List<int>();
+                    foreach( int skill in FindPattern( config.SkillPatterns[i] ) )
+                        list.Add( skill );
+                    addresses[i] = list;
+                }
+                foreach( int addr in addresses[0] ) {
+                    foreach( int start in Find( addr ) ) {
+                        byte[] buffer = memoryAccess.ReadMemory( start, config.SkillPatterns.Length*4 );
+                        foreach( int[] p in CrossProduct( addresses, 0 ) ) {
+                            Matcher matcher = new Matcher( BytesHelper.ToBytes( p ) );
+                            if( matcher.Matches( ref buffer, 0, buffer.Length ) ) {
+                                foreach( int listPointers in Find( start, dwarf, dwarf + 0x2000 ) ) {
+                                    ReportAddress( "Offset", "Creature.SkillVector", listPointers - dwarf - 4 );
+                                }
+                            }
+                        }
+                    }
+                }
+                foreach( int labors in FindPattern( config.LaborsPattern, dwarf, dwarf + 0x2000 ) ) {
+                    ReportAddress( "Offset", "Creature.Labors", labors - dwarf );
+                }
+    */
+	qDebug() << "all done with creature scan";
+    return creature_vector_address;
+}
 
 DFInstance* DFInstance::find_running_copy(QObject *parent) {
     HWND hwnd = FindWindow(NULL, L"Dwarf Fortress");
@@ -279,11 +425,12 @@ DFInstance* DFInstance::find_running_copy(QObject *parent) {
 }
 
 QVector<Dwarf*> DFInstance::load_dwarves() {
-	int a = 0x223b3cc;
-	int b = 0x223b354;
+	int a = 0x223b3cc; // home 1
+	int b = 0x223b354; // home 2
 	int c = 0x013ab3cc; // from work
+	int d = 0x0151b354; // from file
 	QVector<Dwarf*> dwarves;
-	QVector<int> creatures = enumerate_vector(a);
+	QVector<int> creatures = enumerate_vector(d + m_memory_correction);
 	if (creatures.size() > 0) {
 		for (int offset=0; offset < creatures.size(); ++offset) {
 			Dwarf *d = Dwarf::get_dwarf(this, creatures[offset]);

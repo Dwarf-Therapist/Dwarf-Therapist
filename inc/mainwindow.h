@@ -21,6 +21,7 @@ public:
     public slots:
         void connect_to_df();
 		void read_dwarves();
+		void scan_memory();
 
 private:
     Ui::MainWindow *ui;

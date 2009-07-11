@@ -1,10 +1,13 @@
 #include "dwarf.h"
 #include "dfinstance.h"
+#include "skill.h"
+#include <QVector>
 
 Dwarf::Dwarf(DFInstance *df, int address, QObject *parent)
 	: QObject(parent)
 	, m_df(df)
 	, m_address(address)
+    //, m_skills(QVector<Skill>)
 {
 	/*
 	<Offset Name="Creature.FirstName" Value="0x0000" /> 
@@ -29,14 +32,13 @@ Dwarf::Dwarf(DFInstance *df, int address, QObject *parent)
 		m_first_name[0] = m_first_name[0].toUpper();
 	
 	m_nick_name = df->read_string(address + 0x001C);
-	m_last_name = read_last_name();
+    m_last_name = read_last_name(address + 0x0038);
 	m_custom_profession = df->read_string(address + 0x006C);
 	m_race_id = df->read_int32(address + 0x008C, bytes_read);
+    m_skills = read_skills(address + 0x0504);
 }
 
-Dwarf::~Dwarf()
-{
-
+Dwarf::~Dwarf() {
 }
 
 Dwarf *Dwarf::get_dwarf(DFInstance *df, int address) {
@@ -64,6 +66,10 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, int address) {
 	return new Dwarf(df, address, df);
 }
 
+QString Dwarf::to_string() {
+    return QString("%1, %4").arg(nice_name(), m_custom_profession);
+}
+
 QString Dwarf::nice_name() {
 	if (m_nick_name.isEmpty()) {
 		return QString("%1 %2").arg(m_first_name, m_last_name);
@@ -72,30 +78,47 @@ QString Dwarf::nice_name() {
 	}
 }
 
-QString Dwarf::read_last_name() {
-	QString out = "LASTNAME";
-	return out;
-	/*
-	uint bytes_read = 0;
+QString Dwarf::read_last_name(int address) {
+    // TODO: move to config
+    int word_table = 0x0058;
+    uint bytes_read = 0;
+    int actual_lang_table = m_df->read_int32(0x013f15c8 + 4, bytes_read);
+    int translations_ptr = m_df->read_int32(0x013f15f8 + 4, bytes_read);
+    int translation_ptr = m_df->read_int32(translations_ptr, bytes_read);
+    int actual_dwarf_translation_table = m_df->read_int32(translation_ptr + word_table, bytes_read);
+
+    QString out;
+
 	for (int i = 0; i < 7; i++) {
-		int word = m_df->read_int32(address + i * 4, bytes_read);
-		if( word == -1 )
+        int word = m_df->read_int32(address + i * 4, bytes_read);
+        if(bytes_read == 0 || word == -1)
 			break;
-		Q_ASSERT(word < 10000);
-		int mod = memoryAccess.ReadShort( address + 7 * 4 + i * 2 )+1;
-		//int addr = memoryAccess.ReadInt32( actualLanguageTable + word * 4 );
-		//string name = memoryAccess.ReadString( addr + 28*mod + 4 );
-		int addr = memoryAccess.ReadInt32( actualDwarfTranslationTable + word * 4 );
-		string name = memoryAccess.ReadString( addr );
-		sb.Append( name );
+        //Q_ASSERT(word < 10000);
+        int addr = m_df->read_int32(actual_dwarf_translation_table + word * 4, bytes_read);
+        out += m_df->read_string(addr);
 	}
-	string lastname = sb.ToString();
-	if( lastname.Length > 1 )
-		return lastname.Substring( 0, 1 ).ToUpper() + lastname.Substring( 1 );
-	else return lastname;
-	*/
+    if (out.size() > 1) {
+        out[0] = out[0].toUpper();
+    }
+    return out;
 }
 
-QString Dwarf::to_string() {
-	return QString("<%1, %4>").arg(nice_name(), m_custom_profession);
+
+QVector<Skill> Dwarf::read_skills(int address) {
+    QVector<Skill> skills(0);
+    uint bytes_read = 0;
+	foreach(int addr, m_df->enumerate_vector(address)) {
+        short type = m_df->read_short(addr, bytes_read);
+        short experience = m_df->read_short(addr + 2, bytes_read);
+        short rating = m_df->read_short(addr + 4, bytes_read);
+		Skill s(type, rating, experience);
+        skills.append(s);
+    }
+	return skills;
 }
+
+/*protected Labors ReadLabors( int address )
+{
+    byte[] labors = memoryAccess.ReadMemory( address, 102 );
+    return new Labors( labors );
+}*/

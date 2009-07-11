@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Thu Jul 9 21:48:05 2009
+** Created: Fri Jul 10 17:59:50 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -33,6 +33,7 @@ public:
     QAction *act_exit;
     QAction *act_about;
     QAction *act_read_dwarves;
+    QAction *act_scan_memory;
     QWidget *main_widget;
     QVBoxLayout *verticalLayout;
     QTableView *tbl_main;
@@ -64,6 +65,8 @@ public:
         act_about->setIcon(icon2);
         act_read_dwarves = new QAction(MainWindow);
         act_read_dwarves->setObjectName(QString::fromUtf8("act_read_dwarves"));
+        act_scan_memory = new QAction(MainWindow);
+        act_scan_memory->setObjectName(QString::fromUtf8("act_scan_memory"));
         main_widget = new QWidget(MainWindow);
         main_widget->setObjectName(QString::fromUtf8("main_widget"));
         verticalLayout = new QVBoxLayout(main_widget);
@@ -75,7 +78,7 @@ public:
         tbl_main->setSelectionMode(QAbstractItemView::SingleSelection);
         tbl_main->setSelectionBehavior(QAbstractItemView::SelectRows);
         tbl_main->setSortingEnabled(false);
-        tbl_main->verticalHeader()->setVisible(false);
+        tbl_main->verticalHeader()->setVisible(true);
 
         verticalLayout->addWidget(tbl_main);
 
@@ -99,14 +102,16 @@ public:
         menuBar->addAction(menu_Help->menuAction());
         menu_File->addAction(act_connect_to_DF);
         menu_File->addAction(act_read_dwarves);
+        menu_File->addAction(act_scan_memory);
         menu_File->addSeparator();
         menu_File->addAction(act_exit);
         menu_Help->addAction(act_about);
 
         retranslateUi(MainWindow);
-        QObject::connect(act_connect_to_DF, SIGNAL(activated()), MainWindow, SLOT(connect_to_df()));
-        QObject::connect(act_exit, SIGNAL(activated()), MainWindow, SLOT(close()));
-        QObject::connect(act_read_dwarves, SIGNAL(activated()), MainWindow, SLOT(read_dwarves()));
+        QObject::connect(act_connect_to_DF, SIGNAL(triggered()), MainWindow, SLOT(connect_to_df()));
+        QObject::connect(act_exit, SIGNAL(triggered()), MainWindow, SLOT(close()));
+        QObject::connect(act_read_dwarves, SIGNAL(triggered()), MainWindow, SLOT(read_dwarves()));
+        QObject::connect(act_scan_memory, SIGNAL(triggered()), MainWindow, SLOT(scan_memory()));
 
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi
@@ -114,10 +119,11 @@ public:
     void retranslateUi(QMainWindow *MainWindow)
     {
         MainWindow->setWindowTitle(QApplication::translate("MainWindow", "Dwarf Therapist", 0, QApplication::UnicodeUTF8));
-        act_connect_to_DF->setText(QApplication::translate("MainWindow", "Connect To DF", 0, QApplication::UnicodeUTF8));
+        act_connect_to_DF->setText(QApplication::translate("MainWindow", "&Connect To DF", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
-        act_connect_to_DF->setToolTip(QApplication::translate("MainWindow", "Attemp connecting to a running copy of Dwarf Fortress", 0, QApplication::UnicodeUTF8));
+        act_connect_to_DF->setToolTip(QApplication::translate("MainWindow", "Attempt connecting to a running copy of Dwarf Fortress", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
+        act_connect_to_DF->setShortcut(QApplication::translate("MainWindow", "Ctrl+C", 0, QApplication::UnicodeUTF8));
         act_exit->setText(QApplication::translate("MainWindow", "E&xit", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
         act_exit->setToolTip(QApplication::translate("MainWindow", "Close Dwarf Therapist", 0, QApplication::UnicodeUTF8));
@@ -130,6 +136,12 @@ public:
 #ifndef QT_NO_TOOLTIP
         act_read_dwarves->setToolTip(QApplication::translate("MainWindow", "Read the stuff...", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
+        act_read_dwarves->setShortcut(QApplication::translate("MainWindow", "Ctrl+R", 0, QApplication::UnicodeUTF8));
+        act_scan_memory->setText(QApplication::translate("MainWindow", "Scan Memory", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_TOOLTIP
+        act_scan_memory->setToolTip(QApplication::translate("MainWindow", "Map out the RAM of Dwarf Fortress looking for known values", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
+        act_scan_memory->setShortcut(QApplication::translate("MainWindow", "Ctrl+M", 0, QApplication::UnicodeUTF8));
         menu_File->setTitle(QApplication::translate("MainWindow", "&File", 0, QApplication::UnicodeUTF8));
         menu_Help->setTitle(QApplication::translate("MainWindow", "&Help", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
