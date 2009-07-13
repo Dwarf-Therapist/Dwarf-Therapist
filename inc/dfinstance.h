@@ -30,7 +30,7 @@ public:
     short read_short(int start_address, uint &bytes_read);
 	ushort read_ushort(int start_address, uint &bytes_read);
     int read_int32(int start_address, uint &bytes_read);
-    int read_raw(int start_address, int bytes, char *buffer);
+    int read_raw(int start_address, int bytes, void *buffer);
     int scan_mem(QByteArray &needle, int start_address, int end_address, bool &ok);
     QVector<int> scan_mem_find_all(QByteArray &needle, int start_address, int end_address);
     QString read_string(int start_address);
@@ -42,6 +42,10 @@ public:
 
     // Methods for when we know how the data is layed out
 	QVector<Dwarf*> DFInstance::load_dwarves();
+
+	// Writing
+	int write_raw(int start_address, int bytes, void *buffer);
+	
 
     public slots:
         // if a menu cancels our scan, we need to know how to stop

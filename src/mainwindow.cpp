@@ -2,12 +2,15 @@
 #include <QLabel>
 #include <QProgressDialog>
 #include <QSettings>
+#include <QStandardItemModel>
+#include <QSortFilterProxyModel>
 
 #include <QtDebug>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "dwarfmodel.h"
+#include "statetableview.h"
 
 MainWindow::MainWindow(QWidget *parent)
     :QMainWindow(parent)
@@ -15,8 +18,10 @@ MainWindow::MainWindow(QWidget *parent)
     ,m_df(0)
     ,m_lbl_status(0)
 	,m_settings(0)
+	,m_model(new DwarfModel(this))
 {
     ui->setupUi(this);
+	ui->stv->setModel(m_model);
 
 	m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "UDP Software", "Dwarf Therapist", this);
 	read_settings();
@@ -26,8 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
     set_interface_enabled(false);
 }
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow() {
     delete ui;
 }
 
@@ -81,32 +85,9 @@ void MainWindow::connect_to_df() {
 }
 
 void MainWindow::read_dwarves() {
-	GameDataReader *gdr = GameDataReader::ptr();
-	QVector<Dwarf*> dwarves = m_df->load_dwarves();
-
-	DwarfModel *m = new DwarfModel(this);
-	for (int i=0; i<dwarves.size(); ++i) {
-		QStandardItem *name = new QStandardItem(dwarves[i]->to_string());
-		QStandardItem *skills = new QStandardItem();
-		QString out;
-		foreach(Skill s, *dwarves.at(i)->get_skills()) {
-			out += s.to_string();
-			out += "\n";
-		}
-		skills->setText(out);
-		m->setItem(i, 0, name);
-		m->setItem(i, 1, skills);
-		for (int j=0; j < 102; ++j) {
-			bool enabled = dwarves[i]->is_labor_enabled(j);
-			QStandardItem *tmp = new QStandardItem(QString::number(dwarves[i]->get_rating_for_skill(j)));
-			tmp->setToolTip(gdr->get_skill_name(j));
-			tmp->setCheckable(true);
-			tmp->setCheckState(enabled ? Qt::Checked : Qt::Unchecked);
-			m->setItem(i, j+2, tmp);
-		}
-	}
-	ui->tbl_main->setModel(m);
-
+	m_model->load_dwarves(m_df);
+	ui->stv->setModel(m_model);
+	connect(ui->stv, SIGNAL(clicked(const QModelIndex&)), m_model, SLOT(labor_clicked(const QModelIndex&)));
 }
 
 void MainWindow::set_interface_enabled(bool enabled) {
@@ -131,6 +112,11 @@ void MainWindow::scan_memory() {
     qDebug() << "LANGUAGE VECTOR:   " << hex << language_addr;
     qDebug() << "TRANSLATION VECTOR:" << hex << translation_addr;
     qDebug() << "CREATURE VECTOR:   " << hex << creature_addr;
+}
+
+void MainWindow::filter_dwarves() {
+	QString filter_text = ui->le_filter->text();
+	ui->stv->filter_dwarves(filter_text);
 }
 
 

@@ -18,7 +18,7 @@ public:
     Skill(short id, ushort exp, short rating)
         : m_id(id)
         , m_exp(exp)
-        , m_rating(rating)
+		, m_rating(rating > 15 ? 15 : rating)
     {
     }
 

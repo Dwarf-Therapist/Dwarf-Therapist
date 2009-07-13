@@ -6,6 +6,8 @@
 
 #include "dfinstance.h"
 
+class DwarfModel;
+
 namespace Ui
 {
     class MainWindow;
@@ -23,12 +25,14 @@ public:
         void connect_to_df();
 		void read_dwarves();
 		void scan_memory();
+		void filter_dwarves();
 
 private:
     Ui::MainWindow *ui;
     DFInstance *m_df;
 	QLabel *m_lbl_status;
 	QSettings *m_settings;
+	DwarfModel *m_model;
 
 	void closeEvent(QCloseEvent *evt); // override;
 

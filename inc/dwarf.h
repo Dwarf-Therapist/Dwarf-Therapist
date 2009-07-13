@@ -16,11 +16,13 @@ public:
 	static Dwarf* get_dwarf(DFInstance *df, int address);
 	~Dwarf();
 
+	int id(){return m_id;}
 	void refresh_data();
 	QString nice_name();
 	QString to_string();
 	QVector<Skill> *get_skills() {return &m_skills;}
 	bool is_labor_enabled(int labor_id) {return (char)m_labors[labor_id] > 0;}
+	bool toggle_labor(int labor_id);
 	short get_rating_for_skill(int labor_id);
 
 private:
@@ -42,7 +44,7 @@ private:
 	int m_agility;
 	int m_toughness;
     QVector<Skill> m_skills;
-	char *m_labors;
+	uchar *m_labors;
 	
 };
 

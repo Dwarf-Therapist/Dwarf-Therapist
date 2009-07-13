@@ -93,11 +93,11 @@ QString DFInstance::read_string(int address) {
 }
 
 short DFInstance::read_short(int start_address, uint &bytes_read) {
-    short val = 0;
+	char cval[2];
+	memset(cval, 0, 2);
     bytes_read = 0;
-    ReadProcessMemory(m_proc, (LPCVOID)start_address, &val, sizeof(short), (DWORD*)&bytes_read);
-    //qDebug() << "Read from " << start_address << "OK?" << ok <<  " bytes read: " << bytes_read << " VAL " << hex << val;
-    return val;
+    ReadProcessMemory(m_proc, (LPCVOID)start_address, &cval, 2, (DWORD*)&bytes_read);
+    return static_cast<short>((int)cval[0] + (int)(cval[1] >> 8));
 }
 
 ushort DFInstance::read_ushort(int start_address, uint &bytes_read) {
@@ -125,11 +125,19 @@ char DFInstance::read_char(int start_address, uint &bytes_read) {
     return val;
 }
 
-int DFInstance::read_raw(int start_address, int bytes, char *buffer) {
+int DFInstance::read_raw(int start_address, int bytes, void *buffer) {
 	memset(buffer, 0, bytes);
 	DWORD bytes_read = 0;
-	ReadProcessMemory(m_proc, (LPCVOID)start_address, (void*)buffer, sizeof(char) * bytes, &bytes_read);
+	ReadProcessMemory(m_proc, (LPCVOID)start_address, (void*)buffer, sizeof(uchar) * bytes, &bytes_read);
+	Q_ASSERT(bytes_read == bytes);
 	return bytes_read;
+}
+
+int DFInstance::write_raw(int start_address, int bytes, void *buffer) {
+	DWORD bytes_written = 0;
+	WriteProcessMemory(m_proc, (LPVOID)start_address, (void*)buffer, sizeof(uchar) * bytes, &bytes_written);
+	Q_ASSERT(bytes_written == bytes);
+	return bytes_written;
 }
 
 QVector<int> DFInstance::scan_mem_find_all(QByteArray &needle, int start_address, int end_address) {
@@ -435,12 +443,12 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 			Dwarf *d = Dwarf::get_dwarf(this, creatures[offset]);
 			if (d) {
 				dwarves.append(d);
-				qDebug() << "CREATURE" << offset << d->to_string();
+				//qDebug() << "CREATURE" << offset << d->to_string();
 			} else {
-				qWarning() << "BOGUS CREATURE" << offset;
+				//qWarning() << "BOGUS CREATURE" << offset;
 			}
 		}
 	}
-	qDebug() << "finished reading creature vector";
+	//qDebug() << "finished reading creature vector";
 	return dwarves;
 }

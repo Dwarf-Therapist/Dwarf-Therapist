@@ -29,13 +29,18 @@ public:
 		return m_instance;
 	}
 
-	int get_int_for_key(QString key);
+	int get_int_for_key(QString key, short base = 16);
 	int get_address(QString key) {return get_int_for_key("addresses/" + key);}
 	int get_offset(QString key) {return get_int_for_key("offsets/" + key);}
 	int get_dwarf_offset(QString key) {return get_int_for_key("dwarf_offsets/" + key);}
+	
+	QString get_string_for_key(QString key);
 	QString get_profession_name(int profession_id);
 	QString get_skill_level_name(short level);
 	QString get_skill_name(short skill_id);
+	
+	QStringList get_child_groups(QString section);
+	QStringList get_keys(QString section);
 
 protected:
 	GameDataReader();

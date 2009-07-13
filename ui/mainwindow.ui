@@ -6,41 +6,174 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>412</width>
-    <height>461</height>
+    <width>769</width>
+    <height>543</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dwarf Therapist</string>
   </property>
   <widget class="QWidget" name="main_widget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <widget class="QTableView" name="tbl_main">
-      <property name="contextMenuPolicy">
-       <enum>Qt::ActionsContextMenu</enum>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>0</number>
       </property>
-      <property name="alternatingRowColors">
-       <bool>true</bool>
-      </property>
-      <property name="selectionMode">
-       <enum>QAbstractItemView::SingleSelection</enum>
-      </property>
-      <property name="selectionBehavior">
-       <enum>QAbstractItemView::SelectRows</enum>
-      </property>
-      <property name="sortingEnabled">
-       <bool>false</bool>
-      </property>
-      <attribute name="horizontalHeaderStretchLastSection">
-       <bool>true</bool>
-      </attribute>
-      <attribute name="verticalHeaderVisible">
-       <bool>true</bool>
-      </attribute>
-      <attribute name="horizontalHeaderStretchLastSection">
-       <bool>true</bool>
-      </attribute>
+      <widget class="QWidget" name="tab">
+       <attribute name="icon">
+        <iconset resource="../images.qrc">
+         <normaloff>:/img/application_view_icons.png</normaloff>:/img/application_view_icons.png</iconset>
+       </attribute>
+       <attribute name="title">
+        <string>Career Advisor</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Filter Dwarves</string>
+            </property>
+            <property name="buddy">
+             <cstring>le_filter</cstring>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="le_filter">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_filter">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Go</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Resize Grid</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="horizontalSlider">
+            <property name="minimum">
+             <number>8</number>
+            </property>
+            <property name="maximum">
+             <number>160</number>
+            </property>
+            <property name="singleStep">
+             <number>1</number>
+            </property>
+            <property name="pageStep">
+             <number>48</number>
+            </property>
+            <property name="value">
+             <number>16</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::NoTicks</enum>
+            </property>
+            <property name="tickInterval">
+             <number>8</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <widget class="QLabel" name="lbl_x_size">
+              <property name="text">
+               <string>16</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>x</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="lbl_y_size">
+              <property name="text">
+               <string>16</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="StateTableView" name="stv">
+          <property name="font">
+           <font>
+            <pointsize>8</pointsize>
+           </font>
+          </property>
+          <property name="midLineWidth">
+           <number>2</number>
+          </property>
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::SingleSelection</enum>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+          <property name="gridStyle">
+           <enum>Qt::SolidLine</enum>
+          </property>
+          <property name="sortingEnabled">
+           <bool>true</bool>
+          </property>
+          <property name="cornerButtonEnabled">
+           <bool>false</bool>
+          </property>
+          <attribute name="horizontalHeaderVisible">
+           <bool>false</bool>
+          </attribute>
+          <attribute name="horizontalHeaderDefaultSectionSize">
+           <number>16</number>
+          </attribute>
+          <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+           <bool>true</bool>
+          </attribute>
+          <attribute name="verticalHeaderVisible">
+           <bool>false</bool>
+          </attribute>
+          <attribute name="verticalHeaderDefaultSectionSize">
+           <number>16</number>
+          </attribute>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -50,11 +183,14 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>412</width>
+     <width>769</width>
      <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
+    <property name="tearOffEnabled">
+     <bool>false</bool>
+    </property>
     <property name="title">
      <string>&amp;File</string>
     </property>
@@ -65,27 +201,44 @@
     <addaction name="act_exit"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
+    <property name="tearOffEnabled">
+     <bool>false</bool>
+    </property>
     <property name="title">
      <string>&amp;Help</string>
     </property>
     <addaction name="act_about"/>
    </widget>
+   <widget class="QMenu" name="menuOptions">
+    <property name="title">
+     <string>Options</string>
+    </property>
+    <addaction name="action_apply_skill_changes_immedietly"/>
+   </widget>
    <addaction name="menu_File"/>
+   <addaction name="menuOptions"/>
    <addaction name="menu_Help"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
+   </property>
    <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
+    <enum>BottomToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="act_connect_to_DF"/>
+   <addaction name="act_read_dwarves"/>
+   <addaction name="act_scan_memory"/>
+   <addaction name="act_exit"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="act_connect_to_DF">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/img/connect.png</normaloff>:/img/img/connect.png</iconset>
+     <normaloff>:/img/connect.png</normaloff>:/img/connect.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Connect To DF</string>
@@ -100,7 +253,7 @@
   <action name="act_exit">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/img/door_out.png</normaloff>:/img/img/door_out.png</iconset>
+     <normaloff>:/img/door_out.png</normaloff>:/img/door_out.png</iconset>
    </property>
    <property name="text">
     <string>E&amp;xit</string>
@@ -112,7 +265,7 @@
   <action name="act_about">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/img/help.png</normaloff>:/img/img/help.png</iconset>
+     <normaloff>:/img/help.png</normaloff>:/img/help.png</iconset>
    </property>
    <property name="text">
     <string>&amp;About</string>
@@ -122,6 +275,10 @@
    </property>
   </action>
   <action name="act_read_dwarves">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/drive_go.png</normaloff>:/img/drive_go.png</iconset>
+   </property>
    <property name="text">
     <string>Read Dwarves</string>
    </property>
@@ -133,6 +290,10 @@
    </property>
   </action>
   <action name="act_scan_memory">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/drive_magnify.png</normaloff>:/img/drive_magnify.png</iconset>
+   </property>
    <property name="text">
     <string>Scan Memory</string>
    </property>
@@ -143,8 +304,36 @@
     <string>Ctrl+M</string>
    </property>
   </action>
+  <action name="action_apply_skill_changes_immedietly">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Apply Skill Toggles Immedietly</string>
+   </property>
+   <property name="toolTip">
+    <string>When set, skill changes are written to the game immedietly as opposed to buffering up.</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>StateTableView</class>
+   <extends>QTableView</extends>
+   <header location="global">statetableview.h</header>
+   <slots>
+    <slot>filter_dwarves(QString)</slot>
+    <slot>set_grid_size(int)</slot>
+   </slots>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>stv</tabstop>
+  <tabstop>le_filter</tabstop>
+  <tabstop>btn_filter</tabstop>
+  <tabstop>tabWidget</tabstop>
+ </tabstops>
  <resources>
   <include location="../images.qrc"/>
  </resources>
@@ -213,10 +402,91 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btn_filter</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>filter_dwarves()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>730</x>
+     <y>78</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>750</x>
+     <y>25</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>le_filter</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>stv</receiver>
+   <slot>filter_dwarves(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>132</x>
+     <y>68</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>134</x>
+     <y>158</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>horizontalSlider</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>stv</receiver>
+   <slot>set_grid_size(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>163</x>
+     <y>113</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>233</x>
+     <y>153</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>horizontalSlider</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>lbl_x_size</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>152</x>
+     <y>98</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>673</x>
+     <y>103</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>horizontalSlider</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>lbl_y_size</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>394</x>
+     <y>104</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>736</x>
+     <y>112</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
   <slot>read_dwarves()</slot>
   <slot>scan_memory()</slot>
+  <slot>filter_dwarves()</slot>
  </slots>
 </ui>

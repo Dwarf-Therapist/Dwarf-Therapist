@@ -1,7 +1,11 @@
 <RCC>
-  <qresource prefix="/img" >
-    <file>img/help.png</file>
+  <qresource prefix="/" >
+    <file>img/drive_magnify.png</file>
+    <file>img/application_view_icons.png</file>
     <file>img/connect.png</file>
     <file>img/door_out.png</file>
+    <file>img/drive_go.png</file>
+    <file>img/find.png</file>
+    <file>img/help.png</file>
   </qresource>
 </RCC>
