@@ -9,7 +9,18 @@ HeaderDelegate::HeaderDelegate(QObject *parent /* = 0 */)
 : QStyledItemDelegate(parent)
 {}
 
+QSize HeaderDelegate::sizeHint(const QStyleOptionViewItem &opt, const QModelIndex &idx) const{
+	if (idx.parent().isValid()) {
+		return QStyledItemDelegate::sizeHint(opt, idx);
+	}
+	return QSize(16, 100);
+}
+
 void HeaderDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
+	if (idx.parent().isValid()) {
+		SkillDelegate *d = new SkillDelegate;
+		return d->paint(p, opt, idx);
+	}
 	p->save();
 	p->translate(opt.rect.left(), opt.rect.top());
 	p->rotate(90);
@@ -29,6 +40,7 @@ void SkillDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QM
 		QStyledItemDelegate::paint(p, opt, idx);
 		return;
 	}
+	QStyledItemDelegate::paint(p, opt, idx);
 	bool enabled = idx.data(DwarfModel::DR_ENABLED).toBool();
 	short rating = idx.data(DwarfModel::DR_RATING).toInt();
 
@@ -83,12 +95,14 @@ void SkillDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QM
 	}
 }
 
+
 StateTableView::StateTableView(QWidget *parent)
-	: QTableView(parent)
+	: QTreeView(parent)
 {
-	ui.setupUi(this);
+	//ui.setupUi(this);
 	setItemDelegate(new SkillDelegate);
 	setItemDelegateForRow(0, new HeaderDelegate);
+	//this->set
 }
 
 StateTableView::~StateTableView()
@@ -96,9 +110,12 @@ StateTableView::~StateTableView()
 }
 
 void StateTableView::setModel(QAbstractItemModel *model) {
-	QTableView::setModel(model);
+	QTreeView::setModel(model);
 	resizeColumnToContents(0);
-	setRowHeight(0, 100);
+	header()->setLineWidth(4);
+	header()->resizeSection(0, 200);
+	//resizeRowToContents(0);
+	//setRowHeight(0, 100);
 }
 
 void StateTableView::set_grid_size(int new_size) {
@@ -106,7 +123,7 @@ void StateTableView::set_grid_size(int new_size) {
 		return;
 	}
 	for (int i=1; i < model()->rowCount(); ++i) {
-		setRowHeight(i, new_size);
+		//setRowHeight(i, new_size);
 	}
 	for (int i=1; i < model()->columnCount(); ++i) {
 		setColumnWidth(i, new_size);

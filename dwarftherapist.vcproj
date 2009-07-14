@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="DwarfTherapist"
 	ProjectGUID="{AAF7C8FC-BB7C-3D57-A9A7-4A18B330F022}"
+	RootNamespace="DwarfTherapist"
 	Keyword="Qt4VSv1.0"
 	TargetFrameworkVersion="0"
 	>
@@ -437,18 +438,6 @@
 			UniqueIdentifier="{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}"
 			>
 			<File
-				RelativePath=".\Debug\moc_dfinstance.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\Release\moc_dfinstance.cpp"
 				>
 				<FileConfiguration
@@ -461,7 +450,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\Debug\moc_dwarf.cpp"
+				RelativePath=".\Debug\moc_dfinstance.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -485,10 +474,10 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\Release\moc_dwarfmodel.cpp"
+				RelativePath=".\Debug\moc_dwarf.cpp"
 				>
 				<FileConfiguration
-					Name="Debug|Win32"
+					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -500,8 +489,34 @@
 				RelativePath=".\Debug\moc_dwarfmodel.cpp"
 				>
 				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Release|Win32"
 					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\Release\moc_dwarfmodel.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -519,13 +534,8 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\Debug\moc_mainwindow.cpp"
-				>
 				<FileConfiguration
 					Name="Release|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -533,7 +543,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\Debug\moc_statetableview.cpp"
+				RelativePath=".\Debug\moc_mainwindow.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -571,8 +581,15 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="debug\qrc_images.cpp"
+				RelativePath=".\Debug\moc_statetableview.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
 					ExcludedFromBuild="true"
@@ -587,6 +604,18 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="debug\qrc_images.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -620,10 +649,6 @@
 					/>
 				</FileConfiguration>
 			</File>
-			<File
-				RelativePath=".\ui\ui_statetableview.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Form Files"
@@ -654,32 +679,6 @@
 						CommandLine="$(QTDIR)\bin\uic.exe ui\mainwindow.ui -o ui\ui_mainwindow.h&#x0D;&#x0A;"
 						AdditionalDependencies="$(QTDIR)\bin\uic.exe;ui\mainwindow.ui"
 						Outputs="ui\ui_mainwindow.h"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\ui\statetableview.ui"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Uic&apos;ing $(InputPath)..."
-						CommandLine="&quot;$(QTDIR)\bin\uic.exe&quot; -o &quot;.\ui\ui_statetableview.h&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;"
-						AdditionalDependencies="$(QTDIR)\bin\uic.exe"
-						Outputs="&quot;.\ui\ui_statetableview.h&quot;"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="Uic&apos;ing $(InputPath)..."
-						CommandLine="&quot;$(QTDIR)\bin\uic.exe&quot; -o &quot;.\ui\ui_statetableview.h&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;"
-						AdditionalDependencies="$(QTDIR)\bin\uic.exe"
-						Outputs="&quot;.\ui\ui_statetableview.h&quot;"
 					/>
 				</FileConfiguration>
 			</File>
@@ -725,11 +724,11 @@
 	<Globals>
 		<Global
 			Name="QtVersion"
-			Value="4.5.0"
+			Value="4.5.0-desktop-vc"
 		/>
 		<Global
 			Name="QtVersion Win32"
-			Value="4.5.0"
+			Value="4.5.0-desktop-vc"
 		/>
 	</Globals>
 </VisualStudioProject>

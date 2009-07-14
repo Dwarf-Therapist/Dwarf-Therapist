@@ -17,6 +17,7 @@ public:
 	~Dwarf();
 
 	int id(){return m_id;}
+	QString profession() {return m_profession;}
 	void refresh_data();
 	QString nice_name();
 	QString to_string();

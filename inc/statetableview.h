@@ -1,20 +1,13 @@
 #ifndef STATETABLEVIEW_H
 #define STATETABLEVIEW_H
 
-#include <QTableView>
-#include <QHeaderView>
-#include <QStyledItemDelegate>
-#include <QPainter>
-#include <QPen>
-#include <QFont>
-#include <QStyleOption>
-#include "ui_statetableview.h"
-
+#include <QtGui>
 
 class HeaderDelegate : public QStyledItemDelegate {
 	Q_OBJECT
 public:
 	HeaderDelegate (QObject *parent = 0);
+	QSize sizeHint(const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
 	void paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
 };
 
@@ -25,7 +18,7 @@ public:
 	void paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
 };
 
-class StateTableView : public QTableView
+class StateTableView : public QTreeView
 {
 	Q_OBJECT
 
@@ -40,7 +33,7 @@ public:
 		void set_grid_size(int new_size);
 
 private:
-	Ui::StateTableViewClass ui;
+	//Ui::StateTableViewClass ui;
 };
 
 #endif // STATETABLEVIEW_H

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>769</width>
-    <height>543</height>
+    <width>705</width>
+    <height>564</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -131,8 +131,13 @@
             <pointsize>8</pointsize>
            </font>
           </property>
-          <property name="midLineWidth">
-           <number>2</number>
+          <property name="styleSheet">
+           <string>QTreeView::item {
+	border: 1px solid #333333;
+	padding: 2px;
+	margin: 0px;
+	spacing: 0px;
+}</string>
           </property>
           <property name="editTriggers">
            <set>QAbstractItemView::NoEditTriggers</set>
@@ -140,35 +145,29 @@
           <property name="alternatingRowColors">
            <bool>true</bool>
           </property>
-          <property name="selectionMode">
-           <enum>QAbstractItemView::SingleSelection</enum>
+          <property name="indentation">
+           <number>12</number>
           </property>
-          <property name="selectionBehavior">
-           <enum>QAbstractItemView::SelectRows</enum>
+          <property name="rootIsDecorated">
+           <bool>true</bool>
           </property>
-          <property name="gridStyle">
-           <enum>Qt::SolidLine</enum>
+          <property name="uniformRowHeights">
+           <bool>false</bool>
           </property>
           <property name="sortingEnabled">
            <bool>true</bool>
           </property>
-          <property name="cornerButtonEnabled">
+          <property name="animated">
            <bool>false</bool>
           </property>
-          <attribute name="horizontalHeaderVisible">
-           <bool>false</bool>
-          </attribute>
-          <attribute name="horizontalHeaderDefaultSectionSize">
-           <number>16</number>
-          </attribute>
-          <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+          <property name="headerHidden">
            <bool>true</bool>
-          </attribute>
-          <attribute name="verticalHeaderVisible">
+          </property>
+          <property name="expandsOnDoubleClick">
            <bool>false</bool>
-          </attribute>
-          <attribute name="verticalHeaderDefaultSectionSize">
-           <number>16</number>
+          </property>
+          <attribute name="headerVisible">
+           <bool>false</bool>
           </attribute>
          </widget>
         </item>
@@ -183,7 +182,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>769</width>
+     <width>705</width>
      <height>22</height>
     </rect>
    </property>
@@ -320,16 +319,14 @@
  <customwidgets>
   <customwidget>
    <class>StateTableView</class>
-   <extends>QTableView</extends>
-   <header location="global">statetableview.h</header>
+   <extends>QTreeView</extends>
+   <header>statetableview.h</header>
    <slots>
-    <slot>filter_dwarves(QString)</slot>
     <slot>set_grid_size(int)</slot>
    </slots>
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>stv</tabstop>
   <tabstop>le_filter</tabstop>
   <tabstop>btn_filter</tabstop>
   <tabstop>tabWidget</tabstop>
@@ -409,44 +406,12 @@
    <slot>filter_dwarves()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>730</x>
-     <y>78</y>
+     <x>681</x>
+     <y>66</y>
     </hint>
     <hint type="destinationlabel">
      <x>750</x>
      <y>25</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>le_filter</sender>
-   <signal>textChanged(QString)</signal>
-   <receiver>stv</receiver>
-   <slot>filter_dwarves(QString)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>132</x>
-     <y>68</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>134</x>
-     <y>158</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>horizontalSlider</sender>
-   <signal>sliderMoved(int)</signal>
-   <receiver>stv</receiver>
-   <slot>set_grid_size(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>163</x>
-     <y>113</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>233</x>
-     <y>153</y>
     </hint>
    </hints>
   </connection>
@@ -461,8 +426,8 @@
      <y>98</y>
     </hint>
     <hint type="destinationlabel">
-     <x>673</x>
-     <y>103</y>
+     <x>650</x>
+     <y>98</y>
     </hint>
    </hints>
   </connection>
@@ -477,8 +442,24 @@
      <y>104</y>
     </hint>
     <hint type="destinationlabel">
-     <x>736</x>
-     <y>112</y>
+     <x>680</x>
+     <y>98</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>horizontalSlider</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>stv</receiver>
+   <slot>set_grid_size(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>511</x>
+     <y>111</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>510</x>
+     <y>139</y>
     </hint>
    </hints>
   </connection>

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Sun Jul 12 21:10:31 2009
+** Created: Mon Jul 13 16:23:06 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -28,7 +28,7 @@
 #include <QtGui/QToolBar>
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QWidget>
-#include <statetableview.h>
+#include "statetableview.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -69,7 +69,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
-        MainWindow->resize(769, 543);
+        MainWindow->resize(705, 564);
         act_connect_to_DF = new QAction(MainWindow);
         act_connect_to_DF->setObjectName(QString::fromUtf8("act_connect_to_DF"));
         QIcon icon;
@@ -185,19 +185,16 @@ public:
         QFont font;
         font.setPointSize(8);
         stv->setFont(font);
-        stv->setMidLineWidth(2);
         stv->setEditTriggers(QAbstractItemView::NoEditTriggers);
         stv->setAlternatingRowColors(true);
-        stv->setSelectionMode(QAbstractItemView::SingleSelection);
-        stv->setSelectionBehavior(QAbstractItemView::SelectRows);
-        stv->setGridStyle(Qt::SolidLine);
+        stv->setIndentation(12);
+        stv->setRootIsDecorated(true);
+        stv->setUniformRowHeights(false);
         stv->setSortingEnabled(true);
-        stv->setCornerButtonEnabled(false);
-        stv->horizontalHeader()->setVisible(false);
-        stv->horizontalHeader()->setDefaultSectionSize(16);
-        stv->horizontalHeader()->setProperty("showSortIndicator", QVariant(true));
-        stv->verticalHeader()->setVisible(false);
-        stv->verticalHeader()->setDefaultSectionSize(16);
+        stv->setAnimated(false);
+        stv->setHeaderHidden(true);
+        stv->setExpandsOnDoubleClick(false);
+        stv->header()->setVisible(false);
 
         verticalLayout->addWidget(stv);
 
@@ -210,7 +207,7 @@ public:
         MainWindow->setCentralWidget(main_widget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 769, 22));
+        menuBar->setGeometry(QRect(0, 0, 705, 22));
         menu_File = new QMenu(menuBar);
         menu_File->setObjectName(QString::fromUtf8("menu_File"));
         menu_File->setTearOffEnabled(false);
@@ -230,7 +227,6 @@ public:
 #ifndef QT_NO_SHORTCUT
         label->setBuddy(le_filter);
 #endif // QT_NO_SHORTCUT
-        QWidget::setTabOrder(stv, le_filter);
         QWidget::setTabOrder(le_filter, btn_filter);
         QWidget::setTabOrder(btn_filter, tabWidget);
 
@@ -255,10 +251,9 @@ public:
         QObject::connect(act_read_dwarves, SIGNAL(triggered()), MainWindow, SLOT(read_dwarves()));
         QObject::connect(act_scan_memory, SIGNAL(triggered()), MainWindow, SLOT(scan_memory()));
         QObject::connect(btn_filter, SIGNAL(clicked()), MainWindow, SLOT(filter_dwarves()));
-        QObject::connect(le_filter, SIGNAL(textChanged(QString)), stv, SLOT(filter_dwarves(QString)));
-        QObject::connect(horizontalSlider, SIGNAL(sliderMoved(int)), stv, SLOT(set_grid_size(int)));
         QObject::connect(horizontalSlider, SIGNAL(sliderMoved(int)), lbl_x_size, SLOT(setNum(int)));
         QObject::connect(horizontalSlider, SIGNAL(sliderMoved(int)), lbl_y_size, SLOT(setNum(int)));
+        QObject::connect(horizontalSlider, SIGNAL(sliderMoved(int)), stv, SLOT(set_grid_size(int)));
 
         tabWidget->setCurrentIndex(0);
 
@@ -302,6 +297,12 @@ public:
         lbl_x_size->setText(QApplication::translate("MainWindow", "16", 0, QApplication::UnicodeUTF8));
         label_3->setText(QApplication::translate("MainWindow", "x", 0, QApplication::UnicodeUTF8));
         lbl_y_size->setText(QApplication::translate("MainWindow", "16", 0, QApplication::UnicodeUTF8));
+        stv->setStyleSheet(QApplication::translate("MainWindow", "QTreeView::item {\n"
+"	border: 1px solid #333333;\n"
+"	padding: 2px;\n"
+"	margin: 0px;\n"
+"	spacing: 0px;\n"
+"}", 0, QApplication::UnicodeUTF8));
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("MainWindow", "Career Advisor", 0, QApplication::UnicodeUTF8));
         menu_File->setTitle(QApplication::translate("MainWindow", "&File", 0, QApplication::UnicodeUTF8));
         menu_Help->setTitle(QApplication::translate("MainWindow", "&Help", 0, QApplication::UnicodeUTF8));
