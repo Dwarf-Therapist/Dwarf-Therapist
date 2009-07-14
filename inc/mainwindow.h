@@ -21,6 +21,8 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+	QSettings *get_settings() {return m_settings;}
+
     public slots:
         void connect_to_df();
 		void read_dwarves();
@@ -28,6 +30,7 @@ public:
 		void filter_dwarves();
 		void show_toolbutton_text(bool);
 		void set_group_by(int);
+		void show_about();
 
 private:
     Ui::MainWindow *ui;

@@ -1,15 +1,16 @@
 #include <QtGui>
 #include "qmath.h"
+
+#include "mainwindow.h"
 #include "statetableview.h"
 #include "dwarfmodel.h"
 #include "uberdelegate.h"
 
 StateTableView::StateTableView(QWidget *parent)
 	: QTreeView(parent)
+	, m_delegate(new UberDelegate(this))
 {
-	UberDelegate *ud = new UberDelegate(this);
-	setItemDelegate(ud);
-	//setItemDelegateForRow(0, new HeaderDelegate);
+	setItemDelegate(m_delegate);
 }
 
 StateTableView::~StateTableView()

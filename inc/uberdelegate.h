@@ -13,8 +13,11 @@ public:
 
 	void paint_header(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
 	void paint_skill(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
+	void paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
+
+	void set_active_bg_color(QColor c) {m_active_bg_color = c;}
 private:
-	DwarfModel::GROUP_BY m_group_by;
+	QColor m_active_bg_color;
 };
 
 #endif

@@ -15,7 +15,7 @@ public:
 		GB_TOTAL
 	} GROUP_BY;
 	typedef enum {
-		DR_RATING = Qt::ItemDataRole::UserRole + 1,
+		DR_RATING = Qt::UserRole + 1,
 		DR_SKILL_NAME,
 		DR_ENABLED,
 		DR_LABOR_ID,
@@ -37,7 +37,12 @@ private:
 	DFInstance *m_df;
 	QVector<QStringList> m_labor_cols;
 	QMap<int, Dwarf*> m_dwarves;
+	QMap<QString, QVector<Dwarf*>> m_grouped_dwarves;
 	GROUP_BY m_group_by;
+
+	void build_rows();
+
+	
 
 signals:
 	void toggle_labor(int labor_id, int dwarf_id);

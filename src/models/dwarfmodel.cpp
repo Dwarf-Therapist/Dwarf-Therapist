@@ -10,7 +10,6 @@
 DwarfModel::DwarfModel(QObject *parent)
 	: QStandardItemModel(parent)
 	, m_df(0)
-	, m_dwarves(QMap<int, Dwarf*>())
 	, m_group_by(GB_NOTHING)
 {
 	GameDataReader *gdr = GameDataReader::ptr();
@@ -31,35 +30,60 @@ DwarfModel::DwarfModel(QObject *parent)
 }
 
 void DwarfModel::load_dwarves() {
+	// clear id->dwarf map
 	foreach(Dwarf *d, m_dwarves) {
 		delete d;
 	}
 	m_dwarves.clear();
+
+	// don't need to go delete the dwarf pointers in here, since the earlier foreach should have
+	// deleted them
+	m_grouped_dwarves.clear();
+
+	// remove rows except for the header
 	removeRows(1, rowCount()-1);
 
-	QMap<QString, QVector<Dwarf*>> groups;
-
+	// populate dwarf maps
 	foreach(Dwarf *d, m_df->load_dwarves()) {
 		m_dwarves[d->id()] = d;
 		switch (m_group_by) {
 			case GB_NOTHING:
-				groups[QString::number(d->id())].append(d);
+				m_grouped_dwarves[QString::number(d->id())].append(d);
 				break;
 			case GB_PROFESSION:
-				groups[d->profession()].append(d);
+				m_grouped_dwarves[d->profession()].append(d);
 				break;
 		}
 	}
-	foreach(QString key, groups.uniqueKeys()) {
+	build_rows();
+}
+
+void DwarfModel::build_rows() {
+	foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
 		QStandardItem *root = 0;
+		QList<QStandardItem*> root_row;
+
 		if (m_group_by != GB_NOTHING) {
 			// we need a root element to hold group members...
-			QString title = QString("%1 (%2)").arg(key).arg(groups.value(key).size());
-			
+			QString title = QString("%1 (%2)").arg(key).arg(m_grouped_dwarves.value(key).size());
 			root = new QStandardItem(title);
-			root->setData(false, DR_EXPANDED);
+			root_row << root;
 		}
-		foreach(Dwarf *d, groups.value(key)) {
+
+		if (root) { // we have a parent, so we should draw an aggregate row
+			foreach(QStringList l, m_labor_cols) {
+				int labor_id = l[0].toInt();
+				QString labor_name = l[1];
+
+				QStandardItem *item = new QStandardItem();
+				item->setText(0);
+				item->setData(0, DR_ENABLED);
+				item->setData(labor_id, DR_LABOR_ID);
+				root_row << item;
+			}
+		}
+		
+		foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
 			QStandardItem *i_name = new QStandardItem(d->nice_name());
 			QString skill_summary;
 			QVector<Skill> *skills = d->get_skills();
@@ -76,16 +100,24 @@ void DwarfModel::load_dwarves() {
 				int labor_id = l[0].toInt();
 				QString labor_name = l[1];
 				short rating = d->get_rating_for_skill(labor_id);
+				bool enabled = d->is_labor_enabled(labor_id);
 
 				QStandardItem *item = new QStandardItem();
-				item->setData(QVariant(rating), DR_RATING);
-				item->setData(QVariant(d->is_labor_enabled(labor_id)), DR_ENABLED);
+				item->setData(rating, DR_RATING);
+				item->setData(enabled, DR_ENABLED);
 				item->setData(labor_id, DR_LABOR_ID);
 				item->setData(d->id(), DR_ID);
 
 				item->setToolTip(QString("<h3>%2</h3><h4>%3</h4>%1").arg(d->nice_name()).arg(labor_name).arg(QString::number(rating)));
 				item->setStatusTip(labor_name + " :: " + d->nice_name());
 				items << item;
+
+				if (m_group_by != GB_NOTHING && enabled) {
+					// update our aggregate column
+					int i = items.size() - 1;
+					int cnt = root_row[i]->data(DR_ENABLED).toInt();
+					root_row[i]->setData(cnt + 1, DR_ENABLED);
+				}
 			}
 			if (root) {
 				root->appendRow(items);
@@ -94,7 +126,7 @@ void DwarfModel::load_dwarves() {
 			}
 		}
 		if (root) {
-			appendRow(root);
+			appendRow(root_row);
 		}
 	}
 }

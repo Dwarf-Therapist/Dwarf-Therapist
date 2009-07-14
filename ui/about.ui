@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>form_about</class>
+ <widget class="QWidget" name="form_about">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>483</width>
+    <height>256</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>About Dwarf Therapist</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="margin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QFrame" name="frame_2">
+     <property name="styleSheet">
+      <string>background-color: white;</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="font">
+         <font>
+          <family>Segoe UI</family>
+          <pointsize>22</pointsize>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string/>
+        </property>
+        <property name="text">
+         <string>Dwarf Therapist</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="frame">
+     <property name="styleSheet">
+      <string>background-color: #dddddd;</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Copyright &amp;copy; 2009 Trey Stout.
+Made Possible from &lt;a href=&quot;blah.org&quot;&gt;blah&lt;/a&gt;</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::RichText</enum>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        </property>
+        <property name="openExternalLinks">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Up to date/Update Available etc...</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton">
+          <property name="text">
+           <string>OK</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>form_about</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>247</x>
+     <y>328</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>383</x>
+     <y>-7</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

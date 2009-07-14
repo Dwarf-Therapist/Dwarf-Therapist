@@ -1,16 +1,12 @@
-#include <QMessageBox>
-#include <QLabel>
-#include <QProgressDialog>
-#include <QSettings>
-#include <QStandardItemModel>
-#include <QSortFilterProxyModel>
-
+#include <QtGui>
 #include <QtDebug>
 
 #include "mainwindow.h"
+#include "ui_about.h"
 #include "ui_mainwindow.h"
 #include "dwarfmodel.h"
 #include "statetableview.h"
+#include "uberdelegate.h"
 
 MainWindow::MainWindow(QWidget *parent)
     :QMainWindow(parent)
@@ -64,6 +60,10 @@ void MainWindow::read_settings() {
 	int group_by = m_settings->value("group_by", 0).toInt();
 	ui->cb_group_by->setCurrentIndex(group_by);
 	m_model->set_group_by(group_by);
+
+	// delegate active color
+	QColor c = m_settings->value("labors/active_bg_color", QColor(0xE0FFE0)).value<QColor>();
+	ui->stv->get_delegate()->set_active_bg_color(c);
 
 	m_settings->endGroup();
 	m_reading_settings = false;
@@ -158,3 +158,9 @@ void MainWindow::set_group_by(int group_by) {
 	write_settings();
 }
 
+void MainWindow::show_about() {
+	QDialog *d = new QDialog(this);
+	Ui::form_about fa;
+	fa.setupUi(d);
+	d->show();
+}

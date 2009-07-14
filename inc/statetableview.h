@@ -3,6 +3,8 @@
 
 #include <QtGui>
 
+class UberDelegate;
+
 class StateTableView : public QTreeView
 {
 	Q_OBJECT
@@ -12,13 +14,14 @@ public:
 	~StateTableView();
 
 	void setModel(QAbstractItemModel *model);
+	UberDelegate *get_delegate() {return m_delegate;}
 
 	public slots:
 		void filter_dwarves(QString text);
 		void set_grid_size(int new_size);
 
 private:
-	//Ui::StateTableViewClass ui;
+	UberDelegate *m_delegate;
 };
 
 #endif // STATETABLEVIEW_H

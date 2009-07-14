@@ -4,9 +4,7 @@
 
 UberDelegate::UberDelegate(QObject *parent)
 	: QStyledItemDelegate(parent)
-	, m_group_by(DwarfModel::GB_NOTHING)
 {
-
 }
 
 void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
@@ -22,11 +20,19 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 		else
 			paint_skill(p, opt, idx);
 	} else {
-		if (idx.parent().isValid()) { // skill item
+		if (idx.parent().isValid()) { // skill item (under a group header)
 			QStyledItemDelegate::paint(p, opt, idx); // always lay the "base coat"
 			paint_skill(p, opt, idx);
-		} else if (idx.row() == 0 && !idx.parent().isValid()) { // header item
-			paint_header(p, opt, idx);
+		} else {
+			const DwarfModel *m = dynamic_cast<const DwarfModel*>(idx.model());
+			QStandardItem *item = m->itemFromIndex(idx);
+			QModelIndex first_col = m->index(idx.row(), 0, idx.parent());
+			if (m->hasChildren(first_col)) {
+				paint_aggregate(p, opt, idx);
+			} else {
+				paint_header(p, opt, idx); 
+			}
+			
 		}
 	}
 }
@@ -47,15 +53,15 @@ void UberDelegate::paint_header(QPainter *p, const QStyleOptionViewItem &opt, co
 }
 
 void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
-	const DwarfModel *m = dynamic_cast<const DwarfModel*>(idx.model());
-	QStandardItem *item = m->itemFromIndex(idx);
+	//const DwarfModel *m = dynamic_cast<const DwarfModel*>(idx.model());
+	//QStandardItem *item = m->itemFromIndex(idx);
 	
 	bool enabled = idx.data(DwarfModel::DR_ENABLED).toBool();
 	short rating = idx.data(DwarfModel::DR_RATING).toInt();
 	bool skip_border = false;
 	if (enabled) {
 		p->save();
-		p->fillRect(opt.rect, QBrush(QColor(0xE0FFE0)));
+		p->fillRect(opt.rect, QBrush(m_active_bg_color));
 		p->restore();
 	}
 	// draw rating
@@ -107,6 +113,34 @@ void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, con
 		p->drawRect(opt.rect);
 		p->restore();
 	}
+}
+
+void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
+	QStyledItemDelegate::paint(p, opt, idx); // always lay the "base coat"
+	//return;
+
+	const DwarfModel *m = dynamic_cast<const DwarfModel*>(idx.model());
+	QModelIndex first_col = m->index(idx.row(), 0, idx.parent());
+	QStandardItem *item = m->itemFromIndex(first_col);
+
+	int enabled = idx.data(DwarfModel::DR_ENABLED).toInt();
+	int children = item->rowCount();
+
+	Q_ASSERT(children > 0);
+
+	p->save();
+	if (enabled >= children) {
+		p->fillRect(opt.rect, m_active_bg_color);
+	} else if (enabled > 0) {
+		p->fillRect(opt.rect, QBrush(0xAAAAAA));
+	}
+	p->restore();
+
+	p->save(); // border last
+	p->setPen(QColor(0xd9d9d9));
+	p->setBrush(Qt::NoBrush);
+	p->drawRect(opt.rect);
+	p->restore();
 }
 
 QSize UberDelegate::sizeHint(const QStyleOptionViewItem &opt, const QModelIndex &idx) const {

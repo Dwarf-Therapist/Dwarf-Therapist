@@ -15,6 +15,9 @@
   </property>
   <widget class="QWidget" name="main_widget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
+    <property name="margin">
+     <number>6</number>
+    </property>
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
@@ -29,6 +32,9 @@
         <string>Career Advisor</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="margin">
+         <number>6</number>
+        </property>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
@@ -146,6 +152,11 @@
          </widget>
         </item>
        </layout>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>Page</string>
+       </attribute>
       </widget>
      </widget>
     </item>
@@ -521,6 +532,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_about</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>show_about()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>352</x>
+     <y>281</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -529,5 +556,6 @@
   <slot>filter_dwarves()</slot>
   <slot>show_toolbutton_text(bool)</slot>
   <slot>set_group_by(int)</slot>
+  <slot>show_about()</slot>
  </slots>
 </ui>

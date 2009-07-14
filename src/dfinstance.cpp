@@ -32,7 +32,9 @@ DFInstance::DFInstance(DWORD pid, HWND hwnd, QObject* parent)
     PVOID peb_addr = GetPebAddress(m_proc);
     //qDebug() << "PEB is at: " << hex << peb_addr;
 
-	QString connection_error = tr("I'm sorry. I'm having trouble connecting to DF. I can't seem to locate the PEB address of the process. Please re-launch DF and try again.");
+	QString connection_error = tr("I'm sorry. I'm having trouble connecting to DF. "
+		"I can't seem to locate the PEB address of the process. "
+		"Please re-launch DF and try again.");
 	if (peb_addr == 0){
 		QMessageBox::critical(0, tr("Connection Error"), connection_error);
 		qCritical() << "PEB address came back as 0";
@@ -135,7 +137,7 @@ int DFInstance::read_raw(int start_address, int bytes, void *buffer) {
 	memset(buffer, 0, bytes);
 	DWORD bytes_read = 0;
 	ReadProcessMemory(m_proc, (LPCVOID)start_address, (void*)buffer, sizeof(uchar) * bytes, &bytes_read);
-	Q_ASSERT(bytes_read == bytes);
+	//Q_ASSERT(bytes_read == bytes);
 	return bytes_read;
 }
 

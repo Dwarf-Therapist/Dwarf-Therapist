@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Mon Jul 13 23:58:40 2009
+** Created: Tue Jul 14 15:23:27 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -59,6 +59,7 @@ public:
     QComboBox *cb_group_by;
     QSpacerItem *horizontalSpacer;
     StateTableView *stv;
+    QWidget *tab_2;
     QMenuBar *menuBar;
     QMenu *menu_File;
     QMenu *menu_Help;
@@ -120,7 +121,7 @@ public:
         main_widget->setObjectName(QString::fromUtf8("main_widget"));
         verticalLayout_2 = new QVBoxLayout(main_widget);
         verticalLayout_2->setSpacing(6);
-        verticalLayout_2->setMargin(11);
+        verticalLayout_2->setMargin(6);
         verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
         tabWidget = new QTabWidget(main_widget);
         tabWidget->setObjectName(QString::fromUtf8("tabWidget"));
@@ -128,7 +129,7 @@ public:
         tab->setObjectName(QString::fromUtf8("tab"));
         verticalLayout = new QVBoxLayout(tab);
         verticalLayout->setSpacing(6);
-        verticalLayout->setMargin(11);
+        verticalLayout->setMargin(6);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setSpacing(6);
@@ -194,6 +195,9 @@ public:
         QIcon icon7;
         icon7.addPixmap(QPixmap(QString::fromUtf8(":/img/application_view_icons.png")), QIcon::Normal, QIcon::Off);
         tabWidget->addTab(tab, icon7, QString());
+        tab_2 = new QWidget();
+        tab_2->setObjectName(QString::fromUtf8("tab_2"));
+        tabWidget->addTab(tab_2, QString());
 
         verticalLayout_2->addWidget(tabWidget);
 
@@ -252,6 +256,7 @@ public:
         QObject::connect(act_collapse_all, SIGNAL(activated()), stv, SLOT(collapseAll()));
         QObject::connect(act_show_toolbutton_text, SIGNAL(toggled(bool)), MainWindow, SLOT(show_toolbutton_text(bool)));
         QObject::connect(cb_group_by, SIGNAL(currentIndexChanged(int)), MainWindow, SLOT(set_group_by(int)));
+        QObject::connect(act_about, SIGNAL(triggered()), MainWindow, SLOT(show_about()));
 
         tabWidget->setCurrentIndex(0);
 
@@ -329,6 +334,7 @@ public:
         cb_group_by->setStatusTip(QApplication::translate("MainWindow", "Change how dwarves are grouped in the table", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("MainWindow", "Career Advisor", 0, QApplication::UnicodeUTF8));
+        tabWidget->setTabText(tabWidget->indexOf(tab_2), QApplication::translate("MainWindow", "Page", 0, QApplication::UnicodeUTF8));
         menu_File->setTitle(QApplication::translate("MainWindow", "&File", 0, QApplication::UnicodeUTF8));
         menu_Help->setTitle(QApplication::translate("MainWindow", "&Help", 0, QApplication::UnicodeUTF8));
         menuOptions->setTitle(QApplication::translate("MainWindow", "Options", 0, QApplication::UnicodeUTF8));
