@@ -61,9 +61,9 @@ QString Dwarf::to_string() {
 
 QString Dwarf::nice_name() {
 	if (m_nick_name.isEmpty()) {
-		return QString("%1 %2, %3").arg(m_first_name, m_last_name, m_profession);
+		return QString("%1 %2").arg(m_first_name, m_last_name);
 	} else {
-		return QString("%1 \"%2\" %3, %4").arg(m_first_name, m_nick_name, m_last_name, m_profession);
+		return QString("\"%1\" %2 ").arg(m_nick_name, m_last_name);
 	}
 }
 

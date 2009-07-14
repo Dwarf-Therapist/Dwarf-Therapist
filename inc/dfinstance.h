@@ -23,6 +23,7 @@ public:
     // accessors
 	int get_memory_correction() {return m_memory_correction;}
 	int get_base_address() {return m_base_addr;}
+	bool is_ok(){return m_is_ok;}
     
     // brute force memory scanning methods
     QVector<int> enumerate_vector(int address);
@@ -63,6 +64,7 @@ private:
     uint m_memory_size;
     int m_memory_correction;
     bool m_stop_scan; // flag that gets set to stop scan loops
+	bool m_is_ok;
 
     // these should probably not be constants but I have no idea how to find the values at runtime
     static const int STRING_BUFFER_OFFSET = 4;

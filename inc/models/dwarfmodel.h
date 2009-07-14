@@ -20,19 +20,24 @@ public:
 		DR_ENABLED,
 		DR_LABOR_ID,
 		DR_ID,
-		DR_HAS_CHILDREN
+		DR_EXPANDED
 	} DATA_ROLES;
 
 	DwarfModel(QObject *parent = 0);
 	//virtual ~DwarfModel();
-
+	void set_instance(DFInstance *df) {m_df = df;}
+	
+	GROUP_BY current_grouping() const {return m_group_by;}
 	public slots:
-		void load_dwarves(DFInstance *df);
+		void set_group_by(int group_by);
+		void load_dwarves();
 		void labor_clicked(const QModelIndex &idx);
 
 private:
+	DFInstance *m_df;
 	QVector<QStringList> m_labor_cols;
 	QMap<int, Dwarf*> m_dwarves;
+	GROUP_BY m_group_by;
 
 signals:
 	void toggle_labor(int labor_id, int dwarf_id);

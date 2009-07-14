@@ -5,7 +5,7 @@
 #include "utils.h"
 
 /*
- class SkillItem : public QGraphicsItem {
+class SkillItem : public QGraphicsItem {
 	QString m_text;
  public:
 	SkillItem(QString text, QGraphicsItem *parent = 0) 

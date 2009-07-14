@@ -9,7 +9,9 @@
 
 DwarfModel::DwarfModel(QObject *parent)
 	: QStandardItemModel(parent)
+	, m_df(0)
 	, m_dwarves(QMap<int, Dwarf*>())
+	, m_group_by(GB_NOTHING)
 {
 	GameDataReader *gdr = GameDataReader::ptr();
 	QStringList keys = gdr->get_child_groups("labor_table");
@@ -28,19 +30,18 @@ DwarfModel::DwarfModel(QObject *parent)
 	appendRow(items);
 }
 
-void DwarfModel::load_dwarves(DFInstance *df) {
+void DwarfModel::load_dwarves() {
 	foreach(Dwarf *d, m_dwarves) {
 		delete d;
 	}
 	m_dwarves.clear();
 	removeRows(1, rowCount()-1);
 
-	GROUP_BY group_by = GB_PROFESSION;
 	QMap<QString, QVector<Dwarf*>> groups;
 
-	foreach(Dwarf *d, df->load_dwarves()) {
+	foreach(Dwarf *d, m_df->load_dwarves()) {
 		m_dwarves[d->id()] = d;
-		switch (group_by) {
+		switch (m_group_by) {
 			case GB_NOTHING:
 				groups[QString::number(d->id())].append(d);
 				break;
@@ -51,11 +52,12 @@ void DwarfModel::load_dwarves(DFInstance *df) {
 	}
 	foreach(QString key, groups.uniqueKeys()) {
 		QStandardItem *root = 0;
-		if (group_by != GB_NOTHING) {
+		if (m_group_by != GB_NOTHING) {
 			// we need a root element to hold group members...
 			QString title = QString("%1 (%2)").arg(key).arg(groups.value(key).size());
+			
 			root = new QStandardItem(title);
-			root->setData(true, DR_HAS_CHILDREN);
+			root->setData(false, DR_EXPANDED);
 		}
 		foreach(Dwarf *d, groups.value(key)) {
 			QStandardItem *i_name = new QStandardItem(d->nice_name());
@@ -66,6 +68,7 @@ void DwarfModel::load_dwarves(DFInstance *df) {
 				skill_summary += "\n";
 			}
 			i_name->setToolTip(skill_summary);
+			i_name->setStatusTip(d->nice_name());
 
 			QList<QStandardItem*> items;
 			items << i_name;
@@ -81,6 +84,7 @@ void DwarfModel::load_dwarves(DFInstance *df) {
 				item->setData(d->id(), DR_ID);
 
 				item->setToolTip(QString("<h3>%2</h3><h4>%3</h4>%1").arg(d->nice_name()).arg(labor_name).arg(QString::number(rating)));
+				item->setStatusTip(labor_name + " :: " + d->nice_name());
 				items << item;
 			}
 			if (root) {
@@ -96,12 +100,22 @@ void DwarfModel::load_dwarves(DFInstance *df) {
 }
 
 void DwarfModel::labor_clicked(const QModelIndex &idx) {
-	/*QStandardItem *item = itemFromIndex(idx);
-	if (idx.column() == 0 && item->data(DR_HAS_CHILDREN).toBool()) {
-		qDebug() << "EXPANDO!";
+	if (idx.row() == 0 && idx.column() == 0) {
+		setSortRole(Qt::DisplayRole);
+		sort(0, Qt::AscendingOrder);
+		return;
 	}
-	*/
+	
+	if (idx.row() == 0 && idx.column() > 0) {
+		if (m_group_by == GB_NOTHING || (m_group_by != GB_NOTHING && !idx.parent().isValid())) {
+			// this is a header, so sort it
+			setSortRole(DR_RATING);
+			sort(idx.column(), Qt::DescendingOrder);
+		}
+	}
 	return;
+	
+	QStandardItem *item = itemFromIndex(idx);
 
 
 	int dwarf_id = idx.data(DR_ID).toInt();
@@ -113,3 +127,9 @@ void DwarfModel::labor_clicked(const QModelIndex &idx) {
 	qDebug() << "toggling" << idx.data(DR_LABOR_ID).toInt() << "for dwarf:" << idx.data(DR_ID).toInt();
 }
 
+void DwarfModel::set_group_by(int group_by) {
+	qDebug() << "group_by" << group_by;
+	m_group_by = static_cast<GROUP_BY>(group_by);
+	if (m_df)
+		load_dwarves();
+}

@@ -26,6 +26,8 @@ public:
 		void read_dwarves();
 		void scan_memory();
 		void filter_dwarves();
+		void show_toolbutton_text(bool);
+		void set_group_by(int);
 
 private:
     Ui::MainWindow *ui;
@@ -33,6 +35,7 @@ private:
 	QLabel *m_lbl_status;
 	QSettings *m_settings;
 	DwarfModel *m_model;
+	bool m_reading_settings;
 
 	void closeEvent(QCloseEvent *evt); // override;
 
@@ -41,6 +44,7 @@ private:
 
     private slots:
         void set_interface_enabled(bool);
+		
 };
 
 #endif // MAINWINDOW_H

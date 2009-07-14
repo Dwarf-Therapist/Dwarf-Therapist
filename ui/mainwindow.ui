@@ -63,93 +63,64 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QLabel" name="label_2">
+           <widget class="QLabel" name="lbl_group_by">
             <property name="text">
-             <string>Resize Grid</string>
+             <string>Group By</string>
+            </property>
+            <property name="buddy">
+             <cstring>cb_group_by</cstring>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QSlider" name="horizontalSlider">
-            <property name="minimum">
-             <number>8</number>
+           <widget class="QComboBox" name="cb_group_by">
+            <property name="enabled">
+             <bool>false</bool>
             </property>
-            <property name="maximum">
-             <number>160</number>
+            <property name="toolTip">
+             <string>Change how dwarves are grouped in the table</string>
             </property>
-            <property name="singleStep">
-             <number>1</number>
+            <property name="statusTip">
+             <string>Change how dwarves are grouped in the table</string>
             </property>
-            <property name="pageStep">
-             <number>48</number>
-            </property>
-            <property name="value">
-             <number>16</number>
-            </property>
+            <item>
+             <property name="text">
+              <string>Nothing</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
-            <property name="tickPosition">
-             <enum>QSlider::NoTicks</enum>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
             </property>
-            <property name="tickInterval">
-             <number>8</number>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_3">
-            <item>
-             <widget class="QLabel" name="lbl_x_size">
-              <property name="text">
-               <string>16</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_3">
-              <property name="text">
-               <string>x</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="lbl_y_size">
-              <property name="text">
-               <string>16</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           </spacer>
           </item>
          </layout>
         </item>
         <item>
          <widget class="StateTableView" name="stv">
-          <property name="font">
-           <font>
-            <pointsize>8</pointsize>
-           </font>
-          </property>
-          <property name="styleSheet">
-           <string>QTreeView::item {
-	border: 1px solid #333333;
-	padding: 2px;
-	margin: 0px;
-	spacing: 0px;
-}</string>
+          <property name="mouseTracking">
+           <bool>true</bool>
           </property>
           <property name="editTriggers">
            <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
+          <property name="tabKeyNavigation">
+           <bool>true</bool>
           </property>
           <property name="alternatingRowColors">
            <bool>true</bool>
           </property>
           <property name="indentation">
            <number>12</number>
-          </property>
-          <property name="rootIsDecorated">
-           <bool>true</bool>
           </property>
           <property name="uniformRowHeights">
            <bool>false</bool>
@@ -158,15 +129,18 @@
            <bool>true</bool>
           </property>
           <property name="animated">
-           <bool>false</bool>
-          </property>
-          <property name="headerHidden">
            <bool>true</bool>
           </property>
-          <property name="expandsOnDoubleClick">
-           <bool>false</bool>
-          </property>
           <attribute name="headerVisible">
+           <bool>false</bool>
+          </attribute>
+          <attribute name="headerDefaultSectionSize">
+           <number>16</number>
+          </attribute>
+          <attribute name="headerMinimumSectionSize">
+           <number>16</number>
+          </attribute>
+          <attribute name="headerStretchLastSection">
            <bool>false</bool>
           </attribute>
          </widget>
@@ -213,6 +187,7 @@
      <string>Options</string>
     </property>
     <addaction name="action_apply_skill_changes_immedietly"/>
+    <addaction name="act_show_toolbutton_text"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuOptions"/>
@@ -230,7 +205,10 @@
    </attribute>
    <addaction name="act_connect_to_DF"/>
    <addaction name="act_read_dwarves"/>
-   <addaction name="act_scan_memory"/>
+   <addaction name="separator"/>
+   <addaction name="act_expand_all"/>
+   <addaction name="act_collapse_all"/>
+   <addaction name="separator"/>
    <addaction name="act_exit"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -243,6 +221,9 @@
     <string>&amp;Connect To DF</string>
    </property>
    <property name="toolTip">
+    <string>Attempt connecting to a running copy of Dwarf Fortress</string>
+   </property>
+   <property name="statusTip">
     <string>Attempt connecting to a running copy of Dwarf Fortress</string>
    </property>
    <property name="shortcut">
@@ -258,6 +239,9 @@
     <string>E&amp;xit</string>
    </property>
    <property name="toolTip">
+    <string>Close Dwarf Therapist</string>
+   </property>
+   <property name="statusTip">
     <string>Close Dwarf Therapist</string>
    </property>
   </action>
@@ -282,7 +266,10 @@
     <string>Read Dwarves</string>
    </property>
    <property name="toolTip">
-    <string>Read the stuff...</string>
+    <string>Attempt to load all Dwarves from DF</string>
+   </property>
+   <property name="statusTip">
+    <string>Attempt to load all Dwarves from DF</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
@@ -299,6 +286,9 @@
    <property name="toolTip">
     <string>Map out the RAM of Dwarf Fortress looking for known values</string>
    </property>
+   <property name="statusTip">
+    <string>Map out the RAM of Dwarf Fortress looking for known values</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+M</string>
    </property>
@@ -307,11 +297,64 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Apply Skill Toggles Immedietly</string>
    </property>
    <property name="toolTip">
     <string>When set, skill changes are written to the game immedietly as opposed to buffering up.</string>
+   </property>
+   <property name="statusTip">
+    <string>When set, skill changes are written to the game immedietly as opposed to buffering up</string>
+   </property>
+  </action>
+  <action name="act_expand_all">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/arrow_out.png</normaloff>:/img/arrow_out.png</iconset>
+   </property>
+   <property name="text">
+    <string>Expand All</string>
+   </property>
+   <property name="toolTip">
+    <string>Expand all groups</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+Right</string>
+   </property>
+  </action>
+  <action name="act_collapse_all">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/arrow_in.png</normaloff>:/img/arrow_in.png</iconset>
+   </property>
+   <property name="text">
+    <string>Collapse All</string>
+   </property>
+   <property name="toolTip">
+    <string>Collapse all groups</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+Left</string>
+   </property>
+  </action>
+  <action name="act_show_toolbutton_text">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Toolbutton Text</string>
    </property>
   </action>
  </widget>
@@ -329,7 +372,6 @@
  <tabstops>
   <tabstop>le_filter</tabstop>
   <tabstop>btn_filter</tabstop>
-  <tabstop>tabWidget</tabstop>
  </tabstops>
  <resources>
   <include location="../images.qrc"/>
@@ -416,50 +458,66 @@
    </hints>
   </connection>
   <connection>
-   <sender>horizontalSlider</sender>
-   <signal>sliderMoved(int)</signal>
-   <receiver>lbl_x_size</receiver>
-   <slot>setNum(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>152</x>
-     <y>98</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>650</x>
-     <y>98</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>horizontalSlider</sender>
-   <signal>sliderMoved(int)</signal>
-   <receiver>lbl_y_size</receiver>
-   <slot>setNum(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>394</x>
-     <y>104</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>680</x>
-     <y>98</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>horizontalSlider</sender>
-   <signal>sliderMoved(int)</signal>
+   <sender>act_expand_all</sender>
+   <signal>activated()</signal>
    <receiver>stv</receiver>
-   <slot>set_grid_size(int)</slot>
+   <slot>expandAll()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>511</x>
-     <y>111</y>
+     <x>-1</x>
+     <y>-1</y>
     </hint>
     <hint type="destinationlabel">
-     <x>510</x>
-     <y>139</y>
+     <x>147</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_collapse_all</sender>
+   <signal>activated()</signal>
+   <receiver>stv</receiver>
+   <slot>collapseAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>147</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_show_toolbutton_text</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>show_toolbutton_text(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>352</x>
+     <y>281</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cb_group_by</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>set_group_by(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>112</x>
+     <y>107</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>288</x>
+     <y>26</y>
     </hint>
    </hints>
   </connection>
@@ -469,5 +527,7 @@
   <slot>read_dwarves()</slot>
   <slot>scan_memory()</slot>
   <slot>filter_dwarves()</slot>
+  <slot>show_toolbutton_text(bool)</slot>
+  <slot>set_group_by(int)</slot>
  </slots>
 </ui>

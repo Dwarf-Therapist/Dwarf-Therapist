@@ -19,16 +19,20 @@ MainWindow::MainWindow(QWidget *parent)
     ,m_lbl_status(0)
 	,m_settings(0)
 	,m_model(new DwarfModel(this))
+	,m_reading_settings(false)
 {
     ui->setupUi(this);
 	ui->stv->setModel(m_model);
 
 	m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "UDP Software", "Dwarf Therapist", this);
-	read_settings();
 
 	m_lbl_status = new QLabel(tr("not connected"), statusBar());
 	statusBar()->addPermanentWidget(m_lbl_status, 0);
     set_interface_enabled(false);
+
+	ui->cb_group_by->setItemData(0, DwarfModel::GB_NOTHING);
+	ui->cb_group_by->addItem("Profession", DwarfModel::GB_PROFESSION);
+	read_settings();
 }
 
 MainWindow::~MainWindow() {
@@ -36,6 +40,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::read_settings() {
+	m_reading_settings = true;
 	// Geometry
 	m_settings->beginGroup("window");
 	QByteArray geom = m_settings->value("geometry").toByteArray();
@@ -48,16 +53,33 @@ void MainWindow::read_settings() {
 		restoreState(state);
 	}
 	m_settings->endGroup();
+	
+	m_settings->beginGroup("gui_options");
+	// toolbutton text
+	bool show_text = m_settings->value("show_toolbutton_text", true).toBool();
+	ui->act_show_toolbutton_text->setChecked(show_text);
+	show_toolbutton_text(show_text);
 
+	// group by
+	int group_by = m_settings->value("group_by", 0).toInt();
+	ui->cb_group_by->setCurrentIndex(group_by);
+	m_model->set_group_by(group_by);
+
+	m_settings->endGroup();
+	m_reading_settings = false;
 }
 
 void MainWindow::write_settings() {
-	if (m_settings) {
+	if (m_settings && !m_reading_settings) {
 		QByteArray geom = saveGeometry();
 		QByteArray state = saveState();
 		m_settings->beginGroup("window");
 		m_settings->setValue("geometry", QVariant(geom));
 		m_settings->setValue("state", QVariant(state));
+		m_settings->endGroup();
+		m_settings->beginGroup("gui_options");
+		m_settings->setValue("show_toolbutton_text", ui->act_show_toolbutton_text->isChecked());
+		m_settings->setValue("group_by", m_model->current_grouping());
 		m_settings->endGroup();
 	}
 }
@@ -85,7 +107,8 @@ void MainWindow::connect_to_df() {
 }
 
 void MainWindow::read_dwarves() {
-	m_model->load_dwarves(m_df);
+	m_model->set_instance(m_df);
+	m_model->load_dwarves();
 	ui->stv->setModel(m_model);
 	connect(ui->stv, SIGNAL(clicked(const QModelIndex&)), m_model, SLOT(labor_clicked(const QModelIndex&)));
 }
@@ -94,6 +117,9 @@ void MainWindow::set_interface_enabled(bool enabled) {
 	ui->act_connect_to_DF->setEnabled(!enabled);
 	ui->act_read_dwarves->setEnabled(enabled);
 	ui->act_scan_memory->setEnabled(enabled);
+	ui->act_expand_all->setEnabled(enabled);
+	ui->act_collapse_all->setEnabled(enabled);
+	ui->cb_group_by->setEnabled(enabled);
 }
 
 void MainWindow::scan_memory() {
@@ -116,7 +142,19 @@ void MainWindow::scan_memory() {
 
 void MainWindow::filter_dwarves() {
 	QString filter_text = ui->le_filter->text();
-	ui->stv->filter_dwarves(filter_text);
+	//ui->stv->filter_dwarves(filter_text);
 }
 
+void MainWindow::show_toolbutton_text(bool enabled) {
+	if (enabled)
+		ui->mainToolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+	else
+		ui->mainToolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+	write_settings();
+}
+
+void MainWindow::set_group_by(int group_by) {
+	m_model->set_group_by(group_by);
+	write_settings();
+}
 

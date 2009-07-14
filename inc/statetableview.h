@@ -3,21 +3,6 @@
 
 #include <QtGui>
 
-class HeaderDelegate : public QStyledItemDelegate {
-	Q_OBJECT
-public:
-	HeaderDelegate (QObject *parent = 0);
-	QSize sizeHint(const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
-	void paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
-};
-
-class SkillDelegate : public QStyledItemDelegate {
-	Q_OBJECT
-public:
-	SkillDelegate(QObject *parent = 0);
-	void paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
-};
-
 class StateTableView : public QTreeView
 {
 	Q_OBJECT

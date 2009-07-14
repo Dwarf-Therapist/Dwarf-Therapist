@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Mon Jul 13 16:23:06 2009
+** Created: Mon Jul 13 23:58:40 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -14,6 +14,7 @@
 #include <QtGui/QAction>
 #include <QtGui/QApplication>
 #include <QtGui/QButtonGroup>
+#include <QtGui/QComboBox>
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QHeaderView>
 #include <QtGui/QLabel>
@@ -22,7 +23,7 @@
 #include <QtGui/QMenu>
 #include <QtGui/QMenuBar>
 #include <QtGui/QPushButton>
-#include <QtGui/QSlider>
+#include <QtGui/QSpacerItem>
 #include <QtGui/QStatusBar>
 #include <QtGui/QTabWidget>
 #include <QtGui/QToolBar>
@@ -41,6 +42,9 @@ public:
     QAction *act_read_dwarves;
     QAction *act_scan_memory;
     QAction *action_apply_skill_changes_immedietly;
+    QAction *act_expand_all;
+    QAction *act_collapse_all;
+    QAction *act_show_toolbutton_text;
     QWidget *main_widget;
     QVBoxLayout *verticalLayout_2;
     QTabWidget *tabWidget;
@@ -51,12 +55,9 @@ public:
     QLineEdit *le_filter;
     QPushButton *btn_filter;
     QHBoxLayout *horizontalLayout_2;
-    QLabel *label_2;
-    QSlider *horizontalSlider;
-    QHBoxLayout *horizontalLayout_3;
-    QLabel *lbl_x_size;
-    QLabel *label_3;
-    QLabel *lbl_y_size;
+    QLabel *lbl_group_by;
+    QComboBox *cb_group_by;
+    QSpacerItem *horizontalSpacer;
     StateTableView *stv;
     QMenuBar *menuBar;
     QMenu *menu_File;
@@ -98,6 +99,23 @@ public:
         action_apply_skill_changes_immedietly = new QAction(MainWindow);
         action_apply_skill_changes_immedietly->setObjectName(QString::fromUtf8("action_apply_skill_changes_immedietly"));
         action_apply_skill_changes_immedietly->setCheckable(true);
+        action_apply_skill_changes_immedietly->setChecked(true);
+        act_expand_all = new QAction(MainWindow);
+        act_expand_all->setObjectName(QString::fromUtf8("act_expand_all"));
+        act_expand_all->setEnabled(false);
+        QIcon icon5;
+        icon5.addPixmap(QPixmap(QString::fromUtf8(":/img/arrow_out.png")), QIcon::Normal, QIcon::Off);
+        act_expand_all->setIcon(icon5);
+        act_collapse_all = new QAction(MainWindow);
+        act_collapse_all->setObjectName(QString::fromUtf8("act_collapse_all"));
+        act_collapse_all->setEnabled(false);
+        QIcon icon6;
+        icon6.addPixmap(QPixmap(QString::fromUtf8(":/img/arrow_in.png")), QIcon::Normal, QIcon::Off);
+        act_collapse_all->setIcon(icon6);
+        act_show_toolbutton_text = new QAction(MainWindow);
+        act_show_toolbutton_text->setObjectName(QString::fromUtf8("act_show_toolbutton_text"));
+        act_show_toolbutton_text->setCheckable(true);
+        act_show_toolbutton_text->setChecked(true);
         main_widget = new QWidget(MainWindow);
         main_widget->setObjectName(QString::fromUtf8("main_widget"));
         verticalLayout_2 = new QVBoxLayout(main_widget);
@@ -138,69 +156,44 @@ public:
         horizontalLayout_2 = new QHBoxLayout();
         horizontalLayout_2->setSpacing(6);
         horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
-        label_2 = new QLabel(tab);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
+        lbl_group_by = new QLabel(tab);
+        lbl_group_by->setObjectName(QString::fromUtf8("lbl_group_by"));
 
-        horizontalLayout_2->addWidget(label_2);
+        horizontalLayout_2->addWidget(lbl_group_by);
 
-        horizontalSlider = new QSlider(tab);
-        horizontalSlider->setObjectName(QString::fromUtf8("horizontalSlider"));
-        horizontalSlider->setMinimum(8);
-        horizontalSlider->setMaximum(160);
-        horizontalSlider->setSingleStep(1);
-        horizontalSlider->setPageStep(48);
-        horizontalSlider->setValue(16);
-        horizontalSlider->setOrientation(Qt::Horizontal);
-        horizontalSlider->setTickPosition(QSlider::NoTicks);
-        horizontalSlider->setTickInterval(8);
+        cb_group_by = new QComboBox(tab);
+        cb_group_by->setObjectName(QString::fromUtf8("cb_group_by"));
+        cb_group_by->setEnabled(false);
 
-        horizontalLayout_2->addWidget(horizontalSlider);
+        horizontalLayout_2->addWidget(cb_group_by);
 
-        horizontalLayout_3 = new QHBoxLayout();
-        horizontalLayout_3->setSpacing(6);
-        horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
-        lbl_x_size = new QLabel(tab);
-        lbl_x_size->setObjectName(QString::fromUtf8("lbl_x_size"));
+        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-        horizontalLayout_3->addWidget(lbl_x_size);
-
-        label_3 = new QLabel(tab);
-        label_3->setObjectName(QString::fromUtf8("label_3"));
-
-        horizontalLayout_3->addWidget(label_3);
-
-        lbl_y_size = new QLabel(tab);
-        lbl_y_size->setObjectName(QString::fromUtf8("lbl_y_size"));
-
-        horizontalLayout_3->addWidget(lbl_y_size);
-
-
-        horizontalLayout_2->addLayout(horizontalLayout_3);
+        horizontalLayout_2->addItem(horizontalSpacer);
 
 
         verticalLayout->addLayout(horizontalLayout_2);
 
         stv = new StateTableView(tab);
         stv->setObjectName(QString::fromUtf8("stv"));
-        QFont font;
-        font.setPointSize(8);
-        stv->setFont(font);
+        stv->setMouseTracking(true);
         stv->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        stv->setTabKeyNavigation(true);
         stv->setAlternatingRowColors(true);
         stv->setIndentation(12);
-        stv->setRootIsDecorated(true);
         stv->setUniformRowHeights(false);
         stv->setSortingEnabled(true);
-        stv->setAnimated(false);
-        stv->setHeaderHidden(true);
-        stv->setExpandsOnDoubleClick(false);
+        stv->setAnimated(true);
         stv->header()->setVisible(false);
+        stv->header()->setDefaultSectionSize(16);
+        stv->header()->setMinimumSectionSize(16);
+        stv->header()->setStretchLastSection(false);
 
         verticalLayout->addWidget(stv);
 
-        QIcon icon5;
-        icon5.addPixmap(QPixmap(QString::fromUtf8(":/img/application_view_icons.png")), QIcon::Normal, QIcon::Off);
-        tabWidget->addTab(tab, icon5, QString());
+        QIcon icon7;
+        icon7.addPixmap(QPixmap(QString::fromUtf8(":/img/application_view_icons.png")), QIcon::Normal, QIcon::Off);
+        tabWidget->addTab(tab, icon7, QString());
 
         verticalLayout_2->addWidget(tabWidget);
 
@@ -226,9 +219,9 @@ public:
         MainWindow->setStatusBar(statusBar);
 #ifndef QT_NO_SHORTCUT
         label->setBuddy(le_filter);
+        lbl_group_by->setBuddy(cb_group_by);
 #endif // QT_NO_SHORTCUT
         QWidget::setTabOrder(le_filter, btn_filter);
-        QWidget::setTabOrder(btn_filter, tabWidget);
 
         menuBar->addAction(menu_File->menuAction());
         menuBar->addAction(menuOptions->menuAction());
@@ -240,9 +233,13 @@ public:
         menu_File->addAction(act_exit);
         menu_Help->addAction(act_about);
         menuOptions->addAction(action_apply_skill_changes_immedietly);
+        menuOptions->addAction(act_show_toolbutton_text);
         mainToolBar->addAction(act_connect_to_DF);
         mainToolBar->addAction(act_read_dwarves);
-        mainToolBar->addAction(act_scan_memory);
+        mainToolBar->addSeparator();
+        mainToolBar->addAction(act_expand_all);
+        mainToolBar->addAction(act_collapse_all);
+        mainToolBar->addSeparator();
         mainToolBar->addAction(act_exit);
 
         retranslateUi(MainWindow);
@@ -251,9 +248,10 @@ public:
         QObject::connect(act_read_dwarves, SIGNAL(triggered()), MainWindow, SLOT(read_dwarves()));
         QObject::connect(act_scan_memory, SIGNAL(triggered()), MainWindow, SLOT(scan_memory()));
         QObject::connect(btn_filter, SIGNAL(clicked()), MainWindow, SLOT(filter_dwarves()));
-        QObject::connect(horizontalSlider, SIGNAL(sliderMoved(int)), lbl_x_size, SLOT(setNum(int)));
-        QObject::connect(horizontalSlider, SIGNAL(sliderMoved(int)), lbl_y_size, SLOT(setNum(int)));
-        QObject::connect(horizontalSlider, SIGNAL(sliderMoved(int)), stv, SLOT(set_grid_size(int)));
+        QObject::connect(act_expand_all, SIGNAL(activated()), stv, SLOT(expandAll()));
+        QObject::connect(act_collapse_all, SIGNAL(activated()), stv, SLOT(collapseAll()));
+        QObject::connect(act_show_toolbutton_text, SIGNAL(toggled(bool)), MainWindow, SLOT(show_toolbutton_text(bool)));
+        QObject::connect(cb_group_by, SIGNAL(currentIndexChanged(int)), MainWindow, SLOT(set_group_by(int)));
 
         tabWidget->setCurrentIndex(0);
 
@@ -268,41 +266,68 @@ public:
 #ifndef QT_NO_TOOLTIP
         act_connect_to_DF->setToolTip(QApplication::translate("MainWindow", "Attempt connecting to a running copy of Dwarf Fortress", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
+#ifndef QT_NO_STATUSTIP
+        act_connect_to_DF->setStatusTip(QApplication::translate("MainWindow", "Attempt connecting to a running copy of Dwarf Fortress", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
         act_connect_to_DF->setShortcut(QApplication::translate("MainWindow", "Ctrl+C", 0, QApplication::UnicodeUTF8));
         act_exit->setText(QApplication::translate("MainWindow", "E&xit", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
         act_exit->setToolTip(QApplication::translate("MainWindow", "Close Dwarf Therapist", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
+#ifndef QT_NO_STATUSTIP
+        act_exit->setStatusTip(QApplication::translate("MainWindow", "Close Dwarf Therapist", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
         act_about->setText(QApplication::translate("MainWindow", "&About", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
         act_about->setToolTip(QApplication::translate("MainWindow", "Exactly what you think...", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
         act_read_dwarves->setText(QApplication::translate("MainWindow", "Read Dwarves", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
-        act_read_dwarves->setToolTip(QApplication::translate("MainWindow", "Read the stuff...", 0, QApplication::UnicodeUTF8));
+        act_read_dwarves->setToolTip(QApplication::translate("MainWindow", "Attempt to load all Dwarves from DF", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
+#ifndef QT_NO_STATUSTIP
+        act_read_dwarves->setStatusTip(QApplication::translate("MainWindow", "Attempt to load all Dwarves from DF", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
         act_read_dwarves->setShortcut(QApplication::translate("MainWindow", "Ctrl+R", 0, QApplication::UnicodeUTF8));
         act_scan_memory->setText(QApplication::translate("MainWindow", "Scan Memory", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
         act_scan_memory->setToolTip(QApplication::translate("MainWindow", "Map out the RAM of Dwarf Fortress looking for known values", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
+#ifndef QT_NO_STATUSTIP
+        act_scan_memory->setStatusTip(QApplication::translate("MainWindow", "Map out the RAM of Dwarf Fortress looking for known values", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
         act_scan_memory->setShortcut(QApplication::translate("MainWindow", "Ctrl+M", 0, QApplication::UnicodeUTF8));
         action_apply_skill_changes_immedietly->setText(QApplication::translate("MainWindow", "Apply Skill Toggles Immedietly", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
         action_apply_skill_changes_immedietly->setToolTip(QApplication::translate("MainWindow", "When set, skill changes are written to the game immedietly as opposed to buffering up.", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
+#ifndef QT_NO_STATUSTIP
+        action_apply_skill_changes_immedietly->setStatusTip(QApplication::translate("MainWindow", "When set, skill changes are written to the game immedietly as opposed to buffering up", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
+        act_expand_all->setText(QApplication::translate("MainWindow", "Expand All", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_TOOLTIP
+        act_expand_all->setToolTip(QApplication::translate("MainWindow", "Expand all groups", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
+        act_expand_all->setShortcut(QApplication::translate("MainWindow", "Shift+Right", 0, QApplication::UnicodeUTF8));
+        act_collapse_all->setText(QApplication::translate("MainWindow", "Collapse All", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_TOOLTIP
+        act_collapse_all->setToolTip(QApplication::translate("MainWindow", "Collapse all groups", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
+        act_collapse_all->setShortcut(QApplication::translate("MainWindow", "Shift+Left", 0, QApplication::UnicodeUTF8));
+        act_show_toolbutton_text->setText(QApplication::translate("MainWindow", "Show Toolbutton Text", 0, QApplication::UnicodeUTF8));
         label->setText(QApplication::translate("MainWindow", "Filter Dwarves", 0, QApplication::UnicodeUTF8));
         btn_filter->setText(QApplication::translate("MainWindow", "Go", 0, QApplication::UnicodeUTF8));
-        label_2->setText(QApplication::translate("MainWindow", "Resize Grid", 0, QApplication::UnicodeUTF8));
-        lbl_x_size->setText(QApplication::translate("MainWindow", "16", 0, QApplication::UnicodeUTF8));
-        label_3->setText(QApplication::translate("MainWindow", "x", 0, QApplication::UnicodeUTF8));
-        lbl_y_size->setText(QApplication::translate("MainWindow", "16", 0, QApplication::UnicodeUTF8));
-        stv->setStyleSheet(QApplication::translate("MainWindow", "QTreeView::item {\n"
-"	border: 1px solid #333333;\n"
-"	padding: 2px;\n"
-"	margin: 0px;\n"
-"	spacing: 0px;\n"
-"}", 0, QApplication::UnicodeUTF8));
+        lbl_group_by->setText(QApplication::translate("MainWindow", "Group By", 0, QApplication::UnicodeUTF8));
+        cb_group_by->clear();
+        cb_group_by->insertItems(0, QStringList()
+         << QApplication::translate("MainWindow", "Nothing", 0, QApplication::UnicodeUTF8)
+        );
+#ifndef QT_NO_TOOLTIP
+        cb_group_by->setToolTip(QApplication::translate("MainWindow", "Change how dwarves are grouped in the table", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
+#ifndef QT_NO_STATUSTIP
+        cb_group_by->setStatusTip(QApplication::translate("MainWindow", "Change how dwarves are grouped in the table", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("MainWindow", "Career Advisor", 0, QApplication::UnicodeUTF8));
         menu_File->setTitle(QApplication::translate("MainWindow", "&File", 0, QApplication::UnicodeUTF8));
         menu_Help->setTitle(QApplication::translate("MainWindow", "&Help", 0, QApplication::UnicodeUTF8));

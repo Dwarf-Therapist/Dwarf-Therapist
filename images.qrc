@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="/" >
+    <file>img/arrow_in.png</file>
+    <file>img/arrow_out.png</file>
     <file>img/drive_magnify.png</file>
     <file>img/application_view_icons.png</file>
     <file>img/connect.png</file>

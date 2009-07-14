@@ -1,7 +1,5 @@
+#include <QtGui>
 #include <QtDebug>
-#include <QApplication>
-#include <QVector>
-#include <QByteArrayMatcher>
 #include <windows.h>
 #include <psapi.h>
 
@@ -19,6 +17,7 @@ DFInstance::DFInstance(DWORD pid, HWND hwnd, QObject* parent)
     ,m_proc(0)
     ,m_memory_correction(0)
     ,m_stop_scan(false)
+	,m_is_ok(true)
 {
     m_proc = OpenProcess(PROCESS_QUERY_INFORMATION
                          | PROCESS_VM_READ
@@ -28,24 +27,31 @@ DFInstance::DFInstance(DWORD pid, HWND hwnd, QObject* parent)
     PROCESS_MEMORY_COUNTERS pmc;
     GetProcessMemoryInfo(m_proc, &pmc, sizeof(pmc));
     m_memory_size = pmc.WorkingSetSize;
-    qDebug() << "process working set size: " << m_memory_size;
+    //qDebug() << "process working set size: " << m_memory_size;
 
     PVOID peb_addr = GetPebAddress(m_proc);
-    qDebug() << "PEB is at: " << hex << peb_addr;
+    //qDebug() << "PEB is at: " << hex << peb_addr;
 
-	PEB peb;
-	DWORD bytes = 0;
-	if (ReadProcessMemory(m_proc, (PCHAR)peb_addr, &peb, sizeof(PEB), &bytes)) {
-		qDebug() << "read " << bytes << "bytes BASE ADDR is at: " << hex << peb.ImageBaseAddress;
-		m_base_addr = (int)peb.ImageBaseAddress;
+	QString connection_error = tr("I'm sorry. I'm having trouble connecting to DF. I can't seem to locate the PEB address of the process. Please re-launch DF and try again.");
+	if (peb_addr == 0){
+		QMessageBox::critical(0, tr("Connection Error"), connection_error);
+		qCritical() << "PEB address came back as 0";
 	} else {
-		qCritical() << "unable to read remote PEB!" << GetLastError();
+		PEB peb;
+		DWORD bytes = 0;
+		if (ReadProcessMemory(m_proc, (PCHAR)peb_addr, &peb, sizeof(PEB), &bytes)) {
+			qDebug() << "read " << bytes << "bytes BASE ADDR is at: " << hex << peb.ImageBaseAddress;
+			m_base_addr = (int)peb.ImageBaseAddress;
+		} else {
+			QMessageBox::critical(0, tr("Connection Error"), connection_error);
+			qCritical() << "unable to read remote PEB!" << GetLastError();
+			m_is_ok = false;
+		}
+		calculate_checksum();
+
+		m_memory_correction = (int)m_base_addr - 0x0400000;
+		qDebug() << "memory correction " << m_memory_correction;
 	}
-
-	calculate_checksum();
-
-    m_memory_correction = (int)m_base_addr - 0x0400000;
-    qDebug() << "memory correction " << m_memory_correction;
 }
 
 DFInstance::~DFInstance() {
@@ -429,7 +435,10 @@ DFInstance* DFInstance::find_running_copy(QObject *parent) {
     GetWindowThreadProcessId(hwnd, &pid);
     qDebug() << "PID is: " << pid;
 
-    return new DFInstance(pid, hwnd, parent);
+	DFInstance *df = new DFInstance(pid, hwnd, parent);
+	if (df->is_ok())
+		return df;
+	return 0;
 }
 
 QVector<Dwarf*> DFInstance::load_dwarves() {
