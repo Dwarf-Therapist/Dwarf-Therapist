@@ -4,6 +4,7 @@
 #include <QtGui>
 
 class UberDelegate;
+class RotatedHeader;
 
 class StateTableView : public QTreeView
 {
@@ -22,6 +23,6 @@ public:
 
 private:
 	UberDelegate *m_delegate;
+	RotatedHeader *m_header;
 };
-
 #endif // STATETABLEVIEW_H

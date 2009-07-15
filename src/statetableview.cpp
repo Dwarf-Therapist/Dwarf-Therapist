@@ -5,12 +5,15 @@
 #include "statetableview.h"
 #include "dwarfmodel.h"
 #include "uberdelegate.h"
+#include "rotatedheader.h"
 
 StateTableView::StateTableView(QWidget *parent)
 	: QTreeView(parent)
 	, m_delegate(new UberDelegate(this))
+	, m_header(new RotatedHeader(Qt::Horizontal, this))
 {
 	setItemDelegate(m_delegate);
+	this->setHeader(m_header);
 }
 
 StateTableView::~StateTableView()
@@ -19,24 +22,18 @@ StateTableView::~StateTableView()
 
 void StateTableView::setModel(QAbstractItemModel *model) {
 	QTreeView::setModel(model);
-	//resizeColumnToContents(0);
-	this->setColumnWidth(0, 200);
-	//setRowHeight(0, 100);
+	setColumnWidth(0, 200);
+	m_header->set_model(qobject_cast<DwarfModel*>(model));
 }
 
 void StateTableView::set_grid_size(int new_size) {
+	return;
 	if (model()->rowCount() < 1) {
 		return;
 	}
-	for (int i=1; i < model()->rowCount(); ++i) {
-		//setRowHeight(i, new_size);
-	}
-	for (int i=1; i < model()->columnCount(); ++i) {
-		setColumnWidth(i, new_size);
-	}
+	// TODO: apply this to the delegate's size hint?
 }
 
 void StateTableView::filter_dwarves(QString text) {
-	//model()-
-
+	// TODO: apply filtering to model
 }

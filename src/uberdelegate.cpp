@@ -116,9 +116,6 @@ void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, con
 }
 
 void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
-	QStyledItemDelegate::paint(p, opt, idx); // always lay the "base coat"
-	//return;
-
 	const DwarfModel *m = dynamic_cast<const DwarfModel*>(idx.model());
 	QModelIndex first_col = m->index(idx.row(), 0, idx.parent());
 	QStandardItem *item = m->itemFromIndex(first_col);
@@ -133,8 +130,12 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 		p->fillRect(opt.rect, m_active_bg_color);
 	} else if (enabled > 0) {
 		p->fillRect(opt.rect, QBrush(0xAAAAAA));
+	} else {
+		p->fillRect(opt.rect, QBrush(0xEEEEEE));
 	}
 	p->restore();
+
+	QStyledItemDelegate::paint(p, opt, idx); // always lay the "base coat"
 
 	p->save(); // border last
 	p->setPen(QColor(0xd9d9d9));
@@ -144,8 +145,8 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 }
 
 QSize UberDelegate::sizeHint(const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
-	if (idx.row() == 0 && !idx.parent().isValid()) { //top row, unparented (MAIN HEADER)
+	/*if (idx.row() == 0 && !idx.parent().isValid()) { //top row, unparented (MAIN HEADER)
 		return QSize(16, 100);
-	}
+	}*/
 	return QStyledItemDelegate::sizeHint(opt, idx);
 }

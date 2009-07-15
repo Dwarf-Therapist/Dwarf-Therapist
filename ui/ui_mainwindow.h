@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Tue Jul 14 15:23:27 2009
+** Created: Tue Jul 14 16:24:23 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -185,7 +185,8 @@ public:
         stv->setUniformRowHeights(false);
         stv->setSortingEnabled(true);
         stv->setAnimated(true);
-        stv->header()->setVisible(false);
+        stv->setHeaderHidden(false);
+        stv->header()->setVisible(true);
         stv->header()->setDefaultSectionSize(16);
         stv->header()->setMinimumSectionSize(16);
         stv->header()->setStretchLastSection(false);

@@ -16,6 +16,8 @@ DwarfModel::DwarfModel(QObject *parent)
 	QStringList keys = gdr->get_child_groups("labor_table");
 	QList<QStandardItem*> items;
 	items << new QStandardItem;
+	int i = 1;
+	setHorizontalHeaderItem(0, new QStandardItem("woot"));
 	foreach(QString k, keys) {
 		int labor_id = gdr->get_keys("labor_table/" + k)[0].toInt();
 		QString labor_name_key = QString("labor_table/%1/%2").arg(k).arg(labor_id);
@@ -25,8 +27,9 @@ DwarfModel::DwarfModel(QObject *parent)
 		labor << QString::number(labor_id) << labor_name;
 		m_labor_cols << labor;
 		items << new QStandardItem(labor_name);
+		setHorizontalHeaderItem(i++, new QStandardItem(labor_name));
 	}
-	appendRow(items);
+	//appendRow(items);
 }
 
 void DwarfModel::load_dwarves() {

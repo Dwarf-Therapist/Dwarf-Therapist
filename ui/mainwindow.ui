@@ -137,8 +137,11 @@
           <property name="animated">
            <bool>true</bool>
           </property>
-          <attribute name="headerVisible">
+          <property name="headerHidden">
            <bool>false</bool>
+          </property>
+          <attribute name="headerVisible">
+           <bool>true</bool>
           </attribute>
           <attribute name="headerDefaultSectionSize">
            <number>16</number>
