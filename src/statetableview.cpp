@@ -14,6 +14,8 @@ StateTableView::StateTableView(QWidget *parent)
 {
 	setItemDelegate(m_delegate);
 	this->setHeader(m_header);
+	m_header->setClickable(true);
+	m_header->setSortIndicatorShown(true);
 }
 
 StateTableView::~StateTableView()

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'customprofession.ui'
 **
-** Created: Wed Jul 15 16:42:14 2009
+** Created: Wed Jul 15 19:51:04 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -71,7 +71,7 @@ public:
         labor_list->setEditTriggers(QAbstractItemView::NoEditTriggers);
         labor_list->setSelectionMode(QAbstractItemView::NoSelection);
         labor_list->setUniformItemSizes(true);
-        labor_list->setSortingEnabled(true);
+        labor_list->setSortingEnabled(false);
 
         verticalLayout->addWidget(labor_list);
 

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Wed Jul 15 16:42:14 2009
+** Created: Wed Jul 15 19:51:04 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -183,14 +183,16 @@ public:
         stv->setMouseTracking(true);
         stv->setEditTriggers(QAbstractItemView::NoEditTriggers);
         stv->setTabKeyNavigation(true);
-        stv->setAlternatingRowColors(true);
+        stv->setAlternatingRowColors(false);
         stv->setIndentation(12);
-        stv->setUniformRowHeights(false);
+        stv->setUniformRowHeights(true);
         stv->setSortingEnabled(true);
-        stv->setAnimated(true);
+        stv->setAnimated(false);
+        stv->setAllColumnsShowFocus(true);
         stv->setHeaderHidden(false);
         stv->header()->setVisible(true);
         stv->header()->setDefaultSectionSize(16);
+        stv->header()->setHighlightSections(true);
         stv->header()->setMinimumSectionSize(16);
         stv->header()->setStretchLastSection(false);
 

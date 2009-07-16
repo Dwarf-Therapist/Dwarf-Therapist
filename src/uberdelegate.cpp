@@ -12,44 +12,20 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 		QStyledItemDelegate::paint(p, opt, idx); // always lay the "base coat"
 		return;
 	}
-
+	
 	const DwarfModel *model = dynamic_cast<const DwarfModel*>(idx.model());
 	if (model->current_grouping() == DwarfModel::GB_NOTHING) {
-		if (idx.row() == 0)
-			paint_header(p, opt, idx);
-		else
-			paint_skill(p, opt, idx);
+		paint_skill(p, opt, idx);
 	} else {
-		if (idx.parent().isValid()) { // skill item (under a group header)
-			QStyledItemDelegate::paint(p, opt, idx); // always lay the "base coat"
-			paint_skill(p, opt, idx);
+		QModelIndex first_col = model->index(idx.row(), 0, idx.parent());
+		if (model->hasChildren(first_col)) { // skill item (under a group header)
+			//QStyledItemDelegate::paint(p, opt, idx); // always lay the "base coat"
+			paint_aggregate(p, opt, idx);
 		} else {
-			const DwarfModel *m = dynamic_cast<const DwarfModel*>(idx.model());
-			QStandardItem *item = m->itemFromIndex(idx);
-			QModelIndex first_col = m->index(idx.row(), 0, idx.parent());
-			if (m->hasChildren(first_col)) {
-				paint_aggregate(p, opt, idx);
-			} else {
-				paint_header(p, opt, idx); 
-			}
+			paint_skill(p, opt, idx);
 			
 		}
 	}
-}
-void UberDelegate::paint_header(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
-	//border
-	p->save();
-	p->setPen(QColor(0xd9d9d9));
-	p->setBrush(Qt::NoBrush);
-	p->drawRect(opt.rect);
-	p->restore();
-
-	p->save();
-	p->translate(opt.rect.left(), opt.rect.top());
-	p->rotate(90);
-	p->setFont(QFont("Arial", 8));
-	p->drawText(4, -4, idx.data().toString());
-	p->restore();
 }
 
 void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
@@ -58,7 +34,9 @@ void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, con
 	
 	bool enabled = idx.data(DwarfModel::DR_ENABLED).toBool();
 	short rating = idx.data(DwarfModel::DR_RATING).toInt();
+	bool dirty = idx.data(DwarfModel::DR_DIRTY).toBool();
 	bool skip_border = false;
+
 	if (enabled) {
 		p->save();
 		p->fillRect(opt.rect, QBrush(m_active_bg_color));
@@ -90,6 +68,7 @@ void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, con
 		skip_border = true;
 
 	} else if (rating < 15 && rating > 9) {
+		// TODO: try drawing the square of increasing size...
 		int offset = 14 - rating;
 		int color = 0xFFFFFF - 0x111100 * offset;
 		p->save();
@@ -106,11 +85,16 @@ void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, con
 		p->restore();
 	}
 
-	if (!skip_border) {
+	if (dirty || !skip_border) {
 		p->save(); // border last
-		p->setPen(QColor(0xd9d9d9));
 		p->setBrush(Qt::NoBrush);
-		p->drawRect(opt.rect);
+		if (dirty) {
+			p->setPen(QPen(QColor(0xFF6600), 1));
+			p->drawRect(opt.rect.adjusted(0, 0, -1, -1));
+		} else {
+			p->setPen(QColor(0xd9d9d9));
+			p->drawRect(opt.rect);
+		}
 		p->restore();
 	}
 }
@@ -121,26 +105,33 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 	QStandardItem *item = m->itemFromIndex(first_col);
 
 	int enabled = idx.data(DwarfModel::DR_ENABLED).toInt();
+	bool dirty = idx.data(DwarfModel::DR_DIRTY).toBool();
 	int children = item->rowCount();
 
 	Q_ASSERT(children > 0);
-
+	QStyledItemDelegate::paint(p, opt, idx); // always lay the "base coat"
 	p->save();
+	QRect adj = opt.rect.adjusted(1, 1, -1, 1);
 	if (enabled >= children) {
-		p->fillRect(opt.rect, m_active_bg_color);
+		p->fillRect(adj, m_active_bg_color);
 	} else if (enabled > 0) {
-		p->fillRect(opt.rect, QBrush(0xAAAAAA));
+		p->fillRect(adj, QBrush(0xAAAAAA));
 	} else {
-		p->fillRect(opt.rect, QBrush(0xEEEEEE));
+		p->fillRect(adj, QBrush(0xCCCCCC));
 	}
 	p->restore();
 
-	QStyledItemDelegate::paint(p, opt, idx); // always lay the "base coat"
+	
 
 	p->save(); // border last
-	p->setPen(QColor(0xd9d9d9));
 	p->setBrush(Qt::NoBrush);
-	p->drawRect(opt.rect);
+	if (dirty) {
+		p->setPen(QPen(QColor(0xFF6600), 1));
+		p->drawRect(opt.rect.adjusted(0, 0, -1, -1));
+	} else {
+		p->setPen(QColor(0xd9d9d9));
+		p->drawRect(opt.rect);
+	}
 	p->restore();
 }
 

@@ -18,9 +18,9 @@ public:
 		DR_RATING = Qt::UserRole + 1,
 		DR_SKILL_NAME,
 		DR_ENABLED,
+		DR_DIRTY,
 		DR_LABOR_ID,
 		DR_ID,
-		DR_EXPANDED
 	} DATA_ROLES;
 
 	DwarfModel(QObject *parent = 0);
@@ -28,6 +28,7 @@ public:
 	void set_instance(DFInstance *df) {m_df = df;}
 	
 	GROUP_BY current_grouping() const {return m_group_by;}
+	void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
 	public slots:
 		void set_group_by(int group_by);
 		void load_dwarves();
