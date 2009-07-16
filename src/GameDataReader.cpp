@@ -60,4 +60,19 @@ QStringList GameDataReader::get_keys(QString section) {
 	return keys;
 }
 
+QVector<QStringList> GameDataReader::read_labor_pairs() {
+	QVector<QStringList> pairs;
+	
+	QStringList keys = get_child_groups("labor_table");
+	foreach(QString k, keys) {
+		int labor_id = get_keys("labor_table/" + k)[0].toInt();
+		QString labor_name_key = QString("labor_table/%1/%2").arg(k).arg(labor_id);
+		QString labor_name = get_string_for_key(labor_name_key);
+		QStringList labor;
+		labor << QString::number(labor_id) << labor_name;
+		pairs << labor;
+	}
+	return pairs;
+}
+
 GameDataReader *GameDataReader::m_instance = 0;

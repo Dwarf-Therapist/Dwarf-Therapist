@@ -7,6 +7,7 @@
 #include "dwarfmodel.h"
 #include "statetableview.h"
 #include "uberdelegate.h"
+#include "customprofession.h"
 
 MainWindow::MainWindow(QWidget *parent)
     :QMainWindow(parent)
@@ -163,4 +164,13 @@ void MainWindow::show_about() {
 	Ui::form_about fa;
 	fa.setupUi(d);
 	d->show();
+}
+
+void MainWindow::add_custom_profession() {
+	CustomProfession cp;
+	int accepted = cp.show_builder_dialog(this);
+	if (accepted)
+		qDebug() << "new profession accepted!";
+	else
+		qDebug() << "cancelled new profession";
 }

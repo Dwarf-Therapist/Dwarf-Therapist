@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Tue Jul 14 16:24:23 2009
+** Created: Wed Jul 15 16:42:14 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -45,6 +45,7 @@ public:
     QAction *act_expand_all;
     QAction *act_collapse_all;
     QAction *act_show_toolbutton_text;
+    QAction *act_add_custom_Profession;
     QWidget *main_widget;
     QVBoxLayout *verticalLayout_2;
     QTabWidget *tabWidget;
@@ -117,6 +118,8 @@ public:
         act_show_toolbutton_text->setObjectName(QString::fromUtf8("act_show_toolbutton_text"));
         act_show_toolbutton_text->setCheckable(true);
         act_show_toolbutton_text->setChecked(true);
+        act_add_custom_Profession = new QAction(MainWindow);
+        act_add_custom_Profession->setObjectName(QString::fromUtf8("act_add_custom_Profession"));
         main_widget = new QWidget(MainWindow);
         main_widget->setObjectName(QString::fromUtf8("main_widget"));
         verticalLayout_2 = new QVBoxLayout(main_widget);
@@ -235,6 +238,8 @@ public:
         menu_File->addAction(act_read_dwarves);
         menu_File->addAction(act_scan_memory);
         menu_File->addSeparator();
+        menu_File->addAction(act_add_custom_Profession);
+        menu_File->addSeparator();
         menu_File->addAction(act_exit);
         menu_Help->addAction(act_about);
         menuOptions->addAction(action_apply_skill_changes_immedietly);
@@ -253,11 +258,12 @@ public:
         QObject::connect(act_read_dwarves, SIGNAL(triggered()), MainWindow, SLOT(read_dwarves()));
         QObject::connect(act_scan_memory, SIGNAL(triggered()), MainWindow, SLOT(scan_memory()));
         QObject::connect(btn_filter, SIGNAL(clicked()), MainWindow, SLOT(filter_dwarves()));
-        QObject::connect(act_expand_all, SIGNAL(activated()), stv, SLOT(expandAll()));
-        QObject::connect(act_collapse_all, SIGNAL(activated()), stv, SLOT(collapseAll()));
+        QObject::connect(act_expand_all, SIGNAL(triggered()), stv, SLOT(expandAll()));
+        QObject::connect(act_collapse_all, SIGNAL(triggered()), stv, SLOT(collapseAll()));
         QObject::connect(act_show_toolbutton_text, SIGNAL(toggled(bool)), MainWindow, SLOT(show_toolbutton_text(bool)));
         QObject::connect(cb_group_by, SIGNAL(currentIndexChanged(int)), MainWindow, SLOT(set_group_by(int)));
         QObject::connect(act_about, SIGNAL(triggered()), MainWindow, SLOT(show_about()));
+        QObject::connect(act_add_custom_Profession, SIGNAL(triggered()), MainWindow, SLOT(add_custom_profession()));
 
         tabWidget->setCurrentIndex(0);
 
@@ -321,6 +327,7 @@ public:
 #endif // QT_NO_TOOLTIP
         act_collapse_all->setShortcut(QApplication::translate("MainWindow", "Shift+Left", 0, QApplication::UnicodeUTF8));
         act_show_toolbutton_text->setText(QApplication::translate("MainWindow", "Show Toolbutton Text", 0, QApplication::UnicodeUTF8));
+        act_add_custom_Profession->setText(QApplication::translate("MainWindow", "Add Custom Profession", 0, QApplication::UnicodeUTF8));
         label->setText(QApplication::translate("MainWindow", "Filter Dwarves", 0, QApplication::UnicodeUTF8));
         btn_filter->setText(QApplication::translate("MainWindow", "Go", 0, QApplication::UnicodeUTF8));
         lbl_group_by->setText(QApplication::translate("MainWindow", "Group By", 0, QApplication::UnicodeUTF8));

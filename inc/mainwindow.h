@@ -31,6 +31,7 @@ public:
 		void show_toolbutton_text(bool);
 		void set_group_by(int);
 		void show_about();
+		void add_custom_profession();
 
 private:
     Ui::MainWindow *ui;

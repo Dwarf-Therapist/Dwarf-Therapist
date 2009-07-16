@@ -29,6 +29,8 @@ public:
 		return m_instance;
 	}
 
+	QVector<QStringList> read_labor_pairs();
+
 	int get_int_for_key(QString key, short base = 16);
 	int get_address(QString key) {return get_int_for_key("addresses/" + key);}
 	int get_offset(QString key) {return get_int_for_key("offsets/" + key);}

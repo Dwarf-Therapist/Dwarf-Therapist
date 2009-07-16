@@ -185,6 +185,8 @@
     <addaction name="act_read_dwarves"/>
     <addaction name="act_scan_memory"/>
     <addaction name="separator"/>
+    <addaction name="act_add_custom_Profession"/>
+    <addaction name="separator"/>
     <addaction name="act_exit"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
@@ -371,6 +373,11 @@
     <string>Show Toolbutton Text</string>
    </property>
   </action>
+  <action name="act_add_custom_Profession">
+   <property name="text">
+    <string>Add Custom Profession</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -473,7 +480,7 @@
   </connection>
   <connection>
    <sender>act_expand_all</sender>
-   <signal>activated()</signal>
+   <signal>triggered()</signal>
    <receiver>stv</receiver>
    <slot>expandAll()</slot>
    <hints>
@@ -489,7 +496,7 @@
   </connection>
   <connection>
    <sender>act_collapse_all</sender>
-   <signal>activated()</signal>
+   <signal>triggered()</signal>
    <receiver>stv</receiver>
    <slot>collapseAll()</slot>
    <hints>
@@ -551,6 +558,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_add_custom_Profession</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>add_custom_profession()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>352</x>
+     <y>281</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -560,5 +583,6 @@
   <slot>show_toolbutton_text(bool)</slot>
   <slot>set_group_by(int)</slot>
   <slot>show_about()</slot>
+  <slot>add_custom_profession()</slot>
  </slots>
 </ui>
