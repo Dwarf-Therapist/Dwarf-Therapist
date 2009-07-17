@@ -152,9 +152,9 @@ void MainWindow::filter_dwarves() {
 
 void MainWindow::show_toolbutton_text(bool enabled) {
 	if (enabled)
-		ui->mainToolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+		ui->main_toolbar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 	else
-		ui->mainToolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+		ui->main_toolbar->setToolButtonStyle(Qt::ToolButtonIconOnly);
 	write_settings();
 }
 
@@ -180,10 +180,13 @@ void MainWindow::add_custom_profession() {
 }
 
 void MainWindow::new_pending_changes(int cnt) {
+	bool on_off = cnt > 0;
 	ui->lbl_pending_changes->setNum(cnt);
-	ui->act_clear_pending_changes->setEnabled(cnt > 0);
-	ui->act_commit_pending_changes->setEnabled(cnt > 0);
-	ui->act_list_pending_changes->setEnabled(cnt > 0);
+	ui->btn_clear->setEnabled(on_off);
+	ui->btn_commit->setEnabled(on_off);
+	ui->act_clear_pending_changes->setEnabled(on_off);
+	ui->act_commit_pending_changes->setEnabled(on_off);
+	ui->act_list_pending_changes->setEnabled(on_off);
 	list_pending();
 }
 

@@ -214,8 +214,7 @@ void DwarfModel::clear_pending() {
 }
 
 void DwarfModel::commit_pending() {
-	int y = 0;
-	int x = 1 / y;
+	return;
 }
 
 QVector<Dwarf*> DwarfModel::get_dirty_dwarves() {

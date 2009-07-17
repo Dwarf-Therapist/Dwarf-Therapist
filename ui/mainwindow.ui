@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>848</width>
-    <height>577</height>
+    <width>1129</width>
+    <height>777</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -175,7 +175,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>848</width>
+     <width>1129</width>
      <height>20</height>
     </rect>
    </property>
@@ -224,12 +224,30 @@
     </property>
     <addaction name="act_add_custom_profession"/>
    </widget>
+   <widget class="QMenu" name="menuWindows">
+    <property name="title">
+     <string>Windows</string>
+    </property>
+    <widget class="QMenu" name="menuDocks">
+     <property name="title">
+      <string>Docks</string>
+     </property>
+     <addaction name="act_show_pending_labors_window"/>
+     <addaction name="act_show_custom_professions_window"/>
+    </widget>
+    <addaction name="menuDocks"/>
+    <addaction name="act_show_main_toolbar"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menuProfessions"/>
    <addaction name="menuOptions"/>
    <addaction name="menu_Help"/>
+   <addaction name="menuWindows"/>
   </widget>
-  <widget class="QToolBar" name="mainToolBar">
+  <widget class="QToolBar" name="main_toolbar">
+   <property name="windowTitle">
+    <string>Main Toolbar</string>
+   </property>
    <property name="toolButtonStyle">
     <enum>Qt::ToolButtonTextUnderIcon</enum>
    </property>
@@ -264,6 +282,53 @@
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
       <widget class="QListWidget" name="list_pending"/>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QPushButton" name="btn_commit">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Commit Changes</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../images.qrc">
+           <normaloff>:/img/table_go.png</normaloff>:/img/table_go.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_clear">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Clear Changes</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../images.qrc">
+           <normaloff>:/img/table_delete.png</normaloff>:/img/table_delete.png</iconset>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dock_custom_professions">
+   <property name="windowTitle">
+    <string>Custom Professions</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2">
+    <layout class="QVBoxLayout" name="verticalLayout_3">
+     <item>
+      <widget class="QListWidget" name="list_custom_professions"/>
      </item>
     </layout>
    </widget>
@@ -471,6 +536,25 @@
     <string>Show Pending Labors Window</string>
    </property>
   </action>
+  <action name="act_show_custom_professions_window">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Custom Professions Window</string>
+   </property>
+  </action>
+  <action name="act_show_main_toolbar">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Show Main Toolbar</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -563,8 +647,8 @@
    <slot>filter_dwarves()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>559</x>
-     <y>82</y>
+     <x>840</x>
+     <y>104</y>
     </hint>
     <hint type="destinationlabel">
      <x>750</x>
@@ -679,8 +763,8 @@
      <y>-1</y>
     </hint>
     <hint type="destinationlabel">
-     <x>710</x>
-     <y>313</y>
+     <x>1128</x>
+     <y>385</y>
     </hint>
    </hints>
   </connection>
@@ -691,8 +775,8 @@
    <slot>setChecked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>710</x>
-     <y>313</y>
+     <x>1128</x>
+     <y>385</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -707,12 +791,92 @@
    <slot>jump_to_dwarf(QListWidgetItem*,QListWidgetItem*)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>655</x>
-     <y>218</y>
+     <x>1119</x>
+     <y>290</y>
     </hint>
     <hint type="destinationlabel">
      <x>497</x>
      <y>264</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_commit</sender>
+   <signal>clicked()</signal>
+   <receiver>act_commit_pending_changes</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>926</x>
+     <y>418</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_clear</sender>
+   <signal>clicked()</signal>
+   <receiver>act_clear_pending_changes</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1056</x>
+     <y>418</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dock_custom_professions</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>act_show_custom_professions_window</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>991</x>
+     <y>600</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_show_custom_professions_window</sender>
+   <signal>triggered(bool)</signal>
+   <receiver>dock_custom_professions</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>991</x>
+     <y>600</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_show_main_toolbar</sender>
+   <signal>triggered()</signal>
+   <receiver>main_toolbar</receiver>
+   <slot>show()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>45</y>
     </hint>
    </hints>
   </connection>
