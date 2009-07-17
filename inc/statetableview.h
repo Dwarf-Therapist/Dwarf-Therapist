@@ -21,6 +21,9 @@ public:
 		void filter_dwarves(QString text);
 		void set_grid_size(int new_size);
 
+protected:
+	QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers);
+
 private:
 	UberDelegate *m_delegate;
 	RotatedHeader *m_header;

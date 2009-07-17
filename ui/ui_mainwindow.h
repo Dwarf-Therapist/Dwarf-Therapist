@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Wed Jul 15 19:51:04 2009
+** Created: Thu Jul 16 17:35:50 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -46,6 +46,9 @@ public:
     QAction *act_collapse_all;
     QAction *act_show_toolbutton_text;
     QAction *act_add_custom_Profession;
+    QAction *act_clear_pending_changes;
+    QAction *act_commit_pending_changes;
+    QAction *act_list_pending_changes;
     QWidget *main_widget;
     QVBoxLayout *verticalLayout_2;
     QTabWidget *tabWidget;
@@ -59,6 +62,8 @@ public:
     QLabel *lbl_group_by;
     QComboBox *cb_group_by;
     QSpacerItem *horizontalSpacer;
+    QLabel *lbl_pending_changes;
+    QLabel *label_2;
     StateTableView *stv;
     QWidget *tab_2;
     QMenuBar *menuBar;
@@ -120,6 +125,15 @@ public:
         act_show_toolbutton_text->setChecked(true);
         act_add_custom_Profession = new QAction(MainWindow);
         act_add_custom_Profession->setObjectName(QString::fromUtf8("act_add_custom_Profession"));
+        act_clear_pending_changes = new QAction(MainWindow);
+        act_clear_pending_changes->setObjectName(QString::fromUtf8("act_clear_pending_changes"));
+        act_clear_pending_changes->setEnabled(false);
+        act_commit_pending_changes = new QAction(MainWindow);
+        act_commit_pending_changes->setObjectName(QString::fromUtf8("act_commit_pending_changes"));
+        act_commit_pending_changes->setEnabled(false);
+        act_list_pending_changes = new QAction(MainWindow);
+        act_list_pending_changes->setObjectName(QString::fromUtf8("act_list_pending_changes"));
+        act_list_pending_changes->setEnabled(false);
         main_widget = new QWidget(MainWindow);
         main_widget->setObjectName(QString::fromUtf8("main_widget"));
         verticalLayout_2 = new QVBoxLayout(main_widget);
@@ -132,7 +146,7 @@ public:
         tab->setObjectName(QString::fromUtf8("tab"));
         verticalLayout = new QVBoxLayout(tab);
         verticalLayout->setSpacing(6);
-        verticalLayout->setMargin(6);
+        verticalLayout->setMargin(11);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setSpacing(6);
@@ -175,20 +189,36 @@ public:
 
         horizontalLayout_2->addItem(horizontalSpacer);
 
+        lbl_pending_changes = new QLabel(tab);
+        lbl_pending_changes->setObjectName(QString::fromUtf8("lbl_pending_changes"));
+
+        horizontalLayout_2->addWidget(lbl_pending_changes);
+
+        label_2 = new QLabel(tab);
+        label_2->setObjectName(QString::fromUtf8("label_2"));
+
+        horizontalLayout_2->addWidget(label_2);
+
 
         verticalLayout->addLayout(horizontalLayout_2);
 
         stv = new StateTableView(tab);
         stv->setObjectName(QString::fromUtf8("stv"));
+        QFont font;
+        font.setPointSize(8);
+        stv->setFont(font);
         stv->setMouseTracking(true);
         stv->setEditTriggers(QAbstractItemView::NoEditTriggers);
         stv->setTabKeyNavigation(true);
+        stv->setProperty("showDropIndicator", QVariant(false));
         stv->setAlternatingRowColors(false);
+        stv->setSelectionMode(QAbstractItemView::SingleSelection);
+        stv->setSelectionBehavior(QAbstractItemView::SelectRows);
         stv->setIndentation(12);
         stv->setUniformRowHeights(true);
-        stv->setSortingEnabled(true);
+        stv->setSortingEnabled(false);
         stv->setAnimated(false);
-        stv->setAllColumnsShowFocus(true);
+        stv->setAllColumnsShowFocus(false);
         stv->setHeaderHidden(false);
         stv->header()->setVisible(true);
         stv->header()->setDefaultSectionSize(16);
@@ -223,7 +253,7 @@ public:
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QString::fromUtf8("mainToolBar"));
         mainToolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-        MainWindow->addToolBar(Qt::BottomToolBarArea, mainToolBar);
+        MainWindow->addToolBar(Qt::LeftToolBarArea, mainToolBar);
         statusBar = new QStatusBar(MainWindow);
         statusBar->setObjectName(QString::fromUtf8("statusBar"));
         MainWindow->setStatusBar(statusBar);
@@ -248,9 +278,14 @@ public:
         menuOptions->addAction(act_show_toolbutton_text);
         mainToolBar->addAction(act_connect_to_DF);
         mainToolBar->addAction(act_read_dwarves);
+        mainToolBar->addAction(act_add_custom_Profession);
         mainToolBar->addSeparator();
         mainToolBar->addAction(act_expand_all);
         mainToolBar->addAction(act_collapse_all);
+        mainToolBar->addSeparator();
+        mainToolBar->addAction(act_clear_pending_changes);
+        mainToolBar->addAction(act_commit_pending_changes);
+        mainToolBar->addAction(act_list_pending_changes);
         mainToolBar->addSeparator();
         mainToolBar->addAction(act_exit);
 
@@ -322,14 +357,23 @@ public:
 #ifndef QT_NO_TOOLTIP
         act_expand_all->setToolTip(QApplication::translate("MainWindow", "Expand all groups", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
-        act_expand_all->setShortcut(QApplication::translate("MainWindow", "Shift+Right", 0, QApplication::UnicodeUTF8));
+        act_expand_all->setShortcut(QApplication::translate("MainWindow", "Ctrl+Right", 0, QApplication::UnicodeUTF8));
         act_collapse_all->setText(QApplication::translate("MainWindow", "Collapse All", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
         act_collapse_all->setToolTip(QApplication::translate("MainWindow", "Collapse all groups", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
-        act_collapse_all->setShortcut(QApplication::translate("MainWindow", "Shift+Left", 0, QApplication::UnicodeUTF8));
+        act_collapse_all->setShortcut(QApplication::translate("MainWindow", "Ctrl+Left", 0, QApplication::UnicodeUTF8));
         act_show_toolbutton_text->setText(QApplication::translate("MainWindow", "Show Toolbutton Text", 0, QApplication::UnicodeUTF8));
         act_add_custom_Profession->setText(QApplication::translate("MainWindow", "Add Custom Profession", 0, QApplication::UnicodeUTF8));
+        act_clear_pending_changes->setText(QApplication::translate("MainWindow", "Clear Pending Changes", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_TOOLTIP
+        act_clear_pending_changes->setToolTip(QApplication::translate("MainWindow", "Abort all uncomitted changes", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
+        act_commit_pending_changes->setText(QApplication::translate("MainWindow", "Commit Pending Changes", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_TOOLTIP
+        act_commit_pending_changes->setToolTip(QApplication::translate("MainWindow", "Write all uncomitted changes to DF", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
+        act_list_pending_changes->setText(QApplication::translate("MainWindow", "List Pending Changes", 0, QApplication::UnicodeUTF8));
         label->setText(QApplication::translate("MainWindow", "Filter Dwarves", 0, QApplication::UnicodeUTF8));
         btn_filter->setText(QApplication::translate("MainWindow", "Go", 0, QApplication::UnicodeUTF8));
         lbl_group_by->setText(QApplication::translate("MainWindow", "Group By", 0, QApplication::UnicodeUTF8));
@@ -343,6 +387,8 @@ public:
 #ifndef QT_NO_STATUSTIP
         cb_group_by->setStatusTip(QApplication::translate("MainWindow", "Change how dwarves are grouped in the table", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
+        lbl_pending_changes->setText(QApplication::translate("MainWindow", "0", 0, QApplication::UnicodeUTF8));
+        label_2->setText(QApplication::translate("MainWindow", "Pending Changes", 0, QApplication::UnicodeUTF8));
         tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("MainWindow", "Career Advisor", 0, QApplication::UnicodeUTF8));
         tabWidget->setTabText(tabWidget->indexOf(tab_2), QApplication::translate("MainWindow", "Page", 0, QApplication::UnicodeUTF8));
         menu_File->setTitle(QApplication::translate("MainWindow", "&File", 0, QApplication::UnicodeUTF8));

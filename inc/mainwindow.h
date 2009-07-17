@@ -7,6 +7,7 @@
 #include "dfinstance.h"
 
 class DwarfModel;
+class Dwarf;
 
 namespace Ui
 {
@@ -32,6 +33,8 @@ public:
 		void set_group_by(int);
 		void show_about();
 		void add_custom_profession();
+		void new_pending_changes(int);
+		void list_pending();
 
 private:
     Ui::MainWindow *ui;

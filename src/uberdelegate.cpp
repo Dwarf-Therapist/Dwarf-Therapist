@@ -1,5 +1,6 @@
 #include <QtGui>
 #include "dwarfmodel.h"
+#include "dwarf.h"
 #include "uberdelegate.h"
 
 UberDelegate::UberDelegate(QObject *parent)
@@ -19,23 +20,35 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 	} else {
 		QModelIndex first_col = model->index(idx.row(), 0, idx.parent());
 		if (model->hasChildren(first_col)) { // skill item (under a group header)
-			//QStyledItemDelegate::paint(p, opt, idx); // always lay the "base coat"
 			paint_aggregate(p, opt, idx);
 		} else {
 			paint_skill(p, opt, idx);
-			
 		}
+	}
+
+	if (opt.state & QStyle::State_HasFocus) {
+		p->save(); // border last
+		p->setBrush(Qt::NoBrush);
+		p->setPen(QPen(QColor(0xFF00FF), 2));
+		QRect r = opt.rect.adjusted(1, 1, -1 ,-1);
+		p->drawLine(r.topLeft(), r.bottomRight());
+		p->drawLine(r.topRight(), r.bottomLeft());
+		//p->drawRect(opt.rect.adjusted(0, 0, -1, -1));
+		p->restore();
 	}
 }
 
 void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
-	//const DwarfModel *m = dynamic_cast<const DwarfModel*>(idx.model());
-	//QStandardItem *item = m->itemFromIndex(idx);
-	
-	bool enabled = idx.data(DwarfModel::DR_ENABLED).toBool();
+	const DwarfModel *m = dynamic_cast<const DwarfModel*>(idx.model());
 	short rating = idx.data(DwarfModel::DR_RATING).toInt();
-	bool dirty = idx.data(DwarfModel::DR_DIRTY).toBool();
+	
+	Dwarf *d = m->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
+	Q_ASSERT(d);
+
 	bool skip_border = false;
+	int labor_id = idx.data(DwarfModel::DR_LABOR_ID).toInt();
+	bool enabled = d->is_labor_enabled(labor_id);
+	bool dirty = d->is_labor_state_dirty(labor_id);
 
 	if (enabled) {
 		p->save();
@@ -104,28 +117,35 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 	QModelIndex first_col = m->index(idx.row(), 0, idx.parent());
 	QStandardItem *item = m->itemFromIndex(first_col);
 
-	int enabled = idx.data(DwarfModel::DR_ENABLED).toInt();
-	bool dirty = idx.data(DwarfModel::DR_DIRTY).toBool();
-	int children = item->rowCount();
+	QString group_name = idx.data(DwarfModel::DR_GROUP_NAME).toString();
+	int labor_id = idx.data(DwarfModel::DR_LABOR_ID).toInt();
 
-	Q_ASSERT(children > 0);
+	int dirty_count = 0;
+	int enabled_count = 0;
+	const QMap<QString, QVector<Dwarf*>> *groups = m->get_dwarf_groups();
+	foreach(Dwarf *d, groups->value(group_name)) {
+		if (d->is_labor_enabled(labor_id))
+			enabled_count++;
+		if (d->is_labor_state_dirty(labor_id))
+			dirty_count++;
+	}
+	
 	QStyledItemDelegate::paint(p, opt, idx); // always lay the "base coat"
+	
 	p->save();
 	QRect adj = opt.rect.adjusted(1, 1, -1, 1);
-	if (enabled >= children) {
-		p->fillRect(adj, m_active_bg_color);
-	} else if (enabled > 0) {
-		p->fillRect(adj, QBrush(0xAAAAAA));
+	if (enabled_count == item->rowCount()) {
+		p->fillRect(adj, QBrush(0x99FF33));
+	} else if (enabled_count > 0) {
+		p->fillRect(adj, QBrush(0x999999));
 	} else {
 		p->fillRect(adj, QBrush(0xCCCCCC));
 	}
 	p->restore();
 
-	
-
 	p->save(); // border last
 	p->setBrush(Qt::NoBrush);
-	if (dirty) {
+	if (dirty_count) {
 		p->setPen(QPen(QColor(0xFF6600), 1));
 		p->drawRect(opt.rect.adjusted(0, 0, -1, -1));
 	} else {
@@ -133,11 +153,4 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 		p->drawRect(opt.rect);
 	}
 	p->restore();
-}
-
-QSize UberDelegate::sizeHint(const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
-	/*if (idx.row() == 0 && !idx.parent().isValid()) { //top row, unparented (MAIN HEADER)
-		return QSize(16, 100);
-	}*/
-	return QStyledItemDelegate::sizeHint(opt, idx);
 }

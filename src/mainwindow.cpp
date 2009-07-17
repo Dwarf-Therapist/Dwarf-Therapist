@@ -4,6 +4,7 @@
 #include "mainwindow.h"
 #include "ui_about.h"
 #include "ui_mainwindow.h"
+#include "ui_pendingchanges.h"
 #include "dwarfmodel.h"
 #include "statetableview.h"
 #include "uberdelegate.h"
@@ -20,6 +21,10 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 	ui->stv->setModel(m_model);
+	connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
+	connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
+	connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
+	connect(ui->act_list_pending_changes, SIGNAL(triggered()), this, SLOT(list_pending()));
 
 	m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "UDP Software", "Dwarf Therapist", this);
 
@@ -110,8 +115,7 @@ void MainWindow::connect_to_df() {
 void MainWindow::read_dwarves() {
 	m_model->set_instance(m_df);
 	m_model->load_dwarves();
-	ui->stv->setModel(m_model);
-	connect(ui->stv, SIGNAL(clicked(const QModelIndex&)), m_model, SLOT(labor_clicked(const QModelIndex&)));
+	//ui->stv->setModel(m_model);
 }
 
 void MainWindow::set_interface_enabled(bool enabled) {
@@ -173,4 +177,33 @@ void MainWindow::add_custom_profession() {
 		qDebug() << "new profession accepted!";
 	else
 		qDebug() << "cancelled new profession";
+}
+
+void MainWindow::new_pending_changes(int cnt) {
+	ui->lbl_pending_changes->setNum(cnt);
+	ui->act_clear_pending_changes->setEnabled(cnt > 0);
+	ui->act_commit_pending_changes->setEnabled(cnt > 0);
+	ui->act_list_pending_changes->setEnabled(cnt > 0);
+}
+
+void MainWindow::list_pending() {
+	QDialog *dialog = new QDialog(this);
+	Ui::PendingChanges pc;
+	pc.setupUi(dialog);
+
+	foreach(Dwarf *d, m_model->get_dirty_dwarves()) {
+		foreach(int labor_id, d->get_dirty_labors()) {
+			QString text = d->nice_name();
+			text += " " + GameDataReader::ptr()->get_string_for_key(QString("labor_names/%1").arg(labor_id));
+			if (d->is_labor_enabled(labor_id)) {
+				text += " TURN ON";
+			} else {
+				text += " TURN OFF";
+			}
+			QListWidgetItem *i = new QListWidgetItem(text, pc.list_pending);
+			pc.list_pending->addItem(i);
+		}
+	}
+	dialog->raise();
+	dialog->show();
 }

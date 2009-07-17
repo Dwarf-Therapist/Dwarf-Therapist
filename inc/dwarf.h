@@ -22,9 +22,14 @@ public:
 	QString nice_name();
 	QString to_string();
 	QVector<Skill> *get_skills() {return &m_skills;}
-	bool is_labor_enabled(int labor_id) {return (char)m_labors[labor_id] > 0;}
+	QVector<int> get_dirty_labors(); // returns labor ids
+	bool is_labor_enabled(int labor_id) {return (char)m_pending_labors[labor_id] > 0;}
+	bool is_labor_state_dirty(int labor_id) {return (char)m_labors[labor_id] != (char)m_pending_labors[labor_id];}
+	void set_labor(int labor_id, bool enabled);
 	bool toggle_labor(int labor_id);
 	short get_rating_for_skill(int labor_id);
+	int pending_changes();
+	void clear_pending();
 
 private:
 	DFInstance *m_df;
@@ -46,6 +51,7 @@ private:
 	int m_toughness;
     QVector<Skill> m_skills;
 	uchar *m_labors;
+	uchar *m_pending_labors;
 	
 };
 

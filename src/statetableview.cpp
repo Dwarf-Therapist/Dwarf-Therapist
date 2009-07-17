@@ -26,6 +26,70 @@ void StateTableView::setModel(QAbstractItemModel *model) {
 	QTreeView::setModel(model);
 	setColumnWidth(0, 200);
 	m_header->set_model(qobject_cast<DwarfModel*>(model));
+	disconnect(this, SIGNAL(activated(const QModelIndex&)));
+	connect(this, SIGNAL(activated(const QModelIndex&)), 
+			model, SLOT(labor_clicked(const QModelIndex&)));
+	//connect(this, SIGNAL(clicked(const QModelIndex&)), 
+	//		model, SLOT(labor_clicked(const QModelIndex&)));
+}
+
+QModelIndex StateTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) {
+	QModelIndex cur = currentIndex();
+	QModelIndex cur_parent = currentIndex().parent();
+	QModelIndex new_parent = cur_parent;
+	
+
+	int row = cur.row();
+	int col = cur.column();
+	int mod = 1;
+	if (Qt::ShiftModifier & modifiers)
+		mod = 10;
+	
+	switch(cursorAction) {
+		case MoveUp: // cursor moving up
+			row -= mod;
+			if (cur_parent.isValid()) { // this is a skill item
+				if (row < 0) { // top of the subskills for a group
+					row = cur_parent.row();
+					new_parent = QModelIndex();
+				}
+			} else { // this is a group item
+				if (row <= 0) // TODO: make this an option wrap-around on scrolling
+					return cur;
+				QModelIndex up_model = cur.sibling(row, 0); // see if there is a group above this one
+				if (model()->hasChildren(up_model)) { // does it have kids?
+					row = model()->rowCount(up_model) - 1; // set it to the last kid
+					new_parent = up_model;
+				}
+			}
+			break;
+		case MoveDown:
+			row += mod;
+			if (cur_parent.isValid()) { // this is a skill item
+				if (row > model()->rowCount(cur_parent) - 1) { // bottom of the subskills for a group
+					if (cur_parent.row() < model()->rowCount()) {
+						row = cur_parent.row() + 1;
+						new_parent = QModelIndex();
+					} else {
+						return cur;
+					}
+				}
+			} else { // this is a group item
+				if (row > model()->rowCount(cur_parent) - 1) // TODO: make this an option wrap-around on scrolling
+					return cur;
+				row = 0; // set it to the first kid
+				new_parent = model()->index(cur.row(), 0);
+			}
+			break;
+		case MoveRight:
+			col += mod;
+			break;
+		case MoveLeft:
+			col -= mod;
+			break;
+	}
+
+	return model()->index(row, col, new_parent);
 }
 
 void StateTableView::set_grid_size(int new_size) {

@@ -9,6 +9,7 @@ Dwarf::Dwarf(DFInstance *df, int address, QObject *parent)
 	, m_df(df)
 	, m_address(address)
 	, m_labors(new uchar[102])
+	, m_pending_labors(new uchar[102])
 {
 	refresh_data();
 }
@@ -36,6 +37,7 @@ void Dwarf::refresh_data() {
 
 Dwarf::~Dwarf() {
 	delete[] m_labors;
+	delete[] m_pending_labors;
 }
 
 Dwarf *Dwarf::get_dwarf(DFInstance *df, int address) {
@@ -68,11 +70,10 @@ QString Dwarf::nice_name() {
 }
 
 QString Dwarf::read_last_name(int address) {
-    // TODO: move to config
 	GameDataReader *gdr = GameDataReader::ptr();
     int word_table = gdr->get_offset("word_table");
     uint bytes_read = 0;
-    int actual_lang_table = m_df->read_int32(gdr->get_address("language_vector") + m_df->get_memory_correction() + 4, bytes_read);
+    //int actual_lang_table = m_df->read_int32(gdr->get_address("language_vector") + m_df->get_memory_correction() + 4, bytes_read);
     int translations_ptr = m_df->read_int32(gdr->get_address("translation_vector") + m_df->get_memory_correction() + 4, bytes_read);
     int translation_ptr = m_df->read_int32(translations_ptr, bytes_read);
     int actual_dwarf_translation_table = m_df->read_int32(translation_ptr + word_table, bytes_read);
@@ -98,14 +99,6 @@ QVector<Skill> Dwarf::read_skills(int address) {
     QVector<Skill> skills(0);
     uint bytes_read = 0;
 	foreach(int addr, m_df->enumerate_vector(address)) {
-		/*uchar buff[6];
-		memset(buff, 0, 90);
-		bytes_read = m_df->read_raw(addr-30, 60, &buff[0]);
-		//short btype = buff[0] + (buff[1] << 8);
-		short bexp = (short)((int)(buff[9] << 8) + (int)buff[8]);
-		//short brat = buff[4] + (buff[5] << 8);
-		*/
-
         short type = m_df->read_short(addr, bytes_read);
         short experience = m_df->read_short(addr + 2, bytes_read);
         short rating = m_df->read_short(addr + 4, bytes_read);
@@ -144,17 +137,39 @@ void Dwarf::read_labors(int address) {
 	//memset(buf, 0, 400);
 	//int bytes_read = m_df->read_raw(address, 102, &buf);
 	memset(m_labors, 0, 102);
-	int bytes_read = m_df->read_raw(address, 102, m_labors);
+	memset(m_pending_labors, 0, 102);
+	m_df->read_raw(address, 102, m_labors);
+	m_df->read_raw(address, 102, m_pending_labors);
+}
+
+QVector<int> Dwarf::get_dirty_labors() {
+	QVector<int> labors;
+	for (int i = 0; i < 102; ++i) {
+		if (is_labor_state_dirty(i))
+			labors.append(i);
+	}
+	return labors;
 }
 
 bool Dwarf::toggle_labor(int labor_id) {
-	if (m_labors[labor_id]) {
-		m_labors[labor_id] = 0;
-	} else {
-		m_labors[labor_id] = 1;
-	}
+	m_pending_labors[labor_id] = m_pending_labors[labor_id] ? 0 : 1;
 	//TODO: if "write_immediate"
+	/*
 	GameDataReader *gdr = GameDataReader::ptr();
 	int bytes_written = m_df->write_raw(m_address + gdr->get_dwarf_offset("labors"), 102, m_labors);
 	return bytes_written == 102;
+	*/
+	return true;
+}
+
+void Dwarf::set_labor(int labor_id, bool enabled) {
+	m_pending_labors[labor_id] = enabled ? 1 : 0;
+}
+
+int Dwarf::pending_changes() {
+	return get_dirty_labors().size();
+}
+
+void Dwarf::clear_pending() {
+	memcpy(m_pending_labors, m_labors, 102);
 }

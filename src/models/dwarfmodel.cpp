@@ -86,9 +86,11 @@ void DwarfModel::build_rows() {
 
 				QStandardItem *item = new QStandardItem();
 				item->setText(0);
-				item->setData(0, DR_ENABLED);
+				item->setData(true, DR_IS_AGGREGATE);
 				item->setData(labor_id, DR_LABOR_ID);
+				item->setData(key, DR_GROUP_NAME);
 				item->setData(false, DR_DIRTY);
+				item->setData(0, DR_DUMMY);
 				root_row << item;
 			}
 		}
@@ -110,26 +112,20 @@ void DwarfModel::build_rows() {
 				int labor_id = l[0].toInt();
 				QString labor_name = l[1];
 				short rating = d->get_rating_for_skill(labor_id);
-				bool enabled = d->is_labor_enabled(labor_id);
+				//bool enabled = d->is_labor_enabled(labor_id);
 
 				QStandardItem *item = new QStandardItem();
 				
-				item->setData(rating, DR_RATING);
-				item->setData(enabled, DR_ENABLED);
+				item->setData(false, DR_IS_AGGREGATE);
+				item->setData(rating, DR_RATING); // for sort order
 				item->setData(labor_id, DR_LABOR_ID);
-				item->setData(d->id(), DR_ID);
 				item->setData(false, DR_DIRTY);
+				item->setData(d->id(), DR_ID);
+				item->setData(0, DR_DUMMY);
 
 				item->setToolTip(QString("<h3>%2</h3><h4>%3</h4>%1").arg(d->nice_name()).arg(labor_name).arg(QString::number(rating)));
 				item->setStatusTip(labor_name + " :: " + d->nice_name());
 				items << item;
-
-				if (m_group_by != GB_NOTHING && enabled) {
-					// update our aggregate column
-					int offset = items.size() - 1;
-					int cnt = root_row[offset]->data(DR_ENABLED).toInt();
-					root_row[offset]->setData(cnt + 1, DR_ENABLED);
-				}
 			}
 			if (root) {
 				root->appendRow(items);
@@ -144,37 +140,49 @@ void DwarfModel::build_rows() {
 }
 
 void DwarfModel::labor_clicked(const QModelIndex &idx) {
-	QModelIndex first_col = index(idx.row(), 0, idx.parent());
-	if (hasChildren(first_col)) {
-		// aggregate!
-		QStandardItem *root = itemFromIndex(first_col);
-		root->setData(true, DR_DIRTY);
-		for (int i = 0; i < root->rowCount(); ++i) {
-			QModelIndex child = index(i, idx.column(), first_col);
-			setData(child, true, DR_DIRTY);
-			int enabled = root->data(DR_ENABLED).toInt();
-			if (enabled > 0 && enabled < root->rowCount()) {
-				setData(child, true, DR_ENABLED);
-			} else {
-				setData(child, false, DR_ENABLED);
-			}
-			
-		}
-	} else {
-		setData(idx, !data(idx, DR_DIRTY).toBool(), DR_DIRTY);
-		setData(idx, !data(idx, DR_ENABLED).toBool(), DR_ENABLED);
-	}
-	return;
-	
-
-
+	bool is_aggregate = idx.data(DR_IS_AGGREGATE).toBool();
+	int labor_id = idx.data(DR_LABOR_ID).toInt();
 	int dwarf_id = idx.data(DR_ID).toInt();
-	if (!dwarf_id) {
-		return;
+	if (is_aggregate) {
+		QModelIndex first_col = idx.sibling(idx.row(), 0);
+		// first find out how many are enabled...
+		int enabled_count = 0;
+		QString group_name = idx.data(DwarfModel::DR_GROUP_NAME).toString();
+		int children = rowCount(first_col);
+
+		foreach(Dwarf *d, m_grouped_dwarves.value(group_name)) {
+			if (d->is_labor_enabled(labor_id))
+				enabled_count++;
+		}
+
+		// if none or some are enabled, enable all of them
+		bool enabled = (enabled_count < children);
+		foreach(Dwarf *d, m_grouped_dwarves.value(group_name)) {
+			d->set_labor(labor_id, enabled);
+		}
+
+		// tell the view what we touched...
+		setData(idx, idx.data(DR_DUMMY).toInt()+1, DR_DUMMY); // redraw the aggregate...
+		for(int i = 0; i < rowCount(first_col); ++i) {
+			QModelIndex tmp_index = index(i, idx.column(), first_col);
+			setData(tmp_index, tmp_index.data(DR_DUMMY).toInt()+1, DR_DUMMY);
+		}
+		/*
+		BRUTE FORCE (seems slower than calling setData on a lot of places and letting
+		the base class emit the change signal)
+
+		QModelIndex top_left = index(0, idx.column(), first_col);
+		QModelIndex bottom_right = index(rowCount(first_col)-1, idx.column(), first_col);
+		emit dataChanged(top_left, bottom_right);*/
+	} else {
+		QModelIndex aggregate_col = index(idx.parent().row(), idx.column());
+		if (aggregate_col.isValid())
+			setData(aggregate_col, aggregate_col.data(DR_DUMMY).toInt()+1, DR_DUMMY); // redraw the aggregate...
+		setData(idx, idx.data(DR_DUMMY).toInt()+1, DR_DUMMY); // redraw the aggregate...
+		m_dwarves[dwarf_id]->toggle_labor(labor_id);
 	}
-	m_dwarves[dwarf_id]->toggle_labor(idx.data(DR_LABOR_ID).toInt());
-	setData(idx, !idx.data(DR_ENABLED).toBool(), DR_ENABLED);
-	qDebug() << "toggling" << idx.data(DR_LABOR_ID).toInt() << "for dwarf:" << idx.data(DR_ID).toInt();
+	calculate_pending();
+	//qDebug() << "toggling" << labor_id << "for dwarf:" << dwarf_id;
 }
 
 void DwarfModel::set_group_by(int group_by) {
@@ -182,4 +190,36 @@ void DwarfModel::set_group_by(int group_by) {
 	m_group_by = static_cast<GROUP_BY>(group_by);
 	if (m_df)
 		load_dwarves();
+}
+
+void DwarfModel::calculate_pending() {
+	int changes = 0;
+	foreach(Dwarf *d, m_dwarves) {
+		changes += d->pending_changes();
+	}
+	emit new_pending_changes(changes);
+}
+
+void DwarfModel::clear_pending() {
+	foreach(Dwarf *d, m_dwarves) {
+		if (d->pending_changes()) {
+			d->clear_pending();
+		}
+	}
+	emit reset();
+	emit new_pending_changes(0);
+}
+
+void DwarfModel::commit_pending() {
+	int y = 0;
+	int x = 1 / y;
+}
+
+QVector<Dwarf*> DwarfModel::get_dirty_dwarves() {
+	QVector<Dwarf*> dwarves;
+	foreach(Dwarf *d, m_dwarves) {
+		if (d->pending_changes())
+			dwarves.append(d);
+	}
+	return dwarves;
 }
