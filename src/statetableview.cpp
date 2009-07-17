@@ -29,8 +29,8 @@ void StateTableView::setModel(QAbstractItemModel *model) {
 	disconnect(this, SIGNAL(activated(const QModelIndex&)));
 	connect(this, SIGNAL(activated(const QModelIndex&)), 
 			model, SLOT(labor_clicked(const QModelIndex&)));
-	//connect(this, SIGNAL(clicked(const QModelIndex&)), 
-	//		model, SLOT(labor_clicked(const QModelIndex&)));
+	connect(this, SIGNAL(clicked(const QModelIndex&)), 
+			model, SLOT(labor_clicked(const QModelIndex&)));
 }
 
 QModelIndex StateTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) {
@@ -102,4 +102,14 @@ void StateTableView::set_grid_size(int new_size) {
 
 void StateTableView::filter_dwarves(QString text) {
 	// TODO: apply filtering to model
+}
+
+void StateTableView::jump_to_dwarf(QListWidgetItem* current, QListWidgetItem* previous) {
+	int dwarf_id = current->data(Qt::UserRole).toInt();
+	const DwarfModel *m = dynamic_cast<const DwarfModel*>(model());
+	Dwarf *d = m->get_dwarf_by_id(dwarf_id);
+	if (d && d->m_name_idx.isValid()) {
+		this->scrollTo(d->m_name_idx);
+		this->selectionModel()->select(QItemSelection(d->m_name_idx, d->m_name_idx), QItemSelectionModel::SelectCurrent);
+	}
 }

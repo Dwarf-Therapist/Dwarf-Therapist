@@ -1,8 +1,8 @@
 #ifndef DWARF_H
 #define DWARF_H
 
-#include <QObject>
-#include <QVector>
+#include <QtGui>
+
 #include "skill.h"
 
 class DFInstance;
@@ -30,6 +30,8 @@ public:
 	short get_rating_for_skill(int labor_id);
 	int pending_changes();
 	void clear_pending();
+
+	QModelIndex m_name_idx;
 
 private:
 	DFInstance *m_df;

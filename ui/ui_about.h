@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'about.ui'
 **
-** Created: Thu Jul 16 16:04:27 2009
+** Created: Thu Jul 16 20:31:26 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -30,8 +30,8 @@ class Ui_form_about
 public:
     QVBoxLayout *verticalLayout;
     QFrame *frame_2;
-    QVBoxLayout *verticalLayout_3;
     QLabel *label;
+    QLabel *label_4;
     QFrame *frame;
     QVBoxLayout *verticalLayout_2;
     QLabel *label_3;
@@ -44,7 +44,7 @@ public:
     {
         if (form_about->objectName().isEmpty())
             form_about->setObjectName(QString::fromUtf8("form_about"));
-        form_about->resize(483, 256);
+        form_about->resize(491, 259);
         verticalLayout = new QVBoxLayout(form_about);
         verticalLayout->setSpacing(0);
         verticalLayout->setMargin(0);
@@ -53,18 +53,19 @@ public:
         frame_2->setObjectName(QString::fromUtf8("frame_2"));
         frame_2->setFrameShape(QFrame::StyledPanel);
         frame_2->setFrameShadow(QFrame::Raised);
-        verticalLayout_3 = new QVBoxLayout(frame_2);
-        verticalLayout_3->setObjectName(QString::fromUtf8("verticalLayout_3"));
         label = new QLabel(frame_2);
         label->setObjectName(QString::fromUtf8("label"));
+        label->setGeometry(QRect(130, 10, 201, 41));
         QFont font;
         font.setFamily(QString::fromUtf8("Segoe UI"));
         font.setPointSize(22);
         label->setFont(font);
         label->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
-
-        verticalLayout_3->addWidget(label);
-
+        label_4 = new QLabel(frame_2);
+        label_4->setObjectName(QString::fromUtf8("label_4"));
+        label_4->setGeometry(QRect(-10, -10, 131, 161));
+        label_4->setPixmap(QPixmap(QString::fromUtf8(":/img/dwarf.jpg")));
+        label_4->setScaledContents(true);
 
         verticalLayout->addWidget(frame_2);
 
@@ -117,9 +118,11 @@ public:
         frame_2->setStyleSheet(QApplication::translate("form_about", "background-color: white;", 0, QApplication::UnicodeUTF8));
         label->setStyleSheet(QString());
         label->setText(QApplication::translate("form_about", "Dwarf Therapist", 0, QApplication::UnicodeUTF8));
+        label_4->setText(QString());
         frame->setStyleSheet(QApplication::translate("form_about", "background-color: #dddddd;", 0, QApplication::UnicodeUTF8));
         label_3->setText(QApplication::translate("form_about", "Copyright &copy; 2009 Trey Stout.\n"
-"Made Possible from <a href=\"blah.org\">blah</a>", 0, QApplication::UnicodeUTF8));
+"\n"
+"<a href=\"http://udpviper.com/forums\">UDP Viper</a>", 0, QApplication::UnicodeUTF8));
         label_2->setText(QApplication::translate("form_about", "Up to date/Update Available etc...", 0, QApplication::UnicodeUTF8));
         pushButton->setText(QApplication::translate("form_about", "OK", 0, QApplication::UnicodeUTF8));
         Q_UNUSED(form_about);

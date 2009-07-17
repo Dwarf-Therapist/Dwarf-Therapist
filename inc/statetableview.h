@@ -20,6 +20,7 @@ public:
 	public slots:
 		void filter_dwarves(QString text);
 		void set_grid_size(int new_size);
+		void jump_to_dwarf(QListWidgetItem* current, QListWidgetItem* previous);
 
 protected:
 	QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers);

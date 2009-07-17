@@ -132,6 +132,7 @@ void DwarfModel::build_rows() {
 			} else {
 				appendRow(items);
 			}
+			d->m_name_idx = indexFromItem(i_name);
 		}
 		if (root) {
 			appendRow(root_row);
@@ -140,6 +141,8 @@ void DwarfModel::build_rows() {
 }
 
 void DwarfModel::labor_clicked(const QModelIndex &idx) {
+	if (idx.column() == 0)
+		return; // don't mess with the names
 	bool is_aggregate = idx.data(DR_IS_AGGREGATE).toBool();
 	int labor_id = idx.data(DR_LABOR_ID).toInt();
 	int dwarf_id = idx.data(DR_ID).toInt();

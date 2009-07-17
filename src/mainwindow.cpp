@@ -184,26 +184,23 @@ void MainWindow::new_pending_changes(int cnt) {
 	ui->act_clear_pending_changes->setEnabled(cnt > 0);
 	ui->act_commit_pending_changes->setEnabled(cnt > 0);
 	ui->act_list_pending_changes->setEnabled(cnt > 0);
+	list_pending();
 }
 
 void MainWindow::list_pending() {
-	QDialog *dialog = new QDialog(this);
-	Ui::PendingChanges pc;
-	pc.setupUi(dialog);
-
+	ui->list_pending->clear();
 	foreach(Dwarf *d, m_model->get_dirty_dwarves()) {
 		foreach(int labor_id, d->get_dirty_labors()) {
 			QString text = d->nice_name();
 			text += " " + GameDataReader::ptr()->get_string_for_key(QString("labor_names/%1").arg(labor_id));
+			QListWidgetItem *i = new QListWidgetItem(text, ui->list_pending);
 			if (d->is_labor_enabled(labor_id)) {
-				text += " TURN ON";
+				i->setIcon(QIcon(":img/add.png"));
 			} else {
-				text += " TURN OFF";
+				i->setIcon(QIcon(":img/delete.png"));
 			}
-			QListWidgetItem *i = new QListWidgetItem(text, pc.list_pending);
-			pc.list_pending->addItem(i);
+			i->setData(Qt::UserRole, d->id());
+			ui->list_pending->addItem(i);
 		}
 	}
-	dialog->raise();
-	dialog->show();
 }
