@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Fri Jul 17 10:38:58 2009
+** Created: Fri Jul 17 12:15:30 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -53,6 +53,7 @@ public:
     QAction *act_show_pending_labors_window;
     QAction *act_show_custom_professions_window;
     QAction *act_show_main_toolbar;
+    QAction *act_options;
     QWidget *main_widget;
     QVBoxLayout *verticalLayout;
     QHBoxLayout *horizontalLayout;
@@ -69,7 +70,6 @@ public:
     QMenuBar *menuBar;
     QMenu *menu_File;
     QMenu *menu_Help;
-    QMenu *menuOptions;
     QMenu *menuProfessions;
     QMenu *menuWindows;
     QMenu *menuDocks;
@@ -168,6 +168,8 @@ public:
         act_show_main_toolbar = new QAction(MainWindow);
         act_show_main_toolbar->setObjectName(QString::fromUtf8("act_show_main_toolbar"));
         act_show_main_toolbar->setCheckable(false);
+        act_options = new QAction(MainWindow);
+        act_options->setObjectName(QString::fromUtf8("act_options"));
         main_widget = new QWidget(MainWindow);
         main_widget->setObjectName(QString::fromUtf8("main_widget"));
         verticalLayout = new QVBoxLayout(main_widget);
@@ -265,8 +267,6 @@ public:
         menu_Help = new QMenu(menuBar);
         menu_Help->setObjectName(QString::fromUtf8("menu_Help"));
         menu_Help->setTearOffEnabled(false);
-        menuOptions = new QMenu(menuBar);
-        menuOptions->setObjectName(QString::fromUtf8("menuOptions"));
         menuProfessions = new QMenu(menuBar);
         menuProfessions->setObjectName(QString::fromUtf8("menuProfessions"));
         menuWindows = new QMenu(menuBar);
@@ -339,9 +339,8 @@ public:
 
         menuBar->addAction(menu_File->menuAction());
         menuBar->addAction(menuProfessions->menuAction());
-        menuBar->addAction(menuOptions->menuAction());
-        menuBar->addAction(menu_Help->menuAction());
         menuBar->addAction(menuWindows->menuAction());
+        menuBar->addAction(menu_Help->menuAction());
         menu_File->addAction(act_connect_to_DF);
         menu_File->addAction(act_read_dwarves);
         menu_File->addAction(act_scan_memory);
@@ -350,11 +349,9 @@ public:
         menu_File->addAction(act_commit_pending_changes);
         menu_File->addAction(act_clear_pending_changes);
         menu_File->addSeparator();
+        menu_File->addAction(act_options);
         menu_File->addAction(act_exit);
         menu_Help->addAction(act_about);
-        menuOptions->addAction(action_apply_skill_changes_immedietly);
-        menuOptions->addAction(act_show_toolbutton_text);
-        menuOptions->addAction(act_show_pending_labors_window);
         menuProfessions->addAction(act_add_custom_profession);
         menuWindows->addAction(menuDocks->menuAction());
         menuWindows->addAction(act_show_main_toolbar);
@@ -393,6 +390,7 @@ public:
         QObject::connect(dock_custom_professions, SIGNAL(visibilityChanged(bool)), act_show_custom_professions_window, SLOT(setChecked(bool)));
         QObject::connect(act_show_custom_professions_window, SIGNAL(triggered(bool)), dock_custom_professions, SLOT(setVisible(bool)));
         QObject::connect(act_show_main_toolbar, SIGNAL(triggered()), main_toolbar, SLOT(show()));
+        QObject::connect(act_options, SIGNAL(triggered()), MainWindow, SLOT(open_options_menu()));
 
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi
@@ -466,6 +464,10 @@ public:
         act_show_pending_labors_window->setText(QApplication::translate("MainWindow", "Show Pending Labors Window", 0, QApplication::UnicodeUTF8));
         act_show_custom_professions_window->setText(QApplication::translate("MainWindow", "Show Custom Professions Window", 0, QApplication::UnicodeUTF8));
         act_show_main_toolbar->setText(QApplication::translate("MainWindow", "Show Main Toolbar", 0, QApplication::UnicodeUTF8));
+        act_options->setText(QApplication::translate("MainWindow", "Options...", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_TOOLTIP
+        act_options->setToolTip(QApplication::translate("MainWindow", "Open the options menu...", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
         label->setText(QApplication::translate("MainWindow", "Filter Dwarves", 0, QApplication::UnicodeUTF8));
         btn_filter->setText(QApplication::translate("MainWindow", "Go", 0, QApplication::UnicodeUTF8));
         lbl_group_by->setText(QApplication::translate("MainWindow", "Group By", 0, QApplication::UnicodeUTF8));
@@ -483,7 +485,6 @@ public:
         label_2->setText(QApplication::translate("MainWindow", "Pending Changes", 0, QApplication::UnicodeUTF8));
         menu_File->setTitle(QApplication::translate("MainWindow", "&File", 0, QApplication::UnicodeUTF8));
         menu_Help->setTitle(QApplication::translate("MainWindow", "&Help", 0, QApplication::UnicodeUTF8));
-        menuOptions->setTitle(QApplication::translate("MainWindow", "Options", 0, QApplication::UnicodeUTF8));
         menuProfessions->setTitle(QApplication::translate("MainWindow", "Professions", 0, QApplication::UnicodeUTF8));
         menuWindows->setTitle(QApplication::translate("MainWindow", "Windows", 0, QApplication::UnicodeUTF8));
         menuDocks->setTitle(QApplication::translate("MainWindow", "Docks", 0, QApplication::UnicodeUTF8));

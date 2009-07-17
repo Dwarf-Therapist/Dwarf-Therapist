@@ -38,6 +38,7 @@ DFInstance::DFInstance(DWORD pid, HWND hwnd, QObject* parent)
 	if (peb_addr == 0){
 		QMessageBox::critical(0, tr("Connection Error"), connection_error);
 		qCritical() << "PEB address came back as 0";
+		m_is_ok = false;
 	} else {
 		PEB peb;
 		DWORD bytes = 0;

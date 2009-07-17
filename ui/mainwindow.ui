@@ -199,6 +199,7 @@
     <addaction name="act_commit_pending_changes"/>
     <addaction name="act_clear_pending_changes"/>
     <addaction name="separator"/>
+    <addaction name="act_options"/>
     <addaction name="act_exit"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
@@ -209,14 +210,6 @@
      <string>&amp;Help</string>
     </property>
     <addaction name="act_about"/>
-   </widget>
-   <widget class="QMenu" name="menuOptions">
-    <property name="title">
-     <string>Options</string>
-    </property>
-    <addaction name="action_apply_skill_changes_immedietly"/>
-    <addaction name="act_show_toolbutton_text"/>
-    <addaction name="act_show_pending_labors_window"/>
    </widget>
    <widget class="QMenu" name="menuProfessions">
     <property name="title">
@@ -240,9 +233,8 @@
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuProfessions"/>
-   <addaction name="menuOptions"/>
-   <addaction name="menu_Help"/>
    <addaction name="menuWindows"/>
+   <addaction name="menu_Help"/>
   </widget>
   <widget class="QToolBar" name="main_toolbar">
    <property name="windowTitle">
@@ -553,6 +545,14 @@
    </property>
    <property name="text">
     <string>Show Main Toolbar</string>
+   </property>
+  </action>
+  <action name="act_options">
+   <property name="text">
+    <string>Options...</string>
+   </property>
+   <property name="toolTip">
+    <string>Open the options menu...</string>
    </property>
   </action>
  </widget>
@@ -880,6 +880,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_options</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>open_options_menu()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>388</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -890,5 +906,6 @@
   <slot>set_group_by(int)</slot>
   <slot>show_about()</slot>
   <slot>add_custom_profession()</slot>
+  <slot>open_options_menu()</slot>
  </slots>
 </ui>

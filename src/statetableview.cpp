@@ -6,6 +6,7 @@
 #include "dwarfmodel.h"
 #include "uberdelegate.h"
 #include "rotatedheader.h"
+#include "dwarf.h"
 
 StateTableView::StateTableView(QWidget *parent)
 	: QTreeView(parent)
@@ -118,6 +119,8 @@ void StateTableView::filter_dwarves(QString text) {
 }
 
 void StateTableView::jump_to_dwarf(QListWidgetItem* current, QListWidgetItem* previous) {
+	if (!current)
+		return;
 	int dwarf_id = current->data(Qt::UserRole).toInt();
 	const DwarfModel *m = dynamic_cast<const DwarfModel*>(model());
 	Dwarf *d = m->get_dwarf_by_id(dwarf_id);

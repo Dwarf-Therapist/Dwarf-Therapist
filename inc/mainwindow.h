@@ -4,10 +4,10 @@
 #include <QtCore>
 #include <QtGui>
 
-#include "dfinstance.h"
-
+class DFInstance;
 class DwarfModel;
 class Dwarf;
+class OptionsMenu;
 
 namespace Ui
 {
@@ -19,6 +19,14 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+	typedef enum {
+		CC_CURSOR,
+		CC_DIRTY_BORDER,
+		CC_ACTIVE_LABOR,
+		CC_ACTIVE_GROUP,
+		CC_PARTIAL_LABOR_GROUP
+	} CONFIGURABLE_COLORS;
+
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
@@ -35,6 +43,7 @@ public:
 		void add_custom_profession();
 		void new_pending_changes(int);
 		void list_pending();
+		void open_options_menu();
 
 private:
     Ui::MainWindow *ui;
@@ -42,6 +51,7 @@ private:
 	QLabel *m_lbl_status;
 	QSettings *m_settings;
 	DwarfModel *m_model;
+	OptionsMenu *m_options_menu;
 	bool m_reading_settings;
 
 	void closeEvent(QCloseEvent *evt); // override;
@@ -51,6 +61,7 @@ private:
 
     private slots:
         void set_interface_enabled(bool);
+		void color_changed(MainWindow::CONFIGURABLE_COLORS picker, const QColor &c);
 		
 };
 

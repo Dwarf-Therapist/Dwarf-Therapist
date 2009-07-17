@@ -5,14 +5,20 @@
 #include "ui_about.h"
 #include "ui_mainwindow.h"
 #include "ui_pendingchanges.h"
+#include "optionsmenu.h"
 #include "dwarfmodel.h"
+#include "dfinstance.h"
 #include "statetableview.h"
 #include "uberdelegate.h"
 #include "customprofession.h"
 
+#define COMPANY "UDP Software"
+#define PRODUCT "Dwarf Therapist"
+
 MainWindow::MainWindow(QWidget *parent)
     :QMainWindow(parent)
     ,ui(new Ui::MainWindow)
+	,m_options_menu(new OptionsMenu(this))
     ,m_df(0)
     ,m_lbl_status(0)
 	,m_settings(0)
@@ -26,7 +32,12 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
 	connect(ui->act_list_pending_changes, SIGNAL(triggered()), this, SLOT(list_pending()));
 
-	m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "UDP Software", "Dwarf Therapist", this);
+	connect(m_options_menu, 
+			SIGNAL(picker_changed(MainWindow::CONFIGURABLE_COLORS, const QColor&)),
+			this, 
+			SLOT(color_changed(MainWindow::CONFIGURABLE_COLORS, const QColor &)));
+
+	m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
 	m_lbl_status = new QLabel(tr("not connected"), statusBar());
 	statusBar()->addPermanentWidget(m_lbl_status, 0);
@@ -66,12 +77,17 @@ void MainWindow::read_settings() {
 	int group_by = m_settings->value("group_by", 0).toInt();
 	ui->cb_group_by->setCurrentIndex(group_by);
 	m_model->set_group_by(group_by);
+	m_settings->endGroup();
+
+
+	// options menu settings
+	m_options_menu->read_settings(m_settings);
 
 	// delegate active color
-	QColor c = m_settings->value("labors/active_bg_color", QColor(0xE0FFE0)).value<QColor>();
-	ui->stv->get_delegate()->set_active_bg_color(c);
+	//QColor c = m_settings->value("labors/active_bg_color", QColor(0xE0FFE0)).value<QColor>();
+	//ui->stv->get_delegate()->set_active_bg_color(c);
 
-	m_settings->endGroup();
+	
 	m_reading_settings = false;
 }
 
@@ -87,12 +103,15 @@ void MainWindow::write_settings() {
 		m_settings->setValue("show_toolbutton_text", ui->act_show_toolbutton_text->isChecked());
 		m_settings->setValue("group_by", m_model->current_grouping());
 		m_settings->endGroup();
+
+		// options menu settings
+		m_options_menu->write_settings(m_settings);
 	}
 }
 
 void MainWindow::closeEvent(QCloseEvent *evt) {
 	write_settings();
-	QWidget::closeEvent(evt);
+	evt->accept();
 }
 
 void MainWindow::connect_to_df() {
@@ -206,4 +225,21 @@ void MainWindow::list_pending() {
 			ui->list_pending->addItem(i);
 		}
 	}
+}
+
+void MainWindow::open_options_menu() {
+	m_options_menu->show();
+}
+
+void MainWindow::color_changed(MainWindow::CONFIGURABLE_COLORS picker, const QColor &c) {
+	UberDelegate *d = ui->stv->get_delegate();
+	switch (picker) {
+		case CC_CURSOR:			d->color_cursor = c;		break;
+		case CC_ACTIVE_LABOR:	d->color_active_labor = c;	break;
+		case CC_ACTIVE_GROUP:	d->color_active_group = c;	break;
+		case CC_DIRTY_BORDER:	d->color_dirty_border = c;	break;
+		default:
+			qWarning() << "some color changed and I don't know what it is.";
+	}
+	
 }

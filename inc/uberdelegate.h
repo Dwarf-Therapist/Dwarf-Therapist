@@ -12,9 +12,11 @@ public:
 	void paint_skill(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
 	void paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
 
-	void set_active_bg_color(QColor c) {m_active_bg_color = c;}
-private:
-	QColor m_active_bg_color;
+	QColor color_active_labor;
+	QColor color_active_group;
+	QColor color_dirty_border;
+	QColor color_cursor;
+	
 };
 
 #endif

@@ -29,7 +29,7 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 	if (opt.state & QStyle::State_HasFocus) {
 		p->save(); // border last
 		p->setBrush(Qt::NoBrush);
-		p->setPen(QPen(QColor(0xFF00FF), 2));
+		p->setPen(QPen(color_cursor, 2));
 		QRect r = opt.rect.adjusted(1, 1, -1 ,-1);
 		p->drawLine(r.topLeft(), r.bottomRight());
 		p->drawLine(r.topRight(), r.bottomLeft());
@@ -52,7 +52,7 @@ void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, con
 
 	if (enabled) {
 		p->save();
-		p->fillRect(opt.rect, QBrush(m_active_bg_color));
+		p->fillRect(opt.rect, QBrush(color_active_labor));
 		p->restore();
 	}
 	// draw rating
@@ -102,7 +102,7 @@ void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, con
 		p->save(); // border last
 		p->setBrush(Qt::NoBrush);
 		if (dirty) {
-			p->setPen(QPen(QColor(0xFF6600), 1));
+			p->setPen(QPen(QColor(color_dirty_border), 1));
 			p->drawRect(opt.rect.adjusted(0, 0, -1, -1));
 		} else {
 			p->setPen(QColor(0xd9d9d9));
@@ -135,7 +135,7 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 	p->save();
 	QRect adj = opt.rect.adjusted(1, 1, -1, 1);
 	if (enabled_count == item->rowCount()) {
-		p->fillRect(adj, QBrush(0x99FF33));
+		p->fillRect(adj, QBrush(color_active_group));
 	} else if (enabled_count > 0) {
 		p->fillRect(adj, QBrush(0x999999));
 	} else {
@@ -146,7 +146,7 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 	p->save(); // border last
 	p->setBrush(Qt::NoBrush);
 	if (dirty_count) {
-		p->setPen(QPen(QColor(0xFF6600), 1));
+		p->setPen(QPen(color_dirty_border, 1));
 		p->drawRect(opt.rect.adjusted(0, 0, -1, -1));
 	} else {
 		p->setPen(QColor(0xd9d9d9));
