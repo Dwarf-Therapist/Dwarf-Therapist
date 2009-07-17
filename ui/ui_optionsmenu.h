@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'optionsmenu.ui'
 **
-** Created: Fri Jul 17 14:56:26 2009
+** Created: Fri Jul 17 15:17:51 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -144,6 +144,7 @@ public:
 
         verticalLayout_3->addWidget(buttonBox);
 
+        verticalLayout_3->setStretch(1, 3);
 #ifndef QT_NO_SHORTCUT
         label->setBuddy(clr_active_labor);
         label_2->setBuddy(clr_dirty_border);
@@ -163,11 +164,47 @@ public:
         OptionsMenu->setWindowTitle(QApplication::translate("OptionsMenu", "Options", 0, QApplication::UnicodeUTF8));
         groupBox->setTitle(QApplication::translate("OptionsMenu", "Behavior", 0, QApplication::UnicodeUTF8));
         checkBox->setText(QApplication::translate("OptionsMenu", "Write Changes Immediately", 0, QApplication::UnicodeUTF8));
-        groupBox_2->setTitle(QApplication::translate("OptionsMenu", "Colors", 0, QApplication::UnicodeUTF8));
+        groupBox_2->setTitle(QApplication::translate("OptionsMenu", "Grid Colors", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_TOOLTIP
+        clr_active_labor->setToolTip(QApplication::translate("OptionsMenu", "Background color for an individual labor square when it is enabled", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
+#ifndef QT_NO_STATUSTIP
+        clr_active_labor->setStatusTip(QApplication::translate("OptionsMenu", "Background color for an individual labor square when it is enabled", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
+#ifndef QT_NO_WHATSTHIS
+        clr_active_labor->setWhatsThis(QApplication::translate("OptionsMenu", "Background color for an individual labor square when it is enabled", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_WHATSTHIS
         clr_active_labor->setText(QApplication::translate("OptionsMenu", "Black", 0, QApplication::UnicodeUTF8));
         label->setText(QApplication::translate("OptionsMenu", "Active Labor Background", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_TOOLTIP
+        clr_dirty_border->setToolTip(QApplication::translate("OptionsMenu", "Color of the border for labor squares that have not yet been written to the game", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
+#ifndef QT_NO_STATUSTIP
+        clr_dirty_border->setStatusTip(QApplication::translate("OptionsMenu", "Color of the border for labor squares that have not yet been written to the game", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
+#ifndef QT_NO_WHATSTHIS
+        clr_dirty_border->setWhatsThis(QApplication::translate("OptionsMenu", "Color of the border for labor squares that have not yet been written to the game", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_WHATSTHIS
         label_2->setText(QApplication::translate("OptionsMenu", "Dirty Border", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_TOOLTIP
+        clr_cursor->setToolTip(QApplication::translate("OptionsMenu", "Color of the \"X\" cursor on the grid", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
+#ifndef QT_NO_STATUSTIP
+        clr_cursor->setStatusTip(QApplication::translate("OptionsMenu", "Color of the \"X\" cursor on the grid", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
+#ifndef QT_NO_WHATSTHIS
+        clr_cursor->setWhatsThis(QApplication::translate("OptionsMenu", "Color of the \"X\" cursor on the grid", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_WHATSTHIS
         label_3->setText(QApplication::translate("OptionsMenu", "Cursor Color", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_TOOLTIP
+        clr_active_group->setToolTip(QApplication::translate("OptionsMenu", "Only used with \"group by\". The background color of a group of labors, if all members have this labor active.", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
+#ifndef QT_NO_STATUSTIP
+        clr_active_group->setStatusTip(QApplication::translate("OptionsMenu", "Only used with \"group by\". The background color of a group of labors, if all members have this labor active.", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
+#ifndef QT_NO_WHATSTHIS
+        clr_active_group->setWhatsThis(QApplication::translate("OptionsMenu", "Only used with \"group by\". The background color of a group of labors, if all members have this labor active.", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_WHATSTHIS
         label_4->setText(QApplication::translate("OptionsMenu", "Active Group", 0, QApplication::UnicodeUTF8));
         Q_UNUSED(OptionsMenu);
     } // retranslateUi

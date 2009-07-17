@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Options</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3">
+  <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,3,0">
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
@@ -33,13 +33,22 @@
    <item>
     <widget class="QGroupBox" name="groupBox_2">
      <property name="title">
-      <string>Colors</string>
+      <string>Grid Colors</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QtColorPicker" name="clr_active_labor">
+          <property name="toolTip">
+           <string>Background color for an individual labor square when it is enabled</string>
+          </property>
+          <property name="statusTip">
+           <string>Background color for an individual labor square when it is enabled</string>
+          </property>
+          <property name="whatsThis">
+           <string>Background color for an individual labor square when it is enabled</string>
+          </property>
           <property name="text">
            <string>Black</string>
           </property>
@@ -66,7 +75,17 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QtColorPicker" name="clr_dirty_border"/>
+         <widget class="QtColorPicker" name="clr_dirty_border">
+          <property name="toolTip">
+           <string>Color of the border for labor squares that have not yet been written to the game</string>
+          </property>
+          <property name="statusTip">
+           <string>Color of the border for labor squares that have not yet been written to the game</string>
+          </property>
+          <property name="whatsThis">
+           <string>Color of the border for labor squares that have not yet been written to the game</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="label_2">
@@ -83,7 +102,17 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
-         <widget class="QtColorPicker" name="clr_cursor"/>
+         <widget class="QtColorPicker" name="clr_cursor">
+          <property name="toolTip">
+           <string>Color of the &quot;X&quot; cursor on the grid</string>
+          </property>
+          <property name="statusTip">
+           <string>Color of the &quot;X&quot; cursor on the grid</string>
+          </property>
+          <property name="whatsThis">
+           <string>Color of the &quot;X&quot; cursor on the grid</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="label_3">
@@ -100,7 +129,17 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
-         <widget class="QtColorPicker" name="clr_active_group"/>
+         <widget class="QtColorPicker" name="clr_active_group">
+          <property name="toolTip">
+           <string>Only used with &quot;group by&quot;. The background color of a group of labors, if all members have this labor active.</string>
+          </property>
+          <property name="statusTip">
+           <string>Only used with &quot;group by&quot;. The background color of a group of labors, if all members have this labor active.</string>
+          </property>
+          <property name="whatsThis">
+           <string>Only used with &quot;group by&quot;. The background color of a group of labors, if all members have this labor active.</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="label_4">

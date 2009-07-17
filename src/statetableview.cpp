@@ -118,10 +118,10 @@ void StateTableView::filter_dwarves(QString text) {
 	// TODO: apply filtering to model
 }
 
-void StateTableView::jump_to_dwarf(QListWidgetItem* current, QListWidgetItem* previous) {
+void StateTableView::jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* previous) {
 	if (!current)
 		return;
-	int dwarf_id = current->data(Qt::UserRole).toInt();
+	int dwarf_id = current->data(0, Qt::UserRole).toInt();
 	const DwarfModel *m = dynamic_cast<const DwarfModel*>(model());
 	Dwarf *d = m->get_dwarf_by_id(dwarf_id);
 	if (d && d->m_name_idx.isValid()) {

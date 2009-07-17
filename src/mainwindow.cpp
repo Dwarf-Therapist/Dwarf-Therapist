@@ -210,21 +210,26 @@ void MainWindow::new_pending_changes(int cnt) {
 }
 
 void MainWindow::list_pending() {
-	ui->list_pending->clear();
+	ui->tree_pending->clear();
 	foreach(Dwarf *d, m_model->get_dirty_dwarves()) {
-		foreach(int labor_id, d->get_dirty_labors()) {
-			QString text = d->nice_name();
-			text += " " + GameDataReader::ptr()->get_string_for_key(QString("labor_names/%1").arg(labor_id));
-			QListWidgetItem *i = new QListWidgetItem(text, ui->list_pending);
+		QVector<int> labors = d->get_dirty_labors();
+		QTreeWidgetItem *d_item = new QTreeWidgetItem(ui->tree_pending);
+		d_item->setText(0, d->nice_name() + "(" + QString::number(labors.size()) + ")");
+		d_item->setData(0, Qt::UserRole, d->id());
+		foreach(int labor_id, labors) {
+			QString labor_name = GameDataReader::ptr()->get_string_for_key(QString("labor_names/%1").arg(labor_id));
+			QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
+			i->setText(0, labor_name);
 			if (d->is_labor_enabled(labor_id)) {
-				i->setIcon(QIcon(":img/add.png"));
+				i->setIcon(0, QIcon(":img/add.png"));
 			} else {
-				i->setIcon(QIcon(":img/delete.png"));
+				i->setIcon(0, QIcon(":img/delete.png"));
 			}
-			i->setData(Qt::UserRole, d->id());
-			ui->list_pending->addItem(i);
+			i->setData(0, Qt::UserRole, d->id());
+			//ui->list_pending->addItem(i);
 		}
 	}
+	ui->tree_pending->expandAll();
 }
 
 void MainWindow::open_options_menu() {

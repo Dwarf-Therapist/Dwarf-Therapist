@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Fri Jul 17 12:15:30 2009
+** Created: Fri Jul 17 15:39:23 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -28,6 +28,7 @@
 #include <QtGui/QSpacerItem>
 #include <QtGui/QStatusBar>
 #include <QtGui/QToolBar>
+#include <QtGui/QTreeWidget>
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QWidget>
 #include "statetableview.h"
@@ -78,7 +79,10 @@ public:
     QDockWidget *dock_pending_jobs_list;
     QWidget *dockWidgetContents;
     QVBoxLayout *verticalLayout_2;
-    QListWidget *list_pending;
+    QTreeWidget *tree_pending;
+    QHBoxLayout *horizontalLayout_4;
+    QPushButton *btn_expand_all_pending;
+    QPushButton *btn_collapse_all_pending;
     QHBoxLayout *horizontalLayout_3;
     QPushButton *btn_commit;
     QPushButton *btn_clear;
@@ -289,10 +293,34 @@ public:
         verticalLayout_2->setSpacing(6);
         verticalLayout_2->setMargin(11);
         verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
-        list_pending = new QListWidget(dockWidgetContents);
-        list_pending->setObjectName(QString::fromUtf8("list_pending"));
+        tree_pending = new QTreeWidget(dockWidgetContents);
+        tree_pending->setObjectName(QString::fromUtf8("tree_pending"));
+        tree_pending->setFont(font);
+        tree_pending->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        tree_pending->setAlternatingRowColors(true);
+        tree_pending->setUniformRowHeights(true);
+        tree_pending->setSortingEnabled(true);
+        tree_pending->setAllColumnsShowFocus(true);
 
-        verticalLayout_2->addWidget(list_pending);
+        verticalLayout_2->addWidget(tree_pending);
+
+        horizontalLayout_4 = new QHBoxLayout();
+        horizontalLayout_4->setSpacing(6);
+        horizontalLayout_4->setObjectName(QString::fromUtf8("horizontalLayout_4"));
+        btn_expand_all_pending = new QPushButton(dockWidgetContents);
+        btn_expand_all_pending->setObjectName(QString::fromUtf8("btn_expand_all_pending"));
+        btn_expand_all_pending->setIcon(icon5);
+
+        horizontalLayout_4->addWidget(btn_expand_all_pending);
+
+        btn_collapse_all_pending = new QPushButton(dockWidgetContents);
+        btn_collapse_all_pending->setObjectName(QString::fromUtf8("btn_collapse_all_pending"));
+        btn_collapse_all_pending->setIcon(icon6);
+
+        horizontalLayout_4->addWidget(btn_collapse_all_pending);
+
+
+        verticalLayout_2->addLayout(horizontalLayout_4);
 
         horizontalLayout_3 = new QHBoxLayout();
         horizontalLayout_3->setSpacing(6);
@@ -384,13 +412,15 @@ public:
         QObject::connect(act_add_custom_profession, SIGNAL(triggered()), MainWindow, SLOT(add_custom_profession()));
         QObject::connect(act_show_pending_labors_window, SIGNAL(triggered(bool)), dock_pending_jobs_list, SLOT(setVisible(bool)));
         QObject::connect(dock_pending_jobs_list, SIGNAL(visibilityChanged(bool)), act_show_pending_labors_window, SLOT(setChecked(bool)));
-        QObject::connect(list_pending, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), stv, SLOT(jump_to_dwarf(QListWidgetItem*,QListWidgetItem*)));
         QObject::connect(btn_commit, SIGNAL(clicked()), act_commit_pending_changes, SLOT(trigger()));
         QObject::connect(btn_clear, SIGNAL(clicked()), act_clear_pending_changes, SLOT(trigger()));
         QObject::connect(dock_custom_professions, SIGNAL(visibilityChanged(bool)), act_show_custom_professions_window, SLOT(setChecked(bool)));
         QObject::connect(act_show_custom_professions_window, SIGNAL(triggered(bool)), dock_custom_professions, SLOT(setVisible(bool)));
         QObject::connect(act_show_main_toolbar, SIGNAL(triggered()), main_toolbar, SLOT(show()));
         QObject::connect(act_options, SIGNAL(triggered()), MainWindow, SLOT(open_options_menu()));
+        QObject::connect(tree_pending, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), stv, SLOT(jump_to_dwarf(QTreeWidgetItem*,QTreeWidgetItem*)));
+        QObject::connect(btn_collapse_all_pending, SIGNAL(clicked()), tree_pending, SLOT(collapseAll()));
+        QObject::connect(btn_expand_all_pending, SIGNAL(clicked()), tree_pending, SLOT(expandAll()));
 
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi
@@ -490,6 +520,10 @@ public:
         menuDocks->setTitle(QApplication::translate("MainWindow", "Docks", 0, QApplication::UnicodeUTF8));
         main_toolbar->setWindowTitle(QApplication::translate("MainWindow", "Main Toolbar", 0, QApplication::UnicodeUTF8));
         dock_pending_jobs_list->setWindowTitle(QApplication::translate("MainWindow", "Pending Labor Changes", 0, QApplication::UnicodeUTF8));
+        QTreeWidgetItem *___qtreewidgetitem = tree_pending->headerItem();
+        ___qtreewidgetitem->setText(0, QApplication::translate("MainWindow", "Name", 0, QApplication::UnicodeUTF8));
+        btn_expand_all_pending->setText(QApplication::translate("MainWindow", "Expand All", 0, QApplication::UnicodeUTF8));
+        btn_collapse_all_pending->setText(QApplication::translate("MainWindow", "Collapse All", 0, QApplication::UnicodeUTF8));
         btn_commit->setText(QApplication::translate("MainWindow", "Commit Changes", 0, QApplication::UnicodeUTF8));
         btn_clear->setText(QApplication::translate("MainWindow", "Clear Changes", 0, QApplication::UnicodeUTF8));
         dock_custom_professions->setWindowTitle(QApplication::translate("MainWindow", "Custom Professions", 0, QApplication::UnicodeUTF8));

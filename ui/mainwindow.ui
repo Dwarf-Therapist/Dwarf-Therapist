@@ -273,7 +273,59 @@
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
-      <widget class="QListWidget" name="list_pending"/>
+      <widget class="QTreeWidget" name="tree_pending">
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="alternatingRowColors">
+        <bool>true</bool>
+       </property>
+       <property name="uniformRowHeights">
+        <bool>true</bool>
+       </property>
+       <property name="sortingEnabled">
+        <bool>true</bool>
+       </property>
+       <property name="allColumnsShowFocus">
+        <bool>true</bool>
+       </property>
+       <column>
+        <property name="text">
+         <string>Name</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QPushButton" name="btn_expand_all_pending">
+         <property name="text">
+          <string>Expand All</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../images.qrc">
+           <normaloff>:/img/arrow_out.png</normaloff>:/img/arrow_out.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_collapse_all_pending">
+         <property name="text">
+          <string>Collapse All</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../images.qrc">
+           <normaloff>:/img/arrow_in.png</normaloff>:/img/arrow_in.png</iconset>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -564,7 +616,7 @@
    <header>statetableview.h</header>
    <slots>
     <slot>set_grid_size(int)</slot>
-    <slot>jump_to_dwarf(QListWidgetItem*,QListWidgetItem*)</slot>
+    <slot>jump_to_dwarf(QTreeWidgetItem*,QTreeWidgetItem*)</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -785,22 +837,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>list_pending</sender>
-   <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
-   <receiver>stv</receiver>
-   <slot>jump_to_dwarf(QListWidgetItem*,QListWidgetItem*)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1119</x>
-     <y>290</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>497</x>
-     <y>264</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>btn_commit</sender>
    <signal>clicked()</signal>
    <receiver>act_commit_pending_changes</receiver>
@@ -893,6 +929,54 @@
     <hint type="destinationlabel">
      <x>564</x>
      <y>388</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tree_pending</sender>
+   <signal>currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)</signal>
+   <receiver>stv</receiver>
+   <slot>jump_to_dwarf(QTreeWidgetItem*,QTreeWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>936</x>
+     <y>246</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>787</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_collapse_all_pending</sender>
+   <signal>clicked()</signal>
+   <receiver>tree_pending</receiver>
+   <slot>collapseAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>924</x>
+     <y>338</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>919</x>
+     <y>237</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_expand_all_pending</sender>
+   <signal>clicked()</signal>
+   <receiver>tree_pending</receiver>
+   <slot>expandAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1038</x>
+     <y>330</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1021</x>
+     <y>235</y>
     </hint>
    </hints>
   </connection>
