@@ -51,9 +51,8 @@ public:
 		void edit_custom_profession(QListWidgetItem*);
 		void edit_custom_profession();
 		void delete_custom_profession();
+		void import_existing_professions();
 		
-		
-
 private:
     Ui::MainWindow *ui;
     DFInstance *m_df;

@@ -19,6 +19,7 @@ public:
 
 	int id(){return m_id;}
 	QString profession() {return m_profession;}
+	QString custom_profession_name() {return m_pending_custom_profession;}
 	void refresh_data();
 	QString nice_name();
 	QString to_string();
@@ -49,6 +50,7 @@ private:
 	QString m_last_name;
 	QString m_nick_name;
 	QString m_custom_profession;
+	QString m_pending_custom_profession;
 	QString m_profession;
 	int m_strength;
 	int m_agility;

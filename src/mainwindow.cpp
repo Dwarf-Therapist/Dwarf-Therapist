@@ -183,6 +183,8 @@ void MainWindow::set_interface_enabled(bool enabled) {
 	ui->act_expand_all->setEnabled(enabled);
 	ui->act_collapse_all->setEnabled(enabled);
 	ui->cb_group_by->setEnabled(enabled);
+	ui->btn_import_professions->setEnabled(enabled);
+	ui->act_import_existing_professions->setEnabled(enabled);
 }
 
 void MainWindow::scan_memory() {
@@ -418,4 +420,22 @@ CustomProfession *MainWindow::get_custom_profession(QString name) {
 		}
 	}
 	return retval;
+}
+
+void MainWindow::import_existing_professions() {
+	int imported = 0;
+	foreach(Dwarf *d, m_model->get_dwarves()) {
+		QString prof = d->custom_profession_name();
+		if (prof.isEmpty())
+			continue;
+		CustomProfession *cp = get_custom_profession(prof);
+		if (!cp) { // import it
+			cp = new CustomProfession(d, this);
+			cp->set_name(prof);
+			m_custom_professions << cp;
+			imported++;
+		}
+	}
+	draw_professions();
+	QMessageBox::information(this, tr("Import Successful"), "Imported " + QString::number(imported) + " custom professions");
 }

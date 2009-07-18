@@ -218,6 +218,7 @@
      <string>Professions</string>
     </property>
     <addaction name="act_add_custom_profession"/>
+    <addaction name="act_import_existing_professions"/>
    </widget>
    <widget class="QMenu" name="menuWindows">
     <property name="title">
@@ -380,38 +381,29 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btn_delete_custom_profession">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
+      <widget class="QPushButton" name="btn_new_custom_profession">
        <property name="text">
-        <string>Delete Selected...</string>
+        <string>Add New Custom Profession</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../images.qrc">
+         <normaloff>:/img/page_white_add.png</normaloff>:/img/page_white_add.png</iconset>
        </property>
       </widget>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_5">
-       <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btn_new_custom_profession">
-         <property name="text">
-          <string>Add New Custom Profession</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <widget class="QPushButton" name="btn_import_professions">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Import Custom Professions</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../images.qrc">
+         <normaloff>:/img/application_get.png</normaloff>:/img/application_get.png</iconset>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -557,11 +549,19 @@
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/textfield_add.png</normaloff>:/img/textfield_add.png</iconset>
+   </property>
    <property name="text">
     <string>Show Toolbutton Text</string>
    </property>
   </action>
   <action name="act_add_custom_profession">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/page_white_add.png</normaloff>:/img/page_white_add.png</iconset>
+   </property>
    <property name="text">
     <string>Add Custom Profession</string>
    </property>
@@ -603,6 +603,10 @@
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/layout_content.png</normaloff>:/img/layout_content.png</iconset>
+   </property>
    <property name="text">
     <string>Show Pending Labors Window</string>
    </property>
@@ -614,6 +618,10 @@
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/layout_content.png</normaloff>:/img/layout_content.png</iconset>
+   </property>
    <property name="text">
     <string>Show Custom Professions Window</string>
    </property>
@@ -622,16 +630,36 @@
    <property name="checkable">
     <bool>false</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/layout_content.png</normaloff>:/img/layout_content.png</iconset>
+   </property>
    <property name="text">
     <string>Show Main Toolbar</string>
    </property>
   </action>
   <action name="act_options">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/application_edit.png</normaloff>:/img/application_edit.png</iconset>
+   </property>
    <property name="text">
     <string>Options...</string>
    </property>
    <property name="toolTip">
     <string>Open the options menu...</string>
+   </property>
+  </action>
+  <action name="act_import_existing_professions">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/application_get.png</normaloff>:/img/application_get.png</iconset>
+   </property>
+   <property name="text">
+    <string>Import Existing Professions</string>
+   </property>
+   <property name="toolTip">
+    <string>Import all custom professions from the loaded game, and create new labor templates for them</string>
    </property>
   </action>
  </widget>
@@ -1023,6 +1051,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btn_import_professions</sender>
+   <signal>clicked()</signal>
+   <receiver>act_import_existing_professions</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>991</x>
+     <y>673</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_import_existing_professions</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>import_existing_professions()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>373</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -1034,5 +1094,6 @@
   <slot>show_about()</slot>
   <slot>add_custom_profession()</slot>
   <slot>open_options_menu()</slot>
+  <slot>import_existing_professions()</slot>
  </slots>
 </ui>

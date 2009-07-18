@@ -1,5 +1,11 @@
 <RCC>
   <qresource prefix="/" >
+    <file>img/textfield_add.png</file>
+    <file>img/page_white_edit.png</file>
+    <file>img/page_white_add.png</file>
+    <file>img/application_edit.png</file>
+    <file>img/application_get.png</file>
+    <file>img/layout_content.png</file>
     <file>img/add.png</file>
     <file>img/delete.png</file>
     <file>img/dwarf.jpg</file>

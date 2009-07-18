@@ -27,6 +27,7 @@ void Dwarf::refresh_data() {
 	m_nick_name = m_df->read_string(m_address + gdr->get_dwarf_offset("nick_name"));
     m_last_name = read_last_name(m_address + gdr->get_dwarf_offset("last_name"));
 	m_custom_profession = m_df->read_string(m_address + gdr->get_dwarf_offset("custom_profession"));
+	m_pending_custom_profession = m_df->read_string(m_address + gdr->get_dwarf_offset("custom_profession"));
 	m_race_id = m_df->read_int32(m_address + gdr->get_dwarf_offset("race"), bytes_read);
     m_skills = read_skills(m_address + gdr->get_dwarf_offset("skills"));
 	m_profession = read_professtion(m_address + gdr->get_dwarf_offset("profession"));

@@ -18,7 +18,16 @@ CustomProfession::CustomProfession(Dwarf *d, QObject *parent)
 	, ui(new Ui::CustomProfessionEditor)
 	, m_dialog(0)
 	, m_dwarf(d)
-{}
+{
+	GameDataReader *gdr = GameDataReader::ptr();	
+	QVector<QStringList> labor_pairs = gdr->read_labor_pairs();
+	
+	foreach(QStringList pair, labor_pairs) {
+		int labor_id = pair[0].toInt();
+		if (m_dwarf && m_dwarf->is_labor_enabled(labor_id))
+			add_labor(labor_id);
+	}
+}
 
 void CustomProfession::set_labor(int labor_id, bool active) {
 	if (m_active_labors.contains(labor_id) && !active)
@@ -57,11 +66,7 @@ int CustomProfession::show_builder_dialog(QWidget *parent) {
 		int labor_id = pair[0].toInt();
 		item->setData(Qt::UserRole, labor_id);
 		item->setFlag(Qt::ItemIsUserCheckable, true);
-		if (m_dwarf && m_dwarf->is_labor_enabled(labor_id)) {
-			item->setCheckState(Qt::Checked);
-			add_labor(labor_id);
-			num_active++;
-		} else if (is_active(labor_id)) {
+		if (is_active(labor_id)) {
 			item->setCheckState(Qt::Checked);
 			num_active++;
 		} else {
