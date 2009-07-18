@@ -3,6 +3,7 @@
 
 #include <QtGui>
 class QxtListWidgetItem;
+class Dwarf;
 
 namespace Ui
 {
@@ -13,11 +14,12 @@ class CustomProfession : public QObject {
 	Q_OBJECT
 public:
 	CustomProfession(QObject *parent = 0);
+	CustomProfession(Dwarf *d, QObject *parent = 0);
 
-	
+	void save();
 	bool is_active(int labor_id);
-
 	int show_builder_dialog(QWidget *parent = 0);
+
 
 	public slots:
 		void add_labor(int labor_id) {set_labor(labor_id, true);}
@@ -30,6 +32,7 @@ public:
 
 private:
 	bool is_valid();
+	Dwarf *m_dwarf;
 
 	Ui::CustomProfessionEditor *ui;
 	QString m_name;

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1129</width>
-    <height>777</height>
+    <height>747</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -114,6 +114,9 @@
       </property>
       <property name="mouseTracking">
        <bool>true</bool>
+      </property>
+      <property name="contextMenuPolicy">
+       <enum>Qt::DefaultContextMenu</enum>
       </property>
       <property name="editTriggers">
        <set>QAbstractItemView::NoEditTriggers</set>
@@ -258,7 +261,6 @@
    <addaction name="separator"/>
    <addaction name="act_clear_pending_changes"/>
    <addaction name="act_commit_pending_changes"/>
-   <addaction name="act_list_pending_changes"/>
    <addaction name="separator"/>
    <addaction name="act_exit"/>
   </widget>

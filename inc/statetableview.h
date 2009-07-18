@@ -5,6 +5,7 @@
 
 class UberDelegate;
 class RotatedHeader;
+class Dwarf;
 
 class StateTableView : public QTreeView
 {
@@ -24,9 +25,17 @@ public:
 
 protected:
 	QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers);
+	void contextMenuEvent(QContextMenuEvent *event);
 
 private:
 	UberDelegate *m_delegate;
 	RotatedHeader *m_header;
+
+	private slots:
+		void new_custom_profession();
+
+signals:
+	void new_custom_profession(Dwarf *d);
+
 };
 #endif // STATETABLEVIEW_H

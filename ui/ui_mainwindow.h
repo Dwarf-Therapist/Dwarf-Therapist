@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Fri Jul 17 15:39:23 2009
+** Created: Fri Jul 17 16:34:55 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -95,7 +95,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
-        MainWindow->resize(1129, 777);
+        MainWindow->resize(1129, 747);
         act_connect_to_DF = new QAction(MainWindow);
         act_connect_to_DF->setObjectName(QString::fromUtf8("act_connect_to_DF"));
         QIcon icon;
@@ -240,6 +240,7 @@ public:
         font.setPointSize(8);
         stv->setFont(font);
         stv->setMouseTracking(true);
+        stv->setContextMenuPolicy(Qt::DefaultContextMenu);
         stv->setEditTriggers(QAbstractItemView::NoEditTriggers);
         stv->setTabKeyNavigation(true);
         stv->setProperty("showDropIndicator", QVariant(false));
@@ -394,7 +395,6 @@ public:
         main_toolbar->addSeparator();
         main_toolbar->addAction(act_clear_pending_changes);
         main_toolbar->addAction(act_commit_pending_changes);
-        main_toolbar->addAction(act_list_pending_changes);
         main_toolbar->addSeparator();
         main_toolbar->addAction(act_exit);
 

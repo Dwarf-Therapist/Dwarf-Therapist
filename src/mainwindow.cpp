@@ -11,9 +11,7 @@
 #include "statetableview.h"
 #include "uberdelegate.h"
 #include "customprofession.h"
-
-#define COMPANY "UDP Software"
-#define PRODUCT "Dwarf Therapist"
+#include "defines.h"
 
 MainWindow::MainWindow(QWidget *parent)
     :QMainWindow(parent)
@@ -31,6 +29,8 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
 	connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
 	connect(ui->act_list_pending_changes, SIGNAL(triggered()), this, SLOT(list_pending()));
+
+	connect(ui->stv, SIGNAL(new_custom_profession(Dwarf*)), this, SLOT(new_custom_profession(Dwarf *)));
 
 	connect(m_options_menu, 
 			SIGNAL(picker_changed(MainWindow::CONFIGURABLE_COLORS, const QColor&)),
@@ -127,14 +127,13 @@ void MainWindow::connect_to_df() {
                                 "Fortress, are you sure it's running?"));
         return;
     }
-    m_lbl_status->setText(tr("connected"));
+    m_lbl_status->setText(tr("Connected"));
     set_interface_enabled(true);
 }
 
 void MainWindow::read_dwarves() {
 	m_model->set_instance(m_df);
 	m_model->load_dwarves();
-	//ui->stv->setModel(m_model);
 }
 
 void MainWindow::set_interface_enabled(bool enabled) {
@@ -247,4 +246,9 @@ void MainWindow::color_changed(MainWindow::CONFIGURABLE_COLORS picker, const QCo
 			qWarning() << "some color changed and I don't know what it is.";
 	}
 	
+}
+
+void MainWindow::new_custom_profession(Dwarf *d) {
+	CustomProfession cp(d, this);
+	int accepted = cp.show_builder_dialog(this);
 }

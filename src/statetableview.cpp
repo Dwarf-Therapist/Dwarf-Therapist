@@ -30,8 +30,35 @@ void StateTableView::setModel(QAbstractItemModel *model) {
 	disconnect(this, SIGNAL(activated(const QModelIndex&)));
 	connect(this, SIGNAL(activated(const QModelIndex&)), 
 			model, SLOT(labor_clicked(const QModelIndex&)));
-	connect(this, SIGNAL(clicked(const QModelIndex&)), 
-			model, SLOT(labor_clicked(const QModelIndex&)));
+//	connect(this, SIGNAL(clicked(const QModelIndex&)), 
+//			model, SLOT(labor_clicked(const QModelIndex&)));
+}
+
+void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
+	
+	
+	QModelIndex idx = indexAt(event->pos());
+	if (!idx.isValid() || idx.column() != 0  || idx.data(DwarfModel::DR_IS_AGGREGATE).toBool())
+		return;
+
+
+	QMenu m(this);
+	QAction *new_cp = new QAction(tr("New custom profession from this dwarf..."), &m);
+	connect(new_cp, SIGNAL(triggered()), this, SLOT(new_custom_profession()));
+	
+	m.addAction(new_cp);
+	m.exec(event->globalPos());
+}
+
+void StateTableView::new_custom_profession() {
+	QModelIndex idx = currentIndex();
+	if (idx.isValid()) {
+		const DwarfModel *m = dynamic_cast<const DwarfModel*>(model());
+		int id = idx.data(DwarfModel::DR_ID).toInt();
+		Dwarf *d = m->get_dwarf_by_id(id);
+		if (d)
+			emit new_custom_profession(d);
+	}
 }
 
 QModelIndex StateTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) {
@@ -121,8 +148,9 @@ void StateTableView::filter_dwarves(QString text) {
 void StateTableView::jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* previous) {
 	if (!current)
 		return;
-	int dwarf_id = current->data(0, Qt::UserRole).toInt();
 	const DwarfModel *m = dynamic_cast<const DwarfModel*>(model());
+	int dwarf_id = current->data(0, Qt::UserRole).toInt();
+	
 	Dwarf *d = m->get_dwarf_by_id(dwarf_id);
 	if (d && d->m_name_idx.isValid()) {
 		this->scrollTo(d->m_name_idx);

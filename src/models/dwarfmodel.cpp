@@ -76,6 +76,7 @@ void DwarfModel::build_rows() {
 			// we need a root element to hold group members...
 			QString title = QString("%1 (%2)").arg(key).arg(m_grouped_dwarves.value(key).size());
 			root = new QStandardItem(title);
+			root->setData(true, DR_IS_AGGREGATE);
 			root_row << root;
 		}
 
@@ -105,6 +106,8 @@ void DwarfModel::build_rows() {
 			}
 			i_name->setToolTip(skill_summary);
 			i_name->setStatusTip(d->nice_name());
+			i_name->setData(false, DR_IS_AGGREGATE);
+			i_name->setData(d->id(), DR_ID);
 
 			QList<QStandardItem*> items;
 			items << i_name;

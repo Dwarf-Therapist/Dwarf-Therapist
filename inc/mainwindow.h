@@ -44,6 +44,7 @@ public:
 		void new_pending_changes(int);
 		void list_pending();
 		void open_options_menu();
+		void new_custom_profession(Dwarf *d);
 
 private:
     Ui::MainWindow *ui;
