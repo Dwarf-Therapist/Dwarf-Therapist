@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Fri Jul 17 16:34:55 2009
+** Created: Sat Jul 18 14:34:54 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -50,7 +50,6 @@ public:
     QAction *act_add_custom_profession;
     QAction *act_clear_pending_changes;
     QAction *act_commit_pending_changes;
-    QAction *act_list_pending_changes;
     QAction *act_show_pending_labors_window;
     QAction *act_show_custom_professions_window;
     QAction *act_show_main_toolbar;
@@ -90,6 +89,10 @@ public:
     QWidget *dockWidgetContents_2;
     QVBoxLayout *verticalLayout_3;
     QListWidget *list_custom_professions;
+    QPushButton *btn_delete_custom_profession;
+    QHBoxLayout *horizontalLayout_5;
+    QSpacerItem *horizontalSpacer_2;
+    QPushButton *btn_new_custom_profession;
 
     void setupUi(QMainWindow *MainWindow)
     {
@@ -155,12 +158,6 @@ public:
         QIcon icon8;
         icon8.addPixmap(QPixmap(QString::fromUtf8(":/img/table_go.png")), QIcon::Normal, QIcon::Off);
         act_commit_pending_changes->setIcon(icon8);
-        act_list_pending_changes = new QAction(MainWindow);
-        act_list_pending_changes->setObjectName(QString::fromUtf8("act_list_pending_changes"));
-        act_list_pending_changes->setEnabled(false);
-        QIcon icon9;
-        icon9.addPixmap(QPixmap(QString::fromUtf8(":/img/table.png")), QIcon::Normal, QIcon::Off);
-        act_list_pending_changes->setIcon(icon9);
         act_show_pending_labors_window = new QAction(MainWindow);
         act_show_pending_labors_window->setObjectName(QString::fromUtf8("act_show_pending_labors_window"));
         act_show_pending_labors_window->setCheckable(true);
@@ -240,12 +237,12 @@ public:
         font.setPointSize(8);
         stv->setFont(font);
         stv->setMouseTracking(true);
-        stv->setContextMenuPolicy(Qt::DefaultContextMenu);
+        stv->setContextMenuPolicy(Qt::CustomContextMenu);
         stv->setEditTriggers(QAbstractItemView::NoEditTriggers);
         stv->setTabKeyNavigation(true);
         stv->setProperty("showDropIndicator", QVariant(false));
         stv->setAlternatingRowColors(false);
-        stv->setSelectionMode(QAbstractItemView::SingleSelection);
+        stv->setSelectionMode(QAbstractItemView::ExtendedSelection);
         stv->setSelectionBehavior(QAbstractItemView::SelectRows);
         stv->setIndentation(12);
         stv->setUniformRowHeights(true);
@@ -355,8 +352,30 @@ public:
         verticalLayout_3->setObjectName(QString::fromUtf8("verticalLayout_3"));
         list_custom_professions = new QListWidget(dockWidgetContents_2);
         list_custom_professions->setObjectName(QString::fromUtf8("list_custom_professions"));
+        list_custom_professions->setContextMenuPolicy(Qt::CustomContextMenu);
 
         verticalLayout_3->addWidget(list_custom_professions);
+
+        btn_delete_custom_profession = new QPushButton(dockWidgetContents_2);
+        btn_delete_custom_profession->setObjectName(QString::fromUtf8("btn_delete_custom_profession"));
+        btn_delete_custom_profession->setEnabled(false);
+
+        verticalLayout_3->addWidget(btn_delete_custom_profession);
+
+        horizontalLayout_5 = new QHBoxLayout();
+        horizontalLayout_5->setSpacing(6);
+        horizontalLayout_5->setObjectName(QString::fromUtf8("horizontalLayout_5"));
+        horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout_5->addItem(horizontalSpacer_2);
+
+        btn_new_custom_profession = new QPushButton(dockWidgetContents_2);
+        btn_new_custom_profession->setObjectName(QString::fromUtf8("btn_new_custom_profession"));
+
+        horizontalLayout_5->addWidget(btn_new_custom_profession);
+
+
+        verticalLayout_3->addLayout(horizontalLayout_5);
 
         dock_custom_professions->setWidget(dockWidgetContents_2);
         MainWindow->addDockWidget(static_cast<Qt::DockWidgetArea>(2), dock_custom_professions);
@@ -374,7 +393,6 @@ public:
         menu_File->addAction(act_read_dwarves);
         menu_File->addAction(act_scan_memory);
         menu_File->addSeparator();
-        menu_File->addAction(act_list_pending_changes);
         menu_File->addAction(act_commit_pending_changes);
         menu_File->addAction(act_clear_pending_changes);
         menu_File->addSeparator();
@@ -421,6 +439,7 @@ public:
         QObject::connect(tree_pending, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), stv, SLOT(jump_to_dwarf(QTreeWidgetItem*,QTreeWidgetItem*)));
         QObject::connect(btn_collapse_all_pending, SIGNAL(clicked()), tree_pending, SLOT(collapseAll()));
         QObject::connect(btn_expand_all_pending, SIGNAL(clicked()), tree_pending, SLOT(expandAll()));
+        QObject::connect(btn_new_custom_profession, SIGNAL(clicked()), act_add_custom_profession, SLOT(trigger()));
 
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi
@@ -490,7 +509,6 @@ public:
 #ifndef QT_NO_TOOLTIP
         act_commit_pending_changes->setToolTip(QApplication::translate("MainWindow", "Write all uncomitted changes to DF", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
-        act_list_pending_changes->setText(QApplication::translate("MainWindow", "List Pending Changes", 0, QApplication::UnicodeUTF8));
         act_show_pending_labors_window->setText(QApplication::translate("MainWindow", "Show Pending Labors Window", 0, QApplication::UnicodeUTF8));
         act_show_custom_professions_window->setText(QApplication::translate("MainWindow", "Show Custom Professions Window", 0, QApplication::UnicodeUTF8));
         act_show_main_toolbar->setText(QApplication::translate("MainWindow", "Show Main Toolbar", 0, QApplication::UnicodeUTF8));
@@ -527,6 +545,8 @@ public:
         btn_commit->setText(QApplication::translate("MainWindow", "Commit Changes", 0, QApplication::UnicodeUTF8));
         btn_clear->setText(QApplication::translate("MainWindow", "Clear Changes", 0, QApplication::UnicodeUTF8));
         dock_custom_professions->setWindowTitle(QApplication::translate("MainWindow", "Custom Professions", 0, QApplication::UnicodeUTF8));
+        btn_delete_custom_profession->setText(QApplication::translate("MainWindow", "Delete Selected...", 0, QApplication::UnicodeUTF8));
+        btn_new_custom_profession->setText(QApplication::translate("MainWindow", "Add New Custom Profession", 0, QApplication::UnicodeUTF8));
     } // retranslateUi
 
 };

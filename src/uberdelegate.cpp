@@ -26,7 +26,7 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 		}
 	}
 
-	if (opt.state & QStyle::State_HasFocus) {
+	if (opt.state & QStyle::State_HasFocus) { // cursor
 		p->save(); // border last
 		p->setBrush(Qt::NoBrush);
 		p->setPen(QPen(color_cursor, 2));
@@ -104,6 +104,13 @@ void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, con
 		if (dirty) {
 			p->setPen(QPen(QColor(color_dirty_border), 1));
 			p->drawRect(opt.rect.adjusted(0, 0, -1, -1));
+		} else if (opt.state & QStyle::State_Selected) {
+			p->setPen(QColor(0xd9d9d9));
+			p->drawRect(opt.rect);
+			p->setPen(QPen(QColor(0x0099FF)));
+			p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
+			p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
+			//p->drawRect(opt.rect.adjusted(0,0,-1,-1));
 		} else {
 			p->setPen(QColor(0xd9d9d9));
 			p->drawRect(opt.rect);

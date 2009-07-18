@@ -25,7 +25,6 @@ public:
 
 protected:
 	QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers);
-	void contextMenuEvent(QContextMenuEvent *event);
 
 private:
 	UberDelegate *m_delegate;

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'pendingchanges.ui'
 **
-** Created: Thu Jul 16 20:31:26 2009
+** Created: Sat Jul 18 14:34:54 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!

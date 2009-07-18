@@ -35,10 +35,6 @@ void OptionsMenu::read_settings(QSettings *s) {
 	ui->clr_active_group->setCurrentColor(c);
 	c = s->value("dirty_border", QColor(0xFF6600)).value<QColor>();
 	ui->clr_dirty_border->setCurrentColor(c);
-
-
-	//i->stv->get_delegate()->set_active_bg_color(c);
-	
 	s->endGroup();
 	s->endGroup();
 	m_reading_settings = false;
@@ -54,7 +50,6 @@ void OptionsMenu::write_settings(QSettings *s) {
 		s->setValue("dirty_border", ui->clr_dirty_border->currentColor());
 		s->endGroup();
 		s->endGroup();
-		s->sync();
 	}
 }
 

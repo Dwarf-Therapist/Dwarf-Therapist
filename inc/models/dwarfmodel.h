@@ -35,6 +35,8 @@ public:
 	void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
 
 	QVector<Dwarf*> get_dirty_dwarves();
+	QList<Dwarf*> get_dwarves() {return m_dwarves.values();}
+	void calculate_pending();
 
 	public slots:
 		void set_group_by(int group_by);
@@ -49,7 +51,7 @@ private:
 	QMap<int, Dwarf*> m_dwarves;
 	QMap<QString, QVector<Dwarf*>> m_grouped_dwarves;
 	GROUP_BY m_group_by;
-	void calculate_pending();
+	
 
 	void build_rows();
 

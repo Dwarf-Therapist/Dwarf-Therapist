@@ -17,8 +17,11 @@ public:
 	CustomProfession(Dwarf *d, QObject *parent = 0);
 
 	void save();
+	void delete_from_disk();
+	QString get_name() {return m_name;}
 	bool is_active(int labor_id);
 	int show_builder_dialog(QWidget *parent = 0);
+	QVector<int> get_enabled_labors();
 
 
 	public slots:

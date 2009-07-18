@@ -116,7 +116,7 @@
        <bool>true</bool>
       </property>
       <property name="contextMenuPolicy">
-       <enum>Qt::DefaultContextMenu</enum>
+       <enum>Qt::CustomContextMenu</enum>
       </property>
       <property name="editTriggers">
        <set>QAbstractItemView::NoEditTriggers</set>
@@ -131,7 +131,7 @@
        <bool>false</bool>
       </property>
       <property name="selectionMode">
-       <enum>QAbstractItemView::SingleSelection</enum>
+       <enum>QAbstractItemView::ExtendedSelection</enum>
       </property>
       <property name="selectionBehavior">
        <enum>QAbstractItemView::SelectRows</enum>
@@ -198,7 +198,6 @@
     <addaction name="act_read_dwarves"/>
     <addaction name="act_scan_memory"/>
     <addaction name="separator"/>
-    <addaction name="act_list_pending_changes"/>
     <addaction name="act_commit_pending_changes"/>
     <addaction name="act_clear_pending_changes"/>
     <addaction name="separator"/>
@@ -374,7 +373,45 @@
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
-      <widget class="QListWidget" name="list_custom_professions"/>
+      <widget class="QListWidget" name="list_custom_professions">
+       <property name="contextMenuPolicy">
+        <enum>Qt::CustomContextMenu</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_delete_custom_profession">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Delete Selected...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_new_custom_profession">
+         <property name="text">
+          <string>Add New Custom Profession</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </widget>
@@ -557,18 +594,6 @@
    </property>
    <property name="toolTip">
     <string>Write all uncomitted changes to DF</string>
-   </property>
-  </action>
-  <action name="act_list_pending_changes">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../images.qrc">
-     <normaloff>:/img/table.png</normaloff>:/img/table.png</iconset>
-   </property>
-   <property name="text">
-    <string>List Pending Changes</string>
    </property>
   </action>
   <action name="act_show_pending_labors_window">
@@ -818,7 +843,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>1128</x>
-     <y>385</y>
+     <y>376</y>
     </hint>
    </hints>
   </connection>
@@ -830,7 +855,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1128</x>
-     <y>385</y>
+     <y>376</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -845,8 +870,8 @@
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>926</x>
-     <y>418</y>
+     <x>988</x>
+     <y>366</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -861,8 +886,8 @@
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1056</x>
-     <y>418</y>
+     <x>1118</x>
+     <y>366</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -957,8 +982,8 @@
    <slot>collapseAll()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>924</x>
-     <y>338</y>
+     <x>1118</x>
+     <y>334</y>
     </hint>
     <hint type="destinationlabel">
      <x>919</x>
@@ -973,12 +998,28 @@
    <slot>expandAll()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1038</x>
-     <y>330</y>
+     <x>988</x>
+     <y>334</y>
     </hint>
     <hint type="destinationlabel">
      <x>1021</x>
      <y>235</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_new_custom_profession</sender>
+   <signal>clicked()</signal>
+   <receiver>act_add_custom_profession</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1047</x>
+     <y>704</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>373</y>
     </hint>
    </hints>
   </connection>

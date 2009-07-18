@@ -14,23 +14,27 @@
 #include "defines.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    :QMainWindow(parent)
-    ,ui(new Ui::MainWindow)
-	,m_options_menu(new OptionsMenu(this))
-    ,m_df(0)
-    ,m_lbl_status(0)
-	,m_settings(0)
-	,m_model(new DwarfModel(this))
-	,m_reading_settings(false)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+	, m_options_menu(new OptionsMenu(this))
+    , m_df(0)
+    , m_lbl_status(0)
+	, m_settings(0)
+	, m_model(new DwarfModel(this))
+	, m_custom_professions(QVector<CustomProfession*>())
+	, m_reading_settings(false)
+	, m_temp_cp(0)
 {
     ui->setupUi(this);
 	ui->stv->setModel(m_model);
 	connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
 	connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
 	connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
-	connect(ui->act_list_pending_changes, SIGNAL(triggered()), this, SLOT(list_pending()));
 
-	connect(ui->stv, SIGNAL(new_custom_profession(Dwarf*)), this, SLOT(new_custom_profession(Dwarf *)));
+	connect(ui->stv, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_grid_context_menu(const QPoint &)));
+
+	connect(ui->list_custom_professions, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(edit_custom_profession(QListWidgetItem*)));
+	connect(ui->list_custom_professions, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_custom_profession_context_menu(const QPoint &)));
 
 	connect(m_options_menu, 
 			SIGNAL(picker_changed(MainWindow::CONFIGURABLE_COLORS, const QColor&)),
@@ -53,42 +57,59 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::read_settings() {
-	m_reading_settings = true;
-	// Geometry
+	m_reading_settings = true; // don't allow writes while we're reading...
 	m_settings->beginGroup("window");
-	QByteArray geom = m_settings->value("geometry").toByteArray();
-	if (!geom.isEmpty()) {
-		restoreGeometry(geom);
-	}
-	// Toolbars etc... 
-	QByteArray state = m_settings->value("state").toByteArray();
-	if (!state.isEmpty()) {
-		restoreState(state);
+	{ // WINDOW SETTINGS
+		QByteArray geom = m_settings->value("geometry").toByteArray();
+		if (!geom.isEmpty()) {
+			restoreGeometry(geom);
+		}
+		// Toolbars etc... 
+		QByteArray state = m_settings->value("state").toByteArray();
+		if (!state.isEmpty()) {
+			restoreState(state);
+		}
 	}
 	m_settings->endGroup();
 	
 	m_settings->beginGroup("gui_options");
-	// toolbutton text
-	bool show_text = m_settings->value("show_toolbutton_text", true).toBool();
-	ui->act_show_toolbutton_text->setChecked(show_text);
-	show_toolbutton_text(show_text);
-
-	// group by
-	int group_by = m_settings->value("group_by", 0).toInt();
-	ui->cb_group_by->setCurrentIndex(group_by);
-	m_model->set_group_by(group_by);
+	{ // GUI OPTIONS
+		// toolbutton text
+		bool show_text = m_settings->value("show_toolbutton_text", true).toBool();
+		ui->act_show_toolbutton_text->setChecked(show_text);
+		show_toolbutton_text(show_text);
+		// group by
+		int group_by = m_settings->value("group_by", 0).toInt();
+		ui->cb_group_by->setCurrentIndex(group_by);
+		m_model->set_group_by(group_by);
+	}
 	m_settings->endGroup();
 
-
+	m_settings->beginGroup("custom_professions");
+	{
+		QStringList profession_names = m_settings->childGroups();
+		foreach(QString prof, profession_names) {
+			CustomProfession *cp = new CustomProfession(this);
+			cp->set_name(prof);
+			m_settings->beginGroup(prof);
+			int size = m_settings->beginReadArray("labors");
+			for(int i = 0; i < size; ++i) {
+				m_settings->setArrayIndex(i);
+				int labor_id = m_settings->childKeys()[0].toInt();
+				cp->add_labor(labor_id);
+			}
+			m_settings->endArray();
+			m_settings->endGroup();
+			m_custom_professions << cp;
+		}
+	}
+	m_settings->endGroup();
+	
 	// options menu settings
 	m_options_menu->read_settings(m_settings);
 
-	// delegate active color
-	//QColor c = m_settings->value("labors/active_bg_color", QColor(0xE0FFE0)).value<QColor>();
-	//ui->stv->get_delegate()->set_active_bg_color(c);
-
-	
 	m_reading_settings = false;
+	draw_professions();
 }
 
 void MainWindow::write_settings() {
@@ -106,6 +127,25 @@ void MainWindow::write_settings() {
 
 		// options menu settings
 		m_options_menu->write_settings(m_settings);
+		
+		if (m_custom_professions.size() > 0) {
+			m_settings->beginGroup("custom_professions");
+			m_settings->remove(""); // clear all of them, so we can re-write
+
+			foreach(CustomProfession *cp, m_custom_professions) {
+				m_settings->beginGroup(cp->get_name());
+				m_settings->beginWriteArray("labors");
+				int i = 0;
+				foreach(int labor_id, cp->get_enabled_labors()) {
+					m_settings->setArrayIndex(i++);
+					m_settings->setValue(QString::number(labor_id), true);
+				}
+				m_settings->endArray();
+				m_settings->endGroup();
+			}
+			m_settings->endGroup();
+			
+		}
 	}
 }
 
@@ -188,15 +228,6 @@ void MainWindow::show_about() {
 	d->show();
 }
 
-void MainWindow::add_custom_profession() {
-	CustomProfession cp;
-	int accepted = cp.show_builder_dialog(this);
-	if (accepted)
-		qDebug() << "new profession accepted!";
-	else
-		qDebug() << "cancelled new profession";
-}
-
 void MainWindow::new_pending_changes(int cnt) {
 	bool on_off = cnt > 0;
 	ui->lbl_pending_changes->setNum(cnt);
@@ -204,7 +235,6 @@ void MainWindow::new_pending_changes(int cnt) {
 	ui->btn_commit->setEnabled(on_off);
 	ui->act_clear_pending_changes->setEnabled(on_off);
 	ui->act_commit_pending_changes->setEnabled(on_off);
-	ui->act_list_pending_changes->setEnabled(on_off);
 	list_pending();
 }
 
@@ -225,7 +255,6 @@ void MainWindow::list_pending() {
 				i->setIcon(0, QIcon(":img/delete.png"));
 			}
 			i->setData(0, Qt::UserRole, d->id());
-			//ui->list_pending->addItem(i);
 		}
 	}
 	ui->tree_pending->expandAll();
@@ -245,10 +274,148 @@ void MainWindow::color_changed(MainWindow::CONFIGURABLE_COLORS picker, const QCo
 		default:
 			qWarning() << "some color changed and I don't know what it is.";
 	}
-	
 }
 
-void MainWindow::new_custom_profession(Dwarf *d) {
-	CustomProfession cp(d, this);
-	int accepted = cp.show_builder_dialog(this);
+void MainWindow::add_custom_profession() {
+	Dwarf *d = 0;
+	QModelIndex idx = ui->stv->currentIndex();
+	if (idx.isValid()) {
+		int id = idx.data(DwarfModel::DR_ID).toInt();
+		d = m_model->get_dwarf_by_id(id);
+	}
+
+	CustomProfession *cp = new CustomProfession(d, this);
+	int accepted = cp->show_builder_dialog(this);
+	if (accepted) {
+		m_custom_professions << cp;
+		draw_professions();
+	}
+	write_settings();
+}
+
+void MainWindow::edit_custom_profession() {
+	if (!m_temp_cp)
+		return;
+
+	int accepted = m_temp_cp->show_builder_dialog(this);
+	if (accepted) {
+		draw_professions();
+	}
+	m_temp_cp = 0;
+	write_settings();
+}
+
+void MainWindow::edit_custom_profession(QListWidgetItem *i) {
+	QString name = i->text();
+	foreach(CustomProfession *cp, m_custom_professions) {
+		if (cp->get_name() == name) {
+			m_temp_cp = cp;
+		}
+	}
+	edit_custom_profession();
+}
+
+void MainWindow::delete_custom_profession() {
+	if (!m_temp_cp)
+		return;
+
+	QList<Dwarf*> blockers;
+	foreach(Dwarf *d, m_model->get_dwarves()) {
+		if (d->profession() == m_temp_cp->get_name()) {
+			blockers << d;
+		}
+	}
+	if (blockers.size() > 0) {
+		QString message = "The following dwarves are still using '" + m_temp_cp->get_name() + "':";
+		foreach(Dwarf *d, blockers) {
+			message += "\n\t" + d->nice_name();
+		}
+		message += "\n\nPlease change them to another profession before deleting this profession!";
+		QMessageBox::warning(this, tr("Still Being Used"), message);
+	} else {
+		m_temp_cp->delete_from_disk();
+		m_custom_professions.remove(m_custom_professions.indexOf(m_temp_cp));
+	}
+	draw_professions();
+	m_temp_cp = 0;
+	write_settings();
+}
+
+void MainWindow::draw_professions() {
+	ui->list_custom_professions->clear();
+	foreach(CustomProfession *cp, m_custom_professions) {
+		QListWidgetItem *i = new QListWidgetItem(cp->get_name(), ui->list_custom_professions);
+	}
+}
+
+void MainWindow::draw_grid_context_menu(const QPoint &p) {
+	QModelIndex idx = ui->stv->indexAt(p);
+	if (!idx.isValid() || idx.column() != 0  || idx.data(DwarfModel::DR_IS_AGGREGATE).toBool())
+		return;
+
+	//int id = idx.data(DwarfModel::DR_ID).toInt();
+	
+	QMenu m(this);
+	m.setTitle(tr("Dwarf Options"));
+	//m.addAction(tr("View Details..."), this, "add_custom_profession()");
+	//m.addSeparator();
+
+	QMenu sub(&m);
+	sub.setTitle(tr("Custom Professions"));
+	sub.addAction(tr("New custom profession from this dwarf..."), this, SLOT(add_custom_profession()));
+	sub.addSeparator();
+	
+	foreach(CustomProfession *cp, m_custom_professions) {
+		QAction *tmp = sub.addAction(cp->get_name(), this, SLOT(apply_custom_profession()));
+		//tmp->setData(id);
+	}
+	m.addMenu(&sub);
+	
+	m.exec(ui->stv->viewport()->mapToGlobal(p));
+}
+
+void MainWindow::draw_custom_profession_context_menu(const QPoint &p) {
+	QModelIndex idx = ui->list_custom_professions->indexAt(p);
+	if (!idx.isValid())
+		return;
+
+	foreach(CustomProfession *cp, m_custom_professions) {
+		if (cp && cp->get_name() == idx.data().toString())
+			m_temp_cp = cp;
+	}
+
+	QMenu m(this);
+	m.setTitle(tr("Custom Profession"));
+	QAction *act_edit = m.addAction(tr("Edit..."), this, SLOT(edit_custom_profession()));
+	QAction *act_delete = m.addAction(tr("Delete..."), this, SLOT(delete_custom_profession()));
+	m.exec(ui->list_custom_professions->viewport()->mapToGlobal(p));
+}
+
+void MainWindow::apply_custom_profession() {
+	QAction *a = qobject_cast<QAction*>(QObject::sender());
+	CustomProfession *cp = get_custom_profession(a->text());
+	if (!cp)
+		return;
+
+	const QItemSelection sel = ui->stv->selectionModel()->selection();
+	foreach(const QModelIndex idx, sel.indexes()) {
+		if (idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
+			qDebug() << idx.data();
+			Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
+			if (d)
+				d->apply_custom_profession(cp);
+		}
+	}
+	m_model->calculate_pending();
+}
+
+CustomProfession *MainWindow::get_custom_profession(QString name) {
+	CustomProfession *retval = 0;
+	foreach(CustomProfession *cp, m_custom_professions) {
+		if (cp && cp->get_name() == name) {
+			retval = cp;
+			break;
+		}
+	}
+	return retval;
 }

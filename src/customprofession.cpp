@@ -31,22 +31,38 @@ bool CustomProfession::is_active(int labor_id) {
 	return m_active_labors.value(labor_id, false);
 }
 
+QVector<int> CustomProfession::get_enabled_labors() {
+	QVector<int> labors;
+	foreach(int labor, m_active_labors.uniqueKeys()) {
+		if (m_active_labors.value(labor)) {
+			labors << labor;
+		}
+	}
+	return labors;
+}
+
 int CustomProfession::show_builder_dialog(QWidget *parent) {
 	GameDataReader *gdr = GameDataReader::ptr();
 
 	m_dialog = new QDialog(parent);
 	ui->setupUi(m_dialog);
+	ui->name_edit->setText(m_name);
+	connect(ui->name_edit, SIGNAL(textChanged(const QString &)), this, SLOT(set_name(QString)));
 	connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
 	
 	QVector<QStringList> labor_pairs = gdr->read_labor_pairs();
 	int num_active = 0;
 	foreach(QStringList pair, labor_pairs) {
 		QxtListWidgetItem *item = new QxtListWidgetItem(pair[1], ui->labor_list);
-		item->setData(Qt::UserRole, pair[0].toInt());
+		int labor_id = pair[0].toInt();
+		item->setData(Qt::UserRole, labor_id);
 		item->setFlag(Qt::ItemIsUserCheckable, true);
-		if (m_dwarf && m_dwarf->is_labor_enabled(pair[0].toInt())) {
+		if (m_dwarf && m_dwarf->is_labor_enabled(labor_id)) {
 			item->setCheckState(Qt::Checked);
-			add_labor(pair[0].toInt());
+			add_labor(labor_id);
+			num_active++;
+		} else if (is_active(labor_id)) {
+			item->setCheckState(Qt::Checked);
 			num_active++;
 		} else {
 			item->setCheckState(Qt::Unchecked);
@@ -68,7 +84,6 @@ void CustomProfession::accept() {
 	if (!is_valid()) {
 		return;
 	}
-	save();
 	m_dialog->accept();
 }
 
@@ -95,19 +110,9 @@ void CustomProfession::item_check_state_changed(QxtListWidgetItem *item) {
 	}
 }
 
-void CustomProfession::save() {
+void CustomProfession::delete_from_disk() {
 	QSettings s(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 	s.beginGroup("custom_professions");
-	s.beginGroup(ui->name_edit->text());
-	s.beginWriteArray("labors");
-	int i = 0;
-	foreach(int labor_id, m_active_labors.uniqueKeys()) {
-		if (is_active(labor_id)) {
-			s.setArrayIndex(i++);
-			s.setValue(QString::number(labor_id), true);
-		}		
-	}
-	s.endArray();
-	s.endGroup();
+	s.remove(m_name);
 	s.endGroup();
 }

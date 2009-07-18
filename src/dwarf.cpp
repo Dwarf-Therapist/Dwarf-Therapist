@@ -3,6 +3,7 @@
 #include "dfinstance.h"
 #include "skill.h"
 #include "gamedatareader.h"
+#include "customprofession.h"
 
 Dwarf::Dwarf(DFInstance *df, int address, QObject *parent)
 	: QObject(parent)
@@ -172,4 +173,14 @@ int Dwarf::pending_changes() {
 
 void Dwarf::clear_pending() {
 	memcpy(m_pending_labors, m_labors, 102);
+}
+
+int Dwarf::apply_custom_profession(CustomProfession *cp) {
+	memset(m_pending_labors, 0, 102); // clear all labors
+	foreach(int labor_id, cp->get_enabled_labors()) {
+		set_labor(labor_id, true);
+	}
+	m_custom_profession = cp->get_name();
+	return get_dirty_labors().size();
+	//qDebug() << nice_name() << "gets new profession:" << cp->get_name();
 }

@@ -6,6 +6,7 @@
 #include "skill.h"
 
 class DFInstance;
+class CustomProfession;
 
 class Dwarf : public QObject
 {
@@ -30,6 +31,7 @@ public:
 	short get_rating_for_skill(int labor_id);
 	int pending_changes();
 	void clear_pending();
+	int apply_custom_profession(CustomProfession *cp); // return # of pending changes
 
 	QModelIndex m_name_idx;
 

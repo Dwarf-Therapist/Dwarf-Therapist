@@ -8,6 +8,7 @@ class DFInstance;
 class DwarfModel;
 class Dwarf;
 class OptionsMenu;
+class CustomProfession;
 
 namespace Ui
 {
@@ -44,7 +45,14 @@ public:
 		void new_pending_changes(int);
 		void list_pending();
 		void open_options_menu();
-		void new_custom_profession(Dwarf *d);
+		void draw_professions();
+		void draw_grid_context_menu(const QPoint &);
+		void draw_custom_profession_context_menu(const QPoint &);
+		void edit_custom_profession(QListWidgetItem*);
+		void edit_custom_profession();
+		void delete_custom_profession();
+		
+		
 
 private:
     Ui::MainWindow *ui;
@@ -53,6 +61,8 @@ private:
 	QSettings *m_settings;
 	DwarfModel *m_model;
 	OptionsMenu *m_options_menu;
+	QVector<CustomProfession*> m_custom_professions;
+	CustomProfession *m_temp_cp;
 	bool m_reading_settings;
 
 	void closeEvent(QCloseEvent *evt); // override;
@@ -60,9 +70,12 @@ private:
 	void read_settings();
 	void write_settings();
 
+	CustomProfession *get_custom_profession(QString);
+
     private slots:
         void set_interface_enabled(bool);
 		void color_changed(MainWindow::CONFIGURABLE_COLORS picker, const QColor &c);
+		void apply_custom_profession();
 		
 };
 

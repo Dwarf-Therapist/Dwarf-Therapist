@@ -34,22 +34,6 @@ void StateTableView::setModel(QAbstractItemModel *model) {
 //			model, SLOT(labor_clicked(const QModelIndex&)));
 }
 
-void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
-	
-	
-	QModelIndex idx = indexAt(event->pos());
-	if (!idx.isValid() || idx.column() != 0  || idx.data(DwarfModel::DR_IS_AGGREGATE).toBool())
-		return;
-
-
-	QMenu m(this);
-	QAction *new_cp = new QAction(tr("New custom profession from this dwarf..."), &m);
-	connect(new_cp, SIGNAL(triggered()), this, SLOT(new_custom_profession()));
-	
-	m.addAction(new_cp);
-	m.exec(event->globalPos());
-}
-
 void StateTableView::new_custom_profession() {
 	QModelIndex idx = currentIndex();
 	if (idx.isValid()) {
@@ -154,6 +138,7 @@ void StateTableView::jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* pr
 	Dwarf *d = m->get_dwarf_by_id(dwarf_id);
 	if (d && d->m_name_idx.isValid()) {
 		this->scrollTo(d->m_name_idx);
-		this->selectionModel()->select(QItemSelection(d->m_name_idx, d->m_name_idx), QItemSelectionModel::SelectCurrent);
+		this->selectionModel()->select(d->m_name_idx, QItemSelectionModel::SelectCurrent | QItemSelectionModel::Rows);
+		//this->selectionModel()->select(QItemSelection(d->m_name_idx, d->m_name_idx), QItemSelectionModel::SelectCurrent);
 	}
 }

@@ -173,13 +173,6 @@ void DwarfModel::labor_clicked(const QModelIndex &idx) {
 			QModelIndex tmp_index = index(i, idx.column(), first_col);
 			setData(tmp_index, tmp_index.data(DR_DUMMY).toInt()+1, DR_DUMMY);
 		}
-		/*
-		BRUTE FORCE (seems slower than calling setData on a lot of places and letting
-		the base class emit the change signal)
-
-		QModelIndex top_left = index(0, idx.column(), first_col);
-		QModelIndex bottom_right = index(rowCount(first_col)-1, idx.column(), first_col);
-		emit dataChanged(top_left, bottom_right);*/
 	} else {
 		QModelIndex aggregate_col = index(idx.parent().row(), idx.column());
 		if (aggregate_col.isValid())
