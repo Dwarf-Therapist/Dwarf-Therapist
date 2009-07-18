@@ -13,6 +13,14 @@ public:
 	void read_settings(QSettings *s);
 	void write_settings(QSettings *s);
 
+	static QColor default_color_cursor;
+	static QColor default_color_active_labor;
+	static QColor default_color_active_group;
+	static QColor default_color_dirty_border;
+
+	public slots:
+		void restore_defaults();
+	
 private:
 	bool m_reading_settings;
 	Ui::OptionsMenu *ui;

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'optionsmenu.ui'
 **
-** Created: Sat Jul 18 14:34:51 2009
+** Created: Sat Jul 18 16:17:11 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -21,6 +21,7 @@
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QHeaderView>
 #include <QtGui/QLabel>
+#include <QtGui/QPushButton>
 #include <QtGui/QVBoxLayout>
 #include "qtcolorpicker.h"
 
@@ -47,13 +48,15 @@ public:
     QHBoxLayout *horizontalLayout_4;
     QtColorPicker *clr_active_group;
     QLabel *label_4;
+    QHBoxLayout *horizontalLayout_5;
+    QPushButton *btn_restore_defaults;
     QDialogButtonBox *buttonBox;
 
     void setupUi(QDialog *OptionsMenu)
     {
         if (OptionsMenu->objectName().isEmpty())
             OptionsMenu->setObjectName(QString::fromUtf8("OptionsMenu"));
-        OptionsMenu->resize(640, 480);
+        OptionsMenu->resize(476, 334);
         verticalLayout_3 = new QVBoxLayout(OptionsMenu);
         verticalLayout_3->setObjectName(QString::fromUtf8("verticalLayout_3"));
         groupBox = new QGroupBox(OptionsMenu);
@@ -137,14 +140,23 @@ public:
 
         verticalLayout_3->addWidget(groupBox_2);
 
+        horizontalLayout_5 = new QHBoxLayout();
+        horizontalLayout_5->setObjectName(QString::fromUtf8("horizontalLayout_5"));
+        btn_restore_defaults = new QPushButton(OptionsMenu);
+        btn_restore_defaults->setObjectName(QString::fromUtf8("btn_restore_defaults"));
+
+        horizontalLayout_5->addWidget(btn_restore_defaults);
+
         buttonBox = new QDialogButtonBox(OptionsMenu);
         buttonBox->setObjectName(QString::fromUtf8("buttonBox"));
         buttonBox->setOrientation(Qt::Horizontal);
         buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
 
-        verticalLayout_3->addWidget(buttonBox);
+        horizontalLayout_5->addWidget(buttonBox);
 
-        verticalLayout_3->setStretch(1, 3);
+
+        verticalLayout_3->addLayout(horizontalLayout_5);
+
 #ifndef QT_NO_SHORTCUT
         label->setBuddy(clr_active_labor);
         label_2->setBuddy(clr_dirty_border);
@@ -206,6 +218,7 @@ public:
         clr_active_group->setWhatsThis(QApplication::translate("OptionsMenu", "Only used with \"group by\". The background color of a group of labors, if all members have this labor active.", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_WHATSTHIS
         label_4->setText(QApplication::translate("OptionsMenu", "Active Group", 0, QApplication::UnicodeUTF8));
+        btn_restore_defaults->setText(QApplication::translate("OptionsMenu", "Restore Default Colors", 0, QApplication::UnicodeUTF8));
         Q_UNUSED(OptionsMenu);
     } // retranslateUi
 
