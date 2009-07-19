@@ -1,5 +1,6 @@
 #include <QtGui>
 #include "GameDataReader.h"
+#include "labor.h"
 #include <QtDebug>
 
 GameDataReader::GameDataReader(QObject *parent) :
@@ -12,9 +13,10 @@ GameDataReader::GameDataReader(QObject *parent) :
 	m_data_settings->beginGroup("labors");
 	foreach(QString k, m_data_settings->childGroups()) {
 		m_data_settings->beginGroup(k);
-		Labor *l = new Labor(get_string_for_key("name"), get_int_for_key("id"), 
-							 get_int_for_key("skill"), get_color("color"), this);
+		Labor *l = new Labor(get_string_for_key("name"), get_int_for_key("id", 10), 
+							 get_int_for_key("skill", 10), k.toInt(), get_color("color"), this);
 		m_labors[l->labor_id] = l;
+		m_ordered_labors[l->list_order] = l;
 		m_data_settings->endGroup();
 	}
 	m_data_settings->endGroup();
@@ -94,6 +96,10 @@ QVector<QStringList> GameDataReader::read_labor_pairs() {
 		pairs << labor;
 	}
 	return pairs;
+}
+
+Labor *GameDataReader::get_labor(int labor_id) {
+	return m_labors.value(labor_id, new Labor("UNKNOWN", -1, -1, 1000, Qt::black, this));
 }
 
 GameDataReader *GameDataReader::m_instance = 0;

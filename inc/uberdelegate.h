@@ -11,12 +11,12 @@ public:
 	void paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
 	void paint_skill(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
 	void paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
+	//QSize sizeHint(const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
 
 	QColor color_active_labor;
 	QColor color_active_group;
 	QColor color_dirty_border;
 	QColor color_cursor;
-	
 };
 
 #endif

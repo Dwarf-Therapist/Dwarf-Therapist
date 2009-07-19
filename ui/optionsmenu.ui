@@ -13,13 +13,13 @@
   <property name="windowTitle">
    <string>Options</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,10,0">
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
       <string>Behavior</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
+     <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
        <widget class="QCheckBox" name="checkBox">
         <property name="text">
@@ -35,7 +35,7 @@
      <property name="title">
       <string>Grid Colors</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>

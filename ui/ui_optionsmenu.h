@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'optionsmenu.ui'
 **
-** Created: Sat Jul 18 16:17:11 2009
+** Created: Sat Jul 18 19:55:46 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -30,9 +30,9 @@ QT_BEGIN_NAMESPACE
 class Ui_OptionsMenu
 {
 public:
-    QVBoxLayout *verticalLayout_3;
-    QGroupBox *groupBox;
     QVBoxLayout *verticalLayout;
+    QGroupBox *groupBox;
+    QVBoxLayout *verticalLayout_3;
     QCheckBox *checkBox;
     QGroupBox *groupBox_2;
     QVBoxLayout *verticalLayout_2;
@@ -57,19 +57,19 @@ public:
         if (OptionsMenu->objectName().isEmpty())
             OptionsMenu->setObjectName(QString::fromUtf8("OptionsMenu"));
         OptionsMenu->resize(476, 334);
-        verticalLayout_3 = new QVBoxLayout(OptionsMenu);
-        verticalLayout_3->setObjectName(QString::fromUtf8("verticalLayout_3"));
+        verticalLayout = new QVBoxLayout(OptionsMenu);
+        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         groupBox = new QGroupBox(OptionsMenu);
         groupBox->setObjectName(QString::fromUtf8("groupBox"));
-        verticalLayout = new QVBoxLayout(groupBox);
-        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
+        verticalLayout_3 = new QVBoxLayout(groupBox);
+        verticalLayout_3->setObjectName(QString::fromUtf8("verticalLayout_3"));
         checkBox = new QCheckBox(groupBox);
         checkBox->setObjectName(QString::fromUtf8("checkBox"));
 
-        verticalLayout->addWidget(checkBox);
+        verticalLayout_3->addWidget(checkBox);
 
 
-        verticalLayout_3->addWidget(groupBox);
+        verticalLayout->addWidget(groupBox);
 
         groupBox_2 = new QGroupBox(OptionsMenu);
         groupBox_2->setObjectName(QString::fromUtf8("groupBox_2"));
@@ -138,7 +138,7 @@ public:
         verticalLayout_2->addLayout(horizontalLayout_4);
 
 
-        verticalLayout_3->addWidget(groupBox_2);
+        verticalLayout->addWidget(groupBox_2);
 
         horizontalLayout_5 = new QHBoxLayout();
         horizontalLayout_5->setObjectName(QString::fromUtf8("horizontalLayout_5"));
@@ -155,8 +155,9 @@ public:
         horizontalLayout_5->addWidget(buttonBox);
 
 
-        verticalLayout_3->addLayout(horizontalLayout_5);
+        verticalLayout->addLayout(horizontalLayout_5);
 
+        verticalLayout->setStretch(1, 10);
 #ifndef QT_NO_SHORTCUT
         label->setBuddy(clr_active_labor);
         label_2->setBuddy(clr_dirty_border);

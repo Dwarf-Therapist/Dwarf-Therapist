@@ -9,12 +9,13 @@ class RotatedHeader : public QHeaderView {
 	Q_OBJECT
 public:
 	RotatedHeader(Qt::Orientation orientation, QWidget *parent = 0);
-	void set_model(DwarfModel *dm) {m_model = dm;}
+	void set_model(DwarfModel *dm);
 	void paintSection(QPainter *p, const QRect &rect, int idx) const;
 	QSize sizeHint() const;
 protected:
 	void leaveEvent(QEvent *e);
 	void mouseMoveEvent(QMouseEvent *e);
+	void mousePressEvent(QMouseEvent *e);
 private:
 	DwarfModel *m_model;
 	QPoint m_p;

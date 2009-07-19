@@ -26,6 +26,14 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 		}
 	}
 
+	if (idx.column() == model->selected_col()) {
+		p->save();
+		p->setPen(QColor(0x0099FF));
+		p->drawLine(opt.rect.topLeft(), opt.rect.bottomLeft());
+		p->drawLine(opt.rect.topRight(), opt.rect.bottomRight());
+		p->restore();
+	}
+
 	if (opt.state & QStyle::State_HasFocus) { // cursor
 		p->save(); // border last
 		p->setBrush(Qt::NoBrush);
@@ -65,7 +73,7 @@ void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, con
 		p->save();
 		p->setRenderHint(QPainter::Antialiasing);
 		p->setPen(Qt::gray);
-		p->setBrush(QBrush(Qt::black));
+		p->setBrush(QBrush(Qt::red));
 
 		QPolygonF shape;
 		shape << QPointF(0.5, 0.1) //top
@@ -78,27 +86,24 @@ void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, con
 		p->drawPolygon(shape);
 		p->restore();
 
-		p->save();
-		p->setPen(QColor(0x111111));
-		p->drawRect(opt.rect.adjusted(0,0,-1,-1));
-		p->restore();
-		skip_border = true;
-
-	} else if (rating < 15 && rating > 9) {
+	} else if (rating < 15 && rating > 10) {
 		// TODO: try drawing the square of increasing size...
-		int offset = 14 - rating;
-		int color = 0xFFFFFF - 0x111100 * offset;
+		float size = 0.65f * (rating / 10.0f);
+		float inset = (1.0f - size) / 2.0f;
+
 		p->save();
 		p->translate(opt.rect.x(), opt.rect.y());
 		p->scale(opt.rect.width(), opt.rect.height());
-		p->fillRect(QRectF(0.15, 0.15, 0.7, 0.7), QBrush(QColor(color)));
+		p->fillRect(QRectF(inset, inset, size, size), QBrush(QColor(0x888888)));
 		p->restore();
 	} else if (rating > 0) {
-		int color = 0xAAAAAA - 0x090909 * rating;
+		float size = 0.65f * (rating / 10.0f);
+		float inset = (1.0f - size) / 2.0f;
+
 		p->save();
 		p->translate(opt.rect.x(), opt.rect.y());
 		p->scale(opt.rect.width(), opt.rect.height());
-		p->fillRect(QRectF(0.25, 0.25, 0.5, 0.5), QBrush(QColor(color)));
+		p->fillRect(QRectF(inset, inset, size, size), QBrush(QColor(0xAAAAAA)));
 		p->restore();
 	}
 
@@ -165,3 +170,11 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 	}
 	p->restore();
 }
+
+/* If grid-sizing ever comes back...
+QSize UberDelegate::sizeHint(const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
+	if (idx.column() == 0)
+		return QStyledItemDelegate::sizeHint(opt, idx);
+	return QSize(24, 24);
+}
+*/

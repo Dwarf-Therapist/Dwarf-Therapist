@@ -37,7 +37,6 @@ public:
         void connect_to_df();
 		void read_dwarves();
 		void scan_memory();
-		void filter_dwarves();
 		void show_toolbutton_text(bool);
 		void set_group_by(int);
 		void show_about();
@@ -59,6 +58,7 @@ private:
 	QLabel *m_lbl_status;
 	QSettings *m_settings;
 	DwarfModel *m_model;
+	QSortFilterProxyModel *m_proxy;
 	OptionsMenu *m_options_menu;
 	QVector<CustomProfession*> m_custom_professions;
 	CustomProfession *m_temp_cp;
@@ -75,6 +75,7 @@ private:
         void set_interface_enabled(bool);
 		void color_changed(MainWindow::CONFIGURABLE_COLORS picker, const QColor &c);
 		void apply_custom_profession();
+		void set_nickname();
 		
 };
 

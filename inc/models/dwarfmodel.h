@@ -12,6 +12,7 @@ public:
 	typedef enum {
 		GB_NOTHING = 0,
 		GB_PROFESSION = 1,
+		GB_LEGENDARY = 2,
 		GB_TOTAL
 	} GROUP_BY;
 	typedef enum {
@@ -21,7 +22,8 @@ public:
 		DR_LABOR_ID,
 		DR_GROUP_NAME,
 		DR_ID,
-		DR_DUMMY // used as an int counter that increments to force re-draws
+		DR_DUMMY, // used as an int counter that increments to force re-draws
+		DR_COL_SELECT
 	} DATA_ROLES;
 
 	DwarfModel(QObject *parent = 0);
@@ -37,6 +39,8 @@ public:
 	QVector<Dwarf*> get_dirty_dwarves();
 	QList<Dwarf*> get_dwarves() {return m_dwarves.values();}
 	void calculate_pending();
+	int selected_col() const {return m_selected_col;}
+	void filter_changed(const QString &);
 
 	public slots:
 		void set_group_by(int group_by);
@@ -44,15 +48,15 @@ public:
 		void labor_clicked(const QModelIndex &idx);
 		void clear_pending();
 		void commit_pending();
+		void section_clicked(int idx, Qt::MouseButton btn);
 
 private:
 	DFInstance *m_df;
-	QVector<QStringList> m_labor_cols;
 	QMap<int, Dwarf*> m_dwarves;
 	QMap<QString, QVector<Dwarf*>> m_grouped_dwarves;
 	GROUP_BY m_group_by;
+	int m_selected_col;
 	
-
 	void build_rows();
 
 signals:

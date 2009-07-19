@@ -11,6 +11,7 @@
 #include "statetableview.h"
 #include "uberdelegate.h"
 #include "customprofession.h"
+#include "labor.h"
 #include "defines.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -21,12 +22,14 @@ MainWindow::MainWindow(QWidget *parent)
     , m_lbl_status(0)
 	, m_settings(0)
 	, m_model(new DwarfModel(this))
+	, m_proxy(new QSortFilterProxyModel(this))
 	, m_custom_professions(QVector<CustomProfession*>())
 	, m_reading_settings(false)
 	, m_temp_cp(0)
 {
     ui->setupUi(this);
 	ui->stv->setModel(m_model);
+
 	connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
 	connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
 	connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
@@ -49,6 +52,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 	ui->cb_group_by->setItemData(0, DwarfModel::GB_NOTHING);
 	ui->cb_group_by->addItem("Profession", DwarfModel::GB_PROFESSION);
+	ui->cb_group_by->addItem("Legendary or not", DwarfModel::GB_LEGENDARY);
 	read_settings();
 }
 
@@ -205,11 +209,6 @@ void MainWindow::scan_memory() {
     qDebug() << "CREATURE VECTOR:   " << hex << creature_addr;
 }
 
-void MainWindow::filter_dwarves() {
-	QString filter_text = ui->le_filter->text();
-	//ui->stv->filter_dwarves(filter_text);
-}
-
 void MainWindow::show_toolbutton_text(bool enabled) {
 	if (enabled)
 		ui->main_toolbar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
@@ -346,7 +345,7 @@ void MainWindow::delete_custom_profession() {
 void MainWindow::draw_professions() {
 	ui->list_custom_professions->clear();
 	foreach(CustomProfession *cp, m_custom_professions) {
-		QListWidgetItem *i = new QListWidgetItem(cp->get_name(), ui->list_custom_professions);
+		new QListWidgetItem(cp->get_name(), ui->list_custom_professions);
 	}
 }
 
@@ -359,8 +358,9 @@ void MainWindow::draw_grid_context_menu(const QPoint &p) {
 	
 	QMenu m(this);
 	m.setTitle(tr("Dwarf Options"));
+	m.addAction(tr("Set Nickname..."), this, SLOT(set_nickname()));
 	//m.addAction(tr("View Details..."), this, "add_custom_profession()");
-	//m.addSeparator();
+	m.addSeparator();
 
 	QMenu sub(&m);
 	sub.setTitle(tr("Custom Professions"));
@@ -368,8 +368,7 @@ void MainWindow::draw_grid_context_menu(const QPoint &p) {
 	sub.addSeparator();
 	
 	foreach(CustomProfession *cp, m_custom_professions) {
-		QAction *tmp = sub.addAction(cp->get_name(), this, SLOT(apply_custom_profession()));
-		//tmp->setData(id);
+		sub.addAction(cp->get_name(), this, SLOT(apply_custom_profession()));
 	}
 	m.addMenu(&sub);
 	
@@ -388,8 +387,8 @@ void MainWindow::draw_custom_profession_context_menu(const QPoint &p) {
 
 	QMenu m(this);
 	m.setTitle(tr("Custom Profession"));
-	QAction *act_edit = m.addAction(tr("Edit..."), this, SLOT(edit_custom_profession()));
-	QAction *act_delete = m.addAction(tr("Delete..."), this, SLOT(delete_custom_profession()));
+	m.addAction(tr("Edit..."), this, SLOT(edit_custom_profession()));
+	m.addAction(tr("Delete..."), this, SLOT(delete_custom_profession()));
 	m.exec(ui->list_custom_professions->viewport()->mapToGlobal(p));
 }
 
@@ -438,4 +437,32 @@ void MainWindow::import_existing_professions() {
 	}
 	draw_professions();
 	QMessageBox::information(this, tr("Import Successful"), "Imported " + QString::number(imported) + " custom professions");
+}
+
+void MainWindow::set_nickname() {
+	const QItemSelection sel = ui->stv->selectionModel()->selection();
+	QModelIndexList first_col;
+	foreach(QModelIndex i, sel.indexes()) {
+		if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool())
+			first_col << i;
+	}
+
+	if (first_col.size() != 1) {
+		QMessageBox::warning(this, tr("Too many!"), tr("Slow down, killer. One at a time."));
+		return;
+	}
+	
+	int id = first_col[0].data(DwarfModel::DR_ID).toInt();
+	Dwarf *d = m_model->get_dwarf_by_id(id);
+	if (d) {
+		QString new_nick = QInputDialog::getText(this, tr("New Nickname"), tr("Nickname"), QLineEdit::Normal, d->nickname());
+		if (new_nick.length() > 28) {
+			QMessageBox::warning(this, tr("Nickname too long"), tr("Nicknames must be under 28 characters long."));
+			return;
+		}
+		d->set_nickname(new_nick);
+		m_model->setData(first_col[0], d->nice_name(), Qt::DisplayRole);
+		//m_model->dataChanged(first_col[0], first_col[0]);
+	}
+	m_model->calculate_pending();
 }

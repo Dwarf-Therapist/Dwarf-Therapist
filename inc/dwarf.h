@@ -32,7 +32,10 @@ public:
 	short get_rating_for_skill(int labor_id);
 	int pending_changes();
 	void clear_pending();
+	void commit_pending();
 	int apply_custom_profession(CustomProfession *cp); // return # of pending changes
+	QString nickname() {return m_pending_nick_name;}
+	void set_nickname(QString nick) {m_pending_nick_name = nick;}
 
 	QModelIndex m_name_idx;
 
@@ -48,9 +51,8 @@ private:
 	int m_id;
 	QString m_first_name;
 	QString m_last_name;
-	QString m_nick_name;
-	QString m_custom_profession;
-	QString m_pending_custom_profession;
+	QString m_nick_name, m_pending_nick_name;
+	QString m_custom_profession, m_pending_custom_profession;
 	QString m_profession;
 	int m_strength;
 	int m_agility;

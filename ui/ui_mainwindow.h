@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Sat Jul 18 16:03:36 2009
+** Created: Sat Jul 18 21:42:16 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -19,7 +19,6 @@
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QHeaderView>
 #include <QtGui/QLabel>
-#include <QtGui/QLineEdit>
 #include <QtGui/QListWidget>
 #include <QtGui/QMainWindow>
 #include <QtGui/QMenu>
@@ -58,9 +57,6 @@ public:
     QWidget *main_widget;
     QVBoxLayout *verticalLayout;
     QHBoxLayout *horizontalLayout;
-    QLabel *label;
-    QLineEdit *le_filter;
-    QPushButton *btn_filter;
     QHBoxLayout *horizontalLayout_2;
     QLabel *lbl_group_by;
     QComboBox *cb_group_by;
@@ -198,23 +194,6 @@ public:
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setSpacing(6);
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
-        label = new QLabel(main_widget);
-        label->setObjectName(QString::fromUtf8("label"));
-
-        horizontalLayout->addWidget(label);
-
-        le_filter = new QLineEdit(main_widget);
-        le_filter->setObjectName(QString::fromUtf8("le_filter"));
-        le_filter->setEnabled(false);
-
-        horizontalLayout->addWidget(le_filter);
-
-        btn_filter = new QPushButton(main_widget);
-        btn_filter->setObjectName(QString::fromUtf8("btn_filter"));
-        btn_filter->setEnabled(false);
-
-        horizontalLayout->addWidget(btn_filter);
-
 
         verticalLayout->addLayout(horizontalLayout);
 
@@ -390,10 +369,8 @@ public:
         dock_custom_professions->setWidget(dockWidgetContents_2);
         MainWindow->addDockWidget(static_cast<Qt::DockWidgetArea>(2), dock_custom_professions);
 #ifndef QT_NO_SHORTCUT
-        label->setBuddy(le_filter);
         lbl_group_by->setBuddy(cb_group_by);
 #endif // QT_NO_SHORTCUT
-        QWidget::setTabOrder(le_filter, btn_filter);
 
         menuBar->addAction(menu_File->menuAction());
         menuBar->addAction(menuProfessions->menuAction());
@@ -432,7 +409,6 @@ public:
         QObject::connect(act_exit, SIGNAL(triggered()), MainWindow, SLOT(close()));
         QObject::connect(act_read_dwarves, SIGNAL(triggered()), MainWindow, SLOT(read_dwarves()));
         QObject::connect(act_scan_memory, SIGNAL(triggered()), MainWindow, SLOT(scan_memory()));
-        QObject::connect(btn_filter, SIGNAL(clicked()), MainWindow, SLOT(filter_dwarves()));
         QObject::connect(act_expand_all, SIGNAL(triggered()), stv, SLOT(expandAll()));
         QObject::connect(act_collapse_all, SIGNAL(triggered()), stv, SLOT(collapseAll()));
         QObject::connect(act_show_toolbutton_text, SIGNAL(toggled(bool)), MainWindow, SLOT(show_toolbutton_text(bool)));
@@ -533,8 +509,6 @@ public:
 #ifndef QT_NO_TOOLTIP
         act_import_existing_professions->setToolTip(QApplication::translate("MainWindow", "Import all custom professions from the loaded game, and create new labor templates for them", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
-        label->setText(QApplication::translate("MainWindow", "Filter Dwarves", 0, QApplication::UnicodeUTF8));
-        btn_filter->setText(QApplication::translate("MainWindow", "Go", 0, QApplication::UnicodeUTF8));
         lbl_group_by->setText(QApplication::translate("MainWindow", "Group By", 0, QApplication::UnicodeUTF8));
         cb_group_by->clear();
         cb_group_by->insertItems(0, QStringList()

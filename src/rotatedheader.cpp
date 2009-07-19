@@ -5,10 +5,14 @@
 RotatedHeader::RotatedHeader(Qt::Orientation orientation, QWidget *parent)
 	: QHeaderView(orientation, parent)
 {
+	setClickable(true);
+	setSortIndicatorShown(true);
+	setMouseTracking(true);
 }
 
 void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const {
-	if (!rect.isValid()) return;
+	if (!rect.isValid() || idx == 0) 
+		return QHeaderView::paintSection(p, rect, idx);
 
 	GameDataReader *gdr = GameDataReader::ptr();
 
@@ -34,7 +38,6 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 		p->fillRect(rect.adjusted(2,2,-2,-2), QBrush(gdr->get_color(QString("labors/%1/color").arg(idx-1))));
 
 	
-
 	QString data = m_model->headerData(idx, Qt::Horizontal).toString();
 	p->save();
 	p->setPen(Qt::black);
@@ -46,13 +49,29 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 	p->restore();
 }
 
+void RotatedHeader::set_model(DwarfModel *dm) {
+	m_model = dm;
+	setResizeMode(QHeaderView::Fixed);
+	setResizeMode(0, QHeaderView::ResizeToContents);
+}
+
 QSize RotatedHeader::sizeHint() const {
 	return QSize(32, 120);
 }
 
+
 void RotatedHeader::mouseMoveEvent(QMouseEvent *e) {
 	m_p = e->pos();
 	QHeaderView::mouseMoveEvent(e);
+}
+
+void RotatedHeader::mousePressEvent(QMouseEvent *e) {
+	m_p = e->pos();
+	int idx = logicalIndexAt(e->pos());
+	if (idx < count()) {
+		m_model->section_clicked(idx, e->button());
+	}
+	QHeaderView::mousePressEvent(e);
 }
 
 void RotatedHeader::leaveEvent(QEvent *e) {

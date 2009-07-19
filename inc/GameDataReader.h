@@ -3,10 +3,11 @@
 
 #include <string>
 #include <stdexcept>
-#include "labor.h"
+#include <QtCore>
 
 // forward declaration
 class QSettings;
+class Labor;
 
 // exceptions
 class MissingValueException : public std::runtime_error {
@@ -37,7 +38,8 @@ public:
 	int get_offset(QString key) {return get_int_for_key("offsets/" + key);}
 	int get_dwarf_offset(QString key) {return get_int_for_key("dwarf_offsets/" + key);}
 
-	Labor *get_labor(int labor_id) {return m_labors[labor_id];}
+	QMap<int, Labor*> get_ordered_labors() {return m_ordered_labors;}
+	Labor *get_labor(int labor_id);
 	
 	QString get_string_for_key(QString key);
 	QString get_profession_name(int profession_id);
@@ -54,6 +56,7 @@ private:
 	static GameDataReader *m_instance;
 	QSettings *m_data_settings;
 	QMap<int, Labor*> m_labors;
+	QMap<int, Labor*> m_ordered_labors;
 
 
 };

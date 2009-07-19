@@ -16,35 +16,7 @@
   <widget class="QWidget" name="main_widget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Filter Dwarves</string>
-        </property>
-        <property name="buddy">
-         <cstring>le_filter</cstring>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="le_filter">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btn_filter">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Go</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
+     <layout class="QHBoxLayout" name="horizontalLayout"/>
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -675,10 +647,6 @@
    </slots>
   </customwidget>
  </customwidgets>
- <tabstops>
-  <tabstop>le_filter</tabstop>
-  <tabstop>btn_filter</tabstop>
- </tabstops>
  <resources>
   <include location="../images.qrc"/>
  </resources>
@@ -744,22 +712,6 @@
     <hint type="destinationlabel">
      <x>205</x>
      <y>230</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btn_filter</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>filter_dwarves()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>840</x>
-     <y>104</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>750</x>
-     <y>25</y>
     </hint>
    </hints>
   </connection>
@@ -1046,8 +998,8 @@
      <y>704</y>
     </hint>
     <hint type="destinationlabel">
-     <x>564</x>
-     <y>373</y>
+     <x>-1</x>
+     <y>-1</y>
     </hint>
    </hints>
   </connection>

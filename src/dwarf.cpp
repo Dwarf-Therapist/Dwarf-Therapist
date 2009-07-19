@@ -2,6 +2,7 @@
 #include "dwarf.h"
 #include "dfinstance.h"
 #include "skill.h"
+#include "labor.h"
 #include "gamedatareader.h"
 #include "customprofession.h"
 
@@ -25,6 +26,7 @@ void Dwarf::refresh_data() {
 	
 	m_id = m_df->read_int32(m_address + gdr->get_dwarf_offset("id"), bytes_read);
 	m_nick_name = m_df->read_string(m_address + gdr->get_dwarf_offset("nick_name"));
+	m_pending_nick_name = m_nick_name;
     m_last_name = read_last_name(m_address + gdr->get_dwarf_offset("last_name"));
 	m_custom_profession = m_df->read_string(m_address + gdr->get_dwarf_offset("custom_profession"));
 	m_pending_custom_profession = m_df->read_string(m_address + gdr->get_dwarf_offset("custom_profession"));
@@ -64,10 +66,10 @@ QString Dwarf::to_string() {
 }
 
 QString Dwarf::nice_name() {
-	if (m_nick_name.isEmpty()) {
+	if (m_pending_nick_name.isEmpty()) {
 		return QString("%1 %2").arg(m_first_name, m_last_name);
 	} else {
-		return QString("\"%1\" %2 ").arg(m_nick_name, m_last_name);
+		return QString("\"%1\" %2 ").arg(m_pending_nick_name, m_last_name);
 	}
 }
 
@@ -130,7 +132,7 @@ QString Dwarf::read_professtion(int address) {
 	}
 	
 	char buffer[1];
-	int bytes_read = m_df->read_raw(address, 1, &buffer[0]);
+	m_df->read_raw(address, 1, &buffer[0]);
 	return GameDataReader::ptr()->get_profession_name((int)buffer[0]);
 }
 
@@ -174,6 +176,13 @@ int Dwarf::pending_changes() {
 
 void Dwarf::clear_pending() {
 	memcpy(m_pending_labors, m_labors, 102);
+}
+
+void Dwarf::commit_pending() {
+	GameDataReader *gdr = GameDataReader::ptr();
+	int addr = m_address + gdr->get_dwarf_offset("labors");
+	m_df->write_raw(addr, 102, m_pending_labors);
+	read_labors(addr);
 }
 
 int Dwarf::apply_custom_profession(CustomProfession *cp) {

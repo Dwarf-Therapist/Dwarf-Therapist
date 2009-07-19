@@ -14,9 +14,7 @@ StateTableView::StateTableView(QWidget *parent)
 	, m_header(new RotatedHeader(Qt::Horizontal, this))
 {
 	setItemDelegate(m_delegate);
-	this->setHeader(m_header);
-	m_header->setClickable(true);
-	m_header->setSortIndicatorShown(true);
+	setHeader(m_header);
 }
 
 StateTableView::~StateTableView()
@@ -25,8 +23,13 @@ StateTableView::~StateTableView()
 
 void StateTableView::setModel(QAbstractItemModel *model) {
 	QTreeView::setModel(model);
+
+	//header()->setDefaultSectionSize(24); //set grid size
 	setColumnWidth(0, 200);
-	m_header->set_model(qobject_cast<DwarfModel*>(model));
+	
+	DwarfModel *dm = qobject_cast<DwarfModel*>(model);
+	m_header->set_model(dm);
+
 	disconnect(this, SIGNAL(activated(const QModelIndex&)));
 	connect(this, SIGNAL(activated(const QModelIndex&)), 
 			model, SLOT(labor_clicked(const QModelIndex&)));

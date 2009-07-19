@@ -5,6 +5,7 @@
 #include "dwarfmodel.h"
 #include "dwarf.h"
 #include "skill.h"
+#include "labor.h"
 #include "statetableview.h"
 
 DwarfModel::DwarfModel(QObject *parent)
@@ -13,9 +14,14 @@ DwarfModel::DwarfModel(QObject *parent)
 	, m_group_by(GB_NOTHING)
 {
 	GameDataReader *gdr = GameDataReader::ptr();
-	QStringList keys = gdr->get_child_groups("labors");
+	//QStringList keys = gdr->get_child_groups("labors");
 	setHorizontalHeaderItem(0, new QStandardItem);
-	int i = 0;
+	QMap<int, Labor*> labors = gdr->get_ordered_labors();
+	foreach(Labor *l, labors) {
+		setHorizontalHeaderItem(l->list_order + 1, new QStandardItem(l->name));
+	}
+	
+	/*int i = 0;
 	foreach(QString k, keys) {
 		int labor_id = gdr->get_int_for_key(QString("labors/%1/id").arg(i));
 		QString labor_name = gdr->get_string_for_key(QString("labors/%1/name").arg(i));
@@ -25,24 +31,7 @@ DwarfModel::DwarfModel(QObject *parent)
 		m_labor_cols << labor;
 		setHorizontalHeaderItem(i + 1, new QStandardItem(labor_name));
 		i++;
-	}
-
-	/*
-	QStringList keys = gdr->get_child_groups("labor_table");
-	
-	setHorizontalHeaderItem(0, new QStandardItem);
-	int i = 1;
-	foreach(QString k, keys) {
-		int labor_id = gdr->get_keys("labor_table/" + k)[0].toInt();
-		QString labor_name_key = QString("labor_table/%1/%2").arg(k).arg(labor_id);
-		QString labor_name = gdr->get_string_for_key(labor_name_key);
-		
-		QStringList labor;
-		labor << QString::number(labor_id) << labor_name;
-		m_labor_cols << labor;
-		setHorizontalHeaderItem(i++, new QStandardItem(labor_name));
-	}
-	*/
+	}*/
 }
 
 void DwarfModel::sort(int column, Qt::SortOrder order) {
@@ -53,6 +42,27 @@ void DwarfModel::sort(int column, Qt::SortOrder order) {
 	QStandardItemModel::sort(column, order);
 }
 
+void DwarfModel::filter_changed(const QString &needle) {
+}
+
+void DwarfModel::section_clicked(int col, Qt::MouseButton btn) {
+	if (btn == Qt::LeftButton) {
+		if (col == m_selected_col) {
+			// turn it off
+			m_selected_col = -1;
+		} else {
+			m_selected_col = col;
+		}
+		emit dataChanged(index(0, col), index(rowCount()-1, col));
+
+	} else if (btn == Qt::RightButton) {
+		// sort
+		if (col == 0)
+			sort(col, Qt::AscendingOrder);
+		else
+			sort(col, Qt::DescendingOrder);
+	}
+}
 
 void DwarfModel::load_dwarves() {
 	// clear id->dwarf map
@@ -78,12 +88,26 @@ void DwarfModel::load_dwarves() {
 			case GB_PROFESSION:
 				m_grouped_dwarves[d->profession()].append(d);
 				break;
+			case GB_LEGENDARY:
+				int legendary_skills = 0;
+				foreach(Skill s, *d->get_skills()) {
+					if (s.rating() >= 15)
+						legendary_skills++;
+				}
+				if (legendary_skills)
+					m_grouped_dwarves["Legends"].append(d);
+				else
+					m_grouped_dwarves["Losers"].append(d);
+				break;
 		}
 	}
 	build_rows();
 }
 
 void DwarfModel::build_rows() {
+	GameDataReader *gdr = GameDataReader::ptr();
+	QMap<int, Labor*> labors = gdr->get_ordered_labors();
+
 	foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
 		QStandardItem *root = 0;
 		QList<QStandardItem*> root_row;
@@ -97,14 +121,11 @@ void DwarfModel::build_rows() {
 		}
 
 		if (root) { // we have a parent, so we should draw an aggregate row
-			foreach(QStringList l, m_labor_cols) {
-				int labor_id = l[0].toInt();
-				QString labor_name = l[1];
-
+			foreach(Labor *l, labors) {
 				QStandardItem *item = new QStandardItem();
-				item->setText(0);
+				//item->setText(0);
 				item->setData(true, DR_IS_AGGREGATE);
-				item->setData(labor_id, DR_LABOR_ID);
+				item->setData(l->labor_id, DR_LABOR_ID);
 				item->setData(key, DR_GROUP_NAME);
 				item->setData(false, DR_DIRTY);
 				item->setData(0, DR_DUMMY);
@@ -127,23 +148,21 @@ void DwarfModel::build_rows() {
 
 			QList<QStandardItem*> items;
 			items << i_name;
-			foreach(QStringList l, m_labor_cols) {
-				int labor_id = l[0].toInt();
-				QString labor_name = l[1];
-				short rating = d->get_rating_for_skill(labor_id);
+			foreach(Labor *l, labors) {
+				short rating = d->get_rating_for_skill(l->labor_id);
 				//bool enabled = d->is_labor_enabled(labor_id);
 
 				QStandardItem *item = new QStandardItem();
 				
 				item->setData(false, DR_IS_AGGREGATE);
 				item->setData(rating, DR_RATING); // for sort order
-				item->setData(labor_id, DR_LABOR_ID);
+				item->setData(l->labor_id, DR_LABOR_ID);
 				item->setData(false, DR_DIRTY);
 				item->setData(d->id(), DR_ID);
 				item->setData(0, DR_DUMMY);
 
-				item->setToolTip(QString("<h3>%2</h3><h4>%3</h4>%1").arg(d->nice_name()).arg(labor_name).arg(QString::number(rating)));
-				item->setStatusTip(labor_name + " :: " + d->nice_name());
+				item->setToolTip(QString("<h3>%2</h3><h4>%3</h4>%1").arg(d->nice_name()).arg(l->name).arg(QString::number(rating)));
+				item->setStatusTip(l->name + " :: " + d->nice_name());
 				items << item;
 			}
 			if (root) {
@@ -226,7 +245,13 @@ void DwarfModel::clear_pending() {
 }
 
 void DwarfModel::commit_pending() {
-	return;
+	foreach(Dwarf *d, m_dwarves) {
+		if (d->pending_changes()) {
+			d->commit_pending();
+		}
+	}
+	emit reset();
+	emit new_pending_changes(0);
 }
 
 QVector<Dwarf*> DwarfModel::get_dirty_dwarves() {
