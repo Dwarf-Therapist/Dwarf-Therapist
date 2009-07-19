@@ -104,7 +104,7 @@ QVector<Skill> Dwarf::read_skills(int address) {
     uint bytes_read = 0;
 	foreach(int addr, m_df->enumerate_vector(address)) {
         short type = m_df->read_short(addr, bytes_read);
-        short experience = m_df->read_short(addr + 2, bytes_read);
+        ushort experience = m_df->read_ushort(addr + 2, bytes_read);//BUG: this is wrong
         short rating = m_df->read_short(addr + 4, bytes_read);
 		Skill s(type, experience, rating);
         skills.append(s);
@@ -182,7 +182,7 @@ void Dwarf::commit_pending() {
 	GameDataReader *gdr = GameDataReader::ptr();
 	int addr = m_address + gdr->get_dwarf_offset("labors");
 	m_df->write_raw(addr, 102, m_pending_labors);
-	read_labors(addr);
+	refresh_data();
 }
 
 int Dwarf::apply_custom_profession(CustomProfession *cp) {
@@ -192,5 +192,4 @@ int Dwarf::apply_custom_profession(CustomProfession *cp) {
 	}
 	m_custom_profession = cp->get_name();
 	return get_dirty_labors().size();
-	//qDebug() << nice_name() << "gets new profession:" << cp->get_name();
 }

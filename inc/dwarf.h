@@ -17,7 +17,8 @@ public:
 	static Dwarf* get_dwarf(DFInstance *df, int address);
 	~Dwarf();
 
-	int id(){return m_id;}
+	// attributes
+	int id() {return m_id;}
 	QString profession() {return m_profession;}
 	QString custom_profession_name() {return m_pending_custom_profession;}
 	void refresh_data();

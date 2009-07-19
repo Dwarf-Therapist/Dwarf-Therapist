@@ -137,9 +137,9 @@ void DwarfModel::build_rows() {
 			QStandardItem *i_name = new QStandardItem(d->nice_name());
 			QString skill_summary;
 			QVector<Skill> *skills = d->get_skills();
-			foreach(Skill s, *skills) {
-				skill_summary += s.to_string();
-				skill_summary += "\n";
+			qSort(*skills);
+			for (int i = skills->size() - 1; i >= 0; --i) {
+				skill_summary += skills->at(i).to_string() + "\n";
 			}
 			i_name->setToolTip(skill_summary);
 			i_name->setStatusTip(d->nice_name());
@@ -160,8 +160,10 @@ void DwarfModel::build_rows() {
 				item->setData(false, DR_DIRTY);
 				item->setData(d->id(), DR_ID);
 				item->setData(0, DR_DUMMY);
-
-				item->setToolTip(QString("<h3>%2</h3><h4>%3</h4>%1").arg(d->nice_name()).arg(l->name).arg(QString::number(rating)));
+				QString tooltip = "<h3>" + l->name + "</h3>";
+				tooltip += gdr->get_skill_level_name(rating) + " " + gdr->get_skill_name(l->skill_id) + " (" + QString::number(rating) + ")";
+				tooltip += "\n<h4>" + d->nice_name() + "</h4>";
+				item->setToolTip(tooltip);
 				item->setStatusTip(l->name + " :: " + d->nice_name());
 				items << item;
 			}
