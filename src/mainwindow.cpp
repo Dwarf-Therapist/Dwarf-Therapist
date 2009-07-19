@@ -248,9 +248,9 @@ void MainWindow::list_pending() {
 		d_item->setText(0, d->nice_name() + "(" + QString::number(labors.size()) + ")");
 		d_item->setData(0, Qt::UserRole, d->id());
 		foreach(int labor_id, labors) {
-			QString labor_name = GameDataReader::ptr()->get_string_for_key(QString("labor_names/%1").arg(labor_id));
+			Labor *l = GameDataReader::ptr()->get_labor(labor_id);
 			QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
-			i->setText(0, labor_name);
+			i->setText(0, l->name);
 			if (d->is_labor_enabled(labor_id)) {
 				i->setIcon(0, QIcon(":img/add.png"));
 			} else {

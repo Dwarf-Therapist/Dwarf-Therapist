@@ -1,5 +1,6 @@
 #include "rotatedheader.h"
 #include "dwarfmodel.h"
+#include "gamedatareader.h"
 
 RotatedHeader::RotatedHeader(Qt::Orientation orientation, QWidget *parent)
 	: QHeaderView(orientation, parent)
@@ -9,13 +10,14 @@ RotatedHeader::RotatedHeader(Qt::Orientation orientation, QWidget *parent)
 void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const {
 	if (!rect.isValid()) return;
 
+	GameDataReader *gdr = GameDataReader::ptr();
+
 	QStyleOptionHeader opt;
 	opt.rect = rect;
 	opt.orientation = Qt::Horizontal;
 	opt.section = idx;
 	opt.sortIndicator = QStyleOptionHeader::None;
 	
-
 	QStyle::State state = QStyle::State_None;
 	if (isEnabled())
 		state |= QStyle::State_Enabled;
@@ -26,7 +28,12 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 	if (sortIndicatorSection() == idx)
 		state |= QStyle::State_Sunken;
 	opt.state = state;
+	
 	style()->drawControl(QStyle::CE_HeaderSection, &opt, p, this);
+	if (idx > 0)
+		p->fillRect(rect.adjusted(2,2,-2,-2), QBrush(gdr->get_color(QString("labors/%1/color").arg(idx-1))));
+
+	
 
 	QString data = m_model->headerData(idx, Qt::Horizontal).toString();
 	p->save();

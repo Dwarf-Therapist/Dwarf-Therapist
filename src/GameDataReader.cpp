@@ -1,17 +1,29 @@
-#include <QtCore>
+#include <QtGui>
 #include "GameDataReader.h"
 #include <QtDebug>
 
-GameDataReader::GameDataReader() {
+GameDataReader::GameDataReader(QObject *parent) :
+	QObject(parent)
+ {
 	QDir working_dir = QDir::current();
 	QString filename = working_dir.absoluteFilePath("etc/game_data.ini");
 	m_data_settings = new QSettings(filename, QSettings::IniFormat);
+
+	m_data_settings->beginGroup("labors");
+	foreach(QString k, m_data_settings->childGroups()) {
+		m_data_settings->beginGroup(k);
+		Labor *l = new Labor(get_string_for_key("name"), get_int_for_key("id"), 
+							 get_int_for_key("skill"), get_color("color"), this);
+		m_labors[l->labor_id] = l;
+		m_data_settings->endGroup();
+	}
+	m_data_settings->endGroup();
 }
  
 int GameDataReader::get_int_for_key(QString key, short base) {
 	if (!m_data_settings->contains(key)) {
 		QString error = QString("Couldn't find key '%1' in file '%2'").arg(key).arg(m_data_settings->fileName());
-		//qWarning() << error;
+		qWarning() << error;
 		//throw MissingValueException(error.toStdString());
 	}
 	bool ok;
@@ -19,7 +31,7 @@ int GameDataReader::get_int_for_key(QString key, short base) {
 	int val = offset_str.toInt(&ok, base);
 	if (!ok) {
 		QString error = QString("Key '%1' could not be read as an integer in file '%2'").arg(key).arg(m_data_settings->fileName());
-		//qWarning() << error;
+		qWarning() << error;
 		//throw CorruptedValueException(error.toStdString());
 	}
 	return val;
@@ -28,10 +40,19 @@ int GameDataReader::get_int_for_key(QString key, short base) {
 QString GameDataReader::get_string_for_key(QString key) {
 	if (!m_data_settings->contains(key)) {
 		QString error = QString("Couldn't find key '%1' in file '%2'").arg(key).arg(m_data_settings->fileName());
-		//qWarning() << error;
+		qWarning() << error;
 		//throw MissingValueException(error.toStdString());
 	}
 	return m_data_settings->value(key, QVariant("UNKNOWN")).toString();
+}
+
+QColor GameDataReader::get_color(QString key) {
+	QString hex_code = get_string_for_key(key);
+	bool ok;
+	QColor c(hex_code.toInt(&ok, 16));
+	if (!ok || !c.isValid())
+		c = Qt::white;
+	return c;
 }
 
 QString GameDataReader::get_skill_level_name(short level) {

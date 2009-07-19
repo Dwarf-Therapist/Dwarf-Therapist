@@ -112,12 +112,12 @@ QVector<Skill> Dwarf::read_skills(int address) {
 
 short Dwarf::get_rating_for_skill(int labor_id) {
 	GameDataReader *gdr = GameDataReader::ptr();
-	int skill_id = gdr->get_int_for_key("labor_to_skill/" + QString::number(labor_id), 10);
-	if (skill_id == -1) { // not found
+	Labor *l = gdr->get_labor(labor_id);
+	if (l->skill_id == -1) { // not found
 		return 0;
 	}
 	foreach(Skill s, m_skills) {
-		if (s.id() == skill_id) {
+		if (s.id() == l->skill_id) {
 			return s.rating();
 		}
 	}

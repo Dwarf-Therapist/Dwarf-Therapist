@@ -39,6 +39,7 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 }
 
 void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
+	GameDataReader *gdr = GameDataReader::ptr();
 	const DwarfModel *m = dynamic_cast<const DwarfModel*>(idx.model());
 	short rating = idx.data(DwarfModel::DR_RATING).toInt();
 	
@@ -50,11 +51,14 @@ void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, con
 	bool enabled = d->is_labor_enabled(labor_id);
 	bool dirty = d->is_labor_state_dirty(labor_id);
 
+	p->save();
 	if (enabled) {
-		p->save();
 		p->fillRect(opt.rect, QBrush(color_active_labor));
-		p->restore();
+	} else {
+		p->fillRect(opt.rect, QBrush(gdr->get_color(QString("labors/%1/color").arg(idx.column() - 1))));
 	}
+	p->restore();
+	
 	// draw rating
 	if (rating == 15) {
 		// draw diamond
@@ -105,14 +109,14 @@ void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, con
 			p->setPen(QPen(QColor(color_dirty_border), 1));
 			p->drawRect(opt.rect.adjusted(0, 0, -1, -1));
 		} else if (opt.state & QStyle::State_Selected) {
-			p->setPen(QColor(0xd9d9d9));
+			p->setPen(QColor(0xcccccc));
 			p->drawRect(opt.rect);
 			p->setPen(QPen(QColor(0x0099FF)));
 			p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
 			p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
 			//p->drawRect(opt.rect.adjusted(0,0,-1,-1));
 		} else {
-			p->setPen(QColor(0xd9d9d9));
+			p->setPen(QColor(0xcccccc));
 			p->drawRect(opt.rect);
 		}
 		p->restore();

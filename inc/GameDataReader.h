@@ -3,6 +3,7 @@
 
 #include <string>
 #include <stdexcept>
+#include "labor.h"
 
 // forward declaration
 class QSettings;
@@ -19,12 +20,12 @@ public:
 };
 
 //singleton reader of game data
-class GameDataReader {
-	
+class GameDataReader : public QObject {
+	Q_OBJECT
 public:
 	static GameDataReader *ptr() {
 		if (!m_instance) {
-			m_instance = new GameDataReader;
+			m_instance = new GameDataReader(0);
 		}
 		return m_instance;
 	}
@@ -35,20 +36,24 @@ public:
 	int get_address(QString key) {return get_int_for_key("addresses/" + key);}
 	int get_offset(QString key) {return get_int_for_key("offsets/" + key);}
 	int get_dwarf_offset(QString key) {return get_int_for_key("dwarf_offsets/" + key);}
+
+	Labor *get_labor(int labor_id) {return m_labors[labor_id];}
 	
 	QString get_string_for_key(QString key);
 	QString get_profession_name(int profession_id);
 	QString get_skill_level_name(short level);
 	QString get_skill_name(short skill_id);
+	QColor get_color(QString key);
 	
 	QStringList get_child_groups(QString section);
 	QStringList get_keys(QString section);
 
 protected:
-	GameDataReader();
+	GameDataReader(QObject *parent = 0);
 private:
 	static GameDataReader *m_instance;
 	QSettings *m_data_settings;
+	QMap<int, Labor*> m_labors;
 
 
 };

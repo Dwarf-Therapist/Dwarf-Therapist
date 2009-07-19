@@ -13,6 +13,21 @@ DwarfModel::DwarfModel(QObject *parent)
 	, m_group_by(GB_NOTHING)
 {
 	GameDataReader *gdr = GameDataReader::ptr();
+	QStringList keys = gdr->get_child_groups("labors");
+	setHorizontalHeaderItem(0, new QStandardItem);
+	int i = 0;
+	foreach(QString k, keys) {
+		int labor_id = gdr->get_int_for_key(QString("labors/%1/id").arg(i));
+		QString labor_name = gdr->get_string_for_key(QString("labors/%1/name").arg(i));
+
+		QStringList labor;
+		labor << QString::number(labor_id) << labor_name;
+		m_labor_cols << labor;
+		setHorizontalHeaderItem(i + 1, new QStandardItem(labor_name));
+		i++;
+	}
+
+	/*
 	QStringList keys = gdr->get_child_groups("labor_table");
 	
 	setHorizontalHeaderItem(0, new QStandardItem);
@@ -27,6 +42,7 @@ DwarfModel::DwarfModel(QObject *parent)
 		m_labor_cols << labor;
 		setHorizontalHeaderItem(i++, new QStandardItem(labor_name));
 	}
+	*/
 }
 
 void DwarfModel::sort(int column, Qt::SortOrder order) {
