@@ -12,6 +12,8 @@ StateTableView::StateTableView(QWidget *parent)
 	: QTreeView(parent)
 	, m_delegate(new UberDelegate(this))
 	, m_header(new RotatedHeader(Qt::Horizontal, this))
+	, m_grid_focus(false)
+	, m_single_click_labor_changes(false)
 {
 	setItemDelegate(m_delegate);
 	setHeader(m_header);
@@ -30,11 +32,7 @@ void StateTableView::setModel(QAbstractItemModel *model) {
 	DwarfModel *dm = qobject_cast<DwarfModel*>(model);
 	m_header->set_model(dm);
 
-	disconnect(this, SIGNAL(activated(const QModelIndex&)));
-	connect(this, SIGNAL(activated(const QModelIndex&)), 
-			model, SLOT(labor_clicked(const QModelIndex&)));
-//	connect(this, SIGNAL(clicked(const QModelIndex&)), 
-//			model, SLOT(labor_clicked(const QModelIndex&)));
+	connect(this, SIGNAL(activated(const QModelIndex&)), model, SLOT(labor_clicked(const QModelIndex&)));
 }
 
 void StateTableView::new_custom_profession() {
@@ -49,6 +47,9 @@ void StateTableView::new_custom_profession() {
 }
 
 QModelIndex StateTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) {
+	if (!m_grid_focus) {
+		return QTreeView::moveCursor(cursorAction, modifiers);
+	}
 	const DwarfModel *m = dynamic_cast<const DwarfModel*>(model());
 	QModelIndex cur = currentIndex();
 	QModelIndex cur_parent = currentIndex().parent();
@@ -144,4 +145,19 @@ void StateTableView::jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* pr
 		this->selectionModel()->select(d->m_name_idx, QItemSelectionModel::SelectCurrent | QItemSelectionModel::Rows);
 		//this->selectionModel()->select(QItemSelection(d->m_name_idx, d->m_name_idx), QItemSelectionModel::SelectCurrent);
 	}
+}
+
+void StateTableView::set_single_click_labor_changes(bool enabled) {
+	m_single_click_labor_changes = enabled;
+	
+	DwarfModel *dm = qobject_cast<DwarfModel*>(model());
+	disconnect(this, SIGNAL(clicked(const QModelIndex&)), dm, SLOT(labor_clicked(const QModelIndex&)));
+	if (enabled) {
+		connect(this, SIGNAL(clicked(const QModelIndex&)), dm, SLOT(labor_clicked(const QModelIndex&)));
+	}
+}
+
+void StateTableView::set_allow_grid_focus(bool enabled) {
+	m_grid_focus = enabled;
+	m_delegate->set_allow_grid_focus(enabled);
 }

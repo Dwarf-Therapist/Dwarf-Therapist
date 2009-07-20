@@ -13,10 +13,10 @@ AboutDialog::AboutDialog(MainWindow *parent)
 
 void AboutDialog::set_latest_version(const Version &v) {
 	if (m_version < v) {
-		ui->lbl_up_to_date->setText("Update Available: <a href=\"http://code.google.com/p/dwarftherapist/downloads/list\">"
+		ui->lbl_up_to_date->setText("Update Available: <a href=\"http://code.google.com/p/dwarftherapist/downloads/list\">v"
 			+ v.to_string() + "</a>");
 	} else {
-		ui->lbl_up_to_date->setText(QString("This version is up to date (%1)").arg(m_version.to_string()));
+		ui->lbl_up_to_date->setText(QString("This version is up to date (v%1)").arg(m_version.to_string()));
 	}
 }
 

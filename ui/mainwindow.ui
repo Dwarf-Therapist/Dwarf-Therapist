@@ -173,7 +173,6 @@
     <addaction name="act_commit_pending_changes"/>
     <addaction name="act_clear_pending_changes"/>
     <addaction name="separator"/>
-    <addaction name="act_options"/>
     <addaction name="act_exit"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
@@ -206,8 +205,18 @@
     <addaction name="menuDocks"/>
     <addaction name="act_show_main_toolbar"/>
    </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="act_show_toolbutton_text"/>
+    <addaction name="act_keyboard_grid_focus"/>
+    <addaction name="act_single_click_labor_changes"/>
+    <addaction name="act_options"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menuProfessions"/>
+   <addaction name="menuSettings"/>
    <addaction name="menuWindows"/>
    <addaction name="menu_Help"/>
   </widget>
@@ -616,10 +625,10 @@
      <normaloff>:/img/application_edit.png</normaloff>:/img/application_edit.png</iconset>
    </property>
    <property name="text">
-    <string>Options...</string>
+    <string>Color Settings...</string>
    </property>
    <property name="toolTip">
-    <string>Open the options menu...</string>
+    <string>Open the color options menu...</string>
    </property>
   </action>
   <action name="act_import_existing_professions">
@@ -632,6 +641,28 @@
    </property>
    <property name="toolTip">
     <string>Import all custom professions from the loaded game, and create new labor templates for them</string>
+   </property>
+  </action>
+  <action name="act_keyboard_grid_focus">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Enable Keyboard Grid Focus</string>
+   </property>
+   <property name="toolTip">
+    <string>When checked it will show an &quot;X&quot; over the currently focused labor cell. You can then use the arrow keys to navigate the grid much like in DF. Unchecked disables the focus &quot;X&quot;</string>
+   </property>
+  </action>
+  <action name="act_single_click_labor_changes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Single Click Labor Changes</string>
+   </property>
+   <property name="toolTip">
+    <string>When set you will be able to toggle skills in the main grid with a single left-click of the mouse. When unchecked, you will have to double-click</string>
    </property>
   </action>
  </widget>
@@ -1035,6 +1066,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_keyboard_grid_focus</sender>
+   <signal>triggered(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>set_allow_grid_focus(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>373</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_single_click_labor_changes</sender>
+   <signal>triggered(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>set_single_click_labor_changes(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>373</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -1047,5 +1110,7 @@
   <slot>add_custom_profession()</slot>
   <slot>open_options_menu()</slot>
   <slot>import_existing_professions()</slot>
+  <slot>set_single_click_labor_changes(bool)</slot>
+  <slot>set_allow_grid_focus(bool)</slot>
  </slots>
 </ui>

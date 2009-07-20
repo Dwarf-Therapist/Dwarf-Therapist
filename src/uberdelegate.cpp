@@ -5,6 +5,7 @@
 
 UberDelegate::UberDelegate(QObject *parent)
 	: QStyledItemDelegate(parent)
+	, m_allow_grid_focus(false)
 {
 }
 
@@ -34,7 +35,7 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 		p->restore();
 	}
 
-	if (opt.state & QStyle::State_HasFocus) { // cursor
+	if (m_allow_grid_focus && opt.state & QStyle::State_HasFocus) { // cursor
 		p->save(); // border last
 		p->setBrush(Qt::NoBrush);
 		p->setPen(QPen(color_cursor, 2));

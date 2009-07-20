@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Mon Jul 20 12:16:23 2009
+** Created: Mon Jul 20 16:09:15 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -54,6 +54,8 @@ public:
     QAction *act_show_main_toolbar;
     QAction *act_options;
     QAction *act_import_existing_professions;
+    QAction *act_keyboard_grid_focus;
+    QAction *act_single_click_labor_changes;
     QWidget *main_widget;
     QVBoxLayout *verticalLayout;
     QHBoxLayout *horizontalLayout;
@@ -70,6 +72,7 @@ public:
     QMenu *menuProfessions;
     QMenu *menuWindows;
     QMenu *menuDocks;
+    QMenu *menuSettings;
     QToolBar *main_toolbar;
     QStatusBar *statusBar;
     QDockWidget *dock_pending_jobs_list;
@@ -185,6 +188,12 @@ public:
         QIcon icon13;
         icon13.addPixmap(QPixmap(QString::fromUtf8(":/img/application_get.png")), QIcon::Normal, QIcon::Off);
         act_import_existing_professions->setIcon(icon13);
+        act_keyboard_grid_focus = new QAction(MainWindow);
+        act_keyboard_grid_focus->setObjectName(QString::fromUtf8("act_keyboard_grid_focus"));
+        act_keyboard_grid_focus->setCheckable(true);
+        act_single_click_labor_changes = new QAction(MainWindow);
+        act_single_click_labor_changes->setObjectName(QString::fromUtf8("act_single_click_labor_changes"));
+        act_single_click_labor_changes->setCheckable(true);
         main_widget = new QWidget(MainWindow);
         main_widget->setObjectName(QString::fromUtf8("main_widget"));
         verticalLayout = new QVBoxLayout(main_widget);
@@ -272,6 +281,8 @@ public:
         menuWindows->setObjectName(QString::fromUtf8("menuWindows"));
         menuDocks = new QMenu(menuWindows);
         menuDocks->setObjectName(QString::fromUtf8("menuDocks"));
+        menuSettings = new QMenu(menuBar);
+        menuSettings->setObjectName(QString::fromUtf8("menuSettings"));
         MainWindow->setMenuBar(menuBar);
         main_toolbar = new QToolBar(MainWindow);
         main_toolbar->setObjectName(QString::fromUtf8("main_toolbar"));
@@ -374,6 +385,7 @@ public:
 
         menuBar->addAction(menu_File->menuAction());
         menuBar->addAction(menuProfessions->menuAction());
+        menuBar->addAction(menuSettings->menuAction());
         menuBar->addAction(menuWindows->menuAction());
         menuBar->addAction(menu_Help->menuAction());
         menu_File->addAction(act_connect_to_DF);
@@ -383,7 +395,6 @@ public:
         menu_File->addAction(act_commit_pending_changes);
         menu_File->addAction(act_clear_pending_changes);
         menu_File->addSeparator();
-        menu_File->addAction(act_options);
         menu_File->addAction(act_exit);
         menu_Help->addAction(act_about);
         menuProfessions->addAction(act_add_custom_profession);
@@ -392,6 +403,10 @@ public:
         menuWindows->addAction(act_show_main_toolbar);
         menuDocks->addAction(act_show_pending_labors_window);
         menuDocks->addAction(act_show_custom_professions_window);
+        menuSettings->addAction(act_show_toolbutton_text);
+        menuSettings->addAction(act_keyboard_grid_focus);
+        menuSettings->addAction(act_single_click_labor_changes);
+        menuSettings->addAction(act_options);
         main_toolbar->addAction(act_connect_to_DF);
         main_toolbar->addAction(act_read_dwarves);
         main_toolbar->addAction(act_add_custom_profession);
@@ -429,6 +444,8 @@ public:
         QObject::connect(btn_new_custom_profession, SIGNAL(clicked()), act_add_custom_profession, SLOT(trigger()));
         QObject::connect(btn_import_professions, SIGNAL(clicked()), act_import_existing_professions, SLOT(trigger()));
         QObject::connect(act_import_existing_professions, SIGNAL(triggered()), MainWindow, SLOT(import_existing_professions()));
+        QObject::connect(act_keyboard_grid_focus, SIGNAL(triggered(bool)), MainWindow, SLOT(set_allow_grid_focus(bool)));
+        QObject::connect(act_single_click_labor_changes, SIGNAL(triggered(bool)), MainWindow, SLOT(set_single_click_labor_changes(bool)));
 
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi
@@ -501,13 +518,21 @@ public:
         act_show_pending_labors_window->setText(QApplication::translate("MainWindow", "Show Pending Labors Window", 0, QApplication::UnicodeUTF8));
         act_show_custom_professions_window->setText(QApplication::translate("MainWindow", "Show Custom Professions Window", 0, QApplication::UnicodeUTF8));
         act_show_main_toolbar->setText(QApplication::translate("MainWindow", "Show Main Toolbar", 0, QApplication::UnicodeUTF8));
-        act_options->setText(QApplication::translate("MainWindow", "Options...", 0, QApplication::UnicodeUTF8));
+        act_options->setText(QApplication::translate("MainWindow", "Color Settings...", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
-        act_options->setToolTip(QApplication::translate("MainWindow", "Open the options menu...", 0, QApplication::UnicodeUTF8));
+        act_options->setToolTip(QApplication::translate("MainWindow", "Open the color options menu...", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
         act_import_existing_professions->setText(QApplication::translate("MainWindow", "Import Existing Professions", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
         act_import_existing_professions->setToolTip(QApplication::translate("MainWindow", "Import all custom professions from the loaded game, and create new labor templates for them", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
+        act_keyboard_grid_focus->setText(QApplication::translate("MainWindow", "Enable Keyboard Grid Focus", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_TOOLTIP
+        act_keyboard_grid_focus->setToolTip(QApplication::translate("MainWindow", "When checked it will show an \"X\" over the currently focused labor cell. You can then use the arrow keys to navigate the grid much like in DF. Unchecked disables the focus \"X\"", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
+        act_single_click_labor_changes->setText(QApplication::translate("MainWindow", "Single Click Labor Changes", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_TOOLTIP
+        act_single_click_labor_changes->setToolTip(QApplication::translate("MainWindow", "When set you will be able to toggle skills in the main grid with a single left-click of the mouse. When unchecked, you will have to double-click", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
         lbl_group_by->setText(QApplication::translate("MainWindow", "Group By", 0, QApplication::UnicodeUTF8));
         cb_group_by->clear();
@@ -527,6 +552,7 @@ public:
         menuProfessions->setTitle(QApplication::translate("MainWindow", "Professions", 0, QApplication::UnicodeUTF8));
         menuWindows->setTitle(QApplication::translate("MainWindow", "Windows", 0, QApplication::UnicodeUTF8));
         menuDocks->setTitle(QApplication::translate("MainWindow", "Docks", 0, QApplication::UnicodeUTF8));
+        menuSettings->setTitle(QApplication::translate("MainWindow", "Settings", 0, QApplication::UnicodeUTF8));
         main_toolbar->setWindowTitle(QApplication::translate("MainWindow", "Main Toolbar", 0, QApplication::UnicodeUTF8));
         dock_pending_jobs_list->setWindowTitle(QApplication::translate("MainWindow", "Pending Labor Changes", 0, QApplication::UnicodeUTF8));
         QTreeWidgetItem *___qtreewidgetitem = tree_pending->headerItem();

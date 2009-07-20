@@ -82,11 +82,19 @@ void MainWindow::read_settings() {
 	
 	m_settings->beginGroup("gui_options");
 	{ // GUI OPTIONS
-		// toolbutton text
-		bool show_text = m_settings->value("show_toolbutton_text", true).toBool();
-		ui->act_show_toolbutton_text->setChecked(show_text);
-		show_toolbutton_text(show_text);
-		// group by
+		bool enabled;
+		enabled = m_settings->value("show_toolbutton_text", true).toBool();
+		ui->act_show_toolbutton_text->setChecked(enabled);
+		show_toolbutton_text(enabled);
+
+		enabled = m_settings->value("single_click_labor_changes", false).toBool();
+		ui->act_single_click_labor_changes->setChecked(enabled);
+		set_single_click_labor_changes(enabled);
+
+		enabled = m_settings->value("keyboard_grid_focus", false).toBool();
+		ui->act_keyboard_grid_focus->setChecked(enabled);
+		set_allow_grid_focus(enabled);
+
 		int group_by = m_settings->value("group_by", 0).toInt();
 		ui->cb_group_by->setCurrentIndex(group_by);
 		m_model->set_group_by(group_by);
@@ -130,6 +138,8 @@ void MainWindow::write_settings() {
 		m_settings->endGroup();
 		m_settings->beginGroup("gui_options");
 		m_settings->setValue("show_toolbutton_text", ui->act_show_toolbutton_text->isChecked());
+		m_settings->setValue("single_click_labor_changes", ui->act_single_click_labor_changes->isChecked());
+		m_settings->setValue("keyboard_grid_focus", ui->act_keyboard_grid_focus->isChecked());
 		m_settings->setValue("group_by", m_model->current_grouping());
 		m_settings->endGroup();
 
@@ -227,8 +237,17 @@ void MainWindow::version_check_finished(bool error) {
 			qDebug() << "LATEST VERSION IS NEWER!";
 		}
 		m_about_dialog->set_latest_version(newest_v);
+		
+		QMessageBox *mb = new QMessageBox(this);
+		mb->setWindowTitle(tr("Update Available"));
+		mb->setText(tr("A newer version of this application is available."));
+		QString link = "<a href=\"http://code.google.com/p/dwarftherapist/downloads/list\">Download v" + newest_v.to_string() + "</a>";
+		mb->setInformativeText(QString("You are currently running v%1. %2").arg(our_v.to_string()).arg(link));
+		
+		mb->exec();
 	} else {
 		m_about_dialog->version_check_failed();
+		
 	}
 }
 
@@ -255,6 +274,16 @@ void MainWindow::show_toolbutton_text(bool enabled) {
 		ui->main_toolbar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 	else
 		ui->main_toolbar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+	write_settings();
+}
+
+void MainWindow::set_single_click_labor_changes(bool enabled) {
+	ui->stv->set_single_click_labor_changes(enabled);
+	write_settings();
+}
+
+void MainWindow::set_allow_grid_focus(bool enabled) {
+	ui->stv->set_allow_grid_focus(enabled);
 	write_settings();
 }
 

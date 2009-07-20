@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'optionsmenu.ui'
 **
-** Created: Mon Jul 20 12:16:19 2009
+** Created: Mon Jul 20 15:49:52 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -14,7 +14,6 @@
 #include <QtGui/QAction>
 #include <QtGui/QApplication>
 #include <QtGui/QButtonGroup>
-#include <QtGui/QCheckBox>
 #include <QtGui/QDialog>
 #include <QtGui/QDialogButtonBox>
 #include <QtGui/QGroupBox>
@@ -29,9 +28,6 @@ class Ui_OptionsMenu
 {
 public:
     QVBoxLayout *verticalLayout;
-    QGroupBox *groupBox;
-    QVBoxLayout *verticalLayout_3;
-    QCheckBox *checkBox;
     QGroupBox *group_general_colors;
     QHBoxLayout *horizontalLayout_5;
     QPushButton *btn_restore_defaults;
@@ -41,21 +37,9 @@ public:
     {
         if (OptionsMenu->objectName().isEmpty())
             OptionsMenu->setObjectName(QString::fromUtf8("OptionsMenu"));
-        OptionsMenu->resize(476, 334);
+        OptionsMenu->resize(344, 334);
         verticalLayout = new QVBoxLayout(OptionsMenu);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
-        groupBox = new QGroupBox(OptionsMenu);
-        groupBox->setObjectName(QString::fromUtf8("groupBox"));
-        verticalLayout_3 = new QVBoxLayout(groupBox);
-        verticalLayout_3->setObjectName(QString::fromUtf8("verticalLayout_3"));
-        checkBox = new QCheckBox(groupBox);
-        checkBox->setObjectName(QString::fromUtf8("checkBox"));
-
-        verticalLayout_3->addWidget(checkBox);
-
-
-        verticalLayout->addWidget(groupBox);
-
         group_general_colors = new QGroupBox(OptionsMenu);
         group_general_colors->setObjectName(QString::fromUtf8("group_general_colors"));
         group_general_colors->setStyleSheet(QString::fromUtf8("QtColorPicker {\n"
@@ -81,7 +65,7 @@ public:
 
         verticalLayout->addLayout(horizontalLayout_5);
 
-        verticalLayout->setStretch(1, 10);
+        verticalLayout->setStretch(0, 10);
 
         retranslateUi(OptionsMenu);
         QObject::connect(buttonBox, SIGNAL(accepted()), OptionsMenu, SLOT(accept()));
@@ -93,8 +77,6 @@ public:
     void retranslateUi(QDialog *OptionsMenu)
     {
         OptionsMenu->setWindowTitle(QApplication::translate("OptionsMenu", "Options", 0, QApplication::UnicodeUTF8));
-        groupBox->setTitle(QApplication::translate("OptionsMenu", "Behavior", 0, QApplication::UnicodeUTF8));
-        checkBox->setText(QApplication::translate("OptionsMenu", "Write Changes Immediately", 0, QApplication::UnicodeUTF8));
         group_general_colors->setTitle(QApplication::translate("OptionsMenu", "Grid Colors", 0, QApplication::UnicodeUTF8));
         btn_restore_defaults->setText(QApplication::translate("OptionsMenu", "Restore Default Colors", 0, QApplication::UnicodeUTF8));
         Q_UNUSED(OptionsMenu);

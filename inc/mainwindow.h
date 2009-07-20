@@ -31,13 +31,20 @@ public:
         void connect_to_df();
 		void read_dwarves();
 		void scan_memory();
+		
+		//settings
 		void show_toolbutton_text(bool);
 		void set_group_by(int);
+		void set_single_click_labor_changes(bool);
+		void set_allow_grid_focus(bool);
+
+		// dialogs
 		void show_about();
 		void add_custom_profession();
+		void open_options_menu();
+
 		void new_pending_changes(int);
 		void list_pending();
-		void open_options_menu();
 		void draw_professions();
 		void draw_grid_context_menu(const QPoint &);
 		void draw_custom_profession_context_menu(const QPoint &);

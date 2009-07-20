@@ -13,6 +13,8 @@ public:
 	void paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
 	//QSize sizeHint(const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
 
+	void set_allow_grid_focus(bool enabled) {m_allow_grid_focus = enabled;}
+
 	QColor color_active_labor;
 	QColor color_active_group;
 	QColor color_inactive_group;
@@ -21,6 +23,8 @@ public:
 	QColor color_border;
 	QColor color_dirty_border;
 	QColor color_cursor;
+private:
+	bool m_allow_grid_focus;
 };
 
 #endif
