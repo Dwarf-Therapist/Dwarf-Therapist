@@ -145,7 +145,8 @@ void DwarfModel::build_rows() {
 				item->setData(d->id(), DR_ID);
 				item->setData(0, DR_DUMMY);
 				QString tooltip = "<h3>" + l->name + "</h3>";
-				tooltip += gdr->get_skill_level_name(rating) + " " + gdr->get_skill_name(l->skill_id) + " (" + QString::number(rating) + ")";
+				if (l->skill_id != -1)
+					tooltip += gdr->get_skill_level_name(rating) + " " + gdr->get_skill_name(l->skill_id) + " (" + QString::number(rating) + ")";
 				tooltip += "\n<h4>" + d->nice_name() + "</h4>";
 				item->setToolTip(tooltip);
 				item->setStatusTip(l->name + " :: " + d->nice_name());
