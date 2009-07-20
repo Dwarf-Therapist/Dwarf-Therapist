@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>form_about</class>
- <widget class="QWidget" name="form_about">
+ <class>AboutDialog</class>
+ <widget class="QWidget" name="AboutDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>491</width>
-    <height>259</height>
+    <width>400</width>
+    <height>200</height>
    </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>400</width>
+    <height>200</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>About Dwarf Therapist</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="5,4">
    <property name="spacing">
     <number>0</number>
    </property>
@@ -34,8 +40,8 @@
      <widget class="QLabel" name="label">
       <property name="geometry">
        <rect>
-        <x>130</x>
-        <y>10</y>
+        <x>10</x>
+        <y>20</y>
         <width>201</width>
         <height>41</height>
        </rect>
@@ -53,16 +59,19 @@
        <string>Dwarf Therapist</string>
       </property>
       <property name="alignment">
-       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+      </property>
+      <property name="openExternalLinks">
+       <bool>false</bool>
       </property>
      </widget>
      <widget class="QLabel" name="label_4">
       <property name="geometry">
        <rect>
-        <x>-10</x>
-        <y>-10</y>
+        <x>270</x>
+        <y>-15</y>
         <width>131</width>
-        <height>161</height>
+        <height>151</height>
        </rect>
       </property>
       <property name="text">
@@ -73,6 +82,19 @@
       </property>
       <property name="scaledContents">
        <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lbl_our_version">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>60</y>
+        <width>190</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>VERSION</string>
       </property>
      </widget>
     </widget>
@@ -90,7 +112,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QLabel" name="label_3">
+       <widget class="QLabel" name="lbl_text">
         <property name="text">
          <string>Copyright &amp;copy; 2009 Trey Stout.
 
@@ -110,9 +132,12 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QLabel" name="label_2">
+         <widget class="QLabel" name="lbl_up_to_date">
           <property name="text">
            <string>Up to date/Update Available etc...</string>
+          </property>
+          <property name="openExternalLinks">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -145,12 +170,13 @@
  </widget>
  <resources>
   <include location="../images.qrc"/>
+  <include location="../images.qrc"/>
  </resources>
  <connections>
   <connection>
    <sender>pushButton</sender>
    <signal>clicked()</signal>
-   <receiver>form_about</receiver>
+   <receiver>AboutDialog</receiver>
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">

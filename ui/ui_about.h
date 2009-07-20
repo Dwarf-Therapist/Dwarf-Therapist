@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'about.ui'
 **
-** Created: Sun Jul 19 19:29:08 2009
+** Created: Mon Jul 20 12:33:42 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -25,70 +25,77 @@
 
 QT_BEGIN_NAMESPACE
 
-class Ui_form_about
+class Ui_AboutDialog
 {
 public:
     QVBoxLayout *verticalLayout;
     QFrame *frame_2;
     QLabel *label;
     QLabel *label_4;
+    QLabel *lbl_our_version;
     QFrame *frame;
     QVBoxLayout *verticalLayout_2;
-    QLabel *label_3;
+    QLabel *lbl_text;
     QHBoxLayout *horizontalLayout;
-    QLabel *label_2;
+    QLabel *lbl_up_to_date;
     QSpacerItem *horizontalSpacer;
     QPushButton *pushButton;
 
-    void setupUi(QWidget *form_about)
+    void setupUi(QWidget *AboutDialog)
     {
-        if (form_about->objectName().isEmpty())
-            form_about->setObjectName(QString::fromUtf8("form_about"));
-        form_about->resize(491, 259);
-        verticalLayout = new QVBoxLayout(form_about);
+        if (AboutDialog->objectName().isEmpty())
+            AboutDialog->setObjectName(QString::fromUtf8("AboutDialog"));
+        AboutDialog->resize(400, 200);
+        AboutDialog->setMaximumSize(QSize(400, 200));
+        verticalLayout = new QVBoxLayout(AboutDialog);
         verticalLayout->setSpacing(0);
         verticalLayout->setMargin(0);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
-        frame_2 = new QFrame(form_about);
+        frame_2 = new QFrame(AboutDialog);
         frame_2->setObjectName(QString::fromUtf8("frame_2"));
         frame_2->setFrameShape(QFrame::StyledPanel);
         frame_2->setFrameShadow(QFrame::Raised);
         label = new QLabel(frame_2);
         label->setObjectName(QString::fromUtf8("label"));
-        label->setGeometry(QRect(130, 10, 201, 41));
+        label->setGeometry(QRect(10, 20, 201, 41));
         QFont font;
         font.setFamily(QString::fromUtf8("Segoe UI"));
         font.setPointSize(22);
         label->setFont(font);
-        label->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
+        label->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter);
+        label->setOpenExternalLinks(false);
         label_4 = new QLabel(frame_2);
         label_4->setObjectName(QString::fromUtf8("label_4"));
-        label_4->setGeometry(QRect(-10, -10, 131, 161));
+        label_4->setGeometry(QRect(270, -15, 131, 151));
         label_4->setPixmap(QPixmap(QString::fromUtf8(":/img/dwarf.jpg")));
         label_4->setScaledContents(true);
+        lbl_our_version = new QLabel(frame_2);
+        lbl_our_version->setObjectName(QString::fromUtf8("lbl_our_version"));
+        lbl_our_version->setGeometry(QRect(20, 60, 190, 20));
 
         verticalLayout->addWidget(frame_2);
 
-        frame = new QFrame(form_about);
+        frame = new QFrame(AboutDialog);
         frame->setObjectName(QString::fromUtf8("frame"));
         frame->setFrameShape(QFrame::StyledPanel);
         frame->setFrameShadow(QFrame::Raised);
         verticalLayout_2 = new QVBoxLayout(frame);
         verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
-        label_3 = new QLabel(frame);
-        label_3->setObjectName(QString::fromUtf8("label_3"));
-        label_3->setTextFormat(Qt::RichText);
-        label_3->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
-        label_3->setOpenExternalLinks(true);
+        lbl_text = new QLabel(frame);
+        lbl_text->setObjectName(QString::fromUtf8("lbl_text"));
+        lbl_text->setTextFormat(Qt::RichText);
+        lbl_text->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
+        lbl_text->setOpenExternalLinks(true);
 
-        verticalLayout_2->addWidget(label_3);
+        verticalLayout_2->addWidget(lbl_text);
 
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
-        label_2 = new QLabel(frame);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
+        lbl_up_to_date = new QLabel(frame);
+        lbl_up_to_date->setObjectName(QString::fromUtf8("lbl_up_to_date"));
+        lbl_up_to_date->setOpenExternalLinks(true);
 
-        horizontalLayout->addWidget(label_2);
+        horizontalLayout->addWidget(lbl_up_to_date);
 
         horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -105,33 +112,36 @@ public:
 
         verticalLayout->addWidget(frame);
 
+        verticalLayout->setStretch(0, 5);
+        verticalLayout->setStretch(1, 4);
 
-        retranslateUi(form_about);
-        QObject::connect(pushButton, SIGNAL(clicked()), form_about, SLOT(close()));
+        retranslateUi(AboutDialog);
+        QObject::connect(pushButton, SIGNAL(clicked()), AboutDialog, SLOT(close()));
 
-        QMetaObject::connectSlotsByName(form_about);
+        QMetaObject::connectSlotsByName(AboutDialog);
     } // setupUi
 
-    void retranslateUi(QWidget *form_about)
+    void retranslateUi(QWidget *AboutDialog)
     {
-        form_about->setWindowTitle(QApplication::translate("form_about", "About Dwarf Therapist", 0, QApplication::UnicodeUTF8));
-        frame_2->setStyleSheet(QApplication::translate("form_about", "background-color: white;", 0, QApplication::UnicodeUTF8));
+        AboutDialog->setWindowTitle(QApplication::translate("AboutDialog", "About Dwarf Therapist", 0, QApplication::UnicodeUTF8));
+        frame_2->setStyleSheet(QApplication::translate("AboutDialog", "background-color: white;", 0, QApplication::UnicodeUTF8));
         label->setStyleSheet(QString());
-        label->setText(QApplication::translate("form_about", "Dwarf Therapist", 0, QApplication::UnicodeUTF8));
+        label->setText(QApplication::translate("AboutDialog", "Dwarf Therapist", 0, QApplication::UnicodeUTF8));
         label_4->setText(QString());
-        frame->setStyleSheet(QApplication::translate("form_about", "background-color: #dddddd;", 0, QApplication::UnicodeUTF8));
-        label_3->setText(QApplication::translate("form_about", "Copyright &copy; 2009 Trey Stout.\n"
+        lbl_our_version->setText(QApplication::translate("AboutDialog", "VERSION", 0, QApplication::UnicodeUTF8));
+        frame->setStyleSheet(QApplication::translate("AboutDialog", "background-color: #dddddd;", 0, QApplication::UnicodeUTF8));
+        lbl_text->setText(QApplication::translate("AboutDialog", "Copyright &copy; 2009 Trey Stout.\n"
 "\n"
 "<a href=\"http://udpviper.com/forums\">UDP Viper</a>", 0, QApplication::UnicodeUTF8));
-        label_2->setText(QApplication::translate("form_about", "Up to date/Update Available etc...", 0, QApplication::UnicodeUTF8));
-        pushButton->setText(QApplication::translate("form_about", "OK", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(form_about);
+        lbl_up_to_date->setText(QApplication::translate("AboutDialog", "Up to date/Update Available etc...", 0, QApplication::UnicodeUTF8));
+        pushButton->setText(QApplication::translate("AboutDialog", "OK", 0, QApplication::UnicodeUTF8));
+        Q_UNUSED(AboutDialog);
     } // retranslateUi
 
 };
 
 namespace Ui {
-    class form_about: public Ui_form_about {};
+    class AboutDialog: public Ui_AboutDialog {};
 } // namespace Ui
 
 QT_END_NAMESPACE

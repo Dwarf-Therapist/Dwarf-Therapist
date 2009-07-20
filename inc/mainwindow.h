@@ -3,11 +3,13 @@
 
 #include <QtCore>
 #include <QtGui>
+#include <QtNetwork>
 
 class DFInstance;
 class DwarfModel;
 class Dwarf;
 class OptionsMenu;
+class AboutDialog;
 class CustomProfession;
 
 namespace Ui
@@ -44,6 +46,9 @@ public:
 		void delete_custom_profession();
 		void import_existing_professions();
 		
+		void check_latest_version();
+		void version_check_finished(bool error);
+		
 private:
     Ui::MainWindow *ui;
     DFInstance *m_df;
@@ -52,8 +57,10 @@ private:
 	DwarfModel *m_model;
 	QSortFilterProxyModel *m_proxy;
 	OptionsMenu *m_options_menu;
+	AboutDialog *m_about_dialog;
 	QVector<CustomProfession*> m_custom_professions;
 	CustomProfession *m_temp_cp;
+	QHttp *m_http;
 	bool m_reading_settings;
 
 	void closeEvent(QCloseEvent *evt); // override;

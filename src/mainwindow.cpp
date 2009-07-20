@@ -1,4 +1,5 @@
 #include <QtGui>
+#include <QtNetwork>
 #include <QtDebug>
 
 #include "mainwindow.h"
@@ -6,6 +7,7 @@
 #include "ui_mainwindow.h"
 #include "ui_pendingchanges.h"
 #include "optionsmenu.h"
+#include "aboutdialog.h"
 #include "dwarfmodel.h"
 #include "dfinstance.h"
 #include "statetableview.h"
@@ -13,17 +15,20 @@
 #include "customprofession.h"
 #include "labor.h"
 #include "defines.h"
+#include "version.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 	, m_options_menu(new OptionsMenu(this))
+	, m_about_dialog(new AboutDialog(this))
     , m_df(0)
     , m_lbl_status(0)
 	, m_settings(0)
 	, m_model(new DwarfModel(this))
 	, m_proxy(new QSortFilterProxyModel(this))
 	, m_custom_professions(QVector<CustomProfession*>())
+	, m_http(new QHttp(this))
 	, m_reading_settings(false)
 	, m_temp_cp(0)
 {
@@ -51,6 +56,8 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->cb_group_by->addItem("Profession", DwarfModel::GB_PROFESSION);
 	ui->cb_group_by->addItem("Legendary or not", DwarfModel::GB_LEGENDARY);
 	read_settings();
+
+	check_latest_version();
 }
 
 MainWindow::~MainWindow() {
@@ -188,6 +195,43 @@ void MainWindow::set_interface_enabled(bool enabled) {
 	ui->act_import_existing_professions->setEnabled(enabled);
 }
 
+void MainWindow::check_latest_version() {
+	//http://code.google.com/p/dwarftherapist/wiki/LatestVersion
+	Version our_v(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+
+	QHttpRequestHeader header("GET", "/p/dwarftherapist/wiki/LatestVersion");
+	header.setValue("Host", "code.google.com");
+	header.setValue("User-Agent", QString("DwarfTherapist %1").arg(our_v.to_string()));
+	m_http->setHost("code.google.com");
+	disconnect(m_http, SIGNAL(done(bool)));
+	connect(m_http, SIGNAL(done(bool)), this, SLOT(version_check_finished(bool)));
+	m_http->request(header);
+}
+
+void MainWindow::version_check_finished(bool error) {
+	if (error) {
+		qWarning() << m_http->errorString();
+	}
+	QString data = QString(m_http->readAll());
+	QRegExp rx("###LATEST_VERSION###(\\d+)\\.(\\d+)\\.(\\d+)###END_LATEST_VERSION###");
+	int pos = rx.indexIn(data);
+	if (pos != -1) {
+		Version our_v(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+		QString major = rx.cap(1);
+		QString minor = rx.cap(2);
+		QString patch = rx.cap(3);
+		Version newest_v(major.toInt(), minor.toInt(), patch.toInt());
+		qDebug() << "OUR VERSION:" << our_v.to_string();
+		qDebug() << "LATEST VERSION:" << newest_v.to_string();
+		if (our_v < newest_v) {
+			qDebug() << "LATEST VERSION IS NEWER!";
+		}
+		m_about_dialog->set_latest_version(newest_v);
+	} else {
+		m_about_dialog->version_check_failed();
+	}
+}
+
 void MainWindow::scan_memory() {
     QProgressDialog *pd = new QProgressDialog(tr("Scanning Memory"), tr("Cancel"), 0, 1, this);
     connect(m_df, SIGNAL(scan_total_steps(int)), pd, SLOT(setMaximum(int)));
@@ -220,10 +264,7 @@ void MainWindow::set_group_by(int group_by) {
 }
 
 void MainWindow::show_about() {
-	QDialog *d = new QDialog(this);
-	Ui::form_about fa;
-	fa.setupUi(d);
-	d->show();
+	m_about_dialog->show();
 }
 
 void MainWindow::new_pending_changes(int cnt) {
