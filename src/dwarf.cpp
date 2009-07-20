@@ -61,10 +61,6 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, int address) {
 	return new Dwarf(df, address, df);
 }
 
-QString Dwarf::to_string() {
-	return QString("%1, %2 STR:%3 AGI:%4 TOU:%5").arg(nice_name(), m_profession).arg(m_strength).arg(m_agility).arg(m_toughness);
-}
-
 QString Dwarf::nice_name() {
 	if (m_pending_nick_name.isEmpty()) {
 		return QString("%1 %2").arg(m_first_name, m_last_name);
@@ -171,17 +167,26 @@ void Dwarf::set_labor(int labor_id, bool enabled) {
 }
 
 int Dwarf::pending_changes() {
-	return get_dirty_labors().size();
+	int cnt = get_dirty_labors().size();
+	if (m_nick_name != m_pending_nick_name)
+		cnt++;
+	if (m_custom_profession != m_pending_custom_profession)
+		cnt++;
+	return cnt;
 }
 
 void Dwarf::clear_pending() {
-	memcpy(m_pending_labors, m_labors, 102);
+	refresh_data();
 }
 
 void Dwarf::commit_pending() {
 	GameDataReader *gdr = GameDataReader::ptr();
 	int addr = m_address + gdr->get_dwarf_offset("labors");
 	m_df->write_raw(addr, 102, m_pending_labors);
+	if (m_pending_nick_name != m_nick_name)
+		m_df->write_string(m_address + gdr->get_dwarf_offset("nick_name"), m_pending_nick_name);
+	if (m_pending_custom_profession != m_custom_profession)
+		m_df->write_string(m_address + gdr->get_dwarf_offset("custom_profession"), m_pending_custom_profession);
 	refresh_data();
 }
 
@@ -190,6 +195,6 @@ int Dwarf::apply_custom_profession(CustomProfession *cp) {
 	foreach(int labor_id, cp->get_enabled_labors()) {
 		set_labor(labor_id, true);
 	}
-	m_custom_profession = cp->get_name();
+	m_pending_custom_profession = cp->get_name();
 	return get_dirty_labors().size();
 }

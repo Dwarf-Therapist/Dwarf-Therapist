@@ -15,7 +15,6 @@ private:
 public:
     ~DFInstance();
     typedef QVector<int> AddressVector;
-    //typedef AddressVector::iterator AddressVectorIter;
 
     // factory ctor
     static DFInstance* find_running_copy(QObject *parent=0);
@@ -35,6 +34,8 @@ public:
     int scan_mem(QByteArray &needle, int start_address, int end_address, bool &ok);
     QVector<int> scan_mem_find_all(QByteArray &needle, int start_address, int end_address);
     QString read_string(int start_address);
+	int write_string(int start_address, QString str);
+	int write_int32(int start_address, int val);
     
     // Mapping methods
     int find_language_vector();

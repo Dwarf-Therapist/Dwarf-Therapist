@@ -101,6 +101,18 @@ QString DFInstance::read_string(int address) {
     return ret_val;
 }
 
+int DFInstance::write_string(int address, QString str) {
+	uint bytes_read = 0;
+	int cap = read_int32(address + STRING_CAP_OFFSET, bytes_read);
+	int buffer_addr = address + STRING_BUFFER_OFFSET;
+	if( cap >= 16 )
+		buffer_addr = read_int32(buffer_addr, bytes_read);
+
+	int len = qMin<int>(str.length(), cap);
+	write_int32(address + STRING_LENGTH_OFFSET, len);
+	return write_raw(buffer_addr, len, str.toAscii().data());
+}
+
 short DFInstance::read_short(int start_address, uint &bytes_read) {
 	char cval[2];
 	memset(cval, 0, 2);
@@ -123,6 +135,13 @@ int DFInstance::read_int32(int start_address, uint &bytes_read) {
     ReadProcessMemory(m_proc, (LPCVOID)start_address, &val, sizeof(int), (DWORD*)&bytes_read);
     //qDebug() << "Read from " << start_address << "OK?" << ok <<  " bytes read: " << bytes_read << " VAL " << hex << val;
     return val;
+}
+
+int DFInstance::write_int32(int start_address, int val) {
+	uint bytes_written = 0;
+	WriteProcessMemory(m_proc, (LPVOID)start_address, &val, sizeof(int), (DWORD*)&bytes_written);
+	//qDebug() << "Read from " << start_address << "OK?" << ok <<  " bytes read: " << bytes_read << " VAL " << hex << val;
+	return bytes_written;
 }
 
 //returns # of bytes read

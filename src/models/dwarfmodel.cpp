@@ -14,24 +14,11 @@ DwarfModel::DwarfModel(QObject *parent)
 	, m_group_by(GB_NOTHING)
 {
 	GameDataReader *gdr = GameDataReader::ptr();
-	//QStringList keys = gdr->get_child_groups("labors");
 	setHorizontalHeaderItem(0, new QStandardItem);
 	QMap<int, Labor*> labors = gdr->get_ordered_labors();
 	foreach(Labor *l, labors) {
 		setHorizontalHeaderItem(l->list_order + 1, new QStandardItem(l->name));
 	}
-	
-	/*int i = 0;
-	foreach(QString k, keys) {
-		int labor_id = gdr->get_int_for_key(QString("labors/%1/id").arg(i));
-		QString labor_name = gdr->get_string_for_key(QString("labors/%1/name").arg(i));
-
-		QStringList labor;
-		labor << QString::number(labor_id) << labor_name;
-		m_labor_cols << labor;
-		setHorizontalHeaderItem(i + 1, new QStandardItem(labor_name));
-		i++;
-	}*/
 }
 
 void DwarfModel::sort(int column, Qt::SortOrder order) {
@@ -40,9 +27,6 @@ void DwarfModel::sort(int column, Qt::SortOrder order) {
 	else
 		setSortRole(DR_RATING);
 	QStandardItemModel::sort(column, order);
-}
-
-void DwarfModel::filter_changed(const QString &needle) {
 }
 
 void DwarfModel::section_clicked(int col, Qt::MouseButton btn) {
