@@ -28,7 +28,7 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 
 	if (idx.column() == model->selected_col()) {
 		p->save();
-		p->setPen(QColor(0x0099FF));
+		p->setPen(QPen(color_guides));
 		p->drawLine(opt.rect.topLeft(), opt.rect.bottomLeft());
 		p->drawLine(opt.rect.topRight(), opt.rect.bottomRight());
 		p->restore();
@@ -114,14 +114,14 @@ void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, con
 			p->setPen(QPen(QColor(color_dirty_border), 1));
 			p->drawRect(opt.rect.adjusted(0, 0, -1, -1));
 		} else if (opt.state & QStyle::State_Selected) {
-			p->setPen(QColor(0xcccccc));
+			p->setPen(color_border);
 			p->drawRect(opt.rect);
-			p->setPen(QPen(QColor(0x0099FF)));
+			p->setPen(color_guides);
 			p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
 			p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
 			//p->drawRect(opt.rect.adjusted(0,0,-1,-1));
 		} else {
-			p->setPen(QColor(0xcccccc));
+			p->setPen(color_border);
 			p->drawRect(opt.rect);
 		}
 		p->restore();
@@ -149,13 +149,13 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 	QStyledItemDelegate::paint(p, opt, idx); // always lay the "base coat"
 	
 	p->save();
-	QRect adj = opt.rect.adjusted(1, 1, -1, 1);
+	QRect adj = opt.rect.adjusted(1, 1, 0, 0);
 	if (enabled_count == item->rowCount()) {
 		p->fillRect(adj, QBrush(color_active_group));
 	} else if (enabled_count > 0) {
-		p->fillRect(adj, QBrush(0x999999));
+		p->fillRect(adj, QBrush(color_partial_group));
 	} else {
-		p->fillRect(adj, QBrush(0xCCCCCC));
+		p->fillRect(adj, QBrush(color_inactive_group));
 	}
 	p->restore();
 
@@ -165,7 +165,7 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 		p->setPen(QPen(color_dirty_border, 1));
 		p->drawRect(opt.rect.adjusted(0, 0, -1, -1));
 	} else {
-		p->setPen(QColor(0xd9d9d9));
+		p->setPen(QPen(color_border));
 		p->drawRect(opt.rect);
 	}
 	p->restore();

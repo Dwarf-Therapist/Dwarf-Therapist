@@ -39,10 +39,7 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->list_custom_professions, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(edit_custom_profession(QListWidgetItem*)));
 	connect(ui->list_custom_professions, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_custom_profession_context_menu(const QPoint &)));
 
-	connect(m_options_menu, 
-			SIGNAL(picker_changed(MainWindow::CONFIGURABLE_COLORS, const QColor&)),
-			this, 
-			SLOT(color_changed(MainWindow::CONFIGURABLE_COLORS, const QColor &)));
+	connect(m_options_menu, SIGNAL(color_changed(const QString &, const QColor &)), this, SLOT(color_changed(const QString &, const QColor &)));
 
 	m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
@@ -252,16 +249,26 @@ void MainWindow::open_options_menu() {
 	m_options_menu->show();
 }
 
-void MainWindow::color_changed(MainWindow::CONFIGURABLE_COLORS picker, const QColor &c) {
+void MainWindow::color_changed(const QString &key, const QColor &c) {
 	UberDelegate *d = ui->stv->get_delegate();
-	switch (picker) {
-		case CC_CURSOR:			d->color_cursor = c;		break;
-		case CC_ACTIVE_LABOR:	d->color_active_labor = c;	break;
-		case CC_ACTIVE_GROUP:	d->color_active_group = c;	break;
-		case CC_DIRTY_BORDER:	d->color_dirty_border = c;	break;
-		default:
-			qWarning() << "some color changed and I don't know what it is.";
-	}
+	if (key == "cursor")
+		d->color_cursor = c;
+	else if (key == "dirty_border")
+		d->color_dirty_border = c;
+	else if (key == "active_labor")
+		d->color_active_labor = c;
+	else if (key == "active_group")
+		d->color_active_group = c;
+	else if (key == "inactive_group")
+		d->color_inactive_group = c;
+	else if (key == "partial_group")
+		d->color_partial_group = c;
+	else if (key == "guides")
+		d->color_guides = c;
+	else if (key == "border")
+		d->color_border = c;
+	else
+		qWarning() << "some color changed and I don't know what it is.";
 }
 
 void MainWindow::add_custom_profession() {

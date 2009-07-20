@@ -5,6 +5,7 @@
 #include "ui_customprofession.h"
 #include "dwarf.h"
 #include "defines.h"
+#include "labor.h"
 
 CustomProfession::CustomProfession(QObject *parent)
 	: QObject(parent)
@@ -20,12 +21,11 @@ CustomProfession::CustomProfession(Dwarf *d, QObject *parent)
 	, m_dwarf(d)
 {
 	GameDataReader *gdr = GameDataReader::ptr();	
-	QVector<QStringList> labor_pairs = gdr->read_labor_pairs();
+	QMap<int, Labor*> labors = gdr->get_ordered_labors();
 	
-	foreach(QStringList pair, labor_pairs) {
-		int labor_id = pair[0].toInt();
-		if (m_dwarf && m_dwarf->is_labor_enabled(labor_id))
-			add_labor(labor_id);
+	foreach(Labor *l, labors) {
+		if (m_dwarf && m_dwarf->is_labor_enabled(l->labor_id))
+			add_labor(l->labor_id);
 	}
 }
 
@@ -59,14 +59,13 @@ int CustomProfession::show_builder_dialog(QWidget *parent) {
 	connect(ui->name_edit, SIGNAL(textChanged(const QString &)), this, SLOT(set_name(QString)));
 	connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
 	
-	QVector<QStringList> labor_pairs = gdr->read_labor_pairs();
+	QMap<int, Labor*> labors = gdr->get_ordered_labors();
 	int num_active = 0;
-	foreach(QStringList pair, labor_pairs) {
-		QxtListWidgetItem *item = new QxtListWidgetItem(pair[1], ui->labor_list);
-		int labor_id = pair[0].toInt();
-		item->setData(Qt::UserRole, labor_id);
+	foreach(Labor *l, labors) {
+		QxtListWidgetItem *item = new QxtListWidgetItem(l->name, ui->labor_list);
+		item->setData(Qt::UserRole, l->labor_id);
 		item->setFlag(Qt::ItemIsUserCheckable, true);
-		if (is_active(labor_id)) {
+		if (is_active(l->labor_id)) {
 			item->setCheckState(Qt::Checked);
 			num_active++;
 		} else {

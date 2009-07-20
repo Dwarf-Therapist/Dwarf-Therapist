@@ -4,6 +4,8 @@
 #include "mainwindow.h"
 #include "ui_optionsmenu.h"
 
+class CustomColor;
+
 class OptionsMenu : public QDialog {
 	Q_OBJECT
 public:
@@ -13,22 +15,18 @@ public:
 	void read_settings(QSettings *s);
 	void write_settings(QSettings *s);
 
-	static QColor default_color_cursor;
-	static QColor default_color_active_labor;
-	static QColor default_color_active_group;
-	static QColor default_color_dirty_border;
-
 	public slots:
+		void accept();
+		void reject();
 		void restore_defaults();
 	
 private:
 	bool m_reading_settings;
 	Ui::OptionsMenu *ui;
-
-	private slots:
-		void color_changed(const QColor &c);
+	QList<CustomColor*> m_general_colors;
 
 signals:
-	void picker_changed(MainWindow::CONFIGURABLE_COLORS, const QColor &);
+	void color_changed(const QString &, const QColor &);
+	//void picker_changed(MainWindow::CONFIGURABLE_COLORS, const QColor &);
 };
 #endif;

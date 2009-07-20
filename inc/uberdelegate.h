@@ -15,6 +15,10 @@ public:
 
 	QColor color_active_labor;
 	QColor color_active_group;
+	QColor color_inactive_group;
+	QColor color_partial_group;
+	QColor color_guides;
+	QColor color_border;
 	QColor color_dirty_border;
 	QColor color_cursor;
 };

@@ -20,14 +20,6 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-	typedef enum {
-		CC_CURSOR,
-		CC_DIRTY_BORDER,
-		CC_ACTIVE_LABOR,
-		CC_ACTIVE_GROUP,
-		CC_PARTIAL_LABOR_GROUP
-	} CONFIGURABLE_COLORS;
-
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
@@ -73,7 +65,7 @@ private:
 
     private slots:
         void set_interface_enabled(bool);
-		void color_changed(MainWindow::CONFIGURABLE_COLORS picker, const QColor &c);
+		void color_changed(const QString &, const QColor &);
 		void apply_custom_profession();
 		void set_nickname();
 		
