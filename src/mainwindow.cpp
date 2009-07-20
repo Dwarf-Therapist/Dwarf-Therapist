@@ -242,21 +242,8 @@ void MainWindow::new_pending_changes(int cnt) {
 void MainWindow::list_pending() {
 	ui->tree_pending->clear();
 	foreach(Dwarf *d, m_model->get_dirty_dwarves()) {
-		QVector<int> labors = d->get_dirty_labors();
-		QTreeWidgetItem *d_item = new QTreeWidgetItem(ui->tree_pending);
-		d_item->setText(0, d->nice_name() + "(" + QString::number(labors.size()) + ")");
-		d_item->setData(0, Qt::UserRole, d->id());
-		foreach(int labor_id, labors) {
-			Labor *l = GameDataReader::ptr()->get_labor(labor_id);
-			QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
-			i->setText(0, l->name);
-			if (d->is_labor_enabled(labor_id)) {
-				i->setIcon(0, QIcon(":img/add.png"));
-			} else {
-				i->setIcon(0, QIcon(":img/delete.png"));
-			}
-			i->setData(0, Qt::UserRole, d->id());
-		}
+		QTreeWidgetItem *i = d->get_pending_changes_tree();
+		ui->tree_pending->addTopLevelItem(i);
 	}
 	ui->tree_pending->expandAll();
 }

@@ -39,6 +39,8 @@ public:
 	QString nickname() {return m_pending_nick_name;}
 	void set_nickname(QString nick) {m_pending_nick_name = nick;}
 
+	QTreeWidgetItem *get_pending_changes_tree();
+
 	QModelIndex m_name_idx;
 
 private:

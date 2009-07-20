@@ -198,3 +198,34 @@ int Dwarf::apply_custom_profession(CustomProfession *cp) {
 	m_pending_custom_profession = cp->get_name();
 	return get_dirty_labors().size();
 }
+
+QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
+	QVector<int> labors = get_dirty_labors();
+	QTreeWidgetItem *d_item = new QTreeWidgetItem;
+	d_item->setText(0, nice_name() + "(" + QString::number(labors.size()) + ")");
+	d_item->setData(0, Qt::UserRole, id());
+	if (m_pending_nick_name != m_nick_name) {
+		QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
+		i->setText(0, "nickname change to " + m_pending_nick_name);
+		i->setIcon(0, QIcon(":img/book_edit.png"));
+		i->setData(0, Qt::UserRole, id());
+	}
+	if (m_pending_custom_profession != m_custom_profession) {
+		QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
+		i->setText(0, "profession change to " + m_pending_custom_profession);
+		i->setIcon(0, QIcon(":img/book_edit.png"));
+		i->setData(0, Qt::UserRole, id());
+	}
+	foreach(int labor_id, labors) {
+		Labor *l = GameDataReader::ptr()->get_labor(labor_id);
+		QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
+		i->setText(0, l->name);
+		if (is_labor_enabled(labor_id)) {
+			i->setIcon(0, QIcon(":img/add.png"));
+		} else {
+			i->setIcon(0, QIcon(":img/delete.png"));
+		}
+		i->setData(0, Qt::UserRole, id());
+	}
+	return d_item;
+}

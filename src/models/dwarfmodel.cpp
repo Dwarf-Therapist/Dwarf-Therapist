@@ -236,7 +236,7 @@ void DwarfModel::commit_pending() {
 			d->commit_pending();
 		}
 	}
-	emit reset();
+	load_dwarves();
 	emit new_pending_changes(0);
 }
 

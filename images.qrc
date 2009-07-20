@@ -1,25 +1,26 @@
 <RCC>
-  <qresource prefix="/" >
-    <file>img/textfield_add.png</file>
-    <file>img/page_white_edit.png</file>
-    <file>img/page_white_add.png</file>
-    <file>img/application_edit.png</file>
-    <file>img/application_get.png</file>
-    <file>img/layout_content.png</file>
-    <file>img/add.png</file>
-    <file>img/delete.png</file>
-    <file>img/dwarf.jpg</file>
-    <file>img/table.png</file>
-    <file>img/table_delete.png</file>
-    <file>img/table_go.png</file>
-    <file>img/arrow_in.png</file>
-    <file>img/arrow_out.png</file>
-    <file>img/drive_magnify.png</file>
-    <file>img/application_view_icons.png</file>
-    <file>img/connect.png</file>
-    <file>img/door_out.png</file>
-    <file>img/drive_go.png</file>
-    <file>img/find.png</file>
-    <file>img/help.png</file>
-  </qresource>
+    <qresource prefix="/" >
+        <file>img/textfield_add.png</file>
+        <file>img/page_white_edit.png</file>
+        <file>img/page_white_add.png</file>
+        <file>img/application_edit.png</file>
+        <file>img/application_get.png</file>
+        <file>img/layout_content.png</file>
+        <file>img/add.png</file>
+        <file>img/delete.png</file>
+        <file>img/dwarf.jpg</file>
+        <file>img/table.png</file>
+        <file>img/table_delete.png</file>
+        <file>img/table_go.png</file>
+        <file>img/arrow_in.png</file>
+        <file>img/arrow_out.png</file>
+        <file>img/drive_magnify.png</file>
+        <file>img/application_view_icons.png</file>
+        <file>img/connect.png</file>
+        <file>img/door_out.png</file>
+        <file>img/drive_go.png</file>
+        <file>img/find.png</file>
+        <file>img/help.png</file>
+        <file>img/book_edit.png</file>
+    </qresource>
 </RCC>
