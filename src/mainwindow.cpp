@@ -212,6 +212,7 @@ void MainWindow::check_latest_version() {
 	QHttpRequestHeader header("GET", "/p/dwarftherapist/wiki/LatestVersion");
 	header.setValue("Host", "code.google.com");
 	header.setValue("User-Agent", QString("DwarfTherapist %1").arg(our_v.to_string()));
+	header.setValue("Referer", QString("/DwarfTherapist %1").arg(our_v.to_string()));
 	m_http->setHost("code.google.com");
 	disconnect(m_http, SIGNAL(done(bool)));
 	connect(m_http, SIGNAL(done(bool)), this, SLOT(version_check_finished(bool)));

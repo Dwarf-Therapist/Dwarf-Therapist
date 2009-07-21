@@ -23,7 +23,6 @@ OptionsMenu::OptionsMenu(MainWindow *parent)
 	QVBoxLayout *main_layout = new QVBoxLayout();
 	foreach(CustomColor *cc, m_general_colors) {
 		main_layout->addWidget(cc);
-		connect(cc, SIGNAL(colorChanged(const QColor &)), this, SLOT(color_changed(const QColor &)));
 	}
 	ui->group_general_colors->setLayout(main_layout);
 
