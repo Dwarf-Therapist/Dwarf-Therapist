@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'customprofession.ui'
 **
-** Created: Mon Jul 20 12:16:24 2009
+** Created: Tue Jul 21 16:40:31 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -46,6 +46,9 @@ public:
         if (CustomProfessionEditor->objectName().isEmpty())
             CustomProfessionEditor->setObjectName(QString::fromUtf8("CustomProfessionEditor"));
         CustomProfessionEditor->resize(268, 365);
+        QIcon icon;
+        icon.addPixmap(QPixmap(QString::fromUtf8(":/img/hammer.png")), QIcon::Normal, QIcon::Off);
+        CustomProfessionEditor->setWindowIcon(icon);
         CustomProfessionEditor->setSizeGripEnabled(true);
         verticalLayout = new QVBoxLayout(CustomProfessionEditor);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));

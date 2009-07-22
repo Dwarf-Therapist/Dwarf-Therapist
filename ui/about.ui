@@ -10,6 +10,12 @@
     <height>200</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>400</width>
+    <height>200</height>
+   </size>
+  </property>
   <property name="maximumSize">
    <size>
     <width>400</width>
@@ -19,7 +25,14 @@
   <property name="windowTitle">
    <string>About Dwarf Therapist</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="5,4">
+  <property name="windowIcon">
+   <iconset resource="../images.qrc">
+    <normaloff>:/img/hammer.png</normaloff>:/img/hammer.png</iconset>
+  </property>
+  <property name="styleSheet">
+   <string/>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2" stretch="5,4">
    <property name="spacing">
     <number>0</number>
    </property>
@@ -27,9 +40,9 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QFrame" name="frame_2">
+    <widget class="QFrame" name="frame_upper">
      <property name="styleSheet">
-      <string>background-color: white;</string>
+      <string>background: white;</string>
      </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -37,7 +50,20 @@
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <widget class="QLabel" name="label">
+     <widget class="QLabel" name="lbl_our_version">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>60</y>
+        <width>190</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>VERSION</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_title">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -65,7 +91,7 @@
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QLabel" name="label_4">
+     <widget class="QLabel" name="lbl_image">
       <property name="geometry">
        <rect>
         <x>270</x>
@@ -84,25 +110,12 @@
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="QLabel" name="lbl_our_version">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>60</y>
-        <width>190</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>VERSION</string>
-      </property>
-     </widget>
     </widget>
    </item>
    <item>
-    <widget class="QFrame" name="frame">
+    <widget class="QFrame" name="frame_lower">
      <property name="styleSheet">
-      <string>background-color: #dddddd;</string>
+      <string/>
      </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -110,7 +123,7 @@
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <widget class="QLabel" name="lbl_text">
         <property name="text">
@@ -171,6 +184,8 @@
  <resources>
   <include location="../images.qrc"/>
   <include location="../images.qrc"/>
+  <include location="../images.qrc"/>
+  <include location="../images.qrc"/>
  </resources>
  <connections>
   <connection>
@@ -180,12 +195,12 @@
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>247</x>
-     <y>328</y>
+     <x>344</x>
+     <y>172</y>
     </hint>
     <hint type="destinationlabel">
-     <x>383</x>
-     <y>-7</y>
+     <x>267</x>
+     <y>-17</y>
     </hint>
    </hints>
   </connection>

@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../images.qrc">
+    <normaloff>:/img/hammer.png</normaloff>:/img/hammer.png</iconset>
+  </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>
   </property>
@@ -109,7 +113,9 @@
   <tabstop>labor_list</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="../images.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

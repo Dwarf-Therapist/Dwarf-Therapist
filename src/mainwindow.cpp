@@ -1,3 +1,25 @@
+/*
+Dwarf Therapist
+Copyright (c) 2009 Trey Stout (chmod)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
 #include <QtGui>
 #include <QtNetwork>
 #include <QtDebug>
@@ -236,16 +258,14 @@ void MainWindow::version_check_finished(bool error) {
 		qDebug() << "LATEST VERSION:" << newest_v.to_string();
 		if (our_v < newest_v) {
 			qDebug() << "LATEST VERSION IS NEWER!";
+			QMessageBox *mb = new QMessageBox(this);
+			mb->setWindowTitle(tr("Update Available"));
+			mb->setText(tr("A newer version of this application is available."));
+			QString link = "<a href=\"http://code.google.com/p/dwarftherapist/downloads/list\">Download v" + newest_v.to_string() + "</a>";
+			mb->setInformativeText(QString("You are currently running v%1. %2").arg(our_v.to_string()).arg(link));
+			mb->exec();
 		}
 		m_about_dialog->set_latest_version(newest_v);
-		
-		QMessageBox *mb = new QMessageBox(this);
-		mb->setWindowTitle(tr("Update Available"));
-		mb->setText(tr("A newer version of this application is available."));
-		QString link = "<a href=\"http://code.google.com/p/dwarftherapist/downloads/list\">Download v" + newest_v.to_string() + "</a>";
-		mb->setInformativeText(QString("You are currently running v%1. %2").arg(our_v.to_string()).arg(link));
-		
-		mb->exec();
 	} else {
 		m_about_dialog->version_check_failed();
 		
@@ -530,4 +550,18 @@ void MainWindow::set_nickname() {
 		//m_model->dataChanged(first_col[0], first_col[0]);
 	}
 	m_model->calculate_pending();
+}
+
+// web addresses
+void MainWindow::go_to_forums() {
+	QDesktopServices::openUrl(QUrl("http://udpviper.com/forums"));
+}
+void MainWindow::go_to_donate() {
+	QDesktopServices::openUrl(QUrl("http://code.google.com/p/dwarftherapist/wiki/Donations"));
+}
+void MainWindow::go_to_project_home() {
+	QDesktopServices::openUrl(QUrl("http://code.google.com/p/dwarftherapist"));
+}
+void MainWindow::go_to_new_issue() {
+	QDesktopServices::openUrl(QUrl("http://code.google.com/p/dwarftherapist/issues/entry"));
 }

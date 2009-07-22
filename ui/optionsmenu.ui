@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Options</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../images.qrc">
+    <normaloff>:/img/color_wheel.png</normaloff>:/img/color_wheel.png</iconset>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="10,0">
    <item>
     <widget class="QGroupBox" name="group_general_colors">
@@ -49,7 +53,9 @@ text-align: left;
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../images.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

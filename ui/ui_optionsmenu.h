@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'optionsmenu.ui'
 **
-** Created: Mon Jul 20 15:49:52 2009
+** Created: Tue Jul 21 16:11:45 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -38,6 +38,9 @@ public:
         if (OptionsMenu->objectName().isEmpty())
             OptionsMenu->setObjectName(QString::fromUtf8("OptionsMenu"));
         OptionsMenu->resize(344, 334);
+        QIcon icon;
+        icon.addPixmap(QPixmap(QString::fromUtf8(":/img/color_wheel.png")), QIcon::Normal, QIcon::Off);
+        OptionsMenu->setWindowIcon(icon);
         verticalLayout = new QVBoxLayout(OptionsMenu);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         group_general_colors = new QGroupBox(OptionsMenu);

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'pendingchanges.ui'
 **
-** Created: Mon Jul 20 12:16:23 2009
+** Created: Tue Jul 21 16:40:31 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -40,6 +40,9 @@ public:
         if (PendingChanges->objectName().isEmpty())
             PendingChanges->setObjectName(QString::fromUtf8("PendingChanges"));
         PendingChanges->resize(240, 320);
+        QIcon icon;
+        icon.addPixmap(QPixmap(QString::fromUtf8(":/img/hammer.png")), QIcon::Normal, QIcon::Off);
+        PendingChanges->setWindowIcon(icon);
         verticalLayout = new QVBoxLayout(PendingChanges);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         horizontalLayout = new QHBoxLayout();

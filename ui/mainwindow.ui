@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Dwarf Therapist</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../images.qrc">
+    <normaloff>:/img/hammer.png</normaloff>:/img/hammer.png</iconset>
+  </property>
   <widget class="QWidget" name="main_widget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
@@ -182,6 +186,11 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
+    <addaction name="act_go_project_home"/>
+    <addaction name="act_go_forums"/>
+    <addaction name="act_go_new_issue"/>
+    <addaction name="act_go_donate"/>
+    <addaction name="separator"/>
     <addaction name="act_about"/>
    </widget>
    <widget class="QMenu" name="menuProfessions">
@@ -622,7 +631,7 @@
   <action name="act_options">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/application_edit.png</normaloff>:/img/application_edit.png</iconset>
+     <normaloff>:/img/color_wheel.png</normaloff>:/img/color_wheel.png</iconset>
    </property>
    <property name="text">
     <string>Color Settings...</string>
@@ -663,6 +672,54 @@
    </property>
    <property name="toolTip">
     <string>When set you will be able to toggle skills in the main grid with a single left-click of the mouse. When unchecked, you will have to double-click</string>
+   </property>
+  </action>
+  <action name="act_go_forums">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/world_go.png</normaloff>:/img/world_go.png</iconset>
+   </property>
+   <property name="text">
+    <string>Discussion Forums</string>
+   </property>
+   <property name="toolTip">
+    <string>Launch a browser to Dwarf Therapist's discussion forums</string>
+   </property>
+  </action>
+  <action name="act_go_project_home">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/world_go.png</normaloff>:/img/world_go.png</iconset>
+   </property>
+   <property name="text">
+    <string>Project Homepage</string>
+   </property>
+   <property name="toolTip">
+    <string>Launch a browser to Dwarf Therapist's project homepage</string>
+   </property>
+  </action>
+  <action name="act_go_new_issue">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/world_go.png</normaloff>:/img/world_go.png</iconset>
+   </property>
+   <property name="text">
+    <string>Request Feature / Report Bug</string>
+   </property>
+   <property name="toolTip">
+    <string>Report a bug or request a feature online</string>
+   </property>
+  </action>
+  <action name="act_go_donate">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/heart.png</normaloff>:/img/heart.png</iconset>
+   </property>
+   <property name="text">
+    <string>Donate</string>
+   </property>
+   <property name="toolTip">
+    <string>Your donations make the world a better place!</string>
    </property>
   </action>
  </widget>
@@ -1098,6 +1155,70 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_go_donate</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>go_to_donate()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>373</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_go_forums</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>go_to_forums()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>373</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_go_new_issue</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>go_to_new_issue()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>373</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_go_project_home</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>go_to_project_home()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>373</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -1112,5 +1233,9 @@
   <slot>import_existing_professions()</slot>
   <slot>set_single_click_labor_changes(bool)</slot>
   <slot>set_allow_grid_focus(bool)</slot>
+  <slot>go_to_forums()</slot>
+  <slot>go_to_donate()</slot>
+  <slot>go_to_project_home()</slot>
+  <slot>go_to_new_issue()</slot>
  </slots>
 </ui>
