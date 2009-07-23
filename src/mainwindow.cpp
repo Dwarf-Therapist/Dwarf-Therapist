@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include <QtGui>
 #include <QtNetwork>
 #include <QtDebug>
+#include <QxtLogger>
 
 #include "mainwindow.h"
 #include "ui_about.h"
@@ -32,6 +33,7 @@ THE SOFTWARE.
 #include "aboutdialog.h"
 #include "dwarfmodel.h"
 #include "dfinstance.h"
+#include "memorylayout.h"
 #include "statetableview.h"
 #include "uberdelegate.h"
 #include "customprofession.h"
@@ -57,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 	ui->stv->setModel(m_model);
 
+	LOGD << "setting up connections for MainWindow";
 	connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
 	connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
 	connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
@@ -80,6 +83,10 @@ MainWindow::MainWindow(QWidget *parent)
 	read_settings();
 
 	check_latest_version();
+	//TODO: make this an option to connect on launch
+	connect_to_df();
+	if (m_df && m_df->is_ok())
+		read_dwarves();
 }
 
 MainWindow::~MainWindow() {
@@ -87,6 +94,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::read_settings() {
+	LOGD << "begining to read settings";
 	m_reading_settings = true; // don't allow writes while we're reading...
 	m_settings->beginGroup("window");
 	{ // WINDOW SETTINGS
@@ -147,7 +155,8 @@ void MainWindow::read_settings() {
 	m_options_menu->read_settings(m_settings);
 
 	m_reading_settings = false;
-	draw_professions();
+	LOGD << "finished reading settings";
+	draw_professions();	
 }
 
 void MainWindow::write_settings() {
@@ -195,20 +204,20 @@ void MainWindow::closeEvent(QCloseEvent *evt) {
 }
 
 void MainWindow::connect_to_df() {
+	LOGD << "attempting connection to running DF game";
     if (m_df) {
+		LOGD << "already connected, disconnecting";
         delete m_df;
         set_interface_enabled(false);
         m_df = 0;
     }
+	// find_running_copy can fail for several reasons, and will take care of 
+	// logging and notifying the user.
     m_df = DFInstance::find_running_copy(this);
-    if (!m_df) {
-        QMessageBox::warning(this, tr("Warning"),
-                             tr("Unable to locate a running copy of Dwarf "
-                                "Fortress, are you sure it's running?"));
-        return;
-    }
-    m_lbl_status->setText(tr("Connected"));
-    set_interface_enabled(true);
+	if (m_df && m_df->is_ok()) {
+		m_lbl_status->setText(tr("Connected to ") + m_df->memory_layout()->game_version());
+		set_interface_enabled(true);
+	}
 }
 
 void MainWindow::read_dwarves() {
@@ -280,13 +289,13 @@ void MainWindow::scan_memory() {
     connect(pd, SIGNAL(canceled()), m_df, SLOT(cancel_scan()));
     pd->show();
 
-    int language_addr = m_df->find_language_vector();
-    int translation_addr = m_df->find_translation_vector();
+    //int language_addr = m_df->find_language_vector();
+    //int translation_addr = m_df->find_translation_vector();
     int creature_addr = m_df->find_creature_vector();
 	pd->deleteLater();
 
-    qDebug() << "LANGUAGE VECTOR:   " << hex << language_addr;
-    qDebug() << "TRANSLATION VECTOR:" << hex << translation_addr;
+    //qDebug() << "LANGUAGE VECTOR:   " << hex << language_addr;
+    //qDebug() << "TRANSLATION VECTOR:" << hex << translation_addr;
     qDebug() << "CREATURE VECTOR:   " << hex << creature_addr;
 }
 
@@ -554,7 +563,7 @@ void MainWindow::set_nickname() {
 
 // web addresses
 void MainWindow::go_to_forums() {
-	QDesktopServices::openUrl(QUrl("http://udpviper.com/forums"));
+	QDesktopServices::openUrl(QUrl("http://udpviper.com/forums/viewforum.php?f=36"));
 }
 void MainWindow::go_to_donate() {
 	QDesktopServices::openUrl(QUrl("http://code.google.com/p/dwarftherapist/wiki/Donations"));

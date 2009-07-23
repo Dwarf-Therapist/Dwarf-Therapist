@@ -29,6 +29,9 @@ THE SOFTWARE.
 #include "defines.h"
 #include "labor.h"
 
+/*!
+Default ctor. Creates a blank skill template with no name
+*/
 CustomProfession::CustomProfession(QObject *parent)
 	: QObject(parent)
 	, ui(new Ui::CustomProfessionEditor)
@@ -36,6 +39,16 @@ CustomProfession::CustomProfession(QObject *parent)
 	, m_dwarf(0)
 {}
 
+/*!
+When passed in a pointer to a Dwarf, this new custom profession
+will adopt whatever labors that Dwarf has enabled as its
+own template. 
+
+This is used by the "Create custom profession from this dwarf..." action.
+
+\param[in] d The Dwarf to use as a labor template
+\param[in] parent The Qt owner of this object
+*/
 CustomProfession::CustomProfession(Dwarf *d, QObject *parent)
 	: QObject(parent)
 	, ui(new Ui::CustomProfessionEditor)
@@ -51,6 +64,14 @@ CustomProfession::CustomProfession(Dwarf *d, QObject *parent)
 	}
 }
 
+/*!
+Change the enabled status of a template labor. This doesn't
+affect any dwarves using this custom profession, only the 
+template itself.
+
+\param[in] labor_id The id of the labor to change
+\param[in] active Should the labor be enabled or not
+*/
 void CustomProfession::set_labor(int labor_id, bool active) {
 	if (m_active_labors.contains(labor_id) && !active)
 		m_active_labors.remove(labor_id);
@@ -58,10 +79,19 @@ void CustomProfession::set_labor(int labor_id, bool active) {
 		m_active_labors.insert(labor_id, true);
 }
 
+/*!
+Check if the template has a labor enabled
+
+\param[in] labor_id The id of the labor to check
+\returns true if this labor is enabled
+*/
 bool CustomProfession::is_active(int labor_id) {
 	return m_active_labors.value(labor_id, false);
 }
 
+/*!
+Get a vector of all enabled labors in this template by labor_id
+*/
 QVector<int> CustomProfession::get_enabled_labors() {
 	QVector<int> labors;
 	foreach(int labor, m_active_labors.uniqueKeys()) {
@@ -72,6 +102,13 @@ QVector<int> CustomProfession::get_enabled_labors() {
 	return labors;
 }
 
+/*!
+Pops up a dialog box asking for a name for this object as well
+as a list of labors that can be enabled/disabled via checkboxes
+
+\param[in] parent If set, the dialog will launch as a model under parent
+\returns QDialog::exec() result (int)
+*/
 int CustomProfession::show_builder_dialog(QWidget *parent) {
 	GameDataReader *gdr = GameDataReader::ptr();
 
@@ -106,6 +143,13 @@ int CustomProfession::show_builder_dialog(QWidget *parent) {
 	return m_dialog->exec();
 }
 
+/*!
+Called when the show_builder_dialog widget's OK button is pressed, or the 
+dialog is otherwise accepted by the user
+
+We intercept this call to verify the form is valid before saving it.
+\sa is_valid()
+*/
 void CustomProfession::accept() {
 	if (!is_valid()) {
 		return;
@@ -113,6 +157,12 @@ void CustomProfession::accept() {
 	m_dialog->accept();
 }
 
+/*!
+Called after the show_builder_dialog widget is accepted, used to verify that
+the CustomProfession has all needed information to save
+
+\returns true if this instance is ok to save.
+*/
 bool CustomProfession::is_valid() {
 	if (!m_dialog)
 		return true;

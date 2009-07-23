@@ -38,4 +38,10 @@ THE SOFTWARE.
 	#define VERSION_PATCH 5
 #endif
 
+#define LOG   qxtLog
+#define LOGD  qDebug() << __FILE__ << "(ln" << __LINE__ << "): "
+#define LOGW  qWarning() << __FILE__ << "(ln" << __LINE__ << ") [" << __FUNCTION__ << "] "
+#define LOGC  qCritical() << __FILE__ << "(ln" << __LINE__ << ") [" << __FUNCTION__ << "] "
+#define FATAL qFatal() << __FILE__ << "(ln" << __LINE__ << ") [" << __FUNCTION__ << "] "
+
 #endif

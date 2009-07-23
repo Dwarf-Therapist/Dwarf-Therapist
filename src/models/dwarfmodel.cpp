@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "skill.h"
 #include "labor.h"
 #include "statetableview.h"
+#include "defines.h"
 
 DwarfModel::DwarfModel(QObject *parent)
 	: QStandardItemModel(parent)
@@ -229,7 +230,7 @@ void DwarfModel::labor_clicked(const QModelIndex &idx) {
 }
 
 void DwarfModel::set_group_by(int group_by) {
-	qDebug() << "group_by" << group_by;
+	LOGD << "group_by now set to" << group_by;
 	m_group_by = static_cast<GROUP_BY>(group_by);
 	if (m_df)
 		load_dwarves();

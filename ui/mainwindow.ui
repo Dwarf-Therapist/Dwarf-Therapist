@@ -20,9 +20,6 @@
   <widget class="QWidget" name="main_widget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout"/>
-    </item>
-    <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
        <widget class="QLabel" name="lbl_group_by">
@@ -67,6 +64,11 @@
       </item>
       <item>
        <widget class="QLabel" name="lbl_pending_changes">
+        <property name="font">
+         <font>
+          <pointsize>20</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>0</string>
         </property>
@@ -172,7 +174,6 @@
     </property>
     <addaction name="act_connect_to_DF"/>
     <addaction name="act_read_dwarves"/>
-    <addaction name="act_scan_memory"/>
     <addaction name="separator"/>
     <addaction name="act_commit_pending_changes"/>
     <addaction name="act_clear_pending_changes"/>

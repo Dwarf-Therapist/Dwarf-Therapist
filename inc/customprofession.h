@@ -32,17 +32,44 @@ namespace Ui
     class CustomProfessionEditor;
 }
 
+//! Manages custom professions independent of a fortress
+/*!
+CustomProfession objects hold all data needed to map a set of labors onto a
+dwarf. A dwarf can either have a default-profession (determined by the game
+based on the dwarf's highest skill) or a custom-profession. In DF, custom
+professions don't actually have any real meaning other than semantic.
+
+Using Dwarf Therapist, you can associate any number of labors with a custom 
+profession and save this association outside of the game. You can then
+apply a custom profession to a dwarf with this tool, and it will set the 
+appropriate labors on that dwarf.
+
+Example:
+*/
 class CustomProfession : public QObject {
 	Q_OBJECT
 public:
+	//! Constructor with blank labor template
 	CustomProfession(QObject *parent = 0);
+	//! Constructor with labor template based on Dwarf *d
 	CustomProfession(Dwarf *d, QObject *parent = 0);
 
+	//! Writes to disk for later use
 	void save();
+
+	//! Completely kills this profession
 	void delete_from_disk();
+
+	//! Get the game-visible name of this profession
 	QString get_name() {return m_name;}
+
+	//! Check if our template has a particular labor enabled
 	bool is_active(int labor_id);
+
+	//! Shows a small editing dialog for this profession
 	int show_builder_dialog(QWidget *parent = 0);
+
+	//! Returns a vector of all enabled labor_ids in this template
 	QVector<int> get_enabled_labors();
 
 

@@ -53,6 +53,8 @@ public:
 		return m_instance;
 	}
 
+	void set_game_checksum(int checksum) {m_game_checksum = checksum;}
+
 	int get_int_for_key(QString key, short base = 16);
 	int get_address(QString key) {return get_int_for_key("addresses/" + key);}
 	int get_offset(QString key) {return get_int_for_key("offsets/" + key);}
@@ -77,6 +79,7 @@ private:
 	QSettings *m_data_settings;
 	QMap<int, Labor*> m_labors;
 	QMap<int, Labor*> m_ordered_labors;
+	int m_game_checksum;
 
 
 };

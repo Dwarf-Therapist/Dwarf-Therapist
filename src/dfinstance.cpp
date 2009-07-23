@@ -26,11 +26,13 @@ THE SOFTWARE.
 #include <windows.h>
 #include <psapi.h>
 
+#include "defines.h"
 #include "win_structs.h"
 #include "dfinstance.h"
 #include "dwarf.h"
 #include "utils.h"
 #include "gamedatareader.h"
+#include "memorylayout.h"
 
 
 DFInstance::DFInstance(DWORD pid, HWND hwnd, QObject* parent)
@@ -41,6 +43,7 @@ DFInstance::DFInstance(DWORD pid, HWND hwnd, QObject* parent)
     ,m_memory_correction(0)
     ,m_stop_scan(false)
 	,m_is_ok(true)
+	,m_layout(0)
 {
     m_proc = OpenProcess(PROCESS_QUERY_INFORMATION
                          | PROCESS_VM_READ
@@ -50,14 +53,15 @@ DFInstance::DFInstance(DWORD pid, HWND hwnd, QObject* parent)
     PROCESS_MEMORY_COUNTERS pmc;
     GetProcessMemoryInfo(m_proc, &pmc, sizeof(pmc));
     m_memory_size = pmc.WorkingSetSize;
-    //qDebug() << "process working set size: " << m_memory_size;
+    LOGD << "working set size: " << dec << m_memory_size / (1024.0f * 1024.0f) << "MB";
 
     PVOID peb_addr = GetPebAddress(m_proc);
-    //qDebug() << "PEB is at: " << hex << peb_addr;
+    LOGD << "PEB is at: " << hex << peb_addr;
 
 	QString connection_error = tr("I'm sorry. I'm having trouble connecting to DF. "
-		"I can't seem to locate the PEB address of the process. "
+		"I can't seem to locate the PEB address of the process. \n\n"
 		"Please re-launch DF and try again.");
+
 	if (peb_addr == 0){
 		QMessageBox::critical(0, tr("Connection Error"), connection_error);
 		qCritical() << "PEB address came back as 0";
@@ -66,17 +70,29 @@ DFInstance::DFInstance(DWORD pid, HWND hwnd, QObject* parent)
 		PEB peb;
 		DWORD bytes = 0;
 		if (ReadProcessMemory(m_proc, (PCHAR)peb_addr, &peb, sizeof(PEB), &bytes)) {
-			qDebug() << "read " << bytes << "bytes BASE ADDR is at: " << hex << peb.ImageBaseAddress;
+			LOGD << "read" << bytes << "bytes BASE ADDR is at: " << hex << peb.ImageBaseAddress;
 			m_base_addr = (int)peb.ImageBaseAddress;
 		} else {
 			QMessageBox::critical(0, tr("Connection Error"), connection_error);
 			qCritical() << "unable to read remote PEB!" << GetLastError();
 			m_is_ok = false;
 		}
-		calculate_checksum();
+		if (m_is_ok) {
+			int checksum = calculate_checksum();
+			LOGD << "DF's checksum is:" << hex << checksum;
+			//GameDataReader::ptr()->set_game_checksum(checksum);
+
+			m_layout = new MemoryLayout(checksum);
+			if (!m_layout->is_valid()) {
+				QMessageBox::critical(0, tr("Unidentified Version"),
+					tr("I'm sorry but I don't know how to talk to this version of DF!"));
+				LOGC << "unable to identify version from checksum:" << hex << checksum;
+				//m_is_ok = false;
+			}
+		}
 
 		m_memory_correction = (int)m_base_addr - 0x0400000;
-		qDebug() << "memory correction " << m_memory_correction;
+		LOGD << "memory correction " << m_memory_correction;
 	}
 }
 
@@ -382,7 +398,7 @@ int DFInstance::find_creature_vector() {
 	GameDataReader *gdr = GameDataReader::ptr();
     int low_cutoff = gdr->get_int_for_key("ram_guesser/creature_vector_low_cutoff") + m_memory_correction;
     int high_cutoff = gdr->get_int_for_key("ram_guesser/creature_vector_high_cutoff")+ m_memory_correction;
-    int dwarf_nickname_offset = gdr->get_dwarf_offset("nick_name");
+    int dwarf_nickname_offset = 0x001C; //m_layout->dwarf_offset("nick_name");
     QByteArray custom_nickname("FirstCreature");
     QByteArray custom_profession("FirstProfession");
 
@@ -390,10 +406,6 @@ int DFInstance::find_creature_vector() {
     QByteArray skillpattern_metalsmith = encode_skillpattern(29, 0, 2);
     QByteArray skillpattern_swordsman = encode_skillpattern(40, 462, 3);
     QByteArray skillpattern_pump_operator = encode_skillpattern(65, 462, 1);
-
-	uchar foo[6] = {0x00, 0x00, 0x0C, 0x0D, 0x04, 0x00};
-	skillpattern_miner = QByteArray((char*)&foo, 6);
-
 
     int creature_vector_address = -1;
     emit scan_message(tr("Scanning for known nickname"));
@@ -464,31 +476,31 @@ int DFInstance::find_creature_vector() {
                     ReportAddress( "Offset", "Creature.Labors", labors - dwarf );
                 }
     */
-	qDebug() << "all done with creature scan";
+	qDebug("all done with creature scan");
     return creature_vector_address;
 }
 
 DFInstance* DFInstance::find_running_copy(QObject *parent) {
+	LOGD << "attempting to find running copy of DF by window handle";
     HWND hwnd = FindWindow(NULL, L"Dwarf Fortress");
     if (!hwnd) {
-        qWarning() << "can't find running copy";
+		QMessageBox::warning(0, tr("Warning"),
+			tr("Unable to locate a running copy of Dwarf "
+			"Fortress, are you sure it's running?"));
+        LOGW << "can't find running copy";
         return 0;
     }
-    qDebug() << "found copy with HWND: " << hwnd;
+    LOGD << "found copy with HWND: " << hwnd;
 
     DWORD pid;
     GetWindowThreadProcessId(hwnd, &pid);
-    qDebug() << "PID is: " << pid;
+    LOGD << "PID of process is: " << pid;
 
-	DFInstance *df = new DFInstance(pid, hwnd, parent);
-	if (df->is_ok())
-		return df;
-	return 0;
+	return new DFInstance(pid, hwnd, parent);
 }
 
 QVector<Dwarf*> DFInstance::load_dwarves() {
-	
-	int creature_vector = GameDataReader::ptr()->get_address("creature_vector");
+	int creature_vector = m_layout->address("creature_vector");
 	qDebug() << "starting with creature vector" << hex << creature_vector;
 	QVector<Dwarf*> dwarves;
 	QVector<int> creatures = enumerate_vector(creature_vector + m_memory_correction);

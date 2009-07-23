@@ -21,13 +21,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+/*! \mainpage Dwarf Therapist
+*
+* \section intro_sec Introduction
+*
+* Dwarf Therapist is written in C++ using Qt 4.5.2. It is meant to be used as
+* an addon for the game Dwarf Fortress.
+*
+*/
+
 #include <QtGui>
-#include <QtDebug>
+#include <QxtLogger>
+#include "truncatingfilelogger.h"
 #include "mainwindow.h"
 #include "dfinstance.h"
 #include "utils.h"
+#include "version.h"
 
 int main(int argc, char *argv[]) {
+	//setup logging
+	TruncatingFileLoggerEngine *engine = new TruncatingFileLoggerEngine("log/run.log");
+	qxtLog->addLoggerEngine("main", engine);
+	QxtLogger::getInstance()->installAsMessageHandler();
+
+	Version v; // current version
+	LOG->info("Dwarf Therapist", v.to_string(), "starting normally.");
+
+	// start up the application
     QApplication a(argc, argv);
     MainWindow w;
     w.show();

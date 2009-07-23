@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <QString>
 
 #include "dwarf.h"
+class MemoryLayout;
 
 class DFInstance : public QObject {
 private:
@@ -65,6 +66,7 @@ public:
     int find_creature_vector();
 
     // Methods for when we know how the data is layed out
+	MemoryLayout *memory_layout() {return m_layout;}
 	QVector<Dwarf*> DFInstance::load_dwarves();
 
 	// Writing
@@ -88,6 +90,7 @@ private:
     int m_memory_correction;
     bool m_stop_scan; // flag that gets set to stop scan loops
 	bool m_is_ok;
+	MemoryLayout *m_layout;
 
     // these should probably not be constants but I have no idea how to find the values at runtime
     static const int STRING_BUFFER_OFFSET = 4;

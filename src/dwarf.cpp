@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "labor.h"
 #include "gamedatareader.h"
 #include "customprofession.h"
+#include "memorylayout.h"
 
 Dwarf::Dwarf(DFInstance *df, int address, QObject *parent)
 	: QObject(parent)
@@ -39,26 +40,26 @@ Dwarf::Dwarf(DFInstance *df, int address, QObject *parent)
 }
 
 void Dwarf::refresh_data() {
-	GameDataReader *gdr = GameDataReader::ptr();
+	MemoryLayout *mem = m_df->memory_layout();
 	uint bytes_read = 0;
 
-	m_first_name = m_df->read_string(m_address + gdr->get_dwarf_offset("first_name"));
+	m_first_name = m_df->read_string(m_address + mem->dwarf_offset("first_name"));
 	if (m_first_name.size() > 1)
 		m_first_name[0] = m_first_name[0].toUpper();
 	
-	m_id = m_df->read_int32(m_address + gdr->get_dwarf_offset("id"), bytes_read);
-	m_nick_name = m_df->read_string(m_address + gdr->get_dwarf_offset("nick_name"));
+	m_id = m_df->read_int32(m_address + mem->dwarf_offset("id"), bytes_read);
+	m_nick_name = m_df->read_string(m_address + mem->dwarf_offset("nick_name"));
 	m_pending_nick_name = m_nick_name;
-    m_last_name = read_last_name(m_address + gdr->get_dwarf_offset("last_name"));
-	m_custom_profession = m_df->read_string(m_address + gdr->get_dwarf_offset("custom_profession"));
-	m_pending_custom_profession = m_df->read_string(m_address + gdr->get_dwarf_offset("custom_profession"));
-	m_race_id = m_df->read_int32(m_address + gdr->get_dwarf_offset("race"), bytes_read);
-    m_skills = read_skills(m_address + gdr->get_dwarf_offset("skills"));
-	m_profession = read_professtion(m_address + gdr->get_dwarf_offset("profession"));
-	m_strength = m_df->read_int32(m_address + gdr->get_dwarf_offset("strength"), bytes_read);
-	m_toughness = m_df->read_int32(m_address + gdr->get_dwarf_offset("toughness"), bytes_read);
-	m_agility = m_df->read_int32(m_address + gdr->get_dwarf_offset("agility"), bytes_read);
-	read_labors(m_address + gdr->get_dwarf_offset("labors"));
+    m_last_name = read_last_name(m_address + mem->dwarf_offset("last_name"));
+	m_custom_profession = m_df->read_string(m_address + mem->dwarf_offset("custom_profession"));
+	m_pending_custom_profession = m_df->read_string(m_address + mem->dwarf_offset("custom_profession"));
+	m_race_id = m_df->read_int32(m_address + mem->dwarf_offset("race"), bytes_read);
+    m_skills = read_skills(m_address + mem->dwarf_offset("skills"));
+	m_profession = read_professtion(m_address + mem->dwarf_offset("profession"));
+	m_strength = m_df->read_int32(m_address + mem->dwarf_offset("strength"), bytes_read);
+	m_toughness = m_df->read_int32(m_address + mem->dwarf_offset("toughness"), bytes_read);
+	m_agility = m_df->read_int32(m_address + mem->dwarf_offset("agility"), bytes_read);
+	read_labors(m_address + mem->dwarf_offset("labors"));
 }
 
 Dwarf::~Dwarf() {
@@ -67,15 +68,16 @@ Dwarf::~Dwarf() {
 }
 
 Dwarf *Dwarf::get_dwarf(DFInstance *df, int address) {
-	GameDataReader *gdr = GameDataReader::ptr();
+	MemoryLayout *mem = df->memory_layout();
+	
 	uint bytes_read = 0;
-	if ((df->read_int32(address + gdr->get_dwarf_offset("flags1"), bytes_read) & gdr->get_int_for_key("flags/flags1.invalidate")) > 0) {
+	if ((df->read_int32(address + mem->dwarf_offset("flags1"), bytes_read) & mem->flags("flags1.invalidate")) > 0) {
 		return 0;
 	}
-	if ((df->read_int32(address + gdr->get_dwarf_offset("flags2"), bytes_read) & gdr->get_int_for_key("flags/flags2.invalidate")) > 0) {
+	if ((df->read_int32(address + mem->dwarf_offset("flags2"), bytes_read) & mem->flags("flags2.invalidate")) > 0) {
 		return 0;
 	}
-	if ((df->read_int32(address + gdr->get_dwarf_offset("race"), bytes_read)) != 166) {
+	if ((df->read_int32(address + mem->dwarf_offset("race"), bytes_read)) != 166) {
 		return 0;
 	}
 	//if( memoryAccess.ReadInt32( address + memoryLayout["Creature.Race"] ) != actualDwarfRaceId )
@@ -92,13 +94,12 @@ QString Dwarf::nice_name() {
 }
 
 QString Dwarf::read_last_name(int address) {
-	GameDataReader *gdr = GameDataReader::ptr();
-    int word_table = gdr->get_offset("word_table");
+	MemoryLayout *mem = m_df->memory_layout();
     uint bytes_read = 0;
     //int actual_lang_table = m_df->read_int32(gdr->get_address("language_vector") + m_df->get_memory_correction() + 4, bytes_read);
-    int translations_ptr = m_df->read_int32(gdr->get_address("translation_vector") + m_df->get_memory_correction() + 4, bytes_read);
+    int translations_ptr = m_df->read_int32(mem->address("translation_vector") + m_df->get_memory_correction() + 4, bytes_read);
     int translation_ptr = m_df->read_int32(translations_ptr, bytes_read);
-    int actual_dwarf_translation_table = m_df->read_int32(translation_ptr + word_table, bytes_read);
+    int actual_dwarf_translation_table = m_df->read_int32(translation_ptr + mem->offset("word_table"), bytes_read);
 
     QString out;
 
@@ -202,13 +203,13 @@ void Dwarf::clear_pending() {
 }
 
 void Dwarf::commit_pending() {
-	GameDataReader *gdr = GameDataReader::ptr();
-	int addr = m_address + gdr->get_dwarf_offset("labors");
+	MemoryLayout *mem = m_df->memory_layout();
+	int addr = m_address + mem->dwarf_offset("labors");
 	m_df->write_raw(addr, 102, m_pending_labors);
 	if (m_pending_nick_name != m_nick_name)
-		m_df->write_string(m_address + gdr->get_dwarf_offset("nick_name"), m_pending_nick_name);
+		m_df->write_string(m_address + mem->dwarf_offset("nick_name"), m_pending_nick_name);
 	if (m_pending_custom_profession != m_custom_profession)
-		m_df->write_string(m_address + gdr->get_dwarf_offset("custom_profession"), m_pending_custom_profession);
+		m_df->write_string(m_address + mem->dwarf_offset("custom_profession"), m_pending_custom_profession);
 	refresh_data();
 }
 

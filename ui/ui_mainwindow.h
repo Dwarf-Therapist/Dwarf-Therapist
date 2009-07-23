@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Tue Jul 21 16:38:04 2009
+** Created: Wed Jul 22 20:04:52 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -62,7 +62,6 @@ public:
     QAction *act_go_donate;
     QWidget *main_widget;
     QVBoxLayout *verticalLayout;
-    QHBoxLayout *horizontalLayout;
     QHBoxLayout *horizontalLayout_2;
     QLabel *lbl_group_by;
     QComboBox *cb_group_by;
@@ -223,12 +222,6 @@ public:
         verticalLayout->setSpacing(6);
         verticalLayout->setMargin(11);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
-        horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setSpacing(6);
-        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
-
-        verticalLayout->addLayout(horizontalLayout);
-
         horizontalLayout_2 = new QHBoxLayout();
         horizontalLayout_2->setSpacing(6);
         horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
@@ -249,6 +242,9 @@ public:
 
         lbl_pending_changes = new QLabel(main_widget);
         lbl_pending_changes->setObjectName(QString::fromUtf8("lbl_pending_changes"));
+        QFont font;
+        font.setPointSize(20);
+        lbl_pending_changes->setFont(font);
 
         horizontalLayout_2->addWidget(lbl_pending_changes);
 
@@ -262,9 +258,9 @@ public:
 
         stv = new StateTableView(main_widget);
         stv->setObjectName(QString::fromUtf8("stv"));
-        QFont font;
-        font.setPointSize(8);
-        stv->setFont(font);
+        QFont font1;
+        font1.setPointSize(8);
+        stv->setFont(font1);
         stv->setMouseTracking(true);
         stv->setContextMenuPolicy(Qt::CustomContextMenu);
         stv->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -291,7 +287,7 @@ public:
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
         menuBar->setGeometry(QRect(0, 0, 1129, 20));
-        menuBar->setFont(font);
+        menuBar->setFont(font1);
         menu_File = new QMenu(menuBar);
         menu_File->setObjectName(QString::fromUtf8("menu_File"));
         menu_File->setTearOffEnabled(false);
@@ -324,7 +320,7 @@ public:
         verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
         tree_pending = new QTreeWidget(dockWidgetContents);
         tree_pending->setObjectName(QString::fromUtf8("tree_pending"));
-        tree_pending->setFont(font);
+        tree_pending->setFont(font1);
         tree_pending->setEditTriggers(QAbstractItemView::NoEditTriggers);
         tree_pending->setAlternatingRowColors(true);
         tree_pending->setUniformRowHeights(true);
@@ -413,7 +409,6 @@ public:
         menuBar->addAction(menu_Help->menuAction());
         menu_File->addAction(act_connect_to_DF);
         menu_File->addAction(act_read_dwarves);
-        menu_File->addAction(act_scan_memory);
         menu_File->addSeparator();
         menu_File->addAction(act_commit_pending_changes);
         menu_File->addAction(act_clear_pending_changes);
