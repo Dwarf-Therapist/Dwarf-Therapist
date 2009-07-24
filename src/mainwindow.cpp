@@ -421,12 +421,17 @@ void MainWindow::delete_custom_profession() {
 		}
 	}
 	if (blockers.size() > 0) {
-		QString message = "The following dwarves are still using '" + m_temp_cp->get_name() + "':";
+		QMessageBox *box = new QMessageBox(this);
+		box->setIcon(QMessageBox::Warning);
+		box->setWindowTitle(tr("Cannot Remove Profession"));
+		box->setText(tr("The following %1 dwarf(s) is(are) still using <b>%2</b>. Please change them to"
+			" another profession before deleting this profession!").arg(blockers.size()).arg(m_temp_cp->get_name()));
+		QString msg = tr("Dwarves with this profession:\n\n");
 		foreach(Dwarf *d, blockers) {
-			message += "\n\t" + d->nice_name();
+			msg += d->nice_name() + "\n";
 		}
-		message += "\n\nPlease change them to another profession before deleting this profession!";
-		QMessageBox::warning(this, tr("Still Being Used"), message);
+		box->setDetailedText(msg);
+		box->exec();
 	} else {
 		m_temp_cp->delete_from_disk();
 		m_custom_professions.remove(m_custom_professions.indexOf(m_temp_cp));
@@ -530,7 +535,8 @@ void MainWindow::import_existing_professions() {
 		}
 	}
 	draw_professions();
-	QMessageBox::information(this, tr("Import Successful"), "Imported " + QString::number(imported) + " custom professions");
+	QMessageBox::information(this, tr("Import Successful"), 
+		tr("Imported %n custom profession(s)", "" ,imported));
 }
 
 void MainWindow::set_nickname() {

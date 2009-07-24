@@ -22,6 +22,7 @@ THE SOFTWARE.
 */
 #ifndef DEFINES_H
 #define DEFINES_H
+#include <QxtLogger>
 
 #define COMPANY "UDP Software"
 #define PRODUCT "Dwarf Therapist"
@@ -43,5 +44,6 @@ THE SOFTWARE.
 #define LOGW  qWarning() << __FILE__ << "(ln" << __LINE__ << ") [" << __FUNCTION__ << "] "
 #define LOGC  qCritical() << __FILE__ << "(ln" << __LINE__ << ") [" << __FUNCTION__ << "] "
 #define FATAL qFatal() << __FILE__ << "(ln" << __LINE__ << ") [" << __FUNCTION__ << "] "
+#define TRACE qxtLog->trace()
 
 #endif

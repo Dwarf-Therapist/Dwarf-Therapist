@@ -43,12 +43,22 @@ int main(int argc, char *argv[]) {
 	TruncatingFileLoggerEngine *engine = new TruncatingFileLoggerEngine("log/run.log");
 	qxtLog->addLoggerEngine("main", engine);
 	QxtLogger::getInstance()->installAsMessageHandler();
+	qxtLog->disableAllLogLevels();
+	qxtLog->enableLogLevels(QxtLogger::DebugLevel | QxtLogger::InfoLevel | QxtLogger::WarningLevel);
 
 	Version v; // current version
 	LOG->info("Dwarf Therapist", v.to_string(), "starting normally.");
 
 	// start up the application
     QApplication a(argc, argv);
+
+	// translator
+	LOGD << "loading translations";
+	QTranslator translator;
+	translator.load("dwarftherapist_en");
+	a.installTranslator(&translator);
+
+	// make and run the main window
     MainWindow w;
     w.show();
     return a.exec();
