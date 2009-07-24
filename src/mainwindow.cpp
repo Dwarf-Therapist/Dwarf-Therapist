@@ -94,7 +94,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::read_settings() {
-	LOGD << "begining to read settings";
+	LOGD << "beginning to read settings";
 	m_reading_settings = true; // don't allow writes while we're reading...
 	m_settings->beginGroup("window");
 	{ // WINDOW SETTINGS
@@ -161,6 +161,7 @@ void MainWindow::read_settings() {
 
 void MainWindow::write_settings() {
 	if (m_settings && !m_reading_settings) {
+		LOGD << "beginning to write settings";
 		QByteArray geom = saveGeometry();
 		QByteArray state = saveState();
 		m_settings->beginGroup("window");
@@ -195,12 +196,15 @@ void MainWindow::write_settings() {
 			m_settings->endGroup();
 			
 		}
+		LOGD << "finished writing settings";
 	}
 }
 
 void MainWindow::closeEvent(QCloseEvent *evt) {
+	LOG->info() << "Beginning shutdown";
 	write_settings();
 	evt->accept();
+	LOG->info() << "Closing Dwarf Therapist normally";
 }
 
 void MainWindow::connect_to_df() {

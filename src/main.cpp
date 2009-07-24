@@ -39,18 +39,30 @@ THE SOFTWARE.
 #include "version.h"
 
 int main(int argc, char *argv[]) {
+	// start up the application
+	QApplication a(argc, argv);
+
+	QStringList args = a.arguments();
+	bool debug_logging = args.indexOf("-debug") != -1;
+	bool trace_logging = args.indexOf("-trace") != -1;
+
 	//setup logging
 	TruncatingFileLoggerEngine *engine = new TruncatingFileLoggerEngine("log/run.log");
 	qxtLog->addLoggerEngine("main", engine);
 	QxtLogger::getInstance()->installAsMessageHandler();
-	qxtLog->disableAllLogLevels();
-	qxtLog->enableLogLevels(QxtLogger::DebugLevel | QxtLogger::InfoLevel | QxtLogger::WarningLevel);
-
+	qxtLog->setMinimumLevel(QxtLogger::InfoLevel);
+		
 	Version v; // current version
 	LOG->info("Dwarf Therapist", v.to_string(), "starting normally.");
-
-	// start up the application
-    QApplication a(argc, argv);
+	if (debug_logging && !trace_logging) {
+		qxtLog->setMinimumLevel(QxtLogger::DebugLevel);
+		LOG->info("MINIMUM LOG LEVEL SET TO: DEBUG");
+	} else if (trace_logging) {
+		qxtLog->setMinimumLevel(QxtLogger::TraceLevel);
+		LOG->info("MINIMUM LOG LEVEL SET TO: TRACE");
+	} else {
+		LOG->info("MINIMUM LOG LEVEL SET TO: INFO");
+	}
 
 	// translator
 	LOGD << "loading translations";
