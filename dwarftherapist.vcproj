@@ -1272,6 +1272,10 @@
 				RelativePath=".\etc\v0.28.181.40d8.ini"
 				>
 			</File>
+			<File
+				RelativePath=".\etc\v0.28.181.40d9.ini"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath=".\DwarfTherapist.rc"
