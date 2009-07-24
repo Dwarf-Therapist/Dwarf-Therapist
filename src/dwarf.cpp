@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "skill.h"
 #include "labor.h"
+#include "defines.h"
 #include "gamedatareader.h"
 #include "customprofession.h"
 #include "memorylayout.h"
@@ -69,15 +70,20 @@ Dwarf::~Dwarf() {
 
 Dwarf *Dwarf::get_dwarf(DFInstance *df, int address) {
 	MemoryLayout *mem = df->memory_layout();
-	
+	LOGD << "attempting to load dwarf at" << hex << address << "using memory layout" << mem->game_version(); 
+
 	uint bytes_read = 0;
+	int dwarf_race_index = df->memory_layout()->address("dwarf_race_index");
+	int dwarf_race_id = df->read_int32(dwarf_race_index + df->get_memory_correction(), bytes_read);
+	LOGD << "Dwarf Race ID is" << dwarf_race_id;
+	
 	if ((df->read_int32(address + mem->dwarf_offset("flags1"), bytes_read) & mem->flags("flags1.invalidate")) > 0) {
 		return 0;
 	}
 	if ((df->read_int32(address + mem->dwarf_offset("flags2"), bytes_read) & mem->flags("flags2.invalidate")) > 0) {
 		return 0;
 	}
-	if ((df->read_int32(address + mem->dwarf_offset("race"), bytes_read)) != 166) {
+	if ((df->read_int32(address + mem->dwarf_offset("race"), bytes_read)) != dwarf_race_id) {
 		return 0;
 	}
 	//if( memoryAccess.ReadInt32( address + memoryLayout["Creature.Race"] ) != actualDwarfRaceId )

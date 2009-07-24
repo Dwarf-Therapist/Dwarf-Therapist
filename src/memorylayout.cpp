@@ -20,6 +20,7 @@ void MemoryLayout::load_data() {
 	m_addresses.insert("language_vector", read_hex("addresses/language_vector"));
 	m_addresses.insert("translation_vector", read_hex("addresses/translation_vector"));
 	m_addresses.insert("creature_vector", read_hex("addresses/creature_vector"));
+	m_addresses.insert("dwarf_race_index", read_hex("addresses/dwarf_race_index"));
 
 	// offsets
 	m_offsets.insert("word_table", read_hex("offsets/word_table"));

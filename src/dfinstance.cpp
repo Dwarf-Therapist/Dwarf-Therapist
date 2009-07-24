@@ -269,22 +269,35 @@ int DFInstance::scan_mem(QByteArray &needle, int start_address, int end_address,
 }
 
 QVector<int> DFInstance::enumerate_vector(int address) {
+	LOGD << "beginning vector enumeration at" << hex << address;
 	QVector<int> addresses;
 	uint bytes_read = 0;
     int start = read_int32(address + 4, bytes_read);
+	LOGD << "start of vector" << hex << start;
     int end = read_int32(address + 8, bytes_read);
+	LOGD << "end of vector" << hex << end;
 
+	int entries = (end - start) / sizeof(int);
+	LOGD << "there appears to be" << entries << "entries in this vector";
+	/*
 	Q_ASSERT(end >= start);
 	Q_ASSERT((end - start) % 4 == 0);
 	Q_ASSERT(start % 4 == 0);
 	Q_ASSERT(end % 4 == 0);
+	*/
 
+	int count = 0;
 	for( int ptr = start; ptr < end; ptr += 4 ) {
+		LOGD << "reading address" << count << "at" << hex << ptr;
 		int addr = read_int32(ptr, bytes_read);
+		LOGD << bytes_read << "bytes were read OK";
 		if (bytes_read == sizeof(int)) {
+			LOGD << "read pointer size ok, adding address" << hex << addr;
 			addresses.append(addr);
 		}
+		count++;
 	}
+	LOGD << "FOUND" << count << "addresses in vector";
 	return addresses;
 }
 /*
@@ -501,20 +514,22 @@ DFInstance* DFInstance::find_running_copy(QObject *parent) {
 
 QVector<Dwarf*> DFInstance::load_dwarves() {
 	int creature_vector = m_layout->address("creature_vector");
-	qDebug() << "starting with creature vector" << hex << creature_vector;
+	LOGD << "starting with creature vector" << hex << creature_vector;
 	QVector<Dwarf*> dwarves;
+	LOGD << "adjusted creature vector" << hex << creature_vector + m_memory_correction;
 	QVector<int> creatures = enumerate_vector(creature_vector + m_memory_correction);
+	LOGD << "FOUND" << creatures.size() << "creatures";
 	if (creatures.size() > 0) {
 		for (int offset=0; offset < creatures.size(); ++offset) {
 			Dwarf *d = Dwarf::get_dwarf(this, creatures[offset]);
 			if (d) {
 				dwarves.append(d);
-				//qDebug() << "CREATURE" << offset << d->to_string();
+				LOGD << "FOUND DWARF" << offset << d->nice_name();
 			} else {
-				//qWarning() << "BOGUS CREATURE" << offset;
+				LOGD << "FOUND OTHER CREATURE" << offset;
 			}
 		}
 	}
-	//qDebug() << "finished reading creature vector";
+	LOGD << "finished reading creature vector";
 	return dwarves;
 }
