@@ -45,12 +45,13 @@ public:
 	QString custom_profession_name() {return m_pending_custom_profession;}
 	void refresh_data();
 	QString nice_name();
+	QString nickname() {return m_pending_nick_name;}
+	void set_nickname(QString nick) {m_pending_nick_name = nick;}
 	
-
 	QVector<Skill> *get_skills() {return &m_skills;}
 	QVector<int> get_dirty_labors(); // returns labor ids
-	bool is_labor_enabled(int labor_id) {return (char)m_pending_labors[labor_id] > 0;}
-	bool is_labor_state_dirty(int labor_id) {return (char)m_labors[labor_id] != (char)m_pending_labors[labor_id];}
+	bool is_labor_enabled(int labor_id);
+	bool is_labor_state_dirty(int labor_id);
 	void set_labor(int labor_id, bool enabled);
 	bool toggle_labor(int labor_id);
 	short get_rating_for_skill(int labor_id);
@@ -58,11 +59,12 @@ public:
 	void clear_pending();
 	void commit_pending();
 	int apply_custom_profession(CustomProfession *cp); // return # of pending changes
-	QString nickname() {return m_pending_nick_name;}
-	void set_nickname(QString nick) {m_pending_nick_name = nick;}
+	void reset_custom_profession() {m_pending_custom_profession = "";}
+
+	short get_num_weapons();
+	
 
 	QTreeWidgetItem *get_pending_changes_tree();
-
 	QModelIndex m_name_idx;
 
 private:
@@ -83,10 +85,11 @@ private:
 	int m_strength;
 	int m_agility;
 	int m_toughness;
+	short m_num_weapons;
+	short m_pending_num_weapons;
     QVector<Skill> m_skills;
-	uchar *m_labors;
-	uchar *m_pending_labors;
-	
+	QMap<int, bool> m_labors;
+	QMap<int, bool> m_pending_labors;
 };
 
 #endif // DWARF_H

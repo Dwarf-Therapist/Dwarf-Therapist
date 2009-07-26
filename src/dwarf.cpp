@@ -34,8 +34,8 @@ Dwarf::Dwarf(DFInstance *df, int address, QObject *parent)
 	: QObject(parent)
 	, m_df(df)
 	, m_address(address)
-	, m_labors(new uchar[102])
-	, m_pending_labors(new uchar[102])
+	//, m_labors(new uchar[102])
+	//, m_pending_labors(new uchar[102])
 {
 	refresh_data();
 }
@@ -64,8 +64,8 @@ void Dwarf::refresh_data() {
 }
 
 Dwarf::~Dwarf() {
-	delete[] m_labors;
-	delete[] m_pending_labors;
+	//delete[] m_labors;
+	//delete[] m_pending_labors;
 }
 
 Dwarf *Dwarf::get_dwarf(DFInstance *df, int address) {
@@ -160,37 +160,50 @@ QString Dwarf::read_professtion(int address) {
 }
 
 void Dwarf::read_labors(int address) {
-	//uchar buf[400];
-	//memset(buf, 0, 400);
-	//int bytes_read = m_df->read_raw(address, 102, &buf);
-	memset(m_labors, 0, 102);
-	memset(m_pending_labors, 0, 102);
-	m_df->read_raw(address, 102, m_labors);
-	m_df->read_raw(address, 102, m_pending_labors);
+	// read a big array of labors in one read, then pick and choose
+	// the values we care about
+	uchar buf[102];
+	memset(buf, 0, 102);
+	m_df->read_raw(address, 102, &buf);
+
+	// get the list of identified labors from game_data.ini
+	GameDataReader *gdr = GameDataReader::ptr();
+	foreach(Labor *l, gdr->get_ordered_labors()) {
+		bool enabled = buf[l->labor_id] > 0;
+		m_labors[l->labor_id] = enabled;
+		m_pending_labors[l->labor_id] = enabled;
+	}
+	// special cases
+	int num_weapons_offset = gdr->get_int_for_key("military_prefs/0/id", 10);
+	m_pending_num_weapons = buf[num_weapons_offset];
+	m_num_weapons = m_pending_num_weapons;
+}
+
+bool Dwarf::is_labor_enabled(int labor_id) {
+	return m_pending_labors[labor_id];
+}
+
+bool Dwarf::is_labor_state_dirty(int labor_id) {
+	return m_labors[labor_id] != m_pending_labors[labor_id];
 }
 
 QVector<int> Dwarf::get_dirty_labors() {
 	QVector<int> labors;
-	for (int i = 0; i < 102; ++i) {
-		if (is_labor_state_dirty(i))
-			labors.append(i);
+	Q_ASSERT(m_labors.size() == m_pending_labors.size());
+	foreach(int labor_id, m_pending_labors.uniqueKeys()) {
+		if (is_labor_state_dirty(labor_id))
+			labors << labor_id;
 	}
 	return labors;
 }
 
 bool Dwarf::toggle_labor(int labor_id) {
-	m_pending_labors[labor_id] = m_pending_labors[labor_id] ? 0 : 1;
-	//TODO: if "write_immediate"
-	/*
-	GameDataReader *gdr = GameDataReader::ptr();
-	int bytes_written = m_df->write_raw(m_address + gdr->get_dwarf_offset("labors"), 102, m_labors);
-	return bytes_written == 102;
-	*/
+	m_pending_labors[labor_id] = !m_pending_labors[labor_id];
 	return true;
 }
 
 void Dwarf::set_labor(int labor_id, bool enabled) {
-	m_pending_labors[labor_id] = enabled ? 1 : 0;
+	m_pending_labors[labor_id] = enabled;
 }
 
 int Dwarf::pending_changes() {
@@ -209,7 +222,13 @@ void Dwarf::clear_pending() {
 void Dwarf::commit_pending() {
 	MemoryLayout *mem = m_df->memory_layout();
 	int addr = m_address + mem->dwarf_offset("labors");
-	m_df->write_raw(addr, 102, m_pending_labors);
+
+	uchar buf[102];
+	memset(buf, 0, 102);
+	foreach(int labor_id, m_pending_labors.uniqueKeys()) {
+		buf[labor_id] = m_pending_labors.value(labor_id, false) ? 1 : 0;
+	}
+	m_df->write_raw(addr, 102, &buf);
 	if (m_pending_nick_name != m_nick_name)
 		m_df->write_string(m_address + mem->dwarf_offset("nick_name"), m_pending_nick_name);
 	if (m_pending_custom_profession != m_custom_profession)
@@ -218,7 +237,9 @@ void Dwarf::commit_pending() {
 }
 
 int Dwarf::apply_custom_profession(CustomProfession *cp) {
-	memset(m_pending_labors, 0, 102); // clear all labors
+	foreach(bool enabled, m_pending_labors) {
+		enabled = false;
+	}
 	foreach(int labor_id, cp->get_enabled_labors()) {
 		set_labor(labor_id, true);
 	}
@@ -239,14 +260,22 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
 	}
 	if (m_pending_custom_profession != m_custom_profession) {
 		QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
-		i->setText(0, "profession change to " + m_pending_custom_profession);
+		QString prof = m_pending_custom_profession;
+		if (prof.isEmpty())
+			prof = "DEFAULT";
+		i->setText(0, "profession change to " + prof);
 		i->setIcon(0, QIcon(":img/book_edit.png"));
 		i->setData(0, Qt::UserRole, id());
 	}
 	foreach(int labor_id, labors) {
 		Labor *l = GameDataReader::ptr()->get_labor(labor_id);
+		if (l->labor_id != labor_id) {
+			LOGW << "somehow got a change to an unknown labor with id:" << labor_id;
+			continue;
+		}
+		
 		QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
-		i->setText(0, l->name);
+		i->setText(0, l->name + QString::number(l->labor_id));
 		if (is_labor_enabled(labor_id)) {
 			i->setIcon(0, QIcon(":img/add.png"));
 		} else {

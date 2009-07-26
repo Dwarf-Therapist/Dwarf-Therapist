@@ -63,6 +63,7 @@ public:
 		// dialogs
 		void show_about();
 		void add_custom_profession();
+		void reset_custom_profession();
 		void open_options_menu();
 
 		void new_pending_changes(int);

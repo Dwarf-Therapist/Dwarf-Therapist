@@ -36,6 +36,13 @@ public:
 		, list_order(list_order)
 		, color(color)
 	{}
+	Labor(Labor &other)
+		: QObject(other.parent())
+		, name(other.name)
+		, labor_id(other.labor_id)
+		, list_order(other.list_order)
+		, color(other.color)
+	{}
 
 	int operator<(const Labor &other) {
 		return other.list_order < list_order;

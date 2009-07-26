@@ -392,6 +392,18 @@ void MainWindow::add_custom_profession() {
 	write_settings();
 }
 
+void MainWindow::reset_custom_profession() {
+	const QItemSelection sel = ui->stv->selectionModel()->selection();
+	foreach(const QModelIndex idx, sel.indexes()) {
+		if (idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
+			Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
+			if (d)
+				d->reset_custom_profession();
+		}
+	}
+	m_model->calculate_pending();
+}
+
 void MainWindow::edit_custom_profession() {
 	if (!m_temp_cp)
 		return;
@@ -468,6 +480,7 @@ void MainWindow::draw_grid_context_menu(const QPoint &p) {
 	QMenu sub(&m);
 	sub.setTitle(tr("Custom Professions"));
 	sub.addAction(tr("New custom profession from this dwarf..."), this, SLOT(add_custom_profession()));
+	sub.addAction(tr("Reset to default profession"), this, SLOT(reset_custom_profession()));
 	sub.addSeparator();
 	
 	foreach(CustomProfession *cp, m_custom_professions) {
