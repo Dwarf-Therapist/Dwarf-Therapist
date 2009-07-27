@@ -495,6 +495,7 @@ int DFInstance::find_creature_vector() {
 
 DFInstance* DFInstance::find_running_copy(QObject *parent) {
 	LOGD << "attempting to find running copy of DF by window handle";
+
     HWND hwnd = FindWindow(NULL, L"Dwarf Fortress");
     if (!hwnd) {
 		QMessageBox::warning(0, tr("Warning"),
@@ -505,8 +506,10 @@ DFInstance* DFInstance::find_running_copy(QObject *parent) {
     }
     LOGD << "found copy with HWND: " << hwnd;
 
-    DWORD pid;
+    DWORD pid = 0;
     GetWindowThreadProcessId(hwnd, &pid);
+	if (pid == 0)
+		return 0;
     LOGD << "PID of process is: " << pid;
 
 	return new DFInstance(pid, hwnd, parent);

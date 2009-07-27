@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 class DFInstance;
 class DwarfModel;
+class DwarfModelProxy;
 class Dwarf;
 class OptionsMenu;
 class AboutDialog;
@@ -58,7 +59,6 @@ public:
 		void show_toolbutton_text(bool);
 		void set_group_by(int);
 		void set_single_click_labor_changes(bool);
-		void set_allow_grid_focus(bool);
 
 		// dialogs
 		void show_about();
@@ -91,7 +91,7 @@ private:
 	QLabel *m_lbl_status;
 	QSettings *m_settings;
 	DwarfModel *m_model;
-	QSortFilterProxyModel *m_proxy;
+	DwarfModelProxy *m_proxy;
 	OptionsMenu *m_options_menu;
 	AboutDialog *m_about_dialog;
 	QVector<CustomProfession*> m_custom_professions;

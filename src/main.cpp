@@ -46,6 +46,10 @@ int main(int argc, char *argv[]) {
 	bool debug_logging = args.indexOf("-debug") != -1;
 	bool trace_logging = args.indexOf("-trace") != -1;
 
+	//TODO REMOVE ME
+	// debug logging on by default for the early builds...
+	debug_logging = true;
+
 	//setup logging
 	TruncatingFileLoggerEngine *engine = new TruncatingFileLoggerEngine("log/run.log");
 	qxtLog->addLoggerEngine("main", engine);

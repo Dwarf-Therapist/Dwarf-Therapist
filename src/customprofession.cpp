@@ -140,7 +140,9 @@ int CustomProfession::show_builder_dialog(QWidget *parent) {
 
 
 	ui->lbl_skill_count->setNum(num_active);
-	return m_dialog->exec();
+	int code = m_dialog->exec();
+	m_dialog->deleteLater();
+	return code;
 }
 
 /*!

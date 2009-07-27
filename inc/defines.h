@@ -36,7 +36,7 @@ THE SOFTWARE.
 #endif
 
 #ifndef VERSION_PATCH
-	#define VERSION_PATCH 5
+	#define VERSION_PATCH 6
 #endif
 
 #define LOG   qxtLog

@@ -84,6 +84,33 @@
      </layout>
     </item>
     <item>
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,2">
+      <item>
+       <widget class="QLineEdit" name="le_filter_text"/>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton">
+        <property name="text">
+         <string>Clear Filter</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
      <widget class="StateTableView" name="stv">
       <property name="font">
        <font>
@@ -121,13 +148,13 @@
        <bool>true</bool>
       </property>
       <property name="sortingEnabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="animated">
        <bool>false</bool>
       </property>
       <property name="allColumnsShowFocus">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="headerHidden">
        <bool>false</bool>
@@ -144,8 +171,14 @@
       <attribute name="headerMinimumSectionSize">
        <number>16</number>
       </attribute>
+      <attribute name="headerShowSortIndicator" stdset="0">
+       <bool>true</bool>
+      </attribute>
       <attribute name="headerStretchLastSection">
        <bool>false</bool>
+      </attribute>
+      <attribute name="headerShowSortIndicator" stdset="0">
+       <bool>true</bool>
       </attribute>
      </widget>
     </item>
@@ -220,7 +253,6 @@
      <string>Settings</string>
     </property>
     <addaction name="act_show_toolbutton_text"/>
-    <addaction name="act_keyboard_grid_focus"/>
     <addaction name="act_single_click_labor_changes"/>
     <addaction name="act_options"/>
    </widget>
@@ -733,6 +765,7 @@
    <slots>
     <slot>set_grid_size(int)</slot>
     <slot>jump_to_dwarf(QTreeWidgetItem*,QTreeWidgetItem*)</slot>
+    <slot>filter_dwarves(QString)</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -859,8 +892,8 @@
    <slot>set_group_by(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>60</x>
-     <y>113</y>
+     <x>120</x>
+     <y>108</y>
     </hint>
     <hint type="destinationlabel">
      <x>288</x>
@@ -1083,8 +1116,8 @@
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1047</x>
-     <y>704</y>
+     <x>1119</x>
+     <y>686</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -1099,8 +1132,8 @@
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>991</x>
-     <y>673</y>
+     <x>1119</x>
+     <y>716</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -1217,6 +1250,38 @@
     <hint type="destinationlabel">
      <x>564</x>
      <y>373</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>le_filter_text</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>stv</receiver>
+   <slot>filter_dwarves(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>72</x>
+     <y>140</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>72</x>
+     <y>176</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>le_filter_text</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>188</x>
+     <y>133</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>103</x>
+     <y>131</y>
     </hint>
    </hints>
   </connection>

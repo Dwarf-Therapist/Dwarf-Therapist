@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Fri Jul 24 12:06:36 2009
+** Created: Sun Jul 26 15:52:54 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -19,6 +19,7 @@
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QHeaderView>
 #include <QtGui/QLabel>
+#include <QtGui/QLineEdit>
 #include <QtGui/QListWidget>
 #include <QtGui/QMainWindow>
 #include <QtGui/QMenu>
@@ -68,6 +69,10 @@ public:
     QSpacerItem *horizontalSpacer;
     QLabel *lbl_pending_changes;
     QLabel *label_2;
+    QHBoxLayout *horizontalLayout;
+    QLineEdit *le_filter_text;
+    QPushButton *pushButton;
+    QSpacerItem *horizontalSpacer_3;
     StateTableView *stv;
     QMenuBar *menuBar;
     QMenu *menu_File;
@@ -256,6 +261,27 @@ public:
 
         verticalLayout->addLayout(horizontalLayout_2);
 
+        horizontalLayout = new QHBoxLayout();
+        horizontalLayout->setSpacing(6);
+        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        le_filter_text = new QLineEdit(main_widget);
+        le_filter_text->setObjectName(QString::fromUtf8("le_filter_text"));
+
+        horizontalLayout->addWidget(le_filter_text);
+
+        pushButton = new QPushButton(main_widget);
+        pushButton->setObjectName(QString::fromUtf8("pushButton"));
+
+        horizontalLayout->addWidget(pushButton);
+
+        horizontalSpacer_3 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout->addItem(horizontalSpacer_3);
+
+        horizontalLayout->setStretch(2, 2);
+
+        verticalLayout->addLayout(horizontalLayout);
+
         stv = new StateTableView(main_widget);
         stv->setObjectName(QString::fromUtf8("stv"));
         QFont font1;
@@ -271,14 +297,15 @@ public:
         stv->setSelectionBehavior(QAbstractItemView::SelectRows);
         stv->setIndentation(12);
         stv->setUniformRowHeights(true);
-        stv->setSortingEnabled(false);
+        stv->setSortingEnabled(true);
         stv->setAnimated(false);
-        stv->setAllColumnsShowFocus(false);
+        stv->setAllColumnsShowFocus(true);
         stv->setHeaderHidden(false);
         stv->header()->setVisible(true);
         stv->header()->setDefaultSectionSize(16);
         stv->header()->setHighlightSections(true);
         stv->header()->setMinimumSectionSize(16);
+        stv->header()->setProperty("showSortIndicator", QVariant(true));
         stv->header()->setStretchLastSection(false);
 
         verticalLayout->addWidget(stv);
@@ -427,7 +454,6 @@ public:
         menuDocks->addAction(act_show_pending_labors_window);
         menuDocks->addAction(act_show_custom_professions_window);
         menuSettings->addAction(act_show_toolbutton_text);
-        menuSettings->addAction(act_keyboard_grid_focus);
         menuSettings->addAction(act_single_click_labor_changes);
         menuSettings->addAction(act_options);
         main_toolbar->addAction(act_connect_to_DF);
@@ -473,6 +499,8 @@ public:
         QObject::connect(act_go_forums, SIGNAL(triggered()), MainWindow, SLOT(go_to_forums()));
         QObject::connect(act_go_new_issue, SIGNAL(triggered()), MainWindow, SLOT(go_to_new_issue()));
         QObject::connect(act_go_project_home, SIGNAL(triggered()), MainWindow, SLOT(go_to_project_home()));
+        QObject::connect(le_filter_text, SIGNAL(textChanged(QString)), stv, SLOT(filter_dwarves(QString)));
+        QObject::connect(pushButton, SIGNAL(clicked()), le_filter_text, SLOT(clear()));
 
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi
@@ -590,6 +618,7 @@ public:
 #endif // QT_NO_STATUSTIP
         lbl_pending_changes->setText(QApplication::translate("MainWindow", "0", 0, QApplication::UnicodeUTF8));
         label_2->setText(QApplication::translate("MainWindow", "Pending Changes", 0, QApplication::UnicodeUTF8));
+        pushButton->setText(QApplication::translate("MainWindow", "Clear Filter", 0, QApplication::UnicodeUTF8));
         menu_File->setTitle(QApplication::translate("MainWindow", "&File", 0, QApplication::UnicodeUTF8));
         menu_Help->setTitle(QApplication::translate("MainWindow", "&Help", 0, QApplication::UnicodeUTF8));
         menuProfessions->setTitle(QApplication::translate("MainWindow", "Professions", 0, QApplication::UnicodeUTF8));

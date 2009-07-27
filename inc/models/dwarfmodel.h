@@ -23,10 +23,30 @@ THE SOFTWARE.
 #ifndef DWARFMODEL_H
 #define DWARFMODEL_H
 
-#include <Qt>
-#include <QStandardItemModel>
+#include <QtGui>
 class Dwarf;
 class DFInstance;
+class DwarfModel;
+
+
+class DwarfModelProxy: public QSortFilterProxyModel {
+	Q_OBJECT
+public:
+	DwarfModelProxy(QObject *parent = 0);
+	DwarfModel* get_dwarf_model() const;
+
+	void sort(int column, Qt::SortOrder order = Qt::DescendingOrder);
+	public slots:
+		void labor_clicked(const QModelIndex &idx);
+		void setFilterFixedString(const QString &pattern);
+
+protected:
+	bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
+	bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const;
+private:
+	QString m_filter_text;
+};
+
 
 class DwarfModel : public QStandardItemModel {
 	Q_OBJECT
@@ -56,8 +76,6 @@ public:
 	const QMap<QString, QVector<Dwarf*>> *get_dwarf_groups() const {return &m_grouped_dwarves;}
 	Dwarf *get_dwarf_by_id(int id) const {return m_dwarves.value(id, 0);}
 		
-	void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
-
 	QVector<Dwarf*> get_dirty_dwarves();
 	QList<Dwarf*> get_dwarves() {return m_dwarves.values();}
 	void calculate_pending();
@@ -70,7 +88,7 @@ public:
 		void labor_clicked(const QModelIndex &idx);
 		void clear_pending();
 		void commit_pending();
-		void section_clicked(int idx, Qt::MouseButton btn);
+		void section_right_clicked(int idx);
 
 private:
 	DFInstance *m_df;

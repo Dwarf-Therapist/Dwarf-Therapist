@@ -28,6 +28,8 @@ THE SOFTWARE.
 class UberDelegate;
 class RotatedHeader;
 class Dwarf;
+class DwarfModel;
+class DwarfModelProxy;
 
 class StateTableView : public QTreeView
 {
@@ -37,20 +39,18 @@ public:
 	StateTableView(QWidget *parent = 0);
 	~StateTableView();
 
-	void setModel(QAbstractItemModel *model);
+	void set_model(DwarfModel *model, DwarfModelProxy *proxy);
 	UberDelegate *get_delegate() {return m_delegate;}
 
 	public slots:
 		void filter_dwarves(QString text);
 		void set_grid_size(int new_size);
 		void set_single_click_labor_changes(bool enabled);
-		void set_allow_grid_focus(bool enabled);
 		void jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* previous);
 
-protected:
-	QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers);
-
 private:
+	DwarfModel *m_model;
+	DwarfModelProxy *m_proxy;
 	UberDelegate *m_delegate;
 	RotatedHeader *m_header;
 	bool m_grid_focus;

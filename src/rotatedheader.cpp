@@ -51,36 +51,39 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 		state |= QStyle::State_Active;
 	if (rect.contains(m_p))
 		state |= QStyle::State_MouseOver;
-	if (sortIndicatorSection() == idx)
-		state |= QStyle::State_Sunken;
+	if (sortIndicatorSection() == idx) {
+		//state |= QStyle::State_Sunken;
+		if (sortIndicatorOrder() == Qt::AscendingOrder) {
+			opt.sortIndicator = QStyleOptionHeader::SortDown;
+		} else {
+			opt.sortIndicator = QStyleOptionHeader::SortUp;
+		}
+	}
 	opt.state = state;
 	
 	style()->drawControl(QStyle::CE_HeaderSection, &opt, p, this);
 	if (idx > 0)
-		p->fillRect(rect.adjusted(2,2,-2,-2), QBrush(gdr->get_color(QString("labors/%1/color").arg(idx-1))));
+		p->fillRect(rect.adjusted(1,8,-1,-2), QBrush(gdr->get_color(QString("labors/%1/color").arg(idx-1))));
 
+	if (sortIndicatorSection() == idx) {
+		opt.rect = QRect(opt.rect.x() + opt.rect.width()/2 - 5, opt.rect.y(), 10, 8);
+		style()->drawPrimitive(QStyle::PE_IndicatorHeaderArrow, &opt, p);
+	}
 	
-	QString data = m_model->headerData(idx, Qt::Horizontal).toString();
+	QString data = this->model()->headerData(idx, Qt::Horizontal).toString();
 	p->save();
 	p->setPen(Qt::black);
 	p->setRenderHint(QPainter::Antialiasing);
 	p->translate(rect.x(), rect.y());
 	p->rotate(90);
 	p->setFont(QFont("Verdana", 8));
-	p->drawText(8, -4, data);
+	p->drawText(14, -4, data);
 	p->restore();
-}
-
-void RotatedHeader::set_model(DwarfModel *dm) {
-	m_model = dm;
-	setResizeMode(QHeaderView::Fixed);
-	setResizeMode(0, QHeaderView::ResizeToContents);
 }
 
 QSize RotatedHeader::sizeHint() const {
 	return QSize(32, 120);
 }
-
 
 void RotatedHeader::mouseMoveEvent(QMouseEvent *e) {
 	m_p = e->pos();
@@ -90,8 +93,8 @@ void RotatedHeader::mouseMoveEvent(QMouseEvent *e) {
 void RotatedHeader::mousePressEvent(QMouseEvent *e) {
 	m_p = e->pos();
 	int idx = logicalIndexAt(e->pos());
-	if (idx < count()) {
-		m_model->section_clicked(idx, e->button());
+	if (idx < count() && e->button() == Qt::RightButton) {
+		emit section_right_clicked(idx);
 	}
 	QHeaderView::mousePressEvent(e);
 }

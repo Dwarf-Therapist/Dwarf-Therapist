@@ -21,9 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include <QtGui>
+#include "uberdelegate.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
-#include "uberdelegate.h"
 
 UberDelegate::UberDelegate(QObject *parent)
 	: QStyledItemDelegate(parent)
@@ -31,25 +31,29 @@ UberDelegate::UberDelegate(QObject *parent)
 {
 }
 
-void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
-	if (idx.column() == 0) { // we never do anything with the 0 col...
+void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
+	if (!proxy_idx.isValid()) {
+		return;
+	}
+	QModelIndex idx = m_proxy->mapToSource(proxy_idx);
+	if (proxy_idx.column() == 0) { // we never do anything with the 0 col...
 		QStyledItemDelegate::paint(p, opt, idx); // always lay the "base coat"
 		return;
 	}
-	
-	const DwarfModel *model = dynamic_cast<const DwarfModel*>(idx.model());
-	if (model->current_grouping() == DwarfModel::GB_NOTHING) {
-		paint_skill(p, opt, idx);
+
+	if (m_model->current_grouping() == DwarfModel::GB_NOTHING) {
+		paint_skill(p, opt, proxy_idx);
 	} else {
-		QModelIndex first_col = model->index(idx.row(), 0, idx.parent());
-		if (model->hasChildren(first_col)) { // skill item (under a group header)
+		//QModelIndex idx = m_proxy->mapToSource(proxy_idx);
+		QModelIndex first_col = m_model->index(idx.row(), 0, idx.parent());
+		if (m_model->hasChildren(first_col)) { // skill item (under a group header)
 			paint_aggregate(p, opt, idx);
 		} else {
 			paint_skill(p, opt, idx);
 		}
 	}
 
-	if (idx.column() == model->selected_col()) {
+	if (idx.column() == m_model->selected_col()) {
 		p->save();
 		p->setPen(QPen(color_guides));
 		p->drawLine(opt.rect.topLeft(), opt.rect.bottomLeft());
@@ -71,10 +75,9 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 
 void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
 	GameDataReader *gdr = GameDataReader::ptr();
-	const DwarfModel *m = dynamic_cast<const DwarfModel*>(idx.model());
 	short rating = idx.data(DwarfModel::DR_RATING).toInt();
 	
-	Dwarf *d = m->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
+	Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
 	Q_ASSERT(d);
 
 	bool skip_border = false;
@@ -151,17 +154,23 @@ void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, con
 	}
 }
 
-void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
-	const DwarfModel *m = dynamic_cast<const DwarfModel*>(idx.model());
-	QModelIndex first_col = m->index(idx.row(), 0, idx.parent());
-	QStandardItem *item = m->itemFromIndex(first_col);
+void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
+	if (!proxy_idx.isValid()) {
+		return;
+	}
+	QModelIndex idx = m_proxy->mapFromSource(proxy_idx);
+	QModelIndex first_col = m_model->index(idx.row(), 0, idx.parent());
+	if (!first_col.isValid()) {
+		return;
+	}
+	QStandardItem *item = m_model->itemFromIndex(first_col);
 
 	QString group_name = idx.data(DwarfModel::DR_GROUP_NAME).toString();
 	int labor_id = idx.data(DwarfModel::DR_LABOR_ID).toInt();
 
 	int dirty_count = 0;
 	int enabled_count = 0;
-	const QMap<QString, QVector<Dwarf*>> *groups = m->get_dwarf_groups();
+	const QMap<QString, QVector<Dwarf*>> *groups = m_model->get_dwarf_groups();
 	foreach(Dwarf *d, groups->value(group_name)) {
 		if (d->is_labor_enabled(labor_id))
 			enabled_count++;

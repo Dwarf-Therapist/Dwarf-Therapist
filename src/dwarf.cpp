@@ -225,9 +225,12 @@ void Dwarf::commit_pending() {
 
 	uchar buf[102];
 	memset(buf, 0, 102);
+	m_df->read_raw(addr, 102, &buf); // set the buffer as it is in-game
 	foreach(int labor_id, m_pending_labors.uniqueKeys()) {
+		// change values to what's pending
 		buf[labor_id] = m_pending_labors.value(labor_id, false) ? 1 : 0;
 	}
+
 	m_df->write_raw(addr, 102, &buf);
 	if (m_pending_nick_name != m_nick_name)
 		m_df->write_string(m_address + mem->dwarf_offset("nick_name"), m_pending_nick_name);
@@ -275,7 +278,7 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
 		}
 		
 		QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
-		i->setText(0, l->name + QString::number(l->labor_id));
+		i->setText(0, l->name);
 		if (is_labor_enabled(labor_id)) {
 			i->setIcon(0, QIcon(":img/add.png"));
 		} else {

@@ -50,14 +50,15 @@ MainWindow::MainWindow(QWidget *parent)
     , m_lbl_status(0)
 	, m_settings(0)
 	, m_model(new DwarfModel(this))
-	, m_proxy(new QSortFilterProxyModel(this))
+	, m_proxy(new DwarfModelProxy(this))
 	, m_custom_professions(QVector<CustomProfession*>())
 	, m_http(new QHttp(this))
 	, m_reading_settings(false)
 	, m_temp_cp(0)
 {
     ui->setupUi(this);
-	ui->stv->setModel(m_model);
+	m_proxy->setSourceModel(m_model);
+	ui->stv->set_model(m_model, m_proxy);
 
 	LOGD << "setting up connections for MainWindow";
 	connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
@@ -121,10 +122,6 @@ void MainWindow::read_settings() {
 		ui->act_single_click_labor_changes->setChecked(enabled);
 		set_single_click_labor_changes(enabled);
 
-		enabled = m_settings->value("keyboard_grid_focus", false).toBool();
-		ui->act_keyboard_grid_focus->setChecked(enabled);
-		set_allow_grid_focus(enabled);
-
 		int group_by = m_settings->value("group_by", 0).toInt();
 		ui->cb_group_by->setCurrentIndex(group_by);
 		m_model->set_group_by(group_by);
@@ -171,7 +168,6 @@ void MainWindow::write_settings() {
 		m_settings->beginGroup("gui_options");
 		m_settings->setValue("show_toolbutton_text", ui->act_show_toolbutton_text->isChecked());
 		m_settings->setValue("single_click_labor_changes", ui->act_single_click_labor_changes->isChecked());
-		m_settings->setValue("keyboard_grid_focus", ui->act_keyboard_grid_focus->isChecked());
 		m_settings->setValue("group_by", m_model->current_grouping());
 		m_settings->endGroup();
 
@@ -227,6 +223,8 @@ void MainWindow::connect_to_df() {
 void MainWindow::read_dwarves() {
 	m_model->set_instance(m_df);
 	m_model->load_dwarves();
+	m_proxy->setSourceModel(m_model);
+	ui->stv->sortByColumn(0, Qt::AscendingOrder);
 }
 
 void MainWindow::set_interface_enabled(bool enabled) {
@@ -313,11 +311,6 @@ void MainWindow::show_toolbutton_text(bool enabled) {
 
 void MainWindow::set_single_click_labor_changes(bool enabled) {
 	ui->stv->set_single_click_labor_changes(enabled);
-	write_settings();
-}
-
-void MainWindow::set_allow_grid_focus(bool enabled) {
-	ui->stv->set_allow_grid_focus(enabled);
 	write_settings();
 }
 

@@ -31,6 +31,79 @@ THE SOFTWARE.
 #include "statetableview.h"
 #include "defines.h"
 
+
+DwarfModelProxy::DwarfModelProxy(QObject *parent)
+	:QSortFilterProxyModel(parent)
+{}
+
+DwarfModel* DwarfModelProxy::get_dwarf_model() const {
+	//QStandardItemModel *tmp = static_cast<QStandardItemModel*>(sourceModel());
+	return static_cast<DwarfModel*>(sourceModel());
+}
+
+void DwarfModelProxy::labor_clicked(const QModelIndex &idx) {
+	bool valid = idx.isValid();
+	QModelIndex new_idx = mapToSource(idx);
+	valid = new_idx.isValid();
+	return get_dwarf_model()->labor_clicked(new_idx);
+}
+
+void DwarfModelProxy::setFilterFixedString(const QString &pattern) {
+	m_filter_text = pattern;
+	QSortFilterProxyModel::setFilterFixedString(pattern);
+}
+
+bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
+	//return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
+	const DwarfModel *m = get_dwarf_model();
+	if (m->current_grouping() == DwarfModel::GB_NOTHING) {
+		QModelIndex idx = m->index(source_row, 0, source_parent);
+		QString data = m->data(idx, filterRole()).toString();
+		return data.contains(m_filter_text, Qt::CaseInsensitive);	
+	} else {
+		QModelIndex tmp_idx = m->index(source_row, 0, source_parent);
+		QStandardItem *item = m->itemFromIndex(tmp_idx);
+		if (m->data(tmp_idx, DwarfModel::DR_IS_AGGREGATE).toBool()) {
+			int matches = 0;
+			for(int i = 0; i < item->rowCount(); ++i) {
+				if (filterAcceptsRow(i, tmp_idx)) // a child matches
+					matches++;
+			}
+			return matches > 0;
+		} else {
+			QModelIndex idx = m->index(source_row, 0, source_parent);
+			QString data = m->data(idx, filterRole()).toString();
+			return data.contains(m_filter_text, Qt::CaseInsensitive);	
+		}
+	}
+	return true;
+}
+
+bool DwarfModelProxy::filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const {
+	/*
+	if (!mShowLineAndFile && source_column == 1 || source_column == 2) {
+		return false;
+	} else {
+		return QSortFilterProxyModel::filterAcceptsColumn(source_column, source_parent);
+	}
+	*/
+	return true;
+}
+
+void DwarfModelProxy::sort(int column, Qt::SortOrder order) {
+	if (column == 0) {
+		setSortRole(Qt::DisplayRole);
+	} else {
+		if (sortColumn() != column && column > 0) {
+			order = Qt::DescendingOrder;
+		}
+		setSortRole(DwarfModel::DR_RATING);
+	}
+	QSortFilterProxyModel::sort(column, order);
+}
+
+/////////////////////////////////////////
+
 DwarfModel::DwarfModel(QObject *parent)
 	: QStandardItemModel(parent)
 	, m_df(0)
@@ -44,30 +117,12 @@ DwarfModel::DwarfModel(QObject *parent)
 	}
 }
 
-void DwarfModel::sort(int column, Qt::SortOrder order) {
-	if (column == 0)
-		setSortRole(Qt::DisplayRole);
-	else
-		setSortRole(DR_RATING);
-	QStandardItemModel::sort(column, order);
-}
-
-void DwarfModel::section_clicked(int col, Qt::MouseButton btn) {
-	if (btn == Qt::LeftButton) {
-		if (col == m_selected_col) {
-			// turn it off
-			m_selected_col = -1;
-		} else {
-			m_selected_col = col;
-		}
-		emit dataChanged(index(0, col), index(rowCount()-1, col));
-
-	} else if (btn == Qt::RightButton) {
-		// sort
-		if (col == 0)
-			sort(col, Qt::AscendingOrder);
-		else
-			sort(col, Qt::DescendingOrder);
+void DwarfModel::section_right_clicked(int col) {
+	if (col == m_selected_col) {
+		// turn it off
+		m_selected_col = -1;
+	} else {
+		m_selected_col = col;
 	}
 }
 
@@ -124,6 +179,7 @@ void DwarfModel::build_rows() {
 			QString title = QString("%1 (%2)").arg(key).arg(m_grouped_dwarves.value(key).size());
 			root = new QStandardItem(title);
 			root->setData(true, DR_IS_AGGREGATE);
+			root->setData(0, DR_RATING);
 			root_row << root;
 		}
 
@@ -135,6 +191,7 @@ void DwarfModel::build_rows() {
 				item->setData(l->labor_id, DR_LABOR_ID);
 				item->setData(key, DR_GROUP_NAME);
 				item->setData(false, DR_DIRTY);
+				item->setData(0, DR_RATING);
 				item->setData(0, DR_DUMMY);
 				root_row << item;
 			}
@@ -151,6 +208,7 @@ void DwarfModel::build_rows() {
 			i_name->setToolTip(skill_summary);
 			i_name->setStatusTip(d->nice_name());
 			i_name->setData(false, DR_IS_AGGREGATE);
+			i_name->setData(0, DR_RATING);
 			i_name->setData(d->id(), DR_ID);
 
 			QList<QStandardItem*> items;
@@ -174,6 +232,14 @@ void DwarfModel::build_rows() {
 				item->setToolTip(tooltip);
 				item->setStatusTip(l->name + " :: " + d->nice_name());
 				items << item;
+
+				if (root) {
+					short highest_rating = root_row[items.size()-1]->data(DR_RATING).toInt();
+					if (rating > highest_rating) {
+						root_row[items.length() -1]->setData(rating, DR_RATING); // aggregate should hold the highest sub skill value
+						//root->setData(rating, DR_RATING); // so the parents can be sorted by rating before the labors
+					}
+				}
 			}
 			if (root) {
 				root->appendRow(items);
@@ -191,11 +257,16 @@ void DwarfModel::build_rows() {
 void DwarfModel::labor_clicked(const QModelIndex &idx) {
 	if (idx.column() == 0)
 		return; // don't mess with the names
-	bool is_aggregate = idx.data(DR_IS_AGGREGATE).toBool();
-	int labor_id = idx.data(DR_LABOR_ID).toInt();
-	int dwarf_id = idx.data(DR_ID).toInt();
+	QStandardItem *item = itemFromIndex(idx);
+	bool valid = idx.isValid();
+	Q_ASSERT(item);
+
+	bool is_aggregate = item->data(DR_IS_AGGREGATE).toBool();
+	int labor_id = item->data(DR_LABOR_ID).toInt();
+	int dwarf_id = item->data(DR_ID).toInt();
 	if (is_aggregate) {
 		QModelIndex first_col = idx.sibling(idx.row(), 0);
+		
 		// first find out how many are enabled...
 		int enabled_count = 0;
 		QString group_name = idx.data(DwarfModel::DR_GROUP_NAME).toString();
