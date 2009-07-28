@@ -34,8 +34,6 @@ Dwarf::Dwarf(DFInstance *df, int address, QObject *parent)
 	: QObject(parent)
 	, m_df(df)
 	, m_address(address)
-	//, m_labors(new uchar[102])
-	//, m_pending_labors(new uchar[102])
 {
 	refresh_data();
 }
@@ -61,11 +59,27 @@ void Dwarf::refresh_data() {
 	m_toughness = m_df->read_int32(m_address + mem->dwarf_offset("toughness"), bytes_read);
 	m_agility = m_df->read_int32(m_address + mem->dwarf_offset("agility"), bytes_read);
 	read_labors(m_address + mem->dwarf_offset("labors"));
+
+	// NEW
+	char sex = m_df->read_char(m_address + mem->dwarf_offset("sex"), bytes_read);
+	m_is_male = (int)sex == 1;
+
+	m_money = m_df->read_int32(m_address + mem->dwarf_offset("money"), bytes_read);
+	m_raw_happiness = m_df->read_int32(m_address +mem->dwarf_offset("happiness"), bytes_read);
+	m_happiness = happiness_from_score(m_raw_happiness);
+	
+	//qDebug() << nice_name() << "SEX" << (m_is_male ? "M" : "F") << " MONEY" << m_money << "ADDR" << hex << m_address;
+	
 }
 
 Dwarf::~Dwarf() {
-	//delete[] m_labors;
-	//delete[] m_pending_labors;
+}
+
+Dwarf::DWARF_HAPPINESS Dwarf::happiness_from_score(int score) {
+	int chunk = score / 30; // yes, integer division
+	if (chunk > 5)
+		chunk = 5;
+	return (DWARF_HAPPINESS)(DH_MISERABLE + chunk);
 }
 
 Dwarf *Dwarf::get_dwarf(DFInstance *df, int address) {
@@ -160,6 +174,20 @@ QString Dwarf::read_professtion(int address) {
 }
 
 void Dwarf::read_labors(int address) {
+	/* This thing dumps dwarves out to binary files for scanning memory
+	{
+		// TODO: remove me
+		uchar buf[4096];
+		memset(&buf, 0, 4096);
+		m_df->read_raw(m_address, 4096, &buf);
+		QByteArray ba = QByteArray::fromRawData((char*)&buf, 4096);
+		QFile f("dwarf_dumps/" + m_first_name + " " + m_last_name + ".hex");
+		if (f.open(QIODevice::ReadWrite)) {
+			f.write(ba);
+		}
+		f.close();
+	}*/
+
 	// read a big array of labors in one read, then pick and choose
 	// the values we care about
 	uchar buf[102];

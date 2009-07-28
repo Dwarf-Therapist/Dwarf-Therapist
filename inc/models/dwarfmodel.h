@@ -53,8 +53,10 @@ class DwarfModel : public QStandardItemModel {
 public:
 	typedef enum {
 		GB_NOTHING = 0,
-		GB_PROFESSION = 1,
-		GB_LEGENDARY = 2,
+		GB_PROFESSION,
+		GB_LEGENDARY,
+		GB_SEX,
+		GB_HAPPINESS,
 		GB_TOTAL
 	} GROUP_BY;
 	typedef enum {

@@ -81,6 +81,8 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->cb_group_by->setItemData(0, DwarfModel::GB_NOTHING);
 	ui->cb_group_by->addItem("Profession", DwarfModel::GB_PROFESSION);
 	ui->cb_group_by->addItem("Legendary or not", DwarfModel::GB_LEGENDARY);
+	ui->cb_group_by->addItem("Sex", DwarfModel::GB_SEX);
+	ui->cb_group_by->addItem("Happiness", DwarfModel::GB_HAPPINESS);
 	read_settings();
 
 	check_latest_version();

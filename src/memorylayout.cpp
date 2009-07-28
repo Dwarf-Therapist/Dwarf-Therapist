@@ -26,21 +26,12 @@ void MemoryLayout::load_data() {
 	m_offsets.insert("word_table", read_hex("offsets/word_table"));
 		
 	// dwarf offsets
-	m_dwarf_offsets.insert("first_name", read_hex("dwarf_offsets/first_name"));
-	m_dwarf_offsets.insert("nick_name", read_hex("dwarf_offsets/nick_name"));
-	m_dwarf_offsets.insert("last_name", read_hex("dwarf_offsets/last_name"));
-	m_dwarf_offsets.insert("custom_profession", read_hex("dwarf_offsets/custom_profession"));
-	m_dwarf_offsets.insert("profession", read_hex("dwarf_offsets/profession"));
-	m_dwarf_offsets.insert("race", read_hex("dwarf_offsets/race"));
-	m_dwarf_offsets.insert("flags1", read_hex("dwarf_offsets/flags1"));
-	m_dwarf_offsets.insert("flags2", read_hex("dwarf_offsets/flags2"));
-	m_dwarf_offsets.insert("id", read_hex("dwarf_offsets/id"));
-	m_dwarf_offsets.insert("strength", read_hex("dwarf_offsets/strength"));
-	m_dwarf_offsets.insert("agility", read_hex("dwarf_offsets/agility"));
-	m_dwarf_offsets.insert("toughness", read_hex("dwarf_offsets/toughness"));
-	m_dwarf_offsets.insert("skills", read_hex("dwarf_offsets/skills"));
-	m_dwarf_offsets.insert("labors", read_hex("dwarf_offsets/labors"));
-
+	m_data->beginGroup("dwarf_offsets");
+	foreach(QString k, m_data->childKeys()) {
+		m_dwarf_offsets.insert(k, read_hex(k));
+	}
+	m_data->endGroup();
+	
 	// flags
 	m_flags.insert("flags1.invalidate", read_hex("flags/flags1.invalidate"));
 	m_flags.insert("flags2.invalidate", read_hex("flags/flags2.invalidate"));

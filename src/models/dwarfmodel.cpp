@@ -151,15 +151,26 @@ void DwarfModel::load_dwarves() {
 				m_grouped_dwarves[d->profession()].append(d);
 				break;
 			case GB_LEGENDARY:
-				int legendary_skills = 0;
-				foreach(Skill s, *d->get_skills()) {
-					if (s.rating() >= 15)
-						legendary_skills++;
+				{
+					int legendary_skills = 0;
+					foreach(Skill s, *d->get_skills()) {
+						if (s.rating() >= 15)
+							legendary_skills++;
+					}
+					if (legendary_skills)
+						m_grouped_dwarves["Legends"].append(d);
+					else
+						m_grouped_dwarves["Losers"].append(d);
+					break;
 				}
-				if (legendary_skills)
-					m_grouped_dwarves["Legends"].append(d);
+			case GB_SEX:
+				if (d->is_male())
+					m_grouped_dwarves["Males"].append(d);
 				else
-					m_grouped_dwarves["Losers"].append(d);
+					m_grouped_dwarves["Females"].append(d);
+				break;
+			case GB_HAPPINESS:
+				m_grouped_dwarves[QString::number(d->get_happiness())].append(d);
 				break;
 		}
 	}
@@ -169,6 +180,9 @@ void DwarfModel::load_dwarves() {
 void DwarfModel::build_rows() {
 	GameDataReader *gdr = GameDataReader::ptr();
 	QMap<int, Labor*> labors = gdr->get_ordered_labors();
+
+	QIcon icn_f(":img/female.png");
+	QIcon icn_m(":img/male.png");
 
 	foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
 		QStandardItem *root = 0;
@@ -199,17 +213,47 @@ void DwarfModel::build_rows() {
 		
 		foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
 			QStandardItem *i_name = new QStandardItem(d->nice_name());
-			QString skill_summary;
+			QString skill_summary = "<h4>Happiness Level: " + QString::number(d->get_happiness()) + "</h4><h4>Skills</h4><ul>";
 			QVector<Skill> *skills = d->get_skills();
 			qSort(*skills);
 			for (int i = skills->size() - 1; i >= 0; --i) {
-				skill_summary += skills->at(i).to_string() + "\n";
+				skill_summary += "<li>" + skills->at(i).to_string() + "</li>";
 			}
+			skill_summary += "</ul>";
 			i_name->setToolTip(skill_summary);
 			i_name->setStatusTip(d->nice_name());
 			i_name->setData(false, DR_IS_AGGREGATE);
 			i_name->setData(0, DR_RATING);
 			i_name->setData(d->id(), DR_ID);
+			
+			/* SEX ICON
+			if (d->is_male()) {
+				i_name->setIcon(icn_m);
+			} else {
+				i_name->setIcon(icn_f);
+			}
+			*/
+			
+			switch (d->get_happiness()) {
+				case Dwarf::DH_MISERABLE:
+					i_name->setIcon(QIcon(":img/exclamation.png"));
+					break;
+				case Dwarf::DH_UNHAPPY:
+					i_name->setIcon(QIcon(":img/emoticon_unhappy.png"));
+					break;
+				case Dwarf::DH_FINE:
+					i_name->setIcon(QIcon(":img/emoticon_smile.png"));
+					break;
+				case Dwarf::DH_CONTENT:
+					i_name->setIcon(QIcon(":img/emoticon_smile.png"));
+					break;
+				case Dwarf::DH_HAPPY:
+					i_name->setIcon(QIcon(":img/emoticon_grin.png"));
+					break;
+				case Dwarf::DH_ECSTATIC:
+					i_name->setIcon(QIcon(":img/emoticon_happy.png"));
+					break;
+			}
 
 			QList<QStandardItem*> items;
 			items << i_name;

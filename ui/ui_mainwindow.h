@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Sun Jul 26 15:52:54 2009
+** Created: Mon Jul 27 17:04:58 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -295,7 +295,8 @@ public:
         stv->setAlternatingRowColors(false);
         stv->setSelectionMode(QAbstractItemView::ExtendedSelection);
         stv->setSelectionBehavior(QAbstractItemView::SelectRows);
-        stv->setIndentation(12);
+        stv->setIconSize(QSize(12, 12));
+        stv->setIndentation(8);
         stv->setUniformRowHeights(true);
         stv->setSortingEnabled(true);
         stv->setAnimated(false);
@@ -493,7 +494,6 @@ public:
         QObject::connect(btn_new_custom_profession, SIGNAL(clicked()), act_add_custom_profession, SLOT(trigger()));
         QObject::connect(btn_import_professions, SIGNAL(clicked()), act_import_existing_professions, SLOT(trigger()));
         QObject::connect(act_import_existing_professions, SIGNAL(triggered()), MainWindow, SLOT(import_existing_professions()));
-        QObject::connect(act_keyboard_grid_focus, SIGNAL(triggered(bool)), MainWindow, SLOT(set_allow_grid_focus(bool)));
         QObject::connect(act_single_click_labor_changes, SIGNAL(triggered(bool)), MainWindow, SLOT(set_single_click_labor_changes(bool)));
         QObject::connect(act_go_donate, SIGNAL(triggered()), MainWindow, SLOT(go_to_donate()));
         QObject::connect(act_go_forums, SIGNAL(triggered()), MainWindow, SLOT(go_to_forums()));

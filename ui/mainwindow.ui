@@ -141,8 +141,14 @@
       <property name="selectionBehavior">
        <enum>QAbstractItemView::SelectRows</enum>
       </property>
+      <property name="iconSize">
+       <size>
+        <width>12</width>
+        <height>12</height>
+       </size>
+      </property>
       <property name="indentation">
-       <number>12</number>
+       <number>8</number>
       </property>
       <property name="uniformRowHeights">
        <bool>true</bool>
@@ -176,9 +182,6 @@
       </attribute>
       <attribute name="headerStretchLastSection">
        <bool>false</bool>
-      </attribute>
-      <attribute name="headerShowSortIndicator" stdset="0">
-       <bool>true</bool>
       </attribute>
      </widget>
     </item>
@@ -1158,22 +1161,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>act_keyboard_grid_focus</sender>
-   <signal>triggered(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>set_allow_grid_focus(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>564</x>
-     <y>373</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>act_single_click_labor_changes</sender>
    <signal>triggered(bool)</signal>
    <receiver>MainWindow</receiver>
@@ -1298,7 +1285,6 @@
   <slot>open_options_menu()</slot>
   <slot>import_existing_professions()</slot>
   <slot>set_single_click_labor_changes(bool)</slot>
-  <slot>set_allow_grid_focus(bool)</slot>
   <slot>go_to_forums()</slot>
   <slot>go_to_donate()</slot>
   <slot>go_to_project_home()</slot>

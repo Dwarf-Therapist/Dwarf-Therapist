@@ -35,25 +35,25 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 	if (!proxy_idx.isValid()) {
 		return;
 	}
-	QModelIndex idx = m_proxy->mapToSource(proxy_idx);
 	if (proxy_idx.column() == 0) { // we never do anything with the 0 col...
-		QStyledItemDelegate::paint(p, opt, idx); // always lay the "base coat"
+		QStyledItemDelegate::paint(p, opt, proxy_idx); // always lay the "base coat"
 		return;
 	}
 
+	QModelIndex model_idx = m_proxy->mapToSource(proxy_idx);
+	
 	if (m_model->current_grouping() == DwarfModel::GB_NOTHING) {
 		paint_skill(p, opt, proxy_idx);
 	} else {
-		//QModelIndex idx = m_proxy->mapToSource(proxy_idx);
-		QModelIndex first_col = m_model->index(idx.row(), 0, idx.parent());
+		QModelIndex first_col = m_model->index(model_idx.row(), 0, model_idx.parent());
 		if (m_model->hasChildren(first_col)) { // skill item (under a group header)
-			paint_aggregate(p, opt, idx);
+			paint_aggregate(p, opt, proxy_idx);
 		} else {
-			paint_skill(p, opt, idx);
+			paint_skill(p, opt, model_idx);
 		}
 	}
 
-	if (idx.column() == m_model->selected_col()) {
+	if (proxy_idx.column() == m_model->selected_col()) {
 		p->save();
 		p->setPen(QPen(color_guides));
 		p->drawLine(opt.rect.topLeft(), opt.rect.bottomLeft());
@@ -75,6 +75,7 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 
 void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
 	GameDataReader *gdr = GameDataReader::ptr();
+	
 	short rating = idx.data(DwarfModel::DR_RATING).toInt();
 	
 	Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
@@ -158,31 +159,32 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 	if (!proxy_idx.isValid()) {
 		return;
 	}
-	QModelIndex idx = m_proxy->mapFromSource(proxy_idx);
-	QModelIndex first_col = m_model->index(idx.row(), 0, idx.parent());
+	QModelIndex model_idx = m_proxy->mapToSource(proxy_idx);
+	QModelIndex first_col = m_proxy->index(proxy_idx.row(), 0, proxy_idx.parent());
 	if (!first_col.isValid()) {
 		return;
 	}
-	QStandardItem *item = m_model->itemFromIndex(first_col);
-
-	QString group_name = idx.data(DwarfModel::DR_GROUP_NAME).toString();
-	int labor_id = idx.data(DwarfModel::DR_LABOR_ID).toInt();
+	//m_proxy->rowCount(first_col);
+	
+	QString group_name = proxy_idx.data(DwarfModel::DR_GROUP_NAME).toString();
+	int labor_id = proxy_idx.data(DwarfModel::DR_LABOR_ID).toInt();
 
 	int dirty_count = 0;
 	int enabled_count = 0;
-	const QMap<QString, QVector<Dwarf*>> *groups = m_model->get_dwarf_groups();
-	foreach(Dwarf *d, groups->value(group_name)) {
-		if (d->is_labor_enabled(labor_id))
+	for (int i = 0; i < m_proxy->rowCount(first_col); ++i) {
+		int dwarf_id = m_proxy->data(m_proxy->index(i, 0, first_col), DwarfModel::DR_ID).toInt();
+		Dwarf *d = m_model->get_dwarf_by_id(dwarf_id);
+		if (d && d->is_labor_enabled(labor_id))
 			enabled_count++;
-		if (d->is_labor_state_dirty(labor_id))
+		if (d && d->is_labor_state_dirty(labor_id))
 			dirty_count++;
 	}
 	
-	QStyledItemDelegate::paint(p, opt, idx); // always lay the "base coat"
+	QStyledItemDelegate::paint(p, opt, proxy_idx); // always lay the "base coat"
 	
 	p->save();
 	QRect adj = opt.rect.adjusted(1, 1, 0, 0);
-	if (enabled_count == item->rowCount()) {
+	if (enabled_count == m_proxy->rowCount(first_col)) {
 		p->fillRect(adj, QBrush(color_active_group));
 	} else if (enabled_count > 0) {
 		p->fillRect(adj, QBrush(color_partial_group));
