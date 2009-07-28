@@ -47,6 +47,7 @@ public:
 		void set_grid_size(int new_size);
 		void set_single_click_labor_changes(bool enabled);
 		void jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* previous);
+		void jump_to_profession(QListWidgetItem* current, QListWidgetItem* previous);
 
 private:
 	DwarfModel *m_model;

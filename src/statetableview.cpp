@@ -99,9 +99,22 @@ void StateTableView::jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* pr
 	if (d && d->m_name_idx.isValid()) {
 		QModelIndex proxy_idx = m_proxy->mapFromSource(d->m_name_idx);
 		if (proxy_idx.isValid()) {
-			this->scrollTo(proxy_idx);
-			this->selectionModel()->select(proxy_idx, QItemSelectionModel::SelectCurrent | QItemSelectionModel::Rows);
+			scrollTo(proxy_idx);
+			selectionModel()->select(proxy_idx, QItemSelectionModel::SelectCurrent | QItemSelectionModel::Rows);
 		}
+	}
+}
+
+void StateTableView::jump_to_profession(QListWidgetItem* current, QListWidgetItem* previous) {
+	if (!current)
+		return;
+	QString prof_name = current->text();
+	QModelIndexList matches = m_proxy->match(m_proxy->index(0,0), Qt::DisplayRole, prof_name);
+	if (matches.size() > 0) {
+		QModelIndex group_header = matches.at(0);
+		scrollTo(group_header);
+		expand(group_header);
+		selectionModel()->select(group_header, QItemSelectionModel::SelectCurrent | QItemSelectionModel::Rows);
 	}
 }
 

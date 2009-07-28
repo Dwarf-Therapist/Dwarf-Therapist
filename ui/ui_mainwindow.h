@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Mon Jul 27 17:04:58 2009
+** Created: Mon Jul 27 21:07:35 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -501,6 +501,7 @@ public:
         QObject::connect(act_go_project_home, SIGNAL(triggered()), MainWindow, SLOT(go_to_project_home()));
         QObject::connect(le_filter_text, SIGNAL(textChanged(QString)), stv, SLOT(filter_dwarves(QString)));
         QObject::connect(pushButton, SIGNAL(clicked()), le_filter_text, SLOT(clear()));
+        QObject::connect(list_custom_professions, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), stv, SLOT(jump_to_profession(QListWidgetItem*,QListWidgetItem*)));
 
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi

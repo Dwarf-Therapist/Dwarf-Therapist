@@ -769,6 +769,7 @@
     <slot>set_grid_size(int)</slot>
     <slot>jump_to_dwarf(QTreeWidgetItem*,QTreeWidgetItem*)</slot>
     <slot>filter_dwarves(QString)</slot>
+    <slot>jump_to_profession(QListWidgetItem*,QListWidgetItem*)</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -1269,6 +1270,22 @@
     <hint type="destinationlabel">
      <x>103</x>
      <y>131</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>list_custom_professions</sender>
+   <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
+   <receiver>stv</receiver>
+   <slot>jump_to_profession(QListWidgetItem*,QListWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>966</x>
+     <y>528</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>777</x>
+     <y>520</y>
     </hint>
    </hints>
   </connection>
