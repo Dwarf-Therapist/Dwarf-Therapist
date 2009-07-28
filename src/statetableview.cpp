@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "rotatedheader.h"
 #include "dwarf.h"
 #include "defines.h"
+#include "gridview.h"
 
 StateTableView::StateTableView(QWidget *parent)
 	: QTreeView(parent)
@@ -42,6 +43,24 @@ StateTableView::StateTableView(QWidget *parent)
 {
 	setItemDelegate(m_delegate);
 	setHeader(m_header);
+
+	/*
+	GridView *v = new GridView("Default", this);
+	ViewColumnSet *s1 = new ViewColumnSet("crafting", v);
+	ViewColumnSet *s2 = new ViewColumnSet("wood stuff", v);
+	v->add_set(s1);
+	v->add_set(s2);
+
+	s1->set_bg_color(QColor(0xFF0000));
+	s2->set_bg_color(QColor(0x0000FF));
+
+	ViewColumn *c1 = new ViewColumn("bone crafting", s1, s1);
+	c1->set_labor_id(28);
+	c1->set_skill_id(10);
+	ViewColumn *c2 = new ViewColumn("stone crafting", s1, s1);
+
+	ViewColumn *c3 = new ViewColumn("whatevs crafting", s2, s2);
+	*/
 }
 
 StateTableView::~StateTableView()
