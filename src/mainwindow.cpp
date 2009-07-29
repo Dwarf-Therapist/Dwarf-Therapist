@@ -85,6 +85,8 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->cb_group_by->addItem("Happiness", DwarfModel::GB_HAPPINESS);
 	read_settings();
 
+	reload_views();
+
 	check_latest_version();
 	//TODO: make this an option to connect on launch
 	connect_to_df();
@@ -592,3 +594,49 @@ void MainWindow::go_to_project_home() {
 void MainWindow::go_to_new_issue() {
 	QDesktopServices::openUrl(QUrl("http://code.google.com/p/dwarftherapist/issues/entry"));
 }
+
+
+void MainWindow::reload_views() {
+	// make sure the required directories are in place
+	// TODO make directory locations configurable
+
+	QDir cur = QDir::current();
+	if (!cur.exists("etc/views")) {
+		QMessageBox::warning(this, tr("Missing Directory"),
+			tr("Could not fine the 'views' directory under 'etc'"));
+		return;
+	}
+	if (!cur.exists("etc/sets")) {
+		QMessageBox::warning(this, tr("Missing Directory"),
+			tr("Could not fine the 'sets' directory under 'etc'"));
+		return;
+	}
+
+	// goodbye old views!
+	m_views.clear();
+
+	QDir views = QDir(QDir::currentPath() + "/etc/views");
+	QDir sets = QDir(QDir::currentPath() + "/etc/sets");
+	
+	QStringList view_files = views.entryList(QDir::Files | QDir::Readable, QDir::Time);
+	foreach(QString filename, view_files) {
+		if (filename.endsWith(".ini")) {
+			LOGD << "found view file" << views.filePath(filename);
+			GridView *v = GridView::from_file(views.filePath(filename), sets, this);
+			if (v)
+				m_views << v;
+		}
+	}
+
+	
+	
+	
+	// add view to file
+	// set main view to default
+	// make a tab out of each activated view + the default
+}
+void MainWindow::save_views() {}
+void MainWindow::add_new_view() {}
+void MainWindow::edit_view() {}
+void MainWindow::delete_view() {}
+

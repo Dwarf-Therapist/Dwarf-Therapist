@@ -30,8 +30,11 @@ THE SOFTWARE.
 #include "labor.h"
 #include "statetableview.h"
 #include "defines.h"
-#include "gridview.h"
 
+#include "columntypes.h"
+#include "gridview.h"
+#include "viewcolumnset.h"
+#include "viewcolumn.h"
 
 DwarfModelProxy::DwarfModelProxy(QObject *parent)
 	:QSortFilterProxyModel(parent)
@@ -42,11 +45,11 @@ DwarfModel* DwarfModelProxy::get_dwarf_model() const {
 	return static_cast<DwarfModel*>(sourceModel());
 }
 
-void DwarfModelProxy::labor_clicked(const QModelIndex &idx) {
+void DwarfModelProxy::cell_activated(const QModelIndex &idx) {
 	bool valid = idx.isValid();
 	QModelIndex new_idx = mapToSource(idx);
 	valid = new_idx.isValid();
-	return get_dwarf_model()->labor_clicked(new_idx);
+	return get_dwarf_model()->cell_activated(new_idx);
 }
 
 void DwarfModelProxy::setFilterFixedString(const QString &pattern) {
@@ -55,7 +58,6 @@ void DwarfModelProxy::setFilterFixedString(const QString &pattern) {
 }
 
 bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
-	//return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
 	const DwarfModel *m = get_dwarf_model();
 	if (m->current_grouping() == DwarfModel::GB_NOTHING) {
 		QModelIndex idx = m->index(source_row, 0, source_parent);
@@ -112,7 +114,6 @@ DwarfModel::DwarfModel(QObject *parent)
 {
 	GameDataReader *gdr = GameDataReader::ptr();
 	setHorizontalHeaderItem(0, new QStandardItem);
-	setVerticalHeaderItem(2, new QStandardItem("TESTINGTEST"));
 	/*
 	QMap<int, Labor*> labors = gdr->get_ordered_labors();
 	foreach(Labor *l, labors) {
@@ -240,14 +241,14 @@ void DwarfModel::build_rows() {
 			i_name->setData(0, DR_RATING);
 			i_name->setData(d->id(), DR_ID);
 			
-			/* SEX ICON
+
 			if (d->is_male()) {
 				i_name->setIcon(icn_m);
 			} else {
 				i_name->setIcon(icn_f);
 			}
-			*/
-			
+
+			/*			
 			switch (d->get_happiness()) {
 				case Dwarf::DH_MISERABLE:
 					i_name->setIcon(QIcon(":img/exclamation.png"));
@@ -267,16 +268,14 @@ void DwarfModel::build_rows() {
 				case Dwarf::DH_ECSTATIC:
 					i_name->setIcon(QIcon(":img/emoticon_happy.png"));
 					break;
-			}
+			}*/
 
 			QList<QStandardItem*> items;
 			items << i_name;
 			foreach(ViewColumnSet *set, m_gridview->sets()) {
 				foreach(ViewColumn *col, set->columns()) {
 					QStandardItem *item = col->build_cell(d);
-					//short rating = d->get_rating_for_skill(col->labor_id());
 					items << item;
-
 				}
 			}
 			
@@ -322,9 +321,14 @@ void DwarfModel::build_rows() {
 	}
 }
 
-void DwarfModel::labor_clicked(const QModelIndex &idx) {
+void DwarfModel::cell_activated(const QModelIndex &idx) {
 	if (idx.column() == 0)
 		return; // don't mess with the names
+
+	COLUMN_TYPE type = static_cast<COLUMN_TYPE>(idx.data(DwarfModel::DR_COL_TYPE).toInt());
+	if (type != CT_LABOR) 
+		return;
+
 	QStandardItem *item = itemFromIndex(idx);
 	bool valid = idx.isValid();
 	Q_ASSERT(item);

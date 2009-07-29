@@ -38,7 +38,7 @@ public:
 
 	void sort(int column, Qt::SortOrder order = Qt::DescendingOrder);
 	public slots:
-		void labor_clicked(const QModelIndex &idx);
+		void cell_activated(const QModelIndex &idx);
 		void setFilterFixedString(const QString &pattern);
 
 protected:
@@ -63,13 +63,12 @@ public:
 	typedef enum {
 		DR_RATING = Qt::UserRole + 1,
 		DR_IS_AGGREGATE,
-		DR_DIRTY,
 		DR_LABOR_ID,
 		DR_GROUP_NAME,
 		DR_ID,
 		DR_DEFAULT_BG_COLOR,
 		DR_DUMMY, // used as an int counter that increments to force re-draws
-		DR_COL_SELECT
+		DR_COL_TYPE
 	} DATA_ROLES;
 
 	DwarfModel(QObject *parent = 0);
@@ -90,7 +89,7 @@ public:
 	public slots:
 		void set_group_by(int group_by);
 		void load_dwarves();
-		void labor_clicked(const QModelIndex &idx);
+		void cell_activated(const QModelIndex &idx); // a grid cell was clicked/doubleclicked or enter was pressed on it
 		void clear_pending();
 		void commit_pending();
 		void section_right_clicked(int idx);

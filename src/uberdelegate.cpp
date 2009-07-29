@@ -24,35 +24,36 @@ THE SOFTWARE.
 #include "uberdelegate.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
+#include "gridview.h"
+#include "columntypes.h"
 
 UberDelegate::UberDelegate(QObject *parent)
 	: QStyledItemDelegate(parent)
-	, m_allow_grid_focus(false)
-{
-}
+{}
 
 void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
 	if (!proxy_idx.isValid()) {
 		return;
 	}
 	if (proxy_idx.column() == 0) { // we never do anything with the 0 col...
-		QStyledItemDelegate::paint(p, opt, proxy_idx); // always lay the "base coat"
+		QStyledItemDelegate::paint(p, opt, proxy_idx);
 		return;
 	}
 
+	paint_cell(p, opt, proxy_idx);
+	/*
 	QModelIndex model_idx = m_proxy->mapToSource(proxy_idx);
-	
 	if (m_model->current_grouping() == DwarfModel::GB_NOTHING) {
-		paint_skill(p, opt, model_idx);
+		paint_labor(p, opt, model_idx);
 	} else {
 		QModelIndex first_col = m_model->index(model_idx.row(), 0, model_idx.parent());
 		if (m_model->hasChildren(first_col)) { // skill item (under a group header)
 			paint_aggregate(p, opt, proxy_idx);
 		} else {
-			paint_skill(p, opt, model_idx);
+			paint_labor(p, opt, model_idx);
 		}
 	}
-
+	*/
 	if (proxy_idx.column() == m_model->selected_col()) {
 		p->save();
 		p->setPen(QPen(color_guides));
@@ -60,25 +61,39 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 		p->drawLine(opt.rect.topRight(), opt.rect.bottomRight());
 		p->restore();
 	}
+}
 
-	if (m_allow_grid_focus && opt.state & QStyle::State_HasFocus) { // cursor
-		p->save(); // border last
-		p->setBrush(Qt::NoBrush);
-		p->setPen(QPen(color_cursor, 2));
-		QRect r = opt.rect.adjusted(1, 1, -1 ,-1);
-		p->drawLine(r.topLeft(), r.bottomRight());
-		p->drawLine(r.topRight(), r.bottomLeft());
-		//p->drawRect(opt.rect.adjusted(0, 0, -1, -1));
-		p->restore();
+void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
+	QModelIndex model_idx = m_proxy->mapToSource(idx);
+	COLUMN_TYPE type = static_cast<COLUMN_TYPE>(model_idx.data(DwarfModel::DR_COL_TYPE).toInt());
+	switch (type) {
+		case CT_LABOR:
+			{
+				bool agg = model_idx.data(DwarfModel::DR_IS_AGGREGATE).toBool();
+				if (m_model->current_grouping() == DwarfModel::GB_NOTHING) {
+					paint_labor(p, opt, idx);
+				} else if (agg) {
+					paint_aggregate(p, opt, idx);
+				} else {
+					paint_labor(p, opt, idx);
+				}
+			}
+			break;
+		case CT_HAPPINESS:
+			QStyledItemDelegate::paint(p, opt, idx);
+			paint_grid(false, p, opt, idx);
+			break;
+		case CT_DEFAULT:
+		default:
+			QStyledItemDelegate::paint(p, opt, idx);
+			break;
 	}
 }
 
-void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
-	GameDataReader *gdr = GameDataReader::ptr();
+void UberDelegate::paint_labor(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
+	//GameDataReader *gdr = GameDataReader::ptr();
 
-	bool pr = idx.model() == m_proxy;
-	bool mo = idx.model() == m_model;
-	
+	QModelIndex idx = m_proxy->mapToSource(proxy_idx);
 	short rating = idx.data(DwarfModel::DR_RATING).toInt();
 	
 	Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
@@ -170,7 +185,6 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 	if (!first_col.isValid()) {
 		return;
 	}
-	//m_proxy->rowCount(first_col);
 	
 	QString group_name = proxy_idx.data(DwarfModel::DR_GROUP_NAME).toString();
 	int labor_id = proxy_idx.data(DwarfModel::DR_LABOR_ID).toInt();
@@ -206,6 +220,25 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 		p->drawRect(opt.rect.adjusted(0, 0, -1, -1));
 	} else {
 		p->setPen(QPen(color_border));
+		p->drawRect(opt.rect);
+	}
+	p->restore();
+}
+
+void UberDelegate::paint_grid(bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
+	p->save(); // border last
+	p->setBrush(Qt::NoBrush);
+	if (dirty) {
+		p->setPen(QPen(QColor(color_dirty_border), 1));
+		p->drawRect(opt.rect.adjusted(0, 0, -1, -1));
+	} else if (opt.state & QStyle::State_Selected) {
+		p->setPen(color_border);
+		p->drawRect(opt.rect);
+		p->setPen(color_guides);
+		p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
+		p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
+	} else {
+		p->setPen(color_border);
 		p->drawRect(opt.rect);
 	}
 	p->restore();

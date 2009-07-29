@@ -58,6 +58,7 @@ public:
 	QString nickname() {return m_pending_nick_name;}
 	void set_nickname(QString nick) {m_pending_nick_name = nick;}
 	DWARF_HAPPINESS get_happiness() {return m_happiness;}
+	int get_raw_happiness() {return m_raw_happiness;}
 	
 	QVector<Skill> *get_skills() {return &m_skills;}
 	QVector<int> get_dirty_labors(); // returns labor ids

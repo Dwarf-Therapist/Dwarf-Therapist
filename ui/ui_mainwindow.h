@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Tue Jul 28 14:42:48 2009
+** Created: Wed Jul 29 12:48:37 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -295,7 +295,7 @@ public:
         stv->setAlternatingRowColors(false);
         stv->setSelectionMode(QAbstractItemView::ExtendedSelection);
         stv->setSelectionBehavior(QAbstractItemView::SelectRows);
-        stv->setIconSize(QSize(12, 12));
+        stv->setIconSize(QSize(14, 14));
         stv->setIndentation(8);
         stv->setUniformRowHeights(true);
         stv->setSortingEnabled(true);

@@ -34,6 +34,7 @@ class Dwarf;
 class OptionsMenu;
 class AboutDialog;
 class CustomProfession;
+class GridView;
 
 namespace Ui
 {
@@ -84,6 +85,13 @@ public:
 		void go_to_donate();
 		void go_to_project_home();
 		void go_to_new_issue();
+
+		// views
+		void reload_views();
+		void save_views();
+		void add_new_view();
+		void edit_view();
+		void delete_view();
 		
 private:
     Ui::MainWindow *ui;
@@ -98,6 +106,7 @@ private:
 	CustomProfession *m_temp_cp;
 	QHttp *m_http;
 	bool m_reading_settings;
+	QList<GridView*> m_views;
 
 	void closeEvent(QCloseEvent *evt); // override;
 

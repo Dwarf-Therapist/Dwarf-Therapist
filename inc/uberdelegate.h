@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define UBER_DELEGATE_H
 
 #include <QtGui>
+#include "gridview.h"
 
 class DwarfModel;
 class DwarfModelProxy;
@@ -33,11 +34,8 @@ class UberDelegate : public QStyledItemDelegate {
 public:
 	UberDelegate(QObject *parent = 0);
 	void paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
-	void paint_skill(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
-	void paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+	
 	//QSize sizeHint(const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
-
-	void set_allow_grid_focus(bool enabled) {m_allow_grid_focus = enabled;}
 
 	void set_model(DwarfModel *model) {m_model = model;}
 	void set_proxy(DwarfModelProxy *proxy) {m_proxy = proxy;}
@@ -50,10 +48,15 @@ public:
 	QColor color_border;
 	QColor color_dirty_border;
 	QColor color_cursor;
+
 private:
-	bool m_allow_grid_focus;
 	DwarfModel *m_model;
 	DwarfModelProxy *m_proxy;
+
+	void paint_cell(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+	void paint_grid(bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+	void paint_labor(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+	void paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
 };
 
 #endif
