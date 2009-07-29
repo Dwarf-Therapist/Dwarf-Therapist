@@ -27,6 +27,7 @@ THE SOFTWARE.
 class Dwarf;
 class DFInstance;
 class DwarfModel;
+class GridView;
 
 
 class DwarfModelProxy: public QSortFilterProxyModel {
@@ -66,6 +67,7 @@ public:
 		DR_LABOR_ID,
 		DR_GROUP_NAME,
 		DR_ID,
+		DR_DEFAULT_BG_COLOR,
 		DR_DUMMY, // used as an int counter that increments to force re-draws
 		DR_COL_SELECT
 	} DATA_ROLES;
@@ -73,6 +75,7 @@ public:
 	DwarfModel(QObject *parent = 0);
 	//virtual ~DwarfModel();
 	void set_instance(DFInstance *df) {m_df = df;}
+	void set_grid_view(GridView *v) {m_gridview = v;}
 	
 	GROUP_BY current_grouping() const {return m_group_by;}
 	const QMap<QString, QVector<Dwarf*>> *get_dwarf_groups() const {return &m_grouped_dwarves;}
@@ -98,6 +101,7 @@ private:
 	QMap<QString, QVector<Dwarf*>> m_grouped_dwarves;
 	GROUP_BY m_group_by;
 	int m_selected_col;
+	GridView *m_gridview;
 	
 	void build_rows();
 

@@ -43,7 +43,7 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 	QModelIndex model_idx = m_proxy->mapToSource(proxy_idx);
 	
 	if (m_model->current_grouping() == DwarfModel::GB_NOTHING) {
-		paint_skill(p, opt, proxy_idx);
+		paint_skill(p, opt, model_idx);
 	} else {
 		QModelIndex first_col = m_model->index(model_idx.row(), 0, model_idx.parent());
 		if (m_model->hasChildren(first_col)) { // skill item (under a group header)
@@ -75,11 +75,16 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 
 void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
 	GameDataReader *gdr = GameDataReader::ptr();
+
+	bool pr = idx.model() == m_proxy;
+	bool mo = idx.model() == m_model;
 	
 	short rating = idx.data(DwarfModel::DR_RATING).toInt();
 	
 	Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
-	Q_ASSERT(d);
+	if (!d) {
+		return QStyledItemDelegate::paint(p, opt, idx);
+	}
 
 	bool skip_border = false;
 	int labor_id = idx.data(DwarfModel::DR_LABOR_ID).toInt();
@@ -88,10 +93,11 @@ void UberDelegate::paint_skill(QPainter *p, const QStyleOptionViewItem &opt, con
 
 	p->save();
 	if (enabled) {
-		p->fillRect(opt.rect, QBrush(color_active_labor));
+		m_model->setData(idx, color_active_labor, Qt::BackgroundColorRole);
 	} else {
-		p->fillRect(opt.rect, QBrush(gdr->get_color(QString("labors/%1/color").arg(idx.column() - 1))));
+		m_model->setData(idx, idx.data(DwarfModel::DR_DEFAULT_BG_COLOR).value<QColor>(), Qt::BackgroundColorRole);
 	}
+	QStyledItemDelegate::paint(p, opt, idx);
 	p->restore();
 	
 	// draw rating

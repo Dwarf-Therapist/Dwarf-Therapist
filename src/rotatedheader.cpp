@@ -36,7 +36,9 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 	if (!rect.isValid() || idx == 0) 
 		return QHeaderView::paintSection(p, rect, idx);
 
-	GameDataReader *gdr = GameDataReader::ptr();
+	QColor bg = model()->headerData(idx, Qt::Horizontal, Qt::BackgroundColorRole).value<QColor>();
+	qDebug() << "color for column" << idx << bg;
+	//GameDataReader *gdr = GameDataReader::ptr();
 
 	QStyleOptionHeader opt;
 	opt.rect = rect;
@@ -60,10 +62,13 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 		}
 	}
 	opt.state = state;
+	style()->drawControl(QStyle::CE_HeaderSection, &opt, p);
 	
-	style()->drawControl(QStyle::CE_HeaderSection, &opt, p, this);
+	QLinearGradient g(rect.topLeft(), rect.bottomLeft());
+    g.setColorAt(0.25, QColor(255, 255, 255, 10));
+	g.setColorAt(1.0, bg);
 	if (idx > 0)
-		p->fillRect(rect.adjusted(1,8,-1,-2), QBrush(gdr->get_color(QString("labors/%1/color").arg(idx-1))));
+		p->fillRect(rect.adjusted(1,8,-1,-2), QBrush(g));
 
 	if (sortIndicatorSection() == idx) {
 		opt.rect = QRect(opt.rect.x() + opt.rect.width()/2 - 5, opt.rect.y(), 10, 8);

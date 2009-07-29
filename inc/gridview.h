@@ -5,6 +5,7 @@
 
 class GridView;
 class ViewColumnSet;
+class Dwarf;
 
 /*!
 ViewColumn
@@ -28,17 +29,22 @@ public:
 	void set_skill_id(int labor_id) {m_labor_id = labor_id;}
 	bool override_color() {return m_override_set_colors;}
 	void set_override_color(bool yesno) {m_override_set_colors = yesno;}
-
 	ViewColumnSet *set() {return m_set;}
 
-private:
+	QStandardItem *build_cell(Dwarf *d); // create a suitable item based on a dwarf
+
+protected:
 	QString m_title;
 	QColor m_bg_color;
 	bool m_override_set_colors;
 	ViewColumnSet *m_set;
-
 	int m_labor_id;
 	int m_skill_id;
+};
+
+class LaborColumn : public ViewColumn {
+public:
+	LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSet *set = 0, QObject *parent = 0);
 };
 
 
@@ -64,6 +70,8 @@ public:
 		m_bg_color = color;
 	}
 	QColor bg_color() {return m_bg_color;}
+
+	QList<ViewColumn*> columns() {return m_columns.values();}
 
 	GridView *view() {return m_view;}
 

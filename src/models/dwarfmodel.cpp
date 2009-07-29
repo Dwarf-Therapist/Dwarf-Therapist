@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "labor.h"
 #include "statetableview.h"
 #include "defines.h"
+#include "gridview.h"
 
 
 DwarfModelProxy::DwarfModelProxy(QObject *parent)
@@ -111,10 +112,14 @@ DwarfModel::DwarfModel(QObject *parent)
 {
 	GameDataReader *gdr = GameDataReader::ptr();
 	setHorizontalHeaderItem(0, new QStandardItem);
+	setVerticalHeaderItem(2, new QStandardItem("TESTINGTEST"));
+	/*
 	QMap<int, Labor*> labors = gdr->get_ordered_labors();
 	foreach(Labor *l, labors) {
 		setHorizontalHeaderItem(l->list_order + 1, new QStandardItem(l->name));
 	}
+	*/
+
 }
 
 void DwarfModel::section_right_clicked(int col) {
@@ -178,11 +183,20 @@ void DwarfModel::load_dwarves() {
 }
 
 void DwarfModel::build_rows() {
-	GameDataReader *gdr = GameDataReader::ptr();
-	QMap<int, Labor*> labors = gdr->get_ordered_labors();
-
 	QIcon icn_f(":img/female.png");
 	QIcon icn_m(":img/male.png");
+
+	GameDataReader *gdr = GameDataReader::ptr();
+	//QMap<int, Labor*> labors = gdr->get_ordered_labors();
+
+	int start_col = 1;
+	foreach(ViewColumnSet *set, m_gridview->sets()) {
+		foreach(ViewColumn *col, set->columns()) {
+			QStandardItem *header = new QStandardItem(col->title());
+			header->setData(set->bg_color(), Qt::BackgroundColorRole);
+			setHorizontalHeaderItem(start_col++, header);
+		}
+	}
 
 	foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
 		QStandardItem *root = 0;
@@ -198,7 +212,7 @@ void DwarfModel::build_rows() {
 		}
 
 		if (root) { // we have a parent, so we should draw an aggregate row
-			foreach(Labor *l, labors) {
+			/*foreach(Labor *l, labors) {
 				QStandardItem *item = new QStandardItem();
 				//item->setText(0);
 				item->setData(true, DR_IS_AGGREGATE);
@@ -208,7 +222,7 @@ void DwarfModel::build_rows() {
 				item->setData(0, DR_RATING);
 				item->setData(0, DR_DUMMY);
 				root_row << item;
-			}
+			}*/
 		}
 		
 		foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
@@ -257,7 +271,17 @@ void DwarfModel::build_rows() {
 
 			QList<QStandardItem*> items;
 			items << i_name;
-			foreach(Labor *l, labors) {
+			foreach(ViewColumnSet *set, m_gridview->sets()) {
+				foreach(ViewColumn *col, set->columns()) {
+					QStandardItem *item = col->build_cell(d);
+					//short rating = d->get_rating_for_skill(col->labor_id());
+					items << item;
+
+				}
+			}
+			
+
+			/*foreach(Labor *l, labors) {
 				short rating = d->get_rating_for_skill(l->labor_id);
 				//bool enabled = d->is_labor_enabled(labor_id);
 
@@ -284,7 +308,7 @@ void DwarfModel::build_rows() {
 						//root->setData(rating, DR_RATING); // so the parents can be sorted by rating before the labors
 					}
 				}
-			}
+			}*/
 			if (root) {
 				root->appendRow(items);
 			} else {

@@ -43,24 +43,6 @@ StateTableView::StateTableView(QWidget *parent)
 {
 	setItemDelegate(m_delegate);
 	setHeader(m_header);
-
-	/*
-	GridView *v = new GridView("Default", this);
-	ViewColumnSet *s1 = new ViewColumnSet("crafting", v);
-	ViewColumnSet *s2 = new ViewColumnSet("wood stuff", v);
-	v->add_set(s1);
-	v->add_set(s2);
-
-	s1->set_bg_color(QColor(0xFF0000));
-	s2->set_bg_color(QColor(0x0000FF));
-
-	ViewColumn *c1 = new ViewColumn("bone crafting", s1, s1);
-	c1->set_labor_id(28);
-	c1->set_skill_id(10);
-	ViewColumn *c2 = new ViewColumn("stone crafting", s1, s1);
-
-	ViewColumn *c3 = new ViewColumn("whatevs crafting", s2, s2);
-	*/
 }
 
 StateTableView::~StateTableView()
@@ -82,6 +64,27 @@ void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
 	//header()->setDefaultSectionSize(24); //set grid size
 	
 	connect(this, SIGNAL(activated(const QModelIndex&)), proxy, SLOT(labor_clicked(const QModelIndex&)));
+
+	GridView *v = new GridView("Default", this);
+	ViewColumnSet *s1 = new ViewColumnSet("crafting", v);
+	ViewColumnSet *s2 = new ViewColumnSet("wood stuff", v);
+	v->add_set(s1);
+	v->add_set(s2);
+
+	s1->set_bg_color(QColor(0xEECCCC));
+	s2->set_bg_color(QColor(0xCCCCEE));
+
+	ViewColumn *c1 = new ViewColumn("Mining", s1, s1);
+	c1->set_labor_id(0);
+	c1->set_skill_id(0);
+	ViewColumn *c2 = new ViewColumn("Bowyer", s1, s1);
+	c2->set_labor_id(66);
+	c2->set_skill_id(50);
+	s1->add_column(c1);
+	s1->add_column(c2);
+
+	LaborColumn *c3 = new LaborColumn("Carpentry", 11, 2, s2, s2);
+	m_model->set_grid_view(v);
 }
 
 void StateTableView::new_custom_profession() {
