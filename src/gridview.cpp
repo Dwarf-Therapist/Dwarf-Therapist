@@ -37,9 +37,10 @@ QStandardItem *ViewColumn::build_cell(Dwarf *d) {
 
 LaborColumn::LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(title, set, parent)
-	, m_labor_id(labor_id)
-	, m_skill_id(skill_id)
-{}
+{
+	m_labor_id = labor_id;
+	m_skill_id = skill_id;
+}
 
 ViewColumnSet::ViewColumnSet(QString name, QObject *parent)
 	: QObject(parent)

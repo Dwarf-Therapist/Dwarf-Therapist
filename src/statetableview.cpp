@@ -80,9 +80,7 @@ void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
 	ViewColumn *c2 = new ViewColumn("Bowyer", s1, s1);
 	c2->set_labor_id(66);
 	c2->set_skill_id(50);
-	s1->add_column(c1);
-	s1->add_column(c2);
-
+	
 	LaborColumn *c3 = new LaborColumn("Carpentry", 11, 2, s2, s2);
 	m_model->set_grid_view(v);
 }
