@@ -106,5 +106,8 @@ private:
 
 signals:
 	void new_pending_changes(int);
+	void preferred_header_size(int section, int width);
+	void set_index_as_spacer(int);
+	void clear_spacers();
 };
 #endif

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Wed Jul 29 12:48:37 2009
+** Created: Thu Jul 30 18:04:16 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -288,6 +288,7 @@ public:
         font1.setPointSize(8);
         stv->setFont(font1);
         stv->setMouseTracking(true);
+        stv->setFocusPolicy(Qt::NoFocus);
         stv->setContextMenuPolicy(Qt::CustomContextMenu);
         stv->setEditTriggers(QAbstractItemView::NoEditTriggers);
         stv->setTabKeyNavigation(true);
@@ -620,6 +621,7 @@ public:
         lbl_pending_changes->setText(QApplication::translate("MainWindow", "0", 0, QApplication::UnicodeUTF8));
         label_2->setText(QApplication::translate("MainWindow", "Pending Changes", 0, QApplication::UnicodeUTF8));
         pushButton->setText(QApplication::translate("MainWindow", "Clear Filter", 0, QApplication::UnicodeUTF8));
+        stv->setStyleSheet(QString());
         menu_File->setTitle(QApplication::translate("MainWindow", "&File", 0, QApplication::UnicodeUTF8));
         menu_Help->setTitle(QApplication::translate("MainWindow", "&Help", 0, QApplication::UnicodeUTF8));
         menuProfessions->setTitle(QApplication::translate("MainWindow", "Professions", 0, QApplication::UnicodeUTF8));

@@ -32,7 +32,13 @@ class RotatedHeader : public QHeaderView {
 public:
 	RotatedHeader(Qt::Orientation orientation, QWidget *parent = 0);
 	void paintSection(QPainter *p, const QRect &rect, int idx) const;
+	
 	QSize sizeHint() const;
+	public slots:
+		void resizeSection(int logicalIndex, int size );
+		void set_index_as_spacer(int idx);
+		void clear_spacers();
+
 protected:
 	void leaveEvent(QEvent *e);
 	void mouseMoveEvent(QMouseEvent *e);
@@ -41,6 +47,7 @@ signals:
 	void section_right_clicked(int idx);
 private:
 	QPoint m_p;
+	QList<int> m_spacer_indexes;
 };
 
 #endif

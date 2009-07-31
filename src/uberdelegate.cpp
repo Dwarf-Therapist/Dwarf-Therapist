@@ -70,12 +70,10 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
 		case CT_LABOR:
 			{
 				bool agg = model_idx.data(DwarfModel::DR_IS_AGGREGATE).toBool();
-				if (m_model->current_grouping() == DwarfModel::GB_NOTHING) {
+				if (m_model->current_grouping() == DwarfModel::GB_NOTHING || !agg) {
 					paint_labor(p, opt, idx);
-				} else if (agg) {
-					paint_aggregate(p, opt, idx);
 				} else {
-					paint_labor(p, opt, idx);
+					paint_aggregate(p, opt, idx);
 				}
 			}
 			break;
@@ -84,6 +82,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
 			paint_grid(false, p, opt, idx);
 			break;
 		case CT_DEFAULT:
+		case CT_SPACER:
 		default:
 			QStyledItemDelegate::paint(p, opt, idx);
 			break;
@@ -91,8 +90,6 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
 }
 
 void UberDelegate::paint_labor(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
-	//GameDataReader *gdr = GameDataReader::ptr();
-
 	QModelIndex idx = m_proxy->mapToSource(proxy_idx);
 	short rating = idx.data(DwarfModel::DR_RATING).toInt();
 	
@@ -107,12 +104,13 @@ void UberDelegate::paint_labor(QPainter *p, const QStyleOptionViewItem &opt, con
 	bool dirty = d->is_labor_state_dirty(labor_id);
 
 	p->save();
+	p->fillRect(opt.rect, QBrush(idx.data(DwarfModel::DR_DEFAULT_BG_COLOR).value<QColor>()));
 	if (enabled) {
-		m_model->setData(idx, color_active_labor, Qt::BackgroundColorRole);
-	} else {
-		m_model->setData(idx, idx.data(DwarfModel::DR_DEFAULT_BG_COLOR).value<QColor>(), Qt::BackgroundColorRole);
+		p->fillRect(opt.rect.adjusted(1, 1, -2, -2), QBrush(color_active_labor));
+		//m_model->setData(idx, color_active_labor, Qt::BackgroundColorRole);
+		//m_model->setData(idx, idx.data(DwarfModel::DR_DEFAULT_BG_COLOR).value<QColor>(), Qt::BackgroundColorRole);
 	}
-	QStyledItemDelegate::paint(p, opt, idx);
+	//QStyledItemDelegate::paint(p, opt, idx);
 	p->restore();
 	
 	// draw rating
@@ -134,6 +132,12 @@ void UberDelegate::paint_labor(QPainter *p, const QStyleOptionViewItem &opt, con
 		p->drawPolygon(shape);
 		p->restore();
 
+		p->save();
+		p->setPen(QPen(QColor(Qt::black), 1));
+		p->drawRect(opt.rect.adjusted(1, 1, -2, -2));
+		p->restore();
+		skip_border = !dirty;
+
 	} else if (rating < 15 && rating > 10) {
 		// TODO: try drawing the square of increasing size...
 		float size = 0.65f * (rating / 10.0f);
@@ -154,26 +158,8 @@ void UberDelegate::paint_labor(QPainter *p, const QStyleOptionViewItem &opt, con
 		p->fillRect(QRectF(inset, inset, size, size), QBrush(QColor(0xAAAAAA)));
 		p->restore();
 	}
-
-	if (dirty || !skip_border) {
-		p->save(); // border last
-		p->setBrush(Qt::NoBrush);
-		if (dirty) {
-			p->setPen(QPen(QColor(color_dirty_border), 1));
-			p->drawRect(opt.rect.adjusted(0, 0, -1, -1));
-		} else if (opt.state & QStyle::State_Selected) {
-			p->setPen(color_border);
-			p->drawRect(opt.rect);
-			p->setPen(color_guides);
-			p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
-			p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
-			//p->drawRect(opt.rect.adjusted(0,0,-1,-1));
-		} else {
-			p->setPen(color_border);
-			p->drawRect(opt.rect);
-		}
-		p->restore();
-	}
+	if (!skip_border)
+		paint_grid(dirty, p, opt, proxy_idx);
 }
 
 void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
@@ -226,20 +212,19 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 }
 
 void UberDelegate::paint_grid(bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
+	QRect r = opt.rect.adjusted(1, 1, -2, -2);
 	p->save(); // border last
 	p->setBrush(Qt::NoBrush);
-	if (dirty) {
-		p->setPen(QPen(QColor(color_dirty_border), 1));
-		p->drawRect(opt.rect.adjusted(0, 0, -1, -1));
-	} else if (opt.state & QStyle::State_Selected) {
-		p->setPen(color_border);
-		p->drawRect(opt.rect);
+	p->setPen(color_border);
+	p->drawRect(r);
+	if (opt.state & QStyle::State_Selected) {
 		p->setPen(color_guides);
 		p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
 		p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
-	} else {
-		p->setPen(color_border);
-		p->drawRect(opt.rect);
+	}
+	if (dirty) {
+		p->setPen(QPen(color_dirty_border, 1));
+		p->drawRect(r);
 	}
 	p->restore();
 }

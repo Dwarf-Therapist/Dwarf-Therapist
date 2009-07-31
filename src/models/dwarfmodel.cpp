@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include "gridview.h"
 #include "viewcolumnset.h"
 #include "viewcolumn.h"
+#include "spacercolumn.h"
 
 DwarfModelProxy::DwarfModelProxy(QObject *parent)
 	:QSortFilterProxyModel(parent)
@@ -191,11 +192,25 @@ void DwarfModel::build_rows() {
 	//QMap<int, Labor*> labors = gdr->get_ordered_labors();
 
 	int start_col = 1;
+	emit clear_spacers();
 	foreach(ViewColumnSet *set, m_gridview->sets()) {
 		foreach(ViewColumn *col, set->columns()) {
 			QStandardItem *header = new QStandardItem(col->title());
-			header->setData(set->bg_color(), Qt::BackgroundColorRole);
+			header->setData(col->bg_color(), Qt::BackgroundColorRole);
 			setHorizontalHeaderItem(start_col++, header);
+			int width = 16; // TODO get this setting from somewhere
+			switch (col->type()) {
+				case CT_SPACER:
+					SpacerColumn *c = static_cast<SpacerColumn*>(col);
+					width = c->width();
+					emit set_index_as_spacer(start_col - 1);
+					break;
+			}
+			
+
+			emit preferred_header_size(start_col - 1, width);
+			
+			
 		}
 	}
 

@@ -51,8 +51,7 @@ StateTableView::StateTableView(QWidget *parent)
 }
 
 StateTableView::~StateTableView()
-{
-}
+{}
 
 void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
 	QTreeView::setModel(proxy);
@@ -65,32 +64,10 @@ void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
 	header()->setResizeMode(0, QHeaderView::ResizeToContents);
 
 	connect(m_header, SIGNAL(section_right_clicked(int)), m_model, SLOT(section_right_clicked(int)));
-	
-	//header()->setDefaultSectionSize(24); //set grid size
-	
 	connect(this, SIGNAL(activated(const QModelIndex&)), proxy, SLOT(cell_activated(const QModelIndex&)));
-
-	GridView *v = new GridView("Default", this);
-	ViewColumnSet *s1 = new ViewColumnSet("crafting", v);
-	ViewColumnSet *s2 = new ViewColumnSet("wood stuff", v);
-	ViewColumnSet *s3 = new ViewColumnSet("attributes", v);
-	v->add_set(s1);
-	v->add_set(s2);
-	v->add_set(s3);
-
-	s1->set_bg_color(QColor(0xEECCCC));
-	s2->set_bg_color(QColor(0xCCCCEE));
-	s3->set_bg_color(QColor(255, 255, 255, 0));
-
-	new LaborColumn("Mining", 0, 0, s1, s1);
-	//this->setItemDelegateForColumn(1, m_delegate);
-	new LaborColumn("Bowyer", 66, 50, s1, s1);
-	//this->setItemDelegateForColumn(2, m_delegate);
-	new LaborColumn("Carpentry", 11, 2, s2, s2);
-	//this->setItemDelegateForColumn(3, m_delegate);
-	new HappinessColumn("Happiness", s3, s3);
-	m_model->set_grid_view(v);
-	
+	connect(m_model, SIGNAL(preferred_header_size(int, int)), m_header, SLOT(resizeSection(int, int)));
+	connect(m_model, SIGNAL(set_index_as_spacer(int)), m_header, SLOT(set_index_as_spacer(int)));
+	connect(m_model, SIGNAL(clear_spacers()), m_header, SLOT(clear_spacers()));
 }
 
 void StateTableView::new_custom_profession() {

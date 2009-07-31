@@ -27,7 +27,7 @@ THE SOFTWARE.
 #include "dwarf.h"
 
 HappinessColumn::HappinessColumn(QString title, ViewColumnSet *set, QObject *parent) 
-	: ViewColumn(title, set, parent)
+	: ViewColumn(title, CT_HAPPINESS, set, parent)
 {}
 
 QStandardItem *HappinessColumn::build_cell(Dwarf *d) {

@@ -22,7 +22,11 @@ THE SOFTWARE.
 */
 #include "columntypes.h"
 #include "viewcolumnset.h"
-#include "viewcolumn.h"
+#include "laborcolumn.h"
+#include "happinesscolumn.h"
+#include "spacercolumn.h"
+#include "gamedatareader.h"
+#include "defines.h"
 
 ViewColumnSet::ViewColumnSet(QString name, QObject *parent)
 	: QObject(parent)
@@ -41,20 +45,55 @@ void ViewColumnSet::clear_columns() {
 
 ViewColumnSet *ViewColumnSet::from_file(QString filename, QObject *parent) {
 	QSettings s(filename, QSettings::IniFormat);
-	QString name = s.value("info/name", "UNKNOWN").toString();
-	QColor bg_color = s.value("info/bg_color", Qt::white).value<QColor>();
+	QString set_name = s.value("info/name", "UNKNOWN").toString();
+	QString color_in_hex = s.value("info/bg_color", "0xFFFFFF").toString();
+
+	bool ok;
+	QColor bg_color(color_in_hex.toInt(&ok, 16));
+	if (!ok)
+		bg_color = Qt::white;
+
+	ViewColumnSet *ret_val = new ViewColumnSet(set_name, parent);
+	ret_val->set_bg_color(bg_color);
 
 	int cols = s.beginReadArray("columns");
 	for (int i = 0; i < cols; ++i) {
 		s.setArrayIndex(i);
 		QString tmp_type = s.value("type", "DEFAULT").toString();
-		QString name = s.value("name", "UNKNOWN " + QString::number(i)).toString();
+		QString col_name = s.value("name", "UNKNOWN " + QString::number(i)).toString();
 		COLUMN_TYPE type = get_column_type(tmp_type);
+		switch (type) {
+			case CT_LABOR:
+				{
+					int labor_id = s.value("labor_id", -1).toInt();
+					int skill_id = s.value("skill_id", -1).toInt();
+					//TODO: check that labor and skill are known ids
+					new LaborColumn(col_name, labor_id, skill_id, ret_val, ret_val);
+				}
+				break;
+			case CT_HAPPINESS:
+				new HappinessColumn(col_name, ret_val, ret_val);
+				break;
+			case CT_SPACER:
+				{
+					int width = s.value("width", 6).toInt();
+					QString hex_color = s.value("bg_color").toString();
+					bool ok;
+					QColor bg_color(hex_color.toInt(&ok, 16));
+					if (!ok)
+						bg_color = Qt::gray;
+					SpacerColumn *c = new SpacerColumn(col_name, ret_val, ret_val);
+					c->set_override_color(true);
+					c->set_bg_color(bg_color);
+					c->set_width(width);
+				}
+				break;
+			default:
+				LOGW << "Column " << col_name << "in set" << set_name << "has unknown type: " << tmp_type;
+				break;
+		}
 	}
 	s.endArray();
-
-
-	ViewColumnSet *ret_val = new ViewColumnSet(name, parent);
 
 	return ret_val;
 }

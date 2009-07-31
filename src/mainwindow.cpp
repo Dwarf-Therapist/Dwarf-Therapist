@@ -295,13 +295,13 @@ void MainWindow::scan_memory() {
     connect(pd, SIGNAL(canceled()), m_df, SLOT(cancel_scan()));
     pd->show();
 
-    //int language_addr = m_df->find_language_vector();
-    //int translation_addr = m_df->find_translation_vector();
+    int language_addr = m_df->find_language_vector();
+    int translation_addr = m_df->find_translation_vector();
     int creature_addr = m_df->find_creature_vector();
 	pd->deleteLater();
 
-    //qDebug() << "LANGUAGE VECTOR:   " << hex << language_addr;
-    //qDebug() << "TRANSLATION VECTOR:" << hex << translation_addr;
+    qDebug() << "LANGUAGE VECTOR:   " << hex << language_addr;
+    qDebug() << "TRANSLATION VECTOR:" << hex << translation_addr;
     qDebug() << "CREATURE VECTOR:   " << hex << creature_addr;
 }
 
@@ -613,6 +613,9 @@ void MainWindow::reload_views() {
 	}
 
 	// goodbye old views!
+	foreach(GridView *v, m_views) {
+		v->deleteLater();
+	}
 	m_views.clear();
 
 	QDir views = QDir(QDir::currentPath() + "/etc/views");
@@ -627,8 +630,7 @@ void MainWindow::reload_views() {
 				m_views << v;
 		}
 	}
-
-	
+	m_model->set_grid_view(m_views[0]);
 	
 	
 	// add view to file

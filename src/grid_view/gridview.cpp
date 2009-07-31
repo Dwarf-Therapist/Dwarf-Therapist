@@ -59,15 +59,24 @@ GridView *GridView::from_file(const QString &filepath, const QDir &sets_dir, QOb
 	
 	GridView *ret_val = new GridView(name, parent);
 
-	QList<ViewColumnSet*> tmp_sets;
+	QMap<QString, ViewColumnSet*> tmp_sets;
 	foreach(QString filename, sets_dir.entryList()) {
 		if (filename.endsWith(".ini")) {
 			ViewColumnSet *set = ViewColumnSet::from_file(sets_dir.filePath(filename), ret_val);
 			if (set)
-				tmp_sets << set;
+				tmp_sets.insert(set->name(), set);
 		}
 	}
-	
+
+	int total_sets = s.beginReadArray("sets");
+	for (int i = 0; i < total_sets; ++i) {
+		s.setArrayIndex(i);
+		QString name = s.value("name").toString();
+		if (tmp_sets.contains(name)) {
+			ret_val->add_set(tmp_sets.value(name));
+		}
+	}
+	s.endArray();
 
 	return ret_val;
 }

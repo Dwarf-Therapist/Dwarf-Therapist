@@ -28,7 +28,7 @@ THE SOFTWARE.
 #include "dwarf.h"
 
 LaborColumn::LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSet *set, QObject *parent) 
-	: ViewColumn(title, set, parent)
+	: ViewColumn(title, CT_LABOR, set, parent)
 	, m_labor_id(labor_id)
 	, m_skill_id(skill_id)
 {}

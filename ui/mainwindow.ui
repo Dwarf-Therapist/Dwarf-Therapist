@@ -120,8 +120,14 @@
       <property name="mouseTracking">
        <bool>true</bool>
       </property>
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
       <property name="contextMenuPolicy">
        <enum>Qt::CustomContextMenu</enum>
+      </property>
+      <property name="styleSheet">
+       <string/>
       </property>
       <property name="editTriggers">
        <set>QAbstractItemView::NoEditTriggers</set>

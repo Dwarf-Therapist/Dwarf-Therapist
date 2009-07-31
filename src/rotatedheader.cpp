@@ -37,7 +37,14 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 		return QHeaderView::paintSection(p, rect, idx);
 
 	QColor bg = model()->headerData(idx, Qt::Horizontal, Qt::BackgroundColorRole).value<QColor>();
-	qDebug() << "color for column" << idx << bg;
+	if (m_spacer_indexes.contains(idx)) {
+		p->save();
+		p->fillRect(rect, QBrush(bg));
+		p->restore();
+		return;
+		//return QHeaderView::paintSection(p, rect, idx);
+	}
+	
 	//GameDataReader *gdr = GameDataReader::ptr();
 
 	QStyleOptionHeader opt;
@@ -84,6 +91,18 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 	p->setFont(QFont("Verdana", 8));
 	p->drawText(14, -4, data);
 	p->restore();
+}
+
+void RotatedHeader::resizeSection(int logicalIndex, int size) {
+	QHeaderView::resizeSection(logicalIndex, size);
+}
+
+void RotatedHeader::set_index_as_spacer(int idx) {
+	m_spacer_indexes << idx;
+}
+
+void RotatedHeader::clear_spacers() {
+	m_spacer_indexes.clear();
 }
 
 QSize RotatedHeader::sizeHint() const {

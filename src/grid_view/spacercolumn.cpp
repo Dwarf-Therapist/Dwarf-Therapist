@@ -20,37 +20,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include "viewcolumnset.h"
-#include "viewcolumn.h"
+
+#include "spacercolumn.h"
+#include "columntypes.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
 
-ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set, QObject *parent)
-	: QObject(parent)
-	, m_title(title)
-	, m_set(set)
-	, m_override_set_colors(false)
-	, m_type(type)
-{
-	if (set) {
-		set->add_column(this);
-		set_bg_color(set->bg_color());
-	}	
-}
+SpacerColumn::SpacerColumn(QString title, ViewColumnSet *set, QObject *parent) 
+	: ViewColumn(title, CT_SPACER, set, parent)
+{}
 
-QStandardItem *ViewColumn::init_cell(Dwarf *d) {
-	QStandardItem *item = new QStandardItem;
-	item->setStatusTip(m_title + " :: " + d->nice_name());
-	QColor bg;
-	if (m_override_set_colors) {
-		bg = m_bg_color;
-	} else {
-		bg = set()->bg_color();
-	}
-	item->setData(bg, Qt::BackgroundColorRole);
-	item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
-	item->setData(false, DwarfModel::DR_IS_AGGREGATE);
-	item->setData(d->id(), DwarfModel::DR_ID);
-	item->setData(0, DwarfModel::DR_DUMMY);
+QStandardItem *SpacerColumn::build_cell(Dwarf *d) {
+	QStandardItem *item = init_cell(d);
 	return item;
 }

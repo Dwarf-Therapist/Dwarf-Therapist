@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define VIEW_COLUMN_H
 
 #include <QtGui>
+#include "columntypes.h"
 
 class ViewColumnSet;
 class Dwarf;
@@ -40,13 +41,16 @@ I can think of a need for:
 class ViewColumn : public QObject {
 	Q_OBJECT
 public:
-	ViewColumn(QString title, ViewColumnSet *set = 0, QObject *parent = 0);
+	ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set = 0, QObject *parent = 0);
 
 	QString title() {return m_title;}
 	void set_title(QString title) {m_title = title;}
 	bool override_color() {return m_override_set_colors;}
 	void set_override_color(bool yesno) {m_override_set_colors = yesno;}
+	QColor bg_color() {return m_bg_color;}
+	void set_bg_color(QColor c) {m_bg_color = c;}
 	ViewColumnSet *set() {return m_set;}
+	virtual COLUMN_TYPE type() {return m_type;}
 
 	QStandardItem *init_cell(Dwarf *d);
 	virtual QStandardItem *build_cell(Dwarf *d) = 0; // create a suitable item based on a dwarf
@@ -56,6 +60,7 @@ protected:
 	QColor m_bg_color;
 	bool m_override_set_colors;
 	ViewColumnSet *m_set;
+	COLUMN_TYPE m_type;
 };
 
 #endif
