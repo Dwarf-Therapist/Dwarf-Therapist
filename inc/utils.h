@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define UTILS_H
 
 #include <QByteArray>
+#include <QColor>
 
 static inline QByteArray encode_short(short num) {
     char bytes[2];
@@ -62,6 +63,20 @@ static inline QString by_char(QByteArray arr) {
         out += " ";
     }
     return out;
+}
+
+static inline QColor compliment(const QColor &in_color) {
+	qreal brightness = (in_color.red() * 299 + in_color.green() * 587 + in_color.blue() * 114) / 255000.0;
+	QColor tmp = in_color.toHsv();
+	int h = tmp.hue();
+	int s = 25;
+	int v;
+	if (brightness >= 0.5) {
+		v = 0;
+	} else {
+		v = 255;
+	}
+	return QColor::fromHsv(h, s, v);
 }
 
 #endif // UTILS_H

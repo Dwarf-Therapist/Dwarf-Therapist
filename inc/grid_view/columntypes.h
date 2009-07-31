@@ -28,6 +28,7 @@ THE SOFTWARE.
 typedef enum {
 	CT_DEFAULT,
 	CT_SPACER,
+	CT_SKILL,
 	CT_LABOR,
 	CT_HAPPINESS
 } COLUMN_TYPE;
@@ -37,6 +38,8 @@ static inline COLUMN_TYPE get_column_type(const QString &name) {
 		return CT_SPACER;
 	} else if (name.toLower() == "labor") {
 		return CT_LABOR;
+	} else if (name.toLower() == "skill") {
+		return CT_SKILL;
 	} else if (name.toLower() == "happiness") {
 		return CT_HAPPINESS;
 	}

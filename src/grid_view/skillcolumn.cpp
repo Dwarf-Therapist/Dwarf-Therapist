@@ -21,32 +21,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "laborcolumn.h"
+#include "skillcolumn.h"
 #include "gamedatareader.h"
 #include "columntypes.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
 
-LaborColumn::LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSet *set, QObject *parent) 
-	: ViewColumn(title, CT_LABOR, set, parent)
-	, m_labor_id(labor_id)
+SkillColumn::SkillColumn(QString title, int skill_id, ViewColumnSet *set, QObject *parent) 
+	: ViewColumn(title, CT_SKILL, set, parent)
 	, m_skill_id(skill_id)
 {}
 
-QStandardItem *LaborColumn::build_cell(Dwarf *d) {
+QStandardItem *SkillColumn::build_cell(Dwarf *d) {
 	GameDataReader *gdr = GameDataReader::ptr();
 	QStandardItem *item = init_cell(d);
 
-	item->setData(CT_LABOR, DwarfModel::DR_COL_TYPE);
-	short rating = d->get_rating_by_labor(m_labor_id);
+	item->setData(CT_SKILL, DwarfModel::DR_COL_TYPE);
+	short rating = d->get_rating_by_skill(m_skill_id);
 	item->setData(rating, DwarfModel::DR_RATING); // for sort order
-	item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);
-	
+
 	QString tooltip = "<h3>" + m_title + "</h3>";
 	if (m_skill_id != -1)
 		tooltip += gdr->get_skill_level_name(rating) + " " + gdr->get_skill_name(m_skill_id) + " (" + QString::number(rating) + ")";
 	tooltip += "\n<h4>" + d->nice_name() + "</h4>";
 	item->setToolTip(tooltip);
-	
+
 	return item;
 }

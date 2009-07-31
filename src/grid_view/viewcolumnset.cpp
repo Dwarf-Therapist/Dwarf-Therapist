@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "laborcolumn.h"
 #include "happinesscolumn.h"
 #include "spacercolumn.h"
+#include "skillcolumn.h"
 #include "gamedatareader.h"
 #include "defines.h"
 
@@ -63,6 +64,13 @@ ViewColumnSet *ViewColumnSet::from_file(QString filename, QObject *parent) {
 		QString col_name = s.value("name", "UNKNOWN " + QString::number(i)).toString();
 		COLUMN_TYPE type = get_column_type(tmp_type);
 		switch (type) {
+			case CT_SKILL:
+				{
+					int skill_id = s.value("skill_id", -1).toInt();
+					//TODO: check that labor and skill are known ids
+					new SkillColumn(col_name, skill_id, ret_val, ret_val);
+				}
+				break;
 			case CT_LABOR:
 				{
 					int labor_id = s.value("labor_id", -1).toInt();
@@ -76,7 +84,7 @@ ViewColumnSet *ViewColumnSet::from_file(QString filename, QObject *parent) {
 				break;
 			case CT_SPACER:
 				{
-					int width = s.value("width", 6).toInt();
+					int width = s.value("width", 4).toInt();
 					QString hex_color = s.value("bg_color").toString();
 					bool ok;
 					QColor bg_color(hex_color.toInt(&ok, 16));

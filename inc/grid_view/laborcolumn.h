@@ -32,7 +32,7 @@ public:
 	int labor_id() {return m_labor_id;}
 	void set_labor_id(int labor_id) {m_labor_id = labor_id;}
 	int skill_id() {return m_skill_id;}
-	void set_skill_id(int labor_id) {m_labor_id = labor_id;}
+	void set_skill_id(int skill_id) {m_skill_id = skill_id;}
 protected:
 	int m_labor_id;
 	int m_skill_id;

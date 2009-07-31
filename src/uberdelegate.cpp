@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "gridview.h"
 #include "columntypes.h"
+#include "utils.h"
 
 UberDelegate::UberDelegate(QObject *parent)
 	: QStyledItemDelegate(parent)
@@ -41,19 +42,7 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 	}
 
 	paint_cell(p, opt, proxy_idx);
-	/*
-	QModelIndex model_idx = m_proxy->mapToSource(proxy_idx);
-	if (m_model->current_grouping() == DwarfModel::GB_NOTHING) {
-		paint_labor(p, opt, model_idx);
-	} else {
-		QModelIndex first_col = m_model->index(model_idx.row(), 0, model_idx.parent());
-		if (m_model->hasChildren(first_col)) { // skill item (under a group header)
-			paint_aggregate(p, opt, proxy_idx);
-		} else {
-			paint_labor(p, opt, model_idx);
-		}
-	}
-	*/
+
 	if (proxy_idx.column() == m_model->selected_col()) {
 		p->save();
 		p->setPen(QPen(color_guides));
@@ -67,6 +56,14 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
 	QModelIndex model_idx = m_proxy->mapToSource(idx);
 	COLUMN_TYPE type = static_cast<COLUMN_TYPE>(model_idx.data(DwarfModel::DR_COL_TYPE).toInt());
 	switch (type) {
+		case CT_SKILL:
+			{
+				short rating = model_idx.data(DwarfModel::DR_RATING).toInt();
+				QColor bg = paint_bg(false, p, opt, idx);
+				paint_skill(rating, bg, p, opt, idx);
+				paint_grid(false, p, opt, idx);
+			}
+			break;
 		case CT_LABOR:
 			{
 				bool agg = model_idx.data(DwarfModel::DR_IS_AGGREGATE).toBool();
@@ -89,37 +86,33 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
 	}
 }
 
-void UberDelegate::paint_labor(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
+QRect UberDelegate::adjust_rect(QRect r) const {
+	//TODO read padding options from somewhere...
+	return r.adjusted(1, 1, -2, -2);
+}
+
+QColor UberDelegate::paint_bg(bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
 	QModelIndex idx = m_proxy->mapToSource(proxy_idx);
-	short rating = idx.data(DwarfModel::DR_RATING).toInt();
-	
-	Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
-	if (!d) {
-		return QStyledItemDelegate::paint(p, opt, idx);
-	}
-
-	bool skip_border = false;
-	int labor_id = idx.data(DwarfModel::DR_LABOR_ID).toInt();
-	bool enabled = d->is_labor_enabled(labor_id);
-	bool dirty = d->is_labor_state_dirty(labor_id);
-
+	QColor bg = idx.data(DwarfModel::DR_DEFAULT_BG_COLOR).value<QColor>();
+	QRect r = adjust_rect(opt.rect);
 	p->save();
-	p->fillRect(opt.rect, QBrush(idx.data(DwarfModel::DR_DEFAULT_BG_COLOR).value<QColor>()));
-	if (enabled) {
-		p->fillRect(opt.rect.adjusted(1, 1, -2, -2), QBrush(color_active_labor));
-		//m_model->setData(idx, color_active_labor, Qt::BackgroundColorRole);
-		//m_model->setData(idx, idx.data(DwarfModel::DR_DEFAULT_BG_COLOR).value<QColor>(), Qt::BackgroundColorRole);
+	p->fillRect(opt.rect, QBrush(bg));
+	if (active) {
+		bg = color_active_labor;
+		p->fillRect(r, QBrush(bg));
 	}
-	//QStyledItemDelegate::paint(p, opt, idx);
 	p->restore();
-	
-	// draw rating
+	return bg;
+}
+
+void UberDelegate::paint_skill(int rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
+	QColor comp = compliment(bg);
 	if (rating == 15) {
 		// draw diamond
 		p->save();
 		p->setRenderHint(QPainter::Antialiasing);
 		p->setPen(Qt::gray);
-		p->setBrush(QBrush(Qt::red));
+		p->setBrush(QBrush(comp));
 
 		QPolygonF shape;
 		shape << QPointF(0.5, 0.1) //top
@@ -131,22 +124,15 @@ void UberDelegate::paint_labor(QPainter *p, const QStyleOptionViewItem &opt, con
 		p->scale(opt.rect.width()-4, opt.rect.height()-4);
 		p->drawPolygon(shape);
 		p->restore();
-
-		p->save();
-		p->setPen(QPen(QColor(Qt::black), 1));
-		p->drawRect(opt.rect.adjusted(1, 1, -2, -2));
-		p->restore();
-		skip_border = !dirty;
-
 	} else if (rating < 15 && rating > 10) {
 		// TODO: try drawing the square of increasing size...
-		float size = 0.65f * (rating / 10.0f);
+		float size = 0.80f * (rating / 14.0f);
 		float inset = (1.0f - size) / 2.0f;
 
 		p->save();
 		p->translate(opt.rect.x(), opt.rect.y());
 		p->scale(opt.rect.width(), opt.rect.height());
-		p->fillRect(QRectF(inset, inset, size, size), QBrush(QColor(0x888888)));
+		p->fillRect(QRectF(inset, inset, size, size), QBrush(comp));
 		p->restore();
 	} else if (rating > 0) {
 		float size = 0.65f * (rating / 10.0f);
@@ -155,11 +141,27 @@ void UberDelegate::paint_labor(QPainter *p, const QStyleOptionViewItem &opt, con
 		p->save();
 		p->translate(opt.rect.x(), opt.rect.y());
 		p->scale(opt.rect.width(), opt.rect.height());
-		p->fillRect(QRectF(inset, inset, size, size), QBrush(QColor(0xAAAAAA)));
+		p->fillRect(QRectF(inset, inset, size, size), QBrush(comp));
 		p->restore();
 	}
-	if (!skip_border)
-		paint_grid(dirty, p, opt, proxy_idx);
+}
+
+void UberDelegate::paint_labor(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
+	QModelIndex idx = m_proxy->mapToSource(proxy_idx);
+	short rating = idx.data(DwarfModel::DR_RATING).toInt();
+	
+	Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
+	if (!d) {
+		return QStyledItemDelegate::paint(p, opt, idx);
+	}
+
+	int labor_id = idx.data(DwarfModel::DR_LABOR_ID).toInt();
+	bool enabled = d->is_labor_enabled(labor_id);
+	bool dirty = d->is_labor_state_dirty(labor_id);
+
+	QColor bg = paint_bg(enabled, p, opt, proxy_idx);
+	paint_skill(rating, bg, p, opt, proxy_idx);
+	paint_grid(dirty, p, opt, proxy_idx);
 }
 
 void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {

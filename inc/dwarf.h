@@ -66,7 +66,8 @@ public:
 	bool is_labor_state_dirty(int labor_id);
 	void set_labor(int labor_id, bool enabled);
 	bool toggle_labor(int labor_id);
-	short get_rating_for_skill(int labor_id);
+	short get_rating_by_skill(int skill_id);
+	short get_rating_by_labor(int labor_id);
 	int pending_changes();
 	void clear_pending();
 	void commit_pending();

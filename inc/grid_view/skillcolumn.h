@@ -20,33 +20,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+#ifndef SKILL_COLUMN_H
+#define SKILL_COLUMN_H
 
-#include "laborcolumn.h"
-#include "gamedatareader.h"
-#include "columntypes.h"
-#include "dwarfmodel.h"
-#include "dwarf.h"
+#include "viewcolumn.h"
 
-LaborColumn::LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSet *set, QObject *parent) 
-	: ViewColumn(title, CT_LABOR, set, parent)
-	, m_labor_id(labor_id)
-	, m_skill_id(skill_id)
-{}
+class SkillColumn : public ViewColumn {
+public:
+	SkillColumn(QString title, int skill_id, ViewColumnSet *set = 0, QObject *parent = 0);
+	QStandardItem *build_cell(Dwarf *d);
+	int skill_id() {return m_skill_id;}
+	void set_skill_id(int skill_id) {m_skill_id = skill_id;}
+protected:
+	int m_skill_id;
+};
 
-QStandardItem *LaborColumn::build_cell(Dwarf *d) {
-	GameDataReader *gdr = GameDataReader::ptr();
-	QStandardItem *item = init_cell(d);
-
-	item->setData(CT_LABOR, DwarfModel::DR_COL_TYPE);
-	short rating = d->get_rating_by_labor(m_labor_id);
-	item->setData(rating, DwarfModel::DR_RATING); // for sort order
-	item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);
-	
-	QString tooltip = "<h3>" + m_title + "</h3>";
-	if (m_skill_id != -1)
-		tooltip += gdr->get_skill_level_name(rating) + " " + gdr->get_skill_name(m_skill_id) + " (" + QString::number(rating) + ")";
-	tooltip += "\n<h4>" + d->nice_name() + "</h4>";
-	item->setToolTip(tooltip);
-	
-	return item;
-}
+#endif

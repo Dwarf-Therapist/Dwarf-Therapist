@@ -149,18 +149,21 @@ QVector<Skill> Dwarf::read_skills(int address) {
 	return skills;
 }
 
-short Dwarf::get_rating_for_skill(int labor_id) {
-	GameDataReader *gdr = GameDataReader::ptr();
-	Labor *l = gdr->get_labor(labor_id);
-	if (l->skill_id == -1) { // not found
-		return 0;
-	}
+short Dwarf::get_rating_by_skill(int skill_id) {
+	short retval = 0;
 	foreach(Skill s, m_skills) {
-		if (s.id() == l->skill_id) {
-			return s.rating();
+		if (s.id() == skill_id) {
+			retval = s.rating();
+			break;
 		}
 	}
-	return 0;
+	return retval;
+}
+
+short Dwarf::get_rating_by_labor(int labor_id) {
+	GameDataReader *gdr = GameDataReader::ptr();
+	Labor *l = gdr->get_labor(labor_id);
+	return get_rating_by_skill(l->skill_id);
 }
 
 QString Dwarf::read_professtion(int address) {

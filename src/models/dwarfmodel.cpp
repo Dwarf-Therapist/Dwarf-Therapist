@@ -189,7 +189,6 @@ void DwarfModel::build_rows() {
 	QIcon icn_m(":img/male.png");
 
 	GameDataReader *gdr = GameDataReader::ptr();
-	//QMap<int, Labor*> labors = gdr->get_ordered_labors();
 
 	int start_col = 1;
 	emit clear_spacers();
@@ -206,11 +205,7 @@ void DwarfModel::build_rows() {
 					emit set_index_as_spacer(start_col - 1);
 					break;
 			}
-			
-
 			emit preferred_header_size(start_col - 1, width);
-			
-			
 		}
 	}
 
@@ -263,28 +258,6 @@ void DwarfModel::build_rows() {
 				i_name->setIcon(icn_f);
 			}
 
-			/*			
-			switch (d->get_happiness()) {
-				case Dwarf::DH_MISERABLE:
-					i_name->setIcon(QIcon(":img/exclamation.png"));
-					break;
-				case Dwarf::DH_UNHAPPY:
-					i_name->setIcon(QIcon(":img/emoticon_unhappy.png"));
-					break;
-				case Dwarf::DH_FINE:
-					i_name->setIcon(QIcon(":img/emoticon_smile.png"));
-					break;
-				case Dwarf::DH_CONTENT:
-					i_name->setIcon(QIcon(":img/emoticon_smile.png"));
-					break;
-				case Dwarf::DH_HAPPY:
-					i_name->setIcon(QIcon(":img/emoticon_grin.png"));
-					break;
-				case Dwarf::DH_ECSTATIC:
-					i_name->setIcon(QIcon(":img/emoticon_happy.png"));
-					break;
-			}*/
-
 			QList<QStandardItem*> items;
 			items << i_name;
 			foreach(ViewColumnSet *set, m_gridview->sets()) {
@@ -293,36 +266,7 @@ void DwarfModel::build_rows() {
 					items << item;
 				}
 			}
-			
-
-			/*foreach(Labor *l, labors) {
-				short rating = d->get_rating_for_skill(l->labor_id);
-				//bool enabled = d->is_labor_enabled(labor_id);
-
-				QStandardItem *item = new QStandardItem();
-				
-				item->setData(false, DR_IS_AGGREGATE);
-				item->setData(rating, DR_RATING); // for sort order
-				item->setData(l->labor_id, DR_LABOR_ID);
-				item->setData(false, DR_DIRTY);
-				item->setData(d->id(), DR_ID);
-				item->setData(0, DR_DUMMY);
-				QString tooltip = "<h3>" + l->name + "</h3>";
-				if (l->skill_id != -1)
-					tooltip += gdr->get_skill_level_name(rating) + " " + gdr->get_skill_name(l->skill_id) + " (" + QString::number(rating) + ")";
-				tooltip += "\n<h4>" + d->nice_name() + "</h4>";
-				item->setToolTip(tooltip);
-				item->setStatusTip(l->name + " :: " + d->nice_name());
-				items << item;
-
-				if (root) {
-					short highest_rating = root_row[items.size()-1]->data(DR_RATING).toInt();
-					if (rating > highest_rating) {
-						root_row[items.length() -1]->setData(rating, DR_RATING); // aggregate should hold the highest sub skill value
-						//root->setData(rating, DR_RATING); // so the parents can be sorted by rating before the labors
-					}
-				}
-			}*/
+	
 			if (root) {
 				root->appendRow(items);
 			} else {
