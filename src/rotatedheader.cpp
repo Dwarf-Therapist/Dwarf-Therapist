@@ -22,7 +22,7 @@ THE SOFTWARE.
 */
 #include "rotatedheader.h"
 #include "dwarfmodel.h"
-#include "gamedatareader.h"
+#include "dwarfmodelproxy.h"
 
 RotatedHeader::RotatedHeader(Qt::Orientation orientation, QWidget *parent)
 	: QHeaderView(orientation, parent)
@@ -42,11 +42,10 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 		p->fillRect(rect, QBrush(bg));
 		p->restore();
 		return;
-		//return QHeaderView::paintSection(p, rect, idx);
 	}
-	
-	//GameDataReader *gdr = GameDataReader::ptr();
 
+	
+	
 	QStyleOptionHeader opt;
 	opt.rect = rect;
 	opt.orientation = Qt::Horizontal;
@@ -68,6 +67,7 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 			opt.sortIndicator = QStyleOptionHeader::SortUp;
 		}
 	}
+
 	opt.state = state;
 	style()->drawControl(QStyle::CE_HeaderSection, &opt, p);
 	
@@ -81,6 +81,19 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 		opt.rect = QRect(opt.rect.x() + opt.rect.width()/2 - 5, opt.rect.y(), 10, 8);
 		style()->drawPrimitive(QStyle::PE_IndicatorHeaderArrow, &opt, p);
 	}
+
+	/* Draw a border around header if column has guides applied
+	DwarfModelProxy *prox = static_cast<DwarfModelProxy*>(model());
+	DwarfModel *dm = prox->get_dwarf_model();
+	int col = dm->selected_col();
+	if (dm->selected_col() == idx) {
+		p->save();
+		p->setPen(Qt::red);
+		p->setBrush(Qt::NoBrush);
+		p->drawRect(rect);
+		p->restore();
+	}
+	*/
 	
 	QString data = this->model()->headerData(idx, Qt::Horizontal).toString();
 	p->save();

@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "mainwindow.h"
 #include "statetableview.h"
 #include "dwarfmodel.h"
+#include "dwarfmodelproxy.h"
 #include "uberdelegate.h"
 #include "rotatedheader.h"
 #include "dwarf.h"

@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include <QtGui>
 #include "uberdelegate.h"
 #include "dwarfmodel.h"
+#include "dwarfmodelproxy.h"
 #include "dwarf.h"
 #include "gridview.h"
 #include "columntypes.h"

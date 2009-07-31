@@ -20,34 +20,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef DWARFMODEL_H
-#define DWARFMODEL_H
+#ifndef DWARF_MODEL_H
+#define DWARF_MODEL_H
 
 #include <QtGui>
 class Dwarf;
 class DFInstance;
 class DwarfModel;
 class GridView;
-
-
-class DwarfModelProxy: public QSortFilterProxyModel {
-	Q_OBJECT
-public:
-	DwarfModelProxy(QObject *parent = 0);
-	DwarfModel* get_dwarf_model() const;
-
-	void sort(int column, Qt::SortOrder order = Qt::DescendingOrder);
-	public slots:
-		void cell_activated(const QModelIndex &idx);
-		void setFilterFixedString(const QString &pattern);
-
-protected:
-	bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
-	bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const;
-private:
-	QString m_filter_text;
-};
-
 
 class DwarfModel : public QStandardItemModel {
 	Q_OBJECT

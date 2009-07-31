@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "optionsmenu.h"
 #include "aboutdialog.h"
 #include "dwarfmodel.h"
+#include "dwarfmodelproxy.h"
 #include "dfinstance.h"
 #include "memorylayout.h"
 #include "statetableview.h"
