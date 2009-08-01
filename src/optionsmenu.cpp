@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 #include "optionsmenu.h"
 #include "customcolor.h"
+#include "dwarftherapist.h"
 
 OptionsMenu::OptionsMenu(MainWindow *parent)
 	: QDialog(parent)
@@ -49,12 +50,14 @@ OptionsMenu::OptionsMenu(MainWindow *parent)
 	ui->group_general_colors->setLayout(main_layout);
 
 	connect(ui->btn_restore_defaults, SIGNAL(pressed()), this, SLOT(restore_defaults()));
+	read_settings();
 }
 
 OptionsMenu::~OptionsMenu() {}
 
-void OptionsMenu::read_settings(QSettings *s) {
+void OptionsMenu::read_settings() {
 	m_reading_settings = true;
+	QSettings *s = DT->user_settings();
 	s->beginGroup("options");
 	s->beginGroup("colors");
 	QColor c;
@@ -64,41 +67,43 @@ void OptionsMenu::read_settings(QSettings *s) {
 		emit color_changed(cc->get_config_key(), c);
 	}
 	s->endGroup();
+	s->beginGroup("grid");
+	int cell_padding = s->value("cell_padding", 0).toInt();
+	ui->sb_cell_padding->setValue(cell_padding);
+	s->endGroup();
 	s->endGroup();
 	m_reading_settings = false;
 }
 
-void OptionsMenu::write_settings(QSettings *s) {
-	if (s && !m_reading_settings) {
+void OptionsMenu::write_settings() {
+	if (!m_reading_settings) {
+		QSettings *s = DT->user_settings();
 		s->beginGroup("options");
 		s->beginGroup("colors");
 		foreach(CustomColor *cc, m_general_colors) {
 			s->setValue(cc->get_config_key(), cc->get_color());
 		}
 		s->endGroup();
+		s->beginGroup("grid");
+		s->setValue("cell_padding", ui->sb_cell_padding->value());
+		s->endGroup();
 		s->endGroup();
 	}
 }
 
 void OptionsMenu::accept() {
-	foreach(CustomColor *cc, m_general_colors) {
-		if (cc->is_dirty())
-			emit color_changed(cc->get_config_key(), cc->get_color());
-	}
+	write_settings();
+	emit settings_changed();
 	QDialog::accept();
 }
 
 void OptionsMenu::reject() {
-	foreach(CustomColor *cc, m_general_colors) {
-		if (cc->is_dirty())
-			cc->reset_to_last();
-	}
+	read_settings();
 	QDialog::reject();
 }
 
 void OptionsMenu::restore_defaults() {
 	foreach(CustomColor *cc, m_general_colors) {
 		cc->reset_to_default();
-		emit color_changed(cc->get_config_key(), cc->get_color());
 	}
 }

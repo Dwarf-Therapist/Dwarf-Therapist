@@ -41,6 +41,7 @@ CustomColor::CustomColor(QString setting_name, QString tooltip, QString config_k
 	m_picker->setToolTip(m_tooltip);
 	m_picker->setStandardColors();
 	m_picker->setCurrentColor(default_color);
+	m_last_color = m_picker->currentColor();
 
 	QHBoxLayout *hbox = new QHBoxLayout(this);
 	hbox->addWidget(m_picker);
@@ -52,5 +53,4 @@ CustomColor::CustomColor(QString setting_name, QString tooltip, QString config_k
 
 void CustomColor::color_changed(const QColor &) {
 	m_dirty = true;
-	m_last_color = m_picker->currentColor();
 }

@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "dwarfmodelproxy.h"
 #include "gridview.h"
 #include "defines.h"
+#include "dwarftherapist.h"
 
 ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent)
 	: QTabWidget(parent)
@@ -33,14 +34,11 @@ ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent
 	, m_proxy(proxy)
 {
 	m_proxy->setSourceModel(m_model);
-
+ 
 	QPushButton *btn = new QPushButton("Add View", this);
 	setCornerWidget(btn);
 	
 	reload_views();
-	
-	
-	//tabBar()->setTabButton(1, QTabBar::RightSide, btn);
 }
 
 void ViewManager::reload_views() {
@@ -88,10 +86,13 @@ void ViewManager::reload_views() {
 }
 
 void ViewManager::setCurrentIndex(int idx) {
+	StateTableView *stv = qobject_cast<StateTableView*>(widget(idx));
 	foreach(GridView *v, m_views) {
 		if (v->name() == tabBar()->tabText(idx)) {
 			m_model->set_grid_view(v);
 			m_model->build_rows();
+			stv->header()->setResizeMode(QHeaderView::Fixed);
+			stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
 			break;
 		}
 	}
@@ -100,9 +101,12 @@ void ViewManager::setCurrentIndex(int idx) {
 int ViewManager::add_tab_for_gridview(GridView *v) {
 	StateTableView *stv = new StateTableView(this);
 	stv->set_model(m_model, m_proxy);
-	
-	connect(this, SIGNAL(color_changed(const QString &, const QColor &)),
-			stv, SLOT(color_changed(const QString &, const QColor &)));
+	m_model->set_grid_view(v);
+	m_model->build_rows();
+	stv->header()->setResizeMode(QHeaderView::Fixed);
+	stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
+
+	connect(DT, SIGNAL(settings_changed()), stv, SLOT(settings_changed()));
 	connect(stv, SIGNAL(customContextMenuRequested(const QPoint &)), 
 			this, SLOT(draw_grid_context_menu(const QPoint &)));
 
@@ -136,26 +140,12 @@ void ViewManager::draw_grid_context_menu(const QPoint &p) {
 	m.exec(stv->viewport()->mapToGlobal(p));
 }
 
-void ViewManager::color_changed(const QString &key, const QColor &c) {
-	/*FIXME
-	UberDelegate *d = m_stv->get_delegate();
-	if (key == "cursor")
-		d->color_cursor = c;
-	else if (key == "dirty_border")
-		d->color_dirty_border = c;
-	else if (key == "active_labor")
-		d->color_active_labor = c;
-	else if (key == "active_group")
-		d->color_active_group = c;
-	else if (key == "inactive_group")
-		d->color_inactive_group = c;
-	else if (key == "partial_group")
-		d->color_partial_group = c;
-	else if (key == "guides")
-		d->color_guides = c;
-	else if (key == "border")
-		d->color_border = c;
-	else
-		qWarning() << "some color changed and I don't know what it is.";
-	*/
+void ViewManager::expand_all() {
+	StateTableView *stv = qobject_cast<StateTableView*>(currentWidget());
+	stv->expandAll();
+}
+
+void ViewManager::collapse_all() {
+	StateTableView *stv = qobject_cast<StateTableView*>(currentWidget());
+	stv->collapseAll();
 }

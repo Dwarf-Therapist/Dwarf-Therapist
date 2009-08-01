@@ -49,6 +49,7 @@ public:
 	QColor color_border;
 	QColor color_dirty_border;
 	QColor color_cursor;
+	int cell_padding;
 
 private:
 	DwarfModel *m_model;
@@ -63,6 +64,9 @@ private:
 	void paint_skill(int rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
 	void paint_labor(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
 	void paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+	
+	private slots:
+		void read_settings();
 };
 
 #endif

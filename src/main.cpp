@@ -30,52 +30,9 @@ THE SOFTWARE.
 *
 */
 
-#include <QtGui>
-#include <QxtLogger>
-#include "truncatingfilelogger.h"
-#include "mainwindow.h"
-#include "dfinstance.h"
-#include "utils.h"
-#include "version.h"
+#include "dwarftherapist.h"
 
 int main(int argc, char *argv[]) {
-	// start up the application
-	QApplication a(argc, argv);
-
-	QStringList args = a.arguments();
-	bool debug_logging = args.indexOf("-debug") != -1;
-	bool trace_logging = args.indexOf("-trace") != -1;
-
-	//TODO REMOVE ME
-	// debug logging on by default for the early builds...
-	debug_logging = true;
-
-	//setup logging
-	TruncatingFileLoggerEngine *engine = new TruncatingFileLoggerEngine("log/run.log");
-	qxtLog->addLoggerEngine("main", engine);
-	QxtLogger::getInstance()->installAsMessageHandler();
-	qxtLog->setMinimumLevel(QxtLogger::InfoLevel);
-		
-	Version v; // current version
-	LOG->info("Dwarf Therapist", v.to_string(), "starting normally.");
-	if (debug_logging && !trace_logging) {
-		qxtLog->setMinimumLevel(QxtLogger::DebugLevel);
-		LOG->info("MINIMUM LOG LEVEL SET TO: DEBUG");
-	} else if (trace_logging) {
-		qxtLog->setMinimumLevel(QxtLogger::TraceLevel);
-		LOG->info("MINIMUM LOG LEVEL SET TO: TRACE");
-	} else {
-		LOG->info("MINIMUM LOG LEVEL SET TO: INFO");
-	}
-
-	// translator
-	LOGD << "loading translations";
-	QTranslator translator;
-	translator.load("dwarftherapist_en");
-	a.installTranslator(&translator);
-
-	// make and run the main window
-    MainWindow w;
-    w.show();
-    return a.exec();
+	DwarfTherapist d(argc, argv);
+	return d.exec();
 }

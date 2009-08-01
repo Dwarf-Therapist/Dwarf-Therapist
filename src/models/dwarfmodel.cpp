@@ -44,7 +44,6 @@ DwarfModel::DwarfModel(QObject *parent)
 	, m_group_by(GB_NOTHING)
 	, m_selected_col(-1)
 {
-	setHorizontalHeaderItem(0, new QStandardItem);
 }
 
 void DwarfModel::section_right_clicked(int col) {
@@ -80,7 +79,8 @@ void DwarfModel::build_rows() {
 	// don't need to go delete the dwarf pointers in here, since the earlier foreach should have
 	// deleted them
 	m_grouped_dwarves.clear();
-	removeRows(0, rowCount());
+	clear(); // remove all rows and headers
+	//removeRows(0, rowCount());
 
 	// populate dwarf maps
 	foreach(Dwarf *d, m_dwarves) {
@@ -118,6 +118,7 @@ void DwarfModel::build_rows() {
 
 
 	int start_col = 1;
+	setHorizontalHeaderItem(0, new QStandardItem);
 	emit clear_spacers();
 	foreach(ViewColumnSet *set, m_gridview->sets()) {
 		foreach(ViewColumn *col, set->columns()) {

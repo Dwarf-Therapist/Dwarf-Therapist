@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Fri Jul 31 16:33:56 2009
+** Created: Fri Jul 31 21:31:33 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -456,7 +456,6 @@ public:
         QObject::connect(dock_custom_professions, SIGNAL(visibilityChanged(bool)), act_show_custom_professions_window, SLOT(setChecked(bool)));
         QObject::connect(act_show_custom_professions_window, SIGNAL(triggered(bool)), dock_custom_professions, SLOT(setVisible(bool)));
         QObject::connect(act_show_main_toolbar, SIGNAL(triggered()), main_toolbar, SLOT(show()));
-        QObject::connect(act_options, SIGNAL(triggered()), MainWindow, SLOT(open_options_menu()));
         QObject::connect(btn_collapse_all_pending, SIGNAL(clicked()), tree_pending, SLOT(collapseAll()));
         QObject::connect(btn_expand_all_pending, SIGNAL(clicked()), tree_pending, SLOT(expandAll()));
         QObject::connect(btn_new_custom_profession, SIGNAL(clicked()), act_add_custom_profession, SLOT(trigger()));

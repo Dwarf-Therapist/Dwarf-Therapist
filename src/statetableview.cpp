@@ -31,12 +31,12 @@ THE SOFTWARE.
 #include "rotatedheader.h"
 #include "dwarf.h"
 #include "defines.h"
-
 #include "columntypes.h"
 #include "gridview.h"
 #include "viewcolumnset.h"
 #include "laborcolumn.h"
 #include "happinesscolumn.h"
+#include "dwarftherapist.h"
 
 StateTableView::StateTableView(QWidget *parent)
 	: QTreeView(parent)
@@ -51,16 +51,27 @@ StateTableView::StateTableView(QWidget *parent)
 	setUniformRowHeights(true);
 	setSelectionBehavior(QAbstractItemView::SelectRows);
 	setSelectionMode(QAbstractItemView::ExtendedSelection);
+	setIndentation(8);
+	setIconSize(QSize(14, 14));
+	setFont(QFont("Segoe UI", 8));
+	setFocusPolicy(Qt::NoFocus); // keep the dotted border off of things
+	setSortingEnabled(true);
+
 	setItemDelegate(m_delegate);
 	setHeader(m_header);
 	
-
 	// Set StaticContents to enable minimal repaints on resizes.
     viewport()->setAttribute(Qt::WA_StaticContents);
+
 }
 
 StateTableView::~StateTableView()
 {}
+
+void StateTableView::settings_changed() {
+	QSettings *s = DT->user_settings();
+	int cell_padding = s->value("options/grid/cell_padding", 0).toInt();
+}
 
 void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
 	QTreeView::setModel(proxy);

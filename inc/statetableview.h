@@ -43,6 +43,7 @@ public:
 	UberDelegate *get_delegate() {return m_delegate;}
 
 	public slots:
+		void settings_changed();
 		void filter_dwarves(QString text);
 		void set_grid_size(int new_size);
 		void set_single_click_labor_changes(bool enabled);

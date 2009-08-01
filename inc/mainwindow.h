@@ -32,7 +32,6 @@ class DFInstance;
 class DwarfModel;
 class DwarfModelProxy;
 class Dwarf;
-class OptionsMenu;
 class AboutDialog;
 class CustomProfession;
 class GridView;
@@ -67,7 +66,6 @@ public:
 		void show_about();
 		void add_custom_profession();
 		void reset_custom_profession();
-		void open_options_menu();
 
 		void new_pending_changes(int);
 		void list_pending();
@@ -102,7 +100,6 @@ private:
 	ViewManager *m_view_manager;
 	DwarfModel *m_model;
 	DwarfModelProxy *m_proxy;
-	OptionsMenu *m_options_menu;
 	AboutDialog *m_about_dialog;
 	QVector<CustomProfession*> m_custom_professions;
 	CustomProfession *m_temp_cp;

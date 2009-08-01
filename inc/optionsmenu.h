@@ -34,8 +34,8 @@ public:
 	OptionsMenu(MainWindow *parent = 0);
 	virtual ~OptionsMenu();
 
-	void read_settings(QSettings *s);
-	void write_settings(QSettings *s);
+	void read_settings();
+	void write_settings();
 
 	public slots:
 		void accept();
@@ -49,6 +49,7 @@ private:
 
 signals:
 	void color_changed(const QString &, const QColor &);
-	//void picker_changed(MainWindow::CONFIGURABLE_COLORS, const QColor &);
+	//! emitted when the options menu "ok" button is hit
+	void settings_changed(); 
 };
 #endif;

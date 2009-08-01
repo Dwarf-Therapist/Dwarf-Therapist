@@ -20,39 +20,38 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+#ifndef DWARF_THERAPIST_H
+#define DWARF_THERAPIST_H
 
-#ifndef VIEW_MANAGER_H
-#define VIEW_MANAGER_H
+#define DT (static_cast<DwarfTherapist *>(QCoreApplication::instance()))
 
-#include <QtGui>
+#include <QApplication>
 
-class GridView;
-class StateTableView;
-class DwarfModel;
-class DwarfModelProxy;
+class MainWindow;
+class OptionsMenu;
+class QSettings;
 
-class ViewManager : public QTabWidget {
+class DwarfTherapist : public QApplication {
 	Q_OBJECT
 public:
-	ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent = 0);
+	DwarfTherapist(int &argc, char **argv);
+	virtual ~DwarfTherapist(){}
 
-	public slots:
-		void setCurrentIndex(int);
-		void reload_views();
-
-		// context menus
-		void draw_grid_context_menu(const QPoint &p);
-
-		// passthru
-		void expand_all();
-		void collapse_all();
+	QSettings *user_settings() {return m_user_settings;}
+	void read_user_settings();
+	void write_user_settings();
 
 private:
-	QList<GridView*> m_views;
-	DwarfModel *m_model;
-	DwarfModelProxy *m_proxy;
+	QSettings *m_user_settings;
+	MainWindow *m_main_window;
+	OptionsMenu *m_options_menu;
+	bool m_reading_user_settings;
 
-	int add_tab_for_gridview(GridView *v);
+	void setup_logging();
+	void load_translator();
+
+signals:
+	void settings_changed();
 };
 
 #endif

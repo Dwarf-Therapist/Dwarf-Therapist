@@ -28,10 +28,31 @@ THE SOFTWARE.
 #include "gridview.h"
 #include "columntypes.h"
 #include "utils.h"
+#include "dwarftherapist.h"
 
 UberDelegate::UberDelegate(QObject *parent)
 	: QStyledItemDelegate(parent)
-{}
+{
+	read_settings();
+	connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
+}
+
+void UberDelegate::read_settings() {
+	QSettings *s = DT->user_settings();
+	s->beginGroup("options");
+	s->beginGroup("colors");
+	color_cursor = s->value("cursor").value<QColor>();
+	color_dirty_border = s->value("dirty_border").value<QColor>();
+	color_active_labor = s->value("active_labor").value<QColor>();
+	color_active_group = s->value("active_group").value<QColor>();
+	color_inactive_group= s->value("inactive_group").value<QColor>();
+	color_partial_group = s->value("partial_group").value<QColor>();
+	color_guides = s->value("guides").value<QColor>();
+	color_border = s->value("border").value<QColor>();
+	s->endGroup();
+	s->endGroup();
+	cell_padding = s->value("options/grid/cell_padding", 0).toInt();
+}
 
 void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
 	if (!proxy_idx.isValid()) {
@@ -89,7 +110,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
 
 QRect UberDelegate::adjust_rect(QRect r) const {
 	//TODO read padding options from somewhere...
-	return r.adjusted(1, 1, -2, -2);
+	return r.adjusted(cell_padding, cell_padding, (cell_padding * -2) - 1, (cell_padding * -2) - 1);
 }
 
 QColor UberDelegate::paint_bg(bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
@@ -204,7 +225,7 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 }
 
 void UberDelegate::paint_grid(bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
-	QRect r = opt.rect.adjusted(1, 1, -2, -2);
+	QRect r = adjust_rect(opt.rect);
 	p->save(); // border last
 	p->setBrush(Qt::NoBrush);
 	p->setPen(color_border);

@@ -47,7 +47,6 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 	, m_view_manager(0)
-	, m_options_menu(new OptionsMenu(this))
 	, m_about_dialog(new AboutDialog(this))
     , m_df(0)
     , m_lbl_status(0)
@@ -70,13 +69,12 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
 	connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
 	connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
-
+	connect(ui->act_expand_all, SIGNAL(triggered()), m_view_manager, SLOT(expand_all()));
+	connect(ui->act_collapse_all, SIGNAL(triggered()), m_view_manager, SLOT(collapse_all()));
 	
 
 	connect(ui->list_custom_professions, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(edit_custom_profession(QListWidgetItem*)));
 	connect(ui->list_custom_professions, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_custom_profession_context_menu(const QPoint &)));
-
-	connect(m_options_menu, SIGNAL(color_changed(const QString &, const QColor &)), m_view_manager, SLOT(color_changed(const QString &, const QColor &)));
 
 	m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
@@ -94,7 +92,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 	check_latest_version();
 	//TODO: make this an option to connect on launch
-	//connect_to_df();
+	connect_to_df();
 	//if (m_df && m_df->is_ok())
 	//	read_dwarves();
 }
@@ -157,9 +155,6 @@ void MainWindow::read_settings() {
 	}
 	m_settings->endGroup();
 	
-	// options menu settings
-	m_options_menu->read_settings(m_settings);
-
 	m_reading_settings = false;
 	LOGD << "finished reading settings";
 	draw_professions();	
@@ -180,9 +175,6 @@ void MainWindow::write_settings() {
 		m_settings->setValue("group_by", m_model->current_grouping());
 		m_settings->endGroup();
 
-		// options menu settings
-		m_options_menu->write_settings(m_settings);
-		
 		if (m_custom_professions.size() > 0) {
 			m_settings->beginGroup("custom_professions");
 			m_settings->remove(""); // clear all of them, so we can re-write
@@ -349,10 +341,6 @@ void MainWindow::list_pending() {
 		ui->tree_pending->addTopLevelItem(i);
 	}
 	ui->tree_pending->expandAll();
-}
-
-void MainWindow::open_options_menu() {
-	m_options_menu->show();
 }
 
 void MainWindow::add_custom_profession() {
