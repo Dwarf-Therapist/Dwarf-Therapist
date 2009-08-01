@@ -56,10 +56,13 @@ public:
 	void remove_set(QString name);
 	void clear();
 	QList<ViewColumnSet*> sets() {return m_sets;}
+	bool is_active() {return m_active;}
+	void set_active(bool active) {m_active = active;}
 
 	static GridView *from_file(const QString &filepath, const QDir &sets_dir, QObject *parent = 0);
 
 private:
+	bool m_active;
 	QString m_name;
 	QList<ViewColumnSet*> m_sets;
 	QMap<QString, ViewColumnSet*> m_set_map;

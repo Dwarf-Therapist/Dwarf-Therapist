@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include <QtGui>
 #include <QtNetwork>
 
+class StateTableView;
 class DFInstance;
 class DwarfModel;
 class DwarfModelProxy;
@@ -35,6 +36,7 @@ class OptionsMenu;
 class AboutDialog;
 class CustomProfession;
 class GridView;
+class ViewManager;
 
 namespace Ui
 {
@@ -70,7 +72,6 @@ public:
 		void new_pending_changes(int);
 		void list_pending();
 		void draw_professions();
-		void draw_grid_context_menu(const QPoint &);
 		void draw_custom_profession_context_menu(const QPoint &);
 		void edit_custom_profession(QListWidgetItem*);
 		void edit_custom_profession();
@@ -98,6 +99,7 @@ private:
     DFInstance *m_df;
 	QLabel *m_lbl_status;
 	QSettings *m_settings;
+	ViewManager *m_view_manager;
 	DwarfModel *m_model;
 	DwarfModelProxy *m_proxy;
 	OptionsMenu *m_options_menu;
@@ -117,7 +119,6 @@ private:
 
     private slots:
         void set_interface_enabled(bool);
-		void color_changed(const QString &, const QColor &);
 		void apply_custom_profession();
 		void set_nickname();
 		

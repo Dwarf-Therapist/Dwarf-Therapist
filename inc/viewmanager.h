@@ -20,20 +20,38 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef SKILL_COLUMN_H
-#define SKILL_COLUMN_H
 
-#include "viewcolumn.h"
+#ifndef VIEW_MANAGER_H
+#define VIEW_MANAGER_H
 
-class SkillColumn : public ViewColumn {
+#include <QtGui>
+
+class GridView;
+class StateTableView;
+class DwarfModel;
+class DwarfModelProxy;
+
+class ViewManager : public QTabWidget {
+	Q_OBJECT
 public:
-	SkillColumn(QString title, int skill_id, ViewColumnSet *set = 0, QObject *parent = 0);
-	QStandardItem *build_cell(Dwarf *d);
-	QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
-	int skill_id() {return m_skill_id;}
-	void set_skill_id(int skill_id) {m_skill_id = skill_id;}
-protected:
-	int m_skill_id;
+	ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent = 0);
+
+	public slots:
+		void setCurrentIndex(int);
+		void reload_views();
+
+		// context menus
+		void draw_grid_context_menu(const QPoint &p);
+
+		// colors
+		void color_changed(const QString &name, const QColor &c);
+
+private:
+	QList<GridView*> m_views;
+	DwarfModel *m_model;
+	DwarfModelProxy *m_proxy;
+
+	int add_tab_for_gridview(GridView *v);
 };
 
 #endif

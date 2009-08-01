@@ -62,17 +62,28 @@ void DwarfModel::load_dwarves() {
 		delete d;
 	}
 	m_dwarves.clear();
+	removeRows(0, rowCount());
+
+	foreach(Dwarf *d, m_df->load_dwarves()) {
+		m_dwarves[d->id()] = d;
+	}
+
+	build_rows();
+}
+
+void DwarfModel::build_rows() {
+	QIcon icn_f(":img/female.png");
+	QIcon icn_m(":img/male.png");
+
+	GameDataReader *gdr = GameDataReader::ptr();
 
 	// don't need to go delete the dwarf pointers in here, since the earlier foreach should have
 	// deleted them
 	m_grouped_dwarves.clear();
-
-	// remove rows except for the header
 	removeRows(0, rowCount());
 
 	// populate dwarf maps
-	foreach(Dwarf *d, m_df->load_dwarves()) {
-		m_dwarves[d->id()] = d;
+	foreach(Dwarf *d, m_dwarves) {
 		switch (m_group_by) {
 			case GB_NOTHING:
 				m_grouped_dwarves[QString::number(d->id())].append(d);
@@ -104,14 +115,7 @@ void DwarfModel::load_dwarves() {
 				break;
 		}
 	}
-	build_rows();
-}
 
-void DwarfModel::build_rows() {
-	QIcon icn_f(":img/female.png");
-	QIcon icn_m(":img/male.png");
-
-	GameDataReader *gdr = GameDataReader::ptr();
 
 	int start_col = 1;
 	emit clear_spacers();
@@ -146,6 +150,13 @@ void DwarfModel::build_rows() {
 		}
 
 		if (root) { // we have a parent, so we should draw an aggregate row
+			// TODO options to draw aggregates or not...
+			foreach(ViewColumnSet *set, m_gridview->sets()) {
+				foreach(ViewColumn *col, set->columns()) {
+					QStandardItem *item = col->build_aggregate(key, m_grouped_dwarves[key]);
+					root_row << item;
+				}
+			}
 			/*foreach(Labor *l, labors) {
 				QStandardItem *item = new QStandardItem();
 				//item->setText(0);

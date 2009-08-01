@@ -48,3 +48,7 @@ QStandardItem *SkillColumn::build_cell(Dwarf *d) {
 
 	return item;
 }
+
+QStandardItem *SkillColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
+	return new QStandardItem;
+}

@@ -55,7 +55,8 @@ public:
 	//virtual ~DwarfModel();
 	void set_instance(DFInstance *df) {m_df = df;}
 	void set_grid_view(GridView *v) {m_gridview = v;}
-	
+
+	void build_rows();
 	GROUP_BY current_grouping() const {return m_group_by;}
 	const QMap<QString, QVector<Dwarf*>> *get_dwarf_groups() const {return &m_grouped_dwarves;}
 	Dwarf *get_dwarf_by_id(int id) const {return m_dwarves.value(id, 0);}
@@ -82,8 +83,6 @@ private:
 	int m_selected_col;
 	GridView *m_gridview;
 	
-	void build_rows();
-
 signals:
 	void new_pending_changes(int);
 	void preferred_header_size(int section, int width);

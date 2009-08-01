@@ -29,6 +29,7 @@ class HappinessColumn : public ViewColumn {
 public:
 	HappinessColumn(QString title, ViewColumnSet *set = 0, QObject *parent = 0);
 	QStandardItem *build_cell(Dwarf *d);
+	QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 };
 
 #endif

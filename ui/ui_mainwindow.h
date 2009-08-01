@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Thu Jul 30 19:48:47 2009
+** Created: Fri Jul 31 16:33:56 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -31,7 +31,6 @@
 #include <QtGui/QTreeWidget>
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QWidget>
-#include "statetableview.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -62,7 +61,7 @@ public:
     QAction *act_go_new_issue;
     QAction *act_go_donate;
     QWidget *main_widget;
-    QVBoxLayout *verticalLayout;
+    QVBoxLayout *v_box;
     QHBoxLayout *horizontalLayout_2;
     QLabel *lbl_group_by;
     QComboBox *cb_group_by;
@@ -73,7 +72,6 @@ public:
     QLineEdit *le_filter_text;
     QPushButton *pushButton;
     QSpacerItem *horizontalSpacer_3;
-    StateTableView *stv;
     QMenuBar *menuBar;
     QMenu *menu_File;
     QMenu *menu_Help;
@@ -223,10 +221,10 @@ public:
         act_go_donate->setIcon(icon16);
         main_widget = new QWidget(MainWindow);
         main_widget->setObjectName(QString::fromUtf8("main_widget"));
-        verticalLayout = new QVBoxLayout(main_widget);
-        verticalLayout->setSpacing(6);
-        verticalLayout->setMargin(11);
-        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
+        v_box = new QVBoxLayout(main_widget);
+        v_box->setSpacing(6);
+        v_box->setMargin(11);
+        v_box->setObjectName(QString::fromUtf8("v_box"));
         horizontalLayout_2 = new QHBoxLayout();
         horizontalLayout_2->setSpacing(6);
         horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
@@ -259,7 +257,7 @@ public:
         horizontalLayout_2->addWidget(label_2);
 
 
-        verticalLayout->addLayout(horizontalLayout_2);
+        v_box->addLayout(horizontalLayout_2);
 
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setSpacing(6);
@@ -280,42 +278,14 @@ public:
 
         horizontalLayout->setStretch(2, 2);
 
-        verticalLayout->addLayout(horizontalLayout);
-
-        stv = new StateTableView(main_widget);
-        stv->setObjectName(QString::fromUtf8("stv"));
-        QFont font1;
-        font1.setPointSize(8);
-        stv->setFont(font1);
-        stv->setMouseTracking(true);
-        stv->setFocusPolicy(Qt::NoFocus);
-        stv->setContextMenuPolicy(Qt::CustomContextMenu);
-        stv->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        stv->setTabKeyNavigation(true);
-        stv->setProperty("showDropIndicator", QVariant(false));
-        stv->setAlternatingRowColors(false);
-        stv->setSelectionMode(QAbstractItemView::ExtendedSelection);
-        stv->setSelectionBehavior(QAbstractItemView::SelectRows);
-        stv->setIconSize(QSize(14, 14));
-        stv->setIndentation(8);
-        stv->setUniformRowHeights(true);
-        stv->setSortingEnabled(true);
-        stv->setAnimated(false);
-        stv->setAllColumnsShowFocus(true);
-        stv->setHeaderHidden(false);
-        stv->header()->setVisible(true);
-        stv->header()->setDefaultSectionSize(16);
-        stv->header()->setHighlightSections(true);
-        stv->header()->setMinimumSectionSize(16);
-        stv->header()->setProperty("showSortIndicator", QVariant(true));
-        stv->header()->setStretchLastSection(false);
-
-        verticalLayout->addWidget(stv);
+        v_box->addLayout(horizontalLayout);
 
         MainWindow->setCentralWidget(main_widget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
         menuBar->setGeometry(QRect(0, 0, 1129, 20));
+        QFont font1;
+        font1.setPointSize(8);
         menuBar->setFont(font1);
         menu_File = new QMenu(menuBar);
         menu_File->setObjectName(QString::fromUtf8("menu_File"));
@@ -475,8 +445,6 @@ public:
         QObject::connect(act_exit, SIGNAL(triggered()), MainWindow, SLOT(close()));
         QObject::connect(act_read_dwarves, SIGNAL(triggered()), MainWindow, SLOT(read_dwarves()));
         QObject::connect(act_scan_memory, SIGNAL(triggered()), MainWindow, SLOT(scan_memory()));
-        QObject::connect(act_expand_all, SIGNAL(triggered()), stv, SLOT(expandAll()));
-        QObject::connect(act_collapse_all, SIGNAL(triggered()), stv, SLOT(collapseAll()));
         QObject::connect(act_show_toolbutton_text, SIGNAL(toggled(bool)), MainWindow, SLOT(show_toolbutton_text(bool)));
         QObject::connect(cb_group_by, SIGNAL(currentIndexChanged(int)), MainWindow, SLOT(set_group_by(int)));
         QObject::connect(act_about, SIGNAL(triggered()), MainWindow, SLOT(show_about()));
@@ -489,7 +457,6 @@ public:
         QObject::connect(act_show_custom_professions_window, SIGNAL(triggered(bool)), dock_custom_professions, SLOT(setVisible(bool)));
         QObject::connect(act_show_main_toolbar, SIGNAL(triggered()), main_toolbar, SLOT(show()));
         QObject::connect(act_options, SIGNAL(triggered()), MainWindow, SLOT(open_options_menu()));
-        QObject::connect(tree_pending, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), stv, SLOT(jump_to_dwarf(QTreeWidgetItem*,QTreeWidgetItem*)));
         QObject::connect(btn_collapse_all_pending, SIGNAL(clicked()), tree_pending, SLOT(collapseAll()));
         QObject::connect(btn_expand_all_pending, SIGNAL(clicked()), tree_pending, SLOT(expandAll()));
         QObject::connect(btn_new_custom_profession, SIGNAL(clicked()), act_add_custom_profession, SLOT(trigger()));
@@ -500,9 +467,7 @@ public:
         QObject::connect(act_go_forums, SIGNAL(triggered()), MainWindow, SLOT(go_to_forums()));
         QObject::connect(act_go_new_issue, SIGNAL(triggered()), MainWindow, SLOT(go_to_new_issue()));
         QObject::connect(act_go_project_home, SIGNAL(triggered()), MainWindow, SLOT(go_to_project_home()));
-        QObject::connect(le_filter_text, SIGNAL(textChanged(QString)), stv, SLOT(filter_dwarves(QString)));
         QObject::connect(pushButton, SIGNAL(clicked()), le_filter_text, SLOT(clear()));
-        QObject::connect(list_custom_professions, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), stv, SLOT(jump_to_profession(QListWidgetItem*,QListWidgetItem*)));
 
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi
@@ -621,7 +586,6 @@ public:
         lbl_pending_changes->setText(QApplication::translate("MainWindow", "0", 0, QApplication::UnicodeUTF8));
         label_2->setText(QApplication::translate("MainWindow", "Pending Changes", 0, QApplication::UnicodeUTF8));
         pushButton->setText(QApplication::translate("MainWindow", "Clear Filter", 0, QApplication::UnicodeUTF8));
-        stv->setStyleSheet(QString());
         menu_File->setTitle(QApplication::translate("MainWindow", "&File", 0, QApplication::UnicodeUTF8));
         menu_Help->setTitle(QApplication::translate("MainWindow", "&Help", 0, QApplication::UnicodeUTF8));
         menuProfessions->setTitle(QApplication::translate("MainWindow", "Professions", 0, QApplication::UnicodeUTF8));

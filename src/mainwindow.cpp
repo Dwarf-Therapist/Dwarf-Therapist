@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "memorylayout.h"
 #include "statetableview.h"
+#include "viewmanager.h"
 #include "uberdelegate.h"
 #include "customprofession.h"
 #include "labor.h"
@@ -45,6 +46,7 @@ THE SOFTWARE.
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+	, m_view_manager(0)
 	, m_options_menu(new OptionsMenu(this))
 	, m_about_dialog(new AboutDialog(this))
     , m_df(0)
@@ -58,20 +60,23 @@ MainWindow::MainWindow(QWidget *parent)
 	, m_temp_cp(0)
 {
     ui->setupUi(this);
-	m_proxy->setSourceModel(m_model);
-	ui->stv->set_model(m_model, m_proxy);
+	m_view_manager = new ViewManager(m_model, m_proxy, this);
+	ui->v_box->addWidget(m_view_manager);
+
+	//m_proxy->setSourceModel(m_model);
+	//ui->stv->set_model(m_model, m_proxy);
 
 	LOGD << "setting up connections for MainWindow";
 	connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
 	connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
 	connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
 
-	connect(ui->stv, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_grid_context_menu(const QPoint &)));
+	
 
 	connect(ui->list_custom_professions, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(edit_custom_profession(QListWidgetItem*)));
 	connect(ui->list_custom_professions, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_custom_profession_context_menu(const QPoint &)));
 
-	connect(m_options_menu, SIGNAL(color_changed(const QString &, const QColor &)), this, SLOT(color_changed(const QString &, const QColor &)));
+	connect(m_options_menu, SIGNAL(color_changed(const QString &, const QColor &)), m_view_manager, SLOT(color_changed(const QString &, const QColor &)));
 
 	m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
@@ -84,15 +89,14 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->cb_group_by->addItem("Legendary or not", DwarfModel::GB_LEGENDARY);
 	ui->cb_group_by->addItem("Sex", DwarfModel::GB_SEX);
 	ui->cb_group_by->addItem("Happiness", DwarfModel::GB_HAPPINESS);
+	
 	read_settings();
-
-	reload_views();
 
 	check_latest_version();
 	//TODO: make this an option to connect on launch
-	connect_to_df();
-	if (m_df && m_df->is_ok())
-		read_dwarves();
+	//connect_to_df();
+	//if (m_df && m_df->is_ok())
+	//	read_dwarves();
 }
 
 MainWindow::~MainWindow() {
@@ -228,8 +232,7 @@ void MainWindow::connect_to_df() {
 void MainWindow::read_dwarves() {
 	m_model->set_instance(m_df);
 	m_model->load_dwarves();
-	m_proxy->setSourceModel(m_model);
-	ui->stv->sortByColumn(0, Qt::AscendingOrder);
+	//FIXME m_stv->sortByColumn(0, Qt::AscendingOrder);
 }
 
 void MainWindow::set_interface_enabled(bool enabled) {
@@ -315,8 +318,9 @@ void MainWindow::show_toolbutton_text(bool enabled) {
 }
 
 void MainWindow::set_single_click_labor_changes(bool enabled) {
-	ui->stv->set_single_click_labor_changes(enabled);
-	write_settings();
+	//FIXME
+	//m_stv->set_single_click_labor_changes(enabled);
+	//write_settings();
 }
 
 void MainWindow::set_group_by(int group_by) {
@@ -351,31 +355,10 @@ void MainWindow::open_options_menu() {
 	m_options_menu->show();
 }
 
-void MainWindow::color_changed(const QString &key, const QColor &c) {
-	UberDelegate *d = ui->stv->get_delegate();
-	if (key == "cursor")
-		d->color_cursor = c;
-	else if (key == "dirty_border")
-		d->color_dirty_border = c;
-	else if (key == "active_labor")
-		d->color_active_labor = c;
-	else if (key == "active_group")
-		d->color_active_group = c;
-	else if (key == "inactive_group")
-		d->color_inactive_group = c;
-	else if (key == "partial_group")
-		d->color_partial_group = c;
-	else if (key == "guides")
-		d->color_guides = c;
-	else if (key == "border")
-		d->color_border = c;
-	else
-		qWarning() << "some color changed and I don't know what it is.";
-}
-
 void MainWindow::add_custom_profession() {
+	/* FIXME
 	Dwarf *d = 0;
-	QModelIndex idx = ui->stv->currentIndex();
+	QModelIndex idx = m_stv->currentIndex();
 	if (idx.isValid()) {
 		int id = idx.data(DwarfModel::DR_ID).toInt();
 		d = m_model->get_dwarf_by_id(id);
@@ -388,10 +371,12 @@ void MainWindow::add_custom_profession() {
 		draw_professions();
 	}
 	write_settings();
+	*/
 }
 
 void MainWindow::reset_custom_profession() {
-	const QItemSelection sel = ui->stv->selectionModel()->selection();
+	/* FIXME
+	const QItemSelection sel = m_stv->selectionModel()->selection();
 	foreach(const QModelIndex idx, sel.indexes()) {
 		if (idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
 			Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
@@ -400,6 +385,7 @@ void MainWindow::reset_custom_profession() {
 		}
 	}
 	m_model->calculate_pending();
+	*/
 }
 
 void MainWindow::edit_custom_profession() {
@@ -462,33 +448,6 @@ void MainWindow::draw_professions() {
 	}
 }
 
-void MainWindow::draw_grid_context_menu(const QPoint &p) {
-	QModelIndex idx = ui->stv->indexAt(p);
-	if (!idx.isValid() || idx.column() != 0  || idx.data(DwarfModel::DR_IS_AGGREGATE).toBool())
-		return;
-
-	//int id = idx.data(DwarfModel::DR_ID).toInt();
-	
-	QMenu m(this);
-	m.setTitle(tr("Dwarf Options"));
-	m.addAction(tr("Set Nickname..."), this, SLOT(set_nickname()));
-	//m.addAction(tr("View Details..."), this, "add_custom_profession()");
-	m.addSeparator();
-
-	QMenu sub(&m);
-	sub.setTitle(tr("Custom Professions"));
-	sub.addAction(tr("New custom profession from this dwarf..."), this, SLOT(add_custom_profession()));
-	sub.addAction(tr("Reset to default profession"), this, SLOT(reset_custom_profession()));
-	sub.addSeparator();
-	
-	foreach(CustomProfession *cp, m_custom_professions) {
-		sub.addAction(cp->get_name(), this, SLOT(apply_custom_profession()));
-	}
-	m.addMenu(&sub);
-	
-	m.exec(ui->stv->viewport()->mapToGlobal(p));
-}
-
 void MainWindow::draw_custom_profession_context_menu(const QPoint &p) {
 	QModelIndex idx = ui->list_custom_professions->indexAt(p);
 	if (!idx.isValid())
@@ -507,12 +466,13 @@ void MainWindow::draw_custom_profession_context_menu(const QPoint &p) {
 }
 
 void MainWindow::apply_custom_profession() {
+	/* FIXME
 	QAction *a = qobject_cast<QAction*>(QObject::sender());
 	CustomProfession *cp = get_custom_profession(a->text());
 	if (!cp)
 		return;
 
-	const QItemSelection sel = ui->stv->selectionModel()->selection();
+	const QItemSelection sel = m_stv->selectionModel()->selection();
 	foreach(const QModelIndex idx, sel.indexes()) {
 		if (idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
 			qDebug() << idx.data();
@@ -522,6 +482,7 @@ void MainWindow::apply_custom_profession() {
 		}
 	}
 	m_model->calculate_pending();
+	*/
 }
 
 CustomProfession *MainWindow::get_custom_profession(QString name) {
@@ -555,7 +516,8 @@ void MainWindow::import_existing_professions() {
 }
 
 void MainWindow::set_nickname() {
-	const QItemSelection sel = ui->stv->selectionModel()->selection();
+	/* FIXME
+	const QItemSelection sel = m_stv->selectionModel()->selection();
 	QModelIndexList first_col;
 	foreach(QModelIndex i, sel.indexes()) {
 		if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool())
@@ -580,6 +542,7 @@ void MainWindow::set_nickname() {
 		//m_model->dataChanged(first_col[0], first_col[0]);
 	}
 	m_model->calculate_pending();
+	*/
 }
 
 // web addresses
@@ -595,7 +558,6 @@ void MainWindow::go_to_project_home() {
 void MainWindow::go_to_new_issue() {
 	QDesktopServices::openUrl(QUrl("http://code.google.com/p/dwarftherapist/issues/entry"));
 }
-
 
 void MainWindow::reload_views() {
 	// make sure the required directories are in place

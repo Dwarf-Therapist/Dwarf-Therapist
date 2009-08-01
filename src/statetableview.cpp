@@ -47,8 +47,16 @@ StateTableView::StateTableView(QWidget *parent)
 	, m_grid_focus(false)
 	, m_single_click_labor_changes(false)
 {
+	setEditTriggers(QAbstractItemView::NoEditTriggers);
+	setUniformRowHeights(true);
+	setSelectionBehavior(QAbstractItemView::SelectRows);
+	setSelectionMode(QAbstractItemView::ExtendedSelection);
 	setItemDelegate(m_delegate);
 	setHeader(m_header);
+	
+
+	// Set StaticContents to enable minimal repaints on resizes.
+    viewport()->setAttribute(Qt::WA_StaticContents);
 }
 
 StateTableView::~StateTableView()
@@ -74,9 +82,8 @@ void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
 void StateTableView::new_custom_profession() {
 	QModelIndex idx = currentIndex();
 	if (idx.isValid()) {
-		const DwarfModel *m = dynamic_cast<const DwarfModel*>(model());
 		int id = idx.data(DwarfModel::DR_ID).toInt();
-		Dwarf *d = m->get_dwarf_by_id(id);
+		Dwarf *d = m_model->get_dwarf_by_id(id);
 		if (d)
 			emit new_custom_profession(d);
 	}

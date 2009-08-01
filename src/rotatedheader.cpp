@@ -44,8 +44,6 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 		return;
 	}
 
-	
-	
 	QStyleOptionHeader opt;
 	opt.rect = rect;
 	opt.orientation = Qt::Horizontal;

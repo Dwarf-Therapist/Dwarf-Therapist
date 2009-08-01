@@ -23,6 +23,7 @@ THE SOFTWARE.
 
 #include "spacercolumn.h"
 #include "columntypes.h"
+#include "viewcolumnset.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
 
@@ -32,5 +33,20 @@ SpacerColumn::SpacerColumn(QString title, ViewColumnSet *set, QObject *parent)
 
 QStandardItem *SpacerColumn::build_cell(Dwarf *d) {
 	QStandardItem *item = init_cell(d);
+	return item;
+}
+
+QStandardItem *SpacerColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
+	QStandardItem *item = new QStandardItem;
+	QColor bg;
+	if (m_override_set_colors) {
+		bg = m_bg_color;
+	} else {
+		bg = set()->bg_color();
+	}
+	item->setData(bg, Qt::BackgroundColorRole);
+	item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
+	item->setData(false, DwarfModel::DR_IS_AGGREGATE);
+	item->setData(0, DwarfModel::DR_DUMMY);
 	return item;
 }

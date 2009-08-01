@@ -29,6 +29,8 @@ class LaborColumn : public ViewColumn {
 public:
 	LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSet *set = 0, QObject *parent = 0);
 	QStandardItem *build_cell(Dwarf *d);
+	QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
+	
 	int labor_id() {return m_labor_id;}
 	void set_labor_id(int labor_id) {m_labor_id = labor_id;}
 	int skill_id() {return m_skill_id;}

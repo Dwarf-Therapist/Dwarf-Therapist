@@ -29,6 +29,7 @@ class SpacerColumn : public ViewColumn {
 public:
 	SpacerColumn(QString title, ViewColumnSet *set = 0, QObject *parent = 0);
 	QStandardItem *build_cell(Dwarf *d);
+	QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 
 	void set_width(int w) {m_width = w;}
 	int width() {return m_width;}

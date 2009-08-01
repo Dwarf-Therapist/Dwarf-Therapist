@@ -26,6 +26,7 @@ THE SOFTWARE.
 GridView::GridView(QString name, QObject *parent)
 	: QObject(parent)
 	, m_name(name)
+	, m_active(true)
 {}
 
 void GridView::add_set(ViewColumnSet *set) {
@@ -56,8 +57,10 @@ void GridView::clear() {
 GridView *GridView::from_file(const QString &filepath, const QDir &sets_dir, QObject *parent) {
 	QSettings s(filepath, QSettings::IniFormat);
 	QString name = s.value("info/name", "UNKNOWN").toString();
+	bool active = s.value("info/active", true).toBool();
 	
 	GridView *ret_val = new GridView(name, parent);
+	ret_val->set_active(active);
 
 	QMap<QString, ViewColumnSet*> tmp_sets;
 	foreach(QString filename, sets_dir.entryList()) {

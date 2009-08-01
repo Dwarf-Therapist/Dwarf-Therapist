@@ -189,10 +189,8 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 			dirty_count++;
 	}
 	
-	QStyledItemDelegate::paint(p, opt, proxy_idx); // always lay the "base coat"
-	
 	p->save();
-	QRect adj = opt.rect.adjusted(1, 1, 0, 0);
+	QRect adj = adjust_rect(opt.rect);
 	if (enabled_count == m_proxy->rowCount(first_col)) {
 		p->fillRect(adj, QBrush(color_active_group));
 	} else if (enabled_count > 0) {
@@ -202,16 +200,7 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 	}
 	p->restore();
 
-	p->save(); // border last
-	p->setBrush(Qt::NoBrush);
-	if (dirty_count) {
-		p->setPen(QPen(color_dirty_border, 1));
-		p->drawRect(opt.rect.adjusted(0, 0, -1, -1));
-	} else {
-		p->setPen(QPen(color_border));
-		p->drawRect(opt.rect);
-	}
-	p->restore();
+	paint_grid(dirty_count > 0, p, opt, proxy_idx);
 }
 
 void UberDelegate::paint_grid(bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {

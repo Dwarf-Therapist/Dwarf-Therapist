@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "columntypes.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
+#include "viewcolumnset.h"
 
 LaborColumn::LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(title, CT_LABOR, set, parent)
@@ -48,5 +49,25 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
 	tooltip += "\n<h4>" + d->nice_name() + "</h4>";
 	item->setToolTip(tooltip);
 	
+	return item;
+}
+
+QStandardItem *LaborColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
+	QStandardItem *item = new QStandardItem;
+	item->setStatusTip(m_title + " :: " + group_name);
+	QColor bg;
+	if (m_override_set_colors) {
+		bg = m_bg_color;
+	} else {
+		bg = set()->bg_color();
+	}
+	item->setData(CT_LABOR, DwarfModel::DR_COL_TYPE);
+	item->setData(bg, Qt::BackgroundColorRole);
+	item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
+	item->setData(true, DwarfModel::DR_IS_AGGREGATE);
+	item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);
+	item->setData(group_name, DwarfModel::DR_GROUP_NAME);
+	item->setData(0, DwarfModel::DR_RATING);
+	item->setData(0, DwarfModel::DR_DUMMY);
 	return item;
 }

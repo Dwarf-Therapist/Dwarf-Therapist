@@ -18,7 +18,7 @@
     <normaloff>:/img/hammer.png</normaloff>:/img/hammer.png</iconset>
   </property>
   <widget class="QWidget" name="main_widget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="v_box">
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
@@ -109,87 +109,6 @@
        </spacer>
       </item>
      </layout>
-    </item>
-    <item>
-     <widget class="StateTableView" name="stv">
-      <property name="font">
-       <font>
-        <pointsize>8</pointsize>
-       </font>
-      </property>
-      <property name="mouseTracking">
-       <bool>true</bool>
-      </property>
-      <property name="focusPolicy">
-       <enum>Qt::NoFocus</enum>
-      </property>
-      <property name="contextMenuPolicy">
-       <enum>Qt::CustomContextMenu</enum>
-      </property>
-      <property name="styleSheet">
-       <string/>
-      </property>
-      <property name="editTriggers">
-       <set>QAbstractItemView::NoEditTriggers</set>
-      </property>
-      <property name="tabKeyNavigation">
-       <bool>true</bool>
-      </property>
-      <property name="showDropIndicator" stdset="0">
-       <bool>false</bool>
-      </property>
-      <property name="alternatingRowColors">
-       <bool>false</bool>
-      </property>
-      <property name="selectionMode">
-       <enum>QAbstractItemView::ExtendedSelection</enum>
-      </property>
-      <property name="selectionBehavior">
-       <enum>QAbstractItemView::SelectRows</enum>
-      </property>
-      <property name="iconSize">
-       <size>
-        <width>14</width>
-        <height>14</height>
-       </size>
-      </property>
-      <property name="indentation">
-       <number>8</number>
-      </property>
-      <property name="uniformRowHeights">
-       <bool>true</bool>
-      </property>
-      <property name="sortingEnabled">
-       <bool>true</bool>
-      </property>
-      <property name="animated">
-       <bool>false</bool>
-      </property>
-      <property name="allColumnsShowFocus">
-       <bool>true</bool>
-      </property>
-      <property name="headerHidden">
-       <bool>false</bool>
-      </property>
-      <attribute name="headerVisible">
-       <bool>true</bool>
-      </attribute>
-      <attribute name="headerDefaultSectionSize">
-       <number>16</number>
-      </attribute>
-      <attribute name="headerHighlightSections">
-       <bool>true</bool>
-      </attribute>
-      <attribute name="headerMinimumSectionSize">
-       <number>16</number>
-      </attribute>
-      <attribute name="headerShowSortIndicator" stdset="0">
-       <bool>true</bool>
-      </attribute>
-      <attribute name="headerStretchLastSection">
-       <bool>false</bool>
-      </attribute>
-     </widget>
     </item>
    </layout>
   </widget>
@@ -766,19 +685,6 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <customwidgets>
-  <customwidget>
-   <class>StateTableView</class>
-   <extends>QTreeView</extends>
-   <header>statetableview.h</header>
-   <slots>
-    <slot>set_grid_size(int)</slot>
-    <slot>jump_to_dwarf(QTreeWidgetItem*,QTreeWidgetItem*)</slot>
-    <slot>filter_dwarves(QString)</slot>
-    <slot>jump_to_profession(QListWidgetItem*,QListWidgetItem*)</slot>
-   </slots>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="../images.qrc"/>
  </resources>
@@ -844,38 +750,6 @@
     <hint type="destinationlabel">
      <x>205</x>
      <y>230</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>act_expand_all</sender>
-   <signal>triggered()</signal>
-   <receiver>stv</receiver>
-   <slot>expandAll()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>147</x>
-     <y>249</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>act_collapse_all</sender>
-   <signal>triggered()</signal>
-   <receiver>stv</receiver>
-   <slot>collapseAll()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>147</x>
-     <y>249</y>
     </hint>
    </hints>
   </connection>
@@ -1072,22 +946,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>tree_pending</sender>
-   <signal>currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)</signal>
-   <receiver>stv</receiver>
-   <slot>jump_to_dwarf(QTreeWidgetItem*,QTreeWidgetItem*)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>936</x>
-     <y>246</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>787</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>btn_collapse_all_pending</sender>
    <signal>clicked()</signal>
    <receiver>tree_pending</receiver>
@@ -1248,22 +1106,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>le_filter_text</sender>
-   <signal>textChanged(QString)</signal>
-   <receiver>stv</receiver>
-   <slot>filter_dwarves(QString)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>72</x>
-     <y>140</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>72</x>
-     <y>176</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>pushButton</sender>
    <signal>clicked()</signal>
    <receiver>le_filter_text</receiver>
@@ -1276,22 +1118,6 @@
     <hint type="destinationlabel">
      <x>103</x>
      <y>131</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>list_custom_professions</sender>
-   <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
-   <receiver>stv</receiver>
-   <slot>jump_to_profession(QListWidgetItem*,QListWidgetItem*)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>966</x>
-     <y>528</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>777</x>
-     <y>520</y>
     </hint>
    </hints>
   </connection>
