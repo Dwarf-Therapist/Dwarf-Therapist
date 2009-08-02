@@ -26,26 +26,43 @@ THE SOFTWARE.
 #define DT (static_cast<DwarfTherapist *>(QCoreApplication::instance()))
 
 #include <QApplication>
+#include <QVector>
 
+class QListWidgetItem;
 class MainWindow;
 class OptionsMenu;
 class QSettings;
+class CustomProfession;
+class Dwarf;
 
 class DwarfTherapist : public QApplication {
 	Q_OBJECT
 public:
 	DwarfTherapist(int &argc, char **argv);
 	virtual ~DwarfTherapist(){}
+	
+	QVector<CustomProfession*> get_custom_professions() {return m_custom_professions;}
+	CustomProfession *get_custom_profession(QString name);
 
+	int custom_profession_from_dwarf(Dwarf *d);
+	
 	QSettings *user_settings() {return m_user_settings;}
-	void read_user_settings();
-	void write_user_settings();
+
+	public slots:
+		void add_custom_profession();
+		void read_settings();
+		void write_settings();
+		void import_existing_professions();
+		void edit_custom_profession();
+		void edit_custom_profession(QListWidgetItem*);
+		void delete_custom_profession();
 
 private:
+	QVector<CustomProfession*> m_custom_professions;
 	QSettings *m_user_settings;
 	MainWindow *m_main_window;
 	OptionsMenu *m_options_menu;
-	bool m_reading_user_settings;
+	bool m_reading_settings;
 
 	void setup_logging();
 	void load_translator();

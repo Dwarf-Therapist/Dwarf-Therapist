@@ -31,7 +31,6 @@ class Dwarf;
 
 /*!
 ViewColumn
-TODO: maybe subclass these for different accessors
 I can think of a need for:
 * Labor cols
 * status cols (happiness, wounds, etc...)

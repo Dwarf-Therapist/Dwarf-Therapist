@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include "laborcolumn.h"
 #include "happinesscolumn.h"
 #include "dwarftherapist.h"
+#include "customprofession.h"
 
 StateTableView::StateTableView(QWidget *parent)
 	: QTreeView(parent)
@@ -44,33 +45,43 @@ StateTableView::StateTableView(QWidget *parent)
 	, m_proxy(0)
 	, m_delegate(new UberDelegate(this))
 	, m_header(new RotatedHeader(Qt::Horizontal, this))
-	, m_grid_focus(false)
-	, m_single_click_labor_changes(false)
 {
+	read_settings();
+
+	setMouseTracking(true);
 	setEditTriggers(QAbstractItemView::NoEditTriggers);
 	setUniformRowHeights(true);
 	setSelectionBehavior(QAbstractItemView::SelectRows);
 	setSelectionMode(QAbstractItemView::ExtendedSelection);
 	setIndentation(8);
-	setIconSize(QSize(14, 14));
-	setFont(QFont("Segoe UI", 8));
 	setFocusPolicy(Qt::NoFocus); // keep the dotted border off of things
 	setSortingEnabled(true);
 
 	setItemDelegate(m_delegate);
 	setHeader(m_header);
-	
-	// Set StaticContents to enable minimal repaints on resizes.
-    viewport()->setAttribute(Qt::WA_StaticContents);
 
+	// Set StaticContents to enable minimal repaints on resizes.
+	viewport()->setAttribute(Qt::WA_StaticContents);
+
+	connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 }
 
 StateTableView::~StateTableView()
 {}
 
-void StateTableView::settings_changed() {
+void StateTableView::read_settings() {
 	QSettings *s = DT->user_settings();
-	int cell_padding = s->value("options/grid/cell_padding", 0).toInt();
+	
+	//font
+	QFont fnt = s->value("options/grid/font", QFont("Segoe UI", 8)).value<QFont>();
+	setFont(fnt);
+	
+	//cell size
+	m_grid_size = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
+	int pad = s->value("options/grid/cell_padding", 0).toInt();
+	setIconSize(QSize(m_grid_size - 2 - pad * 2, m_grid_size - 2 - pad * 2));
+
+	set_single_click_labor_changes(s->value("options/single_click_labor_changes", false).toBool());
 }
 
 void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
@@ -80,8 +91,6 @@ void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
 
 	m_delegate->set_model(model);
 	m_delegate->set_proxy(proxy);
-	header()->setResizeMode(QHeaderView::Fixed);
-	header()->setResizeMode(0, QHeaderView::ResizeToContents);
 
 	connect(m_header, SIGNAL(section_right_clicked(int)), m_model, SLOT(section_right_clicked(int)));
 	connect(this, SIGNAL(activated(const QModelIndex&)), proxy, SLOT(cell_activated(const QModelIndex&)));
@@ -100,21 +109,13 @@ void StateTableView::new_custom_profession() {
 	}
 }
 
-void StateTableView::set_grid_size(int new_size) {
-	return;
-	if (model()->rowCount() < 1) {
-		return;
-	}
-	// TODO: apply this to the delegate's size hint?
-}
-
 void StateTableView::filter_dwarves(QString text) {
 	m_proxy->setFilterFixedString(text);
 	m_proxy->setFilterKeyColumn(0);
 	m_proxy->setFilterRole(Qt::DisplayRole);
 }
 
-void StateTableView::jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* previous) {
+void StateTableView::jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem*) {
 	if (!current)
 		return;
 	int dwarf_id = current->data(0, Qt::UserRole).toInt();
@@ -129,7 +130,7 @@ void StateTableView::jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* pr
 	}
 }
 
-void StateTableView::jump_to_profession(QListWidgetItem* current, QListWidgetItem* previous) {
+void StateTableView::jump_to_profession(QListWidgetItem* current, QListWidgetItem*) {
 	if (!current)
 		return;
 	QString prof_name = current->text();
@@ -143,10 +144,102 @@ void StateTableView::jump_to_profession(QListWidgetItem* current, QListWidgetIte
 }
 
 void StateTableView::set_single_click_labor_changes(bool enabled) {
-	m_single_click_labor_changes = enabled;
-	LOGD << "setting single click labor changes:" << enabled;
-	disconnect(this, SIGNAL(clicked(const QModelIndex&)), m_proxy, SLOT(cell_activated(const QModelIndex&)));
+	TRACE << "setting single click labor changes:" << enabled;
+	disconnect(this, SIGNAL(clicked(const QModelIndex&)));
 	if (enabled) {
 		connect(this, SIGNAL(clicked(const QModelIndex&)), m_proxy, SLOT(cell_activated(const QModelIndex&)));
 	}
+}
+
+void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
+	QModelIndex idx = indexAt(event->pos());
+	if (!idx.isValid() || idx.column() != 0  || idx.data(DwarfModel::DR_IS_AGGREGATE).toBool())
+		return;
+
+	int id = idx.data(DwarfModel::DR_ID).toInt();
+	
+	QMenu m(this);
+	m.setTitle(tr("Dwarf Options"));
+	m.addAction(tr("Set Nickname..."), this, SLOT(set_nickname()));
+	//m.addAction(tr("View Details..."), this, "add_custom_profession()");
+	m.addSeparator();
+
+	QMenu sub(&m);
+	sub.setTitle(tr("Custom Professions"));
+	QAction *a = sub.addAction(tr("New custom profession from this dwarf..."), this, SLOT(custom_profession_from_dwarf()));
+	a->setData(id);
+	sub.addAction(tr("Reset to default profession"), this, SLOT(reset_custom_profession()));
+	sub.addSeparator();
+
+	foreach(CustomProfession *cp, DT->get_custom_professions()) {
+		sub.addAction(cp->get_name(), this, SLOT(apply_custom_profession()));
+	}
+	m.addMenu(&sub);
+
+	m.exec(viewport()->mapToGlobal(event->pos()));
+}
+
+void StateTableView::set_nickname() {
+	const QItemSelection sel = selectionModel()->selection();
+	QModelIndexList first_col;
+	foreach(QModelIndex i, sel.indexes()) {
+		if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool())
+			first_col << i;
+	}
+
+	if (first_col.size() != 1) {
+		QMessageBox::warning(this, tr("Too many!"), tr("Slow down, killer. One at a time."));
+		return;
+	}
+	
+	int id = first_col[0].data(DwarfModel::DR_ID).toInt();
+	Dwarf *d = m_model->get_dwarf_by_id(id);
+	if (d) {
+		QString new_nick = QInputDialog::getText(this, tr("New Nickname"), tr("Nickname"), QLineEdit::Normal, d->nickname());
+		if (new_nick.length() > 28) {
+			QMessageBox::warning(this, tr("Nickname too long"), tr("Nicknames must be under 28 characters long."));
+			return;
+		}
+		d->set_nickname(new_nick);
+		m_model->setData(first_col[0], d->nice_name(), Qt::DisplayRole);
+	}
+	m_model->calculate_pending();
+}
+
+void StateTableView::custom_profession_from_dwarf() {
+	QAction *a = qobject_cast<QAction*>(QObject::sender());
+	int id = a->data().toInt();
+	Dwarf *d = m_model->get_dwarf_by_id(id);
+
+	DT->custom_profession_from_dwarf(d);
+}
+
+void StateTableView::apply_custom_profession() {
+	QAction *a = qobject_cast<QAction*>(QObject::sender());
+	CustomProfession *cp = DT->get_custom_profession(a->text());
+	if (!cp)
+		return;
+
+	const QItemSelection sel = selectionModel()->selection();
+	foreach(const QModelIndex idx, sel.indexes()) {
+		if (idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
+			qDebug() << idx.data();
+			Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
+			if (d)
+				d->apply_custom_profession(cp);
+		}
+	}
+	m_model->calculate_pending();
+}
+
+void StateTableView::reset_custom_profession() {
+	const QItemSelection sel = selectionModel()->selection();
+	foreach(const QModelIndex idx, sel.indexes()) {
+		if (idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
+			Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
+			if (d)
+				d->reset_custom_profession();
+		}
+	}
+	m_model->calculate_pending();
 }

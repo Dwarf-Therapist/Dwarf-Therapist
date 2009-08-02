@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>344</width>
-    <height>334</height>
+    <width>321</width>
+    <height>328</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,58 +17,232 @@
    <iconset resource="../images.qrc">
     <normaloff>:/img/color_wheel.png</normaloff>:/img/color_wheel.png</iconset>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
+  <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
-    <widget class="QGroupBox" name="groupBox">
-     <property name="title">
-      <string>Grid Options</string>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Cell Padding</string>
-          </property>
-          <property name="buddy">
-           <cstring>sb_cell_padding</cstring>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QSpinBox" name="sb_cell_padding">
-          <property name="suffix">
-           <string>px</string>
-          </property>
-          <property name="maximum">
-           <number>6</number>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="group_general_colors">
-     <property name="styleSheet">
-      <string notr="true">QtColorPicker {
+    <layout class="QHBoxLayout" name="horizontalLayout_6">
+     <item>
+      <widget class="QGroupBox" name="group_general_colors">
+       <property name="styleSheet">
+        <string notr="true">QtColorPicker {
 text-align: left;
 }</string>
-     </property>
-     <property name="title">
-      <string>Grid Colors</string>
-     </property>
-    </widget>
+       </property>
+       <property name="title">
+        <string>Grid Colors</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string>Main Options</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QCheckBox" name="cb_read_dwarves_on_startup">
+            <property name="toolTip">
+             <string>When checked, DwarfTherapist will attemp to connect and load all dwarves from a running copy of Dwarf Fortress.</string>
+            </property>
+            <property name="statusTip">
+             <string>When checked, DwarfTherapist will attemp to connect and load all dwarves from a running copy of Dwarf Fortress.</string>
+            </property>
+            <property name="whatsThis">
+             <string>When checked, DwarfTherapist will attemp to connect and load all dwarves from a running copy of Dwarf Fortress.</string>
+            </property>
+            <property name="text">
+             <string>Load Dwarves on Launch</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cb_auto_contrast">
+            <property name="toolTip">
+             <string>When checked, skill blocks on grid cells will choose the highest contrast color available. </string>
+            </property>
+            <property name="statusTip">
+             <string>When checked, skill blocks on grid cells will choose the highest contrast color available. </string>
+            </property>
+            <property name="whatsThis">
+             <string>When checked, skill blocks on grid cells will choose the highest contrast color available. </string>
+            </property>
+            <property name="text">
+             <string>Auto Contrast Skill Display</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cb_show_aggregates">
+            <property name="toolTip">
+             <string>When checked, and sorting by some criteria, labors will show an aggregate cell above a group. This cell can be toggled to enable/disable a labor for an entire group at once.</string>
+            </property>
+            <property name="statusTip">
+             <string>When checked, and sorting by some criteria, labors will show an aggregate cell above a group. This cell can be toggled to enable/disable a labor for an entire group at once.</string>
+            </property>
+            <property name="whatsThis">
+             <string>When checked, and sorting by some criteria, labors will show an aggregate cell above a group. This cell can be toggled to enable/disable a labor for an entire group at once.</string>
+            </property>
+            <property name="text">
+             <string>Display Labor Group Cells</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cb_single_click_labor_changes">
+            <property name="toolTip">
+             <string>When checked, labors can be toggled with a single left-click of the mouse. Otherwise they must be double-clicked</string>
+            </property>
+            <property name="statusTip">
+             <string>When checked, labors can be toggled with a single left-click of the mouse. Otherwise they must be double-clicked</string>
+            </property>
+            <property name="whatsThis">
+             <string>When checked, labors can be toggled with a single left-click of the mouse. Otherwise they must be double-clicked</string>
+            </property>
+            <property name="text">
+             <string>Single Click Labor Changes</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cb_show_toolbar_text">
+            <property name="toolTip">
+             <string>When checked, show a text description for each icon on the toolbar</string>
+            </property>
+            <property name="statusTip">
+             <string>When checked, show a text description for each icon on the toolbar</string>
+            </property>
+            <property name="whatsThis">
+             <string>When checked, show a text description for each icon on the toolbar</string>
+            </property>
+            <property name="text">
+             <string>Show Toolbar Text</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Grid Options</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <item>
+             <widget class="QLabel" name="label_3">
+              <property name="font">
+               <font>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Font</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QLabel" name="lbl_current_font">
+                <property name="text">
+                 <string>CURRENT_FONT</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btn_change_font">
+                <property name="text">
+                 <string>Change Font...</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QLabel" name="label_2">
+              <property name="font">
+               <font>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Cell Size</string>
+              </property>
+              <property name="buddy">
+               <cstring>sb_cell_size</cstring>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="sb_cell_size">
+              <property name="suffix">
+               <string>px</string>
+              </property>
+              <property name="minimum">
+               <number>4</number>
+              </property>
+              <property name="maximum">
+               <number>64</number>
+              </property>
+              <property name="value">
+               <number>16</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="font">
+               <font>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Cell Padding</string>
+              </property>
+              <property name="buddy">
+               <cstring>sb_cell_padding</cstring>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="sb_cell_padding">
+              <property name="suffix">
+               <string>px</string>
+              </property>
+              <property name="maximum">
+               <number>6</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
       <widget class="QPushButton" name="btn_restore_defaults">
        <property name="text">
-        <string>Restore Default Colors</string>
+        <string>Restore Defaults</string>
        </property>
       </widget>
      </item>
@@ -97,8 +271,8 @@ text-align: left;
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>266</x>
+     <y>474</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -113,8 +287,8 @@ text-align: left;
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>266</x>
+     <y>474</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

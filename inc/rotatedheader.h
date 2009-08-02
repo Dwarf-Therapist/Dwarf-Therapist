@@ -35,6 +35,7 @@ public:
 	
 	QSize sizeHint() const;
 	public slots:
+		void read_settings();
 		void resizeSection(int logicalIndex, int size );
 		void set_index_as_spacer(int idx);
 		void clear_spacers();

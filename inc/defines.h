@@ -41,9 +41,12 @@ THE SOFTWARE.
 
 #define LOG   qxtLog
 #define LOGD  qDebug() << __FILE__ << "(ln" << __LINE__ << "): "
+#define LOGI  qxtLog->info()
 #define LOGW  qWarning() << __FILE__ << "(ln" << __LINE__ << ") [" << __FUNCTION__ << "] "
 #define LOGC  qCritical() << __FILE__ << "(ln" << __LINE__ << ") [" << __FUNCTION__ << "] "
 #define FATAL qFatal() << __FILE__ << "(ln" << __LINE__ << ") [" << __FUNCTION__ << "] "
 #define TRACE qxtLog->trace()
+
+#define DEFAULT_CELL_SIZE 16
 
 #endif

@@ -138,7 +138,10 @@
     <addaction name="separator"/>
     <addaction name="act_commit_pending_changes"/>
     <addaction name="act_clear_pending_changes"/>
+    <addaction name="act_add_custom_profession"/>
+    <addaction name="act_import_existing_professions"/>
     <addaction name="separator"/>
+    <addaction name="act_options"/>
     <addaction name="act_exit"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
@@ -155,13 +158,6 @@
     <addaction name="separator"/>
     <addaction name="act_about"/>
    </widget>
-   <widget class="QMenu" name="menuProfessions">
-    <property name="title">
-     <string>Professions</string>
-    </property>
-    <addaction name="act_add_custom_profession"/>
-    <addaction name="act_import_existing_professions"/>
-   </widget>
    <widget class="QMenu" name="menuWindows">
     <property name="title">
      <string>Windows</string>
@@ -176,17 +172,7 @@
     <addaction name="menuDocks"/>
     <addaction name="act_show_main_toolbar"/>
    </widget>
-   <widget class="QMenu" name="menuSettings">
-    <property name="title">
-     <string>Settings</string>
-    </property>
-    <addaction name="act_show_toolbutton_text"/>
-    <addaction name="act_single_click_labor_changes"/>
-    <addaction name="act_options"/>
-   </widget>
    <addaction name="menu_File"/>
-   <addaction name="menuProfessions"/>
-   <addaction name="menuSettings"/>
    <addaction name="menuWindows"/>
    <addaction name="menu_Help"/>
   </widget>
@@ -213,6 +199,7 @@
    <addaction name="act_clear_pending_changes"/>
    <addaction name="act_commit_pending_changes"/>
    <addaction name="separator"/>
+   <addaction name="act_options"/>
    <addaction name="act_exit"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -440,23 +427,6 @@
     <string>Ctrl+M</string>
    </property>
   </action>
-  <action name="action_apply_skill_changes_immedietly">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Apply Skill Toggles Immedietly</string>
-   </property>
-   <property name="toolTip">
-    <string>When set, skill changes are written to the game immedietly as opposed to buffering up.</string>
-   </property>
-   <property name="statusTip">
-    <string>When set, skill changes are written to the game immedietly as opposed to buffering up</string>
-   </property>
-  </action>
   <action name="act_expand_all">
    <property name="enabled">
     <bool>false</bool>
@@ -491,21 +461,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Left</string>
-   </property>
-  </action>
-  <action name="act_show_toolbutton_text">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../images.qrc">
-     <normaloff>:/img/textfield_add.png</normaloff>:/img/textfield_add.png</iconset>
-   </property>
-   <property name="text">
-    <string>Show Toolbutton Text</string>
    </property>
   </action>
   <action name="act_add_custom_profession">
@@ -595,10 +550,10 @@
      <normaloff>:/img/color_wheel.png</normaloff>:/img/color_wheel.png</iconset>
    </property>
    <property name="text">
-    <string>Color Settings...</string>
+    <string>Options...</string>
    </property>
    <property name="toolTip">
-    <string>Open the color options menu...</string>
+    <string>Open the options menu...</string>
    </property>
   </action>
   <action name="act_import_existing_professions">
@@ -611,28 +566,6 @@
    </property>
    <property name="toolTip">
     <string>Import all custom professions from the loaded game, and create new labor templates for them</string>
-   </property>
-  </action>
-  <action name="act_keyboard_grid_focus">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Enable Keyboard Grid Focus</string>
-   </property>
-   <property name="toolTip">
-    <string>When checked it will show an &quot;X&quot; over the currently focused labor cell. You can then use the arrow keys to navigate the grid much like in DF. Unchecked disables the focus &quot;X&quot;</string>
-   </property>
-  </action>
-  <action name="act_single_click_labor_changes">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Single Click Labor Changes</string>
-   </property>
-   <property name="toolTip">
-    <string>When set you will be able to toggle skills in the main grid with a single left-click of the mouse. When unchecked, you will have to double-click</string>
    </property>
   </action>
   <action name="act_go_forums">
@@ -754,22 +687,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>act_show_toolbutton_text</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>show_toolbutton_text(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>352</x>
-     <y>281</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>cb_group_by</sender>
    <signal>currentIndexChanged(int)</signal>
    <receiver>MainWindow</receiver>
@@ -790,22 +707,6 @@
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>show_about()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>352</x>
-     <y>281</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>act_add_custom_profession</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>add_custom_profession()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -990,38 +891,6 @@
     <hint type="destinationlabel">
      <x>-1</x>
      <y>-1</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>act_import_existing_professions</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>import_existing_professions()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>564</x>
-     <y>373</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>act_single_click_labor_changes</sender>
-   <signal>triggered(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>set_single_click_labor_changes(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>564</x>
-     <y>373</y>
     </hint>
    </hints>
   </connection>

@@ -91,8 +91,8 @@ private:
 	bool m_is_male;
 	
 	QString read_professtion(int address);
-    QString read_last_name(int address);
-    QVector<Skill> read_skills(int address);
+	QString read_last_name(int address);
+	QVector<Skill> read_skills(int address);
 	void read_labors(int address);
 
 	int m_id;
@@ -106,7 +106,7 @@ private:
 	int m_toughness;
 	short m_num_weapons;
 	short m_pending_num_weapons;
-    QVector<Skill> m_skills;
+	QVector<Skill> m_skills;
 	QMap<int, bool> m_labors;
 	QMap<int, bool> m_pending_labors;
 };

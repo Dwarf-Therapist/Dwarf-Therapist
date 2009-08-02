@@ -29,7 +29,7 @@ class Dwarf;
 
 namespace Ui
 {
-    class CustomProfessionEditor;
+	class CustomProfessionEditor;
 }
 
 //! Manages custom professions independent of a fortress

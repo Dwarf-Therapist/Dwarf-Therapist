@@ -42,28 +42,25 @@ THE SOFTWARE.
 #include "labor.h"
 #include "defines.h"
 #include "version.h"
+#include "dwarftherapist.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+	: QMainWindow(parent)
+	, ui(new Ui::MainWindow)
 	, m_view_manager(0)
 	, m_about_dialog(new AboutDialog(this))
-    , m_df(0)
-    , m_lbl_status(0)
+	, m_df(0)
+	, m_lbl_status(0)
 	, m_settings(0)
 	, m_model(new DwarfModel(this))
 	, m_proxy(new DwarfModelProxy(this))
-	, m_custom_professions(QVector<CustomProfession*>())
 	, m_http(new QHttp(this))
 	, m_reading_settings(false)
 	, m_temp_cp(0)
 {
-    ui->setupUi(this);
+	ui->setupUi(this);
 	m_view_manager = new ViewManager(m_model, m_proxy, this);
 	ui->v_box->addWidget(m_view_manager);
-
-	//m_proxy->setSourceModel(m_model);
-	//ui->stv->set_model(m_model, m_proxy);
 
 	LOGD << "setting up connections for MainWindow";
 	connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
@@ -71,16 +68,13 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
 	connect(ui->act_expand_all, SIGNAL(triggered()), m_view_manager, SLOT(expand_all()));
 	connect(ui->act_collapse_all, SIGNAL(triggered()), m_view_manager, SLOT(collapse_all()));
-	
-
-	connect(ui->list_custom_professions, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(edit_custom_profession(QListWidgetItem*)));
 	connect(ui->list_custom_professions, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_custom_profession_context_menu(const QPoint &)));
 
 	m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
 	m_lbl_status = new QLabel(tr("not connected"), statusBar());
 	statusBar()->addPermanentWidget(m_lbl_status, 0);
-    set_interface_enabled(false);
+	set_interface_enabled(false);
 
 	ui->cb_group_by->setItemData(0, DwarfModel::GB_NOTHING);
 	ui->cb_group_by->addItem("Profession", DwarfModel::GB_PROFESSION);
@@ -89,21 +83,17 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->cb_group_by->addItem("Happiness", DwarfModel::GB_HAPPINESS);
 	
 	read_settings();
+	draw_professions();
 
 	check_latest_version();
-	//TODO: make this an option to connect on launch
-	connect_to_df();
-	//if (m_df && m_df->is_ok())
-	//	read_dwarves();
 }
 
 MainWindow::~MainWindow() {
-    delete ui;
+	delete ui;
 }
 
 void MainWindow::read_settings() {
-	LOGD << "beginning to read settings";
-	m_reading_settings = true; // don't allow writes while we're reading...
+	m_reading_settings = true;
 	m_settings->beginGroup("window");
 	{ // WINDOW SETTINGS
 		QByteArray geom = m_settings->value("geometry").toByteArray();
@@ -117,47 +107,16 @@ void MainWindow::read_settings() {
 		}
 	}
 	m_settings->endGroup();
-	
+
 	m_settings->beginGroup("gui_options");
 	{ // GUI OPTIONS
-		bool enabled;
-		enabled = m_settings->value("show_toolbutton_text", true).toBool();
-		ui->act_show_toolbutton_text->setChecked(enabled);
-		show_toolbutton_text(enabled);
-
-		enabled = m_settings->value("single_click_labor_changes", false).toBool();
-		ui->act_single_click_labor_changes->setChecked(enabled);
-		set_single_click_labor_changes(enabled);
-
 		int group_by = m_settings->value("group_by", 0).toInt();
 		ui->cb_group_by->setCurrentIndex(group_by);
 		m_model->set_group_by(group_by);
 	}
 	m_settings->endGroup();
 
-	m_settings->beginGroup("custom_professions");
-	{
-		QStringList profession_names = m_settings->childGroups();
-		foreach(QString prof, profession_names) {
-			CustomProfession *cp = new CustomProfession(this);
-			cp->set_name(prof);
-			m_settings->beginGroup(prof);
-			int size = m_settings->beginReadArray("labors");
-			for(int i = 0; i < size; ++i) {
-				m_settings->setArrayIndex(i);
-				int labor_id = m_settings->childKeys()[0].toInt();
-				cp->add_labor(labor_id);
-			}
-			m_settings->endArray();
-			m_settings->endGroup();
-			m_custom_professions << cp;
-		}
-	}
-	m_settings->endGroup();
-	
 	m_reading_settings = false;
-	LOGD << "finished reading settings";
-	draw_professions();	
 }
 
 void MainWindow::write_settings() {
@@ -170,29 +129,9 @@ void MainWindow::write_settings() {
 		m_settings->setValue("state", QVariant(state));
 		m_settings->endGroup();
 		m_settings->beginGroup("gui_options");
-		m_settings->setValue("show_toolbutton_text", ui->act_show_toolbutton_text->isChecked());
-		m_settings->setValue("single_click_labor_changes", ui->act_single_click_labor_changes->isChecked());
 		m_settings->setValue("group_by", m_model->current_grouping());
 		m_settings->endGroup();
 
-		if (m_custom_professions.size() > 0) {
-			m_settings->beginGroup("custom_professions");
-			m_settings->remove(""); // clear all of them, so we can re-write
-
-			foreach(CustomProfession *cp, m_custom_professions) {
-				m_settings->beginGroup(cp->get_name());
-				m_settings->beginWriteArray("labors");
-				int i = 0;
-				foreach(int labor_id, cp->get_enabled_labors()) {
-					m_settings->setArrayIndex(i++);
-					m_settings->setValue(QString::number(labor_id), true);
-				}
-				m_settings->endArray();
-				m_settings->endGroup();
-			}
-			m_settings->endGroup();
-			
-		}
 		LOGD << "finished writing settings";
 	}
 }
@@ -206,15 +145,15 @@ void MainWindow::closeEvent(QCloseEvent *evt) {
 
 void MainWindow::connect_to_df() {
 	LOGD << "attempting connection to running DF game";
-    if (m_df) {
+	if (m_df) {
 		LOGD << "already connected, disconnecting";
-        delete m_df;
-        set_interface_enabled(false);
-        m_df = 0;
-    }
+		delete m_df;
+		set_interface_enabled(false);
+		m_df = 0;
+	}
 	// find_running_copy can fail for several reasons, and will take care of 
 	// logging and notifying the user.
-    m_df = DFInstance::find_running_copy(this);
+	m_df = DFInstance::find_running_copy(this);
 	if (m_df && m_df->is_ok()) {
 		m_lbl_status->setText(tr("Connected to ") + m_df->memory_layout()->game_version());
 		set_interface_enabled(true);
@@ -222,9 +161,13 @@ void MainWindow::connect_to_df() {
 }
 
 void MainWindow::read_dwarves() {
+	if (!m_df || !m_df->is_ok()) {
+		return;
+	}
 	m_model->set_instance(m_df);
 	m_model->load_dwarves();
-	//FIXME m_stv->sortByColumn(0, Qt::AscendingOrder);
+	// cheap trick to setup the view correctly
+	m_view_manager->setCurrentIndex(m_view_manager->currentIndex());
 }
 
 void MainWindow::set_interface_enabled(bool enabled) {
@@ -265,10 +208,10 @@ void MainWindow::version_check_finished(bool error) {
 		QString minor = rx.cap(2);
 		QString patch = rx.cap(3);
 		Version newest_v(major.toInt(), minor.toInt(), patch.toInt());
-		qDebug() << "OUR VERSION:" << our_v.to_string();
-		qDebug() << "LATEST VERSION:" << newest_v.to_string();
+		LOGI << "OUR VERSION:" << our_v.to_string();
+		LOGI << "LATEST VERSION:" << newest_v.to_string();
 		if (our_v < newest_v) {
-			qDebug() << "LATEST VERSION IS NEWER!";
+			LOGI << "LATEST VERSION IS NEWER!";
 			QMessageBox *mb = new QMessageBox(this);
 			mb->setWindowTitle(tr("Update Available"));
 			mb->setText(tr("A newer version of this application is available."));
@@ -284,35 +227,21 @@ void MainWindow::version_check_finished(bool error) {
 }
 
 void MainWindow::scan_memory() {
-    QProgressDialog *pd = new QProgressDialog(tr("Scanning Memory"), tr("Cancel"), 0, 1, this);
-    connect(m_df, SIGNAL(scan_total_steps(int)), pd, SLOT(setMaximum(int)));
-    connect(m_df, SIGNAL(scan_progress(int)), pd, SLOT(setValue(int)));
-    connect(m_df, SIGNAL(scan_message(QString)), pd, SLOT(setLabelText(QString)));
-    connect(pd, SIGNAL(canceled()), m_df, SLOT(cancel_scan()));
-    pd->show();
+	QProgressDialog *pd = new QProgressDialog(tr("Scanning Memory"), tr("Cancel"), 0, 1, this);
+	connect(m_df, SIGNAL(scan_total_steps(int)), pd, SLOT(setMaximum(int)));
+	connect(m_df, SIGNAL(scan_progress(int)), pd, SLOT(setValue(int)));
+	connect(m_df, SIGNAL(scan_message(QString)), pd, SLOT(setLabelText(QString)));
+	connect(pd, SIGNAL(canceled()), m_df, SLOT(cancel_scan()));
+	pd->show();
 
-    int language_addr = m_df->find_language_vector();
-    int translation_addr = m_df->find_translation_vector();
-    int creature_addr = m_df->find_creature_vector();
+	int language_addr = m_df->find_language_vector();
+	int translation_addr = m_df->find_translation_vector();
+	int creature_addr = m_df->find_creature_vector();
 	pd->deleteLater();
 
-    qDebug() << "LANGUAGE VECTOR:   " << hex << language_addr;
-    qDebug() << "TRANSLATION VECTOR:" << hex << translation_addr;
-    qDebug() << "CREATURE VECTOR:   " << hex << creature_addr;
-}
-
-void MainWindow::show_toolbutton_text(bool enabled) {
-	if (enabled)
-		ui->main_toolbar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-	else
-		ui->main_toolbar->setToolButtonStyle(Qt::ToolButtonIconOnly);
-	write_settings();
-}
-
-void MainWindow::set_single_click_labor_changes(bool enabled) {
-	//FIXME
-	//m_stv->set_single_click_labor_changes(enabled);
-	//write_settings();
+	qDebug() << "LANGUAGE VECTOR:   " << hex << language_addr;
+	qDebug() << "TRANSLATION VECTOR:" << hex << translation_addr;
+	qDebug() << "CREATURE VECTOR:   " << hex << creature_addr;
 }
 
 void MainWindow::set_group_by(int group_by) {
@@ -343,95 +272,14 @@ void MainWindow::list_pending() {
 	ui->tree_pending->expandAll();
 }
 
-void MainWindow::add_custom_profession() {
-	/* FIXME
-	Dwarf *d = 0;
-	QModelIndex idx = m_stv->currentIndex();
-	if (idx.isValid()) {
-		int id = idx.data(DwarfModel::DR_ID).toInt();
-		d = m_model->get_dwarf_by_id(id);
-	}
 
-	CustomProfession *cp = new CustomProfession(d, this);
-	int accepted = cp->show_builder_dialog(this);
-	if (accepted) {
-		m_custom_professions << cp;
-		draw_professions();
-	}
-	write_settings();
-	*/
-}
 
-void MainWindow::reset_custom_profession() {
-	/* FIXME
-	const QItemSelection sel = m_stv->selectionModel()->selection();
-	foreach(const QModelIndex idx, sel.indexes()) {
-		if (idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
-			Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
-			if (d)
-				d->reset_custom_profession();
-		}
-	}
-	m_model->calculate_pending();
-	*/
-}
 
-void MainWindow::edit_custom_profession() {
-	if (!m_temp_cp)
-		return;
 
-	int accepted = m_temp_cp->show_builder_dialog(this);
-	if (accepted) {
-		draw_professions();
-	}
-	m_temp_cp = 0;
-	write_settings();
-}
-
-void MainWindow::edit_custom_profession(QListWidgetItem *i) {
-	QString name = i->text();
-	foreach(CustomProfession *cp, m_custom_professions) {
-		if (cp->get_name() == name) {
-			m_temp_cp = cp;
-		}
-	}
-	edit_custom_profession();
-}
-
-void MainWindow::delete_custom_profession() {
-	if (!m_temp_cp)
-		return;
-
-	QList<Dwarf*> blockers;
-	foreach(Dwarf *d, m_model->get_dwarves()) {
-		if (d->profession() == m_temp_cp->get_name()) {
-			blockers << d;
-		}
-	}
-	if (blockers.size() > 0) {
-		QMessageBox *box = new QMessageBox(this);
-		box->setIcon(QMessageBox::Warning);
-		box->setWindowTitle(tr("Cannot Remove Profession"));
-		box->setText(tr("The following %1 dwarf(s) is(are) still using <b>%2</b>. Please change them to"
-			" another profession before deleting this profession!").arg(blockers.size()).arg(m_temp_cp->get_name()));
-		QString msg = tr("Dwarves with this profession:\n\n");
-		foreach(Dwarf *d, blockers) {
-			msg += d->nice_name() + "\n";
-		}
-		box->setDetailedText(msg);
-		box->exec();
-	} else {
-		m_temp_cp->delete_from_disk();
-		m_custom_professions.remove(m_custom_professions.indexOf(m_temp_cp));
-	}
-	draw_professions();
-	m_temp_cp = 0;
-	write_settings();
-}
 
 void MainWindow::draw_professions() {
 	ui->list_custom_professions->clear();
-	foreach(CustomProfession *cp, m_custom_professions) {
+	foreach(CustomProfession *cp, DT->get_custom_professions()) {
 		new QListWidgetItem(cp->get_name(), ui->list_custom_professions);
 	}
 }
@@ -441,96 +289,15 @@ void MainWindow::draw_custom_profession_context_menu(const QPoint &p) {
 	if (!idx.isValid())
 		return;
 
-	foreach(CustomProfession *cp, m_custom_professions) {
-		if (cp && cp->get_name() == idx.data().toString())
-			m_temp_cp = cp;
-	}
+	QString cp_name = idx.data().toString();
 
 	QMenu m(this);
 	m.setTitle(tr("Custom Profession"));
-	m.addAction(tr("Edit..."), this, SLOT(edit_custom_profession()));
-	m.addAction(tr("Delete..."), this, SLOT(delete_custom_profession()));
+	QAction *a = m.addAction(tr("Edit..."), DT, SLOT(edit_custom_profession()));
+	a->setData(cp_name);
+	a = m.addAction(tr("Delete..."), DT, SLOT(delete_custom_profession()));
+	a->setData(cp_name);
 	m.exec(ui->list_custom_professions->viewport()->mapToGlobal(p));
-}
-
-void MainWindow::apply_custom_profession() {
-	/* FIXME
-	QAction *a = qobject_cast<QAction*>(QObject::sender());
-	CustomProfession *cp = get_custom_profession(a->text());
-	if (!cp)
-		return;
-
-	const QItemSelection sel = m_stv->selectionModel()->selection();
-	foreach(const QModelIndex idx, sel.indexes()) {
-		if (idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
-			qDebug() << idx.data();
-			Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
-			if (d)
-				d->apply_custom_profession(cp);
-		}
-	}
-	m_model->calculate_pending();
-	*/
-}
-
-CustomProfession *MainWindow::get_custom_profession(QString name) {
-	CustomProfession *retval = 0;
-	foreach(CustomProfession *cp, m_custom_professions) {
-		if (cp && cp->get_name() == name) {
-			retval = cp;
-			break;
-		}
-	}
-	return retval;
-}
-
-void MainWindow::import_existing_professions() {
-	int imported = 0;
-	foreach(Dwarf *d, m_model->get_dwarves()) {
-		QString prof = d->custom_profession_name();
-		if (prof.isEmpty())
-			continue;
-		CustomProfession *cp = get_custom_profession(prof);
-		if (!cp) { // import it
-			cp = new CustomProfession(d, this);
-			cp->set_name(prof);
-			m_custom_professions << cp;
-			imported++;
-		}
-	}
-	draw_professions();
-	QMessageBox::information(this, tr("Import Successful"), 
-		tr("Imported %n custom profession(s)", "" ,imported));
-}
-
-void MainWindow::set_nickname() {
-	/* FIXME
-	const QItemSelection sel = m_stv->selectionModel()->selection();
-	QModelIndexList first_col;
-	foreach(QModelIndex i, sel.indexes()) {
-		if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool())
-			first_col << i;
-	}
-
-	if (first_col.size() != 1) {
-		QMessageBox::warning(this, tr("Too many!"), tr("Slow down, killer. One at a time."));
-		return;
-	}
-	
-	int id = first_col[0].data(DwarfModel::DR_ID).toInt();
-	Dwarf *d = m_model->get_dwarf_by_id(id);
-	if (d) {
-		QString new_nick = QInputDialog::getText(this, tr("New Nickname"), tr("Nickname"), QLineEdit::Normal, d->nickname());
-		if (new_nick.length() > 28) {
-			QMessageBox::warning(this, tr("Nickname too long"), tr("Nicknames must be under 28 characters long."));
-			return;
-		}
-		d->set_nickname(new_nick);
-		m_model->setData(first_col[0], d->nice_name(), Qt::DisplayRole);
-		//m_model->dataChanged(first_col[0], first_col[0]);
-	}
-	m_model->calculate_pending();
-	*/
 }
 
 // web addresses
@@ -547,49 +314,6 @@ void MainWindow::go_to_new_issue() {
 	QDesktopServices::openUrl(QUrl("http://code.google.com/p/dwarftherapist/issues/entry"));
 }
 
-void MainWindow::reload_views() {
-	// make sure the required directories are in place
-	// TODO make directory locations configurable
-
-	QDir cur = QDir::current();
-	if (!cur.exists("etc/views")) {
-		QMessageBox::warning(this, tr("Missing Directory"),
-			tr("Could not fine the 'views' directory under 'etc'"));
-		return;
-	}
-	if (!cur.exists("etc/sets")) {
-		QMessageBox::warning(this, tr("Missing Directory"),
-			tr("Could not fine the 'sets' directory under 'etc'"));
-		return;
-	}
-
-	// goodbye old views!
-	foreach(GridView *v, m_views) {
-		v->deleteLater();
-	}
-	m_views.clear();
-
-	QDir views = QDir(QDir::currentPath() + "/etc/views");
-	QDir sets = QDir(QDir::currentPath() + "/etc/sets");
-	
-	QStringList view_files = views.entryList(QDir::Files | QDir::Readable, QDir::Time);
-	foreach(QString filename, view_files) {
-		if (filename.endsWith(".ini")) {
-			LOGD << "found view file" << views.filePath(filename);
-			GridView *v = GridView::from_file(views.filePath(filename), sets, this);
-			if (v)
-				m_views << v;
-		}
-	}
-	m_model->set_grid_view(m_views[0]);
-	
-	
-	// add view to file
-	// set main view to default
-	// make a tab out of each activated view + the default
+QToolBar *MainWindow::get_toolbar() {
+	return ui->main_toolbar;
 }
-void MainWindow::save_views() {}
-void MainWindow::add_new_view() {}
-void MainWindow::edit_view() {}
-void MainWindow::delete_view() {}
-

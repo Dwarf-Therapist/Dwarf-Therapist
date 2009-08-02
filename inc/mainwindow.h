@@ -39,42 +39,39 @@ class ViewManager;
 
 namespace Ui
 {
-    class MainWindow;
+	class MainWindow;
 }
 
 class MainWindow : public QMainWindow
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+	MainWindow(QWidget *parent = 0);
+	~MainWindow();
 
 	QSettings *get_settings() {return m_settings;}
+	QToolBar *get_toolbar();
+	DwarfModel *get_model() {return m_model;}
+	DwarfModelProxy *get_proxy() {return m_proxy;}
 
-    public slots:
-        void connect_to_df();
+	Ui::MainWindow *ui;
+
+	public slots:
+		void connect_to_df();
 		void read_dwarves();
 		void scan_memory();
 		
 		//settings
-		void show_toolbutton_text(bool);
 		void set_group_by(int);
-		void set_single_click_labor_changes(bool);
 
 		// dialogs
 		void show_about();
-		void add_custom_profession();
-		void reset_custom_profession();
 
 		void new_pending_changes(int);
 		void list_pending();
 		void draw_professions();
 		void draw_custom_profession_context_menu(const QPoint &);
-		void edit_custom_profession(QListWidgetItem*);
-		void edit_custom_profession();
-		void delete_custom_profession();
-		void import_existing_professions();
 		
 		void check_latest_version();
 		void version_check_finished(bool error);
@@ -85,23 +82,15 @@ public:
 		void go_to_project_home();
 		void go_to_new_issue();
 
-		// views
-		void reload_views();
-		void save_views();
-		void add_new_view();
-		void edit_view();
-		void delete_view();
-		
+	
 private:
-    Ui::MainWindow *ui;
-    DFInstance *m_df;
+	DFInstance *m_df;
 	QLabel *m_lbl_status;
 	QSettings *m_settings;
 	ViewManager *m_view_manager;
 	DwarfModel *m_model;
 	DwarfModelProxy *m_proxy;
 	AboutDialog *m_about_dialog;
-	QVector<CustomProfession*> m_custom_professions;
 	CustomProfession *m_temp_cp;
 	QHttp *m_http;
 	bool m_reading_settings;
@@ -112,12 +101,8 @@ private:
 	void read_settings();
 	void write_settings();
 
-	CustomProfession *get_custom_profession(QString);
-
-    private slots:
-        void set_interface_enabled(bool);
-		void apply_custom_profession();
-		void set_nickname();
+	private slots:
+		void set_interface_enabled(bool);
 		
 };
 

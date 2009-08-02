@@ -35,7 +35,7 @@ public:
 	UberDelegate(QObject *parent = 0);
 	void paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
 	
-	//QSize sizeHint(const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
+	virtual QSize sizeHint(const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
 
 	void set_model(DwarfModel *model) {m_model = model;}
 	void set_proxy(DwarfModelProxy *proxy) {m_proxy = proxy;}
@@ -48,8 +48,12 @@ public:
 	QColor color_guides;
 	QColor color_border;
 	QColor color_dirty_border;
-	QColor color_cursor;
+	QColor color_skill;
+
+	int cell_size;
 	int cell_padding;
+	bool auto_contrast;
+	bool draw_aggregates;
 
 private:
 	DwarfModel *m_model;

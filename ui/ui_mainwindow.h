@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'mainwindow.ui'
 **
-** Created: Fri Jul 31 21:31:33 2009
+** Created: Sun Aug 2 13:07:25 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -42,10 +42,8 @@ public:
     QAction *act_about;
     QAction *act_read_dwarves;
     QAction *act_scan_memory;
-    QAction *action_apply_skill_changes_immedietly;
     QAction *act_expand_all;
     QAction *act_collapse_all;
-    QAction *act_show_toolbutton_text;
     QAction *act_add_custom_profession;
     QAction *act_clear_pending_changes;
     QAction *act_commit_pending_changes;
@@ -54,8 +52,6 @@ public:
     QAction *act_show_main_toolbar;
     QAction *act_options;
     QAction *act_import_existing_professions;
-    QAction *act_keyboard_grid_focus;
-    QAction *act_single_click_labor_changes;
     QAction *act_go_forums;
     QAction *act_go_project_home;
     QAction *act_go_new_issue;
@@ -75,10 +71,8 @@ public:
     QMenuBar *menuBar;
     QMenu *menu_File;
     QMenu *menu_Help;
-    QMenu *menuProfessions;
     QMenu *menuWindows;
     QMenu *menuDocks;
-    QMenu *menuSettings;
     QToolBar *main_toolbar;
     QStatusBar *statusBar;
     QDockWidget *dock_pending_jobs_list;
@@ -131,10 +125,6 @@ public:
         QIcon icon5;
         icon5.addPixmap(QPixmap(QString::fromUtf8(":/img/drive_magnify.png")), QIcon::Normal, QIcon::Off);
         act_scan_memory->setIcon(icon5);
-        action_apply_skill_changes_immedietly = new QAction(MainWindow);
-        action_apply_skill_changes_immedietly->setObjectName(QString::fromUtf8("action_apply_skill_changes_immedietly"));
-        action_apply_skill_changes_immedietly->setCheckable(true);
-        action_apply_skill_changes_immedietly->setChecked(true);
         act_expand_all = new QAction(MainWindow);
         act_expand_all->setObjectName(QString::fromUtf8("act_expand_all"));
         act_expand_all->setEnabled(false);
@@ -147,78 +137,65 @@ public:
         QIcon icon7;
         icon7.addPixmap(QPixmap(QString::fromUtf8(":/img/arrow_in.png")), QIcon::Normal, QIcon::Off);
         act_collapse_all->setIcon(icon7);
-        act_show_toolbutton_text = new QAction(MainWindow);
-        act_show_toolbutton_text->setObjectName(QString::fromUtf8("act_show_toolbutton_text"));
-        act_show_toolbutton_text->setCheckable(true);
-        act_show_toolbutton_text->setChecked(true);
-        QIcon icon8;
-        icon8.addPixmap(QPixmap(QString::fromUtf8(":/img/textfield_add.png")), QIcon::Normal, QIcon::Off);
-        act_show_toolbutton_text->setIcon(icon8);
         act_add_custom_profession = new QAction(MainWindow);
         act_add_custom_profession->setObjectName(QString::fromUtf8("act_add_custom_profession"));
-        QIcon icon9;
-        icon9.addPixmap(QPixmap(QString::fromUtf8(":/img/page_white_add.png")), QIcon::Normal, QIcon::Off);
-        act_add_custom_profession->setIcon(icon9);
+        QIcon icon8;
+        icon8.addPixmap(QPixmap(QString::fromUtf8(":/img/page_white_add.png")), QIcon::Normal, QIcon::Off);
+        act_add_custom_profession->setIcon(icon8);
         act_clear_pending_changes = new QAction(MainWindow);
         act_clear_pending_changes->setObjectName(QString::fromUtf8("act_clear_pending_changes"));
         act_clear_pending_changes->setEnabled(false);
-        QIcon icon10;
-        icon10.addPixmap(QPixmap(QString::fromUtf8(":/img/table_delete.png")), QIcon::Normal, QIcon::Off);
-        act_clear_pending_changes->setIcon(icon10);
+        QIcon icon9;
+        icon9.addPixmap(QPixmap(QString::fromUtf8(":/img/table_delete.png")), QIcon::Normal, QIcon::Off);
+        act_clear_pending_changes->setIcon(icon9);
         act_commit_pending_changes = new QAction(MainWindow);
         act_commit_pending_changes->setObjectName(QString::fromUtf8("act_commit_pending_changes"));
         act_commit_pending_changes->setEnabled(false);
-        QIcon icon11;
-        icon11.addPixmap(QPixmap(QString::fromUtf8(":/img/table_go.png")), QIcon::Normal, QIcon::Off);
-        act_commit_pending_changes->setIcon(icon11);
+        QIcon icon10;
+        icon10.addPixmap(QPixmap(QString::fromUtf8(":/img/table_go.png")), QIcon::Normal, QIcon::Off);
+        act_commit_pending_changes->setIcon(icon10);
         act_show_pending_labors_window = new QAction(MainWindow);
         act_show_pending_labors_window->setObjectName(QString::fromUtf8("act_show_pending_labors_window"));
         act_show_pending_labors_window->setCheckable(true);
         act_show_pending_labors_window->setChecked(true);
-        QIcon icon12;
-        icon12.addPixmap(QPixmap(QString::fromUtf8(":/img/layout_content.png")), QIcon::Normal, QIcon::Off);
-        act_show_pending_labors_window->setIcon(icon12);
+        QIcon icon11;
+        icon11.addPixmap(QPixmap(QString::fromUtf8(":/img/layout_content.png")), QIcon::Normal, QIcon::Off);
+        act_show_pending_labors_window->setIcon(icon11);
         act_show_custom_professions_window = new QAction(MainWindow);
         act_show_custom_professions_window->setObjectName(QString::fromUtf8("act_show_custom_professions_window"));
         act_show_custom_professions_window->setCheckable(true);
         act_show_custom_professions_window->setChecked(true);
-        act_show_custom_professions_window->setIcon(icon12);
+        act_show_custom_professions_window->setIcon(icon11);
         act_show_main_toolbar = new QAction(MainWindow);
         act_show_main_toolbar->setObjectName(QString::fromUtf8("act_show_main_toolbar"));
         act_show_main_toolbar->setCheckable(false);
-        act_show_main_toolbar->setIcon(icon12);
+        act_show_main_toolbar->setIcon(icon11);
         act_options = new QAction(MainWindow);
         act_options->setObjectName(QString::fromUtf8("act_options"));
-        QIcon icon13;
-        icon13.addPixmap(QPixmap(QString::fromUtf8(":/img/color_wheel.png")), QIcon::Normal, QIcon::Off);
-        act_options->setIcon(icon13);
+        QIcon icon12;
+        icon12.addPixmap(QPixmap(QString::fromUtf8(":/img/color_wheel.png")), QIcon::Normal, QIcon::Off);
+        act_options->setIcon(icon12);
         act_import_existing_professions = new QAction(MainWindow);
         act_import_existing_professions->setObjectName(QString::fromUtf8("act_import_existing_professions"));
-        QIcon icon14;
-        icon14.addPixmap(QPixmap(QString::fromUtf8(":/img/application_get.png")), QIcon::Normal, QIcon::Off);
-        act_import_existing_professions->setIcon(icon14);
-        act_keyboard_grid_focus = new QAction(MainWindow);
-        act_keyboard_grid_focus->setObjectName(QString::fromUtf8("act_keyboard_grid_focus"));
-        act_keyboard_grid_focus->setCheckable(true);
-        act_single_click_labor_changes = new QAction(MainWindow);
-        act_single_click_labor_changes->setObjectName(QString::fromUtf8("act_single_click_labor_changes"));
-        act_single_click_labor_changes->setCheckable(true);
+        QIcon icon13;
+        icon13.addPixmap(QPixmap(QString::fromUtf8(":/img/application_get.png")), QIcon::Normal, QIcon::Off);
+        act_import_existing_professions->setIcon(icon13);
         act_go_forums = new QAction(MainWindow);
         act_go_forums->setObjectName(QString::fromUtf8("act_go_forums"));
-        QIcon icon15;
-        icon15.addPixmap(QPixmap(QString::fromUtf8(":/img/world_go.png")), QIcon::Normal, QIcon::Off);
-        act_go_forums->setIcon(icon15);
+        QIcon icon14;
+        icon14.addPixmap(QPixmap(QString::fromUtf8(":/img/world_go.png")), QIcon::Normal, QIcon::Off);
+        act_go_forums->setIcon(icon14);
         act_go_project_home = new QAction(MainWindow);
         act_go_project_home->setObjectName(QString::fromUtf8("act_go_project_home"));
-        act_go_project_home->setIcon(icon15);
+        act_go_project_home->setIcon(icon14);
         act_go_new_issue = new QAction(MainWindow);
         act_go_new_issue->setObjectName(QString::fromUtf8("act_go_new_issue"));
-        act_go_new_issue->setIcon(icon15);
+        act_go_new_issue->setIcon(icon14);
         act_go_donate = new QAction(MainWindow);
         act_go_donate->setObjectName(QString::fromUtf8("act_go_donate"));
-        QIcon icon16;
-        icon16.addPixmap(QPixmap(QString::fromUtf8(":/img/heart.png")), QIcon::Normal, QIcon::Off);
-        act_go_donate->setIcon(icon16);
+        QIcon icon15;
+        icon15.addPixmap(QPixmap(QString::fromUtf8(":/img/heart.png")), QIcon::Normal, QIcon::Off);
+        act_go_donate->setIcon(icon15);
         main_widget = new QWidget(MainWindow);
         main_widget->setObjectName(QString::fromUtf8("main_widget"));
         v_box = new QVBoxLayout(main_widget);
@@ -293,14 +270,10 @@ public:
         menu_Help = new QMenu(menuBar);
         menu_Help->setObjectName(QString::fromUtf8("menu_Help"));
         menu_Help->setTearOffEnabled(false);
-        menuProfessions = new QMenu(menuBar);
-        menuProfessions->setObjectName(QString::fromUtf8("menuProfessions"));
         menuWindows = new QMenu(menuBar);
         menuWindows->setObjectName(QString::fromUtf8("menuWindows"));
         menuDocks = new QMenu(menuWindows);
         menuDocks->setObjectName(QString::fromUtf8("menuDocks"));
-        menuSettings = new QMenu(menuBar);
-        menuSettings->setObjectName(QString::fromUtf8("menuSettings"));
         MainWindow->setMenuBar(menuBar);
         main_toolbar = new QToolBar(MainWindow);
         main_toolbar->setObjectName(QString::fromUtf8("main_toolbar"));
@@ -352,14 +325,14 @@ public:
         btn_commit = new QPushButton(dockWidgetContents);
         btn_commit->setObjectName(QString::fromUtf8("btn_commit"));
         btn_commit->setEnabled(false);
-        btn_commit->setIcon(icon11);
+        btn_commit->setIcon(icon10);
 
         horizontalLayout_3->addWidget(btn_commit);
 
         btn_clear = new QPushButton(dockWidgetContents);
         btn_clear->setObjectName(QString::fromUtf8("btn_clear"));
         btn_clear->setEnabled(false);
-        btn_clear->setIcon(icon10);
+        btn_clear->setIcon(icon9);
 
         horizontalLayout_3->addWidget(btn_clear);
 
@@ -384,14 +357,14 @@ public:
 
         btn_new_custom_profession = new QPushButton(dockWidgetContents_2);
         btn_new_custom_profession->setObjectName(QString::fromUtf8("btn_new_custom_profession"));
-        btn_new_custom_profession->setIcon(icon9);
+        btn_new_custom_profession->setIcon(icon8);
 
         verticalLayout_3->addWidget(btn_new_custom_profession);
 
         btn_import_professions = new QPushButton(dockWidgetContents_2);
         btn_import_professions->setObjectName(QString::fromUtf8("btn_import_professions"));
         btn_import_professions->setEnabled(false);
-        btn_import_professions->setIcon(icon14);
+        btn_import_professions->setIcon(icon13);
 
         verticalLayout_3->addWidget(btn_import_professions);
 
@@ -402,8 +375,6 @@ public:
 #endif // QT_NO_SHORTCUT
 
         menuBar->addAction(menu_File->menuAction());
-        menuBar->addAction(menuProfessions->menuAction());
-        menuBar->addAction(menuSettings->menuAction());
         menuBar->addAction(menuWindows->menuAction());
         menuBar->addAction(menu_Help->menuAction());
         menu_File->addAction(act_connect_to_DF);
@@ -411,7 +382,10 @@ public:
         menu_File->addSeparator();
         menu_File->addAction(act_commit_pending_changes);
         menu_File->addAction(act_clear_pending_changes);
+        menu_File->addAction(act_add_custom_profession);
+        menu_File->addAction(act_import_existing_professions);
         menu_File->addSeparator();
+        menu_File->addAction(act_options);
         menu_File->addAction(act_exit);
         menu_Help->addAction(act_go_project_home);
         menu_Help->addAction(act_go_forums);
@@ -419,15 +393,10 @@ public:
         menu_Help->addAction(act_go_donate);
         menu_Help->addSeparator();
         menu_Help->addAction(act_about);
-        menuProfessions->addAction(act_add_custom_profession);
-        menuProfessions->addAction(act_import_existing_professions);
         menuWindows->addAction(menuDocks->menuAction());
         menuWindows->addAction(act_show_main_toolbar);
         menuDocks->addAction(act_show_pending_labors_window);
         menuDocks->addAction(act_show_custom_professions_window);
-        menuSettings->addAction(act_show_toolbutton_text);
-        menuSettings->addAction(act_single_click_labor_changes);
-        menuSettings->addAction(act_options);
         main_toolbar->addAction(act_connect_to_DF);
         main_toolbar->addAction(act_read_dwarves);
         main_toolbar->addAction(act_add_custom_profession);
@@ -438,6 +407,7 @@ public:
         main_toolbar->addAction(act_clear_pending_changes);
         main_toolbar->addAction(act_commit_pending_changes);
         main_toolbar->addSeparator();
+        main_toolbar->addAction(act_options);
         main_toolbar->addAction(act_exit);
 
         retranslateUi(MainWindow);
@@ -445,10 +415,8 @@ public:
         QObject::connect(act_exit, SIGNAL(triggered()), MainWindow, SLOT(close()));
         QObject::connect(act_read_dwarves, SIGNAL(triggered()), MainWindow, SLOT(read_dwarves()));
         QObject::connect(act_scan_memory, SIGNAL(triggered()), MainWindow, SLOT(scan_memory()));
-        QObject::connect(act_show_toolbutton_text, SIGNAL(toggled(bool)), MainWindow, SLOT(show_toolbutton_text(bool)));
         QObject::connect(cb_group_by, SIGNAL(currentIndexChanged(int)), MainWindow, SLOT(set_group_by(int)));
         QObject::connect(act_about, SIGNAL(triggered()), MainWindow, SLOT(show_about()));
-        QObject::connect(act_add_custom_profession, SIGNAL(triggered()), MainWindow, SLOT(add_custom_profession()));
         QObject::connect(act_show_pending_labors_window, SIGNAL(triggered(bool)), dock_pending_jobs_list, SLOT(setVisible(bool)));
         QObject::connect(dock_pending_jobs_list, SIGNAL(visibilityChanged(bool)), act_show_pending_labors_window, SLOT(setChecked(bool)));
         QObject::connect(btn_commit, SIGNAL(clicked()), act_commit_pending_changes, SLOT(trigger()));
@@ -460,8 +428,6 @@ public:
         QObject::connect(btn_expand_all_pending, SIGNAL(clicked()), tree_pending, SLOT(expandAll()));
         QObject::connect(btn_new_custom_profession, SIGNAL(clicked()), act_add_custom_profession, SLOT(trigger()));
         QObject::connect(btn_import_professions, SIGNAL(clicked()), act_import_existing_professions, SLOT(trigger()));
-        QObject::connect(act_import_existing_professions, SIGNAL(triggered()), MainWindow, SLOT(import_existing_professions()));
-        QObject::connect(act_single_click_labor_changes, SIGNAL(triggered(bool)), MainWindow, SLOT(set_single_click_labor_changes(bool)));
         QObject::connect(act_go_donate, SIGNAL(triggered()), MainWindow, SLOT(go_to_donate()));
         QObject::connect(act_go_forums, SIGNAL(triggered()), MainWindow, SLOT(go_to_forums()));
         QObject::connect(act_go_new_issue, SIGNAL(triggered()), MainWindow, SLOT(go_to_new_issue()));
@@ -509,13 +475,6 @@ public:
         act_scan_memory->setStatusTip(QApplication::translate("MainWindow", "Map out the RAM of Dwarf Fortress looking for known values", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
         act_scan_memory->setShortcut(QApplication::translate("MainWindow", "Ctrl+M", 0, QApplication::UnicodeUTF8));
-        action_apply_skill_changes_immedietly->setText(QApplication::translate("MainWindow", "Apply Skill Toggles Immedietly", 0, QApplication::UnicodeUTF8));
-#ifndef QT_NO_TOOLTIP
-        action_apply_skill_changes_immedietly->setToolTip(QApplication::translate("MainWindow", "When set, skill changes are written to the game immedietly as opposed to buffering up.", 0, QApplication::UnicodeUTF8));
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_STATUSTIP
-        action_apply_skill_changes_immedietly->setStatusTip(QApplication::translate("MainWindow", "When set, skill changes are written to the game immedietly as opposed to buffering up", 0, QApplication::UnicodeUTF8));
-#endif // QT_NO_STATUSTIP
         act_expand_all->setText(QApplication::translate("MainWindow", "Expand All", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
         act_expand_all->setToolTip(QApplication::translate("MainWindow", "Expand all groups", 0, QApplication::UnicodeUTF8));
@@ -526,7 +485,6 @@ public:
         act_collapse_all->setToolTip(QApplication::translate("MainWindow", "Collapse all groups", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
         act_collapse_all->setShortcut(QApplication::translate("MainWindow", "Ctrl+Left", 0, QApplication::UnicodeUTF8));
-        act_show_toolbutton_text->setText(QApplication::translate("MainWindow", "Show Toolbutton Text", 0, QApplication::UnicodeUTF8));
         act_add_custom_profession->setText(QApplication::translate("MainWindow", "Add Custom Profession", 0, QApplication::UnicodeUTF8));
         act_clear_pending_changes->setText(QApplication::translate("MainWindow", "Clear Pending Changes", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
@@ -539,21 +497,13 @@ public:
         act_show_pending_labors_window->setText(QApplication::translate("MainWindow", "Show Pending Labors Window", 0, QApplication::UnicodeUTF8));
         act_show_custom_professions_window->setText(QApplication::translate("MainWindow", "Show Custom Professions Window", 0, QApplication::UnicodeUTF8));
         act_show_main_toolbar->setText(QApplication::translate("MainWindow", "Show Main Toolbar", 0, QApplication::UnicodeUTF8));
-        act_options->setText(QApplication::translate("MainWindow", "Color Settings...", 0, QApplication::UnicodeUTF8));
+        act_options->setText(QApplication::translate("MainWindow", "Options...", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
-        act_options->setToolTip(QApplication::translate("MainWindow", "Open the color options menu...", 0, QApplication::UnicodeUTF8));
+        act_options->setToolTip(QApplication::translate("MainWindow", "Open the options menu...", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
         act_import_existing_professions->setText(QApplication::translate("MainWindow", "Import Existing Professions", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
         act_import_existing_professions->setToolTip(QApplication::translate("MainWindow", "Import all custom professions from the loaded game, and create new labor templates for them", 0, QApplication::UnicodeUTF8));
-#endif // QT_NO_TOOLTIP
-        act_keyboard_grid_focus->setText(QApplication::translate("MainWindow", "Enable Keyboard Grid Focus", 0, QApplication::UnicodeUTF8));
-#ifndef QT_NO_TOOLTIP
-        act_keyboard_grid_focus->setToolTip(QApplication::translate("MainWindow", "When checked it will show an \"X\" over the currently focused labor cell. You can then use the arrow keys to navigate the grid much like in DF. Unchecked disables the focus \"X\"", 0, QApplication::UnicodeUTF8));
-#endif // QT_NO_TOOLTIP
-        act_single_click_labor_changes->setText(QApplication::translate("MainWindow", "Single Click Labor Changes", 0, QApplication::UnicodeUTF8));
-#ifndef QT_NO_TOOLTIP
-        act_single_click_labor_changes->setToolTip(QApplication::translate("MainWindow", "When set you will be able to toggle skills in the main grid with a single left-click of the mouse. When unchecked, you will have to double-click", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
         act_go_forums->setText(QApplication::translate("MainWindow", "Discussion Forums", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
@@ -587,10 +537,8 @@ public:
         pushButton->setText(QApplication::translate("MainWindow", "Clear Filter", 0, QApplication::UnicodeUTF8));
         menu_File->setTitle(QApplication::translate("MainWindow", "&File", 0, QApplication::UnicodeUTF8));
         menu_Help->setTitle(QApplication::translate("MainWindow", "&Help", 0, QApplication::UnicodeUTF8));
-        menuProfessions->setTitle(QApplication::translate("MainWindow", "Professions", 0, QApplication::UnicodeUTF8));
         menuWindows->setTitle(QApplication::translate("MainWindow", "Windows", 0, QApplication::UnicodeUTF8));
         menuDocks->setTitle(QApplication::translate("MainWindow", "Docks", 0, QApplication::UnicodeUTF8));
-        menuSettings->setTitle(QApplication::translate("MainWindow", "Settings", 0, QApplication::UnicodeUTF8));
         main_toolbar->setWindowTitle(QApplication::translate("MainWindow", "Main Toolbar", 0, QApplication::UnicodeUTF8));
         dock_pending_jobs_list->setWindowTitle(QApplication::translate("MainWindow", "Pending Labor Changes", 0, QApplication::UnicodeUTF8));
         QTreeWidgetItem *___qtreewidgetitem = tree_pending->headerItem();

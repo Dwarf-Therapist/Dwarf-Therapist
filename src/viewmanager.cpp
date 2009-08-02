@@ -78,11 +78,6 @@ void ViewManager::reload_views() {
 	}
 	connect(tabBar(), SIGNAL(currentChanged(int)), this, SLOT(setCurrentIndex(int)));
 	m_model->set_grid_view(m_views[0]);
-	
-	
-	// add view to file
-	// set main view to default
-	// make a tab out of each activated view + the default
 }
 
 void ViewManager::setCurrentIndex(int idx) {
@@ -93,6 +88,7 @@ void ViewManager::setCurrentIndex(int idx) {
 			m_model->build_rows();
 			stv->header()->setResizeMode(QHeaderView::Fixed);
 			stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
+			stv->sortByColumn(0, Qt::AscendingOrder);
 			break;
 		}
 	}
@@ -105,39 +101,8 @@ int ViewManager::add_tab_for_gridview(GridView *v) {
 	m_model->build_rows();
 	stv->header()->setResizeMode(QHeaderView::Fixed);
 	stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
-
-	connect(DT, SIGNAL(settings_changed()), stv, SLOT(settings_changed()));
-	connect(stv, SIGNAL(customContextMenuRequested(const QPoint &)), 
-			this, SLOT(draw_grid_context_menu(const QPoint &)));
-
+	stv->sortByColumn(0, Qt::AscendingOrder);
 	return addTab(stv, v->name());
-}
-
-void ViewManager::draw_grid_context_menu(const QPoint &p) {
-	StateTableView *stv = qobject_cast<StateTableView*>(currentWidget());
-	QModelIndex idx = stv->indexAt(p);
-	if (!idx.isValid() || idx.column() != 0  || idx.data(DwarfModel::DR_IS_AGGREGATE).toBool())
-		return;
-
-	QMenu m(this);
-	m.setTitle(tr("Dwarf Options"));
-	m.addAction(tr("Set Nickname..."), this, SLOT(set_nickname()));
-	//m.addAction(tr("View Details..."), this, "add_custom_profession()");
-	m.addSeparator();
-
-	QMenu sub(&m);
-	sub.setTitle(tr("Custom Professions"));
-	sub.addAction(tr("New custom profession from this dwarf..."), this, SLOT(add_custom_profession()));
-	sub.addAction(tr("Reset to default profession"), this, SLOT(reset_custom_profession()));
-	sub.addSeparator();
-	
-	/*foreach(CustomProfession *cp, m_custom_professions) {
-		sub.addAction(cp->get_name(), this, SLOT(apply_custom_profession()));
-	}
-	m.addMenu(&sub);
-	*/
-	
-	m.exec(stv->viewport()->mapToGlobal(p));
 }
 
 void ViewManager::expand_all() {

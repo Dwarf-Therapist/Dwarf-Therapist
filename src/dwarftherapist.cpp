@@ -6,13 +6,18 @@
 #include "mainwindow.h"
 #include "optionsmenu.h"
 #include "version.h"
+#include "customprofession.h"
+#include "dwarfmodel.h"
+#include "dwarfmodelproxy.h"
+#include "dwarf.h"
+#include "ui_mainwindow.h"
 
 DwarfTherapist::DwarfTherapist(int &argc, char **argv) 
 	: QApplication(argc, argv)
 	, m_user_settings(0)
 	, m_main_window(0)
 	, m_options_menu(0)
-	, m_reading_user_settings(false)
+	, m_reading_settings(false)
 {
 	setup_logging();
 	load_translator();
@@ -22,11 +27,19 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
 	m_options_menu = new OptionsMenu(m_main_window);
 
 	connect(m_options_menu, SIGNAL(settings_changed()), SIGNAL(settings_changed())); // the telephone game...
+	connect(m_options_menu, SIGNAL(settings_changed()), this, SLOT(read_settings()));
+	connect(m_main_window->ui->act_options, SIGNAL(triggered()), m_options_menu, SLOT(show()));
+	connect(m_main_window->ui->act_import_existing_professions, SIGNAL(triggered()), this, SLOT(import_existing_professions()));
+	connect(m_main_window->ui->list_custom_professions, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(edit_custom_profession(QListWidgetItem*)));
+	connect(m_main_window->ui->act_add_custom_profession, SIGNAL(triggered()), this, SLOT(add_custom_profession()));
+	connect(m_main_window->ui->le_filter_text, SIGNAL(textChanged(const QString&)), m_main_window->get_proxy(), SLOT(setFilterFixedString(const QString&)));
+	read_settings();
 
-
-	QAction *act_options = m_main_window->findChild<QAction *>("act_options");
-	connect(act_options, SIGNAL(triggered()), m_options_menu, SLOT(show()));
-
+	bool read = m_user_settings->value("options/read_on_startup", true).toBool();
+	if (read) {
+		m_main_window->connect_to_df();
+		m_main_window->read_dwarves();
+	}
 	m_main_window->show();
 }
 
@@ -63,4 +76,174 @@ void DwarfTherapist::load_translator() {
 	QTranslator translator;
 	translator.load("dwarftherapist_en");
 	installTranslator(&translator);
+}
+
+void DwarfTherapist::read_settings() {
+	LOGD << "beginning to read settings";
+	m_reading_settings = true; // don't allow writes while we're reading...
+
+	if (m_user_settings->value("options/show_toolbutton_text", true).toBool()) {
+		m_main_window->get_toolbar()->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+	} else {
+		m_main_window->get_toolbar()->setToolButtonStyle(Qt::ToolButtonIconOnly);
+	}
+
+	m_user_settings->beginGroup("custom_professions");
+	{
+		QStringList profession_names = m_user_settings->childGroups();
+		foreach(QString prof, profession_names) {
+			CustomProfession *cp = new CustomProfession(this);
+			cp->set_name(prof);
+			m_user_settings->beginGroup(prof);
+			int size = m_user_settings->beginReadArray("labors");
+			for(int i = 0; i < size; ++i) {
+				m_user_settings->setArrayIndex(i);
+				int labor_id = m_user_settings->childKeys()[0].toInt();
+				cp->add_labor(labor_id);
+			}
+			m_user_settings->endArray();
+			m_user_settings->endGroup();
+			m_custom_professions << cp;
+		}
+	}
+	m_user_settings->endGroup();
+
+	m_reading_settings = false;
+	m_main_window->draw_professions();
+	LOGD << "finished reading settings";
+}
+
+void DwarfTherapist::write_settings() {
+	if (m_custom_professions.size() > 0) {
+		m_user_settings->beginGroup("custom_professions");
+		m_user_settings->remove(""); // clear all of them, so we can re-write
+
+		foreach(CustomProfession *cp, m_custom_professions) {
+			m_user_settings->beginGroup(cp->get_name());
+			m_user_settings->beginWriteArray("labors");
+			int i = 0;
+			foreach(int labor_id, cp->get_enabled_labors()) {
+				m_user_settings->setArrayIndex(i++);
+				m_user_settings->setValue(QString::number(labor_id), true);
+			}
+			m_user_settings->endArray();
+			m_user_settings->endGroup();
+		}
+		m_user_settings->endGroup();
+	}
+}
+
+
+/* PROFESSIONS */
+void DwarfTherapist::import_existing_professions() {
+	int imported = 0;
+	foreach(Dwarf *d, m_main_window->get_model()->get_dwarves()) {
+		QString prof = d->custom_profession_name();
+		if (prof.isEmpty())
+			continue;
+		CustomProfession *cp = get_custom_profession(prof);
+		if (!cp) { // import it
+			cp = new CustomProfession(d, this);
+			cp->set_name(prof);
+			m_custom_professions << cp;
+			imported++;
+		}
+	}
+	m_main_window->draw_professions();
+	QMessageBox::information(m_main_window, tr("Import Successful"), 
+		tr("Imported %n custom profession(s)", "", imported));
+}
+
+CustomProfession *DwarfTherapist::get_custom_profession(QString name) {
+	CustomProfession *retval = 0;
+	foreach(CustomProfession *cp, m_custom_professions) {
+		if (cp && cp->get_name() == name) {
+			retval = cp;
+			break;
+		}
+	}
+	return retval;
+}
+
+void DwarfTherapist::add_custom_profession() {
+	Dwarf *d = 0;
+	custom_profession_from_dwarf(d);
+}
+
+
+//! from CP context menu's "Edit..."
+void DwarfTherapist::edit_custom_profession() {
+	QAction *a = qobject_cast<QAction*>(QObject::sender());
+	QString cp_name = a->data().toString();
+	CustomProfession *cp = get_custom_profession(cp_name);
+	if (!cp) {
+		LOGW << "tried to edit custom profession '" << cp_name << "' but I can't find it!";
+		return;
+	}
+	int accepted = cp->show_builder_dialog(m_main_window);
+	if (accepted) {
+		m_main_window->draw_professions();
+		write_settings();
+	}
+}
+
+//! from double-clicking a profession
+void DwarfTherapist::edit_custom_profession(QListWidgetItem *i) {
+	QString name = i->text();
+	CustomProfession *cp = get_custom_profession(name);
+	if (!cp) {
+		LOGW << "tried to edit custom profession '" << name << "' but I can't find it!";
+		return;
+	}
+	int accepted = cp->show_builder_dialog(m_main_window);
+	if (accepted) {
+		m_main_window->draw_professions();
+		write_settings();
+	}
+}
+
+void DwarfTherapist::delete_custom_profession() {
+	QAction *a = qobject_cast<QAction*>(QObject::sender());
+	QString cp_name = a->data().toString();
+	CustomProfession *cp = get_custom_profession(cp_name);
+	if (!cp) {
+		LOGW << "tried to delete custom profession '" << cp_name << "' but I can't find it!";
+		return;
+	}
+
+	QList<Dwarf*> blockers;
+	foreach(Dwarf *d, m_main_window->get_model()->get_dwarves()) {
+		if (d->profession() == cp_name) {
+			blockers << d;
+		}
+	}
+	if (blockers.size() > 0) {
+		QMessageBox *box = new QMessageBox(m_main_window);
+		box->setIcon(QMessageBox::Warning);
+		box->setWindowTitle(tr("Cannot Remove Profession"));
+		box->setText(tr("The following %1 dwarf(s) is(are) still using <b>%2</b>. Please change them to"
+			" another profession before deleting this profession!").arg(blockers.size()).arg(cp_name));
+		QString msg = tr("Dwarves with this profession:\n\n");
+		foreach(Dwarf *d, blockers) {
+			msg += d->nice_name() + "\n";
+		}
+		box->setDetailedText(msg);
+		box->exec();
+	} else {
+		cp->delete_from_disk();
+		m_custom_professions.remove(m_custom_professions.indexOf(cp));
+	}
+	m_main_window->draw_professions();
+	write_settings();
+}	
+
+int DwarfTherapist::custom_profession_from_dwarf(Dwarf *d) {
+	CustomProfession *cp = new CustomProfession(d, this);
+	int accepted = cp->show_builder_dialog(m_main_window);
+	if (accepted) {
+		m_custom_professions << cp;
+		m_main_window->draw_professions();
+		write_settings();
+	}
+	return accepted;
 }

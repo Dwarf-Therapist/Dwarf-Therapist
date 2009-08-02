@@ -13,17 +13,18 @@ DESTDIR = ./bin/debug
 QT += network
 CONFIG += debug
 DEFINES += _WINDOWS QT_LARGEFILE_SUPPORT QT_DLL QT_NETWORK_LIB
-INCLUDEPATH += ../../../Qt/qtcolorpicker-2.6-opensource/src \
+INCLUDEPATH += 
+		$(LIBCOLORPICKER)/src \
     $(LIBQXT)/include/Qxt/QxtGui \
     $(LIBQXT)/include/Qxt/QxtCore \
     ./inc \
     ./inc/models \
     ./bin/debug \
+    ./bin/release \
     ./ui \
     $(QTDIR)/mkspecs/win32-msvc2008 \
-    Debug \
     .
-LIBS += -L"../../../Qt/qtcolorpicker-2.6-opensource/lib" \
+LIBS += -L"$(LIBCOLORPICKER)" \
     -L"$(LIBQXT)/lib" \
     -lpsapi \
     -lQxtCored \

@@ -23,6 +23,8 @@ THE SOFTWARE.
 #include "rotatedheader.h"
 #include "dwarfmodel.h"
 #include "dwarfmodelproxy.h"
+#include "dwarftherapist.h"
+#include "defines.h"
 
 RotatedHeader::RotatedHeader(Qt::Orientation orientation, QWidget *parent)
 	: QHeaderView(orientation, parent)
@@ -30,6 +32,19 @@ RotatedHeader::RotatedHeader(Qt::Orientation orientation, QWidget *parent)
 	setClickable(true);
 	setSortIndicatorShown(true);
 	setMouseTracking(true);
+
+	read_settings();
+	connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
+}
+
+void RotatedHeader::read_settings() {
+	QSettings *s = DT->user_settings();
+	int cell_size = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
+	for(int i=1; i < count(); ++i) {
+		if (!m_spacer_indexes.contains(i)) {
+			resizeSection(i, cell_size);
+		}
+	}
 }
 
 void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const {
@@ -70,7 +85,7 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 	style()->drawControl(QStyle::CE_HeaderSection, &opt, p);
 	
 	QLinearGradient g(rect.topLeft(), rect.bottomLeft());
-    g.setColorAt(0.25, QColor(255, 255, 255, 10));
+	g.setColorAt(0.25, QColor(255, 255, 255, 10));
 	g.setColorAt(1.0, bg);
 	if (idx > 0)
 		p->fillRect(rect.adjusted(1,8,-1,-2), QBrush(g));

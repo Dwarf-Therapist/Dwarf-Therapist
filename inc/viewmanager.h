@@ -40,9 +40,6 @@ public:
 		void setCurrentIndex(int);
 		void reload_views();
 
-		// context menus
-		void draw_grid_context_menu(const QPoint &p);
-
 		// passthru
 		void expand_all();
 		void collapse_all();

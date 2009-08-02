@@ -49,11 +49,11 @@ void Dwarf::refresh_data() {
 	m_id = m_df->read_int32(m_address + mem->dwarf_offset("id"), bytes_read);
 	m_nick_name = m_df->read_string(m_address + mem->dwarf_offset("nick_name"));
 	m_pending_nick_name = m_nick_name;
-    m_last_name = read_last_name(m_address + mem->dwarf_offset("last_name"));
+	m_last_name = read_last_name(m_address + mem->dwarf_offset("last_name"));
 	m_custom_profession = m_df->read_string(m_address + mem->dwarf_offset("custom_profession"));
 	m_pending_custom_profession = m_df->read_string(m_address + mem->dwarf_offset("custom_profession"));
 	m_race_id = m_df->read_int32(m_address + mem->dwarf_offset("race"), bytes_read);
-    m_skills = read_skills(m_address + mem->dwarf_offset("skills"));
+	m_skills = read_skills(m_address + mem->dwarf_offset("skills"));
 	m_profession = read_professtion(m_address + mem->dwarf_offset("profession"));
 	m_strength = m_df->read_int32(m_address + mem->dwarf_offset("strength"), bytes_read);
 	m_toughness = m_df->read_int32(m_address + mem->dwarf_offset("toughness"), bytes_read);
@@ -113,39 +113,39 @@ QString Dwarf::nice_name() {
 
 QString Dwarf::read_last_name(int address) {
 	MemoryLayout *mem = m_df->memory_layout();
-    uint bytes_read = 0;
-    //int actual_lang_table = m_df->read_int32(gdr->get_address("language_vector") + m_df->get_memory_correction() + 4, bytes_read);
-    int translations_ptr = m_df->read_int32(mem->address("translation_vector") + m_df->get_memory_correction() + 4, bytes_read);
-    int translation_ptr = m_df->read_int32(translations_ptr, bytes_read);
-    int actual_dwarf_translation_table = m_df->read_int32(translation_ptr + mem->offset("word_table"), bytes_read);
+	uint bytes_read = 0;
+	//int actual_lang_table = m_df->read_int32(gdr->get_address("language_vector") + m_df->get_memory_correction() + 4, bytes_read);
+	int translations_ptr = m_df->read_int32(mem->address("translation_vector") + m_df->get_memory_correction() + 4, bytes_read);
+	int translation_ptr = m_df->read_int32(translations_ptr, bytes_read);
+	int actual_dwarf_translation_table = m_df->read_int32(translation_ptr + mem->offset("word_table"), bytes_read);
 
-    QString out;
+	QString out;
 
 	for (int i = 0; i < 7; i++) {
-        int word = m_df->read_int32(address + i * 4, bytes_read);
-        if(bytes_read == 0 || word == -1)
+		int word = m_df->read_int32(address + i * 4, bytes_read);
+		if(bytes_read == 0 || word == -1)
 			break;
-        //Q_ASSERT(word < 10000);
-        int addr = m_df->read_int32(actual_dwarf_translation_table + word * 4, bytes_read);
-        out += m_df->read_string(addr);
+		//Q_ASSERT(word < 10000);
+		int addr = m_df->read_int32(actual_dwarf_translation_table + word * 4, bytes_read);
+		out += m_df->read_string(addr);
 	}
-    if (out.size() > 1) {
-        out[0] = out[0].toUpper();
-    }
-    return out;
+	if (out.size() > 1) {
+		out[0] = out[0].toUpper();
+	}
+	return out;
 }
 
 
 QVector<Skill> Dwarf::read_skills(int address) {
-    QVector<Skill> skills(0);
-    uint bytes_read = 0;
+	QVector<Skill> skills(0);
+	uint bytes_read = 0;
 	foreach(int addr, m_df->enumerate_vector(address)) {
-        short type = m_df->read_short(addr, bytes_read);
-        ushort experience = m_df->read_ushort(addr + 2, bytes_read);//BUG: this is wrong
-        short rating = m_df->read_short(addr + 4, bytes_read);
+		short type = m_df->read_short(addr, bytes_read);
+		ushort experience = m_df->read_ushort(addr + 2, bytes_read);//BUG: this is wrong
+		short rating = m_df->read_short(addr + 4, bytes_read);
 		Skill s(type, experience, rating);
-        skills.append(s);
-    }
+		skills.append(s);
+	}
 	return skills;
 }
 
@@ -271,11 +271,11 @@ void Dwarf::commit_pending() {
 }
 
 int Dwarf::apply_custom_profession(CustomProfession *cp) {
-	foreach(bool enabled, m_pending_labors) {
-		enabled = false;
+	foreach(int labor_id, m_pending_labors.uniqueKeys()) {
+		set_labor(labor_id, false); // turn off everything...
 	}
 	foreach(int labor_id, cp->get_enabled_labors()) {
-		set_labor(labor_id, true);
+		set_labor(labor_id, true); // only turn on what this prof has enabled...
 	}
 	m_pending_custom_profession = cp->get_name();
 	return get_dirty_labors().size();

@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include "dwarfmodelproxy.h"
 #include "dwarf.h"
+#include "defines.h"
 #include "gridview.h"
 #include "columntypes.h"
 #include "utils.h"
@@ -41,7 +42,7 @@ void UberDelegate::read_settings() {
 	QSettings *s = DT->user_settings();
 	s->beginGroup("options");
 	s->beginGroup("colors");
-	color_cursor = s->value("cursor").value<QColor>();
+	color_skill = s->value("skill").value<QColor>();
 	color_dirty_border = s->value("dirty_border").value<QColor>();
 	color_active_labor = s->value("active_labor").value<QColor>();
 	color_active_group = s->value("active_group").value<QColor>();
@@ -51,7 +52,10 @@ void UberDelegate::read_settings() {
 	color_border = s->value("border").value<QColor>();
 	s->endGroup();
 	s->endGroup();
+	cell_size = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
 	cell_padding = s->value("options/grid/cell_padding", 0).toInt();
+	auto_contrast = s->value("options/auto_contrast", true).toBool();
+	draw_aggregates = s->value("options/show_aggregates", true).toBool();
 }
 
 void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
@@ -92,7 +96,8 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
 				if (m_model->current_grouping() == DwarfModel::GB_NOTHING || !agg) {
 					paint_labor(p, opt, idx);
 				} else {
-					paint_aggregate(p, opt, idx);
+					if (draw_aggregates)
+						paint_aggregate(p, opt, idx);
 				}
 			}
 			break;
@@ -104,12 +109,18 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
 		case CT_SPACER:
 		default:
 			QStyledItemDelegate::paint(p, opt, idx);
+			if (opt.state & QStyle::State_Selected) {
+				p->save();
+				p->setPen(color_guides);
+				p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
+				p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
+				p->restore();
+			}
 			break;
 	}
 }
 
 QRect UberDelegate::adjust_rect(QRect r) const {
-	//TODO read padding options from somewhere...
 	return r.adjusted(cell_padding, cell_padding, (cell_padding * -2) - 1, (cell_padding * -2) - 1);
 }
 
@@ -128,13 +139,16 @@ QColor UberDelegate::paint_bg(bool active, QPainter *p, const QStyleOptionViewIt
 }
 
 void UberDelegate::paint_skill(int rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
-	QColor comp = compliment(bg);
+	QColor c = color_skill; 
+	if (auto_contrast)
+		c = compliment(bg);
+
 	if (rating == 15) {
 		// draw diamond
 		p->save();
 		p->setRenderHint(QPainter::Antialiasing);
 		p->setPen(Qt::gray);
-		p->setBrush(QBrush(comp));
+		p->setBrush(QBrush(c));
 
 		QPolygonF shape;
 		shape << QPointF(0.5, 0.1) //top
@@ -147,14 +161,13 @@ void UberDelegate::paint_skill(int rating, QColor bg, QPainter *p, const QStyleO
 		p->drawPolygon(shape);
 		p->restore();
 	} else if (rating < 15 && rating > 10) {
-		// TODO: try drawing the square of increasing size...
-		float size = 0.80f * (rating / 14.0f);
+		float size = 0.75f * (rating / 14.0f);
 		float inset = (1.0f - size) / 2.0f;
 
 		p->save();
 		p->translate(opt.rect.x(), opt.rect.y());
 		p->scale(opt.rect.width(), opt.rect.height());
-		p->fillRect(QRectF(inset, inset, size, size), QBrush(comp));
+		p->fillRect(QRectF(inset, inset, size, size), QBrush(c));
 		p->restore();
 	} else if (rating > 0) {
 		float size = 0.65f * (rating / 10.0f);
@@ -163,7 +176,7 @@ void UberDelegate::paint_skill(int rating, QColor bg, QPainter *p, const QStyleO
 		p->save();
 		p->translate(opt.rect.x(), opt.rect.y());
 		p->scale(opt.rect.width(), opt.rect.height());
-		p->fillRect(QRectF(inset, inset, size, size), QBrush(comp));
+		p->fillRect(QRectF(inset, inset, size, size), QBrush(c));
 		p->restore();
 	}
 }
@@ -242,10 +255,8 @@ void UberDelegate::paint_grid(bool dirty, QPainter *p, const QStyleOptionViewIte
 	p->restore();
 }
 
-/* If grid-sizing ever comes back...
 QSize UberDelegate::sizeHint(const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
 	if (idx.column() == 0)
 		return QStyledItemDelegate::sizeHint(opt, idx);
-	return QSize(24, 24);
+	return QSize(cell_size, cell_size);
 }
-*/

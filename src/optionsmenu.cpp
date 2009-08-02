@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "optionsmenu.h"
 #include "customcolor.h"
 #include "dwarftherapist.h"
+#include "defines.h"
 
 OptionsMenu::OptionsMenu(MainWindow *parent)
 	: QDialog(parent)
@@ -34,7 +35,7 @@ OptionsMenu::OptionsMenu(MainWindow *parent)
 	ui->setupUi(this);
 	
 	m_general_colors 
-		<< new CustomColor(tr("Cursor"), "", "cursor", QColor(0xFF00FF), this)
+		<< new CustomColor(tr("Skill"), "", "skill", QColor(0xAAAAAA), this)
 		<< new CustomColor(tr("Active Labor Cell"), "", "active_labor", QColor(0xE0FFE0), this)
 		<< new CustomColor(tr("Active Group Cell"), "", "active_group", QColor(0x33FF33), this)
 		<< new CustomColor(tr("Inactive Group Cell"), "", "inactive_group", QColor(0x999999), this)
@@ -50,6 +51,8 @@ OptionsMenu::OptionsMenu(MainWindow *parent)
 	ui->group_general_colors->setLayout(main_layout);
 
 	connect(ui->btn_restore_defaults, SIGNAL(pressed()), this, SLOT(restore_defaults()));
+	connect(ui->btn_change_font, SIGNAL(pressed()), this, SLOT(show_font_chooser()));
+	connect(ui->cb_auto_contrast, SIGNAL(toggled(bool)), m_general_colors[0], SLOT(setDisabled(bool)));
 	read_settings();
 }
 
@@ -68,10 +71,21 @@ void OptionsMenu::read_settings() {
 	}
 	s->endGroup();
 	s->beginGroup("grid");
-	int cell_padding = s->value("cell_padding", 0).toInt();
-	ui->sb_cell_padding->setValue(cell_padding);
+	ui->sb_cell_size->setValue(s->value("cell_size", DEFAULT_CELL_SIZE).toInt());
+	ui->sb_cell_padding->setValue(s->value("cell_padding", 0).toInt());
+	
+	m_font = s->value("font", QFont("Segoe UI", 8)).value<QFont>();
+	m_dirty_font = m_font;
+	ui->lbl_current_font->setText(m_font.family() + " [" + QString::number(m_font.pointSize()) + "pt]");
+	
 	s->endGroup();
+	ui->cb_read_dwarves_on_startup->setChecked(s->value("read_on_startup", true).toBool());
+	ui->cb_auto_contrast->setChecked(s->value("auto_contrast", true).toBool());
+	ui->cb_show_aggregates->setChecked(s->value("show_aggregates", true).toBool());
+	ui->cb_single_click_labor_changes->setChecked(s->value("single_click_labor_changes", true).toBool());
+	ui->cb_show_toolbar_text->setChecked(s->value("show_toolbutton_text", true).toBool());
 	s->endGroup();
+
 	m_reading_settings = false;
 }
 
@@ -79,25 +93,38 @@ void OptionsMenu::write_settings() {
 	if (!m_reading_settings) {
 		QSettings *s = DT->user_settings();
 		s->beginGroup("options");
+
 		s->beginGroup("colors");
 		foreach(CustomColor *cc, m_general_colors) {
 			s->setValue(cc->get_config_key(), cc->get_color());
 		}
 		s->endGroup();
+		
 		s->beginGroup("grid");
+		s->setValue("cell_size", ui->sb_cell_size->value());
 		s->setValue("cell_padding", ui->sb_cell_padding->value());
+		s->setValue("font", m_font);
 		s->endGroup();
+
+		s->setValue("read_on_startup", ui->cb_read_dwarves_on_startup->isChecked());
+		s->setValue("auto_contrast", ui->cb_auto_contrast->isChecked());
+		s->setValue("show_aggregates", ui->cb_show_aggregates->isChecked());
+		s->setValue("single_click_labor_changes", ui->cb_single_click_labor_changes->isChecked());
+		s->setValue("show_toolbutton_text", ui->cb_show_toolbar_text->isChecked());
+		
 		s->endGroup();
 	}
 }
 
 void OptionsMenu::accept() {
+	m_font = m_dirty_font;
 	write_settings();
 	emit settings_changed();
 	QDialog::accept();
 }
 
 void OptionsMenu::reject() {
+	m_dirty_font = m_font;
 	read_settings();
 	QDialog::reject();
 }
@@ -105,5 +132,26 @@ void OptionsMenu::reject() {
 void OptionsMenu::restore_defaults() {
 	foreach(CustomColor *cc, m_general_colors) {
 		cc->reset_to_default();
+	}
+	ui->cb_read_dwarves_on_startup->setChecked(true);
+	ui->cb_auto_contrast->setChecked(true);
+	ui->cb_show_aggregates->setChecked(true);
+	ui->cb_single_click_labor_changes->setChecked(false);
+	ui->cb_show_toolbar_text->setChecked(true);
+
+	m_font = QFont("Segoe UI", 8);
+	m_dirty_font = m_font;
+	ui->lbl_current_font->setText(m_font.family() + " [" + QString::number(m_font.pointSize()) + "pt]");
+
+	ui->sb_cell_size->setValue(DEFAULT_CELL_SIZE);
+	ui->sb_cell_padding->setValue(0);
+}
+
+void OptionsMenu::show_font_chooser() {
+	bool ok;
+	QFont tmp = QFontDialog::getFont(&ok, m_font, this, tr("Font used in main table"));
+	if (ok) {
+		ui->lbl_current_font->setText(tmp.family() + " [" + QString::number(tmp.pointSize()) + "pt]");
+		m_dirty_font = tmp;
 	}
 }

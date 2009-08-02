@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "labor.h"
 #include "statetableview.h"
 #include "defines.h"
+#include "dwarftherapist.h"
 
 #include "columntypes.h"
 #include "gridview.h"
@@ -43,16 +44,15 @@ DwarfModel::DwarfModel(QObject *parent)
 	, m_df(0)
 	, m_group_by(GB_NOTHING)
 	, m_selected_col(-1)
-{
-}
+{}
 
 void DwarfModel::section_right_clicked(int col) {
 	if (col == m_selected_col) {
 		m_selected_col = -1; // turn off the guides
 	} else {
 		m_selected_col = col;
-		emit dataChanged(index(0, col), index(rowCount()-1, col));
 	}
+	emit dataChanged(index(0, col), index(rowCount()-1, col));
 }
 
 void DwarfModel::load_dwarves() {
@@ -74,13 +74,10 @@ void DwarfModel::build_rows() {
 	QIcon icn_f(":img/female.png");
 	QIcon icn_m(":img/male.png");
 
-	GameDataReader *gdr = GameDataReader::ptr();
-
 	// don't need to go delete the dwarf pointers in here, since the earlier foreach should have
 	// deleted them
 	m_grouped_dwarves.clear();
-	clear(); // remove all rows and headers
-	//removeRows(0, rowCount());
+	clear();
 
 	// populate dwarf maps
 	foreach(Dwarf *d, m_dwarves) {
@@ -125,7 +122,9 @@ void DwarfModel::build_rows() {
 			QStandardItem *header = new QStandardItem(col->title());
 			header->setData(col->bg_color(), Qt::BackgroundColorRole);
 			setHorizontalHeaderItem(start_col++, header);
-			int width = 16; // TODO get this setting from somewhere
+
+			QSettings *s = DT->user_settings();
+			int width = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
 			switch (col->type()) {
 				case CT_SPACER:
 					SpacerColumn *c = static_cast<SpacerColumn*>(col);
@@ -136,6 +135,13 @@ void DwarfModel::build_rows() {
 			emit preferred_header_size(start_col - 1, width);
 		}
 	}
+
+	/*if (m_group_by == GB_PROFESSION) {
+		// sort professions by column labors
+		// for each col in this view, find the associated skill, and then profession that matches the skill
+		// draw all professions ordered to match the cols, then everything remaining at the end...
+
+	}*/
 
 	foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
 		QStandardItem *root = 0;
@@ -151,24 +157,12 @@ void DwarfModel::build_rows() {
 		}
 
 		if (root) { // we have a parent, so we should draw an aggregate row
-			// TODO options to draw aggregates or not...
 			foreach(ViewColumnSet *set, m_gridview->sets()) {
 				foreach(ViewColumn *col, set->columns()) {
 					QStandardItem *item = col->build_aggregate(key, m_grouped_dwarves[key]);
 					root_row << item;
 				}
 			}
-			/*foreach(Labor *l, labors) {
-				QStandardItem *item = new QStandardItem();
-				//item->setText(0);
-				item->setData(true, DR_IS_AGGREGATE);
-				item->setData(l->labor_id, DR_LABOR_ID);
-				item->setData(key, DR_GROUP_NAME);
-				item->setData(false, DR_DIRTY);
-				item->setData(0, DR_RATING);
-				item->setData(0, DR_DUMMY);
-				root_row << item;
-			}*/
 		}
 		
 		foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
@@ -224,7 +218,6 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
 		return;
 
 	QStandardItem *item = itemFromIndex(idx);
-	bool valid = idx.isValid();
 	Q_ASSERT(item);
 
 	bool is_aggregate = item->data(DR_IS_AGGREGATE).toBool();
@@ -263,7 +256,7 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
 		m_dwarves[dwarf_id]->toggle_labor(labor_id);
 	}
 	calculate_pending();
-	//qDebug() << "toggling" << labor_id << "for dwarf:" << dwarf_id;
+	TRACE << "toggling" << labor_id << "for dwarf:" << dwarf_id;
 }
 
 void DwarfModel::set_group_by(int group_by) {
