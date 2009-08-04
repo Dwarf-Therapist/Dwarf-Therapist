@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="/" >
+    <file>img/image_add.png</file>
+    <file>img/table_add.png</file>
     <file>img/cross.png</file>
     <file>img/tab_add.png</file>
     <file>img/hammer.png</file>
