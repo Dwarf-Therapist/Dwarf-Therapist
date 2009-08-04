@@ -136,6 +136,7 @@ void DwarfModel::build_rows() {
 		}
 	}
 
+	//FIXME : jump to prof and jump to pending change
 	/*if (m_group_by == GB_PROFESSION) {
 		// sort professions by column labors
 		// for each col in this view, find the associated skill, and then profession that matches the skill

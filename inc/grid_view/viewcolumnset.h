@@ -53,6 +53,10 @@ public:
 	//! loads a returns a new set object based on the description in filename
 	static ViewColumnSet *from_file(QString filename, QObject *parent = 0);
 
+	//! for use when editing this set is cancelled, just reload from disk
+	void reset_from_disk();
+
+	bool eventFilter(QObject *, QEvent *);
 	public slots:
 		void set_name(const QString &name);
 		void write_settings();
@@ -62,13 +66,11 @@ public:
 
 		//! for use when the builder dialog is open
 		void update_color(const QColor &new_color);
+		void draw_columns();
 		void type_chosen(const QString &type_name);
 		void add_column_from_gui();
 		void draw_column_context_menu(const QPoint &);
 		void edit_column();
-		void order_changed(const QModelIndexList &);
-		void item_changed(QListWidgetItem *item);
-		
 
 private:
 	Ui::ViewColumnSetDialog *ui;
@@ -79,6 +81,8 @@ private:
 	QBrush m_bg_brush; // possibly allow textured backgrounds in the long long ago, err future.
 	QColor m_bg_color;
 	QDialog *m_dialog; // for showing the builder dialog
+
+	void order_changed();
 };
 
 #endif

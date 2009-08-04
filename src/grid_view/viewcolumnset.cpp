@@ -55,16 +55,17 @@ void ViewColumnSet::clear_columns() {
 	m_columns.clear();
 }
 
-ViewColumnSet *ViewColumnSet::from_file(QString filename, QObject *parent) {
-	QSettings s(filename, QSettings::IniFormat);
+void ViewColumnSet::reset_from_disk() {
+	QSettings s(m_filename, QSettings::IniFormat);
 	QString set_name = s.value("info/name", "UNKNOWN").toString();
 	QString color_in_hex = s.value("info/bg_color", "0xFFFFFF").toString();
 	QColor bg_color = from_hex(color_in_hex);
 
-	ViewColumnSet *ret_val = new ViewColumnSet(set_name, parent);
-	ret_val->set_filename(filename);
-	ret_val->set_bg_color(bg_color);
-
+	clear_columns();
+	
+	m_name = set_name;
+	m_bg_color = bg_color;
+	
 	int cols = s.beginReadArray("columns");
 	for (int i = 0; i < cols; ++i) {
 		s.setArrayIndex(i);
@@ -76,7 +77,7 @@ ViewColumnSet *ViewColumnSet::from_file(QString filename, QObject *parent) {
 				{
 					int skill_id = s.value("skill_id", -1).toInt();
 					//TODO: check that labor and skill are known ids
-					new SkillColumn(col_name, skill_id, ret_val, ret_val);
+					new SkillColumn(col_name, skill_id, this, this);
 				}
 				break;
 			case CT_LABOR:
@@ -84,20 +85,22 @@ ViewColumnSet *ViewColumnSet::from_file(QString filename, QObject *parent) {
 					int labor_id = s.value("labor_id", -1).toInt();
 					int skill_id = s.value("skill_id", -1).toInt();
 					//TODO: check that labor and skill are known ids
-					new LaborColumn(col_name, labor_id, skill_id, ret_val, ret_val);
+					new LaborColumn(col_name, labor_id, skill_id, this, this);
 				}
 				break;
 			case CT_HAPPINESS:
-				new HappinessColumn(col_name, ret_val, ret_val);
+				new HappinessColumn(col_name, this, this);
 				break;
 			case CT_SPACER:
 				{
 					int width = s.value("width", 4).toInt();
 					QString hex_color = s.value("bg_color").toString();
 					QColor bg_color = from_hex(hex_color);
-					SpacerColumn *c = new SpacerColumn(col_name, ret_val, ret_val);
-					c->set_override_color(true);
-					c->set_bg_color(bg_color);
+					SpacerColumn *c = new SpacerColumn(col_name, this, this);
+					c->set_override_color(s.value("override_color").toBool());
+					if (c->override_color()) {
+						c->set_bg_color(bg_color);
+					}
 					c->set_width(width);
 				}
 				break;
@@ -107,7 +110,12 @@ ViewColumnSet *ViewColumnSet::from_file(QString filename, QObject *parent) {
 		}
 	}
 	s.endArray();
+}
 
+ViewColumnSet *ViewColumnSet::from_file(QString filename, QObject *parent) {
+	ViewColumnSet *ret_val = new ViewColumnSet("", parent);
+	ret_val->set_filename(filename);
+	ret_val->reset_from_disk();
 	return ret_val;
 }
 
@@ -161,19 +169,7 @@ void ViewColumnSet::write_settings() {
 
 void ViewColumnSet::update_color(const QColor &new_color) {
 	set_bg_color(new_color);
-	if (m_dialog) {
-		foreach(QListWidgetItem *i, ui->list_columns->findItems("*", Qt::MatchWildcard)) {
-			QString title = i->data(Qt::UserRole).toString();
-			foreach(ViewColumn *vc, columns()) {
-				if (title == vc->title()) {
-					if (vc->override_color())
-						i->setBackgroundColor(vc->bg_color());
-					else
-						i->setBackgroundColor(m_bg_color);
-				}
-			}
-		}
-	}
+	draw_columns();
 }
 
 void ViewColumnSet::type_chosen(const QString &type_name) {
@@ -306,18 +302,52 @@ void ViewColumnSet::edit_column() {
 		if (dui->cb_override->isChecked()) {
 			vc->set_bg_color(dui->cp_bg_color->currentColor());
 		}
+		draw_columns();
 	}
 	delete dui;
 }
 
-void ViewColumnSet::order_changed(const QModelIndexList &idx_list) {
-	int x = idx_list.length();
+bool ViewColumnSet::eventFilter(QObject *obj, QEvent *e) {
+	if (e->type() == QEvent::ChildRemoved) {
+		order_changed();
+		return false;
+	}
+	return false;
 }
 
-void ViewColumnSet::item_changed(QListWidgetItem *item) {
-	LOGD << item->text();
+//! called when the user has re-arranged the columns in the gui..
+void ViewColumnSet::order_changed() {
+	QMap<int, ViewColumn*> new_views;
+	int insert_count = 0;
+	for (int i = 0; i < ui->list_columns->count(); ++i) {
+		// find the VC that matches this item in the GUI list
+		QListWidgetItem *item = ui->list_columns->item(i);
+		QString title = item->data(Qt::UserRole).toString();
+		COLUMN_TYPE type = static_cast<COLUMN_TYPE>(item->data(Qt::UserRole + 1).toInt());
+		foreach(ViewColumn *vc, columns()) {
+			if (vc->title() == title && vc->type() == type) {
+				new_views.insert(insert_count++, vc);
+			}
+		}
+	}
+	m_columns = new_views;
+	draw_columns();
 }
-	
+
+void ViewColumnSet::draw_columns() {
+	ui->list_columns->clear();
+	foreach(ViewColumn *vc, m_columns) {
+		QString title = QString("%1 %2").arg(get_column_type(vc->type())).arg(vc->title());
+		QListWidgetItem *item = new QListWidgetItem(title, ui->list_columns);
+		item->setData(Qt::UserRole, vc->title());
+		item->setData(Qt::UserRole + 1, vc->type());
+		if (vc->override_color())
+			item->setBackgroundColor(vc->bg_color());
+		else
+			item->setBackgroundColor(m_bg_color);
+	}
+}
+
 int ViewColumnSet::show_builder_dialog(QWidget *parent) {
 	m_dialog = new QDialog(parent);
 	ui->setupUi(m_dialog);
@@ -336,22 +366,18 @@ int ViewColumnSet::show_builder_dialog(QWidget *parent) {
 	connect(ui->cb_col_type, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(type_chosen(const QString &)));
 	connect(ui->btn_add_col, SIGNAL(pressed()), this, SLOT(add_column_from_gui()));
 	connect(ui->list_columns, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_column_context_menu(const QPoint &)));
-	connect(ui->list_columns, SIGNAL(indexesMoved(const QModelIndexList &)), this, SLOT(order_changed(const QModelIndexList &)));
-	connect(ui->list_columns, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(item_changed(QListWidgetItem*)));
 	connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
 
-	foreach(ViewColumn *vc, columns()) {
-		QString title = QString("%1 %2").arg(get_column_type(vc->type())).arg(vc->title());
-		QListWidgetItem *item = new QListWidgetItem(title, ui->list_columns);
-		item->setData(Qt::UserRole, vc->title());
-		item->setData(Qt::UserRole + 1, vc->type());
-		if (vc->override_color())
-			item->setBackgroundColor(vc->bg_color());
-		else
-			item->setBackgroundColor(m_bg_color);
-	}
+	ui->list_columns->installEventFilter(this);
+
+	draw_columns();
 
 	int code = m_dialog->exec();
-	m_dialog->deleteLater();
+	if (code == QDialog::Accepted) {
+		//write to disk?
+	} else {
+		reset_from_disk();
+	}
+	delete m_dialog;
 	return code;
 }

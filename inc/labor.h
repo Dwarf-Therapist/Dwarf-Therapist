@@ -28,20 +28,18 @@ THE SOFTWARE.
 class Labor : public QObject {
 	Q_OBJECT
 public:
-	Labor(QString name, int id, int skill, int list_order, QColor color, QObject *parent = 0) 
+	Labor(QString name, int id, int skill, int list_order, QObject *parent = 0) 
 		: QObject(parent)
 		, name(name)
 		, labor_id(id)
 		, skill_id(skill)
 		, list_order(list_order)
-		, color(color)
 	{}
 	Labor(Labor &other)
 		: QObject(other.parent())
 		, name(other.name)
 		, labor_id(other.labor_id)
 		, list_order(other.list_order)
-		, color(other.color)
 	{}
 
 	int operator<(const Labor &other) {
@@ -52,7 +50,6 @@ public:
 	int labor_id;
 	int skill_id;
 	int list_order;
-	QColor color;
 };
 
 #endif;

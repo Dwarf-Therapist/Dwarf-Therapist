@@ -36,7 +36,7 @@ GameDataReader::GameDataReader(QObject *parent) :
 	foreach(QString k, m_data_settings->childGroups()) {
 		m_data_settings->beginGroup(k);
 		Labor *l = new Labor(get_string_for_key("name"), get_int_for_key("id", 10), 
-							 get_int_for_key("skill", 10), k.toInt(), get_color("color"), this);
+							 get_int_for_key("skill", 10), k.toInt(), this);
 		m_labors[l->labor_id] = l;
 		m_ordered_labors[l->list_order] = l;
 		m_data_settings->endGroup();
@@ -113,7 +113,7 @@ QStringList GameDataReader::get_keys(QString section) {
 }
 
 Labor *GameDataReader::get_labor(int labor_id) {
-	return m_labors.value(labor_id, new Labor("UNKNOWN", -1, -1, 1000, Qt::black, this));
+	return m_labors.value(labor_id, new Labor("UNKNOWN", -1, -1, 1000, this));
 }
 
 GameDataReader *GameDataReader::m_instance = 0;

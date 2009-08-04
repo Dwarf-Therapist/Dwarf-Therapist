@@ -77,7 +77,8 @@ void ViewManager::reload_views() {
 		}
 	}
 	connect(tabBar(), SIGNAL(currentChanged(int)), this, SLOT(setCurrentIndex(int)));
-	m_model->set_grid_view(m_views[0]);
+	//m_model->set_grid_view(m_views[0]);
+	connect(cornerWidget(), SIGNAL(pressed()), m_views[0]->sets()[4], SLOT(show_builder_dialog()));
 }
 
 void ViewManager::write_views() {
@@ -98,7 +99,6 @@ void ViewManager::setCurrentIndex(int idx) {
 			break;
 		}
 	}
-	connect(cornerWidget(), SIGNAL(pressed()), m_views[0]->sets()[4], SLOT(show_builder_dialog()));
 }
 
 int ViewManager::add_tab_for_gridview(GridView *v) {

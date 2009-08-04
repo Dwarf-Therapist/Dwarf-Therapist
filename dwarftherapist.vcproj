@@ -208,18 +208,6 @@
 			UniqueIdentifier="{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}"
 			>
 			<File
-				RelativePath="bin\debug\DwarfTherapist.res"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="bin\release\DwarfTherapist.res"
 				>
 				<FileConfiguration
@@ -232,14 +220,14 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\bin\Debug\moc_aboutdialog.cpp"
+				RelativePath="bin\debug\DwarfTherapist.res"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
-						Name="VCCLCompilerTool"
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -256,7 +244,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\bin\Debug\moc_customcolor.cpp"
+				RelativePath=".\bin\Debug\moc_aboutdialog.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -272,6 +260,18 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\bin\Debug\moc_customcolor.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -304,18 +304,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\bin\Debug\moc_dfinstance.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\bin\Release\moc_dfinstance.cpp"
 				>
 				<FileConfiguration
@@ -328,7 +316,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\bin\Debug\moc_dwarf.cpp"
+				RelativePath=".\bin\Debug\moc_dfinstance.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -344,6 +332,18 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\bin\Debug\moc_dwarf.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -376,6 +376,18 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\bin\Debug\moc_dwarfmodelproxy.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\bin\Release\moc_dwarfmodelproxy.cpp"
 				>
 				<FileConfiguration
@@ -388,10 +400,10 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\bin\Debug\moc_dwarfmodelproxy.cpp"
+				RelativePath=".\bin\Release\moc_dwarftherapist.cpp"
 				>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -412,25 +424,6 @@
 				<FileConfiguration
 					Name="Release|Win32"
 					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\bin\Release\moc_dwarftherapist.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -467,32 +460,6 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\bin\Debug\moc_gridview.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\bin\Release\moc_gridview.cpp"
@@ -505,19 +472,12 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\bin\Release\moc_labor.cpp"
+				RelativePath=".\bin\Debug\moc_gridview.cpp"
 				>
 				<FileConfiguration
-					Name="Debug|Win32"
+					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -538,15 +498,20 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\bin\Debug\moc_mainwindow.cpp"
+				RelativePath=".\bin\Release\moc_labor.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\bin\Debug\moc_mainwindow.cpp"
+				>
 				<FileConfiguration
 					Name="Release|Win32"
 					ExcludedFromBuild="true"
@@ -567,8 +532,13 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\bin\Release\moc_optionsmenu.cpp"
+				>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -588,10 +558,10 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\bin\Release\moc_optionsmenu.cpp"
+				RelativePath=".\bin\Debug\moc_rotatedheader.cpp"
 				>
 				<FileConfiguration
-					Name="Debug|Win32"
+					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -604,18 +574,6 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\bin\Debug\moc_rotatedheader.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -648,35 +606,9 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\bin\Release\moc_uberdelegate.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\bin\Debug\moc_uberdelegate.cpp"
 				>
 				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -686,7 +618,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\bin\Release\moc_viewcolumn.cpp"
+				RelativePath=".\bin\Release\moc_uberdelegate.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -702,6 +634,18 @@
 				>
 				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\bin\Release\moc_viewcolumn.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -739,32 +683,6 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\bin\Release\moc_viewmanager.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\bin\Debug\moc_viewmanager.cpp"
@@ -778,6 +696,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\bin\Release\moc_viewmanager.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool

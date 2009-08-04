@@ -19,7 +19,7 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
 	, m_options_menu(0)
 	, m_reading_settings(false)
 {
-	setup_logging();
+	//setup_logging();
 	load_translator();
 
 	m_user_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
