@@ -52,6 +52,7 @@ public:
 	GridView(QString name, QObject *parent = 0);
 
 	QString name() {return m_name;}
+	void set_filename(const QString &filename) {m_filename = filename;}
 	void add_set(ViewColumnSet *set);
 	void remove_set(QString name);
 	void clear();
@@ -60,10 +61,13 @@ public:
 	void set_active(bool active) {m_active = active;}
 
 	static GridView *from_file(const QString &filepath, const QDir &sets_dir, QObject *parent = 0);
+	public slots:
+		void write_settings();
 
 private:
 	bool m_active;
 	QString m_name;
+	QString m_filename;
 	QList<ViewColumnSet*> m_sets;
 	QMap<QString, ViewColumnSet*> m_set_map;
 };

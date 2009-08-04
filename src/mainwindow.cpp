@@ -139,6 +139,7 @@ void MainWindow::write_settings() {
 void MainWindow::closeEvent(QCloseEvent *evt) {
 	LOG->info() << "Beginning shutdown";
 	write_settings();
+	m_view_manager->write_views();
 	evt->accept();
 	LOG->info() << "Closing Dwarf Therapist normally";
 }

@@ -60,6 +60,7 @@ GridView *GridView::from_file(const QString &filepath, const QDir &sets_dir, QOb
 	bool active = s.value("info/active", true).toBool();
 	
 	GridView *ret_val = new GridView(name, parent);
+	ret_val->set_filename(filepath);
 	ret_val->set_active(active);
 
 	QMap<QString, ViewColumnSet*> tmp_sets;
@@ -82,4 +83,23 @@ GridView *GridView::from_file(const QString &filepath, const QDir &sets_dir, QOb
 	s.endArray();
 
 	return ret_val;
+}
+
+void GridView::write_settings() {
+	if (m_filename.isEmpty())
+		m_filename = m_name + ".ini";
+
+	QSettings s(m_filename, QSettings::IniFormat);
+	s.setValue("info/name", m_name);
+	s.setValue("info/active", m_active);
+
+	s.remove("sets");
+	s.beginWriteArray("sets", sets().size());
+	int i = 0;
+	foreach(ViewColumnSet *set, sets()) {
+		s.setArrayIndex(i++);
+		s.setValue("name", set->name());
+		set->write_settings();
+	}
+	s.endArray();
 }

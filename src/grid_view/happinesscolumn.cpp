@@ -63,6 +63,6 @@ QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
 	return item;
 }
 
-QStandardItem *HappinessColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
+QStandardItem *HappinessColumn::build_aggregate(const QString &, const QVector<Dwarf*> &) {
 	return new QStandardItem;
 }

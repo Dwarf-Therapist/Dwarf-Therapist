@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "gridview.h"
 #include "defines.h"
 #include "dwarftherapist.h"
+#include "viewcolumnset.h"
 
 ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent)
 	: QTabWidget(parent)
@@ -37,7 +38,6 @@ ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent
  
 	QPushButton *btn = new QPushButton("Add View", this);
 	setCornerWidget(btn);
-	
 	reload_views();
 }
 
@@ -80,6 +80,12 @@ void ViewManager::reload_views() {
 	m_model->set_grid_view(m_views[0]);
 }
 
+void ViewManager::write_views() {
+	foreach(GridView *v, m_views) {
+		v->write_settings();
+	}
+}
+
 void ViewManager::setCurrentIndex(int idx) {
 	StateTableView *stv = qobject_cast<StateTableView*>(widget(idx));
 	foreach(GridView *v, m_views) {
@@ -92,6 +98,7 @@ void ViewManager::setCurrentIndex(int idx) {
 			break;
 		}
 	}
+	connect(cornerWidget(), SIGNAL(pressed()), m_views[0]->sets()[4], SLOT(show_builder_dialog()));
 }
 
 int ViewManager::add_tab_for_gridview(GridView *v) {

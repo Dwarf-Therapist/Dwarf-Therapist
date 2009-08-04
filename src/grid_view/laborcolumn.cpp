@@ -52,7 +52,7 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
 	return item;
 }
 
-QStandardItem *LaborColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
+QStandardItem *LaborColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &) {
 	QStandardItem *item = new QStandardItem;
 	item->setStatusTip(m_title + " :: " + group_name);
 	QColor bg;

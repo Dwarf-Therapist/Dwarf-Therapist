@@ -28,6 +28,11 @@ THE SOFTWARE.
 class ViewColumn;
 class GridView;
 
+namespace Ui
+{
+	class ViewColumnSetDialog;
+}
+
 /*!
 ViewColumnSet
 */
@@ -37,6 +42,7 @@ public:
 	ViewColumnSet(QString name, QObject *parent = 0);
 
 	QString name() {return m_name;}
+	void set_filename(const QString &filename) {m_filename = filename;}
 	void add_column(ViewColumn *col);
 	void clear_columns();
 	void set_bg_color(const QColor &color) {m_bg_color = color;}
@@ -44,14 +50,35 @@ public:
 	QList<ViewColumn*> columns() {return m_columns.values();}
 	GridView *view() {return m_view;}
 
+	//! loads a returns a new set object based on the description in filename
 	static ViewColumnSet *from_file(QString filename, QObject *parent = 0);
 
+	public slots:
+		void set_name(const QString &name);
+		void write_settings();
+		
+		//! Shows a small editing dialog for this set
+		int show_builder_dialog(QWidget *parent = 0);
+
+		//! for use when the builder dialog is open
+		void update_color(const QColor &new_color);
+		void type_chosen(const QString &type_name);
+		void add_column_from_gui();
+		void draw_column_context_menu(const QPoint &);
+		void edit_column();
+		void order_changed(const QModelIndexList &);
+		void item_changed(QListWidgetItem *item);
+		
+
 private:
+	Ui::ViewColumnSetDialog *ui;
 	QString m_name;
+	QString m_filename;
 	GridView *m_view;
 	QMap<int, ViewColumn*> m_columns;
 	QBrush m_bg_brush; // possibly allow textured backgrounds in the long long ago, err future.
 	QColor m_bg_color;
+	QDialog *m_dialog; // for showing the builder dialog
 };
 
 #endif

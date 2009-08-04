@@ -46,4 +46,14 @@ static inline COLUMN_TYPE get_column_type(const QString &name) {
 	return CT_DEFAULT;
 }
 
+static inline QString get_column_type(const COLUMN_TYPE &type) {
+	switch (type) {
+		case CT_SPACER:		return "SPACER";
+		case CT_SKILL:		return "SKILL";
+		case CT_LABOR:		return "LABOR";
+		case CT_HAPPINESS:	return "HAPPINESS";
+	}
+	return "UNKNOWN";
+}
+
 #endif;

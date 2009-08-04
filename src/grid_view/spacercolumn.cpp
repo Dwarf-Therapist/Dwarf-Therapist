@@ -36,7 +36,7 @@ QStandardItem *SpacerColumn::build_cell(Dwarf *d) {
 	return item;
 }
 
-QStandardItem *SpacerColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
+QStandardItem *SpacerColumn::build_aggregate(const QString &, const QVector<Dwarf*> &) {
 	QStandardItem *item = new QStandardItem;
 	QColor bg;
 	if (m_override_set_colors) {

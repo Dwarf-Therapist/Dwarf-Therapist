@@ -138,7 +138,7 @@ QColor UberDelegate::paint_bg(bool active, QPainter *p, const QStyleOptionViewIt
 	return bg;
 }
 
-void UberDelegate::paint_skill(int rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
+void UberDelegate::paint_skill(int rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &) const {
 	QColor c = color_skill; 
 	if (auto_contrast)
 		c = compliment(bg);
@@ -237,7 +237,7 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 	paint_grid(dirty_count > 0, p, opt, proxy_idx);
 }
 
-void UberDelegate::paint_grid(bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
+void UberDelegate::paint_grid(bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &) const {
 	QRect r = adjust_rect(opt.rect);
 	p->save(); // border last
 	p->setBrush(Qt::NoBrush);

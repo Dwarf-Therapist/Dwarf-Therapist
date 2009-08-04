@@ -35,10 +35,11 @@ class ViewManager : public QTabWidget {
 	Q_OBJECT
 public:
 	ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent = 0);
-
+	
 	public slots:
 		void setCurrentIndex(int);
 		void reload_views();
+		void write_views();
 
 		// passthru
 		void expand_all();

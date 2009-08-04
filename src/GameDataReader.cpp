@@ -42,6 +42,13 @@ GameDataReader::GameDataReader(QObject *parent) :
 		m_data_settings->endGroup();
 	}
 	m_data_settings->endGroup();
+
+	m_data_settings->beginGroup("skill_names");
+	foreach(QString k, m_data_settings->childKeys()) {
+		int skill_id = k.toInt();
+		m_skills.insert(skill_id, m_data_settings->value(k, "UNKNOWN").toString());
+	}
+	m_data_settings->endGroup();
 }
  
 int GameDataReader::get_int_for_key(QString key, short base) {

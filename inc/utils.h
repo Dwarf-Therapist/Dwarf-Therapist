@@ -79,4 +79,27 @@ static inline QColor compliment(const QColor &in_color) {
 	return QColor::fromHsv(h, s, v);
 }
 
+static inline QColor from_hex(const QString &h) {
+	bool ok;
+	QColor retval = Qt::gray;
+	if (h.length() == 8) { // "0x99AABB" (no alpha)
+		retval = QColor(h.toInt(&ok, 16));
+	} else if (h.length() == 10) { // "0x99AABBFF" (last two for alpha channel)
+		int r = h.mid(2, 2).toInt(&ok, 16);
+		int g = h.mid(4, 2).toInt(&ok, 16);
+		int b = h.mid(6, 2).toInt(&ok, 16);
+		int a = h.mid(8, 2).toInt(&ok, 16);
+		retval = QColor(r, g, b, a);
+	}
+	return retval;
+}
+
+static inline QString to_hex(const QColor &c) {
+	return QString("0x%1%2%3%4")
+		.arg(QString::number(c.red(), 16))
+		.arg(QString::number(c.green(), 16))
+		.arg(QString::number(c.blue(), 16))
+		.arg(QString::number(c.alpha(), 16));
+}
+
 #endif // UTILS_H

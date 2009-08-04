@@ -61,6 +61,7 @@ public:
 	int get_dwarf_offset(QString key) {return get_int_for_key("dwarf_offsets/" + key);}
 
 	QMap<int, Labor*> get_ordered_labors() {return m_ordered_labors;}
+	QMap<int, QString> get_skills() {return m_skills;}
 	Labor *get_labor(int labor_id);
 	
 	QString get_string_for_key(QString key);
@@ -79,6 +80,7 @@ private:
 	QSettings *m_data_settings;
 	QMap<int, Labor*> m_labors;
 	QMap<int, Labor*> m_ordered_labors;
+	QMap<int, QString> m_skills;
 	int m_game_checksum;
 
 
