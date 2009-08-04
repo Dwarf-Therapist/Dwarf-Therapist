@@ -93,7 +93,7 @@ void ViewColumnSet::reset_from_disk() {
 				break;
 			case CT_SPACER:
 				{
-					int width = s.value("width", 4).toInt();
+					int width = s.value("width", DEFAULT_SPACER_WIDTH).toInt();
 					QString hex_color = s.value("bg_color").toString();
 					QColor bg_color = from_hex(hex_color);
 					SpacerColumn *c = new SpacerColumn(col_name, this, this);
@@ -132,6 +132,14 @@ void ViewColumnSet::write_settings() {
 	int i = 0;
 	foreach(ViewColumn *vc, columns()) {
 		s.setArrayIndex(i++);
+		
+		//cleanup
+		s.remove("override_color");
+		s.remove("bg_color");
+		s.remove("width");
+		s.remove("labor_id");
+		s.remove("skill_id");
+
 		if (!vc->title().isEmpty())
 			s.setValue("name", vc->title());
 		s.setValue("type", get_column_type(vc->type()));
@@ -269,14 +277,24 @@ void ViewColumnSet::draw_column_context_menu(const QPoint &p) {
 	m.exec(ui->list_columns->viewport()->mapToGlobal(p));
 }
 
+void ViewColumnSet::edit_column(QListWidgetItem *item) {
+	int row = ui->list_columns->row(item);
+	ViewColumn *vc = m_columns.value(row, 0);
+	if (vc)
+		show_edit_column_dialog(vc);
+}
+
 void ViewColumnSet::edit_column() {
 	// find out which column we're editing...
 	QAction *a = qobject_cast<QAction*>(QObject::sender());
 	QPoint  p = a->data().value<QPoint>();
-
 	QModelIndex idx = ui->list_columns->indexAt(p);
-	ViewColumn *vc = columns().at(idx.row());
+	ViewColumn *vc = m_columns.value(idx.row(), 0);
+	if (vc)
+		show_edit_column_dialog(vc);
+}
 
+void ViewColumnSet::show_edit_column_dialog(ViewColumn *vc) {
 	// build the column dialog
 	QDialog *d = new QDialog(m_dialog);
 	Ui::ColumnEditDialog *dui = new Ui::ColumnEditDialog;
@@ -285,11 +303,17 @@ void ViewColumnSet::edit_column() {
 	
 	connect(dui->cb_override, SIGNAL(toggled(bool)), dui->cp_bg_color, SLOT(setEnabled(bool)));
 
-	dui->cp_bg_color->setCurrentColor(m_bg_color);
+	if (vc->override_color())
+		dui->cp_bg_color->setCurrentColor(vc->bg_color());
+	else
+		dui->cp_bg_color->setCurrentColor(m_bg_color);
 	dui->cp_bg_color->setStandardColors();
 	dui->le_title->setText(vc->title());
 	dui->cb_override->setChecked(vc->override_color());
-	if (vc->type() != CT_SPACER) {
+	if (vc->type() == CT_SPACER) {
+		SpacerColumn *c = static_cast<SpacerColumn*>(vc);
+		dui->sb_width->setValue(c->width());
+	} else { // don't show the width form for non-spacer columns
 		dui->lbl_col_width->hide();
 		dui->sb_width->hide();
 		dui->verticalLayout->removeItem(dui->hbox_width);
@@ -301,6 +325,13 @@ void ViewColumnSet::edit_column() {
 		vc->set_override_color(dui->cb_override->isChecked());
 		if (dui->cb_override->isChecked()) {
 			vc->set_bg_color(dui->cp_bg_color->currentColor());
+		}
+		if (vc->type() == CT_SPACER) {
+			SpacerColumn *c = static_cast<SpacerColumn*>(vc);
+			int w = dui->sb_width->value();
+			if (w < 1)
+				w = DEFAULT_SPACER_WIDTH;
+			c->set_width(w);
 		}
 		draw_columns();
 	}
@@ -366,6 +397,7 @@ int ViewColumnSet::show_builder_dialog(QWidget *parent) {
 	connect(ui->cb_col_type, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(type_chosen(const QString &)));
 	connect(ui->btn_add_col, SIGNAL(pressed()), this, SLOT(add_column_from_gui()));
 	connect(ui->list_columns, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_column_context_menu(const QPoint &)));
+	connect(ui->list_columns, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(edit_column(QListWidgetItem*)));
 	connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
 
 	ui->list_columns->installEventFilter(this);

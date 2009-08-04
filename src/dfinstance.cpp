@@ -533,6 +533,6 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 			}
 		}
 	}
-	LOGD << "found" << dwarves.size() << "dwarves out of" << creatures.size() << "creatures";
+	LOGI << "found" << dwarves.size() << "dwarves out of" << creatures.size() << "creatures";
 	return dwarves;
 }

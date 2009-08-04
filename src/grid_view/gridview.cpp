@@ -22,6 +22,7 @@ THE SOFTWARE.
 */
 #include "gridview.h"
 #include "viewcolumnset.h"
+#include "viewmanager.h"
 
 GridView::GridView(QString name, QObject *parent)
 	: QObject(parent)
@@ -54,7 +55,7 @@ void GridView::clear() {
 	m_set_map.clear();
 }
 
-GridView *GridView::from_file(const QString &filepath, const QDir &sets_dir, QObject *parent) {
+GridView *GridView::from_file(const QString &filepath, ViewManager *mgr, QObject *parent) {
 	QSettings s(filepath, QSettings::IniFormat);
 	QString name = s.value("info/name", "UNKNOWN").toString();
 	bool active = s.value("info/active", true).toBool();
@@ -63,21 +64,13 @@ GridView *GridView::from_file(const QString &filepath, const QDir &sets_dir, QOb
 	ret_val->set_filename(filepath);
 	ret_val->set_active(active);
 
-	QMap<QString, ViewColumnSet*> tmp_sets;
-	foreach(QString filename, sets_dir.entryList()) {
-		if (filename.endsWith(".ini")) {
-			ViewColumnSet *set = ViewColumnSet::from_file(sets_dir.filePath(filename), ret_val);
-			if (set)
-				tmp_sets.insert(set->name(), set);
-		}
-	}
-
 	int total_sets = s.beginReadArray("sets");
 	for (int i = 0; i < total_sets; ++i) {
 		s.setArrayIndex(i);
 		QString name = s.value("name").toString();
-		if (tmp_sets.contains(name)) {
-			ret_val->add_set(tmp_sets.value(name));
+		ViewColumnSet *set = mgr->get_set_by_name(name);
+		if (set) {
+			ret_val->add_set(set);
 		}
 	}
 	s.endArray();

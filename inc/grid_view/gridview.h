@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include <QtGui>
 
 class ViewColumnSet;
+class ViewManager;
 
 /*!
 The idea: GridViews have many ViewColumnSets, which in turn have many 
@@ -60,7 +61,7 @@ public:
 	bool is_active() {return m_active;}
 	void set_active(bool active) {m_active = active;}
 
-	static GridView *from_file(const QString &filepath, const QDir &sets_dir, QObject *parent = 0);
+	static GridView *from_file(const QString &filepath, ViewManager *mgr, QObject *parent = 0);
 	public slots:
 		void write_settings();
 

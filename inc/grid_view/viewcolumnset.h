@@ -70,7 +70,8 @@ public:
 		void type_chosen(const QString &type_name);
 		void add_column_from_gui();
 		void draw_column_context_menu(const QPoint &);
-		void edit_column();
+		void edit_column(); // from context menu
+		void edit_column(QListWidgetItem*); // from double click
 
 private:
 	Ui::ViewColumnSetDialog *ui;
@@ -83,6 +84,7 @@ private:
 	QDialog *m_dialog; // for showing the builder dialog
 
 	void order_changed();
+	void show_edit_column_dialog(ViewColumn *vc);
 };
 
 #endif

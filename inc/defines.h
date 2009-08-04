@@ -48,5 +48,6 @@ THE SOFTWARE.
 #define TRACE qxtLog->trace()
 
 #define DEFAULT_CELL_SIZE 16
+#define DEFAULT_SPACER_WIDTH 4
 
 #endif

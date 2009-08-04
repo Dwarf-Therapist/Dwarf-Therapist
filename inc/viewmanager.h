@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include <QtGui>
 
 class GridView;
+class ViewColumnSet;
 class StateTableView;
 class DwarfModel;
 class DwarfModelProxy;
@@ -41,16 +42,28 @@ public:
 		void reload_views();
 		void write_views();
 
+		void reload_sets();
+		//void write_sets();
+		//void write_set(ViewColumnSet *set);
+
+		ViewColumnSet *get_set_by_name(const QString &name);
+
 		// passthru
 		void expand_all();
 		void collapse_all();
 
 private:
 	QList<GridView*> m_views;
+	QList<ViewColumnSet*> m_sets;
 	DwarfModel *m_model;
 	DwarfModelProxy *m_proxy;
 
-	int add_tab_for_gridview(GridView *v);
+	private slots:
+		//! used when adding tabs via the tool button
+		int add_tab_from_action();
+		//! used from everywhere else
+		int add_tab_for_gridview(GridView *v);
+		void remove_tab_for_gridview(int index);
 };
 
 #endif

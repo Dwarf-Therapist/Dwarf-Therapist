@@ -35,10 +35,28 @@ ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent
 	, m_proxy(proxy)
 {
 	m_proxy->setSourceModel(m_model);
- 
-	QPushButton *btn = new QPushButton("Add View", this);
-	setCornerWidget(btn);
+	setTabsClosable(true);
+	setMovable(true);
+
+	reload_sets();
 	reload_views();
+
+	QIcon icn(":img/tab_add.png");
+	QMenu *m = new QMenu(this);
+	foreach(GridView *v, m_views) {
+		QAction *a = m->addAction(icn, "Add " + v->name(), this, SLOT(add_tab_from_action()));
+		a->setData(v->name());
+	}
+
+	QToolButton *btn = new QToolButton(this);
+	btn->setIcon(QIcon(":img/tab_add.png"));
+	btn->setPopupMode(QToolButton::InstantPopup);
+	btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
+	btn->setMenu(m);
+	setCornerWidget(btn, Qt::TopLeftCorner);
+
+	connect(tabBar(), SIGNAL(tabMoved(int, int)), this, SLOT(write_views()));
+	connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(remove_tab_for_gridview(int)));
 }
 
 void ViewManager::reload_views() {
@@ -68,23 +86,79 @@ void ViewManager::reload_views() {
 	QStringList view_files = views.entryList(QDir::Files | QDir::Readable, QDir::Time);
 	foreach(QString filename, view_files) {
 		if (filename.endsWith(".ini")) {
-			LOGD << "found view file" << views.filePath(filename);
-			GridView *v = GridView::from_file(views.filePath(filename), sets, this);
+			TRACE << "found view file" << views.filePath(filename);
+			GridView *v = GridView::from_file(views.filePath(filename), this, this);
 			if (v)
 				m_views << v;
+		}
+	}
+	LOGI << "Loaded" << m_views.size() << "views from disk";
+
+	// see if we have a saved tab order...
+	QStringList tab_order = DT->user_settings()->value("gui_options/tab_order").toStringList();
+	if (tab_order.size() > 0) {
+		foreach(QString name, tab_order) {
+			foreach(GridView *v, m_views) {
+				if (v->name() == name) {
+					add_tab_for_gridview(v);
+				}
+			}
+		}
+	} else {
+		// load them up in default order
+		foreach(GridView *v, m_views) {
 			if (v->is_active())
 				add_tab_for_gridview(v);
 		}
 	}
 	connect(tabBar(), SIGNAL(currentChanged(int)), this, SLOT(setCurrentIndex(int)));
-	//m_model->set_grid_view(m_views[0]);
-	connect(cornerWidget(), SIGNAL(pressed()), m_views[0]->sets()[4], SLOT(show_builder_dialog()));
+	//connect(cornerWidget(), SIGNAL(pressed()), m_views[0]->sets()[4], SLOT(show_builder_dialog()));
 }
 
 void ViewManager::write_views() {
 	foreach(GridView *v, m_views) {
 		v->write_settings();
 	}
+	QStringList tab_order;
+	for (int i = 0; i < count(); ++i) {
+		tab_order << tabText(i);
+	}
+	DT->user_settings()->setValue("gui_options/tab_order", tab_order);
+}
+
+void ViewManager::reload_sets() {
+	QDir cur = QDir::current();
+	if (!cur.exists("etc/sets")) {
+		QMessageBox::warning(this, tr("Missing Directory"),
+			tr("Could not fine the 'sets' directory under 'etc'"));
+		return;
+	}
+	foreach(ViewColumnSet *set, m_sets) {
+		set->deleteLater();
+	}
+	m_sets.clear();
+	QDir sets = QDir(QDir::currentPath() + "/etc/sets");
+	QStringList set_files = sets.entryList(QDir::Files | QDir::Readable, QDir::Name);
+	foreach(QString filename, set_files) {
+		if (filename.endsWith(".ini")) {
+			TRACE << "found set file" << sets.filePath(filename);
+			ViewColumnSet *set = ViewColumnSet::from_file(sets.filePath(filename), this);
+			if (set)
+				m_sets << set;
+		}
+	}
+	LOGI << "Loaded" << m_sets.size() << "column sets from disk";
+}
+
+ViewColumnSet *ViewManager::get_set_by_name(const QString &name) {
+	ViewColumnSet *retval = 0;
+	foreach(ViewColumnSet *set, m_sets) {
+		if (name == set->name()) {
+			retval = set;
+			break;
+		}
+	}
+	return retval;
 }
 
 void ViewManager::setCurrentIndex(int idx) {
@@ -99,9 +173,27 @@ void ViewManager::setCurrentIndex(int idx) {
 			break;
 		}
 	}
+	tabBar()->setCurrentIndex(idx);
+}
+
+int ViewManager::add_tab_from_action() {
+	QAction *a = qobject_cast<QAction*>(QObject::sender());
+	if (!a)
+		return -1;
+	
+	QString name = a->data().toString();
+	foreach(GridView *v, m_views) {
+		if (v->name() == name) {
+			int idx = add_tab_for_gridview(v);
+			setCurrentIndex(idx);
+			return idx;
+		}
+	}
+	return -1;
 }
 
 int ViewManager::add_tab_for_gridview(GridView *v) {
+	v->set_active(true);
 	StateTableView *stv = new StateTableView(this);
 	stv->set_model(m_model, m_proxy);
 	m_model->set_grid_view(v);
@@ -110,6 +202,21 @@ int ViewManager::add_tab_for_gridview(GridView *v) {
 	stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
 	stv->sortByColumn(0, Qt::AscendingOrder);
 	return addTab(stv, v->name());
+}
+
+void ViewManager::remove_tab_for_gridview(int idx) {
+	if (count() < 2) {
+		QMessageBox::warning(this, tr("Can't Remove Tab"), 
+			tr("Cannot remove the last tab!"));
+		return;
+	}
+	foreach(GridView *v, m_views) {
+		if (v->name() == tabText(idx)) {
+			v->set_active(false);
+		}
+	}
+	widget(idx)->deleteLater();
+	removeTab(idx);
 }
 
 void ViewManager::expand_all() {

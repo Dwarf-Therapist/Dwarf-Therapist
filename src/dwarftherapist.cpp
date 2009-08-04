@@ -19,7 +19,7 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
 	, m_options_menu(0)
 	, m_reading_settings(false)
 {
-	//setup_logging();
+	setup_logging();
 	load_translator();
 
 	m_user_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
@@ -72,10 +72,11 @@ void DwarfTherapist::setup_logging() {
 }
 
 void DwarfTherapist::load_translator() {
-	LOGD << "loading translations";
+	TRACE << "loading translations";
 	QTranslator translator;
 	translator.load("dwarftherapist_en");
 	installTranslator(&translator);
+	TRACE << "english translation loaded";
 }
 
 void DwarfTherapist::read_settings() {
