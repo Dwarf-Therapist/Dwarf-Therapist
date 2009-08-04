@@ -20,7 +20,7 @@
   <widget class="QWidget" name="main_widget">
    <layout class="QVBoxLayout" name="v_box">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,0,10,0,0">
       <item>
        <widget class="QLabel" name="lbl_group_by">
         <property name="text">
@@ -47,6 +47,36 @@
           <string>Nothing</string>
          </property>
         </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Filter Dwarves</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="le_filter_text"/>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton">
+        <property name="toolTip">
+         <string>Clear Filter Text</string>
+        </property>
+        <property name="statusTip">
+         <string>Clear Filter Text</string>
+        </property>
+        <property name="whatsThis">
+         <string>This will clear the filter box and show all dwarves</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../images.qrc">
+          <normaloff>:/img/cross.png</normaloff>:/img/cross.png</iconset>
+        </property>
        </widget>
       </item>
       <item>
@@ -80,33 +110,6 @@
          <string>Pending Changes</string>
         </property>
        </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,2">
-      <item>
-       <widget class="QLineEdit" name="le_filter_text"/>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton">
-        <property name="text">
-         <string>Clear Filter</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer_3">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
       </item>
      </layout>
     </item>
