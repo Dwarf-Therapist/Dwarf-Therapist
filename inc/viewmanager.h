@@ -37,6 +37,9 @@ class ViewManager : public QTabWidget {
 public:
 	ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent = 0);
 	
+	QList<GridView*> views() {return m_views;}
+	QList<ViewColumnSet*> sets() {return m_sets;}
+
 	public slots:
 		void setCurrentIndex(int);
 		void reload_views();

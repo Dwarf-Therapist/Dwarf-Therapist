@@ -62,7 +62,9 @@ public:
 		void write_settings();
 		
 		//! Shows a small editing dialog for this set
-		int show_builder_dialog(QWidget *parent = 0);
+		int show_builder_dialog();
+		int show_builder_dialog(QWidget *parent);
+		void delete_from_disk();
 
 		//! for use when the builder dialog is open
 		void update_color(const QColor &new_color);
@@ -85,6 +87,10 @@ private:
 
 	void order_changed();
 	void show_edit_column_dialog(ViewColumn *vc);
+
+signals:
+	void set_deleted();
+	void set_changed();
 };
 
 #endif

@@ -334,6 +334,7 @@ void ViewColumnSet::show_edit_column_dialog(ViewColumn *vc) {
 			c->set_width(w);
 		}
 		draw_columns();
+		emit set_changed();
 	}
 	delete dui;
 }
@@ -363,6 +364,7 @@ void ViewColumnSet::order_changed() {
 	}
 	m_columns = new_views;
 	draw_columns();
+	emit set_changed();
 }
 
 void ViewColumnSet::draw_columns() {
@@ -377,6 +379,25 @@ void ViewColumnSet::draw_columns() {
 		else
 			item->setBackgroundColor(m_bg_color);
 	}
+}
+
+void ViewColumnSet::delete_from_disk() {
+	int answer = QMessageBox::question(
+		0, tr("Really delete '%1' forever?").arg(m_name),
+		tr("Deleting '%1' will permanently delete it from disk. Also if any views are currently using"
+		   " this set, they may become corrupted. There is no undo!").arg(m_name),
+		QMessageBox::Yes | QMessageBox::No);
+	if (answer == QMessageBox::Yes) {
+		LOGD << "permanently deleting set" << m_name;
+		QFile f;
+		bool removed = f.remove(m_filename);
+		emit set_deleted();
+		deleteLater();
+	}
+}
+
+int ViewColumnSet::show_builder_dialog() {
+	return show_builder_dialog(0);
 }
 
 int ViewColumnSet::show_builder_dialog(QWidget *parent) {

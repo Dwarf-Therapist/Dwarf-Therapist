@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1129</width>
-    <height>747</height>
+    <height>807</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,6 +16,12 @@
   <property name="windowIcon">
    <iconset resource="../images.qrc">
     <normaloff>:/img/hammer.png</normaloff>:/img/hammer.png</iconset>
+  </property>
+  <property name="tabShape">
+   <enum>QTabWidget::Rounded</enum>
+  </property>
+  <property name="dockOptions">
+   <set>QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
   </property>
   <widget class="QWidget" name="main_widget">
    <layout class="QVBoxLayout" name="v_box">
@@ -316,8 +322,19 @@
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
       <widget class="QListWidget" name="list_custom_professions">
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
        <property name="contextMenuPolicy">
         <enum>Qt::CustomContextMenu</enum>
+       </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="alternatingRowColors">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -343,6 +360,91 @@
        <property name="icon">
         <iconset resource="../images.qrc">
          <normaloff>:/img/application_get.png</normaloff>:/img/application_get.png</iconset>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dock_views">
+   <property name="floating">
+    <bool>false</bool>
+   </property>
+   <property name="windowTitle">
+    <string>Grid Views</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_4">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QListWidget" name="list_grid_views">
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
+       <property name="contextMenuPolicy">
+        <enum>Qt::CustomContextMenu</enum>
+       </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="alternatingRowColors">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_add_new_gridview">
+       <property name="text">
+        <string>Add New GridView</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../images.qrc">
+         <normaloff>:/img/table_add.png</normaloff>:/img/table_add.png</iconset>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dock_view_sets">
+   <property name="windowTitle">
+    <string>View Column Sets</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_6">
+    <layout class="QVBoxLayout" name="verticalLayout_4">
+     <item>
+      <widget class="QListWidget" name="list_column_sets">
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
+       <property name="contextMenuPolicy">
+        <enum>Qt::CustomContextMenu</enum>
+       </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="alternatingRowColors">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_add_new_column_set">
+       <property name="text">
+        <string>Add New Column Set</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../images.qrc">
+         <normaloff>:/img/image_add.png</normaloff>:/img/image_add.png</iconset>
        </property>
       </widget>
      </item>
@@ -617,6 +719,30 @@
    </property>
    <property name="toolTip">
     <string>Your donations make the world a better place!</string>
+   </property>
+  </action>
+  <action name="act_add_new_gridview">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/table_add.png</normaloff>:/img/table_add.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add New GridView</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a new gridview with custom sets</string>
+   </property>
+  </action>
+  <action name="act_add_new_column_set">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/image_add.png</normaloff>:/img/image_add.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add New Column Set</string>
+   </property>
+   <property name="toolTip">
+    <string>Add a new set of columns to be used in grid views</string>
    </property>
   </action>
  </widget>
@@ -977,6 +1103,70 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_add_new_gridview</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>add_new_grid_view()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>373</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_add_new_gridview</sender>
+   <signal>clicked()</signal>
+   <receiver>act_add_new_gridview</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>991</x>
+     <y>704</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_add_new_column_set</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>add_new_column_set()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>373</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_add_new_column_set</sender>
+   <signal>clicked()</signal>
+   <receiver>act_add_new_column_set</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>991</x>
+     <y>704</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -994,5 +1184,7 @@
   <slot>go_to_donate()</slot>
   <slot>go_to_project_home()</slot>
   <slot>go_to_new_issue()</slot>
+  <slot>add_new_grid_view()</slot>
+  <slot>add_new_column_set()</slot>
  </slots>
 </ui>

@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include "memorylayout.h"
 #include "statetableview.h"
 #include "viewmanager.h"
+#include "viewcolumnset.h"
 #include "uberdelegate.h"
 #include "customprofession.h"
 #include "labor.h"
@@ -62,13 +63,18 @@ MainWindow::MainWindow(QWidget *parent)
 	m_view_manager = new ViewManager(m_model, m_proxy, this);
 	ui->v_box->addWidget(m_view_manager);
 
+	setTabPosition(Qt::AllDockWidgetAreas, QTabWidget::North);
+
 	LOGD << "setting up connections for MainWindow";
 	connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
 	connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
 	connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
 	connect(ui->act_expand_all, SIGNAL(triggered()), m_view_manager, SLOT(expand_all()));
 	connect(ui->act_collapse_all, SIGNAL(triggered()), m_view_manager, SLOT(collapse_all()));
-	connect(ui->list_custom_professions, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_custom_profession_context_menu(const QPoint &)));
+	connect(ui->list_custom_professions, SIGNAL(customContextMenuRequested(const QPoint &)),
+			this, SLOT(draw_custom_profession_context_menu(const QPoint &)));
+	connect(ui->list_column_sets, SIGNAL(customContextMenuRequested(const QPoint &)),
+		this, SLOT(draw_column_sets_context_menu(const QPoint &)));
 
 	m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
@@ -84,6 +90,8 @@ MainWindow::MainWindow(QWidget *parent)
 	
 	read_settings();
 	draw_professions();
+	draw_gridviews();
+	draw_column_sets();
 
 	check_latest_version();
 }
@@ -273,16 +281,33 @@ void MainWindow::list_pending() {
 	ui->tree_pending->expandAll();
 }
 
-
-
-
-
-
 void MainWindow::draw_professions() {
 	ui->list_custom_professions->clear();
 	foreach(CustomProfession *cp, DT->get_custom_professions()) {
 		new QListWidgetItem(cp->get_name(), ui->list_custom_professions);
 	}
+}
+
+void MainWindow::draw_gridviews() {
+	ui->list_grid_views->clear();
+	foreach(GridView *v, m_view_manager->views()) {
+		new QListWidgetItem(v->name(), ui->list_grid_views);
+	}
+}
+
+void MainWindow::draw_column_sets() {
+	ui->list_column_sets->clear();
+	foreach(ViewColumnSet *set, m_view_manager->sets()) {
+		new QListWidgetItem(set->name(), ui->list_column_sets);
+	}
+}
+
+void MainWindow::add_new_grid_view() {
+	QMessageBox::information(this, "woot", "gridview");
+}
+void MainWindow::add_new_column_set() {
+	QMessageBox::information(this, "woot", "set");
+
 }
 
 void MainWindow::draw_custom_profession_context_menu(const QPoint &p) {
@@ -299,6 +324,20 @@ void MainWindow::draw_custom_profession_context_menu(const QPoint &p) {
 	a = m.addAction(tr("Delete..."), DT, SLOT(delete_custom_profession()));
 	a->setData(cp_name);
 	m.exec(ui->list_custom_professions->viewport()->mapToGlobal(p));
+}
+
+void MainWindow::draw_column_sets_context_menu(const QPoint &p) {
+	QListWidgetItem *item = ui->list_column_sets->itemAt(p);
+
+	QString name = item->text();
+	ViewColumnSet *set = m_view_manager->get_set_by_name(name);
+
+	QMenu m(this);
+	QAction *a = m.addAction(tr("Edit..."), set, SLOT(show_builder_dialog()));
+	a->setData(name);
+	a = m.addAction(tr("Delete..."), set, SLOT(delete_from_disk()));
+	a->setData(name);
+	m.exec(ui->list_column_sets->viewport()->mapToGlobal(p));
 }
 
 // web addresses

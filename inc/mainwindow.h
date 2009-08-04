@@ -58,20 +58,26 @@ public:
 	Ui::MainWindow *ui;
 
 	public slots:
+		// DF related
 		void connect_to_df();
 		void read_dwarves();
 		void scan_memory();
+		void new_pending_changes(int);
 		
 		//settings
 		void set_group_by(int);
 
 		// dialogs
 		void show_about();
-
-		void new_pending_changes(int);
 		void list_pending();
 		void draw_professions();
+		void draw_gridviews();
+		void draw_column_sets();
 		void draw_custom_profession_context_menu(const QPoint &);
+		void draw_column_sets_context_menu(const QPoint &);
+
+		void add_new_grid_view();
+		void add_new_column_set();
 		
 		void check_latest_version();
 		void version_check_finished(bool error);
