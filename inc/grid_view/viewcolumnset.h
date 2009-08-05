@@ -47,7 +47,7 @@ public:
 	void clear_columns();
 	void set_bg_color(const QColor &color) {m_bg_color = color;}
 	QColor bg_color() {return m_bg_color;}
-	QList<ViewColumn*> columns() {return m_columns.values();}
+	QList<ViewColumn*> columns() {return m_columns;}
 	GridView *view() {return m_view;}
 
 	//! loads a returns a new set object based on the description in filename
@@ -74,13 +74,14 @@ public:
 		void draw_column_context_menu(const QPoint &);
 		void edit_column(); // from context menu
 		void edit_column(QListWidgetItem*); // from double click
+		void remove_column(); // from context menu
 
 private:
 	Ui::ViewColumnSetDialog *ui;
 	QString m_name;
 	QString m_filename;
 	GridView *m_view;
-	QMap<int, ViewColumn*> m_columns;
+	QList<ViewColumn*> m_columns;
 	QBrush m_bg_brush; // possibly allow textured backgrounds in the long long ago, err future.
 	QColor m_bg_color;
 	QDialog *m_dialog; // for showing the builder dialog

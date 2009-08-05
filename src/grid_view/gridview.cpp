@@ -48,9 +48,6 @@ void GridView::remove_set(QString name) {
 };
 
 void GridView::clear() {
-	foreach(ViewColumnSet *set, m_sets) {
-		set->deleteLater();
-	}
 	m_sets.clear();
 	m_set_map.clear();
 }
@@ -68,7 +65,7 @@ GridView *GridView::from_file(const QString &filepath, ViewManager *mgr, QObject
 	for (int i = 0; i < total_sets; ++i) {
 		s.setArrayIndex(i);
 		QString name = s.value("name").toString();
-		ViewColumnSet *set = mgr->get_set_by_name(name);
+		ViewColumnSet *set = mgr->get_set(name);
 		if (set) {
 			ret_val->add_set(set);
 		}

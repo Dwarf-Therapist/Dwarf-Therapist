@@ -150,7 +150,18 @@ void ViewManager::reload_sets() {
 	LOGI << "Loaded" << m_sets.size() << "column sets from disk";
 }
 
-ViewColumnSet *ViewManager::get_set_by_name(const QString &name) {
+GridView *ViewManager::get_view(const QString &name) {
+	GridView *retval = 0;
+	foreach(GridView *view, m_views) {
+		if (name == view->name()) {
+			retval = view;
+			break;
+		}
+	}
+	return retval;
+}
+
+ViewColumnSet *ViewManager::get_set(const QString &name) {
 	ViewColumnSet *retval = 0;
 	foreach(ViewColumnSet *set, m_sets) {
 		if (name == set->name()) {
@@ -227,4 +238,10 @@ void ViewManager::expand_all() {
 void ViewManager::collapse_all() {
 	StateTableView *stv = qobject_cast<StateTableView*>(currentWidget());
 	stv->collapseAll();
+}
+
+void ViewManager::edit_set(QListWidgetItem *item) {
+	ViewColumnSet *vc = get_set(item->text());
+	if (vc)
+		vc->show_builder_dialog(this);
 }

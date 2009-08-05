@@ -65,16 +65,26 @@ MainWindow::MainWindow(QWidget *parent)
 
 	setTabPosition(Qt::AllDockWidgetAreas, QTabWidget::North);
 
+	ui->dock_grid_views->set_view_manager(m_view_manager);
+	ui->dock_sets->set_view_manager(m_view_manager);
+
 	LOGD << "setting up connections for MainWindow";
 	connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
 	connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
 	connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
 	connect(ui->act_expand_all, SIGNAL(triggered()), m_view_manager, SLOT(expand_all()));
 	connect(ui->act_collapse_all, SIGNAL(triggered()), m_view_manager, SLOT(collapse_all()));
+
 	connect(ui->list_custom_professions, SIGNAL(customContextMenuRequested(const QPoint &)),
 			this, SLOT(draw_custom_profession_context_menu(const QPoint &)));
+
+	// Column Sets
+	/*FIXME
+	connect(ui->list_column_sets, SIGNAL(itemActivated(QListWidgetItem*)), 
+		m_view_manager, SLOT(edit_set(QListWidgetItem*)));
 	connect(ui->list_column_sets, SIGNAL(customContextMenuRequested(const QPoint &)),
 		this, SLOT(draw_column_sets_context_menu(const QPoint &)));
+	*/
 
 	m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
@@ -90,8 +100,6 @@ MainWindow::MainWindow(QWidget *parent)
 	
 	read_settings();
 	draw_professions();
-	draw_gridviews();
-	draw_column_sets();
 
 	check_latest_version();
 }
@@ -288,20 +296,6 @@ void MainWindow::draw_professions() {
 	}
 }
 
-void MainWindow::draw_gridviews() {
-	ui->list_grid_views->clear();
-	foreach(GridView *v, m_view_manager->views()) {
-		new QListWidgetItem(v->name(), ui->list_grid_views);
-	}
-}
-
-void MainWindow::draw_column_sets() {
-	ui->list_column_sets->clear();
-	foreach(ViewColumnSet *set, m_view_manager->sets()) {
-		new QListWidgetItem(set->name(), ui->list_column_sets);
-	}
-}
-
 void MainWindow::add_new_grid_view() {
 	QMessageBox::information(this, "woot", "gridview");
 }
@@ -326,6 +320,7 @@ void MainWindow::draw_custom_profession_context_menu(const QPoint &p) {
 	m.exec(ui->list_custom_professions->viewport()->mapToGlobal(p));
 }
 
+/*
 void MainWindow::draw_column_sets_context_menu(const QPoint &p) {
 	QListWidgetItem *item = ui->list_column_sets->itemAt(p);
 
@@ -338,7 +333,7 @@ void MainWindow::draw_column_sets_context_menu(const QPoint &p) {
 	a = m.addAction(tr("Delete..."), set, SLOT(delete_from_disk()));
 	a->setData(name);
 	m.exec(ui->list_column_sets->viewport()->mapToGlobal(p));
-}
+}*/
 
 // web addresses
 void MainWindow::go_to_forums() {

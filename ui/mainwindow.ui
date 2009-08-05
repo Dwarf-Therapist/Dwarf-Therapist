@@ -56,7 +56,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="lbl_filter">
         <property name="text">
          <string>Filter Dwarves</string>
         </property>
@@ -66,7 +66,7 @@
        <widget class="QLineEdit" name="le_filter_text"/>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="btn_clear_filter">
         <property name="toolTip">
          <string>Clear Filter Text</string>
         </property>
@@ -111,7 +111,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="lbl_pending_changes_lbl">
         <property name="text">
          <string>Pending Changes</string>
         </property>
@@ -366,90 +366,17 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dock_views">
-   <property name="floating">
-    <bool>false</bool>
-   </property>
-   <property name="windowTitle">
-    <string>Grid Views</string>
-   </property>
+  <widget class="GridViewDock" name="dock_grid_views">
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents_4">
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="QListWidget" name="list_grid_views">
-       <property name="font">
-        <font>
-         <pointsize>8</pointsize>
-        </font>
-       </property>
-       <property name="contextMenuPolicy">
-        <enum>Qt::CustomContextMenu</enum>
-       </property>
-       <property name="editTriggers">
-        <set>QAbstractItemView::NoEditTriggers</set>
-       </property>
-       <property name="alternatingRowColors">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="btn_add_new_gridview">
-       <property name="text">
-        <string>Add New GridView</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../images.qrc">
-         <normaloff>:/img/table_add.png</normaloff>:/img/table_add.png</iconset>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
+   <widget class="QWidget" name="dockWidgetContents_3"/>
   </widget>
-  <widget class="QDockWidget" name="dock_view_sets">
-   <property name="windowTitle">
-    <string>View Column Sets</string>
-   </property>
+  <widget class="ViewColumnSetDock" name="dock_sets">
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents_6">
-    <layout class="QVBoxLayout" name="verticalLayout_4">
-     <item>
-      <widget class="QListWidget" name="list_column_sets">
-       <property name="font">
-        <font>
-         <pointsize>8</pointsize>
-        </font>
-       </property>
-       <property name="contextMenuPolicy">
-        <enum>Qt::CustomContextMenu</enum>
-       </property>
-       <property name="editTriggers">
-        <set>QAbstractItemView::NoEditTriggers</set>
-       </property>
-       <property name="alternatingRowColors">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="btn_add_new_column_set">
-       <property name="text">
-        <string>Add New Column Set</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../images.qrc">
-         <normaloff>:/img/image_add.png</normaloff>:/img/image_add.png</iconset>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
+   <widget class="QWidget" name="dockWidgetContents_5"/>
   </widget>
   <action name="act_connect_to_DF">
    <property name="icon">
@@ -747,6 +674,20 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>GridViewDock</class>
+   <extends>QDockWidget</extends>
+   <header>gridviewdock.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ViewColumnSetDock</class>
+   <extends>QDockWidget</extends>
+   <header>viewcolumnsetdock.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../images.qrc"/>
  </resources>
@@ -822,8 +763,8 @@
    <slot>set_group_by(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>120</x>
-     <y>108</y>
+     <x>123</x>
+     <y>438</y>
     </hint>
     <hint type="destinationlabel">
      <x>288</x>
@@ -859,7 +800,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>1128</x>
-     <y>376</y>
+     <y>257</y>
     </hint>
    </hints>
   </connection>
@@ -871,7 +812,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1128</x>
-     <y>376</y>
+     <y>257</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -887,7 +828,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>988</x>
-     <y>366</y>
+     <y>247</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -903,7 +844,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1118</x>
-     <y>366</y>
+     <y>247</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -918,8 +859,8 @@
    <slot>setChecked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>991</x>
-     <y>600</y>
+     <x>1128</x>
+     <y>446</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -938,8 +879,8 @@
      <y>-1</y>
     </hint>
     <hint type="destinationlabel">
-     <x>991</x>
-     <y>600</y>
+     <x>1128</x>
+     <y>446</y>
     </hint>
    </hints>
   </connection>
@@ -967,11 +908,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>1118</x>
-     <y>334</y>
+     <y>215</y>
     </hint>
     <hint type="destinationlabel">
-     <x>919</x>
-     <y>237</y>
+     <x>1119</x>
+     <y>184</y>
     </hint>
    </hints>
   </connection>
@@ -983,11 +924,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>988</x>
-     <y>334</y>
+     <y>215</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1021</x>
-     <y>235</y>
+     <x>1119</x>
+     <y>184</y>
     </hint>
    </hints>
   </connection>
@@ -999,7 +940,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1119</x>
-     <y>686</y>
+     <y>407</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -1015,7 +956,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1119</x>
-     <y>716</y>
+     <y>437</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -1088,18 +1029,18 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton</sender>
+   <sender>btn_clear_filter</sender>
    <signal>clicked()</signal>
    <receiver>le_filter_text</receiver>
    <slot>clear()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>188</x>
-     <y>133</y>
+     <x>371</x>
+     <y>440</y>
     </hint>
     <hint type="destinationlabel">
-     <x>103</x>
-     <y>131</y>
+     <x>308</x>
+     <y>438</y>
     </hint>
    </hints>
   </connection>
@@ -1120,22 +1061,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>btn_add_new_gridview</sender>
-   <signal>clicked()</signal>
-   <receiver>act_add_new_gridview</receiver>
-   <slot>trigger()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>991</x>
-     <y>704</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>act_add_new_column_set</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
@@ -1148,22 +1073,6 @@
     <hint type="destinationlabel">
      <x>564</x>
      <y>373</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btn_add_new_column_set</sender>
-   <signal>clicked()</signal>
-   <receiver>act_add_new_column_set</receiver>
-   <slot>trigger()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>991</x>
-     <y>704</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-1</x>
-     <y>-1</y>
     </hint>
    </hints>
   </connection>

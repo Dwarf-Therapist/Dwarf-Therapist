@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>419</width>
     <height>460</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Column Set</string>
   </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>
@@ -194,7 +194,6 @@
   <zorder>groupBox</zorder>
   <zorder>groupBox_2</zorder>
   <zorder></zorder>
-  <zorder>label_4</zorder>
  </widget>
  <customwidgets>
   <customwidget>
@@ -214,8 +213,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>268</x>
-     <y>420</y>
+     <x>408</x>
+     <y>447</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -230,8 +229,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>290</x>
-     <y>420</y>
+     <x>408</x>
+     <y>447</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

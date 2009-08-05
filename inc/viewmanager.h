@@ -49,7 +49,14 @@ public:
 		//void write_sets();
 		//void write_set(ViewColumnSet *set);
 
-		ViewColumnSet *get_set_by_name(const QString &name);
+		GridView *get_view(const QString &name);
+		ViewColumnSet *get_set(const QString &name);
+
+		// dialogs
+		//void edit_view(QListWidgetItem*); // from main window's list of views
+		void edit_set(QListWidgetItem*); // from main window's list of sets
+		//void edit_set(); // from context menu
+		
 
 		// passthru
 		void expand_all();

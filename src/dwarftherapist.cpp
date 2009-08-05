@@ -29,9 +29,11 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
 	connect(m_options_menu, SIGNAL(settings_changed()), SIGNAL(settings_changed())); // the telephone game...
 	connect(m_options_menu, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 	connect(m_main_window->ui->act_options, SIGNAL(triggered()), m_options_menu, SLOT(show()));
+	// custom professions
 	connect(m_main_window->ui->act_import_existing_professions, SIGNAL(triggered()), this, SLOT(import_existing_professions()));
 	connect(m_main_window->ui->list_custom_professions, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(edit_custom_profession(QListWidgetItem*)));
 	connect(m_main_window->ui->act_add_custom_profession, SIGNAL(triggered()), this, SLOT(add_custom_profession()));
+	
 	connect(m_main_window->ui->le_filter_text, SIGNAL(textChanged(const QString&)), m_main_window->get_proxy(), SLOT(setFilterFixedString(const QString&)));
 	read_settings();
 

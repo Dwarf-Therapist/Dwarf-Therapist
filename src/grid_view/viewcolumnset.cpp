@@ -45,7 +45,7 @@ void ViewColumnSet::set_name(const QString &name) {
 }
 
 void ViewColumnSet::add_column(ViewColumn *col) {
-	m_columns.insert(m_columns.uniqueKeys().size(), col);
+	m_columns << col;
 }
 	
 void ViewColumnSet::clear_columns() {
@@ -225,14 +225,12 @@ void ViewColumnSet::add_column_from_gui() {
 		case CT_SPACER:
 			{
 				SpacerColumn *c = new SpacerColumn("", this, this);
-				add_column(c);
 				newcol = c;
 			}
 			break;
 		case CT_HAPPINESS:
 			{
 				HappinessColumn *c = new HappinessColumn(name, this, this);
-				add_column(c);
 				newcol = c;
 			}
 			break;
@@ -243,7 +241,6 @@ void ViewColumnSet::add_column_from_gui() {
 				Labor *l = gdr->get_labor(labor_id);
 				if (l) {
 					LaborColumn *c = new LaborColumn(name, l->labor_id, l->skill_id, this, this);
-					add_column(c);
 					newcol = c;
 				}
 			}
@@ -253,26 +250,30 @@ void ViewColumnSet::add_column_from_gui() {
 				int skill_id = ui->cb_column->itemData(ui->cb_column->currentIndex(), Qt::UserRole + 1).toInt();
 				GameDataReader *gdr = GameDataReader::ptr();
 				SkillColumn *c = new SkillColumn(gdr->get_skill_name(skill_id), skill_id, this, this);
-				add_column(c);
 				newcol = c;
 			}
 			break;
 	}
 	if (newcol) {
-		QString title = QString("%1 %2").arg(get_column_type(newcol->type())).arg(newcol->title());
+		add_column(newcol);
+		draw_columns();
+		/*QString title = QString("%1 %2").arg(get_column_type(newcol->type())).arg(newcol->title());
 		QListWidgetItem *item = new QListWidgetItem(title, ui->list_columns);
 		item->setData(Qt::UserRole, newcol->title());
 		if (newcol->override_color()) 
 			item->setBackgroundColor(newcol->bg_color());
 		else
 			item->setBackgroundColor(m_bg_color);
+			*/
+
 	}
 }
 
 void ViewColumnSet::draw_column_context_menu(const QPoint &p) {
 	QMenu m(m_dialog);
-	m.setTitle(tr("Custom Profession"));
 	QAction *a = m.addAction(tr("Edit..."), this, SLOT(edit_column()));
+	a->setData(p);
+	a = m.addAction(tr("Remove..."), this, SLOT(remove_column()));
 	a->setData(p);
 	m.exec(ui->list_columns->viewport()->mapToGlobal(p));
 }
@@ -339,6 +340,17 @@ void ViewColumnSet::show_edit_column_dialog(ViewColumn *vc) {
 	delete dui;
 }
 
+void ViewColumnSet::remove_column() {
+	QAction *a = qobject_cast<QAction*>(QObject::sender());
+	QPoint  p = a->data().value<QPoint>();
+	QListWidgetItem *item = ui->list_columns->itemAt(p);
+	int row = ui->list_columns->row(item);
+	if (m_columns.size() >= row) {
+		m_columns.removeAt(row);
+		draw_columns();
+	}
+}
+
 bool ViewColumnSet::eventFilter(QObject *obj, QEvent *e) {
 	if (e->type() == QEvent::ChildRemoved) {
 		order_changed();
@@ -349,8 +361,7 @@ bool ViewColumnSet::eventFilter(QObject *obj, QEvent *e) {
 
 //! called when the user has re-arranged the columns in the gui..
 void ViewColumnSet::order_changed() {
-	QMap<int, ViewColumn*> new_views;
-	int insert_count = 0;
+	QList<ViewColumn*> new_views;
 	for (int i = 0; i < ui->list_columns->count(); ++i) {
 		// find the VC that matches this item in the GUI list
 		QListWidgetItem *item = ui->list_columns->item(i);
@@ -358,13 +369,12 @@ void ViewColumnSet::order_changed() {
 		COLUMN_TYPE type = static_cast<COLUMN_TYPE>(item->data(Qt::UserRole + 1).toInt());
 		foreach(ViewColumn *vc, columns()) {
 			if (vc->title() == title && vc->type() == type) {
-				new_views.insert(insert_count++, vc);
+				new_views << vc;
 			}
 		}
 	}
 	m_columns = new_views;
 	draw_columns();
-	emit set_changed();
 }
 
 void ViewColumnSet::draw_columns() {
@@ -416,10 +426,9 @@ int ViewColumnSet::show_builder_dialog(QWidget *parent) {
 	connect(ui->le_name, SIGNAL(textChanged(const QString &)), this, SLOT(set_name(const QString &)));
 	connect(ui->cp_bg_color, SIGNAL(colorChanged(const QColor &)), this, SLOT(update_color(const QColor &)));
 	connect(ui->cb_col_type, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(type_chosen(const QString &)));
-	connect(ui->btn_add_col, SIGNAL(pressed()), this, SLOT(add_column_from_gui()));
+	connect(ui->btn_add_col, SIGNAL(clicked()), this, SLOT(add_column_from_gui()));
 	connect(ui->list_columns, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_column_context_menu(const QPoint &)));
 	connect(ui->list_columns, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(edit_column(QListWidgetItem*)));
-	connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
 
 	ui->list_columns->installEventFilter(this);
 
