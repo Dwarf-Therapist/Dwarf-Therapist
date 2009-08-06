@@ -96,10 +96,10 @@ static inline QColor from_hex(const QString &h) {
 
 static inline QString to_hex(const QColor &c) {
 	return QString("0x%1%2%3%4")
-		.arg(QString::number(c.red(), 16))
-		.arg(QString::number(c.green(), 16))
-		.arg(QString::number(c.blue(), 16))
-		.arg(QString::number(c.alpha(), 16));
+		.arg(c.red(), 2, 16, QChar('0'))
+		.arg(c.green(), 2, 16, QChar('0'))
+		.arg(c.blue(), 2, 16, QChar('0'))
+		.arg(c.alpha(), 2, 16, QChar('0'));
 }
 
 #endif // UTILS_H

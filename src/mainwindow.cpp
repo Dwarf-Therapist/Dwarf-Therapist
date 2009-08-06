@@ -75,17 +75,12 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->act_expand_all, SIGNAL(triggered()), m_view_manager, SLOT(expand_all()));
 	connect(ui->act_collapse_all, SIGNAL(triggered()), m_view_manager, SLOT(collapse_all()));
 	connect(ui->dock_grid_views, SIGNAL(views_changed()), m_view_manager, SLOT(views_changed()));
+	connect(ui->dock_sets, SIGNAL(sets_changed()), m_view_manager, SLOT(sets_changed()));
+	connect(ui->act_add_new_gridview, SIGNAL(triggered()), ui->dock_grid_views, SLOT(add_new_view()));
+	connect(ui->act_add_new_column_set, SIGNAL(triggered()), ui->dock_sets, SLOT(add_new_set()));
 
 	connect(ui->list_custom_professions, SIGNAL(customContextMenuRequested(const QPoint &)),
 			this, SLOT(draw_custom_profession_context_menu(const QPoint &)));
-
-	// Column Sets
-	/*FIXME
-	connect(ui->list_column_sets, SIGNAL(itemActivated(QListWidgetItem*)), 
-		m_view_manager, SLOT(edit_set(QListWidgetItem*)));
-	connect(ui->list_column_sets, SIGNAL(customContextMenuRequested(const QPoint &)),
-		this, SLOT(draw_column_sets_context_menu(const QPoint &)));
-	*/
 
 	m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
@@ -297,14 +292,6 @@ void MainWindow::draw_professions() {
 	}
 }
 
-void MainWindow::add_new_grid_view() {
-	QMessageBox::information(this, "woot", "gridview");
-}
-void MainWindow::add_new_column_set() {
-	QMessageBox::information(this, "woot", "set");
-
-}
-
 void MainWindow::draw_custom_profession_context_menu(const QPoint &p) {
 	QModelIndex idx = ui->list_custom_professions->indexAt(p);
 	if (!idx.isValid())
@@ -320,21 +307,6 @@ void MainWindow::draw_custom_profession_context_menu(const QPoint &p) {
 	a->setData(cp_name);
 	m.exec(ui->list_custom_professions->viewport()->mapToGlobal(p));
 }
-
-/*
-void MainWindow::draw_column_sets_context_menu(const QPoint &p) {
-	QListWidgetItem *item = ui->list_column_sets->itemAt(p);
-
-	QString name = item->text();
-	ViewColumnSet *set = m_view_manager->get_set_by_name(name);
-
-	QMenu m(this);
-	QAction *a = m.addAction(tr("Edit..."), set, SLOT(show_builder_dialog()));
-	a->setData(name);
-	a = m.addAction(tr("Delete..."), set, SLOT(delete_from_disk()));
-	a->setData(name);
-	m.exec(ui->list_column_sets->viewport()->mapToGlobal(p));
-}*/
 
 // web addresses
 void MainWindow::go_to_forums() {

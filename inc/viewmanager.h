@@ -49,6 +49,7 @@ public:
 		void write_views();
 		void draw_views();
 
+		void sets_changed();
 		void views_changed();
 
 		void reload_sets();

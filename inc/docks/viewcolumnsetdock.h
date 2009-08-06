@@ -39,6 +39,9 @@ public:
 	void draw_sets();
 
 	void contextMenuEvent(QContextMenuEvent *);
+	public slots:
+		void add_new_set();
+
 private:
 	ViewManager *m_manager;
 	Ui::ViewColumnSetDock *ui;
@@ -48,6 +51,8 @@ private:
 		void edit_set();
 		void edit_set(QListWidgetItem*);
 		void delete_set();
+signals:
+	void sets_changed();
 };
 
 #endif

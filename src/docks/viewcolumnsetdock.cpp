@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include "ui_viewcolumnsetdock.h"
 #include "viewmanager.h"
 #include "viewcolumnset.h"
+#include "viewcolumnsetdialog.h"
 
 ViewColumnSetDock::ViewColumnSetDock(QWidget *parent, Qt::WindowFlags flags)
 	: QDockWidget(parent, flags)
@@ -38,12 +39,25 @@ void ViewColumnSetDock::set_view_manager(ViewManager *mgr) {
 	draw_sets();
 
 	connect(ui->list_sets, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(edit_set(QListWidgetItem*)));
+	connect(ui->btn_add, SIGNAL(clicked()), this, SLOT(add_new_set()));
 }
 
 void ViewColumnSetDock::draw_sets() {
 	ui->list_sets->clear();
 	foreach(ViewColumnSet *set, m_manager->sets()) {
 		new QListWidgetItem(set->name(), ui->list_sets);
+	}
+}
+
+void ViewColumnSetDock::add_new_set() {
+	ViewColumnSet *set = new ViewColumnSet("", m_manager);
+	ViewColumnSetDialog *d = new ViewColumnSetDialog(m_manager, set, this);
+	int accepted = d->exec();
+	if (accepted == QDialog::Accepted) {
+		set->update_from_dialog(d);
+		set->write_settings();
+		emit sets_changed();
+		draw_sets();
 	}
 }
 
@@ -63,8 +77,23 @@ void ViewColumnSetDock::edit_set(QListWidgetItem *item) {
 }
 
 void ViewColumnSetDock::edit_set() {
-	if (m_tmp_item)
-		QMessageBox::information(this, tr("Edit..."), m_tmp_item->text());
+	if (!m_tmp_item)
+		return;
+	
+	ViewColumnSet *set= m_manager->get_set(m_tmp_item->text());
+	if (!set)
+		return;
+	
+	ViewColumnSetDialog *d = new ViewColumnSetDialog(m_manager, set, m_manager);
+	int accepted = d->exec();
+	if (accepted == QDialog::Accepted) {
+		set->update_from_dialog(d);
+		set->write_settings();
+		emit sets_changed();
+		draw_sets();
+	} else {
+		set->reset_from_disk();
+	}
 	m_tmp_item = 0;
 }
 void ViewColumnSetDock::delete_set() {

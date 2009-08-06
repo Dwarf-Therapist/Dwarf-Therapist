@@ -69,7 +69,6 @@ void GridViewDock::add_new_view() {
 		view->write_settings();
 		emit views_changed();
 		draw_views();
-	} else {
 	}
 }
 

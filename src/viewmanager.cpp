@@ -71,6 +71,13 @@ void ViewManager::draw_add_tab_button() {
 	m_add_tab_button->setMenu(m);
 }
 
+void ViewManager::sets_changed() {
+	read_settings();
+	reload_sets();
+	reload_views();
+	setCurrentIndex(currentIndex());
+}
+
 void ViewManager::views_changed() {
 	read_settings();
 	reload_sets();
@@ -161,12 +168,12 @@ void ViewManager::reload_sets() {
 		set->deleteLater();
 	}
 	m_sets.clear();
-	QDir sets = QDir(QDir::currentPath() + "/etc/sets");
+	QDir sets = QDir(m_set_path).absolutePath();
 	QStringList set_files = sets.entryList(QDir::Files | QDir::Readable, QDir::Name);
 	foreach(QString filename, set_files) {
 		if (filename.endsWith(".ini")) {
 			TRACE << "found set file" << sets.filePath(filename);
-			ViewColumnSet *set = ViewColumnSet::from_file(sets.filePath(filename), this);
+			ViewColumnSet *set = ViewColumnSet::from_file(sets.filePath(filename), this, this);
 			if (set)
 				m_sets << set;
 		}

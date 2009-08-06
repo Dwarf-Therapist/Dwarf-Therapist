@@ -25,13 +25,10 @@ THE SOFTWARE.
 
 #include <QtGui>
 
+class ViewManager;
 class ViewColumn;
+class ViewColumnSetDialog;
 class GridView;
-
-namespace Ui
-{
-	class ViewColumnSetDialog;
-}
 
 /*!
 ViewColumnSet
@@ -39,7 +36,7 @@ ViewColumnSet
 class ViewColumnSet : public QObject {
 	Q_OBJECT
 public:
-	ViewColumnSet(QString name, QObject *parent = 0);
+	ViewColumnSet(QString name, ViewManager *mgr, QObject *parent = 0);
 
 	QString name() {return m_name;}
 	void set_filename(const QString &filename) {m_filename = filename;}
@@ -51,47 +48,30 @@ public:
 	GridView *view() {return m_view;}
 
 	//! loads a returns a new set object based on the description in filename
-	static ViewColumnSet *from_file(QString filename, QObject *parent = 0);
+	static ViewColumnSet *from_file(QString filename, ViewManager *mgr, QObject *parent = 0);
 
 	//! for use when editing this set is cancelled, just reload from disk
 	void reset_from_disk();
 
-	bool eventFilter(QObject *, QEvent *);
+	//! editing dialog was accepted by user, so modify settings
+	void update_from_dialog(ViewColumnSetDialog *d);
 	public slots:
 		void set_name(const QString &name);
 		void write_settings();
-		
-		//! Shows a small editing dialog for this set
-		int show_builder_dialog();
-		int show_builder_dialog(QWidget *parent);
 		void delete_from_disk();
 
-		//! for use when the builder dialog is open
-		void update_color(const QColor &new_color);
-		void draw_columns();
-		void type_chosen(const QString &type_name);
-		void add_column_from_gui();
-		void draw_column_context_menu(const QPoint &);
-		void edit_column(); // from context menu
-		void edit_column(QListWidgetItem*); // from double click
-		void remove_column(); // from context menu
-
 private:
-	Ui::ViewColumnSetDialog *ui;
 	QString m_name;
+	ViewManager *m_manager;
 	QString m_filename;
 	GridView *m_view;
 	QList<ViewColumn*> m_columns;
 	QBrush m_bg_brush; // possibly allow textured backgrounds in the long long ago, err future.
 	QColor m_bg_color;
-	QDialog *m_dialog; // for showing the builder dialog
-
-	void order_changed();
-	void show_edit_column_dialog(ViewColumn *vc);
 
 signals:
 	void set_deleted();
-	void set_changed();
+	// NOT USED YET void set_changed();
 };
 
 #endif

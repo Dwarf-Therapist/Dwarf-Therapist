@@ -103,16 +103,17 @@ void GridViewDialog::add_set() {
 
 void GridViewDialog::remove_set_from_action() {
 	QAction *a = qobject_cast<QAction*>(QObject::sender());
-	QPoint p = a->data().toPoint();
-	QListWidgetItem *item = ui->list_sets->itemAt(p);
-
-	QListWidgetItem *removed = ui->list_sets->takeItem(ui->list_sets->row(item));
+	int row = a->data().toInt();
+	QListWidgetItem *removed = ui->list_sets->takeItem(row);
 	delete removed;
 }
 
 void GridViewDialog::draw_set_context_menu(const QPoint &p) {
 	QMenu m(this);
+	QListWidgetItem *item = ui->list_sets->itemAt(p);
+	if (!item)
+		return;
 	QAction *a = m.addAction(tr("Remove..."), this, SLOT(remove_set_from_action()));
-	a->setData(p);
+	a->setData(ui->list_sets->row(item));
 	m.exec(ui->list_sets->viewport()->mapToGlobal(p));
 }

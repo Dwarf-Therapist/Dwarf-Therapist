@@ -21,7 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include "columntypes.h"
+#include "viewmanager.h"
 #include "viewcolumnset.h"
+#include "viewcolumnsetdialog.h"
 #include "laborcolumn.h"
 #include "happinesscolumn.h"
 #include "spacercolumn.h"
@@ -30,14 +32,11 @@ THE SOFTWARE.
 #include "defines.h"
 #include "labor.h"
 #include "utils.h"
-#include "ui_viewcolumnsetdialog.h"
-#include "ui_columneditdialog.h"
 
-ViewColumnSet::ViewColumnSet(QString name, QObject *parent)
+ViewColumnSet::ViewColumnSet(QString name, ViewManager *mgr, QObject *parent)
 	: QObject(parent)
-	, ui(new Ui::ViewColumnSetDialog)
 	, m_name(name)
-	, m_dialog(0)
+	, m_manager(mgr)
 {}
 
 void ViewColumnSet::set_name(const QString &name) {
@@ -112,8 +111,8 @@ void ViewColumnSet::reset_from_disk() {
 	s.endArray();
 }
 
-ViewColumnSet *ViewColumnSet::from_file(QString filename, QObject *parent) {
-	ViewColumnSet *ret_val = new ViewColumnSet("", parent);
+ViewColumnSet *ViewColumnSet::from_file(QString filename, ViewManager *mgr, QObject *parent) {
+	ViewColumnSet *ret_val = new ViewColumnSet("", mgr, parent);
 	ret_val->set_filename(filename);
 	ret_val->reset_from_disk();
 	return ret_val;
@@ -121,7 +120,7 @@ ViewColumnSet *ViewColumnSet::from_file(QString filename, QObject *parent) {
 
 void ViewColumnSet::write_settings() {
 	if (m_filename.isEmpty())
-		m_filename = m_name + ".ini";
+		m_filename = m_manager->set_path() + "/" + m_name + ".ini";
 
 	QSettings s(m_filename, QSettings::IniFormat);
 	s.setValue("info/name", m_name);
@@ -175,222 +174,6 @@ void ViewColumnSet::write_settings() {
 	s.endArray();
 }
 
-void ViewColumnSet::update_color(const QColor &new_color) {
-	set_bg_color(new_color);
-	draw_columns();
-}
-
-void ViewColumnSet::type_chosen(const QString &type_name) {
-	GameDataReader *gdr = GameDataReader::ptr();
-
-	QStandardItemModel *m = new QStandardItemModel();
-	ui->cb_column->clear();
-	ui->cb_column->setEnabled(true);
-	ui->btn_add_col->setEnabled(true);
-	if (type_name == "Special") {
-		QStandardItem *spacer = new QStandardItem("Spacer");
-		spacer->setData(CT_SPACER, Qt::UserRole);
-		m->appendRow(spacer);
-		QStandardItem *happiness  = new QStandardItem("Happiness");
-		happiness->setData(CT_HAPPINESS, Qt::UserRole);
-		m->appendRow(happiness);
-	} else if (type_name == "Labor") {
-		foreach(Labor *l, gdr->get_ordered_labors()) {
-			QStandardItem *i = new QStandardItem(l->name);
-			i->setData(CT_LABOR, Qt::UserRole);
-			i->setData(l->labor_id, Qt::UserRole + 1);
-			m->appendRow(i);
-		}
-	} else if (type_name == "Skill") {
-		QMap<int, QString> skills = gdr->get_skills();
-		foreach(int skill_id, skills.uniqueKeys()) {
-			QStandardItem *i = new QStandardItem(skills.value(skill_id, "UNKNOWN"));
-			i->setData(CT_SKILL, Qt::UserRole);
-			i->setData(skill_id, Qt::UserRole + 1);
-			m->appendRow(i);
-		}
-	} else {
-		ui->cb_column->setEnabled(false);
-		ui->btn_add_col->setEnabled(false);
-	}
-	m->sort(0);
-	ui->cb_column->setModel(m);
-}
-
-void ViewColumnSet::add_column_from_gui() {
-	COLUMN_TYPE type = static_cast<COLUMN_TYPE>(ui->cb_column->itemData(ui->cb_column->currentIndex()).toInt());
-	QString name = ui->cb_column->currentText();
-	ViewColumn *newcol = 0;
-	switch(type) {
-		case CT_SPACER:
-			{
-				SpacerColumn *c = new SpacerColumn("", this, this);
-				newcol = c;
-			}
-			break;
-		case CT_HAPPINESS:
-			{
-				HappinessColumn *c = new HappinessColumn(name, this, this);
-				newcol = c;
-			}
-			break;
-		case CT_LABOR:
-			{
-				int labor_id = ui->cb_column->itemData(ui->cb_column->currentIndex(), Qt::UserRole + 1).toInt();
-				GameDataReader *gdr = GameDataReader::ptr();
-				Labor *l = gdr->get_labor(labor_id);
-				if (l) {
-					LaborColumn *c = new LaborColumn(name, l->labor_id, l->skill_id, this, this);
-					newcol = c;
-				}
-			}
-			break;
-		case CT_SKILL:
-			{
-				int skill_id = ui->cb_column->itemData(ui->cb_column->currentIndex(), Qt::UserRole + 1).toInt();
-				GameDataReader *gdr = GameDataReader::ptr();
-				SkillColumn *c = new SkillColumn(gdr->get_skill_name(skill_id), skill_id, this, this);
-				newcol = c;
-			}
-			break;
-	}
-	if (newcol) {
-		add_column(newcol);
-		draw_columns();
-		/*QString title = QString("%1 %2").arg(get_column_type(newcol->type())).arg(newcol->title());
-		QListWidgetItem *item = new QListWidgetItem(title, ui->list_columns);
-		item->setData(Qt::UserRole, newcol->title());
-		if (newcol->override_color()) 
-			item->setBackgroundColor(newcol->bg_color());
-		else
-			item->setBackgroundColor(m_bg_color);
-			*/
-
-	}
-}
-
-void ViewColumnSet::draw_column_context_menu(const QPoint &p) {
-	QMenu m(m_dialog);
-	QAction *a = m.addAction(tr("Edit..."), this, SLOT(edit_column()));
-	a->setData(p);
-	a = m.addAction(tr("Remove..."), this, SLOT(remove_column()));
-	a->setData(p);
-	m.exec(ui->list_columns->viewport()->mapToGlobal(p));
-}
-
-void ViewColumnSet::edit_column(QListWidgetItem *item) {
-	int row = ui->list_columns->row(item);
-	ViewColumn *vc = m_columns.value(row, 0);
-	if (vc)
-		show_edit_column_dialog(vc);
-}
-
-void ViewColumnSet::edit_column() {
-	// find out which column we're editing...
-	QAction *a = qobject_cast<QAction*>(QObject::sender());
-	QPoint  p = a->data().value<QPoint>();
-	QModelIndex idx = ui->list_columns->indexAt(p);
-	ViewColumn *vc = m_columns.value(idx.row(), 0);
-	if (vc)
-		show_edit_column_dialog(vc);
-}
-
-void ViewColumnSet::show_edit_column_dialog(ViewColumn *vc) {
-	// build the column dialog
-	QDialog *d = new QDialog(m_dialog);
-	Ui::ColumnEditDialog *dui = new Ui::ColumnEditDialog;
-	dui->setupUi(d);
-	d->setModal(true);
-	
-	connect(dui->cb_override, SIGNAL(toggled(bool)), dui->cp_bg_color, SLOT(setEnabled(bool)));
-
-	if (vc->override_color())
-		dui->cp_bg_color->setCurrentColor(vc->bg_color());
-	else
-		dui->cp_bg_color->setCurrentColor(m_bg_color);
-	dui->cp_bg_color->setStandardColors();
-	dui->le_title->setText(vc->title());
-	dui->cb_override->setChecked(vc->override_color());
-	if (vc->type() == CT_SPACER) {
-		SpacerColumn *c = static_cast<SpacerColumn*>(vc);
-		dui->sb_width->setValue(c->width());
-	} else { // don't show the width form for non-spacer columns
-		dui->lbl_col_width->hide();
-		dui->sb_width->hide();
-		dui->verticalLayout->removeItem(dui->hbox_width);
-	}
-
-	int accepted = d->exec();
-	if (accepted == QDialog::Accepted) {
-		vc->set_title(dui->le_title->text());
-		vc->set_override_color(dui->cb_override->isChecked());
-		if (dui->cb_override->isChecked()) {
-			vc->set_bg_color(dui->cp_bg_color->currentColor());
-		}
-		if (vc->type() == CT_SPACER) {
-			SpacerColumn *c = static_cast<SpacerColumn*>(vc);
-			int w = dui->sb_width->value();
-			if (w < 1)
-				w = DEFAULT_SPACER_WIDTH;
-			c->set_width(w);
-		}
-		draw_columns();
-		emit set_changed();
-	}
-	delete dui;
-}
-
-void ViewColumnSet::remove_column() {
-	QAction *a = qobject_cast<QAction*>(QObject::sender());
-	QPoint  p = a->data().value<QPoint>();
-	QListWidgetItem *item = ui->list_columns->itemAt(p);
-	int row = ui->list_columns->row(item);
-	if (m_columns.size() >= row) {
-		m_columns.removeAt(row);
-		draw_columns();
-	}
-}
-
-bool ViewColumnSet::eventFilter(QObject *, QEvent *e) {
-	if (e->type() == QEvent::ChildRemoved) {
-		order_changed();
-		return false;
-	}
-	return false;
-}
-
-//! called when the user has re-arranged the columns in the gui..
-void ViewColumnSet::order_changed() {
-	QList<ViewColumn*> new_views;
-	for (int i = 0; i < ui->list_columns->count(); ++i) {
-		// find the VC that matches this item in the GUI list
-		QListWidgetItem *item = ui->list_columns->item(i);
-		QString title = item->data(Qt::UserRole).toString();
-		COLUMN_TYPE type = static_cast<COLUMN_TYPE>(item->data(Qt::UserRole + 1).toInt());
-		foreach(ViewColumn *vc, columns()) {
-			if (vc->title() == title && vc->type() == type) {
-				new_views << vc;
-			}
-		}
-	}
-	m_columns = new_views;
-	draw_columns();
-}
-
-void ViewColumnSet::draw_columns() {
-	ui->list_columns->clear();
-	foreach(ViewColumn *vc, m_columns) {
-		QString title = QString("%1 %2").arg(get_column_type(vc->type())).arg(vc->title());
-		QListWidgetItem *item = new QListWidgetItem(title, ui->list_columns);
-		item->setData(Qt::UserRole, vc->title());
-		item->setData(Qt::UserRole + 1, vc->type());
-		if (vc->override_color())
-			item->setBackgroundColor(vc->bg_color());
-		else
-			item->setBackgroundColor(m_bg_color);
-	}
-}
-
 void ViewColumnSet::delete_from_disk() {
 	int answer = QMessageBox::question(
 		0, tr("Really delete '%1' forever?").arg(m_name),
@@ -407,40 +190,11 @@ void ViewColumnSet::delete_from_disk() {
 	}
 }
 
-int ViewColumnSet::show_builder_dialog() {
-	return show_builder_dialog(0);
-}
-
-int ViewColumnSet::show_builder_dialog(QWidget *parent) {
-	m_dialog = new QDialog(parent);
-	ui->setupUi(m_dialog);
-	ui->le_name->setText(m_name);
-	ui->cp_bg_color->setCurrentColor(m_bg_color);
-	ui->cp_bg_color->setStandardColors();
-
-	// Pop
-	ui->cb_col_type->addItem("Special");
-	ui->cb_col_type->addItem("Labor");
-	ui->cb_col_type->addItem("Skill");
-
-
-	connect(ui->le_name, SIGNAL(textChanged(const QString &)), this, SLOT(set_name(const QString &)));
-	connect(ui->cp_bg_color, SIGNAL(colorChanged(const QColor &)), this, SLOT(update_color(const QColor &)));
-	connect(ui->cb_col_type, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(type_chosen(const QString &)));
-	connect(ui->btn_add_col, SIGNAL(clicked()), this, SLOT(add_column_from_gui()));
-	connect(ui->list_columns, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_column_context_menu(const QPoint &)));
-	connect(ui->list_columns, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(edit_column(QListWidgetItem*)));
-
-	ui->list_columns->installEventFilter(this);
-
-	draw_columns();
-
-	int code = m_dialog->exec();
-	if (code == QDialog::Accepted) {
-		//write to disk?
-	} else {
-		reset_from_disk();
+void ViewColumnSet::update_from_dialog(ViewColumnSetDialog *d) {
+	m_name = d->name();
+	m_bg_color = d->bg_color();
+	clear_columns();
+	foreach(ViewColumn *vc, d->columns()) {
+		add_column(vc);
 	}
-	delete m_dialog;
-	return code;
 }
