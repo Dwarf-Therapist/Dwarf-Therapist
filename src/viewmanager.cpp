@@ -33,56 +33,67 @@ ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent
 	: QTabWidget(parent)
 	, m_model(dm)
 	, m_proxy(proxy)
+	, m_add_tab_button(new QToolButton(this))
 {
 	m_proxy->setSourceModel(m_model);
 	setTabsClosable(true);
 	setMovable(true);
 
+	read_settings();
+
 	reload_sets();
 	reload_views();
 
+	m_add_tab_button->setIcon(QIcon(":img/tab_add.png"));
+	m_add_tab_button->setPopupMode(QToolButton::InstantPopup);
+	m_add_tab_button->setToolButtonStyle(Qt::ToolButtonIconOnly);
+	draw_add_tab_button();
+	setCornerWidget(m_add_tab_button, Qt::TopLeftCorner);
+
+	connect(tabBar(), SIGNAL(tabMoved(int, int)), this, SLOT(write_views()));
+	connect(tabBar(), SIGNAL(currentChanged(int)), this, SLOT(setCurrentIndex(int)));
+	connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(remove_tab_for_gridview(int)));
+}
+
+void ViewManager::read_settings() {
+	QSettings *s = DT->user_settings();
+	m_set_path = s->value("options/paths/sets", "etc/sets").toString();
+	m_view_path = s->value("options/paths/views", "etc/views").toString();
+}
+
+void ViewManager::draw_add_tab_button() {
 	QIcon icn(":img/tab_add.png");
 	QMenu *m = new QMenu(this);
 	foreach(GridView *v, m_views) {
 		QAction *a = m->addAction(icn, "Add " + v->name(), this, SLOT(add_tab_from_action()));
 		a->setData(v->name());
 	}
+	m_add_tab_button->setMenu(m);
+}
 
-	QToolButton *btn = new QToolButton(this);
-	btn->setIcon(QIcon(":img/tab_add.png"));
-	btn->setPopupMode(QToolButton::InstantPopup);
-	btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
-	btn->setMenu(m);
-	setCornerWidget(btn, Qt::TopLeftCorner);
-
-	connect(tabBar(), SIGNAL(tabMoved(int, int)), this, SLOT(write_views()));
-	connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(remove_tab_for_gridview(int)));
+void ViewManager::views_changed() {
+	read_settings();
+	reload_sets();
+	reload_views();
+	draw_views();
 }
 
 void ViewManager::reload_views() {
 	// make sure the required directories are in place
 	// TODO make directory locations configurable
 	QDir cur = QDir::current();
-	if (!cur.exists("etc/views")) {
-		QMessageBox::warning(this, tr("Missing Directory"),
-			tr("Could not fine the 'views' directory under 'etc'"));
+	if (!cur.exists(m_view_path)) {
+		QMessageBox::warning(this, tr("Missing Views Directory"),
+			tr("Could not find the 'views' directory at '%1'").arg(m_view_path));
 		return;
 	}
-	if (!cur.exists("etc/sets")) {
-		QMessageBox::warning(this, tr("Missing Directory"),
-			tr("Could not fine the 'sets' directory under 'etc'"));
-		return;
-	}
-
 	// goodbye old views!
 	foreach(GridView *v, m_views) {
 		v->deleteLater();
 	}
 	m_views.clear();
 
-	QDir views = QDir(QDir::currentPath() + "/etc/views");
-	QDir sets = QDir(QDir::currentPath() + "/etc/sets");
-	
+	QDir views = QDir(m_view_path).absolutePath();
 	QStringList view_files = views.entryList(QDir::Files | QDir::Readable, QDir::Time);
 	foreach(QString filename, view_files) {
 		if (filename.endsWith(".ini")) {
@@ -93,15 +104,25 @@ void ViewManager::reload_views() {
 		}
 	}
 	LOGI << "Loaded" << m_views.size() << "views from disk";
+	draw_add_tab_button();
+	draw_views();
+}
 
+void ViewManager::draw_views() {
 	// see if we have a saved tab order...
+	int idx = currentIndex();
+	while (count()) {
+		QWidget *w = widget(0);
+		w->deleteLater();
+		removeTab(0);
+	}
+	int x = count();
 	QStringList tab_order = DT->user_settings()->value("gui_options/tab_order").toStringList();
 	if (tab_order.size() > 0) {
 		foreach(QString name, tab_order) {
 			foreach(GridView *v, m_views) {
-				if (v->name() == name) {
+				if (v->name() == name) 
 					add_tab_for_gridview(v);
-				}
 			}
 		}
 	} else {
@@ -111,8 +132,11 @@ void ViewManager::reload_views() {
 				add_tab_for_gridview(v);
 		}
 	}
-	connect(tabBar(), SIGNAL(currentChanged(int)), this, SLOT(setCurrentIndex(int)));
-	//connect(cornerWidget(), SIGNAL(pressed()), m_views[0]->sets()[4], SLOT(show_builder_dialog()));
+	if (idx <= count() - 1) {
+		setCurrentIndex(idx);
+	} else {
+		setCurrentIndex(0);
+	}
 }
 
 void ViewManager::write_views() {
@@ -128,9 +152,9 @@ void ViewManager::write_views() {
 
 void ViewManager::reload_sets() {
 	QDir cur = QDir::current();
-	if (!cur.exists("etc/sets")) {
-		QMessageBox::warning(this, tr("Missing Directory"),
-			tr("Could not fine the 'sets' directory under 'etc'"));
+	if (!cur.exists(m_set_path)) {
+		QMessageBox::warning(this, tr("Missing Sets Directory"),
+			tr("Could not fine the 'sets' directory at '%1'").arg(m_set_path));
 		return;
 	}
 	foreach(ViewColumnSet *set, m_sets) {
@@ -175,7 +199,7 @@ ViewColumnSet *ViewManager::get_set(const QString &name) {
 void ViewManager::setCurrentIndex(int idx) {
 	StateTableView *stv = qobject_cast<StateTableView*>(widget(idx));
 	foreach(GridView *v, m_views) {
-		if (v->name() == tabBar()->tabText(idx)) {
+		if (v->name() == tabText(idx)) {
 			m_model->set_grid_view(v);
 			m_model->build_rows();
 			stv->header()->setResizeMode(QHeaderView::Fixed);
@@ -223,7 +247,15 @@ void ViewManager::remove_tab_for_gridview(int idx) {
 	}
 	foreach(GridView *v, m_views) {
 		if (v->name() == tabText(idx)) {
-			v->set_active(false);
+			// find out if there are other dupes of this view still active...
+			int active = 0;
+			for(int i = 0; i < count(); ++i) {
+				if (tabText(i) == v->name()) {
+					active++;
+				}
+			}
+			if (active < 2)
+				v->set_active(false);
 		}
 	}
 	widget(idx)->deleteLater();
@@ -238,10 +270,4 @@ void ViewManager::expand_all() {
 void ViewManager::collapse_all() {
 	StateTableView *stv = qobject_cast<StateTableView*>(currentWidget());
 	stv->collapseAll();
-}
-
-void ViewManager::edit_set(QListWidgetItem *item) {
-	ViewColumnSet *vc = get_set(item->text());
-	if (vc)
-		vc->show_builder_dialog(this);
 }

@@ -40,10 +40,14 @@ GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent
 	if (m_view) { // looks like this is an edit...
 		ui->le_name->setText(view->name());
 		draw_sets();
+		if (!view->name().isEmpty())
+			ui->buttonBox->setEnabled(true);
 	}
 	ui->list_sets->installEventFilter(this);
 
-	connect(ui->le_name, SIGNAL(textChanged(const QString &)), this, SLOT(check_name(const QString &)));
+	connect(ui->list_sets, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_set_context_menu(const QPoint &)));
+	connect(ui->le_name, SIGNAL(textChanged(const QString &)), SLOT(check_name(const QString &)));
+	connect(ui->btn_add_set, SIGNAL(clicked()), SLOT(add_set()));
 }
 
 QString GridViewDialog::name() {
@@ -69,7 +73,7 @@ void GridViewDialog::draw_sets() {
 void GridViewDialog::populate_combo_box() {
 	ui->cb_sets->clear();
 	foreach(ViewColumnSet *set, m_manager->sets()) {
-		if (m_view && !m_view->sets().contains(set)) {
+		if (!m_view || !m_view->sets().contains(set)) {
 			ui->cb_sets->addItem(set->name());
 		}
 	}
@@ -88,4 +92,27 @@ void GridViewDialog::order_changed() {
 
 void GridViewDialog::check_name(const QString &name) {
 	ui->buttonBox->setDisabled(name.isEmpty());
+}
+
+void GridViewDialog::add_set() {
+	QString set_name = ui->cb_sets->currentText();
+	ViewColumnSet *set = m_manager->get_set(set_name);
+	m_view->add_set(set);
+	draw_sets();
+}
+
+void GridViewDialog::remove_set_from_action() {
+	QAction *a = qobject_cast<QAction*>(QObject::sender());
+	QPoint p = a->data().toPoint();
+	QListWidgetItem *item = ui->list_sets->itemAt(p);
+
+	QListWidgetItem *removed = ui->list_sets->takeItem(ui->list_sets->row(item));
+	delete removed;
+}
+
+void GridViewDialog::draw_set_context_menu(const QPoint &p) {
+	QMenu m(this);
+	QAction *a = m.addAction(tr("Remove..."), this, SLOT(remove_set_from_action()));
+	a->setData(p);
+	m.exec(ui->list_sets->viewport()->mapToGlobal(p));
 }

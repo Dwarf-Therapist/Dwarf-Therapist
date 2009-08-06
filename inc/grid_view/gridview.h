@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 class ViewColumnSet;
 class ViewManager;
+class GridViewDialog;
 
 /*!
 The idea: GridViews have many ViewColumnSets, which in turn have many 
@@ -50,7 +51,7 @@ GridView
 class GridView : public QObject {
 	Q_OBJECT
 public:
-	GridView(QString name, QObject *parent = 0);
+	GridView(QString name, ViewManager *mgr, QObject *parent = 0);
 
 	QString name() {return m_name;}
 	void set_name(const QString &name) {m_name = name;}
@@ -63,6 +64,7 @@ public:
 	void set_active(bool active) {m_active = active;}
 
 	static GridView *from_file(const QString &filepath, ViewManager *mgr, QObject *parent = 0);
+	void update_from_dialog(GridViewDialog *d);
 	public slots:
 		void write_settings();
 
@@ -72,6 +74,7 @@ private:
 	QString m_filename;
 	QList<ViewColumnSet*> m_sets;
 	QMap<QString, ViewColumnSet*> m_set_map;
+	ViewManager *m_manager;
 };
 
 #endif

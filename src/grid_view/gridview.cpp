@@ -23,11 +23,13 @@ THE SOFTWARE.
 #include "gridview.h"
 #include "viewcolumnset.h"
 #include "viewmanager.h"
+#include "gridviewdialog.h"
 
-GridView::GridView(QString name, QObject *parent)
+GridView::GridView(QString name, ViewManager *mgr, QObject *parent)
 	: QObject(parent)
 	, m_name(name)
 	, m_active(true)
+	, m_manager(mgr)
 {}
 
 void GridView::add_set(ViewColumnSet *set) {
@@ -57,7 +59,7 @@ GridView *GridView::from_file(const QString &filepath, ViewManager *mgr, QObject
 	QString name = s.value("info/name", "UNKNOWN").toString();
 	bool active = s.value("info/active", true).toBool();
 	
-	GridView *ret_val = new GridView(name, parent);
+	GridView *ret_val = new GridView(name, mgr, parent);
 	ret_val->set_filename(filepath);
 	ret_val->set_active(active);
 
@@ -77,7 +79,7 @@ GridView *GridView::from_file(const QString &filepath, ViewManager *mgr, QObject
 
 void GridView::write_settings() {
 	if (m_filename.isEmpty())
-		m_filename = m_name + ".ini";
+		m_filename = m_manager->view_path() + "/" + m_name + ".ini";
 
 	QSettings s(m_filename, QSettings::IniFormat);
 	s.setValue("info/name", m_name);
@@ -92,4 +94,14 @@ void GridView::write_settings() {
 		set->write_settings();
 	}
 	s.endArray();
+}
+
+void GridView::update_from_dialog(GridViewDialog *d) {
+	m_name = d->name();
+	clear();
+	foreach(QString set_name, d->sets()) {
+		ViewColumnSet *s = m_manager->get_set(set_name);
+		if (s)
+			add_set(s);
+	}
 }

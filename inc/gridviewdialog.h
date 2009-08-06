@@ -36,7 +36,7 @@ namespace Ui {
 class GridViewDialog : public QDialog {
 	Q_OBJECT
 public:
-	GridViewDialog(ViewManager *mgr, GridView *view = 0, QWidget *parent = 0);
+	GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent = 0);
 
 	//! used to hack into the list of sets, since they don't seem to send a proper re-order signal
 	bool eventFilter(QObject *, QEvent *);
@@ -62,6 +62,15 @@ private:
 
 		//! makes sure the name for this view is ok
 		void check_name(const QString &);
+
+		//! add the currently selected set in the combobox to this view's set list
+		void add_set();
+
+		//! overridden context menu for the set list
+		void draw_set_context_menu(const QPoint &);
+
+		//! called from the context menu
+		void remove_set_from_action();
 };
 
 #endif;

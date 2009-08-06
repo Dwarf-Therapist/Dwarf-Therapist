@@ -39,6 +39,7 @@ void GridViewDock::set_view_manager(ViewManager *mgr) {
 	draw_views();
 
 	connect(ui->list_views, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(edit_view(QListWidgetItem*)));
+	connect(ui->btn_add, SIGNAL(clicked()), this, SLOT(add_new_view()));
 }
 
 void GridViewDock::draw_views() {
@@ -58,6 +59,20 @@ void GridViewDock::contextMenuEvent(QContextMenuEvent *e) {
 	m.exec(e->globalPos());
 }
 
+void GridViewDock::add_new_view() {
+	GridView *view = new GridView("", m_manager, m_manager);
+	GridViewDialog *d = new GridViewDialog(m_manager, view, this);
+	int accepted = d->exec();
+	if (accepted == QDialog::Accepted) {
+		view->update_from_dialog(d);
+		view->set_active(false);
+		view->write_settings();
+		emit views_changed();
+		draw_views();
+	} else {
+	}
+}
+
 void GridViewDock::edit_view(QListWidgetItem *item) {
 	m_tmp_item = item;
 	edit_view();
@@ -73,13 +88,10 @@ void GridViewDock::edit_view() {
 	GridViewDialog *d = new GridViewDialog(m_manager, view, this);
 	int accepted = d->exec();
 	if (accepted == QDialog::Accepted) {
-		view->set_name(d->name());
-		view->clear();
-		foreach(QString set_name, d->sets()) {
-			ViewColumnSet *s = m_manager->get_set(set_name);
-			if (s)
-				view->add_set(s);
-		}
+		view->update_from_dialog(d);
+		view->write_settings();
+		emit views_changed();
+		draw_views();
 	} else {
 		//view->reset_from_disk();
 	}

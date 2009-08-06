@@ -39,6 +39,8 @@ public:
 	void draw_views();
 
 	void contextMenuEvent(QContextMenuEvent *);
+	public slots:
+		void add_new_view();
 private:
 	ViewManager *m_manager;
 	Ui::GridViewDock *ui;
@@ -48,6 +50,10 @@ private:
 		void edit_view();
 		void edit_view(QListWidgetItem*);
 		void delete_view();
+
+signals:
+	void views_changed();
+
 };
 
 #endif

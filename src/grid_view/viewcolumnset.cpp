@@ -351,7 +351,7 @@ void ViewColumnSet::remove_column() {
 	}
 }
 
-bool ViewColumnSet::eventFilter(QObject *obj, QEvent *e) {
+bool ViewColumnSet::eventFilter(QObject *, QEvent *e) {
 	if (e->type() == QEvent::ChildRemoved) {
 		order_changed();
 		return false;
@@ -400,9 +400,10 @@ void ViewColumnSet::delete_from_disk() {
 	if (answer == QMessageBox::Yes) {
 		LOGD << "permanently deleting set" << m_name;
 		QFile f;
-		bool removed = f.remove(m_filename);
-		emit set_deleted();
-		deleteLater();
+		if (f.remove(m_filename)) {
+			emit set_deleted();
+			deleteLater();
+		}
 	}
 }
 

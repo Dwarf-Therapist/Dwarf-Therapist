@@ -40,10 +40,16 @@ public:
 	QList<GridView*> views() {return m_views;}
 	QList<ViewColumnSet*> sets() {return m_sets;}
 
+	QString set_path() {return m_set_path;}
+	QString view_path() {return m_view_path;}
+
 	public slots:
 		void setCurrentIndex(int);
 		void reload_views();
 		void write_views();
+		void draw_views();
+
+		void views_changed();
 
 		void reload_sets();
 		//void write_sets();
@@ -51,12 +57,6 @@ public:
 
 		GridView *get_view(const QString &name);
 		ViewColumnSet *get_set(const QString &name);
-
-		// dialogs
-		//void edit_view(QListWidgetItem*); // from main window's list of views
-		void edit_set(QListWidgetItem*); // from main window's list of sets
-		//void edit_set(); // from context menu
-		
 
 		// passthru
 		void expand_all();
@@ -67,6 +67,9 @@ private:
 	QList<ViewColumnSet*> m_sets;
 	DwarfModel *m_model;
 	DwarfModelProxy *m_proxy;
+	QString m_set_path;
+	QString m_view_path;
+	QToolButton *m_add_tab_button;
 
 	private slots:
 		//! used when adding tabs via the tool button
@@ -74,6 +77,8 @@ private:
 		//! used from everywhere else
 		int add_tab_for_gridview(GridView *v);
 		void remove_tab_for_gridview(int index);
+		void read_settings();
+		void draw_add_tab_button();
 };
 
 #endif
