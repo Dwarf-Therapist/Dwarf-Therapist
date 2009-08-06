@@ -143,7 +143,7 @@ void ViewColumnSetDialog::add_column_from_gui() {
 	switch(type) {
 		case CT_SPACER:
 			{
-				SpacerColumn *c = new SpacerColumn("", 0, this);
+				SpacerColumn *c = new SpacerColumn("SPACER " + QString::number(m_pending_columns.size()), 0, this);
 				newcol = c;
 			}
 			break;
@@ -194,7 +194,7 @@ void ViewColumnSetDialog::order_changed() {
 		QListWidgetItem *item = ui->list_columns->item(i);
 		QString title = item->data(Qt::UserRole).toString();
 		COLUMN_TYPE type = static_cast<COLUMN_TYPE>(item->data(Qt::UserRole + 1).toInt());
-		foreach(ViewColumn *vc, columns()) {
+		foreach(ViewColumn *vc, m_pending_columns) {
 			if (vc->title() == title && vc->type() == type) {
 				new_cols << vc;
 			}

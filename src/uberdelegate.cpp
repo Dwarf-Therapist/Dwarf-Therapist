@@ -222,6 +222,8 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 		if (d && d->is_labor_state_dirty(labor_id))
 			dirty_count++;
 	}
+
+	QStyledItemDelegate::paint(p, opt, proxy_idx); // slap on the main bg
 	
 	p->save();
 	QRect adj = adjust_rect(opt.rect);
