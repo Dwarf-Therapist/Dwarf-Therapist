@@ -55,7 +55,6 @@ StateTableView::StateTableView(QWidget *parent)
 	setSelectionMode(QAbstractItemView::ExtendedSelection);
 	setIndentation(8);
 	setFocusPolicy(Qt::NoFocus); // keep the dotted border off of things
-	setSortingEnabled(true);
 
 	setItemDelegate(m_delegate);
 	setHeader(m_header);
@@ -81,7 +80,7 @@ void StateTableView::read_settings() {
 	int pad = s->value("options/grid/cell_padding", 0).toInt();
 	setIconSize(QSize(m_grid_size - 2 - pad * 2, m_grid_size - 2 - pad * 2));
 
-	set_single_click_labor_changes(s->value("options/single_click_labor_changes", false).toBool());
+	set_single_click_labor_changes(s->value("options/single_click_labor_changes", true).toBool());
 }
 
 void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
@@ -97,6 +96,7 @@ void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
 	connect(m_model, SIGNAL(preferred_header_size(int, int)), m_header, SLOT(resizeSection(int, int)));
 	connect(m_model, SIGNAL(set_index_as_spacer(int)), m_header, SLOT(set_index_as_spacer(int)));
 	connect(m_model, SIGNAL(clear_spacers()), m_header, SLOT(clear_spacers()));
+	set_single_click_labor_changes(DT->user_settings()->value("options/single_click_labor_changes", true).toBool());
 }
 
 void StateTableView::new_custom_profession() {
@@ -144,9 +144,10 @@ void StateTableView::jump_to_profession(QListWidgetItem* current, QListWidgetIte
 }
 
 void StateTableView::set_single_click_labor_changes(bool enabled) {
-	TRACE << "setting single click labor changes:" << enabled;
-	disconnect(this, SIGNAL(clicked(const QModelIndex&)));
-	if (enabled) {
+	LOGD << "setting single click labor changes:" << enabled;
+	disconnect(this, SIGNAL(clicked(const QModelIndex&)), 0, 0);
+	if (enabled && m_proxy) {
+		LOGD << "connecting single click";
 		connect(this, SIGNAL(clicked(const QModelIndex&)), m_proxy, SLOT(cell_activated(const QModelIndex&)));
 	}
 }

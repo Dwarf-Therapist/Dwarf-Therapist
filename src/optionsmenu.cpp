@@ -36,14 +36,29 @@ OptionsMenu::OptionsMenu(MainWindow *parent)
 	ui->setupUi(this);
 	
 	m_general_colors 
-		<< new CustomColor(tr("Skill"), "", "skill", from_hex("0xAAAAAAFF"), this)
-		<< new CustomColor(tr("Active Labor Cell"), "", "active_labor", from_hex("0xE0FFE0FF"), this)
-		<< new CustomColor(tr("Active Group Cell"), "", "active_group", QColor(0x33FF33), this)
-		<< new CustomColor(tr("Inactive Group Cell"), "", "inactive_group", QColor(0x999999), this)
-		<< new CustomColor(tr("Partial Group Cell"), "", "partial_group", QColor(0xCCCCCC), this)
-		<< new CustomColor(tr("Selection Guides"), "", "guides", QColor(0x0099FF), this)
-		<< new CustomColor(tr("Main Border"), "", "border", QColor(0xd9d9d9), this)
-		<< new CustomColor(tr("Dirty Cell Indicator"), "", "dirty_border", QColor(0xFF6600), this);
+		<< new CustomColor(tr("Skill"), tr("The color of the growing skill indicator box "
+			"inside a cell. Is not used when auto-contrast is enabled."), "skill", from_hex("0xAAAAAAFF"), this)
+		<< new CustomColor(tr("Active Labor Cell"), 
+			tr("Color shown for a cell when the labor is active for a dwarf."), 
+			"active_labor", from_hex("0x7878B3FF"), this)
+		<< new CustomColor(tr("Active Group Cell"), 
+			tr("Color shown on an aggregate cell if <b>all</b> dwarves have this labor enabled."),
+			"active_group", from_hex("0x33FF33FF"), this)
+		<< new CustomColor(tr("Inactive Group Cell"), 
+			tr("Color shown on an aggregate cell if <b>none</b> of the dwarves have this labor enabled."), 
+			"inactive_group", from_hex("0x00000020"), this)
+		<< new CustomColor(tr("Partial Group Cell"), 
+			tr("Color shown on an aggregate cell if <b>some</b> of the dwarves have this labor enabled."), 
+			"partial_group", from_hex("0x00000060"), this)
+		<< new CustomColor(tr("Selection Guides"), 
+			tr("Color of the lines around cells when a row and/or column are selected."), 
+			"guides", QColor(0x0099FF), this)
+		<< new CustomColor(tr("Main Border"), 
+			tr("Color of cell borders"), 
+			"border", QColor(0xd9d9d9), this)
+		<< new CustomColor(tr("Dirty Cell Indicator"), 
+			tr("Border color of a cell that has pending changes. Set to main border color to disable this."), 
+			"dirty_border", QColor(0xFF6600), this);
 
 	QVBoxLayout *main_layout = new QVBoxLayout();
 	foreach(CustomColor *cc, m_general_colors) {

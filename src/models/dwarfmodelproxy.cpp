@@ -71,21 +71,18 @@ bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source
 }
 
 bool DwarfModelProxy::filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const {
-	/*
-	if (!mShowLineAndFile && source_column == 1 || source_column == 2) {
-		return false;
-	} else {
-		return QSortFilterProxyModel::filterAcceptsColumn(source_column, source_parent);
-	}
-	*/
 	return true;
 }
 
 void DwarfModelProxy::sort(int column, Qt::SortOrder order) {
 	if (column == 0) {
+		DwarfModel *dm = get_dwarf_model();
+		if (dm->current_grouping() == DwarfModel::GB_PROFESSION) {
+			return;
+		}
 		setSortRole(Qt::DisplayRole);
 	} else {
-		if (sortColumn() != column && column > 0) {
+		if (sortColumn() != column) {
 			order = Qt::DescendingOrder;
 		}
 		setSortRole(DwarfModel::DR_RATING);

@@ -211,7 +211,7 @@ void ViewManager::setCurrentIndex(int idx) {
 			m_model->build_rows();
 			stv->header()->setResizeMode(QHeaderView::Fixed);
 			stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
-			stv->sortByColumn(0, Qt::AscendingOrder);
+			//stv->sortByColumn(0, Qt::AscendingOrder);
 			break;
 		}
 	}
@@ -237,12 +237,14 @@ int ViewManager::add_tab_from_action() {
 int ViewManager::add_tab_for_gridview(GridView *v) {
 	v->set_active(true);
 	StateTableView *stv = new StateTableView(this);
+	stv->setSortingEnabled(false);
 	stv->set_model(m_model, m_proxy);
 	m_model->set_grid_view(v);
 	m_model->build_rows();
 	stv->header()->setResizeMode(QHeaderView::Fixed);
 	stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
-	stv->sortByColumn(0, Qt::AscendingOrder);
+	//stv->sortByColumn(0, Qt::AscendingOrder);
+	stv->setSortingEnabled(true);
 	return addTab(stv, v->name());
 }
 

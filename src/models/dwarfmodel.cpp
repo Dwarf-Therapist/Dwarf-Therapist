@@ -36,6 +36,8 @@ THE SOFTWARE.
 #include "gridview.h"
 #include "viewcolumnset.h"
 #include "viewcolumn.h"
+#include "laborcolumn.h"
+#include "skillcolumn.h"
 #include "spacercolumn.h"
 
 
@@ -71,8 +73,7 @@ void DwarfModel::load_dwarves() {
 }
 
 void DwarfModel::build_rows() {
-	QIcon icn_f(":img/female.png");
-	QIcon icn_m(":img/male.png");
+
 
 	// don't need to go delete the dwarf pointers in here, since the earlier foreach should have
 	// deleted them
@@ -139,75 +140,104 @@ void DwarfModel::build_rows() {
 	}
 
 	//FIXME : jump to prof and jump to pending change
-	/*if (m_group_by == GB_PROFESSION) {
+	if (m_group_by == GB_PROFESSION) {
 		// sort professions by column labors
-		// for each col in this view, find the associated skill, and then profession that matches the skill
-		// draw all professions ordered to match the cols, then everything remaining at the end...
-
-	}*/
-
-	foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
-		QStandardItem *root = 0;
-		QList<QStandardItem*> root_row;
-
-		if (m_group_by != GB_NOTHING) {
-			// we need a root element to hold group members...
-			QString title = QString("%1 (%2)").arg(key).arg(m_grouped_dwarves.value(key).size());
-			root = new QStandardItem(title);
-			root->setData(true, DR_IS_AGGREGATE);
-			root->setData(0, DR_RATING);
-			root_row << root;
-		}
-
-		if (root) { // we have a parent, so we should draw an aggregate row
-			foreach(ViewColumnSet *set, m_gridview->sets()) {
-				foreach(ViewColumn *col, set->columns()) {
-					QStandardItem *item = col->build_aggregate(key, m_grouped_dwarves[key]);
-					root_row << item;
+		QStringList group_order;
+		foreach(ViewColumnSet *set, m_gridview->sets()) {
+			foreach(ViewColumn *col, set->columns()) {
+				int skill = -1;
+				if (col->type() == CT_LABOR) {
+					LaborColumn *lc = static_cast<LaborColumn*>(col);
+					skill = lc->skill_id();
+				} else if (col->type() == CT_SKILL) {
+					SkillColumn *sc = static_cast<SkillColumn*>(col);
+					skill = sc->skill_id();
+				}
+				if (skill != -1) {
+					group_order << GameDataReader::ptr()->get_skill_name(skill);
 				}
 			}
 		}
-		
-		foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
-			QStandardItem *i_name = new QStandardItem(d->nice_name());
-			QString skill_summary = "<h4>Happiness Level: " + QString::number(d->get_happiness()) + "</h4><h4>Skills</h4><ul>";
-			QVector<Skill> *skills = d->get_skills();
-			qSort(*skills);
-			for (int i = skills->size() - 1; i >= 0; --i) {
-				skill_summary += "<li>" + skills->at(i).to_string() + "</li>";
+		foreach(QString prof_name, group_order) {
+			if (m_grouped_dwarves.contains(prof_name)) {
+				build_row(prof_name);
 			}
-			skill_summary += "</ul>";
-			i_name->setToolTip(skill_summary);
-			i_name->setStatusTip(d->nice_name());
-			i_name->setData(false, DR_IS_AGGREGATE);
-			i_name->setData(0, DR_RATING);
-			i_name->setData(d->id(), DR_ID);
-			
-			if (d->is_male()) {
-				i_name->setIcon(icn_m);
-			} else {
-				i_name->setIcon(icn_f);
+		}
+		foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
+			if (!group_order.contains(key)) {
+				build_row(key);
 			}
+		}
+	} else {
+		foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
+			build_row(key);
+		}
+	}
+}
 
-			QList<QStandardItem*> items;
-			items << i_name;
-			foreach(ViewColumnSet *set, m_gridview->sets()) {
-				foreach(ViewColumn *col, set->columns()) {
-					QStandardItem *item = col->build_cell(d);
-					items << item;
-				}
+void DwarfModel::build_row(QString key) {
+	QIcon icn_f(":img/female.png");
+	QIcon icn_m(":img/male.png");
+	QStandardItem *root = 0;
+	QList<QStandardItem*> root_row;
+
+	if (m_group_by != GB_NOTHING) {
+		// we need a root element to hold group members...
+		QString title = QString("%1 (%2)").arg(key).arg(m_grouped_dwarves.value(key).size());
+		root = new QStandardItem(title);
+		root->setData(true, DR_IS_AGGREGATE);
+		root->setData(0, DR_RATING);
+		root_row << root;
+	}
+
+	if (root) { // we have a parent, so we should draw an aggregate row
+		foreach(ViewColumnSet *set, m_gridview->sets()) {
+			foreach(ViewColumn *col, set->columns()) {
+				QStandardItem *item = col->build_aggregate(key, m_grouped_dwarves[key]);
+				root_row << item;
 			}
+		}
+	}
 	
-			if (root) {
-				root->appendRow(items);
-			} else {
-				appendRow(items);
+	foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
+		QStandardItem *i_name = new QStandardItem(d->nice_name());
+		QString skill_summary = "<h4>Happiness Level: " + QString::number(d->get_happiness()) + "</h4><h4>Skills</h4><ul>";
+		QVector<Skill> *skills = d->get_skills();
+		qSort(*skills);
+		for (int i = skills->size() - 1; i >= 0; --i) {
+			skill_summary += "<li>" + skills->at(i).to_string() + "</li>";
+		}
+		skill_summary += "</ul>";
+		i_name->setToolTip(skill_summary);
+		i_name->setStatusTip(d->nice_name());
+		i_name->setData(false, DR_IS_AGGREGATE);
+		i_name->setData(0, DR_RATING);
+		i_name->setData(d->id(), DR_ID);
+		
+		if (d->is_male()) {
+			i_name->setIcon(icn_m);
+		} else {
+			i_name->setIcon(icn_f);
+		}
+
+		QList<QStandardItem*> items;
+		items << i_name;
+		foreach(ViewColumnSet *set, m_gridview->sets()) {
+			foreach(ViewColumn *col, set->columns()) {
+				QStandardItem *item = col->build_cell(d);
+				items << item;
 			}
-			d->m_name_idx = indexFromItem(i_name);
 		}
+
 		if (root) {
-			appendRow(root_row);
+			root->appendRow(items);
+		} else {
+			appendRow(items);
 		}
+		d->m_name_idx = indexFromItem(i_name);
+	}
+	if (root) {
+		appendRow(root_row);
 	}
 }
 

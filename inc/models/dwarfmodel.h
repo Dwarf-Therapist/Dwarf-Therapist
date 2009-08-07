@@ -56,6 +56,7 @@ public:
 	void set_instance(DFInstance *df) {m_df = df;}
 	void set_grid_view(GridView *v) {m_gridview = v;}
 
+	void build_row(QString key);
 	void build_rows();
 	GROUP_BY current_grouping() const {return m_group_by;}
 	const QMap<QString, QVector<Dwarf*>> *get_dwarf_groups() const {return &m_grouped_dwarves;}
