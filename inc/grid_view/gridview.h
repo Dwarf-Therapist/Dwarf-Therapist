@@ -55,6 +55,7 @@ public:
 
 	QString name() {return m_name;}
 	void set_name(const QString &name) {m_name = name;}
+	QString filename() {return m_filename;}
 	void set_filename(const QString &filename) {m_filename = filename;}
 	void add_set(ViewColumnSet *set);
 	void remove_set(QString name);

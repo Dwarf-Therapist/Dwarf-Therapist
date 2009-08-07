@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "viewmanager.h"
 #include "gridview.h"
 #include "gridviewdialog.h"
+#include "defines.h"
 
 GridViewDock::GridViewDock(QWidget *parent, Qt::WindowFlags flags)
 	: QDockWidget(parent, flags)
@@ -97,7 +98,24 @@ void GridViewDock::edit_view() {
 	m_tmp_item = 0;
 }
 void GridViewDock::delete_view() {
-	if (m_tmp_item)
-		QMessageBox::information(this, tr("delete"), m_tmp_item->text());
+	if (!m_tmp_item)
+		return;
+	GridView *view = m_manager->get_view(m_tmp_item->text());
+	if (!view)
+		return;
+
+	int answer = QMessageBox::question(
+		0, tr("Delete View"),
+		tr("Deleting '%1' will permanently delete it from disk. <h1>Really delete '%1'?</h1><h2>There is no undo!</h2>").arg(view->name()),
+		QMessageBox::Yes | QMessageBox::No);
+	if (answer == QMessageBox::Yes) {
+		LOGI << "permanently deleting set" << view->name();
+		QFile f;
+		if (f.remove(view->filename())) {
+			emit views_changed();
+			draw_views();
+			view->deleteLater();
+		}
+	}
 	m_tmp_item = 0;
 }

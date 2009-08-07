@@ -39,6 +39,7 @@ public:
 	ViewColumnSet(QString name, ViewManager *mgr, QObject *parent = 0);
 
 	QString name() {return m_name;}
+	QString filename() {return m_filename;}
 	void set_filename(const QString &filename) {m_filename = filename;}
 	void add_column(ViewColumn *col);
 	void clear_columns();
