@@ -62,6 +62,8 @@ public:
 		// passthru
 		void expand_all();
 		void collapse_all();
+		void jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* previous);
+		void jump_to_profession(QListWidgetItem* current, QListWidgetItem* previous);
 
 private:
 	QList<GridView*> m_views;

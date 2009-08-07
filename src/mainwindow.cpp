@@ -68,6 +68,13 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->dock_grid_views->set_view_manager(m_view_manager);
 	ui->dock_sets->set_view_manager(m_view_manager);
 
+	ui->menu_docks->addAction(ui->dock_pending_jobs_list->toggleViewAction());
+	ui->menu_docks->addAction(ui->dock_custom_professions->toggleViewAction());
+	ui->menu_docks->addAction(ui->dock_grid_views->toggleViewAction());
+	ui->menu_docks->addAction(ui->dock_sets->toggleViewAction());
+	ui->menuWindows->addAction(ui->main_toolbar->toggleViewAction());
+
+
 	LOGD << "setting up connections for MainWindow";
 	connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
 	connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
@@ -80,6 +87,12 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->act_add_new_column_set, SIGNAL(triggered()), ui->dock_sets, SLOT(add_new_set()));
 	connect(ui->list_custom_professions, SIGNAL(customContextMenuRequested(const QPoint &)),
 			this, SLOT(draw_custom_profession_context_menu(const QPoint &)));
+
+	connect(ui->tree_pending, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
+			m_view_manager, SLOT(jump_to_dwarf(QTreeWidgetItem *, QTreeWidgetItem *)));
+	connect(ui->list_custom_professions, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
+		m_view_manager, SLOT(jump_to_profession(QListWidgetItem *, QListWidgetItem *)));
+
 
 	m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 

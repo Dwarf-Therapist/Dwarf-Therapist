@@ -171,15 +171,12 @@
     <property name="title">
      <string>Windows</string>
     </property>
-    <widget class="QMenu" name="menuDocks">
+    <widget class="QMenu" name="menu_docks">
      <property name="title">
       <string>Docks</string>
      </property>
-     <addaction name="act_show_pending_labors_window"/>
-     <addaction name="act_show_custom_professions_window"/>
     </widget>
-    <addaction name="menuDocks"/>
-    <addaction name="act_show_main_toolbar"/>
+    <addaction name="menu_docks"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuWindows"/>
@@ -543,48 +540,6 @@
     <string>Write all uncomitted changes to DF</string>
    </property>
   </action>
-  <action name="act_show_pending_labors_window">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../images.qrc">
-     <normaloff>:/img/layout_content.png</normaloff>:/img/layout_content.png</iconset>
-   </property>
-   <property name="text">
-    <string>Show Pending Labors Window</string>
-   </property>
-  </action>
-  <action name="act_show_custom_professions_window">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../images.qrc">
-     <normaloff>:/img/layout_content.png</normaloff>:/img/layout_content.png</iconset>
-   </property>
-   <property name="text">
-    <string>Show Custom Professions Window</string>
-   </property>
-  </action>
-  <action name="act_show_main_toolbar">
-   <property name="checkable">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../images.qrc">
-     <normaloff>:/img/layout_content.png</normaloff>:/img/layout_content.png</iconset>
-   </property>
-   <property name="text">
-    <string>Show Main Toolbar</string>
-   </property>
-  </action>
   <action name="act_options">
    <property name="icon">
     <iconset resource="../images.qrc">
@@ -657,18 +612,6 @@
     <string>Your donations make the world a better place!</string>
    </property>
   </action>
-  <action name="act_add_new_gridview">
-   <property name="icon">
-    <iconset resource="../images.qrc">
-     <normaloff>:/img/table_add.png</normaloff>:/img/table_add.png</iconset>
-   </property>
-   <property name="text">
-    <string>Add New GridView</string>
-   </property>
-   <property name="toolTip">
-    <string>Create a new gridview with custom sets</string>
-   </property>
-  </action>
   <action name="act_add_new_column_set">
    <property name="icon">
     <iconset resource="../images.qrc">
@@ -679,6 +622,18 @@
    </property>
    <property name="toolTip">
     <string>Add a new set of columns to be used in grid views</string>
+   </property>
+  </action>
+  <action name="act_add_new_gridview">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/table_add.png</normaloff>:/img/table_add.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add New GridView</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a new gridview with custom sets</string>
    </property>
   </action>
  </widget>
@@ -798,38 +753,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>act_show_pending_labors_window</sender>
-   <signal>triggered(bool)</signal>
-   <receiver>dock_pending_jobs_list</receiver>
-   <slot>setVisible(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1128</x>
-     <y>257</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>dock_pending_jobs_list</sender>
-   <signal>visibilityChanged(bool)</signal>
-   <receiver>act_show_pending_labors_window</receiver>
-   <slot>setChecked(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1128</x>
-     <y>257</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>btn_commit</sender>
    <signal>clicked()</signal>
    <receiver>act_commit_pending_changes</receiver>
@@ -837,7 +760,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>988</x>
-     <y>247</y>
+     <y>374</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -853,59 +776,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>1118</x>
-     <y>247</y>
+     <y>374</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
      <y>-1</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>dock_custom_professions</sender>
-   <signal>visibilityChanged(bool)</signal>
-   <receiver>act_show_custom_professions_window</receiver>
-   <slot>setChecked(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1128</x>
-     <y>446</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>act_show_custom_professions_window</sender>
-   <signal>triggered(bool)</signal>
-   <receiver>dock_custom_professions</receiver>
-   <slot>setVisible(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1128</x>
-     <y>446</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>act_show_main_toolbar</sender>
-   <signal>triggered()</signal>
-   <receiver>main_toolbar</receiver>
-   <slot>show()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>564</x>
-     <y>45</y>
     </hint>
    </hints>
   </connection>
@@ -917,7 +792,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1118</x>
-     <y>215</y>
+     <y>342</y>
     </hint>
     <hint type="destinationlabel">
      <x>1119</x>
@@ -933,7 +808,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>988</x>
-     <y>215</y>
+     <y>342</y>
     </hint>
     <hint type="destinationlabel">
      <x>1119</x>
@@ -949,7 +824,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1119</x>
-     <y>407</y>
+     <y>657</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -965,7 +840,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1119</x>
-     <y>437</y>
+     <y>687</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>

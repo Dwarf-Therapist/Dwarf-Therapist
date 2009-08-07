@@ -280,3 +280,13 @@ void ViewManager::collapse_all() {
 	StateTableView *stv = qobject_cast<StateTableView*>(currentWidget());
 	stv->collapseAll();
 }
+
+void ViewManager::jump_to_dwarf(QTreeWidgetItem *current, QTreeWidgetItem *previous) {
+	StateTableView *stv = qobject_cast<StateTableView*>(currentWidget());
+	stv->jump_to_dwarf(current, previous);
+}
+
+void ViewManager::jump_to_profession(QListWidgetItem *current, QListWidgetItem *previous) {
+	StateTableView *stv = qobject_cast<StateTableView*>(currentWidget());
+	stv->jump_to_profession(current, previous);
+}
