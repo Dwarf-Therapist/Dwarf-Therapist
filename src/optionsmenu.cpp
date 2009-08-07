@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "optionsmenu.h"
 #include "customcolor.h"
 #include "dwarftherapist.h"
+#include "utils.h"
 #include "defines.h"
 
 OptionsMenu::OptionsMenu(MainWindow *parent)
@@ -35,8 +36,8 @@ OptionsMenu::OptionsMenu(MainWindow *parent)
 	ui->setupUi(this);
 	
 	m_general_colors 
-		<< new CustomColor(tr("Skill"), "", "skill", QColor(0xAAAAAA), this)
-		<< new CustomColor(tr("Active Labor Cell"), "", "active_labor", QColor(0xE0FFE0), this)
+		<< new CustomColor(tr("Skill"), "", "skill", from_hex("0xAAAAAAFF"), this)
+		<< new CustomColor(tr("Active Labor Cell"), "", "active_labor", from_hex("0xE0FFE0FF"), this)
 		<< new CustomColor(tr("Active Group Cell"), "", "active_group", QColor(0x33FF33), this)
 		<< new CustomColor(tr("Inactive Group Cell"), "", "inactive_group", QColor(0x999999), this)
 		<< new CustomColor(tr("Partial Group Cell"), "", "partial_group", QColor(0xCCCCCC), this)
@@ -67,7 +68,6 @@ void OptionsMenu::read_settings() {
 	foreach(CustomColor *cc, m_general_colors) {
 		c = s->value(cc->get_config_key(), cc->get_default()).value<QColor>();
 		cc->set_color(c);
-		emit color_changed(cc->get_config_key(), c);
 	}
 	s->endGroup();
 	s->beginGroup("grid");

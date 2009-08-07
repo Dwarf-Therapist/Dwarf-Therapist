@@ -29,12 +29,11 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
 	connect(m_options_menu, SIGNAL(settings_changed()), SIGNAL(settings_changed())); // the telephone game...
 	connect(m_options_menu, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 	connect(m_main_window->ui->act_options, SIGNAL(triggered()), m_options_menu, SLOT(show()));
-	// custom professions
 	connect(m_main_window->ui->act_import_existing_professions, SIGNAL(triggered()), this, SLOT(import_existing_professions()));
 	connect(m_main_window->ui->list_custom_professions, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(edit_custom_profession(QListWidgetItem*)));
 	connect(m_main_window->ui->act_add_custom_profession, SIGNAL(triggered()), this, SLOT(add_custom_profession()));
-	
 	connect(m_main_window->ui->le_filter_text, SIGNAL(textChanged(const QString&)), m_main_window->get_proxy(), SLOT(setFilterFixedString(const QString&)));
+	
 	read_settings();
 
 	bool read = m_user_settings->value("options/read_on_startup", true).toBool();
@@ -84,6 +83,13 @@ void DwarfTherapist::load_translator() {
 void DwarfTherapist::read_settings() {
 	LOGD << "beginning to read settings";
 	m_reading_settings = true; // don't allow writes while we're reading...
+
+	// HACK!
+	if (m_user_settings->value("it_feels_like_the_first_time", true).toBool()) {
+		m_options_menu->write_settings(); //write it out so that we can get default colors loaded
+		emit settings_changed(); // this will cause delegates to get the right default colors
+		m_user_settings->setValue("it_feels_like_the_first_time", false);
+	}
 
 	if (m_user_settings->value("options/show_toolbutton_text", true).toBool()) {
 		m_main_window->get_toolbar()->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);

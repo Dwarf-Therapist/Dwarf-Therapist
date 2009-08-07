@@ -117,22 +117,24 @@ void DwarfModel::build_rows() {
 	int start_col = 1;
 	setHorizontalHeaderItem(0, new QStandardItem);
 	emit clear_spacers();
+	QSettings *s = DT->user_settings();
+	int width = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
 	foreach(ViewColumnSet *set, m_gridview->sets()) {
 		foreach(ViewColumn *col, set->columns()) {
 			QStandardItem *header = new QStandardItem(col->title());
 			header->setData(col->bg_color(), Qt::BackgroundColorRole);
 			setHorizontalHeaderItem(start_col++, header);
-
-			QSettings *s = DT->user_settings();
-			int width = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
 			switch (col->type()) {
 				case CT_SPACER:
-					SpacerColumn *c = static_cast<SpacerColumn*>(col);
-					width = c->width();
-					emit set_index_as_spacer(start_col - 1);
+					{
+						SpacerColumn *c = static_cast<SpacerColumn*>(col);
+						emit set_index_as_spacer(start_col - 1);
+						emit preferred_header_size(start_col - 1, c->width());
+					}
 					break;
+				default:
+					emit preferred_header_size(start_col - 1, width);
 			}
-			emit preferred_header_size(start_col - 1, width);
 		}
 	}
 
@@ -181,7 +183,6 @@ void DwarfModel::build_rows() {
 			i_name->setData(0, DR_RATING);
 			i_name->setData(d->id(), DR_ID);
 			
-
 			if (d->is_male()) {
 				i_name->setIcon(icn_m);
 			} else {

@@ -78,7 +78,6 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->dock_sets, SIGNAL(sets_changed()), m_view_manager, SLOT(sets_changed()));
 	connect(ui->act_add_new_gridview, SIGNAL(triggered()), ui->dock_grid_views, SLOT(add_new_view()));
 	connect(ui->act_add_new_column_set, SIGNAL(triggered()), ui->dock_sets, SLOT(add_new_set()));
-
 	connect(ui->list_custom_professions, SIGNAL(customContextMenuRequested(const QPoint &)),
 			this, SLOT(draw_custom_profession_context_menu(const QPoint &)));
 

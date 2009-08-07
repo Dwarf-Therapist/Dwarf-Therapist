@@ -367,12 +367,21 @@
    </widget>
   </widget>
   <widget class="GridViewDock" name="dock_grid_views">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="floating">
+    <bool>false</bool>
+   </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_3"/>
   </widget>
   <widget class="ViewColumnSetDock" name="dock_sets">
+   <property name="floating">
+    <bool>false</bool>
+   </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>

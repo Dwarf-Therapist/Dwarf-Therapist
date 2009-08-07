@@ -23,6 +23,7 @@ THE SOFTWARE.
 
 #include "skillcolumn.h"
 #include "gamedatareader.h"
+#include "viewcolumnset.h"
 #include "columntypes.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
@@ -50,5 +51,13 @@ QStandardItem *SkillColumn::build_cell(Dwarf *d) {
 }
 
 QStandardItem *SkillColumn::build_aggregate(const QString &, const QVector<Dwarf*> &) {
-	return new QStandardItem;
+	QStandardItem *item = new QStandardItem;
+	QColor bg;
+	if (m_override_set_colors)
+		bg = m_bg_color;
+	else
+		bg = m_set->bg_color();
+	item->setData(bg, Qt::BackgroundColorRole);
+	item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
+	return item;
 }

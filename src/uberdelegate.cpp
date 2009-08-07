@@ -102,13 +102,15 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
 			}
 			break;
 		case CT_HAPPINESS:
+			paint_bg(false, p, opt, idx);
 			QStyledItemDelegate::paint(p, opt, idx);
 			paint_grid(false, p, opt, idx);
 			break;
 		case CT_DEFAULT:
 		case CT_SPACER:
 		default:
-			QStyledItemDelegate::paint(p, opt, idx);
+			paint_bg(false, p, opt, idx);
+			//QStyledItemDelegate::paint(p, opt, idx);
 			if (opt.state & QStyle::State_Selected) {
 				p->save();
 				p->setPen(color_guides);
