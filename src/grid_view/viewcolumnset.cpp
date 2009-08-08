@@ -37,6 +37,7 @@ ViewColumnSet::ViewColumnSet(QString name, ViewManager *mgr, QObject *parent)
 	: QObject(parent)
 	, m_name(name)
 	, m_manager(mgr)
+	, m_bg_color(Qt::white)
 {}
 
 void ViewColumnSet::set_name(const QString &name) {

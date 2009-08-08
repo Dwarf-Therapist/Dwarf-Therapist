@@ -518,6 +518,32 @@
 			Name="Core"
 			>
 			<File
+				RelativePath=".\inc\cp437codec.h"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description=""
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description=""
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\inc\defines.h"
 				>
 			</File>
@@ -1786,6 +1812,13 @@
 							Name="VCCLCompilerTool"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\bin\Debug\moc_viewcolumnset.cpp"
@@ -1805,6 +1838,13 @@
 					<FileConfiguration
 						Name="Debug|Win32"
 						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2656,6 +2696,24 @@
 					>
 				</File>
 			</Filter>
+		</Filter>
+		<Filter
+			Name="Header Files"
+			Filter="h"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			>
+		</Filter>
+		<Filter
+			Name="Generated Files"
+			Filter="moc;h;cpp"
+			UniqueIdentifier="{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}"
+			>
+		</Filter>
+		<Filter
+			Name="Source Files"
+			Filter="cpp;cxx;c;def"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			>
 		</Filter>
 	</Files>
 	<Globals>

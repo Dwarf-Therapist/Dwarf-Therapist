@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include "happinesscolumn.h"
 #include "laborcolumn.h"
 #include "skillcolumn.h"
+#include "utils.h"
 
 ViewColumnSetDialog::ViewColumnSetDialog(ViewManager *mgr, ViewColumnSet *set, QWidget *parent)
 	: QDialog(parent)
@@ -44,6 +45,7 @@ ViewColumnSetDialog::ViewColumnSetDialog(ViewManager *mgr, ViewColumnSet *set, Q
 {
 	m_pending_columns.clear();
 	ui->setupUi(this);
+	ui->cp_bg_color->setCurrentColor(m_pending_bg_color);
 	if (set) {
 		ui->le_name->setText(set->name());
 		ui->cp_bg_color->setCurrentColor(set->bg_color());
@@ -92,10 +94,13 @@ void ViewColumnSetDialog::draw_columns() {
 		QListWidgetItem *item = new QListWidgetItem(title, ui->list_columns);
 		item->setData(Qt::UserRole, vc->title());
 		item->setData(Qt::UserRole + 1, vc->type());
-		if (vc->override_color())
-			item->setBackgroundColor(vc->bg_color());
-		else
-			item->setBackgroundColor(m_pending_bg_color);
+		if (vc->override_color()) {
+			item->setBackground(QBrush(vc->bg_color()));
+			item->setForeground(QBrush(compliment(vc->bg_color())));
+		} else {
+			item->setBackground(QBrush(m_pending_bg_color));
+			item->setForeground(QBrush(compliment(m_pending_bg_color)));
+		}
 	}
 }
 

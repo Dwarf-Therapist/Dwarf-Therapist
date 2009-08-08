@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include "utils.h"
 #include "gamedatareader.h"
 #include "memorylayout.h"
-
+#include "cp437codec.h"
 
 DFInstance::DFInstance(DWORD pid, HWND hwnd, QObject* parent)
 	:QObject(parent)
@@ -157,7 +157,12 @@ QString DFInstance::read_string(int address) {
 	
 	char *buffer = new char[len];
 	bytes_read = read_raw(buffer_addr, len, buffer);
-	QString ret_val = QString::fromAscii(buffer, bytes_read);
+	
+	//QString ret_val = QString::fromAscii(buffer, bytes_read);
+
+	CP437Codec *codec = new CP437Codec();
+	QString ret_val = codec->toUnicode(buffer, len);
+	delete codec;
 	delete[] buffer;
 	return ret_val;
 }
