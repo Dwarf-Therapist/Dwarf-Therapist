@@ -160,9 +160,8 @@ QString DFInstance::read_string(int address) {
 	
 	//QString ret_val = QString::fromAscii(buffer, bytes_read);
 
-	CP437Codec *codec = new CP437Codec();
+	CP437Codec *codec = new CP437Codec;
 	QString ret_val = codec->toUnicode(buffer, len);
-	delete codec;
 	delete[] buffer;
 	return ret_val;
 }
