@@ -125,6 +125,9 @@ void ViewManager::draw_views() {
 	}
 	int x = count();
 	QStringList tab_order = DT->user_settings()->value("gui_options/tab_order").toStringList();
+	if (tab_order.size() == 0) {
+		tab_order << "Labors" << "VPView" << "Military" << "Social";
+	}
 	if (tab_order.size() > 0) {
 		foreach(QString name, tab_order) {
 			foreach(GridView *v, m_views) {
@@ -139,7 +142,7 @@ void ViewManager::draw_views() {
 				add_tab_for_gridview(v);
 		}
 	}
-	if (idx <= count() - 1) {
+	if (idx >= 0 && idx <= count() - 1) {
 		setCurrentIndex(idx);
 	} else {
 		setCurrentIndex(0);

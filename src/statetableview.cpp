@@ -144,7 +144,7 @@ void StateTableView::jump_to_profession(QListWidgetItem* current, QListWidgetIte
 }
 
 void StateTableView::set_single_click_labor_changes(bool enabled) {
-	LOGD << "setting single click labor changes:" << enabled;
+	TRACE << "setting single click labor changes:" << enabled;
 	disconnect(this, SIGNAL(clicked(const QModelIndex&)), 0, 0);
 	if (enabled && m_proxy) {
 		LOGD << "connecting single click";

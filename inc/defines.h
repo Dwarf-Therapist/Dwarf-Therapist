@@ -32,11 +32,11 @@ THE SOFTWARE.
 #endif
 
 #ifndef VERSION_MINOR
-	#define VERSION_MINOR 1
+	#define VERSION_MINOR 3
 #endif
 
 #ifndef VERSION_PATCH
-	#define VERSION_PATCH 6
+	#define VERSION_PATCH 0
 #endif
 
 #define LOG   qxtLog
