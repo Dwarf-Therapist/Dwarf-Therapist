@@ -56,6 +56,7 @@ public:
 	int read_raw(int start_address, int bytes, void *buffer);
 	int scan_mem(QByteArray &needle, int start_address, int end_address, bool &ok);
 	QVector<int> scan_mem_find_all(QByteArray &needle, int start_address, int end_address);
+	QString read_wstring(int start_address);
 	QString read_string(int start_address);
 	int write_string(int start_address, QString str);
 	int write_int32(int start_address, int val);

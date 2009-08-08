@@ -121,6 +121,28 @@ int DFInstance::calculate_checksum() {
 	return timestamp;
 }
 
+QString DFInstance::read_wstring(int address) {
+	uint bytes_read = 0;
+	int len = read_int32(address + STRING_LENGTH_OFFSET, bytes_read);
+	int cap = read_int32(address + STRING_CAP_OFFSET, bytes_read);
+	int buffer_addr = address + STRING_BUFFER_OFFSET;
+	if (cap >= 16)
+		buffer_addr = read_int32(buffer_addr, bytes_read);
+
+	Q_ASSERT(len <= cap);
+	Q_ASSERT(len >= 0);
+	Q_ASSERT(len < (1 << 16));
+
+	uchar *buffer = new uchar[len];
+	bytes_read = read_raw(buffer_addr, len, buffer);
+	QString ret_val;
+	for(int i = 0; i < len; ++i) {
+		ret_val += buffer[i];
+	}
+	delete[] buffer;
+	return ret_val;
+}
+
 QString DFInstance::read_string(int address) {
 	uint bytes_read = 0;
 	int len = read_int32(address + STRING_LENGTH_OFFSET, bytes_read);
