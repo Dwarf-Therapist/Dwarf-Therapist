@@ -210,11 +210,12 @@ void MainWindow::check_latest_version() {
 	//http://code.google.com/p/dwarftherapist/wiki/LatestVersion
 	Version our_v(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 
-	QHttpRequestHeader header("GET", "/p/dwarftherapist/wiki/LatestVersion");
-	header.setValue("Host", "code.google.com");
+	QHttpRequestHeader header("GET", "/version");
+	header.setValue("Host", "dt-tracker.appspot.com");
+	//header.setValue("Host", "localhost");
 	header.setValue("User-Agent", QString("DwarfTherapist %1").arg(our_v.to_string()));
-	header.setValue("Referer", QString("/DwarfTherapist %1").arg(our_v.to_string()));
-	m_http->setHost("code.google.com");
+	m_http->setHost("dt-tracker.appspot.com");
+	//m_http->setHost("localhost", 8080);
 	disconnect(m_http, SIGNAL(done(bool)));
 	connect(m_http, SIGNAL(done(bool)), this, SLOT(version_check_finished(bool)));
 	m_http->request(header);
@@ -225,7 +226,7 @@ void MainWindow::version_check_finished(bool error) {
 		qWarning() << m_http->errorString();
 	}
 	QString data = QString(m_http->readAll());
-	QRegExp rx("###LATEST_VERSION###(\\d+)\\.(\\d+)\\.(\\d+)###END_LATEST_VERSION###");
+	QRegExp rx("(\\d+)\\.(\\d+)\\.(\\d+)");
 	int pos = rx.indexIn(data);
 	if (pos != -1) {
 		Version our_v(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);

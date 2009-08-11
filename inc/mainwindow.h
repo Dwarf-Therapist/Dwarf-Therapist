@@ -73,6 +73,7 @@ public:
 		void draw_professions();
 		void draw_custom_profession_context_menu(const QPoint &);
 		
+		//void send_usage_data();
 		void check_latest_version();
 		void version_check_finished(bool error);
 
