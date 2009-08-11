@@ -40,7 +40,7 @@ ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set, QObj
 
 QStandardItem *ViewColumn::init_cell(Dwarf *d) {
 	QStandardItem *item = new QStandardItem;
-	item->setStatusTip(m_title + " :: " + d->nice_name());
+	item->setStatusTip(QString("%1 :: %2").arg(m_title).arg(d->nice_name()));
 	QColor bg;
 	if (m_override_set_colors) {
 		bg = m_bg_color;

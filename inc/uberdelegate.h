@@ -39,7 +39,6 @@ public:
 
 	void set_model(DwarfModel *model) {m_model = model;}
 	void set_proxy(DwarfModelProxy *proxy) {m_proxy = proxy;}
-	QRect adjust_rect(QRect r) const;
 
 	QColor color_active_labor;
 	QColor color_active_group;
@@ -54,20 +53,21 @@ public:
 	int cell_padding;
 	bool auto_contrast;
 	bool draw_aggregates;
-
+	
 private:
 	DwarfModel *m_model;
 	DwarfModelProxy *m_proxy;
 
 	void paint_cell(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
 	
-	void paint_grid(bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+	void paint_grid(const QRect &adjusted, bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+	
 	//! return the bg color that was painted
-	QColor paint_bg(bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+	QColor paint_bg(const QRect &adjusted, bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
 
 	void paint_skill(int rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
-	void paint_labor(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
-	void paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+	void paint_labor(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+	void paint_aggregate(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
 	
 	private slots:
 		void read_settings();

@@ -81,6 +81,7 @@ private:
 	QMap<int, Labor*> m_labors;
 	QMap<int, Labor*> m_ordered_labors;
 	QMap<int, QString> m_skills;
+	QMap<int, QString> m_skill_levels;
 	int m_game_checksum;
 
 

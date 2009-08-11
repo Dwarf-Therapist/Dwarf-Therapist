@@ -123,7 +123,6 @@ void ViewManager::draw_views() {
 		w->deleteLater();
 		removeTab(0);
 	}
-	int x = count();
 	QStringList tab_order = DT->user_settings()->value("gui_options/tab_order").toStringList();
 	if (tab_order.size() == 0) {
 		tab_order << "Labors" << "VPView" << "Military" << "Social";
@@ -242,10 +241,10 @@ int ViewManager::add_tab_for_gridview(GridView *v) {
 	StateTableView *stv = new StateTableView(this);
 	stv->setSortingEnabled(false);
 	stv->set_model(m_model, m_proxy);
-	m_model->set_grid_view(v);
-	m_model->build_rows();
-	stv->header()->setResizeMode(QHeaderView::Fixed);
-	stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
+	//m_model->set_grid_view(v);
+	//m_model->build_rows();
+	//stv->header()->setResizeMode(QHeaderView::Fixed);
+	//stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
 	//stv->sortByColumn(0, Qt::AscendingOrder);
 	stv->setSortingEnabled(true);
 	return addTab(stv, v->name());

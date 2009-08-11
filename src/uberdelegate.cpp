@@ -81,35 +81,36 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
 	QModelIndex model_idx = m_proxy->mapToSource(idx);
 	COLUMN_TYPE type = static_cast<COLUMN_TYPE>(model_idx.data(DwarfModel::DR_COL_TYPE).toInt());
+	QRect adjusted = opt.rect.adjusted(cell_padding, cell_padding, (cell_padding * -2) - 1, (cell_padding * -2) - 1);
 	switch (type) {
 		case CT_SKILL:
 			{
 				short rating = model_idx.data(DwarfModel::DR_RATING).toInt();
-				QColor bg = paint_bg(false, p, opt, idx);
+				QColor bg = paint_bg(adjusted, false, p, opt, idx);
 				paint_skill(rating, bg, p, opt, idx);
-				paint_grid(false, p, opt, idx);
+				paint_grid(adjusted, false, p, opt, idx);
 			}
 			break;
 		case CT_LABOR:
 			{
 				bool agg = model_idx.data(DwarfModel::DR_IS_AGGREGATE).toBool();
 				if (m_model->current_grouping() == DwarfModel::GB_NOTHING || !agg) {
-					paint_labor(p, opt, idx);
+					paint_labor(adjusted, p, opt, idx);
 				} else {
 					if (draw_aggregates)
-						paint_aggregate(p, opt, idx);
+						paint_aggregate(adjusted, p, opt, idx);
 				}
 			}
 			break;
 		case CT_HAPPINESS:
-			paint_bg(false, p, opt, idx);
+			paint_bg(adjusted, false, p, opt, idx);
 			QStyledItemDelegate::paint(p, opt, idx);
-			paint_grid(false, p, opt, idx);
+			paint_grid(adjusted, false, p, opt, idx);
 			break;
 		case CT_DEFAULT:
 		case CT_SPACER:
 		default:
-			paint_bg(false, p, opt, idx);
+			paint_bg(adjusted, false, p, opt, idx);
 			//QStyledItemDelegate::paint(p, opt, idx);
 			if (opt.state & QStyle::State_Selected) {
 				p->save();
@@ -122,19 +123,14 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
 	}
 }
 
-QRect UberDelegate::adjust_rect(QRect r) const {
-	return r.adjusted(cell_padding, cell_padding, (cell_padding * -2) - 1, (cell_padding * -2) - 1);
-}
-
-QColor UberDelegate::paint_bg(bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
+QColor UberDelegate::paint_bg(const QRect &adjusted, bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
 	QModelIndex idx = m_proxy->mapToSource(proxy_idx);
 	QColor bg = idx.data(DwarfModel::DR_DEFAULT_BG_COLOR).value<QColor>();
-	QRect r = adjust_rect(opt.rect);
 	p->save();
 	p->fillRect(opt.rect, QBrush(bg));
 	if (active) {
 		bg = color_active_labor;
-		p->fillRect(r, QBrush(bg));
+		p->fillRect(adjusted, QBrush(bg));
 	}
 	p->restore();
 	return bg;
@@ -183,7 +179,7 @@ void UberDelegate::paint_skill(int rating, QColor bg, QPainter *p, const QStyleO
 	}
 }
 
-void UberDelegate::paint_labor(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
+void UberDelegate::paint_labor(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
 	QModelIndex idx = m_proxy->mapToSource(proxy_idx);
 	short rating = idx.data(DwarfModel::DR_RATING).toInt();
 	
@@ -196,12 +192,12 @@ void UberDelegate::paint_labor(QPainter *p, const QStyleOptionViewItem &opt, con
 	bool enabled = d->is_labor_enabled(labor_id);
 	bool dirty = d->is_labor_state_dirty(labor_id);
 
-	QColor bg = paint_bg(enabled, p, opt, proxy_idx);
+	QColor bg = paint_bg(adjusted, enabled, p, opt, proxy_idx);
 	paint_skill(rating, bg, p, opt, proxy_idx);
-	paint_grid(dirty, p, opt, proxy_idx);
+	paint_grid(adjusted, dirty, p, opt, proxy_idx);
 }
 
-void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
+void UberDelegate::paint_aggregate(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
 	if (!proxy_idx.isValid()) {
 		return;
 	}
@@ -219,42 +215,42 @@ void UberDelegate::paint_aggregate(QPainter *p, const QStyleOptionViewItem &opt,
 	for (int i = 0; i < m_proxy->rowCount(first_col); ++i) {
 		int dwarf_id = m_proxy->data(m_proxy->index(i, 0, first_col), DwarfModel::DR_ID).toInt();
 		Dwarf *d = m_model->get_dwarf_by_id(dwarf_id);
-		if (d && d->is_labor_enabled(labor_id))
+		if (!d)
+			continue;
+		if (d->is_labor_enabled(labor_id))
 			enabled_count++;
-		if (d && d->is_labor_state_dirty(labor_id))
+		if (d->is_labor_state_dirty(labor_id))
 			dirty_count++;
 	}
 
 	QStyledItemDelegate::paint(p, opt, proxy_idx); // slap on the main bg
 	
 	p->save();
-	QRect adj = adjust_rect(opt.rect);
 	if (enabled_count == m_proxy->rowCount(first_col)) {
-		p->fillRect(adj, QBrush(color_active_group));
+		p->fillRect(adjusted, QBrush(color_active_group));
 	} else if (enabled_count > 0) {
-		p->fillRect(adj, QBrush(color_partial_group));
+		p->fillRect(adjusted, QBrush(color_partial_group));
 	} else {
-		p->fillRect(adj, QBrush(color_inactive_group));
+		p->fillRect(adjusted, QBrush(color_inactive_group));
 	}
 	p->restore();
 
-	paint_grid(dirty_count > 0, p, opt, proxy_idx);
+	paint_grid(adjusted, dirty_count > 0, p, opt, proxy_idx);
 }
 
-void UberDelegate::paint_grid(bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &) const {
-	QRect r = adjust_rect(opt.rect);
+void UberDelegate::paint_grid(const QRect &adjusted, bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &) const {
 	p->save(); // border last
 	p->setBrush(Qt::NoBrush);
-	p->setPen(color_border);
-	p->drawRect(r);
-	if (opt.state & QStyle::State_Selected) {
+	if (dirty) {
+		p->setPen(QPen(color_dirty_border, 1));
+		p->drawRect(adjusted);
+	} else if (opt.state.testFlag(QStyle::State_Selected)) {
 		p->setPen(color_guides);
 		p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
 		p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
-	}
-	if (dirty) {
-		p->setPen(QPen(color_dirty_border, 1));
-		p->drawRect(r);
+	} else {
+		p->setPen(color_border);
+		p->drawRect(adjusted);
 	}
 	p->restore();
 }

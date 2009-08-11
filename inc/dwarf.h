@@ -54,9 +54,9 @@ public:
 	QString profession() {return m_profession;}
 	QString custom_profession_name() {return m_pending_custom_profession;}
 	void refresh_data();
-	QString nice_name();
+	QString nice_name() {return m_nice_name;}
 	QString nickname() {return m_pending_nick_name;}
-	void set_nickname(QString nick) {m_pending_nick_name = nick;}
+	void set_nickname(QString nick) {m_pending_nick_name = nick; calc_nice_name();}
 	DWARF_HAPPINESS get_happiness() {return m_happiness;}
 	int get_raw_happiness() {return m_raw_happiness;}
 	
@@ -94,11 +94,13 @@ private:
 	QString read_last_name(int address);
 	QVector<Skill> read_skills(int address);
 	void read_labors(int address);
+	void calc_nice_name();
 
 	int m_id;
 	QString m_first_name;
 	QString m_last_name;
 	QString m_nick_name, m_pending_nick_name;
+	QString m_nice_name; // used to cache this value
 	QString m_custom_profession, m_pending_custom_profession;
 	QString m_profession;
 	int m_strength;

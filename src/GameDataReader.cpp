@@ -49,6 +49,13 @@ GameDataReader::GameDataReader(QObject *parent) :
 		m_skills.insert(skill_id, m_data_settings->value(k, "UNKNOWN").toString());
 	}
 	m_data_settings->endGroup();
+
+	m_data_settings->beginGroup("skill_levels");
+	foreach(QString k, m_data_settings->childKeys()) {
+		int rating = k.toInt();
+		m_skill_levels.insert(rating, m_data_settings->value(k, "UNKNOWN").toString());
+	}
+	m_data_settings->endGroup();
 }
  
 int GameDataReader::get_int_for_key(QString key, short base) {
@@ -87,11 +94,13 @@ QColor GameDataReader::get_color(QString key) {
 }
 
 QString GameDataReader::get_skill_level_name(short level) {
-	return get_string_for_key(QString("skill_levels/%1").arg(level));
+	return m_skill_levels.value(level, "UNKNOWN");
+	//return get_string_for_key(QString("skill_levels/%1").arg(level));
 }
 
 QString GameDataReader::get_skill_name(short skill_id) {
-	return get_string_for_key(QString("skill_names/%1").arg(skill_id));
+	return m_skills.value(skill_id, "UNKNOWN");
+	//return get_string_for_key(QString("skill_names/%1").arg(skill_id));
 }
 
 QString GameDataReader::get_profession_name(int profession_id) {

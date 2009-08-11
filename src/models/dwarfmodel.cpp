@@ -69,7 +69,7 @@ void DwarfModel::load_dwarves() {
 		m_dwarves[d->id()] = d;
 	}
 
-	build_rows();
+	//build_rows();
 }
 
 void DwarfModel::build_rows() {

@@ -39,15 +39,17 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
 	QStandardItem *item = init_cell(d);
 
 	item->setData(CT_LABOR, DwarfModel::DR_COL_TYPE);
-	short rating = d->get_rating_by_labor(m_labor_id);
+	short rating = d->get_rating_by_skill(m_skill_id);
 	item->setData(rating, DwarfModel::DR_RATING); // for sort order
 	item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);
 	
-	QString tooltip = "<h3>" + m_title + "</h3>";
+	QString skill_str;
 	if (m_skill_id != -1)
-		tooltip += gdr->get_skill_level_name(rating) + " " + gdr->get_skill_name(m_skill_id) + " (" + QString::number(rating) + ")";
-	tooltip += "\n<h4>" + d->nice_name() + "</h4>";
-	item->setToolTip(tooltip);
+		skill_str = QString("%1 %2 (%3)")
+			.arg(gdr->get_skill_level_name(rating))
+			.arg(gdr->get_skill_name(m_skill_id))
+			.arg(rating);
+	item->setToolTip(QString("<h3>%1</h3>%2<h4>%3</h4>").arg(m_title).arg(skill_str).arg(d->nice_name()));
 	
 	return item;
 }

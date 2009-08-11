@@ -69,10 +69,18 @@ void Dwarf::refresh_data() {
 	m_happiness = happiness_from_score(m_raw_happiness);
 	
 	//qDebug() << nice_name() << "SEX" << (m_is_male ? "M" : "F") << " MONEY" << m_money << "ADDR" << hex << m_address;
-	
+
+	calc_nice_name();
 }
 
 Dwarf::~Dwarf() {
+}
+
+void Dwarf::calc_nice_name() {
+	if (m_pending_nick_name.isEmpty())
+		m_nice_name = QString("%1 %2").arg(m_first_name, m_last_name);
+	else
+		m_nice_name = QString("'%1' %2").arg(m_pending_nick_name, m_last_name);
 }
 
 Dwarf::DWARF_HAPPINESS Dwarf::happiness_from_score(int score) {
@@ -101,14 +109,6 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, int address) {
 		return 0;
 	}
 	return new Dwarf(df, address, df);
-}
-
-QString Dwarf::nice_name() {
-	if (m_pending_nick_name.isEmpty()) {
-		return QString("%1 %2").arg(m_first_name, m_last_name);
-	} else {
-		return QString("\"%1\" %2 ").arg(m_pending_nick_name, m_last_name);
-	}
 }
 
 QString Dwarf::read_last_name(int address) {
@@ -205,9 +205,11 @@ void Dwarf::read_labors(int address) {
 		m_pending_labors[l->labor_id] = enabled;
 	}
 	// special cases
+	/*
 	int num_weapons_offset = gdr->get_int_for_key("military_prefs/0/id", 10);
 	m_pending_num_weapons = buf[num_weapons_offset];
 	m_num_weapons = m_pending_num_weapons;
+	*/
 }
 
 bool Dwarf::is_labor_enabled(int labor_id) {
