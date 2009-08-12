@@ -76,6 +76,14 @@ void Dwarf::refresh_data() {
 Dwarf::~Dwarf() {
 }
 
+QString Dwarf::profession() {
+	if (!m_pending_custom_profession.isEmpty())
+		return m_pending_custom_profession;
+	if (!m_custom_profession.isEmpty())
+		return m_custom_profession;
+	return m_profession;
+}
+
 void Dwarf::calc_nice_name() {
 	if (m_pending_nick_name.isEmpty())
 		m_nice_name = QString("%1 %2").arg(m_first_name, m_last_name);

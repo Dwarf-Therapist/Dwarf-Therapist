@@ -51,7 +51,7 @@ public:
 	// attributes
 	int id() {return m_id;}
 	bool is_male() {return m_is_male;}
-	QString profession() {return m_profession;}
+	QString profession();
 	QString custom_profession_name() {return m_pending_custom_profession;}
 	void refresh_data();
 	QString nice_name() {return m_nice_name;}
