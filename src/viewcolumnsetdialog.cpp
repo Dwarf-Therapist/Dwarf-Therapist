@@ -53,6 +53,7 @@ ViewColumnSetDialog::ViewColumnSetDialog(ViewManager *mgr, ViewColumnSet *set, Q
 		foreach(ViewColumn *vc, set->columns()) {
 			m_pending_columns << vc;
 		}
+		ui->buttonBox->setEnabled(!set->name().isEmpty());
 	}
 	ui->cp_bg_color->setStandardColors();
 	ui->list_columns->installEventFilter(this);

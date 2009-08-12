@@ -40,8 +40,7 @@ GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent
 	if (m_view) { // looks like this is an edit...
 		ui->le_name->setText(view->name());
 		draw_sets();
-		if (!view->name().isEmpty())
-			ui->buttonBox->setEnabled(true);
+		ui->buttonBox->setEnabled(!view->name().isEmpty());
 	}
 	ui->list_sets->installEventFilter(this);
 
