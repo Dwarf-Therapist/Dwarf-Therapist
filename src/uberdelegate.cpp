@@ -36,6 +36,25 @@ UberDelegate::UberDelegate(QObject *parent)
 {
 	read_settings();
 	connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
+
+	// Build a star shape for drawing later (http://doc.trolltech.com/4.5/itemviews-stardelegate-starrating-cpp.html)
+	double pi = 3.14; // nobody cares, these are tiny
+	for (int i = 0; i < 5; ++i) {
+		// star points are 5 per circle which are 2pi/5 radians apart
+		// we want to cross center by drawing points that are 4pi/5 radians apart
+		// in order. The winding-fill will fill it in nicely as we draw each point
+		// skip a point on each iteration by moving 4*pi/5 around the circle
+		// which is basically .8 * pi
+		m_star_shape << QPointF(
+			0.4 * cos(i * pi * 0.8), // x
+			0.4 * sin(i * pi * 0.8)  // y
+			);
+	}
+
+	m_diamond_shape << QPointF(0.5, 0.1) //top
+				    << QPointF(0.75, 0.5) // right
+		            << QPointF(0.5, 0.9) //bottom
+		            << QPointF(0.25, 0.5); // left
 }
 
 void UberDelegate::read_settings() {
@@ -56,6 +75,7 @@ void UberDelegate::read_settings() {
 	cell_padding = s->value("options/grid/cell_padding", 0).toInt();
 	auto_contrast = s->value("options/auto_contrast", true).toBool();
 	draw_aggregates = s->value("options/show_aggregates", true).toBool();
+	m_skill_drawing_method = static_cast<SKILL_DRAWING_METHOD>(s->value("options/grid/skill_drawing_method", SDM_GROWING_CENTRAL_BOX).toInt());
 }
 
 void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
@@ -87,7 +107,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
 			{
 				short rating = model_idx.data(DwarfModel::DR_RATING).toInt();
 				QColor bg = paint_bg(adjusted, false, p, opt, idx);
-				paint_skill(rating, bg, p, opt, idx);
+				paint_skill(adjusted, rating, bg, p, opt, idx);
 				paint_grid(adjusted, false, p, opt, idx);
 			}
 			break;
@@ -136,118 +156,121 @@ QColor UberDelegate::paint_bg(const QRect &adjusted, bool active, QPainter *p, c
 	return bg;
 }
 
-void UberDelegate::paint_skill(int rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &) const {
+void UberDelegate::paint_skill(const QRect &adjusted, int rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &) const {
 	QColor c = color_skill; 
 	if (auto_contrast)
 		c = compliment(bg);
-	QRect adjusted = opt.rect.adjusted(cell_padding, cell_padding, (cell_padding * -2) - 1, (cell_padding * -2) - 1);
+	
 	p->save();
-	bool growing_box = false;
-	if (growing_box) {
-		if (rating == 15) {
-			// draw diamond
-			p->setRenderHint(QPainter::Antialiasing);
-			p->setPen(Qt::gray);
+	switch(m_skill_drawing_method) {
+		case SDM_GROWING_CENTRAL_BOX:
+			if (rating == 15) {
+				// draw diamond
+				p->setRenderHint(QPainter::Antialiasing);
+				p->setPen(Qt::gray);
+				p->setBrush(QBrush(c));
+				p->translate(opt.rect.x() + 2, opt.rect.y() + 2);
+				p->scale(opt.rect.width()-4, opt.rect.height()-4);
+				p->drawPolygon(m_diamond_shape);
+			} else if (rating < 15) {
+				float size = 0.75f * (rating / 14.0f);
+				float inset = (1.0f - size) / 2.0f;
+				p->translate(adjusted.x(), adjusted.y());
+				p->scale(adjusted.width(), adjusted.height());
+				p->fillRect(QRectF(inset, inset, size, size), QBrush(c));
+			}
+			break;
+		case SDM_GROWING_FILL:
+			if (rating == 15) {
+				// draw diamond
+				p->setRenderHint(QPainter::Antialiasing);
+				p->setPen(Qt::gray);
+				p->setBrush(QBrush(c));
+				p->translate(opt.rect.x() + 2, opt.rect.y() + 2);
+				p->scale(opt.rect.width()-4, opt.rect.height()-4);
+				p->drawPolygon(m_diamond_shape);
+			} else if (rating < 15) {				
+				float size = (rating / 14.0f);
+				p->translate(adjusted.x(), adjusted.y());
+				p->scale(adjusted.width(), adjusted.height());
+				p->fillRect(QRectF(0, 0, size, adjusted.height()), QBrush(c));
+			}
+			break;
+		case SDM_GLYPH_LINES:
 			p->setBrush(QBrush(c));
-			QPolygonF shape;
-			shape << QPointF(0.5, 0.1) //top
-				<< QPointF(0.75, 0.5) // right
-				<< QPointF(0.5, 0.9) //bottom
-				<< QPointF(0.25, 0.5); // left
-
-			p->translate(opt.rect.x() + 2, opt.rect.y() + 2);
-			p->scale(opt.rect.width()-4, opt.rect.height()-4);
-			p->drawPolygon(shape);
-		} else if (rating < 15 && rating > 10) {
-			float size = 0.75f * (rating / 14.0f);
-			float inset = (1.0f - size) / 2.0f;
-			p->translate(opt.rect.x(), opt.rect.y());
-			p->scale(opt.rect.width(), opt.rect.height());
-			p->fillRect(QRectF(inset, inset, size, size), QBrush(c));
-		} else if (rating > 0) {
-			float size = 0.65f * (rating / 10.0f);
-			float inset = (1.0f - size) / 2.0f;
-			p->translate(opt.rect.x(), opt.rect.y());
-			p->scale(opt.rect.width(), opt.rect.height());
-			p->fillRect(QRectF(inset, inset, size, size), QBrush(c));
-		}
-	} else {
-		p->setBrush(QBrush(c));
-		p->setPen(c);
-		p->translate(adjusted.x(), adjusted.y());
-		p->scale(adjusted.width(), adjusted.height());
-		QVector<QLineF> lines;
-		switch (rating) {
-			case 15:
-				{
-					//http://doc.trolltech.com/4.5/itemviews-stardelegate-starrating-cpp.html
-					QPolygonF poly;
-					double pi = 3.14; // nobody cares, these are tiny
-					//poly << QPointF(0.5, 0.9);
-					for (int i = 0; i < 5; ++i)
-						poly << QPointF(
-									0.5 + 0.4 * sin(i * ((pi * 2)/5.0)), // x
-									0.5 + 0.4 * cos(i * ((pi * 2)/5.0))  // y
-								);
-					p->drawPolygon(poly, Qt::WindingFill);
-				}
-				break;
-			case 14:
-				p->drawEllipse(QPointF(0.5, 0.5), 0.35, 0.35);
-				break;
-			case 13:
-				{
-					QPolygonF poly;
-					poly << QPointF(0.5, 0.1)
-						<< QPointF(0.5, 0.5)
-						<< QPointF(0.9, 0.5);
-					p->drawPolygon(poly);
-				}
-			case 12:
-				{
-					QPolygonF poly;
-					poly << QPointF(0.1, 0.5)
-						<< QPointF(0.5, 0.5)
-						<< QPointF(0.5, 0.9);
-					p->drawPolygon(poly);
-				}
-			case 11:
-				{
-					QPolygonF poly;
-					poly << QPointF(0.9, 0.5)
-						 << QPointF(0.5, 0.5)
-						 << QPointF(0.5, 0.9);
-					p->drawPolygon(poly);
-				}
-			case 10:
-				{
-					QPolygonF poly;
-					poly << QPointF(0.1, 0.5)
-						 << QPointF(0.5, 0.5)
-						 << QPointF(0.5, 0.1);
-					p->drawPolygon(poly);
-				}
-			case 9:
-				lines << QLineF(QPointF(0.1, 0.5), QPointF(0.5, 0.1));
-			case 8:
-				lines << QLineF(QPointF(0.5, 0.9), QPointF(0.1, 0.5));
-			case 7:
-				lines << QLineF(QPointF(0.5, 0.9), QPointF(0.9, 0.5));
-			case 6:
-				lines << QLineF(QPointF(0.5, 0.1), QPointF(0.9, 0.5));
-			case 5:
-				lines << QLineF(QPointF(0.5, 0.9), QPointF(0.5, 0.5));
-			case 4:
-				lines << QLineF(QPointF(0.5, 0.1), QPointF(0.5, 0.5));
-			case 3:
-				lines << QLineF(QPointF(0.1, 0.5), QPointF(0.5, 0.5));
-			case 2:
-				lines << QLineF(QPointF(0.5, 0.5), QPointF(0.9, 0.5));
-			case 1:
-				lines << QLineF(QPointF(0.5, 0.5), QPointF(0.5, 0.5));
-				break;
-		}
-		p->drawLines(lines);
+			p->setPen(c);
+			p->translate(adjusted.x(), adjusted.y());
+			p->scale(adjusted.width(), adjusted.height());
+			QVector<QLineF> lines;
+			switch (rating) {
+				case 15:
+					{
+						p->resetTransform();
+						p->translate(adjusted.x() + adjusted.width()/2.0, 
+									 adjusted.y() + adjusted.height()/2.0);
+						p->scale(adjusted.width(), adjusted.height());
+						p->rotate(-18);
+						p->setRenderHint(QPainter::Antialiasing);
+						p->drawPolygon(m_star_shape, Qt::WindingFill);
+					}
+					break;
+				case 14:
+					p->drawEllipse(QPointF(0.5, 0.5), 0.35, 0.35);
+					break;
+				case 13:
+					{
+						QPolygonF poly;
+						poly << QPointF(0.5, 0.1)
+							<< QPointF(0.5, 0.5)
+							<< QPointF(0.9, 0.5);
+						p->drawPolygon(poly);
+					}
+				case 12:
+					{
+						QPolygonF poly;
+						poly << QPointF(0.1, 0.5)
+							<< QPointF(0.5, 0.5)
+							<< QPointF(0.5, 0.9);
+						p->drawPolygon(poly);
+					}
+				case 11:
+					{
+						QPolygonF poly;
+						poly << QPointF(0.9, 0.5)
+							 << QPointF(0.5, 0.5)
+							 << QPointF(0.5, 0.9);
+						p->drawPolygon(poly);
+					}
+				case 10:
+					{
+						QPolygonF poly;
+						poly << QPointF(0.1, 0.5)
+							 << QPointF(0.5, 0.5)
+							 << QPointF(0.5, 0.1);
+						p->drawPolygon(poly);
+					}
+				case 9:
+					lines << QLineF(QPointF(0.1, 0.5), QPointF(0.5, 0.1));
+				case 8:
+					lines << QLineF(QPointF(0.5, 0.9), QPointF(0.1, 0.5));
+				case 7:
+					lines << QLineF(QPointF(0.5, 0.9), QPointF(0.9, 0.5));
+				case 6:
+					lines << QLineF(QPointF(0.5, 0.1), QPointF(0.9, 0.5));
+				case 5:
+					lines << QLineF(QPointF(0.5, 0.9), QPointF(0.5, 0.5));
+				case 4:
+					lines << QLineF(QPointF(0.5, 0.1), QPointF(0.5, 0.5));
+				case 3:
+					lines << QLineF(QPointF(0.1, 0.5), QPointF(0.5, 0.5));
+				case 2:
+					lines << QLineF(QPointF(0.5, 0.5), QPointF(0.9, 0.5));
+				case 1:
+					lines << QLineF(QPointF(0.5, 0.5), QPointF(0.5, 0.5));
+					break;
+			}
+			p->drawLines(lines);
+			break;
 	}
 	p->restore();
 }
@@ -266,7 +289,7 @@ void UberDelegate::paint_labor(const QRect &adjusted, QPainter *p, const QStyleO
 	bool dirty = d->is_labor_state_dirty(labor_id);
 
 	QColor bg = paint_bg(adjusted, enabled, p, opt, proxy_idx);
-	paint_skill(rating, bg, p, opt, proxy_idx);
+	paint_skill(adjusted, rating, bg, p, opt, proxy_idx);
 	paint_grid(adjusted, dirty, p, opt, proxy_idx);
 }
 

@@ -45,6 +45,7 @@ void RotatedHeader::read_settings() {
 			resizeSection(i, cell_size);
 		}
 	}
+	m_shade_column_headers = s->value("options/grid/shade_column_headers", true).toBool();
 }
 
 void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const {
@@ -84,11 +85,13 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 	opt.state = state;
 	style()->drawControl(QStyle::CE_HeaderSection, &opt, p);
 	
-	QLinearGradient g(rect.topLeft(), rect.bottomLeft());
-	g.setColorAt(0.25, QColor(255, 255, 255, 10));
-	g.setColorAt(1.0, bg);
-	if (idx > 0)
-		p->fillRect(rect.adjusted(1,8,-1,-2), QBrush(g));
+	if (m_shade_column_headers) {
+		QLinearGradient g(rect.topLeft(), rect.bottomLeft());
+		g.setColorAt(0.25, QColor(255, 255, 255, 10));
+		g.setColorAt(1.0, bg);
+		if (idx > 0)
+			p->fillRect(rect.adjusted(1,8,-1,-2), QBrush(g));
+	}
 
 	if (sortIndicatorSection() == idx) {
 		opt.rect = QRect(opt.rect.x() + opt.rect.width()/2 - 5, opt.rect.y(), 10, 8);

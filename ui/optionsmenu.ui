@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>321</width>
-    <height>328</height>
+    <height>401</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <iconset resource="../images.qrc">
     <normaloff>:/img/color_wheel.png</normaloff>:/img/color_wheel.png</iconset>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_4">
+  <layout class="QVBoxLayout" name="verticalLayout_4" stretch="10,0">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_6">
      <item>
@@ -33,7 +33,7 @@ text-align: left;
       </widget>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
+      <layout class="QVBoxLayout" name="verticalLayout_3" stretch="10,0">
        <item>
         <widget class="QGroupBox" name="groupBox_2">
          <property name="title">
@@ -119,6 +119,36 @@ text-align: left;
              <string>Show Toolbar Text</string>
             </property>
            </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cb_shade_column_headers">
+            <property name="toolTip">
+             <string>When checked, this will shade column headers with the column's background color</string>
+            </property>
+            <property name="statusTip">
+             <string>When checked, this will shade column headers with the column's background color</string>
+            </property>
+            <property name="whatsThis">
+             <string>When checked, this will shade column headers with the column's background color</string>
+            </property>
+            <property name="text">
+             <string>Gradient Shade Column Headers</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <item>
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>Skill Drawing Method</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="cb_skill_drawing_method"/>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>

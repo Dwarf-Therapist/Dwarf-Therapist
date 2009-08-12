@@ -34,6 +34,12 @@ class UberDelegate : public QStyledItemDelegate {
 public:
 	UberDelegate(QObject *parent = 0);
 	void paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+
+	typedef enum {
+		SDM_GROWING_CENTRAL_BOX = 0,
+		SDM_GLYPH_LINES,
+		SDM_GROWING_FILL
+	} SKILL_DRAWING_METHOD;
 	
 	virtual QSize sizeHint(const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
 
@@ -57,6 +63,9 @@ public:
 private:
 	DwarfModel *m_model;
 	DwarfModelProxy *m_proxy;
+	QPolygonF m_star_shape;
+	QPolygonF m_diamond_shape;
+	SKILL_DRAWING_METHOD m_skill_drawing_method;
 
 	void paint_cell(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
 	
@@ -65,7 +74,7 @@ private:
 	//! return the bg color that was painted
 	QColor paint_bg(const QRect &adjusted, bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
 
-	void paint_skill(int rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+	void paint_skill(const QRect &adjusted, int rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
 	void paint_labor(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
 	void paint_aggregate(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
 	

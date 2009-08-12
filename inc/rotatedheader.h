@@ -49,6 +49,7 @@ signals:
 private:
 	QPoint m_p;
 	QList<int> m_spacer_indexes;
+	bool m_shade_column_headers;
 };
 
 #endif

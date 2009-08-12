@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "utils.h"
 #include "defines.h"
+#include "uberdelegate.h"
 
 OptionsMenu::OptionsMenu(MainWindow *parent)
 	: QDialog(parent)
@@ -66,6 +67,10 @@ OptionsMenu::OptionsMenu(MainWindow *parent)
 	}
 	ui->group_general_colors->setLayout(main_layout);
 
+	ui->cb_skill_drawing_method->addItem("Growing Center Box", UberDelegate::SDM_GROWING_CENTRAL_BOX);
+	ui->cb_skill_drawing_method->addItem("Line Glyphs", UberDelegate::SDM_GLYPH_LINES);
+	ui->cb_skill_drawing_method->addItem("Growing Fill", UberDelegate::SDM_GROWING_FILL);
+
 	connect(ui->btn_restore_defaults, SIGNAL(pressed()), this, SLOT(restore_defaults()));
 	connect(ui->btn_change_font, SIGNAL(pressed()), this, SLOT(show_font_chooser()));
 	connect(ui->cb_auto_contrast, SIGNAL(toggled(bool)), m_general_colors[0], SLOT(setDisabled(bool)));
@@ -86,8 +91,16 @@ void OptionsMenu::read_settings() {
 	}
 	s->endGroup();
 	s->beginGroup("grid");
+	UberDelegate::SKILL_DRAWING_METHOD m = static_cast<UberDelegate::SKILL_DRAWING_METHOD>(s->value("skill_drawing_method", UberDelegate::SDM_GROWING_CENTRAL_BOX).toInt());
+	for(int i=0; i < ui->cb_skill_drawing_method->count(); ++i) {
+		if (ui->cb_skill_drawing_method->itemData(i) == m) {
+			ui->cb_skill_drawing_method->setCurrentIndex(i);
+			break;
+		}
+	}
 	ui->sb_cell_size->setValue(s->value("cell_size", DEFAULT_CELL_SIZE).toInt());
 	ui->sb_cell_padding->setValue(s->value("cell_padding", 0).toInt());
+	ui->cb_shade_column_headers->setChecked(s->value("shade_column_headers", true).toBool());
 	
 	m_font = s->value("font", QFont("Segoe UI", 8)).value<QFont>();
 	m_dirty_font = m_font;
@@ -116,8 +129,10 @@ void OptionsMenu::write_settings() {
 		s->endGroup();
 		
 		s->beginGroup("grid");
+		s->setValue("skill_drawing_method", ui->cb_skill_drawing_method->itemData(ui->cb_skill_drawing_method->currentIndex()).toInt());
 		s->setValue("cell_size", ui->sb_cell_size->value());
 		s->setValue("cell_padding", ui->sb_cell_padding->value());
+		s->setValue("shade_column_headers", ui->cb_shade_column_headers->isChecked());
 		s->setValue("font", m_font);
 		s->endGroup();
 
