@@ -97,6 +97,11 @@ void DwarfTherapist::read_settings() {
 		m_main_window->get_toolbar()->setToolButtonStyle(Qt::ToolButtonIconOnly);
 	}
 
+	foreach(CustomProfession *cp, m_custom_professions) {
+		cp->deleteLater();
+	}
+	m_custom_professions.clear();
+
 	m_user_settings->beginGroup("custom_professions");
 	{
 		QStringList profession_names = m_user_settings->childGroups();
