@@ -192,7 +192,7 @@ void MainWindow::read_dwarves() {
 	m_model->set_instance(m_df);
 	m_model->load_dwarves();
 	// cheap trick to setup the view correctly
-	m_view_manager->setCurrentIndex(m_view_manager->currentIndex());
+	m_view_manager->redraw_current_tab();
 }
 
 void MainWindow::set_interface_enabled(bool enabled) {
@@ -271,8 +271,8 @@ void MainWindow::scan_memory() {
 }
 
 void MainWindow::set_group_by(int group_by) {
-	m_model->set_group_by(group_by);
 	write_settings();
+	m_view_manager->set_group_by(group_by);
 }
 
 void MainWindow::show_about() {
@@ -290,19 +290,27 @@ void MainWindow::new_pending_changes(int cnt) {
 }
 
 void MainWindow::list_pending() {
+	disconnect(ui->tree_pending, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
+		0, 0);
 	ui->tree_pending->clear();
 	foreach(Dwarf *d, m_model->get_dirty_dwarves()) {
-		QTreeWidgetItem *i = d->get_pending_changes_tree();
-		ui->tree_pending->addTopLevelItem(i);
+		ui->tree_pending->addTopLevelItem(d->get_pending_changes_tree());
 	}
 	ui->tree_pending->expandAll();
+	connect(ui->tree_pending, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
+		m_view_manager, SLOT(jump_to_dwarf(QTreeWidgetItem *, QTreeWidgetItem *)));
 }
 
 void MainWindow::draw_professions() {
+	disconnect(ui->list_custom_professions, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
+		0, 0);
 	ui->list_custom_professions->clear();
 	foreach(CustomProfession *cp, DT->get_custom_professions()) {
 		new QListWidgetItem(cp->get_name(), ui->list_custom_professions);
 	}
+	connect(ui->list_custom_professions, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
+		m_view_manager, SLOT(jump_to_profession(QListWidgetItem *, QListWidgetItem *)));
+
 }
 
 void MainWindow::draw_custom_profession_context_menu(const QPoint &p) {

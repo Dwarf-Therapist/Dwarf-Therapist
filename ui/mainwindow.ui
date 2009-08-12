@@ -652,6 +652,19 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>cb_group_by</tabstop>
+  <tabstop>le_filter_text</tabstop>
+  <tabstop>btn_clear_filter</tabstop>
+  <tabstop>tree_pending</tabstop>
+  <tabstop>list_custom_professions</tabstop>
+  <tabstop>btn_expand_all_pending</tabstop>
+  <tabstop>btn_collapse_all_pending</tabstop>
+  <tabstop>btn_commit</tabstop>
+  <tabstop>btn_clear</tabstop>
+  <tabstop>btn_new_custom_profession</tabstop>
+  <tabstop>btn_import_professions</tabstop>
+ </tabstops>
  <resources>
   <include location="../images.qrc"/>
  </resources>

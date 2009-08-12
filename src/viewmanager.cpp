@@ -53,6 +53,7 @@ ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent
 	connect(tabBar(), SIGNAL(tabMoved(int, int)), this, SLOT(write_views()));
 	connect(tabBar(), SIGNAL(currentChanged(int)), this, SLOT(setCurrentIndex(int)));
 	connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(remove_tab_for_gridview(int)));
+	connect(m_model, SIGNAL(need_redraw()), this, SLOT(redraw_current_tab()));
 }
 
 void ViewManager::read_settings() {
@@ -163,7 +164,7 @@ void ViewManager::reload_sets() {
 	QDir cur = QDir::current();
 	if (!cur.exists(m_set_path)) {
 		QMessageBox::warning(this, tr("Missing Sets Directory"),
-			tr("Could not fine the 'sets' directory at '%1'").arg(m_set_path));
+			tr("Could not find the 'sets' directory at '%1'").arg(m_set_path));
 		return;
 	}
 	foreach(ViewColumnSet *set, m_sets) {
@@ -218,6 +219,7 @@ void ViewManager::setCurrentIndex(int idx) {
 		}
 	}
 	tabBar()->setCurrentIndex(idx);
+	stv->restore_expanded_items();	
 }
 
 int ViewManager::add_tab_from_action() {
@@ -241,11 +243,6 @@ int ViewManager::add_tab_for_gridview(GridView *v) {
 	StateTableView *stv = new StateTableView(this);
 	stv->setSortingEnabled(false);
 	stv->set_model(m_model, m_proxy);
-	//m_model->set_grid_view(v);
-	//m_model->build_rows();
-	//stv->header()->setResizeMode(QHeaderView::Fixed);
-	//stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
-	//stv->sortByColumn(0, Qt::AscendingOrder);
 	stv->setSortingEnabled(true);
 	return addTab(stv, v->name());
 }
@@ -291,4 +288,13 @@ void ViewManager::jump_to_dwarf(QTreeWidgetItem *current, QTreeWidgetItem *previ
 void ViewManager::jump_to_profession(QListWidgetItem *current, QListWidgetItem *previous) {
 	StateTableView *stv = qobject_cast<StateTableView*>(currentWidget());
 	stv->jump_to_profession(current, previous);
+}
+
+void ViewManager::set_group_by(int group_by) {
+	m_model->set_group_by(group_by);
+	redraw_current_tab();
+}
+
+void ViewManager::redraw_current_tab() {
+	setCurrentIndex(currentIndex());
 }

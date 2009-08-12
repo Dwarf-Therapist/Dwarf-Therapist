@@ -50,6 +50,13 @@ public:
 		void jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* previous);
 		void jump_to_profession(QListWidgetItem* current, QListWidgetItem* previous);
 
+		// expand/collapse persistence
+		void expandAll();
+		void collapseAll();
+		void index_expanded(const QModelIndex &idx);
+		void index_collapsed(const QModelIndex &idx);
+		void restore_expanded_items();
+
 protected:
 	virtual void contextMenuEvent(QContextMenuEvent *event);
 
@@ -59,6 +66,7 @@ private:
 	UberDelegate *m_delegate;
 	RotatedHeader *m_header;
 	int m_grid_size;
+	QList<int> m_expanded_rows;
 
 	private slots:
 		void set_nickname();

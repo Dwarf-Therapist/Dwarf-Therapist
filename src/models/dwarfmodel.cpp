@@ -63,7 +63,8 @@ void DwarfModel::load_dwarves() {
 		delete d;
 	}
 	m_dwarves.clear();
-	removeRows(0, rowCount());
+	if (rowCount())
+		removeRows(0, rowCount());
 
 	foreach(Dwarf *d, m_df->load_dwarves()) {
 		m_dwarves[d->id()] = d;
@@ -312,8 +313,9 @@ void DwarfModel::clear_pending() {
 			d->clear_pending();
 		}
 	}
-	emit reset();
+	//reset();
 	emit new_pending_changes(0);
+	emit need_redraw();
 }
 
 void DwarfModel::commit_pending() {
@@ -324,6 +326,7 @@ void DwarfModel::commit_pending() {
 	}
 	load_dwarves();
 	emit new_pending_changes(0);
+	emit need_redraw();
 }
 
 QVector<Dwarf*> DwarfModel::get_dirty_dwarves() {

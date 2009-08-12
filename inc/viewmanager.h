@@ -53,6 +53,8 @@ public:
 		void views_changed();
 
 		void reload_sets();
+		void set_group_by(int group_by);
+		void redraw_current_tab();
 		//void write_sets();
 		//void write_set(ViewColumnSet *set);
 
@@ -82,6 +84,7 @@ private:
 		void remove_tab_for_gridview(int index);
 		void read_settings();
 		void draw_add_tab_button();
+		
 };
 
 #endif

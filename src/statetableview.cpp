@@ -63,6 +63,8 @@ StateTableView::StateTableView(QWidget *parent)
 	viewport()->setAttribute(Qt::WA_StaticContents);
 
 	connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
+	connect(this, SIGNAL(expanded(const QModelIndex &)), SLOT(index_expanded(const QModelIndex &)));
+	connect(this, SIGNAL(collapsed(const QModelIndex &)), SLOT(index_collapsed(const QModelIndex &)));
 }
 
 StateTableView::~StateTableView()
@@ -242,4 +244,38 @@ void StateTableView::reset_custom_profession() {
 		}
 	}
 	m_model->calculate_pending();
+}
+
+/************************************************************************/
+/* Handlers for expand/collapse persistence                             */
+/************************************************************************/
+void StateTableView::expandAll() {
+	m_expanded_rows.clear();
+	for(int i = 0; i < m_proxy->rowCount(); ++i) {
+		m_expanded_rows << i;
+	}
+	QTreeView::expandAll();
+}
+
+void StateTableView::collapseAll() {
+	m_expanded_rows.clear();
+	QTreeView::collapseAll();
+}
+
+void StateTableView::index_expanded(const QModelIndex &idx) {
+	m_expanded_rows << idx.row();
+}
+
+void StateTableView::index_collapsed(const QModelIndex &idx) {
+	int i = m_expanded_rows.indexOf(idx.row());
+	if (i != -1)
+		m_expanded_rows.removeAt(i);
+}
+
+void StateTableView::restore_expanded_items() {
+	disconnect(this, SIGNAL(expanded(const QModelIndex &)), 0, 0);
+	foreach(int row, m_expanded_rows) {
+		expand(m_proxy->index(row, 0));
+	}
+	connect(this, SIGNAL(expanded(const QModelIndex &)), SLOT(index_expanded(const QModelIndex &)));
 }
