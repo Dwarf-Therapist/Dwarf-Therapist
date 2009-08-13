@@ -147,8 +147,11 @@
     <addaction name="separator"/>
     <addaction name="act_commit_pending_changes"/>
     <addaction name="act_clear_pending_changes"/>
+    <addaction name="separator"/>
     <addaction name="act_add_custom_profession"/>
     <addaction name="act_import_existing_professions"/>
+    <addaction name="act_export_custom_professions"/>
+    <addaction name="act_import_saved_custom_professions"/>
     <addaction name="separator"/>
     <addaction name="act_options"/>
     <addaction name="act_exit"/>
@@ -558,7 +561,7 @@
      <normaloff>:/img/application_get.png</normaloff>:/img/application_get.png</iconset>
    </property>
    <property name="text">
-    <string>Import Existing Professions</string>
+    <string>Import Professions from DF</string>
    </property>
    <property name="toolTip">
     <string>Import all custom professions from the loaded game, and create new labor templates for them</string>
@@ -634,6 +637,33 @@
    </property>
    <property name="toolTip">
     <string>Create a new gridview with custom sets</string>
+   </property>
+  </action>
+  <action name="act_export_custom_professions">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/disk.png</normaloff>:/img/disk.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export Custom Professions...</string>
+   </property>
+   <property name="toolTip">
+    <string>Export your custom professions to file of your choosing</string>
+   </property>
+  </action>
+  <action name="act_import_saved_custom_professions">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/folder_page.png</normaloff>:/img/folder_page.png</iconset>
+   </property>
+   <property name="text">
+    <string>Import Saved Custom Professions...</string>
+   </property>
+   <property name="toolTip">
+    <string>Import a custom professions file that was previously exported</string>
    </property>
   </action>
  </widget>
@@ -941,6 +971,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_export_custom_professions</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>export_custom_professions()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>403</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_import_saved_custom_professions</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>import_custom_professions()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>403</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -952,7 +1014,6 @@
   <slot>show_about()</slot>
   <slot>add_custom_profession()</slot>
   <slot>open_options_menu()</slot>
-  <slot>import_existing_professions()</slot>
   <slot>set_single_click_labor_changes(bool)</slot>
   <slot>go_to_forums()</slot>
   <slot>go_to_donate()</slot>
@@ -960,5 +1021,7 @@
   <slot>go_to_new_issue()</slot>
   <slot>add_new_grid_view()</slot>
   <slot>add_new_column_set()</slot>
+  <slot>export_custom_professions()</slot>
+  <slot>import_custom_professions()</slot>
  </slots>
 </ui>

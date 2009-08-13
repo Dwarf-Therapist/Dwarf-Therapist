@@ -66,6 +66,8 @@ public:
 		
 		//settings
 		void set_group_by(int);
+		void export_custom_professions();
+		void import_custom_professions();
 
 		// dialogs
 		void show_about();
@@ -73,7 +75,7 @@ public:
 		void draw_professions();
 		void draw_custom_profession_context_menu(const QPoint &);
 		
-		//void send_usage_data();
+		// version check
 		void check_latest_version();
 		void version_check_finished(bool error);
 

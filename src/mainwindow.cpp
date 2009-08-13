@@ -87,12 +87,10 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->act_add_new_column_set, SIGNAL(triggered()), ui->dock_sets, SLOT(add_new_set()));
 	connect(ui->list_custom_professions, SIGNAL(customContextMenuRequested(const QPoint &)),
 			this, SLOT(draw_custom_profession_context_menu(const QPoint &)));
-
 	connect(ui->tree_pending, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
 			m_view_manager, SLOT(jump_to_dwarf(QTreeWidgetItem *, QTreeWidgetItem *)));
 	connect(ui->list_custom_professions, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
 		m_view_manager, SLOT(jump_to_profession(QListWidgetItem *, QListWidgetItem *)));
-
 
 	m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
@@ -139,7 +137,6 @@ void MainWindow::read_settings() {
 		m_model->set_group_by(group_by);
 	}
 	m_settings->endGroup();
-
 	m_reading_settings = false;
 }
 
@@ -305,12 +302,14 @@ void MainWindow::draw_professions() {
 	disconnect(ui->list_custom_professions, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
 		0, 0);
 	ui->list_custom_professions->clear();
-	foreach(CustomProfession *cp, DT->get_custom_professions()) {
+	QVector<CustomProfession*> profs = DT->get_custom_professions();
+	foreach(CustomProfession *cp, profs) {
 		new QListWidgetItem(cp->get_name(), ui->list_custom_professions);
 	}
 	connect(ui->list_custom_professions, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
 		m_view_manager, SLOT(jump_to_profession(QListWidgetItem *, QListWidgetItem *)));
-
+	// allow exports only when there are profs to export
+	ui->act_export_custom_professions->setEnabled(profs.size());
 }
 
 void MainWindow::draw_custom_profession_context_menu(const QPoint &p) {
@@ -345,4 +344,86 @@ void MainWindow::go_to_new_issue() {
 
 QToolBar *MainWindow::get_toolbar() {
 	return ui->main_toolbar;
+}
+
+void MainWindow::export_custom_professions() {
+	//TODO first choose which profs to export
+
+
+	QString default_path = QString("%1/%2").arg(QDesktopServices::storageLocation(QDesktopServices::DesktopLocation), "custom_professions.dt");
+	QString path = QFileDialog::getSaveFileName(this, tr("Choose a file to export to"),	default_path, 
+		"Dwarf Therapist Profession Exports (*.dt);;All Files (*.*)");
+	if (path.isEmpty())
+		return; // they cancelled
+	LOGD << "exporting custom professions to:" << path;
+
+	QSettings s(path, QSettings::IniFormat);
+	s.remove(""); // clear out the file if there was anything there.
+	Version v;
+	s.setValue("info/DT_version/major", v.major);
+	s.setValue("info/DT_version/minor", v.minor);
+	s.setValue("info/DT_version/patch", v.patch);
+	s.setValue("info/export_date", QDateTime::currentDateTime());
+
+	int i = 0;
+	s.beginWriteArray("custom_professions");
+	foreach(CustomProfession *cp, DT->get_custom_professions()) {
+		s.setArrayIndex(i++);
+		s.setValue("name", cp->get_name());
+		s.beginWriteArray("labors");
+		int j = 0;
+		foreach(int labor_id, cp->get_enabled_labors()) {
+			s.setArrayIndex(j++);
+			s.setValue(QString::number(labor_id), true);
+		}
+		s.endArray();
+	}
+	s.endArray();
+	s.sync();
+}
+
+void MainWindow::import_custom_professions() {
+	QString default_path = QString("%1/%2").arg(QDesktopServices::storageLocation(QDesktopServices::DesktopLocation), "custom_professions.dt");
+	QString path = QFileDialog::getOpenFileName(this, tr("Choose a file to import"), default_path, 
+		"Dwarf Therapist Profession Exports (*.dt);;All Files (*.*)");
+	if (path.isEmpty())
+		return; // they cancelled
+	LOGD << "importing custom professions from:" << path;
+	
+	QSettings s(path, QSettings::IniFormat);
+	
+	/* don't need to check versions yet, since everything will be compatible */
+	Version file_version;
+	file_version.major = s.value("info/DT_version/major", 0).toInt();
+	file_version.minor = s.value("info/DT_version/minor", 0).toInt();
+	file_version.patch = s.value("info/DT_version/patch", 0).toInt();
+	QDateTime t = s.value("info/export_date").toDateTime();
+
+	QVector<CustomProfession*> imported_profs;
+	int cnt = s.beginReadArray("custom_professions");
+	for(int i = 0; i < cnt; i++) {
+		s.setArrayIndex(i);
+		CustomProfession *cp = new CustomProfession(DT);
+		cp->set_name(s.value("name", "UNKNOWN").toString());
+		int labor_cnt = s.beginReadArray("labors");
+		for(int j = 0; j < labor_cnt; ++j) {
+			s.setArrayIndex(j);
+			cp->add_labor(s.childKeys()[0].toInt());
+		}
+		s.endArray();
+		imported_profs << cp;
+	}
+	s.endArray();
+	
+	// TODO, turn this into a dialog that allows the user to choose which profs to import and resolve name conflicts
+	int answer = QMessageBox::question(this, tr("Proceed with Import?"), tr("File <b>%1</b> was"
+		" created %2 by version %3 and contains %5 professions."
+		" <h4>Proceed with import?</h4>").arg(path).arg(t.toString()).arg(file_version.to_string()).arg(cnt),
+		QMessageBox::Yes | QMessageBox::No);
+	if (answer == QMessageBox::Yes) {
+		foreach(CustomProfession *cp, imported_profs) {
+			// TODO avoid conflicts!
+			//DT->add_custom_profession(cp);
+		}
+	}
 }
