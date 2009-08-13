@@ -226,7 +226,6 @@ void StateTableView::apply_custom_profession() {
 	const QItemSelection sel = selectionModel()->selection();
 	foreach(const QModelIndex idx, sel.indexes()) {
 		if (idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
-			qDebug() << idx.data();
 			Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
 			if (d)
 				d->apply_custom_profession(cp);

@@ -50,6 +50,7 @@ public:
 
 	public slots:
 		void add_custom_profession();
+		void add_custom_profession(CustomProfession *cp);
 		void read_settings();
 		void write_settings();
 		void import_existing_professions();
