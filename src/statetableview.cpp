@@ -45,6 +45,7 @@ StateTableView::StateTableView(QWidget *parent)
 	, m_proxy(0)
 	, m_delegate(new UberDelegate(this))
 	, m_header(new RotatedHeader(Qt::Horizontal, this))
+	, m_expanded_rows(QList<int>())
 {
 	read_settings();
 

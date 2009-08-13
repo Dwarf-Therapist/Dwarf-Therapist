@@ -92,8 +92,6 @@ void GridViewDock::edit_view() {
 		view->write_settings();
 		emit views_changed();
 		draw_views();
-	} else {
-		//view->reset_from_disk();
 	}
 	m_tmp_item = 0;
 }

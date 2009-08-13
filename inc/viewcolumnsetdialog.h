@@ -44,6 +44,9 @@ public:
 	
 	//! used to hack into the list of columns, since they don't seem to send a proper re-order signal
 	bool eventFilter(QObject *, QEvent *);
+
+	public slots:
+		void accept();
 	
 private:
 	Ui::ViewColumnSetDialog *ui;
@@ -53,6 +56,8 @@ private:
 	QColor m_pending_bg_color;
 	//! holds the list of columns that will become the new columns for this set, if the dialog is accepted
 	QList<ViewColumn*> m_pending_columns;
+	bool m_is_editing;
+	QString m_original_name;
 
 	private slots:
 

@@ -42,6 +42,8 @@ ViewColumnSetDialog::ViewColumnSetDialog(ViewManager *mgr, ViewColumnSet *set, Q
 	, m_set(set)
 	, m_manager(mgr)
 	, m_pending_bg_color(Qt::white)
+	, m_is_editing(false)
+	, m_original_name("")
 {
 	m_pending_columns.clear();
 	ui->setupUi(this);
@@ -54,6 +56,8 @@ ViewColumnSetDialog::ViewColumnSetDialog(ViewManager *mgr, ViewColumnSet *set, Q
 			m_pending_columns << vc;
 		}
 		ui->buttonBox->setEnabled(!set->name().isEmpty());
+		m_is_editing = true;
+		m_original_name = set->name();
 	}
 	ui->cp_bg_color->setStandardColors();
 	ui->list_columns->installEventFilter(this);
@@ -291,5 +295,25 @@ void ViewColumnSetDialog::show_edit_column_dialog(ViewColumn *vc) {
 		emit column_changed(vc);
 	}
 	delete dui;
+}
+
+void ViewColumnSetDialog::accept() {
+	if (ui->le_name->text().isEmpty()) {
+		QMessageBox::warning(this, tr("Empty Name"), tr("Cannot save a set with no name!"));
+		return;
+	} else if (m_manager->get_set(ui->le_name->text())) {
+		// this name exists
+		if (!m_is_editing || (m_is_editing && m_original_name != ui->le_name->text())) {
+			QMessageBox m(QMessageBox::Question, tr("Overwrite View?"),
+				tr("There is already a set named <b>%1</b><h3>Do you want to overwrite it?</h3>").arg(ui->le_name->text()),
+				QMessageBox::Yes | QMessageBox::No, 0);
+			if (m.exec() == QMessageBox::Yes) {
+				return QDialog::accept();
+			} else {
+				return;
+			}
+		}
+	}
+	return QDialog::accept();
 }
 

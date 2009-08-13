@@ -341,6 +341,8 @@ void UberDelegate::paint_grid(const QRect &adjusted, bool dirty, QPainter *p, co
 		p->setPen(QPen(color_dirty_border, 1));
 		p->drawRect(adjusted);
 	} else if (opt.state.testFlag(QStyle::State_Selected)) {
+		p->setPen(color_border);
+		p->drawRect(adjusted);
 		p->setPen(color_guides);
 		p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
 		p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());

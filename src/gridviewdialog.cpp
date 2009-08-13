@@ -33,6 +33,7 @@ GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent
 	, ui(new Ui::GridViewDialog)
 	, m_view(view)
 	, m_manager(mgr)
+	, m_is_editing(false)
 {
 	ui->setupUi(this);
 	populate_combo_box();
@@ -41,6 +42,8 @@ GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent
 		ui->le_name->setText(view->name());
 		draw_sets();
 		ui->buttonBox->setEnabled(!view->name().isEmpty());
+		m_is_editing = true;
+		m_original_name = view->name();
 	}
 	ui->list_sets->installEventFilter(this);
 
@@ -115,4 +118,24 @@ void GridViewDialog::draw_set_context_menu(const QPoint &p) {
 	QAction *a = m.addAction(tr("Remove..."), this, SLOT(remove_set_from_action()));
 	a->setData(ui->list_sets->row(item));
 	m.exec(ui->list_sets->viewport()->mapToGlobal(p));
+}
+
+void GridViewDialog::accept() {
+	if (ui->le_name->text().isEmpty()) {
+		QMessageBox::warning(this, tr("Empty Name"), tr("Cannot save a view with no name!"));
+		return;
+	} else if (m_manager->get_view(ui->le_name->text())) {
+		// this name exists
+		if (!m_is_editing || (m_is_editing && m_original_name != ui->le_name->text())) {
+			QMessageBox m(QMessageBox::Question, tr("Overwrite View?"),
+				tr("There is already a view named <b>%1</b><h3>Do you want to overwrite it?</h3>").arg(ui->le_name->text()),
+				QMessageBox::Yes | QMessageBox::No, 0);
+			if (m.exec() == QMessageBox::Yes) {
+				return QDialog::accept();
+			} else {
+				return;
+			}
+		}
+	}
+	return QDialog::accept();
 }

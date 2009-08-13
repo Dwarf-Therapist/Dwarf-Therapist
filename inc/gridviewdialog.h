@@ -42,12 +42,17 @@ public:
 	bool eventFilter(QObject *, QEvent *);
 	QString name();
 	QStringList sets();
+	
+	public slots:
+		void accept();
 
 
 private:
 	Ui::GridViewDialog *ui;
 	GridView *m_view;
 	ViewManager *m_manager;
+	bool m_is_editing;
+	QString m_original_name;
 
 	private slots:
 

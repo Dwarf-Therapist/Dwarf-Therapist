@@ -207,6 +207,10 @@ ViewColumnSet *ViewManager::get_set(const QString &name) {
 }
 
 void ViewManager::setCurrentIndex(int idx) {
+	if (idx < 0 || idx > count()-1) {
+		LOGW << "tab switch to index" << idx << "requested but there are only" << count() << "tabs";
+		return;
+	}
 	StateTableView *stv = qobject_cast<StateTableView*>(widget(idx));
 	foreach(GridView *v, m_views) {
 		if (v->name() == tabText(idx)) {
