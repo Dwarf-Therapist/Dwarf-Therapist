@@ -32,7 +32,6 @@ THE SOFTWARE.
 class MemoryLayout;
 
 class DFInstance : public QObject {
-private:
 	Q_OBJECT
 	DFInstance(DWORD pid, HWND hwnd, QObject *parent=0);
 public:
@@ -98,11 +97,15 @@ private:
 	static const int STRING_LENGTH_OFFSET = 20;
 	static const int STRING_CAP_OFFSET = 24;
 
+	private slots:
+		void heartbeat();
+
 signals:
 	// methods for sending progress information to QWidgets
 	void scan_total_steps(int steps);
 	void scan_progress(int step);
 	void scan_message(const QString &message);
+	void connection_interrupted();
 
 };
 

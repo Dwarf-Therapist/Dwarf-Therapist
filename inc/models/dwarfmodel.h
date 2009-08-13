@@ -52,9 +52,10 @@ public:
 	} DATA_ROLES;
 
 	DwarfModel(QObject *parent = 0);
-	//virtual ~DwarfModel();
+	virtual ~DwarfModel();
 	void set_instance(DFInstance *df) {m_df = df;}
 	void set_grid_view(GridView *v) {m_gridview = v;}
+	void clear_all(); // reset everything to normal
 
 	void build_row(QString key);
 	void build_rows();

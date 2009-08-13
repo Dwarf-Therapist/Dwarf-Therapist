@@ -94,6 +94,10 @@ DFInstance::DFInstance(DWORD pid, HWND hwnd, QObject* parent)
 		m_memory_correction = (int)m_base_addr - 0x0400000;
 		LOGD << "memory correction " << m_memory_correction;
 	}
+
+	QTimer *df_check_timer = new QTimer(this);
+	connect(df_check_timer, SIGNAL(timeout()), SLOT(heartbeat()));
+	df_check_timer->start(1000); // every second
 }
 
 DFInstance::~DFInstance() {
@@ -561,4 +565,14 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 	}
 	LOGI << "found" << dwarves.size() << "dwarves out of" << creatures.size() << "creatures";
 	return dwarves;
+}
+
+void DFInstance::heartbeat() {
+	// simple read attempt that will fail if the DF game isn't running a fort, or isn't running at all
+	QVector<int> creatures = enumerate_vector(m_layout->address("creature_vector") + m_memory_correction);
+	if (creatures.size() < 1) {
+		// no game loaded, or process is gone
+		emit connection_interrupted();
+	}
+
 }

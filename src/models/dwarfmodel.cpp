@@ -48,6 +48,20 @@ DwarfModel::DwarfModel(QObject *parent)
 	, m_selected_col(-1)
 {}
 
+DwarfModel::~DwarfModel() {
+	clear_all();
+}
+
+void DwarfModel::clear_all() {
+	clear_pending();
+	foreach(Dwarf *d, m_dwarves) {
+		delete d;
+	}
+	m_dwarves.clear();
+	m_grouped_dwarves.clear();
+	clear();
+}
+
 void DwarfModel::section_right_clicked(int col) {
 	if (col == m_selected_col) {
 		m_selected_col = -1; // turn off the guides
@@ -74,8 +88,6 @@ void DwarfModel::load_dwarves() {
 }
 
 void DwarfModel::build_rows() {
-
-
 	// don't need to go delete the dwarf pointers in here, since the earlier foreach should have
 	// deleted them
 	m_grouped_dwarves.clear();

@@ -63,6 +63,7 @@ public:
 		void read_dwarves();
 		void scan_memory();
 		void new_pending_changes(int);
+		void lost_df_connection();
 		
 		//settings
 		void set_group_by(int);

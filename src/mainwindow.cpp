@@ -179,7 +179,21 @@ void MainWindow::connect_to_df() {
 	m_df = DFInstance::find_running_copy(this);
 	if (m_df && m_df->is_ok()) {
 		m_lbl_status->setText(tr("Connected to ") + m_df->memory_layout()->game_version());
+		connect(m_df, SIGNAL(connection_interrupted()), SLOT(lost_df_connection()));
 		set_interface_enabled(true);
+	}
+}
+
+void MainWindow::lost_df_connection() {
+	LOGD << "lost connection to DF";
+	if (m_df) {
+		m_model->clear_all();
+		delete m_df;
+		m_df = 0;
+		set_interface_enabled(false);
+		m_lbl_status->setText(tr("Not Connected"));
+		QMessageBox::information(this, tr("Unable to talk to Dwarf Fortress"),
+			tr("Dwarf Fortress has either stopped running, or you unloaded your game. Please re-connect when a fort is loaded."));
 	}
 }
 
