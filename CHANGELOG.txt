@@ -1,0 +1,33 @@
+CHANGES SINCE 0.3.0
+==========================================================================================
+ * (Fixed issue 5): Show skill-ratings legend somewhere
+ * Moved the dock config around. Views, Sets, and Skill legend docks are now off by default and can be turned on in a variety of ways. They also default to floating windows that can be docked.
+ * (Fixed issue 42): Hangs if game saved/continued without reloading
+ * DT now heartbeats every second to DF. It a fort is unloaded or the game exits, DT will disconnect and allow reconnection.
+ * (Implemented issue 40): Profession mgmt - separate file/export
+ * Fixed a minor drawing bug with selected rows not showing the main grid underneath
+ * Fixed a bug where the Viewmanager would try to draw tabs with invalid indexes
+ * (Fixed issue 55): Confirm overwrite if View or Set name exists
+	This dialog only pops up when you aren't editing. To prevent accidental clobbering.
+	Cases where it shows up:
+		Edit View1, change the name to View2(which already exists)
+		New view, change the name to View2(which already exists)
+		Will not show up on edit if the original name was View3 and you save it as View3.
+	Since it doesn't show up in the general case, I've opted to not implement the "don't ask me again" checkbox
+ * (Fixed issue 54) Blank name is allowed for set name
+ * (Fixed issue 53) Main window doesn't show changes after changing group by
+ * generic_useless.ini set wasn't correct, so I removed it
+ * StateTableView now remembers which rows were expanded and which weren't
+ * Setting the group by now goes thru ViewManager so the columns don't get stretched incorrectly 
+ * (Fixed issue 57) Dwarf Name column resets to fixed-width
+ * (Fixed issue 63) Options Window Duplicates Custom Professions
+ * (Fixes issue 61) customizable skill icons
+ * (Fixes issue 62) option to turn of shading
+ * some minor speedups based on a trial of profiler
+ * Dwarf::nice_name() is now cached since it hardly ever changes
+ * GameDataReader now caches skill names and skill level names (and uses them)
+ * UberDelegate now passes adjusted rectangles by reference to the sub-painters for less stack thrashing
+ * Less QString::operator+ usage, since it seems to cause reallocations and is generally slow as fucking hell
+ * Found some spots where build_rows() was being called multiple times and being slow
+ 
+
