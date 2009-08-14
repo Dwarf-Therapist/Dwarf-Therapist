@@ -34,8 +34,7 @@ namespace Ui {
 class ViewColumnSetDock : public QDockWidget {
 	Q_OBJECT
 public:
-	ViewColumnSetDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
-	void set_view_manager(ViewManager *mgr);
+	ViewColumnSetDock(ViewManager *mgr, QWidget *parent = 0, Qt::WindowFlags flags = 0);
 	void draw_sets();
 
 	void contextMenuEvent(QContextMenuEvent *);

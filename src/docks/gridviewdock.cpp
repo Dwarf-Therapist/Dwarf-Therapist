@@ -27,16 +27,15 @@ THE SOFTWARE.
 #include "gridviewdialog.h"
 #include "defines.h"
 
-GridViewDock::GridViewDock(QWidget *parent, Qt::WindowFlags flags)
+GridViewDock::GridViewDock(ViewManager *mgr, QWidget *parent, Qt::WindowFlags flags)
 	: QDockWidget(parent, flags)
-	, m_manager(0)
+	, m_manager(mgr)
 	, ui(new Ui::GridViewDock)
 	, m_tmp_item(0)
-{}
-
-void GridViewDock::set_view_manager(ViewManager *mgr) {
+{
 	ui->setupUi(this);
-	m_manager = mgr;
+	setFeatures(QDockWidget::AllDockWidgetFeatures);
+	setAllowedAreas(Qt::AllDockWidgetAreas);
 	draw_views();
 
 	connect(ui->list_views, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(edit_view(QListWidgetItem*)));

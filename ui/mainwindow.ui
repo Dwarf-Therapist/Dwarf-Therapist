@@ -349,43 +349,8 @@
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QPushButton" name="btn_import_professions">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Import Custom Professions</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../images.qrc">
-         <normaloff>:/img/application_get.png</normaloff>:/img/application_get.png</iconset>
-       </property>
-      </widget>
-     </item>
     </layout>
    </widget>
-  </widget>
-  <widget class="GridViewDock" name="dock_grid_views">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
-   <property name="floating">
-    <bool>false</bool>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents_3"/>
-  </widget>
-  <widget class="ViewColumnSetDock" name="dock_sets">
-   <property name="floating">
-    <bool>false</bool>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents_5"/>
   </widget>
   <action name="act_connect_to_DF">
    <property name="icon">
@@ -668,20 +633,6 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <customwidgets>
-  <customwidget>
-   <class>GridViewDock</class>
-   <extends>QDockWidget</extends>
-   <header>gridviewdock.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ViewColumnSetDock</class>
-   <extends>QDockWidget</extends>
-   <header>viewcolumnsetdock.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <tabstops>
   <tabstop>cb_group_by</tabstop>
   <tabstop>le_filter_text</tabstop>
@@ -693,7 +644,6 @@
   <tabstop>btn_commit</tabstop>
   <tabstop>btn_clear</tabstop>
   <tabstop>btn_new_custom_profession</tabstop>
-  <tabstop>btn_import_professions</tabstop>
  </tabstops>
  <resources>
   <include location="../images.qrc"/>
@@ -868,22 +818,6 @@
     <hint type="sourcelabel">
      <x>1119</x>
      <y>657</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btn_import_professions</sender>
-   <signal>clicked()</signal>
-   <receiver>act_import_existing_professions</receiver>
-   <slot>trigger()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1119</x>
-     <y>687</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>

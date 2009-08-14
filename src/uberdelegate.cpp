@@ -33,6 +33,8 @@ THE SOFTWARE.
 
 UberDelegate::UberDelegate(QObject *parent)
 	: QStyledItemDelegate(parent)
+	, m_model(0)
+	, m_proxy(0)
 {
 	read_settings();
 	connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
@@ -89,7 +91,8 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 
 	paint_cell(p, opt, proxy_idx);
 
-	if (proxy_idx.column() == m_model->selected_col()) {
+
+	if (m_model && proxy_idx.column() == m_model->selected_col()) {
 		p->save();
 		p->setPen(QPen(color_guides));
 		p->drawLine(opt.rect.topLeft(), opt.rect.bottomLeft());
@@ -99,7 +102,10 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
 }
 
 void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
-	QModelIndex model_idx = m_proxy->mapToSource(idx);
+	QModelIndex model_idx = idx;
+	if (m_proxy)
+		model_idx = m_proxy->mapToSource(idx);
+	
 	COLUMN_TYPE type = static_cast<COLUMN_TYPE>(model_idx.data(DwarfModel::DR_COL_TYPE).toInt());
 	QRect adjusted = opt.rect.adjusted(cell_padding, cell_padding, (cell_padding * -2) - 1, (cell_padding * -2) - 1);
 	switch (type) {
@@ -144,7 +150,9 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
 }
 
 QColor UberDelegate::paint_bg(const QRect &adjusted, bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
-	QModelIndex idx = m_proxy->mapToSource(proxy_idx);
+	QModelIndex idx = proxy_idx;
+	if (m_proxy)
+		idx = m_proxy->mapToSource(proxy_idx);
 	QColor bg = idx.data(DwarfModel::DR_DEFAULT_BG_COLOR).value<QColor>();
 	p->save();
 	p->fillRect(opt.rect, QBrush(bg));
@@ -190,10 +198,10 @@ void UberDelegate::paint_skill(const QRect &adjusted, int rating, QColor bg, QPa
 				p->scale(opt.rect.width()-4, opt.rect.height()-4);
 				p->drawPolygon(m_diamond_shape);
 			} else if (rating < 15) {				
-				float size = (rating / 14.0f);
+				float size = rating / 14.0f;
 				p->translate(adjusted.x(), adjusted.y());
 				p->scale(adjusted.width(), adjusted.height());
-				p->fillRect(QRectF(0, 0, size, adjusted.height()), QBrush(c));
+				p->fillRect(QRectF(0, 0, size, 1), QBrush(c));
 			}
 			break;
 		case SDM_GLYPH_LINES:

@@ -27,16 +27,15 @@ THE SOFTWARE.
 #include "viewcolumnsetdialog.h"
 #include "defines.h"
 
-ViewColumnSetDock::ViewColumnSetDock(QWidget *parent, Qt::WindowFlags flags)
+ViewColumnSetDock::ViewColumnSetDock(ViewManager *mgr, QWidget *parent, Qt::WindowFlags flags)
 	: QDockWidget(parent, flags)
-	, m_manager(0)
+	, m_manager(mgr)
 	, ui(new Ui::ViewColumnSetDock)
 	, m_tmp_item(0)
-{}
-
-void ViewColumnSetDock::set_view_manager(ViewManager *mgr) {
+{
 	ui->setupUi(this);
-	m_manager = mgr;
+	setFeatures(QDockWidget::AllDockWidgetFeatures);
+	setAllowedAreas(Qt::AllDockWidgetAreas);
 	draw_sets();
 
 	connect(ui->list_sets, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(edit_set(QListWidgetItem*)));

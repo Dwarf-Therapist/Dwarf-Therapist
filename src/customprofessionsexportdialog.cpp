@@ -25,6 +25,8 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "customprofession.h"
 #include "version.h"
+#include "gamedatareader.h"
+#include "labor.h"
 
 CustomProfessionsExportDialog::CustomProfessionsExportDialog(QWidget *parent)
 	: QDialog(parent)
@@ -111,6 +113,13 @@ void CustomProfessionsExportDialog::setup_for_import() {
 		i->setData(Qt::UserRole, cp->get_name());
 		i->setData(Qt::UserRole+1, false); // not conflicting as far as we know
 		i->setCheckState(Qt::Checked);
+		QString tooltip = "<h3>Enabled Labors</h3><ul>";
+		GameDataReader *gdr = GameDataReader::ptr();
+		foreach(int labor_id, cp->get_enabled_labors()) {
+			tooltip += QString("<li>%1</li>").arg(gdr->get_labor(labor_id)->name);
+		}
+		tooltip += "</ul>";
+		i->setToolTip(tooltip);
 
 		// watch out for conflicts!
 		if (DT->get_custom_profession(cp->get_name())) {

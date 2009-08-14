@@ -45,6 +45,12 @@ THE SOFTWARE.
 #include "version.h"
 #include "dwarftherapist.h"
 #include "customprofessionsexportdialog.h"
+#include "gridviewdock.h"
+#include "viewcolumnsetdock.h"
+#include "skilllegenddock.h"
+
+#include "columntypes.h"
+#include "rotatedheader.h"
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -66,13 +72,27 @@ MainWindow::MainWindow(QWidget *parent)
 
 	setTabPosition(Qt::AllDockWidgetAreas, QTabWidget::North);
 
-	ui->dock_grid_views->set_view_manager(m_view_manager);
-	ui->dock_sets->set_view_manager(m_view_manager);
+	/* docks! */
+	GridViewDock *grid_view_dock = new GridViewDock(m_view_manager, this);
+	grid_view_dock->setFloating(true);
+	addDockWidget(Qt::RightDockWidgetArea, grid_view_dock);
+	grid_view_dock->setHidden(true); // hide by default
 
+	ViewColumnSetDock *view_set_dock = new ViewColumnSetDock(m_view_manager, this);
+	view_set_dock->setFloating(true);
+	addDockWidget(Qt::RightDockWidgetArea, view_set_dock);
+	view_set_dock->setHidden(true); // hide by default
+
+	SkillLegendDock *skill_legend_dock = new SkillLegendDock(this);
+	skill_legend_dock->setFloating(true);
+	addDockWidget(Qt::RightDockWidgetArea, skill_legend_dock);
+	skill_legend_dock->setHidden(true); // hide by default
+	
 	ui->menu_docks->addAction(ui->dock_pending_jobs_list->toggleViewAction());
 	ui->menu_docks->addAction(ui->dock_custom_professions->toggleViewAction());
-	ui->menu_docks->addAction(ui->dock_grid_views->toggleViewAction());
-	ui->menu_docks->addAction(ui->dock_sets->toggleViewAction());
+	ui->menu_docks->addAction(grid_view_dock->toggleViewAction());
+	ui->menu_docks->addAction(view_set_dock->toggleViewAction());
+	ui->menu_docks->addAction(skill_legend_dock->toggleViewAction());
 	ui->menuWindows->addAction(ui->main_toolbar->toggleViewAction());
 
 
@@ -82,10 +102,10 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
 	connect(ui->act_expand_all, SIGNAL(triggered()), m_view_manager, SLOT(expand_all()));
 	connect(ui->act_collapse_all, SIGNAL(triggered()), m_view_manager, SLOT(collapse_all()));
-	connect(ui->dock_grid_views, SIGNAL(views_changed()), m_view_manager, SLOT(views_changed()));
-	connect(ui->dock_sets, SIGNAL(sets_changed()), m_view_manager, SLOT(sets_changed()));
-	connect(ui->act_add_new_gridview, SIGNAL(triggered()), ui->dock_grid_views, SLOT(add_new_view()));
-	connect(ui->act_add_new_column_set, SIGNAL(triggered()), ui->dock_sets, SLOT(add_new_set()));
+	connect(grid_view_dock, SIGNAL(views_changed()), m_view_manager, SLOT(views_changed()));
+	connect(view_set_dock, SIGNAL(sets_changed()), m_view_manager, SLOT(sets_changed()));
+	connect(ui->act_add_new_gridview, SIGNAL(triggered()), grid_view_dock, SLOT(add_new_view()));
+	connect(ui->act_add_new_column_set, SIGNAL(triggered()), view_set_dock, SLOT(add_new_set()));
 	connect(ui->list_custom_professions, SIGNAL(customContextMenuRequested(const QPoint &)),
 			this, SLOT(draw_custom_profession_context_menu(const QPoint &)));
 	connect(ui->tree_pending, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
@@ -214,7 +234,6 @@ void MainWindow::set_interface_enabled(bool enabled) {
 	ui->act_expand_all->setEnabled(enabled);
 	ui->act_collapse_all->setEnabled(enabled);
 	ui->cb_group_by->setEnabled(enabled);
-	ui->btn_import_professions->setEnabled(enabled);
 	ui->act_import_existing_professions->setEnabled(enabled);
 }
 

@@ -20,38 +20,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef GRID_VIEW_DOCK_H
-#define GRID_VIEW_DOCK_H
+#ifndef SKILL_LEGEND_DOCK_H
+#define SKILL_LEGEND_DOCK_H
 
 #include <QtGui>
 
-class ViewManager;
-
-namespace Ui {
-	class GridViewDock;
-}
-
-class GridViewDock : public QDockWidget {
+class SkillLegendDock : public QDockWidget {
 	Q_OBJECT
 public:
-	GridViewDock(ViewManager *mgr, QWidget *parent = 0, Qt::WindowFlags flags = 0);
-	void draw_views();
+	SkillLegendDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
-	void contextMenuEvent(QContextMenuEvent *);
-	public slots:
-		void add_new_view();
 private:
-	ViewManager *m_manager;
-	Ui::GridViewDock *ui;
-	QListWidgetItem *m_tmp_item;
-
-	private slots:
-		void edit_view();
-		void edit_view(QListWidgetItem*);
-		void delete_view();
-
-signals:
-	void views_changed();
 
 };
 
