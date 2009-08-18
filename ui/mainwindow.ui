@@ -210,6 +210,7 @@
    <addaction name="separator"/>
    <addaction name="act_options"/>
    <addaction name="act_exit"/>
+   <addaction name="act_scan_memory"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dock_pending_jobs_list">

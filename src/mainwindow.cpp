@@ -291,14 +291,16 @@ void MainWindow::scan_memory() {
 	connect(pd, SIGNAL(canceled()), m_df, SLOT(cancel_scan()));
 	pd->show();
 
-	int language_addr = m_df->find_language_vector();
-	int translation_addr = m_df->find_translation_vector();
-	int creature_addr = m_df->find_creature_vector();
+	//int language_addr = m_df->find_language_vector();
+	//int translation_addr = m_df->find_translation_vector();
+	//int creature_addr = m_df->find_creature_vector();
+	int dwarf_race_index = m_df->find_dwarf_race_index();
 	pd->deleteLater();
 
-	qDebug() << "LANGUAGE VECTOR:   " << hex << language_addr;
-	qDebug() << "TRANSLATION VECTOR:" << hex << translation_addr;
-	qDebug() << "CREATURE VECTOR:   " << hex << creature_addr;
+	//qDebug() << "LANGUAGE VECTOR:   " << hex << language_addr;
+	//qDebug() << "TRANSLATION VECTOR:" << hex << translation_addr;
+	//qDebug() << "CREATURE VECTOR:   " << hex << creature_addr;
+	qDebug() << "DWARF RACE INDEX:   " << hex << dwarf_race_index;
 }
 
 void MainWindow::set_group_by(int group_by) {

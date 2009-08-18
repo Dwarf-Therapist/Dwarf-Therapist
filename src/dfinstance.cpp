@@ -95,9 +95,9 @@ DFInstance::DFInstance(DWORD pid, HWND hwnd, QObject* parent)
 		LOGD << "memory correction " << m_memory_correction;
 	}
 
-	QTimer *df_check_timer = new QTimer(this);
+	/*QTimer *df_check_timer = new QTimer(this);
 	connect(df_check_timer, SIGNAL(timeout()), SLOT(heartbeat()));
-	df_check_timer->start(1000); // every second
+	df_check_timer->start(1000); // every second*/
 }
 
 DFInstance::~DFInstance() {
@@ -373,20 +373,18 @@ int DFInstance::find_language_vector() {
 	int lang_vector_high_cutoff = 0x015D0000;
 	QByteArray needle("LANCER");
 
-
 	int language_vector_address = -1; // return val
 	emit scan_message(tr("Scanning for known word"));
-	foreach(int word_addr, scan_mem_find_all(needle, 0, m_memory_size)) {
+	foreach(int word_addr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
 		emit scan_message(tr("Scanning for word pointer"));
 		qDebug() << "FOUND WORD" << hex << word_addr;
 		needle = encode_int(word_addr - 4);
-		foreach(int word_addr_ptr, scan_mem_find_all(needle, 0, m_memory_size)) {
+		foreach(int word_addr_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
 			emit scan_message(tr("Scanning for language vector"));
 			qDebug() << "FOUND WORD PTR" << hex << word_addr_ptr;
 			int word_list = word_addr_ptr - (language_word_number * 4);
 			needle = encode_int(word_list);
-			foreach(int word_list_ptr, scan_mem_find_all(needle, lang_vector_low_cutoff + m_memory_correction,
-														 lang_vector_high_cutoff + m_memory_correction)) {
+			foreach(int word_list_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
 				language_vector_address = word_list_ptr - 0x4 - m_memory_correction;
 				qDebug() << "LANGUAGE VECTOR IS AT" << hex << language_vector_address;
 			}
@@ -408,22 +406,20 @@ int DFInstance::find_translation_vector() {
 	int translation_vector_address = -1; //return val;
 	emit scan_message(tr("Scanning for translation vector"));
 	QByteArray needle(translation_word);
-	foreach(int word, scan_mem_find_all(translation_word, 0, m_memory_size)) {
+	foreach(int word, scan_mem_find_all(translation_word, 0, 0x0FFFFFFF)) {
 		needle = encode_int(word - 4);
-		foreach(int word_ptr, scan_mem_find_all(needle, 0, m_memory_size)) {
+		foreach(int word_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
 			needle = encode_int(word_ptr - (translation_word_number * 4));
-			foreach(int word_list_ptr, scan_mem_find_all(needle, 0, m_memory_size)) {
+			foreach(int word_list_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
 				needle = translation_name;
 				foreach(int dwarf_translation_name, scan_mem_find_all(needle, word_list_ptr - 0x1000, word_list_ptr)) {
 					dwarf_translation_name -= 4;
 					qDebug() << "FOUND TRANSLATION WORD TABLE" << hex << word_list_ptr - dwarf_translation_name;
 					needle = encode_int(dwarf_translation_name);
-					foreach(int dwarf_translation_ptr, scan_mem_find_all(needle, 0, m_memory_size)) {
+					foreach(int dwarf_translation_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
 						int translations_list = dwarf_translation_ptr - (translation_number * 4);
 						needle = encode_int(translations_list);
-						foreach(int translations_list_ptr, scan_mem_find_all(needle,
-																			 translation_vector_low_cutoff,
-																			 translation_vector_high_cutoff)) {
+						foreach(int translations_list_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
 							translation_vector_address = translations_list_ptr - 4 - m_memory_correction;
 							qDebug() << "FOUND TRANSLATIONS VECTOR" << hex << translation_vector_address;
 						}
@@ -437,7 +433,6 @@ int DFInstance::find_translation_vector() {
 }
 
 int DFInstance::find_creature_vector() {
-	// TODO: move to config
 	GameDataReader *gdr = GameDataReader::ptr();
 	int low_cutoff = gdr->get_int_for_key("ram_guesser/creature_vector_low_cutoff") + m_memory_correction;
 	int high_cutoff = gdr->get_int_for_key("ram_guesser/creature_vector_high_cutoff")+ m_memory_correction;
@@ -454,12 +449,14 @@ int DFInstance::find_creature_vector() {
 	emit scan_message(tr("Scanning for known nickname"));
 	QByteArray needle(custom_nickname);
 	int dwarf = 0;
-	foreach(int nickname, scan_mem_find_all(needle, 0, m_memory_size)) {
+	foreach(int nickname, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
 		qDebug() << "FOUND NICKNAME" << hex << nickname;
 		emit scan_message(tr("Scanning for dwarf objects"));
-		needle = encode_int(nickname - dwarf_nickname_offset - 4); // should be the address of this dwarf
-		foreach(int dwarf, scan_mem_find_all(needle, 0, m_memory_size)) {
-			qDebug() << "FOUND DWARF" << hex << dwarf;
+		int possible_dwarf_address = nickname - dwarf_nickname_offset - 4;
+		qDebug() << "DWARF POINTER SHOULD BE AT:" << hex << possible_dwarf_address;
+		needle = encode_int(possible_dwarf_address); // should be the address of this dwarf
+		foreach(int dwarf, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
+			//qDebug() << "FOUND DWARF" << hex << dwarf;
 			emit scan_message(tr("Scanning for dwarf vector pointer"));
 			needle = encode_int(dwarf); // since this is the first dwarf, it should also be the dwarf vector
 			foreach(int vector_ptr, scan_mem_find_all(needle, low_cutoff, high_cutoff)) {
@@ -521,6 +518,64 @@ int DFInstance::find_creature_vector() {
 	*/
 	qDebug("all done with creature scan");
 	return creature_vector_address;
+}
+
+int DFInstance::find_dwarf_race_index() {
+	int dwarf_race_index = -1;
+	emit scan_message(tr("Scanning for dwarf race index"));
+	QByteArray needle("FirstCreature");
+	int dwarf = 0;
+	uint bytes_read = 0;
+	foreach(int nickname, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
+		dwarf = nickname - 0x1C - 4;
+		int race = read_int32(dwarf + 0x8C, bytes_read);
+		emit scan_message(tr("Scanning for 'A group of '"));
+		foreach(int group_of, scan_mem_find_all(QByteArray("A group of "), 0, 0x0FFFFFFF)) {
+			QByteArray tmp(4, NULL);
+			tmp[3] = 0x68;
+			tmp.append(encode_int(group_of));
+			emit scan_message(tr("Scanning for refs to 'A group of '"));
+			foreach(int ref_to_group_of, scan_mem_find_all(tmp, 0, 0x7FFFFFFF)) {
+				QByteArray tmp2(4, 0);
+				tmp[1] = 0x66;
+				tmp[2] = 0x39;
+				emit scan_message(tr("Scanning for refs to race index"));
+				foreach(int ref_to_race, scan_mem_find_all(tmp, ref_to_group_of, ref_to_group_of + 60)) {
+					int race_ptr = ref_to_race + 4;
+					int race_ptr_addr = read_int32(race_ptr, bytes_read);
+					LOGD << "POSSIBLE RACE INDEX:" << hex << race_ptr_addr;
+					dwarf_race_index = race_ptr_addr;
+				}
+			}
+		}
+	}
+	return dwarf_race_index;
+
+
+	/*
+	int currentRaceIndex = 0;
+	foreach( int nickname in Find( config.CreatureNick ) ) {
+		int dwarf = nickname - 0x001C - 4;
+		currentRaceIndex = memoryAccess.ReadInt32( dwarf + 0x8C );
+
+		foreach( int aGroupOf in Find( "A group of " ) ) {
+			foreach( int refToAGroupOf in Find( BytesHelper.Concat( new byte?[] { null, null, null, 0x68 }, BytesHelper.ToBytes(aGroupOf) ) ) ) {
+				foreach( int refToRaceIndex in Find( new byte?[] { null, 0x66, 0x39, null }, refToAGroupOf, refToAGroupOf + 60 ) ) {
+					int pointAddress = refToRaceIndex + 4;
+					int raceIndexPointer = memoryAccess.ReadInt32( pointAddress );
+					if( raceIndexPointer > 0x1600000 )
+						continue;
+
+					try {
+						int intRaceIndex = memoryAccess.ReadInt32( raceIndexPointer );
+						if( intRaceIndex == currentRaceIndex )
+							ReportAddress( "Address", "DwarvenRaceIndex", raceIndexPointer );
+					} catch( Exception ) { }
+				}
+			}
+		}
+	}
+	*/
 }
 
 DFInstance* DFInstance::find_running_copy(QObject *parent) {

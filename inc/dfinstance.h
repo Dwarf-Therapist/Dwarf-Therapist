@@ -64,6 +64,7 @@ public:
 	int find_language_vector();
 	int find_translation_vector();
 	int find_creature_vector();
+	int find_dwarf_race_index();
 
 	// Methods for when we know how the data is layed out
 	MemoryLayout *memory_layout() {return m_layout;}

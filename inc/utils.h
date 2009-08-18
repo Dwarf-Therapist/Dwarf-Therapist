@@ -35,13 +35,16 @@ static inline QByteArray encode_short(short num) {
 }
 
 static inline QByteArray encode_int(int num) {
-	char bytes[4];
-	bytes[0] = (char)num;
-	bytes[1] = (char)(num >> 8);
-	bytes[2] = (char)(num >> 16);
-	bytes[3] = (char)(num >> 24);
+	char *bytes;
+	bytes = (char*)&num;
 	QByteArray arr(bytes, 4);
 	return arr;
+}
+
+static inline int decode_int(const QByteArray &arr) {
+	const char* data = arr.constData();
+	int *out_ptr = (int*)data;
+	return *out_ptr;
 }
 
 static inline QByteArray encode_skillpattern(short skill, short exp, short rating) {
