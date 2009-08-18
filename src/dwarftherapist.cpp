@@ -289,3 +289,8 @@ int DwarfTherapist::custom_profession_from_dwarf(Dwarf *d) {
 	}
 	return accepted;
 }
+
+//! convenience method
+Dwarf *DwarfTherapist::get_dwarf_by_id(int dwarf_id) {
+	return m_main_window->get_model()->get_dwarf_by_id(dwarf_id);
+}

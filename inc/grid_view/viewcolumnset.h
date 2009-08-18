@@ -29,6 +29,7 @@ class ViewManager;
 class ViewColumn;
 class ViewColumnSetDialog;
 class GridView;
+class Dwarf;
 
 /*!
 ViewColumnSet
@@ -60,6 +61,9 @@ public:
 		void set_name(const QString &name);
 		void write_settings();
 		void delete_from_disk();
+		void toggle_for_dwarf(Dwarf *d);
+		void toggle_for_dwarf(); // from context menu of single labor
+		void toggle_for_dwarf_group(); // from context menu of aggregate
 
 private:
 	QString m_name;

@@ -32,6 +32,10 @@ THE SOFTWARE.
 #include "defines.h"
 #include "labor.h"
 #include "utils.h"
+#include "dwarftherapist.h"
+#include "dwarf.h"
+#include "mainwindow.h"
+#include "dwarfmodel.h"
 
 ViewColumnSet::ViewColumnSet(QString name, ViewManager *mgr, QObject *parent)
 	: QObject(parent)
@@ -198,4 +202,66 @@ void ViewColumnSet::update_from_dialog(ViewColumnSetDialog *d) {
 	foreach(ViewColumn *vc, d->columns()) {
 		add_column(vc);
 	}
+}
+
+void ViewColumnSet::toggle_for_dwarf_group() {
+	QAction *a = qobject_cast<QAction*>(QObject::sender());
+	QString group_name = a->data().toString();
+	DwarfModel *dm = DT->get_main_window()->get_model();
+
+	TRACE << "toggling set:" << name() << "for group:" << group_name;
+
+	int total_enabled = 0;
+	int total_labors = 0;
+	foreach(Dwarf *d, dm->get_dwarf_groups()->value(group_name)) {
+		foreach(ViewColumn *vc, m_columns) {
+			if (vc->type() == CT_LABOR) {
+				total_labors++;
+				LaborColumn *lc = static_cast<LaborColumn*>(vc);
+				if (d->is_labor_enabled(lc->labor_id()))
+					total_enabled++;
+			}
+		}
+	}
+	bool turn_on = total_enabled < total_labors;
+	foreach(Dwarf *d, dm->get_dwarf_groups()->value(group_name)) {
+		foreach(ViewColumn *vc, m_columns) {
+			if (vc->type() == CT_LABOR) {
+				LaborColumn *lc = static_cast<LaborColumn*>(vc);
+				d->set_labor(lc->labor_id(), turn_on);
+			}
+		}
+	}
+	DT->get_main_window()->get_model()->calculate_pending();
+}
+
+void ViewColumnSet::toggle_for_dwarf() {
+	// find out which dwarf this is for...
+	QAction *a = qobject_cast<QAction*>(QObject::sender());
+	int dwarf_id = a->data().toInt();
+	Dwarf *d = DT->get_dwarf_by_id(dwarf_id);
+	toggle_for_dwarf(d);
+}
+
+void ViewColumnSet::toggle_for_dwarf(Dwarf *d) {
+	TRACE << "toggling set:" << name() << "for" << d->nice_name();
+	int total_enabled = 0;
+	int total_labors = 0;
+	foreach(ViewColumn *vc, m_columns) {
+		if (vc->type() == CT_LABOR) {
+			total_labors++;
+			LaborColumn *lc = static_cast<LaborColumn*>(vc);
+			if (d->is_labor_enabled(lc->labor_id()))
+				total_enabled++;
+		}
+	}
+	bool turn_on = total_enabled < total_labors;
+	foreach(ViewColumn *vc, m_columns) {
+		if (vc->type() == CT_LABOR) {
+			LaborColumn *lc = static_cast<LaborColumn*>(vc);
+			d->set_labor(lc->labor_id(), turn_on);
+		}
+	}
+	DT->get_main_window()->get_model()->calculate_pending();
+	
 }

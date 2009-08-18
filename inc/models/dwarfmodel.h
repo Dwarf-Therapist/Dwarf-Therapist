@@ -48,7 +48,8 @@ public:
 		DR_ID,
 		DR_DEFAULT_BG_COLOR,
 		DR_DUMMY, // used as an int counter that increments to force re-draws
-		DR_COL_TYPE
+		DR_COL_TYPE,
+		DR_SET_NAME
 	} DATA_ROLES;
 
 	DwarfModel(QObject *parent = 0);

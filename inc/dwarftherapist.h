@@ -43,10 +43,12 @@ public:
 	
 	QVector<CustomProfession*> get_custom_professions() {return m_custom_professions;}
 	CustomProfession *get_custom_profession(QString name);
+	MainWindow *get_main_window() {return m_main_window;}
 
 	int custom_profession_from_dwarf(Dwarf *d);
 	
 	QSettings *user_settings() {return m_user_settings;}
+	Dwarf *get_dwarf_by_id(int dwarf_id);
 
 	public slots:
 		void add_custom_profession();

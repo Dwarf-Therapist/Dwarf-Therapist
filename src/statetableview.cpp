@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include "happinesscolumn.h"
 #include "dwarftherapist.h"
 #include "customprofession.h"
+#include "viewmanager.h"
 
 StateTableView::StateTableView(QWidget *parent)
 	: QTreeView(parent)
@@ -156,29 +157,51 @@ void StateTableView::set_single_click_labor_changes(bool enabled) {
 
 void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 	QModelIndex idx = indexAt(event->pos());
-	if (!idx.isValid() || idx.column() != 0  || idx.data(DwarfModel::DR_IS_AGGREGATE).toBool())
+	if (!idx.isValid())
 		return;
 
-	int id = idx.data(DwarfModel::DR_ID).toInt();
-	
-	QMenu m(this);
-	m.setTitle(tr("Dwarf Options"));
-	m.addAction(tr("Set Nickname..."), this, SLOT(set_nickname()));
-	//m.addAction(tr("View Details..."), this, "add_custom_profession()");
-	m.addSeparator();
+	QMenu m(this); // this will be the popup menu
+	if (idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
+		// we're on top of a dwarf's name
+		int id = idx.data(DwarfModel::DR_ID).toInt();
+		m.addAction(tr("Set Nickname..."), this, SLOT(set_nickname()));
+		//m.addAction(tr("View Details..."), this, "add_custom_profession()");
+		m.addSeparator();
 
-	QMenu sub(&m);
-	sub.setTitle(tr("Custom Professions"));
-	QAction *a = sub.addAction(tr("New custom profession from this dwarf..."), this, SLOT(custom_profession_from_dwarf()));
-	a->setData(id);
-	sub.addAction(tr("Reset to default profession"), this, SLOT(reset_custom_profession()));
-	sub.addSeparator();
+		QMenu sub(&m);
+		sub.setTitle(tr("Custom Professions"));
+		QAction *a = sub.addAction(tr("New custom profession from this dwarf..."), this, SLOT(custom_profession_from_dwarf()));
+		a->setData(id);
+		sub.addAction(tr("Reset to default profession"), this, SLOT(reset_custom_profession()));
+		sub.addSeparator();
 
-	foreach(CustomProfession *cp, DT->get_custom_professions()) {
-		sub.addAction(cp->get_name(), this, SLOT(apply_custom_profession()));
+		foreach(CustomProfession *cp, DT->get_custom_professions()) {
+			sub.addAction(cp->get_name(), this, SLOT(apply_custom_profession()));
+		}
+		m.addMenu(&sub);
+	} else if (idx.data(DwarfModel::DR_COL_TYPE).toInt() == CT_LABOR) {
+		// labor column
+		QString set_name = idx.data(DwarfModel::DR_SET_NAME).toString();
+		ViewColumnSet *set = DT->get_main_window()->get_view_manager()->get_set(set_name);
+		if (idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) { //aggregate labor
+			QModelIndex first_col = idx.sibling(idx.row(), 0);
+			QString group_name = idx.data(DwarfModel::DR_GROUP_NAME).toString();
+			foreach(Dwarf *d, m_model->get_dwarf_groups()->value(group_name)) {
+			}
+			QAction *a = m.addAction(tr("Toggle %1 for %2").arg(set_name).arg(group_name));
+			a->setData(group_name);
+			connect(a, SIGNAL(triggered()), set, SLOT(toggle_for_dwarf_group()));
+		} else { // single dwarf labor
+			// find the dwarf...
+			int dwarf_id = idx.data(DwarfModel::DR_ID).toInt();
+			Dwarf *d = m_model->get_dwarf_by_id(dwarf_id);
+			QAction *a = m.addAction(tr("Toggle %1 for %2").arg(set_name).arg(d->nice_name()));
+			a->setData(dwarf_id);
+			connect(a, SIGNAL(triggered()), set, SLOT(toggle_for_dwarf()));
+		}
+		
+
 	}
-	m.addMenu(&sub);
-
 	m.exec(viewport()->mapToGlobal(event->pos()));
 }
 

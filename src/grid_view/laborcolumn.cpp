@@ -42,6 +42,7 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
 	short rating = d->get_rating_by_skill(m_skill_id);
 	item->setData(rating, DwarfModel::DR_RATING); // for sort order
 	item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);
+	item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
 	
 	QString skill_str;
 	if (m_skill_id != -1)
@@ -71,5 +72,6 @@ QStandardItem *LaborColumn::build_aggregate(const QString &group_name, const QVe
 	item->setData(group_name, DwarfModel::DR_GROUP_NAME);
 	item->setData(0, DwarfModel::DR_RATING);
 	item->setData(0, DwarfModel::DR_DUMMY);
+	item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
 	return item;
 }

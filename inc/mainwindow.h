@@ -34,7 +34,6 @@ class DwarfModelProxy;
 class Dwarf;
 class AboutDialog;
 class CustomProfession;
-class GridView;
 class ViewManager;
 
 namespace Ui
@@ -54,6 +53,7 @@ public:
 	QToolBar *get_toolbar();
 	DwarfModel *get_model() {return m_model;}
 	DwarfModelProxy *get_proxy() {return m_proxy;}
+	ViewManager *get_view_manager() {return m_view_manager;}
 
 	Ui::MainWindow *ui;
 
@@ -98,7 +98,6 @@ private:
 	CustomProfession *m_temp_cp;
 	QHttp *m_http;
 	bool m_reading_settings;
-	QList<GridView*> m_views;
 
 	void closeEvent(QCloseEvent *evt); // override;
 
