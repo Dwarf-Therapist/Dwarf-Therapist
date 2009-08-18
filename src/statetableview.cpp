@@ -160,9 +160,11 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 	if (!idx.isValid())
 		return;
 
-	QMenu m(this); // this will be the popup menu
+	
+	
 	if (idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
 		// we're on top of a dwarf's name
+		QMenu m(this); // this will be the popup menu
 		int id = idx.data(DwarfModel::DR_ID).toInt();
 		m.addAction(tr("Set Nickname..."), this, SLOT(set_nickname()));
 		//m.addAction(tr("View Details..."), this, "add_custom_profession()");
@@ -179,8 +181,10 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 			sub.addAction(cp->get_name(), this, SLOT(apply_custom_profession()));
 		}
 		m.addMenu(&sub);
+		m.exec(viewport()->mapToGlobal(event->pos()));
 	} else if (idx.data(DwarfModel::DR_COL_TYPE).toInt() == CT_LABOR) {
 		// labor column
+		QMenu m(this); // this will be the popup menu
 		QString set_name = idx.data(DwarfModel::DR_SET_NAME).toString();
 		ViewColumnSet *set = DT->get_main_window()->get_view_manager()->get_set(set_name);
 		if (idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) { //aggregate labor
@@ -199,10 +203,8 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 			a->setData(dwarf_id);
 			connect(a, SIGNAL(triggered()), set, SLOT(toggle_for_dwarf()));
 		}
-		
-
+		m.exec(viewport()->mapToGlobal(event->pos()));
 	}
-	m.exec(viewport()->mapToGlobal(event->pos()));
 }
 
 void StateTableView::set_nickname() {
