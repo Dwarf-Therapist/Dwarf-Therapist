@@ -4,6 +4,8 @@ from google.appengine.ext import db
 class MetricEntry(db.Model):
     ip = db.StringProperty()
     city = db.StringProperty()
+    region_code = db.StringProperty()
+    region_name = db.StringProperty()
     country = db.StringProperty()
     dt_version_major = db.IntegerProperty()
     dt_version_minor = db.IntegerProperty()

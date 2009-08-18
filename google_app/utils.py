@@ -1,6 +1,14 @@
 import logging
 import urllib
 from xml.etree import ElementTree as ET
+from pprint import pformat
+
+xml_to_dict_map = {
+    'CountryCode': 'country',
+    'RegionName': 'region_name',
+    'RegionCode': 'region_code',
+    'City': 'city'
+}
 
 def ip_info(ip):
     """
@@ -22,6 +30,8 @@ def ip_info(ip):
     """
     info = {
         'country': 'unknown',
+        'region_code': 'unknown',
+        'region_name': 'unknown',
         'city': 'unknown',
         'ip': ip
     }
@@ -34,12 +44,12 @@ def ip_info(ip):
     
     try:
         tree = ET.fromstring(txt.strip())
-        country = tree.find("CountryCode")
-        city = tree.find("City")
-        if country is not None:
-            info['country'] = country.text
-        if city is not None:
-            info['city'] = city.text
+        for xml_val, dict_key in xml_to_dict_map.items():
+            elem = tree.find(xml_val)
+            if elem is not None:
+                info[dict_key] = elem.text
     except:
         logging.error("error parsing IP result %s", txt)
+    logging.info("got info for %s", ip)
+    logging.info(pformat(info))
     return info
