@@ -61,6 +61,7 @@ public:
 	int get_raw_happiness() {return m_raw_happiness;}
 	
 	QVector<Skill> *get_skills() {return &m_skills;}
+	const Skill get_skill(int skill_id);
 	QVector<int> get_dirty_labors(); // returns labor ids
 	bool is_labor_enabled(int labor_id);
 	bool is_labor_state_dirty(int labor_id);
@@ -77,6 +78,7 @@ public:
 	short get_num_weapons();
 	
 	static DWARF_HAPPINESS happiness_from_score(int score);
+	static QString happiness_name(DWARF_HAPPINESS happiness);
 
 	QTreeWidgetItem *get_pending_changes_tree();
 	QModelIndex m_name_idx;

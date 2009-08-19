@@ -83,7 +83,7 @@ void StateTableView::read_settings() {
 	m_grid_size = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
 	int pad = s->value("options/grid/cell_padding", 0).toInt();
 	setIconSize(QSize(m_grid_size - 2 - pad * 2, m_grid_size - 2 - pad * 2));
-
+	
 	set_single_click_labor_changes(s->value("options/single_click_labor_changes", true).toBool());
 }
 
@@ -159,8 +159,6 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 	QModelIndex idx = indexAt(event->pos());
 	if (!idx.isValid())
 		return;
-
-	
 	
 	if (idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
 		// we're on top of a dwarf's name
@@ -190,8 +188,6 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 		if (idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) { //aggregate labor
 			QModelIndex first_col = idx.sibling(idx.row(), 0);
 			QString group_name = idx.data(DwarfModel::DR_GROUP_NAME).toString();
-			foreach(Dwarf *d, m_model->get_dwarf_groups()->value(group_name)) {
-			}
 			QAction *a = m.addAction(tr("Toggle %1 for %2").arg(set_name).arg(group_name));
 			a->setData(group_name);
 			connect(a, SIGNAL(triggered()), set, SLOT(toggle_for_dwarf_group()));

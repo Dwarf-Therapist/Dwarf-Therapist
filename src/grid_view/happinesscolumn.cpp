@@ -36,10 +36,14 @@ QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
 	
 	item->setData(CT_HAPPINESS, DwarfModel::DR_COL_TYPE);
 	item->setData(d->get_raw_happiness(), DwarfModel::DR_RATING);
-	QString tooltip = "<h3>" + m_title + "</h3>"
-		"\t" + QString::number(d->get_raw_happiness());
-	tooltip += "\n<h4>" + d->nice_name() + "</h4>";
+	QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%4</h4>")
+					  .arg(m_title)
+					  .arg(Dwarf::happiness_name(d->get_happiness()))
+					  .arg(d->get_raw_happiness())
+					  .arg(d->nice_name());
 	item->setToolTip(tooltip);
+
+	d->get_happiness();
 
 	switch (d->get_happiness()) {
 		case Dwarf::DH_MISERABLE:

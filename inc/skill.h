@@ -32,12 +32,12 @@ class Skill
 public:
 	Skill()
 		: m_id(-1)
-		, m_exp(-1)
+		, m_exp(0)
 		, m_rating(-1)
 	{
 	}
 	 
-	Skill(short id, ushort exp, short rating)
+	Skill(short id, uint exp, short rating)
 		: m_id(id)
 		, m_exp(exp)
 		, m_rating(rating > 15 ? 15 : rating)
@@ -46,6 +46,7 @@ public:
 
 	short id() const {return m_id;}
 	short rating() const {return m_rating;}
+	uint exp() const {return m_exp;}
 
 	QString to_string() const {
 		GameDataReader *gdr = GameDataReader::ptr();
@@ -66,7 +67,7 @@ public:
 
 private:
 	short m_id;
-	ushort m_exp;
+	uint m_exp;
 	short m_rating;
 };
 

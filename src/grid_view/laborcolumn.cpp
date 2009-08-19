@@ -46,10 +46,11 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
 	
 	QString skill_str;
 	if (m_skill_id != -1)
-		skill_str = QString("%1 %2 (%3)")
+		skill_str = QString("%1 %2 (%3) %4exp")
 			.arg(gdr->get_skill_level_name(rating))
 			.arg(gdr->get_skill_name(m_skill_id))
-			.arg(rating);
+			.arg(rating)
+			.arg(d->get_skill(m_skill_id).exp());
 	item->setToolTip(QString("<h3>%1</h3>%2<h4>%3</h4>").arg(m_title).arg(skill_str).arg(d->nice_name()));
 	
 	return item;

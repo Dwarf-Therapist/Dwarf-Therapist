@@ -98,6 +98,18 @@ Dwarf::DWARF_HAPPINESS Dwarf::happiness_from_score(int score) {
 	return (DWARF_HAPPINESS)(DH_MISERABLE + chunk);
 }
 
+QString Dwarf::happiness_name(DWARF_HAPPINESS happiness) {
+	switch(happiness) {
+		case DH_MISERABLE: return tr("Miserable");
+		case DH_UNHAPPY: return tr("Unhappy");
+		case DH_FINE: return tr("Fine");
+		case DH_CONTENT: return tr("Content");
+		case DH_HAPPY: return tr("Happy");
+		case DH_ECSTATIC: return tr("Ecstatic");
+		default: return "UNKNOWN";
+	}
+}
+
 Dwarf *Dwarf::get_dwarf(DFInstance *df, int address) {
 	MemoryLayout *mem = df->memory_layout();
 	TRACE << "attempting to load dwarf at" << address << "using memory layout" << mem->game_version(); 
@@ -143,18 +155,26 @@ QString Dwarf::read_last_name(int address) {
 	return out;
 }
 
-
 QVector<Skill> Dwarf::read_skills(int address) {
 	QVector<Skill> skills(0);
 	uint bytes_read = 0;
 	foreach(int addr, m_df->enumerate_vector(address)) {
 		short type = m_df->read_short(addr, bytes_read);
-		ushort experience = m_df->read_ushort(addr + 2, bytes_read);//BUG: this is wrong
+		uint experience = m_df->read_int32(addr + 8, bytes_read);
 		short rating = m_df->read_short(addr + 4, bytes_read);
 		Skill s(type, experience, rating);
 		skills.append(s);
 	}
 	return skills;
+}
+
+const Skill Dwarf::get_skill(int skill_id) {
+	foreach(Skill s, m_skills) {
+		if (s.id() == skill_id) {
+			return s;
+		}
+	}
+	return Skill(skill_id, 0, 0);
 }
 
 short Dwarf::get_rating_by_skill(int skill_id) {
