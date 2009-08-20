@@ -23,23 +23,19 @@ THE SOFTWARE.
 #ifndef DFINSTANCE_H
 #define DFINSTANCE_H
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <QObject>
-#include <QString>
 
 #include "dwarf.h"
 class MemoryLayout;
 
 class DFInstance : public QObject {
 	Q_OBJECT
-	DFInstance(DWORD pid, HWND hwnd, QObject *parent=0);
 public:
+	DFInstance(QObject *parent=0);
 	~DFInstance();
 	typedef QVector<int> AddressVector;
 
 	// factory ctor
-	static DFInstance* find_running_copy(QObject *parent=0);
+	virtual bool find_running_copy() = 0;
 
 	// accessors
 	int get_memory_correction() {return m_memory_correction;}
@@ -51,17 +47,16 @@ public:
 	bool looks_like_vector_of_pointers(int address);
 
 	QVector<int> enumerate_vector(int address);
-	char read_char(int start_address, uint &bytes_read);
-	short read_short(int start_address, uint &bytes_read);
-	ushort read_ushort(int start_address, uint &bytes_read);
-	int read_int32(int start_address, uint &bytes_read);
-	int read_raw(int start_address, int bytes, void *buffer);
+	virtual char read_char(int start_address, uint &bytes_read) = 0;
+	virtual short read_short(int start_address, uint &bytes_read) = 0;
+	virtual ushort read_ushort(int start_address, uint &bytes_read) = 0;
+	virtual int read_int32(int start_address, uint &bytes_read) = 0;
+	virtual int read_raw(int start_address, int bytes, void *buffer) = 0;
 	int scan_mem(QByteArray &needle, int start_address, int end_address, bool &ok);
 	QVector<int> scan_mem_find_all(QByteArray &needle, int start_address, int end_address);
 	QString read_wstring(int start_address);
 	QString read_string(int start_address);
-	int write_string(int start_address, QString str);
-	int write_int32(int start_address, int val);
+	
 	
 	// Mapping methods
 	int find_language_vector();
@@ -75,21 +70,23 @@ public:
 	QVector<Dwarf*> DFInstance::load_dwarves();
 
 	// Writing
-	int write_raw(int start_address, int bytes, void *buffer);
+	virtual int write_raw(int start_address, int bytes, void *buffer) = 0;
+	virtual int write_string(int start_address, QString str) = 0;
+	virtual int write_int32(int start_address, int val) = 0;
 	
 
 	public slots:
 		// if a menu cancels our scan, we need to know how to stop
 		void cancel_scan() {m_stop_scan = true;}
 
-private:
+protected:
 	// handy util methods
 	int calculate_checksum();
 	QVector<QVector<int> > DFInstance::cross_product(QVector<QVector<int> > addresses, int index);
 
-	DWORD m_pid;
+	int m_pid;
 	HWND m_hwnd;
-	HANDLE m_proc;
+	void *m_proc;
 	uint m_base_addr;
 	uint m_memory_size;
 	int m_memory_correction;
