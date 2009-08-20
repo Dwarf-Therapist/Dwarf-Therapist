@@ -52,4 +52,5 @@ public:
 	int list_order;
 };
 
-#endif;
+#endif
+
