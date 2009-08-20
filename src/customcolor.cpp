@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include <QtGui>
-#include <qtcolorpicker.h>
+#include <QtColorPicker>
 
 #include "customcolor.h"
 
