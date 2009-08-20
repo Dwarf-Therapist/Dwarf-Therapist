@@ -298,6 +298,35 @@ int DFInstance::scan_mem(QByteArray &needle, int start_address, int end_address,
 	return 0;
 }
 
+QVector<int> DFInstance::find_likely_vectors(int start_address, int bytes) {
+	QVector<int> vector_addrs;
+	for (int addr = start_address; addr < start_address + bytes; addr += 4) {
+		if (looks_like_vector_of_pointers(addr))
+			vector_addrs << addr - start_address;
+	}
+	return vector_addrs;
+}
+
+bool DFInstance::looks_like_vector_of_pointers(int address) {
+	uint bytes_read = 0;
+	int start = read_int32(address + 0x4, bytes_read);
+	int end = read_int32(address + 0x8, bytes_read);
+	int alloc_end = read_int32(address + 0xC, bytes_read);
+	int capacity = (alloc_end - start) / 4;
+	int entries = (end - start) / sizeof(int);
+
+	return start >=0 && 
+		   end >=0 && 
+		   end >= start && 
+		   (end-start) % 4 == 0 &&
+		   start % 4 == 0 &&
+		   end % 4 == 0 &&
+		   entries > 6 &&
+		   entries < 12 &&
+		   capacity > 0;
+	
+}
+
 QVector<int> DFInstance::enumerate_vector(int address) {
 	TRACE << "beginning vector enumeration at" << address;
 	QVector<int> addresses;
@@ -309,12 +338,14 @@ QVector<int> DFInstance::enumerate_vector(int address) {
 
 	int entries = (end - start) / sizeof(int);
 	TRACE << "there appears to be" << entries << "entries in this vector";
-	/*
+	
+	Q_ASSERT(start >= 0);
+	Q_ASSERT(end >= 0);
 	Q_ASSERT(end >= start);
 	Q_ASSERT((end - start) % 4 == 0);
 	Q_ASSERT(start % 4 == 0);
 	Q_ASSERT(end % 4 == 0);
-	*/
+	//Q_ASSERT(entries < 2000);
 
 	int count = 0;
 	for( int ptr = start; ptr < end; ptr += 4 ) {
@@ -365,6 +396,33 @@ public IEnumerable<int[]> CrossProduct( List<int>[] addresses, int idx )
 		}
 	}
 }*/
+
+int DFInstance::find_stone_vector() {
+	QVector<int> addrs = enumerate_vector(0x0E1B8FE8);
+
+
+	int stone_number = 42;
+	QByteArray needle("OLIVINE");
+	
+	int address = -1;
+	emit scan_message(tr("Scanning for known word"));
+	foreach(int word_addr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
+		emit scan_message(tr("Scanning for word pointer"));
+		LOGD << "found" << needle << hex << word_addr;
+		needle = encode_int(word_addr - 4);
+		foreach(int word_addr_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
+			emit scan_message(tr("Scanning for stones vector"));
+			LOGD << "found word ptr" << hex << word_addr_ptr;
+			int word_list = word_addr_ptr - (stone_number * 4);
+			needle = encode_int(word_list);
+			/*foreach(int word_list_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
+				address = word_list_ptr - 0x4 - m_memory_correction;
+				LOGD << "STONE VECTOR AT" << hex << address;
+			}*/
+		}
+	}
+	return address;
+}
 
 int DFInstance::find_language_vector() {
 	// TODO: move to config

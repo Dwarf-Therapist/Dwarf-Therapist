@@ -95,6 +95,7 @@ private:
 	QString read_professtion(int address);
 	QString read_last_name(int address);
 	QVector<Skill> read_skills(int address);
+	void read_prefs(int address);
 	void read_labors(int address);
 	void calc_nice_name();
 

@@ -59,7 +59,7 @@ void Dwarf::refresh_data() {
 	m_toughness = m_df->read_int32(m_address + mem->dwarf_offset("toughness"), bytes_read);
 	m_agility = m_df->read_int32(m_address + mem->dwarf_offset("agility"), bytes_read);
 	read_labors(m_address + mem->dwarf_offset("labors"));
-
+	
 	// NEW
 	char sex = m_df->read_char(m_address + mem->dwarf_offset("sex"), bytes_read);
 	m_is_male = (int)sex == 1;
@@ -71,6 +71,15 @@ void Dwarf::refresh_data() {
 	//qDebug() << nice_name() << "SEX" << (m_is_male ? "M" : "F") << " MONEY" << m_money << "ADDR" << hex << m_address;
 
 	calc_nice_name();
+	/*
+	if (m_first_name == "Dumed") {
+		QVector<int> vector_offsets = m_df->find_likely_vectors(m_address, 4096);
+		//read_prefs(m_address + mem->dwarf_offset("likes"));
+		read_prefs(m_address + 0x2a4);
+		read_prefs(m_address + 0x51c);
+		read_prefs(m_address + 0xaac);
+		read_prefs(m_address + 0xd24);
+	}*/
 }
 
 Dwarf::~Dwarf() {
@@ -153,6 +162,29 @@ QString Dwarf::read_last_name(int address) {
 		out[0] = out[0].toUpper();
 	}
 	return out;
+}
+
+void Dwarf::read_prefs(int address) {
+	//0x051C vector at this offset, not sure what it is
+	uint bytes_read = 0;
+	QVector<int> addrs = m_df->enumerate_vector(address);
+	foreach(int addr, addrs) {
+		//short val0 = m_df->read_short(addr, bytes_read);
+		//short val1 = m_df->read_short(addr + 0x02, bytes_read);
+		//short val2 = m_df->read_short(addr + 0x04, bytes_read);
+		short is_rock = m_df->read_short(addr + 0x04, bytes_read);
+		short obj_type = m_df->read_short(addr + 0x06, bytes_read);
+		short materiel = m_df->read_short(addr + 0x08, bytes_read);
+		int when_possible = (int)m_df->read_char(addr + 0x0A, bytes_read);
+		//short val5 = m_df->read_short(addr + 0x0A, bytes_read);
+		//short val6 = m_df->read_short(addr + 0x0C, bytes_read);
+		//short val7 = m_df->read_short(addr + 0x0E, bytes_read);
+		//short val8 = m_df->read_short(addr + 0x10, bytes_read);
+		//short val9 = m_df->read_short(addr + 0x12, bytes_read);
+		//short valA = m_df->read_short(addr + 0x14, bytes_read);
+		//short valB = m_df->read_short(addr + 0x16, bytes_read);
+		int x = 0;
+	}
 }
 
 QVector<Skill> Dwarf::read_skills(int address) {

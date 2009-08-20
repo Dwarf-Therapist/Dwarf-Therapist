@@ -47,6 +47,9 @@ public:
 	bool is_ok(){return m_is_ok;}
 	
 	// brute force memory scanning methods
+	QVector<int> find_likely_vectors(int start_address, int bytes);
+	bool looks_like_vector_of_pointers(int address);
+
 	QVector<int> enumerate_vector(int address);
 	char read_char(int start_address, uint &bytes_read);
 	short read_short(int start_address, uint &bytes_read);
@@ -65,6 +68,7 @@ public:
 	int find_translation_vector();
 	int find_creature_vector();
 	int find_dwarf_race_index();
+	int find_stone_vector();
 
 	// Methods for when we know how the data is layed out
 	MemoryLayout *memory_layout() {return m_layout;}
