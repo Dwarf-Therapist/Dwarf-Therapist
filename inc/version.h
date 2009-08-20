@@ -32,9 +32,9 @@ struct Version {
 	int patch;
 
 	Version()
-		: major(VERSION_MAJOR)
-		, minor(VERSION_MINOR)
-		, patch(VERSION_PATCH)
+		: major(DT_VERSION_MAJOR)
+		, minor(DT_VERSION_MINOR)
+		, patch(DT_VERSION_PATCH)
 	{}
 	Version(int major, int minor, int patch) 
 		: major(major)

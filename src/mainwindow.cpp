@@ -245,7 +245,7 @@ void MainWindow::set_interface_enabled(bool enabled) {
 
 void MainWindow::check_latest_version() {
 	//http://code.google.com/p/dwarftherapist/wiki/LatestVersion
-	Version our_v(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+	Version our_v(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
 
 	QHttpRequestHeader header("GET", "/version");
 	header.setValue("Host", "dt-tracker.appspot.com");
@@ -266,7 +266,7 @@ void MainWindow::version_check_finished(bool error) {
 	QRegExp rx("(\\d+)\\.(\\d+)\\.(\\d+)");
 	int pos = rx.indexIn(data);
 	if (pos != -1) {
-		Version our_v(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+		Version our_v(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
 		QString major = rx.cap(1);
 		QString minor = rx.cap(2);
 		QString patch = rx.cap(3);

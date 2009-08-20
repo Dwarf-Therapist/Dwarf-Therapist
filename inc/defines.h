@@ -27,16 +27,16 @@ THE SOFTWARE.
 #define COMPANY "UDP Software"
 #define PRODUCT "Dwarf Therapist"
 
-#ifndef VERSION_MAJOR
-	#define VERSION_MAJOR 0
+#ifndef DT_VERSION_MAJOR
+	#define DT_VERSION_MAJOR 0
 #endif
 
-#ifndef VERSION_MINOR
-	#define VERSION_MINOR 3
+#ifndef DT_VERSION_MINOR
+	#define DT_VERSION_MINOR 3
 #endif
 
-#ifndef VERSION_PATCH
-	#define VERSION_PATCH 1
+#ifndef DT_VERSION_PATCH
+	#define DT_VERSION_PATCH 1
 #endif
 
 #define LOG   qxtLog
