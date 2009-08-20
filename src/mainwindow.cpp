@@ -74,19 +74,19 @@ MainWindow::MainWindow(QWidget *parent)
 
 	/* docks! */
 	GridViewDock *grid_view_dock = new GridViewDock(m_view_manager, this);
+	grid_view_dock->setHidden(true); // hide by default
 	grid_view_dock->setFloating(true);
 	addDockWidget(Qt::RightDockWidgetArea, grid_view_dock);
-	grid_view_dock->setHidden(true); // hide by default
 
 	ViewColumnSetDock *view_set_dock = new ViewColumnSetDock(m_view_manager, this);
+	view_set_dock->setHidden(true); // hide by default
 	view_set_dock->setFloating(true);
 	addDockWidget(Qt::RightDockWidgetArea, view_set_dock);
-	view_set_dock->setHidden(true); // hide by default
-
+	
 	SkillLegendDock *skill_legend_dock = new SkillLegendDock(this);
+	skill_legend_dock->setHidden(true); // hide by default
 	skill_legend_dock->setFloating(true);
 	addDockWidget(Qt::RightDockWidgetArea, skill_legend_dock);
-	skill_legend_dock->setHidden(true); // hide by default
 	
 	ui->menu_docks->addAction(ui->dock_pending_jobs_list->toggleViewAction());
 	ui->menu_docks->addAction(ui->dock_custom_professions->toggleViewAction());
@@ -94,7 +94,6 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->menu_docks->addAction(view_set_dock->toggleViewAction());
 	ui->menu_docks->addAction(skill_legend_dock->toggleViewAction());
 	ui->menuWindows->addAction(ui->main_toolbar->toggleViewAction());
-
 
 	LOGD << "setting up connections for MainWindow";
 	connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));

@@ -1,5 +1,10 @@
 CHANGES SINCE 0.3.0
 ==========================================================================================
+ * HappinessColumn tooltip now shows the english version of the happiness level
+ * Skills now correctly read experience (Fixed issue 1)
+ * fixed issue 58 (can't repro it anymore)
+ * Added ability to toggle an entire set at once for a dwarf or a group of dwarfs
+ * added support for 40d14
  * (Fixed issue 5): Show skill-ratings legend somewhere
  * Moved the dock config around. Views, Sets, and Skill legend docks are now off by default and can be turned on in a variety of ways. They also default to floating windows that can be docked.
  * (Fixed issue 42): Hangs if game saved/continued without reloading
@@ -29,5 +34,3 @@ CHANGES SINCE 0.3.0
  * UberDelegate now passes adjusted rectangles by reference to the sub-painters for less stack thrashing
  * Less QString::operator+ usage, since it seems to cause reallocations and is generally slow as fucking hell
  * Found some spots where build_rows() was being called multiple times and being slow
- 
-
