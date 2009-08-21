@@ -55,6 +55,9 @@ public:
 protected:
 	// handy util methods
 	int calculate_checksum();
+
+	HWND m_hwnd;
+	HANDLE m_proc;
 };
 
 #endif // DFINSTANCE_H

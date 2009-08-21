@@ -23,9 +23,9 @@ THE SOFTWARE.
 
 #ifndef TRUNCATING_FILE_LOGGER_ENGINE_H
 #define TRUNCATING_FILE_LOGGER_ENGINE_H
-#include <qxtloggerengine>
-#include <qxtbasicfileloggerengine.h>
-#include <qxtabstractfileloggerengine>
+#include <QxtLoggerEngine>
+#include <QxtBasicFileLoggerEngine>
+#include <QxtAbstractFileLoggerEngine>
 #include <QTextStream>
 #include <QFile>
 #include <QTime>

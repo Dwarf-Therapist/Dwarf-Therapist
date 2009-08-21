@@ -26,6 +26,11 @@ THE SOFTWARE.
 #include <QString>
 #include "defines.h"
 
+#ifdef Q_WS_X11
+#undef major
+#undef minor
+#endif
+
 struct Version {
 	int major;
 	int minor;

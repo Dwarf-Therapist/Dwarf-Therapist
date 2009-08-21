@@ -55,4 +55,4 @@ signals:
 	//! emitted when the options menu "ok" button is hit
 	void settings_changed(); 
 };
-#endif;
+#endif

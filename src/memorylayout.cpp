@@ -1,6 +1,6 @@
 #include <QtCore>
 #include "memorylayout.h"
-#include "GameDataReader.h"
+#include "gamedatareader.h"
 
 MemoryLayout::MemoryLayout(int checksum)
 	: m_checksum(checksum)

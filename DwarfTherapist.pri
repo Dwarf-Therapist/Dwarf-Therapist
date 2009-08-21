@@ -19,7 +19,7 @@ HEADERS += ./inc/customcolor.h \
     ./inc/cp437codec.h \
     ./inc/defines.h \
     ./inc/dwarftherapist.h \
-    ./inc/GameDataReader.h \
+    ./inc/gamedatareader.h \
     ./inc/memorylayout.h \
     ./inc/truncatingfilelogger.h \
     ./inc/utils.h \
@@ -57,7 +57,7 @@ SOURCES += ./src/customcolor.cpp \
     ./src/optionsmenu.cpp \
     ./src/viewcolumnsetdialog.cpp \
     ./src/dwarftherapist.cpp \
-    ./src/GameDataReader.cpp \
+    ./src/gamedatareader.cpp \
     ./src/main.cpp \
     ./src/memorylayout.cpp \
     ./src/customprofession.cpp \

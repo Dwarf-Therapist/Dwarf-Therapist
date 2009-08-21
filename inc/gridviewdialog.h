@@ -78,4 +78,4 @@ private:
 		void remove_set_from_action();
 };
 
-#endif;
+#endif

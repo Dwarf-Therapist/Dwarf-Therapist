@@ -40,4 +40,4 @@ private:
 	Ui::AboutDialog *ui;
 
 };
-#endif;
+#endif

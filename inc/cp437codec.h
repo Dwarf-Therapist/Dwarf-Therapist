@@ -120,7 +120,7 @@ public:
 	}
 
 protected:
-	QString CP437Codec::convertToUnicode(const char *in, int length, ConverterState *) const {
+	QString convertToUnicode(const char *in, int length, ConverterState *) const {
 		QString str;
 		if ( length >= 6 && in[0] == '8' && in[1] == '0' &&
 			in[length - 4] == 'F' && in[length - 3] == 'F' &&
@@ -158,7 +158,7 @@ protected:
 		return str;
 	}
 
-	QByteArray CP437Codec::convertFromUnicode(const QChar *in, int length, ConverterState *) const {
+	QByteArray convertFromUnicode(const QChar *in, int length, ConverterState *) const {
 		QByteArray result;
 		unsigned int ch;
 		char *out;

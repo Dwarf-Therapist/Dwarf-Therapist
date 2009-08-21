@@ -52,8 +52,10 @@ static inline QString get_column_type(const COLUMN_TYPE &type) {
 		case CT_SKILL:		return "SKILL";
 		case CT_LABOR:		return "LABOR";
 		case CT_HAPPINESS:	return "HAPPINESS";
+		case CT_DEFAULT:	return "UNKNOWN";
 	}
 	return "UNKNOWN";
 }
 
-#endif;
+#endif
+

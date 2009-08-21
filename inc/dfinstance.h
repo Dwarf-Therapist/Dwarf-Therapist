@@ -23,15 +23,16 @@ THE SOFTWARE.
 #ifndef DFINSTANCE_H
 #define DFINSTANCE_H
 
+#include <QtGui>
 
-#include "dwarf.h"
+class Dwarf;
 class MemoryLayout;
 
 class DFInstance : public QObject {
 	Q_OBJECT
 public:
 	DFInstance(QObject *parent=0);
-	~DFInstance();
+	virtual ~DFInstance(){}
 	typedef QVector<int> AddressVector;
 
 	// factory ctor
@@ -67,7 +68,7 @@ public:
 
 	// Methods for when we know how the data is layed out
 	MemoryLayout *memory_layout() {return m_layout;}
-	QVector<Dwarf*> DFInstance::load_dwarves();
+	QVector<Dwarf*> load_dwarves();
 
 	// Writing
 	virtual int write_raw(int start_address, int bytes, void *buffer) = 0;
@@ -81,12 +82,9 @@ public:
 
 protected:
 	// handy util methods
-	int calculate_checksum();
-	QVector<QVector<int> > DFInstance::cross_product(QVector<QVector<int> > addresses, int index);
+	virtual int calculate_checksum() = 0;
 
 	int m_pid;
-	HWND m_hwnd;
-	void *m_proc;
 	uint m_base_addr;
 	uint m_memory_size;
 	int m_memory_correction;

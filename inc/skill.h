@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 #include <QString>
 #include <QStringList>
-#include "GameDataReader.h"
+#include "gamedatareader.h"
 
 class Skill
 {

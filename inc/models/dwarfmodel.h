@@ -61,7 +61,7 @@ public:
 	void build_row(QString key);
 	void build_rows();
 	GROUP_BY current_grouping() const {return m_group_by;}
-	const QMap<QString, QVector<Dwarf*>> *get_dwarf_groups() const {return &m_grouped_dwarves;}
+	const QMap<QString, QVector<Dwarf*> > *get_dwarf_groups() const {return &m_grouped_dwarves;}
 	Dwarf *get_dwarf_by_id(int id) const {return m_dwarves.value(id, 0);}
 		
 	QVector<Dwarf*> get_dirty_dwarves();
@@ -81,7 +81,7 @@ public:
 private:
 	DFInstance *m_df;
 	QMap<int, Dwarf*> m_dwarves;
-	QMap<QString, QVector<Dwarf*>> m_grouped_dwarves;
+	QMap<QString, QVector<Dwarf*> > m_grouped_dwarves;
 	GROUP_BY m_group_by;
 	int m_selected_col;
 	GridView *m_gridview;

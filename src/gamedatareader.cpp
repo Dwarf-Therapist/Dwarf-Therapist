@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include <QtGui>
-#include "GameDataReader.h"
+#include "gamedatareader.h"
 #include "labor.h"
 #include <QtDebug>
 

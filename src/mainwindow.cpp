@@ -53,7 +53,10 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #ifdef Q_WS_WIN
 #include "dfinstancewindows.h"
-#endif;
+#endif
+#ifdef Q_WS_X11
+#include "dfinstancelinux.h"
+#endif
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -200,11 +203,12 @@ void MainWindow::connect_to_df() {
 	// logging and notifying the user.
 #ifdef Q_WS_WIN
 	m_df = new DFInstanceWindows();
-#elif Q_WS_X11
+#endif
+#ifdef Q_WS_X11
 	m_df = new DFInstanceLinux();
 #endif
 	if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
-		m_lbl_status->setText(tr("Connected to ") + m_df->memory_layout()->game_version());
+		//m_lbl_status->setText(tr("Connected to ") + m_df->memory_layout()->game_version());
 		connect(m_df, SIGNAL(connection_interrupted()), SLOT(lost_df_connection()));
 		set_interface_enabled(true);
 	}

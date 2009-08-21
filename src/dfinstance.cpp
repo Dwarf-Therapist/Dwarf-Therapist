@@ -34,8 +34,6 @@ THE SOFTWARE.
 DFInstance::DFInstance(QObject* parent)
 	:QObject(parent)
 	,m_pid(0)
-	,m_hwnd(0)
-	,m_proc(0)
 	,m_memory_correction(0)
 	,m_stop_scan(false)
 	,m_is_ok(true)
@@ -45,9 +43,6 @@ DFInstance::DFInstance(QObject* parent)
 	connect(df_check_timer, SIGNAL(timeout()), SLOT(heartbeat()));
 	df_check_timer->start(1000); // every second
 }
-
-DFInstance::~DFInstance() 
-{}
 
 QString DFInstance::read_wstring(int address) {
 	uint bytes_read = 0;
@@ -421,7 +416,8 @@ int DFInstance::find_dwarf_race_index() {
 		dwarf = nickname - 0x1C - 4;
 		int race = read_int32(dwarf + 0x8C, bytes_read);
 		emit scan_message(tr("Scanning for 'A group of '"));
-		foreach(int group_of, scan_mem_find_all(QByteArray("A group of "), 0, 0x0FFFFFFF)) {
+		needle = "A group of";
+		foreach(int group_of, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
 			QByteArray tmp(4, NULL);
 			tmp[3] = 0x68;
 			tmp.append(encode_int(group_of));

@@ -20,42 +20,36 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef CUSTOM_COLOR_H
-#define CUSTOM_COLOR_H
+#ifndef DFINSTANCE_LINUX_H
+#define DFINSTANCE_LINUX_H
+#include "dfinstance.h"
+#include "dwarf.h"
 
-#include <QtGui>
-#include <qtcolorpicker.h>
+class MemoryLayout;
 
-class CustomColor : public QWidget {
+class DFInstanceLinux : public DFInstance {
 	Q_OBJECT
 public:
-	CustomColor(QString setting_name, QString tooltip, QString config_key, QColor default_color, QWidget *parent = 0);
+	DFInstanceLinux(QObject *parent=0);
+	~DFInstanceLinux() {}
 
-	void set_color(QColor new_color) {m_picker->setCurrentColor(new_color);}
-	QColor get_color() {return m_picker->currentColor();}
-	QColor get_default() {return m_default;}
-	bool is_dirty() {return m_dirty;}
-	void reset_to_default() {m_picker->setCurrentColor(m_default);}
-	void reset_to_last() {m_picker->setCurrentColor(m_last_color);}
-	QString get_config_key() {return m_config_key;}
-	
+	// factory ctor
+	bool find_running_copy();
 
-private:
-	QString m_name;
-	QString m_tooltip;
-	QString m_config_key;
-	QtColorPicker *m_picker;
-	QLabel *m_label;
-	QColor m_default;
-	QColor m_last_color;
+	char read_char(int start_address, uint &bytes_read);
+	short read_short(int start_address, uint &bytes_read);
+	ushort read_ushort(int start_address, uint &bytes_read);
+	int read_int32(int start_address, uint &bytes_read);
+	int read_raw(int start_address, int bytes, void *buffer);
 
-	bool m_dirty;
+	// Writing
+	int write_raw(int start_address, int bytes, void *buffer);
+	int write_string(int start_address, QString str);
+	int write_int32(int start_address, int val);
 
-	private slots:
-		void color_changed(const QColor &);
 
-signals:
-	void color_changed(QString config_key, const QColor &new_color);
+protected:
+	int calculate_checksum();
 };
 
-#endif
+#endif // DFINSTANCE_H
