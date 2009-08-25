@@ -31,7 +31,7 @@ class DFInstanceLinux : public DFInstance {
 	Q_OBJECT
 public:
 	DFInstanceLinux(QObject *parent=0);
-	~DFInstanceLinux() {}
+    ~DFInstanceLinux();
 
 	// factory ctor
 	bool find_running_copy();

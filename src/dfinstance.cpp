@@ -39,9 +39,10 @@ DFInstance::DFInstance(QObject* parent)
 	,m_is_ok(true)
 	,m_layout(0)
 {
-	QTimer *df_check_timer = new QTimer(this);
+	/*QTimer *df_check_timer = new QTimer(this);
 	connect(df_check_timer, SIGNAL(timeout()), SLOT(heartbeat()));
 	df_check_timer->start(1000); // every second
+        */
 }
 
 QString DFInstance::read_wstring(int address) {
@@ -120,7 +121,7 @@ int DFInstance::scan_mem(QByteArray &needle, int start_address, int end_address,
 	m_stop_scan = false;
 	ok = true;
 	if (end_address <= start_address) {
-		qWarning() << "start address must be lower than end_address";
+        LOGW << "start address must be lower than end_address";
 		ok = false;
 		return 0;
 	}

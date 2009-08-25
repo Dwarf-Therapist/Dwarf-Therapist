@@ -207,7 +207,7 @@ void MainWindow::connect_to_df() {
 #ifdef Q_WS_X11
 	m_df = new DFInstanceLinux();
 #endif
-	if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
+    if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
 		//m_lbl_status->setText(tr("Connected to ") + m_df->memory_layout()->game_version());
 		connect(m_df, SIGNAL(connection_interrupted()), SLOT(lost_df_connection()));
 		set_interface_enabled(true);
