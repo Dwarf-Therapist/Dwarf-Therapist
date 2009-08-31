@@ -36,19 +36,11 @@ public:
 		if (m_pid) {
 			scan();
 			if (m_base_addr != -1) {
-				/*
-				QVector<uint> lang_vectors = hulk_smash(2107, 4);
-				foreach(uint addr, lang_vectors) {
-					qDebug() << "LANG VECTOR AT" << hex << addr;
-					int max = 5;
-					foreach(uint sub, enumerate_vector(addr)) {
-						qDebug() << "\t" << read_str2(sub);
-						if (max-- == 0)
-							break;
-					}
-				}
-				*/
-
+				// working...
+				//uint dwarf_race_index = find_dwarf_race_index();
+				//qDebug() << "DWARF RACE INDEX FOUND" << hex << dwarf_race_index;
+				
+				// broken...
 				//uint addr = find_language_vector();
 				//qDebug() << "LANG VECTOR FOUND" << hex << addr;
 				//uint trans_addr = find_translation_vector();
@@ -167,7 +159,7 @@ public:
 					int1 < int2 &&
 					is_valid_address(int1) && 
 					is_valid_address(int2) && 
-					abs((int2 - int1) - target_bytes) < 16)
+					(int2 - int1) == target_bytes)
 				{
 					QVector<uint> addrs = enumerate_vector(addr_pair.first + i);
 					if (addrs.size() == num_entries) {
@@ -247,6 +239,76 @@ public:
 		return translation_vector_address;
 	}
 
+	uint find_dwarf_race_index() {
+		uint dwarf_race_index = 0;
+		int expected_dwarf_race_value = 166;
+		foreach(uint ptr, scan_mem(QByteArray("A group of "))) {
+			foreach(uint ptr2, scan_mem(encode(ptr))) {
+				qDebug() << "\tPTR" << hex << ptr2 << read_str2(ptr2);
+				QByteArray needle(2, 0);
+				needle[0] = 0x66;
+				needle[1] = 0x39;
+				int offset = get_data(ptr2, 60).indexOf(needle);
+				if (offset != -1) {
+					qDebug() << "\tMATCH! offset" << offset << hex << offset;
+					uint idx_addr = read_uint32(ptr2 + offset + 3);
+					qDebug() << "\tREAD ADDR FROM" << hex << ptr2 + offset << "=" << idx_addr;
+					int idx = read_int32(idx_addr);
+					qDebug() << "\t\tRACE VALUE" << idx << "HEX" << hex << idx;
+					if (idx == expected_dwarf_race_value) {
+						dwarf_race_index = idx_addr;	
+						break;
+					}
+				}	
+			}
+		}
+		return dwarf_race_index;
+	}
+
+	QByteArray get_data(uint start_addr, int size) {
+		char *buffer = new char[size];
+		memset(buffer, 0, size);
+		read_raw(start_addr, size, buffer);
+		QByteArray data(buffer, size);
+		delete[] buffer;
+		return data;
+	}
+
+	//! ahhh convenience
+	QString pprint(uint addr, int size) {
+		return pprint(get_data(addr, size), addr);
+	}
+
+	QString pprint(const QByteArray &ba, uint start_addr=0) {
+		QString out = "  ADDR | 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F | TEXT\n";
+		out.append("------------------------------------------------------------------------\n");
+		int lines = ba.size() / 16;
+		if (ba.size() % 16)
+			lines++;
+
+		for(int i = 0; i < lines; ++i) {
+			out.append(QString::number(start_addr + i * 16, 16));
+			out.append(" | ");
+			for (int c = 0; c < 16; ++c) {
+				out.append(ba.mid(i*16 + c, 1).toHex());
+				out.append(" ");
+			}
+			out.append("| ");
+			for (int c = 0; c < 16; ++c) {
+				QByteArray tmp = ba.mid(i*16 + c, 1);
+				if (tmp.at(0) == 0)
+					out.append(".");
+				else if (tmp.at(0) <= 126 && tmp.at(0) >= 32)
+					out.append(tmp);
+				else
+					out.append(tmp.toHex());
+			}
+			//out.append(ba.mid(i*16, 16).toPercentEncoding());
+			out.append("\n");
+		}
+		return out;
+	}
+
 	uint find_creature_vector() {
 		uint creature_vector_addr = 0;
 
@@ -255,7 +317,7 @@ public:
 			qDebug() << "nickname found at" << hex << nickname;
 			foreach(uint nickname_ptr, scan_mem(encode(nickname))) {
 				qDebug() << "found ptr to nickname at" << hex << nickname_ptr;
-				qDebug() << "first name:" << read_str2(nickname_ptr - 4);
+				//qDebug() << "first name:" << read_str2(nickname_ptr - 4);
 				foreach(uint dwarf_list_start, scan_mem(encode(nickname_ptr - 4))) {
 					qDebug() << "possible creature vector start at" << hex << dwarf_list_start;
 					foreach(uint dwarf_list_vec_ptr, scan_mem(encode(dwarf_list_start))) {
@@ -477,11 +539,11 @@ public:
 				} else if (perms.contains("r") && inode && path == QFile::symLinkTarget(QString("/proc/%1/exe").arg(m_pid))) {
 					keep_it = true;
 				} else {
-					//keep_it = path.isEmpty();
+					keep_it = path.isEmpty();
 				}
 				// uncomment to search HEAP only
 				//keep_it = path.contains("[heap]");
-				//keep_it = true;
+				keep_it = true;
 
 				if (keep_it) {
 					//qDebug() << "KEEPING RANGE" << hex << start_addr << "-" << end_addr << "PATH " << path;
