@@ -202,7 +202,7 @@ QVector<int> DFInstance::enumerate_vector(int address) {
 	TRACE << "end of vector" << end;
 
 	int entries = (end - start) / sizeof(int);
-	TRACE << "there appears to be" << entries << "entries in this vector";
+	LOGD << "there appears to be" << entries << "entries in this vector";
 	
 	Q_ASSERT(start >= 0);
 	Q_ASSERT(end >= 0);
@@ -495,5 +495,49 @@ void DFInstance::heartbeat() {
 		// no game loaded, or process is gone
 		emit connection_interrupted();
 	}
-
 }
+
+QByteArray DFInstance::get_data(uint addr, int size) {
+	char *buffer = new char[size];
+	memset(buffer, 0, size);
+	read_raw(addr, size, buffer);
+	QByteArray data(buffer, size);
+	delete[] buffer;
+	return data;
+}
+
+//! ahhh convenience
+QString DFInstance::pprint(uint addr, int size) {
+	return pprint(get_data(addr, size), addr);
+}
+
+QString DFInstance::pprint(const QByteArray &ba, uint start_addr) {
+	QString out = "  ADDR | 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F | TEXT\n";
+	out.append("------------------------------------------------------------------------\n");
+	int lines = ba.size() / 16;
+	if (ba.size() % 16)
+		lines++;
+
+	for(int i = 0; i < lines; ++i) {
+		out.append(QString::number(start_addr + i * 16, 16));
+		out.append(" | ");
+		for (int c = 0; c < 16; ++c) {
+			out.append(ba.mid(i*16 + c, 1).toHex());
+			out.append(" ");
+		}
+		out.append("| ");
+		for (int c = 0; c < 16; ++c) {
+			QByteArray tmp = ba.mid(i*16 + c, 1);
+			if (tmp.at(0) == 0)
+				out.append(".");
+			else if (tmp.at(0) <= 126 && tmp.at(0) >= 32)
+				out.append(tmp);
+			else
+				out.append(tmp.toHex());
+		}
+		//out.append(ba.mid(i*16, 16).toPercentEncoding());
+		out.append("\n");
+	}
+	return out;
+}
+

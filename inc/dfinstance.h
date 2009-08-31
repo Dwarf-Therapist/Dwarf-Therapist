@@ -52,11 +52,15 @@ public:
 	virtual short read_short(int start_address, uint &bytes_read) = 0;
 	virtual ushort read_ushort(int start_address, uint &bytes_read) = 0;
 	virtual int read_int32(int start_address, uint &bytes_read) = 0;
-	virtual int read_raw(int start_address, int bytes, void *buffer) = 0;
+	virtual int read_raw(uint addr, int bytes, void *buffer) = 0;
 	int scan_mem(QByteArray &needle, int start_address, int end_address, bool &ok);
 	QVector<int> scan_mem_find_all(QByteArray &needle, int start_address, int end_address);
 	QString read_wstring(int start_address);
 	QString read_string(int start_address);
+
+	QByteArray get_data(uint addr, int size);
+	QString pprint(uint addr, int size);
+	QString pprint(const QByteArray &ba, uint start_addr=0);
 	
 	
 	// Mapping methods

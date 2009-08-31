@@ -119,11 +119,10 @@ char DFInstanceWindows::read_char(int start_address, uint &bytes_read) {
 	return val;
 }
 
-int DFInstanceWindows::read_raw(int start_address, int bytes, void *buffer) {
+int DFInstanceWindows::read_raw(uint addr, int bytes, void *buffer) {
 	memset(buffer, 0, bytes);
 	DWORD bytes_read = 0;
-	ReadProcessMemory(m_proc, (LPCVOID)start_address, (void*)buffer, sizeof(uchar) * bytes, &bytes_read);
-	//Q_ASSERT(bytes_read == bytes);
+	ReadProcessMemory(m_proc, (LPCVOID)addr, (void*)buffer, sizeof(uchar) * bytes, &bytes_read);
 	return bytes_read;
 }
 
