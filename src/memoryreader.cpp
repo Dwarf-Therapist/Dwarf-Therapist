@@ -51,8 +51,10 @@ public:
 
 				//uint addr = find_language_vector();
 				//qDebug() << "LANG VECTOR FOUND" << hex << addr;
-				uint trans_addr = find_translation_vector();
-				qDebug() << "TRANSLATION VECTOR FOUND" << hex << trans_addr;
+				//uint trans_addr = find_translation_vector();
+				//qDebug() << "TRANSLATION VECTOR FOUND" << hex << trans_addr;
+				uint creature_vector_addr = find_creature_vector();
+				qDebug() << "CREATURE VECTOR FOUND" << hex << creature_vector_addr;
 			}
 		}
 	}
@@ -84,7 +86,12 @@ public:
 		Q_ASSERT_X(end > start, "enumerate_vector", "End must be larger than start!");
 		Q_ASSERT_X((end - start) % 4 == 0, "enumerate_vector", "end - start must be divisible by 4");
 
-		uchar *stuff = new uchar[bytes];
+		uchar *stuff;
+		try {
+			stuff = new uchar[bytes];
+		} catch (std::bad_alloc &ex) {
+			qFatal(ex.what());
+		}
 		if (!stuff) {
 			qWarning() << "Unable to allocate uchar array of size" << bytes;
 			return addrs;
@@ -179,9 +186,28 @@ public:
 	}
 	
 	uint find_translation_vector() {
+		/*
+		foreach( int word in Find( config.TranslationWord ) ) {
+                foreach( int wordPointer in Find( word -4 ) ) {
+                    int wordList = wordPointer - ParseNumber(config.TranslationWordNumber) * 4;
+                    foreach( int wordListPointer in Find( wordList ) ) {
+                        foreach( int dwarfTranslationName in Find( config.TranslationName, wordListPointer - 0x1000, wordListPointer ) ) {
+                            int dwarfTranslation = dwarfTranslationName - 4;
+                            ReportAddress( "Offset", "Translation.WordTable", wordListPointer - dwarfTranslation );
+                            foreach( int dwarfTranslationPointer in Find( dwarfTranslation ) ) {
+                                int translationsList = dwarfTranslationPointer - ParseNumber(config.TranslationNumber) * 4;
+                                foreach( int translationsListPointer in Find( translationsList, ParseNumber(config.TranslationsVectorLowCutoff) + memoryCorrection, ParseNumber(config.TranslationsVectorHighCutoff) + memoryCorrection ) )
+                                    ReportAddress( "Address", "TranslationsVector", translationsListPointer - 4 );
+                            }
+                        }
+                    }
+                }
+            }
+		*/
 		int num_words = 2107;
 		QString first_lang_word = "ABBEY";
 		QString first_dwarf_word = "kulet";
+		QByteArray dwarf_translation_name = "DWARF";
 		uint lang_table_addr = 0;
 		uint dwarf_table_addr = 0; 
 
@@ -193,35 +219,111 @@ public:
 				
 				if (first_entry == first_lang_word) {
 					qDebug() << "FOUND LANGUAGE TABLE" << hex << vec_addr;
-					lang_table_addr = vec_addr;
+					lang_table_addr = addr;
 				} else if (first_entry == first_dwarf_word) {
 					qDebug() << "FOUND DWARF TABLE" << hex << vec_addr;
-					dwarf_table_addr = vec_addr;
+					dwarf_table_addr = addr;
 				}
 				break;
 			}
 		}
-		
 		//try to find a vector that holds all of these entries with dwarfish being the first
-		QByteArray needle = encode(lang_table_addr);
-		foreach(uint addr, scan_mem_find_all(needle)) {
+		qDebug() << "looking for ptr to dwarf lang" << hex << dwarf_table_addr;
+		foreach(uint addr, scan_mem(encode(dwarf_table_addr))) {
 			qDebug() << "possible translation vector at" << hex << addr;
 			uint i1 = read_uint32(addr);
 			uint i2 = read_uint32(addr + 4);
 			qDebug() << hex << i1 << i2;
 			if (i2 <= i1 || !is_valid_address(i1) || !is_valid_address(i2))
 				continue;
+			int max = 5;
 			foreach(uint entry, enumerate_vector(addr)) {
 				qDebug() << "\tADDR" << hex << entry;	
+				if (max-- == 0)
+					break;
 			}
 		}
-
 
 		return translation_vector_address;
 	}
 
+	uint find_creature_vector() {
+		uint creature_vector_addr = 0;
 
-	QVector<uint> scan_mem_find_all(QByteArray &needle) {
+		QByteArray needle("FirstCreature");
+		foreach(uint nickname, scan_mem(needle)) {
+			qDebug() << "nickname found at" << hex << nickname;
+			foreach(uint nickname_ptr, scan_mem(encode(nickname))) {
+				qDebug() << "found ptr to nickname at" << hex << nickname_ptr;
+				qDebug() << "first name:" << read_str2(nickname_ptr - 4);
+				foreach(uint dwarf_list_start, scan_mem(encode(nickname_ptr - 4))) {
+					qDebug() << "possible creature vector start at" << hex << dwarf_list_start;
+					foreach(uint dwarf_list_vec_ptr, scan_mem(encode(dwarf_list_start))) {
+						qDebug() << "possible creature vector ptr at" << hex << dwarf_list_vec_ptr;
+						creature_vector_addr = dwarf_list_vec_ptr;
+						break;
+					}
+				}
+			}
+		}
+
+		if (creature_vector_addr) {
+		foreach(uint dwarf_ptr, enumerate_vector(creature_vector_addr)) {
+			qDebug() << "CREATURE AT" << hex << dwarf_ptr;
+			qDebug() << "\tFIRST NAME" << read_str2(dwarf_ptr);
+			qDebug() << "\tNICKNAME" << read_str2(dwarf_ptr + 0x04);
+			qDebug() << "\tCUSTOM PROF" << read_str2(dwarf_ptr + 0x3C);
+		}
+		}
+		return creature_vector_addr;
+		/*
+	{
+            foreach( int nickname in Find( config.CreatureNick) ) {
+                int dwarf = nickname - 0x001C - 4;
+                foreach( int dwarfPointer in Find( dwarf ) ) {
+                    try {
+                        int dwarfList = dwarfPointer - 0 * 4;
+                        foreach( int dwarfListPointer in Find( dwarfList, ParseNumber(config.CreatureVectorLowCutoff) + memoryCorrection, ParseNumber(config.CreatureVectorHighCutoff) + memoryCorrection ) ) {
+                            ReportAddress( "Address", "CreatureVector", dwarfListPointer - 1*4 );
+                        }
+                    } catch( Exception ) { }
+                }
+
+                foreach( int customProfession in Find( config.CreatureProfession, dwarf, dwarf + 0x1000 ) ) {
+                    ReportAddress( "Offset", "Creature.CustomProfession", customProfession-dwarf-4 );
+                }
+
+                List<int>[] addresses = new List<int>[config.SkillPatterns.Length];
+                for( int i = 0; i < config.SkillPatterns.Length; i++ ) {
+                    List<int> list = new List<int>();
+                    foreach( int skill in FindPattern( config.SkillPatterns[i] ) )
+                        list.Add( skill );
+                    addresses[i] = list;
+                }
+                foreach( int addr in addresses[0] ) {
+                    foreach( int start in Find( addr ) ) {
+                        byte[] buffer = memoryAccess.ReadMemory( start, config.SkillPatterns.Length*4 );
+                        foreach( int[] p in CrossProduct( addresses, 0 ) ) {
+                            Matcher matcher = new Matcher( BytesHelper.ToBytes( p ) );
+                            if( matcher.Matches( ref buffer, 0, buffer.Length ) ) {
+                                foreach( int listPointers in Find( start, dwarf, dwarf + 0x2000 ) ) {
+                                    ReportAddress( "Offset", "Creature.SkillVector", listPointers - dwarf - 4 ); 
+                                }
+                            }
+                        }
+                    }
+                }
+                foreach( int labors in FindPattern( config.LaborsPattern, dwarf, dwarf + 0x2000 ) ) {
+                    ReportAddress( "Offset", "Creature.Labors", labors - dwarf );
+                }
+            }
+            progressMonitor.EndTask();
+        }
+		*/
+
+	}
+
+	QVector<uint> scan_mem(const QByteArray &needle) {
 		QVector<uint> addresses;
 		QByteArrayMatcher matcher(needle);
 
@@ -245,7 +347,7 @@ public:
 				memset(buffer, 0, step);
 				int bytes_read = read_raw(ptr, step, buffer);
 				if (bytes_read < step)
-					qDebug() << "tried to read" << step << "bytes starting at" << hex << ptr << "but only got" << dec << bytes_read;
+					qWarning() << "tried to read" << step << "bytes starting at" << hex << ptr << "but only got" << dec << bytes_read;
 			
 				int idx = matcher.indexIn(QByteArray(buffer, bytes_read));
 				if (idx != -1) {
@@ -261,6 +363,7 @@ public:
 		uint buffer_addr = read_int32(start_address);
 		int upper_size = 1024;
 		char *c = new char[upper_size];
+		memset(c, 0, upper_size);
 		read_raw(buffer_addr, upper_size, c);
 		return QString::fromLatin1(c);
 	}
@@ -374,7 +477,7 @@ public:
 				} else if (perms.contains("r") && inode && path == QFile::symLinkTarget(QString("/proc/%1/exe").arg(m_pid))) {
 					keep_it = true;
 				} else {
-					keep_it = path.isEmpty();
+					//keep_it = path.isEmpty();
 				}
 				// uncomment to search HEAP only
 				//keep_it = path.contains("[heap]");
