@@ -256,9 +256,7 @@ int DFInstance::find_stone_vector() {
 int DFInstance::find_language_vector() {
 	// TODO: move to config
 	int language_word_number = 1373;
-	int lang_vector_low_cutoff = 0x01500000;
-	int lang_vector_high_cutoff = 0x015D0000;
-	QByteArray needle("LANCER");
+    QByteArray needle("LANCER");
 
 	int language_vector_address = -1; // return val
 	emit scan_message(tr("Scanning for known word"));

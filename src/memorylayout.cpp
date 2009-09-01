@@ -2,14 +2,20 @@
 #include "memorylayout.h"
 #include "gamedatareader.h"
 
-MemoryLayout::MemoryLayout(int checksum)
+MemoryLayout::MemoryLayout(uint checksum)
 	: m_checksum(checksum)
 	, m_data(0)
 {
 	m_game_version = GameDataReader::ptr()->get_string_for_key("checksum_to_version/0x" + QString::number(checksum, 16));
 	if (m_game_version != "UNKNOWN") {
 		QDir working_dir = QDir::current();
-		QString filename = working_dir.absoluteFilePath("etc/" + m_game_version + ".ini");
+#ifdef Q_WS_WIN
+        QString subdir = "windows";
+#endif
+#ifdef Q_WS_X11
+        QString subdir = "linux";
+#endif
+        QString filename = working_dir.absoluteFilePath("etc/memory_layouts/" + subdir + "/" + m_game_version + ".ini");
 		m_data = new QSettings(filename, QSettings::IniFormat);
 		load_data();
 	}
@@ -37,9 +43,9 @@ void MemoryLayout::load_data() {
 	m_flags.insert("flags2.invalidate", read_hex("flags/flags2.invalidate"));
 }
 
-int MemoryLayout::read_hex(QString key) {
+uint MemoryLayout::read_hex(QString key) {
 	bool ok;
 	QString data = m_data->value(key, -1).toString();
-	int val = data.toInt(&ok, 16);
+    uint val = data.toUInt(&ok, 16);
 	return val;
 }

@@ -86,7 +86,7 @@ public:
 
 protected:
 	// handy util methods
-	virtual int calculate_checksum() = 0;
+    virtual uint calculate_checksum() = 0;
 
 	int m_pid;
 	uint m_base_addr;

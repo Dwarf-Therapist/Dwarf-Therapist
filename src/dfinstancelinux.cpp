@@ -24,11 +24,7 @@ THE SOFTWARE.
 #include <QtDebug>
 #include <sys/ptrace.h>
 #include <errno.h>
-#include <sys/param.h>
-#include <sys/user.h>
-#include <sys/sysctl.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <wait.h>
 
 #include "dfinstance.h"
 #include "dfinstancelinux.h"
@@ -49,18 +45,21 @@ DFInstanceLinux::~DFInstanceLinux() {
     //perror("detach");
 }
 
-int DFInstanceLinux::calculate_checksum() {
+uint DFInstanceLinux::calculate_checksum() {
     // ELF binaries don't seem to store a linker timestamp, so just MD5 the file.
-    int md5 = 0; // we're going to throw away a lot of this checksum we just need 4bytes worth
+    uint md5 = 0; // we're going to throw away a lot of this checksum we just need 4bytes worth
     QProcess *proc = new QProcess(this);
     QStringList args;
+    args << "md5sum";
     args << QString("/proc/%1/exe").arg(m_pid);
-    proc->start("md5sum", args);
-    proc->waitForFinished(1000);
-    if (proc->exitCode() == 0) {//found it
-        QByteArray out = proc->readAllStandardOutput();
+    proc->start("/usr/bin/env", args);
+    if (proc->waitForReadyRead(3000)) {
+        QByteArray out = proc->readAll();
         QString str_md5(out);
-        md5 = str_md5.toInt();
+        QStringList chunks = str_md5.split(" ");
+        str_md5 = chunks[0];
+        bool ok;
+        md5 = str_md5.mid(0, 8).toUInt(&ok,16); // use the first 8 bytes
         TRACE << "GOT MD5:" << md5;
     }
     return md5;
@@ -97,21 +96,25 @@ char DFInstanceLinux::read_char(int start_address, uint &bytes_read) {
     return c[0];
 }
 
-int DFInstanceLinux::read_raw(int start_address, int bytes, void *buffer) {
-    uint bytes_read = 0;
-    int steps = bytes / 4;
-    if (bytes % 4 != 0)
-        steps++;
-
-    for(int i = 0; i < steps; i++) {
-        long data = ptrace(PTRACE_PEEKDATA, m_pid, start_address + i*sizeof(int), 0);
-        if (errno)
-            perror("readraw");
-        char *tmp;
-        tmp = (char*)&data;
-        memcpy((char*)buffer + i * sizeof(int), tmp, sizeof(int));
+int DFInstanceLinux::read_raw(uint start_address, int bytes, void *buffer) {
+    if (ptrace(PTRACE_ATTACH, m_pid, 0, 0) == -1) {
+        // unable to attach
+        perror("ptrace attach");
+        LOGC << "Could not attach to PID" << m_pid;
+        return 0;
     }
-    return bytes_read;
+    // read this procs base address for the ELF header
+    QFile mem_file(QString("/proc/%1/mem").arg(m_pid));
+    if (!mem_file.open(QIODevice::ReadOnly)) {
+        qCritical() << "Unable to open" << mem_file.fileName();
+        ptrace(PTRACE_DETACH, m_pid, 0, 0);
+        return 0;
+    }
+    mem_file.seek(start_address); // this should be the entry point in the ELF header
+    QByteArray data = mem_file.read(bytes);
+    memcpy(buffer, data.data(), data.size());
+    ptrace(PTRACE_DETACH, m_pid, 0, 0);
+    return data.size();
 }
 
 int DFInstanceLinux::write_raw(int start_address, int bytes, void *buffer) {
@@ -119,6 +122,8 @@ int DFInstanceLinux::write_raw(int start_address, int bytes, void *buffer) {
 }
 
 bool DFInstanceLinux::find_running_copy() {
+    m_regions.clear();
+    // find PID of DF
     TRACE << "attempting to find running copy of DF by executable name";
     QProcess *proc = new QProcess(this);
     QStringList args;
@@ -135,41 +140,75 @@ bool DFInstanceLinux::find_running_copy() {
         return false;
     }
 
+    // scan the maps to populate known regions of memory
+    QFile f(QString("/proc/%1/maps").arg(m_pid));
+    if (!f.open(QIODevice::ReadOnly)) {
+        LOGC << "Unable to open" << f.fileName();
+        return false;
+    }
+    TRACE << "opened" << f.fileName();
+    QByteArray line;
+    uint lowest_addr = 0xFFFFFFFF;
+    uint start_addr = 0;
+    uint end_addr = 0;
+    bool ok;
+
+    QRegExp rx("^([a-f\\d]+)-([a-f\\d]+)\\s([rwxsp-]{4})\\s+[\\d\\w]{8}\\s+[\\d\\w]{2}:[\\d\\w]{2}\\s+(\\d+)\\s*(.+)\\s*$");
+    do {
+        line = f.readLine();
+        // parse the first line to see find the base
+        if (rx.indexIn(line) != -1) {
+            //qDebug() << "RANGE" << rx.cap(1) << "-" << rx.cap(2) << "PERMS" << rx.cap(3) << "INODE" << rx.cap(4) << "PATH" << rx.cap(5);
+            start_addr = rx.cap(1).toUInt(&ok, 16);
+            end_addr = rx.cap(2).toUInt(&ok, 16);
+            QString perms = rx.cap(3).trimmed();
+            int inode = rx.cap(4).toInt();
+            QString path = rx.cap(5).trimmed();
+
+            //qDebug() << "RANGE" << hex << start_addr << "-" << end_addr << perms << inode << "PATH >" << path << "<";
+            bool keep_it = false;
+            if (path.contains("[heap]") || path.contains("[stack]") || path.contains("[vdso]"))  {
+                keep_it = true;
+            } else if (perms.contains("r") && inode && path == QFile::symLinkTarget(QString("/proc/%1/exe").arg(m_pid))) {
+                keep_it = true;
+            } else {
+                keep_it = path.isEmpty();
+            }
+            // uncomment to search HEAP only
+            //keep_it = path.contains("[heap]");
+            //keep_it = true;
+
+            if (keep_it) {
+                //qDebug() << "KEEPING RANGE" << hex << start_addr << "-" << end_addr << "PATH " << path;
+                m_regions << QPair<uint, uint>(start_addr, end_addr);
+                if (start_addr < lowest_addr)
+                    lowest_addr = start_addr;
+            }
+        }
+    } while (!line.isEmpty());
+    f.close();
+    //qDebug() << "LOWEST ADDR:" << hex << lowest_addr;
+
+
+    //DUMP LIST OF MEMORY RANGES
+    /*
+    QPair<uint, uint> tmp_pair;
+    foreach(tmp_pair, m_regions) {
+        LOGD << "RANGE start:" << hex << tmp_pair.first << "end:" << tmp_pair.second;
+    }*/
+
+
     if (ptrace(PTRACE_ATTACH, m_pid, 0, 0) < 0) {
         // unable to attach
         perror("ptrace attach");
         LOGC << "Could not attach to PID" << m_pid;
         return false;
     }
-    TRACE << "Attached to PID" << m_pid;
-    //we're now tracing DF...
-    // attempt to locate the PE header
-
-    QFile f(QString("/proc/%1/maps").arg(m_pid));
-    if (!f.open(QIODevice::ReadOnly)) {
-        LOGC << "Unable to open" << f.fileName();
-        ptrace(PTRACE_DETACH, m_pid, 0, 0);
-        return false;
-    }
-    TRACE << "opened" << f.fileName();
-    QByteArray line = f.readLine();
-    TRACE << "first line" << line;
-    f.close();
-
-    // parse the first line to see find the base
-    int start_addr = 0;
-    int end_addr = 0;
-    QRegExp rx("^([0-9a-f]{8})-([0-9a-f]{8})");
-    if (rx.indexIn(line) != -1) {
-        bool ok;
-        start_addr = rx.cap(1).toInt(&ok, 16);
-        end_addr = rx.cap(2).toInt(&ok, 16);
-        LOGD << "RANGE" << hex << start_addr << "-" << end_addr;
-    } else {
-        LOGC << "unable to read the base range from" << f.fileName();
-        ptrace(PTRACE_DETACH, m_pid, 0, 0);
-        return false;
-    }
+    TRACE << "Waiting for PID" << m_pid << "to stop...";
+    int status;
+    wait(&status);
+    TRACE << "attached to process" << m_pid;
+    //we're now tracing DF, and DF is stopped
 
     // read this procs base address for the ELF header
     QFile mem_file(QString("/proc/%1/mem").arg(m_pid));
@@ -178,20 +217,24 @@ bool DFInstanceLinux::find_running_copy() {
         ptrace(PTRACE_DETACH, m_pid, 0, 0);
         return false;
     }
-    mem_file.seek(start_addr + 0x18); // this should be the entry point in the ELF header
+    mem_file.seek(lowest_addr + 0x18); // this should be the entry point in the ELF header
     QByteArray data = mem_file.read(4);
-    qDebug() << "read" << data;
-    for (int i = 0; i < 4; ++i) {
-        qDebug() << "byte" << i << QString::number(data[i]);
-    }
-    memcpy(&m_base_addr, data.data(), sizeof(int));
-
-    LOGD << "base_addr:" << m_base_addr << "HEX" << hex << m_base_addr;
     mem_file.close();
-    int checksum = calculate_checksum();
+    memcpy(&m_base_addr, data.data(), sizeof(uint));
+    LOGD << "base_addr:" << m_base_addr << "HEX" << hex << m_base_addr;
 
     ptrace(PTRACE_DETACH, m_pid, 0, 0);
     m_is_ok = true;
+    uint checksum = calculate_checksum();
+    LOGD << "DF's checksum is" << hex << checksum;
+    m_layout = new MemoryLayout(checksum);
+    if (!m_layout->is_valid()) {
+        QMessageBox::critical(0, tr("Unidentified Version"),
+            tr("I'm sorry but I don't know how to talk to this version of DF!"));
+        LOGC << "unable to identify version from checksum:" << hex << checksum;
+        m_is_ok = false;
+    }
+
     return true;
 }
 /*
