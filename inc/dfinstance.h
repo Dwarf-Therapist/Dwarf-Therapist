@@ -33,51 +33,48 @@ class DFInstance : public QObject {
 public:
 	DFInstance(QObject *parent=0);
 	virtual ~DFInstance(){}
-	typedef QVector<int> AddressVector;
 
 	// factory ctor
 	virtual bool find_running_copy() = 0;
 
 	// accessors
-	int get_memory_correction() {return m_memory_correction;}
-	int get_base_address() {return m_base_addr;}
+    uint get_memory_correction() {return m_memory_correction;}
+    uint get_base_address() {return m_base_addr;}
 	bool is_ok(){return m_is_ok;}
 	
 	// brute force memory scanning methods
-	QVector<int> find_likely_vectors(int start_address, int bytes);
-	bool looks_like_vector_of_pointers(int address);
+    bool looks_like_vector_of_pointers(const uint &addr);
 
-	QVector<int> enumerate_vector(int address);
-	virtual char read_char(int start_address, uint &bytes_read) = 0;
-	virtual short read_short(int start_address, uint &bytes_read) = 0;
-	virtual ushort read_ushort(int start_address, uint &bytes_read) = 0;
-	virtual int read_int32(int start_address, uint &bytes_read) = 0;
-	virtual int read_raw(uint addr, int bytes, void *buffer) = 0;
-	int scan_mem(QByteArray &needle, int start_address, int end_address, bool &ok);
-	QVector<int> scan_mem_find_all(QByteArray &needle, int start_address, int end_address);
-	QString read_wstring(int start_address);
-	QString read_string(int start_address);
+    virtual QVector<uint> enumerate_vector(const uint &addr) = 0;
+    virtual char read_char(const uint &addr) = 0;
+    virtual short read_short(const uint &addr) = 0;
+    virtual ushort read_ushort(const uint &addr) = 0;
+    virtual int read_int(const uint &addr) = 0;
+    virtual uint read_raw(const uint &addr, const uint &bytes, void *buffer) = 0;
+    uint scan_mem(const QByteArray &needle, const uint &start_address, const uint &end_address, bool &ok);
+    QVector<uint> scan_mem_find_all(const QByteArray &needle, const uint &start_address, const uint &end_address);
+    virtual QString read_string(const uint &addr) = 0;
 
-	QByteArray get_data(uint addr, int size);
-	QString pprint(uint addr, int size);
-	QString pprint(const QByteArray &ba, uint start_addr=0);
+    QByteArray get_data(const uint &addr, const uint &size);
+    QString pprint(const uint &addr, const uint &size);
+    QString pprint(const QByteArray &ba, const uint &start_addr=0);
 	
 	
 	// Mapping methods
-	int find_language_vector();
-	int find_translation_vector();
-	int find_creature_vector();
-	int find_dwarf_race_index();
-	int find_stone_vector();
+    uint find_language_vector();
+    uint find_translation_vector();
+    uint find_creature_vector();
+    uint find_dwarf_race_index();
+    uint find_stone_vector();
 
 	// Methods for when we know how the data is layed out
 	MemoryLayout *memory_layout() {return m_layout;}
 	QVector<Dwarf*> load_dwarves();
 
 	// Writing
-	virtual int write_raw(int start_address, int bytes, void *buffer) = 0;
-	virtual int write_string(int start_address, QString str) = 0;
-	virtual int write_int32(int start_address, int val) = 0;
+    virtual uint write_raw(const uint &addr, const uint &bytes, void *buffer) = 0;
+    virtual uint write_string(const uint &addr, const QString &str) = 0;
+    virtual uint write_int(const uint &addr, const int &val) = 0;
 	
 
 	public slots:
@@ -91,7 +88,7 @@ protected:
 	int m_pid;
 	uint m_base_addr;
 	uint m_memory_size;
-	int m_memory_correction;
+    uint m_memory_correction;
 	bool m_stop_scan; // flag that gets set to stop scan loops
 	bool m_is_ok;
 	MemoryLayout *m_layout;

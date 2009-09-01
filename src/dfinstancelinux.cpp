@@ -45,6 +45,44 @@ DFInstanceLinux::~DFInstanceLinux() {
     //perror("detach");
 }
 
+QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
+    QVector<uint> addrs;
+    uint start = read_uint(addr);
+    uint end = read_uint(addr + 4);
+    uint bytes = end - start;
+    uint entries = bytes / 4;
+    uint tmp_addr = 0;
+
+    Q_ASSERT_X(start > 0, "enumerate_vector", "start pointer must be larger than 0");
+    Q_ASSERT_X(end > 0, "enumerate_vector", "End must be larger than start!");
+    Q_ASSERT_X(start % 4 == 0, "enumerate_vector", "Start must be divisible by 4");
+    Q_ASSERT_X(end % 4 == 0, "enumerate_vector", "End must be divisible by 4");
+    Q_ASSERT_X(end > start, "enumerate_vector", "End must be larger than start!");
+    Q_ASSERT_X((end - start) % 4 == 0, "enumerate_vector", "end - start must be divisible by 4");
+
+    char *stuff = new char[bytes];
+	if (stuff == 0) {
+        qWarning() << "Unable to allocate char array of size" << bytes;
+        return addrs;
+    }
+    uint bytes_read = read_raw(start, bytes, stuff);
+    if (bytes_read != bytes) {
+        qWarning() << "Tried to read" << bytes << "bytes but only got" << bytes_read;
+        return addrs;
+    }
+    for(uint i = 0; i < bytes; i += 4) {
+        memcpy(&tmp_addr, stuff + i, 4);
+        if (is_valid_address(tmp_addr)) {
+            addrs << tmp_addr;
+        } else {
+            //qWarning() << "bad addr in vector:" << hex << tmp_addr;
+        }
+    }
+    delete[] stuff;
+    //qDebug() << "VECTOR at" << hex << addr << "start:" << start << "end:" << end << "(" << dec << entries << "entries) valid entries" << addrs.size();
+    return addrs;
+}
+
 uint DFInstanceLinux::calculate_checksum() {
     // ELF binaries don't seem to store a linker timestamp, so just MD5 the file.
     uint md5 = 0; // we're going to throw away a lot of this checksum we just need 4bytes worth
@@ -65,42 +103,70 @@ uint DFInstanceLinux::calculate_checksum() {
     return md5;
 }
 
-int DFInstanceLinux::write_string(int address, QString str) {
+bool DFInstanceLinux::is_valid_address(const uint &addr) {
+    bool valid = false;
+    QPair<uint, uint> region;
+    foreach(region, m_regions) {
+        if (addr >= region.first && addr <= region.second) {
+            valid = true;
+            break;
+        }
+    }
+    return valid;
+}
+
+uint DFInstanceLinux::read_uint(const uint &addr) {
+    uint retval = 0;
+    read_raw(addr, sizeof(uint), &retval);
+    return retval;
+}
+
+int DFInstanceLinux::read_int(const uint &addr) {
+    int retval = 0;
+    read_raw(addr, sizeof(int), &retval);
+    return retval;
+}
+
+QString DFInstanceLinux::read_string(const uint &addr) {
+    uint buffer_addr = read_uint(addr);
+    int upper_size = 1024;
+    char *c = new char[upper_size];
+    memset(c, 0, upper_size);
+    read_raw(buffer_addr, upper_size, c);
+	
+	CP437Codec *codec = new CP437Codec;
+	QString ret_val = codec->toUnicode(c);
+	delete[] c;
+	return ret_val;
+}
+
+uint DFInstanceLinux::write_string(const uint &addr, const QString &str) {
 	return 0;
 }
 
-short DFInstanceLinux::read_short(int start_address, uint &bytes_read) {
+short DFInstanceLinux::read_short(const uint &addr) {
 	return 0;
 }
 
-ushort DFInstanceLinux::read_ushort(int start_address, uint &bytes_read) {
+ushort DFInstanceLinux::read_ushort(const uint &addr) {
 	return 0;
 }
 
-int DFInstanceLinux::read_int32(int start_address, uint &bytes_read) {
-    long data = ptrace(PTRACE_PEEKDATA, m_pid, start_address, 0);
-    if (errno)
-        perror("ptrace read_int32");
-    return data;
-}
-
-int DFInstanceLinux::write_int32(int start_address, int val) {
+uint DFInstanceLinux::write_int(const uint &addr, const int &val) {
 	return 0;
 }
 
-char DFInstanceLinux::read_char(int start_address, uint &bytes_read) {
-    long data = ptrace(PTRACE_PEEKDATA, m_pid, start_address, 0);
-    perror("readchar");
-    char *c;
-    c = (char*)&data;
-    return c[0];
+char DFInstanceLinux::read_char(const uint &addr) {
+	char retval;
+	read_raw(addr, sizeof(char), &retval);
+	return retval;
 }
 
-int DFInstanceLinux::read_raw(uint start_address, int bytes, void *buffer) {
+uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer) {
     if (ptrace(PTRACE_ATTACH, m_pid, 0, 0) == -1) {
         // unable to attach
         perror("ptrace attach");
-        LOGC << "Could not attach to PID" << m_pid;
+        qCritical() << "Could not attach to PID" << m_pid;
         return 0;
     }
     // read this procs base address for the ELF header
@@ -110,14 +176,31 @@ int DFInstanceLinux::read_raw(uint start_address, int bytes, void *buffer) {
         ptrace(PTRACE_DETACH, m_pid, 0, 0);
         return 0;
     }
-    mem_file.seek(start_address); // this should be the entry point in the ELF header
-    QByteArray data = mem_file.read(bytes);
+    int status;
+    wait(&status);
+
+    uint bytes_read = 0;
+    QByteArray data;
+    while (bytes_read < bytes) {
+        //qDebug() << "reading raw from:" << hex << start_address + bytes_read;
+        mem_file.seek(addr + bytes_read);
+        QByteArray tmp = mem_file.read(bytes - data.size());
+        bytes_read += tmp.size();
+        data.append(tmp);
+        if (bytes_read == 0) {
+            qWarning() << "read 0 bytes from" << hex << addr + bytes_read;
+            break;
+        }
+        //qDebug() << "bytes_read:" << bytes_read;
+    }
     memcpy(buffer, data.data(), data.size());
+    mem_file.close();
     ptrace(PTRACE_DETACH, m_pid, 0, 0);
-    return data.size();
+    return bytes_read;
 }
 
-int DFInstanceLinux::write_raw(int start_address, int bytes, void *buffer) {
+
+uint DFInstanceLinux::write_raw(const uint &addr, const uint &bytes, void *buffer) {
 	return 0;
 }
 

@@ -67,6 +67,61 @@ int DFInstanceWindows::calculate_checksum() {
 	return timestamp;
 }
 
+QVector<int> DFInstanceWindows::enumerate_vector(int address) {
+        TRACE << "beginning vector enumeration at" << address;
+        QVector<int> addresses;
+        uint bytes_read = 0;
+        int start = read_int32(address + 4, bytes_read);
+        TRACE << "start of vector" << start;
+        int end = read_int32(address + 8, bytes_read);
+        TRACE << "end of vector" << end;
+
+        int entries = (end - start) / sizeof(int);
+        LOGD << "there appears to be" << entries << "entries in this vector";
+
+        Q_ASSERT(start >= 0);
+        Q_ASSERT(end >= 0);
+        Q_ASSERT(end >= start);
+        Q_ASSERT((end - start) % 4 == 0);
+        Q_ASSERT(start % 4 == 0);
+        Q_ASSERT(end % 4 == 0);
+        //Q_ASSERT(entries < 2000);
+
+        int count = 0;
+        for( int ptr = start; ptr < end; ptr += 4 ) {
+                TRACE << "reading address" << count << "at" << ptr;
+                int addr = read_int32(ptr, bytes_read);
+                TRACE << bytes_read << "bytes were read OK";
+                if (bytes_read == sizeof(int)) {
+                        TRACE << "read pointer size ok, adding address" << addr;
+                        addresses.append(addr);
+                }
+                count++;
+        }
+        TRACE << "FOUND" << count << "addresses in vector";
+        return addresses;
+}
+
+QString DFInstance::read_string(const uint &addr) {
+	int len = read_int(addr + STRING_LENGTH_OFFSET);
+	int cap = read_int(addr + STRING_CAP_OFFSET);
+	int buffer_addr = addr + STRING_BUFFER_OFFSET;
+	if (cap >= 16)
+		buffer_addr = read_int(buffer_addr);
+
+	Q_ASSERT_X(len <= cap, "read_string", "Length must be less than or equal to capacity!");
+	Q_ASSERT_X(len >= 0, "read_string", "Length must be >=0!");
+	Q_ASSERT_X(len < (1 << 16), "read_string", "String must be of sane length!");
+	
+	char *buffer = new char[len];
+	read_raw(buffer_addr, len, buffer);
+	
+	CP437Codec *codec = new CP437Codec;
+	QString ret_val = codec->toUnicode(buffer, len);
+	delete[] buffer;
+	return ret_val;
+}
+
 int DFInstanceWindows::write_string(int address, QString str) {
 	uint bytes_read = 0;
 	int cap = read_int32(address + STRING_CAP_OFFSET, bytes_read);

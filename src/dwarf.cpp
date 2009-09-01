@@ -40,32 +40,31 @@ Dwarf::Dwarf(DFInstance *df, int address, QObject *parent)
 
 void Dwarf::refresh_data() {
 	MemoryLayout *mem = m_df->memory_layout();
-	uint bytes_read = 0;
 
 	m_first_name = m_df->read_string(m_address + mem->dwarf_offset("first_name"));
 	if (m_first_name.size() > 1)
 		m_first_name[0] = m_first_name[0].toUpper();
 	
-	m_id = m_df->read_int32(m_address + mem->dwarf_offset("id"), bytes_read);
+	m_id = m_df->read_int(m_address + mem->dwarf_offset("id"));
 	m_nick_name = m_df->read_string(m_address + mem->dwarf_offset("nick_name"));
 	m_pending_nick_name = m_nick_name;
 	m_last_name = read_last_name(m_address + mem->dwarf_offset("last_name"));
 	m_custom_profession = m_df->read_string(m_address + mem->dwarf_offset("custom_profession"));
 	m_pending_custom_profession = m_df->read_string(m_address + mem->dwarf_offset("custom_profession"));
-	m_race_id = m_df->read_int32(m_address + mem->dwarf_offset("race"), bytes_read);
+	m_race_id = m_df->read_int(m_address + mem->dwarf_offset("race"));
 	m_skills = read_skills(m_address + mem->dwarf_offset("skills"));
 	m_profession = read_professtion(m_address + mem->dwarf_offset("profession"));
-	m_strength = m_df->read_int32(m_address + mem->dwarf_offset("strength"), bytes_read);
-	m_toughness = m_df->read_int32(m_address + mem->dwarf_offset("toughness"), bytes_read);
-	m_agility = m_df->read_int32(m_address + mem->dwarf_offset("agility"), bytes_read);
+	m_strength = m_df->read_int(m_address + mem->dwarf_offset("strength"));
+	m_toughness = m_df->read_int(m_address + mem->dwarf_offset("toughness"));
+	m_agility = m_df->read_int(m_address + mem->dwarf_offset("agility"));
 	read_labors(m_address + mem->dwarf_offset("labors"));
 	
 	// NEW
-	char sex = m_df->read_char(m_address + mem->dwarf_offset("sex"), bytes_read);
+	char sex = m_df->read_char(m_address + mem->dwarf_offset("sex"));
 	m_is_male = (int)sex == 1;
 
-	m_money = m_df->read_int32(m_address + mem->dwarf_offset("money"), bytes_read);
-	m_raw_happiness = m_df->read_int32(m_address +mem->dwarf_offset("happiness"), bytes_read);
+	m_money = m_df->read_int(m_address + mem->dwarf_offset("money"));
+	m_raw_happiness = m_df->read_int(m_address +mem->dwarf_offset("happiness"));
 	m_happiness = happiness_from_score(m_raw_happiness);
 	
 	//qDebug() << nice_name() << "SEX" << (m_is_male ? "M" : "F") << " MONEY" << m_money << "ADDR" << hex << m_address;
@@ -119,43 +118,46 @@ QString Dwarf::happiness_name(DWARF_HAPPINESS happiness) {
 	}
 }
 
-Dwarf *Dwarf::get_dwarf(DFInstance *df, int address) {
+Dwarf *Dwarf::get_dwarf(DFInstance *df, const uint &addr) {
 	MemoryLayout *mem = df->memory_layout();
-	TRACE << "attempting to load dwarf at" << address << "using memory layout" << mem->game_version(); 
+    TRACE << "attempting to load dwarf at" << addr << "using memory layout" << mem->game_version();
 
 	uint bytes_read = 0;
-	int dwarf_race_index = df->memory_layout()->address("dwarf_race_index");
-	int dwarf_race_id = df->read_int32(dwarf_race_index + df->get_memory_correction(), bytes_read);
+	LOGD << df->pprint(addr, 0x600);
+    uint dwarf_race_index = df->memory_layout()->address("dwarf_race_index");
+    int dwarf_race_id = df->read_int(dwarf_race_index + df->get_memory_correction());
 	TRACE << "Dwarf Race ID is" << dwarf_race_id;
 	
-	if ((df->read_int32(address + mem->dwarf_offset("flags1"), bytes_read) & mem->flags("flags1.invalidate")) > 0) {
+	/*
+	if ((df->read_int(addr + mem->dwarf_offset("flags1")) & mem->flags("flags1.invalidate")) > 0) {
 		return 0;
 	}
-	if ((df->read_int32(address + mem->dwarf_offset("flags2"), bytes_read) & mem->flags("flags2.invalidate")) > 0) {
+	if ((df->read_int(addr + mem->dwarf_offset("flags2")) & mem->flags("flags2.invalidate")) > 0) {
 		return 0;
 	}
-	if ((df->read_int32(address + mem->dwarf_offset("race"), bytes_read)) != dwarf_race_id) {
+	*/
+	if ((df->read_int(addr + mem->dwarf_offset("race"))) != dwarf_race_id) {
 		return 0;
 	}
-	return new Dwarf(df, address, df);
+	return new Dwarf(df, addr, df);
 }
 
 QString Dwarf::read_last_name(int address) {
 	MemoryLayout *mem = m_df->memory_layout();
 	uint bytes_read = 0;
-	//int actual_lang_table = m_df->read_int32(gdr->get_address("language_vector") + m_df->get_memory_correction() + 4, bytes_read);
-	int translations_ptr = m_df->read_int32(mem->address("translation_vector") + m_df->get_memory_correction() + 4, bytes_read);
-	int translation_ptr = m_df->read_int32(translations_ptr, bytes_read);
-	int actual_dwarf_translation_table = m_df->read_int32(translation_ptr + mem->offset("word_table"), bytes_read);
+	//int actual_lang_table = m_df->read_int(gdr->get_address("language_vector") + m_df->get_memory_correction() + 4, bytes_read);
+	int translations_ptr = m_df->read_int(mem->address("translation_vector") + m_df->get_memory_correction() + 4);
+	int translation_ptr = m_df->read_int(translations_ptr);
+	int actual_dwarf_translation_table = m_df->read_int(translation_ptr + mem->offset("word_table"));
 
 	QString out;
 
 	for (int i = 0; i < 7; i++) {
-		int word = m_df->read_int32(address + i * 4, bytes_read);
+		int word = m_df->read_int(address + i * 4);
 		if(bytes_read == 0 || word == -1)
 			break;
 		//Q_ASSERT(word < 10000);
-		int addr = m_df->read_int32(actual_dwarf_translation_table + word * 4, bytes_read);
+		int addr = m_df->read_int(actual_dwarf_translation_table + word * 4);
 		out += m_df->read_string(addr);
 	}
 	if (out.size() > 1) {
@@ -166,16 +168,15 @@ QString Dwarf::read_last_name(int address) {
 
 void Dwarf::read_prefs(int address) {
 	//0x051C vector at this offset, not sure what it is
-	uint bytes_read = 0;
-	QVector<int> addrs = m_df->enumerate_vector(address);
+    QVector<uint> addrs = m_df->enumerate_vector(address);
 	foreach(int addr, addrs) {
 		//short val0 = m_df->read_short(addr, bytes_read);
 		//short val1 = m_df->read_short(addr + 0x02, bytes_read);
 		//short val2 = m_df->read_short(addr + 0x04, bytes_read);
-		short is_rock = m_df->read_short(addr + 0x04, bytes_read);
-		short obj_type = m_df->read_short(addr + 0x06, bytes_read);
-		short materiel = m_df->read_short(addr + 0x08, bytes_read);
-		int when_possible = (int)m_df->read_char(addr + 0x0A, bytes_read);
+		short is_rock = m_df->read_short(addr + 0x04);
+		short obj_type = m_df->read_short(addr + 0x06);
+		short materiel = m_df->read_short(addr + 0x08);
+		int when_possible = (int)m_df->read_char(addr + 0x0A);
 		//short val5 = m_df->read_short(addr + 0x0A, bytes_read);
 		//short val6 = m_df->read_short(addr + 0x0C, bytes_read);
 		//short val7 = m_df->read_short(addr + 0x0E, bytes_read);
@@ -189,11 +190,10 @@ void Dwarf::read_prefs(int address) {
 
 QVector<Skill> Dwarf::read_skills(int address) {
 	QVector<Skill> skills(0);
-	uint bytes_read = 0;
 	foreach(int addr, m_df->enumerate_vector(address)) {
-		short type = m_df->read_short(addr, bytes_read);
-		uint experience = m_df->read_int32(addr + 8, bytes_read);
-		short rating = m_df->read_short(addr + 4, bytes_read);
+		short type = m_df->read_short(addr);
+		uint experience = m_df->read_int(addr + 8);
+		short rating = m_df->read_short(addr + 4);
 		Skill s(type, experience, rating);
 		skills.append(s);
 	}

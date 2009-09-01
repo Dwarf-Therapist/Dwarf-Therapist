@@ -40,11 +40,13 @@ public:
 	// factory ctor
 	bool find_running_copy();
 
+        QVector<int> enumerate_vector(int address);
 	char read_char(int start_address, uint &bytes_read);
 	short read_short(int start_address, uint &bytes_read);
 	ushort read_ushort(int start_address, uint &bytes_read);
 	int read_int32(int start_address, uint &bytes_read);
 	int read_raw(uint addr, int bytes, void *buffer);
+    QString read_string(const uint &addr);
 	
 	// Writing
 	int write_raw(int start_address, int bytes, void *buffer);

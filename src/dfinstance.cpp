@@ -45,79 +45,34 @@ DFInstance::DFInstance(QObject* parent)
         */
 }
 
-QString DFInstance::read_wstring(int address) {
-	uint bytes_read = 0;
-	int len = read_int32(address + STRING_LENGTH_OFFSET, bytes_read);
-	int cap = read_int32(address + STRING_CAP_OFFSET, bytes_read);
-	int buffer_addr = address + STRING_BUFFER_OFFSET;
-	if (cap >= 16)
-		buffer_addr = read_int32(buffer_addr, bytes_read);
-
-	Q_ASSERT(len <= cap);
-	Q_ASSERT(len >= 0);
-	Q_ASSERT(len < (1 << 16));
-
-	uchar *buffer = new uchar[len];
-	bytes_read = read_raw(buffer_addr, len, buffer);
-	QString ret_val;
-	for(int i = 0; i < len; ++i) {
-		ret_val += buffer[i];
-	}
-	delete[] buffer;
-	return ret_val;
-}
-
-QString DFInstance::read_string(int address) {
-	uint bytes_read = 0;
-	int len = read_int32(address + STRING_LENGTH_OFFSET, bytes_read);
-	int cap = read_int32(address + STRING_CAP_OFFSET, bytes_read);
-	int buffer_addr = address + STRING_BUFFER_OFFSET;
-	if (cap >= 16)
-		buffer_addr = read_int32(buffer_addr, bytes_read);
-
-	Q_ASSERT(len <= cap);
-	Q_ASSERT(len >= 0);
-	Q_ASSERT(len < (1 << 16));
-	
-	char *buffer = new char[len];
-	bytes_read = read_raw(buffer_addr, len, buffer);
-	
-	//QString ret_val = QString::fromAscii(buffer, bytes_read);
-
-	CP437Codec *codec = new CP437Codec;
-	QString ret_val = codec->toUnicode(buffer, len);
-	delete[] buffer;
-	return ret_val;
-}
-
-int DFInstance::write_string(int address, QString str) {
-	uint bytes_read = 0;
-	int cap = read_int32(address + STRING_CAP_OFFSET, bytes_read);
-	int buffer_addr = address + STRING_BUFFER_OFFSET;
+uint DFInstance::write_string(const uint &addr, const QString &str) {
+	int cap = read_int(addr + STRING_CAP_OFFSET);
+	int buffer_addr = addr + STRING_BUFFER_OFFSET;
 	if( cap >= 16 )
-		buffer_addr = read_int32(buffer_addr, bytes_read);
+		buffer_addr = read_int(buffer_addr);
 
 	int len = qMin<int>(str.length(), cap);
-	write_int32(address + STRING_LENGTH_OFFSET, len);
+	write_int(addr + STRING_LENGTH_OFFSET, len);
 	return write_raw(buffer_addr, len, str.toAscii().data());
 }
 
-QVector<int> DFInstance::scan_mem_find_all(QByteArray &needle, int start_address, int end_address) {
-	QVector<int> addresses;
+QVector<uint> DFInstance::scan_mem_find_all(const QByteArray &needle, const uint &start_address, const uint &end_address) {
+	QVector<uint> addresses;
+	uint ptr = start_address;
 	bool ok;
 	do {
-		int addr = scan_mem(needle, start_address, end_address, ok);
+		int addr = scan_mem(needle, ptr, end_address, ok);
 		if (ok && addr != 0) {
 			addresses.push_back(addr);
-			start_address = addr+1;
+			ptr = addr + 1;
 		} else {
 			break;
 		}
-	} while (start_address < end_address);
+	} while (ptr < end_address);
 	return addresses;
 }
 
-int DFInstance::scan_mem(QByteArray &needle, int start_address, int end_address, bool &ok) {
+uint DFInstance::scan_mem(const QByteArray &needle, const uint &start_address, const uint &end_address, bool &ok) {
 	m_stop_scan = false;
 	ok = true;
 	if (end_address <= start_address) {
@@ -163,21 +118,9 @@ int DFInstance::scan_mem(QByteArray &needle, int start_address, int end_address,
 	return 0;
 }
 
-QVector<int> DFInstance::find_likely_vectors(int start_address, int bytes) {
-	QVector<int> vector_addrs;
-	for (int addr = start_address; addr < start_address + bytes; addr += 4) {
-		if (looks_like_vector_of_pointers(addr))
-			vector_addrs << addr - start_address;
-	}
-	return vector_addrs;
-}
-
-bool DFInstance::looks_like_vector_of_pointers(int address) {
-	uint bytes_read = 0;
-	int start = read_int32(address + 0x4, bytes_read);
-	int end = read_int32(address + 0x8, bytes_read);
-	int alloc_end = read_int32(address + 0xC, bytes_read);
-	int capacity = (alloc_end - start) / 4;
+bool DFInstance::looks_like_vector_of_pointers(const uint &addr) {
+	int start = read_int(addr + 0x4);
+	int end = read_int(addr + 0x8);
 	int entries = (end - start) / sizeof(int);
 
 	return start >=0 && 
@@ -187,73 +130,11 @@ bool DFInstance::looks_like_vector_of_pointers(int address) {
 		   start % 4 == 0 &&
 		   end % 4 == 0 &&
 		   entries > 6 &&
-		   entries < 12 &&
-		   capacity > 0;
+		   entries < 12;
 	
 }
 
-QVector<int> DFInstance::enumerate_vector(int address) {
-	TRACE << "beginning vector enumeration at" << address;
-	QVector<int> addresses;
-	uint bytes_read = 0;
-	int start = read_int32(address + 4, bytes_read);
-	TRACE << "start of vector" << start;
-	int end = read_int32(address + 8, bytes_read);
-	TRACE << "end of vector" << end;
-
-	int entries = (end - start) / sizeof(int);
-	LOGD << "there appears to be" << entries << "entries in this vector";
-	
-	Q_ASSERT(start >= 0);
-	Q_ASSERT(end >= 0);
-	Q_ASSERT(end >= start);
-	Q_ASSERT((end - start) % 4 == 0);
-	Q_ASSERT(start % 4 == 0);
-	Q_ASSERT(end % 4 == 0);
-	//Q_ASSERT(entries < 2000);
-
-	int count = 0;
-	for( int ptr = start; ptr < end; ptr += 4 ) {
-		TRACE << "reading address" << count << "at" << ptr;
-		int addr = read_int32(ptr, bytes_read);
-		TRACE << bytes_read << "bytes were read OK";
-		if (bytes_read == sizeof(int)) {
-			TRACE << "read pointer size ok, adding address" << addr;
-			addresses.append(addr);
-		}
-		count++;
-	}
-	TRACE << "FOUND" << count << "addresses in vector";
-	return addresses;
-}
-
-int DFInstance::find_stone_vector() {
-	QVector<int> addrs = enumerate_vector(0x0E1B8FE8);
-
-	int stone_number = 42;
-	QByteArray needle("OLIVINE");
-	
-	int address = -1;
-	emit scan_message(tr("Scanning for known word"));
-	foreach(int word_addr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
-		emit scan_message(tr("Scanning for word pointer"));
-		LOGD << "found" << needle << hex << word_addr;
-		needle = encode_int(word_addr - 4);
-		foreach(int word_addr_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
-			emit scan_message(tr("Scanning for stones vector"));
-			LOGD << "found word ptr" << hex << word_addr_ptr;
-			int word_list = word_addr_ptr - (stone_number * 4);
-			needle = encode_int(word_list);
-			/*foreach(int word_list_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
-				address = word_list_ptr - 0x4 - m_memory_correction;
-				LOGD << "STONE VECTOR AT" << hex << address;
-			}*/
-		}
-	}
-	return address;
-}
-
-int DFInstance::find_language_vector() {
+uint DFInstance::find_language_vector() {
 	// TODO: move to config
 	int language_word_number = 1373;
     QByteArray needle("LANCER");
@@ -279,7 +160,7 @@ int DFInstance::find_language_vector() {
 	return language_vector_address;
 }
 
-int DFInstance::find_translation_vector() {
+uint DFInstance::find_translation_vector() {
 	// TODO: move to config
 	int translation_vector_low_cutoff = 0x01500000 + m_memory_correction;
 	int translation_vector_high_cutoff = 0x015D0000 + m_memory_correction;
@@ -317,7 +198,7 @@ int DFInstance::find_translation_vector() {
 	return translation_vector_address;
 }
 
-int DFInstance::find_creature_vector() {
+uint DFInstance::find_creature_vector() {
 	GameDataReader *gdr = GameDataReader::ptr();
 	int low_cutoff = gdr->get_int_for_key("ram_guesser/creature_vector_low_cutoff") + m_memory_correction;
 	int high_cutoff = gdr->get_int_for_key("ram_guesser/creature_vector_high_cutoff")+ m_memory_correction;
@@ -405,15 +286,14 @@ int DFInstance::find_creature_vector() {
 	return creature_vector_address;
 }
 
-int DFInstance::find_dwarf_race_index() {
+uint DFInstance::find_dwarf_race_index() {
 	int dwarf_race_index = -1;
 	emit scan_message(tr("Scanning for dwarf race index"));
 	QByteArray needle("FirstCreature");
 	int dwarf = 0;
-	uint bytes_read = 0;
 	foreach(int nickname, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
 		dwarf = nickname - 0x1C - 4;
-		int race = read_int32(dwarf + 0x8C, bytes_read);
+		int race = read_int(dwarf + 0x8C);
 		emit scan_message(tr("Scanning for 'A group of '"));
 		needle = "A group of";
 		foreach(int group_of, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
@@ -428,7 +308,7 @@ int DFInstance::find_dwarf_race_index() {
 				emit scan_message(tr("Scanning for refs to race index"));
 				foreach(int ref_to_race, scan_mem_find_all(tmp, ref_to_group_of, ref_to_group_of + 60)) {
 					int race_ptr = ref_to_race + 4;
-					int race_ptr_addr = read_int32(race_ptr, bytes_read);
+					int race_ptr_addr = read_int(race_ptr);
 					LOGD << "POSSIBLE RACE INDEX:" << hex << race_ptr_addr;
 					dwarf_race_index = race_ptr_addr;
 				}
@@ -466,10 +346,10 @@ int DFInstance::find_dwarf_race_index() {
 
 QVector<Dwarf*> DFInstance::load_dwarves() {
 	int creature_vector = m_layout->address("creature_vector");
-	TRACE << "starting with creature vector" << creature_vector;
+    TRACE << "starting with creature vector" << hex << creature_vector;
 	QVector<Dwarf*> dwarves;
 	TRACE << "adjusted creature vector" << creature_vector + m_memory_correction;
-	QVector<int> creatures = enumerate_vector(creature_vector + m_memory_correction);
+    QVector<uint> creatures = enumerate_vector(creature_vector + m_memory_correction);
 	TRACE << "FOUND" << creatures.size() << "creatures";
 	if (creatures.size() > 0) {
 		for (int offset=0; offset < creatures.size(); ++offset) {
@@ -488,14 +368,14 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
 void DFInstance::heartbeat() {
 	// simple read attempt that will fail if the DF game isn't running a fort, or isn't running at all
-	QVector<int> creatures = enumerate_vector(m_layout->address("creature_vector") + m_memory_correction);
+    QVector<uint> creatures = enumerate_vector(m_layout->address("creature_vector") + m_memory_correction);
 	if (creatures.size() < 1) {
 		// no game loaded, or process is gone
 		emit connection_interrupted();
 	}
 }
 
-QByteArray DFInstance::get_data(uint addr, int size) {
+QByteArray DFInstance::get_data(const uint &addr, const uint &size) {
 	char *buffer = new char[size];
 	memset(buffer, 0, size);
 	read_raw(addr, size, buffer);
@@ -505,11 +385,11 @@ QByteArray DFInstance::get_data(uint addr, int size) {
 }
 
 //! ahhh convenience
-QString DFInstance::pprint(uint addr, int size) {
+QString DFInstance::pprint(const uint &addr, const uint &size) {
 	return pprint(get_data(addr, size), addr);
 }
 
-QString DFInstance::pprint(const QByteArray &ba, uint start_addr) {
+QString DFInstance::pprint(const QByteArray &ba, const uint &start_addr) {
 	QString out = "  ADDR | 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F | TEXT\n";
 	out.append("------------------------------------------------------------------------\n");
 	int lines = ba.size() / 16;

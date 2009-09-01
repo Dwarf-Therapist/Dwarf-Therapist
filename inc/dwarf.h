@@ -36,7 +36,7 @@ class Dwarf : public QObject
 	Dwarf(DFInstance *df, int address, QObject *parent=0); //private, use the static get_dwarf() method
 
 public:
-	static Dwarf* get_dwarf(DFInstance *df, int address);
+    static Dwarf* get_dwarf(DFInstance *df, const uint &address);
 	~Dwarf();
 
 	typedef enum {

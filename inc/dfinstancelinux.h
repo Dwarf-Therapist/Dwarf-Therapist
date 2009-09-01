@@ -28,24 +28,27 @@ THE SOFTWARE.
 class MemoryLayout;
 
 class DFInstanceLinux : public DFInstance {
-	Q_OBJECT
+    Q_OBJECT
 public:
 	DFInstanceLinux(QObject *parent=0);
     ~DFInstanceLinux();
 
 	// factory ctor
 	bool find_running_copy();
-
-	char read_char(int start_address, uint &bytes_read);
-	short read_short(int start_address, uint &bytes_read);
-	ushort read_ushort(int start_address, uint &bytes_read);
-	int read_int32(int start_address, uint &bytes_read);
-    int read_raw(uint start_address, int bytes, void *buffer);
+    QVector<uint> enumerate_vector(const uint &addr);
+    char read_char(const uint &addr);
+    short read_short(const uint &addr);
+    ushort read_ushort(const uint &addr);
+    uint read_uint(const uint &addr);
+    int read_int(const uint &addr);
+    uint read_raw(const uint &addr, const uint &bytes, void *buffer);
+    bool is_valid_address(const uint &addr);
+	QString read_string(const uint &addr);
 
 	// Writing
-	int write_raw(int start_address, int bytes, void *buffer);
-	int write_string(int start_address, QString str);
-	int write_int32(int start_address, int val);
+    uint write_raw(const uint &addr, const uint &bytes, void *buffer);
+    uint write_string(const uint &addr, const QString &str);
+    uint write_int(const uint &addr, const int &val);
 
 
 protected:
