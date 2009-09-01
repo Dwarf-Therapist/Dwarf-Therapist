@@ -421,13 +421,15 @@ public:
 		return addresses;
 	}
 
-	QString read_str2(uint start_address) {
-		uint buffer_addr = read_int32(start_address);
+	QString read_str2(const uint &addr) {
+		uint buffer_addr = read_uint(addr);
 		int upper_size = 1024;
 		char *c = new char[upper_size];
 		memset(c, 0, upper_size);
 		read_raw(buffer_addr, upper_size, c);
-		return QString::fromLatin1(c);
+		QString out = QString::fromLatin1(c);
+		delete[] c;
+		return out;
 	}
 
 	std::string read_str(uint start_address) {
