@@ -298,8 +298,8 @@ Dwarf *DwarfTherapist::get_dwarf_by_id(int dwarf_id) {
 }
 
 void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
-    this->m_generic_words.clear();
-    this->m_dwarf_words.clear();
+    m_generic_words.clear();
+    m_dwarf_words.clear();
     foreach(uint word_ptr, df->enumerate_vector(df->memory_layout()->address("generic_lang_table"))) {
         m_generic_words << df->read_string(word_ptr);
     }

@@ -92,7 +92,7 @@ private:
 	int m_money;
 	bool m_is_male;
 	
-    QString read_professtion(const uint &addr);
+    QString read_profession(const uint &addr);
     QString read_last_name(const uint &addr);
     QVector<Skill> read_skills(const uint &addr);
     void read_prefs(const uint &addr);

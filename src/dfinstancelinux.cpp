@@ -50,15 +50,16 @@ QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
     uint start = read_uint(addr);
     uint end = read_uint(addr + 4);
     uint bytes = end - start;
-    uint entries = bytes / 4;
+    int entries = bytes / 4;
+	TRACE << "enumerating vector at" << hex << addr << "START" << start << "END" << end << "UNVERIFIED ENTRIES" << dec << entries;
     uint tmp_addr = 0;
 
     //Q_ASSERT_X(start > 0, "enumerate_vector", "start pointer must be larger than 0");
     //Q_ASSERT_X(end > 0, "enumerate_vector", "End must be larger than start!");
-    Q_ASSERT_X(start % 4 == 0, "enumerate_vector", "Start must be divisible by 4");
-    Q_ASSERT_X(end % 4 == 0, "enumerate_vector", "End must be divisible by 4");
-    Q_ASSERT_X(end >= start, "enumerate_vector", "End must be >= start!");
-    Q_ASSERT_X((end - start) % 4 == 0, "enumerate_vector", "end - start must be divisible by 4");
+    //Q_ASSERT_X(start % 4 == 0, "enumerate_vector", "Start must be divisible by 4");
+    //Q_ASSERT_X(end % 4 == 0, "enumerate_vector", "End must be divisible by 4");
+    //Q_ASSERT_X(end >= start, "enumerate_vector", "End must be >= start!");
+    //Q_ASSERT_X((end - start) % 4 == 0, "enumerate_vector", "end - start must be divisible by 4");
 
     char *stuff = new char[bytes];
 	if (stuff == 0) {
@@ -80,6 +81,7 @@ QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
     }
     delete[] stuff;
     //qDebug() << "VECTOR at" << hex << addr << "start:" << start << "end:" << end << "(" << dec << entries << "entries) valid entries" << addrs.size();
+    Q_ASSERT_X(entries == addrs.size(), "enumerate_vector", "Vector did not contain 100% valid addresses!");
     return addrs;
 }
 
@@ -141,6 +143,8 @@ QString DFInstanceLinux::read_string(const uint &addr) {
 }
 
 uint DFInstanceLinux::write_string(const uint &addr, const QString &str) {
+    Q_UNUSED(addr);
+    Q_UNUSED(str);
 	return 0;
 }
 

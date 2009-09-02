@@ -54,7 +54,7 @@ void Dwarf::refresh_data() {
 	m_pending_custom_profession = m_df->read_string(m_address + mem->dwarf_offset("custom_profession"));
 	m_race_id = m_df->read_int(m_address + mem->dwarf_offset("race"));
 	m_skills = read_skills(m_address + mem->dwarf_offset("skills"));
-	m_profession = read_professtion(m_address + mem->dwarf_offset("profession"));
+	m_profession = read_profession(m_address + mem->dwarf_offset("profession"));
 	m_strength = m_df->read_int(m_address + mem->dwarf_offset("strength"));
 	m_toughness = m_df->read_int(m_address + mem->dwarf_offset("toughness"));
 	m_agility = m_df->read_int(m_address + mem->dwarf_offset("agility"));
@@ -126,7 +126,7 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const uint &addr) {
     uint dwarf_race_index = df->memory_layout()->address("dwarf_race_index");
     int dwarf_race_id = df->read_int(dwarf_race_index + df->get_memory_correction());
 	TRACE << "Dwarf Race ID is" << dwarf_race_id;
-    LOGD << df->pprint(addr, 0x1000);
+    LOGD << "\n" << df->pprint(df->get_data(addr, 0x400), 0);
 	
 	/*
 	if ((df->read_int(addr + mem->dwarf_offset("flags1")) & mem->flags("flags1.invalidate")) > 0) {
@@ -145,7 +145,7 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const uint &addr) {
 QString Dwarf::read_last_name(const uint &addr) {
 	QString out;
 	for (int i = 0; i < 7; i++) {
-        int word = m_df->read_int(addr + i * 4);
+        uint word = m_df->read_uint(addr + i * 4);
         if(word == 0xFFFFFFFF)
 			break;
         out.append(DT->get_dwarf_word(word));
@@ -216,7 +216,7 @@ short Dwarf::get_rating_by_labor(int labor_id) {
 	return get_rating_by_skill(l->skill_id);
 }
 
-QString Dwarf::read_professtion(const uint &addr) {
+QString Dwarf::read_profession(const uint &addr) {
 	if (!m_custom_profession.isEmpty()) {
 		return m_custom_profession; 
 	}

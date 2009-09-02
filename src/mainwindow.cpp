@@ -209,7 +209,7 @@ void MainWindow::connect_to_df() {
 #endif
     if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
         DT->load_game_translation_tables(m_df);
-		//m_lbl_status->setText(tr("Connected to ") + m_df->memory_layout()->game_version());
+        m_lbl_status->setText(tr("Connected to ") + m_df->memory_layout()->game_version());
 		connect(m_df, SIGNAL(connection_interrupted()), SLOT(lost_df_connection()));
 		set_interface_enabled(true);
 	}

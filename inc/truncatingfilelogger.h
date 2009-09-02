@@ -42,22 +42,17 @@ protected:
 		if (messages.isEmpty()) 
 			return;
 		QString header = '[' + QTime::currentTime().toString("hh:mm:ss.zzz") + "] [" + level + "] ";
-		//QString padding;
 		QIODevice* file = device();
 		Q_ASSERT(file);
 		file->write(header.toUtf8());
-		//for (int i = 0; i < header.size(); i++) padding.append(" ");
-		//int count = 0;
 		Q_FOREACH(const QVariant& out, messages) {
 			if (!out.isNull() 
 				&& out.toString() != "qdebug"
 				&& out.toString() != "qwarning"
 				&& out.toString() != "qcritical") {
-				//if (count != 0) file->write(padding.toUtf8());
 				file->write(out.toString().toUtf8());
 				file->write(" ");
 			}
-			//count++;
 		}
 		file->write("\n");
 	}

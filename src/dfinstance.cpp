@@ -390,14 +390,15 @@ QString DFInstance::pprint(const uint &addr, const uint &size) {
 }
 
 QString DFInstance::pprint(const QByteArray &ba, const uint &start_addr) {
-	QString out = "  ADDR | 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F | TEXT\n";
+	QString out = "   ADDR  | 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F | TEXT\n";
 	out.append("------------------------------------------------------------------------\n");
 	int lines = ba.size() / 16;
 	if (ba.size() % 16)
 		lines++;
 
 	for(int i = 0; i < lines; ++i) {
-		out.append(QString::number(start_addr + i * 16, 16));
+		uint offset = start_addr + i * 16;
+		out.append(QString("0x%1").arg(offset, 8, 16, QChar('0')));
 		out.append(" | ");
 		for (int c = 0; c < 16; ++c) {
 			out.append(ba.mid(i*16 + c, 1).toHex());

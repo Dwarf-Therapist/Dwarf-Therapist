@@ -1,7 +1,12 @@
 TEMPLATE = app
 TARGET = DwarfTherapist
 CONFIG += debug_and_release
-DESTDIR = ./bin/debug
+CONFIG:debug {
+	DESTDIR = ./bin/debug
+}
+CONFIG:release {
+	DESTDIR = ./bin/release
+}
 QT += network
 INCLUDEPATH += $$(LIBCOLORPICKER)/src  \
     $$(LIBQXT)/QxtGui \
