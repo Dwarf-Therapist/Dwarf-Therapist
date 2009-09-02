@@ -33,6 +33,8 @@ THE SOFTWARE.
 #include "dwarfmodelproxy.h"
 #include "dwarf.h"
 #include "ui_mainwindow.h"
+#include "dfinstance.h"
+#include "memorylayout.h"
 
 DwarfTherapist::DwarfTherapist(int &argc, char **argv) 
 	: QApplication(argc, argv)
@@ -58,10 +60,10 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
 	
 	read_settings();
 
-	bool read = m_user_settings->value("options/read_on_startup", true).toBool();
+    bool read = m_user_settings->value("options/read_on_startup", true).toBool();
 	if (read) {
-                //m_main_window->connect_to_df();
-                //m_main_window->read_dwarves();
+        //m_main_window->connect_to_df();
+        //m_main_window->read_dwarves();
 	}
 	m_main_window->show();
 }
@@ -293,4 +295,15 @@ int DwarfTherapist::custom_profession_from_dwarf(Dwarf *d) {
 //! convenience method
 Dwarf *DwarfTherapist::get_dwarf_by_id(int dwarf_id) {
 	return m_main_window->get_model()->get_dwarf_by_id(dwarf_id);
+}
+
+void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
+    this->m_generic_words.clear();
+    this->m_dwarf_words.clear();
+    foreach(uint word_ptr, df->enumerate_vector(df->memory_layout()->address("generic_lang_table"))) {
+        m_generic_words << df->read_string(word_ptr);
+    }
+    foreach(uint word_ptr, df->enumerate_vector(df->memory_layout()->address("dwarf_lang_table"))) {
+        m_dwarf_words << df->read_string(word_ptr);
+    }
 }

@@ -50,6 +50,7 @@ public:
     virtual short read_short(const uint &addr) = 0;
     virtual ushort read_ushort(const uint &addr) = 0;
     virtual int read_int(const uint &addr) = 0;
+    virtual uint read_uint(const uint &addr) = 0;
     virtual uint read_raw(const uint &addr, const uint &bytes, void *buffer) = 0;
     uint scan_mem(const QByteArray &needle, const uint &start_address, const uint &end_address, bool &ok);
     QVector<uint> scan_mem_find_all(const QByteArray &needle, const uint &start_address, const uint &end_address);

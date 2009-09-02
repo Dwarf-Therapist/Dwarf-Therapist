@@ -33,7 +33,7 @@ class CustomProfession;
 class Dwarf : public QObject
 {
 	Q_OBJECT
-	Dwarf(DFInstance *df, int address, QObject *parent=0); //private, use the static get_dwarf() method
+    Dwarf(DFInstance *df, const uint &addr, QObject *parent=0); //private, use the static get_dwarf() method
 
 public:
     static Dwarf* get_dwarf(DFInstance *df, const uint &address);
@@ -85,18 +85,18 @@ public:
 
 private:
 	DFInstance *m_df;
-	int m_address;
+    uint m_address;
 	int m_race_id;
 	DWARF_HAPPINESS m_happiness;
 	int m_raw_happiness;
 	int m_money;
 	bool m_is_male;
 	
-	QString read_professtion(int address);
-	QString read_last_name(int address);
-	QVector<Skill> read_skills(int address);
-	void read_prefs(int address);
-	void read_labors(int address);
+    QString read_professtion(const uint &addr);
+    QString read_last_name(const uint &addr);
+    QVector<Skill> read_skills(const uint &addr);
+    void read_prefs(const uint &addr);
+    void read_labors(const uint &addr);
 	void calc_nice_name();
 
 	int m_id;

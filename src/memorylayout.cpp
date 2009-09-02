@@ -23,8 +23,8 @@ MemoryLayout::MemoryLayout(uint checksum)
 
 void MemoryLayout::load_data() {
 	// addresses
-	m_addresses.insert("language_vector", read_hex("addresses/language_vector"));
-	m_addresses.insert("translation_vector", read_hex("addresses/translation_vector"));
+    m_addresses.insert("generic_lang_table", read_hex("addresses/generic_lang_table"));
+    m_addresses.insert("dwarf_lang_table", read_hex("addresses/dwarf_lang_table"));
 	m_addresses.insert("creature_vector", read_hex("addresses/creature_vector"));
 	m_addresses.insert("dwarf_race_index", read_hex("addresses/dwarf_race_index"));
 

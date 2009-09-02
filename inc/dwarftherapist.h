@@ -34,6 +34,7 @@ class OptionsMenu;
 class QSettings;
 class CustomProfession;
 class Dwarf;
+class DFInstance;
 
 class DwarfTherapist : public QApplication {
 	Q_OBJECT
@@ -50,6 +51,10 @@ public:
 	QSettings *user_settings() {return m_user_settings;}
 	Dwarf *get_dwarf_by_id(int dwarf_id);
 
+    void load_game_translation_tables(DFInstance *df);
+    QString get_generic_word(const uint &offset) {return m_generic_words.value(offset, "UNKNOWN");}
+    QString get_dwarf_word(const uint &offset) {return m_dwarf_words.value(offset, "UNKNOWN");}
+
 	public slots:
 		void add_custom_profession();
 		void add_custom_profession(CustomProfession *cp);
@@ -61,6 +66,8 @@ public:
 		void delete_custom_profession();
 
 private:
+    QVector<QString> m_generic_words;
+    QVector<QString> m_dwarf_words;
 	QVector<CustomProfession*> m_custom_professions;
 	QSettings *m_user_settings;
 	MainWindow *m_main_window;
@@ -69,6 +76,7 @@ private:
 
 	void setup_logging();
 	void load_translator();
+
 
 signals:
 	void settings_changed();

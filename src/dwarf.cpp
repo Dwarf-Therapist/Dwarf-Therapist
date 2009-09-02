@@ -29,11 +29,12 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "customprofession.h"
 #include "memorylayout.h"
+#include "dwarftherapist.h"
 
-Dwarf::Dwarf(DFInstance *df, int address, QObject *parent)
+Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
 	: QObject(parent)
 	, m_df(df)
-	, m_address(address)
+    , m_address(addr)
 {
 	refresh_data();
 }
@@ -122,11 +123,10 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const uint &addr) {
 	MemoryLayout *mem = df->memory_layout();
     TRACE << "attempting to load dwarf at" << addr << "using memory layout" << mem->game_version();
 
-	uint bytes_read = 0;
-	LOGD << df->pprint(addr, 0x600);
     uint dwarf_race_index = df->memory_layout()->address("dwarf_race_index");
     int dwarf_race_id = df->read_int(dwarf_race_index + df->get_memory_correction());
 	TRACE << "Dwarf Race ID is" << dwarf_race_id;
+    LOGD << df->pprint(addr, 0x1000);
 	
 	/*
 	if ((df->read_int(addr + mem->dwarf_offset("flags1")) & mem->flags("flags1.invalidate")) > 0) {
@@ -142,23 +142,13 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const uint &addr) {
 	return new Dwarf(df, addr, df);
 }
 
-QString Dwarf::read_last_name(int address) {
-	MemoryLayout *mem = m_df->memory_layout();
-	uint bytes_read = 0;
-	//int actual_lang_table = m_df->read_int(gdr->get_address("language_vector") + m_df->get_memory_correction() + 4, bytes_read);
-	int translations_ptr = m_df->read_int(mem->address("translation_vector") + m_df->get_memory_correction() + 4);
-	int translation_ptr = m_df->read_int(translations_ptr);
-	int actual_dwarf_translation_table = m_df->read_int(translation_ptr + mem->offset("word_table"));
-
+QString Dwarf::read_last_name(const uint &addr) {
 	QString out;
-
 	for (int i = 0; i < 7; i++) {
-		int word = m_df->read_int(address + i * 4);
-		if(bytes_read == 0 || word == -1)
+        int word = m_df->read_int(addr + i * 4);
+        if(word == 0xFFFFFFFF)
 			break;
-		//Q_ASSERT(word < 10000);
-		int addr = m_df->read_int(actual_dwarf_translation_table + word * 4);
-		out += m_df->read_string(addr);
+        out.append(DT->get_dwarf_word(word));
 	}
 	if (out.size() > 1) {
 		out[0] = out[0].toUpper();
@@ -166,9 +156,9 @@ QString Dwarf::read_last_name(int address) {
 	return out;
 }
 
-void Dwarf::read_prefs(int address) {
+void Dwarf::read_prefs(const uint &addr) {
 	//0x051C vector at this offset, not sure what it is
-    QVector<uint> addrs = m_df->enumerate_vector(address);
+    QVector<uint> addrs = m_df->enumerate_vector(addr);
 	foreach(int addr, addrs) {
 		//short val0 = m_df->read_short(addr, bytes_read);
 		//short val1 = m_df->read_short(addr + 0x02, bytes_read);
@@ -188,12 +178,12 @@ void Dwarf::read_prefs(int address) {
 	}
 }
 
-QVector<Skill> Dwarf::read_skills(int address) {
+QVector<Skill> Dwarf::read_skills(const uint &addr) {
 	QVector<Skill> skills(0);
-	foreach(int addr, m_df->enumerate_vector(address)) {
-		short type = m_df->read_short(addr);
-		uint experience = m_df->read_int(addr + 8);
-		short rating = m_df->read_short(addr + 4);
+    foreach(uint entry, m_df->enumerate_vector(addr)) {
+        short type = m_df->read_short(entry);
+        uint experience = m_df->read_int(entry + 8);
+        short rating = m_df->read_short(entry + 4);
 		Skill s(type, experience, rating);
 		skills.append(s);
 	}
@@ -226,36 +216,22 @@ short Dwarf::get_rating_by_labor(int labor_id) {
 	return get_rating_by_skill(l->skill_id);
 }
 
-QString Dwarf::read_professtion(int address) {
+QString Dwarf::read_professtion(const uint &addr) {
 	if (!m_custom_profession.isEmpty()) {
 		return m_custom_profession; 
 	}
 	
 	char buffer[1];
-	m_df->read_raw(address, 1, &buffer[0]);
+    m_df->read_raw(addr, 1, &buffer[0]);
 	return GameDataReader::ptr()->get_profession_name((int)buffer[0]);
 }
 
-void Dwarf::read_labors(int address) {
-	/* This thing dumps dwarves out to binary files for scanning memory
-	{
-		// TODO: remove me
-		uchar buf[4096];
-		memset(&buf, 0, 4096);
-		m_df->read_raw(m_address, 4096, &buf);
-		QByteArray ba = QByteArray::fromRawData((char*)&buf, 4096);
-		QFile f("dwarf_dumps/" + m_first_name + " " + m_last_name + ".hex");
-		if (f.open(QIODevice::ReadWrite)) {
-			f.write(ba);
-		}
-		f.close();
-	}*/
-
-	// read a big array of labors in one read, then pick and choose
+void Dwarf::read_labors(const uint &addr) {
+    // read a big array of labors in one read, then pick and choose
 	// the values we care about
 	uchar buf[102];
 	memset(buf, 0, 102);
-	m_df->read_raw(address, 102, &buf);
+    m_df->read_raw(addr, 102, &buf);
 
 	// get the list of identified labors from game_data.ini
 	GameDataReader *gdr = GameDataReader::ptr();

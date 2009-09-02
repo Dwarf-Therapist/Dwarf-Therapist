@@ -144,12 +144,12 @@ uint DFInstance::find_language_vector() {
 	foreach(int word_addr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
 		emit scan_message(tr("Scanning for word pointer"));
 		qDebug() << "FOUND WORD" << hex << word_addr;
-		needle = encode_int(word_addr - 4);
+        needle = encode(word_addr - 4);
 		foreach(int word_addr_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
 			emit scan_message(tr("Scanning for language vector"));
 			qDebug() << "FOUND WORD PTR" << hex << word_addr_ptr;
 			int word_list = word_addr_ptr - (language_word_number * 4);
-			needle = encode_int(word_list);
+            needle = encode(word_list);
 			foreach(int word_list_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
 				language_vector_address = word_list_ptr - 0x4 - m_memory_correction;
 				qDebug() << "LANGUAGE VECTOR IS AT" << hex << language_vector_address;
@@ -173,18 +173,18 @@ uint DFInstance::find_translation_vector() {
 	emit scan_message(tr("Scanning for translation vector"));
 	QByteArray needle(translation_word);
 	foreach(int word, scan_mem_find_all(translation_word, 0, 0x0FFFFFFF)) {
-		needle = encode_int(word - 4);
+        needle = encode(word - 4);
 		foreach(int word_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
-			needle = encode_int(word_ptr - (translation_word_number * 4));
+            needle = encode(word_ptr - (translation_word_number * 4));
 			foreach(int word_list_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
 				needle = translation_name;
 				foreach(int dwarf_translation_name, scan_mem_find_all(needle, word_list_ptr - 0x1000, word_list_ptr)) {
 					dwarf_translation_name -= 4;
 					qDebug() << "FOUND TRANSLATION WORD TABLE" << hex << word_list_ptr - dwarf_translation_name;
-					needle = encode_int(dwarf_translation_name);
+                    needle = encode(dwarf_translation_name);
 					foreach(int dwarf_translation_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
 						int translations_list = dwarf_translation_ptr - (translation_number * 4);
-						needle = encode_int(translations_list);
+                        needle = encode(translations_list);
 						foreach(int translations_list_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
 							translation_vector_address = translations_list_ptr - 4 - m_memory_correction;
 							qDebug() << "FOUND TRANSLATIONS VECTOR" << hex << translation_vector_address;
@@ -220,11 +220,11 @@ uint DFInstance::find_creature_vector() {
 		emit scan_message(tr("Scanning for dwarf objects"));
 		int possible_dwarf_address = nickname - dwarf_nickname_offset - 4;
 		qDebug() << "DWARF POINTER SHOULD BE AT:" << hex << possible_dwarf_address;
-		needle = encode_int(possible_dwarf_address); // should be the address of this dwarf
+        needle = encode(possible_dwarf_address); // should be the address of this dwarf
 		foreach(int dwarf, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
 			//qDebug() << "FOUND DWARF" << hex << dwarf;
 			emit scan_message(tr("Scanning for dwarf vector pointer"));
-			needle = encode_int(dwarf); // since this is the first dwarf, it should also be the dwarf vector
+            needle = encode(dwarf); // since this is the first dwarf, it should also be the dwarf vector
 			foreach(int vector_ptr, scan_mem_find_all(needle, low_cutoff, high_cutoff)) {
 				creature_vector_address = vector_ptr - 0x4 - m_memory_correction;
 				qDebug() << "FOUND CREATURE VECTOR" << hex << creature_vector_address;
@@ -299,7 +299,7 @@ uint DFInstance::find_dwarf_race_index() {
 		foreach(int group_of, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
 			QByteArray tmp(4, NULL);
 			tmp[3] = 0x68;
-			tmp.append(encode_int(group_of));
+            tmp.append(encode(group_of));
 			emit scan_message(tr("Scanning for refs to 'A group of '"));
 			foreach(int ref_to_group_of, scan_mem_find_all(tmp, 0, 0x7FFFFFFF)) {
 				QByteArray tmp2(4, 0);

@@ -27,19 +27,26 @@ THE SOFTWARE.
 #include <QColor>
 
 static inline QByteArray encode_short(short num) {
-	char bytes[2];
-	bytes[0] = (char)num;
-	bytes[1] = (char)(num >> 8);
-	QByteArray arr(bytes, 2);
+    char *bytes;
+    bytes = (char*)&num;
+    QByteArray arr(bytes, sizeof(short));
+    return arr;
+}
+
+static inline QByteArray encode(int num) {
+	char *bytes;
+	bytes = (char*)&num;
+    QByteArray arr(bytes, sizeof(int));
 	return arr;
 }
 
-static inline QByteArray encode_int(int num) {
-	char *bytes;
-	bytes = (char*)&num;
-	QByteArray arr(bytes, 4);
-	return arr;
+static inline QByteArray encode(uint num) {
+    char *bytes;
+    bytes = (char*)&num;
+    QByteArray arr(bytes, sizeof(uint));
+    return arr;
 }
+
 
 static inline int decode_int(const QByteArray &arr) {
 	const char* data = arr.constData();

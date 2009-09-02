@@ -53,11 +53,11 @@ QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
     uint entries = bytes / 4;
     uint tmp_addr = 0;
 
-    Q_ASSERT_X(start > 0, "enumerate_vector", "start pointer must be larger than 0");
-    Q_ASSERT_X(end > 0, "enumerate_vector", "End must be larger than start!");
+    //Q_ASSERT_X(start > 0, "enumerate_vector", "start pointer must be larger than 0");
+    //Q_ASSERT_X(end > 0, "enumerate_vector", "End must be larger than start!");
     Q_ASSERT_X(start % 4 == 0, "enumerate_vector", "Start must be divisible by 4");
     Q_ASSERT_X(end % 4 == 0, "enumerate_vector", "End must be divisible by 4");
-    Q_ASSERT_X(end > start, "enumerate_vector", "End must be larger than start!");
+    Q_ASSERT_X(end >= start, "enumerate_vector", "End must be >= start!");
     Q_ASSERT_X((end - start) % 4 == 0, "enumerate_vector", "end - start must be divisible by 4");
 
     char *stuff = new char[bytes];
@@ -145,7 +145,9 @@ uint DFInstanceLinux::write_string(const uint &addr, const QString &str) {
 }
 
 short DFInstanceLinux::read_short(const uint &addr) {
-	return 0;
+    short retval = 0;
+    read_raw(addr, sizeof(short), &retval);
+    return retval;
 }
 
 ushort DFInstanceLinux::read_ushort(const uint &addr) {
