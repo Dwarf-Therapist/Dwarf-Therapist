@@ -38,6 +38,7 @@ public:
 	virtual bool find_running_copy() = 0;
 
 	// accessors
+    uint get_heap_start_address() {return m_heap_start_address;}
     uint get_memory_correction() {return m_memory_correction;}
     uint get_base_address() {return m_base_addr;}
 	bool is_ok(){return m_is_ok;}
@@ -93,6 +94,7 @@ protected:
     uint m_memory_correction;
 	uint m_lowest_address;
 	uint m_highest_address;
+    uint m_heap_start_address;
 	bool m_stop_scan; // flag that gets set to stop scan loops
 	bool m_is_ok;
 	MemoryLayout *m_layout;

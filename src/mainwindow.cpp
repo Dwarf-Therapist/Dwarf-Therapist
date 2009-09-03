@@ -208,6 +208,7 @@ void MainWindow::connect_to_df() {
 	m_df = new DFInstanceLinux();
 #endif
     if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
+        LOGD << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
         DT->load_game_translation_tables(m_df);
         m_lbl_status->setText(tr("Connected to ") + m_df->memory_layout()->game_version());
 		connect(m_df, SIGNAL(connection_interrupted()), SLOT(lost_df_connection()));

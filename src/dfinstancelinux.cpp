@@ -177,6 +177,9 @@ uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer
         qCritical() << "Could not attach to PID" << m_pid;
         return 0;
     }
+    int status;
+    wait(&status);
+
     // read this procs base address for the ELF header
     QFile mem_file(QString("/proc/%1/mem").arg(m_pid));
     if (!mem_file.open(QIODevice::ReadOnly)) {
@@ -184,8 +187,6 @@ uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer
         ptrace(PTRACE_DETACH, m_pid, 0, 0);
         return 0;
     }
-    int status;
-    wait(&status);
 
     uint bytes_read = 0;
     QByteArray data;
@@ -239,7 +240,8 @@ bool DFInstanceLinux::find_running_copy() {
     }
     TRACE << "opened" << f.fileName();
     QByteArray line;
-    uint lowest_addr = 0xFFFFFFFF;
+    m_lowest_address = 0xFFFFFFFF;
+    m_highest_address = 0;
     uint start_addr = 0;
     uint end_addr = 0;
     bool ok;
@@ -272,8 +274,14 @@ bool DFInstanceLinux::find_running_copy() {
             if (keep_it) {
                 //qDebug() << "KEEPING RANGE" << hex << start_addr << "-" << end_addr << "PATH " << path;
                 m_regions << QPair<uint, uint>(start_addr, end_addr);
-                if (start_addr < lowest_addr)
-                    lowest_addr = start_addr;
+                if (start_addr < m_lowest_address)
+                    m_lowest_address = start_addr;
+                else if (end_addr > m_highest_address)
+                    m_highest_address = end_addr;
+            }
+            if (path.contains("[heap]")) {
+                LOGD << "setting heap start address at" << hex << start_addr;
+                m_heap_start_address = start_addr;
             }
         }
     } while (!line.isEmpty());
@@ -289,33 +297,10 @@ bool DFInstanceLinux::find_running_copy() {
     }*/
 
 
-    if (ptrace(PTRACE_ATTACH, m_pid, 0, 0) < 0) {
-        // unable to attach
-        perror("ptrace attach");
-        LOGC << "Could not attach to PID" << m_pid;
-        return false;
-    }
-    TRACE << "Waiting for PID" << m_pid << "to stop...";
-    int status;
-    wait(&status);
-    TRACE << "attached to process" << m_pid;
-    //we're now tracing DF, and DF is stopped
-
-    // read this procs base address for the ELF header
-    QFile mem_file(QString("/proc/%1/mem").arg(m_pid));
-    if (!mem_file.open(QIODevice::ReadOnly)) {
-        qCritical() << "Unable to open" << mem_file.fileName();
-        ptrace(PTRACE_DETACH, m_pid, 0, 0);
-        return false;
-    }
-    mem_file.seek(lowest_addr + 0x18); // this should be the entry point in the ELF header
-    QByteArray data = mem_file.read(4);
-    mem_file.close();
-    memcpy(&m_base_addr, data.data(), sizeof(uint));
+    uint m_base_addr = read_uint(m_lowest_address + 0x18);
     LOGD << "base_addr:" << m_base_addr << "HEX" << hex << m_base_addr;
+    m_is_ok = m_base_addr > 0;
 
-    ptrace(PTRACE_DETACH, m_pid, 0, 0);
-    m_is_ok = true;
     uint checksum = calculate_checksum();
     LOGD << "DF's checksum is" << hex << checksum;
     m_layout = new MemoryLayout(checksum);
@@ -326,7 +311,7 @@ bool DFInstanceLinux::find_running_copy() {
         m_is_ok = false;
     }
 
-    return true;
+    return m_is_ok;
 }
 /*
     PROCESS_MEMORY_COUNTERS pmc;
