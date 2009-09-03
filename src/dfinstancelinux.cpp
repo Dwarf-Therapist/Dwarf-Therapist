@@ -155,7 +155,9 @@ short DFInstanceLinux::read_short(const uint &addr) {
 }
 
 ushort DFInstanceLinux::read_ushort(const uint &addr) {
-	return 0;
+    ushort retval = 0;
+    read_raw(addr, sizeof(ushort), &retval);
+    return retval;
 }
 
 uint DFInstanceLinux::write_int(const uint &addr, const int &val) {
