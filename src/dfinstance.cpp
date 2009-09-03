@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "memorylayout.h"
 #include "cp437codec.h"
+#include "dwarftherapist.h"
 
 DFInstance::DFInstance(QObject* parent)
 	:QObject(parent)
@@ -134,69 +135,30 @@ bool DFInstance::looks_like_vector_of_pointers(const uint &addr) {
 	
 }
 
-uint DFInstance::find_language_vector() {
-	// TODO: move to config
-	int language_word_number = 1373;
-    QByteArray needle("LANCER");
+void DFInstance::find_language_tables() {
+	GameDataReader *gdr = GameDataReader::ptr();
+	int target_total_words = gdr->get_int_for_key("ram_guesser/total_words_per_table", 10);
+	QString first_generic_word = gdr->get_string_for_key("ram_guesser/first_generic_word");
+	QString first_dwarf_word = gdr->get_string_for_key("ram_guesser/first_dwarf_word");
 
-	int language_vector_address = -1; // return val
-	emit scan_message(tr("Scanning for known word"));
-	foreach(int word_addr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
-		emit scan_message(tr("Scanning for word pointer"));
-		qDebug() << "FOUND WORD" << hex << word_addr;
-        needle = encode(word_addr - 4);
-		foreach(int word_addr_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
-			emit scan_message(tr("Scanning for language vector"));
-			qDebug() << "FOUND WORD PTR" << hex << word_addr_ptr;
-			int word_list = word_addr_ptr - (language_word_number * 4);
-            needle = encode(word_list);
-			foreach(int word_list_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
-				language_vector_address = word_list_ptr - 0x4 - m_memory_correction;
-				qDebug() << "LANGUAGE VECTOR IS AT" << hex << language_vector_address;
+	emit scan_message(tr("Scanning for vectors with %1 entries").arg(target_total_words));
+	foreach(uint vec_addr, this->find_vectors(target_total_words)) {
+		//LOGD << "FOUND VECTOR AT" << hex << vec_addr << "WITH" << dec << target_total_words << "ENTRIES!";
+		foreach(uint word_ptr, enumerate_vector(vec_addr)) {
+			QString first_entry = read_string(word_ptr);
+			QString final_addr = QString("0x%1").arg(vec_addr - m_memory_correction, 8, 16, QChar('0'));
+			if (first_entry == first_generic_word) {
+				LOGI << "GENERIC WORD TABLE FOUND:" << final_addr;
+			} else if (first_entry == first_dwarf_word) {
+				LOGI << "DWARF WORD TABLE FOUND:" << final_addr;
 			}
+
+			break;
 		}
 	}
-	qDebug() << "all done with language scan";
-	return language_vector_address;
+	LOGD << "FINISHED SCANNING FOR WORD TABLES";
 }
 
-uint DFInstance::find_translation_vector() {
-	// TODO: move to config
-	int translation_vector_low_cutoff = 0x01500000 + m_memory_correction;
-	int translation_vector_high_cutoff = 0x015D0000 + m_memory_correction;
-	int translation_word_number = 1373;
-	int translation_number = 0;
-	QByteArray translation_word("kivish");
-	QByteArray translation_name("DWARF");
-
-	int translation_vector_address = -1; //return val;
-	emit scan_message(tr("Scanning for translation vector"));
-	QByteArray needle(translation_word);
-	foreach(int word, scan_mem_find_all(translation_word, 0, 0x0FFFFFFF)) {
-        needle = encode(word - 4);
-		foreach(int word_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
-            needle = encode(word_ptr - (translation_word_number * 4));
-			foreach(int word_list_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
-				needle = translation_name;
-				foreach(int dwarf_translation_name, scan_mem_find_all(needle, word_list_ptr - 0x1000, word_list_ptr)) {
-					dwarf_translation_name -= 4;
-					qDebug() << "FOUND TRANSLATION WORD TABLE" << hex << word_list_ptr - dwarf_translation_name;
-                    needle = encode(dwarf_translation_name);
-					foreach(int dwarf_translation_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
-						int translations_list = dwarf_translation_ptr - (translation_number * 4);
-                        needle = encode(translations_list);
-						foreach(int translations_list_ptr, scan_mem_find_all(needle, 0, 0x0FFFFFFF)) {
-							translation_vector_address = translations_list_ptr - 4 - m_memory_correction;
-							qDebug() << "FOUND TRANSLATIONS VECTOR" << hex << translation_vector_address;
-						}
-					}
-				}
-			}
-		}
-	}
-	qDebug() << "all done with translation scan";
-	return translation_vector_address;
-}
 
 uint DFInstance::find_creature_vector() {
 	GameDataReader *gdr = GameDataReader::ptr();
@@ -346,7 +308,7 @@ uint DFInstance::find_dwarf_race_index() {
 
 QVector<Dwarf*> DFInstance::load_dwarves() {
 	int creature_vector = m_layout->address("creature_vector");
-    TRACE << "starting with creature vector" << hex << creature_vector;
+    TRACE << "starting with creature vector" << creature_vector;
 	QVector<Dwarf*> dwarves;
 	TRACE << "adjusted creature vector" << creature_vector + m_memory_correction;
     QVector<uint> creatures = enumerate_vector(creature_vector + m_memory_correction);
@@ -373,6 +335,18 @@ void DFInstance::heartbeat() {
 		// no game loaded, or process is gone
 		emit connection_interrupted();
 	}
+}
+
+bool DFInstance::is_valid_address(const uint &addr) {
+	bool valid = false;
+	QPair<uint, uint> region;
+	foreach(region, m_regions) {
+		if (addr >= region.first && addr <= region.second) {
+			valid = true;
+			break;
+		}
+	}
+	return valid;
 }
 
 QByteArray DFInstance::get_data(const uint &addr, const uint &size) {
@@ -420,3 +394,84 @@ QString DFInstance::pprint(const QByteArray &ba, const uint &start_addr) {
 	return out;
 }
 
+QVector<uint> DFInstance::find_vectors(const uint &num_entries, const uint &fuzz/* =0 */, const uint &entry_size/* =4 */) {
+	QVector<uint> vectors;
+
+	emit scan_total_steps(m_regions.size());
+	emit scan_progress(0);
+
+	/* 
+	glibc++ does vectors like so...
+	|4bytes      | 4bytes    | 4bytes
+	START_ADDRESS|END_ADDRESS|END_ALLOCATOR
+
+	MSVC++ does vectors like so...
+	| 4bytes     | 4bytes      | 4 bytes   | 4bytes
+	ALLOCATOR    |START_ADDRESS|END_ADDRESS|END_ALLOCATOR
+	*/
+	
+	uint int1 = 0; // holds the start val
+	uint int2 = 0; // holds the end val 
+
+	// iterate over all known memory segments
+	QPair<uint, uint> addr_pair;
+	int count = 0;
+	foreach(addr_pair, m_regions) {
+		// size in bytes of this segment
+		uint size = addr_pair.second - addr_pair.first;
+		//qDebug() << "SCANNING REGION" << hex << addr_pair.first << "-" << addr_pair.second << "BYTES:" << dec << size;
+
+		// this buffer will hold the entire memory segment (may need to toned down a bit)
+		char *buffer = new (std::nothrow) char[size];
+		if (buffer == 0) {
+			LOGC << "unable to allocate char buffer of" << size << "bytes!";
+			continue;
+		}
+		memset(buffer, 0, size); // 0 out the buffer
+
+		// this may read multiple times to populate the entire region in our buffer
+		uint bytes_read = read_raw(addr_pair.first, size, buffer);
+		if (bytes_read < size) {
+			LOGW << "tried to read" << size << "bytes starting at" << hex << addr_pair.first << "but only got" << dec << bytes_read;
+			continue;
+		}
+
+		// we now have this entire memory segment inside buffer. So lets step through it looking for things that look like vectors of pointers.
+		// we read a uint into int1 and 4 bytes later we read another uint into int2. If int1 is a vector head, then int2 will be larger than int2, 
+		// evenly divisible by 4, and the difference between the two (divided by four) will tell us how many pointers are in this array. We can also
+		// check to make sure int1 and int2 reside in valid memory regions. If all of this adds up, then odds are pretty good we've found a vector 
+		for (uint i = 0; i < size; i += 4) {
+			memcpy(&int1, buffer + i, 4);
+			memcpy(&int2, buffer + i + 4, 4);
+			if (int2 >= int1 && is_valid_address(int1) && is_valid_address(int2)) {
+				uint bytes = int2 - int1;
+				uint entries = bytes / entry_size;
+				int diff = entries - num_entries;
+				if (qAbs(diff) <= fuzz) {
+#ifdef Q_WS_WIN
+					// on windows the pointer is 4 bytes in front of the start address
+					uint vector_address = addr_pair.first + i - 4;
+#endif
+#ifdef Q_WS_X11
+					// on linux the pointer is the start address
+					uint vector_address = addr_pair.first + i;
+#endif
+					QVector<uint> addrs = enumerate_vector(vector_address);
+					diff = addrs.size() - num_entries;
+					if (qAbs(diff) <= fuzz) {
+						vectors << vector_address;
+					}
+				}
+				if (m_stop_scan)
+					break;
+			}
+		}
+		delete[] buffer;
+
+		emit scan_progress(count++);
+		DT->processEvents();
+		if (m_stop_scan)
+			break;
+	}
+	return vectors;
+}

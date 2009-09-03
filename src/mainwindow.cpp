@@ -302,14 +302,14 @@ void MainWindow::scan_memory() {
 	connect(pd, SIGNAL(canceled()), m_df, SLOT(cancel_scan()));
 	pd->show();
 
-    int language_addr = m_df->find_language_vector();
+    m_df->find_language_tables();
 	//int translation_addr = m_df->find_translation_vector();
 	//int creature_addr = m_df->find_creature_vector();
 	//int dwarf_race_index = m_df->find_dwarf_race_index();
     //int stone_vector = m_df->find_stone_vector();
 	pd->deleteLater();
 
-    qDebug() << "LANGUAGE VECTOR:   " << hex << language_addr;
+    //qDebug() << "LANGUAGE VECTOR:   " << hex << language_addr;
 	//qDebug() << "TRANSLATION VECTOR:" << hex << translation_addr;
 	//qDebug() << "CREATURE VECTOR:   " << hex << creature_addr;
 	//qDebug() << "DWARF RACE INDEX:  " << hex << dwarf_race_index;

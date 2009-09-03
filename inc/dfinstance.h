@@ -43,6 +43,7 @@ public:
 	bool is_ok(){return m_is_ok;}
 	
 	// brute force memory scanning methods
+	bool is_valid_address(const uint &addr);
     bool looks_like_vector_of_pointers(const uint &addr);
 
     virtual QVector<uint> enumerate_vector(const uint &addr) = 0;
@@ -62,8 +63,8 @@ public:
 	
 	
 	// Mapping methods
-    uint find_language_vector();
-    uint find_translation_vector();
+	QVector<uint> find_vectors(const uint &num_entries, const uint &fuzz=0, const uint &entry_size=4);
+    void find_language_tables();
     uint find_creature_vector();
     uint find_dwarf_race_index();
     uint find_stone_vector();
@@ -90,9 +91,12 @@ protected:
 	uint m_base_addr;
 	uint m_memory_size;
     uint m_memory_correction;
+	uint m_lowest_address;
+	uint m_highest_address;
 	bool m_stop_scan; // flag that gets set to stop scan loops
 	bool m_is_ok;
 	MemoryLayout *m_layout;
+	QVector<QPair<uint, uint> > m_regions;
 
 	// these should probably not be constants but I have no idea how to find the values at runtime
 	static const int STRING_BUFFER_OFFSET = 4;

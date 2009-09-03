@@ -39,8 +39,7 @@ THE SOFTWARE.
 
 DFInstanceWindows::DFInstanceWindows(QObject* parent)
 	: DFInstance(parent)	
-{
-}
+{}
 
 DFInstanceWindows::~DFInstanceWindows() {
 	if (m_proc) {
@@ -48,66 +47,59 @@ DFInstanceWindows::~DFInstanceWindows() {
 	}
 }
 
-int DFInstanceWindows::calculate_checksum() {
-	uint bytes_read = 0;
-	char expect_M = read_char(m_base_addr, bytes_read);
-	char expect_Z = read_char(m_base_addr + 0x1, bytes_read);
+uint DFInstanceWindows::calculate_checksum() {
+	char expect_M = read_char(m_base_addr);
+	char expect_Z = read_char(m_base_addr + 0x1);
 
 	if (expect_M != 'M' || expect_Z != 'Z') {
 		qWarning() << "invalid executable";
 	}
-	uint pe_header = m_base_addr + read_int32(m_base_addr + 30 * 2, bytes_read);
-	char expect_P = read_char(pe_header, bytes_read);
-	char expect_E = read_char(pe_header + 0x1, bytes_read);
+	uint pe_header = m_base_addr + read_int(m_base_addr + 30 * 2);
+	char expect_P = read_char(pe_header);
+	char expect_E = read_char(pe_header + 0x1);
 	if (expect_P != 'P' || expect_E != 'E') {
 		qWarning() << "PE header invalid";
 	}
 
-	int timestamp = read_int32(pe_header + 4 + 2 * 2, bytes_read);
+	uint timestamp = read_uint(pe_header + 4 + 2 * 2);
 	return timestamp;
 }
 
-QVector<int> DFInstanceWindows::enumerate_vector(int address) {
-        TRACE << "beginning vector enumeration at" << address;
-        QVector<int> addresses;
-        uint bytes_read = 0;
-        int start = read_int32(address + 4, bytes_read);
-        TRACE << "start of vector" << start;
-        int end = read_int32(address + 8, bytes_read);
-        TRACE << "end of vector" << end;
+QVector<uint> DFInstanceWindows::enumerate_vector(const uint &addr) {
+	TRACE << "beginning vector enumeration at" << addr;
+	QVector<uint> addresses;
+	uint start = read_uint(addr + 4);
+	TRACE << "start of vector" << start;
+	uint end = read_uint(addr + 8);
+	TRACE << "end of vector" << end;
 
-        int entries = (end - start) / sizeof(int);
-        LOGD << "there appears to be" << entries << "entries in this vector";
+	uint entries = (end - start) / sizeof(uint);
+	TRACE << "there appears to be" << entries << "entries in this vector";
 
-        Q_ASSERT(start >= 0);
-        Q_ASSERT(end >= 0);
-        Q_ASSERT(end >= start);
-        Q_ASSERT((end - start) % 4 == 0);
-        Q_ASSERT(start % 4 == 0);
-        Q_ASSERT(end % 4 == 0);
-        //Q_ASSERT(entries < 2000);
+	Q_ASSERT(start >= 0);
+	Q_ASSERT(end >= 0);
+	Q_ASSERT(end >= start);
+	Q_ASSERT((end - start) % 4 == 0);
+	Q_ASSERT(start % 4 == 0);
+	Q_ASSERT(end % 4 == 0);
+	//Q_ASSERT(entries < 2000);
 
-        int count = 0;
-        for( int ptr = start; ptr < end; ptr += 4 ) {
-                TRACE << "reading address" << count << "at" << ptr;
-                int addr = read_int32(ptr, bytes_read);
-                TRACE << bytes_read << "bytes were read OK";
-                if (bytes_read == sizeof(int)) {
-                        TRACE << "read pointer size ok, adding address" << addr;
-                        addresses.append(addr);
-                }
-                count++;
-        }
-        TRACE << "FOUND" << count << "addresses in vector";
-        return addresses;
+	int count = 0;
+	for (uint ptr = start; ptr < end; ptr += 4 ) {
+		uint a = read_uint(ptr);
+		addresses.append(a);
+		count++;
+	}
+	TRACE << "FOUND" << count << "addresses in vector";
+	return addresses;
 }
 
-QString DFInstance::read_string(const uint &addr) {
+QString DFInstanceWindows::read_string(const uint &addr) {
 	int len = read_int(addr + STRING_LENGTH_OFFSET);
 	int cap = read_int(addr + STRING_CAP_OFFSET);
-	int buffer_addr = addr + STRING_BUFFER_OFFSET;
+	uint buffer_addr = addr + STRING_BUFFER_OFFSET;
 	if (cap >= 16)
-		buffer_addr = read_int(buffer_addr);
+		buffer_addr = read_uint(buffer_addr);
 
 	Q_ASSERT_X(len <= cap, "read_string", "Length must be less than or equal to capacity!");
 	Q_ASSERT_X(len >= 0, "read_string", "Length must be >=0!");
@@ -122,68 +114,64 @@ QString DFInstance::read_string(const uint &addr) {
 	return ret_val;
 }
 
-int DFInstanceWindows::write_string(int address, QString str) {
-	uint bytes_read = 0;
-	int cap = read_int32(address + STRING_CAP_OFFSET, bytes_read);
-	int buffer_addr = address + STRING_BUFFER_OFFSET;
+uint DFInstanceWindows::write_string(const uint &addr, const QString &str) {
+	int cap = read_int(addr + STRING_CAP_OFFSET);
+	uint buffer_addr = addr + STRING_BUFFER_OFFSET;
 	if( cap >= 16 )
-		buffer_addr = read_int32(buffer_addr, bytes_read);
+		buffer_addr = read_uint(buffer_addr);
 
 	int len = qMin<int>(str.length(), cap);
-	write_int32(address + STRING_LENGTH_OFFSET, len);
+	write_int(addr + STRING_LENGTH_OFFSET, len);
 	return write_raw(buffer_addr, len, str.toAscii().data());
 }
 
-short DFInstanceWindows::read_short(int start_address, uint &bytes_read) {
+short DFInstanceWindows::read_short(const uint &addr) {
 	char cval[2];
 	memset(cval, 0, 2);
-	bytes_read = 0;
-	ReadProcessMemory(m_proc, (LPCVOID)start_address, &cval, 2, (DWORD*)&bytes_read);
+	ReadProcessMemory(m_proc, (LPCVOID)addr, &cval, 2, 0);
 	return static_cast<short>((int)cval[0] + (int)(cval[1] >> 8));
 }
 
-ushort DFInstanceWindows::read_ushort(int start_address, uint &bytes_read) {
+ushort DFInstanceWindows::read_ushort(const uint &addr) {
 	ushort val = 0;
-	bytes_read = 0;
-	ReadProcessMemory(m_proc, (LPCVOID)start_address, &val, sizeof(ushort), (DWORD*)&bytes_read);
-	//qDebug() << "Read from " << start_address << "OK?" << ok <<  " bytes read: " << bytes_read << " VAL " << hex << val;
+	ReadProcessMemory(m_proc, (LPCVOID)addr, &val, sizeof(ushort), 0);
 	return val;
 }
 
-int DFInstanceWindows::read_int32(int start_address, uint &bytes_read) {
+int DFInstanceWindows::read_int(const uint &addr) {
 	int val = 0;
-	bytes_read = 0;
-	ReadProcessMemory(m_proc, (LPCVOID)start_address, &val, sizeof(int), (DWORD*)&bytes_read);
-	//qDebug() << "Read from " << start_address << "OK?" << ok <<  " bytes read: " << bytes_read << " VAL " << hex << val;
+	ReadProcessMemory(m_proc, (LPCVOID)addr, &val, sizeof(int), 0);
 	return val;
 }
 
-int DFInstanceWindows::write_int32(int start_address, int val) {
+uint DFInstanceWindows::read_uint(const uint &addr) {
+	uint val = 0;
+	ReadProcessMemory(m_proc, (LPCVOID)addr, &val, sizeof(uint), 0);
+	return val;
+}
+
+uint DFInstanceWindows::write_int(const uint &addr, const int &val) {
 	uint bytes_written = 0;
-	WriteProcessMemory(m_proc, (LPVOID)start_address, &val, sizeof(int), (DWORD*)&bytes_written);
-	//qDebug() << "Read from " << start_address << "OK?" << ok <<  " bytes read: " << bytes_read << " VAL " << hex << val;
+	WriteProcessMemory(m_proc, (LPVOID)addr, &val, sizeof(int), (DWORD*)&bytes_written);
 	return bytes_written;
 }
 
-//returns # of bytes read
-char DFInstanceWindows::read_char(int start_address, uint &bytes_read) {
+char DFInstanceWindows::read_char(const uint &addr) {
 	char val = 0;
-	bytes_read = 0;
-	ReadProcessMemory(m_proc, (LPCVOID)start_address, &val, sizeof(char), (DWORD*)&bytes_read);
-	//qDebug() << "Read from " << start_address << "OK?" << ok <<  " bytes read: " << bytes_read << " VAL " << val;
+	ReadProcessMemory(m_proc, (LPCVOID)addr, &val, sizeof(char), 0);
 	return val;
 }
 
-int DFInstanceWindows::read_raw(uint addr, int bytes, void *buffer) {
+uint DFInstanceWindows::read_raw(const uint &addr, const uint &bytes, void *buffer) {
 	memset(buffer, 0, bytes);
-	DWORD bytes_read = 0;
-	ReadProcessMemory(m_proc, (LPCVOID)addr, (void*)buffer, sizeof(uchar) * bytes, &bytes_read);
+	uint bytes_read = 0;
+	ReadProcessMemory(m_proc, (LPCVOID)addr, (void*)buffer, sizeof(uchar) * bytes, (DWORD*)&bytes_read);
 	return bytes_read;
 }
 
-int DFInstanceWindows::write_raw(int start_address, int bytes, void *buffer) {
-	DWORD bytes_written = 0;
-	WriteProcessMemory(m_proc, (LPVOID)start_address, (void*)buffer, sizeof(uchar) * bytes, &bytes_written);
+uint DFInstanceWindows::write_raw(const uint &addr, const uint &bytes, void *buffer) {
+	uint bytes_written = 0;
+	WriteProcessMemory(m_proc, (LPVOID)addr, (void*)buffer, sizeof(uchar) * bytes, (DWORD*)&bytes_written);
 	Q_ASSERT(bytes_written == bytes);
 	return bytes_written;
 }
@@ -258,6 +246,54 @@ bool DFInstanceWindows::find_running_copy() {
 		m_memory_correction = (int)m_base_addr - 0x0400000;
 		LOGD << "memory correction " << m_memory_correction;
 	}
+
+	// scan pages
+	uint start = 0;
+	int accepted = 0;
+	int rejected = 0;
+	LOGD << "ENUMERATING MEMORY SEGMENTS FROM" << hex << start << "TO" << m_base_addr + m_memory_size;
+	while (start < 0x7FFFFFFF) {
+		MEMORY_BASIC_INFORMATION mbi;
+		int sz = VirtualQueryEx(m_proc, (void*)start, &mbi, sizeof(MEMORY_BASIC_INFORMATION));
+		if (sz != sizeof(MEMORY_BASIC_INFORMATION)) {
+			// incomplete data returned. increment start and move on...
+			start += 0x1000;
+			continue;
+		}
+
+		if (mbi.State == MEM_COMMIT && (mbi.Protect & PAGE_EXECUTE_READ || 
+										mbi.Protect & PAGE_EXECUTE_READWRITE || 
+										mbi.Protect & PAGE_READONLY ||
+										mbi.Protect & PAGE_READWRITE ||
+										mbi.Protect & PAGE_WRITECOPY)) {
+			TRACE << QString("FOUND READABLE COMMITED MEMORY SEGMENT AT 0x%1 SIZE: %2KB FLAGS:%3")
+					.arg((uint)mbi.BaseAddress, 8, 16, QChar('0')).arg(mbi.RegionSize / 1024.0)
+					.arg(mbi.Protect, 0, 16);
+			
+			QPair<uint, uint> segment((uint)mbi.BaseAddress, (uint)mbi.BaseAddress + mbi.RegionSize);
+			m_regions << segment;
+			accepted++;
+		} else {
+			TRACE << QString("REJECTING MEMORY SEGMENT AT 0x%1 SIZE: %2KB FLAGS:%3")
+				.arg((uint)mbi.BaseAddress, 8, 16, QChar('0')).arg(mbi.RegionSize / 1024.0)
+				.arg(mbi.Protect, 0, 16);
+			rejected++;
+		}
+		if (mbi.RegionSize)
+			start += mbi.RegionSize;
+		else
+			start += 0x1000; //skip ahead 1k
+	}
+	m_lowest_address = 0xFFFFFFFF;
+	m_highest_address = 0;
+	QPair<uint, uint> addr_pair;
+	foreach(addr_pair, m_regions) {
+		if (addr_pair.first < m_lowest_address)
+			m_lowest_address = addr_pair.first;
+		if (addr_pair.second > m_highest_address)
+			m_highest_address = addr_pair.second;
+	}
+	LOGD << "MEMORY SEGMENT SUMMARY--accepted" << accepted << "rejected" << rejected << "total" << accepted + rejected;
 	return true;
 }
 #endif
