@@ -17,6 +17,9 @@ INCLUDEPATH += $$(LIBCOLORPICKER)/src  \
     ./inc/docks \
     ./ui 
 
+#Include file(s)
+include(DwarfTherapist.pri)
+
 win32 {
     DEFINES += _WINDOWS QT_LARGEFILE_SUPPORT QT_DLL QT_NETWORK_LIB
     INCLUDEPATH += $$(QTDIR)/mkspecs/win32-msvc2008
@@ -40,9 +43,6 @@ MOC_DIR += bin/debug
 OBJECTS_DIR += bin/debug
 UI_DIR += ./ui
 RCC_DIR += ./bin/debug
-
-#Include file(s)
-include(DwarfTherapist.pri)
 
 #Translation files
 TRANSLATIONS += ./dwarftherapist_en.ts
