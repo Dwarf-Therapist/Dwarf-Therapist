@@ -79,6 +79,9 @@ public:
     virtual uint write_string(const uint &addr, const QString &str) = 0;
     virtual uint write_int(const uint &addr, const int &val) = 0;
 	
+    bool is_attached() {return m_attach_count > 0;}
+    virtual bool attach() = 0;
+    virtual bool detach() = 0;
 
 	public slots:
 		// if a menu cancels our scan, we need to know how to stop
@@ -99,6 +102,7 @@ protected:
 	bool m_is_ok;
 	MemoryLayout *m_layout;
 	QVector<QPair<uint, uint> > m_regions;
+    int m_attach_count;
 
 	// these should probably not be constants but I have no idea how to find the values at runtime
 	static const int STRING_BUFFER_OFFSET = 4;

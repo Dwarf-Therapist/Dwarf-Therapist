@@ -46,6 +46,8 @@ DFInstanceLinux::~DFInstanceLinux() {
 }
 
 QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
+    attach();
+
     QVector<uint> addrs;
     uint start = read_uint(addr);
     uint end = read_uint(addr + 4);
@@ -64,11 +66,13 @@ QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
     char *stuff = new char[bytes];
 	if (stuff == 0) {
         qWarning() << "Unable to allocate char array of size" << bytes;
+        detach();
         return addrs;
     }
     uint bytes_read = read_raw(start, bytes, stuff);
     if (bytes_read != bytes) {
         qWarning() << "Tried to read" << bytes << "bytes but only got" << bytes_read;
+        detach();
         return addrs;
     }
     for(uint i = 0; i < bytes; i += 4) {
@@ -82,6 +86,7 @@ QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
     delete[] stuff;
     //qDebug() << "VECTOR at" << hex << addr << "start:" << start << "end:" << end << "(" << dec << entries << "entries) valid entries" << addrs.size();
     Q_ASSERT_X(entries == addrs.size(), "enumerate_vector", "Vector did not contain 100% valid addresses!");
+    detach();
     return addrs;
 }
 
@@ -170,41 +175,82 @@ char DFInstanceLinux::read_char(const uint &addr) {
 	return retval;
 }
 
-uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer) {
-    if (ptrace(PTRACE_ATTACH, m_pid, 0, 0) == -1) {
-        // unable to attach
+bool DFInstanceLinux::attach() {
+    //TRACE << "STARTING ATTACH" << m_attach_count;
+    if (is_attached()) {
+        m_attach_count++;
+        //TRACE << "ALREADY ATTACHED SKIPPING..." << m_attach_count;
+        return true;
+    }
+
+    if (ptrace(PTRACE_ATTACH, m_pid, 0, 0) == -1) { // unable to attach
         perror("ptrace attach");
-        qCritical() << "Could not attach to PID" << m_pid;
-        return 0;
+        LOGC << "Could not attach to PID" << m_pid;
+        return false;
     }
     int status;
-    wait(&status);
+    while(true) {
+        LOGD << "waiting for proc to stop";
+        pid_t w = waitpid(m_pid, &status, 0);
+        if (w == -1) {
+            // child died
+            perror("wait inside attach()");
+            exit(-1);
+        }
+        if (WIFSTOPPED(status)) {
+            break;
+        }
+    }
+    m_attach_count++;
+    //TRACE << "FINISHED ATTACH" << m_attach_count;
+    return m_attach_count > 0;
+}
+
+bool DFInstanceLinux::detach() {
+    //TRACE << "STARTING DETACH" << m_attach_count;
+    m_attach_count--;
+    if (m_attach_count > 0) {
+        //TRACE << "NO NEED TO DETACH SKIPPING..." << m_attach_count;
+        return true;
+    }
+
+    ptrace(PTRACE_DETACH, m_pid, 0, 0);
+    //TRACE << "FINISHED DETACH" << m_attach_count;
+    return m_attach_count > 0;
+}
+
+uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer) {
+    attach();
 
     // read this procs base address for the ELF header
     QFile mem_file(QString("/proc/%1/mem").arg(m_pid));
     if (!mem_file.open(QIODevice::ReadOnly)) {
-        qCritical() << "Unable to open" << mem_file.fileName();
-        ptrace(PTRACE_DETACH, m_pid, 0, 0);
+        LOGC << "Unable to open" << mem_file.fileName();
+        detach();
         return 0;
     }
 
     uint bytes_read = 0;
     QByteArray data;
+    int failures = 0;
     while (bytes_read < bytes) {
-        //qDebug() << "reading raw from:" << hex << start_address + bytes_read;
+        //LOGD << "reading raw from:" << hex << addr + bytes_read;
         mem_file.seek(addr + bytes_read);
         QByteArray tmp = mem_file.read(bytes - data.size());
         bytes_read += tmp.size();
         data.append(tmp);
         if (bytes_read == 0) {
-            qWarning() << "read 0 bytes from" << hex << addr + bytes_read;
-            break;
+            failures++;
+            LOGW << "read 0 bytes from" << hex << addr + bytes_read;
+            if (failures > 2)
+                break;
         }
         //qDebug() << "bytes_read:" << bytes_read;
     }
     memcpy(buffer, data.data(), data.size());
     mem_file.close();
-    ptrace(PTRACE_DETACH, m_pid, 0, 0);
+
+    detach();
     return bytes_read;
 }
 

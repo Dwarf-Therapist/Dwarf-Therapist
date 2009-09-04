@@ -39,6 +39,7 @@ DFInstance::DFInstance(QObject* parent)
 	,m_stop_scan(false)
 	,m_is_ok(true)
 	,m_layout(0)
+    ,m_attach_count(0)
 {
 	/*QTimer *df_check_timer = new QTimer(this);
 	connect(df_check_timer, SIGNAL(timeout()), SLOT(heartbeat()));

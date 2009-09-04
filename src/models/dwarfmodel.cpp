@@ -80,9 +80,11 @@ void DwarfModel::load_dwarves() {
 	if (rowCount())
 		removeRows(0, rowCount());
 
+    m_df->attach();
 	foreach(Dwarf *d, m_df->load_dwarves()) {
 		m_dwarves[d->id()] = d;
 	}
+    m_df->detach();
 
 	//build_rows();
 }

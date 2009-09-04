@@ -300,16 +300,22 @@ Dwarf *DwarfTherapist::get_dwarf_by_id(int dwarf_id) {
 void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
     m_generic_words.clear();
     m_dwarf_words.clear();
+    df->attach();
     uint generic_lang_table = df->memory_layout()->address("generic_lang_table"); // this is a stack allocated var (so don't use correction)
     uint dwarf_lang_table = df->memory_layout()->address("dwarf_lang_table") + df->get_heap_start_address();
     uint foo = df->memory_layout()->address("dwarf_lang_table");
     LOGD << "dwarf lang offset" << hex << foo;
     LOGD << "Loading generic strings from" << hex << generic_lang_table;
+    QVector<uint> generic_words = df->enumerate_vector(generic_lang_table);
     LOGD << "Loading dwarf strings from" << hex << dwarf_lang_table;
-    foreach(uint word_ptr, df->enumerate_vector(generic_lang_table)) {
+    QVector<uint> dwarf_words = df->enumerate_vector(dwarf_lang_table);
+    LOGD << "generic words" << generic_words.size();
+    LOGD << "dwarf words" << dwarf_words.size();
+    foreach(uint word_ptr, generic_words) {
         m_generic_words << df->read_string(word_ptr);
     }
-    foreach(uint word_ptr, df->enumerate_vector(dwarf_lang_table)) {
+    foreach(uint word_ptr, dwarf_words) {
         m_dwarf_words << df->read_string(word_ptr);
     }
+    df->detach();
 }
