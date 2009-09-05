@@ -41,7 +41,8 @@ HEADERS += ./inc/customcolor.h \
     ./inc/grid_view/viewcolumnset.h \
     ./inc/viewmanager.h \
     ./inc/rotatedheader.h \
-    ./inc/uberdelegate.h
+    ./inc/uberdelegate.h \
+	./thirdparty/qtcolorpicker-2.6/qtcolorpicker.h
 
 #Source files
 SOURCES += ./src/customcolor.cpp \
@@ -73,7 +74,8 @@ SOURCES += ./src/customcolor.cpp \
     ./src/grid_view/viewcolumnset.cpp \
     ./src/viewmanager.cpp \
     ./src/rotatedheader.cpp \
-    ./src/uberdelegate.cpp
+    ./src/uberdelegate.cpp \
+	./thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp
 
 #Forms
 FORMS += ./ui/about.ui \

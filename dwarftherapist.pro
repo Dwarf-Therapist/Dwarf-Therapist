@@ -8,9 +8,9 @@ CONFIG:release {
 	DESTDIR = ./bin/release
 }
 QT += network
-INCLUDEPATH += $$(LIBCOLORPICKER)/src  \
-    $$(LIBQXT)/QxtGui \
+INCLUDEPATH += $$(LIBQXT)/QxtGui \
     $$(LIBQXT)/QxtCore \
+	./thirdparty/qtcolorpicker-2.6 \
     ./inc \
     ./inc/models \
     ./inc/grid_view \
@@ -33,10 +33,8 @@ unix {
 	HEADERS += ./inc/dfinstancelinux.h
 	SOURCES += ./src/dfinstancelinux.cpp
 }
-LIBS += -L"$$(LIBCOLORPICKER)/lib" \
-    -lQxtCore \
-    -lQxtGui \
-    -lQtSolutions_ColorPicker-2.6
+LIBS += -lQxtCore \
+    -lQxtGui
 
 DEPENDPATH += .
 MOC_DIR += bin/debug
