@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include <QtGui>
-#include <QxtGui>
 #include "customprofession.h"
 #include "gamedatareader.h"
 #include "ui_customprofession.h"
@@ -121,9 +120,9 @@ int CustomProfession::show_builder_dialog(QWidget *parent) {
 	QMap<int, Labor*> labors = gdr->get_ordered_labors();
 	int num_active = 0;
 	foreach(Labor *l, labors) {
-		QxtListWidgetItem *item = new QxtListWidgetItem(l->name, ui->labor_list);
+		QListWidgetItem *item = new QListWidgetItem(l->name, ui->labor_list);
 		item->setData(Qt::UserRole, l->labor_id);
-		item->setFlag(Qt::ItemIsUserCheckable, true);
+		item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
 		if (is_active(l->labor_id)) {
 			item->setCheckState(Qt::Checked);
 			num_active++;
@@ -134,9 +133,9 @@ int CustomProfession::show_builder_dialog(QWidget *parent) {
 	}
 
 	connect(ui->labor_list, 
-			SIGNAL(itemCheckStateChanged(QxtListWidgetItem*)),
+			SIGNAL(itemChanged(QListWidgetItem*)),
 			this,
-			SLOT(item_check_state_changed(QxtListWidgetItem*)));
+			SLOT(item_check_state_changed(QListWidgetItem*)));
 
 
 	ui->lbl_skill_count->setNum(num_active);
@@ -178,7 +177,7 @@ bool CustomProfession::is_valid() {
 	
 }
 
-void CustomProfession::item_check_state_changed(QxtListWidgetItem *item) {
+void CustomProfession::item_check_state_changed(QListWidgetItem *item) {
 	if (item->checkState() == Qt::Checked) {
 		add_labor(item->data(Qt::UserRole).toInt());
 		ui->lbl_skill_count->setNum(ui->lbl_skill_count->text().toInt() + 1);

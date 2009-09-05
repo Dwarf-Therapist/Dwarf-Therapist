@@ -56,7 +56,7 @@ void CustomProfessionsExportDialog::setup_for_export() {
 	ui->lbl_professions_count->setText(QString::number(0));
 	foreach(CustomProfession *cp, DT->get_custom_professions()) {
 		QString title = QString("%1 (%2)").arg(cp->get_name()).arg(cp->get_enabled_labors().size());
-		QxtListWidgetItem *i = new QxtListWidgetItem(title, ui->list_professions);
+		QListWidgetItem *i = new QListWidgetItem(title, ui->list_professions);
 		i->setData(Qt::UserRole, cp->get_name());
 		i->setData(Qt::UserRole+1, false); // not conflicting as far as we know
 		i->setCheckState(Qt::Checked);
@@ -109,7 +109,7 @@ void CustomProfessionsExportDialog::setup_for_import() {
 	ui->lbl_professions_count->setText(QString::number(m_profs.size()));
 	foreach(CustomProfession *cp, m_profs) {
 		QString title = QString("%1 (%2)").arg(cp->get_name()).arg(cp->get_enabled_labors().size());
-		QxtListWidgetItem *i = new QxtListWidgetItem(title, ui->list_professions);
+		QListWidgetItem *i = new QListWidgetItem(title, ui->list_professions);
 		i->setData(Qt::UserRole, cp->get_name());
 		i->setData(Qt::UserRole+1, false); // not conflicting as far as we know
 		i->setCheckState(Qt::Checked);
@@ -136,7 +136,7 @@ void CustomProfessionsExportDialog::setup_for_import() {
 
 void CustomProfessionsExportDialog::select_all() {
 	for(int i = 0; i < ui->list_professions->count(); ++i) {
-		QxtListWidgetItem *item = static_cast<QxtListWidgetItem*>(ui->list_professions->item(i));
+		QListWidgetItem *item = static_cast<QListWidgetItem*>(ui->list_professions->item(i));
 		if (item->data(Qt::UserRole + 1).toBool())
 			continue;
 		ui->list_professions->item(i)->setCheckState(Qt::Checked);
@@ -152,7 +152,7 @@ void CustomProfessionsExportDialog::clear_selection() {
 QVector<CustomProfession*> CustomProfessionsExportDialog::get_profs() {
 	QVector<CustomProfession*> out;
 	for(int i = 0; i < ui->list_professions->count(); ++i) {
-		QxtListWidgetItem *item = static_cast<QxtListWidgetItem*>(ui->list_professions->item(i));
+		QListWidgetItem *item = static_cast<QListWidgetItem*>(ui->list_professions->item(i));
 		if (item->checkState() != Qt::Checked)
 			continue;
 		QString name = item->data(Qt::UserRole).toString();

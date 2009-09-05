@@ -1,0 +1,93 @@
+LibQxt 0.5.0 introduces new features and contains bug fixes to the 0.4.x
+series. For more details, see the documentation included in this package
+or online at http://docs.libqxt.org.
+
+0.5.0
+-----
+
+- General
+    * Added LGPL license option
+    * Run Krazy checks and fixed found issues
+    * Improved configure.bat
+    * Added missing export macros
+    * Added missing convenience headers
+    * Improved compatibility
+        - QT_FORWARD_DECLARE_CLASS
+        - Q_SLOTS, Q_SIGNALS & Q_FOREACH in headers
+        - interface
+
+- QxtCore
+    * Revised QxtFifo
+    * Added QxtAlgorithms
+    * Added QxtSerialDevice
+    * Added QxtSlotMapper
+    
+- QxtCrypto
+    * Revised QxtBlowfish
+
+- QxtGui
+    * Added QxtWindowSystem::idleTime()
+    * Added QxtCrumbView
+    * Improved QxtScheduleView
+    * Added QxtSortFilterProxyModel
+    * Improved QxtSpanSlider
+        - Added QxtSpanSlider::HandleMovementMode
+    * Improved QxtItemDelegate
+        - Added ProgressMinimumRole & ProgressMaximumRole
+        - Added support for busy indicator mode
+    * Improved QxtLetterBoxWidget
+        - Added QxtLetterBoxWidget::margin
+        - Added QxtLetterBoxWidget::resizeWidget 
+
+- QxtWeb
+    * Added QxtWebCgiService
+
+0.4.0
+-----
+
+- QxtCore
+    * Added QxtDeplex
+    * Added QxtLocale
+    * Added QxtPointerList
+    * Added QxtMultiSignalWaiter
+    * Added QxtSignalGroup
+    * Added QxtCommandOptions
+    * Added QxtLogger
+    * Added QxtAbstractConnectionManager
+    * Added QxtDataStreamSignalSerializer
+    * Added QxtAbstractSignalSerializer
+
+- QxtCrypto
+    * Added QxtHmac
+
+- QxtGui
+    * Added QxtItemEditorCreatorBase
+    * Added QxtStandardItemEditorCreator
+    * Added QxtItemEditorCreator
+    * Added QxtBaseSpinBox
+    * Added QxtCountryComboBox
+    * Added QxtCountryModel
+    * Added QxtLanguageComboBox
+    * Added QxtScheduleView
+    * Added QxtTabBar
+    * Added QxtFlowView
+    * Added QxtLetterBoxWidget
+    * Improved QxtTabWidget
+        - Added QxtTabWidget::alwaysShowTabBar
+        - Added QxtTabWidget::tabAnimation
+        - Added QxtTabWidget::tabMovementMode
+    * Improved QxtConfirmationMessage
+        - Added QxtConfirmationMessage::settingsFormat
+        - Added QxtConfirmationMessage::rememberOnReject
+        - Added QxtConfirmationMessage::overrideSettingsApplication
+        - Added QxtConfirmationMessage::overrideSettingsKey
+        - Added QxtConfirmationMessage::overrideSettingsOrganization
+
+- QxtBerkeley
+    * Added QxtBdbTree
+
+- QxtWeb
+    * Revised the whole module
+
+- QxtNetwork
+    * Added QxtTcpConnectionManager

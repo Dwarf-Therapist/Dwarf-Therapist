@@ -8,9 +8,8 @@ CONFIG:release {
 	DESTDIR = ./bin/release
 }
 QT += network
-INCLUDEPATH += $$(LIBQXT)/QxtGui \
-    $$(LIBQXT)/QxtCore \
-	./thirdparty/qtcolorpicker-2.6 \
+INCLUDEPATH += ./thirdparty/qtcolorpicker-2.6 \
+	./thirdparty/libqxt-0.5.0 \
     ./inc \
     ./inc/models \
     ./inc/grid_view \
@@ -32,9 +31,8 @@ unix {
     INCLUDEPATH += $$(QTDIR)/mkspecs/linux-g++
 	HEADERS += ./inc/dfinstancelinux.h
 	SOURCES += ./src/dfinstancelinux.cpp
+#contains(QMAKE_LFLAGS, "-Wl,--no-undefined"):LIBS += $${QMAKE_LIBS_X11}
 }
-LIBS += -lQxtCore \
-    -lQxtGui
 
 DEPENDPATH += .
 MOC_DIR += bin/debug

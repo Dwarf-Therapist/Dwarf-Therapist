@@ -102,7 +102,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QxtListWidget" name="list_professions">
+    <widget class="QListWidget" name="list_professions">
      <property name="toolTip">
       <string>Select the professions you would like to import</string>
      </property>
@@ -147,13 +147,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QxtListWidget</class>
-   <extends>QListWidget</extends>
-   <header location="global">qxtlistwidget.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections>
   <connection>

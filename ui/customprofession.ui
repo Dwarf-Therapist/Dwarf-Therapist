@@ -39,7 +39,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QxtListWidget" name="labor_list">
+    <widget class="QListWidget" name="labor_list">
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>
@@ -101,13 +101,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QxtListWidget</class>
-   <extends>QListWidget</extends>
-   <header location="global">qxtlistwidget.h</header>
-  </customwidget>
- </customwidgets>
  <tabstops>
   <tabstop>name_edit</tabstop>
   <tabstop>labor_list</tabstop>

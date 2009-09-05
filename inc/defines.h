@@ -22,7 +22,7 @@ THE SOFTWARE.
 */
 #ifndef DEFINES_H
 #define DEFINES_H
-#include <QxtLogger>
+#include "qxtlogger.h"
 
 #define COMPANY "UDP Software"
 #define PRODUCT "Dwarf Therapist"

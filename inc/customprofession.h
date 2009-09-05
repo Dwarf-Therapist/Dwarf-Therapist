@@ -24,7 +24,6 @@ THE SOFTWARE.
 #define CUSTOM_PROFESSION_H
 
 #include <QtGui>
-class QxtListWidgetItem;
 class Dwarf;
 
 namespace Ui
@@ -80,7 +79,7 @@ public:
 		void set_name(QString name) {m_name = name;}
 		void accept();
 		void cancel() {return;}
-		void item_check_state_changed(QxtListWidgetItem*);
+		void item_check_state_changed(QListWidgetItem*);
 
 private:
 	bool is_valid();

@@ -23,7 +23,7 @@ THE SOFTWARE.
 #include <QtGui>
 #include <QtNetwork>
 #include <QtDebug>
-#include <QxtLogger>
+#include "qxtlogger.h"
 
 #include "mainwindow.h"
 #include "ui_about.h"
