@@ -166,7 +166,7 @@ ushort DFInstanceLinux::read_ushort(const uint &addr) {
 }
 
 uint DFInstanceLinux::write_int(const uint &addr, const int &val) {
-	return 0;
+    return write_raw(addr, sizeof(int), (void*)&val);
 }
 
 char DFInstanceLinux::read_char(const uint &addr) {
@@ -190,12 +190,12 @@ bool DFInstanceLinux::attach() {
     }
     int status;
     while(true) {
-        LOGD << "waiting for proc to stop";
+        //LOGD << "waiting for proc to stop";
         pid_t w = waitpid(m_pid, &status, 0);
         if (w == -1) {
             // child died
             perror("wait inside attach()");
-            exit(-1);
+            //exit(-1);
         }
         if (WIFSTOPPED(status)) {
             break;
@@ -220,9 +220,11 @@ bool DFInstanceLinux::detach() {
 }
 
 uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer) {
+    // try to attach, will be ignored if we're already attached
     attach();
 
-    // read this procs base address for the ELF header
+    // open the memory virtual file for this proc (can only read once 
+    // attached and child is stopped
     QFile mem_file(QString("/proc/%1/mem").arg(m_pid));
     if (!mem_file.open(QIODevice::ReadOnly)) {
         LOGC << "Unable to open" << mem_file.fileName();
@@ -230,33 +232,94 @@ uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer
         return 0;
     }
 
-    uint bytes_read = 0;
-    QByteArray data;
-    int failures = 0;
+    uint bytes_read = 0; //! tracks how much we've read of what was asked for
+    QByteArray data; // out final memory container
+    ushort failures = 0; // how many read failures have occurred
+    ushort failure_max = 3; // how many times will we retry after a read failure
+
+    // keep going until we've read everything we were asked for
     while (bytes_read < bytes) {
-        //LOGD << "reading raw from:" << hex << addr + bytes_read;
+        // mem behaves like a normal file, so seek to the next unread offset
         mem_file.seek(addr + bytes_read);
+        // read the remainder
         QByteArray tmp = mem_file.read(bytes - data.size());
         bytes_read += tmp.size();
+        // push the recently read chunk into data
         data.append(tmp);
         if (bytes_read == 0) {
+            // failed to read
             failures++;
             LOGW << "read 0 bytes from" << hex << addr + bytes_read;
-            if (failures > 2)
+            if (failures >= failure_max)
                 break;
         }
         //qDebug() << "bytes_read:" << bytes_read;
     }
+    // copy the read data into the provided buffer
     memcpy(buffer, data.data(), data.size());
+    // don't leave the mem file open
     mem_file.close();
 
+    // attempt to detach, will be ignored if we're several layers into an attach chain
     detach();
+    // tell the caller their buffer is ready, with fresh bits from the oven :)
     return bytes_read;
 }
 
-
 uint DFInstanceLinux::write_raw(const uint &addr, const uint &bytes, void *buffer) {
-	return 0;
+    // try to attach, will be ignored if we're already attached
+    attach();
+
+    /* Since most kernels won't let us write to /proc/<pid>/mem, we have to poke
+     * out data in 4 bytes at a time. Good thing we read way more than we write
+     */
+
+    uint bytes_written = 0; // keep track of how much we've written
+    uint steps = bytes / 4;
+    if (bytes % 4)
+        steps++;
+    LOGD << "WRITE_RAW: WILL WRITE" << bytes << "bytes over" << steps << "steps";
+
+    // we want to make sure that given the case where (bytes % 4 != 0) we don't
+    // clobber data past where we meant to write. So we're first going to read
+    // the existing data as it is, and then write the changes over the existing 
+    // data in the buffer first, then write the buffer 4 bytes at a time to the
+    // process. This should ensure no clobbering of data.
+    char *existing_data = new char[steps * 4];
+    memset(existing_data, 0, steps * 4);
+    read_raw(addr, (steps * 4), existing_data);
+    QByteArray tmp(existing_data, steps * 4);
+    LOGD << "WRITE_RAW: EXISTING OLD DATA     " << tmp.toHex();
+
+    // ok we have our insurance in place, now write our new junk to the buffer
+    memcpy(existing_data, buffer, bytes);
+    QByteArray tmp2(existing_data, steps * 4);
+    LOGD << "WRITE_RAW: EXISTING WITH NEW DATA" << tmp2.toHex();
+
+    // ok, now our to be written data is in part or all of the exiting data buffer
+    long tmp_data;
+    for (int i = 0; i < steps; ++i) {
+        int offset = i * 4;
+        // for each step write a single word to the child
+        memcpy(&tmp_data, existing_data + offset, 4);
+        QByteArray tmp_data_str((char*)&tmp_data, 4);
+        LOGD << "WRITE_RAW:" << hex << addr + offset << "HEX" << tmp_data_str.toHex();
+        if (ptrace(PTRACE_POKEDATA, m_pid, addr + offset, tmp_data) != 0) {
+            perror("write word");
+            break;
+        } else {
+            bytes_written += 4;
+        }
+        long written = ptrace(PTRACE_PEEKDATA, m_pid, addr + offset, 0);
+        QByteArray foo((char*)&written, 4);
+        LOGD << "WRITE_RAW: WE APPEAR TO HAVE WRITTEN" << foo.toHex();
+    }
+    delete[] existing_data;
+
+    // attempt to detach, will be ignored if we're several layers into an attach chain
+    detach();
+    // tell the caller how many bytes we wrote
+    return bytes_written;
 }
 
 bool DFInstanceLinux::find_running_copy() {
