@@ -49,6 +49,7 @@ public:
 	} DWARF_HAPPINESS;
 
 	// attributes
+    uint address() {return m_address;}
 	int id() {return m_id;}
 	bool is_male() {return m_is_male;}
 	QString profession();

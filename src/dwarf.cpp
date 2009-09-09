@@ -68,9 +68,9 @@ void Dwarf::refresh_data() {
 	m_raw_happiness = m_df->read_int(m_address +mem->dwarf_offset("happiness"));
 	m_happiness = happiness_from_score(m_raw_happiness);
 	
-	//qDebug() << nice_name() << "SEX" << (m_is_male ? "M" : "F") << " MONEY" << m_money << "ADDR" << hex << m_address;
 
 	calc_nice_name();
+    //LOGD << "LOADED" << nice_name() << "SEX" << (m_is_male ? "M" : "F") << " MONEY" << m_money << "ADDR" << hex << m_address;
 	/*
 	if (m_first_name == "Dumed") {
 		QVector<int> vector_offsets = m_df->find_likely_vectors(m_address, 4096);
