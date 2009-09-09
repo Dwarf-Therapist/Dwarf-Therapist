@@ -126,7 +126,6 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const uint &addr) {
     uint dwarf_race_index = df->memory_layout()->address("dwarf_race_index");
     int dwarf_race_id = df->read_int(dwarf_race_index + df->get_memory_correction());
 	TRACE << "Dwarf Race ID is" << dwarf_race_id;
-    //LOGD << "\n" << df->pprint(df->get_data(addr, 0x400), 0);
 	
 	/*
 	if ((df->read_int(addr + mem->dwarf_offset("flags1")) & mem->flags("flags1.invalidate")) > 0) {
