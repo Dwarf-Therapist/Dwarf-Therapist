@@ -24,6 +24,32 @@ static inline QByteArray encode(const short &num) {
     return arr;
 }
 
+struct MemorySegment {
+    MemorySegment(const QString &_name, const uint &_start_addr, const uint &_end_addr) 
+        : name(_name)
+        , start_addr(_start_addr)
+        , end_addr(_end_addr)
+        , is_heap(false)
+    {
+        if (name.contains("[heap]"))
+            is_heap = true;
+        size = end_addr - start_addr;
+    }
+    QString to_string() {
+        return QString("0x%1-0x%2 (%L3 bytes) %4 HEAP: %5")
+            .arg(start_addr, 8, 16, QChar('0'))
+            .arg(end_addr, 8, 16, QChar('0'))
+            .arg(size)
+            .arg(name)
+            .arg(is_heap);
+    }
+    uint size;
+    QString name;
+    uint start_addr;
+    uint end_addr;
+    bool is_heap;
+};
+
 static inline QByteArray encode_skillpattern(const short &skill, const int &exp, const short &rating) {
     QByteArray bytes;
     bytes.reserve(8);
@@ -35,13 +61,17 @@ static inline QByteArray encode_skillpattern(const short &skill, const int &exp,
 
 class MemoryReader : public QCoreApplication {
     int m_pid;
-    int m_base_addr;
-    QVector<QPair<uint, uint> > m_regions;
+    uint m_base_addr;
+    int m_memory_correction;
+    uint m_heap_start;
+    
+    QVector<MemorySegment*> m_regions;
 public:
     MemoryReader(int &argc, char** argv)
         : QCoreApplication(argc, argv)
         , m_pid(0)
-        , m_base_addr(-1)
+        , m_base_addr(0)
+        , m_memory_correction(0)
     {
         QStringList args = arguments();
         if (args.size() != 2) {
@@ -51,34 +81,30 @@ public:
         }
         if (m_pid) {
             scan();
-            if (m_base_addr != -1) {
+            if (m_base_addr != 0) {
                 // working...
                 //uint dwarf_race_index = find_dwarf_race_index();
                 //qDebug() << "DWARF RACE INDEX FOUND" << hex << dwarf_race_index;
-                uint trans_addr = find_translation_vector();
-                qDebug() << "TRANSLATION VECTOR FOUND" << hex << trans_addr;
+                find_translation_vector();
                 
-                // broken...
-                int count = 0;
-                foreach(uint word, enumerate_vector(0xaf20624)) {
-                    QString w = read_str2(word);
-                    //qDebug() << "\tWORD" << w;
-                    if (w == "ilral" || w == "atol") {
-                        qDebug() << "\t\tWORD" << w << count << "HEX" << hex << count;
-                    }
-                    count++;
-                }
                 //uint creature_vector_addr = find_creature_vector();
                 //qDebug() << "CREATURE VECTOR FOUND" << hex << creature_vector_addr;
             }
         }
     }
+
+    MemorySegment *parent_segment(const uint &addr) {
+        foreach(MemorySegment *seg, m_regions) {
+            if (seg->start_addr <= addr && seg->end_addr >= addr)
+                return seg;
+        }
+        return 0;
+    }
     
     bool is_valid_address(const uint &addr) {
         bool valid = false;
-        QPair<uint, uint> region;
-        foreach(region, m_regions) {
-            if (addr >= region.first && addr <= region.second) {
+        foreach(MemorySegment *seg, m_regions) {
+            if (addr >= seg->start_addr && addr <= seg->end_addr) {
                 valid = true;
                 break;
             }
@@ -144,24 +170,21 @@ public:
 
 
         // iterate over all known memory segments
-        QPair<uint, uint> addr_pair;
-        foreach(addr_pair, m_regions) {
-            // size in bytes of this segment
-            uint size = addr_pair.second - addr_pair.first;
-            //qDebug() << "SCANNING REGION" << hex << addr_pair.first << "-" << addr_pair.second << "BYTES:" << dec << size;
+        foreach(MemorySegment *seg, m_regions) {
+            //qDebug() << "SCANNING REGION" << hex << seg->start_addr << "-" << seg->end_addr << "BYTES:" << dec << seg->size;
 
             // this buffer will hold the entire memory segment (may need to toned down a bit)
-            uchar *buffer = new uchar[size];
+            uchar *buffer = new uchar[seg->size];
             if (!buffer) {
-                qCritical() << "unable to allocate char buffer of" << size << "bytes!";
+                qCritical() << "unable to allocate char buffer of" << seg->size << "bytes!";
                 continue;
             }
-            memset(buffer, 0, size); // 0 out the buffer
+            memset(buffer, 0, seg->size); // 0 out the buffer
 
             // this may read multiple times to populate the entire region in our buffer
-            uint bytes_read = read_raw(addr_pair.first, size, buffer);
-            if (bytes_read < size) {
-                qWarning() << "tried to read" << size << "bytes starting at" << hex << addr_pair.first << "but only got" << dec << bytes_read;
+            uint bytes_read = read_raw(seg->start_addr, seg->size, buffer);
+            if (bytes_read < seg->size) {
+                qWarning() << "tried to read" << seg->size << "bytes starting at" << hex << seg->start_addr << "but only got" << dec << bytes_read;
                 continue;
             }
 
@@ -169,7 +192,7 @@ public:
             we read a uint into int1 and 4 bytes later we read another uint into int2. If int1 is a vector head, then int2 will be larger than int2, 
             evenly divisible by 4, and the difference between the two (divided by four) will tell us how many pointers are in this array. We can also
             check to make sure int1 and int2 reside in valid memory regions. If all of this adds up, then odds are pretty good we've found a vector */
-            for (uint i = 0; i < size; i += 4) {
+            for (uint i = 0; i < seg->size; i += 4) {
                 memcpy(&int1, buffer + i, 4);
                 memcpy(&int2, buffer + i + 4, 4);
                 if (int1 % 4 == 0 && 
@@ -179,10 +202,10 @@ public:
                     is_valid_address(int2) && 
                     (int2 - int1) == target_bytes)
                 {
-                    QVector<uint> addrs = enumerate_vector(addr_pair.first + i);
+                    QVector<uint> addrs = enumerate_vector(seg->start_addr + i);
                     if (addrs.size() == num_entries) {
                         //qDebug() << "++++++++++++++++++++++ VECTOR HAS" << addrs.size() << "actual entries!";
-                        vectors << addr_pair.first + i;
+                        vectors << seg->start_addr + i;
                         //foreach(uint a, addrs) {
                         //    QString obj_str = read_str2(a);
                         //    qDebug() << "\t" << hex << a << "member str:" << obj_str;
@@ -195,67 +218,67 @@ public:
         return vectors;
     }
     
-    uint find_translation_vector() {
-        /*
-        foreach( int word in Find( config.TranslationWord ) ) {
-                foreach( int wordPointer in Find( word -4 ) ) {
-                    int wordList = wordPointer - ParseNumber(config.TranslationWordNumber) * 4;
-                    foreach( int wordListPointer in Find( wordList ) ) {
-                        foreach( int dwarfTranslationName in Find( config.TranslationName, wordListPointer - 0x1000, wordListPointer ) ) {
-                            int dwarfTranslation = dwarfTranslationName - 4;
-                            ReportAddress( "Offset", "Translation.WordTable", wordListPointer - dwarfTranslation );
-                            foreach( int dwarfTranslationPointer in Find( dwarfTranslation ) ) {
-                                int translationsList = dwarfTranslationPointer - ParseNumber(config.TranslationNumber) * 4;
-                                foreach( int translationsListPointer in Find( translationsList, ParseNumber(config.TranslationsVectorLowCutoff) + memoryCorrection, ParseNumber(config.TranslationsVectorHighCutoff) + memoryCorrection ) )
-                                    ReportAddress( "Address", "TranslationsVector", translationsListPointer - 4 );
-                            }
-                        }
-                    }
-                }
-            }
-        */
-        int num_words = 2107;
-        QString first_lang_word = "ABBEY";
-        QString first_dwarf_word = "kulet";
-        QByteArray dwarf_translation_name = "DWARF";
-        uint lang_table_addr = 0;
-        uint dwarf_table_addr = 0; 
+    void find_translation_vector() {
+        // First find all vectors that have the correct number of entries to be lang tables
+        int num_words = 2107; // how many words per language
+        int total_langs = 4;
+        QString first_lang_word = "ABBEY"; // first generic (non-racial) word
+        QString first_dwarf_word = "kulet"; // first dwarven word
+        uint dwarf_lang_table = 0;
 
-        uint translation_vector_address = 0; //return val;
         foreach(uint addr, hulk_smash(num_words)) {
-            qDebug() << "looking at table" << hex << addr;
             foreach(uint vec_addr, enumerate_vector(addr)) {
                 QString first_entry = read_str2(vec_addr);
-                
+                //qDebug() << "+++++ FOUND VECTOR" << hex << addr << "FIRST ENTRY:" << first_entry;
                 if (first_entry == first_lang_word) {
                     qDebug() << "FOUND LANGUAGE TABLE" << hex << addr;
-                    lang_table_addr = addr;
                 } else if (first_entry == first_dwarf_word) {
                     qDebug() << "FOUND DWARF TABLE" << hex << addr;
-                    dwarf_table_addr = addr;
+                    dwarf_lang_table = addr;
+                } else {
+                    break;
+                    //qDebug() << "FOUND ??? TABLE" << hex << addr << "CORRECTED" << addr - m_heap_start;
                 }
                 break;
             }
         }
-        return dwarf_table_addr;
-        //try to find a vector that holds all of these entries with dwarfish being the first
-        qDebug() << "looking for ptr to dwarf lang" << hex << dwarf_table_addr;
-        foreach(uint addr, scan_mem(encode(dwarf_table_addr))) {
-            qDebug() << "possible translation vector at" << hex << addr;
-            uint i1 = read_uint(addr);
-            uint i2 = read_uint(addr + 4);
-            qDebug() << hex << i1 << i2;
-            if (i2 <= i1 || !is_valid_address(i1) || !is_valid_address(i2))
-                continue;
-            int max = 5;
-            foreach(uint entry, enumerate_vector(addr)) {
-                qDebug() << "\tADDR" << hex << entry;    
-                if (max-- == 0)
-                    break;
+
+        // A translation entry is basically the race name (i.e. "DWARF") followed by a vector of words shorty afterwards.
+        // So we find langs like so...
+        // 1) look for a null terminated string "DWARF\0"
+        // 2) find a pointer to that buffer (this is the std::string object)
+        // 3) find a pointer to the std::string (the translation object)
+        // 4) find a pointer to the translation object (an entry in the translations vector)
+
+        QVector<uint> translations_vectors;
+        foreach(uint str_buf, scan_mem("DWARF\0")) { // std::string internal buffer
+            foreach(uint str, scan_mem(encode(str_buf))) { // std::string
+                if (read_str(str) != "DWARF") // can match "DWARF_LIASON" and the like so ignore those...
+                    continue;
+                foreach(uint str_ptr, scan_mem(encode(str))) { // translation table name attribute?
+                    foreach(uint str_ptr_ptr, scan_mem(encode(str_ptr))) { // entry in translations vector
+                        translations_vectors << str_ptr_ptr;
+                        qDebug() << "Found possible translations vector" << hex << str_ptr_ptr;
+                    }
+                }
             }
         }
-
-        return translation_vector_address;
+        //qDebug() << "Verifying possible vectors";
+        foreach(uint vec, translations_vectors) {
+            //qDebug() << "Verifying" << hex << vec;
+            QVector<uint> langs = enumerate_vector(vec);
+            if (langs.size() == total_langs) {
+                //qDebug() << "VECTOR COUNT IS VALID";
+                if (read_str(langs.at(0)) == "DWARF") {
+                    //qDebug() << "FIRST ENTRY IS FOR DWARF!";
+                    qDebug() << "+++ VERIFIED +++";
+                    qDebug() << "\tTRANSLATIONS VECTOR AT" << hex << vec;
+                    qDebug() << "\tDWARF TRANS OBJECT" << hex << langs.at(0) << "WORD TABLE" << dwarf_lang_table;
+                    qDebug() << "\tOFFSET FROM WORD TABLE" << hex << (int)(dwarf_lang_table - langs.at(0));
+                    break;
+                }
+            }
+        }
     }
 
     uint find_dwarf_race_index() {
@@ -298,34 +321,35 @@ public:
         return pprint(get_data(addr, size), addr);
     }
 
-    QString pprint(const QByteArray &ba, uint start_addr=0) {
-        QString out = "  ADDR | 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F | TEXT\n";
-        out.append("------------------------------------------------------------------------\n");
-        int lines = ba.size() / 16;
-        if (ba.size() % 16)
-            lines++;
-
-        for(int i = 0; i < lines; ++i) {
-            out.append(QString::number(start_addr + i * 16, 16));
-            out.append(" | ");
-            for (int c = 0; c < 16; ++c) {
-                out.append(ba.mid(i*16 + c, 1).toHex());
-                out.append(" ");
-            }
-            out.append("| ");
-            for (int c = 0; c < 16; ++c) {
-                QByteArray tmp = ba.mid(i*16 + c, 1);
-                if (tmp.at(0) == 0)
-                    out.append(".");
-                else if (tmp.at(0) <= 126 && tmp.at(0) >= 32)
-                    out.append(tmp);
-                else
-                    out.append(tmp.toHex());
-            }
-            //out.append(ba.mid(i*16, 16).toPercentEncoding());
-            out.append("\n");
-        }
-        return out;
+    QString pprint(const QByteArray &ba, const uint &start_addr = 0) {
+    	QString out = "   ADDR  | 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F | TEXT\n";
+    	out.append("------------------------------------------------------------------------\n");
+    	int lines = ba.size() / 16;
+    	if (ba.size() % 16)
+    		lines++;
+    
+    	for(int i = 0; i < lines; ++i) {
+    		uint offset = start_addr + i * 16;
+    		out.append(QString("0x%1").arg(offset, 8, 16, QChar('0')));
+    		out.append(" | ");
+    		for (int c = 0; c < 16; ++c) {
+    			out.append(ba.mid(i*16 + c, 1).toHex());
+    			out.append(" ");
+    		}
+    		out.append("| ");
+    		for (int c = 0; c < 16; ++c) {
+    			QByteArray tmp = ba.mid(i*16 + c, 1);
+    			if (tmp.at(0) == 0)
+    				out.append(".");
+    			else if (tmp.at(0) <= 126 && tmp.at(0) >= 32)
+    				out.append(tmp);
+    			else
+    				out.append(tmp.toHex());
+    		}
+    		//out.append(ba.mid(i*16, 16).toPercentEncoding());
+    		out.append("\n");
+    	}
+    	return out;
     }
 
     uint find_creature_vector() {
@@ -430,22 +454,20 @@ public:
         QVector<uint> addresses;
         QByteArrayMatcher matcher(needle);
 
-        QPair<uint, uint> addr_pair;
-        foreach(addr_pair, m_regions) {
-            uint size = addr_pair.second - addr_pair.first;
+        foreach(MemorySegment *seg, m_regions) {
             int step = 0x1000;
             char *buffer = new char[step];
             if (!buffer) {
-                qCritical() << "unable to allocate char buffer of" << size << "bytes!";
+                qCritical() << "unable to allocate char buffer of" << seg->size << "bytes!";
                 continue;
             }
-            int steps = size / step;
-            if (size % step)
+            int steps = seg->size / step;
+            if (seg->size % step)
                 steps++;
 
-            for(uint ptr = addr_pair.first; ptr < addr_pair.second; ptr += step) {
-                if (ptr + step > addr_pair.second)
-                    step = addr_pair.second - (ptr + step);
+            for(uint ptr = seg->start_addr; ptr < seg->end_addr; ptr += step) {
+                if (ptr + step > seg->end_addr)
+                    step = seg->end_addr - (ptr + step);
                 
                 memset(buffer, 0, step);
                 int bytes_read = read_raw(ptr, step, buffer);
@@ -473,16 +495,20 @@ public:
         return out;
     }
 
-    std::string read_str(uint start_address) {
-        uint buffer_addr = read_int32(start_address);
-        int len = read_int32(buffer_addr - 0x0C);
-        //int cap = read_int32(buffer_addr - 0x08);
+    QString read_str(const uint &start_address) {
+        uint buffer_addr = read_uint(start_address);
+        uint len = read_uint(start_address + 0x0C);
+        uint cap = read_uint(start_address + 0x10);
         //qDebug() << "attempting to read string at" << hex << start_address << "buffer starts at:" << buffer_addr << "LEN" << dec << len << "CAP" << cap;
+        if (len < 1 || len > 1000 || cap < len) {
+            // something is wrong
+            return read_str2(start_address);
+        }
         char *c = new char[len];
-        read_raw(buffer_addr, len , c);
-        std::string retval(c);
+        read_raw(buffer_addr, len, c);
+        QString out = QString::fromLatin1(c, len);
         delete[] c;
-        return retval;
+        return out;
     }
 
     uint read_uint(uint start_address) {
@@ -516,6 +542,9 @@ public:
             qCritical() << "Could not attach to PID" << m_pid;
             return 0;
         }
+        int status;
+        wait(&status);
+
         // read this procs base address for the ELF header
         QFile mem_file(QString("/proc/%1/mem").arg(m_pid));
         if (!mem_file.open(QIODevice::ReadOnly)) {
@@ -523,8 +552,6 @@ public:
             ptrace(PTRACE_DETACH, m_pid, 0, 0);
             return 0;
         }
-        int status;
-        wait(&status);
 
         uint bytes_read = 0;
         QByteArray data;
@@ -590,10 +617,13 @@ public:
 
                 if (keep_it) {
                     //qDebug() << "KEEPING RANGE" << hex << start_addr << "-" << end_addr << "PATH " << path;
-                    m_regions << QPair<uint, uint>(start_addr, end_addr);
+                    m_regions << new MemorySegment(path, start_addr, end_addr);
                     if (start_addr < lowest_addr)
                         lowest_addr = start_addr;
                 }
+
+                if (path.contains("[heap]"))
+                    m_heap_start = start_addr;
             }
         } while (!line.isEmpty());
         f.close();
@@ -626,8 +656,12 @@ public:
         QByteArray data = mem_file.read(4);
         mem_file.close();
         memcpy(&m_base_addr, data.data(), sizeof(int));
+
     
         qDebug() << "base_addr:" << hex << m_base_addr;
+        m_memory_correction = (int)m_base_addr - 0x400000;
+        qDebug() << "memory correction:" << hex << m_memory_correction;
+
         ptrace(PTRACE_DETACH, m_pid, 0, 0);
     }
 };
