@@ -23,13 +23,18 @@ MemoryLayout::MemoryLayout(uint checksum)
 
 void MemoryLayout::load_data() {
 	// addresses
-    m_addresses.insert("generic_lang_table", read_hex("addresses/generic_lang_table"));
-    m_addresses.insert("dwarf_lang_table", read_hex("addresses/dwarf_lang_table"));
-	m_addresses.insert("creature_vector", read_hex("addresses/creature_vector"));
-	m_addresses.insert("dwarf_race_index", read_hex("addresses/dwarf_race_index"));
+	m_data->beginGroup("addresses");
+	foreach(QString k, m_data->childKeys()) {
+		m_addresses.insert(k, read_hex(k));
+	}
+	m_data->endGroup();
 
 	// offsets
-	m_offsets.insert("word_table", read_hex("offsets/word_table"));
+	m_data->beginGroup("offsets");
+	foreach(QString k, m_data->childKeys()) {
+		m_offsets.insert(k, read_hex(k));
+	}
+	m_data->endGroup();
 		
 	// dwarf offsets
 	m_data->beginGroup("dwarf_offsets");

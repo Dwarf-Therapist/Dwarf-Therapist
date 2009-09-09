@@ -302,14 +302,19 @@ void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
     m_dwarf_words.clear();
     df->attach();
     uint generic_lang_table = df->memory_layout()->address("generic_lang_table"); // this is a stack allocated var (so don't use correction)
-    uint dwarf_lang_table = df->memory_layout()->address("dwarf_lang_table") + df->get_heap_start_address();
-    uint foo = df->memory_layout()->address("dwarf_lang_table");
-    LOGD << "dwarf lang offset" << hex << foo;
+    uint translations_vector = df->memory_layout()->address("translations_vector") + df->get_memory_correction();
+    LOGD << "LANGUAGES VECTOR" << hex << translations_vector;
+    uint word_table_offset = df->memory_layout()->offset("word_table");
+    LOGD << "WORD TABLE OFFSET" << hex << word_table_offset;
+
     LOGD << "Loading generic strings from" << hex << generic_lang_table;
     QVector<uint> generic_words = df->enumerate_vector(generic_lang_table);
+    LOGD << "generic words" << generic_words.size();
+    
+    QVector<uint> languages = df->enumerate_vector(translations_vector);
+    uint dwarf_lang_table = languages.at(0) + word_table_offset;
     LOGD << "Loading dwarf strings from" << hex << dwarf_lang_table;
     QVector<uint> dwarf_words = df->enumerate_vector(dwarf_lang_table);
-    LOGD << "generic words" << generic_words.size();
     LOGD << "dwarf words" << dwarf_words.size();
     foreach(uint word_ptr, generic_words) {
         m_generic_words << df->read_string(word_ptr);
