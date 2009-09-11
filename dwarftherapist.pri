@@ -54,6 +54,8 @@ HEADERS += $$COLOR_PICKER_HEADERS \
     ./inc/viewmanager.h \
     ./inc/rotatedheader.h \
     ./inc/uberdelegate.h \
+    ./inc/scannerthread.h \
+    ./inc/scanner.h \
 
 #Source files
 SOURCES += $$COLOR_PICKER_SOURCES \
@@ -88,6 +90,7 @@ SOURCES += $$COLOR_PICKER_SOURCES \
     ./src/viewmanager.cpp \
     ./src/rotatedheader.cpp \
     ./src/uberdelegate.cpp \
+    ./src/scanner.cpp
 
 #Forms
 FORMS += ./ui/about.ui \
@@ -99,6 +102,7 @@ FORMS += ./ui/about.ui \
     ./ui/mainwindow.ui \
     ./ui/optionsmenu.ui \
     ./ui/pendingchanges.ui \
+    ./ui/scannerdialog.ui \
     ./ui/viewcolumnsetdialog.ui \
     ./ui/viewcolumnsetdock.ui
 

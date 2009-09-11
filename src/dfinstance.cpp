@@ -48,27 +48,6 @@ DFInstance::DFInstance(QObject* parent)
         */
 }
 
-//! Convenience method for finding a pointer to an address
-QVector<uint> DFInstance::scan_for_pointer(const uint &addr) {
-#ifdef Q_WS_WIN
-	QByteArray needle = encode(addr - 0x4); // windows needs to backup 4 bytes
-#else
-	QByteArray needle = encode(addr); // windows needs to backup 4 bytes
-#endif
-	return scan_mem(needle);
-}
-
-uint DFInstance::write_string(const uint &addr, const QString &str) {
-	int cap = read_int(addr + STRING_CAP_OFFSET);
-	int buffer_addr = addr + STRING_BUFFER_OFFSET;
-	if( cap >= 16 )
-		buffer_addr = read_int(buffer_addr);
-
-	int len = qMin<int>(str.length(), cap);
-	write_int(addr + STRING_LENGTH_OFFSET, len);
-	return write_raw(buffer_addr, len, str.toAscii().data());
-}
-
 QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
 	m_stop_scan = false;
 	QVector<uint> addresses;

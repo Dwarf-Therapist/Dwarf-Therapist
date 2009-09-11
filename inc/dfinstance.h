@@ -56,7 +56,6 @@ public:
     virtual uint read_uint(const uint &addr) = 0;
     virtual uint read_raw(const uint &addr, const uint &bytes, void *buffer) = 0;
 	QVector<uint> scan_mem(const QByteArray &needle);
-	QVector<uint> scan_for_pointer(const uint &addr);
     virtual QString read_string(const uint &addr) = 0;
 
     QByteArray get_data(const uint &addr, const uint &size);
