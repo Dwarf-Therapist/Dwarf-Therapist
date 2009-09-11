@@ -49,6 +49,7 @@ THE SOFTWARE.
 #include "skilllegenddock.h"
 #include "columntypes.h"
 #include "rotatedheader.h"
+#include "scanner.h"
 
 #include "dfinstance.h"
 #ifdef Q_WS_WIN
@@ -68,6 +69,7 @@ MainWindow::MainWindow(QWidget *parent)
 	, m_settings(0)
 	, m_model(new DwarfModel(this))
 	, m_proxy(new DwarfModelProxy(this))
+	, m_scanner(0)
 	, m_http(new QHttp(this))
 	, m_reading_settings(false)
 	, m_temp_cp(0)
@@ -208,6 +210,7 @@ void MainWindow::connect_to_df() {
 	m_df = new DFInstanceLinux();
 #endif
     if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
+		m_scanner = new Scanner(m_df, this);
         LOGD << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
         DT->load_game_translation_tables(m_df);
         m_lbl_status->setText(tr("Connected to ") + m_df->memory_layout()->game_version());
@@ -296,6 +299,8 @@ void MainWindow::version_check_finished(bool error) {
 }
 
 void MainWindow::scan_memory() {
+	m_scanner->show();
+	return;
 	QProgressDialog *pd = new QProgressDialog(tr("Scanning Memory"), tr("Cancel"), 0, 1, this);
 	connect(m_df, SIGNAL(scan_total_steps(int)), pd, SLOT(setMaximum(int)));
 	connect(m_df, SIGNAL(scan_progress(int)), pd, SLOT(setValue(int)));

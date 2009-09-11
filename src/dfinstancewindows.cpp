@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include "memorylayout.h"
 #include "cp437codec.h"
 #include "win_structs.h"
+#include "memorysegment.h"
 
 
 DFInstanceWindows::DFInstanceWindows(QObject* parent)
@@ -100,7 +101,12 @@ QString DFInstanceWindows::read_string(const uint &addr) {
 	uint buffer_addr = addr + STRING_BUFFER_OFFSET;
 	if (cap >= 16)
 		buffer_addr = read_uint(buffer_addr);
-
+	
+	if (len > cap || len < 0 || len > 1024) {
+		// probaby not really a string
+		LOGW << "Tried to read a string at" << hex << addr << "but it was totally not a string...";
+		return QString();
+	}
 	Q_ASSERT_X(len <= cap, "read_string", "Length must be less than or equal to capacity!");
 	Q_ASSERT_X(len >= 0, "read_string", "Length must be >=0!");
 	Q_ASSERT_X(len < (1 << 16), "read_string", "String must be of sane length!");
@@ -166,6 +172,9 @@ uint DFInstanceWindows::read_raw(const uint &addr, const uint &bytes, void *buff
 	memset(buffer, 0, bytes);
 	uint bytes_read = 0;
 	ReadProcessMemory(m_proc, (LPCVOID)addr, (void*)buffer, sizeof(uchar) * bytes, (DWORD*)&bytes_read);
+	/*if (!ok || bytes_read != bytes)
+		LOGW << "ERROR: tried to get" << bytes << "bytes from" << hex << addr << "but only got" 
+			 << dec << bytes_read << "Windows System Error(" << dec << GetLastError() << ")";*/
 	return bytes_read;
 }
 
@@ -201,6 +210,8 @@ bool DFInstanceWindows::find_running_copy() {
 						 | PROCESS_VM_READ
 						 | PROCESS_VM_OPERATION
 						 | PROCESS_VM_WRITE, false, m_pid);
+	
+	//m_proc = OpenProcess(PROCESS_ALL_ACCESS, false, m_pid);
 
 	PROCESS_MEMORY_COUNTERS pmc;
 	GetProcessMemoryInfo(m_proc, &pmc, sizeof(pmc));
@@ -261,16 +272,20 @@ bool DFInstanceWindows::find_running_copy() {
 			continue;
 		}
 
-		if (mbi.State == MEM_COMMIT && (mbi.Protect & PAGE_EXECUTE_READ || 
-										mbi.Protect & PAGE_EXECUTE_READWRITE || 
-										mbi.Protect & PAGE_READONLY ||
-										mbi.Protect & PAGE_READWRITE ||
-										mbi.Protect & PAGE_WRITECOPY)) {
-			TRACE << QString("FOUND READABLE COMMITED MEMORY SEGMENT AT 0x%1 SIZE: %2KB FLAGS:%3")
-					.arg((uint)mbi.BaseAddress, 8, 16, QChar('0')).arg(mbi.RegionSize / 1024.0)
+		if (mbi.State == MEM_COMMIT 
+			//&& !(mbi.Protect & PAGE_GUARD)
+			&& (mbi.Protect & PAGE_EXECUTE_READ || 
+				mbi.Protect & PAGE_EXECUTE_READWRITE || 
+				mbi.Protect & PAGE_READONLY ||
+				mbi.Protect & PAGE_READWRITE ||
+				mbi.Protect & PAGE_WRITECOPY)) {
+			TRACE << QString("FOUND READABLE COMMITED MEMORY SEGMENT FROM 0x%1-0x%2 SIZE: %3KB FLAGS:%4")
+					.arg((uint)mbi.BaseAddress, 8, 16, QChar('0'))
+					.arg((uint)mbi.BaseAddress + mbi.RegionSize, 8, 16, QChar('0'))
+					.arg(mbi.RegionSize / 1024.0)
 					.arg(mbi.Protect, 0, 16);
-			
-			QPair<uint, uint> segment((uint)mbi.BaseAddress, (uint)mbi.BaseAddress + mbi.RegionSize);
+			MemorySegment *segment = new MemorySegment("", (uint)mbi.BaseAddress, (uint)(mbi.BaseAddress) + mbi.RegionSize);
+			segment->is_guarded = mbi.Protect & PAGE_GUARD;
 			m_regions << segment;
 			accepted++;
 		} else {
@@ -286,14 +301,13 @@ bool DFInstanceWindows::find_running_copy() {
 	}
 	m_lowest_address = 0xFFFFFFFF;
 	m_highest_address = 0;
-	QPair<uint, uint> addr_pair;
-	foreach(addr_pair, m_regions) {
-		if (addr_pair.first < m_lowest_address)
-			m_lowest_address = addr_pair.first;
-		if (addr_pair.second > m_highest_address)
-			m_highest_address = addr_pair.second;
+	foreach(MemorySegment *seg, m_regions) {
+		if (seg->start_addr < m_lowest_address)
+			m_lowest_address = seg->start_addr;
+		if (seg->end_addr > m_highest_address)
+			m_highest_address = seg->end_addr;
 	}
-	LOGD << "MEMORY SEGMENT SUMMARY--accepted" << accepted << "rejected" << rejected << "total" << accepted + rejected;
+	LOGD << "MEMORY SEGMENT SUMMARY: accepted" << accepted << "rejected" << rejected << "total" << accepted + rejected;
 	return true;
 }
 #endif

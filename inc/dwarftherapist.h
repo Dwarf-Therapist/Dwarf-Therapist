@@ -53,7 +53,7 @@ public:
 
     void load_game_translation_tables(DFInstance *df);
     QString get_generic_word(const uint &offset) {return m_generic_words.value(offset, "UNKNOWN");}
-    QString get_dwarf_word(const uint &offset) {return m_dwarf_words.value(offset, "UNKNOWN");}
+    QString get_dwarf_word(const uint &offset) {return m_dwarf_words.value(offset, get_generic_word(offset));}
 
 	public slots:
 		void add_custom_profession();

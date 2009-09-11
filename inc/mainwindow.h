@@ -35,6 +35,7 @@ class Dwarf;
 class AboutDialog;
 class CustomProfession;
 class ViewManager;
+class Scanner;
 
 namespace Ui
 {
@@ -96,6 +97,7 @@ private:
 	DwarfModelProxy *m_proxy;
 	AboutDialog *m_about_dialog;
 	CustomProfession *m_temp_cp;
+	Scanner *m_scanner;
 	QHttp *m_http;
 	bool m_reading_settings;
 

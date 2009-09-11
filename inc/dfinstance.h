@@ -27,6 +27,7 @@ THE SOFTWARE.
 
 class Dwarf;
 class MemoryLayout;
+struct MemorySegment;
 
 class DFInstance : public QObject {
 	Q_OBJECT
@@ -54,8 +55,8 @@ public:
     virtual int read_int(const uint &addr) = 0;
     virtual uint read_uint(const uint &addr) = 0;
     virtual uint read_raw(const uint &addr, const uint &bytes, void *buffer) = 0;
-    uint scan_mem(const QByteArray &needle, const uint &start_address, const uint &end_address, bool &ok);
-    QVector<uint> scan_mem_find_all(const QByteArray &needle, const uint &start_address, const uint &end_address);
+	QVector<uint> scan_mem(const QByteArray &needle);
+	QVector<uint> scan_for_pointer(const uint &addr);
     virtual QString read_string(const uint &addr) = 0;
 
     QByteArray get_data(const uint &addr, const uint &size);
@@ -83,6 +84,18 @@ public:
     virtual bool attach() = 0;
     virtual bool detach() = 0;
 
+	// Windows string offsets
+#ifdef Q_WS_WIN
+	static const int STRING_BUFFER_OFFSET = 4;
+	static const int STRING_LENGTH_OFFSET = 20;
+	static const int STRING_CAP_OFFSET = 24;
+	static const int VECTOR_POINTER_OFFSET = 4;
+#endif
+#ifdef Q_WS_X11
+	static const int STRING_BUFFER_OFFSET = 0;
+	static const int VECTOR_POINTER_OFFSET = 0;
+#endif
+
 	public slots:
 		// if a menu cancels our scan, we need to know how to stop
 		void cancel_scan() {m_stop_scan = true;}
@@ -101,13 +114,8 @@ protected:
 	bool m_stop_scan; // flag that gets set to stop scan loops
 	bool m_is_ok;
 	MemoryLayout *m_layout;
-	QVector<QPair<uint, uint> > m_regions;
+	QVector<MemorySegment*> m_regions;
     int m_attach_count;
-
-	// these should probably not be constants but I have no idea how to find the values at runtime
-	static const int STRING_BUFFER_OFFSET = 4;
-	static const int STRING_LENGTH_OFFSET = 20;
-	static const int STRING_CAP_OFFSET = 24;
 
 	private slots:
 		void heartbeat();

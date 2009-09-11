@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ScannerDialog</class>
+ <widget class="QDialog" name="ScannerDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>751</width>
+    <height>475</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>DF Rapist</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_7">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="3,1">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_6">
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Output</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextBrowser" name="text_output">
+         <property name="textInteractionFlags">
+          <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <widget class="QGroupBox" name="gb_scan_targets">
+         <property name="title">
+          <string>Scan Targets</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <widget class="QPushButton" name="btn_find_creature_vector">
+            <property name="text">
+             <string>Locate Creature Vector</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_find_dwarf_race_index">
+            <property name="text">
+             <string>Locate Dwarf Race Index</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_find_translations_vector">
+            <property name="text">
+             <string>Locate Translations Vector</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="gb_search">
+         <property name="title">
+          <string>Brute Force Search</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QPushButton" name="btn_find_null_terminated_string">
+            <property name="text">
+             <string>Find Null Terminated String</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_find_vector_by_length">
+            <property name="text">
+             <string>Find Vector By Length</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="gb_brute_force">
+         <property name="title">
+          <string>Brute Force</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Address</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="le_address">
+              <property name="inputMask">
+               <string>&lt;\0\xhhhhhhhh; </string>
+              </property>
+              <property name="text">
+               <string>0x</string>
+              </property>
+              <property name="maxLength">
+               <number>10</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="cb_interpret_as_type">
+              <item>
+               <property name="text">
+                <string>std::string</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>NULL terminated string</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Int</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Unsigned Int</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_read_address">
+              <property name="text">
+               <string>READ</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="le_read_output"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="gb_progress">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="title">
+          <string>Scan Progress</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QLabel" name="lbl_scan_progress">
+            <property name="text">
+             <string>PROGRESS MESSAGE</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QProgressBar" name="pb_main">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="maximum">
+             <number>0</number>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="invertedAppearance">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QProgressBar" name="pb_sub">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="maximum">
+             <number>0</number>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_cancel_scan">
+       <property name="text">
+        <string>Cancel Scan</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_close">
+       <property name="text">
+        <string>Close</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>btn_find_creature_vector</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>find_creature_vector()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>527</x>
+     <y>47</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>375</x>
+     <y>236</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_find_dwarf_race_index</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>find_dwarf_race_index()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>644</x>
+     <y>78</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>746</x>
+     <y>126</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_find_translations_vector</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>find_translations_vector()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>586</x>
+     <y>110</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>745</x>
+     <y>94</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_find_null_terminated_string</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>find_null_terminated_string()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>668</x>
+     <y>175</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>745</x>
+     <y>196</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_find_vector_by_length</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>find_vector_by_length()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>602</x>
+     <y>209</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>748</x>
+     <y>236</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_read_address</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>brute_force_read()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>656</x>
+     <y>276</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>747</x>
+     <y>314</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_cancel_scan</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>cancel_scan()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>476</x>
+     <y>457</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>380</x>
+     <y>452</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_close</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>617</x>
+     <y>455</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>693</x>
+     <y>448</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>find_creature_vector()</slot>
+  <slot>find_dwarf_race_index()</slot>
+  <slot>find_translations_vector()</slot>
+  <slot>find_null_terminated_string()</slot>
+  <slot>find_vector_by_length()</slot>
+  <slot>brute_force_read()</slot>
+  <slot>cancel_scan()</slot>
+ </slots>
+</ui>
