@@ -17,7 +17,7 @@ INCLUDEPATH += ./thirdparty/qtcolorpicker-2.6 \
     ./ui 
 
 #Include file(s)
-include(DwarfTherapist.pri)
+include(dwarftherapist.pri)
 
 win32 {
     DEFINES += _WINDOWS QT_LARGEFILE_SUPPORT QT_DLL QT_NETWORK_LIB
