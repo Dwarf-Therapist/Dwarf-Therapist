@@ -280,8 +280,8 @@ void MainWindow::version_check_finished(bool error) {
 		QString minor = rx.cap(2);
 		QString patch = rx.cap(3);
 		Version newest_v(major.toInt(), minor.toInt(), patch.toInt());
-		LOGI << "OUR VERSION:" << our_v.to_string();
-		LOGI << "LATEST VERSION:" << newest_v.to_string();
+		LOGI << "RUNNING VERSION         :" << our_v.to_string();
+		LOGI << "LATEST AVAILABLE VERSION:" << newest_v.to_string();
 		if (our_v < newest_v) {
 			LOGI << "LATEST VERSION IS NEWER!";
 			QMessageBox *mb = new QMessageBox(this);
@@ -300,26 +300,6 @@ void MainWindow::version_check_finished(bool error) {
 
 void MainWindow::scan_memory() {
 	m_scanner->show();
-	return;
-	QProgressDialog *pd = new QProgressDialog(tr("Scanning Memory"), tr("Cancel"), 0, 1, this);
-	connect(m_df, SIGNAL(scan_total_steps(int)), pd, SLOT(setMaximum(int)));
-	connect(m_df, SIGNAL(scan_progress(int)), pd, SLOT(setValue(int)));
-	connect(m_df, SIGNAL(scan_message(QString)), pd, SLOT(setLabelText(QString)));
-	connect(pd, SIGNAL(canceled()), m_df, SLOT(cancel_scan()));
-	pd->show();
-
-    m_df->find_language_tables();
-	//int translation_addr = m_df->find_translation_vector();
-	//int creature_addr = m_df->find_creature_vector();
-	//int dwarf_race_index = m_df->find_dwarf_race_index();
-    //int stone_vector = m_df->find_stone_vector();
-	pd->deleteLater();
-
-    //qDebug() << "LANGUAGE VECTOR:   " << hex << language_addr;
-	//qDebug() << "TRANSLATION VECTOR:" << hex << translation_addr;
-	//qDebug() << "CREATURE VECTOR:   " << hex << creature_addr;
-	//qDebug() << "DWARF RACE INDEX:  " << hex << dwarf_race_index;
-    //qDebug() << "STONE VECTOR:      " << hex << stone_vector;
 }
 
 void MainWindow::set_group_by(int group_by) {

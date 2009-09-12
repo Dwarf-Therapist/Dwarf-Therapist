@@ -20,42 +20,39 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef SCANNER_H
-#define SCANNER_H
+#ifndef SCANNER_JOB_H
+#define SCANNER_JOB_H
 
-#include "mainwindow.h"
-#include "ui_scannerdialog.h"
+#include <QObject>
+#include "dfinstance.h"
 
-class DFInstance;
-class ScannerThread;
-class ScannerJob;
+typedef enum {
+	FIND_TRANSLATIONS_VECTOR
+} SCANNER_JOB_TYPE;
 
-class Scanner: public QDialog {
+
+class ScannerJob : public QObject {
 	Q_OBJECT
 public:
-	Scanner(DFInstance *df, MainWindow *parent = 0);
-	virtual ~Scanner(){}
+	ScannerJob(SCANNER_JOB_TYPE job_type);
+	virtual ~ScannerJob();
+	SCANNER_JOB_TYPE job_type();
+	DFInstance *df();
 
-	public slots:
-		void report_address(const QString&, const uint&);
-		void report_offset(const QString&, const int&);
-		void cancel_scan();
-
-private:
+protected:
+	SCANNER_JOB_TYPE m_job_type;
+	bool m_ok;
 	DFInstance *m_df;
-	ScannerThread *m_thread;
-	Ui::ScannerDialog *ui;
-	bool m_stop_scanning;
+	bool get_DFInstance();
 
-	void set_ui_enabled(bool enabled);
-
-	private slots:
-		void find_creature_vector();
-		void find_dwarf_race_index();
-		void find_translations_vector();
-		void find_vector_by_length();
-		void find_null_terminated_string();
-		void brute_force_read();
-
+signals:
+	void main_scan_total_steps(int);
+	void main_scan_progress(int);
+	void sub_scan_total_steps(int);
+	void sub_scan_progress(int);
+	void found_address(const QString&, const uint&);
+	void found_offset(const QString&, const int&);
+	void scan_message(const QString&);
+	void quit();
 };
 #endif

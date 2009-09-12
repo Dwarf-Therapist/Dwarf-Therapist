@@ -65,10 +65,6 @@ public:
 	
 	// Mapping methods
 	QVector<uint> find_vectors(const uint &num_entries, const uint &fuzz=0, const uint &entry_size=4);
-    void find_language_tables();
-    uint find_creature_vector();
-    uint find_dwarf_race_index();
-    uint find_stone_vector();
 
 	// Methods for when we know how the data is layed out
 	MemoryLayout *memory_layout() {return m_layout;}

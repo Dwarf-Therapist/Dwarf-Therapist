@@ -20,42 +20,41 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef SCANNER_H
-#define SCANNER_H
-
-#include "mainwindow.h"
-#include "ui_scannerdialog.h"
-
-class DFInstance;
-class ScannerThread;
-class ScannerJob;
-
-class Scanner: public QDialog {
-	Q_OBJECT
-public:
-	Scanner(DFInstance *df, MainWindow *parent = 0);
-	virtual ~Scanner(){}
-
-	public slots:
-		void report_address(const QString&, const uint&);
-		void report_offset(const QString&, const int&);
-		void cancel_scan();
-
-private:
-	DFInstance *m_df;
-	ScannerThread *m_thread;
-	Ui::ScannerDialog *ui;
-	bool m_stop_scanning;
-
-	void set_ui_enabled(bool enabled);
-
-	private slots:
-		void find_creature_vector();
-		void find_dwarf_race_index();
-		void find_translations_vector();
-		void find_vector_by_length();
-		void find_null_terminated_string();
-		void brute_force_read();
-
-};
+#include "scannerjob.h"
+#include "dfinstance.h"
+#ifdef Q_WS_WIN
+#include "dfinstancewindows.h"
 #endif
+#ifdef Q_WS_X11
+#include "dfinstancelinux.h"
+#endif
+
+
+ScannerJob::ScannerJob(SCANNER_JOB_TYPE job_type)
+	: m_job_type(job_type)
+{
+	m_ok = get_DFInstance();
+}
+ScannerJob::~ScannerJob() {
+	if (m_df)
+		delete m_df;
+	m_df = 0;
+}
+
+SCANNER_JOB_TYPE ScannerJob::job_type() {
+	return m_job_type;
+}
+
+DFInstance *ScannerJob::df() {
+	return m_df;
+}
+
+bool ScannerJob::get_DFInstance() {
+#ifdef Q_WS_WIN
+	m_df = new DFInstanceWindows(this);
+#endif
+#ifdef Q_WS_X11
+	m_df = new DFInstanceLinux(this);
+#endif
+	return m_df->find_running_copy() && m_df->is_ok();
+}
