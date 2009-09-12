@@ -42,7 +42,6 @@ public:
     uint read_uint(const uint &addr);
     int read_int(const uint &addr);
     uint read_raw(const uint &addr, const uint &bytes, void *buffer);
-    bool is_valid_address(const uint &addr);
 	QString read_string(const uint &addr);
 
 	// Writing
@@ -56,9 +55,6 @@ public:
 
 protected:
     uint calculate_checksum();
-
-private:
-    QVector<QPair<uint, uint> > m_regions;
 };
 
 #endif // DFINSTANCE_H

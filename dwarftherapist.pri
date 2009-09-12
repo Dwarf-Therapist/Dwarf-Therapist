@@ -56,6 +56,7 @@ HEADERS += $$COLOR_PICKER_HEADERS \
     ./inc/uberdelegate.h \
     ./inc/scannerthread.h \
     ./inc/scanner.h \
+    ./inc/memorysegment.h \
 
 #Source files
 SOURCES += $$COLOR_PICKER_SOURCES \

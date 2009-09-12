@@ -124,7 +124,7 @@ public:
 						word_table_offset = dwarf_lang_table - dwarf_translation;
 						emit found_offset("word_table", word_table_offset);
 						//now find a pointer to this guy...
-						foreach (uint trans_ptr, m_df->scan_mem(encode(dwarf_translation + 4))) {
+						foreach (uint trans_ptr, m_df->scan_mem(encode(dwarf_translation + m_df->VECTOR_POINTER_OFFSET))) {
 							foreach (uint trans_vec_ptr, m_df->scan_mem(encode(trans_ptr))) {
 								translations_vectors << trans_vec_ptr - m_df->VECTOR_POINTER_OFFSET;
 							}

@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "memorylayout.h"
 #include "cp437codec.h"
+#include "memorysegment.h"
 
 DFInstanceLinux::DFInstanceLinux(QObject* parent)
 	: DFInstance(parent)	
@@ -108,18 +109,6 @@ uint DFInstanceLinux::calculate_checksum() {
         TRACE << "GOT MD5:" << md5;
     }
     return md5;
-}
-
-bool DFInstanceLinux::is_valid_address(const uint &addr) {
-    bool valid = false;
-    QPair<uint, uint> region;
-    foreach(region, m_regions) {
-        if (addr >= region.first && addr <= region.second) {
-            valid = true;
-            break;
-        }
-    }
-    return valid;
 }
 
 uint DFInstanceLinux::read_uint(const uint &addr) {
@@ -381,8 +370,9 @@ bool DFInstanceLinux::find_running_copy() {
             //keep_it = true;
 
             if (keep_it) {
+			    MemorySegment *segment = new MemorySegment(path, start_addr, end_addr);
                 //qDebug() << "KEEPING RANGE" << hex << start_addr << "-" << end_addr << "PATH " << path;
-                m_regions << QPair<uint, uint>(start_addr, end_addr);
+                m_regions << segment;
                 if (start_addr < m_lowest_address)
                     m_lowest_address = start_addr;
                 else if (end_addr > m_highest_address)

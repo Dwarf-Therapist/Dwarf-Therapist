@@ -220,7 +220,6 @@ void DFInstance::find_language_tables() {
 	LOGD << "FINISHED SCANNING FOR WORD TABLES";
 }
 
-
 uint DFInstance::find_creature_vector() {
 	return 0;
 }
