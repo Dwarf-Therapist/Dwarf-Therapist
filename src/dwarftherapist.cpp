@@ -316,7 +316,7 @@ void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
 	foreach(uint lang, languages) {
 		LOGD << "FOUND LANG ENTRY" << hex << lang << df->read_string(lang);
 	}
-    uint dwarf_lang_table = languages.at(0) + word_table_offset;
+    uint dwarf_lang_table = languages.at(0) + word_table_offset - df->VECTOR_POINTER_OFFSET;
     LOGD << "Loading dwarf strings from" << hex << dwarf_lang_table;
     QVector<uint> dwarf_words = df->enumerate_vector(dwarf_lang_table);
     LOGD << "dwarf words" << dwarf_words.size();
