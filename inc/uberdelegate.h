@@ -38,7 +38,8 @@ public:
 	typedef enum {
 		SDM_GROWING_CENTRAL_BOX = 0,
 		SDM_GLYPH_LINES,
-		SDM_GROWING_FILL
+		SDM_GROWING_FILL,
+		SDM_NUMERIC
 	} SKILL_DRAWING_METHOD;
 	
 	virtual QSize sizeHint(const QStyleOptionViewItem &opt, const QModelIndex &idx) const;

@@ -203,11 +203,11 @@ const Skill Dwarf::get_skill(int skill_id) {
 			return s;
 		}
 	}
-	return Skill(skill_id, 0, 0);
+	return Skill(skill_id, 0, -1);
 }
 
 short Dwarf::get_rating_by_skill(int skill_id) {
-	short retval = 0;
+	short retval = -1;
 	foreach(Skill s, m_skills) {
 		if (s.id() == skill_id) {
 			retval = s.rating();

@@ -180,8 +180,8 @@ void UberDelegate::paint_skill(const QRect &adjusted, int rating, QColor bg, QPa
 				p->translate(opt.rect.x() + 2, opt.rect.y() + 2);
 				p->scale(opt.rect.width()-4, opt.rect.height()-4);
 				p->drawPolygon(m_diamond_shape);
-			} else if (rating < 15) {
-				float size = 0.75f * (rating / 14.0f);
+			} else if (rating > -1 && rating < 15) {
+				float size = 0.75f * ((rating + 1) / 15.0f); // even dabbling (0) should be drawn
 				float inset = (1.0f - size) / 2.0f;
 				p->translate(adjusted.x(), adjusted.y());
 				p->scale(adjusted.width(), adjusted.height());
@@ -195,16 +195,17 @@ void UberDelegate::paint_skill(const QRect &adjusted, int rating, QColor bg, QPa
 				p->setPen(Qt::gray);
 				p->setBrush(QBrush(c));
 				p->translate(opt.rect.x() + 2, opt.rect.y() + 2);
-				p->scale(opt.rect.width()-4, opt.rect.height()-4);
+				p->scale(opt.rect.width() - 4, opt.rect.height() - 4);
 				p->drawPolygon(m_diamond_shape);
-			} else if (rating < 15) {				
-				float size = rating / 14.0f;
+			} else if (rating > -1 && rating < 15) {				
+				float size = (rating + 2) / 16.0f;
 				p->translate(adjusted.x(), adjusted.y());
 				p->scale(adjusted.width(), adjusted.height());
 				p->fillRect(QRectF(0, 0, size, 1), QBrush(c));
 			}
 			break;
 		case SDM_GLYPH_LINES:
+			{
 			p->setBrush(QBrush(c));
 			p->setPen(c);
 			p->translate(adjusted.x(), adjusted.y());
@@ -228,9 +229,6 @@ void UberDelegate::paint_skill(const QRect &adjusted, int rating, QColor bg, QPa
 					}
 					break;
 				case 14:
-					p->drawEllipse(QPointF(0.5, 0.5), 0.35, 0.35);
-					break;
-				case 13:
 					{
 						QPolygonF poly;
 						poly << QPointF(0.5, 0.1)
@@ -238,7 +236,7 @@ void UberDelegate::paint_skill(const QRect &adjusted, int rating, QColor bg, QPa
 							<< QPointF(0.9, 0.5);
 						p->drawPolygon(poly);
 					}
-				case 12:
+				case 13:
 					{
 						QPolygonF poly;
 						poly << QPointF(0.1, 0.5)
@@ -246,43 +244,54 @@ void UberDelegate::paint_skill(const QRect &adjusted, int rating, QColor bg, QPa
 							<< QPointF(0.5, 0.9);
 						p->drawPolygon(poly);
 					}
-				case 11:
+				case 12:
 					{
 						QPolygonF poly;
 						poly << QPointF(0.9, 0.5)
-							 << QPointF(0.5, 0.5)
-							 << QPointF(0.5, 0.9);
+							<< QPointF(0.5, 0.5)
+							<< QPointF(0.5, 0.9);
 						p->drawPolygon(poly);
 					}
-				case 10:
+				case 11:
 					{
 						QPolygonF poly;
 						poly << QPointF(0.1, 0.5)
-							 << QPointF(0.5, 0.5)
-							 << QPointF(0.5, 0.1);
+							<< QPointF(0.5, 0.5)
+							<< QPointF(0.5, 0.1);
 						p->drawPolygon(poly);
 					}
-				case 9:
-					lines << QLineF(QPointF(0.1, 0.5), QPointF(0.5, 0.1));
-				case 8:
-					lines << QLineF(QPointF(0.5, 0.9), QPointF(0.1, 0.5));
-				case 7:
-					lines << QLineF(QPointF(0.5, 0.9), QPointF(0.9, 0.5));
-				case 6:
+				case 10: // accomplished
 					lines << QLineF(QPointF(0.5, 0.1), QPointF(0.9, 0.5));
-				case 5:
-					lines << QLineF(QPointF(0.5, 0.9), QPointF(0.5, 0.5));
-				case 4:
-					lines << QLineF(QPointF(0.5, 0.1), QPointF(0.5, 0.5));
-				case 3:
-					lines << QLineF(QPointF(0.1, 0.5), QPointF(0.5, 0.5));
-				case 2:
+				case 9: //professional
+					lines << QLineF(QPointF(0.1, 0.5), QPointF(0.5, 0.1));
+				case 8: //expert
+					lines << QLineF(QPointF(0.5, 0.9), QPointF(0.1, 0.5));
+				case 7: //adept
+					lines << QLineF(QPointF(0.5, 0.9), QPointF(0.9, 0.5));
+				case 6: //talented
+					lines << QLineF(QPointF(0.5, 0.5), QPointF(0.5, 0.9));
+				case 5: //proficient
 					lines << QLineF(QPointF(0.5, 0.5), QPointF(0.9, 0.5));
-				case 1:
+				case 4: //skilled
+					lines << QLineF(QPointF(0.5, 0.1), QPointF(0.5, 0.5));
+				case 3: //competent
+					lines << QLineF(QPointF(0.1, 0.5), QPointF(0.5, 0.5));
+				case 2: //untitled
+					lines << QLineF(QPointF(0.7, 0.3), QPointF(0.3, 0.7));
+				case 1: //novice
+					lines << QLineF(QPointF(0.3, 0.3), QPointF(0.7, 0.7));
+				case 0: //dabbling
 					lines << QLineF(QPointF(0.5, 0.5), QPointF(0.5, 0.5));
 					break;
 			}
 			p->drawLines(lines);
+			}
+			break;
+		case SDM_NUMERIC:
+			if (rating > -1) { // don't draw 0s everywhere
+				p->setPen(c);
+				p->drawText(opt.rect, Qt::AlignCenter, QString::number(rating));
+			}
 			break;
 	}
 	p->restore();
