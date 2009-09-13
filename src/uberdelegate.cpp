@@ -172,7 +172,7 @@ void UberDelegate::paint_skill(const QRect &adjusted, int rating, QColor bg, QPa
 	p->save();
 	switch(m_skill_drawing_method) {
 		case SDM_GROWING_CENTRAL_BOX:
-			if (rating == 15) {
+			if (rating >= 15) {
 				// draw diamond
 				p->setRenderHint(QPainter::Antialiasing);
 				p->setPen(Qt::gray);
@@ -189,7 +189,7 @@ void UberDelegate::paint_skill(const QRect &adjusted, int rating, QColor bg, QPa
 			}
 			break;
 		case SDM_GROWING_FILL:
-			if (rating == 15) {
+			if (rating >= 15) {
 				// draw diamond
 				p->setRenderHint(QPainter::Antialiasing);
 				p->setPen(Qt::gray);
@@ -211,6 +211,11 @@ void UberDelegate::paint_skill(const QRect &adjusted, int rating, QColor bg, QPa
 			p->scale(adjusted.width(), adjusted.height());
 			QVector<QLineF> lines;
 			switch (rating) {
+				case 20:
+				case 19:
+				case 18:
+				case 17:
+				case 16:
 				case 15:
 					{
 						p->resetTransform();

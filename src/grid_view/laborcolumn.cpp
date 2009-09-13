@@ -45,14 +45,19 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
 	item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
 	
 	QString skill_str;
-	if (m_skill_id != -1)
-		skill_str = QString("%1 %2 (%3) %4exp")
+	if (m_skill_id != -1) {
+		QString adjusted_rating = QString::number(rating);
+		if (rating > 15) {
+			adjusted_rating = QString("15 +%1").arg(rating - 15);
+		}
+		skill_str = tr("%1 %2<br/>[RAW LEVEL: <b><font color=blue>%3</font></b>]<br/>%4exp")
 			.arg(gdr->get_skill_level_name(rating))
 			.arg(gdr->get_skill_name(m_skill_id))
-			.arg(rating)
+			.arg(adjusted_rating)
 			.arg(d->get_skill(m_skill_id).exp());
+	}
 	item->setToolTip(QString("<h3>%1</h3>%2<h4>%3</h4>").arg(m_title).arg(skill_str).arg(d->nice_name()));
-	
+
 	return item;
 }
 

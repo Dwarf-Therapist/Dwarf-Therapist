@@ -40,7 +40,7 @@ public:
 	Skill(short id, uint exp, short rating)
 		: m_id(id)
 		, m_exp(exp)
-		, m_rating(rating > 15 ? 15 : rating)
+		, m_rating(rating > 20 ? 20 : rating)
 	{
 	}
 
@@ -50,15 +50,15 @@ public:
 
 	QString to_string() const {
 		GameDataReader *gdr = GameDataReader::ptr();
-		QString out;
-		QString level = gdr->get_skill_level_name(m_rating);
-		
-		if (!level.isEmpty()) {
-			out += level;
-			out += " ";
-		}
-		out += gdr->get_skill_name(m_id);
-		return out;// + QString("(%3exp)").arg(m_exp);TODO: fix the exp reading
+		QString out = QString("[%1] ").arg(m_rating);
+		QString skill_level = gdr->get_skill_level_name(m_rating);
+		QString skill_name = gdr->get_skill_name(m_id);
+		if (skill_level.isEmpty())
+			out.append(skill_name);
+		else
+			out.append(QString("%1 %2").arg(skill_level, skill_name));
+		out.append(QString(" (%1xp)").arg(m_exp));
+		return out;
 	}
 
 	bool operator<(const Skill &s2) const {

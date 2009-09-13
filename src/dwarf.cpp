@@ -50,6 +50,7 @@ void Dwarf::refresh_data() {
 	m_nick_name = m_df->read_string(m_address + mem->dwarf_offset("nick_name"));
 	m_pending_nick_name = m_nick_name;
 	m_last_name = read_last_name(m_address + mem->dwarf_offset("last_name"));
+	m_translated_last_name = read_last_name(m_address + mem->dwarf_offset("last_name"), true);
 	m_custom_profession = m_df->read_string(m_address + mem->dwarf_offset("custom_profession"));
 	m_pending_custom_profession = m_df->read_string(m_address + mem->dwarf_offset("custom_profession"));
 	m_race_id = m_df->read_int(m_address + mem->dwarf_offset("race"));
@@ -69,7 +70,7 @@ void Dwarf::refresh_data() {
 	m_happiness = happiness_from_score(m_raw_happiness);
 	
 
-	calc_nice_name();
+	calc_names();
     //LOGD << "LOADED" << nice_name() << "SEX" << (m_is_male ? "M" : "F") << " MONEY" << m_money << "ADDR" << hex << m_address;
 	/*
 	if (m_first_name == "Dumed") {
@@ -93,11 +94,14 @@ QString Dwarf::profession() {
 	return m_profession;
 }
 
-void Dwarf::calc_nice_name() {
-	if (m_pending_nick_name.isEmpty())
+void Dwarf::calc_names() {
+	if (m_pending_nick_name.isEmpty()) {
 		m_nice_name = QString("%1 %2").arg(m_first_name, m_last_name);
-	else
+		m_translated_name = QString("%1 %2").arg(m_first_name, m_translated_last_name);
+	} else {
 		m_nice_name = QString("'%1' %2").arg(m_pending_nick_name, m_last_name);
+		m_translated_name = QString("'%1' %2").arg(m_pending_nick_name, m_translated_last_name);
+	}
 }
 
 Dwarf::DWARF_HAPPINESS Dwarf::happiness_from_score(int score) {
@@ -141,14 +145,18 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const uint &addr) {
 	return new Dwarf(df, addr, df);
 }
 
-QString Dwarf::read_last_name(const uint &addr) {
+QString Dwarf::read_last_name(const uint &addr, bool use_generic) {
 	QString out;
 	for (int i = 0; i < 7; i++) {
         uint word = m_df->read_uint(addr + i * 4);
-        if(word == 0xFFFFFFFF)
+        if (word == 0xFFFFFFFF)
 			break;
-        out.append(DT->get_dwarf_word(word));
+		if (use_generic)
+			out.append(DT->get_generic_word(word));
+		else
+			out.append(DT->get_dwarf_word(word));
 	}
+	out = out.toLower();
 	if (out.size() > 1) {
 		out[0] = out[0].toUpper();
 	}

@@ -300,33 +300,38 @@ Dwarf *DwarfTherapist::get_dwarf_by_id(int dwarf_id) {
 void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
     m_generic_words.clear();
     m_dwarf_words.clear();
-	
-	df->attach();
-    uint generic_lang_table = df->memory_layout()->address("generic_lang_table") + df->get_memory_correction();
-    uint translation_vector = df->memory_layout()->address("translation_vector") + df->get_memory_correction();
-    LOGD << "LANGUAGES VECTOR" << hex << translation_vector;
-    uint word_table_offset = df->memory_layout()->offset("word_table");
-    LOGD << "WORD TABLE OFFSET" << hex << word_table_offset;
 
-    LOGD << "Loading generic strings from" << hex << generic_lang_table;
-    QVector<uint> generic_words = df->enumerate_vector(generic_lang_table);
-    LOGD << "generic words" << generic_words.size();
-    
-    QVector<uint> languages = df->enumerate_vector(translation_vector);
-	foreach(uint lang, languages) {
-		LOGD << "FOUND LANG ENTRY" << hex << lang << df->read_string(lang);
+	uint generic_lang_table = df->memory_layout()->address("language_vector") + df->get_memory_correction();
+	uint translation_vector = df->memory_layout()->address("translation_vector") + df->get_memory_correction();
+	uint word_table_offset = df->memory_layout()->offset("word_table");
+	LOGD << "LANGUAGES VECTOR" << hex << translation_vector;
+	LOGD << "GENERIC LANGUAGE VECTOR" << hex << generic_lang_table;
+	LOGD << "WORD TABLE OFFSET" << hex << word_table_offset;
+
+
+	df->attach();
+	if (generic_lang_table != 0xFFFFFFFF && generic_lang_table != 0) {
+		LOGD << "Loading generic strings from" << hex << generic_lang_table;
+		QVector<uint> generic_words = df->enumerate_vector(generic_lang_table);
+		LOGD << "generic words" << generic_words.size();
+		foreach(uint word_ptr, generic_words) {
+			m_generic_words << df->read_string(word_ptr);
+		}
 	}
-    uint dwarf_lang_table = languages.at(0) + word_table_offset - df->VECTOR_POINTER_OFFSET;
-    LOGD << "Loading dwarf strings from" << hex << dwarf_lang_table;
-    QVector<uint> dwarf_words = df->enumerate_vector(dwarf_lang_table);
-    LOGD << "dwarf words" << dwarf_words.size();
-   
-	
-	foreach(uint word_ptr, generic_words) {
-        m_generic_words << df->read_string(word_ptr);
-    }
-    foreach(uint word_ptr, dwarf_words) {
-        m_dwarf_words << df->read_string(word_ptr);
-    }
+
+	if (translation_vector != 0xFFFFFFFF && translation_vector != 0) {
+		QVector<uint> languages = df->enumerate_vector(translation_vector);
+		foreach(uint lang, languages) {
+			LOGD << "FOUND LANG ENTRY" << hex << lang << df->read_string(lang);
+		}
+		uint dwarf_lang_table = languages.at(0) + word_table_offset - df->VECTOR_POINTER_OFFSET;
+		LOGD << "Loading dwarf strings from" << hex << dwarf_lang_table;
+		QVector<uint> dwarf_words = df->enumerate_vector(dwarf_lang_table);
+		LOGD << "dwarf words" << dwarf_words.size();
+	   	
+		foreach(uint word_ptr, dwarf_words) {
+			m_dwarf_words << df->read_string(word_ptr);
+		}
+	}
     df->detach();
 }

@@ -68,7 +68,7 @@ public:
 				foreach(uint vec_addr, m_df->enumerate_vector(addr)) {
 					QString first_entry = m_df->read_string(vec_addr);
 					if (first_entry == first_generic_word) {
-						emit found_address("generic_lang_table", addr);
+						emit found_address("language_vector", addr);
 					} else if (first_entry == first_dwarf_word) {
 						LOGD << "FOUND DWARF LANG TABLE" << hex << addr;
 						dwarf_lang_table = addr; // store this

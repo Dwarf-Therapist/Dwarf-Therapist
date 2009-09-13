@@ -188,7 +188,12 @@ uint DFInstanceWindows::write_raw(const uint &addr, const uint &bytes, void *buf
 bool DFInstanceWindows::find_running_copy() {
 	LOGD << "attempting to find running copy of DF by window handle";
 
-	HWND hwnd = FindWindow(NULL, L"Dwarf Fortress");
+	HWND hwnd = FindWindow(L"OpenGL", L"Dwarf Fortress");
+	if (!hwnd)
+		hwnd = FindWindow(L"SDL_app", L"Dwarf Fortress");
+	if (!hwnd)
+		hwnd = FindWindow(NULL, L"Dwarf Fortress");
+
 	if (!hwnd) {
 		QMessageBox::warning(0, tr("Warning"),
 			tr("Unable to locate a running copy of Dwarf "
@@ -250,7 +255,8 @@ bool DFInstanceWindows::find_running_copy() {
 				QMessageBox::critical(0, tr("Unidentified Version"),
 					tr("I'm sorry but I don't know how to talk to this version of DF!"));
 				LOGC << "unable to identify version from checksum:" << hex << checksum;
-				//m_is_ok = false;
+				m_is_ok = false;
+				return false;
 			}
 		}
 
