@@ -238,6 +238,7 @@ void MainWindow::read_dwarves() {
 	}
 	m_model->set_instance(m_df);
 	m_model->load_dwarves();
+	new_pending_changes(0);
 	// cheap trick to setup the view correctly
 	m_view_manager->redraw_current_tab();
 }
