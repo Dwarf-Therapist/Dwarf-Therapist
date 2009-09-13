@@ -64,7 +64,6 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
 		skill_str = "0 experience";
 	}
 	item->setToolTip(QString("<h3>%1</h3>%2<h4>%3</h4>").arg(m_title).arg(skill_str).arg(d->nice_name()));
-
 	return item;
 }
 

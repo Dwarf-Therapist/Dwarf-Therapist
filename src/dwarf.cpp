@@ -131,14 +131,12 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const uint &addr) {
     int dwarf_race_id = df->read_int(dwarf_race_index + df->get_memory_correction());
 	TRACE << "Dwarf Race ID is" << dwarf_race_id;
 	
-	/*
 	if ((df->read_int(addr + mem->dwarf_offset("flags1")) & mem->flags("flags1.invalidate")) > 0) {
 		return 0;
 	}
 	if ((df->read_int(addr + mem->dwarf_offset("flags2")) & mem->flags("flags2.invalidate")) > 0) {
 		return 0;
 	}
-	*/
 	if ((df->read_int(addr + mem->dwarf_offset("race"))) != dwarf_race_id) {
 		return 0;
 	}
@@ -227,10 +225,12 @@ QString Dwarf::read_profession(const uint &addr) {
 	if (!m_custom_profession.isEmpty()) {
 		return m_custom_profession; 
 	}
-	
 	char buffer[1];
     m_df->read_raw(addr, 1, &buffer[0]);
-	return GameDataReader::ptr()->get_profession_name((int)buffer[0]);
+	m_raw_profession = (int)buffer[0];
+	GameDataReader *gdr = GameDataReader::ptr();
+	m_can_set_labors = gdr->profession_can_have_labors(m_raw_profession);
+	return gdr->get_profession_name((int)buffer[0]);
 }
 
 void Dwarf::read_labors(const uint &addr) {
@@ -274,12 +274,13 @@ QVector<int> Dwarf::get_dirty_labors() {
 }
 
 bool Dwarf::toggle_labor(int labor_id) {
-	m_pending_labors[labor_id] = !m_pending_labors[labor_id];
+	set_labor(labor_id, !m_pending_labors[labor_id]);
 	return true;
 }
 
 void Dwarf::set_labor(int labor_id, bool enabled) {
-	m_pending_labors[labor_id] = enabled;
+	if (m_can_set_labors)
+		m_pending_labors[labor_id] = enabled;
 }
 
 int Dwarf::pending_changes() {

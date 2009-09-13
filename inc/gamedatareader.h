@@ -69,6 +69,7 @@ public:
 	QString get_skill_level_name(short level);
 	QString get_skill_name(short skill_id);
 	QColor get_color(QString key);
+	bool profession_can_have_labors(const int &profession_id);
 	
 	QStringList get_child_groups(QString section);
 	QStringList get_keys(QString section);
@@ -82,6 +83,7 @@ private:
 	QMap<int, Labor*> m_ordered_labors;
 	QMap<int, QString> m_skills;
 	QMap<int, QString> m_skill_levels;
+	QMap<int, QString> m_non_labor_professions;
 	int m_game_checksum;
 
 

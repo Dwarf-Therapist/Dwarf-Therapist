@@ -53,6 +53,7 @@ public:
 	int id() {return m_id;}
 	bool is_male() {return m_is_male;}
 	QString profession();
+	int raw_profession() {return m_raw_profession;}
 	QString custom_profession_name() {return m_pending_custom_profession;}
 	void refresh_data();
 	QString nice_name() {return m_nice_name;}
@@ -108,6 +109,8 @@ private:
 	QString m_nice_name, m_translated_name; // used to cache this value
 	QString m_custom_profession, m_pending_custom_profession;
 	QString m_profession;
+	int m_raw_profession;
+	bool m_can_set_labors;
 	int m_strength;
 	int m_agility;
 	int m_toughness;

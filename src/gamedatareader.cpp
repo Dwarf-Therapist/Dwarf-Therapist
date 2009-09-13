@@ -25,9 +25,9 @@ THE SOFTWARE.
 #include "labor.h"
 #include <QtDebug>
 
-GameDataReader::GameDataReader(QObject *parent) :
-	QObject(parent)
- {
+GameDataReader::GameDataReader(QObject *parent)
+	: QObject(parent)
+{
 	QDir working_dir = QDir::current();
 	QString filename = working_dir.absoluteFilePath("etc/game_data.ini");
 	m_data_settings = new QSettings(filename, QSettings::IniFormat);
@@ -54,6 +54,13 @@ GameDataReader::GameDataReader(QObject *parent) :
 	foreach(QString k, m_data_settings->childKeys()) {
 		int rating = k.toInt();
 		m_skill_levels.insert(rating, m_data_settings->value(k, "UNKNOWN").toString());
+	}
+	m_data_settings->endGroup();
+
+	m_data_settings->beginGroup("non_labor_professions");
+	foreach(QString k, m_data_settings->childKeys()) {
+		int profession_id = k.toInt();
+		m_non_labor_professions.insert(profession_id, m_data_settings->value(k, "UNKNOWN").toString());
 	}
 	m_data_settings->endGroup();
 }
@@ -123,6 +130,10 @@ QStringList GameDataReader::get_keys(QString section) {
 
 Labor *GameDataReader::get_labor(int labor_id) {
 	return m_labors.value(labor_id, new Labor("UNKNOWN", -1, -1, 1000, this));
+}
+
+bool GameDataReader::profession_can_have_labors(const int &profession_id) {
+	return !m_non_labor_professions.contains(profession_id);
 }
 
 GameDataReader *GameDataReader::m_instance = 0;
