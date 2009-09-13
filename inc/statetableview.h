@@ -67,6 +67,7 @@ private:
 	RotatedHeader *m_header;
 	int m_grid_size;
 	QList<int> m_expanded_rows;
+	bool m_auto_expand_groups;
 
 	private slots:
 		void set_nickname();

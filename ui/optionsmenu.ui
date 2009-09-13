@@ -137,6 +137,22 @@ text-align: left;
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="cb_auto_expand">
+            <property name="toolTip">
+             <string>When checked, if dwarfs are grouped by something, this will auto-expand all groups each view change</string>
+            </property>
+            <property name="statusTip">
+             <string>When checked, if dwarfs are grouped by something, this will auto-expand all groups each view change</string>
+            </property>
+            <property name="whatsThis">
+             <string>When checked, if dwarfs are grouped by something, this will auto-expand all groups each view change</string>
+            </property>
+            <property name="text">
+             <string>Expand Groups On Load</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_7">
             <item>
              <widget class="QLabel" name="label_4">

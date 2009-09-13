@@ -113,6 +113,7 @@ void OptionsMenu::read_settings() {
 	ui->cb_show_aggregates->setChecked(s->value("show_aggregates", true).toBool());
 	ui->cb_single_click_labor_changes->setChecked(s->value("single_click_labor_changes", true).toBool());
 	ui->cb_show_toolbar_text->setChecked(s->value("show_toolbutton_text", true).toBool());
+	ui->cb_auto_expand->setChecked(s->value("auto_expand_groups", true).toBool());
 	s->endGroup();
 
 	m_reading_settings = false;
@@ -142,6 +143,7 @@ void OptionsMenu::write_settings() {
 		s->setValue("show_aggregates", ui->cb_show_aggregates->isChecked());
 		s->setValue("single_click_labor_changes", ui->cb_single_click_labor_changes->isChecked());
 		s->setValue("show_toolbutton_text", ui->cb_show_toolbar_text->isChecked());
+		s->setValue("auto_expand_groups", ui->cb_auto_expand->isChecked());
 		
 		s->endGroup();
 	}
@@ -169,6 +171,7 @@ void OptionsMenu::restore_defaults() {
 	ui->cb_show_aggregates->setChecked(true);
 	ui->cb_single_click_labor_changes->setChecked(false);
 	ui->cb_show_toolbar_text->setChecked(true);
+	ui->cb_auto_expand->setChecked(false);
 
 	m_font = QFont("Segoe UI", 8);
 	m_dirty_font = m_font;

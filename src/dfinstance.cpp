@@ -42,10 +42,9 @@ DFInstance::DFInstance(QObject* parent)
 	,m_layout(0)
     ,m_attach_count(0)
 {
-	/*QTimer *df_check_timer = new QTimer(this);
+	QTimer *df_check_timer = new QTimer(this);
 	connect(df_check_timer, SIGNAL(timeout()), SLOT(heartbeat()));
 	df_check_timer->start(1000); // every second
-        */
 }
 
 QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {

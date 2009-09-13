@@ -85,6 +85,7 @@ void StateTableView::read_settings() {
 	setIconSize(QSize(m_grid_size - 2 - pad * 2, m_grid_size - 2 - pad * 2));
 	
 	set_single_click_labor_changes(s->value("options/single_click_labor_changes", true).toBool());
+	m_auto_expand_groups = s->value("options/auto_expand_groups", false).toBool();
 }
 
 void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
@@ -294,6 +295,10 @@ void StateTableView::index_collapsed(const QModelIndex &idx) {
 }
 
 void StateTableView::restore_expanded_items() {
+	if (m_auto_expand_groups) {
+		expandAll();
+		return;
+	}
 	disconnect(this, SIGNAL(expanded(const QModelIndex &)), 0, 0);
 	foreach(int row, m_expanded_rows) {
 		expand(m_proxy->index(row, 0));
