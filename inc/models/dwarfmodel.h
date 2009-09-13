@@ -42,6 +42,7 @@ public:
 	} GROUP_BY;
 	typedef enum {
 		DR_RATING = Qt::UserRole + 1,
+		DR_SORT_VALUE,
 		DR_IS_AGGREGATE,
 		DR_LABOR_ID,
 		DR_GROUP_NAME,

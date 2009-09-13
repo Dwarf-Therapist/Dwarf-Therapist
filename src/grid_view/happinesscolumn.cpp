@@ -35,7 +35,7 @@ QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
 	QStandardItem *item = init_cell(d);
 	
 	item->setData(CT_HAPPINESS, DwarfModel::DR_COL_TYPE);
-	item->setData(d->get_raw_happiness(), DwarfModel::DR_RATING);
+	item->setData(d->get_raw_happiness(), DwarfModel::DR_SORT_VALUE);
 	QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%4</h4>")
 					  .arg(m_title)
 					  .arg(Dwarf::happiness_name(d->get_happiness()))

@@ -85,7 +85,7 @@ void DwarfModelProxy::sort(int column, Qt::SortOrder order) {
 		if (sortColumn() != column) {
 			order = Qt::DescendingOrder;
 		}
-		setSortRole(DwarfModel::DR_RATING);
+		setSortRole(DwarfModel::DR_SORT_VALUE);
 	}
 	QSortFilterProxyModel::sort(column, order);
 }
