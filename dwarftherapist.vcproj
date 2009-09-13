@@ -977,6 +977,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\skill.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\inc\skill.h"
 				>
 			</File>

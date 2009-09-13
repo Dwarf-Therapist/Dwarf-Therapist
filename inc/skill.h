@@ -30,44 +30,24 @@ THE SOFTWARE.
 class Skill
 {
 public:
-	Skill()
-		: m_id(-1)
-		, m_exp(0)
-		, m_rating(-1)
-	{
-	}
-	 
-	Skill(short id, uint exp, short rating)
-		: m_id(id)
-		, m_exp(exp)
-		, m_rating(rating > 20 ? 20 : rating)
-	{
-	}
+	Skill();
+	Skill(short id, uint exp, short rating);
 
 	short id() const {return m_id;}
 	short rating() const {return m_rating;}
 	uint exp() const {return m_exp;}
+	uint actual_exp() const {return m_actual_exp;}
+	uint exp_for_next_level() const {return m_exp_for_next_level;}
+	QString exp_summary() const;
 
-	QString to_string() const {
-		GameDataReader *gdr = GameDataReader::ptr();
-		QString out = QString("[%1] ").arg(m_rating);
-		QString skill_level = gdr->get_skill_level_name(m_rating);
-		QString skill_name = gdr->get_skill_name(m_id);
-		if (skill_level.isEmpty())
-			out.append(skill_name);
-		else
-			out.append(QString("%1 %2").arg(skill_level, skill_name));
-		out.append(QString(" (%1xp)").arg(m_exp));
-		return out;
-	}
-
-	bool operator<(const Skill &s2) const {
-		return m_rating < s2.rating();
-	}
-
+	QString to_string() const;
+	bool operator<(const Skill &s2) const;
+		
 private:
 	short m_id;
 	uint m_exp;
+	uint m_actual_exp;
+	uint m_exp_for_next_level;
 	short m_rating;
 };
 
