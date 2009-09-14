@@ -67,8 +67,13 @@ bool Skill::operator<(const Skill &s2) const {
 
 QString Skill::exp_summary() const {
 	float progress = 0.0f;
-	if (m_exp_for_next_level)
-		progress = ((float)m_actual_exp / (float)m_exp_for_next_level) * 100;
+	if (m_exp_for_next_level) {
+		uint m_exp_for_current_level = 0;
+		for (int i = 0; i < m_rating; ++i) {
+			m_exp_for_current_level += 500 + (i * 100);
+		}
+		progress = ((float)m_exp / (float)(m_exp_for_next_level - m_exp_for_current_level)) * 100;
+	}
 	return QString("%1/%2 (%L3%)")
 		.arg(m_actual_exp)
 		.arg(m_exp_for_next_level)
