@@ -111,6 +111,7 @@ protected:
 	MemoryLayout *m_layout;
 	QVector<MemorySegment*> m_regions;
     int m_attach_count;
+	QTimer *m_heartbeat_timer;
 
 	private slots:
 		void heartbeat();

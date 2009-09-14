@@ -39,7 +39,8 @@ THE SOFTWARE.
 
 
 DFInstanceWindows::DFInstanceWindows(QObject* parent)
-	: DFInstance(parent)	
+	: DFInstance(parent)
+	, m_proc(0)
 {}
 
 DFInstanceWindows::~DFInstanceWindows() {
@@ -187,6 +188,7 @@ uint DFInstanceWindows::write_raw(const uint &addr, const uint &bytes, void *buf
 
 bool DFInstanceWindows::find_running_copy() {
 	LOGD << "attempting to find running copy of DF by window handle";
+	m_is_ok = false;
 
 	HWND hwnd = FindWindow(L"OpenGL", L"Dwarf Fortress");
 	if (!hwnd)
@@ -199,14 +201,15 @@ bool DFInstanceWindows::find_running_copy() {
 			tr("Unable to locate a running copy of Dwarf "
 			"Fortress, are you sure it's running?"));
 		LOGW << "can't find running copy";
-		return false;
+		return m_is_ok;
 	}
 	LOGD << "found copy with HWND: " << hwnd;
 
 	DWORD pid = 0;
 	GetWindowThreadProcessId(hwnd, &pid);
-	if (pid == 0)
-		return false;
+	if (pid == 0) {
+		return m_is_ok;
+	}
 	LOGD << "PID of process is: " << pid;
 	m_pid = pid;
 	m_hwnd = hwnd;
@@ -233,7 +236,6 @@ bool DFInstanceWindows::find_running_copy() {
 	if (peb_addr == 0){
 		QMessageBox::critical(0, tr("Connection Error"), connection_error);
 		qCritical() << "PEB address came back as 0";
-		m_is_ok = false;
 	} else {
 		PEB peb;
 		DWORD bytes = 0;
@@ -243,26 +245,28 @@ bool DFInstanceWindows::find_running_copy() {
 		} else {
 			QMessageBox::critical(0, tr("Connection Error"), connection_error);
 			qCritical() << "unable to read remote PEB!" << GetLastError();
+		}
+	}
+	
+	if (m_is_ok) {
+		int checksum = calculate_checksum();
+		LOGD << "DF's checksum is:" << hex << checksum;
+		//GameDataReader::ptr()->set_game_checksum(checksum);
+
+		m_layout = new MemoryLayout(checksum);
+		if (!m_layout->is_valid()) {
+			QMessageBox::critical(0, tr("Unidentified Version"),
+				tr("I'm sorry but I don't know how to talk to this version of DF!"));
+			LOGC << "unable to identify version from checksum:" << hex << checksum;
 			m_is_ok = false;
 		}
-		if (m_is_ok) {
-			int checksum = calculate_checksum();
-			LOGD << "DF's checksum is:" << hex << checksum;
-			//GameDataReader::ptr()->set_game_checksum(checksum);
-
-			m_layout = new MemoryLayout(checksum);
-			if (!m_layout->is_valid()) {
-				QMessageBox::critical(0, tr("Unidentified Version"),
-					tr("I'm sorry but I don't know how to talk to this version of DF!"));
-				LOGC << "unable to identify version from checksum:" << hex << checksum;
-				m_is_ok = false;
-				return false;
-			}
-		}
-
-		m_memory_correction = (int)m_base_addr - 0x0400000;
-		LOGD << "memory correction " << m_memory_correction;
 	}
+
+	if (!m_is_ok) // time to bail
+		return m_is_ok;
+
+	m_memory_correction = (int)m_base_addr - 0x0400000;
+	LOGD << "memory correction " << m_memory_correction;
 
 	// scan pages
 	uint start = 0;
@@ -314,6 +318,9 @@ bool DFInstanceWindows::find_running_copy() {
 			m_highest_address = seg->end_addr;
 	}
 	LOGD << "MEMORY SEGMENT SUMMARY: accepted" << accepted << "rejected" << rejected << "total" << accepted + rejected;
-	return true;
+	
+	m_heartbeat_timer->start(1000); // check every second for disconnection
+	m_is_ok = true;
+	return m_is_ok;
 }
 #endif

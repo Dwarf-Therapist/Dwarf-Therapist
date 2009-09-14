@@ -41,10 +41,10 @@ DFInstance::DFInstance(QObject* parent)
 	,m_is_ok(true)
 	,m_layout(0)
     ,m_attach_count(0)
+	,m_heartbeat_timer(new QTimer(this))
 {
-	QTimer *df_check_timer = new QTimer(this);
-	connect(df_check_timer, SIGNAL(timeout()), SLOT(heartbeat()));
-	df_check_timer->start(1000); // every second
+	connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
+	// let subclasses start the timer, since we don't want to be checking before we're connected
 }
 
 QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
@@ -117,9 +117,14 @@ bool DFInstance::looks_like_vector_of_pointers(const uint &addr) {
 }
 
 QVector<Dwarf*> DFInstance::load_dwarves() {
+	QVector<Dwarf*> dwarves;
+	if (!m_is_ok) {
+		LOGW << "not connected";
+		return dwarves;
+	}
 	int creature_vector = m_layout->address("creature_vector");
     TRACE << "starting with creature vector" << creature_vector;
-	QVector<Dwarf*> dwarves;
+	
 	TRACE << "adjusted creature vector" << creature_vector + m_memory_correction;
     QVector<uint> creatures = enumerate_vector(creature_vector + m_memory_correction);
 	TRACE << "FOUND" << creatures.size() << "creatures";
