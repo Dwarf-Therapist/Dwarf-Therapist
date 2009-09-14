@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include "ui_about.h"
 #include "ui_mainwindow.h"
 #include "ui_pendingchanges.h"
-#include "optionsmenu.h"
 #include "aboutdialog.h"
 #include "dwarfmodel.h"
 #include "dwarfmodelproxy.h"

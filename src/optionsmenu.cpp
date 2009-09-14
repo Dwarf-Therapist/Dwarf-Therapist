@@ -29,7 +29,7 @@ THE SOFTWARE.
 #include "defines.h"
 #include "uberdelegate.h"
 
-OptionsMenu::OptionsMenu(MainWindow *parent)
+OptionsMenu::OptionsMenu(QWidget *parent)
 	: QDialog(parent)
 	, ui(new Ui::OptionsMenu)
 	, m_reading_settings(false)
@@ -191,4 +191,12 @@ void OptionsMenu::show_font_chooser() {
 		ui->lbl_current_font->setText(tmp.family() + " [" + QString::number(tmp.pointSize()) + "pt]");
 		m_dirty_font = tmp;
 	}
+}
+
+void OptionsMenu::set_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD &sdm) {
+	LOGD << "Setting SDM to" << UberDelegate::name_for_method(sdm);
+	QSettings *s = DT->user_settings();
+	s->setValue("options/grid/skill_drawing_method", static_cast<int>(sdm));
+	read_settings(); // to set the combo-box correctly
+	emit settings_changed();
 }

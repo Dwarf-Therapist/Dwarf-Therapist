@@ -23,15 +23,15 @@ THE SOFTWARE.
 #ifndef OPTIONS_MENU_H
 #define OPTIONS_MENU_H
 
-#include "mainwindow.h"
 #include "ui_optionsmenu.h"
+#include "uberdelegate.h"
 
 class CustomColor;
 
 class OptionsMenu : public QDialog {
 	Q_OBJECT
 public:
-	OptionsMenu(MainWindow *parent = 0);
+	OptionsMenu(QWidget *parent = 0);
 	virtual ~OptionsMenu();
 
 	void read_settings();
@@ -42,6 +42,7 @@ public:
 		void reject();
 		void restore_defaults();
 		void show_font_chooser();
+		void set_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&);
 	
 private:
 	bool m_reading_settings;

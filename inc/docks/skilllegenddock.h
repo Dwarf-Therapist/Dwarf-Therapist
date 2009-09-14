@@ -24,13 +24,18 @@ THE SOFTWARE.
 #define SKILL_LEGEND_DOCK_H
 
 #include <QtGui>
+#include "uberdelegate.h"
 
 class SkillLegendDock : public QDockWidget {
 	Q_OBJECT
 public:
 	SkillLegendDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
-private:
+	public slots:
+		void set_SDM();
+
+signals:
+	void change_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&);
 
 };
 

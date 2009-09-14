@@ -26,6 +26,8 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include "columntypes.h"
 #include "rotatedheader.h"
+#include "dwarftherapist.h"
+#include "optionsmenu.h"
 
 SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags) 
 	: QDockWidget(parent, flags)
@@ -37,13 +39,25 @@ SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags)
 	main_widget->setLayout(layout);
 	
 	StateTableView *stv = new StateTableView(this);
+	stv->setContextMenuPolicy(Qt::ActionsContextMenu);
+
+	QAction *a;
+	for(int i = 0; i < UberDelegate::SDM_TOTAL_METHODS; ++i) {
+		UberDelegate::SKILL_DRAWING_METHOD m = static_cast<UberDelegate::SKILL_DRAWING_METHOD>(i);
+		a = new QAction(QString("Use %1 Method")
+			.arg(UberDelegate::name_for_method(m)), stv);
+		a->setData(m);
+		connect(a, SIGNAL(triggered()), SLOT(set_SDM()));
+		stv->addAction(a);
+	}
+	
 	layout->addWidget(stv);
 	setWidget(main_widget);
 
 	QStandardItemModel *m = new QStandardItemModel(this);
 	stv->setModel(m);
 	QList<QStandardItem*> items;
-	for(int i = 15; i >= 0; --i) {
+	for(int i = 20; i >= 0; --i) {
 		QList<QStandardItem*> sub_items;
 		QStandardItem *name = new QStandardItem;
 		name->setText(GameDataReader::ptr()->get_skill_level_name(i));
@@ -58,4 +72,13 @@ SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags)
 	for(int i = 1; i < 16; ++i) {
 		stv->get_header()->resizeSection(i, 16);
 	}
+
+	connect(this, SIGNAL(change_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&)),
+		DT->get_options_menu(), SLOT(set_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&)));
+}
+
+void SkillLegendDock::set_SDM() {
+	QAction *a = qobject_cast<QAction*>(QObject::sender());
+	UberDelegate::SKILL_DRAWING_METHOD sdm = static_cast<UberDelegate::SKILL_DRAWING_METHOD>(a->data().toInt());
+	emit change_skill_drawing_method(sdm);
 }

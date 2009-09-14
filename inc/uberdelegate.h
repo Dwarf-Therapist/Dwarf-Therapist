@@ -39,8 +39,19 @@ public:
 		SDM_GROWING_CENTRAL_BOX = 0,
 		SDM_GLYPH_LINES,
 		SDM_GROWING_FILL,
-		SDM_NUMERIC
+		SDM_NUMERIC,
+		SDM_TOTAL_METHODS
 	} SKILL_DRAWING_METHOD;
+	
+	static QString name_for_method(const SKILL_DRAWING_METHOD &method) {
+		switch (method) {
+			case SDM_GROWING_CENTRAL_BOX: return "Growing Central Box";
+			case SDM_GLYPH_LINES: return "Line Glyphs";
+			case SDM_GROWING_FILL: return "Growing Fill";
+			case SDM_NUMERIC: return "Numeric";
+			default: return "UNKNOWN SDM";
+		}
+	}
 	
 	virtual QSize sizeHint(const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
 
