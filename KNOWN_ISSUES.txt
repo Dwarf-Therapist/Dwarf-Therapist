@@ -1,0 +1,18 @@
+==============================================================================   
+KNOWN ISSUES
+==============================================================================
+1) If you get an error about a missing DLL, you need to donwload the MS VC
+   redistributable package. You can find it here:
+   http://www.microsoft.com/downloads/details.aspx?FamilyID=9b2da534-3e03-4391-8a4d-074b9f2bc1bf&displaylang=en
+ 
+2) Speed. Big forts can take some time to render the labor grid. I will be 
+   working on this in the future.
+   
+3) If you come across some other weird error, please post a bug report here:
+   http://code.google.com/p/dwarftherapist/issues/entry and paste the 
+   "run.log" file from the "log" directory into the bug report (or attach it)
+   
+   You can increase the amount of logging by running DwarfTherapist.exe with
+   the "-trace" argument. You can do this via the shortcut, or via the command
+   line
+   

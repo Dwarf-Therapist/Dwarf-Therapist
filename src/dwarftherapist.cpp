@@ -62,8 +62,8 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
 
     bool read = m_user_settings->value("options/read_on_startup", true).toBool();
 	if (read) {
-        //m_main_window->connect_to_df();
-        //m_main_window->read_dwarves();
+        m_main_window->connect_to_df();
+        m_main_window->read_dwarves();
 	}
 	m_main_window->show();
 }

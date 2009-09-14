@@ -1,29 +1,82 @@
+RELEASE 0.3.2 (September 13, 2009)
+CHANGES SINCE 0.3.1
+===============================================================================
+MAJOR CHANGES:
+	* added support for 40d15 & 40d16 on Windows
+	* re-implemented experience display. Tooltips now show experience as: 
+	  "current/nextlevel (%progress)" (issue 67)
+	* Fixed up tooltips for skill and labor columns to nicely show skills with 
+	  true level and experience (issues 75,77)
+	* Fixed the window finding issues on XP and Vista (Thanks to Guhndahb and 
+	  0x517A5D) 
+MINOR CHANGES:
+	* Added non-labor setting professions (child, baby, noble etc...) This 
+	  should keep users from setting illegal labors (issue 60)
+	* tooltips now show the generic translation of a dwarf's name (issues 68, 
+	  70, 76)
+	* fixed a bug where the translation tables were read despite having 0 values
+	  (issues 68, 70, 76)
+	* Labor changes not added if Read Dwarves is pressed before Commit Changes 
+	  (issue 69)
+	* Got rid of both library dependencies on both windows and linux (they are 
+	  statically compiled in making building easier)
+	* Windows now maps memory segments the same way linux does, this prevents 
+	  access violations etc..., making sure we only read known committed 
+	  readable memory segments
+FEATURE REQUESTS:
+ * Added option to show full dwarf names in the options menu (requires 
+   re-reading the dwarfs due to caching) (issue 66)
+ * added new option to always expand all groups (feature request 83)
+ * Enabled labors with no skill in the labor now get a slight boost in sort 
+   order. So if you sort a labor by skill, enabled-but-unskilled dwarfs will 
+   show just after dabbling dwarves. (feature request 78)
+ * Added a new skill drawing method SDM_NUMERIC which draws numbers for the 
+   level on the grid (looks good actually) (issues 75,77)
+ * Re-did the other SKILL_DRAWING_METHODs to differentiate between 0xp and 
+   dabbling. Something is now draw for each of them if skill is over 0exp. 
+   (issues 75,77)
+ * Skill objects now default to a -1 rating instead of 0 (this was causing a 
+   merge between dabbling and 0 experience) (issues 75,77)
+ * reworked the dwarf tooltips (show profession in tooltip) (issues 68, 70, 
+	 76)
+ 
+
+RELEASE 0.3.1 (August 19, 2009)
 CHANGES SINCE 0.3.0
-==========================================================================================
+===============================================================================
  * HappinessColumn tooltip now shows the english version of the happiness level
  * Skills now correctly read experience (Fixed issue 1)
  * fixed issue 58 (can't repro it anymore)
- * Added ability to toggle an entire set at once for a dwarf or a group of dwarfs
+ * Added ability to toggle an entire set at once for a dwarf or a group of 
+   dwarfs
  * added support for 40d14
  * (Fixed issue 5): Show skill-ratings legend somewhere
- * Moved the dock config around. Views, Sets, and Skill legend docks are now off by default and can be turned on in a variety of ways. They also default to floating windows that can be docked.
+ * Moved the dock config around. Views, Sets, and Skill legend docks are now 
+   off by default and can be turned on in a variety of ways. They also default 
+   to floating windows that can be docked.
  * (Fixed issue 42): Hangs if game saved/continued without reloading
- * DT now heartbeats every second to DF. It a fort is unloaded or the game exits, DT will disconnect and allow reconnection.
+ * DT now heartbeats every second to DF. It a fort is unloaded or the game 
+   exits, DT will disconnect and allow reconnection.
  * (Implemented issue 40): Profession mgmt - separate file/export
- * Fixed a minor drawing bug with selected rows not showing the main grid underneath
+ * Fixed a minor drawing bug with selected rows not showing the main grid 
+   underneath
  * Fixed a bug where the Viewmanager would try to draw tabs with invalid indexes
  * (Fixed issue 55): Confirm overwrite if View or Set name exists
-	This dialog only pops up when you aren't editing. To prevent accidental clobbering.
-	Cases where it shows up:
-		Edit View1, change the name to View2(which already exists)
-		New view, change the name to View2(which already exists)
-		Will not show up on edit if the original name was View3 and you save it as View3.
-	Since it doesn't show up in the general case, I've opted to not implement the "don't ask me again" checkbox
+	 This dialog only pops up when you aren't editing. To prevent accidental 
+	 clobbering.
+	 Cases where it shows up:
+		 Edit View1, change the name to View2(which already exists)
+		 New view, change the name to View2(which already exists)
+		 Will not show up on edit if the original name was View3 and you save it as 
+		   View3.
+	 Since it doesn't show up in the general case, I've opted to not implement 
+	 the "don't ask me again" checkbox
  * (Fixed issue 54) Blank name is allowed for set name
  * (Fixed issue 53) Main window doesn't show changes after changing group by
  * generic_useless.ini set wasn't correct, so I removed it
  * StateTableView now remembers which rows were expanded and which weren't
- * Setting the group by now goes thru ViewManager so the columns don't get stretched incorrectly 
+ * Setting the group by now goes thru ViewManager so the columns don't get 
+   stretched incorrectly 
  * (Fixed issue 57) Dwarf Name column resets to fixed-width
  * (Fixed issue 63) Options Window Duplicates Custom Professions
  * (Fixes issue 61) customizable skill icons
@@ -31,6 +84,9 @@ CHANGES SINCE 0.3.0
  * some minor speedups based on a trial of profiler
  * Dwarf::nice_name() is now cached since it hardly ever changes
  * GameDataReader now caches skill names and skill level names (and uses them)
- * UberDelegate now passes adjusted rectangles by reference to the sub-painters for less stack thrashing
- * Less QString::operator+ usage, since it seems to cause reallocations and is generally slow as fucking hell
- * Found some spots where build_rows() was being called multiple times and being slow
+ * UberDelegate now passes adjusted rectangles by reference to the sub-painters
+   for less stack thrashing
+ * Less QString::operator+ usage, since it seems to cause reallocations and is
+   generally slow as fucking hell
+ * Found some spots where build_rows() was being called multiple times and 
+   being slow
