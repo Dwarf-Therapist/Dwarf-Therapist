@@ -54,10 +54,10 @@ QString Skill::to_string() const {
 	QString skill_level = gdr->get_skill_level_name(m_rating);
 	QString skill_name = gdr->get_skill_name(m_id);
 	if (skill_level.isEmpty())
-		out.append(skill_name);
+		out.append(QString("<b>%1</b>").arg(skill_name));
 	else
-		out.append(QString("%1 %2").arg(skill_level, skill_name));
-	out.append(QString(" (%1xp)").arg(m_exp));
+		out.append(QString("<b>%1 %2</b>").arg(skill_level, skill_name));
+	out.append(QString(" EXP %1").arg(exp_summary()));
 	return out;
 }
 

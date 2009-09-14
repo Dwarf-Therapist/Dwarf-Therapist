@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>321</width>
-    <height>401</height>
+    <height>429</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -149,6 +149,22 @@ text-align: left;
             </property>
             <property name="text">
              <string>Expand Groups On Load</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cb_show_full_dwarf_names">
+            <property name="toolTip">
+             <string>When checked, show first names for dwarfs even if they have custom nicknames. Note: this change will not take effect until the next full read of dwarves occurrs!</string>
+            </property>
+            <property name="statusTip">
+             <string>When checked, show first names for dwarfs even if they have custom nicknames. Note: this change will not take effect until the next full read of dwarves occurrs!</string>
+            </property>
+            <property name="whatsThis">
+             <string>When checked, show first names for dwarfs even if they have custom nicknames. Note: this change will not take effect until the next full read of dwarves occurrs!</string>
+            </property>
+            <property name="text">
+             <string>Show Full Dwarf Names</string>
             </property>
            </widget>
           </item>

@@ -217,23 +217,7 @@ void DwarfModel::build_row(QString key) {
 	foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
 		QStandardItem *i_name = new QStandardItem(d->nice_name());
 
-		QString skill_summary;
-		QVector<Skill> *skills = d->get_skills();
-		qSort(*skills);
-		for (int i = skills->size() - 1; i >= 0; --i) {
-			skill_summary.append(QString("<li>%1</li>").arg(skills->at(i).to_string()));
-		}
-		QString dwarf_tooltip = tr("<b><font size=5>%1</font><br/><font size=3>(%2)</font></b><br/><br/>"
-			"<b>Happiness:</b> %3 (%4)<br/>"
-			"<b>Profession:</b> %5<br/><br/>"
-			"<b>Skills:</b><ul>%6</ul>")
-			.arg(d->nice_name())
-			.arg(d->translated_name())
-			.arg(d->happiness_name(d->get_happiness()))
-			.arg(d->get_raw_happiness())
-			.arg(d->profession())
-			.arg(skill_summary);
-		i_name->setToolTip(dwarf_tooltip);
+		i_name->setToolTip(d->tooltip_text());
 		i_name->setStatusTip(d->nice_name());
 		i_name->setData(false, DR_IS_AGGREGATE);
 		i_name->setData(0, DR_RATING);

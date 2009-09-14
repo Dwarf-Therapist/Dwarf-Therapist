@@ -36,7 +36,9 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
 	, m_df(df)
     , m_address(addr)
 {
+	read_settings();
 	refresh_data();
+	connect(DT, SIGNAL(settings_changed()), SLOT(read_settings()));
 }
 
 void Dwarf::refresh_data() {
@@ -69,21 +71,20 @@ void Dwarf::refresh_data() {
 	m_raw_happiness = m_df->read_int(m_address +mem->dwarf_offset("happiness"));
 	m_happiness = happiness_from_score(m_raw_happiness);
 	
-
 	calc_names();
-    //LOGD << "LOADED" << nice_name() << "SEX" << (m_is_male ? "M" : "F") << " MONEY" << m_money << "ADDR" << hex << m_address;
-	/*
-	if (m_first_name == "Dumed") {
-		QVector<int> vector_offsets = m_df->find_likely_vectors(m_address, 4096);
-		//read_prefs(m_address + mem->dwarf_offset("likes"));
-		read_prefs(m_address + 0x2a4);
-		read_prefs(m_address + 0x51c);
-		read_prefs(m_address + 0xaac);
-		read_prefs(m_address + 0xd24);
-	}*/
 }
 
 Dwarf::~Dwarf() {
+}
+
+void Dwarf::read_settings() {
+	QSettings *s = DT->user_settings();
+	bool new_show_full_name = s->value("options/show_full_dwarf_names", false).toBool();
+	if (new_show_full_name != m_show_full_name) {
+		calc_names();
+		emit name_changed();
+	}
+	m_show_full_name = new_show_full_name;
 }
 
 QString Dwarf::profession() {
@@ -99,8 +100,13 @@ void Dwarf::calc_names() {
 		m_nice_name = QString("%1 %2").arg(m_first_name, m_last_name);
 		m_translated_name = QString("%1 %2").arg(m_first_name, m_translated_last_name);
 	} else {
-		m_nice_name = QString("'%1' %2").arg(m_pending_nick_name, m_last_name);
-		m_translated_name = QString("'%1' %2").arg(m_pending_nick_name, m_translated_last_name);
+		if (m_show_full_name) {
+			m_nice_name = QString("%1 '%2' %3").arg(m_first_name, m_pending_nick_name, m_last_name);
+			m_translated_name = QString("%1 '%2' %3").arg(m_first_name, m_pending_nick_name, m_translated_last_name);
+		} else {
+			m_nice_name = QString("'%1' %2").arg(m_pending_nick_name, m_last_name);
+			m_translated_name = QString("'%1' %2").arg(m_pending_nick_name, m_translated_last_name);
+		}
 	}
 }
 
@@ -364,4 +370,23 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
 		i->setData(0, Qt::UserRole, id());
 	}
 	return d_item;
+}
+
+QString Dwarf::tooltip_text() {
+	QString skill_summary;
+	QVector<Skill> *skills = get_skills();
+	qSort(*skills);
+	for (int i = skills->size() - 1; i >= 0; --i) {
+		skill_summary.append(QString("<li>%1</li>").arg(skills->at(i).to_string()));
+	}
+	return tr("<b><font size=5>%1</font><br/><font size=3>(%2)</font></b><br/><br/>"
+		"<b>Happiness:</b> %3 (%4)<br/>"
+		"<b>Profession:</b> %5<br/><br/>"
+		"<b>Skills:</b><ul>%6</ul>")
+		.arg(m_nice_name)
+		.arg(m_translated_name)
+		.arg(happiness_name(m_happiness))
+		.arg(m_raw_happiness)
+		.arg(profession())
+		.arg(skill_summary);
 }

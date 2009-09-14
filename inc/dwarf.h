@@ -77,6 +77,7 @@ public:
 	void commit_pending();
 	int apply_custom_profession(CustomProfession *cp); // return # of pending changes
 	void reset_custom_profession() {m_pending_custom_profession = "";}
+	QString tooltip_text();
 
 	short get_num_weapons();
 	
@@ -86,6 +87,9 @@ public:
 	QTreeWidgetItem *get_pending_changes_tree();
 	QModelIndex m_name_idx;
 
+	public slots:
+		void read_settings();
+
 private:
 	DFInstance *m_df;
     uint m_address;
@@ -94,6 +98,7 @@ private:
 	int m_raw_happiness;
 	int m_money;
 	bool m_is_male;
+	bool m_show_full_name;
 	
     QString read_profession(const uint &addr);
     QString read_last_name(const uint &addr, bool use_generic=false);
@@ -119,6 +124,9 @@ private:
 	QVector<Skill> m_skills;
 	QMap<int, bool> m_labors;
 	QMap<int, bool> m_pending_labors;
+
+signals:
+	void name_changed();
 };
 
 #endif // DWARF_H

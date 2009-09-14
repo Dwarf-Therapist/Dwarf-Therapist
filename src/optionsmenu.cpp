@@ -114,6 +114,7 @@ void OptionsMenu::read_settings() {
 	ui->cb_single_click_labor_changes->setChecked(s->value("single_click_labor_changes", true).toBool());
 	ui->cb_show_toolbar_text->setChecked(s->value("show_toolbutton_text", true).toBool());
 	ui->cb_auto_expand->setChecked(s->value("auto_expand_groups", true).toBool());
+	ui->cb_show_full_dwarf_names->setChecked(s->value("show_full_dwarf_names", false).toBool());
 	s->endGroup();
 
 	m_reading_settings = false;
@@ -144,6 +145,7 @@ void OptionsMenu::write_settings() {
 		s->setValue("single_click_labor_changes", ui->cb_single_click_labor_changes->isChecked());
 		s->setValue("show_toolbutton_text", ui->cb_show_toolbar_text->isChecked());
 		s->setValue("auto_expand_groups", ui->cb_auto_expand->isChecked());
+		s->setValue("show_full_dwarf_names", ui->cb_show_full_dwarf_names->isChecked());
 		
 		s->endGroup();
 	}
@@ -172,6 +174,7 @@ void OptionsMenu::restore_defaults() {
 	ui->cb_single_click_labor_changes->setChecked(false);
 	ui->cb_show_toolbar_text->setChecked(true);
 	ui->cb_auto_expand->setChecked(false);
+	ui->cb_show_full_dwarf_names->setChecked(false);
 
 	m_font = QFont("Segoe UI", 8);
 	m_dirty_font = m_font;
