@@ -123,6 +123,7 @@ void ViewColumnSetDialog::type_chosen(const QString &type_name) {
 		QStandardItem *happiness  = new QStandardItem("Happiness");
 		happiness->setData(CT_HAPPINESS, Qt::UserRole);
 		m->appendRow(happiness);
+		m->sort(0, Qt::DescendingOrder); // make sure spacer shows before happiness
 	} else if (type_name == "Labor") {
 		foreach(Labor *l, gdr->get_ordered_labors()) {
 			QStandardItem *i = new QStandardItem(l->name);
@@ -130,6 +131,7 @@ void ViewColumnSetDialog::type_chosen(const QString &type_name) {
 			i->setData(l->labor_id, Qt::UserRole + 1);
 			m->appendRow(i);
 		}
+		m->sort(0);
 	} else if (type_name == "Skill") {
 		QMap<int, QString> skills = gdr->get_skills();
 		foreach(int skill_id, skills.uniqueKeys()) {
@@ -138,11 +140,11 @@ void ViewColumnSetDialog::type_chosen(const QString &type_name) {
 			i->setData(skill_id, Qt::UserRole + 1);
 			m->appendRow(i);
 		}
+		m->sort(0);
 	} else {
 		ui->cb_column->setEnabled(false);
 		ui->btn_add_col->setEnabled(false);
 	}
-	m->sort(0);
 	ui->cb_column->setModel(m);
 }
 
