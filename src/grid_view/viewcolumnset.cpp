@@ -76,12 +76,18 @@ void ViewColumnSet::reset_from_disk() {
 		QString tmp_type = s.value("type", "DEFAULT").toString();
 		QString col_name = s.value("name", "UNKNOWN " + QString::number(i)).toString();
 		COLUMN_TYPE type = get_column_type(tmp_type);
+		QString hex_color = s.value("bg_color", color_in_hex).toString();
+		QColor bg_color = from_hex(hex_color);
+
+
+		ViewColumn *vc = 0;
 		switch (type) {
 			case CT_SKILL:
 				{
 					int skill_id = s.value("skill_id", -1).toInt();
 					//TODO: check that labor and skill are known ids
-					new SkillColumn(col_name, skill_id, this, this);
+					SkillColumn *c = new SkillColumn(col_name, skill_id, this, this);
+					vc = c;
 				}
 				break;
 			case CT_LABOR:
@@ -89,28 +95,33 @@ void ViewColumnSet::reset_from_disk() {
 					int labor_id = s.value("labor_id", -1).toInt();
 					int skill_id = s.value("skill_id", -1).toInt();
 					//TODO: check that labor and skill are known ids
-					new LaborColumn(col_name, labor_id, skill_id, this, this);
+					LaborColumn *c = new LaborColumn(col_name, labor_id, skill_id, this, this);
+					vc = c;
 				}
 				break;
 			case CT_HAPPINESS:
-				new HappinessColumn(col_name, this, this);
+				{
+					HappinessColumn *c = new HappinessColumn(col_name, this, this);
+					vc = c;
+				}
 				break;
 			case CT_SPACER:
 				{
 					int width = s.value("width", DEFAULT_SPACER_WIDTH).toInt();
-					QString hex_color = s.value("bg_color").toString();
-					QColor bg_color = from_hex(hex_color);
 					SpacerColumn *c = new SpacerColumn(col_name, this, this);
-					c->set_override_color(s.value("override_color").toBool());
-					if (c->override_color()) {
-						c->set_bg_color(bg_color);
-					}
 					c->set_width(width);
+					vc = c;
 				}
 				break;
 			default:
 				LOGW << "Column " << col_name << "in set" << set_name << "has unknown type: " << tmp_type;
 				break;
+		}
+		if (vc) {
+			vc->set_override_color(s.value("override_color").toBool());
+			if (vc->override_color()) {
+				vc->set_bg_color(bg_color);
+			}
 		}
 	}
 	s.endArray();

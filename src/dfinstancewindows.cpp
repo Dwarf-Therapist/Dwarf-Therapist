@@ -242,9 +242,11 @@ bool DFInstanceWindows::find_running_copy() {
 		if (ReadProcessMemory(m_proc, (PCHAR)peb_addr, &peb, sizeof(PEB), &bytes)) {
 			LOGD << "read" << bytes << "bytes BASE ADDR is at: " << hex << peb.ImageBaseAddress;
 			m_base_addr = (int)peb.ImageBaseAddress;
+			m_is_ok = true;
 		} else {
 			QMessageBox::critical(0, tr("Connection Error"), connection_error);
 			qCritical() << "unable to read remote PEB!" << GetLastError();
+			m_is_ok = false;
 		}
 	}
 	
