@@ -245,6 +245,7 @@ int ViewManager::add_tab_from_action() {
 int ViewManager::add_tab_for_gridview(GridView *v) {
 	v->set_active(true);
 	StateTableView *stv = new StateTableView(this);
+	connect(stv, SIGNAL(dwarf_focus_changed(Dwarf*)), SIGNAL(dwarf_focus_changed(Dwarf*))); // pass-thru
 	stv->setSortingEnabled(false);
 	stv->set_model(m_model, m_proxy);
 	stv->setSortingEnabled(true);

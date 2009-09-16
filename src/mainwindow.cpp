@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include "gridviewdock.h"
 #include "viewcolumnsetdock.h"
 #include "skilllegenddock.h"
+#include "dwarfdetailsdock.h"
 #include "columntypes.h"
 #include "rotatedheader.h"
 #include "scanner.h"
@@ -94,12 +95,18 @@ MainWindow::MainWindow(QWidget *parent)
 	skill_legend_dock->setHidden(true); // hide by default
 	skill_legend_dock->setFloating(true);
 	addDockWidget(Qt::RightDockWidgetArea, skill_legend_dock);
+
+	DwarfDetailsDock *dwarf_details_dock = new DwarfDetailsDock(this);
+	dwarf_details_dock->setHidden(true);
+	dwarf_details_dock->setFloating(true);
+	addDockWidget(Qt::RightDockWidgetArea, dwarf_details_dock);
 	
 	ui->menu_docks->addAction(ui->dock_pending_jobs_list->toggleViewAction());
 	ui->menu_docks->addAction(ui->dock_custom_professions->toggleViewAction());
 	ui->menu_docks->addAction(grid_view_dock->toggleViewAction());
 	ui->menu_docks->addAction(view_set_dock->toggleViewAction());
 	ui->menu_docks->addAction(skill_legend_dock->toggleViewAction());
+	ui->menu_docks->addAction(dwarf_details_dock->toggleViewAction());
 	ui->menuWindows->addAction(ui->main_toolbar->toggleViewAction());
 
 	LOGD << "setting up connections for MainWindow";
@@ -118,6 +125,7 @@ MainWindow::MainWindow(QWidget *parent)
 			m_view_manager, SLOT(jump_to_dwarf(QTreeWidgetItem *, QTreeWidgetItem *)));
 	connect(ui->list_custom_professions, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
 		m_view_manager, SLOT(jump_to_profession(QListWidgetItem *, QListWidgetItem *)));
+	connect(m_view_manager, SIGNAL(dwarf_focus_changed(Dwarf*)), dwarf_details_dock, SLOT(show_dwarf(Dwarf*)));
 
 	m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 

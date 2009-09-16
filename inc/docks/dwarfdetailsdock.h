@@ -20,37 +20,28 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef SKILL_H
-#define SKILL_H
+#ifndef DWARF_DETAILS_H
+#define DWARF_DETAILS_H
 
-#include <QString>
-#include <QStringList>
-#include "gamedatareader.h"
+#include <QtGui>
 
-class Skill
-{
+class Dwarf;
+
+namespace Ui {
+	class DwarfDetailsDock;
+}
+
+class DwarfDetailsDock : public QDockWidget {
+	Q_OBJECT
 public:
-	Skill();
-	Skill(short id, uint exp, short rating);
+	DwarfDetailsDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+	public slots:
+		void show_dwarf(Dwarf *d);
 
-	short id() const {return m_id;}
-	short rating() const {return m_rating;}
-	uint exp() const {return m_exp;}
-	uint actual_exp() const {return m_actual_exp;}
-	uint exp_for_current_level() const {return m_exp_for_current_level;}
-	uint exp_for_next_level() const {return m_exp_for_next_level;}
-	QString exp_summary() const;
-
-	QString to_string(bool include_level = true, bool include_exp_summary = true) const;
-	bool operator<(const Skill &s2) const;
-		
 private:
-	short m_id;
-	uint m_exp;
-	uint m_actual_exp;
-	uint m_exp_for_current_level;
-	uint m_exp_for_next_level;
-	short m_rating;
+	Ui::DwarfDetailsDock *ui;
+	QGridLayout *m_skills_layout;
+	QVector<QObject*> m_cleanup_list;
 };
 
-#endif // SKILL_H
+#endif

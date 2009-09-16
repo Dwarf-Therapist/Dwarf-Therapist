@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 #include <QtGui>
 
+class Dwarf;
 class GridView;
 class ViewColumnSet;
 class StateTableView;
@@ -84,6 +85,9 @@ private:
 		void remove_tab_for_gridview(int index);
 		void read_settings();
 		void draw_add_tab_button();
+
+signals:
+	void dwarf_focus_changed(Dwarf *d);
 		
 };
 

@@ -268,6 +268,16 @@ void StateTableView::reset_custom_profession() {
 	m_model->calculate_pending();
 }
 
+void StateTableView::currentChanged(const QModelIndex &cur, const QModelIndex &) {
+	// current item changed, so find out what dwarf the current item is for...
+	int id = m_proxy->data(cur, DwarfModel::DR_ID).toInt();
+	Dwarf *d = m_model->get_dwarf_by_id(id);
+	if (d) {
+		//LOGD << "focus changed to" << d->nice_name();
+		emit dwarf_focus_changed(d);
+	}
+}
+
 /************************************************************************/
 /* Handlers for expand/collapse persistence                             */
 /************************************************************************/

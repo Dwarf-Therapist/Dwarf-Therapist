@@ -56,6 +56,7 @@ public:
 		void index_expanded(const QModelIndex &idx);
 		void index_collapsed(const QModelIndex &idx);
 		void restore_expanded_items();
+		void currentChanged(const QModelIndex &, const QModelIndex &);
 
 protected:
 	virtual void contextMenuEvent(QContextMenuEvent *event);
@@ -78,6 +79,7 @@ private:
 
 signals:
 	void new_custom_profession(Dwarf *d);
+	void dwarf_focus_changed(Dwarf *d);
 
 };
 #endif // STATETABLEVIEW_H
