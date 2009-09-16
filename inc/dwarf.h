@@ -62,6 +62,10 @@ public:
 	void set_nickname(QString nick) {m_pending_nick_name = nick; calc_names();}
 	DWARF_HAPPINESS get_happiness() {return m_happiness;}
 	int get_raw_happiness() {return m_raw_happiness;}
+	int strength() {return m_strength;}
+	int agility() {return m_agility;}
+	int toughness() {return m_toughness;}
+	int total_xp() {return m_total_xp;}
 	
 	QVector<Skill> *get_skills() {return &m_skills;}
 	const Skill get_skill(int skill_id);
@@ -99,6 +103,7 @@ private:
 	int m_money;
 	bool m_is_male;
 	bool m_show_full_name;
+	int m_total_xp;
 	
     QString read_profession(const uint &addr);
     QString read_last_name(const uint &addr, bool use_generic=false);

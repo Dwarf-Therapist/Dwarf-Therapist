@@ -35,6 +35,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
 	: QObject(parent)
 	, m_df(df)
     , m_address(addr)
+	, m_total_xp(0)
 {
 	read_settings();
 	refresh_data();
@@ -190,12 +191,14 @@ void Dwarf::read_prefs(const uint &addr) {
 }
 
 QVector<Skill> Dwarf::read_skills(const uint &addr) {
+	m_total_xp = 0;
 	QVector<Skill> skills(0);
     foreach(uint entry, m_df->enumerate_vector(addr)) {
         short type = m_df->read_short(entry);
         uint experience = m_df->read_int(entry + 8);
         short rating = m_df->read_short(entry + 4);
 		Skill s(type, experience, rating);
+		m_total_xp += s.actual_exp();
 		skills.append(s);
 	}
 	return skills;

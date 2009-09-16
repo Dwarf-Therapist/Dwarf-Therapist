@@ -63,6 +63,13 @@ GameDataReader::GameDataReader(QObject *parent)
 		m_non_labor_professions.insert(profession_id, m_data_settings->value(k, "UNKNOWN").toString());
 	}
 	m_data_settings->endGroup();
+
+	m_data_settings->beginGroup("attribute_levels");
+	foreach(QString k, m_data_settings->childKeys()) {
+		int num_attributes = k.toInt();
+		m_attribute_levels.insert(num_attributes, m_data_settings->value(k).toInt());
+	}
+	m_data_settings->endGroup();
 }
  
 int GameDataReader::get_int_for_key(QString key, short base) {
@@ -134,6 +141,10 @@ Labor *GameDataReader::get_labor(int labor_id) {
 
 bool GameDataReader::profession_can_have_labors(const int &profession_id) {
 	return !m_non_labor_professions.contains(profession_id);
+}
+
+int GameDataReader::get_xp_for_next_attribute_level(int current_number_of_attributes) {
+	return m_attribute_levels.value(current_number_of_attributes + 1, 0); // return 0 if we don't know
 }
 
 GameDataReader *GameDataReader::m_instance = 0;

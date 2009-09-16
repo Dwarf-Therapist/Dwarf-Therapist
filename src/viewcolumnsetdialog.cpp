@@ -133,7 +133,7 @@ void ViewColumnSetDialog::type_chosen(const QString &type_name) {
 		}
 		m->sort(0);
 	} else if (type_name == "Skill") {
-		QMap<int, QString> skills = gdr->get_skills();
+		QHash<int, QString> skills = gdr->get_skills();
 		foreach(int skill_id, skills.uniqueKeys()) {
 			QStandardItem *i = new QStandardItem(skills.value(skill_id, "UNKNOWN"));
 			i->setData(CT_SKILL, Qt::UserRole);

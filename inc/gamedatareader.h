@@ -59,9 +59,10 @@ public:
 	int get_address(QString key) {return get_int_for_key("addresses/" + key);}
 	int get_offset(QString key) {return get_int_for_key("offsets/" + key);}
 	int get_dwarf_offset(QString key) {return get_int_for_key("dwarf_offsets/" + key);}
+	int get_xp_for_next_attribute_level(int current_number_of_attributes);
 
 	QMap<int, Labor*> get_ordered_labors() {return m_ordered_labors;}
-	QMap<int, QString> get_skills() {return m_skills;}
+	QHash<int, QString> get_skills() {return m_skills;}
 	Labor *get_labor(int labor_id);
 	
 	QString get_string_for_key(QString key);
@@ -79,11 +80,12 @@ protected:
 private:
 	static GameDataReader *m_instance;
 	QSettings *m_data_settings;
-	QMap<int, Labor*> m_labors;
+	QHash<int, Labor*> m_labors;
 	QMap<int, Labor*> m_ordered_labors;
-	QMap<int, QString> m_skills;
-	QMap<int, QString> m_skill_levels;
-	QMap<int, QString> m_non_labor_professions;
+	QHash<int, QString> m_skills;
+	QHash<int, QString> m_skill_levels;
+	QHash<int, QString> m_non_labor_professions;
+	QHash<int, int> m_attribute_levels;
 	int m_game_checksum;
 
 

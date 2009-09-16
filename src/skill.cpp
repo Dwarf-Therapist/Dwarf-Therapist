@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include "skill.h"
+#include "gamedatareader.h"
 
 Skill::Skill()
 	: m_id(-1)
@@ -29,6 +30,7 @@ Skill::Skill()
 	, m_actual_exp(0)
 	, m_exp_for_current_level(0)
 	, m_exp_for_next_level(1)
+	, m_name("UNKNOWN")
 {}
 
 Skill::Skill(short id, uint exp, short rating)
@@ -38,6 +40,7 @@ Skill::Skill(short id, uint exp, short rating)
 	, m_actual_exp(exp)
 	, m_exp_for_current_level(0)
 	, m_exp_for_next_level(exp + 1)
+	, m_name("UNKNOWN")
 {
 	// formula from http://dwarf.lendemaindeveille.com/index.php/Experience
 	m_actual_exp = m_exp;
@@ -52,6 +55,7 @@ Skill::Skill(short id, uint exp, short rating)
 	for (int i = 0; i < m_rating + 1; ++i) {
 		m_exp_for_next_level += 500 + (i * 100);
 	}
+	m_name = GameDataReader::ptr()->get_skill_name(m_id);
 }
 
 QString Skill::to_string(bool include_level, bool include_exp_summary) const {
@@ -66,7 +70,7 @@ QString Skill::to_string(bool include_level, bool include_exp_summary) const {
 	else
 		out.append(QString("<b>%1 %2</b>").arg(skill_level, skill_name));
 	if (include_exp_summary)
-		out.append(QString(" EXP %1").arg(exp_summary()));
+		out.append(QString(" %1").arg(exp_summary()));
 	return out;
 }
 
@@ -79,7 +83,7 @@ QString Skill::exp_summary() const {
 	if (m_exp_for_next_level && m_exp_for_current_level) {
 		progress = ((float)m_exp / (float)(m_exp_for_next_level - m_exp_for_current_level)) * 100;
 	}
-	return QString("%1/%2 (%L3%)")
+	return QString("%L1xp / %L2xp (%L3%)")
 		.arg(m_actual_exp)
 		.arg(m_exp_for_next_level)
 		.arg(progress, 0, 'f', 1);

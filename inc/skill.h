@@ -42,6 +42,7 @@ public:
 	QString exp_summary() const;
 
 	QString to_string(bool include_level = true, bool include_exp_summary = true) const;
+	QString name() {return m_name;}
 	bool operator<(const Skill &s2) const;
 		
 private:
@@ -51,6 +52,7 @@ private:
 	uint m_exp_for_current_level;
 	uint m_exp_for_next_level;
 	short m_rating;
+	QString m_name;
 };
 
 #endif // SKILL_H

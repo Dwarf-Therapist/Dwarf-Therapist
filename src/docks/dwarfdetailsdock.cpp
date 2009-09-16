@@ -36,51 +36,89 @@ DwarfDetailsDock::DwarfDetailsDock(QWidget *parent, Qt::WindowFlags flags)
 	ui->setupUi(this);
 	setFeatures(QDockWidget::AllDockWidgetFeatures);
 	setAllowedAreas(Qt::AllDockWidgetAreas);
-	ui->sa_contents->setLayout(m_skills_layout);
 }
 
 void DwarfDetailsDock::show_dwarf(Dwarf *d) {
 	//LOGD << "ABOUT TO DRAW" << d->nice_name();
+	// Draw the name/profession text labels...
 	ui->lbl_dwarf_name->setText(d->nice_name());
 	ui->lbl_translated_name->setText(QString("(%1)").arg(d->translated_name()));
 	ui->lbl_profession->setText(d->profession());
+
+	QMap<QProgressBar*, int> things;
+	int str = d->strength();
+	int agi = d->agility();
+	int tou = d->toughness();
+	things.insert(ui->pb_strength, str);
+	things.insert(ui->pb_agility, agi);
+	things.insert(ui->pb_toughness, tou);
 	
-	int raw_happiness = d->get_raw_happiness();
-	
-	if (raw_happiness > 150) {
-		ui->pb_happiness->setMaximum(raw_happiness);
-	} else {
-		ui->pb_happiness->setMaximum(150);
+	foreach(QProgressBar *pb, things.uniqueKeys()) {
+		int stat = things.value(pb);
+		pb->setMaximum(stat > 5 ? stat : 5);
+		pb->setValue(stat);
 	}
-	ui->pb_happiness->setValue(raw_happiness);
+	GameDataReader *gdr = GameDataReader::ptr();
+	int xp_for_current = gdr->get_xp_for_next_attribute_level(str + agi + tou - 1);
+	int xp_for_next = gdr->get_xp_for_next_attribute_level(str + agi + tou);
+	if (xp_for_current && xp_for_next) {// is 0 when we don't know when the next level is...
+		ui->pb_next_attribute_gain->setRange(xp_for_current, xp_for_next);
+		ui->pb_next_attribute_gain->setValue(d->total_xp());
+		ui->pb_next_attribute_gain->setToolTip(QString("%L1xp / %L2xp").arg(d->total_xp()).arg(xp_for_next));
+	} else {
+		ui->pb_next_attribute_gain->setValue(-1); //turn it off
+		ui->pb_next_attribute_gain->setToolTip("Off the charts! (I have no idea when you'll get the next gain)");
+	}
+	
+	QString color;
+	ui->lbl_happiness->setText(QString("<b>%1</b> (%2)").arg(d->happiness_name(d->get_happiness())).arg(d->get_raw_happiness()));
+	switch(d->get_happiness()) {
+		case Dwarf::DH_MISERABLE: color = "#cc0000"; break;
+		case Dwarf::DH_UNHAPPY: color = "#0000cc"; break;
+		case Dwarf::DH_FINE: color = "#cccccc"; break;
+		case Dwarf::DH_CONTENT: color = "#ddddcc"; break;
+		case Dwarf::DH_HAPPY: color = "#cccc00"; break;
+		case Dwarf::DH_ECSTATIC: color = "#66FF66"; break;
+	}
+	if (!color.isEmpty())
+		ui->lbl_happiness->setStyleSheet(QString("background-color: %1;").arg(color));
 
 	foreach(QObject *obj, m_cleanup_list) {
 		obj->deleteLater();
 	}
 	m_cleanup_list.clear();
-	
-	//GameDataReader *gdr = GameDataReader::ptr();
+
 	QVector<Skill> *skills = d->get_skills();
-	qSort(*skills); // this will reverse sort by level 0 to 20...
-	int row = 0;
-	for (int i = skills->size() - 1; i >= 0; --i) {
-		Skill s = skills->at(i);
-		QLabel *skill_name = new QLabel;
-		QProgressBar *pb = new QProgressBar(this);
+	QTableWidget *tw = new QTableWidget(skills->size(), 3, this);
+	ui->vbox_main->insertWidget(4, tw, 10);
+	m_cleanup_list << tw;
+	tw->setEditTriggers(QTableWidget::NoEditTriggers);
+	tw->setGridStyle(Qt::NoPen);
+	tw->setAlternatingRowColors(true);
+	tw->setHorizontalHeaderLabels(QStringList() << "Skill" << "Level" << "Progress");
+	tw->verticalHeader()->hide();
+	tw->horizontalHeader()->setStretchLastSection(true);
+	tw->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+	tw->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
+	tw->setSortingEnabled(false); // no sorting while we're inserting
+	for (int row = 0; row < skills->size(); ++row) {
+		tw->setRowHeight(row, 18);
+		Skill s = skills->at(row);
+		QTableWidgetItem *text = new QTableWidgetItem(s.name());
+		QTableWidgetItem *level = new QTableWidgetItem;
+		level->setData(0, d->get_rating_by_skill(s.id()));
 
-		m_skills_layout->addWidget(skill_name, row, 0);
-		m_skills_layout->addWidget(pb, row++, 1);
-		m_cleanup_list << skill_name << pb;
-
-		LOGD << d->nice_name() << s.to_string();
-		LOGD << d->nice_name() << s.exp() << "/" << s.exp_for_next_level() - s.exp_for_current_level() ;
-
-		skill_name->setText(s.to_string(true, false));
-		pb->reset();
+		
+		QProgressBar *pb = new QProgressBar(tw);
 		pb->setRange(s.exp_for_current_level(), s.exp_for_next_level());
 		pb->setValue(s.actual_exp());
 		pb->setToolTip(s.exp_summary());
-	}
-	
+		pb->setDisabled(true);// this is to keep them from animating and looking all goofy
 
+		tw->setItem(row, 0, text);
+		tw->setItem(row, 1, level);
+		tw->setCellWidget(row, 2, pb);
+	}
+	tw->setSortingEnabled(true); // no sorting while we're inserting
+	tw->sortItems(1, Qt::DescendingOrder); // order by level descending
 }
