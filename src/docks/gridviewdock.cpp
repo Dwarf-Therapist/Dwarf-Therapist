@@ -55,6 +55,7 @@ void GridViewDock::contextMenuEvent(QContextMenuEvent *e) {
 		return;
 	QMenu m(this);
 	m.addAction(tr("Edit..."), this, SLOT(edit_view()));
+	m.addAction(tr("Copy..."), this, SLOT(copy_view()));
 	m.addAction(tr("Delete..."), this, SLOT(delete_view()));
 	m.exec(e->globalPos());
 }
@@ -94,6 +95,22 @@ void GridViewDock::edit_view() {
 	}
 	m_tmp_item = 0;
 }
+
+void GridViewDock::copy_view() {
+	if (!m_tmp_item)
+		return;
+
+	GridView *view = m_manager->get_view(m_tmp_item->text());
+	if (!view)
+		return;
+
+	GridView copy(*view);
+	copy.write_settings();
+	emit views_changed();
+	draw_views();
+	m_tmp_item = 0;
+}
+
 void GridViewDock::delete_view() {
 	if (!m_tmp_item)
 		return;

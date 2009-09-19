@@ -72,14 +72,16 @@ void Scanner::report_offset(const QString &msg, const int &addr) {
 	LOGD << out;
 }
 
-void Scanner::find_translations_vector() {
-	set_ui_enabled(false);
-	
-
-	// First find all vectors that have the correct number of entries to be lang tables
-	LOGD << "Launching search thread from thread" << QThread::currentThreadId();
+void Scanner::prepare_new_thread(SCANNER_JOB_TYPE type) {
+	if (m_thread && m_thread->isRunning()) {
+		m_thread->terminate();
+		m_thread->wait(3000);
+		m_thread->deleteLater();
+		m_thread = 0;
+	}
+		
 	m_thread = new ScannerThread;
-	m_thread->set_job(FIND_TRANSLATIONS_VECTOR);
+	m_thread->set_job(type);
 	connect(m_thread, SIGNAL(main_scan_total_steps(int)), ui->pb_main, SLOT(setMaximum(int)));
 	connect(m_thread, SIGNAL(main_scan_progress(int)), ui->pb_main, SLOT(setValue(int)));
 	connect(m_thread, SIGNAL(sub_scan_total_steps(int)), ui->pb_sub, SLOT(setMaximum(int)));
@@ -87,8 +89,15 @@ void Scanner::find_translations_vector() {
 	connect(m_thread, SIGNAL(scan_message(const QString&)), ui->lbl_scan_progress, SLOT(setText(const QString&)));
 	connect(m_thread, SIGNAL(found_address(const QString&, const uint&)), this, SLOT(report_address(const QString&, const uint&)));
 	connect(m_thread, SIGNAL(found_offset(const QString&, const int&)), this, SLOT(report_offset(const QString&, const int&)));
-	m_thread->start();
+}
+
+void Scanner::find_translations_vector() {
+	set_ui_enabled(false);
 	
+	// First find all vectors that have the correct number of entries to be lang tables
+	LOGD << "Launching search thread from thread" << QThread::currentThreadId();
+	prepare_new_thread(FIND_TRANSLATIONS_VECTOR);
+	m_thread->start();
 	
 	while (!m_thread->wait(100)) {
 		if (m_stop_scanning)
@@ -126,10 +135,51 @@ void Scanner::find_vector_by_length() {
 
 void Scanner::find_null_terminated_string() {
 	set_ui_enabled(false);
+	prepare_new_thread(FIND_NULL_TERMINATED_STRING);
+	QByteArray needle = ui->le_null_terminated_string->text().toLocal8Bit();
+	m_thread->set_meta(needle);
+	m_thread->start();
+	while (!m_thread->wait(100)) {
+		if (m_stop_scanning)
+			break;
+		//ui->text_output->append("waiting on thread...");
+		DT->processEvents();
+	}
+	if (m_thread->wait(5000)) {
+		m_thread->deleteLater();
+	} else {
+		LOGC << "Scanning thread failed to stop for 5 seconds after termination!";
+	}
+	m_thread = 0;
 	set_ui_enabled(true);
 }
 
 void Scanner::brute_force_read() {
 	set_ui_enabled(false);
+	bool ok; // for base conversions
+	switch(ui->cb_interpret_as_type->currentIndex()) {
+		case 0: // std::string
+			break;
+		case 1: // null terminated string
+			break;
+		case 2: // int
+			{
+				int val = m_df->read_int(ui->le_address->text().toUInt(&ok, 16));
+				ui->le_read_output->setText(QString::number(val));
+			}
+			break;
+		case 3: // uint
+			{
+				uint val = m_df->read_uint(ui->le_address->text().toUInt(&ok, 16));
+				ui->le_read_output->setText(QString::number(val));
+			}
+			break;
+		case 4: // raw
+			{
+				QString data = m_df->pprint(ui->le_address->text().toUInt(&ok, 16), 0x600);
+				ui->text_output->append(data);
+			}
+			break;
+	}
 	set_ui_enabled(true);
 }

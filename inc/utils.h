@@ -47,6 +47,12 @@ static inline QByteArray encode(uint num) {
     return arr;
 }
 
+static inline QByteArray encode(const ushort &num) {
+	char *bytes;
+	bytes = (char*)&num;
+	QByteArray arr(bytes, sizeof(ushort));
+	return arr;
+}
 
 static inline int decode_int(const QByteArray &arr) {
 	const char* data = arr.constData();

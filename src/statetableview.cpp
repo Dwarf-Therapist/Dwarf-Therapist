@@ -165,8 +165,10 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 		// we're on top of a dwarf's name
 		QMenu m(this); // this will be the popup menu
 		int id = idx.data(DwarfModel::DR_ID).toInt();
+		Dwarf *d = m_model->get_dwarf_by_id(id);
+		m.addActions(d->get_actions());
+		m.addSeparator();
 		m.addAction(tr("Set Nickname..."), this, SLOT(set_nickname()));
-		//m.addAction(tr("View Details..."), this, "add_custom_profession()");
 		m.addSeparator();
 
 		QMenu sub(&m);

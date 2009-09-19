@@ -27,22 +27,34 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "scannerjob.h"
 #include "translationvectorsearchjob.h"
+#include "nullterminatedstringsearchjob.h"
 
 class ScannerThread : public QThread {
 	Q_OBJECT
 public:
 	ScannerThread(QObject *parent = 0)
 		: QThread(parent)
+		, m_meta(QByteArray())
 	{}
 
 	void set_job(SCANNER_JOB_TYPE type) {
 		m_type = type;
 	}
+	void set_meta(const QByteArray &meta) {
+		m_meta = meta;
+	}
 
 	void run() {
 		switch (m_type) {
 			case FIND_TRANSLATIONS_VECTOR:
-				m_job = new TranslationVectorSearchJob();
+				m_job = new TranslationVectorSearchJob;
+				break;
+			case FIND_NULL_TERMINATED_STRING:
+				{
+					NullTerminatedStringSearchJob *job = new NullTerminatedStringSearchJob;
+					job->set_needle(m_meta);
+					m_job = job;
+				}
 				break;
 			default:
 				LOGD << "JOB TYPE NOT SET, EXITING THREAD";
@@ -69,6 +81,7 @@ public:
 private:
 	SCANNER_JOB_TYPE m_type;
 	ScannerJob *m_job;
+	QByteArray m_meta;
 
 signals:
 	void main_scan_total_steps(int);

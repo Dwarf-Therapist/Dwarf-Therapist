@@ -32,6 +32,19 @@ GridView::GridView(QString name, ViewManager *mgr, QObject *parent)
 	, m_manager(mgr)
 {}
 
+GridView::GridView(const GridView &to_be_copied)
+	: QObject(to_be_copied.parent())
+	, m_name(to_be_copied.m_name + " (COPY)")
+	, m_manager(to_be_copied.m_manager)
+{
+	QString new_filename = to_be_copied.m_filename;
+	new_filename.replace(".ini", "COPY.ini");
+	m_filename = new_filename;
+	foreach(ViewColumnSet *s, to_be_copied.sets()) {
+		add_set(s);
+	}
+}
+
 void GridView::add_set(ViewColumnSet *set) {
 	m_sets << set;
 	m_set_map.insert(set->name(), set);
@@ -98,6 +111,7 @@ void GridView::write_settings() {
 
 void GridView::update_from_dialog(GridViewDialog *d) {
 	m_name = d->name();
+	m_filename = d->filename();
 	clear();
 	foreach(QString set_name, d->sets()) {
 		ViewColumnSet *s = m_manager->get_set(set_name);

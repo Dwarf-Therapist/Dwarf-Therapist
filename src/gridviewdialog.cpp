@@ -38,19 +38,29 @@ GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent
 	ui->setupUi(this);
 	populate_combo_box();
 
-	if (m_view) { // looks like this is an edit...
+	if (!m_view->filename().isEmpty()) { // looks like this is an edit...
+		ui->le_filename->setText(view->filename());
 		ui->le_name->setText(view->name());
 		draw_sets();
 		ui->buttonBox->setEnabled(!view->name().isEmpty());
 		m_is_editing = true;
 		m_original_name = view->name();
+	} else {
+		// give them a default save path
+		ui->le_filename->setText(mgr->view_path() + "/");
 	}
+
 	ui->list_sets->installEventFilter(this);
 
 	connect(ui->list_sets, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_set_context_menu(const QPoint &)));
 	connect(ui->le_name, SIGNAL(textChanged(const QString &)), SLOT(check_name(const QString &)));
 	connect(ui->btn_add_set, SIGNAL(clicked()), SLOT(add_set()));
 }
+
+QString GridViewDialog::filename() {
+	return ui->le_filename->text();
+}
+
 
 QString GridViewDialog::name() {
 	 return ui->le_name->text();

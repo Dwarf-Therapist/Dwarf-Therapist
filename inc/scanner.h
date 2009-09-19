@@ -25,10 +25,10 @@ THE SOFTWARE.
 
 #include "mainwindow.h"
 #include "ui_scannerdialog.h"
+#include "scannerjob.h"
 
 class DFInstance;
 class ScannerThread;
-class ScannerJob;
 
 class Scanner: public QDialog {
 	Q_OBJECT
@@ -48,6 +48,8 @@ private:
 	bool m_stop_scanning;
 
 	void set_ui_enabled(bool enabled);
+	void prepare_new_thread(SCANNER_JOB_TYPE type);
+
 
 	private slots:
 		void find_creature_vector();

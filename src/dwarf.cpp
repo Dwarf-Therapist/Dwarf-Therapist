@@ -40,6 +40,12 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
 	read_settings();
 	refresh_data();
 	connect(DT, SIGNAL(settings_changed()), SLOT(read_settings()));
+
+	// setup context actions
+	m_actions.clear();
+	QAction *dump_mem = new QAction(tr("Dump Memory..."), this);
+	connect(dump_mem, SIGNAL(triggered()), SLOT(dump_memory()));
+	m_actions << dump_mem;
 }
 
 void Dwarf::refresh_data() {
@@ -392,4 +398,20 @@ QString Dwarf::tooltip_text() {
 		.arg(m_raw_happiness)
 		.arg(profession())
 		.arg(skill_summary);
+}
+
+void Dwarf::dump_memory() {
+	QDialog *d = new QDialog;
+	d->setModal(false);
+	d->setWindowTitle(m_nice_name);
+	d->resize(800, 600);
+	QVBoxLayout *v = new QVBoxLayout(d);
+	QTextEdit *te = new QTextEdit(d);
+	te->setReadOnly(true);
+	te->setFontFamily("Courier");
+	te->setFontPointSize(8);
+	te->setText(m_df->pprint(m_address, 0x660));
+	v->addWidget(te);
+	d->setLayout(v);
+	d->show();
 }

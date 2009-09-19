@@ -91,8 +91,12 @@ public:
 	QTreeWidgetItem *get_pending_changes_tree();
 	QModelIndex m_name_idx;
 
+	QList<QAction*> get_actions() {return m_actions;}
+
 	public slots:
 		void read_settings();
+		//! show a dialog with a memory dump for this dwarf...
+		void dump_memory();
 
 private:
 	DFInstance *m_df;
@@ -129,6 +133,7 @@ private:
 	QVector<Skill> m_skills;
 	QMap<int, bool> m_labors;
 	QMap<int, bool> m_pending_labors;
+	QList<QAction*> m_actions; // actions suitable for context menus
 
 signals:
 	void name_changed();

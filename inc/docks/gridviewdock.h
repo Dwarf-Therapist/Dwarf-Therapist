@@ -48,6 +48,7 @@ private:
 	private slots:
 		void edit_view();
 		void edit_view(QListWidgetItem*);
+		void copy_view();
 		void delete_view();
 
 signals:

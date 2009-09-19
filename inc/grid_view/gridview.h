@@ -52,15 +52,16 @@ class GridView : public QObject {
 	Q_OBJECT
 public:
 	GridView(QString name, ViewManager *mgr, QObject *parent = 0);
+	GridView(const GridView &to_be_copied); // copy ctor
 
-	QString name() {return m_name;}
+	const QString name() const {return m_name;}
 	void set_name(const QString &name) {m_name = name;}
-	QString filename() {return m_filename;}
+	const QString filename() const {return m_filename;}
 	void set_filename(const QString &filename) {m_filename = filename;}
 	void add_set(ViewColumnSet *set);
 	void remove_set(QString name);
 	void clear();
-	QList<ViewColumnSet*> sets() {return m_sets;}
+	const QList<ViewColumnSet*> sets() const {return m_sets;}
 	bool is_active() {return m_active;}
 	void set_active(bool active) {m_active = active;}
 

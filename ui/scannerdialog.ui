@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>751</width>
-    <height>475</height>
+    <width>788</width>
+    <height>566</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,8 +27,25 @@
        </item>
        <item>
         <widget class="QTextBrowser" name="text_output">
+         <property name="font">
+          <font>
+           <family>Courier New</family>
+          </font>
+         </property>
+         <property name="undoRedoEnabled">
+          <bool>true</bool>
+         </property>
+         <property name="lineWrapMode">
+          <enum>QTextEdit::NoWrap</enum>
+         </property>
+         <property name="readOnly">
+          <bool>false</bool>
+         </property>
+         <property name="tabStopWidth">
+          <number>80</number>
+         </property>
          <property name="textInteractionFlags">
-          <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+          <set>Qt::TextEditorInteraction</set>
          </property>
         </widget>
        </item>
@@ -71,15 +88,34 @@
          <property name="title">
           <string>Brute Force Search</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
-          <item>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLineEdit" name="le_null_terminated_string"/>
+          </item>
+          <item row="0" column="1">
            <widget class="QPushButton" name="btn_find_null_terminated_string">
             <property name="text">
              <string>Find Null Terminated String</string>
             </property>
            </widget>
           </item>
-          <item>
+          <item row="1" column="0">
+           <widget class="QSpinBox" name="sb_vector_entries">
+            <property name="suffix">
+             <string> entries</string>
+            </property>
+            <property name="prefix">
+             <string/>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>3000</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
            <widget class="QPushButton" name="btn_find_vector_by_length">
             <property name="text">
              <string>Find Vector By Length</string>
@@ -96,7 +132,7 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout">
+           <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,4,0,0">
             <item>
              <widget class="QLabel" name="label_2">
               <property name="text">
@@ -131,12 +167,17 @@
               </item>
               <item>
                <property name="text">
-                <string>Int</string>
+                <string>integer</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Unsigned Int</string>
+                <string>unsigned integer</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>--RAW--</string>
                </property>
               </item>
              </widget>
