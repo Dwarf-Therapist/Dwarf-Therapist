@@ -26,7 +26,7 @@
   <widget class="QWidget" name="main_widget">
    <layout class="QVBoxLayout" name="v_box">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,0,10,0,0">
+     <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QLabel" name="lbl_group_by">
         <property name="text">
@@ -97,6 +97,25 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="lbl_dwarf_total">
+        <property name="font">
+         <font>
+          <pointsize>20</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lbl_pending_changes_lbl_2">
+        <property name="text">
+         <string>Dwarfs</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QLabel" name="lbl_pending_changes">
