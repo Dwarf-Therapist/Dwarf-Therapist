@@ -26,12 +26,17 @@ win32 {
     SOURCES += ./src/dfinstancewindows.cpp
     LIBS += -lpsapi
 }
-unix {
+linux {
 	DEFINES += _LINUX
     INCLUDEPATH += $$(QTDIR)/mkspecs/linux-g++
 	HEADERS += ./inc/dfinstancelinux.h
 	SOURCES += ./src/dfinstancelinux.cpp
 #contains(QMAKE_LFLAGS, "-Wl,--no-undefined"):LIBS += $${QMAKE_LIBS_X11}
+}
+macx {
+	message(Setting up for OSX)
+	DEFINES += _OSX
+	INCLUDEPATH += $$(QTDIR)/mkspecs/macx-xcode
 }
 
 DEPENDPATH += .

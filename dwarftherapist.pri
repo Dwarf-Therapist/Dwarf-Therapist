@@ -20,6 +20,7 @@ HEADERS += $$COLOR_PICKER_HEADERS \
     ./inc/models/dwarfmodel.h \
     ./inc/models/dwarfmodelproxy.h \
     ./inc/mainwindow.h \
+    ./inc/docks/dwarfdetailsdock.h \
     ./inc/docks/gridviewdock.h \
     ./inc/docks/skilllegenddock.h \
     ./inc/docks/viewcolumnsetdock.h \
@@ -58,6 +59,7 @@ HEADERS += $$COLOR_PICKER_HEADERS \
     ./inc/scanner.h \
     ./inc/scannerjob.h \
     ./inc/translationvectorsearchjob.h \
+    ./inc/nullterminatedstringsearchjob.h \
     ./inc/memorysegment.h \
 
 #Source files
@@ -67,6 +69,7 @@ SOURCES += $$COLOR_PICKER_SOURCES \
     ./src/models/dwarfmodel.cpp \
     ./src/models/dwarfmodelproxy.cpp \
     ./src/mainwindow.cpp \
+    ./src/docks/dwarfdetailsdock.cpp \
     ./src/docks/gridviewdock.cpp \
     ./src/docks/skilllegenddock.cpp \
     ./src/docks/viewcolumnsetdock.cpp \
@@ -94,13 +97,15 @@ SOURCES += $$COLOR_PICKER_SOURCES \
     ./src/rotatedheader.cpp \
     ./src/uberdelegate.cpp \
     ./src/scanner.cpp \
-    ./src/scannerjob.cpp
+    ./src/scannerjob.cpp \
+    ./src/skill.cpp
 
 #Forms
 FORMS += ./ui/about.ui \
     ./ui/columneditdialog.ui \
     ./ui/customprofession.ui \
     ./ui/customprofessionsexportdialog.ui \
+    ./ui/dwarfdetailsdock.ui \
     ./ui/gridviewdialog.ui \
     ./ui/gridviewdock.ui \
     ./ui/mainwindow.ui \

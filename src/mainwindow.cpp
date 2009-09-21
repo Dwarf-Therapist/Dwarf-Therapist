@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "ui_mainwindow.h"
 #include "ui_pendingchanges.h"
 #include "aboutdialog.h"
+#include "dwarf.h"
 #include "dwarfmodel.h"
 #include "dwarfmodelproxy.h"
 #include "memorylayout.h"

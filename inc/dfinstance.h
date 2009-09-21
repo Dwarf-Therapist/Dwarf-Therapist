@@ -90,6 +90,10 @@ public:
 	static const int STRING_BUFFER_OFFSET = 0;
 	static const int VECTOR_POINTER_OFFSET = 0;
 #endif
+#ifdef Q_WS_MAC
+	static const int STRING_BUFFER_OFFSET = 0;
+	static const int VECTOR_POINTER_OFFSET = 0;
+#endif
 
 	public slots:
 		// if a menu cancels our scan, we need to know how to stop

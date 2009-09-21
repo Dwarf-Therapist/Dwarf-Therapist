@@ -15,6 +15,9 @@ MemoryLayout::MemoryLayout(uint checksum)
 #ifdef Q_WS_X11
         QString subdir = "linux";
 #endif
+#ifdef Q_WS_MAC
+		QString subdir = "osx";
+#endif
         QString filename = working_dir.absoluteFilePath("etc/memory_layouts/" + subdir + "/" + m_game_version + ".ini");
 		m_data = new QSettings(filename, QSettings::IniFormat);
 		load_data();
