@@ -50,35 +50,50 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
 
 void Dwarf::refresh_data() {
 	MemoryLayout *mem = m_df->memory_layout();
+	TRACE << QString("Starting refresh of dwarf data at 0x%1").arg(m_address, 8, 16, QChar('0'));
 
+	m_id = m_df->read_int(m_address + mem->dwarf_offset("id"));
+	TRACE << "\tID:" << m_id;
 	m_first_name = m_df->read_string(m_address + mem->dwarf_offset("first_name"));
 	if (m_first_name.size() > 1)
 		m_first_name[0] = m_first_name[0].toUpper();
-	
-	m_id = m_df->read_int(m_address + mem->dwarf_offset("id"));
+	TRACE << "\tFIRSTNAME:" << m_first_name;
 	m_nick_name = m_df->read_string(m_address + mem->dwarf_offset("nick_name"));
+	TRACE << "\tNICKNAME:" << m_nick_name;
 	m_pending_nick_name = m_nick_name;
 	m_last_name = read_last_name(m_address + mem->dwarf_offset("last_name"));
+	TRACE << "\tLASTNAME:" << m_last_name;
 	m_translated_last_name = read_last_name(m_address + mem->dwarf_offset("last_name"), true);
 	m_custom_profession = m_df->read_string(m_address + mem->dwarf_offset("custom_profession"));
+	TRACE << "\tCUSTOM PROF:" << m_custom_profession;
 	m_pending_custom_profession = m_df->read_string(m_address + mem->dwarf_offset("custom_profession"));
 	m_race_id = m_df->read_int(m_address + mem->dwarf_offset("race"));
+	TRACE << "\tRACE ID:" << m_race_id;
 	m_skills = read_skills(m_address + mem->dwarf_offset("skills"));
+	TRACE << "\tSKILLS: FOUND" << m_skills.size();
 	m_profession = read_profession(m_address + mem->dwarf_offset("profession"));
+	TRACE << "\tPROFESSION:" << m_profession;
 	m_strength = m_df->read_int(m_address + mem->dwarf_offset("strength"));
+	TRACE << "\tSTRENGTH:" << m_strength;
 	m_toughness = m_df->read_int(m_address + mem->dwarf_offset("toughness"));
+	TRACE << "\tTOUGHNESS:" << m_toughness;
 	m_agility = m_df->read_int(m_address + mem->dwarf_offset("agility"));
+	TRACE << "\tAGILITY:" << m_agility;
 	read_labors(m_address + mem->dwarf_offset("labors"));
-	
-	// NEW
+
 	char sex = m_df->read_char(m_address + mem->dwarf_offset("sex"));
 	m_is_male = (int)sex == 1;
+	TRACE << "\tMALE?" << m_is_male;
 
 	m_money = m_df->read_int(m_address + mem->dwarf_offset("money"));
+	TRACE << "\tMONEY:" << m_money;
 	m_raw_happiness = m_df->read_int(m_address +mem->dwarf_offset("happiness"));
+	TRACE << "\tRAW HAPPINESS:" << m_raw_happiness;
 	m_happiness = happiness_from_score(m_raw_happiness);
-	
+	TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
+
 	calc_names();
+	TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
 }
 
 Dwarf::~Dwarf() {
