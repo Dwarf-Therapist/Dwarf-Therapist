@@ -20,13 +20,15 @@ INCLUDEPATH += ./thirdparty/qtcolorpicker-2.6 \
 include(dwarftherapist.pri)
 
 win32 {
+	message(Setting up for Windows)
     DEFINES += _WINDOWS QT_LARGEFILE_SUPPORT QT_DLL QT_NETWORK_LIB
     INCLUDEPATH += $$(QTDIR)/mkspecs/win32-msvc2008
     HEADERS += ./inc/dfinstancewindows.h
     SOURCES += ./src/dfinstancewindows.cpp
     LIBS += -lpsapi
 }
-linux {
+linux-g++ {
+	message(Setting up for Linux)
 	DEFINES += _LINUX
     INCLUDEPATH += $$(QTDIR)/mkspecs/linux-g++
 	HEADERS += ./inc/dfinstancelinux.h
