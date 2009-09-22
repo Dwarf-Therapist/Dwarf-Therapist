@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_7">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="3,1">
+    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="3,2">
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_6">
        <item>
@@ -132,7 +132,7 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,4,0,0">
+           <layout class="QHBoxLayout" name="horizontalLayout">
             <item>
              <widget class="QLabel" name="label_2">
               <property name="text">
@@ -143,13 +143,13 @@
             <item>
              <widget class="QLineEdit" name="le_address">
               <property name="inputMask">
-               <string>&lt;\0\xhhhhhhhh; </string>
+               <string/>
               </property>
               <property name="text">
-               <string>0x</string>
+               <string/>
               </property>
               <property name="maxLength">
-               <number>10</number>
+               <number>32767</number>
               </property>
              </widget>
             </item>
@@ -173,6 +173,11 @@
               <item>
                <property name="text">
                 <string>unsigned integer</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>std::vector&lt;void*&gt;</string>
                </property>
               </item>
               <item>
@@ -374,8 +379,8 @@
    <slot>brute_force_read()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>656</x>
-     <y>276</y>
+     <x>765</x>
+     <y>337</y>
     </hint>
     <hint type="destinationlabel">
      <x>747</x>
@@ -390,8 +395,8 @@
    <slot>cancel_scan()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>476</x>
-     <y>457</y>
+     <x>694</x>
+     <y>555</y>
     </hint>
     <hint type="destinationlabel">
      <x>380</x>
@@ -406,12 +411,44 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>617</x>
-     <y>455</y>
+     <x>777</x>
+     <y>555</y>
     </hint>
     <hint type="destinationlabel">
      <x>693</x>
      <y>448</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>le_address</sender>
+   <signal>returnPressed()</signal>
+   <receiver>btn_read_address</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>511</x>
+     <y>327</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>716</x>
+     <y>331</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>le_null_terminated_string</sender>
+   <signal>returnPressed()</signal>
+   <receiver>btn_find_null_terminated_string</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>529</x>
+     <y>170</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>619</x>
+     <y>176</y>
     </hint>
    </hints>
   </connection>

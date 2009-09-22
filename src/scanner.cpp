@@ -57,9 +57,10 @@ void Scanner::set_ui_enabled(bool enabled) {
 }
 
 void Scanner::report_address(const QString &msg, const uint &addr) {
-	QString out = QString("<b>%1\t= <font color=blue>0x%2</font>\n")
+	QString out = QString("<b>%1\t= <font color=blue>0x%2</font> (uncorrected:0x%3)\n")
 		.arg(msg)
-		.arg(addr - m_df->get_memory_correction(), 8, 16, QChar('0'));
+		.arg(addr - m_df->get_memory_correction(), 8, 16, QChar('0'))
+		.arg(addr, 8, 16, QChar('0'));
 	ui->text_output->append(out);
 	LOGD << out;
 }
@@ -157,10 +158,22 @@ void Scanner::find_null_terminated_string() {
 void Scanner::brute_force_read() {
 	set_ui_enabled(false);
 	bool ok; // for base conversions
+	uint addr = ui->le_address->text().toUInt(&ok, 16);
 	switch(ui->cb_interpret_as_type->currentIndex()) {
 		case 0: // std::string
+			{
+				QString val = m_df->read_string(addr);
+				ui->le_read_output->setText(val);
+			}
 			break;
 		case 1: // null terminated string
+			{
+				char *buf = new char[512];
+				m_df->read_raw(addr, 512, buf);
+				QString val = QString::fromAscii(buf);
+				ui->le_read_output->setText(val);
+				delete[] buf;
+			}
 			break;
 		case 2: // int
 			{
@@ -174,7 +187,16 @@ void Scanner::brute_force_read() {
 				ui->le_read_output->setText(QString::number(val));
 			}
 			break;
-		case 4: // raw
+		case 4: // std::vector<void*>
+			{
+				QVector<uint> addresses = m_df->enumerate_vector(addr);
+				ui->text_output->append(QString("Vector at 0x%1 contains %2 entries...").arg(addr, 8, 16, QChar('0')).arg(addresses.size()));
+				foreach(uint a, addresses) {
+					ui->text_output->append(QString("0x%1").arg(a, 8, 16, QChar('0')));
+				}
+			}
+			break;
+		case 5: // raw
 			{
 				QString data = m_df->pprint(ui->le_address->text().toUInt(&ok, 16), 0x600);
 				ui->text_output->append(data);
