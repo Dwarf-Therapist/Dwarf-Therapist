@@ -263,7 +263,7 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
 
 	bool is_aggregate = item->data(DR_IS_AGGREGATE).toBool();
 	int labor_id = item->data(DR_LABOR_ID).toInt();
-	int dwarf_id = item->data(DR_ID).toInt();
+	int dwarf_id = item->data(DR_ID).toInt(); // TODO: handle no id
 	if (is_aggregate) {
 		QModelIndex first_col = idx.sibling(idx.row(), 0);
 		
@@ -290,11 +290,15 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
 			setData(tmp_index, tmp_index.data(DR_DUMMY).toInt()+1, DR_DUMMY);
 		}
 	} else {
-		QModelIndex aggregate_col = index(idx.parent().row(), idx.column());
-		if (aggregate_col.isValid())
-			setData(aggregate_col, aggregate_col.data(DR_DUMMY).toInt()+1, DR_DUMMY); // redraw the aggregate...
-		setData(idx, idx.data(DR_DUMMY).toInt()+1, DR_DUMMY); // redraw the aggregate...
-		m_dwarves[dwarf_id]->toggle_labor(labor_id);
+        if (!dwarf_id) {
+            LOGW << "dwarf_id was 0 for cell at" << idx << "!";
+        } else {
+		    QModelIndex aggregate_col = index(idx.parent().row(), idx.column());
+		    if (aggregate_col.isValid())
+		    	setData(aggregate_col, aggregate_col.data(DR_DUMMY).toInt()+1, DR_DUMMY); // redraw the aggregate...
+		    setData(idx, idx.data(DR_DUMMY).toInt()+1, DR_DUMMY); // redraw the aggregate...
+		    m_dwarves[dwarf_id]->toggle_labor(labor_id);
+        }
 	}
 	calculate_pending();
 	TRACE << "toggling" << labor_id << "for dwarf:" << dwarf_id;
