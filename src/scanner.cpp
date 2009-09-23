@@ -92,21 +92,18 @@ void Scanner::prepare_new_thread(SCANNER_JOB_TYPE type) {
 	connect(m_thread, SIGNAL(found_offset(const QString&, const int&)), this, SLOT(report_offset(const QString&, const int&)));
 }
 
-void Scanner::find_translations_vector() {
-	set_ui_enabled(false);
-	
-	// First find all vectors that have the correct number of entries to be lang tables
-	LOGD << "Launching search thread from thread" << QThread::currentThreadId();
-	prepare_new_thread(FIND_TRANSLATIONS_VECTOR);
+void Scanner::run_thread_and_wait() {
+	if (!m_thread) {
+		LOGW << "can't run a thread that was never set up! (m_thread == 0)";
+		return;
+	}
 	m_thread->start();
-	
 	while (!m_thread->wait(100)) {
 		if (m_stop_scanning)
 			break;
 		//ui->text_output->append("waiting on thread...");
 		DT->processEvents();
 	}
-	
 	m_thread->terminate();
 	if (m_thread->wait(5000)) {
 		delete m_thread;
@@ -114,8 +111,12 @@ void Scanner::find_translations_vector() {
 		LOGC << "Scanning thread failed to stop for 5 seconds after termination!";
 	}
 	m_thread = 0;
-	
+}
 
+void Scanner::find_translations_vector() {
+	set_ui_enabled(false);
+	prepare_new_thread(FIND_TRANSLATIONS_VECTOR);
+	run_thread_and_wait();
 	set_ui_enabled(true);
 }
 
@@ -134,24 +135,24 @@ void Scanner::find_vector_by_length() {
 	set_ui_enabled(true);
 }
 
+void Scanner::find_stone_vector() {
+	set_ui_enabled(false);
+	prepare_new_thread(FIND_STONE_VECTOR);
+	run_thread_and_wait();
+	set_ui_enabled(true);
+}
+
+void Scanner::find_metal_vector() {
+	set_ui_enabled(false);
+	set_ui_enabled(true);
+}
+
 void Scanner::find_null_terminated_string() {
 	set_ui_enabled(false);
 	prepare_new_thread(FIND_NULL_TERMINATED_STRING);
 	QByteArray needle = ui->le_null_terminated_string->text().toLocal8Bit();
 	m_thread->set_meta(needle);
-	m_thread->start();
-	while (!m_thread->wait(100)) {
-		if (m_stop_scanning)
-			break;
-		//ui->text_output->append("waiting on thread...");
-		DT->processEvents();
-	}
-	if (m_thread->wait(5000)) {
-		m_thread->deleteLater();
-	} else {
-		LOGC << "Scanning thread failed to stop for 5 seconds after termination!";
-	}
-	m_thread = 0;
+	run_thread_and_wait();
 	set_ui_enabled(true);
 }
 
@@ -161,21 +162,8 @@ void Scanner::find_number_or_address() {
 	bool ok;
 	QByteArray needle = encode(ui->le_find_address->text().toUInt(&ok, ui->rb_hex->isChecked() ? 16 : 10));
 	m_thread->set_meta(needle);
-	m_thread->start();
-	while (!m_thread->wait(100)) {
-		if (m_stop_scanning)
-			break;
-		//ui->text_output->append("waiting on thread...");
-		DT->processEvents();
-	}
-	if (m_thread->wait(5000)) {
-		m_thread->deleteLater();
-	} else {
-		LOGC << "Scanning thread failed to stop for 5 seconds after termination!";
-	}
-	m_thread = 0;
+	run_thread_and_wait();
 	set_ui_enabled(true);
-
 }
 
 void Scanner::brute_force_read() {

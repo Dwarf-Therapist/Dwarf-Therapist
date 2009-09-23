@@ -29,7 +29,7 @@
         <widget class="QTextBrowser" name="text_output">
          <property name="font">
           <font>
-           <family>Lucida Console</family>
+           <family>Courier</family>
           </font>
          </property>
          <property name="undoRedoEnabled">
@@ -58,22 +58,36 @@
          <property name="title">
           <string>Scan Targets</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_4">
-          <item>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="0">
            <widget class="QPushButton" name="btn_find_creature_vector">
             <property name="text">
              <string>Locate Creature Vector</string>
             </property>
            </widget>
           </item>
-          <item>
+          <item row="0" column="1">
+           <widget class="QPushButton" name="pushButton">
+            <property name="text">
+             <string>Locate Stone Vector</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
            <widget class="QPushButton" name="btn_find_dwarf_race_index">
             <property name="text">
              <string>Locate Dwarf Race Index</string>
             </property>
            </widget>
           </item>
-          <item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="pushButton_2">
+            <property name="text">
+             <string>Locate Metal Vector</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
            <widget class="QPushButton" name="btn_find_translations_vector">
             <property name="text">
              <string>Locate Translations Vector</string>
@@ -368,7 +382,7 @@
    <slot>find_creature_vector()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1068</x>
+     <x>863</x>
      <y>61</y>
     </hint>
     <hint type="destinationlabel">
@@ -384,7 +398,7 @@
    <slot>find_dwarf_race_index()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1068</x>
+     <x>863</x>
      <y>94</y>
     </hint>
     <hint type="destinationlabel">
@@ -400,7 +414,7 @@
    <slot>find_translations_vector()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1068</x>
+     <x>863</x>
      <y>127</y>
     </hint>
     <hint type="destinationlabel">
@@ -553,6 +567,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>find_stone_vector()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>907</x>
+     <y>49</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>908</x>
+     <y>7</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_2</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>find_metal_vector()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1003</x>
+     <y>84</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1084</x>
+     <y>85</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>find_creature_vector()</slot>
@@ -563,6 +609,8 @@
   <slot>brute_force_read()</slot>
   <slot>cancel_scan()</slot>
   <slot>find_number_or_address()</slot>
+  <slot>find_stone_vector()</slot>
+  <slot>find_metal_vector()</slot>
  </slots>
  <buttongroups>
   <buttongroup name="buttonGroup"/>

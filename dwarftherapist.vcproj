@@ -136,7 +136,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm200 -w34100 -w34189 -Zm200 -w34100 -w34189 -w34100 -w34189"
-				Optimization="2"
+				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
@@ -145,9 +145,11 @@
 				AdditionalIncludeDirectories="&quot;$(QTDIR)\include\QtCore&quot;;&quot;$(QTDIR)\include\QtNetwork&quot;;&quot;$(QTDIR)\include\QtGui&quot;;&quot;$(QTDIR)\include&quot;;.\inc;.\inc\models;.\inc\docks;.\inc\grid_view;&quot;$(IntDir)&quot;;.\ui;&quot;$(QTDIR)\mkspecs\win32-msvc2008&quot;;.;&quot;$(QTDIR)\include\ActiveQt&quot;;.\tmp;&quot;.\thirdparty\libqxt-0.5.0&quot;;&quot;.\thirdparty\qtcolorpicker-2.6&quot;"
 				PreprocessorDefinitions="QT_NO_DEBUG;NDEBUG;_WINDOWS;UNICODE;WIN32;QT_LARGEFILE_SUPPORT;QT_DLL;QT_NETWORK_LIB;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;QT_SCRIPT_LIB;BUILD_QXT_CORE"
 				GeneratePreprocessedFile="0"
+				MinimalRebuild="true"
 				ExceptionHandling="1"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
+				EnableEnhancedInstructionSet="2"
 				FloatingPointModel="2"
 				TreatWChar_tAsBuiltInType="false"
 				RuntimeTypeInfo="true"
@@ -156,7 +158,7 @@
 				ProgramDataBaseFileName=".\"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="0"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -174,9 +176,10 @@
 				AdditionalOptions="&quot;/MANIFESTDEPENDENCY:type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos; processorArchitecture=&apos;*&apos;&quot; &quot;/MANIFESTDEPENDENCY:type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos; processorArchitecture=&apos;*&apos;&quot;"
 				AdditionalDependencies="qtmain.lib psapi.lib QtGui4.lib QtNetwork4.lib QtCore4.lib QtScript4.lib"
 				OutputFile="bin\release\DwarfTherapist.exe"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;$(QTDIR)\lib&quot;"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="false"
 				SubSystem="2"
 				LinkTimeCodeGeneration="1"
@@ -830,6 +833,32 @@
 					</File>
 					<File
 						RelativePath=".\inc\scannerjob.h"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCustomBuildTool"
+								Description="Moc&apos;ing $(InputFileName)..."
+								CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;.\bin\$(ConfigurationName)\moc_$(InputName).cpp&quot; -D_WINDOWS -DBUILD_QXT_CORE -DQT_CORE_LIB -DQT_DLL -DQT_GUI_LIB -DQT_LARGEFILE_SUPPORT -DQT_NETWORK_LIB -DQT_SCRIPT_LIB -DQT_THREAD_SUPPORT -DUNICODE -DWIN32 -I&quot;$(IntDir)\.&quot; -I&quot;$(QTDIR)\include\.&quot; -I&quot;$(QTDIR)\include\ActiveQt\.&quot; -I&quot;$(QTDIR)\include\QtCore\.&quot; -I&quot;$(QTDIR)\include\QtGui\.&quot; -I&quot;$(QTDIR)\include\QtNetwork\.&quot; -I&quot;$(QTDIR)\mkspecs\win32-msvc2008\.&quot; -I&quot;.\.&quot; -I&quot;.\inc\.&quot; -I&quot;.\inc\docks\.&quot; -I&quot;.\inc\grid_view\.&quot; -I&quot;.\inc\models\.&quot; -I&quot;.\thirdparty\libqxt-0.5.0\.&quot; -I&quot;.\thirdparty\qtcolorpicker-2.6\.&quot; -I&quot;.\tmp\.&quot; -I&quot;.\ui\.&quot;&#x0D;&#x0A;"
+								AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+								Outputs="&quot;.\bin\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCustomBuildTool"
+								Description="Moc&apos;ing $(InputFileName)..."
+								CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;  &quot;$(InputPath)&quot; -o &quot;.\bin\$(ConfigurationName)\moc_$(InputName).cpp&quot; -D_WINDOWS -DBUILD_QXT_CORE -DNDEBUG -DQT_CORE_LIB -DQT_DLL -DQT_GUI_LIB -DQT_LARGEFILE_SUPPORT -DQT_NETWORK_LIB -DQT_NO_DEBUG -DQT_SCRIPT_LIB -DQT_THREAD_SUPPORT -DUNICODE -DWIN32 -I&quot;$(IntDir)\.&quot; -I&quot;$(QTDIR)\include\.&quot; -I&quot;$(QTDIR)\include\ActiveQt\.&quot; -I&quot;$(QTDIR)\include\QtCore\.&quot; -I&quot;$(QTDIR)\include\QtGui\.&quot; -I&quot;$(QTDIR)\include\QtNetwork\.&quot; -I&quot;$(QTDIR)\mkspecs\win32-msvc2008\.&quot; -I&quot;.\.&quot; -I&quot;.\inc\.&quot; -I&quot;.\inc\docks\.&quot; -I&quot;.\inc\grid_view\.&quot; -I&quot;.\inc\models\.&quot; -I&quot;.\thirdparty\libqxt-0.5.0\.&quot; -I&quot;.\thirdparty\qtcolorpicker-2.6\.&quot; -I&quot;.\tmp\.&quot; -I&quot;.\ui\.&quot;&#x0D;&#x0A;"
+								AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+								Outputs="&quot;.\bin\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath=".\inc\stonevectorsearchjob.h"
 						>
 						<FileConfiguration
 							Name="Debug|Win32"
@@ -1660,18 +1689,6 @@
 				UniqueIdentifier="{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}"
 				>
 				<File
-					RelativePath="bin\debug\DwarfTherapist.res"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCustomBuildTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath="bin\release\DwarfTherapist.res"
 					>
 					<FileConfiguration
@@ -1684,14 +1701,14 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Debug\moc_aboutdialog.cpp"
+					RelativePath="bin\debug\DwarfTherapist.res"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
-							Name="VCCLCompilerTool"
+							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
 				</File>
@@ -1700,6 +1717,18 @@
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\bin\Debug\moc_aboutdialog.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -1732,18 +1761,6 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Release\moc_customprofession.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath=".\bin\Debug\moc_customprofession.cpp"
 					>
 					<FileConfiguration
@@ -1756,7 +1773,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Release\moc_customprofessionsexportdialog.cpp"
+					RelativePath=".\bin\Release\moc_customprofession.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -1772,6 +1789,18 @@
 					>
 					<FileConfiguration
 						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\bin\Release\moc_customprofessionsexportdialog.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -1804,18 +1833,6 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Release\moc_dfinstancewindows.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath=".\bin\Debug\moc_dfinstancewindows.cpp"
 					>
 					<FileConfiguration
@@ -1828,17 +1845,10 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Debug\moc_dwarf.cpp"
+					RelativePath=".\bin\Release\moc_dfinstancewindows.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -1857,8 +1867,13 @@
 							Name="VCCLCompilerTool"
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\bin\Debug\moc_dwarf.cpp"
+					>
 					<FileConfiguration
 						Name="Release|Win32"
+						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1890,18 +1905,6 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Release\moc_dwarfmodel.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath=".\bin\Debug\moc_dwarfmodel.cpp"
 					>
 					<FileConfiguration
@@ -1914,10 +1917,10 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Debug\moc_dwarfmodelproxy.cpp"
+					RelativePath=".\bin\Release\moc_dwarfmodel.cpp"
 					>
 					<FileConfiguration
-						Name="Release|Win32"
+						Name="Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -1930,6 +1933,18 @@
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\bin\Debug\moc_dwarfmodelproxy.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -1962,18 +1977,6 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Debug\moc_GameDataReader.cpp"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath=".\bin\Release\moc_gamedatareader.cpp"
 					>
 					<FileConfiguration
@@ -1986,7 +1989,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Debug\moc_gridview.cpp"
+					RelativePath=".\bin\Debug\moc_GameDataReader.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2002,6 +2005,18 @@
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\bin\Debug\moc_gridview.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -2034,18 +2049,6 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Release\moc_gridviewdock.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath=".\bin\Debug\moc_gridviewdock.cpp"
 					>
 					<FileConfiguration
@@ -2058,7 +2061,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Release\moc_labor.cpp"
+					RelativePath=".\bin\Release\moc_gridviewdock.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -2074,6 +2077,18 @@
 					>
 					<FileConfiguration
 						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\bin\Release\moc_labor.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -2106,18 +2121,6 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Release\moc_nullterminatedstringsearchjob.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath=".\bin\Debug\moc_nullterminatedstringsearchjob.cpp"
 					>
 					<FileConfiguration
@@ -2130,7 +2133,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Release\moc_optionsmenu.cpp"
+					RelativePath=".\bin\Release\moc_nullterminatedstringsearchjob.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -2146,6 +2149,18 @@
 					>
 					<FileConfiguration
 						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\bin\Release\moc_optionsmenu.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -2178,18 +2193,6 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Debug\moc_qxtlogger.cpp"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath=".\bin\Release\moc_qxtlogger.cpp"
 					>
 					<FileConfiguration
@@ -2202,7 +2205,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Debug\moc_qxtlogger_p.cpp"
+					RelativePath=".\bin\Debug\moc_qxtlogger.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2218,6 +2221,18 @@
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\bin\Debug\moc_qxtlogger_p.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -2250,6 +2265,18 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\bin\Release\moc_rotatedheader.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath=".\bin\Debug\moc_rotatedheader.cpp"
 					>
 					<FileConfiguration
@@ -2262,10 +2289,17 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Release\moc_rotatedheader.cpp"
+					RelativePath=".\bin\Debug\moc_scanner.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -2293,17 +2327,10 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Debug\moc_scanner.cpp"
+					RelativePath=".\bin\Release\moc_scannerjob.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -2316,18 +2343,6 @@
 					>
 					<FileConfiguration
 						Name="Release|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath=".\bin\Release\moc_scannerjob.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -2360,18 +2375,6 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Release\moc_skilllegenddock.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath=".\bin\Debug\moc_skilllegenddock.cpp"
 					>
 					<FileConfiguration
@@ -2384,10 +2387,10 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Debug\moc_statetableview.cpp"
+					RelativePath=".\bin\Release\moc_skilllegenddock.cpp"
 					>
 					<FileConfiguration
-						Name="Release|Win32"
+						Name="Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -2408,11 +2411,49 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Release\moc_translationvectorsearchjob.cpp"
+					RelativePath=".\bin\Debug\moc_statetableview.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\bin\Debug\moc_stonevectorsearchjob.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\bin\Release\moc_stonevectorsearchjob.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
 						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2432,7 +2473,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Release\moc_uberdelegate.cpp"
+					RelativePath=".\bin\Release\moc_translationvectorsearchjob.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -2456,10 +2497,10 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Debug\moc_viewcolumn.cpp"
+					RelativePath=".\bin\Release\moc_uberdelegate.cpp"
 					>
 					<FileConfiguration
-						Name="Release|Win32"
+						Name="Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -2480,10 +2521,10 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Release\moc_viewcolumnset.cpp"
+					RelativePath=".\bin\Debug\moc_viewcolumn.cpp"
 					>
 					<FileConfiguration
-						Name="Debug|Win32"
+						Name="Release|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -2504,10 +2545,10 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Debug\moc_viewcolumnsetdialog.cpp"
+					RelativePath=".\bin\Release\moc_viewcolumnset.cpp"
 					>
 					<FileConfiguration
-						Name="Release|Win32"
+						Name="Debug|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -2528,7 +2569,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Debug\moc_viewcolumnsetdock.cpp"
+					RelativePath=".\bin\Debug\moc_viewcolumnsetdialog.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -2544,6 +2585,18 @@
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\bin\Debug\moc_viewcolumnsetdock.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
 						ExcludedFromBuild="true"
 						>
 						<Tool
@@ -2596,29 +2649,6 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\bin\Debug\qtcolorpicker.moc"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCustomBuildTool"
-							Description="Moc&apos;ing $(InputFileName)..."
-							CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NETWORK_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DQT_SCRIPT_LIB -DBUILD_QXT_CORE  -I&quot;$(QTDIR)\include\QtCore\.&quot; -I&quot;$(QTDIR)\include\QtNetwork\.&quot; -I&quot;$(QTDIR)\include\QtGui\.&quot; -I&quot;$(QTDIR)\include\.&quot; -I&quot;.\inc\.&quot; -I&quot;.\inc\models\.&quot; -I&quot;.\inc\docks\.&quot; -I&quot;.\inc\grid_view\.&quot; -I&quot;$(IntDir)\.&quot; -I&quot;.\ui\.&quot; -I&quot;$(QTDIR)\mkspecs\win32-msvc2008\.&quot; -I&quot;.\.&quot; -I&quot;$(QTDIR)\include\ActiveQt\.&quot; -I&quot;.\tmp\.&quot; -I&quot;.\thirdparty\libqxt-0.5.0\.&quot; -I&quot;.\thirdparty\qtcolorpicker-2.6\.&quot; &quot;.\thirdparty\qtcolorpicker-2.6\qtcolorpicker.cpp&quot; -o &quot;.\bin\$(ConfigurationName)\$(InputName).moc&quot;&#x0D;&#x0A;"
-							AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;qtcolorpicker.cpp"
-							Outputs="&quot;.\bin\$(ConfigurationName)\$(InputName).moc&quot;"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCustomBuildTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
 					RelativePath=".\bin\Release\qtcolorpicker.moc"
 					>
 					<FileConfiguration
@@ -2638,6 +2668,29 @@
 							CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NETWORK_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DQT_SCRIPT_LIB -DBUILD_QXT_CORE  -I&quot;$(QTDIR)\include\QtCore\.&quot; -I&quot;$(QTDIR)\include\QtNetwork\.&quot; -I&quot;$(QTDIR)\include\QtGui\.&quot; -I&quot;$(QTDIR)\include\.&quot; -I&quot;.\inc\.&quot; -I&quot;.\inc\models\.&quot; -I&quot;.\inc\docks\.&quot; -I&quot;.\inc\grid_view\.&quot; -I&quot;$(IntDir)\.&quot; -I&quot;.\ui\.&quot; -I&quot;$(QTDIR)\mkspecs\win32-msvc2008\.&quot; -I&quot;.\.&quot; -I&quot;$(QTDIR)\include\ActiveQt\.&quot; -I&quot;.\tmp\.&quot; -I&quot;.\thirdparty\libqxt-0.5.0\.&quot; -I&quot;.\thirdparty\qtcolorpicker-2.6\.&quot; &quot;.\thirdparty\qtcolorpicker-2.6\qtcolorpicker.cpp&quot; -o &quot;.\bin\$(ConfigurationName)\$(InputName).moc&quot;&#x0D;&#x0A;"
 							AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;qtcolorpicker.cpp"
 							Outputs="&quot;.\bin\$(ConfigurationName)\$(InputName).moc&quot;"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\bin\Debug\qtcolorpicker.moc"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+							Description="Moc&apos;ing $(InputFileName)..."
+							CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot;   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NETWORK_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DQT_SCRIPT_LIB -DBUILD_QXT_CORE  -I&quot;$(QTDIR)\include\QtCore\.&quot; -I&quot;$(QTDIR)\include\QtNetwork\.&quot; -I&quot;$(QTDIR)\include\QtGui\.&quot; -I&quot;$(QTDIR)\include\.&quot; -I&quot;.\inc\.&quot; -I&quot;.\inc\models\.&quot; -I&quot;.\inc\docks\.&quot; -I&quot;.\inc\grid_view\.&quot; -I&quot;$(IntDir)\.&quot; -I&quot;.\ui\.&quot; -I&quot;$(QTDIR)\mkspecs\win32-msvc2008\.&quot; -I&quot;.\.&quot; -I&quot;$(QTDIR)\include\ActiveQt\.&quot; -I&quot;.\tmp\.&quot; -I&quot;.\thirdparty\libqxt-0.5.0\.&quot; -I&quot;.\thirdparty\qtcolorpicker-2.6\.&quot; &quot;.\thirdparty\qtcolorpicker-2.6\qtcolorpicker.cpp&quot; -o &quot;.\bin\$(ConfigurationName)\$(InputName).moc&quot;&#x0D;&#x0A;"
+							AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;qtcolorpicker.cpp"
+							Outputs="&quot;.\bin\$(ConfigurationName)\$(InputName).moc&quot;"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
 						/>
 					</FileConfiguration>
 				</File>

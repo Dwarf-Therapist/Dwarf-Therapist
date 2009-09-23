@@ -49,6 +49,7 @@ private:
 
 	void set_ui_enabled(bool enabled);
 	void prepare_new_thread(SCANNER_JOB_TYPE type);
+	void run_thread_and_wait();
 
 
 	private slots:
@@ -58,6 +59,8 @@ private:
 		void find_vector_by_length();
 		void find_null_terminated_string();
 		void find_number_or_address();
+		void find_stone_vector();
+		void find_metal_vector();
 		void brute_force_read();
 
 };

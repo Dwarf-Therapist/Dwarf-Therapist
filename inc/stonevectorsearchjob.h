@@ -20,24 +20,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef NULL_TERMINATED_STRING_SEARCH_JOB_H
-#define NULL_TERMINATED_STRING_SEARCH_JOB_H
+#ifndef STONE_VECTOR_SEARCH_JOB_H
+#define STONE_VECTOR_SEARCH_JOB_H
 
 #include "scannerjob.h"
 #include "defines.h"
+#include "gamedatareader.h"
 #include "utils.h"
 
-class NullTerminatedStringSearchJob : public ScannerJob {
+class StoneVectorSearchJob : public ScannerJob {
 	Q_OBJECT
 public:
-	NullTerminatedStringSearchJob() 
-		: ScannerJob(FIND_NULL_TERMINATED_STRING)
+	StoneVectorSearchJob() 
+		: ScannerJob(FIND_TRANSLATIONS_VECTOR)
 	{}
-	
-	void set_needle(const QByteArray &needle) {
-		m_needle = needle;
-	}
-
 	public slots:
 		void go() {
 			if (!m_ok) {
@@ -47,17 +43,34 @@ public:
 			}
 			LOGD << "Starting Search in Thread" << QThread::currentThreadId();
 
-			emit main_scan_total_steps(0);
-			emit main_scan_progress(-1);
-			emit scan_message(tr("Looking for %1").arg(QString(m_needle.toHex())));
-			foreach (uint str, m_df->scan_mem(m_needle)) {
-				emit found_address(m_needle.toHex() + " found at", str);
+			emit main_scan_total_steps(1);
+			emit main_scan_progress(0);
+
+			GameDataReader *gdr = GameDataReader::ptr();
+			//! first word in the stone vector
+			int target_stones = gdr->get_int_for_key("ram_guesser/total_stones", 10);
+			QString first_stone = gdr->get_string_for_key("ram_guesser/first_stone");
+
+			emit scan_message(tr("Looking for vectors with %1 entries").arg(target_stones));
+			QVector<uint> vecs = m_df->find_vectors(target_stones);
+			emit main_scan_total_steps(vecs.size());
+			emit scan_message(tr("Looking for a correctly sized vector where the first entry is %1").arg(first_stone));
+			int count = 0;
+			foreach(uint vec_addr, vecs) {
+				if (m_df->looks_like_vector_of_pointers(vec_addr)) {
+					foreach(uint entry, m_df->enumerate_vector(vec_addr)) {
+						if (m_df->is_valid_address(entry)) {
+							QString first_entry = m_df->read_string(entry);
+							if (first_entry == first_stone) {
+								emit found_address("stone_vector", vec_addr);
+							}
+						}
+						break;
+					}
+				}
+				emit main_scan_progress(++count);
 			}
 			emit quit();
 		}
-
-private:
-	QByteArray m_needle;
-
 };
 #endif

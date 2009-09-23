@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "scannerjob.h"
 #include "translationvectorsearchjob.h"
 #include "nullterminatedstringsearchjob.h"
+#include "stonevectorsearchjob.h"
 
 class ScannerThread : public QThread {
 	Q_OBJECT
@@ -49,6 +50,9 @@ public:
 			case FIND_TRANSLATIONS_VECTOR:
 				m_job = new TranslationVectorSearchJob;
 				break;
+			case FIND_STONE_VECTOR:
+				m_job = new StoneVectorSearchJob;
+				break;
 			case FIND_NULL_TERMINATED_STRING:
 				{
 					NullTerminatedStringSearchJob *job = new NullTerminatedStringSearchJob;
@@ -57,7 +61,7 @@ public:
 				}
 				break;
 			default:
-				LOGD << "JOB TYPE NOT SET, EXITING THREAD";
+				LOGW << "JOB TYPE NOT SET, EXITING THREAD";
 				return;
 		}
 		// forward the status signals
