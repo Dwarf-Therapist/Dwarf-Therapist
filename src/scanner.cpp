@@ -155,16 +155,36 @@ void Scanner::find_null_terminated_string() {
 	set_ui_enabled(true);
 }
 
+void Scanner::find_number_or_address() {
+	set_ui_enabled(false);
+	prepare_new_thread(FIND_NULL_TERMINATED_STRING); //re-use the basic bit searcher
+	bool ok;
+	QByteArray needle = encode(ui->le_find_address->text().toUInt(&ok, ui->rb_hex->isChecked() ? 16 : 10));
+	m_thread->set_meta(needle);
+	m_thread->start();
+	while (!m_thread->wait(100)) {
+		if (m_stop_scanning)
+			break;
+		//ui->text_output->append("waiting on thread...");
+		DT->processEvents();
+	}
+	if (m_thread->wait(5000)) {
+		m_thread->deleteLater();
+	} else {
+		LOGC << "Scanning thread failed to stop for 5 seconds after termination!";
+	}
+	m_thread = 0;
+	set_ui_enabled(true);
+
+}
+
 void Scanner::brute_force_read() {
 	set_ui_enabled(false);
 	bool ok; // for base conversions
 	uint addr = ui->le_address->text().toUInt(&ok, 16);
 	switch(ui->cb_interpret_as_type->currentIndex()) {
 		case 0: // std::string
-			{
-				QString val = m_df->read_string(addr);
-				ui->le_read_output->setText(val);
-			}
+			ui->le_read_output->setText(m_df->read_string(addr));
 			break;
 		case 1: // null terminated string
 			{
@@ -176,18 +196,18 @@ void Scanner::brute_force_read() {
 			}
 			break;
 		case 2: // int
-			{
-				int val = m_df->read_int(ui->le_address->text().toUInt(&ok, 16));
-				ui->le_read_output->setText(QString::number(val));
-			}
+			ui->le_read_output->setText(QString::number(m_df->read_int(addr)));
 			break;
 		case 3: // uint
-			{
-				uint val = m_df->read_uint(ui->le_address->text().toUInt(&ok, 16));
-				ui->le_read_output->setText(QString::number(val));
-			}
+			ui->le_read_output->setText(QString::number(m_df->read_uint(addr)));
 			break;
-		case 4: // std::vector<void*>
+		case 4: // short
+			ui->le_read_output->setText(QString::number(m_df->read_short(addr)));
+			break;
+		case 5: // ushort
+			ui->le_read_output->setText(QString::number(m_df->read_ushort(addr)));
+			break;
+		case 6: // std::vector<void*>
 			{
 				QVector<uint> addresses = m_df->enumerate_vector(addr);
 				ui->text_output->append(QString("Vector at 0x%1 contains %2 entries...").arg(addr, 8, 16, QChar('0')).arg(addresses.size()));
@@ -196,11 +216,8 @@ void Scanner::brute_force_read() {
 				}
 			}
 			break;
-		case 5: // raw
-			{
-				QString data = m_df->pprint(ui->le_address->text().toUInt(&ok, 16), 0x600);
-				ui->text_output->append(data);
-			}
+		case 7: // raw
+			ui->text_output->append(m_df->pprint(addr, 0x600));
 			break;
 	}
 	set_ui_enabled(true);

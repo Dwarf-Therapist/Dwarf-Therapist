@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>788</width>
-    <height>566</height>
+    <width>1090</width>
+    <height>590</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,7 +29,7 @@
         <widget class="QTextBrowser" name="text_output">
          <property name="font">
           <font>
-           <family>Courier New</family>
+           <family>Lucida Console</family>
           </font>
          </property>
          <property name="undoRedoEnabled">
@@ -88,7 +88,7 @@
          <property name="title">
           <string>Brute Force Search</string>
          </property>
-         <layout class="QFormLayout" name="formLayout">
+         <layout class="QGridLayout" name="gridLayout">
           <item row="0" column="0">
            <widget class="QLineEdit" name="le_null_terminated_string"/>
           </item>
@@ -100,6 +100,47 @@
            </widget>
           </item>
           <item row="1" column="0">
+           <widget class="QLineEdit" name="le_find_address"/>
+          </item>
+          <item row="1" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="0,10">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_6">
+              <item>
+               <widget class="QRadioButton" name="rb_hex">
+                <property name="text">
+                 <string>hex</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+                <attribute name="buttonGroup">
+                 <string>buttonGroup</string>
+                </attribute>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="rb_dec">
+                <property name="text">
+                 <string>dec</string>
+                </property>
+                <attribute name="buttonGroup">
+                 <string>buttonGroup</string>
+                </attribute>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_find_address">
+              <property name="text">
+               <string>Find number/address</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="2" column="0">
            <widget class="QSpinBox" name="sb_vector_entries">
             <property name="suffix">
              <string> entries</string>
@@ -115,7 +156,7 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="2" column="1">
            <widget class="QPushButton" name="btn_find_vector_by_length">
             <property name="text">
              <string>Find Vector By Length</string>
@@ -138,6 +179,9 @@
               <property name="text">
                <string>Address</string>
               </property>
+              <property name="buddy">
+               <cstring>le_address</cstring>
+              </property>
              </widget>
             </item>
             <item>
@@ -153,6 +197,10 @@
               </property>
              </widget>
             </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="10,0">
             <item>
              <widget class="QComboBox" name="cb_interpret_as_type">
               <item>
@@ -177,6 +225,16 @@
               </item>
               <item>
                <property name="text">
+                <string>short</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>unsigned short</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
                 <string>std::vector&lt;void*&gt;</string>
                </property>
               </item>
@@ -197,7 +255,18 @@
            </layout>
           </item>
           <item>
-           <widget class="QLineEdit" name="le_read_output"/>
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Output</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="le_read_output"/>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>
@@ -299,8 +368,8 @@
    <slot>find_creature_vector()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>527</x>
-     <y>47</y>
+     <x>1068</x>
+     <y>61</y>
     </hint>
     <hint type="destinationlabel">
      <x>375</x>
@@ -315,8 +384,8 @@
    <slot>find_dwarf_race_index()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>644</x>
-     <y>78</y>
+     <x>1068</x>
+     <y>94</y>
     </hint>
     <hint type="destinationlabel">
      <x>746</x>
@@ -331,8 +400,8 @@
    <slot>find_translations_vector()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>586</x>
-     <y>110</y>
+     <x>1068</x>
+     <y>127</y>
     </hint>
     <hint type="destinationlabel">
      <x>745</x>
@@ -347,8 +416,8 @@
    <slot>find_null_terminated_string()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>668</x>
-     <y>175</y>
+     <x>941</x>
+     <y>195</y>
     </hint>
     <hint type="destinationlabel">
      <x>745</x>
@@ -363,8 +432,8 @@
    <slot>find_vector_by_length()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>602</x>
-     <y>209</y>
+     <x>867</x>
+     <y>261</y>
     </hint>
     <hint type="destinationlabel">
      <x>748</x>
@@ -379,8 +448,8 @@
    <slot>brute_force_read()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>765</x>
-     <y>337</y>
+     <x>1067</x>
+     <y>363</y>
     </hint>
     <hint type="destinationlabel">
      <x>747</x>
@@ -395,8 +464,8 @@
    <slot>cancel_scan()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>694</x>
-     <y>555</y>
+     <x>996</x>
+     <y>576</y>
     </hint>
     <hint type="destinationlabel">
      <x>380</x>
@@ -411,8 +480,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>777</x>
-     <y>555</y>
+     <x>1079</x>
+     <y>576</y>
     </hint>
     <hint type="destinationlabel">
      <x>693</x>
@@ -427,12 +496,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>511</x>
+     <x>1067</x>
      <y>327</y>
     </hint>
     <hint type="destinationlabel">
-     <x>716</x>
-     <y>331</y>
+     <x>1067</x>
+     <y>363</y>
     </hint>
    </hints>
   </connection>
@@ -443,12 +512,44 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>529</x>
-     <y>170</y>
+     <x>798</x>
+     <y>192</y>
     </hint>
     <hint type="destinationlabel">
-     <x>619</x>
-     <y>176</y>
+     <x>941</x>
+     <y>195</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>le_find_address</sender>
+   <signal>returnPressed()</signal>
+   <receiver>btn_find_address</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>701</x>
+     <y>218</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>970</x>
+     <y>214</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_find_address</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>find_number_or_address()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1024</x>
+     <y>214</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1087</x>
+     <y>212</y>
     </hint>
    </hints>
   </connection>
@@ -461,5 +562,9 @@
   <slot>find_vector_by_length()</slot>
   <slot>brute_force_read()</slot>
   <slot>cancel_scan()</slot>
+  <slot>find_number_or_address()</slot>
  </slots>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
 </ui>

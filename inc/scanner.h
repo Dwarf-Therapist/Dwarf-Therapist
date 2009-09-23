@@ -57,6 +57,7 @@ private:
 		void find_translations_vector();
 		void find_vector_by_length();
 		void find_null_terminated_string();
+		void find_number_or_address();
 		void brute_force_read();
 
 };
