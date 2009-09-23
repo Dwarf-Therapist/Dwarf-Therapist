@@ -60,6 +60,7 @@ HEADERS += $$COLOR_PICKER_HEADERS \
     ./inc/scannerjob.h \
     ./inc/translationvectorsearchjob.h \
     ./inc/nullterminatedstringsearchjob.h \
+    ./inc/stonevectorsearchjob.h \
     ./inc/memorysegment.h \
 
 #Source files
