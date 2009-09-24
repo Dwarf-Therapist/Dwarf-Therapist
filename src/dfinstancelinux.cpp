@@ -165,10 +165,10 @@ char DFInstanceLinux::read_char(const uint &addr) {
 }
 
 bool DFInstanceLinux::attach() {
-    //TRACE << "STARTING ATTACH" << m_attach_count;
+    TRACE << "STARTING ATTACH" << m_attach_count;
     if (is_attached()) {
         m_attach_count++;
-        //TRACE << "ALREADY ATTACHED SKIPPING..." << m_attach_count;
+        TRACE << "ALREADY ATTACHED SKIPPING..." << m_attach_count;
         return true;
     }
 
@@ -179,32 +179,34 @@ bool DFInstanceLinux::attach() {
     }
     int status;
     while(true) {
-        //LOGD << "waiting for proc to stop";
+        TRACE << "waiting for proc to stop";
         pid_t w = waitpid(m_pid, &status, 0);
         if (w == -1) {
             // child died
             perror("wait inside attach()");
-            //exit(-1);
+            LOGC << "child died?";
+            exit(-1);
         }
         if (WIFSTOPPED(status)) {
             break;
         }
+        TRACE << "waitpid returned but child wasn't stopped, keep waiting...";
     }
     m_attach_count++;
-    //TRACE << "FINISHED ATTACH" << m_attach_count;
+    TRACE << "FINISHED ATTACH" << m_attach_count;
     return m_attach_count > 0;
 }
 
 bool DFInstanceLinux::detach() {
-    //TRACE << "STARTING DETACH" << m_attach_count;
+    TRACE << "STARTING DETACH" << m_attach_count;
     m_attach_count--;
     if (m_attach_count > 0) {
-        //TRACE << "NO NEED TO DETACH SKIPPING..." << m_attach_count;
+        TRACE << "NO NEED TO DETACH SKIPPING..." << m_attach_count;
         return true;
     }
 
     ptrace(PTRACE_DETACH, m_pid, 0, 0);
-    //TRACE << "FINISHED DETACH" << m_attach_count;
+    TRACE << "FINISHED DETACH" << m_attach_count;
     return m_attach_count > 0;
 }
 

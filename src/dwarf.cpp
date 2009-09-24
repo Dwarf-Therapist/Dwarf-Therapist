@@ -92,8 +92,18 @@ void Dwarf::refresh_data() {
 	m_happiness = happiness_from_score(m_raw_happiness);
 	TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
 
+    //TEST
+    QString squad_name = DT->get_dwarf_word(m_df->read_int(m_address + mem->dwarf_offset("squad_name")));
+    squad_name.append(DT->get_dwarf_word(m_df->read_int(m_address + mem->dwarf_offset("squad_name") + 0xC)));
+	
+
 	calc_names();
+    LOGD << "LOADED" << m_nice_name << hex << m_address << "SQUAD:" << squad_name;
 	TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
+
+    /*if (m_first_name == "Urdim")
+        read_prefs(m_address + mem->dwarf_offset("preferences"));
+        */
 }
 
 Dwarf::~Dwarf() {
@@ -190,24 +200,51 @@ QString Dwarf::read_last_name(const uint &addr, bool use_generic) {
 }
 
 void Dwarf::read_prefs(const uint &addr) {
-	//0x051C vector at this offset, not sure what it is
+    /*
+Looks like this as a dump where the start of each line is the raw 4 * 6 bytes of each like struct
+5th byte appears to point at a massive vector with 14169 entries, possible object vector?
+    the 5th byte of the first and second entry both point at the same massive vector (at least same # of entries)
+---------------------------------------------------------------------------------
+00 00 ff ff | ff ff 01 00 | c3 00 01 00 | 67 52 cb 39 | f0 0f 6e 0c | 19 00 00 00 (stone: realgar)
+00 00 ff ff | ff ff 02 00 | 03 00 01 00 | 7c dd da 15 | f0 12 6e 0c | 19 00 00 00 (metal: bismuth)
+00 00 ff ff | ff ff 01 00 | 73 00 01 00 | 4d 0a 43 0b | f0 15 6e 0c | 19 00 00 00 (stone(gem): rhodolite)
+00 00 ff ff | ff ff 0d 00 | ff ff 01 00 | aa 16 49 24 | f0 18 6e 0c | 19 00 00 00 (wood: mango tree)
+00 00 ff ff | ff ff 0a 00 | 5f 00 00 00 | 23 d2 54 2f | f0 1b 6e 0c | 19 00 00 00 (body part?: horn)
+00 00 ff ff | ff ff 0b 00 | 72 00 00 00 | 08 83 c8 3e | f0 1e 6e 0c | 19 00 00 00 (body part?: cave lobster shell)
+04 00 3f 00 | 01 00 ff ff | ff ff 01 00 | 69 47 00 2b | f0 21 6e 0c | 19 00 00 00 (color: light brown)
+04 00 56 00 | ff ff ff ff | ff ff 01 00 | 16 c2 0b 12 | f0 24 6e 0c | 19 00 00 00 (donkeys: for stubborness)
+02 00 2f 00 | ff ff 37 00 | ff ff 00 00 | 9f a3 02 0c | f0 27 6e 0c | 19 00 00 00 (cave spiders: for mystery)
+02 00 4c 00 | ff ff 0a 00 | 66 00 01 00 | 54 5f d7 2f | f0 2a 6e 0c | 19 00 00 00 (when possible: Dwarven Wine)
+02 00 4a 00 | ff ff 20 00 | 03 00 01 00 | 45 1c 7f 3c | f0 2d 6e 0c | 19 00 00 00 (when possible: Dwarven wheat flour)
+03 00 01 00 | ff ff ff ff | ff ff 00 00 | 42 b2 36 26 | f0 30 6e 0c | 21 00 00 00 (detests purring maggots)
+    */
+    /*
+    uint stone_vector = 0x08f9cab0;
+    QVector<uint> stones = m_df->enumerate_vector(stone_vector);
+    foreach(uint stone, stones) {
+        LOGD << "material at" << hex << stone << m_df->read_string(stone);
+    }
+    */
     QVector<uint> addrs = m_df->enumerate_vector(addr);
+    LOGD << "reading prefs for" << m_nice_name << "found" << addrs.size() << "preference entries";
 	foreach(int addr, addrs) {
-		//short val0 = m_df->read_short(addr, bytes_read);
-		//short val1 = m_df->read_short(addr + 0x02, bytes_read);
-		//short val2 = m_df->read_short(addr + 0x04, bytes_read);
-		short is_rock = m_df->read_short(addr + 0x04);
-		short obj_type = m_df->read_short(addr + 0x06);
-		short materiel = m_df->read_short(addr + 0x08);
-		int when_possible = (int)m_df->read_char(addr + 0x0A);
-		//short val5 = m_df->read_short(addr + 0x0A, bytes_read);
-		//short val6 = m_df->read_short(addr + 0x0C, bytes_read);
-		//short val7 = m_df->read_short(addr + 0x0E, bytes_read);
-		//short val8 = m_df->read_short(addr + 0x10, bytes_read);
-		//short val9 = m_df->read_short(addr + 0x12, bytes_read);
-		//short valA = m_df->read_short(addr + 0x14, bytes_read);
-		//short valB = m_df->read_short(addr + 0x16, bytes_read);
-		int x = 0;
+        short type = m_df->read_short(addr + 0x06);
+        short sub_type = m_df->read_short(addr + 0x08);
+        LOGD << "\tTYPE" << type << hex << type << "SUBTYPE" << dec << sub_type << hex << sub_type;
+        /*
+        switch (type) {
+            case 1: // stone
+                LOGD << "\tSTONE TYPE" << m_df->read_string(stones.at(sub_type));
+                break;
+            case 2: // metal
+                LOGD << "\tMETAL TYPE" << "UNKNOWN";
+                break;
+            case 0xd: // wood (tree)
+                LOGD << "\tWOOD TYPE UNKNOWN";
+                break;
+        }
+        */
+		//int when_possible = (int)m_df->read_char(addr + 0x0A);
 	}
 }
 
