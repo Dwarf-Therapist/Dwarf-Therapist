@@ -53,12 +53,16 @@ THE SOFTWARE.
 #include "scanner.h"
 
 #include "dfinstance.h"
-#ifdef Q_WS_WIN
+#ifdef _WINDOWS
 #include "dfinstancewindows.h"
 #endif
-#ifdef Q_WS_X11
+#ifdef _LINUX
 #include "dfinstancelinux.h"
 #endif
+#ifdef _OSX
+#include "dfinstanceosx.h"
+#endif
+
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -211,10 +215,13 @@ void MainWindow::connect_to_df() {
 	}
 	// find_running_copy can fail for several reasons, and will take care of 
 	// logging and notifying the user.
-#ifdef Q_WS_WIN
+#ifdef _WINDOWS
 	m_df = new DFInstanceWindows();
 #endif
-#ifdef Q_WS_X11
+#ifdef _OSX
+	m_df = new DFInstanceOSX();
+#endif
+#ifdef _LINUX
 	m_df = new DFInstanceLinux();
 #endif
     if (m_df && m_df->find_running_copy() && m_df->is_ok()) {

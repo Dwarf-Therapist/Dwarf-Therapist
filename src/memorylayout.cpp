@@ -9,14 +9,14 @@ MemoryLayout::MemoryLayout(uint checksum)
 	m_game_version = GameDataReader::ptr()->get_string_for_key("checksum_to_version/0x" + QString::number(checksum, 16));
 	if (m_game_version != "UNKNOWN") {
 		QDir working_dir = QDir::current();
-#ifdef Q_WS_WIN
-        QString subdir = "windows";
+#ifdef _WINDOWS
+    QString subdir = "windows";
 #endif
-#ifdef Q_WS_X11
-        QString subdir = "linux";
+#ifdef _LINUX
+    QString subdir = "linux";
 #endif
-#ifdef Q_WS_MAC
-		QString subdir = "osx";
+#ifdef _OSX
+	QString subdir = "osx";
 #endif
         QString filename = working_dir.absoluteFilePath("etc/memory_layouts/" + subdir + "/" + m_game_version + ".ini");
 		m_data = new QSettings(filename, QSettings::IniFormat);

@@ -20,46 +20,41 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include "scannerjob.h"
+#ifndef DFINSTANCE_OSX_H
+#define DFINSTANCE_OSX_H
 #include "dfinstance.h"
-#ifdef _WINDOWS
-#include "dfinstancewindows.h"
-#endif
-#ifdef _LINUX
-#include "dfinstancelinux.h"
-#endif
-#ifdef _OSX
-#include "dfinstanceosx.h"
-#endif
+#include "dwarf.h"
 
-ScannerJob::ScannerJob(SCANNER_JOB_TYPE job_type)
-	: m_job_type(job_type)
-{
-	m_ok = get_DFInstance();
-}
-ScannerJob::~ScannerJob() {
-	if (m_df)
-		delete m_df;
-	m_df = 0;
-}
+class MemoryLayout;
 
-SCANNER_JOB_TYPE ScannerJob::job_type() {
-	return m_job_type;
-}
+class DFInstanceOSX : public DFInstance {
+    Q_OBJECT
+public:
+	DFInstanceOSX(QObject *parent=0);
+    ~DFInstanceOSX();
 
-DFInstance *ScannerJob::df() {
-	return m_df;
-}
+	// factory ctor
+	bool find_running_copy();
+    QVector<uint> enumerate_vector(const uint &addr);
+    char read_char(const uint &addr);
+    short read_short(const uint &addr);
+    ushort read_ushort(const uint &addr);
+    uint read_uint(const uint &addr);
+    int read_int(const uint &addr);
+    uint read_raw(const uint &addr, const uint &bytes, void *buffer);
+	QString read_string(const uint &addr);
 
-bool ScannerJob::get_DFInstance() {
-#ifdef _WINDOWS
-	m_df = new DFInstanceWindows(this);
-#endif
-#ifdef _LINUX
-	m_df = new DFInstanceLinux(this);
-#endif
-#ifdef _OSX
-	m_df = new DFInstanceOSX(this);
-#endif
-	return m_df->find_running_copy() && m_df->is_ok();
-}
+	// Writing
+    uint write_raw(const uint &addr, const uint &bytes, void *buffer);
+    uint write_string(const uint &addr, const QString &str);
+    uint write_int(const uint &addr, const int &val);
+
+    bool attach();
+    bool detach();
+
+
+protected:
+    uint calculate_checksum();
+};
+
+#endif // DFINSTANCE_H
