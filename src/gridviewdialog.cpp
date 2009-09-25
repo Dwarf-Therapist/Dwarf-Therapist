@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "viewmanager.h"
 #include "gridview.h"
 #include "viewcolumnset.h"
+#include "viewcolumn.h"
 #include "defines.h"
 
 GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent)
@@ -34,10 +35,11 @@ GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent
 	, m_view(view)
 	, m_manager(mgr)
 	, m_is_editing(false)
+	, m_model(new ViewManagerItemModel(this))
 {
 	ui->setupUi(this);
-	populate_combo_box();
-
+	ui->tree->setModel(m_model);
+	
 	if (!m_view->name().isEmpty()) { // looks like this is an edit...
 		ui->le_name->setText(view->name());
 		draw_sets();
@@ -45,11 +47,10 @@ GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent
 		m_is_editing = true;
 		m_original_name = view->name();
 	}
-	ui->list_sets->installEventFilter(this);
+	ui->tree->installEventFilter(this);
 
-	connect(ui->list_sets, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_set_context_menu(const QPoint &)));
+	connect(ui->tree, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_set_context_menu(const QPoint &)));
 	connect(ui->le_name, SIGNAL(textChanged(const QString &)), SLOT(check_name(const QString &)));
-	connect(ui->btn_add_set, SIGNAL(clicked()), SLOT(add_set()));
 }
 
 QString GridViewDialog::name() {
@@ -58,36 +59,40 @@ QString GridViewDialog::name() {
 
 QStringList GridViewDialog::sets() {
 	QStringList retval;
+	return retval;
+	/*
 	for(int i = 0; i < ui->list_sets->count(); ++i) {
 		retval << ui->list_sets->item(i)->text();
 	}
 	return retval;
-}
-
-void GridViewDialog::draw_sets() {
-	ui->list_sets->clear();
-	foreach(ViewColumnSet *set, m_view->sets()) {
-		QListWidgetItem *item = new QListWidgetItem(set->name(), ui->list_sets);
-		item->setBackgroundColor(set->bg_color());
-	}
-}
-
-void GridViewDialog::populate_combo_box() {
-	/*ui->cb_sets->clear();
-	foreach(ViewColumnSet *set, m_manager->sets()) {
-		if (!m_view || !m_view->sets().contains(set)) {
-			ui->cb_sets->addItem(set->name());
-		}
-	}
 	*/
 }
 
+void GridViewDialog::draw_sets() {
+	m_model->clear();
+	foreach(ViewColumnSet *set, m_view->sets()) {
+		QStandardItem *set_item = new QStandardItem(set->name());
+		set_item->setBackground(set->bg_color());
+		m_model->appendRow(set_item);
+
+		foreach(ViewColumn *vc, set->columns()) {
+			QStandardItem *col_item = new QStandardItem(vc->title());
+			set_item->appendRow(col_item);
+			if (vc->override_color())
+				col_item->setBackground(vc->bg_color());
+			else
+				col_item->setBackground(set->bg_color());
+		}
+	}
+}
+/*
 bool GridViewDialog::eventFilter(QObject *, QEvent *e) {
 	if (e->type() == QEvent::ChildRemoved) {
 		order_changed(); // we're just here to help the signals along since this shit is broken in Qt...
 	}
 	return false; // don't actually interrupt anything
 }
+*/
 
 void GridViewDialog::order_changed() {
 	LOGD << "ORDER CHANGED!";
@@ -107,23 +112,32 @@ void GridViewDialog::add_set() {
 }
 
 void GridViewDialog::remove_set_from_action() {
-	QAction *a = qobject_cast<QAction*>(QObject::sender());
-	int row = a->data().toInt();
-	QListWidgetItem *removed = ui->list_sets->takeItem(row);
-	delete removed;
+	/*
+	if (!m_temp_item)
+		return;
+	if (!m_temp_item->childCount()) // leaf
+		ui->tree->model->in
+
+		QTreeWidgetItem *removed = ui->tree->takeTopLevelItem(idx.row());
+		delete removed;
+	}
+	*/
 }
 
 void GridViewDialog::draw_set_context_menu(const QPoint &p) {
+	/*
 	QMenu m(this);
-	QListWidgetItem *item = ui->list_sets->itemAt(p);
+	QTreeWidgetItem *item = ui->tree->itemAt(p);
 	if (!item)
 		return;
 	QAction *a = m.addAction(tr("Remove..."), this, SLOT(remove_set_from_action()));
-	a->setData(ui->list_sets->row(item));
-	m.exec(ui->list_sets->viewport()->mapToGlobal(p));
+	m_temp_item = item;
+	m.exec(ui->tree->viewport()->mapToGlobal(p));
+	*/
 }
 
 void GridViewDialog::accept() {
+	/*
 	if (ui->le_name->text().isEmpty()) {
 		QMessageBox::warning(this, tr("Empty Name"), tr("Cannot save a view with no name!"));
 		return;
@@ -140,5 +154,7 @@ void GridViewDialog::accept() {
 			}
 		}
 	}
-	return QDialog::accept();
+	*/
+	//return QDialog::accept();
+	return QDialog::reject();
 }

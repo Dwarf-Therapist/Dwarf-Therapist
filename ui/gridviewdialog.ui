@@ -19,37 +19,18 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <widget class="QGroupBox" name="groupBox_2">
-     <property name="title">
-      <string>Options for Grid View</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Grid View Name</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="le_name"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QPushButton" name="btn_add_set">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="text">
-         <string>New Set</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../images.qrc">
-          <normaloff>:/img/add.png</normaloff>:/img/add.png</iconset>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Grid View Name</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="le_name"/>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QGroupBox" name="groupBox">
@@ -58,22 +39,23 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QListWidget" name="list_sets">
-        <property name="font">
-         <font>
-          <pointsize>8</pointsize>
-         </font>
+       <widget class="ViewManagerTreeView" name="tree">
+        <property name="showDropIndicator" stdset="0">
+         <bool>false</bool>
         </property>
-        <property name="contextMenuPolicy">
-         <enum>Qt::CustomContextMenu</enum>
+        <property name="indentation">
+         <number>10</number>
         </property>
-        <property name="editTriggers">
-         <set>QAbstractItemView::NoEditTriggers</set>
+        <property name="uniformRowHeights">
+         <bool>true</bool>
         </property>
-        <property name="dragDropMode">
-         <enum>QAbstractItemView::InternalMove</enum>
+        <property name="animated">
+         <bool>true</bool>
         </property>
-        <property name="uniformItemSizes">
+        <property name="allColumnsShowFocus">
+         <bool>true</bool>
+        </property>
+        <property name="headerHidden">
          <bool>true</bool>
         </property>
        </widget>
@@ -133,6 +115,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ViewManagerTreeView</class>
+   <extends>QTreeView</extends>
+   <header>gridviewdialog.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../images.qrc"/>
  </resources>
