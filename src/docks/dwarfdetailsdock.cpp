@@ -27,6 +27,8 @@ THE SOFTWARE.
 #include "skill.h"
 #include "labor.h"
 #include "defines.h"
+#include "dwarftherapist.h"
+#include "utils.h"
 
 DwarfDetailsDock::DwarfDetailsDock(QWidget *parent, Qt::WindowFlags flags)
 	: QDockWidget(parent, flags)
@@ -70,19 +72,17 @@ void DwarfDetailsDock::show_dwarf(Dwarf *d) {
 		ui->pb_next_attribute_gain->setToolTip("Off the charts! (I have no idea when you'll get the next gain)");
 	}
 	
-	QString color;
-	ui->lbl_happiness->setText(QString("<b>%1</b> (%2)").arg(d->happiness_name(d->get_happiness())).arg(d->get_raw_happiness()));
-	switch(d->get_happiness()) {
-		case Dwarf::DH_MISERABLE: color = "#cc0000"; break;
-		case Dwarf::DH_UNHAPPY: color = "#0000cc"; break;
-		case Dwarf::DH_FINE: color = "#cccccc"; break;
-		case Dwarf::DH_CONTENT: color = "#ddddcc"; break;
-		case Dwarf::DH_HAPPY: color = "#cccc00"; break;
-		case Dwarf::DH_ECSTATIC: color = "#66FF66"; break;
-	}
-	if (!color.isEmpty())
-		ui->lbl_happiness->setStyleSheet(QString("background-color: %1;").arg(color));
-
+	
+	Dwarf::DWARF_HAPPINESS happiness = d->get_happiness();
+	ui->lbl_happiness->setText(QString("<b>%1</b> (%2)").arg(d->happiness_name(happiness)).arg(d->get_raw_happiness()));
+	QColor color = DT->user_settings()->value(
+		QString("options/colors/happiness/%1").arg(static_cast<int>(happiness))).value<QColor>();
+	QString style_sheet_color = QString("#%1%2%3")
+									.arg(color.red(), 2, 16, QChar('0'))
+									.arg(color.green(), 2, 16, QChar('0'))
+									.arg(color.blue(), 2, 16, QChar('0'));
+	ui->lbl_happiness->setStyleSheet(QString("background-color: %1;").arg(style_sheet_color));
+	
 	foreach(QObject *obj, m_cleanup_list) {
 		obj->deleteLater();
 	}
