@@ -144,7 +144,7 @@ void Dwarf::calc_names() {
 
 Dwarf::DWARF_HAPPINESS Dwarf::happiness_from_score(int score) {
 	int chunk = score / 25; // yes, integer division
-	if (chunk > 5)
+	if (chunk > 6)
 		chunk = 6;
 	return (DWARF_HAPPINESS)(DH_MISERABLE + chunk);
 }
