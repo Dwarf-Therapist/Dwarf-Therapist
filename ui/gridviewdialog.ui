@@ -23,54 +23,30 @@
      <property name="title">
       <string>Options for Grid View</string>
      </property>
-     <layout class="QFormLayout" name="formLayout">
+     <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>File Name</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="le_filename"/>
-      </item>
-      <item row="1" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Grid View Name</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
+      <item row="0" column="1">
        <widget class="QLineEdit" name="le_name"/>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_2">
+      <item row="1" column="0">
+       <widget class="QPushButton" name="btn_add_set">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="text">
-         <string>Add Set</string>
+         <string>New Set</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../images.qrc">
+          <normaloff>:/img/add.png</normaloff>:/img/add.png</iconset>
         </property>
        </widget>
-      </item>
-      <item row="2" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="10,0">
-        <item>
-         <widget class="QComboBox" name="cb_sets"/>
-        </item>
-        <item>
-         <widget class="QPushButton" name="btn_add_set">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>Add</string>
-          </property>
-          <property name="icon">
-           <iconset resource="../images.qrc">
-            <normaloff>:/img/add.png</normaloff>:/img/add.png</iconset>
-          </property>
-         </widget>
-        </item>
-       </layout>
       </item>
      </layout>
     </widget>

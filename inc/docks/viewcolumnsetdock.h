@@ -49,7 +49,7 @@ private:
 	private slots:
 		void edit_set();
 		void edit_set(QListWidgetItem*);
-		void delete_set();
+
 signals:
 	void sets_changed();
 };

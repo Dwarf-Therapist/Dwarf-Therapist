@@ -28,6 +28,12 @@ THE SOFTWARE.
 #include "defines.h"
 #include "dwarftherapist.h"
 #include "viewcolumnset.h"
+#include "viewcolumn.h"
+#include "skillcolumn.h"
+#include "laborcolumn.h"
+#include "happinesscolumn.h"
+#include "spacercolumn.h"
+#include "utils.h"
 
 ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent)
 	: QTabWidget(parent)
@@ -40,8 +46,6 @@ ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent
 	setMovable(true);
 
 	read_settings();
-
-	reload_sets();
 	reload_views();
 
 	m_add_tab_button->setIcon(QIcon(":img/tab_add.png"));
@@ -57,9 +61,6 @@ ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent
 }
 
 void ViewManager::read_settings() {
-	QSettings *s = DT->user_settings();
-	m_set_path = s->value("options/paths/sets", "etc/sets").toString();
-	m_view_path = s->value("options/paths/views", "etc/views").toString();
 }
 
 void ViewManager::draw_add_tab_button() {
@@ -72,21 +73,14 @@ void ViewManager::draw_add_tab_button() {
 	m_add_tab_button->setMenu(m);
 }
 
-void ViewManager::sets_changed() {
-	read_settings();
-	reload_sets();
-	reload_views();
-	setCurrentIndex(currentIndex());
-}
-
 void ViewManager::views_changed() {
 	read_settings();
-	reload_sets();
 	reload_views();
 	draw_views();
 }
 
 void ViewManager::reload_views() {
+	/*
 	// make sure the required directories are in place
 	// TODO make directory locations configurable
 	QDir cur = QDir::current();
@@ -111,6 +105,98 @@ void ViewManager::reload_views() {
 				m_views << v;
 		}
 	}
+	LOGI << "Loaded" << m_views.size() << "views from disk";
+	draw_add_tab_button();
+	draw_views();
+	*/
+	// goodbye old views!
+	foreach(GridView *v, m_views) {
+		v->deleteLater();
+	}
+	m_views.clear();
+
+	// start reading views from main settings
+	QSettings *s = DT->user_settings();
+	int total_views = s->beginReadArray("gridviews");
+	for (int i = 0; i < total_views; ++i) {
+		s->setArrayIndex(i);
+		QString name = s->value("name", "UNKNOWN").toString();
+		bool active = s->value("active", true).toBool();
+
+		GridView *gv = new GridView(name, this, this);
+		gv->set_active(active);
+		add_view(gv);
+
+		int total_sets = s->beginReadArray("sets");
+		for (int j = 0; j < total_sets; ++j) {
+			s->setArrayIndex(j);
+			QString name = s->value("name", "UNKNOWN").toString();
+			QString color_in_hex = s->value("bg_color", "0xFFFFFF").toString();
+			QColor bg_color = from_hex(color_in_hex);
+
+			ViewColumnSet *set = new ViewColumnSet(name, this, this);
+			set->set_bg_color(bg_color);
+			gv->add_set(set);
+			m_sets << set;
+
+			int total_columns = s->beginReadArray("columns");
+			for (int k = 0; k < total_columns; ++k) {
+				s->setArrayIndex(k);
+				QString tmp_type = s->value("type", "DEFAULT").toString();
+				QString col_name = s->value("name", "UNKNOWN " + QString::number(k)).toString();
+				COLUMN_TYPE type = get_column_type(tmp_type);
+				QString hex_color = s->value("bg_color", color_in_hex).toString();
+				QColor bg_color = from_hex(hex_color);
+
+				ViewColumn *vc = 0;
+				switch (type) {
+					case CT_SKILL:
+						{
+							int skill_id = s->value("skill_id", -1).toInt();
+							//TODO: check that labor and skill are known ids
+							SkillColumn *c = new SkillColumn(col_name, skill_id, set, set);
+							vc = c;
+						}
+						break;
+					case CT_LABOR:
+						{
+							int labor_id = s->value("labor_id", -1).toInt();
+							int skill_id = s->value("skill_id", -1).toInt();
+							//TODO: check that labor and skill are known ids
+							LaborColumn *c = new LaborColumn(col_name, labor_id, skill_id, set, set);
+							vc = c;
+						}
+						break;
+					case CT_HAPPINESS:
+						{
+							HappinessColumn *c = new HappinessColumn(col_name, set, set);
+							vc = c;
+						}
+						break;
+					case CT_SPACER:
+						{
+							int width = s->value("width", DEFAULT_SPACER_WIDTH).toInt();
+							SpacerColumn *c = new SpacerColumn(col_name, set, set);
+							c->set_width(width);
+							vc = c;
+						}
+						break;
+					default:
+						LOGW << "Column " << col_name << "in set" << set->name() << "has unknown type: " << tmp_type;
+						break;
+				}
+				if (vc) {
+					vc->set_override_color(s->value("override_color").toBool());
+					if (vc->override_color()) {
+						vc->set_bg_color(bg_color);
+					}
+				}
+			}
+			s->endArray();
+		}
+		s->endArray();
+	}
+	s->endArray();
 	LOGI << "Loaded" << m_views.size() << "views from disk";
 	draw_add_tab_button();
 	draw_views();
@@ -150,38 +236,70 @@ void ViewManager::draw_views() {
 }
 
 void ViewManager::write_views() {
-	foreach(GridView *v, m_views) {
-		v->write_settings();
+	QSettings *s = DT->user_settings();
+	s->remove("gridviews"); // look at us, taking chances like this!
+	s->beginWriteArray("gridviews", m_views.size());
+	int i = 0;
+	foreach(GridView *gv, m_views) {
+		s->setArrayIndex(i++);
+		s->setValue("name", gv->name());
+		s->setValue("active", gv->is_active());
+		s->beginWriteArray("sets", gv->sets().size());
+		int j = 0;
+		foreach(ViewColumnSet *set, gv->sets()) {
+			s->setArrayIndex(j++);
+			s->setValue("name", set->name());
+			s->setValue("bg_color", to_hex(set->bg_color()));
+			s->beginWriteArray("columns", set->columns().size());
+			int k = 0;
+			foreach(ViewColumn *vc, set->columns()) {
+				s->setArrayIndex(k++);
+				if (!vc->title().isEmpty())
+					s->setValue("name", vc->title());
+				else
+					s->setValue("name", "UNKNOWN");
+
+				s->setValue("type", get_column_type(vc->type()));
+				if (vc->override_color()) {
+					s->setValue("override_color", true);
+					s->setValue("bg_color", to_hex(vc->bg_color()));
+				}
+				switch (vc->type()) {
+					case CT_SKILL:
+						{
+							SkillColumn *c = static_cast<SkillColumn*>(vc);
+							s->setValue("skill_id", c->skill_id());
+						}
+						break;
+					case CT_LABOR:
+						{
+							LaborColumn *c = static_cast<LaborColumn*>(vc);
+							s->setValue("labor_id", c->labor_id());
+							s->setValue("skill_id", c->skill_id());
+						}
+						break;
+					case CT_SPACER:
+						{
+							SpacerColumn *c = static_cast<SpacerColumn*>(vc);
+							if (c->width() > 0)
+								s->setValue("width", c->width());
+						}
+						break;
+					default:
+						break;
+				}
+			}
+			s->endArray();
+		}
+		s->endArray();
 	}
+	s->endArray();
+	return;
 	QStringList tab_order;
 	for (int i = 0; i < count(); ++i) {
 		tab_order << tabText(i);
 	}
 	DT->user_settings()->setValue("gui_options/tab_order", tab_order);
-}
-
-void ViewManager::reload_sets() {
-	QDir cur = QDir::current();
-	if (!cur.exists(m_set_path)) {
-		QMessageBox::warning(this, tr("Missing Sets Directory"),
-			tr("Could not find the 'sets' directory at '%1'").arg(m_set_path));
-		return;
-	}
-	foreach(ViewColumnSet *set, m_sets) {
-		set->deleteLater();
-	}
-	m_sets.clear();
-	QDir sets = QDir(m_set_path).absolutePath();
-	QStringList set_files = sets.entryList(QDir::Files | QDir::Readable, QDir::Name);
-	foreach(QString filename, set_files) {
-		if (filename.endsWith(".ini")) {
-			TRACE << "found set file" << sets.filePath(filename);
-			ViewColumnSet *set = ViewColumnSet::from_file(sets.filePath(filename), this, this);
-			if (set)
-				m_sets << set;
-		}
-	}
-	LOGI << "Loaded" << m_sets.size() << "column sets from disk";
 }
 
 GridView *ViewManager::get_view(const QString &name) {

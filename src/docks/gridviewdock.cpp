@@ -67,7 +67,8 @@ void GridViewDock::add_new_view() {
 	if (accepted == QDialog::Accepted) {
 		view->update_from_dialog(d);
 		view->set_active(false);
-		view->write_settings();
+		m_manager->add_view(view);
+		m_manager->write_views();
 		emit views_changed();
 		draw_views();
 	}
@@ -89,7 +90,7 @@ void GridViewDock::edit_view() {
 	int accepted = d->exec();
 	if (accepted == QDialog::Accepted) {
 		view->update_from_dialog(d);
-		view->write_settings();
+		m_manager->write_views();
 		emit views_changed();
 		draw_views();
 	}
@@ -105,7 +106,7 @@ void GridViewDock::copy_view() {
 		return;
 
 	GridView copy(*view);
-	copy.write_settings();
+	m_manager->write_views();
 	emit views_changed();
 	draw_views();
 	m_tmp_item = 0;
@@ -124,12 +125,11 @@ void GridViewDock::delete_view() {
 		QMessageBox::Yes | QMessageBox::No);
 	if (answer == QMessageBox::Yes) {
 		LOGI << "permanently deleting set" << view->name();
-		QFile f;
-		if (f.remove(view->filename())) {
-			emit views_changed();
-			draw_views();
-			view->deleteLater();
-		}
+		m_manager->views().removeAll(view);
+		m_manager->write_views();
+		emit views_changed();
+		draw_views();
+		view->deleteLater();
 	}
 	m_tmp_item = 0;
 }

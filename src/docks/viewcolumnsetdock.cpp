@@ -55,7 +55,6 @@ void ViewColumnSetDock::add_new_set() {
 	int accepted = d->exec();
 	if (accepted == QDialog::Accepted) {
 		set->update_from_dialog(d);
-		set->write_settings();
 		emit sets_changed();
 		draw_sets();
 	}
@@ -88,35 +87,8 @@ void ViewColumnSetDock::edit_set() {
 	int accepted = d->exec();
 	if (accepted == QDialog::Accepted) {
 		set->update_from_dialog(d);
-		set->write_settings();
 		emit sets_changed();
 		draw_sets();
-	} else {
-		set->reset_from_disk();
-	}
-	m_tmp_item = 0;
-}
-void ViewColumnSetDock::delete_set() {
-	if (!m_tmp_item)
-		return;
-
-	ViewColumnSet *set= m_manager->get_set(m_tmp_item->text());
-	if (!set)
-		return;
-
-	int answer = QMessageBox::question(
-		0, tr("Delete Column Set"),
-		tr("<h1>Really delete '%1'?</h1>Deleting '%1' will permanently delete it from disk. "
-			"Any views currently referencing this set could become corrupted! <h2>There is no undo!</h2>").arg(set->name()),
-		QMessageBox::Yes | QMessageBox::No);
-	if (answer == QMessageBox::Yes) {
-		LOGI << "permanently deleting set" << set->name();
-		QFile f;
-		if (f.remove(set->filename())) {
-			emit sets_changed();
-			draw_sets();
-			set->deleteLater();
-		}
 	}
 	m_tmp_item = 0;
 }

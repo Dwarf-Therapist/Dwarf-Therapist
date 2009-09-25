@@ -56,24 +56,17 @@ public:
 
 	const QString name() const {return m_name;}
 	void set_name(const QString &name) {m_name = name;}
-	const QString filename() const {return m_filename;}
-	void set_filename(const QString &filename) {m_filename = filename;}
 	void add_set(ViewColumnSet *set);
 	void remove_set(QString name);
 	void clear();
 	const QList<ViewColumnSet*> sets() const {return m_sets;}
 	bool is_active() {return m_active;}
 	void set_active(bool active) {m_active = active;}
-
-	static GridView *from_file(const QString &filepath, ViewManager *mgr, QObject *parent = 0);
 	void update_from_dialog(GridViewDialog *d);
-	public slots:
-		void write_settings();
 
 private:
 	bool m_active;
 	QString m_name;
-	QString m_filename;
 	QList<ViewColumnSet*> m_sets;
 	QMap<QString, ViewColumnSet*> m_set_map;
 	ViewManager *m_manager;

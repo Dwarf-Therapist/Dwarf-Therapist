@@ -40,24 +40,16 @@ public:
 	
 	QList<GridView*> views() {return m_views;}
 	QList<ViewColumnSet*> sets() {return m_sets;}
-
-	QString set_path() {return m_set_path;}
-	QString view_path() {return m_view_path;}
+	void add_view(GridView *view) {m_views << view;}
 
 	public slots:
 		void setCurrentIndex(int);
 		void reload_views();
 		void write_views();
 		void draw_views();
-
-		void sets_changed();
 		void views_changed();
-
-		void reload_sets();
 		void set_group_by(int group_by);
 		void redraw_current_tab();
-		//void write_sets();
-		//void write_set(ViewColumnSet *set);
 
 		GridView *get_view(const QString &name);
 		ViewColumnSet *get_set(const QString &name);
@@ -73,8 +65,6 @@ private:
 	QList<ViewColumnSet*> m_sets;
 	DwarfModel *m_model;
 	DwarfModelProxy *m_proxy;
-	QString m_set_path;
-	QString m_view_path;
 	QToolButton *m_add_tab_button;
 
 	private slots:

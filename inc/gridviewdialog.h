@@ -40,7 +40,6 @@ public:
 
 	//! used to hack into the list of sets, since they don't seem to send a proper re-order signal
 	bool eventFilter(QObject *, QEvent *);
-	QString filename();
 	QString name();
 	QStringList sets();
 	

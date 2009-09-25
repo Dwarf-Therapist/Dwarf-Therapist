@@ -37,9 +37,6 @@ GridView::GridView(const GridView &to_be_copied)
 	, m_name(to_be_copied.m_name + " (COPY)")
 	, m_manager(to_be_copied.m_manager)
 {
-	QString new_filename = to_be_copied.m_filename;
-	new_filename.replace(".ini", "COPY.ini");
-	m_filename = new_filename;
 	foreach(ViewColumnSet *s, to_be_copied.sets()) {
 		add_set(s);
 	}
@@ -67,51 +64,8 @@ void GridView::clear() {
 	m_set_map.clear();
 }
 
-GridView *GridView::from_file(const QString &filepath, ViewManager *mgr, QObject *parent) {
-	QSettings s(filepath, QSettings::IniFormat);
-	QString name = s.value("info/name", "UNKNOWN").toString();
-	bool active = s.value("info/active", true).toBool();
-	
-	GridView *ret_val = new GridView(name, mgr, parent);
-	ret_val->set_filename(filepath);
-	ret_val->set_active(active);
-
-	int total_sets = s.beginReadArray("sets");
-	for (int i = 0; i < total_sets; ++i) {
-		s.setArrayIndex(i);
-		QString name = s.value("name").toString();
-		ViewColumnSet *set = mgr->get_set(name);
-		if (set) {
-			ret_val->add_set(set);
-		}
-	}
-	s.endArray();
-
-	return ret_val;
-}
-
-void GridView::write_settings() {
-	if (m_filename.isEmpty())
-		m_filename = m_manager->view_path() + "/" + m_name + ".ini";
-
-	QSettings s(m_filename, QSettings::IniFormat);
-	s.setValue("info/name", m_name);
-	s.setValue("info/active", m_active);
-
-	s.remove("sets");
-	s.beginWriteArray("sets", sets().size());
-	int i = 0;
-	foreach(ViewColumnSet *set, sets()) {
-		s.setArrayIndex(i++);
-		s.setValue("name", set->name());
-		set->write_settings();
-	}
-	s.endArray();
-}
-
 void GridView::update_from_dialog(GridViewDialog *d) {
 	m_name = d->name();
-	m_filename = d->filename();
 	clear();
 	foreach(QString set_name, d->sets()) {
 		ViewColumnSet *s = m_manager->get_set(set_name);
