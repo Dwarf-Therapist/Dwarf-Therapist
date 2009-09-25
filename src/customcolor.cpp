@@ -37,13 +37,18 @@ CustomColor::CustomColor(QString setting_name, QString tooltip, QString config_k
 	, m_dirty(false)
 {
 	m_label->setBuddy(m_picker);
+	m_label->setStatusTip(m_tooltip);
 	m_picker->insertColor(default_color, tr("Default"));
-	m_picker->setToolTip(m_tooltip);
+	//m_picker->setToolTip(m_tooltip);
+	m_picker->setStatusTip(m_tooltip);
 	m_picker->setStandardColors();
 	m_picker->setCurrentColor(default_color);
+	m_picker->setStyleSheet("text-align: left;");
 	m_last_color = m_picker->currentColor();
 
 	QHBoxLayout *hbox = new QHBoxLayout(this);
+	hbox->setSpacing(2);
+	hbox->setMargin(0);
 	hbox->addWidget(m_picker);
 	hbox->addWidget(m_label);
 	this->setLayout(hbox);

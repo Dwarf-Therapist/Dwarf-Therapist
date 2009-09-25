@@ -56,12 +56,18 @@ public:
 	virtual QStandardItem *build_aggregate(const QString &group_name, 
 										   const QVector<Dwarf*> &dwarves) = 0; // create an aggregate cell based on several dwarves
 
+	public slots:
+		virtual void read_settings() {}
+		void clear_cells() {m_cells.clear();}
+		virtual void redraw_cells() {}
+
 protected:
 	QString m_title;
 	QColor m_bg_color;
 	bool m_override_set_colors;
 	ViewColumnSet *m_set;
 	COLUMN_TYPE m_type;
+	QHash<Dwarf*, QStandardItem*> m_cells;
 };
 
 #endif

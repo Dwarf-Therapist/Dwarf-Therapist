@@ -24,12 +24,19 @@ THE SOFTWARE.
 #define HAPPINESS_COLUMN_H
 
 #include "viewcolumn.h"
+#include "dwarf.h"
 
 class HappinessColumn : public ViewColumn {
 public:
 	HappinessColumn(QString title, ViewColumnSet *set = 0, QObject *parent = 0);
 	QStandardItem *build_cell(Dwarf *d);
 	QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
+
+	public slots:
+		void read_settings();
+		void redraw_cells();
+private:
+	QMap<Dwarf::DWARF_HAPPINESS, QColor> m_colors;
 };
 
 #endif

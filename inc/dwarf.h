@@ -41,11 +41,13 @@ public:
 
 	typedef enum {
 		DH_MISERABLE,
+		DH_VERY_UNHAPPY,
 		DH_UNHAPPY,
 		DH_FINE,
 		DH_CONTENT,
 		DH_HAPPY,
-		DH_ECSTATIC
+		DH_ECSTATIC,
+		DH_TOTAL_LEVELS
 	} DWARF_HAPPINESS;
 
 	// attributes

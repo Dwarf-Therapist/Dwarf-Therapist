@@ -190,7 +190,7 @@ void DwarfModel::build_rows() {
 	}
 }
 
-void DwarfModel::build_row(QString key) {
+void DwarfModel::build_row(const QString &key) {
 	QIcon icn_f(":img/female.png");
 	QIcon icn_m(":img/male.png");
 	QStandardItem *root = 0;

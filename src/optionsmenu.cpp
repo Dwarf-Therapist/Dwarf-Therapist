@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 #include "optionsmenu.h"
 #include "customcolor.h"
+#include "dwarf.h"
 #include "dwarftherapist.h"
 #include "utils.h"
 #include "defines.h"
@@ -35,7 +36,7 @@ OptionsMenu::OptionsMenu(QWidget *parent)
 	, m_reading_settings(false)
 {
 	ui->setupUi(this);
-	
+
 	m_general_colors 
 		<< new CustomColor(tr("Skill"), tr("The color of the growing skill indicator box "
 			"inside a cell. Is not used when auto-contrast is enabled."), "skill", from_hex("0xAAAAAAFF"), this)
@@ -61,12 +62,36 @@ OptionsMenu::OptionsMenu(QWidget *parent)
 			tr("Border color of a cell that has pending changes. Set to main border color to disable this."), 
 			"dirty_border", QColor(0xFF6600), this);
 
+	m_happiness_colors 
+		<< new CustomColor(tr("Ecstatic"), tr("Color shown in happiness columns when a dwarf is <b>ecstatic</b>."),
+			QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_ECSTATIC)), QColor(0x00FF00), this)
+		<< new CustomColor(tr("Happy"), tr("Color shown in happiness columns when a dwarf is <b>happy</b>."),
+			QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_HAPPY)), QColor(0x71cc09), this)
+		<< new CustomColor(tr("Content"), tr("Color shown in happiness columns when a dwarf is <b>quite content</b>."),
+			QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_CONTENT)), QColor(0xDDDD00), this)
+		<< new CustomColor(tr("Fine"), tr("Color shown in happiness columns when a dwarf is <b>fine</b>."),
+			QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_FINE)), QColor(0xe7e2ab), this)
+		<< new CustomColor(tr("Unhappy"), tr("Color shown in happiness columns when a dwarf is <b>unhappy</b>."),
+			QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_UNHAPPY)), QColor(0xffaa00), this)
+		<< new CustomColor(tr("Very Unhappy"), tr("Color shown in happiness columns when a dwarf is <b>very unhappy</b>."),
+			QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_VERY_UNHAPPY)), QColor(0xCC0000), this)
+		<< new CustomColor(tr("Miserable"), tr("Color shown in happiness columns when a dwarf is <b>miserable.</b>"),
+			QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_MISERABLE)), QColor(0xFF0000), this);
+
 	QVBoxLayout *main_layout = new QVBoxLayout();
 	foreach(CustomColor *cc, m_general_colors) {
 		main_layout->addWidget(cc);
 	}
+	main_layout->setSpacing(0);
 	ui->group_general_colors->setLayout(main_layout);
 
+	QVBoxLayout *happiness_layout = new QVBoxLayout;
+	foreach(CustomColor *cc, m_happiness_colors) {
+		happiness_layout->addWidget(cc);
+	}
+	happiness_layout->setSpacing(0);
+	ui->tab_happiness_colors->setLayout(happiness_layout);
+	
 	ui->cb_skill_drawing_method->addItem("Growing Center Box", UberDelegate::SDM_GROWING_CENTRAL_BOX);
 	ui->cb_skill_drawing_method->addItem("Line Glyphs", UberDelegate::SDM_GLYPH_LINES);
 	ui->cb_skill_drawing_method->addItem("Growing Fill", UberDelegate::SDM_GROWING_FILL);
@@ -80,6 +105,15 @@ OptionsMenu::OptionsMenu(QWidget *parent)
 
 OptionsMenu::~OptionsMenu() {}
 
+
+bool OptionsMenu::event(QEvent *evt) {
+	if (evt->type() == QEvent::StatusTip) {
+		ui->text_status_tip->setHtml(static_cast<QStatusTipEvent*>(evt)->tip());
+		return true; // we've handled it, don't pass it
+	}
+	return QWidget::event(evt); // pass the event along the chain
+}
+
 void OptionsMenu::read_settings() {
 	m_reading_settings = true;
 	QSettings *s = DT->user_settings();
@@ -87,6 +121,10 @@ void OptionsMenu::read_settings() {
 	s->beginGroup("colors");
 	QColor c;
 	foreach(CustomColor *cc, m_general_colors) {
+		c = s->value(cc->get_config_key(), cc->get_default()).value<QColor>();
+		cc->set_color(c);
+	}
+	foreach(CustomColor *cc, m_happiness_colors) {
 		c = s->value(cc->get_config_key(), cc->get_default()).value<QColor>();
 		cc->set_color(c);
 	}
@@ -129,6 +167,9 @@ void OptionsMenu::write_settings() {
 		foreach(CustomColor *cc, m_general_colors) {
 			s->setValue(cc->get_config_key(), cc->get_color());
 		}
+		foreach(CustomColor *cc, m_happiness_colors) {
+			s->setValue(cc->get_config_key(), cc->get_color());
+		}
 		s->endGroup();
 		
 		s->beginGroup("grid");
@@ -166,6 +207,9 @@ void OptionsMenu::reject() {
 
 void OptionsMenu::restore_defaults() {
 	foreach(CustomColor *cc, m_general_colors) {
+		cc->reset_to_default();
+	}
+	foreach(CustomColor *cc, m_happiness_colors) {
 		cc->reset_to_default();
 	}
 	ui->cb_read_dwarves_on_startup->setChecked(true);

@@ -2,12 +2,15 @@
 <ui version="4.0">
  <class>OptionsMenu</class>
  <widget class="QDialog" name="OptionsMenu">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>321</width>
-    <height>429</height>
+    <width>476</width>
+    <height>389</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,287 +20,400 @@
    <iconset resource="../images.qrc">
     <normaloff>:/img/color_wheel.png</normaloff>:/img/color_wheel.png</iconset>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_4" stretch="10,0">
+  <layout class="QVBoxLayout" name="vbox" stretch="20,1,1">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_6">
-     <item>
-      <widget class="QGroupBox" name="group_general_colors">
-       <property name="styleSheet">
-        <string notr="true">QtColorPicker {
-text-align: left;
-}</string>
-       </property>
-       <property name="title">
-        <string>Grid Colors</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_3" stretch="10,0">
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="statusTip">
+      <string>STATUS TIP</string>
+     </property>
+     <property name="tabPosition">
+      <enum>QTabWidget::North</enum>
+     </property>
+     <property name="tabShape">
+      <enum>QTabWidget::Rounded</enum>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>24</width>
+       <height>24</height>
+      </size>
+     </property>
+     <widget class="QWidget" name="tab_main_settings">
+      <attribute name="icon">
+       <iconset resource="../images.qrc">
+        <normaloff>:/img/hammer.png</normaloff>:/img/hammer.png</iconset>
+      </attribute>
+      <attribute name="title">
+       <string>General</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QGroupBox" name="groupBox_2">
-         <property name="title">
-          <string>Main Options</string>
+        <widget class="QCheckBox" name="cb_read_dwarves_on_startup">
+         <property name="toolTip">
+          <string>When checked, DwarfTherapist will attemp to connect and load all dwarves from a running copy of Dwarf Fortress.</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout">
-          <item>
-           <widget class="QCheckBox" name="cb_read_dwarves_on_startup">
-            <property name="toolTip">
-             <string>When checked, DwarfTherapist will attemp to connect and load all dwarves from a running copy of Dwarf Fortress.</string>
-            </property>
-            <property name="statusTip">
-             <string>When checked, DwarfTherapist will attemp to connect and load all dwarves from a running copy of Dwarf Fortress.</string>
-            </property>
-            <property name="whatsThis">
-             <string>When checked, DwarfTherapist will attemp to connect and load all dwarves from a running copy of Dwarf Fortress.</string>
-            </property>
-            <property name="text">
-             <string>Load Dwarves on Launch</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="cb_auto_contrast">
-            <property name="toolTip">
-             <string>When checked, skill blocks on grid cells will choose the highest contrast color available. </string>
-            </property>
-            <property name="statusTip">
-             <string>When checked, skill blocks on grid cells will choose the highest contrast color available. </string>
-            </property>
-            <property name="whatsThis">
-             <string>When checked, skill blocks on grid cells will choose the highest contrast color available. </string>
-            </property>
-            <property name="text">
-             <string>Auto Contrast Skill Display</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="cb_show_aggregates">
-            <property name="toolTip">
-             <string>When checked, and sorting by some criteria, labors will show an aggregate cell above a group. This cell can be toggled to enable/disable a labor for an entire group at once.</string>
-            </property>
-            <property name="statusTip">
-             <string>When checked, and sorting by some criteria, labors will show an aggregate cell above a group. This cell can be toggled to enable/disable a labor for an entire group at once.</string>
-            </property>
-            <property name="whatsThis">
-             <string>When checked, and sorting by some criteria, labors will show an aggregate cell above a group. This cell can be toggled to enable/disable a labor for an entire group at once.</string>
-            </property>
-            <property name="text">
-             <string>Display Labor Group Cells</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="cb_single_click_labor_changes">
-            <property name="toolTip">
-             <string>When checked, labors can be toggled with a single left-click of the mouse. Otherwise they must be double-clicked</string>
-            </property>
-            <property name="statusTip">
-             <string>When checked, labors can be toggled with a single left-click of the mouse. Otherwise they must be double-clicked</string>
-            </property>
-            <property name="whatsThis">
-             <string>When checked, labors can be toggled with a single left-click of the mouse. Otherwise they must be double-clicked</string>
-            </property>
-            <property name="text">
-             <string>Single Click Labor Changes</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="cb_show_toolbar_text">
-            <property name="toolTip">
-             <string>When checked, show a text description for each icon on the toolbar</string>
-            </property>
-            <property name="statusTip">
-             <string>When checked, show a text description for each icon on the toolbar</string>
-            </property>
-            <property name="whatsThis">
-             <string>When checked, show a text description for each icon on the toolbar</string>
-            </property>
-            <property name="text">
-             <string>Show Toolbar Text</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="cb_shade_column_headers">
-            <property name="toolTip">
-             <string>When checked, this will shade column headers with the column's background color</string>
-            </property>
-            <property name="statusTip">
-             <string>When checked, this will shade column headers with the column's background color</string>
-            </property>
-            <property name="whatsThis">
-             <string>When checked, this will shade column headers with the column's background color</string>
-            </property>
-            <property name="text">
-             <string>Gradient Shade Column Headers</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="cb_auto_expand">
-            <property name="toolTip">
-             <string>When checked, if dwarfs are grouped by something, this will auto-expand all groups each view change</string>
-            </property>
-            <property name="statusTip">
-             <string>When checked, if dwarfs are grouped by something, this will auto-expand all groups each view change</string>
-            </property>
-            <property name="whatsThis">
-             <string>When checked, if dwarfs are grouped by something, this will auto-expand all groups each view change</string>
-            </property>
-            <property name="text">
-             <string>Expand Groups On Load</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="cb_show_full_dwarf_names">
-            <property name="toolTip">
-             <string>When checked, show first names for dwarfs even if they have custom nicknames. Note: this change will not take effect until the next full read of dwarves occurrs!</string>
-            </property>
-            <property name="statusTip">
-             <string>When checked, show first names for dwarfs even if they have custom nicknames. Note: this change will not take effect until the next full read of dwarves occurrs!</string>
-            </property>
-            <property name="whatsThis">
-             <string>When checked, show first names for dwarfs even if they have custom nicknames. Note: this change will not take effect until the next full read of dwarves occurrs!</string>
-            </property>
-            <property name="text">
-             <string>Show Full Dwarf Names</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_7">
-            <item>
-             <widget class="QLabel" name="label_4">
-              <property name="text">
-               <string>Skill Drawing Method</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="cb_skill_drawing_method"/>
-            </item>
-           </layout>
-          </item>
-         </layout>
+         <property name="statusTip">
+          <string>When checked, DwarfTherapist will attemp to connect and load all dwarves from a running copy of Dwarf Fortress.</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, DwarfTherapist will attemp to connect and load all dwarves from a running copy of Dwarf Fortress.</string>
+         </property>
+         <property name="text">
+          <string>Load Dwarves on Launch</string>
+         </property>
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox">
-         <property name="title">
-          <string>Grid Options</string>
+        <widget class="QCheckBox" name="cb_single_click_labor_changes">
+         <property name="toolTip">
+          <string>When checked, labors can be toggled with a single left-click of the mouse. Otherwise they must be double-clicked</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_4">
-            <item>
-             <widget class="QLabel" name="label_3">
-              <property name="font">
-               <font>
-                <weight>50</weight>
-                <bold>false</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>Font</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_3">
-              <item>
-               <widget class="QLabel" name="lbl_current_font">
-                <property name="text">
-                 <string>CURRENT_FONT</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="btn_change_font">
-                <property name="text">
-                 <string>Change Font...</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
-            <item>
-             <widget class="QLabel" name="label_2">
-              <property name="font">
-               <font>
-                <weight>50</weight>
-                <bold>false</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>Cell Size</string>
-              </property>
-              <property name="buddy">
-               <cstring>sb_cell_size</cstring>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="sb_cell_size">
-              <property name="suffix">
-               <string>px</string>
-              </property>
-              <property name="minimum">
-               <number>4</number>
-              </property>
-              <property name="maximum">
-               <number>64</number>
-              </property>
-              <property name="value">
-               <number>16</number>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout">
-            <item>
-             <widget class="QLabel" name="label">
-              <property name="font">
-               <font>
-                <weight>50</weight>
-                <bold>false</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>Cell Padding</string>
-              </property>
-              <property name="buddy">
-               <cstring>sb_cell_padding</cstring>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="sb_cell_padding">
-              <property name="suffix">
-               <string>px</string>
-              </property>
-              <property name="maximum">
-               <number>6</number>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
+         <property name="statusTip">
+          <string>When checked, labors can be toggled with a single left-click of the mouse. Otherwise they must be double-clicked</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, labors can be toggled with a single left-click of the mouse. Otherwise they must be double-clicked</string>
+         </property>
+         <property name="text">
+          <string>Single Click Labor Changes</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_show_toolbar_text">
+         <property name="toolTip">
+          <string>When checked, show a text description for each icon on the toolbar</string>
+         </property>
+         <property name="statusTip">
+          <string>When checked, show a text description for each icon on the toolbar</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, show a text description for each icon on the toolbar</string>
+         </property>
+         <property name="text">
+          <string>Show Toolbar Text</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_auto_expand">
+         <property name="toolTip">
+          <string>When checked, if dwarfs are grouped by something, this will auto-expand all groups each view change</string>
+         </property>
+         <property name="statusTip">
+          <string>When checked, if dwarfs are grouped by something, this will auto-expand all groups each view change</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, if dwarfs are grouped by something, this will auto-expand all groups each view change</string>
+         </property>
+         <property name="text">
+          <string>Expand Groups On Load</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_show_full_dwarf_names">
+         <property name="toolTip">
+          <string>When checked, show first names for dwarfs even if they have custom nicknames. Note: this change will not take effect until the next full read of dwarves occurrs!</string>
+         </property>
+         <property name="statusTip">
+          <string>When checked, show first names for dwarfs even if they have custom nicknames. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read of dwarves occurrs!&lt;/font&gt;&lt;/b&gt;</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, show first names for dwarfs even if they have custom nicknames. Note: this change will not take effect until the next full read of dwarves occurrs!</string>
+         </property>
+         <property name="text">
+          <string>Show Full Dwarf Names</string>
+         </property>
         </widget>
        </item>
       </layout>
-     </item>
-    </layout>
+     </widget>
+     <widget class="QWidget" name="tab_grid_colors">
+      <attribute name="icon">
+       <iconset resource="../images.qrc">
+        <normaloff>:/img/color_swatch.png</normaloff>:/img/color_swatch.png</iconset>
+      </attribute>
+      <attribute name="title">
+       <string>Grid Colors</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,5,0,0,0">
+       <item>
+        <widget class="QCheckBox" name="cb_auto_contrast">
+         <property name="toolTip">
+          <string/>
+         </property>
+         <property name="statusTip">
+          <string>When checked, skill blocks on grid cells will choose the highest contrast color available. </string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, skill blocks on grid cells will choose the highest contrast color available. </string>
+         </property>
+         <property name="text">
+          <string>Auto Contrast Skill Display</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_show_aggregates">
+         <property name="toolTip">
+          <string/>
+         </property>
+         <property name="statusTip">
+          <string>When checked, and sorting by some criteria, labors will show an aggregate cell above a group. This cell can be toggled to enable/disable a labor for an entire group at once.</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, and sorting by some criteria, labors will show an aggregate cell above a group. This cell can be toggled to enable/disable a labor for an entire group at once.</string>
+         </property>
+         <property name="text">
+          <string>Display Labor Group Cells</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_shade_column_headers">
+         <property name="toolTip">
+          <string/>
+         </property>
+         <property name="statusTip">
+          <string>When checked, this will shade column headers with the column's background color</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, this will shade column headers with the column's background color</string>
+         </property>
+         <property name="text">
+          <string>Gradient Shade Column Headers</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>This option controls how skills are represented within a labor or skill column.</string>
+           </property>
+           <property name="whatsThis">
+            <string>This option controls how skills are represented within a labor or skill column.</string>
+           </property>
+           <property name="text">
+            <string>Skill Drawing Method</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="cb_skill_drawing_method">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>This option controls how skills are represented within a labor or skill column.</string>
+           </property>
+           <property name="whatsThis">
+            <string>This option controls how skills are represented within a labor or skill column.</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="group_general_colors">
+         <property name="styleSheet">
+          <string notr="true">QtColorPicker {
+text-align: left;
+}</string>
+         </property>
+         <property name="title">
+          <string>Grid Colors</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="font">
+            <font>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="statusTip">
+            <string>This controls which font is used for drawing text inside the labor grid.</string>
+           </property>
+           <property name="whatsThis">
+            <string>This controls which font is used for drawing text inside the labor grid.</string>
+           </property>
+           <property name="accessibleName">
+            <string/>
+           </property>
+           <property name="text">
+            <string>Font</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <item>
+            <widget class="QLabel" name="lbl_current_font">
+             <property name="toolTip">
+              <string/>
+             </property>
+             <property name="statusTip">
+              <string>The current active font.</string>
+             </property>
+             <property name="whatsThis">
+              <string>The current active font.</string>
+             </property>
+             <property name="text">
+              <string>CURRENT_FONT</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_change_font">
+             <property name="statusTip">
+              <string>This controls which font is used for drawing text inside the labor grid.</string>
+             </property>
+             <property name="whatsThis">
+              <string>This controls which font is used for drawing text inside the labor grid.</string>
+             </property>
+             <property name="accessibleName">
+              <string/>
+             </property>
+             <property name="text">
+              <string>Change Font...</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="font">
+            <font>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>This controls how much padding a column cell will have. Increasing the size will give cells more space between eachother without affecting the overall cell size.</string>
+           </property>
+           <property name="whatsThis">
+            <string>This controls how much padding a column cell will have. Increasing the size will give cells more space between eachother without affecting the overall cell size.</string>
+           </property>
+           <property name="text">
+            <string>Cell Padding</string>
+           </property>
+           <property name="buddy">
+            <cstring>sb_cell_padding</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="sb_cell_padding">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>This controls how much padding a column cell will have. Increasing the size will give cells more space between eachother without affecting the overall cell size.</string>
+           </property>
+           <property name="whatsThis">
+            <string>This controls how much padding a column cell will have. Increasing the size will give cells more space between eachother without affecting the overall cell size.</string>
+           </property>
+           <property name="suffix">
+            <string>px</string>
+           </property>
+           <property name="maximum">
+            <number>6</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="font">
+            <font>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="statusTip">
+            <string>This controls the overall size of a grid cell in the labor views. Large values may cause a very large grid to be drawn which would require a lot of scrolling around. Try to keep this value at a small enough size to still be able to see the information you need.</string>
+           </property>
+           <property name="whatsThis">
+            <string>This controls the overall size of a grid cell in the labor views. Large values may cause a very large grid to be drawn which would require a lot of scrolling around. Try to keep this value at a small enough size to still be able to see the information you need.</string>
+           </property>
+           <property name="text">
+            <string>Cell Size</string>
+           </property>
+           <property name="buddy">
+            <cstring>sb_cell_size</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="sb_cell_size">
+           <property name="statusTip">
+            <string>This controls the overall size of a grid cell in the labor views. Large values may cause a very large grid to be drawn which would require a lot of scrolling around. Try to keep this value at a small enough size to still be able to see the information you need.</string>
+           </property>
+           <property name="whatsThis">
+            <string>This controls the overall size of a grid cell in the labor views. Large values may cause a very large grid to be drawn which would require a lot of scrolling around. Try to keep this value at a small enough size to still be able to see the information you need.</string>
+           </property>
+           <property name="suffix">
+            <string>px</string>
+           </property>
+           <property name="minimum">
+            <number>4</number>
+           </property>
+           <property name="maximum">
+            <number>64</number>
+           </property>
+           <property name="value">
+            <number>16</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_happiness_colors">
+      <attribute name="icon">
+       <iconset resource="../images.qrc">
+        <normaloff>:/img/emoticon_grin.png</normaloff>:/img/emoticon_grin.png</iconset>
+      </attribute>
+      <attribute name="title">
+       <string>Happiness Colors</string>
+      </attribute>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTextEdit" name="text_status_tip">
+     <property name="undoRedoEnabled">
+      <bool>false</bool>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -333,8 +449,8 @@ text-align: left;
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>266</x>
-     <y>474</y>
+     <x>327</x>
+     <y>715</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -349,8 +465,8 @@ text-align: left;
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>266</x>
-     <y>474</y>
+     <x>327</x>
+     <y>715</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

@@ -59,8 +59,6 @@ public:
 	void set_grid_view(GridView *v) {m_gridview = v;}
 	void clear_all(); // reset everything to normal
 
-	void build_row(QString key);
-	void build_rows();
 	GROUP_BY current_grouping() const {return m_group_by;}
 	const QMap<QString, QVector<Dwarf*> > *get_dwarf_groups() const {return &m_grouped_dwarves;}
 	Dwarf *get_dwarf_by_id(int id) const {return m_dwarves.value(id, 0);}
@@ -72,6 +70,8 @@ public:
 	void filter_changed(const QString &);
 
 	public slots:
+		void build_row(const QString &key);
+		void build_rows();
 		void set_group_by(int group_by);
 		void load_dwarves();
 		void cell_activated(const QModelIndex &idx); // a grid cell was clicked/doubleclicked or enter was pressed on it

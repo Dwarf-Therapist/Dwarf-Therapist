@@ -37,6 +37,8 @@ public:
 	void read_settings();
 	void write_settings();
 
+	bool event(QEvent *evt);
+
 	public slots:
 		void accept();
 		void reject();
@@ -48,6 +50,7 @@ private:
 	bool m_reading_settings;
 	Ui::OptionsMenu *ui;
 	QList<CustomColor*> m_general_colors;
+	QList<CustomColor*> m_happiness_colors;
 	QFont m_font;
 	QFont m_dirty_font;
 

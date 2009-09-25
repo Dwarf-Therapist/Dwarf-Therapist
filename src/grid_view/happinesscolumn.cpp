@@ -26,10 +26,15 @@ THE SOFTWARE.
 #include "viewcolumnset.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
+#include "dwarftherapist.h"
+#include "defines.h"
 
 HappinessColumn::HappinessColumn(QString title, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(title, CT_HAPPINESS, set, parent)
-{}
+{
+	read_settings();
+	connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings())); // for color changes
+}
 
 QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
 	QStandardItem *item = init_cell(d);
@@ -42,40 +47,45 @@ QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
 					  .arg(d->get_raw_happiness())
 					  .arg(d->nice_name());
 	item->setToolTip(tooltip);
-
-	d->get_happiness();
-
-	switch (d->get_happiness()) {
-		case Dwarf::DH_MISERABLE:
-			item->setIcon(QIcon(":img/exclamation.png"));
-			break;
-		case Dwarf::DH_UNHAPPY:
-			item->setIcon(QIcon(":img/emoticon_unhappy.png"));
-			break;
-		case Dwarf::DH_FINE:
-			item->setIcon(QIcon(":img/emoticon_smile.png"));
-			break;
-		case Dwarf::DH_CONTENT:
-			item->setIcon(QIcon(":img/emoticon_smile.png"));
-			break;
-		case Dwarf::DH_HAPPY:
-			item->setIcon(QIcon(":img/emoticon_grin.png"));
-			break;
-		case Dwarf::DH_ECSTATIC:
-			item->setIcon(QIcon(":img/emoticon_happy.png"));
-			break;
-	}
+	QColor bg = m_colors[d->get_happiness()];
+	item->setBackground(QBrush(bg));
 	return item;
 }
 
-QStandardItem *HappinessColumn::build_aggregate(const QString &, const QVector<Dwarf*> &) {
+QStandardItem *HappinessColumn::build_aggregate(const QString &, const QVector<Dwarf*> &dwarves) {
 	QStandardItem *item = new QStandardItem;
-	QColor bg;
-	if (m_override_set_colors)
-		bg = m_bg_color;
-	else
-		bg = m_set->bg_color();
-	item->setData(bg, Qt::BackgroundColorRole);
-	item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
+	// find lowest happiness of all dwarfs this set represents, and show that color (so low happiness still pops out in a big group)
+	Dwarf::DWARF_HAPPINESS lowest = Dwarf::DH_ECSTATIC;
+	QString lowest_dwarf = "Nobody";
+	foreach(Dwarf *d, dwarves) {
+		Dwarf::DWARF_HAPPINESS tmp = d->get_happiness();
+		if (tmp <= lowest) {
+			lowest = tmp;
+			lowest_dwarf = d->nice_name();
+		}
+	}
+	item->setToolTip(tr("<h3>%1</h3>Lowest Happiness in group: <b>%2: %3</b>")
+		.arg(m_title)
+		.arg(lowest_dwarf)
+		.arg(Dwarf::happiness_name(lowest)));
+	item->setData(m_colors[lowest], Qt::BackgroundColorRole);
+	item->setData(m_colors[lowest], DwarfModel::DR_DEFAULT_BG_COLOR);
 	return item;
+}
+
+void HappinessColumn::read_settings() {
+	QSettings *s = DT->user_settings();
+	s->beginGroup("options/colors/happiness");
+	foreach(QString k, s->childKeys()) {
+		Dwarf::DWARF_HAPPINESS h = static_cast<Dwarf::DWARF_HAPPINESS>(k.toInt());
+		m_colors[h] = s->value(k).value<QColor>();
+	}
+	s->endGroup();
+	redraw_cells();
+}
+
+void HappinessColumn::redraw_cells() {
+	foreach(Dwarf *d, m_cells.uniqueKeys()) {
+		m_cells[d]->setBackground(m_colors[d->get_happiness()]);
+	}
 }

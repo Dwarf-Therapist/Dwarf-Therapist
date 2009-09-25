@@ -110,7 +110,8 @@ void DwarfTherapist::read_settings() {
 	m_reading_settings = true; // don't allow writes while we're reading...
 
 	// HACK!
-	if (m_user_settings->value("it_feels_like_the_first_time", true).toBool()) {
+	if (m_user_settings->value("it_feels_like_the_first_time", true).toBool() ||
+		!m_user_settings->contains("options/colors/happiness/1")) {
 		m_options_menu->write_settings(); //write it out so that we can get default colors loaded
 		emit settings_changed(); // this will cause delegates to get the right default colors
 		m_user_settings->setValue("it_feels_like_the_first_time", false);
