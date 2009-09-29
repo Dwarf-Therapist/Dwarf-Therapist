@@ -39,6 +39,7 @@ GridViewDock::GridViewDock(ViewManager *mgr, QWidget *parent, Qt::WindowFlags fl
 	draw_views();
 
 	connect(ui->list_views, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(edit_view(QListWidgetItem*)));
+	connect(ui->list_views, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_list_context_menu(const QPoint &)));
 	connect(ui->btn_add, SIGNAL(clicked()), this, SLOT(add_new_view()));
 }
 
@@ -58,15 +59,17 @@ void GridViewDock::draw_views() {
 	}
 }
 
-void GridViewDock::contextMenuEvent(QContextMenuEvent *e) {
-	m_tmp_item = ui->list_views->itemAt(ui->list_views->viewport()->mapFromGlobal(e->globalPos()));
-	if (!m_tmp_item)
-		return;
+void GridViewDock::draw_list_context_menu(const QPoint &pos) {
+	m_tmp_item = ui->list_views->itemAt(pos);
 	QMenu m(this);
-	m.addAction(tr("Edit..."), this, SLOT(edit_view()));
-	m.addAction(tr("Copy..."), this, SLOT(copy_view()));
-	m.addAction(tr("Delete..."), this, SLOT(delete_view()));
-	m.exec(e->globalPos());
+	if (m_tmp_item) {
+		m.addAction(QIcon(":/img/application_edit.png"), tr("Edit..."), this, SLOT(edit_view()));
+		m.addAction(QIcon(":/img/page_copy.png"), tr("Copy..."), this, SLOT(copy_view()));
+		m.addAction(QIcon(":/img/table_delete.png"), tr("Delete..."), this, SLOT(delete_view()));
+	} else { // whitespace
+		m.addAction(QIcon(":img/table_add.png"), tr("Add New GridView"), this, SLOT(add_new_view()));
+	}
+	m.exec(ui->list_views->mapToGlobal(pos));
 }
 
 void GridViewDock::add_new_view() {

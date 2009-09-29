@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "labor.h"
 #include "utils.h"
+#include "ui_columneditdialog.h"
 
 GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent)
 	: QDialog(parent)
@@ -90,29 +91,7 @@ bool GridViewDialog::eventFilter(QObject *sender, QEvent *evt) {
 }
 
 void GridViewDialog::column_order_changed() {
-	QObjectList foo;
-	LOGD << "model column order";
-	for(int i = 0; i < m_col_model->rowCount(); ++i) {
-		LOGD << m_col_model->item(i, 0)->text();
-	}
-	LOGD << "actual column order";
-	foreach(ViewColumn *vc, m_active_set->columns()) {
-		LOGD << vc->title();
-	}
-	LOGD << "COLUMN ORDER CHANGED!";
-
-	m_active_set->reorder_columns(m_col_model);
-}
-
-QStringList GridViewDialog::sets() {
-	QStringList retval;
-	return retval;
-	/*
-	for(int i = 0; i < ui->list_sets->count(); ++i) {
-		retval << ui->list_sets->item(i)->text();
-	}
-	return retval;
-	*/
+	m_active_set->reorder_columns(*m_col_model);
 }
 
 void GridViewDialog::draw_sets() {
@@ -146,6 +125,7 @@ void GridViewDialog::draw_columns_for_set(ViewColumnSet *set) {
 	m_col_model->clear();
 	foreach(ViewColumn *vc, set->columns()) {
 		QStandardItem *item = new QStandardItem(vc->title());
+		item->setData(vc->title(), GPDT_TITLE);
 		item->setData(vc->type(), GPDT_COLUMN_TYPE);
 		item->setBackground(vc->override_color() ? vc->bg_color() : set->bg_color());
 		item->setForeground(compliment(vc->override_color() ? vc->bg_color() : set->bg_color()));
@@ -159,7 +139,16 @@ void GridViewDialog::check_name(const QString &name) {
 }
 
 void GridViewDialog::add_set() {
-	ViewColumnSet *set = new ViewColumnSet("New Set", m_manager, m_manager);
+	QRegExp rx = QRegExp("^New Set (\\d+)$");
+	int highest_new_set_number = 0;
+	foreach(ViewColumnSet *set, m_pending_view->sets()) {
+		if (rx.indexIn(set->name()) != -1) {
+			if (rx.cap(1).toInt() > highest_new_set_number)
+				highest_new_set_number = rx.cap(1).toInt();
+		}
+	}
+
+	ViewColumnSet *set = new ViewColumnSet(tr("New Set %1").arg(highest_new_set_number + 1), m_manager, m_manager);
 	m_pending_view->add_set(set);
 	draw_sets();
 }
@@ -199,16 +188,20 @@ void GridViewDialog::edit_set(const QModelIndex &idx) {
 		set->set_bg_color(cp->currentColor());
 		draw_sets();
 		draw_columns_for_set(set);
-		//set_selection_changed(ui->list_sets->selectionModel()->selection(), QItemSelection());
 	}
 	d->deleteLater();
 }
 
 void GridViewDialog::remove_set() {
-	if (m_temp_set < 0)
-		return;
-	m_set_model->removeRow(m_temp_set);
-	m_temp_set = -1;
+	QModelIndexList selected = ui->list_sets->selectionModel()->selectedIndexes();
+	QList<ViewColumnSet*> sets_to_remove;
+	foreach(QModelIndex idx, selected) {
+		sets_to_remove << m_pending_view->get_set(idx.row());
+	}
+	foreach(ViewColumnSet *set, sets_to_remove) {
+		m_pending_view->remove_set(set);
+	}
+	draw_sets();
 }
 
 void GridViewDialog::draw_set_context_menu(const QPoint &p) {
@@ -232,37 +225,48 @@ void GridViewDialog::edit_column() {
 }
 
 void GridViewDialog::edit_column(const QModelIndex &idx) {
-	QStandardItem *item = m_col_model->itemFromIndex(idx);
-	/*
-
+	ViewColumn *vc = m_active_set->column_at(idx.row());
+	
+	// build the column dialog
 	QDialog *d = new QDialog(this);
-	QVBoxLayout *vbox = new QVBoxLayout(d);
-	d->setLayout(vbox);
+	Ui::ColumnEditDialog *dui = new Ui::ColumnEditDialog;
+	dui->setupUi(d);
+	d->setModal(true);
 
-	QFormLayout *form = new QFormLayout(d);
-	QLineEdit *le_name = new QLineEdit(item->text(), d);
-	QtColorPicker *cp = new QtColorPicker(d);
-	cp->setStandardColors();
-	cp->setCurrentColor(item->background().color());
+	connect(dui->cb_override, SIGNAL(toggled(bool)), dui->cp_bg_color, SLOT(setEnabled(bool)));
 
-	form->addRow(tr("Name of set"), le_name);
-	form->addRow(tr("Background color"), cp);
-
-	QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, d);
-	vbox->addLayout(form, 10);
-	vbox->addWidget(buttons);
-
-	connect(buttons, SIGNAL(accepted()), d, SLOT(accept()));
-	connect(buttons, SIGNAL(rejected()), d, SLOT(reject()));
-
-	if (d->exec()) {
-		item->setBackground(cp->currentColor());
-		item->setData(cp->currentColor(), GPDT_BG_COLOR);
-		item->setText(le_name->text());
-		set_selection_changed(ui->list_sets->selectionModel()->selection(), QItemSelection());
+	if (vc->override_color())
+		dui->cp_bg_color->setCurrentColor(vc->bg_color());
+	else
+		dui->cp_bg_color->setCurrentColor(m_active_set->bg_color());
+	dui->cp_bg_color->setStandardColors();
+	dui->le_title->setText(vc->title());
+	dui->cb_override->setChecked(vc->override_color());
+	if (vc->type() == CT_SPACER) {
+		SpacerColumn *c = static_cast<SpacerColumn*>(vc);
+		dui->sb_width->setValue(c->width());
+	} else { // don't show the width form for non-spacer columns
+		dui->lbl_col_width->hide();
+		dui->sb_width->hide();
+		dui->verticalLayout->removeItem(dui->hbox_width);
 	}
-	d->deleteLater();
-	*/
+
+	if (d->exec()) { //accepted
+		vc->set_title(dui->le_title->text());
+		vc->set_override_color(dui->cb_override->isChecked());
+		if (dui->cb_override->isChecked()) {
+			vc->set_bg_color(dui->cp_bg_color->currentColor());
+		}
+		if (vc->type() == CT_SPACER) {
+			SpacerColumn *c = static_cast<SpacerColumn*>(vc);
+			int w = dui->sb_width->value();
+			if (w < 1)
+				w = DEFAULT_SPACER_WIDTH;
+			c->set_width(w);
+		}
+		draw_columns_for_set(m_active_set);
+	}
+	delete dui;
 }
 
 void GridViewDialog::remove_column() {
@@ -363,7 +367,7 @@ void GridViewDialog::add_skill_column() {
 void GridViewDialog::accept() {
 	if (ui->le_name->text().isEmpty()) {
 		QMessageBox::warning(this, tr("Empty Name"), tr("Cannot save a view with no name!"));
-		return QDialog::reject();
+		return;
 	} else if (m_manager->get_view(ui->le_name->text())) {
 		// this name exists
 		if (!m_is_editing || (m_is_editing && m_original_name != ui->le_name->text())) {
@@ -373,7 +377,7 @@ void GridViewDialog::accept() {
 			if (m.exec() == QMessageBox::Yes) {
 				return QDialog::accept();
 			} else {
-				return QDialog::reject();
+				return;
 			}
 		}
 	}

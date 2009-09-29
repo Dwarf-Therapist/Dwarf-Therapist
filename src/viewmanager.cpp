@@ -293,7 +293,7 @@ void ViewManager::write_views() {
 		s->endArray();
 	}
 	s->endArray();
-	return;
+	
 	QStringList tab_order;
 	for (int i = 0; i < count(); ++i) {
 		tab_order << tabText(i);

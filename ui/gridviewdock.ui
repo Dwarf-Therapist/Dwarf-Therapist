@@ -2,12 +2,29 @@
 <ui version="4.0">
  <class>GridViewDock</class>
  <widget class="QDockWidget" name="GridViewDock">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>274</width>
+    <height>261</height>
+   </rect>
+  </property>
   <property name="mouseTracking">
    <bool>false</bool>
   </property>
   <property name="windowIcon">
    <iconset resource="../images.qrc">
     <normaloff>:/img/hammer.png</normaloff>:/img/hammer.png</iconset>
+  </property>
+  <property name="toolTip">
+   <string>These are your grid views. They can be customized. Right-click for editing options...</string>
+  </property>
+  <property name="statusTip">
+   <string>These are your grid views. They can be customized. Right-click for editing options...</string>
+  </property>
+  <property name="whatsThis">
+   <string>These are your grid views. They can be customized. Right-click for editing options...</string>
   </property>
   <property name="windowTitle">
    <string>Grid Views</string>
@@ -17,7 +34,7 @@
     <bool>true</bool>
    </property>
    <property name="toolTip">
-    <string>FIXME</string>
+    <string/>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
@@ -29,6 +46,9 @@
        <font>
         <pointsize>8</pointsize>
        </font>
+      </property>
+      <property name="contextMenuPolicy">
+       <enum>Qt::CustomContextMenu</enum>
       </property>
       <property name="editTriggers">
        <set>QAbstractItemView::NoEditTriggers</set>

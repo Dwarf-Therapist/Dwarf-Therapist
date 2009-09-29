@@ -37,9 +37,10 @@ public:
 	GridViewDock(ViewManager *mgr, QWidget *parent = 0, Qt::WindowFlags flags = 0);
 	void draw_views();
 
-	void contextMenuEvent(QContextMenuEvent *);
 	public slots:
 		void add_new_view();
+		void draw_list_context_menu(const QPoint &pos);
+
 private:
 	ViewManager *m_manager;
 	Ui::GridViewDock *ui;

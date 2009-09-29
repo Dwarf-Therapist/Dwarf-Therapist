@@ -75,6 +75,12 @@ ViewColumnSet::ViewColumnSet(const ViewColumnSet &copy)
 					new_c = lc;
 				}
 				break;
+			case CT_SKILL:
+				{
+					SkillColumn *old = static_cast<SkillColumn*>(vc);
+					SkillColumn *sc = new SkillColumn(old->title(), old->skill_id(), this, this);
+					new_c = sc;
+				}
 		}
 		if (new_c) {
 			new_c->set_override_color(vc->override_color());
@@ -171,11 +177,11 @@ void ViewColumnSet::toggle_for_dwarf(Dwarf *d) {
 }
 
 
-void ViewColumnSet::reorder_columns(QStandardItemModel *model) {
+void ViewColumnSet::reorder_columns(const QStandardItemModel &model) {
 	QList<ViewColumn*> new_cols;
-	for (int i = 0; i < model->rowCount(); ++i) {
+	for (int i = 0; i < model.rowCount(); ++i) {
 		// find the VC that matches this item in the GUI list
-		QStandardItem *item = model->item(i, 0);
+		QStandardItem *item = model.item(i, 0);
 		QString title = item->data(GridViewDialog::GPDT_TITLE).toString();
 		COLUMN_TYPE type = static_cast<COLUMN_TYPE>(item->data(GridViewDialog::GPDT_COLUMN_TYPE).toInt());
 		foreach(ViewColumn *vc, m_columns) {
@@ -184,6 +190,8 @@ void ViewColumnSet::reorder_columns(QStandardItemModel *model) {
 			}
 		}
 	}
+	Q_ASSERT(new_cols.size() == m_columns.size());
+
 	m_columns.clear();
 	foreach(ViewColumn *vc, new_cols) {
 		m_columns << vc;

@@ -52,7 +52,6 @@ public:
 	//! used to hack into the list of sets, since they don't seem to send a proper re-order signal
 	bool eventFilter(QObject *, QEvent *);
 	QString name();
-	QStringList sets();
 	GridView *view() {return m_view;}
 	GridView *pending_view() {return m_pending_view;}
 	ViewManager *manager() {return m_manager;}

@@ -58,11 +58,13 @@ public:
 	void set_name(const QString &name) {m_name = name;}
 	void add_set(ViewColumnSet *set);
 	void remove_set(QString name);
+	void remove_set(ViewColumnSet *set) {m_sets.removeAll(set);}
 	void clear();
 	const QList<ViewColumnSet*> sets() const {return m_sets;}
 	bool is_active() {return m_active;}
 	void set_active(bool active) {m_active = active;}
 	ViewColumnSet *get_set(const QString &name);
+	ViewColumnSet *get_set(int offset) {return m_sets.at(offset);}
 
 private:
 	bool m_active;

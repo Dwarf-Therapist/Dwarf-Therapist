@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/" >
+    <file>img/page_copy.png</file>
     <file>img/image_add.png</file>
     <file>img/table_add.png</file>
     <file>img/cross.png</file>
