@@ -39,7 +39,6 @@ public:
 	ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent = 0);
 	
 	QList<GridView*> views() {return m_views;}
-	QList<ViewColumnSet*> sets() {return m_sets;}
 	void add_view(GridView *view) {m_views << view;}
 
 	public slots:
@@ -52,7 +51,9 @@ public:
 		void redraw_current_tab();
 
 		GridView *get_view(const QString &name);
-		ViewColumnSet *get_set(const QString &name);
+		GridView *get_active_view();
+		void remove_view(GridView *view);
+		void replace_view(GridView *old_view, GridView *new_view);
 
 		// passthru
 		void expand_all();
@@ -62,7 +63,6 @@ public:
 
 private:
 	QList<GridView*> m_views;
-	QList<ViewColumnSet*> m_sets;
 	DwarfModel *m_model;
 	DwarfModelProxy *m_proxy;
 	QToolButton *m_add_tab_button;

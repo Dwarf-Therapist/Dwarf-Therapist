@@ -62,7 +62,7 @@ public:
 	const QList<ViewColumnSet*> sets() const {return m_sets;}
 	bool is_active() {return m_active;}
 	void set_active(bool active) {m_active = active;}
-	void update_from_dialog(GridViewDialog *d);
+	ViewColumnSet *get_set(const QString &name);
 
 private:
 	bool m_active;

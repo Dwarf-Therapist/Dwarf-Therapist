@@ -38,10 +38,23 @@ GameDataReader::GameDataReader(QObject *parent)
 		Labor *l = new Labor(get_string_for_key("name"), get_int_for_key("id", 10), 
 							 get_int_for_key("skill", 10), k.toInt(), this);
 		m_labors[l->labor_id] = l;
-		m_ordered_labors[l->list_order] = l;
 		m_data_settings->endGroup();
 	}
 	m_data_settings->endGroup();
+
+	QStringList labor_names;
+	foreach(Labor *l, m_labors) {
+		labor_names << l->name;
+	}
+	qSort(labor_names);
+	foreach(QString name, labor_names) {
+		foreach(Labor *l, m_labors) {
+			if (name == l->name) {
+				m_ordered_labors << l;
+				break;
+			}
+		}
+	}
 
 	m_data_settings->beginGroup("skill_names");
 	foreach(QString k, m_data_settings->childKeys()) {
@@ -49,6 +62,20 @@ GameDataReader::GameDataReader(QObject *parent)
 		m_skills.insert(skill_id, m_data_settings->value(k, "UNKNOWN").toString());
 	}
 	m_data_settings->endGroup();
+
+	QStringList skill_names;
+	foreach(QString name, m_skills) {
+		skill_names << name;
+	}
+	qSort(skill_names);
+	foreach(QString name, skill_names) {
+		foreach(int skill_id, m_skills.uniqueKeys()) {
+			if (name == m_skills.value(skill_id)) {
+				m_ordered_skills << QPair<int, QString>(skill_id, name);
+				break;
+			}
+		}
+	}
 
 	m_data_settings->beginGroup("skill_levels");
 	foreach(QString k, m_data_settings->childKeys()) {

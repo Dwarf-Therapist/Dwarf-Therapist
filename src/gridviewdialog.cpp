@@ -27,15 +27,21 @@ THE SOFTWARE.
 #include "gridview.h"
 #include "viewcolumnset.h"
 #include "viewcolumn.h"
+#include "spacercolumn.h"
+#include "happinesscolumn.h"
+#include "laborcolumn.h"
+#include "skillcolumn.h"
 #include "defines.h"
 #include "statetableview.h"
 #include "gamedatareader.h"
 #include "labor.h"
+#include "utils.h"
 
 GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent)
 	: QDialog(parent)
 	, ui(new Ui::GridViewDialog)
 	, m_view(view)
+	, m_pending_view(new GridView((const GridView)*view))
 	, m_manager(mgr)
 	, m_is_editing(false)
 	, m_set_model(new QStandardItemModel)
@@ -48,21 +54,22 @@ GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent
 	connect(ui->list_sets->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)),
 		SLOT(set_selection_changed(const QItemSelection&, const QItemSelection&)));
 
-	if (!m_view->name().isEmpty()) { // looks like this is an edit...
-		ui->le_name->setText(view->name());
+	if (!m_pending_view->name().isEmpty()) { // looks like this is an edit...
+		ui->le_name->setText(m_pending_view->name());
 		draw_sets();
-		ui->buttonBox->setEnabled(!view->name().isEmpty());
+		ui->buttonBox->setEnabled(!m_pending_view->name().isEmpty());
 		m_is_editing = true;
-		m_original_name = view->name();
+		m_original_name = m_pending_view->name();
 	}
-	//ui->tree->installEventFilter(this);
+	ui->list_columns->installEventFilter(this);
 
-	/* TODO: show a STV with a preview using this gridview...
+	/*/ TODO: show a STV with a preview using this gridview...
 	StateTableView *stv = new StateTableView(this);
 	QStandardItemModel *m = new QStandardItemModel(this);
 	stv->setModel(m);
 	ui->vbox->addWidget(stv, 10);
 	*/
+	
 	connect(ui->list_sets, SIGNAL(activated(const QModelIndex &)), SLOT(edit_set(const QModelIndex &)));
 	connect(ui->list_sets, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_set_context_menu(const QPoint &)));
 	connect(ui->list_columns, SIGNAL(activated(const QModelIndex &)), SLOT(edit_column(const QModelIndex &)));
@@ -72,6 +79,29 @@ GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent
 
 QString GridViewDialog::name() {
 	 return ui->le_name->text();
+}
+
+
+bool GridViewDialog::eventFilter(QObject *sender, QEvent *evt) {
+	if (evt->type() == QEvent::ChildRemoved && sender == ui->list_columns) {
+		column_order_changed();
+	}
+	return false; // don't actually interrupt anything
+}
+
+void GridViewDialog::column_order_changed() {
+	QObjectList foo;
+	LOGD << "model column order";
+	for(int i = 0; i < m_col_model->rowCount(); ++i) {
+		LOGD << m_col_model->item(i, 0)->text();
+	}
+	LOGD << "actual column order";
+	foreach(ViewColumn *vc, m_active_set->columns()) {
+		LOGD << vc->title();
+	}
+	LOGD << "COLUMN ORDER CHANGED!";
+
+	m_active_set->reorder_columns(m_col_model);
 }
 
 QStringList GridViewDialog::sets() {
@@ -88,9 +118,10 @@ QStringList GridViewDialog::sets() {
 void GridViewDialog::draw_sets() {
 	m_set_model->clear();
 	m_col_model->clear();
-	foreach(ViewColumnSet *set, m_view->sets()) {
+	foreach(ViewColumnSet *set, m_pending_view->sets()) {
 		QStandardItem *set_item = new QStandardItem(set->name());
 		set_item->setBackground(set->bg_color());
+		set_item->setForeground(compliment(set->bg_color()));
 		set_item->setDropEnabled(false);
 		set_item->setData(set->name(), GPDT_TITLE);
 		set_item->setData(set->bg_color(), GPDT_BG_COLOR);
@@ -103,16 +134,23 @@ void GridViewDialog::set_selection_changed(const QItemSelection &selected, const
 	if (selected.indexes().size() != 1)
 		return;
 	QStandardItem *set_item = m_set_model->itemFromIndex(selected.indexes().at(0));
-	foreach(ViewColumnSet *set, m_view->sets()) {
+	foreach(ViewColumnSet *set, m_pending_view->sets()) {
 		if (set->name() == set_item->data(GPDT_TITLE).toString()) {
-			m_col_model->clear();
-			foreach(ViewColumn *vc, set->columns()) {
-				QStandardItem *item = new QStandardItem(vc->title());
-				item->setBackground(vc->override_color() ? vc->bg_color() : set_item->data(GPDT_BG_COLOR).value<QColor>());
-				item->setDropEnabled(false);
-				m_col_model->appendRow(item);
-			}
+			m_active_set = set;
+			draw_columns_for_set(m_active_set);
 		}
+	}
+}
+
+void GridViewDialog::draw_columns_for_set(ViewColumnSet *set) {
+	m_col_model->clear();
+	foreach(ViewColumn *vc, set->columns()) {
+		QStandardItem *item = new QStandardItem(vc->title());
+		item->setData(vc->type(), GPDT_COLUMN_TYPE);
+		item->setBackground(vc->override_color() ? vc->bg_color() : set->bg_color());
+		item->setForeground(compliment(vc->override_color() ? vc->bg_color() : set->bg_color()));
+		item->setDropEnabled(false);
+		m_col_model->appendRow(item);
 	}
 }
 
@@ -121,12 +159,9 @@ void GridViewDialog::check_name(const QString &name) {
 }
 
 void GridViewDialog::add_set() {
-	/*
-	QString set_name = ui->cb_sets->currentText();
-	ViewColumnSet *set = m_manager->get_set(set_name);
-	m_view->add_set(set);
+	ViewColumnSet *set = new ViewColumnSet("New Set", m_manager, m_manager);
+	m_pending_view->add_set(set);
 	draw_sets();
-	*/
 }
 
 void GridViewDialog::edit_set() {
@@ -159,10 +194,12 @@ void GridViewDialog::edit_set(const QModelIndex &idx) {
 	connect(buttons, SIGNAL(rejected()), d, SLOT(reject()));
 
 	if (d->exec()) {
-		item->setBackground(cp->currentColor());
-		item->setData(cp->currentColor(), GPDT_BG_COLOR);
-		item->setText(le_name->text());
-		set_selection_changed(ui->list_sets->selectionModel()->selection(), QItemSelection());
+		ViewColumnSet *set = m_pending_view->get_set(item->data(GPDT_TITLE).toString());
+		set->set_name(le_name->text());
+		set->set_bg_color(cp->currentColor());
+		draw_sets();
+		draw_columns_for_set(set);
+		//set_selection_changed(ui->list_sets->selectionModel()->selection(), QItemSelection());
 	}
 	d->deleteLater();
 }
@@ -177,11 +214,13 @@ void GridViewDialog::remove_set() {
 void GridViewDialog::draw_set_context_menu(const QPoint &p) {
 	QMenu m(this);
 	QModelIndex idx = ui->list_sets->indexAt(p);
-	if (!idx.isValid())
-		return;
-	m.addAction(QIcon(":img/application_edit.png"), tr("Edit..."), this, SLOT(edit_set()));
-	m.addAction(QIcon(":img/delete.png"), tr("Remove"), this, SLOT(remove_set()));
-	m_temp_set = idx.row();
+	if (idx.isValid()) {
+		m.addAction(QIcon(":img/application_edit.png"), tr("Edit..."), this, SLOT(edit_set()));
+		m.addAction(QIcon(":img/delete.png"), tr("Remove"), this, SLOT(remove_set()));
+		m_temp_set = idx.row();
+	} else {
+		m.addAction(tr("Add New Set"), this, SLOT(add_set()));
+	}
 	m.exec(ui->list_sets->viewport()->mapToGlobal(p));
 }
 
@@ -227,10 +266,11 @@ void GridViewDialog::edit_column(const QModelIndex &idx) {
 }
 
 void GridViewDialog::remove_column() {
-	if (m_temp_col < 0)
+	if (m_temp_col < 0 || !m_active_set)
 		return;
-	m_col_model->removeRow(m_temp_col);
+	m_active_set->remove_column(m_temp_col);
 	m_temp_col = -1;
+	draw_columns_for_set(m_active_set);
 }
 
 void GridViewDialog::draw_column_context_menu(const QPoint &p) {
@@ -242,41 +282,88 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
 		m_temp_col = idx.row();
 	} else { // in whitespace
 		GameDataReader *gdr = GameDataReader::ptr();
-		QMenu *m_special = m->addMenu(tr("Add Special"));
-		QAction *a = m_special->addAction("Spacer", this, SLOT(add_spacer_column()));
+		QAction *a = m->addAction("Add Spacer", this, SLOT(add_spacer_column()));
 		a->setToolTip(tr("Adds a non-selectable spacer to this set. You can set a custom width and color on spacer columns."));
-		a = m_special->addAction("Happiness", this, SLOT(add_happiness_column()));
-		a->setToolTip(tr("Adds a single column that shows a color-coded happiness indicator for "
-			"each dwarf. You can customize the colors used in the options menu."));
 
 		QMenu *m_labor = m->addMenu(tr("Add Labor Column"));
-		m_labor->setTearOffEnabled(true);
 		m_labor->setToolTip(tr("Labor columns function as toggle switches for individual labors on a dwarf."));
+		QMenu *labor_a_l = m_labor->addMenu(tr("A-I"));
+		QMenu *labor_j_r = m_labor->addMenu(tr("J-R"));
+		QMenu *labor_s_z = m_labor->addMenu(tr("S-Z"));
 		foreach(Labor *l, gdr->get_ordered_labors()) {
-			QAction *a = m_labor->addAction(l->name, this, SLOT(add_labor_column()));
+			QMenu *menu_to_use = labor_a_l;
+			if (l->name.at(0).toLower() > 'i')
+				menu_to_use = labor_j_r;
+			if (l->name.at(0).toLower() > 'r')
+				menu_to_use = labor_s_z;
+			QAction *a = menu_to_use->addAction(l->name, this, SLOT(add_labor_column()));
 			a->setData(l->labor_id);
 			a->setToolTip(tr("Add a column for labor %1 (ID%2)").arg(l->name).arg(l->labor_id));
 		}
 
 		QMenu *m_skill = m->addMenu(tr("Add Skill Column"));
-		m_skill->setTearOffEnabled(true);
 		m_skill->setToolTip(tr("Skill columns function as a read-only display of a dwarf's skill in a particular area."
 			" Note that you can add skill columns for labors but they won't work as toggles."));
-		QHash<int, QString> skills = gdr->get_skills();
-		foreach(int skill_id, skills.uniqueKeys()) {
-			QAction *a = m_skill->addAction(skills.value(skill_id), this, SLOT(add_skill_column()));
-			a->setData(skill_id);
-			a->setToolTip(tr("Add a column for skill %1 (ID%2)").arg(skills.value(skill_id)).arg(skill_id));
+		QMenu *skill_a_l = m_skill->addMenu(tr("A-I"));
+		QMenu *skill_j_r = m_skill->addMenu(tr("J-R"));
+		QMenu *skill_m_z = m_skill->addMenu(tr("S-Z"));
+		QPair<int, QString> skill_pair;
+		foreach(skill_pair, gdr->get_ordered_skills()) {
+			QMenu *menu_to_use = skill_a_l;
+			if (skill_pair.second.at(0).toLower() > 'i')
+				menu_to_use = skill_j_r;
+			if (skill_pair.second.at(0).toLower() > 'r')
+				menu_to_use = skill_m_z;
+			QAction *a = menu_to_use->addAction(skill_pair.second, this, SLOT(add_skill_column()));
+			a->setData(skill_pair.first);
+			a->setToolTip(tr("Add a column for skill %1 (ID%2)").arg(skill_pair.second).arg(skill_pair.first));
 		}
+
+		a = m->addAction("Add Happiness", this, SLOT(add_happiness_column()));
+		a->setToolTip(tr("Adds a single column that shows a color-coded happiness indicator for "
+			"each dwarf. You can customize the colors used in the options menu."));
 	}
 	m->exec(ui->list_columns->viewport()->mapToGlobal(p));
 }
 
+void GridViewDialog::add_spacer_column() {
+	if (!m_active_set)
+		return;
+	
+	new SpacerColumn("SPACER", m_active_set, m_active_set);
+	draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_happiness_column() {
+	if (!m_active_set)
+		return;
+	new HappinessColumn("Happiness", m_active_set, m_active_set);
+	draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_labor_column() {
+	if (!m_active_set)
+		return;
+	QAction *a = qobject_cast<QAction*>(QObject::sender());
+	int labor_id = a->data().toInt();
+	Labor *l = GameDataReader::ptr()->get_labor(labor_id);
+	new LaborColumn(l->name, l->labor_id, l->skill_id, m_active_set, m_active_set);
+	draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_skill_column() {
+	if (!m_active_set)
+		return;
+	QAction *a = qobject_cast<QAction*>(QObject::sender());
+	int skill_id = a->data().toInt();
+	new SkillColumn(GameDataReader::ptr()->get_skill_name(skill_id), skill_id, m_active_set, m_active_set);
+	draw_columns_for_set(m_active_set);
+}
+
 void GridViewDialog::accept() {
-	/*
 	if (ui->le_name->text().isEmpty()) {
 		QMessageBox::warning(this, tr("Empty Name"), tr("Cannot save a view with no name!"));
-		return;
+		return QDialog::reject();
 	} else if (m_manager->get_view(ui->le_name->text())) {
 		// this name exists
 		if (!m_is_editing || (m_is_editing && m_original_name != ui->le_name->text())) {
@@ -286,11 +373,10 @@ void GridViewDialog::accept() {
 			if (m.exec() == QMessageBox::Yes) {
 				return QDialog::accept();
 			} else {
-				return;
+				return QDialog::reject();
 			}
 		}
 	}
-	*/
-	//return QDialog::accept();
-	return QDialog::reject();
+	m_pending_view->set_name(ui->le_name->text());
+	return QDialog::accept();
 }

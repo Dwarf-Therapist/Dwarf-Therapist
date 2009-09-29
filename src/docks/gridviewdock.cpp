@@ -44,8 +44,17 @@ GridViewDock::GridViewDock(ViewManager *mgr, QWidget *parent, Qt::WindowFlags fl
 
 void GridViewDock::draw_views() {
 	ui->list_views->clear();
+	QStringList view_names;
 	foreach(GridView *v, m_manager->views()) {
-		new QListWidgetItem(v->name(), ui->list_views);
+		view_names << v->name();
+	}
+	qSort(view_names);
+	foreach(QString name, view_names) {
+		foreach(GridView *v, m_manager->views()) {
+			if (v->name() == name) {
+				new QListWidgetItem(v->name(), ui->list_views);
+			}
+		}
 	}
 }
 
@@ -65,8 +74,8 @@ void GridViewDock::add_new_view() {
 	GridViewDialog *d = new GridViewDialog(m_manager, view, this);
 	int accepted = d->exec();
 	if (accepted == QDialog::Accepted) {
-		view->update_from_dialog(d);
-		view->set_active(false);
+		GridView *new_view = d->pending_view();
+		new_view->set_active(false);
 		m_manager->add_view(view);
 		m_manager->write_views();
 		emit views_changed();
@@ -89,8 +98,7 @@ void GridViewDock::edit_view() {
 	GridViewDialog *d = new GridViewDialog(m_manager, view, this);
 	int accepted = d->exec();
 	if (accepted == QDialog::Accepted) {
-		view->update_from_dialog(d);
-		m_manager->write_views();
+		m_manager->replace_view(view, d->pending_view());
 		emit views_changed();
 		draw_views();
 	}
@@ -105,7 +113,9 @@ void GridViewDock::copy_view() {
 	if (!view)
 		return;
 
-	GridView copy(*view);
+	GridView *copy = new GridView(*view);
+	copy->set_name(view->name() + "(COPY)");
+	m_manager->add_view(copy);
 	m_manager->write_views();
 	emit views_changed();
 	draw_views();
@@ -125,8 +135,7 @@ void GridViewDock::delete_view() {
 		QMessageBox::Yes | QMessageBox::No);
 	if (answer == QMessageBox::Yes) {
 		LOGI << "permanently deleting set" << view->name();
-		m_manager->views().removeAll(view);
-		m_manager->write_views();
+		m_manager->remove_view(view);
 		emit views_changed();
 		draw_views();
 		view->deleteLater();

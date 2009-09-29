@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "mainwindow.h"
 #include "dwarfmodel.h"
+#include "gridviewdialog.h"
 
 ViewColumnSet::ViewColumnSet(QString name, ViewManager *mgr, QObject *parent)
 	: QObject(parent)
@@ -43,6 +44,45 @@ ViewColumnSet::ViewColumnSet(QString name, ViewManager *mgr, QObject *parent)
 	, m_manager(mgr)
 	, m_bg_color(Qt::white)
 {}
+
+ViewColumnSet::ViewColumnSet(const ViewColumnSet &copy) 
+	: QObject(copy.parent())
+	, m_name(copy.m_name)
+	, m_manager(copy.m_manager)
+	, m_bg_color(copy.m_bg_color)
+{
+	foreach(ViewColumn *vc, copy.m_columns) {
+		ViewColumn *new_c = 0;
+		switch(vc->type()) {
+			case CT_SPACER:
+				{
+					SpacerColumn *old = static_cast<SpacerColumn*>(vc);
+					SpacerColumn *sc = new SpacerColumn(vc->title(), this, this);
+					sc->set_width(old->width());
+					new_c = sc;
+				}
+				break;
+			case CT_HAPPINESS:
+				{
+					HappinessColumn *hc = new HappinessColumn(vc->title(), this, this);
+					new_c = hc;
+				}
+				break;
+			case CT_LABOR:
+				{
+					LaborColumn *old = static_cast<LaborColumn*>(vc);
+					LaborColumn *lc = new LaborColumn(old->title(), old->labor_id(), old->skill_id(), this, this);
+					new_c = lc;
+				}
+				break;
+		}
+		if (new_c) {
+			new_c->set_override_color(vc->override_color());
+			if (vc->override_color())
+				new_c->set_bg_color(vc->bg_color());
+		}
+	}
+}
 
 void ViewColumnSet::set_name(const QString &name) {
 	m_name = name;
@@ -128,4 +168,24 @@ void ViewColumnSet::toggle_for_dwarf(Dwarf *d) {
 	}
 	DT->get_main_window()->get_model()->calculate_pending();
 	
+}
+
+
+void ViewColumnSet::reorder_columns(QStandardItemModel *model) {
+	QList<ViewColumn*> new_cols;
+	for (int i = 0; i < model->rowCount(); ++i) {
+		// find the VC that matches this item in the GUI list
+		QStandardItem *item = model->item(i, 0);
+		QString title = item->data(GridViewDialog::GPDT_TITLE).toString();
+		COLUMN_TYPE type = static_cast<COLUMN_TYPE>(item->data(GridViewDialog::GPDT_COLUMN_TYPE).toInt());
+		foreach(ViewColumn *vc, m_columns) {
+			if (vc->title() == title && vc->type() == type) {
+				new_cols << vc;
+			}
+		}
+	}
+	m_columns.clear();
+	foreach(ViewColumn *vc, new_cols) {
+		m_columns << vc;
+	}
 }

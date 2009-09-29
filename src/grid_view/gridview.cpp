@@ -34,11 +34,11 @@ GridView::GridView(QString name, ViewManager *mgr, QObject *parent)
 
 GridView::GridView(const GridView &to_be_copied)
 	: QObject(to_be_copied.parent())
-	, m_name(to_be_copied.m_name + " (COPY)")
+	, m_name(to_be_copied.m_name)
 	, m_manager(to_be_copied.m_manager)
 {
 	foreach(ViewColumnSet *s, to_be_copied.sets()) {
-		add_set(s);
+		add_set(new ViewColumnSet((const ViewColumnSet)*s));
 	}
 }
 
@@ -64,12 +64,13 @@ void GridView::clear() {
 	m_set_map.clear();
 }
 
-void GridView::update_from_dialog(GridViewDialog *d) {
-	m_name = d->name();
-	clear();
-	foreach(QString set_name, d->sets()) {
-		ViewColumnSet *s = m_manager->get_set(set_name);
-		if (s)
-			add_set(s);
+ViewColumnSet *GridView::get_set(const QString &name) {
+	ViewColumnSet *ret_val = 0;
+	foreach(ViewColumnSet *set, m_sets) {
+		if (set->name() == name) {
+			ret_val = set;
+			break;
+		}
 	}
+	return ret_val;
 }

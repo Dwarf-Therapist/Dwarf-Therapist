@@ -61,8 +61,9 @@ public:
 	int get_dwarf_offset(QString key) {return get_int_for_key("dwarf_offsets/" + key);}
 	int get_xp_for_next_attribute_level(int current_number_of_attributes);
 
-	QMap<int, Labor*> get_ordered_labors() {return m_ordered_labors;}
+	QVector<Labor*> get_ordered_labors() {return m_ordered_labors;}
 	QHash<int, QString> get_skills() {return m_skills;}
+	QList<QPair<int, QString>> get_ordered_skills() {return m_ordered_skills;}
 	Labor *get_labor(int labor_id);
 	
 	QString get_string_for_key(QString key);
@@ -81,8 +82,9 @@ private:
 	static GameDataReader *m_instance;
 	QSettings *m_data_settings;
 	QHash<int, Labor*> m_labors;
-	QMap<int, Labor*> m_ordered_labors;
+	QVector<Labor*> m_ordered_labors;
 	QHash<int, QString> m_skills;
+	QList<QPair<int, QString>> m_ordered_skills;
 	QHash<int, QString> m_skill_levels;
 	QHash<int, QString> m_non_labor_professions;
 	QHash<int, int> m_attribute_levels;

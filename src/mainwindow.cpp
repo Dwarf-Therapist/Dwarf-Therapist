@@ -121,7 +121,6 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->act_expand_all, SIGNAL(triggered()), m_view_manager, SLOT(expand_all()));
 	connect(ui->act_collapse_all, SIGNAL(triggered()), m_view_manager, SLOT(collapse_all()));
 	connect(grid_view_dock, SIGNAL(views_changed()), m_view_manager, SLOT(views_changed()));
-	connect(view_set_dock, SIGNAL(sets_changed()), m_view_manager, SLOT(sets_changed()));
 	connect(ui->act_add_new_gridview, SIGNAL(triggered()), grid_view_dock, SLOT(add_new_view()));
 	connect(ui->act_add_new_column_set, SIGNAL(triggered()), view_set_dock, SLOT(add_new_set()));
 	connect(ui->list_custom_professions, SIGNAL(customContextMenuRequested(const QPoint &)),

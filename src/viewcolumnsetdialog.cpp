@@ -133,11 +133,11 @@ void ViewColumnSetDialog::type_chosen(const QString &type_name) {
 		}
 		m->sort(0);
 	} else if (type_name == "Skill") {
-		QHash<int, QString> skills = gdr->get_skills();
-		foreach(int skill_id, skills.uniqueKeys()) {
-			QStandardItem *i = new QStandardItem(skills.value(skill_id, "UNKNOWN"));
+		QPair<int, QString> skill_pair;
+		foreach(skill_pair, gdr->get_ordered_skills()) {
+			QStandardItem *i = new QStandardItem(skill_pair.second);
 			i->setData(CT_SKILL, Qt::UserRole);
-			i->setData(skill_id, Qt::UserRole + 1);
+			i->setData(skill_pair.first, Qt::UserRole + 1);
 			m->appendRow(i);
 		}
 		m->sort(0);
@@ -300,6 +300,7 @@ void ViewColumnSetDialog::show_edit_column_dialog(ViewColumn *vc) {
 }
 
 void ViewColumnSetDialog::accept() {
+	/*
 	if (ui->le_name->text().isEmpty()) {
 		QMessageBox::warning(this, tr("Empty Name"), tr("Cannot save a set with no name!"));
 		return;
@@ -317,5 +318,6 @@ void ViewColumnSetDialog::accept() {
 		}
 	}
 	return QDialog::accept();
+	*/
 }
 

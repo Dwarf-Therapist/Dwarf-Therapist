@@ -30,6 +30,8 @@ THE SOFTWARE.
 
 class ViewManager;
 class GridView;
+class ViewColumnSet;
+class ViewColumn;
 
 namespace Ui {
 	class GridViewDialog;
@@ -42,25 +44,29 @@ public:
 		GPDT_TITLE = Qt::UserRole,
 		GPDT_BG_COLOR,
 		GPDT_OVERRIDE_BG_COLOR,
-		GPDT_WIDTH
+		GPDT_WIDTH,
+		GPDT_COLUMN_TYPE
 	} GRIDVIEW_PENDING_DATA_TYPE;
 	GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent = 0);
 
 	//! used to hack into the list of sets, since they don't seem to send a proper re-order signal
-	//bool eventFilter(QObject *, QEvent *);
+	bool eventFilter(QObject *, QEvent *);
 	QString name();
 	QStringList sets();
 	GridView *view() {return m_view;}
+	GridView *pending_view() {return m_pending_view;}
 	ViewManager *manager() {return m_manager;}
 	
 	public slots:
 		void accept();
 		void set_selection_changed(const QItemSelection&, const QItemSelection&);
+		void draw_columns_for_set(ViewColumnSet *set);
 
 
 private:
 	Ui::GridViewDialog *ui;
 	GridView *m_view;
+	GridView *m_pending_view;
 	ViewManager *m_manager;
 	bool m_is_editing;
 	QString m_original_name;
@@ -68,10 +74,13 @@ private:
 	QStandardItemModel *m_col_model;
 	int m_temp_set;
 	int m_temp_col;
+	ViewColumnSet *m_active_set;
 
 	private slots:
 		//! for redrawing sets in the edit dialog
 		void draw_sets();
+		//! called when the order of columns changes
+		void column_order_changed();
 		//! makes sure the name for this view is ok
 		void check_name(const QString &);
 		//! add the currently selected set in the combobox to this view's set list
@@ -96,10 +105,10 @@ private:
 		void remove_column();
 
 		//! column adders
-		void add_spacer_column() {}
-		void add_happiness_column() {}
-		void add_labor_column() {}
-		void add_skill_column() {}
+		void add_spacer_column();
+		void add_happiness_column();
+		void add_labor_column();
+		void add_skill_column();
 };
 
 #endif

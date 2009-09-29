@@ -38,6 +38,7 @@ class ViewColumnSet : public QObject {
 	Q_OBJECT
 public:
 	ViewColumnSet(QString name, ViewManager *mgr, QObject *parent = 0);
+	ViewColumnSet(const ViewColumnSet &copy); //copy ctor
 
 	QString name() {return m_name;}
 	void add_column(ViewColumn *col);
@@ -46,6 +47,10 @@ public:
 	QColor bg_color() {return m_bg_color;}
 	QList<ViewColumn*> columns() {return m_columns;}
 	GridView *view() {return m_view;}
+	void remove_column(int offset) {m_columns.removeAt(offset);}
+
+	//! order of columns was changed by a view, so reflect those changes internally
+	void reorder_columns(QStandardItemModel *model);
 
 	//! editing dialog was accepted by user, so modify settings
 	void update_from_dialog(ViewColumnSetDialog *d);

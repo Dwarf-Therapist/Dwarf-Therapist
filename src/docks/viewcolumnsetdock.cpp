@@ -43,10 +43,12 @@ ViewColumnSetDock::ViewColumnSetDock(ViewManager *mgr, QWidget *parent, Qt::Wind
 }
 
 void ViewColumnSetDock::draw_sets() {
+	/*
 	ui->list_sets->clear();
 	foreach(ViewColumnSet *set, m_manager->sets()) {
 		new QListWidgetItem(set->name(), ui->list_sets);
 	}
+	*/
 }
 
 void ViewColumnSetDock::add_new_set() {
@@ -76,6 +78,7 @@ void ViewColumnSetDock::edit_set(QListWidgetItem *item) {
 }
 
 void ViewColumnSetDock::edit_set() {
+	/*
 	if (!m_tmp_item)
 		return;
 	
@@ -91,4 +94,5 @@ void ViewColumnSetDock::edit_set() {
 		draw_sets();
 	}
 	m_tmp_item = 0;
+	*/
 }

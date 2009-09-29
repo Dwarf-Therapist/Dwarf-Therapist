@@ -137,7 +137,6 @@ void ViewManager::reload_views() {
 			ViewColumnSet *set = new ViewColumnSet(name, this, this);
 			set->set_bg_color(bg_color);
 			gv->add_set(set);
-			m_sets << set;
 
 			int total_columns = s->beginReadArray("columns");
 			for (int k = 0; k < total_columns; ++k) {
@@ -313,15 +312,28 @@ GridView *ViewManager::get_view(const QString &name) {
 	return retval;
 }
 
-ViewColumnSet *ViewManager::get_set(const QString &name) {
-	ViewColumnSet *retval = 0;
-	foreach(ViewColumnSet *set, m_sets) {
-		if (name == set->name()) {
-			retval = set;
+GridView *ViewManager::get_active_view() {
+	GridView *retval = 0;
+	foreach(GridView *view, m_views) {
+		if (view->name() == tabText(currentIndex())) {
+			retval = view;
 			break;
 		}
 	}
 	return retval;
+}
+
+void ViewManager::remove_view(GridView *view) {
+	m_views.removeAll(view);
+	write_views();
+	views_changed();
+}
+
+void ViewManager::replace_view(GridView *old_view, GridView *new_view) {
+	m_views.removeAll(old_view);
+	m_views.append(new_view);
+	write_views();
+	views_changed();
 }
 
 void ViewManager::setCurrentIndex(int idx) {

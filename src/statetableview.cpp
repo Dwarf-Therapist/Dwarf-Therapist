@@ -187,7 +187,7 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 		// labor column
 		QMenu m(this); // this will be the popup menu
 		QString set_name = idx.data(DwarfModel::DR_SET_NAME).toString();
-		ViewColumnSet *set = DT->get_main_window()->get_view_manager()->get_set(set_name);
+		ViewColumnSet *set = DT->get_main_window()->get_view_manager()->get_active_view()->get_set(set_name);
 		if (idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) { //aggregate labor
 			QModelIndex first_col = idx.sibling(idx.row(), 0);
 			QString group_name = idx.data(DwarfModel::DR_GROUP_NAME).toString();
