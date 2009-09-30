@@ -20,46 +20,56 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef CUSTOM_PROFESSIONS_EXPORT_DIALOG
-#define CUSTOM_PROFESSIONS_EXPORT_DIALOG
+#ifndef IMPORT_EXPORT_DIALOG
+#define IMPORT_EXPORT_DIALOG
 
 #include <QtGui>
 
 namespace Ui {
-	class CustomProfessionsExportDialog;
+	class ImportExportDialog;
 }
 class CustomProfession;
+class GridView;
 
-class CustomProfessionsExportDialog : public QDialog {
+class ImportExportDialog : public QDialog {
 	Q_OBJECT
 
 public:
-	CustomProfessionsExportDialog(QWidget *parent = 0);
-	void setup_for_export();
-	void setup_for_import();
+	ImportExportDialog(QWidget *parent = 0);
+	void setup_for_profession_export();
+	void setup_for_profession_import();
+	void setup_for_gridview_export();
+	void setup_for_gridview_import();
 
 	public slots:
 		void accept();
 
 private:
-	Ui::CustomProfessionsExportDialog *ui;
+	Ui::ImportExportDialog *ui;
 	QVector<CustomProfession*> m_profs;
+	QVector<GridView*> m_views;
 	QString m_path;
 
 	typedef enum {
-		MODE_IMPORT,
-		MODE_EXPORT
+		MODE_IMPORT_PROFESSIONS,
+		MODE_EXPORT_PROFESSIONS,
+		MODE_IMPORT_GRIDVIEWS,
+		MODE_EXPORT_GRIDVIEWS
 	} DIALOG_MODE;
 
 	DIALOG_MODE m_mode;
 
 	QVector<CustomProfession*> get_profs();
+	QVector<GridView*> get_views();
+	
 	private slots:
 		void select_all();
 		void clear_selection();
-		void export_selected();
-		void import_selected();
-	
+		void export_selected_professions();
+		void import_selected_professions();
+		void export_selected_gridviews();
+		void import_selected_gridviews();
+
 };
 
 #endif
