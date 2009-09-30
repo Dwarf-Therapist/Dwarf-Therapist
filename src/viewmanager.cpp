@@ -87,12 +87,32 @@ void ViewManager::reload_views() {
 	QVector<GridView*> pending_views, updated_views, unchanged_views;
 	// start reading views from main settings
 	QSettings *s = DT->user_settings();
-	int total_views = s->beginReadArray("gridviews");
-	for (int i = 0; i < total_views; ++i) {
-		s->setArrayIndex(i);
-		pending_views << GridView::read_from_ini(*s, this);
-	}
-	s->endArray();
+
+    // first make sure the user has some configured views (they won't on first run)
+    if (!s->childGroups().contains("gridviews")) {
+        QTemporaryFile temp_f;
+        if (temp_f.open()) {
+            QString filename = temp_f.fileName();
+            QResource res(":config/default_gridviews");
+            int size = res.size();
+            temp_f.write((const char*)res.data());
+            size = temp_f.size();
+        }
+        QSettings alt_s(temp_f.fileName(), QSettings::IniFormat);
+        int total_views = alt_s.beginReadArray("gridviews");
+        for (int i = 0; i < total_views; ++i) {
+            alt_s.setArrayIndex(i);
+            pending_views << GridView::read_from_ini(alt_s, this);
+        }
+        alt_s.endArray();
+    } else {
+	    int total_views = s->beginReadArray("gridviews");
+	    for (int i = 0; i < total_views; ++i) {
+		    s->setArrayIndex(i);
+		    pending_views << GridView::read_from_ini(*s, this);
+	    }
+	    s->endArray();
+    }
 	
 	foreach(GridView *pending, pending_views) {
 		if (view_was_updated(pending)) {
