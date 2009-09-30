@@ -45,7 +45,6 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "importexportdialog.h"
 #include "gridviewdock.h"
-#include "viewcolumnsetdock.h"
 #include "skilllegenddock.h"
 #include "dwarfdetailsdock.h"
 #include "columntypes.h"
