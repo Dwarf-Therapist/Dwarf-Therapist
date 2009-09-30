@@ -34,6 +34,12 @@ LaborColumn::LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSe
 	, m_skill_id(skill_id)
 {}
 
+LaborColumn::LaborColumn(QSettings &s, ViewColumnSet *set, QObject *parent) 
+	: ViewColumn(s, set, parent)
+	, m_labor_id(s.value("labor_id", -1).toInt())
+	, m_skill_id(s.value("skill_id", -1).toInt())
+{}
+
 QStandardItem *LaborColumn::build_cell(Dwarf *d) {
 	GameDataReader *gdr = GameDataReader::ptr();
 	QStandardItem *item = init_cell(d);
@@ -86,4 +92,10 @@ QStandardItem *LaborColumn::build_aggregate(const QString &group_name, const QVe
 	item->setData(0, DwarfModel::DR_DUMMY);
 	item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
 	return item;
+}
+
+void LaborColumn::write_to_ini(QSettings &s) {
+	ViewColumn::write_to_ini(s); 
+	s.setValue("skill_id", m_skill_id); 
+	s.setValue("labor_id", m_labor_id);
 }

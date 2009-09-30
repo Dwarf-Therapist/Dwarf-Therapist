@@ -28,6 +28,7 @@ THE SOFTWARE.
 class LaborColumn : public ViewColumn {
 public:
 	LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSet *set = 0, QObject *parent = 0);
+    LaborColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
 	QStandardItem *build_cell(Dwarf *d);
 	QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 	
@@ -35,6 +36,9 @@ public:
 	void set_labor_id(int labor_id) {m_labor_id = labor_id;}
 	int skill_id() {return m_skill_id;}
 	void set_skill_id(int skill_id) {m_skill_id = skill_id;}
+
+	// override
+	void write_to_ini(QSettings &s);
 protected:
 	int m_labor_id;
 	int m_skill_id;

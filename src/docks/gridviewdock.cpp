@@ -73,7 +73,7 @@ void GridViewDock::draw_list_context_menu(const QPoint &pos) {
 }
 
 void GridViewDock::add_new_view() {
-	GridView *view = new GridView("", m_manager, m_manager);
+	GridView *view = new GridView("", m_manager);
 	GridViewDialog *d = new GridViewDialog(m_manager, view, this);
 	int accepted = d->exec();
 	if (accepted == QDialog::Accepted) {

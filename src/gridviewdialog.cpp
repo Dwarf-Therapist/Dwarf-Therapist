@@ -148,7 +148,7 @@ void GridViewDialog::add_set() {
 		}
 	}
 
-	ViewColumnSet *set = new ViewColumnSet(tr("New Set %1").arg(highest_new_set_number + 1), m_manager, m_manager);
+	ViewColumnSet *set = new ViewColumnSet(tr("New Set %1").arg(highest_new_set_number + 1), m_manager);
 	m_pending_view->add_set(set);
 	draw_sets();
 }
@@ -169,8 +169,8 @@ void GridViewDialog::edit_set(const QModelIndex &idx) {
 	QFormLayout *form = new QFormLayout(d);
 	QLineEdit *le_name = new QLineEdit(item->text(), d);
 	QtColorPicker *cp = new QtColorPicker(d);
-	cp->setStandardColors();
 	cp->setCurrentColor(item->background().color());
+	cp->setStandardColors();
 
 	form->addRow(tr("Name of set"), le_name);
 	form->addRow(tr("Background color"), cp);

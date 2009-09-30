@@ -45,7 +45,6 @@ ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent
 	setTabsClosable(true);
 	setMovable(true);
 
-	read_settings();
 	reload_views();
 
 	m_add_tab_button->setIcon(QIcon(":img/tab_add.png"));
@@ -60,9 +59,6 @@ ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent
 	connect(m_model, SIGNAL(need_redraw()), this, SLOT(redraw_current_tab()));
 }
 
-void ViewManager::read_settings() {
-}
-
 void ViewManager::draw_add_tab_button() {
 	QIcon icn(":img/tab_add.png");
 	QMenu *m = new QMenu(this);
@@ -74,41 +70,11 @@ void ViewManager::draw_add_tab_button() {
 }
 
 void ViewManager::views_changed() {
-	read_settings();
 	reload_views();
 	draw_views();
 }
 
 void ViewManager::reload_views() {
-	/*
-	// make sure the required directories are in place
-	// TODO make directory locations configurable
-	QDir cur = QDir::current();
-	if (!cur.exists(m_view_path)) {
-		QMessageBox::warning(this, tr("Missing Views Directory"),
-			tr("Could not find the 'views' directory at '%1'").arg(m_view_path));
-		return;
-	}
-	// goodbye old views!
-	foreach(GridView *v, m_views) {
-		v->deleteLater();
-	}
-	m_views.clear();
-
-	QDir views = QDir(m_view_path).absolutePath();
-	QStringList view_files = views.entryList(QDir::Files | QDir::Readable, QDir::Time);
-	foreach(QString filename, view_files) {
-		if (filename.endsWith(".ini")) {
-			TRACE << "found view file" << views.filePath(filename);
-			GridView *v = GridView::from_file(views.filePath(filename), this, this);
-			if (v)
-				m_views << v;
-		}
-	}
-	LOGI << "Loaded" << m_views.size() << "views from disk";
-	draw_add_tab_button();
-	draw_views();
-	*/
 	// goodbye old views!
 	foreach(GridView *v, m_views) {
 		v->deleteLater();
@@ -123,7 +89,7 @@ void ViewManager::reload_views() {
 		QString name = s->value("name", "UNKNOWN").toString();
 		bool active = s->value("active", true).toBool();
 
-		GridView *gv = new GridView(name, this, this);
+		GridView *gv = new GridView(name, this);
 		gv->set_active(active);
 		add_view(gv);
 
@@ -134,7 +100,7 @@ void ViewManager::reload_views() {
 			QString color_in_hex = s->value("bg_color", "0xFFFFFF").toString();
 			QColor bg_color = from_hex(color_in_hex);
 
-			ViewColumnSet *set = new ViewColumnSet(name, this, this);
+			ViewColumnSet *set = new ViewColumnSet(name, this);
 			set->set_bg_color(bg_color);
 			gv->add_set(set);
 
@@ -220,12 +186,6 @@ void ViewManager::draw_views() {
 					add_tab_for_gridview(v);
 			}
 		}
-	} else {
-		// load them up in default order
-		foreach(GridView *v, m_views) {
-			if (v->is_active())
-				add_tab_for_gridview(v);
-		}
 	}
 	if (idx >= 0 && idx <= count() - 1) {
 		setCurrentIndex(idx);
@@ -299,6 +259,11 @@ void ViewManager::write_views() {
 		tab_order << tabText(i);
 	}
 	DT->user_settings()->setValue("gui_options/tab_order", tab_order);
+}
+
+void ViewManager::add_view(GridView *view) {
+    view->re_parent(this);
+    m_views << view;
 }
 
 GridView *ViewManager::get_view(const QString &name) {

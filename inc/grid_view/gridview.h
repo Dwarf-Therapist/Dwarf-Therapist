@@ -51,8 +51,10 @@ GridView
 class GridView : public QObject {
 	Q_OBJECT
 public:
-	GridView(QString name, ViewManager *mgr, QObject *parent = 0);
+	GridView(QString name, QObject *parent = 0);
 	GridView(const GridView &to_be_copied); // copy ctor
+
+    void re_parent(QObject *parent);
 
 	const QString name() const {return m_name;}
 	void set_name(const QString &name) {m_name = name;}
@@ -65,13 +67,19 @@ public:
 	void set_active(bool active) {m_active = active;}
 	ViewColumnSet *get_set(const QString &name);
 	ViewColumnSet *get_set(int offset) {return m_sets.at(offset);}
+	
+	void write_to_ini(QSettings &settings);
+
+	//! Factory function to create a gridview from a QSettings that has already been pointed at a gridview entry
+	static GridView *read_from_ini(QSettings &settings, QObject *parent = 0);
 
 private:
 	bool m_active;
 	QString m_name;
 	QList<ViewColumnSet*> m_sets;
-	QMap<QString, ViewColumnSet*> m_set_map;
-	ViewManager *m_manager;
+
+signals:
+    void updated(const GridView*);
 };
 
 #endif

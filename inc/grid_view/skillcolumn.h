@@ -28,10 +28,14 @@ THE SOFTWARE.
 class SkillColumn : public ViewColumn {
 public:
 	SkillColumn(QString title, int skill_id, ViewColumnSet *set = 0, QObject *parent = 0);
+    SkillColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
 	QStandardItem *build_cell(Dwarf *d);
 	QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 	int skill_id() {return m_skill_id;}
 	void set_skill_id(int skill_id) {m_skill_id = skill_id;}
+
+	//override
+	void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("skill_id", m_skill_id);}
 protected:
 	int m_skill_id;
 };

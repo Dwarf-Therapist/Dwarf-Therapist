@@ -71,6 +71,8 @@ bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source
 }
 
 bool DwarfModelProxy::filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const {
+	Q_UNUSED(source_column);
+	Q_UNUSED(source_parent);
 	return true;
 }
 

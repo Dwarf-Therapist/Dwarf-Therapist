@@ -41,6 +41,7 @@ class ViewColumn : public QObject {
 	Q_OBJECT
 public:
 	ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set = 0, QObject *parent = 0);
+	ViewColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
 
 	QString title() {return m_title;}
 	void set_title(QString title) {m_title = title;}
@@ -55,6 +56,8 @@ public:
 	virtual QStandardItem *build_cell(Dwarf *d) = 0; // create a suitable item based on a dwarf
 	virtual QStandardItem *build_aggregate(const QString &group_name, 
 										   const QVector<Dwarf*> &dwarves) = 0; // create an aggregate cell based on several dwarves
+
+	virtual void write_to_ini(QSettings &s);
 
 	public slots:
 		virtual void read_settings() {}

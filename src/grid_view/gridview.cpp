@@ -24,27 +24,32 @@ THE SOFTWARE.
 #include "viewcolumnset.h"
 #include "viewmanager.h"
 #include "gridviewdialog.h"
+#include "utils.h"
 
-GridView::GridView(QString name, ViewManager *mgr, QObject *parent)
+GridView::GridView(QString name, QObject *parent)
 	: QObject(parent)
 	, m_name(name)
 	, m_active(true)
-	, m_manager(mgr)
 {}
 
 GridView::GridView(const GridView &to_be_copied)
 	: QObject(to_be_copied.parent())
 	, m_name(to_be_copied.m_name)
-	, m_manager(to_be_copied.m_manager)
 {
 	foreach(ViewColumnSet *s, to_be_copied.sets()) {
 		add_set(new ViewColumnSet((const ViewColumnSet)*s));
 	}
 }
 
+void GridView::re_parent(QObject *parent) {
+    setParent(parent);
+    foreach(ViewColumnSet *set, m_sets) {
+        set->re_parent(this);
+    }
+}
+
 void GridView::add_set(ViewColumnSet *set) {
 	m_sets << set;
-	m_set_map.insert(set->name(), set);
 }
 
 void GridView::remove_set(QString name) {
@@ -56,12 +61,10 @@ void GridView::remove_set(QString name) {
 		}
 	}
 	m_sets.removeOne(to_remove);
-	m_set_map.remove(name);
 };
 
 void GridView::clear() {
 	m_sets.clear();
-	m_set_map.clear();
 }
 
 ViewColumnSet *GridView::get_set(const QString &name) {
@@ -72,5 +75,34 @@ ViewColumnSet *GridView::get_set(const QString &name) {
 			break;
 		}
 	}
+	return ret_val;
+}
+
+void GridView::write_to_ini(QSettings &s) {
+	s.setValue("name", m_name);
+	s.setValue("active", m_active);
+	s.beginWriteArray("sets", m_sets.size());
+	int i = 0;
+	foreach(ViewColumnSet *set, m_sets) {
+		s.setArrayIndex(i++);
+		set->write_to_ini(s);
+	}
+	s.endArray();
+}
+
+GridView *GridView::read_from_ini(QSettings &s, QObject *parent) {
+	GridView *ret_val = new GridView("", parent);
+	ret_val->set_name(s.value("name", "UNKNOWN").toString());
+	ret_val->set_active(s.value("active", true).toBool());
+	
+	int total_sets = s.beginReadArray("sets");
+	for (int i = 0; i < total_sets; ++i) {
+		s.setArrayIndex(i);
+		ViewColumnSet *set = ViewColumnSet::read_from_ini(s, parent);
+		if (set)
+			ret_val->add_set(set);
+	}
+	s.endArray();
+
 	return ret_val;
 }

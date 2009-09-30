@@ -38,17 +38,15 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include "gridviewdialog.h"
 
-ViewColumnSet::ViewColumnSet(QString name, ViewManager *mgr, QObject *parent)
+ViewColumnSet::ViewColumnSet(QString name, QObject *parent)
 	: QObject(parent)
 	, m_name(name)
-	, m_manager(mgr)
 	, m_bg_color(Qt::white)
 {}
 
 ViewColumnSet::ViewColumnSet(const ViewColumnSet &copy) 
 	: QObject(copy.parent())
 	, m_name(copy.m_name)
-	, m_manager(copy.m_manager)
 	, m_bg_color(copy.m_bg_color)
 {
 	foreach(ViewColumn *vc, copy.m_columns) {
@@ -88,6 +86,13 @@ ViewColumnSet::ViewColumnSet(const ViewColumnSet &copy)
 				new_c->set_bg_color(vc->bg_color());
 		}
 	}
+}
+
+void ViewColumnSet::re_parent(QObject *parent) {
+    setParent(parent);
+    foreach(ViewColumn *vc, m_columns) {
+        vc->setParent(parent);
+    }
 }
 
 void ViewColumnSet::set_name(const QString &name) {
@@ -173,7 +178,6 @@ void ViewColumnSet::toggle_for_dwarf(Dwarf *d) {
 		}
 	}
 	DT->get_main_window()->get_model()->calculate_pending();
-	
 }
 
 
@@ -196,4 +200,50 @@ void ViewColumnSet::reorder_columns(const QStandardItemModel &model) {
 	foreach(ViewColumn *vc, new_cols) {
 		m_columns << vc;
 	}
+}
+
+void ViewColumnSet::write_to_ini(QSettings &s) {
+	s.setValue("name", m_name);
+	s.setValue("bg_color", to_hex(m_bg_color));
+	s.beginWriteArray("columns", m_columns.size());
+	int i = 0;
+	foreach(ViewColumn *vc, m_columns) {
+		s.setArrayIndex(i++);
+		vc->write_to_ini(s);
+	}
+	s.endArray();
+}
+
+ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
+	ViewColumnSet *ret_val = new ViewColumnSet(s.value("name", "UNKNOWN").toString(), parent);
+	QString color_in_hex = s.value("bg_color", "0xFFFFFF").toString();
+	QColor bg_color = from_hex(color_in_hex);
+	ret_val->set_bg_color(bg_color);
+	
+	int total_columns = s.beginReadArray("columns");
+	for (int i = 0; i < total_columns; ++i) {
+		s.setArrayIndex(i);
+		switch(get_column_type(s.value("type", "DEFAULT").toString())) {
+			case CT_SPACER:
+				ret_val->add_column(new SpacerColumn(s, ret_val, parent));
+                break;
+            case CT_HAPPINESS:
+                ret_val->add_column(new HappinessColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent));
+                break;
+            case CT_LABOR:
+                ret_val->add_column(new LaborColumn(s, ret_val, parent));
+                break;
+            case CT_SKILL:
+                ret_val->add_column(new SkillColumn(s, ret_val, parent));
+                break;
+            
+            case CT_DEFAULT:
+            default:
+                LOGW << "unidentified column type in set" << ret_val->name() << "!";
+                break;
+		}
+	}
+	s.endArray();
+
+	return ret_val;
 }

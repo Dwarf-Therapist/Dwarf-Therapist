@@ -167,10 +167,12 @@
     <addaction name="act_commit_pending_changes"/>
     <addaction name="act_clear_pending_changes"/>
     <addaction name="separator"/>
-    <addaction name="act_add_custom_profession"/>
     <addaction name="act_import_existing_professions"/>
     <addaction name="act_export_custom_professions"/>
     <addaction name="act_import_saved_custom_professions"/>
+    <addaction name="separator"/>
+    <addaction name="act_export_gridviews"/>
+    <addaction name="act_import_saved_gridviews"/>
     <addaction name="separator"/>
     <addaction name="act_options"/>
     <addaction name="act_exit"/>
@@ -219,7 +221,6 @@
    </attribute>
    <addaction name="act_connect_to_DF"/>
    <addaction name="act_read_dwarves"/>
-   <addaction name="act_add_custom_profession"/>
    <addaction name="separator"/>
    <addaction name="act_expand_all"/>
    <addaction name="act_collapse_all"/>
@@ -651,6 +652,30 @@
     <string>Import a custom professions file that was previously exported</string>
    </property>
   </action>
+  <action name="act_import_saved_gridviews">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/folder_page.png</normaloff>:/img/folder_page.png</iconset>
+   </property>
+   <property name="text">
+    <string>Import Saved Grid Views...</string>
+   </property>
+   <property name="toolTip">
+    <string>Import Grid Views from file</string>
+   </property>
+  </action>
+  <action name="act_export_gridviews">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/disk.png</normaloff>:/img/disk.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export Grid Views...</string>
+   </property>
+   <property name="toolTip">
+    <string>Export Grid Views to file</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
@@ -957,6 +982,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_export_gridviews</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>export_gridviews()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>403</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_import_saved_gridviews</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>import_gridviews()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>403</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -977,5 +1034,7 @@
   <slot>add_new_column_set()</slot>
   <slot>export_custom_professions()</slot>
   <slot>import_custom_professions()</slot>
+  <slot>export_gridviews()</slot>
+  <slot>import_gridviews()</slot>
  </slots>
 </ui>

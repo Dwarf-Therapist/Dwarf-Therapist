@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include "viewcolumn.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
+#include "utils.h"
 
 ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set, QObject *parent)
 	: QObject(parent)
@@ -36,6 +37,17 @@ ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set, QObj
 		set->add_column(this);
 		set_bg_color(set->bg_color());
 	}	
+}
+
+ViewColumn::ViewColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
+	: QObject(parent)
+	, m_title(s.value("name", "UNKNOWN").toString())
+	, m_set(set)
+	, m_override_set_colors( s.value("override_color", false).toBool())
+	, m_type(get_column_type(s.value("type", "DEFAULT").toString()))
+{
+	if (m_override_set_colors)
+		m_bg_color = from_hex(s.value("bg_color", to_hex(set->bg_color())).toString());
 }
 
 QStandardItem *ViewColumn::init_cell(Dwarf *d) {
@@ -54,4 +66,17 @@ QStandardItem *ViewColumn::init_cell(Dwarf *d) {
 	item->setData(0, DwarfModel::DR_DUMMY);
 	m_cells[d] = item;
 	return item;
+}
+
+void ViewColumn::write_to_ini(QSettings &s) {
+	if (!m_title.isEmpty())
+		s.setValue("name", m_title);
+	else
+		s.setValue("name", "UNKNOWN");
+
+	s.setValue("type", get_column_type(m_type));
+	if (m_override_set_colors) {
+		s.setValue("override_color", true);
+		s.setValue("bg_color", to_hex(m_bg_color));
+	}
 }

@@ -26,9 +26,16 @@ THE SOFTWARE.
 #include "viewcolumnset.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
+#include "defines.h"
+
 
 SpacerColumn::SpacerColumn(QString title, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(title, CT_SPACER, set, parent)
+{}
+
+SpacerColumn::SpacerColumn(QSettings &s, ViewColumnSet *set, QObject *parent) 
+	: ViewColumn(s, set, parent)
+	, m_width(s.value("width", DEFAULT_SPACER_WIDTH).toInt())
 {}
 
 QStandardItem *SpacerColumn::build_cell(Dwarf *d) {
@@ -49,4 +56,10 @@ QStandardItem *SpacerColumn::build_aggregate(const QString &, const QVector<Dwar
 	item->setData(false, DwarfModel::DR_IS_AGGREGATE);
 	item->setData(0, DwarfModel::DR_DUMMY);
 	return item;
+}
+
+void SpacerColumn::write_to_ini(QSettings &s) {
+	ViewColumn::write_to_ini(s);
+	if (m_width)
+		s.setValue("width", m_width);
 }

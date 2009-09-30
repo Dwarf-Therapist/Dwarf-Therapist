@@ -43,7 +43,7 @@ THE SOFTWARE.
 #include "defines.h"
 #include "version.h"
 #include "dwarftherapist.h"
-#include "customprofessionsexportdialog.h"
+#include "importexportdialog.h"
 #include "gridviewdock.h"
 #include "viewcolumnsetdock.h"
 #include "skilllegenddock.h"
@@ -398,14 +398,25 @@ QToolBar *MainWindow::get_toolbar() {
 }
 
 void MainWindow::export_custom_professions() {
-	//TODO first choose which profs to export
-	CustomProfessionsExportDialog d(this);
-	d.setup_for_export();
+	ImportExportDialog d(this);
+	d.setup_for_profession_export();
 	d.exec();
 }
 
 void MainWindow::import_custom_professions() {
-	CustomProfessionsExportDialog d(this);
-	d.setup_for_import();
+	ImportExportDialog d(this);
+	d.setup_for_profession_import();
+	d.exec();
+}
+
+void MainWindow::export_gridviews() {
+	ImportExportDialog d(this);
+	d.setup_for_gridview_export();
+	d.exec();
+}
+
+void MainWindow::import_gridviews() {
+	ImportExportDialog d(this);
+	d.setup_for_gridview_import();
 	d.exec();
 }

@@ -37,8 +37,10 @@ ViewColumnSet
 class ViewColumnSet : public QObject {
 	Q_OBJECT
 public:
-	ViewColumnSet(QString name, ViewManager *mgr, QObject *parent = 0);
+	ViewColumnSet(QString name, QObject *parent = 0);
 	ViewColumnSet(const ViewColumnSet &copy); //copy ctor
+
+    void re_parent(QObject *parent);
 
 	QString name() {return m_name;}
 	void add_column(ViewColumn *col);
@@ -55,6 +57,12 @@ public:
 
 	//! editing dialog was accepted by user, so modify settings
 	void update_from_dialog(ViewColumnSetDialog *d);
+
+	//! persist this structure to disk
+	void write_to_ini(QSettings &s);
+	//! factory method for creating a set based on a QSettings that has been pointed at a set entry
+	static ViewColumnSet *read_from_ini(QSettings &s, QObject *parent = 0);
+
 	public slots:
 		void set_name(const QString &name);
 		void toggle_for_dwarf(Dwarf *d);
@@ -63,7 +71,6 @@ public:
 
 private:
 	QString m_name;
-	ViewManager *m_manager;
 	GridView *m_view;
 	QList<ViewColumn*> m_columns;
 	QBrush m_bg_brush; // possibly allow textured backgrounds in the long long ago, err future.

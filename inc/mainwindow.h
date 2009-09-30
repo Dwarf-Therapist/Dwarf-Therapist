@@ -70,6 +70,8 @@ public:
 		void set_group_by(int);
 		void export_custom_professions();
 		void import_custom_professions();
+		void export_gridviews();
+		void import_gridviews();
 
 		// dialogs
 		void show_about();

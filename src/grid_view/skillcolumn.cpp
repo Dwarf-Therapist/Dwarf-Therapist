@@ -33,6 +33,11 @@ SkillColumn::SkillColumn(QString title, int skill_id, ViewColumnSet *set, QObjec
 	, m_skill_id(skill_id)
 {}
 
+SkillColumn::SkillColumn(QSettings &s, ViewColumnSet *set, QObject *parent) 
+    : ViewColumn(s, set, parent)
+    , m_skill_id(s.value("skill_id", -1).toInt())
+{}
+
 QStandardItem *SkillColumn::build_cell(Dwarf *d) {
 	GameDataReader *gdr = GameDataReader::ptr();
 	QStandardItem *item = init_cell(d);

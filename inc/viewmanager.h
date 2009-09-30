@@ -39,7 +39,7 @@ public:
 	ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent = 0);
 	
 	QList<GridView*> views() {return m_views;}
-	void add_view(GridView *view) {m_views << view;}
+	void add_view(GridView *view);
 
 	public slots:
 		void setCurrentIndex(int);
@@ -73,11 +73,11 @@ private:
 		//! used from everywhere else
 		int add_tab_for_gridview(GridView *v);
 		void remove_tab_for_gridview(int index);
-		void read_settings();
 		void draw_add_tab_button();
 
 signals:
 	void dwarf_focus_changed(Dwarf *d);
+    void gridview_changed(const GridView*);
 		
 };
 
