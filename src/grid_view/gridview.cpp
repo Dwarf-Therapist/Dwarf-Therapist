@@ -41,6 +41,24 @@ GridView::GridView(const GridView &to_be_copied)
 	}
 }
 
+GridView::~GridView() {
+	foreach(ViewColumnSet *set, m_sets) {
+		set->deleteLater();
+	}
+}
+
+bool GridView::operator==(const GridView &other) const {
+	bool ret_val = m_name == other.m_name &&
+		m_active == other.m_active &&
+		m_sets.size() == other.m_sets.size();
+	if (ret_val) { // looks good so far...
+		for (int i = 0; i < m_sets.size(); ++i) { // compare their sets...
+			ret_val = ret_val && *(m_sets.at(i)) == *(other.m_sets.at(i));
+		}
+	}
+	return ret_val;
+}
+
 void GridView::re_parent(QObject *parent) {
     setParent(parent);
     foreach(ViewColumnSet *set, m_sets) {
@@ -105,4 +123,24 @@ GridView *GridView::read_from_ini(QSettings &s, QObject *parent) {
 	s.endArray();
 
 	return ret_val;
+}
+
+void GridView::reorder_sets(const QStandardItemModel &model) {
+	QList<ViewColumnSet*> new_sets;
+	for (int i = 0; i < model.rowCount(); ++i) {
+		// find the set that matches this item in the GUI list
+		QStandardItem *item = model.item(i, 0);
+		QString name = item->data(GridViewDialog::GPDT_TITLE).toString();
+		foreach(ViewColumnSet *set, m_sets) {
+			if (set->name() == name) {
+				new_sets << set;
+			}
+		}
+	}
+	Q_ASSERT(new_sets.size() == m_sets.size());
+
+	m_sets.clear();
+	foreach(ViewColumnSet *set, new_sets) {
+		m_sets << set;
+	}
 }

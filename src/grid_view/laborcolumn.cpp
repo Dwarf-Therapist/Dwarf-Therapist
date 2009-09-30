@@ -40,6 +40,12 @@ LaborColumn::LaborColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
 	, m_skill_id(s.value("skill_id", -1).toInt())
 {}
 
+bool LaborColumn::operator==(const LaborColumn &other) const {
+	return ViewColumn::operator==(other) &&
+		m_labor_id == other.m_labor_id &&
+		m_skill_id == other.m_skill_id;
+}
+
 QStandardItem *LaborColumn::build_cell(Dwarf *d) {
 	GameDataReader *gdr = GameDataReader::ptr();
 	QStandardItem *item = init_cell(d);

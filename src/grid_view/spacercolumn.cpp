@@ -31,12 +31,18 @@ THE SOFTWARE.
 
 SpacerColumn::SpacerColumn(QString title, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(title, CT_SPACER, set, parent)
+	, m_width(DEFAULT_SPACER_WIDTH)
 {}
 
 SpacerColumn::SpacerColumn(QSettings &s, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(s, set, parent)
 	, m_width(s.value("width", DEFAULT_SPACER_WIDTH).toInt())
 {}
+
+bool SpacerColumn::operator==(const SpacerColumn &other) const {
+	return ViewColumn::operator==(other) &&
+		m_width == other.m_width;
+}
 
 QStandardItem *SpacerColumn::build_cell(Dwarf *d) {
 	QStandardItem *item = init_cell(d);

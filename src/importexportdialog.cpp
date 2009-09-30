@@ -367,6 +367,6 @@ void ImportExportDialog::import_selected_gridviews() {
         QMessageBox::information(this, tr("Import Successful"), 
             tr("Imported %n grid view(s)", "", imported));
         view_mgr->write_views();
-        view_mgr->views_changed();
+        view_mgr->reload_views();
     }
 }

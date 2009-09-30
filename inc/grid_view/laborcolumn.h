@@ -39,6 +39,9 @@ public:
 
 	// override
 	void write_to_ini(QSettings &s);
+
+	bool operator==(const LaborColumn &other) const;
+	bool operator!=(const LaborColumn &other) const {return !(*this == other);}
 protected:
 	int m_labor_id;
 	int m_skill_id;

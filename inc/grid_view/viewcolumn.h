@@ -58,6 +58,8 @@ public:
 										   const QVector<Dwarf*> &dwarves) = 0; // create an aggregate cell based on several dwarves
 
 	virtual void write_to_ini(QSettings &s);
+	bool operator==(const ViewColumn &other) const;
+	bool operator!=(const ViewColumn &other) const {return !(*this == other);}
 
 	public slots:
 		virtual void read_settings() {}

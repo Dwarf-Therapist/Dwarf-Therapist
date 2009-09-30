@@ -38,6 +38,9 @@ public:
 	// override
 	void write_to_ini(QSettings &s);
 
+	bool operator==(const SpacerColumn &other) const;
+	bool operator!=(const SpacerColumn &other) const {return !(*this == other);}
+
 private:
 	int m_width; // in pixels
 };

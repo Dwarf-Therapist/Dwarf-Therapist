@@ -35,7 +35,7 @@ ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set, QObj
 {
 	if (set) {
 		set->add_column(this);
-		set_bg_color(set->bg_color());
+		m_bg_color = set->bg_color();
 	}	
 }
 
@@ -46,8 +46,19 @@ ViewColumn::ViewColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
 	, m_override_set_colors( s.value("override_color", false).toBool())
 	, m_type(get_column_type(s.value("type", "DEFAULT").toString()))
 {
+	if (set) {
+		set->add_column(this);
+		m_bg_color = set->bg_color();
+	}
 	if (m_override_set_colors)
-		m_bg_color = from_hex(s.value("bg_color", to_hex(set->bg_color())).toString());
+		m_bg_color = from_hex(s.value("bg_color").toString());
+}
+
+bool ViewColumn::operator==(const ViewColumn &other) const {
+	return m_title == other.m_title &&
+		m_type == other.m_type &&
+		m_override_set_colors == other.m_override_set_colors &&
+		m_bg_color == other.m_bg_color;
 }
 
 QStandardItem *ViewColumn::init_cell(Dwarf *d) {

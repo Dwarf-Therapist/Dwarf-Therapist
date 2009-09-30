@@ -36,6 +36,9 @@ public:
 
 	//override
 	void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("skill_id", m_skill_id);}
+
+	bool operator==(const SkillColumn &other) const;
+	bool operator!=(const SkillColumn &other) const {return !(*this == other);}
 protected:
 	int m_skill_id;
 };

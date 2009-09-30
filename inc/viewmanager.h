@@ -41,12 +41,14 @@ public:
 	QList<GridView*> views() {return m_views;}
 	void add_view(GridView *view);
 
+	//! check if new_view has been updated
+	bool view_was_updated(GridView *new_view);
+
 	public slots:
 		void setCurrentIndex(int);
 		void reload_views();
 		void write_views();
 		void draw_views();
-		void views_changed();
 		void set_group_by(int group_by);
 		void redraw_current_tab();
 

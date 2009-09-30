@@ -62,6 +62,7 @@ GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent
 		m_is_editing = true;
 		m_original_name = m_pending_view->name();
 	}
+	ui->list_sets->installEventFilter(this);
 	ui->list_columns->installEventFilter(this);
 
 	/*/ TODO: show a STV with a preview using this gridview...
@@ -82,12 +83,18 @@ QString GridViewDialog::name() {
 	 return ui->le_name->text();
 }
 
-
 bool GridViewDialog::eventFilter(QObject *sender, QEvent *evt) {
-	if (evt->type() == QEvent::ChildRemoved && sender == ui->list_columns) {
-		column_order_changed();
+	if (evt->type() == QEvent::ChildRemoved) {
+		if (sender == ui->list_columns)
+			column_order_changed();
+		else if (sender == ui->list_sets)
+			set_order_changed();
 	}
 	return false; // don't actually interrupt anything
+}
+
+void GridViewDialog::set_order_changed() {
+	m_pending_view->reorder_sets(*m_set_model);
 }
 
 void GridViewDialog::column_order_changed() {
@@ -270,10 +277,14 @@ void GridViewDialog::edit_column(const QModelIndex &idx) {
 }
 
 void GridViewDialog::remove_column() {
-	if (m_temp_col < 0 || !m_active_set)
-		return;
-	m_active_set->remove_column(m_temp_col);
-	m_temp_col = -1;
+	QModelIndexList selected = ui->list_columns->selectionModel()->selectedIndexes();
+	QList<ViewColumn*> cols_to_remove;
+	foreach(QModelIndex idx, selected) {
+		cols_to_remove << m_active_set->column_at(idx.row());
+	}
+	foreach(ViewColumn *vc, cols_to_remove) {
+		m_active_set->remove_column(vc);
+	}
 	draw_columns_for_set(m_active_set);
 }
 

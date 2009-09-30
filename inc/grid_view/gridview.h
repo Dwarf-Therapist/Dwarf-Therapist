@@ -53,6 +53,7 @@ class GridView : public QObject {
 public:
 	GridView(QString name, QObject *parent = 0);
 	GridView(const GridView &to_be_copied); // copy ctor
+	virtual ~GridView();
 
     void re_parent(QObject *parent);
 
@@ -67,11 +68,18 @@ public:
 	void set_active(bool active) {m_active = active;}
 	ViewColumnSet *get_set(const QString &name);
 	ViewColumnSet *get_set(int offset) {return m_sets.at(offset);}
+
+	//! order of sets was changed by a view, so reflect those changes internally
+	void reorder_sets(const QStandardItemModel &model);
 	
 	void write_to_ini(QSettings &settings);
 
 	//! Factory function to create a gridview from a QSettings that has already been pointed at a gridview entry
 	static GridView *read_from_ini(QSettings &settings, QObject *parent = 0);
+
+	//! overload equality operator for triggering redraws on changes...
+	bool operator==(const GridView &other) const;
+	bool operator!=(const GridView &other) const {return !(*this == other);}
 
 private:
 	bool m_active;

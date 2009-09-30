@@ -79,8 +79,7 @@ void GridViewDock::add_new_view() {
 	if (accepted == QDialog::Accepted) {
 		GridView *new_view = d->pending_view();
 		new_view->set_active(false);
-		m_manager->add_view(view);
-		m_manager->write_views();
+		m_manager->add_view(new_view);
 		emit views_changed();
 		draw_views();
 	}

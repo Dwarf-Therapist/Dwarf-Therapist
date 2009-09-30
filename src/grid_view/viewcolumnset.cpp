@@ -23,7 +23,6 @@ THE SOFTWARE.
 #include "columntypes.h"
 #include "viewmanager.h"
 #include "viewcolumnset.h"
-#include "viewcolumnsetdialog.h"
 #include "laborcolumn.h"
 #include "happinesscolumn.h"
 #include "spacercolumn.h"
@@ -88,6 +87,52 @@ ViewColumnSet::ViewColumnSet(const ViewColumnSet &copy)
 	}
 }
 
+bool ViewColumnSet::operator==(const ViewColumnSet &other) const {
+	bool ret_val = m_name == other.m_name &&
+		m_bg_color == other.m_bg_color &&
+		m_bg_brush == other.m_bg_brush &&
+		m_columns.size() == other.m_columns.size();
+
+	if (ret_val) { //looking good...
+		for (int i = 0; i < m_columns.size(); ++i) {
+			if (m_columns.at(i)->type() != other.m_columns.at(i)->type()) {
+				ret_val = false;
+				break;
+			}
+			switch(m_columns.at(i)->type()) {
+				case CT_SPACER:
+					{
+						SpacerColumn *c1 = static_cast<SpacerColumn*>(m_columns.at(i));
+						SpacerColumn *c2 = static_cast<SpacerColumn*>(other.m_columns.at(i));
+						ret_val = ret_val && (*c1 == *c2);
+					}
+					break;
+				case CT_LABOR:
+					{
+						LaborColumn *c1 = static_cast<LaborColumn*>(m_columns.at(i));
+						LaborColumn *c2 = static_cast<LaborColumn*>(other.m_columns.at(i));
+						ret_val = ret_val && (*c1 == *c2);
+					}
+					break;
+				case CT_SKILL:
+					{
+						SkillColumn *c1 = static_cast<SkillColumn*>(m_columns.at(i));
+						SkillColumn *c2 = static_cast<SkillColumn*>(other.m_columns.at(i));
+						ret_val = ret_val && (*c1 == *c2);
+					}
+					break;
+				case CT_HAPPINESS:
+				case CT_DEFAULT:
+				default:
+					{
+						ret_val = ret_val && *(m_columns.at(i)) == *(other.m_columns.at(i));
+					}
+			}
+		}
+	}
+	return ret_val;
+}
+
 void ViewColumnSet::re_parent(QObject *parent) {
     setParent(parent);
     foreach(ViewColumn *vc, m_columns) {
@@ -108,15 +153,6 @@ void ViewColumnSet::clear_columns() {
 		col->deleteLater();
 	}
 	m_columns.clear();
-}
-
-void ViewColumnSet::update_from_dialog(ViewColumnSetDialog *d) {
-	m_name = d->name();
-	m_bg_color = d->bg_color();
-	clear_columns();
-	foreach(ViewColumn *vc, d->columns()) {
-		add_column(vc);
-	}
 }
 
 void ViewColumnSet::toggle_for_dwarf_group() {
@@ -225,16 +261,16 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
 		s.setArrayIndex(i);
 		switch(get_column_type(s.value("type", "DEFAULT").toString())) {
 			case CT_SPACER:
-				ret_val->add_column(new SpacerColumn(s, ret_val, parent));
+				new SpacerColumn(s, ret_val, parent);
                 break;
             case CT_HAPPINESS:
-                ret_val->add_column(new HappinessColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent));
+                new HappinessColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
                 break;
             case CT_LABOR:
-                ret_val->add_column(new LaborColumn(s, ret_val, parent));
+                new LaborColumn(s, ret_val, parent);
                 break;
             case CT_SKILL:
-                ret_val->add_column(new SkillColumn(s, ret_val, parent));
+                new SkillColumn(s, ret_val, parent);
                 break;
             
             case CT_DEFAULT:

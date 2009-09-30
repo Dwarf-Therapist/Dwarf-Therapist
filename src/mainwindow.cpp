@@ -91,11 +91,6 @@ MainWindow::MainWindow(QWidget *parent)
 	grid_view_dock->setFloating(true);
 	addDockWidget(Qt::RightDockWidgetArea, grid_view_dock);
 
-	ViewColumnSetDock *view_set_dock = new ViewColumnSetDock(m_view_manager, this);
-	view_set_dock->setHidden(true); // hide by default
-	view_set_dock->setFloating(true);
-	addDockWidget(Qt::RightDockWidgetArea, view_set_dock);
-	
 	SkillLegendDock *skill_legend_dock = new SkillLegendDock(this);
 	skill_legend_dock->setHidden(true); // hide by default
 	skill_legend_dock->setFloating(true);
@@ -109,7 +104,6 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->menu_docks->addAction(ui->dock_pending_jobs_list->toggleViewAction());
 	ui->menu_docks->addAction(ui->dock_custom_professions->toggleViewAction());
 	ui->menu_docks->addAction(grid_view_dock->toggleViewAction());
-	ui->menu_docks->addAction(view_set_dock->toggleViewAction());
 	ui->menu_docks->addAction(skill_legend_dock->toggleViewAction());
 	ui->menu_docks->addAction(dwarf_details_dock->toggleViewAction());
 	ui->menuWindows->addAction(ui->main_toolbar->toggleViewAction());
@@ -122,7 +116,6 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->act_collapse_all, SIGNAL(triggered()), m_view_manager, SLOT(collapse_all()));
 	connect(grid_view_dock, SIGNAL(views_changed()), m_view_manager, SLOT(views_changed()));
 	connect(ui->act_add_new_gridview, SIGNAL(triggered()), grid_view_dock, SLOT(add_new_view()));
-	connect(ui->act_add_new_column_set, SIGNAL(triggered()), view_set_dock, SLOT(add_new_set()));
 	connect(ui->list_custom_professions, SIGNAL(customContextMenuRequested(const QPoint &)),
 			this, SLOT(draw_custom_profession_context_menu(const QPoint &)));
 	connect(ui->tree_pending, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),

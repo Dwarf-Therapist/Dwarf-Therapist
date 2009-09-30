@@ -50,18 +50,20 @@ public:
 	QList<ViewColumn*> columns() {return m_columns;}
 	GridView *view() {return m_view;}
 	void remove_column(int offset) {m_columns.removeAt(offset);}
+	void remove_column(ViewColumn *vc) {m_columns.removeAll(vc);}
 	ViewColumn *column_at(int offset) {return m_columns.at(offset);}
 
 	//! order of columns was changed by a view, so reflect those changes internally
 	void reorder_columns(const QStandardItemModel &model);
 
-	//! editing dialog was accepted by user, so modify settings
-	void update_from_dialog(ViewColumnSetDialog *d);
-
 	//! persist this structure to disk
 	void write_to_ini(QSettings &s);
 	//! factory method for creating a set based on a QSettings that has been pointed at a set entry
 	static ViewColumnSet *read_from_ini(QSettings &s, QObject *parent = 0);
+
+	//! overload equality operator for triggering redraws on changes...
+	virtual bool operator==(const ViewColumnSet &other) const;
+	virtual bool operator!=(const ViewColumnSet &other) const {return !(*this == other);}
 
 	public slots:
 		void set_name(const QString &name);

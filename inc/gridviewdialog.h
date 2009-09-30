@@ -78,6 +78,8 @@ private:
 	private slots:
 		//! for redrawing sets in the edit dialog
 		void draw_sets();
+		//! called when the order of sets changes
+		void set_order_changed();
 		//! called when the order of columns changes
 		void column_order_changed();
 		//! makes sure the name for this view is ok
