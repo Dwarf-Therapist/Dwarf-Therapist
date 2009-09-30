@@ -24,7 +24,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="statusTip">
-      <string>STATUS TIP</string>
+      <string/>
      </property>
      <property name="tabPosition">
       <enum>QTabWidget::North</enum>
@@ -53,23 +53,23 @@
        <item>
         <widget class="QCheckBox" name="cb_read_dwarves_on_startup">
          <property name="toolTip">
-          <string>When checked, DwarfTherapist will attemp to connect and load all dwarves from a running copy of Dwarf Fortress.</string>
+          <string/>
          </property>
          <property name="statusTip">
-          <string>When checked, DwarfTherapist will attemp to connect and load all dwarves from a running copy of Dwarf Fortress.</string>
+          <string>When checked, DwarfTherapist will attempt to connect and load all dwarves from a running copy of Dwarf Fortress at startup.</string>
          </property>
          <property name="whatsThis">
-          <string>When checked, DwarfTherapist will attemp to connect and load all dwarves from a running copy of Dwarf Fortress.</string>
+          <string>When checked, DwarfTherapist will attempt to connect and load all dwarves from a running copy of Dwarf Fortress at startup.</string>
          </property>
          <property name="text">
-          <string>Load Dwarves on Launch</string>
+          <string>Load Dwarves on Startup</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QCheckBox" name="cb_single_click_labor_changes">
          <property name="toolTip">
-          <string>When checked, labors can be toggled with a single left-click of the mouse. Otherwise they must be double-clicked</string>
+          <string/>
          </property>
          <property name="statusTip">
           <string>When checked, labors can be toggled with a single left-click of the mouse. Otherwise they must be double-clicked</string>
@@ -85,7 +85,7 @@
        <item>
         <widget class="QCheckBox" name="cb_show_toolbar_text">
          <property name="toolTip">
-          <string>When checked, show a text description for each icon on the toolbar</string>
+          <string/>
          </property>
          <property name="statusTip">
           <string>When checked, show a text description for each icon on the toolbar</string>
@@ -101,7 +101,7 @@
        <item>
         <widget class="QCheckBox" name="cb_auto_expand">
          <property name="toolTip">
-          <string>When checked, if dwarfs are grouped by something, this will auto-expand all groups each view change</string>
+          <string/>
          </property>
          <property name="statusTip">
           <string>When checked, if dwarfs are grouped by something, this will auto-expand all groups each view change</string>
@@ -117,7 +117,7 @@
        <item>
         <widget class="QCheckBox" name="cb_show_full_dwarf_names">
          <property name="toolTip">
-          <string>When checked, show first names for dwarfs even if they have custom nicknames. Note: this change will not take effect until the next full read of dwarves occurrs!</string>
+          <string/>
          </property>
          <property name="statusTip">
           <string>When checked, show first names for dwarfs even if they have custom nicknames. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read of dwarves occurrs!&lt;/font&gt;&lt;/b&gt;</string>
@@ -130,6 +130,35 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QCheckBox" name="cb_check_for_updates_on_startup">
+         <property name="statusTip">
+          <string>When checked, Dwarf Therapist will go online at the time of launch and notify you if there is an update available.</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, Dwarf Therapist will go online at the time of launch and notify you if there is an update available.</string>
+         </property>
+         <property name="text">
+          <string>Check For Updates On Startup</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_alert_on_lost_connection">
+         <property name="statusTip">
+          <string>When checked, Dwarf Therapist will alert you if it ever loses connectivity to your Dwarf Fortress game. This helps avoid writing bad data to your fort.  &lt;font color=red&gt;&lt;b&gt;Note: this change requires a restart of Dwarf Therapist!&lt;/font&gt;&lt;/b&gt;</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, Dwarf Therapist will alert you if it ever loses connectivity to your Dwarf Fortress game. This helps avoid writing bad data to your fort.</string>
+         </property>
+         <property name="text">
+          <string>Alert on Lost Connection</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tab_grid_colors">
@@ -138,7 +167,7 @@
         <normaloff>:/img/color_swatch.png</normaloff>:/img/color_swatch.png</iconset>
       </attribute>
       <attribute name="title">
-       <string>Grid Colors</string>
+       <string>Grid Options</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,5,0,0,0">
        <item>

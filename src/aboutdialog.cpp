@@ -23,6 +23,8 @@ THE SOFTWARE.
 #include <QtGui>
 
 #include "aboutdialog.h"
+#include "dwarftherapist.h"
+#include "mainwindow.h"
 
 AboutDialog::AboutDialog(MainWindow *parent)
 	: QDialog(parent)
@@ -31,6 +33,7 @@ AboutDialog::AboutDialog(MainWindow *parent)
 {
 	ui->setupUi(this);
 	ui->lbl_our_version->setText(QString("VERSION %1").arg(m_version.to_string()));
+    connect(ui->pb_check_version, SIGNAL(clicked()), SLOT(check_version()));
 }
 
 void AboutDialog::set_latest_version(const Version &v) {
@@ -44,4 +47,8 @@ void AboutDialog::set_latest_version(const Version &v) {
 
 void AboutDialog::version_check_failed() {
 	ui->lbl_up_to_date->setText(tr("Version check failed"));
+}
+
+void AboutDialog::check_version() {
+    DT->get_main_window()->check_latest_version(true);
 }

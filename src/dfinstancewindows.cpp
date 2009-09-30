@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include "cp437codec.h"
 #include "win_structs.h"
 #include "memorysegment.h"
+#include "dwarftherapist.h"
 
 
 DFInstanceWindows::DFInstanceWindows(QObject* parent)
@@ -321,7 +322,9 @@ bool DFInstanceWindows::find_running_copy() {
 	}
 	LOGD << "MEMORY SEGMENT SUMMARY: accepted" << accepted << "rejected" << rejected << "total" << accepted + rejected;
 	
-	m_heartbeat_timer->start(1000); // check every second for disconnection
+    if (DT->user_settings()->value("options/alert_on_lost_connection", true).toBool()) {
+	    m_heartbeat_timer->start(1000); // check every second for disconnection
+    }
 	m_is_ok = true;
 	return m_is_ok;
 }

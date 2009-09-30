@@ -74,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
 	, m_model(new DwarfModel(this))
 	, m_proxy(new DwarfModelProxy(this))
 	, m_scanner(0)
-	, m_http(new QHttp(this))
+	, m_http(0)
 	, m_reading_settings(false)
 	, m_temp_cp(0)
 {
@@ -138,7 +138,8 @@ MainWindow::MainWindow(QWidget *parent)
 	read_settings();
 	draw_professions();
 
-	check_latest_version();
+    if (m_settings->value("options/check_for_updates_on_startup", true).toBool())
+	    check_latest_version();
 }
 
 MainWindow::~MainWindow() {
@@ -260,7 +261,8 @@ void MainWindow::set_interface_enabled(bool enabled) {
 	ui->act_import_existing_professions->setEnabled(enabled);
 }
 
-void MainWindow::check_latest_version() {
+void MainWindow::check_latest_version(bool show_result_on_equal) {
+    m_show_result_on_equal = show_result_on_equal;
 	//http://code.google.com/p/dwarftherapist/wiki/LatestVersion
 	Version our_v(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
 
@@ -268,6 +270,10 @@ void MainWindow::check_latest_version() {
 	header.setValue("Host", "dt-tracker.appspot.com");
 	//header.setValue("Host", "localhost");
 	header.setValue("User-Agent", QString("DwarfTherapist %1").arg(our_v.to_string()));
+    if (m_http) {
+        m_http->deleteLater();
+    }
+    m_http = new QHttp(this);
 	m_http->setHost("dt-tracker.appspot.com");
 	//m_http->setHost("localhost", 8080);
 	disconnect(m_http, SIGNAL(done(bool)));
@@ -295,14 +301,18 @@ void MainWindow::version_check_finished(bool error) {
 			QMessageBox *mb = new QMessageBox(this);
 			mb->setWindowTitle(tr("Update Available"));
 			mb->setText(tr("A newer version of this application is available."));
-			QString link = "<a href=\"http://code.google.com/p/dwarftherapist/downloads/list\">Download v" + newest_v.to_string() + "</a>";
+			QString link = "<br><a href=\"http://code.google.com/p/dwarftherapist/downloads/list\">Download v" + newest_v.to_string() + "</a>";
 			mb->setInformativeText(QString("You are currently running v%1. %2").arg(our_v.to_string()).arg(link));
 			mb->exec();
-		}
+        } else if (m_show_result_on_equal) {
+            QMessageBox *mb = new QMessageBox(this);
+            mb->setWindowTitle(tr("Up to Date"));
+            mb->setText(tr("You are running the most recent version of Dwarf Therapist."));
+            mb->exec();
+        }
 		m_about_dialog->set_latest_version(newest_v);
 	} else {
 		m_about_dialog->version_check_failed();
-		
 	}
 }
 

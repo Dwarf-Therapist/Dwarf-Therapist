@@ -80,7 +80,7 @@ public:
 		void draw_custom_profession_context_menu(const QPoint &);
 		
 		// version check
-		void check_latest_version();
+		void check_latest_version(bool show_result_on_equal=false);
 		void version_check_finished(bool error);
 
 		//links
@@ -102,6 +102,7 @@ private:
 	Scanner *m_scanner;
 	QHttp *m_http;
 	bool m_reading_settings;
+    bool m_show_result_on_equal; //! used during version checks
 
 	void closeEvent(QCloseEvent *evt); // override;
 
