@@ -280,6 +280,23 @@ void StateTableView::currentChanged(const QModelIndex &cur, const QModelIndex &)
 	}
 }
 
+void StateTableView::select_dwarf(Dwarf *d) {
+    for(int top = 0; top < m_proxy->rowCount(); ++top) {
+        QModelIndex idx = m_proxy->index(top, 0);
+        if (idx.data(DwarfModel::DR_ID).toInt() == d->id()) {
+            this->selectionModel()->select(idx, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+            break;
+        } else if (m_proxy->rowCount(idx)) { // has children
+            for (int sub = 0; sub < m_proxy->rowCount(idx); ++sub) {
+                QModelIndex sub_idx = m_proxy->index(sub, 0, idx);
+                if (sub_idx.data(DwarfModel::DR_ID).toInt() == d->id()) {
+                    this->selectionModel()->select(sub_idx, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+                }
+            }
+        }
+    }
+}
+
 /************************************************************************/
 /* Handlers for expand/collapse persistence                             */
 /************************************************************************/

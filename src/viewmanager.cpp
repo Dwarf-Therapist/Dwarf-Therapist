@@ -252,12 +252,21 @@ void ViewManager::replace_view(GridView *old_view, GridView *new_view) {
 	}
 }
 
+StateTableView *ViewManager::get_stv(int idx) {
+    if (idx == -1)
+        idx = currentIndex();
+    QWidget *w = widget(idx);
+    if (w)
+        return static_cast<StateTableView*>(w);
+    return 0;
+}
+
 void ViewManager::setCurrentIndex(int idx) {
 	if (idx < 0 || idx > count()-1) {
 		//LOGW << "tab switch to index" << idx << "requested but there are only" << count() << "tabs";
 		return;
 	}
-	StateTableView *stv = qobject_cast<StateTableView*>(widget(idx));
+	StateTableView *stv = get_stv(idx);
 	foreach(GridView *v, m_views) {
 		if (v->name() == tabText(idx)) {
 			m_model->set_grid_view(v);
@@ -265,11 +274,31 @@ void ViewManager::setCurrentIndex(int idx) {
 			stv->header()->setResizeMode(QHeaderView::Fixed);
 			stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
 			//stv->sortByColumn(0, Qt::AscendingOrder);
+            QList<Dwarf*> tmp_list;
+            foreach(Dwarf *d, m_selected_dwarfs) {
+                tmp_list << d;
+            }
+            foreach(Dwarf *d, tmp_list) {
+                stv->select_dwarf(d);
+            }
 			break;
 		}
 	}
 	tabBar()->setCurrentIndex(idx);
 	stv->restore_expanded_items();	
+}
+
+void ViewManager::dwarf_selection_changed(const QItemSelection &selected, const QItemSelection &deselected) {
+    Q_UNUSED(selected);
+    Q_UNUSED(deselected);
+    QItemSelectionModel *selection = qobject_cast<QItemSelectionModel*>(QObject::sender());
+    m_selected_dwarfs.clear();
+    foreach(QModelIndex idx, selection->selectedRows(0)) {
+        int dwarf_id = idx.data(DwarfModel::DR_ID).toInt();
+        Dwarf *d = DT->get_dwarf_by_id(dwarf_id);
+        if (d)
+            m_selected_dwarfs << d;
+    }
 }
 
 int ViewManager::add_tab_from_action() {
@@ -286,11 +315,13 @@ int ViewManager::add_tab_from_action() {
 int ViewManager::add_tab_for_gridview(GridView *v) {
 	v->set_active(true);
 	StateTableView *stv = new StateTableView(this);
-	connect(stv, SIGNAL(dwarf_focus_changed(Dwarf*)), SIGNAL(dwarf_focus_changed(Dwarf*))); // pass-thru
 	stv->setSortingEnabled(false);
 	stv->set_model(m_model, m_proxy);
 	stv->setSortingEnabled(true);
-	return addTab(stv, v->name());
+    connect(stv, SIGNAL(dwarf_focus_changed(Dwarf*)), SIGNAL(dwarf_focus_changed(Dwarf*))); // pass-thru
+    connect(stv->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+        SLOT(dwarf_selection_changed(const QItemSelection &, const QItemSelection &)));
+    return addTab(stv, v->name());
 }
 
 void ViewManager::remove_tab_for_gridview(int idx) {

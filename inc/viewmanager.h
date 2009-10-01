@@ -68,6 +68,9 @@ private:
 	DwarfModel *m_model;
 	DwarfModelProxy *m_proxy;
 	QToolButton *m_add_tab_button;
+    QList<Dwarf*> m_selected_dwarfs;
+
+    StateTableView *get_stv(int idx = -1);
 
 	private slots:
 		//! used when adding tabs via the tool button
@@ -76,6 +79,7 @@ private:
 		int add_tab_for_gridview(GridView *v);
 		void remove_tab_for_gridview(int index);
 		void draw_add_tab_button();
+        void dwarf_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
 
 signals:
 	void dwarf_focus_changed(Dwarf *d);

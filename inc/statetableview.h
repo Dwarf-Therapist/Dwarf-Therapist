@@ -49,6 +49,7 @@ public:
 		void set_single_click_labor_changes(bool enabled);
 		void jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* previous);
 		void jump_to_profession(QListWidgetItem* current, QListWidgetItem* previous);
+        void select_dwarf(Dwarf *d);
 
 		// expand/collapse persistence
 		void expandAll();
