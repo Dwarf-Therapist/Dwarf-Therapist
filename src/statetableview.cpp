@@ -297,6 +297,12 @@ void StateTableView::select_dwarf(Dwarf *d) {
     }
 }
 
+void StateTableView::mouseMoveEvent(QMouseEvent *event) {
+    QModelIndex idx = indexAt(event->pos());
+    if (idx.isValid())
+        m_header->column_hover(idx.column());
+}
+
 /************************************************************************/
 /* Handlers for expand/collapse persistence                             */
 /************************************************************************/

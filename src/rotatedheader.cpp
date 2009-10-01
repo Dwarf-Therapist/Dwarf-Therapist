@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 RotatedHeader::RotatedHeader(Qt::Orientation orientation, QWidget *parent)
 	: QHeaderView(orientation, parent)
+    , m_hovered_column(-1)
 {
 	setClickable(true);
 	setSortIndicatorShown(true);
@@ -35,6 +36,12 @@ RotatedHeader::RotatedHeader(Qt::Orientation orientation, QWidget *parent)
 
 	read_settings();
 	connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
+}
+
+void RotatedHeader::column_hover(int col) {
+    updateSection(m_hovered_column);
+    m_hovered_column = col;
+    updateSection(col);
 }
 
 void RotatedHeader::read_settings() {
@@ -81,17 +88,22 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 			opt.sortIndicator = QStyleOptionHeader::SortUp;
 		}
 	}
+    if (m_hovered_column == idx) {
+        state |= QStyle::State_MouseOver;
+    }
 
 	opt.state = state;
 	style()->drawControl(QStyle::CE_HeaderSection, &opt, p);
 	
+    QBrush brush = QBrush(bg);
 	if (m_shade_column_headers) {
 		QLinearGradient g(rect.topLeft(), rect.bottomLeft());
 		g.setColorAt(0.25, QColor(255, 255, 255, 10));
 		g.setColorAt(1.0, bg);
-		if (idx > 0)
-			p->fillRect(rect.adjusted(1,8,-1,-2), QBrush(g));
+        brush = QBrush(g);
 	}
+    if (idx > 0)
+        p->fillRect(rect.adjusted(1,8,-1,-2), brush);
 
 	if (sortIndicatorSection() == idx) {
 		opt.rect = QRect(opt.rect.x() + opt.rect.width()/2 - 5, opt.rect.y(), 10, 8);
@@ -110,7 +122,7 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 		p->restore();
 	}
 	*/
-	
+    
 	QString data = this->model()->headerData(idx, Qt::Horizontal).toString();
 	p->save();
 	p->setPen(Qt::black);

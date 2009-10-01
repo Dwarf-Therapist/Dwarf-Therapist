@@ -61,6 +61,7 @@ public:
 
 protected:
 	virtual void contextMenuEvent(QContextMenuEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
 
 private:
 	DwarfModel *m_model;

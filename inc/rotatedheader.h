@@ -32,6 +32,8 @@ class RotatedHeader : public QHeaderView {
 public:
 	RotatedHeader(Qt::Orientation orientation, QWidget *parent = 0);
 	void paintSection(QPainter *p, const QRect &rect, int idx) const;
+
+    void column_hover(int col);
 	
 	QSize sizeHint() const;
 	public slots:
@@ -50,6 +52,7 @@ private:
 	QPoint m_p;
 	QList<int> m_spacer_indexes;
 	bool m_shade_column_headers;
+    int m_hovered_column;
 };
 
 #endif
