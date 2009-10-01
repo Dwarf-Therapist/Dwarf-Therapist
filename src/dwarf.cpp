@@ -347,8 +347,18 @@ bool Dwarf::toggle_labor(int labor_id) {
 }
 
 void Dwarf::set_labor(int labor_id, bool enabled) {
-	if (m_can_set_labors)
-		m_pending_labors[labor_id] = enabled;
+	if (!m_can_set_labors)
+        return;
+    Labor *l = GameDataReader::ptr()->get_labor(labor_id);
+    if (!l)
+        return;
+
+    if (enabled) { // user is turning a labor on, so we must turn off exclusives
+        foreach(int excluded, l->get_excluded_labors()) {
+            m_pending_labors[excluded] = false;
+        }
+    }
+	m_pending_labors[labor_id] = enabled;
 }
 
 int Dwarf::pending_changes() {

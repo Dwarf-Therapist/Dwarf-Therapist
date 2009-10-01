@@ -40,16 +40,26 @@ public:
 		, name(other.name)
 		, labor_id(other.labor_id)
 		, list_order(other.list_order)
+        , m_excluded_labors(other.m_excluded_labors)
 	{}
 
 	int operator<(const Labor &other) {
 		return other.list_order < list_order;
 	}
 
+    void add_exclusive_labor(int labor_id) {
+        m_excluded_labors << labor_id;
+    }
+
+    const QList<int> &get_excluded_labors() {
+        return m_excluded_labors;
+    }
+
 	QString name;
 	int labor_id;
 	int skill_id;
 	int list_order;
+    QList<int> m_excluded_labors; // list of other labors that this one is exclusive with
 };
 
 #endif

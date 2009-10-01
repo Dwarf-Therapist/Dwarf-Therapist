@@ -37,6 +37,12 @@ GameDataReader::GameDataReader(QObject *parent)
 		m_data_settings->beginGroup(k);
 		Labor *l = new Labor(get_string_for_key("name"), get_int_for_key("id", 10), 
 							 get_int_for_key("skill", 10), k.toInt(), this);
+        int count = m_data_settings->beginReadArray("excludes");
+        for (int i = 0; i < count; ++i) {
+            m_data_settings->setArrayIndex(i);
+            l->add_exclusive_labor(m_data_settings->value("labor_id").toInt());
+        }
+        m_data_settings->endArray();
 		m_labors[l->labor_id] = l;
 		m_data_settings->endGroup();
 	}
