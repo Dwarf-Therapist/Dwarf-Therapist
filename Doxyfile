@@ -31,7 +31,7 @@ PROJECT_NAME           = "Dwarf Therapist"
 # This could be handy for archiving the generated documentation or 
 # if some version control system is used.
 
-PROJECT_NUMBER         = 0.3.3
+PROJECT_NUMBER         = 0.4.0
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
 # base path where the generated documentation will be put. 
@@ -918,19 +918,19 @@ GENERATE_QHP           = YES
 # be used to specify the file name of the resulting .qch file. 
 # The path specified is relative to the HTML output folder.
 
-QCH_FILE               = api.qch
+QCH_FILE               = ../api.qch
 
 # The QHP_NAMESPACE tag specifies the namespace to use when generating 
 # Qt Help Project output. For more information please see 
 # http://doc.trolltech.com/qthelpproject.html#namespace
 
-QHP_NAMESPACE          = udpviper.com.dwarftherapist_api.0_3_3
+QHP_NAMESPACE          = udpviper.com.dwarftherapist_api.0_4_0
 
 # The QHP_VIRTUAL_FOLDER tag specifies the namespace to use when generating 
 # Qt Help Project output. For more information please see 
 # http://doc.trolltech.com/qthelpproject.html#virtual-folders
 
-QHP_VIRTUAL_FOLDER     = doc
+QHP_VIRTUAL_FOLDER     = api
 
 # If QHP_CUST_FILTER_NAME is set, it specifies the name of a custom filter to add. 
 # For more information please see 

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QtHelpProject version="1.0">
+  <namespace>udpviper.com.dwarftherapist.0_4_0</namespace>
+  <virtualFolder>doc</virtualFolder>
+  <customFilter name="Dwarf Therapist 0.4.0">
+     <filterAttribute>dwarftherapist</filterAttribute>
+     <filterAttribute>0.4.0</filterAttribute>
+  </customFilter>
+  <filterSection>
+     <toc>
+         <section title="Dwarf Therapist Manual" ref="index.html">
+             <section title="Connecting" ref="communicating.html#connecting"/>
+             <section title="Reading" ref="communicating.html#reading"/>
+             <section title="Writing" ref="communicating.html#writing"/>
+           <section title="API" ref="qtindex.html"/>
+         </section>
+     </toc>
+     <keywords>
+         <keyword name="foo" id="MyApplication::foo" ref="doc.html#foo"/>
+         <keyword name="bar" ref="doc.html#bar"/>
+         <keyword id="MyApplication::foobar" ref="doc.html#foobar"/>
+     </keywords>
+     <files>
+         <file>index.html</file>
+         <file>communicating.html</file>
+     </files>
+  </filterSection>
+ </QtHelpProject>

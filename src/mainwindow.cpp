@@ -22,6 +22,7 @@ THE SOFTWARE.
 */
 #include <QtGui>
 #include <QtNetwork>
+#include <QtHelp>
 #include <QtDebug>
 #include "qxtlogger.h"
 
@@ -122,6 +123,7 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->list_custom_professions, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
 		m_view_manager, SLOT(jump_to_profession(QListWidgetItem *, QListWidgetItem *)));
 	connect(m_view_manager, SIGNAL(dwarf_focus_changed(Dwarf*)), dwarf_details_dock, SLOT(show_dwarf(Dwarf*)));
+	connect(ui->act_open_help_contents, SIGNAL(triggered()), SLOT(open_help_contents()));
 
 	m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
@@ -421,4 +423,11 @@ void MainWindow::import_gridviews() {
 	ImportExportDialog d(this);
 	d.setup_for_gridview_import();
 	d.exec();
+}
+
+void MainWindow::open_help_contents() {
+	QHelpEngine *help = new QHelpEngine("doc/dwarftherapist.qch", this);
+	help->setupData();
+	
+	
 }

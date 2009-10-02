@@ -1,48 +1,49 @@
 <RCC>
-    <qresource prefix="/" >
-        <file>img/page_copy.png</file>
-        <file>img/image_add.png</file>
-        <file>img/table_add.png</file>
-        <file>img/cross.png</file>
-        <file>img/tab_add.png</file>
-        <file>img/hammer.png</file>
-        <file>img/color_swatch.png</file>
-        <file>img/color_wheel.png</file>
-        <file>img/world_go.png</file>
-        <file>img/textfield_add.png</file>
-        <file>img/page_white_edit.png</file>
-        <file>img/page_white_add.png</file>
-        <file>img/application_edit.png</file>
-        <file>img/application_get.png</file>
-        <file>img/layout_content.png</file>
-        <file>img/add.png</file>
-        <file>img/delete.png</file>
-        <file>img/dwarf.jpg</file>
-        <file>img/table.png</file>
-        <file>img/table_delete.png</file>
-        <file>img/table_go.png</file>
-        <file>img/disk.png</file>
-        <file>img/folder_page.png</file>
-        <file>img/arrow_in.png</file>
-        <file>img/arrow_out.png</file>
-        <file>img/drive_magnify.png</file>
-        <file>img/application_view_icons.png</file>
-        <file>img/connect.png</file>
-        <file>img/door_out.png</file>
-        <file>img/drive_go.png</file>
-        <file>img/find.png</file>
-        <file>img/help.png</file>
-        <file>img/book_edit.png</file>
-        <file>img/heart.png</file>
-        <file>img/female.png</file>
-        <file>img/male.png</file>
-        <file>img/emoticon_grin.png</file>
-        <file>img/emoticon_happy.png</file>
-        <file>img/emoticon_smile.png</file>
-        <file>img/emoticon_unhappy.png</file>
-        <file>img/exclamation.png</file>
-    </qresource>
-    <qresource prefix="/config" >
-        <file alias="default_gridviews" >default_gridviews.dtg</file>
-    </qresource>
+  <qresource prefix="/" >
+    <file>img/tag_blue.png</file>
+    <file>img/page_copy.png</file>
+    <file>img/image_add.png</file>
+    <file>img/table_add.png</file>
+    <file>img/cross.png</file>
+    <file>img/tab_add.png</file>
+    <file>img/hammer.png</file>
+    <file>img/color_swatch.png</file>
+    <file>img/color_wheel.png</file>
+    <file>img/world_go.png</file>
+    <file>img/textfield_add.png</file>
+    <file>img/page_white_edit.png</file>
+    <file>img/page_white_add.png</file>
+    <file>img/application_edit.png</file>
+    <file>img/application_get.png</file>
+    <file>img/layout_content.png</file>
+    <file>img/add.png</file>
+    <file>img/delete.png</file>
+    <file>img/dwarf.jpg</file>
+    <file>img/table.png</file>
+    <file>img/table_delete.png</file>
+    <file>img/table_go.png</file>
+    <file>img/disk.png</file>
+    <file>img/folder_page.png</file>
+    <file>img/arrow_in.png</file>
+    <file>img/arrow_out.png</file>
+    <file>img/drive_magnify.png</file>
+    <file>img/application_view_icons.png</file>
+    <file>img/connect.png</file>
+    <file>img/door_out.png</file>
+    <file>img/drive_go.png</file>
+    <file>img/find.png</file>
+    <file>img/help.png</file>
+    <file>img/book_edit.png</file>
+    <file>img/heart.png</file>
+    <file>img/female.png</file>
+    <file>img/male.png</file>
+    <file>img/emoticon_grin.png</file>
+    <file>img/emoticon_happy.png</file>
+    <file>img/emoticon_smile.png</file>
+    <file>img/emoticon_unhappy.png</file>
+    <file>img/exclamation.png</file>
+  </qresource>
+  <qresource prefix="/config" >
+    <file alias="default_gridviews" >default_gridviews.dtg</file>
+  </qresource>
 </RCC>

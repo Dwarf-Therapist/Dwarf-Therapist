@@ -184,6 +184,8 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
+    <addaction name="act_open_help_contents"/>
+    <addaction name="separator"/>
     <addaction name="act_go_project_home"/>
     <addaction name="act_go_forums"/>
     <addaction name="act_go_new_issue"/>
@@ -409,7 +411,7 @@
   <action name="act_about">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/help.png</normaloff>:/img/help.png</iconset>
+     <normaloff>:/img/tag_blue.png</normaloff>:/img/tag_blue.png</iconset>
    </property>
    <property name="text">
     <string>&amp;About</string>
@@ -674,6 +676,24 @@
    </property>
    <property name="toolTip">
     <string>Export Grid Views to file</string>
+   </property>
+  </action>
+  <action name="act_open_help_contents">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/help.png</normaloff>:/img/help.png</iconset>
+   </property>
+   <property name="text">
+    <string>Contents</string>
+   </property>
+   <property name="toolTip">
+    <string>Open help dialog to the contents page.</string>
+   </property>
+   <property name="statusTip">
+    <string>Open help dialog to the contents page.</string>
+   </property>
+   <property name="whatsThis">
+    <string>Open help dialog to the contents page.</string>
    </property>
   </action>
  </widget>
