@@ -272,6 +272,8 @@ void StateTableView::reset_custom_profession() {
 
 void StateTableView::currentChanged(const QModelIndex &cur, const QModelIndex &) {
 	// current item changed, so find out what dwarf the current item is for...
+	if (!m_proxy) // special case tables (like skill legend, don't have a proxy)
+		return;
 	int id = m_proxy->data(cur, DwarfModel::DR_ID).toInt();
 	Dwarf *d = m_model->get_dwarf_by_id(id);
 	if (d) {

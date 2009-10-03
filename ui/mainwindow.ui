@@ -184,8 +184,6 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
-    <addaction name="act_open_help_contents"/>
-    <addaction name="separator"/>
     <addaction name="act_go_project_home"/>
     <addaction name="act_go_forums"/>
     <addaction name="act_go_new_issue"/>

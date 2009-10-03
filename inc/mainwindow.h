@@ -78,7 +78,6 @@ public:
 		void list_pending();
 		void draw_professions();
 		void draw_custom_profession_context_menu(const QPoint &);
-		void open_help_contents();
 		
 		// version check
 		void check_latest_version(bool show_result_on_equal=false);

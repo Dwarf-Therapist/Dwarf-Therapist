@@ -424,10 +424,3 @@ void MainWindow::import_gridviews() {
 	d.setup_for_gridview_import();
 	d.exec();
 }
-
-void MainWindow::open_help_contents() {
-	QHelpEngine *help = new QHelpEngine("doc/dwarftherapist.qch", this);
-	help->setupData();
-	
-	
-}
