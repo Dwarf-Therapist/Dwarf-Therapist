@@ -9,7 +9,6 @@
 		</generate>
 		<register>
 			<file>dwarftherapist.qch</file>
-      <file>api.qch</file>
 		</register>
 	</docFiles>
 </QHelpCollectionProject>

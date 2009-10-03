@@ -12,7 +12,7 @@
              <section title="Connecting" ref="communicating.html#connecting"/>
              <section title="Reading" ref="communicating.html#reading"/>
              <section title="Writing" ref="communicating.html#writing"/>
-           <section title="API" ref="qtindex.html"/>
+           <section title="API" ref="qthelp://udpviper.com.dwarftherapist_api.0_4_0/api/index.html"/>
          </section>
      </toc>
      <keywords>
@@ -22,6 +22,7 @@
      </keywords>
      <files>
          <file>index.html</file>
+         <file>feature_list.html</file>
          <file>communicating.html</file>
      </files>
   </filterSection>
