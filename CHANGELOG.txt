@@ -1,3 +1,46 @@
+RELEASE 0.4.0 (October 2, 2009)
+CHANGES SINCE 0.3.2
+===============================================================================
+MAJOR CHANGES:
+ * Full re-write of the sets and views handler. View customization now rules if I may say so myself. (Fixed issue 89)
+ * Custom views can now be imported/exported like custom professions (this should get us sharing views!)
+ * New dwarf details dialog is epic (Fixes issue 95)
+MINOR CHANGES:
+ * Labors can now include an "excludes" list which will make sure only one of the professions in list can be active at a time. (Fixes issue 91)
+ * Column headers now highlight as you move around the main cells (Fixes issue 80)
+ * Views now remember selected dwarfs when switching tabs, sort order, or grouping (Fixes issue 108)
+ * Added new option for alerting when connection is lost to DF (Fixes issue 102)
+ * Added new option for checking for updates on startup
+ * Reworked the about menu to allow manual update checks. 
+ * Options menu is now broken into different tabs with better tooltips for each options (Fixed issue 105)
+ * Added a mechanism for HappinessColumn to update itself independent from DwarfModel redraws (much faster)
+ * HappinessColumn now draws an aggregate cell that shows the lowest happiness in a group for (eye-catching-ness)
+ * Hacked up ColorPickerButton a bit to show the hex code of custom colors
+ * There is now a display for total number of dwarfs next to the big number of pending changes display (Fixed issue 100)
+ * Views can now be copied via their context menus
+ * You can now dump memory for a dwarf to a text dialog (not for general use)
+ * Dwarf detail dock now shows attributes as well as a graph for when the next attribute will be gained
+ * Skill legend dock now allows right click to change the active skill drawing method (Fixes issue 85)
+BUG FIXES:
+ * Fixed color choosers not remembering the last custom color used (Fixed issue 103) 
+ * Removed incorrect entries in the non_labor_professions (Fixed issues 87 & 106)
+ * Fixed a bug where set re-ordering wasn't being persisted after editing.
+ * Fixed a stupid bug where any GridView being changed caused ViewManager to write/read/redraw/write/read/redraw (this took almost 3 seconds in debug builds) Much much faster handling of this now.
+ * Fixed a bug where newly added sets were promptly thrown away after accepting the edit dialog :)
+ * Fixed a bug in the SpacerColumn ctor that did not explicitly set a width (spacers with a width of -8923232 don't look quite right, BTW)
+ * Fixed a bug in the ViewColumn QSettings-based ctor where the column was not being automatically added to the set that was passed in
+ * fixed a stupid thing I was doing with the GridViewDock (allowing context menus anywhere on the widget), also added a "new set" action to the GridViewDock's context menu.
+ * Fixed some bugs with column re-ordering in a set
+ * Added icons to the GridViewDock context menu
+ * Fixed a bug where skill columns weren't being drawn in the editor
+ * Fixed a bug where the user's tab order wasn't being saved on changes
+ * Fixed a bug where DT only recognized 6 happiness levels to support all 7 that actually exist
+ * Additional languages cause dwarf names to be wrong (Fixes issue 101)
+ * Reworked the XP displays that were broken in the 0.3.2 release (Fixes issue 93)
+ * Fixed bug where overridden column background colors weren't being honored (Fixes issue 86)
+ * Reverse sort the special column types so that "Spacer" is the default instead of "Happiness" when editing a column set (Fixed issue 90)
+ * Fixed crash on windows when launched with option read on start set, and no DF version is running (Fixed issues 84, 99)
+
 RELEASE 0.3.2 (September 13, 2009)
 CHANGES SINCE 0.3.1
 ===============================================================================
