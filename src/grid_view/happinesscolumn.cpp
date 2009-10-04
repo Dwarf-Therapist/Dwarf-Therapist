@@ -86,8 +86,8 @@ void HappinessColumn::read_settings() {
 }
 
 void HappinessColumn::redraw_cells() {
-	foreach(Dwarf *d, m_cells.uniqueKeys()) {
-        if (m_cells[d]->model())
+	/*foreach(Dwarf *d, m_cells.uniqueKeys()) {
+        if (d && m_cells[d] && m_cells[d]->model())
 		    m_cells[d]->setBackground(m_colors[d->get_happiness()]);
-	}
+	}*/
 }
