@@ -80,6 +80,7 @@ public:
 	short get_rating_by_labor(int labor_id);
 	short trait(int trait_id) {return m_traits.value(trait_id, -1);}
 	void read_traits(const uint &addr);
+    const QHash<int, short> &traits() {return m_traits;}
 
 	int pending_changes();
 	void clear_pending();

@@ -37,6 +37,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
 	, m_df(df)
     , m_address(addr)
 	, m_total_xp(0)
+    , m_raw_profession(-1)
 {
 	read_settings();
 	refresh_data();
@@ -65,6 +66,8 @@ void Dwarf::refresh_data() {
 	m_last_name = read_last_name(m_address + mem->dwarf_offset("last_name"));
 	TRACE << "\tLASTNAME:" << m_last_name;
 	m_translated_last_name = read_last_name(m_address + mem->dwarf_offset("last_name"), true);
+    calc_names();
+
 	m_custom_profession = m_df->read_string(m_address + mem->dwarf_offset("custom_profession"));
 	TRACE << "\tCUSTOM PROF:" << m_custom_profession;
 	m_pending_custom_profession = m_df->read_string(m_address + mem->dwarf_offset("custom_profession"));
@@ -101,7 +104,7 @@ void Dwarf::refresh_data() {
     squad_name.append(DT->get_dwarf_word(m_df->read_int(m_address + mem->dwarf_offset("squad_name") + 0xC)));
 	
 
-	calc_names();
+	
     LOGD << "LOADED" << m_nice_name << hex << m_address << "SQUAD:" << squad_name;
 	TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
 
@@ -307,15 +310,18 @@ short Dwarf::get_rating_by_labor(int labor_id) {
 }
 
 QString Dwarf::read_profession(const uint &addr) {
-	if (!m_custom_profession.isEmpty()) {
-		return m_custom_profession; 
-	}
-	char buffer[1];
+    char buffer[1];
     m_df->read_raw(addr, 1, &buffer[0]);
-	m_raw_profession = (int)buffer[0];
+    m_raw_profession = (int)buffer[0];
+    LOGD << "READ RAW PROFESSION FOR" << m_nice_name << "AS" << m_raw_profession;
 	GameDataReader *gdr = GameDataReader::ptr();
 	m_can_set_labors = gdr->profession_can_have_labors(m_raw_profession);
-	return gdr->get_profession_name((int)buffer[0]);
+
+    if (!m_custom_profession.isEmpty()) {
+        return m_custom_profession; 
+    } else {
+        return gdr->get_profession_name((int)buffer[0]);
+    }
 }
 
 void Dwarf::read_labors(const uint &addr) {
@@ -364,11 +370,16 @@ bool Dwarf::toggle_labor(int labor_id) {
 }
 
 void Dwarf::set_labor(int labor_id, bool enabled) {
-	if (!m_can_set_labors)
+    if (!m_can_set_labors) {
+        LOGD << "IGNORING SET LABOR OF ID:" << labor_id << "TO:" << enabled << "FOR:" << m_nice_name << "PROF_ID" << m_raw_profession
+             << "PROF_NAME:" << profession() << "CUSTOM:" << m_pending_custom_profession;
         return;
+    }
     Labor *l = GameDataReader::ptr()->get_labor(labor_id);
-    if (!l)
+    if (!l) {
+        LOGD << "UNKNOWN LABOR: Bailing on set profession of id" << labor_id << "enabled?" << enabled << "for" << m_nice_name;
         return;
+    }
 
     if (enabled) { // user is turning a labor on, so we must turn off exclusives
         foreach(int excluded, l->get_excluded_labors()) {

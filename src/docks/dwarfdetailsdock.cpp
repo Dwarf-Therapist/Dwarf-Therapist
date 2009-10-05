@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "skill.h"
 #include "labor.h"
+#include "trait.h"
 #include "defines.h"
 #include "dwarftherapist.h"
 #include "utils.h"
@@ -88,6 +89,7 @@ void DwarfDetailsDock::show_dwarf(Dwarf *d) {
 	}
 	m_cleanup_list.clear();
 
+    // SKILLS TABLE
 	QVector<Skill> *skills = d->get_skills();
 	QTableWidget *tw = new QTableWidget(skills->size(), 3, this);
 	ui->vbox_main->insertWidget(4, tw, 10);
@@ -121,4 +123,54 @@ void DwarfDetailsDock::show_dwarf(Dwarf *d) {
 	}
 	tw->setSortingEnabled(true); // no sorting while we're inserting
 	tw->sortItems(1, Qt::DescendingOrder); // order by level descending
+
+
+    // TRAITS TABLE
+    QHash<int, short> traits = d->traits();
+    QTableWidget *tw_traits = new QTableWidget(this);
+    ui->vbox_main->insertWidget(5, tw_traits, 10);
+    m_cleanup_list << tw_traits;
+    tw_traits->setColumnCount(3);
+    tw_traits->setEditTriggers(QTableWidget::NoEditTriggers);
+    tw_traits->setShowGrid(false);
+    tw_traits->setGridStyle(Qt::NoPen);
+    tw_traits->setAlternatingRowColors(true);
+    tw_traits->setHorizontalHeaderLabels(QStringList() << "Trait" << "Raw" << "Message");
+    tw_traits->verticalHeader()->hide();
+    tw_traits->horizontalHeader()->setStretchLastSection(true);
+    tw_traits->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+    tw_traits->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
+    tw_traits->setSortingEnabled(false);
+    for (int row = 0; row < traits.size(); ++row) {
+        short val = traits[row];
+        if (val == -1)
+            continue;
+        tw_traits->insertRow(0);
+        tw_traits->setRowHeight(0, 14);
+        Trait *t = gdr->get_trait(row);
+        QTableWidgetItem *trait_name = new QTableWidgetItem(t->name);
+        QTableWidgetItem *trait_score = new QTableWidgetItem;
+        trait_score->setData(0, val);
+
+        int deviation = abs(50 - val);
+        QFont f(tw_traits->font()); // copy the table font
+        if (deviation >= 41) {
+            f.setBold(true);
+            trait_score->setFont(f);
+            trait_score->setBackground(QColor(0, 0, 128, 255));
+            trait_score->setForeground(QColor(255, 255, 255, 255));
+        } else if (deviation >= 25) {
+            f.setBold(true);
+            trait_score->setFont(f);
+            trait_score->setForeground(QColor(0, 0, 128, 255));
+        }
+
+        QTableWidgetItem *trait_msg = new QTableWidgetItem(t->level_message(val));
+        tw_traits->setItem(0, 0, trait_name);
+        tw_traits->setItem(0, 1, trait_score);
+        tw_traits->setItem(0, 2, trait_msg);
+    }
+    tw_traits->setSortingEnabled(true);
+    tw_traits->sortItems(1, Qt::DescendingOrder);
+
 }
