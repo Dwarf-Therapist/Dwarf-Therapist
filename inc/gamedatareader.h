@@ -30,6 +30,7 @@ THE SOFTWARE.
 // forward declaration
 class QSettings;
 class Labor;
+class Trait;
 
 // exceptions
 class MissingValueException : public std::runtime_error {
@@ -65,6 +66,7 @@ public:
 	QHash<int, QString> get_skills() {return m_skills;}
 	QList<QPair<int, QString> > get_ordered_skills() {return m_ordered_skills;}
 	Labor *get_labor(int labor_id);
+	Trait *get_trait(int trait_id);
 	
 	QString get_string_for_key(QString key);
 	QString get_profession_name(int profession_id);
@@ -82,6 +84,7 @@ private:
 	static GameDataReader *m_instance;
 	QSettings *m_data_settings;
 	QHash<int, Labor*> m_labors;
+	QHash<int, Trait*> m_traits;
 	QVector<Labor*> m_ordered_labors;
 	QHash<int, QString> m_skills;
 	QList<QPair<int, QString> > m_ordered_skills;

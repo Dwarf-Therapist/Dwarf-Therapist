@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include <QtGui>
 #include "gamedatareader.h"
 #include "labor.h"
+#include "trait.h"
 #include <QtDebug>
 
 GameDataReader::GameDataReader(QObject *parent)
@@ -103,6 +104,14 @@ GameDataReader::GameDataReader(QObject *parent)
 		m_attribute_levels.insert(num_attributes, m_data_settings->value(k).toInt());
 	}
 	m_data_settings->endGroup();
+
+	int traits = m_data_settings->beginReadArray("traits");
+	for(int i = 0; i < traits; ++i) {
+		m_data_settings->setArrayIndex(i);
+		Trait *t = new Trait(*m_data_settings);
+		m_traits.insert(i, t);
+	}
+	m_data_settings->endArray();
 }
  
 int GameDataReader::get_int_for_key(QString key, short base) {
@@ -170,6 +179,10 @@ QStringList GameDataReader::get_keys(QString section) {
 
 Labor *GameDataReader::get_labor(int labor_id) {
 	return m_labors.value(labor_id, new Labor("UNKNOWN", -1, -1, 1000, this));
+}
+
+Trait *GameDataReader::get_trait(int trait_id) {
+	return m_traits.value(trait_id, 0);
 }
 
 bool GameDataReader::profession_can_have_labors(const int &profession_id) {

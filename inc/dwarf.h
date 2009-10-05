@@ -40,7 +40,7 @@ public:
 	~Dwarf();
 
 	typedef enum {
-		DH_MISERABLE,
+		DH_MISERABLE = 0,
 		DH_VERY_UNHAPPY,
 		DH_UNHAPPY,
 		DH_FINE,
@@ -78,6 +78,9 @@ public:
 	bool toggle_labor(int labor_id);
 	short get_rating_by_skill(int skill_id);
 	short get_rating_by_labor(int labor_id);
+	short trait(int trait_id) {return m_traits.value(trait_id, -1);}
+	void read_traits(const uint &addr);
+
 	int pending_changes();
 	void clear_pending();
 	void commit_pending();
@@ -133,6 +136,7 @@ private:
 	short m_num_weapons;
 	short m_pending_num_weapons;
 	QVector<Skill> m_skills;
+	QHash<int, short> m_traits;
 	QMap<int, bool> m_labors;
 	QMap<int, bool> m_pending_labors;
 	QList<QAction*> m_actions; // actions suitable for context menus

@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "skill.h"
 #include "labor.h"
+#include "trait.h"
 #include "defines.h"
 #include "gamedatareader.h"
 #include "customprofession.h"
@@ -80,6 +81,9 @@ void Dwarf::refresh_data() {
 	m_agility = m_df->read_int(m_address + mem->dwarf_offset("agility"));
 	TRACE << "\tAGILITY:" << m_agility;
 	read_labors(m_address + mem->dwarf_offset("labors"));
+
+	read_traits(m_address + mem->dwarf_offset("traits"));
+	TRACE << "\tTRAITS:" << m_traits.size();
 
 	char sex = m_df->read_char(m_address + mem->dwarf_offset("sex"));
 	m_is_male = (int)sex == 1;
@@ -198,6 +202,19 @@ QString Dwarf::read_last_name(const uint &addr, bool use_generic) {
 		out[0] = out[0].toUpper();
 	}
 	return out;
+}
+
+void Dwarf::read_traits(const uint &addr) {
+	m_traits.clear();
+	for (int i = 0; i < 30; ++i) {
+		short val = m_df->read_short(addr + i * 2);
+		int deviation = abs(val - 50); // how far from the norm is this trait?
+		if (deviation > 10) {
+			m_traits.insert(i, val);
+		} else {
+			m_traits.insert(i, -1);
+		}
+	}
 }
 
 void Dwarf::read_prefs(const uint &addr) {
@@ -445,22 +462,34 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
 }
 
 QString Dwarf::tooltip_text() {
-	QString skill_summary;
+	QString skill_summary, trait_summary;
 	QVector<Skill> *skills = get_skills();
 	qSort(*skills);
 	for (int i = skills->size() - 1; i >= 0; --i) {
 		skill_summary.append(QString("<li>%1</li>").arg(skills->at(i).to_string()));
 	}
+	GameDataReader *gdr = GameDataReader::ptr();
+	for (int i = 0; i <= m_traits.size(); ++i) {
+		if (m_traits.value(i) == -1)
+			continue;
+		Trait *t = gdr->get_trait(i);
+		if (!t)
+			continue;
+		trait_summary.append(QString("%1 ").arg(t->level_message(m_traits.value(i))));
+	}
+
 	return tr("<b><font size=5>%1</font><br/><font size=3>(%2)</font></b><br/><br/>"
 		"<b>Happiness:</b> %3 (%4)<br/>"
 		"<b>Profession:</b> %5<br/><br/>"
-		"<b>Skills:</b><ul>%6</ul>")
+		"<b>Skills:</b><ul>%6</ul><br/>"
+		"<b>Traits:</b> %7<br/>")
 		.arg(m_nice_name)
 		.arg(m_translated_name)
 		.arg(happiness_name(m_happiness))
 		.arg(m_raw_happiness)
 		.arg(profession())
-		.arg(skill_summary);
+		.arg(skill_summary)
+		.arg(trait_summary);
 }
 
 void Dwarf::dump_memory() {
@@ -473,7 +502,7 @@ void Dwarf::dump_memory() {
 	te->setReadOnly(true);
 	te->setFontFamily("Courier");
 	te->setFontPointSize(8);
-	te->setText(m_df->pprint(m_address, 0x660));
+	te->setText(m_df->pprint(m_address, 0x900));
 	v->addWidget(te);
 	d->setLayout(v);
 	d->show();
