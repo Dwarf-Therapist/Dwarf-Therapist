@@ -46,7 +46,7 @@ public:
 	public slots:
 		void read_settings();
 		void filter_dwarves(QString text);
-		void set_single_click_labor_changes(bool enabled);
+        void set_single_click_labor_changes(bool enabled) {m_single_click_labor_changes = enabled;}
 		void jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* previous);
 		void jump_to_profession(QListWidgetItem* current, QListWidgetItem* previous);
         void select_dwarf(Dwarf *d);
@@ -58,10 +58,13 @@ public:
 		void index_collapsed(const QModelIndex &idx);
 		void restore_expanded_items();
 		void currentChanged(const QModelIndex &, const QModelIndex &);
+        void clicked(const QModelIndex &index);
 
 protected:
 	virtual void contextMenuEvent(QContextMenuEvent *event);
+    void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
 
 private:
 	DwarfModel *m_model;
@@ -71,6 +74,9 @@ private:
 	int m_grid_size;
 	QList<int> m_expanded_rows;
 	bool m_auto_expand_groups;
+    bool m_single_click_labor_changes;
+    //! we have to store this ourselves since the click(), accept() etc... don't send which button caused them
+    Qt::MouseButton m_last_button; 
 
 	private slots:
 		void set_nickname();

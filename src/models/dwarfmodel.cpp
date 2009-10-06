@@ -251,17 +251,28 @@ void DwarfModel::build_row(const QString &key) {
 }
 
 void DwarfModel::cell_activated(const QModelIndex &idx) {
-	if (idx.column() == 0)
-		return; // don't mess with the names
+    QStandardItem *item = itemFromIndex(idx);
+    bool is_aggregate = item->data(DR_IS_AGGREGATE).toBool();
+    if (idx.column() == 0) {
+        if (is_aggregate)
+            return; // no double clicking aggregate names
+        int dwarf_id = item->data(DR_ID).toInt(); // TODO: handle no id
+        if (!dwarf_id) {
+            LOGW << "double clicked what should have been a dwarf name, but the ID wasn't set!";
+            return;
+        }
+        Dwarf *d = get_dwarf_by_id(dwarf_id);
+        d->show_details();
+        return;
+    }
 
 	COLUMN_TYPE type = static_cast<COLUMN_TYPE>(idx.data(DwarfModel::DR_COL_TYPE).toInt());
 	if (type != CT_LABOR) 
 		return;
 
-	QStandardItem *item = itemFromIndex(idx);
+	
 	Q_ASSERT(item);
 
-	bool is_aggregate = item->data(DR_IS_AGGREGATE).toBool();
 	int labor_id = item->data(DR_LABOR_ID).toInt();
 	int dwarf_id = item->data(DR_ID).toInt(); // TODO: handle no id
 	if (is_aggregate) {

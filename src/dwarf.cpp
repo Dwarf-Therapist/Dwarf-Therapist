@@ -31,6 +31,8 @@ THE SOFTWARE.
 #include "customprofession.h"
 #include "memorylayout.h"
 #include "dwarftherapist.h"
+#include "dwarfdetailswidget.h"
+#include "mainwindow.h"
 
 Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
 	: QObject(parent)
@@ -45,6 +47,9 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
 
 	// setup context actions
 	m_actions.clear();
+    QAction *show_details = new QAction(tr("Show Details..."), this);
+    connect(show_details, SIGNAL(triggered()), SLOT(show_details()));
+    m_actions << show_details;
 	QAction *dump_mem = new QAction(tr("Dump Memory..."), this);
 	connect(dump_mem, SIGNAL(triggered()), SLOT(dump_memory()));
 	m_actions << dump_mem;
@@ -505,8 +510,8 @@ QString Dwarf::tooltip_text() {
 
 void Dwarf::dump_memory() {
 	QDialog *d = new QDialog;
-	d->setModal(false);
-	d->setWindowTitle(m_nice_name);
+    d->setAttribute(Qt::WA_DeleteOnClose, true);
+	d->setWindowTitle(QString("%1, %2").arg(m_nice_name).arg(profession()));
 	d->resize(800, 600);
 	QVBoxLayout *v = new QVBoxLayout(d);
 	QTextEdit *te = new QTextEdit(d);
@@ -517,4 +522,19 @@ void Dwarf::dump_memory() {
 	v->addWidget(te);
 	d->setLayout(v);
 	d->show();
+}
+
+void Dwarf::show_details() {
+    QDialog *d = new QDialog;
+    d->setWindowIcon(QIcon(":img/hammer.png"));
+    d->setAttribute(Qt::WA_DeleteOnClose, true);
+    DwarfDetailsWidget *w = new DwarfDetailsWidget(d);
+    w->show_dwarf(this);
+    d->setModal(false);
+    d->setWindowTitle(QString("%1, %2").arg(m_nice_name).arg(profession()));
+    d->resize(400, 600);
+    QVBoxLayout *v = new QVBoxLayout(d);
+    v->addWidget(w);
+    d->setLayout(v);
+    d->show();
 }

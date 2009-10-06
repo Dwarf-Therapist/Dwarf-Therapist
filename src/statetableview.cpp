@@ -67,6 +67,7 @@ StateTableView::StateTableView(QWidget *parent)
 	connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 	connect(this, SIGNAL(expanded(const QModelIndex &)), SLOT(index_expanded(const QModelIndex &)));
 	connect(this, SIGNAL(collapsed(const QModelIndex &)), SLOT(index_collapsed(const QModelIndex &)));
+    connect(this, SIGNAL(clicked(const QModelIndex &)), SLOT(clicked(const QModelIndex &)));
 }
 
 StateTableView::~StateTableView()
@@ -145,14 +146,6 @@ void StateTableView::jump_to_profession(QListWidgetItem* current, QListWidgetIte
 		scrollTo(group_header);
 		expand(group_header);
 		selectionModel()->select(group_header, QItemSelectionModel::SelectCurrent | QItemSelectionModel::Rows);
-	}
-}
-
-void StateTableView::set_single_click_labor_changes(bool enabled) {
-	TRACE << "setting single click labor changes:" << enabled;
-	disconnect(this, SIGNAL(clicked(const QModelIndex&)), 0, 0);
-	if (enabled && m_proxy) {
-		connect(this, SIGNAL(clicked(const QModelIndex&)), m_proxy, SLOT(cell_activated(const QModelIndex&)));
 	}
 }
 
@@ -298,11 +291,31 @@ void StateTableView::select_dwarf(Dwarf *d) {
         }
     }
 }
-
+/************************************************************************/
+/* Hey look, our own mouse handling (/rolleyes)                         */
+/************************************************************************/
+void StateTableView::mousePressEvent(QMouseEvent *event) {
+    m_last_button = event->button();
+    QTreeView::mousePressEvent(event);
+}
 void StateTableView::mouseMoveEvent(QMouseEvent *event) {
     QModelIndex idx = indexAt(event->pos());
     if (idx.isValid())
         m_header->column_hover(idx.column());
+    QTreeView::mouseMoveEvent(event);
+}
+
+void StateTableView::mouseReleaseEvent(QMouseEvent *event) {
+    m_last_button = event->button();
+    QTreeView::mouseReleaseEvent(event);
+}
+
+void StateTableView::clicked(const QModelIndex &idx) {
+    if (m_last_button == Qt::LeftButton && // only activate on left-clicks
+        m_single_click_labor_changes && // only activated on single-click if the user set it that way
+        m_proxy && // we only do this for views that have proxies (dwarf views)
+        idx.column() != 0) // don't single-click activate the name column
+        m_proxy->cell_activated(idx);
 }
 
 /************************************************************************/

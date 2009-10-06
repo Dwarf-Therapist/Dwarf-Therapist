@@ -103,6 +103,8 @@ public:
 		void read_settings();
 		//! show a dialog with a memory dump for this dwarf...
 		void dump_memory();
+        //! show details for this dwarf in a new window...
+        void show_details();
 
 private:
 	DFInstance *m_df;
