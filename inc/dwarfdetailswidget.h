@@ -20,25 +20,28 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef DWARF_DETAILS_H
-#define DWARF_DETAILS_H
+#ifndef DWARF_DETAILS_WIDGET_H
+#define DWARF_DETAILS_WIDGET_H
 
 #include <QtGui>
 
 class Dwarf;
-class DwarfDetailsWidget;
 
-class DwarfDetailsDock : public QDockWidget {
-	Q_OBJECT
+namespace Ui {
+    class DwarfDetailsWidget;
+}
+
+class DwarfDetailsWidget: public QWidget {
+    Q_OBJECT
 public:
-	DwarfDetailsDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
-	public slots:
-		void show_dwarf(Dwarf *d);
+    DwarfDetailsWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    public slots:
+        void show_dwarf(Dwarf *d);
 
 private:
-	QGridLayout *m_skills_layout;
-	QVector<QObject*> m_cleanup_list;
-    DwarfDetailsWidget *m_widget;
+    Ui::DwarfDetailsWidget *ui;
+    QGridLayout *m_skills_layout;
+    QVector<QObject*> m_cleanup_list;
 };
 
 #endif
