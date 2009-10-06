@@ -11,6 +11,7 @@ HEADERS += ./inc/customcolor.h \
     ./inc/docks/dwarfdetailsdock.h \
     ./inc/docks/gridviewdock.h \
     ./inc/docks/skilllegenddock.h \
+    ./inc/dwarfdetailswidget.h \
     ./inc/aboutdialog.h \
     ./inc/gridviewdialog.h \
     ./inc/importexportdialog.h \
@@ -49,6 +50,7 @@ HEADERS += ./inc/customcolor.h \
     ./inc/dwarf.h \
     ./inc/labor.h \
     ./inc/skill.h \
+    ./inc/trait.h \
     ./thirdparty/libqxt-0.5.0/logengines/qxtabstractfileloggerengine.h \
     ./thirdparty/libqxt-0.5.0/logengines/qxtabstractiologgerengine.h \
     ./thirdparty/libqxt-0.5.0/logengines/qxtbasicfileloggerengine.h \
@@ -72,6 +74,7 @@ SOURCES += ./src/customcolor.cpp \
     ./src/docks/dwarfdetailsdock.cpp \
     ./src/docks/gridviewdock.cpp \
     ./src/docks/skilllegenddock.cpp \
+    ./src/dwarfdetailswidget.cpp \
     ./src/aboutdialog.cpp \
     ./src/gridviewdialog.cpp \
     ./src/importexportdialog.cpp \
@@ -114,6 +117,7 @@ FORMS += ./ui/about.ui \
     ./ui/columneditdialog.ui \
     ./ui/customprofession.ui \
     ./ui/dwarfdetailsdock.ui \
+    ./ui/dwarfdetailswidget.ui \
     ./ui/gridviewdialog.ui \
     ./ui/gridviewdock.ui \
     ./ui/importexportdialog.ui \

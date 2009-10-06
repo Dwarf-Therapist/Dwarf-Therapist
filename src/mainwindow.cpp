@@ -22,7 +22,6 @@ THE SOFTWARE.
 */
 #include <QtGui>
 #include <QtNetwork>
-#include <QtHelp>
 #include <QtDebug>
 #include "qxtlogger.h"
 

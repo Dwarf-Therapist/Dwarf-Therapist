@@ -36,7 +36,7 @@ linux-g++ {
 }
 macx {
 	message(Setting up for OSX)
-	DEFINES += _OSX
+	DEFINES += _OSX BUILD_QXT
 	INCLUDEPATH += $$(QTDIR)/mkspecs/macx-xcode
 	HEADERS += ./inc/dfinstanceosx.h
 	SOURCES += ./src/dfinstanceosx.cpp
