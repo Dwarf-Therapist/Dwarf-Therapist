@@ -98,6 +98,10 @@ void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
 	m_delegate->set_proxy(proxy);
 
 	connect(m_header, SIGNAL(section_right_clicked(int)), m_model, SLOT(section_right_clicked(int)));
+    connect(m_header, SIGNAL(sort_alpha_ascending()), m_proxy, SLOT(sort_alpha_ascending()));
+    connect(m_header, SIGNAL(sort_alpha_descending()), m_proxy, SLOT(sort_alpha_descending()));
+    connect(m_header, SIGNAL(sort_game_order()), m_proxy, SLOT(sort_game_order()));
+
 	connect(this, SIGNAL(activated(const QModelIndex&)), proxy, SLOT(cell_activated(const QModelIndex&)));
 	connect(m_model, SIGNAL(preferred_header_size(int, int)), m_header, SLOT(resizeSection(int, int)));
 	connect(m_model, SIGNAL(set_index_as_spacer(int)), m_header, SLOT(set_index_as_spacer(int)));

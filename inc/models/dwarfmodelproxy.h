@@ -33,10 +33,13 @@ public:
 	DwarfModelProxy(QObject *parent = 0);
 	DwarfModel* get_dwarf_model() const;
 
-	void sort(int column, Qt::SortOrder order = Qt::DescendingOrder);
+	void sort(int column, Qt::SortOrder order = Qt::DescendingOrder, bool unsort = false);
 	public slots:
 		void cell_activated(const QModelIndex &idx);
 		void setFilterFixedString(const QString &pattern);
+        void sort_alpha_ascending();
+        void sort_alpha_descending();
+        void sort_game_order();
 
 protected:
 	bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;

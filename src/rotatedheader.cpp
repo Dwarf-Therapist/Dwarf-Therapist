@@ -158,7 +158,7 @@ void RotatedHeader::mouseMoveEvent(QMouseEvent *e) {
 void RotatedHeader::mousePressEvent(QMouseEvent *e) {
 	m_p = e->pos();
 	int idx = logicalIndexAt(e->pos());
-	if (idx < count() && e->button() == Qt::RightButton) {
+	if (idx > 0 && idx < count() && e->button() == Qt::RightButton) {
 		emit section_right_clicked(idx);
 	}
 	QHeaderView::mousePressEvent(e);
@@ -167,4 +167,15 @@ void RotatedHeader::mousePressEvent(QMouseEvent *e) {
 void RotatedHeader::leaveEvent(QEvent *e) {
 	m_p = QPoint(-1, -1);
 	QHeaderView::leaveEvent(e);
+}
+
+void RotatedHeader::contextMenuEvent(QContextMenuEvent *evt) {
+    int idx = logicalIndexAt(evt->pos());
+    if (idx == 0) { //name header
+        QMenu *m = new QMenu(this);
+        m->addAction(tr("Sort A-Z"), this, SIGNAL(sort_alpha_ascending()));
+        m->addAction(tr("Sort Z-A"), this, SIGNAL(sort_alpha_descending()));
+        m->addAction(tr("Sort in game order"), this, SIGNAL(sort_game_order()));
+        m->exec(viewport()->mapToGlobal(evt->pos()));
+    }
 }

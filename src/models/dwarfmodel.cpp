@@ -184,13 +184,14 @@ void DwarfModel::build_rows() {
 			}
 		}
 	} else {
+        int game_order = 0;
 		foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
-			build_row(key);
+			build_row(key, game_order++);
 		}
 	}
 }
 
-void DwarfModel::build_row(const QString &key) {
+void DwarfModel::build_row(const QString &key, int game_order) {
 	QIcon icn_f(":img/female.png");
 	QIcon icn_m(":img/male.png");
 	QStandardItem *root = 0;
@@ -222,6 +223,7 @@ void DwarfModel::build_row(const QString &key) {
 		i_name->setData(false, DR_IS_AGGREGATE);
 		i_name->setData(0, DR_RATING);
 		i_name->setData(d->id(), DR_ID);
+        i_name->setData(game_order, DR_SORT_VALUE);
 		
 		if (d->is_male()) {
 			i_name->setIcon(icn_m);

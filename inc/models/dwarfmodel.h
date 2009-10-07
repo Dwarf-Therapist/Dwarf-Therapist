@@ -70,7 +70,7 @@ public:
 	void filter_changed(const QString &);
 
 	public slots:
-		void build_row(const QString &key);
+		void build_row(const QString &key, int game_order = 0);
 		void build_rows();
 		void set_group_by(int group_by);
 		void load_dwarves();

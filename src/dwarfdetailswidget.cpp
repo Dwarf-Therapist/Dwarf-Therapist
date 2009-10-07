@@ -86,7 +86,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     // SKILLS TABLE
     QVector<Skill> *skills = d->get_skills();
     QTableWidget *tw = new QTableWidget(skills->size(), 3, this);
-    ui->vbox_main->insertWidget(4, tw, 10);
+    ui->vbox_main->addWidget(tw, 10);
     m_cleanup_list << tw;
     tw->setEditTriggers(QTableWidget::NoEditTriggers);
     tw->setGridStyle(Qt::NoPen);
@@ -122,7 +122,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     // TRAITS TABLE
     QHash<int, short> traits = d->traits();
     QTableWidget *tw_traits = new QTableWidget(this);
-    ui->vbox_main->insertWidget(5, tw_traits, 10);
+    ui->vbox_main->addWidget(tw_traits, 10);
     m_cleanup_list << tw_traits;
     tw_traits->setColumnCount(3);
     tw_traits->setEditTriggers(QTableWidget::NoEditTriggers);

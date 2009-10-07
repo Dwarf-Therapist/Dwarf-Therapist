@@ -509,7 +509,7 @@ QString Dwarf::tooltip_text() {
 }
 
 void Dwarf::dump_memory() {
-	QDialog *d = new QDialog;
+	QDialog *d = new QDialog(DT->get_main_window());
     d->setAttribute(Qt::WA_DeleteOnClose, true);
 	d->setWindowTitle(QString("%1, %2").arg(m_nice_name).arg(profession()));
 	d->resize(800, 600);
@@ -525,16 +525,20 @@ void Dwarf::dump_memory() {
 }
 
 void Dwarf::show_details() {
-    QDialog *d = new QDialog;
+    QDialog *d = new QDialog(DT->get_main_window());
+    DwarfDetailsWidget *w = new DwarfDetailsWidget(d);
+    QDialogButtonBox *bb = new QDialogButtonBox(QDialogButtonBox::Close, Qt::Horizontal, d);
+    connect(bb, SIGNAL(rejected()), d, SLOT(reject()));
     d->setWindowIcon(QIcon(":img/hammer.png"));
     d->setAttribute(Qt::WA_DeleteOnClose, true);
-    DwarfDetailsWidget *w = new DwarfDetailsWidget(d);
+    
     w->show_dwarf(this);
     d->setModal(false);
     d->setWindowTitle(QString("%1, %2").arg(m_nice_name).arg(profession()));
     d->resize(400, 600);
     QVBoxLayout *v = new QVBoxLayout(d);
-    v->addWidget(w);
+    v->addWidget(w, 100);
+    v->addWidget(bb);
     d->setLayout(v);
     d->show();
 }

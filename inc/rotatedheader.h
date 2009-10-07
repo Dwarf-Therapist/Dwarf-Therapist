@@ -41,13 +41,19 @@ public:
 		void resizeSection(int logicalIndex, int size );
 		void set_index_as_spacer(int idx);
 		void clear_spacers();
+        void contextMenuEvent(QContextMenuEvent *);
 
 protected:
 	void leaveEvent(QEvent *e);
 	void mouseMoveEvent(QMouseEvent *e);
 	void mousePressEvent(QMouseEvent *e);
+
 signals:
 	void section_right_clicked(int idx);
+    void sort_alpha_ascending();
+    void sort_alpha_descending();
+    void sort_game_order();
+
 private:
 	QPoint m_p;
 	QList<int> m_spacer_indexes;

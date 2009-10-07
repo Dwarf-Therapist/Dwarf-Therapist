@@ -76,13 +76,16 @@ bool DwarfModelProxy::filterAcceptsColumn(int source_column, const QModelIndex &
 	return true;
 }
 
-void DwarfModelProxy::sort(int column, Qt::SortOrder order) {
+void DwarfModelProxy::sort(int column, Qt::SortOrder order, bool unsort) {
 	if (column == 0) {
 		DwarfModel *dm = get_dwarf_model();
 		if (dm->current_grouping() == DwarfModel::GB_PROFESSION) {
 			return;
 		}
-		setSortRole(Qt::DisplayRole);
+        if (unsort)
+            setSortRole(DwarfModel::DR_SORT_VALUE);
+        else
+		    setSortRole(Qt::DisplayRole);
 	} else {
 		if (sortColumn() != column) {
 			order = Qt::DescendingOrder;
@@ -90,4 +93,16 @@ void DwarfModelProxy::sort(int column, Qt::SortOrder order) {
 		setSortRole(DwarfModel::DR_SORT_VALUE);
 	}
 	QSortFilterProxyModel::sort(column, order);
+}
+
+void DwarfModelProxy::sort_alpha_ascending() {
+    sort(0, Qt::AscendingOrder);
+}
+
+void DwarfModelProxy::sort_alpha_descending() {
+    sort(0, Qt::DescendingOrder);
+}
+
+void DwarfModelProxy::sort_game_order() {
+    sort(0, Qt::AscendingOrder, true);
 }
