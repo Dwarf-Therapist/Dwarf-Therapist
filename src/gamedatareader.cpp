@@ -112,6 +112,15 @@ GameDataReader::GameDataReader(QObject *parent)
 		m_traits.insert(i, t);
 	}
 	m_data_settings->endArray();
+
+    int job_names = m_data_settings->beginReadArray("job_names");
+    m_job_names.clear();
+    m_job_names.resize(job_names);
+    for (int i = 0; i < job_names; ++i) {
+        m_data_settings->setArrayIndex(i);
+        m_job_names[i] = m_data_settings->value("name", "???").toString();
+    }
+    m_data_settings->endArray();   
 }
  
 int GameDataReader::get_int_for_key(QString key, short base) {
@@ -183,6 +192,14 @@ Labor *GameDataReader::get_labor(int labor_id) {
 
 Trait *GameDataReader::get_trait(int trait_id) {
 	return m_traits.value(trait_id, 0);
+}
+
+QString GameDataReader::get_job_name(const short &job_id) {
+    if (job_id >= 0 && job_id <= m_job_names.size()) {
+        return m_job_names[job_id - 1];
+    } else {
+        return "???";
+    }
 }
 
 bool GameDataReader::profession_can_have_labors(const int &profession_id) {

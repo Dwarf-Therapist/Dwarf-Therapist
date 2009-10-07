@@ -41,6 +41,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
 	, m_total_xp(0)
     , m_raw_profession(-1)
 	, m_migration_wave(0)
+    , m_current_job_id(-1)
 {
 	read_settings();
 	refresh_data();
@@ -104,6 +105,9 @@ void Dwarf::refresh_data() {
 	TRACE << "\tRAW HAPPINESS:" << m_raw_happiness;
 	m_happiness = happiness_from_score(m_raw_happiness);
 	TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
+
+    read_current_job(m_address + mem->dwarf_offset("current_job"));
+    LOGD << "\tCURRENT JOB:" << m_current_job_id << m_current_job;
 
     //TEST
     //QString squad_name = DT->get_dwarf_word(m_df->read_int(m_address + mem->dwarf_offset("squad_name")));
@@ -327,6 +331,17 @@ QString Dwarf::read_profession(const uint &addr) {
     }
 }
 
+void Dwarf::read_current_job(const uint &addr) {
+    uint current_job_addr = m_df->read_uint(addr);
+    if (current_job_addr != 0) {
+        m_current_job_id = m_df->read_ushort(current_job_addr + m_df->memory_layout()->offset("current_job_id"));
+        m_current_job = GameDataReader::ptr()->get_job_name(m_current_job_id);
+    } else {
+        m_current_job = tr("No Job");
+    }
+
+}
+
 void Dwarf::read_labors(const uint &addr) {
     // read a big array of labors in one read, then pick and choose
 	// the values we care about
@@ -511,14 +526,17 @@ QString Dwarf::tooltip_text() {
 void Dwarf::dump_memory() {
 	QDialog *d = new QDialog(DT->get_main_window());
     d->setAttribute(Qt::WA_DeleteOnClose, true);
-	d->setWindowTitle(QString("%1, %2").arg(m_nice_name).arg(profession()));
+    d->setWindowTitle(QString("%1, %2 [addr: 0x%3] [id:%4]")
+        .arg(m_nice_name).arg(profession())
+        .arg(m_address, 8, 16, QChar('0'))
+        .arg(m_id));
 	d->resize(800, 600);
 	QVBoxLayout *v = new QVBoxLayout(d);
 	QTextEdit *te = new QTextEdit(d);
 	te->setReadOnly(true);
 	te->setFontFamily("Courier");
 	te->setFontPointSize(8);
-	te->setText(m_df->pprint(m_address, 0x900));
+	te->setText(m_df->pprint(m_df->get_data(m_address, 0x900), 0));
 	v->addWidget(te);
 	d->setLayout(v);
 	d->show();

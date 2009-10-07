@@ -81,8 +81,9 @@ public:
 	short get_rating_by_skill(int skill_id);
 	short get_rating_by_labor(int labor_id);
 	short trait(int trait_id) {return m_traits.value(trait_id, -1);}
-	void read_traits(const uint &addr);
     const QHash<int, short> &traits() {return m_traits;}
+    const QString &current_job() {return m_current_job;}
+    const short &current_job_id() {return m_current_job_id;}
 
 	int pending_changes();
 	void clear_pending();
@@ -126,6 +127,8 @@ private:
     void read_prefs(const uint &addr);
     void read_labors(const uint &addr);
 	void calc_names();
+    void read_traits(const uint &addr);
+    void read_current_job(const uint &addr);
 
 	int m_id;
 	QString m_first_name;
@@ -141,6 +144,8 @@ private:
 	int m_toughness;
 	short m_num_weapons;
 	short m_pending_num_weapons;
+    short m_current_job_id;
+    QString m_current_job;
 	QVector<Skill> m_skills;
 	QHash<int, short> m_traits;
 	QMap<int, bool> m_labors;

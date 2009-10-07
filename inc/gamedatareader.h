@@ -72,6 +72,7 @@ public:
 	QString get_profession_name(int profession_id);
 	QString get_skill_level_name(short level);
 	QString get_skill_name(short skill_id);
+    QString get_job_name(const short &job_id);
 	QColor get_color(QString key);
 	bool profession_can_have_labors(const int &profession_id);
 	
@@ -91,6 +92,7 @@ private:
 	QHash<int, QString> m_skill_levels;
 	QHash<int, QString> m_non_labor_professions;
 	QHash<int, int> m_attribute_levels;
+    QVector<QString> m_job_names;
 	int m_game_checksum;
 
 
