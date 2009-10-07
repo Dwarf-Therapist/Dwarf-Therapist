@@ -86,10 +86,6 @@ void DwarfModelProxy::sort(int column, Qt::SortOrder order) {
 void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role) {
 	Qt::SortOrder order;
 	if (column == 0) {
-		DwarfModel *dm = get_dwarf_model();
-		if (dm->current_grouping() == DwarfModel::GB_PROFESSION) {
-			return;
-		}
 		switch(role) {
 			case DSR_NAME_ASC:
 				order = Qt::AscendingOrder;

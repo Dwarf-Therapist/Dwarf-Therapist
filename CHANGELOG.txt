@@ -1,3 +1,18 @@
+RELEASE 0.4.1 (October 6, 2009)
+CHANGES SINCE 0.4.0
+===============================================================================
+MAJOR CHANGES:
+ * Dwarf traits are now shown in the DwarfDetailsDock! (40d16 only!) (Fixed issue 113)
+ * Improved sorting behavior on names. You can now right-click the top of the names column for sort options (Fixed issue 115)
+ * Fixed the dwarf details handling to now open the dock on double click or "show details..." if it is not already open.
+ * You can now group dwarfs by migration wave (this relies on guesswork and may be very broken)
+MINOR CHANGES:
+ * DwarfDetailsDock now shows a better default screen on load
+BUG FIXES:
+ * Fixed showstopper for folks using custom professions (issues 112 and 114) This was a bug
+   preventing users from being able to toggle labors for some dwarfs with custom professions set.
+ * Allow sorting when grouped by profession again (oversight)
+ 
 RELEASE 0.4.0 (October 3, 2009)
 CHANGES SINCE 0.3.2
 ===============================================================================
