@@ -39,6 +39,7 @@ private:
 	QGridLayout *m_skills_layout;
 	QVector<QObject*> m_cleanup_list;
     DwarfDetailsWidget *m_widget;
+	bool m_initialized;
 };
 
 #endif

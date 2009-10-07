@@ -41,15 +41,15 @@ public:
 	}
 
 	QString level_message(const short &val) {
-		if (val > 91)
+		if (val >= 91)
 			return m_level_string[91];
-		else if (val > 76)
+		else if (val >= 76)
 			return m_level_string[76];
-		else if (val > 61)
+		else if (val >= 61)
 			return m_level_string[61];
-		else if (val > 25)
+		else if (val >= 25)
 			return m_level_string[25];
-		else if (val > 10)
+		else if (val >= 10)
 			return m_level_string[10];
 		else
 			return m_level_string[0];

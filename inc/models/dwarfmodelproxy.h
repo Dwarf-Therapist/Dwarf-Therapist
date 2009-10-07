@@ -30,16 +30,21 @@ class DwarfModel;
 class DwarfModelProxy: public QSortFilterProxyModel {
 	Q_OBJECT
 public:
+	typedef enum {
+		DSR_NAME_ASC = 0,
+		DSR_NAME_DESC,
+		DSR_ID_ASC,
+		DSR_ID_DESC,
+		DSR_GAME_ORDER
+	} DWARF_SORT_ROLE;
+
 	DwarfModelProxy(QObject *parent = 0);
 	DwarfModel* get_dwarf_model() const;
-
-	void sort(int column, Qt::SortOrder order = Qt::DescendingOrder, bool unsort = false);
+	void sort(int column, Qt::SortOrder order);
 	public slots:
 		void cell_activated(const QModelIndex &idx);
 		void setFilterFixedString(const QString &pattern);
-        void sort_alpha_ascending();
-        void sort_alpha_descending();
-        void sort_game_order();
+		void sort(int, DwarfModelProxy::DWARF_SORT_ROLE);
 
 protected:
 	bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;

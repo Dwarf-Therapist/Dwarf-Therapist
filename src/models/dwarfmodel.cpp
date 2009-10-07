@@ -80,13 +80,30 @@ void DwarfModel::load_dwarves() {
 	if (rowCount())
 		removeRows(0, rowCount());
 
-    m_df->attach();
+	m_df->attach();
 	foreach(Dwarf *d, m_df->load_dwarves()) {
 		m_dwarves[d->id()] = d;
 	}
-    m_df->detach();
-
-	//build_rows();
+	m_df->detach();
+	/*! Let's try to guess the wave a dwarf arrived in based on ID.
+	The game appears to assign ids to creates in a serial manner.
+	Since at least 1 season seems to pass in between waves there is a
+	high likelihood that dwarves arriving in a new wave will be folling
+	several other creatures such as groundhogs and the like, thus
+	producing a gap in IDs of more than 1 
+	*/
+	int last_id = 0;
+	int wave = 0;
+	QList<int> ids = m_dwarves.uniqueKeys(); // get all ids
+	qSort(ids); // now in order;
+	for (int i = 0; i < ids.size(); ++i) {
+		int id = ids.at(i);
+		if ((id - last_id) > 5)
+			wave++;
+		last_id = id;
+		m_dwarves[id]->set_migration_wave(wave);
+	}
+    
 }
 
 void DwarfModel::build_rows() {
@@ -125,6 +142,9 @@ void DwarfModel::build_rows() {
 				break;
 			case GB_HAPPINESS:
 				m_grouped_dwarves[QString::number(d->get_happiness())].append(d);
+				break;
+			case GB_MIGRATION_WAVE:
+				m_grouped_dwarves[QString("Wave %1").arg(d->migration_wave())].append(d);
 				break;
 		}
 	}
@@ -184,14 +204,13 @@ void DwarfModel::build_rows() {
 			}
 		}
 	} else {
-        int game_order = 0;
 		foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
-			build_row(key, game_order++);
+			build_row(key);
 		}
 	}
 }
 
-void DwarfModel::build_row(const QString &key, int game_order) {
+void DwarfModel::build_row(const QString &key) {
 	QIcon icn_f(":img/female.png");
 	QIcon icn_m(":img/male.png");
 	QStandardItem *root = 0;
@@ -223,7 +242,7 @@ void DwarfModel::build_row(const QString &key, int game_order) {
 		i_name->setData(false, DR_IS_AGGREGATE);
 		i_name->setData(0, DR_RATING);
 		i_name->setData(d->id(), DR_ID);
-        i_name->setData(game_order, DR_SORT_VALUE);
+        i_name->setData(d->raw_profession(), DR_SORT_VALUE);
 		
 		if (d->is_male()) {
 			i_name->setIcon(icn_m);

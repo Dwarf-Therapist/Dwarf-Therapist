@@ -27,15 +27,24 @@ DwarfDetailsDock::DwarfDetailsDock(QWidget *parent, Qt::WindowFlags flags)
 	: QDockWidget(parent, flags)
 	, m_skills_layout(new QGridLayout(this))
     , m_widget(new DwarfDetailsWidget(this))
+	, m_initialized(false)
 {
+	m_widget->hide();
     setWindowTitle(tr("Dwarf Details"));
     setObjectName("dwarfdetailsdock");
 	setFeatures(QDockWidget::AllDockWidgetFeatures);
 	setAllowedAreas(Qt::AllDockWidgetAreas);
-    setWidget(m_widget);
+	QLabel *l = new QLabel(tr("Click on a dwarf name to show details here"), this);
+	l->setAlignment(Qt::AlignCenter);
+	setWidget(l);
 }
 
 void DwarfDetailsDock::show_dwarf(Dwarf *d) {
-    m_widget->show_dwarf(d);
+	m_widget->show_dwarf(d);
+	if (!m_initialized) {
+		m_initialized = true;
+		setWidget(m_widget);
+		m_widget->show();
+	}
 }
 

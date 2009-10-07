@@ -38,6 +38,7 @@ public:
 		GB_LEGENDARY,
 		GB_SEX,
 		GB_HAPPINESS,
+		GB_MIGRATION_WAVE,
 		GB_TOTAL
 	} GROUP_BY;
 	typedef enum {
@@ -70,7 +71,7 @@ public:
 	void filter_changed(const QString &);
 
 	public slots:
-		void build_row(const QString &key, int game_order = 0);
+		void build_row(const QString &key);
 		void build_rows();
 		void set_group_by(int group_by);
 		void load_dwarves();

@@ -89,6 +89,8 @@ public:
 		void go_to_project_home();
 		void go_to_new_issue();
 
+		void show_dwarf_details_dock(Dwarf *d = 0);
+
 private:
 	DFInstance *m_df;
 	QLabel *m_lbl_status;

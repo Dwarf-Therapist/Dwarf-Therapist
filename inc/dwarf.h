@@ -68,6 +68,8 @@ public:
 	int agility() {return m_agility;}
 	int toughness() {return m_toughness;}
 	int total_xp() {return m_total_xp;}
+	int migration_wave() {return m_migration_wave;}
+	void set_migration_wave(const int &wave_number) {m_migration_wave = wave_number;}
 	
 	QVector<Skill> *get_skills() {return &m_skills;}
 	const Skill get_skill(int skill_id);
@@ -116,6 +118,7 @@ private:
 	bool m_is_male;
 	bool m_show_full_name;
 	int m_total_xp;
+	int m_migration_wave;
 	
     QString read_profession(const uint &addr);
     QString read_last_name(const uint &addr, bool use_generic=false);

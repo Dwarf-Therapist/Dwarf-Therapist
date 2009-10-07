@@ -173,9 +173,22 @@ void RotatedHeader::contextMenuEvent(QContextMenuEvent *evt) {
     int idx = logicalIndexAt(evt->pos());
     if (idx == 0) { //name header
         QMenu *m = new QMenu(this);
-        m->addAction(tr("Sort A-Z"), this, SIGNAL(sort_alpha_ascending()));
-        m->addAction(tr("Sort Z-A"), this, SIGNAL(sort_alpha_descending()));
-        m->addAction(tr("Sort in game order"), this, SIGNAL(sort_game_order()));
+		QAction *a = m->addAction(tr("Sort Alphabetically Ascending"), this, SLOT(sort_action()));
+		a->setData(DwarfModelProxy::DSR_NAME_ASC);
+        a = m->addAction(tr("Sort Alphabetically Descending"), this, SLOT(sort_action()));
+		a->setData(DwarfModelProxy::DSR_NAME_DESC);
+		a = m->addAction(tr("Sort by ID Ascending"), this, SLOT(sort_action()));
+		a->setData(DwarfModelProxy::DSR_ID_ASC);
+		a = m->addAction(tr("Sort by ID Descending"), this, SLOT(sort_action()));
+		a->setData(DwarfModelProxy::DSR_ID_DESC);
+        a = m->addAction(tr("Sort in Game Order"), this, SLOT(sort_action()));
+		a->setData(DwarfModelProxy::DSR_GAME_ORDER);
         m->exec(viewport()->mapToGlobal(evt->pos()));
     }
+}
+
+void RotatedHeader::sort_action() {
+	QAction *sender = qobject_cast<QAction*>(QObject::sender());
+	DwarfModelProxy::DWARF_SORT_ROLE role = static_cast<DwarfModelProxy::DWARF_SORT_ROLE>(sender->data().toInt());
+	emit sort(0, role);
 }

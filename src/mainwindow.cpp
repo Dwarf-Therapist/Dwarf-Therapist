@@ -129,10 +129,11 @@ MainWindow::MainWindow(QWidget *parent)
 	set_interface_enabled(false);
 
 	ui->cb_group_by->setItemData(0, DwarfModel::GB_NOTHING);
-	ui->cb_group_by->addItem("Profession", DwarfModel::GB_PROFESSION);
-	ui->cb_group_by->addItem("Legendary or not", DwarfModel::GB_LEGENDARY);
-	ui->cb_group_by->addItem("Sex", DwarfModel::GB_SEX);
-	ui->cb_group_by->addItem("Happiness", DwarfModel::GB_HAPPINESS);
+	ui->cb_group_by->addItem(tr("Profession"), DwarfModel::GB_PROFESSION);
+	ui->cb_group_by->addItem(tr("Legendary Status"), DwarfModel::GB_LEGENDARY);
+	ui->cb_group_by->addItem(tr("Sex"), DwarfModel::GB_SEX);
+	ui->cb_group_by->addItem(tr("Happiness"), DwarfModel::GB_HAPPINESS);
+	ui->cb_group_by->addItem(tr("Migration Wave"), DwarfModel::GB_MIGRATION_WAVE);
 	
 	read_settings();
 	draw_professions();
@@ -420,4 +421,11 @@ void MainWindow::import_gridviews() {
 	ImportExportDialog d(this);
 	d.setup_for_gridview_import();
 	d.exec();
+}
+
+void MainWindow::show_dwarf_details_dock(Dwarf *d) {
+	DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dwarfdetailsdock"));
+	if (d)
+		dock->show_dwarf(d);
+	dock->show();
 }

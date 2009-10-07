@@ -40,6 +40,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_address(addr)
 	, m_total_xp(0)
     , m_raw_profession(-1)
+	, m_migration_wave(0)
 {
 	read_settings();
 	refresh_data();
@@ -105,17 +106,12 @@ void Dwarf::refresh_data() {
 	TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
 
     //TEST
-    QString squad_name = DT->get_dwarf_word(m_df->read_int(m_address + mem->dwarf_offset("squad_name")));
-    squad_name.append(DT->get_dwarf_word(m_df->read_int(m_address + mem->dwarf_offset("squad_name") + 0xC)));
+    //QString squad_name = DT->get_dwarf_word(m_df->read_int(m_address + mem->dwarf_offset("squad_name")));
+    //squad_name.append(DT->get_dwarf_word(m_df->read_int(m_address + mem->dwarf_offset("squad_name") + 0xC)));
 	
-
-	
-    LOGD << "LOADED" << m_nice_name << hex << m_address << "SQUAD:" << squad_name;
+    //LOGD << "LOADED" << m_nice_name << hex << m_address << "SQUAD:" << squad_name;
+	LOGD << m_nice_name << m_id;
 	TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
-
-    /*if (m_first_name == "Urdim")
-        read_prefs(m_address + mem->dwarf_offset("preferences"));
-        */
 }
 
 Dwarf::~Dwarf() {
@@ -152,6 +148,8 @@ void Dwarf::calc_names() {
 			m_translated_name = QString("'%1' %2").arg(m_pending_nick_name, m_translated_last_name);
 		}
 	}
+	// uncomment to put internal ID at front of name
+	//m_nice_name = QString("%1 %2").arg(m_id).arg(m_nice_name);
 }
 
 Dwarf::DWARF_HAPPINESS Dwarf::happiness_from_score(int score) {
@@ -491,7 +489,9 @@ QString Dwarf::tooltip_text() {
 		Trait *t = gdr->get_trait(i);
 		if (!t)
 			continue;
-		trait_summary.append(QString("%1 ").arg(t->level_message(m_traits.value(i))));
+		trait_summary.append(QString("%1").arg(t->level_message(m_traits.value(i))));
+		if (i < m_traits.size() - 1) // second to last
+			trait_summary.append(", ");
 	}
 
 	return tr("<b><font size=5>%1</font><br/><font size=3>(%2)</font></b><br/><br/>"
@@ -525,6 +525,9 @@ void Dwarf::dump_memory() {
 }
 
 void Dwarf::show_details() {
+	DT->get_main_window()->show_dwarf_details_dock(this);
+	/*
+
     QDialog *d = new QDialog(DT->get_main_window());
     DwarfDetailsWidget *w = new DwarfDetailsWidget(d);
     QDialogButtonBox *bb = new QDialogButtonBox(QDialogButtonBox::Close, Qt::Horizontal, d);
@@ -541,4 +544,5 @@ void Dwarf::show_details() {
     v->addWidget(bb);
     d->setLayout(v);
     d->show();
+	*/
 }

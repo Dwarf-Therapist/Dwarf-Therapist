@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define ROTATED_HEADER_H
 
 #include <QtGui>
+#include "dwarfmodelproxy.h"
 
 class DwarfModel;
 
@@ -50,15 +51,17 @@ protected:
 
 signals:
 	void section_right_clicked(int idx);
-    void sort_alpha_ascending();
-    void sort_alpha_descending();
-    void sort_game_order();
+	void sort(int, DwarfModelProxy::DWARF_SORT_ROLE);
 
 private:
 	QPoint m_p;
 	QList<int> m_spacer_indexes;
 	bool m_shade_column_headers;
     int m_hovered_column;
+
+	private slots:
+		//! called by a sorting context menu action
+		void sort_action();
 };
 
 #endif
