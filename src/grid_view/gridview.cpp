@@ -28,8 +28,8 @@ THE SOFTWARE.
 
 GridView::GridView(QString name, QObject *parent)
 	: QObject(parent)
-	, m_name(name)
 	, m_active(true)
+        , m_name(name)
 {}
 
 GridView::GridView(const GridView &to_be_copied)

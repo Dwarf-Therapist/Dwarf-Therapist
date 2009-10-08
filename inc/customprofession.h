@@ -83,9 +83,8 @@ public:
 
 private:
 	bool is_valid();
+        Ui::CustomProfessionEditor *ui;
 	Dwarf *m_dwarf;
-
-	Ui::CustomProfessionEditor *ui;
 	QString m_name;
 	QMap<int, bool> m_active_labors;
 	QDialog *m_dialog;

@@ -27,10 +27,11 @@ win32 {
     SOURCES += ./src/dfinstancewindows.cpp
     LIBS += -lpsapi
 }
-linux-g++ {
+linux-g++|linux-g++-32 {
 	message(Setting up for Linux)
-	DEFINES += _LINUX
-    INCLUDEPATH += $$(QTDIR)/mkspecs/linux-g++
+	CFLAGS=-m32
+    	DEFINES += _LINUX BUILD_QXT
+    	INCLUDEPATH += $$(QTDIR)/mkspecs/linux-g++
 	HEADERS += ./inc/dfinstancelinux.h
 	SOURCES += ./src/dfinstancelinux.cpp
 }

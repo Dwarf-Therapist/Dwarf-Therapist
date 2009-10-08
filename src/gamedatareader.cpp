@@ -195,7 +195,7 @@ Trait *GameDataReader::get_trait(int trait_id) {
 }
 
 QString GameDataReader::get_job_name(const short &job_id) {
-    if (job_id >= 0 && job_id <= m_job_names.size()) {
+    if (job_id - 1 >= 0 && job_id - 1 <= m_job_names.size()) {
         return m_job_names[job_id - 1];
     } else {
         return "???";

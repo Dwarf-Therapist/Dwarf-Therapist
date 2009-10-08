@@ -34,8 +34,8 @@ Default ctor. Creates a blank skill template with no name
 CustomProfession::CustomProfession(QObject *parent)
 	: QObject(parent)
 	, ui(new Ui::CustomProfessionEditor)
-	, m_dialog(0)
 	, m_dwarf(0)
+        , m_dialog(0)
 {}
 
 /*!

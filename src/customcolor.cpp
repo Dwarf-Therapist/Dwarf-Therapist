@@ -30,10 +30,10 @@ CustomColor::CustomColor(QString setting_name, QString tooltip, QString config_k
 	, m_name(setting_name)
 	, m_tooltip(tooltip)
 	, m_config_key(config_key)
+        , m_picker(new QtColorPicker(this, -1, true))
+        , m_label(new QLabel(setting_name, this))
 	, m_default(default_color)
-	, m_last_color(default_color)
-	, m_label(new QLabel(setting_name, this))
-	, m_picker(new QtColorPicker(this, -1, true))
+        , m_last_color(default_color)
 	, m_dirty(false)
 {
 	m_label->setBuddy(m_picker);

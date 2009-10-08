@@ -94,8 +94,10 @@ void ViewManager::reload_views() {
         if (temp_f.open()) {
             QString filename = temp_f.fileName();
             QResource res(":config/default_gridviews");
+            bool is_comp = res.isCompressed();
             int size = res.size();
-            temp_f.write((const char*)res.data());
+            temp_f.write(qUncompress(res.data(), res.size()));
+            temp_f.flush();
             size = temp_f.size();
         }
         QSettings alt_s(temp_f.fileName(), QSettings::IniFormat);
