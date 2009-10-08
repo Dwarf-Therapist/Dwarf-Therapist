@@ -109,8 +109,13 @@ void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role) {
 				break;
 		}
 	} else {
-		if (sortColumn() != column) {
-			order = Qt::DescendingOrder;
+		switch(role) {
+			case DSR_NAME_ASC:
+				order = Qt::AscendingOrder;
+				break;
+			case DSR_NAME_DESC:
+				order = Qt::DescendingOrder;
+				break;
 		}
 		setSortRole(DwarfModel::DR_SORT_VALUE);
 	}
