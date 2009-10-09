@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "happinesscolumn.h"
 #include "spacercolumn.h"
 #include "skillcolumn.h"
+#include "idlecolumn.h"
 #include "gamedatareader.h"
 #include "defines.h"
 #include "labor.h"
@@ -78,6 +79,12 @@ ViewColumnSet::ViewColumnSet(const ViewColumnSet &copy)
 					SkillColumn *sc = new SkillColumn(old->title(), old->skill_id(), this, this);
 					new_c = sc;
 				}
+            case CT_IDLE:
+                {
+                    IdleColumn *ic = new IdleColumn(vc->title(), this, this);
+                    new_c = ic;
+                }
+                break;
 		}
 		if (new_c) {
 			new_c->set_override_color(vc->override_color());
@@ -122,6 +129,7 @@ bool ViewColumnSet::operator==(const ViewColumnSet &other) const {
 					}
 					break;
 				case CT_HAPPINESS:
+                case CT_IDLE:
 				case CT_DEFAULT:
 				default:
 					{
@@ -271,6 +279,9 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
                 break;
             case CT_SKILL:
                 new SkillColumn(s, ret_val, parent);
+                break;
+            case CT_IDLE:
+                new IdleColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
                 break;
             
             case CT_DEFAULT:

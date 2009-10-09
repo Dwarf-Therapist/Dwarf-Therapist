@@ -110,6 +110,7 @@ private:
 		void add_happiness_column();
 		void add_labor_column();
 		void add_skill_column();
+        void add_idle_column();
 };
 
 #endif

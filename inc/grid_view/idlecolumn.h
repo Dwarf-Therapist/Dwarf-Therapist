@@ -20,46 +20,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef COLUMN_TYPES_H
-#define COLUMN_TYPES_H
+#ifndef IDLE_COLUMN_H
+#define IDLE_COLUMN_H
 
-#include <QString>
+#include "viewcolumn.h"
+#include "dwarf.h"
 
-typedef enum {
-	CT_DEFAULT,
-	CT_SPACER,
-	CT_SKILL,
-	CT_LABOR,
-	CT_HAPPINESS,
-    CT_IDLE
-} COLUMN_TYPE;
-
-static inline COLUMN_TYPE get_column_type(const QString &name) {
-	if (name.toLower() == "spacer" || name.toLower() == "space") {
-		return CT_SPACER;
-	} else if (name.toLower() == "labor") {
-		return CT_LABOR;
-	} else if (name.toLower() == "skill") {
-		return CT_SKILL;
-	} else if (name.toLower() == "happiness") {
-		return CT_HAPPINESS;
-    } else if (name.toLower() == "idle") {
-        return CT_IDLE;
-    }
-	return CT_DEFAULT;
-}
-
-static inline QString get_column_type(const COLUMN_TYPE &type) {
-	switch (type) {
-		case CT_SPACER:		return "SPACER";
-		case CT_SKILL:		return "SKILL";
-		case CT_LABOR:		return "LABOR";
-		case CT_HAPPINESS:	return "HAPPINESS";
-        case CT_IDLE:       return "IDLE";
-		case CT_DEFAULT:	return "UNKNOWN";
-	}
-	return "UNKNOWN";
-}
+class IdleColumn : public ViewColumn {
+    Q_OBJECT
+public:
+    IdleColumn(QString title, ViewColumnSet *set = 0, QObject *parent = 0);
+    QStandardItem *build_cell(Dwarf *d);
+    QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
+};
 
 #endif
-

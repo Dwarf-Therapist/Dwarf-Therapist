@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "happinesscolumn.h"
 #include "laborcolumn.h"
 #include "skillcolumn.h"
+#include "idlecolumn.h"
 #include "defines.h"
 #include "statetableview.h"
 #include "gamedatareader.h"
@@ -334,9 +335,12 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
 			a->setToolTip(tr("Add a column for skill %1 (ID%2)").arg(skill_pair.second).arg(skill_pair.first));
 		}
 
-		a = m->addAction("Add Happiness", this, SLOT(add_happiness_column()));
+		a = m->addAction(tr("Add Happiness"), this, SLOT(add_happiness_column()));
 		a->setToolTip(tr("Adds a single column that shows a color-coded happiness indicator for "
 			"each dwarf. You can customize the colors used in the options menu."));
+        
+        a = m->addAction(tr("Add Idle/Current Job"), this, SLOT(add_idle_column()));
+        a->setToolTip(tr("Adds a single column that shows a the current idle state for a dwarf."));
 	}
 	m->exec(ui->list_columns->viewport()->mapToGlobal(p));
 }
@@ -354,6 +358,13 @@ void GridViewDialog::add_happiness_column() {
 		return;
 	new HappinessColumn("Happiness", m_active_set, m_active_set);
 	draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_idle_column() {
+    if (!m_active_set)
+        return;
+    new IdleColumn("Idle", m_active_set, m_active_set);
+    draw_columns_for_set(m_active_set);
 }
 
 void GridViewDialog::add_labor_column() {

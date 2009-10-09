@@ -129,10 +129,23 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
 			}
 			break;
 		case CT_HAPPINESS:
-			paint_bg(adjusted, false, p, opt, idx);
-			QStyledItemDelegate::paint(p, opt, idx);
-			paint_grid(adjusted, false, p, opt, idx);
+            {
+			    paint_bg(adjusted, false, p, opt, idx);
+			    QStyledItemDelegate::paint(p, opt, idx);
+                paint_grid(adjusted, false, p, opt, idx);
+            }
 			break;
+        case CT_IDLE:
+            {
+                paint_bg(adjusted, false, p, opt, idx);
+                QIcon icon = idx.data(Qt::DecorationRole).value<QIcon>();
+                QPixmap pixmap = icon.pixmap(adjusted.size());
+                p->save();
+                p->drawPixmap(adjusted, pixmap);
+                p->restore();
+                paint_grid(adjusted, false, p, opt, idx);
+            }
+            break;
 		case CT_DEFAULT:
 		case CT_SPACER:
 		default:
