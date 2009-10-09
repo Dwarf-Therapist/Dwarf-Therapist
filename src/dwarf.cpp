@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "skill.h"
 #include "labor.h"
 #include "trait.h"
+#include "dwarfjob.h"
 #include "defines.h"
 #include "gamedatareader.h"
 #include "customprofession.h"
@@ -335,7 +336,11 @@ void Dwarf::read_current_job(const uint &addr) {
     uint current_job_addr = m_df->read_uint(addr);
     if (current_job_addr != 0) {
         m_current_job_id = m_df->read_ushort(current_job_addr + m_df->memory_layout()->offset("current_job_id"));
-        m_current_job = GameDataReader::ptr()->get_job_name(m_current_job_id);
+		DwarfJob *job = GameDataReader::ptr()->get_job(m_current_job_id);
+		if (job)
+			m_current_job = job->description;
+		else
+			m_current_job = tr("Unknown job");
     } else {
         m_current_job = tr("No Job");
     }

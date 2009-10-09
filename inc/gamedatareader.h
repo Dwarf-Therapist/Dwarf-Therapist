@@ -31,6 +31,7 @@ THE SOFTWARE.
 class QSettings;
 class Labor;
 class Trait;
+class DwarfJob;
 
 // exceptions
 class MissingValueException : public std::runtime_error {
@@ -65,14 +66,15 @@ public:
 	QVector<Labor*> get_ordered_labors() {return m_ordered_labors;}
 	QHash<int, QString> get_skills() {return m_skills;}
 	QList<QPair<int, QString> > get_ordered_skills() {return m_ordered_skills;}
-	Labor *get_labor(int labor_id);
-	Trait *get_trait(int trait_id);
-	
+	Labor *get_labor(const int &labor_id);
+	Trait *get_trait(const int &trait_id);
+	DwarfJob *get_job(const short &job_id);
+
 	QString get_string_for_key(QString key);
 	QString get_profession_name(int profession_id);
 	QString get_skill_level_name(short level);
 	QString get_skill_name(short skill_id);
-    QString get_job_name(const short &job_id);
+	
 	QColor get_color(QString key);
 	bool profession_can_have_labors(const int &profession_id);
 	
@@ -92,7 +94,7 @@ private:
 	QHash<int, QString> m_skill_levels;
 	QHash<int, QString> m_non_labor_professions;
 	QHash<int, int> m_attribute_levels;
-    QVector<QString> m_job_names;
+    QHash<short, DwarfJob*> m_dwarf_jobs;
 	int m_game_checksum;
 
 

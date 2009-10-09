@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "dwarftherapist.h"
 #include "defines.h"
+#include "dwarfjob.h"
+#include "GameDataReader.h"
 
 IdleColumn::IdleColumn(QString title, ViewColumnSet *set, QObject *parent) 
     : ViewColumn(title, CT_IDLE, set, parent)
@@ -36,14 +38,27 @@ IdleColumn::IdleColumn(QString title, ViewColumnSet *set, QObject *parent)
 QStandardItem *IdleColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
     short job_id = d->current_job_id();
-    if (job_id == -1)
-        item->setData(QIcon(":status/img/bullet_red.png"), Qt::DecorationRole);
-    else if (job_id == 15)
-        item->setData(QIcon(":status/img/cheese.png"), Qt::DecorationRole);
-    else if (job_id == 20)
-        item->setData(QIcon(":status/img/pillow.png"), Qt::DecorationRole);
-    else 
-        item->setData(QIcon(":status/img/control_play_blue.png"), Qt::DecorationRole);
+	QString pixmap_name(":img/help.png");
+	if (job_id == -1) {
+		pixmap_name = ":status/img/bullet_red.png"; // idle
+	} else {
+		DwarfJob *job = GameDataReader::ptr()->get_job(job_id);
+		if (job) {
+			switch (job->type) {
+			case DwarfJob::DJT_IDLE:	pixmap_name = ":status/img/bullet_red.png";			break;
+			case DwarfJob::DJT_DIG:		pixmap_name = ":status/img/pickaxe.png";			break;
+			case DwarfJob::DJT_REST:	pixmap_name = ":status/img/pillow.png";				break;
+			case DwarfJob::DJT_DRINK:	pixmap_name = ":status/img/cup.png";				break;
+			case DwarfJob::DJT_FOOD:	pixmap_name = ":status/img/cheese.png";				break;
+			case DwarfJob::DJT_BUILD:	pixmap_name = ":status/img/gear.png";				break;
+			case DwarfJob::DJT_HAUL:	pixmap_name = ":status/img/cart.png";				break;
+			
+			default:
+			case DwarfJob::DJT_DEFAULT:	pixmap_name = ":status/img/control_play_blue.png";	break;
+			}
+		}
+	}
+	item->setData(QIcon(pixmap_name), Qt::DecorationRole);
     
     item->setData(CT_IDLE, DwarfModel::DR_COL_TYPE);
     item->setData(d->current_job_id(), DwarfModel::DR_SORT_VALUE);

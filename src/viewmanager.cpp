@@ -85,32 +85,28 @@ void ViewManager::reload_views() {
 	QSettings *s = DT->user_settings();
 
     // first make sure the user has some configured views (they won't on first run)
-    if (!s->childGroups().contains("gridviews")) {
+	int total_views = s->beginReadArray("gridviews");
+	s->endArray();
+    if (!s->childGroups().contains("gridviews") || total_views == 0) {
         QTemporaryFile temp_f;
         if (temp_f.open()) {
             QString filename = temp_f.fileName();
             QResource res(":config/default_gridviews");
-            bool is_comp = res.isCompressed();
-            int size = res.size();
-            temp_f.write(qUncompress(res.data(), res.size()));
+			if (res.isCompressed()) {
+				temp_f.write(qUncompress(res.data(), res.size()));
+			} else {
+				temp_f.write(QByteArray((const char*)res.data(), res.size()));
+			}
             temp_f.flush();
-            size = temp_f.size();
         }
-        QSettings alt_s(temp_f.fileName(), QSettings::IniFormat);
-        int total_views = alt_s.beginReadArray("gridviews");
-        for (int i = 0; i < total_views; ++i) {
-            alt_s.setArrayIndex(i);
-            pending_views << GridView::read_from_ini(alt_s, this);
-        }
-        alt_s.endArray();
-    } else {
-	    int total_views = s->beginReadArray("gridviews");
-	    for (int i = 0; i < total_views; ++i) {
-		    s->setArrayIndex(i);
-		    pending_views << GridView::read_from_ini(*s, this);
-	    }
-	    s->endArray();
+        s = new QSettings(temp_f.fileName(), QSettings::IniFormat);
     }
+	total_views = s->beginReadArray("gridviews");
+    for (int i = 0; i < total_views; ++i) {
+	    s->setArrayIndex(i);
+	    pending_views << GridView::read_from_ini(*s, this);
+    }
+    s->endArray();
 	
 	foreach(GridView *pending, pending_views) {
 		if (view_was_updated(pending)) {
