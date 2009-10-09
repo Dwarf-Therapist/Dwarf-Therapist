@@ -29,7 +29,7 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "defines.h"
 #include "dwarfjob.h"
-#include "GameDataReader.h"
+#include "gamedatareader.h"
 
 IdleColumn::IdleColumn(QString title, ViewColumnSet *set, QObject *parent) 
     : ViewColumn(title, CT_IDLE, set, parent)

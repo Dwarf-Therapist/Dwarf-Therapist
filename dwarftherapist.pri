@@ -17,6 +17,7 @@ HEADERS += ./inc/customcolor.h \
     ./inc/importexportdialog.h \
     ./inc/optionsmenu.h \
     ./inc/grid_view/columntypes.h \
+    ./inc/grid_view/idlecolumn.h \
     ./inc/grid_view/happinesscolumn.h \
     ./inc/grid_view/laborcolumn.h \
     ./inc/grid_view/skillcolumn.h \
@@ -51,6 +52,7 @@ HEADERS += ./inc/customcolor.h \
     ./inc/labor.h \
     ./inc/skill.h \
     ./inc/trait.h \
+    ./inc/dwarfjob.h \
     ./thirdparty/libqxt-0.5.0/logengines/qxtabstractfileloggerengine.h \
     ./thirdparty/libqxt-0.5.0/logengines/qxtabstractiologgerengine.h \
     ./thirdparty/libqxt-0.5.0/logengines/qxtbasicfileloggerengine.h \
@@ -79,6 +81,7 @@ SOURCES += ./src/customcolor.cpp \
     ./src/gridviewdialog.cpp \
     ./src/importexportdialog.cpp \
     ./src/optionsmenu.cpp \
+    ./src/grid_view/idlecolumn.cpp \
     ./src/grid_view/happinesscolumn.cpp \
     ./src/grid_view/laborcolumn.cpp \
     ./src/grid_view/skillcolumn.cpp \
