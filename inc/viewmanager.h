@@ -49,6 +49,7 @@ public:
 		void reload_views();
 		void write_views();
 		void draw_views();
+		void write_tab_order();
 		void set_group_by(int group_by);
 		void redraw_current_tab();
 

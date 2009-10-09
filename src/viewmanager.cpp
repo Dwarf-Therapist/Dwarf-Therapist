@@ -29,10 +29,6 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "viewcolumnset.h"
 #include "viewcolumn.h"
-#include "skillcolumn.h"
-#include "laborcolumn.h"
-#include "happinesscolumn.h"
-#include "spacercolumn.h"
 #include "utils.h"
 
 ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent)
@@ -159,7 +155,7 @@ void ViewManager::draw_views() {
 	}
 	QStringList tab_order = DT->user_settings()->value("gui_options/tab_order").toStringList();
 	if (tab_order.size() == 0) {
-		tab_order << "Labors" << "VPView" << "Military" << "Social";
+		tab_order << "Labors" << "Military" << "Social";
 	}
 	if (tab_order.size() > 0) {
 		foreach(QString name, tab_order) {
@@ -178,6 +174,14 @@ void ViewManager::draw_views() {
 	LOGD << QString("redrew views in %L1ms").arg(start.msecsTo(stop));
 }
 
+void ViewManager::write_tab_order() {
+	QStringList tab_order;
+	for (int i = 0; i < count(); ++i) {
+		tab_order << tabText(i);
+	}
+	DT->user_settings()->setValue("gui_options/tab_order", tab_order);
+}
+
 void ViewManager::write_views() {
 	QSettings *s = DT->user_settings();
 	s->remove("gridviews"); // look at us, taking chances like this!
@@ -189,11 +193,7 @@ void ViewManager::write_views() {
 	}
 	s->endArray();
 	
-	QStringList tab_order;
-	for (int i = 0; i < count(); ++i) {
-		tab_order << tabText(i);
-	}
-	DT->user_settings()->setValue("gui_options/tab_order", tab_order);
+	write_tab_order();
 }
 
 void ViewManager::add_view(GridView *view) {
@@ -288,6 +288,7 @@ void ViewManager::setCurrentIndex(int idx) {
 	}
 	tabBar()->setCurrentIndex(idx);
 	stv->restore_expanded_items();	
+	write_tab_order();
 }
 
 void ViewManager::dwarf_selection_changed(const QItemSelection &selected, const QItemSelection &deselected) {
@@ -323,7 +324,9 @@ int ViewManager::add_tab_for_gridview(GridView *v) {
     connect(stv, SIGNAL(dwarf_focus_changed(Dwarf*)), SIGNAL(dwarf_focus_changed(Dwarf*))); // pass-thru
     connect(stv->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
         SLOT(dwarf_selection_changed(const QItemSelection &, const QItemSelection &)));
-    return addTab(stv, v->name());
+    int new_idx = addTab(stv, v->name());
+	write_tab_order();
+	return new_idx;
 }
 
 void ViewManager::remove_tab_for_gridview(int idx) {
@@ -347,6 +350,7 @@ void ViewManager::remove_tab_for_gridview(int idx) {
 	}
 	widget(idx)->deleteLater();
 	removeTab(idx);
+	write_tab_order();
 }
 
 void ViewManager::expand_all() {
