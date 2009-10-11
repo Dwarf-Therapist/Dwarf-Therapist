@@ -54,7 +54,8 @@ QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
     uint end = read_uint(addr + 4);
     uint bytes = end - start;
     int entries = bytes / 4;
-	TRACE << "enumerating vector at" << hex << addr << "START" << start << "END" << end << "UNVERIFIED ENTRIES" << dec << entries;
+    TRACE << "enumerating vector at" << hex << addr << "START" << start
+        << "END" << end << "UNVERIFIED ENTRIES" << dec << entries;
     uint tmp_addr = 0;
 
     //Q_ASSERT_X(start > 0, "enumerate_vector", "start pointer must be larger than 0");
@@ -72,7 +73,8 @@ QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
     }
     uint bytes_read = read_raw(start, bytes, stuff);
     if (bytes_read != bytes) {
-        qWarning() << "Tried to read" << bytes << "bytes but only got" << bytes_read;
+        qWarning() << "Tried to read" << bytes << "bytes but only got"
+                << bytes_read;
         detach();
         return addrs;
     }
@@ -86,7 +88,8 @@ QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
     }
     delete[] stuff;
     //qDebug() << "VECTOR at" << hex << addr << "start:" << start << "end:" << end << "(" << dec << entries << "entries) valid entries" << addrs.size();
-    Q_ASSERT_X(entries == addrs.size(), "enumerate_vector", "Vector did not contain 100% valid addresses!");
+    Q_ASSERT_X(entries == addrs.size(), "enumerate_vector",
+               "Vector did not contain 100% valid addresses!");
     detach();
     return addrs;
 }

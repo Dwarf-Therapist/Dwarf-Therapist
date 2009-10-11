@@ -122,6 +122,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 		LOGW << "not connected";
 		return dwarves;
 	}
+    attach();
 	int creature_vector = m_layout->address("creature_vector");
     TRACE << "starting with creature vector" << creature_vector;
 	
@@ -139,6 +140,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 			}
 		}
 	}
+    detach();
 	LOGI << "found" << dwarves.size() << "dwarves out of" << creatures.size() << "creatures";
 	return dwarves;
 }
