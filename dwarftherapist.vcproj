@@ -135,7 +135,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-Zm200 -w34100 -w34189 -Zm200 -w34100 -w34189 -w34100 -w34189"
+				AdditionalOptions="/MP -Zm200 -w34100 -w34189 -Zm200 -w34100 -w34189 -w34100 -w34189"
 				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
@@ -145,11 +145,10 @@
 				AdditionalIncludeDirectories="&quot;$(QTDIR)\include\QtCore&quot;;&quot;$(QTDIR)\include\QtNetwork&quot;;&quot;$(QTDIR)\include\QtGui&quot;;&quot;$(QTDIR)\include&quot;;.\inc;.\inc\models;.\inc\docks;.\inc\grid_view;&quot;$(IntDir)&quot;;.\ui;&quot;$(QTDIR)\mkspecs\win32-msvc2008&quot;;.;&quot;$(QTDIR)\include\ActiveQt&quot;;.\tmp;&quot;.\thirdparty\libqxt-0.5.0&quot;;&quot;.\thirdparty\qtcolorpicker-2.6&quot;;$(QTDIR)\include\QtHelp"
 				PreprocessorDefinitions="QT_NO_DEBUG;NDEBUG;_WINDOWS;UNICODE;WIN32;QT_LARGEFILE_SUPPORT;QT_DLL;QT_NETWORK_LIB;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT;QT_SCRIPT_LIB;BUILD_QXT_CORE"
 				GeneratePreprocessedFile="0"
-				MinimalRebuild="true"
+				MinimalRebuild="false"
 				ExceptionHandling="1"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
-				EnableEnhancedInstructionSet="2"
 				FloatingPointModel="2"
 				TreatWChar_tAsBuiltInType="false"
 				RuntimeTypeInfo="true"
