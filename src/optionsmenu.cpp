@@ -78,12 +78,12 @@ OptionsMenu::OptionsMenu(QWidget *parent)
 		<< new CustomColor(tr("Miserable"), tr("Color shown in happiness columns when a dwarf is <b>miserable.</b>"),
 			QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_MISERABLE)), QColor(0xFF0000), this);
 
-	QVBoxLayout *main_layout = new QVBoxLayout();
+	QVBoxLayout *main_layout = new QVBoxLayout;
 	foreach(CustomColor *cc, m_general_colors) {
 		main_layout->addWidget(cc);
 	}
 	main_layout->setSpacing(0);
-	ui->group_general_colors->setLayout(main_layout);
+	ui->tab_grid_colors->setLayout(main_layout);
 
 	QVBoxLayout *happiness_layout = new QVBoxLayout;
 	foreach(CustomColor *cc, m_happiness_colors) {

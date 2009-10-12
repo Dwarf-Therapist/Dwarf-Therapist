@@ -161,7 +161,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_grid_colors">
+     <widget class="QWidget" name="tab_grid_options">
       <attribute name="icon">
        <iconset resource="../images.qrc">
         <normaloff>:/img/color_swatch.png</normaloff>:/img/color_swatch.png</iconset>
@@ -169,7 +169,7 @@
       <attribute name="title">
        <string>Grid Options</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,5,0,0,0">
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,0,0,0">
        <item>
         <widget class="QCheckBox" name="cb_auto_contrast">
          <property name="toolTip">
@@ -250,18 +250,6 @@
           </widget>
          </item>
         </layout>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="group_general_colors">
-         <property name="styleSheet">
-          <string notr="true">QtColorPicker {
-text-align: left;
-}</string>
-         </property>
-         <property name="title">
-          <string>Grid Colors</string>
-         </property>
-        </widget>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -422,6 +410,15 @@ text-align: left;
         </layout>
        </item>
       </layout>
+     </widget>
+     <widget class="QWidget" name="tab_grid_colors">
+      <attribute name="icon">
+       <iconset resource="../images.qrc">
+        <normaloff>:/img/color_wheel.png</normaloff>:/img/color_wheel.png</iconset>
+      </attribute>
+      <attribute name="title">
+       <string>Grid Colors</string>
+      </attribute>
      </widget>
      <widget class="QWidget" name="tab_happiness_colors">
       <attribute name="icon">
