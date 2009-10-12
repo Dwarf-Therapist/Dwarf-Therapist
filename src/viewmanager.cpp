@@ -229,6 +229,7 @@ void ViewManager::remove_view(GridView *view) {
 			removeTab(i);
 	}
 	write_views();
+    draw_add_tab_button();
 	view->deleteLater();
 }
 
