@@ -46,12 +46,13 @@ QStandardItem *IdleColumn::build_cell(Dwarf *d) {
 		if (job) {
 			switch (job->type) {
 			case DwarfJob::DJT_IDLE:	pixmap_name = ":status/img/status_idle.png";		break;
-			case DwarfJob::DJT_DIG:		pixmap_name = ":status/img/status_dig.png";			break;
+			case DwarfJob::DJT_DIG:		pixmap_name = ":status/img/pickaxe.png";			break;
+            case DwarfJob::DJT_CUT:     pixmap_name = ":status/img/axe.png";                break;
 			case DwarfJob::DJT_REST:	pixmap_name = ":status/img/status_sleep.png";		break;
 			case DwarfJob::DJT_DRINK:	pixmap_name = ":status/img/status_drink.png";		break;
 			case DwarfJob::DJT_FOOD:	pixmap_name = ":status/img/status_eat.png";			break;
 			case DwarfJob::DJT_BUILD:	pixmap_name = ":status/img/status_build.png";		break;
-			case DwarfJob::DJT_HAUL:	pixmap_name = ":status/img/status_haul.png";		break;
+			case DwarfJob::DJT_HAUL:	pixmap_name = ":status/img/haul.png";	        	break;
 			
 			default:
 			case DwarfJob::DJT_DEFAULT:	pixmap_name = ":status/img/control_play_blue.png";	break;
@@ -73,23 +74,5 @@ QStandardItem *IdleColumn::build_cell(Dwarf *d) {
 
 QStandardItem *IdleColumn::build_aggregate(const QString &, const QVector<Dwarf*> &dwarves) {
     QStandardItem *item = new QStandardItem;
-    /*
-    // find lowest happiness of all dwarfs this set represents, and show that color (so low happiness still pops out in a big group)
-    Dwarf::DWARF_HAPPINESS lowest = Dwarf::DH_ECSTATIC;
-    QString lowest_dwarf = "Nobody";
-    foreach(Dwarf *d, dwarves) {
-        Dwarf::DWARF_HAPPINESS tmp = d->get_happiness();
-        if (tmp <= lowest) {
-            lowest = tmp;
-            lowest_dwarf = d->nice_name();
-        }
-    }
-    item->setToolTip(tr("<h3>%1</h3>Lowest Happiness in group: <b>%2: %3</b>")
-        .arg(m_title)
-        .arg(lowest_dwarf)
-        .arg(Dwarf::happiness_name(lowest)));
-    item->setData(m_colors[lowest], Qt::BackgroundColorRole);
-    item->setData(m_colors[lowest], DwarfModel::DR_DEFAULT_BG_COLOR);
-    */
     return item;
 }

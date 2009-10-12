@@ -131,7 +131,9 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
 		case CT_HAPPINESS:
             {
 			    paint_bg(adjusted, false, p, opt, idx);
-			    QStyledItemDelegate::paint(p, opt, idx);
+                p->save();
+                p->fillRect(adjusted, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
+                p->restore();
                 paint_grid(adjusted, false, p, opt, idx);
             }
 			break;

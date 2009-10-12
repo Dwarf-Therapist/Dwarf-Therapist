@@ -58,7 +58,6 @@
         <file>img/red_badge.png</file>
         <file>img/bullet_red.png</file>
         <file>img/control_play_blue.png</file>
-        <file>img/pickaxe.png</file>
         <file>img/cart.png</file>
         <file>img/cup.png</file>
         <file>img/TherapyIcons.png</file>
@@ -71,5 +70,8 @@
         <file>img/status_haul.png</file>
         <file>img/status_idle.png</file>
         <file>img/status_sleep.png</file>
+        <file>img/pickaxe.png</file>
+        <file>img/axe.png</file>
+        <file>img/haul.png</file>
     </qresource>
 </RCC>

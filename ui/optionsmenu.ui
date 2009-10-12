@@ -159,6 +159,16 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QCheckBox" name="cb_labor_cheats">
+         <property name="statusTip">
+          <string>When checked, you can apply labors to dwarfs that the game does not allow such as children and nobles &lt;b&gt;&lt;font color=&quot;red&quot;&gt;This is cheating!&lt;/font&gt;&lt;/b&gt;</string>
+         </property>
+         <property name="text">
+          <string>Allow Labor Setting on Anyone (I'm a dirty cheater)</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tab_grid_options">

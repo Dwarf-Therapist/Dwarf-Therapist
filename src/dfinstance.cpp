@@ -267,11 +267,11 @@ QVector<uint> DFInstance::find_vectors(const uint &num_entries, const uint &fuzz
 				uint bytes = int2 - int1;
 				uint entries = bytes / entry_size;
 				int diff = entries - num_entries;
-				if (qAbs(diff) <= fuzz) {
+				if ((uint)qAbs(diff) <= fuzz) {
 					uint vector_address = seg->start_addr + i - VECTOR_POINTER_OFFSET;
 					QVector<uint> addrs = enumerate_vector(vector_address);
 					diff = addrs.size() - num_entries;
-					if (qAbs(diff) <= fuzz) {
+					if ((uint)qAbs(diff) <= fuzz) {
 						vectors << vector_address;
 					}
 				}

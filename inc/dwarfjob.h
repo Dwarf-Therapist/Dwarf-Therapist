@@ -32,6 +32,7 @@ public:
 		DJT_DEFAULT,
 		DJT_IDLE,
 		DJT_DIG,
+        DJT_CUT,
 		DJT_REST,
 		DJT_DRINK,
 		DJT_FOOD,
@@ -44,6 +45,7 @@ public:
 		QMap<QString, DWARF_JOB_TYPE> m;
 		m["idle"] = DJT_IDLE;
 		m["dig"] = DJT_DIG;
+        m["cut"] = DJT_CUT;
 		m["rest"] = DJT_REST;
 		m["drink"] = DJT_DRINK;
 		m["food"] = DJT_FOOD;

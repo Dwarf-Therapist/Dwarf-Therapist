@@ -155,6 +155,7 @@ void OptionsMenu::read_settings() {
 	ui->cb_show_full_dwarf_names->setChecked(s->value("show_full_dwarf_names", false).toBool());
     ui->cb_check_for_updates_on_startup->setChecked(s->value("check_for_updates_on_startup", true).toBool());
     ui->cb_alert_on_lost_connection->setChecked(s->value("alert_on_lost_connection", true).toBool());
+    ui->cb_labor_cheats->setChecked(s->value("allow_labor_cheats", false).toBool());
 	s->endGroup();
 
 	m_reading_settings = false;
@@ -191,6 +192,7 @@ void OptionsMenu::write_settings() {
 		s->setValue("show_full_dwarf_names", ui->cb_show_full_dwarf_names->isChecked());
         s->setValue("check_for_updates_on_startup", ui->cb_check_for_updates_on_startup->isChecked());
         s->setValue("alert_on_lost_connection", ui->cb_alert_on_lost_connection->isChecked());
+        s->setValue("allow_labor_cheats", ui->cb_labor_cheats->isChecked());
 		
 		s->endGroup();
 	}
@@ -225,6 +227,7 @@ void OptionsMenu::restore_defaults() {
 	ui->cb_show_full_dwarf_names->setChecked(false);
     ui->cb_check_for_updates_on_startup->setChecked(true);
     ui->cb_alert_on_lost_connection->setChecked(true);
+    ui->cb_labor_cheats->setChecked(false);
 
 	m_font = QFont("Segoe UI", 8);
 	m_dirty_font = m_font;

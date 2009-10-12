@@ -42,6 +42,7 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
 	, m_main_window(0)
 	, m_options_menu(0)
 	, m_reading_settings(false)
+    , m_allow_labor_cheats(false)
 {
 	setup_logging();
 	load_translator();
@@ -151,6 +152,8 @@ void DwarfTherapist::read_settings() {
 		}
 	}
 	m_user_settings->endGroup();
+
+    m_allow_labor_cheats = m_user_settings->value("options/allow_labor_cheats", false).toBool();
 
 	m_reading_settings = false;
 	m_main_window->draw_professions();

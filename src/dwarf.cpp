@@ -321,7 +321,6 @@ QString Dwarf::read_profession(const uint &addr) {
     char buffer[1];
     m_df->read_raw(addr, 1, &buffer[0]);
     m_raw_profession = (int)buffer[0];
-    LOGD << "READ RAW PROFESSION FOR" << m_nice_name << "AS" << m_raw_profession;
 	GameDataReader *gdr = GameDataReader::ptr();
 	m_can_set_labors = gdr->profession_can_have_labors(m_raw_profession);
 
@@ -393,7 +392,7 @@ bool Dwarf::toggle_labor(int labor_id) {
 }
 
 void Dwarf::set_labor(int labor_id, bool enabled) {
-    if (!m_can_set_labors) {
+    if (!m_can_set_labors && !DT->labor_cheats_allowed()) {
         LOGD << "IGNORING SET LABOR OF ID:" << labor_id << "TO:" << enabled << "FOR:" << m_nice_name << "PROF_ID" << m_raw_profession
              << "PROF_NAME:" << profession() << "CUSTOM:" << m_pending_custom_profession;
         return;

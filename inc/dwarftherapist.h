@@ -55,6 +55,7 @@ public:
     void load_game_translation_tables(DFInstance *df);
     QString get_generic_word(const uint &offset) {return m_generic_words.value(offset, "UNKNOWN");}
     QString get_dwarf_word(const uint &offset) {return m_dwarf_words.value(offset, get_generic_word(offset));}
+    bool labor_cheats_allowed() {return m_allow_labor_cheats;}
 
 	public slots:
 		void add_custom_profession();
@@ -74,6 +75,7 @@ private:
 	MainWindow *m_main_window;
 	OptionsMenu *m_options_menu;
 	bool m_reading_settings;
+    bool m_allow_labor_cheats;
 
 	void setup_logging();
 	void load_translator();
