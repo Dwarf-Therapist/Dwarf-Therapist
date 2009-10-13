@@ -77,6 +77,7 @@ MainWindow::MainWindow(QWidget *parent)
 	, m_http(0)
 	, m_reading_settings(false)
 	, m_temp_cp(0)
+    , m_dwarf_name_completer(0)
 {
 	ui->setupUi(this);
 	m_view_manager = new ViewManager(m_model, m_proxy, this);
@@ -249,6 +250,18 @@ void MainWindow::read_dwarves() {
 	// cheap trick to setup the view correctly
 	m_view_manager->redraw_current_tab();
 	ui->lbl_dwarf_total->setText(QString::number(m_model->get_dwarves().size()));
+
+    // setup the filter auto-completer
+    m_dwarf_names_list.clear();
+    foreach(Dwarf *d, m_model->get_dwarves()) {
+        m_dwarf_names_list << d->nice_name();
+    }
+    if (!m_dwarf_name_completer) {
+        m_dwarf_name_completer = new QCompleter(m_dwarf_names_list, this);
+        m_dwarf_name_completer->setCompletionMode(QCompleter::PopupCompletion);
+        m_dwarf_name_completer->setCaseSensitivity(Qt::CaseInsensitive);
+        ui->le_filter_text->setCompleter(m_dwarf_name_completer);
+    }
 }
 
 void MainWindow::set_interface_enabled(bool enabled) {

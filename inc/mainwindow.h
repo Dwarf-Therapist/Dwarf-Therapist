@@ -104,6 +104,8 @@ private:
 	QHttp *m_http;
 	bool m_reading_settings;
     bool m_show_result_on_equal; //! used during version checks
+    QCompleter *m_dwarf_name_completer;
+    QStringList m_dwarf_names_list;
 
 	void closeEvent(QCloseEvent *evt); // override;
 
