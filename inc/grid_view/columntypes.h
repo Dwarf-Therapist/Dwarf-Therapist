@@ -31,7 +31,9 @@ typedef enum {
 	CT_SKILL,
 	CT_LABOR,
 	CT_HAPPINESS,
-    CT_IDLE
+    CT_IDLE,
+    CT_TRAIT,
+    CT_TOTAL_TYPES
 } COLUMN_TYPE;
 
 static inline COLUMN_TYPE get_column_type(const QString &name) {
@@ -45,6 +47,8 @@ static inline COLUMN_TYPE get_column_type(const QString &name) {
 		return CT_HAPPINESS;
     } else if (name.toLower() == "idle") {
         return CT_IDLE;
+    } else if (name.toLower() == "trait") {
+        return CT_TRAIT;
     }
 	return CT_DEFAULT;
 }
@@ -56,7 +60,9 @@ static inline QString get_column_type(const COLUMN_TYPE &type) {
 		case CT_LABOR:		return "LABOR";
 		case CT_HAPPINESS:	return "HAPPINESS";
         case CT_IDLE:       return "IDLE";
-		case CT_DEFAULT:	return "UNKNOWN";
+        case CT_TRAIT:      return "TRAIT";
+		default:
+            return "UNKNOWN";
 	}
 	return "UNKNOWN";
 }

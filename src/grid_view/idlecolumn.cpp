@@ -31,8 +31,12 @@ THE SOFTWARE.
 #include "dwarfjob.h"
 #include "gamedatareader.h"
 
-IdleColumn::IdleColumn(QString title, ViewColumnSet *set, QObject *parent) 
+IdleColumn::IdleColumn(const QString &title, ViewColumnSet *set, QObject *parent) 
     : ViewColumn(title, CT_IDLE, set, parent)
+{}
+
+IdleColumn::IdleColumn(const IdleColumn &to_copy)
+    : ViewColumn(to_copy)
 {}
 
 QStandardItem *IdleColumn::build_cell(Dwarf *d) {

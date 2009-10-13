@@ -109,7 +109,7 @@ GameDataReader::GameDataReader(QObject *parent)
 	int traits = m_data_settings->beginReadArray("traits");
 	for(int i = 0; i < traits; ++i) {
 		m_data_settings->setArrayIndex(i);
-		Trait *t = new Trait(*m_data_settings);
+		Trait *t = new Trait(*m_data_settings, this);
 		m_traits.insert(i, t);
 	}
 	m_data_settings->endArray();

@@ -80,7 +80,6 @@ void GridViewDock::add_new_view() {
 		GridView *new_view = d->pending_view();
 		new_view->set_active(false);
 		m_manager->add_view(new_view);
-		emit views_changed();
 		draw_views();
 	}
 }
@@ -101,7 +100,6 @@ void GridViewDock::edit_view() {
 	int accepted = d->exec();
 	if (accepted == QDialog::Accepted) {
 		m_manager->replace_view(view, d->pending_view());
-		emit views_changed();
 		draw_views();
 	}
 	m_tmp_item = 0;
@@ -119,7 +117,6 @@ void GridViewDock::copy_view() {
 	copy->set_name(view->name() + "(COPY)");
 	m_manager->add_view(copy);
 	m_manager->write_views();
-	emit views_changed();
 	draw_views();
 	m_tmp_item = 0;
 }
@@ -138,7 +135,6 @@ void GridViewDock::delete_view() {
 	if (answer == QMessageBox::Yes) {
 		LOGI << "permanently deleting set" << view->name();
 		m_manager->remove_view(view);
-		emit views_changed();
 		draw_views();
 		view->deleteLater();
 	}

@@ -61,10 +61,6 @@ public:
 	//! factory method for creating a set based on a QSettings that has been pointed at a set entry
 	static ViewColumnSet *read_from_ini(QSettings &s, QObject *parent = 0);
 
-	//! overload equality operator for triggering redraws on changes...
-	virtual bool operator==(const ViewColumnSet &other) const;
-	virtual bool operator!=(const ViewColumnSet &other) const {return !(*this == other);}
-
 	public slots:
 		void set_name(const QString &name);
 		void toggle_for_dwarf(Dwarf *d);

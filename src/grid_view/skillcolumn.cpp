@@ -28,7 +28,7 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include "dwarf.h"
 
-SkillColumn::SkillColumn(QString title, int skill_id, ViewColumnSet *set, QObject *parent) 
+SkillColumn::SkillColumn(const QString &title, const int &skill_id, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(title, CT_SKILL, set, parent)
 	, m_skill_id(skill_id)
 {}
@@ -38,10 +38,10 @@ SkillColumn::SkillColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     , m_skill_id(s.value("skill_id", -1).toInt())
 {}
 
-bool SkillColumn::operator==(const SkillColumn &other) const {
-	return ViewColumn::operator==(other) &&
-		m_skill_id == other.m_skill_id;
-}
+SkillColumn::SkillColumn(const SkillColumn &to_copy) 
+    : ViewColumn(to_copy)
+    , m_skill_id(to_copy.m_skill_id)
+{}
 
 QStandardItem *SkillColumn::build_cell(Dwarf *d) {
 	GameDataReader *gdr = GameDataReader::ptr();

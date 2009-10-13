@@ -111,6 +111,7 @@ private:
 		void add_labor_column();
 		void add_skill_column();
         void add_idle_column();
+        void add_trait_column();
 };
 
 #endif

@@ -29,6 +29,8 @@ class LaborColumn : public ViewColumn {
 public:
 	LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSet *set = 0, QObject *parent = 0);
     LaborColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
+    LaborColumn(const LaborColumn &to_copy); // copy ctor
+    LaborColumn* clone() {return new LaborColumn(*this);}
 	QStandardItem *build_cell(Dwarf *d);
 	QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 	
@@ -40,8 +42,6 @@ public:
 	// override
 	void write_to_ini(QSettings &s);
 
-	bool operator==(const LaborColumn &other) const;
-	bool operator!=(const LaborColumn &other) const {return !(*this == other);}
 protected:
 	int m_labor_id;
 	int m_skill_id;

@@ -29,6 +29,8 @@ THE SOFTWARE.
 class HappinessColumn : public ViewColumn {
 public:
 	HappinessColumn(QString title, ViewColumnSet *set = 0, QObject *parent = 0);
+    HappinessColumn(const HappinessColumn &to_copy); // copy ctor
+    HappinessColumn* clone() {return new HappinessColumn(*this);}
 	QStandardItem *build_cell(Dwarf *d);
 	QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 

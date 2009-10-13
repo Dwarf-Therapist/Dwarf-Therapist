@@ -32,11 +32,13 @@ THE SOFTWARE.
 #include "laborcolumn.h"
 #include "skillcolumn.h"
 #include "idlecolumn.h"
+#include "traitcolumn.h"
 #include "defines.h"
 #include "statetableview.h"
 #include "gamedatareader.h"
 #include "labor.h"
 #include "utils.h"
+#include "trait.h"
 #include "ui_columneditdialog.h"
 
 GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent)
@@ -335,6 +337,24 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
 			a->setToolTip(tr("Add a column for skill %1 (ID%2)").arg(skill_pair.second).arg(skill_pair.first));
 		}
 
+        QMenu *m_trait = m->addMenu(tr("Add Trait Column"));
+        m_trait->setToolTip(tr("Trait columns show a read-only display of a dwarf's score in a particular trait."));
+        QMenu *trait_a_l = m_trait->addMenu(tr("A-I"));
+        QMenu *trait_j_r = m_trait->addMenu(tr("J-R"));
+        QMenu *trait_m_z = m_trait->addMenu(tr("S-Z"));
+        QHash<int, Trait*> traits = gdr->get_traits();
+        foreach(int trait_id, traits.uniqueKeys()) {
+            Trait *t = traits.value(trait_id);
+            QMenu *menu_to_use = trait_a_l;
+            if (t->name.at(0).toLower() > 'i')
+                menu_to_use = trait_j_r;
+            if (t->name.at(0).toLower() > 'r')
+                menu_to_use = trait_m_z;
+            QAction *a = menu_to_use->addAction(t->name, this, SLOT(add_trait_column()));
+            a->setData(trait_id);
+            a->setToolTip(tr("Add a column for trait %1 (ID%2)").arg(t->name).arg(trait_id));
+        }
+
 		a = m->addAction(tr("Add Happiness"), this, SLOT(add_happiness_column()));
 		a->setToolTip(tr("Adds a single column that shows a color-coded happiness indicator for "
 			"each dwarf. You can customize the colors used in the options menu."));
@@ -384,6 +404,15 @@ void GridViewDialog::add_skill_column() {
 	int skill_id = a->data().toInt();
 	new SkillColumn(GameDataReader::ptr()->get_skill_name(skill_id), skill_id, m_active_set, m_active_set);
 	draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_trait_column() {
+    if (!m_active_set)
+        return;
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    int trait_id = a->data().toInt();
+    new TraitColumn(GameDataReader::ptr()->get_trait(trait_id)->name, trait_id, m_active_set, m_active_set);
+    draw_columns_for_set(m_active_set);
 }
 
 void GridViewDialog::accept() {

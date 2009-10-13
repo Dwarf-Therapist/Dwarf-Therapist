@@ -54,11 +54,17 @@ ViewColumn::ViewColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
 		m_bg_color = from_hex(s.value("bg_color").toString());
 }
 
-bool ViewColumn::operator==(const ViewColumn &other) const {
-	return m_title == other.m_title &&
-		m_type == other.m_type &&
-		m_override_set_colors == other.m_override_set_colors &&
-		m_bg_color == other.m_bg_color;
+ViewColumn::ViewColumn(const ViewColumn &to_copy)
+    : QObject(to_copy.parent())
+    , m_title(to_copy.m_title)
+    , m_set(to_copy.m_set)
+    , m_override_set_colors(to_copy.m_override_set_colors)
+    , m_bg_color(to_copy.m_bg_color)
+    , m_type(to_copy.m_type)
+{
+    // cloning should not add it to the copy's set! You must add it manually!
+    if (m_set && !m_override_set_colors)
+        m_bg_color = m_set->bg_color();
 }
 
 QStandardItem *ViewColumn::init_cell(Dwarf *d) {

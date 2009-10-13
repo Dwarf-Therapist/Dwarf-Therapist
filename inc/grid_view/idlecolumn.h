@@ -29,7 +29,9 @@ THE SOFTWARE.
 class IdleColumn : public ViewColumn {
     Q_OBJECT
 public:
-    IdleColumn(QString title, ViewColumnSet *set = 0, QObject *parent = 0);
+    IdleColumn(const QString &title, ViewColumnSet *set = 0, QObject *parent = 0);
+    IdleColumn(const IdleColumn &to_copy); // copy ctor
+    IdleColumn* clone() {return new IdleColumn(*this);}
     QStandardItem *build_cell(Dwarf *d);
     QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 };

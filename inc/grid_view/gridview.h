@@ -77,10 +77,6 @@ public:
 	//! Factory function to create a gridview from a QSettings that has already been pointed at a gridview entry
 	static GridView *read_from_ini(QSettings &settings, QObject *parent = 0);
 
-	//! overload equality operator for triggering redraws on changes...
-	bool operator==(const GridView &other) const;
-	bool operator!=(const GridView &other) const {return !(*this == other);}
-
 private:
 	bool m_active;
 	QString m_name;

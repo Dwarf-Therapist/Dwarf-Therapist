@@ -37,6 +37,11 @@ HappinessColumn::HappinessColumn(QString title, ViewColumnSet *set, QObject *par
 	connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings())); // for color changes
 }
 
+HappinessColumn::HappinessColumn(const HappinessColumn &to_copy)
+    : ViewColumn(to_copy)
+    , m_colors(to_copy.m_colors)
+{}
+
 QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
 	QStandardItem *item = init_cell(d);
 	

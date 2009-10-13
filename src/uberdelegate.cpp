@@ -148,6 +148,15 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
                 paint_grid(adjusted, false, p, opt, idx);
             }
             break;
+        case CT_TRAIT:
+            {
+                paint_bg(adjusted, false, p, opt, idx);
+                p->save();
+                p->drawText(adjusted, Qt::AlignCenter, model_idx.data(Qt::DisplayRole).toString());
+                p->restore();
+                paint_grid(adjusted, false, p, opt, idx);
+            }
+            break;
 		case CT_DEFAULT:
 		case CT_SPACER:
 		default:

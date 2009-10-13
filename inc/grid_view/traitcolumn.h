@@ -20,27 +20,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef SKILL_COLUMN_H
-#define SKILL_COLUMN_H
+#ifndef TRAIT_COLUMN_H
+#define TRAIT_COLUMN_H
+
+class Trait;
 
 #include "viewcolumn.h"
+#include "dwarf.h"
 
-class SkillColumn : public ViewColumn {
+class TraitColumn : public ViewColumn {
+    Q_OBJECT
 public:
-	SkillColumn(const QString &title, const int &skill_id, ViewColumnSet *set = 0, QObject *parent = 0);
-    SkillColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
-    SkillColumn(const SkillColumn &to_copy); // copy ctor
-    SkillColumn* clone() {return new SkillColumn(*this);}
-	QStandardItem *build_cell(Dwarf *d);
-	QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
-	int skill_id() {return m_skill_id;}
-	void set_skill_id(int skill_id) {m_skill_id = skill_id;}
+    TraitColumn(const QString &title, const short &trait_id, ViewColumnSet *set = 0, QObject *parent = 0);
+    TraitColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
+    TraitColumn(const TraitColumn &to_copy); // copy ctor
+    TraitColumn* clone() {return new TraitColumn(*this);}
+    QStandardItem *build_cell(Dwarf *d);
+    QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
+    short trait_id() const {return m_trait_id;}
 
-	//override
-	void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("skill_id", m_skill_id);}
+    void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("trait_id", m_trait_id);}
 
-protected:
-	int m_skill_id;
+private:
+    short m_trait_id;
+    Trait *m_trait;
 };
 
 #endif

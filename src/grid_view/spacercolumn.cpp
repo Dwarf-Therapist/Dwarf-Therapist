@@ -39,10 +39,10 @@ SpacerColumn::SpacerColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
 	, m_width(s.value("width", DEFAULT_SPACER_WIDTH).toInt())
 {}
 
-bool SpacerColumn::operator==(const SpacerColumn &other) const {
-	return ViewColumn::operator==(other) &&
-		m_width == other.m_width;
-}
+SpacerColumn::SpacerColumn(const SpacerColumn &to_copy)
+    : ViewColumn(to_copy)
+    , m_width(to_copy.m_width)
+{}
 
 QStandardItem *SpacerColumn::build_cell(Dwarf *d) {
 	QStandardItem *item = init_cell(d);

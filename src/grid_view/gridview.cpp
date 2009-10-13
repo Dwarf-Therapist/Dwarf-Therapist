@@ -47,18 +47,6 @@ GridView::~GridView() {
 	}
 }
 
-bool GridView::operator==(const GridView &other) const {
-	bool ret_val = m_name == other.m_name &&
-		m_active == other.m_active &&
-		m_sets.size() == other.m_sets.size();
-	if (ret_val) { // looks good so far...
-		for (int i = 0; i < m_sets.size(); ++i) { // compare their sets...
-			ret_val = ret_val && *(m_sets.at(i)) == *(other.m_sets.at(i));
-		}
-	}
-	return ret_val;
-}
-
 void GridView::re_parent(QObject *parent) {
     setParent(parent);
     foreach(ViewColumnSet *set, m_sets) {

@@ -42,6 +42,8 @@ class ViewColumn : public QObject {
 public:
 	ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set = 0, QObject *parent = 0);
 	ViewColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
+    ViewColumn(const ViewColumn &to_copy); // copy ctor
+    virtual ViewColumn* clone() = 0;
 
 	QString title() {return m_title;}
 	void set_title(QString title) {m_title = title;}
@@ -50,6 +52,7 @@ public:
 	QColor bg_color() {return m_bg_color;}
 	void set_bg_color(QColor c) {m_bg_color = c;}
 	ViewColumnSet *set() {return m_set;}
+    void set_viewcolumnset(ViewColumnSet *set) {m_set = set;}
 	virtual COLUMN_TYPE type() {return m_type;}
 
 	QStandardItem *init_cell(Dwarf *d);
@@ -58,8 +61,6 @@ public:
 										   const QVector<Dwarf*> &dwarves) = 0; // create an aggregate cell based on several dwarves
 
 	virtual void write_to_ini(QSettings &s);
-	bool operator==(const ViewColumn &other) const;
-	bool operator!=(const ViewColumn &other) const {return !(*this == other);}
 
 	public slots:
 		virtual void read_settings() {}

@@ -29,6 +29,8 @@ class SpacerColumn : public ViewColumn {
 public:
 	SpacerColumn(QString title, ViewColumnSet *set = 0, QObject *parent = 0);
 	SpacerColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
+    SpacerColumn(const SpacerColumn &to_copy); //! copy ctor
+    SpacerColumn* clone() {return new SpacerColumn(*this);}
 	QStandardItem *build_cell(Dwarf *d);
 	QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 
@@ -37,9 +39,6 @@ public:
 
 	// override
 	void write_to_ini(QSettings &s);
-
-	bool operator==(const SpacerColumn &other) const;
-	bool operator!=(const SpacerColumn &other) const {return !(*this == other);}
 
 private:
 	int m_width; // in pixels

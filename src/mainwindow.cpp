@@ -433,7 +433,12 @@ void MainWindow::export_gridviews() {
 void MainWindow::import_gridviews() {
 	ImportExportDialog d(this);
 	d.setup_for_gridview_import();
-	d.exec();
+    if (d.exec()) {
+        GridViewDock *dock = qobject_cast<GridViewDock*>(QObject::findChild<GridViewDock*>("GridViewDock"));
+        if (dock)
+            dock->draw_views();
+    }
+        
 }
 
 void MainWindow::show_dwarf_details_dock(Dwarf *d) {

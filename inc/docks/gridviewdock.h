@@ -51,10 +51,6 @@ private:
 		void edit_view(QListWidgetItem*);
 		void copy_view();
 		void delete_view();
-
-signals:
-	void views_changed();
-
 };
 
 #endif

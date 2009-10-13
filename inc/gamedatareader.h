@@ -66,6 +66,7 @@ public:
 	QVector<Labor*> get_ordered_labors() {return m_ordered_labors;}
 	QHash<int, QString> get_skills() {return m_skills;}
 	QList<QPair<int, QString> > get_ordered_skills() {return m_ordered_skills;}
+    QHash<int, Trait*> get_traits() {return m_traits;}
 	Labor *get_labor(const int &labor_id);
 	Trait *get_trait(const int &trait_id);
 	DwarfJob *get_job(const short &job_id);

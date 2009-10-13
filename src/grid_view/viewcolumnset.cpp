@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "spacercolumn.h"
 #include "skillcolumn.h"
 #include "idlecolumn.h"
+#include "traitcolumn.h"
 #include "gamedatareader.h"
 #include "defines.h"
 #include "labor.h"
@@ -50,95 +51,11 @@ ViewColumnSet::ViewColumnSet(const ViewColumnSet &copy)
 	, m_bg_color(copy.m_bg_color)
 {
 	foreach(ViewColumn *vc, copy.m_columns) {
-		ViewColumn *new_c = 0;
-		switch(vc->type()) {
-			case CT_SPACER:
-				{
-					SpacerColumn *old = static_cast<SpacerColumn*>(vc);
-					SpacerColumn *sc = new SpacerColumn(vc->title(), this, this);
-					sc->set_width(old->width());
-					new_c = sc;
-				}
-				break;
-			case CT_HAPPINESS:
-				{
-					HappinessColumn *hc = new HappinessColumn(vc->title(), this, this);
-					new_c = hc;
-				}
-				break;
-			case CT_LABOR:
-				{
-					LaborColumn *old = static_cast<LaborColumn*>(vc);
-					LaborColumn *lc = new LaborColumn(old->title(), old->labor_id(), old->skill_id(), this, this);
-					new_c = lc;
-				}
-				break;
-			case CT_SKILL:
-				{
-					SkillColumn *old = static_cast<SkillColumn*>(vc);
-					SkillColumn *sc = new SkillColumn(old->title(), old->skill_id(), this, this);
-					new_c = sc;
-				}
-            case CT_IDLE:
-                {
-                    IdleColumn *ic = new IdleColumn(vc->title(), this, this);
-                    new_c = ic;
-                }
-                break;
-		}
-		if (new_c) {
-			new_c->set_override_color(vc->override_color());
-			if (vc->override_color())
-				new_c->set_bg_color(vc->bg_color());
-		}
+        ViewColumn *new_c = vc->clone();
+        new_c->setParent(this);
+        new_c->set_viewcolumnset(this);
+        add_column(new_c); // manually add a cloned copy
 	}
-}
-
-bool ViewColumnSet::operator==(const ViewColumnSet &other) const {
-	bool ret_val = m_name == other.m_name &&
-		m_bg_color == other.m_bg_color &&
-		m_bg_brush == other.m_bg_brush &&
-		m_columns.size() == other.m_columns.size();
-
-	if (ret_val) { //looking good...
-		for (int i = 0; i < m_columns.size(); ++i) {
-			if (m_columns.at(i)->type() != other.m_columns.at(i)->type()) {
-				ret_val = false;
-				break;
-			}
-			switch(m_columns.at(i)->type()) {
-				case CT_SPACER:
-					{
-						SpacerColumn *c1 = static_cast<SpacerColumn*>(m_columns.at(i));
-						SpacerColumn *c2 = static_cast<SpacerColumn*>(other.m_columns.at(i));
-						ret_val = ret_val && (*c1 == *c2);
-					}
-					break;
-				case CT_LABOR:
-					{
-						LaborColumn *c1 = static_cast<LaborColumn*>(m_columns.at(i));
-						LaborColumn *c2 = static_cast<LaborColumn*>(other.m_columns.at(i));
-						ret_val = ret_val && (*c1 == *c2);
-					}
-					break;
-				case CT_SKILL:
-					{
-						SkillColumn *c1 = static_cast<SkillColumn*>(m_columns.at(i));
-						SkillColumn *c2 = static_cast<SkillColumn*>(other.m_columns.at(i));
-						ret_val = ret_val && (*c1 == *c2);
-					}
-					break;
-				case CT_HAPPINESS:
-                case CT_IDLE:
-				case CT_DEFAULT:
-				default:
-					{
-						ret_val = ret_val && *(m_columns.at(i)) == *(other.m_columns.at(i));
-					}
-			}
-		}
-	}
-	return ret_val;
 }
 
 void ViewColumnSet::re_parent(QObject *parent) {
@@ -282,6 +199,9 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
                 break;
             case CT_IDLE:
                 new IdleColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
+                break;
+            case CT_TRAIT:
+                new TraitColumn(s, ret_val, parent);
                 break;
             
             case CT_DEFAULT:

@@ -67,20 +67,7 @@ void ViewManager::draw_add_tab_button() {
 	m_add_tab_button->setMenu(m);
 }
 
-bool ViewManager::view_was_updated(GridView *new_view) {
-	bool updated = false;
-	foreach(GridView *existing, m_views) {
-		if (new_view->name() == existing->name() &&
-			*new_view != *existing) {
-				updated = true;
-				break;
-		}
-	}
-	return updated;
-}
-
 void ViewManager::reload_views() {
-	QVector<GridView*> pending_views, updated_views, unchanged_views;
 	// start reading views from main settings
 	QSettings *s = DT->user_settings();
 
@@ -101,43 +88,16 @@ void ViewManager::reload_views() {
         }
         s = new QSettings(temp_f.fileName(), QSettings::IniFormat);
     }
+    m_views.clear();
 	total_views = s->beginReadArray("gridviews");
     for (int i = 0; i < total_views; ++i) {
 	    s->setArrayIndex(i);
-	    pending_views << GridView::read_from_ini(*s, this);
+	    m_views << GridView::read_from_ini(*s, this);
     }
     s->endArray();
 	
-	foreach(GridView *pending, pending_views) {
-		if (view_was_updated(pending)) {
-			updated_views << pending;
-		} else {
-			unchanged_views << pending;
-		}
-	}
-
-	LOGI << "Loaded" << pending_views.size() << "views from disk";
-	LOGI << unchanged_views.size() << "views were unchanged";
-	LOGI << updated_views.size() << "views were updated";
-
-	m_views.clear();
-	foreach(GridView *view, unchanged_views) {
-		m_views << view;
-	}
-
-	bool refresh_current_tab = false;
-	foreach(GridView *updated, updated_views) {
-		if (tabText(currentIndex()) == updated->name()) {
-			refresh_current_tab = true;
-			break;
-		}
-		m_views << updated;
-	}
-
+	LOGI << "Loaded" << m_views.size() << "views from disk";
 	draw_add_tab_button();
-	if (refresh_current_tab)
-		setCurrentIndex(currentIndex());
-	//draw_views();
 }
 
 void ViewManager::draw_views() {
@@ -234,20 +194,23 @@ void ViewManager::remove_view(GridView *view) {
 }
 
 void ViewManager::replace_view(GridView *old_view, GridView *new_view) {
-	bool update_current_index = false;
+	bool update_current_index = false; // if the current tab was updated, we need to redraw it
 	for (int i = 0; i < count(); ++i) {
 		if (tabText(i) == old_view->name()) {
-			setTabText(i, new_view->name());
-			update_current_index = true;
+			setTabText(i, new_view->name()); // update tab titles that were showing the old view
+            if (i == currentIndex()) // going to have to redraw the active tab as its view was just updated
+			    update_current_index = true;
 		}
 	}
 	m_views.removeAll(old_view);
 	m_views.append(new_view);
 	write_views();
+    draw_add_tab_button();
 
 	if (update_current_index) {
-		m_model->set_grid_view(new_view);
-		m_model->build_rows();
+        setCurrentIndex(currentIndex());
+		//m_model->set_grid_view(new_view);
+		//m_model->build_rows();
 	}
 }
 
