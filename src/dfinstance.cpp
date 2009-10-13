@@ -141,6 +141,42 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 		}
 	}
     detach();
+
+    /*TEST RELATIONSHIPS*/
+    foreach(Dwarf *d, dwarves) {
+        // get all bytes for this dwarf...
+        qDebug() << "Scanning for ID references in" << d->nice_name();
+        QByteArray data = get_data(d->address(), 0x900);
+        foreach(Dwarf *other_d, dwarves) {
+            if (other_d == d)
+                continue; // let's hope there are no pointers to ourselves...
+            //qDebug() << "looking for a reference to" << other_d->id() << other_d->nice_name();
+            int offset = 0;
+            /*while (offset < data.size()) {
+                int idx = data.indexOf(encode(other_d->address()), offset);
+                if (idx != -1) {
+                    qDebug() << "Found pointer to" << other_d->nice_name() << "at offset" << hex << idx << "in" << d->nice_name();
+                    offset = idx + 1;
+                } else {
+                    offset = data.size();
+                }
+            }
+            offset = 0;
+            */
+            while (offset < data.size()) {
+                int idx = data.indexOf(encode(other_d->id()), offset);
+                if (idx != -1) {
+                    qDebug() << "\t\tOFFSET:" << hex << idx << "Found ID of" << other_d->nice_name();
+                    offset = idx + 1;
+                } else {
+                    offset = data.size();
+                }
+            }
+        }
+    }
+
+
+
 	LOGI << "found" << dwarves.size() << "dwarves out of" << creatures.size() << "creatures";
 	return dwarves;
 }
