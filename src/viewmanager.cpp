@@ -209,8 +209,6 @@ void ViewManager::replace_view(GridView *old_view, GridView *new_view) {
 
 	if (update_current_index) {
         setCurrentIndex(currentIndex());
-		//m_model->set_grid_view(new_view);
-		//m_model->build_rows();
 	}
 }
 

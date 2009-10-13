@@ -33,11 +33,17 @@ class StateTableView;
 class DwarfModel;
 class DwarfModelProxy;
 
+/*!
+ * This class is an un-enforced singleton that holds a collection of all configured GridViews
+ * It also serves as the main view of the app (the tab widget) It creates many to one mappings
+ * of gridviews to visible tabs. Each visible tab is an instance of StateTableView
+ */
 class ViewManager : public QTabWidget {
 	Q_OBJECT
 public:
 	ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent = 0);
-	
+
+    
 	QList<GridView*> views() {return m_views;}
 	void add_view(GridView *view);
 
