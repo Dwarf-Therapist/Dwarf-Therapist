@@ -168,7 +168,9 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 
 		QMenu sub(&m);
 		sub.setTitle(tr("Custom Professions"));
-		QAction *a = sub.addAction(tr("New custom profession from this dwarf..."), this, SLOT(custom_profession_from_dwarf()));
+        QAction *a = sub.addAction(tr("Set custom profession name..."), this, SLOT(set_custom_profession_text()));
+        a->setData(id);
+		a = sub.addAction(tr("New custom profession from this dwarf..."), this, SLOT(custom_profession_from_dwarf()));
 		a->setData(id);
 		sub.addAction(tr("Reset to default profession"), this, SLOT(reset_custom_profession()));
 		sub.addSeparator();
@@ -263,6 +265,32 @@ void StateTableView::reset_custom_profession() {
 		}
 	}
 	m_model->calculate_pending();
+}
+
+void StateTableView::set_custom_profession_text() {
+    QString prof_name;
+    bool warn = false;
+    do {
+        bool ok;
+        if (warn)
+            QMessageBox::warning(this, tr("Name too long!"), tr("Profession names must be 15 characters or shorter!"));
+        prof_name = QInputDialog::getText(this, tr("New Custom Profession Name"), 
+            tr("Custom Profession"), QLineEdit::Normal, QString(), &ok);
+        if (!ok)
+            return;
+        warn = prof_name.length() > 15;
+    } while(warn);
+    
+    const QItemSelection sel = selectionModel()->selection();
+    foreach(const QModelIndex idx, sel.indexes()) {
+        if (idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
+            Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
+            if (d)
+                d->set_custom_profession_text(prof_name);
+        }
+    }
+    m_model->calculate_pending();
+
 }
 
 void StateTableView::currentChanged(const QModelIndex &cur, const QModelIndex &) {

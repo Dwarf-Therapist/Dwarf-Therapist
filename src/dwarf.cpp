@@ -444,6 +444,10 @@ void Dwarf::commit_pending() {
 	refresh_data();
 }
 
+void Dwarf::set_custom_profession_text(const QString &prof_text) {
+    m_pending_custom_profession = prof_text;
+}
+
 int Dwarf::apply_custom_profession(CustomProfession *cp) {
 	foreach(int labor_id, m_pending_labors.uniqueKeys()) {
 		set_labor(labor_id, false); // turn off everything...

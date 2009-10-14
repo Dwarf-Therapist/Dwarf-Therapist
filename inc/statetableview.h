@@ -84,6 +84,7 @@ private:
 		void apply_custom_profession();
 		void custom_profession_from_dwarf();
 		void reset_custom_profession();
+        void set_custom_profession_text();
 
 signals:
 	void new_custom_profession(Dwarf *d);

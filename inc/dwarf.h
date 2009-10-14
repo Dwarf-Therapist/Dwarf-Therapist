@@ -88,6 +88,7 @@ public:
 	int pending_changes();
 	void clear_pending();
 	void commit_pending();
+    void set_custom_profession_text(const QString &prof_text);
 	int apply_custom_profession(CustomProfession *cp); // return # of pending changes
 	void reset_custom_profession() {m_pending_custom_profession = "";}
 	QString tooltip_text();
