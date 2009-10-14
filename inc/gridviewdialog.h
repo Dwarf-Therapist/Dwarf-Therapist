@@ -112,6 +112,7 @@ private:
 		void add_skill_column();
         void add_idle_column();
         void add_trait_column();
+        void add_attribute_column();
 };
 
 #endif

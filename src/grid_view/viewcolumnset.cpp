@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "skillcolumn.h"
 #include "idlecolumn.h"
 #include "traitcolumn.h"
+#include "attributecolumn.h"
 #include "gamedatareader.h"
 #include "defines.h"
 #include "labor.h"
@@ -202,6 +203,9 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
                 break;
             case CT_TRAIT:
                 new TraitColumn(s, ret_val, parent);
+                break;
+            case CT_ATTRIBUTE:
+                new AttributeColumn(s, ret_val, parent);
                 break;
             
             case CT_DEFAULT:

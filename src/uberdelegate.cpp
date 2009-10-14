@@ -149,6 +149,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
             }
             break;
         case CT_TRAIT:
+        case CT_ATTRIBUTE:
             {
                 paint_bg(adjusted, false, p, opt, idx);
                 p->save();
@@ -157,7 +158,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
                 paint_grid(adjusted, false, p, opt, idx);
             }
             break;
-		case CT_DEFAULT:
+        case CT_DEFAULT:
 		case CT_SPACER:
 		default:
 			paint_bg(adjusted, false, p, opt, idx);

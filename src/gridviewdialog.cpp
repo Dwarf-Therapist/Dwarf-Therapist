@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include "skillcolumn.h"
 #include "idlecolumn.h"
 #include "traitcolumn.h"
+#include "attributecolumn.h"
 #include "defines.h"
 #include "statetableview.h"
 #include "gamedatareader.h"
@@ -349,6 +350,14 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
             a->setToolTip(tr("Add a column for trait %1 (ID%2)").arg(t->name).arg(trait_pair.first));
         }
 
+        QMenu *m_attr = m->addMenu(tr("Add Attribute Column"));
+        a = m_attr->addAction(tr("Strength"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_STRENGTH);
+        a = m_attr->addAction(tr("Agility"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_AGILITY);
+        a = m_attr->addAction(tr("Toughness"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_TOUGHNESS);
+
 		a = m->addAction(tr("Add Happiness"), this, SLOT(add_happiness_column()));
 		a->setToolTip(tr("Adds a single column that shows a color-coded happiness indicator for "
 			"each dwarf. You can customize the colors used in the options menu."));
@@ -406,6 +415,15 @@ void GridViewDialog::add_trait_column() {
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     int trait_id = a->data().toInt();
     new TraitColumn(GameDataReader::ptr()->get_trait(trait_id)->name, trait_id, m_active_set, m_active_set);
+    draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_attribute_column() {
+    if (!m_active_set)
+        return;
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    AttributeColumn::DWARF_ATTRIBUTE_TYPE type = static_cast<AttributeColumn::DWARF_ATTRIBUTE_TYPE>(a->data().toInt());
+    new AttributeColumn("", type, m_active_set, m_active_set);
     draw_columns_for_set(m_active_set);
 }
 

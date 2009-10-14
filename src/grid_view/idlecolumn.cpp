@@ -76,7 +76,7 @@ QStandardItem *IdleColumn::build_cell(Dwarf *d) {
     return item;
 }
 
-QStandardItem *IdleColumn::build_aggregate(const QString &, const QVector<Dwarf*> &dwarves) {
+QStandardItem *IdleColumn::build_aggregate(const QString &, const QVector<Dwarf*> &) {
     QStandardItem *item = new QStandardItem;
     return item;
 }
