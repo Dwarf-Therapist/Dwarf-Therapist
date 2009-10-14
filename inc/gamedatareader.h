@@ -67,6 +67,7 @@ public:
 	QHash<int, QString> get_skills() {return m_skills;}
 	QList<QPair<int, QString> > get_ordered_skills() {return m_ordered_skills;}
     QHash<int, Trait*> get_traits() {return m_traits;}
+	QList<QPair<int, Trait*> > get_ordered_traits() {return m_ordered_traits;}
 	Labor *get_labor(const int &labor_id);
 	Trait *get_trait(const int &trait_id);
 	DwarfJob *get_job(const short &job_id);
@@ -89,6 +90,7 @@ private:
 	QSettings *m_data_settings;
 	QHash<int, Labor*> m_labors;
 	QHash<int, Trait*> m_traits;
+	QList<QPair<int, Trait*> > m_ordered_traits;
 	QVector<Labor*> m_ordered_labors;
 	QHash<int, QString> m_skills;
 	QList<QPair<int, QString> > m_ordered_skills;

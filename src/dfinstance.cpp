@@ -142,31 +142,21 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 	}
     detach();
 
-    /*TEST RELATIONSHIPS*/
+    /*TEST RELATIONSHIPS
+	int relations_found = 0;
     foreach(Dwarf *d, dwarves) {
         // get all bytes for this dwarf...
-        qDebug() << "Scanning for ID references in" << d->nice_name();
-        QByteArray data = get_data(d->address(), 0x900);
+        qDebug() << "Scanning for ID references in" << d->nice_name() << "(" << hex << d->id() << ")";
+        QByteArray data = get_data(d->address(), 0x7e8);
         foreach(Dwarf *other_d, dwarves) {
             if (other_d == d)
                 continue; // let's hope there are no pointers to ourselves...
-            //qDebug() << "looking for a reference to" << other_d->id() << other_d->nice_name();
             int offset = 0;
-            /*while (offset < data.size()) {
-                int idx = data.indexOf(encode(other_d->address()), offset);
-                if (idx != -1) {
-                    qDebug() << "Found pointer to" << other_d->nice_name() << "at offset" << hex << idx << "in" << d->nice_name();
-                    offset = idx + 1;
-                } else {
-                    offset = data.size();
-                }
-            }
-            offset = 0;
-            */
             while (offset < data.size()) {
                 int idx = data.indexOf(encode(other_d->id()), offset);
                 if (idx != -1) {
-                    qDebug() << "\t\tOFFSET:" << hex << idx << "Found ID of" << other_d->nice_name();
+                    qDebug() << "\t\tOFFSET:" << hex << idx << "Found ID of" << other_d->nice_name() << "(" << other_d->id() << ")";
+					relations_found++;
                     offset = idx + 1;
                 } else {
                     offset = data.size();
@@ -174,8 +164,8 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
             }
         }
     }
-
-
+	LOGD << "relations found" << relations_found;
+	*/
 
 	LOGI << "found" << dwarves.size() << "dwarves out of" << creatures.size() << "creatures";
 	return dwarves;

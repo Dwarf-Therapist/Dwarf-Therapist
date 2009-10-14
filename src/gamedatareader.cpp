@@ -107,12 +107,26 @@ GameDataReader::GameDataReader(QObject *parent)
 	m_data_settings->endGroup();
 
 	int traits = m_data_settings->beginReadArray("traits");
-	for(int i = 0; i < traits; ++i) {
+	for(int i = 0; i < traits; i++) {
 		m_data_settings->setArrayIndex(i);
 		Trait *t = new Trait(*m_data_settings, this);
+		t->trait_id = i;
 		m_traits.insert(i, t);
 	}
 	m_data_settings->endArray();
+	QStringList trait_names;
+	foreach(Trait *t, m_traits) {
+		trait_names << t->name;
+	}
+	qSort(trait_names);
+	foreach(QString name, trait_names) {
+		foreach(Trait *t, m_traits) {
+			if (t->name == name) {
+				m_ordered_traits << QPair<int, Trait*>(t->trait_id, t);
+				break;
+			}
+		}		
+	}
 
     int job_names = m_data_settings->beginReadArray("dwarf_jobs");
     m_dwarf_jobs.clear();

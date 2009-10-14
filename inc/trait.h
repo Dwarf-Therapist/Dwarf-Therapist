@@ -32,6 +32,7 @@ public:
 		: QObject(parent)
 	{
 		name = s.value("name", "UNKNOWN").toString();
+		trait_id = s.value("trait_id", -1).toInt();
 		m_level_string[0]  = s.value("level_0", "UNKNOWN TRAIT 0(" + name + ")").toString();
 		m_level_string[10] = s.value("level_1", "UNKNOWN TRAIT 1(" + name + ")").toString();
 		m_level_string[25] = s.value("level_2", "UNKNOWN TRAIT 2(" + name + ")").toString();

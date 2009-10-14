@@ -339,20 +339,14 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
 
         QMenu *m_trait = m->addMenu(tr("Add Trait Column"));
         m_trait->setToolTip(tr("Trait columns show a read-only display of a dwarf's score in a particular trait."));
-        QMenu *trait_a_l = m_trait->addMenu(tr("A-I"));
-        QMenu *trait_j_r = m_trait->addMenu(tr("J-R"));
-        QMenu *trait_m_z = m_trait->addMenu(tr("S-Z"));
-        QHash<int, Trait*> traits = gdr->get_traits();
-        foreach(int trait_id, traits.uniqueKeys()) {
-            Trait *t = traits.value(trait_id);
-            QMenu *menu_to_use = trait_a_l;
-            if (t->name.at(0).toLower() > 'i')
-                menu_to_use = trait_j_r;
-            if (t->name.at(0).toLower() > 'r')
-                menu_to_use = trait_m_z;
-            QAction *a = menu_to_use->addAction(t->name, this, SLOT(add_trait_column()));
-            a->setData(trait_id);
-            a->setToolTip(tr("Add a column for trait %1 (ID%2)").arg(t->name).arg(trait_id));
+		m_trait->setTearOffEnabled(true);
+        QList<QPair<int, Trait*> > traits = gdr->get_ordered_traits();
+		QPair<int, Trait*> trait_pair;
+        foreach(trait_pair, traits) {
+            Trait *t = trait_pair.second;
+            QAction *a = m_trait->addAction(t->name, this, SLOT(add_trait_column()));
+            a->setData(trait_pair.first);
+            a->setToolTip(tr("Add a column for trait %1 (ID%2)").arg(t->name).arg(trait_pair.first));
         }
 
 		a = m->addAction(tr("Add Happiness"), this, SLOT(add_happiness_column()));
