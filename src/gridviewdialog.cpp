@@ -305,11 +305,13 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
 		a->setToolTip(tr("Adds a non-selectable spacer to this set. You can set a custom width and color on spacer columns."));
 
 		QMenu *m_labor = m->addMenu(tr("Add Labor Column"));
-		m_labor->setToolTip(tr("Labor columns function as toggle switches for individual labors on a dwarf."));
+		//m_labor->setToolTip(tr("Labor columns function as toggle switches for individual labors on a dwarf."));
 		QMenu *labor_a_l = m_labor->addMenu(tr("A-I"));
 		QMenu *labor_j_r = m_labor->addMenu(tr("J-R"));
 		QMenu *labor_s_z = m_labor->addMenu(tr("S-Z"));
 		foreach(Labor *l, gdr->get_ordered_labors()) {
+            if (l->is_weapon)
+                continue; // we'll list weapons separately
 			QMenu *menu_to_use = labor_a_l;
 			if (l->name.at(0).toLower() > 'i')
 				menu_to_use = labor_j_r;
@@ -319,6 +321,16 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
 			a->setData(l->labor_id);
 			a->setToolTip(tr("Add a column for labor %1 (ID%2)").arg(l->name).arg(l->labor_id));
 		}
+
+        QMenu *m_weapons = m->addMenu(tr("Add Weapon Column"));
+        m_weapons->setMouseTracking(true);
+        foreach(Labor *l, gdr->get_ordered_labors()) {
+            if (!l->is_weapon)
+                continue; // weapons only
+            QAction *a = m_weapons->addAction(l->name, this, SLOT(add_labor_column()));
+            a->setData(l->labor_id);
+            a->setToolTip(tr("Add a column for weapon choice: %1 (ID%2)").arg(l->name).arg(l->labor_id));
+        }
 
 		QMenu *m_skill = m->addMenu(tr("Add Skill Column"));
 		m_skill->setToolTip(tr("Skill columns function as a read-only display of a dwarf's skill in a particular area."
@@ -396,6 +408,10 @@ void GridViewDialog::add_labor_column() {
 	QAction *a = qobject_cast<QAction*>(QObject::sender());
 	int labor_id = a->data().toInt();
 	Labor *l = GameDataReader::ptr()->get_labor(labor_id);
+    if (!l) {
+        LOGC << "Failed to get a labor with id" << labor_id << "!";
+        return;
+    }
 	new LaborColumn(l->name, l->labor_id, l->skill_id, m_active_set, m_active_set);
 	draw_columns_for_set(m_active_set);
 }

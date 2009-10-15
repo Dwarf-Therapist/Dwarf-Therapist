@@ -27,6 +27,8 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "dwarfmodel.h"
 #include "defines.h"
+#include "dwarftherapist.h"
+#include "mainwindow.h"
 
 AttributeColumn::AttributeColumn(const QString &title, DWARF_ATTRIBUTE_TYPE type, ViewColumnSet *set, QObject *parent) 
     : ViewColumn(title, CT_ATTRIBUTE, set, parent)
@@ -92,5 +94,6 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
 
 QStandardItem *AttributeColumn::build_aggregate(const QString &, const QVector<Dwarf*> &) {
     QStandardItem *item = new QStandardItem;
+    item->setData(Qt::white, DwarfModel::DR_DEFAULT_BG_COLOR);
     return item;
 }

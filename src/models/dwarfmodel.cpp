@@ -236,9 +236,8 @@ void DwarfModel::build_row(const QString &key) {
 	}
 	
 	foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
-        Profession *p = GameDataReader::ptr()->get_profession(d->raw_profession());
         QString name = d->nice_name();
-        if (p && p->is_military())
+        if (d->active_military())
             name = "[M]" + name;
 		QStandardItem *i_name = new QStandardItem(name);
 

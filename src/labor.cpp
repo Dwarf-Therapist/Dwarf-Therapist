@@ -20,43 +20,5 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef LABOR_H
-#define LABOR_H
-
-#include <QtGui>
-
-#define LABOR_P *Labor;
-
-class Labor : public QObject {
-	Q_OBJECT
-public:
-    Labor(QSettings &s, QObject *parent = 0)
-        : QObject(parent)
-        , name(s.value("name", "UNKNOWN LABOR").toString())
-        , labor_id(s.value("id", -1).toInt())
-        , skill_id(s.value("skill", -1).toInt())
-        , is_weapon(s.value("is_weapon", false).toBool())
-    {
-        int excludes = s.beginReadArray("excludes");
-        for (int i = 0; i < excludes; ++i) {
-            s.setArrayIndex(i);
-            int labor = s.value("labor_id", -1).toInt();
-            if (labor != -1)
-                m_excluded_labors << labor;
-        }
-        s.endArray();
-    }
-        
-    const QList<int> &get_excluded_labors() {
-        return m_excluded_labors;
-    }
-
-	QString name;
-	int labor_id;
-	int skill_id;
-    QList<int> m_excluded_labors; // list of other labors that this one is exclusive with
-    bool is_weapon; // all weapon labors are mutually exclusive of each other
-};
-
-#endif
-
+#include "labor.h"
+#include "gamedatareader.h"

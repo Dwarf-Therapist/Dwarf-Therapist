@@ -55,7 +55,7 @@ CustomProfession::CustomProfession(Dwarf *d, QObject *parent)
 	, m_dwarf(d)
 {
 	GameDataReader *gdr = GameDataReader::ptr();	
-	QVector<Labor*> labors = gdr->get_ordered_labors();
+	QList<Labor*> labors = gdr->get_ordered_labors();
 	
 	foreach(Labor *l, labors) {
 		if (m_dwarf && m_dwarf->is_labor_enabled(l->labor_id))
@@ -117,7 +117,7 @@ int CustomProfession::show_builder_dialog(QWidget *parent) {
 	connect(ui->name_edit, SIGNAL(textChanged(const QString &)), this, SLOT(set_name(QString)));
 	connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
 	
-	QVector<Labor*> labors = gdr->get_ordered_labors();
+	QList<Labor*> labors = gdr->get_ordered_labors();
 	int num_active = 0;
 	foreach(Labor *l, labors) {
 		QListWidgetItem *item = new QListWidgetItem(l->name, ui->labor_list);

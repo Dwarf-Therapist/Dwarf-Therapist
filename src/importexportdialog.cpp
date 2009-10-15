@@ -119,7 +119,14 @@ void ImportExportDialog::setup_for_profession_import() {
 		QString tooltip = "<h3>Enabled Labors</h3><ul>";
 		GameDataReader *gdr = GameDataReader::ptr();
 		foreach(int labor_id, cp->get_enabled_labors()) {
-			tooltip += QString("<li>%1</li>").arg(gdr->get_labor(labor_id)->name);
+            QString labor_name = "UNKNOWN";
+            Labor *l = gdr->get_labor(labor_id);
+            if (l) {
+                labor_name = l->name;
+            } else {
+                LOGC << "custom profession lists labor_id" << labor_id << "which is unrecognized!";
+            }
+			tooltip += QString("<li>%1</li>").arg(labor_name);
 		}
 		tooltip += "</ul>";
 		i->setToolTip(tooltip);

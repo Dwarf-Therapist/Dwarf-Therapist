@@ -141,6 +141,11 @@ QString Dwarf::profession() {
 	return m_profession;
 }
 
+bool Dwarf::active_military() {
+    Profession *p = GameDataReader::ptr()->get_profession(m_raw_profession);
+    return p && p->is_military();
+}
+
 void Dwarf::calc_names() {
 	if (m_pending_nick_name.isEmpty()) {
 		m_nice_name = QString("%1 %2").arg(m_first_name, m_last_name);
@@ -317,7 +322,10 @@ short Dwarf::get_rating_by_skill(int skill_id) {
 short Dwarf::get_rating_by_labor(int labor_id) {
 	GameDataReader *gdr = GameDataReader::ptr();
 	Labor *l = gdr->get_labor(labor_id);
-	return get_rating_by_skill(l->skill_id);
+    if (l)
+	    return get_rating_by_skill(l->skill_id);
+    else
+        return -1;
 }
 
 QString Dwarf::read_profession(const uint &addr) {
@@ -365,6 +373,8 @@ void Dwarf::read_labors(const uint &addr) {
 	// get the list of identified labors from game_data.ini
 	GameDataReader *gdr = GameDataReader::ptr();
 	foreach(Labor *l, gdr->get_ordered_labors()) {
+        if (l->is_weapon && l->labor_id < 0) // unarmed
+            continue;
 		bool enabled = buf[l->labor_id] > 0;
 		m_labors[l->labor_id] = enabled;
 		m_pending_labors[l->labor_id] = enabled;
@@ -378,7 +388,20 @@ void Dwarf::read_labors(const uint &addr) {
 }
 
 bool Dwarf::is_labor_enabled(int labor_id) {
-	return m_pending_labors[labor_id];
+    if (labor_id < 0) {// unarmed
+        bool uses_weapon = false;
+        foreach(Labor *l, GameDataReader::ptr()->get_ordered_labors()) {
+            if (l->is_weapon && l->labor_id > 0) {
+                if (m_pending_labors[l->labor_id]) {
+                    uses_weapon = true;
+                    break;
+                }
+            }
+        }
+        return !uses_weapon;
+    } else {
+        return m_pending_labors[labor_id];
+    }
 }
 
 bool Dwarf::is_labor_state_dirty(int labor_id) {
@@ -417,6 +440,12 @@ void Dwarf::set_labor(int labor_id, bool enabled) {
             m_pending_labors[excluded] = false;
         }
     }
+    if (enabled && l->is_weapon) { // weapon type labors are automatically exclusive
+        foreach(Labor *l, GameDataReader::ptr()->get_ordered_labors()) {
+            if (l && l->is_weapon)
+                m_pending_labors[l->labor_id] = false;
+        }
+    }
 	m_pending_labors[labor_id] = enabled;
 }
 
@@ -441,6 +470,8 @@ void Dwarf::commit_pending() {
 	memset(buf, 0, 102);
 	m_df->read_raw(addr, 102, &buf); // set the buffer as it is in-game
 	foreach(int labor_id, m_pending_labors.uniqueKeys()) {
+        if (labor_id < 0)
+            continue;
 		// change values to what's pending
 		buf[labor_id] = m_pending_labors.value(labor_id, false) ? 1 : 0;
 	}
@@ -490,7 +521,7 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
 	}
 	foreach(int labor_id, labors) {
 		Labor *l = GameDataReader::ptr()->get_labor(labor_id);
-		if (l->labor_id != labor_id) {
+		if (!l || l->labor_id != labor_id) {
 			LOGW << "somehow got a change to an unknown labor with id:" << labor_id;
 			continue;
 		}

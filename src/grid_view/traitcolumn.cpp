@@ -79,5 +79,7 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
 QStandardItem *TraitColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
     Q_UNUSED(group_name);
     Q_UNUSED(dwarves);
-    return new QStandardItem;
+    QStandardItem *item = new QStandardItem;
+    item->setData(Qt::white, DwarfModel::DR_DEFAULT_BG_COLOR);
+    return item;
 }

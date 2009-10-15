@@ -70,6 +70,7 @@ public:
 	int total_xp() {return m_total_xp;}
 	int migration_wave() {return m_migration_wave;}
 	void set_migration_wave(const int &wave_number) {m_migration_wave = wave_number;}
+    bool active_military();
 	
 	QVector<Skill> *get_skills() {return &m_skills;}
 	const Skill get_skill(int skill_id);

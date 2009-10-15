@@ -78,5 +78,6 @@ QStandardItem *IdleColumn::build_cell(Dwarf *d) {
 
 QStandardItem *IdleColumn::build_aggregate(const QString &, const QVector<Dwarf*> &) {
     QStandardItem *item = new QStandardItem;
+    item->setData(Qt::white, DwarfModel::DR_DEFAULT_BG_COLOR);
     return item;
 }

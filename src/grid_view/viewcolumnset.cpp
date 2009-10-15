@@ -71,6 +71,27 @@ void ViewColumnSet::set_name(const QString &name) {
 }
 
 void ViewColumnSet::add_column(ViewColumn *col) {
+    bool name_ok = false;
+    while (!name_ok) {
+        name_ok = true;
+        foreach(ViewColumn *vc, m_columns) { // protect against duplicate names
+            QString title = col->title();
+            if (title == vc->title()) {
+                // col is a dupe, see if it ends with a number
+                QRegExp regex("([a-zA-Z0-9\\[\\]. ]*)\\s*(\\d+)$");
+                QString stripped_title = title; // title without an ending number
+                int num = 0;
+                int pos = regex.indexIn(title);
+                if (pos != -1) {
+                    stripped_title = regex.cap(1).trimmed();
+                    num = regex.cap(2).toInt();
+                }
+                col->set_title(QString("%1 %2").arg(stripped_title).arg(num + 1));
+                name_ok = false;
+                break;
+            }
+        }
+    }
 	m_columns << col;
 }
 	

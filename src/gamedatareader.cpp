@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "trait.h"
 #include "dwarfjob.h"
 #include "profession.h"
+#include "defines.h"
 #include <QtDebug>
 
 GameDataReader::GameDataReader(QObject *parent)
@@ -35,34 +36,28 @@ GameDataReader::GameDataReader(QObject *parent)
 	QString filename = working_dir.absoluteFilePath("etc/game_data.ini");
 	m_data_settings = new QSettings(filename, QSettings::IniFormat);
 
-	m_data_settings->beginGroup("labors");
-	foreach(QString k, m_data_settings->childGroups()) {
-		m_data_settings->beginGroup(k);
-		Labor *l = new Labor(get_string_for_key("name"), get_int_for_key("id", 10), 
-							 get_int_for_key("skill", 10), k.toInt(), this);
-        int count = m_data_settings->beginReadArray("excludes");
-        for (int i = 0; i < count; ++i) {
-            m_data_settings->setArrayIndex(i);
-            l->add_exclusive_labor(m_data_settings->value("labor_id").toInt());
-        }
-        m_data_settings->endArray();
+    QStringList labor_names;
+	int labors = m_data_settings->beginReadArray("labors");
+    for(int i = 0; i < labors; ++i) {
+        m_data_settings->setArrayIndex(i);
+        Labor *l = new Labor(*m_data_settings, this);
 		m_labors[l->labor_id] = l;
-		m_data_settings->endGroup();
+        labor_names << l->name;
 	}
-	m_data_settings->endGroup();
-
-	QStringList labor_names;
-	foreach(Labor *l, m_labors) {
-		labor_names << l->name;
-	}
-	qSort(labor_names);
+	m_data_settings->endArray();
+    m_ordered_labors.clear();
+    qSort(labor_names);
 	foreach(QString name, labor_names) {
+        bool found = false;
 		foreach(Labor *l, m_labors) {
 			if (name == l->name) {
 				m_ordered_labors << l;
+                found = true;
 				break;
 			}
 		}
+        if (!found)
+            LOGW << name << "not found in labor map! Most likely, labor ids are duplicated in game_data.ini";
 	}
 
 	m_data_settings->beginGroup("skill_names");
@@ -208,7 +203,7 @@ QStringList GameDataReader::get_keys(QString section) {
 }
 
 Labor *GameDataReader::get_labor(const int &labor_id) {
-	return m_labors.value(labor_id, new Labor("UNKNOWN", -1, -1, 1000, this));
+	return m_labors.value(labor_id, 0);
 }
 
 Trait *GameDataReader::get_trait(const int &trait_id) {

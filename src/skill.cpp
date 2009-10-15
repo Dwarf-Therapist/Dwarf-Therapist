@@ -75,7 +75,7 @@ QString Skill::to_string(bool include_level, bool include_exp_summary) const {
 }
 
 bool Skill::operator<(const Skill &s2) const {
-	return m_rating < s2.rating();
+	return m_rating < s2.m_rating;
 }
 
 QString Skill::exp_summary() const {

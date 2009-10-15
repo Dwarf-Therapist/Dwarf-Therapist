@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 // forward declaration
 class QSettings;
-class Labor;
+#include "labor.h"
 class Trait;
 class Profession;
 class DwarfJob;
@@ -64,7 +64,7 @@ public:
 	int get_dwarf_offset(QString key) {return get_int_for_key("dwarf_offsets/" + key);}
 	int get_xp_for_next_attribute_level(int current_number_of_attributes);
 
-	QVector<Labor*> get_ordered_labors() {return m_ordered_labors;}
+	QList<Labor*> get_ordered_labors() {return m_ordered_labors;}
 	QHash<int, QString> get_skills() {return m_skills;}
 	QList<QPair<int, QString> > get_ordered_skills() {return m_ordered_skills;}
     QHash<int, Trait*> get_traits() {return m_traits;}
@@ -88,13 +88,17 @@ protected:
 private:
 	static GameDataReader *m_instance;
 	QSettings *m_data_settings;
-	QHash<int, Labor*> m_labors;
-	QHash<int, Trait*> m_traits;
+	
+    QHash<int, Labor*> m_labors;
+	QList<Labor*> m_ordered_labors;
+
+    QHash<int, Trait*> m_traits;
 	QList<QPair<int, Trait*> > m_ordered_traits;
-	QVector<Labor*> m_ordered_labors;
+	
 	QHash<int, QString> m_skills;
 	QList<QPair<int, QString> > m_ordered_skills;
-	QHash<int, QString> m_skill_levels;
+	
+    QHash<int, QString> m_skill_levels;
 	QHash<int, int> m_attribute_levels;
     QHash<short, DwarfJob*> m_dwarf_jobs;
     QHash<short, Profession*> m_professions;
