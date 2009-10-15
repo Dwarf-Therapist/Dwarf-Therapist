@@ -26,7 +26,7 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
-#include "skill.h"wh
+#include "skill.h"
 #include "labor.h"
 #include "profession.h"
 #include "statetableview.h"
