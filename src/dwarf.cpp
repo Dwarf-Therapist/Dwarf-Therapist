@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "dwarfdetailswidget.h"
 #include "mainwindow.h"
+#include "profession.h"
 
 Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
 	: QObject(parent)
@@ -153,6 +154,8 @@ void Dwarf::calc_names() {
 			m_translated_name = QString("'%1' %2").arg(m_pending_nick_name, m_translated_last_name);
 		}
 	}
+    // uncomment to put address at front of name
+    //m_nice_name = QString("0x%1 %2").arg(m_address, 8, 16, QChar('0')).arg(m_nice_name);
 	// uncomment to put internal ID at front of name
 	//m_nice_name = QString("%1 %2").arg(m_id).arg(m_nice_name);
 }
@@ -320,14 +323,20 @@ short Dwarf::get_rating_by_labor(int labor_id) {
 QString Dwarf::read_profession(const uint &addr) {
     char buffer[1];
     m_df->read_raw(addr, 1, &buffer[0]);
-    m_raw_profession = (int)buffer[0];
-	GameDataReader *gdr = GameDataReader::ptr();
-	m_can_set_labors = gdr->profession_can_have_labors(m_raw_profession);
-
+    m_raw_profession = (short)buffer[0];
+    Profession *p = GameDataReader::ptr()->get_profession(m_raw_profession);
+    QString prof_name = tr("Unknown Profession %1").arg(m_raw_profession);
+    if (p) {
+        m_can_set_labors = p->can_assign_labors();
+        prof_name = p->name();
+    } else {
+        LOGC << "Read unknown profession with id" << m_raw_profession << "for dwarf" << m_nice_name;
+        m_can_set_labors = false;
+    }
     if (!m_custom_profession.isEmpty()) {
         return m_custom_profession; 
     } else {
-        return gdr->get_profession_name((int)buffer[0]);
+        return prof_name;
     }
 }
 

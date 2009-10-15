@@ -26,8 +26,9 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
-#include "skill.h"
+#include "skill.h"wh
 #include "labor.h"
+#include "profession.h"
 #include "statetableview.h"
 #include "defines.h"
 #include "dwarftherapist.h"
@@ -235,7 +236,11 @@ void DwarfModel::build_row(const QString &key) {
 	}
 	
 	foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
-		QStandardItem *i_name = new QStandardItem(d->nice_name());
+        Profession *p = GameDataReader::ptr()->get_profession(d->raw_profession());
+        QString name = d->nice_name();
+        if (p && p->is_military())
+            name = "[M]" + name;
+		QStandardItem *i_name = new QStandardItem(name);
 
 		i_name->setToolTip(d->tooltip_text());
 		i_name->setStatusTip(d->nice_name());

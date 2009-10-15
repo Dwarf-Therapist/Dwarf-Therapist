@@ -31,6 +31,7 @@ THE SOFTWARE.
 class QSettings;
 class Labor;
 class Trait;
+class Profession;
 class DwarfJob;
 
 // exceptions
@@ -73,12 +74,11 @@ public:
 	DwarfJob *get_job(const short &job_id);
 
 	QString get_string_for_key(QString key);
-	QString get_profession_name(int profession_id);
+    Profession* get_profession(const short &profession_id);
 	QString get_skill_level_name(short level);
 	QString get_skill_name(short skill_id);
 	
 	QColor get_color(QString key);
-	bool profession_can_have_labors(const int &profession_id);
 	
 	QStringList get_child_groups(QString section);
 	QStringList get_keys(QString section);
@@ -95,9 +95,9 @@ private:
 	QHash<int, QString> m_skills;
 	QList<QPair<int, QString> > m_ordered_skills;
 	QHash<int, QString> m_skill_levels;
-	QHash<int, QString> m_non_labor_professions;
 	QHash<int, int> m_attribute_levels;
     QHash<short, DwarfJob*> m_dwarf_jobs;
+    QHash<short, Profession*> m_professions;
 	int m_game_checksum;
 
 

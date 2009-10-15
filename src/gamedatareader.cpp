@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "labor.h"
 #include "trait.h"
 #include "dwarfjob.h"
+#include "profession.h"
 #include <QtDebug>
 
 GameDataReader::GameDataReader(QObject *parent)
@@ -92,13 +93,6 @@ GameDataReader::GameDataReader(QObject *parent)
 	}
 	m_data_settings->endGroup();
 
-	m_data_settings->beginGroup("non_labor_professions");
-	foreach(QString k, m_data_settings->childKeys()) {
-		int profession_id = k.toInt();
-		m_non_labor_professions.insert(profession_id, m_data_settings->value(k, "UNKNOWN").toString());
-	}
-	m_data_settings->endGroup();
-
 	m_data_settings->beginGroup("attribute_levels");
 	foreach(QString k, m_data_settings->childKeys()) {
 		int num_attributes = k.toInt();
@@ -138,6 +132,16 @@ GameDataReader::GameDataReader(QObject *parent)
 			this);
     }
     m_data_settings->endArray();   
+
+    int professions = m_data_settings->beginReadArray("professions");
+    m_professions.clear();
+    for(short i = 0; i < professions; ++i) {
+        m_data_settings->setArrayIndex(i);
+        Profession *p = new Profession(*m_data_settings);
+        m_professions.insert(p->id(), p);
+    }
+    m_data_settings->endArray();
+
 }
  
 int GameDataReader::get_int_for_key(QString key, short base) {
@@ -185,8 +189,8 @@ QString GameDataReader::get_skill_name(short skill_id) {
 	//return get_string_for_key(QString("skill_names/%1").arg(skill_id));
 }
 
-QString GameDataReader::get_profession_name(int profession_id) {
-	return get_string_for_key(QString("profession_names/%1").arg(profession_id));
+Profession* GameDataReader::get_profession(const short &profession_id) {
+    return m_professions.value(profession_id, 0);
 }
 
 QStringList GameDataReader::get_child_groups(QString section) {
@@ -213,10 +217,6 @@ Trait *GameDataReader::get_trait(const int &trait_id) {
 
 DwarfJob *GameDataReader::get_job(const short &job_id) {
 	return m_dwarf_jobs.value(job_id, 0);
-}
-
-bool GameDataReader::profession_can_have_labors(const int &profession_id) {
-	return !m_non_labor_professions.contains(profession_id);
 }
 
 int GameDataReader::get_xp_for_next_attribute_level(int current_number_of_attributes) {
