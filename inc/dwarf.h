@@ -71,6 +71,7 @@ public:
 	int migration_wave() {return m_migration_wave;}
 	void set_migration_wave(const int &wave_number) {m_migration_wave = wave_number;}
     bool active_military();
+    Dwarf *get_squad_leader();
 	
 	QVector<Skill> *get_skills() {return &m_skills;}
 	const Skill get_skill(int skill_id);
@@ -153,6 +154,7 @@ private:
 	QMap<int, bool> m_labors;
 	QMap<int, bool> m_pending_labors;
 	QList<QAction*> m_actions; // actions suitable for context menus
+    int m_squad_leader_id;
 
 signals:
 	void name_changed();

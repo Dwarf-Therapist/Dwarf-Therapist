@@ -44,6 +44,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_raw_profession(-1)
 	, m_migration_wave(0)
     , m_current_job_id(-1)
+    , m_squad_leader_id(0)
 {
 	read_settings();
 	refresh_data();
@@ -111,12 +112,15 @@ void Dwarf::refresh_data() {
     read_current_job(m_address + mem->dwarf_offset("current_job"));
     LOGD << "\tCURRENT JOB:" << m_current_job_id << m_current_job;
 
+    m_squad_leader_id = m_df->read_int(m_address + mem->dwarf_offset("squad_leader_id"));
+    TRACE << "\tSQUAD LEADER ID:" << m_squad_leader_id;
+
     //TEST
     //QString squad_name = DT->get_dwarf_word(m_df->read_int(m_address + mem->dwarf_offset("squad_name")));
     //squad_name.append(DT->get_dwarf_word(m_df->read_int(m_address + mem->dwarf_offset("squad_name") + 0xC)));
 	
     //LOGD << "LOADED" << m_nice_name << hex << m_address << "SQUAD:" << squad_name;
-	LOGD << m_nice_name << m_id;
+	//LOGD << m_nice_name << m_id;
 	TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
 }
 
@@ -144,6 +148,13 @@ QString Dwarf::profession() {
 bool Dwarf::active_military() {
     Profession *p = GameDataReader::ptr()->get_profession(m_raw_profession);
     return p && p->is_military();
+}
+
+Dwarf *Dwarf::get_squad_leader() {
+    // Oh... I will be squad leader!
+    if (m_squad_leader_id)
+        return DT->get_dwarf_by_id(m_squad_leader_id);
+    return 0;
 }
 
 void Dwarf::calc_names() {
