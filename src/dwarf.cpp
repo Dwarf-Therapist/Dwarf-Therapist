@@ -151,10 +151,13 @@ bool Dwarf::active_military() {
 }
 
 Dwarf *Dwarf::get_squad_leader() {
-    // Oh... I will be squad leader!
-    if (m_squad_leader_id)
-        return DT->get_dwarf_by_id(m_squad_leader_id);
-    return 0;
+	// Oh I will be...
+	if (!m_squad_leader_id) {
+		// I'll be squad leader!
+		return 0;
+	} else {
+        return DT->get_dwarf_by_id(m_squad_leader_id); // Tony Danza
+	}
 }
 
 void Dwarf::calc_names() {
