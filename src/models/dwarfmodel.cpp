@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "skill.h"
 #include "labor.h"
 #include "profession.h"
+#include "squad.h"
 #include "statetableview.h"
 #include "defines.h"
 #include "dwarftherapist.h"
@@ -105,6 +106,14 @@ void DwarfModel::load_dwarves() {
 		m_dwarves[id]->set_migration_wave(wave);
 	}
     
+    /* build up the squad structures for loaded dwarfs */
+    //m_squads.clear();
+    foreach(Dwarf *d, m_dwarves) {
+        Dwarf *squad_leader = d->get_squad_leader();
+        if (squad_leader) { // this dwarf has a squad leader
+            squad_leader->add_squad_member(d);
+        }
+    }
 }
 
 void DwarfModel::build_rows() {
@@ -113,6 +122,70 @@ void DwarfModel::build_rows() {
 	m_grouped_dwarves.clear();
 	clear();
 
+
+    QList<Dwarf *> undrawn_dwarfs;
+    undrawn_dwarfs = m_dwarves.values();
+    int loop_max = 100;
+    while (undrawn_dwarfs.size()) {
+        LOGD << "looping... undrawn" << undrawn_dwarfs.size();
+        foreach(Dwarf *d, undrawn_dwarfs) {
+            switch(m_group_by) {
+                default:
+                case GB_NOTHING:
+                    appendRow(build_row(d));
+                    undrawn_dwarfs.removeAll(d);
+                    break;
+                case GB_PROFESSION:
+                    {
+                        QStandardItem *prof_root;
+                        QModelIndex prof_idx = findOne(d->profession());
+                        if (!prof_idx.isValid()) {
+                            prof_root = new QStandardItem(d->profession());
+                            appendRow(prof_root);
+                        } else {
+                            prof_root = itemFromIndex(prof_idx);
+                        }
+                        prof_root->appendRow(build_row(d));
+                        undrawn_dwarfs.removeAll(d);
+                    }
+                    break;
+                case GB_SQUAD:
+                    {
+                        QStandardItem *squad_root;
+                        Dwarf *squad_leader = d->get_squad_leader();
+                        if (squad_leader) {
+                            QModelIndex squad_idx = findOne("[M]"+ squad_leader->nice_name());
+                            if (squad_idx.isValid()) {
+                                squad_root = itemFromIndex(squad_idx);
+                                squad_root->appendRow(build_row(d));
+                                undrawn_dwarfs.removeAll(d);
+                            }
+                        } else {
+                            if (d->squad_members().size()) { // has no leader, but has members = top level squad
+                                squad_root = new QStandardItem("SQUAD " + d->squad_name());
+                                squad_root->appendRow(build_row(d));
+                                appendRow(squad_root);
+                                undrawn_dwarfs.removeAll(d);
+                            } else {
+                                // just some dude...
+                                appendRow(build_row(d));
+                                undrawn_dwarfs.removeAll(d);
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
+        loop_max--;
+        if (loop_max == 0) {
+            LOGC << "Failed to draw all dwarfs in under 100 loops, something is broken in the grouping logic of DwarfModel!";
+            break;
+        }
+    }
+
+    // build squad structures...
+  
+    /*
 	// populate dwarf maps
 	foreach(Dwarf *d, m_dwarves) {
 		switch (m_group_by) {
@@ -142,7 +215,7 @@ void DwarfModel::build_rows() {
 					m_grouped_dwarves["Females"].append(d);
 				break;
 			case GB_HAPPINESS:
-				m_grouped_dwarves[QString::number(d->get_happiness())].append(d);
+				m_grouped_dwarves[d->happiness_name(d->get_happiness())].append(d);
 				break;
 			case GB_MIGRATION_WAVE:
 				m_grouped_dwarves[QString("Wave %1").arg(d->migration_wave())].append(d);
@@ -155,8 +228,11 @@ void DwarfModel::build_rows() {
                 m_grouped_dwarves[squad].append(d);
 		}
 	}
+    */
 
-
+    /*
+    TODO: Move this to the RotatedHeader class
+    */
 	int start_col = 1;
 	setHorizontalHeaderItem(0, new QStandardItem);
 	emit clear_spacers();
@@ -180,41 +256,43 @@ void DwarfModel::build_rows() {
 			}
 		}
 	}
-
-	//FIXME : jump to prof and jump to pending change
-	if (m_group_by == GB_PROFESSION) {
-		// sort professions by column labors
-		QStringList group_order;
-		foreach(ViewColumnSet *set, m_gridview->sets()) {
-			foreach(ViewColumn *col, set->columns()) {
-				int skill = -1;
-				if (col->type() == CT_LABOR) {
-					LaborColumn *lc = static_cast<LaborColumn*>(col);
-					skill = lc->skill_id();
-				} else if (col->type() == CT_SKILL) {
-					SkillColumn *sc = static_cast<SkillColumn*>(col);
-					skill = sc->skill_id();
-				}
-				if (skill != -1) {
-					group_order << GameDataReader::ptr()->get_skill_name(skill);
-				}
-			}
-		}
-		foreach(QString prof_name, group_order) {
-			if (m_grouped_dwarves.contains(prof_name)) {
-				build_row(prof_name);
-			}
-		}
-		foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
-			if (!group_order.contains(key)) {
-				build_row(key);
-			}
-		}
-	} else {
-		foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
-			build_row(key);
-		}
+    /*
+    foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
+	    build_row(key);
 	}
+    */
+}
+
+QList<QStandardItem*> DwarfModel::build_row(Dwarf *d) {
+    QIcon icn_f(":img/female.png");
+    QIcon icn_m(":img/male.png");
+    QString name = d->nice_name();
+    if (d->active_military())
+        name = "[M]" + name;
+    QStandardItem *i_name = new QStandardItem(name);
+
+    i_name->setToolTip(d->tooltip_text());
+    i_name->setStatusTip(d->nice_name());
+    i_name->setData(false, DR_IS_AGGREGATE);
+    i_name->setData(0, DR_RATING);
+    i_name->setData(d->id(), DR_ID);
+    i_name->setData(d->raw_profession(), DR_SORT_VALUE);
+
+    if (d->is_male()) {
+        i_name->setIcon(icn_m);
+    } else {
+        i_name->setIcon(icn_f);
+    }
+
+    QList<QStandardItem*> items;
+    items << i_name;
+    foreach(ViewColumnSet *set, m_gridview->sets()) {
+        foreach(ViewColumn *col, set->columns()) {
+            QStandardItem *item = col->build_cell(d);
+            items << item;
+        }
+    }
+    return items;
 }
 
 void DwarfModel::build_row(const QString &key) {
@@ -390,4 +468,28 @@ QVector<Dwarf*> DwarfModel::get_dirty_dwarves() {
 			dwarves.append(d);
 	}
 	return dwarves;
+}
+
+QModelIndex DwarfModel::findOne(const QVariant &needle, const QModelIndex &start_index, int role, int column) {
+    QModelIndex ret_val;
+    if (data(start_index, role) == needle) {
+        ret_val = start_index;
+        return ret_val;
+    }
+    for (int i = 0; i < rowCount(start_index); ++i) {
+        ret_val = findOne(needle, index(i, column, start_index), role, column);
+        if (ret_val.isValid())
+            return ret_val;
+    }
+    return ret_val;
+}
+
+QList<QModelIndex> DwarfModel::findAll(const QVariant &needle, const QModelIndex &start_index, int role, int column) {
+    QList<QModelIndex> ret_val;
+    if (data(start_index, role) == needle)
+        ret_val << start_index;
+    for (int i = 0; i < rowCount(start_index); ++i) {
+        ret_val += findAll(needle, index(i, column, start_index), role, column);
+    }
+    return ret_val;
 }

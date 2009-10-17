@@ -44,7 +44,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_raw_profession(-1)
 	, m_migration_wave(0)
     , m_current_job_id(-1)
-    , m_squad_leader_id(0)
+    , m_squad_leader_id(-1)
 {
 	read_settings();
 	refresh_data();
@@ -58,6 +58,16 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
 	QAction *dump_mem = new QAction(tr("Dump Memory..."), this);
 	connect(dump_mem, SIGNAL(triggered()), SLOT(dump_memory()));
 	m_actions << dump_mem;
+}
+
+
+Dwarf::~Dwarf() {
+    m_traits.clear();
+    foreach(QAction *a, m_actions) {
+        a->deleteLater();
+    }
+    m_actions.clear();
+    m_skills.clear();
 }
 
 void Dwarf::refresh_data() {
@@ -110,10 +120,15 @@ void Dwarf::refresh_data() {
 	TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
 
     read_current_job(m_address + mem->dwarf_offset("current_job"));
-    LOGD << "\tCURRENT JOB:" << m_current_job_id << m_current_job;
+    TRACE << "\tCURRENT JOB:" << m_current_job_id << m_current_job;
 
     m_squad_leader_id = m_df->read_int(m_address + mem->dwarf_offset("squad_leader_id"));
-    TRACE << "\tSQUAD LEADER ID:" << m_squad_leader_id;
+    LOGD << "\tSQUAD LEADER ID:" << m_squad_leader_id;
+
+    m_squad_name = read_squad_name(m_address + mem->dwarf_offset("squad_name"));
+    LOGD << "\tSQUAD NAME:" << m_squad_name;
+    m_generic_squad_name = read_squad_name(m_address + mem->dwarf_offset("squad_name"), true);
+    LOGD << "\tGENERIC SQUAD NAME:" << m_generic_squad_name;
 
     //TEST
     //QString squad_name = DT->get_dwarf_word(m_df->read_int(m_address + mem->dwarf_offset("squad_name")));
@@ -122,9 +137,6 @@ void Dwarf::refresh_data() {
     //LOGD << "LOADED" << m_nice_name << hex << m_address << "SQUAD:" << squad_name;
 	//LOGD << m_nice_name << m_id;
 	TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
-}
-
-Dwarf::~Dwarf() {
 }
 
 void Dwarf::read_settings() {
@@ -148,16 +160,6 @@ QString Dwarf::profession() {
 bool Dwarf::active_military() {
     Profession *p = GameDataReader::ptr()->get_profession(m_raw_profession);
     return p && p->is_military();
-}
-
-Dwarf *Dwarf::get_squad_leader() {
-	// Oh I will be...
-	if (!m_squad_leader_id) {
-		// I'll be squad leader!
-		return 0;
-	} else {
-        return DT->get_dwarf_by_id(m_squad_leader_id); // Tony Danza
-	}
 }
 
 void Dwarf::calc_names() {
@@ -606,23 +608,43 @@ void Dwarf::dump_memory() {
 
 void Dwarf::show_details() {
 	DT->get_main_window()->show_dwarf_details_dock(this);
-	/*
+}
 
-    QDialog *d = new QDialog(DT->get_main_window());
-    DwarfDetailsWidget *w = new DwarfDetailsWidget(d);
-    QDialogButtonBox *bb = new QDialogButtonBox(QDialogButtonBox::Close, Qt::Horizontal, d);
-    connect(bb, SIGNAL(rejected()), d, SLOT(reject()));
-    d->setWindowIcon(QIcon(":img/hammer.png"));
-    d->setAttribute(Qt::WA_DeleteOnClose, true);
-    
-    w->show_dwarf(this);
-    d->setModal(false);
-    d->setWindowTitle(QString("%1, %2").arg(m_nice_name).arg(profession()));
-    d->resize(400, 600);
-    QVBoxLayout *v = new QVBoxLayout(d);
-    v->addWidget(w, 100);
-    v->addWidget(bb);
-    d->setLayout(v);
-    d->show();
-	*/
+/************************************************************************/
+/* SQUAD STUFF                                                          */
+/************************************************************************/
+Dwarf *Dwarf::get_squad_leader() {
+    // Oh I will be...
+    if (m_squad_leader_id <= 0) {
+        // I'll be squad leader!
+        return 0;
+    } else {
+        return DT->get_dwarf_by_id(m_squad_leader_id); // Tony Danza
+    }
+}
+
+QString Dwarf::read_squad_name(const uint &addr, bool use_generic) {
+    QString out;
+    for (int i = 0; i < 24; i+=4) {
+        int word_offset = m_df->read_int(addr + i);
+        if (word_offset == 0 || word_offset == 0xFFFFFFFF)
+            continue;
+        if (use_generic)
+            out += DT->get_generic_word(word_offset);
+        else
+            out += DT->get_dwarf_word(word_offset);
+    }
+    return out;
+}
+
+QString Dwarf::squad_name() {
+    if (m_squad_leader_id > 0) // follow the chain up
+        return get_squad_leader()->squad_name();
+    else
+        return m_squad_name;
+}
+
+void Dwarf::add_squad_member(Dwarf *d) {
+    if (d && !m_squad_members.contains(d))
+        m_squad_members << d;
 }

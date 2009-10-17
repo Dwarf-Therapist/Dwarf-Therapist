@@ -28,6 +28,7 @@ class Dwarf;
 class DFInstance;
 class DwarfModel;
 class GridView;
+class Squad;
 
 class DwarfModel : public QStandardItemModel {
 	Q_OBJECT
@@ -71,6 +72,10 @@ public:
 	int selected_col() const {return m_selected_col;}
 	void filter_changed(const QString &);
 
+    QList<QStandardItem*> build_row(Dwarf *d);
+    QModelIndex DwarfModel::findOne(const QVariant &needle, const QModelIndex &start_index = QModelIndex(), int role = Qt::DisplayRole, int column = 0);
+    QList<QModelIndex> DwarfModel::findAll(const QVariant &needle, const QModelIndex &start_index = QModelIndex(), int role = Qt::DisplayRole, int column = 0);
+
 	public slots:
 		void build_row(const QString &key);
 		void build_rows();
@@ -85,6 +90,8 @@ private:
 	DFInstance *m_df;
 	QMap<int, Dwarf*> m_dwarves;
 	QMap<QString, QVector<Dwarf*> > m_grouped_dwarves;
+    //! squad_leader_id -> squad object
+    QHash<int, Squad*> m_squads;
 	GROUP_BY m_group_by;
 	int m_selected_col;
 	GridView *m_gridview;

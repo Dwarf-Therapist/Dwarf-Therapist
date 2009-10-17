@@ -55,6 +55,7 @@ public:
 	DwarfModel *get_model() {return m_model;}
 	DwarfModelProxy *get_proxy() {return m_proxy;}
 	ViewManager *get_view_manager() {return m_view_manager;}
+    DFInstance *get_DFInstance() {return m_df;}
 
 	Ui::MainWindow *ui;
 

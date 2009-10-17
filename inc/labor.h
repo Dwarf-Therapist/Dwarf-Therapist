@@ -25,8 +25,6 @@ THE SOFTWARE.
 
 #include <QtGui>
 
-#define LABOR_P *Labor;
-
 class Labor : public QObject {
 	Q_OBJECT
 public:
