@@ -325,10 +325,14 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
         if (!dwarf_id) {
             LOGW << "dwarf_id was 0 for cell at" << idx << "!";
         } else {
-		    QModelIndex aggregate_col = index(idx.parent().row(), idx.column());
-		    if (aggregate_col.isValid())
-                emit dataChanged(aggregate_col, aggregate_col);
-            emit dataChanged(idx, idx);
+            QModelIndex left = index(idx.parent().row(), 0, idx.parent().parent());
+            QModelIndex right = index(idx.parent().row(), columnCount(idx.parent()) - 1, idx.parent().parent());
+            emit dataChanged(left, right); // update the agg row
+
+            left = index(idx.row(), 0, idx.parent());
+            right = index(idx.row(), columnCount(idx.parent()) - 1, idx.parent());
+		    emit dataChanged(left, right); // update the dwarf row
+
 		    m_dwarves[dwarf_id]->toggle_labor(labor_id);
         }
 	}
