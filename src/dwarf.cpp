@@ -447,14 +447,15 @@ bool Dwarf::toggle_labor(int labor_id) {
 }
 
 void Dwarf::set_labor(int labor_id, bool enabled) {
-    if (!m_can_set_labors && !DT->labor_cheats_allowed()) {
-        LOGD << "IGNORING SET LABOR OF ID:" << labor_id << "TO:" << enabled << "FOR:" << m_nice_name << "PROF_ID" << m_raw_profession
-             << "PROF_NAME:" << profession() << "CUSTOM:" << m_pending_custom_profession;
-        return;
-    }
     Labor *l = GameDataReader::ptr()->get_labor(labor_id);
     if (!l) {
         LOGD << "UNKNOWN LABOR: Bailing on set profession of id" << labor_id << "enabled?" << enabled << "for" << m_nice_name;
+        return;
+    }
+
+    if (!m_can_set_labors && !DT->labor_cheats_allowed() && !l->is_weapon) {
+        LOGD << "IGNORING SET LABOR OF ID:" << labor_id << "TO:" << enabled << "FOR:" << m_nice_name << "PROF_ID" << m_raw_profession
+             << "PROF_NAME:" << profession() << "CUSTOM:" << m_pending_custom_profession;
         return;
     }
 
