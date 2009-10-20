@@ -30,6 +30,23 @@ class DwarfModel;
 class GridView;
 class Squad;
 
+/*
+class CreatureGroup : public QStandardItem {
+    Q_OBJECT
+public:
+    CreatureGroup();
+    CreatureGroup(const QString &text);
+    CreatureGroup(const QIcon &icon, const QString &text);
+    virtual ~CreatureGroup();
+
+    QList<QStandardItem*> build_row();
+    void add_member(Dwarf *d);
+    int type() const {return QStandardItem::UserType + 1;}
+private:
+    QList<int> m_member_ids;
+};
+*/
+
 class DwarfModel : public QStandardItemModel {
 	Q_OBJECT
 public:
@@ -53,7 +70,8 @@ public:
 		DR_DEFAULT_BG_COLOR,
 		DR_DUMMY, // used as an int counter that increments to force re-draws
 		DR_COL_TYPE,
-		DR_SET_NAME
+		DR_SET_NAME,
+        DR_MEMBER_IDS // creature ids that belong to this aggregate
 	} DATA_ROLES;
 
 	DwarfModel(QObject *parent = 0);
@@ -72,7 +90,6 @@ public:
 	int selected_col() const {return m_selected_col;}
 	void filter_changed(const QString &);
 
-    QList<QStandardItem*> build_row(Dwarf *d);
     QModelIndex DwarfModel::findOne(const QVariant &needle, const QModelIndex &start_index = QModelIndex(), int role = Qt::DisplayRole, int column = 0);
     QList<QModelIndex> DwarfModel::findAll(const QVariant &needle, const QModelIndex &start_index = QModelIndex(), int role = Qt::DisplayRole, int column = 0);
 

@@ -634,6 +634,8 @@ QString Dwarf::read_squad_name(const uint &addr, bool use_generic) {
         else
             out += DT->get_dwarf_word(word_offset);
     }
+    if (out.size())
+        out[0] = out.at(0).toUpper();
     return out;
 }
 

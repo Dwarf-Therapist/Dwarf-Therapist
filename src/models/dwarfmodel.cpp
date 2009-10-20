@@ -122,70 +122,32 @@ void DwarfModel::build_rows() {
 	m_grouped_dwarves.clear();
 	clear();
 
-
-    QList<Dwarf *> undrawn_dwarfs;
-    undrawn_dwarfs = m_dwarves.values();
-    int loop_max = 100;
-    while (undrawn_dwarfs.size()) {
-        LOGD << "looping... undrawn" << undrawn_dwarfs.size();
-        foreach(Dwarf *d, undrawn_dwarfs) {
-            switch(m_group_by) {
+    /*
+    TODO: Move this to the RotatedHeader class
+    */
+    int start_col = 1;
+    setHorizontalHeaderItem(0, new QStandardItem);
+    emit clear_spacers();
+    QSettings *s = DT->user_settings();
+    int width = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
+    foreach(ViewColumnSet *set, m_gridview->sets()) {
+        foreach(ViewColumn *col, set->columns()) {
+            QStandardItem *header = new QStandardItem(col->title());
+            header->setData(col->bg_color(), Qt::BackgroundColorRole);
+            setHorizontalHeaderItem(start_col++, header);
+            switch (col->type()) {
+                case CT_SPACER:
+                    {
+                        SpacerColumn *c = static_cast<SpacerColumn*>(col);
+                        emit set_index_as_spacer(start_col - 1);
+                        emit preferred_header_size(start_col - 1, c->width());
+                    }
+                    break;
                 default:
-                case GB_NOTHING:
-                    appendRow(build_row(d));
-                    undrawn_dwarfs.removeAll(d);
-                    break;
-                case GB_PROFESSION:
-                    {
-                        QStandardItem *prof_root;
-                        QModelIndex prof_idx = findOne(d->profession());
-                        if (!prof_idx.isValid()) {
-                            prof_root = new QStandardItem(d->profession());
-                            appendRow(prof_root);
-                        } else {
-                            prof_root = itemFromIndex(prof_idx);
-                        }
-                        prof_root->appendRow(build_row(d));
-                        undrawn_dwarfs.removeAll(d);
-                    }
-                    break;
-                case GB_SQUAD:
-                    {
-                        QStandardItem *squad_root;
-                        Dwarf *squad_leader = d->get_squad_leader();
-                        if (squad_leader) {
-                            QModelIndex squad_idx = findOne("[M]"+ squad_leader->nice_name());
-                            if (squad_idx.isValid()) {
-                                squad_root = itemFromIndex(squad_idx);
-                                squad_root->appendRow(build_row(d));
-                                undrawn_dwarfs.removeAll(d);
-                            }
-                        } else {
-                            if (d->squad_members().size()) { // has no leader, but has members = top level squad
-                                squad_root = new QStandardItem("SQUAD " + d->squad_name());
-                                squad_root->appendRow(build_row(d));
-                                appendRow(squad_root);
-                                undrawn_dwarfs.removeAll(d);
-                            } else {
-                                // just some dude...
-                                appendRow(build_row(d));
-                                undrawn_dwarfs.removeAll(d);
-                            }
-                        }
-                    }
-                    break;
+                    emit preferred_header_size(start_col - 1, width);
             }
         }
-        loop_max--;
-        if (loop_max == 0) {
-            LOGC << "Failed to draw all dwarfs in under 100 loops, something is broken in the grouping logic of DwarfModel!";
-            break;
-        }
     }
-
-    // build squad structures...
-  
-    /*
 	// populate dwarf maps
 	foreach(Dwarf *d, m_dwarves) {
 		switch (m_group_by) {
@@ -223,76 +185,28 @@ void DwarfModel::build_rows() {
             case GB_SQUAD:
                 QString squad = "None";
                 Dwarf *leader = d->get_squad_leader();
-                if (leader)
-                    squad = leader->nice_name();
+                if (leader) {
+                    squad = leader->squad_name();
+                } else if (d->squad_members().size()) {
+                    squad = d->squad_name();
+                    //HACK (reorder this to make sure the leader is added first
+                    QVector<Dwarf*> current_members = m_grouped_dwarves[squad];
+                    if (current_members.size()) {
+                        m_grouped_dwarves[squad].clear();
+                        m_grouped_dwarves[squad].append(d);
+                        foreach(Dwarf *member, current_members) {
+                            m_grouped_dwarves[squad].append(member);
+                        }
+                        continue;
+                    }
+                }
                 m_grouped_dwarves[squad].append(d);
 		}
 	}
-    */
-
-    /*
-    TODO: Move this to the RotatedHeader class
-    */
-	int start_col = 1;
-	setHorizontalHeaderItem(0, new QStandardItem);
-	emit clear_spacers();
-	QSettings *s = DT->user_settings();
-	int width = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
-	foreach(ViewColumnSet *set, m_gridview->sets()) {
-		foreach(ViewColumn *col, set->columns()) {
-			QStandardItem *header = new QStandardItem(col->title());
-			header->setData(col->bg_color(), Qt::BackgroundColorRole);
-			setHorizontalHeaderItem(start_col++, header);
-			switch (col->type()) {
-				case CT_SPACER:
-					{
-						SpacerColumn *c = static_cast<SpacerColumn*>(col);
-						emit set_index_as_spacer(start_col - 1);
-						emit preferred_header_size(start_col - 1, c->width());
-					}
-					break;
-				default:
-					emit preferred_header_size(start_col - 1, width);
-			}
-		}
-	}
-    /*
+ 
     foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
 	    build_row(key);
 	}
-    */
-}
-
-QList<QStandardItem*> DwarfModel::build_row(Dwarf *d) {
-    QIcon icn_f(":img/female.png");
-    QIcon icn_m(":img/male.png");
-    QString name = d->nice_name();
-    if (d->active_military())
-        name = "[M]" + name;
-    QStandardItem *i_name = new QStandardItem(name);
-
-    i_name->setToolTip(d->tooltip_text());
-    i_name->setStatusTip(d->nice_name());
-    i_name->setData(false, DR_IS_AGGREGATE);
-    i_name->setData(0, DR_RATING);
-    i_name->setData(d->id(), DR_ID);
-    i_name->setData(d->raw_profession(), DR_SORT_VALUE);
-
-    if (d->is_male()) {
-        i_name->setIcon(icn_m);
-    } else {
-        i_name->setIcon(icn_f);
-    }
-
-    QList<QStandardItem*> items;
-    items << i_name;
-    foreach(ViewColumnSet *set, m_gridview->sets()) {
-        foreach(ViewColumn *col, set->columns()) {
-            QStandardItem *item = col->build_cell(d);
-            items << item;
-        }
-    }
-    return items;
 }
 
 void DwarfModel::build_row(const QString &key) {
@@ -378,7 +292,6 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
 	COLUMN_TYPE type = static_cast<COLUMN_TYPE>(idx.data(DwarfModel::DR_COL_TYPE).toInt());
 	if (type != CT_LABOR) 
 		return;
-
 	
 	Q_ASSERT(item);
 
@@ -404,19 +317,18 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
 		}
 
 		// tell the view what we touched...
-		setData(idx, idx.data(DR_DUMMY).toInt()+1, DR_DUMMY); // redraw the aggregate...
-		for(int i = 0; i < rowCount(first_col); ++i) {
-			QModelIndex tmp_index = index(i, idx.column(), first_col);
-			setData(tmp_index, tmp_index.data(DR_DUMMY).toInt()+1, DR_DUMMY);
-		}
-	} else {
+        emit dataChanged(idx, idx);
+        QModelIndex left = index(0, 0, first_col);
+        QModelIndex right = index(rowCount(first_col) - 1, columnCount(first_col) - 1, first_col);
+        emit dataChanged(left, right); // tell the view we changed every dwarf under this agg to pick up implicit exclusive changes
+    } else {
         if (!dwarf_id) {
             LOGW << "dwarf_id was 0 for cell at" << idx << "!";
         } else {
 		    QModelIndex aggregate_col = index(idx.parent().row(), idx.column());
 		    if (aggregate_col.isValid())
-		    	setData(aggregate_col, aggregate_col.data(DR_DUMMY).toInt()+1, DR_DUMMY); // redraw the aggregate...
-		    setData(idx, idx.data(DR_DUMMY).toInt()+1, DR_DUMMY); // redraw the aggregate...
+                emit dataChanged(aggregate_col, aggregate_col);
+            emit dataChanged(idx, idx);
 		    m_dwarves[dwarf_id]->toggle_labor(labor_id);
         }
 	}
