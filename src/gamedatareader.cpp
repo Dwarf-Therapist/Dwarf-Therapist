@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "trait.h"
 #include "dwarfjob.h"
 #include "profession.h"
+#include "militarypreference.h"
 #include "defines.h"
 #include <QtDebug>
 
@@ -41,7 +42,7 @@ GameDataReader::GameDataReader(QObject *parent)
     for(int i = 0; i < labors; ++i) {
         m_data_settings->setArrayIndex(i);
         Labor *l = new Labor(*m_data_settings, this);
-		m_labors[l->labor_id] = l;
+        m_labors.insert(l->labor_id, l);
         labor_names << l->name;
 	}
 	m_data_settings->endArray();
@@ -137,6 +138,15 @@ GameDataReader::GameDataReader(QObject *parent)
     }
     m_data_settings->endArray();
 
+    int mil_prefs = m_data_settings->beginReadArray("military_prefs");
+    m_military_preferences.clear();
+    for(short i = 0; i < mil_prefs; ++i) {
+        m_data_settings->setArrayIndex(i);
+        MilitaryPreference *p = new MilitaryPreference(*m_data_settings, this);
+        m_military_preferences.insert(p->labor_id, p);
+    }
+    m_data_settings->endArray();
+
 }
  
 int GameDataReader::get_int_for_key(QString key, short base) {
@@ -212,6 +222,10 @@ Trait *GameDataReader::get_trait(const int &trait_id) {
 
 DwarfJob *GameDataReader::get_job(const short &job_id) {
 	return m_dwarf_jobs.value(job_id, 0);
+}
+
+MilitaryPreference *GameDataReader::get_military_preference(const int &mil_pref_id) {
+    return m_military_preferences.value(mil_pref_id, 0);
 }
 
 int GameDataReader::get_xp_for_next_attribute_level(int current_number_of_attributes) {

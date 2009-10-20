@@ -44,6 +44,7 @@
         <file>img/exclamation.png</file>
         <file>img/bullet_red.png</file>
         <file>img/tick.png</file>
+        <file>img/arrow_switch.png</file>
     </qresource>
     <qresource prefix="/config" >
         <file alias="default_gridviews" >default_gridviews.dtg</file>

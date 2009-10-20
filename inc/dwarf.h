@@ -117,6 +117,12 @@ public:
     //! return true if the labor specified by labor_id has been toggled and not committed
     bool is_labor_state_dirty(int labor_id);
 
+    //! return the numeric value of a preference setting (uses labor ids for offset)
+    short pref_value(const int &labor_id);
+
+    //! sets a numeric value on a preference to the next value in the chain (uses labor ids for offset)
+    void toggle_pref_value(const int &labor_id);
+
     /*! return this dwarf's numeric score for the trait specified by trait_id, 
     will return -1 if the trait is in the average range (non-extreme values)
     */
@@ -258,14 +264,12 @@ private:
 	int m_strength;
 	int m_agility;
 	int m_toughness;
-	short m_num_weapons;
-	short m_pending_num_weapons;
     short m_current_job_id;
     QString m_current_job;
 	QVector<Skill> m_skills;
 	QHash<int, short> m_traits;
-	QMap<int, bool> m_labors;
-	QMap<int, bool> m_pending_labors;
+	QMap<int, ushort> m_labors;
+	QMap<int, ushort> m_pending_labors;
 	QList<QAction*> m_actions; // actions suitable for context menus
     
     // Squad settings

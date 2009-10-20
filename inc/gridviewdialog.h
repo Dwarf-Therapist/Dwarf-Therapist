@@ -113,6 +113,7 @@ private:
         void add_idle_column();
         void add_trait_column();
         void add_attribute_column();
+        void add_military_preferences_column();
 };
 
 #endif

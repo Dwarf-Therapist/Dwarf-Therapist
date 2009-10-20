@@ -34,12 +34,15 @@ THE SOFTWARE.
 #include "idlecolumn.h"
 #include "traitcolumn.h"
 #include "attributecolumn.h"
+#include "militarypreferencecolumn.h"
+
 #include "defines.h"
 #include "statetableview.h"
 #include "gamedatareader.h"
 #include "labor.h"
 #include "utils.h"
 #include "trait.h"
+#include "militarypreference.h"
 #include "ui_columneditdialog.h"
 
 GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent)
@@ -322,7 +325,8 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
 			a->setToolTip(tr("Add a column for labor %1 (ID%2)").arg(l->name).arg(l->labor_id));
 		}
 
-        QMenu *m_weapons = m->addMenu(tr("Add Weapon Column"));
+        QMenu *m_mil_prefs = m->addMenu(tr("Add Military Columns"));
+        QMenu *m_weapons = m_mil_prefs->addMenu(tr("Add Weapon Column"));
         m_weapons->setMouseTracking(true);
         foreach(Labor *l, gdr->get_ordered_labors()) {
             if (!l->is_weapon)
@@ -330,6 +334,11 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
             QAction *a = m_weapons->addAction(l->name, this, SLOT(add_labor_column()));
             a->setData(l->labor_id);
             a->setToolTip(tr("Add a column for weapon choice: %1 (ID%2)").arg(l->name).arg(l->labor_id));
+        }
+        m_mil_prefs->addSeparator();
+        foreach(MilitaryPreference* mp, gdr->get_military_preferences()) {
+            a = m_mil_prefs->addAction(mp->name, this, SLOT(add_military_preferences_column()));
+            a->setData(mp->labor_id);
         }
 
 		QMenu *m_skill = m->addMenu(tr("Add Skill Column"));
@@ -440,6 +449,16 @@ void GridViewDialog::add_attribute_column() {
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     AttributeColumn::DWARF_ATTRIBUTE_TYPE type = static_cast<AttributeColumn::DWARF_ATTRIBUTE_TYPE>(a->data().toInt());
     new AttributeColumn("", type, m_active_set, m_active_set);
+    draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_military_preferences_column() {
+    if (!m_active_set)
+        return;
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    int labor_id = a->data().toInt();
+    MilitaryPreference *mp = GameDataReader::ptr()->get_military_preference(labor_id);
+    new MilitaryPreferenceColumn(mp->name, mp->labor_id, mp->skill_id, m_active_set, m_active_set);
     draw_columns_for_set(m_active_set);
 }
 

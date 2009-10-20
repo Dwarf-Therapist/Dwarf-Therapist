@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include "dwarfdetailswidget.h"
 #include "mainwindow.h"
 #include "profession.h"
+#include "militarypreference.h"
 
 Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
 	: QObject(parent)
@@ -123,19 +124,13 @@ void Dwarf::refresh_data() {
     TRACE << "\tCURRENT JOB:" << m_current_job_id << m_current_job;
 
     m_squad_leader_id = m_df->read_int(m_address + mem->dwarf_offset("squad_leader_id"));
-    LOGD << "\tSQUAD LEADER ID:" << m_squad_leader_id;
+    TRACE << "\tSQUAD LEADER ID:" << m_squad_leader_id;
 
     m_squad_name = read_squad_name(m_address + mem->dwarf_offset("squad_name"));
-    LOGD << "\tSQUAD NAME:" << m_squad_name;
+    TRACE << "\tSQUAD NAME:" << m_squad_name;
     m_generic_squad_name = read_squad_name(m_address + mem->dwarf_offset("squad_name"), true);
-    LOGD << "\tGENERIC SQUAD NAME:" << m_generic_squad_name;
+    TRACE << "\tGENERIC SQUAD NAME:" << m_generic_squad_name;
 
-    //TEST
-    //QString squad_name = DT->get_dwarf_word(m_df->read_int(m_address + mem->dwarf_offset("squad_name")));
-    //squad_name.append(DT->get_dwarf_word(m_df->read_int(m_address + mem->dwarf_offset("squad_name") + 0xC)));
-	
-    //LOGD << "LOADED" << m_nice_name << hex << m_address << "SQUAD:" << squad_name;
-	//LOGD << m_nice_name << m_id;
 	TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
 }
 
@@ -379,6 +374,19 @@ void Dwarf::read_current_job(const uint &addr) {
 
 }
 
+short Dwarf::pref_value(const int &labor_id) {
+    if (!m_pending_labors.contains(labor_id)) {
+        LOGW << m_nice_name << "pref_value for labor_id" << labor_id << "was not found in pending labors hash!";
+        return 0;
+    }
+    return m_pending_labors.value(labor_id);
+}
+
+void Dwarf::toggle_pref_value(const int &labor_id) {
+    short next_val = GameDataReader::ptr()->get_military_preference(labor_id)->next_val(pref_value(labor_id));
+    m_pending_labors[labor_id] = next_val;
+}
+
 void Dwarf::read_labors(const uint &addr) {
     // read a big array of labors in one read, then pick and choose
 	// the values we care about
@@ -395,12 +403,11 @@ void Dwarf::read_labors(const uint &addr) {
 		m_labors[l->labor_id] = enabled;
 		m_pending_labors[l->labor_id] = enabled;
 	}
-	// special cases
-	/*
-	int num_weapons_offset = gdr->get_int_for_key("military_prefs/0/id", 10);
-	m_pending_num_weapons = buf[num_weapons_offset];
-	m_num_weapons = m_pending_num_weapons;
-	*/
+    // also store prefs in this structure
+    foreach(MilitaryPreference *mp, gdr->get_military_preferences()) {
+        m_labors[mp->labor_id] = static_cast<ushort>(buf[mp->labor_id]);
+        m_pending_labors[mp->labor_id] = static_cast<ushort>(buf[mp->labor_id]);
+    }
 }
 
 bool Dwarf::is_labor_enabled(int labor_id) {
@@ -416,7 +423,7 @@ bool Dwarf::is_labor_enabled(int labor_id) {
         }
         return !uses_weapon;
     } else {
-        return m_pending_labors[labor_id];
+        return m_pending_labors.value(labor_id, false);
     }
 }
 
@@ -489,7 +496,7 @@ void Dwarf::commit_pending() {
         if (labor_id < 0)
             continue;
 		// change values to what's pending
-		buf[labor_id] = m_pending_labors.value(labor_id, false) ? 1 : 0;
+		buf[labor_id] = m_pending_labors.value(labor_id);
 	}
 
 	m_df->write_raw(addr, 102, &buf);
@@ -537,19 +544,29 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
 	}
 	foreach(int labor_id, labors) {
 		Labor *l = GameDataReader::ptr()->get_labor(labor_id);
+        MilitaryPreference *mp = GameDataReader::ptr()->get_military_preference(labor_id);
+
 		if (!l || l->labor_id != labor_id) {
-			LOGW << "somehow got a change to an unknown labor with id:" << labor_id;
-			continue;
-		}
-		
-		QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
-		i->setText(0, l->name);
-		if (is_labor_enabled(labor_id)) {
-			i->setIcon(0, QIcon(":img/add.png"));
-		} else {
-			i->setIcon(0, QIcon(":img/delete.png"));
-		}
-		i->setData(0, Qt::UserRole, id());
+            // this may be a mil pref not a labor..
+            if (!mp || mp->labor_id != labor_id) {
+                LOGW << "somehow got a change to an unknown labor with id:" << labor_id;
+				continue;
+            }
+        }
+
+	    QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
+        if (l) {
+	        i->setText(0, l->name);
+	        if (is_labor_enabled(labor_id)) {
+		        i->setIcon(0, QIcon(":img/add.png"));
+	        } else {
+		        i->setIcon(0, QIcon(":img/delete.png"));
+	        }
+        } else if (mp) {
+            i->setText(0, QString("Set %1 to %2").arg(mp->name).arg(mp->value_name(pref_value(labor_id))));
+            i->setIcon(0, QIcon(":img/arrow_switch.png"));
+        }
+	    i->setData(0, Qt::UserRole, id());
 	}
 	return d_item;
 }

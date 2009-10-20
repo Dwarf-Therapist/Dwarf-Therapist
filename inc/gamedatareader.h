@@ -31,6 +31,7 @@ THE SOFTWARE.
 class QSettings;
 #include "labor.h"
 class Trait;
+class MilitaryPreference;
 class Profession;
 class DwarfJob;
 
@@ -69,9 +70,12 @@ public:
 	QList<QPair<int, QString> > get_ordered_skills() {return m_ordered_skills;}
     QHash<int, Trait*> get_traits() {return m_traits;}
 	QList<QPair<int, Trait*> > get_ordered_traits() {return m_ordered_traits;}
+    QHash<int, MilitaryPreference*> get_military_preferences() {return m_military_preferences;}
+
 	Labor *get_labor(const int &labor_id);
 	Trait *get_trait(const int &trait_id);
 	DwarfJob *get_job(const short &job_id);
+    MilitaryPreference *get_military_preference(const int &mil_pref_id);
 
 	QString get_string_for_key(QString key);
     Profession* get_profession(const short &profession_id);
@@ -91,6 +95,8 @@ private:
 	
     QHash<int, Labor*> m_labors;
 	QList<Labor*> m_ordered_labors;
+
+    QHash<int, MilitaryPreference*> m_military_preferences;
 
     QHash<int, Trait*> m_traits;
 	QList<QPair<int, Trait*> > m_ordered_traits;

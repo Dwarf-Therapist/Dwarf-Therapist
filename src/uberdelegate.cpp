@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "columntypes.h"
 #include "utils.h"
 #include "dwarftherapist.h"
+#include "militarypreference.h"
 
 UberDelegate::UberDelegate(QObject *parent)
 	: QStyledItemDelegate(parent)
@@ -156,6 +157,17 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
                 p->drawText(adjusted, Qt::AlignCenter, model_idx.data(Qt::DisplayRole).toString());
                 p->restore();
                 paint_grid(adjusted, false, p, opt, idx);
+            }
+            break;
+        case CT_MILITARY_PREFERENCE:
+            {
+                bool agg = model_idx.data(DwarfModel::DR_IS_AGGREGATE).toBool();
+                if (m_model->current_grouping() == DwarfModel::GB_NOTHING || !agg) {
+                   paint_pref(adjusted, p, opt, idx);
+                } else {
+                    if (draw_aggregates)
+                        paint_aggregate(adjusted, p, opt, idx);
+                }
             }
             break;
         case CT_DEFAULT:
@@ -320,6 +332,25 @@ void UberDelegate::paint_skill(const QRect &adjusted, int rating, QColor bg, QPa
 			break;
 	}
 	p->restore();
+}
+
+void UberDelegate::paint_pref(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
+    QModelIndex idx = m_proxy->mapToSource(proxy_idx);
+    Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
+    if (!d) {
+        return QStyledItemDelegate::paint(p, opt, idx);
+    }
+
+    int labor_id = idx.data(DwarfModel::DR_LABOR_ID).toInt();
+    short val = d->pref_value(labor_id);
+    QString symbol = GameDataReader::ptr()->get_military_preference(labor_id)->value_symbol(val);
+    bool dirty = d->is_labor_state_dirty(labor_id);
+
+    QColor bg = paint_bg(adjusted, false, p, opt, proxy_idx);
+    p->save();
+    p->drawText(opt.rect, Qt::AlignCenter, symbol);
+    p->restore();
+    paint_grid(adjusted, dirty, p, opt, proxy_idx);
 }
 
 void UberDelegate::paint_labor(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {

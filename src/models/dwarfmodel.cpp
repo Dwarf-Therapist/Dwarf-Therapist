@@ -165,16 +165,16 @@ void DwarfModel::build_rows() {
 							legendary_skills++;
 					}
 					if (legendary_skills)
-						m_grouped_dwarves["Legends"].append(d);
+						m_grouped_dwarves[tr("Legends")].append(d);
 					else
-						m_grouped_dwarves["Losers"].append(d);
+						m_grouped_dwarves[tr("Losers")].append(d);
 					break;
 				}
 			case GB_SEX:
 				if (d->is_male())
-					m_grouped_dwarves["Males"].append(d);
+					m_grouped_dwarves[tr("Males")].append(d);
 				else
-					m_grouped_dwarves["Females"].append(d);
+					m_grouped_dwarves[tr("Females")].append(d);
 				break;
 			case GB_HAPPINESS:
 				m_grouped_dwarves[d->happiness_name(d->get_happiness())].append(d);
@@ -290,7 +290,7 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
     }
 
 	COLUMN_TYPE type = static_cast<COLUMN_TYPE>(idx.data(DwarfModel::DR_COL_TYPE).toInt());
-	if (type != CT_LABOR) 
+	if (type != CT_LABOR && type != CT_MILITARY_PREFERENCE) 
 		return;
 	
 	Q_ASSERT(item);
@@ -332,8 +332,11 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
             left = index(idx.row(), 0, idx.parent());
             right = index(idx.row(), columnCount(idx.parent()) - 1, idx.parent());
 		    emit dataChanged(left, right); // update the dwarf row
-
-		    m_dwarves[dwarf_id]->toggle_labor(labor_id);
+            if (type == CT_LABOR)
+                m_dwarves[dwarf_id]->toggle_labor(labor_id);
+            else if (type == CT_MILITARY_PREFERENCE)
+                m_dwarves[dwarf_id]->toggle_pref_value(labor_id);
+		    
         }
 	}
 	calculate_pending();
