@@ -131,6 +131,7 @@ void ViewColumnSet::toggle_for_dwarf_group() {
 			}
 		}
 	}
+	dm->dwarf_group_toggled(group_name);
 	DT->get_main_window()->get_model()->calculate_pending();
 }
 
@@ -161,7 +162,9 @@ void ViewColumnSet::toggle_for_dwarf(Dwarf *d) {
 			d->set_labor(lc->labor_id(), turn_on);
 		}
 	}
-	DT->get_main_window()->get_model()->calculate_pending();
+	DwarfModel *dm = DT->get_main_window()->get_model();
+	dm->dwarf_set_toggled(d);
+	dm->calculate_pending();
 }
 
 

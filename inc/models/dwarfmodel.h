@@ -90,8 +90,8 @@ public:
 	int selected_col() const {return m_selected_col;}
 	void filter_changed(const QString &);
 
-    QModelIndex DwarfModel::findOne(const QVariant &needle, const QModelIndex &start_index = QModelIndex(), int role = Qt::DisplayRole, int column = 0);
-    QList<QModelIndex> DwarfModel::findAll(const QVariant &needle, const QModelIndex &start_index = QModelIndex(), int role = Qt::DisplayRole, int column = 0);
+    QModelIndex DwarfModel::findOne(const QVariant &needle, int role = Qt::DisplayRole, int column = 0, const QModelIndex &start_index = QModelIndex());
+    QList<QPersistentModelIndex> DwarfModel::findAll(const QVariant &needle, int role = Qt::DisplayRole, int column = 0, QModelIndex start_index = QModelIndex());
 
 	public slots:
 		void build_row(const QString &key);
@@ -102,6 +102,8 @@ public:
 		void clear_pending();
 		void commit_pending();
 		void section_right_clicked(int idx);
+		void dwarf_group_toggled(const QString &group_name);
+		void dwarf_set_toggled(Dwarf *d);
 
 private:
 	DFInstance *m_df;

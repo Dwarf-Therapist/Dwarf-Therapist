@@ -220,6 +220,7 @@ void DwarfModel::build_row(const QString &key) {
 		QString title = QString("%1 (%2)").arg(key).arg(m_grouped_dwarves.value(key).size());
 		root = new QStandardItem(title);
 		root->setData(true, DR_IS_AGGREGATE);
+		root->setData(key, DR_GROUP_NAME);
 		root->setData(0, DR_RATING);
 		root_row << root;
 	}
@@ -389,26 +390,64 @@ QVector<Dwarf*> DwarfModel::get_dirty_dwarves() {
 	return dwarves;
 }
 
-QModelIndex DwarfModel::findOne(const QVariant &needle, const QModelIndex &start_index, int role, int column) {
+QModelIndex DwarfModel::findOne(const QVariant &needle, int role, int column, const QModelIndex &start_index) {
     QModelIndex ret_val;
     if (data(start_index, role) == needle) {
         ret_val = start_index;
         return ret_val;
     }
     for (int i = 0; i < rowCount(start_index); ++i) {
-        ret_val = findOne(needle, index(i, column, start_index), role, column);
+        ret_val = findOne(needle, role, column, index(i, column, start_index));
         if (ret_val.isValid())
             return ret_val;
     }
     return ret_val;
 }
 
-QList<QModelIndex> DwarfModel::findAll(const QVariant &needle, const QModelIndex &start_index, int role, int column) {
-    QList<QModelIndex> ret_val;
+QList<QPersistentModelIndex> DwarfModel::findAll(const QVariant &needle, int role, int column, QModelIndex start_index) {
+	QList<QPersistentModelIndex> ret_val;
     if (data(start_index, role) == needle)
-        ret_val << start_index;
+		ret_val.append(QPersistentModelIndex(start_index));
     for (int i = 0; i < rowCount(start_index); ++i) {
-        ret_val += findAll(needle, index(i, column, start_index), role, column);
+		if (column == -1) {
+			for (int j = 0; j < columnCount(start_index); ++j) {
+				ret_val.append(findAll(needle, role, -1, index(i, j, start_index)));
+			}
+		} else {
+			ret_val.append(findAll(needle, role, column, index(i, column, start_index)));
+		}
     }
     return ret_val;
+}
+
+void DwarfModel::dwarf_group_toggled(const QString &group_name) {
+	QModelIndex agg_cell = findOne(group_name, DR_GROUP_NAME);
+	if (agg_cell.isValid()) {
+		QModelIndex left = agg_cell;
+		QModelIndex right = index(agg_cell.row(), columnCount(agg_cell.parent()) -1, agg_cell.parent());
+		emit dataChanged(left, right);
+	}
+	foreach (Dwarf *d, m_grouped_dwarves[group_name]) {
+		foreach(QModelIndex idx, findAll(d->id(), DR_ID, 0, agg_cell)) {
+			QModelIndex left = idx;
+			QModelIndex right = index(idx.row(), columnCount(idx.parent()) - 1, idx.parent());
+			emit dataChanged(left, right);
+		}
+	}
+}
+
+void DwarfModel::dwarf_set_toggled(Dwarf *d) {
+	// just update all cells we can find with this dwarf's id
+	QList<QPersistentModelIndex> cells = findAll(d->id(), DR_ID, 0);
+	foreach(QPersistentModelIndex idx, cells) {
+		QModelIndex left = idx;
+		QModelIndex right = index(idx.row(), columnCount(idx.parent()) - 1, idx.parent());
+		emit dataChanged(left, right);
+	}
+	if (cells.size()) {
+		QPersistentModelIndex first_idx = cells.at(0);
+		QModelIndex left = first_idx.parent();
+		QModelIndex right = index(left.row(), columnCount(left) - 1, left.parent());
+		emit dataChanged(left, right);
+	}
 }
