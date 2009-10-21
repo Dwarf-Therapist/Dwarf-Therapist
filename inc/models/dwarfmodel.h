@@ -58,6 +58,7 @@ public:
 		GB_HAPPINESS,
 		GB_MIGRATION_WAVE,
         GB_SQUAD,
+		GB_CURRENT_JOB,
 		GB_TOTAL
 	} GROUP_BY;
 	typedef enum {

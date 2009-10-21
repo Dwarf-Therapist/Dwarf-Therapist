@@ -182,6 +182,9 @@ void DwarfModel::build_rows() {
 			case GB_MIGRATION_WAVE:
 				m_grouped_dwarves[QString("Wave %1").arg(d->migration_wave())].append(d);
 				break;
+			case GB_CURRENT_JOB:
+				m_grouped_dwarves[d->current_job()].append(d);
+				break;
             case GB_SQUAD:
                 QString squad = "None";
                 Dwarf *leader = d->get_squad_leader();
