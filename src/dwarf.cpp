@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include "mainwindow.h"
 #include "profession.h"
 #include "militarypreference.h"
+#include "utils.h"
 
 Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
 	: QObject(parent)
@@ -200,19 +201,40 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const uint &addr) {
 	MemoryLayout *mem = df->memory_layout();
     TRACE << "attempting to load dwarf at" << addr << "using memory layout" << mem->game_version();
 
-    uint dwarf_race_index = df->memory_layout()->address("dwarf_race_index");
+    uint dwarf_race_index = mem->address("dwarf_race_index");
     int dwarf_race_id = df->read_int(dwarf_race_index + df->get_memory_correction());
-	TRACE << "Dwarf Race ID is" << dwarf_race_id;
 	
-	if ((df->read_int(addr + mem->dwarf_offset("flags1")) & mem->flags("flags1.invalidate")) > 0) {
-		return 0;
-	}
-	if ((df->read_int(addr + mem->dwarf_offset("flags2")) & mem->flags("flags2.invalidate")) > 0) {
-		return 0;
-	}
-	if ((df->read_int(addr + mem->dwarf_offset("race"))) != dwarf_race_id) {
-		return 0;
-	}
+    uint flags1 = df->read_uint(addr + mem->dwarf_offset("flags1"));
+    uint flags2 = df->read_uint(addr + mem->dwarf_offset("flags2"));
+    uint inv1 = mem->flags("flags1.invalidate");
+    uint inv2 = mem->flags("flags2.invalidate");
+    int race_id = df->read_int(addr + mem->dwarf_offset("race"));
+
+    if (race_id != dwarf_race_id) { // we only care about dwarfs
+        TRACE << "Ignoring non-dwarf creature with racial ID of " << hexify(race_id);
+        return 0;
+    }
+    /*
+    LOGD << "examining dwarf at" << hex << addr;
+    LOGD << "FLAGS1 :" << hexify(flags1);
+    LOGD << "INV 1  :" << hexify(inv1);
+    LOGD << "FLAGS2 :" << hexify(flags2);
+    LOGD << "INV 2  :" << hexify(inv2);
+    LOGD << "RACE   :" << hexify(race_id);
+    LOGD << "NAME   :" << df->read_string(addr + mem->dwarf_offset("first_name"));
+    LOGD << "INVADER FILTER:" << hexify(0x1000 | 0x2000 | 0x20000 | 0x80000 | 0xc0000 | 0x8C0);
+    LOGD << "OTHER   FILTER:" << hexify(0x80 | 0x40000);
+    */
+    
+    if (flags1 & inv1) {
+        TRACE << "Ignoring this dwarf which is either undead, zombie, an invader, a guard, or a merchant";
+        return 0;
+    }
+    if (flags2 & inv2) {
+        TRACE << "Ignoring this dwarf which is either dead or from the underworld";
+        return 0;
+    }
+	
 	return new Dwarf(df, addr, df);
 }
 

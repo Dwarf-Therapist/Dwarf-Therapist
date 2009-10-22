@@ -118,4 +118,8 @@ static inline QString to_hex(const QColor &c) {
 		.arg(c.alpha(), 2, 16, QChar('0'));
 }
 
+static inline QString hexify(const uint &num) {
+    return QString("0x%1").arg(num, 8, 16, QChar('0'));
+}
+
 #endif // UTILS_H

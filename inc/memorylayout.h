@@ -12,7 +12,7 @@ public:
     uint address(QString key) {return m_addresses.value(key, -1);}
     uint offset(QString key) {return m_offsets.value(key, -1);}
     uint dwarf_offset(QString key) {return m_dwarf_offsets.value(key, -1);}
-	int flags(QString key) {return m_flags.value(key, -1);}
+	uint flags(QString key) {return m_flags.value(key);}
 
 private:
     uint m_checksum;
