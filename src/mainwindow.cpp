@@ -244,10 +244,17 @@ void MainWindow::lost_df_connection() {
 
 void MainWindow::read_dwarves() {
 	if (!m_df || !m_df->is_ok()) {
+        lost_df_connection();
 		return;
 	}
 	m_model->set_instance(m_df);
 	m_model->load_dwarves();
+
+    if (m_model->get_dwarves().size() < 1) {
+        lost_df_connection();
+        return;
+    }
+
 	new_pending_changes(0);
 	// cheap trick to setup the view correctly
 	m_view_manager->redraw_current_tab();
