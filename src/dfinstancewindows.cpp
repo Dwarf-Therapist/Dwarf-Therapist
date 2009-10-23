@@ -119,7 +119,7 @@ QString DFInstanceWindows::read_string(const uint &addr) {
 	CP437Codec *codec = new CP437Codec;
 	QString ret_val = codec->toUnicode(buffer, len);
 	delete[] buffer;
-    delete codec;
+    //delete codec; seems to cause Qt Warnings if you delete this.
 	return ret_val;
 }
 
@@ -135,7 +135,7 @@ uint DFInstanceWindows::write_string(const uint &addr, const QString &str) {
     CP437Codec *codec = new CP437Codec;
     QByteArray data = codec->fromUnicode(str); 
     uint bytes_written = write_raw(buffer_addr, len, data.data());
-    delete codec;
+    //delete codec; seems to cause Qt Warnings if you delete this.
     return bytes_written;
 }
 

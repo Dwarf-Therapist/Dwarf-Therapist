@@ -38,7 +38,10 @@ public:
 		DJT_FOOD,
 		DJT_BUILD,
 		DJT_HAUL,
-		DJT_ADMIN
+		DJT_ADMIN,
+        DJT_FIGHT,
+        DJT_MOOD,
+        DJT_FORGE
 	} DWARF_JOB_TYPE;
 
 	static DWARF_JOB_TYPE get_type(const QString &type) {
@@ -52,6 +55,9 @@ public:
 		m["build"] = DJT_BUILD;
 		m["haul"] = DJT_HAUL;
 		m["admin"] = DJT_ADMIN;
+        m["fight"] = DJT_FIGHT;
+        m["mood"] = DJT_MOOD;
+        m["forge"] = DJT_FORGE;
 		return m.value(type.toLower(), DJT_DEFAULT);
 	}
 	
