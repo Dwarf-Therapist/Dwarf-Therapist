@@ -233,7 +233,8 @@ void ViewManager::setCurrentIndex(int idx) {
 			m_model->build_rows();
 			stv->header()->setResizeMode(QHeaderView::Fixed);
 			stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
-			//stv->sortByColumn(0, Qt::AscendingOrder);
+            //stv->header()->setResizeMode(m_model->columnCount() - 1, QHeaderView::ResizeToContents);
+			stv->sortByColumn(0, Qt::AscendingOrder);
             QList<Dwarf*> tmp_list;
             foreach(Dwarf *d, m_selected_dwarfs) {
                 tmp_list << d;

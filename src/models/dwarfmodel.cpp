@@ -148,6 +148,7 @@ void DwarfModel::build_rows() {
             }
         }
     }
+
 	// populate dwarf maps
 	foreach(Dwarf *d, m_dwarves) {
 		switch (m_group_by) {
@@ -238,11 +239,13 @@ void DwarfModel::build_row(const QString &key) {
 	}
 	
 	foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
-        QString name = d->nice_name();
-        if (d->active_military())
-            name = "[M]" + name;
-		QStandardItem *i_name = new QStandardItem(name);
-
+        QStandardItem *i_name = new QStandardItem(d->nice_name());
+        if (d->active_military()) {
+            QFont f = i_name->font();
+            f.setBold(true);
+            i_name->setFont(f);
+        }
+            
 		i_name->setToolTip(d->tooltip_text());
 		i_name->setStatusTip(d->nice_name());
 		i_name->setData(false, DR_IS_AGGREGATE);
