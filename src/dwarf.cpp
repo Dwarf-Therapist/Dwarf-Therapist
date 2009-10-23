@@ -178,10 +178,20 @@ void Dwarf::calc_names() {
 }
 
 Dwarf::DWARF_HAPPINESS Dwarf::happiness_from_score(int score) {
-	int chunk = score / 25; // yes, integer division
-	if (chunk > 6)
-		chunk = 6;
-	return (DWARF_HAPPINESS)(DH_MISERABLE + chunk);
+    if (score < 1)
+        return DH_MISERABLE;
+    else if (score <= 25)
+        return DH_VERY_UNHAPPY;
+    else if (score <= 50)
+        return DH_UNHAPPY;
+    else if (score <= 75)
+        return DH_FINE;
+    else if (score <= 125)
+        return DH_CONTENT;
+    else if (score <= 150)
+        return DH_HAPPY;
+    else
+        return DH_ECSTATIC;
 }
 
 QString Dwarf::happiness_name(DWARF_HAPPINESS happiness) {
