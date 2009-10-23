@@ -78,6 +78,10 @@ void Dwarf::refresh_data() {
 
 	m_id = m_df->read_int(m_address + mem->dwarf_offset("id"));
 	TRACE << "\tID:" << m_id;
+    char sex = m_df->read_char(m_address + mem->dwarf_offset("sex"));
+    m_is_male = (int)sex == 1;
+    TRACE << "\tMALE?" << m_is_male;
+
 	m_first_name = m_df->read_string(m_address + mem->dwarf_offset("first_name"));
 	if (m_first_name.size() > 1)
 		m_first_name[0] = m_first_name[0].toUpper();
@@ -105,15 +109,9 @@ void Dwarf::refresh_data() {
 	TRACE << "\tTOUGHNESS:" << m_toughness;
 	m_agility = m_df->read_int(m_address + mem->dwarf_offset("agility"));
 	TRACE << "\tAGILITY:" << m_agility;
-	read_labors(m_address + mem->dwarf_offset("labors"));
-
+    read_labors(m_address + mem->dwarf_offset("labors"));
 	read_traits(m_address + mem->dwarf_offset("traits"));
 	TRACE << "\tTRAITS:" << m_traits.size();
-
-	char sex = m_df->read_char(m_address + mem->dwarf_offset("sex"));
-	m_is_male = (int)sex == 1;
-	TRACE << "\tMALE?" << m_is_male;
-
 	m_money = m_df->read_int(m_address + mem->dwarf_offset("money"));
 	TRACE << "\tMONEY:" << m_money;
 	m_raw_happiness = m_df->read_int(m_address +mem->dwarf_offset("happiness"));
@@ -379,7 +377,7 @@ QString Dwarf::read_profession(const uint &addr) {
     QString prof_name = tr("Unknown Profession %1").arg(m_raw_profession);
     if (p) {
         m_can_set_labors = p->can_assign_labors();
-        prof_name = p->name();
+        prof_name = p->name(m_is_male);
     } else {
         LOGC << "Read unknown profession with id" << m_raw_profession << "for dwarf" << m_nice_name;
         m_can_set_labors = false;

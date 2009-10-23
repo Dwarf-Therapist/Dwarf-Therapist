@@ -31,12 +31,15 @@ public:
     Profession(QSettings &s)
         : m_id(s.value("id", -1).toInt())
         , m_name(s.value("name", "UNKNOWN PROFESSION").toString())
+        , m_female_name(s.value("female_name", m_name).toString())
         , m_is_military(s.value("is_military", false).toBool())
         , m_can_assign_labors(s.value("can_assign_labors", true).toBool())
     {}
 
     const short &id() const {return m_id;}
-    const QString &name() const {return m_name;}
+    QString name(const bool &male) const {
+        return male ? m_name : m_female_name;
+    }
     const bool &is_military() const {return m_is_military;}
     const bool &can_assign_labors() const {return m_can_assign_labors;}
 
@@ -47,6 +50,7 @@ public:
 private:
     short m_id;
     QString m_name;
+    QString m_female_name;
     bool m_is_military;
     bool m_can_assign_labors;
 };
