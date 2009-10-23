@@ -119,6 +119,7 @@ QString DFInstanceWindows::read_string(const uint &addr) {
 	CP437Codec *codec = new CP437Codec;
 	QString ret_val = codec->toUnicode(buffer, len);
 	delete[] buffer;
+    delete codec;
 	return ret_val;
 }
 
@@ -130,7 +131,12 @@ uint DFInstanceWindows::write_string(const uint &addr, const QString &str) {
 
 	int len = qMin<int>(str.length(), cap);
 	write_int(addr + STRING_LENGTH_OFFSET, len);
-	return write_raw(buffer_addr, len, str.toAscii().data());
+
+    CP437Codec *codec = new CP437Codec;
+    QByteArray data = codec->fromUnicode(str); 
+    uint bytes_written = write_raw(buffer_addr, len, data.data());
+    delete codec;
+    return bytes_written;
 }
 
 short DFInstanceWindows::read_short(const uint &addr) {

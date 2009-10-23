@@ -163,6 +163,7 @@ protected:
 		unsigned int ch;
 		char *out;
 
+        /*
 		// Determine if the string should be encoded using the UCS-2 hack.
 		bool non437 = false;
 		for ( int posn = 0; !non437 && posn < length; ++posn ) {
@@ -172,6 +173,7 @@ protected:
 			else if ( cp437FromUnicode[ch] == '?' && ch != '?' )
 				non437 = true;
 		}
+        
 		if ( non437 ) {
 			// There is a non CP437 character in this string, so use UCS-2.
 			result.resize( length * 4 + 6 );
@@ -191,14 +193,19 @@ protected:
 			*out++ = 'F';
 			*out   = 'F';
 			return result;
-		}
+		}*/
 
 		// If we get here, we can guarantee that the string only contains
 		// valid CP437 code points between 0x0000 and 0x00FF.
-		result.resize( length );
+		result.resize(length);
 		out = result.data();
-		while ( length-- > 0 ) {
-			*out++ = (char)cp437FromUnicode[in->unicode()];
+		while (length--) {
+            ch = in->unicode();
+            if (ch >= 0x0100 || ch == '?') {
+                *out ++ = '?';
+            } else {
+			    *out++ = (char)cp437FromUnicode[in->unicode()];
+            }
 			++in;
 		}
 		return result;
