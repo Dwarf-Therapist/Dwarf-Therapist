@@ -71,6 +71,7 @@ public:
     QHash<int, Trait*> get_traits() {return m_traits;}
 	QList<QPair<int, Trait*> > get_ordered_traits() {return m_ordered_traits;}
     QHash<int, MilitaryPreference*> get_military_preferences() {return m_military_preferences;}
+	QHash<short, Profession*> get_professions() {return m_professions;}
 
 	Labor *get_labor(const int &labor_id);
 	Trait *get_trait(const int &trait_id);

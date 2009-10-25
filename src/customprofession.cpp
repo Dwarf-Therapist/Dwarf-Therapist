@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "defines.h"
 #include "labor.h"
+#include "profession.h"
 
 /*!
 Default ctor. Creates a blank skill template with no name
@@ -170,13 +171,21 @@ bool CustomProfession::is_valid() {
 	if (!m_dialog)
 		return true;
 
-	if (ui->name_edit->text().isEmpty()) {
+	QString proposed_name = ui->name_edit->text();
+	if (proposed_name.isEmpty()) {
 		QMessageBox::warning(m_dialog, tr("Naming Error!"),
 			tr("You must enter a name for this custom profession!"));
 		return false;
 	}
+	QHash<short, Profession*> profs = GameDataReader::ptr()->get_professions();
+	foreach(Profession *p, profs) {
+		if (proposed_name == p->name(true)) {
+			QMessageBox::warning(m_dialog, tr("Naming Error!"),
+				tr("The profession '%1' is a default game profession, please choose a different name.").arg(proposed_name));
+			return false;
+		}
+	}
 	return true;
-	
 }
 
 void CustomProfession::item_check_state_changed(QListWidgetItem *item) {
