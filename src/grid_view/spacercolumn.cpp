@@ -60,7 +60,6 @@ QStandardItem *SpacerColumn::build_aggregate(const QString &, const QVector<Dwar
 	item->setData(bg, Qt::BackgroundColorRole);
 	item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
 	item->setData(false, DwarfModel::DR_IS_AGGREGATE);
-	item->setData(0, DwarfModel::DR_DUMMY);
 	return item;
 }
 

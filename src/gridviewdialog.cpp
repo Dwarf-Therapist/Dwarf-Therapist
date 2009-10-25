@@ -393,21 +393,21 @@ void GridViewDialog::add_spacer_column() {
 	if (!m_active_set)
 		return;
 	
-	new SpacerColumn("SPACER", m_active_set, m_active_set);
+	new SpacerColumn(tr("SPACER"), m_active_set, m_active_set);
 	draw_columns_for_set(m_active_set);
 }
 
 void GridViewDialog::add_happiness_column() {
 	if (!m_active_set)
 		return;
-	new HappinessColumn("Happiness", m_active_set, m_active_set);
+	new HappinessColumn(tr("Happiness"), m_active_set, m_active_set);
 	draw_columns_for_set(m_active_set);
 }
 
 void GridViewDialog::add_idle_column() {
     if (!m_active_set)
         return;
-    new IdleColumn("Idle", m_active_set, m_active_set);
+    new IdleColumn(tr("Current Job"), m_active_set, m_active_set);
     draw_columns_for_set(m_active_set);
 }
 

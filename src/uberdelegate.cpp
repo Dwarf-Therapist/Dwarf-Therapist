@@ -348,6 +348,8 @@ void UberDelegate::paint_pref(const QRect &adjusted, QPainter *p, const QStyleOp
 
     QColor bg = paint_bg(adjusted, false, p, opt, proxy_idx);
     p->save();
+	if (auto_contrast)
+		p->setPen(QPen(compliment(bg)));
     p->drawText(opt.rect, Qt::AlignCenter, symbol);
     p->restore();
     paint_grid(adjusted, dirty, p, opt, proxy_idx);

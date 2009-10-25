@@ -95,7 +95,6 @@ QStandardItem *LaborColumn::build_aggregate(const QString &group_name, const QVe
 	item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);
 	item->setData(group_name, DwarfModel::DR_GROUP_NAME);
 	item->setData(0, DwarfModel::DR_RATING);
-	item->setData(0, DwarfModel::DR_DUMMY);
 	item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
 	return item;
 }

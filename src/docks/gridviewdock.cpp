@@ -53,7 +53,11 @@ void GridViewDock::draw_views() {
 	foreach(QString name, view_names) {
 		foreach(GridView *v, m_manager->views()) {
 			if (v->name() == name) {
-				new QListWidgetItem(v->name(), ui->list_views);
+				QListWidgetItem *item = new QListWidgetItem(v->name(), ui->list_views);
+				if (!v->is_custom()) {
+					item->setForeground(Qt::gray);
+					item->setToolTip("Built-in View. Copy this view to customize it.");
+				}
 			}
 		}
 	}
@@ -61,11 +65,14 @@ void GridViewDock::draw_views() {
 
 void GridViewDock::draw_list_context_menu(const QPoint &pos) {
 	m_tmp_item = ui->list_views->itemAt(pos);
+	GridView *gv = m_manager->get_view(m_tmp_item->text());
 	QMenu m(this);
-	if (m_tmp_item) {
-		m.addAction(QIcon(":/img/application_edit.png"), tr("Edit..."), this, SLOT(edit_view()));
+	if (gv) {
+		if (gv->is_custom())
+			m.addAction(QIcon(":/img/application_edit.png"), tr("Edit..."), this, SLOT(edit_view()));
 		m.addAction(QIcon(":/img/page_copy.png"), tr("Copy..."), this, SLOT(copy_view()));
-		m.addAction(QIcon(":/img/table_delete.png"), tr("Delete..."), this, SLOT(delete_view()));
+		if (gv->is_custom())
+			m.addAction(QIcon(":/img/table_delete.png"), tr("Delete..."), this, SLOT(delete_view()));
 	} else { // whitespace
 		m.addAction(QIcon(":img/table_add.png"), tr("Add New GridView"), this, SLOT(add_new_view()));
 	}
@@ -96,6 +103,9 @@ void GridViewDock::edit_view() {
 	GridView *view = m_manager->get_view(m_tmp_item->text());
 	if (!view)
 		return;
+	if (!view->is_custom()) {
+		return; // can't edit non-custom views
+	}
 	GridViewDialog *d = new GridViewDialog(m_manager, view, this);
 	int accepted = d->exec();
 	if (accepted == QDialog::Accepted) {
@@ -114,6 +124,7 @@ void GridViewDock::copy_view() {
 		return;
 
 	GridView *copy = new GridView(*view);
+	copy->set_is_custom(true); // all copies are custom
 	copy->set_name(view->name() + "(COPY)");
 	m_manager->add_view(copy);
 	m_manager->write_views();

@@ -68,31 +68,62 @@ void ViewManager::draw_add_tab_button() {
 }
 
 void ViewManager::reload_views() {
-	// start reading views from main settings
-	QSettings *s = DT->user_settings();
+	m_views.clear();
 
-    // first make sure the user has some configured views (they won't on first run)
+	// first read out default gridviews
+	QTemporaryFile temp_f;
+	if (temp_f.open()) {
+		QString filename = temp_f.fileName();
+		QResource res(":config/default_gridviews");
+		if (res.isCompressed()) {
+			temp_f.write(qUncompress(res.data(), res.size()));
+		} else {
+			temp_f.write(QByteArray((const char*)res.data(), res.size()));
+		}
+		temp_f.flush();
+	}
+	QSettings *s = new QSettings(temp_f.fileName(), QSettings::IniFormat);
+	
 	int total_views = s->beginReadArray("gridviews");
+	QList<GridView*> built_in_views;
+	for (int i = 0; i < total_views; ++i) {
+		s->setArrayIndex(i);
+		GridView *gv = GridView::read_from_ini(*s, this);
+		gv->set_is_custom(false); // this is a default view
+		m_views << gv;
+		built_in_views << gv;
+	}
 	s->endArray();
-    if (!s->childGroups().contains("gridviews") || total_views == 0) {
-        QTemporaryFile temp_f;
-        if (temp_f.open()) {
-            QString filename = temp_f.fileName();
-            QResource res(":config/default_gridviews");
-			if (res.isCompressed()) {
-				temp_f.write(qUncompress(res.data(), res.size()));
-			} else {
-				temp_f.write(QByteArray((const char*)res.data(), res.size()));
-			}
-            temp_f.flush();
-        }
-        s = new QSettings(temp_f.fileName(), QSettings::IniFormat);
-    }
-    m_views.clear();
+
+	// now read any gridviews out of the user's settings
+	s = DT->user_settings();
 	total_views = s->beginReadArray("gridviews");
     for (int i = 0; i < total_views; ++i) {
 	    s->setArrayIndex(i);
-	    m_views << GridView::read_from_ini(*s, this);
+		GridView *gv = GridView::read_from_ini(*s, this);
+		bool name_taken = true;
+		do {
+			name_taken = false;
+			foreach(GridView *built_in, built_in_views) {
+				if (gv->name() == built_in->name()) {
+					name_taken = true;
+					break;
+				}
+			}
+			if (name_taken) {
+				QMessageBox::information(this, tr("Name in Use!"), tr("A custom view was found in your settings called '%1.' "
+					"However, this name is already taken by a built-in view, you must rename the custom view.").arg(gv->name()));
+				QString new_name;
+				while (new_name.isEmpty() || new_name == gv->name()) {
+					new_name = QInputDialog::getText(this, tr("Rename View"), tr("New name for '%1'").arg(gv->name()));
+				}
+				gv->set_name(new_name);
+			}
+		} while(name_taken);
+		
+		
+		gv->set_is_custom(true); // this came from a user's settings
+	    m_views << gv;
     }
     s->endArray();
 	
@@ -141,14 +172,21 @@ void ViewManager::write_tab_order() {
 void ViewManager::write_views() {
 	QSettings *s = DT->user_settings();
 	s->remove("gridviews"); // look at us, taking chances like this!
-	s->beginWriteArray("gridviews", m_views.size());
-	int i = 0;
+
+	// find all custom gridviews...
+	QList<GridView*> custom_views;
 	foreach(GridView *gv, m_views) {
+		if (gv->is_custom())
+			custom_views << gv;
+	}
+
+	s->beginWriteArray("gridviews", custom_views.size());
+	int i = 0;
+	foreach(GridView *gv, custom_views) {
 		s->setArrayIndex(i++);
 		gv->write_to_ini(*s);
 	}
 	s->endArray();
-	
 	write_tab_order();
 }
 

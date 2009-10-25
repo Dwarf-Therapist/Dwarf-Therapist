@@ -69,7 +69,6 @@ public:
 		DR_GROUP_NAME,
 		DR_ID,
 		DR_DEFAULT_BG_COLOR,
-		DR_DUMMY, // used as an int counter that increments to force re-draws
 		DR_COL_TYPE,
 		DR_SET_NAME,
         DR_MEMBER_IDS // creature ids that belong to this aggregate

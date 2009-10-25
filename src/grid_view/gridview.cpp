@@ -29,12 +29,14 @@ THE SOFTWARE.
 GridView::GridView(QString name, QObject *parent)
 	: QObject(parent)
 	, m_active(true)
-        , m_name(name)
+	, m_name(name)
 {}
 
 GridView::GridView(const GridView &to_be_copied)
 	: QObject(to_be_copied.parent())
 	, m_name(to_be_copied.m_name)
+	, m_active(to_be_copied.m_active)
+	, m_is_custom(to_be_copied.m_is_custom)
 {
 	foreach(ViewColumnSet *s, to_be_copied.sets()) {
 		add_set(new ViewColumnSet((const ViewColumnSet)*s));

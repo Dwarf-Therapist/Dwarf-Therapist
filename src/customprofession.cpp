@@ -120,6 +120,8 @@ int CustomProfession::show_builder_dialog(QWidget *parent) {
 	QList<Labor*> labors = gdr->get_ordered_labors();
 	int num_active = 0;
 	foreach(Labor *l, labors) {
+		if (l->is_weapon)
+			continue;
 		QListWidgetItem *item = new QListWidgetItem(l->name, ui->labor_list);
 		item->setData(Qt::UserRole, l->labor_id);
 		item->setFlags(item->flags() | Qt::ItemIsUserCheckable);

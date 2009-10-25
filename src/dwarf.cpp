@@ -479,7 +479,7 @@ bool Dwarf::toggle_labor(int labor_id) {
 void Dwarf::set_labor(int labor_id, bool enabled) {
     Labor *l = GameDataReader::ptr()->get_labor(labor_id);
     if (!l) {
-        LOGD << "UNKNOWN LABOR: Bailing on set profession of id" << labor_id << "enabled?" << enabled << "for" << m_nice_name;
+        LOGD << "UNKNOWN LABOR: Bailing on set labor of id" << labor_id << "enabled?" << enabled << "for" << m_nice_name;
         return;
     }
 

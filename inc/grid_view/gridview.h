@@ -68,6 +68,9 @@ public:
 	void set_active(bool active) {m_active = active;}
 	ViewColumnSet *get_set(const QString &name);
 	ViewColumnSet *get_set(int offset) {return m_sets.at(offset);}
+	void set_is_custom(bool is_custom) {m_is_custom = is_custom;}
+	bool is_custom() {return m_is_custom;}
+
 
 	//! order of sets was changed by a view, so reflect those changes internally
 	void reorder_sets(const QStandardItemModel &model);
@@ -81,6 +84,7 @@ private:
 	bool m_active;
 	QString m_name;
 	QList<ViewColumnSet*> m_sets;
+	bool m_is_custom;
 
 signals:
     void updated(const GridView*);

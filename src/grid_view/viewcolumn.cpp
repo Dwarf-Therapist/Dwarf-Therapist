@@ -80,7 +80,6 @@ QStandardItem *ViewColumn::init_cell(Dwarf *d) {
 	item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
 	item->setData(false, DwarfModel::DR_IS_AGGREGATE);
 	item->setData(d->id(), DwarfModel::DR_ID);
-	item->setData(0, DwarfModel::DR_DUMMY);
 	m_cells[d] = item;
 	return item;
 }

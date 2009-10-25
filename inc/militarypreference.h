@@ -94,7 +94,7 @@ public:
             count++;
         }
         LOGW << "Military Preference:" << name << "was unable to find a suitable next value after" << old_val;
-        return old_val; // that sucks...
+		return m_values.at(0)->id; // that sucks...
     }
 
     QString name;
