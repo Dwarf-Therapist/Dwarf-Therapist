@@ -187,24 +187,50 @@ void DwarfModel::build_rows() {
 				m_grouped_dwarves[d->current_job()].append(d);
 				break;
             case GB_SQUAD:
-                QString squad = "None";
-                Dwarf *leader = d->get_squad_leader();
-                if (leader) {
-                    squad = leader->squad_name();
-                } else if (d->squad_members().size()) {
-                    squad = d->squad_name();
-                    //HACK (reorder this to make sure the leader is added first
-                    QVector<Dwarf*> current_members = m_grouped_dwarves[squad];
-                    if (current_members.size()) {
-                        m_grouped_dwarves[squad].clear();
-                        m_grouped_dwarves[squad].append(d);
-                        foreach(Dwarf *member, current_members) {
-                            m_grouped_dwarves[squad].append(member);
-                        }
-                        continue;
-                    }
-                }
-                m_grouped_dwarves[squad].append(d);
+				{
+					QString squad = "None";
+					Dwarf *leader = d->get_squad_leader();
+					if (leader) {
+						squad = leader->squad_name();
+					} else if (d->squad_members().size()) {
+						squad = d->squad_name();
+						//HACK (reorder this to make sure the leader is added first
+						QVector<Dwarf*> current_members = m_grouped_dwarves[squad];
+						if (current_members.size()) {
+							m_grouped_dwarves[squad].clear();
+							m_grouped_dwarves[squad].append(d);
+							foreach(Dwarf *member, current_members) {
+								m_grouped_dwarves[squad].append(member);
+							}
+							continue;
+						}
+					}
+					m_grouped_dwarves[squad].append(d);
+				}
+				break;
+			case GB_MILITARY_STATUS:
+				{
+					// groups
+					if (d->raw_profession() == 109 || d->raw_profession() == 110) { //child or baby
+						m_grouped_dwarves["Juveniles"].append(d);
+					} else if (d->active_military() && !d->can_set_labors()) { // epic military
+						m_grouped_dwarves["Champions"].append(d);
+					} else if (!d->can_set_labors()) {
+						m_grouped_dwarves["Nobles"].append(d);
+					} else if (d->active_military()) {
+						m_grouped_dwarves["Active Military"].append(d);
+					} else {
+						m_grouped_dwarves["Can Activate"].append(d);
+					}
+					/*
+					4a) Heroes and Champions (who cannot deactivate)
+					4b) Non-Heroic Soldiers and Guards (who can deactivate)
+					4c) Civilians (who can activate)
+					4d) Juveniles (who may one day activate)
+					4e) Immigrant Nobles (who are forever off-limits)
+					*/
+				}
+				break;
 		}
 	}
  
@@ -244,6 +270,9 @@ void DwarfModel::build_row(const QString &key) {
             QFont f = i_name->font();
             f.setBold(true);
             i_name->setFont(f);
+			if (d->squad_members().size() && !d->get_squad_leader()) {
+				i_name->setText(QString("[L] %1").arg(i_name->text()));
+			}
         }
             
 		i_name->setToolTip(d->tooltip_text());

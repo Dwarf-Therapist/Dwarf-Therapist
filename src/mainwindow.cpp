@@ -137,6 +137,7 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->cb_group_by->addItem(tr("Migration Wave"), DwarfModel::GB_MIGRATION_WAVE);
     ui->cb_group_by->addItem(tr("Squad"), DwarfModel::GB_SQUAD);
 	ui->cb_group_by->addItem(tr("Current Job"), DwarfModel::GB_CURRENT_JOB);
+	ui->cb_group_by->addItem(tr("Military Status"), DwarfModel::GB_MILITARY_STATUS);
 	
 	read_settings();
 	draw_professions();

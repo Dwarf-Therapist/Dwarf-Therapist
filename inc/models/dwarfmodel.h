@@ -59,6 +59,7 @@ public:
 		GB_MIGRATION_WAVE,
         GB_SQUAD,
 		GB_CURRENT_JOB,
+		GB_MILITARY_STATUS,
 		GB_TOTAL
 	} GROUP_BY;
 	typedef enum {

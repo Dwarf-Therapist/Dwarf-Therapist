@@ -202,6 +202,9 @@ public:
     //! get's a list of QActions that can be activated on this dwarf, suitable for adding to Toolbars or context menus
 	QList<QAction*> get_actions() {return m_actions;}
 
+	//! returns true if this dwarf can have labors specified on it
+	bool can_set_labors() {return m_can_set_labors;}
+
     /************************************************************************/
     /* SQUAD STUFF                                                          */
     /************************************************************************/
