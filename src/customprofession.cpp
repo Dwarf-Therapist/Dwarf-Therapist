@@ -33,10 +33,10 @@ THE SOFTWARE.
 Default ctor. Creates a blank skill template with no name
 */
 CustomProfession::CustomProfession(QObject *parent)
-	: QObject(parent)
-	, ui(new Ui::CustomProfessionEditor)
-	, m_dwarf(0)
-        , m_dialog(0)
+    : QObject(parent)
+    , ui(new Ui::CustomProfessionEditor)
+    , m_dwarf(0)
+    , m_dialog(0)
 {}
 
 /*!
@@ -177,6 +177,7 @@ bool CustomProfession::is_valid() {
 			tr("You must enter a name for this custom profession!"));
 		return false;
 	}
+    /* Let's not do this...
 	QHash<short, Profession*> profs = GameDataReader::ptr()->get_professions();
 	foreach(Profession *p, profs) {
 		if (proposed_name == p->name(true)) {
@@ -185,6 +186,7 @@ bool CustomProfession::is_valid() {
 			return false;
 		}
 	}
+    */
 	return true;
 }
 

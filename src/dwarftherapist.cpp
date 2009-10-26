@@ -266,7 +266,7 @@ void DwarfTherapist::delete_custom_profession() {
 
 	QList<Dwarf*> blockers;
 	foreach(Dwarf *d, m_main_window->get_model()->get_dwarves()) {
-		if (d->profession() == cp_name) {
+		if (d->custom_profession_name() == cp_name) {
 			blockers << d;
 		}
 	}
@@ -276,7 +276,7 @@ void DwarfTherapist::delete_custom_profession() {
 		box->setWindowTitle(tr("Cannot Remove Profession"));
 		box->setText(tr("The following %1 dwarf(s) is(are) still using <b>%2</b>. Please change them to"
 			" another profession before deleting this profession!").arg(blockers.size()).arg(cp_name));
-		QString msg = tr("Dwarves with this profession:\n\n");
+		QString msg = tr("Dwarfs with this profession:\n\n");
 		foreach(Dwarf *d, blockers) {
 			msg += d->nice_name() + "\n";
 		}
