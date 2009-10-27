@@ -1,8 +1,44 @@
+RELEASE 0.4.2 (October 26, 2009)
+CHANGES SINCE 0.4.1
+===============================================================================
+MAJOR CHANGES:
+ * You can now set a dwarf's weapon count, shield type and armor type
+ * You can now set a dwarf's  main weapon type (Fixed issue 137)
+ * Added new grouping method "Military Status" for helping out when choosing new military. (Fixed issue 134)
+ * Added new grouping method "Squad" which does what it sounds like :)
+ * Added new grouping method "Current Job", and it rules (Fixed issue 9)
+ * GridViews are now either custom or built-in. Built-in gridviews cannot be edited. (Fixed issue 147)
+ * Welcome back Athlon owners! Fixed problem running on non-SSE2 processors (Athlon) (Fixed issue 120)
+ 
+MINOR CHANGES: 
+ * You can now have custom professions that have the same name as a default profession, 
+   and trying to delete that custom profession (for instance "Miner") will force you to 
+   change the profession for all dwarfs that have the custom profession set to "Miner", 
+   but not dwarfs whose main default profession is "Miner" (Fixed issue 144)
+ * Added AttributeColumns (Fixes issue 122)
+ * Added a name completer to the filter box (guesses names based on what's been typed) 
+   Searching for characters that don't start a dwarf name still works though. 
+ * Added labor cheating option to main options tab (when checked you can set labors on anything) (Fixed issue 125)
+BUG FIXES:
+ * Fixed Happiness labels (Content has a range of 50 points not 25) (Fixed issue 139)
+ * Professions now all have male and female versions of their title (only used for Baron, Count etc...) (Fixed issue 140)
+ * Fixed invalidation flags in all windows versions for filtering out invaders and the undead
+   This should fix non-site dwarfs showing in the list (Fixed issue 116)
+ * Added more checks for lost connections (for those that turn off the alert) (Fixed issue 129)
+ * Fix Bulk Toggle (Hauling, etc) Does Not Display Changes On Grid (work on issue 135)
+ * Duplicate name defense on ViewColumnSet::add_column(), dupe names now get incremental numbers appended to their name
+ * Added "Set Profession Text" Option on Right-Click Context Menu for dwarfs (Fixes issue 130)
+ * Tabs now properly update after editing gridviews that are currently shown (and not shown)
+ * Fixed bad drawing of happiness cells (no OS highlight anymore)
+ * Attempting to add a Grid view that has been deleted triggers crash (Fixed issue 124)
+ * Fixed broken labor sorting (Fixed issue 117)
+ * Split "Grid Colors" from "Grid options" section of Options screen (Fixed issue 126)
+
 RELEASE 0.4.1 (October 6, 2009)
 CHANGES SINCE 0.4.0
 ===============================================================================
 MAJOR CHANGES:
- * Dwarf traits are now shown in the DwarfDetailsDock! (40d16 only!) (Fixed issue 113)
+ * Dwarf traits are now shown in the DwarfDetailsDock! (Fixed issue 113)
  * Improved sorting behavior on names. You can now right-click the top of the names column for sort options (Fixed issue 115)
  * Fixed the dwarf details handling to now open the dock on double click or "show details..." if it is not already open.
  * You can now group dwarfs by migration wave (this relies on guesswork and may be very broken)

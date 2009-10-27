@@ -5,10 +5,13 @@ KNOWN ISSUES
    redistributable package. You can find it here:
    http://www.microsoft.com/downloads/details.aspx?FamilyID=9b2da534-3e03-4391-8a4d-074b9f2bc1bf&displaylang=en
  
-2) Speed. Big forts can take some time to render the labor grid. I will be 
-   working on this in the future.
+2) Migration Waves incorrect - The group-by "Migration Wave" is based on some shady guesswork
+   based on dwarf ids. It is in no way 100% accurate, but can sometimes amaze me that it works :)
    
-3) If you come across some other weird error, please post a bug report here:
+3) Dwarf and Squad translation names - This is brute force word-list searching. Verb conjugation,
+   plurality and case are a crapshoot. But it's generally pretty close.
+   
+4) If you come across some other weird error, please post a bug report here:
    http://code.google.com/p/dwarftherapist/issues/entry and paste the 
    "run.log" file from the "log" directory into the bug report (or attach it)
    
