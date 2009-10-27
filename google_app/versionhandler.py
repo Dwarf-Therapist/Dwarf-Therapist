@@ -5,7 +5,7 @@ from google.appengine.ext import webapp
 from metricentry import MetricEntry
 from utils import ip_info
 
-CURRENT_VERSION = "0.4.1"
+CURRENT_VERSION = "0.4.2"
 RX_VERSION_CHUNKER = re.compile(r"\s*DwarfTherapist\s+(\d+)\.(\d+)\.(\d+)\s*")
 class VersionHandler(webapp.RequestHandler):
     def get(self, *args):
