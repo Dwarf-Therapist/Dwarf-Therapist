@@ -227,6 +227,9 @@ void MainWindow::connect_to_df() {
         m_lbl_status->setText(tr("Connected to ") + m_df->memory_layout()->game_version());
 		connect(m_df, SIGNAL(connection_interrupted()), SLOT(lost_df_connection()));
 		set_interface_enabled(true);
+		if (DT->user_settings()->value("options/read_on_startup", true).toBool()) {
+			read_dwarves();
+		}
 	}
 }
 

@@ -9,7 +9,6 @@ MAJOR CHANGES:
  * Added new grouping method "Current Job", and it rules (Fixed issue 9)
  * GridViews are now either custom or built-in. Built-in gridviews cannot be edited. (Fixed issue 147)
  * Welcome back Athlon owners! Fixed problem running on non-SSE2 processors (Athlon) (Fixed issue 120)
- 
 MINOR CHANGES: 
  * You can now have custom professions that have the same name as a default profession, 
    and trying to delete that custom profession (for instance "Miner") will force you to 
