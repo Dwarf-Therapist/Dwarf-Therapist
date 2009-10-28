@@ -12,14 +12,16 @@ public:
     uint address(QString key) {return m_addresses.value(key, -1);}
     uint offset(QString key) {return m_offsets.value(key, -1);}
     uint dwarf_offset(QString key) {return m_dwarf_offsets.value(key, -1);}
-	uint flags(QString key) {return m_flags.value(key);}
+	QHash<uint, QString> invalid_flags_1() {return m_invalid_flags_1;}
+	QHash<uint, QString> invalid_flags_2() {return m_invalid_flags_2;}
 
 private:
     uint m_checksum;
-    QMap<QString, uint> m_addresses;
-    QMap<QString, uint> m_offsets;
-    QMap<QString, uint> m_dwarf_offsets;
-    QMap<QString, uint> m_flags;
+    QHash<QString, uint> m_addresses;
+    QHash<QString, uint> m_offsets;
+    QHash<QString, uint> m_dwarf_offsets;
+	QHash<uint, QString> m_invalid_flags_1;
+	QHash<uint, QString> m_invalid_flags_2;
 	QSettings *m_data;
 
 	void load_data();

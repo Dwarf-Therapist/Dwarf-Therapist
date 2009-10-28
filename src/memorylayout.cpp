@@ -47,8 +47,21 @@ void MemoryLayout::load_data() {
 	m_data->endGroup();
 	
 	// flags
-	m_flags.insert("flags1.invalidate", read_hex("flags/flags1.invalidate"));
-	m_flags.insert("flags2.invalidate", read_hex("flags/flags2.invalidate"));
+	int flag_count = m_data->beginReadArray("invalid_flags_1");
+	for (int i = 0; i < flag_count; ++i) {
+		m_data->setArrayIndex(i);
+		m_invalid_flags_1.insert(read_hex("value"),
+			m_data->value("name", "UNKNOWN INVALID FLAG 1").toString());
+	}
+	m_data->endArray();
+	
+	flag_count = m_data->beginReadArray("invalid_flags_2");
+	for (int i = 0; i < flag_count; ++i) {
+		m_data->setArrayIndex(i);
+		m_invalid_flags_2.insert(read_hex("value"),
+			m_data->value("name", "UNKNOWN INVALID FLAG 2").toString());
+	}
+	m_data->endArray();
 }
 
 uint MemoryLayout::read_hex(QString key) {

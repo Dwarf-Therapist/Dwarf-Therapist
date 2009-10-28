@@ -214,36 +214,60 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const uint &addr) {
 	
     uint flags1 = df->read_uint(addr + mem->dwarf_offset("flags1"));
     uint flags2 = df->read_uint(addr + mem->dwarf_offset("flags2"));
-    uint inv1 = mem->flags("flags1.invalidate");
-    uint inv2 = mem->flags("flags2.invalidate");
     int race_id = df->read_int(addr + mem->dwarf_offset("race"));
 
     if (race_id != dwarf_race_id) { // we only care about dwarfs
         TRACE << "Ignoring non-dwarf creature with racial ID of " << hexify(race_id);
         return 0;
     }
+	Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
     /*
     LOGD << "examining dwarf at" << hex << addr;
     LOGD << "FLAGS1 :" << hexify(flags1);
-    LOGD << "INV 1  :" << hexify(inv1);
-    LOGD << "FLAGS2 :" << hexify(flags2);
-    LOGD << "INV 2  :" << hexify(inv2);
+	LOGD << "FLAGS2 :" << hexify(flags2);
     LOGD << "RACE   :" << hexify(race_id);
     LOGD << "NAME   :" << df->read_string(addr + mem->dwarf_offset("first_name"));
     LOGD << "INVADER FILTER:" << hexify(0x1000 | 0x2000 | 0x20000 | 0x80000 | 0xc0000 | 0x8C0);
     LOGD << "OTHER   FILTER:" << hexify(0x80 | 0x40000);
     */
-    
-    if (flags1 & inv1) {
-        TRACE << "Ignoring this dwarf which is either undead, zombie, an invader, a guard, or a merchant";
-        return 0;
-    }
-    if (flags2 & inv2) {
-        TRACE << "Ignoring this dwarf which is either dead or from the underworld";
-        return 0;
-    }
+	QHash<uint, QString> flags = mem->invalid_flags_1();
+	foreach(uint flag, flags.uniqueKeys()) {
+		QString reason = flags[flag];
+		if ((flags1 & flag) == flag) {
+			LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to be" << reason;
+			delete unverified_dwarf;
+			return 0;
+		}
+	}
 	
-	return new Dwarf(df, addr, df);
+	flags = mem->invalid_flags_2();
+	foreach(uint flag, flags.uniqueKeys()) {
+		QString reason = flags[flag];
+		if ((flags2 & flag) == flag) {
+			LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to be" << reason;
+			delete unverified_dwarf;
+			return 0;
+		}
+	}
+
+	//HACK: ugh... so ugly, but this seems to be the best way to filter out kidnapped babies
+	short baby_id = -1;
+	foreach(Profession *p, GameDataReader::ptr()->get_professions()) {
+		if (p->name(true) == "Baby") {
+			baby_id = p->id();
+			break;
+		}
+	}
+	if (unverified_dwarf->raw_profession() == baby_id) {
+		if ((flags1 & 0x200) != 0x200) {
+			// kidnapped flag? seems like it
+			LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to be a kidnapped baby";
+			delete unverified_dwarf;
+			return 0;
+		}
+	}
+	
+	return unverified_dwarf;
 }
 
 QString Dwarf::read_last_name(const uint &addr, bool use_generic) {
