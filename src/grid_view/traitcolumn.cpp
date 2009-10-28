@@ -53,20 +53,22 @@ TraitColumn::TraitColumn(const TraitColumn &to_copy)
 
 QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
-    short score = d->trait(m_trait_id);
-    if (score == -1) // not an active trait...
-        item->setText("");
-    else
-        item->setText(QString::number(score));
     item->setData(CT_TRAIT, DwarfModel::DR_COL_TYPE);
-    item->setData(score, DwarfModel::DR_SORT_VALUE);
 
+    short score = d->trait(m_trait_id);
     QString msg = "???";
     if (m_trait)
         msg = m_trait->level_message(score);
-    if (score == -1)
-        msg = "Not an active trait for this dwarf";
-   
+
+    if (score == -1) { // not an active trait...
+        item->setText("");
+        item->setData(50, DwarfModel::DR_SORT_VALUE);
+        msg = tr("Not an active trait for this dwarf");
+    } else {
+        item->setText(QString::number(score));
+        item->setData(score, DwarfModel::DR_SORT_VALUE);
+    }
+    
     QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%4</h4>")
         .arg(m_title)
         .arg(msg)
