@@ -225,6 +225,11 @@ public:
 
     QList<Dwarf*> squad_members() {return m_squad_members;}
 
+    QString first_name() const {
+        //qDebug() << "first_name called (from script?)";
+        return m_first_name;
+    }
+
     public slots:
         //! called when global user settings change
 		void read_settings();
@@ -256,6 +261,7 @@ private:
     void read_current_job(const uint &addr);
 
 	int m_id;
+    Q_PROPERTY(QString first_name READ first_name) // no setters (scripting read-only)
 	QString m_first_name;
 	QString m_last_name, m_translated_last_name;
 	QString m_nick_name, m_pending_nick_name;

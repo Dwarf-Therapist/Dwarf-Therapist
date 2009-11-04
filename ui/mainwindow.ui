@@ -86,6 +86,46 @@
        </widget>
       </item>
       <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Run Filter Script</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="cb_filter_script">
+        <item>
+         <property name="text">
+          <string>None</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Add New...</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../images.qrc">
+           <normaloff>:/img/add.png</normaloff>:/img/add.png</iconset>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>High Rage</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>High Trusting</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Miners</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -816,7 +856,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>988</x>
-     <y>374</y>
+     <y>437</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -832,7 +872,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1118</x>
-     <y>374</y>
+     <y>437</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -848,7 +888,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1118</x>
-     <y>342</y>
+     <y>405</y>
     </hint>
     <hint type="destinationlabel">
      <x>1119</x>
@@ -864,7 +904,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>988</x>
-     <y>342</y>
+     <y>405</y>
     </hint>
     <hint type="destinationlabel">
      <x>1119</x>
@@ -880,7 +920,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>1119</x>
-     <y>657</y>
+     <y>776</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
@@ -959,7 +999,7 @@
    <slot>clear()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>371</x>
+     <x>451</x>
      <y>440</y>
     </hint>
     <hint type="destinationlabel">

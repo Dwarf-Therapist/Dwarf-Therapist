@@ -21,15 +21,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#include <QtScript>
+
 #include "dwarfmodelproxy.h"
 #include "dwarfmodel.h"
+#include "dwarf.h"
+#include "defines.h"
+#include "dwarftherapist.h"
+#include "mainwindow.h"
 
 DwarfModelProxy::DwarfModelProxy(QObject *parent)
 	:QSortFilterProxyModel(parent)
-{}
+    , m_active_filter_script("none")
+    , m_engine(new QScriptEngine(this))
+{
+    m_filter_scripts.insert("High Rage", "d.rage >= 65");
+    m_filter_scripts.insert("High Trusting", "d.trusting >= 65 && d.stress >= 50");
+    m_filter_scripts.insert("Miners", "d.mining == true");
+}
 
 DwarfModel* DwarfModelProxy::get_dwarf_model() const {
-	//QStandardItemModel *tmp = static_cast<QStandardItemModel*>(sourceModel());
 	return static_cast<DwarfModel*>(sourceModel());
 }
 
@@ -45,12 +56,37 @@ void DwarfModelProxy::setFilterFixedString(const QString &pattern) {
 	QSortFilterProxyModel::setFilterFixedString(pattern);
 }
 
+void DwarfModelProxy::run_filter_script(int combo_box_index) {
+    QComboBox *cb = qobject_cast<QComboBox*>(QObject::sender());
+    if (!cb)
+        return;
+
+    QString item = cb->itemText(combo_box_index);
+    LOGD << "filter script" << item << "chosen";
+    if (item == tr("None")) {
+        m_active_filter_script = "none"; // this will cause all dwarves to match
+        invalidateFilter();
+    } else if (item == tr("Add New...")) {
+        // TODO: make a new dialog that can edit the scripts, allow non-modal running of the script as its written
+        // and showing helpful functions, members etc... in a helpbox
+        // syntax highlighting?
+    } else if (m_filter_scripts.contains(item)) {
+        m_active_filter_script = item;
+        invalidateFilter();
+    }
+}
+
 bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
+    bool matches = true;
+
+    int dwarf_id = 0;
 	const DwarfModel *m = get_dwarf_model();
 	if (m->current_grouping() == DwarfModel::GB_NOTHING) {
 		QModelIndex idx = m->index(source_row, 0, source_parent);
+        dwarf_id = m->data(idx, DwarfModel::DR_ID).toInt();
 		QString data = m->data(idx, filterRole()).toString();
-		return data.contains(m_filter_text, Qt::CaseInsensitive);	
+        if (!m_filter_text.isEmpty())
+		    matches = matches && data.contains(m_filter_text, Qt::CaseInsensitive);	
 	} else {
 		QModelIndex tmp_idx = m->index(source_row, 0, source_parent);
 		QStandardItem *item = m->itemFromIndex(tmp_idx);
@@ -60,14 +96,25 @@ bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source
 				if (filterAcceptsRow(i, tmp_idx)) // a child matches
 					matches++;
 			}
-			return matches > 0;
+			matches = matches && matches > 0;
 		} else {
 			QModelIndex idx = m->index(source_row, 0, source_parent);
+            dwarf_id = m->data(idx, DwarfModel::DR_ID).toInt();
 			QString data = m->data(idx, filterRole()).toString();
-			return data.contains(m_filter_text, Qt::CaseInsensitive);	
+            if (!m_filter_text.isEmpty())
+			    matches = matches && data.contains(m_filter_text, Qt::CaseInsensitive);	
 		}
 	}
-	return true;
+    
+    if (dwarf_id && m_filter_scripts.contains(m_active_filter_script)) {
+        Dwarf *d = m->get_dwarf_by_id(dwarf_id);
+        if (d) {
+            QScriptValue d_obj = m_engine->newQObject(d);
+            m_engine->globalObject().setProperty("d", d_obj);
+            matches = matches && m_engine->evaluate(m_filter_scripts[m_active_filter_script]).toBool();
+        }
+    }
+	return matches;
 }
 
 bool DwarfModelProxy::filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const {

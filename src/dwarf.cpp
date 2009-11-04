@@ -80,6 +80,7 @@ void Dwarf::refresh_data() {
 	TRACE << "\tID:" << m_id;
     char sex = m_df->read_char(m_address + mem->dwarf_offset("sex"));
     m_is_male = (int)sex == 1;
+    setProperty("is_male", m_is_male);
     TRACE << "\tMALE?" << m_is_male;
 
 	m_first_name = m_df->read_string(m_address + mem->dwarf_offset("first_name"));
@@ -290,14 +291,17 @@ QString Dwarf::read_last_name(const uint &addr, bool use_generic) {
 
 void Dwarf::read_traits(const uint &addr) {
 	m_traits.clear();
+    GameDataReader *gdr = GameDataReader::ptr();
 	for (int i = 0; i < 30; ++i) {
 		short val = m_df->read_short(addr + i * 2);
 		int deviation = abs(val - 50); // how far from the norm is this trait?
-		if (deviation > 10) {
-			m_traits.insert(i, val);
-		} else {
-			m_traits.insert(i, -1);
+		if (deviation <= 10) {
+            val = -1; // this will cause median scores to not be treated as "active" traits
 		}
+        m_traits.insert(i, val);
+        QString trait_name = gdr->get_trait(i)->name.toLower();
+        //qDebug() << "setting property on" << m_nice_name << "for trait:" << trait_name << "to" << val;
+        setProperty(trait_name.toAscii(), val);
 	}
 }
 
@@ -456,6 +460,7 @@ void Dwarf::read_labors(const uint &addr) {
 		bool enabled = buf[l->labor_id] > 0;
 		m_labors[l->labor_id] = enabled;
 		m_pending_labors[l->labor_id] = enabled;
+        setProperty(l->name.toLower().toAscii(), enabled);
 	}
     // also store prefs in this structure
     foreach(MilitaryPreference *mp, gdr->get_military_preferences()) {

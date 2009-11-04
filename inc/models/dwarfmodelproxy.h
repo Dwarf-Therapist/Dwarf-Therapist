@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <QtGui>
 
 class DwarfModel;
+class QScriptEngine;
 
 class DwarfModelProxy: public QSortFilterProxyModel {
 	Q_OBJECT
@@ -45,12 +46,16 @@ public:
 		void cell_activated(const QModelIndex &idx);
 		void setFilterFixedString(const QString &pattern);
 		void sort(int, DwarfModelProxy::DWARF_SORT_ROLE);
+        void run_filter_script(int combo_box_index);
 
 protected:
 	bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
 	bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const;
 private:
 	QString m_filter_text;
+    QString m_active_filter_script;
+    QHash<QString, QString> m_filter_scripts; //name -> script
+    QScriptEngine *m_engine;
 };
 
 #endif
