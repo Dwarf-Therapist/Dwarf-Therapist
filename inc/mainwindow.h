@@ -36,6 +36,7 @@ class AboutDialog;
 class CustomProfession;
 class ViewManager;
 class Scanner;
+class ScriptDialog;
 
 namespace Ui
 {
@@ -79,6 +80,7 @@ public:
 		void list_pending();
 		void draw_professions();
 		void draw_custom_profession_context_menu(const QPoint &);
+        void add_new_filter_script();
 		
 		// version check
 		void check_latest_version(bool show_result_on_equal=false);
@@ -91,6 +93,9 @@ public:
 		void go_to_new_issue();
 
 		void show_dwarf_details_dock(Dwarf *d = 0);
+        void new_filter_script_chosen(const QString &script_name);
+        void redraw_filter_scripts_cb();
+
 
 private:
 	DFInstance *m_df;
@@ -102,6 +107,7 @@ private:
 	AboutDialog *m_about_dialog;
 	CustomProfession *m_temp_cp;
 	Scanner *m_scanner;
+    ScriptDialog *m_script_dialog;
 	QHttp *m_http;
 	bool m_reading_settings;
     bool m_show_result_on_equal; //! used during version checks

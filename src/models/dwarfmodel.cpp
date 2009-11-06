@@ -342,7 +342,7 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
 		int children = rowCount(first_col);
 
 		foreach(Dwarf *d, m_grouped_dwarves.value(group_name)) {
-			if (d->is_labor_enabled(labor_id))
+			if (d->labor_enabled(labor_id))
 				enabled_count++;
 		}
 

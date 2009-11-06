@@ -20,41 +20,37 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef DWARF_MODEL_PROXY_H
-#define DWARF_MODEL_PROXY_H
+
+#ifndef SCRIPT_DIALOG_H
+#define SCRIPT_DIALOG_H
 
 #include <QtGui>
+#include "defines.h"
 
-class DwarfModel;
-class QScriptEngine;
+namespace Ui {
+    class ScriptDialog;
+}
 
-class DwarfModelProxy: public QSortFilterProxyModel {
-	Q_OBJECT
+class ScriptDialog : public QDialog {
+    Q_OBJECT
 public:
-	typedef enum {
-		DSR_NAME_ASC = 0,
-		DSR_NAME_DESC,
-		DSR_ID_ASC,
-		DSR_ID_DESC,
-		DSR_GAME_ORDER
-	} DWARF_SORT_ROLE;
+    ScriptDialog(QWidget *parent = 0);
+    public slots:
+        //! clear the script editing box
+        void clear_script();
 
-	DwarfModelProxy(QObject *parent = 0);
-	DwarfModel* get_dwarf_model() const;
-	void sort(int column, Qt::SortOrder order);
-	public slots:
-		void cell_activated(const QModelIndex &idx);
-		void setFilterFixedString(const QString &pattern);
-		void sort(int, DwarfModelProxy::DWARF_SORT_ROLE);
-        void apply_script(const QString &script_body);
-
-protected:
-	bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
-	bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const;
 private:
-	QString m_filter_text;
-    QScriptEngine *m_engine;
-    QString m_active_filter_script;
+    Ui::ScriptDialog *ui;
+
+    private slots:
+        void apply_pressed();
+        void save_pressed();
+
+signals:
+        //! tell the app to run the script currently being edited
+        void apply_script(const QString &script_body);
+        //! tell the app that the user has just saved a script
+        void scripts_changed();
 };
 
 #endif

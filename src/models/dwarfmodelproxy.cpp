@@ -32,13 +32,8 @@ THE SOFTWARE.
 
 DwarfModelProxy::DwarfModelProxy(QObject *parent)
 	:QSortFilterProxyModel(parent)
-    , m_active_filter_script("none")
     , m_engine(new QScriptEngine(this))
-{
-    m_filter_scripts.insert("High Rage", "d.rage >= 65");
-    m_filter_scripts.insert("High Trusting", "d.trusting >= 65 && d.stress >= 50");
-    m_filter_scripts.insert("Miners", "d.mining == true");
-}
+{}
 
 DwarfModel* DwarfModelProxy::get_dwarf_model() const {
 	return static_cast<DwarfModel*>(sourceModel());
@@ -56,24 +51,9 @@ void DwarfModelProxy::setFilterFixedString(const QString &pattern) {
 	QSortFilterProxyModel::setFilterFixedString(pattern);
 }
 
-void DwarfModelProxy::run_filter_script(int combo_box_index) {
-    QComboBox *cb = qobject_cast<QComboBox*>(QObject::sender());
-    if (!cb)
-        return;
-
-    QString item = cb->itemText(combo_box_index);
-    LOGD << "filter script" << item << "chosen";
-    if (item == tr("None")) {
-        m_active_filter_script = "none"; // this will cause all dwarves to match
-        invalidateFilter();
-    } else if (item == tr("Add New...")) {
-        // TODO: make a new dialog that can edit the scripts, allow non-modal running of the script as its written
-        // and showing helpful functions, members etc... in a helpbox
-        // syntax highlighting?
-    } else if (m_filter_scripts.contains(item)) {
-        m_active_filter_script = item;
-        invalidateFilter();
-    }
+void DwarfModelProxy::apply_script(const QString &script_body) {
+    m_active_filter_script = script_body;
+    invalidateFilter();
 }
 
 bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
@@ -106,12 +86,12 @@ bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source
 		}
 	}
     
-    if (dwarf_id && m_filter_scripts.contains(m_active_filter_script)) {
+    if (dwarf_id && !m_active_filter_script.isEmpty()) {
         Dwarf *d = m->get_dwarf_by_id(dwarf_id);
         if (d) {
             QScriptValue d_obj = m_engine->newQObject(d);
             m_engine->globalObject().setProperty("d", d_obj);
-            matches = matches && m_engine->evaluate(m_filter_scripts[m_active_filter_script]).toBool();
+            matches = matches && m_engine->evaluate(m_active_filter_script).toBool();
         }
     }
 	return matches;

@@ -58,19 +58,19 @@ public:
 	int id() {return m_id;}
     
     //! true if the creature is male, false if female or "it"
-	bool is_male() {return m_is_male;}
+	Q_INVOKABLE bool is_male() {return m_is_male;}
     
     //! return a text version of this dwarf's profession (will use custom profession if set)
 	QString profession();
     
     //! return the raw game-set profession for a dwarf
-	int raw_profession() {return m_raw_profession;}
+	Q_INVOKABLE int raw_profession() {return m_raw_profession;}
     
     //! custom profession string (if set)
 	QString custom_profession_name() {return m_pending_custom_profession;}
 	
     //! return a printable name for this dwarf based on user-settings (may include nickname/firstname or both)
-	QString nice_name() {return m_nice_name;}
+	Q_INVOKABLE QString nice_name() {return m_nice_name;}
 
     //! return a printable name for this dwarf where each dwarven word is translated to english (not game human)
 	QString translated_name() {return m_translated_name;}
@@ -82,16 +82,16 @@ public:
     DWARF_HAPPINESS get_happiness() {return m_happiness;}
 
     //! return the raw happiness score for this dwarf
-    int get_raw_happiness() {return m_raw_happiness;}
+    Q_INVOKABLE int get_raw_happiness() {return m_raw_happiness;}
 
     //! return this dwarf's strength attribute score
-    int strength() {return m_strength;}
+    Q_INVOKABLE int strength() {return m_strength;}
     
     //! return this dwarf's agility attribute score
-    int agility() {return m_agility;}
+    Q_INVOKABLE int agility() {return m_agility;}
 
     //! return this dwarf's toughness attribute score
-    int toughness() {return m_toughness;}
+    Q_INVOKABLE int toughness() {return m_toughness;}
 
     //! return the sum total of all xp this dwarf has earned
     int total_xp() {return m_total_xp;}
@@ -100,7 +100,7 @@ public:
     int migration_wave() {return m_migration_wave;}
 
     //! return true if the dwarf's raw_profession is a military professions
-    bool active_military();
+    Q_INVOKABLE bool active_military();
 
     //! return a vector of Skill objects that this dwarf has experience in
     QVector<Skill> *get_skills() {return &m_skills;}
@@ -112,10 +112,10 @@ public:
     QVector<int> get_dirty_labors(); // returns labor ids
 
     //! return true if the labor specified by labor_id is enabled or pending enabled
-    bool is_labor_enabled(int labor_id);
+    Q_INVOKABLE bool labor_enabled(int labor_id);
 
     //! return true if the labor specified by labor_id has been toggled and not committed
-    bool is_labor_state_dirty(int labor_id);
+    Q_INVOKABLE bool is_labor_state_dirty(int labor_id);
 
     //! return the numeric value of a preference setting (uses labor ids for offset)
     short pref_value(const int &labor_id);
@@ -126,13 +126,13 @@ public:
     /*! return this dwarf's numeric score for the trait specified by trait_id, 
     will return -1 if the trait is in the average range (non-extreme values)
     */
-    short trait(int trait_id) {return m_traits.value(trait_id, -1);}
+    Q_INVOKABLE short trait(int trait_id) {return m_traits.value(trait_id, -1);}
 
     //! returns the numeric rating for the this dwarf in the skill specified by skill_id
     short get_rating_by_skill(int skill_id);
 
     //! returns the numeric rating for the this dwarf in the skill associated with the labor specified by labor_id
-    short get_rating_by_labor(int labor_id);
+    Q_INVOKABLE short get_rating_by_labor(int labor_id);
 
     //! return a hashmap of trait_id to trait score for this dwarf
     const QHash<int, short> &traits() {return m_traits;}
@@ -203,7 +203,7 @@ public:
 	QList<QAction*> get_actions() {return m_actions;}
 
 	//! returns true if this dwarf can have labors specified on it
-	bool can_set_labors() {return m_can_set_labors;}
+	Q_INVOKABLE bool can_set_labors() {return m_can_set_labors;}
 
     /************************************************************************/
     /* SQUAD STUFF                                                          */
@@ -237,6 +237,8 @@ public:
 		void dump_memory();
         //! show details for this dwarf in a new window...
         void show_details();
+
+
 
 private:
 	DFInstance *m_df;

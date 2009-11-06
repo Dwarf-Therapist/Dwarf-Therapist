@@ -117,7 +117,7 @@ void ViewColumnSet::toggle_for_dwarf_group() {
 			if (vc->type() == CT_LABOR) {
 				total_labors++;
 				LaborColumn *lc = static_cast<LaborColumn*>(vc);
-				if (d->is_labor_enabled(lc->labor_id()))
+				if (d->labor_enabled(lc->labor_id()))
 					total_enabled++;
 			}
 		}
@@ -151,7 +151,7 @@ void ViewColumnSet::toggle_for_dwarf(Dwarf *d) {
 		if (vc->type() == CT_LABOR) {
 			total_labors++;
 			LaborColumn *lc = static_cast<LaborColumn*>(vc);
-			if (d->is_labor_enabled(lc->labor_id()))
+			if (d->labor_enabled(lc->labor_id()))
 				total_enabled++;
 		}
 	}

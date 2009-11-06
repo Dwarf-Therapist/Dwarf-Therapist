@@ -94,33 +94,12 @@
       </item>
       <item>
        <widget class="QComboBox" name="cb_filter_script">
+        <property name="sizeAdjustPolicy">
+         <enum>QComboBox::AdjustToContents</enum>
+        </property>
         <item>
          <property name="text">
           <string>None</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Add New...</string>
-         </property>
-         <property name="icon">
-          <iconset resource="../images.qrc">
-           <normaloff>:/img/add.png</normaloff>:/img/add.png</iconset>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>High Rage</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>High Trusting</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Miners</string>
          </property>
         </item>
        </widget>
@@ -242,7 +221,20 @@
     </widget>
     <addaction name="menu_docks"/>
    </widget>
+   <widget class="QMenu" name="menuScripting">
+    <property name="title">
+     <string>Scripting</string>
+    </property>
+    <widget class="QMenu" name="menu_edit_filters">
+     <property name="title">
+      <string>Edit Filter Scripts...</string>
+     </property>
+    </widget>
+    <addaction name="act_add_new_filter_script"/>
+    <addaction name="menu_edit_filters"/>
+   </widget>
    <addaction name="menu_File"/>
+   <addaction name="menuScripting"/>
    <addaction name="menuWindows"/>
    <addaction name="menu_Help"/>
   </widget>
@@ -734,6 +726,15 @@
     <string>Open help dialog to the contents page.</string>
    </property>
   </action>
+  <action name="act_add_new_filter_script">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/add.png</normaloff>:/img/add.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add New Filter Script...</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
@@ -999,7 +1000,7 @@
    <slot>clear()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>451</x>
+     <x>371</x>
      <y>440</y>
     </hint>
     <hint type="destinationlabel">
@@ -1072,6 +1073,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_add_new_filter_script</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>add_new_filter_script()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>403</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -1094,5 +1111,6 @@
   <slot>import_custom_professions()</slot>
   <slot>export_gridviews()</slot>
   <slot>import_gridviews()</slot>
+  <slot>add_new_filter_script()</slot>
  </slots>
 </ui>

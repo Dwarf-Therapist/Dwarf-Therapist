@@ -50,6 +50,7 @@ THE SOFTWARE.
 #include "columntypes.h"
 #include "rotatedheader.h"
 #include "scanner.h"
+#include "scriptdialog.h"
 
 #include "dfinstance.h"
 #ifdef _WINDOWS
@@ -74,6 +75,7 @@ MainWindow::MainWindow(QWidget *parent)
 	, m_model(new DwarfModel(this))
 	, m_proxy(new DwarfModelProxy(this))
 	, m_scanner(0)
+    , m_script_dialog(new ScriptDialog(this))
 	, m_http(0)
 	, m_reading_settings(false)
 	, m_temp_cp(0)
@@ -122,6 +124,9 @@ MainWindow::MainWindow(QWidget *parent)
 	connect(ui->list_custom_professions, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
 		m_view_manager, SLOT(jump_to_profession(QListWidgetItem *, QListWidgetItem *)));
 	connect(m_view_manager, SIGNAL(dwarf_focus_changed(Dwarf*)), dwarf_details_dock, SLOT(show_dwarf(Dwarf*)));
+    connect(ui->cb_filter_script, SIGNAL(currentIndexChanged(const QString &)), SLOT(new_filter_script_chosen(const QString &)));
+    connect(m_script_dialog, SIGNAL(apply_script(const QString &)), m_proxy, SLOT(apply_script(const QString&)));
+    connect(m_script_dialog, SIGNAL(scripts_changed()), SLOT(redraw_filter_scripts_cb()));
 
 	m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
@@ -141,6 +146,7 @@ MainWindow::MainWindow(QWidget *parent)
 	
 	read_settings();
 	draw_professions();
+    redraw_filter_scripts_cb();
 
     if (m_settings->value("options/check_for_updates_on_startup", true).toBool())
 	    check_latest_version();
@@ -450,8 +456,7 @@ void MainWindow::import_gridviews() {
         GridViewDock *dock = qobject_cast<GridViewDock*>(QObject::findChild<GridViewDock*>("GridViewDock"));
         if (dock)
             dock->draw_views();
-    }
-        
+    }   
 }
 
 void MainWindow::show_dwarf_details_dock(Dwarf *d) {
@@ -459,4 +464,23 @@ void MainWindow::show_dwarf_details_dock(Dwarf *d) {
 	if (d)
 		dock->show_dwarf(d);
 	dock->show();
+}
+
+void MainWindow::add_new_filter_script() {
+    m_script_dialog->clear_script();
+    m_script_dialog->show();
+}
+
+void MainWindow::redraw_filter_scripts_cb() {
+    ui->cb_filter_script->clear();
+    ui->cb_filter_script->addItem(tr("None"));
+
+    QSettings *s = DT->user_settings();
+    s->beginGroup("filter_scripts");
+    ui->cb_filter_script->addItems(s->childKeys());
+    s->endGroup();
+}
+
+void MainWindow::new_filter_script_chosen(const QString &script_name) {
+    m_proxy->apply_script(DT->user_settings()->value(QString("filter_scripts/%1").arg(script_name), QString()).toString());
 }

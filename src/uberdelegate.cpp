@@ -365,7 +365,7 @@ void UberDelegate::paint_labor(const QRect &adjusted, QPainter *p, const QStyleO
 	}
 
 	int labor_id = idx.data(DwarfModel::DR_LABOR_ID).toInt();
-	bool enabled = d->is_labor_enabled(labor_id);
+	bool enabled = d->labor_enabled(labor_id);
 	bool dirty = d->is_labor_state_dirty(labor_id);
 
 	QColor bg = paint_bg(adjusted, enabled, p, opt, proxy_idx);
@@ -393,7 +393,7 @@ void UberDelegate::paint_aggregate(const QRect &adjusted, QPainter *p, const QSt
 		Dwarf *d = m_model->get_dwarf_by_id(dwarf_id);
 		if (!d)
 			continue;
-		if (d->is_labor_enabled(labor_id))
+		if (d->labor_enabled(labor_id))
 			enabled_count++;
 		if (d->is_labor_state_dirty(labor_id))
 			dirty_count++;
