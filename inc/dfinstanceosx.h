@@ -20,6 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+#ifdef _DEBUG
 #ifndef DFINSTANCE_OSX_H
 #define DFINSTANCE_OSX_H
 #include "dfinstance.h"
@@ -30,11 +31,11 @@ class MemoryLayout;
 class DFInstanceOSX : public DFInstance {
     Q_OBJECT
 public:
-	DFInstanceOSX(QObject *parent=0);
+    DFInstanceOSX(QObject *parent=0);
     ~DFInstanceOSX();
 
-	// factory ctor
-	bool find_running_copy();
+    // factory ctor
+    bool find_running_copy();
     QVector<uint> enumerate_vector(const uint &addr);
     char read_char(const uint &addr);
     short read_short(const uint &addr);
@@ -42,9 +43,9 @@ public:
     uint read_uint(const uint &addr);
     int read_int(const uint &addr);
     uint read_raw(const uint &addr, const uint &bytes, void *buffer);
-	QString read_string(const uint &addr);
+    QString read_string(const uint &addr);
 
-	// Writing
+    // Writing
     uint write_raw(const uint &addr, const uint &bytes, void *buffer);
     uint write_string(const uint &addr, const QString &str);
     uint write_int(const uint &addr, const int &val);
@@ -58,3 +59,4 @@ protected:
 };
 
 #endif // DFINSTANCE_H
+#endif

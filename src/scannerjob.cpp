@@ -22,7 +22,7 @@ THE SOFTWARE.
 */
 #include "scannerjob.h"
 #include "dfinstance.h"
-#ifdef _WINDOWS
+#ifdef Q_WS_WIN
 #include "dfinstancewindows.h"
 #endif
 #ifdef _LINUX
@@ -33,33 +33,33 @@ THE SOFTWARE.
 #endif
 
 ScannerJob::ScannerJob(SCANNER_JOB_TYPE job_type)
-	: m_job_type(job_type)
+    : m_job_type(job_type)
 {
-	m_ok = get_DFInstance();
+    m_ok = get_DFInstance();
 }
 ScannerJob::~ScannerJob() {
-	if (m_df)
-		delete m_df;
-	m_df = 0;
+    if (m_df)
+        delete m_df;
+    m_df = 0;
 }
 
 SCANNER_JOB_TYPE ScannerJob::job_type() {
-	return m_job_type;
+    return m_job_type;
 }
 
 DFInstance *ScannerJob::df() {
-	return m_df;
+    return m_df;
 }
 
 bool ScannerJob::get_DFInstance() {
 #ifdef _WINDOWS
-	m_df = new DFInstanceWindows(this);
+    m_df = new DFInstanceWindows(this);
 #endif
 #ifdef _LINUX
-	m_df = new DFInstanceLinux(this);
+    m_df = new DFInstanceLinux(this);
 #endif
 #ifdef _OSX
-	m_df = new DFInstanceOSX(this);
+    m_df = new DFInstanceOSX(this);
 #endif
-	return m_df->find_running_copy() && m_df->is_ok();
+    return m_df->find_running_copy() && m_df->is_ok();
 }

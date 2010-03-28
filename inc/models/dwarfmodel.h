@@ -48,79 +48,79 @@ private:
 */
 
 class DwarfModel : public QStandardItemModel {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	typedef enum {
-		GB_NOTHING = 0,
-		GB_PROFESSION,
-		GB_LEGENDARY,
-		GB_SEX,
-		GB_HAPPINESS,
-		GB_MIGRATION_WAVE,
+    typedef enum {
+        GB_NOTHING = 0,
+        GB_PROFESSION,
+        GB_LEGENDARY,
+        GB_SEX,
+        GB_HAPPINESS,
+        GB_MIGRATION_WAVE,
         GB_SQUAD,
-		GB_CURRENT_JOB,
-		GB_MILITARY_STATUS,
-		GB_TOTAL
-	} GROUP_BY;
-	typedef enum {
-		DR_RATING = Qt::UserRole + 1,
-		DR_SORT_VALUE,
-		DR_IS_AGGREGATE,
-		DR_LABOR_ID,
-		DR_GROUP_NAME,
-		DR_ID,
-		DR_DEFAULT_BG_COLOR,
-		DR_COL_TYPE,
-		DR_SET_NAME,
+        GB_CURRENT_JOB,
+        GB_MILITARY_STATUS,
+        GB_TOTAL
+    } GROUP_BY;
+    typedef enum {
+        DR_RATING = Qt::UserRole + 1,
+        DR_SORT_VALUE,
+        DR_IS_AGGREGATE,
+        DR_LABOR_ID,
+        DR_GROUP_NAME,
+        DR_ID,
+        DR_DEFAULT_BG_COLOR,
+        DR_COL_TYPE,
+        DR_SET_NAME,
         DR_MEMBER_IDS // creature ids that belong to this aggregate
-	} DATA_ROLES;
+    } DATA_ROLES;
 
-	DwarfModel(QObject *parent = 0);
-	virtual ~DwarfModel();
-	void set_instance(DFInstance *df) {m_df = df;}
-	void set_grid_view(GridView *v) {m_gridview = v;}
-	void clear_all(); // reset everything to normal
+    DwarfModel(QObject *parent = 0);
+    virtual ~DwarfModel();
+    void set_instance(DFInstance *df) {m_df = df;}
+    void set_grid_view(GridView *v) {m_gridview = v;}
+    void clear_all(); // reset everything to normal
 
-	GROUP_BY current_grouping() const {return m_group_by;}
-	const QMap<QString, QVector<Dwarf*> > *get_dwarf_groups() const {return &m_grouped_dwarves;}
-	Dwarf *get_dwarf_by_id(int id) const {return m_dwarves.value(id, 0);}
-		
-	QVector<Dwarf*> get_dirty_dwarves();
-	QList<Dwarf*> get_dwarves() {return m_dwarves.values();}
-	void calculate_pending();
-	int selected_col() const {return m_selected_col;}
-	void filter_changed(const QString &);
+    GROUP_BY current_grouping() const {return m_group_by;}
+    const QMap<QString, QVector<Dwarf*> > *get_dwarf_groups() const {return &m_grouped_dwarves;}
+    Dwarf *get_dwarf_by_id(int id) const {return m_dwarves.value(id, 0);}
 
-    QModelIndex DwarfModel::findOne(const QVariant &needle, int role = Qt::DisplayRole, int column = 0, const QModelIndex &start_index = QModelIndex());
-    QList<QPersistentModelIndex> DwarfModel::findAll(const QVariant &needle, int role = Qt::DisplayRole, int column = 0, QModelIndex start_index = QModelIndex());
+    QVector<Dwarf*> get_dirty_dwarves();
+    QList<Dwarf*> get_dwarves() {return m_dwarves.values();}
+    void calculate_pending();
+    int selected_col() const {return m_selected_col;}
+    void filter_changed(const QString &);
 
-	public slots:
-		void build_row(const QString &key);
-		void build_rows();
-		void set_group_by(int group_by);
-		void load_dwarves();
-		void cell_activated(const QModelIndex &idx); // a grid cell was clicked/doubleclicked or enter was pressed on it
-		void clear_pending();
-		void commit_pending();
-		void section_right_clicked(int idx);
-		void dwarf_group_toggled(const QString &group_name);
-		void dwarf_set_toggled(Dwarf *d);
+    QModelIndex findOne(const QVariant &needle, int role = Qt::DisplayRole, int column = 0, const QModelIndex &start_index = QModelIndex());
+    QList<QPersistentModelIndex> findAll(const QVariant &needle, int role = Qt::DisplayRole, int column = 0, QModelIndex start_index = QModelIndex());
+
+    public slots:
+        void build_row(const QString &key);
+        void build_rows();
+        void set_group_by(int group_by);
+        void load_dwarves();
+        void cell_activated(const QModelIndex &idx); // a grid cell was clicked/doubleclicked or enter was pressed on it
+        void clear_pending();
+        void commit_pending();
+        void section_right_clicked(int idx);
+        void dwarf_group_toggled(const QString &group_name);
+        void dwarf_set_toggled(Dwarf *d);
 
 private:
-	DFInstance *m_df;
-	QMap<int, Dwarf*> m_dwarves;
-	QMap<QString, QVector<Dwarf*> > m_grouped_dwarves;
+    DFInstance *m_df;
+    QMap<int, Dwarf*> m_dwarves;
+    QMap<QString, QVector<Dwarf*> > m_grouped_dwarves;
     //! squad_leader_id -> squad object
     QHash<int, Squad*> m_squads;
-	GROUP_BY m_group_by;
-	int m_selected_col;
-	GridView *m_gridview;
-	
+    GROUP_BY m_group_by;
+    int m_selected_col;
+    GridView *m_gridview;
+
 signals:
-	void new_pending_changes(int);
-	void preferred_header_size(int section, int width);
-	void set_index_as_spacer(int);
-	void clear_spacers();
-	void need_redraw();
+    void new_pending_changes(int);
+    void preferred_header_size(int section, int width);
+    void set_index_as_spacer(int);
+    void clear_spacers();
+    void need_redraw();
 };
 #endif
