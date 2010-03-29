@@ -1,0 +1,11 @@
+# qmake generated files
+Makefile
+Makefile.Debug
+Makefile.Release
+object_script.DwarfTherapist.Debug
+object_script.DwarfTherapist.Release
+
+syntax: glob
+bin/*
+debug/*
+release/*
