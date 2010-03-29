@@ -4,8 +4,11 @@ Makefile.Debug
 Makefile.Release
 object_script.DwarfTherapist.Debug
 object_script.DwarfTherapist.Release
+dwarftherapist.pro.user
 
 syntax: glob
 bin/*
 debug/*
 release/*
+ui/*.h
+log/*
