@@ -24,7 +24,7 @@ THE SOFTWARE.
 #define MILITARY_PREFERENCE_H
 
 #include <QtGui>
-#include "defines.h"
+#include "truncatingfilelogger.h"
 
 struct PreferenceValue {
     short id;
@@ -56,7 +56,7 @@ public:
         }
         s.endArray();
     }
-    
+
     virtual ~MilitaryPreference() {
         foreach(PreferenceValue *pv, m_values) {
             delete pv;
@@ -94,7 +94,7 @@ public:
             count++;
         }
         LOGW << "Military Preference:" << name << "was unable to find a suitable next value after" << old_val;
-		return m_values.at(0)->id; // that sucks...
+        return m_values.at(0)->id; // that sucks...
     }
 
     QString name;

@@ -35,16 +35,8 @@ THE SOFTWARE.
 #endif
 
 #ifndef DT_VERSION_PATCH
-    #define DT_VERSION_PATCH 2
+    #define DT_VERSION_PATCH 3
 #endif
-
-//#define LOG   qxtLog
-#define LOGD  qDebug() << __FILE__ << "(ln" << __LINE__ << "): "
-#define LOGI  qDebug()
-#define LOGW  qWarning() << __FILE__ << "(ln" << __LINE__ << ") [" << __FUNCTION__ << "] "
-#define LOGC  qCritical() << __FILE__ << "(ln" << __LINE__ << ") [" << __FUNCTION__ << "] "
-#define FATAL qFatal() << __FILE__ << "(ln" << __LINE__ << ") [" << __FUNCTION__ << "] "
-#define TRACE qDebug()
 
 #define DEFAULT_CELL_SIZE 16
 #define DEFAULT_SPACER_WIDTH 4

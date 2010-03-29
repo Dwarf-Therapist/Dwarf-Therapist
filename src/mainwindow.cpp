@@ -50,6 +50,7 @@ THE SOFTWARE.
 #include "rotatedheader.h"
 #include "scanner.h"
 #include "scriptdialog.h"
+#include "truncatingfilelogger.h"
 
 #include "dfinstance.h"
 #ifdef Q_WS_WIN
@@ -62,22 +63,22 @@ THE SOFTWARE.
 #include "dfinstanceosx.h"
 #endif
 
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , m_view_manager(0)
-    , m_reading_settings(false)
-    , m_about_dialog(new AboutDialog(this))
     , m_df(0)
     , m_lbl_status(0)
     , m_settings(0)
+    , m_view_manager(0)
     , m_model(new DwarfModel(this))
     , m_proxy(new DwarfModelProxy(this))
+    , m_about_dialog(new AboutDialog(this))
+    , m_temp_cp(0)
     , m_scanner(0)
     , m_script_dialog(new ScriptDialog(this))
     , m_http(0)
-    , m_temp_cp(0)
+    , m_reading_settings(false)
+    , m_show_result_on_equal(false)
     , m_dwarf_name_completer(0)
 {
     ui->setupUi(this);
@@ -286,7 +287,7 @@ void MainWindow::read_dwarves() {
 void MainWindow::set_interface_enabled(bool enabled) {
     ui->act_connect_to_DF->setEnabled(!enabled);
     ui->act_read_dwarves->setEnabled(enabled);
-    ui->act_scan_memory->setEnabled(enabled);
+    //ui->act_scan_memory->setEnabled(enabled);
     ui->act_expand_all->setEnabled(enabled);
     ui->act_collapse_all->setEnabled(enabled);
     ui->cb_group_by->setEnabled(enabled);

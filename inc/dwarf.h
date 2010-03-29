@@ -32,51 +32,51 @@ class CustomProfession;
 
 class Dwarf : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
     Dwarf(DFInstance *df, const uint &addr, QObject *parent=0); //private, use the static get_dwarf() method
 
 public:
     static Dwarf* get_dwarf(DFInstance *df, const uint &address);
-	virtual ~Dwarf();
+    virtual ~Dwarf();
 
-	typedef enum {
-		DH_MISERABLE = 0,
-		DH_VERY_UNHAPPY,
-		DH_UNHAPPY,
-		DH_FINE,
-		DH_CONTENT,
-		DH_HAPPY,
-		DH_ECSTATIC,
-		DH_TOTAL_LEVELS
-	} DWARF_HAPPINESS;
+    typedef enum {
+        DH_MISERABLE = 0,
+        DH_VERY_UNHAPPY,
+        DH_UNHAPPY,
+        DH_FINE,
+        DH_CONTENT,
+        DH_HAPPY,
+        DH_ECSTATIC,
+        DH_TOTAL_LEVELS
+    } DWARF_HAPPINESS;
 
-	// getters
+    // getters
     //! Return the memory address (in hex) of this creature in the remote DF process
     uint address() {return m_address;}
-    
+
     //! return the the unique id for this creature
-	int id() {return m_id;}
-    
+    int id() {return m_id;}
+
     //! true if the creature is male, false if female or "it"
-	Q_INVOKABLE bool is_male() {return m_is_male;}
-    
+    Q_INVOKABLE bool is_male() {return m_is_male;}
+
     //! return a text version of this dwarf's profession (will use custom profession if set)
-	QString profession();
-    
+    QString profession();
+
     //! return the raw game-set profession for a dwarf
-	Q_INVOKABLE int raw_profession() {return m_raw_profession;}
-    
+    Q_INVOKABLE int raw_profession() {return m_raw_profession;}
+
     //! custom profession string (if set)
-	QString custom_profession_name() {return m_pending_custom_profession;}
-	
+    QString custom_profession_name() {return m_pending_custom_profession;}
+
     //! return a printable name for this dwarf based on user-settings (may include nickname/firstname or both)
-	Q_INVOKABLE QString nice_name() {return m_nice_name;}
+    Q_INVOKABLE QString nice_name() {return m_nice_name;}
 
     //! return a printable name for this dwarf where each dwarven word is translated to english (not game human)
-	QString translated_name() {return m_translated_name;}
+    QString translated_name() {return m_translated_name;}
 
     //! return the string nickname for this dwarf (if set)
-	QString nickname() {return m_pending_nick_name;}
+    QString nickname() {return m_pending_nick_name;}
 
     //! return the happiness level of this dwarf
     DWARF_HAPPINESS get_happiness() {return m_happiness;}
@@ -86,7 +86,7 @@ public:
 
     //! return this dwarf's strength attribute score
     Q_INVOKABLE int strength() {return m_strength;}
-    
+
     //! return this dwarf's agility attribute score
     Q_INVOKABLE int agility() {return m_agility;}
 
@@ -123,7 +123,7 @@ public:
     //! sets a numeric value on a preference to the next value in the chain (uses labor ids for offset)
     void toggle_pref_value(const int &labor_id);
 
-    /*! return this dwarf's numeric score for the trait specified by trait_id, 
+    /*! return this dwarf's numeric score for the trait specified by trait_id,
     will return -1 if the trait is in the average range (non-extreme values)
     */
     Q_INVOKABLE short trait(int trait_id) {return m_traits.value(trait_id, -1);}
@@ -157,53 +157,53 @@ public:
     void set_nickname(QString nick) {m_pending_nick_name = nick; calc_names();}
 
     //! set the migration wave this dwarf (DwarfModel currently calls this with its best guess)
-	void set_migration_wave(const int &wave_number) {m_migration_wave = wave_number;}
+    void set_migration_wave(const int &wave_number) {m_migration_wave = wave_number;}
 
     /*! manually set a labor as enabled or disabled for this dwarf. This method automatically unsets
     exclusive partners of a labor, or weapon choice. It also defends against cheating by not allowing
     labors to be set on certain professions (Baby, Child, Nobles, etc...)
     */
-	void set_labor(int labor_id, bool enabled);
+    void set_labor(int labor_id, bool enabled);
 
     //! convenience method that calls set_labor() and switches the state of the labor specified by labor_id
-	bool toggle_labor(int labor_id);
+    bool toggle_labor(int labor_id);
 
     //! undo any uncomitted changes to this dwarf (reset back to game-state)
-	void clear_pending();
+    void clear_pending();
 
     //! write all uncommitted pending changes back to the game (DANGEROUS METHOD)
-	void commit_pending();
+    void commit_pending();
 
     //! set's the pending custom profession text for this dwarf
     void set_custom_profession_text(const QString &prof_text);
 
-    /*! sets the pending custom profession text for this dwarf as well as sets all labors for 
+    /*! sets the pending custom profession text for this dwarf as well as sets all labors for
     this dwarf to match the labor template of the CustomProfession object.
     */
-	int apply_custom_profession(CustomProfession *cp); // return # of pending changes
+    int apply_custom_profession(CustomProfession *cp); // return # of pending changes
 
     /*! clears the pending custom profession text for this dwarf. This will cause the dwarf to
     show up as their default profession in game
     */
-	void reset_custom_profession() {m_pending_custom_profession = "";}
-	
+    void reset_custom_profession() {m_pending_custom_profession = "";}
+
     //! static method for mapping a numeric happiness score into a value of the enum DWARF_HAPPINESS
-	static DWARF_HAPPINESS happiness_from_score(int score);
+    static DWARF_HAPPINESS happiness_from_score(int score);
 
     //! static method for mapping a value in the enum DWARF_HAPPINESS to a meaningful text string
-	static QString happiness_name(DWARF_HAPPINESS happiness);
+    static QString happiness_name(DWARF_HAPPINESS happiness);
 
     //! used for building a datamodel that shows all pending changes this dwarf has queued up
-	QTreeWidgetItem *get_pending_changes_tree();
+    QTreeWidgetItem *get_pending_changes_tree();
 
     //! convenience hack allowing Dwarf objects to know where they live in the gridview model
-	QModelIndex m_name_idx;
+    QModelIndex m_name_idx;
 
     //! get's a list of QActions that can be activated on this dwarf, suitable for adding to Toolbars or context menus
-	QList<QAction*> get_actions() {return m_actions;}
+    QList<QAction*> get_actions() {return m_actions;}
 
-	//! returns true if this dwarf can have labors specified on it
-	Q_INVOKABLE bool can_set_labors() {return m_can_set_labors;}
+    //! returns true if this dwarf can have labors specified on it
+    Q_INVOKABLE bool can_set_labors() {return m_can_set_labors;}
 
     /************************************************************************/
     /* SQUAD STUFF                                                          */
@@ -232,66 +232,67 @@ public:
 
     public slots:
         //! called when global user settings change
-		void read_settings();
-		//! show a dialog with a memory dump for this dwarf...
-		void dump_memory();
+        void read_settings();
+        //! show a dialog with a memory dump for this dwarf...
+        void dump_memory();
         //! show details for this dwarf in a new window...
         void show_details();
 
 
 
 private:
-	DFInstance *m_df;
+    int m_id;
+    DFInstance *m_df;
     uint m_address;
-	int m_race_id;
-	DWARF_HAPPINESS m_happiness;
-	int m_raw_happiness;
-	int m_money;
-	bool m_is_male;
-	bool m_show_full_name;
-	int m_total_xp;
-	int m_migration_wave;
-	
+    int m_race_id;
+    DWARF_HAPPINESS m_happiness;
+    int m_raw_happiness;
+    int m_money;
+    bool m_is_male;
+    bool m_show_full_name;
+    int m_total_xp;
+    int m_migration_wave;
+
     QString read_profession(const uint &addr);
     QString read_last_name(const uint &addr, bool use_generic=false);
     QString read_squad_name(const uint &addr, bool use_generic=false);
     QVector<Skill> read_skills(const uint &addr);
     void read_prefs(const uint &addr);
     void read_labors(const uint &addr);
-	void calc_names();
+    void calc_names();
     void read_traits(const uint &addr);
     void read_current_job(const uint &addr);
 
-	int m_id;
+
     Q_PROPERTY(QString first_name READ first_name) // no setters (scripting read-only)
-	QString m_first_name;
-	QString m_last_name, m_translated_last_name;
-	QString m_nick_name, m_pending_nick_name;
-	QString m_nice_name, m_translated_name; // used to cache this value
-	QString m_custom_profession, m_pending_custom_profession;
-	QString m_profession;
-	int m_raw_profession;
-	bool m_can_set_labors;
-	int m_strength;
-	int m_agility;
-	int m_toughness;
+    QString m_first_name;
+    QString m_last_name, m_translated_last_name;
+    QString m_nick_name, m_pending_nick_name;
+    QString m_nice_name, m_translated_name; // used to cache this value
+    QString m_custom_profession, m_pending_custom_profession;
+    QString m_profession;
+    int m_raw_profession;
+    bool m_can_set_labors;
+    int m_strength;
+    int m_agility;
+    int m_toughness;
     short m_current_job_id;
     QString m_current_job;
-	QVector<Skill> m_skills;
-	QHash<int, short> m_traits;
-	QMap<int, ushort> m_labors;
-	QMap<int, ushort> m_pending_labors;
-	QList<QAction*> m_actions; // actions suitable for context menus
-    
+    QVector<Skill> m_skills;
+    QHash<int, short> m_traits;
+    QMap<int, ushort> m_labors;
+    QMap<int, ushort> m_pending_labors;
+    QList<QAction*> m_actions; // actions suitable for context menus
+
     // Squad settings
     int m_squad_leader_id;
     QString m_squad_name;
     QString m_generic_squad_name;
     //! maintain a list of all dwarfs who follow this dwarf in the military hierarchy
     QList<Dwarf*> m_squad_members;
-    
+
 signals:
-	void name_changed();
+    void name_changed();
 };
 
 #endif // DWARF_H

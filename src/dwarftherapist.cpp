@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include "ui_mainwindow.h"
 #include "dfinstance.h"
 #include "memorylayout.h"
+#include "truncatingfilelogger.h"
 
 DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     : QApplication(argc, argv)
@@ -41,6 +42,7 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     , m_options_menu(0)
     , m_reading_settings(false)
     , m_allow_labor_cheats(false)
+    , m_logger(0)
 {
     setup_logging();
     load_translator();
@@ -72,8 +74,6 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
 }
 
 void DwarfTherapist::setup_logging() {
-    /*
-
     QStringList args = arguments();
     bool debug_logging = args.indexOf("-debug") != -1;
     bool trace_logging = args.indexOf("-trace") != -1;
@@ -83,24 +83,17 @@ void DwarfTherapist::setup_logging() {
     debug_logging = true;
 
     //setup logging
-    TruncatingFileLoggerEngine *engine = new TruncatingFileLoggerEngine("log/run.log");
-    qxtLog->addLoggerEngine("main", engine);
-    QxtLogger::getInstance()->installAsMessageHandler();
-    qxtLog->setMinimumLevel(QxtLogger::InfoLevel);
-
+    //applicationDirPath()
+    m_logger = new TruncatingFileLogger("log/run.log", LL_TRACE, this);
     Version v; // current version
-    LOG->info("Dwarf Therapist", v.to_string(), "starting normally.");
-    if (debug_logging && !trace_logging) {
-        qxtLog->setMinimumLevel(QxtLogger::DebugLevel);
-        LOG->info("MINIMUM LOG LEVEL SET TO: DEBUG");
-    } else if (trace_logging) {
-        qxtLog->setMinimumLevel(QxtLogger::TraceLevel);
-        LOG->info("MINIMUM LOG LEVEL SET TO: TRACE");
-    } else {
-        LOG->info("MINIMUM LOG LEVEL SET TO: INFO");
+    LOGI << "Dwarf Therapist" << v.to_string() << "starting normally.";
+    LOG_LEVEL min_level = LL_INFO;
+    if (trace_logging) {
+        min_level = LL_TRACE;
+    } else if (debug_logging) {
+        min_level = LL_DEBUG;
     }
-
-    */
+    m_logger->set_minimum_level(min_level);
 }
 
 void DwarfTherapist::load_translator() {

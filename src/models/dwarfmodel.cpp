@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include "profession.h"
 #include "squad.h"
 #include "statetableview.h"
-#include "defines.h"
+#include "truncatingfilelogger.h"
 #include "dwarftherapist.h"
 
 #include "columntypes.h"

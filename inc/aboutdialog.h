@@ -28,16 +28,16 @@ THE SOFTWARE.
 #include "version.h"
 
 class AboutDialog : public QDialog {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	AboutDialog(MainWindow *parent = 0);
+    AboutDialog(MainWindow *parent = 0);
 
-	void set_latest_version(const Version &v);
-	void version_check_failed();
-	
+    void set_latest_version(const Version &v);
+    void version_check_failed();
+
 private:
-	Version m_version;
-	Ui::AboutDialog *ui;
+    Ui::AboutDialog *ui;
+    Version m_version;
 
     private slots:
         void check_version();

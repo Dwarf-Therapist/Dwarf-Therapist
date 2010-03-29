@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "dfinstancewindows.h"
 #include "defines.h"
+#include "truncatingfilelogger.h"
 #include "dwarf.h"
 #include "utils.h"
 #include "gamedatareader.h"
@@ -107,12 +108,15 @@ QString DFInstanceWindows::read_string(const uint &addr) {
 
     if (len > cap || len < 0 || len > 1024) {
         // probaby not really a string
-        LOGW << "Tried to read a string at" << hex << addr << "but it was totally not a string...";
+        LOGW << "Tried to read a string at" << hex << addr
+            << "but it was totally not a string...";
         return QString();
     }
-    Q_ASSERT_X(len <= cap, "read_string", "Length must be less than or equal to capacity!");
+    Q_ASSERT_X(len <= cap, "read_string",
+               "Length must be less than or equal to capacity!");
     Q_ASSERT_X(len >= 0, "read_string", "Length must be >=0!");
-    Q_ASSERT_X(len < (1 << 16), "read_string", "String must be of sane length!");
+    Q_ASSERT_X(len < (1 << 16), "read_string",
+               "String must be of sane length!");
 
     char *buffer = new char[len];
     read_raw(buffer_addr, len, buffer);
@@ -167,7 +171,8 @@ uint DFInstanceWindows::read_uint(const uint &addr) {
 
 uint DFInstanceWindows::write_int(const uint &addr, const int &val) {
     uint bytes_written = 0;
-    WriteProcessMemory(m_proc, (LPVOID)addr, &val, sizeof(int), (DWORD*)&bytes_written);
+    WriteProcessMemory(m_proc, (LPVOID)addr, &val, sizeof(int),
+                       (DWORD*)&bytes_written);
     return bytes_written;
 }
 
@@ -177,19 +182,26 @@ char DFInstanceWindows::read_char(const uint &addr) {
     return val;
 }
 
-uint DFInstanceWindows::read_raw(const uint &addr, const uint &bytes, void *buffer) {
+uint DFInstanceWindows::read_raw(const uint &addr, const uint &bytes,
+                                 void *buffer) {
     memset(buffer, 0, bytes);
     uint bytes_read = 0;
-    ReadProcessMemory(m_proc, (LPCVOID)addr, (void*)buffer, sizeof(uchar) * bytes, (DWORD*)&bytes_read);
-    /*if (!ok || bytes_read != bytes)
-        LOGW << "ERROR: tried to get" << bytes << "bytes from" << hex << addr << "but only got"
-             << dec << bytes_read << "Windows System Error(" << dec << GetLastError() << ")";*/
+    ReadProcessMemory(m_proc, (LPCVOID)addr, (void*)buffer,
+                      sizeof(uchar) * bytes, (DWORD*)&bytes_read);
+    /*
+    if (!ok || bytes_read != bytes)
+        LOGW << "ERROR: tried to get" << bytes << "bytes from" << hex << addr
+            << "but only got" << dec << bytes_read << "Windows System Error("
+            << dec << GetLastError() << ")";
+    */
     return bytes_read;
 }
 
-uint DFInstanceWindows::write_raw(const uint &addr, const uint &bytes, void *buffer) {
+uint DFInstanceWindows::write_raw(const uint &addr, const uint &bytes,
+                                  void *buffer) {
     uint bytes_written = 0;
-    WriteProcessMemory(m_proc, (LPVOID)addr, (void*)buffer, sizeof(uchar) * bytes, (DWORD*)&bytes_written);
+    WriteProcessMemory(m_proc, (LPVOID)addr, (void*)buffer,
+                       sizeof(uchar) * bytes, (DWORD*)&bytes_written);
     Q_ASSERT(bytes_written == bytes);
     return bytes_written;
 }
@@ -232,15 +244,16 @@ bool DFInstanceWindows::find_running_copy() {
     PROCESS_MEMORY_COUNTERS pmc;
     GetProcessMemoryInfo(m_proc, &pmc, sizeof(pmc));
     m_memory_size = pmc.WorkingSetSize;
-    LOGD << "working set size: " << dec << m_memory_size / (1024.0f * 1024.0f) << "MB";
+    LOGD << "working set size: " << dec << m_memory_size / (1024.0f * 1024.0f)
+            << "MB";
 
     PVOID peb_addr = GetPebAddress(m_proc);
     LOGD << "PEB is at: " << hex << peb_addr;
 
-    QString connection_error = tr("I'm sorry. I'm having trouble connecting to DF. "
-        "I can't seem to locate the PEB address of the process. \n\n"
-        "Please re-launch DF and try again.");
-
+    QString connection_error = tr("I'm sorry. I'm having trouble connecting to "
+                                  "DF. I can't seem to locate the PEB address "
+                                  "of the process. \n\nPlease re-launch DF and "
+                                  "try again.");
     if (peb_addr == 0){
         QMessageBox::critical(0, tr("Connection Error"), connection_error);
         qCritical() << "PEB address came back as 0";
@@ -267,7 +280,7 @@ bool DFInstanceWindows::find_running_copy() {
         if (!m_layout->is_valid()) {
             QMessageBox::critical(0, tr("Unidentified Version"),
                 tr("I'm sorry but I don't know how to talk to this version of DF!"));
-            LOGC << "unable to identify version from checksum:" << hex << checksum;
+            ERROR << tr("unable to identify version from checksum:") << hex << checksum;
             m_is_ok = false;
         }
     }

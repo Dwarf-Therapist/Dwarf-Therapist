@@ -26,9 +26,9 @@ THE SOFTWARE.
 #include "viewcolumnset.h"
 #include "gamedatareader.h"
 #include "dwarfmodel.h"
-#include "defines.h"
+#include "truncatingfilelogger.h"
 
-AttributeColumn::AttributeColumn(const QString &title, DWARF_ATTRIBUTE_TYPE type, ViewColumnSet *set, QObject *parent) 
+AttributeColumn::AttributeColumn(const QString &title, DWARF_ATTRIBUTE_TYPE type, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title, CT_ATTRIBUTE, set, parent)
     , m_attribute_type(type)
 {
@@ -41,7 +41,7 @@ AttributeColumn::AttributeColumn(const QString &title, DWARF_ATTRIBUTE_TYPE type
     }
 }
 
-AttributeColumn::AttributeColumn(QSettings &s, ViewColumnSet *set, QObject *parent) 
+AttributeColumn::AttributeColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     : ViewColumn(s, set, parent)
     , m_attribute_type(static_cast<DWARF_ATTRIBUTE_TYPE>(s.value("attribute", -1).toInt()))
 {}
@@ -76,11 +76,11 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
         msg = GameDataReader::ptr()->get_string_for_key(key);
         item->setData(val, Qt::DisplayRole);
     }
-    
+
     item->setData(val, DwarfModel::DR_SORT_VALUE);
     item->setData(val, DwarfModel::DR_RATING);
     item->setData(CT_ATTRIBUTE, DwarfModel::DR_COL_TYPE);
-    
+
     QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%4</h4>")
         .arg(m_title)
         .arg(msg)

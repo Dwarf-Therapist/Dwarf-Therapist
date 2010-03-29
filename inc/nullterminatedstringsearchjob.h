@@ -25,39 +25,40 @@ THE SOFTWARE.
 
 #include "scannerjob.h"
 #include "defines.h"
+#include "truncatingfilelogger.h"
 #include "utils.h"
 
 class NullTerminatedStringSearchJob : public ScannerJob {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	NullTerminatedStringSearchJob() 
-		: ScannerJob(FIND_NULL_TERMINATED_STRING)
-	{}
-	
-	void set_needle(const QByteArray &needle) {
-		m_needle = needle;
-	}
+    NullTerminatedStringSearchJob()
+        : ScannerJob(FIND_NULL_TERMINATED_STRING)
+    {}
 
-	public slots:
-		void go() {
-			if (!m_ok) {
-				LOGC << "Scanner Thread couldn't connect to DF!";
-				emit quit();
-				return;
-			}
-			LOGD << "Starting Search in Thread" << QThread::currentThreadId();
+    void set_needle(const QByteArray &needle) {
+        m_needle = needle;
+    }
 
-			emit main_scan_total_steps(0);
-			emit main_scan_progress(-1);
-			emit scan_message(tr("Looking for %1").arg(QString(m_needle.toHex())));
-			foreach (uint str, m_df->scan_mem(m_needle)) {
-				emit found_address(m_needle.toHex() + " found at", str);
-			}
-			emit quit();
-		}
+    public slots:
+        void go() {
+            if (!m_ok) {
+                ERROR << "Scanner Thread couldn't connect to DF!";
+                emit quit();
+                return;
+            }
+            LOGD << "Starting Search in Thread" << QThread::currentThreadId();
+
+            emit main_scan_total_steps(0);
+            emit main_scan_progress(-1);
+            emit scan_message(tr("Looking for %1").arg(QString(m_needle.toHex())));
+            foreach (uint str, m_df->scan_mem(m_needle)) {
+                emit found_address(m_needle.toHex() + " found at", str);
+            }
+            emit quit();
+        }
 
 private:
-	QByteArray m_needle;
+    QByteArray m_needle;
 
 };
 #endif

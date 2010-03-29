@@ -24,53 +24,53 @@ THE SOFTWARE.
 #define STONE_VECTOR_SEARCH_JOB_H
 
 #include "scannerjob.h"
-#include "defines.h"
+#include "truncatingfilelogger.h"
 #include "gamedatareader.h"
 #include "utils.h"
 
 class StoneVectorSearchJob : public ScannerJob {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	StoneVectorSearchJob() 
-		: ScannerJob(FIND_TRANSLATIONS_VECTOR)
-	{}
-	public slots:
-		void go() {
-			if (!m_ok) {
-				LOGC << "Scanner Thread couldn't connect to DF!";
-				emit quit();
-				return;
-			}
-			LOGD << "Starting Search in Thread" << QThread::currentThreadId();
+    StoneVectorSearchJob()
+        : ScannerJob(FIND_TRANSLATIONS_VECTOR)
+    {}
+    public slots:
+        void go() {
+            if (!m_ok) {
+                ERROR << "Scanner Thread couldn't connect to DF!";
+                emit quit();
+                return;
+            }
+            LOGD << "Starting Search in Thread" << QThread::currentThreadId();
 
-			emit main_scan_total_steps(1);
-			emit main_scan_progress(0);
+            emit main_scan_total_steps(1);
+            emit main_scan_progress(0);
 
-			GameDataReader *gdr = GameDataReader::ptr();
-			//! first word in the stone vector
-			int target_stones = gdr->get_int_for_key("ram_guesser/total_stones", 10);
-			QString first_stone = gdr->get_string_for_key("ram_guesser/first_stone");
+            GameDataReader *gdr = GameDataReader::ptr();
+            //! first word in the stone vector
+            int target_stones = gdr->get_int_for_key("ram_guesser/total_stones", 10);
+            QString first_stone = gdr->get_string_for_key("ram_guesser/first_stone");
 
-			emit scan_message(tr("Looking for vectors with %1 entries").arg(target_stones));
-			QVector<uint> vecs = m_df->find_vectors(target_stones);
-			emit main_scan_total_steps(vecs.size());
-			emit scan_message(tr("Looking for a correctly sized vector where the first entry is %1").arg(first_stone));
-			int count = 0;
-			foreach(uint vec_addr, vecs) {
-				if (m_df->looks_like_vector_of_pointers(vec_addr)) {
-					foreach(uint entry, m_df->enumerate_vector(vec_addr)) {
-						if (m_df->is_valid_address(entry)) {
-							QString first_entry = m_df->read_string(entry);
-							if (first_entry == first_stone) {
-								emit found_address("stone_vector", vec_addr);
-							}
-						}
-						break;
-					}
-				}
-				emit main_scan_progress(++count);
-			}
-			emit quit();
-		}
+            emit scan_message(tr("Looking for vectors with %1 entries").arg(target_stones));
+            QVector<uint> vecs = m_df->find_vectors(target_stones);
+            emit main_scan_total_steps(vecs.size());
+            emit scan_message(tr("Looking for a correctly sized vector where the first entry is %1").arg(first_stone));
+            int count = 0;
+            foreach(uint vec_addr, vecs) {
+                if (m_df->looks_like_vector_of_pointers(vec_addr)) {
+                    foreach(uint entry, m_df->enumerate_vector(vec_addr)) {
+                        if (m_df->is_valid_address(entry)) {
+                            QString first_entry = m_df->read_string(entry);
+                            if (first_entry == first_stone) {
+                                emit found_address("stone_vector", vec_addr);
+                            }
+                        }
+                        break;
+                    }
+                }
+                emit main_scan_progress(++count);
+            }
+            emit quit();
+        }
 };
 #endif

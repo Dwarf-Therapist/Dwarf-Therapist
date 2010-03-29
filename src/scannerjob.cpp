@@ -52,7 +52,7 @@ DFInstance *ScannerJob::df() {
 }
 
 bool ScannerJob::get_DFInstance() {
-#ifdef _WINDOWS
+#ifdef Q_WS_WIN
     m_df = new DFInstanceWindows(this);
 #endif
 #ifdef _LINUX

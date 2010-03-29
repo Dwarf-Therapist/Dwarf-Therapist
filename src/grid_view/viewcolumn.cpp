@@ -26,40 +26,43 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "utils.h"
 
-ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set, QObject *parent)
-	: QObject(parent)
-	, m_title(title)
-	, m_set(set)
-	, m_override_set_colors(false)
-	, m_type(type)
+ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,
+                       QObject *parent)
+    : QObject(parent)
+    , m_title(title)
+    , m_bg_color(Qt::red) //! should stand out if it doesn't get set
+    , m_override_set_colors(false)
+    , m_set(set)
+    , m_type(type)
 {
-	if (set) {
-		set->add_column(this);
-		m_bg_color = set->bg_color();
-	}	
+    if (set) {
+        set->add_column(this);
+        m_bg_color = set->bg_color();
+    }
 }
 
 ViewColumn::ViewColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
-	: QObject(parent)
-	, m_title(s.value("name", "UNKNOWN").toString())
-	, m_set(set)
-	, m_override_set_colors( s.value("override_color", false).toBool())
-	, m_type(get_column_type(s.value("type", "DEFAULT").toString()))
+    : QObject(parent)
+    , m_title(s.value("name", "UNKNOWN").toString())
+    , m_bg_color(Qt::red) //! should stand out if it doesn't get set
+    , m_override_set_colors(s.value("override_color", false).toBool())
+    , m_set(set)
+    , m_type(get_column_type(s.value("type", "DEFAULT").toString()))
 {
-	if (set) {
-		set->add_column(this);
-		m_bg_color = set->bg_color();
-	}
-	if (m_override_set_colors)
-		m_bg_color = from_hex(s.value("bg_color").toString());
+    if (set) {
+        set->add_column(this);
+        m_bg_color = set->bg_color();
+    }
+    if (m_override_set_colors)
+        m_bg_color = from_hex(s.value("bg_color").toString());
 }
 
 ViewColumn::ViewColumn(const ViewColumn &to_copy)
     : QObject(to_copy.parent())
     , m_title(to_copy.m_title)
-    , m_set(to_copy.m_set)
-    , m_override_set_colors(to_copy.m_override_set_colors)
     , m_bg_color(to_copy.m_bg_color)
+    , m_override_set_colors(to_copy.m_override_set_colors)
+    , m_set(to_copy.m_set)
     , m_type(to_copy.m_type)
 {
     // cloning should not add it to the copy's set! You must add it manually!
@@ -68,31 +71,31 @@ ViewColumn::ViewColumn(const ViewColumn &to_copy)
 }
 
 QStandardItem *ViewColumn::init_cell(Dwarf *d) {
-	QStandardItem *item = new QStandardItem;
-	item->setStatusTip(QString("%1 :: %2").arg(m_title).arg(d->nice_name()));
-	QColor bg;
-	if (m_override_set_colors) {
-		bg = m_bg_color;
-	} else {
-		bg = set()->bg_color();
-	}
-	item->setData(bg, Qt::BackgroundColorRole);
-	item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
-	item->setData(false, DwarfModel::DR_IS_AGGREGATE);
-	item->setData(d->id(), DwarfModel::DR_ID);
-	m_cells[d] = item;
-	return item;
+    QStandardItem *item = new QStandardItem;
+    item->setStatusTip(QString("%1 :: %2").arg(m_title).arg(d->nice_name()));
+    QColor bg;
+    if (m_override_set_colors) {
+        bg = m_bg_color;
+    } else {
+        bg = set()->bg_color();
+    }
+    item->setData(bg, Qt::BackgroundColorRole);
+    item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
+    item->setData(false, DwarfModel::DR_IS_AGGREGATE);
+    item->setData(d->id(), DwarfModel::DR_ID);
+    m_cells[d] = item;
+    return item;
 }
 
 void ViewColumn::write_to_ini(QSettings &s) {
-	if (!m_title.isEmpty())
-		s.setValue("name", m_title);
-	else
-		s.setValue("name", "UNKNOWN");
+    if (!m_title.isEmpty())
+        s.setValue("name", m_title);
+    else
+        s.setValue("name", "UNKNOWN");
 
-	s.setValue("type", get_column_type(m_type));
-	if (m_override_set_colors) {
-		s.setValue("override_color", true);
-		s.setValue("bg_color", to_hex(m_bg_color));
-	}
+    s.setValue("type", get_column_type(m_type));
+    if (m_override_set_colors) {
+        s.setValue("override_color", true);
+        s.setValue("bg_color", to_hex(m_bg_color));
+    }
 }

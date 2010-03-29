@@ -10,14 +10,13 @@ INCLUDEPATH += ./thirdparty/qtcolorpicker-2.6 \
     ./inc/grid_view \
     ./inc/docks \
     ./ui
-
-win32-g++|win32 {
+win32-g++|win32 { 
     message(Setting up for Windows)
     HEADERS += ./inc/dfinstancewindows.h
     SOURCES += ./src/dfinstancewindows.cpp
     LIBS += -lpsapi
 }
-linux-g++|linux-g++-32 {
+linux-g++|linux-g++-32 { 
     message(Setting up for Linux)
     CFLAGS = -m32
     DEFINES += _LINUX
@@ -25,7 +24,7 @@ linux-g++|linux-g++-32 {
     HEADERS += ./inc/dfinstancelinux.h
     SOURCES += ./src/dfinstancelinux.cpp
 }
-macx {
+macx { 
     message(Setting up for OSX)
     DEFINES += _OSX
     INCLUDEPATH += $$(QTDIR)/mkspecs/macx-xcode
@@ -98,7 +97,8 @@ HEADERS += inc/win_structs.h \
     inc/docks/skilllegenddock.h \
     inc/docks/gridviewdock.h \
     inc/docks/dwarfdetailsdock.h \
-    thirdparty/qtcolorpicker-2.6/qtcolorpicker.h
+    thirdparty/qtcolorpicker-2.6/qtcolorpicker.h \
+    inc/truncatingfilelogger.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/statetableview.cpp \
@@ -138,7 +138,8 @@ SOURCES += src/viewmanager.cpp \
     src/docks/skilllegenddock.cpp \
     src/docks/gridviewdock.cpp \
     src/docks/dwarfdetailsdock.cpp \
-    thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp
+    thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp \
+    src/truncatingfilelogger.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

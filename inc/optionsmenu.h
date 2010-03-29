@@ -29,34 +29,34 @@ THE SOFTWARE.
 class CustomColor;
 
 class OptionsMenu : public QDialog {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	OptionsMenu(QWidget *parent = 0);
-	virtual ~OptionsMenu();
+    OptionsMenu(QWidget *parent = 0);
+    virtual ~OptionsMenu();
 
-	void read_settings();
-	void write_settings();
+    void read_settings();
+    void write_settings();
 
-	bool event(QEvent *evt);
+    bool event(QEvent *evt);
 
-	public slots:
-		void accept();
-		void reject();
-		void restore_defaults();
-		void show_font_chooser();
-		void set_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&);
-	
+    public slots:
+        void accept();
+        void reject();
+        void restore_defaults();
+        void show_font_chooser();
+        void set_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&);
+
 private:
-	bool m_reading_settings;
-	Ui::OptionsMenu *ui;
-	QList<CustomColor*> m_general_colors;
-	QList<CustomColor*> m_happiness_colors;
-	QFont m_font;
-	QFont m_dirty_font;
+    Ui::OptionsMenu *ui;
+    bool m_reading_settings;
+    QList<CustomColor*> m_general_colors;
+    QList<CustomColor*> m_happiness_colors;
+    QFont m_font;
+    QFont m_dirty_font;
 
 signals:
-	void color_changed(const QString &, const QColor &);
-	//! emitted when the options menu "ok" button is hit
-	void settings_changed(); 
+    void color_changed(const QString &, const QColor &);
+    //! emitted when the options menu "ok" button is hit
+    void settings_changed();
 };
 #endif
