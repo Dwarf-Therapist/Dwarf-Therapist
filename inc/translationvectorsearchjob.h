@@ -38,7 +38,7 @@ public:
     public slots:
         void go() {
             if (!m_ok) {
-                ERROR << "Scanner Thread couldn't connect to DF!";
+                LOGE << "Scanner Thread couldn't connect to DF!";
                 emit quit();
                 return;
             }
