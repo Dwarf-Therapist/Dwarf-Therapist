@@ -1,47 +1,53 @@
 TEMPLATE = app
 TARGET = DwarfTherapist
-CONFIG:debug:DESTDIR = ./bin/debug
-CONFIG:release:DESTDIR = ./bin/release
+CONFIG = debug
 QT += network \
     script
-INCLUDEPATH += ./thirdparty/qtcolorpicker-2.6 \
-    ./inc \
-    ./inc/models \
-    ./inc/grid_view \
-    ./inc/docks \
-    ./ui
-win32-g++|win32 { 
+CONFIG(debug, debug|release) {
+    message(Debug Mode)
+    DESTDIR = bin/debug
+    MOC_DIR = bin/debug
+    UI_DIR = bin/debug
+    RCC_DIR = bin/debug
+    OBJECTS_DIR = bin/debug
+}
+CONFIG(release, debug|release) {
+    message(Release Mode)
+    DESTDIR = bin/release
+    MOC_DIR = bin/release
+    UI_DIR = bin/release
+    RCC_DIR = bin/release
+    OBJECTS_DIR = bin/release
+}
+
+INCLUDEPATH += inc \
+    inc/models \
+    inc/grid_view \
+    inc/docks \
+    ui \
+    thirdparty\qtcolorpicker-2.6
+
+win32 {
     message(Setting up for Windows)
     HEADERS += ./inc/dfinstancewindows.h
     SOURCES += ./src/dfinstancewindows.cpp
+    RC_FILE = DwarfTherapist.rc
     LIBS += -lpsapi
-}
-linux-g++|linux-g++-32 { 
+} else:unix {
     message(Setting up for Linux)
-    CFLAGS = -m32
-    DEFINES += _LINUX
-    INCLUDEPATH += $$(QTDIR)/mkspecs/linux-g++
+    #CFLAGS = -m32
     HEADERS += ./inc/dfinstancelinux.h
     SOURCES += ./src/dfinstancelinux.cpp
-}
-macx { 
+} else:macx {
     message(Setting up for OSX)
-    DEFINES += _OSX
-    INCLUDEPATH += $$(QTDIR)/mkspecs/macx-xcode
     HEADERS += ./inc/dfinstanceosx.h
     SOURCES += ./src/dfinstanceosx.cpp
+    ICON = hammer.ico
 }
-DEPENDPATH += .
-MOC_DIR += bin/debug
-OBJECTS_DIR += bin/debug
-UI_DIR += ./ui
-RCC_DIR += ./bin/debug
 
 # Translation files
 TRANSLATIONS += ./dwarftherapist_en.ts
 
-# Windows resource file
-win32:RC_FILE = DwarfTherapist.rc
 HEADERS += inc/win_structs.h \
     inc/viewmanager.h \
     inc/version.h \
@@ -97,10 +103,10 @@ HEADERS += inc/win_structs.h \
     inc/docks/skilllegenddock.h \
     inc/docks/gridviewdock.h \
     inc/docks/dwarfdetailsdock.h \
-    thirdparty/qtcolorpicker-2.6/qtcolorpicker.h \
-    inc/truncatingfilelogger.h
+    thirdparty/qtcolorpicker-2.6/qtcolorpicker.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
+    src/truncatingfilelogger.cpp \
     src/statetableview.cpp \
     src/squad.cpp \
     src/skill.cpp \
@@ -138,8 +144,7 @@ SOURCES += src/viewmanager.cpp \
     src/docks/skilllegenddock.cpp \
     src/docks/gridviewdock.cpp \
     src/docks/dwarfdetailsdock.cpp \
-    thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp \
-    src/truncatingfilelogger.cpp
+    thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \
