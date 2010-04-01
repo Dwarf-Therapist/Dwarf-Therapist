@@ -24,7 +24,8 @@ THE SOFTWARE.
 #define CUSTOM_COLOR_H
 
 #include <QtGui>
-#include <qtcolorpicker.h>
+#include "qtcolorpicker.h"
+
 
 class CustomColor : public QWidget {
 	Q_OBJECT
