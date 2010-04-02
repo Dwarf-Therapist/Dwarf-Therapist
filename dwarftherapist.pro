@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = DwarfTherapist
-CONFIG = debug
+
 QT += network \
     script
 CONFIG(debug, debug|release) {
@@ -10,8 +10,7 @@ CONFIG(debug, debug|release) {
     UI_DIR = bin/debug
     RCC_DIR = bin/debug
     OBJECTS_DIR = bin/debug
-}
-CONFIG(release, debug|release) {
+} else {
     message(Release Mode)
     DESTDIR = bin/release
     MOC_DIR = bin/release
@@ -29,8 +28,7 @@ INCLUDEPATH += inc \
 
 win32 {
     message(Setting up for Windows)
-    HEADERS += ./inc/dfinstancewindows.h
-    SOURCES += ./src/dfinstancewindows.cpp
+
     RC_FILE = DwarfTherapist.rc
     LIBS += -lpsapi
 } else:unix {
@@ -81,6 +79,7 @@ HEADERS += inc/win_structs.h \
     inc/dwarfdetailswidget.h \
     inc/dwarf.h \
     inc/dfinstance.h \
+    inc/dfinstancewindows.h \
     inc/defines.h \
     inc/customprofession.h \
     inc/customcolor.h \
@@ -125,6 +124,7 @@ SOURCES += src/viewmanager.cpp \
     src/dwarfdetailswidget.cpp \
     src/dwarf.cpp \
     src/dfinstance.cpp \
+    src/dfinstancewindows.cpp \
     src/customprofession.cpp \
     src/customcolor.cpp \
     src/aboutdialog.cpp \
