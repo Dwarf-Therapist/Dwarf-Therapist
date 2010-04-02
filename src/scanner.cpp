@@ -108,7 +108,7 @@ void Scanner::run_thread_and_wait() {
     if (m_thread->wait(5000)) {
         delete m_thread;
     } else {
-        ERROR << "Scanning thread failed to stop for 5 seconds after termination!";
+        LOGE << "Scanning thread failed to stop for 5 seconds after termination!";
     }
     m_thread = 0;
 }
@@ -132,6 +132,12 @@ void Scanner::find_creature_vector() {
 
 void Scanner::find_vector_by_length() {
     set_ui_enabled(false);
+    uint target_count = ui->sb_vector_entries->value();
+    ui->text_output->append(tr("Vectors with %1 entries").arg(target_count));
+    prepare_new_thread(FIND_VECTORS_OF_SIZE);
+    QByteArray needle = QString("%1").arg(target_count).toAscii();
+    m_thread->set_meta(needle);
+    run_thread_and_wait();
     set_ui_enabled(true);
 }
 

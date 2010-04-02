@@ -27,35 +27,36 @@ THE SOFTWARE.
 #include "dfinstance.h"
 
 typedef enum {
-	FIND_TRANSLATIONS_VECTOR,
-	FIND_STONE_VECTOR,
-	FIND_METAL_VECTOR,
-	FIND_NULL_TERMINATED_STRING
+    FIND_TRANSLATIONS_VECTOR,
+    FIND_STONE_VECTOR,
+    FIND_METAL_VECTOR,
+    FIND_NULL_TERMINATED_STRING,
+    FIND_VECTORS_OF_SIZE
 } SCANNER_JOB_TYPE;
 
 
 class ScannerJob : public QObject {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	ScannerJob(SCANNER_JOB_TYPE job_type);
-	virtual ~ScannerJob();
-	SCANNER_JOB_TYPE job_type();
-	DFInstance *df();
+    ScannerJob(SCANNER_JOB_TYPE job_type);
+    virtual ~ScannerJob();
+    SCANNER_JOB_TYPE job_type();
+    DFInstance *df();
 
 protected:
-	SCANNER_JOB_TYPE m_job_type;
-	bool m_ok;
-	DFInstance *m_df;
-	bool get_DFInstance();
+    SCANNER_JOB_TYPE m_job_type;
+    bool m_ok;
+    DFInstance *m_df;
+    bool get_DFInstance();
 
 signals:
-	void main_scan_total_steps(int);
-	void main_scan_progress(int);
-	void sub_scan_total_steps(int);
-	void sub_scan_progress(int);
-	void found_address(const QString&, const uint&);
-	void found_offset(const QString&, const int&);
-	void scan_message(const QString&);
-	void quit();
+    void main_scan_total_steps(int);
+    void main_scan_progress(int);
+    void sub_scan_total_steps(int);
+    void sub_scan_progress(int);
+    void found_address(const QString&, const uint&);
+    void found_offset(const QString&, const int&);
+    void scan_message(const QString&);
+    void quit();
 };
 #endif

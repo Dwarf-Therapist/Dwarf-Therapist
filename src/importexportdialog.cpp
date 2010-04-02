@@ -126,7 +126,7 @@ void ImportExportDialog::setup_for_profession_import() {
             if (l) {
                 labor_name = l->name;
             } else {
-                ERROR << tr("custom profession lists labor_id %1, which is "
+                LOGE << tr("custom profession lists labor_id %1, which is "
                             "unrecognized!").arg(labor_id);
             }
             tooltip += QString("<li>%1</li>").arg(labor_name);

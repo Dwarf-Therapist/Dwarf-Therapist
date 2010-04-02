@@ -267,23 +267,27 @@ QVector<uint> DFInstance::find_vectors(const uint &num_entries, const uint &fuzz
     emit scan_total_steps(100);
     emit scan_progress(0);
     // iterate over all known memory segments
+    uint max_segment_size = 0;
+    foreach(MemorySegment *seg, m_regions) {
+        if (seg->size > max_segment_size)
+            max_segment_size = seg->size;
+    }
+    LOGD << "Largest segment size is" << max_segment_size;
+
+    // this buffer will hold the entire memory segment (may need to toned down a bit)
+    char *buffer = new char[max_segment_size];
+    if (buffer == 0) {
+        LOGE << tr("Unable to allocate char buffer of %1 bytes")
+                .arg(max_segment_size);
+    }
+
     foreach(MemorySegment *seg, m_regions) {
         //LOGD << "SCANNING REGION" << hex << seg->start_addr << "-" << seg->end_addr << "BYTES:" << dec << seg->size;
-
-        // this buffer will hold the entire memory segment (may need to toned down a bit)
-        char *buffer = new (std::nothrow) char[seg->size];
-        if (buffer == 0) {
-            ERROR << tr("Unable to allocate char buffer of %1 bytes")
-                    .arg(seg->size);
-            continue;
-        }
         memset(buffer, 0, seg->size); // 0 out the buffer
 
         // this may read multiple times to populate the entire region in our buffer
         uint bytes_read = read_raw(seg->start_addr, seg->size, buffer);
         if (bytes_read < seg->size) {
-            LOGW << "tried to read" << seg->size << "bytes starting at" << hex
-                 << seg->start_addr << "but only got" << dec << bytes_read;
             continue;
         }
 
@@ -313,11 +317,11 @@ QVector<uint> DFInstance::find_vectors(const uint &num_entries, const uint &fuzz
             if (i % 400 == 0)
                 emit scan_progress(bytes_scanned / report_every_n_bytes);
         }
-        delete[] buffer;
         DT->processEvents();
         if (m_stop_scan)
             break;
     }
+    delete[] buffer;
     emit scan_progress(100);
     return vectors;
 }

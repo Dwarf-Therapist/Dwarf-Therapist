@@ -71,24 +71,32 @@ uint DFInstanceWindows::calculate_checksum() {
 }
 
 QVector<uint> DFInstanceWindows::enumerate_vector(const uint &addr) {
-    TRACE << "beginning vector enumeration at" << addr;
+    /*
+8097c912 found at = 0x0c5a67d8 (uncorrected:0x0c5a67d8)
+8097c912 found at = 0x0d52c0a8 (uncorrected:0x0d52c0a8)
+8097c912 found at = 0x10ec80ac (uncorrected:0x10ec80ac)
+8097c912 found at = 0x11448b10 (uncorrected:0x11448b10)
+8097c912 found at = 0x20c6f020 (uncorrected:0x20c6f020)
+*/
+    TRACE << "beginning vector enumeration at" << hex << addr;
     QVector<uint> addresses;
     uint start = read_uint(addr + 4);
-    TRACE << "start of vector" << start;
+    LOGD << "start of vector" << hex << start;
     uint end = read_uint(addr + 8);
-    TRACE << "end of vector" << end;
+    LOGD << "end of vector" << hex << end;
 
     uint entries = (end - start) / sizeof(uint);
     TRACE << "there appears to be" << entries << "entries in this vector";
 
+    /*
     Q_ASSERT(start >= 0);
     Q_ASSERT(end >= 0);
     Q_ASSERT(end >= start);
     Q_ASSERT((end - start) % 4 == 0);
     Q_ASSERT(start % 4 == 0);
     Q_ASSERT(end % 4 == 0);
-    //Q_ASSERT(entries < 2000);
-
+    Q_ASSERT(entries < 5000);
+    */
     int count = 0;
     for (uint ptr = start; ptr < end; ptr += 4 ) {
         uint a = read_uint(ptr);
@@ -188,12 +196,11 @@ uint DFInstanceWindows::read_raw(const uint &addr, const uint &bytes,
     uint bytes_read = 0;
     ReadProcessMemory(m_proc, (LPCVOID)addr, (void*)buffer,
                       sizeof(uchar) * bytes, (DWORD*)&bytes_read);
-    /*
-    if (!ok || bytes_read != bytes)
-        LOGW << "ERROR: tried to get" << bytes << "bytes from" << hex << addr
+    if (bytes_read != bytes) {
+        LOGW << "tried to get" << bytes << "bytes from" << hex << addr
             << "but only got" << dec << bytes_read << "Windows System Error("
             << dec << GetLastError() << ")";
-    */
+    }
     return bytes_read;
 }
 
@@ -280,7 +287,7 @@ bool DFInstanceWindows::find_running_copy() {
         if (!m_layout->is_valid()) {
             QMessageBox::critical(0, tr("Unidentified Version"),
                 tr("I'm sorry but I don't know how to talk to this version of DF!"));
-            ERROR << tr("unable to identify version from checksum:") << hex << checksum;
+            LOGE << tr("unable to identify version from checksum:") << hex << checksum;
             m_is_ok = false;
         }
     }

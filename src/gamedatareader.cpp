@@ -153,14 +153,14 @@ GameDataReader::GameDataReader(QObject *parent)
 
 int GameDataReader::get_int_for_key(QString key, short base) {
     if (!m_data_settings->contains(key)) {
-        ERROR << tr("Couldn't find key '%1' in file '%2'").arg(key)
+        LOGE << tr("Couldn't find key '%1' in file '%2'").arg(key)
                 .arg(m_data_settings->fileName());
     }
     bool ok;
     QString offset_str = m_data_settings->value(key, QVariant(-1)).toString();
     int val = offset_str.toInt(&ok, base);
     if (!ok) {
-        ERROR << tr("Key '%1' could not be read as an integer in file '%2'")
+        LOGE << tr("Key '%1' could not be read as an integer in file '%2'")
                 .arg(key).arg(m_data_settings->fileName());
     }
     return val;
@@ -168,7 +168,7 @@ int GameDataReader::get_int_for_key(QString key, short base) {
 
 QString GameDataReader::get_string_for_key(QString key) {
     if (!m_data_settings->contains(key)) {
-        ERROR << tr("Couldn't find key '%1' in file '%2'").arg(key)
+        LOGE << tr("Couldn't find key '%1' in file '%2'").arg(key)
                 .arg(m_data_settings->fileName());
     }
     return m_data_settings->value(key, QVariant("UNKNOWN")).toString();

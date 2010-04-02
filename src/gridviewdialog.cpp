@@ -418,7 +418,7 @@ void GridViewDialog::add_labor_column() {
     int labor_id = a->data().toInt();
     Labor *l = GameDataReader::ptr()->get_labor(labor_id);
     if (!l) {
-        ERROR << tr("Failed to get a labor with id %1!").arg(labor_id);
+        LOGE << tr("Failed to get a labor with id %1!").arg(labor_id);
         return;
     }
     new LaborColumn(l->name, l->labor_id, l->skill_id, m_active_set, m_active_set);

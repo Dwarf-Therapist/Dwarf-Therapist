@@ -29,71 +29,79 @@ THE SOFTWARE.
 #include "translationvectorsearchjob.h"
 #include "nullterminatedstringsearchjob.h"
 #include "stonevectorsearchjob.h"
+#include "vectorsearchjob.h"
 
 class ScannerThread : public QThread {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	ScannerThread(QObject *parent = 0)
-		: QThread(parent)
-		, m_meta(QByteArray())
-	{}
+    ScannerThread(QObject *parent = 0)
+        : QThread(parent)
+        , m_meta(QByteArray())
+    {}
 
-	void set_job(SCANNER_JOB_TYPE type) {
-		m_type = type;
-	}
-	void set_meta(const QByteArray &meta) {
-		m_meta = meta;
-	}
+    void set_job(SCANNER_JOB_TYPE type) {
+        m_type = type;
+    }
+    void set_meta(const QByteArray &meta) {
+        m_meta = meta;
+    }
 
-	void run() {
-		switch (m_type) {
-			case FIND_TRANSLATIONS_VECTOR:
-				m_job = new TranslationVectorSearchJob;
-				break;
-			case FIND_STONE_VECTOR:
-				m_job = new StoneVectorSearchJob;
-				break;
-			case FIND_NULL_TERMINATED_STRING:
-				{
-					NullTerminatedStringSearchJob *job = new NullTerminatedStringSearchJob;
-					job->set_needle(m_meta);
-					m_job = job;
-				}
-				break;
-			default:
-				LOGW << "JOB TYPE NOT SET, EXITING THREAD";
-				return;
-		}
-		// forward the status signals
-		connect(m_job->df(), SIGNAL(scan_total_steps(int)), SIGNAL(sub_scan_total_steps(int)));
-		connect(m_job->df(), SIGNAL(scan_progress(int)), SIGNAL(sub_scan_progress(int)));
-		connect(m_job->df(), SIGNAL(scan_message(const QString&)), SIGNAL(scan_message(const QString&)));
-		connect(m_job, SIGNAL(scan_message(const QString&)), SIGNAL(scan_message(const QString&)));
-		connect(m_job, SIGNAL(found_address(const QString&, const uint&)), SIGNAL(found_address(const QString&, const uint&)));
-		connect(m_job, SIGNAL(found_offset(const QString&, const int&)), SIGNAL(found_offset(const QString&, const int&)));
-		connect(m_job, SIGNAL(main_scan_total_steps(int)), SIGNAL(main_scan_total_steps(int)));
-		connect(m_job, SIGNAL(main_scan_progress(int)), SIGNAL(main_scan_progress(int)));
-		connect(m_job, SIGNAL(sub_scan_total_steps(int)), SIGNAL(sub_scan_total_steps(int)));
-		connect(m_job, SIGNAL(sub_scan_progress(int)), SIGNAL(sub_scan_progress(int)));
-		connect(m_job, SIGNAL(quit()), this, SLOT(quit()));
-		QTimer::singleShot(0, m_job, SLOT(go()));
-		exec();
-		m_job->deleteLater();
-		deleteLater();
-	}
+    void run() {
+        switch (m_type) {
+            case FIND_TRANSLATIONS_VECTOR:
+                m_job = new TranslationVectorSearchJob;
+                break;
+            case FIND_STONE_VECTOR:
+                m_job = new StoneVectorSearchJob;
+                break;
+            case FIND_NULL_TERMINATED_STRING:
+                {
+                    NullTerminatedStringSearchJob *job = new NullTerminatedStringSearchJob;
+                    job->set_needle(m_meta);
+                    m_job = job;
+                }
+                break;
+            case FIND_VECTORS_OF_SIZE:
+                {
+                    VectorSearchJob *job = new VectorSearchJob;
+                    job->set_needle(m_meta);
+                    m_job = job;
+                }
+                break;
+            default:
+                LOGW << "JOB TYPE NOT SET, EXITING THREAD";
+                return;
+        }
+        // forward the status signals
+        connect(m_job->df(), SIGNAL(scan_total_steps(int)), SIGNAL(sub_scan_total_steps(int)));
+        connect(m_job->df(), SIGNAL(scan_progress(int)), SIGNAL(sub_scan_progress(int)));
+        connect(m_job->df(), SIGNAL(scan_message(const QString&)), SIGNAL(scan_message(const QString&)));
+        connect(m_job, SIGNAL(scan_message(const QString&)), SIGNAL(scan_message(const QString&)));
+        connect(m_job, SIGNAL(found_address(const QString&, const uint&)), SIGNAL(found_address(const QString&, const uint&)));
+        connect(m_job, SIGNAL(found_offset(const QString&, const int&)), SIGNAL(found_offset(const QString&, const int&)));
+        connect(m_job, SIGNAL(main_scan_total_steps(int)), SIGNAL(main_scan_total_steps(int)));
+        connect(m_job, SIGNAL(main_scan_progress(int)), SIGNAL(main_scan_progress(int)));
+        connect(m_job, SIGNAL(sub_scan_total_steps(int)), SIGNAL(sub_scan_total_steps(int)));
+        connect(m_job, SIGNAL(sub_scan_progress(int)), SIGNAL(sub_scan_progress(int)));
+        connect(m_job, SIGNAL(quit()), this, SLOT(quit()));
+        QTimer::singleShot(0, m_job, SLOT(go()));
+        exec();
+        m_job->deleteLater();
+        deleteLater();
+    }
 
 private:
-	SCANNER_JOB_TYPE m_type;
-	ScannerJob *m_job;
-	QByteArray m_meta;
+    SCANNER_JOB_TYPE m_type;
+    ScannerJob *m_job;
+    QByteArray m_meta;
 
 signals:
-	void main_scan_total_steps(int);
-	void main_scan_progress(int);
-	void sub_scan_total_steps(int);
-	void sub_scan_progress(int);
-	void scan_message(const QString&);
-	void found_address(const QString&, const uint&);
-	void found_offset(const QString&, const int&);
+    void main_scan_total_steps(int);
+    void main_scan_progress(int);
+    void sub_scan_total_steps(int);
+    void sub_scan_progress(int);
+    void scan_message(const QString&);
+    void found_address(const QString&, const uint&);
+    void found_offset(const QString&, const int&);
 };
 #endif
