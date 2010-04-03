@@ -71,19 +71,12 @@ uint DFInstanceWindows::calculate_checksum() {
 }
 
 QVector<uint> DFInstanceWindows::enumerate_vector(const uint &addr) {
-    /*
-8097c912 found at = 0x0c5a67d8 (uncorrected:0x0c5a67d8)
-8097c912 found at = 0x0d52c0a8 (uncorrected:0x0d52c0a8)
-8097c912 found at = 0x10ec80ac (uncorrected:0x10ec80ac)
-8097c912 found at = 0x11448b10 (uncorrected:0x11448b10)
-8097c912 found at = 0x20c6f020 (uncorrected:0x20c6f020)
-*/
     TRACE << "beginning vector enumeration at" << hex << addr;
     QVector<uint> addresses;
     uint start = read_uint(addr + 4);
-    LOGD << "start of vector" << hex << start;
+    TRACE << "start of vector" << hex << start;
     uint end = read_uint(addr + 8);
-    LOGD << "end of vector" << hex << end;
+    TRACE << "end of vector" << hex << end;
 
     uint entries = (end - start) / sizeof(uint);
     TRACE << "there appears to be" << entries << "entries in this vector";

@@ -102,7 +102,8 @@ HEADERS += inc/win_structs.h \
     inc/docks/gridviewdock.h \
     inc/docks/dwarfdetailsdock.h \
     thirdparty/qtcolorpicker-2.6/qtcolorpicker.h \
-    inc/vectorsearchjob.h
+    inc/vectorsearchjob.h \
+    inc/dwarfraceindexsearchjob.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \

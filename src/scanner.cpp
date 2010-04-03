@@ -122,6 +122,8 @@ void Scanner::find_translations_vector() {
 
 void Scanner::find_dwarf_race_index() {
     set_ui_enabled(false);
+    prepare_new_thread(FIND_DWARF_RACE_INDEX);
+    run_thread_and_wait();
     set_ui_enabled(true);
 }
 
@@ -211,7 +213,7 @@ void Scanner::brute_force_read() {
             }
             break;
         case 7: // raw
-            ui->text_output->append(m_df->pprint(addr, 0x600));
+            ui->text_output->append(m_df->pprint(addr, 0xA00));
             break;
     }
     set_ui_enabled(true);

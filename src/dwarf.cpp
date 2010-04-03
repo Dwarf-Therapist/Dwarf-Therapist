@@ -227,15 +227,10 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const uint &addr) {
     uint flags2 = df->read_uint(addr + mem->dwarf_offset("flags2"));
     int race_id = df->read_int(addr + mem->dwarf_offset("race"));
 
-    //TODO: HACK: get rid of the hard coded racial id
-    if (race_id != 0xc8) {
-        return 0;
-    }
-    /* TODO: PUT THIS BACK!
     if (race_id != dwarf_race_id) { // we only care about dwarfs
         TRACE << "Ignoring non-dwarf creature with racial ID of " << hexify(race_id);
         return 0;
-    }*/
+    }
     Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
     /*
     LOGD << "examining dwarf at" << hex << addr;
@@ -688,7 +683,7 @@ void Dwarf::dump_memory() {
     te->setReadOnly(true);
     te->setFontFamily("Courier");
     te->setFontPointSize(8);
-    te->setText(m_df->pprint(m_df->get_data(m_address, 0x900), 0));
+    te->setText(m_df->pprint(m_df->get_data(m_address, 0xA00), 0));
     v->addWidget(te);
     d->setLayout(v);
     d->show();
