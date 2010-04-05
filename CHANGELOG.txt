@@ -1,3 +1,10 @@
+RELEASE 0.4.3 (April 4, 2010)
+CHANGES SINCE 0.4.2
+===============================================================================
+MAJOR CHANGES:
+ * Added preliminary support for DF2010 (0.31.01)
+ * This will not be an advertised release
+ 
 RELEASE 0.4.2 (October 26, 2009)
 CHANGES SINCE 0.4.1
 ===============================================================================

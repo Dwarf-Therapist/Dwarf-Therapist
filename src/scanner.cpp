@@ -129,6 +129,8 @@ void Scanner::find_dwarf_race_index() {
 
 void Scanner::find_creature_vector() {
     set_ui_enabled(false);
+    prepare_new_thread(FIND_CREATURE_VECTOR);
+    run_thread_and_wait();
     set_ui_enabled(true);
 }
 

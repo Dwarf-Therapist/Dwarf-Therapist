@@ -240,6 +240,39 @@ QString DFInstance::pprint(const QByteArray &ba, const uint &start_addr) {
     return out;
 }
 
+QVector<uint> DFInstance::find_vectors_in_range(const uint &max_entries,
+                                                const uint &start_address,
+                                                const uint &range_length) {
+    QByteArray data = get_data(start_address, range_length);
+    QVector<uint> vectors;
+    uint int1 = 0; // holds the start val
+    uint int2 = 0; // holds the end val
+
+    for (uint i = 0; i < range_length; i += 4) {
+        memcpy(&int1, data.data() + i, 4);
+        memcpy(&int2, data.data() + i + 4, 4);
+        if (int2 >= int1 && is_valid_address(int1) && is_valid_address(int2)) {
+            uint bytes = int2 - int1;
+            uint entries = bytes / 4;
+            if (entries > 0 && entries <= max_entries) {
+                uint vector_address = start_address + i - VECTOR_POINTER_OFFSET;
+                QVector<uint> addrs = enumerate_vector(vector_address);
+                bool all_valid = true;
+                foreach(uint vec_entry, addrs) {
+                    if (!is_valid_address(vec_entry)) {
+                        all_valid = false;
+                        break;
+                    }
+                }
+                if (all_valid) {
+                    vectors << vector_address;
+                }
+            }
+        }
+    }
+    return vectors;
+}
+
 QVector<uint> DFInstance::find_vectors(const uint &num_entries, const uint &fuzz/* =0 */, const uint &entry_size/* =4 */) {
     m_stop_scan = false;
     QVector<uint> vectors;

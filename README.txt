@@ -1,5 +1,5 @@
-Dwarf Therapist v0.4.2
-Copyright (c) 2009 Trey Stout (chmod)
+Dwarf Therapist v0.4.3
+Copyright (c) 2009,2010 Trey Stout (chmod)
 Homepage: http://code.google.com/p/dwarftherapist/
 License: MIT License (see included LICENSE.txt file)
 
@@ -16,3 +16,4 @@ The author would like to thank the following people:
    support
  - The udpviper.com community for making me feel okay about writing so much 
    software.
+ - The DF Community for their encouragement, time, and donations!

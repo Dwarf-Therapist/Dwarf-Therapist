@@ -88,6 +88,8 @@ void Dwarf::refresh_data() {
     TRACE << QString("Starting refresh of dwarf data at 0x%1").arg(m_address, 8, 16, QChar('0'));
 
     m_id = m_df->read_int(m_address + mem->dwarf_offset("id"));
+    //m_id = m_address; // HACK: this will allow dwarfs in the list even when
+    // the id offset isn't know for this version
     TRACE << "\tID:" << m_id;
     char sex = m_df->read_char(m_address + mem->dwarf_offset("sex"));
     m_is_male = (int)sex == 1;
@@ -104,13 +106,14 @@ void Dwarf::refresh_data() {
     TRACE << "\tLASTNAME:" << m_last_name;
     m_translated_last_name = read_last_name(m_address + mem->dwarf_offset("last_name"), true);
     calc_names();
-
     m_custom_profession = m_df->read_string(m_address + mem->dwarf_offset("custom_profession"));
     TRACE << "\tCUSTOM PROF:" << m_custom_profession;
     m_pending_custom_profession = m_df->read_string(m_address + mem->dwarf_offset("custom_profession"));
     m_race_id = m_df->read_int(m_address + mem->dwarf_offset("race"));
     TRACE << "\tRACE ID:" << m_race_id;
-    m_skills = read_skills(m_address + mem->dwarf_offset("skills"));
+
+    // TODO: Put this back!
+    //m_skills = read_skills(m_address + mem->dwarf_offset("skills"));
     TRACE << "\tSKILLS: FOUND" << m_skills.size();
     m_profession = read_profession(m_address + mem->dwarf_offset("profession"));
     TRACE << "\tPROFESSION:" << m_profession;
@@ -121,25 +124,57 @@ void Dwarf::refresh_data() {
     m_agility = m_df->read_int(m_address + mem->dwarf_offset("agility"));
     TRACE << "\tAGILITY:" << m_agility;
     read_labors(m_address + mem->dwarf_offset("labors"));
-    read_traits(m_address + mem->dwarf_offset("traits"));
-    TRACE << "\tTRAITS:" << m_traits.size();
+
+    // TODO: put this back!
+    //read_traits(m_address + mem->dwarf_offset("traits"));
+    //TRACE << "\tTRAITS:" << m_traits.size();
     m_money = m_df->read_int(m_address + mem->dwarf_offset("money"));
     TRACE << "\tMONEY:" << m_money;
     m_raw_happiness = m_df->read_int(m_address +mem->dwarf_offset("happiness"));
     TRACE << "\tRAW HAPPINESS:" << m_raw_happiness;
     m_happiness = happiness_from_score(m_raw_happiness);
     TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
-
     read_current_job(m_address + mem->dwarf_offset("current_job"));
     TRACE << "\tCURRENT JOB:" << m_current_job_id << m_current_job;
-
     m_squad_leader_id = m_df->read_int(m_address + mem->dwarf_offset("squad_leader_id"));
     TRACE << "\tSQUAD LEADER ID:" << m_squad_leader_id;
-
     m_squad_name = read_squad_name(m_address + mem->dwarf_offset("squad_name"));
     TRACE << "\tSQUAD NAME:" << m_squad_name;
     m_generic_squad_name = read_squad_name(m_address + mem->dwarf_offset("squad_name"), true);
     TRACE << "\tGENERIC SQUAD NAME:" << m_generic_squad_name;
+
+    /* Search for a souls vector, where each soul contains a vector of skills
+    QVector<uint> vectors = m_df->find_vectors_in_range(1, m_address, 0xc00);
+    foreach(uint vec_addr, vectors) {
+        QVector<uint> entries = m_df->enumerate_vector(vec_addr);
+        uint soul = entries.at(0);
+        LOGD << nice_name() << "Found vector of" << entries.size()
+                << "valid entries at" << hex << vec_addr << "Offset:"
+                << (vec_addr - m_address) << "SOULPTR:" << soul;
+        //LOGD << m_df->pprint(soul, 0x50);
+        foreach(uint skill_vec, m_df->find_vectors_in_range(50, soul, 0x250)) {
+            QVector<uint> skills = m_df->enumerate_vector(skill_vec);
+            LOGD << nice_name() << "souls offset:" << hex
+                    << (vec_addr - m_address) << "skills offset in soul:"
+                    << (skill_vec - entries.at(0)) << "total skills:"
+                    << dec << skills.size();
+
+            //m_skills = read_skills(skill_vec);
+            //foreach(uint skill, skills) {
+            //    LOGD << nice_name() << "\n" << m_df->pprint(skill, 0x20);
+            //}
+        }
+    }
+    */
+
+    QVector<uint> souls = m_df->enumerate_vector(m_address + mem->dwarf_offset("souls"));
+    foreach(uint soul, souls) {
+        //LOGD << "SOUL FOUND AT" << hex << soul;
+        QVector<uint> skills = m_df->enumerate_vector(soul + mem->dwarf_offset("skills"));
+        //LOGD << nice_name() << "Soul contains" << skills.size() << "skills";
+        m_skills = read_skills(soul + mem->dwarf_offset("skills"));
+    }
+    calc_names();
 
     TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
 }
@@ -184,6 +219,22 @@ void Dwarf::calc_names() {
     //m_nice_name = QString("0x%1 %2").arg(m_address, 8, 16, QChar('0')).arg(m_nice_name);
     // uncomment to put internal ID at front of name
     //m_nice_name = QString("%1 %2").arg(m_id).arg(m_nice_name);
+
+    /*
+    bool debugging_labors = true;
+    if (debugging_labors) {
+        // find first labor that is on for a dwarf...
+        uchar buf[150];
+        memset(buf, 0, 150);
+        m_df->read_raw(m_address + m_df->memory_layout()->dwarf_offset("labors"), 150, &buf);
+        for(int i = 0; i < 150; ++i) {
+            if (buf[i] > 0) {
+                m_nice_name = QString("%1 - %2").arg(m_nice_name).arg(i);
+                break;
+            }
+        }
+    }
+    */
 }
 
 Dwarf::DWARF_HAPPINESS Dwarf::happiness_from_score(int score) {
@@ -363,11 +414,20 @@ Looks like this as a dump where the start of each line is the raw 4 * 6 bytes of
 QVector<Skill> Dwarf::read_skills(const uint &addr) {
     m_total_xp = 0;
     QVector<Skill> skills(0);
-    foreach(uint entry, m_df->enumerate_vector(addr)) {
-        short type = m_df->read_short(entry);
-        uint experience = m_df->read_int(entry + 8);
-        short rating = m_df->read_short(entry + 4);
-        Skill s(type, experience, rating);
+    QVector<uint> entries = m_df->enumerate_vector(addr);
+    //LOGD << "Reading skills for" << nice_name() << "found:" << entries.size();
+    short type = 0;
+    short rating = 0;
+    int xp = 0;
+    foreach(uint entry, entries) {
+        type = m_df->read_short(entry);
+        rating = m_df->read_short(entry + 4);
+        xp = m_df->read_int(entry + 8);
+
+        //LOGD << "\treading skill at" << hex << entry << "type" << dec << type
+        //        << "rating" << rating << "xp:" << xp;
+
+        Skill s(type, xp, rating);
         m_total_xp += s.actual_exp();
         skills.append(s);
     }
@@ -411,7 +471,7 @@ QString Dwarf::read_profession(const uint &addr) {
     QString prof_name = tr("Unknown Profession %1").arg(m_raw_profession);
     if (p) {
         m_can_set_labors = p->can_assign_labors();
-        prof_name = p->name(m_is_male);
+        prof_name = QString("(%1) %2").arg(m_raw_profession).arg(p->name(m_is_male));
     } else {
         LOGE << tr("Read unknown profession with id '%1' for dwarf '%2'")
                 .arg(m_raw_profession).arg(m_nice_name);
@@ -455,9 +515,9 @@ void Dwarf::toggle_pref_value(const int &labor_id) {
 void Dwarf::read_labors(const uint &addr) {
     // read a big array of labors in one read, then pick and choose
     // the values we care about
-    uchar buf[102];
-    memset(buf, 0, 102);
-    m_df->read_raw(addr, 102, &buf);
+    uchar buf[150];
+    memset(buf, 0, 150);
+    m_df->read_raw(addr, 150, &buf);
 
     // get the list of identified labors from game_data.ini
     GameDataReader *gdr = GameDataReader::ptr();
@@ -526,6 +586,7 @@ void Dwarf::set_labor(int labor_id, bool enabled) {
 
     if (enabled) { // user is turning a labor on, so we must turn off exclusives
         foreach(int excluded, l->get_excluded_labors()) {
+            LOGD << "LABOR" << labor_id << "excludes" << excluded;
             m_pending_labors[excluded] = false;
         }
     }
@@ -683,7 +744,7 @@ void Dwarf::dump_memory() {
     te->setReadOnly(true);
     te->setFontFamily("Courier");
     te->setFontPointSize(8);
-    te->setText(m_df->pprint(m_df->get_data(m_address, 0xA00), 0));
+    te->setText(m_df->pprint(m_df->get_data(m_address, 0xb90), 0));
     v->addWidget(te);
     d->setLayout(v);
     d->show();

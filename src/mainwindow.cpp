@@ -150,6 +150,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     if (m_settings->value("options/check_for_updates_on_startup", true).toBool())
         check_latest_version();
+
+    // SUPER WARNING!
+    QMessageBox::warning(this, tr("DT Broken Edition!"),
+                         tr("You are running this version of DT thanks to "
+                            "overwhelming demand on the forums. This version "
+                            "is known to be broken in almost every way when "
+                            "talking to 0.31.01. Your old custom views <b>WILL NOT WORK</b>! You must use the new default views. <h1>DO NOT FILE BUGS AGAINST "
+                            "THIS VERSION!</h1>"));
 }
 
 MainWindow::~MainWindow() {
@@ -287,7 +295,7 @@ void MainWindow::read_dwarves() {
 void MainWindow::set_interface_enabled(bool enabled) {
     ui->act_connect_to_DF->setEnabled(!enabled);
     ui->act_read_dwarves->setEnabled(enabled);
-    //ui->act_scan_memory->setEnabled(enabled);
+    ui->act_scan_memory->setEnabled(enabled);
     ui->act_expand_all->setEnabled(enabled);
     ui->act_collapse_all->setEnabled(enabled);
     ui->cb_group_by->setEnabled(enabled);

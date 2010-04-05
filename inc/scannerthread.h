@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "stonevectorsearchjob.h"
 #include "vectorsearchjob.h"
 #include "dwarfraceindexsearchjob.h"
+#include "creaturevectorsearchjob.h"
 
 class ScannerThread : public QThread {
     Q_OBJECT
@@ -57,6 +58,9 @@ public:
                 break;
             case FIND_DWARF_RACE_INDEX:
                 m_job = new DwarfRaceIndexSearchJob;
+                break;
+            case FIND_CREATURE_VECTOR:
+                m_job = new CreatureVectorSearchJob;
                 break;
             case FIND_NULL_TERMINATED_STRING:
                 {

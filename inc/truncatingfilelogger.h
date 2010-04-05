@@ -51,7 +51,7 @@ public:
     explicit Streamer(TruncatingFileLogger *logger, LOG_LEVEL lvl,
                       const QString &file, int lineno, const QString &func);
     ~Streamer() {write();}
-    QDebug &stream() {return m_dbg.maybeSpace();}
+    QDebug &stream() {return m_dbg;}
 private:
     void write();
     TruncatingFileLogger *m_logger; //! parent logger

@@ -72,27 +72,28 @@ QString TruncatingFileLogger::level_name(LOG_LEVEL lvl) {
 
 void TruncatingFileLogger::set_minimum_level(LOG_LEVEL lvl) {
     m_minimum_level = lvl;
-    LOGI <<"Minimum log level set to" << level_name(lvl);
+    LOGI << "Minimum log level set to" << level_name(lvl);
 }
 
 void TruncatingFileLogger::write(LOG_LEVEL lvl, const QString &message,
                                  const QString &file, int lineno,
                                  const QString &func) {
     if (m_file && m_file->isWritable() && lvl >= m_minimum_level) {
+        QString stripped = message.trimmed();
         // make a string for this log level
         QDateTime now = QDateTime::currentDateTime();
-        QString msg("%1 %2\t%3 %4 %5\n");
+        QString msg("%1 %2\t%3%4%5\n");
         msg = msg.arg(now.toString("yyyy-MMM-dd hh:mm:ss.zzz"))
               .arg(level_name(lvl))
-              .arg(message).toAscii();
+              .arg(stripped).toAscii();
 
         QString location;
         QString function;
         if (lvl != LL_INFO && !file.isEmpty()) {
-            location = QString("[%1:%2]").arg(file).arg(lineno);
+            location = QString(" [%1:%2]").arg(file).arg(lineno);
         }
         if (lvl > LL_INFO && !func.isEmpty()) {
-            function = QString("(%1)").arg(func);
+            function = QString(" (%1)").arg(func);
         }
         msg = msg.arg(location);
         msg = msg.arg(function);

@@ -30,29 +30,29 @@ THE SOFTWARE.
 class Skill
 {
 public:
-	Skill();
-	Skill(short id, uint exp, short rating);
+    Skill();
+    Skill(short id, uint exp, short rating);
 
-	short id() const {return m_id;}
-	short rating() const {return m_rating;}
-	uint exp() const {return m_exp;}
-	uint actual_exp() const {return m_actual_exp;}
-	uint exp_for_current_level() const {return m_exp_for_current_level;}
-	uint exp_for_next_level() const {return m_exp_for_next_level;}
-	QString exp_summary() const;
+    short id() const {return m_id;}
+    short rating() const {return m_rating;}
+    uint exp() const {return m_exp;}
+    uint actual_exp() const {return m_actual_exp;}
+    uint exp_for_current_level() const {return m_exp_for_current_level;}
+    uint exp_for_next_level() const {return m_exp_for_next_level;}
+    QString exp_summary() const;
 
-	QString to_string(bool include_level = true, bool include_exp_summary = true) const;
-	QString name() {return m_name;}
-	bool operator<(const Skill &s2) const;
-		
+    QString to_string(bool include_level = true, bool include_exp_summary = true) const;
+    QString name() {return QString("(%1) %2").arg(m_id).arg(m_name);}
+    bool operator<(const Skill &s2) const;
+
 private:
-	short m_id;
-	uint m_exp;
-	uint m_actual_exp;
-	uint m_exp_for_current_level;
-	uint m_exp_for_next_level;
-	short m_rating;
-	QString m_name;
+    short m_id;
+    uint m_exp;
+    uint m_actual_exp;
+    uint m_exp_for_current_level;
+    uint m_exp_for_next_level;
+    short m_rating;
+    QString m_name;
 };
 
 #endif // SKILL_H

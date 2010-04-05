@@ -32,11 +32,11 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
     , ui(new Ui::DwarfDetailsWidget)
 {
-	ui->setupUi(this);
+    ui->setupUi(this);
 }
 
 void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
-	// Draw the name/profession text labels...
+    // Draw the name/profession text labels...
     ui->lbl_dwarf_name->setText(d->nice_name());
     ui->lbl_translated_name->setText(QString("(%1)").arg(d->translated_name()));
     ui->lbl_profession->setText(d->profession());
@@ -126,7 +126,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     m_cleanup_list << tw_traits;
     tw_traits->setColumnCount(3);
     tw_traits->setEditTriggers(QTableWidget::NoEditTriggers);
-	tw_traits->setWordWrap(true);
+    tw_traits->setWordWrap(true);
     tw_traits->setShowGrid(false);
     tw_traits->setGridStyle(Qt::NoPen);
     tw_traits->setAlternatingRowColors(true);
@@ -156,9 +156,9 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             trait_score->setForeground(QColor(0, 0, 128, 255));
         }
 
-		QString lvl_msg = t->level_message(val);
+        QString lvl_msg = t->level_message(val);
         QTableWidgetItem *trait_msg = new QTableWidgetItem(lvl_msg);
-		trait_msg->setToolTip(lvl_msg);
+        trait_msg->setToolTip(lvl_msg);
         tw_traits->setItem(0, 0, trait_name);
         tw_traits->setItem(0, 1, trait_score);
         tw_traits->setItem(0, 2, trait_msg);
