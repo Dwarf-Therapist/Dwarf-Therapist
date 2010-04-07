@@ -152,12 +152,14 @@ MainWindow::MainWindow(QWidget *parent)
         check_latest_version();
 
     // SUPER WARNING!
-    QMessageBox::warning(this, tr("DT Broken Edition!"),
-                         tr("You are running this version of DT thanks to "
-                            "overwhelming demand on the forums. This version "
-                            "is known to be broken in almost every way when "
-                            "talking to 0.31.01. Your old custom views <b>WILL NOT WORK</b>! You must use the new default views. <h1>DO NOT FILE BUGS AGAINST "
-                            "THIS VERSION!</h1>"));
+    if (0) {
+        QMessageBox::warning(this, tr("DT Broken Edition!"), tr("You are "
+           "running this version of DT thanks to overwhelming demand on the "
+           "forums. This version is known to be broken in almost every way "
+           "when talking to 0.31.01. Your old custom views <b>WILL NOT WORK"
+           "</b>! You must use the new default views. <h1>DO NOT FILE BUGS "
+           "AGAINST THIS VERSION!</h1>"));
+    }
 }
 
 MainWindow::~MainWindow() {

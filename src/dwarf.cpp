@@ -111,10 +111,6 @@ void Dwarf::refresh_data() {
     m_pending_custom_profession = m_df->read_string(m_address + mem->dwarf_offset("custom_profession"));
     m_race_id = m_df->read_int(m_address + mem->dwarf_offset("race"));
     TRACE << "\tRACE ID:" << m_race_id;
-
-    // TODO: Put this back!
-    //m_skills = read_skills(m_address + mem->dwarf_offset("skills"));
-    TRACE << "\tSKILLS: FOUND" << m_skills.size();
     m_profession = read_profession(m_address + mem->dwarf_offset("profession"));
     TRACE << "\tPROFESSION:" << m_profession;
     m_strength = m_df->read_int(m_address + mem->dwarf_offset("strength"));
@@ -174,7 +170,9 @@ void Dwarf::refresh_data() {
         //LOGD << nice_name() << "Soul contains" << skills.size() << "skills";
         m_skills = read_skills(soul + mem->dwarf_offset("skills"));
     }
-    calc_names();
+
+    short position = m_df->read_short(m_address + mem->dwarf_offset("position"));
+    LOGD << nice_name() << "POSITION:" << position;
 
     TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
 }
