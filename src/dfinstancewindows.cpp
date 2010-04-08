@@ -284,6 +284,7 @@ bool DFInstanceWindows::find_running_copy() {
             m_is_ok = false;
         }
     }
+    LOGD << "memory layout for" << m_layout->game_version() << "loaded ok";
 
     if (!m_is_ok) // time to bail
         return m_is_ok;

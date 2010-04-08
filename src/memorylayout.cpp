@@ -1,11 +1,13 @@
 #include <QtCore>
 #include "memorylayout.h"
 #include "gamedatareader.h"
+#include "truncatingfilelogger.h"
 
 MemoryLayout::MemoryLayout(uint checksum)
     : m_checksum(checksum)
     , m_data(0)
 {
+    LOGD << "Attempting to contruct MemoryLayout for " << hex << checksum;
     m_game_version = GameDataReader::ptr()->get_string_for_key("checksum_to_version/0x" + QString::number(checksum, 16));
     if (m_game_version != "UNKNOWN") {
         QDir working_dir = QDir::current();

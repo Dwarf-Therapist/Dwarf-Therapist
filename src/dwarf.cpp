@@ -423,18 +423,30 @@ QVector<Skill> Dwarf::read_skills(const uint &addr) {
     m_total_xp = 0;
     QVector<Skill> skills(0);
     QVector<uint> entries = m_df->enumerate_vector(addr);
-    //LOGD << "Reading skills for" << nice_name() << "found:" << entries.size();
+    LOGD << "Reading skills for" << nice_name() << "found:" << entries.size();
     short type = 0;
     short rating = 0;
     int xp = 0;
+    int last_used = 0;
+    int rust = 0;
+    int rust_counter = 0;
+    int demotion_counter = 0;
     foreach(uint entry, entries) {
+        /* type, level, experience, last used counter, rust, rust counter,
+        demotion counter
+        */
         type = m_df->read_short(entry);
-        rating = m_df->read_short(entry + 4);
-        xp = m_df->read_int(entry + 8);
+        rating = m_df->read_short(entry + 0x04);
+        xp = m_df->read_int(entry + 0x08);
+        last_used =m_df->read_int(entry + 0x0C);
+        rust = m_df->read_int(entry + 0x10);
+        rust_counter = m_df->read_int(entry + 0x14);
+        demotion_counter = m_df->read_int(entry + 0x18);
 
-        //LOGD << "\treading skill at" << hex << entry << "type" << dec << type
-        //        << "rating" << rating << "xp:" << xp;
-
+        LOGD << "reading skill at" << hex << entry << "type" << dec << type
+                << "rating" << rating << "xp:" << xp << "last_used:"
+                << last_used << "rust:" << rust << "rust counter:"
+                << rust_counter << "demotions:" << demotion_counter;
         Skill s(type, xp, rating);
         m_total_xp += s.actual_exp();
         skills.append(s);
@@ -493,6 +505,8 @@ QString Dwarf::read_profession(const uint &addr) {
 }
 
 void Dwarf::read_current_job(const uint &addr) {
+    // TODO: jobs contain info about materials being used, if we ever get the
+    // material list we could show that in here
     uint current_job_addr = m_df->read_uint(addr);
     if (current_job_addr != 0) {
         m_current_job_id = m_df->read_ushort(current_job_addr + m_df->memory_layout()->offset("current_job_id"));
