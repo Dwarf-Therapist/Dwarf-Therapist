@@ -238,6 +238,7 @@ void MainWindow::connect_to_df() {
     // find_running_copy can fail for several reasons, and will take care of
     // logging and notifying the user.
     if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
+        LOGD << "Creating new Scanner for future use";
         m_scanner = new Scanner(m_df, this);
         LOGD << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
         DT->load_game_translation_tables(m_df);

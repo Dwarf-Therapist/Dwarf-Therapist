@@ -1,6 +1,7 @@
 #include <QtCore>
 #include "memorylayout.h"
 #include "gamedatareader.h"
+#include "utils.h"
 #include "truncatingfilelogger.h"
 
 MemoryLayout::MemoryLayout(uint checksum)
@@ -21,8 +22,15 @@ MemoryLayout::MemoryLayout(uint checksum)
     QString subdir = "osx";
 #endif
         QString filename = working_dir.absoluteFilePath("etc/memory_layouts/" + subdir + "/" + m_game_version + ".ini");
-        m_data = new QSettings(filename, QSettings::IniFormat);
-        load_data();
+        QFileInfo info(filename);
+        if (info.exists() && info.isReadable()) {
+            m_data = new QSettings(filename, QSettings::IniFormat);
+            load_data();
+        } else {
+            LOGE << "tried to load memory layout for checksum"
+                    << hexify(checksum) << "which should be in file" << filename
+                    << "however that file could not be found or opened!";
+        }
     }
 }
 

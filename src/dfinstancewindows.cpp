@@ -40,7 +40,6 @@ THE SOFTWARE.
 #include "memorysegment.h"
 #include "dwarftherapist.h"
 
-
 DFInstanceWindows::DFInstanceWindows(QObject* parent)
     : DFInstance(parent)
     , m_proc(0)
@@ -277,14 +276,26 @@ bool DFInstanceWindows::find_running_copy() {
         //GameDataReader::ptr()->set_game_checksum(checksum);
 
         m_layout = new MemoryLayout(checksum);
-        if (!m_layout->is_valid()) {
-            QMessageBox::critical(0, tr("Unidentified Version"),
-                tr("I'm sorry but I don't know how to talk to this version of DF!"));
+        m_is_ok = m_layout->is_valid();
+        if (m_is_ok) {
+            LOGD << "memory layout for" << m_layout->game_version() << "loaded";
+        } else {
+            QMessageBox *mb = new QMessageBox(qApp->activeWindow());
+            mb->setIcon(QMessageBox::Critical);
+            mb->setWindowTitle(tr("Unidentified Game Version"));
+            mb->setText(tr("I'm sorry but I don't know how to talk to this"
+                           "version of Dwarf Fortress!"));
+            mb->setInformativeText(tr("GAME CHECKSUM: %1")
+                                   .arg(hexify(checksum)));
+            mb->setDetailedText(tr("Tried to locate memory layout file for "
+                                   "checksum %1, but the file was either not "
+                                   "specified in game_data.ini, or the file "
+                                   "specified doesn't exist or is not readable!"
+                                   ).arg(hexify(checksum)));
+            mb->exec();
             LOGE << tr("unable to identify version from checksum:") << hex << checksum;
-            m_is_ok = false;
         }
     }
-    LOGD << "memory layout for" << m_layout->game_version() << "loaded ok";
 
     if (!m_is_ok) // time to bail
         return m_is_ok;
