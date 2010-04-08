@@ -2,6 +2,7 @@
 Makefile
 Makefile.Debug
 Makefile.Release
+object_script.DwarfTherapist
 object_script.DwarfTherapist.Debug
 object_script.DwarfTherapist.Release
 dwarftherapist.pro.user
@@ -12,3 +13,4 @@ debug/*
 release/*
 ui/*.h
 log/*
+img/icons/*
