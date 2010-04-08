@@ -47,7 +47,15 @@ void MemoryLayout::load_data() {
     m_data->endGroup();
 
     // flags
-    int flag_count = m_data->beginReadArray("invalid_flags_1");
+    int flag_count = m_data->beginReadArray("valid_flags_1");
+    for (int i = 0; i < flag_count; ++i) {
+        m_data->setArrayIndex(i);
+        m_valid_flags_1.insert(read_hex("value"),
+            m_data->value("name", "UNKNOWN VALID FLAG 1").toString());
+    }
+    m_data->endArray();
+
+    flag_count = m_data->beginReadArray("invalid_flags_1");
     for (int i = 0; i < flag_count; ++i) {
         m_data->setArrayIndex(i);
         m_invalid_flags_1.insert(read_hex("value"),

@@ -171,7 +171,7 @@ void Dwarf::refresh_data() {
         m_skills = read_skills(soul + mem->dwarf_offset("skills"));
     }
 
-    short position = m_df->read_short(m_address + mem->dwarf_offset("position"));
+    ushort position = m_df->read_ushort(m_address + mem->dwarf_offset("position"));
     LOGD << nice_name() << "POSITION:" << position;
 
     TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
@@ -281,8 +281,7 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const uint &addr) {
         return 0;
     }
     Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
-    /*
-    LOGD << "examining dwarf at" << hex << addr;
+    /*LOGD << "examining dwarf at" << hex << addr;
     LOGD << "FLAGS1 :" << hexify(flags1);
     LOGD << "FLAGS2 :" << hexify(flags2);
     LOGD << "RACE   :" << hexify(race_id);
@@ -290,7 +289,18 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const uint &addr) {
     LOGD << "INVADER FILTER:" << hexify(0x1000 | 0x2000 | 0x20000 | 0x80000 | 0xc0000 | 0x8C0);
     LOGD << "OTHER   FILTER:" << hexify(0x80 | 0x40000);
     */
-    QHash<uint, QString> flags = mem->invalid_flags_1();
+
+    QHash<uint, QString> flags = mem->valid_flags_1();
+    foreach(uint flag, flags.uniqueKeys()) {
+        QString reason = flags[flag];
+        if ((flags1 & flag) != flag) {
+            LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to be" << reason;
+            delete unverified_dwarf;
+            return 0;
+        }
+    }
+
+    flags = mem->invalid_flags_1();
     foreach(uint flag, flags.uniqueKeys()) {
         QString reason = flags[flag];
         if ((flags1 & flag) == flag) {
