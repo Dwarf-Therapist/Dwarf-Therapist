@@ -81,6 +81,7 @@ public:
 		void draw_professions();
 		void draw_custom_profession_context_menu(const QPoint &);
         void add_new_filter_script();
+        void print_gridview();
 		
 		// version check
 		void check_latest_version(bool show_result_on_equal=false);

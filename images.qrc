@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/" >
+    <qresource prefix="/">
         <file>img/tag_blue.png</file>
         <file>img/page_copy.png</file>
         <file>img/image_add.png</file>
@@ -45,11 +45,13 @@
         <file>img/bullet_red.png</file>
         <file>img/tick.png</file>
         <file>img/arrow_switch.png</file>
+        <file>img/printer_error.png</file>
+        <file>img/printer.png</file>
     </qresource>
-    <qresource prefix="/config" >
-        <file alias="default_gridviews" >default_gridviews.dtg</file>
+    <qresource prefix="/config">
+        <file alias="default_gridviews">default_gridviews.dtg</file>
     </qresource>
-    <qresource prefix="/status" >
+    <qresource prefix="/status">
         <file>img/cheese.png</file>
         <file>img/gear.png</file>
         <file>img/hammer.png</file>

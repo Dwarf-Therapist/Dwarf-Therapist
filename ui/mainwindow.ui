@@ -182,6 +182,7 @@
     </property>
     <addaction name="act_connect_to_DF"/>
     <addaction name="act_read_dwarves"/>
+    <addaction name="act_print"/>
     <addaction name="separator"/>
     <addaction name="act_commit_pending_changes"/>
     <addaction name="act_clear_pending_changes"/>
@@ -253,6 +254,7 @@
    </attribute>
    <addaction name="act_connect_to_DF"/>
    <addaction name="act_read_dwarves"/>
+   <addaction name="act_print"/>
    <addaction name="separator"/>
    <addaction name="act_expand_all"/>
    <addaction name="act_collapse_all"/>
@@ -735,6 +737,21 @@
     <string>Add New Filter Script...</string>
    </property>
   </action>
+  <action name="act_print">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/printer.png</normaloff>:/img/printer.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Print...</string>
+   </property>
+   <property name="toolTip">
+    <string>Print the current grid view</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
@@ -1089,6 +1106,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_print</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>print_gridview()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>403</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -1112,5 +1145,6 @@
   <slot>export_gridviews()</slot>
   <slot>import_gridviews()</slot>
   <slot>add_new_filter_script()</slot>
+  <slot>print_gridview()</slot>
  </slots>
 </ui>

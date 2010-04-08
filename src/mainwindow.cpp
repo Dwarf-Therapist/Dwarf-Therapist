@@ -302,6 +302,7 @@ void MainWindow::set_interface_enabled(bool enabled) {
     ui->act_collapse_all->setEnabled(enabled);
     ui->cb_group_by->setEnabled(enabled);
     ui->act_import_existing_professions->setEnabled(enabled);
+    ui->act_print->setEnabled(enabled);
 }
 
 void MainWindow::check_latest_version(bool show_result_on_equal) {
@@ -494,4 +495,28 @@ void MainWindow::redraw_filter_scripts_cb() {
 
 void MainWindow::new_filter_script_chosen(const QString &script_name) {
     m_proxy->apply_script(DT->user_settings()->value(QString("filter_scripts/%1").arg(script_name), QString()).toString());
+}
+
+void MainWindow::print_gridview() {
+    QPrinter printer;
+    //printer.setOutputFileName("woot.pdf");
+    //printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setOrientation(QPrinter::Landscape);
+    QPrintDialog *d = new QPrintDialog(&printer, this);
+    d->setWindowTitle(tr("Print GridView"));
+    if (d->exec() != QDialog::Accepted) {
+        return;
+    }
+
+    // print is configured and user accepted
+    QWidget *current_gv = get_view_manager()->currentWidget();
+    QPainter p(&printer);
+    QRect rect = p.viewport();
+    QSize size = current_gv->size();
+    size.scale(rect.size(), Qt::KeepAspectRatio);
+    p.setViewport(rect.x(), rect.y(), size.width(), size.height());
+    p.setWindow(current_gv->rect());
+    QPixmap pm = QPixmap::grabWidget(current_gv, current_gv->rect());
+    p.drawPixmap(0, 0, pm);
+    p.end();
 }
