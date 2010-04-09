@@ -60,6 +60,7 @@ QStandardItem *IdleColumn::build_cell(Dwarf *d) {
             case DwarfJob::DJT_FIGHT:	pixmap_name = ":status/img/status_fight2.png";	    break;
             case DwarfJob::DJT_MOOD:	pixmap_name = ":img/exclamation.png";       	    break;
             case DwarfJob::DJT_FORGE:	pixmap_name = ":status/img/status_forge.png"; 	    break;
+            case DwarfJob::DJT_MEDICAL: pixmap_name = ":status/img/first_aid_kit.png";      break;
 			
 			default:
 			case DwarfJob::DJT_DEFAULT:	pixmap_name = ":status/img/control_play_blue.png";	break;

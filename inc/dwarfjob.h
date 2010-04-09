@@ -41,7 +41,9 @@ public:
 		DJT_ADMIN,
         DJT_FIGHT,
         DJT_MOOD,
-        DJT_FORGE
+        DJT_FORGE,
+        DJT_MEDICAL,
+        DJT_FURNACE
 	} DWARF_JOB_TYPE;
 
 	static DWARF_JOB_TYPE get_type(const QString &type) {
@@ -58,6 +60,8 @@ public:
         m["fight"] = DJT_FIGHT;
         m["mood"] = DJT_MOOD;
         m["forge"] = DJT_FORGE;
+        m["medical"] = DJT_MEDICAL;
+        m["furnace"] = DJT_FURNACE;
 		return m.value(type.toLower(), DJT_DEFAULT);
 	}
 	

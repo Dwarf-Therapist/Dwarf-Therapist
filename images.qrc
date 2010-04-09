@@ -67,5 +67,8 @@
         <file>img/status_fight2.png</file>
         <file>img/status_forge.png</file>
         <file>img/status_haul.png</file>
+        <file>img/syringe.png</file>
+        <file>img/band_aid.png</file>
+        <file>img/first_aid_kit.png</file>
     </qresource>
 </RCC>
