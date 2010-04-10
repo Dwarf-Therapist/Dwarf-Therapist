@@ -120,10 +120,6 @@ void Dwarf::refresh_data() {
     m_agility = m_df->read_int(m_address + mem->dwarf_offset("agility"));
     TRACE << "\tAGILITY:" << m_agility;
     read_labors(m_address + mem->dwarf_offset("labors"));
-
-    // TODO: put this back!
-    //read_traits(m_address + mem->dwarf_offset("traits"));
-    //TRACE << "\tTRAITS:" << m_traits.size();
     m_money = m_df->read_int(m_address + mem->dwarf_offset("money"));
     TRACE << "\tMONEY:" << m_money;
     m_raw_happiness = m_df->read_int(m_address +mem->dwarf_offset("happiness"));
@@ -165,10 +161,12 @@ void Dwarf::refresh_data() {
 
     QVector<uint> souls = m_df->enumerate_vector(m_address + mem->dwarf_offset("souls"));
     foreach(uint soul, souls) {
-        //LOGD << "SOUL FOUND AT" << hex << soul;
+        LOGD << "SOUL FOUND AT" << hex << soul << m_df->pprint(m_df->get_data(soul, 0x500), 0);
         QVector<uint> skills = m_df->enumerate_vector(soul + mem->dwarf_offset("skills"));
         //LOGD << nice_name() << "Soul contains" << skills.size() << "skills";
         m_skills = read_skills(soul + mem->dwarf_offset("skills"));
+        read_traits(soul + mem->dwarf_offset("traits"));
+        TRACE << "\tTRAITS:" << m_traits.size();
     }
 
     ushort position = m_df->read_ushort(m_address + mem->dwarf_offset("position"));
