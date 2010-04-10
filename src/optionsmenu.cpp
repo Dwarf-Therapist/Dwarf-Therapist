@@ -154,6 +154,7 @@ void OptionsMenu::read_settings() {
     ui->cb_show_toolbar_text->setChecked(s->value("show_toolbutton_text", true).toBool());
     ui->cb_auto_expand->setChecked(s->value("auto_expand_groups", true).toBool());
     ui->cb_show_full_dwarf_names->setChecked(s->value("show_full_dwarf_names", false).toBool());
+    ui->cb_show_dabbling_in_tooltip->setChecked(s->value("show_dabbling_in_tooltips", true).toBool());
     ui->cb_check_for_updates_on_startup->setChecked(s->value("check_for_updates_on_startup", true).toBool());
     ui->cb_alert_on_lost_connection->setChecked(s->value("alert_on_lost_connection", true).toBool());
     ui->cb_labor_cheats->setChecked(s->value("allow_labor_cheats", false).toBool());
@@ -191,6 +192,7 @@ void OptionsMenu::write_settings() {
         s->setValue("show_toolbutton_text", ui->cb_show_toolbar_text->isChecked());
         s->setValue("auto_expand_groups", ui->cb_auto_expand->isChecked());
         s->setValue("show_full_dwarf_names", ui->cb_show_full_dwarf_names->isChecked());
+        s->setValue("show_dabbling_in_tooltips", ui->cb_show_dabbling_in_tooltip->isChecked());
         s->setValue("check_for_updates_on_startup", ui->cb_check_for_updates_on_startup->isChecked());
         s->setValue("alert_on_lost_connection", ui->cb_alert_on_lost_connection->isChecked());
         s->setValue("allow_labor_cheats", ui->cb_labor_cheats->isChecked());
@@ -226,6 +228,7 @@ void OptionsMenu::restore_defaults() {
     ui->cb_show_toolbar_text->setChecked(true);
     ui->cb_auto_expand->setChecked(false);
     ui->cb_show_full_dwarf_names->setChecked(false);
+    ui->cb_show_dabbling_in_tooltip->setChecked(true);
     ui->cb_check_for_updates_on_startup->setChecked(true);
     ui->cb_alert_on_lost_connection->setChecked(true);
     ui->cb_labor_cheats->setChecked(false);

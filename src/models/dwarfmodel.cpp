@@ -212,16 +212,17 @@ void DwarfModel::build_rows() {
             case GB_MILITARY_STATUS:
                 {
                     // groups
-                    if (d->raw_profession() == 109 || d->raw_profession() == 110) { //child or baby
-                        m_grouped_dwarves["Juveniles"].append(d);
+                    if (d->profession() == "Baby" ||
+                        d->profession() == "Child") {
+                        m_grouped_dwarves[tr("Juveniles")].append(d);
                     } else if (d->active_military() && !d->can_set_labors()) { // epic military
-                        m_grouped_dwarves["Champions"].append(d);
+                        m_grouped_dwarves[tr("Champions")].append(d);
                     } else if (!d->can_set_labors()) {
-                        m_grouped_dwarves["Nobles"].append(d);
+                        m_grouped_dwarves[tr("Nobles")].append(d);
                     } else if (d->active_military()) {
-                        m_grouped_dwarves["Active Military"].append(d);
+                        m_grouped_dwarves[tr("Active Military")].append(d);
                     } else {
-                        m_grouped_dwarves["Can Activate"].append(d);
+                        m_grouped_dwarves[tr("Can Activate")].append(d);
                     }
                     /*
                     4a) Heroes and Champions (who cannot deactivate)
@@ -253,6 +254,10 @@ void DwarfModel::build_row(const QString &key) {
         root->setData(true, DR_IS_AGGREGATE);
         root->setData(key, DR_GROUP_NAME);
         root->setData(0, DR_RATING);
+        if (m_group_by == GB_MIGRATION_WAVE) {
+            root->setData(m_grouped_dwarves.value(key).at(0)->migration_wave(),
+                          DR_SORT_VALUE);
+        }
         root_row << root;
     }
 

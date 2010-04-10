@@ -161,7 +161,7 @@ void Dwarf::refresh_data() {
 
     QVector<uint> souls = m_df->enumerate_vector(m_address + mem->dwarf_offset("souls"));
     foreach(uint soul, souls) {
-        LOGD << "SOUL FOUND AT" << hex << soul << m_df->pprint(m_df->get_data(soul, 0x500), 0);
+        //LOGD << "SOUL FOUND AT" << hex << soul << m_df->pprint(m_df->get_data(soul, 0x500), 0);
         QVector<uint> skills = m_df->enumerate_vector(soul + mem->dwarf_offset("skills"));
         //LOGD << nice_name() << "Soul contains" << skills.size() << "skills";
         m_skills = read_skills(soul + mem->dwarf_offset("skills"));
@@ -176,6 +176,11 @@ void Dwarf::refresh_data() {
 }
 
 void Dwarf::read_settings() {
+    /* This is pretty fucked up. There is no good way to let the options for
+       full name, or show dabbling to just update existing cells. Will have to
+       send signals when this stuff changes, or just bit the bullet and subclass
+       the QStandardItem for the name items in the main model
+       */
     QSettings *s = DT->user_settings();
     bool new_show_full_name = s->value("options/show_full_dwarf_names", false).toBool();
     if (new_show_full_name != m_show_full_name) {
@@ -338,20 +343,42 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const uint &addr) {
     return unverified_dwarf;
 }
 
-QString Dwarf::read_last_name(const uint &addr, bool use_generic) {
-    QString out;
-    for (int i = 0; i < 7; i++) {
-        uint word = m_df->read_uint(addr + i * 4);
-        if (word == 0xFFFFFFFF)
-            break;
-        if (use_generic)
-            out.append(DT->get_generic_word(word));
-        else
-            out.append(DT->get_dwarf_word(word));
+QString Dwarf::word_chunk(uint word, bool use_generic) {
+    QString out = "";
+    if (word != 0xFFFFFFFF) {
+        if (use_generic) {
+            out = DT->get_generic_word(word);
+        } else {
+            out = DT->get_dwarf_word(word);
+        }
     }
+    return out;
+}
+
+QString Dwarf::read_last_name(const uint &addr, bool use_generic) {
+    // last name reading taken from patch by Zhentar (issue 189)
+    QString first, second, third;
+
+    first.append(word_chunk(m_df->read_uint(addr), use_generic));
+    first.append(word_chunk(m_df->read_uint(addr + 0x4), use_generic));
+    second.append(word_chunk(m_df->read_uint(addr + 0x8), use_generic));
+    second.append(word_chunk(m_df->read_uint(addr + 0x14), use_generic));
+    third.append(word_chunk(m_df->read_uint(addr + 0x18), use_generic));
+
+    QString out = first;
     out = out.toLower();
-    if (out.size() > 1) {
+    if (!out.isEmpty()) {
         out[0] = out[0].toUpper();
+    }
+    if (!second.isEmpty()) {
+        second = second.toLower();
+        second[0] = second[0].toUpper();
+        out.append(" " + second);
+    }
+    if (!third.isEmpty()) {
+        third = third.toLower();
+        third[0] = third[0].toUpper();
+        out.append(" " + third);
     }
     return out;
 }
@@ -421,7 +448,7 @@ QVector<Skill> Dwarf::read_skills(const uint &addr) {
     m_total_xp = 0;
     QVector<Skill> skills(0);
     QVector<uint> entries = m_df->enumerate_vector(addr);
-    LOGD << "Reading skills for" << nice_name() << "found:" << entries.size();
+    TRACE << "Reading skills for" << nice_name() << "found:" << entries.size();
     short type = 0;
     short rating = 0;
     int xp = 0;
@@ -441,7 +468,7 @@ QVector<Skill> Dwarf::read_skills(const uint &addr) {
         rust_counter = m_df->read_int(entry + 0x14);
         demotion_counter = m_df->read_int(entry + 0x18);
 
-        LOGD << "reading skill at" << hex << entry << "type" << dec << type
+        TRACE   << "reading skill at" << hex << entry << "type" << dec << type
                 << "rating" << rating << "xp:" << xp << "last_used:"
                 << last_used << "rust:" << rust << "rust counter:"
                 << rust_counter << "demotions:" << demotion_counter;
@@ -722,7 +749,15 @@ QString Dwarf::tooltip_text() {
     QString skill_summary, trait_summary;
     QVector<Skill> *skills = get_skills();
     qSort(*skills);
+
+    QSettings *s = DT->user_settings();
+    bool show_dabbling = s->value("options/show_dabbling_in_tooltips", true)
+                         .toBool();
     for (int i = skills->size() - 1; i >= 0; --i) {
+        // check options to see if we should show dabbling skills
+        if (skills->at(i).rating() < 1 && !show_dabbling) {
+            continue;
+        }
         skill_summary.append(QString("<li>%1</li>").arg(skills->at(i).to_string()));
     }
     GameDataReader *gdr = GameDataReader::ptr();

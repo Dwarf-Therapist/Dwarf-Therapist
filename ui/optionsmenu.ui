@@ -131,6 +131,19 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="cb_show_dabbling_in_tooltip">
+         <property name="statusTip">
+          <string>Uncheck this option to hide dabbling skills on dwarf tooltips. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read of dwarves occurrs!&lt;/font&gt;&lt;/b&gt;</string>
+         </property>
+         <property name="whatsThis">
+          <string>Uncheck this option to hide dabbling skills on dwarf tooltips. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read of dwarves occurrs!&lt;/font&gt;&lt;/b&gt;</string>
+         </property>
+         <property name="text">
+          <string>Show Dabbling Skills in Tooltips</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="cb_check_for_updates_on_startup">
          <property name="statusTip">
           <string>When checked, Dwarf Therapist will go online at the time of launch and notify you if there is an update available.</string>

@@ -165,7 +165,7 @@
      <x>0</x>
      <y>0</y>
      <width>1129</width>
-     <height>20</height>
+     <height>19</height>
     </rect>
    </property>
    <property name="font">
@@ -182,7 +182,6 @@
     </property>
     <addaction name="act_connect_to_DF"/>
     <addaction name="act_read_dwarves"/>
-    <addaction name="act_print"/>
     <addaction name="separator"/>
     <addaction name="act_commit_pending_changes"/>
     <addaction name="act_clear_pending_changes"/>
@@ -254,7 +253,6 @@
    </attribute>
    <addaction name="act_connect_to_DF"/>
    <addaction name="act_read_dwarves"/>
-   <addaction name="act_print"/>
    <addaction name="separator"/>
    <addaction name="act_expand_all"/>
    <addaction name="act_collapse_all"/>

@@ -254,6 +254,7 @@ private:
     int m_migration_wave;
 
     QString read_profession(const uint &addr);
+    QString word_chunk(uint word, bool use_generic=false);
     QString read_last_name(const uint &addr, bool use_generic=false);
     QString read_squad_name(const uint &addr, bool use_generic=false);
     QVector<Skill> read_skills(const uint &addr);
