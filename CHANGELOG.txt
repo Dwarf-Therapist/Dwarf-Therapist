@@ -1,3 +1,26 @@
+RELEASE 0.5.0 (April 10, 2010)
+CHANGES SINCE 0.4.3
+===============================================================================
+MAJOR CHANGES:
+ * Stable Support for 0.31.01 and 0.31.02
+MINOR CHANGES:
+ * more informative error when connecting to unknown versions of DF
+ * Show the checksum of a DF version that can't be talked to (to assist with adding support for new versions)
+ * MemoryLayout now checks to make sure a file exists before blindly reading crap
+ * added new types of dwarf jobs MEDICAL and FURNACE (furnace still needs an icon)
+BUG FIXES:
+ * Fixed flag validation for dwarfs (merchants, guards, liasons, corpses should no longer show up in the main list)
+ * Fixed skill display for dwarfs 
+ * Fixed trait display for dwarfs
+ * Fixed current-job display for dwarfs
+ * Fixed issue 189. (long/multipart surname reading)
+ * Fixed issue 173. (migration waves sort order)
+ * Fixed issue 157. (add option for hiding dabbling skills)
+ * Made military status names translatable (and made the baby/child search text based instead of using ids)
+ * Removed print button since it was just for playing around with
+ * Fixed issue 193. (some flags are required to be on a dwarf)
+ * Fixed issue 201. (mechanic skill id incorrect)
+  
 RELEASE 0.4.3 (April 4, 2010)
 CHANGES SINCE 0.4.2
 ===============================================================================

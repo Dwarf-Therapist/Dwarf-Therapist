@@ -169,8 +169,8 @@ void Dwarf::refresh_data() {
         TRACE << "\tTRAITS:" << m_traits.size();
     }
 
-    ushort position = m_df->read_ushort(m_address + mem->dwarf_offset("position"));
-    LOGD << nice_name() << "POSITION:" << position;
+    //ushort position = m_df->read_ushort(m_address + mem->dwarf_offset("position"));
+    //LOGD << nice_name() << "POSITION:" << position;
 
     TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
 }
