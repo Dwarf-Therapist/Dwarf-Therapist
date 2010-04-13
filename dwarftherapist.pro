@@ -2,7 +2,7 @@ TEMPLATE = app
 TARGET = DwarfTherapist
 QT += network \
     script
-CONFIG(debug, debug|release) { 
+CONFIG(debug, debug|release) {
     message(Debug Mode)
     DESTDIR = bin/debug
     MOC_DIR = bin/debug
@@ -10,7 +10,7 @@ CONFIG(debug, debug|release) {
     RCC_DIR = bin/debug
     OBJECTS_DIR = bin/debug
 }
-else { 
+else {
     message(Release Mode)
     DESTDIR = bin/release
     MOC_DIR = bin/release
@@ -23,20 +23,22 @@ INCLUDEPATH += inc \
     inc/grid_view \
     inc/docks \
     ui \
-    thirdparty\qtcolorpicker-2.6
-win32 { 
+    thirdparty/qtcolorpicker-2.6
+win32 {
     message(Setting up for Windows)
     RC_FILE = DwarfTherapist.rc
     LIBS += -lpsapi
+    HEADERS += inc/dfinstancewindows.h
+    SOURCES += src/dfisntancewindows.cpp
 }
-else:unix { 
+else:unix {
     message(Setting up for Linux)
-    
-    # CFLAGS = -m32
-    HEADERS += ./inc/dfinstancelinux.h
-    SOURCES += ./src/dfinstancelinux.cpp
+    # force 32 bit compile
+    CFLAGS = -m32
+    HEADERS += inc/dfinstancelinux.h
+    SOURCES += src/dfinstancelinux.cpp
 }
-else:macx { 
+else:macx {
     message(Setting up for OSX)
     HEADERS += ./inc/dfinstanceosx.h
     SOURCES += ./src/dfinstanceosx.cpp
@@ -78,7 +80,6 @@ HEADERS += inc/win_structs.h \
     inc/dwarfdetailswidget.h \
     inc/dwarf.h \
     inc/dfinstance.h \
-    inc/dfinstancewindows.h \
     inc/defines.h \
     inc/customprofession.h \
     inc/customcolor.h \
@@ -126,7 +127,6 @@ SOURCES += src/viewmanager.cpp \
     src/dwarfdetailswidget.cpp \
     src/dwarf.cpp \
     src/dfinstance.cpp \
-    src/dfinstancewindows.cpp \
     src/customprofession.cpp \
     src/customcolor.cpp \
     src/aboutdialog.cpp \
