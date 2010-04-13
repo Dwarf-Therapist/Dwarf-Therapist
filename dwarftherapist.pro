@@ -29,7 +29,7 @@ win32 {
     RC_FILE = DwarfTherapist.rc
     LIBS += -lpsapi
     HEADERS += inc/dfinstancewindows.h
-    SOURCES += src/dfisntancewindows.cpp
+    SOURCES += src/dfinstancewindows.cpp
 }
 else:unix {
     message(Setting up for Linux)
