@@ -80,7 +80,6 @@ QVector<uint> DFInstanceWindows::enumerate_vector(const uint &addr) {
     uint entries = (end - start) / sizeof(uint);
     TRACE << "there appears to be" << entries << "entries in this vector";
 
-    /*
     Q_ASSERT(start >= 0);
     Q_ASSERT(end >= 0);
     Q_ASSERT(end >= start);
@@ -88,7 +87,7 @@ QVector<uint> DFInstanceWindows::enumerate_vector(const uint &addr) {
     Q_ASSERT(start % 4 == 0);
     Q_ASSERT(end % 4 == 0);
     Q_ASSERT(entries < 5000);
-    */
+
     int count = 0;
     for (uint ptr = start; ptr < end; ptr += 4 ) {
         uint a = read_uint(ptr);

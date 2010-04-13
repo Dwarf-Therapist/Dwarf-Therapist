@@ -298,7 +298,7 @@ void MainWindow::read_dwarves() {
 void MainWindow::set_interface_enabled(bool enabled) {
     ui->act_connect_to_DF->setEnabled(!enabled);
     ui->act_read_dwarves->setEnabled(enabled);
-    ui->act_scan_memory->setEnabled(enabled);
+    //ui->act_scan_memory->setEnabled(enabled);
     ui->act_expand_all->setEnabled(enabled);
     ui->act_collapse_all->setEnabled(enabled);
     ui->cb_group_by->setEnabled(enabled);
