@@ -45,7 +45,8 @@ DFInstance::DFInstance(QObject* parent)
     ,m_heartbeat_timer(new QTimer(this))
 {
     connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
-    // let subclasses start the timer, since we don't want to be checking before we're connected
+    // let subclasses start the timer, since we don't want to be checking before
+    // we're connected
 }
 
 QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
@@ -78,7 +79,8 @@ QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
             memset(buffer, 0, step);
             int bytes_read = read_raw(ptr, step, buffer);
             if (bytes_read < step && !seg->is_guarded) {
-                LOGW << "tried to read" << step << "bytes starting at" << hex << ptr << "but only got" << dec << bytes_read;
+                LOGW << "tried to read" << step << "bytes starting at" << hex
+                        << ptr << "but only got" << dec << bytes_read;
                 continue;
             }
 
@@ -96,7 +98,8 @@ QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
         if (m_stop_scan)
             break;
     }
-    LOGD << QString("Scanned %L1KB in %L2ms").arg(bytes_scanned / 1024 * 1024).arg(timer.elapsed());
+    TRACE << QString("Scanned %L1KB in %L2ms").arg(bytes_scanned / 1024 * 1024)
+            .arg(timer.elapsed());
     delete[] buffer;
     return addresses;
 }
@@ -124,20 +127,29 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         return dwarves;
     }
     attach();
-    int creature_vector = m_layout->address("creature_vector");
+    uint creature_vector = m_layout->address("creature_vector");
     TRACE << "starting with creature vector" << creature_vector;
+    if (!is_valid_address(creature_vector)) {
+        LOGW << "Active Memory Layout" << m_layout->filename() << "("
+                << m_layout->game_version() << ")" << "contains an invalid"
+                << "creature_vector address. Either you are scanning a new "
+                << "DF version or your config files are corrupted.";
+        detach();
+        return dwarves;
+    }
 
     TRACE << "adjusted creature vector" << creature_vector + m_memory_correction;
     QVector<uint> creatures = enumerate_vector(creature_vector + m_memory_correction);
     TRACE << "FOUND" << creatures.size() << "creatures";
-    if (creatures.size() > 0) {
-        for (int offset=0; offset < creatures.size(); ++offset) {
-            Dwarf *d = Dwarf::get_dwarf(this, creatures[offset]);
+    if (!creatures.empty()) {
+        Dwarf *d = 0;
+        foreach(uint creature_addr, creatures) {
+            d = Dwarf::get_dwarf(this, creature_addr);
             if (d) {
                 dwarves.append(d);
-                TRACE << "FOUND DWARF" << offset << d->nice_name();
+                TRACE << "FOUND DWARF" << creature_addr << d->nice_name();
             } else {
-                TRACE << "FOUND OTHER CREATURE" << offset;
+                TRACE << "FOUND OTHER CREATURE" << creature_addr;
             }
         }
     } else {
@@ -273,7 +285,9 @@ QVector<uint> DFInstance::find_vectors_in_range(const uint &max_entries,
     return vectors;
 }
 
-QVector<uint> DFInstance::find_vectors(const uint &num_entries, const uint &fuzz/* =0 */, const uint &entry_size/* =4 */) {
+QVector<uint> DFInstance::find_vectors(const uint &num_entries,
+                                       const uint &fuzz/* =0 */,
+                                       const uint &entry_size/* =4 */) {
     m_stop_scan = false;
     QVector<uint> vectors;
 
@@ -315,28 +329,37 @@ QVector<uint> DFInstance::find_vectors(const uint &num_entries, const uint &fuzz
     }
 
     foreach(MemorySegment *seg, m_regions) {
-        //LOGD << "SCANNING REGION" << hex << seg->start_addr << "-" << seg->end_addr << "BYTES:" << dec << seg->size;
+        LOGD << "SCANNING REGION" << hex << seg->start_addr << "-"
+                << seg->end_addr << "BYTES:" << dec << seg->size;
         memset(buffer, 0, seg->size); // 0 out the buffer
 
-        // this may read multiple times to populate the entire region in our buffer
+        // this may read multiple times to put the entire region in the buffer
         uint bytes_read = read_raw(seg->start_addr, seg->size, buffer);
         if (bytes_read < seg->size) {
             continue;
         }
 
-        // we now have this entire memory segment inside buffer. So lets step through it looking for things that look like vectors of pointers.
-        // we read a uint into int1 and 4 bytes later we read another uint into int2. If int1 is a vector head, then int2 will be larger than int2,
-        // evenly divisible by 4, and the difference between the two (divided by four) will tell us how many pointers are in this array. We can also
-        // check to make sure int1 and int2 reside in valid memory regions. If all of this adds up, then odds are pretty good we've found a vector
+        /* we now have this entire memory segment inside `buffer`. So lets step
+           through it looking for things that look like vectors of pointers.
+           We read a uint into int1 and 4 bytes later we read another uint into
+           int2. If int1 is a vector head, then int2 will be larger than int2,
+           evenly divisible by 4, and the difference between the two (divided
+           by four) will tell us how many pointers are in this array. We can
+           also check to make sure int1 and int2 reside in valid memory
+           regions. If all of this adds up, then odds are pretty good we've
+           found a vector
+        */
         for (uint i = 0; i < seg->size; i += 4) {
             memcpy(&int1, buffer + i, 4);
             memcpy(&int2, buffer + i + 4, 4);
-            if (int2 >= int1 && is_valid_address(int1) && is_valid_address(int2)) {
+            if (int2 >= int1 && is_valid_address(int1) &&
+                is_valid_address(int2)) {
                 uint bytes = int2 - int1;
                 uint entries = bytes / entry_size;
                 int diff = entries - num_entries;
                 if ((uint)qAbs(diff) <= fuzz) {
-                    uint vector_address = seg->start_addr + i - VECTOR_POINTER_OFFSET;
+                    uint vector_address = seg->start_addr + i -
+                                          VECTOR_POINTER_OFFSET;
                     QVector<uint> addrs = enumerate_vector(vector_address);
                     diff = addrs.size() - num_entries;
                     if ((uint)qAbs(diff) <= fuzz) {

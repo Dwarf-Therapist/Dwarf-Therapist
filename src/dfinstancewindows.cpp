@@ -275,7 +275,7 @@ bool DFInstanceWindows::find_running_copy() {
         //GameDataReader::ptr()->set_game_checksum(checksum);
 
         m_layout = new MemoryLayout(checksum);
-        m_is_ok = m_layout->is_valid();
+        m_is_ok = m_layout != NULL && m_layout->is_valid();
         if (m_is_ok) {
             LOGD << "memory layout for" << m_layout->game_version() << "loaded";
         } else {

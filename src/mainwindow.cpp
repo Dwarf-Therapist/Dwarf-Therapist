@@ -252,7 +252,7 @@ void MainWindow::connect_to_df() {
 }
 
 void MainWindow::lost_df_connection() {
-    LOGD << "lost connection to DF";
+    LOGW << "lost connection to DF";
     if (m_df) {
         m_model->clear_all();
         delete m_df;
@@ -260,7 +260,8 @@ void MainWindow::lost_df_connection() {
         set_interface_enabled(false);
         m_lbl_status->setText(tr("Not Connected"));
         QMessageBox::information(this, tr("Unable to talk to Dwarf Fortress"),
-            tr("Dwarf Fortress has either stopped running, or you unloaded your game. Please re-connect when a fort is loaded."));
+            tr("Dwarf Fortress has either stopped running, or you unloaded "
+               "your game. Please re-connect when a fort is loaded."));
     }
 }
 
@@ -347,12 +348,13 @@ void MainWindow::version_check_finished(bool error) {
             mb->setWindowTitle(tr("Update Available"));
             mb->setText(tr("A newer version of this application is available."));
             QString link = "<br><a href=\"http://code.google.com/p/dwarftherapist/downloads/list\">Download v" + newest_v.to_string() + "</a>";
-            mb->setInformativeText(QString("You are currently running v%1. %2").arg(our_v.to_string()).arg(link));
+            mb->setInformativeText(tr("You are currently running v%1. %2").arg(our_v.to_string()).arg(link));
             mb->exec();
         } else if (m_show_result_on_equal) {
             QMessageBox *mb = new QMessageBox(this);
             mb->setWindowTitle(tr("Up to Date"));
-            mb->setText(tr("You are running the most recent version of Dwarf Therapist."));
+            mb->setText(tr("You are running the most recent version of Dwarf "
+                           "Therapist."));
             mb->exec();
         }
         m_about_dialog->set_latest_version(newest_v);

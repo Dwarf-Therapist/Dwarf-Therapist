@@ -180,7 +180,8 @@ void Scanner::brute_force_read() {
     set_ui_enabled(false);
     bool ok; // for base conversions
     uint addr = ui->le_address->text().toUInt(&ok, 16);
-    switch(ui->cb_interpret_as_type->currentIndex()) {
+    if (m_df && m_df->is_ok()) {
+        switch(ui->cb_interpret_as_type->currentIndex()) {
         case 0: // std::string
             ui->le_read_output->setText(m_df->read_string(addr));
             break;
@@ -208,15 +209,21 @@ void Scanner::brute_force_read() {
         case 6: // std::vector<void*>
             {
                 QVector<uint> addresses = m_df->enumerate_vector(addr);
-                ui->text_output->append(QString("Vector at 0x%1 contains %2 entries...").arg(addr, 8, 16, QChar('0')).arg(addresses.size()));
+                ui->text_output->append(QString("Vector at 0x%1 contains %2 "
+                                                "entries...").arg(hexify(addr))
+                                        .arg(addresses.size()));
                 foreach(uint a, addresses) {
-                    ui->text_output->append(QString("0x%1").arg(a, 8, 16, QChar('0')));
+                    ui->text_output->append(hexify(a));
                 }
             }
             break;
         case 7: // raw
             ui->text_output->append(m_df->pprint(addr, 0xA00));
             break;
+        }
+    } else {
+        LOGE << "Cannot brute-force read. DF Connection is not ok.";
+
     }
     set_ui_enabled(true);
 }

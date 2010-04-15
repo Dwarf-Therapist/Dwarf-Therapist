@@ -7,6 +7,7 @@ class MemoryLayout {
 public:
     MemoryLayout(uint checksum);
 
+    QString filename() {return m_filename;}
     bool is_valid() {return m_data != 0;}
     QString game_version() {return m_game_version;}
     uint address(QString key) {return m_addresses.value(key, -1);}
@@ -18,6 +19,7 @@ public:
 
 private:
     uint m_checksum;
+    QString m_filename;
     QHash<QString, uint> m_addresses;
     QHash<QString, uint> m_offsets;
     QHash<QString, uint> m_dwarf_offsets;
