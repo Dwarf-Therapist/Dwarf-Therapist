@@ -14,3 +14,4 @@ release/*
 ui/*.h
 log/*
 img/icons/*
+ui_*.h
