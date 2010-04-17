@@ -1,4 +1,5 @@
 #include "graphicsthing.h"
+#include "displaycell.h"
 #include <QtGui>
 
 GraphicsThing::GraphicsThing(const QString &name, QGraphicsItem *parent)
@@ -14,19 +15,19 @@ GraphicsThing::GraphicsThing(const QString &name, QGraphicsItem *parent)
 {
     setFlag(ItemIsSelectable, true);
     setAcceptsHoverEvents(true);
-    m_text->setFont(QFont("Helvetica", 9));
-    m_text->setDefaultTextColor(Qt::black);
+    m_text->setFont(QFont("Helvetica", 7));
+    m_text->setDefaultTextColor(Qt::white);
     m_text->setPos(1, 1);
     //this->setGraphicsEffect(new QGraphicsDropShadowEffect(this));
 
     m_items.clear();
-    for (int i = 0; i < 22; ++i) {
-        QGraphicsRectItem *r = new QGraphicsRectItem(this);
-        r->setPen(QPen(Qt::gray));
-        r->setBrush(Qt::black);
-        r->hide();
-        r->setRect(0, 0, 16, 16);
-        m_items << r;
+    for (int i = 0; i < 25; ++i) {
+        DisplayCell *cell = new DisplayCell(this);
+        int x = boundingRect().width() + 4;
+        int y = (boundingRect().height() - cell->boundingRect().height()) / 2;
+        cell->setPos(x, y);
+        cell->hide();
+        m_items << cell;
     }
 }
 
@@ -39,30 +40,55 @@ QRectF GraphicsThing::boundingRect() const {
 }
 
 void GraphicsThing::paint(QPainter *p, const QStyleOptionGraphicsItem *opt, QWidget *w) {
-    p->save();
+    /*p->save();
     p->setPen(QPen(QColor(192, 192, 192, 255), 1));
     p->setBrush(m_hovering ? m_bg_hover_brush : m_bg_brush);
     QRectF r = boundingRect();
     p->drawRect(0, 0, r.width(), r.height());
-    p->restore();
+    p->restore();*/
 }
 
 void GraphicsThing::collapse() {
     m_expanded = false;
-    foreach(QGraphicsItem *r, m_items) {
-        r->setPos(0, 0);
-        r->hide();
+    int x = boundingRect().width() + 4;
+    m_animation->stop();
+    m_animation->clear();
+    foreach(DisplayCell *cell, m_items) {
+        int y = (boundingRect().height() - cell->boundingRect().height()) / 2;
+        QPropertyAnimation *ani = new QPropertyAnimation(cell, "pos",
+                                                         m_animation);
+        ani->setDuration(450);
+        ani->setStartValue(cell->pos());
+        ani->setEndValue(QPointF(x, y));
+        QEasingCurve curve(QEasingCurve::InCubic);
+        curve.setAmplitude(.25);
+        curve.setPeriod(.25);
+        ani->setEasingCurve(curve);
+        connect(ani, SIGNAL(finished()), cell, SLOT(hide_me()));
     }
+    m_animation->start();
 }
 
 void GraphicsThing::expand_right() {
     m_expanded = true;
     int x = boundingRect().width() + 4;
-    foreach(QGraphicsItem *item, m_items) {
-        item->setPos(x, 0);
-        item->show();
-        x += item->boundingRect().width() + 4;
+    m_animation->stop();
+    m_animation->clear();
+    foreach(DisplayCell *cell, m_items) {
+        QPropertyAnimation *ani = new QPropertyAnimation(cell, "pos",
+                                                         m_animation);
+        ani->setDuration(500);
+        ani->setStartValue(cell->pos());
+        ani->setEndValue(QPointF(x, cell->pos().y()));
+        QEasingCurve curve(QEasingCurve::OutBounce);
+        curve.setAmplitude(1.0);
+        curve.setPeriod(1.25);
+        ani->setEasingCurve(curve);
+        cell->show();
+        m_animation->addAnimation(ani);
+        x += cell->boundingRect().width() + 4;
     }
+    m_animation->start();
 }
 
 void GraphicsThing::set_min_width(int min_width) {
@@ -74,7 +100,7 @@ void GraphicsThing::set_min_width(int min_width) {
 
 /* Mouse Handlers */
 void GraphicsThing::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
-    qDebug() << "mouse enter";
+    qDebug() << "mouse enter" << event->pos();
     m_hovering = true;
     m_is_click = false;
     update();

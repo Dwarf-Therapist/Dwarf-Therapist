@@ -8,9 +8,10 @@ static const int box_h = 16;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , m_scene(new QGraphicsScene(this))
+    , m_scene(new QGraphicsScene(0, 0, 800, 400, this))
     , m_view(new QGraphicsView(m_scene, this))
 {
+    resize(800, 400);
     m_view->setInteractive(true);
     m_view->setMouseTracking(true);
     m_view->setBackgroundBrush(QBrush(QColor(48, 48, 48)));
@@ -54,7 +55,7 @@ void MainWindow::layout_things() {
         QRectF r = t->boundingRect();
         qDebug() << "Y:" << y << "RECT:" << r;
         t->setPos(0, y);
-        y += r.height() + 5;
+        y += r.height();
         if (r.width() > max_width)
             max_width = r.width();
     }
@@ -62,4 +63,5 @@ void MainWindow::layout_things() {
     foreach(GraphicsThing *t, m_things) {
         t->set_min_width(max_width);
     }
+    m_view->ensureVisible(m_things.at(0));;
 }

@@ -3,13 +3,16 @@
 
 #include <QtGui>
 
+class DisplayCell;
+
 class GraphicsThing : public QGraphicsObject {
     Q_OBJECT
 public:
     GraphicsThing(const QString &name, QGraphicsItem *parent = 0);
 
     QRectF boundingRect() const;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+               QWidget *widget);
 
 protected:
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
@@ -27,7 +30,7 @@ private:
     QString m_name;
     bool m_expanded;
     QGraphicsTextItem *m_text;
-    QList<QGraphicsItem*> m_items;
+    QList<DisplayCell*> m_items;
     int m_min_width;
     QBrush m_bg_brush;
     QBrush m_bg_hover_brush;
