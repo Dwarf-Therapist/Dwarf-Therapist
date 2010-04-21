@@ -2,7 +2,7 @@ TEMPLATE = app
 TARGET = DwarfTherapist
 QT += network \
     script
-CONFIG(debug, debug|release) {
+CONFIG(debug, debug|release) { 
     message(Debug Mode)
     DESTDIR = bin/debug
     MOC_DIR = bin/debug
@@ -10,7 +10,7 @@ CONFIG(debug, debug|release) {
     RCC_DIR = bin/debug
     OBJECTS_DIR = bin/debug
 }
-else {
+else { 
     message(Release Mode)
     DESTDIR = bin/release
     MOC_DIR = bin/release
@@ -24,21 +24,22 @@ INCLUDEPATH += inc \
     inc/docks \
     ui \
     thirdparty/qtcolorpicker-2.6
-win32 {
+win32 { 
     message(Setting up for Windows)
     RC_FILE = DwarfTherapist.rc
     LIBS += -lpsapi
     HEADERS += inc/dfinstancewindows.h
     SOURCES += src/dfinstancewindows.cpp
 }
-else:unix {
+else:unix { 
     message(Setting up for Linux)
+    
     # force 32 bit compile
     CFLAGS = -m32
     HEADERS += inc/dfinstancelinux.h
     SOURCES += src/dfinstancelinux.cpp
 }
-else:macx {
+else:macx { 
     message(Setting up for OSX)
     HEADERS += ./inc/dfinstanceosx.h
     SOURCES += ./src/dfinstanceosx.cpp
@@ -105,7 +106,8 @@ HEADERS += inc/win_structs.h \
     thirdparty/qtcolorpicker-2.6/qtcolorpicker.h \
     inc/vectorsearchjob.h \
     inc/dwarfraceindexsearchjob.h \
-    inc/creaturevectorsearchjob.h
+    inc/creaturevectorsearchjob.h \
+    inc/positionvectorsearchjob.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \

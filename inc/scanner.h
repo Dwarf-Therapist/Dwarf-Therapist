@@ -31,37 +31,38 @@ class DFInstance;
 class ScannerThread;
 
 class Scanner: public QDialog {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	Scanner(DFInstance *df, MainWindow *parent = 0);
-	virtual ~Scanner(){}
+    Scanner(DFInstance *df, MainWindow *parent = 0);
+    virtual ~Scanner(){}
 
-	public slots:
-		void report_address(const QString&, const uint&);
-		void report_offset(const QString&, const int&);
-		void cancel_scan();
+    public slots:
+        void report_address(const QString&, const uint&);
+        void report_offset(const QString&, const int&);
+        void cancel_scan();
 
 private:
-	DFInstance *m_df;
-	ScannerThread *m_thread;
-	Ui::ScannerDialog *ui;
-	bool m_stop_scanning;
+    DFInstance *m_df;
+    ScannerThread *m_thread;
+    Ui::ScannerDialog *ui;
+    bool m_stop_scanning;
 
-	void set_ui_enabled(bool enabled);
-	void prepare_new_thread(SCANNER_JOB_TYPE type);
-	void run_thread_and_wait();
+    void set_ui_enabled(bool enabled);
+    void prepare_new_thread(SCANNER_JOB_TYPE type);
+    void run_thread_and_wait();
 
 
-	private slots:
-		void find_creature_vector();
-		void find_dwarf_race_index();
-		void find_translations_vector();
-		void find_vector_by_length();
-		void find_null_terminated_string();
-		void find_number_or_address();
-		void find_stone_vector();
-		void find_metal_vector();
-		void brute_force_read();
+    private slots:
+        void find_creature_vector();
+        void find_dwarf_race_index();
+        void find_translations_vector();
+        void find_vector_by_length();
+        void find_null_terminated_string();
+        void find_number_or_address();
+        void find_stone_vector();
+        void find_metal_vector();
+        void find_position_vector();
+        void brute_force_read();
 
 };
 #endif

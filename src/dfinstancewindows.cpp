@@ -66,6 +66,8 @@ uint DFInstanceWindows::calculate_checksum() {
     }
 
     uint timestamp = read_uint(pe_header + 4 + 2 * 2);
+    QDateTime compile_timestamp = QDateTime::fromTime_t(timestamp);
+    LOGD << "Target EXE was compiled" << compile_timestamp;
     return timestamp;
 }
 
@@ -88,13 +90,13 @@ QVector<uint> DFInstanceWindows::enumerate_vector(const uint &addr) {
     Q_ASSERT(end % 4 == 0);
     Q_ASSERT(entries < 5000);
 
-    int count = 0;
     for (uint ptr = start; ptr < end; ptr += 4 ) {
         uint a = read_uint(ptr);
-        addresses.append(a);
-        count++;
+        if (is_valid_address(a)) {
+            addresses.append(a);
+        }
     }
-    TRACE << "FOUND" << count << "addresses in vector";
+    TRACE << "FOUND" << addresses.size()<< "addresses in vector";
     return addresses;
 }
 
@@ -187,11 +189,13 @@ uint DFInstanceWindows::read_raw(const uint &addr, const uint &bytes,
     uint bytes_read = 0;
     ReadProcessMemory(m_proc, (LPCVOID)addr, (void*)buffer,
                       sizeof(uchar) * bytes, (DWORD*)&bytes_read);
+#ifdef _DEBUG
     if (bytes_read != bytes) {
         LOGW << "tried to get" << bytes << "bytes from" << hex << addr
             << "but only got" << dec << bytes_read << "Windows System Error("
             << dec << GetLastError() << ")";
     }
+#endif
     return bytes_read;
 }
 

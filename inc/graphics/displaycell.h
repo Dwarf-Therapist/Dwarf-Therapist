@@ -1,6 +1,6 @@
 /*
 Dwarf Therapist
-Copyright (c) 2009 Trey Stout (chmod)
+Copyright (c) 2010 Trey Stout (chmod)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,46 +20,35 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef SCANNER_JOB_H
-#define SCANNER_JOB_H
+#ifndef DISPLAYCELL_H
+#define DISPLAYCELL_H
 
-#include <QObject>
-#include "dfinstance.h"
+#include <QtGui>
 
-typedef enum {
-    FIND_TRANSLATIONS_VECTOR,
-    FIND_STONE_VECTOR,
-    FIND_METAL_VECTOR,
-    FIND_NULL_TERMINATED_STRING,
-    FIND_VECTORS_OF_SIZE,
-    FIND_DWARF_RACE_INDEX,
-    FIND_CREATURE_VECTOR,
-    FIND_POSITION_VECTOR
-} SCANNER_JOB_TYPE;
+static const int box_w = 16;
+static const int box_h = 16;
 
-
-class ScannerJob : public QObject {
+class DisplayCell : public QGraphicsObject {
     Q_OBJECT
 public:
-    ScannerJob(SCANNER_JOB_TYPE job_type);
-    virtual ~ScannerJob();
-    SCANNER_JOB_TYPE job_type();
-    DFInstance *df();
+    DisplayCell(QGraphicsItem *parent = 0);
+
+    QRectF boundingRect() const;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+               QWidget *widget);
+
+public slots:
+    void hide_me() {hide();}
+    void show_me() {show();}
 
 protected:
-    SCANNER_JOB_TYPE m_job_type;
-    bool m_ok;
-    DFInstance *m_df;
-    bool get_DFInstance();
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
 
-signals:
-    void main_scan_total_steps(int);
-    void main_scan_progress(int);
-    void sub_scan_total_steps(int);
-    void sub_scan_progress(int);
-    void found_address(const QString&, const uint&);
-    void found_offset(const QString&, const int&);
-    void scan_message(const QString&);
-    void quit();
+private:
 };
-#endif
+
+#endif // DISPLAYCELL_H

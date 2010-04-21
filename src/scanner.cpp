@@ -157,6 +157,13 @@ void Scanner::find_metal_vector() {
     set_ui_enabled(true);
 }
 
+void Scanner::find_position_vector() {
+    set_ui_enabled(false);
+    prepare_new_thread(FIND_POSITION_VECTOR);
+    run_thread_and_wait();
+    set_ui_enabled(true);
+}
+
 void Scanner::find_null_terminated_string() {
     set_ui_enabled(false);
     prepare_new_thread(FIND_NULL_TERMINATED_STRING);

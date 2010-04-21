@@ -319,7 +319,7 @@ QVector<uint> DFInstance::find_vectors(const uint &num_entries,
         if (seg->size > max_segment_size)
             max_segment_size = seg->size;
     }
-    LOGD << "Largest segment size is" << max_segment_size;
+    //LOGD << "Largest segment size is" << max_segment_size;
 
     // this buffer will hold the entire memory segment (may need to toned down a bit)
     char *buffer = new char[max_segment_size];
@@ -329,8 +329,8 @@ QVector<uint> DFInstance::find_vectors(const uint &num_entries,
     }
 
     foreach(MemorySegment *seg, m_regions) {
-        LOGD << "SCANNING REGION" << hex << seg->start_addr << "-"
-                << seg->end_addr << "BYTES:" << dec << seg->size;
+        //LOGD << "SCANNING REGION" << hex << seg->start_addr << "-"
+        //        << seg->end_addr << "BYTES:" << dec << seg->size;
         memset(buffer, 0, seg->size); // 0 out the buffer
 
         // this may read multiple times to put the entire region in the buffer

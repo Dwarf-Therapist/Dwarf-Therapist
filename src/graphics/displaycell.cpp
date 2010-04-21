@@ -1,6 +1,6 @@
 /*
 Dwarf Therapist
-Copyright (c) 2009 Trey Stout (chmod)
+Copyright (c) 2010 Trey Stout (chmod)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,46 +20,43 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef SCANNER_JOB_H
-#define SCANNER_JOB_H
+#include "displaycell.h"
 
-#include <QObject>
-#include "dfinstance.h"
+DisplayCell::DisplayCell(QGraphicsItem *parent)
+    : QGraphicsObject(parent)
+{
+    setAcceptHoverEvents(true);
+}
 
-typedef enum {
-    FIND_TRANSLATIONS_VECTOR,
-    FIND_STONE_VECTOR,
-    FIND_METAL_VECTOR,
-    FIND_NULL_TERMINATED_STRING,
-    FIND_VECTORS_OF_SIZE,
-    FIND_DWARF_RACE_INDEX,
-    FIND_CREATURE_VECTOR,
-    FIND_POSITION_VECTOR
-} SCANNER_JOB_TYPE;
+QRectF DisplayCell::boundingRect() const {
+    return QRectF(0, 0, box_w, box_h);
+}
 
+void DisplayCell::paint(QPainter *p, const QStyleOptionGraphicsItem *opt,
+                        QWidget *widget) {
+    p->save();
+    p->setPen(QPen(Qt::black, 0.5));
+    p->setBrush(Qt::gray);
+    p->drawRect(boundingRect());
+    p->restore();
+}
 
-class ScannerJob : public QObject {
-    Q_OBJECT
-public:
-    ScannerJob(SCANNER_JOB_TYPE job_type);
-    virtual ~ScannerJob();
-    SCANNER_JOB_TYPE job_type();
-    DFInstance *df();
+void DisplayCell::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
 
-protected:
-    SCANNER_JOB_TYPE m_job_type;
-    bool m_ok;
-    DFInstance *m_df;
-    bool get_DFInstance();
+}
 
-signals:
-    void main_scan_total_steps(int);
-    void main_scan_progress(int);
-    void sub_scan_total_steps(int);
-    void sub_scan_progress(int);
-    void found_address(const QString&, const uint&);
-    void found_offset(const QString&, const int&);
-    void scan_message(const QString&);
-    void quit();
-};
-#endif
+void DisplayCell::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
+
+}
+
+void DisplayCell::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+
+}
+
+void DisplayCell::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+
+}
+
+void DisplayCell::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) {
+
+}
