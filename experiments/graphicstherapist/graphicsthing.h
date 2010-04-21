@@ -20,6 +20,7 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
 public slots:
     void collapse();
@@ -37,6 +38,8 @@ private:
     bool m_hovering;
     bool m_is_click;
     QParallelAnimationGroup *m_animation;
+
+    void on_added_to_scene(QGraphicsScene *scene);
 };
 
 #endif // GRAPHICSTHING_H

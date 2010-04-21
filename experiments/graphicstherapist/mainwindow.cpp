@@ -11,16 +11,17 @@ MainWindow::MainWindow(QWidget *parent)
     , m_scene(new QGraphicsScene(0, 0, 800, 400, this))
     , m_view(new QGraphicsView(m_scene, this))
 {
-    resize(800, 400);
     m_view->setInteractive(true);
     m_view->setMouseTracking(true);
     m_view->setBackgroundBrush(QBrush(QColor(48, 48, 48)));
     m_view->setRenderHint(QPainter::Antialiasing, true);
+    m_view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 
     ui->setupUi(this);
     srand(QTime(0,0,0).secsTo(QTime::currentTime()));
 
     this->setCentralWidget(m_view);
+    resize(850, 450);
 
     m_things.clear();
     m_things << new GraphicsThing("Urist McFoobizzle");
@@ -30,6 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
         m_scene->addItem(t);
     }
     layout_things();
+
 }
 
 MainWindow::~MainWindow() {
@@ -53,7 +55,7 @@ void MainWindow::layout_things() {
     int max_width = 0;
     foreach(GraphicsThing *t, m_things) {
         QRectF r = t->boundingRect();
-        qDebug() << "Y:" << y << "RECT:" << r;
+        //qDebug() << "Y:" << y << "RECT:" << r;
         t->setPos(0, y);
         y += r.height();
         if (r.width() > max_width)
