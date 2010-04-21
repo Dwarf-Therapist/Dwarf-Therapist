@@ -15,3 +15,6 @@ ui/*.h
 log/*
 img/icons/*
 ui_*.h
+moc_*.cpp
+moc_*.h
+*.o
