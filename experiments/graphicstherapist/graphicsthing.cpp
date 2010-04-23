@@ -25,15 +25,17 @@ GraphicsThing::GraphicsThing(const QString &name, QGraphicsItem *parent)
     connect(this, SIGNAL(single_click()), SLOT(toggle_expand()));
 
     m_items.clear();
-    for (int i = 0; i < 25; ++i) {
+    for (int i = 0; i < 32; ++i) {
         DisplayCell *cell = new DisplayCell(this);
+        //cell->setPos(100, 21);
         cell->hide();
         m_items << cell;
     }
 }
 
 void GraphicsThing::on_added_to_scene(QGraphicsScene *scene) {
-    qDebug() << "added to scene:" << scene;
+    Q_UNUSED(scene);
+    //qDebug() << "added to scene:" << scene;
 }
 
 QRectF GraphicsThing::boundingRect() const {
@@ -42,14 +44,18 @@ QRectF GraphicsThing::boundingRect() const {
         w = m_text->boundingRect().width();
     }
     QRectF bounds(0, 0, w, m_text->boundingRect().height() + 2);
+
     foreach(QGraphicsItem *child, childItems()) {
-        QPointF child_pos = child->pos();
-        QRectF child_rect = child->boundingRect();
-        if (child_pos.x() + child_rect.width() > bounds.width()) {
-            bounds.setWidth(child_pos.x() + child_rect.width() + 2);
+        QPointF p = child->pos();
+        QRectF r = child->boundingRect();
+
+        float x = mapFromItem(child, r.topRight()).x();
+        float y = mapFromItem(child, r.bottomRight()).y();
+        if (x > bounds.width()) {
+            bounds.setWidth(x + 2);
         }
-        if ((child_pos.y() + child_rect.height()) > bounds.height()) {
-            bounds.setHeight(child_pos.y() + child_rect.height() + 2);
+        if (y > bounds.height()) {
+            bounds.setHeight(y + 2);
         }
     }
     return bounds;
@@ -79,11 +85,11 @@ void GraphicsThing::toggle_expand() {
 void GraphicsThing::collapse() {
     m_expanded = false;
     int x = 0;
+    int y = boundingRect().height() / 2.0f;
     m_animation->stop();
     m_animation->clear();
     prepareGeometryChange();
     foreach(DisplayCell *cell, m_items) {
-        int y = (boundingRect().height() - cell->boundingRect().height()) / 2;
         QPropertyAnimation *ani = new QPropertyAnimation(cell, "pos",
                                                          m_animation);
         ani->setDuration(450);
@@ -105,17 +111,15 @@ void GraphicsThing::expand_right() {
     m_expanded = true;
     prepareGeometryChange();
     int x = m_min_width + 4;
+    int y = boundingRect().height() / 2.0f;
     m_animation->stop();
     m_animation->clear();
     foreach(DisplayCell *cell, m_items) {
-        cell->setPos(boundingRect().width() - cell->boundingRect().width(),
-                     (boundingRect().height() -
-                      cell->boundingRect().height()) / 2.0f);
         QPropertyAnimation *ani = new QPropertyAnimation(cell, "pos",
                                                          m_animation);
         ani->setDuration(500);
         ani->setStartValue(cell->pos());
-        ani->setEndValue(QPointF(x, cell->pos().y()));
+        ani->setEndValue(QPointF(x, y));
         QEasingCurve curve(QEasingCurve::OutCubic);
         curve.setAmplitude(1.0);
         curve.setPeriod(1.25);

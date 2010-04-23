@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->gv_main->setMouseTracking(true);
     ui->gv_main->setBackgroundBrush(QBrush(QColor(48, 48, 48)));
     ui->gv_main->setRenderHint(QPainter::Antialiasing, true);
+    ui->gv_main->setDragMode(QGraphicsView::NoDrag);
     //ui->gv_main->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 
     m_things.clear();
@@ -58,10 +59,9 @@ void MainWindow::layout_things() {
         if (r.width() > max_width)
             max_width = r.width();
     }
-    qDebug() << "max width" << max_width;
+    //qDebug() << "max width" << max_width;
     foreach(GraphicsThing *t, m_things) {
         t->set_min_width(max_width);
-        qDebug() << t << "rect:" << t->boundingRect();
     }
     ui->gv_main->ensureVisible(m_things.at(0));;
 }

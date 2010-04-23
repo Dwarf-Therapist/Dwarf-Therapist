@@ -12,9 +12,7 @@ public:
     ToolTip(const QString &title, QGraphicsItem *parent = 0)
         : QGraphicsWidget(parent)
         , m_title(title)
-    {
-        setOpacity(0.5);
-    }
+    {}
 
     void on_added_to_scene(QGraphicsScene *scene) {
         QGraphicsWidget *label = scene->addWidget(new QLabel(m_title));
@@ -50,9 +48,15 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget);
 
+public slots:
+    void toggle();
+
 private:
     ToolTip *m_tooltip;
     bool m_show_tooltip;
+    bool m_labor_on;
+    QBrush m_bg;
+    QBrush m_bg_selected;
     void on_added_to_scene(QGraphicsScene *scene);
 
 private slots:
