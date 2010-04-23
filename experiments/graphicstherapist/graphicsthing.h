@@ -11,10 +11,9 @@ class GraphicsThing : public BaseGraphicsObject {
 public:
     GraphicsThing(const QString &name, QGraphicsItem *parent = 0);
 
-    /*QRectF boundingRect() const;
+    QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-               QWidget *widget = 0);
-               */
+               QWidget *widget);
 
 public slots:
     void toggle_expand();

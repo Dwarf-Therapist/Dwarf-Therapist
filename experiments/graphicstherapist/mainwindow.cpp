@@ -19,18 +19,16 @@ MainWindow::MainWindow(QWidget *parent)
     ui->gv_main->setMouseTracking(true);
     ui->gv_main->setBackgroundBrush(QBrush(QColor(48, 48, 48)));
     ui->gv_main->setRenderHint(QPainter::Antialiasing, true);
-    ui->gv_main->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    //ui->gv_main->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 
     m_things.clear();
-    //m_things << new GraphicsThing("Urist McFoobizzle");
-    //m_things << new GraphicsThing("Cog Zanderpither");
-    //m_things << new GraphicsThing("Wank WaggleFoot");
+    m_things << new GraphicsThing("Urist McFoobizzle");
+    m_things << new GraphicsThing("Cog Zanderpither");
+    m_things << new GraphicsThing("Wank WaggleFoot");
     foreach(GraphicsThing *t, m_things) {
         m_scene->addItem(t);
     }
-    BaseGraphicsObject *obj = new BaseGraphicsObject;
-    m_scene->addItem(obj);
-    //layout_things();
+    layout_things();
 }
 
 MainWindow::~MainWindow() {

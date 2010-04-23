@@ -14,7 +14,7 @@ public:
                QWidget *widget = 0);
 
 public slots:
-    void update() { QGraphicsObject::update(); }
+    void maybe_update();
 
 protected:
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);

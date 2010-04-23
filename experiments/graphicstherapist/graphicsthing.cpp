@@ -9,7 +9,7 @@ GraphicsThing::GraphicsThing(const QString &name, QGraphicsItem *parent)
     , m_hovering(false)
     , m_text(new QGraphicsTextItem(name, this))
     , m_min_width(0) // boundingRect() relies on this being init'd to 0
-    , m_bg_brush(QBrush(QColor(0, 120, 0, 255)))
+    , m_bg_brush(QBrush(QColor(0, 120, 0, 128)))
     , m_bg_hover_brush(QBrush(QColor(64, 64, 64, 128)))
     , m_animation(new QParallelAnimationGroup(this))
 {
@@ -25,20 +25,17 @@ GraphicsThing::GraphicsThing(const QString &name, QGraphicsItem *parent)
     connect(this, SIGNAL(single_click()), SLOT(toggle_expand()));
 
     m_items.clear();
-    /*
     for (int i = 0; i < 25; ++i) {
         DisplayCell *cell = new DisplayCell(this);
         cell->hide();
         m_items << cell;
     }
-    */
 }
 
 void GraphicsThing::on_added_to_scene(QGraphicsScene *scene) {
     qDebug() << "added to scene:" << scene;
-    update();
 }
-/*
+
 QRectF GraphicsThing::boundingRect() const {
     int w = m_min_width;
     if (w == 0) {
@@ -60,20 +57,17 @@ QRectF GraphicsThing::boundingRect() const {
 
 void GraphicsThing::paint(QPainter *p, const QStyleOptionGraphicsItem *opt,
                           QWidget *w) {
-    Q_UNUSED(opt);
     Q_UNUSED(w);
     p->save();
-    p->setPen(QPen(QColor(192, 192, 192, 255), 1));
-    p->drawEllipse(10, 10, 20, 50);
-    //p->setBrush(Qt::NoBrush);
+    p->setPen(QPen(QColor(192, 192, 192), 0.5));
     p->setBrush(m_hovering ? m_bg_hover_brush : m_bg_brush);
-    QRectF r = boundingRect();
-    p->drawRect(1, 1, r.width() - 1, r.height() -1);
+    QRectF r = opt->rect.adjusted(0.5f, 0.5f, -0.5f, -0.5f);
+    p->fillRect(r, p->brush());
     p->drawLine(r.topLeft(), r.topRight());
     p->drawLine(r.bottomLeft(), r.bottomRight());
     p->restore();
 }
-*/
+
 void GraphicsThing::toggle_expand() {
     if (m_expanded) {
         collapse();
@@ -100,6 +94,9 @@ void GraphicsThing::collapse() {
         curve.setPeriod(.25);
         ani->setEasingCurve(curve);
         connect(ani, SIGNAL(finished()), cell, SLOT(hide_me()));
+        // if this is the first item, update ourselves as it moves
+        if (cell == m_items.at(0))
+            connect(ani, SIGNAL(valueChanged(QVariant)), SLOT(maybe_update()));
     }
     m_animation->start();
 }
@@ -119,7 +116,7 @@ void GraphicsThing::expand_right() {
         ani->setDuration(500);
         ani->setStartValue(cell->pos());
         ani->setEndValue(QPointF(x, cell->pos().y()));
-        QEasingCurve curve(QEasingCurve::OutBounce);
+        QEasingCurve curve(QEasingCurve::OutCubic);
         curve.setAmplitude(1.0);
         curve.setPeriod(1.25);
         ani->setEasingCurve(curve);
@@ -127,6 +124,9 @@ void GraphicsThing::expand_right() {
         cell->show();
         m_animation->addAnimation(ani);
         x += cell->boundingRect().width() + 4;
+        // if this is the first item, update ourselves as it moves
+        if (cell == m_items.at(0))
+            connect(ani, SIGNAL(valueChanged(QVariant)), SLOT(maybe_update()));
     }
     m_animation->start();
 }
@@ -147,11 +147,11 @@ void GraphicsThing::double_clicked(QPointF pos) {
 }
 
 void GraphicsThing::on_hover_start() {
-    //m_hovering = true;
-    //update();
+    m_hovering = true;
+    maybe_update();
 }
 
 void GraphicsThing::on_hover_stop() {
-    //m_hovering = false;
-    //update();
+    m_hovering = false;
+    maybe_update();
 }

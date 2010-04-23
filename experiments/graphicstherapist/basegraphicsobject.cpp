@@ -40,6 +40,11 @@ void BaseGraphicsObject::maybe_single_click() {
     m_double_clicked = false;
 }
 
+void BaseGraphicsObject::maybe_update() {
+    prepareGeometryChange();
+    //QGraphicsObject::update();
+}
+
 
 void BaseGraphicsObject::on_added_to_scene(QGraphicsScene *scene) {
     Q_UNUSED(scene);
