@@ -6,7 +6,6 @@
 static const int box_w = 16;
 static const int box_h = 16;
 
-
 class ToolTip : public QGraphicsWidget {
     Q_OBJECT
 public:
@@ -28,14 +27,12 @@ public:
     }
 
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) {
-        QVariant ret_val;
+        QVariant ret_val = QGraphicsItem::itemChange(change, value);
         if (change == ItemSceneChange) {
             QGraphicsScene *new_scene = value.value<QGraphicsScene*>();
             if (!scene() && new_scene) { // this was freshly added to new_scene
                 on_added_to_scene(new_scene);
             }
-        } else {
-            ret_val = QGraphicsItem::itemChange(change, value);
         }
         return ret_val;
     }
@@ -55,11 +52,13 @@ public:
 
 private:
     ToolTip *m_tooltip;
+    bool m_show_tooltip;
     void on_added_to_scene(QGraphicsScene *scene);
 
 private slots:
     void on_hover_start();
     void on_hover_stop();
+    void maybe_show_tooltip();
 };
 
 #endif // DISPLAYCELL_H
