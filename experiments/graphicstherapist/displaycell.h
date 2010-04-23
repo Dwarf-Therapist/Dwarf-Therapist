@@ -2,6 +2,7 @@
 #define DISPLAYCELL_H
 
 #include <QtGui>
+#include "basegraphicsobject.h"
 static const int box_w = 16;
 static const int box_h = 16;
 
@@ -13,7 +14,7 @@ public:
         : QGraphicsWidget(parent)
         , m_title(title)
     {
-        //setOpacity(0.5);
+        setOpacity(0.5);
     }
 
     void on_added_to_scene(QGraphicsScene *scene) {
@@ -42,7 +43,7 @@ private:
     QString m_title;
 };
 
-class DisplayCell : public QGraphicsObject {
+class DisplayCell : public BaseGraphicsObject {
     Q_OBJECT
 public:
     DisplayCell(QGraphicsItem *parent = 0);
@@ -52,19 +53,13 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget);
 
-public slots:
-    void hide_me() {hide();}
-    void show_me() {show();}
-
-protected:
-    void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
-
 private:
     ToolTip *m_tooltip;
+    void on_added_to_scene(QGraphicsScene *scene);
+
+private slots:
+    void on_hover_start();
+    void on_hover_stop();
 };
 
 #endif // DISPLAYCELL_H

@@ -15,6 +15,9 @@ public:
 
 public slots:
     void maybe_update();
+    void hide_me() {hide();}
+    void show_me() {show();}
+
 
 protected:
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);

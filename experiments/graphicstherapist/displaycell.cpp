@@ -2,12 +2,15 @@
 #include <QtGui>
 
 DisplayCell::DisplayCell(QGraphicsItem *parent)
-    : QGraphicsObject(parent)
+    : BaseGraphicsObject(parent)
     , m_tooltip(new ToolTip("My Tooltip"))
 {
     setAcceptHoverEvents(true);
-    //m_tooltip->setZValue(1);
+    m_tooltip->setZValue(1);
     m_tooltip->hide();
+
+    connect(this, SIGNAL(hover_start()), SLOT(on_hover_start()));
+    connect(this, SIGNAL(hover_stop()), SLOT(on_hover_stop()));
 }
 
 DisplayCell::~DisplayCell() {
@@ -28,9 +31,9 @@ void DisplayCell::paint(QPainter *p, const QStyleOptionGraphicsItem *opt,
     p->restore();
 }
 
-void DisplayCell::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
+void DisplayCell::on_hover_start() {
     //prepareGeometryChange();
-    //qDebug() << "Hover";
+    qDebug() << "Hover";
     //m_tooltip->setPos(mapFromScene(event->pos()));
     //m_tooltip->setPos(boundingRect().bottomRight() + QPoint(4, 4));
     //m_tooltip->setPos(mapToScene(boundingRect().bottomRight()));
@@ -39,20 +42,12 @@ void DisplayCell::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
     scene()->update(m_tooltip->boundingRect());
 }
 
-void DisplayCell::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
-    //qDebug() << "Leave";
+void DisplayCell::on_hover_stop() {
+    qDebug() << "Leave";
     prepareGeometryChange();
     m_tooltip->hide();
 }
 
-void DisplayCell::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-
-}
-
-void DisplayCell::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-
-}
-
-void DisplayCell::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) {
-
+void DisplayCell::on_added_to_scene(QGraphicsScene *scene) {
+    scene->addItem(m_tooltip);
 }
