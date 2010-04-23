@@ -9,29 +9,28 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , m_scene(new QGraphicsScene(0, 0, 800, 400, this))
-    , m_view(new QGraphicsView(m_scene, this))
 {
-    m_view->setInteractive(true);
-    m_view->setMouseTracking(true);
-    m_view->setBackgroundBrush(QBrush(QColor(48, 48, 48)));
-    m_view->setRenderHint(QPainter::Antialiasing, true);
-    m_view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-
     ui->setupUi(this);
     srand(QTime(0,0,0).secsTo(QTime::currentTime()));
+    resize(850, 550);
 
-    this->setCentralWidget(m_view);
-    resize(850, 450);
+    ui->gv_main->setScene(m_scene);
+    ui->gv_main->setInteractive(true);
+    ui->gv_main->setMouseTracking(true);
+    ui->gv_main->setBackgroundBrush(QBrush(QColor(48, 48, 48)));
+    ui->gv_main->setRenderHint(QPainter::Antialiasing, true);
+    ui->gv_main->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 
     m_things.clear();
-    m_things << new GraphicsThing("Urist McFoobizzle");
-    m_things << new GraphicsThing("Cog Zanderpither");
-    m_things << new GraphicsThing("Wank WaggleFoot");
+    //m_things << new GraphicsThing("Urist McFoobizzle");
+    //m_things << new GraphicsThing("Cog Zanderpither");
+    //m_things << new GraphicsThing("Wank WaggleFoot");
     foreach(GraphicsThing *t, m_things) {
         m_scene->addItem(t);
     }
-    layout_things();
-
+    BaseGraphicsObject *obj = new BaseGraphicsObject;
+    m_scene->addItem(obj);
+    //layout_things();
 }
 
 MainWindow::~MainWindow() {
@@ -64,6 +63,15 @@ void MainWindow::layout_things() {
     qDebug() << "max width" << max_width;
     foreach(GraphicsThing *t, m_things) {
         t->set_min_width(max_width);
+        qDebug() << t << "rect:" << t->boundingRect();
     }
-    m_view->ensureVisible(m_things.at(0));;
+    ui->gv_main->ensureVisible(m_things.at(0));;
+}
+
+void MainWindow::set_scale(double new_scale) {
+    if (ui->gv_main) {
+        ui->gv_main->resetMatrix();
+        ui->gv_main->scale(new_scale, new_scale);
+        ui->gv_main->centerOn(0, 0);
+    }
 }

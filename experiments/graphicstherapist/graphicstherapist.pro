@@ -8,8 +8,10 @@ TEMPLATE = app
 SOURCES += main.cpp \
     mainwindow.cpp \
     graphicsthing.cpp \
-    displaycell.cpp
+    displaycell.cpp \
+    basegraphicsobject.cpp
 HEADERS += mainwindow.h \
     graphicsthing.h \
-    displaycell.h
+    displaycell.h \
+    basegraphicsobject.h
 FORMS += mainwindow.ui

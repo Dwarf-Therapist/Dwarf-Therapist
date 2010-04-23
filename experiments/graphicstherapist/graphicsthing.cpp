@@ -3,14 +3,14 @@
 #include <QtGui>
 
 GraphicsThing::GraphicsThing(const QString &name, QGraphicsItem *parent)
-    : QGraphicsObject(parent)
+    : BaseGraphicsObject(parent)
     , m_name(name)
     , m_expanded(false)
-    , m_text(new QGraphicsTextItem(name, this))
-    , m_min_width(0)
-    , m_bg_brush(QBrush(QColor(0, 0, 0, 255)))
-    , m_bg_hover_brush(QBrush(QColor(64, 64, 64, 128)))
     , m_hovering(false)
+    , m_text(new QGraphicsTextItem(name, this))
+    , m_min_width(0) // boundingRect() relies on this being init'd to 0
+    , m_bg_brush(QBrush(QColor(0, 120, 0, 255)))
+    , m_bg_hover_brush(QBrush(QColor(64, 64, 64, 128)))
     , m_animation(new QParallelAnimationGroup(this))
 {
     setFlag(ItemIsSelectable, true);
@@ -20,14 +20,25 @@ GraphicsThing::GraphicsThing(const QString &name, QGraphicsItem *parent)
     m_text->setPos(1, 1);
     //this->setGraphicsEffect(new QGraphicsDropShadowEffect(this));
 
+    connect(this, SIGNAL(hover_start()), SLOT(on_hover_start()));
+    connect(this, SIGNAL(hover_stop()), SLOT(on_hover_stop()));
+    connect(this, SIGNAL(single_click()), SLOT(toggle_expand()));
+
     m_items.clear();
+    /*
     for (int i = 0; i < 25; ++i) {
         DisplayCell *cell = new DisplayCell(this);
         cell->hide();
         m_items << cell;
     }
+    */
 }
 
+void GraphicsThing::on_added_to_scene(QGraphicsScene *scene) {
+    qDebug() << "added to scene:" << scene;
+    update();
+}
+/*
 QRectF GraphicsThing::boundingRect() const {
     int w = m_min_width;
     if (w == 0) {
@@ -49,12 +60,26 @@ QRectF GraphicsThing::boundingRect() const {
 
 void GraphicsThing::paint(QPainter *p, const QStyleOptionGraphicsItem *opt,
                           QWidget *w) {
+    Q_UNUSED(opt);
+    Q_UNUSED(w);
     p->save();
     p->setPen(QPen(QColor(192, 192, 192, 255), 1));
+    p->drawEllipse(10, 10, 20, 50);
+    //p->setBrush(Qt::NoBrush);
     p->setBrush(m_hovering ? m_bg_hover_brush : m_bg_brush);
     QRectF r = boundingRect();
-    p->drawRect(0, 0, r.width(), r.height());
+    p->drawRect(1, 1, r.width() - 1, r.height() -1);
+    p->drawLine(r.topLeft(), r.topRight());
+    p->drawLine(r.bottomLeft(), r.bottomRight());
     p->restore();
+}
+*/
+void GraphicsThing::toggle_expand() {
+    if (m_expanded) {
+        collapse();
+    } else {
+        expand_right();
+    }
 }
 
 void GraphicsThing::collapse() {
@@ -113,65 +138,20 @@ void GraphicsThing::set_min_width(int min_width) {
     }
 }
 
-void GraphicsThing::on_added_to_scene(QGraphicsScene *scene) {
-    /*
-    if (scene) {
-        prepareGeometryChange();
-        QPushButton *b = new QPushButton("Press me", 0);
-        QGraphicsProxyWidget *w = scene->addWidget(b);
-        w->setParentItem(this);
-        w->setPos(0, 20);
-    }
-    */
-}
-
-/* Overloads */
-QVariant GraphicsThing::itemChange(GraphicsItemChange change,
-                                   const QVariant &value) {
-    if (change == ItemSceneChange) {
-        QGraphicsScene *new_scene = value.value<QGraphicsScene*>();
-        if (!scene() && new_scene) {
-            on_added_to_scene(new_scene);
-            return value;
-        }
-    } else {
-        return QGraphicsItem::itemChange(change, value);
-    }
-}
-
-/* Mouse Handlers */
-void GraphicsThing::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
-    //qDebug() << "mouse enter" << event->pos();
-    m_hovering = true;
-    m_is_click = false;
-    update();
-    QGraphicsObject::hoverEnterEvent(event);
-}
-void GraphicsThing::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
-    //qDebug() << "mouse exit";
-    m_hovering = false;
-    m_is_click = false;
-    update();
-    QGraphicsObject::hoverLeaveEvent(event);
-}
-void GraphicsThing::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    m_is_click = true;
-    QGraphicsObject::mousePressEvent(event);
-}
-
-void GraphicsThing::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    if (m_is_click) {
-        //qDebug() << "single click";
-    }
-    QGraphicsObject::mouseReleaseEvent(event);
-}
-
-void GraphicsThing::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) {
-    m_is_click = false;
-    //qDebug() << "double click";
+void GraphicsThing::double_clicked(QPointF pos) {
+    Q_UNUSED(pos);
     if (m_expanded)
         collapse();
     else
         expand_right();
-    QGraphicsObject::mouseDoubleClickEvent(event);
+}
+
+void GraphicsThing::on_hover_start() {
+    //m_hovering = true;
+    //update();
+}
+
+void GraphicsThing::on_hover_stop() {
+    //m_hovering = false;
+    //update();
 }
