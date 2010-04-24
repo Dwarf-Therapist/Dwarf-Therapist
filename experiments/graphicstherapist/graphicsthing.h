@@ -9,7 +9,8 @@ class DisplayCell;
 class GraphicsThing : public BaseGraphicsObject {
     Q_OBJECT
 public:
-    GraphicsThing(const QString &name, QGraphicsItem *parent = 0);
+    GraphicsThing(const QString &name, Qt::Orientation = Qt::Horizontal,
+                  QGraphicsItem *parent = 0);
 
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
@@ -17,16 +18,17 @@ public:
 
 public slots:
     void toggle_expand();
+    void expand();
     void collapse();
-    void expand_down() {}
-    void expand_right();
     void set_min_width(int min_width);
-    void double_clicked(QPointF pos);
     void on_hover_start();
     void on_hover_stop();
+    void show_details();
+    void hide_details();
 
 private:
     QString m_name;
+    Qt::Orientation m_orientation;
     bool m_expanded;
     bool m_hovering;
     QGraphicsTextItem *m_text;

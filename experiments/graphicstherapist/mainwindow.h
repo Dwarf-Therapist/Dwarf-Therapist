@@ -16,6 +16,8 @@ public:
 
 public slots:
     void set_scale(double new_scale);
+    void expand_all();
+    void collapse_all();
 
 protected:
     void changeEvent(QEvent *e);

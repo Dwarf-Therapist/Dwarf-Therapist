@@ -15,3 +15,4 @@ HEADERS += mainwindow.h \
     displaycell.h \
     basegraphicsobject.h
 FORMS += mainwindow.ui
+RESOURCES += 

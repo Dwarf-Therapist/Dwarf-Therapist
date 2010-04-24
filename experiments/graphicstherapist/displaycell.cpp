@@ -12,6 +12,7 @@ DisplayCell::DisplayCell(QGraphicsItem *parent)
     setAcceptHoverEvents(true);
     m_tooltip->setZValue(1);
     m_tooltip->hide();
+    this->setFlag(QGraphicsItem::ItemIsFocusable, true);
 
     connect(this, SIGNAL(hover_start()), SLOT(on_hover_start()));
     connect(this, SIGNAL(hover_stop()), SLOT(on_hover_stop()));
@@ -30,7 +31,11 @@ QRectF DisplayCell::boundingRect() const {
 void DisplayCell::paint(QPainter *p, const QStyleOptionGraphicsItem *opt,
                         QWidget *widget) {
     p->save();
-    p->setPen(QPen(Qt::black, 0.5));
+    if (scene()->focusItem() == this) {
+        p->setPen(QPen(Qt::white, 0.5));
+    } else {
+        p->setPen(QPen(Qt::black, 0.5));
+    }
     if (isEnabled() && m_labor_on) {
         p->setBrush(m_bg_selected);
     } else {
@@ -41,6 +46,7 @@ void DisplayCell::paint(QPainter *p, const QStyleOptionGraphicsItem *opt,
 }
 
 void DisplayCell::on_hover_start() {
+    scene()->setFocusItem(this, Qt::MouseFocusReason);
     //qDebug() << "Hover";
     m_show_tooltip = true;
     QTimer::singleShot(100, this, SLOT(maybe_show_tooltip()));

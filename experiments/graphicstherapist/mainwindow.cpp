@@ -8,7 +8,8 @@ static const int box_h = 16;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , m_scene(new QGraphicsScene(0, 0, 800, 400, this))
+    //, m_scene(new QGraphicsScene(0, 0, 800, 300, this))
+    , m_scene(new QGraphicsScene(this))
 {
     ui->setupUi(this);
     srand(QTime(0,0,0).secsTo(QTime::currentTime()));
@@ -63,7 +64,9 @@ void MainWindow::layout_things() {
     foreach(GraphicsThing *t, m_things) {
         t->set_min_width(max_width);
     }
-    ui->gv_main->ensureVisible(m_things.at(0));;
+    //ui->gv_main->ensureVisible(m_things.at(0));
+    //ui->gv_main->centerOn(m_things.at(0));
+    ui->gv_main->move(0,0);
 }
 
 void MainWindow::set_scale(double new_scale) {
@@ -71,5 +74,19 @@ void MainWindow::set_scale(double new_scale) {
         ui->gv_main->resetMatrix();
         ui->gv_main->scale(new_scale, new_scale);
         ui->gv_main->centerOn(0, 0);
+    }
+}
+
+void MainWindow::expand_all() {
+    foreach(GraphicsThing *t, m_things) {
+        if (t)
+            t->expand();
+    }
+}
+
+void MainWindow::collapse_all() {
+    foreach(GraphicsThing *t, m_things) {
+        if (t)
+            t->collapse();
     }
 }

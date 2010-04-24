@@ -2,9 +2,11 @@
 #include "displaycell.h"
 #include <QtGui>
 
-GraphicsThing::GraphicsThing(const QString &name, QGraphicsItem *parent)
+GraphicsThing::GraphicsThing(const QString &name, Qt::Orientation orientation,
+                             QGraphicsItem *parent)
     : BaseGraphicsObject(parent)
     , m_name(name)
+    , m_orientation(orientation)
     , m_expanded(false)
     , m_hovering(false)
     , m_text(new QGraphicsTextItem(name, this))
@@ -22,7 +24,8 @@ GraphicsThing::GraphicsThing(const QString &name, QGraphicsItem *parent)
 
     connect(this, SIGNAL(hover_start()), SLOT(on_hover_start()));
     connect(this, SIGNAL(hover_stop()), SLOT(on_hover_stop()));
-    connect(this, SIGNAL(single_click()), SLOT(toggle_expand()));
+    //connect(this, SIGNAL(single_click()), SLOT(show_details()));
+    connect(this, SIGNAL(double_click()), SLOT(toggle_expand()));
 
     m_items.clear();
     for (int i = 0; i < 32; ++i) {
@@ -31,6 +34,25 @@ GraphicsThing::GraphicsThing(const QString &name, QGraphicsItem *parent)
         cell->hide();
         m_items << cell;
     }
+}
+
+void GraphicsThing::show_details() {
+    QPushButton *btn = new QPushButton("close");
+    QGraphicsWidget *w = new QGraphicsWidget(this);
+    w->setPos(0, 30);
+    QGraphicsWidget *label = scene()->addWidget(new QLabel(m_name));
+    QGraphicsWidget *btn_w = scene()->addWidget(btn);
+    QGraphicsLinearLayout *layout = new QGraphicsLinearLayout;
+    layout->setOrientation(Qt::Vertical);
+    layout->addItem(label);
+    layout->addItem(btn_w);
+    w->setLayout(layout);
+    connect(btn, SIGNAL(pressed()), this, SLOT(hide_details()));
+
+}
+
+void GraphicsThing::hide_details() {
+    qDebug() << "would hide";
 }
 
 void GraphicsThing::on_added_to_scene(QGraphicsScene *scene) {
@@ -78,7 +100,7 @@ void GraphicsThing::toggle_expand() {
     if (m_expanded) {
         collapse();
     } else {
-        expand_right();
+        expand();
     }
 }
 
@@ -107,13 +129,19 @@ void GraphicsThing::collapse() {
     m_animation->start();
 }
 
-void GraphicsThing::expand_right() {
+void GraphicsThing::expand() {
     m_expanded = true;
     prepareGeometryChange();
+
+    // base position for a cell (home-base)
     int x = m_min_width + 4;
     int y = boundingRect().height() / 2.0f;
+
+    // stop and destroy any existing animations
     m_animation->stop();
     m_animation->clear();
+
+    // setup property animations for each member cell
     foreach(DisplayCell *cell, m_items) {
         QPropertyAnimation *ani = new QPropertyAnimation(cell, "pos",
                                                          m_animation);
@@ -127,7 +155,15 @@ void GraphicsThing::expand_right() {
 
         cell->show();
         m_animation->addAnimation(ani);
-        x += cell->boundingRect().width() + 4;
+        if (m_orientation == Qt::Horizontal) {
+            // expand on the x axis
+            x += cell->boundingRect().width() + 4;
+        } else {
+            // expand down the y axis
+            y += cell->boundingRect().height() + 4;
+        }
+
+
         // if this is the first item, update ourselves as it moves
         if (cell == m_items.at(0))
             connect(ani, SIGNAL(valueChanged(QVariant)), SLOT(maybe_update()));
@@ -140,14 +176,6 @@ void GraphicsThing::set_min_width(int min_width) {
         prepareGeometryChange();
         m_min_width = min_width;
     }
-}
-
-void GraphicsThing::double_clicked(QPointF pos) {
-    Q_UNUSED(pos);
-    if (m_expanded)
-        collapse();
-    else
-        expand_right();
 }
 
 void GraphicsThing::on_hover_start() {

@@ -61,8 +61,20 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="act_expand_all"/>
+   <addaction name="act_collapse_all"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="act_expand_all">
+   <property name="text">
+    <string>Expand All</string>
+   </property>
+  </action>
+  <action name="act_collapse_all">
+   <property name="text">
+    <string>Collapse All</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
@@ -83,9 +95,42 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_expand_all</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>expand_all()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>236</x>
+     <y>213</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_collapse_all</sender>
+   <signal>activated()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>collapse_all()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>236</x>
+     <y>213</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
-  <slot>set_scale(int)</slot>
   <slot>set_scale(double)</slot>
+  <slot>expand_all()</slot>
+  <slot>collapse_all()</slot>
  </slots>
 </ui>
