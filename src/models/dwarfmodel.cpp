@@ -234,10 +234,16 @@ void DwarfModel::build_rows() {
                 }
                 break;
             case GB_HIGHEST_SKILL:
-                Skill highest = d->highest_skill();
-                GameDataReader *gdr = GameDataReader::ptr();
-                QString level = gdr->get_skill_level_name(highest.rating());
-                m_grouped_dwarves[level].append(d);
+                {
+                    Skill highest = d->highest_skill();
+                    GameDataReader *gdr = GameDataReader::ptr();
+                    QString level = gdr->get_skill_level_name(highest.rating());
+                    m_grouped_dwarves[level].append(d);
+                }
+                break;
+            case GB_TOTAL_SKILL_LEVELS:
+                m_grouped_dwarves[tr("Levels: %1").arg(d->total_skill_levels())]
+                    .append(d);
                 break;
         }
     }

@@ -96,6 +96,8 @@ public:
     //! return this dwarf's highest skill
     Skill highest_skill();
 
+    Q_INVOKABLE int total_skill_levels();
+
     //! return the sum total of all xp this dwarf has earned
     int total_xp() {return m_total_xp;}
 

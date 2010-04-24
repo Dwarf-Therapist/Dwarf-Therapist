@@ -822,6 +822,14 @@ Skill Dwarf::highest_skill() {
     return highest;
 }
 
+int Dwarf::total_skill_levels() {
+    int ret_val = 0;
+    foreach(Skill s, m_skills) {
+        ret_val += s.rating();
+    }
+    return ret_val;
+}
+
 /************************************************************************/
 /* SQUAD STUFF                                                          */
 /************************************************************************/
