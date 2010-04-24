@@ -699,11 +699,14 @@ int Dwarf::apply_custom_profession(CustomProfession *cp) {
 QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
     QVector<int> labors = get_dirty_labors();
     QTreeWidgetItem *d_item = new QTreeWidgetItem;
-    d_item->setText(0, nice_name() + "(" + QString::number(labors.size()) + ")");
+    d_item->setText(0, QString("%1 (%2)").arg(nice_name()).arg(labors.size()));
     d_item->setData(0, Qt::UserRole, id());
     if (m_pending_nick_name != m_nick_name) {
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
-        i->setText(0, "nickname change to " + m_pending_nick_name);
+        QString nick = m_pending_nick_name;
+        if (nick.isEmpty())
+            nick = tr("DEFAULT");
+        i->setText(0, tr("Nickname change to %1").arg(nick));
         i->setIcon(0, QIcon(":img/book_edit.png"));
         i->setData(0, Qt::UserRole, id());
     }
@@ -711,8 +714,8 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
         QString prof = m_pending_custom_profession;
         if (prof.isEmpty())
-            prof = "DEFAULT";
-        i->setText(0, "profession change to " + prof);
+            prof = tr("DEFAULT");
+        i->setText(0, tr("Profession change to %1").arg(prof));
         i->setIcon(0, QIcon(":img/book_edit.png"));
         i->setData(0, Qt::UserRole, id());
     }

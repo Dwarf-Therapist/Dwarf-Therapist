@@ -150,5 +150,7 @@ void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role) {
         }
         setSortRole(DwarfModel::DR_SORT_VALUE);
     }
+    setSortCaseSensitivity(Qt::CaseInsensitive);
+    setSortLocaleAware(true);
     QSortFilterProxyModel::sort(column, order);
 }
