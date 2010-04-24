@@ -233,6 +233,12 @@ void DwarfModel::build_rows() {
                     */
                 }
                 break;
+            case GB_HIGHEST_SKILL:
+                Skill highest = d->highest_skill();
+                GameDataReader *gdr = GameDataReader::ptr();
+                QString level = gdr->get_skill_level_name(highest.rating());
+                m_grouped_dwarves[level].append(d);
+                break;
         }
     }
 
@@ -256,6 +262,9 @@ void DwarfModel::build_row(const QString &key) {
         root->setData(0, DR_RATING);
         if (m_group_by == GB_MIGRATION_WAVE) {
             root->setData(m_grouped_dwarves.value(key).at(0)->migration_wave(),
+                          DR_SORT_VALUE);
+        } else if (m_group_by == GB_HIGHEST_SKILL) {
+            root->setData(m_grouped_dwarves.value(key).at(0)->highest_skill().rating(),
                           DR_SORT_VALUE);
         }
         root_row << root;

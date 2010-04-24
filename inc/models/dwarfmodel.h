@@ -60,6 +60,7 @@ public:
         GB_SQUAD,
         GB_CURRENT_JOB,
         GB_MILITARY_STATUS,
+        GB_HIGHEST_SKILL,
         GB_TOTAL
     } GROUP_BY;
     typedef enum {

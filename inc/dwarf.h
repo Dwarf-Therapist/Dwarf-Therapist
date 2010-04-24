@@ -93,6 +93,9 @@ public:
     //! return this dwarf's toughness attribute score
     Q_INVOKABLE int toughness() {return m_toughness;}
 
+    //! return this dwarf's highest skill
+    Skill highest_skill();
+
     //! return the sum total of all xp this dwarf has earned
     int total_xp() {return m_total_xp;}
 

@@ -812,6 +812,16 @@ void Dwarf::show_details() {
     DT->get_main_window()->show_dwarf_details_dock(this);
 }
 
+Skill Dwarf::highest_skill() {
+    Skill highest(0, 0, 0);
+    foreach(Skill s, m_skills) {
+        if (s.rating() > highest.rating()) {
+            highest = s;
+        }
+    }
+    return highest;
+}
+
 /************************************************************************/
 /* SQUAD STUFF                                                          */
 /************************************************************************/
