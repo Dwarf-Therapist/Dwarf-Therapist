@@ -258,6 +258,12 @@ void DwarfModel::build_row(const QString &key) {
     QIcon icn_m(":img/male.png");
     QStandardItem *root = 0;
     QList<QStandardItem*> root_row;
+    Dwarf *first_dwarf = m_grouped_dwarves.value(key).at(0);
+    if (!first_dwarf) {
+        LOGE << "'Group by'' set for" << key << "has a bad ref for its first "
+                << "dwarf";
+        return;
+    }
 
     if (m_group_by != GB_NOTHING) {
         // we need a root element to hold group members...
@@ -266,12 +272,15 @@ void DwarfModel::build_row(const QString &key) {
         root->setData(true, DR_IS_AGGREGATE);
         root->setData(key, DR_GROUP_NAME);
         root->setData(0, DR_RATING);
+        root->setData(title, DR_SORT_VALUE);
+        // for integer based values we want to make sure they sort by the int
+        // values instead of the string values
         if (m_group_by == GB_MIGRATION_WAVE) {
-            root->setData(m_grouped_dwarves.value(key).at(0)->migration_wave(),
-                          DR_SORT_VALUE);
+            root->setData(first_dwarf->migration_wave(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HIGHEST_SKILL) {
-            root->setData(m_grouped_dwarves.value(key).at(0)->highest_skill().rating(),
-                          DR_SORT_VALUE);
+            root->setData(first_dwarf->highest_skill().rating(), DR_SORT_VALUE);
+        } else if (m_group_by == GB_TOTAL_SKILL_LEVELS) {
+            root->setData(first_dwarf->total_skill_levels(), DR_SORT_VALUE);
         }
         root_row << root;
     }
