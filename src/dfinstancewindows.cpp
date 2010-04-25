@@ -274,14 +274,15 @@ bool DFInstanceWindows::find_running_copy() {
     }
 
     if (m_is_ok) {
-        int checksum = calculate_checksum();
-        LOGD << "DF's checksum is:" << hex << checksum;
-        //GameDataReader::ptr()->set_game_checksum(checksum);
+        QString checksum = hexify(calculate_checksum());
+        LOGD << "DF's checksum is:" << checksum;
 
-        m_layout = new MemoryLayout(checksum);
+        m_layout = m_memory_layouts.value(checksum, NULL);
         m_is_ok = m_layout != NULL && m_layout->is_valid();
         if (m_is_ok) {
-            LOGD << "memory layout for" << m_layout->game_version() << "loaded";
+            LOGI << "Detected Dwarf Fortress version"
+                    << m_layout->game_version() << "using MemoryLayout from"
+                    << m_layout->filename();
         } else {
             QMessageBox *mb = new QMessageBox(qApp->activeWindow());
             mb->setIcon(QMessageBox::Critical);
@@ -289,14 +290,14 @@ bool DFInstanceWindows::find_running_copy() {
             mb->setText(tr("I'm sorry but I don't know how to talk to this"
                            "version of Dwarf Fortress!"));
             mb->setInformativeText(tr("GAME CHECKSUM: %1")
-                                   .arg(hexify(checksum)));
+                                   .arg(checksum));
             mb->setDetailedText(tr("Tried to locate memory layout file for "
                                    "checksum %1, but the file was either not "
                                    "specified in game_data.ini, or the file "
                                    "specified doesn't exist or is not readable!"
-                                   ).arg(hexify(checksum)));
+                                   ).arg(checksum));
             mb->exec();
-            LOGE << tr("unable to identify version from checksum:") << hex << checksum;
+            LOGE << tr("unable to identify version from checksum:") << checksum;
         }
     }
 

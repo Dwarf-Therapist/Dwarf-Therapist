@@ -47,6 +47,48 @@ DFInstance::DFInstance(QObject* parent)
     connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
     // let subclasses start the timer, since we don't want to be checking before
     // we're connected
+
+    // We need to scan for memory layout files to get a list of DF versions this
+    // DT version can talk to. Start by building up a list of search paths
+    QDir working_dir = QDir::current();
+    QDir::addSearchPath("memory_layouts", working_dir.path());
+#ifdef Q_WS_WIN
+    QString subdir = "windows";
+#endif
+#ifdef Q_WS_X11
+    QString subdir = "linux";
+#endif
+#ifdef _OSX
+    QString subdir = "osx";
+#endif
+    QDir::addSearchPath("memory_layouts", working_dir.absoluteFilePath(
+        QString("etc/memory_layouts/%1").arg(subdir)));
+
+    TRACE << "Searching for MemoryLayout ini files in the following directories";
+    foreach(QString path, QDir::searchPaths("memory_layouts")) {
+        TRACE<< path;
+        QDir d(path);
+        d.setNameFilters(QStringList() << "*.ini");
+        d.setFilter(QDir::NoDotAndDotDot | QDir::Readable | QDir::Files);
+        d.setSorting(QDir::Name | QDir::Reversed);
+        QFileInfoList files = d.entryInfoList();
+        foreach(QFileInfo info, files) {
+            MemoryLayout *temp = new MemoryLayout(info.absoluteFilePath());
+            if (temp && temp->is_valid()) {
+                LOGD << "adding valid layout" << temp->game_version()
+                        << temp->checksum();
+                m_memory_layouts.insert(temp->checksum(), temp);
+            }
+        }
+    }
+}
+
+DFInstance::~DFInstance() {
+    LOGD << "DFInstance baseclass virtual dtor!";
+    foreach(MemoryLayout *l, m_memory_layouts) {
+        delete(l);
+    }
+    m_memory_layouts.clear();
 }
 
 QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
@@ -126,6 +168,8 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         LOGW << "not connected";
         return dwarves;
     }
+
+    emit progress_message(tr("Loading Dwarves"));
     attach();
     uint creature_vector = m_layout->address("creature_vector");
     TRACE << "starting with creature vector" << creature_vector;
@@ -140,9 +184,11 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
     TRACE << "adjusted creature vector" << creature_vector + m_memory_correction;
     QVector<uint> creatures = enumerate_vector(creature_vector + m_memory_correction);
+    emit progress_range(0, creatures.size()-1);
     TRACE << "FOUND" << creatures.size() << "creatures";
     if (!creatures.empty()) {
         Dwarf *d = 0;
+        int i = 0;
         foreach(uint creature_addr, creatures) {
             d = Dwarf::get_dwarf(this, creature_addr);
             if (d) {
@@ -151,6 +197,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
             } else {
                 TRACE << "FOUND OTHER CREATURE" << creature_addr;
             }
+            emit progress_value(i++);
         }
     } else {
         // we lost the fort!

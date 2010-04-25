@@ -67,7 +67,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , m_df(0)
-    , m_lbl_status(0)
+    , m_lbl_status(new QLabel(tr("not connected"), this))
+    , m_progress(new QProgressBar(this))
     , m_settings(0)
     , m_view_manager(0)
     , m_model(new DwarfModel(this))
@@ -130,7 +131,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
-    m_lbl_status = new QLabel(tr("not connected"), statusBar());
+    m_progress->setVisible(false);
     statusBar()->addPermanentWidget(m_lbl_status, 0);
     set_interface_enabled(false);
 
@@ -240,12 +241,20 @@ void MainWindow::connect_to_df() {
     // find_running_copy can fail for several reasons, and will take care of
     // logging and notifying the user.
     if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
-        LOGD << "Creating new Scanner for future use";
         m_scanner = new Scanner(m_df, this);
-        LOGD << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
+        LOGD << "Connection to DF version"
+                << m_df->memory_layout()->game_version() << "established.";
         DT->load_game_translation_tables(m_df);
-        m_lbl_status->setText(tr("Connected to ") + m_df->memory_layout()->game_version());
-        connect(m_df, SIGNAL(connection_interrupted()), SLOT(lost_df_connection()));
+        m_lbl_status->setText(tr("Connected to %1")
+                              .arg(m_df->memory_layout()->game_version()));
+        connect(m_df, SIGNAL(connection_interrupted()),
+                SLOT(lost_df_connection()));
+        connect(m_df, SIGNAL(progress_message(QString)),
+                SLOT(set_progress_message(QString)));
+        connect(m_df, SIGNAL(progress_range(int,int)),
+                SLOT(set_progress_range(int,int)));
+        connect(m_df, SIGNAL(progress_value(int)),
+                SLOT(set_progress_value(int)));
         set_interface_enabled(true);
         if (DT->user_settings()->value("options/read_on_startup", true).toBool()) {
             read_dwarves();
@@ -524,4 +533,25 @@ void MainWindow::print_gridview() {
     QPixmap pm = QPixmap::grabWidget(current_gv, current_gv->rect());
     p.drawPixmap(0, 0, pm);
     p.end();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//! Progress Stuff
+void MainWindow::set_progress_message(const QString &msg) {
+    statusBar()->showMessage(msg, 5000);
+}
+
+void MainWindow::set_progress_range(int min, int max) {
+    m_progress->setVisible(true);
+    m_progress->setRange(min, max);
+    m_progress->setValue(min);
+    statusBar()->insertPermanentWidget(0, m_progress, 0);
+}
+
+void MainWindow::set_progress_value(int value) {
+    m_progress->setValue(value);
+    if (value >= m_progress->maximum()) {
+        statusBar()->removeWidget(m_progress);
+        m_progress->setVisible(false);
+    }
 }

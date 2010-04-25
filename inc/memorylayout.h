@@ -5,11 +5,12 @@
 
 class MemoryLayout {
 public:
-    MemoryLayout(uint checksum);
+    explicit MemoryLayout(const QString &filename);
 
     QString filename() {return m_filename;}
-    bool is_valid() {return m_data != 0;}
+    bool is_valid();
     QString game_version() {return m_game_version;}
+    QString checksum() {return m_checksum;}
     uint address(QString key) {return m_addresses.value(key, -1);}
     uint offset(QString key) {return m_offsets.value(key, -1);}
     uint dwarf_offset(QString key) {return m_dwarf_offsets.value(key, -1);}
@@ -18,8 +19,9 @@ public:
     QHash<uint, QString> invalid_flags_2() {return m_invalid_flags_2;}
 
 private:
-    uint m_checksum;
     QString m_filename;
+    QString m_checksum;
+    QString m_game_version;
     QHash<QString, uint> m_addresses;
     QHash<QString, uint> m_offsets;
     QHash<QString, uint> m_dwarf_offsets;
@@ -30,7 +32,6 @@ private:
 
     void load_data();
     uint read_hex(QString key);
-    QString m_game_version;
 };
 
 #endif

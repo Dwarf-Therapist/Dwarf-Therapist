@@ -36,14 +36,16 @@ Squad::Squad(Dwarf *leader, DFInstance *df, QObject *parent)
 
     MemoryLayout *mem = df->memory_layout();
     for (int i = 0; i < 24; i+=4) {
-        int word_offset = df->read_int(leader->address() + mem->dwarf_offset("squad_name") + i);
-        if (word_offset == 0 || word_offset == 0xFFFFFFFF)
+        int word_offset = df->read_int(leader->address()
+                                       + mem->dwarf_offset("squad_name")
+                                       + i);
+        if (word_offset == 0)
             continue;
         m_name += DT->get_dwarf_word(word_offset);
         m_generic_name += DT->get_generic_word(word_offset);
     }
-    
-    
+
+
     //Squad *m_parent_squad;
     //QString m_name;
     //QString m_generic_name;

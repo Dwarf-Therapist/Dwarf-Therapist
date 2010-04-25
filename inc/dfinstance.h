@@ -33,7 +33,7 @@ class DFInstance : public QObject {
     Q_OBJECT
 public:
     DFInstance(QObject *parent=0);
-    virtual ~DFInstance(){}
+    virtual ~DFInstance();
 
     // factory ctor
     virtual bool find_running_copy() = 0;
@@ -118,6 +118,11 @@ protected:
     int m_attach_count;
     QTimer *m_heartbeat_timer;
 
+    /*! this hash will hold a map of all loaded and valid memory layouts found
+        on disk, the key is a QString of the checksum since other OSs will use
+        an MD5 of the binary instead of a PE timestamp */
+    QHash<QString, MemoryLayout*> m_memory_layouts; // checksum->layout
+
     private slots:
         void heartbeat();
 
@@ -127,6 +132,9 @@ signals:
     void scan_progress(int step);
     void scan_message(const QString &message);
     void connection_interrupted();
+    void progress_message(const QString &message);
+    void progress_range(int min, int max);
+    void progress_value(int value);
 
 };
 

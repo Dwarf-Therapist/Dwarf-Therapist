@@ -55,6 +55,7 @@ public:
                                                        "position_name");
             uint offset = gdr->get_int_for_key("ram_guesser/"
                                                "position_name_offset", 16);
+            Q_UNUSED(offset);
 
             emit main_scan_total_steps(1);
             emit main_scan_progress(0);
@@ -73,7 +74,7 @@ public:
                 for (int j = 0; j < entries.size(); ++j) {
                     uint entry = entries.at(j);
                     QByteArray data = m_df->get_data(entry, 0x500);
-                    LOGD << "got data" << data.size() << "bytes";
+                    //LOGD << "got data" << data.size() << "bytes";
                     int offset = data.indexOf(position.toLocal8Bit(), 0);
                     if (offset != -1) {
                         LOGD << "WOOT!" << entry;

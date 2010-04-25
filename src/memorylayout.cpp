@@ -4,41 +4,33 @@
 #include "utils.h"
 #include "truncatingfilelogger.h"
 
-MemoryLayout::MemoryLayout(uint checksum)
-    : m_checksum(checksum)
+MemoryLayout::MemoryLayout(const QString &filename)
+    : m_filename(filename)
+    , m_checksum(0)
     , m_data(0)
 {
-    LOGD << "Attempting to contruct MemoryLayout for " << hex << checksum;
-    m_game_version = GameDataReader::ptr()->get_string_for_key(
-            "checksum_to_version/0x" + QString::number(checksum, 16));
-    if (m_game_version != "UNKNOWN") {
-        QDir working_dir = QDir::current();
-#ifdef Q_WS_WIN
-    QString subdir = "windows";
-#endif
-#ifdef Q_WS_X11
-    QString subdir = "linux";
-#endif
-#ifdef _OSX
-    QString subdir = "osx";
-#endif
-        m_filename = working_dir.absoluteFilePath(
-                QString("etc/memory_layouts/%1/%2.ini").arg(subdir)
-                .arg(m_game_version));
-        QFileInfo info(m_filename);
-        if (info.exists() && info.isReadable()) {
-            m_data = new QSettings(m_filename, QSettings::IniFormat);
-            load_data();
-        } else {
-            LOGE << "tried to load memory layout for checksum"
-                    << hexify(checksum) << "which should be in file"
-                    << m_filename << "however that file could not be found or "
-                    "opened!";
-        }
+    TRACE << "Attempting to contruct MemoryLayout from file " << filename;
+    QFileInfo info(m_filename);
+    if (info.exists() && info.isReadable()) {
+        m_data = new QSettings(m_filename, QSettings::IniFormat);
+        load_data();
+    } else {
+        LOGE << m_filename << "could either not be found or not be opened!";
     }
 }
 
 void MemoryLayout::load_data() {
+    if (!is_valid()) {
+        LOGE << "Skipping read of invalid memory layout in" << m_filename;
+        return;
+    }
+
+    // basics (if these are missing, don't read anything else)
+    m_data->beginGroup("info");
+    m_checksum = m_data->value("checksum", "UNKNOWN").toString();
+    m_game_version = m_data->value("version_name", "UNKNOWN").toString();
+    m_data->endGroup();
+
     // addresses
     m_data->beginGroup("addresses");
     foreach(QString k, m_data->childKeys()) {
@@ -91,4 +83,9 @@ uint MemoryLayout::read_hex(QString key) {
     QString data = m_data->value(key, -1).toString();
     uint val = data.toUInt(&ok, 16);
     return val;
+}
+
+bool MemoryLayout::is_valid() {
+    return m_data && m_data->contains("info/checksum")
+            && m_data->contains("info/version_name");
 }

@@ -38,79 +38,73 @@ class DwarfJob;
 // exceptions
 class MissingValueException : public std::runtime_error {
 public:
-	MissingValueException(const std::string &msg) : runtime_error(msg) {}
+    MissingValueException(const std::string &msg) : runtime_error(msg) {}
 };
 
 class CorruptedValueException : public std::runtime_error {
 public:
-	CorruptedValueException(const std::string &msg) : runtime_error(msg) {}
+    CorruptedValueException(const std::string &msg) : runtime_error(msg) {}
 };
 
 //singleton reader of game data
 class GameDataReader : public QObject {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	static GameDataReader *ptr() {
-		if (!m_instance) {
-			m_instance = new GameDataReader(0);
-		}
-		return m_instance;
-	}
+    static GameDataReader *ptr() {
+        if (!m_instance) {
+            m_instance = new GameDataReader(0);
+        }
+        return m_instance;
+    }
+    int get_int_for_key(QString key, short base = 16);
+    int get_address(QString key) {return get_int_for_key("addresses/" + key);}
+    int get_offset(QString key) {return get_int_for_key("offsets/" + key);}
+    int get_dwarf_offset(QString key) {return get_int_for_key("dwarf_offsets/" + key);}
+    int get_xp_for_next_attribute_level(int current_number_of_attributes);
 
-	void set_game_checksum(int checksum) {m_game_checksum = checksum;}
-
-	int get_int_for_key(QString key, short base = 16);
-	int get_address(QString key) {return get_int_for_key("addresses/" + key);}
-	int get_offset(QString key) {return get_int_for_key("offsets/" + key);}
-	int get_dwarf_offset(QString key) {return get_int_for_key("dwarf_offsets/" + key);}
-	int get_xp_for_next_attribute_level(int current_number_of_attributes);
-
-	QList<Labor*> get_ordered_labors() {return m_ordered_labors;}
-	QHash<int, QString> get_skills() {return m_skills;}
-	QList<QPair<int, QString> > get_ordered_skills() {return m_ordered_skills;}
+    QList<Labor*> get_ordered_labors() {return m_ordered_labors;}
+    QHash<int, QString> get_skills() {return m_skills;}
+    QList<QPair<int, QString> > get_ordered_skills() {return m_ordered_skills;}
     QHash<int, Trait*> get_traits() {return m_traits;}
-	QList<QPair<int, Trait*> > get_ordered_traits() {return m_ordered_traits;}
+    QList<QPair<int, Trait*> > get_ordered_traits() {return m_ordered_traits;}
     QHash<int, MilitaryPreference*> get_military_preferences() {return m_military_preferences;}
-	QHash<short, Profession*> get_professions() {return m_professions;}
+    QHash<short, Profession*> get_professions() {return m_professions;}
 
-	Labor *get_labor(const int &labor_id);
-	Trait *get_trait(const int &trait_id);
-	DwarfJob *get_job(const short &job_id);
+    Labor *get_labor(const int &labor_id);
+    Trait *get_trait(const int &trait_id);
+    DwarfJob *get_job(const short &job_id);
     MilitaryPreference *get_military_preference(const int &mil_pref_id);
 
-	QString get_string_for_key(QString key);
+    QString get_string_for_key(QString key);
     Profession* get_profession(const short &profession_id);
-	QString get_skill_level_name(short level);
-	QString get_skill_name(short skill_id);
-	
-	QColor get_color(QString key);
-	
-	QStringList get_child_groups(QString section);
-	QStringList get_keys(QString section);
+    QString get_skill_level_name(short level);
+    QString get_skill_name(short skill_id);
+
+    QColor get_color(QString key);
+
+    QStringList get_child_groups(QString section);
+    QStringList get_keys(QString section);
 
 protected:
-	GameDataReader(QObject *parent = 0);
+    GameDataReader(QObject *parent = 0);
 private:
-	static GameDataReader *m_instance;
-	QSettings *m_data_settings;
-	
+    static GameDataReader *m_instance;
+    QSettings *m_data_settings;
+
     QHash<int, Labor*> m_labors;
-	QList<Labor*> m_ordered_labors;
+    QList<Labor*> m_ordered_labors;
 
     QHash<int, MilitaryPreference*> m_military_preferences;
 
     QHash<int, Trait*> m_traits;
-	QList<QPair<int, Trait*> > m_ordered_traits;
-	
-	QHash<int, QString> m_skills;
-	QList<QPair<int, QString> > m_ordered_skills;
-	
+    QList<QPair<int, Trait*> > m_ordered_traits;
+
+    QHash<int, QString> m_skills;
+    QList<QPair<int, QString> > m_ordered_skills;
+
     QHash<int, QString> m_skill_levels;
-	QHash<int, int> m_attribute_levels;
+    QHash<int, int> m_attribute_levels;
     QHash<short, DwarfJob*> m_dwarf_jobs;
     QHash<short, Profession*> m_professions;
-	int m_game_checksum;
-
-
 };
 #endif
