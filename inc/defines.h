@@ -26,6 +26,9 @@ THE SOFTWARE.
 #define COMPANY "UDP Software"
 #define PRODUCT "Dwarf Therapist"
 
+#define URL_SUPPORTED_GAME_VERSIONS "http://code.google.com/p/dwarftherapist/wiki/SupportedGameVersions"
+#define URL_DOWNLOAD_LIST "http://code.google.com/p/dwarftherapist/downloads/list"
+
 #ifndef DT_VERSION_MAJOR
     #define DT_VERSION_MAJOR 0
 #endif

@@ -320,7 +320,6 @@ void MainWindow::set_interface_enabled(bool enabled) {
 
 void MainWindow::check_latest_version(bool show_result_on_equal) {
     m_show_result_on_equal = show_result_on_equal;
-    //http://code.google.com/p/dwarftherapist/wiki/LatestVersion
     Version our_v(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
 
     QHttpRequestHeader header("GET", "/version");
@@ -356,10 +355,15 @@ void MainWindow::version_check_finished(bool error) {
         if (our_v < newest_v) {
             LOGI << "LATEST VERSION IS NEWER!";
             QMessageBox *mb = new QMessageBox(this);
+            mb->setIcon(QMessageBox::Information);
             mb->setWindowTitle(tr("Update Available"));
             mb->setText(tr("A newer version of this application is available."));
-            QString link = "<br><a href=\"http://code.google.com/p/dwarftherapist/downloads/list\">Download v" + newest_v.to_string() + "</a>";
-            mb->setInformativeText(tr("You are currently running v%1. %2").arg(our_v.to_string()).arg(link));
+            QString link = tr("<br><a href=\"%1\">Click Here to Download v%2"
+                              "</a>")
+                           .arg(URL_DOWNLOAD_LIST)
+                           .arg(newest_v.to_string());
+            mb->setInformativeText(tr("You are currently running v%1. %2")
+                                   .arg(our_v.to_string()).arg(link));
             mb->exec();
         } else if (m_show_result_on_equal) {
             QMessageBox *mb = new QMessageBox(this);

@@ -68,7 +68,7 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
 
     bool read = m_user_settings->value("options/read_on_startup", true).toBool();
     if (read) {
-        m_main_window->connect_to_df();
+        QTimer::singleShot(0, m_main_window, SLOT(connect_to_df()));
     }
     m_main_window->show();
 }

@@ -284,18 +284,30 @@ bool DFInstanceWindows::find_running_copy() {
                     << m_layout->game_version() << "using MemoryLayout from"
                     << m_layout->filename();
         } else {
+            QString supported_vers;
+            foreach(QString tmp_checksum, m_memory_layouts.uniqueKeys()) {
+                MemoryLayout *l = m_memory_layouts[tmp_checksum];
+                supported_vers.append(
+                        QString("<li><b>%1</b>(<font color=\"#444444\">%2"
+                                "</font>) from <font size=-1>%3</font></li>")
+                        .arg(l->game_version())
+                        .arg(l->checksum())
+                        .arg(l->filename()));
+            }
+
             QMessageBox *mb = new QMessageBox(qApp->activeWindow());
             mb->setIcon(QMessageBox::Critical);
             mb->setWindowTitle(tr("Unidentified Game Version"));
-            mb->setText(tr("I'm sorry but I don't know how to talk to this"
-                           "version of Dwarf Fortress!"));
-            mb->setInformativeText(tr("GAME CHECKSUM: %1")
-                                   .arg(checksum));
-            mb->setDetailedText(tr("Tried to locate memory layout file for "
-                                   "checksum %1, but the file was either not "
-                                   "specified in game_data.ini, or the file "
-                                   "specified doesn't exist or is not readable!"
-                                   ).arg(checksum));
+            mb->setText(tr("I'm sorry but I don't know how to talk to this "
+                "version of Dwarf Fortress! (checksum:%1)<br><br> <b>Supported "
+                "Versions:</b><ul>%2</ul>").arg(checksum).arg(supported_vers));
+            mb->setInformativeText(tr("<a href=\"%1\">Click Here to find out "
+                                      "more online</a>.")
+                                   .arg(URL_SUPPORTED_GAME_VERSIONS));
+            /*
+            mb->setDetailedText(tr("Failed to locate a memory layout file for "
+                "Dwarf Fortress exectutable with checksum '%1'").arg(checksum));
+            */
             mb->exec();
             LOGE << tr("unable to identify version from checksum:") << checksum;
         }
