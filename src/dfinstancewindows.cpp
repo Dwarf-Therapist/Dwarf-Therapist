@@ -274,7 +274,7 @@ bool DFInstanceWindows::find_running_copy() {
     }
 
     if (m_is_ok) {
-        QString checksum = hexify(calculate_checksum());
+        QString checksum = hexify(calculate_checksum()).toLower();
         LOGD << "DF's checksum is:" << checksum;
 
         m_layout = m_memory_layouts.value(checksum, NULL);

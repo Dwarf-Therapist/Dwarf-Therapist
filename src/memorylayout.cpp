@@ -27,8 +27,8 @@ void MemoryLayout::load_data() {
 
     // basics (if these are missing, don't read anything else)
     m_data->beginGroup("info");
-    m_checksum = m_data->value("checksum", "UNKNOWN").toString();
-    m_game_version = m_data->value("version_name", "UNKNOWN").toString();
+    m_checksum = m_data->value("checksum", "UNKNOWN").toString().toLower();
+    m_game_version = m_data->value("version_name", "UNKNOWN").toString().toLower();
     m_data->endGroup();
 
     // addresses

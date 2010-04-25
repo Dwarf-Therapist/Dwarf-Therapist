@@ -77,7 +77,7 @@ DFInstance::DFInstance(QObject* parent)
             if (temp && temp->is_valid()) {
                 LOGD << "adding valid layout" << temp->game_version()
                         << temp->checksum();
-                m_memory_layouts.insert(temp->checksum(), temp);
+                m_memory_layouts.insert(temp->checksum().toLower(), temp);
             }
         }
     }
