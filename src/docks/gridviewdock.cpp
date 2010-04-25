@@ -70,7 +70,10 @@ void GridViewDock::draw_views() {
 
 void GridViewDock::draw_list_context_menu(const QPoint &pos) {
     m_tmp_item = ui->list_views->itemAt(pos);
-    GridView *gv = m_manager->get_view(m_tmp_item->text());
+    QString item_text;
+    if (m_tmp_item)
+        item_text = m_tmp_item->text();
+    GridView *gv = m_manager->get_view(item_text);
     QMenu m(this);
     if (gv) {
         if (gv->is_custom())
