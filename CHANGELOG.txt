@@ -1,3 +1,34 @@
+RELEASE 0.5.1 (April 24, 2010)
+CHANGES SINCE 0.5.0
+===============================================================================
+MAJOR CHANGES:
+ * Stable Support for 0.31.03
+ * game_data.ini no longer lists checksum->memory_layout entries anymore 
+   (They are now discovered by reading *.ini in your platform's memory_layout 
+   directory) Any .ini file found with a valid info section will be added to 
+   the memory layout list. This prevents repeating the same data in different 
+   places and enables new layout files to be delivered in the future by just 
+   dropping them in the correct directory.
+ * The "can't talk to this version" warning dialog got a face lift. Since we now
+   read in all memory layouts, the dialog can show which versions of DF can be 
+   talked to. This hopefully gives a bit more actionble information to the user.
+   It also links to the wiki.
+MINOR CHANGES:
+ * New group-by method "Highest Skill" groups dwarves by their highest actual skill level
+ * New group-by method "Total Skill Levels" groups dwarves by their total number of skill ranks
+ * Added a progress bar the Main windows's status bar (dwarf loading uses it now)
+BUG FIXES:
+ * Fix for leatherworking and tanning mixup on the grid
+ * Fixed issue 206. (wrong name for skill level 2)
+ * Fixed crash in Scanner if creature_vector is incorrect
+ * Profession 63 is Diagnoser not Suturer (fixes issue 205)
+ * Applied locale-aware sorting patch from Zhentar (fixes issue 190)
+ * Some translation fixes for setting Dwarf nicknames.
+ * Added new group by "Highest skill" option (Fixes issue 180)
+ * Added method to group by total skill level (Related to issue 180)
+ * Fix sorting for integer based group-by options (such as Highest skill, migration wave etc...)
+ 
+  
 RELEASE 0.5.0 (April 10, 2010)
 CHANGES SINCE 0.4.3
 ===============================================================================
@@ -20,6 +51,7 @@ BUG FIXES:
  * Removed print button since it was just for playing around with
  * Fixed issue 193. (some flags are required to be on a dwarf)
  * Fixed issue 201. (mechanic skill id incorrect)
+ 
   
 RELEASE 0.4.3 (April 4, 2010)
 CHANGES SINCE 0.4.2
@@ -27,6 +59,7 @@ CHANGES SINCE 0.4.2
 MAJOR CHANGES:
  * Added preliminary support for DF2010 (0.31.01)
  * This will not be an advertised release
+ 
  
 RELEASE 0.4.2 (October 26, 2009)
 CHANGES SINCE 0.4.1
@@ -63,6 +96,7 @@ BUG FIXES:
  * Fixed broken labor sorting (Fixed issue 117)
  * Split "Grid Colors" from "Grid options" section of Options screen (Fixed issue 126)
 
+
 RELEASE 0.4.1 (October 6, 2009)
 CHANGES SINCE 0.4.0
 ===============================================================================
@@ -78,6 +112,7 @@ BUG FIXES:
    preventing users from being able to toggle labors for some dwarfs with custom professions set.
  * Allow sorting when grouped by profession again (oversight)
  
+
 RELEASE 0.4.0 (October 3, 2009)
 CHANGES SINCE 0.3.2
 ===============================================================================
@@ -120,6 +155,7 @@ BUG FIXES:
  * Fixed bug where overridden column background colors weren't being honored (Fixes issue 86)
  * Reverse sort the special column types so that "Spacer" is the default instead of "Happiness" when editing a column set (Fixed issue 90)
  * Fixed crash on windows when launched with option read on start set, and no DF version is running (Fixed issues 84, 99)
+
 
 RELEASE 0.3.2 (September 13, 2009)
 CHANGES SINCE 0.3.1

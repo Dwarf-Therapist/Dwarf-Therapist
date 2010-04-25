@@ -1,13 +1,21 @@
 ==============================================================================   
 KNOWN ISSUES
 ==============================================================================
-1) Migration Waves incorrect - The group-by "Migration Wave" is based on some shady guesswork
-   based on dwarf ids. It is in no way 100% accurate, but can sometimes amaze me that it works :)
+ * - Setting Mining and Woodcutting -
+   Setting these labors rely on the dwarf already having the proper equipment
+   (pick or axe). These labors should be manually set in game for now.
+
+ * - Migration Waves Incorrect -
+   The group-by "Migration Wave" is based on some shady guesswork
+   based on dwarf ids. It is in no way 100% accurate, but can sometimes amaze 
+   me that it works :)
    
-2) Dwarf and Squad translation names - This is brute force word-list searching. Verb conjugation,
-   plurality and case are a crapshoot. But it's generally pretty close.
-   
-3) If you come across some other weird error, please post a bug report here:
+ * - Dwarf and Squad Names -
+   This is brute force word-list searching. Verb conjugation, plurality and 
+   case are a crapshoot. But it's generally pretty close.
+  
+ * - Unknown - 
+   If you come across some other weird error, please post a bug report here:
    http://code.google.com/p/dwarftherapist/issues/entry and paste the 
    "run.log" file from the "log" directory into the bug report (or attach it)
    
