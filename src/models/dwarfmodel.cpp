@@ -272,7 +272,7 @@ void DwarfModel::build_row(const QString &key) {
         root->setData(true, DR_IS_AGGREGATE);
         root->setData(key, DR_GROUP_NAME);
         root->setData(0, DR_RATING);
-        root->setData(title, DR_SORT_VALUE);
+        //root->setData(title, DR_SORT_VALUE);
         // for integer based values we want to make sure they sort by the int
         // values instead of the string values
         if (m_group_by == GB_MIGRATION_WAVE) {
@@ -310,7 +310,20 @@ void DwarfModel::build_row(const QString &key) {
         i_name->setData(false, DR_IS_AGGREGATE);
         i_name->setData(0, DR_RATING);
         i_name->setData(d->id(), DR_ID);
-        i_name->setData(d->raw_profession(), DR_SORT_VALUE);
+        QVariant sort_val;
+        switch(m_group_by) {
+            case GB_PROFESSION:
+                sort_val = d->raw_profession();
+                break;
+            case GB_HAPPINESS:
+                sort_val = d->get_raw_happiness();
+                break;
+            case GB_NOTHING:
+            default:
+                sort_val = d->nice_name();
+                break;
+        }
+        i_name->setData(sort_val, DR_SORT_VALUE);
 
         if (d->is_male()) {
             i_name->setIcon(icn_m);
