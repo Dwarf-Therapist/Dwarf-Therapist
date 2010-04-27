@@ -65,7 +65,6 @@ public:
 
 
     // Mapping methods
-    virtual void map_virtual_memory() = 0;
     QVector<uint> find_vectors_in_range(const uint &max_entries,
                                         const uint &start_address,
                                         const uint &range_length);
@@ -122,6 +121,7 @@ protected:
     QVector<MemorySegment*> m_regions;
     int m_attach_count;
     QTimer *m_heartbeat_timer;
+    QTimer *m_memory_remap_timer;
 
     /*! this hash will hold a map of all loaded and valid memory layouts found
         on disk, the key is a QString of the checksum since other OSs will use
@@ -130,6 +130,7 @@ protected:
 
     private slots:
         void heartbeat();
+        virtual void map_virtual_memory() = 0;
 
 signals:
     // methods for sending progress information to QWidgets

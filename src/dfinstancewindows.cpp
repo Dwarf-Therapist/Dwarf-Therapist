@@ -332,18 +332,20 @@ void DFInstanceWindows::map_virtual_memory() {
     }
     m_regions.clear();
 
+    if (!m_is_ok)
+        return;
+
     // start by figuring out what kernel we're talking to
-    LOGD << "Mapping out virtual memory";
+    TRACE << "Mapping out virtual memory";
     SYSTEM_INFO info;
     GetSystemInfo(&info);
-    LOGD << "SYSTEM INFO";
-    LOGD << "PROCESSORS:" << info.dwNumberOfProcessors;
-    LOGD << "PROC TYPE:" << info.wProcessorArchitecture <<
+    TRACE << "PROCESSORS:" << info.dwNumberOfProcessors;
+    TRACE << "PROC TYPE:" << info.wProcessorArchitecture <<
             info.wProcessorLevel <<
             info.wProcessorRevision;
-    LOGD << "PAGE SIZE" << info.dwPageSize;
-    LOGD << "MIN ADDRESS:" << hexify((uint)info.lpMinimumApplicationAddress);
-    LOGD << "MAX ADDRESS:" << hexify((uint)info.lpMaximumApplicationAddress);
+    TRACE << "PAGE SIZE" << info.dwPageSize;
+    TRACE << "MIN ADDRESS:" << hexify((uint)info.lpMinimumApplicationAddress);
+    TRACE << "MAX ADDRESS:" << hexify((uint)info.lpMaximumApplicationAddress);
 
     uint start = (uint)info.lpMinimumApplicationAddress;
     uint max_address = (uint)info.lpMaximumApplicationAddress;
@@ -372,13 +374,11 @@ void DFInstanceWindows::map_virtual_memory() {
                 mbi.Protect & PAGE_READONLY ||
                 mbi.Protect & PAGE_READWRITE ||
                 mbi.Protect & PAGE_WRITECOPY)) {
-            /*
             TRACE << "FOUND READABLE COMMITED MEMORY SEGMENT FROM" <<
                     hexify(segment_start) << "-" <<
                     hexify(segment_start + segment_size) <<
                     "SIZE:" << (segment_size / 1024.0f) << "KB" <<
                     "FLAGS:" << mbi.Protect;
-            */
             MemorySegment *segment = new MemorySegment("", segment_start,
                                                        segment_start
                                                        + segment_size);
@@ -386,17 +386,15 @@ void DFInstanceWindows::map_virtual_memory() {
             m_regions << segment;
             accepted++;
         } else {
-            /*
             TRACE << "REJECTING MEMORY SEGMENT AT" << hexify(segment_start) <<
                     "SIZE:" << (segment_size / 1024.0f) << "KB FLAGS:" <<
                     mbi.Protect;
-            */
             rejected++;
         }
         if (mbi.RegionSize)
             start += mbi.RegionSize;
         else
-            start += page_size; //skip ahead 1k
+            start += page_size;
     }
     m_lowest_address = 0xFFFFFFFF;
     m_highest_address = 0;
@@ -406,7 +404,7 @@ void DFInstanceWindows::map_virtual_memory() {
         if (seg->end_addr > m_highest_address)
             m_highest_address = seg->end_addr;
     }
-    LOGD << "MEMORY SEGMENT SUMMARY: accepted" << accepted << "rejected" <<
+    TRACE << "MEMORY SEGMENT SUMMARY: accepted" << accepted << "rejected" <<
             rejected << "total" << accepted + rejected;
 }
 #endif

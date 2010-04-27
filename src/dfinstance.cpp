@@ -35,16 +35,20 @@ THE SOFTWARE.
 #include "truncatingfilelogger.h"
 
 DFInstance::DFInstance(QObject* parent)
-    :QObject(parent)
-    ,m_pid(0)
-    ,m_memory_correction(0)
-    ,m_stop_scan(false)
-    ,m_is_ok(true)
-    ,m_layout(0)
-    ,m_attach_count(0)
-    ,m_heartbeat_timer(new QTimer(this))
+    : QObject(parent)
+    , m_pid(0)
+    , m_memory_correction(0)
+    , m_stop_scan(false)
+    , m_is_ok(true)
+    , m_layout(0)
+    , m_attach_count(0)
+    , m_heartbeat_timer(new QTimer(this))
+    , m_memory_remap_timer(new QTimer(this))
 {
     connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
+    connect(m_memory_remap_timer, SIGNAL(timeout()),
+            SLOT(map_virtual_memory()));
+    m_memory_remap_timer->start(20000); // 20 seconds
     // let subclasses start the timer, since we don't want to be checking before
     // we're connected
 
@@ -169,7 +173,7 @@ bool DFInstance::looks_like_vector_of_pointers(const uint &addr) {
 }
 
 QVector<Dwarf*> DFInstance::load_dwarves() {
-    this->map_virtual_memory();
+    map_virtual_memory();
     QVector<Dwarf*> dwarves;
     if (!m_is_ok) {
         LOGW << "not connected";
@@ -242,8 +246,10 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 }
 
 void DFInstance::heartbeat() {
-    // simple read attempt that will fail if the DF game isn't running a fort, or isn't running at all
-    QVector<uint> creatures = enumerate_vector(m_layout->address("creature_vector") + m_memory_correction);
+    // simple read attempt that will fail if the DF game isn't running a fort,
+    // or isn't running at all
+    QVector<uint> creatures = enumerate_vector(
+            m_layout->address("creature_vector") + m_memory_correction);
     if (creatures.size() < 1) {
         // no game loaded, or process is gone
         emit connection_interrupted();
