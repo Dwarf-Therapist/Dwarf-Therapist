@@ -67,7 +67,8 @@ uint DFInstanceWindows::calculate_checksum() {
 
     uint timestamp = read_uint(pe_header + 4 + 2 * 2);
     QDateTime compile_timestamp = QDateTime::fromTime_t(timestamp);
-    LOGD << "Target EXE was compiled" << compile_timestamp;
+    LOGD << "Target EXE was compiled at " <<
+            compile_timestamp.toString(Qt::ISODate);
     return timestamp;
 }
 
@@ -240,15 +241,6 @@ bool DFInstanceWindows::find_running_copy() {
                          | PROCESS_VM_READ
                          | PROCESS_VM_OPERATION
                          | PROCESS_VM_WRITE, false, m_pid);
-
-    //m_proc = OpenProcess(PROCESS_ALL_ACCESS, false, m_pid);
-
-    PROCESS_MEMORY_COUNTERS pmc;
-    GetProcessMemoryInfo(m_proc, &pmc, sizeof(pmc));
-    m_memory_size = pmc.WorkingSetSize;
-    LOGD << "working set size: " << dec << m_memory_size / (1024.0f * 1024.0f)
-            << "MB";
-
     PVOID peb_addr = GetPebAddress(m_proc);
     LOGD << "PEB is at: " << hex << peb_addr;
 
@@ -319,19 +311,59 @@ bool DFInstanceWindows::find_running_copy() {
     m_memory_correction = (int)m_base_addr - 0x0400000;
     LOGD << "memory correction " << m_memory_correction;
 
-    // scan pages
-    uint start = 0;
+    map_virtual_memory();
+
+    if (DT->user_settings()->value("options/alert_on_lost_connection",
+                                   true).toBool()) {
+        m_heartbeat_timer->start(1000); // check every second for disconnection
+    }
+    m_is_ok = true;
+    return m_is_ok;
+}
+
+/*! OS specific way of asking the kernel for valid virtual memory pages from
+  the DF process. These pages are used to speed up scanning, and validate
+  reads from DF's memory. If addresses are not within ranges found by this
+  method, they will fail the is_valid_address() method */
+void DFInstanceWindows::map_virtual_memory() {
+    // destroy existing segments
+    foreach(MemorySegment *seg, m_regions) {
+        delete(seg);
+    }
+    m_regions.clear();
+
+    // start by figuring out what kernel we're talking to
+    LOGD << "Mapping out virtual memory";
+    SYSTEM_INFO info;
+    GetSystemInfo(&info);
+    LOGD << "SYSTEM INFO";
+    LOGD << "PROCESSORS:" << info.dwNumberOfProcessors;
+    LOGD << "PROC TYPE:" << info.wProcessorArchitecture <<
+            info.wProcessorLevel <<
+            info.wProcessorRevision;
+    LOGD << "PAGE SIZE" << info.dwPageSize;
+    LOGD << "MIN ADDRESS:" << hexify((uint)info.lpMinimumApplicationAddress);
+    LOGD << "MAX ADDRESS:" << hexify((uint)info.lpMaximumApplicationAddress);
+
+    uint start = (uint)info.lpMinimumApplicationAddress;
+    uint max_address = (uint)info.lpMaximumApplicationAddress;
+    int page_size = info.dwPageSize;
     int accepted = 0;
     int rejected = 0;
-    LOGD << "ENUMERATING MEMORY SEGMENTS FROM" << hex << start << "TO" << m_base_addr + m_memory_size;
-    while (start < 0x7FFFFFFF) {
+    uint segment_start = start;
+    uint segment_size = page_size;
+    while (start < max_address) {
         MEMORY_BASIC_INFORMATION mbi;
-        int sz = VirtualQueryEx(m_proc, (void*)start, &mbi, sizeof(MEMORY_BASIC_INFORMATION));
+        int sz = VirtualQueryEx(m_proc, (void*)start, &mbi,
+                                sizeof(MEMORY_BASIC_INFORMATION));
         if (sz != sizeof(MEMORY_BASIC_INFORMATION)) {
             // incomplete data returned. increment start and move on...
-            start += 0x1000;
+            start += page_size;
             continue;
         }
+
+        segment_start = (uint)mbi.BaseAddress;
+        segment_size = (uint)mbi.RegionSize;
 
         if (mbi.State == MEM_COMMIT
             //&& !(mbi.Protect & PAGE_GUARD)
@@ -340,25 +372,31 @@ bool DFInstanceWindows::find_running_copy() {
                 mbi.Protect & PAGE_READONLY ||
                 mbi.Protect & PAGE_READWRITE ||
                 mbi.Protect & PAGE_WRITECOPY)) {
-            TRACE << QString("FOUND READABLE COMMITED MEMORY SEGMENT FROM 0x%1-0x%2 SIZE: %3KB FLAGS:%4")
-                    .arg((uint)mbi.BaseAddress, 8, 16, QChar('0'))
-                    .arg((uint)mbi.BaseAddress + mbi.RegionSize, 8, 16, QChar('0'))
-                    .arg(mbi.RegionSize / 1024.0)
-                    .arg(mbi.Protect, 0, 16);
-            MemorySegment *segment = new MemorySegment("", (uint)mbi.BaseAddress, (uint)(mbi.BaseAddress) + mbi.RegionSize);
+            /*
+            TRACE << "FOUND READABLE COMMITED MEMORY SEGMENT FROM" <<
+                    hexify(segment_start) << "-" <<
+                    hexify(segment_start + segment_size) <<
+                    "SIZE:" << (segment_size / 1024.0f) << "KB" <<
+                    "FLAGS:" << mbi.Protect;
+            */
+            MemorySegment *segment = new MemorySegment("", segment_start,
+                                                       segment_start
+                                                       + segment_size);
             segment->is_guarded = mbi.Protect & PAGE_GUARD;
             m_regions << segment;
             accepted++;
         } else {
-            TRACE << QString("REJECTING MEMORY SEGMENT AT 0x%1 SIZE: %2KB FLAGS:%3")
-                .arg((uint)mbi.BaseAddress, 8, 16, QChar('0')).arg(mbi.RegionSize / 1024.0)
-                .arg(mbi.Protect, 0, 16);
+            /*
+            TRACE << "REJECTING MEMORY SEGMENT AT" << hexify(segment_start) <<
+                    "SIZE:" << (segment_size / 1024.0f) << "KB FLAGS:" <<
+                    mbi.Protect;
+            */
             rejected++;
         }
         if (mbi.RegionSize)
             start += mbi.RegionSize;
         else
-            start += 0x1000; //skip ahead 1k
+            start += page_size; //skip ahead 1k
     }
     m_lowest_address = 0xFFFFFFFF;
     m_highest_address = 0;
@@ -368,12 +406,7 @@ bool DFInstanceWindows::find_running_copy() {
         if (seg->end_addr > m_highest_address)
             m_highest_address = seg->end_addr;
     }
-    LOGD << "MEMORY SEGMENT SUMMARY: accepted" << accepted << "rejected" << rejected << "total" << accepted + rejected;
-
-    if (DT->user_settings()->value("options/alert_on_lost_connection", true).toBool()) {
-        m_heartbeat_timer->start(1000); // check every second for disconnection
-    }
-    m_is_ok = true;
-    return m_is_ok;
+    LOGD << "MEMORY SEGMENT SUMMARY: accepted" << accepted << "rejected" <<
+            rejected << "total" << accepted + rejected;
 }
 #endif

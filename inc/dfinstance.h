@@ -48,13 +48,14 @@ public:
     bool is_valid_address(const uint &addr);
     bool looks_like_vector_of_pointers(const uint &addr);
 
+    // memory reading
     virtual QVector<uint> enumerate_vector(const uint &addr) = 0;
     virtual char read_char(const uint &addr) = 0;
     virtual short read_short(const uint &addr) = 0;
     virtual ushort read_ushort(const uint &addr) = 0;
     virtual int read_int(const uint &addr) = 0;
     virtual uint read_uint(const uint &addr) = 0;
-    virtual uint read_raw(const uint &addr, const uint &bytes, void *buffer) = 0;
+    virtual uint read_raw(const uint &addr, const uint &bytes, void *buf) = 0;
     QVector<uint> scan_mem(const QByteArray &needle);
     virtual QString read_string(const uint &addr) = 0;
 
@@ -64,8 +65,13 @@ public:
 
 
     // Mapping methods
-    QVector<uint> find_vectors_in_range(const uint &max_entries, const uint &start_address, const uint &range_length);
-    QVector<uint> find_vectors(const uint &num_entries, const uint &fuzz=0, const uint &entry_size=4);
+    virtual void map_virtual_memory() = 0;
+    QVector<uint> find_vectors_in_range(const uint &max_entries,
+                                        const uint &start_address,
+                                        const uint &range_length);
+    QVector<uint> find_vectors(const uint &num_entries,
+                               const uint &fuzz=0,
+                               const uint &entry_size=4);
 
     // Methods for when we know how the data is layed out
     MemoryLayout *memory_layout() {return m_layout;}
@@ -106,7 +112,6 @@ protected:
 
     int m_pid;
     uint m_base_addr;
-    uint m_memory_size;
     uint m_memory_correction;
     uint m_lowest_address;
     uint m_highest_address;

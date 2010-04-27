@@ -81,6 +81,12 @@ DFInstance::DFInstance(QObject* parent)
             }
         }
     }
+    // if no memory layouts were found that's a critical error
+    if (m_memory_layouts.size() < 1) {
+        LOGE << "No valid memory layouts found in the following directories..."
+                << QDir::searchPaths("memory_layouts");
+        qApp->exit(ERROR_NO_VALID_LAYOUTS);
+    }
 }
 
 DFInstance::~DFInstance() {
@@ -163,6 +169,7 @@ bool DFInstance::looks_like_vector_of_pointers(const uint &addr) {
 }
 
 QVector<Dwarf*> DFInstance::load_dwarves() {
+    this->map_virtual_memory();
     QVector<Dwarf*> dwarves;
     if (!m_is_ok) {
         LOGW << "not connected";

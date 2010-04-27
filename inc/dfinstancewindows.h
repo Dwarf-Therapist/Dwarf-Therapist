@@ -52,7 +52,10 @@ public:
     uint write_string(const uint &addr, const QString &str);
     uint write_int(const uint &addr, const int &val);
 
-    // pure virtual methods windows doesn't really have a concept of
+    // pure virtual methods
+    void map_virtual_memory();
+
+    // windows doesn't really have a concept of
     // attaching/detaching from the process like Linux does, so just
     // make them no-ops
     bool attach(){return true;}
