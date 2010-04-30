@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QtGui>
-#include "graphicsthing.h"
+#include "creature.h"
 
 namespace Ui {
     class MainWindow;
@@ -25,7 +25,7 @@ protected:
 private:
     Ui::MainWindow *ui;
     QGraphicsScene *m_scene;
-    QList<GraphicsThing*> m_things;
+    QList<Creature*> m_creatures;
 
     void layout_things();
 };

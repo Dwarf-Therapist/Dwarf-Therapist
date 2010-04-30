@@ -7,11 +7,11 @@ TARGET = graphicstherapist
 TEMPLATE = app
 SOURCES += main.cpp \
     mainwindow.cpp \
-    graphicsthing.cpp \
+    creature.cpp \
     displaycell.cpp \
     basegraphicsobject.cpp
 HEADERS += mainwindow.h \
-    graphicsthing.h \
+    creature.h \
     displaycell.h \
     basegraphicsobject.h
 FORMS += mainwindow.ui

@@ -1,8 +1,8 @@
-#include "graphicsthing.h"
+#include "creature.h"
 #include "displaycell.h"
 #include <QtGui>
 
-GraphicsThing::GraphicsThing(const QString &name, Qt::Orientation orientation,
+Creature::Creature(const QString &name, Qt::Orientation orientation,
                              QGraphicsItem *parent)
     : BaseGraphicsObject(parent)
     , m_name(name)
@@ -36,7 +36,7 @@ GraphicsThing::GraphicsThing(const QString &name, Qt::Orientation orientation,
     }
 }
 
-void GraphicsThing::show_details() {
+void Creature::show_details() {
     QPushButton *btn = new QPushButton("close");
     QGraphicsWidget *w = new QGraphicsWidget(this);
     w->setPos(0, 30);
@@ -51,16 +51,16 @@ void GraphicsThing::show_details() {
 
 }
 
-void GraphicsThing::hide_details() {
+void Creature::hide_details() {
     qDebug() << "would hide";
 }
 
-void GraphicsThing::on_added_to_scene(QGraphicsScene *scene) {
+void Creature::on_added_to_scene(QGraphicsScene *scene) {
     Q_UNUSED(scene);
     //qDebug() << "added to scene:" << scene;
 }
 
-QRectF GraphicsThing::boundingRect() const {
+QRectF Creature::boundingRect() const {
     int w = m_min_width;
     if (w == 0) {
         w = m_text->boundingRect().width();
@@ -83,7 +83,7 @@ QRectF GraphicsThing::boundingRect() const {
     return bounds;
 }
 
-void GraphicsThing::paint(QPainter *p, const QStyleOptionGraphicsItem *opt,
+void Creature::paint(QPainter *p, const QStyleOptionGraphicsItem *opt,
                           QWidget *w) {
     Q_UNUSED(w);
     p->save();
@@ -96,7 +96,7 @@ void GraphicsThing::paint(QPainter *p, const QStyleOptionGraphicsItem *opt,
     p->restore();
 }
 
-void GraphicsThing::toggle_expand() {
+void Creature::toggle_expand() {
     if (m_expanded) {
         collapse();
     } else {
@@ -104,7 +104,7 @@ void GraphicsThing::toggle_expand() {
     }
 }
 
-void GraphicsThing::collapse() {
+void Creature::collapse() {
     m_expanded = false;
     int x = 0;
     int y = boundingRect().height() / 2.0f;
@@ -129,7 +129,7 @@ void GraphicsThing::collapse() {
     m_animation->start();
 }
 
-void GraphicsThing::expand() {
+void Creature::expand() {
     m_expanded = true;
     prepareGeometryChange();
 
@@ -171,19 +171,19 @@ void GraphicsThing::expand() {
     m_animation->start();
 }
 
-void GraphicsThing::set_min_width(int min_width) {
+void Creature::set_min_width(int min_width) {
     if (min_width != m_min_width) {
         prepareGeometryChange();
         m_min_width = min_width;
     }
 }
 
-void GraphicsThing::on_hover_start() {
+void Creature::on_hover_start() {
     m_hovering = true;
     maybe_update();
 }
 
-void GraphicsThing::on_hover_stop() {
+void Creature::on_hover_stop() {
     m_hovering = false;
     maybe_update();
 }

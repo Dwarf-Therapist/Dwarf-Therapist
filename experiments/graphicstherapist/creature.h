@@ -1,15 +1,28 @@
-#ifndef GRAPHICSTHING_H
-#define GRAPHICSTHING_H
+#ifndef CREATURE_H
+#define CREATURE_H
 
 #include <QtGui>
 #include "basegraphicsobject.h"
 
+/* Graphics overhaul of dwarves for the data grid
+
+   we need to be able to show any creature along with several supplimentary
+   data fields attached to or somewhere around the core graphic
+
+   The hierarcy of drawables should be build up before polluting it with too
+   much specific creature data.
+
+   BaseGraphicsObject -> MultiStateGraphicsObject
+
+
+*/
+
 class DisplayCell;
 
-class GraphicsThing : public BaseGraphicsObject {
+class Creature : public BaseGraphicsObject {
     Q_OBJECT
 public:
-    GraphicsThing(const QString &name, Qt::Orientation = Qt::Horizontal,
+    Creature(const QString &name, Qt::Orientation = Qt::Horizontal,
                   QGraphicsItem *parent = 0);
 
     QRectF boundingRect() const;
@@ -41,4 +54,4 @@ private:
     void on_added_to_scene(QGraphicsScene *scene);
 };
 
-#endif // GRAPHICSTHING_H
+#endif // Creature_H

@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "graphicsthing.h"
 
 static const int box_w = 16;
 static const int box_h = 16;
@@ -21,13 +20,17 @@ MainWindow::MainWindow(QWidget *parent)
     ui->gv_main->setBackgroundBrush(QBrush(QColor(48, 48, 48)));
     ui->gv_main->setRenderHint(QPainter::Antialiasing, true);
     ui->gv_main->setDragMode(QGraphicsView::NoDrag);
+    ui->gv_main->setResizeAnchor(QGraphicsView::NoAnchor);
+    ui->gv_main->setTransformationAnchor(QGraphicsView::NoAnchor);
+    ui->gv_main->setSceneRect(0, 0, 800, 1000);
     //ui->gv_main->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 
-    m_things.clear();
-    m_things << new GraphicsThing("Urist McFoobizzle");
-    m_things << new GraphicsThing("Cog Zanderpither");
-    m_things << new GraphicsThing("Wank WaggleFoot");
-    foreach(GraphicsThing *t, m_things) {
+    m_creatures.clear();
+    m_creatures << new Creature("Urist McFoobizzle");
+    m_creatures << new Creature("Cog Zanderpither");
+    m_creatures << new Creature("Wank WaggleFoot");
+    m_creatures << new Creature("Fath Esuriast");
+    foreach(Creature *t, m_creatures) {
         m_scene->addItem(t);
     }
     layout_things();
@@ -49,10 +52,10 @@ void MainWindow::changeEvent(QEvent *e) {
 }
 
 void MainWindow::layout_things() {
-    qStableSort(m_things);
+    qStableSort(m_creatures);
     int y = 0;
     int max_width = 0;
-    foreach(GraphicsThing *t, m_things) {
+    foreach(Creature *t, m_creatures) {
         QRectF r = t->boundingRect();
         //qDebug() << "Y:" << y << "RECT:" << r;
         t->setPos(0, y);
@@ -61,12 +64,11 @@ void MainWindow::layout_things() {
             max_width = r.width();
     }
     //qDebug() << "max width" << max_width;
-    foreach(GraphicsThing *t, m_things) {
+    foreach(Creature *t, m_creatures) {
         t->set_min_width(max_width);
     }
-    //ui->gv_main->ensureVisible(m_things.at(0));
-    //ui->gv_main->centerOn(m_things.at(0));
     ui->gv_main->move(0,0);
+    //ui->gv_main->ensureVisible(m_creatures.at(0));
 }
 
 void MainWindow::set_scale(double new_scale) {
@@ -78,14 +80,14 @@ void MainWindow::set_scale(double new_scale) {
 }
 
 void MainWindow::expand_all() {
-    foreach(GraphicsThing *t, m_things) {
+    foreach(Creature *t, m_creatures) {
         if (t)
             t->expand();
     }
 }
 
 void MainWindow::collapse_all() {
-    foreach(GraphicsThing *t, m_things) {
+    foreach(Creature *t, m_creatures) {
         if (t)
             t->collapse();
     }
