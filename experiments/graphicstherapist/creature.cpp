@@ -2,11 +2,12 @@
 #include "displaycell.h"
 #include <QtGui>
 
-Creature::Creature(const QString &name, Qt::Orientation orientation,
-                             QGraphicsItem *parent)
+Creature::Creature(const QString &name, const QString &prof,
+                   int highest_skill_level, QGraphicsItem *parent)
     : BaseGraphicsObject(parent)
     , m_name(name)
-    , m_orientation(orientation)
+    , m_prof(prof)
+    , m_highest_skill_level(highest_skill_level)
     , m_expanded(false)
     , m_hovering(false)
     , m_text(new QGraphicsTextItem(name, this))
@@ -155,15 +156,7 @@ void Creature::expand() {
 
         cell->show();
         m_animation->addAnimation(ani);
-        if (m_orientation == Qt::Horizontal) {
-            // expand on the x axis
-            x += cell->boundingRect().width() + 4;
-        } else {
-            // expand down the y axis
-            y += cell->boundingRect().height() + 4;
-        }
-
-
+        x += cell->boundingRect().width() + 4;
         // if this is the first item, update ourselves as it moves
         if (cell == m_items.at(0))
             connect(ani, SIGNAL(valueChanged(QVariant)), SLOT(maybe_update()));

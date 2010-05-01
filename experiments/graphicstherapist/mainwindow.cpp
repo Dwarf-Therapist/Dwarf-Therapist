@@ -26,10 +26,10 @@ MainWindow::MainWindow(QWidget *parent)
     //ui->gv_main->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 
     m_creatures.clear();
-    m_creatures << new Creature("Urist McFoobizzle");
-    m_creatures << new Creature("Cog Zanderpither");
-    m_creatures << new Creature("Wank WaggleFoot");
-    m_creatures << new Creature("Fath Esuriast");
+    m_creatures << new Creature("Urist McFoobizzle", "Fisherdwarf", 6);
+    m_creatures << new Creature("Cog Zanderpither", "Fisherdwarf", 12);
+    m_creatures << new Creature("Wank WaggleFoot", "Miner", 20);
+    m_creatures << new Creature("Fath Esuriast", "Bonecrafter", 3);
     foreach(Creature *t, m_creatures) {
         m_scene->addItem(t);
     }

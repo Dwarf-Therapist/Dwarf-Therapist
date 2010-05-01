@@ -22,8 +22,8 @@ class DisplayCell;
 class Creature : public BaseGraphicsObject {
     Q_OBJECT
 public:
-    Creature(const QString &name, Qt::Orientation = Qt::Horizontal,
-                  QGraphicsItem *parent = 0);
+    Creature(const QString &name, const QString &prof, int higest_skill_level,
+             QGraphicsItem *parent = 0);
 
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
@@ -41,7 +41,8 @@ public slots:
 
 private:
     QString m_name;
-    Qt::Orientation m_orientation;
+    QString m_prof;
+    int m_highest_skill_level;
     bool m_expanded;
     bool m_hovering;
     QGraphicsTextItem *m_text;
