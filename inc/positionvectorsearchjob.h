@@ -49,14 +49,89 @@ public:
 
             GameDataReader *gdr = GameDataReader::ptr();
             //! number of words that should be in a single language
-            int num_positions = gdr->get_int_for_key("ram_guesser/"
-                                                     "total_positions", 10);
-            QString position = gdr->get_string_for_key("ram_guesser/"
-                                                       "position_name");
-            uint offset = gdr->get_int_for_key("ram_guesser/"
-                                               "position_name_offset", 16);
-            Q_UNUSED(offset);
+            QString token = gdr->get_string_for_key(
+                    "ram_guesser/position/token");
+            QString needle = gdr->get_string_for_key(
+                    "ram_guesser/position/name_male_singluar/value");
 
+            LOGD << "searching for distance between" << token << "and" <<
+                    needle;
+
+            /*! this should be set to a big enough range to cover the distance
+                between a position token and its male singluar name buffer
+            */
+            uint bytes_to_backtrack = 0x200;
+
+            // search for the needle, then search backwards for the token
+            QVector<uint> needle_hits = m_df->scan_mem(needle.toAscii());
+            emit scan_message(tr("Searching for %1").arg(needle));
+            emit main_scan_total_steps(needle_hits.size());
+            int i = 1;
+            foreach(uint hit, needle_hits) {
+                // all we found was a null terminated c-string, make sure if
+                // we back up we find a valid std::string
+                uint hit_addr = hit - DFInstance::STRING_BUFFER_OFFSET;
+                QString hit_str = m_df->read_string(hit_addr);
+                if (hit_str != needle) {
+                    continue; // bail out this was just a c-string hit
+                }
+                LOGD << "found" << hit_str;
+
+                // fetch some raw data in front of our string match, so we can
+                // look for the position token
+                QByteArray data = m_df->get_data(hit_addr - bytes_to_backtrack,
+                                                 bytes_to_backtrack);
+
+                // search for the token c-string in the backtrack data
+                int token_offset = data.indexOf(token.toAscii());
+                if (token_offset != -1) {
+                    // this may only be a c-string hit as well, so we need to
+                    // try to make it a reference to a std::string.
+                    // The offset we found this at is based on backtrack bytes,
+                    // not the needle buffer. So we need to convert it to be a
+                    // distance from the TOKEN to the name buffer
+                    uint token_addr = hit_addr - bytes_to_backtrack
+                                      + token_offset
+                                      - DFInstance::STRING_BUFFER_OFFSET;
+                    QString token_str = m_df->read_string(token_addr);
+                    if (token_str != token) {
+                        continue; // bail out this was just a c-string hit
+                    }
+
+                    // Hell yes, we now have valid pointers to the std::string
+                    // instances for this postion token and name, get the offset
+                    uint dist = hit_addr - token_addr;
+
+                    LOGD << "TOKEN:" << hex << token_addr;
+                    LOGD << "NAME:" << hex << hit_addr;
+                    LOGD << "DISTANCE:" << hex << dist;
+                    //LOGD << m_df->pprint(data, 0);
+                    emit found_offset("position name offset:",
+                                      dist);
+
+                    int boxes = m_df->read_int(token_addr + 0x384);
+                    LOGD << "BOXES NEEDED:" << boxes;
+
+                    // here it gets a bit weird, find all pointers to our token
+                    // string which should be the position object
+                    foreach(uint pos_ptr1, m_df->scan_mem(encode(token_addr))) {
+                        // now find pointers to this pointer, which should
+                        // hopefully be a vector of positions with our
+                        // token_addr as the first entry
+                        foreach(uint pos_ptr2,
+                                m_df->scan_mem(encode(pos_ptr1))) {
+                            emit found_address(tr("Positions Vector"),
+                                pos_ptr2 - DFInstance::VECTOR_POINTER_OFFSET);
+                            foreach(uint position_addr, m_df->enumerate_vector(pos_ptr2 - DFInstance::VECTOR_POINTER_OFFSET)) {
+                                LOGD << "POSITION TOKEN:" << m_df->read_string(position_addr) << "BOXES NEEDED:" << m_df->read_int(position_addr + 0x384);
+                            }
+                        }
+                    }
+                }
+                emit main_scan_progress(i++);
+            }
+            emit quit();
+            /*
             emit main_scan_total_steps(1);
             emit main_scan_progress(0);
             LOGD << "scanning for" << position.toAscii().toHex();
@@ -87,6 +162,7 @@ public:
                 }
             }
             emit quit();
+            */
         }
 };
 #endif // POSITIONVECTORSEARCHJOB_H

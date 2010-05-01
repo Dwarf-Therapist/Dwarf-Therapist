@@ -109,9 +109,11 @@ QString DFInstanceWindows::read_string(const uint &addr) {
         buffer_addr = read_uint(buffer_addr);
 
     if (len > cap || len < 0 || len > 1024) {
+#ifdef _DEBUG
         // probaby not really a string
         LOGW << "Tried to read a string at" << hex << addr
             << "but it was totally not a string...";
+#endif
         return QString();
     }
     Q_ASSERT_X(len <= cap, "read_string",
