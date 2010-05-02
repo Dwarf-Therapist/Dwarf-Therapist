@@ -48,7 +48,6 @@ public:
             LOGD << "Starting Search in Thread" << QThread::currentThreadId();
 
             GameDataReader *gdr = GameDataReader::ptr();
-            //! number of words that should be in a single language
             QString token = gdr->get_string_for_key(
                     "ram_guesser/position/token");
             QString needle = gdr->get_string_for_key(
@@ -66,6 +65,7 @@ public:
             QVector<uint> needle_hits = m_df->scan_mem(needle.toAscii());
             emit scan_message(tr("Searching for %1").arg(needle));
             emit main_scan_total_steps(needle_hits.size());
+            emit main_scan_progress(0);
             int i = 1;
             foreach(uint hit, needle_hits) {
                 // all we found was a null terminated c-string, make sure if
@@ -109,9 +109,6 @@ public:
                     emit found_offset("position name offset:",
                                       dist);
 
-                    int boxes = m_df->read_int(token_addr + 0x384);
-                    LOGD << "BOXES NEEDED:" << boxes;
-
                     // here it gets a bit weird, find all pointers to our token
                     // string which should be the position object
                     foreach(uint pos_ptr1, m_df->scan_mem(encode(token_addr))) {
@@ -123,7 +120,11 @@ public:
                             emit found_address(tr("Positions Vector"),
                                 pos_ptr2 - DFInstance::VECTOR_POINTER_OFFSET);
                             foreach(uint position_addr, m_df->enumerate_vector(pos_ptr2 - DFInstance::VECTOR_POINTER_OFFSET)) {
+                                int flags = m_df->read_int(position_addr + 0x20);
+                                LOGD << hexify(position_addr) << m_df->read_int(position_addr + 0x1C);
                                 LOGD << "POSITION TOKEN:" << m_df->read_string(position_addr) << "BOXES NEEDED:" << m_df->read_int(position_addr + 0x384);
+                                LOGD << "NAME:" << m_df->read_string(position_addr + 0xe8) << "FEMALE NAME PLURAL:" << m_df->read_string(position_addr + 0x13C);
+                                LOGD << "FLAGS:" << flags << hexify(flags);
                             }
                         }
                     }
@@ -131,38 +132,6 @@ public:
                 emit main_scan_progress(i++);
             }
             emit quit();
-            /*
-            emit main_scan_total_steps(1);
-            emit main_scan_progress(0);
-            LOGD << "scanning for" << position.toAscii().toHex();
-
-            emit scan_message(tr("Looking for Positions Vector (%1 entries)")
-                              .arg(num_positions));
-            QVector<uint> vectors = m_df->find_vectors(num_positions, 5, 4);
-            emit main_scan_total_steps(vectors.size());
-            for (int i = 0; i < vectors.size(); ++i) {
-                uint vec = vectors.at(i);
-                QVector<uint> entries = m_df->enumerate_vector(vec);
-                LOGD << "looking at" << hex << vec << "entries:" << dec << entries.size();
-                emit main_scan_progress(i);
-                emit sub_scan_total_steps(entries.size());
-                for (int j = 0; j < entries.size(); ++j) {
-                    uint entry = entries.at(j);
-                    QByteArray data = m_df->get_data(entry, 0x500);
-                    //LOGD << "got data" << data.size() << "bytes";
-                    int offset = data.indexOf(position.toLocal8Bit(), 0);
-                    if (offset != -1) {
-                        LOGD << "WOOT!" << entry;
-                        emit found_address(tr("Vector that contains %1")
-                                           .arg(position), vec);
-                        emit sub_scan_progress(entries.size());
-                        break;
-                    }
-                    emit sub_scan_progress(j);
-                }
-            }
-            emit quit();
-            */
         }
 };
 #endif // POSITIONVECTORSEARCHJOB_H
