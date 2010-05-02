@@ -240,6 +240,8 @@ public:
         void read_settings();
         //! show a dialog with a memory dump for this dwarf...
         void dump_memory();
+        //! dump dwarf memory to a file using the dwarf's name
+        void dump_memory_to_file();
         //! show details for this dwarf in a new window...
         void show_details();
 

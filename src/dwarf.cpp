@@ -71,6 +71,9 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     QAction *dump_mem = new QAction(tr("Dump Memory..."), this);
     connect(dump_mem, SIGNAL(triggered()), SLOT(dump_memory()));
     m_actions << dump_mem;
+    QAction *dump_mem_to_file = new QAction(tr("Dump Memory To File"), this);
+    connect(dump_mem_to_file, SIGNAL(triggered()), SLOT(dump_memory_to_file()));
+    m_actions << dump_mem_to_file;
 }
 
 
@@ -806,6 +809,30 @@ void Dwarf::dump_memory() {
     v->addWidget(te);
     d->setLayout(v);
     d->show();
+}
+
+void Dwarf::dump_memory_to_file() {
+    QString filename = QString("%1-%2.txt").arg(nice_name())
+                    .arg(QDateTime::currentDateTime()
+                         .toString("MMM-dd hh-mm-ss"));
+    QDir d = QDir::current();
+    d.cd("log");
+    QFile *f = new QFile(d.filePath(filename), this);
+    if (f->open(QFile::ReadWrite)) {
+        f->write(QString("NAME: %1\n").arg(nice_name()).toAscii());
+        f->write(QString("ADDRESS: %1\n").arg(hexify(m_address)).toAscii());
+        f->write(m_df->pprint(m_df->get_data(m_address, 0xb90), 0).toAscii());
+        f->close();
+        QMessageBox::information(DT->get_main_window(), tr("Dumped"),
+                                 tr("%1 has been dumped to %2")
+                                 .arg(nice_name())
+                                 .arg(d.absoluteFilePath(filename)));
+    } else {
+        QMessageBox::warning(DT->get_main_window(), tr("Unable to Dump Dwarf"),
+                             tr("Could not write new file in log directory! "
+                                "(%1)").arg(f->errorString()));
+    }
+    f->deleteLater();
 }
 
 void Dwarf::show_details() {
