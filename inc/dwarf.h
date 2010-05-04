@@ -244,6 +244,8 @@ public:
         void dump_memory_to_file();
         //! show details for this dwarf in a new window...
         void show_details();
+        //! copy this dwarf's memory address to the clipboard (debugging)
+        void copy_address_to_clipboard();
 
 
 

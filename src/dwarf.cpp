@@ -74,6 +74,11 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     QAction *dump_mem_to_file = new QAction(tr("Dump Memory To File"), this);
     connect(dump_mem_to_file, SIGNAL(triggered()), SLOT(dump_memory_to_file()));
     m_actions << dump_mem_to_file;
+    QAction *copy_address_to_clipboard = new QAction(
+            tr("Copy Address to Clipboard"), this);
+    connect(copy_address_to_clipboard, SIGNAL(triggered()),
+            SLOT(copy_address_to_clipboard()));
+    m_actions << copy_address_to_clipboard;
 }
 
 
@@ -837,6 +842,10 @@ void Dwarf::dump_memory_to_file() {
 
 void Dwarf::show_details() {
     DT->get_main_window()->show_dwarf_details_dock(this);
+}
+
+void Dwarf::copy_address_to_clipboard() {
+    qApp->clipboard()->setText(hexify(m_address));
 }
 
 Skill Dwarf::highest_skill() {
