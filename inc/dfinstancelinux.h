@@ -50,6 +50,8 @@ public:
     uint write_string(const uint &addr, const QString &str);
     uint write_int(const uint &addr, const int &val);
 
+    void map_virtual_memory();
+
     bool attach();
     bool detach();
 

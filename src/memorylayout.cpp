@@ -86,6 +86,6 @@ uint MemoryLayout::read_hex(QString key) {
 }
 
 bool MemoryLayout::is_valid() {
-    return m_data && m_data->contains("info/checksum")
+    return m_data != NULL && m_data->contains("info/checksum")
             && m_data->contains("info/version_name");
 }

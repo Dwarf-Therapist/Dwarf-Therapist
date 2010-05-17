@@ -56,7 +56,7 @@ THE SOFTWARE.
 #ifdef Q_WS_WIN
 #include "dfinstancewindows.h"
 #endif
-#ifdef _LINUX
+#ifdef Q_WS_X11
 #include "dfinstancelinux.h"
 #endif
 #ifdef _OSX
@@ -231,12 +231,14 @@ void MainWindow::connect_to_df() {
 
 #ifdef Q_WS_WIN
     m_df = new DFInstanceWindows();
-#endif
+#else
 #ifdef Q_WS_MAC
     m_df = new DFInstanceOSX();
-#endif
-#ifdef _LINUX
+#else
+#ifdef Q_WS_X11
     m_df = new DFInstanceLinux();
+#endif
+#endif
 #endif
     // find_running_copy can fail for several reasons, and will take care of
     // logging and notifying the user.

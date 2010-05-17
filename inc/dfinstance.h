@@ -127,6 +127,7 @@ protected:
         on disk, the key is a QString of the checksum since other OSs will use
         an MD5 of the binary instead of a PE timestamp */
     QHash<QString, MemoryLayout*> m_memory_layouts; // checksum->layout
+    MemoryLayout *get_memory_layout(QString checksum);
 
     private slots:
         void heartbeat();

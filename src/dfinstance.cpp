@@ -441,3 +441,46 @@ QVector<uint> DFInstance::find_vectors(const uint &num_entries,
     emit scan_progress(100);
     return vectors;
 }
+
+MemoryLayout *DFInstance::get_memory_layout(QString checksum) {
+    checksum = checksum.toLower();
+    LOGD << "DF's checksum is:" << checksum;
+
+    MemoryLayout *ret_val = NULL;
+    ret_val = m_memory_layouts.value(checksum, NULL);
+    m_is_ok = ret_val != NULL && ret_val->is_valid();
+    if (m_is_ok) {
+        LOGI << "Detected Dwarf Fortress version"
+                << ret_val->game_version() << "using MemoryLayout from"
+                << ret_val->filename();
+    } else {
+        QString supported_vers;
+        foreach(QString tmp_checksum, m_memory_layouts.uniqueKeys()) {
+            MemoryLayout *l = m_memory_layouts[tmp_checksum];
+            supported_vers.append(
+                    QString("<li><b>%1</b>(<font color=\"#444444\">%2"
+                            "</font>) from <font size=-1>%3</font></li>")
+                    .arg(l->game_version())
+                    .arg(l->checksum())
+                    .arg(l->filename()));
+        }
+
+        QMessageBox *mb = new QMessageBox(qApp->activeWindow());
+        mb->setIcon(QMessageBox::Critical);
+        mb->setWindowTitle(tr("Unidentified Game Version"));
+        mb->setText(tr("I'm sorry but I don't know how to talk to this "
+            "version of Dwarf Fortress! (checksum:%1)<br><br> <b>Supported "
+            "Versions:</b><ul>%2</ul>").arg(checksum).arg(supported_vers));
+        mb->setInformativeText(tr("<a href=\"%1\">Click Here to find out "
+                                  "more online</a>.")
+                               .arg(URL_SUPPORTED_GAME_VERSIONS));
+
+        /*
+        mb->setDetailedText(tr("Failed to locate a memory layout file for "
+            "Dwarf Fortress exectutable with checksum '%1'").arg(checksum));
+        */
+        mb->exec();
+        LOGE << tr("unable to identify version from checksum:") << checksum;
+    }
+    return ret_val;
+}
