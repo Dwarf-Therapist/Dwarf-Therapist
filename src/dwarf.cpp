@@ -874,7 +874,7 @@ QString Dwarf::read_squad_name(const uint &addr, bool use_generic) {
     QString out;
     for (int i = 0; i < 24; i+=4) {
         int word_offset = m_df->read_int(addr + i);
-        if (word_offset == 0 || word_offset == 0xFFFFFFFF)
+        if (word_offset <= 0)
             continue;
         if (use_generic)
             out += DT->get_generic_word(word_offset);
