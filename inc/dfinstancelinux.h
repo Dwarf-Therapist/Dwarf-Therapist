@@ -32,7 +32,7 @@ class DFInstanceLinux : public DFInstance {
     Q_OBJECT
 public:
     DFInstanceLinux(QObject *parent=0);
-    ~DFInstanceLinux();
+    virtual ~DFInstanceLinux();
 
     // factory ctor
     bool find_running_copy();
@@ -50,12 +50,16 @@ public:
     uint write_string(const uint &addr, const QString &str);
     uint write_int(const uint &addr, const int &val);
 
+    void map_virtual_memory();
+
     bool attach();
     bool detach();
 
 
 protected:
     uint calculate_checksum();
+private:
+    QFile m_memory_file;
 };
 
 #endif // DFINSTANCE_H

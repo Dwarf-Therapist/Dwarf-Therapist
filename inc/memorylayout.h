@@ -17,6 +17,7 @@ public:
     QHash<uint, QString> valid_flags_1() {return m_valid_flags_1;}
     QHash<uint, QString> invalid_flags_1() {return m_invalid_flags_1;}
     QHash<uint, QString> invalid_flags_2() {return m_invalid_flags_2;}
+    bool is_complete() {return m_complete;}
 
 private:
     QString m_filename;
@@ -29,6 +30,7 @@ private:
     QHash<uint, QString> m_invalid_flags_1;
     QHash<uint, QString> m_invalid_flags_2;
     QSettings *m_data;
+    bool m_complete;
 
     void load_data();
     uint read_hex(QString key);

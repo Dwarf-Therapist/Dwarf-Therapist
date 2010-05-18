@@ -24,12 +24,14 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #ifdef Q_WS_WIN
 #include "dfinstancewindows.h"
-#endif
-#ifdef _LINUX
+#else
+#ifdef Q_WS_MAC
+#include "dfinstanceosx.h"
+#else
+#ifdef Q_WS_X11
 #include "dfinstancelinux.h"
 #endif
-#ifdef _OSX
-#include "dfinstanceosx.h"
+#endif
 #endif
 
 ScannerJob::ScannerJob(SCANNER_JOB_TYPE job_type)
@@ -54,12 +56,14 @@ DFInstance *ScannerJob::df() {
 bool ScannerJob::get_DFInstance() {
 #ifdef Q_WS_WIN
     m_df = new DFInstanceWindows(this);
-#endif
-#ifdef _LINUX
+#else
+#ifdef Q_WS_MAC
+    m_df = new DFInstanceOSX(this);
+#else
+#ifdef Q_WS_X11
     m_df = new DFInstanceLinux(this);
 #endif
-#ifdef _OSX
-    m_df = new DFInstanceOSX(this);
+#endif
 #endif
     return m_df->find_running_copy() && m_df->is_ok();
 }

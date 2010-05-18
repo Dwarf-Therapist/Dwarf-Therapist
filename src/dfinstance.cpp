@@ -40,17 +40,21 @@ DFInstance::DFInstance(QObject* parent)
     , m_memory_correction(0)
     , m_stop_scan(false)
     , m_is_ok(true)
+    , m_bytes_scanned(0)
     , m_layout(0)
     , m_attach_count(0)
     , m_heartbeat_timer(new QTimer(this))
     , m_memory_remap_timer(new QTimer(this))
+    , m_scan_speed_timer(new QTimer(this))
 {
-    connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
+    connect(m_scan_speed_timer, SIGNAL(timeout()),
+            SLOT(calculate_scan_rate()));
     connect(m_memory_remap_timer, SIGNAL(timeout()),
             SLOT(map_virtual_memory()));
     m_memory_remap_timer->start(20000); // 20 seconds
-    // let subclasses start the timer, since we don't want to be checking before
-    // we're connected
+    // let subclasses start the heartbeat timer, since we don't want to be
+    // checking before we're connected
+    connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
 
     // We need to scan for memory layout files to get a list of DF versions this
     // DT version can talk to. Start by building up a list of search paths
@@ -58,12 +62,14 @@ DFInstance::DFInstance(QObject* parent)
     QDir::addSearchPath("memory_layouts", working_dir.path());
 #ifdef Q_WS_WIN
     QString subdir = "windows";
-#endif
+#else
 #ifdef Q_WS_X11
     QString subdir = "linux";
-#endif
+#else
 #ifdef _OSX
     QString subdir = "osx";
+#endif
+#endif
 #endif
     QDir::addSearchPath("memory_layouts", working_dir.absoluteFilePath(
         QString("etc/memory_layouts/%1").arg(subdir)));
@@ -131,8 +137,10 @@ QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
             memset(buffer, 0, step);
             int bytes_read = read_raw(ptr, step, buffer);
             if (bytes_read < step && !seg->is_guarded) {
-                LOGW << "tried to read" << step << "bytes starting at" << hex
-                        << ptr << "but only got" << dec << bytes_read;
+                if (m_layout->is_complete()) {
+                    LOGW << "tried to read" << step << "bytes starting at" <<
+                            hexify(ptr) << "but only got" << dec << bytes_read;
+                }
                 continue;
             }
 
@@ -150,7 +158,7 @@ QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
         if (m_stop_scan)
             break;
     }
-    TRACE << QString("Scanned %L1KB in %L2ms").arg(bytes_scanned / 1024 * 1024)
+    LOGD << QString("Scanned %L1MB in %L2ms").arg(bytes_scanned / 1024 * 1024)
             .arg(timer.elapsed());
     delete[] buffer;
     return addresses;
@@ -268,12 +276,12 @@ bool DFInstance::is_valid_address(const uint &addr) {
 }
 
 QByteArray DFInstance::get_data(const uint &addr, const uint &size) {
-    char *buffer = new char[size];
-    memset(buffer, 0, size);
-    read_raw(addr, size, buffer);
-    QByteArray data(buffer, size);
-    delete[] buffer;
-    return data;
+    QByteArray ret_val(size, 0); // 0 filled to proper length
+    uint bytes_read = read_raw(addr, size, ret_val.data());
+    if (bytes_read != size) {
+        ret_val.clear();
+    }
+    return ret_val;
 }
 
 //! ahhh convenience
@@ -345,12 +353,9 @@ QVector<uint> DFInstance::find_vectors_in_range(const uint &max_entries,
     return vectors;
 }
 
-QVector<uint> DFInstance::find_vectors(const uint &num_entries,
-                                       const uint &fuzz/* =0 */,
-                                       const uint &entry_size/* =4 */) {
-    m_stop_scan = false;
-    QVector<uint> vectors;
-
+QVector<uint> DFInstance::find_vectors(int num_entries,
+                                       int fuzz/* =0 */,
+                                       int entry_size/* =4 */) {
     /*
     glibc++ does vectors like so...
     |4bytes      | 4bytes    | 4bytes
@@ -360,84 +365,134 @@ QVector<uint> DFInstance::find_vectors(const uint &num_entries,
     | 4bytes     | 4bytes      | 4 bytes   | 4bytes
     ALLOCATOR    |START_ADDRESS|END_ADDRESS|END_ALLOCATOR
     */
-
+    m_stop_scan = false; //! if ever set true, bail from the inner loop
+    QVector<uint> vectors; //! return value collection of vectors found
     uint int1 = 0; // holds the start val
     uint int2 = 0; // holds the end val
 
     // progress reporting
+    m_scan_speed_timer->start(500);
+    m_memory_remap_timer->stop(); // don't remap segments while scanning
     uint total_bytes = 0;
-    uint bytes_scanned = 0;
+    m_bytes_scanned = 0; // for global timings
+    int bytes_scanned = 0; // for progress calcs
     foreach(MemorySegment *seg, m_regions) {
         total_bytes += seg->size;
     }
-    uint report_every_n_bytes = total_bytes / 100;
-    emit scan_total_steps(100);
+    uint report_every_n_bytes = total_bytes / 1000;
+    emit scan_total_steps(1000);
     emit scan_progress(0);
-    // iterate over all known memory segments
-    uint max_segment_size = 0;
-    foreach(MemorySegment *seg, m_regions) {
-        if (seg->size > max_segment_size)
-            max_segment_size = seg->size;
-    }
-    //LOGD << "Largest segment size is" << max_segment_size;
 
-    // this buffer will hold the entire memory segment (may need to toned down a bit)
-    char *buffer = new char[max_segment_size];
-    if (buffer == 0) {
-        LOGE << tr("Unable to allocate char buffer of %1 bytes")
-                .arg(max_segment_size);
-    }
-
+    int scan_step_size = 0x10000;
+    QByteArray buffer(scan_step_size, '\0');
+    QTime timer;
+    timer.start();
     foreach(MemorySegment *seg, m_regions) {
-        //LOGD << "SCANNING REGION" << hex << seg->start_addr << "-"
+        //TRACE << "SCANNING REGION" << hex << seg->start_addr << "-"
         //        << seg->end_addr << "BYTES:" << dec << seg->size;
-        memset(buffer, 0, seg->size); // 0 out the buffer
-
-        // this may read multiple times to put the entire region in the buffer
-        uint bytes_read = read_raw(seg->start_addr, seg->size, buffer);
-        if (bytes_read < seg->size) {
-            continue;
+        if ((int)seg->size <= scan_step_size) {
+            scan_step_size = seg->size;
         }
-
-        /* we now have this entire memory segment inside `buffer`. So lets step
-           through it looking for things that look like vectors of pointers.
-           We read a uint into int1 and 4 bytes later we read another uint into
-           int2. If int1 is a vector head, then int2 will be larger than int2,
-           evenly divisible by 4, and the difference between the two (divided
-           by four) will tell us how many pointers are in this array. We can
-           also check to make sure int1 and int2 reside in valid memory
-           regions. If all of this adds up, then odds are pretty good we've
-           found a vector
-        */
-        for (uint i = 0; i < seg->size; i += 4) {
-            memcpy(&int1, buffer + i, 4);
-            memcpy(&int2, buffer + i + 4, 4);
-            if (int2 >= int1 && is_valid_address(int1) &&
-                is_valid_address(int2)) {
-                uint bytes = int2 - int1;
-                uint entries = bytes / entry_size;
-                int diff = entries - num_entries;
-                if ((uint)qAbs(diff) <= fuzz) {
-                    uint vector_address = seg->start_addr + i -
-                                          VECTOR_POINTER_OFFSET;
-                    QVector<uint> addrs = enumerate_vector(vector_address);
-                    diff = addrs.size() - num_entries;
-                    if ((uint)qAbs(diff) <= fuzz) {
-                        vectors << vector_address;
+        int scan_steps = seg->size / scan_step_size;
+        if (seg->size % scan_step_size) {
+            scan_steps++;
+        }
+        uint addr = 0; // the ptr we will read from
+        for(int step = 0; step < scan_steps; ++step) {
+            addr = seg->start_addr + (scan_step_size * step);
+            LOGD << "starting scan for vectors at" << hex << addr << "step"
+                    << dec << step << "of" << scan_steps;
+            int bytes_read = read_raw(addr, scan_step_size, buffer);
+            if (bytes_read < scan_step_size) {
+                continue;
+            }
+            for(int offset = 0; offset < scan_step_size; offset += entry_size) {
+                int1 = decode_int(buffer.mid(offset, entry_size));
+                int2 = decode_int(buffer.mid(offset + entry_size, entry_size));
+                if (int1 && int2 && int2 >= int1
+                    //&& is_valid_address(int1)
+                    //&& is_valid_address(int2)
+                    ) {
+                    uint bytes = int2 - int1;
+                    uint entries = bytes / entry_size;
+                    int diff = entries - num_entries;
+                    if (qAbs(diff) <= fuzz) {
+                        uint vector_address = addr + offset -
+                                              VECTOR_POINTER_OFFSET;
+                        QVector<uint> addrs = enumerate_vector(vector_address);
+                        diff = addrs.size() - num_entries;
+                        if (qAbs(diff) <= fuzz) {
+                            vectors << vector_address;
+                        }
                     }
                 }
+                m_bytes_scanned += entry_size;
+                bytes_scanned += entry_size;
                 if (m_stop_scan)
                     break;
             }
-            bytes_scanned += 4;
-            if (i % 400 == 0)
-                emit scan_progress(bytes_scanned / report_every_n_bytes);
+            QString msg = QString("%1 bytes scanned").arg(bytes_scanned);
+            emit scan_progress(bytes_scanned / report_every_n_bytes);
+            DT->processEvents();
+            if (m_stop_scan)
+                break;
         }
-        DT->processEvents();
-        if (m_stop_scan)
-            break;
     }
-    delete[] buffer;
+    m_memory_remap_timer->start(20000); // start the remapper again
+    m_scan_speed_timer->stop();
+    LOGD << QString("Scanned %L1MB in %L2ms").arg(bytes_scanned / 1024 * 1024)
+            .arg(timer.elapsed());
     emit scan_progress(100);
     return vectors;
+}
+
+MemoryLayout *DFInstance::get_memory_layout(QString checksum) {
+    checksum = checksum.toLower();
+    LOGD << "DF's checksum is:" << checksum;
+
+    MemoryLayout *ret_val = NULL;
+    ret_val = m_memory_layouts.value(checksum, NULL);
+    m_is_ok = ret_val != NULL && ret_val->is_valid();
+    if (m_is_ok) {
+        LOGI << "Detected Dwarf Fortress version"
+                << ret_val->game_version() << "using MemoryLayout from"
+                << ret_val->filename();
+    } else {
+        QString supported_vers;
+        foreach(QString tmp_checksum, m_memory_layouts.uniqueKeys()) {
+            MemoryLayout *l = m_memory_layouts[tmp_checksum];
+            supported_vers.append(
+                    QString("<li><b>%1</b>(<font color=\"#444444\">%2"
+                            "</font>) from <font size=-1>%3</font></li>")
+                    .arg(l->game_version())
+                    .arg(l->checksum())
+                    .arg(l->filename()));
+        }
+
+        QMessageBox *mb = new QMessageBox(qApp->activeWindow());
+        mb->setIcon(QMessageBox::Critical);
+        mb->setWindowTitle(tr("Unidentified Game Version"));
+        mb->setText(tr("I'm sorry but I don't know how to talk to this "
+            "version of Dwarf Fortress! (checksum:%1)<br><br> <b>Supported "
+            "Versions:</b><ul>%2</ul>").arg(checksum).arg(supported_vers));
+        mb->setInformativeText(tr("<a href=\"%1\">Click Here to find out "
+                                  "more online</a>.")
+                               .arg(URL_SUPPORTED_GAME_VERSIONS));
+
+        /*
+        mb->setDetailedText(tr("Failed to locate a memory layout file for "
+            "Dwarf Fortress exectutable with checksum '%1'").arg(checksum));
+        */
+        mb->exec();
+        LOGE << tr("unable to identify version from checksum:") << checksum;
+    }
+    return ret_val;
+}
+
+void DFInstance::calculate_scan_rate() {
+    float rate = (m_bytes_scanned / 1024.0f / 1024.0f) /
+                 (m_scan_speed_timer->interval() / 1000.0f);
+    QString msg = QString("%L1MB/s").arg(rate);
+    emit scan_message(msg);
+    m_bytes_scanned = 0;
 }

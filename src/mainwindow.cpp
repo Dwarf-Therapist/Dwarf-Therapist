@@ -56,7 +56,7 @@ THE SOFTWARE.
 #ifdef Q_WS_WIN
 #include "dfinstancewindows.h"
 #endif
-#ifdef _LINUX
+#ifdef Q_WS_X11
 #include "dfinstancelinux.h"
 #endif
 #ifdef _OSX
@@ -231,12 +231,14 @@ void MainWindow::connect_to_df() {
 
 #ifdef Q_WS_WIN
     m_df = new DFInstanceWindows();
-#endif
+#else
 #ifdef Q_WS_MAC
     m_df = new DFInstanceOSX();
-#endif
-#ifdef _LINUX
+#else
+#ifdef Q_WS_X11
     m_df = new DFInstanceLinux();
+#endif
+#endif
 #endif
     // find_running_copy can fail for several reasons, and will take care of
     // logging and notifying the user.
@@ -244,11 +246,19 @@ void MainWindow::connect_to_df() {
         m_scanner = new Scanner(m_df, this);
         LOGD << "Connection to DF version"
                 << m_df->memory_layout()->game_version() << "established.";
-        DT->load_game_translation_tables(m_df);
         m_lbl_status->setText(tr("Connected to %1")
                               .arg(m_df->memory_layout()->game_version()));
-        connect(m_df, SIGNAL(connection_interrupted()),
-                SLOT(lost_df_connection()));
+        if (m_df->memory_layout()->is_complete()) {
+            // if the memory layout is still being mapped don't read all this
+            // in yet
+            DT->load_game_translation_tables(m_df);
+            connect(m_df, SIGNAL(connection_interrupted()),
+                    SLOT(lost_df_connection()));
+            if (DT->user_settings()->value("options/read_on_startup",
+                                           true).toBool()) {
+                read_dwarves();
+            }
+        }
         connect(m_df, SIGNAL(progress_message(QString)),
                 SLOT(set_progress_message(QString)));
         connect(m_df, SIGNAL(progress_range(int,int)),
@@ -256,9 +266,6 @@ void MainWindow::connect_to_df() {
         connect(m_df, SIGNAL(progress_value(int)),
                 SLOT(set_progress_value(int)));
         set_interface_enabled(true);
-        if (DT->user_settings()->value("options/read_on_startup", true).toBool()) {
-            read_dwarves();
-        }
     }
 }
 
@@ -379,7 +386,9 @@ void MainWindow::version_check_finished(bool error) {
 }
 
 void MainWindow::scan_memory() {
-    m_scanner->show();
+    if (m_scanner) {
+        m_scanner->show();
+    }
 }
 
 void MainWindow::set_group_by(int group_by) {

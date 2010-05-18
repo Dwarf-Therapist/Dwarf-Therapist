@@ -83,21 +83,24 @@ QVector<uint> DFInstanceWindows::enumerate_vector(const uint &addr) {
     uint entries = (end - start) / sizeof(uint);
     TRACE << "there appears to be" << entries << "entries in this vector";
 
-    Q_ASSERT(start >= 0);
-    Q_ASSERT(end >= 0);
-    Q_ASSERT(end >= start);
-    Q_ASSERT((end - start) % 4 == 0);
-    Q_ASSERT(start % 4 == 0);
-    Q_ASSERT(end % 4 == 0);
-    Q_ASSERT(entries < 5000);
+    if (m_layout->is_complete()) {
+        Q_ASSERT(start >= 0);
+        Q_ASSERT(end >= 0);
+        Q_ASSERT(end >= start);
+        Q_ASSERT((end - start) % 4 == 0);
+        Q_ASSERT(start % 4 == 0);
+        Q_ASSERT(end % 4 == 0);
+        Q_ASSERT(entries < 5000);
+    }
 
     for (uint ptr = start; ptr < end; ptr += 4 ) {
         uint a = read_uint(ptr);
-        if (is_valid_address(a)) {
+        //if (is_valid_address(a)) {
             addresses.append(a);
-        }
+        //}
     }
-    TRACE << "FOUND" << addresses.size()<< "addresses in vector";
+    TRACE << "FOUND" << addresses.size()<< "addresses in vector at"
+            << hexify(addr);
     return addresses;
 }
 
@@ -186,6 +189,15 @@ char DFInstanceWindows::read_char(const uint &addr) {
     return val;
 }
 
+int DFInstanceWindows::read_raw(const uint &addr, const uint &bytes,
+                                QByteArray &buffer) {
+    buffer.fill(0, bytes);
+    int bytes_read = 0;
+    ReadProcessMemory(m_proc, (LPCVOID)addr, (char*)buffer.data(),
+                      sizeof(BYTE) * bytes, (DWORD*)&bytes_read);
+    return bytes_read;
+}
+
 uint DFInstanceWindows::read_raw(const uint &addr, const uint &bytes,
                                  void *buffer) {
     memset(buffer, 0, bytes);
@@ -268,43 +280,7 @@ bool DFInstanceWindows::find_running_copy() {
     }
 
     if (m_is_ok) {
-        QString checksum = hexify(calculate_checksum()).toLower();
-        LOGD << "DF's checksum is:" << checksum;
-
-        m_layout = m_memory_layouts.value(checksum, NULL);
-        m_is_ok = m_layout != NULL && m_layout->is_valid();
-        if (m_is_ok) {
-            LOGI << "Detected Dwarf Fortress version"
-                    << m_layout->game_version() << "using MemoryLayout from"
-                    << m_layout->filename();
-        } else {
-            QString supported_vers;
-            foreach(QString tmp_checksum, m_memory_layouts.uniqueKeys()) {
-                MemoryLayout *l = m_memory_layouts[tmp_checksum];
-                supported_vers.append(
-                        QString("<li><b>%1</b>(<font color=\"#444444\">%2"
-                                "</font>) from <font size=-1>%3</font></li>")
-                        .arg(l->game_version())
-                        .arg(l->checksum())
-                        .arg(l->filename()));
-            }
-
-            QMessageBox *mb = new QMessageBox(qApp->activeWindow());
-            mb->setIcon(QMessageBox::Critical);
-            mb->setWindowTitle(tr("Unidentified Game Version"));
-            mb->setText(tr("I'm sorry but I don't know how to talk to this "
-                "version of Dwarf Fortress! (checksum:%1)<br><br> <b>Supported "
-                "Versions:</b><ul>%2</ul>").arg(checksum).arg(supported_vers));
-            mb->setInformativeText(tr("<a href=\"%1\">Click Here to find out "
-                                      "more online</a>.")
-                                   .arg(URL_SUPPORTED_GAME_VERSIONS));
-            /*
-            mb->setDetailedText(tr("Failed to locate a memory layout file for "
-                "Dwarf Fortress exectutable with checksum '%1'").arg(checksum));
-            */
-            mb->exec();
-            LOGE << tr("unable to identify version from checksum:") << checksum;
-        }
+        m_layout = get_memory_layout(hexify(calculate_checksum()).toLower());
     }
 
     if (!m_is_ok) // time to bail
