@@ -8,6 +8,7 @@ MemoryLayout::MemoryLayout(const QString &filename)
     : m_filename(filename)
     , m_checksum(0)
     , m_data(0)
+    , m_complete(true)
 {
     TRACE << "Attempting to contruct MemoryLayout from file " << filename;
     QFileInfo info(m_filename);
@@ -29,6 +30,7 @@ void MemoryLayout::load_data() {
     m_data->beginGroup("info");
     m_checksum = m_data->value("checksum", "UNKNOWN").toString().toLower();
     m_game_version = m_data->value("version_name", "UNKNOWN").toString().toLower();
+    m_complete = m_data->value("complete", true).toBool();
     m_data->endGroup();
 
     // addresses

@@ -33,7 +33,7 @@ class DFInstanceWindows : public DFInstance {
     Q_OBJECT
 public:
     DFInstanceWindows(QObject *parent=0);
-    ~DFInstanceWindows();
+    virtual ~DFInstanceWindows();
 
     // factory ctor
     bool find_running_copy();

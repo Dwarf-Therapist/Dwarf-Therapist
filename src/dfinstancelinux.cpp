@@ -43,8 +43,9 @@ DFInstanceLinux::DFInstanceLinux(QObject* parent)
 }
 
 DFInstanceLinux::~DFInstanceLinux() {
-    //ptrace(PTRACE_DETACH, m_pid, 0, 0);
-    //perror("detach");
+    if (m_attach_count > 0) {
+        detach();
+    }
 }
 
 QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
@@ -89,8 +90,8 @@ QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
     }
     delete[] stuff;
     //qDebug() << "VECTOR at" << hex << addr << "start:" << start << "end:" << end << "(" << dec << entries << "entries) valid entries" << addrs.size();
-    Q_ASSERT_X(entries == addrs.size(), "enumerate_vector",
-               "Vector did not contain 100% valid addresses!");
+    //Q_ASSERT_X(entries == addrs.size(), "enumerate_vector",
+    //           "Vector did not contain 100% valid addresses!");
     detach();
     return addrs;
 }
@@ -215,6 +216,34 @@ bool DFInstanceLinux::detach() {
 }
 
 uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer) {
+    attach();
+    if (!m_memory_file.open(QIODevice::ReadOnly)) {
+        LOGE << "Unable to open" << m_memory_file.fileName();
+        detach();
+        return 0;
+    }
+    uint bytes_read = 0;
+    while(bytes_read < bytes) {
+        m_memory_file.seek(addr + bytes_read);
+        QByteArray tmp = m_memory_file.read(4096);
+        if (bytes_read + tmp.size() > bytes) { // we read too much
+            tmp = tmp.left(bytes - bytes_read); // trim to just what we need
+        } else if (tmp.size() == 0) { // we didn't read anything
+            if (m_layout->is_complete()) {
+                LOGW << "read 0 bytes from" << hexify(addr + bytes_read);
+            }
+            break;
+        }
+        bytes_read += tmp.size();
+        memcpy(buffer, tmp.data(), tmp.size());
+    }
+    m_memory_file.close();
+    detach();
+    return bytes_read;
+}
+
+/*
+uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer) {
     // try to attach, will be ignored if we're already attached
     attach();
 
@@ -230,7 +259,7 @@ uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer
     uint bytes_read = 0; //! tracks how much we've read of what was asked for
     QByteArray data; // out final memory container
     ushort failures = 0; // how many read failures have occurred
-    ushort failure_max = 3; // how many times will we retry after a read failure
+    ushort failure_max = 0; // how many times will we retry after a read failure
 
     // keep going until we've read everything we were asked for
     while (bytes_read < bytes) {
@@ -244,7 +273,9 @@ uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer
         if (bytes_read == 0) {
             // failed to read
             failures++;
-            LOGW << "read 0 bytes from" << hex << addr + bytes_read;
+            if (m_layout->complete()) {
+                LOGW << "read 0 bytes from" << hex << addr + bytes_read;
+            }
             if (failures >= failure_max)
                 break;
         }
@@ -259,7 +290,7 @@ uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer
     detach();
     // tell the caller their buffer is ready, with fresh bits from the oven :)
     return bytes_read;
-}
+}*/
 
 uint DFInstanceLinux::write_raw(const uint &addr, const uint &bytes, void *buffer) {
     // try to attach, will be ignored if we're already attached
@@ -329,10 +360,15 @@ bool DFInstanceLinux::find_running_copy() {
         QByteArray out = proc->readAllStandardOutput();
         QString str_pid(out);
         m_pid = str_pid.toInt();
+        m_memory_file.setFileName(QString("/proc/%1/mem").arg(m_pid));
         TRACE << "FOUND PID:" << m_pid;
     } else {
+        QMessageBox::warning(0, tr("Warning"),
+            tr("Unable to locate a running copy of Dwarf "
+            "Fortress, are you sure it's running?"));
+        LOGW << "can't find running copy";
         m_is_ok = false;
-        return false;
+        return m_is_ok;
     }
 
     map_virtual_memory();
@@ -405,8 +441,8 @@ void DFInstanceLinux::map_virtual_memory() {
                 keep_it = path.isEmpty();
             }
             // uncomment to search HEAP only
-            //keep_it = path.contains("[heap]");
-            //keep_it = true;
+            keep_it = path.contains("[heap]");
+            keep_it = true;
 
             if (keep_it) {
                 MemorySegment *segment = new MemorySegment(path, start_addr, end_addr);

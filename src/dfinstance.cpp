@@ -131,8 +131,10 @@ QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
             memset(buffer, 0, step);
             int bytes_read = read_raw(ptr, step, buffer);
             if (bytes_read < step && !seg->is_guarded) {
-                LOGW << "tried to read" << step << "bytes starting at" << hex
-                        << ptr << "but only got" << dec << bytes_read;
+                if (m_layout->is_complete()) {
+                    LOGW << "tried to read" << step << "bytes starting at" <<
+                            hexify(ptr) << "but only got" << dec << bytes_read;
+                }
                 continue;
             }
 
@@ -268,12 +270,12 @@ bool DFInstance::is_valid_address(const uint &addr) {
 }
 
 QByteArray DFInstance::get_data(const uint &addr, const uint &size) {
-    char *buffer = new char[size];
-    memset(buffer, 0, size);
-    read_raw(addr, size, buffer);
-    QByteArray data(buffer, size);
-    delete[] buffer;
-    return data;
+    QByteArray ret_val(size, 0); // 0 filled to proper length
+    uint bytes_read = read_raw(addr, size, ret_val.data());
+    if (bytes_read != size) {
+        ret_val.clear();
+    }
+    return ret_val;
 }
 
 //! ahhh convenience
@@ -382,23 +384,18 @@ QVector<uint> DFInstance::find_vectors(const uint &num_entries,
     //LOGD << "Largest segment size is" << max_segment_size;
 
     // this buffer will hold the entire memory segment (may need to toned down a bit)
-    char *buffer = new char[max_segment_size];
-    if (buffer == 0) {
-        LOGE << tr("Unable to allocate char buffer of %1 bytes")
-                .arg(max_segment_size);
-    }
-
+    LOGD << "allocating buffer for" << max_segment_size / 1024.0 << "KB";
+    QByteArray buffer(max_segment_size, 0);
     foreach(MemorySegment *seg, m_regions) {
         //LOGD << "SCANNING REGION" << hex << seg->start_addr << "-"
         //        << seg->end_addr << "BYTES:" << dec << seg->size;
-        memset(buffer, 0, seg->size); // 0 out the buffer
+        buffer.fill(0, seg->size); // 0 out the buffer
 
         // this may read multiple times to put the entire region in the buffer
-        uint bytes_read = read_raw(seg->start_addr, seg->size, buffer);
+        uint bytes_read = read_raw(seg->start_addr, seg->size, buffer.data());
         if (bytes_read < seg->size) {
             continue;
         }
-
         /* we now have this entire memory segment inside `buffer`. So lets step
            through it looking for things that look like vectors of pointers.
            We read a uint into int1 and 4 bytes later we read another uint into
@@ -409,9 +406,10 @@ QVector<uint> DFInstance::find_vectors(const uint &num_entries,
            regions. If all of this adds up, then odds are pretty good we've
            found a vector
         */
+        bool ok = false;
         for (uint i = 0; i < seg->size; i += 4) {
-            memcpy(&int1, buffer + i, 4);
-            memcpy(&int2, buffer + i + 4, 4);
+            int1 = buffer.mid(i, 4).toUInt(&ok, 10);
+            int2 = buffer.mid(i + 4, 4).toUInt(&ok, 10);
             if (int2 >= int1 && is_valid_address(int1) &&
                 is_valid_address(int2)) {
                 uint bytes = int2 - int1;
@@ -437,7 +435,6 @@ QVector<uint> DFInstance::find_vectors(const uint &num_entries,
         if (m_stop_scan)
             break;
     }
-    delete[] buffer;
     emit scan_progress(100);
     return vectors;
 }
