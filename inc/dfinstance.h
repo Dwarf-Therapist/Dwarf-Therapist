@@ -56,6 +56,7 @@ public:
     virtual int read_int(const uint &addr) = 0;
     virtual uint read_uint(const uint &addr) = 0;
     virtual uint read_raw(const uint &addr, const uint &bytes, void *buf) = 0;
+    virtual int read_raw(const uint &addr, const uint &bytes, QByteArray &buf) = 0;
     QVector<uint> scan_mem(const QByteArray &needle);
     virtual QString read_string(const uint &addr) = 0;
 
@@ -68,9 +69,7 @@ public:
     QVector<uint> find_vectors_in_range(const uint &max_entries,
                                         const uint &start_address,
                                         const uint &range_length);
-    QVector<uint> find_vectors(const uint &num_entries,
-                               const uint &fuzz=0,
-                               const uint &entry_size=4);
+    QVector<uint> find_vectors(int num_entries, int fuzz=0, int entry_size=4);
 
     // Methods for when we know how the data is layed out
     MemoryLayout *memory_layout() {return m_layout;}
@@ -117,11 +116,13 @@ protected:
     uint m_heap_start_address;
     bool m_stop_scan; // flag that gets set to stop scan loops
     bool m_is_ok;
+    int m_bytes_scanned;
     MemoryLayout *m_layout;
     QVector<MemorySegment*> m_regions;
     int m_attach_count;
     QTimer *m_heartbeat_timer;
     QTimer *m_memory_remap_timer;
+    QTimer *m_scan_speed_timer;
 
     /*! this hash will hold a map of all loaded and valid memory layouts found
         on disk, the key is a QString of the checksum since other OSs will use
@@ -131,6 +132,7 @@ protected:
 
     private slots:
         void heartbeat();
+        void calculate_scan_rate();
         virtual void map_virtual_memory() = 0;
 
 signals:

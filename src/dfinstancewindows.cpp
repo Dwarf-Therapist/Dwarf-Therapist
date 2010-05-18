@@ -83,21 +83,24 @@ QVector<uint> DFInstanceWindows::enumerate_vector(const uint &addr) {
     uint entries = (end - start) / sizeof(uint);
     TRACE << "there appears to be" << entries << "entries in this vector";
 
-    Q_ASSERT(start >= 0);
-    Q_ASSERT(end >= 0);
-    Q_ASSERT(end >= start);
-    Q_ASSERT((end - start) % 4 == 0);
-    Q_ASSERT(start % 4 == 0);
-    Q_ASSERT(end % 4 == 0);
-    Q_ASSERT(entries < 5000);
+    if (m_layout->is_complete()) {
+        Q_ASSERT(start >= 0);
+        Q_ASSERT(end >= 0);
+        Q_ASSERT(end >= start);
+        Q_ASSERT((end - start) % 4 == 0);
+        Q_ASSERT(start % 4 == 0);
+        Q_ASSERT(end % 4 == 0);
+        Q_ASSERT(entries < 5000);
+    }
 
     for (uint ptr = start; ptr < end; ptr += 4 ) {
         uint a = read_uint(ptr);
-        if (is_valid_address(a)) {
+        //if (is_valid_address(a)) {
             addresses.append(a);
-        }
+        //}
     }
-    TRACE << "FOUND" << addresses.size()<< "addresses in vector";
+    TRACE << "FOUND" << addresses.size()<< "addresses in vector at"
+            << hexify(addr);
     return addresses;
 }
 
@@ -184,6 +187,15 @@ char DFInstanceWindows::read_char(const uint &addr) {
     char val = 0;
     ReadProcessMemory(m_proc, (LPCVOID)addr, &val, sizeof(char), 0);
     return val;
+}
+
+int DFInstanceWindows::read_raw(const uint &addr, const uint &bytes,
+                                QByteArray &buffer) {
+    buffer.fill(0, bytes);
+    int bytes_read = 0;
+    ReadProcessMemory(m_proc, (LPCVOID)addr, (char*)buffer.data(),
+                      sizeof(BYTE) * bytes, (DWORD*)&bytes_read);
+    return bytes_read;
 }
 
 uint DFInstanceWindows::read_raw(const uint &addr, const uint &bytes,
