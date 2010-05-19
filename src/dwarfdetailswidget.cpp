@@ -42,8 +42,11 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     ui->lbl_profession->setText(d->profession());
     ui->lbl_current_job->setText(QString("%1 %2").arg(d->current_job_id()).arg(d->current_job()));
 
+    GameDataReader *gdr = GameDataReader::ptr();
+
+    /* TODO: bring this back once mapped for 0.31.x
     QMap<QProgressBar*, int> things;
-    int str = d->strength();
+    int str = gdr->get_level_from_xp(d->strength());
     int agi = d->agility();
     int tou = d->toughness();
     things.insert(ui->pb_strength, str);
@@ -55,7 +58,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         pb->setMaximum(stat > 5 ? stat : 5);
         pb->setValue(stat);
     }
-    GameDataReader *gdr = GameDataReader::ptr();
+
     int xp_for_current = gdr->get_xp_for_next_attribute_level(str + agi + tou - 1);
     int xp_for_next = gdr->get_xp_for_next_attribute_level(str + agi + tou);
     if (xp_for_current && xp_for_next) {// is 0 when we don't know when the next level is...
@@ -64,8 +67,8 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         ui->pb_next_attribute_gain->setToolTip(QString("%L1xp / %L2xp").arg(d->total_xp()).arg(xp_for_next));
     } else {
         ui->pb_next_attribute_gain->setValue(-1); //turn it off
-        ui->pb_next_attribute_gain->setToolTip("Off the charts! (I have no idea when you'll get the next gain)");
-    }
+        ui->pb_next_attribute_gain->setToolTip(tr("Off the charts! (I have no idea when you'll get the next gain)"));
+    }*/
 
 
     Dwarf::DWARF_HAPPINESS happiness = d->get_happiness();
