@@ -1,3 +1,23 @@
+RELEASE 0.5.2 (May 18, 2010)
+CHANGES SINCE 0.5.1
+===============================================================================
+MAJOR CHANGES:
+ * Support for 0.31.04
+ * MemoryLayouts now have a concept of being "complete" or not. DT will not try
+   to load values on startup if the detected layout file is "incomplete" 
+   (complete means the file doesn't contain a "complete = false" line in its 
+   [info] section. This should help for mapping new versions.
+MINOR CHANGES:
+ * Added a "copy address to clipboard" method to dwarf context menu
+ * Added dump to file context menu action for dwarves (Fixes issue 224)
+ * Greatly sped up raw data reads on linux (also uses less ram)
+ * Compiles and runs on Linux again (no memory layouts yet)
+BUG FIXES:
+ * Confirmed fixes migrants not loading (Fixes issue 218)
+ * Sorting fix (fixes issue 220)
+ * Fixed crash on right click in grid views dock (Fixes issue 219)
+
+
 RELEASE 0.5.1 (April 24, 2010)
 CHANGES SINCE 0.5.0
 ===============================================================================
