@@ -400,8 +400,8 @@ QVector<uint> DFInstance::find_vectors(int num_entries,
         uint addr = 0; // the ptr we will read from
         for(int step = 0; step < scan_steps; ++step) {
             addr = seg->start_addr + (scan_step_size * step);
-            LOGD << "starting scan for vectors at" << hex << addr << "step"
-                    << dec << step << "of" << scan_steps;
+            //LOGD << "starting scan for vectors at" << hex << addr << "step"
+            //        << dec << step << "of" << scan_steps;
             int bytes_read = read_raw(addr, scan_step_size, buffer);
             if (bytes_read < scan_step_size) {
                 continue;

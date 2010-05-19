@@ -231,4 +231,18 @@ int GameDataReader::get_xp_for_next_attribute_level(int current_number_of_attrib
     return m_attribute_levels.value(current_number_of_attributes + 1, 0); // return 0 if we don't know
 }
 
+int GameDataReader::get_level_from_xp(int xp) {
+    int last_xp = 0;
+    int ret_val = 0;
+    QList<int> levels = m_attribute_levels.uniqueKeys();
+    qStableSort(levels);
+    foreach(int lvl, levels) {
+        if (last_xp <= xp && xp <= m_attribute_levels.value(lvl, 0)) {
+            ret_val = lvl - 1;
+            break;
+        }
+    }
+    return ret_val;
+}
+
 GameDataReader *GameDataReader::m_instance = 0;

@@ -287,7 +287,8 @@ bool DFInstanceWindows::find_running_copy() {
         return m_is_ok;
 
     m_memory_correction = (int)m_base_addr - 0x0400000;
-    LOGD << "memory correction " << m_memory_correction;
+    LOGD << "base address:" << hexify(m_base_addr);
+    LOGD << "memory correction:" << hexify(m_memory_correction);
 
     map_virtual_memory();
 

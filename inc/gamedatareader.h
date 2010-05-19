@@ -84,6 +84,7 @@ public:
 
     QStringList get_child_groups(QString section);
     QStringList get_keys(QString section);
+    int get_level_from_xp(int xp);
 
 protected:
     GameDataReader(QObject *parent = 0);
