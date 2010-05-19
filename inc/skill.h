@@ -42,7 +42,8 @@ public:
     QString exp_summary() const;
 
     QString to_string(bool include_level = true, bool include_exp_summary = true) const;
-    QString name() {return QString("(%1) %2").arg(m_id).arg(m_name);}
+    //QString name() {return QString("(%1) %2").arg(m_id).arg(m_name);}
+    QString name() {return m_name;}
     bool operator<(const Skill &s2) const;
 
 private:
