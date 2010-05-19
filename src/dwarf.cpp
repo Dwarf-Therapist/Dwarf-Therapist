@@ -93,7 +93,7 @@ Dwarf::~Dwarf() {
 
 void Dwarf::refresh_data() {
     MemoryLayout *mem = m_df->memory_layout();
-    TRACE << QString("Starting refresh of dwarf data at 0x%1").arg(m_address, 8, 16, QChar('0'));
+    TRACE << "Starting refresh of dwarf data at" << hexify(m_address);
 
     m_id = m_df->read_int(m_address + mem->dwarf_offset("id"));
     //m_id = m_address; // HACK: this will allow dwarfs in the list even when
@@ -180,7 +180,8 @@ void Dwarf::refresh_data() {
     //ushort position = m_df->read_ushort(m_address + mem->dwarf_offset("position"));
     //LOGD << nice_name() << "POSITION:" << position;
 
-    TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
+    TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name
+            << "(" << m_translated_name << ")";
 }
 
 void Dwarf::read_settings() {
@@ -524,7 +525,8 @@ QString Dwarf::read_profession(const uint &addr) {
     QString prof_name = tr("Unknown Profession %1").arg(m_raw_profession);
     if (p) {
         m_can_set_labors = p->can_assign_labors();
-        prof_name = QString("(%1) %2").arg(m_raw_profession).arg(p->name(m_is_male));
+        //prof_name = QString("(%1) %2").arg(m_raw_profession).arg(p->name(m_is_male));
+        prof_name = p->name(m_is_male);
     } else {
         LOGE << tr("Read unknown profession with id '%1' for dwarf '%2'")
                 .arg(m_raw_profession).arg(m_nice_name);
