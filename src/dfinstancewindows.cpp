@@ -255,6 +255,11 @@ bool DFInstanceWindows::find_running_copy() {
                          | PROCESS_VM_READ
                          | PROCESS_VM_OPERATION
                          | PROCESS_VM_WRITE, false, m_pid);
+    LOGD << "PROC HANDLE:" << m_proc;
+    if (m_proc == NULL) {
+        LOGE << "Error opening process!" << GetLastError();
+    }
+
     PVOID peb_addr = GetPebAddress(m_proc);
     LOGD << "PEB is at: " << hex << peb_addr;
 
