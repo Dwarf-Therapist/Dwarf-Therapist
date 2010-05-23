@@ -277,7 +277,7 @@ bool DFInstance::is_valid_address(const uint &addr) {
 
 QByteArray DFInstance::get_data(const uint &addr, const uint &size) {
     QByteArray ret_val(size, 0); // 0 filled to proper length
-    uint bytes_read = read_raw(addr, size, ret_val.data());
+    uint bytes_read = read_raw(addr, size, ret_val);
     if (bytes_read != size) {
         ret_val.clear();
     }
@@ -295,10 +295,12 @@ QString DFInstance::pprint(const QByteArray &ba, const uint &start_addr) {
     int lines = ba.size() / 16;
     if (ba.size() % 16)
         lines++;
+    if (lines < 1)
+        lines = 0;
 
     for(int i = 0; i < lines; ++i) {
         uint offset = start_addr + i * 16;
-        out.append(QString("0x%1").arg(offset, 8, 16, QChar('0')));
+        out.append(hexify(offset));
         out.append(" | ");
         for (int c = 0; c < 16; ++c) {
             out.append(ba.mid(i*16 + c, 1).toHex());
