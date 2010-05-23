@@ -543,6 +543,7 @@ void Dwarf::read_current_job(const uint &addr) {
     // TODO: jobs contain info about materials being used, if we ever get the
     // material list we could show that in here
     uint current_job_addr = m_df->read_uint(addr);
+
     if (current_job_addr != 0) {
         m_current_job_id = m_df->read_ushort(current_job_addr + m_df->memory_layout()->offset("current_job_id"));
         DwarfJob *job = GameDataReader::ptr()->get_job(m_current_job_id);
@@ -551,7 +552,21 @@ void Dwarf::read_current_job(const uint &addr) {
         else
             m_current_job = tr("Unknown job");
     } else {
-        m_current_job = tr("No Job");
+        bool is_on_break = false;
+
+        uint test = m_address + m_df->memory_layout()->dwarf_offset("states");
+        QVector<uint> entries = m_df->enumerate_vector(test);
+        foreach(uint entry, entries) {
+            int value = m_df->read_short(entry);
+
+            if(value == 17)
+                is_on_break = true;
+        }
+
+        if(is_on_break)
+            m_current_job = tr("On Break");
+        else
+            m_current_job = tr("No Job");
     }
 
 }
