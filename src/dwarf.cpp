@@ -545,7 +545,8 @@ void Dwarf::read_current_job(const uint &addr) {
     uint current_job_addr = m_df->read_uint(addr);
 
     if (current_job_addr != 0) {
-        m_current_job_id = m_df->read_ushort(current_job_addr + m_df->memory_layout()->offset("current_job_id"));
+        m_current_job_id = m_df->read_ushort(
+                current_job_addr + m_df->memory_layout()->offset("current_job_id"));
         DwarfJob *job = GameDataReader::ptr()->get_job(m_current_job_id);
         if (job)
             m_current_job = job->description;
@@ -553,22 +554,18 @@ void Dwarf::read_current_job(const uint &addr) {
             m_current_job = tr("Unknown job");
     } else {
         bool is_on_break = false;
-
-        uint test = m_address + m_df->memory_layout()->dwarf_offset("states");
-        QVector<uint> entries = m_df->enumerate_vector(test);
+        MemoryLayout* layout = m_df->memory_layout();
+        uint states_addr = m_address + layout->dwarf_offset("states");
+        QVector<uint> entries = m_df->enumerate_vector(states_addr);
+        short on_break_value = layout->job_flag("on_break");
         foreach(uint entry, entries) {
-            int value = m_df->read_short(entry);
-
-            if(value == 17)
+            if (m_df->read_short(entry) == on_break_value) {
                 is_on_break = true;
+                break; // no pun intended
+            }
         }
-
-        if(is_on_break)
-            m_current_job = tr("On Break");
-        else
-            m_current_job = tr("No Job");
+        m_current_job = is_on_break ? tr("On Break") : tr("No Job");
     }
-
 }
 
 short Dwarf::pref_value(const int &labor_id) {
