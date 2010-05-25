@@ -699,6 +699,14 @@ void Dwarf::commit_pending() {
     }
 
     m_df->write_raw(addr, 102, &buf);
+
+    // We'll set the "recheck_equipment" flag because there was a labor change.
+    uchar recheck_equipment[1];
+    memset(recheck_equipment, 0, 1);
+    m_df->read_raw(m_address + mem->dwarf_offset("recheck_equipment"), 1, &recheck_equipment);
+    recheck_equipment[0] |= 1;
+    m_df->write_raw(m_address +  mem->dwarf_offset("recheck_equipment"), 1, &recheck_equipment);
+
     if (m_pending_nick_name != m_nick_name)
         m_df->write_string(m_address + mem->dwarf_offset("nick_name"), m_pending_nick_name);
     if (m_pending_custom_profession != m_custom_profession)
