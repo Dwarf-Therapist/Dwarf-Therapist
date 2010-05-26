@@ -54,6 +54,7 @@ GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent
     , m_is_editing(false)
     , m_set_model(new QStandardItemModel)
     , m_col_model(new QStandardItemModel)
+    , m_active_set(NULL)
 {
     ui->setupUi(this);
     ui->list_sets->setModel(m_set_model);
@@ -120,6 +121,7 @@ void GridViewDialog::draw_sets() {
         set_item->setData(set->bg_color(), GPDT_BG_COLOR);
         m_set_model->appendRow(set_item);
     }
+    m_active_set = NULL;
     ui->list_sets->selectionModel()->select(m_set_model->index(0,0), QItemSelectionModel::SelectCurrent);
 }
 
@@ -303,6 +305,14 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
         m->addAction(QIcon(":img/delete.png"), tr("Remove"), this, SLOT(remove_column()));
         m_temp_col = idx.row();
     } else { // in whitespace
+        if (!m_active_set) { // can't do much without a parent for our cols
+            QMessageBox::warning(this, tr("No Set Selected"),
+                tr("Please select an existing set on the left side pane before "
+                   "attempting to modify columns. If there are no sets yet, "
+                   "create one first."));
+            return;
+        }
+
         GameDataReader *gdr = GameDataReader::ptr();
         QAction *a = m->addAction("Add Spacer", this, SLOT(add_spacer_column()));
         a->setToolTip(tr("Adds a non-selectable spacer to this set. You can set a custom width and color on spacer columns."));
