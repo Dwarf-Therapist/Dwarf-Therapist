@@ -108,16 +108,15 @@ DFInstance::~DFInstance() {
 }
 
 QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
+    m_memory_remap_timer->stop(); // don't remap segments while scanning
+
     m_stop_scan = false;
     QVector<uint> addresses;
     QByteArrayMatcher matcher(needle);
 
     int step = 0x1000;
-    char *buffer = new char[step];
-    if (!buffer) {
-        qCritical() << "unable to allocate char buffer of" << step << "bytes!";
-        return addresses;
-    }
+    QByteArray buffer(step, 0);
+
     int count = 0;
     emit scan_total_steps(m_regions.size());
     emit scan_progress(0);
@@ -134,7 +133,10 @@ QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
             if (ptr + step > seg->end_addr)
                 step = seg->end_addr - (ptr + step);
 
-            memset(buffer, 0, step);
+            if (step > 0x1000) {
+                LOGD << "step is set to" << step;
+            }
+
             int bytes_read = read_raw(ptr, step, buffer);
             if (bytes_read < step && !seg->is_guarded) {
                 if (m_layout->is_complete()) {
@@ -143,8 +145,8 @@ QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
                 }
                 continue;
             }
-
-            int idx = matcher.indexIn(QByteArray(buffer, bytes_read));
+            bytes_scanned += bytes_read;
+            int idx = matcher.indexIn(buffer);
             if (idx != -1) {
                 addresses << (uint)(ptr + idx);
             }
@@ -152,15 +154,14 @@ QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
                 break;
 
         }
-        bytes_scanned += seg->size;
         emit scan_progress(count++);
         DT->processEvents();
         if (m_stop_scan)
             break;
     }
+    m_memory_remap_timer->start(20000); // start the remapper again
     LOGD << QString("Scanned %L1MB in %L2ms").arg(bytes_scanned / 1024 * 1024)
             .arg(timer.elapsed());
-    delete[] buffer;
     return addresses;
 }
 

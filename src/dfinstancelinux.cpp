@@ -215,34 +215,10 @@ bool DFInstanceLinux::detach() {
     return m_attach_count > 0;
 }
 
-uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer) {
-    attach();
-    if (!m_memory_file.open(QIODevice::ReadOnly)) {
-        LOGE << "Unable to open" << m_memory_file.fileName();
-        detach();
-        return 0;
-    }
-    uint bytes_read = 0;
-    while(bytes_read < bytes) {
-        m_memory_file.seek(addr + bytes_read);
-        QByteArray tmp = m_memory_file.read(4096);
-        if (bytes_read + tmp.size() > bytes) { // we read too much
-            tmp = tmp.left(bytes - bytes_read); // trim to just what we need
-        } else if (tmp.size() == 0) { // we didn't read anything
-            if (m_layout->is_complete()) {
-                LOGW << "read 0 bytes from" << hexify(addr + bytes_read);
-            }
-            break;
-        }
-        bytes_read += tmp.size();
-        memcpy(buffer, tmp.data(), tmp.size());
-    }
-    m_memory_file.close();
-    detach();
-    return bytes_read;
+int DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, QByteArray &buffer) {
+    return read_raw(addr, bytes, buffer.data());
 }
 
-/*
 uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer) {
     // try to attach, will be ignored if we're already attached
     attach();
@@ -273,7 +249,7 @@ uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer
         if (bytes_read == 0) {
             // failed to read
             failures++;
-            if (m_layout->complete()) {
+            if (m_layout->is_complete()) {
                 LOGW << "read 0 bytes from" << hex << addr + bytes_read;
             }
             if (failures >= failure_max)
@@ -290,7 +266,7 @@ uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer
     detach();
     // tell the caller their buffer is ready, with fresh bits from the oven :)
     return bytes_read;
-}*/
+}
 
 uint DFInstanceLinux::write_raw(const uint &addr, const uint &bytes, void *buffer) {
     // try to attach, will be ignored if we're already attached
@@ -424,29 +400,31 @@ void DFInstanceLinux::map_virtual_memory() {
         line = f.readLine();
         // parse the first line to see find the base
         if (rx.indexIn(line) != -1) {
-            //qDebug() << "RANGE" << rx.cap(1) << "-" << rx.cap(2) << "PERMS" << rx.cap(3) << "INODE" << rx.cap(4) << "PATH" << rx.cap(5);
+            //LOGD << "RANGE" << rx.cap(1) << "-" << rx.cap(2) << "PERMS" <<
+            //        rx.cap(3) << "INODE" << rx.cap(4) << "PATH" << rx.cap(5);
             start_addr = rx.cap(1).toUInt(&ok, 16);
             end_addr = rx.cap(2).toUInt(&ok, 16);
             QString perms = rx.cap(3).trimmed();
             int inode = rx.cap(4).toInt();
             QString path = rx.cap(5).trimmed();
 
-            //qDebug() << "RANGE" << hex << start_addr << "-" << end_addr << perms << inode << "PATH >" << path << "<";
+            //LOGD << "RANGE" << hex << start_addr << "-" << end_addr << perms
+            //        << inode << "PATH >" << path << "<";
             bool keep_it = false;
             if (path.contains("[heap]") || path.contains("[stack]") || path.contains("[vdso]"))  {
                 keep_it = true;
             } else if (perms.contains("r") && inode && path == QFile::symLinkTarget(QString("/proc/%1/exe").arg(m_pid))) {
                 keep_it = true;
-            } else {
-                keep_it = path.isEmpty();
+            //} else {
+            //    keep_it = path.isEmpty();
             }
             // uncomment to search HEAP only
-            keep_it = path.contains("[heap]");
-            keep_it = true;
+            //keep_it = path.contains("[heap]");
+            //keep_it = true;
 
-            if (keep_it) {
+            if (keep_it && end_addr > start_addr) {
                 MemorySegment *segment = new MemorySegment(path, start_addr, end_addr);
-                //qDebug() << "KEEPING RANGE" << hex << start_addr << "-" << end_addr << "PATH " << path;
+                LOGD << "keeping" << segment->to_string();
                 m_regions << segment;
                 if (start_addr < m_lowest_address)
                     m_lowest_address = start_addr;
@@ -454,7 +432,7 @@ void DFInstanceLinux::map_virtual_memory() {
                     m_highest_address = end_addr;
             }
             if (path.contains("[heap]")) {
-                LOGD << "setting heap start address at" << hex << start_addr;
+                //LOGD << "setting heap start address at" << hex << start_addr;
                 m_heap_start_address = start_addr;
             }
         }

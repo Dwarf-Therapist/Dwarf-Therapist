@@ -43,6 +43,7 @@ public:
     uint read_uint(const uint &addr);
     int read_int(const uint &addr);
     uint read_raw(const uint &addr, const uint &bytes, void *buffer);
+    int read_raw(const uint &addr, const uint &bytes, QByteArray &buffer);
     QString read_string(const uint &addr);
 
     // Writing

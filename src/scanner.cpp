@@ -98,8 +98,8 @@ void Scanner::run_thread_and_wait() {
         return;
     }
     m_thread->start();
-    while (!m_thread->wait(100)) {
-        if (m_stop_scanning)
+    while (!m_thread->wait(200)) {
+        if (m_stop_scanning || !m_thread->isRunning() || m_thread->isFinished())
             break;
         //ui->text_output->append("waiting on thread...");
         DT->processEvents();
