@@ -33,26 +33,10 @@ void MemoryLayout::load_data() {
     m_complete = m_data->value("complete", true).toBool();
     m_data->endGroup();
 
-    // addresses
-    m_data->beginGroup("addresses");
-    foreach(QString k, m_data->childKeys()) {
-        m_addresses.insert(k, read_hex(k));
-    }
-    m_data->endGroup();
-
-    // offsets
-    m_data->beginGroup("offsets");
-    foreach(QString k, m_data->childKeys()) {
-        m_offsets.insert(k, read_hex(k));
-    }
-    m_data->endGroup();
-
-    // dwarf offsets
-    m_data->beginGroup("dwarf_offsets");
-    foreach(QString k, m_data->childKeys()) {
-        m_dwarf_offsets.insert(k, read_hex(k));
-    }
-    m_data->endGroup();
+    read_group("addresses", m_addresses);
+    read_group("offsets", m_offsets);
+    read_group("dwarf_offsets", m_dwarf_offsets);
+    read_group("job_flags", m_job_flags);
 
     // flags
     int flag_count = m_data->beginReadArray("valid_flags_1");
@@ -90,4 +74,12 @@ uint MemoryLayout::read_hex(QString key) {
 bool MemoryLayout::is_valid() {
     return m_data != NULL && m_data->contains("info/checksum")
             && m_data->contains("info/version_name");
+}
+
+void MemoryLayout::read_group(const QString &group, AddressHash &map) {
+    m_data->beginGroup(group);
+    foreach(QString k, m_data->childKeys()) {
+        map.insert(k, read_hex(k));
+    }
+    m_data->endGroup();
 }
