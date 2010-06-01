@@ -99,7 +99,7 @@ void Dwarf::refresh_data() {
     //m_id = m_address; // HACK: this will allow dwarfs in the list even when
     // the id offset isn't know for this version
     TRACE << "\tID:" << m_id;
-    char sex = m_df->read_char(m_address + mem->dwarf_offset("sex"));
+    BYTE sex = m_df->read_byte(m_address + mem->dwarf_offset("sex"));
     m_is_male = (int)sex == 1;
     TRACE << "\tMALE?" << m_is_male;
 
@@ -121,12 +121,14 @@ void Dwarf::refresh_data() {
     TRACE << "\tRACE ID:" << m_race_id;
     m_profession = read_profession(m_address + mem->dwarf_offset("profession"));
     TRACE << "\tPROFESSION:" << m_profession;
+    /*
     m_strength = m_df->read_int(m_address + mem->dwarf_offset("strength"));
     TRACE << "\tSTRENGTH:" << m_strength;
     m_toughness = m_df->read_int(m_address + mem->dwarf_offset("toughness"));
     TRACE << "\tTOUGHNESS:" << m_toughness;
     m_agility = m_df->read_int(m_address + mem->dwarf_offset("agility"));
     TRACE << "\tAGILITY:" << m_agility;
+    */
     read_labors(m_address + mem->dwarf_offset("labors"));
     m_money = m_df->read_int(m_address + mem->dwarf_offset("money"));
     TRACE << "\tMONEY:" << m_money;
@@ -167,6 +169,7 @@ void Dwarf::refresh_data() {
     }
     */
 
+    /*
     QVector<uint> souls = m_df->enumerate_vector(m_address + mem->dwarf_offset("souls"));
     foreach(uint soul, souls) {
         //LOGD << "SOUL FOUND AT" << hex << soul << m_df->pprint(m_df->get_data(soul, 0x500), 0);
@@ -176,6 +179,7 @@ void Dwarf::refresh_data() {
         read_traits(soul + mem->dwarf_offset("traits"));
         TRACE << "\tTRAITS:" << m_traits.size();
     }
+    */
 
     //ushort position = m_df->read_ushort(m_address + mem->dwarf_offset("position"));
     //LOGD << nice_name() << "POSITION:" << position;
@@ -277,75 +281,75 @@ QString Dwarf::happiness_name(DWARF_HAPPINESS happiness) {
     }
 }
 
-Dwarf *Dwarf::get_dwarf(DFInstance *df, const uint &addr) {
+Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     MemoryLayout *mem = df->memory_layout();
     TRACE << "attempting to load dwarf at" << addr << "using memory layout" << mem->game_version();
 
     uint dwarf_race_index = mem->address("dwarf_race_index");
-    int dwarf_race_id = df->read_int(dwarf_race_index + df->get_memory_correction());
+    WORD dwarf_race_id = df->read_word(dwarf_race_index + df->get_memory_correction());
 
-    uint flags1 = df->read_uint(addr + mem->dwarf_offset("flags1"));
-    uint flags2 = df->read_uint(addr + mem->dwarf_offset("flags2"));
-    int race_id = df->read_int(addr + mem->dwarf_offset("race"));
+    DWORD flags1 = df->read_dword(addr + mem->dwarf_offset("flags1"));
+    DWORD flags2 = df->read_dword(addr + mem->dwarf_offset("flags2"));
+    WORD race_id = df->read_word(addr + mem->dwarf_offset("race"));
 
     if (race_id != dwarf_race_id) { // we only care about dwarfs
         TRACE << "Ignoring non-dwarf creature with racial ID of " << hexify(race_id);
         return 0;
     }
     Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
-    /*LOGD << "examining dwarf at" << hex << addr;
+    LOGD << "examining dwarf at" << hex << addr;
     LOGD << "FLAGS1 :" << hexify(flags1);
     LOGD << "FLAGS2 :" << hexify(flags2);
     LOGD << "RACE   :" << hexify(race_id);
-    LOGD << "NAME   :" << df->read_string(addr + mem->dwarf_offset("first_name"));
-    LOGD << "INVADER FILTER:" << hexify(0x1000 | 0x2000 | 0x20000 | 0x80000 | 0xc0000 | 0x8C0);
-    LOGD << "OTHER   FILTER:" << hexify(0x80 | 0x40000);
-    */
+    //LOGD << "INVADER FILTER:" << hexify(0x1000 | 0x2000 | 0x20000 | 0x80000 | 0xc0000 | 0x8C0);
+    //LOGD << "OTHER   FILTER:" << hexify(0x80 | 0x40000);
 
-    QHash<uint, QString> flags = mem->valid_flags_1();
-    foreach(uint flag, flags.uniqueKeys()) {
-        QString reason = flags[flag];
-        if ((flags1 & flag) != flag) {
-            LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to be" << reason;
-            delete unverified_dwarf;
-            return 0;
+    if (mem->is_complete()) {
+        QHash<uint, QString> flags = mem->valid_flags_1();
+        foreach(uint flag, flags.uniqueKeys()) {
+            QString reason = flags[flag];
+            if ((flags1 & flag) != flag) {
+                LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to be" << reason;
+                delete unverified_dwarf;
+                return 0;
+            }
         }
-    }
 
-    flags = mem->invalid_flags_1();
-    foreach(uint flag, flags.uniqueKeys()) {
-        QString reason = flags[flag];
-        if ((flags1 & flag) == flag) {
-            LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to be" << reason;
-            delete unverified_dwarf;
-            return 0;
+        flags = mem->invalid_flags_1();
+        foreach(uint flag, flags.uniqueKeys()) {
+            QString reason = flags[flag];
+            if ((flags1 & flag) == flag) {
+                LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to be" << reason;
+                delete unverified_dwarf;
+                return 0;
+            }
         }
-    }
 
-    flags = mem->invalid_flags_2();
-    foreach(uint flag, flags.uniqueKeys()) {
-        QString reason = flags[flag];
-        if ((flags2 & flag) == flag) {
-            LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to be" << reason;
-            delete unverified_dwarf;
-            return 0;
+        flags = mem->invalid_flags_2();
+        foreach(uint flag, flags.uniqueKeys()) {
+            QString reason = flags[flag];
+            if ((flags2 & flag) == flag) {
+                LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to be" << reason;
+                delete unverified_dwarf;
+                return 0;
+            }
         }
-    }
 
-    //HACK: ugh... so ugly, but this seems to be the best way to filter out kidnapped babies
-    short baby_id = -1;
-    foreach(Profession *p, GameDataReader::ptr()->get_professions()) {
-        if (p->name(true) == "Baby") {
-            baby_id = p->id();
-            break;
+        //HACK: ugh... so ugly, but this seems to be the best way to filter out kidnapped babies
+        short baby_id = -1;
+        foreach(Profession *p, GameDataReader::ptr()->get_professions()) {
+            if (p->name(true) == "Baby") {
+                baby_id = p->id();
+                break;
+            }
         }
-    }
-    if (unverified_dwarf->raw_profession() == baby_id) {
-        if ((flags1 & 0x200) != 0x200) {
-            // kidnapped flag? seems like it
-            LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to be a kidnapped baby";
-            delete unverified_dwarf;
-            return 0;
+        if (unverified_dwarf->raw_profession() == baby_id) {
+            if ((flags1 & 0x200) != 0x200) {
+                // kidnapped flag? seems like it
+                LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to be a kidnapped baby";
+                delete unverified_dwarf;
+                return 0;
+            }
         }
     }
 
@@ -368,11 +372,11 @@ QString Dwarf::read_last_name(const uint &addr, bool use_generic) {
     // last name reading taken from patch by Zhentar (issue 189)
     QString first, second, third;
 
-    first.append(word_chunk(m_df->read_uint(addr), use_generic));
-    first.append(word_chunk(m_df->read_uint(addr + 0x4), use_generic));
-    second.append(word_chunk(m_df->read_uint(addr + 0x8), use_generic));
-    second.append(word_chunk(m_df->read_uint(addr + 0x14), use_generic));
-    third.append(word_chunk(m_df->read_uint(addr + 0x18), use_generic));
+    first.append(word_chunk(m_df->read_dword(addr), use_generic));
+    first.append(word_chunk(m_df->read_dword(addr + 0x4), use_generic));
+    second.append(word_chunk(m_df->read_dword(addr + 0x8), use_generic));
+    second.append(word_chunk(m_df->read_dword(addr + 0x14), use_generic));
+    third.append(word_chunk(m_df->read_dword(addr + 0x18), use_generic));
 
     QString out = first;
     out = out.toLower();
@@ -518,9 +522,7 @@ short Dwarf::get_rating_by_labor(int labor_id) {
 }
 
 QString Dwarf::read_profession(const uint &addr) {
-    char buffer[1];
-    m_df->read_raw(addr, 1, &buffer[0]);
-    m_raw_profession = (short)buffer[0];
+    m_raw_profession = m_df->read_byte(addr);
     Profession *p = GameDataReader::ptr()->get_profession(m_raw_profession);
     QString prof_name = tr("Unknown Profession %1").arg(m_raw_profession);
     if (p) {
@@ -532,6 +534,8 @@ QString Dwarf::read_profession(const uint &addr) {
                 .arg(m_raw_profession).arg(m_nice_name);
         m_can_set_labors = false;
     }
+    TRACE << "reading profession for" << nice_name() << m_raw_profession <<
+            prof_name;
     if (!m_custom_profession.isEmpty()) {
         return m_custom_profession;
     } else {
@@ -539,14 +543,14 @@ QString Dwarf::read_profession(const uint &addr) {
     }
 }
 
-void Dwarf::read_current_job(const uint &addr) {
+void Dwarf::read_current_job(const VIRTADDR &addr) {
     // TODO: jobs contain info about materials being used, if we ever get the
     // material list we could show that in here
-    uint current_job_addr = m_df->read_uint(addr);
+    VIRTADDR current_job_addr = m_df->read_dword(addr);
 
     if (current_job_addr != 0) {
-        m_current_job_id = m_df->read_ushort(
-                current_job_addr + m_df->memory_layout()->offset("current_job_id"));
+        m_current_job_id = m_df->read_word(current_job_addr +
+                           m_df->memory_layout()->offset("current_job_id"));
         DwarfJob *job = GameDataReader::ptr()->get_job(m_current_job_id);
         if (job)
             m_current_job = job->description;
@@ -584,16 +588,15 @@ void Dwarf::toggle_pref_value(const int &labor_id) {
 void Dwarf::read_labors(const uint &addr) {
     // read a big array of labors in one read, then pick and choose
     // the values we care about
-    uchar buf[150];
-    memset(buf, 0, 150);
-    m_df->read_raw(addr, 150, &buf);
+    QByteArray buf(102, 0);
+    m_df->read_raw(addr, 102, buf);
 
     // get the list of identified labors from game_data.ini
     GameDataReader *gdr = GameDataReader::ptr();
     foreach(Labor *l, gdr->get_ordered_labors()) {
         if (l->is_weapon && l->labor_id < 0) // unarmed
             continue;
-        bool enabled = buf[l->labor_id] > 0;
+        bool enabled = buf.at(l->labor_id) > 0;
         m_labors[l->labor_id] = enabled;
         m_pending_labors[l->labor_id] = enabled;
     }
@@ -685,9 +688,8 @@ void Dwarf::commit_pending() {
     MemoryLayout *mem = m_df->memory_layout();
     int addr = m_address + mem->dwarf_offset("labors");
 
-    uchar buf[102];
-    memset(buf, 0, 102);
-    m_df->read_raw(addr, 102, &buf); // set the buffer as it is in-game
+    QByteArray buf(102, 0);
+    m_df->read_raw(addr, 102, buf); // set the buffer as it is in-game
     foreach(int labor_id, m_pending_labors.uniqueKeys()) {
         if (labor_id < 0)
             continue;
@@ -695,14 +697,14 @@ void Dwarf::commit_pending() {
         buf[labor_id] = m_pending_labors.value(labor_id);
     }
 
-    m_df->write_raw(addr, 102, &buf);
+    m_df->write_raw(addr, 102, buf.data());
 
     // We'll set the "recheck_equipment" flag because there was a labor change.
-    uchar recheck_equipment[1];
-    memset(recheck_equipment, 0, 1);
-    m_df->read_raw(m_address + mem->dwarf_offset("recheck_equipment"), 1, &recheck_equipment);
-    recheck_equipment[0] |= 1;
-    m_df->write_raw(m_address +  mem->dwarf_offset("recheck_equipment"), 1, &recheck_equipment);
+    BYTE recheck_equipment = m_df->read_byte(m_address +
+                                     mem->dwarf_offset("recheck_equipment"));
+    recheck_equipment |= 1;
+    m_df->write_raw(m_address + mem->dwarf_offset("recheck_equipment"), 1,
+                    &recheck_equipment);
 
     if (m_pending_nick_name != m_nick_name)
         m_df->write_string(m_address + mem->dwarf_offset("nick_name"), m_pending_nick_name);

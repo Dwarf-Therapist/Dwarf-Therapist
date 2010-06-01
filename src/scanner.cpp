@@ -186,7 +186,7 @@ void Scanner::find_number_or_address() {
 void Scanner::brute_force_read() {
     set_ui_enabled(false);
     bool ok; // for base conversions
-    uint addr = ui->le_address->text().toUInt(&ok, 16);
+    VIRTADDR addr = ui->le_address->text().toUInt(&ok, 16);
     if (m_df && m_df->is_ok()) {
         switch(ui->cb_interpret_as_type->currentIndex()) {
         case 0: // std::string
@@ -194,24 +194,22 @@ void Scanner::brute_force_read() {
             break;
         case 1: // null terminated string
             {
-                char *buf = new char[512];
-                m_df->read_raw(addr, 512, buf);
-                QString val = QString::fromAscii(buf);
-                ui->le_read_output->setText(val);
-                delete[] buf;
+                QByteArray str(512, 0);
+                m_df->read_raw(addr, 512, str);
+                ui->le_read_output->setText(QString(str));
             }
             break;
         case 2: // int
             ui->le_read_output->setText(QString::number(m_df->read_int(addr)));
             break;
         case 3: // uint
-            ui->le_read_output->setText(QString::number(m_df->read_uint(addr)));
+            ui->le_read_output->setText(QString::number(m_df->read_dword(addr)));
             break;
         case 4: // short
             ui->le_read_output->setText(QString::number(m_df->read_short(addr)));
             break;
         case 5: // ushort
-            ui->le_read_output->setText(QString::number(m_df->read_ushort(addr)));
+            ui->le_read_output->setText(QString::number(m_df->read_word(addr)));
             break;
         case 6: // std::vector<void*>
             {

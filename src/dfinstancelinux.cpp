@@ -49,49 +49,50 @@ DFInstanceLinux::~DFInstanceLinux() {
 }
 
 QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
-    attach();
-
     QVector<uint> addrs;
-    uint start = read_uint(addr);
-    uint end = read_uint(addr + 4);
+    if (!addr)
+        return addrs;
+
+    attach();
+    VIRTADDR start = read_dword(addr);
+    VIRTADDR end = read_dword(addr + 4);
     uint bytes = end - start;
     int entries = bytes / 4;
     TRACE << "enumerating vector at" << hex << addr << "START" << start
         << "END" << end << "UNVERIFIED ENTRIES" << dec << entries;
-    uint tmp_addr = 0;
+    VIRTADDR tmp_addr = 0;
 
-    //Q_ASSERT_X(start > 0, "enumerate_vector", "start pointer must be larger than 0");
-    //Q_ASSERT_X(end > 0, "enumerate_vector", "End must be larger than start!");
-    //Q_ASSERT_X(start % 4 == 0, "enumerate_vector", "Start must be divisible by 4");
-    //Q_ASSERT_X(end % 4 == 0, "enumerate_vector", "End must be divisible by 4");
-    //Q_ASSERT_X(end >= start, "enumerate_vector", "End must be >= start!");
-    //Q_ASSERT_X((end - start) % 4 == 0, "enumerate_vector", "end - start must be divisible by 4");
-
-    char *stuff = new char[bytes];
-    if (stuff == 0) {
-        qWarning() << "Unable to allocate char array of size" << bytes;
-        detach();
-        return addrs;
+#ifdef _DEBUG
+    if (m_layout->is_complete()) {
+        Q_ASSERT_X(start > 0, "enumerate_vector", "start pointer must be larger than 0");
+        Q_ASSERT_X(end > 0, "enumerate_vector", "End must be larger than start!");
+        Q_ASSERT_X(start % 4 == 0, "enumerate_vector", "Start must be divisible by 4");
+        Q_ASSERT_X(end % 4 == 0, "enumerate_vector", "End must be divisible by 4");
+        Q_ASSERT_X(end >= start, "enumerate_vector", "End must be >= start!");
+        Q_ASSERT_X((end - start) % 4 == 0, "enumerate_vector", "end - start must be divisible by 4");
+    } else {
+        // when testing it's usually pretty bad to find a vector with more
+        // than 5000 entries... so throw
+        Q_ASSERT_X(entries < 5000, "enumerate_vector", "more than 5000 entires");
     }
-    uint bytes_read = read_raw(start, bytes, stuff);
-    if (bytes_read != bytes) {
-        qWarning() << "Tried to read" << bytes << "bytes but only got"
+#endif
+    QByteArray data(bytes, 0);
+    int bytes_read = read_raw(start, bytes, data);
+    if (bytes_read != bytes && m_layout->is_complete()) {
+        LOGW << "Tried to read" << bytes << "bytes but only got"
                 << bytes_read;
         detach();
         return addrs;
     }
     for(uint i = 0; i < bytes; i += 4) {
-        memcpy(&tmp_addr, stuff + i, 4);
-        if (is_valid_address(tmp_addr)) {
-            addrs << tmp_addr;
+        tmp_addr = decode_dword(data.mid(i, 4));
+        if (m_layout->is_complete()) {
+            if (is_valid_address(tmp_addr))
+                addrs << tmp_addr;
         } else {
-            //qWarning() << "bad addr in vector:" << hex << tmp_addr;
+            addrs << tmp_addr;
         }
     }
-    delete[] stuff;
-    //qDebug() << "VECTOR at" << hex << addr << "start:" << start << "end:" << end << "(" << dec << entries << "entries) valid entries" << addrs.size();
-    //Q_ASSERT_X(entries == addrs.size(), "enumerate_vector",
-    //           "Vector did not contain 100% valid addresses!");
     detach();
     return addrs;
 }
@@ -116,28 +117,16 @@ uint DFInstanceLinux::calculate_checksum() {
     return md5;
 }
 
-uint DFInstanceLinux::read_uint(const uint &addr) {
-    uint retval = 0;
-    read_raw(addr, sizeof(uint), &retval);
-    return retval;
-}
 
-int DFInstanceLinux::read_int(const uint &addr) {
-    int retval = 0;
-    read_raw(addr, sizeof(int), &retval);
-    return retval;
-}
+QString DFInstanceLinux::read_string(const VIRTADDR &addr) {
+    VIRTADDR buffer_addr = read_dword(addr);
+    int upper_size = 256;
+    QByteArray buf(upper_size, 0);
+    read_raw(buffer_addr, upper_size, buf);
 
-QString DFInstanceLinux::read_string(const uint &addr) {
-    uint buffer_addr = read_uint(addr);
-    int upper_size = 1024;
-    char *c = new char[upper_size];
-    memset(c, 0, upper_size);
-    read_raw(buffer_addr, upper_size, c);
-
+    QString ret_val(buf);
     CP437Codec *codec = new CP437Codec;
-    QString ret_val = codec->toUnicode(c);
-    delete[] c;
+    ret_val = codec->toUnicode(ret_val.toAscii());
     return ret_val;
 }
 
@@ -147,26 +136,8 @@ uint DFInstanceLinux::write_string(const uint &addr, const QString &str) {
     return 0;
 }
 
-short DFInstanceLinux::read_short(const uint &addr) {
-    short retval = 0;
-    read_raw(addr, sizeof(short), &retval);
-    return retval;
-}
-
-ushort DFInstanceLinux::read_ushort(const uint &addr) {
-    ushort retval = 0;
-    read_raw(addr, sizeof(ushort), &retval);
-    return retval;
-}
-
 uint DFInstanceLinux::write_int(const uint &addr, const int &val) {
     return write_raw(addr, sizeof(int), (void*)&val);
-}
-
-char DFInstanceLinux::read_char(const uint &addr) {
-    char retval;
-    read_raw(addr, sizeof(char), &retval);
-    return retval;
 }
 
 bool DFInstanceLinux::attach() {
@@ -215,10 +186,40 @@ bool DFInstanceLinux::detach() {
     return m_attach_count > 0;
 }
 
-int DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, QByteArray &buffer) {
-    return read_raw(addr, bytes, buffer.data());
+int DFInstanceLinux::read_raw(const VIRTADDR &addr, int bytes, QByteArray &buffer) {
+    // try to attach, will be ignored if we're already attached
+    attach();
+
+    // open the memory virtual file for this proc (can only read once
+    // attached and child is stopped
+    QFile mem_file(QString("/proc/%1/mem").arg(m_pid));
+    if (!mem_file.open(QIODevice::ReadOnly)) {
+        LOGE << "Unable to open" << mem_file.fileName();
+        detach();
+        return 0;
+    }
+    int bytes_read = 0; // tracks how much we've read of what was asked for
+    int step_size = 0x1000; // how many bytes to read each step
+    QByteArray chunk(step_size, 0); // our temporary memory container
+    buffer.fill(0, bytes); // zero our buffer
+    int steps = bytes / step_size;
+    if (bytes % step_size)
+        steps++;
+
+    for(VIRTADDR ptr = addr; ptr < addr+ bytes; ptr += step_size) {
+        if (ptr+step_size > addr + bytes)
+            step_size = addr + bytes - ptr;
+        mem_file.seek(ptr);
+        chunk = mem_file.read(step_size);
+        buffer.replace(bytes_read, chunk.size(), chunk);
+        bytes_read += chunk.size();
+    }
+    mem_file.close();
+    detach();
+    return bytes_read;
 }
 
+/*
 uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer) {
     // try to attach, will be ignored if we're already attached
     attach();
@@ -267,6 +268,7 @@ uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer
     // tell the caller their buffer is ready, with fresh bits from the oven :)
     return bytes_read;
 }
+*/
 
 uint DFInstanceLinux::write_raw(const uint &addr, const uint &bytes, void *buffer) {
     // try to attach, will be ignored if we're already attached
@@ -287,15 +289,13 @@ uint DFInstanceLinux::write_raw(const uint &addr, const uint &bytes, void *buffe
     // the existing data as it is, and then write the changes over the existing
     // data in the buffer first, then write the buffer 4 bytes at a time to the
     // process. This should ensure no clobbering of data.
-    char *existing_data = new char[steps * 4];
-    memset(existing_data, 0, steps * 4);
+    QByteArray existing_data(steps * 4, 0);
     read_raw(addr, (steps * 4), existing_data);
-    QByteArray tmp(existing_data, steps * 4);
-    LOGD << "WRITE_RAW: EXISTING OLD DATA     " << tmp.toHex();
+    LOGD << "WRITE_RAW: EXISTING OLD DATA     " << existing_data.toHex();
 
     // ok we have our insurance in place, now write our new junk to the buffer
-    memcpy(existing_data, buffer, bytes);
-    QByteArray tmp2(existing_data, steps * 4);
+    memcpy(existing_data.data(), buffer, bytes);
+    QByteArray tmp2(existing_data);
     LOGD << "WRITE_RAW: EXISTING WITH NEW DATA" << tmp2.toHex();
 
     // ok, now our to be written data is in part or all of the exiting data buffer
@@ -303,7 +303,7 @@ uint DFInstanceLinux::write_raw(const uint &addr, const uint &bytes, void *buffe
     for (uint i = 0; i < steps; ++i) {
         int offset = i * 4;
         // for each step write a single word to the child
-        memcpy(&tmp_data, existing_data + offset, 4);
+        memcpy(&tmp_data, existing_data.mid(offset, 4).data(), 4);
         QByteArray tmp_data_str((char*)&tmp_data, 4);
         LOGD << "WRITE_RAW:" << hex << addr + offset << "HEX" << tmp_data_str.toHex();
         if (ptrace(PTRACE_POKEDATA, m_pid, addr + offset, tmp_data) != 0) {
@@ -316,8 +316,6 @@ uint DFInstanceLinux::write_raw(const uint &addr, const uint &bytes, void *buffe
         QByteArray foo((char*)&written, 4);
         LOGD << "WRITE_RAW: WE APPEAR TO HAVE WRITTEN" << foo.toHex();
     }
-    delete[] existing_data;
-
     // attempt to detach, will be ignored if we're several layers into an attach chain
     detach();
     // tell the caller how many bytes we wrote
@@ -359,7 +357,7 @@ bool DFInstanceLinux::find_running_copy() {
         LOGD << "RANGE start:" << hex << tmp_pair.first << "end:" << tmp_pair.second;
     }*/
 
-    uint m_base_addr = read_uint(m_lowest_address + 0x18);
+    VIRTADDR m_base_addr = read_dword(m_lowest_address + 0x18);
     LOGD << "base_addr:" << m_base_addr << "HEX" << hex << m_base_addr;
     m_is_ok = m_base_addr > 0;
 
@@ -415,8 +413,8 @@ void DFInstanceLinux::map_virtual_memory() {
                 keep_it = true;
             } else if (perms.contains("r") && inode && path == QFile::symLinkTarget(QString("/proc/%1/exe").arg(m_pid))) {
                 keep_it = true;
-            //} else {
-            //    keep_it = path.isEmpty();
+            } else {
+                keep_it = path.isEmpty();
             }
             // uncomment to search HEAP only
             //keep_it = path.contains("[heap]");
@@ -424,7 +422,7 @@ void DFInstanceLinux::map_virtual_memory() {
 
             if (keep_it && end_addr > start_addr) {
                 MemorySegment *segment = new MemorySegment(path, start_addr, end_addr);
-                LOGD << "keeping" << segment->to_string();
+                TRACE << "keeping" << segment->to_string();
                 m_regions << segment;
                 if (start_addr < m_lowest_address)
                     m_lowest_address = start_addr;

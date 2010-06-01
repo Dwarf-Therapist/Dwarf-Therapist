@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <QtGui>
 
 #include "skill.h"
+#include "utils.h"
 
 class DFInstance;
 class CustomProfession;
@@ -36,7 +37,7 @@ class Dwarf : public QObject
     Dwarf(DFInstance *df, const uint &addr, QObject *parent=0); //private, use the static get_dwarf() method
 
 public:
-    static Dwarf* get_dwarf(DFInstance *df, const uint &address);
+    static Dwarf* get_dwarf(DFInstance *df, const VIRTADDR &address);
     virtual ~Dwarf();
 
     typedef enum {
@@ -271,7 +272,7 @@ private:
     void read_labors(const uint &addr);
     void calc_names();
     void read_traits(const uint &addr);
-    void read_current_job(const uint &addr);
+    void read_current_job(const VIRTADDR &addr);
 
 
     Q_PROPERTY(QString first_name READ first_name) // no setters (scripting read-only)

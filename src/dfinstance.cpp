@@ -107,23 +107,61 @@ DFInstance::~DFInstance() {
     m_memory_layouts.clear();
 }
 
+BYTE DFInstance::read_byte(const VIRTADDR &addr) {
+    QByteArray out;
+    read_raw(addr, sizeof(BYTE), out);
+    return out.at(0);
+}
+
+WORD DFInstance::read_word(const VIRTADDR &addr) {
+    QByteArray out;
+    read_raw(addr, sizeof(WORD), out);
+    return decode_word(out);
+}
+
+DWORD DFInstance::read_dword(const VIRTADDR &addr) {
+    QByteArray out;
+    read_raw(addr, sizeof(DWORD), out);
+    return decode_dword(out);
+}
+
+qint16 DFInstance::read_short(const VIRTADDR &addr) {
+    QByteArray out;
+    read_raw(addr, sizeof(qint16), out);
+    return decode_short(out);
+}
+
+qint32 DFInstance::read_int(const VIRTADDR &addr) {
+    QByteArray out;
+    read_raw(addr, sizeof(qint32), out);
+    return decode_int(out);
+}
+
 QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
+    // progress reporting
+    m_scan_speed_timer->start(500);
     m_memory_remap_timer->stop(); // don't remap segments while scanning
+    uint total_bytes = 0;
+    m_bytes_scanned = 0; // for global timings
+    int bytes_scanned = 0; // for progress calcs
+    foreach(MemorySegment *seg, m_regions) {
+        total_bytes += seg->size;
+    }
+    uint report_every_n_bytes = total_bytes / 1000;
+    emit scan_total_steps(1000);
+    emit scan_progress(0);
+
 
     m_stop_scan = false;
-    QVector<uint> addresses;
+    QVector<uint> addresses; //! return value
     QByteArrayMatcher matcher(needle);
 
     int step = 0x1000;
     QByteArray buffer(step, 0);
 
-    int count = 0;
-    emit scan_total_steps(m_regions.size());
-    emit scan_progress(0);
-
-    uint bytes_scanned = 0;
     QTime timer;
     timer.start();
+    attach();
     foreach(MemorySegment *seg, m_regions) {
         int steps = seg->size / step;
         if (seg->size % step)
@@ -146,19 +184,21 @@ QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
                 continue;
             }
             bytes_scanned += bytes_read;
+            m_bytes_scanned += bytes_read;
             int idx = matcher.indexIn(buffer);
             if (idx != -1) {
                 addresses << (uint)(ptr + idx);
             }
             if (m_stop_scan)
                 break;
+            emit scan_progress(bytes_scanned / report_every_n_bytes);
 
         }
-        emit scan_progress(count++);
         DT->processEvents();
         if (m_stop_scan)
             break;
     }
+    detach();
     m_memory_remap_timer->start(20000); // start the remapper again
     LOGD << QString("Scanned %L1MB in %L2ms").arg(bytes_scanned / 1024 * 1024)
             .arg(timer.elapsed());
@@ -390,6 +430,7 @@ QVector<uint> DFInstance::find_vectors(int num_entries,
     QByteArray buffer(scan_step_size, '\0');
     QTime timer;
     timer.start();
+    attach();
     foreach(MemorySegment *seg, m_regions) {
         //TRACE << "SCANNING REGION" << hex << seg->start_addr << "-"
         //        << seg->end_addr << "BYTES:" << dec << seg->size;
@@ -434,13 +475,13 @@ QVector<uint> DFInstance::find_vectors(int num_entries,
                 if (m_stop_scan)
                     break;
             }
-            QString msg = QString("%1 bytes scanned").arg(bytes_scanned);
             emit scan_progress(bytes_scanned / report_every_n_bytes);
             DT->processEvents();
             if (m_stop_scan)
                 break;
         }
     }
+    detach();
     m_memory_remap_timer->start(20000); // start the remapper again
     m_scan_speed_timer->stop();
     LOGD << QString("Scanned %L1MB in %L2ms").arg(bytes_scanned / 1024 * 1024)
