@@ -684,6 +684,11 @@ void Dwarf::commit_pending() {
     refresh_data();
 }
 
+void Dwarf::set_nickname(const QString &nick) {
+    m_pending_nick_name = nick;
+    calc_names();
+}
+
 void Dwarf::set_custom_profession_text(const QString &prof_text) {
     m_pending_custom_profession = prof_text;
 }

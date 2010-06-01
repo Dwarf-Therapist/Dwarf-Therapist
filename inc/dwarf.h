@@ -163,7 +163,7 @@ public:
     void refresh_data();
 
     //! set the pending nickname for this dwarf (does not auto-commit)
-    void set_nickname(QString nick) {m_pending_nick_name = nick; calc_names();}
+    Q_INVOKABLE void set_nickname(const QString &nick);
 
     //! set the migration wave this dwarf (DwarfModel currently calls this with its best guess)
     void set_migration_wave(const int &wave_number) {m_migration_wave = wave_number;}
