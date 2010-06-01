@@ -167,18 +167,14 @@ void Dwarf::refresh_data() {
     }
     */
 
-    QVector<uint> souls = m_df->enumerate_vector(m_address + mem->dwarf_offset("souls"));
-    foreach(uint soul, souls) {
-        //LOGD << "SOUL FOUND AT" << hex << soul << m_df->pprint(m_df->get_data(soul, 0x500), 0);
-        QVector<uint> skills = m_df->enumerate_vector(soul + mem->dwarf_offset("skills"));
-        //LOGD << nice_name() << "Soul contains" << skills.size() << "skills";
-        m_skills = read_skills(soul + mem->dwarf_offset("skills"));
-        read_traits(soul + mem->dwarf_offset("traits"));
+    foreach(uint soul, m_df->enumerate_vector(m_address +
+                                              mem->dwarf_offset("souls"))) {
+        LOGD << hex << mem->soul_detail("skills");
+
+        m_skills = read_skills(soul + mem->soul_detail("skills"));
+        read_traits(soul + mem->soul_detail("traits"));
         TRACE << "\tTRAITS:" << m_traits.size();
     }
-
-    //ushort position = m_df->read_ushort(m_address + mem->dwarf_offset("position"));
-    //LOGD << nice_name() << "POSITION:" << position;
 
     TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name
             << "(" << m_translated_name << ")";
@@ -545,8 +541,8 @@ void Dwarf::read_current_job(const uint &addr) {
     uint current_job_addr = m_df->read_uint(addr);
 
     if (current_job_addr != 0) {
-        m_current_job_id = m_df->read_ushort(
-                current_job_addr + m_df->memory_layout()->offset("current_job_id"));
+        m_current_job_id = m_df->read_ushort(current_job_addr +
+                                     m_df->memory_layout()->job_detail("id"));
         DwarfJob *job = GameDataReader::ptr()->get_job(m_current_job_id);
         if (job)
             m_current_job = job->description;
@@ -557,7 +553,7 @@ void Dwarf::read_current_job(const uint &addr) {
         MemoryLayout* layout = m_df->memory_layout();
         uint states_addr = m_address + layout->dwarf_offset("states");
         QVector<uint> entries = m_df->enumerate_vector(states_addr);
-        short on_break_value = layout->job_flag("on_break");
+        short on_break_value = layout->job_detail("on_break_flag");
         foreach(uint entry, entries) {
             if (m_df->read_short(entry) == on_break_value) {
                 is_on_break = true;

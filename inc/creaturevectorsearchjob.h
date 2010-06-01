@@ -69,23 +69,23 @@ public slots:
 
         emit scan_message(tr("Scanning for known nickname"));
         QByteArray needle(custom_nickname);
-        foreach(uint nickname, m_df->scan_mem(needle)) {
-            LOGD << "FOUND NICKNAME" << hex << nickname;
-            emit scan_message(tr("Scanning for dwarf objects"));
-            uint possible_addr = nickname - dwarf_nickname_offset -
-                                 DFInstance::STRING_BUFFER_OFFSET;
-            LOGD << "DWARF POINTER SHOULD BE AT:" << hex << possible_addr;
-            needle = encode(possible_addr);
-            foreach(uint dwarf, m_df->scan_mem(needle)) {
-                LOGD << "FOUND DWARF" << hex << dwarf;
-                emit scan_message(tr("Scanning for dwarf vector pointer"));
-                // since this is the first dwarf, it should also be the vector
-                needle = encode(dwarf);
-                foreach(uint vector_ptr, m_df->scan_mem(needle)) {
-                    uint creature_vec = vector_ptr -
-                                        DFInstance::VECTOR_POINTER_OFFSET;
-                    emit found_address("creature_vector", creature_vec);
-                    LOGD << "FOUND CREATURE VECTOR" << hex << creature_vec;
+        foreach(uint nickname_buf, m_df->scan_mem(needle)) {
+            LOGD << "FOUND NICKNAME" << hexify(nickname_buf);
+            foreach(uint nickname_str, m_df->scan_mem(encode(nickname_buf))) {
+                uint possible_addr = nickname_str - dwarf_nickname_offset -
+                                     DFInstance::STRING_BUFFER_OFFSET;
+
+                LOGD << "DWARF POINTER SHOULD BE AT:" << hex << possible_addr;
+                foreach(uint dwarf, m_df->scan_mem(encode(possible_addr))) {
+                    LOGD << "FOUND DWARF" << hex << dwarf;
+                    emit scan_message(tr("Scanning for dwarf vector pointer"));
+                    // since this is the first dwarf, it should also be the vector
+                    foreach(uint vector_ptr, m_df->scan_mem(encode(dwarf))) {
+                        uint creature_vec = vector_ptr -
+                                            DFInstance::VECTOR_POINTER_OFFSET;
+                        emit found_address("creature_vector", creature_vec);
+                        LOGD << "FOUND CREATURE VECTOR" << hex << creature_vec;
+                    }
                 }
             }
         }

@@ -16,7 +16,8 @@ public:
     uint dwarf_offset(const QString &key) {
         return m_dwarf_offsets.value(key, -1);
     }
-    uint job_flag(const QString &key) {return m_job_flags.value(key, -1);}
+    uint job_detail(const QString &key) {return m_job_details.value(key, -1);}
+    uint soul_detail(const QString &key) {return m_soul_details.value(key, -1);}
     QHash<uint, QString> valid_flags_1() {return m_valid_flags_1;}
     QHash<uint, QString> invalid_flags_1() {return m_invalid_flags_1;}
     QHash<uint, QString> invalid_flags_2() {return m_invalid_flags_2;}
@@ -32,7 +33,8 @@ private:
     AddressHash m_addresses;
     AddressHash m_offsets;
     AddressHash m_dwarf_offsets;
-    AddressHash m_job_flags;
+    AddressHash m_job_details;
+    AddressHash m_soul_details;
     QHash<uint, QString> m_valid_flags_1;
     QHash<uint, QString> m_invalid_flags_1;
     QHash<uint, QString> m_invalid_flags_2;

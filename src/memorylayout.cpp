@@ -36,7 +36,8 @@ void MemoryLayout::load_data() {
     read_group("addresses", m_addresses);
     read_group("offsets", m_offsets);
     read_group("dwarf_offsets", m_dwarf_offsets);
-    read_group("job_flags", m_job_flags);
+    read_group("job_details", m_job_details);
+    read_group("soul_details", m_soul_details);
 
     // flags
     int flag_count = m_data->beginReadArray("valid_flags_1");
