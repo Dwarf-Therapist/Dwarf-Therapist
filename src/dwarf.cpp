@@ -145,7 +145,7 @@ void Dwarf::refresh_data() {
     m_generic_squad_name = read_squad_name(m_address + mem->dwarf_offset("squad_name"), true);
     TRACE << "\tGENERIC SQUAD NAME:" << m_generic_squad_name;
 
-    /* Search for a souls vector, where each soul contains a vector of skills
+    // Search for a souls vector, where each soul contains a vector of skills
     QVector<uint> vectors = m_df->find_vectors_in_range(1, m_address, 0xc00);
     foreach(uint vec_addr, vectors) {
         QVector<uint> entries = m_df->enumerate_vector(vec_addr);
@@ -154,28 +154,28 @@ void Dwarf::refresh_data() {
                 << "valid entries at" << hex << vec_addr << "Offset:"
                 << (vec_addr - m_address) << "SOULPTR:" << soul;
         //LOGD << m_df->pprint(soul, 0x50);
-        foreach(uint skill_vec, m_df->find_vectors_in_range(50, soul, 0x250)) {
+        foreach(uint skill_vec, m_df->find_vectors_in_range(50, soul, 0x350)) {
             QVector<uint> skills = m_df->enumerate_vector(skill_vec);
-            LOGD << nice_name() << "souls offset:" << hex
-                    << (vec_addr - m_address) << "skills offset in soul:"
+            LOGD << nice_name() << "+" << hex << (vec_addr - m_address)
+                    << "skills offset in soul:"
                     << (skill_vec - entries.at(0)) << "total skills:"
                     << dec << skills.size();
 
-            //m_skills = read_skills(skill_vec);
-            //foreach(uint skill, skills) {
-            //    LOGD << nice_name() << "\n" << m_df->pprint(skill, 0x20);
-            //}
+            foreach(Skill s, read_skills(skill_vec)) {
+                LOGD << s.name() << s.exp_summary();
+            }
         }
     }
-    */
+    //*/
+
 
     foreach(uint soul, m_df->enumerate_vector(m_address +
                                               mem->dwarf_offset("souls"))) {
         m_skills = read_skills(soul + mem->soul_detail("skills"));
-        read_traits(soul + mem->soul_detail("traits"));
+//        read_traits(soul + mem->soul_detail("traits"));
         TRACE << "\tTRAITS:" << m_traits.size();
     }
-    */
+
     TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name
             << "(" << m_translated_name << ")";
 }
@@ -541,7 +541,7 @@ void Dwarf::read_current_job(const VIRTADDR &addr) {
     VIRTADDR current_job_addr = m_df->read_dword(addr);
 
     if (current_job_addr != 0) {
-        m_current_job_id = m_df->read_ushort(current_job_addr +
+        m_current_job_id = m_df->read_word(current_job_addr +
                                      m_df->memory_layout()->job_detail("id"));
         DwarfJob *job = GameDataReader::ptr()->get_job(m_current_job_id);
         if (job)

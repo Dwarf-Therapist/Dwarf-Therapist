@@ -62,6 +62,11 @@ QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
         << "END" << end << "UNVERIFIED ENTRIES" << dec << entries;
     VIRTADDR tmp_addr = 0;
 
+    if (entries > 5000) {
+        LOGW << "vector at" << hexify(addr) << "has over 5000 entries! (" <<
+                entries << ")";
+    }
+
 #ifdef _DEBUG
     if (m_layout->is_complete()) {
         Q_ASSERT_X(start > 0, "enumerate_vector", "start pointer must be larger than 0");
