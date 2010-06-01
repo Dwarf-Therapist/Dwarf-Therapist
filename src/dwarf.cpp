@@ -145,7 +145,7 @@ void Dwarf::refresh_data() {
     m_generic_squad_name = read_squad_name(m_address + mem->dwarf_offset("squad_name"), true);
     TRACE << "\tGENERIC SQUAD NAME:" << m_generic_squad_name;
 
-    // Search for a souls vector, where each soul contains a vector of skills
+    /* Search for a souls vector, where each soul contains a vector of skills
     QVector<uint> vectors = m_df->find_vectors_in_range(1, m_address, 0xc00);
     foreach(uint vec_addr, vectors) {
         QVector<uint> entries = m_df->enumerate_vector(vec_addr);
@@ -153,8 +153,8 @@ void Dwarf::refresh_data() {
         LOGD << nice_name() << "Found vector of" << entries.size()
                 << "valid entries at" << hex << vec_addr << "Offset:"
                 << (vec_addr - m_address) << "SOULPTR:" << soul;
-        //LOGD << m_df->pprint(soul, 0x50);
-        foreach(uint skill_vec, m_df->find_vectors_in_range(50, soul, 0x350)) {
+        //LOGD << m_df->pprint(soul, 0x250);
+        foreach(uint skill_vec, m_df->find_vectors_in_range(50, soul, 0x250)) {
             QVector<uint> skills = m_df->enumerate_vector(skill_vec);
             LOGD << nice_name() << "+" << hex << (vec_addr - m_address)
                     << "skills offset in soul:"
@@ -166,13 +166,15 @@ void Dwarf::refresh_data() {
             }
         }
     }
-    //*/
+    */
 
 
-    foreach(uint soul, m_df->enumerate_vector(m_address +
-                                              mem->dwarf_offset("souls"))) {
+    foreach(VIRTADDR soul, m_df->enumerate_vector(m_address +
+                                                  mem->dwarf_offset("souls"))) {
+        LOGD << nice_name() << m_df->pprint(soul, 0x250);
+
         m_skills = read_skills(soul + mem->soul_detail("skills"));
-//        read_traits(soul + mem->soul_detail("traits"));
+        read_traits(soul + mem->soul_detail("traits"));
         TRACE << "\tTRAITS:" << m_traits.size();
     }
 
