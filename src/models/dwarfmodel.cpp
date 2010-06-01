@@ -381,16 +381,19 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
 
         // first find out how many are enabled...
         int enabled_count = 0;
+        int settable_dwarves = 0;
         QString group_name = idx.data(DwarfModel::DR_GROUP_NAME).toString();
-        int children = rowCount(first_col);
 
         foreach(Dwarf *d, m_grouped_dwarves.value(group_name)) {
-            if (d->labor_enabled(labor_id))
-                enabled_count++;
+            if (d->can_set_labors() || DT->labor_cheats_allowed()) {
+                settable_dwarves++;
+                if (d->labor_enabled(labor_id))
+                    enabled_count++;
+            }
         }
 
         // if none or some are enabled, enable all of them
-        bool enabled = (enabled_count < children);
+        bool enabled = (enabled_count < settable_dwarves);
         foreach(Dwarf *d, m_grouped_dwarves.value(group_name)) {
             d->set_labor(labor_id, enabled);
         }
