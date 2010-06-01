@@ -33,7 +33,6 @@ public:
         , name(s.value("name", "UNKNOWN LABOR").toString())
         , labor_id(s.value("id", -1).toInt())
         , skill_id(s.value("skill", -1).toInt())
-        , is_weapon(s.value("is_weapon", false).toBool())
         , requires_equipment(s.value("requires_equipment", false).toBool())
     {
         int excludes = s.beginReadArray("excludes");
@@ -54,7 +53,6 @@ public:
     int labor_id;
     int skill_id;
     QList<int> m_excluded_labors; // list of other labors that this one is exclusive with
-    bool is_weapon; // all weapon labors are mutually exclusive of each other
     bool requires_equipment; // when first assigned the dwarf should go find
                              // needed equipment (default is false)
 };

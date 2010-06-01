@@ -39,8 +39,6 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     QString labor_list = "<br><b>Labor Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Labor ID</th><th>Labor</th></tr>";
     foreach(Labor *l, gdr->get_ordered_labors()) {
-        if (l->is_weapon)
-            continue;
         labor_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(l->labor_id, 2, 10, QChar('0')).arg(l->name));
     }
     labor_list.append("</table>");

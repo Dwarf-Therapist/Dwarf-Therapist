@@ -587,8 +587,6 @@ void Dwarf::read_labors(const uint &addr) {
     // get the list of identified labors from game_data.ini
     GameDataReader *gdr = GameDataReader::ptr();
     foreach(Labor *l, gdr->get_ordered_labors()) {
-        if (l->is_weapon && l->labor_id < 0) // unarmed
-            continue;
         bool enabled = buf[l->labor_id] > 0;
         m_labors[l->labor_id] = enabled;
         m_pending_labors[l->labor_id] = enabled;
@@ -601,20 +599,7 @@ void Dwarf::read_labors(const uint &addr) {
 }
 
 bool Dwarf::labor_enabled(int labor_id) {
-    if (labor_id < 0) {// unarmed
-        bool uses_weapon = false;
-        foreach(Labor *l, GameDataReader::ptr()->get_ordered_labors()) {
-            if (l->is_weapon && l->labor_id > 0) {
-                if (m_pending_labors[l->labor_id]) {
-                    uses_weapon = true;
-                    break;
-                }
-            }
-        }
-        return !uses_weapon;
-    } else {
-        return m_pending_labors.value(labor_id, false);
-    }
+    return m_pending_labors.value(labor_id, false);
 }
 
 bool Dwarf::is_labor_state_dirty(int labor_id) {
@@ -643,7 +628,7 @@ void Dwarf::set_labor(int labor_id, bool enabled) {
         return;
     }
 
-    if (!m_can_set_labors && !DT->labor_cheats_allowed() && !l->is_weapon) {
+    if (!m_can_set_labors && !DT->labor_cheats_allowed()) {
         LOGD << "IGNORING SET LABOR OF ID:" << labor_id << "TO:" << enabled << "FOR:" << m_nice_name << "PROF_ID" << m_raw_profession
              << "PROF_NAME:" << profession() << "CUSTOM:" << m_pending_custom_profession;
         return;
@@ -653,12 +638,6 @@ void Dwarf::set_labor(int labor_id, bool enabled) {
         foreach(int excluded, l->get_excluded_labors()) {
             LOGD << "LABOR" << labor_id << "excludes" << excluded;
             m_pending_labors[excluded] = false;
-        }
-    }
-    if (enabled && l->is_weapon) { // weapon type labors are automatically exclusive
-        foreach(Labor *l, GameDataReader::ptr()->get_ordered_labors()) {
-            if (l && l->is_weapon)
-                m_pending_labors[l->labor_id] = false;
         }
     }
     m_pending_labors[labor_id] = enabled;
@@ -880,6 +859,17 @@ int Dwarf::total_skill_levels() {
     int ret_val = 0;
     foreach(Skill s, m_skills) {
         ret_val += s.rating();
+    }
+    return ret_val;
+}
+
+int Dwarf::total_assigned_labors() {
+    // get the list of identified labors from game_data.ini
+    int ret_val = 0;
+    GameDataReader *gdr = GameDataReader::ptr();
+    foreach(Labor *l, gdr->get_ordered_labors()) {
+        if (m_labors[l->labor_id] > 0)
+            ret_val++;
     }
     return ret_val;
 }

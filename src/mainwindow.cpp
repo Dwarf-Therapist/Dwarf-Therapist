@@ -140,12 +140,17 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cb_group_by->addItem(tr("Legendary Status"), DwarfModel::GB_LEGENDARY);
     ui->cb_group_by->addItem(tr("Sex"), DwarfModel::GB_SEX);
     ui->cb_group_by->addItem(tr("Happiness"), DwarfModel::GB_HAPPINESS);
-    ui->cb_group_by->addItem(tr("Migration Wave"), DwarfModel::GB_MIGRATION_WAVE);
+    ui->cb_group_by->addItem(tr("Migration Wave"),
+                             DwarfModel::GB_MIGRATION_WAVE);
     ui->cb_group_by->addItem(tr("Squad"), DwarfModel::GB_SQUAD);
     ui->cb_group_by->addItem(tr("Current Job"), DwarfModel::GB_CURRENT_JOB);
-    ui->cb_group_by->addItem(tr("Military Status"), DwarfModel::GB_MILITARY_STATUS);
+    ui->cb_group_by->addItem(tr("Military Status"),
+                             DwarfModel::GB_MILITARY_STATUS);
     ui->cb_group_by->addItem(tr("Highest Skill"), DwarfModel::GB_HIGHEST_SKILL);
-    ui->cb_group_by->addItem(tr("Total Skill Levels"), DwarfModel::GB_TOTAL_SKILL_LEVELS);
+    ui->cb_group_by->addItem(tr("Total Skill Levels"),
+                             DwarfModel::GB_TOTAL_SKILL_LEVELS);
+    ui->cb_group_by->addItem(tr("Total Assigned Labors"),
+                             DwarfModel::GB_ASSIGNED_LABORS);
 
     read_settings();
     draw_professions();

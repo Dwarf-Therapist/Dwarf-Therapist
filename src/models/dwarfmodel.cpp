@@ -245,6 +245,10 @@ void DwarfModel::build_rows() {
                 m_grouped_dwarves[tr("Levels: %1").arg(d->total_skill_levels())]
                     .append(d);
                 break;
+            case GB_ASSIGNED_LABORS:
+                m_grouped_dwarves[tr("%1 Assigned Labors")
+                                  .arg(d->total_assigned_labors())].append(d);
+                break;
         }
     }
 
@@ -281,6 +285,8 @@ void DwarfModel::build_row(const QString &key) {
             root->setData(first_dwarf->highest_skill().rating(), DR_SORT_VALUE);
         } else if (m_group_by == GB_TOTAL_SKILL_LEVELS) {
             root->setData(first_dwarf->total_skill_levels(), DR_SORT_VALUE);
+        } else if (m_group_by == GB_ASSIGNED_LABORS) {
+            root->setData(first_dwarf->total_assigned_labors(), DR_SORT_VALUE);
         }
         root_row << root;
     }
