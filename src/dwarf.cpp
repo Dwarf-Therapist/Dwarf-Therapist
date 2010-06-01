@@ -169,8 +169,6 @@ void Dwarf::refresh_data() {
 
     foreach(uint soul, m_df->enumerate_vector(m_address +
                                               mem->dwarf_offset("souls"))) {
-        LOGD << hex << mem->soul_detail("skills");
-
         m_skills = read_skills(soul + mem->soul_detail("skills"));
         read_traits(soul + mem->soul_detail("traits"));
         TRACE << "\tTRAITS:" << m_traits.size();
