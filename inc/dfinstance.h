@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define DFINSTANCE_H
 
 #include <QtGui>
+#include "utils.h"
 
 class Dwarf;
 class MemoryLayout;
@@ -48,22 +49,22 @@ public:
     bool is_valid_address(const uint &addr);
     bool looks_like_vector_of_pointers(const uint &addr);
 
+    // revamped memory reading
+    virtual int read_raw(const VIRTADDR &addr, int bytes, QByteArray &buf) = 0;
+    virtual BYTE read_byte(const VIRTADDR &addr);
+    virtual WORD read_word(const VIRTADDR &addr);
+    virtual DWORD read_dword(const VIRTADDR &addr);
+    virtual qint16 read_short(const VIRTADDR &addr);
+    virtual qint32 read_int(const VIRTADDR &addr);
+
     // memory reading
     virtual QVector<uint> enumerate_vector(const uint &addr) = 0;
-    virtual char read_char(const uint &addr) = 0;
-    virtual short read_short(const uint &addr) = 0;
-    virtual ushort read_ushort(const uint &addr) = 0;
-    virtual int read_int(const uint &addr) = 0;
-    virtual uint read_uint(const uint &addr) = 0;
-    virtual uint read_raw(const uint &addr, const uint &bytes, void *buf) = 0;
-    virtual int read_raw(const uint &addr, const uint &bytes, QByteArray &buf) = 0;
-    QVector<uint> scan_mem(const QByteArray &needle);
-    virtual QString read_string(const uint &addr) = 0;
+    virtual QString read_string(const VIRTADDR &addr) = 0;
 
+    QVector<uint> scan_mem(const QByteArray &needle);
     QByteArray get_data(const uint &addr, const uint &size);
     QString pprint(const uint &addr, const uint &size);
     QString pprint(const QByteArray &ba, const uint &start_addr=0);
-
 
     // Mapping methods
     QVector<uint> find_vectors_in_range(const uint &max_entries,

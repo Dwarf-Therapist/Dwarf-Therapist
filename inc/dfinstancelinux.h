@@ -37,14 +37,8 @@ public:
     // factory ctor
     bool find_running_copy();
     QVector<uint> enumerate_vector(const uint &addr);
-    char read_char(const uint &addr);
-    short read_short(const uint &addr);
-    ushort read_ushort(const uint &addr);
-    uint read_uint(const uint &addr);
-    int read_int(const uint &addr);
-    uint read_raw(const uint &addr, const uint &bytes, void *buffer);
-    int read_raw(const uint &addr, const uint &bytes, QByteArray &buffer);
-    QString read_string(const uint &addr);
+    int read_raw(const VIRTADDR &addr, int bytes, QByteArray &buffer);
+    QString read_string(const VIRTADDR &addr);
 
     // Writing
     uint write_raw(const uint &addr, const uint &bytes, void *buffer);
