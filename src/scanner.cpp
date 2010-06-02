@@ -203,7 +203,7 @@ void Scanner::brute_force_read() {
             ui->le_read_output->setText(QString::number(m_df->read_int(addr)));
             break;
         case 3: // uint
-            ui->le_read_output->setText(QString::number(m_df->read_dword(addr)));
+            ui->le_read_output->setText(QString::number(m_df->read_addr(addr)));
             break;
         case 4: // short
             ui->le_read_output->setText(QString::number(m_df->read_short(addr)));

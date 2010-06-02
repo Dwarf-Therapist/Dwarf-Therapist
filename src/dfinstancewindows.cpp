@@ -52,20 +52,20 @@ DFInstanceWindows::~DFInstanceWindows() {
 }
 
 uint DFInstanceWindows::calculate_checksum() {
-    char expect_M = read_char(m_base_addr);
-    char expect_Z = read_char(m_base_addr + 0x1);
+    BYTE expect_M = read_byte(m_base_addr);
+    BYTE expect_Z = read_byte(m_base_addr + 0x1);
 
     if (expect_M != 'M' || expect_Z != 'Z') {
         qWarning() << "invalid executable";
     }
     uint pe_header = m_base_addr + read_int(m_base_addr + 30 * 2);
-    char expect_P = read_char(pe_header);
-    char expect_E = read_char(pe_header + 0x1);
+    BYTE expect_P = read_byte(pe_header);
+    BYTE expect_E = read_byte(pe_header + 0x1);
     if (expect_P != 'P' || expect_E != 'E') {
         qWarning() << "PE header invalid";
     }
 
-    uint timestamp = read_uint(pe_header + 4 + 2 * 2);
+    quint32 timestamp = read_addr(pe_header + 4 + 2 * 2);
     QDateTime compile_timestamp = QDateTime::fromTime_t(timestamp);
     LOGD << "Target EXE was compiled at " <<
             compile_timestamp.toString(Qt::ISODate);
@@ -75,12 +75,12 @@ uint DFInstanceWindows::calculate_checksum() {
 QVector<uint> DFInstanceWindows::enumerate_vector(const uint &addr) {
     TRACE << "beginning vector enumeration at" << hex << addr;
     QVector<uint> addresses;
-    uint start = read_uint(addr + 4);
+    VIRTADDR start = read_addr(addr + 4);
     TRACE << "start of vector" << hex << start;
-    uint end = read_uint(addr + 8);
+    VIRTADDR end = read_addr(addr + 8);
     TRACE << "end of vector" << hex << end;
 
-    uint entries = (end - start) / sizeof(uint);
+    int entries = (end - start) / sizeof(VIRTADDR);
     TRACE << "there appears to be" << entries << "entries in this vector";
 
     if (m_layout->is_complete()) {
@@ -93,8 +93,8 @@ QVector<uint> DFInstanceWindows::enumerate_vector(const uint &addr) {
         Q_ASSERT(entries < 5000);
     }
 
-    for (uint ptr = start; ptr < end; ptr += 4 ) {
-        uint a = read_uint(ptr);
+    for (VIRTADDR ptr = start; ptr < end; ptr += 4 ) {
+        VIRTADDR a = read_addr(ptr);
         //if (is_valid_address(a)) {
             addresses.append(a);
         //}
@@ -107,9 +107,9 @@ QVector<uint> DFInstanceWindows::enumerate_vector(const uint &addr) {
 QString DFInstanceWindows::read_string(const uint &addr) {
     int len = read_int(addr + STRING_LENGTH_OFFSET);
     int cap = read_int(addr + STRING_CAP_OFFSET);
-    uint buffer_addr = addr + STRING_BUFFER_OFFSET;
+    VIRTADDR buffer_addr = addr + STRING_BUFFER_OFFSET;
     if (cap >= 16)
-        buffer_addr = read_uint(buffer_addr);
+        buffer_addr = read_addr(buffer_addr);
 
     if (len > cap || len < 0 || len > 1024) {
 #ifdef _DEBUG
@@ -125,21 +125,27 @@ QString DFInstanceWindows::read_string(const uint &addr) {
     Q_ASSERT_X(len < (1 << 16), "read_string",
                "String must be of sane length!");
 
-    char *buffer = new char[len];
-    read_raw(buffer_addr, len, buffer);
-
+    QByteArray buffer = get_data(buffer_addr, len);
     CP437Codec *codec = new CP437Codec;
-    QString ret_val = codec->toUnicode(buffer, len);
-    delete[] buffer;
-    //delete codec; seems to cause Qt Warnings if you delete this.
+    QString ret_val = codec->toUnicode(buffer);
+    delete codec; // seems to cause Qt Warnings if you delete this.
     return ret_val;
 }
 
 uint DFInstanceWindows::write_string(const uint &addr, const QString &str) {
+    /*
+
+      THIS IS TOTALLY DANGEROUS
+
+      */
+
+    // TODO, don't write strings longer than 15 characters to the string
+    // unless it has already been expanded to a bigger allocation
+
     int cap = read_int(addr + STRING_CAP_OFFSET);
-    uint buffer_addr = addr + STRING_BUFFER_OFFSET;
+    VIRTADDR buffer_addr = addr + STRING_BUFFER_OFFSET;
     if( cap >= 16 )
-        buffer_addr = read_uint(buffer_addr);
+        buffer_addr = read_addr(buffer_addr);
 
     int len = qMin<int>(str.length(), cap);
     write_int(addr + STRING_LENGTH_OFFSET, len);
@@ -151,31 +157,6 @@ uint DFInstanceWindows::write_string(const uint &addr, const QString &str) {
     return bytes_written;
 }
 
-short DFInstanceWindows::read_short(const uint &addr) {
-    char cval[2];
-    memset(cval, 0, 2);
-    ReadProcessMemory(m_proc, (LPCVOID)addr, &cval, 2, 0);
-    return static_cast<short>((int)cval[0] + (int)(cval[1] >> 8));
-}
-
-ushort DFInstanceWindows::read_ushort(const uint &addr) {
-    ushort val = 0;
-    ReadProcessMemory(m_proc, (LPCVOID)addr, &val, sizeof(ushort), 0);
-    return val;
-}
-
-int DFInstanceWindows::read_int(const uint &addr) {
-    int val = 0;
-    ReadProcessMemory(m_proc, (LPCVOID)addr, &val, sizeof(int), 0);
-    return val;
-}
-
-uint DFInstanceWindows::read_uint(const uint &addr) {
-    uint val = 0;
-    ReadProcessMemory(m_proc, (LPCVOID)addr, &val, sizeof(uint), 0);
-    return val;
-}
-
 uint DFInstanceWindows::write_int(const uint &addr, const int &val) {
     uint bytes_written = 0;
     WriteProcessMemory(m_proc, (LPVOID)addr, &val, sizeof(int),
@@ -183,34 +164,12 @@ uint DFInstanceWindows::write_int(const uint &addr, const int &val) {
     return bytes_written;
 }
 
-char DFInstanceWindows::read_char(const uint &addr) {
-    char val = 0;
-    ReadProcessMemory(m_proc, (LPCVOID)addr, &val, sizeof(char), 0);
-    return val;
-}
-
-int DFInstanceWindows::read_raw(const uint &addr, const uint &bytes,
+int DFInstanceWindows::read_raw(const VIRTADDR &addr, int bytes,
                                 QByteArray &buffer) {
     buffer.fill(0, bytes);
     int bytes_read = 0;
     ReadProcessMemory(m_proc, (LPCVOID)addr, (char*)buffer.data(),
                       sizeof(BYTE) * bytes, (DWORD*)&bytes_read);
-    return bytes_read;
-}
-
-uint DFInstanceWindows::read_raw(const uint &addr, const uint &bytes,
-                                 void *buffer) {
-    memset(buffer, 0, bytes);
-    uint bytes_read = 0;
-    ReadProcessMemory(m_proc, (LPCVOID)addr, (void*)buffer,
-                      sizeof(uchar) * bytes, (DWORD*)&bytes_read);
-#ifdef _DEBUG
-    if (bytes_read != bytes) {
-        LOGW << "tried to get" << bytes << "bytes from" << hex << addr
-            << "but only got" << dec << bytes_read << "Windows System Error("
-            << dec << GetLastError() << ")";
-    }
-#endif
     return bytes_read;
 }
 

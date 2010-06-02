@@ -53,7 +53,7 @@ public:
     virtual int read_raw(const VIRTADDR &addr, int bytes, QByteArray &buf) = 0;
     virtual BYTE read_byte(const VIRTADDR &addr);
     virtual WORD read_word(const VIRTADDR &addr);
-    virtual DWORD read_dword(const VIRTADDR &addr);
+    virtual VIRTADDR read_addr(const VIRTADDR &addr);
     virtual qint16 read_short(const VIRTADDR &addr);
     virtual qint32 read_int(const VIRTADDR &addr);
 

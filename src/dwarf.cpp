@@ -282,8 +282,8 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     uint dwarf_race_index = mem->address("dwarf_race_index");
     WORD dwarf_race_id = df->read_word(dwarf_race_index + df->get_memory_correction());
 
-    DWORD flags1 = df->read_dword(addr + mem->dwarf_offset("flags1"));
-    DWORD flags2 = df->read_dword(addr + mem->dwarf_offset("flags2"));
+    quint32 flags1 = df->read_addr(addr + mem->dwarf_offset("flags1"));
+    quint32 flags2 = df->read_addr(addr + mem->dwarf_offset("flags2"));
     WORD race_id = df->read_word(addr + mem->dwarf_offset("race"));
 
     if (race_id != dwarf_race_id) { // we only care about dwarfs
@@ -366,11 +366,11 @@ QString Dwarf::read_last_name(const uint &addr, bool use_generic) {
     // last name reading taken from patch by Zhentar (issue 189)
     QString first, second, third;
 
-    first.append(word_chunk(m_df->read_dword(addr), use_generic));
-    first.append(word_chunk(m_df->read_dword(addr + 0x4), use_generic));
-    second.append(word_chunk(m_df->read_dword(addr + 0x8), use_generic));
-    second.append(word_chunk(m_df->read_dword(addr + 0x14), use_generic));
-    third.append(word_chunk(m_df->read_dword(addr + 0x18), use_generic));
+    first.append(word_chunk(m_df->read_addr(addr), use_generic));
+    first.append(word_chunk(m_df->read_addr(addr + 0x4), use_generic));
+    second.append(word_chunk(m_df->read_addr(addr + 0x8), use_generic));
+    second.append(word_chunk(m_df->read_addr(addr + 0x14), use_generic));
+    third.append(word_chunk(m_df->read_addr(addr + 0x18), use_generic));
 
     QString out = first;
     out = out.toLower();
@@ -540,7 +540,7 @@ QString Dwarf::read_profession(const uint &addr) {
 void Dwarf::read_current_job(const VIRTADDR &addr) {
     // TODO: jobs contain info about materials being used, if we ever get the
     // material list we could show that in here
-    VIRTADDR current_job_addr = m_df->read_dword(addr);
+    VIRTADDR current_job_addr = m_df->read_addr(addr);
 
     if (current_job_addr != 0) {
         m_current_job_id = m_df->read_word(current_job_addr +

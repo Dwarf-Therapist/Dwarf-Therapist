@@ -71,7 +71,7 @@ public:
                     int offset = m_df->get_data(ptr2, 60).indexOf(needle);
                     if (offset != 1) {
                         LOGD << "\tMATCH! offset" << offset << hex << offset;
-                        VIRTADDR idx_addr = m_df->read_dword(ptr2 + offset + 3);
+                        VIRTADDR idx_addr = m_df->read_addr(ptr2 + offset + 3);
                         LOGD << "\tREAD ADDR FROM" << hex << ptr2 + offset << "=" << idx_addr;
                         int idx = m_df->read_int(idx_addr);
                         LOGD << "\t\tRACE VALUE" << idx << "HEX" << hex << idx;

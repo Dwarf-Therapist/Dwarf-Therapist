@@ -119,9 +119,9 @@ WORD DFInstance::read_word(const VIRTADDR &addr) {
     return decode_word(out);
 }
 
-DWORD DFInstance::read_dword(const VIRTADDR &addr) {
+VIRTADDR DFInstance::read_addr(const VIRTADDR &addr) {
     QByteArray out;
-    read_raw(addr, sizeof(DWORD), out);
+    read_raw(addr, sizeof(VIRTADDR), out);
     return decode_dword(out);
 }
 

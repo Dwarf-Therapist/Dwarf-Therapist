@@ -31,7 +31,6 @@ THE SOFTWARE.
 typedef quint32 VIRTADDR;
 typedef quint8 BYTE;
 typedef quint16 WORD;
-typedef quint32 DWORD;
 
 static inline QByteArray encode_short(short num) {
     char *bytes;
@@ -71,8 +70,8 @@ static inline WORD decode_word(const QByteArray &arr) {
     return *out_ptr;
 }
 
-static inline DWORD decode_dword(const QByteArray &arr) {
-    DWORD *out_ptr = (DWORD*)arr.constData();
+static inline quint32 decode_dword(const QByteArray &arr) {
+    quint32 *out_ptr = (quint32*)arr.constData();
     return *out_ptr;
 }
 
