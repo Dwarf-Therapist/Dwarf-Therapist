@@ -54,8 +54,8 @@ QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
         return addrs;
 
     attach();
-    VIRTADDR start = read_dword(addr);
-    VIRTADDR end = read_dword(addr + 4);
+    VIRTADDR start = read_addr(addr);
+    VIRTADDR end = read_addr(addr + 4);
     uint bytes = end - start;
     int entries = bytes / 4;
     TRACE << "enumerating vector at" << hex << addr << "START" << start
@@ -124,7 +124,7 @@ uint DFInstanceLinux::calculate_checksum() {
 
 
 QString DFInstanceLinux::read_string(const VIRTADDR &addr) {
-    VIRTADDR buffer_addr = read_dword(addr);
+    VIRTADDR buffer_addr = read_addr(addr);
     int upper_size = 256;
     QByteArray buf(upper_size, 0);
     read_raw(buffer_addr, upper_size, buf);
@@ -362,7 +362,7 @@ bool DFInstanceLinux::find_running_copy() {
         LOGD << "RANGE start:" << hex << tmp_pair.first << "end:" << tmp_pair.second;
     }*/
 
-    VIRTADDR m_base_addr = read_dword(m_lowest_address + 0x18);
+    VIRTADDR m_base_addr = read_addr(m_lowest_address + 0x18);
     LOGD << "base_addr:" << m_base_addr << "HEX" << hex << m_base_addr;
     m_is_ok = m_base_addr > 0;
 
