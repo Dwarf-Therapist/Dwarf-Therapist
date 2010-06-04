@@ -332,10 +332,11 @@ bool DFInstanceLinux::find_running_copy() {
     TRACE << "attempting to find running copy of DF by executable name";
     QProcess *proc = new QProcess(this);
     QStringList args;
-    args << "dwarfort.exe";
+    args << "dwarfort.exe"; // 0.31.04 and earlier
+    args << "Dwarf_Fortress"; // 0.31.05+
     proc->start("pidof", args);
     proc->waitForFinished(1000);
-    if (proc->exitCode() == 0) {//found it
+    if (proc->exitCode() == 0) { //found it
         QByteArray out = proc->readAllStandardOutput();
         QString str_pid(out);
         m_pid = str_pid.toInt();
