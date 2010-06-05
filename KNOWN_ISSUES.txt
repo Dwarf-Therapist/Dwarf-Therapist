@@ -1,10 +1,6 @@
 ==============================================================================   
 KNOWN ISSUES
 ==============================================================================
- * - Setting Mining and Woodcutting -
-   Setting these labors rely on the dwarf already having the proper equipment
-   (pick or axe). These labors should be manually set in game for now.
-
  * - Migration Waves Incorrect -
    The group-by "Migration Wave" is based on some shady guesswork
    based on dwarf ids. It is in no way 100% accurate, but can sometimes amaze 

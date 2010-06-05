@@ -127,7 +127,7 @@
       <item>
        <widget class="QLabel" name="lbl_text">
         <property name="text">
-         <string>Copyright &amp;copy; 2009 Trey Stout. &lt;a href=&quot;http://udpviper.com/forums&quot;&gt;UDP Viper&lt;/a&gt;</string>
+         <string>Copyright &amp;copy; 2009,2010 Trey Stout. &lt;a href=&quot;http://udpviper.com/forums&quot;&gt;UDP Viper&lt;/a&gt;</string>
         </property>
         <property name="textFormat">
          <enum>Qt::RichText</enum>
@@ -197,11 +197,6 @@ p, li { white-space: pre-wrap; }
   </layout>
  </widget>
  <resources>
-  <include location="../images.qrc"/>
-  <include location="../images.qrc"/>
-  <include location="../images.qrc"/>
-  <include location="../images.qrc"/>
-  <include location="../images.qrc"/>
   <include location="../images.qrc"/>
  </resources>
  <connections>

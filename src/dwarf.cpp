@@ -171,8 +171,7 @@ void Dwarf::refresh_data() {
 
     foreach(VIRTADDR soul, m_df->enumerate_vector(m_address +
                                                   mem->dwarf_offset("souls"))) {
-        LOGD << nice_name() << m_df->pprint(soul, 0x250);
-
+        //LOGD << nice_name() << m_df->pprint(soul, 0x250);
         m_skills = read_skills(soul + mem->soul_detail("skills"));
         read_traits(soul + mem->soul_detail("traits"));
         TRACE << "\tTRAITS:" << m_traits.size();
@@ -291,12 +290,10 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
         return 0;
     }
     Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
-    LOGD << "examining dwarf at" << hex << addr;
-    LOGD << "FLAGS1 :" << hexify(flags1);
-    LOGD << "FLAGS2 :" << hexify(flags2);
-    LOGD << "RACE   :" << hexify(race_id);
-    //LOGD << "INVADER FILTER:" << hexify(0x1000 | 0x2000 | 0x20000 | 0x80000 | 0xc0000 | 0x8C0);
-    //LOGD << "OTHER   FILTER:" << hexify(0x80 | 0x40000);
+    TRACE << "examining dwarf at" << hex << addr;
+    TRACE << "FLAGS1 :" << hexify(flags1);
+    TRACE << "FLAGS2 :" << hexify(flags2);
+    TRACE << "RACE   :" << hexify(race_id);
 
     if (mem->is_complete()) {
         QHash<uint, QString> flags = mem->valid_flags_1();
@@ -553,13 +550,16 @@ void Dwarf::read_current_job(const VIRTADDR &addr) {
     } else {
         bool is_on_break = false;
         MemoryLayout* layout = m_df->memory_layout();
-        uint states_addr = m_address + layout->dwarf_offset("states");
-        QVector<uint> entries = m_df->enumerate_vector(states_addr);
-        short on_break_value = layout->job_detail("on_break_flag");
-        foreach(uint entry, entries) {
-            if (m_df->read_short(entry) == on_break_value) {
-                is_on_break = true;
-                break; // no pun intended
+        uint states_offset = layout->dwarf_offset("states");
+        if (states_offset) {
+            VIRTADDR states_addr = m_address + states_offset;
+            QVector<uint> entries = m_df->enumerate_vector(states_addr);
+            short on_break_value = layout->job_detail("on_break_flag");
+            foreach(uint entry, entries) {
+                if (m_df->read_short(entry) == on_break_value) {
+                    is_on_break = true;
+                    break; // no pun intended
+                }
             }
         }
         m_current_job = is_on_break ? tr("On Break") : tr("No Job");
@@ -637,7 +637,7 @@ void Dwarf::set_labor(int labor_id, bool enabled) {
 
     if (enabled) { // user is turning a labor on, so we must turn off exclusives
         foreach(int excluded, l->get_excluded_labors()) {
-            LOGD << "LABOR" << labor_id << "excludes" << excluded;
+            TRACE << "LABOR" << labor_id << "excludes" << excluded;
             m_pending_labors[excluded] = false;
         }
     }
