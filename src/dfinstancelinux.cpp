@@ -424,7 +424,7 @@ void DFInstanceLinux::map_virtual_memory() {
             }
             // uncomment to search HEAP only
             //keep_it = path.contains("[heap]");
-            //keep_it = true;
+            keep_it = true;
 
             if (keep_it && end_addr > start_addr) {
                 MemorySegment *segment = new MemorySegment(path, start_addr, end_addr);
