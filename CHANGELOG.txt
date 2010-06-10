@@ -1,3 +1,21 @@
+RELEASE 0.5.3 (June 5, 2010)
+CHANGES SINCE 0.5.2
+===============================================================================
+MAJOR CHANGES:
+ * Support for 0.31.05 (graphics + legacy versions)
+ * Better support for 0.31.04 graphics version
+ * Added support for 0.31.04 legacy version
+MINOR CHANGES:
+ * Added detection for "On Break" dwarves (Fixed issue 167)
+ * Added "Make Reaction" (Fixed issue 211)
+ * Make sure happiness sorting uses happiness value vs name (fixes order issues)
+ * You can now group dwarves by number of assigned labors (Fixed issue 176)
+BUG FIXES:
+ * Properly set labors that require tools from DT (Fixed issue 207)
+   (You can toggle mining and woodcutting from DT again!)
+ * Fixed issue 222 (crash on adding columns to a gridview with no sets)
+ 
+
 RELEASE 0.5.2 (May 18, 2010)
 CHANGES SINCE 0.5.1
 ===============================================================================
