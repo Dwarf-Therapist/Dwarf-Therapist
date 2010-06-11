@@ -1,4 +1,4 @@
-Dwarf Therapist v0.5.3
+Dwarf Therapist v0.5.4
 Copyright (c) 2009,2010 Trey Stout (chmod)
 Homepage: http://code.google.com/p/dwarftherapist/
 License: MIT License (see included LICENSE.txt file)
@@ -14,6 +14,7 @@ The author would like to thank the following people:
  - Paul Davey for the hammer icon (http://mattahan.deviantart.com/)
  - Killian Hermann for testing, brainstorming sessions, and general 
    support
+ - Simon Poile for being a good patron of the arts ;)
  - The udpviper.com community for making me feel okay about writing so much 
    software.
  - The DF Community for their encouragement, time, and donations!

@@ -256,8 +256,8 @@ bool DFInstanceWindows::find_running_copy() {
 
     map_virtual_memory();
 
-    if (DT->user_settings()->value("options/alert_on_lost_connection",
-                                   true).toBool()) {
+    if (DT->user_settings()->value("options/alert_on_lost_connection", true)
+        .toBool() && m_layout->is_complete()) {
         m_heartbeat_timer->start(1000); // check every second for disconnection
     }
     m_is_ok = true;
