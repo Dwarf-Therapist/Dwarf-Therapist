@@ -31,19 +31,16 @@ win32 {
     HEADERS += inc/dfinstancewindows.h
     SOURCES += src/dfinstancewindows.cpp
 }
-else:unix { 
-    message(Setting up for Linux)
-    
-    # force 32 bit compile
-    CFLAGS = -m32
-    HEADERS += inc/dfinstancelinux.h
-    SOURCES += src/dfinstancelinux.cpp
-}
 else:macx { 
     message(Setting up for OSX)
     HEADERS += ./inc/dfinstanceosx.h
     SOURCES += ./src/dfinstanceosx.cpp
     ICON = hammer.ico
+}
+else:unix {
+    message(Setting up for Linux)
+    HEADERS += inc/dfinstancelinux.h
+    SOURCES += src/dfinstancelinux.cpp
 }
 
 # Translation files

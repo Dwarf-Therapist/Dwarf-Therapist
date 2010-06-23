@@ -56,7 +56,7 @@ QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
     attach();
     VIRTADDR start = read_addr(addr);
     VIRTADDR end = read_addr(addr + 4);
-    uint bytes = end - start;
+    int bytes = end - start;
     int entries = bytes / 4;
     TRACE << "enumerating vector at" << hex << addr << "START" << start
         << "END" << end << "UNVERIFIED ENTRIES" << dec << entries;
@@ -89,7 +89,7 @@ QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
         detach();
         return addrs;
     }
-    for(uint i = 0; i < bytes; i += 4) {
+    for(int i = 0; i < bytes; i += 4) {
         tmp_addr = decode_dword(data.mid(i, 4));
         if (m_layout->is_complete()) {
             if (is_valid_address(tmp_addr))
