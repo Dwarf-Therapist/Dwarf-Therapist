@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include "dwarfmodelproxy.h"
 #include "memorylayout.h"
-#include "statetableview.h"
 #include "viewmanager.h"
 #include "viewcolumnset.h"
 #include "uberdelegate.h"

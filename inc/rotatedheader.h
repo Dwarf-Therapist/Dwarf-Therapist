@@ -29,39 +29,42 @@ THE SOFTWARE.
 class DwarfModel;
 
 class RotatedHeader : public QHeaderView {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	RotatedHeader(Qt::Orientation orientation, QWidget *parent = 0);
-	void paintSection(QPainter *p, const QRect &rect, int idx) const;
+    RotatedHeader(Qt::Orientation orientation, QWidget *parent = 0);
+    void paintSection(QPainter *p, const QRect &rect, int idx) const;
 
     void column_hover(int col);
-	
-	QSize sizeHint() const;
-	public slots:
-		void read_settings();
-		void resizeSection(int logicalIndex, int size );
-		void set_index_as_spacer(int idx);
-		void clear_spacers();
+
+    QSize sizeHint() const;
+    public slots:
+        void read_settings();
+        void resizeSection(int logicalIndex, int size );
+        void set_index_as_spacer(int idx);
+        void clear_spacers();
         void contextMenuEvent(QContextMenuEvent *);
 
 protected:
-	void leaveEvent(QEvent *e);
-	void mouseMoveEvent(QMouseEvent *e);
-	void mousePressEvent(QMouseEvent *e);
+    void leaveEvent(QEvent *e);
+    void mouseMoveEvent(QMouseEvent *e);
+    void mousePressEvent(QMouseEvent *e);
 
 signals:
-	void section_right_clicked(int idx);
-	void sort(int, DwarfModelProxy::DWARF_SORT_ROLE);
+    void section_right_clicked(int idx);
+    void sort(int, DwarfModelProxy::DWARF_SORT_ROLE);
+    void toggle_set(const QString &set_name);
 
 private:
-	QPoint m_p;
-	QList<int> m_spacer_indexes;
-	bool m_shade_column_headers;
+    QPoint m_p;
+    QList<int> m_spacer_indexes;
+    bool m_shade_column_headers;
     int m_hovered_column;
 
-	private slots:
-		//! called by a sorting context menu action
-		void sort_action();
+    private slots:
+        //! called by a sorting context menu action
+        void sort_action();
+        //! called by context menu on sections
+        void toggle_set_action();
 };
 
 #endif

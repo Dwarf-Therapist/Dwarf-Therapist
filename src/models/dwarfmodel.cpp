@@ -131,9 +131,16 @@ void DwarfModel::build_rows() {
     QSettings *s = DT->user_settings();
     int width = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
     foreach(ViewColumnSet *set, m_gridview->sets()) {
+        QStandardItem *set_header = new QStandardItem(set->name());
+        set_header->setData(set->bg_color(), Qt::BackgroundColorRole);
+        set_header->setData(true);
+        setHorizontalHeaderItem(start_col++, set_header);
+        emit set_index_as_spacer(start_col - 1);
+        emit preferred_header_size(start_col - 1, width);
         foreach(ViewColumn *col, set->columns()) {
             QStandardItem *header = new QStandardItem(col->title());
             header->setData(col->bg_color(), Qt::BackgroundColorRole);
+            header->setData(set->name(), Qt::UserRole);
             setHorizontalHeaderItem(start_col++, header);
             switch (col->type()) {
                 case CT_SPACER:
@@ -342,6 +349,8 @@ void DwarfModel::build_row(const QString &key) {
         QList<QStandardItem*> items;
         items << i_name;
         foreach(ViewColumnSet *set, m_gridview->sets()) {
+            QStandardItem *set_item = new QStandardItem;
+            items << set_item;
             foreach(ViewColumn *col, set->columns()) {
                 QStandardItem *item = col->build_cell(d);
                 items << item;

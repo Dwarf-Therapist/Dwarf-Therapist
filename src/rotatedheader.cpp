@@ -59,7 +59,8 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
     if (!rect.isValid() || idx == 0)
         return QHeaderView::paintSection(p, rect, idx);
 
-    QColor bg = model()->headerData(idx, Qt::Horizontal, Qt::BackgroundColorRole).value<QColor>();
+    QColor bg = model()->headerData(idx, Qt::Horizontal,
+                                    Qt::BackgroundColorRole).value<QColor>();
     if (m_spacer_indexes.contains(idx)) {
         p->save();
         p->fillRect(rect, QBrush(bg));
@@ -184,6 +185,14 @@ void RotatedHeader::contextMenuEvent(QContextMenuEvent *evt) {
         a = m->addAction(tr("Sort in Game Order"), this, SLOT(sort_action()));
         a->setData(DwarfModelProxy::DSR_GAME_ORDER);
         m->exec(viewport()->mapToGlobal(evt->pos()));
+    } else {
+        // find out what set this is...
+        QString set_name = model()->headerData(idx, Qt::Horizontal, Qt::UserRole).toString();
+        QMenu *m = new QMenu(this);
+        QAction *a = m->addAction(tr("Toggle Set %1").arg(set_name),
+                                  this, SLOT(toggle_set_action()));
+        a->setData(set_name);
+        m->exec(viewport()->mapToGlobal(evt->pos()));
     }
 }
 
@@ -191,4 +200,16 @@ void RotatedHeader::sort_action() {
     QAction *sender = qobject_cast<QAction*>(QObject::sender());
     DwarfModelProxy::DWARF_SORT_ROLE role = static_cast<DwarfModelProxy::DWARF_SORT_ROLE>(sender->data().toInt());
     emit sort(0, role);
+}
+
+void RotatedHeader::toggle_set_action() {
+    QAction *sender = qobject_cast<QAction*>(QObject::sender());
+    QString set_name = sender->data().toString();
+    //emit toggle_set(set_name);
+
+    for(int i = 1; i < count(); ++i) {
+        if (model()->headerData(i, Qt::Horizontal, Qt::UserRole).toString() == set_name) {
+            hideSection(i);
+        }
+    }
 }
