@@ -92,7 +92,7 @@ HEADERS += inc/win_structs.h \
     inc/grid_view/skillcolumn.h \
     inc/grid_view/militarypreferencecolumn.h \
     inc/grid_view/laborcolumn.h \
-    inc/grid_view/idlecolumn.h \
+    inc/grid_view/currentjobcolumn.h \
     inc/grid_view/happinesscolumn.h \
     inc/grid_view/gridview.h \
     inc/grid_view/columntypes.h \
@@ -138,7 +138,7 @@ SOURCES += src/viewmanager.cpp \
     src/grid_view/skillcolumn.cpp \
     src/grid_view/militarypreferencecolumn.cpp \
     src/grid_view/laborcolumn.cpp \
-    src/grid_view/idlecolumn.cpp \
+    src/grid_view/currentjobcolumn.cpp \
     src/grid_view/happinesscolumn.cpp \
     src/grid_view/gridview.cpp \
     src/grid_view/attributecolumn.cpp \
