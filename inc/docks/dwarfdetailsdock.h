@@ -31,15 +31,13 @@ class DwarfDetailsWidget;
 class DwarfDetailsDock : public QDockWidget {
 	Q_OBJECT
 public:
-	DwarfDetailsDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
-	public slots:
-		void show_dwarf(Dwarf *d);
+    DwarfDetailsDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    public slots:
+        void show_dwarf(Dwarf *d);
 
 private:
-	QGridLayout *m_skills_layout;
-	QVector<QObject*> m_cleanup_list;
     DwarfDetailsWidget *m_widget;
-	bool m_initialized;
+    bool m_initialized;
 };
 
 #endif

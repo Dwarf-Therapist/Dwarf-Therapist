@@ -35,7 +35,7 @@ SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags)
 	setObjectName("dock_skill_legend");
 	setWindowTitle(tr("Skill Legend"));
 	QWidget *main_widget = new QWidget(this);
-	QVBoxLayout *layout = new QVBoxLayout(this);
+        QVBoxLayout *layout = new QVBoxLayout(main_widget);
 	main_widget->setLayout(layout);
 	
 	StateTableView *stv = new StateTableView(this);

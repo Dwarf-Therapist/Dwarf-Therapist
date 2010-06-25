@@ -503,10 +503,11 @@ void MainWindow::import_gridviews() {
 }
 
 void MainWindow::show_dwarf_details_dock(Dwarf *d) {
-    DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dwarfdetailsdock"));
-    if (d)
+    DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));
+    if (dock && d) {
         dock->show_dwarf(d);
-    dock->show();
+        dock->show();
+    }
 }
 
 void MainWindow::add_new_filter_script() {
