@@ -63,8 +63,6 @@ private:
     private slots:
         //! called by a sorting context menu action
         void sort_action();
-        //! called by context menu on sections
-        void toggle_set_action();
 };
 
 #endif
