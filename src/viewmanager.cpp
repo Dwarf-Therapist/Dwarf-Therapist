@@ -352,27 +352,32 @@ void ViewManager::remove_tab_for_gridview(int idx) {
 }
 
 void ViewManager::expand_all() {
-    StateTableView *stv = qobject_cast<StateTableView*>(currentWidget());
-    stv->expandAll();
+    StateTableView *stv = get_stv();
+    if (stv)
+        stv->expandAll();
 }
 
 void ViewManager::collapse_all() {
-    StateTableView *stv = qobject_cast<StateTableView*>(currentWidget());
-    stv->collapseAll();
+    StateTableView *stv = get_stv();
+    if (stv)
+        stv->collapseAll();
 }
 
 void ViewManager::jump_to_dwarf(QTreeWidgetItem *current, QTreeWidgetItem *previous) {
-    StateTableView *stv = qobject_cast<StateTableView*>(currentWidget());
-    stv->jump_to_dwarf(current, previous);
+    StateTableView *stv = get_stv();
+    if (stv)
+        stv->jump_to_dwarf(current, previous);
 }
 
 void ViewManager::jump_to_profession(QListWidgetItem *current, QListWidgetItem *previous) {
-    StateTableView *stv = qobject_cast<StateTableView*>(currentWidget());
-    stv->jump_to_profession(current, previous);
+    StateTableView *stv = get_stv();
+    if (stv)
+        stv->jump_to_profession(current, previous);
 }
 
 void ViewManager::set_group_by(int group_by) {
-    m_model->set_group_by(group_by);
+    if (m_model)
+        m_model->set_group_by(group_by);
     redraw_current_tab();
 }
 
