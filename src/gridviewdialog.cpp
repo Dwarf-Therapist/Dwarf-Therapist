@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include "happinesscolumn.h"
 #include "laborcolumn.h"
 #include "skillcolumn.h"
-#include "idlecolumn.h"
+#include "currentjobcolumn.h"
 #include "traitcolumn.h"
 #include "attributecolumn.h"
 #include "militarypreferencecolumn.h"
@@ -405,7 +405,7 @@ void GridViewDialog::add_happiness_column() {
 void GridViewDialog::add_idle_column() {
     if (!m_active_set)
         return;
-    new IdleColumn(tr("Current Job"), m_active_set, m_active_set);
+    new CurrentJobColumn(tr("Current Job"), m_active_set, m_active_set);
     draw_columns_for_set(m_active_set);
 }
 

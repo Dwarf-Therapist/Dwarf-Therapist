@@ -27,7 +27,7 @@ THE SOFTWARE.
 #include "happinesscolumn.h"
 #include "spacercolumn.h"
 #include "skillcolumn.h"
-#include "idlecolumn.h"
+#include "currentjobcolumn.h"
 #include "traitcolumn.h"
 #include "attributecolumn.h"
 #include "militarypreferencecolumn.h"
@@ -224,7 +224,7 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
                 new SkillColumn(s, ret_val, parent);
                 break;
             case CT_IDLE:
-                new IdleColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
+                new CurrentJobColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
                 break;
             case CT_TRAIT:
                 new TraitColumn(s, ret_val, parent);
