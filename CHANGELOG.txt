@@ -1,3 +1,25 @@
+RELEASE 0.5.5 (June 26, 2010)
+CHANGES SINCE 0.5.4
+===============================================================================
+MAJOR CHANGES:
+ * Support for 0.31.08 (graphics + legacy versions)
+ * The military view tab is back (read only for now)
+MINOR CHANGES:
+ * Added method to scanner for searching for std::string instances
+ * Removed group by squad since none of the squad reading works yet
+BUG FIXES:
+ * Added job name for job 97 (forge ?? pick) (Fixes issue 257)
+ * get rid of exclusive labor on Mining+Gem Setting (Fixes issue 250)
+ * Fixed 3 unreported bugs in DFInstance::scan_mem():
+   1) When encountering a memory region that was smaller than the step size, 
+      the step size was reduced but never increased again slowing everything 
+      down
+   2) There was no provision for matches that may occur more than once in a 
+      memory segment (it now finds all of them)
+   3) There was no provision for hits that may cross step boundaries. Use of a 
+      back buffer now catches matches across step boundaries.
+
+      
 RELEASE 0.5.4 (June 10, 2010)
 CHANGES SINCE 0.5.3
 ===============================================================================
