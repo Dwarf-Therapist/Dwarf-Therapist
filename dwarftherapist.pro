@@ -104,7 +104,8 @@ HEADERS += inc/win_structs.h \
     inc/vectorsearchjob.h \
     inc/dwarfraceindexsearchjob.h \
     inc/creaturevectorsearchjob.h \
-    inc/positionvectorsearchjob.h
+    inc/positionvectorsearchjob.h \
+    inc/stdstringsearchjob.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \

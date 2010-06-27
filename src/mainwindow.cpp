@@ -141,7 +141,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cb_group_by->addItem(tr("Happiness"), DwarfModel::GB_HAPPINESS);
     ui->cb_group_by->addItem(tr("Migration Wave"),
                              DwarfModel::GB_MIGRATION_WAVE);
-    ui->cb_group_by->addItem(tr("Squad"), DwarfModel::GB_SQUAD);
     ui->cb_group_by->addItem(tr("Current Job"), DwarfModel::GB_CURRENT_JOB);
     ui->cb_group_by->addItem(tr("Military Status"),
                              DwarfModel::GB_MILITARY_STATUS);
@@ -157,16 +156,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     if (m_settings->value("options/check_for_updates_on_startup", true).toBool())
         check_latest_version();
-
-    // SUPER WARNING!
-    if (0) {
-        QMessageBox::warning(this, tr("DT Broken Edition!"), tr("You are "
-           "running this version of DT thanks to overwhelming demand on the "
-           "forums. This version is known to be broken in almost every way "
-           "when talking to 0.31.01. Your old custom views <b>WILL NOT WORK"
-           "</b>! You must use the new default views. <h1>DO NOT FILE BUGS "
-           "AGAINST THIS VERSION!</h1>"));
-    }
 }
 
 MainWindow::~MainWindow() {

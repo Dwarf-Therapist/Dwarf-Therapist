@@ -55,17 +55,8 @@ public slots:
         QByteArray custom_profession = gdr->get_string_for_key(
                 "ram_guesser/dwarf_custom_profession").toAscii();
 
-        emit scan_message(tr("Scanning for main creature vector"));
         emit main_scan_total_steps(1);
         emit main_scan_progress(1);
-
-
-        /*
-        QByteArray skillpattern_miner = encode_skillpattern(0, 3340, 4);
-        QByteArray skillpattern_metalsmith = encode_skillpattern(29, 0, 2);
-        QByteArray skillpattern_swordsman = encode_skillpattern(40, 462, 3);
-        QByteArray skillpattern_pump_operator = encode_skillpattern(65, 462, 1);
-        */
 
         emit scan_message(tr("Scanning for known nickname"));
         QByteArray needle(custom_nickname);
@@ -75,7 +66,7 @@ public slots:
                 uint possible_addr = nickname_str - dwarf_nickname_offset -
                                      DFInstance::STRING_BUFFER_OFFSET;
 
-                LOGD << "DWARF POINTER SHOULD BE AT:" << hex << possible_addr;
+                LOGD << "DWARF POINTER SHOULD BE AT:" << hexify(possible_addr);
                 foreach(uint dwarf, m_df->scan_mem(encode(possible_addr))) {
                     LOGD << "FOUND DWARF" << hex << dwarf;
                     emit scan_message(tr("Scanning for dwarf vector pointer"));
@@ -91,6 +82,11 @@ public slots:
         }
 
         /*
+        QByteArray skillpattern_miner = encode_skillpattern(0, 3340, 4);
+        QByteArray skillpattern_metalsmith = encode_skillpattern(29, 0, 2);
+        QByteArray skillpattern_swordsman = encode_skillpattern(40, 462, 3);
+        QByteArray skillpattern_pump_operator = encode_skillpattern(65, 462, 1);
+
         needle = custom_profession;
         foreach(int prof, scan_mem_find_all(needle, dwarf, dwarf + 0x1000)) {
                 qDebug() << "Custom Profession Offset" << prof - dwarf - 4;

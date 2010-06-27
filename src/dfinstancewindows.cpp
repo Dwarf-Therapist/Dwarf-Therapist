@@ -72,9 +72,9 @@ uint DFInstanceWindows::calculate_checksum() {
     return timestamp;
 }
 
-QVector<uint> DFInstanceWindows::enumerate_vector(const uint &addr) {
+QVector<VIRTADDR> DFInstanceWindows::enumerate_vector(const VIRTADDR &addr) {
     TRACE << "beginning vector enumeration at" << hex << addr;
-    QVector<uint> addresses;
+    QVector<VIRTADDR> addresses;
     VIRTADDR start = read_addr(addr + 4);
     TRACE << "start of vector" << hex << start;
     VIRTADDR end = read_addr(addr + 8);
@@ -132,7 +132,7 @@ QString DFInstanceWindows::read_string(const uint &addr) {
     return ret_val;
 }
 
-uint DFInstanceWindows::write_string(const uint &addr, const QString &str) {
+int DFInstanceWindows::write_string(const VIRTADDR &addr, const QString &str) {
     /*
 
       THIS IS TOTALLY DANGEROUS
@@ -152,13 +152,13 @@ uint DFInstanceWindows::write_string(const uint &addr, const QString &str) {
 
     CP437Codec *codec = new CP437Codec;
     QByteArray data = codec->fromUnicode(str);
-    uint bytes_written = write_raw(buffer_addr, len, data.data());
+    int bytes_written = write_raw(buffer_addr, len, data.data());
     //delete codec; seems to cause Qt Warnings if you delete this.
     return bytes_written;
 }
 
-uint DFInstanceWindows::write_int(const uint &addr, const int &val) {
-    uint bytes_written = 0;
+int DFInstanceWindows::write_int(const VIRTADDR &addr, const int &val) {
+    int bytes_written = 0;
     WriteProcessMemory(m_proc, (LPVOID)addr, &val, sizeof(int),
                        (DWORD*)&bytes_written);
     return bytes_written;
@@ -173,9 +173,9 @@ int DFInstanceWindows::read_raw(const VIRTADDR &addr, int bytes,
     return bytes_read;
 }
 
-uint DFInstanceWindows::write_raw(const uint &addr, const uint &bytes,
+int DFInstanceWindows::write_raw(const VIRTADDR &addr, const int &bytes,
                                   void *buffer) {
-    uint bytes_written = 0;
+    int bytes_written = 0;
     WriteProcessMemory(m_proc, (LPVOID)addr, (void*)buffer,
                        sizeof(uchar) * bytes, (DWORD*)&bytes_written);
     Q_ASSERT(bytes_written == bytes);
@@ -309,14 +309,14 @@ void DFInstanceWindows::map_virtual_memory() {
 
         segment_start = (uint)mbi.BaseAddress;
         segment_size = (uint)mbi.RegionSize;
-
         if (mbi.State == MEM_COMMIT
             //&& !(mbi.Protect & PAGE_GUARD)
             && (mbi.Protect & PAGE_EXECUTE_READ ||
                 mbi.Protect & PAGE_EXECUTE_READWRITE ||
                 mbi.Protect & PAGE_READONLY ||
                 mbi.Protect & PAGE_READWRITE ||
-                mbi.Protect & PAGE_WRITECOPY)) {
+                mbi.Protect & PAGE_WRITECOPY)
+            ) {
             TRACE << "FOUND READABLE COMMITED MEMORY SEGMENT FROM" <<
                     hexify(segment_start) << "-" <<
                     hexify(segment_start + segment_size) <<
@@ -330,8 +330,8 @@ void DFInstanceWindows::map_virtual_memory() {
             accepted++;
         } else {
             TRACE << "REJECTING MEMORY SEGMENT AT" << hexify(segment_start) <<
-                    "SIZE:" << (segment_size / 1024.0f) << "KB FLAGS:" <<
-                    mbi.Protect;
+                     "SIZE:" << (segment_size / 1024.0f) << "KB FLAGS:" <<
+                     mbi.Protect;
             rejected++;
         }
         if (mbi.RegionSize)
@@ -347,7 +347,7 @@ void DFInstanceWindows::map_virtual_memory() {
         if (seg->end_addr > m_highest_address)
             m_highest_address = seg->end_addr;
     }
-    TRACE << "MEMORY SEGMENT SUMMARY: accepted" << accepted << "rejected" <<
+    LOGD << "MEMORY SEGMENT SUMMARY: accepted" << accepted << "rejected" <<
             rejected << "total" << accepted + rejected;
 }
 #endif

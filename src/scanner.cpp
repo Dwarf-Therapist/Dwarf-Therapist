@@ -56,21 +56,24 @@ void Scanner::set_ui_enabled(bool enabled) {
     ui->pb_sub->reset();
 }
 
-void Scanner::report_address(const QString &msg, const uint &addr) {
-    QString out = QString("<b>%1\t= <font color=blue>0x%2</font> (uncorrected:0x%3)\n")
+void Scanner::report_address(const QString &msg, const quint32 &addr) {
+    VIRTADDR corrected_addr = addr - m_df->get_memory_correction();
+    QString out = QString("<b>%1\t= <font color=blue>%2</font> "
+                          "(uncorrected:%3)\n")
         .arg(msg)
-        .arg(addr - m_df->get_memory_correction(), 8, 16, QChar('0'))
-        .arg(addr, 8, 16, QChar('0'));
+        .arg(hexify(corrected_addr))
+        .arg(hexify(addr));
     ui->text_output->append(out);
-    LOGD << out;
+    LOGD << "ADDRESS FOR:" << msg << hexify(corrected_addr) << "UNCORRECTED:" <<
+            hexify(addr);
 }
 
 void Scanner::report_offset(const QString &msg, const int &addr) {
-    QString out = QString("<b>%1\t= <font color=blue>0x%2</font></b>\n")
+    QString out = QString("<b>%1\t= <font color=blue>%2</font></b>\n")
         .arg(msg)
-        .arg(addr, 8, 16, QChar('0'));
+        .arg(hexify(addr));
     ui->text_output->append(out);
-    LOGD << out;
+    LOGD << "OFFSET FOR:" << msg << hexify(addr);
 }
 
 void Scanner::prepare_new_thread(SCANNER_JOB_TYPE type) {
@@ -83,13 +86,20 @@ void Scanner::prepare_new_thread(SCANNER_JOB_TYPE type) {
 
     m_thread = new ScannerThread;
     m_thread->set_job(type);
-    connect(m_thread, SIGNAL(main_scan_total_steps(int)), ui->pb_main, SLOT(setMaximum(int)));
-    connect(m_thread, SIGNAL(main_scan_progress(int)), ui->pb_main, SLOT(setValue(int)));
-    connect(m_thread, SIGNAL(sub_scan_total_steps(int)), ui->pb_sub, SLOT(setMaximum(int)));
-    connect(m_thread, SIGNAL(sub_scan_progress(int)), ui->pb_sub, SLOT(setValue(int)));
-    connect(m_thread, SIGNAL(scan_message(const QString&)), ui->lbl_scan_progress, SLOT(setText(const QString&)));
-    connect(m_thread, SIGNAL(found_address(const QString&, const uint&)), this, SLOT(report_address(const QString&, const uint&)));
-    connect(m_thread, SIGNAL(found_offset(const QString&, const int&)), this, SLOT(report_offset(const QString&, const int&)));
+    connect(m_thread, SIGNAL(main_scan_total_steps(int)),
+            ui->pb_main, SLOT(setMaximum(int)));
+    connect(m_thread, SIGNAL(main_scan_progress(int)),
+            ui->pb_main, SLOT(setValue(int)));
+    connect(m_thread, SIGNAL(sub_scan_total_steps(int)),
+            ui->pb_sub, SLOT(setMaximum(int)));
+    connect(m_thread, SIGNAL(sub_scan_progress(int)),
+            ui->pb_sub, SLOT(setValue(int)));
+    connect(m_thread, SIGNAL(scan_message(const QString&)),
+            ui->lbl_scan_progress, SLOT(setText(const QString&)));
+    connect(m_thread, SIGNAL(found_address(const QString&, const quint32&)),
+            SLOT(report_address(const QString&, const quint32&)));
+    connect(m_thread, SIGNAL(found_offset(const QString&, const int&)),
+            SLOT(report_offset(const QString&, const int&)));
 }
 
 void Scanner::run_thread_and_wait() {
@@ -108,7 +118,7 @@ void Scanner::run_thread_and_wait() {
     if (m_thread->wait(5000)) {
         delete m_thread;
     } else {
-        LOGE << "Scanning thread failed to stop for 5 seconds after termination!";
+        LOGE << "Scanning thread failed to stop for 5 seconds after killed!";
     }
     m_thread = 0;
 }
@@ -164,6 +174,15 @@ void Scanner::find_position_vector() {
     set_ui_enabled(true);
 }
 
+void Scanner::find_std_string() {
+    set_ui_enabled(false);
+    prepare_new_thread(FIND_STD_STRING);
+    QByteArray needle = ui->le_null_terminated_string->text().toAscii();
+    m_thread->set_meta(needle);
+    run_thread_and_wait();
+    set_ui_enabled(true);
+}
+
 void Scanner::find_null_terminated_string() {
     set_ui_enabled(false);
     prepare_new_thread(FIND_NULL_TERMINATED_STRING);
@@ -175,9 +194,11 @@ void Scanner::find_null_terminated_string() {
 
 void Scanner::find_number_or_address() {
     set_ui_enabled(false);
-    prepare_new_thread(FIND_NULL_TERMINATED_STRING); //re-use the basic bit searcher
+    //re-use the basic bit searcher
+    prepare_new_thread(FIND_NULL_TERMINATED_STRING);
     bool ok;
-    QByteArray needle = encode(ui->le_find_address->text().toUInt(&ok, ui->rb_hex->isChecked() ? 16 : 10));
+    QByteArray needle = encode(ui->le_find_address->text().
+                               toUInt(&ok, ui->rb_hex->isChecked() ? 16 : 10));
     m_thread->set_meta(needle);
     run_thread_and_wait();
     set_ui_enabled(true);
@@ -214,7 +235,7 @@ void Scanner::brute_force_read() {
         case 6: // std::vector<void*>
             {
                 QVector<uint> addresses = m_df->enumerate_vector(addr);
-                ui->text_output->append(QString("Vector at 0x%1 contains %2 "
+                ui->text_output->append(QString("Vector at %1 contains %2 "
                                                 "entries...").arg(hexify(addr))
                                         .arg(addresses.size()));
                 foreach(uint a, addresses) {

@@ -26,11 +26,11 @@ THE SOFTWARE.
 #include <QString>
 
 typedef enum {
-	CT_DEFAULT,
-	CT_SPACER,
-	CT_SKILL,
-	CT_LABOR,
-	CT_HAPPINESS,
+    CT_DEFAULT,
+    CT_SPACER,
+    CT_SKILL,
+    CT_LABOR,
+    CT_HAPPINESS,
     CT_IDLE,
     CT_TRAIT,
     CT_ATTRIBUTE,
@@ -39,14 +39,14 @@ typedef enum {
 } COLUMN_TYPE;
 
 static inline COLUMN_TYPE get_column_type(const QString &name) {
-	if (name.toLower() == "spacer" || name.toLower() == "space") {
-		return CT_SPACER;
-	} else if (name.toLower() == "labor") {
-		return CT_LABOR;
-	} else if (name.toLower() == "skill") {
-		return CT_SKILL;
-	} else if (name.toLower() == "happiness") {
-		return CT_HAPPINESS;
+    if (name.toLower() == "spacer" || name.toLower() == "space") {
+        return CT_SPACER;
+    } else if (name.toLower() == "labor") {
+        return CT_LABOR;
+    } else if (name.toLower() == "skill") {
+        return CT_SKILL;
+    } else if (name.toLower() == "happiness") {
+        return CT_HAPPINESS;
     } else if (name.toLower() == "idle") {
         return CT_IDLE;
     } else if (name.toLower() == "trait") {
@@ -56,23 +56,23 @@ static inline COLUMN_TYPE get_column_type(const QString &name) {
     } else if (name.toLower() == "military_preference") {
         return CT_MILITARY_PREFERENCE;
     }
-	return CT_DEFAULT;
+    return CT_DEFAULT;
 }
 
 static inline QString get_column_type(const COLUMN_TYPE &type) {
-	switch (type) {
-		case CT_SPACER:                 return "SPACER";
-		case CT_SKILL:                  return "SKILL";
-		case CT_LABOR:                  return "LABOR";
-		case CT_HAPPINESS:              return "HAPPINESS";
+    switch (type) {
+        case CT_SPACER:                 return "SPACER";
+        case CT_SKILL:                  return "SKILL";
+        case CT_LABOR:                  return "LABOR";
+        case CT_HAPPINESS:              return "HAPPINESS";
         case CT_IDLE:                   return "IDLE";
         case CT_TRAIT:                  return "TRAIT";
         case CT_ATTRIBUTE:              return "ATTRIBUTE";
         case CT_MILITARY_PREFERENCE:    return "MILITARY_PREFERENCE";
-		default:
+        default:
             return "UNKNOWN";
-	}
-	return "UNKNOWN";
+    }
+    return "UNKNOWN";
 }
 
 #endif

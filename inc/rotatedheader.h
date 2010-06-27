@@ -52,7 +52,6 @@ protected:
 signals:
     void section_right_clicked(int idx);
     void sort(int, DwarfModelProxy::DWARF_SORT_ROLE);
-    void toggle_set(const QString &set_name);
 
 private:
     QPoint m_p;
@@ -63,6 +62,8 @@ private:
     private slots:
         //! called by a sorting context menu action
         void sort_action();
+        //! called by context menu on sections
+        void toggle_set_action();
 };
 
 #endif

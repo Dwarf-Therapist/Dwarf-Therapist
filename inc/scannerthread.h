@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "scannerjob.h"
 #include "translationvectorsearchjob.h"
+#include "stdstringsearchjob.h"
 #include "nullterminatedstringsearchjob.h"
 #include "stonevectorsearchjob.h"
 #include "vectorsearchjob.h"
@@ -50,6 +51,8 @@ public:
     }
 
     void run() {
+        // Don't forget your 'break' when adding new sections, Trey. You've done
+        // it twice now for a total waste of about 50 minutes >:|
         switch (m_type) {
             case FIND_TRANSLATIONS_VECTOR:
                 m_job = new TranslationVectorSearchJob;
@@ -66,8 +69,16 @@ public:
             case FIND_POSITION_VECTOR:
                 m_job = new PositionVectorSearchJob;
                 break;
+            case FIND_STD_STRING:
+                {
+                    StdStringSearchJob *job = new StdStringSearchJob;
+                    job->set_needle(m_meta);
+                    m_job = job;
+                }
+                break;
             case FIND_NULL_TERMINATED_STRING:
                 {
+                    // what is this, Java?
                     NullTerminatedStringSearchJob *job = new NullTerminatedStringSearchJob;
                     job->set_needle(m_meta);
                     m_job = job;
@@ -85,16 +96,26 @@ public:
                 return;
         }
         // forward the status signals
-        connect(m_job->df(), SIGNAL(scan_total_steps(int)), SIGNAL(sub_scan_total_steps(int)));
-        connect(m_job->df(), SIGNAL(scan_progress(int)), SIGNAL(sub_scan_progress(int)));
-        connect(m_job->df(), SIGNAL(scan_message(const QString&)), SIGNAL(scan_message(const QString&)));
-        connect(m_job, SIGNAL(scan_message(const QString&)), SIGNAL(scan_message(const QString&)));
-        connect(m_job, SIGNAL(found_address(const QString&, const uint&)), SIGNAL(found_address(const QString&, const uint&)));
-        connect(m_job, SIGNAL(found_offset(const QString&, const int&)), SIGNAL(found_offset(const QString&, const int&)));
-        connect(m_job, SIGNAL(main_scan_total_steps(int)), SIGNAL(main_scan_total_steps(int)));
-        connect(m_job, SIGNAL(main_scan_progress(int)), SIGNAL(main_scan_progress(int)));
-        connect(m_job, SIGNAL(sub_scan_total_steps(int)), SIGNAL(sub_scan_total_steps(int)));
-        connect(m_job, SIGNAL(sub_scan_progress(int)), SIGNAL(sub_scan_progress(int)));
+        connect(m_job->df(), SIGNAL(scan_total_steps(int)),
+                SIGNAL(sub_scan_total_steps(int)));
+        connect(m_job->df(), SIGNAL(scan_progress(int)),
+                SIGNAL(sub_scan_progress(int)));
+        connect(m_job->df(), SIGNAL(scan_message(const QString&)),
+                SIGNAL(scan_message(const QString&)));
+        connect(m_job, SIGNAL(scan_message(const QString&)),
+                SIGNAL(scan_message(const QString&)));
+        connect(m_job, SIGNAL(found_address(const QString&, const quint32&)),
+                SIGNAL(found_address(const QString&, const quint32&)));
+        connect(m_job, SIGNAL(found_offset(const QString&, const int&)),
+                SIGNAL(found_offset(const QString&, const int&)));
+        connect(m_job, SIGNAL(main_scan_total_steps(int)),
+                SIGNAL(main_scan_total_steps(int)));
+        connect(m_job, SIGNAL(main_scan_progress(int)),
+                SIGNAL(main_scan_progress(int)));
+        connect(m_job, SIGNAL(sub_scan_total_steps(int)),
+                SIGNAL(sub_scan_total_steps(int)));
+        connect(m_job, SIGNAL(sub_scan_progress(int)),
+                SIGNAL(sub_scan_progress(int)));
         connect(m_job, SIGNAL(quit()), this, SLOT(quit()));
         QTimer::singleShot(0, m_job, SLOT(go()));
         exec();
@@ -113,7 +134,7 @@ signals:
     void sub_scan_total_steps(int);
     void sub_scan_progress(int);
     void scan_message(const QString&);
-    void found_address(const QString&, const uint&);
+    void found_address(const QString&, const quint32&);
     void found_offset(const QString&, const int&);
 };
 #endif

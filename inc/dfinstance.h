@@ -40,14 +40,14 @@ public:
     virtual bool find_running_copy() = 0;
 
     // accessors
-    uint get_heap_start_address() {return m_heap_start_address;}
-    uint get_memory_correction() {return m_memory_correction;}
-    uint get_base_address() {return m_base_addr;}
-    bool is_ok(){return m_is_ok;}
+    VIRTADDR get_heap_start_address() {return m_heap_start_address;}
+    quint32 get_memory_correction() {return m_memory_correction;}
+    VIRTADDR get_base_address() {return m_base_addr;}
+    bool is_ok() {return m_is_ok;}
 
     // brute force memory scanning methods
-    bool is_valid_address(const uint &addr);
-    bool looks_like_vector_of_pointers(const uint &addr);
+    bool is_valid_address(const VIRTADDR &addr);
+    bool looks_like_vector_of_pointers(const VIRTADDR &addr);
 
     // revamped memory reading
     virtual int read_raw(const VIRTADDR &addr, int bytes, QByteArray &buf) = 0;
@@ -58,28 +58,30 @@ public:
     virtual qint32 read_int(const VIRTADDR &addr);
 
     // memory reading
-    virtual QVector<uint> enumerate_vector(const uint &addr) = 0;
+    virtual QVector<VIRTADDR> enumerate_vector(const VIRTADDR &addr) = 0;
     virtual QString read_string(const VIRTADDR &addr) = 0;
 
-    QVector<uint> scan_mem(const QByteArray &needle);
-    QByteArray get_data(const uint &addr, const uint &size);
-    QString pprint(const uint &addr, const uint &size);
-    QString pprint(const QByteArray &ba, const uint &start_addr=0);
+    QVector<VIRTADDR> scan_mem(const QByteArray &needle);
+    QByteArray get_data(const VIRTADDR &addr, int size);
+    QString pprint(const VIRTADDR &addr, int size);
+    QString pprint(const QByteArray &ba, const VIRTADDR &start_addr=0);
 
     // Mapping methods
-    QVector<uint> find_vectors_in_range(const uint &max_entries,
-                                        const uint &start_address,
-                                        const uint &range_length);
-    QVector<uint> find_vectors(int num_entries, int fuzz=0, int entry_size=4);
+    QVector<VIRTADDR> find_vectors_in_range(const int &max_entries,
+                                            const VIRTADDR &start_address,
+                                            const int &range_length);
+    QVector<VIRTADDR> find_vectors(int num_entries, int fuzz=0,
+                                   int entry_size=4);
 
     // Methods for when we know how the data is layed out
     MemoryLayout *memory_layout() {return m_layout;}
     QVector<Dwarf*> load_dwarves();
 
     // Writing
-    virtual uint write_raw(const uint &addr, const uint &bytes, void *buffer) = 0;
-    virtual uint write_string(const uint &addr, const QString &str) = 0;
-    virtual uint write_int(const uint &addr, const int &val) = 0;
+    virtual int write_raw(const VIRTADDR &addr, const int &bytes,
+                          void *buffer) = 0;
+    virtual int write_string(const VIRTADDR &addr, const QString &str) = 0;
+    virtual int write_int(const VIRTADDR &addr, const int &val) = 0;
 
     bool is_attached() {return m_attach_count > 0;}
     virtual bool attach() = 0;
@@ -107,14 +109,14 @@ public:
 
 protected:
     // handy util methods
-    virtual uint calculate_checksum() = 0;
+    virtual quint32 calculate_checksum() = 0;
 
     int m_pid;
-    uint m_base_addr;
-    uint m_memory_correction;
-    uint m_lowest_address;
-    uint m_highest_address;
-    uint m_heap_start_address;
+    VIRTADDR m_base_addr;
+    quint32 m_memory_correction;
+    VIRTADDR m_lowest_address;
+    VIRTADDR m_highest_address;
+    VIRTADDR m_heap_start_address;
     bool m_stop_scan; // flag that gets set to stop scan loops
     bool m_is_ok;
     int m_bytes_scanned;

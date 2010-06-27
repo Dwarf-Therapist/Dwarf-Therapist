@@ -30,6 +30,7 @@ typedef enum {
     FIND_TRANSLATIONS_VECTOR,
     FIND_STONE_VECTOR,
     FIND_METAL_VECTOR,
+    FIND_STD_STRING,
     FIND_NULL_TERMINATED_STRING,
     FIND_VECTORS_OF_SIZE,
     FIND_DWARF_RACE_INDEX,
@@ -57,7 +58,7 @@ signals:
     void main_scan_progress(int);
     void sub_scan_total_steps(int);
     void sub_scan_progress(int);
-    void found_address(const QString&, const uint&);
+    void found_address(const QString&, const quint32&);
     void found_offset(const QString&, const int&);
     void scan_message(const QString&);
     void quit();

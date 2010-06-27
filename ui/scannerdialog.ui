@@ -13,11 +13,11 @@
   <property name="windowTitle">
    <string>DF Rapist</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_7">
+  <layout class="QVBoxLayout" name="verticalLayout_4" stretch="100,0">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="3,2">
+    <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="3,2">
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_6">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <widget class="QLabel" name="label_3">
          <property name="text">
@@ -58,7 +58,7 @@
          <property name="title">
           <string>Scan Targets</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_2">
+         <layout class="QGridLayout" name="gridLayout">
           <item row="0" column="0">
            <widget class="QPushButton" name="btn_find_creature_vector">
             <property name="text">
@@ -68,6 +68,9 @@
           </item>
           <item row="0" column="1">
            <widget class="QPushButton" name="btn_find_position_vector">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Locate Position Vector</string>
             </property>
@@ -105,16 +108,34 @@
          <property name="title">
           <string>Brute Force Search</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout">
+         <layout class="QFormLayout" name="formLayout_2">
+          <property name="fieldGrowthPolicy">
+           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+          </property>
           <item row="0" column="0">
-           <widget class="QLineEdit" name="le_null_terminated_string"/>
-          </item>
-          <item row="0" column="1">
-           <widget class="QPushButton" name="btn_find_null_terminated_string">
+           <widget class="QLineEdit" name="le_null_terminated_string">
             <property name="text">
-             <string>Find Null Terminated String</string>
+             <string>this_is_a_long_name</string>
             </property>
            </widget>
+          </item>
+          <item row="0" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QPushButton" name="btn_find_null_terminated_string">
+              <property name="text">
+               <string>Find C String</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_find_std_string">
+              <property name="text">
+               <string>Find std::string</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item row="1" column="0">
            <widget class="QLineEdit" name="le_find_address"/>
@@ -427,30 +448,14 @@
    </hints>
   </connection>
   <connection>
-   <sender>btn_find_null_terminated_string</sender>
-   <signal>clicked()</signal>
-   <receiver>ScannerDialog</receiver>
-   <slot>find_null_terminated_string()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>941</x>
-     <y>195</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>745</x>
-     <y>196</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>btn_find_vector_by_length</sender>
    <signal>clicked()</signal>
    <receiver>ScannerDialog</receiver>
    <slot>find_vector_by_length()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>867</x>
-     <y>261</y>
+     <x>1068</x>
+     <y>254</y>
     </hint>
     <hint type="destinationlabel">
      <x>748</x>
@@ -523,22 +528,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>le_null_terminated_string</sender>
-   <signal>returnPressed()</signal>
-   <receiver>btn_find_null_terminated_string</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>798</x>
-     <y>192</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>941</x>
-     <y>195</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>le_find_address</sender>
    <signal>returnPressed()</signal>
    <receiver>btn_find_address</receiver>
@@ -602,6 +591,54 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btn_find_null_terminated_string</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>find_null_terminated_string()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>933</x>
+     <y>193</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>745</x>
+     <y>196</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>le_null_terminated_string</sender>
+   <signal>returnPressed()</signal>
+   <receiver>btn_find_null_terminated_string</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>797</x>
+     <y>189</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>933</x>
+     <y>193</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_find_std_string</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>find_std_string()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1021</x>
+     <y>175</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>593</x>
+     <y>2</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>find_creature_vector()</slot>
@@ -615,6 +652,7 @@
   <slot>find_stone_vector()</slot>
   <slot>find_metal_vector()</slot>
   <slot>find_position_vector()</slot>
+  <slot>find_std_string()</slot>
  </slots>
  <buttongroups>
   <buttongroup name="buttonGroup"/>

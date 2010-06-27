@@ -186,6 +186,7 @@ void RotatedHeader::contextMenuEvent(QContextMenuEvent *evt) {
         a->setData(DwarfModelProxy::DSR_GAME_ORDER);
         m->exec(viewport()->mapToGlobal(evt->pos()));
     } else {
+        /* Don't do this yet
         // find out what set this is...
         QString set_name = model()->headerData(idx, Qt::Horizontal, Qt::UserRole).toString();
         QMenu *m = new QMenu(this);
@@ -193,6 +194,7 @@ void RotatedHeader::contextMenuEvent(QContextMenuEvent *evt) {
                                   this, SLOT(toggle_set_action()));
         a->setData(set_name);
         m->exec(viewport()->mapToGlobal(evt->pos()));
+        */
     }
 }
 
@@ -205,10 +207,10 @@ void RotatedHeader::sort_action() {
 void RotatedHeader::toggle_set_action() {
     QAction *sender = qobject_cast<QAction*>(QObject::sender());
     QString set_name = sender->data().toString();
-    //emit toggle_set(set_name);
-
     for(int i = 1; i < count(); ++i) {
-        if (model()->headerData(i, Qt::Horizontal, Qt::UserRole).toString() == set_name) {
+        QString col_set_name = model()->headerData(i, Qt::Horizontal,
+                                                   Qt::UserRole).toString();
+        if (col_set_name == set_name) {
             hideSection(i);
         }
     }

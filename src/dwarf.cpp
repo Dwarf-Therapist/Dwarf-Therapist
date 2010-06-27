@@ -42,11 +42,12 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     : QObject(parent)
     , m_id(-1)
     , m_df(df)
+    , m_mem(df->memory_layout())
     , m_address(addr)
+    , m_first_soul(0)
     , m_race_id(-1)
     , m_happiness(DH_MISERABLE)
     , m_raw_happiness(0)
-    , m_money(0)
     , m_is_male(true)
     , m_show_full_name(false)
     , m_total_xp(0)
@@ -57,7 +58,6 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_agility(-1)
     , m_toughness(-1)
     , m_current_job_id(-1)
-    , m_squad_leader_id(-1)
 {
     read_settings();
     refresh_data();
@@ -91,59 +91,59 @@ Dwarf::~Dwarf() {
     m_skills.clear();
 }
 
+void Dwarf::read_settings() {
+    /* This is pretty fucked up. There is no good way to let the options for
+       full name, or show dabbling to just update existing cells. Will have to
+       send signals when this stuff changes, or just bite the bullet and
+       subclass the QStandardItem for the name items in the main model
+       */
+    QSettings *s = DT->user_settings();
+    bool new_show_full_name = s->value("options/show_full_dwarf_names",
+                                       false).toBool();
+    if (new_show_full_name != m_show_full_name) {
+        calc_names();
+        emit name_changed();
+    }
+    m_show_full_name = new_show_full_name;
+}
+
 void Dwarf::refresh_data() {
-    MemoryLayout *mem = m_df->memory_layout();
+    if (!m_df || !m_df->memory_layout() || !m_df->memory_layout()->is_valid()) {
+        LOGW << "refresh of dwarf called but we're not connected";
+        return;
+    }
+    // make sure our reference is up to date to the active memory layout
+    m_mem = m_df->memory_layout();
     TRACE << "Starting refresh of dwarf data at" << hexify(m_address);
 
-    m_id = m_df->read_int(m_address + mem->dwarf_offset("id"));
-    //m_id = m_address; // HACK: this will allow dwarfs in the list even when
-    // the id offset isn't know for this version
-    TRACE << "\tID:" << m_id;
-    BYTE sex = m_df->read_byte(m_address + mem->dwarf_offset("sex"));
-    m_is_male = (int)sex == 1;
-    TRACE << "\tMALE?" << m_is_male;
-
-    m_first_name = m_df->read_string(m_address + mem->dwarf_offset("first_name"));
-    if (m_first_name.size() > 1)
-        m_first_name[0] = m_first_name[0].toUpper();
-    TRACE << "\tFIRSTNAME:" << m_first_name;
-    m_nick_name = m_df->read_string(m_address + mem->dwarf_offset("nick_name"));
-    TRACE << "\tNICKNAME:" << m_nick_name;
-    m_pending_nick_name = m_nick_name;
-    m_last_name = read_last_name(m_address + mem->dwarf_offset("last_name"));
-    TRACE << "\tLASTNAME:" << m_last_name;
-    m_translated_last_name = read_last_name(m_address + mem->dwarf_offset("last_name"), true);
+    // read everything we need
+    read_id();
+    read_caste();
+    read_race();
+    read_first_name();
+    read_last_name();
+    read_nick_name();
     calc_names();
-    m_custom_profession = m_df->read_string(m_address + mem->dwarf_offset("custom_profession"));
-    TRACE << "\tCUSTOM PROF:" << m_custom_profession;
-    m_pending_custom_profession = m_df->read_string(m_address + mem->dwarf_offset("custom_profession"));
-    m_race_id = m_df->read_int(m_address + mem->dwarf_offset("race"));
-    TRACE << "\tRACE ID:" << m_race_id;
-    m_profession = read_profession(m_address + mem->dwarf_offset("profession"));
-    TRACE << "\tPROFESSION:" << m_profession;
-    /*
+    read_profession();
+    read_labors();
+    read_happiness();
+    read_current_job();
+    read_souls();
+
+    /* OLD Stuff from the 40d series that no longer works the same way
     m_strength = m_df->read_int(m_address + mem->dwarf_offset("strength"));
     TRACE << "\tSTRENGTH:" << m_strength;
     m_toughness = m_df->read_int(m_address + mem->dwarf_offset("toughness"));
     TRACE << "\tTOUGHNESS:" << m_toughness;
     m_agility = m_df->read_int(m_address + mem->dwarf_offset("agility"));
     TRACE << "\tAGILITY:" << m_agility;
-    */
-    read_labors(m_address + mem->dwarf_offset("labors"));
-    m_money = m_df->read_int(m_address + mem->dwarf_offset("money"));
-    TRACE << "\tMONEY:" << m_money;
-    m_raw_happiness = m_df->read_int(m_address +mem->dwarf_offset("happiness"));
-    TRACE << "\tRAW HAPPINESS:" << m_raw_happiness;
-    m_happiness = happiness_from_score(m_raw_happiness);
-    TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
-    read_current_job(m_address + mem->dwarf_offset("current_job"));
-    TRACE << "\tCURRENT JOB:" << m_current_job_id << m_current_job;
     m_squad_leader_id = m_df->read_int(m_address + mem->dwarf_offset("squad_leader_id"));
     TRACE << "\tSQUAD LEADER ID:" << m_squad_leader_id;
     m_squad_name = read_squad_name(m_address + mem->dwarf_offset("squad_name"));
     TRACE << "\tSQUAD NAME:" << m_squad_name;
     m_generic_squad_name = read_squad_name(m_address + mem->dwarf_offset("squad_name"), true);
     TRACE << "\tGENERIC SQUAD NAME:" << m_generic_squad_name;
+    */
 
     /* Search for a souls vector, where each soul contains a vector of skills
     QVector<uint> vectors = m_df->find_vectors_in_range(1, m_address, 0xc00);
@@ -167,46 +167,94 @@ void Dwarf::refresh_data() {
         }
     }
     */
-
-
-    foreach(VIRTADDR soul, m_df->enumerate_vector(m_address +
-                                                  mem->dwarf_offset("souls"))) {
-        //LOGD << nice_name() << m_df->pprint(soul, 0x250);
-        m_skills = read_skills(soul + mem->soul_detail("skills"));
-        read_traits(soul + mem->soul_detail("traits"));
-        TRACE << "\tTRAITS:" << m_traits.size();
-    }
-
     TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name
             << "(" << m_translated_name << ")";
 }
 
-void Dwarf::read_settings() {
-    /* This is pretty fucked up. There is no good way to let the options for
-       full name, or show dabbling to just update existing cells. Will have to
-       send signals when this stuff changes, or just bit the bullet and subclass
-       the QStandardItem for the name items in the main model
-       */
-    QSettings *s = DT->user_settings();
-    bool new_show_full_name = s->value("options/show_full_dwarf_names", false).toBool();
-    if (new_show_full_name != m_show_full_name) {
-        calc_names();
-        emit name_changed();
+/*******************************************************************************
+  DATA POPULATION METHODS
+*******************************************************************************/
+
+void Dwarf::read_id() {
+    m_id = m_df->read_int(m_address + m_mem->dwarf_offset("id"));
+    //m_id = m_address; // HACK: this will allow dwarfs in the list even when
+    // the id offset isn't know for this version
+    TRACE << "ID:" << m_id;
+}
+
+void Dwarf::read_caste() {
+    // TODO: actually break down this caste
+    BYTE sex = m_df->read_byte(m_address + m_mem->dwarf_offset("sex"));
+    m_is_male = (int)sex == 1;
+    TRACE << "MALE:" << m_is_male;
+}
+
+void Dwarf::read_race() {
+    m_race_id = m_df->read_int(m_address + m_mem->dwarf_offset("race"));
+    TRACE << "RACE ID:" << m_race_id;
+}
+
+void Dwarf::read_first_name() {
+    m_first_name = m_df->read_string(m_address +
+                                     m_mem->dwarf_offset("first_name"));
+    if (m_first_name.size() > 1)
+        m_first_name[0] = m_first_name[0].toUpper();
+    TRACE << "FIRSTNAME:" << m_first_name;
+}
+
+//! used by read_last_name to find word chunks
+QString Dwarf::word_chunk(uint word, bool use_generic) {
+    QString out = "";
+    if (word != 0xFFFFFFFF) {
+        if (use_generic) {
+            out = DT->get_generic_word(word);
+        } else {
+            out = DT->get_dwarf_word(word);
+        }
     }
-    m_show_full_name = new_show_full_name;
+    return out;
 }
 
-QString Dwarf::profession() {
-    if (!m_pending_custom_profession.isEmpty())
-        return m_pending_custom_profession;
-    if (!m_custom_profession.isEmpty())
-        return m_custom_profession;
-    return m_profession;
+QString Dwarf::read_chunked_name(const VIRTADDR &addr, bool use_generic) {
+    // last name reading taken from patch by Zhentar (issue 189)
+    QString first, second, third;
+
+    first.append(word_chunk(m_df->read_addr(addr), use_generic));
+    first.append(word_chunk(m_df->read_addr(addr + 0x4), use_generic));
+    second.append(word_chunk(m_df->read_addr(addr + 0x8), use_generic));
+    second.append(word_chunk(m_df->read_addr(addr + 0x14), use_generic));
+    third.append(word_chunk(m_df->read_addr(addr + 0x18), use_generic));
+
+    QString out = first;
+    out = out.toLower();
+    if (!out.isEmpty()) {
+        out[0] = out[0].toUpper();
+    }
+    if (!second.isEmpty()) {
+        second = second.toLower();
+        second[0] = second[0].toUpper();
+        out.append(" " + second);
+    }
+    if (!third.isEmpty()) {
+        third = third.toLower();
+        third[0] = third[0].toUpper();
+        out.append(" " + third);
+    }
+    return out;
 }
 
-bool Dwarf::active_military() {
-    Profession *p = GameDataReader::ptr()->get_profession(m_raw_profession);
-    return p && p->is_military();
+void Dwarf::read_last_name() {
+    VIRTADDR addr = m_address + m_mem->dwarf_offset("last_name");
+    m_last_name = read_chunked_name(addr);
+    m_translated_last_name = read_chunked_name(addr);
+}
+
+
+void Dwarf::read_nick_name() {
+    m_nick_name = m_df->read_string(m_address +
+                                    m_mem->dwarf_offset("nick_name"));
+    TRACE << "\tNICKNAME:" << m_nick_name;
+    m_pending_nick_name = m_nick_name;
 }
 
 void Dwarf::calc_names() {
@@ -243,6 +291,133 @@ void Dwarf::calc_names() {
     }
     */
 }
+
+void Dwarf::read_profession() {
+    // first see if there is a custom prof set...
+    VIRTADDR custom_addr = m_address + m_mem->dwarf_offset("custom_profession");
+    m_custom_profession = m_df->read_string(custom_addr);
+    TRACE << "\tCUSTOM PROF:" << m_custom_profession;
+
+    // we set both to the same to know it hasn't been edited yet
+    m_pending_custom_profession = m_custom_profession;
+
+    // now read the actual profession by id
+    VIRTADDR addr = m_address + m_mem->dwarf_offset("profession");
+    m_raw_profession = m_df->read_byte(addr);
+    Profession *p = GameDataReader::ptr()->get_profession(m_raw_profession);
+    QString prof_name = tr("Unknown Profession %1").arg(m_raw_profession);
+    if (p) {
+        m_can_set_labors = p->can_assign_labors();
+        prof_name = p->name(m_is_male);
+    } else {
+        LOGE << tr("Read unknown profession with id '%1' for dwarf '%2'")
+                .arg(m_raw_profession).arg(m_nice_name);
+        m_can_set_labors = false;
+    }
+    if (!m_custom_profession.isEmpty()) {
+        m_profession =  m_custom_profession;
+    } else {
+        m_profession = prof_name;
+    }
+    TRACE << "reading profession for" << nice_name() << m_raw_profession <<
+            prof_name;
+    TRACE << "EFFECTIVE PROFESSION:" << m_profession;
+}
+
+void Dwarf::read_labors() {
+    VIRTADDR addr = m_address + m_mem->dwarf_offset("labors");
+    // read a big array of labors in one read, then pick and choose
+    // the values we care about
+    QByteArray buf(102, 0);
+    m_df->read_raw(addr, 102, buf);
+
+    // get the list of identified labors from game_data.ini
+    GameDataReader *gdr = GameDataReader::ptr();
+    foreach(Labor *l, gdr->get_ordered_labors()) {
+        bool enabled = buf.at(l->labor_id) > 0;
+        m_labors[l->labor_id] = enabled;
+        m_pending_labors[l->labor_id] = enabled;
+    }
+    // also store prefs in this structure
+    foreach(MilitaryPreference *mp, gdr->get_military_preferences()) {
+        m_labors[mp->labor_id] = static_cast<ushort>(buf[mp->labor_id]);
+        m_pending_labors[mp->labor_id] = static_cast<ushort>(buf[mp->labor_id]);
+    }
+}
+
+void Dwarf::read_happiness() {
+    VIRTADDR addr = m_address + m_mem->dwarf_offset("happiness");
+    m_raw_happiness = m_df->read_int(addr);
+    m_happiness = happiness_from_score(m_raw_happiness);
+    TRACE << "\tRAW HAPPINESS:" << m_raw_happiness;
+    TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
+}
+
+void Dwarf::read_current_job() {
+    // TODO: jobs contain info about materials being used, if we ever get the
+    // material list we could show that in here
+    VIRTADDR addr = m_address + m_mem->dwarf_offset("current_job");
+    VIRTADDR current_job_addr = m_df->read_addr(addr);
+
+    if (current_job_addr != 0) {
+        m_current_job_id = m_df->read_word(current_job_addr +
+                                     m_df->memory_layout()->job_detail("id"));
+        DwarfJob *job = GameDataReader::ptr()->get_job(m_current_job_id);
+        if (job)
+            m_current_job = job->description;
+        else
+            m_current_job = tr("Unknown job");
+    } else {
+        bool is_on_break = false;
+        MemoryLayout* layout = m_df->memory_layout();
+        uint states_offset = layout->dwarf_offset("states");
+        if (states_offset) {
+            VIRTADDR states_addr = m_address + states_offset;
+            QVector<uint> entries = m_df->enumerate_vector(states_addr);
+            short on_break_value = layout->job_detail("on_break_flag");
+            foreach(uint entry, entries) {
+                if (m_df->read_short(entry) == on_break_value) {
+                    is_on_break = true;
+                    break; // no pun intended
+                }
+            }
+        }
+        m_current_job = is_on_break ? tr("On Break") : tr("No Job");
+    }
+    TRACE << "CURRENT JOB:" << m_current_job_id << m_current_job;
+}
+
+void Dwarf::read_souls() {
+    VIRTADDR soul_vector = m_address + m_mem->dwarf_offset("souls");
+    QVector<VIRTADDR> souls = m_df->enumerate_vector(soul_vector);
+    if (souls.size() != 1) {
+        LOGW << nice_name() << "has" << souls.size() << "souls!";
+        return;
+    }
+    m_first_soul = souls.at(0);
+    read_skills();
+    read_traits();
+    TRACE << "SKILLS:" << m_skills.size();
+    TRACE << "TRAITS:" << m_traits.size();
+}
+
+
+/******* OTHER CRAP*/
+
+QString Dwarf::profession() {
+    if (!m_pending_custom_profession.isEmpty())
+        return m_pending_custom_profession;
+    if (!m_custom_profession.isEmpty())
+        return m_custom_profession;
+    return m_profession;
+}
+
+bool Dwarf::active_military() {
+    Profession *p = GameDataReader::ptr()->get_profession(m_raw_profession);
+    return p && p->is_military();
+}
+
+
 
 Dwarf::DWARF_HAPPINESS Dwarf::happiness_from_score(int score) {
     if (score < 1)
@@ -347,47 +522,9 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     return unverified_dwarf;
 }
 
-QString Dwarf::word_chunk(uint word, bool use_generic) {
-    QString out = "";
-    if (word != 0xFFFFFFFF) {
-        if (use_generic) {
-            out = DT->get_generic_word(word);
-        } else {
-            out = DT->get_dwarf_word(word);
-        }
-    }
-    return out;
-}
 
-QString Dwarf::read_last_name(const uint &addr, bool use_generic) {
-    // last name reading taken from patch by Zhentar (issue 189)
-    QString first, second, third;
-
-    first.append(word_chunk(m_df->read_addr(addr), use_generic));
-    first.append(word_chunk(m_df->read_addr(addr + 0x4), use_generic));
-    second.append(word_chunk(m_df->read_addr(addr + 0x8), use_generic));
-    second.append(word_chunk(m_df->read_addr(addr + 0x14), use_generic));
-    third.append(word_chunk(m_df->read_addr(addr + 0x18), use_generic));
-
-    QString out = first;
-    out = out.toLower();
-    if (!out.isEmpty()) {
-        out[0] = out[0].toUpper();
-    }
-    if (!second.isEmpty()) {
-        second = second.toLower();
-        second[0] = second[0].toUpper();
-        out.append(" " + second);
-    }
-    if (!third.isEmpty()) {
-        third = third.toLower();
-        third[0] = third[0].toUpper();
-        out.append(" " + third);
-    }
-    return out;
-}
-
-void Dwarf::read_traits(const uint &addr) {
+void Dwarf::read_traits() {
+    VIRTADDR addr = m_first_soul + m_mem->soul_detail("traits");
     m_traits.clear();
     for (int i = 0; i < 30; ++i) {
         short val = m_df->read_short(addr + i * 2);
@@ -399,59 +536,11 @@ void Dwarf::read_traits(const uint &addr) {
     }
 }
 
-void Dwarf::read_prefs(const uint &addr) {
-    /*
-Looks like this as a dump where the start of each line is the raw 4 * 6 bytes of each like struct
-5th byte appears to point at a massive vector with 14169 entries, possible object vector?
-    the 5th byte of the first and second entry both point at the same massive vector (at least same # of entries)
----------------------------------------------------------------------------------
-00 00 ff ff | ff ff 01 00 | c3 00 01 00 | 67 52 cb 39 | f0 0f 6e 0c | 19 00 00 00 (stone: realgar)
-00 00 ff ff | ff ff 02 00 | 03 00 01 00 | 7c dd da 15 | f0 12 6e 0c | 19 00 00 00 (metal: bismuth)
-00 00 ff ff | ff ff 01 00 | 73 00 01 00 | 4d 0a 43 0b | f0 15 6e 0c | 19 00 00 00 (stone(gem): rhodolite)
-00 00 ff ff | ff ff 0d 00 | ff ff 01 00 | aa 16 49 24 | f0 18 6e 0c | 19 00 00 00 (wood: mango tree)
-00 00 ff ff | ff ff 0a 00 | 5f 00 00 00 | 23 d2 54 2f | f0 1b 6e 0c | 19 00 00 00 (body part?: horn)
-00 00 ff ff | ff ff 0b 00 | 72 00 00 00 | 08 83 c8 3e | f0 1e 6e 0c | 19 00 00 00 (body part?: cave lobster shell)
-04 00 3f 00 | 01 00 ff ff | ff ff 01 00 | 69 47 00 2b | f0 21 6e 0c | 19 00 00 00 (color: light brown)
-04 00 56 00 | ff ff ff ff | ff ff 01 00 | 16 c2 0b 12 | f0 24 6e 0c | 19 00 00 00 (donkeys: for stubborness)
-02 00 2f 00 | ff ff 37 00 | ff ff 00 00 | 9f a3 02 0c | f0 27 6e 0c | 19 00 00 00 (cave spiders: for mystery)
-02 00 4c 00 | ff ff 0a 00 | 66 00 01 00 | 54 5f d7 2f | f0 2a 6e 0c | 19 00 00 00 (when possible: Dwarven Wine)
-02 00 4a 00 | ff ff 20 00 | 03 00 01 00 | 45 1c 7f 3c | f0 2d 6e 0c | 19 00 00 00 (when possible: Dwarven wheat flour)
-03 00 01 00 | ff ff ff ff | ff ff 00 00 | 42 b2 36 26 | f0 30 6e 0c | 21 00 00 00 (detests purring maggots)
-    */
-    /*
-    uint stone_vector = 0x08f9cab0;
-    QVector<uint> stones = m_df->enumerate_vector(stone_vector);
-    foreach(uint stone, stones) {
-        LOGD << "material at" << hex << stone << m_df->read_string(stone);
-    }
-    */
-    QVector<uint> addrs = m_df->enumerate_vector(addr);
-    LOGD << "reading prefs for" << m_nice_name << "found" << addrs.size() << "preference entries";
-    foreach(int addr, addrs) {
-        short type = m_df->read_short(addr + 0x06);
-        short sub_type = m_df->read_short(addr + 0x08);
-        LOGD << "\tTYPE" << type << hex << type << "SUBTYPE" << dec << sub_type << hex << sub_type;
-        /*
-        switch (type) {
-            case 1: // stone
-                LOGD << "\tSTONE TYPE" << m_df->read_string(stones.at(sub_type));
-                break;
-            case 2: // metal
-                LOGD << "\tMETAL TYPE" << "UNKNOWN";
-                break;
-            case 0xd: // wood (tree)
-                LOGD << "\tWOOD TYPE UNKNOWN";
-                break;
-        }
-        */
-        //int when_possible = (int)m_df->read_char(addr + 0x0A);
-    }
-}
-
-QVector<Skill> Dwarf::read_skills(const uint &addr) {
+void Dwarf::read_skills() {
+    VIRTADDR addr = m_first_soul + m_mem->soul_detail("skills");
     m_total_xp = 0;
-    QVector<Skill> skills(0);
-    QVector<uint> entries = m_df->enumerate_vector(addr);
+    m_skills.clear();
+    QVector<VIRTADDR> entries = m_df->enumerate_vector(addr);
     TRACE << "Reading skills for" << nice_name() << "found:" << entries.size();
     short type = 0;
     short rating = 0;
@@ -460,7 +549,7 @@ QVector<Skill> Dwarf::read_skills(const uint &addr) {
     int rust = 0;
     int rust_counter = 0;
     int demotion_counter = 0;
-    foreach(uint entry, entries) {
+    foreach(VIRTADDR entry, entries) {
         /* type, level, experience, last used counter, rust, rust counter,
         demotion counter
         */
@@ -478,9 +567,8 @@ QVector<Skill> Dwarf::read_skills(const uint &addr) {
                 << rust_counter << "demotions:" << demotion_counter;
         Skill s(type, xp, rating);
         m_total_xp += s.actual_exp();
-        skills.append(s);
+        m_skills.append(s);
     }
-    return skills;
 }
 
 const Skill Dwarf::get_skill(int skill_id) {
@@ -512,59 +600,7 @@ short Dwarf::get_rating_by_labor(int labor_id) {
         return -1;
 }
 
-QString Dwarf::read_profession(const uint &addr) {
-    m_raw_profession = m_df->read_byte(addr);
-    Profession *p = GameDataReader::ptr()->get_profession(m_raw_profession);
-    QString prof_name = tr("Unknown Profession %1").arg(m_raw_profession);
-    if (p) {
-        m_can_set_labors = p->can_assign_labors();
-        //prof_name = QString("(%1) %2").arg(m_raw_profession).arg(p->name(m_is_male));
-        prof_name = p->name(m_is_male);
-    } else {
-        LOGE << tr("Read unknown profession with id '%1' for dwarf '%2'")
-                .arg(m_raw_profession).arg(m_nice_name);
-        m_can_set_labors = false;
-    }
-    TRACE << "reading profession for" << nice_name() << m_raw_profession <<
-            prof_name;
-    if (!m_custom_profession.isEmpty()) {
-        return m_custom_profession;
-    } else {
-        return prof_name;
-    }
-}
 
-void Dwarf::read_current_job(const VIRTADDR &addr) {
-    // TODO: jobs contain info about materials being used, if we ever get the
-    // material list we could show that in here
-    VIRTADDR current_job_addr = m_df->read_addr(addr);
-
-    if (current_job_addr != 0) {
-        m_current_job_id = m_df->read_word(current_job_addr +
-                                     m_df->memory_layout()->job_detail("id"));
-        DwarfJob *job = GameDataReader::ptr()->get_job(m_current_job_id);
-        if (job)
-            m_current_job = job->description;
-        else
-            m_current_job = tr("Unknown job");
-    } else {
-        bool is_on_break = false;
-        MemoryLayout* layout = m_df->memory_layout();
-        uint states_offset = layout->dwarf_offset("states");
-        if (states_offset) {
-            VIRTADDR states_addr = m_address + states_offset;
-            QVector<uint> entries = m_df->enumerate_vector(states_addr);
-            short on_break_value = layout->job_detail("on_break_flag");
-            foreach(uint entry, entries) {
-                if (m_df->read_short(entry) == on_break_value) {
-                    is_on_break = true;
-                    break; // no pun intended
-                }
-            }
-        }
-        m_current_job = is_on_break ? tr("On Break") : tr("No Job");
-    }
-}
 
 short Dwarf::pref_value(const int &labor_id) {
     if (!m_pending_labors.contains(labor_id)) {
@@ -579,25 +615,6 @@ void Dwarf::toggle_pref_value(const int &labor_id) {
     m_pending_labors[labor_id] = next_val;
 }
 
-void Dwarf::read_labors(const uint &addr) {
-    // read a big array of labors in one read, then pick and choose
-    // the values we care about
-    QByteArray buf(102, 0);
-    m_df->read_raw(addr, 102, buf);
-
-    // get the list of identified labors from game_data.ini
-    GameDataReader *gdr = GameDataReader::ptr();
-    foreach(Labor *l, gdr->get_ordered_labors()) {
-        bool enabled = buf.at(l->labor_id) > 0;
-        m_labors[l->labor_id] = enabled;
-        m_pending_labors[l->labor_id] = enabled;
-    }
-    // also store prefs in this structure
-    foreach(MilitaryPreference *mp, gdr->get_military_preferences()) {
-        m_labors[mp->labor_id] = static_cast<ushort>(buf[mp->labor_id]);
-        m_pending_labors[mp->labor_id] = static_cast<ushort>(buf[mp->labor_id]);
-    }
-}
 
 bool Dwarf::labor_enabled(int labor_id) {
     return m_pending_labors.value(labor_id, false);
@@ -812,7 +829,8 @@ void Dwarf::dump_memory() {
     te->setReadOnly(true);
     te->setFontFamily("Courier");
     te->setFontPointSize(8);
-    te->setText(m_df->pprint(m_df->get_data(m_address, 0xb90), 0));
+    QByteArray data = m_df->get_data(m_address, 0xb90);
+    te->setText(m_df->pprint(data));
     v->addWidget(te);
     d->setLayout(v);
     d->show();
@@ -828,7 +846,8 @@ void Dwarf::dump_memory_to_file() {
     if (f->open(QFile::ReadWrite)) {
         f->write(QString("NAME: %1\n").arg(nice_name()).toAscii());
         f->write(QString("ADDRESS: %1\n").arg(hexify(m_address)).toAscii());
-        f->write(m_df->pprint(m_df->get_data(m_address, 0xb90), 0).toAscii());
+        QByteArray data = m_df->get_data(m_address, 0xb90);
+        f->write(m_df->pprint(data).toAscii());
         f->close();
         QMessageBox::information(DT->get_main_window(), tr("Dumped"),
                                  tr("%1 has been dumped to %2")
@@ -877,45 +896,4 @@ int Dwarf::total_assigned_labors() {
             ret_val++;
     }
     return ret_val;
-}
-
-/************************************************************************/
-/* SQUAD STUFF                                                          */
-/************************************************************************/
-Dwarf *Dwarf::get_squad_leader() {
-    // Oh I will be...
-    if (m_squad_leader_id <= 0) {
-        // I'll be squad leader!
-        return 0;
-    } else {
-        return DT->get_dwarf_by_id(m_squad_leader_id); // Tony Danza
-    }
-}
-
-QString Dwarf::read_squad_name(const uint &addr, bool use_generic) {
-    QString out;
-    for (int i = 0; i < 24; i+=4) {
-        int word_offset = m_df->read_int(addr + i);
-        if (word_offset <= 0)
-            continue;
-        if (use_generic)
-            out += DT->get_generic_word(word_offset);
-        else
-            out += DT->get_dwarf_word(word_offset);
-    }
-    if (out.size())
-        out[0] = out.at(0).toUpper();
-    return out;
-}
-
-QString Dwarf::squad_name() {
-    if (m_squad_leader_id > 0) // follow the chain up
-        return get_squad_leader()->squad_name();
-    else
-        return m_squad_name;
-}
-
-void Dwarf::add_squad_member(Dwarf *d) {
-    if (d && !m_squad_members.contains(d))
-        m_squad_members << d;
 }

@@ -52,8 +52,11 @@ public:
             emit main_scan_progress(-1);
             emit scan_message(tr("Looking for %1 (%2)").arg(QString(m_needle))
                               .arg(QString(m_needle.toHex())));
-            foreach (uint str, m_df->scan_mem(m_needle)) {
-                emit found_address(m_needle.toHex() + " found at", str);
+            foreach (VIRTADDR str, m_df->scan_mem(m_needle)) {
+                emit found_address(QString("Found '%1' (%2)")
+                                   .arg(QString(m_needle))
+                                   .arg(QString(m_needle.toHex())),
+                                   str);
             }
             emit quit();
         }

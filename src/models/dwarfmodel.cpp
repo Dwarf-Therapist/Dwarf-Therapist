@@ -105,15 +105,6 @@ void DwarfModel::load_dwarves() {
         last_id = id;
         m_dwarves[id]->set_migration_wave(wave);
     }
-
-    /* build up the squad structures for loaded dwarfs */
-    //m_squads.clear();
-    foreach(Dwarf *d, m_dwarves) {
-        Dwarf *squad_leader = d->get_squad_leader();
-        if (squad_leader) { // this dwarf has a squad leader
-            squad_leader->add_squad_member(d);
-        }
-    }
 }
 
 void DwarfModel::build_rows() {
@@ -131,12 +122,12 @@ void DwarfModel::build_rows() {
     QSettings *s = DT->user_settings();
     int width = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
     foreach(ViewColumnSet *set, m_gridview->sets()) {
-        QStandardItem *set_header = new QStandardItem(set->name());
+        /*QStandardItem *set_header = new QStandardItem(set->name());
         set_header->setData(set->bg_color(), Qt::BackgroundColorRole);
         set_header->setData(true);
         setHorizontalHeaderItem(start_col++, set_header);
         emit set_index_as_spacer(start_col - 1);
-        emit preferred_header_size(start_col - 1, width);
+        emit preferred_header_size(start_col - 1, width);*/
         foreach(ViewColumn *col, set->columns()) {
             QStandardItem *header = new QStandardItem(col->title());
             header->setData(col->bg_color(), Qt::BackgroundColorRole);
@@ -193,28 +184,6 @@ void DwarfModel::build_rows() {
                 break;
             case GB_CURRENT_JOB:
                 m_grouped_dwarves[d->current_job()].append(d);
-                break;
-            case GB_SQUAD:
-                {
-                    QString squad = "None";
-                    Dwarf *leader = d->get_squad_leader();
-                    if (leader) {
-                        squad = leader->squad_name();
-                    } else if (d->squad_members().size()) {
-                        squad = d->squad_name();
-                        //HACK (reorder this to make sure the leader is added first
-                        QVector<Dwarf*> current_members = m_grouped_dwarves[squad];
-                        if (current_members.size()) {
-                            m_grouped_dwarves[squad].clear();
-                            m_grouped_dwarves[squad].append(d);
-                            foreach(Dwarf *member, current_members) {
-                                m_grouped_dwarves[squad].append(member);
-                            }
-                            continue;
-                        }
-                    }
-                    m_grouped_dwarves[squad].append(d);
-                }
                 break;
             case GB_MILITARY_STATUS:
                 {
@@ -315,9 +284,6 @@ void DwarfModel::build_row(const QString &key) {
             QFont f = i_name->font();
             f.setBold(true);
             i_name->setFont(f);
-            if (d->squad_members().size() && !d->get_squad_leader()) {
-                i_name->setText(QString("[L] %1").arg(i_name->text()));
-            }
         }
 
         i_name->setToolTip(d->tooltip_text());
@@ -349,8 +315,6 @@ void DwarfModel::build_row(const QString &key) {
         QList<QStandardItem*> items;
         items << i_name;
         foreach(ViewColumnSet *set, m_gridview->sets()) {
-            QStandardItem *set_item = new QStandardItem;
-            items << set_item;
             foreach(ViewColumn *col, set->columns()) {
                 QStandardItem *item = col->build_cell(d);
                 items << item;

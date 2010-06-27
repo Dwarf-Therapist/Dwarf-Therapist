@@ -57,7 +57,6 @@ public:
         GB_SEX,
         GB_HAPPINESS,
         GB_MIGRATION_WAVE,
-        GB_SQUAD,
         GB_CURRENT_JOB,
         GB_MILITARY_STATUS,
         GB_HIGHEST_SKILL,

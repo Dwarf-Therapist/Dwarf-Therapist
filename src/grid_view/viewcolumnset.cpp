@@ -235,7 +235,6 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
             case CT_MILITARY_PREFERENCE:
                 new MilitaryPreferenceColumn(s, ret_val, parent);
                 break;
-
             case CT_DEFAULT:
             default:
                 LOGW << "unidentified column type in set" << ret_val->name() << "!";

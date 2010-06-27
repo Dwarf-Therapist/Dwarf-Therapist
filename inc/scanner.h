@@ -37,7 +37,7 @@ public:
     virtual ~Scanner(){}
 
     public slots:
-        void report_address(const QString&, const uint&);
+        void report_address(const QString&, const quint32&);
         void report_offset(const QString&, const int&);
         void cancel_scan();
 
@@ -57,6 +57,7 @@ private:
         void find_dwarf_race_index();
         void find_translations_vector();
         void find_vector_by_length();
+        void find_std_string();
         void find_null_terminated_string();
         void find_number_or_address();
         void find_stone_vector();

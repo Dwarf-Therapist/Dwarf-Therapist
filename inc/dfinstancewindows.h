@@ -38,14 +38,14 @@ public:
     // factory ctor
     bool find_running_copy();
 
-    QVector<uint> enumerate_vector(const uint &addr);
+    QVector<VIRTADDR> enumerate_vector(const VIRTADDR &addr);
     int read_raw(const VIRTADDR &addr, int bytes, QByteArray &buffer);
-    QString read_string(const uint &addr);
+    QString read_string(const VIRTADDR &addr);
 
     // Writing
-    uint write_raw(const uint &addr, const uint &bytes, void *buffer);
-    uint write_string(const uint &addr, const QString &str);
-    uint write_int(const uint &addr, const int &val);
+    int write_raw(const VIRTADDR &addr, const int &bytes, void *buffer);
+    int write_string(const VIRTADDR &addr, const QString &str);
+    int write_int(const VIRTADDR &addr, const int &val);
 
     // pure virtual methods
     void map_virtual_memory();

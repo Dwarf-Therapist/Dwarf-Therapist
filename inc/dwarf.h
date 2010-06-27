@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "utils.h"
 
 class DFInstance;
+class MemoryLayout;
 class CustomProfession;
 
 class Dwarf : public QObject
@@ -53,7 +54,7 @@ public:
 
     // getters
     //! Return the memory address (in hex) of this creature in the remote DF process
-    uint address() {return m_address;}
+    VIRTADDR address() {return m_address;}
 
     //! return the the unique id for this creature
     int id() {return m_id;}
@@ -215,26 +216,6 @@ public:
     //! returns true if this dwarf can have labors specified on it
     Q_INVOKABLE bool can_set_labors() {return m_can_set_labors;}
 
-    /************************************************************************/
-    /* SQUAD STUFF                                                          */
-    /************************************************************************/
-    //! return a pointer to this dwarf's squad leader, or 0 if no squad leader is set
-    Dwarf *get_squad_leader();
-
-    /*! return the dwarf string name of this dwarf's squad
-    If this dwarf is not a squad leader but still in a squad, this method will return the
-    name of the squad if this dwarf were squad leader. If you want the name of the squad
-    this dwarf is a follower of, then get the squad name from this dwarf's squad_leader
-
-    /sa: get_squad_leader()
-    */
-    QString squad_name();
-
-    //! add a dwarf to this dwarf's squad
-    void add_squad_member(Dwarf *d);
-
-    QList<Dwarf*> squad_members() {return m_squad_members;}
-
     QString first_name() const {
         //qDebug() << "first_name called (from script?)";
         return m_first_name;
@@ -255,39 +236,31 @@ public:
 
 
 private:
-    int m_id;
+    int m_id; // each creature in the game has a unique serial ID
     DFInstance *m_df;
-    uint m_address;
-    int m_race_id;
-    DWARF_HAPPINESS m_happiness;
-    int m_raw_happiness;
-    int m_money;
+    MemoryLayout *m_mem;
+    VIRTADDR m_address; // start of the structure in DF's memory space
+    VIRTADDR m_first_soul; // start of 1st soul for this creature
+    int m_race_id; // each creature has racial ID
+    DWARF_HAPPINESS m_happiness; // enum value of happiness
+    int m_raw_happiness; // raw score before being turned into an enum
     bool m_is_male;
     bool m_show_full_name;
     int m_total_xp;
     int m_migration_wave;
-
-    QString read_profession(const uint &addr);
-    QString word_chunk(uint word, bool use_generic=false);
-    QString read_last_name(const uint &addr, bool use_generic=false);
-    QString read_squad_name(const uint &addr, bool use_generic=false);
-    QVector<Skill> read_skills(const uint &addr);
-    void read_prefs(const uint &addr);
-    void read_labors(const uint &addr);
-    void calc_names();
-    void read_traits(const uint &addr);
-    void read_current_job(const VIRTADDR &addr);
-
-
-    Q_PROPERTY(QString first_name READ first_name) // no setters (scripting read-only)
-    QString m_first_name;
-    QString m_last_name, m_translated_last_name;
-    QString m_nick_name, m_pending_nick_name;
-    QString m_nice_name, m_translated_name; // used to cache this value
-    QString m_custom_profession, m_pending_custom_profession;
-    QString m_profession;
-    int m_raw_profession;
-    bool m_can_set_labors;
+    Q_PROPERTY(QString first_name READ first_name) // no setters (read-only)
+    QString m_first_name; // set by game
+    QString m_nick_name; // set by user
+    QString m_pending_nick_name; // used when not committed yet
+    QString m_last_name; // last name in dwarven
+    QString m_translated_last_name; // last name in human english
+    QString m_nice_name; // full name (depends on settings)
+    QString m_translated_name; // full name using human english last name
+    QString m_custom_profession; // set by user
+    QString m_pending_custom_profession; // uncommitted
+    QString m_profession; // name of profession set by game
+    int m_raw_profession; // id of profession set by game
+    bool m_can_set_labors; // used to prevent cheating
     int m_strength;
     int m_agility;
     int m_toughness;
@@ -299,12 +272,29 @@ private:
     QMap<int, ushort> m_pending_labors;
     QList<QAction*> m_actions; // actions suitable for context menus
 
-    // Squad settings
-    int m_squad_leader_id;
-    QString m_squad_name;
-    QString m_generic_squad_name;
-    //! maintain a list of all dwarfs who follow this dwarf in the military hierarchy
-    QList<Dwarf*> m_squad_members;
+    // these methods read data from raw memory
+    void read_id();
+    void read_caste();
+    void read_race();
+    void read_first_name();
+    void read_last_name();
+    void read_nick_name();
+    void read_profession();
+    void read_labors();
+    void read_happiness();
+    void read_current_job();
+    void read_souls();
+    void read_skills();
+    void read_traits();
+
+    // utility methods to assist with reading names made up of several words
+    // from the language tables
+    QString word_chunk(uint word, bool use_generic=false);
+    QString read_chunked_name(const VIRTADDR &addr, bool use_generic=false);
+    QString read_squad_name(bool use_generic=false);
+
+    // assembles component names into a nicely formatted single string
+    void calc_names();
 
 signals:
     void name_changed();

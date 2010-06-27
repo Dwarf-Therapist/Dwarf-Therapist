@@ -46,7 +46,7 @@ static inline QByteArray encode(int num) {
     return arr;
 }
 
-static inline QByteArray encode(uint num) {
+static inline QByteArray encode(VIRTADDR num) {
     char *bytes;
     bytes = (char*)&num;
     QByteArray arr(bytes, sizeof(uint));

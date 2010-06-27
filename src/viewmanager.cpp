@@ -32,7 +32,8 @@ THE SOFTWARE.
 #include "viewcolumn.h"
 #include "utils.h"
 
-ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent)
+ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy,
+                         QWidget *parent)
     : QTabWidget(parent)
     , m_model(dm)
     , m_proxy(proxy)
@@ -50,10 +51,11 @@ ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent
     draw_add_tab_button();
     setCornerWidget(m_add_tab_button, Qt::TopLeftCorner);
 
-    connect(tabBar(), SIGNAL(tabMoved(int, int)), this, SLOT(write_views()));
-    connect(tabBar(), SIGNAL(currentChanged(int)), this, SLOT(setCurrentIndex(int)));
-    connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(remove_tab_for_gridview(int)));
-    connect(m_model, SIGNAL(need_redraw()), this, SLOT(redraw_current_tab()));
+    connect(tabBar(), SIGNAL(tabMoved(int, int)), SLOT(write_views()));
+    connect(tabBar(), SIGNAL(currentChanged(int)), SLOT(setCurrentIndex(int)));
+    connect(this, SIGNAL(tabCloseRequested(int)),
+            SLOT(remove_tab_for_gridview(int)));
+    connect(m_model, SIGNAL(need_redraw()), SLOT(redraw_current_tab()));
 
     draw_views();
 }
@@ -62,7 +64,8 @@ void ViewManager::draw_add_tab_button() {
     QIcon icn(":img/tab_add.png");
     QMenu *m = new QMenu(this);
     foreach(GridView *v, m_views) {
-        QAction *a = m->addAction(icn, "Add " + v->name(), this, SLOT(add_tab_from_action()));
+        QAction *a = m->addAction(icn, "Add " + v->name(), this,
+                                  SLOT(add_tab_from_action()));
         a->setData((qulonglong)v);
     }
     m_add_tab_button->setMenu(m);
@@ -112,11 +115,14 @@ void ViewManager::reload_views() {
                 }
             }
             if (name_taken) {
-                QMessageBox::information(this, tr("Name in Use!"), tr("A custom view was found in your settings called '%1.' "
-                    "However, this name is already taken by a built-in view, you must rename the custom view.").arg(gv->name()));
+                QMessageBox::information(this, tr("Name in Use!"),
+                    tr("A custom view was found in your settings called '%1.' "
+                    "However, this name is already taken by a built-in view, "
+                    "you must rename the custom view.").arg(gv->name()));
                 QString new_name;
                 while (new_name.isEmpty() || new_name == gv->name()) {
-                    new_name = QInputDialog::getText(this, tr("Rename View"), tr("New name for '%1'").arg(gv->name()));
+                    new_name = QInputDialog::getText(this, tr("Rename View"),
+                                    tr("New name for '%1'").arg(gv->name()));
                 }
                 gv->set_name(new_name);
             }
@@ -141,9 +147,10 @@ void ViewManager::draw_views() {
         w->deleteLater();
         removeTab(0);
     }
-    QStringList tab_order = DT->user_settings()->value("gui_options/tab_order").toStringList();
+    QStringList tab_order = DT->user_settings()->value(
+            "gui_options/tab_order").toStringList();
     if (tab_order.size() == 0) {
-        tab_order << "Labors" << "Social";
+        tab_order << "Labors" << "Military" << "Social";
     }
     if (tab_order.size() > 0) {
         foreach(QString name, tab_order) {
@@ -233,11 +240,15 @@ void ViewManager::remove_view(GridView *view) {
 }
 
 void ViewManager::replace_view(GridView *old_view, GridView *new_view) {
-    bool update_current_index = false; // if the current tab was updated, we need to redraw it
+    // if the current tab was updated, we need to redraw it
+    bool update_current_index = false;
     for (int i = 0; i < count(); ++i) {
         if (tabText(i) == old_view->name()) {
-            setTabText(i, new_view->name()); // update tab titles that were showing the old view
-            if (i == currentIndex()) // going to have to redraw the active tab as its view was just updated
+            // update tab titles that were showing the old view
+            setTabText(i, new_view->name());
+            // going to have to redraw the active tab as its view was just
+            // updated
+            if (i == currentIndex())
                 update_current_index = true;
         }
     }
@@ -255,14 +266,16 @@ StateTableView *ViewManager::get_stv(int idx) {
     if (idx == -1)
         idx = currentIndex();
     QWidget *w = widget(idx);
-    if (w)
-        return static_cast<StateTableView*>(w);
+    if (w) {
+        return qobject_cast<StateTableView*>(w);
+    }
     return 0;
 }
 
 void ViewManager::setCurrentIndex(int idx) {
     if (idx < 0 || idx > count()-1) {
-        //LOGW << "tab switch to index" << idx << "requested but there are only" << count() << "tabs";
+        LOGW << "tab switch to index" << idx << "requested but there are " <<
+            "only" << count() << "tabs";
         return;
     }
     StateTableView *stv = get_stv(idx);
@@ -272,7 +285,6 @@ void ViewManager::setCurrentIndex(int idx) {
             m_model->build_rows();
             stv->header()->setResizeMode(QHeaderView::Fixed);
             stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
-            //stv->header()->setResizeMode(m_model->columnCount() - 1, QHeaderView::ResizeToContents);
             stv->sortByColumn(0, Qt::AscendingOrder);
             QList<Dwarf*> tmp_list;
             foreach(Dwarf *d, m_selected_dwarfs) {
@@ -289,10 +301,12 @@ void ViewManager::setCurrentIndex(int idx) {
     write_tab_order();
 }
 
-void ViewManager::dwarf_selection_changed(const QItemSelection &selected, const QItemSelection &deselected) {
+void ViewManager::dwarf_selection_changed(const QItemSelection &selected,
+                                          const QItemSelection &deselected) {
     Q_UNUSED(selected);
     Q_UNUSED(deselected);
-    QItemSelectionModel *selection = qobject_cast<QItemSelectionModel*>(QObject::sender());
+    QItemSelectionModel *selection = qobject_cast<QItemSelectionModel*>
+                                     (QObject::sender());
     m_selected_dwarfs.clear();
     foreach(QModelIndex idx, selection->selectedRows(0)) {
         int dwarf_id = idx.data(DwarfModel::DR_ID).toInt();
@@ -319,9 +333,14 @@ int ViewManager::add_tab_for_gridview(GridView *v) {
     stv->setSortingEnabled(false);
     stv->set_model(m_model, m_proxy);
     stv->setSortingEnabled(true);
-    connect(stv, SIGNAL(dwarf_focus_changed(Dwarf*)), SIGNAL(dwarf_focus_changed(Dwarf*))); // pass-thru
-    connect(stv->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
-        SLOT(dwarf_selection_changed(const QItemSelection &, const QItemSelection &)));
+    connect(stv, SIGNAL(dwarf_focus_changed(Dwarf*)),
+            SIGNAL(dwarf_focus_changed(Dwarf*))); // pass-thru
+    connect(stv->selectionModel(),
+            SIGNAL(selectionChanged(const QItemSelection &,
+                                    const QItemSelection &)),
+            SLOT(dwarf_selection_changed(const QItemSelection &,
+                                         const QItemSelection &)));
+    stv->show();
     int new_idx = addTab(stv, v->name());
     write_tab_order();
     return new_idx;
@@ -363,13 +382,15 @@ void ViewManager::collapse_all() {
         stv->collapseAll();
 }
 
-void ViewManager::jump_to_dwarf(QTreeWidgetItem *current, QTreeWidgetItem *previous) {
+void ViewManager::jump_to_dwarf(QTreeWidgetItem *current,
+                                QTreeWidgetItem *previous) {
     StateTableView *stv = get_stv();
     if (stv)
         stv->jump_to_dwarf(current, previous);
 }
 
-void ViewManager::jump_to_profession(QListWidgetItem *current, QListWidgetItem *previous) {
+void ViewManager::jump_to_profession(QListWidgetItem *current,
+                                     QListWidgetItem *previous) {
     StateTableView *stv = get_stv();
     if (stv)
         stv->jump_to_profession(current, previous);

@@ -59,7 +59,8 @@ DFInstance::DFInstance(QObject* parent)
     // We need to scan for memory layout files to get a list of DF versions this
     // DT version can talk to. Start by building up a list of search paths
     QDir working_dir = QDir::current();
-    QDir::addSearchPath("memory_layouts", working_dir.path());
+    QStringList search_paths;
+    search_paths << working_dir.path();
 #ifdef Q_WS_WIN
     QString subdir = "windows";
 #else
@@ -71,11 +72,10 @@ DFInstance::DFInstance(QObject* parent)
 #endif
 #endif
 #endif
-    QDir::addSearchPath("memory_layouts", working_dir.absoluteFilePath(
-        QString("etc/memory_layouts/%1").arg(subdir)));
+    search_paths << QString("etc/memory_layouts/%1").arg(subdir);
 
     TRACE << "Searching for MemoryLayout ini files in the following directories";
-    foreach(QString path, QDir::searchPaths("memory_layouts")) {
+    foreach(QString path, search_paths) {
         TRACE<< path;
         QDir d(path);
         d.setNameFilters(QStringList() << "*.ini");
@@ -137,44 +137,48 @@ qint32 DFInstance::read_int(const VIRTADDR &addr) {
     return decode_int(out);
 }
 
-QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
+QVector<VIRTADDR> DFInstance::scan_mem(const QByteArray &needle) {
     // progress reporting
     m_scan_speed_timer->start(500);
     m_memory_remap_timer->stop(); // don't remap segments while scanning
-    uint total_bytes = 0;
+    int total_bytes = 0;
     m_bytes_scanned = 0; // for global timings
     int bytes_scanned = 0; // for progress calcs
     foreach(MemorySegment *seg, m_regions) {
         total_bytes += seg->size;
     }
-    uint report_every_n_bytes = total_bytes / 1000;
+    int report_every_n_bytes = total_bytes / 1000;
     emit scan_total_steps(1000);
     emit scan_progress(0);
 
 
     m_stop_scan = false;
-    QVector<uint> addresses; //! return value
+    QVector<VIRTADDR> addresses; //! return value
     QByteArrayMatcher matcher(needle);
 
-    int step = 0x1000;
-    QByteArray buffer(step, 0);
+    int step_size = 0x1000;
+    QByteArray buffer(step_size, 0);
+    QByteArray back_buffer(step_size * 2, 0);
 
     QTime timer;
     timer.start();
     attach();
     foreach(MemorySegment *seg, m_regions) {
+        int step = step_size;
         int steps = seg->size / step;
         if (seg->size % step)
             steps++;
 
-        for(uint ptr = seg->start_addr; ptr < seg->end_addr; ptr += step) {
-            if (ptr + step > seg->end_addr)
-                step = seg->end_addr - (ptr + step);
-
-            if (step > 0x1000) {
-                LOGD << "step is set to" << step;
+        for(VIRTADDR ptr = seg->start_addr; ptr < seg->end_addr; ptr += step) {
+            step = step_size;
+            if (ptr + step > seg->end_addr) {
+                step = seg->end_addr - ptr;
             }
 
+            // move the last thing we read to the front of the back_buffer
+            back_buffer.replace(0, step, buffer);
+
+            // fill the main read buffer
             int bytes_read = read_raw(ptr, step, buffer);
             if (bytes_read < step && !seg->is_guarded) {
                 if (m_layout->is_complete()) {
@@ -185,10 +189,24 @@ QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
             }
             bytes_scanned += bytes_read;
             m_bytes_scanned += bytes_read;
-            int idx = matcher.indexIn(buffer);
-            if (idx != -1) {
-                addresses << (uint)(ptr + idx);
+
+            // put the main buffer on the end of the back_buffer
+            back_buffer.replace(step, step, buffer);
+
+            int idx = -1;
+            forever {
+                idx = matcher.indexIn(back_buffer, idx+1);
+                if (idx == -1) {
+                    break;
+                } else {
+                    VIRTADDR hit = ptr + idx - step;
+                    if (!addresses.contains(hit)) {
+                        // backbuffer may cause duplicate hits
+                        addresses << hit;
+                    }
+                }
             }
+
             if (m_stop_scan)
                 break;
             emit scan_progress(bytes_scanned / report_every_n_bytes);
@@ -205,7 +223,7 @@ QVector<uint> DFInstance::scan_mem(const QByteArray &needle) {
     return addresses;
 }
 
-bool DFInstance::looks_like_vector_of_pointers(const uint &addr) {
+bool DFInstance::looks_like_vector_of_pointers(const VIRTADDR &addr) {
     int start = read_int(addr + 0x4);
     int end = read_int(addr + 0x8);
     int entries = (end - start) / sizeof(int);
@@ -231,7 +249,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
     emit progress_message(tr("Loading Dwarves"));
     attach();
-    uint creature_vector = m_layout->address("creature_vector");
+    VIRTADDR creature_vector = m_layout->address("creature_vector");
     TRACE << "starting with creature vector" << creature_vector;
     if (!is_valid_address(creature_vector)) {
         LOGW << "Active Memory Layout" << m_layout->filename() << "("
@@ -243,13 +261,13 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     }
 
     TRACE << "adjusted creature vector" << creature_vector + m_memory_correction;
-    QVector<uint> creatures = enumerate_vector(creature_vector + m_memory_correction);
+    QVector<VIRTADDR> creatures = enumerate_vector(creature_vector + m_memory_correction);
     emit progress_range(0, creatures.size()-1);
     TRACE << "FOUND" << creatures.size() << "creatures";
     if (!creatures.empty()) {
         Dwarf *d = 0;
         int i = 0;
-        foreach(uint creature_addr, creatures) {
+        foreach(VIRTADDR creature_addr, creatures) {
             d = Dwarf::get_dwarf(this, creature_addr);
             if (d) {
                 dwarves.append(d);
@@ -297,7 +315,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 void DFInstance::heartbeat() {
     // simple read attempt that will fail if the DF game isn't running a fort,
     // or isn't running at all
-    QVector<uint> creatures = enumerate_vector(
+    QVector<VIRTADDR> creatures = enumerate_vector(
             m_layout->address("creature_vector") + m_memory_correction);
     if (creatures.size() < 1) {
         // no game loaded, or process is gone
@@ -305,7 +323,7 @@ void DFInstance::heartbeat() {
     }
 }
 
-bool DFInstance::is_valid_address(const uint &addr) {
+bool DFInstance::is_valid_address(const VIRTADDR &addr) {
     bool valid = false;
     foreach(MemorySegment *seg, m_regions) {
         if (seg->contains(addr)) {
@@ -316,9 +334,9 @@ bool DFInstance::is_valid_address(const uint &addr) {
     return valid;
 }
 
-QByteArray DFInstance::get_data(const uint &addr, const uint &size) {
+QByteArray DFInstance::get_data(const VIRTADDR &addr, int size) {
     QByteArray ret_val(size, 0); // 0 filled to proper length
-    uint bytes_read = read_raw(addr, size, ret_val);
+    int bytes_read = read_raw(addr, size, ret_val);
     if (bytes_read != size) {
         ret_val.clear();
     }
@@ -326,11 +344,11 @@ QByteArray DFInstance::get_data(const uint &addr, const uint &size) {
 }
 
 //! ahhh convenience
-QString DFInstance::pprint(const uint &addr, const uint &size) {
+QString DFInstance::pprint(const VIRTADDR &addr, int size) {
     return pprint(get_data(addr, size), addr);
 }
 
-QString DFInstance::pprint(const QByteArray &ba, const uint &start_addr) {
+QString DFInstance::pprint(const QByteArray &ba, const VIRTADDR &start_addr) {
     QString out = "    ADDR   | 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F | TEXT\n";
     out.append("------------------------------------------------------------------------\n");
     int lines = ba.size() / 16;
@@ -340,7 +358,7 @@ QString DFInstance::pprint(const QByteArray &ba, const uint &start_addr) {
         lines = 0;
 
     for(int i = 0; i < lines; ++i) {
-        uint offset = start_addr + i * 16;
+        VIRTADDR offset = start_addr + i * 16;
         out.append(hexify(offset));
         out.append(" | ");
         for (int c = 0; c < 16; ++c) {
@@ -363,32 +381,32 @@ QString DFInstance::pprint(const QByteArray &ba, const uint &start_addr) {
     return out;
 }
 
-QVector<uint> DFInstance::find_vectors_in_range(const uint &max_entries,
-                                                const uint &start_address,
-                                                const uint &range_length) {
+QVector<VIRTADDR> DFInstance::find_vectors_in_range(const int &max_entries,
+                                                const VIRTADDR &start_address,
+                                                const int &range_length) {
     QByteArray data = get_data(start_address, range_length);
-    QVector<uint> vectors;
-    uint int1 = 0; // holds the start val
-    uint int2 = 0; // holds the end val
+    QVector<VIRTADDR> vectors;
+    VIRTADDR int1 = 0; // holds the start val
+    VIRTADDR int2 = 0; // holds the end val
 
-    for (uint i = 0; i < range_length; i += 4) {
+    for (int i = 0; i < range_length; i += 4) {
         memcpy(&int1, data.data() + i, 4);
         memcpy(&int2, data.data() + i + 4, 4);
         if (int2 >= int1 && is_valid_address(int1) && is_valid_address(int2)) {
-            uint bytes = int2 - int1;
-            uint entries = bytes / 4;
+            int bytes = int2 - int1;
+            int entries = bytes / 4;
             if (entries > 0 && entries <= max_entries) {
-                uint vector_address = start_address + i - VECTOR_POINTER_OFFSET;
-                QVector<uint> addrs = enumerate_vector(vector_address);
+                VIRTADDR vector_addr = start_address + i - VECTOR_POINTER_OFFSET;
+                QVector<VIRTADDR> addrs = enumerate_vector(vector_addr);
                 bool all_valid = true;
-                foreach(uint vec_entry, addrs) {
+                foreach(VIRTADDR vec_entry, addrs) {
                     if (!is_valid_address(vec_entry)) {
                         all_valid = false;
                         break;
                     }
                 }
                 if (all_valid) {
-                    vectors << vector_address;
+                    vectors << vector_addr;
                 }
             }
         }
@@ -396,9 +414,8 @@ QVector<uint> DFInstance::find_vectors_in_range(const uint &max_entries,
     return vectors;
 }
 
-QVector<uint> DFInstance::find_vectors(int num_entries,
-                                       int fuzz/* =0 */,
-                                       int entry_size/* =4 */) {
+QVector<VIRTADDR> DFInstance::find_vectors(int num_entries, int fuzz/* =0 */,
+                                           int entry_size/* =4 */) {
     /*
     glibc++ does vectors like so...
     |4bytes      | 4bytes    | 4bytes
@@ -409,20 +426,20 @@ QVector<uint> DFInstance::find_vectors(int num_entries,
     ALLOCATOR    |START_ADDRESS|END_ADDRESS|END_ALLOCATOR
     */
     m_stop_scan = false; //! if ever set true, bail from the inner loop
-    QVector<uint> vectors; //! return value collection of vectors found
-    uint int1 = 0; // holds the start val
-    uint int2 = 0; // holds the end val
+    QVector<VIRTADDR> vectors; //! return value collection of vectors found
+    VIRTADDR int1 = 0; // holds the start val
+    VIRTADDR int2 = 0; // holds the end val
 
     // progress reporting
     m_scan_speed_timer->start(500);
     m_memory_remap_timer->stop(); // don't remap segments while scanning
-    uint total_bytes = 0;
+    int total_bytes = 0;
     m_bytes_scanned = 0; // for global timings
     int bytes_scanned = 0; // for progress calcs
     foreach(MemorySegment *seg, m_regions) {
         total_bytes += seg->size;
     }
-    uint report_every_n_bytes = total_bytes / 1000;
+    int report_every_n_bytes = total_bytes / 1000;
     emit scan_total_steps(1000);
     emit scan_progress(0);
 
@@ -441,7 +458,7 @@ QVector<uint> DFInstance::find_vectors(int num_entries,
         if (seg->size % scan_step_size) {
             scan_steps++;
         }
-        uint addr = 0; // the ptr we will read from
+        VIRTADDR addr = 0; // the ptr we will read from
         for(int step = 0; step < scan_steps; ++step) {
             addr = seg->start_addr + (scan_step_size * step);
             //LOGD << "starting scan for vectors at" << hex << addr << "step"
@@ -457,16 +474,16 @@ QVector<uint> DFInstance::find_vectors(int num_entries,
                     //&& is_valid_address(int1)
                     //&& is_valid_address(int2)
                     ) {
-                    uint bytes = int2 - int1;
-                    uint entries = bytes / entry_size;
+                    int bytes = int2 - int1;
+                    int entries = bytes / entry_size;
                     int diff = entries - num_entries;
                     if (qAbs(diff) <= fuzz) {
-                        uint vector_address = addr + offset -
-                                              VECTOR_POINTER_OFFSET;
-                        QVector<uint> addrs = enumerate_vector(vector_address);
+                        VIRTADDR vector_addr = addr + offset -
+                                               VECTOR_POINTER_OFFSET;
+                        QVector<VIRTADDR> addrs = enumerate_vector(vector_addr);
                         diff = addrs.size() - num_entries;
                         if (qAbs(diff) <= fuzz) {
-                            vectors << vector_address;
+                            vectors << vector_addr;
                         }
                     }
                 }
