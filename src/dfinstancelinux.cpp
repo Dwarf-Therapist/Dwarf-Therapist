@@ -135,13 +135,13 @@ QString DFInstanceLinux::read_string(const VIRTADDR &addr) {
     return ret_val;
 }
 
-uint DFInstanceLinux::write_string(const uint &addr, const QString &str) {
+int DFInstanceLinux::write_string(const VIRTADDR &addr, const QString &str) {
     Q_UNUSED(addr);
     Q_UNUSED(str);
     return 0;
 }
 
-uint DFInstanceLinux::write_int(const uint &addr, const int &val) {
+int DFInstanceLinux::write_int(const VIRTADDR &addr, const int &val) {
     return write_raw(addr, sizeof(int), (void*)&val);
 }
 
@@ -224,58 +224,8 @@ int DFInstanceLinux::read_raw(const VIRTADDR &addr, int bytes, QByteArray &buffe
     return bytes_read;
 }
 
-/*
-uint DFInstanceLinux::read_raw(const uint &addr, const uint &bytes, void *buffer) {
-    // try to attach, will be ignored if we're already attached
-    attach();
-
-    // open the memory virtual file for this proc (can only read once
-    // attached and child is stopped
-    QFile mem_file(QString("/proc/%1/mem").arg(m_pid));
-    if (!mem_file.open(QIODevice::ReadOnly)) {
-        LOGE << "Unable to open" << mem_file.fileName();
-        detach();
-        return 0;
-    }
-
-    uint bytes_read = 0; //! tracks how much we've read of what was asked for
-    QByteArray data; // out final memory container
-    ushort failures = 0; // how many read failures have occurred
-    ushort failure_max = 0; // how many times will we retry after a read failure
-
-    // keep going until we've read everything we were asked for
-    while (bytes_read < bytes) {
-        // mem behaves like a normal file, so seek to the next unread offset
-        mem_file.seek(addr + bytes_read);
-        // read the remainder
-        QByteArray tmp = mem_file.read(bytes - data.size());
-        bytes_read += tmp.size();
-        // push the recently read chunk into data
-        data.append(tmp);
-        if (bytes_read == 0) {
-            // failed to read
-            failures++;
-            if (m_layout->is_complete()) {
-                LOGW << "read 0 bytes from" << hex << addr + bytes_read;
-            }
-            if (failures >= failure_max)
-                break;
-        }
-        //qDebug() << "bytes_read:" << bytes_read;
-    }
-    // copy the read data into the provided buffer
-    memcpy(buffer, data.data(), data.size());
-    // don't leave the mem file open
-    mem_file.close();
-
-    // attempt to detach, will be ignored if we're several layers into an attach chain
-    detach();
-    // tell the caller their buffer is ready, with fresh bits from the oven :)
-    return bytes_read;
-}
-*/
-
-uint DFInstanceLinux::write_raw(const uint &addr, const uint &bytes, void *buffer) {
+int DFInstanceLinux::write_raw(const VIRTADDR &addr, const int &bytes,
+                               void *buffer) {
     // try to attach, will be ignored if we're already attached
     attach();
 

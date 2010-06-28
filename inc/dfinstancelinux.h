@@ -41,7 +41,7 @@ public:
     QString read_string(const VIRTADDR &addr);
 
     // Writing
-    int write_raw(const VIRTADDR &addr, const uint &bytes, void *buffer);
+    int write_raw(const VIRTADDR &addr, const int &bytes, void *buffer);
     int write_string(const VIRTADDR &addr, const QString &str);
     int write_int(const VIRTADDR &addr, const int &val);
 
