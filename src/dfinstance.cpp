@@ -46,6 +46,7 @@ DFInstance::DFInstance(QObject* parent)
     , m_heartbeat_timer(new QTimer(this))
     , m_memory_remap_timer(new QTimer(this))
     , m_scan_speed_timer(new QTimer(this))
+    , m_dwarf_race_id(0)
 {
     connect(m_scan_speed_timer, SIGNAL(timeout()),
             SLOT(calculate_scan_rate()));
@@ -244,36 +245,57 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     QVector<Dwarf*> dwarves;
     if (!m_is_ok) {
         LOGW << "not connected";
+        detach();
         return dwarves;
     }
 
-    emit progress_message(tr("Loading Dwarves"));
-    attach();
+    // we're connected, make sure we have good addresses
     VIRTADDR creature_vector = m_layout->address("creature_vector");
-    TRACE << "starting with creature vector" << creature_vector;
+    creature_vector += m_memory_correction;
+    VIRTADDR dwarf_race_index = m_layout->address("dwarf_race_index");
+    dwarf_race_index += m_memory_correction;
+
     if (!is_valid_address(creature_vector)) {
         LOGW << "Active Memory Layout" << m_layout->filename() << "("
                 << m_layout->game_version() << ")" << "contains an invalid"
                 << "creature_vector address. Either you are scanning a new "
                 << "DF version or your config files are corrupted.";
-        detach();
+        return dwarves;
+    }
+    if (!is_valid_address(dwarf_race_index)) {
+        LOGW << "Active Memory Layout" << m_layout->filename() << "("
+                << m_layout->game_version() << ")" << "contains an invalid"
+                << "dwarf_race_index address. Either you are scanning a new "
+                << "DF version or your config files are corrupted.";
         return dwarves;
     }
 
-    TRACE << "adjusted creature vector" << creature_vector + m_memory_correction;
-    QVector<VIRTADDR> creatures = enumerate_vector(creature_vector + m_memory_correction);
-    emit progress_range(0, creatures.size()-1);
-    TRACE << "FOUND" << creatures.size() << "creatures";
-    if (!creatures.empty()) {
+    // both necessary addresses are valid, so let's try to read the creatures
+    LOGD << "loading creatures from " << hexify(creature_vector) <<
+            hexify(creature_vector - m_memory_correction) << "(UNCORRECTED)";
+    LOGD << "dwarf race index" << hexify(dwarf_race_index) <<
+            hexify(dwarf_race_index - m_memory_correction) << "(UNCORRECTED)";
+    emit progress_message(tr("Loading Dwarves"));
+
+    attach();
+    // which race id is dwarven?
+    m_dwarf_race_id = read_word(dwarf_race_index);
+    LOGD << "dwarf race:" << hexify(m_dwarf_race_id);
+
+    QVector<VIRTADDR> entries = enumerate_vector(creature_vector);
+    emit progress_range(0, entries.size()-1);
+    TRACE << "FOUND" << entries.size() << "creatures";
+    if (!entries.empty()) {
         Dwarf *d = 0;
         int i = 0;
-        foreach(VIRTADDR creature_addr, creatures) {
+        foreach(VIRTADDR creature_addr, entries) {
             d = Dwarf::get_dwarf(this, creature_addr);
             if (d) {
                 dwarves.append(d);
-                TRACE << "FOUND DWARF" << creature_addr << d->nice_name();
+                TRACE << "FOUND DWARF" << hexify(creature_addr)
+                        << d->nice_name();
             } else {
-                TRACE << "FOUND OTHER CREATURE" << creature_addr;
+                TRACE << "FOUND OTHER CREATURE" << hexify(creature_addr);
             }
             emit progress_value(i++);
         }
@@ -282,33 +304,8 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         m_is_ok = false;
     }
     detach();
-
-    /*TEST RELATIONSHIPS
-    int relations_found = 0;
-    foreach(Dwarf *d, dwarves) {
-        // get all bytes for this dwarf...
-        qDebug() << "Scanning for ID references in" << d->nice_name() << "(" << hex << d->id() << ")";
-        QByteArray data = get_data(d->address(), 0x7e8);
-        foreach(Dwarf *other_d, dwarves) {
-            if (other_d == d)
-                continue; // let's hope there are no pointers to ourselves...
-            int offset = 0;
-            while (offset < data.size()) {
-                int idx = data.indexOf(encode(other_d->id()), offset);
-                if (idx != -1) {
-                    qDebug() << "\t\tOFFSET:" << hex << idx << "Found ID of" << other_d->nice_name() << "(" << other_d->id() << ")";
-                    relations_found++;
-                    offset = idx + 1;
-                } else {
-                    offset = data.size();
-                }
-            }
-        }
-    }
-    LOGD << "relations found" << relations_found;
-    */
-
-    LOGI << "found" << dwarves.size() << "dwarves out of" << creatures.size() << "creatures";
+    LOGI << "found" << dwarves.size() << "dwarves out of" << entries.size()
+            << "creatures";
     return dwarves;
 }
 

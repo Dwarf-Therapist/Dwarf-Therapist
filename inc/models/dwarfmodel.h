@@ -62,6 +62,7 @@ public:
         GB_HIGHEST_SKILL,
         GB_TOTAL_SKILL_LEVELS,
         GB_ASSIGNED_LABORS,
+        GB_HAS_NICKNAME,
         GB_TOTAL
     } GROUP_BY;
     typedef enum {

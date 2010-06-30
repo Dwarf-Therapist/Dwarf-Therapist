@@ -149,6 +149,8 @@ MainWindow::MainWindow(QWidget *parent)
                              DwarfModel::GB_TOTAL_SKILL_LEVELS);
     ui->cb_group_by->addItem(tr("Total Assigned Labors"),
                              DwarfModel::GB_ASSIGNED_LABORS);
+    ui->cb_group_by->addItem(tr("Has Nickname"),
+                             DwarfModel::GB_HAS_NICKNAME);
 
     read_settings();
     draw_professions();
@@ -241,6 +243,14 @@ void MainWindow::connect_to_df() {
                 << m_df->memory_layout()->game_version() << "established.";
         m_lbl_status->setText(tr("Connected to %1")
                               .arg(m_df->memory_layout()->game_version()));
+        set_interface_enabled(true);
+        connect(m_df, SIGNAL(progress_message(QString)),
+                SLOT(set_progress_message(QString)));
+        connect(m_df, SIGNAL(progress_range(int,int)),
+                SLOT(set_progress_range(int,int)));
+        connect(m_df, SIGNAL(progress_value(int)),
+                SLOT(set_progress_value(int)));
+
         if (m_df->memory_layout()->is_complete()) {
             // if the memory layout is still being mapped don't read all this
             // in yet
@@ -252,13 +262,6 @@ void MainWindow::connect_to_df() {
                 read_dwarves();
             }
         }
-        connect(m_df, SIGNAL(progress_message(QString)),
-                SLOT(set_progress_message(QString)));
-        connect(m_df, SIGNAL(progress_range(int,int)),
-                SLOT(set_progress_range(int,int)));
-        connect(m_df, SIGNAL(progress_value(int)),
-                SLOT(set_progress_value(int)));
-        set_interface_enabled(true);
     }
 }
 

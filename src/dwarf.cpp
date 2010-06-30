@@ -451,17 +451,15 @@ QString Dwarf::happiness_name(DWARF_HAPPINESS happiness) {
 
 Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     MemoryLayout *mem = df->memory_layout();
-    TRACE << "attempting to load dwarf at" << addr << "using memory layout" << mem->game_version();
-
-    uint dwarf_race_index = mem->address("dwarf_race_index");
-    WORD dwarf_race_id = df->read_word(dwarf_race_index + df->get_memory_correction());
+    TRACE << "attempting to load dwarf at" << addr << "using memory layout"
+            << mem->game_version();
 
     quint32 flags1 = df->read_addr(addr + mem->dwarf_offset("flags1"));
     quint32 flags2 = df->read_addr(addr + mem->dwarf_offset("flags2"));
     WORD race_id = df->read_word(addr + mem->dwarf_offset("race"));
 
-    if (race_id != dwarf_race_id) { // we only care about dwarfs
-        TRACE << "Ignoring non-dwarf creature with racial ID of " << hexify(race_id);
+    if (race_id != df->dwarf_race_id()) { // we only care about dwarfs
+        TRACE << "Ignoring creature with race ID of " << hex << race_id;
         return 0;
     }
     Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
@@ -475,7 +473,8 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
         foreach(uint flag, flags.uniqueKeys()) {
             QString reason = flags[flag];
             if ((flags1 & flag) != flag) {
-                LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to be" << reason;
+                LOGD << "Ignoring" << unverified_dwarf->nice_name() <<
+                        "who appears to be" << reason;
                 delete unverified_dwarf;
                 return 0;
             }
@@ -485,7 +484,8 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
         foreach(uint flag, flags.uniqueKeys()) {
             QString reason = flags[flag];
             if ((flags1 & flag) == flag) {
-                LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to be" << reason;
+                LOGD << "Ignoring" << unverified_dwarf->nice_name()
+                        << "who appears to be" << reason;
                 delete unverified_dwarf;
                 return 0;
             }
@@ -495,13 +495,15 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
         foreach(uint flag, flags.uniqueKeys()) {
             QString reason = flags[flag];
             if ((flags2 & flag) == flag) {
-                LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to be" << reason;
+                LOGD << "Ignoring" << unverified_dwarf->nice_name()
+                        << "who appears to be" << reason;
                 delete unverified_dwarf;
                 return 0;
             }
         }
 
-        //HACK: ugh... so ugly, but this seems to be the best way to filter out kidnapped babies
+        // HACK: ugh... so ugly, but this seems to be the best way to filter
+        // out kidnapped babies
         short baby_id = -1;
         foreach(Profession *p, GameDataReader::ptr()->get_professions()) {
             if (p->name(true) == "Baby") {
@@ -512,13 +514,13 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
         if (unverified_dwarf->raw_profession() == baby_id) {
             if ((flags1 & 0x200) != 0x200) {
                 // kidnapped flag? seems like it
-                LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to be a kidnapped baby";
+                LOGD << "Ignoring" << unverified_dwarf->nice_name() <<
+                        "who appears to be a kidnapped baby";
                 delete unverified_dwarf;
                 return 0;
             }
         }
     }
-
     return unverified_dwarf;
 }
 

@@ -44,6 +44,7 @@ public:
     quint32 get_memory_correction() {return m_memory_correction;}
     VIRTADDR get_base_address() {return m_base_addr;}
     bool is_ok() {return m_is_ok;}
+    WORD dwarf_race_id() {return m_dwarf_race_id;}
 
     // brute force memory scanning methods
     bool is_valid_address(const VIRTADDR &addr);
@@ -126,6 +127,7 @@ protected:
     QTimer *m_heartbeat_timer;
     QTimer *m_memory_remap_timer;
     QTimer *m_scan_speed_timer;
+    WORD m_dwarf_race_id;
 
     /*! this hash will hold a map of all loaded and valid memory layouts found
         on disk, the key is a QString of the checksum since other OSs will use

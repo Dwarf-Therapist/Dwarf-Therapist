@@ -225,6 +225,15 @@ void DwarfModel::build_rows() {
                 m_grouped_dwarves[tr("%1 Assigned Labors")
                                   .arg(d->total_assigned_labors())].append(d);
                 break;
+            case GB_HAS_NICKNAME:
+                {
+                    if (d->nickname().isEmpty()) {
+                        m_grouped_dwarves[tr("No Nickname")].append(d);
+                    } else {
+                        m_grouped_dwarves[tr("Has Nickname")].append(d);
+                    }
+                }
+                break;
         }
     }
 
