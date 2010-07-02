@@ -24,12 +24,8 @@ http://www.opensource.org/licenses/mit-license.php
 */
 #include "truncatingfilelogger.h"
 
-TruncatingFileLogger::TruncatingFileLogger(const QString &path, LOG_LEVEL lvl,
-                                           QObject *parent)
+LogManager::LogManager(QObject *parent)
     : QObject(parent)
-    , m_path(path)
-    , m_minimum_level(lvl)
-    , m_file(0)
 {
     // setup names for the logging levels
     m_level_names[LL_TRACE] = tr("TRACE");
@@ -38,7 +34,83 @@ TruncatingFileLogger::TruncatingFileLogger(const QString &path, LOG_LEVEL lvl,
     m_level_names[LL_WARN] = tr("WARNING");
     m_level_names[LL_ERROR] = tr("ERROR");
     m_level_names[LL_FATAL] = tr("FATAL");
+}
 
+TruncatingFileLogger *LogManager::add_logger(const QString &path) {
+    TruncatingFileLogger *ret_val = get_logger(path);
+    if (ret_val == NULL) {
+        ret_val = new TruncatingFileLogger(path, this);
+        m_loggers.insert(path, ret_val);
+    }
+    return ret_val;
+}
+
+TruncatingFileLogger *LogManager::get_logger(const QString &path) {
+    return m_loggers.value(path, NULL);
+}
+
+LogAppender *LogManager::add_appender(const QString &module_name,
+                                      TruncatingFileLogger *logger,
+                                      LOG_LEVEL min_level) {
+    LogAppender *ret_val = get_appender(module_name);
+    if (ret_val == NULL) {
+        ret_val = new LogAppender(module_name, logger, min_level);
+        m_appenders.insert(module_name, ret_val);
+    }
+    return ret_val;
+}
+
+LogAppender *LogManager::get_appender(const QString &module_name) {
+    return m_appenders.value(module_name, NULL);
+}
+
+
+QString LogManager::level_name(LOG_LEVEL lvl) {
+    return m_level_names.value(lvl, QString("%1").arg(lvl));
+}
+
+/**************** APPENDER **********************/
+LogAppender::LogAppender(const QString &module, TruncatingFileLogger *logger,
+                         LOG_LEVEL min_level, LogAppender *parent_appender)
+    : QObject(NULL)
+    , m_module_name(module)
+    , m_minimum_level(min_level)
+    , m_parent_appender(parent_appender)
+    , m_logger(logger)
+{
+}
+
+QString LogAppender::module_name() {
+    if (m_parent_appender) {
+        return QString("%1.%2").arg(m_parent_appender->module_name())
+                .arg(m_module_name);
+    }
+    return m_module_name;
+}
+
+void LogAppender::set_minimum_level(LOG_LEVEL lvl) {
+    m_minimum_level = lvl;
+    //LOGI << "Minimum log level set to" << m_manager->level_name(lvl);
+}
+
+void LogAppender::write(const QString &message, LOG_LEVEL lvl,
+                        const QString &file, int lineno,
+                        const QString &function) {
+    QString out = QString("%1\t%2\t%3")
+                  .arg(DT->get_log_manager()->level_name(lvl))
+                  .arg(module_name())
+                  .arg(message);
+    if (m_logger) {
+        m_logger->write(out, file, lineno, function);
+    }
+}
+
+/**************** LOGGER **********************/
+TruncatingFileLogger::TruncatingFileLogger(const QString &path, QObject *parent)
+    : QObject(parent)
+    , m_path(path)
+    , m_file(0)
+{
     QDir d;
     if (!d.isAbsolutePath(m_path)) {
         m_path = d.absoluteFilePath(path);
@@ -50,49 +122,36 @@ TruncatingFileLogger::TruncatingFileLogger(const QString &path, LOG_LEVEL lvl,
                       QIODevice::Text)) {
         qCritical() << "Could not open logfile for writing!"
                 << m_file->errorString();
-    } else {
-        write(LL_INFO, tr("Log Opened Successfully"));
     }
 }
 
 TruncatingFileLogger::~TruncatingFileLogger() {
     if (m_file) {
         if (m_file->isOpen()) {
-            write(LL_INFO, tr("Closing log"));
             m_file->flush();
             m_file->close();
         }
-        m_file->deleteLater();
+        m_file->deleteLater(); // the object not the file
     }
 }
 
-QString TruncatingFileLogger::level_name(LOG_LEVEL lvl) {
-    return m_level_names.value(lvl, QString("%1").arg(lvl));
-}
-
-void TruncatingFileLogger::set_minimum_level(LOG_LEVEL lvl) {
-    m_minimum_level = lvl;
-    LOGI << "Minimum log level set to" << level_name(lvl);
-}
-
-void TruncatingFileLogger::write(LOG_LEVEL lvl, const QString &message,
+void TruncatingFileLogger::write(const QString &message,
                                  const QString &file, int lineno,
                                  const QString &func) {
-    if (m_file && m_file->isWritable() && lvl >= m_minimum_level) {
+    if (m_file && m_file->isWritable()) {
         QString stripped = message.trimmed();
         // make a string for this log level
         QDateTime now = QDateTime::currentDateTime();
-        QString msg("%1 %2\t%3%4%5\n");
+        QString msg("%1 %2%3%4\n");
         msg = msg.arg(now.toString("yyyy-MMM-dd hh:mm:ss.zzz"))
-              .arg(level_name(lvl))
               .arg(stripped).toAscii();
 
         QString location;
         QString function;
-        if (lvl != LL_INFO && !file.isEmpty()) {
+        if (!file.isEmpty()) {
             location = QString(" [%1:%2]").arg(file).arg(lineno);
         }
-        if (lvl > LL_INFO && !func.isEmpty()) {
+        if (!func.isEmpty()) {
             function = QString(" (%1)").arg(func);
         }
         msg = msg.arg(location);
@@ -102,9 +161,9 @@ void TruncatingFileLogger::write(LOG_LEVEL lvl, const QString &message,
     }
 }
 
-Streamer::Streamer(TruncatingFileLogger *logger, LOG_LEVEL lvl, const QString &file,
-         int lineno, const QString &func)
-    : m_logger(logger)
+Streamer::Streamer(LogAppender *appender, LOG_LEVEL lvl, const QString &file,
+                   int lineno, const QString &func)
+    : m_appender(appender)
     , m_level(lvl)
     , m_buffer(QString())
     , m_dbg(&m_buffer)
@@ -114,5 +173,13 @@ Streamer::Streamer(TruncatingFileLogger *logger, LOG_LEVEL lvl, const QString &f
 {}
 
 void Streamer::write() {
-    m_logger->write(m_level, m_buffer, m_file, m_lineno, m_function);
+    if (m_appender) {
+        m_appender->write(m_buffer, m_level, m_file, m_lineno, m_function);
+    } else {
+        // this should be fatal to prevent us from making lots of bogus
+        // appender names
+        qCritical() << "LOG ENTRY FROM" << m_file << m_lineno << m_function <<
+                "Has no valid log appender!";
+        qFatal("FATAL ERROR: invalid log appender");
+    }
 }

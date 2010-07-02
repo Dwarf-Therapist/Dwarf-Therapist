@@ -36,7 +36,7 @@ class QSettings;
 class CustomProfession;
 class Dwarf;
 class DFInstance;
-class TruncatingFileLogger;
+class LogManager;
 
 class DwarfTherapist : public QApplication {
     Q_OBJECT
@@ -58,7 +58,7 @@ public:
     QString get_generic_word(const uint &offset) {return m_generic_words.value(offset, "UNKNOWN");}
     QString get_dwarf_word(const uint &offset) {return m_dwarf_words.value(offset, get_generic_word(offset));}
     bool labor_cheats_allowed() {return m_allow_labor_cheats;}
-    TruncatingFileLogger *get_logger() {return m_logger;}
+    LogManager *get_log_manager() {return m_log_mgr;}
 
     public slots:
         void add_custom_profession();
@@ -79,7 +79,7 @@ private:
     OptionsMenu *m_options_menu;
     bool m_reading_settings;
     bool m_allow_labor_cheats;
-    TruncatingFileLogger *m_logger;
+    LogManager *m_log_mgr;
 
     void setup_logging();
     void load_translator();

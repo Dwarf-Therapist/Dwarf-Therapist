@@ -41,6 +41,10 @@ typedef enum {
     LL_FATAL    = 50
 } LOG_LEVEL;
 
+class TruncatingFileLogger;
+class LogAppender;
+class LogManager;
+
 /*! simple class that macros create on the stack. It works with an internal
   QDebug to format most types nicely into an internal string buffer. Its dtor
   write its buffer to the active logger. So you can make these on the stack
@@ -48,13 +52,13 @@ typedef enum {
 */
 class Streamer {
 public:
-    explicit Streamer(TruncatingFileLogger *logger, LOG_LEVEL lvl,
+    explicit Streamer(LogAppender *appender, LOG_LEVEL lvl,
                       const QString &file, int lineno, const QString &func);
     ~Streamer() {write();}
     QDebug &stream() {return m_dbg;}
 private:
     void write();
-    TruncatingFileLogger *m_logger; //! parent logger
+    LogAppender *m_appender; //! parent logger
     LOG_LEVEL m_level; //! our logging level
     QString m_buffer; //! string storage
     QDebug m_dbg; //! our streamer backed by m_buffer
@@ -73,38 +77,71 @@ private:
 class TruncatingFileLogger : public QObject {
 Q_OBJECT
 public:
-    explicit TruncatingFileLogger(const QString &path, LOG_LEVEL lvl,
-                                  QObject *parent = 0);
+    explicit TruncatingFileLogger(const QString &path, QObject *parent = 0);
     virtual ~TruncatingFileLogger();
-    LOG_LEVEL minimum_level() {return m_minimum_level;}
-    void set_minimum_level(LOG_LEVEL lvl);
-    void write(LOG_LEVEL lvl, const QString &message,
-               const QString &file = QString(), int lineno = -1,
-               const QString &function = QString());
-    QString level_name(LOG_LEVEL lvl);
-
+    void write(const QString &message, const QString &file = QString(),
+               int lineno = -1, const QString &function = QString());
 private:
     QString m_path; // absolute path to the current logfile
-    LOG_LEVEL m_minimum_level; // ignore any messages below this level
     QFile *m_file; // the handle we use to log to
-    QMap<LOG_LEVEL, QString> m_level_names;
 };
 
-// handy macro for line numbers
+class LogAppender : public QObject {
+    Q_OBJECT
+public:
+    explicit LogAppender(const QString &module, TruncatingFileLogger *logger,
+                         LOG_LEVEL min_level, LogAppender *parent_appender = 0);
+    virtual QString module_name();
+    LOG_LEVEL minimum_level() {return m_minimum_level;}
+    void set_minimum_level(LOG_LEVEL lvl);
+    void write(const QString &message, LOG_LEVEL lvl,
+               const QString &file = QString(), int lineno = -1,
+               const QString &function = QString());
+private:
+    QString m_module_name;
+    LOG_LEVEL m_minimum_level; // ignore any messages below this level
+    LogAppender *m_parent_appender;
+    TruncatingFileLogger *m_logger;
+};
+
+/*! class for managing the various active appenders and loggers and their
+  runtime levels
+  */
+class LogManager : public QObject {
+    Q_OBJECT
+public:
+    explicit LogManager(QObject *parent = 0);
+    TruncatingFileLogger *add_logger(const QString &path);
+    TruncatingFileLogger *get_logger(const QString &path=QString());
+
+    LogAppender *add_appender(const QString &module_name,
+                              TruncatingFileLogger *logger,
+                              LOG_LEVEL min_level);
+    LogAppender *get_appender(const QString &module_name);
+
+    QString level_name(LOG_LEVEL lvl);
+private:
+    QHash<QString, TruncatingFileLogger*> m_loggers;
+    QHash<QString, LogAppender*> m_appenders;
+    QHash<LOG_LEVEL, QString> m_level_names;
+};
+
 
 // this will go get the opened log from the main application
-#define LOG   qobject_cast<DwarfTherapist*>(qApp)->get_logger()
 
-// macro to get a log for a log level only if that level won't be ignored
-#define GET_LOG_BY_LEVEL(level) \
-if (LOG->minimum_level() > level); \
-else Streamer(LOG, level, __FILE__, __LINE__, __FUNCTION__).stream()
+#define GET_APPENDER(module) DT->get_log_manager()->get_appender(module)
 
-#define TRACE GET_LOG_BY_LEVEL(LL_TRACE)
-#define LOGD GET_LOG_BY_LEVEL(LL_DEBUG)
-#define LOGI GET_LOG_BY_LEVEL(LL_INFO)
-#define LOGW GET_LOG_BY_LEVEL(LL_WARN)
-#define LOGE GET_LOG_BY_LEVEL(LL_ERROR)
-#define FATAL GET_LOG_BY_LEVEL(LL_FATAL)
+#define GET_LOG_BY_LEVEL_AND_MODULE(level, module) \
+if (GET_APPENDER(module) && GET_APPENDER(module)->minimum_level() > level); \
+else Streamer(GET_APPENDER(module), level, __FILE__, __LINE__, __FUNCTION__).stream()
+
+#define TRACE GET_LOG_BY_LEVEL_AND_MODULE(LL_TRACE, "core")
+#define LOGD GET_LOG_BY_LEVEL_AND_MODULE(LL_DEBUG, "core")
+#define LOGI GET_LOG_BY_LEVEL_AND_MODULE(LL_INFO, "core")
+#define LOGW GET_LOG_BY_LEVEL_AND_MODULE(LL_WARN, "core")
+#define LOGE GET_LOG_BY_LEVEL_AND_MODULE(LL_ERROR, "core")
+#define FATAL GET_LOG_BY_LEVEL_AND_MODULE(LL_FATAL, "core")
+
+#define LOG_D(module) GET_LOG_BY_LEVEL_AND_MODULE(LL_DEBUG, module)
 
 #endif // TRUNCATINGFILELOGGER_H

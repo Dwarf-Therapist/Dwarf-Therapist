@@ -42,7 +42,7 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     , m_options_menu(0)
     , m_reading_settings(false)
     , m_allow_labor_cheats(false)
-    , m_logger(0)
+    , m_log_mgr(0)
 {
     setup_logging();
     load_translator();
@@ -82,18 +82,31 @@ void DwarfTherapist::setup_logging() {
     // debug logging on by default for the early builds...
     debug_logging = true;
 
-    //setup logging
-    //applicationDirPath()
-    m_logger = new TruncatingFileLogger("log/run.log", LL_TRACE, this);
-    Version v; // current version
-    LOGI << "Dwarf Therapist" << v.to_string() << "starting normally.";
     LOG_LEVEL min_level = LL_INFO;
     if (trace_logging) {
         min_level = LL_TRACE;
     } else if (debug_logging) {
         min_level = LL_DEBUG;
     }
-    m_logger->set_minimum_level(min_level);
+
+    //setup logging
+    m_log_mgr = new LogManager(this);
+    TruncatingFileLogger *log = m_log_mgr->add_logger("log/run.log");
+    if (log) {
+        LogAppender *app = m_log_mgr->add_appender("core", log, LL_TRACE);
+        if (app) {
+            Version v; // current version
+            LOGI << "Dwarf Therapist" << v.to_string() << "starting normally.";
+            //app->set_minimum_level(min_level);
+            app->set_minimum_level(LL_TRACE);
+        } else {
+            qCritical() << "Could not open logfile!";
+            qApp->exit(1);
+        }
+    } else {
+        qCritical() << "Could not open logfile!";
+        qApp->exit(1);
+    }
 }
 
 void DwarfTherapist::load_translator() {
