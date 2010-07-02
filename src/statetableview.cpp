@@ -170,8 +170,10 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
         Dwarf *d = m_model->get_dwarf_by_id(id);
         m.addActions(d->get_actions());
         m.addSeparator();
+#ifndef Q_WS_X11
         m.addAction(tr("Set Nickname..."), this, SLOT(set_nickname()));
         m.addSeparator();
+#endif
 
         QMenu sub(&m);
         sub.setTitle(tr("Custom Professions"));
