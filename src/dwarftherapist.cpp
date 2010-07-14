@@ -98,7 +98,7 @@ void DwarfTherapist::setup_logging() {
             Version v; // current version
             LOGI << "Dwarf Therapist" << v.to_string() << "starting normally.";
             //app->set_minimum_level(min_level);
-            app->set_minimum_level(LL_TRACE);
+            app->set_minimum_level(min_level);
         } else {
             qCritical() << "Could not open logfile!";
             qApp->exit(1);
