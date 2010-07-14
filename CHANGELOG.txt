@@ -1,10 +1,17 @@
+RELEASE 0.5.7 (July 13, 2010)
+CHANGES SINCE 0.5.6
+===============================================================================
+MAJOR CHANGES:
+ * Support for 0.31.10 (graphics + legacy versions)
+
+ 
 RELEASE 0.5.6 (June 29, 2010)
 CHANGES SINCE 0.5.5
 ===============================================================================
 MAJOR CHANGES:
- None (BUGFIX RELEASE)
+ * None (BUGFIX RELEASE)
 MINOR CHANGES:
- * * Added group by nickname or no nickname (Fixes issue 262)
+ * Added group by nickname or no nickname (Fixes issue 262)
 BUG FIXES:
  * Fixed incorrect warning about no fort loaded when a fort was actually loaded 
    (Fixes issue 261)
