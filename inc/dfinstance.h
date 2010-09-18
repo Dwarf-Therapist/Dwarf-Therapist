@@ -90,9 +90,9 @@ public:
 
     // Windows string offsets
 #ifdef Q_WS_WIN
-    static const int STRING_BUFFER_OFFSET = 0;
-    static const int STRING_LENGTH_OFFSET = 16;
-    static const int STRING_CAP_OFFSET = 20;
+    static const int STRING_BUFFER_OFFSET = 4;  // Default value for older windows releases
+    static const int STRING_LENGTH_OFFSET = 16; // Relative to STRING_BUFFER_OFFSET
+    static const int STRING_CAP_OFFSET = 20;    // Relative to STRING_BUFFER_OFFSET
     static const int VECTOR_POINTER_OFFSET = 4;
 #endif
 #ifdef Q_WS_X11

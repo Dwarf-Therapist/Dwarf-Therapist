@@ -13,6 +13,9 @@ public:
     QString checksum() {return m_checksum;}
     uint address(const QString &key) {return m_addresses.value(key, -1);}
     uint offset(const QString &key) {return m_offsets.value(key, -1);}
+    uint string_buffer_offset();
+    uint string_length_offset();
+    uint string_cap_offset();
     uint dwarf_offset(const QString &key) {
         return m_dwarf_offsets.value(key, -1);
     }

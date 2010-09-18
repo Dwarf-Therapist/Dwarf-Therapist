@@ -105,9 +105,9 @@ QVector<VIRTADDR> DFInstanceWindows::enumerate_vector(const VIRTADDR &addr) {
 }
 
 QString DFInstanceWindows::read_string(const uint &addr) {
-    int len = read_int(addr + STRING_LENGTH_OFFSET);
-    int cap = read_int(addr + STRING_CAP_OFFSET);
-    VIRTADDR buffer_addr = addr + STRING_BUFFER_OFFSET;
+    int len = read_int(addr + memory_layout()->string_length_offset());
+    int cap = read_int(addr + memory_layout()->string_cap_offset());
+    VIRTADDR buffer_addr = addr + memory_layout()->string_buffer_offset();
     if (cap >= 16)
         buffer_addr = read_addr(buffer_addr);
 
@@ -142,13 +142,13 @@ int DFInstanceWindows::write_string(const VIRTADDR &addr, const QString &str) {
     // TODO, don't write strings longer than 15 characters to the string
     // unless it has already been expanded to a bigger allocation
 
-    int cap = read_int(addr + STRING_CAP_OFFSET);
-    VIRTADDR buffer_addr = addr + STRING_BUFFER_OFFSET;
+    int cap = read_int(addr + memory_layout()->string_cap_offset());
+    VIRTADDR buffer_addr = addr + memory_layout()->string_buffer_offset();
     if( cap >= 16 )
         buffer_addr = read_addr(buffer_addr);
 
     int len = qMin<int>(str.length(), cap);
-    write_int(addr + STRING_LENGTH_OFFSET, len);
+    write_int(addr + memory_layout()->string_length_offset(), len);
 
     CP437Codec *codec = new CP437Codec;
     QByteArray data = codec->fromUnicode(str);

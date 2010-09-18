@@ -1,0 +1,16 @@
+ 1. Update version in defines.h
+ 2. Compile release version of Dwarf Therapist
+	a. You may have to do a clean first to pick up the new version number
+	b. Verify the version is updated
+ 3. Update CHANGELOG.txt (Add new entry)
+ 4. Update README.txt (Update version + Copyright)
+ 5. Update version in google_app/versionhandler.py
+ 6. Double check the new Memory Layouts for typos!
+ 7. Repackage Zip File (Use previous version)
+	- Also delete release.log
+ 8. Check-in code changes
+ 9. Post Zip File
+	a. Make the new Zip File featured and add the following tags:
+		Type-Archive, OpSys-Windows, Featured
+	b. Remove the featured tag from the previous Zip file
+10. Update SupportedGameVersions Wiki page

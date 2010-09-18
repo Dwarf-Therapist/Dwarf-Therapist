@@ -1,4 +1,15 @@
-RELEASE 0.6.0 (September 16, 2010)
+RELEASE 0.6.1 (September 18, 2010)
+CHANGES SINCE 0.6.0
+===============================================================================
+MAJOR CHANGES:
+ * Official Support for 0.31.11 (graphics + legacy versions)
+ * Official Support for 0.31.12 (graphics + legacy versions)
+BUG FIXES:
+ * Fixed backward compatibility with previous versions of Dwarf Fortress
+   (Fixes issue 285)
+
+   
+RELEASE 0.6.0 (September 17, 2010)
 CHANGES SINCE 0.5.7
 ===============================================================================
 MAJOR CHANGES:

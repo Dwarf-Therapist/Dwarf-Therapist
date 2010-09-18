@@ -3,6 +3,7 @@
 #include "gamedatareader.h"
 #include "utils.h"
 #include "truncatingfilelogger.h"
+#include "dfinstance.h"
 
 MemoryLayout::MemoryLayout(const QString &filename)
     : m_filename(filename)
@@ -84,3 +85,19 @@ void MemoryLayout::read_group(const QString &group, AddressHash &map) {
     }
     m_data->endGroup();
 }
+
+uint MemoryLayout::string_buffer_offset() {
+    return m_offsets.value("string_buffer_offset", DFInstance::STRING_BUFFER_OFFSET);
+}
+
+uint MemoryLayout::string_length_offset() {
+    return string_buffer_offset() +
+            m_offsets.value("string_length_offset", DFInstance::STRING_LENGTH_OFFSET);
+}
+
+uint MemoryLayout::string_cap_offset() {
+    return string_buffer_offset() +
+            m_offsets.value("string_cap_offset", DFInstance::STRING_CAP_OFFSET);
+}
+
+
