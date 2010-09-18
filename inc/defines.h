@@ -34,11 +34,11 @@ THE SOFTWARE.
 #endif
 
 #ifndef DT_VERSION_MINOR
-    #define DT_VERSION_MINOR 5
+    #define DT_VERSION_MINOR 6
 #endif
 
 #ifndef DT_VERSION_PATCH
-    #define DT_VERSION_PATCH 7
+    #define DT_VERSION_PATCH 0
 #endif
 
 #define DEFAULT_CELL_SIZE 16
