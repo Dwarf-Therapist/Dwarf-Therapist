@@ -97,10 +97,14 @@ public:
 #endif
 #ifdef Q_WS_X11
     static const int STRING_BUFFER_OFFSET = 0;
+    static const int STRING_LENGTH_OFFSET = 0; // Dummy value
+    static const int STRING_CAP_OFFSET = 0;    // Dummy value
     static const int VECTOR_POINTER_OFFSET = 0;
 #endif
 #ifdef Q_WS_MAC
     static const int STRING_BUFFER_OFFSET = 0;
+    static const int STRING_LENGTH_OFFSET = 0; // Dummy value
+    static const int STRING_CAP_OFFSET = 0;    // Dummy value
     static const int VECTOR_POINTER_OFFSET = 0;
 #endif
 
