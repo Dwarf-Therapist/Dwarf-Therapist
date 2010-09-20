@@ -8,7 +8,7 @@
  6. Double check the new Memory Layouts for typos!
  7. Repackage Zip File (Use previous version)
 	- Also delete release.log
- 8. Check-in code changes
+ 8. Check-in code changes & create tag
  9. Post Zip File
 	a. Make the new Zip File featured and add the following tags:
 		Type-Archive, OpSys-Windows, Featured
