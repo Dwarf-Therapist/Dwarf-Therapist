@@ -30,6 +30,7 @@ http://www.opensource.org/licenses/mit-license.php
 #include "truncatingfilelogger.h"
 #include "gamedatareader.h"
 #include "utils.h"
+#include "memorylayout.h"
 
 class PositionVectorSearchJob : public ScannerJob {
     Q_OBJECT
@@ -70,7 +71,7 @@ public:
             foreach(uint hit, needle_hits) {
                 // all we found was a null terminated c-string, make sure if
                 // we back up we find a valid std::string
-                uint hit_addr = hit - DFInstance::STRING_BUFFER_OFFSET;
+                uint hit_addr = hit - m_df->memory_layout()->string_buffer_offset();
                 QString hit_str = m_df->read_string(hit_addr);
                 if (hit_str != needle) {
                     continue; // bail out this was just a c-string hit
@@ -92,7 +93,7 @@ public:
                     // distance from the TOKEN to the name buffer
                     uint token_addr = hit_addr - bytes_to_backtrack
                                       + token_offset
-                                      - DFInstance::STRING_BUFFER_OFFSET;
+                                      - m_df->memory_layout()->string_buffer_offset();
                     QString token_str = m_df->read_string(token_addr);
                     if (token_str != token) {
                         continue; // bail out this was just a c-string hit

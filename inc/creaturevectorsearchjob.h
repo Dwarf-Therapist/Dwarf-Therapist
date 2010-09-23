@@ -31,6 +31,7 @@ http://www.opensource.org/licenses/mit-license.php
 #include "truncatingfilelogger.h"
 #include "gamedatareader.h"
 #include "utils.h"
+#include "memorylayout.h"
 
 class CreatureVectorSearchJob : public ScannerJob {
     Q_OBJECT
@@ -64,7 +65,7 @@ public slots:
             LOGD << "FOUND NICKNAME" << hexify(nickname_buf);
             foreach(uint nickname_str, m_df->scan_mem(encode(nickname_buf))) {
                 uint possible_addr = nickname_str - dwarf_nickname_offset -
-                                     DFInstance::STRING_BUFFER_OFFSET;
+                                     m_df->memory_layout()->string_buffer_offset();
 
                 LOGD << "DWARF POINTER SHOULD BE AT:" << hexify(possible_addr);
                 foreach(uint dwarf, m_df->scan_mem(encode(possible_addr))) {

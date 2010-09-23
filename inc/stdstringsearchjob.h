@@ -30,6 +30,7 @@ http://www.opensource.org/licenses/mit-license.php
 #include "defines.h"
 #include "truncatingfilelogger.h"
 #include "utils.h"
+#include "memorylayout.h"
 
 class StdStringSearchJob : public ScannerJob {
     Q_OBJECT
@@ -81,7 +82,7 @@ public:
                     foreach (VIRTADDR ptr, m_df->scan_mem(encode(str_buf))) {
                         // found a ptr to the string buffer, so back up to what
                         // should be the start of the std::string object
-                        VIRTADDR str_ptr = ptr - m_df->STRING_BUFFER_OFFSET;
+                        VIRTADDR str_ptr = ptr - m_df->memory_layout()->string_buffer_offset();
                         QString real_str = m_df->read_string(str_ptr);
                         LOGD << "found real str:" << real_str;
                         if (real_str.toAscii() == m_needle) {
@@ -94,7 +95,7 @@ public:
                     }
                 } else {
                     emit found_address(m_needle,
-                                       str_buf - m_df->STRING_BUFFER_OFFSET);
+                                       str_buf - m_df->memory_layout()->string_buffer_offset());
                 }
             }
             emit quit();
