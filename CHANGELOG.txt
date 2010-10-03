@@ -1,3 +1,10 @@
+RELEASE 0.6.2 (October 3, 2010)
+CHANGES SINCE 0.6.2
+===============================================================================
+MAJOR CHANGES:
+ * Support for 0.31.15 (graphics + legacy versions)
+ 
+
 RELEASE 0.6.2 (September 13, 2010)
 CHANGES SINCE 0.6.1
 ===============================================================================
