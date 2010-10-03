@@ -7,7 +7,7 @@
 
 MemoryLayout::MemoryLayout(const QString &filename)
     : m_filename(filename)
-    , m_checksum(0)
+    , m_checksum("0")
     , m_data(0)
     , m_complete(true)
 {
