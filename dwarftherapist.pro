@@ -105,7 +105,9 @@ HEADERS += inc/win_structs.h \
     inc/dwarfraceindexsearchjob.h \
     inc/creaturevectorsearchjob.h \
     inc/positionvectorsearchjob.h \
-    inc/stdstringsearchjob.h
+    inc/stdstringsearchjob.h \
+    inc/selectparentlayoutdialog.h \
+    inc/layoutcreator.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -146,7 +148,9 @@ SOURCES += src/viewmanager.cpp \
     src/docks/skilllegenddock.cpp \
     src/docks/gridviewdock.cpp \
     src/docks/dwarfdetailsdock.cpp \
-    thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp
+    thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp \
+    src/selectparentlayoutdialog.cpp \
+    src/layoutcreator.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \
@@ -159,5 +163,6 @@ FORMS += ui/scriptdialog.ui \
     ui/dwarfdetailsdock.ui \
     ui/customprofession.ui \
     ui/columneditdialog.ui \
-    ui/about.ui
+    ui/about.ui \
+    ui/selectparentlayoutdialog.ui
 RESOURCES += images.qrc

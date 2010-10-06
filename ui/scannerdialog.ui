@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>DF Rapist</string>
+   <string>DF Therapist</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../images.qrc">
+    <normaloff>:/status/img/hatchet.png</normaloff>:/status/img/hatchet.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4" stretch="100,0">
    <item>
@@ -97,6 +101,13 @@
            <widget class="QPushButton" name="btn_find_translations_vector">
             <property name="text">
              <string>Locate Translations Vector</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="btn_create_memory_layout">
+            <property name="text">
+             <string>Create New Layout</string>
             </property>
            </widget>
           </item>
@@ -397,7 +408,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../images.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>btn_find_creature_vector</sender>
@@ -639,6 +652,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btn_create_memory_layout</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>create_memory_layout()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>929</x>
+     <y>114</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>355</x>
+     <y>567</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>find_creature_vector()</slot>
@@ -653,6 +682,7 @@
   <slot>find_metal_vector()</slot>
   <slot>find_position_vector()</slot>
   <slot>find_std_string()</slot>
+  <slot>create_memory_layout()</slot>
  </slots>
  <buttongroups>
   <buttongroup name="buttonGroup"/>

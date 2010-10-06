@@ -82,7 +82,7 @@ public:
                         LOGD << "\tREAD ADDR FROM" << hex << ptr2 + offset << "=" << idx_addr;
                         int idx = m_df->read_int(idx_addr);
                         LOGD << "\t\tRACE VALUE" << idx << "HEX" << hex << idx;
-                        if (idx == expected_val) {
+                        if (idx == expected_val && dwarf_race_index != idx_addr) {
                             dwarf_race_index = idx_addr;
                             emit found_address("Dwarf Race", dwarf_race_index);
                             LOGD << "FOUND DWARF RACE INDEX" << hex << dwarf_race_index;

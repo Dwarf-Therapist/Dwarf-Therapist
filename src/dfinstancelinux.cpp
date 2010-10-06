@@ -277,7 +277,7 @@ int DFInstanceLinux::write_raw(const VIRTADDR &addr, const int &bytes,
     return bytes_written;
 }
 
-bool DFInstanceLinux::find_running_copy() {
+bool DFInstanceLinux::find_running_copy(bool) {
     // find PID of DF
     TRACE << "attempting to find running copy of DF by executable name";
     QProcess *proc = new QProcess(this);
@@ -320,7 +320,7 @@ bool DFInstanceLinux::find_running_copy() {
     uint checksum = calculate_checksum();
     LOGD << "DF's checksum is" << hexify(checksum);
     if (m_is_ok) {
-        m_layout = get_memory_layout(hexify(checksum).toLower());
+        m_layout = get_memory_layout(hexify(checksum).toLower(), !connect_anyway);
     }
     return m_is_ok;
 }

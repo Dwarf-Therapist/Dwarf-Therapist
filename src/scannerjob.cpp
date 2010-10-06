@@ -53,6 +53,8 @@ DFInstance *ScannerJob::df() {
     return m_df;
 }
 
+QString ScannerJob::m_layout_override_checksum("");
+
 bool ScannerJob::get_DFInstance() {
 #ifdef Q_WS_WIN
     m_df = new DFInstanceWindows(this);
@@ -65,5 +67,11 @@ bool ScannerJob::get_DFInstance() {
 #endif
 #endif
 #endif
-    return m_df->find_running_copy() && m_df->is_ok();
+    bool result = m_df->find_running_copy(true) && m_df->is_ok();
+
+    if(!m_layout_override_checksum.isEmpty()) {
+        m_df->set_memory_layout(m_df->get_memory_layout(m_layout_override_checksum, false));
+    }
+
+    return result;
 }

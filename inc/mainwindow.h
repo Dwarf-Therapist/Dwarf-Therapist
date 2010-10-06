@@ -121,6 +121,7 @@ private:
     bool m_show_result_on_equal; //! used during version checks
     QCompleter *m_dwarf_name_completer;
     QStringList m_dwarf_names_list;
+    bool m_force_connect;
 
     void closeEvent(QCloseEvent *evt); // override;
 

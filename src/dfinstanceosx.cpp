@@ -110,6 +110,6 @@ uint DFInstanceOSX::write_raw(const uint &addr, const uint &bytes, void *buffer)
     return 0;
 }
 
-bool DFInstanceOSX::find_running_copy() {
+bool DFInstanceOSX::find_running_copy(bool) {
     return false;
 }

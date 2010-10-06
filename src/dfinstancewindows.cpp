@@ -182,7 +182,7 @@ int DFInstanceWindows::write_raw(const VIRTADDR &addr, const int &bytes,
     return bytes_written;
 }
 
-bool DFInstanceWindows::find_running_copy() {
+bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
     LOGD << "attempting to find running copy of DF by window handle";
     m_is_ok = false;
 
@@ -244,11 +244,15 @@ bool DFInstanceWindows::find_running_copy() {
     }
 
     if (m_is_ok) {
-        m_layout = get_memory_layout(hexify(calculate_checksum()).toLower());
+        m_layout = get_memory_layout(hexify(calculate_checksum()).toLower(), !connect_anyway);
     }
 
-    if (!m_is_ok) // time to bail
-        return m_is_ok;
+    if(!m_is_ok) {
+        if(connect_anyway)
+            m_is_ok = true;
+        else // time to bail
+            return m_is_ok;
+    }
 
     m_memory_correction = (int)m_base_addr - 0x0400000;
     LOGD << "base address:" << hexify(m_base_addr);
@@ -257,7 +261,7 @@ bool DFInstanceWindows::find_running_copy() {
     map_virtual_memory();
 
     if (DT->user_settings()->value("options/alert_on_lost_connection", true)
-        .toBool() && m_layout->is_complete()) {
+        .toBool() && m_layout && m_layout->is_complete()) {
         m_heartbeat_timer->start(1000); // check every second for disconnection
     }
     m_is_ok = true;

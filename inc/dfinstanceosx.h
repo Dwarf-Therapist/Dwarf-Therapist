@@ -35,7 +35,7 @@ public:
     ~DFInstanceOSX();
 
     // factory ctor
-    bool find_running_copy();
+    bool find_running_copy(bool connect_anyway = false);
     QVector<uint> enumerate_vector(const uint &addr);
     char read_char(const uint &addr);
     short read_short(const uint &addr);

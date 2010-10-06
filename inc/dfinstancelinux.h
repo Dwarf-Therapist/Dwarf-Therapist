@@ -35,7 +35,7 @@ public:
     virtual ~DFInstanceLinux();
 
     // factory ctor
-    bool find_running_copy();
+    bool find_running_copy(bool connect_anyway = false);
     QVector<VIRTADDR> enumerate_vector(const uint &addr);
     int read_raw(const VIRTADDR &addr, int bytes, QByteArray &buffer);
     QString read_string(const VIRTADDR &addr);

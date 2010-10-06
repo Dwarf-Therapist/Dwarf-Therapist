@@ -6,6 +6,7 @@
 class MemoryLayout {
 public:
     explicit MemoryLayout(const QString &filename);
+    MemoryLayout(const QString & filename, QSettings * data);
 
     QString filename() {return m_filename;}
     bool is_valid();
@@ -19,6 +20,7 @@ public:
     uint dwarf_offset(const QString &key) {
         return m_dwarf_offsets.value(key, -1);
     }
+    QSettings * data() { return m_data; }
     uint job_detail(const QString &key) {return m_job_details.value(key, -1);}
     uint soul_detail(const QString &key) {return m_soul_details.value(key, -1);}
     QHash<uint, QString> valid_flags_1() {return m_valid_flags_1;}
@@ -26,6 +28,13 @@ public:
     QHash<uint, QString> invalid_flags_2() {return m_invalid_flags_2;}
 
     bool is_complete() {return m_complete;}
+
+    //Setters
+    void set_address(const QString & key, uint value);
+    void set_game_version(const QString & value);
+    void set_checksum(const QString & checksum);
+    void save_data();
+    void set_complete();
 
 private:
     typedef QHash<QString, uint> AddressHash;
@@ -48,5 +57,5 @@ private:
     uint read_hex(QString key);
     void read_group(const QString &group, AddressHash &map);
 };
-
+Q_DECLARE_METATYPE(MemoryLayout *)
 #endif

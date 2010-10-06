@@ -37,7 +37,7 @@ public:
     virtual ~DFInstance();
 
     // factory ctor
-    virtual bool find_running_copy() = 0;
+    virtual bool find_running_copy(bool connectUnknown = false) = 0;
 
     // accessors
     VIRTADDR get_heap_start_address() {return m_heap_start_address;}
@@ -45,6 +45,7 @@ public:
     VIRTADDR get_base_address() {return m_base_addr;}
     bool is_ok() {return m_is_ok;}
     WORD dwarf_race_id() {return m_dwarf_race_id;}
+    QList<MemoryLayout*> get_layouts() { return m_memory_layouts.values(); }
 
     // brute force memory scanning methods
     bool is_valid_address(const VIRTADDR &addr);
@@ -78,6 +79,9 @@ public:
     MemoryLayout *memory_layout() {return m_layout;}
     QVector<Dwarf*> load_dwarves();
 
+    // Set layout
+    void set_memory_layout(MemoryLayout * layout) { m_layout = layout; }
+
     // Writing
     virtual int write_raw(const VIRTADDR &addr, const int &bytes,
                           void *buffer) = 0;
@@ -108,13 +112,15 @@ public:
     static const int VECTOR_POINTER_OFFSET = 0;
 #endif
 
+    // handy util methods
+    virtual quint32 calculate_checksum() = 0;
+    MemoryLayout *get_memory_layout(QString checksum, bool warn = true);
+
     public slots:
         // if a menu cancels our scan, we need to know how to stop
         void cancel_scan() {m_stop_scan = true;}
 
 protected:
-    // handy util methods
-    virtual quint32 calculate_checksum() = 0;
 
     int m_pid;
     VIRTADDR m_base_addr;
@@ -137,7 +143,6 @@ protected:
         on disk, the key is a QString of the checksum since other OSs will use
         an MD5 of the binary instead of a PE timestamp */
     QHash<QString, MemoryLayout*> m_memory_layouts; // checksum->layout
-    MemoryLayout *get_memory_layout(QString checksum);
 
     private slots:
         void heartbeat();

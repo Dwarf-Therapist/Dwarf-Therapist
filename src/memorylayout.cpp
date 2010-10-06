@@ -21,6 +21,19 @@ MemoryLayout::MemoryLayout(const QString &filename)
     }
 }
 
+MemoryLayout::MemoryLayout(const QString & filename, QSettings * data):
+    m_filename(filename),
+    m_checksum("0"),
+    m_data(NULL),
+    m_complete(false)
+{
+    m_data = new QSettings(m_filename, QSettings::IniFormat);
+    foreach(QString key, data->allKeys()) {
+        m_data->setValue(key, data->value(key));
+    }
+}
+
+
 void MemoryLayout::load_data() {
     if (!is_valid()) {
         LOGE << "Skipping read of invalid memory layout in" << m_filename;
@@ -99,5 +112,29 @@ uint MemoryLayout::string_cap_offset() {
     return string_buffer_offset() +
             m_offsets.value("string_cap_offset", DFInstance::STRING_CAP_OFFSET);
 }
+
+void MemoryLayout::set_address(const QString & key, uint value) {
+    m_data->setValue(key, hexify(value));
+}
+
+void MemoryLayout::set_game_version(const QString & value) {
+    m_game_version = value;
+    m_data->setValue("info/version_name", m_game_version);
+}
+
+void MemoryLayout::set_checksum(const QString & checksum) {
+    m_checksum = checksum;
+    m_data->setValue("info/checksum", m_checksum);
+}
+
+void MemoryLayout::save_data() {
+    m_data->sync();
+}
+
+void MemoryLayout::set_complete() {
+    m_complete = true;
+    m_data->setValue("info/complete", "true");
+}
+
 
 

@@ -504,7 +504,7 @@ QVector<VIRTADDR> DFInstance::find_vectors(int num_entries, int fuzz/* =0 */,
     return vectors;
 }
 
-MemoryLayout *DFInstance::get_memory_layout(QString checksum) {
+MemoryLayout *DFInstance::get_memory_layout(QString checksum, bool warn) {
     checksum = checksum.toLower();
     LOGD << "DF's checksum is:" << checksum;
 
@@ -515,7 +515,7 @@ MemoryLayout *DFInstance::get_memory_layout(QString checksum) {
         LOGI << "Detected Dwarf Fortress version"
                 << ret_val->game_version() << "using MemoryLayout from"
                 << ret_val->filename();
-    } else {
+    } else if(warn) {
         QString supported_vers;
         foreach(QString tmp_checksum, m_memory_layouts.uniqueKeys()) {
             MemoryLayout *l = m_memory_layouts[tmp_checksum];

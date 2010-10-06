@@ -63,6 +63,7 @@ private:
         void find_stone_vector();
         void find_metal_vector();
         void find_position_vector();
+        void create_memory_layout();
         void brute_force_read();
 
 };

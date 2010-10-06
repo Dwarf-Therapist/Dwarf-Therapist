@@ -80,6 +80,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_reading_settings(false)
     , m_show_result_on_equal(false)
     , m_dwarf_name_completer(0)
+    , m_force_connect(false)
 {
     ui->setupUi(this);
     m_view_manager = new ViewManager(m_model, m_proxy, this);
@@ -237,7 +238,21 @@ void MainWindow::connect_to_df() {
 #endif
     // find_running_copy can fail for several reasons, and will take care of
     // logging and notifying the user.
-    if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
+    if (m_force_connect && m_df && m_df->find_running_copy(true)) {
+        m_scanner = new Scanner(m_df, this);
+
+        LOGD << "Connection to unknown DF Version established.";
+        m_lbl_status->setText("Connected to unknown version");
+        set_interface_enabled(true);
+
+        connect(m_df, SIGNAL(progress_message(QString)),
+                SLOT(set_progress_message(QString)));
+        connect(m_df, SIGNAL(progress_range(int,int)),
+                SLOT(set_progress_range(int,int)));
+        connect(m_df, SIGNAL(progress_value(int)),
+                SLOT(set_progress_value(int)));
+
+    } else if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
         m_scanner = new Scanner(m_df, this);
         LOGD << "Connection to DF version"
                 << m_df->memory_layout()->game_version() << "established.";
@@ -262,6 +277,8 @@ void MainWindow::connect_to_df() {
                 read_dwarves();
             }
         }
+    } else {
+        m_force_connect = true;
     }
 }
 

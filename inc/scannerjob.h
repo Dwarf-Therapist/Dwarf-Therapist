@@ -46,6 +46,7 @@ public:
     virtual ~ScannerJob();
     SCANNER_JOB_TYPE job_type();
     DFInstance *df();
+    static QString m_layout_override_checksum;
 
 protected:
     SCANNER_JOB_TYPE m_job_type;

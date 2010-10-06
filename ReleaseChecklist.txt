@@ -14,4 +14,4 @@
 		Type-Archive, OpSys-Windows, Featured
 	b. Remove the featured tag from the previous Zip file
 10. Update SupportedGameVersions Wiki page
-11. Update form thread
+11. Update forum thread

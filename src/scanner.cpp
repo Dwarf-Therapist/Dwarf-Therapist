@@ -27,6 +27,8 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "scannerthread.h"
 #include "defines.h"
+#include "selectparentlayoutdialog.h"
+#include "layoutcreator.h"
 
 Scanner::Scanner(DFInstance *df, MainWindow *parent)
     : QDialog(parent)
@@ -84,7 +86,7 @@ void Scanner::prepare_new_thread(SCANNER_JOB_TYPE type) {
         m_thread = 0;
     }
 
-    m_thread = new ScannerThread;
+    m_thread = new ScannerThread(m_df);
     m_thread->set_job(type);
     connect(m_thread, SIGNAL(main_scan_total_steps(int)),
             ui->pb_main, SLOT(setMaximum(int)));
@@ -171,6 +173,63 @@ void Scanner::find_position_vector() {
     set_ui_enabled(false);
     prepare_new_thread(FIND_POSITION_VECTOR);
     run_thread_and_wait();
+    set_ui_enabled(true);
+}
+
+void Scanner::create_memory_layout() {
+    set_ui_enabled(false);
+
+    SelectParentLayoutDialog dlg(m_df, this);
+    int ret = dlg.exec();
+
+    if(QDialog::Accepted == ret)
+    {
+        GameDataReader * gdr = GameDataReader::ptr();
+        QString out = QString("<b><font color=blue>Make sure that your first dwarf from embark has a nickname of '%1' and a custom profession of '%2'</font></b>\n")
+                      .arg(gdr->get_string_for_key("ram_guesser/dwarf_nickname"))
+                      .arg(gdr->get_string_for_key("ram_guesser/dwarf_custom_profession"));
+        ui->text_output->append(out);
+        MemoryLayout * parent = dlg.get_layout();
+        LOGD << "Attempting to create layout from " << parent->game_version() << " for version "
+                << dlg.get_version_name() << " and filename " << dlg.get_file_name();
+
+        LayoutCreator * creator = new LayoutCreator(m_df, parent, dlg.get_file_name(), dlg.get_version_name());
+        m_df->set_memory_layout(parent);
+
+        ScannerJob::m_layout_override_checksum = parent->checksum();
+
+        prepare_new_thread(FIND_DWARF_RACE_INDEX);
+        connect(m_thread, SIGNAL(found_address(const QString&, const quint32&)), creator,
+                SLOT(report_address(const QString&, const quint32&)));
+        run_thread_and_wait();
+
+        prepare_new_thread(FIND_TRANSLATIONS_VECTOR);
+        connect(m_thread, SIGNAL(found_address(const QString&, const quint32&)), creator,
+                SLOT(report_address(const QString&, const quint32&)));
+        run_thread_and_wait();
+
+        prepare_new_thread(FIND_CREATURE_VECTOR);
+        connect(m_thread, SIGNAL(found_address(const QString&, const quint32&)), creator,
+                SLOT(report_address(const QString&, const quint32&)));
+        run_thread_and_wait();
+
+        ScannerJob::m_layout_override_checksum = "";
+
+        LOGD << "Finished reading layouts, writing to disk.";
+        if(creator->write_file()) {
+            out = QString("<b><font color=green>Finished. Created new file: %1</font></b>\n").arg(dlg.get_file_name());
+            ui->text_output->append(out);
+            out = QString("<b><font color=red>Please restart DwarfTherapist!</font></b>\n");
+            ui->text_output->append(out);
+
+            LOGD << "Finished writing file " << dlg.get_file_name() << " to disk.";
+        } else {
+            out = QString("<b><font color=red>Unable to write to file, please check your disk!</font></b>\n");
+            ui->text_output->append(out);
+        }
+        delete creator;
+    }
+
     set_ui_enabled(true);
 }
 
