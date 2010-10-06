@@ -277,7 +277,7 @@ int DFInstanceLinux::write_raw(const VIRTADDR &addr, const int &bytes,
     return bytes_written;
 }
 
-bool DFInstanceLinux::find_running_copy(bool) {
+bool DFInstanceLinux::find_running_copy(bool connect_anyway) {
     // find PID of DF
     TRACE << "attempting to find running copy of DF by executable name";
     QProcess *proc = new QProcess(this);
