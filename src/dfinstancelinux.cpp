@@ -322,7 +322,7 @@ bool DFInstanceLinux::find_running_copy(bool connect_anyway) {
     if (m_is_ok) {
         m_layout = get_memory_layout(hexify(checksum).toLower(), !connect_anyway);
     }
-    return m_is_ok;
+    return m_is_ok || connect_anyway;
 }
 
 void DFInstanceLinux::map_virtual_memory() {
