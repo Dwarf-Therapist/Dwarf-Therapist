@@ -73,9 +73,9 @@ void ImportExportDialog::setup_for_profession_export() {
 
 void ImportExportDialog::setup_for_profession_import() {
     m_mode = MODE_IMPORT_PROFESSIONS;
-    QString default_path = QString("%1/%2").arg(QDesktopServices::storageLocation(QDesktopServices::DesktopLocation), "custom_professions.dt");
+    QString default_path = QString("%1/%2").arg(QDesktopServices::storageLocation(QDesktopServices::DesktopLocation), "custom_professions.dtp");
     m_path = QFileDialog::getOpenFileName(this, tr("Choose a file to import"), default_path,
-        "Dwarf Therapist Profession Exports (*.dt);;All Files (*.*)");
+        "Dwarf Therapist Profession Exports (*.dtp);;All Files (*.*)");
     if (m_path.isEmpty())
         return; // they cancelled
     LOGD << "importing custom professions from:" << m_path;

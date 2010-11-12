@@ -1,3 +1,16 @@
+RELEASE 0.6.5 (November 11, 2010)
+CHANGES SINCE 0.6.4
+===============================================================================
+MAJOR CHANGES:
+ * Support for 0.31.17 (graphics + legacy versions)
+ * Fixed Dwarf Race Index scanning on linux
+ * Added a new Layout Wizard feature for creating new layouts
+	Basically, when you get the version not found message, click ok, connect, then
+	scan memory.  From there, click the Create New Layout, type in the new version and filename, and
+	select the most recent file.  If the dwarf offsets haven't change, it should generate the layout
+	for you automatically.  Follow instructions in GUI.
+ * Fixed issue 295 - Importing asks for incorrect file extension
+
 RELEASE 0.6.4 (October 4, 2010)
 CHANGES SINCE 0.6.3
 ===============================================================================
