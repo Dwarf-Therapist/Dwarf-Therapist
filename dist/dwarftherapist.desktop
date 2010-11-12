@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Dwarf Therapist
+Comment=Dwarf Viewer and Manager for Dwarf Fortress
+Exec=dwarftherapist
+TryExec=dwarftherapist
+Icon=dwarftherapist
+Terminal=false
+Type=Application
+Categories=Qt;GNOME;Game;
+

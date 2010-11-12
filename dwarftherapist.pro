@@ -41,6 +41,34 @@ else:unix {
     message(Setting up for Linux)
     HEADERS += inc/dfinstancelinux.h
     SOURCES += src/dfinstancelinux.cpp
+
+    message(Setting up for Linux Install)
+    bin.path = /usr/bin
+    bin.files += bin/release/DwarfTherapist
+    bin.files += dist/dwarftherapist
+    INSTALLS += bin
+
+    application.path = /usr/share/applications
+    application.files = dist/dwarftherapist.desktop
+    INSTALLS += application
+
+    doc.path = /usr/share/doc/dwarftherapist
+    doc.extra = cp COPYRIGHT $(INSTALL_ROOT)/usr/share/doc/dwarftherapist/copyright; cp README $(INSTALL_ROOT)/usr/share/doc/dwarftherapist/README.Debian
+    INSTALLS += doc
+
+    icon.path = /usr/share/pixmaps
+    icon.files += img/icon.png
+    icon.files += img/icon.xpm
+    INSTALLS += icon
+
+    share.path = /usr/share/dwarftherapist
+    share.extra = mkdir -p $(INSTALL_ROOT)/usr/share/dwarftherapist/etc; \
+        mkdir -p $(INSTALL_ROOT)/usr/share/dwarftherapist/etc/memory_layouts; \
+        mkdir -p $(INSTALL_ROOT)/usr/share/dwarftherapist/etc/memory_layouts/linux; \
+        cp etc/game_data.ini $(INSTALL_ROOT)/usr/share/dwarftherapist/etc; \
+        cp etc/memory_layouts/linux/* $(INSTALL_ROOT)/usr/share/dwarftherapist/etc/memory_layouts/linux
+
+    INSTALLS += share
 }
 
 # Translation files
