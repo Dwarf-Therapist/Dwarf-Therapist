@@ -43,6 +43,9 @@ else:unix {
     SOURCES += src/dfinstancelinux.cpp
 
     message(Setting up for Linux Install)
+    target.path = /usr/bin
+    INSTALLS += target
+
     bin.path = /usr/bin
     bin.files += bin/release/DwarfTherapist
     bin.files += dist/dwarftherapist
@@ -57,8 +60,8 @@ else:unix {
     INSTALLS += doc
 
     icon.path = /usr/share/pixmaps
-    icon.files += img/icon.png
-    icon.files += img/icon.xpm
+    icon.files += img/dwarftherapist.png
+    icon.files += img/dwarftherapist.xpm
     INSTALLS += icon
 
     share.path = /usr/share/dwarftherapist

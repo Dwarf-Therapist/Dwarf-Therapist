@@ -1,0 +1,5 @@
+dwarftherapist (0.6.5) unstable; urgency=low
+
+  * Initial packaged release (Closes: #297)
+
+ -- Justin Ehlert <ehlertjd@gmail.com>  Fri, 12 Nov 2010 14:44:39 -0600

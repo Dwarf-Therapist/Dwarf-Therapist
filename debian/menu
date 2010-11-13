@@ -1,0 +1,2 @@
+?package(dwarftherapist):needs="X11|Qt|text|vc|wm" section="Applications/Data Management"\
+  title="DwarfTherapist" command="/usr/bin/dwarftherapist" icon="/usr/share/pixmaps/dwarftherapist.xpm"

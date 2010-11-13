@@ -1,0 +1,5 @@
+#!/bin/bash
+debuild -us -uc -S 
+sudo pbuilder build ../*.dsc 
+mkdir -p ../packages/lucid
+cp /var/cache/pbuilder/result/dwarftherapist_0.6.?_i386.deb ../packages/lucid

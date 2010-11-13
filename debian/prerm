@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+unlink /usr/share/dwarftherapist/log
+rm -rf /var/log/DwarfTherapist
+rm -f /usr/share/dwarftherapist/etc/memory_layouts/linux/*
+
+#DEBHELPER# 

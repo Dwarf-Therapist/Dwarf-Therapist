@@ -1,0 +1,28 @@
+#!/bin/bash
+#Build source descriptor
+debuild -us -uc -S 
+
+#Lucid
+sudo pbuilder build ../*.dsc 
+
+mkdir -p ../packages/dists
+mkdir -p ../packages/dists/lucid
+mkdir -p ../packages/dists/lucid/universe
+mkdir -p ../packages/dists/lucid/universe/binary-i386
+
+cp /var/cache/pbuilder/result/dwarftherapist_0.6.?_i386.deb ../packages/dists/lucid/universe/binary-i386
+
+#Maverick
+sudo pbuilder-dist maverick build ../*.dsc 
+
+mkdir -p ../packages/dists
+mkdir -p ../packages/dists/maverick
+mkdir -p ../packages/dists/maverick/universe
+mkdir -p ../packages/dists/maverick/universe/binary-i386
+
+cp ~/pbuilder/maverick_result/dwarftherapist_0.6.?_i386.deb ../packages/dists/maverick/universe/binary-i386
+
+pushd ..
+./build_repo
+popd
+

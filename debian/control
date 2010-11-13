@@ -1,0 +1,26 @@
+Source: dwarftherapist
+Section: utils
+Priority: extra
+Maintainer: Justin Ehlert <ehlertjd@gmail.com>
+Build-Depends: debhelper (>= 7), libqt4-dev (>= 4.3)
+Standards-Version: 3.8.4
+Homepage: http://code.google.com/p/dwarftherapist/
+
+Package: dwarftherapist
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, gksu (>= 1.0)
+Description: Dwarf Therapist is an extension application for the game 
+ Dwarf Fortress.  It is intended and designed to be primarily a decision 
+ support tool to reduce or eliminate in-game screen transitions to find 
+ information and present game data in a concise, flexible and 
+ easy-to-understand manner.  Additionally, this program assists in otherwise 
+ cumbersome or tedius workflows (such as changing labors assignments) and 
+ allow quick, easy editing of these elements within DwarfTherapist and then 
+ writing the changes to the game.
+ .
+ This package contains the Dwarf Therapist binary.
+ . 
+ The nature of this software requires that it be run with elevated privileges 
+ on systems where ptrace attach has been hardened.  If you are uncomfortable 
+ with this, it is advised you check back; future releases may have a sane 
+ workaround for this issue.

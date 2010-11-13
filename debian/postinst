@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+#DEBHELPER# 
+
+if [ "$1" = "configure" ]; then
+	echo Configuring DwarfTherapist...
+
+	mkdir /var/log/DwarfTherapist
+	chmod 777 /var/log/DwarfTherapist
+	ln -s /var/log/DwarfTherapist /usr/share/dwarftherapist/log
+
+fi
+
