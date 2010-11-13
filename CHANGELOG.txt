@@ -1,3 +1,15 @@
+RELEASE 0.6.6 ()
+CHANGES SINCE 0.6.5
+===============================================================================
+MAJOR CHANGES:
+ * Started generating debian packages for Dwarf Therapist.  See wiki for repositories
+BUG FIXES:
+ * Fixed issue 297 - Unable to run DT on Ubuntu 10-10
+ * Fixed issue 298 - Unable to connect DT to DF (ptrace issue)
+ * Fixed issue 263 - Tabs not showing up
+ * Fixed issue 247 - No compiling instructions
+ * Fixed issue 291 - Compilation errors in qt 4.7
+
 RELEASE 0.6.5 (November 11, 2010)
 CHANGES SINCE 0.6.4
 ===============================================================================

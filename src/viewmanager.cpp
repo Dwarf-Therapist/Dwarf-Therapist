@@ -74,19 +74,8 @@ void ViewManager::draw_add_tab_button() {
 void ViewManager::reload_views() {
     m_views.clear();
 
-    // first read out default gridviews
-    QTemporaryFile temp_f;
-    if (temp_f.open()) {
-        QString filename = temp_f.fileName();
-        QResource res(":config/default_gridviews");
-        if (res.isCompressed()) {
-            temp_f.write(qUncompress(res.data(), res.size()));
-        } else {
-            temp_f.write(QByteArray((const char*)res.data(), res.size()));
-        }
-        temp_f.flush();
-    }
-    QSettings *s = new QSettings(temp_f.fileName(), QSettings::IniFormat);
+    QSettings *s = new QSettings(
+            ":config/default_gridviews", QSettings::IniFormat);
 
     int total_views = s->beginReadArray("gridviews");
     QList<GridView*> built_in_views;

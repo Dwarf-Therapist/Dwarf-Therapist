@@ -7,7 +7,7 @@
 
 MemoryLayout::MemoryLayout(const QString &filename)
     : m_filename(filename)
-    , m_checksum("0")
+    , m_checksum(QString::null)
     , m_data(0)
     , m_complete(true)
 {
@@ -23,7 +23,7 @@ MemoryLayout::MemoryLayout(const QString &filename)
 
 MemoryLayout::MemoryLayout(const QString & filename, QSettings * data):
     m_filename(filename),
-    m_checksum("0"),
+    m_checksum(QString::null),
     m_data(NULL),
     m_complete(false)
 {
