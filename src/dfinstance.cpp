@@ -468,6 +468,8 @@ QVector<VIRTADDR> DFInstance::find_vectors(int num_entries, int fuzz/* =0 */,
                 int1 = decode_int(buffer.mid(offset, entry_size));
                 int2 = decode_int(buffer.mid(offset + entry_size, entry_size));
                 if (int1 && int2 && int2 >= int1
+                    && int1 % 4 == 0
+                    && int2 % 4 == 0
                     //&& is_valid_address(int1)
                     //&& is_valid_address(int2)
                     ) {
