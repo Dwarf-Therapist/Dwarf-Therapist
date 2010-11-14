@@ -9,6 +9,7 @@ BUG FIXES:
  * Fixed issue 263 - Tabs not showing up
  * Fixed issue 247 - No compiling instructions
  * Fixed issue 291 - Compilation errors in qt 4.7
+ * Fixed issue 301 - Ghostly Dwarves appear on DT
 
 RELEASE 0.6.5 (November 11, 2010)
 CHANGES SINCE 0.6.4
