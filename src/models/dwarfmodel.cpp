@@ -83,9 +83,17 @@ void DwarfModel::load_dwarves() {
         removeRows(0, rowCount());
 
     m_df->attach();
+
     foreach(Dwarf *d, m_df->load_dwarves()) {
         m_dwarves[d->id()] = d;
     }
+
+    m_squads.clear();
+    foreach(Squad * s, m_df->load_squads()) {
+        m_squads[s->id()] = s;
+        //set squad for each dwarf
+    }
+
     m_df->detach();
     /*! Let's try to guess the wave a dwarf arrived in based on ID.
     The game appears to assign ids to creates in a serial manner.

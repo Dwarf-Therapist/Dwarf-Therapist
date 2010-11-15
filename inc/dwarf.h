@@ -95,6 +95,9 @@ public:
     //! return this dwarf's toughness attribute score
     Q_INVOKABLE int toughness() {return m_toughness;}
 
+    //! return this dwarf's squad reference id
+    Q_INVOKABLE int get_squad_ref_id() { return m_squad_ref_id; }
+
     //! return this dwarf's highest skill
     Skill highest_skill();
 
@@ -271,6 +274,7 @@ private:
     QMap<int, ushort> m_labors;
     QMap<int, ushort> m_pending_labors;
     QList<QAction*> m_actions; // actions suitable for context menus
+    int m_squad_ref_id; //Dwarf reference that appears to be used by squad
 
     // these methods read data from raw memory
     void read_id();
@@ -286,6 +290,7 @@ private:
     void read_souls();
     void read_skills();
     void read_traits();
+    void read_squad_ref_id();
 
     // utility methods to assist with reading names made up of several words
     // from the language tables

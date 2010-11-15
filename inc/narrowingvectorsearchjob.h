@@ -1,6 +1,6 @@
 /*
 Dwarf Therapist
-Copyright (c) 2009 Trey Stout (chmod)
+Copyright (c) 2010 Justin Ehlert
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,27 @@ THE SOFTWARE.
 http://www.opensource.org/licenses/mit-license.php
 */
 
-#ifndef VECTORSEARCHJOB_H
-#define VECTORSEARCHJOB_H
+#ifndef NARROWINGVECTORSEARCHJOB_H
+#define NARROWINGVECTORSEARCHJOB_H
 
 #include "scannerjob.h"
 #include "defines.h"
 #include "truncatingfilelogger.h"
 #include "utils.h"
 
-class VectorSearchJob : public ScannerJob {
+class NarrowingVectorSearchJob : public ScannerJob {
     Q_OBJECT
 public:
-    VectorSearchJob()
-        : ScannerJob(FIND_VECTORS_OF_SIZE)
+    NarrowingVectorSearchJob()
+        : ScannerJob(FIND_NARROWING_VECTORS_OF_SIZE)
     {}
 
     void set_needle(const QByteArray &needle) {
         m_needle = needle;
+    }
+
+    void set_search_vector(const QVector<VIRTADDR> & searchvector) {
+        m_searchvector = searchvector;
     }
 
     public slots:
@@ -56,26 +60,22 @@ public:
             uint target_count = m_needle.toInt();
             emit scan_message(tr("Looking for Vectors with %1 entries")
                               .arg(target_count));
-            QVector<VIRTADDR> vectors = m_df->find_vectors(target_count);
+            QVector<VIRTADDR> vectors;
+            if(m_searchvector.size() == 0) {
+                vectors = m_df->find_vectors(target_count);
+            } else {
+                vectors = m_df->find_vectors(target_count, m_searchvector);
+            }
             LOGD << "Search complete, found " << vectors.size() << " vectors.";
 
-            //Only report the first 200 or so vectors, otherwise the UI hangs
-            int count = 0;
-            foreach(uint addr, vectors) {
-                if(count < 200) {
-                    emit found_address("vector found at", addr);
-                } else {
-                    VIRTADDR corrected_addr = addr - m_df->get_memory_correction();
-                    LOGD << "Extra vector address found:"
-                            << hexify(corrected_addr) << "uncorrected:" << hexify(addr);
-                }
-                count++;
-            }
+            emit got_result(new QVector<VIRTADDR>(vectors));
             emit quit();
         }
 
 private:
     QByteArray m_needle;
+    QVector<VIRTADDR> m_searchvector;
 
 };
-#endif // VECTORSEARCHJOB_H
+
+#endif // NARROWINGVECTORSEARCHJOB_H

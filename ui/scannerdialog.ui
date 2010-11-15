@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1090</width>
-    <height>590</height>
+    <width>977</width>
+    <height>753</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4" stretch="100,0">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="3,2">
+    <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="3,0">
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
@@ -321,6 +321,131 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="gb_narrowing_search">
+         <property name="title">
+          <string>Narrowing Search</string>
+         </property>
+         <widget class="QWidget" name="formLayoutWidget">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>341</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <layout class="QFormLayout" name="formLayout">
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>Search Type:</string>
+             </property>
+             <property name="buddy">
+              <cstring>cb_narrowing_search_type</cstring>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QComboBox" name="cb_narrowing_search_type">
+             <item>
+              <property name="text">
+               <string>std::vector&lt;void*&gt;</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="formLayoutWidget_2">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>50</y>
+            <width>341</width>
+            <height>22</height>
+           </rect>
+          </property>
+          <layout class="QFormLayout" name="formLayout_3">
+           <item row="0" column="0">
+            <widget class="QLabel" name="lbl_narrowing_value">
+             <property name="text">
+              <string>Size:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="le_narrowing_value"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="formLayoutWidget_3">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>80</y>
+            <width>341</width>
+            <height>21</height>
+           </rect>
+          </property>
+          <layout class="QFormLayout" name="formLayout_4">
+           <property name="fieldGrowthPolicy">
+            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>Current Result:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="lbl_narrowing_result">
+             <property name="text">
+              <string>nil</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="horizontalLayoutWidget">
+          <property name="geometry">
+           <rect>
+            <x>9</x>
+            <y>100</y>
+            <width>341</width>
+            <height>31</height>
+           </rect>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_9">
+           <item>
+            <widget class="QPushButton" name="btn_narrow">
+             <property name="text">
+              <string>Search</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_narrowing_reset">
+             <property name="text">
+              <string>Reset</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_narrowing_print">
+             <property name="text">
+              <string>Print</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="gb_progress">
          <property name="enabled">
           <bool>true</bool>
@@ -419,8 +544,8 @@
    <slot>find_creature_vector()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>863</x>
-     <y>60</y>
+     <x>780</x>
+     <y>56</y>
     </hint>
     <hint type="destinationlabel">
      <x>375</x>
@@ -435,8 +560,8 @@
    <slot>find_dwarf_race_index()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>863</x>
-     <y>93</y>
+     <x>780</x>
+     <y>85</y>
     </hint>
     <hint type="destinationlabel">
      <x>746</x>
@@ -451,8 +576,8 @@
    <slot>find_translations_vector()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>863</x>
-     <y>126</y>
+     <x>780</x>
+     <y>114</y>
     </hint>
     <hint type="destinationlabel">
      <x>745</x>
@@ -467,8 +592,8 @@
    <slot>find_vector_by_length()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1068</x>
-     <y>254</y>
+     <x>955</x>
+     <y>240</y>
     </hint>
     <hint type="destinationlabel">
      <x>748</x>
@@ -483,8 +608,8 @@
    <slot>brute_force_read()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1067</x>
-     <y>363</y>
+     <x>954</x>
+     <y>332</y>
     </hint>
     <hint type="destinationlabel">
      <x>747</x>
@@ -499,8 +624,8 @@
    <slot>cancel_scan()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>996</x>
-     <y>576</y>
+     <x>885</x>
+     <y>646</y>
     </hint>
     <hint type="destinationlabel">
      <x>380</x>
@@ -515,8 +640,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1079</x>
-     <y>576</y>
+     <x>966</x>
+     <y>646</y>
     </hint>
     <hint type="destinationlabel">
      <x>693</x>
@@ -531,12 +656,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1067</x>
-     <y>327</y>
+     <x>954</x>
+     <y>300</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1067</x>
-     <y>363</y>
+     <x>954</x>
+     <y>332</y>
     </hint>
    </hints>
   </connection>
@@ -547,12 +672,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>701</x>
-     <y>218</y>
+     <x>743</x>
+     <y>206</y>
     </hint>
     <hint type="destinationlabel">
-     <x>970</x>
-     <y>214</y>
+     <x>954</x>
+     <y>210</y>
     </hint>
    </hints>
   </connection>
@@ -563,11 +688,11 @@
    <slot>find_number_or_address()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1024</x>
-     <y>214</y>
+     <x>954</x>
+     <y>210</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1087</x>
+     <x>976</x>
      <y>212</y>
     </hint>
    </hints>
@@ -579,11 +704,11 @@
    <slot>find_metal_vector()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1003</x>
-     <y>84</y>
+     <x>955</x>
+     <y>85</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1084</x>
+     <x>976</x>
      <y>85</y>
     </hint>
    </hints>
@@ -595,11 +720,11 @@
    <slot>find_position_vector()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>960</x>
-     <y>48</y>
+     <x>955</x>
+     <y>56</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1085</x>
+     <x>976</x>
      <y>34</y>
     </hint>
    </hints>
@@ -611,8 +736,8 @@
    <slot>find_null_terminated_string()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>933</x>
-     <y>193</y>
+     <x>849</x>
+     <y>179</y>
     </hint>
     <hint type="destinationlabel">
      <x>745</x>
@@ -627,12 +752,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>797</x>
-     <y>189</y>
+     <x>743</x>
+     <y>175</y>
     </hint>
     <hint type="destinationlabel">
-     <x>933</x>
-     <y>193</y>
+     <x>849</x>
+     <y>179</y>
     </hint>
    </hints>
   </connection>
@@ -643,8 +768,8 @@
    <slot>find_std_string()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1021</x>
-     <y>175</y>
+     <x>954</x>
+     <y>179</y>
     </hint>
     <hint type="destinationlabel">
      <x>593</x>
@@ -668,6 +793,54 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btn_narrow</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>find_narrowing()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>661</x>
+     <y>481</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>239</x>
+     <y>620</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_narrowing_reset</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>reset_narrowing()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>784</x>
+     <y>476</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>276</x>
+     <y>630</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_narrowing_print</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>print_narrowing()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>861</x>
+     <y>471</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>305</x>
+     <y>635</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>find_creature_vector()</slot>
@@ -683,6 +856,9 @@
   <slot>find_position_vector()</slot>
   <slot>find_std_string()</slot>
   <slot>create_memory_layout()</slot>
+  <slot>find_narrowing()</slot>
+  <slot>reset_narrowing()</slot>
+  <slot>print_narrowing()</slot>
  </slots>
  <buttongroups>
   <buttongroup name="buttonGroup"/>

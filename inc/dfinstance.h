@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "utils.h"
 
 class Dwarf;
+class Squad;
 class MemoryLayout;
 struct MemorySegment;
 
@@ -74,10 +75,13 @@ public:
                                             const int &range_length);
     QVector<VIRTADDR> find_vectors(int num_entries, int fuzz=0,
                                    int entry_size=4);
+    QVector<VIRTADDR> find_vectors(int num_entries, const QVector<VIRTADDR> & search_set,
+                                   int fuzz=0, int entry_size=4);
 
     // Methods for when we know how the data is layed out
     MemoryLayout *memory_layout() {return m_layout;}
     QVector<Dwarf*> load_dwarves();
+    QVector<Squad*> load_squads();
 
     // Set layout
     void set_memory_layout(MemoryLayout * layout) { m_layout = layout; }

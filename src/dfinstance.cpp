@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "defines.h"
 #include "dfinstance.h"
 #include "dwarf.h"
+#include "squad.h"
 #include "utils.h"
 #include "gamedatareader.h"
 #include "memorylayout.h"
@@ -309,6 +310,57 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     return dwarves;
 }
 
+QVector<Squad*> DFInstance::load_squads() {
+
+    QVector<Squad*> squads;
+    if (!m_is_ok) {
+        LOGW << "not connected";
+        detach();
+        return squads;
+    }
+
+    // we're connected, make sure we have good addresses
+    VIRTADDR squad_vector = m_layout->address("squad_vector");
+    squad_vector += m_memory_correction;
+
+    if (!is_valid_address(squad_vector)) {
+        LOGW << "Active Memory Layout" << m_layout->filename() << "("
+                << m_layout->game_version() << ")" << "contains an invalid"
+                << "squad_vector address. Either you are scanning a new "
+                << "DF version or your config files are corrupted.";
+        return squads;
+    }
+
+    // both necessary addresses are valid, so let's try to read the creatures
+    LOGD << "loading squads from " << hexify(squad_vector) <<
+            hexify(squad_vector - m_memory_correction) << "(UNCORRECTED)";
+
+    emit progress_message(tr("Loading Squads"));
+
+    attach();
+
+    QVector<VIRTADDR> entries = enumerate_vector(squad_vector);
+    emit progress_range(0, entries.size()-1);
+    TRACE << "FOUND" << entries.size() << "squads";
+
+    if (!entries.empty()) {
+        Squad *s = NULL;
+        int i = 0;
+        foreach(VIRTADDR squad_addr, entries) {
+            s = Squad::get_squad(this, squad_addr);
+            if (s) {
+                TRACE << "FOUND SQUAD" << hexify(squad_addr) << s->name();
+                squads << s;
+            }
+            emit progress_value(i++);
+        }
+    }
+
+    detach();
+    LOGI << "Found" << squads.size() << "squads out of" << entries.size();
+    return squads;
+}
+
 void DFInstance::heartbeat() {
     // simple read attempt that will fail if the DF game isn't running a fort,
     // or isn't running at all
@@ -505,6 +557,79 @@ QVector<VIRTADDR> DFInstance::find_vectors(int num_entries, int fuzz/* =0 */,
     emit scan_progress(100);
     return vectors;
 }
+
+QVector<VIRTADDR> DFInstance::find_vectors(int num_entries, const QVector<VIRTADDR> & search_set,
+                               int fuzz/* =0 */, int entry_size/* =4 */) {
+
+    m_stop_scan = false; //! if ever set true, bail from the inner loop
+    QVector<VIRTADDR> vectors; //! return value collection of vectors found
+
+    // progress reporting
+    m_scan_speed_timer->start(500);
+    m_memory_remap_timer->stop(); // don't remap segments while scanning
+
+    int total_vectors = vectors.size();
+    m_bytes_scanned = 0; // for global timings
+    int vectors_scanned = 0; // for progress calcs
+
+    emit scan_total_steps(total_vectors);
+    emit scan_progress(0);
+
+    QTime timer;
+    timer.start();
+    attach();
+
+    int vector_size = 8 + VECTOR_POINTER_OFFSET;
+    QByteArray buffer(vector_size, '\0');
+
+    foreach(VIRTADDR addr, search_set) {
+        int bytes_read = read_raw(addr, vector_size, buffer);
+        if (bytes_read < vector_size) {
+            continue;
+        }
+
+        VIRTADDR int1 = 0; // holds the start val
+        VIRTADDR int2 = 0; // holds the end val
+        int1 = decode_int(buffer.mid(VECTOR_POINTER_OFFSET, sizeof(VIRTADDR)));
+        int2 = decode_int(buffer.mid(VECTOR_POINTER_OFFSET+ sizeof(VIRTADDR), sizeof(VIRTADDR)));
+
+        if (int1 && int2 && int2 >= int1
+                && int1 % 4 == 0
+                && int2 % 4 == 0) {
+
+            int bytes = int2 - int1;
+            int entries = bytes / entry_size;
+            int diff = entries - num_entries;
+            if (qAbs(diff) <= fuzz) {
+                QVector<VIRTADDR> addrs = enumerate_vector(addr);
+                diff = addrs.size() - num_entries;
+                if (qAbs(diff) <= fuzz) {
+                    vectors << addr;
+                }
+            }
+        }
+
+        vectors_scanned++;
+
+        if(vectors_scanned % 100 == 0) {
+            emit scan_progress(vectors_scanned);
+            DT->processEvents();
+        }
+
+        if (m_stop_scan)
+            break;
+    }
+
+
+    detach();
+    m_memory_remap_timer->start(20000); // start the remapper again
+    m_scan_speed_timer->stop();
+    LOGD << QString("Scanned %L1 vectors in %L2ms").arg(vectors_scanned)
+            .arg(timer.elapsed());
+    emit scan_progress(100);
+    return vectors;
+}
+
 
 MemoryLayout *DFInstance::get_memory_layout(QString checksum, bool warn) {
     checksum = checksum.toLower();

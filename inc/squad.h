@@ -24,48 +24,41 @@ THE SOFTWARE.
 #define SQUAD_H
 
 #include <QtGui>
+#include "utils.h"
 
 class Dwarf;
 class DFInstance;
+class MemoryLayout;
 
 class Squad : public QObject {
     Q_OBJECT
 public:
-    typedef enum {
-        SSL_GROUND,
-        SSL_ROOM,
-        SSL_BARACKS
-    } SQUAD_SLEEP_LOCATION;
-
-    Squad(Dwarf *leader, DFInstance *df, QObject *parent = 0);
+    Squad(DFInstance *df, VIRTADDR address, QObject *parent = 0);
     virtual ~Squad();
 
-    QString name() {return m_name;}
-    QString generic_name() {return m_generic_name;}
-    Dwarf *leader() {return m_leader;}
-    QList<Dwarf *> members() {return m_members;}
-    bool standing_down() {return m_standing_down;}
-    bool carries_water() {return m_carries_water;}
-    short carried_rations() {return m_carried_rations;}
-    SQUAD_SLEEP_LOCATION sleep_location() {return m_sleep_location;}
-    bool chases_opponents() {return m_chases_opponents;}
-    bool harasses_animals() {return m_harasses_animals;}
+    static Squad* get_squad(DFInstance *df, const VIRTADDR &address);
 
-    void add_member(Dwarf *d);
+    //! Return the memory address (in hex) of this creature in the remote DF process
+    VIRTADDR address() {return m_address;}
+    int id() {return m_id;}
+    QString name() {return m_name;}
+    QVector<Dwarf *> members() {return m_members;}
+    void refresh_data();
 
 private:
-    Dwarf* m_leader;
-    QList<Dwarf*> m_members;
-    Squad *m_parent_squad;
+    VIRTADDR m_address;
+    int m_id;
     QString m_name;
-    QString m_generic_name;
+    DFInstance * m_df;
+    MemoryLayout * m_mem;
+    QVector<Dwarf *> m_members;
 
-    bool m_standing_down;
-    short m_carried_rations; //0, 1 or 2
-    bool m_carries_water;
-    SQUAD_SLEEP_LOCATION m_sleep_location; // room, ground, or barracks
-    bool m_chases_opponents;
-    bool m_harasses_animals;
+    void read_id();
+    void read_name();
+    void read_members();
+
+    QString word_chunk(uint word, bool use_generic=true);
+    QString read_chunked_name(const VIRTADDR &addr, bool use_generic=true);
 };
 
 #endif

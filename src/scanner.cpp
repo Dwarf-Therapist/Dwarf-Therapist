@@ -312,3 +312,68 @@ void Scanner::brute_force_read() {
     }
     set_ui_enabled(true);
 }
+
+void Scanner::find_narrowing() {
+    set_ui_enabled(false);
+    uint target_count = ui->le_narrowing_value->text().toInt();
+    prepare_new_thread(FIND_NARROWING_VECTORS_OF_SIZE);
+    QByteArray needle = QString("%1").arg(target_count).toAscii();
+    m_thread->set_meta(needle);
+
+    if(ui->lbl_narrowing_result->text() != "nil") {
+        m_thread->set_search_vector(m_narrow);
+    }
+
+    m_thread->start();
+    while (!m_thread->wait(200)) {
+        if (m_stop_scanning || !m_thread->isRunning() || m_thread->isFinished())
+            break;
+        //ui->text_output->append("waiting on thread...");
+        DT->processEvents();
+    }
+    m_thread->terminate();
+    if (!m_thread->wait(5000)) {
+        LOGE << "Scanning thread failed to stop for 5 seconds after killed!";
+        return;
+    }
+
+    QVector<VIRTADDR> * result = (QVector<VIRTADDR> *)m_thread->get_result();
+    if(result == NULL) {
+        ui->lbl_narrowing_result->setText(tr("0"));
+        m_narrow.clear();
+    } else {
+        ui->lbl_narrowing_result->setText(QString("%1").arg(result->size()));
+        m_narrow = *result;
+        m_thread->clear_result();
+        delete result;
+    }
+
+    delete m_thread;
+    m_thread = 0;
+
+    set_ui_enabled(true);
+}
+
+void Scanner::reset_narrowing() {
+    LOGD << "Reset narrowing search";
+    m_narrow.clear();
+    ui->lbl_narrowing_result->setText(tr("nil"));
+    ui->le_narrowing_value->setText("");
+}
+
+void Scanner::print_narrowing() {
+    if(m_narrow.size() > 200) {
+        QString out = QString("<b><font color=red>There are a total of %1 vectors, only printing 200.</font></b>\n")
+            .arg(m_narrow.size());
+
+        ui->text_output->append(out);
+    }
+
+    int i = 0;
+    foreach(uint addr, m_narrow) {
+        report_address("vector found at", addr);
+
+        if(i++ >= 200)
+            break;
+    }
+}

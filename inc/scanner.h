@@ -47,6 +47,8 @@ private:
     Ui::ScannerDialog *ui;
     bool m_stop_scanning;
 
+    QVector<VIRTADDR> m_narrow;
+
     void set_ui_enabled(bool enabled);
     void prepare_new_thread(SCANNER_JOB_TYPE type);
     void run_thread_and_wait();
@@ -65,6 +67,10 @@ private:
         void find_position_vector();
         void create_memory_layout();
         void brute_force_read();
+
+        void find_narrowing();
+        void reset_narrowing();
+        void print_narrowing();
 
 };
 #endif

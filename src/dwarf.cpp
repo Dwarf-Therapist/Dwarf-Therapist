@@ -58,6 +58,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_agility(-1)
     , m_toughness(-1)
     , m_current_job_id(-1)
+    , m_squad_ref_id(-1)
 {
     read_settings();
     refresh_data();
@@ -129,6 +130,7 @@ void Dwarf::refresh_data() {
     read_happiness();
     read_current_job();
     read_souls();
+    read_squad_ref_id();
 
     /* OLD Stuff from the 40d series that no longer works the same way
     m_strength = m_df->read_int(m_address + mem->dwarf_offset("strength"));
@@ -536,6 +538,11 @@ void Dwarf::read_traits() {
         }
         m_traits.insert(i, val);
     }
+}
+
+void Dwarf::read_squad_ref_id() {
+    m_squad_ref_id = m_df->read_int(m_address + m_mem->dwarf_offset("squad_ref_id"));
+    TRACE << "Squad Reference ID:" << m_squad_ref_id;
 }
 
 void Dwarf::read_skills() {

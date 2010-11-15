@@ -35,7 +35,8 @@ typedef enum {
     FIND_VECTORS_OF_SIZE,
     FIND_DWARF_RACE_INDEX,
     FIND_CREATURE_VECTOR,
-    FIND_POSITION_VECTOR
+    FIND_POSITION_VECTOR,
+    FIND_NARROWING_VECTORS_OF_SIZE
 } SCANNER_JOB_TYPE;
 
 
@@ -62,6 +63,7 @@ signals:
     void found_address(const QString&, const quint32&);
     void found_offset(const QString&, const int&);
     void scan_message(const QString&);
+    void got_result(void *);
     void quit();
 };
 #endif

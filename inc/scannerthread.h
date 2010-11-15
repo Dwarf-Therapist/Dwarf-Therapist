@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include "dwarfraceindexsearchjob.h"
 #include "creaturevectorsearchjob.h"
 #include "positionvectorsearchjob.h"
+#include "narrowingvectorsearchjob.h"
 
 class ScannerThread : public QThread {
     Q_OBJECT
@@ -41,6 +42,7 @@ public:
     ScannerThread(QObject *parent = 0)
         : QThread(parent)
         , m_meta(QByteArray())
+        , m_result(NULL)
     {}
 
     void set_job(SCANNER_JOB_TYPE type) {
@@ -48,6 +50,17 @@ public:
     }
     void set_meta(const QByteArray &meta) {
         m_meta = meta;
+    }
+    void set_search_vector(const QVector<VIRTADDR> &searchvector) {
+        m_searchvector = searchvector;
+    }
+
+    void * get_result() {
+        return m_result;
+    }
+
+    void clear_result() {
+        m_result = NULL;
     }
 
     void run() {
@@ -91,6 +104,14 @@ public:
                     m_job = job;
                 }
                 break;
+            case FIND_NARROWING_VECTORS_OF_SIZE:
+                {
+                    NarrowingVectorSearchJob * job = new NarrowingVectorSearchJob;
+                    job->set_needle(m_meta);
+                    job->set_search_vector(m_searchvector);
+                    m_job = job;
+                }
+                break;
             default:
                 LOGW << "JOB TYPE NOT SET, EXITING THREAD";
                 return;
@@ -117,6 +138,7 @@ public:
         connect(m_job, SIGNAL(sub_scan_progress(int)),
                 SIGNAL(sub_scan_progress(int)));
         connect(m_job, SIGNAL(quit()), this, SLOT(quit()));
+        connect(m_job, SIGNAL(got_result(void *)), this, SLOT(set_result(void *)));
         QTimer::singleShot(0, m_job, SLOT(go()));
         exec();
         m_job->deleteLater();
@@ -127,6 +149,15 @@ private:
     SCANNER_JOB_TYPE m_type;
     ScannerJob *m_job;
     QByteArray m_meta;
+    QVector<VIRTADDR> m_searchvector;
+
+protected:
+    void * m_result;
+
+protected slots:
+    void set_result(void * result) {
+        m_result = result;
+    }
 
 signals:
     void main_scan_total_steps(int);
