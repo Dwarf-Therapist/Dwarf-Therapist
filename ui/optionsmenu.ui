@@ -173,6 +173,16 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="cb_hide_children">
+         <property name="statusTip">
+          <string>When checked, Children and Babies will not be displayed in the grid at all. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read of dwarves occurrs!&lt;/font&gt;&lt;/b&gt;</string>
+         </property>
+         <property name="text">
+          <string>Don't Display Children or Babies</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="cb_labor_cheats">
          <property name="statusTip">
           <string>When checked, you can apply labors to dwarfs that the game does not allow such as children and nobles &lt;b&gt;&lt;font color=&quot;red&quot;&gt;This is cheating!&lt;/font&gt;&lt;/b&gt;</string>
@@ -498,8 +508,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>327</x>
-     <y>715</y>
+     <x>432</x>
+     <y>378</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -514,8 +524,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>327</x>
-     <y>715</y>
+     <x>432</x>
+     <y>378</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

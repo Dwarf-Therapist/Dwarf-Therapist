@@ -81,6 +81,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_show_result_on_equal(false)
     , m_dwarf_name_completer(0)
     , m_force_connect(false)
+    , m_deleting_settings(false)
 {
     ui->setupUi(this);
     m_view_manager = new ViewManager(m_model, m_proxy, this);
@@ -210,8 +211,10 @@ void MainWindow::write_settings() {
 
 void MainWindow::closeEvent(QCloseEvent *evt) {
     LOGI << "Beginning shutdown";
-    write_settings();
-    m_view_manager->write_views();
+    if(!m_deleting_settings) {
+        write_settings();
+        m_view_manager->write_views();
+    }
     evt->accept();
     LOGI << "Closing Dwarf Therapist normally";
 }
@@ -510,6 +513,41 @@ void MainWindow::import_gridviews() {
             dock->draw_views();
     }
 }
+
+void MainWindow::clear_user_settings() {
+    QMessageBox *mb = new QMessageBox(qApp->activeWindow());
+    mb->setIcon(QMessageBox::Warning);
+    mb->setWindowTitle(tr("Clear User Settings"));
+    mb->setText(tr("Warning: This will delete all of your user settings and exit Dwarf Therapist!"));
+    mb->addButton(QMessageBox::Ok);
+    mb->addButton(QMessageBox::Cancel);
+    if(QMessageBox::Ok == mb->exec()) {
+        //Delete data
+        m_settings->clear();
+        m_settings->sync();
+
+        QFile file(m_settings->fileName());
+        LOGI << "Removing file:" << m_settings->fileName();
+
+        delete m_settings;
+        m_settings = 0;
+
+        if(!file.remove()) {
+            LOGW << "Error removing file!";
+            delete mb;
+            mb = new QMessageBox(qApp->activeWindow());
+            mb->setIcon(QMessageBox::Critical);
+            mb->setWindowTitle("Clear User Settings");
+            mb->setText(tr("Unable to delete settings file."));
+            mb->exec();
+            return;
+        }
+
+        m_deleting_settings = true;
+        close();
+    }
+}
+
 
 void MainWindow::show_dwarf_details_dock(Dwarf *d) {
     DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));

@@ -229,18 +229,21 @@ void StateTableView::set_nickname() {
     int id = first_col[0].data(DwarfModel::DR_ID).toInt();
     Dwarf *d = m_model->get_dwarf_by_id(id);
     if (d) {
+        bool ok;
         QString new_nick = QInputDialog::getText(this, tr("New Nickname"),
              tr("Enter a new nickname for this dwarf. Or leave blank to reset "
-                "to their default name."), QLineEdit::Normal, d->nickname());
-        int limit = 16;
-        if (new_nick.length() > limit) {
-            QMessageBox::warning(this, tr("Nickname too long"),
-                                 tr("Nicknames must be under %1 characters "
-                                    "long.").arg(limit));
-            return;
+                "to their default name."), QLineEdit::Normal, d->nickname(), &ok);
+        if(ok) {
+            int limit = 16;
+            if (new_nick.length() > limit) {
+                QMessageBox::warning(this, tr("Nickname too long"),
+                                     tr("Nicknames must be under %1 characters "
+                                        "long.").arg(limit));
+                return;
+            }
+            d->set_nickname(new_nick);
+            m_model->setData(first_col[0], d->nice_name(), Qt::DisplayRole);
         }
-        d->set_nickname(new_nick);
-        m_model->setData(first_col[0], d->nice_name(), Qt::DisplayRole);
     }
     m_model->calculate_pending();
 }

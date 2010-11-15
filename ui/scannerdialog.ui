@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>DF Therapist</string>
+   <string>Dwarf Therapist - Scan Memory</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../images.qrc">

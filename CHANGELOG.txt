@@ -3,6 +3,9 @@ CHANGES SINCE 0.6.5
 ===============================================================================
 MAJOR CHANGES:
  * Started generating debian packages for Dwarf Therapist.  See wiki for repositories
+ * Implemented Feature 272 - Ability to clear user settings from File menu
+ * Implemented Feature 231 - Option to hide children and babies
+ 
 BUG FIXES:
  * Fixed issue 297 - Unable to run DT on Ubuntu 10-10
  * Fixed issue 298 - Unable to connect DT to DF (ptrace issue)
@@ -10,6 +13,8 @@ BUG FIXES:
  * Fixed issue 247 - No compiling instructions
  * Fixed issue 291 - Compilation errors in qt 4.7
  * Fixed issue 301 - Ghostly Dwarves appear on DT
+ * Fixed issue 273 - Window title for Scanner Dialog
+ * Fixed issue 270 - Cancelling nickname change wipes nickname anyway
 
 RELEASE 0.6.5 (November 11, 2010)
 CHANGES SINCE 0.6.4

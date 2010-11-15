@@ -193,6 +193,8 @@
     <addaction name="act_export_gridviews"/>
     <addaction name="act_import_saved_gridviews"/>
     <addaction name="separator"/>
+    <addaction name="act_clear_user_settings"/>
+    <addaction name="separator"/>
     <addaction name="act_options"/>
     <addaction name="act_exit"/>
    </widget>
@@ -750,6 +752,18 @@
     <string>Ctrl+P</string>
    </property>
   </action>
+  <action name="act_clear_user_settings">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/table_delete.png</normaloff>:/img/table_delete.png</iconset>
+   </property>
+   <property name="text">
+    <string>Clear User Settings...</string>
+   </property>
+   <property name="toolTip">
+    <string>Clear User Settings and exit application</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
@@ -839,8 +853,8 @@
    <slot>set_group_by(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>123</x>
-     <y>438</y>
+     <x>122</x>
+     <y>437</y>
     </hint>
     <hint type="destinationlabel">
      <x>288</x>
@@ -1015,12 +1029,12 @@
    <slot>clear()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>371</x>
-     <y>440</y>
+     <x>382</x>
+     <y>439</y>
     </hint>
     <hint type="destinationlabel">
-     <x>308</x>
-     <y>438</y>
+     <x>348</x>
+     <y>437</y>
     </hint>
    </hints>
   </connection>
@@ -1105,10 +1119,10 @@
    </hints>
   </connection>
   <connection>
-   <sender>act_print</sender>
+   <sender>act_clear_user_settings</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>print_gridview()</slot>
+   <slot>clear_user_settings()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1144,5 +1158,6 @@
   <slot>import_gridviews()</slot>
   <slot>add_new_filter_script()</slot>
   <slot>print_gridview()</slot>
+  <slot>clear_user_settings()</slot>
  </slots>
 </ui>

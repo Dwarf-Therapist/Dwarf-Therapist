@@ -74,6 +74,7 @@ public:
         void import_custom_professions();
         void export_gridviews();
         void import_gridviews();
+        void clear_user_settings();
 
         // dialogs
         void show_about();
@@ -122,6 +123,7 @@ private:
     QCompleter *m_dwarf_name_completer;
     QStringList m_dwarf_names_list;
     bool m_force_connect;
+    bool m_deleting_settings;
 
     void closeEvent(QCloseEvent *evt); // override;
 
