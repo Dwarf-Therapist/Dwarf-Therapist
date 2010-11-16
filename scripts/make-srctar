@@ -9,7 +9,7 @@ rm -f $TAR_FILE
 
 mkdir $SRC_DIR
 cp default_gridviews.dtg $SRC_DIR
-cp build_maverick $SRC_DIR
+cp build_packages $SRC_DIR
 cp -R debian $SRC_DIR
 cp -R dist $SRC_DIR
 cp -R doc $SRC_DIR

@@ -1,3 +1,21 @@
+dwarftherapist (0.6.6-1) lucid; urgency=low
+
+ * Support for 0.31.18 (graphics + legacy versions)
+ * Started generating debian packages for Dwarf Therapist.  See wiki for repositories
+ * Implemented Feature 272 - Ability to clear user settings from File menu
+ * Implemented Feature 231 - Option to hide children and babies
+ * Implemented Feature 300 - Group by squad
+ * Fixed issue 297 - Unable to run DT on Ubuntu 10-10
+ * Fixed issue 298 - Unable to connect DT to DF (ptrace issue)
+ * Fixed issue 263 - Tabs not showing up
+ * Fixed issue 247 - No compiling instructions
+ * Fixed issue 291 - Compilation errors in qt 4.7
+ * Fixed issue 301 - Ghostly Dwarves appear on DT
+ * Fixed issue 273 - Window title for Scanner Dialog
+ * Fixed issue 270 - Cancelling nickname change wipes nickname anyway
+
+ -- Justin Ehlert <ehlertjd@ehlertjd-desktop>  Tue, 16 Nov 2010 11:57:20 -0600
+
 dwarftherapist (0.6.5) unstable; urgency=low
 
   * Initial packaged release (Closes: #297)

@@ -17,7 +17,7 @@ BUG FIXES:
  * Fixed issue 301 - Ghostly Dwarves appear on DT
  * Fixed issue 273 - Window title for Scanner Dialog
  * Fixed issue 270 - Cancelling nickname change wipes nickname anyway
-
+ 
 RELEASE 0.6.5 (November 11, 2010)
 CHANGES SINCE 0.6.4
 ===============================================================================

@@ -8,7 +8,8 @@ Homepage: http://code.google.com/p/dwarftherapist/
 
 Package: dwarftherapist
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, gksu (>= 1.0)
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Suggests: gksu (>= 1.0), kdesudo(>= 1.0)
 Description: Dwarf Therapist is an extension application for the game 
  Dwarf Fortress.  It is intended and designed to be primarily a decision 
  support tool to reduce or eliminate in-game screen transitions to find 

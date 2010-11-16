@@ -1,9 +1,25 @@
 #!/bin/bash
 cd /usr/share/dwarftherapist
 
+#Search for the appropriate SUDO application
+_foundprog=
+findprog () {
+    _foundprog=`which $1`
+    return $?
+}
+
+SUDO=
+if findprog gksudo; then
+	SUDO=gksudo
+elif findprog kdesudo; then
+	SUDO=kdesudo
+else
+	SUDO=sudo
+fi
+
 if [ -f /proc/sys/kernel/yama/ptrace_scope ] && [ `cat /proc/sys/kernel/yama/ptrace_scope` -eq 1 ]; then
 	echo Dwarf therapist needs to run as root because user ptrace is disabled
-	gksu -u root /usr/bin/DwarfTherapist
+	$SUDO /usr/bin/DwarfTherapist
 else
 	/usr/bin/DwarfTherapist
 fi

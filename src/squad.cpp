@@ -68,7 +68,7 @@ void Squad::read_id() {
 }
 
 void Squad::read_name() {
-    m_name = read_chunked_name(m_address + m_mem->squad_offset("name"));
+    m_name = read_chunked_name();
     TRACE << "Name:" << m_name;
 }
 
@@ -77,7 +77,7 @@ void Squad::read_members() {
 
     VIRTADDR member_vector = m_address + m_mem->squad_offset("members");
     QVector<VIRTADDR> members = m_df->enumerate_vector(member_vector);
-    TRACE << "Squad" << m_id << "has" << members.size() << "members.";
+    TRACE << "Squad" << m_id << ":" << m_name << "has" << members.size() << "members.";
     foreach(VIRTADDR member_addr, members) {
         int ref_id = m_df->read_int(member_addr);
         if(ref_id != -1) {
@@ -106,7 +106,7 @@ Word * Squad::read_word(uint offset) {
     return result;
 }
 
-QString Squad::read_chunked_name(const VIRTADDR &addr) {
+QString Squad::read_chunked_name() {
     QString result = "The";
 
     //7 parts e.g.  ffffffff ffffffff 000006d4

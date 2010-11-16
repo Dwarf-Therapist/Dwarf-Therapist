@@ -59,7 +59,7 @@ private:
     void read_members();
 
     Word * read_word(uint offset);
-    QString read_chunked_name(const VIRTADDR &addr);
+    QString read_chunked_name();
     QString capitalize(const QString & word);
 };
 
