@@ -12,16 +12,22 @@ mkdir -p ../packages/dists/lucid/universe/binary-i386
 
 cp /var/cache/pbuilder/result/dwarftherapist_0.6.?_i386.deb ../packages/dists/lucid/universe/binary-i386
 
-#Maverick
-sudo pbuilder-dist maverick build ../*.dsc 
+#Other dists in pbuilder (TODO: move lucid here)
+for dist in "maverick" "sid"
+do
 
-mkdir -p ../packages/dists
-mkdir -p ../packages/dists/maverick
-mkdir -p ../packages/dists/maverick/universe
-mkdir -p ../packages/dists/maverick/universe/binary-i386
+	sudo pbuilder-dist $dist build ../*.dsc 
 
-cp ~/pbuilder/maverick_result/dwarftherapist_0.6.?_i386.deb ../packages/dists/maverick/universe/binary-i386
+	mkdir -p ../packages/dists
+	mkdir -p ../packages/dists/$dist
+	mkdir -p ../packages/dists/$dist/universe
+	mkdir -p ../packages/dists/$dist/universe/binary-i386
 
+	cp ~/pbuilder/${dist}_result/dwarftherapist_0.6.?_i386.deb ../packages/dists/maverick/universe/binary-i386
+done
+
+
+# Build repository
 pushd ..
 ./build_repo
 popd

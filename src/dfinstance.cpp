@@ -340,10 +340,10 @@ QVector<Squad*> DFInstance::load_squads() {
     attach();
 
     QVector<VIRTADDR> entries = enumerate_vector(squad_vector);
-    emit progress_range(0, entries.size()-1);
     TRACE << "FOUND" << entries.size() << "squads";
 
     if (!entries.empty()) {
+        emit progress_range(0, entries.size()-1);
         Squad *s = NULL;
         int i = 0;
         foreach(VIRTADDR squad_addr, entries) {
