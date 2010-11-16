@@ -72,5 +72,7 @@ private:
         void reset_narrowing();
         void print_narrowing();
 
+        void find_squad_vector();
+
 };
 #endif

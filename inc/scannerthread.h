@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include "creaturevectorsearchjob.h"
 #include "positionvectorsearchjob.h"
 #include "narrowingvectorsearchjob.h"
+#include "squadvectorsearchjob.h"
 
 class ScannerThread : public QThread {
     Q_OBJECT
@@ -110,6 +111,12 @@ public:
                     job->set_needle(m_meta);
                     job->set_search_vector(m_searchvector);
                     m_job = job;
+                }
+                break;
+            case FIND_SQUADS_VECTOR:
+                {
+                    m_job = new SquadVectorSearchJob;
+                    break;
                 }
                 break;
             default:

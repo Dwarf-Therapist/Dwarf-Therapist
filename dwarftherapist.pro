@@ -139,7 +139,8 @@ HEADERS += inc/win_structs.h \
     inc/stdstringsearchjob.h \
     inc/selectparentlayoutdialog.h \
     inc/layoutcreator.h \
-    inc/narrowingvectorsearchjob.h
+    inc/narrowingvectorsearchjob.h \
+    inc/squadvectorsearchjob.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \

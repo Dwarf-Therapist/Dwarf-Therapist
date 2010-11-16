@@ -377,3 +377,10 @@ void Scanner::print_narrowing() {
             break;
     }
 }
+
+void Scanner::find_squad_vector() {
+    set_ui_enabled(false);
+    prepare_new_thread(FIND_SQUADS_VECTOR);
+    run_thread_and_wait();
+    set_ui_enabled(true);
+}

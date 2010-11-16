@@ -104,7 +104,14 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="3" column="0">
+           <widget class="QPushButton" name="btn_find_squad_vector">
+            <property name="text">
+             <string>Locate Squads Vector</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
            <widget class="QPushButton" name="btn_create_memory_layout">
             <property name="text">
              <string>Create New Layout</string>
@@ -593,7 +600,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>955</x>
-     <y>240</y>
+     <y>267</y>
     </hint>
     <hint type="destinationlabel">
      <x>748</x>
@@ -609,7 +616,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>954</x>
-     <y>332</y>
+     <y>383</y>
     </hint>
     <hint type="destinationlabel">
      <x>747</x>
@@ -625,7 +632,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>885</x>
-     <y>646</y>
+     <y>742</y>
     </hint>
     <hint type="destinationlabel">
      <x>380</x>
@@ -641,7 +648,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>966</x>
-     <y>646</y>
+     <y>742</y>
     </hint>
     <hint type="destinationlabel">
      <x>693</x>
@@ -657,11 +664,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>954</x>
-     <y>300</y>
+     <y>346</y>
     </hint>
     <hint type="destinationlabel">
      <x>954</x>
-     <y>332</y>
+     <y>383</y>
     </hint>
    </hints>
   </connection>
@@ -673,11 +680,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>743</x>
-     <y>206</y>
+     <y>233</y>
     </hint>
     <hint type="destinationlabel">
      <x>954</x>
-     <y>210</y>
+     <y>237</y>
     </hint>
    </hints>
   </connection>
@@ -689,7 +696,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>954</x>
-     <y>210</y>
+     <y>237</y>
     </hint>
     <hint type="destinationlabel">
      <x>976</x>
@@ -737,7 +744,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>849</x>
-     <y>179</y>
+     <y>206</y>
     </hint>
     <hint type="destinationlabel">
      <x>745</x>
@@ -753,11 +760,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>743</x>
-     <y>175</y>
+     <y>202</y>
     </hint>
     <hint type="destinationlabel">
      <x>849</x>
-     <y>179</y>
+     <y>206</y>
     </hint>
    </hints>
   </connection>
@@ -769,7 +776,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>954</x>
-     <y>179</y>
+     <y>206</y>
     </hint>
     <hint type="destinationlabel">
      <x>593</x>
@@ -784,8 +791,8 @@
    <slot>create_memory_layout()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>929</x>
-     <y>114</y>
+     <x>955</x>
+     <y>143</y>
     </hint>
     <hint type="destinationlabel">
      <x>355</x>
@@ -800,8 +807,8 @@
    <slot>find_narrowing()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>661</x>
-     <y>481</y>
+     <x>719</x>
+     <y>565</y>
     </hint>
     <hint type="destinationlabel">
      <x>239</x>
@@ -816,8 +823,8 @@
    <slot>reset_narrowing()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>784</x>
-     <y>476</y>
+     <x>834</x>
+     <y>565</y>
     </hint>
     <hint type="destinationlabel">
      <x>276</x>
@@ -832,12 +839,28 @@
    <slot>print_narrowing()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>861</x>
-     <y>471</y>
+     <x>949</x>
+     <y>565</y>
     </hint>
     <hint type="destinationlabel">
      <x>305</x>
      <y>635</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_find_squad_vector</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>find_squad_vector()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>627</x>
+     <y>138</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>971</x>
+     <y>156</y>
     </hint>
    </hints>
   </connection>
@@ -859,6 +882,7 @@
   <slot>find_narrowing()</slot>
   <slot>reset_narrowing()</slot>
   <slot>print_narrowing()</slot>
+  <slot>find_squad_vector()</slot>
  </slots>
  <buttongroups>
   <buttongroup name="buttonGroup"/>
