@@ -91,7 +91,6 @@ void DwarfModel::load_dwarves() {
     m_squads.clear();
     foreach(Squad * s, m_df->load_squads()) {
         m_squads[s->id()] = s;
-        //set squad for each dwarf
     }
 
     m_df->detach();
@@ -239,6 +238,15 @@ void DwarfModel::build_rows() {
                         m_grouped_dwarves[tr("No Nickname")].append(d);
                     } else {
                         m_grouped_dwarves[tr("Has Nickname")].append(d);
+                    }
+                }
+                break;
+            case GB_SQUAD:
+                {
+                    if(d->squad_name().isEmpty()) {
+                        m_grouped_dwarves[tr("No Squad")].append(d);
+                    } else {
+                        m_grouped_dwarves[d->squad_name()].append(d);
                     }
                 }
                 break;

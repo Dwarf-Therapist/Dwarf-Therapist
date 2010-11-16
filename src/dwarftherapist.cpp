@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include "dwarfmodelproxy.h"
 #include "dwarf.h"
+#include "word.h"
 #include "ui_mainwindow.h"
 #include "dfinstance.h"
 #include "memorylayout.h"
@@ -315,6 +316,7 @@ Dwarf *DwarfTherapist::get_dwarf_by_id(int dwarf_id) {
 
 void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
     LOGD << "Loading language translation tables";
+    m_language.clear();
     m_generic_words.clear();
     m_dwarf_words.clear();
 
@@ -332,6 +334,7 @@ void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
         LOGD << "generic words" << generic_words.size();
         foreach(uint word_ptr, generic_words) {
             m_generic_words << df->read_string(word_ptr);
+            m_language << Word::get_word(df, word_ptr);
         }
     }
 

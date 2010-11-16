@@ -92,6 +92,12 @@
    </widget>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>le_file_name</tabstop>
+  <tabstop>le_version_name</tabstop>
+  <tabstop>cmb_select_layout</tabstop>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

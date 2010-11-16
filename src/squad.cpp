@@ -22,6 +22,7 @@ THE SOFTWARE.
 */
 #include "squad.h"
 #include "dwarf.h"
+#include "word.h"
 #include "dwarfmodel.h"
 #include "dfinstance.h"
 #include "memorylayout.h"
@@ -84,6 +85,7 @@ void Squad::read_members() {
                 if(d->get_squad_ref_id() == ref_id) {
                     TRACE << "Squad member ref_id" << ref_id << "refers to" << d->nice_name();
                     m_members << d;
+                    d->m_squad_name = name();
                     break;
                 }
             }
@@ -94,42 +96,78 @@ void Squad::read_members() {
 }
 
 //! used by read_last_name to find word chunks
-QString Squad::word_chunk(uint word, bool use_generic) {
-    QString out = "";
-    if (word != 0xFFFFFFFF) {
-        if (use_generic) {
-            out = DT->get_generic_word(word);
-        } else {
-            out = DT->get_dwarf_word(word);
-        }
+Word * Squad::read_word(uint offset) {
+    Word * result = NULL;
+    uint word_id = m_df->read_int(m_address +
+        m_mem->squad_offset("name") + offset);
+    if(word_id != 0xFFFFFFFF) {
+        result = DT->get_word(word_id);
     }
-    return out;
+    return result;
 }
 
-QString Squad::read_chunked_name(const VIRTADDR &addr, bool use_generic) {
-    // last name reading taken from patch by Zhentar (issue 189)
-    QString first, second, third;
+QString Squad::read_chunked_name(const VIRTADDR &addr) {
+    QString result = "The";
 
-    first.append(word_chunk(m_df->read_addr(addr), use_generic));
-    first.append(word_chunk(m_df->read_addr(addr + 0x4), use_generic));
-    second.append(word_chunk(m_df->read_addr(addr + 0x8), use_generic));
-    second.append(word_chunk(m_df->read_addr(addr + 0x14), use_generic));
-    third.append(word_chunk(m_df->read_addr(addr + 0x18), use_generic));
+    //7 parts e.g.  ffffffff ffffffff 000006d4
+    //      ffffffff ffffffff 000002b1 ffffffff
 
-    QString out = first;
-    out = out.toLower();
-    if (!out.isEmpty()) {
-        out[0] = out[0].toUpper();
+    //Unknown
+    Word * word = read_word(0x00);
+    if(word)
+        result.append(" " + capitalize(word->base()));
+
+    //Unknown
+    word = read_word(0x04);
+    if(word)
+        result.append(" " + capitalize(word->base()));
+
+    //Verb
+    word = read_word(0x08);
+    if(word) {
+        result.append(" " + capitalize(word->adjective()));
     }
-    if (!second.isEmpty()) {
-        second = second.toLower();
-        second[0] = second[0].toUpper();
-        out.append(" " + second);
+
+    //Unknown
+    word = read_word(0x0C);
+    if(word)
+        result.append(" " + capitalize(word->base()));
+
+    //Unknown
+    word = read_word(0x10);
+    if(word)
+        result.append(" " + capitalize(word->base()));
+
+    //Noun
+    word = read_word(0x14);
+    bool singular = false;
+    if(word) {
+        if(word->plural_noun().isEmpty()) {
+            result.append(" " + capitalize(word->noun()));
+            singular = true;
+        } else {
+            result.append(" " + capitalize(word->plural_noun()));
+        }
     }
-    if (!third.isEmpty()) {
-        third = third.toLower();
-        third[0] = third[0].toUpper();
-        out.append(" " + third);
+
+    //of verb
+    word = read_word(0x18);
+    if(word) {
+        if(singular) {
+            result.append(" of " + capitalize(word->verb()));
+        } else {
+            result.append(" of " + capitalize(word->present_participle_verb()));
+        }
     }
-    return out;
+
+    return result.trimmed();
+}
+
+QString Squad::capitalize(const QString & word) {
+    QString result = word;
+    if(!result.isEmpty()) {
+        result = result.toLower();
+        result[0] = result[0].toUpper();
+    }
+    return result;
 }

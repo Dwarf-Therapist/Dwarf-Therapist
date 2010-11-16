@@ -153,6 +153,7 @@ MainWindow::MainWindow(QWidget *parent)
                              DwarfModel::GB_ASSIGNED_LABORS);
     ui->cb_group_by->addItem(tr("Has Nickname"),
                              DwarfModel::GB_HAS_NICKNAME);
+    ui->cb_group_by->addItem(tr("Squad"), DwarfModel::GB_SQUAD);
 
     read_settings();
     draw_professions();

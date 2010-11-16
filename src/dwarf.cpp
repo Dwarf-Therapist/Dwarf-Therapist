@@ -59,6 +59,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_toughness(-1)
     , m_current_job_id(-1)
     , m_squad_ref_id(-1)
+    , m_squad_name(QString::null)
 {
     read_settings();
     refresh_data();

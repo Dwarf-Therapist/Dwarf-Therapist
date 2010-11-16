@@ -23,6 +23,9 @@ public:
     uint squad_offset(const QString & key) {
         return m_squad_offsets.value(key, -1);
     }
+    uint word_offset(const QString & key) {
+        return m_word_offsets.value(key, -1);
+    }
 
     QSettings * data() { return m_data; }
     uint job_detail(const QString &key) {return m_job_details.value(key, -1);}
@@ -52,6 +55,7 @@ private:
     AddressHash m_job_details;
     AddressHash m_soul_details;
     AddressHash m_squad_offsets;
+    AddressHash m_word_offsets;
     QHash<uint, QString> m_valid_flags_1;
     QHash<uint, QString> m_invalid_flags_1;
     QHash<uint, QString> m_invalid_flags_2;

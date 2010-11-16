@@ -213,6 +213,11 @@ void Scanner::create_memory_layout() {
                 SLOT(report_address(const QString&, const quint32&)));
         run_thread_and_wait();
 
+        prepare_new_thread(FIND_SQUADS_VECTOR);
+        connect(m_thread, SIGNAL(found_address(const QString&, const quint32&)), creator,
+                SLOT(report_address(const QString&, const quint32&)));
+        run_thread_and_wait();
+
         ScannerJob::m_layout_override_checksum = "";
 
         LOGD << "Finished reading layouts, writing to disk.";

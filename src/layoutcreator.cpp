@@ -34,7 +34,8 @@ LayoutCreator::LayoutCreator(DFInstance * df, MemoryLayout * parent, QString fil
         m_dwarf_race_index(0),
         m_translation_vector(0),
         m_language_vector(0),
-        m_creature_vector(0)
+        m_creature_vector(0),
+        m_squad_vector(0)
 {
 
 }
@@ -65,6 +66,7 @@ bool LayoutCreator::write_file()
     newLayout.set_address("addresses/language_vector", m_language_vector);
     newLayout.set_address("addresses/creature_vector", m_creature_vector);
     newLayout.set_address("addresses/dwarf_race_index", m_dwarf_race_index);
+    newLayout.set_address("addresses/squad_vector", m_squad_vector);
     newLayout.set_complete();
     LOGD << "\tWriting file.";
     newLayout.save_data();
@@ -91,5 +93,8 @@ void LayoutCreator::report_address(const QString& name, const quint32& addr)
     else if(name == "creature_vector" && m_creature_vector == 0)
     {
         m_creature_vector = corrected_addr;
+    }
+    else if(name == "squad vector" && m_squad_vector == 0) {
+        m_squad_vector = corrected_addr;
     }
 }

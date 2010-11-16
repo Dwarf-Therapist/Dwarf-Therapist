@@ -140,7 +140,8 @@ HEADERS += inc/win_structs.h \
     inc/selectparentlayoutdialog.h \
     inc/layoutcreator.h \
     inc/narrowingvectorsearchjob.h \
-    inc/squadvectorsearchjob.h
+    inc/squadvectorsearchjob.h \
+    inc/word.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -183,7 +184,8 @@ SOURCES += src/viewmanager.cpp \
     src/docks/dwarfdetailsdock.cpp \
     thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp \
     src/selectparentlayoutdialog.cpp \
-    src/layoutcreator.cpp
+    src/layoutcreator.cpp \
+    src/word.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

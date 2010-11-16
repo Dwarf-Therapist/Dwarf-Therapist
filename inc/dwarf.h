@@ -35,6 +35,7 @@ class CustomProfession;
 class Dwarf : public QObject
 {
     Q_OBJECT
+    friend class Squad;
     Dwarf(DFInstance *df, const uint &addr, QObject *parent=0); //private, use the static get_dwarf() method
 
 public:
@@ -224,6 +225,10 @@ public:
         return m_first_name;
     }
 
+    QString squad_name() const {
+        return m_squad_name;
+    }
+
     public slots:
         //! called when global user settings change
         void read_settings();
@@ -275,6 +280,7 @@ private:
     QMap<int, ushort> m_pending_labors;
     QList<QAction*> m_actions; // actions suitable for context menus
     int m_squad_ref_id; //Dwarf reference that appears to be used by squad
+    QString m_squad_name; //The name of the squad that the dwarf belongs to (if any)
 
     // these methods read data from raw memory
     void read_id();

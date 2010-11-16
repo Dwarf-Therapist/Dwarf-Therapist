@@ -24,6 +24,7 @@ protected:
     quint32 m_translation_vector;
     quint32 m_language_vector;
     quint32 m_creature_vector;
+    quint32 m_squad_vector;
 
 private slots:
     void report_address(const QString&, const quint32&);

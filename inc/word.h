@@ -1,6 +1,6 @@
 /*
 Dwarf Therapist
-Copyright (c) 2009 Trey Stout (chmod)
+Copyright (c) 2010 Justin Ehlert
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,47 +20,55 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef SQUAD_H
-#define SQUAD_H
+#ifndef WORD_H
+#define WORD_H
 
 #include <QtGui>
 #include "utils.h"
 
 class Dwarf;
-class Word;
 class DFInstance;
 class MemoryLayout;
 
-class Squad : public QObject {
+class Word : public QObject {
     Q_OBJECT
 public:
-    Squad(DFInstance *df, VIRTADDR address, QObject *parent = 0);
-    virtual ~Squad();
+    Word(DFInstance *df, VIRTADDR address, QObject *parent = 0);
+    virtual ~Word();
 
-    static Squad* get_squad(DFInstance *df, const VIRTADDR &address);
+    static Word* get_word(DFInstance *df, const VIRTADDR &address);
 
     //! Return the memory address (in hex) of this creature in the remote DF process
     VIRTADDR address() {return m_address;}
-    int id() {return m_id;}
-    QString name() {return m_name;}
-    QVector<Dwarf *> members() {return m_members;}
+
+    QString base() {return m_base;}
+    QString noun() {return m_noun;}
+    QString plural_noun() {return m_plural_noun;}
+    QString adjective() {return m_adjective;}
+    QString verb() {return m_verb;}
+    QString present_simple_verb() {return m_present_simple_verb;}
+    QString past_simple_verb() {return m_past_simple_verb;}
+    QString past_participle_verb() {return m_past_participle_verb;}
+    QString present_participle_verb() {return m_present_participle_verb;}
+
     void refresh_data();
 
 private:
     VIRTADDR m_address;
-    int m_id;
-    QString m_name;
+    QString m_base;
+    QString m_noun;
+    QString m_plural_noun;
+    QString m_adjective;
+    QString m_verb;
+    QString m_present_simple_verb;
+    QString m_past_simple_verb;
+    QString m_past_participle_verb;
+    QString m_present_participle_verb;
+
     DFInstance * m_df;
     MemoryLayout * m_mem;
-    QVector<Dwarf *> m_members;
 
-    void read_id();
-    void read_name();
     void read_members();
-
-    Word * read_word(uint offset);
-    QString read_chunked_name(const VIRTADDR &addr);
-    QString capitalize(const QString & word);
 };
 
 #endif

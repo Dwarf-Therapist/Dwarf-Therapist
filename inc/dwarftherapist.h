@@ -35,6 +35,7 @@ class OptionsMenu;
 class QSettings;
 class CustomProfession;
 class Dwarf;
+class Word;
 class DFInstance;
 class LogManager;
 
@@ -57,6 +58,7 @@ public:
     void load_game_translation_tables(DFInstance *df);
     QString get_generic_word(const uint &offset) {return m_generic_words.value(offset, "UNKNOWN");}
     QString get_dwarf_word(const uint &offset) {return m_dwarf_words.value(offset, get_generic_word(offset));}
+    Word * get_word(const uint & offset) { return m_language.value(offset, NULL); }
     bool labor_cheats_allowed() {return m_allow_labor_cheats;}
     LogManager *get_log_manager() {return m_log_mgr;}
 
@@ -73,6 +75,7 @@ public:
 private:
     QVector<QString> m_generic_words;
     QVector<QString> m_dwarf_words;
+    QVector<Word *> m_language;
     QVector<CustomProfession*> m_custom_professions;
     QSettings *m_user_settings;
     MainWindow *m_main_window;

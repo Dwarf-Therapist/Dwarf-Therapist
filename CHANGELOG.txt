@@ -1,11 +1,12 @@
-RELEASE 0.6.6 ()
+RELEASE 0.6.6 (November 16, 2010)
 CHANGES SINCE 0.6.5
 ===============================================================================
 MAJOR CHANGES:
  * Started generating debian packages for Dwarf Therapist.  See wiki for repositories
  * Implemented Feature 272 - Ability to clear user settings from File menu
  * Implemented Feature 231 - Option to hide children and babies
- 
+ * Implemented Feature 300 - Group by squad
+  
 BUG FIXES:
  * Fixed issue 297 - Unable to run DT on Ubuntu 10-10
  * Fixed issue 298 - Unable to connect DT to DF (ptrace issue)
