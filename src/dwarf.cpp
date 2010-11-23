@@ -494,6 +494,17 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
             }
         }
 
+        flags = mem->valid_flags_2();
+        foreach(uint flag, flags.uniqueKeys()) {
+            QString reason = flags[flag];
+            if ((flags2 & flag) != flag) {
+                LOGD << "Ignoring" << unverified_dwarf->nice_name() <<
+                        "who appears to be" << reason;
+                delete unverified_dwarf;
+                return 0;
+            }
+        }
+
         flags = mem->invalid_flags_2();
         foreach(uint flag, flags.uniqueKeys()) {
             QString reason = flags[flag];
