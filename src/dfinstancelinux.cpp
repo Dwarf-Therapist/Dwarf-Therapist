@@ -230,22 +230,29 @@ int DFInstanceLinux::write_raw(const VIRTADDR &addr, const int &bytes,
     attach();
 
     /* Since most kernels won't let us write to /proc/<pid>/mem, we have to poke
-     * out data in 4 bytes at a time. Good thing we read way more than we write
+     * out data in n bytes at a time. Good thing we read way more than we write.
+     *
+     * On x86-64 systems, the size that POKEDATA writes is 8 bytes instead of
+     * 4, so we need to use the sizeof( long ) as our step size.
      */
 
+    // TODO: Should probably have a global define of word size for the
+    // architecture being compiled on. For now, sizeof(long) is consistent
+    // on most (all?) linux systems so we'll keep this.
+    uint stepsize = sizeof( long );
     uint bytes_written = 0; // keep track of how much we've written
-    uint steps = bytes / 4;
-    if (bytes % 4)
+    uint steps = bytes / stepsize;
+    if (bytes % stepsize)
         steps++;
-    LOGD << "WRITE_RAW: WILL WRITE" << bytes << "bytes over" << steps << "steps";
+    LOGD << "WRITE_RAW: WILL WRITE" << bytes << "bytes over" << steps << "steps, with stepsize " << stepsize;
 
-    // we want to make sure that given the case where (bytes % 4 != 0) we don't
+    // we want to make sure that given the case where (bytes % stepsize != 0) we don't
     // clobber data past where we meant to write. So we're first going to read
     // the existing data as it is, and then write the changes over the existing
-    // data in the buffer first, then write the buffer 4 bytes at a time to the
-    // process. This should ensure no clobbering of data.
-    QByteArray existing_data(steps * 4, 0);
-    read_raw(addr, (steps * 4), existing_data);
+    // data in the buffer first, then write the buffer with stepsize bytes at a time 
+    // to the process. This should ensure no clobbering of data.
+    QByteArray existing_data(steps * stepsize, 0);
+    read_raw(addr, (steps * stepsize), existing_data);
     LOGD << "WRITE_RAW: EXISTING OLD DATA     " << existing_data.toHex();
 
     // ok we have our insurance in place, now write our new junk to the buffer
@@ -256,19 +263,19 @@ int DFInstanceLinux::write_raw(const VIRTADDR &addr, const int &bytes,
     // ok, now our to be written data is in part or all of the exiting data buffer
     long tmp_data;
     for (uint i = 0; i < steps; ++i) {
-        int offset = i * 4;
+        int offset = i * stepsize;
         // for each step write a single word to the child
-        memcpy(&tmp_data, existing_data.mid(offset, 4).data(), 4);
-        QByteArray tmp_data_str((char*)&tmp_data, 4);
+        memcpy(&tmp_data, existing_data.mid(offset, stepsize).data(), stepsize);
+        QByteArray tmp_data_str((char*)&tmp_data, stepsize);
         LOGD << "WRITE_RAW:" << hex << addr + offset << "HEX" << tmp_data_str.toHex();
         if (ptrace(PTRACE_POKEDATA, m_pid, addr + offset, tmp_data) != 0) {
             perror("write word");
             break;
         } else {
-            bytes_written += 4;
+            bytes_written += stepsize;
         }
         long written = ptrace(PTRACE_PEEKDATA, m_pid, addr + offset, 0);
-        QByteArray foo((char*)&written, 4);
+        QByteArray foo((char*)&written, stepsize);
         LOGD << "WRITE_RAW: WE APPEAR TO HAVE WRITTEN" << foo.toHex();
     }
     // attempt to detach, will be ignored if we're several layers into an attach chain
