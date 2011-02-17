@@ -1,5 +1,5 @@
-Dwarf Therapist v0.6.7
-Copyright (c) 2009,2010 Trey Stout (chmod)
+Dwarf Therapist v0.6.8
+Copyright (c) 2009-2011 Trey Stout (chmod)
 Homepage: http://code.google.com/p/dwarftherapist/
 License: MIT License (see included LICENSE.txt file)
 

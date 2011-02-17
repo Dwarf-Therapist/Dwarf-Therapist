@@ -1,3 +1,12 @@
+RELEASE 0.6.8 (February 16, 2011)
+CHANGES SINCE 0.6.7
+===============================================================================
+MAJOR CHANGES:
+ * Support for 0.31.19 (graphics + legacy versions)
+ * Added Skills, Labors, and Professions for Shearing, Spinning, Pottery, Glazing, Pressing, Bee Keeping and Wax Working
+KNOWN ISSUES:
+ * Jobs for new professions are not displayed
+  
 RELEASE 0.6.7 (November 24, 2010)
 CHANGES SINCE 0.6.6
 ===============================================================================
