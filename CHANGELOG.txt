@@ -1,3 +1,11 @@
+RELEASE 0.6.9 (February 17, 2011)
+CHANGES SINCE 0.6.8
+===============================================================================
+MAJOR CHANGES:
+ * Support for most new job types (with icons!)
+KNOWN ISSUES:
+ * Still a few job types that are not supported (mostly due to bugs)
+
 RELEASE 0.6.8 (February 16, 2011)
 CHANGES SINCE 0.6.7
 ===============================================================================

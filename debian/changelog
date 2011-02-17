@@ -1,3 +1,11 @@
+dwarftherapist (0.6.9-1) lucid; urgency=low
+
+  * Support for 0.31.19 (graphics + legacy versions)
+  * Added Skills, Labors, and Professions for Shearing, Spinning, Pottery, Glazing, Pressing, Bee Keeping and Wax Working 
+  * Support for most new job types (with icons!)
+
+ -- Justin <ehlertjd@ehlertjd-desktop>  Thu, 17 Feb 2011 17:07:30 -0600
+
 dwarftherapist (0.6.6-1) lucid; urgency=low
 
  * Support for 0.31.18 (graphics + legacy versions)
