@@ -264,6 +264,17 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
         .toBool() && m_layout && m_layout->is_complete()) {
         m_heartbeat_timer->start(1000); // check every second for disconnection
     }
+
+    char * modName = new char[MAX_PATH];
+    DWORD lenModName = 0;
+    if ((lenModName = GetModuleFileNameExA(m_proc, NULL, modName, MAX_PATH)) != 0) {
+        QString exe_path = QString::fromLocal8Bit(modName, lenModName);
+        LOGD << "GetModuleFileNameEx returned: " << exe_path;
+        QFileInfo exe(exe_path);
+        m_df_dir = exe.absoluteDir();
+        LOGI << "Dwarf fortress path:" << m_df_dir.absolutePath();
+    }
+
     m_is_ok = true;
     return m_is_ok;
 }

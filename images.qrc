@@ -70,5 +70,10 @@
         <file>img/syringe.png</file>
         <file>img/band_aid.png</file>
         <file>img/first_aid_kit.png</file>
+        <file>img/cup2.png</file>
+        <file>img/bee_i_guess.png</file>
+        <file>img/pot.png</file>
+        <file>img/lump.png</file>
+        <file>img/spinning.png</file>
     </qresource>
 </RCC>

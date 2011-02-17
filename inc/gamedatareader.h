@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <string>
 #include <stdexcept>
 #include <QtCore>
+#include "raws/rawobjectlist.h"
 
 // forward declaration
 class QSettings;
@@ -86,6 +87,16 @@ public:
     QStringList get_keys(QString section);
     int get_level_from_xp(int xp);
 
+    RawObjectPtr get_reaction(QString reactionClass, QString id) {
+        if(m_reaction_classes.contains(reactionClass)) {
+            return m_reaction_classes.value(reactionClass)
+                    .getRawObject("REACTION", id);
+        }
+        return RawObjectPtr();
+    }
+
+    void read_raws(QDir df_dir);
+
 protected:
     GameDataReader(QObject *parent = 0);
 private:
@@ -107,5 +118,7 @@ private:
     QHash<int, int> m_attribute_levels;
     QHash<short, DwarfJob*> m_dwarf_jobs;
     QHash<short, Profession*> m_professions;
+
+    QHash<QString, QRawObjectList> m_reaction_classes;
 };
 #endif

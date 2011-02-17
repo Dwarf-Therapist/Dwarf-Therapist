@@ -47,6 +47,7 @@ public:
     bool is_ok() {return m_is_ok;}
     WORD dwarf_race_id() {return m_dwarf_race_id;}
     QList<MemoryLayout*> get_layouts() { return m_memory_layouts.values(); }
+    QDir get_df_dir() { return m_df_dir; }
 
     // brute force memory scanning methods
     bool is_valid_address(const VIRTADDR &addr);
@@ -80,6 +81,7 @@ public:
 
     // Methods for when we know how the data is layed out
     MemoryLayout *memory_layout() {return m_layout;}
+    void read_raws();
     QVector<Dwarf*> load_dwarves();
     QVector<Squad*> load_squads();
 
@@ -142,6 +144,7 @@ protected:
     QTimer *m_memory_remap_timer;
     QTimer *m_scan_speed_timer;
     WORD m_dwarf_race_id;
+    QDir m_df_dir;
 
     /*! this hash will hold a map of all loaded and valid memory layouts found
         on disk, the key is a QString of the checksum since other OSs will use

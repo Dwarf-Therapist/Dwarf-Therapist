@@ -162,12 +162,3 @@ QString Squad::read_chunked_name() {
 
     return result.trimmed();
 }
-
-QString Squad::capitalize(const QString & word) {
-    QString result = word;
-    if(!result.isEmpty()) {
-        result = result.toLower();
-        result[0] = result[0].toUpper();
-    }
-    return result;
-}

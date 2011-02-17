@@ -276,6 +276,10 @@ void MainWindow::connect_to_df() {
             DT->load_game_translation_tables(m_df);
             connect(m_df, SIGNAL(connection_interrupted()),
                     SLOT(lost_df_connection()));
+
+            //Read raws once memory layout is complete
+            m_df->read_raws();
+
             if (DT->user_settings()->value("options/read_on_startup",
                                            true).toBool()) {
                 read_dwarves();

@@ -362,14 +362,32 @@ void Dwarf::read_current_job() {
     VIRTADDR addr = m_address + m_mem->dwarf_offset("current_job");
     VIRTADDR current_job_addr = m_df->read_addr(addr);
 
+    m_current_sub_job_id.clear();
+
+    TRACE << "Current job addr: " << hex << current_job_addr;
+
     if (current_job_addr != 0) {
         m_current_job_id = m_df->read_word(current_job_addr +
                                      m_df->memory_layout()->job_detail("id"));
         DwarfJob *job = GameDataReader::ptr()->get_job(m_current_job_id);
-        if (job)
+        if (job) {
             m_current_job = job->description;
-        else
+
+            int sub_job_offset = m_df->memory_layout()->job_detail("sub_job_id");
+            if(sub_job_offset != -1) {
+                m_current_sub_job_id = m_df->read_string(current_job_addr + sub_job_offset);
+                if(!job->reactionClass.isEmpty() && !m_current_sub_job_id.isEmpty()) {
+                    RawObjectPtr reaction = GameDataReader::ptr()->
+                            get_reaction(job->reactionClass, m_current_sub_job_id);
+                    if(!reaction.isNull()) {
+                        m_current_job = capitalize(reaction->get_value("NAME", m_current_job));
+                        TRACE << "Sub job: " << m_current_sub_job_id << m_current_job;
+                    }
+                }
+            }
+        } else {
             m_current_job = tr("Unknown job");
+        }
     } else {
         bool is_on_break = false;
         MemoryLayout* layout = m_df->memory_layout();
@@ -387,7 +405,7 @@ void Dwarf::read_current_job() {
         }
         m_current_job = is_on_break ? tr("On Break") : tr("No Job");
     }
-    TRACE << "CURRENT JOB:" << m_current_job_id << m_current_job;
+    LOGD << "CURRENT JOB:" << m_current_job_id << m_current_sub_job_id << m_current_job;
 }
 
 void Dwarf::read_souls() {

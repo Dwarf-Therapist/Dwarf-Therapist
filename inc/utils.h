@@ -148,4 +148,13 @@ static inline QString hexify(const uint &num) {
     return QString("0x%1").arg(num, 8, 16, QChar('0'));
 }
 
+static inline QString capitalize(const QString & word) {
+    QString result = word;
+    if(!result.isEmpty()) {
+        result = result.toLower();
+        result[0] = result[0].toUpper();
+    }
+    return result;
+}
+
 #endif // UTILS_H

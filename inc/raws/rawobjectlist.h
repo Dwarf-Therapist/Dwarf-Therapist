@@ -1,6 +1,6 @@
 /*
 Dwarf Therapist
-Copyright (c) 2009 Trey Stout (chmod)
+Copyright (c) 2011 Justin Ehlert (Dwarf Engineer)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,46 +20,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef SQUAD_H
-#define SQUAD_H
+#ifndef RAWOBJECTLIST_H
+#define RAWOBJECTLIST_H
 
-#include <QtGui>
-#include "utils.h"
+#include <QObject>
+#include <QList>
+#include "raws/rawobject.h"
 
-class Dwarf;
-class Word;
-class DFInstance;
-class MemoryLayout;
-
-class Squad : public QObject {
-    Q_OBJECT
+class QRawObjectList : public QList<RawObjectPtr> {
 public:
-    Squad(DFInstance *df, VIRTADDR address, QObject *parent = 0);
-    virtual ~Squad();
-
-    static Squad* get_squad(DFInstance *df, const VIRTADDR &address);
-
-    //! Return the memory address (in hex) of this creature in the remote DF process
-    VIRTADDR address() {return m_address;}
-    int id() {return m_id;}
-    QString name() {return m_name;}
-    QVector<Dwarf *> members() {return m_members;}
-    void refresh_data();
-
-private:
-    VIRTADDR m_address;
-    int m_id;
-    QString m_name;
-    DFInstance * m_df;
-    MemoryLayout * m_mem;
-    QVector<Dwarf *> m_members;
-
-    void read_id();
-    void read_name();
-    void read_members();
-
-    Word * read_word(uint offset);
-    QString read_chunked_name();
+    RawObjectPtr getRawObject(QString name, QString id) const {
+        foreach(RawObjectPtr obj, *this) {
+            if(obj->get_name() == name && obj->get_id() == id) {
+                return obj;
+            }
+        }
+        return RawObjectPtr();
+    }
 };
 
-#endif
+
+#endif // RAWOBJECTLIST_H

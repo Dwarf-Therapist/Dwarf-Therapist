@@ -241,6 +241,11 @@ bool DFInstance::looks_like_vector_of_pointers(const VIRTADDR &addr) {
 
 }
 
+void DFInstance::read_raws() {
+    LOGI << "Reading some game raws...";
+    GameDataReader::ptr()->read_raws(m_df_dir);
+}
+
 QVector<Dwarf*> DFInstance::load_dwarves() {
     map_virtual_memory();
     QVector<Dwarf*> dwarves;

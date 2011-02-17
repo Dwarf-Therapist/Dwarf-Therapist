@@ -141,7 +141,11 @@ HEADERS += inc/win_structs.h \
     inc/layoutcreator.h \
     inc/narrowingvectorsearchjob.h \
     inc/squadvectorsearchjob.h \
-    inc/word.h
+    inc/word.h \
+    inc/raws/rawnode.h \
+    inc/raws/rawobject.h \
+    inc/raws/rawreader.h \
+    inc/raws/rawobjectlist.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -185,7 +189,8 @@ SOURCES += src/viewmanager.cpp \
     thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp \
     src/selectparentlayoutdialog.cpp \
     src/layoutcreator.cpp \
-    src/word.cpp
+    src/word.cpp \
+    src/raws/rawreader.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

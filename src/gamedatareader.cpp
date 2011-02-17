@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "militarypreference.h"
 #include "defines.h"
 #include <QtDebug>
+#include "raws/rawreader.h"
 
 GameDataReader::GameDataReader(QObject *parent)
     : QObject(parent)
@@ -124,10 +125,15 @@ GameDataReader::GameDataReader(QObject *parent)
     m_dwarf_jobs.clear();
     for (short i = 0; i < job_names; ++i) {
         m_data_settings->setArrayIndex(i);
-        m_dwarf_jobs[i + 1] =  new DwarfJob(i + 1,
-            m_data_settings->value("name", "???").toString(),
-            DwarfJob::get_type(m_data_settings->value("type").toString()),
-            this);
+
+        QString name = m_data_settings->value("name", "???").toString();
+        QString job_type = m_data_settings->value("type").toString();
+        QString reactionClass = m_data_settings->value("reaction_class").toString();
+        DwarfJob::DWARF_JOB_TYPE type = DwarfJob::get_type(job_type);
+
+        TRACE << "Creating job(" << name << "," << type << "," << reactionClass << ")";
+
+        m_dwarf_jobs[i + 1] =  new DwarfJob(i + 1, name, type, reactionClass, this);
     }
     m_data_settings->endArray();
 
@@ -244,5 +250,13 @@ int GameDataReader::get_level_from_xp(int xp) {
     }
     return ret_val;
 }
+
+void GameDataReader::read_raws(QDir df_dir) {
+    //Read reactions
+    QFileInfo reaction_other(df_dir, "raw/objects/reaction_other.txt");
+    m_reaction_classes["reaction_other"] = RawReader::read_objects(reaction_other);
+    LOGD << "Read " << m_reaction_classes["reaction_other"].size() << " reactions";
+}
+
 
 GameDataReader *GameDataReader::m_instance = 0;

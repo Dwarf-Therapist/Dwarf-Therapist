@@ -24,57 +24,71 @@ THE SOFTWARE.
 #define DWARF_JOB_H
 
 #include <QtCore>
+#include "truncatingfilelogger.h"
 
 class DwarfJob : public QObject {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	typedef enum {
-		DJT_DEFAULT,
-		DJT_IDLE,
-		DJT_DIG,
+    typedef enum {
+        DJT_DEFAULT,
+        DJT_IDLE,
+        DJT_DIG,
         DJT_CUT,
-		DJT_REST,
-		DJT_DRINK,
-		DJT_FOOD,
-		DJT_BUILD,
-		DJT_HAUL,
-		DJT_ADMIN,
+        DJT_REST,
+        DJT_DRINK,
+        DJT_FOOD,
+        DJT_BUILD,
+        DJT_HAUL,
+        DJT_ADMIN,
         DJT_FIGHT,
         DJT_MOOD,
         DJT_FORGE,
         DJT_MEDICAL,
-        DJT_FURNACE
-	} DWARF_JOB_TYPE;
+        DJT_FURNACE,
+        DJT_WAX_WORKING,
+        DJT_BEE_KEEPING,
+        DJT_PRESSING,
+        DJT_SPINNING,
+        DJT_POTTERY
+    } DWARF_JOB_TYPE;
 
-	static DWARF_JOB_TYPE get_type(const QString &type) {
-		QMap<QString, DWARF_JOB_TYPE> m;
-		m["idle"] = DJT_IDLE;
-		m["dig"] = DJT_DIG;
+    static DWARF_JOB_TYPE get_type(const QString &type) {
+        QMap<QString, DWARF_JOB_TYPE> m;
+        m["idle"] = DJT_IDLE;
+        m["dig"] = DJT_DIG;
         m["cut"] = DJT_CUT;
-		m["rest"] = DJT_REST;
-		m["drink"] = DJT_DRINK;
-		m["food"] = DJT_FOOD;
-		m["build"] = DJT_BUILD;
-		m["haul"] = DJT_HAUL;
-		m["admin"] = DJT_ADMIN;
+        m["rest"] = DJT_REST;
+        m["drink"] = DJT_DRINK;
+        m["food"] = DJT_FOOD;
+        m["build"] = DJT_BUILD;
+        m["haul"] = DJT_HAUL;
+        m["admin"] = DJT_ADMIN;
         m["fight"] = DJT_FIGHT;
         m["mood"] = DJT_MOOD;
         m["forge"] = DJT_FORGE;
         m["medical"] = DJT_MEDICAL;
         m["furnace"] = DJT_FURNACE;
-		return m.value(type.toLower(), DJT_DEFAULT);
-	}
-	
-	DwarfJob(short id, QString description, DWARF_JOB_TYPE type, QObject *parent = 0)
-		: QObject(parent)
-		, id(id)
-		, description(description)
-		, type(type)
-	{}
+        m["wax_working"] = DJT_WAX_WORKING;
+        m["bee_keeping"] = DJT_BEE_KEEPING;
+        m["pressing"] = DJT_PRESSING;
+        m["spinning"] = DJT_SPINNING;
+        m["pottery"] = DJT_POTTERY;
+        m["glazing"] = DJT_POTTERY;
+        return m.value(type.toLower(), DJT_DEFAULT);
+    }
 
-	short id;
-	QString description;
-	DWARF_JOB_TYPE type;
+    DwarfJob(short id, QString description, DWARF_JOB_TYPE type, QString reactionClass, QObject *parent = 0)
+        : QObject(parent)
+        , id(id)
+        , description(description)
+        , type(type)
+        , reactionClass(reactionClass)
+    {}
+
+    short id;
+    QString description;
+    DWARF_JOB_TYPE type;
+    QString reactionClass;
 };
 
 #endif

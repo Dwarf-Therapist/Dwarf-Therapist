@@ -49,7 +49,19 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
     } else {
         DwarfJob *job = GameDataReader::ptr()->get_job(job_id);
         if (job) {
-            switch (job->type) {
+
+            DwarfJob::DWARF_JOB_TYPE job_type = job->type;
+            if(!job->reactionClass.isEmpty() && !d->current_sub_job_id().isEmpty()) {
+                RawObjectPtr reaction = GameDataReader::ptr()->
+                        get_reaction(job->reactionClass, d->current_sub_job_id());
+                if(!reaction.isNull()) {
+                    job_type = DwarfJob::get_type(reaction->get_value("SKILL"));
+                }
+            }
+
+            TRACE << "Dwarf: " << d->nice_name() << " job -" << job_id << ": (" << job->description << "," << job_type << ")";
+
+            switch (job_type) {
             case DwarfJob::DJT_IDLE:
                 pixmap_name = ":status/img/bullet_red.png";
                 break;
@@ -85,6 +97,21 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
                 break;
             case DwarfJob::DJT_MEDICAL:
                 pixmap_name = ":status/img/first_aid_kit.png";
+                break;
+            case DwarfJob::DJT_WAX_WORKING:
+                pixmap_name = ":status/img/lump.png";
+                break;
+            case DwarfJob::DJT_POTTERY:
+                pixmap_name = ":status/img/pot.png";
+                break;
+            case DwarfJob::DJT_PRESSING:
+                pixmap_name = ":status/img/cup2.png";
+                break;
+            case DwarfJob::DJT_SPINNING:
+                pixmap_name = ":status/img/spinning.png";
+                break;
+            case DwarfJob::DJT_BEE_KEEPING:
+                pixmap_name = ":status/img/bee_i_guess.png";
                 break;
             default:
             case DwarfJob::DJT_DEFAULT:
