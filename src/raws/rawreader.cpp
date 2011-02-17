@@ -88,7 +88,6 @@ void RawReader::populate_sub_nodes(const RawNodePtr & node,  QStringList & lines
                 node->children.append(subNode);
             }
         }
-        line = lines.front();
     }
 }
 

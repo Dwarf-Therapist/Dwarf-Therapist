@@ -329,6 +329,11 @@ bool DFInstanceLinux::find_running_copy(bool connect_anyway) {
     if (m_is_ok) {
         m_layout = get_memory_layout(hexify(checksum).toLower(), !connect_anyway);
     }
+
+    //Get dwarf fortress directory
+    m_df_dir = QDir(QFileInfo(QString("/proc/%1/cwd").arg(m_pid)).symLinkTarget());
+    LOGI << "Dwarf fortress path:" << m_df_dir.absolutePath();
+
     return m_is_ok || connect_anyway;
 }
 
