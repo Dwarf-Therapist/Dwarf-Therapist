@@ -94,6 +94,9 @@ public:
     virtual int write_string(const VIRTADDR &addr, const QString &str) = 0;
     virtual int write_int(const VIRTADDR &addr, const int &val) = 0;
 
+    bool add_new_layout(const QString & version, QFile & file);
+    void layout_not_found(const QString & checksum);
+
     bool is_attached() {return m_attach_count > 0;}
     virtual bool attach() = 0;
     virtual bool detach() = 0;

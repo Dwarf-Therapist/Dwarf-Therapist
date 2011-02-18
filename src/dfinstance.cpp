@@ -34,6 +34,20 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "memorysegment.h"
 #include "truncatingfilelogger.h"
+#include "mainwindow.h"
+
+#ifdef Q_WS_WIN
+#define LAYOUT_SUBDIR "windows"
+#else
+#ifdef Q_WS_X11
+#define LAYOUT_SUBDIR "linux"
+#else
+#ifdef _OSX
+#define LAYOUT_SUBDIR "osx"
+#endif
+#endif
+#endif
+
 
 DFInstance::DFInstance(QObject* parent)
     : QObject(parent)
@@ -63,17 +77,8 @@ DFInstance::DFInstance(QObject* parent)
     QDir working_dir = QDir::current();
     QStringList search_paths;
     search_paths << working_dir.path();
-#ifdef Q_WS_WIN
-    QString subdir = "windows";
-#else
-#ifdef Q_WS_X11
-    QString subdir = "linux";
-#else
-#ifdef _OSX
-    QString subdir = "osx";
-#endif
-#endif
-#endif
+
+    QString subdir = LAYOUT_SUBDIR;
     search_paths << QString("etc/memory_layouts/%1").arg(subdir);
 
     TRACE << "Searching for MemoryLayout ini files in the following directories";
@@ -242,6 +247,8 @@ bool DFInstance::looks_like_vector_of_pointers(const VIRTADDR &addr) {
 }
 
 void DFInstance::read_raws() {
+    emit progress_message(tr("Reading raws"));
+
     LOGI << "Reading some game raws...";
     GameDataReader::ptr()->read_raws(m_df_dir);
 }
@@ -326,6 +333,11 @@ QVector<Squad*> DFInstance::load_squads() {
 
     // we're connected, make sure we have good addresses
     VIRTADDR squad_vector = m_layout->address("squad_vector");
+    if(squad_vector == 0xFFFFFFFF) {
+        LOGI << "Squads not supported for this version of Dwarf Fortress";
+        return squads;
+    }
+
     squad_vector += m_memory_correction;
 
     if (!is_valid_address(squad_vector)) {
@@ -643,40 +655,76 @@ MemoryLayout *DFInstance::get_memory_layout(QString checksum, bool warn) {
     MemoryLayout *ret_val = NULL;
     ret_val = m_memory_layouts.value(checksum, NULL);
     m_is_ok = ret_val != NULL && ret_val->is_valid();
+
+    if(!m_is_ok) {
+        LOGD << "Could not find layout for checksum" << checksum;
+        DT->get_main_window()->check_for_layout(checksum);
+    }
+
     if (m_is_ok) {
         LOGI << "Detected Dwarf Fortress version"
                 << ret_val->game_version() << "using MemoryLayout from"
                 << ret_val->filename();
-    } else if(warn) {
-        QString supported_vers;
-        foreach(QString tmp_checksum, m_memory_layouts.uniqueKeys()) {
-            MemoryLayout *l = m_memory_layouts[tmp_checksum];
-            supported_vers.append(
-                    QString("<li><b>%1</b>(<font color=\"#444444\">%2"
-                            "</font>) from <font size=-1>%3</font></li>")
-                    .arg(l->game_version())
-                    .arg(l->checksum())
-                    .arg(l->filename()));
-        }
-
-        QMessageBox *mb = new QMessageBox(qApp->activeWindow());
-        mb->setIcon(QMessageBox::Critical);
-        mb->setWindowTitle(tr("Unidentified Game Version"));
-        mb->setText(tr("I'm sorry but I don't know how to talk to this "
-            "version of Dwarf Fortress! (checksum:%1)<br><br> <b>Supported "
-            "Versions:</b><ul>%2</ul>").arg(checksum).arg(supported_vers));
-        mb->setInformativeText(tr("<a href=\"%1\">Click Here to find out "
-                                  "more online</a>.")
-                               .arg(URL_SUPPORTED_GAME_VERSIONS));
-
-        /*
-        mb->setDetailedText(tr("Failed to locate a memory layout file for "
-            "Dwarf Fortress exectutable with checksum '%1'").arg(checksum));
-        */
-        mb->exec();
-        LOGE << tr("unable to identify version from checksum:") << checksum;
     }
+
     return ret_val;
+}
+
+bool DFInstance::add_new_layout(const QString & version, QFile & file) {
+    QString newFileName = version;
+    newFileName.replace("(", "").replace(")", "").replace(" ", "_");
+    newFileName +=  ".ini";
+
+    QFileInfo newFile(QDir(QString("etc/memory_layouts/%1").arg(LAYOUT_SUBDIR)), newFileName);
+    newFileName = newFile.absoluteFilePath();
+
+    if(!file.exists()) {
+        LOGW << "Layout file" << file.fileName() << "does not exist!";
+        return false;
+    }
+
+    LOGD << "Copying: " << file.fileName() << " to " << newFileName;
+    if(!file.copy(newFileName)) {
+        LOGW << "Error renaming layout file!";
+        return false;
+    }
+
+    MemoryLayout *temp = new MemoryLayout(newFileName);
+    if (temp && temp->is_valid()) {
+        LOGD << "adding valid layout" << temp->game_version() << temp->checksum();
+        m_memory_layouts.insert(temp->checksum().toLower(), temp);
+    }
+    return true;
+}
+
+void DFInstance::layout_not_found(const QString & checksum) {
+    QString supported_vers;
+    foreach(QString tmp_checksum, m_memory_layouts.uniqueKeys()) {
+        MemoryLayout *l = m_memory_layouts[tmp_checksum];
+        supported_vers.append(
+                QString("<li><b>%1</b>(<font color=\"#444444\">%2"
+                        "</font>) from <font size=-1>%3</font></li>")
+                .arg(l->game_version())
+                .arg(l->checksum())
+                .arg(l->filename()));
+    }
+
+    QMessageBox *mb = new QMessageBox(qApp->activeWindow());
+    mb->setIcon(QMessageBox::Critical);
+    mb->setWindowTitle(tr("Unidentified Game Version"));
+    mb->setText(tr("I'm sorry but I don't know how to talk to this "
+        "version of Dwarf Fortress! (checksum:%1)<br><br> <b>Supported "
+        "Versions:</b><ul>%2</ul>").arg(checksum).arg(supported_vers));
+    mb->setInformativeText(tr("<a href=\"%1\">Click Here to find out "
+                              "more online</a>.")
+                           .arg(URL_SUPPORTED_GAME_VERSIONS));
+
+    /*
+    mb->setDetailedText(tr("Failed to locate a memory layout file for "
+        "Dwarf Fortress exectutable with checksum '%1'").arg(checksum));
+    */
+    mb->exec();
+    LOGE << tr("unable to identify version from checksum:") << checksum;
 }
 
 void DFInstance::calculate_scan_rate() {

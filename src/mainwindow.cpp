@@ -81,6 +81,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_show_result_on_equal(false)
     , m_dwarf_name_completer(0)
     , m_force_connect(false)
+    , m_try_download(true)
     , m_deleting_settings(false)
 {
     ui->setupUi(this);
@@ -403,6 +404,75 @@ void MainWindow::version_check_finished(bool error) {
         m_about_dialog->set_latest_version(newest_v);
     } else {
         m_about_dialog->version_check_failed();
+    }
+}
+
+void MainWindow::check_for_layout(const QString & checksum) {
+    if(m_try_download &&
+            (m_settings->value("options/check_for_updates_on_startup", true).toBool())) {
+        m_try_download = false;
+
+        LOGI << "Checking for layout for checksum: " << checksum;
+        m_tmp_checksum = checksum;
+
+        Version our_v(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
+
+        QString request = QString("/memory_layouts/checksum/%1").arg(checksum);
+        QHttpRequestHeader header("GET", request);
+        header.setValue("Host", "www.dwarftherapist.com");
+        header.setValue("User-Agent", QString("DwarfTherapist %1").arg(our_v.to_string()));
+        if (m_http) {
+            m_http->deleteLater();
+        }
+        m_http = new QHttp(this);
+        m_http->setHost("www.dwarftherapist.com");
+
+        disconnect(m_http, SIGNAL(done(bool)));
+        connect(m_http, SIGNAL(done(bool)), this, SLOT(layout_check_finished(bool)));
+        m_http->request(header);
+    } else if (!m_force_connect) {
+        m_df->layout_not_found(checksum);
+    }
+}
+
+void MainWindow::layout_check_finished(bool error) {
+    if(!error) {
+        QTemporaryFile outFile("layout.ini");
+        if (!outFile.open())
+         return;
+
+        QString fileName = outFile.fileName();
+        QTextStream out(&outFile);
+        out << m_http->readAll();
+        outFile.close();
+
+        QString version;
+
+        {
+            QSettings layout(fileName, QSettings::IniFormat);
+            version = layout.value("info/version_name", "").toString();
+        }
+
+        LOGD << "Found version" << version;
+
+        if(m_df->add_new_layout(version, outFile)) {
+            QMessageBox *mb = new QMessageBox(this);
+            mb->setIcon(QMessageBox::Information);
+            mb->setWindowTitle(tr("New Memory Layout Added"));
+            mb->setText(tr("A new memory layout has been downloaded for this version of dwarf fortress!"));
+            mb->setInformativeText(tr("New layout for version %1 of Dwarf Fortress.").arg(version));
+            mb->exec();
+
+            LOGD << "Reconnecting to Dwarf Fortress!";
+            m_force_connect = false;
+            connect_to_df();
+        } else {
+            error = true;
+        }
+    }
+
+    if(error && !m_force_connect) {
+        m_df->layout_not_found(m_tmp_checksum);
     }
 }
 

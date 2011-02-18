@@ -405,7 +405,7 @@ void Dwarf::read_current_job() {
         }
         m_current_job = is_on_break ? tr("On Break") : tr("No Job");
     }
-    LOGD << "CURRENT JOB:" << m_current_job_id << m_current_sub_job_id << m_current_job;
+    TRACE << "CURRENT JOB:" << m_current_job_id << m_current_sub_job_id << m_current_job;
 }
 
 void Dwarf::read_souls() {

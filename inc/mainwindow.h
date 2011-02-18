@@ -88,6 +88,10 @@ public:
         void check_latest_version(bool show_result_on_equal=false);
         void version_check_finished(bool error);
 
+        // layout check
+        void check_for_layout(const QString & checksum);
+        void layout_check_finished(bool error);
+
         // links
         void go_to_forums();
         void go_to_donate();
@@ -123,6 +127,8 @@ private:
     QCompleter *m_dwarf_name_completer;
     QStringList m_dwarf_names_list;
     bool m_force_connect;
+    bool m_try_download;
+    QString m_tmp_checksum;
     bool m_deleting_settings;
 
     void closeEvent(QCloseEvent *evt); // override;

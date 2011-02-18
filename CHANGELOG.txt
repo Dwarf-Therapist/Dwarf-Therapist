@@ -3,8 +3,13 @@ CHANGES SINCE 0.6.8
 ===============================================================================
 MAJOR CHANGES:
  * Support for most new job types (with icons!)
-KNOWN ISSUES:
- * Still a few job types that are not supported (mostly due to bugs)
+ * Support for automatic downloading of layout files. 
+		(Can be disabled by disabling the version check in preferences)
+ * This is the first version of Dwarf Therapist that reads RAW files, so please 
+		post any issues found
+
+ BUG FIXES:
+ * Fixed issue 313 - Stuck loading squads on older versions of Dwarf Fortress
 
 RELEASE 0.6.8 (February 16, 2011)
 CHANGES SINCE 0.6.7
