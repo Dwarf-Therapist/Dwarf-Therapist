@@ -1,3 +1,10 @@
+dwarftherapist (0.6.9-2) lucid; urgency=low
+
+  * Support for automatic downloading of layout files. (Can be disabled by disabling the version check in preferences)
+  * This is the first version of Dwarf Therapist that reads RAW files, so please post any issues found
+
+ -- Justin <ehlertjd@ehlertjd-desktop>  Fri, 18 Feb 2011 16:41:39 -0600
+
 dwarftherapist (0.6.9-1) lucid; urgency=low
 
   * Support for 0.31.19 (graphics + legacy versions)

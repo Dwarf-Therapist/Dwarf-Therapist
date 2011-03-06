@@ -648,7 +648,7 @@ QVector<VIRTADDR> DFInstance::find_vectors(int num_entries, const QVector<VIRTAD
 }
 
 
-MemoryLayout *DFInstance::get_memory_layout(QString checksum, bool warn) {
+MemoryLayout *DFInstance::get_memory_layout(QString checksum, bool) {
     checksum = checksum.toLower();
     LOGD << "DF's checksum is:" << checksum;
 
