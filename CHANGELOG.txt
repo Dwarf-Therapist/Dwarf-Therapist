@@ -1,3 +1,14 @@
+RELEASE 0.6.10 (March 15, 2011)
+CHANGES SINCE 0.6.9
+===============================================================================
+MAJOR CHANGES:
+ * Support for 0.31.20 & 0.31.21
+
+ BUG FIXES:
+ * Closes issue 318 - Support for 0.31.21
+ * Closes issue 319 - 31.21 Windows
+ * Fixed issue 276 - Job Names Incorrect
+
 RELEASE 0.6.9 (February 17, 2011)
 CHANGES SINCE 0.6.8
 ===============================================================================
