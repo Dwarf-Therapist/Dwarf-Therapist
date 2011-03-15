@@ -2,23 +2,12 @@
 #Build source descriptor
 debuild -us -uc -S 
 
-#Lucid
-sudo rm -rf /var/cache/pbuilder/result/*
-sudo pbuilder build ../*.dsc 
-
-mkdir -p ../packages/dists
-mkdir -p ../packages/dists/lucid
-mkdir -p ../packages/dists/lucid/universe
-mkdir -p ../packages/dists/lucid/universe/binary-i386
-sudo rm -f ../packages/dists/lucid/universe/binary-i386/*
-
-cp /var/cache/pbuilder/result/dwarftherapist*.deb ../packages/dists/lucid/universe/binary-i386
-
-#Other dists in pbuilder (TODO: move lucid here)
-for dist in "maverick" "sid" "lenny"
+#Other dists in pbuilder
+for dist in "lucid" "maverick" "sid" "lenny"
 do
-	sudo rm -rf ~/pbuilder/${dist}_result/*
-	sudo pbuilder-dist $dist build ../*.dsc 
+	#32-bit
+	sudo rm -rf ~/pbuilder/${dist}-i386_result/*
+	sudo pbuilder-dist $dist i386 build ../*.dsc 
 
 	mkdir -p ../packages/dists
 	mkdir -p ../packages/dists/$dist
@@ -26,7 +15,19 @@ do
 	mkdir -p ../packages/dists/$dist/universe/binary-i386
 	sudo rm -f ../packages/dists/$dist/universe/binary-i386/*
 
-	cp ~/pbuilder/${dist}_result/dwarftherapist*.deb ../packages/dists/$dist/universe/binary-i386
+	cp ~/pbuilder/${dist}-i386_result/dwarftherapist*.deb ../packages/dists/$dist/universe/binary-i386
+
+	#64-bit
+	sudo rm -rf ~/pbuilder/${dist}_result/*
+	sudo pbuilder-dist $dist build ../*.dsc 
+
+	mkdir -p ../packages/dists
+	mkdir -p ../packages/dists/$dist
+	mkdir -p ../packages/dists/$dist/universe
+	mkdir -p ../packages/dists/$dist/universe/binary-amd64
+	sudo rm -f ../packages/dists/$dist/universe/binary-amd64/*
+
+	cp ~/pbuilder/${dist}_result/dwarftherapist*.deb ../packages/dists/$dist/universe/binary-amd64
 done
 
 

@@ -1,9 +1,18 @@
+dwarftherapist (0.6.10-1) maverick; urgency=low
+
+  * Support for 0.31.20 & 0.31.21
+  * Closes issue 318 - Support for 0.31.21
+  * Closes issue 319 - 31.21 Windows
+  * Fixed issue 276 - Job Names Incorrect
+ 
+ -- Justin <ehlertjd@gmail.com>  Tue, 15 Mar 2011 18:35:03 -0500
+
 dwarftherapist (0.6.9-2) lucid; urgency=low
 
   * Support for automatic downloading of layout files. (Can be disabled by disabling the version check in preferences)
   * This is the first version of Dwarf Therapist that reads RAW files, so please post any issues found
 
- -- Justin <ehlertjd@ehlertjd-desktop>  Fri, 18 Feb 2011 16:41:39 -0600
+ -- Justin <ehlertjd@gmail.com>  Fri, 18 Feb 2011 16:41:39 -0600
 
 dwarftherapist (0.6.9-1) lucid; urgency=low
 
@@ -11,7 +20,7 @@ dwarftherapist (0.6.9-1) lucid; urgency=low
   * Added Skills, Labors, and Professions for Shearing, Spinning, Pottery, Glazing, Pressing, Bee Keeping and Wax Working 
   * Support for most new job types (with icons!)
 
- -- Justin <ehlertjd@ehlertjd-desktop>  Thu, 17 Feb 2011 17:07:30 -0600
+ -- Justin <ehlertjd@gmail.com>  Thu, 17 Feb 2011 17:07:30 -0600
 
 dwarftherapist (0.6.6-1) lucid; urgency=low
 
@@ -29,7 +38,7 @@ dwarftherapist (0.6.6-1) lucid; urgency=low
  * Fixed issue 273 - Window title for Scanner Dialog
  * Fixed issue 270 - Cancelling nickname change wipes nickname anyway
 
- -- Justin Ehlert <ehlertjd@ehlertjd-desktop>  Tue, 16 Nov 2010 11:57:20 -0600
+ -- Justin Ehlert <ehlertjd@gmail.com>  Tue, 16 Nov 2010 11:57:20 -0600
 
 dwarftherapist (0.6.5) unstable; urgency=low
 
