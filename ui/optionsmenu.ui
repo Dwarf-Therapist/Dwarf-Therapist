@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>476</width>
-    <height>389</height>
+    <width>560</width>
+    <height>529</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -127,6 +127,19 @@
          </property>
          <property name="text">
           <string>Show Full Dwarf Names</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_generic_names">
+         <property name="statusTip">
+          <string>When checked, show generic (English) last names for dwarves. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read of dwarves occurrs!&lt;/font&gt;&lt;/b&gt;</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, show generic (English) last names for dwarves. Note: this change will not take effect until the next full read of dwarves occurrs!</string>
+         </property>
+         <property name="text">
+          <string>Show Generic Dwarf Names</string>
          </property>
         </widget>
        </item>

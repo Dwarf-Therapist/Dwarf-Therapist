@@ -159,6 +159,7 @@ void OptionsMenu::read_settings() {
     ui->cb_alert_on_lost_connection->setChecked(s->value("alert_on_lost_connection", true).toBool());
     ui->cb_labor_cheats->setChecked(s->value("allow_labor_cheats", false).toBool());
     ui->cb_hide_children->setChecked(s->value("hide_children_and_babies", false).toBool());
+    ui->cb_generic_names->setChecked(s->value("use_generic_names", false).toBool());
     s->endGroup();
 
     m_reading_settings = false;
@@ -198,6 +199,7 @@ void OptionsMenu::write_settings() {
         s->setValue("alert_on_lost_connection", ui->cb_alert_on_lost_connection->isChecked());
         s->setValue("allow_labor_cheats", ui->cb_labor_cheats->isChecked());
         s->setValue("hide_children_and_babies", ui->cb_hide_children->isChecked());
+        s->setValue("use_generic_names", ui->cb_generic_names->isChecked());
 
         s->endGroup();
     }

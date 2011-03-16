@@ -248,7 +248,14 @@ QString Dwarf::read_chunked_name(const VIRTADDR &addr, bool use_generic) {
 
 void Dwarf::read_last_name() {
     VIRTADDR addr = m_address + m_mem->dwarf_offset("last_name");
-    m_last_name = read_chunked_name(addr);
+
+    //Generic
+    bool use_generic = false;
+    if (DT->user_settings()->value("options/use_generic_names", false).toBool()) {
+        use_generic = true;
+    }
+
+    m_last_name = read_chunked_name(addr, use_generic);
     m_translated_last_name = read_chunked_name(addr);
 }
 
