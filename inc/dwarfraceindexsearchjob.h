@@ -68,27 +68,31 @@ public:
             int expected_val = gdr->get_int_for_key("ram_guesser/"
                                                     "expected_dwarf_race", 10);
 
-            emit main_scan_total_steps(0);
-            emit main_scan_progress(-1);
+            while(expected_val < 300 && dwarf_race_index == 0) {
+                emit main_scan_total_steps(0);
+                emit main_scan_progress(-1);
 
-            emit scan_message(tr("Looking for Dwarf Race Index"));
-            foreach(uint ptr, m_df->scan_mem(QByteArray("A group of"))) {
-                foreach(uint ptr2, m_df->scan_mem(encode(ptr))) {
-                    LOGD << "\tPTR" << hex << ptr2 << m_df->read_string(ptr2);
-                    int offset = m_df->get_data(ptr2, 60).indexOf(encode(RACE_INDEX_MAGIC_REFERENCE));
-                    if (offset != -1) {
-                        LOGD << "\tMATCH! offset" << offset << hex << offset;
-                        VIRTADDR idx_addr = m_df->read_addr(ptr2 + offset + 3);
-                        LOGD << "\tREAD ADDR FROM" << hex << ptr2 + offset << "=" << idx_addr;
-                        int idx = m_df->read_int(idx_addr);
-                        LOGD << "\t\tRACE VALUE" << idx << "HEX" << hex << idx;
-                        if (idx == expected_val && dwarf_race_index != idx_addr) {
-                            dwarf_race_index = idx_addr;
-                            emit found_address("Dwarf Race", dwarf_race_index);
-                            LOGD << "FOUND DWARF RACE INDEX" << hex << dwarf_race_index;
+                emit scan_message(tr("Looking for Dwarf Race Index"));
+                foreach(uint ptr, m_df->scan_mem(QByteArray("A group of"))) {
+                    foreach(uint ptr2, m_df->scan_mem(encode(ptr))) {
+                        LOGD << "\tPTR" << hex << ptr2 << m_df->read_string(ptr2);
+                        int offset = m_df->get_data(ptr2, 60).indexOf(encode(RACE_INDEX_MAGIC_REFERENCE));
+                        if (offset != -1) {
+                            LOGD << "\tMATCH! offset" << offset << hex << offset;
+                            VIRTADDR idx_addr = m_df->read_addr(ptr2 + offset + 3);
+                            LOGD << "\tREAD ADDR FROM" << hex << ptr2 + offset << "=" << idx_addr;
+                            int idx = m_df->read_int(idx_addr);
+                            LOGD << "\t\tRACE VALUE" << idx << "HEX" << hex << idx;
+                            if (idx == expected_val && dwarf_race_index != idx_addr) {
+                                dwarf_race_index = idx_addr;
+                                emit found_address("Dwarf Race", dwarf_race_index);
+                                LOGD << "FOUND DWARF RACE INDEX" << hex << dwarf_race_index;
+                            }
                         }
                     }
                 }
+
+                ++expected_val;
             }
             //emit found_address("Dwarf Race", dwarf_race_index);
             emit quit();
