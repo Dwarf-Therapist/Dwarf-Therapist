@@ -44,6 +44,10 @@ public:
     void save_data();
     void set_complete();
 
+    bool operator<(const MemoryLayout & rhs) const {
+        return m_game_version < rhs.m_game_version;
+    }
+
 private:
     typedef QHash<QString, uint> AddressHash;
 

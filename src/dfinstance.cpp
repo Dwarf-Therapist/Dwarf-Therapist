@@ -699,14 +699,20 @@ bool DFInstance::add_new_layout(const QString & version, QFile & file) {
 
 void DFInstance::layout_not_found(const QString & checksum) {
     QString supported_vers;
-    foreach(QString tmp_checksum, m_memory_layouts.uniqueKeys()) {
-        MemoryLayout *l = m_memory_layouts[tmp_checksum];
+
+    // TODO: Replace this with a rich dialog at some point that
+    // is also accessible from the help menu. For now, remove the
+    // extra path information as the dialog is getting way too big.
+    // And make a half-ass attempt at sorting
+    QList<MemoryLayout *> layouts = m_memory_layouts.values();
+    qSort(layouts);
+
+    foreach(MemoryLayout * l, layouts) {
         supported_vers.append(
                 QString("<li><b>%1</b>(<font color=\"#444444\">%2"
-                        "</font>) from <font size=-1>%3</font></li>")
+                        "</font>)</li>")
                 .arg(l->game_version())
-                .arg(l->checksum())
-                .arg(l->filename()));
+                .arg(l->checksum()));
     }
 
     QMessageBox *mb = new QMessageBox(qApp->activeWindow());

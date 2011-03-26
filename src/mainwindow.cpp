@@ -436,6 +436,10 @@ void MainWindow::check_for_layout(const QString & checksum) {
 }
 
 void MainWindow::layout_check_finished(bool error) {
+    int status = m_http->lastResponse().statusCode();
+    LOGD << "Status: " << status;
+
+    error = error || (status != 200);
     if(!error) {
         QTemporaryFile outFile("layout.ini");
         if (!outFile.open())
@@ -471,7 +475,9 @@ void MainWindow::layout_check_finished(bool error) {
         }
     }
 
-    if(error && !m_force_connect) {
+    LOGD << "Error: " << error << " Force Connect: " << m_force_connect;
+
+    if(error) {
         m_df->layout_not_found(m_tmp_checksum);
     }
 }
