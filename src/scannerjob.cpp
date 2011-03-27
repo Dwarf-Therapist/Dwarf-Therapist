@@ -67,7 +67,7 @@ bool ScannerJob::get_DFInstance() {
 #endif
 #endif
 #endif
-    bool result = m_df->find_running_copy(true) && m_df->is_ok();
+    bool result = m_df->find_running_copy(true);
 
     if(!m_layout_override_checksum.isEmpty()) {
         m_df->set_memory_layout(m_df->get_memory_layout(m_layout_override_checksum, false));
