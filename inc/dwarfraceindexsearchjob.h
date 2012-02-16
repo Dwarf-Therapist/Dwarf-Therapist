@@ -67,8 +67,9 @@ public:
             //! number of words that should be in a single language
             int expected_val = gdr->get_int_for_key("ram_guesser/"
                                                     "expected_dwarf_race", 10);
+            const int max_expected_val = expected_val + 200;
 
-            while(expected_val < 300 && dwarf_race_index == 0) {
+            while(expected_val < max_expected_val && dwarf_race_index == 0) {
                 emit main_scan_total_steps(0);
                 emit main_scan_progress(-1);
 

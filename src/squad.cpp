@@ -150,13 +150,21 @@ QString Squad::read_chunked_name() {
         }
     }
 
-    //of verb
+    //of verb(noun)
     word = read_word(0x18);
     if(word) {
-        if(singular) {
-            result.append(" of " + capitalize(word->verb()));
+        if( !word->verb().isEmpty() ) {
+            if(singular) {
+                result.append(" of " + capitalize(word->verb()));
+            } else {
+                result.append(" of " + capitalize(word->present_participle_verb()));
+            }
         } else {
-            result.append(" of " + capitalize(word->present_participle_verb()));
+            if(singular) {
+                result.append(" of " + capitalize(word->noun()));
+            } else {
+                result.append(" of " + capitalize(word->plural_noun()));
+            }
         }
     }
 
