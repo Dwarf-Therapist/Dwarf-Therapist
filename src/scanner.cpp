@@ -280,7 +280,7 @@ void Scanner::find_null_terminated_string() {
     QByteArray text = ui->le_null_terminated_string->text().toLocal8Bit();
 
     get_brute_force_address_range(params.start_addr, params.end_addr);
-    params.size = qMin((uint)text.size(), sizeof(params.data));
+    params.size = qMin((size_t)text.size(), sizeof(params.data));
     memcpy(params.data, text.data(), params.size);
 
     QByteArray needle((const char *)&params, sizeof(params));
@@ -298,7 +298,7 @@ void Scanner::find_number_or_address() {
     QByteArray text = encode(ui->le_find_address->text().
                                toUInt(&ok, ui->rb_hex->isChecked() ? 16 : 10));
     get_brute_force_address_range(params.start_addr, params.end_addr);
-    params.size = qMin((uint)text.size(), sizeof(params.data));
+    params.size = qMin((size_t)text.size(), sizeof(params.data));
     memcpy(params.data, text.data(), params.size);
 
     QByteArray needle((const char *)&params, sizeof(params));
