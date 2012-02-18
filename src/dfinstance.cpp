@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "dwarf.h"
 #include "squad.h"
+#include "word.h"
 #include "utils.h"
 #include "gamedatareader.h"
 #include "memorylayout.h"
@@ -144,7 +145,7 @@ qint32 DFInstance::read_int(const VIRTADDR &addr) {
     return decode_int(out);
 }
 
-QVector<VIRTADDR> DFInstance::scan_mem(const QByteArray &needle) {
+QVector<VIRTADDR> DFInstance::scan_mem(const QByteArray &needle, const uint start_addr, const uint end_addr) {
     // progress reporting
     m_scan_speed_timer->start(500);
     m_memory_remap_timer->stop(); // don't remap segments while scanning
@@ -176,7 +177,24 @@ QVector<VIRTADDR> DFInstance::scan_mem(const QByteArray &needle) {
         if (seg->size % step)
             steps++;
 
+        if( seg->end_addr < start_addr ) {
+            continue;
+        }
+
+        if( seg->start_addr > end_addr ) {
+            break;
+        }
+
         for(VIRTADDR ptr = seg->start_addr; ptr < seg->end_addr; ptr += step) {
+
+            if( ptr < start_addr ) {
+                continue;
+            }
+            if( ptr > end_addr ) {
+                m_stop_scan = true;
+                break;
+            }
+
             step = step_size;
             if (ptr + step > seg->end_addr) {
                 step = seg->end_addr - ptr;
@@ -305,10 +323,11 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
             d = Dwarf::get_dwarf(this, creature_addr);
             if (d) {
                 dwarves.append(d);
-                TRACE << "FOUND DWARF" << hexify(creature_addr)
-                        << d->nice_name();
+                uint x = (uint)read_int(creature_addr + 0x668);
+                LOGD << "FOUND DWARF" << hexify(creature_addr)
+                     << d->nice_name() << "mystery offset = " << hexify(x);
             } else {
-                TRACE << "FOUND OTHER CREATURE" << hexify(creature_addr);
+                LOGD << "FOUND OTHER CREATURE" << hexify(creature_addr);
             }
             emit progress_value(i++);
         }
@@ -447,6 +466,81 @@ QString DFInstance::pprint(const QByteArray &ba, const VIRTADDR &start_addr) {
     return out;
 }
 
+Word * DFInstance::read_dwarf_word(const VIRTADDR &addr) {
+    Word * result = NULL;
+    uint word_id = read_int(addr);
+    if(word_id != 0xFFFFFFFF) {
+        result = DT->get_word(word_id);
+    }
+    return result;
+}
+
+QString DFInstance::read_dwarf_name(const VIRTADDR &addr) {
+    QString result = "The";
+
+    //7 parts e.g.  ffffffff ffffffff 000006d4
+    //      ffffffff ffffffff 000002b1 ffffffff
+
+    //Unknown
+    Word * word = read_dwarf_word(addr);
+    if(word)
+        result.append(" " + capitalize(word->base()));
+
+    //Unknown
+    word = read_dwarf_word(addr + 0x04);
+    if(word)
+        result.append(" " + capitalize(word->base()));
+
+    //Verb
+    word = read_dwarf_word(addr + 0x08);
+    if(word) {
+        result.append(" " + capitalize(word->adjective()));
+    }
+
+    //Unknown
+    word = read_dwarf_word(addr + 0x0C);
+    if(word)
+        result.append(" " + capitalize(word->base()));
+
+    //Unknown
+    word = read_dwarf_word(addr + 0x10);
+    if(word)
+        result.append(" " + capitalize(word->base()));
+
+    //Noun
+    word = read_dwarf_word(addr + 0x14);
+    bool singular = false;
+    if(word) {
+        if(word->plural_noun().isEmpty()) {
+            result.append(" " + capitalize(word->noun()));
+            singular = true;
+        } else {
+            result.append(" " + capitalize(word->plural_noun()));
+        }
+    }
+
+    //of verb(noun)
+    word = read_dwarf_word(addr + 0x18);
+    if(word) {
+        if( !word->verb().isEmpty() ) {
+            if(singular) {
+                result.append(" of " + capitalize(word->verb()));
+            } else {
+                result.append(" of " + capitalize(word->present_participle_verb()));
+            }
+        } else {
+            if(singular) {
+                result.append(" of " + capitalize(word->noun()));
+            } else {
+                result.append(" of " + capitalize(word->plural_noun()));
+            }
+        }
+    }
+
+    return result.trimmed();
+}
+
+
 QVector<VIRTADDR> DFInstance::find_vectors_in_range(const int &max_entries,
                                                 const VIRTADDR &start_address,
                                                 const int &range_length) {
@@ -551,6 +645,120 @@ QVector<VIRTADDR> DFInstance::find_vectors(int num_entries, int fuzz/* =0 */,
                         QVector<VIRTADDR> addrs = enumerate_vector(vector_addr);
                         diff = addrs.size() - num_entries;
                         if (qAbs(diff) <= fuzz) {
+                            vectors << vector_addr;
+                        }
+                    }
+                }
+                m_bytes_scanned += entry_size;
+                bytes_scanned += entry_size;
+                if (m_stop_scan)
+                    break;
+            }
+            emit scan_progress(bytes_scanned / report_every_n_bytes);
+            DT->processEvents();
+            if (m_stop_scan)
+                break;
+        }
+    }
+    detach();
+    m_memory_remap_timer->start(20000); // start the remapper again
+    m_scan_speed_timer->stop();
+    LOGD << QString("Scanned %L1MB in %L2ms").arg(bytes_scanned / 1024 * 1024)
+            .arg(timer.elapsed());
+    emit scan_progress(100);
+    return vectors;
+}
+
+QVector<VIRTADDR> DFInstance::find_vectors_ext(int num_entries, const char op,
+                              const uint start_addr, const uint end_addr, int entry_size/* =4 */) {
+    /*
+    glibc++ does vectors like so...
+    |4bytes      | 4bytes    | 4bytes
+    START_ADDRESS|END_ADDRESS|END_ALLOCATOR
+
+    MSVC++ does vectors like so...
+    | 4bytes     | 4bytes      | 4 bytes   | 4bytes
+    ALLOCATOR    |START_ADDRESS|END_ADDRESS|END_ALLOCATOR
+    */
+    m_stop_scan = false; //! if ever set true, bail from the inner loop
+    QVector<VIRTADDR> vectors; //! return value collection of vectors found
+    VIRTADDR int1 = 0; // holds the start val
+    VIRTADDR int2 = 0; // holds the end val
+
+    // progress reporting
+    m_scan_speed_timer->start(500);
+    m_memory_remap_timer->stop(); // don't remap segments while scanning
+    int total_bytes = 0;
+    m_bytes_scanned = 0; // for global timings
+    int bytes_scanned = 0; // for progress calcs
+    foreach(MemorySegment *seg, m_regions) {
+        total_bytes += seg->size;
+    }
+    int report_every_n_bytes = total_bytes / 1000;
+    emit scan_total_steps(1000);
+    emit scan_progress(0);
+
+    int scan_step_size = 0x10000;
+    QByteArray buffer(scan_step_size, '\0');
+    QTime timer;
+    timer.start();
+    attach();
+    foreach(MemorySegment *seg, m_regions) {
+        //TRACE << "SCANNING REGION" << hex << seg->start_addr << "-"
+        //        << seg->end_addr << "BYTES:" << dec << seg->size;
+        if ((int)seg->size <= scan_step_size) {
+            scan_step_size = seg->size;
+        }
+        int scan_steps = seg->size / scan_step_size;
+        if (seg->size % scan_step_size) {
+            scan_steps++;
+        }
+
+        if( seg->end_addr < start_addr ) {
+            continue;
+        }
+
+        if( seg->start_addr > end_addr ) {
+            break;
+        }
+
+        VIRTADDR addr = 0; // the ptr we will read from
+        for(int step = 0; step < scan_steps; ++step) {
+            addr = seg->start_addr + (scan_step_size * step);
+            //LOGD << "starting scan for vectors at" << hex << addr << "step"
+            //        << dec << step << "of" << scan_steps;
+            int bytes_read = read_raw(addr, scan_step_size, buffer);
+            if (bytes_read < scan_step_size) {
+                continue;
+            }
+
+            for(int offset = 0; offset < scan_step_size; offset += entry_size) {
+                VIRTADDR vector_addr = addr + offset - VECTOR_POINTER_OFFSET;
+
+                if( vector_addr < start_addr ) {
+                    continue;
+                }
+
+                if( vector_addr > end_addr ) {
+                    m_stop_scan = true;
+                    break;
+                }
+
+                int1 = decode_int(buffer.mid(offset, entry_size));
+                int2 = decode_int(buffer.mid(offset + entry_size, entry_size));
+                if (int1 && int2 && int2 >= int1
+                    && int1 % 4 == 0
+                    && int2 % 4 == 0
+                    //&& is_valid_address(int1)
+                    //&& is_valid_address(int2)
+                    ) {
+                    int bytes = int2 - int1;
+                    int entries = bytes / entry_size;
+                    if (entries > 0 && entries < 1000) {
+                        QVector<VIRTADDR> addrs = enumerate_vector(vector_addr);
+                        if( (op == '=' && addrs.size() == num_entries)
+                                || (op == '<' && addrs.size() < num_entries)
+                                || (op == '>' && addrs.size() > num_entries) ) {
                             vectors << vector_addr;
                         }
                     }

@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 class Dwarf;
 class Squad;
+class Word;
 class MemoryLayout;
 struct MemorySegment;
 
@@ -65,10 +66,13 @@ public:
     virtual QVector<VIRTADDR> enumerate_vector(const VIRTADDR &addr) = 0;
     virtual QString read_string(const VIRTADDR &addr) = 0;
 
-    QVector<VIRTADDR> scan_mem(const QByteArray &needle);
+    QVector<VIRTADDR> scan_mem(const QByteArray &needle, const uint start_addr=0, const uint end_addr=0xffffffff);
     QByteArray get_data(const VIRTADDR &addr, int size);
     QString pprint(const VIRTADDR &addr, int size);
     QString pprint(const QByteArray &ba, const VIRTADDR &start_addr=0);
+
+    Word * read_dwarf_word(const VIRTADDR &addr);
+    QString read_dwarf_name(const VIRTADDR &addr);
 
     // Mapping methods
     QVector<VIRTADDR> find_vectors_in_range(const int &max_entries,
@@ -76,6 +80,8 @@ public:
                                             const int &range_length);
     QVector<VIRTADDR> find_vectors(int num_entries, int fuzz=0,
                                    int entry_size=4);
+    QVector<VIRTADDR> find_vectors_ext(int num_entries, const char op,
+                                  const uint start_addr, const uint end_addr, int entry_size=4);
     QVector<VIRTADDR> find_vectors(int num_entries, const QVector<VIRTADDR> & search_set,
                                    int fuzz=0, int entry_size=4);
 

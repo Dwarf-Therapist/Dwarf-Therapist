@@ -53,6 +53,7 @@ private:
     void prepare_new_thread(SCANNER_JOB_TYPE type);
     void run_thread_and_wait();
 
+    void get_brute_force_address_range(uint &start_addr, uint &end_addr);
 
     private slots:
         void find_creature_vector();
@@ -73,6 +74,7 @@ private:
         void print_narrowing();
 
         void find_squad_vector();
+        void change_operator();
 
 };
 #endif

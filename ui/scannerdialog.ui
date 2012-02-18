@@ -6,9 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>977</width>
-    <height>753</height>
+    <width>1107</width>
+    <height>761</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1200</width>
+    <height>16777215</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Dwarf Therapist - Scan Memory</string>
@@ -196,28 +208,135 @@
             </item>
            </layout>
           </item>
-          <item row="2" column="0">
-           <widget class="QSpinBox" name="sb_vector_entries">
-            <property name="suffix">
-             <string> entries</string>
-            </property>
-            <property name="prefix">
-             <string/>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>3000</number>
-            </property>
-           </widget>
+          <item row="3" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_13">
+            <item>
+             <widget class="QPushButton" name="btn_find_vector_operator">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>40</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>=</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="sb_vector_entries">
+              <property name="suffix">
+               <string> entries</string>
+              </property>
+              <property name="prefix">
+               <string/>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>3000</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
-          <item row="2" column="1">
+          <item row="3" column="1">
            <widget class="QPushButton" name="btn_find_vector_by_length">
             <property name="text">
              <string>Find Vector By Length</string>
             </property>
            </widget>
+          </item>
+          <item row="4" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_14">
+            <item>
+             <widget class="QLabel" name="label_6">
+              <property name="text">
+               <string>Start Addr:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="le_start_address">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>100</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="baseSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="4" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_15">
+            <item>
+             <widget class="QLabel" name="label_7">
+              <property name="text">
+               <string>End Addr:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="le_end_address">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="baseSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>
@@ -299,6 +418,16 @@
                 <string>--RAW--</string>
                </property>
               </item>
+              <item>
+               <property name="text">
+                <string>dwarf word</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>dwarf name</string>
+               </property>
+              </item>
              </widget>
             </item>
             <item>
@@ -329,6 +458,18 @@
        </item>
        <item>
         <widget class="QGroupBox" name="gb_narrowing_search">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>135</height>
+          </size>
+         </property>
          <property name="title">
           <string>Narrowing Search</string>
          </property>
@@ -463,6 +604,12 @@
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
            <widget class="QLabel" name="lbl_scan_progress">
+            <property name="maximumSize">
+             <size>
+              <width>300</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="text">
              <string>PROGRESS MESSAGE</string>
             </property>
@@ -551,7 +698,7 @@
    <slot>find_creature_vector()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>780</x>
+     <x>765</x>
      <y>56</y>
     </hint>
     <hint type="destinationlabel">
@@ -567,7 +714,7 @@
    <slot>find_dwarf_race_index()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>780</x>
+     <x>765</x>
      <y>85</y>
     </hint>
     <hint type="destinationlabel">
@@ -583,7 +730,7 @@
    <slot>find_translations_vector()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>780</x>
+     <x>765</x>
      <y>114</y>
     </hint>
     <hint type="destinationlabel">
@@ -600,7 +747,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>955</x>
-     <y>267</y>
+     <y>266</y>
     </hint>
     <hint type="destinationlabel">
      <x>748</x>
@@ -615,8 +762,8 @@
    <slot>brute_force_read()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>954</x>
-     <y>383</y>
+     <x>1036</x>
+     <y>411</y>
     </hint>
     <hint type="destinationlabel">
      <x>747</x>
@@ -631,8 +778,8 @@
    <slot>cancel_scan()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>885</x>
-     <y>742</y>
+     <x>966</x>
+     <y>729</y>
     </hint>
     <hint type="destinationlabel">
      <x>380</x>
@@ -647,8 +794,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>966</x>
-     <y>742</y>
+     <x>1047</x>
+     <y>729</y>
     </hint>
     <hint type="destinationlabel">
      <x>693</x>
@@ -663,12 +810,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>954</x>
-     <y>346</y>
+     <x>1050</x>
+     <y>383</y>
     </hint>
     <hint type="destinationlabel">
-     <x>954</x>
-     <y>383</y>
+     <x>1036</x>
+     <y>411</y>
     </hint>
    </hints>
   </connection>
@@ -679,12 +826,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>743</x>
-     <y>233</y>
+     <x>734</x>
+     <y>230</y>
     </hint>
     <hint type="destinationlabel">
-     <x>954</x>
-     <y>237</y>
+     <x>998</x>
+     <y>231</y>
     </hint>
    </hints>
   </connection>
@@ -695,8 +842,8 @@
    <slot>find_number_or_address()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>954</x>
-     <y>237</y>
+     <x>998</x>
+     <y>231</y>
     </hint>
     <hint type="destinationlabel">
      <x>976</x>
@@ -743,8 +890,8 @@
    <slot>find_null_terminated_string()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>849</x>
-     <y>206</y>
+     <x>903</x>
+     <y>203</y>
     </hint>
     <hint type="destinationlabel">
      <x>745</x>
@@ -759,12 +906,12 @@
    <slot>click()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>743</x>
+     <x>734</x>
      <y>202</y>
     </hint>
     <hint type="destinationlabel">
-     <x>849</x>
-     <y>206</y>
+     <x>903</x>
+     <y>203</y>
     </hint>
    </hints>
   </connection>
@@ -775,8 +922,8 @@
    <slot>find_std_string()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>954</x>
-     <y>206</y>
+     <x>1008</x>
+     <y>203</y>
     </hint>
     <hint type="destinationlabel">
      <x>593</x>
@@ -807,8 +954,8 @@
    <slot>find_narrowing()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>719</x>
-     <y>565</y>
+     <x>771</x>
+     <y>583</y>
     </hint>
     <hint type="destinationlabel">
      <x>239</x>
@@ -823,8 +970,8 @@
    <slot>reset_narrowing()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>834</x>
-     <y>565</y>
+     <x>886</x>
+     <y>583</y>
     </hint>
     <hint type="destinationlabel">
      <x>276</x>
@@ -839,8 +986,8 @@
    <slot>print_narrowing()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>949</x>
-     <y>565</y>
+     <x>1001</x>
+     <y>583</y>
     </hint>
     <hint type="destinationlabel">
      <x>305</x>
@@ -855,12 +1002,28 @@
    <slot>find_squad_vector()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>627</x>
+     <x>734</x>
      <y>138</y>
     </hint>
     <hint type="destinationlabel">
      <x>971</x>
      <y>156</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btn_find_vector_operator</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>change_operator()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>735</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>415</x>
+     <y>283</y>
     </hint>
    </hints>
   </connection>
@@ -883,6 +1046,7 @@
   <slot>reset_narrowing()</slot>
   <slot>print_narrowing()</slot>
   <slot>find_squad_vector()</slot>
+  <slot>change_operator()</slot>
  </slots>
  <buttongroups>
   <buttongroup name="buttonGroup"/>

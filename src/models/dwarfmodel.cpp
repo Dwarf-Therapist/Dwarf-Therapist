@@ -94,6 +94,26 @@ void DwarfModel::load_dwarves() {
     }
 
     m_df->detach();
+
+    QList<Dwarf *> dwarves = m_dwarves.values();
+    qSort(dwarves.begin(), dwarves.end(), compare_turn_count);
+
+    int wave = 0;
+    const int wave_gap = 33600;
+    long long last_turn = -1;
+    for( int i = 0; i < dwarves.size(); i++ ) {
+        long long turn = dwarves[i]->turn_count();
+        if( last_turn != -1 && last_turn - turn > wave_gap ) {
+            wave++;
+        }
+        last_turn = turn;
+        dwarves[i]->set_migration_wave(wave);
+    }
+
+
+#if 0
+    // NOTE: This way no longer works due to the fact that historical
+    // figures now arrive in migration waves
     /*! Let's try to guess the wave a dwarf arrived in based on ID.
     The game appears to assign ids to creates in a serial manner.
     Since at least 1 season seems to pass in between waves there is a
@@ -112,6 +132,7 @@ void DwarfModel::load_dwarves() {
         last_id = id;
         m_dwarves[id]->set_migration_wave(wave);
     }
+#endif
 }
 
 void DwarfModel::build_rows() {
@@ -505,6 +526,10 @@ QList<QPersistentModelIndex> DwarfModel::findAll(const QVariant &needle, int rol
         }
     }
     return ret_val;
+}
+
+bool DwarfModel::compare_turn_count(const Dwarf *a, const Dwarf *b) {
+    return a->turn_count() > b->turn_count();
 }
 
 void DwarfModel::dwarf_group_toggled(const QString &group_name) {

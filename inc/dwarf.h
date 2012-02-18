@@ -232,6 +232,10 @@ public:
         return m_squad_name;
     }
 
+    uint turn_count() const {
+        return m_turn_count;
+    }
+
     public slots:
         //! called when global user settings change
         void read_settings();
@@ -285,6 +289,7 @@ private:
     QList<QAction*> m_actions; // actions suitable for context menus
     int m_squad_ref_id; //Dwarf reference that appears to be used by squad
     QString m_squad_name; //The name of the squad that the dwarf belongs to (if any)
+    uint m_turn_count; // Dwarf turn count from start of fortress (as best we know)
 
     // these methods read data from raw memory
     void read_id();
@@ -301,6 +306,7 @@ private:
     void read_skills();
     void read_traits();
     void read_squad_ref_id();
+    void read_turn_count();
 
     // utility methods to assist with reading names made up of several words
     // from the language tables

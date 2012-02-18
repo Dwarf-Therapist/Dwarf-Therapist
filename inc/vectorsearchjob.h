@@ -31,6 +31,13 @@ http://www.opensource.org/licenses/mit-license.php
 #include "truncatingfilelogger.h"
 #include "utils.h"
 
+struct VectorSearchParams {
+    char op;
+    uint target_count;
+    uint start_addr;
+    uint end_addr;
+};
+
 class VectorSearchJob : public ScannerJob {
     Q_OBJECT
 public:
@@ -53,10 +60,11 @@ public:
 
             emit main_scan_total_steps(0);
             emit main_scan_progress(-1);
-            uint target_count = m_needle.toInt();
-            emit scan_message(tr("Looking for Vectors with %1 entries")
-                              .arg(target_count));
-            QVector<VIRTADDR> vectors = m_df->find_vectors(target_count);
+            VectorSearchParams *params = (VectorSearchParams *)m_needle.data();
+            emit scan_message(tr("Looking for Vectors %1 %2 entries")
+                              .arg(params->op).arg(params->target_count));
+            QVector<VIRTADDR> vectors = m_df->find_vectors_ext(params->target_count,
+                                         params->op, params->start_addr, params->end_addr);
             LOGD << "Search complete, found " << vectors.size() << " vectors.";
 
             //Only report the first 200 or so vectors, otherwise the UI hangs

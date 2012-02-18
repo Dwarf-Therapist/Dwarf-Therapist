@@ -98,6 +98,8 @@ public:
     QModelIndex findOne(const QVariant &needle, int role = Qt::DisplayRole, int column = 0, const QModelIndex &start_index = QModelIndex());
     QList<QPersistentModelIndex> findAll(const QVariant &needle, int role = Qt::DisplayRole, int column = 0, QModelIndex start_index = QModelIndex());
 
+    static bool compare_turn_count(const Dwarf *a, const Dwarf *b);
+
     public slots:
         void build_row(const QString &key);
         void build_rows();

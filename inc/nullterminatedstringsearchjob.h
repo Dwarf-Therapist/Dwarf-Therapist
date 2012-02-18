@@ -28,6 +28,13 @@ THE SOFTWARE.
 #include "truncatingfilelogger.h"
 #include "utils.h"
 
+struct NullTerminatedStringSearchParams {
+    uint start_addr;
+    uint end_addr;
+    uint size;
+    char data[256];
+};
+
 class NullTerminatedStringSearchJob : public ScannerJob {
     Q_OBJECT
 public:
@@ -48,14 +55,18 @@ public:
             }
             LOGD << "Starting Search in Thread" << QThread::currentThreadId();
 
+            NullTerminatedStringSearchParams * params = (NullTerminatedStringSearchParams *)
+                    m_needle.data();
+            QByteArray searchString = QByteArray(params->data, params->size);
+
             emit main_scan_total_steps(0);
             emit main_scan_progress(-1);
-            emit scan_message(tr("Looking for %1 (%2)").arg(QString(m_needle))
-                              .arg(QString(m_needle.toHex())));
-            foreach (VIRTADDR str, m_df->scan_mem(m_needle)) {
+            emit scan_message(tr("Looking for %1 (%2)").arg(QString(searchString))
+                              .arg(QString(searchString.toHex())));
+            foreach (VIRTADDR str, m_df->scan_mem(searchString, params->start_addr, params->end_addr)) {
                 emit found_address(QString("Found '%1' (%2)")
-                                   .arg(QString(m_needle))
-                                   .arg(QString(m_needle.toHex())),
+                                   .arg(QString(searchString))
+                                   .arg(QString(searchString.toHex())),
                                    str);
             }
             emit quit();

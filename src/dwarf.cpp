@@ -132,6 +132,7 @@ void Dwarf::refresh_data() {
     read_current_job();
     read_souls();
     read_squad_ref_id();
+    read_turn_count();
 
     /* OLD Stuff from the 40d series that no longer works the same way
     m_strength = m_df->read_int(m_address + mem->dwarf_offset("strength"));
@@ -580,6 +581,11 @@ void Dwarf::read_traits() {
 void Dwarf::read_squad_ref_id() {
     m_squad_ref_id = m_df->read_int(m_address + m_mem->dwarf_offset("squad_ref_id"));
     TRACE << "Squad Reference ID:" << m_squad_ref_id;
+}
+
+void Dwarf::read_turn_count() {
+    m_turn_count = m_df->read_int(m_address + m_mem->dwarf_offset("turn_count"));
+    TRACE << "Turn Count:" << m_turn_count;
 }
 
 void Dwarf::read_skills() {

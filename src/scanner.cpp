@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "defines.h"
 #include "selectparentlayoutdialog.h"
 #include "layoutcreator.h"
+#include "word.h"
 
 Scanner::Scanner(DFInstance *df, MainWindow *parent)
     : QDialog(parent)
@@ -77,6 +78,22 @@ void Scanner::report_offset(const QString &msg, const int &addr) {
     ui->text_output->append(out);
     LOGD << "OFFSET FOR:" << msg << hexify(addr);
 }
+
+void Scanner::get_brute_force_address_range(uint &start_addr, uint &end_addr) {
+    QString start = ui->le_start_address->text();
+    QString end = ui->le_end_address->text();
+    bool ok;
+
+    start_addr = start.toUInt(&ok, 16);
+    if( !ok ) {
+        start_addr = 0;
+    }
+    end_addr = end.toUInt(&ok, 16);
+    if( !ok ) {
+        end_addr = 0xFFFFFFFF;
+    }
+}
+
 
 void Scanner::prepare_new_thread(SCANNER_JOB_TYPE type) {
     if (m_thread && m_thread->isRunning()) {
@@ -147,11 +164,20 @@ void Scanner::find_creature_vector() {
 }
 
 void Scanner::find_vector_by_length() {
+    VectorSearchParams params;
+
     set_ui_enabled(false);
     uint target_count = ui->sb_vector_entries->value();
-    ui->text_output->append(tr("Vectors with %1 entries").arg(target_count));
+    QString op = ui->btn_find_vector_operator->text();
+
+    ui->text_output->append(tr("Vectors %1 %2 entries").arg(op).arg(target_count));
     prepare_new_thread(FIND_VECTORS_OF_SIZE);
-    QByteArray needle = QString("%1").arg(target_count).toAscii();
+
+    get_brute_force_address_range(params.start_addr, params.end_addr);
+    params.target_count = target_count;
+    params.op = op.at(0).toAscii();
+
+    QByteArray needle((const char *)&params, sizeof(params));
     m_thread->set_meta(needle);
     run_thread_and_wait();
     set_ui_enabled(true);
@@ -248,21 +274,34 @@ void Scanner::find_std_string() {
 }
 
 void Scanner::find_null_terminated_string() {
+    NullTerminatedStringSearchParams params;
     set_ui_enabled(false);
     prepare_new_thread(FIND_NULL_TERMINATED_STRING);
-    QByteArray needle = ui->le_null_terminated_string->text().toLocal8Bit();
+    QByteArray text = ui->le_null_terminated_string->text().toLocal8Bit();
+
+    get_brute_force_address_range(params.start_addr, params.end_addr);
+    params.size = qMin((uint)text.size(), sizeof(params.data));
+    memcpy(params.data, text.data(), params.size);
+
+    QByteArray needle((const char *)&params, sizeof(params));
     m_thread->set_meta(needle);
     run_thread_and_wait();
     set_ui_enabled(true);
 }
 
 void Scanner::find_number_or_address() {
+    NullTerminatedStringSearchParams params;
     set_ui_enabled(false);
     //re-use the basic bit searcher
     prepare_new_thread(FIND_NULL_TERMINATED_STRING);
     bool ok;
-    QByteArray needle = encode(ui->le_find_address->text().
+    QByteArray text = encode(ui->le_find_address->text().
                                toUInt(&ok, ui->rb_hex->isChecked() ? 16 : 10));
+    get_brute_force_address_range(params.start_addr, params.end_addr);
+    params.size = qMin((uint)text.size(), sizeof(params.data));
+    memcpy(params.data, text.data(), params.size);
+
+    QByteArray needle((const char *)&params, sizeof(params));
     m_thread->set_meta(needle);
     run_thread_and_wait();
     set_ui_enabled(true);
@@ -309,6 +348,22 @@ void Scanner::brute_force_read() {
             break;
         case 7: // raw
             ui->text_output->append(m_df->pprint(addr, 0xA00));
+            break;
+        case 8: // word
+            {
+                Word * word = m_df->read_dwarf_word(addr);
+                if( word ) {
+                    ui->le_read_output->setText(word->base());
+                } else {
+                    ui->le_read_output->setText(("<unknown>"));
+                }
+            }
+            break;
+        case 9: // name
+            {
+                QString name = m_df->read_dwarf_name(addr);
+                ui->le_read_output->setText(name);
+            }
             break;
         }
     } else {
@@ -388,4 +443,16 @@ void Scanner::find_squad_vector() {
     prepare_new_thread(FIND_SQUADS_VECTOR);
     run_thread_and_wait();
     set_ui_enabled(true);
+}
+
+void Scanner::change_operator() {
+    QString op = ui->btn_find_vector_operator->text();
+    if(op == "=") {
+        op = "<";
+    } else if(op == "<") {
+        op = ">";
+    } else {
+        op = "=";
+    }
+    ui->btn_find_vector_operator->setText(op);
 }
