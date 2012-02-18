@@ -2,7 +2,8 @@ RELEASE 0.6.12 (February 18, 2012)
 CHANGES SINCE 0.6.11
 ===============================================================================
 MAJOR CHANGES:
-BUG FIXES:
+ * Support for 0.34.02 (graphics + legacy version)
+ BUG FIXES:
  * Closes issue 382 - Migration waves are wonky
  * Closes issue 383 - Ability to set child labor in Dwarf Therapist
  * Closes issue 368 - Beekeepers, waxworkers always show 0 experience

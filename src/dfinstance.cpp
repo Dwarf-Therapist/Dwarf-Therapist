@@ -323,11 +323,10 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
             d = Dwarf::get_dwarf(this, creature_addr);
             if (d) {
                 dwarves.append(d);
-                uint x = (uint)read_int(creature_addr + 0x668);
                 LOGD << "FOUND DWARF" << hexify(creature_addr)
-                     << d->nice_name() << "mystery offset = " << hexify(x);
+                     << d->nice_name();
             } else {
-                LOGD << "FOUND OTHER CREATURE" << hexify(creature_addr);
+                TRACE << "FOUND OTHER CREATURE" << hexify(creature_addr);
             }
             emit progress_value(i++);
         }
