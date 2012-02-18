@@ -5,6 +5,7 @@ MAJOR CHANGES:
 BUG FIXES:
  * Closes issue 382 - Migration waves are wonky
  * Closes issue 383 - Ability to set child labor in Dwarf Therapist
+ * Closes issue 368 - Beekeepers, waxworkers always show 0 experience
 
 RELEASE 0.6.11 (February 15, 2012)
 CHANGES SINCE 0.6.10
