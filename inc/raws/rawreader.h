@@ -27,18 +27,23 @@ THE SOFTWARE.
 #include <QStringList>
 #include "raws/rawobject.h"
 #include "raws/rawobjectlist.h"
-
+#include <QHash>
 class RawReader {
 private:
     RawReader() {}
 
 public:
     static QRawObjectList read_objects(QFileInfo file);
+    static QRawObjectList read_creatures(QFileInfo file, int n_creature);
 
 private:
     static RawObjectPtr read_object(QStringList & lines);
+    static RawObjectPtr read_creature(QStringList & lines, int N = 0);
     static void populate_node_values(const RawNodePtr & node, QString & line);
+    static void populate_creature_node_values(const RawNodePtr & node, QString & line, QString id);
     static void populate_sub_nodes(const RawNodePtr & node, QStringList & lines, QString indent = "\t");
+    static void populate_creature_sub_nodes(const RawNodePtr & node, QStringList & lines);
+    static void populate_caste_sub_nodes(const RawNodePtr & node, QStringList & lines);
 };
 
 #endif // RAW_READER_H

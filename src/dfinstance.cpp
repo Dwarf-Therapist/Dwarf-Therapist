@@ -285,6 +285,8 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     creature_vector += m_memory_correction;
     VIRTADDR dwarf_race_index = m_layout->address("dwarf_race_index");
     dwarf_race_index += m_memory_correction;
+    VIRTADDR current_year = m_layout->address("current_year");
+    current_year += m_memory_correction;
 
     if (!is_valid_address(creature_vector)) {
         LOGW << "Active Memory Layout" << m_layout->filename() << "("
@@ -306,12 +308,17 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
             hexify(creature_vector - m_memory_correction) << "(UNCORRECTED)";
     LOGD << "dwarf race index" << hexify(dwarf_race_index) <<
             hexify(dwarf_race_index - m_memory_correction) << "(UNCORRECTED)";
+    LOGD << "current year" << hexify(current_year) <<
+            hexify(current_year - m_memory_correction) << "(UNCORRECTED)";
     emit progress_message(tr("Loading Dwarves"));
 
     attach();
     // which race id is dwarven?
     m_dwarf_race_id = read_word(dwarf_race_index);
     LOGD << "dwarf race:" << hexify(m_dwarf_race_id);
+
+    m_current_year = read_word(current_year);
+    LOGD << "current year:" << m_current_year;
 
     QVector<VIRTADDR> entries = enumerate_vector(creature_vector);
     emit progress_range(0, entries.size()-1);

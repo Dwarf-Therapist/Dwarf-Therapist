@@ -31,6 +31,7 @@ THE SOFTWARE.
 // forward declaration
 class QSettings;
 #include "labor.h"
+#include "attribute.h"
 class Trait;
 class MilitaryPreference;
 class Profession;
@@ -80,6 +81,7 @@ public:
     Profession* get_profession(const short &profession_id);
     QString get_skill_level_name(short level);
     QString get_skill_name(short skill_id);
+    QString get_attribute_level_name(QString attribute, short level);
 
     QColor get_color(QString key);
 
@@ -95,11 +97,26 @@ public:
         return RawObjectPtr();
     }
 
+    RawObjectPtr get_creature(QString creatureClass, QString id) {
+        if(m_creatures_classes.contains(creatureClass)) {
+            return m_creatures_classes.value(creatureClass)
+                    .getRawObject("CREATURE", id);
+        }
+        return RawObjectPtr();
+    }
+
+    QString get_race_name(int race_id);
+    QString get_caste_name(int caste_id);
+    int get_attribute_mean_value(int attribute, int caste) {return m_attributes_mean_value.value(caste).value(attribute);}
+
     void read_raws(QDir df_dir);
 
 protected:
     GameDataReader(QObject *parent = 0);
 private:
+    void load_race_names();
+    void load_caste_names();
+    void load_attributes_mean_value();
     static GameDataReader *m_instance;
     QSettings *m_data_settings;
 
@@ -116,9 +133,15 @@ private:
 
     QHash<int, QString> m_skill_levels;
     QHash<int, int> m_attribute_levels;
+    QHash<QString, Attribute*> m_attributes;
     QHash<short, DwarfJob*> m_dwarf_jobs;
     QHash<short, Profession*> m_professions;
 
     QHash<QString, QRawObjectList> m_reaction_classes;
+    QHash<QString, QRawObjectList> m_creatures_classes;
+
+    QHash<QString, QString> m_race_names;
+    QHash<QString, QString> m_caste_names;
+    QHash<int, QHash<int, int> > m_attributes_mean_value;
 };
 #endif

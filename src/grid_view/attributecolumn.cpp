@@ -37,6 +37,9 @@ AttributeColumn::AttributeColumn(const QString &title, DWARF_ATTRIBUTE_TYPE type
             case DTA_STRENGTH:  m_title = tr("Strength");   break;
             case DTA_AGILITY:   m_title = tr("Agility");    break;
             case DTA_TOUGHNESS: m_title = tr("Toughness");  break;
+            case DTA_ENDURANCE: m_title = tr("Endurance");  break;
+            case DTA_RECUPERATION: m_title = tr("Recuperation");  break;
+            case DTA_DISEASE_RESISTANCE: m_title = tr("Disease resistance");  break;
         }
     }
 }
@@ -55,36 +58,57 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
     QString key("attributes/%1/level_%2");
     short val = -1;
+    short rawVal = 0;
+    val = d->get_attribute((int)m_attribute_type);
+    QString msg;
     switch (m_attribute_type) {
         case DTA_STRENGTH:
-            val = d->strength();
-            key = key.arg("strength").arg(val > 5 ? 5 : val);
+            key = key.arg("Strength").arg(val > 8 ? 8 : val);
+            msg = GameDataReader::ptr()->get_attribute_level_name("Strength", val);
+            rawVal = (int)d->strength();
             break;
         case DTA_AGILITY:
-            val = d->agility();
-            key = key.arg("agility").arg(val > 5 ? 5 : val);
+            key = key.arg("Agility").arg(val > 8 ? 8 : val);
+            msg = GameDataReader::ptr()->get_attribute_level_name("Agility", val);
+            rawVal = (int)d->agility();
             break;
         case DTA_TOUGHNESS:
-            val = d->toughness();
-            key = key.arg("toughness").arg(val > 5 ? 5 : val);
+            key = key.arg("Toughness").arg(val > 8 ? 8 : val);
+            msg = GameDataReader::ptr()->get_attribute_level_name("Toughness", val);
+            rawVal = (int)d->toughness();
+            break;
+        case DTA_ENDURANCE:
+            key = key.arg("Endurance").arg(val > 8 ? 8 : val);
+            msg = GameDataReader::ptr()->get_attribute_level_name("Endurance", val);
+            rawVal = (int)d->endurance();
+            break;
+        case DTA_RECUPERATION:
+            key = key.arg("Recuperation").arg(val > 8 ? 8 : val);
+            msg = GameDataReader::ptr()->get_attribute_level_name("Recuperation", val);
+            rawVal = (int)d->recuperation();
+            break;
+        case DTA_DISEASE_RESISTANCE:
+            key = key.arg("Disease Resistance").arg(val > 8 ? 8 : val);
+            msg = GameDataReader::ptr()->get_attribute_level_name("Disease Resistance", val);
+            rawVal = (int)d->disease_resistance();
             break;
         default:
             LOGW << "Attribute column can't build cell since type is set to" << m_attribute_type;
     }
-    QString msg;
+
     if (val) {
-        msg = GameDataReader::ptr()->get_string_for_key(key);
+        //msg = GameDataReader::ptr()->get_string_for_key(key);
         item->setData(val, Qt::DisplayRole);
     }
 
-    item->setData(val, DwarfModel::DR_SORT_VALUE);
+    item->setData(rawVal, DwarfModel::DR_SORT_VALUE);
     item->setData(val, DwarfModel::DR_RATING);
     item->setData(CT_ATTRIBUTE, DwarfModel::DR_COL_TYPE);
 
-    QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%4</h4>")
+    QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%5</h4>")
         .arg(m_title)
         .arg(msg)
-        .arg(val)
+        .arg(rawVal)
         .arg(d->nice_name());
     item->setToolTip(tooltip);
     return item;

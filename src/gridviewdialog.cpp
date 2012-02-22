@@ -376,6 +376,12 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
         a->setData(AttributeColumn::DTA_AGILITY);
         a = m_attr->addAction(tr("Toughness"), this, SLOT(add_attribute_column()));
         a->setData(AttributeColumn::DTA_TOUGHNESS);
+        a = m_attr->addAction(tr("Endurance"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_ENDURANCE);
+        a = m_attr->addAction(tr("Recuperation"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_RECUPERATION);
+        a = m_attr->addAction(tr("Disease resistance"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_DISEASE_RESISTANCE);
 
         a = m->addAction(tr("Add Happiness"), this, SLOT(add_happiness_column()));
         a->setToolTip(tr("Adds a single column that shows a color-coded happiness indicator for "

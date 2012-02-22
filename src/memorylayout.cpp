@@ -88,6 +88,15 @@ void MemoryLayout::load_data() {
             m_data->value("name", "UNKNOWN INVALID FLAG 2").toString());
     }
     m_data->endArray();
+
+    flag_count = m_data->beginReadArray("valid_flags_3");
+    for (int i = 0; i < flag_count; ++i) {
+        m_data->setArrayIndex(i);
+        m_valid_flags_3.insert(read_hex("value"),
+            m_data->value("name", "UNKNOWN VALID FLAG 3").toString());
+    }
+    m_data->endArray();
+
 }
 
 uint MemoryLayout::read_hex(QString key) {

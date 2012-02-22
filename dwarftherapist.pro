@@ -145,7 +145,9 @@ HEADERS += inc/win_structs.h \
     inc/raws/rawnode.h \
     inc/raws/rawobject.h \
     inc/raws/rawreader.h \
-    inc/raws/rawobjectlist.h
+    inc/raws/rawobjectlist.h \
+    inc/grid_view/flagcolumn.h \
+    inc/attribute.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -190,7 +192,8 @@ SOURCES += src/viewmanager.cpp \
     src/selectparentlayoutdialog.cpp \
     src/layoutcreator.cpp \
     src/word.cpp \
-    src/raws/rawreader.cpp
+    src/raws/rawreader.cpp \
+    src/grid_view/flagcolumn.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

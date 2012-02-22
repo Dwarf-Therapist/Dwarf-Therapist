@@ -57,9 +57,15 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_strength(-1)
     , m_agility(-1)
     , m_toughness(-1)
+    , m_endurance(-1)
+    , m_recuperation(-1)
+    , m_disease_resistance(-1)
     , m_current_job_id(-1)
     , m_squad_ref_id(-1)
     , m_squad_name(QString::null)
+    , m_flag1(0)
+    , m_flag2(0)
+    , m_age(0)
 {
     read_settings();
     refresh_data();
@@ -120,6 +126,7 @@ void Dwarf::refresh_data() {
 
     // read everything we need
     read_id();
+    read_sex();
     read_caste();
     read_race();
     read_first_name();
@@ -134,6 +141,23 @@ void Dwarf::refresh_data() {
     read_squad_ref_id();
     read_turn_count();
 
+    m_strength = m_df->read_short(m_address + m_mem->dwarf_offset("strength"));
+    TRACE << "\tSTRENGTH:" << m_strength;
+    m_toughness = m_df->read_short(m_address + m_mem->dwarf_offset("toughness"));
+    TRACE << "\tTOUGHNESS:" << m_toughness;
+    m_agility = m_df->read_short(m_address + m_mem->dwarf_offset("agility"));
+    TRACE << "\tAGILITY:" << m_agility;
+    m_endurance = m_df->read_short(m_address + m_mem->dwarf_offset("endurance"));
+    TRACE << "\tENDURANCE:" << m_endurance;
+    m_recuperation = m_df->read_short(m_address + m_mem->dwarf_offset("recuperation"));
+    TRACE << "\tRECUPERATION:" << m_recuperation;
+    m_disease_resistance = m_df->read_short(m_address + m_mem->dwarf_offset("disease_resistance"));
+    TRACE << "\tDISEASE RESISTANCE:" << m_disease_resistance;
+    m_flag1 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags1"));
+    m_flag2 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags2"));
+    m_pending_flag1 = m_flag1;
+    m_pending_flag2 = m_flag2;
+    m_age = m_df->current_year() - m_df->read_short(m_address + m_mem->dwarf_offset("birth_year"));
     /* OLD Stuff from the 40d series that no longer works the same way
     m_strength = m_df->read_int(m_address + mem->dwarf_offset("strength"));
     TRACE << "\tSTRENGTH:" << m_strength;
@@ -186,11 +210,16 @@ void Dwarf::read_id() {
     TRACE << "ID:" << m_id;
 }
 
-void Dwarf::read_caste() {
+void Dwarf::read_sex() {
     // TODO: actually break down this caste
     BYTE sex = m_df->read_byte(m_address + m_mem->dwarf_offset("sex"));
     m_is_male = (int)sex == 1;
     TRACE << "MALE:" << m_is_male;
+}
+
+void Dwarf::read_caste() {
+    m_caste_id = m_df->read_short(m_address + m_mem->dwarf_offset("caste"));
+    TRACE << "CASTE:" << m_caste_id;
 }
 
 void Dwarf::read_race() {
@@ -281,6 +310,19 @@ void Dwarf::calc_names() {
             m_translated_name = QString("'%1' %2").arg(m_pending_nick_name, m_translated_last_name);
         }
     }
+    if (is_animal())
+    {
+        if (m_nice_name.trimmed()=="")
+        {
+            m_nice_name = "Stray " + race_name(m_race_id);
+            m_translated_name = m_nice_name;
+        }
+        else
+        {
+            m_nice_name += " " + race_name(m_race_id);
+            m_translated_name += " " + race_name(m_race_id);
+        }
+    }
     // uncomment to put address at front of name
     //m_nice_name = QString("0x%1 %2").arg(m_address, 8, 16, QChar('0')).arg(m_nice_name);
     // uncomment to put internal ID at front of name
@@ -301,6 +343,11 @@ void Dwarf::calc_names() {
         }
     }
     */
+}
+
+bool Dwarf::is_animal()
+{
+    return (m_df->dwarf_race_id()!=m_race_id);
 }
 
 void Dwarf::read_profession() {
@@ -464,6 +511,19 @@ Dwarf::DWARF_HAPPINESS Dwarf::happiness_from_score(int score) {
     else
         return DH_ECSTATIC;
 }
+QString Dwarf::caste_name(short id) {
+    QString tmp_name = GameDataReader::ptr()->get_caste_name(id);
+    tmp_name = tmp_name.toLower().remove("female_").remove("male_").replace('_',' ');
+    if (tmp_name.size()>0)
+        tmp_name[0]=tmp_name[0].toUpper();
+    if (tmp_name=="Male" || tmp_name=="Female")
+        tmp_name="No caste";
+    return tmp_name;
+}
+
+QString Dwarf::race_name(int id) {
+    return GameDataReader::ptr()->get_race_name(id);
+}
 
 QString Dwarf::happiness_name(DWARF_HAPPINESS happiness) {
     switch(happiness) {
@@ -478,6 +538,32 @@ QString Dwarf::happiness_name(DWARF_HAPPINESS happiness) {
     }
 }
 
+QString Dwarf::attribute_level_name(ATTRIBUTES_TYPE attribute, short val)
+{
+    QString msg;
+    switch (attribute) {
+        case AT_STRENGTH:
+            msg = GameDataReader::ptr()->get_attribute_level_name("Strength", val);
+            break;
+        case AT_AGILITY:
+            msg = GameDataReader::ptr()->get_attribute_level_name("Agility", val);
+            break;
+        case AT_TOUGHNESS:
+            msg = GameDataReader::ptr()->get_attribute_level_name("Toughness", val);
+            break;
+        case AT_ENDURANCE:
+            msg = GameDataReader::ptr()->get_attribute_level_name("Endurance", val);
+            break;
+        case AT_RECUPERATION:
+            msg = GameDataReader::ptr()->get_attribute_level_name("Recuperation", val);
+            break;
+        case AT_DISEASE_RESISTANCE:
+            msg = GameDataReader::ptr()->get_attribute_level_name("Disease Resistance", val);
+            break;
+    }
+    return msg;
+}
+
 Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     MemoryLayout *mem = df->memory_layout();
     TRACE << "attempting to load dwarf at" << addr << "using memory layout"
@@ -488,8 +574,54 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     WORD race_id = df->read_word(addr + mem->dwarf_offset("race"));
 
     if (race_id != df->dwarf_race_id()) { // we only care about dwarfs
-        TRACE << "Ignoring creature with race ID of " << hex << race_id;
-        return 0;
+//        TRACE << "Ignoring creature with race ID of " << hex << race_id;
+//        return 0;
+        Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
+        TRACE << "examining dwarf at" << hex << addr;
+        TRACE << "FLAGS1 :" << hexify(flags1);
+        TRACE << "FLAGS2 :" << hexify(flags2);
+        TRACE << "RACE   :" << hexify(race_id);
+
+        if (mem->is_complete()) {
+            QHash<uint, QString> flags = mem->valid_flags_3();
+            foreach(uint flag, flags.uniqueKeys()) {
+                QString reason = flags[flag];
+                if ((flags1 & flag) != flag) {
+                    TRACE << "Ignoring" << unverified_dwarf->nice_name() <<
+                            "who appears to be" << reason;
+                    delete unverified_dwarf;
+                    return 0;
+                }
+            }
+
+            flags = mem->invalid_flags_1();
+            foreach(uint flag, flags.uniqueKeys()) {
+                QString reason = flags[flag];
+                if ((flags1 & flag) == flag) {
+                    TRACE << "Ignoring" << unverified_dwarf->nice_name()
+                            << "who appears to be" << reason;
+                    delete unverified_dwarf;
+                    return 0;
+                }
+                //else
+                //{
+                //    LOGD << unverified_dwarf->race_name((int)race_id) << flag << " " << flags1;
+                //}
+            }
+
+            flags = mem->invalid_flags_2();
+            foreach(uint flag, flags.uniqueKeys()) {
+                QString reason = flags[flag];
+                if ((flags2 & flag) == flag) {
+                    TRACE << "Ignoring" << unverified_dwarf->nice_name()
+                            << "who appears to be" << reason;
+                    delete unverified_dwarf;
+                    return 0;
+                }
+            }
+        }
+        return unverified_dwarf;
+
     }
     Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
     TRACE << "examining dwarf at" << hex << addr;
@@ -560,11 +692,86 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
                 return 0;
             }
         }
+
+    }
+    return unverified_dwarf;
+}
+
+// get all the owned animals
+Dwarf *Dwarf::get_creature(DFInstance *df, const VIRTADDR &addr) {
+    MemoryLayout *mem = df->memory_layout();
+    TRACE << "attempting to load dwarf at" << addr << "using memory layout"
+            << mem->game_version();
+
+    quint32 flags1 = df->read_addr(addr + mem->dwarf_offset("flags1"));
+    quint32 flags2 = df->read_addr(addr + mem->dwarf_offset("flags2"));
+    WORD race_id = df->read_word(addr + mem->dwarf_offset("race"));
+
+    if (race_id == df->dwarf_race_id()) { // we only care about dwarfs
+        TRACE << "Ignoring creature with race ID of " << hex << race_id;
+        return 0;
+    }
+    Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
+    TRACE << "examining dwarf at" << hex << addr;
+    TRACE << "FLAGS1 :" << hexify(flags1);
+    TRACE << "FLAGS2 :" << hexify(flags2);
+    TRACE << "RACE   :" << hexify(race_id);
+
+    if (mem->is_complete()) {
+        QHash<uint, QString> flags = mem->valid_flags_3();
+        foreach(uint flag, flags.uniqueKeys()) {
+            QString reason = flags[flag];
+            if ((flags1 & flag) != flag) {
+                TRACE << "Ignoring" << unverified_dwarf->nice_name() <<
+                        "who appears to be" << reason;
+                delete unverified_dwarf;
+                return 0;
+            }
+        }
+
+        flags = mem->invalid_flags_1();
+        foreach(uint flag, flags.uniqueKeys()) {
+            QString reason = flags[flag];
+            if ((flags1 & flag) == flag) {
+                TRACE << "Ignoring" << unverified_dwarf->nice_name()
+                        << "who appears to be" << reason;
+                delete unverified_dwarf;
+                return 0;
+            }
+            //else
+            //{
+            //    LOGD << unverified_dwarf->race_name((int)race_id) << flag << " " << flags1;
+            //}
+        }
+
+        flags = mem->invalid_flags_2();
+        foreach(uint flag, flags.uniqueKeys()) {
+            QString reason = flags[flag];
+            if ((flags2 & flag) == flag) {
+                TRACE << "Ignoring" << unverified_dwarf->nice_name()
+                        << "who appears to be" << reason;
+                delete unverified_dwarf;
+                return 0;
+            }
+        }
     }
     return unverified_dwarf;
 }
 
 
+bool Dwarf::get_flag_value(int bit)
+{
+    quint32 flg=m_pending_flag1;
+    if(bit>31)
+    {
+        bit-=32;
+        flg=m_pending_flag2;
+    }
+    quint32 mask = 1;
+    for (int i=0;i<bit;i++)
+        mask<<=1;
+    return ((flg & mask)==mask);
+}
 void Dwarf::read_traits() {
     VIRTADDR addr = m_first_soul + m_mem->soul_detail("traits");
     m_traits.clear();
@@ -713,11 +920,35 @@ void Dwarf::set_labor(int labor_id, bool enabled) {
     m_pending_labors[labor_id] = enabled;
 }
 
+bool Dwarf::toggle_flag_bit(int bit) {
+    if (bit!=49)
+        return false;
+    if (!m_nice_name.startsWith("Stray"))
+        return false;
+    int n=bit;
+    if(bit>31)
+    {
+        n=bit-32;
+    }
+    quint32 mask = 1;
+    for (int i=0;i<n;i++)
+        mask<<=1;
+    if (bit>31)
+        m_pending_flag2^=mask;
+    else
+        m_pending_flag1^=mask;
+    return true;
+}
+
 int Dwarf::pending_changes() {
     int cnt = get_dirty_labors().size();
     if (m_nick_name != m_pending_nick_name)
         cnt++;
     if (m_custom_profession != m_pending_custom_profession)
+        cnt++;
+    if (m_flag1 != m_pending_flag1)
+        cnt++;
+    if (m_flag2 != m_pending_flag2)
         cnt++;
     return cnt;
 }
@@ -752,6 +983,10 @@ void Dwarf::commit_pending() {
         m_df->write_string(m_address + mem->dwarf_offset("nick_name"), m_pending_nick_name);
     if (m_pending_custom_profession != m_custom_profession)
         m_df->write_string(m_address + mem->dwarf_offset("custom_profession"), m_pending_custom_profession);
+    if (m_pending_flag1 != m_flag1)
+        m_df->write_raw(m_address + m_mem->dwarf_offset("flags1"), 4, &m_pending_flag1);
+    if (m_pending_flag2 != m_flag2)
+        m_df->write_raw(m_address + m_mem->dwarf_offset("flags2"), 4, &m_pending_flag2);
     refresh_data();
 }
 
@@ -780,6 +1015,18 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
     QTreeWidgetItem *d_item = new QTreeWidgetItem;
     d_item->setText(0, QString("%1 (%2)").arg(nice_name()).arg(labors.size()));
     d_item->setData(0, Qt::UserRole, id());
+    if (m_pending_flag1 != m_flag1) {
+        QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
+        i->setText(0, tr("Flag1 change to %1").arg(hexify(m_pending_flag1)));
+        i->setIcon(0, QIcon(":img/book_edit.png"));
+        i->setData(0, Qt::UserRole, id());
+    }
+    if (m_pending_flag2 != m_flag2) {
+        QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
+        i->setText(0, tr("Flag2 change to %1").arg(hexify(m_pending_flag2)));
+        i->setIcon(0, QIcon(":img/book_edit.png"));
+        i->setData(0, Qt::UserRole, id());
+    }
     if (m_pending_nick_name != m_nick_name) {
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
         QString nick = m_pending_nick_name;
@@ -948,4 +1195,157 @@ int Dwarf::total_assigned_labors() {
             ret_val++;
     }
     return ret_val;
+}
+
+int Dwarf::get_attribute(int attribute)
+{
+    int mean_value = 0; //set the mean value to 0 so that we're working with the raw values rather than a value adjusted to the mean
+
+    //LOGD << "mean " << mean_value << " attribute " << attribute << " caste " << m_caste_id;
+    int ret_value;
+
+    //modify the return 'rating' values so they're spread more from 0 to 15 so that when painting with graphics it shows more of a difference in the skills
+    //(ie, shows the diamond graphic on that draw type for high values, but still show a tiny square for low values)
+    switch(attribute)
+    {
+    case AT_STRENGTH:
+    {
+        //mean_value-=1250;
+        if (m_strength<251+mean_value)
+            ret_value=0;
+        else if (m_strength<501+mean_value)
+            ret_value=1;
+        else if (m_strength<751+mean_value)
+            ret_value=3;
+        else if (m_strength<1001+mean_value)
+            ret_value=5;
+        else if (m_strength<1500+mean_value)
+            ret_value=7;
+        else if (m_strength<1750+mean_value)
+            ret_value=9;
+        else if (m_strength<2000+mean_value)
+            ret_value=11;
+        else if (m_strength<2250+mean_value)
+            ret_value=13;
+        else
+            ret_value=15;
+    }
+        break;
+    case AT_AGILITY:
+    {
+        //mean_value-=900;
+        if (m_agility == 0)
+            ret_value=0;
+        else if (m_agility<151+mean_value)
+            ret_value=1;
+        else if (m_agility<401+mean_value)
+            ret_value=3;
+        else if (m_agility<651+mean_value)
+            ret_value=5;
+        else if (m_agility<1150+mean_value)
+            ret_value=7;
+        else if (m_agility<1400+mean_value)
+            ret_value=9;
+        else if (m_agility<1650+mean_value)
+            ret_value=11;
+        else if (m_agility<1900+mean_value)
+            ret_value=13;
+        else
+            ret_value=15;
+    }
+        break;
+    case AT_TOUGHNESS:
+    {
+        //mean_value-=1250;
+        if (m_toughness<251+mean_value)
+            ret_value=0;
+        else if (m_toughness<501+mean_value)
+            ret_value=1;
+        else if (m_toughness<751+mean_value)
+            ret_value=3;
+        else if (m_toughness<1001+mean_value)
+            ret_value=5;
+        else if (m_toughness<1500+mean_value)
+            ret_value=7;
+        else if (m_toughness<1750+mean_value)
+            ret_value=9;
+        else if (m_toughness<2000+mean_value)
+            ret_value=11;
+        else if (m_toughness<2250+mean_value)
+            ret_value=13;
+        else
+            ret_value=15;
+    }
+        break;
+    case AT_ENDURANCE:
+    {
+        //mean_value-=1000;
+        if (m_endurance==0)
+            ret_value=0;
+        else if (m_endurance<251+mean_value)
+            ret_value=1;
+        else if (m_endurance<501+mean_value)
+            ret_value=3;
+        else if (m_endurance<751+mean_value)
+            ret_value=5;
+        else if (m_endurance<1250+mean_value)
+            ret_value=7;
+        else if (m_endurance<1500+mean_value)
+            ret_value=9;
+        else if (m_endurance<1750+mean_value)
+            ret_value=11;
+        else if (m_endurance<2000+mean_value)
+            ret_value=13;
+        else
+            ret_value=15;
+    }
+        break;
+    case AT_RECUPERATION:
+    {
+        //mean_value-=1000;
+        if (m_recuperation==0)
+            ret_value=0;
+        else if (m_recuperation<251+mean_value)
+            ret_value=1;
+        else if (m_recuperation<501+mean_value)
+            ret_value=3;
+        else if (m_recuperation<751+mean_value)
+            ret_value=5;
+        else if (m_recuperation<1250+mean_value)
+            ret_value=7;
+        else if (m_recuperation<1500+mean_value)
+            ret_value=9;
+        else if (m_recuperation<1750+mean_value)
+            ret_value=11;
+        else if (m_recuperation<2000+mean_value)
+            ret_value=13;
+        else
+            ret_value=15;
+    }
+        break;
+    case AT_DISEASE_RESISTANCE:
+    {
+        //mean_value-=1000;
+        if (m_disease_resistance==0)
+            ret_value=0;
+        else if (m_disease_resistance<251+mean_value)
+            ret_value=1;
+        else if (m_disease_resistance<501+mean_value)
+            ret_value=3;
+        else if (m_disease_resistance<751+mean_value)
+            ret_value=5;
+        else if (m_disease_resistance<1250+mean_value)
+            ret_value=7;
+        else if (m_disease_resistance<1500+mean_value)
+            ret_value=9;
+        else if (m_disease_resistance<1750+mean_value)
+            ret_value=11;
+        else if (m_disease_resistance<2000+mean_value)
+            ret_value=13;
+        else
+            ret_value=15;
+    }
+        break;
+    }
+    return ret_value;
 }

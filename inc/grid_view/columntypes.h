@@ -35,6 +35,7 @@ typedef enum {
     CT_TRAIT,
     CT_ATTRIBUTE,
     CT_MILITARY_PREFERENCE,
+    CT_FLAGS,
     CT_TOTAL_TYPES
 } COLUMN_TYPE;
 
@@ -55,6 +56,8 @@ static inline COLUMN_TYPE get_column_type(const QString &name) {
         return CT_ATTRIBUTE;
     } else if (name.toLower() == "military_preference") {
         return CT_MILITARY_PREFERENCE;
+    } else if (name.toLower() == "flags") {
+        return CT_FLAGS;
     }
     return CT_DEFAULT;
 }
@@ -69,6 +72,7 @@ static inline QString get_column_type(const COLUMN_TYPE &type) {
         case CT_TRAIT:                  return "TRAIT";
         case CT_ATTRIBUTE:              return "ATTRIBUTE";
         case CT_MILITARY_PREFERENCE:    return "MILITARY_PREFERENCE";
+        case CT_FLAGS:                  return "FLAGS";
         default:
             return "UNKNOWN";
     }

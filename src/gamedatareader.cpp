@@ -64,6 +64,14 @@ GameDataReader::GameDataReader(QObject *parent)
         }
     }
 
+    int attributes = m_data_settings->beginReadArray("attributes");
+    for(int i = 0; i < attributes; ++i) {
+        m_data_settings->setArrayIndex(i);
+        Attribute *a = new Attribute(*m_data_settings, this);
+        m_attributes.insert(a->name, a);
+    }
+    m_data_settings->endArray();
+
     m_data_settings->beginGroup("skill_names");
     foreach(QString k, m_data_settings->childKeys()) {
         int skill_id = k.toInt();
@@ -172,6 +180,11 @@ int GameDataReader::get_int_for_key(QString key, short base) {
     return val;
 }
 
+QString GameDataReader::get_attribute_level_name(QString attribute, short level)
+{
+    return m_attributes.value(attribute, 0)->m_levels.value(level);
+}
+
 QString GameDataReader::get_string_for_key(QString key) {
     if (!m_data_settings->contains(key)) {
         LOGE << tr("Couldn't find key '%1' in file '%2'").arg(key)
@@ -251,11 +264,147 @@ int GameDataReader::get_level_from_xp(int xp) {
     return ret_val;
 }
 
+void GameDataReader::load_race_names()
+{
+    QHash<QString, QRawObjectList>::iterator i;
+    for (i = m_creatures_classes.begin(); i != m_creatures_classes.end(); ++i)
+    {
+        foreach(RawObjectPtr obj, i.value()) {
+            QString race = obj->get_value("NAME", "Unknown");
+            if (race.size() > 1)
+                race[0] = race[0].toUpper();
+            m_race_names.insert(obj->get_id(), race);
+        }
+    }
+}
+
+QString GameDataReader::get_race_name(int race_id)
+{
+    return m_race_names[QString("%1").arg(race_id)];
+}
+
+void GameDataReader::load_caste_names()
+{
+    QHash<QString, QRawObjectList>::iterator i;
+    bool found=false;
+    for (i = m_creatures_classes.begin(); i != m_creatures_classes.end(); ++i)
+    {
+        foreach(RawObjectPtr obj, i.value()) {
+            if (obj->get_value(1)=="DWARF")
+            {
+                QVector<RawNodePtr> subNodes = obj->get_children("CASTE");
+                LOGD << "Found " << subNodes.count() << " castes";
+                int n_caste=0;
+                foreach (RawNodePtr subNode, subNodes)
+                {
+                    m_caste_names.insert(QString("%1").arg(n_caste), subNode->get_value(0, QString("Caste %1").arg(n_caste)));
+                    n_caste++;
+                }
+                found=true;
+                break;
+            }
+            if (found)
+                break;
+        }
+    }
+}
+
+void GameDataReader::load_attributes_mean_value()
+{
+    //first we load some default value
+    QHash<int, int> mean;
+    int count = m_caste_names.count();
+    for (int i=0;i<count;i++)
+    {
+        mean.insert(Attribute::AT_STRENGTH,1250);
+        mean.insert(Attribute::AT_AGILITY,900);
+        mean.insert(Attribute::AT_TOUGHNESS,1250);
+        mean.insert(Attribute::AT_ENDURANCE,1000);
+        mean.insert(Attribute::AT_RECUPERATION,1000);
+        mean.insert(Attribute::AT_DISEASE_RESISTANCE,1000);
+
+        m_attributes_mean_value.insert(i,mean);
+        mean.clear();
+    }
+    //then we try to get the mean values from the raw
+    QHash<QString, QRawObjectList>::iterator j;
+    bool found=false;
+    for (j = m_creatures_classes.begin(); j != m_creatures_classes.end(); ++j)
+    {
+        foreach(RawObjectPtr obj, j.value()) {
+            if (obj->get_value(1)=="DWARF")
+            {
+                QVector<RawNodePtr> castes = obj->get_children("CASTE");
+                int n_caste=0;
+                foreach (RawNodePtr caste, castes)
+                {
+                    //redefine the default values so if there are no modification we still have a value
+                    mean.insert(Attribute::AT_STRENGTH,1250);
+                    mean.insert(Attribute::AT_AGILITY,900);
+                    mean.insert(Attribute::AT_TOUGHNESS,1250);
+                    mean.insert(Attribute::AT_ENDURANCE,1000);
+                    mean.insert(Attribute::AT_RECUPERATION,1000);
+                    mean.insert(Attribute::AT_DISEASE_RESISTANCE,1000);
+                    QVector<RawNodePtr> subNodes = caste->get_children("PHYS_ATT_RANGE");
+                    foreach (RawNodePtr subNode, subNodes)
+                    {
+                        QString attr_name = subNode->get_value(0);
+                        if(attr_name=="STRENGTH")
+                            mean.insert(Attribute::AT_STRENGTH,subNode->get_value(4).toInt());
+                        else if(attr_name=="AGILITY")
+                            mean.insert(Attribute::AT_AGILITY,subNode->get_value(4).toInt());
+                        else if(attr_name=="TOUGHNESS")
+                            mean.insert(Attribute::AT_TOUGHNESS,subNode->get_value(4).toInt());
+                        else if(attr_name=="ENDURANCE")
+                            mean.insert(Attribute::AT_ENDURANCE,subNode->get_value(4).toInt());
+                        else if(attr_name=="RECUPERATION")
+                            mean.insert(Attribute::AT_RECUPERATION,subNode->get_value(4).toInt());
+                        else if(attr_name=="DISEASE_RESISTANCE")
+                            mean.insert(Attribute::AT_DISEASE_RESISTANCE,subNode->get_value(4).toInt());
+                    }
+                    m_attributes_mean_value.insert(n_caste,mean);
+                    mean.clear();
+                    n_caste++;
+                }
+                found=true;
+                break;
+            }
+            if (found)
+                break;
+        }
+    }
+}
+
+
+QString GameDataReader::get_caste_name(int caste_id)
+{
+    return m_caste_names[QString("%1").arg(caste_id)];
+}
+
 void GameDataReader::read_raws(QDir df_dir) {
     //Read reactions
     QFileInfo reaction_other(df_dir, "raw/objects/reaction_other.txt");
     m_reaction_classes["reaction_other"] = RawReader::read_objects(reaction_other);
     LOGD << "Read " << m_reaction_classes["reaction_other"].size() << " reactions";
+    QDir raw_dir = reaction_other.absoluteDir();
+    raw_dir.setFilter( QDir::Files );
+    QStringList filters;
+    filters << "creature_*.txt";
+    raw_dir.setNameFilters(filters);
+    raw_dir.setSorting(QDir::Name);
+    QFileInfoList infos = raw_dir.entryInfoList();
+
+    int N = 0;
+    for (QList<QFileInfo>::iterator info=infos.begin();info!=infos.end();info++)
+    {
+        m_creatures_classes[(*info).baseName()] = RawReader::read_creatures((*info), N);
+        TRACE << "Read " << m_creatures_classes[(*info).baseName()].size() << " " << (*info).baseName();
+        N+=m_creatures_classes[(*info).baseName()].size();
+    }
+    load_race_names();
+    load_caste_names();
+    load_attributes_mean_value();
+    //m_race_names = RawReader::read_races_names();
 }
 
 

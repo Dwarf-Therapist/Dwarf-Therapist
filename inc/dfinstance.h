@@ -25,10 +25,10 @@ THE SOFTWARE.
 
 #include <QtGui>
 #include "utils.h"
+#include "word.h"
 
 class Dwarf;
 class Squad;
-class Word;
 class MemoryLayout;
 struct MemorySegment;
 
@@ -49,6 +49,7 @@ public:
     WORD dwarf_race_id() {return m_dwarf_race_id;}
     QList<MemoryLayout*> get_layouts() { return m_memory_layouts.values(); }
     QDir get_df_dir() { return m_df_dir; }
+    short current_year() {return (short)m_current_year;}
 
     // brute force memory scanning methods
     bool is_valid_address(const VIRTADDR &addr);
@@ -153,6 +154,7 @@ protected:
     QTimer *m_memory_remap_timer;
     QTimer *m_scan_speed_timer;
     WORD m_dwarf_race_id;
+    WORD m_current_year;
     QDir m_df_dir;
 
     /*! this hash will hold a map of all loaded and valid memory layouts found

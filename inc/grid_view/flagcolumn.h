@@ -20,39 +20,32 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef ATTRIBUTE_COLUMN_H
-#define ATTRIBUTE_COLUMN_H
+
+#ifndef FLAGCOLUMN_H
+#define FLAGCOLUMN_H
 
 #include "viewcolumn.h"
-#include "dwarf.h"
 
-class AttributeColumn : public ViewColumn {
-    Q_OBJECT
+class FlagColumn : public ViewColumn {
 public:
-    typedef enum {
-        DTA_STRENGTH,
-        DTA_AGILITY,
-        DTA_TOUGHNESS,
-        DTA_ENDURANCE,
-        DTA_RECUPERATION,
-        DTA_DISEASE_RESISTANCE
-    } DWARF_ATTRIBUTE_TYPE;
+        FlagColumn(QString title, int bit_pos, bool bit_value, ViewColumnSet *set = 0, QObject *parent = 0);
+    FlagColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
+    FlagColumn(const FlagColumn &to_copy); // copy ctor
+    FlagColumn* clone() {return new FlagColumn(*this);}
+        QStandardItem *build_cell(Dwarf *d);
+        QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 
-    AttributeColumn(const QString &title, DWARF_ATTRIBUTE_TYPE type, ViewColumnSet *set = 0, QObject *parent = 0);
-    AttributeColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
-    AttributeColumn(const AttributeColumn &to_copy); // copy ctor
-    AttributeColumn* clone() {return new AttributeColumn(*this);}
-    QStandardItem *build_cell(Dwarf *d);
-    QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
+        int bit_pos() {return m_bit_pos;}
+        void set_bit_pos(int bit_pos) {m_bit_pos = bit_pos;}
+        bool bit_value() {return m_bit_value;}
+        void set_bit_value(bool bit_value) {m_bit_value = bit_value;}
 
-    DWARF_ATTRIBUTE_TYPE attribute() {return m_attribute_type;}
-    void set_attribute(DWARF_ATTRIBUTE_TYPE type) {m_attribute_type = type;}
+        // override
+        void write_to_ini(QSettings &s);
 
-    //override
-    void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("attribute", m_attribute_type);}
-
-private:
-    DWARF_ATTRIBUTE_TYPE m_attribute_type;
+protected:
+        int m_bit_pos;
+        bool m_bit_value;
 };
 
-#endif
+#endif // FLAGCOLUMN_H

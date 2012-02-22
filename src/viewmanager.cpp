@@ -270,6 +270,8 @@ void ViewManager::setCurrentIndex(int idx) {
     StateTableView *stv = get_stv(idx);
     foreach(GridView *v, m_views) {
         if (v->name() == tabText(idx)) {
+            QSettings *s = DT->user_settings();
+            s->setValue("read_animals",(tabText(idx)=="Animals"));
             m_model->set_grid_view(v);
             m_model->build_rows();
             stv->header()->setResizeMode(QHeaderView::Fixed);

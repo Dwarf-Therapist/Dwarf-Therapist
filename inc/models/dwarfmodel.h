@@ -64,6 +64,8 @@ public:
         GB_ASSIGNED_LABORS,
         GB_HAS_NICKNAME,
         GB_SQUAD,
+        GB_CASTE,
+        GB_RACE,
         GB_TOTAL
     } GROUP_BY;
     typedef enum {
@@ -124,6 +126,7 @@ private:
 
 signals:
     void new_pending_changes(int);
+    void new_creatures_count(int);
     void preferred_header_size(int section, int width);
     void set_index_as_spacer(int);
     void clear_spacers();

@@ -20,39 +20,40 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef ATTRIBUTE_COLUMN_H
-#define ATTRIBUTE_COLUMN_H
 
-#include "viewcolumn.h"
-#include "dwarf.h"
+#ifndef ATTRIBUTE_H
+#define ATTRIBUTE_H
 
-class AttributeColumn : public ViewColumn {
+#include <QtGui>
+
+class Attribute : public QObject {
     Q_OBJECT
 public:
+    Attribute(QSettings &s, QObject *parent = 0)
+        : QObject(parent)
+        , name(s.value("name", "UNKNOWN ATTRIBUTE").toString())
+    {
+        int levels = s.beginReadArray("levels");
+        for (int i = 0; i < levels; ++i) {
+            s.setArrayIndex(i);
+            int level = s.value("level_id", -1).toInt();
+            QString level_name = s.value("level_name", "").toString();
+            if (level != -1)
+                m_levels.insert(level, level_name);
+        }
+        s.endArray();
+    }
+    QString name;
+    QHash<int, QString> m_levels;
     typedef enum {
-        DTA_STRENGTH,
-        DTA_AGILITY,
-        DTA_TOUGHNESS,
-        DTA_ENDURANCE,
-        DTA_RECUPERATION,
-        DTA_DISEASE_RESISTANCE
-    } DWARF_ATTRIBUTE_TYPE;
+        AT_STRENGTH = 0,
+        AT_AGILITY,
+        AT_TOUGHNESS,
+        AT_ENDURANCE,
+        AT_RECUPERATION,
+        AT_DISEASE_RESISTANCE
+    } ATTRIBUTES_TYPE;
 
-    AttributeColumn(const QString &title, DWARF_ATTRIBUTE_TYPE type, ViewColumnSet *set = 0, QObject *parent = 0);
-    AttributeColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
-    AttributeColumn(const AttributeColumn &to_copy); // copy ctor
-    AttributeColumn* clone() {return new AttributeColumn(*this);}
-    QStandardItem *build_cell(Dwarf *d);
-    QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
-
-    DWARF_ATTRIBUTE_TYPE attribute() {return m_attribute_type;}
-    void set_attribute(DWARF_ATTRIBUTE_TYPE type) {m_attribute_type = type;}
-
-    //override
-    void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("attribute", m_attribute_type);}
-
-private:
-    DWARF_ATTRIBUTE_TYPE m_attribute_type;
 };
 
-#endif
+#endif // ATTRIBUTE_H

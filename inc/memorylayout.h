@@ -32,6 +32,7 @@ public:
     uint soul_detail(const QString &key) {return m_soul_details.value(key, -1);}
     QHash<uint, QString> valid_flags_1() {return m_valid_flags_1;}
     QHash<uint, QString> valid_flags_2() {return m_valid_flags_2;}
+    QHash<uint, QString> valid_flags_3() {return m_valid_flags_3;}
     QHash<uint, QString> invalid_flags_1() {return m_invalid_flags_1;}
     QHash<uint, QString> invalid_flags_2() {return m_invalid_flags_2;}
 
@@ -63,6 +64,7 @@ private:
     AddressHash m_word_offsets;
     QHash<uint, QString> m_valid_flags_1;
     QHash<uint, QString> m_valid_flags_2;
+    QHash<uint, QString> m_valid_flags_3;
     QHash<uint, QString> m_invalid_flags_1;
     QHash<uint, QString> m_invalid_flags_2;
     QSettings *m_data;

@@ -152,11 +152,15 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         case CT_TRAIT:
         case CT_ATTRIBUTE:
             {
-                paint_bg(adjusted, false, p, opt, idx);
-                p->save();
-                p->drawText(adjusted, Qt::AlignCenter, model_idx.data(Qt::DisplayRole).toString());
-                p->restore();
+                short rating = model_idx.data(DwarfModel::DR_RATING).toInt();
+                QColor bg = paint_bg(adjusted, false, p, opt, idx);
+                paint_skill(adjusted, rating, bg, p, opt, idx);
                 paint_grid(adjusted, false, p, opt, idx);
+//                paint_bg(adjusted, false, p, opt, idx);
+//                p->save();
+//                p->drawText(adjusted, Qt::AlignCenter, model_idx.data(Qt::DisplayRole).toString());
+//                p->restore();
+//                paint_grid(adjusted, false, p, opt, idx);
             }
             break;
         case CT_MILITARY_PREFERENCE:
@@ -168,6 +172,12 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
                     if (draw_aggregates)
                         paint_aggregate(adjusted, p, opt, idx);
                 }
+            }
+            break;
+        case CT_FLAGS:
+            {
+               paint_flags(adjusted, p, opt, idx);
+               paint_grid(adjusted, false, p, opt, idx);
             }
             break;
         case CT_DEFAULT:
@@ -354,6 +364,18 @@ void UberDelegate::paint_pref(const QRect &adjusted, QPainter *p, const QStyleOp
     p->drawText(opt.rect, Qt::AlignCenter, symbol);
     p->restore();
     paint_grid(adjusted, dirty, p, opt, proxy_idx);
+}
+
+void UberDelegate::paint_flags(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
+    QModelIndex idx = m_proxy->mapToSource(proxy_idx);
+    Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
+    if (!d) {
+        return QStyledItemDelegate::paint(p, opt, idx);
+    }
+
+    int bit_pos = idx.data(DwarfModel::DR_LABOR_ID).toInt();
+    bool val = d->get_flag_value(bit_pos);
+    paint_bg(adjusted, val, p, opt, proxy_idx);
 }
 
 void UberDelegate::paint_labor(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {

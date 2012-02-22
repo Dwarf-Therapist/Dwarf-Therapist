@@ -114,6 +114,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menuWindows->addAction(ui->main_toolbar->toggleViewAction());
 
     LOGD << "setting up connections for MainWindow";
+    connect(m_model, SIGNAL(new_creatures_count(int)), this, SLOT(new_creatures_count(int)));
     connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
     connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
     connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
@@ -155,6 +156,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cb_group_by->addItem(tr("Has Nickname"),
                              DwarfModel::GB_HAS_NICKNAME);
     ui->cb_group_by->addItem(tr("Squad"), DwarfModel::GB_SQUAD);
+    ui->cb_group_by->addItem(tr("Caste"), DwarfModel::GB_CASTE);
+    ui->cb_group_by->addItem(tr("Race"), DwarfModel::GB_RACE);
 
     read_settings();
     draw_professions();
@@ -517,6 +520,10 @@ void MainWindow::list_pending() {
     ui->tree_pending->expandAll();
     connect(ui->tree_pending, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
         m_view_manager, SLOT(jump_to_dwarf(QTreeWidgetItem *, QTreeWidgetItem *)));
+}
+
+void MainWindow::new_creatures_count(int cnt) {
+    ui->lbl_dwarf_total->setNum(cnt);
 }
 
 void MainWindow::draw_professions() {

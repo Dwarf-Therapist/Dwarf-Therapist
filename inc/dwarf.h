@@ -40,6 +40,7 @@ class Dwarf : public QObject
 
 public:
     static Dwarf* get_dwarf(DFInstance *df, const VIRTADDR &address);
+    static Dwarf* get_creature(DFInstance *df, const VIRTADDR &address);
     virtual ~Dwarf();
 
     typedef enum {
@@ -53,6 +54,15 @@ public:
         DH_TOTAL_LEVELS
     } DWARF_HAPPINESS;
 
+    typedef enum {
+        AT_STRENGTH = 0,
+        AT_AGILITY,
+        AT_TOUGHNESS,
+        AT_ENDURANCE,
+        AT_RECUPERATION,
+        AT_DISEASE_RESISTANCE
+    } ATTRIBUTES_TYPE;
+
     // getters
     //! Return the memory address (in hex) of this creature in the remote DF process
     VIRTADDR address() {return m_address;}
@@ -62,6 +72,9 @@ public:
 
     //! true if the creature is male, false if female or "it"
     Q_INVOKABLE bool is_male() {return m_is_male;}
+
+    //! false if the creature is a dwarf, true if not
+    Q_INVOKABLE bool is_animal();
 
     //! return a text version of this dwarf's profession (will use custom profession if set)
     QString profession();
@@ -87,6 +100,9 @@ public:
     //! return the raw happiness score for this dwarf
     Q_INVOKABLE int get_raw_happiness() {return m_raw_happiness;}
 
+    //! return the level of the specified attribute of this dwarf
+    int get_attribute(int attribute);       
+
     //! return this dwarf's strength attribute score
     Q_INVOKABLE int strength() {return m_strength;}
 
@@ -96,8 +112,35 @@ public:
     //! return this dwarf's toughness attribute score
     Q_INVOKABLE int toughness() {return m_toughness;}
 
+    //! return this dwarf's endurance attribute score
+    Q_INVOKABLE int endurance() {return m_endurance;}
+
+    //! return this dwarf's recuperation attribute score
+    Q_INVOKABLE int recuperation() {return m_recuperation;}
+
+    //! return this dwarf's disease resistance attribute score
+    Q_INVOKABLE int disease_resistance() {return m_disease_resistance;}
+
     //! return this dwarf's squad reference id
     Q_INVOKABLE int get_squad_ref_id() { return m_squad_ref_id; }
+
+    //! return this dwarf's caste id
+    Q_INVOKABLE short get_caste_id() { return m_caste_id; }
+
+    //! return this creature's race id
+    Q_INVOKABLE short get_race_id() { return m_race_id; }
+
+    //! return this creature's age
+    Q_INVOKABLE short get_age() { return m_age; }
+
+    //! return this creature's flag1
+    Q_INVOKABLE quint32 get_flag1() { return m_flag1; }
+
+    //! return this creature's flag2
+    Q_INVOKABLE quint32 get_flag2() { return m_flag2; }
+
+    //! return this creature's Nth bit from flags
+    Q_INVOKABLE bool get_flag_value(int bit);
 
     //! return this dwarf's highest skill
     Skill highest_skill();
@@ -186,6 +229,9 @@ public:
     //! convenience method that calls set_labor() and switches the state of the labor specified by labor_id
     bool toggle_labor(int labor_id);
 
+    //! toggle the n_bit bit of the flag
+    bool toggle_flag_bit(int n_bit);
+
     //! undo any uncomitted changes to this dwarf (reset back to game-state)
     void clear_pending();
 
@@ -210,6 +256,15 @@ public:
 
     //! static method for mapping a value in the enum DWARF_HAPPINESS to a meaningful text string
     static QString happiness_name(DWARF_HAPPINESS happiness);
+
+    //! static method for mapping a value in the enum DWARF_HAPPINESS to a meaningful text string
+    static QString attribute_level_name(ATTRIBUTES_TYPE attribute, short value);
+
+    //! static method for mapping a caste id to a meaningful text string
+    static QString caste_name(short id);
+
+    //! static method for mapping a race id to a meaningful text string
+    static QString race_name(int id);
 
     //! used for building a datamodel that shows all pending changes this dwarf has queued up
     QTreeWidgetItem *get_pending_changes_tree();
@@ -249,7 +304,6 @@ public:
         void copy_address_to_clipboard();
 
 
-
 private:
     int m_id; // each creature in the game has a unique serial ID
     DFInstance *m_df;
@@ -260,6 +314,7 @@ private:
     DWARF_HAPPINESS m_happiness; // enum value of happiness
     int m_raw_happiness; // raw score before being turned into an enum
     bool m_is_male;
+    short m_caste_id;
     bool m_show_full_name;
     int m_total_xp;
     int m_migration_wave;
@@ -276,10 +331,13 @@ private:
     QString m_profession; // name of profession set by game
     int m_raw_profession; // id of profession set by game
     bool m_can_set_labors; // used to prevent cheating
+    short m_current_job_id;
     int m_strength;
     int m_agility;
     int m_toughness;
-    short m_current_job_id;
+    int m_endurance;
+    int m_disease_resistance;
+    int m_recuperation;
     QString m_current_job;
     QString m_current_sub_job_id;
     QVector<Skill> m_skills;
@@ -289,10 +347,16 @@ private:
     QList<QAction*> m_actions; // actions suitable for context menus
     int m_squad_ref_id; //Dwarf reference that appears to be used by squad
     QString m_squad_name; //The name of the squad that the dwarf belongs to (if any)
+    quint32 m_flag1;
+    quint32 m_flag2;
+    quint32 m_pending_flag1;
+    quint32 m_pending_flag2;
+    short m_age;
     uint m_turn_count; // Dwarf turn count from start of fortress (as best we know)
 
     // these methods read data from raw memory
     void read_id();
+    void read_sex();
     void read_caste();
     void read_race();
     void read_first_name();
@@ -306,6 +370,7 @@ private:
     void read_skills();
     void read_traits();
     void read_squad_ref_id();
+    void read_flags();
     void read_turn_count();
 
     // utility methods to assist with reading names made up of several words

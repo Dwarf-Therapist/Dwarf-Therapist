@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "happinesscolumn.h"
 #include "spacercolumn.h"
 #include "skillcolumn.h"
+#include "flagcolumn.h"
 #include "currentjobcolumn.h"
 #include "traitcolumn.h"
 #include "attributecolumn.h"
@@ -234,6 +235,9 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
                 break;
             case CT_MILITARY_PREFERENCE:
                 new MilitaryPreferenceColumn(s, ret_val, parent);
+                break;
+            case CT_FLAGS:
+                new FlagColumn(s, ret_val, parent);
                 break;
             case CT_DEFAULT:
             default:

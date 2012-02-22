@@ -38,6 +38,7 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
 void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     // Draw the name/profession text labels...
     ui->lbl_dwarf_name->setText(d->nice_name());
+    ui->lbl_age->setText(QString("Age: %1 years").arg(d->get_age()));
     ui->lbl_translated_name->setText(QString("(%1)").arg(d->translated_name()));
     ui->lbl_profession->setText(d->profession());
     ui->lbl_current_job->setText(QString("%1 %2").arg(d->current_job_id()).arg(d->current_job()));
@@ -80,6 +81,13 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         .arg(color.green(), 2, 16, QChar('0'))
         .arg(color.blue(), 2, 16, QChar('0'));
     ui->lbl_happiness->setStyleSheet(QString("background-color: %1;").arg(style_sheet_color));
+
+    ui->lbl_strength->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Dwarf::AT_STRENGTH,d->get_attribute((int)Dwarf::AT_STRENGTH))).arg(d->strength()));
+    ui->lbl_agility->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Dwarf::AT_AGILITY,d->get_attribute((int)Dwarf::AT_AGILITY))).arg(d->agility()));
+    ui->lbl_toughness->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Dwarf::AT_TOUGHNESS,d->get_attribute((int)Dwarf::AT_TOUGHNESS))).arg(d->toughness()));
+    ui->lbl_endurance->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Dwarf::AT_ENDURANCE,d->get_attribute((int)Dwarf::AT_ENDURANCE))).arg(d->endurance()));
+    ui->lbl_recuperation->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Dwarf::AT_RECUPERATION,d->get_attribute((int)Dwarf::AT_RECUPERATION))).arg(d->recuperation()));
+    ui->lbl_disease_resistance->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Dwarf::AT_DISEASE_RESISTANCE,d->get_attribute((int)Dwarf::AT_DISEASE_RESISTANCE))).arg(d->disease_resistance()));
 
     foreach(QObject *obj, m_cleanup_list) {
         obj->deleteLater();
