@@ -40,7 +40,7 @@ class Dwarf : public QObject
 
 public:
     static Dwarf* get_dwarf(DFInstance *df, const VIRTADDR &address);
-    static Dwarf* get_creature(DFInstance *df, const VIRTADDR &address);
+    //static Dwarf* get_creature(DFInstance *df, const VIRTADDR &address);
     virtual ~Dwarf();
 
     typedef enum {

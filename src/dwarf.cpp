@@ -573,7 +573,7 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     quint32 flags2 = df->read_addr(addr + mem->dwarf_offset("flags2"));
     WORD race_id = df->read_word(addr + mem->dwarf_offset("race"));
 
-    if (race_id != df->dwarf_race_id()) { // we only care about dwarfs
+    if (race_id != df->dwarf_race_id()) { // animals and other non-dwarves loaded here
 //        TRACE << "Ignoring creature with race ID of " << hex << race_id;
 //        return 0;
         Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
@@ -698,65 +698,65 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
 }
 
 // get all the owned animals
-Dwarf *Dwarf::get_creature(DFInstance *df, const VIRTADDR &addr) {
-    MemoryLayout *mem = df->memory_layout();
-    TRACE << "attempting to load dwarf at" << addr << "using memory layout"
-            << mem->game_version();
+//Dwarf *Dwarf::get_creature(DFInstance *df, const VIRTADDR &addr) {
+//    MemoryLayout *mem = df->memory_layout();
+//    TRACE << "attempting to load dwarf at" << addr << "using memory layout"
+//            << mem->game_version();
 
-    quint32 flags1 = df->read_addr(addr + mem->dwarf_offset("flags1"));
-    quint32 flags2 = df->read_addr(addr + mem->dwarf_offset("flags2"));
-    WORD race_id = df->read_word(addr + mem->dwarf_offset("race"));
+//    quint32 flags1 = df->read_addr(addr + mem->dwarf_offset("flags1"));
+//    quint32 flags2 = df->read_addr(addr + mem->dwarf_offset("flags2"));
+//    WORD race_id = df->read_word(addr + mem->dwarf_offset("race"));
 
-    if (race_id == df->dwarf_race_id()) { // we only care about dwarfs
-        TRACE << "Ignoring creature with race ID of " << hex << race_id;
-        return 0;
-    }
-    Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
-    TRACE << "examining dwarf at" << hex << addr;
-    TRACE << "FLAGS1 :" << hexify(flags1);
-    TRACE << "FLAGS2 :" << hexify(flags2);
-    TRACE << "RACE   :" << hexify(race_id);
+//    if (race_id == df->dwarf_race_id()) { // we only care about dwarfs
+//        TRACE << "Ignoring creature with race ID of " << hex << race_id;
+//        return 0;
+//    }
+//    Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
+//    TRACE << "examining dwarf at" << hex << addr;
+//    TRACE << "FLAGS1 :" << hexify(flags1);
+//    TRACE << "FLAGS2 :" << hexify(flags2);
+//    TRACE << "RACE   :" << hexify(race_id);
 
-    if (mem->is_complete()) {
-        QHash<uint, QString> flags = mem->valid_flags_3();
-        foreach(uint flag, flags.uniqueKeys()) {
-            QString reason = flags[flag];
-            if ((flags1 & flag) != flag) {
-                TRACE << "Ignoring" << unverified_dwarf->nice_name() <<
-                        "who appears to be" << reason;
-                delete unverified_dwarf;
-                return 0;
-            }
-        }
+//    if (mem->is_complete()) {
+//        QHash<uint, QString> flags = mem->valid_flags_3();
+//        foreach(uint flag, flags.uniqueKeys()) {
+//            QString reason = flags[flag];
+//            if ((flags1 & flag) != flag) {
+//                TRACE << "Ignoring" << unverified_dwarf->nice_name() <<
+//                        "who appears to be" << reason;
+//                delete unverified_dwarf;
+//                return 0;
+//            }
+//        }
 
-        flags = mem->invalid_flags_1();
-        foreach(uint flag, flags.uniqueKeys()) {
-            QString reason = flags[flag];
-            if ((flags1 & flag) == flag) {
-                TRACE << "Ignoring" << unverified_dwarf->nice_name()
-                        << "who appears to be" << reason;
-                delete unverified_dwarf;
-                return 0;
-            }
-            //else
-            //{
-            //    LOGD << unverified_dwarf->race_name((int)race_id) << flag << " " << flags1;
-            //}
-        }
+//        flags = mem->invalid_flags_1();
+//        foreach(uint flag, flags.uniqueKeys()) {
+//            QString reason = flags[flag];
+//            if ((flags1 & flag) == flag) {
+//                TRACE << "Ignoring" << unverified_dwarf->nice_name()
+//                        << "who appears to be" << reason;
+//                delete unverified_dwarf;
+//                return 0;
+//            }
+//            //else
+//            //{
+//            //    LOGD << unverified_dwarf->race_name((int)race_id) << flag << " " << flags1;
+//            //}
+//        }
 
-        flags = mem->invalid_flags_2();
-        foreach(uint flag, flags.uniqueKeys()) {
-            QString reason = flags[flag];
-            if ((flags2 & flag) == flag) {
-                TRACE << "Ignoring" << unverified_dwarf->nice_name()
-                        << "who appears to be" << reason;
-                delete unverified_dwarf;
-                return 0;
-            }
-        }
-    }
-    return unverified_dwarf;
-}
+//        flags = mem->invalid_flags_2();
+//        foreach(uint flag, flags.uniqueKeys()) {
+//            QString reason = flags[flag];
+//            if ((flags2 & flag) == flag) {
+//                TRACE << "Ignoring" << unverified_dwarf->nice_name()
+//                        << "who appears to be" << reason;
+//                delete unverified_dwarf;
+//                return 0;
+//            }
+//        }
+//    }
+//    return unverified_dwarf;
+//}
 
 
 bool Dwarf::get_flag_value(int bit)
