@@ -383,6 +383,33 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
         a = m_attr->addAction(tr("Disease resistance"), this, SLOT(add_attribute_column()));
         a->setData(AttributeColumn::DTA_DISEASE_RESISTANCE);
 
+        a = m_attr->addAction(tr("Analytical Ability"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_ANALYTICAL_ABILITY);
+        a = m_attr->addAction(tr("Creativity"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_CREATIVITY);
+        a = m_attr->addAction(tr("Empathy"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_EMPATHY);
+        a = m_attr->addAction(tr("Focus"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_FOCUS);
+        a = m_attr->addAction(tr("Intuition"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_INTUITION);
+        a = m_attr->addAction(tr("Kinesthetic Sense"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_KINESTHETIC_SENSE);
+        a = m_attr->addAction(tr("Linguistic Ability"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_LINGUISTIC_ABILITY);
+        a = m_attr->addAction(tr("Memory"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_MEMORY);
+        a = m_attr->addAction(tr("Musicality"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_MUSICALITY);
+        a = m_attr->addAction(tr("Patience"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_PATIENCE);
+        a = m_attr->addAction(tr("Social Awareness"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_SOCIAL_AWARENESS);
+        a = m_attr->addAction(tr("Spatial Sense"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_SPATIAL_SENSE);
+        a = m_attr->addAction(tr("Willpower"), this, SLOT(add_attribute_column()));
+        a->setData(AttributeColumn::DTA_WILLPOWER);
+
         a = m->addAction(tr("Add Happiness"), this, SLOT(add_happiness_column()));
         a->setToolTip(tr("Adds a single column that shows a color-coded happiness indicator for "
             "each dwarf. You can customize the colors used in the options menu."));

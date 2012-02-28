@@ -141,6 +141,7 @@ void OptionsMenu::read_settings() {
     ui->sb_cell_size->setValue(s->value("cell_size", DEFAULT_CELL_SIZE).toInt());
     ui->sb_cell_padding->setValue(s->value("cell_padding", 0).toInt());
     ui->cb_shade_column_headers->setChecked(s->value("shade_column_headers", true).toBool());
+    ui->cb_header_text_direction->setChecked(s->value("header_text_bottom", false).toBool());
 
     m_font = s->value("font", QFont("Segoe UI", 8)).value<QFont>();
     m_dirty_font = m_font;
@@ -184,6 +185,7 @@ void OptionsMenu::write_settings() {
         s->setValue("cell_size", ui->sb_cell_size->value());
         s->setValue("cell_padding", ui->sb_cell_padding->value());
         s->setValue("shade_column_headers", ui->cb_shade_column_headers->isChecked());
+        s->setValue("header_text_bottom", ui->cb_header_text_direction->isChecked());
         s->setValue("font", m_font);
         s->endGroup();
 
@@ -236,6 +238,8 @@ void OptionsMenu::restore_defaults() {
     ui->cb_check_for_updates_on_startup->setChecked(true);
     ui->cb_alert_on_lost_connection->setChecked(true);
     ui->cb_labor_cheats->setChecked(false);
+    ui->cb_header_text_direction->setChecked(false);
+
 
     m_font = QFont("Segoe UI", 8);
     m_dirty_font = m_font;

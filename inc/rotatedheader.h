@@ -57,6 +57,7 @@ private:
     QPoint m_p;
     QList<int> m_spacer_indexes;
     bool m_shade_column_headers;
+    bool m_header_text_bottom;
     int m_hovered_column;
 
     private slots:

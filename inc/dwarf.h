@@ -60,7 +60,20 @@ public:
         AT_TOUGHNESS,
         AT_ENDURANCE,
         AT_RECUPERATION,
-        AT_DISEASE_RESISTANCE
+        AT_DISEASE_RESISTANCE,
+        AT_ANALYTICAL_ABILITY,
+        AT_CREATIVITY,
+        AT_EMPATHY,
+        AT_FOCUS,
+        AT_INTUITION,
+        AT_KINESTHETIC_SENSE,
+        AT_LINGUISTIC_ABILITY,
+        AT_MEMORY,
+        AT_MUSICALITY,
+        AT_PATIENCE,
+        AT_SOCIAL_AWARENESS,
+        AT_SPATIAL_SENSE,
+        AT_WILLPOWER
     } ATTRIBUTES_TYPE;
 
     // getters
@@ -120,6 +133,45 @@ public:
 
     //! return this dwarf's disease resistance attribute score
     Q_INVOKABLE int disease_resistance() {return m_disease_resistance;}
+
+    //! return this dwarf's willpower attribute score
+    Q_INVOKABLE int willpower() {return m_willpower;}
+
+    //! return this dwarf's memory attribute score
+    Q_INVOKABLE int memory() {return m_memory;}
+
+    //! return this dwarf's focus attribute score
+    Q_INVOKABLE int focus() {return m_focus;}
+
+    //! return this dwarf's intuition attribute score
+    Q_INVOKABLE int intuition() {return m_intuition;}
+
+    //! return this dwarf's patience attribute score
+    Q_INVOKABLE int patience() {return m_patience;}
+
+    //! return this dwarf's empathy attribute score
+    Q_INVOKABLE int empathy() {return m_empathy;}
+
+    //! return this dwarf's social awareness attribute score
+    Q_INVOKABLE int social_awareness() {return m_social_awareness;}
+
+    //! return this dwarf's creativity attribute score
+    Q_INVOKABLE int creativity() {return m_creativity;}
+
+    //! return this dwarf's musicality attribute score
+    Q_INVOKABLE int musicality() {return m_musicality;}
+
+    //! return this dwarf's analytical ability attribute score
+    Q_INVOKABLE int analytical_ability() {return m_analytical_ability;}
+
+    //! return this dwarf's linguistic ability attribute score
+    Q_INVOKABLE int linguistic_ability() {return m_linguistic_ability;}
+
+    //! return this dwarf's spatial sense attribute score
+    Q_INVOKABLE int spatial_sense() {return m_spatial_sense;}
+
+    //! return this dwarf's kinesthetic sense attribute score
+    Q_INVOKABLE int kinesthetic_sense() {return m_kinesthetic_sense;}
 
     //! return this dwarf's squad reference id
     Q_INVOKABLE int get_squad_ref_id() { return m_squad_ref_id; }
@@ -338,6 +390,19 @@ private:
     int m_endurance;
     int m_disease_resistance;
     int m_recuperation;
+    int m_willpower;
+    int m_memory;
+    int m_focus;
+    int m_intuition;
+    int m_patience;
+    int m_empathy;
+    int m_social_awareness;
+    int m_creativity;
+    int m_musicality;
+    int m_analytical_ability;
+    int m_linguistic_ability;
+    int m_spatial_sense;
+    int m_kinesthetic_sense;
     QString m_current_job;
     QString m_current_sub_job_id;
     QVector<Skill> m_skills;
@@ -368,6 +433,7 @@ private:
     void read_current_job();
     void read_souls();
     void read_skills();
+    void read_attributes();
     void read_traits();
     void read_squad_ref_id();
     void read_flags();

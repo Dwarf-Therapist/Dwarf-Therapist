@@ -60,6 +60,19 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_endurance(-1)
     , m_recuperation(-1)
     , m_disease_resistance(-1)
+    , m_willpower(-1)
+    , m_memory(-1)
+    , m_focus(-1)
+    , m_intuition(-1)
+    , m_patience(-1)
+    , m_empathy(-1)
+    , m_social_awareness(-1)
+    , m_creativity(-1)
+    , m_musicality(-1)
+    , m_analytical_ability(-1)
+    , m_linguistic_ability(-1)
+    , m_spatial_sense(-1)
+    , m_kinesthetic_sense(-1)
     , m_current_job_id(-1)
     , m_squad_ref_id(-1)
     , m_squad_name(QString::null)
@@ -141,18 +154,6 @@ void Dwarf::refresh_data() {
     read_squad_ref_id();
     read_turn_count();
 
-    m_strength = m_df->read_short(m_address + m_mem->dwarf_offset("strength"));
-    TRACE << "\tSTRENGTH:" << m_strength;
-    m_toughness = m_df->read_short(m_address + m_mem->dwarf_offset("toughness"));
-    TRACE << "\tTOUGHNESS:" << m_toughness;
-    m_agility = m_df->read_short(m_address + m_mem->dwarf_offset("agility"));
-    TRACE << "\tAGILITY:" << m_agility;
-    m_endurance = m_df->read_short(m_address + m_mem->dwarf_offset("endurance"));
-    TRACE << "\tENDURANCE:" << m_endurance;
-    m_recuperation = m_df->read_short(m_address + m_mem->dwarf_offset("recuperation"));
-    TRACE << "\tRECUPERATION:" << m_recuperation;
-    m_disease_resistance = m_df->read_short(m_address + m_mem->dwarf_offset("disease_resistance"));
-    TRACE << "\tDISEASE RESISTANCE:" << m_disease_resistance;
     m_flag1 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags1"));
     m_flag2 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags2"));
     m_pending_flag1 = m_flag1;
@@ -472,6 +473,7 @@ void Dwarf::read_souls() {
     }
     m_first_soul = souls.at(0);
     read_skills();
+    read_attributes();
     read_traits();
     TRACE << "SKILLS:" << m_skills.size();
     TRACE << "TRAITS:" << m_traits.size();
@@ -778,7 +780,7 @@ void Dwarf::read_traits() {
     for (int i = 0; i < 30; ++i) {
         short val = m_df->read_short(addr + i * 2);
         int deviation = abs(val - 50); // how far from the norm is this trait?
-        if (deviation <= 10) {
+        if (deviation <= 5) {
             val = -1; // this will cause median scores to not be treated as "active" traits
         }
         m_traits.insert(i, val);
@@ -828,6 +830,35 @@ void Dwarf::read_skills() {
         m_total_xp += s.actual_exp();
         m_skills.append(s);
     }
+}
+
+void Dwarf::read_attributes() {
+    m_strength = m_df->read_short(m_address + m_mem->dwarf_offset("strength"));
+    TRACE << "\tSTRENGTH:" << m_strength;
+    m_toughness = m_df->read_short(m_address + m_mem->dwarf_offset("toughness"));
+    TRACE << "\tTOUGHNESS:" << m_toughness;
+    m_agility = m_df->read_short(m_address + m_mem->dwarf_offset("agility"));
+    TRACE << "\tAGILITY:" << m_agility;
+    m_endurance = m_df->read_short(m_address + m_mem->dwarf_offset("endurance"));
+    TRACE << "\tENDURANCE:" << m_endurance;
+    m_recuperation = m_df->read_short(m_address + m_mem->dwarf_offset("recuperation"));
+    TRACE << "\tRECUPERATION:" << m_recuperation;
+    m_disease_resistance = m_df->read_short(m_address + m_mem->dwarf_offset("disease_resistance"));
+    TRACE << "\tDISEASE RESISTANCE:" << m_disease_resistance;
+
+    m_willpower = m_df->read_short(m_first_soul + m_mem->soul_detail("willpower"));
+    m_memory = m_df->read_short(m_first_soul + m_mem->soul_detail("memory"));
+    m_focus = m_df->read_short(m_first_soul + m_mem->soul_detail("focus"));
+    m_intuition = m_df->read_short(m_first_soul + m_mem->soul_detail("intuition"));
+    m_patience = m_df->read_short(m_first_soul + m_mem->soul_detail("patience"));
+    m_empathy = m_df->read_short(m_first_soul + m_mem->soul_detail("empathy"));
+    m_social_awareness = m_df->read_short(m_first_soul + m_mem->soul_detail("socialawareness"));
+    m_creativity = m_df->read_short(m_first_soul + m_mem->soul_detail("creativity"));
+    m_musicality = m_df->read_short(m_first_soul + m_mem->soul_detail("musicality"));
+    m_analytical_ability = m_df->read_short(m_first_soul + m_mem->soul_detail("analyticalability"));
+    m_linguistic_ability = m_df->read_short(m_first_soul + m_mem->soul_detail("linguisticability"));
+    m_spatial_sense = m_df->read_short(m_first_soul + m_mem->soul_detail("spatialsense"));
+    m_kinesthetic_sense = m_df->read_short(m_first_soul + m_mem->soul_detail("kinestheticsense"));
 }
 
 const Skill Dwarf::get_skill(int skill_id) {
@@ -1199,153 +1230,123 @@ int Dwarf::total_assigned_labors() {
 
 int Dwarf::get_attribute(int attribute)
 {
-    int mean_value = 0; //set the mean value to 0 so that we're working with the raw values rather than a value adjusted to the mean
-
+    //int mean_value = 0; //set the mean value to 0 so that we're working with the raw values rather than a value adjusted to the mean
+    //**finally i'm not using the mean at all
     //LOGD << "mean " << mean_value << " attribute " << attribute << " caste " << m_caste_id;
     int ret_value;
+    int value = 0;
+
+    //if we're not using the mean we can group attribute levels in the case so set the generic value here to use
+    if(attribute==AT_STRENGTH){value = m_strength;}
+    if(attribute==AT_ENDURANCE){value = m_endurance;}
+    if(attribute==AT_AGILITY){value = m_agility;}
+    if(attribute==AT_TOUGHNESS){value = m_toughness;}
+    if(attribute==AT_RECUPERATION){value = m_recuperation;}
+    if(attribute==AT_DISEASE_RESISTANCE){value = m_disease_resistance;}
+    if(attribute==AT_ANALYTICAL_ABILITY){value = m_analytical_ability;}
+    if(attribute==AT_CREATIVITY){value = m_creativity;}
+    if(attribute==AT_EMPATHY){value = m_empathy;}
+    if(attribute==AT_FOCUS){value = m_focus;}
+    if(attribute==AT_INTUITION){value = m_intuition;}
+    if(attribute==AT_KINESTHETIC_SENSE){value = m_kinesthetic_sense;}
+    if(attribute==AT_LINGUISTIC_ABILITY){value = m_linguistic_ability;}
+    if(attribute==AT_MEMORY){value = m_memory;}
+    if(attribute==AT_MUSICALITY){value = m_musicality;}
+    if(attribute==AT_PATIENCE){value = m_patience;}
+    if(attribute==AT_SOCIAL_AWARENESS){value = m_social_awareness;}
+    if(attribute==AT_SPATIAL_SENSE){value = m_spatial_sense;}
+    if(attribute==AT_WILLPOWER){value = m_willpower;}
 
     //modify the return 'rating' values so they're spread more from 0 to 15 so that when painting with graphics it shows more of a difference in the skills
     //(ie, shows the diamond graphic on that draw type for high values, but still show a tiny square for low values)
-    switch(attribute)
+    if(attribute==AT_STRENGTH || attribute==AT_MEMORY || attribute==AT_PATIENCE || attribute==AT_CREATIVITY || attribute==AT_ANALYTICAL_ABILITY || attribute==AT_TOUGHNESS ||
+            attribute==AT_FOCUS)
     {
-    case AT_STRENGTH:
-    {
-        //mean_value-=1250;
-        if (m_strength<251+mean_value)
+        if (value<251)
             ret_value=0;
-        else if (m_strength<501+mean_value)
+        else if (value<501)
             ret_value=1;
-        else if (m_strength<751+mean_value)
+        else if (value<751)
             ret_value=3;
-        else if (m_strength<1001+mean_value)
+        else if (value<1001)
             ret_value=5;
-        else if (m_strength<1500+mean_value)
+        else if (value<1500)
             ret_value=7;
-        else if (m_strength<1750+mean_value)
+        else if (value<1750)
             ret_value=9;
-        else if (m_strength<2000+mean_value)
+        else if (value<2000)
             ret_value=11;
-        else if (m_strength<2250+mean_value)
+        else if (value<2250)
             ret_value=13;
         else
             ret_value=15;
     }
-        break;
-    case AT_AGILITY:
+
+    if(attribute==AT_AGILITY)
     {
-        //mean_value-=900;
-        if (m_agility == 0)
+        if (value == 0)
             ret_value=0;
-        else if (m_agility<151+mean_value)
+        else if (value<151)
             ret_value=1;
-        else if (m_agility<401+mean_value)
+        else if (value<401)
             ret_value=3;
-        else if (m_agility<651+mean_value)
+        else if (value<651)
             ret_value=5;
-        else if (m_agility<1150+mean_value)
+        else if (value<1150)
             ret_value=7;
-        else if (m_agility<1400+mean_value)
+        else if (value<1400)
             ret_value=9;
-        else if (m_agility<1650+mean_value)
+        else if (value<1650)
             ret_value=11;
-        else if (m_agility<1900+mean_value)
+        else if (value<1900)
             ret_value=13;
         else
             ret_value=15;
     }
-        break;
-    case AT_TOUGHNESS:
+
+    if( attribute==AT_SPATIAL_SENSE || attribute==AT_FOCUS)
     {
-        //mean_value-=1250;
-        if (m_toughness<251+mean_value)
+        if (value<543)
             ret_value=0;
-        else if (m_toughness<501+mean_value)
+        else if (value<793)
             ret_value=1;
-        else if (m_toughness<751+mean_value)
+        else if (value<1043)
             ret_value=3;
-        else if (m_toughness<1001+mean_value)
+        else if (value<1293)
             ret_value=5;
-        else if (m_toughness<1500+mean_value)
+        else if (value<1792)
             ret_value=7;
-        else if (m_toughness<1750+mean_value)
+        else if (value<2042)
             ret_value=9;
-        else if (m_toughness<2000+mean_value)
+        else if (value<2292)
             ret_value=11;
-        else if (m_toughness<2250+mean_value)
+        else if (value<2542)
             ret_value=13;
         else
             ret_value=15;
     }
-        break;
-    case AT_ENDURANCE:
+
+    if (attribute==AT_ENDURANCE || attribute==AT_WILLPOWER || attribute==AT_INTUITION || attribute==AT_LINGUISTIC_ABILITY || attribute==AT_KINESTHETIC_SENSE ||
+            attribute==AT_SOCIAL_AWARENESS || attribute==AT_EMPATHY || attribute==AT_RECUPERATION || attribute==AT_DISEASE_RESISTANCE || attribute==AT_MUSICALITY)
     {
-        //mean_value-=1000;
-        if (m_endurance==0)
+        if (value==0)
             ret_value=0;
-        else if (m_endurance<251+mean_value)
+        else if (value<251)
             ret_value=1;
-        else if (m_endurance<501+mean_value)
+        else if (value<501)
             ret_value=3;
-        else if (m_endurance<751+mean_value)
+        else if (value<751)
             ret_value=5;
-        else if (m_endurance<1250+mean_value)
+        else if (value<1250)
             ret_value=7;
-        else if (m_endurance<1500+mean_value)
+        else if (value<1500)
             ret_value=9;
-        else if (m_endurance<1750+mean_value)
+        else if (value<1750)
             ret_value=11;
-        else if (m_endurance<2000+mean_value)
+        else if (value<2000)
             ret_value=13;
         else
             ret_value=15;
-    }
-        break;
-    case AT_RECUPERATION:
-    {
-        //mean_value-=1000;
-        if (m_recuperation==0)
-            ret_value=0;
-        else if (m_recuperation<251+mean_value)
-            ret_value=1;
-        else if (m_recuperation<501+mean_value)
-            ret_value=3;
-        else if (m_recuperation<751+mean_value)
-            ret_value=5;
-        else if (m_recuperation<1250+mean_value)
-            ret_value=7;
-        else if (m_recuperation<1500+mean_value)
-            ret_value=9;
-        else if (m_recuperation<1750+mean_value)
-            ret_value=11;
-        else if (m_recuperation<2000+mean_value)
-            ret_value=13;
-        else
-            ret_value=15;
-    }
-        break;
-    case AT_DISEASE_RESISTANCE:
-    {
-        //mean_value-=1000;
-        if (m_disease_resistance==0)
-            ret_value=0;
-        else if (m_disease_resistance<251+mean_value)
-            ret_value=1;
-        else if (m_disease_resistance<501+mean_value)
-            ret_value=3;
-        else if (m_disease_resistance<751+mean_value)
-            ret_value=5;
-        else if (m_disease_resistance<1250+mean_value)
-            ret_value=7;
-        else if (m_disease_resistance<1500+mean_value)
-            ret_value=9;
-        else if (m_disease_resistance<1750+mean_value)
-            ret_value=11;
-        else if (m_disease_resistance<2000+mean_value)
-            ret_value=13;
-        else
-            ret_value=15;
-    }
-        break;
     }
     return ret_value;
 }

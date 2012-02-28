@@ -35,7 +35,20 @@ public:
         DTA_TOUGHNESS,
         DTA_ENDURANCE,
         DTA_RECUPERATION,
-        DTA_DISEASE_RESISTANCE
+        DTA_DISEASE_RESISTANCE,
+        DTA_ANALYTICAL_ABILITY,
+        DTA_CREATIVITY,
+        DTA_EMPATHY,
+        DTA_FOCUS,
+        DTA_INTUITION,
+        DTA_KINESTHETIC_SENSE,
+        DTA_LINGUISTIC_ABILITY,
+        DTA_MEMORY,
+        DTA_MUSICALITY,
+        DTA_PATIENCE,
+        DTA_SOCIAL_AWARENESS,
+        DTA_SPATIAL_SENSE,
+        DTA_WILLPOWER
     } DWARF_ATTRIBUTE_TYPE;
 
     AttributeColumn(const QString &title, DWARF_ATTRIBUTE_TYPE type, ViewColumnSet *set = 0, QObject *parent = 0);

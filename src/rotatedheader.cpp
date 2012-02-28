@@ -53,7 +53,9 @@ void RotatedHeader::read_settings() {
         }
     }
     m_shade_column_headers = s->value("options/grid/shade_column_headers", true).toBool();
+    m_header_text_bottom = s->value("options/grid/header_text_bottom", false).toBool();
 }
+
 
 void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const {
     if (!rect.isValid() || idx == 0)
@@ -128,10 +130,21 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
     p->save();
     p->setPen(Qt::black);
     p->setRenderHint(QPainter::Antialiasing);
-    p->translate(rect.x(), rect.y());
-    p->rotate(90);
     p->setFont(QFont("Verdana", 8));
-    p->drawText(14, -4, data);
+
+    if (m_header_text_bottom)
+    {
+        //flip column header text to read from bottom to top (supposedly this is more readable...)
+        p->translate(rect.x() + rect.width(), rect.height());
+        p->rotate(270);
+        p->drawText(4,-4,data);
+    }
+    else
+    {
+        p->translate(rect.x(), rect.y());
+        p->rotate(90);
+        p->drawText(14, -4, data);
+    }
     p->restore();
 }
 
