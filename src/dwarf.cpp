@@ -1259,38 +1259,14 @@ int Dwarf::get_attribute(int attribute)
 
     //modify the return 'rating' values so they're spread more from 0 to 15 so that when painting with graphics it shows more of a difference in the skills
     //(ie, shows the diamond graphic on that draw type for high values, but still show a tiny square for low values)
-    if(attribute==AT_STRENGTH || attribute==AT_MEMORY || attribute==AT_PATIENCE || attribute==AT_CREATIVITY || attribute==AT_ANALYTICAL_ABILITY || attribute==AT_TOUGHNESS ||
-            attribute==AT_FOCUS)
-    {
-        if (value<251)
-            ret_value=0;
-        else if (value<501)
-            ret_value=1;
-        else if (value<751)
-            ret_value=3;
-        else if (value<1001)
-            ret_value=5;
-        else if (value<1500)
-            ret_value=7;
-        else if (value<1750)
-            ret_value=9;
-        else if (value<2000)
-            ret_value=11;
-        else if (value<2250)
-            ret_value=13;
-        else
-            ret_value=15;
-    }
 
     if(attribute==AT_AGILITY)
     {
-        if (value == 0)
-            ret_value=0;
-        else if (value<151)
+        if (value<150)
             ret_value=1;
-        else if (value<401)
+        else if (value<151)
             ret_value=3;
-        else if (value<651)
+        else if (value<401)
             ret_value=5;
         else if (value<1150)
             ret_value=7;
@@ -1304,15 +1280,34 @@ int Dwarf::get_attribute(int attribute)
             ret_value=15;
     }
 
+    if (attribute==AT_STRENGTH || attribute==AT_TOUGHNESS || attribute==AT_ANALYTICAL_ABILITY ||
+            attribute==AT_CREATIVITY || attribute==AT_PATIENCE || attribute==AT_MEMORY)
+    {
+        if (value<251)
+            ret_value=1;
+        else if (value<501)
+            ret_value=3;
+        else if (value<751)
+            ret_value=5;
+        else if (value<1500)
+            ret_value=7;
+        else if (value<1750)
+            ret_value=9;
+        else if (value<2000)
+            ret_value=11;
+        else if (value<2250)
+            ret_value=13;
+        else
+            ret_value=15;
+    }
+
     if( attribute==AT_SPATIAL_SENSE || attribute==AT_FOCUS)
     {
-        if (value<543)
-            ret_value=0;
-        else if (value<793)
+        if (value<542)
             ret_value=1;
-        else if (value<1043)
+        else if (value<793)
             ret_value=3;
-        else if (value<1293)
+        else if (value<1043)
             ret_value=5;
         else if (value<1792)
             ret_value=7;
@@ -1326,16 +1321,16 @@ int Dwarf::get_attribute(int attribute)
             ret_value=15;
     }
 
-    if (attribute==AT_ENDURANCE || attribute==AT_WILLPOWER || attribute==AT_INTUITION || attribute==AT_LINGUISTIC_ABILITY || attribute==AT_KINESTHETIC_SENSE ||
-            attribute==AT_SOCIAL_AWARENESS || attribute==AT_EMPATHY || attribute==AT_RECUPERATION || attribute==AT_DISEASE_RESISTANCE || attribute==AT_MUSICALITY)
+    if (attribute==AT_ENDURANCE || attribute==AT_RECUPERATION || attribute==AT_DISEASE_RESISTANCE ||
+            attribute==AT_INTUITION || attribute==AT_WILLPOWER || attribute==AT_KINESTHETIC_SENSE ||
+            attribute==AT_LINGUISTIC_ABILITY || attribute==AT_MUSICALITY || attribute==AT_EMPATHY ||
+            attribute==AT_SOCIAL_AWARENESS)
     {
-        if (value==0)
-            ret_value=0;
-        else if (value<251)
+        if (value<250)
             ret_value=1;
-        else if (value<501)
+        else if (value<251)
             ret_value=3;
-        else if (value<751)
+        else if (value<501)
             ret_value=5;
         else if (value<1250)
             ret_value=7;
@@ -1348,5 +1343,6 @@ int Dwarf::get_attribute(int attribute)
         else
             ret_value=15;
     }
+
     return ret_value;
 }
