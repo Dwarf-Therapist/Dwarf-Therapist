@@ -178,5 +178,5 @@ void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role) {
     }
     setSortCaseSensitivity(Qt::CaseInsensitive);
     setSortLocaleAware(true);
-    QSortFilterProxyModel::sort(column, order);
+    QSortFilterProxyModel::sort(column, order);    
 }

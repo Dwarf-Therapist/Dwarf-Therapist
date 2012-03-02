@@ -324,7 +324,6 @@ void MainWindow::read_dwarves() {
     new_pending_changes(0);
     // cheap trick to setup the view correctly
     m_view_manager->redraw_current_tab();
-    ui->lbl_dwarf_total->setText(QString::number(m_model->get_dwarves().size()));
 
     // setup the filter auto-completer
     m_dwarf_names_list.clear();

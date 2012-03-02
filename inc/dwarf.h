@@ -54,6 +54,7 @@ public:
         DH_TOTAL_LEVELS
     } DWARF_HAPPINESS;
 
+    //make sure these are in the same order as the offsets in memory
     typedef enum {
         AT_STRENGTH = 0,
         AT_AGILITY,
@@ -62,18 +63,18 @@ public:
         AT_RECUPERATION,
         AT_DISEASE_RESISTANCE,
         AT_ANALYTICAL_ABILITY,
-        AT_CREATIVITY,
-        AT_EMPATHY,
         AT_FOCUS,
+        AT_WILLPOWER,
+        AT_CREATIVITY,
         AT_INTUITION,
-        AT_KINESTHETIC_SENSE,
-        AT_LINGUISTIC_ABILITY,
-        AT_MEMORY,
-        AT_MUSICALITY,
         AT_PATIENCE,
-        AT_SOCIAL_AWARENESS,
+        AT_MEMORY,
+        AT_LINGUISTIC_ABILITY,
         AT_SPATIAL_SENSE,
-        AT_WILLPOWER
+        AT_MUSICALITY,
+        AT_KINESTHETIC_SENSE,
+        AT_EMPATHY,
+        AT_SOCIAL_AWARENESS
     } ATTRIBUTES_TYPE;
 
     // getters
@@ -116,62 +117,62 @@ public:
     //! return the level of the specified attribute of this dwarf
     int get_attribute(int attribute);       
 
-    //! return this dwarf's strength attribute score
-    Q_INVOKABLE int strength() {return m_strength;}
+    //! return this dwarf's strength attribute score    
+    Q_INVOKABLE int strength() {return m_attributes.value(AT_STRENGTH,-1);}
 
     //! return this dwarf's agility attribute score
-    Q_INVOKABLE int agility() {return m_agility;}
+    Q_INVOKABLE int agility() {return m_attributes.value(AT_AGILITY,-1);}
 
     //! return this dwarf's toughness attribute score
-    Q_INVOKABLE int toughness() {return m_toughness;}
+    Q_INVOKABLE int toughness() {return m_attributes.value(AT_TOUGHNESS,-1);}
 
     //! return this dwarf's endurance attribute score
-    Q_INVOKABLE int endurance() {return m_endurance;}
+    Q_INVOKABLE int endurance() {return m_attributes.value(AT_ENDURANCE,-1);}
 
     //! return this dwarf's recuperation attribute score
-    Q_INVOKABLE int recuperation() {return m_recuperation;}
+    Q_INVOKABLE int recuperation() {return m_attributes.value(AT_RECUPERATION,-1);}
 
     //! return this dwarf's disease resistance attribute score
-    Q_INVOKABLE int disease_resistance() {return m_disease_resistance;}
+    Q_INVOKABLE int disease_resistance() {return m_attributes.value(AT_DISEASE_RESISTANCE,-1);}
 
     //! return this dwarf's willpower attribute score
-    Q_INVOKABLE int willpower() {return m_willpower;}
+    Q_INVOKABLE int willpower() {return m_attributes.value(AT_WILLPOWER,-1);}
 
     //! return this dwarf's memory attribute score
-    Q_INVOKABLE int memory() {return m_memory;}
+    Q_INVOKABLE int memory() {return m_attributes.value(AT_MEMORY,-1);}
 
     //! return this dwarf's focus attribute score
-    Q_INVOKABLE int focus() {return m_focus;}
+    Q_INVOKABLE int focus() {return m_attributes.value(AT_FOCUS,-1);}
 
     //! return this dwarf's intuition attribute score
-    Q_INVOKABLE int intuition() {return m_intuition;}
+    Q_INVOKABLE int intuition() {return m_attributes.value(AT_INTUITION,-1);}
 
     //! return this dwarf's patience attribute score
-    Q_INVOKABLE int patience() {return m_patience;}
+    Q_INVOKABLE int patience() {return m_attributes.value(AT_PATIENCE,-1);}
 
     //! return this dwarf's empathy attribute score
-    Q_INVOKABLE int empathy() {return m_empathy;}
+    Q_INVOKABLE int empathy() {return m_attributes.value(AT_EMPATHY,-1);}
 
     //! return this dwarf's social awareness attribute score
-    Q_INVOKABLE int social_awareness() {return m_social_awareness;}
+    Q_INVOKABLE int social_awareness() {return m_attributes.value(AT_SOCIAL_AWARENESS,-1);}
 
     //! return this dwarf's creativity attribute score
-    Q_INVOKABLE int creativity() {return m_creativity;}
+    Q_INVOKABLE int creativity() {return m_attributes.value(AT_CREATIVITY,-1);}
 
     //! return this dwarf's musicality attribute score
-    Q_INVOKABLE int musicality() {return m_musicality;}
+    Q_INVOKABLE int musicality() {return m_attributes.value(AT_MUSICALITY,-1);}
 
     //! return this dwarf's analytical ability attribute score
-    Q_INVOKABLE int analytical_ability() {return m_analytical_ability;}
+    Q_INVOKABLE int analytical_ability() {return m_attributes.value(AT_ANALYTICAL_ABILITY,-1);}
 
     //! return this dwarf's linguistic ability attribute score
-    Q_INVOKABLE int linguistic_ability() {return m_linguistic_ability;}
+    Q_INVOKABLE int linguistic_ability() {return m_attributes.value(AT_LINGUISTIC_ABILITY,-1);}
 
     //! return this dwarf's spatial sense attribute score
-    Q_INVOKABLE int spatial_sense() {return m_spatial_sense;}
+    Q_INVOKABLE int spatial_sense() {return m_attributes.value(AT_SPATIAL_SENSE,-1);}
 
     //! return this dwarf's kinesthetic sense attribute score
-    Q_INVOKABLE int kinesthetic_sense() {return m_kinesthetic_sense;}
+    Q_INVOKABLE int kinesthetic_sense() {return m_attributes.value(AT_KINESTHETIC_SENSE,-1);}
 
     //! return this dwarf's squad reference id
     Q_INVOKABLE int get_squad_ref_id() { return m_squad_ref_id; }
@@ -237,6 +238,8 @@ public:
     will return -1 if the trait is in the average range (non-extreme values)
     */
     Q_INVOKABLE short trait(int trait_id) {return m_traits.value(trait_id, -1);}
+
+    Q_INVOKABLE int attribute(int attrib_id) {return m_attributes.value(attrib_id, -1);}
 
     //! returns the numeric rating for the this dwarf in the skill specified by skill_id
     short get_rating_by_skill(int skill_id);
@@ -366,6 +369,8 @@ private:
     DWARF_HAPPINESS m_happiness; // enum value of happiness
     int m_raw_happiness; // raw score before being turned into an enum
     bool m_is_male;
+    int m_mood_id;
+    QString m_curse_name;
     short m_caste_id;
     bool m_show_full_name;
     int m_total_xp;
@@ -384,29 +389,11 @@ private:
     int m_raw_profession; // id of profession set by game
     bool m_can_set_labors; // used to prevent cheating
     short m_current_job_id;
-    int m_strength;
-    int m_agility;
-    int m_toughness;
-    int m_endurance;
-    int m_disease_resistance;
-    int m_recuperation;
-    int m_willpower;
-    int m_memory;
-    int m_focus;
-    int m_intuition;
-    int m_patience;
-    int m_empathy;
-    int m_social_awareness;
-    int m_creativity;
-    int m_musicality;
-    int m_analytical_ability;
-    int m_linguistic_ability;
-    int m_spatial_sense;
-    int m_kinesthetic_sense;
     QString m_current_job;
     QString m_current_sub_job_id;
     QVector<Skill> m_skills;
     QHash<int, short> m_traits;
+    QHash<int, short> m_attributes;
     QMap<int, ushort> m_labors;
     QMap<int, ushort> m_pending_labors;
     QList<QAction*> m_actions; // actions suitable for context menus
@@ -422,6 +409,8 @@ private:
     // these methods read data from raw memory
     void read_id();
     void read_sex();
+    void read_mood();
+    void read_curse();
     void read_caste();
     void read_race();
     void read_first_name();

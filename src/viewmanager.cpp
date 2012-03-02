@@ -79,7 +79,7 @@ void ViewManager::reload_views() {
 
     int total_views = s->beginReadArray("gridviews");
     QList<GridView*> built_in_views;
-    for (int i = 0; i < total_views; ++i) {
+    for (int i = 0; i <= total_views; ++i) {
         s->setArrayIndex(i);
         GridView *gv = GridView::read_from_ini(*s, this);
         gv->set_is_custom(false); // this is a default view

@@ -34,8 +34,26 @@ win32 {
 else:macx { 
     message(Setting up for OSX)
     HEADERS += ./inc/dfinstanceosx.h
-    SOURCES += ./src/dfinstanceosx.cpp
+    OBJECTIVE_SOURCES += ./src/dfinstanceosx.mm
     ICON = hammer.ico
+    LIBS += -framework Cocoa
+    LIBS += -framework Carbon
+    LIBS += -framework Security
+    LIBS += -framework SecurityFoundation
+    LIBS += -framework Foundation
+    LIBS += -framework ApplicationServices
+    LIBS += -framework Accelerate
+
+    log.path = Contents/MacOS/log
+    QMAKE_BUNDLE_DATA += log
+
+    etc.path = Contents/MacOS/etc
+    etc.files += etc/game_data.ini
+    QMAKE_BUNDLE_DATA += etc
+
+    layouts.path = Contents/MacOS/etc/memory_layouts/osx
+    layouts.files += etc/memory_layouts/osx/v0.34.03.ini
+    QMAKE_BUNDLE_DATA += layouts
 }
 else:unix {
     message(Setting up for Linux)
@@ -146,8 +164,8 @@ HEADERS += inc/win_structs.h \
     inc/raws/rawobject.h \
     inc/raws/rawreader.h \
     inc/raws/rawobjectlist.h \
-    inc/grid_view/flagcolumn.h \
-    inc/attribute.h
+    inc/attribute.h \
+    inc/grid_view/flagcolumn.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -209,3 +227,6 @@ FORMS += ui/scriptdialog.ui \
     ui/about.ui \
     ui/selectparentlayoutdialog.ui
 RESOURCES += images.qrc
+
+OTHER_FILES += \
+    src/dfinstanceosx.cpp

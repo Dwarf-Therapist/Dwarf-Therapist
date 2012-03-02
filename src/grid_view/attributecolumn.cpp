@@ -185,7 +185,7 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     item->setData(val, DwarfModel::DR_RATING);
     item->setData(CT_ATTRIBUTE, DwarfModel::DR_COL_TYPE);
 
-    QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%5</h4>")
+    QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%4</h4>")
         .arg(m_title)
         .arg(msg)
         .arg(rawVal)

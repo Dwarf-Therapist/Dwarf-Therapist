@@ -176,8 +176,8 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
             break;
         case CT_FLAGS:
             {
-               paint_flags(adjusted, p, opt, idx);
-               paint_grid(adjusted, false, p, opt, idx);
+            paint_flags(adjusted, p, opt, idx);
+            paint_grid(adjusted, false, p, opt, idx);
             }
             break;
         case CT_DEFAULT:

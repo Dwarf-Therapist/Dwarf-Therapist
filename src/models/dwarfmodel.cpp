@@ -535,7 +535,6 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
                 m_dwarves[dwarf_id]->toggle_pref_value(labor_id);
             else if (type == CT_FLAGS)
                 m_dwarves[dwarf_id]->toggle_flag_bit(labor_id);
-
         }
     }
     calculate_pending();
