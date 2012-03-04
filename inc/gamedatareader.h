@@ -133,7 +133,7 @@ private:
 
     QHash<int, QString> m_skill_levels;
     QHash<int, int> m_attribute_levels;
-    QHash<QString, Attribute*> m_attributes;
+    QHash<QString, Attribute*> m_raw_attributes;
     QHash<short, DwarfJob*> m_dwarf_jobs;
     QHash<short, Profession*> m_professions;
 

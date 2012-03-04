@@ -68,7 +68,7 @@ GameDataReader::GameDataReader(QObject *parent)
     for(int i = 0; i < attributes; ++i) {
         m_data_settings->setArrayIndex(i);
         Attribute *a = new Attribute(*m_data_settings, this);
-        m_attributes.insert(a->name, a);
+        m_raw_attributes.insert(a->name, a);
     }
     m_data_settings->endArray();
 
@@ -182,7 +182,7 @@ int GameDataReader::get_int_for_key(QString key, short base) {
 
 QString GameDataReader::get_attribute_level_name(QString attribute, short level)
 {
-    return m_attributes.value(attribute, 0)->m_levels.value(level);
+    return m_raw_attributes.value(attribute, 0)->m_levels.value(level);
 }
 
 QString GameDataReader::get_string_for_key(QString key) {

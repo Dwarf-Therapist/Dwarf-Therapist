@@ -40,7 +40,6 @@ AttributeColumn::AttributeColumn(const QString &title, DWARF_ATTRIBUTE_TYPE type
             case DTA_ENDURANCE: m_title = tr("Endurance");  break;
             case DTA_RECUPERATION: m_title = tr("Recuperation");  break;
             case DTA_DISEASE_RESISTANCE: m_title = tr("Disease resistance");  break;
-
             case DTA_ANALYTICAL_ABILITY: m_title = tr("Analytical Ability");  break;
             case DTA_CREATIVITY: m_title = tr("Creativity");  break;
             case DTA_EMPATHY: m_title = tr("Empathy");  break;
@@ -74,100 +73,101 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     short val = -1;
     short rawVal = 0;
     val = d->get_attribute((int)m_attribute_type);
+    if(val>15){val=15;};
     QString msg;
     switch (m_attribute_type) {
         case DTA_STRENGTH:
-            key = key.arg("Strength").arg(val > 8 ? 8 : val);
+            key = key.arg("Strength").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Strength", val);
             rawVal = (int)d->strength();
             break;
         case DTA_AGILITY:
-            key = key.arg("Agility").arg(val > 8 ? 8 : val);
+            key = key.arg("Agility").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Agility", val);
             rawVal = (int)d->agility();
             break;
         case DTA_TOUGHNESS:
-            key = key.arg("Toughness").arg(val > 8 ? 8 : val);
+            key = key.arg("Toughness").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Toughness", val);
             rawVal = (int)d->toughness();
             break;
         case DTA_ENDURANCE:
-            key = key.arg("Endurance").arg(val > 8 ? 8 : val);
+            key = key.arg("Endurance").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Endurance", val);
             rawVal = (int)d->endurance();
             break;
         case DTA_RECUPERATION:
-            key = key.arg("Recuperation").arg(val > 8 ? 8 : val);
+            key = key.arg("Recuperation").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Recuperation", val);
             rawVal = (int)d->recuperation();
             break;
         case DTA_DISEASE_RESISTANCE:
-            key = key.arg("Disease Resistance").arg(val > 8 ? 8 : val);
+            key = key.arg("Disease Resistance").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Disease Resistance", val);
             rawVal = (int)d->disease_resistance();
             break;
         case DTA_ANALYTICAL_ABILITY:
-            key = key.arg("Analytical Ability").arg(val > 8 ? 8 : val);
+            key = key.arg("Analytical Ability").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Analytical Ability", val);
             rawVal = (int)d->analytical_ability();
             break;
         case DTA_CREATIVITY:
-            key = key.arg("Creativity").arg(val > 8 ? 8 : val);
+            key = key.arg("Creativity").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Creativity", val);
             rawVal = (int)d->creativity();
             break;
         case DTA_EMPATHY:
-            key = key.arg("Empathy").arg(val > 8 ? 8 : val);
+            key = key.arg("Empathy").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Empathy", val);
             rawVal = (int)d->empathy();
             break;
         case DTA_FOCUS:
-            key = key.arg("Focus").arg(val > 8 ? 8 : val);
+            key = key.arg("Focus").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Focus", val);
             rawVal = (int)d->focus();
             break;
         case DTA_INTUITION:
-            key = key.arg("Intuition").arg(val > 8 ? 8 : val);
+            key = key.arg("Intuition").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Intuition", val);
             rawVal = (int)d->intuition();
             break;
         case DTA_KINESTHETIC_SENSE:
-            key = key.arg("Kinesthetic Sense").arg(val > 8 ? 8 : val);
+            key = key.arg("Kinesthetic Sense").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Kinesthetic Sense", val);
             rawVal = (int)d->kinesthetic_sense();
             break;
         case DTA_LINGUISTIC_ABILITY:
-            key = key.arg("Linguistic Ability").arg(val > 8 ? 8 : val);
+            key = key.arg("Linguistic Ability").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Linguistic Ability", val);
             rawVal = (int)d->linguistic_ability();
             break;
         case DTA_MEMORY:
-            key = key.arg("Memory").arg(val > 8 ? 8 : val);
+            key = key.arg("Memory").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Memory", val);
             rawVal = (int)d->memory();
             break;
         case DTA_MUSICALITY:
-            key = key.arg("Musicality").arg(val > 8 ? 8 : val);
+            key = key.arg("Musicality").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Musicality", val);
             rawVal = (int)d->musicality();
             break;
         case DTA_PATIENCE:
-            key = key.arg("Patience").arg(val > 8 ? 8 : val);
+            key = key.arg("Patience").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Patience", val);
             rawVal = (int)d->patience();
             break;
         case DTA_SOCIAL_AWARENESS:
-            key = key.arg("Social Awareness").arg(val > 8 ? 8 : val);
+            key = key.arg("Social Awareness").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Social Awareness", val);
             rawVal = (int)d->social_awareness();
             break;
         case DTA_SPATIAL_SENSE:
-            key = key.arg("Spatial Sense").arg(val > 8 ? 8 : val);
+            key = key.arg("Spatial Sense").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Spatial Sense", val);
             rawVal = (int)d->spatial_sense();
             break;
         case DTA_WILLPOWER:
-            key = key.arg("Willpower").arg(val > 8 ? 8 : val);
+            key = key.arg("Willpower").arg(val);
             msg = GameDataReader::ptr()->get_attribute_level_name("Willpower", val);
             rawVal = (int)d->willpower();
         break;

@@ -30,25 +30,25 @@ class AttributeColumn : public ViewColumn {
     Q_OBJECT
 public:
     typedef enum {
-        DTA_STRENGTH,
+        DTA_STRENGTH=0,
         DTA_AGILITY,
         DTA_TOUGHNESS,
         DTA_ENDURANCE,
         DTA_RECUPERATION,
         DTA_DISEASE_RESISTANCE,
         DTA_ANALYTICAL_ABILITY,
-        DTA_CREATIVITY,
-        DTA_EMPATHY,
         DTA_FOCUS,
+        DTA_WILLPOWER,
+        DTA_CREATIVITY,
         DTA_INTUITION,
-        DTA_KINESTHETIC_SENSE,
-        DTA_LINGUISTIC_ABILITY,
-        DTA_MEMORY,
-        DTA_MUSICALITY,
         DTA_PATIENCE,
-        DTA_SOCIAL_AWARENESS,
+        DTA_MEMORY,
+        DTA_LINGUISTIC_ABILITY,
         DTA_SPATIAL_SENSE,
-        DTA_WILLPOWER
+        DTA_MUSICALITY,
+        DTA_KINESTHETIC_SENSE,
+        DTA_EMPATHY,
+        DTA_SOCIAL_AWARENESS
     } DWARF_ATTRIBUTE_TYPE;
 
     AttributeColumn(const QString &title, DWARF_ATTRIBUTE_TYPE type, ViewColumnSet *set = 0, QObject *parent = 0);

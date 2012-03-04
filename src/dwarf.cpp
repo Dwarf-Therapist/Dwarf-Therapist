@@ -424,7 +424,6 @@ void Dwarf::read_souls() {
     QVector<VIRTADDR> souls = m_df->enumerate_vector(soul_vector);
     if (souls.size() != 1) {
         LOGW << nice_name() << "has" << souls.size() << "souls!";
-        int soulsize=souls.size();
         return;
     }
     m_first_soul = souls.at(0);
@@ -677,8 +676,9 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
             }
         }
         if (unverified_dwarf->raw_profession() == baby_id) {
-            if ((flags1 & 0x200) != 0x200) {
-                // kidnapped flag? seems like it (this is actually the 'rider' flag) maybe 0x100 - 'left the map' would be better?
+            //kidnapped flag? seems like it (0x200 is actually the 'rider' flag and sometimes flags unkidnapped babies)
+            //changed to 0x100 - 'left the map' instead. check both or just add this as an invalid flag?
+            if ((flags1 & 0x100) == 0x100) {
                 LOGD << "Ignoring" << unverified_dwarf->nice_name() <<
                         "who appears to be a kidnapped baby";
                 delete unverified_dwarf;
@@ -1162,45 +1162,74 @@ int Dwarf::get_attribute(int attribute)
 
     //a lot of the attributes have specific ranges and a gap in them somewhere, so we'll add an additional range for that gap value
     //usually the level 5 (rating 8) as the gap is between 4 (rating 7) and 6 (rating 9)
-
     if(attribute==AT_AGILITY)
     {
-        if(value==NULL){ret_value=1;};
-        if(value>0&&value<151){ret_value=3;};
-        if(value>150&&value<401){ret_value=5;};
-        if(value>400&&value<651){ret_value=7;};
-        if(value>650&&value<1150){ret_value=8;}; //filler
-        if(value>1149&&value<1400){ret_value=9;};
-        if(value>1400&&value<1650){ret_value=11;};
-        if(value>1649&&value<1890){ret_value=13;};
-        if(value>1899){ret_value=15;};
+        if(value==NULL){
+            ret_value=1;
+        }else if(value<151){
+            ret_value=3;
+        }else if(value<401){
+            ret_value=5;
+        }else if(value<651){
+            ret_value=7;
+        }else if(value<1150){
+            ret_value=8;
+        }else if(value<1400){
+            ret_value=9;
+        }else if(value<1650){
+            ret_value=11;
+        }else if(value<1890){
+            ret_value=13;
+        }else{
+            ret_value=15;
+        }
     }
 
     if (attribute==AT_STRENGTH || attribute==AT_TOUGHNESS || attribute==AT_ANALYTICAL_ABILITY ||
             attribute==AT_CREATIVITY || attribute==AT_PATIENCE || attribute==AT_MEMORY)
     {
-        if(value<251){ret_value=1;};
-        if(value>250&&value<501){ret_value=3;};
-        if(value>500&&value<751){ret_value=5;};
-        if(value>750&&value<1001){ret_value=7;};
-        if(value>1000&&value<1500){ret_value=8;}; //filler
-        if(value>1499&&value<1750){ret_value=9;};
-        if(value>1749&&value<2000){ret_value=11;};
-        if(value>1999&&value<2250){ret_value=13;};
-        if(value>2249){ret_value=15;};
+        if(value==251){
+            ret_value=1;
+        }else if(value<501){
+            ret_value=3;
+        }else if(value<751){
+            ret_value=5;
+        }else if(value<1001){
+            ret_value=7;
+        }else if(value<1500){
+            ret_value=8;
+        }else if(value<1750){
+            ret_value=9;
+        }else if(value<2000){
+            ret_value=11;
+        }else if(value<2250){
+            ret_value=13;
+        }else{
+            ret_value=15;
+        }
     }
 
     if( attribute==AT_SPATIAL_SENSE || attribute==AT_FOCUS)
     {
-        if(value<543){ret_value=1;};
-        if(value>542&&value<793){ret_value=3;};
-        if(value>792&&value<1043){ret_value=5;};
-        if(value>1042&&value<1293){ret_value=7;};
-        if(value>1292&&value<1792){ret_value=8;}; //filler
-        if(value>1791&&value<2042){ret_value=9;};
-        if(value>2041&&value<2292){ret_value=11;};
-        if(value>2291&&value<2542){ret_value=13;};
-        if(value>2541){ret_value=15;};
+        if(value==543){
+            ret_value=1;
+        }else if(value<793){
+            ret_value=3;
+        }else if(value<1043){
+            ret_value=5;
+        }else if(value<1293){
+            ret_value=7;
+        }else if(value<1792){
+            ret_value=8;
+        }else if(value<2042){
+            ret_value=9;
+        }else if(value<2292){
+            ret_value=11;
+        }else if(value<2542){
+            ret_value=13;
+        }else{
+            ret_value=15;
+        }
     }
 
     if (attribute==AT_ENDURANCE || attribute==AT_RECUPERATION || attribute==AT_DISEASE_RESISTANCE ||
@@ -1208,15 +1237,25 @@ int Dwarf::get_attribute(int attribute)
             attribute==AT_LINGUISTIC_ABILITY || attribute==AT_MUSICALITY || attribute==AT_EMPATHY ||
             attribute==AT_SOCIAL_AWARENESS)
     {
-        if(value==0){ret_value=1;};
-        if(value>0&&value<251){ret_value=3;};
-        if(value>250&&value<501){ret_value=5;};
-        if(value>500&&value<751){ret_value=7;};
-        if(value>750&&value<1250){ret_value=8;}; //filler
-        if(value>1249&&value<1500){ret_value=9;};
-        if(value>1499&&value<1750){ret_value=11;};
-        if(value>1749&&value<2000){ret_value=13;};
-        if(value>1999){ret_value=15;};
+        if(value==0){
+            ret_value=1;
+        }else if(value<253){
+            ret_value=3;
+        }else if(value<501){
+            ret_value=5;
+        }else if(value<751){
+            ret_value=7;
+        }else if(value<1250){
+            ret_value=8;
+        }else if(value<1500){
+            ret_value=9;
+        }else if(value<1750){
+            ret_value=11;
+        }else if(value<2000){
+            ret_value=13;
+        }else{
+            ret_value=15;
+        }
     }
 
     return ret_value;
