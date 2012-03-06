@@ -420,6 +420,14 @@ void DwarfModel::build_row(const QString &key) {
             i_name->setFont(f);
         }
 
+        QSettings *s = DT->user_settings();
+        if(s->value("options/highlight_cursed",false).toBool()){
+            if(d->curse_name() != ""){
+                QColor col_curse = QColor(136,000,255,175);
+                i_name->setBackground(QBrush(col_curse));
+            }
+        }
+
         i_name->setToolTip(d->tooltip_text());
         i_name->setStatusTip(d->nice_name());
         i_name->setData(false, DR_IS_AGGREGATE);

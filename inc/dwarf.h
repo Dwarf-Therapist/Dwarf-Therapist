@@ -102,6 +102,9 @@ public:
     //! return a printable name for this dwarf based on user-settings (may include nickname/firstname or both)
     Q_INVOKABLE QString nice_name() {return m_nice_name;}
 
+    //! return the name of the curse afflicting this dwarf
+    Q_INVOKABLE QString curse_name() {return m_curse_name;}
+
     //! return a printable name for this dwarf where each dwarven word is translated to english (not game human)
     QString translated_name() {return m_translated_name;}
 

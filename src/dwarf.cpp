@@ -170,7 +170,50 @@ void Dwarf::read_mood(){
 }
 
 void Dwarf::read_curse(){
-    m_curse_name = m_df->read_string(m_address + m_mem->dwarf_offset("curse"));
+    m_curse_name = m_df->read_string(m_address + m_mem->dwarf_offset("curse"));    
+//    //testing to find the assumed identity of vampires
+//    if(m_curse_name=="vampire"){
+
+//        int m_histid1 = m_df->read_int(m_address+0x8ac);
+//        int m_histid2 = m_df->read_int(m_address+0x8b0);
+
+//        //load the historical figures 0x027946f0
+//        VIRTADDR addr = 0x027946f0;
+//        QVector<VIRTADDR> hist_figures = m_df->enumerate_vector(addr);
+
+//        foreach(VIRTADDR hist_figure, hist_figures) {
+//            //get historical figure info
+//            VIRTADDR pnt_info = hist_figure + 0xf0;
+//            VIRTADDR addr_info = m_df->read_addr(pnt_info);
+
+//            //get the reputation structure
+//            VIRTADDR pnt_rep = addr_info + 0x2c;
+//            VIRTADDR addr_rep = m_df->read_addr(pnt_rep);
+//            //read the current identity
+//            int cur_ident = m_df->read_int(addr_rep + 0x10); //assumed identity
+
+//            //load all identities for this creature
+//            QVector<VIRTADDR> idents = m_df->enumerate_vector(addr_rep + 0x14);
+//            foreach(VIRTADDR ident, idents){
+//                int ident_id = m_df->read_int(ident);
+//                TRACE << ident_id;
+//            }
+
+//            if(cur_ident>0){
+//                TRACE << "pause";
+//            }
+
+//            //load the assumed bad identities
+//            addr = 0x0278b444;
+//            QVector<VIRTADDR> identities = m_df->enumerate_vector(addr);
+//            foreach(VIRTADDR identity, identities) {
+//                int hist_id = m_df->read_int(identity+0x78);
+//                if(hist_id==cur_ident){
+//                    TRACE << "pause";
+//                }
+//            }
+//        }
+//    }
 }
 
 void Dwarf::read_caste() {
@@ -666,6 +709,17 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
             }
         }
 
+        //if it's not a vampire, and it's not a were-beast it's most likely not one of our dwarves
+        if(unverified_dwarf->m_curse_name!=""){
+            if(!unverified_dwarf->m_curse_name.startsWith("were",Qt::CaseInsensitive) && unverified_dwarf->m_curse_name.toLower()!="vampire"){
+                LOGD << "Ignoring" << unverified_dwarf->nice_name()
+                        << "who appears to be a cursed" << unverified_dwarf->m_curse_name;
+                delete unverified_dwarf;
+                return 0;
+            }
+        }
+
+
         // HACK: ugh... so ugly, but this seems to be the best way to filter
         // out kidnapped babies
         short baby_id = -1;
@@ -756,7 +810,7 @@ void Dwarf::read_traits() {
     for (int i = 0; i < 30; ++i) {
         short val = m_df->read_short(addr + i * 2);
         int deviation = abs(val - 50); // how far from the norm is this trait?
-        if (deviation <= 5) {
+        if (deviation <= 10) {
             val = -1; // this will cause median scores to not be treated as "active" traits
         }
         m_traits.insert(i, val);
@@ -1053,7 +1107,7 @@ QString Dwarf::tooltip_text() {
             trait_summary.append(", ");
     }
 
-    return tr("<b><font size=5>%1</font><br/><font size=3>(%2)</font></b><br/><br/>"
+    QString tt = tr("<b><font size=5>%1</font><br/><font size=3>(%2)</font></b><br/><br/>"
         "<b>Happiness:</b> %3 (%4)<br/>"
         "<b>Profession:</b> %5<br/><br/>"
         "<b>Skills:</b><ul>%6</ul><br/>"
@@ -1065,6 +1119,11 @@ QString Dwarf::tooltip_text() {
         .arg(profession())
         .arg(skill_summary)
         .arg(trait_summary);
+
+    if(s->value("options/highlight_cursed", false).toBool()){
+        if(curse_name()!=""){tt += "<br><b>Curse:</b> Cursed to prowl the night as a " + curse_name() + "!";};
+    }
+    return tt;
 }
 
 void Dwarf::dump_memory() {
@@ -1165,21 +1224,21 @@ int Dwarf::get_attribute(int attribute)
     if(attribute==AT_AGILITY)
     {
         if(value==NULL){
-            ret_value=1;
+            ret_value=-15;
         }else if(value<151){
-            ret_value=3;
+            ret_value=-11;
         }else if(value<401){
-            ret_value=5;
+            ret_value=-7;
         }else if(value<651){
-            ret_value=7;
+            ret_value=-3;
         }else if(value<1150){
-            ret_value=8;
+            ret_value=0;
         }else if(value<1400){
-            ret_value=9;
+            ret_value=3;
         }else if(value<1650){
-            ret_value=11;
+            ret_value=7;
         }else if(value<1890){
-            ret_value=13;
+            ret_value=11;
         }else{
             ret_value=15;
         }
@@ -1189,21 +1248,21 @@ int Dwarf::get_attribute(int attribute)
             attribute==AT_CREATIVITY || attribute==AT_PATIENCE || attribute==AT_MEMORY)
     {
         if(value==251){
-            ret_value=1;
+            ret_value=-15;
         }else if(value<501){
-            ret_value=3;
+            ret_value=-11;
         }else if(value<751){
-            ret_value=5;
+            ret_value=-7;
         }else if(value<1001){
-            ret_value=7;
+            ret_value=-3;
         }else if(value<1500){
-            ret_value=8;
+            ret_value=0;
         }else if(value<1750){
-            ret_value=9;
+            ret_value=3;
         }else if(value<2000){
-            ret_value=11;
+            ret_value=7;
         }else if(value<2250){
-            ret_value=13;
+            ret_value=11;
         }else{
             ret_value=15;
         }
@@ -1212,21 +1271,21 @@ int Dwarf::get_attribute(int attribute)
     if( attribute==AT_SPATIAL_SENSE || attribute==AT_FOCUS)
     {
         if(value==543){
-            ret_value=1;
+            ret_value=-15;
         }else if(value<793){
-            ret_value=3;
+            ret_value=-11;
         }else if(value<1043){
-            ret_value=5;
+            ret_value=-7;
         }else if(value<1293){
-            ret_value=7;
+            ret_value=-3;
         }else if(value<1792){
-            ret_value=8;
+            ret_value=0;
         }else if(value<2042){
-            ret_value=9;
+            ret_value=3;
         }else if(value<2292){
-            ret_value=11;
+            ret_value=7;
         }else if(value<2542){
-            ret_value=13;
+            ret_value=11;
         }else{
             ret_value=15;
         }
@@ -1238,21 +1297,21 @@ int Dwarf::get_attribute(int attribute)
             attribute==AT_SOCIAL_AWARENESS)
     {
         if(value==0){
-            ret_value=1;
+            ret_value=-15;
         }else if(value<253){
-            ret_value=3;
+            ret_value=-11;
         }else if(value<501){
-            ret_value=5;
+            ret_value=-7;
         }else if(value<751){
-            ret_value=7;
+            ret_value=-3;
         }else if(value<1250){
-            ret_value=8;
+            ret_value=0;
         }else if(value<1500){
-            ret_value=9;
+            ret_value=3;
         }else if(value<1750){
-            ret_value=11;
+            ret_value=7;
         }else if(value<2000){
-            ret_value=13;
+            ret_value=11;
         }else{
             ret_value=15;
         }

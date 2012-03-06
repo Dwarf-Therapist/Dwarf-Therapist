@@ -114,7 +114,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
             {
                 short rating = model_idx.data(DwarfModel::DR_RATING).toInt();
                 QColor bg = paint_bg(adjusted, false, p, opt, idx);
-                paint_skill(adjusted, rating, bg, p, opt, idx);
+                paint_skill_attribute(adjusted, rating, bg, p, opt, idx);
                 paint_grid(adjusted, false, p, opt, idx);
             }
             break;
@@ -154,13 +154,9 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
             {
                 short rating = model_idx.data(DwarfModel::DR_RATING).toInt();
                 QColor bg = paint_bg(adjusted, false, p, opt, idx);
-                paint_skill(adjusted, rating, bg, p, opt, idx);
+                paint_skill_attribute(adjusted, rating, bg, p, opt, idx);
                 paint_grid(adjusted, false, p, opt, idx);
-//                paint_bg(adjusted, false, p, opt, idx);
-//                p->save();
-//                p->drawText(adjusted, Qt::AlignCenter, model_idx.data(Qt::DisplayRole).toString());
-//                p->restore();
-//                paint_grid(adjusted, false, p, opt, idx);
+
             }
             break;
         case CT_MILITARY_PREFERENCE:
@@ -211,10 +207,25 @@ QColor UberDelegate::paint_bg(const QRect &adjusted, bool active, QPainter *p, c
     return bg;
 }
 
-void UberDelegate::paint_skill(const QRect &adjusted, int rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &) const {
+void UberDelegate::paint_skill_attribute(const QRect &adjusted, int rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
     QColor c = color_skill;
     if (auto_contrast)
         c = compliment(bg);
+
+    QModelIndex model_idx = idx;
+    if (m_proxy)
+        model_idx = m_proxy->mapToSource(idx);
+
+    COLUMN_TYPE type = static_cast<COLUMN_TYPE>(model_idx.data(DwarfModel::DR_COL_TYPE).toInt());
+    int rawRating = rating;
+    if(type==CT_ATTRIBUTE){
+        if (rating<0){
+            c=QColor(235,26,26); //lower than average attributes are in red
+        }else if (rating==0){
+            return; //paint nothing for average attributes
+        }
+        rating = abs(rating);
+    }
 
     p->save();
     switch(m_skill_drawing_method) {
@@ -229,7 +240,8 @@ void UberDelegate::paint_skill(const QRect &adjusted, int rating, QColor bg, QPa
                 p->scale(opt.rect.width()-4, opt.rect.height()-4);
                 p->drawPolygon(m_diamond_shape);
             } else if (rating > -1 && rating < 15) {
-                float size = 0.75f * ((rating + 1) / 15.0f); // even dabbling (0) should be drawn
+                float size = 0;
+                size = 0.75f * ((rating + 1) / 15.0f); // even dabbling (0) should be drawn
                 float inset = (1.0f - size) / 2.0f;
                 p->translate(adjusted.x(), adjusted.y());
                 p->scale(adjusted.width(), adjusted.height());
@@ -338,7 +350,7 @@ void UberDelegate::paint_skill(const QRect &adjusted, int rating, QColor bg, QPa
         case SDM_NUMERIC:
             if (rating > -1) { // don't draw 0s everywhere
                 p->setPen(c);
-                p->drawText(opt.rect, Qt::AlignCenter, QString::number(rating));
+                p->drawText(opt.rect, Qt::AlignCenter, QString::number(rawRating));
             }
             break;
     }
@@ -392,7 +404,7 @@ void UberDelegate::paint_labor(const QRect &adjusted, QPainter *p, const QStyleO
     bool dirty = d->is_labor_state_dirty(labor_id);
 
     QColor bg = paint_bg(adjusted, enabled, p, opt, proxy_idx);
-    paint_skill(adjusted, rating, bg, p, opt, proxy_idx);
+    paint_skill_attribute(adjusted, rating, bg, p, opt, proxy_idx);
     paint_grid(adjusted, dirty, p, opt, proxy_idx);
 }
 

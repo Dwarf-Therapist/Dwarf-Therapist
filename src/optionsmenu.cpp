@@ -142,6 +142,7 @@ void OptionsMenu::read_settings() {
     ui->sb_cell_padding->setValue(s->value("cell_padding", 0).toInt());
     ui->cb_shade_column_headers->setChecked(s->value("shade_column_headers", true).toBool());
     ui->cb_header_text_direction->setChecked(s->value("header_text_bottom", false).toBool());
+    ui->cb_curse_highlight->setChecked(s->value("highlight_cursed", false).toBool());
 
     m_font = s->value("font", QFont("Segoe UI", 8)).value<QFont>();
     m_dirty_font = m_font;
@@ -202,6 +203,7 @@ void OptionsMenu::write_settings() {
         s->setValue("allow_labor_cheats", ui->cb_labor_cheats->isChecked());
         s->setValue("hide_children_and_babies", ui->cb_hide_children->isChecked());
         s->setValue("use_generic_names", ui->cb_generic_names->isChecked());
+        s->setValue("highlight_cursed", ui->cb_curse_highlight->isChecked());
 
         s->endGroup();
     }

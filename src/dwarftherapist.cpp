@@ -136,10 +136,6 @@ void DwarfTherapist::read_settings() {
         m_main_window->get_toolbar()->setToolButtonStyle(Qt::ToolButtonIconOnly);
     }
 
-    if (!m_user_settings->contains("options/grid/header_text_bottom")){
-        m_user_settings->setValue("options/grid/header_text_bottom",false);
-    }
-
     foreach(CustomProfession *cp, m_custom_professions) {
         cp->deleteLater();
     }

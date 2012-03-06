@@ -33,7 +33,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <property name="iconSize">
       <size>
@@ -202,6 +202,19 @@
          </property>
          <property name="text">
           <string>Allow Labor Setting on Anyone (I'm a dirty cheater)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_curse_highlight">
+         <property name="statusTip">
+          <string>When checked, highlights cursed dwarves, such as vampires and werebeasts and adds a description in the tooltip. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read of dwarves occurrs!&lt;/font&gt;&lt;/b&gt;</string>
+         </property>
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>Highlight Cursed Dwarves (I'm a dirty cheater)</string>
          </property>
         </widget>
        </item>
