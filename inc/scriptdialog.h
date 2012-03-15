@@ -38,9 +38,11 @@ public:
     public slots:
         //! clear the script editing box
         void clear_script();
+        void load_script(QString name, QString script);
 
 private:
     Ui::ScriptDialog *ui;
+    QString m_name;
 
     private slots:
         void apply_pressed();

@@ -58,7 +58,7 @@ public:
 
 	QString name;
 	int trait_id;
-	//! this map will hold the minimum_value -> string (e.g. level 76-90 of Nervousness is "Is always tense and jittery")
+    //! this map will hold the minimum_value -> string (e.g. level 76-90 of Nervousness is "Is always tense and jittery")
 	QMap<int, QString> m_level_string;
 };
 

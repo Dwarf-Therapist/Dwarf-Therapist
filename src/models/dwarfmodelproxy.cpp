@@ -142,7 +142,7 @@ void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role) {
         switch(role) {
             default:
             case DSR_NAME_ASC:
-                order = Qt::AscendingOrder;
+                order = Qt::AscendingOrder;                
                 setSortRole(DwarfModel::DR_SORT_VALUE);
                 break;
             case DSR_NAME_DESC:

@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "labor.h"
 #include "trait.h"
+#include "skill.h"
 #include "dwarftherapist.h"
 
 ScriptDialog::ScriptDialog(QWidget *parent)
@@ -46,11 +47,30 @@ ScriptDialog::ScriptDialog(QWidget *parent)
 
     QString trait_list = "<br><b>Traits Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Trait ID</th><th>Trait</th></tr>";
-    foreach(Trait *t, gdr->get_traits()) {
-        trait_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(t->trait_id).arg(t->name));
+    QPair<int, Trait*> trait_pair;
+    foreach(trait_pair, gdr->get_ordered_traits()) {
+        trait_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(trait_pair.second->trait_id).arg(trait_pair.second->name));
     }
     trait_list.append("</table>");
     ui->text_help->append(trait_list);
+
+    QString skill_list = "<br><b>Skills Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
+        "<tr><th width=24%>Skill ID</th><th>Skill</th></tr>";
+    QPair<int, QString> skill_pair;
+    foreach(skill_pair, gdr->get_ordered_skills()) {
+        skill_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(skill_pair.first).arg(skill_pair.second));
+    }
+    skill_list.append("</table>");
+    ui->text_help->append(skill_list);
+
+    QString attribute_list = "<br><b>Attribute Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
+        "<tr><th width=24%>Attribute ID</th><th>Attribute</th></tr>";
+    QPair<int, Attribute*> att_pair;
+    foreach(att_pair, gdr->get_ordered_attributes()) {
+        attribute_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(att_pair.second->id).arg(att_pair.second->name));
+    }
+    attribute_list.append("</table>");
+    ui->text_help->append(attribute_list);
 
     connect(ui->btn_apply, SIGNAL(clicked()), SLOT(apply_pressed()));
     connect(ui->btn_save, SIGNAL(clicked()), SLOT(save_pressed()));
@@ -60,16 +80,23 @@ void ScriptDialog::clear_script() {
     ui->script_edit->clear();
 }
 
+void ScriptDialog::load_script(QString name, QString script){
+    ui->script_edit->setText(script);
+    m_name = name;
+}
+
 void ScriptDialog::apply_pressed() {
     emit apply_script(ui->script_edit->toPlainText());
 }
 
 void ScriptDialog::save_pressed() {
-    bool ok;
-    QString name = QInputDialog::getText(this, tr("Name this Script"), tr("Script Name:"), QLineEdit::Normal, QString(), &ok);
+    bool ok=true;
+    if(m_name=="")
+        m_name = QInputDialog::getText(this, tr("Name this Script"), tr("Script Name:"), QLineEdit::Normal, QString(), &ok);
+
     if (ok) { // TODO: check for name collision
         QSettings *s = DT->user_settings();
-        s->setValue(QString("filter_scripts/%1").arg(name), ui->script_edit->toPlainText());
+        s->setValue(QString("filter_scripts/%1").arg(m_name), ui->script_edit->toPlainText());
     }
     emit scripts_changed();
 }

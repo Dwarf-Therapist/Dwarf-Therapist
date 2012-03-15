@@ -35,6 +35,7 @@ struct MemorySegment;
 class DFInstance : public QObject {
     Q_OBJECT
 public:
+
     DFInstance(QObject *parent=0);
     virtual ~DFInstance();
 
@@ -108,6 +109,11 @@ public:
     virtual bool attach() = 0;
     virtual bool detach() = 0;
 
+    //stats
+//    static int get_attribute_min(int id){return m_dwarf_attribute_minimum.at(id);}
+//    static float get_attribute_mean(int id){return m_dwarf_attribute_mean.at(id);}
+//    static float get_attribute_stdev(int id){return m_dwarf_attribute_stdDev.at(id);}
+
     // Windows string offsets
 #ifdef Q_WS_WIN
     static const int STRING_BUFFER_OFFSET = 4;  // Default value for older windows releases
@@ -137,7 +143,6 @@ public:
         void cancel_scan() {m_stop_scan = true;}
 
 protected:
-
     int m_pid;
     VIRTADDR m_base_addr;
     quint32 m_memory_correction;
@@ -157,15 +162,24 @@ protected:
     WORD m_current_year;
     QDir m_df_dir;
 
+//    static void load_stats(QVector<Dwarf*> dwarves);
+
+//    static QHash<int, QVector<int>* > m_dwarf_attributes;
+//    static QVector<float> m_dwarf_attribute_mean;
+//    static QVector<float> m_dwarf_attribute_stdDev;
+//    static QVector<float> m_dwarf_attribute_minimum;
+//    static QVector<float> m_dwarf_attribute_maximum;
+
     /*! this hash will hold a map of all loaded and valid memory layouts found
         on disk, the key is a QString of the checksum since other OSs will use
         an MD5 of the binary instead of a PE timestamp */
-    QHash<QString, MemoryLayout*> m_memory_layouts; // checksum->layout
+    QHash<QString, MemoryLayout*> m_memory_layouts; // checksum->layout    
 
     private slots:
         void heartbeat();
         void calculate_scan_rate();
         virtual void map_virtual_memory() = 0;
+
 
 signals:
     // methods for sending progress information to QWidgets
@@ -176,6 +190,8 @@ signals:
     void progress_message(const QString &message);
     void progress_range(int min, int max);
     void progress_value(int value);
+
+private:
 
 };
 

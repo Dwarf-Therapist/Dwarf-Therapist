@@ -52,7 +52,7 @@ QStandardItem *MilitaryPreferenceColumn::build_cell(Dwarf *d) {
 	QStandardItem *item = init_cell(d);
 
 	item->setData(CT_MILITARY_PREFERENCE, DwarfModel::DR_COL_TYPE);
-	short rating = d->get_rating_by_skill(m_skill_id);
+    short rating = d->skill_rating(m_skill_id);
     short val = d->pref_value(m_labor_id);
     QString val_name = gdr->get_military_preference(m_labor_id)->value_name(val);
 

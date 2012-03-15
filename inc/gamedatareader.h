@@ -32,6 +32,7 @@ THE SOFTWARE.
 class QSettings;
 #include "labor.h"
 #include "attribute.h"
+#include "role.h"
 class Trait;
 class MilitaryPreference;
 class Profession;
@@ -65,17 +66,20 @@ public:
     int get_xp_for_next_attribute_level(int current_number_of_attributes);
 
     QList<Labor*> get_ordered_labors() {return m_ordered_labors;}
-    QHash<int, QString> get_skills() {return m_skills;}
     QList<QPair<int, QString> > get_ordered_skills() {return m_ordered_skills;}
     QHash<int, Trait*> get_traits() {return m_traits;}
     QList<QPair<int, Trait*> > get_ordered_traits() {return m_ordered_traits;}
+    QList<QPair<int, Attribute*> > get_ordered_attributes() {return m_ordered_attributes;}
     QHash<int, MilitaryPreference*> get_military_preferences() {return m_military_preferences;}
-    QHash<short, Profession*> get_professions() {return m_professions;}
+    QHash<short, Profession*> get_professions() {return m_professions;}    
+    QList<QPair<QString, Role*>  > get_ordered_roles() {return m_ordered_roles;}
+    QHash<QString, Attribute*> get_attributes() {return m_attributes;}
 
     Labor *get_labor(const int &labor_id);
     Trait *get_trait(const int &trait_id);
     DwarfJob *get_job(const short &job_id);
     MilitaryPreference *get_military_preference(const int &mil_pref_id);
+    Role *get_role(const QString &name);
 
     QString get_string_for_key(QString key);
     Profession* get_profession(const short &profession_id);
@@ -107,7 +111,8 @@ public:
 
     QString get_race_name(int race_id);
     QString get_caste_name(int caste_id);
-    int get_attribute_mean_value(int attribute, int caste) {return m_attributes_mean_value.value(caste).value(attribute);}
+    QString get_caste_desc(int caste_id);
+    //int get_attribute_mean_value(int attribute, int caste) {return m_attributes_mean_value.value(caste).value(attribute);}
 
     void read_raws(QDir df_dir);
 
@@ -116,7 +121,7 @@ protected:
 private:
     void load_race_names();
     void load_caste_names();
-    void load_attributes_mean_value();
+    //void load_attributes_mean_value();
     static GameDataReader *m_instance;
     QSettings *m_data_settings;
 
@@ -129,19 +134,24 @@ private:
     QList<QPair<int, Trait*> > m_ordered_traits;
 
     QHash<int, QString> m_skills;
-    QList<QPair<int, QString> > m_ordered_skills;
-
+    QList<QPair<int, QString> > m_ordered_skills;    
     QHash<int, QString> m_skill_levels;
+
     QHash<int, int> m_attribute_levels;
-    QHash<QString, Attribute*> m_raw_attributes;
+    QHash<QString, Attribute*> m_attributes;
+    QList<QPair<int, Attribute*> > m_ordered_attributes;
+
     QHash<short, DwarfJob*> m_dwarf_jobs;
     QHash<short, Profession*> m_professions;
+
+    QHash<QString, Role*> m_dwarf_roles;
+    QList<QPair<QString, Role*> > m_ordered_roles;
 
     QHash<QString, QRawObjectList> m_reaction_classes;
     QHash<QString, QRawObjectList> m_creatures_classes;
 
     QHash<QString, QString> m_race_names;
-    QHash<QString, QString> m_caste_names;
-    QHash<int, QHash<int, int> > m_attributes_mean_value;
+    QHash<QString, QStringList> m_caste_names;
+    //QHash<int, QHash<int, int> > m_attributes_mean_value;
 };
 #endif

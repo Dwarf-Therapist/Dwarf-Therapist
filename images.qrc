@@ -75,5 +75,6 @@
         <file>img/pot.png</file>
         <file>img/lump.png</file>
         <file>img/spinning.png</file>
+        <file>img/bullet_blue.png</file>
     </qresource>
 </RCC>

@@ -45,7 +45,11 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
     short job_id = d->current_job_id();
     QString pixmap_name(":img/help.png");
     if (job_id == -1) {
-        pixmap_name = ":status/img/bullet_red.png"; // idle
+        if(d->is_on_break()){
+            pixmap_name = ":status/img/bullet_blue.png"; // break
+        }else{
+            pixmap_name = ":status/img/bullet_red.png"; // idle
+        }
     } else {
         DwarfJob *job = GameDataReader::ptr()->get_job(job_id);
         if (job) {
@@ -62,7 +66,7 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
             TRACE << "Dwarf: " << d->nice_name() << " job -" << job_id << ": (" << job->description << "," << job_type << ")";
 
             switch (job_type) {
-            case DwarfJob::DJT_IDLE:
+            case DwarfJob::DJT_IDLE:                
                 pixmap_name = ":status/img/bullet_red.png";
                 break;
             case DwarfJob::DJT_DIG:

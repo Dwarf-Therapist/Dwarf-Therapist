@@ -32,6 +32,7 @@ public:
     Attribute(QSettings &s, QObject *parent = 0)
         : QObject(parent)
         , name(s.value("name", "UNKNOWN ATTRIBUTE").toString())
+        , id(s.value("id",0).toInt())
     {
         int levels = s.beginReadArray("levels");
         for (int i = 0; i < levels; ++i) {
@@ -44,14 +45,28 @@ public:
         s.endArray();
     }
     QString name;
+    int id;
     QHash<int, QString> m_levels;
     typedef enum {
         AT_STRENGTH = 0,
-        AT_AGILITY,
-        AT_TOUGHNESS,
-        AT_ENDURANCE,
-        AT_RECUPERATION,
-        AT_DISEASE_RESISTANCE
+        AT_AGILITY=1,
+        AT_TOUGHNESS=2,
+        AT_ENDURANCE=3,
+        AT_RECUPERATION=4,
+        AT_DISEASE_RESISTANCE=5,
+        AT_ANALYTICAL_ABILITY=6,
+        AT_FOCUS=7,
+        AT_WILLPOWER=8,
+        AT_CREATIVITY=9,
+        AT_INTUITION=10,
+        AT_PATIENCE=11,
+        AT_MEMORY=12,
+        AT_LINGUISTIC_ABILITY=13,
+        AT_SPATIAL_SENSE=14,
+        AT_MUSICALITY=15,
+        AT_KINESTHETIC_SENSE=16,
+        AT_EMPATHY=17,
+        AT_SOCIAL_AWARENESS=18
     } ATTRIBUTES_TYPE;
 
 };

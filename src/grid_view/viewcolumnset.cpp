@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "currentjobcolumn.h"
 #include "traitcolumn.h"
 #include "attributecolumn.h"
+#include "rolecolumn.h"
 #include "militarypreferencecolumn.h"
 #include "gamedatareader.h"
 #include "truncatingfilelogger.h"
@@ -211,6 +212,7 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
     int total_columns = s.beginReadArray("columns");
     for (int i = 0; i < total_columns; ++i) {
         s.setArrayIndex(i);
+        QString ctype = s.value("type","").toString();
         switch(get_column_type(s.value("type", "DEFAULT").toString())) {
             case CT_SPACER:
                 new SpacerColumn(s, ret_val, parent);
@@ -238,6 +240,9 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
                 break;
             case CT_FLAGS:
                 new FlagColumn(s, ret_val, parent);
+                break;
+            case CT_ROLE:
+                new RoleColumn(s, ret_val, parent);
                 break;
             case CT_DEFAULT:
             default:

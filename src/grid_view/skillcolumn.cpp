@@ -48,7 +48,7 @@ QStandardItem *SkillColumn::build_cell(Dwarf *d) {
 	QStandardItem *item = init_cell(d);
 
 	item->setData(CT_SKILL, DwarfModel::DR_COL_TYPE);
-	short rating = d->get_rating_by_skill(m_skill_id);
+	short rating = d->skill_rating(m_skill_id);
 	item->setData(rating, DwarfModel::DR_RATING);
 	item->setData(rating, DwarfModel::DR_SORT_VALUE);
 

@@ -79,7 +79,7 @@ void ViewManager::reload_views() {
 
     int total_views = s->beginReadArray("gridviews");
     QList<GridView*> built_in_views;
-    for (int i = 0; i <= total_views; ++i) {
+    for (int i = 0; i < total_views; ++i) {
         s->setArrayIndex(i);
         GridView *gv = GridView::read_from_ini(*s, this);
         gv->set_is_custom(false); // this is a default view
@@ -139,7 +139,7 @@ void ViewManager::draw_views() {
     QStringList tab_order = DT->user_settings()->value(
             "gui_options/tab_order").toStringList();
     if (tab_order.size() == 0) {
-        tab_order << "Labors" << "Military" << "Social" << "Attributes" << "Animals";
+        tab_order << "Labors" << "Military" << "Social" << "Attributes" << "Roles" << "Animals";
     }
     if (tab_order.size() > 0) {
         foreach(QString name, tab_order) {

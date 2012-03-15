@@ -165,7 +165,10 @@ HEADERS += inc/win_structs.h \
     inc/raws/rawreader.h \
     inc/raws/rawobjectlist.h \
     inc/attribute.h \
-    inc/grid_view/flagcolumn.h
+    inc/grid_view/flagcolumn.h \
+    inc/grid_view/rolecolumn.h \
+    inc/role.h \
+    inc/dwarfstats.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -211,7 +214,10 @@ SOURCES += src/viewmanager.cpp \
     src/layoutcreator.cpp \
     src/word.cpp \
     src/raws/rawreader.cpp \
-    src/grid_view/flagcolumn.cpp
+    src/grid_view/flagcolumn.cpp \
+    src/grid_view/rolecolumn.cpp \
+    src/dwarfstats.cpp \
+    src/role.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

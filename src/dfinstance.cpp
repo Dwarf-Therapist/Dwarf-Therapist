@@ -36,6 +36,8 @@ THE SOFTWARE.
 #include "memorysegment.h"
 #include "truncatingfilelogger.h"
 #include "mainwindow.h"
+#include "limits"
+#include "dwarfstats.h"
 
 #ifdef Q_WS_WIN
 #define LAYOUT_SUBDIR "windows"
@@ -328,12 +330,14 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         int i = 0;
         foreach(VIRTADDR creature_addr, entries) {
             d = Dwarf::get_dwarf(this, creature_addr);
-            if (d) {
-                dwarves.append(d);
-                LOGD << "FOUND DWARF" << hexify(creature_addr)
-                     << d->nice_name();
-            } else {
-                TRACE << "FOUND OTHER CREATURE" << hexify(creature_addr);
+            if (d != 0) {
+                dwarves.append(d); //add animals as well so we can show them
+                if(d->is_animal() == false){
+                    LOGD << "FOUND DWARF" << hexify(creature_addr)
+                         << d->nice_name();
+                } else {
+                    TRACE << "FOUND OTHER CREATURE" << hexify(creature_addr);
+                }
             }
             emit progress_value(i++);
         }
@@ -342,10 +346,64 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         m_is_ok = false;
     }
     detach();
+
+    //load statistical data now that we've got a list of valid dwarves
+    DwarfStats::load_stats(dwarves);
+
     LOGI << "found" << dwarves.size() << "dwarves out of" << entries.size()
             << "creatures";
     return dwarves;
 }
+
+//void DFInstance::load_stats(QVector<Dwarf*> dwarves){
+//    //clear existing stats
+//    m_dwarf_attributes.clear();
+//    m_dwarf_attribute_minimum.clear();
+//    m_dwarf_attribute_maximum.clear();
+//    m_dwarf_attribute_stdDev.clear();
+//    m_dwarf_attribute_mean.clear();
+
+//    //initialize the hash table, 0-18 are attributes
+//    for(int i=0; i < 19; i++){
+//        m_dwarf_attributes[i] = new QVector<int>; //&values;
+//    }
+
+//    for(int i=0; i < dwarves.count(); i++){
+//        Dwarf *d = dwarves[i];
+//        if (d->is_animal() == false){
+//            for(int j=0; j < 19; j++){
+//                m_dwarf_attributes[j]->append((int)d->attribute(j));
+//            }
+//        }
+//    }
+
+//    foreach(int id, m_dwarf_attributes.uniqueKeys()){
+//        QVector<int> *values = m_dwarf_attributes.value(id);
+//        int min = *std::min_element(values->begin(),values->end());
+//        int max = *std::max_element(values->begin(),values->end());
+//        float total = 0.0;
+//        float devTotal = 0.0;
+
+//        //calculate the mean
+//        for(int i = 0; i < values->count(); i++){
+//            total += values->at(i);
+//        }
+//        float mean = total / (values->count() -1);
+
+//        //calculate standard deviation
+//        for(int i = 0; i < values->count(); i++){
+//            devTotal += pow((values->at(i)-mean) , 2);
+//        }
+//        float stdDev = sqrt(devTotal / values->count() - 2);
+
+//        //store the stats
+//        m_dwarf_attribute_minimum.append(min);
+//        m_dwarf_attribute_maximum.append(max);
+//        m_dwarf_attribute_mean.append(mean);
+//        m_dwarf_attribute_stdDev.append(stdDev);
+//    }
+
+//}
 
 QVector<Squad*> DFInstance::load_squads() {
 

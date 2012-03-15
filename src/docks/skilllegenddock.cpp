@@ -56,7 +56,6 @@ SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags)
 
 	QStandardItemModel *m = new QStandardItemModel(this);
 	stv->setModel(m);
-	QList<QStandardItem*> items;
 	for(int i = 20; i >= 0; --i) {
 		QList<QStandardItem*> sub_items;
 		QStandardItem *name = new QStandardItem;

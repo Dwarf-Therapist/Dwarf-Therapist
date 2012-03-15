@@ -86,7 +86,7 @@ private:
     //! return the bg color that was painted
     QColor paint_bg(const QRect &adjusted, bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
 
-    void paint_skill_attribute(const QRect &adjusted, int rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+    void paint_generic(const QRect &adjusted, int rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
     void paint_labor(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
     void paint_pref(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
     void paint_flags(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;

@@ -25,47 +25,27 @@ THE SOFTWARE.
 
 #include "viewcolumn.h"
 #include "dwarf.h"
+#include "attribute.h"
 
 class AttributeColumn : public ViewColumn {
     Q_OBJECT
 public:
-    typedef enum {
-        DTA_STRENGTH=0,
-        DTA_AGILITY,
-        DTA_TOUGHNESS,
-        DTA_ENDURANCE,
-        DTA_RECUPERATION,
-        DTA_DISEASE_RESISTANCE,
-        DTA_ANALYTICAL_ABILITY,
-        DTA_FOCUS,
-        DTA_WILLPOWER,
-        DTA_CREATIVITY,
-        DTA_INTUITION,
-        DTA_PATIENCE,
-        DTA_MEMORY,
-        DTA_LINGUISTIC_ABILITY,
-        DTA_SPATIAL_SENSE,
-        DTA_MUSICALITY,
-        DTA_KINESTHETIC_SENSE,
-        DTA_EMPATHY,
-        DTA_SOCIAL_AWARENESS
-    } DWARF_ATTRIBUTE_TYPE;
 
-    AttributeColumn(const QString &title, DWARF_ATTRIBUTE_TYPE type, ViewColumnSet *set = 0, QObject *parent = 0);
+    AttributeColumn(const QString &title, Attribute::ATTRIBUTES_TYPE type, ViewColumnSet *set = 0, QObject *parent = 0);
     AttributeColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
     AttributeColumn(const AttributeColumn &to_copy); // copy ctor
     AttributeColumn* clone() {return new AttributeColumn(*this);}
     QStandardItem *build_cell(Dwarf *d);
     QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 
-    DWARF_ATTRIBUTE_TYPE attribute() {return m_attribute_type;}
-    void set_attribute(DWARF_ATTRIBUTE_TYPE type) {m_attribute_type = type;}
+    Attribute::ATTRIBUTES_TYPE attribute() {return m_attribute_type;}
+    void set_attribute(Attribute::ATTRIBUTES_TYPE type) {m_attribute_type = type;}
 
     //override
     void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("attribute", m_attribute_type);}
 
 private:
-    DWARF_ATTRIBUTE_TYPE m_attribute_type;
+    Attribute::ATTRIBUTES_TYPE m_attribute_type;
 };
 
 #endif

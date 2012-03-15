@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include "traitcolumn.h"
 #include "attributecolumn.h"
 #include "militarypreferencecolumn.h"
+#include "rolecolumn.h"
 
 #include "defines.h"
 #include "statetableview.h"
@@ -339,6 +340,17 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
             a->setData(mp->labor_id);
         }
 
+        QMenu *m_roles = m->addMenu(tr("Add Role Columns"));
+        m_roles->setToolTip(tr("Role columns will show how well a dwarf can fill a particular role."));
+        QList<QPair<QString, Role*> > roles = gdr->get_ordered_roles();
+        QPair<QString, Role*> role_pair;
+        foreach(role_pair, roles){
+            Role *r = role_pair.second;
+            QAction *a = m_roles->addAction(r->name, this, SLOT(add_role_column()));
+            a->setData(role_pair.first);
+            a->setToolTip(tr("Add a column for role %1 (ID%2)").arg(r->name).arg(role_pair.first));
+        }
+
         QMenu *m_skill = m->addMenu(tr("Add Skill Column"));
         m_skill->setToolTip(tr("Skill columns function as a read-only display of a dwarf's skill in a particular area."
             " Note that you can add skill columns for labors but they won't work as toggles."));
@@ -371,44 +383,44 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
 
         QMenu *m_attr = m->addMenu(tr("Add Attribute Column"));
         a = m_attr->addAction(tr("Strength"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_STRENGTH);
+        a->setData(Attribute::AT_STRENGTH);
         a = m_attr->addAction(tr("Agility"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_AGILITY);
+        a->setData(Attribute::AT_AGILITY);
         a = m_attr->addAction(tr("Toughness"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_TOUGHNESS);
+        a->setData(Attribute::AT_TOUGHNESS);
         a = m_attr->addAction(tr("Endurance"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_ENDURANCE);
+        a->setData(Attribute::AT_ENDURANCE);
         a = m_attr->addAction(tr("Recuperation"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_RECUPERATION);
+        a->setData(Attribute::AT_RECUPERATION);
         a = m_attr->addAction(tr("Disease resistance"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_DISEASE_RESISTANCE);
+        a->setData(Attribute::AT_DISEASE_RESISTANCE);
 
         a = m_attr->addAction(tr("Analytical Ability"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_ANALYTICAL_ABILITY);
+        a->setData(Attribute::AT_ANALYTICAL_ABILITY);
         a = m_attr->addAction(tr("Creativity"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_CREATIVITY);
+        a->setData(Attribute::AT_CREATIVITY);
         a = m_attr->addAction(tr("Empathy"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_EMPATHY);
+        a->setData(Attribute::AT_EMPATHY);
         a = m_attr->addAction(tr("Focus"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_FOCUS);
+        a->setData(Attribute::AT_FOCUS);
         a = m_attr->addAction(tr("Intuition"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_INTUITION);
+        a->setData(Attribute::AT_INTUITION);
         a = m_attr->addAction(tr("Kinesthetic Sense"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_KINESTHETIC_SENSE);
+        a->setData(Attribute::AT_KINESTHETIC_SENSE);
         a = m_attr->addAction(tr("Linguistic Ability"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_LINGUISTIC_ABILITY);
+        a->setData(Attribute::AT_LINGUISTIC_ABILITY);
         a = m_attr->addAction(tr("Memory"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_MEMORY);
+        a->setData(Attribute::AT_MEMORY);
         a = m_attr->addAction(tr("Musicality"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_MUSICALITY);
+        a->setData(Attribute::AT_MUSICALITY);
         a = m_attr->addAction(tr("Patience"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_PATIENCE);
+        a->setData(Attribute::AT_PATIENCE);
         a = m_attr->addAction(tr("Social Awareness"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_SOCIAL_AWARENESS);
+        a->setData(Attribute::AT_SOCIAL_AWARENESS);
         a = m_attr->addAction(tr("Spatial Sense"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_SPATIAL_SENSE);
+        a->setData(Attribute::AT_SPATIAL_SENSE);
         a = m_attr->addAction(tr("Willpower"), this, SLOT(add_attribute_column()));
-        a->setData(AttributeColumn::DTA_WILLPOWER);
+        a->setData(Attribute::AT_WILLPOWER);
 
         a = m->addAction(tr("Add Happiness"), this, SLOT(add_happiness_column()));
         a->setToolTip(tr("Adds a single column that shows a color-coded happiness indicator for "
@@ -478,8 +490,17 @@ void GridViewDialog::add_attribute_column() {
     if (!m_active_set)
         return;
     QAction *a = qobject_cast<QAction*>(QObject::sender());
-    AttributeColumn::DWARF_ATTRIBUTE_TYPE type = static_cast<AttributeColumn::DWARF_ATTRIBUTE_TYPE>(a->data().toInt());
+    Attribute::ATTRIBUTES_TYPE type = static_cast<Attribute::ATTRIBUTES_TYPE>(a->data().toInt());
     new AttributeColumn("", type, m_active_set, m_active_set);
+    draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_role_column() {
+    if (!m_active_set)
+        return;
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    QString role_name = a->data().toString();
+    new RoleColumn(role_name,GameDataReader::ptr()->get_role(role_name), m_active_set, m_active_set);
     draw_columns_for_set(m_active_set);
 }
 

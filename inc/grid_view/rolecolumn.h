@@ -20,32 +20,32 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-
-#ifndef FLAGCOLUMN_H
-#define FLAGCOLUMN_H
+#ifndef ROLECOLUMN_H
+#define ROLECOLUMN_H
 
 #include "viewcolumn.h"
+#include "dwarf.h"
+#include "dfinstance.h"
 
-class FlagColumn : public ViewColumn {
+#include <QtScript>
+
+class RoleColumn : public ViewColumn {
 public:
-        FlagColumn(QString title, int bit_pos, bool bit_value, ViewColumnSet *set = 0, QObject *parent = 0);
-        FlagColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
-        FlagColumn(const FlagColumn &to_copy); // copy ctor
-        FlagColumn* clone() {return new FlagColumn(*this);}
-        QStandardItem *build_cell(Dwarf *d);
-        QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
+    RoleColumn(const QString &title, Role *r, ViewColumnSet *set = 0, QObject *parent = 0);
+    RoleColumn(QSettings &s, ViewColumnSet *set, QObject *parent);
+    RoleColumn(const RoleColumn &to_copy); // copy ctor
+    RoleColumn* clone() {return new RoleColumn(*this);}
+    QStandardItem *build_cell(Dwarf *d);
+    QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 
-        int bit_pos() {return m_bit_pos;}
-        void set_bit_pos(int bit_pos) {m_bit_pos = bit_pos;}
-        bool bit_value() {return m_bit_value;}
-        void set_bit_value(bool bit_value) {m_bit_value = bit_value;}
+    Role* get_role() {return m_role;}
 
-        // override
-        void write_to_ini(QSettings &s);
+    //override
+    void RoleColumn::write_to_ini(QSettings &s){ViewColumn::write_to_ini(s);}
 
 protected:
-        int m_bit_pos;
-        bool m_bit_value;
+    Role *m_role;
+    QScriptEngine m_engine;
 };
 
-#endif // FLAGCOLUMN_H
+#endif // ROLECOLUMN_H

@@ -114,7 +114,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
             {
                 short rating = model_idx.data(DwarfModel::DR_RATING).toInt();
                 QColor bg = paint_bg(adjusted, false, p, opt, idx);
-                paint_skill_attribute(adjusted, rating, bg, p, opt, idx);
+                paint_generic(adjusted, rating, bg, p, opt, idx);
                 paint_grid(adjusted, false, p, opt, idx);
             }
             break;
@@ -138,6 +138,14 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
                 paint_grid(adjusted, false, p, opt, idx);
             }
             break;
+        case CT_ROLE:
+            {
+                QColor bg = paint_bg(adjusted, false, p, opt, idx);
+                int rating = model_idx.data(DwarfModel::DR_RATING).toInt();
+                paint_generic(adjusted, rating, bg, p, opt, idx);
+                paint_grid(adjusted, false, p, opt, idx);
+            }
+            break;
         case CT_IDLE:
             {
                 paint_bg(adjusted, false, p, opt, idx);
@@ -150,11 +158,19 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
             }
             break;
         case CT_TRAIT:
+            {
+                short rating = model_idx.data(DwarfModel::DR_RATING).toInt();
+                rating = (rating-50) / 2.5; //scale rating to between -20 and 20 for drawing
+                QColor bg = paint_bg(adjusted, false, p, opt, idx);
+                paint_generic(adjusted, rating, bg, p, opt, idx);
+                paint_grid(adjusted, false, p, opt, idx);
+            }
+            break;
         case CT_ATTRIBUTE:
             {
                 short rating = model_idx.data(DwarfModel::DR_RATING).toInt();
                 QColor bg = paint_bg(adjusted, false, p, opt, idx);
-                paint_skill_attribute(adjusted, rating, bg, p, opt, idx);
+                paint_generic(adjusted, rating, bg, p, opt, idx);
                 paint_grid(adjusted, false, p, opt, idx);
 
             }
@@ -207,7 +223,7 @@ QColor UberDelegate::paint_bg(const QRect &adjusted, bool active, QPainter *p, c
     return bg;
 }
 
-void UberDelegate::paint_skill_attribute(const QRect &adjusted, int rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
+void UberDelegate::paint_generic(const QRect &adjusted, int rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
     QColor c = color_skill;
     if (auto_contrast)
         c = compliment(bg);
@@ -218,11 +234,11 @@ void UberDelegate::paint_skill_attribute(const QRect &adjusted, int rating, QCol
 
     COLUMN_TYPE type = static_cast<COLUMN_TYPE>(model_idx.data(DwarfModel::DR_COL_TYPE).toInt());
     int rawRating = rating;
-    if(type==CT_ATTRIBUTE){
+    if(type==CT_ATTRIBUTE || type==CT_ROLE || type==CT_TRAIT){
         if (rating<0){
             c=QColor(235,26,26); //lower than average attributes are in red
         }else if (rating==0){
-            return; //paint nothing for average attributes
+            return; //paint nothing for averages
         }
         rating = abs(rating);
     }
@@ -404,7 +420,7 @@ void UberDelegate::paint_labor(const QRect &adjusted, QPainter *p, const QStyleO
     bool dirty = d->is_labor_state_dirty(labor_id);
 
     QColor bg = paint_bg(adjusted, enabled, p, opt, proxy_idx);
-    paint_skill_attribute(adjusted, rating, bg, p, opt, proxy_idx);
+    paint_generic(adjusted, rating, bg, p, opt, proxy_idx);
     paint_grid(adjusted, dirty, p, opt, proxy_idx);
 }
 

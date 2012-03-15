@@ -649,14 +649,30 @@ void MainWindow::add_new_filter_script() {
     m_script_dialog->show();
 }
 
+void MainWindow::edit_filter_script() {
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    QStringList script = a->data().toStringList();
+    m_script_dialog->load_script(script.at(0),script.at(1));
+    m_script_dialog->show();
+}
+
 void MainWindow::redraw_filter_scripts_cb() {
     ui->cb_filter_script->clear();
     ui->cb_filter_script->addItem(tr("None"));
 
+    ui->menu_edit_filters->clear();
     QSettings *s = DT->user_settings();
     s->beginGroup("filter_scripts");
     ui->cb_filter_script->addItems(s->childKeys());
-    s->endGroup();
+
+    foreach(QString script_name, s->childKeys()){
+        QStringList data;
+        data.append(script_name);
+        data.append(s->value(script_name).toString());
+        QAction *a = ui->menu_edit_filters->addAction(script_name,this,SLOT(edit_filter_script()) );
+        a->setData(data);
+    }
+    s->endGroup();    
 }
 
 void MainWindow::new_filter_script_chosen(const QString &script_name) {

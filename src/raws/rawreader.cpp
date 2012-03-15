@@ -107,7 +107,8 @@ RawObjectPtr RawReader::read_object(QStringList & lines) {
 
 void RawReader::populate_node_values(const RawNodePtr & node, QString & line) {
     QString str = line.trimmed();
-    str = str.mid(1, str.length()-2);
+    //str = str.mid(1, str.length()-2);
+    str = str.mid(1, str.indexOf("]")-1); //might be a good idea to do this elsewhere if we want to use more raws
     QStringList strings = str.split(":", QString::SkipEmptyParts);
     node->name = strings[0];
     for(int i = 1; i < strings.size(); ++i) {
@@ -173,12 +174,17 @@ void RawReader::populate_caste_sub_nodes(const RawNodePtr & node,  QStringList &
     while(!done && !lines.isEmpty()) {
         QString line = lines.front();
         lines.removeFirst();
-        if((line.trimmed().startsWith("[CREATURE:"))||(line.trimmed().startsWith("[CASTE:"))||(line.trimmed().startsWith("[SELECT_CASTE:"))) {
+        //if((line.trimmed().startsWith("[CREATURE:"))||(line.trimmed().startsWith("[CASTE:"))||(line.trimmed().startsWith("[SELECT_CASTE:"))) {
+        if((line.trimmed().startsWith("[CREATURE:"))||(line.trimmed().contains("[CASTE:"))||(line.trimmed().contains("[SELECT_CASTE:"))) {
             done = true;
-            lines.push_front(line);
+            //lines.push_front(line);
+            lines.push_front(line.remove(0,line.indexOf("[")));
         } else {
-            if(line.trimmed().startsWith('[')) {
+            //if(line.trimmed().startsWith('[')) {
+            if(line.trimmed().contains('[')) {
                     RawNodePtr subNode(new RawNode);
+                    //populate_node_values(subNode, line);
+                    line = line.remove(0,line.indexOf("[")); //trim the junk before the [
                     populate_node_values(subNode, line);
                     node->children.append(subNode);
                 }

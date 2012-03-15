@@ -82,12 +82,12 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         .arg(color.blue(), 2, 16, QChar('0'));
     ui->lbl_happiness->setStyleSheet(QString("background-color: %1;").arg(style_sheet_color));
 
-    ui->lbl_strength->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Dwarf::AT_STRENGTH,d->get_attribute((int)Dwarf::AT_STRENGTH))).arg(d->strength()));
-    ui->lbl_agility->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Dwarf::AT_AGILITY,d->get_attribute((int)Dwarf::AT_AGILITY))).arg(d->agility()));
-    ui->lbl_toughness->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Dwarf::AT_TOUGHNESS,d->get_attribute((int)Dwarf::AT_TOUGHNESS))).arg(d->toughness()));
-    ui->lbl_endurance->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Dwarf::AT_ENDURANCE,d->get_attribute((int)Dwarf::AT_ENDURANCE))).arg(d->endurance()));
-    ui->lbl_recuperation->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Dwarf::AT_RECUPERATION,d->get_attribute((int)Dwarf::AT_RECUPERATION))).arg(d->recuperation()));
-    ui->lbl_disease_resistance->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Dwarf::AT_DISEASE_RESISTANCE,d->get_attribute((int)Dwarf::AT_DISEASE_RESISTANCE))).arg(d->disease_resistance()));
+    ui->lbl_strength->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Attribute::AT_STRENGTH,d->get_attribute((int)Attribute::AT_STRENGTH))).arg(d->strength()));
+    ui->lbl_agility->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Attribute::AT_AGILITY,d->get_attribute((int)Attribute::AT_AGILITY))).arg(d->agility()));
+    ui->lbl_toughness->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Attribute::AT_TOUGHNESS,d->get_attribute((int)Attribute::AT_TOUGHNESS))).arg(d->toughness()));
+    ui->lbl_endurance->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Attribute::AT_ENDURANCE,d->get_attribute((int)Attribute::AT_ENDURANCE))).arg(d->endurance()));
+    ui->lbl_recuperation->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Attribute::AT_RECUPERATION,d->get_attribute((int)Attribute::AT_RECUPERATION))).arg(d->recuperation()));
+    ui->lbl_disease_resistance->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Attribute::AT_DISEASE_RESISTANCE,d->get_attribute((int)Attribute::AT_DISEASE_RESISTANCE))).arg(d->disease_resistance()));
 
     foreach(QObject *obj, m_cleanup_list) {
         obj->deleteLater();
@@ -113,7 +113,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         Skill s = skills->at(row);
         QTableWidgetItem *text = new QTableWidgetItem(s.name());
         QTableWidgetItem *level = new QTableWidgetItem;
-        level->setData(0, d->get_rating_by_skill(s.id()));
+        level->setData(0, d->skill_rating(s.id()));
 
 
         QProgressBar *pb = new QProgressBar(tw);
@@ -149,30 +149,31 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     tw_traits->setSortingEnabled(false);
     for (int row = 0; row < traits.size(); ++row) {
         short val = traits[row];
-        if (val == -1)
-            continue;
-        tw_traits->insertRow(0);
-        tw_traits->setRowHeight(0, 14);
-        Trait *t = gdr->get_trait(row);
-        QTableWidgetItem *trait_name = new QTableWidgetItem(t->name);
-        QTableWidgetItem *trait_score = new QTableWidgetItem;
-        trait_score->setData(0, val);
+        if (d->trait_is_active(row))
+        {
+            tw_traits->insertRow(0);
+            tw_traits->setRowHeight(0, 14);
+            Trait *t = gdr->get_trait(row);
+            QTableWidgetItem *trait_name = new QTableWidgetItem(t->name);
+            QTableWidgetItem *trait_score = new QTableWidgetItem;
+            trait_score->setData(0, val);
 
-        int deviation = abs(50 - val);
-        if (deviation >= 41) {
-            trait_score->setBackground(QColor(0, 0, 128, 255));
-            trait_score->setForeground(QColor(255, 255, 255, 255));
-        } else if (deviation >= 25) {
-            trait_score->setBackground(QColor(220, 220, 255, 255));
-            trait_score->setForeground(QColor(0, 0, 128, 255));
+            int deviation = abs(50 - val);
+            if (deviation >= 41) {
+                trait_score->setBackground(QColor(0, 0, 128, 255));
+                trait_score->setForeground(QColor(255, 255, 255, 255));
+            } else if (deviation >= 25) {
+                trait_score->setBackground(QColor(220, 220, 255, 255));
+                trait_score->setForeground(QColor(0, 0, 128, 255));
+            }
+
+            QString lvl_msg = t->level_message(val);
+            QTableWidgetItem *trait_msg = new QTableWidgetItem(lvl_msg);
+            trait_msg->setToolTip(lvl_msg);
+            tw_traits->setItem(0, 0, trait_name);
+            tw_traits->setItem(0, 1, trait_score);
+            tw_traits->setItem(0, 2, trait_msg);
         }
-
-        QString lvl_msg = t->level_message(val);
-        QTableWidgetItem *trait_msg = new QTableWidgetItem(lvl_msg);
-        trait_msg->setToolTip(lvl_msg);
-        tw_traits->setItem(0, 0, trait_name);
-        tw_traits->setItem(0, 1, trait_score);
-        tw_traits->setItem(0, 2, trait_msg);
     }
     tw_traits->setSortingEnabled(true);
     tw_traits->sortItems(1, Qt::DescendingOrder);
