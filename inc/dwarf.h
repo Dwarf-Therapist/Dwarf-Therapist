@@ -99,7 +99,7 @@ public:
     Q_INVOKABLE int get_raw_happiness() {return m_raw_happiness;}
 
     //! return the level of the specified attribute of this dwarf
-    int get_attribute(int attribute);       
+    Attribute::level get_attribute_rating(int attribute);
 
     //! return this dwarf's strength attribute score    
     Q_INVOKABLE int strength() {return m_attributes.value(Attribute::AT_STRENGTH,-1);}
@@ -199,6 +199,8 @@ public:
 
     //! return a vector of Skill objects that this dwarf has experience in
     QVector<Skill> *get_skills() {return &m_skills;}
+
+    QHash<int, short> get_attributes() {return m_attributes;}
 
     //! return a skill object by skill_id
     const Skill get_skill(int skill_id);
@@ -325,6 +327,12 @@ public:
     //! invokable functions for statistical data
     Q_INVOKABLE float attribute_mean(int id);
     Q_INVOKABLE float attribute_stdev(int id);
+
+    Q_INVOKABLE float skill_mean(int id);
+    Q_INVOKABLE float skill_stdev(int id);
+
+    Q_INVOKABLE float trait_mean(int id);
+    Q_INVOKABLE float trait_stdev(int id);
 
     QString first_name() const {
         //qDebug() << "first_name called (from script?)";

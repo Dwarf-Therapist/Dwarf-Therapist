@@ -195,6 +195,7 @@ void MainWindow::read_settings() {
     }
     m_settings->endGroup();
     m_reading_settings = false;
+
 }
 
 void MainWindow::write_settings() {

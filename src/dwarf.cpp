@@ -92,6 +92,7 @@ Dwarf::~Dwarf() {
     }
     m_actions.clear();
     m_skills.clear();
+    m_attributes.clear();
 }
 
 void Dwarf::read_settings() {
@@ -572,32 +573,33 @@ QString Dwarf::happiness_name(DWARF_HAPPINESS happiness) {
     }
 }
 
-//used to display the level name for attributes on the docked dwarf details
-QString Dwarf::attribute_level_name(Attribute::ATTRIBUTES_TYPE attribute, short val)
-{
-    QString msg;
-    switch (attribute) {
-        case Attribute::AT_STRENGTH:
-            msg = GameDataReader::ptr()->get_attribute_level_name("Strength", val);
-            break;
-        case Attribute::AT_AGILITY:
-            msg = GameDataReader::ptr()->get_attribute_level_name("Agility", val);
-            break;
-        case Attribute::AT_TOUGHNESS:
-            msg = GameDataReader::ptr()->get_attribute_level_name("Toughness", val);
-            break;
-        case Attribute::AT_ENDURANCE:
-            msg = GameDataReader::ptr()->get_attribute_level_name("Endurance", val);
-            break;
-        case Attribute::AT_RECUPERATION:
-            msg = GameDataReader::ptr()->get_attribute_level_name("Recuperation", val);
-            break;
-        case Attribute::AT_DISEASE_RESISTANCE:
-            msg = GameDataReader::ptr()->get_attribute_level_name("Disease Resistance", val);
-            break;
-    }
-    return msg;
-}
+////used to display the level name for attributes on the docked dwarf details
+//QString Dwarf::attribute_level_name(Attribute::ATTRIBUTES_TYPE attribute, short val)
+//{
+////    QString msg;
+////    switch (attribute) {
+////        case Attribute::AT_STRENGTH:
+////            msg = GameDataReader::ptr()->get_attribute_level_name("Strength", val);
+////            break;
+////        case Attribute::AT_AGILITY:
+////            msg = GameDataReader::ptr()->get_attribute_level_name("Agility", val);
+////            break;
+////        case Attribute::AT_TOUGHNESS:
+////            msg = GameDataReader::ptr()->get_attribute_level_name("Toughness", val);
+////            break;
+////        case Attribute::AT_ENDURANCE:
+////            msg = GameDataReader::ptr()->get_attribute_level_name("Endurance", val);
+////            break;
+////        case Attribute::AT_RECUPERATION:
+////            msg = GameDataReader::ptr()->get_attribute_level_name("Recuperation", val);
+////            break;
+////        case Attribute::AT_DISEASE_RESISTANCE:
+////            msg = GameDataReader::ptr()->get_attribute_level_name("Disease Resistance", val);
+////            break;
+////    }
+////    return msg;
+//    return GameDataReader::ptr()->get_attribute_level_name(attribute,val);
+//}
 
 Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     MemoryLayout *mem = df->memory_layout();
@@ -1244,120 +1246,135 @@ int Dwarf::total_assigned_labors() {
     return ret_val;
 }
 
-int Dwarf::get_attribute(int attribute)
+Attribute::level Dwarf::get_attribute_rating(int attribute)
 {
     //int mean_value = 0; //set the mean value to 0 so that we're working with the raw values rather than a value adjusted to the mean
     //**finally i'm not using the mean at all
     //LOGD << "mean " << mean_value << " attribute " << attribute << " caste " << m_caste_id;
-    int ret_value;
+    //Attribute::level ret_value;
     int value = m_attributes.value(attribute);
 
     //modify the return 'rating' values so they're spread more from 1 to 15 so that when painting with graphics it shows more of a difference
     //(ie, shows the diamond graphic on that draw type for high values, but still show a tiny square for low values)
 
-    //a lot of the attributes have specific ranges and a gap in them somewhere, so we'll add an additional range for that gap value
-    //usually the level 5 (rating 8) as the gap is between 4 (rating 7) and 6 (rating 9)
-    if(attribute==Attribute::AT_AGILITY)
-    {
-        if(value==NULL){
-            ret_value=-15;
-        }else if(value<151){
-            ret_value=-11;
-        }else if(value<401){
-            ret_value=-7;
-        }else if(value<651){
-            ret_value=-3;
-        }else if(value<1150){
-            ret_value=0;
-        }else if(value<1400){
-            ret_value=3;
-        }else if(value<1650){
-            ret_value=7;
-        }else if(value<1890){
-            ret_value=11;
-        }else{
-            ret_value=15;
-        }
-    }
+    Attribute *a = GameDataReader::ptr()->get_attribute(attribute);
 
-    if (attribute==Attribute::AT_STRENGTH || attribute==Attribute::AT_TOUGHNESS || attribute==Attribute::AT_ANALYTICAL_ABILITY ||
-            attribute==Attribute::AT_CREATIVITY || attribute==Attribute::AT_PATIENCE || attribute==Attribute::AT_MEMORY)
-    {
-        if(value==251){
-            ret_value=-15;
-        }else if(value<501){
-            ret_value=-11;
-        }else if(value<751){
-            ret_value=-7;
-        }else if(value<1001){
-            ret_value=-3;
-        }else if(value<1500){
-            ret_value=0;
-        }else if(value<1750){
-            ret_value=3;
-        }else if(value<2000){
-            ret_value=7;
-        }else if(value<2250){
-            ret_value=11;
-        }else{
-            ret_value=15;
-        }
+    //if we have level range overrides, get them here
+    for(int i = 0; i < a->m_levels.length(); i++){
+        if(value <= a->m_levels.at(i).limit)
+            return a->m_levels.at(i);
     }
+    return a->m_levels.at(a->m_levels.count()-1);
 
-    if( attribute==Attribute::AT_SPATIAL_SENSE || attribute==Attribute::AT_FOCUS)
-    {
-        if(value==543){
-            ret_value=-15;
-        }else if(value<793){
-            ret_value=-11;
-        }else if(value<1043){
-            ret_value=-7;
-        }else if(value<1293){
-            ret_value=-3;
-        }else if(value<1792){
-            ret_value=0;
-        }else if(value<2042){
-            ret_value=3;
-        }else if(value<2292){
-            ret_value=7;
-        }else if(value<2542){
-            ret_value=11;
-        }else{
-            ret_value=15;
-        }
-    }
+//    //a lot of the attributes have specific ranges and a gap in them somewhere, so we'll add an additional range for that gap value
+//    //usually the level 5 (rating 8) as the gap is between 4 (rating 7) and 6 (rating 9)
+//    if(attribute==Attribute::AT_AGILITY)
+//    {
+//        if(value==NULL){
+//            ret_value=-15;
+//        }else if(value<151){
+//            ret_value=-11;
+//        }else if(value<401){
+//            ret_value=-7;
+//        }else if(value<651){
+//            ret_value=-3;
+//        }else if(value<1150){
+//            ret_value=0;
+//        }else if(value<1400){
+//            ret_value=3;
+//        }else if(value<1650){
+//            ret_value=7;
+//        }else if(value<1900){
+//            ret_value=11;
+//        }else{
+//            ret_value=15;
+//        }
+//    }
 
-    if (attribute==Attribute::AT_ENDURANCE || attribute==Attribute::AT_RECUPERATION || attribute==Attribute::AT_DISEASE_RESISTANCE ||
-            attribute==Attribute::AT_INTUITION || attribute==Attribute::AT_WILLPOWER || attribute==Attribute::AT_KINESTHETIC_SENSE ||
-            attribute==Attribute::AT_LINGUISTIC_ABILITY || attribute==Attribute::AT_MUSICALITY || attribute==Attribute::AT_EMPATHY ||
-            attribute==Attribute::AT_SOCIAL_AWARENESS)
-    {
-        if(value==0){
-            ret_value=-15;
-        }else if(value<253){
-            ret_value=-11;
-        }else if(value<501){
-            ret_value=-7;
-        }else if(value<751){
-            ret_value=-3;
-        }else if(value<1250){
-            ret_value=0;
-        }else if(value<1500){
-            ret_value=3;
-        }else if(value<1750){
-            ret_value=7;
-        }else if(value<2000){
-            ret_value=11;
-        }else{
-            ret_value=15;
-        }
-    }
+//    if (attribute==Attribute::AT_STRENGTH || attribute==Attribute::AT_TOUGHNESS || attribute==Attribute::AT_ANALYTICAL_ABILITY ||
+//            attribute==Attribute::AT_CREATIVITY || attribute==Attribute::AT_PATIENCE || attribute==Attribute::AT_MEMORY)
+//    {
+//        if(value==251){
+//            ret_value=-15;
+//        }else if(value<501){
+//            ret_value=-11;
+//        }else if(value<751){
+//            ret_value=-7;
+//        }else if(value<1001){
+//            ret_value=-3;
+//        }else if(value<1500){
+//            ret_value=0;
+//        }else if(value<1750){
+//            ret_value=3;
+//        }else if(value<2000){
+//            ret_value=7;
+//        }else if(value<2250){
+//            ret_value=11;
+//        }else{
+//            ret_value=15;
+//        }
+//    }
 
-    return ret_value;    
+//    if( attribute==Attribute::AT_SPATIAL_SENSE || attribute==Attribute::AT_FOCUS)
+//    {
+//        if(value==543){
+//            ret_value=-15;
+//        }else if(value<793){
+//            ret_value=-11;
+//        }else if(value<1043){
+//            ret_value=-7;
+//        }else if(value<1293){
+//            ret_value=-3;
+//        }else if(value<1792){
+//            ret_value=0;
+//        }else if(value<2042){
+//            ret_value=3;
+//        }else if(value<2292){
+//            ret_value=7;
+//        }else if(value<2542){
+//            ret_value=11;
+//        }else{
+//            ret_value=15;
+//        }
+//    }
+
+//    if (attribute==Attribute::AT_ENDURANCE || attribute==Attribute::AT_RECUPERATION || attribute==Attribute::AT_DISEASE_RESISTANCE ||
+//            attribute==Attribute::AT_INTUITION || attribute==Attribute::AT_WILLPOWER || attribute==Attribute::AT_KINESTHETIC_SENSE ||
+//            attribute==Attribute::AT_LINGUISTIC_ABILITY || attribute==Attribute::AT_MUSICALITY || attribute==Attribute::AT_EMPATHY ||
+//            attribute==Attribute::AT_SOCIAL_AWARENESS)
+//    {
+//        if(value==0){
+//            ret_value=-15;
+//        }else if(value<253){
+//            ret_value=-11;
+//        }else if(value<501){
+//            ret_value=-7;
+//        }else if(value<751){
+//            ret_value=-3;
+//        }else if(value<1250){
+//            ret_value=0;
+//        }else if(value<1500){
+//            ret_value=3;
+//        }else if(value<1750){
+//            ret_value=7;
+//        }else if(value<2000){
+//            ret_value=11;
+//        }else{
+//            ret_value=15;
+//        }
+//    }
+
+//    return ret_value;
 }
 
 float Dwarf::attribute_mean(int id){return DwarfStats::get_attribute_mean(id);}
 float Dwarf::attribute_stdev(int id){return DwarfStats::get_attribute_stdev(id);}
+
+float Dwarf::skill_mean(int id){return DwarfStats::get_skill_mean(id);}
+float Dwarf::skill_stdev(int id){return DwarfStats::get_skill_stdev(id);}
+
+float Dwarf::trait_mean(int id){return DwarfStats::get_trait_mean(id);}
+float Dwarf::trait_stdev(int id){return DwarfStats::get_trait_stdev(id);}
 
 
 

@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <QApplication>
 #include <QVector>
 #include "defines.h"
+#include "role.h"
 
 class QListWidgetItem;
 class MainWindow;

@@ -29,24 +29,20 @@ THE SOFTWARE.
 class Attribute : public QObject {
     Q_OBJECT
 public:
-    Attribute(QSettings &s, QObject *parent = 0)
-        : QObject(parent)
-        , name(s.value("name", "UNKNOWN ATTRIBUTE").toString())
-        , id(s.value("id",0).toInt())
-    {
-        int levels = s.beginReadArray("levels");
-        for (int i = 0; i < levels; ++i) {
-            s.setArrayIndex(i);
-            int level = s.value("level_id", -1).toInt();
-            QString level_name = s.value("level_name", "").toString();
-            if (level != -1)
-                m_levels.insert(level, level_name);
-        }
-        s.endArray();
-    }
+    Attribute(QSettings &s, QObject *parent = 0);
     QString name;
     int id;
-    QHash<int, QString> m_levels;
+    //QHash<int, QString> m_levels;
+    //QList<float> m_limits;
+
+    struct level{
+        QString description;
+        int rating;
+        int limit;
+    };
+
+    QList<level> m_levels;
+
     typedef enum {
         AT_STRENGTH = 0,
         AT_AGILITY=1,
@@ -68,6 +64,9 @@ public:
         AT_EMPATHY=17,
         AT_SOCIAL_AWARENESS=18
     } ATTRIBUTES_TYPE;
+
+protected:
+    int find_attribute_limit(int id, int level_index);
 
 };
 

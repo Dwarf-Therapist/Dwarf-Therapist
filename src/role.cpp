@@ -22,6 +22,7 @@ THE SOFTWARE.
 */
 
 #include "role.h"
+#include "dwarftherapist.h"
 
 Role::Role()
     :name("UNKNOWN")
@@ -33,119 +34,44 @@ Role::Role(QSettings &s, QObject *parent)
     , name(s.value("name", "UNKNOWN ROLE").toString())
     , script(s.value("script","").toString())
 {
-//    QStringList aList;
-//    QStringList detail;
-//    QString name = "";
-//    QString a = "";
-//    int id=0;
-//    float val = 1.0;
-
-    parseAspect(s.value("attributes").toString(), attribute_weight, attributes);
-//    a = s.value("attributes").toString();
-//    if(a.trimmed()!=""){
-//        if(a.indexOf("::")>0){
-//            attribute_weight = a.split("::")[0].QString::toFloat();
-//            a = a.midRef(a.indexOf("::")+2).toString();
-//        }else{
-//            attribute_weight = 1.0;
-//        }
-//        aList = a.split(",");
-
-//        //load the attributes
-//        foreach(QString w, aList){
-//            detail = w.split(":");
-//            name = detail[0];
-//            if(detail.length() > 1)
-//                val = detail[1].QString::toFloat();
-//            attributes.insert(name.trimmed(),(val <=0 ? 1 : val));
-//        }
-//    }else{
-//        attribute_weight = 0;
-//    }
-
-    //load the traits
-    parseAspect(s.value("traits").toString(), trait_weight, traits);
-//    a = s.value("traits").toString();
-//    QString id2;
-//    if(a.trimmed()!=""){
-//        if(a.indexOf("::")>0){
-//            trait_weight = a.split("::")[0].QString::toFloat();
-//            a = a.midRef(a.indexOf("::")+2).toString();
-//        }else{
-//            trait_weight = 1.0;
-//        }
-//        val = 1.0;
-//        aList = a.split(",");
-//        foreach(QString w, aList){
-//            detail = w.split(":");
-//            aspect t;
-//            //id = detail[0].QString::toInt();
-//            id2 = detail[0];
-//            id2.indexOf("-")>=0 ? t.is_neg=true : t.is_neg=false;
-//            if(detail.length() > 1)
-//                val = detail[1].QString::toFloat();
-//            t.weight = (val <=0 ? 1 : val);
-//            traits.insert(abs(id2.toInt()), t);
-//        }
-//    }else{
-//        trait_weight = 0;
-//    }
-    parseAspect(s.value("skills").toString(), skills_weight, skills);
-//    //load the skills
-//    a = s.value("skills").toString();
-//    if(a.trimmed()!=""){
-//        if(a.indexOf("::")>0){
-//            skills_weight = a.split("::")[0].QString::toFloat();
-//            a = a.midRef(a.indexOf("::")+2).toString();
-//        }else{
-//            skills_weight = 1.0;
-//        }
-//        val = 1.0;
-//        aList = a.split(",");
-//        foreach(QString w, aList){
-//            detail = w.split(":");
-//            id = detail[0].QString::toInt();
-//            if(detail.length() > 1)
-//                val = detail[1].QString::toFloat();
-//            skills.insert(id,(val <=0 ? 1 : val));
-//        }
-//    }else{
-//        skills_weight=0;
-//    }
+    parseAspect(s, "attributes", attributes_weight, attributes);
+    parseAspect(s, "traits", traits_weight, traits);
+    parseAspect(s, "skills", skills_weight, skills);
 }
 
-void Role::parseAspect(QString raw, float &weight, QHash<QString,aspect> &list)
+void Role::parseAspect(QSettings &s, QString node, global_weight &g_weight, QHash<QString,aspect> &list)
 {
-    QStringList aList;
-    QStringList detail;
-    QString id = "0";
-    float val = 1.0;
+    list.clear();
+    QString id = "";
+    aspect a;
+    float default_weight = DT->user_settings()->value(QString("options/default_%1_weight").arg(node),1.0).toFloat();
+    g_weight.weight = s.value(QString("%1_weight").arg(node),-1).toFloat();
 
-    if(raw.trimmed()!=""){
-        if(raw.indexOf("::")>0){
-            weight = raw.split("::")[0].QString::toFloat();
-            raw = raw.midRef(raw.indexOf("::")+2).toString();
-        }else{
-            weight = 1.0;
-        }
-        val = 1.0;
-        aList = raw.split(",");
-        foreach(QString w, aList){
-            detail = w.split(":");
-            aspect t;
-            id = detail[0];
-            if (id.indexOf("-") >= 0){
-                id = id.replace("-","");
-                t.is_neg = true;
-            }else{
-                t.is_neg = false;
-            }
-            if(detail.length() > 1)
-                val = detail[1].QString::toFloat();
-            t.weight = (val <=0 ? 1 : val);
-            list.insert(id.trimmed(), t);
-        }
+    //keep track of whether or not we're using the global default when we redraw if options are changed
+    if(g_weight.weight < 0){
+        g_weight.weight = default_weight;
+        g_weight.is_default = true;
     }else{
-        weight = 0;
+        g_weight.is_default = false;
     }
+
+    int count = s.beginReadArray(node);
+    if(count<=0)
+        g_weight.weight = 0;
+
+    for (int i = 0; i < count; ++i) {
+        s.setArrayIndex(i);
+        a.weight = s.value("weight",1.0).toFloat();
+        if((a.weight) < 0)
+            a.weight = 1.0;
+        id = s.value("id", "0").toString();
+        if(id.indexOf("-") >= 0){
+            id.replace("-","");
+            a.is_neg = true;
+        }else{
+            a.is_neg = false;
+        }
+        list.insert(id.trimmed(),a);
+    }
+    s.endArray();
 }

@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "columntypes.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
+#include "dwarfstats.h"
 
 SkillColumn::SkillColumn(const QString &title, const int &skill_id, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(title, CT_SKILL, set, parent)
@@ -66,7 +67,10 @@ QStandardItem *SkillColumn::build_cell(Dwarf *d) {
 		// either the skill isn't a valid id, or they have 0 experience in it
 		skill_str = "0 experience";
 	}
-	item->setToolTip(QString("<h3>%1</h3>%2<h4>%3</h4>").arg(m_title).arg(skill_str).arg(d->nice_name()));
+    item->setToolTip(QString("<h3>%1</h3>%2<br><h4>%3</h4>")
+                     .arg(m_title)
+                     .arg(skill_str)
+                     .arg(d->nice_name()));
 	return item;
 }
 

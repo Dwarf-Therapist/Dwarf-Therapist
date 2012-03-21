@@ -217,7 +217,8 @@ SOURCES += src/viewmanager.cpp \
     src/grid_view/flagcolumn.cpp \
     src/grid_view/rolecolumn.cpp \
     src/dwarfstats.cpp \
-    src/role.cpp
+    src/role.cpp \
+    src/attribute.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

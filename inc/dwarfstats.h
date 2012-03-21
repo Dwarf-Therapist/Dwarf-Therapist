@@ -31,12 +31,15 @@ private:
     static QHash<int, QVector<int>* > m_dwarf_attributes;
     static QVector<float> m_dwarf_attribute_mean;
     static QVector<float> m_dwarf_attribute_stdDev;
-//    static QVector<float> m_dwarf_attribute_minimum;
-//    static QVector<float> m_dwarf_attribute_maximum;
 
     static QHash<int, QVector<int>* > m_dwarf_skills;
     static QVector<float> m_dwarf_skill_mean;
     static QVector<float> m_dwarf_skill_stdDev;
+
+    static QHash<int, QVector<int>* > m_dwarf_traits;
+    static QVector<float> m_dwarf_trait_mean;
+    static QVector<float> m_dwarf_trait_stdDev;
+
 public:
     static void load_stats(QVector<Dwarf*> dwarves);
 
@@ -46,14 +49,13 @@ public:
     static float get_skill_mean(int id){return m_dwarf_skill_mean.at(id);}
     static float get_skill_stdev(int id){return m_dwarf_skill_stdDev.at(id);}
 
-    static float calc_cdf(float mean, float stdev, int rawValue);
+    static float get_trait_mean(int id){return m_dwarf_trait_mean.at(id);}
+    static float get_trait_stdev(int id){return m_dwarf_trait_stdDev.at(id);}
+
+    static float calc_cdf(float mean, float stdev, float rawValue);    
     static float calc_mean(QVector<int> *values);
-    static float calc_standard_deviation(float mean, QVector<int> *values);
-
-    static float get_attribute_rating(Attribute::ATTRIBUTES_TYPE id, int rawValue);
-    static float get_trait_rating(int rawValue);
-    static float get_skill_rating(int skill_id, int rawValue);
-
+    static float calc_variance(QVector<int> * values, float mean);
+    static float calc_standard_deviation(float mean, QVector<int> *values);    
 };
 
 #endif // DWARFSTATS_H

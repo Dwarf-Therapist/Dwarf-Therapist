@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "dwarf.h"
 #include "trait.h"
+#include "dwarfstats.h"
 
 DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
@@ -82,17 +83,11 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         .arg(color.blue(), 2, 16, QChar('0'));
     ui->lbl_happiness->setStyleSheet(QString("background-color: %1;").arg(style_sheet_color));
 
-    ui->lbl_strength->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Attribute::AT_STRENGTH,d->get_attribute((int)Attribute::AT_STRENGTH))).arg(d->strength()));
-    ui->lbl_agility->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Attribute::AT_AGILITY,d->get_attribute((int)Attribute::AT_AGILITY))).arg(d->agility()));
-    ui->lbl_toughness->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Attribute::AT_TOUGHNESS,d->get_attribute((int)Attribute::AT_TOUGHNESS))).arg(d->toughness()));
-    ui->lbl_endurance->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Attribute::AT_ENDURANCE,d->get_attribute((int)Attribute::AT_ENDURANCE))).arg(d->endurance()));
-    ui->lbl_recuperation->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Attribute::AT_RECUPERATION,d->get_attribute((int)Attribute::AT_RECUPERATION))).arg(d->recuperation()));
-    ui->lbl_disease_resistance->setText(QString("<b>%1</b> (%2)").arg(d->attribute_level_name(Attribute::AT_DISEASE_RESISTANCE,d->get_attribute((int)Attribute::AT_DISEASE_RESISTANCE))).arg(d->disease_resistance()));
-
     foreach(QObject *obj, m_cleanup_list) {
         obj->deleteLater();
     }
     m_cleanup_list.clear();
+
 
     // SKILLS TABLE
     QVector<Skill> *skills = d->get_skills();
@@ -128,6 +123,53 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     }
     tw->setSortingEnabled(true); // no sorting while we're inserting
     tw->sortItems(1, Qt::DescendingOrder); // order by level descending
+
+
+    // ATTRIBUTES TABLE
+    QHash<int, short> attributes = d->get_attributes();
+    QTableWidget *tw_attributes = new QTableWidget(this);
+    ui->vbox_main->addWidget(tw_attributes, 10);
+    m_cleanup_list << tw_attributes;
+    tw_attributes->setColumnCount(3);
+    tw_attributes->setEditTriggers(QTableWidget::NoEditTriggers);
+    tw_attributes->setWordWrap(true);
+    tw_attributes->setShowGrid(false);
+    tw_attributes->setGridStyle(Qt::NoPen);
+    tw_attributes->setAlternatingRowColors(true);
+    tw_attributes->setHorizontalHeaderLabels(QStringList() << "Attribute" << "Value" << "Message");
+    tw_attributes->verticalHeader()->hide();
+    tw_attributes->horizontalHeader()->setStretchLastSection(true);
+    tw_attributes->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+    tw_attributes->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
+    tw_attributes->setSortingEnabled(false);
+    for (int row = 0; row < attributes.size(); ++row) {
+        Attribute *r = gdr->get_attribute(row);
+
+        tw_attributes->insertRow(0);
+        tw_attributes->setRowHeight(0, 14);
+        Attribute::level l = d->get_attribute_rating(row);
+
+        QTableWidgetItem *attribute_name = new QTableWidgetItem(r->name);
+        QTableWidgetItem *attribute_rating = new QTableWidgetItem;
+        attribute_rating->setData(0,d->attribute(row));
+
+        if (l.rating >= 0) {
+            attribute_rating->setBackground(QColor(255, 255, 255, 255));
+            attribute_rating->setForeground(QColor(0, 0, 0, 255));
+        } else {
+            attribute_rating->setBackground(QColor(204, 0, 0, 128));
+            attribute_rating->setForeground(QColor(0, 0, 128, 255));
+        }
+
+        QString lvl_msg = l.description;
+        QTableWidgetItem *attribute_msg = new QTableWidgetItem(lvl_msg);
+        attribute_msg->setToolTip(lvl_msg);
+        tw_attributes->setItem(0, 0, attribute_name);
+        tw_attributes->setItem(0, 1, attribute_rating);
+        tw_attributes->setItem(0, 2, attribute_msg);
+    }
+    tw_attributes->setSortingEnabled(true);
+    tw_attributes->sortItems(0, Qt::AscendingOrder);
 
 
     // TRAITS TABLE

@@ -50,6 +50,7 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
 
     TRACE << "Creating settings object";
     m_user_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
+
     TRACE << "Creating options menu";
     m_options_menu = new OptionsMenu;
     TRACE << "Creating main window";

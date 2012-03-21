@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "trait.h"
 #include "gamedatareader.h"
+#include "dwarfstats.h"
 
 TraitColumn::TraitColumn(const QString &title, const short &trait_id, ViewColumnSet *set, QObject *parent) 
     : ViewColumn(title, CT_TRAIT, set, parent)
@@ -67,11 +68,11 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     item->setData(score, DwarfModel::DR_SORT_VALUE);
     item->setData(score, DwarfModel::DR_RATING);
     
-    QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%4</h4>")
-        .arg(m_title)
-        .arg(msg)
-        .arg(score)
-        .arg(d->nice_name());
+    QString tooltip = QString("<h3>%1</h3>%2 (%3)<br><h4>%4</h4>")
+            .arg(m_title)
+            .arg(msg)
+            .arg(score)
+            .arg(d->nice_name());
     item->setToolTip(tooltip);
     return item;
 }

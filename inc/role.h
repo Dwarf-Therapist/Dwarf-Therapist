@@ -41,6 +41,11 @@ public:
         float weight;
     };
 
+    struct global_weight{
+        bool is_default;
+        float weight;
+    };
+
     //unfortunately we need to keep all the keys as a string and cast them so we can use the same functions
     //ie can't pass in a hash with <string, aspect> and <int, aspect>
     QHash<QString, aspect> attributes;
@@ -48,12 +53,12 @@ public:
     QHash<QString, aspect > traits;
 
     //global weights
-    float attribute_weight;
-    float skills_weight;
-    float trait_weight;
+    global_weight attributes_weight;
+    global_weight skills_weight;
+    global_weight traits_weight;
 
-private:
-    void parseAspect(QString raw, float &weight, QHash<QString,aspect> &list);
+protected:
+    void parseAspect(QSettings &s, QString node, global_weight &g_weight, QHash<QString,aspect> &list);
 
 
 

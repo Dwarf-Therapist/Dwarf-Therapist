@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "defines.h"
 #include "truncatingfilelogger.h"
 #include "uberdelegate.h"
+#include "mainwindow.h"
 
 OptionsMenu::OptionsMenu(QWidget *parent)
     : QDialog(parent)
@@ -162,6 +163,9 @@ void OptionsMenu::read_settings() {
     ui->cb_labor_cheats->setChecked(s->value("allow_labor_cheats", false).toBool());
     ui->cb_hide_children->setChecked(s->value("hide_children_and_babies", false).toBool());
     ui->cb_generic_names->setChecked(s->value("use_generic_names", false).toBool());
+    ui->dsb_attribute_weight->setValue(s->value("default_attributes_weight",1.0).toDouble());
+    ui->dsb_skill_weight->setValue(s->value("default_skills_weight",1.0).toDouble());
+    ui->dsb_trait_weight->setValue(s->value("default_traits_weight",1.0).toDouble());
     s->endGroup();
 
     m_reading_settings = false;
@@ -205,6 +209,10 @@ void OptionsMenu::write_settings() {
         s->setValue("use_generic_names", ui->cb_generic_names->isChecked());
         s->setValue("highlight_cursed", ui->cb_curse_highlight->isChecked());
 
+        s->setValue("default_attributes_weight",ui->dsb_attribute_weight->value());
+        s->setValue("default_skills_weight",ui->dsb_skill_weight->value());
+        s->setValue("default_traits_weight",ui->dsb_trait_weight->value());
+
         s->endGroup();
     }
 }
@@ -214,6 +222,12 @@ void OptionsMenu::accept() {
     write_settings();
     emit settings_changed();
     QDialog::accept();
+    int answer = QMessageBox::question(
+            0, tr("Read Dwarves"),
+            tr("Would you like to apply the new options now (Read Dwarves)?"),
+            QMessageBox::Yes | QMessageBox::No);
+    if (answer == QMessageBox::Yes)
+        DT->get_main_window()->read_dwarves();
 }
 
 void OptionsMenu::reject() {

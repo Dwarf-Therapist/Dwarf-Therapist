@@ -72,20 +72,22 @@ public:
     QList<QPair<int, Attribute*> > get_ordered_attributes() {return m_ordered_attributes;}
     QHash<int, MilitaryPreference*> get_military_preferences() {return m_military_preferences;}
     QHash<short, Profession*> get_professions() {return m_professions;}    
+    QHash<QString, Role*> get_roles(){return m_dwarf_roles;}
     QList<QPair<QString, Role*>  > get_ordered_roles() {return m_ordered_roles;}
-    QHash<QString, Attribute*> get_attributes() {return m_attributes;}
+    QHash<int, Attribute*> get_attributes() {return m_attributes;}
 
     Labor *get_labor(const int &labor_id);
     Trait *get_trait(const int &trait_id);
     DwarfJob *get_job(const short &job_id);
     MilitaryPreference *get_military_preference(const int &mil_pref_id);
-    Role *get_role(const QString &name);
+    Role *get_role(const QString &name);    
+    Attribute *get_attribute(int attribute){return m_attributes.value(attribute);}
 
     QString get_string_for_key(QString key);
     Profession* get_profession(const short &profession_id);
     QString get_skill_level_name(short level);
     QString get_skill_name(short skill_id);
-    QString get_attribute_level_name(QString attribute, short level);
+    //QString get_attribute_level_name(Attribute::ATTRIBUTES_TYPE attribute, short level);
 
     QColor get_color(QString key);
 
@@ -138,7 +140,7 @@ private:
     QHash<int, QString> m_skill_levels;
 
     QHash<int, int> m_attribute_levels;
-    QHash<QString, Attribute*> m_attributes;
+    QHash<int, Attribute*> m_attributes;
     QList<QPair<int, Attribute*> > m_ordered_attributes;
 
     QHash<short, DwarfJob*> m_dwarf_jobs;

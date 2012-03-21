@@ -41,7 +41,9 @@ public:
     Role* get_role() {return m_role;}
 
     //override
-    void RoleColumn::write_to_ini(QSettings &s){ViewColumn::write_to_ini(s);}
+    void write_to_ini(QSettings &s){ViewColumn::write_to_ini(s);}
+
+    void read_settings();
 
 protected:
     Role *m_role;

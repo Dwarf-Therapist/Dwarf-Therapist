@@ -314,12 +314,34 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
             return;
         }
 
-        GameDataReader *gdr = GameDataReader::ptr();
-        QAction *a = m->addAction("Add Spacer", this, SLOT(add_spacer_column()));
-        a->setToolTip(tr("Adds a non-selectable spacer to this set. You can set a custom width and color on spacer columns."));
 
+        QAction *a;
+        GameDataReader *gdr = GameDataReader::ptr();
+
+        //ATTRIBUTE
+        QMenu *m_attr = m->addMenu(tr("Add Attribute Columns"));
+        m_attr->setTearOffEnabled(true);
+        QList<QPair<int, Attribute*> > atts = gdr->get_ordered_attributes();
+        QPair<int, Attribute*> att_pair;
+        foreach(att_pair, atts){
+            a = m_attr->addAction(tr(att_pair.second->name.toLatin1()), this, SLOT(add_attribute_column()));
+            a->setData(att_pair.second->id);
+        }
+
+        //HAPPINESS
+        a = m->addAction(tr("Add Happiness"), this, SLOT(add_happiness_column()));
+        a->setToolTip(tr("Adds a single column that shows a color-coded happiness indicator for "
+            "each dwarf. You can customize the colors used in the options menu."));
+
+        //IDLE
+        a = m->addAction(tr("Add Idle/Current Job"), this, SLOT(add_idle_column()));
+        a->setToolTip(tr("Adds a single column that shows a the current idle state for a dwarf."));
+
+
+        //LABOUR
         QMenu *m_labor = m->addMenu(tr("Add Labor Column"));
         //m_labor->setToolTip(tr("Labor columns function as toggle switches for individual labors on a dwarf."));
+        m_labor->setTearOffEnabled(true);
         QMenu *labor_a_l = m_labor->addMenu(tr("A-I"));
         QMenu *labor_j_r = m_labor->addMenu(tr("J-R"));
         QMenu *labor_s_z = m_labor->addMenu(tr("S-Z"));
@@ -334,26 +356,39 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
             a->setToolTip(tr("Add a column for labor %1 (ID%2)").arg(l->name).arg(l->labor_id));
         }
 
+        //MILITARY
         QMenu *m_mil_prefs = m->addMenu(tr("Add Military Columns"));
         foreach(MilitaryPreference* mp, gdr->get_military_preferences()) {
             a = m_mil_prefs->addAction(mp->name, this, SLOT(add_military_preferences_column()));
             a->setData(mp->labor_id);
         }
 
+        //ROLES
         QMenu *m_roles = m->addMenu(tr("Add Role Columns"));
         m_roles->setToolTip(tr("Role columns will show how well a dwarf can fill a particular role."));
+        m_roles->setTearOffEnabled(true);
+        QMenu *role_a_l = m_roles->addMenu(tr("A-I"));
+        QMenu *role_j_r = m_roles->addMenu(tr("J-R"));
+        QMenu *role_m_z = m_roles->addMenu(tr("S-Z"));
         QList<QPair<QString, Role*> > roles = gdr->get_ordered_roles();
         QPair<QString, Role*> role_pair;
         foreach(role_pair, roles){
             Role *r = role_pair.second;
-            QAction *a = m_roles->addAction(r->name, this, SLOT(add_role_column()));
+            QMenu *menu_to_use = role_a_l;
+            if (r->name.at(0).toLower() > 'i')
+                menu_to_use = role_j_r;
+            if (r->name.at(0).toLower() > 'r')
+                menu_to_use = role_m_z;
+            QAction *a = menu_to_use->addAction(r->name, this, SLOT(add_role_column()));
             a->setData(role_pair.first);
             a->setToolTip(tr("Add a column for role %1 (ID%2)").arg(r->name).arg(role_pair.first));
         }
 
+        //SKILL
         QMenu *m_skill = m->addMenu(tr("Add Skill Column"));
         m_skill->setToolTip(tr("Skill columns function as a read-only display of a dwarf's skill in a particular area."
             " Note that you can add skill columns for labors but they won't work as toggles."));
+        m_skill->setTearOffEnabled(true);
         QMenu *skill_a_l = m_skill->addMenu(tr("A-I"));
         QMenu *skill_j_r = m_skill->addMenu(tr("J-R"));
         QMenu *skill_m_z = m_skill->addMenu(tr("S-Z"));
@@ -369,6 +404,11 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
             a->setToolTip(tr("Add a column for skill %1 (ID%2)").arg(skill_pair.second).arg(skill_pair.first));
         }
 
+        //SPACER
+        a = m->addAction("Add Spacer", this, SLOT(add_spacer_column()));
+        a->setToolTip(tr("Adds a non-selectable spacer to this set. You can set a custom width and color on spacer columns."));
+
+        //TRAIT
         QMenu *m_trait = m->addMenu(tr("Add Trait Column"));
         m_trait->setToolTip(tr("Trait columns show a read-only display of a dwarf's score in a particular trait."));
         m_trait->setTearOffEnabled(true);
@@ -381,53 +421,6 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
             a->setToolTip(tr("Add a column for trait %1 (ID%2)").arg(t->name).arg(trait_pair.first));
         }
 
-        QMenu *m_attr = m->addMenu(tr("Add Attribute Column"));
-        a = m_attr->addAction(tr("Strength"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_STRENGTH);
-        a = m_attr->addAction(tr("Agility"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_AGILITY);
-        a = m_attr->addAction(tr("Toughness"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_TOUGHNESS);
-        a = m_attr->addAction(tr("Endurance"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_ENDURANCE);
-        a = m_attr->addAction(tr("Recuperation"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_RECUPERATION);
-        a = m_attr->addAction(tr("Disease resistance"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_DISEASE_RESISTANCE);
-
-        a = m_attr->addAction(tr("Analytical Ability"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_ANALYTICAL_ABILITY);
-        a = m_attr->addAction(tr("Creativity"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_CREATIVITY);
-        a = m_attr->addAction(tr("Empathy"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_EMPATHY);
-        a = m_attr->addAction(tr("Focus"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_FOCUS);
-        a = m_attr->addAction(tr("Intuition"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_INTUITION);
-        a = m_attr->addAction(tr("Kinesthetic Sense"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_KINESTHETIC_SENSE);
-        a = m_attr->addAction(tr("Linguistic Ability"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_LINGUISTIC_ABILITY);
-        a = m_attr->addAction(tr("Memory"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_MEMORY);
-        a = m_attr->addAction(tr("Musicality"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_MUSICALITY);
-        a = m_attr->addAction(tr("Patience"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_PATIENCE);
-        a = m_attr->addAction(tr("Social Awareness"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_SOCIAL_AWARENESS);
-        a = m_attr->addAction(tr("Spatial Sense"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_SPATIAL_SENSE);
-        a = m_attr->addAction(tr("Willpower"), this, SLOT(add_attribute_column()));
-        a->setData(Attribute::AT_WILLPOWER);
-
-        a = m->addAction(tr("Add Happiness"), this, SLOT(add_happiness_column()));
-        a->setToolTip(tr("Adds a single column that shows a color-coded happiness indicator for "
-            "each dwarf. You can customize the colors used in the options menu."));
-
-        a = m->addAction(tr("Add Idle/Current Job"), this, SLOT(add_idle_column()));
-        a->setToolTip(tr("Adds a single column that shows a the current idle state for a dwarf."));
     }
     m->exec(ui->list_columns->viewport()->mapToGlobal(p));
 }

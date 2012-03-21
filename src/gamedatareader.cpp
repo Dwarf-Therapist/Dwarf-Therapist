@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "raws/rawreader.h"
 #include "math.h"
 
+
 GameDataReader::GameDataReader(QObject *parent)
     : QObject(parent)
 {
@@ -69,7 +70,7 @@ GameDataReader::GameDataReader(QObject *parent)
     for(int i = 0; i < attributes; ++i) {
         m_data_settings->setArrayIndex(i);
         Attribute *a = new Attribute(*m_data_settings, this);
-        m_attributes.insert(a->name, a);
+        m_attributes.insert(a->id, a);
     }
     m_data_settings->endArray();  
     QStringList attribute_names;
@@ -160,20 +161,33 @@ GameDataReader::GameDataReader(QObject *parent)
     }
     m_data_settings->endArray();
 
-    int dwarf_roles = m_data_settings->beginReadArray("dwarf_roles");
+
+
     m_dwarf_roles.clear();
+    //first add custom roles
+    QSettings *u = DT->user_settings();
+    int dwarf_roles = u->beginReadArray("custom_roles");
+    for (short i = 0; i < dwarf_roles; ++i) {
+        u->setArrayIndex(i);
+        Role *r = new Role(*u, this);
+        m_dwarf_roles.insert(r->name,r);
+    }
+    u->endArray();
+
+    dwarf_roles = m_data_settings->beginReadArray("dwarf_roles");
     for (short i = 0; i < dwarf_roles; ++i) {
         m_data_settings->setArrayIndex(i);
-
+        //don't overwrite any custom role with the same name
         Role *r = new Role(*m_data_settings, this);
-        m_dwarf_roles.insert(r->name, r);
+        if(!m_dwarf_roles.contains(r->name))
+                m_dwarf_roles.insert(r->name, r);
     }
     m_data_settings->endArray();
 
     QStringList role_names;
     foreach(Role *r, m_dwarf_roles) {
         role_names << r->name;
-    }
+    }        
 
     qSort(role_names);
     foreach(QString name, role_names) {
@@ -220,10 +234,11 @@ int GameDataReader::get_int_for_key(QString key, short base) {
     return val;
 }
 
-QString GameDataReader::get_attribute_level_name(QString attribute, short level)
-{
-    return m_attributes.value(attribute, 0)->m_levels.value(level);
-}
+//QString GameDataReader::get_attribute_level_name(Attribute::ATTRIBUTES_TYPE attribute, short id)
+//{
+//    //return m_attributes.value(attribute, 0)->m_levels.value(level);
+//    return m_attributes.value(attribute,0)->m_levels.at(id).name;
+//}
 
 QString GameDataReader::get_string_for_key(QString key) {
     if (!m_data_settings->contains(key)) {
