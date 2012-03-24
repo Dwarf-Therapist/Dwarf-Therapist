@@ -374,7 +374,7 @@ void StateTableView::clicked(const QModelIndex &idx) {
 
 void StateTableView::header_clicked(int index) {
     if (!m_column_already_sorted && index > 0) {
-        m_header->setSortIndicator(index, Qt::DescendingOrder);
+        m_header->setSortIndicator(index, Qt::DescendingOrder);        
     }
 }
 

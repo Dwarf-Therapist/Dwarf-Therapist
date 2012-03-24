@@ -355,15 +355,15 @@ void MainWindow::check_latest_version(bool show_result_on_equal) {
     Version our_v(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
 
     QHttpRequestHeader header("GET", "/version");
-    //header.setValue("Host", "dt-tracker.appspot.com");
-    header.setValue("Host", "localhost"); //don't auto-update as this is a branch and we have different ini files
+    header.setValue("Host", "dt-tracker.appspot.com");
+    //header.setValue("Host", "localhost");
     header.setValue("User-Agent", QString("DwarfTherapist %1").arg(our_v.to_string()));
     if (m_http) {
         m_http->deleteLater();
     }
     m_http = new QHttp(this);
-    //m_http->setHost("dt-tracker.appspot.com");
-    m_http->setHost("localhost", 8080);
+    m_http->setHost("dt-tracker.appspot.com");
+    //m_http->setHost("localhost", 8080);
     disconnect(m_http, SIGNAL(done(bool)));
     connect(m_http, SIGNAL(done(bool)), this, SLOT(version_check_finished(bool)));
     m_http->request(header);

@@ -446,6 +446,7 @@ void DwarfModel::build_row(const QString &key) {
                 sort_val = d->nice_name();
                 break;
         }
+
         i_name->setData(sort_val, DR_SORT_VALUE);
 
         if (d->is_male()) {

@@ -70,14 +70,14 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
     QString attribs_str="";
     QString traits_str="";
 
-    float avgMeanDev_attribs = 0.0;
-    float avgStdev_attribs=0.0;
+//    float avgMeanDev_attribs = 0.0;
+//    float avgStdev_attribs=0.0;
 
-    float avgMeanDev_skills = 0.0;
-    float avgStdev_skills=0.0;
+//    float avgMeanDev_skills = 0.0;
+//    float avgStdev_skills=0.0;
 
-    float avgMeanDev_traits = 0.0;
-    float avgStdev_traits=0.0;
+//    float avgMeanDev_traits = 0.0;
+//    float avgStdev_traits=0.0;
 
     float deviation = 0.0;
 
@@ -144,20 +144,30 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
                     else if(name == "empathy"){attrib_id = Attribute::AT_EMPATHY;}
                     else if(name == "social awareness"){attrib_id = Attribute::AT_SOCIAL_AWARENESS;}
 
+//                    deviation = d->attribute(attrib_id) - DwarfStats::get_attribute_mean(attrib_id);
+//                    if(a.is_neg)
+//                        deviation *= -1;
+//                    deviation /= DwarfStats::get_attribute_stdev(attrib_id);
+//                    deviation *= weight;
+//                    rating_att += deviation;
+//                    total_weight += pow(weight,2);
+
                     deviation = d->attribute(attrib_id) - DwarfStats::get_attribute_mean(attrib_id);
                     if(a.is_neg)
                         deviation *= -1;
-                    deviation /= DwarfStats::get_attribute_stdev(attrib_id);
-                    deviation *= weight;
-                    rating_att += deviation;
+                    rating_att += (deviation / DwarfStats::get_attribute_stdev(attrib_id)) * weight;
                     total_weight += pow(weight,2);
 
                 }
                 attribs_str += "</br>";
+                rating_att = rating_att / sqrt(total_weight);
 
-                avgMeanDev_attribs = rating_att / m_role->attributes.count();
-                avgStdev_attribs = sqrt(total_weight / m_role->attributes.count());
-                rating_att = DwarfStats::calc_cdf(0,avgStdev_attribs,avgMeanDev_attribs)*100;
+//                avgMeanDev_attribs = rating_att / m_role->attributes.count();
+//                avgStdev_attribs = sqrt(total_weight / m_role->attributes.count());
+//                rating_att = DwarfStats::calc_cdf(0,avgStdev_attribs,avgMeanDev_attribs)*100;
+
+//                avgMeanDev_attribs = total_weight;
+                //rating_att = DwarfStats::calc_cdf(0,sqrt(total_weight),rating_att);//*100;
             }
             //********************************
 
@@ -182,18 +192,32 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
                         traits_str += tr(" (w %2)").arg(weight);
                     traits_str += tr("</dd></p>");
 
+//                    deviation = d->trait(trait_id.toInt()) - DwarfStats::get_trait_mean(trait_id.toInt());
+//                    if(a.is_neg)
+//                        deviation *= -1;
+//                    deviation /= DwarfStats::get_trait_stdev(trait_id.toInt());
+//                    deviation *= weight;
+//                    rating_trait += deviation;
+//                    total_weight += pow(weight,2);
+
                     deviation = d->trait(trait_id.toInt()) - DwarfStats::get_trait_mean(trait_id.toInt());
                     if(a.is_neg)
                         deviation *= -1;
-                    deviation /= DwarfStats::get_trait_stdev(trait_id.toInt());
-                    deviation *= weight;
+                    deviation = (deviation / DwarfStats::get_trait_stdev(trait_id.toInt())) * weight;
                     rating_trait += deviation;
                     total_weight += pow(weight,2);
                 }
                 traits_str += "</br>";
-                avgMeanDev_traits = rating_trait / m_role->traits.count();
-                avgStdev_traits = sqrt(total_weight / m_role->traits.count());
-                rating_trait = DwarfStats::calc_cdf(0,avgStdev_traits,avgMeanDev_traits)*100;
+
+                rating_trait = rating_trait / sqrt(total_weight);
+
+//                avgMeanDev_traits = rating_trait / m_role->traits.count();
+//                avgStdev_traits = sqrt(total_weight / m_role->traits.count());
+//                rating_trait = DwarfStats::calc_cdf(0,avgStdev_traits,avgMeanDev_traits)*100;
+
+//                avgMeanDev_traits = total_weight;
+
+                //rating_trait = DwarfStats::calc_cdf(0,sqrt(total_weight),rating_trait);//*100;
             }
             //********************************
 
@@ -222,11 +246,25 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
                     if(skill_value < 0)
                         skill_value = 0;
 
+//                    deviation = skill_value - DwarfStats::get_skill_mean(skill_id.toInt());
+//                    float stdev = DwarfStats::get_skill_stdev(skill_id.toInt());
+//                    if(stdev != 0){
+//                    deviation /= stdev;
+//                    deviation *= weight;
+//                    }else{
+//                        deviation = 0;
+//                    }
+//                    avgMeanDev_skills += deviation;
+//                    rating_skill += deviation;
+//                    total_weight += pow(weight,2);
+
                     deviation = skill_value - DwarfStats::get_skill_mean(skill_id.toInt());
                     float stdev = DwarfStats::get_skill_stdev(skill_id.toInt());
                     if(stdev != 0){
-                    deviation /= stdev;
-                    deviation *= weight;
+                        if(a.is_neg)
+                            deviation *= -1;
+                        deviation /= stdev;
+                        deviation *= weight;
                     }else{
                         deviation = 0;
                     }
@@ -235,16 +273,33 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
 
                 }
                 skills_str += "</br>";
-                avgMeanDev_skills = rating_skill / m_role->skills.count();
-                avgStdev_skills = sqrt(total_weight / m_role->skills.count());
-                rating_skill = DwarfStats::calc_cdf(0,avgStdev_skills,avgMeanDev_skills)*100;
+                rating_skill = rating_skill / sqrt(total_weight);
+
+//                avgMeanDev_skills = rating_skill / m_role->skills.count();
+//                avgStdev_skills = sqrt(total_weight / m_role->skills.count());
+//                rating_skill = DwarfStats::calc_cdf(0,avgStdev_skills,avgMeanDev_skills)*100;
+                //rating_skill = DwarfStats::calc_cdf(0,sqrt(total_weight),rating_skill);//*100;
             }
             //********************************
-            rating_total = ((rating_att*attrib_weight)+(rating_skill*skill_weight)+(rating_trait*trait_weight)) / (attrib_weight+trait_weight+skill_weight);
+            //rating_total = ((rating_att*attrib_weight)+(rating_skill*skill_weight)+(rating_trait*trait_weight)) / (attrib_weight+trait_weight+skill_weight);
+
+//            rating_total = DwarfStats::calc_cdf(0,
+//                                                sqrt(
+//                                                    pow(avgMeanDev_attribs,2) +
+//                                                    pow(avgMeanDev_skills,2) +
+//                                                    pow(avgMeanDev_traits,2)),
+//                                                (rating_att * attrib_weight) + (rating_skill * skill_weight) + (rating_trait * trait_weight)
+//                                                )*100;
+
+            rating_total = DwarfStats::calc_cdf(0,
+                                                sqrt(pow(attrib_weight,2)+pow(skill_weight,2)+pow(trait_weight,2)),
+                                                (rating_att*attrib_weight)+(rating_skill*skill_weight)+(rating_trait*trait_weight)
+                                                )*100;
+
 
             //assume the values are between 0 and 100, now augment them to be between -20 and +20
             //this is if we want to draw like the attributes, the worse, the larger the red square
-            drawRating = (rating_total-50)/2.5;
+            drawRating = (rating_total-50)/3.33;
         }
         item->setData((int)drawRating, DwarfModel::DR_RATING); //drawing value
         item->setData(rating_total, DwarfModel::DR_SORT_VALUE);
@@ -262,10 +317,10 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
                 aspects_str += tr("<br><b>Note:</b> A higher weight (w) puts greater value on the aspect. Default weights are not shown.");
                 match_str += "</br>" + aspects_str;
 
-                item->setToolTip(QString("<h3>%1 - %3%</h3>%2<h4>%4 satisfies %3% of this role's aspects on average.</h4>")
+                item->setToolTip(QString("<h3>%1 - %3%</h3>%2<h4>%4 is a %3% fit for this role.</h4>")
                                  .arg(m_role->name)
                                  .arg(match_str)
-                                 .arg(ceil(rating_total))
+                                 .arg(QString::number(rating_total,'f',2))
                                  .arg(d->nice_name()));
 
             }else{

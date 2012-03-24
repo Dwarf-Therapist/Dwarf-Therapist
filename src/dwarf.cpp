@@ -573,34 +573,6 @@ QString Dwarf::happiness_name(DWARF_HAPPINESS happiness) {
     }
 }
 
-////used to display the level name for attributes on the docked dwarf details
-//QString Dwarf::attribute_level_name(Attribute::ATTRIBUTES_TYPE attribute, short val)
-//{
-////    QString msg;
-////    switch (attribute) {
-////        case Attribute::AT_STRENGTH:
-////            msg = GameDataReader::ptr()->get_attribute_level_name("Strength", val);
-////            break;
-////        case Attribute::AT_AGILITY:
-////            msg = GameDataReader::ptr()->get_attribute_level_name("Agility", val);
-////            break;
-////        case Attribute::AT_TOUGHNESS:
-////            msg = GameDataReader::ptr()->get_attribute_level_name("Toughness", val);
-////            break;
-////        case Attribute::AT_ENDURANCE:
-////            msg = GameDataReader::ptr()->get_attribute_level_name("Endurance", val);
-////            break;
-////        case Attribute::AT_RECUPERATION:
-////            msg = GameDataReader::ptr()->get_attribute_level_name("Recuperation", val);
-////            break;
-////        case Attribute::AT_DISEASE_RESISTANCE:
-////            msg = GameDataReader::ptr()->get_attribute_level_name("Disease Resistance", val);
-////            break;
-////    }
-////    return msg;
-//    return GameDataReader::ptr()->get_attribute_level_name(attribute,val);
-//}
-
 Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     MemoryLayout *mem = df->memory_layout();
     TRACE << "attempting to load dwarf at" << addr << "using memory layout"
@@ -677,6 +649,7 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     TRACE << "FLAGS3 :" << hexify(flags3);
     TRACE << "RACE   :" << hexify(race_id);
 
+
     if (mem->is_complete()) {
         QHash<uint, QString> flags = mem->valid_flags_1();
 
@@ -691,6 +664,12 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
 //                return 0;
 //            }
 //        }
+
+        //need to do a special check for migrants, they have both the incoming (0x0400 flag) and the dead flag (0x0002)
+        if((flags1 & 0x00000402)==0x00000402){
+            LOGD << "Found migrant " << unverified_dwarf->nice_name();
+            return unverified_dwarf;
+        }
 
         //if a dwarf has gone crazy (berserk=7,raving=6)
         int m_mood = unverified_dwarf->m_mood_id;
