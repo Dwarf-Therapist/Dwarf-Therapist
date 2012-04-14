@@ -22,7 +22,8 @@ THE SOFTWARE.
 */
 
 #include "attribute.h"
-#include "dwarftherapist.h"
+#include "dwarfstats.h"
+
 
 Attribute::Attribute(QSettings &s, QObject *parent)
         : QObject(parent)
@@ -53,7 +54,9 @@ Attribute::Attribute(QSettings &s, QObject *parent)
 int Attribute::find_attribute_limit(int id, int level_index)
 {
     int ret_value = 0;
+    QList<int> raws;
 
+    //-
     if(id==Attribute::AT_AGILITY)
     {
         if(level_index==0){
@@ -75,8 +78,14 @@ int Attribute::find_attribute_limit(int id, int level_index)
         }else{
             ret_value=5000;
         }
+
+        raws << 150 << 600 << 800 << 900 << 1000 << 1100 << 1500 << 5000;
+        DwarfStats::load_attribute_bins(negative, raws);
+        m_aspect_type = negative;
+
     }
 
+    //+
     if (id==Attribute::AT_STRENGTH || id==Attribute::AT_TOUGHNESS || id==Attribute::AT_ANALYTICAL_ABILITY ||
             id==Attribute::AT_CREATIVITY || id==Attribute::AT_PATIENCE || id==Attribute::AT_MEMORY)
     {
@@ -99,8 +108,13 @@ int Attribute::find_attribute_limit(int id, int level_index)
         }else{
             ret_value=5000;
         }
+
+        raws << 450 << 950 << 1150 << 1250 << 1350 << 1550 << 2250 << 5000;
+        DwarfStats::load_attribute_bins(positive, raws);
+        m_aspect_type = positive;
     }
 
+    //++
     if( id==Attribute::AT_SPATIAL_SENSE || id==Attribute::AT_FOCUS)
     {
         if(level_index==0){
@@ -122,8 +136,13 @@ int Attribute::find_attribute_limit(int id, int level_index)
         }else{
             ret_value=5000;
         }
+
+        raws << 700 << 1200 << 1400 << 1500 << 1600 << 1800 << 2500 << 5000;
+        DwarfStats::load_attribute_bins(double_positive, raws);
+        m_aspect_type = double_positive;
     }
 
+    //avg
     if (id==Attribute::AT_ENDURANCE || id==Attribute::AT_RECUPERATION || id==Attribute::AT_DISEASE_RESISTANCE ||
             id==Attribute::AT_INTUITION || id==Attribute::AT_WILLPOWER || id==Attribute::AT_KINESTHETIC_SENSE ||
             id==Attribute::AT_LINGUISTIC_ABILITY || id==Attribute::AT_MUSICALITY || id==Attribute::AT_EMPATHY ||
@@ -148,6 +167,10 @@ int Attribute::find_attribute_limit(int id, int level_index)
         }else{
             ret_value=5000;
         }
+
+        raws << 200 << 700 << 900 << 1000 << 1100 << 1300 << 2000 << 5000;
+        DwarfStats::load_attribute_bins(average, raws);
+        m_aspect_type = average;
 
     }
 

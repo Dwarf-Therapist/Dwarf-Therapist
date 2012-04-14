@@ -63,6 +63,8 @@ public:
     bool labor_cheats_allowed() {return m_allow_labor_cheats;}
     LogManager *get_log_manager() {return m_log_mgr;}
 
+    void emit_settings_changed();
+
     public slots:
         void add_custom_profession();
         void add_custom_profession(CustomProfession *cp);

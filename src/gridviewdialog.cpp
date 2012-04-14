@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include "attributecolumn.h"
 #include "militarypreferencecolumn.h"
 #include "rolecolumn.h"
+#include "weaponcolumn.h"
 
 #include "defines.h"
 #include "statetableview.h"
@@ -302,126 +303,157 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     QMenu *m = new QMenu(this);
     QModelIndex idx = ui->list_columns->indexAt(p);
     if (idx.isValid()) { // context on a column
-        m->addAction(QIcon(":img/application_edit.png"), tr("Edit..."), this, SLOT(edit_column()));
-        m->addAction(QIcon(":img/delete.png"), tr("Remove"), this, SLOT(remove_column()));
+        m->addAction(QIcon(":img/application_edit.png"), tr("Edit Selected"), this, SLOT(edit_column()));
+        m->addAction(QIcon(":img/delete.png"), tr("Remove Selected"), this, SLOT(remove_column()));
+        m->addSeparator();
         m_temp_col = idx.row();
-    } else { // in whitespace
-        if (!m_active_set) { // can't do much without a parent for our cols
-            QMessageBox::warning(this, tr("No Set Selected"),
-                tr("Please select an existing set on the left side pane before "
-                   "attempting to modify columns. If there are no sets yet, "
-                   "create one first."));
-            return;
-        }
+    } //else { // in whitespace
 
-
-        QAction *a;
-        GameDataReader *gdr = GameDataReader::ptr();
-
-        //ATTRIBUTE
-        QMenu *m_attr = m->addMenu(tr("Add Attribute Columns"));
-        m_attr->setTearOffEnabled(true);
-        QList<QPair<int, Attribute*> > atts = gdr->get_ordered_attributes();
-        QPair<int, Attribute*> att_pair;
-        foreach(att_pair, atts){
-            a = m_attr->addAction(tr(att_pair.second->name.toLatin1()), this, SLOT(add_attribute_column()));
-            a->setData(att_pair.second->id);
-        }
-
-        //HAPPINESS
-        a = m->addAction(tr("Add Happiness"), this, SLOT(add_happiness_column()));
-        a->setToolTip(tr("Adds a single column that shows a color-coded happiness indicator for "
-            "each dwarf. You can customize the colors used in the options menu."));
-
-        //IDLE
-        a = m->addAction(tr("Add Idle/Current Job"), this, SLOT(add_idle_column()));
-        a->setToolTip(tr("Adds a single column that shows a the current idle state for a dwarf."));
-
-
-        //LABOUR
-        QMenu *m_labor = m->addMenu(tr("Add Labor Column"));
-        //m_labor->setToolTip(tr("Labor columns function as toggle switches for individual labors on a dwarf."));
-        m_labor->setTearOffEnabled(true);
-        QMenu *labor_a_l = m_labor->addMenu(tr("A-I"));
-        QMenu *labor_j_r = m_labor->addMenu(tr("J-R"));
-        QMenu *labor_s_z = m_labor->addMenu(tr("S-Z"));
-        foreach(Labor *l, gdr->get_ordered_labors()) {
-            QMenu *menu_to_use = labor_a_l;
-            if (l->name.at(0).toLower() > 'i')
-                menu_to_use = labor_j_r;
-            if (l->name.at(0).toLower() > 'r')
-                menu_to_use = labor_s_z;
-            QAction *a = menu_to_use->addAction(l->name, this, SLOT(add_labor_column()));
-            a->setData(l->labor_id);
-            a->setToolTip(tr("Add a column for labor %1 (ID%2)").arg(l->name).arg(l->labor_id));
-        }
-
-        //MILITARY
-        QMenu *m_mil_prefs = m->addMenu(tr("Add Military Columns"));
-        foreach(MilitaryPreference* mp, gdr->get_military_preferences()) {
-            a = m_mil_prefs->addAction(mp->name, this, SLOT(add_military_preferences_column()));
-            a->setData(mp->labor_id);
-        }
-
-        //ROLES
-        QMenu *m_roles = m->addMenu(tr("Add Role Columns"));
-        m_roles->setToolTip(tr("Role columns will show how well a dwarf can fill a particular role."));
-        m_roles->setTearOffEnabled(true);
-        QMenu *role_a_l = m_roles->addMenu(tr("A-I"));
-        QMenu *role_j_r = m_roles->addMenu(tr("J-R"));
-        QMenu *role_m_z = m_roles->addMenu(tr("S-Z"));
-        QList<QPair<QString, Role*> > roles = gdr->get_ordered_roles();
-        QPair<QString, Role*> role_pair;
-        foreach(role_pair, roles){
-            Role *r = role_pair.second;
-            QMenu *menu_to_use = role_a_l;
-            if (r->name.at(0).toLower() > 'i')
-                menu_to_use = role_j_r;
-            if (r->name.at(0).toLower() > 'r')
-                menu_to_use = role_m_z;
-            QAction *a = menu_to_use->addAction(r->name, this, SLOT(add_role_column()));
-            a->setData(role_pair.first);
-            a->setToolTip(tr("Add a column for role %1 (ID%2)").arg(r->name).arg(role_pair.first));
-        }
-
-        //SKILL
-        QMenu *m_skill = m->addMenu(tr("Add Skill Column"));
-        m_skill->setToolTip(tr("Skill columns function as a read-only display of a dwarf's skill in a particular area."
-            " Note that you can add skill columns for labors but they won't work as toggles."));
-        m_skill->setTearOffEnabled(true);
-        QMenu *skill_a_l = m_skill->addMenu(tr("A-I"));
-        QMenu *skill_j_r = m_skill->addMenu(tr("J-R"));
-        QMenu *skill_m_z = m_skill->addMenu(tr("S-Z"));
-        QPair<int, QString> skill_pair;
-        foreach(skill_pair, gdr->get_ordered_skills()) {
-            QMenu *menu_to_use = skill_a_l;
-            if (skill_pair.second.at(0).toLower() > 'i')
-                menu_to_use = skill_j_r;
-            if (skill_pair.second.at(0).toLower() > 'r')
-                menu_to_use = skill_m_z;
-            QAction *a = menu_to_use->addAction(skill_pair.second, this, SLOT(add_skill_column()));
-            a->setData(skill_pair.first);
-            a->setToolTip(tr("Add a column for skill %1 (ID%2)").arg(skill_pair.second).arg(skill_pair.first));
-        }
-
-        //SPACER
-        a = m->addAction("Add Spacer", this, SLOT(add_spacer_column()));
-        a->setToolTip(tr("Adds a non-selectable spacer to this set. You can set a custom width and color on spacer columns."));
-
-        //TRAIT
-        QMenu *m_trait = m->addMenu(tr("Add Trait Column"));
-        m_trait->setToolTip(tr("Trait columns show a read-only display of a dwarf's score in a particular trait."));
-        m_trait->setTearOffEnabled(true);
-        QList<QPair<int, Trait*> > traits = gdr->get_ordered_traits();
-        QPair<int, Trait*> trait_pair;
-        foreach(trait_pair, traits) {
-            Trait *t = trait_pair.second;
-            QAction *a = m_trait->addAction(t->name, this, SLOT(add_trait_column()));
-            a->setData(trait_pair.first);
-            a->setToolTip(tr("Add a column for trait %1 (ID%2)").arg(t->name).arg(trait_pair.first));
-        }
-
+    if (!m_active_set) { // can't do much without a parent for our cols
+        QMessageBox::warning(this, tr("No Set Selected"),
+                             tr("Please select an existing set on the left side pane before "
+                                "attempting to modify columns. If there are no sets yet, "
+                                "create one first."));
+        return;
     }
+
+    QAction *a;
+    GameDataReader *gdr = GameDataReader::ptr();
+
+    //ATTRIBUTE
+    QMenu *m_attr = m->addMenu(tr("Add Attribute Columns"));
+    m_attr->setTearOffEnabled(true);
+    QList<QPair<int, Attribute*> > atts = gdr->get_ordered_attributes();
+    QPair<int, Attribute*> att_pair;
+    foreach(att_pair, atts){
+        a = m_attr->addAction(tr(att_pair.second->name.toLatin1()), this, SLOT(add_attribute_column()));
+        a->setData(att_pair.second->id);
+    }
+
+    //HAPPINESS
+    a = m->addAction(tr("Add Happiness"), this, SLOT(add_happiness_column()));
+    a->setToolTip(tr("Adds a single column that shows a color-coded happiness indicator for "
+                     "each dwarf. You can customize the colors used in the options menu."));
+
+    //IDLE
+    a = m->addAction(tr("Add Idle/Current Job"), this, SLOT(add_idle_column()));
+    a->setToolTip(tr("Adds a single column that shows a the current idle state for a dwarf."));
+
+
+    //LABOUR
+    QMenu *m_labor = m->addMenu(tr("Add Labor Column"));
+    //m_labor->setToolTip(tr("Labor columns function as toggle switches for individual labors on a dwarf."));
+    m_labor->setTearOffEnabled(true);
+    QMenu *labor_a_l = m_labor->addMenu(tr("A-I"));
+    labor_a_l->setTearOffEnabled(true);
+    QMenu *labor_j_r = m_labor->addMenu(tr("J-R"));
+    labor_j_r->setTearOffEnabled(true);
+    QMenu *labor_s_z = m_labor->addMenu(tr("S-Z"));
+    labor_s_z->setTearOffEnabled(true);
+    foreach(Labor *l, gdr->get_ordered_labors()) {
+        QMenu *menu_to_use = labor_a_l;
+        if (l->name.at(0).toLower() > 'i')
+            menu_to_use = labor_j_r;
+        if (l->name.at(0).toLower() > 'r')
+            menu_to_use = labor_s_z;
+        QAction *a = menu_to_use->addAction(l->name, this, SLOT(add_labor_column()));
+        a->setData(l->labor_id);
+        a->setToolTip(tr("Add a column for labor %1 (ID%2)").arg(l->name).arg(l->labor_id));
+    }
+
+    //MILITARY
+    QMenu *m_mil_prefs = m->addMenu(tr("Add Military Columns"));
+    foreach(MilitaryPreference* mp, gdr->get_military_preferences()) {
+        a = m_mil_prefs->addAction(mp->name, this, SLOT(add_military_preferences_column()));
+        a->setData(mp->labor_id);
+    }
+
+    //ROLES
+    QMenu *m_roles = m->addMenu(tr("Add Role Columns"));
+    m_roles->setToolTip(tr("Role columns will show how well a dwarf can fill a particular role."));
+    m_roles->setTearOffEnabled(true);
+    QMenu *role_a_l = m_roles->addMenu(tr("A-I"));
+    role_a_l->setTearOffEnabled(true);
+    QMenu *role_j_r = m_roles->addMenu(tr("J-R"));
+    role_j_r->setTearOffEnabled(true);
+    QMenu *role_m_z = m_roles->addMenu(tr("S-Z"));
+    role_m_z->setTearOffEnabled(true);
+    QList<QPair<QString, Role*> > roles = gdr->get_ordered_roles();
+    QPair<QString, Role*> role_pair;
+    foreach(role_pair, roles){
+        Role *r = role_pair.second;
+        QMenu *menu_to_use = role_a_l;
+        if (r->name.at(0).toLower() > 'i')
+            menu_to_use = role_j_r;
+        if (r->name.at(0).toLower() > 'r')
+            menu_to_use = role_m_z;
+        QAction *a = menu_to_use->addAction(r->name, this, SLOT(add_role_column()));
+        a->setData(role_pair.first);
+        a->setToolTip(tr("Add a column for role %1 (ID%2)").arg(r->name).arg(role_pair.first));
+    }
+
+    //SKILL
+    QMenu *m_skill = m->addMenu(tr("Add Skill Column"));
+    m_skill->setToolTip(tr("Skill columns function as a read-only display of a dwarf's skill in a particular area."
+                           " Note that you can add skill columns for labors but they won't work as toggles."));
+    m_skill->setTearOffEnabled(true);
+    QMenu *skill_a_l = m_skill->addMenu(tr("A-I"));
+    skill_a_l->setTearOffEnabled(true);
+    QMenu *skill_j_r = m_skill->addMenu(tr("J-R"));
+    skill_j_r->setTearOffEnabled(true);
+    QMenu *skill_m_z = m_skill->addMenu(tr("S-Z"));
+    skill_m_z->setTearOffEnabled(true);
+    QPair<int, QString> skill_pair;
+    foreach(skill_pair, gdr->get_ordered_skills()) {
+        QMenu *menu_to_use = skill_a_l;
+        if (skill_pair.second.at(0).toLower() > 'i')
+            menu_to_use = skill_j_r;
+        if (skill_pair.second.at(0).toLower() > 'r')
+            menu_to_use = skill_m_z;
+        QAction *a = menu_to_use->addAction(skill_pair.second, this, SLOT(add_skill_column()));
+        a->setData(skill_pair.first);
+        a->setToolTip(tr("Add a column for skill %1 (ID%2)").arg(skill_pair.second).arg(skill_pair.first));
+    }
+
+    //SPACER
+    a = m->addAction("Add Spacer", this, SLOT(add_spacer_column()));
+    a->setToolTip(tr("Adds a non-selectable spacer to this set. You can set a custom width and color on spacer columns."));
+
+    //TRAIT
+    QMenu *m_trait = m->addMenu(tr("Add Trait Column"));
+    m_trait->setToolTip(tr("Trait columns show a read-only display of a dwarf's score in a particular trait."));
+    m_trait->setTearOffEnabled(true);
+    QList<QPair<int, Trait*> > traits = gdr->get_ordered_traits();
+    QPair<int, Trait*> trait_pair;
+    foreach(trait_pair, traits) {
+        Trait *t = trait_pair.second;
+        QAction *a = m_trait->addAction(t->name, this, SLOT(add_trait_column()));
+        a->setData(trait_pair.first);
+        a->setToolTip(tr("Add a column for trait %1 (ID%2)").arg(t->name).arg(trait_pair.first));
+    }
+
+    QMenu *m_weapon = m->addMenu(tr("Add Weapon Column"));
+    m_skill->setToolTip(tr("Weapon columns will show an indicator of whether the dwarf can wield the weapon with one hand, two hands or not at all."));
+    m_weapon->setTearOffEnabled(true);
+    QMenu *weapon_a_l = m_weapon->addMenu(tr("A-I"));
+    weapon_a_l->setTearOffEnabled(true);
+    QMenu *weapon_j_r = m_weapon->addMenu(tr("J-R"));
+    weapon_j_r->setTearOffEnabled(true);
+    QMenu *weapon_m_z = m_weapon->addMenu(tr("S-Z"));
+    weapon_m_z->setTearOffEnabled(true);
+    QPair<QString, GameDataReader::weapon> weapon_pair;
+    foreach(weapon_pair, gdr->get_ordered_weapons()) {
+        QMenu *menu_to_use = weapon_a_l;
+        if (weapon_pair.first.at(0).toLower() > 'i')
+            menu_to_use = weapon_j_r;
+        if (weapon_pair.first.at(0).toLower() > 'r')
+            menu_to_use = weapon_m_z;
+        QAction *a = menu_to_use->addAction(weapon_pair.first, this, SLOT(add_weapon_column()));
+        a->setData(weapon_pair.first);
+        a->setToolTip(tr("Add a column for weapon %1").arg(weapon_pair.first));
+    }
+
+    //    }
     m->exec(ui->list_columns->viewport()->mapToGlobal(p));
 }
 
@@ -494,6 +526,15 @@ void GridViewDialog::add_role_column() {
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     QString role_name = a->data().toString();
     new RoleColumn(role_name,GameDataReader::ptr()->get_role(role_name), m_active_set, m_active_set);
+    draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_weapon_column(){
+    if(!m_active_set)
+        return;
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    QString key = a->data().toString();
+    new WeaponColumn(key,GameDataReader::ptr()->get_weapons().value(key),m_active_set,m_active_set);
     draw_columns_for_set(m_active_set);
 }
 

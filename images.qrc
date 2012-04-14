@@ -47,6 +47,9 @@
         <file>img/arrow_switch.png</file>
         <file>img/printer_error.png</file>
         <file>img/printer.png</file>
+        <file>img/script_minus.png</file>
+        <file>img/script_pencil.png</file>
+        <file>img/script_plus.png</file>
     </qresource>
     <qresource prefix="/config">
         <file alias="default_gridviews">default_gridviews.dtg</file>

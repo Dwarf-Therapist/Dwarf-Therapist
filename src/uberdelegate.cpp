@@ -175,6 +175,15 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
 
             }
             break;
+    case CT_WEAPON:
+    {
+        short rating = model_idx.data(DwarfModel::DR_RATING).toInt();
+        QColor bg = paint_bg(adjusted, false, p, opt, idx);
+        paint_generic(adjusted, rating, bg, p, opt, idx);
+        paint_grid(adjusted, false, p, opt, idx);
+
+    }
+        break;
         case CT_MILITARY_PREFERENCE:
             {
                 bool agg = model_idx.data(DwarfModel::DR_IS_AGGREGATE).toBool();
@@ -234,9 +243,9 @@ void UberDelegate::paint_generic(const QRect &adjusted, int rating, QColor bg, Q
 
     COLUMN_TYPE type = static_cast<COLUMN_TYPE>(model_idx.data(DwarfModel::DR_COL_TYPE).toInt());
     int rawRating = rating;
-    if(type==CT_ATTRIBUTE || type==CT_ROLE || type==CT_TRAIT){
+    if(type==CT_ATTRIBUTE || type==CT_ROLE || type==CT_TRAIT || type==CT_WEAPON){
         if (rating<0){
-            c=QColor(235,26,26); //lower than average attributes are in red
+            c=QColor(235,26,26); //lower than average are in red
         }else if (rating==0){
             return; //paint nothing for averages
         }

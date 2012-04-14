@@ -66,7 +66,7 @@ public:
         void read_dwarves();
         void scan_memory();
         void new_pending_changes(int);
-        void new_creatures_count(int);
+        void new_creatures_count(int,int,int);
         void lost_df_connection();
 
         //settings
@@ -108,12 +108,14 @@ public:
         // misc
         void show_dwarf_details_dock(Dwarf *d = 0);
         void new_filter_script_chosen(const QString &script_name);
-        void redraw_filter_scripts_cb();
+        void reload_filter_scripts();
 
+        void add_new_custom_role();
 
 private:
     DFInstance *m_df;
     QLabel *m_lbl_status;
+    QLabel *m_lbl_message;
     QProgressBar *m_progress;
     QSettings *m_settings;
     ViewManager *m_view_manager;
@@ -138,8 +140,14 @@ private:
     void read_settings();
     void write_settings();
 
+    void refresh_role_menus();
+    void write_custom_roles();
+
     private slots:
         void set_interface_enabled(bool);
+        //role stuff
+        void edit_custom_role();
+        void remove_custom_role();
 
 };
 

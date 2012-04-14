@@ -35,14 +35,22 @@ private:
 public:
     static QRawObjectList read_objects(QFileInfo file);
     static QRawObjectList read_creatures(QFileInfo file, int n_creature);
+    static QRawObjectList read_weapons(QFileInfo file, int n_creature);
 
 private:
     static RawObjectPtr read_object(QStringList & lines);
+
     static RawObjectPtr read_creature(QStringList & lines, int N = 0);
-    static void populate_node_values(const RawNodePtr & node, QString & line);
     static void populate_creature_node_values(const RawNodePtr & node, QString & line, QString id);
-    static void populate_sub_nodes(const RawNodePtr & node, QStringList & lines, QString indent = "\t");
     static void populate_creature_sub_nodes(const RawNodePtr & node, QStringList & lines);
+
+    static RawObjectPtr read_weapon(QStringList & lines, int N = 0);
+    static void populate_weapon_node_values(const RawNodePtr & node, QString & line, QString id);
+    static void populate_weapon_sub_nodes(const RawNodePtr & node, QStringList & lines);
+
+    static void populate_node_values(const RawNodePtr & node, QString & line);
+    static void populate_sub_nodes(const RawNodePtr & node, QStringList & lines, QString indent = "\t");
+
     static void populate_caste_sub_nodes(const RawNodePtr & node, QStringList & lines);
 };
 

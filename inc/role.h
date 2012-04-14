@@ -32,9 +32,11 @@ class Role : public QObject {
 public:
     Role();
     Role(QSettings &s, QObject *parent = 0);
+    Role(const Role &r);
 
     QString name;
     QString script;
+    bool is_custom;
 
     struct aspect{
         bool is_neg;
@@ -57,10 +59,16 @@ public:
     global_weight skills_weight;
     global_weight traits_weight;
 
+    QString role_details;
+
+    void create_role_details(QSettings &s);
+
+    void write_to_ini(QSettings &s, float default_attributes_weight, float default_traits_weight, float default_skills_weight);
+
 protected:
     void parseAspect(QSettings &s, QString node, global_weight &g_weight, QHash<QString,aspect> &list);
-
-
+    void write_aspect_group(QSettings &s, QString group_name, global_weight group_weight, float group_default_weight, QHash<QString,aspect> &list);
+    QString build_aspect_detail(QString title, global_weight aspect_group_weight, float aspect_default_weight, QHash<QString,aspect> &list);
 
 };
 #endif // ROLE_H

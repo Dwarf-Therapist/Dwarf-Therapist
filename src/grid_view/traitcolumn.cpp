@@ -59,19 +59,18 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     short score = d->trait(m_trait_id);
     QString msg = "???";
     if (m_trait)
-        msg = m_trait->level_message(score);
+        msg = tr("%1 (%2)").arg(m_trait->level_message(score)).arg(score);
 
     if (d->trait_is_active(m_trait_id)==false)
-        msg += tr(" - Not an active trait for this dwarf");
+        msg += tr("<br><br>Not an active trait for this dwarf.");
 
     item->setText(QString::number(score));
     item->setData(score, DwarfModel::DR_SORT_VALUE);
     item->setData(score, DwarfModel::DR_RATING);
     
-    QString tooltip = QString("<h3>%1</h3>%2 (%3)<br><h4>%4</h4>")
+    QString tooltip = QString("<h3>%1</h3>%2<br><h4>%3</h4>")
             .arg(m_title)
             .arg(msg)
-            .arg(score)
             .arg(d->nice_name());
     item->setToolTip(tooltip);
     return item;

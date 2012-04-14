@@ -52,6 +52,7 @@ private:
     uint m_actual_exp;
     uint m_exp_for_current_level;
     uint m_exp_for_next_level;
+    float m_exp_progress;
     short m_rating;
     QString m_name;
 };

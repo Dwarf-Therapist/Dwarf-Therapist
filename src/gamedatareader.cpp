@@ -85,8 +85,7 @@ GameDataReader::GameDataReader(QObject *parent)
                 break;
             }
         }
-    }
-
+    }    
 
     m_data_settings->beginGroup("skill_names");
     foreach(QString k, m_data_settings->childKeys()) {
@@ -126,8 +125,8 @@ GameDataReader::GameDataReader(QObject *parent)
     int traits = m_data_settings->beginReadArray("traits");
     for(int i = 0; i < traits; i++) {
         m_data_settings->setArrayIndex(i);
-        Trait *t = new Trait(*m_data_settings, this);
-        t->trait_id = i;
+        Trait *t = new Trait(i,*m_data_settings, this);
+        //t->trait_id = i;
         m_traits.insert(i, t);
     }
     m_data_settings->endArray();
@@ -164,12 +163,14 @@ GameDataReader::GameDataReader(QObject *parent)
 
 
     m_dwarf_roles.clear();
+    m_default_roles.clear();
     //first add custom roles
     QSettings *u = DT->user_settings();
     int dwarf_roles = u->beginReadArray("custom_roles");
     for (short i = 0; i < dwarf_roles; ++i) {
         u->setArrayIndex(i);
         Role *r = new Role(*u, this);
+        r->is_custom = true;
         m_dwarf_roles.insert(r->name,r);
     }
     u->endArray();
@@ -177,27 +178,16 @@ GameDataReader::GameDataReader(QObject *parent)
     dwarf_roles = m_data_settings->beginReadArray("dwarf_roles");
     for (short i = 0; i < dwarf_roles; ++i) {
         m_data_settings->setArrayIndex(i);
-        //don't overwrite any custom role with the same name
         Role *r = new Role(*m_data_settings, this);
+        //keep a list of default roles to check custom roles against
+        m_default_roles.append(r->name);
+        //don't overwrite any custom role with the same name
         if(!m_dwarf_roles.contains(r->name))
-                m_dwarf_roles.insert(r->name, r);
+            m_dwarf_roles.insert(r->name, r);
     }
     m_data_settings->endArray();
 
-    QStringList role_names;
-    foreach(Role *r, m_dwarf_roles) {
-        role_names << r->name;
-    }        
-
-    qSort(role_names);
-    foreach(QString name, role_names) {
-        foreach(Role *r, m_dwarf_roles) {
-            if (r->name == name) {
-                m_ordered_roles << QPair<QString, Role*>(r->name, r);
-                break;
-            }
-        }
-    }
+    load_sorted_roles();
 
     int professions = m_data_settings->beginReadArray("professions");
     m_professions.clear();
@@ -215,7 +205,7 @@ GameDataReader::GameDataReader(QObject *parent)
         MilitaryPreference *p = new MilitaryPreference(*m_data_settings, this);
         m_military_preferences.insert(p->labor_id, p);
     }
-    m_data_settings->endArray();
+    m_data_settings->endArray();    
 
 }
 
@@ -264,7 +254,6 @@ QString GameDataReader::get_skill_level_name(short level) {
 
 QString GameDataReader::get_skill_name(short skill_id) {
     return m_skills.value(skill_id, "UNKNOWN");
-    //return get_string_for_key(QString("skill_names/%1").arg(skill_id));
 }
 
 Role* GameDataReader::get_role(const QString &name) {
@@ -295,6 +284,10 @@ Labor *GameDataReader::get_labor(const int &labor_id) {
 
 Trait *GameDataReader::get_trait(const int &trait_id) {
     return m_traits.value(trait_id, 0);
+}
+
+QString GameDataReader::get_trait_name(short trait_id) {
+    return get_trait(trait_id)->name;
 }
 
 DwarfJob *GameDataReader::get_job(const short &job_id) {
@@ -385,6 +378,50 @@ void GameDataReader::load_caste_names()
             if (found)
                 break;
         }
+    }
+}
+
+void GameDataReader::load_weapon_list()
+{
+    m_weapons.clear();
+    QHash<QString, QRawObjectList>::iterator i;
+    for (i = m_weapon_classes.begin(); i != m_weapon_classes.end(); ++i)
+    {
+        //TODO: may be better to group weapons by skill instead
+        //ie all PIKE weapons together in their own list
+        foreach(RawObjectPtr obj, i.value()) {
+            if (obj->get_value(1).startsWith("ITEM_WEAPON"))
+            {
+                weapon w;
+
+                RawNodePtr temp =  obj->get_children("TWO_HANDED").at(0);
+                w.singlegrasp_size = temp->get_value(0).toLong();
+
+                temp = obj->get_children("MINIMUM_SIZE").at(0);
+                w.multigrasp_size = temp->get_value(0).toLong();
+
+                temp = obj->get_children("NAME").at(0);
+                w.name = temp->get_value(1);
+                w.name[0] = w.name[0].toUpper();
+
+                temp = obj->get_children("SKILL").at(0);
+                w.skill = temp->get_value(0,"Unknown");
+
+                m_weapons.insert(w.name,w);
+            }
+        }
+    }
+
+    m_ordered_weapons.clear();
+
+    QStringList weapon_names;
+    foreach(QString key, m_weapons.uniqueKeys()) {
+        weapon_names << key;
+    }
+
+    qSort(weapon_names);
+    foreach(QString name, weapon_names) {
+        m_ordered_weapons << QPair<QString, weapon>(name, m_weapons.value(name));
     }
 }
 
@@ -497,11 +534,49 @@ void GameDataReader::read_raws(QDir df_dir) {
         TRACE << "Read " << m_creatures_classes[(*info).baseName()].size() << " " << (*info).baseName();
         N+=m_creatures_classes[(*info).baseName()].size();
     }
+
+    //read weapons
+    filters.clear();
+    filters << "*weapon*.txt";
+    raw_dir.setNameFilters(filters);
+    infos = raw_dir.entryInfoList();
+    N=0;
+    for (QList<QFileInfo>::iterator info=infos.begin();info!=infos.end();info++)
+    {
+        m_weapon_classes[(*info).baseName()] = RawReader::read_weapons((*info), N);
+        TRACE << "Read " << m_weapon_classes[(*info).baseName()].size() << " " << (*info).baseName();
+        N+=m_weapon_classes[(*info).baseName()].size();
+    }
+
     load_race_names();
     load_caste_names();
+    load_weapon_list();
     //load_attributes_mean_value();
     //m_race_names = RawReader::read_races_names();
+
 }
 
+void GameDataReader::load_sorted_roles(){
+    m_ordered_roles.clear();
+
+    QStringList role_names;
+    foreach(Role *r, m_dwarf_roles) {
+        role_names << r->name;
+    }
+
+    qSort(role_names);
+    foreach(QString name, role_names) {
+        foreach(Role *r, m_dwarf_roles) {
+            if (r->name == name) {
+                m_ordered_roles << QPair<QString, Role*>(r->name, r);
+                break;
+            }
+        }
+    }
+}
+
+void DwarfTherapist::emit_settings_changed(){
+    emit settings_changed();
+}
 
 GameDataReader *GameDataReader::m_instance = 0;

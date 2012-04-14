@@ -102,6 +102,9 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     connect(ui->btn_restore_defaults, SIGNAL(pressed()), this, SLOT(restore_defaults()));
     connect(ui->btn_change_font, SIGNAL(pressed()), this, SLOT(show_font_chooser()));
     connect(ui->cb_auto_contrast, SIGNAL(toggled(bool)), m_general_colors[0], SLOT(setDisabled(bool)));
+
+    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tab_index_changed(int)));
+
     read_settings();
 }
 
@@ -163,9 +166,14 @@ void OptionsMenu::read_settings() {
     ui->cb_labor_cheats->setChecked(s->value("allow_labor_cheats", false).toBool());
     ui->cb_hide_children->setChecked(s->value("hide_children_and_babies", false).toBool());
     ui->cb_generic_names->setChecked(s->value("use_generic_names", false).toBool());
+
     ui->dsb_attribute_weight->setValue(s->value("default_attributes_weight",1.0).toDouble());
     ui->dsb_skill_weight->setValue(s->value("default_skills_weight",1.0).toDouble());
     ui->dsb_trait_weight->setValue(s->value("default_traits_weight",1.0).toDouble());
+
+    ui->sb_roles_tooltip->setValue(s->value("role_count_tooltip",3).toInt());
+    ui->sb_roles_pane->setValue(s->value("role_count_pane",10).toInt());
+
     s->endGroup();
 
     m_reading_settings = false;
@@ -212,6 +220,8 @@ void OptionsMenu::write_settings() {
         s->setValue("default_attributes_weight",ui->dsb_attribute_weight->value());
         s->setValue("default_skills_weight",ui->dsb_skill_weight->value());
         s->setValue("default_traits_weight",ui->dsb_trait_weight->value());
+        s->setValue("role_count_tooltip",ui->sb_roles_tooltip->value());
+        s->setValue("role_count_pane",ui->sb_roles_pane->value());
 
         s->endGroup();
     }
@@ -280,4 +290,17 @@ void OptionsMenu::set_skill_drawing_method(const UberDelegate::SKILL_DRAWING_MET
     s->setValue("options/grid/skill_drawing_method", static_cast<int>(sdm));
     read_settings(); // to set the combo-box correctly
     emit settings_changed();
+}
+
+void OptionsMenu::tab_index_changed(int index){
+    if(index == ui->tabWidget->indexOf(ui->tab_roles)){
+        int max_roles = GameDataReader::ptr()->get_roles().count();
+        QString max_text = tr(" (max %1)").arg(max_roles);
+
+        ui->lbl_pane_roles->setText(ui->lbl_pane_roles->text() + max_text);
+        ui->sb_roles_pane->setMaximum(max_roles);
+
+        ui->lbl_tooltip_roles->setText(ui->lbl_tooltip_roles->text() + max_text);
+        ui->sb_roles_tooltip->setMaximum(max_roles);
+    }
 }

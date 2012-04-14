@@ -52,20 +52,20 @@ class DwarfModel : public QStandardItemModel {
 public:
     typedef enum {
         GB_NOTHING = 0,
-        GB_PROFESSION,
-        GB_LEGENDARY,
-        GB_SEX,
-        GB_HAPPINESS,
-        GB_MIGRATION_WAVE,
-        GB_CURRENT_JOB,
-        GB_MILITARY_STATUS,
-        GB_HIGHEST_SKILL,
-        GB_TOTAL_SKILL_LEVELS,
-        GB_ASSIGNED_LABORS,
-        GB_HAS_NICKNAME,
-        GB_SQUAD,
         GB_CASTE,
+        GB_CURRENT_JOB,
+        GB_HAPPINESS,
+        GB_HAS_NICKNAME,
+        GB_HIGHEST_SKILL,
+        GB_LEGENDARY,
+        GB_MIGRATION_WAVE,
+        GB_MILITARY_STATUS,
+        GB_PROFESSION,
         GB_RACE,
+        GB_SEX,
+        GB_SQUAD,
+        GB_ASSIGNED_LABORS,
+        GB_TOTAL_SKILL_LEVELS,
         GB_TOTAL
     } GROUP_BY;
     typedef enum {
@@ -126,7 +126,7 @@ private:
 
 signals:
     void new_pending_changes(int);
-    void new_creatures_count(int);
+    void new_creatures_count(int,int,int);
     void preferred_header_size(int section, int width);
     void set_index_as_spacer(int);
     void clear_spacers();

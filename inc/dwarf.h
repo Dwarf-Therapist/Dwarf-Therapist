@@ -27,6 +27,7 @@ THE SOFTWARE.
 
 #include "skill.h"
 #include "utils.h"
+#include "global_enums.h"
 
 
 class DFInstance;
@@ -238,6 +239,12 @@ public:
     //! return a hashmap of trait_id to trait score for this dwarf
     const QHash<int, short> &traits() {return m_traits;}
 
+    //! return a hashmap of roles and ratings for this dwarf
+    const QHash<QString, float> &role_ratings() {return m_role_ratings;}
+
+    //! return a hashmap of roles and ratings for this dwarf, sorted by rating
+    const QList<QPair<QString, float> > &sorted_role_ratings() {return m_sorted_role_ratings;}
+
     //! return the text string describing what this dwarf is currently doing ("Idle", "Construct Rock Door" etc...)
     const QString &current_job() {return m_current_job;}
 
@@ -294,6 +301,11 @@ public:
     */
     void reset_custom_profession() {m_pending_custom_profession = "";}
 
+    void calc_role_ratings();
+    float get_role_rating(QString role_name);
+    void set_role_rating(QString role_name, float value);
+    void update_rating_list();
+
     //! static method for mapping a numeric happiness score into a value of the enum DWARF_HAPPINESS
     static DWARF_HAPPINESS happiness_from_score(int score);
 
@@ -347,6 +359,10 @@ public:
         return m_turn_count;
     }
 
+    int body_size() {return m_body_size;}
+
+    bool has_state(short id){return m_states.contains(id);}
+
     public slots:
         //! called when global user settings change
         void read_settings();
@@ -359,6 +375,8 @@ public:
         //! copy this dwarf's memory address to the clipboard (debugging)
         void copy_address_to_clipboard();
 
+        //sorts ratings
+        static bool sort_ratings(const QPair<QString,float> &r1,const QPair<QString,float> &r2){return r1.second > r2.second;}
 
 private:
     int m_id; // each creature in the game has a unique serial ID
@@ -376,6 +394,7 @@ private:
     bool m_show_full_name;
     int m_total_xp;
     int m_migration_wave;
+    int m_body_size;
     Q_PROPERTY(QString first_name READ first_name) // no setters (read-only)
     QString m_first_name; // set by game
     QString m_nick_name; // set by user
@@ -407,17 +426,22 @@ private:
     short m_age;
     uint m_turn_count; // Dwarf turn count from start of fortress (as best we know)
     bool m_is_on_break;
+    QHash<QString, float> m_role_ratings;
+    QList<QPair<QString,float> > m_sorted_role_ratings;
+    QVector<short> m_states;
 
     // these methods read data from raw memory
     void read_id();
     void read_sex();
     void read_mood();
+    void read_body_size();
     void read_curse();
     void read_caste();
     void read_race();
     void read_first_name();
     void read_last_name();
     void read_nick_name();
+    void read_states(); //read states before job
     void read_profession();
     void read_labors();
     void read_happiness();
@@ -428,7 +452,8 @@ private:
     void read_traits();
     void read_squad_ref_id();
     void read_flags();
-    void read_turn_count();
+    void read_turn_count();    
+
 
     // utility methods to assist with reading names made up of several words
     // from the language tables
@@ -438,6 +463,8 @@ private:
 
     // assembles component names into a nicely formatted single string
     void calc_names();
+
+
 
 signals:
     void name_changed();

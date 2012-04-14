@@ -53,6 +53,7 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
 
     TRACE << "Creating options menu";
     m_options_menu = new OptionsMenu;
+
     TRACE << "Creating main window";
     m_main_window = new MainWindow;
     m_options_menu->setParent(m_main_window, Qt::Dialog);
@@ -70,7 +71,7 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
 
     bool read = m_user_settings->value("options/read_on_startup", true).toBool();
     if (read) {
-        QTimer::singleShot(0, m_main_window, SLOT(connect_to_df()));
+        QTimer::singleShot(0, m_main_window, SLOT(read_dwarves())); //SLOT(connect_to_df()));
     }
     m_main_window->show();
 }
@@ -148,6 +149,7 @@ void DwarfTherapist::read_settings() {
         foreach(QString prof, profession_names) {
             CustomProfession *cp = new CustomProfession(this);
             cp->set_name(prof);
+            cp->set_mask(m_user_settings->value(QString("%1/is_mask").arg(prof),false).toBool());
             m_user_settings->beginGroup(prof);
             int size = m_user_settings->beginReadArray("labors");
             for(int i = 0; i < size; ++i) {
@@ -176,6 +178,7 @@ void DwarfTherapist::write_settings() {
 
         foreach(CustomProfession *cp, m_custom_professions) {
             m_user_settings->beginGroup(cp->get_name());
+            m_user_settings->setValue("is_mask",cp->is_mask());
             m_user_settings->beginWriteArray("labors");
             int i = 0;
             foreach(int labor_id, cp->get_enabled_labors()) {

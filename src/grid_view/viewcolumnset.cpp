@@ -42,6 +42,7 @@ THE SOFTWARE.
 #include "mainwindow.h"
 #include "dwarfmodel.h"
 #include "gridviewdialog.h"
+#include "weaponcolumn.h"
 
 ViewColumnSet::ViewColumnSet(QString name, QObject *parent)
     : QObject(parent)
@@ -214,40 +215,44 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
         s.setArrayIndex(i);
         QString ctype = s.value("type","").toString();
         switch(get_column_type(s.value("type", "DEFAULT").toString())) {
-            case CT_SPACER:
-                new SpacerColumn(s, ret_val, parent);
-                break;
-            case CT_HAPPINESS:
-                new HappinessColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
-                break;
-            case CT_LABOR:
-                new LaborColumn(s, ret_val, parent);
-                break;
-            case CT_SKILL:
-                new SkillColumn(s, ret_val, parent);
-                break;
-            case CT_IDLE:
-                new CurrentJobColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
-                break;
-            case CT_TRAIT:
-                new TraitColumn(s, ret_val, parent);
-                break;
-            case CT_ATTRIBUTE:
-                new AttributeColumn(s, ret_val, parent);
-                break;
-            case CT_MILITARY_PREFERENCE:
-                new MilitaryPreferenceColumn(s, ret_val, parent);
-                break;
-            case CT_FLAGS:
-                new FlagColumn(s, ret_val, parent);
-                break;
-            case CT_ROLE:
-                new RoleColumn(s, ret_val, parent);
-                break;
-            case CT_DEFAULT:
-            default:
-                LOGW << "unidentified column type in set" << ret_val->name() << "!";
-                break;
+        case CT_SPACER:
+            new SpacerColumn(s, ret_val, parent);
+            break;
+        case CT_HAPPINESS:
+            new HappinessColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
+            break;
+        case CT_LABOR:
+            new LaborColumn(s, ret_val, parent);
+            break;
+        case CT_SKILL:
+            new SkillColumn(s, ret_val, parent);
+            break;
+        case CT_IDLE:
+            new CurrentJobColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
+            break;
+        case CT_TRAIT:
+            new TraitColumn(s, ret_val, parent);
+            break;
+        case CT_ATTRIBUTE:
+            new AttributeColumn(s, ret_val, parent);
+            break;
+        case CT_MILITARY_PREFERENCE:
+            new MilitaryPreferenceColumn(s, ret_val, parent);
+            break;
+        case CT_FLAGS:
+            new FlagColumn(s, ret_val, parent);
+            break;
+        case CT_ROLE:
+            new RoleColumn(s, ret_val, parent);
+            break;
+        case CT_WEAPON:
+            new WeaponColumn(s.value("name").toString(),GameDataReader::ptr()->get_weapons().value(s.value("name").toString()),ret_val,parent);
+            break;
+
+        case CT_DEFAULT:
+        default:
+            LOGW << "unidentified column type in set" << ret_val->name() << "!";
+            break;
         }
     }
     s.endArray();

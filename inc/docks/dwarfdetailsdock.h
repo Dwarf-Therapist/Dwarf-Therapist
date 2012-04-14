@@ -34,6 +34,7 @@ public:
     DwarfDetailsDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
     public slots:
         void show_dwarf(Dwarf *d);
+        QByteArray splitter_sizes();
 
 private:
     DwarfDetailsWidget *m_widget;

@@ -42,6 +42,21 @@ private:
     Ui::DwarfDetailsWidget *ui;
     QGridLayout *m_skills_layout;
     QVector<QObject*> m_cleanup_list;
+
+    QByteArray m_splitter_sizes;
+
+    int m_skill_sort_col;
+    int m_skill_sort_desc;
+
+    int m_attribute_sort_col;
+    int m_attribute_sort_desc;
+
+    int m_trait_sort_col;
+    int m_trait_sort_desc;
+
+    int m_role_sort_col;
+    int m_role_sort_desc;
+
 };
 
 #endif

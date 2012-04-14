@@ -124,6 +124,9 @@
           <pointsize>20</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Adults/Children/Babies</string>
+        </property>
         <property name="text">
          <string>0</string>
         </property>
@@ -231,12 +234,44 @@
      <property name="title">
       <string>Edit Filter Scripts...</string>
      </property>
+     <property name="icon">
+      <iconset resource="../images.qrc">
+       <normaloff>:/img/script_pencil.png</normaloff>:/img/script_pencil.png</iconset>
+     </property>
     </widget>
     <addaction name="act_add_new_filter_script"/>
     <addaction name="menu_edit_filters"/>
    </widget>
+   <widget class="QMenu" name="menuRoles">
+    <property name="title">
+     <string>Roles</string>
+    </property>
+    <widget class="QMenu" name="menu_edit_roles">
+     <property name="title">
+      <string>Edit Custom Role</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../images.qrc">
+       <normaloff>:/img/script_pencil.png</normaloff>:/img/script_pencil.png</iconset>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menu_remove_roles">
+     <property name="title">
+      <string>Remove Custom Role</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../images.qrc">
+       <normaloff>:/img/script_minus.png</normaloff>:/img/script_minus.png</iconset>
+     </property>
+    </widget>
+    <addaction name="act_add_new_custom_role"/>
+    <addaction name="menu_edit_roles"/>
+    <addaction name="separator"/>
+    <addaction name="menu_remove_roles"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menuScripting"/>
+   <addaction name="menuRoles"/>
    <addaction name="menuWindows"/>
    <addaction name="menu_Help"/>
   </widget>
@@ -731,7 +766,7 @@
   <action name="act_add_new_filter_script">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/add.png</normaloff>:/img/add.png</iconset>
+     <normaloff>:/img/script_plus.png</normaloff>:/img/script_plus.png</iconset>
    </property>
    <property name="text">
     <string>Add New Filter Script...</string>
@@ -762,6 +797,15 @@
    </property>
    <property name="toolTip">
     <string>Clear User Settings and exit application</string>
+   </property>
+  </action>
+  <action name="act_add_new_custom_role">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/script_plus.png</normaloff>:/img/script_plus.png</iconset>
+   </property>
+   <property name="text">
+    <string>New Custom Role</string>
    </property>
   </action>
  </widget>
@@ -1134,6 +1178,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_add_new_custom_role</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>add_new_custom_role()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>403</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -1159,5 +1219,6 @@
   <slot>add_new_filter_script()</slot>
   <slot>print_gridview()</slot>
   <slot>clear_user_settings()</slot>
+  <slot>add_new_custom_role()</slot>
  </slots>
 </ui>

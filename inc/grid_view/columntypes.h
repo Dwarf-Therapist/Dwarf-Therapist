@@ -37,7 +37,8 @@ typedef enum {
     CT_MILITARY_PREFERENCE,
     CT_FLAGS,
     CT_ROLE,
-    CT_TOTAL_TYPES
+    CT_WEAPON,
+    CT_TOTAL_TYPES    
 } COLUMN_TYPE;
 
 static inline COLUMN_TYPE get_column_type(const QString &name) {
@@ -61,24 +62,27 @@ static inline COLUMN_TYPE get_column_type(const QString &name) {
         return CT_FLAGS;
     } else if (name.toLower() == "role"){
         return CT_ROLE;
+    } else if (name.toLower() == "weapon"){
+        return CT_WEAPON;
     }
     return CT_DEFAULT;
 }
 
 static inline QString get_column_type(const COLUMN_TYPE &type) {
     switch (type) {
-        case CT_SPACER:                 return "SPACER";
-        case CT_SKILL:                  return "SKILL";
-        case CT_LABOR:                  return "LABOR";
-        case CT_HAPPINESS:              return "HAPPINESS";
-        case CT_IDLE:                   return "IDLE";
-        case CT_TRAIT:                  return "TRAIT";
-        case CT_ATTRIBUTE:              return "ATTRIBUTE";
-        case CT_MILITARY_PREFERENCE:    return "MILITARY_PREFERENCE";
-        case CT_FLAGS:                  return "FLAGS";
-        case CT_ROLE:                   return "ROLE";
-        default:
-            return "UNKNOWN";
+    case CT_SPACER:                 return "SPACER";
+    case CT_SKILL:                  return "SKILL";
+    case CT_LABOR:                  return "LABOR";
+    case CT_HAPPINESS:              return "HAPPINESS";
+    case CT_IDLE:                   return "IDLE";
+    case CT_TRAIT:                  return "TRAIT";
+    case CT_ATTRIBUTE:              return "ATTRIBUTE";
+    case CT_MILITARY_PREFERENCE:    return "MILITARY_PREFERENCE";
+    case CT_FLAGS:                  return "FLAGS";
+    case CT_ROLE:                   return "ROLE";
+    case CT_WEAPON:                 return "WEAPON";
+    default:
+        return "UNKNOWN";
     }
     return "UNKNOWN";
 }

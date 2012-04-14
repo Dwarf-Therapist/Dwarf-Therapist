@@ -29,6 +29,7 @@ Skill::Skill()
     , m_actual_exp(0)
     , m_exp_for_current_level(0)
     , m_exp_for_next_level(1)
+    , m_exp_progress(0)
     , m_rating(-1)
     , m_name("UNKNOWN")
 {}
@@ -39,6 +40,7 @@ Skill::Skill(short id, uint exp, short rating)
     , m_actual_exp(exp)
     , m_exp_for_current_level(0)
     , m_exp_for_next_level(exp + 1)
+    , m_exp_progress(0)
     , m_rating(rating > 20 ? 20 : rating)
     , m_name("UNKNOWN")
 {
@@ -56,6 +58,10 @@ Skill::Skill(short id, uint exp, short rating)
         m_exp_for_next_level += 500 + (i * 100);
     }
     m_name = GameDataReader::ptr()->get_skill_name(m_id);
+
+    if (m_exp_for_next_level && m_exp_for_current_level) {
+        m_exp_progress = ((float)m_exp / (float)(m_exp_for_next_level - m_exp_for_current_level)) * 100;
+    }
 }
 
 QString Skill::to_string(bool include_level, bool include_exp_summary) const {
@@ -82,12 +88,13 @@ QString Skill::exp_summary() const {
     if (m_rating >= 20) {
         return QString("TOTAL: %L1xp").arg(m_actual_exp);
     }
-    float progress = 0.0f;
-    if (m_exp_for_next_level && m_exp_for_current_level) {
-        progress = ((float)m_exp / (float)(m_exp_for_next_level - m_exp_for_current_level)) * 100;
-    }
+//    float progress = 0.0f;
+//    if (m_exp_for_next_level && m_exp_for_current_level) {
+//        progress = ((float)m_exp / (float)(m_exp_for_next_level - m_exp_for_current_level)) * 100;
+//    }
     return QString("%L1xp / %L2xp (%L3%)")
-        .arg(m_actual_exp)
-        .arg(m_exp_for_next_level)
-        .arg(progress, 0, 'f', 1);
+            .arg(m_actual_exp)
+            .arg(m_exp_for_next_level)
+            .arg(m_exp_progress, 0, 'f', 1);
+        //.arg(progress, 0, 'f', 1);
 }

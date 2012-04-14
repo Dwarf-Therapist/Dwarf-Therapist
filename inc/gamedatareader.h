@@ -59,6 +59,14 @@ public:
         }
         return m_instance;
     }
+
+    struct weapon{
+        QString name;
+        long singlegrasp_size;
+        long multigrasp_size;
+        QString skill;
+    };
+
     int get_int_for_key(QString key, short base = 16);
     int get_address(QString key) {return get_int_for_key("addresses/" + key);}
     int get_offset(QString key) {return get_int_for_key("offsets/" + key);}
@@ -75,19 +83,26 @@ public:
     QHash<QString, Role*> get_roles(){return m_dwarf_roles;}
     QList<QPair<QString, Role*>  > get_ordered_roles() {return m_ordered_roles;}
     QHash<int, Attribute*> get_attributes() {return m_attributes;}
+    QVector<QString> get_default_roles() {return m_default_roles;}
 
     Labor *get_labor(const int &labor_id);
     Trait *get_trait(const int &trait_id);
+    QString get_trait_name(short trait_id);
+
     DwarfJob *get_job(const short &job_id);
     MilitaryPreference *get_military_preference(const int &mil_pref_id);
-    Role *get_role(const QString &name);    
+
+    Role *get_role(const QString &name);
+    void remove_role(QString name){m_dwarf_roles.remove(name);}
+    void add_role(QString name, Role *r){m_dwarf_roles.insert(name,r);}
+    void load_sorted_roles();
+
     Attribute *get_attribute(int attribute){return m_attributes.value(attribute);}
 
     QString get_string_for_key(QString key);
     Profession* get_profession(const short &profession_id);
     QString get_skill_level_name(short level);
     QString get_skill_name(short skill_id);
-    //QString get_attribute_level_name(Attribute::ATTRIBUTES_TYPE attribute, short level);
 
     QColor get_color(QString key);
 
@@ -111,6 +126,9 @@ public:
         return RawObjectPtr();
     }
 
+    QHash<QString, weapon> get_weapons() {return m_weapons;}
+    QList<QPair<QString, weapon> > get_ordered_weapons() {return m_ordered_weapons;}
+
     QString get_race_name(int race_id);
     QString get_caste_name(int caste_id);
     QString get_caste_desc(int caste_id);
@@ -123,6 +141,7 @@ protected:
 private:
     void load_race_names();
     void load_caste_names();
+    void load_weapon_list();
     //void load_attributes_mean_value();
     static GameDataReader *m_instance;
     QSettings *m_data_settings;
@@ -148,12 +167,17 @@ private:
 
     QHash<QString, Role*> m_dwarf_roles;
     QList<QPair<QString, Role*> > m_ordered_roles;
+    QVector<QString> m_default_roles;
 
     QHash<QString, QRawObjectList> m_reaction_classes;
     QHash<QString, QRawObjectList> m_creatures_classes;
+    QHash<QString, QRawObjectList> m_weapon_classes;
 
     QHash<QString, QString> m_race_names;
     QHash<QString, QStringList> m_caste_names;
+
+    QHash<QString,weapon> m_weapons;
+    QList<QPair<QString, weapon> > m_ordered_weapons;
     //QHash<int, QHash<int, int> > m_attributes_mean_value;
 };
 #endif

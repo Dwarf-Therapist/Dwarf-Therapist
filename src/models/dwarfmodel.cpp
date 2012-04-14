@@ -98,6 +98,34 @@ void DwarfModel::load_dwarves() {
     QList<Dwarf *> dwarves = m_dwarves.values();
     qSort(dwarves.begin(), dwarves.end(), compare_turn_count);
 
+    //updated migration taking into account animals courtesy of Shisimaru
+    int wave = 0;
+    int wave_animals = 0;
+    const int wave_gap = 33600;
+    long long last_turn = -1;
+    long long last_turn_animals = -1;
+    for( int i = 0; i < dwarves.size(); i++ ) {
+        if (dwarves[i]->is_animal()==false)
+        {
+            long long turn = dwarves[i]->turn_count();
+            if( last_turn != -1 && last_turn - turn > wave_gap ) {
+                wave++;
+            }
+            last_turn = turn;
+            dwarves[i]->set_migration_wave(wave);
+        }
+        if (dwarves[i]->is_animal()==true)
+        {
+            long long turn = dwarves[i]->turn_count();
+            if( last_turn_animals != -1 && last_turn_animals - turn > wave_gap ) {
+                wave_animals++;
+            }
+            last_turn_animals = turn;
+            dwarves[i]->set_migration_wave(wave_animals);
+        }
+    }
+
+#if 0
     int wave = 0;
     const int wave_gap = 33600;
     long long last_turn = -1;
@@ -110,8 +138,6 @@ void DwarfModel::load_dwarves() {
         dwarves[i]->set_migration_wave(wave);
     }
 
-
-#if 0
     // NOTE: This way no longer works due to the fact that historical
     // figures now arrive in migration waves
     /*! Let's try to guess the wave a dwarf arrived in based on ID.
@@ -177,6 +203,9 @@ void DwarfModel::build_rows() {
 
     // populate dwarf maps
     bool only_animals = s->value("read_animals",false).toBool();
+    int n_adults=0;
+    int n_children=0;
+    int n_babies=0;
     foreach(Dwarf *d, m_dwarves) {
         if (only_animals)
         {
@@ -354,15 +383,22 @@ void DwarfModel::build_rows() {
                         }
                         break;
                 }
+
+                if(d->profession()=="Child")
+                    n_children ++;
+                else if(d->profession()=="Baby")
+                    n_babies ++;
+                else
+                    n_adults ++;
             }
         }
     }
-    int n_creatures=0;
+
     foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
         build_row(key);
-        n_creatures+=m_grouped_dwarves.value(key).count();
+        //n_creatures+=m_grouped_dwarves.value(key).count();
     }
-    emit new_creatures_count(n_creatures);
+    emit new_creatures_count(n_adults,n_children,n_babies);
 }
 
 void DwarfModel::build_row(const QString &key) {
@@ -412,6 +448,9 @@ void DwarfModel::build_row(const QString &key) {
         }
     }
 
+    QSettings *s = DT->user_settings();
+    QColor col_curse = QColor(136,000,255,175);
+
     foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
         QStandardItem *i_name = new QStandardItem(d->nice_name());
         if (d->active_military()) {
@@ -420,12 +459,9 @@ void DwarfModel::build_row(const QString &key) {
             i_name->setFont(f);
         }
 
-        QSettings *s = DT->user_settings();
         if(s->value("options/highlight_cursed",false).toBool()){
-            if(d->curse_name() != ""){
-                QColor col_curse = QColor(136,000,255,175);
-                i_name->setBackground(QBrush(col_curse));
-            }
+            if(d->curse_name() != "")
+                i_name->setBackground(QBrush(col_curse));            
         }
 
         i_name->setToolTip(d->tooltip_text());

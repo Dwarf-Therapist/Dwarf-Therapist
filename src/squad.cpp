@@ -69,7 +69,7 @@ void Squad::read_id() {
 
 void Squad::read_name() {
     m_name = read_chunked_name();
-    TRACE << "Name:" << m_name;
+    TRACE << "Name:" << m_name;    
 }
 
 void Squad::read_members() {

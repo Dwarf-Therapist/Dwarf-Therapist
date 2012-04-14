@@ -115,6 +115,7 @@ private:
         void add_attribute_column();
         void add_military_preferences_column();
         void add_role_column();
+        void add_weapon_column();
 };
 
 #endif

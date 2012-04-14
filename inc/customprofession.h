@@ -71,6 +71,9 @@ public:
 	//! Returns a vector of all enabled labor_ids in this template
 	QVector<int> get_enabled_labors();
 
+    //! Determines whether or not this profession should be applied as a mask
+    bool is_mask(){return m_is_mask;}
+    void set_mask(bool value){m_is_mask = value;}
 
 	public slots:
 		void add_labor(int labor_id) {set_labor(labor_id, true);}
@@ -80,14 +83,16 @@ public:
 		void accept();
 		void cancel() {return;}
 		void item_check_state_changed(QListWidgetItem*);
+        void mask_changed(bool value);
 
 private:
 	bool is_valid();
-        Ui::CustomProfessionEditor *ui;
+    Ui::CustomProfessionEditor *ui;
 	Dwarf *m_dwarf;
 	QString m_name;
 	QMap<int, bool> m_active_labors;
 	QDialog *m_dialog;
+    bool m_is_mask;
 
 };
 #endif

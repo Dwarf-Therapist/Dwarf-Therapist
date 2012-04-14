@@ -44,6 +44,14 @@ void DwarfDetailsDock::show_dwarf(Dwarf *d) {
         m_initialized = true;
         setWidget(m_widget);
         m_widget->show();
-    }
+    }  
+}
+
+QByteArray DwarfDetailsDock::splitter_sizes(){
+    QSplitter* split = m_widget->findChild<QSplitter *>("details_splitter");
+    if(split)
+        return split->saveState();
+    else
+        return NULL;
 }
 

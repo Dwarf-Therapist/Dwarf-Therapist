@@ -132,12 +132,18 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
     p->setRenderHint(QPainter::Antialiasing);
     p->setFont(QFont("Verdana", 8));
 
+//    if(data.length() > 20){
+//        data = data.mid(0,20);
+//        data += "...";
+//    }
+
     if (m_header_text_bottom)
     {
         //flip column header text to read from bottom to top (supposedly this is more readable...)
         p->translate(rect.x() + rect.width(), rect.height());
         p->rotate(270);
-        p->drawText(4,-4,data);
+        p->drawText(4,-15,rect.height()-10,rect.width(),1,data);
+
     }
     else
     {

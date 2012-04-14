@@ -50,6 +50,9 @@ THE SOFTWARE.
 #include "scanner.h"
 #include "scriptdialog.h"
 #include "truncatingfilelogger.h"
+#include "roledialog.h"
+#include "viewcolumn.h"
+#include "rolecolumn.h"
 
 #include "dfinstance.h"
 #ifdef Q_WS_WIN
@@ -67,9 +70,9 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
     , m_df(0)
     , m_lbl_status(new QLabel(tr("not connected"), this))
+    , m_lbl_message(new QLabel(tr("Initializing"), this))
     , m_progress(new QProgressBar(this))
     , m_settings(0)
-    , m_view_manager(0)
     , m_model(new DwarfModel(this))
     , m_proxy(new DwarfModelProxy(this))
     , m_about_dialog(new AboutDialog(this))
@@ -83,8 +86,13 @@ MainWindow::MainWindow(QWidget *parent)
     , m_force_connect(false)
     , m_try_download(true)
     , m_deleting_settings(false)
+    , m_view_manager(0)
 {
     ui->setupUi(this);
+
+    //connect to df first, we need to read raws for some ui elements first!!!
+    connect_to_df();
+
     m_view_manager = new ViewManager(m_model, m_proxy, this);
     ui->v_box->addWidget(m_view_manager);
 
@@ -114,7 +122,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menuWindows->addAction(ui->main_toolbar->toggleViewAction());
 
     LOGD << "setting up connections for MainWindow";
-    connect(m_model, SIGNAL(new_creatures_count(int)), this, SLOT(new_creatures_count(int)));
+    connect(m_model, SIGNAL(new_creatures_count(int,int,int)), this, SLOT(new_creatures_count(int,int,int)));
     connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
     connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
     connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
@@ -130,38 +138,35 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_view_manager, SIGNAL(dwarf_focus_changed(Dwarf*)), dwarf_details_dock, SLOT(show_dwarf(Dwarf*)));
     connect(ui->cb_filter_script, SIGNAL(currentIndexChanged(const QString &)), SLOT(new_filter_script_chosen(const QString &)));
     connect(m_script_dialog, SIGNAL(apply_script(const QString &)), m_proxy, SLOT(apply_script(const QString&)));
-    connect(m_script_dialog, SIGNAL(scripts_changed()), SLOT(redraw_filter_scripts_cb()));
+    connect(m_script_dialog, SIGNAL(scripts_changed()), SLOT(reload_filter_scripts()));
 
     m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
     m_progress->setVisible(false);
+    statusBar()->addPermanentWidget(m_lbl_message, 0);    
     statusBar()->addPermanentWidget(m_lbl_status, 0);
     set_interface_enabled(false);
 
     ui->cb_group_by->setItemData(0, DwarfModel::GB_NOTHING);
-    ui->cb_group_by->addItem(tr("Profession"), DwarfModel::GB_PROFESSION);
-    ui->cb_group_by->addItem(tr("Legendary Status"), DwarfModel::GB_LEGENDARY);
-    ui->cb_group_by->addItem(tr("Sex"), DwarfModel::GB_SEX);
-    ui->cb_group_by->addItem(tr("Happiness"), DwarfModel::GB_HAPPINESS);
-    ui->cb_group_by->addItem(tr("Migration Wave"),
-                             DwarfModel::GB_MIGRATION_WAVE);
-    ui->cb_group_by->addItem(tr("Current Job"), DwarfModel::GB_CURRENT_JOB);
-    ui->cb_group_by->addItem(tr("Military Status"),
-                             DwarfModel::GB_MILITARY_STATUS);
-    ui->cb_group_by->addItem(tr("Highest Skill"), DwarfModel::GB_HIGHEST_SKILL);
-    ui->cb_group_by->addItem(tr("Total Skill Levels"),
-                             DwarfModel::GB_TOTAL_SKILL_LEVELS);
-    ui->cb_group_by->addItem(tr("Total Assigned Labors"),
-                             DwarfModel::GB_ASSIGNED_LABORS);
-    ui->cb_group_by->addItem(tr("Has Nickname"),
-                             DwarfModel::GB_HAS_NICKNAME);
-    ui->cb_group_by->addItem(tr("Squad"), DwarfModel::GB_SQUAD);
     ui->cb_group_by->addItem(tr("Caste"), DwarfModel::GB_CASTE);
+    ui->cb_group_by->addItem(tr("Current Job"), DwarfModel::GB_CURRENT_JOB);
+    ui->cb_group_by->addItem(tr("Happiness"), DwarfModel::GB_HAPPINESS);
+    ui->cb_group_by->addItem(tr("Has Nickname"),DwarfModel::GB_HAS_NICKNAME);
+    ui->cb_group_by->addItem(tr("Highest Skill"), DwarfModel::GB_HIGHEST_SKILL);
+    ui->cb_group_by->addItem(tr("Legendary Status"), DwarfModel::GB_LEGENDARY);
+    ui->cb_group_by->addItem(tr("Migration Wave"),DwarfModel::GB_MIGRATION_WAVE);
+    ui->cb_group_by->addItem(tr("Military Status"),DwarfModel::GB_MILITARY_STATUS);
+    ui->cb_group_by->addItem(tr("Profession"), DwarfModel::GB_PROFESSION);
     ui->cb_group_by->addItem(tr("Race"), DwarfModel::GB_RACE);
+    ui->cb_group_by->addItem(tr("Sex"), DwarfModel::GB_SEX);
+    ui->cb_group_by->addItem(tr("Squad"), DwarfModel::GB_SQUAD);
+    ui->cb_group_by->addItem(tr("Total Assigned Labors"),DwarfModel::GB_ASSIGNED_LABORS);
+    ui->cb_group_by->addItem(tr("Total Skill Levels"),DwarfModel::GB_TOTAL_SKILL_LEVELS);
 
     read_settings();
     draw_professions();
-    redraw_filter_scripts_cb();
+    reload_filter_scripts();
+    refresh_role_menus();
 
     if (m_settings->value("options/check_for_updates_on_startup", true).toBool())
         check_latest_version();
@@ -209,6 +214,14 @@ void MainWindow::write_settings() {
         m_settings->endGroup();
         m_settings->beginGroup("gui_options");
         m_settings->setValue("group_by", m_model->current_grouping());
+
+        DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));
+        if(dock){
+            QByteArray sizes = dock->splitter_sizes();
+            if(!sizes.isNull())
+                m_settings->setValue("detailPanesSizes", sizes);
+        }
+
         m_settings->endGroup();
 
         LOGD << "finished writing settings";
@@ -263,10 +276,9 @@ void MainWindow::connect_to_df() {
 
     } else if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
         m_scanner = new Scanner(m_df, this);
-        LOGD << "Connection to DF version"
-                << m_df->memory_layout()->game_version() << "established.";
-        m_lbl_status->setText(tr("Connected to %1")
-                              .arg(m_df->memory_layout()->game_version()));
+        LOGD << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
+        m_lbl_status->setText(tr("Connected to %1").arg(m_df->memory_layout()->game_version()));
+        m_lbl_status->setToolTip(tr("Currently using layout file: %1").arg(m_df->memory_layout()->filename()));
         set_interface_enabled(true);
         connect(m_df, SIGNAL(progress_message(QString)),
                 SLOT(set_progress_message(QString)));
@@ -284,11 +296,6 @@ void MainWindow::connect_to_df() {
 
             //Read raws once memory layout is complete
             m_df->read_raws();
-
-            if (DT->user_settings()->value("options/read_on_startup",
-                                           true).toBool()) {
-                read_dwarves();
-            }
         }
     } else {
         m_force_connect = true;
@@ -322,6 +329,7 @@ void MainWindow::read_dwarves() {
         return;
     }
 
+    set_interface_enabled(true);
     new_pending_changes(0);
     // cheap trick to setup the view correctly
     m_view_manager->redraw_current_tab();
@@ -522,8 +530,13 @@ void MainWindow::list_pending() {
         m_view_manager, SLOT(jump_to_dwarf(QTreeWidgetItem *, QTreeWidgetItem *)));
 }
 
-void MainWindow::new_creatures_count(int cnt) {
-    ui->lbl_dwarf_total->setNum(cnt);
+void MainWindow::new_creatures_count(int adults, int children, int babies) {
+    ui->lbl_dwarf_total->setText(tr("%1/%2/%3").arg(adults).arg(children).arg(babies));
+    ui->lbl_dwarf_total->setToolTip(tr("%1 Adult%2<br>%3 Child%4<br>%5 Bab%6<br>%7 Total Population")
+                                    .arg(adults).arg(adults == 1 ? "" : "s")
+                                    .arg(children).arg(children == 1 ? "" : "ren")
+                                    .arg(babies).arg(babies == 1 ? "y" : "ies")
+                                    .arg(adults+children+babies));
 }
 
 void MainWindow::draw_professions() {
@@ -641,7 +654,7 @@ void MainWindow::show_dwarf_details_dock(Dwarf *d) {
     DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));
     if (dock && d) {
         dock->show_dwarf(d);
-        dock->show();
+        dock->show();        
     }
 }
 
@@ -657,7 +670,7 @@ void MainWindow::edit_filter_script() {
     m_script_dialog->show();
 }
 
-void MainWindow::redraw_filter_scripts_cb() {
+void MainWindow::reload_filter_scripts() {
     ui->cb_filter_script->clear();
     ui->cb_filter_script->addItem(tr("None"));
 
@@ -675,6 +688,105 @@ void MainWindow::redraw_filter_scripts_cb() {
     }
     s->endGroup();    
 }
+
+void MainWindow::add_new_custom_role() {
+    roleDialog *edit = new roleDialog(this,"");
+    edit->exec();
+    if(edit->Accepted){
+        write_custom_roles();
+        GameDataReader::ptr()->load_sorted_roles();
+        refresh_role_menus();
+        DT->emit_settings_changed();
+    }
+}
+
+void MainWindow::edit_custom_role() {
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    QString name = a->data().toString();
+    roleDialog *edit = new roleDialog(this,name);
+    edit->exec();
+
+    if(edit->Accepted){
+        write_custom_roles();
+        GameDataReader::ptr()->load_sorted_roles();
+        refresh_role_menus();
+        DT->emit_settings_changed();
+    }
+}
+
+void MainWindow::remove_custom_role(){
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    QString name = a->data().toString();
+    int answer = QMessageBox::question(0,"Confirm Remove",tr("Are you sure you want to remove role %1?").arg(name),QMessageBox::Yes,QMessageBox::No);
+    if(answer == QMessageBox::Yes){
+        GameDataReader::ptr()->remove_role(name);
+
+        //prompt and remove columns??
+        answer = QMessageBox::question(0,"Clean View",tr("Would you also like to remove role %1 from all views?").arg(name),QMessageBox::Yes,QMessageBox::No);
+        if(answer == QMessageBox::Yes){
+            ViewManager *vm = m_view_manager;
+            foreach(GridView *gv, vm->views()){
+                foreach(ViewColumnSet *vcs, gv->sets()){
+                    foreach(ViewColumn *vc, vcs->columns()){
+                        if(vc->type()==CT_ROLE){
+                            RoleColumn *rc = ((RoleColumn*)vc);
+                            if(rc->get_role() && rc->get_role()->name==name){
+                                vcs->remove_column(vc);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        write_custom_roles();
+        GameDataReader::ptr()->load_sorted_roles();
+        refresh_role_menus();
+        m_view_manager->update();
+        m_view_manager->redraw_current_tab();
+    }
+}
+
+void MainWindow::refresh_role_menus() {
+    ui->menu_edit_roles->clear();
+    ui->menu_remove_roles->clear();
+
+    QList<QPair<QString, Role*> > roles = GameDataReader::ptr()->get_ordered_roles();
+    QPair<QString, Role*> role_pair;
+    foreach(role_pair, roles){
+        if(role_pair.second->is_custom){
+            QAction *edit = ui->menu_edit_roles->addAction(role_pair.first,this,SLOT(edit_custom_role()) );
+            edit->setData(role_pair.first);
+
+            QAction *rem = ui->menu_remove_roles->addAction(role_pair.first,this,SLOT(remove_custom_role()) );
+            rem->setData(role_pair.first);
+        }
+    }
+}
+
+void MainWindow::write_custom_roles(){
+    //re-write custom roles, ugly but doesn't seem that replacing only one works properly
+    QSettings *s = DT->user_settings();
+    s->remove("custom_roles");
+
+    //read defaults before we start writing
+    float default_attributes_weight = s->value("options/default_attributes_weight",1.0).toFloat();
+    float default_skills_weight = s->value("options/default_skills_weight",1.0).toFloat();
+    float default_traits_weight = s->value("options/default_traits_weight",1.0).toFloat();
+
+    s->beginWriteArray("custom_roles");
+    int count = 0;
+    foreach(Role *r, GameDataReader::ptr()->get_roles()){
+        if(r->is_custom){
+            s->setArrayIndex(count);
+            r->write_to_ini(*s, default_attributes_weight, default_traits_weight, default_skills_weight);
+            count++;
+        }
+    }
+    s->endArray();
+}
+
+
+
 
 void MainWindow::new_filter_script_chosen(const QString &script_name) {
     m_proxy->apply_script(DT->user_settings()->value(QString("filter_scripts/%1").arg(script_name), QString()).toString());
@@ -707,14 +819,14 @@ void MainWindow::print_gridview() {
 ///////////////////////////////////////////////////////////////////////////////
 //! Progress Stuff
 void MainWindow::set_progress_message(const QString &msg) {
-    statusBar()->showMessage(msg, 5000);
+    m_lbl_message->setText(msg);
 }
 
 void MainWindow::set_progress_range(int min, int max) {
     m_progress->setVisible(true);
     m_progress->setRange(min, max);
-    m_progress->setValue(min);
-    statusBar()->insertPermanentWidget(0, m_progress, 0);
+    m_progress->setValue(min);    
+    statusBar()->insertPermanentWidget(1, m_progress, 1);
 }
 
 void MainWindow::set_progress_value(int value) {
@@ -722,5 +834,6 @@ void MainWindow::set_progress_value(int value) {
     if (value >= m_progress->maximum()) {
         statusBar()->removeWidget(m_progress);
         m_progress->setVisible(false);
+        set_progress_message("");
     }
 }

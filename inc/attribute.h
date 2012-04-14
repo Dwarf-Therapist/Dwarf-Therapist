@@ -25,6 +25,8 @@ THE SOFTWARE.
 #define ATTRIBUTE_H
 
 #include <QtGui>
+#include "global_enums.h"
+
 
 class Attribute : public QObject {
     Q_OBJECT
@@ -40,8 +42,6 @@ public:
         int rating;
         int limit;
     };
-
-    QList<level> m_levels;
 
     typedef enum {
         AT_STRENGTH = 0,
@@ -65,9 +65,13 @@ public:
         AT_SOCIAL_AWARENESS=18
     } ATTRIBUTES_TYPE;
 
+    QList<level> m_levels;
+
+    ASPECT_TYPE m_aspect_type;
+
+
 protected:
     int find_attribute_limit(int id, int level_index);
-
 };
 
 #endif // ATTRIBUTE_H

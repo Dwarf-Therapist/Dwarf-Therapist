@@ -20,44 +20,26 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef OPTIONS_MENU_H
-#define OPTIONS_MENU_H
+#ifndef WEAPONCOLUMN_H
+#define WEAPONCOLUMN_H
 
-#include "ui_optionsmenu.h"
-#include "uberdelegate.h"
+#include "viewcolumn.h"
+#include "dwarf.h"
 
-class CustomColor;
-
-class OptionsMenu : public QDialog {
+class WeaponColumn : public ViewColumn {
     Q_OBJECT
 public:
-    OptionsMenu(QWidget *parent = 0);
-    virtual ~OptionsMenu();
 
-    void read_settings();
-    void write_settings();
+    WeaponColumn(const QString &title, GameDataReader::weapon w, ViewColumnSet *set = 0, QObject *parent = 0);
+    WeaponColumn* clone() {return new WeaponColumn(*this);}
+    QStandardItem *build_cell(Dwarf *d);
+    QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 
-    bool event(QEvent *evt);
-
-    public slots:
-        void accept();
-        void reject();
-        void restore_defaults();
-        void show_font_chooser();
-        void set_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&);
-        void tab_index_changed(int index);
+    //override
+    void write_to_ini(QSettings &s){ViewColumn::write_to_ini(s);}
 
 private:
-    Ui::OptionsMenu *ui;
-    bool m_reading_settings;
-    QList<CustomColor*> m_general_colors;
-    QList<CustomColor*> m_happiness_colors;
-    QFont m_font;
-    QFont m_dirty_font;
-
-signals:
-    void color_changed(const QString &, const QColor &);
-    //! emitted when the options menu "ok" button is hit
-    void settings_changed();
+    GameDataReader::weapon m_weapon;
 };
-#endif
+
+#endif // WEAPONCOLUMN_H

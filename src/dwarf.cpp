@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include <QVector>
+#include <QtScript>
+#include <QDebug>
 #include "dwarf.h"
 #include "dfinstance.h"
 #include "skill.h"
@@ -60,7 +62,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_squad_name(QString::null)
     , m_flag1(0)
     , m_flag2(0)
-    , m_age(0)
+    , m_age(0)    
 {
     read_settings();
     refresh_data();
@@ -130,6 +132,7 @@ void Dwarf::refresh_data() {
     read_profession();
     read_labors();
     read_happiness();
+    read_states();
     read_current_job();
     read_souls();
     read_squad_ref_id();
@@ -138,6 +141,7 @@ void Dwarf::refresh_data() {
     read_sex();
     read_caste();
     read_mood();
+    read_body_size();
 
     m_flag1 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags1"));
     m_flag2 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags2"));
@@ -169,6 +173,38 @@ void Dwarf::read_sex() {
 
 void Dwarf::read_mood(){
     m_mood_id = m_df->read_short(m_address + m_mem->dwarf_offset("mood"));
+}
+
+void Dwarf::read_body_size(){
+    if(m_mem->dwarf_offset("body_size") != -1){
+        QVector<VIRTADDR> entries = m_df->enumerate_vector(m_address + m_mem->dwarf_offset("body_size"));
+        if(m_profession=="Child")
+            m_body_size = 15000;
+        else if(m_profession=="Baby")
+            m_body_size = 3000;
+        else
+            m_body_size = 60000;
+
+        foreach(VIRTADDR entry, entries) {
+            m_body_size = m_body_size * ((float)entry / 100);
+        }
+    }else{
+        m_body_size = -1;
+    }
+}
+
+void Dwarf::read_states(){
+    m_states.clear();
+    //vector holding a set of enum short
+    MemoryLayout* layout = m_df->memory_layout();
+    uint states_offset = layout->dwarf_offset("states");
+    if (states_offset) {
+        VIRTADDR states_addr = m_address + states_offset;
+        QVector<uint> entries = m_df->enumerate_vector(states_addr);
+        foreach(uint entry, entries) {
+            m_states.append(m_df->read_short(entry));
+        }
+    }
 }
 
 void Dwarf::read_curse(){
@@ -446,6 +482,10 @@ void Dwarf::read_current_job() {
     if (current_job_addr != 0) {
         m_current_job_id = m_df->read_word(current_job_addr + m_df->memory_layout()->job_detail("id"));
 
+        //if drinking blood and we're not showing vamps, change job to drink
+        if (m_current_job_id == 223 && DT->user_settings()->value("options/highlight_cursed", false).toBool()==false)
+            m_current_job_id = 17;
+
         DwarfJob *job = GameDataReader::ptr()->get_job(m_current_job_id);
         if (job) {
             m_current_job = job->description;
@@ -465,24 +505,9 @@ void Dwarf::read_current_job() {
         } else {
             m_current_job = tr("Unknown job");
         }
-    } else {
-        //bool is_on_break = false;
-        if(first_name()=="Tobul")
-            TRACE << "pause";
-        m_is_on_break = false;
-        MemoryLayout* layout = m_df->memory_layout();
-        uint states_offset = layout->dwarf_offset("states");
-        if (states_offset) {
-            VIRTADDR states_addr = m_address + states_offset;
-            QVector<uint> entries = m_df->enumerate_vector(states_addr);
-            short on_break_value = layout->job_detail("on_break_flag");
-            foreach(uint entry, entries) {
-                if (m_df->read_short(entry) == on_break_value) {
-                    m_is_on_break=true;
-                    break; // no pun intended
-                }
-            }
-        }
+    } else {        
+        short on_break_value = m_df->memory_layout()->job_detail("on_break_flag");
+        m_is_on_break = has_state(on_break_value);
         m_current_job = m_is_on_break ? tr("On Break") : tr("No Job");
     }
     TRACE << "CURRENT JOB:" << m_current_job_id << m_current_sub_job_id << m_current_job;
@@ -584,16 +609,13 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     WORD race_id = df->read_word(addr + mem->dwarf_offset("race"));
 
     if (race_id != df->dwarf_race_id()) { // animals and other non-dwarves loaded here
-//        TRACE << "Ignoring creature with race ID of " << hex << race_id;
-//        return 0;
+
         Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
         TRACE << "examining dwarf at" << hex << addr;
         TRACE << "FLAGS1 :" << hexify(flags1);
         TRACE << "FLAGS2 :" << hexify(flags2);
         TRACE << "FLAGS3 :" << hexify(flags3);
         TRACE << "RACE   :" << hexify(race_id);
-
-        QString racename = unverified_dwarf->race_name(unverified_dwarf->get_race_id());
 
         if (mem->is_complete()) {
             QHash<uint, QString> flags = mem->valid_flags_1();
@@ -609,10 +631,6 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
                     delete unverified_dwarf;
                     return 0;
                 }
-                //else
-                //{
-                //    LOGD << unverified_dwarf->race_name((int)race_id) << flag << " " << flags1;
-                //}
             }
 
             flags = mem->invalid_flags_2();
@@ -649,27 +667,23 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     TRACE << "FLAGS3 :" << hexify(flags3);
     TRACE << "RACE   :" << hexify(race_id);
 
-
     if (mem->is_complete()) {
         QHash<uint, QString> flags = mem->valid_flags_1();
 
-        //valid_flags_1 0x80000000 is for important historical figures, which with the changes to migrants is probably
-        //not a good idea to check any longer
-//        foreach(uint flag, flags.uniqueKeys()) {
-//            QString reason = flags[flag];
-//            if ((flags1 & flag) != flag) {
-//                LOGD << "Ignoring" << unverified_dwarf->nice_name() <<
-//                        "who appears to be" << reason;
-//                delete unverified_dwarf;
-//                return 0;
-//            }
+
+//        //need to do a special check for migrants, they have both the incoming (0x0400 flag) and the dead flag (0x0002)
+//        if((flags1 & 0x00000402)==0x00000402){
+//            LOGD << "Found migrant " << unverified_dwarf->nice_name();
+//            return unverified_dwarf;
 //        }
 
-        //need to do a special check for migrants, they have both the incoming (0x0400 flag) and the dead flag (0x0002)
-        if((flags1 & 0x00000402)==0x00000402){
+        //a better way to check migrants is to check the states vector
+        //hardcoded for now, could also put it in the ini like the 'on break' flag under job details
+        if(unverified_dwarf->has_state(7)){
             LOGD << "Found migrant " << unverified_dwarf->nice_name();
             return unverified_dwarf;
         }
+
 
         //if a dwarf has gone crazy (berserk=7,raving=6)
         int m_mood = unverified_dwarf->m_mood_id;
@@ -737,20 +751,10 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
             }
         }
 
-
-        // HACK: ugh... so ugly, but this seems to be the best way to filter
-        // out kidnapped babies
-        short baby_id = -1;
-        foreach(Profession *p, GameDataReader::ptr()->get_professions()) {
-            if (p->name(true) == "Baby") {
-                baby_id = p->id();
-                break;
-            }
-        }
-        if (unverified_dwarf->raw_profession() == baby_id) {
-            //kidnapped flag? seems like it (0x200 is actually the 'rider' flag and sometimes flags unkidnapped babies)
-            //changed to 0x100 - 'left the map' instead. check both or just add this as an invalid flag?
-            if ((flags1 & 0x100) == 0x100) {
+        //kidnapped flag? seems like it (0x200 is actually the 'rider' flag and sometimes flags unkidnapped babies)
+        //however if a baby is dropped by a mother, this flag is also removed so still checking the 0x100 gone from map flag for now
+        if(m_mood==8){ //babies have their own mood
+            if((flags1 & 0x100) == 0x100) {
                 LOGD << "Ignoring" << unverified_dwarf->nice_name() <<
                         "who appears to be a kidnapped baby";
                 delete unverified_dwarf;
@@ -759,6 +763,16 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
         }
 
     }
+
+    //finally, if we've got no attributes at all, it's probably a corpse part (most likely from a mod)
+    if(unverified_dwarf->m_attributes.count() <=0 ){
+        LOGD << "Ignoring" << unverified_dwarf->nice_name() <<
+                "who appears to be a corpse.";
+        delete unverified_dwarf;
+        return 0;
+    }
+
+
     return unverified_dwarf;
 }
 
@@ -827,6 +841,10 @@ void Dwarf::read_traits() {
     m_traits.clear();
     for (int i = 0; i < 30; ++i) {
         short val = m_df->read_short(addr + i * 2);
+        if(val < 0)
+            val = 0;
+        if(val > 100)
+            val = 100;
         m_traits.insert(i, val);
     }
 }
@@ -1030,7 +1048,9 @@ void Dwarf::set_custom_profession_text(const QString &prof_text) {
 
 int Dwarf::apply_custom_profession(CustomProfession *cp) {
     foreach(int labor_id, m_pending_labors.uniqueKeys()) {
-        set_labor(labor_id, false); // turn off everything...
+        //only turn off all labours if it's NOT a mask
+        if(!cp->is_mask())
+            set_labor(labor_id, false);
     }
     foreach(int labor_id, cp->get_enabled_labors()) {
         set_labor(labor_id, true); // only turn on what this prof has enabled...
@@ -1130,18 +1150,34 @@ QString Dwarf::tooltip_text() {
     if(trait_summary.lastIndexOf(",") == trait_summary.length()-2)
         trait_summary.chop(2);
 
+    QString roles_summary = "";
+    int max_roles = s->value("options/role_count_tooltip",3).toInt();
+    if(max_roles > m_sorted_role_ratings.count())
+        max_roles = m_sorted_role_ratings.count();
+    roles_summary.append("<ol>");
+    for(int i = 0; i < max_roles; i++){
+        roles_summary += tr("<li>%1  (%2%)</li>").arg(m_sorted_role_ratings.at(i).first).arg(QString::number(m_sorted_role_ratings.at(i).second,'f',2));
+    }
+    roles_summary.append("</ol>");
+
+
     QString tt = tr("<b><font size=5>%1</font><br/><font size=3>(%2)</font></b><br/>").arg(m_nice_name).arg(m_translated_name);
     tt += tr("<br><b>Caste:</b> %1<br/>").arg(caste_name(m_caste_id));
     tt += tr("<b>Happiness:</b> %1 (%2)<br/>").arg(happiness_name(m_happiness)).arg(m_raw_happiness);
     tt += tr("<b>Profession:</b> %1<br/><br/>").arg(profession());
     tt += tr("<b>Skills:</b><ul>%1</ul><br/>").arg(skill_summary);
     tt += tr("<b>Traits:</b> %1<br/>").arg(trait_summary);
+    tt += tr("<br/><b>Top %1 Roles:</b><ul>%2</ul><br/>").arg(max_roles).arg(roles_summary);
+
     //unused at the moment tt += tr("<br/>%1<br/>").arg(caste_desc(m_caste_id));
+
     if(s->value("options/highlight_cursed", false).toBool() && curse_name() != "")
         tt += tr("<br/><b>Curse:</b> Cursed to prowl the night as a %1!").arg(curse_name());
 
+    tt += tr("body size: %1").arg(m_body_size);
     return tt.trimmed();
 }
+
 
 void Dwarf::dump_memory() {
     QDialog *d = new QDialog(DT->get_main_window());
@@ -1244,106 +1280,210 @@ Attribute::level Dwarf::get_attribute_rating(int attribute)
             return a->m_levels.at(i);
     }
     return a->m_levels.at(a->m_levels.count()-1);
+}
 
-//    //a lot of the attributes have specific ranges and a gap in them somewhere, so we'll add an additional range for that gap value
-//    //usually the level 5 (rating 8) as the gap is between 4 (rating 7) and 6 (rating 9)
-//    if(attribute==Attribute::AT_AGILITY)
-//    {
-//        if(value==NULL){
-//            ret_value=-15;
-//        }else if(value<151){
-//            ret_value=-11;
-//        }else if(value<401){
-//            ret_value=-7;
-//        }else if(value<651){
-//            ret_value=-3;
-//        }else if(value<1150){
-//            ret_value=0;
-//        }else if(value<1400){
-//            ret_value=3;
-//        }else if(value<1650){
-//            ret_value=7;
-//        }else if(value<1900){
-//            ret_value=11;
-//        }else{
-//            ret_value=15;
-//        }
-//    }
+void Dwarf::calc_role_ratings(){
 
-//    if (attribute==Attribute::AT_STRENGTH || attribute==Attribute::AT_TOUGHNESS || attribute==Attribute::AT_ANALYTICAL_ABILITY ||
-//            attribute==Attribute::AT_CREATIVITY || attribute==Attribute::AT_PATIENCE || attribute==Attribute::AT_MEMORY)
-//    {
-//        if(value==251){
-//            ret_value=-15;
-//        }else if(value<501){
-//            ret_value=-11;
-//        }else if(value<751){
-//            ret_value=-7;
-//        }else if(value<1001){
-//            ret_value=-3;
-//        }else if(value<1500){
-//            ret_value=0;
-//        }else if(value<1750){
-//            ret_value=3;
-//        }else if(value<2000){
-//            ret_value=7;
-//        }else if(value<2250){
-//            ret_value=11;
-//        }else{
-//            ret_value=15;
-//        }
-//    }
+    m_role_ratings.clear();
+    m_sorted_role_ratings.clear();
 
-//    if( attribute==Attribute::AT_SPATIAL_SENSE || attribute==Attribute::AT_FOCUS)
-//    {
-//        if(value==543){
-//            ret_value=-15;
-//        }else if(value<793){
-//            ret_value=-11;
-//        }else if(value<1043){
-//            ret_value=-7;
-//        }else if(value<1293){
-//            ret_value=-3;
-//        }else if(value<1792){
-//            ret_value=0;
-//        }else if(value<2042){
-//            ret_value=3;
-//        }else if(value<2292){
-//            ret_value=7;
-//        }else if(value<2542){
-//            ret_value=11;
-//        }else{
-//            ret_value=15;
-//        }
-//    }
+    foreach(Role *m_role, GameDataReader::ptr()->get_roles()){
+        float rating_att = 0.0;
+        float rating_trait = 0.0;
+        float rating_skill = 0.0;
+        float rating_total = 0.0;
 
-//    if (attribute==Attribute::AT_ENDURANCE || attribute==Attribute::AT_RECUPERATION || attribute==Attribute::AT_DISEASE_RESISTANCE ||
-//            attribute==Attribute::AT_INTUITION || attribute==Attribute::AT_WILLPOWER || attribute==Attribute::AT_KINESTHETIC_SENSE ||
-//            attribute==Attribute::AT_LINGUISTIC_ABILITY || attribute==Attribute::AT_MUSICALITY || attribute==Attribute::AT_EMPATHY ||
-//            attribute==Attribute::AT_SOCIAL_AWARENESS)
-//    {
-//        if(value==0){
-//            ret_value=-15;
-//        }else if(value<253){
-//            ret_value=-11;
-//        }else if(value<501){
-//            ret_value=-7;
-//        }else if(value<751){
-//            ret_value=-3;
-//        }else if(value<1250){
-//            ret_value=0;
-//        }else if(value<1500){
-//            ret_value=3;
-//        }else if(value<1750){
-//            ret_value=7;
-//        }else if(value<2000){
-//            ret_value=11;
-//        }else{
-//            ret_value=15;
-//        }
-//    }
+        float aspect_value = 0.0;
+        QScriptEngine m_engine;
 
-//    return ret_value;
+        if(m_role){
+            //if we have a script, use that
+            if(m_role->script != ""){
+                QScriptValue d_obj = m_engine.newQObject(this);
+                m_engine.globalObject().setProperty("d", d_obj);
+                rating_total = m_engine.evaluate(m_role->script).toNumber(); //just show the raw value the script generates
+                m_role_ratings.insert(m_role->name,rating_total);
+            }else
+            {
+                //adjust our global weights here to 0 if the aspect count is <= 0
+                float attrib_weight = m_role->attributes.count() <= 0 ? 0 : m_role->attributes_weight.weight;
+                float skill_weight = m_role->skills.count() <= 0 ? 0 : m_role->skills_weight.weight;
+                float trait_weight = m_role->traits.count() <= 0 ? 0 : m_role->traits_weight.weight;
+
+                Role::aspect a;
+
+                //read the attributes, traits and skills, and calculate the ratings
+                float total_weight = 0.0;
+                float weight = 1.0;
+
+                //**************** ATTRIBUTES ****************
+                if(m_role->attributes.count()>0){
+
+                    int attrib_id = 0;
+                    aspect_value = 0;
+                    foreach(QString name, m_role->attributes.uniqueKeys()){
+                        a = m_role->attributes.value(name);
+                        weight = a.weight;
+
+                        name = name.toLower();
+                        //map the user's attribute name to enum
+                        if(name == "strength"){attrib_id = Attribute::AT_STRENGTH;}
+                        else if(name == "agility"){attrib_id = Attribute::AT_AGILITY;}
+                        else if(name == "toughness"){attrib_id = Attribute::AT_TOUGHNESS;}
+                        else if(name == "endurance"){attrib_id = Attribute::AT_ENDURANCE;}
+                        else if(name == "recuperation"){attrib_id = Attribute::AT_RECUPERATION;}
+                        else if(name == "disease resistance"){attrib_id = Attribute::AT_DISEASE_RESISTANCE;}
+                        else if(name == "analytical ability"){attrib_id = Attribute::AT_ANALYTICAL_ABILITY;}
+                        else if(name == "focus"){attrib_id = Attribute::AT_FOCUS;}
+                        else if(name == "willpower"){attrib_id = Attribute::AT_WILLPOWER;}
+                        else if(name == "creativity"){attrib_id = Attribute::AT_CREATIVITY;}
+                        else if(name == "intuition"){attrib_id = Attribute::AT_INTUITION;}
+                        else if(name == "patience"){attrib_id = Attribute::AT_PATIENCE;}
+                        else if(name == "memory"){attrib_id = Attribute::AT_MEMORY;}
+                        else if(name == "linguistic ability"){attrib_id = Attribute::AT_LINGUISTIC_ABILITY;}
+                        else if(name == "spatial sense"){attrib_id = Attribute::AT_SPATIAL_SENSE;}
+                        else if(name == "musicality"){attrib_id = Attribute::AT_MUSICALITY;}
+                        else if(name == "kinesthetic sense"){attrib_id = Attribute::AT_KINESTHETIC_SENSE;}
+                        else if(name == "empathy"){attrib_id = Attribute::AT_EMPATHY;}
+                        else if(name == "social awareness"){attrib_id = Attribute::AT_SOCIAL_AWARENESS;}
+
+//                        deviation = this->attribute(attrib_id) - DwarfStats::get_attribute_mean(attrib_id);
+//                        if(a.is_neg)
+//                            deviation *= -1;
+//                        rating_att += (deviation / DwarfStats::get_attribute_stdev(attrib_id)) * weight;
+//                        total_weight += pow(weight,2);
+
+//                        deviation = attribute(attrib_id);
+//                        deviation = deviation / 5000;
+//                        if(a.is_neg)
+//                            deviation = 1-deviation;
+//                        deviation *= weight;
+//                        rating_att += deviation;//((this->attribute(attrib_id) / 5000) * weight);
+
+                        aspect_value = DwarfStats::get_attribute_role_rating(
+                                    GameDataReader::ptr()->get_attributes().value(attrib_id)->m_aspect_type
+                                    , attribute(attrib_id));
+                        if(a.is_neg)
+                            aspect_value = 1-aspect_value;
+                        rating_att += (aspect_value*weight);
+
+                        total_weight += weight;
+
+                    }
+//                    rating_att = rating_att / sqrt(total_weight);
+                    rating_att = (rating_att / total_weight) * 100; //weighted average percentile
+                }
+                //********************************
+
+
+                //**************** TRAITS ****************
+                if(m_role->traits.count()>0)
+                {
+                    total_weight = 0;
+                    aspect_value = 0;
+                    foreach(QString trait_id, m_role->traits.uniqueKeys()){
+                        a = m_role->traits.value(trait_id);
+                        weight = a.weight;
+
+//                        deviation = this->trait(trait_id.toInt()) - DwarfStats::get_trait_mean(trait_id.toInt());
+//                        if(a.is_neg)
+//                            deviation *= -1;
+//                        deviation = (deviation / DwarfStats::get_trait_stdev(trait_id.toInt())) * weight;
+//                        rating_trait += deviation;
+//                        total_weight += pow(weight,2);
+
+//                        deviation = trait(trait_id.toInt());
+//                        deviation = deviation / 100;
+//                        if(a.is_neg)
+//                            deviation = 1-deviation;
+//                        deviation *= weight;
+//                        rating_trait += deviation;
+                        aspect_value = DwarfStats::get_trait_role_rating(
+                                    GameDataReader::ptr()->get_trait(trait_id.toInt())->m_aspect_type
+                                    , trait(trait_id.toInt()));
+                        if(a.is_neg)
+                            aspect_value = 1-aspect_value;
+                        rating_trait += (aspect_value * weight);
+
+                        total_weight += weight;
+                    }
+//                    rating_trait = rating_trait / sqrt(total_weight);
+                    rating_trait = (rating_trait / total_weight) * 100;//weighted average percentile
+                }
+                //********************************
+
+
+                //************ SKILLS ************
+                if(m_role->skills.count()>0){
+                    total_weight = 0;
+                    aspect_value = 0;
+                    Skill s;
+                    foreach(QString skill_id, m_role->skills.uniqueKeys()){
+                        a = m_role->skills.value(skill_id);
+                        weight = a.weight;
+
+//                        skill_value = get_skill(skill_id.toInt()).actual_exp(); //this->skill_rating(skill_id.toInt());
+//                        if(skill_value < 0)
+//                            skill_value = 0;
+
+//                        deviation = skill_value - DwarfStats::get_skill_mean(skill_id.toInt());
+//                        float stdev = DwarfStats::get_skill_stdev(skill_id.toInt());
+//                        if(stdev != 0){
+//                            if(a.is_neg)
+//                                deviation *= -1;
+//                            deviation /= stdev;
+//                            deviation *= weight;
+//                        }else{
+//                            deviation = 0;
+//                        }
+//                        rating_skill += deviation;
+//                        total_weight += pow(weight,2);
+
+                        s = this->get_skill(skill_id.toInt());
+                        aspect_value = s.actual_exp();
+                        aspect_value = aspect_value / 29000;
+                        if(aspect_value > 1.0)
+                            aspect_value = 1.0;
+                        if(a.is_neg)
+                            aspect_value = 1-aspect_value;
+
+                        rating_skill += (aspect_value*weight);
+                        //rating_skill = (DwarfStats::get_skill_role_rating(skill_id.toInt(), get_skill(skill_id.toInt()).actual_exp()) * weight);
+                        total_weight += weight;
+
+                    }
+                    rating_skill = (rating_skill / total_weight) * 100;//weighted average percentile
+//                    rating_skill = rating_skill / sqrt(total_weight);
+                }
+                //********************************
+
+
+//                rating_total = DwarfStats::calc_cdf(0,
+//                                                    sqrt(pow(attrib_weight,2)+pow(skill_weight,2)+pow(trait_weight,2)),
+//                                                    (rating_att*attrib_weight)+(rating_skill*skill_weight)+(rating_trait*trait_weight)
+//                                                    )*100;
+
+                rating_total = ((rating_att * attrib_weight)+(rating_skill * skill_weight)+(rating_trait * trait_weight))
+                        / (attrib_weight + skill_weight + trait_weight); //weighted average percentile total
+
+                m_role_ratings.insert(m_role->name,rating_total);
+            }
+        }
+    }
+}
+
+float Dwarf::get_role_rating(QString role_name){
+    return m_role_ratings.value(role_name);
+}
+void Dwarf::set_role_rating(QString role_name, float value){
+    m_role_ratings.insert(role_name,value);
+}
+void Dwarf::update_rating_list(){
+        //keep a sorted list of the ratings as well
+        foreach(QString name, m_role_ratings.uniqueKeys()){
+            m_sorted_role_ratings << qMakePair(name,m_role_ratings.value(name));
+        }
+        qSort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(), &Dwarf::sort_ratings);
 }
 
 float Dwarf::attribute_mean(int id){return DwarfStats::get_attribute_mean(id);}

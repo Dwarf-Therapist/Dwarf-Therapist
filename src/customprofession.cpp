@@ -37,6 +37,7 @@ CustomProfession::CustomProfession(QObject *parent)
     , ui(new Ui::CustomProfessionEditor)
     , m_dwarf(0)
     , m_dialog(0)
+    , m_is_mask(false)
 {}
 
 /*!
@@ -54,6 +55,7 @@ CustomProfession::CustomProfession(Dwarf *d, QObject *parent)
     , ui(new Ui::CustomProfessionEditor)
     , m_dwarf(d)
     , m_dialog(0)
+    , m_is_mask(false)
 {
     GameDataReader *gdr = GameDataReader::ptr();
     QList<Labor*> labors = gdr->get_ordered_labors();
@@ -133,6 +135,10 @@ int CustomProfession::show_builder_dialog(QWidget *parent) {
         ui->labor_list->addItem(item);
     }
 
+    ui->chk_mask->setChecked(m_is_mask);
+    ui->chk_mask->setToolTip("This profession's labours will be applied in addition to those already there.");
+    connect(ui->chk_mask,SIGNAL(clicked(bool)),this,SLOT(mask_changed(bool)));
+
     connect(ui->labor_list,
             SIGNAL(itemChanged(QListWidgetItem*)),
             this,
@@ -196,6 +202,10 @@ void CustomProfession::item_check_state_changed(QListWidgetItem *item) {
         remove_labor(item->data(Qt::UserRole).toInt());
         ui->lbl_skill_count->setNum(ui->lbl_skill_count->text().toInt() - 1);
     }
+}
+
+void CustomProfession::mask_changed(bool value){
+    m_is_mask = value;
 }
 
 void CustomProfession::delete_from_disk() {

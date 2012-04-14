@@ -83,16 +83,64 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         .arg(color.blue(), 2, 16, QChar('0'));
     ui->lbl_happiness->setStyleSheet(QString("background-color: %1;").arg(style_sheet_color));
 
+    //save user changes before cleaning
+    if(m_cleanup_list.count() > 0){
+        //save splitter settings
+        QSplitter* old_splitter = qobject_cast<QSplitter *>(m_cleanup_list[0]);
+        m_splitter_sizes = old_splitter->saveState();
+        QTableWidget *temp;
+        //save skill sorts
+        temp = qobject_cast<QTableWidget *>(m_cleanup_list[1]);
+        m_skill_sort_col = temp->horizontalHeader()->sortIndicatorSection();
+        m_skill_sort_desc = temp->horizontalHeader()->sortIndicatorOrder();
+        //save attribute sorts
+        temp = qobject_cast<QTableWidget *>(m_cleanup_list[2]);
+        m_attribute_sort_col = temp->horizontalHeader()->sortIndicatorSection();
+        m_attribute_sort_desc = temp->horizontalHeader()->sortIndicatorOrder();
+        //save trait sorts
+        temp = qobject_cast<QTableWidget *>(m_cleanup_list[3]);
+        m_trait_sort_col = temp->horizontalHeader()->sortIndicatorSection();
+        m_trait_sort_desc = temp->horizontalHeader()->sortIndicatorOrder();
+        //save role sorts
+        temp = qobject_cast<QTableWidget *>(m_cleanup_list[4]);
+        m_role_sort_col = temp->horizontalHeader()->sortIndicatorSection();
+        m_role_sort_desc = temp->horizontalHeader()->sortIndicatorOrder();
+    }else{//defaults
+        //splitter
+        m_splitter_sizes = DT->user_settings()->value("gui_options/detailPanesSizes").toByteArray();
+        //skill sorts
+        m_skill_sort_col = 1;
+        m_skill_sort_desc = Qt::DescendingOrder;
+        //attribute sorts
+        m_attribute_sort_col = 0;
+        m_attribute_sort_desc = Qt::AscendingOrder;
+        //trait sorts
+        m_trait_sort_col = 1;
+        m_trait_sort_desc = Qt::DescendingOrder;
+        //role sorts
+        m_role_sort_col = 1;
+        m_role_sort_desc = Qt::DescendingOrder;
+    }
+
+
     foreach(QObject *obj, m_cleanup_list) {
         obj->deleteLater();
     }
     m_cleanup_list.clear();
 
 
+    QSplitter *details_splitter = new QSplitter(this);
+    details_splitter->setOrientation(Qt::Vertical);
+    details_splitter->setOpaqueResize(true);
+    details_splitter->setObjectName("details_splitter");
+    ui->vbox_main->addWidget(details_splitter);
+    m_cleanup_list << details_splitter;
+
+
     // SKILLS TABLE
     QVector<Skill> *skills = d->get_skills();
     QTableWidget *tw = new QTableWidget(skills->size(), 3, this);
-    ui->vbox_main->addWidget(tw, 10);
+    details_splitter->addWidget(tw);
     m_cleanup_list << tw;
     tw->setEditTriggers(QTableWidget::NoEditTriggers);
     tw->setGridStyle(Qt::NoPen);
@@ -102,7 +150,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     tw->horizontalHeader()->setStretchLastSection(true);
     tw->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
     tw->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
-    tw->setSortingEnabled(false); // no sorting while we're inserting
+    tw->setSortingEnabled(false); // no sorting while we're inserting    
     for (int row = 0; row < skills->size(); ++row) {
         tw->setRowHeight(row, 18);
         Skill s = skills->at(row);
@@ -115,20 +163,20 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         pb->setRange(s.exp_for_current_level(), s.exp_for_next_level());
         pb->setValue(s.actual_exp());
         pb->setToolTip(s.exp_summary());
-        pb->setDisabled(true);// this is to keep them from animating and looking all goofy
+        pb->setDisabled(true);// this is to keep them from animating and looking all goofy        
 
         tw->setItem(row, 0, text);
         tw->setItem(row, 1, level);
         tw->setCellWidget(row, 2, pb);
     }
-    tw->setSortingEnabled(true); // no sorting while we're inserting
-    tw->sortItems(1, Qt::DescendingOrder); // order by level descending
+    tw->setSortingEnabled(true); // no sorting while we're inserting    
+    tw->sortItems(m_skill_sort_col, static_cast<Qt::SortOrder>(m_skill_sort_desc));
 
 
     // ATTRIBUTES TABLE
     QHash<int, short> attributes = d->get_attributes();
     QTableWidget *tw_attributes = new QTableWidget(this);
-    ui->vbox_main->addWidget(tw_attributes, 10);
+    details_splitter->addWidget(tw_attributes);
     m_cleanup_list << tw_attributes;
     tw_attributes->setColumnCount(3);
     tw_attributes->setEditTriggers(QTableWidget::NoEditTriggers);
@@ -169,13 +217,13 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         tw_attributes->setItem(0, 2, attribute_msg);
     }
     tw_attributes->setSortingEnabled(true);
-    tw_attributes->sortItems(0, Qt::AscendingOrder);
+    tw_attributes->sortItems(m_attribute_sort_col, static_cast<Qt::SortOrder>(m_attribute_sort_desc));
 
 
     // TRAITS TABLE
     QHash<int, short> traits = d->traits();
     QTableWidget *tw_traits = new QTableWidget(this);
-    ui->vbox_main->addWidget(tw_traits, 10);
+    details_splitter->addWidget(tw_traits);
     m_cleanup_list << tw_traits;
     tw_traits->setColumnCount(3);
     tw_traits->setEditTriggers(QTableWidget::NoEditTriggers);
@@ -191,6 +239,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     tw_traits->setSortingEnabled(false);
     for (int row = 0; row < traits.size(); ++row) {
         short val = traits[row];
+
         if (d->trait_is_active(row))
         {
             tw_traits->insertRow(0);
@@ -218,5 +267,60 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         }
     }
     tw_traits->setSortingEnabled(true);
-    tw_traits->sortItems(1, Qt::DescendingOrder);
+    tw_traits->sortItems(m_trait_sort_col, static_cast<Qt::SortOrder>(m_trait_sort_desc));
+
+
+
+    // ROLES TABLE
+    QList<QPair<QString, float> > roles = d->sorted_role_ratings();
+    QTableWidget *tw_roles = new QTableWidget(this);
+    details_splitter->addWidget(tw_roles);
+    m_cleanup_list << tw_roles;
+    tw_roles->setColumnCount(2);
+    tw_roles->setEditTriggers(QTableWidget::NoEditTriggers);
+    tw_roles->setWordWrap(true);
+    tw_roles->setShowGrid(false);
+    tw_roles->setGridStyle(Qt::NoPen);
+    tw_roles->setAlternatingRowColors(true);
+    tw_roles->setHorizontalHeaderLabels(QStringList() << "Role" << "Rating");
+    tw_roles->verticalHeader()->hide();
+    tw_roles->horizontalHeader()->setStretchLastSection(true);
+    tw_roles->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+    tw_roles->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
+    tw_roles->setSortingEnabled(false);
+    QString name = "";
+    float val = 0.0;
+    int max = DT->user_settings()->value("options/role_count_pane",10).toInt();
+    if(max > d->sorted_role_ratings().count())
+        max = d->sorted_role_ratings().count();
+    for(int i = 0; i < max; i++){
+        name = roles.at(i).first;
+        val = roles.at(i).second;
+
+        tw_roles->insertRow(0);
+        tw_roles->setRowHeight(0, 14);
+
+        QTableWidgetItem *role_name = new QTableWidgetItem(name);
+        QTableWidgetItem *role_rating = new QTableWidgetItem;
+        role_rating->setData(0, static_cast<float>(static_cast<int>(val*100+0.5))/100);
+
+
+        if (val >= 50) {
+            role_rating->setBackground(QColor(255, 255, 255, 255));
+            role_rating->setForeground(QColor(0, 0, 0, 255));
+        } else {
+            role_rating->setBackground(QColor(204, 0, 0, 128));
+            role_rating->setForeground(QColor(0, 0, 128, 255));
+        }
+
+        tw_roles->setItem(0, 0, role_name);
+        tw_roles->setItem(0, 1, role_rating);
+
+        //role_rating->setToolTip(gdr->get_role(name)->role_details);
+    }
+    tw_roles->setSortingEnabled(true);
+    tw_roles->sortItems(m_role_sort_col, static_cast<Qt::SortOrder>(m_role_sort_desc));
+
+    details_splitter->restoreState(m_splitter_sizes);
 }
+
