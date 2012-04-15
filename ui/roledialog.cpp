@@ -21,10 +21,14 @@ roleDialog::roleDialog(QWidget *parent, QString name) :
     ui(new Ui::roleDialog)
 {
     ui->setupUi(this);
+    m_override = false;
+    m_adding = false;
     m_role = GameDataReader::ptr()->get_role(name);
     if(!m_role){
         m_role = new Role();
         m_role->is_custom = true;
+        m_role->name = "";
+        m_adding = true;
     }
 
     //attributes table
@@ -167,22 +171,22 @@ void roleDialog::save_pressed(){
     m_role->traits_weight.weight = ui->dsb_traits_weight->value();
     save_aspects(*ui->tw_traits,m_role->traits);
 
-    QString old_name = m_role->name;
-
-    //remove old role if it's name has changed
-    if(new_name != old_name)
-        GameDataReader::ptr()->remove_role(old_name);
+    //if we're updating/adding a role to replace a default remove the default role first
+    if(m_override)
+        GameDataReader::ptr()->remove_role(m_role->name);
 
     //update the role's name now before we insert it
     m_role->name = new_name;
+    //update role description/tooltip
     m_role->create_role_details(*s);
 
-    //add edited/new role
-    GameDataReader::ptr()->add_role(new_name,m_role);
-    //update ordered list
-    GameDataReader::ptr()->load_sorted_roles();
+    //new role
+    //if(!GameDataReader::ptr()->get_roles().contains(m_role->name))
+    if(m_adding || m_override)
+        GameDataReader::ptr()->add_role(new_name,m_role);
 
-    this->close();
+    //exit
+    this->accept();
 }
 
 void roleDialog::save_aspects(QTableWidget &table, QHash<QString,Role::aspect> &list){
@@ -197,7 +201,7 @@ void roleDialog::save_aspects(QTableWidget &table, QHash<QString,Role::aspect> &
 }
 
 void roleDialog::close_pressed(){
-    this->close();
+    this->reject();
 }
 
 //ATTRIBUTE CONTEXT MENUS
@@ -363,9 +367,11 @@ void roleDialog::name_changed(QString text){
         if(GameDataReader::ptr()->get_default_roles().contains(text.trimmed())){
             ui->le_role_name->setStatusTip("This role has the same name as a default role and will override it.");
             pal.setColor(ui->le_role_name->backgroundRole(),color_override);
+            m_override = true;
         }else{
             ui->le_role_name->setStatusTip("Name of the role.");
             pal.setColor(ui->le_role_name->backgroundRole(),color_default);
+            m_override = false;
         }
         ui->le_role_name->setPalette(pal);
         emit event(new QStatusTipEvent(ui->le_role_name->statusTip()));

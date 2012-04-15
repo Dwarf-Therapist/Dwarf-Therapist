@@ -263,8 +263,16 @@ void MainWindow::connect_to_df() {
     if (m_force_connect && m_df && m_df->find_running_copy(true)) {
         m_scanner = new Scanner(m_df, this);
 
-        LOGD << "Connection to unknown DF Version established.";
-        m_lbl_status->setText("Connected to unknown version");
+
+        if(m_df->memory_layout()){
+            LOGD << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
+            m_lbl_status->setText(tr("Connected to %1").arg(m_df->memory_layout()->game_version()));
+            m_lbl_status->setToolTip(tr("Currently using layout file: %1").arg(m_df->memory_layout()->filename()));
+        }else{
+            LOGD << "Connection to unknown DF Version established.";
+            m_lbl_status->setText("Connected to unknown version");
+        }
+
         set_interface_enabled(true);
 
         connect(m_df, SIGNAL(progress_message(QString)),
@@ -273,6 +281,19 @@ void MainWindow::connect_to_df() {
                 SLOT(set_progress_range(int,int)));
         connect(m_df, SIGNAL(progress_value(int)),
                 SLOT(set_progress_value(int)));
+
+        if (m_df->memory_layout() && m_df->memory_layout()->is_complete()) {
+            // if the memory layout is still being mapped don't read all this
+            // in yet
+            DT->load_game_translation_tables(m_df);
+            connect(m_df, SIGNAL(connection_interrupted()),
+                    SLOT(lost_df_connection()));
+
+            //Read raws once memory layout is complete
+            m_df->read_raws();
+            if(m_view_manager)
+                m_view_manager->reload_views();
+        }
 
     } else if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
         m_scanner = new Scanner(m_df, this);
@@ -296,6 +317,8 @@ void MainWindow::connect_to_df() {
 
             //Read raws once memory layout is complete
             m_df->read_raws();
+            if(m_view_manager)
+                m_view_manager->reload_views();
         }
     } else {
         m_force_connect = true;
@@ -691,27 +714,18 @@ void MainWindow::reload_filter_scripts() {
 
 void MainWindow::add_new_custom_role() {
     roleDialog *edit = new roleDialog(this,"");
-    edit->exec();
-    if(edit->Accepted){
-        write_custom_roles();
-        GameDataReader::ptr()->load_sorted_roles();
-        refresh_role_menus();
-        DT->emit_settings_changed();
-    }
+
+    if(edit->exec() == QDialog::Accepted)
+        refresh_roles_data();
 }
 
 void MainWindow::edit_custom_role() {
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     QString name = a->data().toString();
     roleDialog *edit = new roleDialog(this,name);
-    edit->exec();
+    if(edit->exec() == QDialog::Accepted)
+        refresh_roles_data();
 
-    if(edit->Accepted){
-        write_custom_roles();
-        GameDataReader::ptr()->load_sorted_roles();
-        refresh_role_menus();
-        DT->emit_settings_changed();
-    }
 }
 
 void MainWindow::remove_custom_role(){
@@ -722,28 +736,44 @@ void MainWindow::remove_custom_role(){
         GameDataReader::ptr()->remove_role(name);
 
         //prompt and remove columns??
-        answer = QMessageBox::question(0,"Clean View",tr("Would you also like to remove role %1 from all views?").arg(name),QMessageBox::Yes,QMessageBox::No);
+        answer = QMessageBox::question(0,"Clean Views",tr("Would you also like to remove role %1 from all custom views?").arg(name),QMessageBox::Yes,QMessageBox::No);
         if(answer == QMessageBox::Yes){
             ViewManager *vm = m_view_manager;
             foreach(GridView *gv, vm->views()){
-                foreach(ViewColumnSet *vcs, gv->sets()){
-                    foreach(ViewColumn *vc, vcs->columns()){
-                        if(vc->type()==CT_ROLE){
-                            RoleColumn *rc = ((RoleColumn*)vc);
-                            if(rc->get_role() && rc->get_role()->name==name){
-                                vcs->remove_column(vc);
+                if(gv->is_custom() && gv->is_active()){ //only remove from custom views which are active
+                    foreach(ViewColumnSet *vcs, gv->sets()){
+                        foreach(ViewColumn *vc, vcs->columns()){
+                            if(vc->type()==CT_ROLE){
+                                RoleColumn *rc = ((RoleColumn*)vc);
+                                if(rc->get_role() && rc->get_role()->name==name){
+                                    vcs->remove_column(vc);
+                                }
                             }
                         }
                     }
                 }
             }
         }
+        //first write our custom roles
         write_custom_roles();
-        GameDataReader::ptr()->load_sorted_roles();
+        //re-read roles from the ini to replace any default roles that may have been replaced by a custom role which was just removed
+        //this will also rebuild our sorted role list
+        GameDataReader::ptr()->load_roles();
+        //update our current roles/ui elements
+        DT->emit_settings_changed();
         refresh_role_menus();
         m_view_manager->update();
         m_view_manager->redraw_current_tab();
     }
+}
+
+void MainWindow::refresh_roles_data(){
+    write_custom_roles();
+    DT->emit_settings_changed();
+    GameDataReader::ptr()->load_sorted_roles();
+    refresh_role_menus();
+    m_view_manager->update();
+    m_view_manager->redraw_current_tab();
 }
 
 void MainWindow::refresh_role_menus() {

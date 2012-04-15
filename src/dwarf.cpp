@@ -132,7 +132,7 @@ void Dwarf::refresh_data() {
     read_profession();
     read_labors();
     read_happiness();
-    read_states();
+    read_states();  //read states before job
     read_current_job();
     read_souls();
     read_squad_ref_id();
@@ -1347,19 +1347,6 @@ void Dwarf::calc_role_ratings(){
                         else if(name == "empathy"){attrib_id = Attribute::AT_EMPATHY;}
                         else if(name == "social awareness"){attrib_id = Attribute::AT_SOCIAL_AWARENESS;}
 
-//                        deviation = this->attribute(attrib_id) - DwarfStats::get_attribute_mean(attrib_id);
-//                        if(a.is_neg)
-//                            deviation *= -1;
-//                        rating_att += (deviation / DwarfStats::get_attribute_stdev(attrib_id)) * weight;
-//                        total_weight += pow(weight,2);
-
-//                        deviation = attribute(attrib_id);
-//                        deviation = deviation / 5000;
-//                        if(a.is_neg)
-//                            deviation = 1-deviation;
-//                        deviation *= weight;
-//                        rating_att += deviation;//((this->attribute(attrib_id) / 5000) * weight);
-
                         aspect_value = DwarfStats::get_attribute_role_rating(
                                     GameDataReader::ptr()->get_attributes().value(attrib_id)->m_aspect_type
                                     , attribute(attrib_id));
@@ -1370,7 +1357,6 @@ void Dwarf::calc_role_ratings(){
                         total_weight += weight;
 
                     }
-//                    rating_att = rating_att / sqrt(total_weight);
                     rating_att = (rating_att / total_weight) * 100; //weighted average percentile
                 }
                 //********************************
@@ -1384,20 +1370,6 @@ void Dwarf::calc_role_ratings(){
                     foreach(QString trait_id, m_role->traits.uniqueKeys()){
                         a = m_role->traits.value(trait_id);
                         weight = a.weight;
-
-//                        deviation = this->trait(trait_id.toInt()) - DwarfStats::get_trait_mean(trait_id.toInt());
-//                        if(a.is_neg)
-//                            deviation *= -1;
-//                        deviation = (deviation / DwarfStats::get_trait_stdev(trait_id.toInt())) * weight;
-//                        rating_trait += deviation;
-//                        total_weight += pow(weight,2);
-
-//                        deviation = trait(trait_id.toInt());
-//                        deviation = deviation / 100;
-//                        if(a.is_neg)
-//                            deviation = 1-deviation;
-//                        deviation *= weight;
-//                        rating_trait += deviation;
                         aspect_value = DwarfStats::get_trait_role_rating(
                                     GameDataReader::ptr()->get_trait(trait_id.toInt())->m_aspect_type
                                     , trait(trait_id.toInt()));
@@ -1407,7 +1379,6 @@ void Dwarf::calc_role_ratings(){
 
                         total_weight += weight;
                     }
-//                    rating_trait = rating_trait / sqrt(total_weight);
                     rating_trait = (rating_trait / total_weight) * 100;//weighted average percentile
                 }
                 //********************************
@@ -1421,23 +1392,6 @@ void Dwarf::calc_role_ratings(){
                     foreach(QString skill_id, m_role->skills.uniqueKeys()){
                         a = m_role->skills.value(skill_id);
                         weight = a.weight;
-
-//                        skill_value = get_skill(skill_id.toInt()).actual_exp(); //this->skill_rating(skill_id.toInt());
-//                        if(skill_value < 0)
-//                            skill_value = 0;
-
-//                        deviation = skill_value - DwarfStats::get_skill_mean(skill_id.toInt());
-//                        float stdev = DwarfStats::get_skill_stdev(skill_id.toInt());
-//                        if(stdev != 0){
-//                            if(a.is_neg)
-//                                deviation *= -1;
-//                            deviation /= stdev;
-//                            deviation *= weight;
-//                        }else{
-//                            deviation = 0;
-//                        }
-//                        rating_skill += deviation;
-//                        total_weight += pow(weight,2);
 
                         s = this->get_skill(skill_id.toInt());
                         aspect_value = s.actual_exp();
@@ -1453,15 +1407,8 @@ void Dwarf::calc_role_ratings(){
 
                     }
                     rating_skill = (rating_skill / total_weight) * 100;//weighted average percentile
-//                    rating_skill = rating_skill / sqrt(total_weight);
                 }
                 //********************************
-
-
-//                rating_total = DwarfStats::calc_cdf(0,
-//                                                    sqrt(pow(attrib_weight,2)+pow(skill_weight,2)+pow(trait_weight,2)),
-//                                                    (rating_att*attrib_weight)+(rating_skill*skill_weight)+(rating_trait*trait_weight)
-//                                                    )*100;
 
                 rating_total = ((rating_att * attrib_weight)+(rating_skill * skill_weight)+(rating_trait * trait_weight))
                         / (attrib_weight + skill_weight + trait_weight); //weighted average percentile total
@@ -1485,17 +1432,3 @@ void Dwarf::update_rating_list(){
         }
         qSort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(), &Dwarf::sort_ratings);
 }
-
-float Dwarf::attribute_mean(int id){return DwarfStats::get_attribute_mean(id);}
-float Dwarf::attribute_stdev(int id){return DwarfStats::get_attribute_stdev(id);}
-
-float Dwarf::skill_mean(int id){return DwarfStats::get_skill_mean(id);}
-float Dwarf::skill_stdev(int id){return DwarfStats::get_skill_stdev(id);}
-
-float Dwarf::trait_mean(int id){return DwarfStats::get_trait_mean(id);}
-float Dwarf::trait_stdev(int id){return DwarfStats::get_trait_stdev(id);}
-
-
-
-
-

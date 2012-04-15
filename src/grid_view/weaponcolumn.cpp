@@ -53,7 +53,7 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     QString wep = m_weapon.name.toLower();
     if(wep.indexOf(",")>0)
         wep = "these weapons";
-    short draw_rating = -3;
+    short draw_rating = -2;
     short rating = 1;
     int body_size = d->body_size();
     bool onehand = false;
@@ -67,7 +67,7 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     //setup drawing ratings
     if(!onehand && !twohand){
         desc = tr("<b>Cannot wield</b> %1.").arg(wep);
-        draw_rating = -5;
+        draw_rating = -6;
         rating = 0;
     }
     else if (twohand && onehand){

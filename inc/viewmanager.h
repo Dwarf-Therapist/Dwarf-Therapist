@@ -75,6 +75,7 @@ private:
     QList<Dwarf*> m_selected_dwarfs;
 
     StateTableView *get_stv(int idx = -1);
+    void add_weapons_view(QList<GridView*> &built_in_views);
 
 	private slots:
 		//! used when adding tabs via the tool button

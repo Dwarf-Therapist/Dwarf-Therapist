@@ -95,6 +95,7 @@ public:
     Role *get_role(const QString &name);
     void remove_role(QString name){m_dwarf_roles.remove(name);}
     void add_role(QString name, Role *r){m_dwarf_roles.insert(name,r);}
+    void load_roles();
     void load_sorted_roles();
 
     Attribute *get_attribute(int attribute){return m_attributes.value(attribute);}

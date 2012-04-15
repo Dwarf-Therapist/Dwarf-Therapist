@@ -70,126 +70,21 @@ AttributeColumn::AttributeColumn(const AttributeColumn &to_copy)
 
 QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
-    //QString key("attributes/%1/level_%2");
-    //short val = -1;
     short rawVal = 0;
-    //val = d->get_attribute_rating((int)m_attribute_type);
     Attribute::level l = d->get_attribute_rating(m_attribute_type);
-    //if(val>15){val=15;};
     if(l.rating>20)
         l.rating=20;
     QString msg;
-//    switch (m_attribute_type) {
-//        case Attribute::AT_STRENGTH:
-//            key = key.arg("Strength").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Strength", val);
-//            rawVal = (int)d->strength();
-//            break;
-//        case Attribute::AT_AGILITY:
-//            key = key.arg("Agility").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Agility", val);
-//            rawVal = (int)d->agility();
-//            break;
-//        case Attribute::AT_TOUGHNESS:
-//            key = key.arg("Toughness").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Toughness", val);
-//            rawVal = (int)d->toughness();
-//            break;
-//        case Attribute::AT_ENDURANCE:
-//            key = key.arg("Endurance").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Endurance", val);
-//            rawVal = (int)d->endurance();
-//            break;
-//        case Attribute::AT_RECUPERATION:
-//            key = key.arg("Recuperation").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Recuperation", val);
-//            rawVal = (int)d->recuperation();
-//            break;
-//        case Attribute::AT_DISEASE_RESISTANCE:
-//            key = key.arg("Disease Resistance").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Disease Resistance", val);
-//            rawVal = (int)d->disease_resistance();
-//            break;
-//        case Attribute::AT_ANALYTICAL_ABILITY:
-//            key = key.arg("Analytical Ability").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Analytical Ability", val);
-//            rawVal = (int)d->analytical_ability();
-//            break;
-//        case Attribute::AT_CREATIVITY:
-//            key = key.arg("Creativity").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Creativity", val);
-//            rawVal = (int)d->creativity();
-//            break;
-//        case Attribute::AT_EMPATHY:
-//            key = key.arg("Empathy").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Empathy", val);
-//            rawVal = (int)d->empathy();
-//            break;
-//        case Attribute::AT_FOCUS:
-//            key = key.arg("Focus").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Focus", val);
-//            rawVal = (int)d->focus();
-//            break;
-//        case Attribute::AT_INTUITION:
-//            key = key.arg("Intuition").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Intuition", val);
-//            rawVal = (int)d->intuition();
-//            break;
-//        case Attribute::AT_KINESTHETIC_SENSE:
-//            key = key.arg("Kinesthetic Sense").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Kinesthetic Sense", val);
-//            rawVal = (int)d->kinesthetic_sense();
-//            break;
-//        case Attribute::AT_LINGUISTIC_ABILITY:
-//            key = key.arg("Linguistic Ability").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Linguistic Ability", val);
-//            rawVal = (int)d->linguistic_ability();
-//            break;
-//        case Attribute::AT_MEMORY:
-//            key = key.arg("Memory").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Memory", val);
-//            rawVal = (int)d->memory();
-//            break;
-//        case Attribute::AT_MUSICALITY:
-//            key = key.arg("Musicality").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Musicality", val);
-//            rawVal = (int)d->musicality();
-//            break;
-//        case Attribute::AT_PATIENCE:
-//            key = key.arg("Patience").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Patience", val);
-//            rawVal = (int)d->patience();
-//            break;
-//        case Attribute::AT_SOCIAL_AWARENESS:
-//            key = key.arg("Social Awareness").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Social Awareness", val);
-//            rawVal = (int)d->social_awareness();
-//            break;
-//        case Attribute::AT_SPATIAL_SENSE:
-//            key = key.arg("Spatial Sense").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Spatial Sense", val);
-//            rawVal = (int)d->spatial_sense();
-//            break;
-//        case Attribute::AT_WILLPOWER:
-//            key = key.arg("Willpower").arg(val);
-//            msg = GameDataReader::ptr()->get_attribute_level_name("Willpower", val);
-//            rawVal = (int)d->willpower();
-//        break;
 
-//        default:
-//            LOGW << "Attribute column can't build cell since type is set to" << m_attribute_type;
-//    }
-
-    msg = l.description; //GameDataReader::ptr()->get_attribute_level_name(m_attribute_type, val);
+    msg = l.description;
     rawVal = (int)d->attribute(m_attribute_type);
 
     if (l.rating){ //(val) {
-        //msg = GameDataReader::ptr()->get_string_for_key(key);
-        item->setData(l.rating);//val, Qt::DisplayRole);
+        item->setData(l.rating);
     }
 
     item->setData(rawVal, DwarfModel::DR_SORT_VALUE);
-    item->setData(l.rating,DwarfModel::DR_RATING);//val, DwarfModel::DR_RATING);
+    item->setData(l.rating,DwarfModel::DR_RATING);
     item->setData(CT_ATTRIBUTE, DwarfModel::DR_COL_TYPE);
 
     QString tooltip = QString("<h3>%1</h3>%2 (%3)<br><h4>%4</h4>")

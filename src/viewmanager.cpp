@@ -91,73 +91,8 @@ void ViewManager::reload_views() {
     }
     s->endArray();
 
-    //add a special weapons view, this will dynamically change depending on the raws read
 
-
-//    //group by skill type for display
-//    QHash<QString, QVector<GameDataReader::weapon>* > grouped_weapons;
-//    QPair<QString, GameDataReader::weapon> weapon_pair;
-//    foreach(weapon_pair, GameDataReader::ptr()->get_ordered_weapons()){
-//        if(!grouped_weapons.contains(weapon_pair.second.skill)){
-//            grouped_weapons.insert(weapon_pair.second.skill,new QVector<GameDataReader::weapon>);
-//        }
-//            grouped_weapons.value(weapon_pair.second.skill)->append(weapon_pair.second);
-//    }
-//    GridView *gv = new GridView("Weapons",this);
-//    foreach(QString key, grouped_weapons.uniqueKeys()){
-//        ViewColumnSet *vcs = new ViewColumnSet(key, this);
-
-//        QVector<GameDataReader::weapon> *glist = grouped_weapons.value(key);
-//        for(int i=0; i < glist->count(); i++){
-//            new WeaponColumn(glist->at(i).name,glist->at(i), vcs, this);
-//        }
-//        new SpacerColumn("",vcs,this);
-//        gv->add_set(vcs);
-//        gv->set_is_custom(false);
-//    }
-//    m_views << gv;
-//    built_in_views << gv;
-
-
-
-    //group by weapon size..
-    QHash<QPair<long,long>, GameDataReader::weapon*> grouped_weapons2;
-    QPair<QString, GameDataReader::weapon> weapon_pair2;
-    foreach(weapon_pair2, GameDataReader::ptr()->get_ordered_weapons()){
-        QPair<long,long> key;
-        key.first = weapon_pair2.second.singlegrasp_size;
-        key.second = weapon_pair2.second.multigrasp_size;
-        if(!grouped_weapons2.contains(key)){
-            GameDataReader::weapon *w = new GameDataReader::weapon;
-            w->singlegrasp_size = key.first;
-            w->multigrasp_size = key.second;
-            w->name = weapon_pair2.second.name;
-            grouped_weapons2.insert(key,w);
-        }else{
-            grouped_weapons2.value(key)->name.append(", ").append(weapon_pair2.second.name);
-        }
-    }
-
-    //if the weapon columns count <=10 append the columns onto the military tab as well
-    GridView *gv = new GridView("Weapons",this);
-    ViewColumnSet *vcs = new ViewColumnSet("All Weapons", this);
-    int count = grouped_weapons2.count();
-    QPair<long,long> wkeys;
-    foreach(wkeys, grouped_weapons2.uniqueKeys()){
-        new WeaponColumn(grouped_weapons2.value(wkeys)->name,*grouped_weapons2.value(wkeys),vcs,this);
-    }
-    gv->add_set(vcs);
-    gv->set_is_custom(false);
-    if(count<=10){
-        GridView *mv = this->get_view("Military");
-        if(mv){
-            mv->add_set(vcs);
-            mv->set_is_custom(false);
-        }
-    }
-    m_views << gv;
-    built_in_views << gv;
-
+    add_weapons_view(built_in_views);
 
 
     // now read any gridviews out of the user's settings
@@ -197,6 +132,81 @@ void ViewManager::reload_views() {
 
     LOGI << "Loaded" << m_views.size() << "views from disk";
     draw_add_tab_button();
+}
+
+void ViewManager::add_weapons_view(QList<GridView*> &built_in_views){
+    if(GameDataReader::ptr()->get_ordered_weapons().length() > 0){
+        //add a special weapons view, this will dynamically change depending on the raws read
+
+
+        //    //group by skill type for display
+        //    QHash<QString, QVector<GameDataReader::weapon>* > grouped_weapons;
+        //    QPair<QString, GameDataReader::weapon> weapon_pair;
+        //    foreach(weapon_pair, GameDataReader::ptr()->get_ordered_weapons()){
+        //        if(!grouped_weapons.contains(weapon_pair.second.skill)){
+        //            grouped_weapons.insert(weapon_pair.second.skill,new QVector<GameDataReader::weapon>);
+        //        }
+        //            grouped_weapons.value(weapon_pair.second.skill)->append(weapon_pair.second);
+        //    }
+        //    GridView *gv = new GridView("Weapons",this);
+        //    foreach(QString key, grouped_weapons.uniqueKeys()){
+        //        ViewColumnSet *vcs = new ViewColumnSet(key, this);
+
+        //        QVector<GameDataReader::weapon> *glist = grouped_weapons.value(key);
+        //        for(int i=0; i < glist->count(); i++){
+        //            new WeaponColumn(glist->at(i).name,glist->at(i), vcs, this);
+        //        }
+        //        new SpacerColumn("",vcs,this);
+        //        gv->add_set(vcs);
+        //        gv->set_is_custom(false);
+        //    }
+        //    m_views << gv;
+        //    built_in_views << gv;
+
+        //group by weapon size..
+        QHash<QPair<long,long>, GameDataReader::weapon*> grouped_by_size;
+        QPair<QString, GameDataReader::weapon> wp;
+        foreach(wp, GameDataReader::ptr()->get_ordered_weapons()){
+            QPair<long,long> key;
+            key.first = wp.second.singlegrasp_size;
+            key.second = wp.second.multigrasp_size;
+            if(!grouped_by_size.contains(key)){
+                GameDataReader::weapon *w = new GameDataReader::weapon;
+                w->singlegrasp_size = key.first;
+                w->multigrasp_size = key.second;
+                w->name = wp.second.name;
+                grouped_by_size.insert(key,w);
+            }else{
+                grouped_by_size.value(key)->name.append(", ").append(wp.second.name);
+            }
+        }
+
+        GridView *gv = this->get_view("Weapon");
+        if(!gv)
+            gv = new GridView("Weapons",this);
+        else
+            gv->clear();
+
+        ViewColumnSet *vcs = new ViewColumnSet("All Weapons", this);
+        int count = grouped_by_size.count();
+        QPair<long,long> wkeys;
+        foreach(wkeys, grouped_by_size.uniqueKeys()){
+            new WeaponColumn(grouped_by_size.value(wkeys)->name,*grouped_by_size.value(wkeys),vcs,this);
+        }
+        gv->add_set(vcs);
+        gv->set_is_custom(false);
+        //if the weapon columns count <=10 append the columns onto the military tab as well
+        if(count<=10){
+            GridView *mv = this->get_view("Military");
+            if(mv){
+                mv->remove_set("All Weapons");
+                mv->add_set(vcs);
+                mv->set_is_custom(false);
+            }
+        }
+        m_views << gv;
+        built_in_views << gv;
+    }
 }
 
 void ViewManager::draw_views() {

@@ -336,16 +336,6 @@ public:
     //! returns true if this dwarf can have labors specified on it
     Q_INVOKABLE bool can_set_labors() {return m_can_set_labors;}
 
-    //! invokable functions for statistical data
-    Q_INVOKABLE float attribute_mean(int id);
-    Q_INVOKABLE float attribute_stdev(int id);
-
-    Q_INVOKABLE float skill_mean(int id);
-    Q_INVOKABLE float skill_stdev(int id);
-
-    Q_INVOKABLE float trait_mean(int id);
-    Q_INVOKABLE float trait_stdev(int id);
-
     QString first_name() const {
         //qDebug() << "first_name called (from script?)";
         return m_first_name;
@@ -441,7 +431,7 @@ private:
     void read_first_name();
     void read_last_name();
     void read_nick_name();
-    void read_states(); //read states before job
+    void read_states();
     void read_profession();
     void read_labors();
     void read_happiness();

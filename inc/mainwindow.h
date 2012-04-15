@@ -141,6 +141,7 @@ private:
     void write_settings();
 
     void refresh_role_menus();
+    void refresh_roles_data();
     void write_custom_roles();
 
     private slots:

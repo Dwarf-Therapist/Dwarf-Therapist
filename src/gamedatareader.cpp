@@ -160,34 +160,7 @@ GameDataReader::GameDataReader(QObject *parent)
     }
     m_data_settings->endArray();
 
-
-
-    m_dwarf_roles.clear();
-    m_default_roles.clear();
-    //first add custom roles
-    QSettings *u = DT->user_settings();
-    int dwarf_roles = u->beginReadArray("custom_roles");
-    for (short i = 0; i < dwarf_roles; ++i) {
-        u->setArrayIndex(i);
-        Role *r = new Role(*u, this);
-        r->is_custom = true;
-        m_dwarf_roles.insert(r->name,r);
-    }
-    u->endArray();
-
-    dwarf_roles = m_data_settings->beginReadArray("dwarf_roles");
-    for (short i = 0; i < dwarf_roles; ++i) {
-        m_data_settings->setArrayIndex(i);
-        Role *r = new Role(*m_data_settings, this);
-        //keep a list of default roles to check custom roles against
-        m_default_roles.append(r->name);
-        //don't overwrite any custom role with the same name
-        if(!m_dwarf_roles.contains(r->name))
-            m_dwarf_roles.insert(r->name, r);
-    }
-    m_data_settings->endArray();
-
-    load_sorted_roles();
+    load_roles();
 
     int professions = m_data_settings->beginReadArray("professions");
     m_professions.clear();
@@ -425,7 +398,7 @@ void GameDataReader::load_weapon_list()
     }
 }
 
-//should be able to use dwarfstats for this now, but i'm leaving this code to be sure
+//should be read with the other raws instead
 //void GameDataReader::load_attributes_mean_value()
 //{
 //    //first we load some default value
@@ -554,6 +527,35 @@ void GameDataReader::read_raws(QDir df_dir) {
     //load_attributes_mean_value();
     //m_race_names = RawReader::read_races_names();
 
+}
+
+void GameDataReader::load_roles(){
+    m_dwarf_roles.clear();
+    m_default_roles.clear();
+    //first add custom roles
+    QSettings *u = DT->user_settings();
+    int dwarf_roles = u->beginReadArray("custom_roles");
+    for (short i = 0; i < dwarf_roles; ++i) {
+        u->setArrayIndex(i);
+        Role *r = new Role(*u, this);
+        r->is_custom = true;
+        m_dwarf_roles.insert(r->name,r);
+    }
+    u->endArray();
+
+    dwarf_roles = m_data_settings->beginReadArray("dwarf_roles");
+    for (short i = 0; i < dwarf_roles; ++i) {
+        m_data_settings->setArrayIndex(i);
+        Role *r = new Role(*m_data_settings, this);
+        //keep a list of default roles to check custom roles against
+        m_default_roles.append(r->name);
+        //don't overwrite any custom role with the same name
+        if(!m_dwarf_roles.contains(r->name))
+            m_dwarf_roles.insert(r->name, r);
+    }
+    m_data_settings->endArray();
+
+    load_sorted_roles();
 }
 
 void GameDataReader::load_sorted_roles(){
