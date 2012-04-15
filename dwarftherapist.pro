@@ -170,8 +170,8 @@ HEADERS += inc/win_structs.h \
     inc/role.h \
     inc/dwarfstats.h \
     inc/global_enums.h \
-    ui/roledialog.h \
-    inc/grid_view/weaponcolumn.h
+    inc/grid_view/weaponcolumn.h \
+    inc/roledialog.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -222,8 +222,8 @@ SOURCES += src/viewmanager.cpp \
     src/dwarfstats.cpp \
     src/role.cpp \
     src/attribute.cpp \
-    ui/roledialog.cpp \
-    src/grid_view/weaponcolumn.cpp
+    src/grid_view/weaponcolumn.cpp \
+    src/roledialog.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \
