@@ -30,6 +30,10 @@ THE SOFTWARE.
 #include <QtScript>
 
 class RoleColumn : public ViewColumn {
+    Q_OBJECT
+public slots:
+    void roles_changed();
+
 public:
     RoleColumn(const QString &title, Role *r, ViewColumnSet *set = 0, QObject *parent = 0);
     RoleColumn(QSettings &s, ViewColumnSet *set, QObject *parent);
@@ -45,9 +49,10 @@ public:
 
     void read_settings();
 
+
+
 protected:
     Role *m_role;
-    QScriptEngine m_engine;
 };
 
 #endif // ROLECOLUMN_H

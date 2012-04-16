@@ -38,6 +38,9 @@ THE SOFTWARE.
 #include "mainwindow.h"
 #include "limits"
 #include "dwarfstats.h"
+#include "QThreadPool"
+#include "rolecalc.h"
+#include "viewmanager.h"
 
 #ifdef Q_WS_WIN
 #define LAYOUT_SUBDIR "windows"
@@ -325,10 +328,12 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     QVector<VIRTADDR> entries = enumerate_vector(creature_vector);
     emit progress_range(0, entries.size()-1);
     TRACE << "FOUND" << entries.size() << "creatures";
+    bool hide_non_adults = DT->user_settings()->value("options/hide_children_and_babies",true).toBool();
     if (!entries.empty()) {
         Dwarf *d = 0;
         int i = 0;
-        QVector<Dwarf*> actual_dwarves;
+        //QVector<Dwarf*> actual_dwarves;
+        actual_dwarves.clear();
         foreach(VIRTADDR creature_addr, entries) {
             d = Dwarf::get_dwarf(this, creature_addr);
             if (d != 0) {
@@ -336,7 +341,16 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
                 if(d->is_animal() == false){
                     LOGD << "FOUND DWARF" << hexify(creature_addr)
                          << d->nice_name();
-                    actual_dwarves.append(d);
+                    //never calculate roles for babies
+                    if(d->profession() != "Baby"){
+                        //only calculate roles for children if they're set to be able to assign labours
+                        if(!hide_non_adults){
+                            actual_dwarves.append(d);
+                        }else if(d->profession() != "Child" ){
+                            actual_dwarves.append(d);
+                        }
+                    }
+
                 } else {
                     TRACE << "FOUND OTHER CREATURE" << hexify(creature_addr);
                 }
@@ -344,17 +358,37 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
             emit progress_value(i++);
         }
 
-        //load statistical data now that we've got a list of valid dwarves
-        emit progress_message(tr("Calculating Roles..."));
-        emit progress_range(0, actual_dwarves.size()-1);
+        //load up role stuff now
+        load_roles();
 
-        i=0;
-        //could do this in the load_stats as well, but here we can show progress
-        foreach(Dwarf *d, actual_dwarves){
-            if(!d->is_animal())
-                d->calc_role_ratings();
-            emit progress_value(i++);
-        }
+    } else {
+        // we lost the fort!
+        m_is_ok = false;
+    }
+    detach();
+
+    LOGI << "found" << dwarves.size() << "dwarves out of" << entries.size()
+            << "creatures";
+    return dwarves;
+}
+
+void DFInstance::load_roles(){
+    t.start();
+    //could do this in the load_stats as well, but here we can show progress
+    calc_progress = 0;
+    foreach(Dwarf *d, actual_dwarves){
+        rolecalc *rc = new rolecalc(d);
+        rc->setAutoDelete(true);
+        connect(rc,SIGNAL(done()),this,SLOT(calc_done()),Qt::QueuedConnection);
+        QThreadPool::globalInstance()->start(rc);
+    }
+}
+
+void DFInstance::calc_done(){    
+    calc_progress ++;
+    //emit progress_value(calc_progress);
+    emit progress_message(tr("Calculating roles...%1%").arg(QString::number(((float)calc_progress/(float)actual_dwarves.count())*100,'f',2)));   
+    if(calc_progress == actual_dwarves.count()){
         foreach(Role *r, GameDataReader::ptr()->get_roles()){
             float mean = 0.0;
             float stdev = 0.0;
@@ -376,17 +410,15 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         foreach(Dwarf *d, actual_dwarves){
             d->update_rating_list();
         }
-        actual_dwarves.clear();
+        actual_dwarves.clear();        
+        //emit progress_value(calc_progress+1);
+        progress_message(QString("All roles loaded in %1 seconds.").arg(QString::number((float)t.elapsed()/1000,'f',2)));
 
-    } else {
-        // we lost the fort!
-        m_is_ok = false;
+        //update role columns
+        //DT->emit_roles_changed();
+        DT->get_main_window()->get_view_manager()->redraw_current_tab();
     }
-    detach();
 
-    LOGI << "found" << dwarves.size() << "dwarves out of" << entries.size()
-            << "creatures";
-    return dwarves;
 }
 
 QVector<Squad*> DFInstance::load_squads() {

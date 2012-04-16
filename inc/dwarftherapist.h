@@ -64,6 +64,7 @@ public:
     LogManager *get_log_manager() {return m_log_mgr;}
 
     void emit_settings_changed();
+    void emit_roles_changed();
 
     public slots:
         void add_custom_profession();
@@ -93,6 +94,7 @@ private:
 
 signals:
     void settings_changed();
+    void roles_changed();
 };
 
 #endif

@@ -671,18 +671,19 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
         QHash<uint, QString> flags = mem->valid_flags_1();
 
 
-//        //need to do a special check for migrants, they have both the incoming (0x0400 flag) and the dead flag (0x0002)
-//        if((flags1 & 0x00000402)==0x00000402){
-//            LOGD << "Found migrant " << unverified_dwarf->nice_name();
-//            return unverified_dwarf;
-//        }
-
-        //a better way to check migrants is to check the states vector
-        //hardcoded for now, could also put it in the ini like the 'on break' flag under job details
-        if(unverified_dwarf->has_state(7)){
+        //need to do a special check for migrants, they have both the incoming (0x0400 flag) and the dead flag (0x0002)
+        if((flags1 & 0x00000402)==0x00000402){
             LOGD << "Found migrant " << unverified_dwarf->nice_name();
             return unverified_dwarf;
         }
+
+//        //a better way to check migrants is to check the states vector?
+//        //hardcoded for now, could also put it in the ini like the 'on break' flag under job details
+//        //after testing it seems that undead can also have this flag (wtf?)
+//        if(unverified_dwarf->has_state(7)){
+//            LOGD << "Found migrant " << unverified_dwarf->nice_name();
+//            return unverified_dwarf;
+//        }
 
 
         //if a dwarf has gone crazy (berserk=7,raving=6)
@@ -1174,7 +1175,7 @@ QString Dwarf::tooltip_text() {
     if(s->value("options/highlight_cursed", false).toBool() && curse_name() != "")
         tt += tr("<br/><b>Curse:</b> Cursed to prowl the night as a %1!").arg(curse_name());
 
-    tt += tr("body size: %1").arg(m_body_size);
+    //tt += tr("body size: %1").arg(m_body_size);
     return tt.trimmed();
 }
 
@@ -1294,11 +1295,11 @@ void Dwarf::calc_role_ratings(){
         float rating_total = 0.0;
 
         float aspect_value = 0.0;
-        QScriptEngine m_engine;
 
         if(m_role){
             //if we have a script, use that
             if(m_role->script != ""){
+                QScriptEngine m_engine;
                 QScriptValue d_obj = m_engine.newQObject(this);
                 m_engine.globalObject().setProperty("d", d_obj);
                 rating_total = m_engine.evaluate(m_role->script).toNumber(); //just show the raw value the script generates
@@ -1426,9 +1427,11 @@ void Dwarf::set_role_rating(QString role_name, float value){
     m_role_ratings.insert(role_name,value);
 }
 void Dwarf::update_rating_list(){
-        //keep a sorted list of the ratings as well
-        foreach(QString name, m_role_ratings.uniqueKeys()){
-            m_sorted_role_ratings << qMakePair(name,m_role_ratings.value(name));
-        }
-        qSort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(), &Dwarf::sort_ratings);
+    //keep a sorted list of the ratings as well
+    foreach(QString name, m_role_ratings.uniqueKeys()){
+        m_sorted_role_ratings << qMakePair(name,m_role_ratings.value(name));
+    }
+    qSort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(), &Dwarf::sort_ratings);
+    //refresh the tooltip as well
+    //tooltip_text();
 }

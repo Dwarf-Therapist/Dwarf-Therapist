@@ -80,7 +80,7 @@ public:
     QList<QPair<int, Attribute*> > get_ordered_attributes() {return m_ordered_attributes;}
     QHash<int, MilitaryPreference*> get_military_preferences() {return m_military_preferences;}
     QHash<short, Profession*> get_professions() {return m_professions;}    
-    QHash<QString, Role*> get_roles(){return m_dwarf_roles;}
+    QHash<QString, Role*>& get_roles(){return m_dwarf_roles;}
     QList<QPair<QString, Role*>  > get_ordered_roles() {return m_ordered_roles;}
     QHash<int, Attribute*> get_attributes() {return m_attributes;}
     QVector<QString> get_default_roles() {return m_default_roles;}
@@ -93,8 +93,7 @@ public:
     MilitaryPreference *get_military_preference(const int &mil_pref_id);
 
     Role *get_role(const QString &name);
-    void remove_role(QString name){m_dwarf_roles.remove(name);}
-    void add_role(QString name, Role *r){m_dwarf_roles.insert(name,r);}
+
     void load_roles();
     void load_sorted_roles();
 

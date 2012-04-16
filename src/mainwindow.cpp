@@ -715,16 +715,20 @@ void MainWindow::reload_filter_scripts() {
 void MainWindow::add_new_custom_role() {
     roleDialog *edit = new roleDialog(this,"");
 
-    if(edit->exec() == QDialog::Accepted)
+    if(edit->exec() == QDialog::Accepted){
+        write_custom_roles();
         refresh_roles_data();
+    }
 }
 
 void MainWindow::edit_custom_role() {
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     QString name = a->data().toString();
     roleDialog *edit = new roleDialog(this,name);
-    if(edit->exec() == QDialog::Accepted)
+    if(edit->exec() == QDialog::Accepted){
+        write_custom_roles();
         refresh_roles_data();
+    }
 
 }
 
@@ -733,7 +737,7 @@ void MainWindow::remove_custom_role(){
     QString name = a->data().toString();
     int answer = QMessageBox::question(0,"Confirm Remove",tr("Are you sure you want to remove role %1?").arg(name),QMessageBox::Yes,QMessageBox::No);
     if(answer == QMessageBox::Yes){
-        GameDataReader::ptr()->remove_role(name);
+        GameDataReader::ptr()->get_roles().remove(name);
 
         //prompt and remove columns??
         answer = QMessageBox::question(0,"Clean Views",tr("Would you also like to remove role %1 from all custom views?").arg(name),QMessageBox::Yes,QMessageBox::No);
@@ -760,7 +764,7 @@ void MainWindow::remove_custom_role(){
         //this will also rebuild our sorted role list
         GameDataReader::ptr()->load_roles();
         //update our current roles/ui elements
-        DT->emit_settings_changed();
+        DT->emit_roles_changed();
         refresh_role_menus();
         m_view_manager->update();
         m_view_manager->redraw_current_tab();
@@ -768,9 +772,11 @@ void MainWindow::remove_custom_role(){
 }
 
 void MainWindow::refresh_roles_data(){
-    write_custom_roles();
-    DT->emit_settings_changed();
+    //GameDataReader::ptr()->load_roles();
+
+    DT->emit_roles_changed();
     GameDataReader::ptr()->load_sorted_roles();
+
     refresh_role_menus();
     m_view_manager->update();
     m_view_manager->redraw_current_tab();

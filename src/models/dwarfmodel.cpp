@@ -48,7 +48,8 @@ DwarfModel::DwarfModel(QObject *parent)
     , m_df(0)
     , m_group_by(GB_NOTHING)
     , m_selected_col(-1)
-{}
+{
+}
 
 DwarfModel::~DwarfModel() {
     clear_all();
@@ -84,13 +85,14 @@ void DwarfModel::load_dwarves() {
 
     m_df->attach();
 
-    foreach(Dwarf *d, m_df->load_dwarves()) {
-        m_dwarves[d->id()] = d;
-    }
 
     m_squads.clear();
     foreach(Squad * s, m_df->load_squads()) {
         m_squads[s->id()] = s;
+    }
+
+    foreach(Dwarf *d, m_df->load_dwarves()) {
+        m_dwarves[d->id()] = d;
     }
 
     m_df->detach();

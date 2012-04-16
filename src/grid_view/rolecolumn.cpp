@@ -38,6 +38,7 @@ RoleColumn::RoleColumn(const QString &title, Role *r, ViewColumnSet *set, QObjec
     ,m_role(r)
 {
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
+    connect(DT, SIGNAL(roles_changed()), this, SLOT(roles_changed()));
 }
 
 RoleColumn::RoleColumn(const RoleColumn &to_copy)
@@ -45,6 +46,7 @@ RoleColumn::RoleColumn(const RoleColumn &to_copy)
     , m_role(to_copy.m_role)
 {
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
+    connect(DT, SIGNAL(roles_changed()), this, SLOT(roles_changed()));
 }
 
 RoleColumn::RoleColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
@@ -52,16 +54,26 @@ RoleColumn::RoleColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
 {
     m_role = GameDataReader::ptr()->get_role(s.value("name").toString());
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
+    connect(DT, SIGNAL(roles_changed()), this, SLOT(roles_changed()));
 }
 
 QStandardItem *RoleColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
+
+    if(d->profession()=="Baby"){
+        item->setData(-20, DwarfModel::DR_RATING); //drawing value
+        item->setData(-20, DwarfModel::DR_SORT_VALUE);
+        item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
+        item->setToolTip("<h4>Babies aren't included in role calculations.</h4>");
+        return item;
+    }
+
     if(m_role){
 
-    float rating_total = d->get_role_rating(m_role->name);
-    float drawRating = 0.0;
-    if(rating_total >=0 && rating_total <= 100)
-         drawRating = (rating_total-50)/3.3;
+        float rating_total = d->get_role_rating(m_role->name);
+        float drawRating = 0.0;
+        if(rating_total >=0 && rating_total <= 100)
+            drawRating = (rating_total-50)/3.3;
 
         item->setData((int)drawRating, DwarfModel::DR_RATING); //drawing value
         item->setData(rating_total, DwarfModel::DR_SORT_VALUE);
@@ -112,15 +124,7 @@ QStandardItem *RoleColumn::build_aggregate(const QString &group_name, const QVec
 }
 
 void RoleColumn::read_settings() {
-    //see if perhaps we have a new role created that fits the missing role
-    //or if our role has been updated
-    if(!m_role || m_role != GameDataReader::ptr()->get_role(this->title()))
-        m_role = GameDataReader::ptr()->get_role(this->title());
-
     if(m_role){
-        //update the column header if the role's name has changed
-        if(m_role->name != this->title())
-            this->set_title(m_role->name);
 
         //reset role's global weights to the new default weights, but only if they were using them in the first place
         QSettings *s = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
@@ -132,6 +136,19 @@ void RoleColumn::read_settings() {
             m_role->skills_weight.weight = s->value(QString("options/default_skills_weight")).toFloat();
 
         m_role->create_role_details(*s); //rebuild the description
+    }
+}
+
+void RoleColumn::roles_changed(){
+    //see if perhaps we have a new role created that fits the missing role
+    //or if our role has been updated
+    if(!m_role || GameDataReader::ptr()->get_role(this->title()) != m_role)
+        m_role = GameDataReader::ptr()->get_role(this->title());
+
+    //update the column header if the role's name has changed
+    if(m_role){
+        if(m_role->name != this->title())
+            this->set_title(m_role->name);
     }
 }
 

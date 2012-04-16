@@ -112,7 +112,7 @@ public:
         void commit_pending();
         void section_right_clicked(int idx);
         void dwarf_group_toggled(const QString &group_name);
-        void dwarf_set_toggled(Dwarf *d);
+        void dwarf_set_toggled(Dwarf *d);        
 
 private:
     DFInstance *m_df;

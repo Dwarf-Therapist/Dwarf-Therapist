@@ -31,7 +31,8 @@ private:
 
     void add_aspect(QString id, QTableWidget &table, QHash<QString,Role::aspect> &list);
 
-    bool m_adding;
+    void clear_table(QTableWidget &t);
+
     bool m_override;
 private slots:
     void close_pressed();

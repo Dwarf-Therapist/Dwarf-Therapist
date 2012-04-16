@@ -91,6 +91,8 @@ public:
     MemoryLayout *memory_layout() {return m_layout;}
     void read_raws();
     QVector<Dwarf*> load_dwarves();
+    void load_roles();
+
     QVector<Squad*> load_squads();
 
     // Set layout
@@ -136,7 +138,7 @@ public:
     public slots:
         // if a menu cancels our scan, we need to know how to stop
         void cancel_scan() {m_stop_scan = true;}
-
+        void calc_done();
 protected:
     int m_pid;
     VIRTADDR m_base_addr;
@@ -156,6 +158,8 @@ protected:
     WORD m_dwarf_race_id;
     WORD m_current_year;
     QDir m_df_dir;
+    QVector<Dwarf*> actual_dwarves;
+    int calc_progress;
 
     /*! this hash will hold a map of all loaded and valid memory layouts found
         on disk, the key is a QString of the checksum since other OSs will use
@@ -179,7 +183,7 @@ signals:
     void progress_value(int value);
 
 private:
-
+    QTime t;
 };
 
 #endif // DFINSTANCE_H

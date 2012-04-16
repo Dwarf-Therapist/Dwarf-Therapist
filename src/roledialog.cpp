@@ -22,13 +22,11 @@ roleDialog::roleDialog(QWidget *parent, QString name) :
 {
     ui->setupUi(this);
     m_override = false;
-    m_adding = false;
-    m_role = GameDataReader::ptr()->get_role(name);
+    m_role = GameDataReader::ptr()->get_roles().take(name);
     if(!m_role){
         m_role = new Role();
         m_role->is_custom = true;
         m_role->name = "";
-        m_adding = true;
     }
 
     //attributes table
@@ -130,11 +128,6 @@ void roleDialog::insert_row(QTableWidget &table, Role::aspect a, QString key){
     name->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     table.setItem(row,0,name);
 
-//    QTableWidgetItem *weight = new QTableWidgetItem();
-//    weight->setData(0,a.is_neg ? 0-a.weight : a.weight);
-//    weight->setFlags(Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-//    table.setItem(row,1,weight);
-
     QDoubleSpinBox *dbs = new QDoubleSpinBox();
     dbs->setMinimum(0);
     dbs->setMaximum(100);
@@ -154,7 +147,6 @@ void roleDialog::add_aspect(QString id, QTableWidget &table, QHash<QString, Role
 
 void roleDialog::save_pressed(){
     QString new_name = ui->le_role_name->text().trimmed();
-    QSettings *s = DT->user_settings();
 
     //update the role
     m_role->is_custom = true;
@@ -173,17 +165,10 @@ void roleDialog::save_pressed(){
 
     //if we're updating/adding a role to replace a default remove the default role first
     if(m_override)
-        GameDataReader::ptr()->remove_role(m_role->name);
+        GameDataReader::ptr()->get_roles().remove(m_role->name);
 
-    //update the role's name now before we insert it
     m_role->name = new_name;
-    //update role description/tooltip
-    m_role->create_role_details(*s);
-
-    //new role
-    //if(!GameDataReader::ptr()->get_roles().contains(m_role->name))
-    if(m_adding || m_override)
-        GameDataReader::ptr()->add_role(new_name,m_role);
+    GameDataReader::ptr()->get_roles().insert(new_name,m_role);
 
     //exit
     this->accept();
@@ -341,7 +326,8 @@ void roleDialog::copy_pressed(){
     if (answer == QMessageBox::Yes){
         QString name = ui->le_role_name->text().trimmed();
         //remove the current role if editing
-        GameDataReader::ptr()->remove_role(name);
+        //GameDataReader::ptr()->get_roles.remove(name);
+
         //load up the copied role, with our custom name, if no name exists keep the name the same as the
         //copy assuming they want to override the default role
         Role *copy = GameDataReader::ptr()->get_role(ui->cmb_copy->currentText());
@@ -349,7 +335,20 @@ void roleDialog::copy_pressed(){
         if(name=="")
             name = m_role->name;
         m_role->name = name;
+
+        //clear tables
+        clear_table(*ui->tw_attributes);
+        clear_table(*ui->tw_skills);
+        clear_table(*ui->tw_traits);
+
+        //load new data
         load_role_data();
+    }
+}
+
+void roleDialog::clear_table(QTableWidget &t){
+    for(int i = t.rowCount(); i >=0; i--){
+        t.removeRow(i);
     }
 }
 

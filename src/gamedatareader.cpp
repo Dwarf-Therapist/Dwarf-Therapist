@@ -230,7 +230,7 @@ QString GameDataReader::get_skill_name(short skill_id) {
 }
 
 Role* GameDataReader::get_role(const QString &name) {
-    return m_dwarf_roles.value(name, 0);
+    return m_dwarf_roles.value(name,NULL);
 }
 
 Profession* GameDataReader::get_profession(const short &profession_id) {
@@ -575,10 +575,6 @@ void GameDataReader::load_sorted_roles(){
             }
         }
     }
-}
-
-void DwarfTherapist::emit_settings_changed(){
-    emit settings_changed();
 }
 
 GameDataReader *GameDataReader::m_instance = 0;

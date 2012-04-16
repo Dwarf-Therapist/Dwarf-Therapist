@@ -362,3 +362,11 @@ void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
     }
     df->detach();
 }
+
+void DwarfTherapist::emit_settings_changed(){
+    emit settings_changed();
+}
+
+void DwarfTherapist::emit_roles_changed(){
+    emit roles_changed();
+}
