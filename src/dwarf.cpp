@@ -61,8 +61,12 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_squad_ref_id(-1)
     , m_squad_name(QString::null)
     , m_flag1(0)
-    , m_flag2(0)
+    , m_flag2(0)    
     , m_age(0)    
+    , m_mood_id(-1)
+    , m_body_size(60000)
+    , m_curse_name("")
+    , m_animal_type(none)
 {
     read_settings();
     refresh_data();
@@ -128,7 +132,7 @@ void Dwarf::refresh_data() {
     read_first_name();
     read_last_name();
     read_nick_name();
-    calc_names();
+    calc_names(); //creates nice name.. which is used for debug messages so we need to do it first..
     read_profession();
     read_labors();
     read_happiness();
@@ -142,6 +146,10 @@ void Dwarf::refresh_data() {
     read_caste();
     read_mood();
     read_body_size();
+    read_animal_type(); //need skills loaded to check for hostiles
+
+    if(is_animal())
+        calc_names(); //calculate names again as we need to check tameness for animals
 
     m_flag1 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags1"));
     m_flag2 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags2"));
@@ -190,6 +198,17 @@ void Dwarf::read_body_size(){
         }
     }else{
         m_body_size = -1;
+    }
+}
+
+void Dwarf::read_animal_type(){
+    if(is_animal()){
+        if(m_skills.size() <= 0){
+            qint32 animal_offset = m_df->memory_layout()->dwarf_offset("animal_type");
+            if(animal_offset>=0)
+                m_animal_type = static_cast<ANIMAL_TYPE>(m_df->read_int(m_address + animal_offset));
+        }else
+            m_animal_type = hostile;
     }
 }
 
@@ -370,16 +389,52 @@ void Dwarf::calc_names() {
     }
     if (is_animal())
     {
-        if (m_nice_name.trimmed()=="")
-        {
-            m_nice_name = "Stray " + race_name(m_race_id);
-            m_translated_name = m_nice_name;
+        QString tametype = "";
+        switch (m_animal_type) {
+        case semi_wild:
+            tametype = "Semi-wild";
+            break;
+        case trained:
+            tametype = "Trained";
+            break;
+        case well_trained:
+            tametype = "Well trained";
+            break;
+        case skillfully_trained:
+            tametype = "Skillfully trained";
+            break;
+        case expertly_trained:
+            tametype = "Expertly trained";
+            break;
+        case exceptionally_trained:
+            tametype = "Exceptionally trained";
+            break;
+        case masterfully_trained:
+            tametype = "Masterfully trained";
+            break;
+        case domesticated:
+            tametype = "Domesticated";
+            break;
+        case unknown_trained:
+            tametype = "Unknown";
+            break;
+        case wild_untamed:
+            tametype = "Wild";
+            break;
+        case hostile:
+            tametype = "Hostile";
+            break;
+        default:
+            tametype = "";
+            break;
         }
-        else
-        {
-            m_nice_name += " " + race_name(m_race_id);
-            m_translated_name += " " + race_name(m_race_id);
-        }
+
+        QString prof = (m_profession=="Child" ? " " + m_profession : "");
+        tametype = (tametype != "" ? " (" + tametype + ") " : " ");
+
+        m_nice_name = race_name(m_race_id) + prof + tametype + m_nice_name;
+
+
     }
     // uncomment to put address at front of name
     //m_nice_name = QString("0x%1 %2").arg(m_address, 8, 16, QChar('0')).arg(m_nice_name);
@@ -655,6 +710,14 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
                     delete unverified_dwarf;
                     return 0;
                 }
+            }
+
+            //exclude hostile and wild animals
+            if(unverified_dwarf->m_animal_type==hostile || unverified_dwarf->m_animal_type==wild_untamed){
+                TRACE << "Ignoring" << unverified_dwarf->nice_name()
+                        << "who appears to be a hostile or wild animal";
+                delete unverified_dwarf;
+                return 0;
             }
         }
         return unverified_dwarf;
@@ -971,7 +1034,7 @@ void Dwarf::set_labor(int labor_id, bool enabled) {
 bool Dwarf::toggle_flag_bit(int bit) {
     if (bit!=49)
         return false;
-    if (!m_nice_name.startsWith("Stray"))
+    if(m_animal_type==hostile || m_animal_type==wild_untamed || m_animal_type==unknown_trained)
         return false;
     int n=bit;
     if(bit>31)

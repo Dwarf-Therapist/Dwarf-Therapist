@@ -98,26 +98,28 @@ bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source
     }
 
     //filter children and babies if necessary, but only check this if we've already got a match with a filter
+    //DOESNT apply to animals!!
     if(matches){
-        bool hide_children = s->value("options/hide_children_and_babies",
-                                       false).toBool();
+        bool hide_children = s->value("options/hide_children_and_babies",false).toBool();
         if(dwarf_id && hide_children) {
             Dwarf *d = m->get_dwarf_by_id(dwarf_id);
+            if(!d->is_animal()){
 
-            short baby_id = -1;
-            short child_id = -1;
-            foreach(Profession *p, GameDataReader::ptr()->get_professions()) {
-                if (p->name(true) == "Baby") {
-                    baby_id = p->id();
+                short baby_id = -1;
+                short child_id = -1;
+                foreach(Profession *p, GameDataReader::ptr()->get_professions()) {
+                    if (p->name(true) == "Baby") {
+                        baby_id = p->id();
+                    }
+                    if (p->name(true) == "Child") {
+                        child_id = p->id();
+                    }
+                    if(baby_id > 0 && child_id > 0)
+                        break;
                 }
-                if (p->name(true) == "Child") {
-                    child_id = p->id();
-                }
-                if(baby_id > 0 && child_id > 0)
-                    break;
+                matches = (d->raw_profession() != baby_id &&
+                        d->raw_profession() != child_id);
             }
-            matches = (d->raw_profession() != baby_id &&
-                       d->raw_profession() != child_id);
         }
     }
     return matches;

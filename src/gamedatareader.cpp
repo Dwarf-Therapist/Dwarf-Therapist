@@ -298,7 +298,7 @@ void GameDataReader::load_race_names()
             QString race = obj->get_value("NAME", "Unknown");
             if (race.size() > 1)
                 race[0] = race[0].toUpper();
-            m_race_names.insert(obj->get_id(), race);
+            m_race_names.insert(obj->get_id(), race);            
         }
     }
 }
@@ -491,7 +491,7 @@ void GameDataReader::read_raws(QDir df_dir) {
     //Read reactions
     QFileInfo reaction_other(df_dir, "raw/objects/reaction_other.txt");
     m_reaction_classes["reaction_other"] = RawReader::read_objects(reaction_other);
-    LOGD << "Read " << m_reaction_classes["reaction_other"].size() << " reactions";
+    //LOGD << "Read " << m_reaction_classes["reaction_other"].size() << " reactions";
     QDir raw_dir = reaction_other.absoluteDir();
     raw_dir.setFilter( QDir::Files );
     QStringList filters;

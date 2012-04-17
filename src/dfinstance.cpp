@@ -332,7 +332,6 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     if (!entries.empty()) {
         Dwarf *d = 0;
         int i = 0;
-        //QVector<Dwarf*> actual_dwarves;
         actual_dwarves.clear();
         foreach(VIRTADDR creature_addr, entries) {
             d = Dwarf::get_dwarf(this, creature_addr);
@@ -374,11 +373,9 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
 void DFInstance::load_roles(){
     t.start();
-    //could do this in the load_stats as well, but here we can show progress
     calc_progress = 0;
     foreach(Dwarf *d, actual_dwarves){
         rolecalc *rc = new rolecalc(d);
-        rc->setAutoDelete(true);
         connect(rc,SIGNAL(done()),this,SLOT(calc_done()),Qt::QueuedConnection);
         QThreadPool::globalInstance()->start(rc);
     }

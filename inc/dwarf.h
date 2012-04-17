@@ -385,6 +385,8 @@ private:
     int m_total_xp;
     int m_migration_wave;
     int m_body_size;
+    ANIMAL_TYPE m_animal_type;
+
     Q_PROPERTY(QString first_name READ first_name) // no setters (read-only)
     QString m_first_name; // set by game
     QString m_nick_name; // set by user
@@ -443,6 +445,7 @@ private:
     void read_squad_ref_id();
     void read_flags();
     void read_turn_count();    
+    void read_animal_type();
 
 
     // utility methods to assist with reading names made up of several words

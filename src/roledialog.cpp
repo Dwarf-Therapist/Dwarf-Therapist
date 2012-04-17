@@ -129,7 +129,7 @@ void roleDialog::insert_row(QTableWidget &table, Role::aspect a, QString key){
     table.setItem(row,0,name);
 
     QDoubleSpinBox *dbs = new QDoubleSpinBox();
-    dbs->setMinimum(0);
+    dbs->setMinimum(-100);
     dbs->setMaximum(100);
     dbs->setSingleStep(0.25);
     dbs->setValue(a.is_neg ? 0-a.weight : a.weight);
@@ -147,7 +147,10 @@ void roleDialog::add_aspect(QString id, QTableWidget &table, QHash<QString, Role
 
 void roleDialog::save_pressed(){
     QString new_name = ui->le_role_name->text().trimmed();
-
+    if(new_name.trimmed().isEmpty()){
+        QMessageBox::critical(this,"Invalid Role Name","Role names cannot be blank.");
+        return;
+    }
     //update the role
     m_role->is_custom = true;
 
@@ -168,6 +171,7 @@ void roleDialog::save_pressed(){
         GameDataReader::ptr()->get_roles().remove(m_role->name);
 
     m_role->name = new_name;
+    m_role->create_role_details(*DT->user_settings());
     GameDataReader::ptr()->get_roles().insert(new_name,m_role);
 
     //exit
@@ -178,7 +182,7 @@ void roleDialog::save_aspects(QTableWidget &table, QHash<QString,Role::aspect> &
     Role::aspect a;
     for(int i= 0; i<table.rowCount(); i++){
         QString key = table.item(i,0)->data(Qt::UserRole).toString();
-        float weight = static_cast<QDoubleSpinBox*>(table.cellWidget(i,1))->value(); //table.item(i,1)->data(0).toFloat();
+        float weight = static_cast<QDoubleSpinBox*>(table.cellWidget(i,1))->value();
         a.weight = abs(weight);
         a.is_neg = weight < 0 ? true : false;
         list.insert(key,a);
@@ -186,6 +190,9 @@ void roleDialog::save_aspects(QTableWidget &table, QHash<QString,Role::aspect> &
 }
 
 void roleDialog::close_pressed(){
+    //if we were editing and cancelled, put the role back!
+    if(m_role && !m_role->name.trimmed().isEmpty())
+        GameDataReader::ptr()->get_roles().insert(m_role->name,m_role);
     this->reject();
 }
 

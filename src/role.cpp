@@ -170,10 +170,10 @@ void Role::write_aspect_group(QSettings &s, QString group_name, global_weight gr
         foreach(QString key, list.uniqueKeys()){
             s.setArrayIndex(count);
             a = (Role::aspect)list.value(key);
-            s.setValue("id",key);
+            QString id = tr("%1%2").arg(a.is_neg ? "-" : "").arg(key);
+            s.setValue("id",id);
             if(a.weight != 1.0){
-                QString w = tr("%1%2").arg(a.is_neg ? "-" : "").arg(a.weight);
-                s.setValue("weight",w);
+                s.setValue("weight",QString::number(a.weight,'g',2));
             }
             count ++;
         }

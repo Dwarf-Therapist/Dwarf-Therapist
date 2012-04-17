@@ -83,6 +83,9 @@ RawObjectPtr RawReader::read_creature(QStringList & lines, int N) {
     QString line = lines.first();
     lines.removeFirst();
 
+    if(line.isEmpty())
+        return result;
+
     if(line.trimmed().startsWith("[CREATURE:")) {
         result = RawObjectPtr(new RawObject);
         populate_creature_node_values(result, line, QString("%1").arg(N));
@@ -94,7 +97,8 @@ RawObjectPtr RawReader::read_creature(QStringList & lines, int N) {
 
 void RawReader::populate_creature_node_values(const RawNodePtr & node, QString & line, QString id) {
     QString str = line.trimmed();
-    str = str.mid(1, str.length()-2);
+    //str = str.mid(1, str.length()-2);
+    str = str.mid(1, str.indexOf("]")-1);
     QStringList strings = str.split(":", QString::SkipEmptyParts);
     node->name = strings[0];
     strings.insert(1, id);

@@ -267,6 +267,13 @@ void DwarfModel::build_rows() {
                         }
                         break;
                 }
+
+                if(d->profession()=="Child")
+                    n_children ++;
+                else if(d->profession()=="Baby")
+                    n_babies ++;
+                else
+                    n_adults ++;
             }
         }
         else
