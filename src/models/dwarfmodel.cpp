@@ -85,16 +85,14 @@ void DwarfModel::load_dwarves() {
 
     m_df->attach();
 
+    foreach(Dwarf *d, m_df->load_dwarves()) {
+        m_dwarves[d->id()] = d;
+    }
 
     m_squads.clear();
     foreach(Squad * s, m_df->load_squads()) {
         m_squads[s->id()] = s;
     }
-
-    foreach(Dwarf *d, m_df->load_dwarves()) {
-        m_dwarves[d->id()] = d;
-    }
-
     m_df->detach();
 
     QList<Dwarf *> dwarves = m_dwarves.values();
