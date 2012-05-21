@@ -68,7 +68,7 @@ void Squad::read_id() {
 }
 
 void Squad::read_name() {
-    m_name = read_chunked_name();
+    m_name = m_df->get_translated_word(m_address + m_mem->squad_offset("name"));
     TRACE << "Name:" << m_name;    
 }
 

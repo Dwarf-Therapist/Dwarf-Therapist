@@ -174,6 +174,8 @@ void OptionsMenu::read_settings() {
     ui->sb_roles_tooltip->setValue(s->value("role_count_tooltip",3).toInt());
     ui->sb_roles_pane->setValue(s->value("role_count_pane",10).toInt());
 
+    ui->chk_roles_in_labor->setChecked(s->value("show_roles_in_labor",true).toBool());
+
     s->endGroup();
 
     m_reading_settings = false;
@@ -222,6 +224,7 @@ void OptionsMenu::write_settings() {
         s->setValue("default_traits_weight",ui->dsb_trait_weight->value());
         s->setValue("role_count_tooltip",ui->sb_roles_tooltip->value());
         s->setValue("role_count_pane",ui->sb_roles_pane->value());
+        s->setValue("show_roles_in_labor",ui->chk_roles_in_labor->isChecked());
 
         s->endGroup();
     }

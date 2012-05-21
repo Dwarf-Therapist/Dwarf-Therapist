@@ -69,6 +69,7 @@ void Word::read_members() {
     m_noun = m_df->read_string(m_address + m_mem->word_offset("noun_singular"));
     m_plural_noun = m_df->read_string(m_address + m_mem->word_offset("noun_plural"));
     m_adjective = m_df->read_string(m_address + m_mem->word_offset("adjective"));
+    m_prefix = m_df->read_string(m_address + m_mem->word_offset("prefix"));
     m_verb = m_df->read_string(m_address + m_mem->word_offset("verb"));
     m_present_simple_verb = m_df->read_string(m_address + m_mem->word_offset("present_simple_verb"));
     m_past_simple_verb = m_df->read_string(m_address + m_mem->word_offset("past_simple_verb"));

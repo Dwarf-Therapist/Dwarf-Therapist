@@ -83,11 +83,7 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
         QString aspects_str;
         if (m_role->script == "") {
             if(rating_total >= 0){
-
-                //lazy load the details
-                if(m_role->role_details == "")
-                    m_role->create_role_details(*DT->user_settings());
-                aspects_str = m_role->role_details;
+                aspects_str = m_role->get_role_details();
                 aspects_str += tr("<br><b>Note:</b> A higher weight (w) puts greater value on the aspect. Default weights are not shown.");
                 match_str += "</br>" + aspects_str;
 

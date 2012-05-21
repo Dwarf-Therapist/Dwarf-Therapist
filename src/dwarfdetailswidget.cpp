@@ -195,7 +195,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
         tw_attributes->insertRow(0);
         tw_attributes->setRowHeight(0, 14);
-        Attribute::level l = d->get_attribute_rating(row);
+        Caste::attribute_level l = d->get_attribute_rating(row);
 
         QTableWidgetItem *attribute_name = new QTableWidgetItem(r->name);
         QTableWidgetItem *attribute_rating = new QTableWidgetItem;

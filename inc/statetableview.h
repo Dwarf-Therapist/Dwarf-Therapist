@@ -43,6 +43,8 @@ public:
     UberDelegate *get_delegate() {return m_delegate;}
     RotatedHeader *get_header() {return m_header;}
 
+    QItemSelection m_selected;
+
     public slots:
         void read_settings();
         void filter_dwarves(QString text);
@@ -80,6 +82,8 @@ private:
     //! we have to store this ourselves since the click(), accept() etc... don't send which button caused them
     Qt::MouseButton m_last_button;
     bool m_column_already_sorted;
+
+    void keyPressEvent(QKeyEvent *event);
 
     private slots:
         void set_nickname();

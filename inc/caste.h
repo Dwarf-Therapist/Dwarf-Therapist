@@ -20,57 +20,58 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef WORD_H
-#define WORD_H
+#ifndef CASTE_H
+#define CASTE_H
 
 #include <QtGui>
 #include "utils.h"
+#include "attribute.h"
 
-class Dwarf;
 class DFInstance;
 class MemoryLayout;
 
-class Word : public QObject {
+class Caste : public QObject {
     Q_OBJECT
 public:
-    Word(DFInstance *df, VIRTADDR address, QObject *parent = 0);
-    virtual ~Word();
+    Caste(DFInstance *df, VIRTADDR address, QString race_name, QObject *parent = 0);
+    virtual ~Caste();
 
-    static Word* get_word(DFInstance *df, const VIRTADDR &address);
+    static Caste* get_caste(DFInstance *df, const VIRTADDR &address, QString race_name);
 
     //! Return the memory address (in hex) of this creature in the remote DF process
     VIRTADDR address() {return m_address;}
 
-    QString base() {return m_base;}
-    QString noun() {return m_noun;}
-    QString plural_noun() {return m_plural_noun;}
-    QString adjective() {return m_adjective;}
-    QString prefix() {return m_prefix;}
-    QString verb() {return m_verb;}
-    QString present_simple_verb() {return m_present_simple_verb;}
-    QString past_simple_verb() {return m_past_simple_verb;}
-    QString past_participle_verb() {return m_past_participle_verb;}
-    QString present_participle_verb() {return m_present_participle_verb;}
+    struct attribute_level{
+        QString description;
+        int rating;
+    };
 
-    void refresh_data();
+    QString name() {return m_name;}
+    QString description() {return m_description;}
+    attribute_level get_attribute_level(int id, int value);
+
+    void load_data();
+    void load_attribute_info();
 
 private:
     VIRTADDR m_address;
-    QString m_base;
-    QString m_noun;
-    QString m_plural_noun;
-    QString m_adjective;
-    QString m_prefix;
-    QString m_verb;
-    QString m_present_simple_verb;
-    QString m_past_simple_verb;
-    QString m_past_participle_verb;
-    QString m_present_participle_verb;
+    QString m_tag;
+    QString m_race_name;
+    QString m_name;
+    QString m_description;    
+
+    struct att_range{
+        QList<int> raw_bins;
+        QList<int> display_bins;        
+    };
+
+    QHash<int,att_range> m_ranges;
 
     DFInstance * m_df;
     MemoryLayout * m_mem;
 
-    void read_members();
+    void read_caste();
 };
 
-#endif
+
+#endif // CASTE_H

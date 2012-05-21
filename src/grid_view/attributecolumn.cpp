@@ -71,7 +71,7 @@ AttributeColumn::AttributeColumn(const AttributeColumn &to_copy)
 QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
     short rawVal = 0;
-    Attribute::level l = d->get_attribute_rating(m_attribute_type);
+    Caste::attribute_level l = d->get_attribute_rating(m_attribute_type);
     if(l.rating>20)
         l.rating=20;
     QString msg;
@@ -84,7 +84,7 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     }
 
     item->setData(rawVal, DwarfModel::DR_SORT_VALUE);
-    item->setData(l.rating,DwarfModel::DR_RATING);
+    item->setData(l.rating, DwarfModel::DR_RATING);
     item->setData(CT_ATTRIBUTE, DwarfModel::DR_COL_TYPE);
 
     QString tooltip = QString("<h3>%1</h3>%2 (%3)<br><h4>%4</h4>")

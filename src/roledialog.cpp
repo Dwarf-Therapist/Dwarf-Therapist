@@ -183,7 +183,7 @@ void roleDialog::save_aspects(QTableWidget &table, QHash<QString,Role::aspect> &
     for(int i= 0; i<table.rowCount(); i++){
         QString key = table.item(i,0)->data(Qt::UserRole).toString();
         float weight = static_cast<QDoubleSpinBox*>(table.cellWidget(i,1))->value();
-        a.weight = abs(weight);
+        a.weight = fabs(weight);
         a.is_neg = weight < 0 ? true : false;
         list.insert(key,a);
     }

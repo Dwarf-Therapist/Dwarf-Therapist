@@ -40,7 +40,7 @@ ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy,
     : QTabWidget(parent)
     , m_model(dm)
     , m_proxy(proxy)
-    , m_add_tab_button(new QToolButton(this))
+    , m_add_tab_button(new QToolButton(this))    
 {
     m_proxy->setSourceModel(m_model);
     setTabsClosable(true);
@@ -206,6 +206,11 @@ void ViewManager::add_weapons_view(QList<GridView*> &built_in_views){
         }
         m_views << gv;
         built_in_views << gv;
+        if (m_add_weapons_tab)
+        {
+            add_tab_for_gridview(gv);
+            m_add_weapons_tab = false;
+        }
     }
 }
 
@@ -225,6 +230,8 @@ void ViewManager::draw_views() {
     }
     if (tab_order.size() > 0) {
         foreach(QString name, tab_order) {
+            if (name == "Weapons")
+                m_add_weapons_tab = true;
             foreach(GridView *v, m_views) {
                 if (v->name() == name)
                     add_tab_for_gridview(v);
@@ -353,7 +360,7 @@ void ViewManager::setCurrentIndex(int idx) {
     foreach(GridView *v, m_views) {
         if (v->name() == tabText(idx)) {
             QSettings *s = DT->user_settings();
-            s->setValue("read_animals",(tabText(idx)=="Animals"));
+            s->setValue("read_animals",(tabText(idx).startsWith("Animals")));
             m_model->set_grid_view(v);
             m_model->build_rows();
             stv->header()->setResizeMode(QHeaderView::Fixed);
@@ -371,7 +378,7 @@ void ViewManager::setCurrentIndex(int idx) {
     }
     tabBar()->setCurrentIndex(idx);
     stv->restore_expanded_items();
-    write_tab_order();
+    write_tab_order();    
 }
 
 void ViewManager::dwarf_selection_changed(const QItemSelection &selected,

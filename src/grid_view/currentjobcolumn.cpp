@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "defines.h"
 #include "dwarfjob.h"
 #include "gamedatareader.h"
+#include "reaction.h"
 
 CurrentJobColumn::CurrentJobColumn(const QString &title, ViewColumnSet *set,
                        QObject *parent)
@@ -56,10 +57,9 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
 
             DwarfJob::DWARF_JOB_TYPE job_type = job->type;
             if(!job->reactionClass.isEmpty() && !d->current_sub_job_id().isEmpty()) {
-                RawObjectPtr reaction = GameDataReader::ptr()->
-                        get_reaction(job->reactionClass, d->current_sub_job_id());
-                if(!reaction.isNull()) {
-                    job_type = DwarfJob::get_type(reaction->get_value("SKILL"));
+                Reaction* reaction = d->get_reaction();
+                if(reaction!=0) {
+                    job_type = DwarfJob::get_type(reaction->skill());
                 }
             }
 

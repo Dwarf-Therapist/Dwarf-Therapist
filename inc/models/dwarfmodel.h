@@ -101,6 +101,11 @@ public:
     QList<QPersistentModelIndex> findAll(const QVariant &needle, int role = Qt::DisplayRole, int column = 0, QModelIndex start_index = QModelIndex());
 
     static bool compare_turn_count(const Dwarf *a, const Dwarf *b);
+    static void build_calendar();
+    QString get_migration_desc(Dwarf *d);
+
+    static QStringList m_seasons;
+    static QStringList m_months;
 
     public slots:
         void build_row(const QString &key);
@@ -126,7 +131,7 @@ private:
 
 signals:
     void new_pending_changes(int);
-    void new_creatures_count(int,int,int);
+    void new_creatures_count(int,int,int,QString);
     void preferred_header_size(int section, int width);
     void set_index_as_spacer(int);
     void clear_spacers();

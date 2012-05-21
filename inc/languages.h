@@ -1,6 +1,6 @@
 /*
 Dwarf Therapist
-Copyright (c) 2009 Trey Stout (chmod)
+Copyright (c) 2010 Justin Ehlert
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,41 +20,40 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef DWARF_MODEL_PROXY_H
-#define DWARF_MODEL_PROXY_H
+#ifndef LANGUAGES_H
+#define LANGUAGES_H
 
 #include <QtGui>
+#include "utils.h"
 
-class DwarfModel;
-class QScriptEngine;
+class DFInstance;
+class MemoryLayout;
+class Word;
 
-class DwarfModelProxy: public QSortFilterProxyModel {
+class Languages : public QObject {
     Q_OBJECT
 public:
-    typedef enum {
-        DSR_NAME_ASC = 0,
-        DSR_NAME_DESC,
-        DSR_ID_ASC,
-        DSR_ID_DESC,
-        DSR_GAME_ORDER
-    } DWARF_SORT_ROLE;
+    Languages(DFInstance *df, QObject *parent = 0);
+    virtual ~Languages();
 
-    DwarfModelProxy(QObject *parent = 0);
-    DwarfModel* get_dwarf_model() const;
-    void sort(int column, Qt::SortOrder order);
-public slots:
-    void cell_activated(const QModelIndex &idx);    
-    void setFilterFixedString(const QString &pattern);
-    void sort(int, DwarfModelProxy::DWARF_SORT_ROLE);
-    void apply_script(const QString &script_body);
+    static Languages* get_languages(DFInstance *df);
 
-protected:
-    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
-	bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const;
+    QString language_word(VIRTADDR address);
+    QString english_word(VIRTADDR address);
+
+    void load_data();
+
 private:
-	QString m_filter_text;
-    QScriptEngine *m_engine;
-    QString m_active_filter_script;
+    VIRTADDR m_address;
+    QVector<Word *> m_language;
+    QHash<int, QStringList> m_words;
+
+    DFInstance * m_df;
+    MemoryLayout * m_mem;
+
+    QString word_chunk(uint word, int language_id);
+    QString word_chunk_declined(uint word, short pos);
+
 };
 
-#endif
+#endif // LANGUAGES_H

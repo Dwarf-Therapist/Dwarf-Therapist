@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include "dwarf.h"
 #include "viewcolumnset.h"
+#include "dwarftherapist.h"
 
 LaborColumn::LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(title, CT_LABOR, set, parent)
@@ -61,21 +62,46 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
 	item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);
 	item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
 	
-	QString skill_str;
-	if (m_skill_id != -1 && rating > -1) {
-		QString adjusted_rating = QString::number(rating);
-		if (rating > 15)
-			adjusted_rating = QString("15 +%1").arg(rating - 15);
-		skill_str = tr("%1 %2<br/>[RAW LEVEL: <b><font color=blue>%3</font></b>]<br/><b>Experience:</b><br/>%4")
-			.arg(gdr->get_skill_level_name(rating))
-			.arg(gdr->get_skill_name(m_skill_id))
-			.arg(adjusted_rating)
-			.arg(d->get_skill(m_skill_id).exp_summary());
-	} else {
-		// either the skill isn't a valid id, or they have 0 experience in it
+    QString role_str="";
+    if (DT->user_settings()->value("options/show_toolbutton_text", true).toBool()) {
+
+        float role_rating=0;
+        if(m_skill_id != -1){
+            QVector<Role*> found_roles = GameDataReader::ptr()->get_skill_roles().value(m_skill_id);
+            float sortVal = 0;
+            role_rating = 0;
+
+            //just list roles and %
+            role_str = tr("<h4>Related Roles:</h4><ul style=\"margin-left:-30px; padding-left:0px;\">");
+            foreach(Role *r, found_roles){
+                role_rating = d->get_role_rating(r->name);
+                role_str += tr("<li>%1 (%2%)</li>").arg(r->name).arg(QString::number(role_rating,'f',2));
+                sortVal += role_rating;
+                if(d->labor_enabled(m_labor_id))
+                    sortVal += 1000;
+            }
+            role_str += "</ul>";
+            sortVal /= found_roles.count();
+            item->setData(sortVal,DwarfModel::DR_SORT_VALUE);
+        }
+    }
+
+    QString skill_str;
+    if (m_skill_id != -1 && rating > -1) {
+        QString adjusted_rating = QString::number(rating);
+        if (rating > 15)
+            adjusted_rating = QString("15 +%1").arg(rating - 15);
+
+        skill_str = tr("%1 %2<br/>[RAW LEVEL: <b><font color=blue>%3</font></b>]<br/><b>Experience:</b><br/>%4")
+                .arg(gdr->get_skill_level_name(rating))
+                .arg(gdr->get_skill_name(m_skill_id))
+                .arg(adjusted_rating)
+                .arg(d->get_skill(m_skill_id).exp_summary());
+    } else {
+        // either the skill isn't a valid id, or they have 0 experience in it
 		skill_str = "0 experience";
 	}
-	item->setToolTip(QString("<h3>%1</h3>%2<h4>%3</h4>").arg(m_title).arg(skill_str).arg(d->nice_name()));
+    item->setToolTip(QString("<h3>%1</h3>%2%3<h4>%4</h4>").arg(m_title).arg(skill_str).arg(role_str).arg(d->nice_name()));
 	return item;
 }
 

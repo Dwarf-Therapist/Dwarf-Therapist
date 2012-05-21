@@ -116,6 +116,12 @@ void Role::create_role_details(QSettings &s){
     role_details += build_aspect_detail("Traits",traits_weight,default_traits_weight,traits);
 }
 
+QString Role::get_role_details(){
+    if(role_details == "")
+        create_role_details(*DT->user_settings());
+    return role_details;
+}
+
 QString Role::build_aspect_detail(QString title, global_weight aspect_group_weight,
                                   float aspect_default_weight, QHash<QString,aspect> &list){
 

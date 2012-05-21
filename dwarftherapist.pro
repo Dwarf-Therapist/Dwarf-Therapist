@@ -172,7 +172,12 @@ HEADERS += inc/win_structs.h \
     inc/global_enums.h \
     inc/grid_view/weaponcolumn.h \
     inc/roledialog.h \
-    inc/rolecalc.h
+    inc/rolecalc.h \
+    inc/reaction.h \
+    inc/races.h \
+    inc/languages.h \    
+    inc/caste.h \
+    inc/reaction.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -225,7 +230,11 @@ SOURCES += src/viewmanager.cpp \
     src/attribute.cpp \
     src/grid_view/weaponcolumn.cpp \
     src/roledialog.cpp \
-    src/rolecalc.cpp
+    src/rolecalc.cpp \
+    src/races.cpp \
+    src/languages.cpp \    
+    src/caste.cpp \
+    src/reaction.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \
@@ -245,3 +254,5 @@ RESOURCES += images.qrc
 
 OTHER_FILES += \
     src/dfinstanceosx.cpp
+
+

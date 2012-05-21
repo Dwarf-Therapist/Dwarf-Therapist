@@ -34,7 +34,6 @@ THE SOFTWARE.
 QHash<ASPECT_TYPE, QList<DwarfStats::bin> > DwarfStats::m_attribute_bins;
 QHash<ASPECT_TYPE, QList<DwarfStats::bin> > DwarfStats::m_trait_bins;
 
-
 float DwarfStats::calc_cdf(float mean, float stdev, float rawValue){
     double rating = 0.0;
 
@@ -127,14 +126,6 @@ float DwarfStats::get_attribute_role_rating(ASPECT_TYPE key, int value){
     return get_aspect_role_rating(value, m_attribute_bins.value(key));
 }
 
-//Normal
-//0.00385    0 to 9
-//0.01965    10 to 24
-//0.0856    25 to 39
-//0.7818    40 to 60
-//0.0856    61 to 75
-//0.01965    76 to 90
-//0.00385    91 to 100
 
 void DwarfStats::load_trait_bins(ASPECT_TYPE key, QList<int> raws){
     if(!m_trait_bins.contains(key))
@@ -146,35 +137,35 @@ void DwarfStats::load_trait_bins(ASPECT_TYPE key, QList<int> raws){
             switch(i){
             case 0:
                 temp.density = 0;
-                temp.probability = 0.004527777766667;
+                temp.probability = 0.00375;
                 break;
             case 1:
-                temp.density = 0.004527777766667;
-                temp.probability = 0.017646604933333;
+                temp.density = 0.00375;
+                temp.probability = 0.01925;
                 break;
             case 2:
-                temp.density = 0.0221743827;
-                temp.probability = 0.0883287037;
+                temp.density = 0.023;
+                temp.probability = 0.08475;
                 break;
             case 3:
-                temp.density = 0.1105030864;
-                temp.probability = 0.7853132716;
+                temp.density = 0.10775;
+                temp.probability = 0.7845;
                 break;
             case 4:
-                temp.density = 0.895816358;
-                temp.probability = 0.080581790133333;
+                temp.density = 0.89225;
+                temp.probability = 0.08475;
                 break;
             case 5:
-                temp.density = 0.976398148133333;
-                temp.probability = 0.0204845679;
+                temp.density = 0.977;
+                temp.probability = 0.01925;
                 break;
             case 6:
-                temp.density = 0.996882716033333;
-                temp.probability = 0.003117283966667;
+                temp.density = 0.99625;
+                temp.probability = 0.00375;
                 break;
             }
 
-            temp.min = raws[i]-1;
+            temp.min = raws[i];
             temp.max = raws[i+1]-1;
             m_bins.append(temp);
         }
@@ -183,20 +174,49 @@ void DwarfStats::load_trait_bins(ASPECT_TYPE key, QList<int> raws){
     }
 }
 
-float DwarfStats::get_trait_role_rating(ASPECT_TYPE key, int value){
-    return get_aspect_role_rating(value, m_trait_bins.value(key));
+float DwarfStats::get_trait_role_rating(ASPECT_TYPE key, int value){    
+    float mid = 50;
+    float adj_value = (float)value;
+    if(key==negative)
+        mid=45;
+    else if(key==positive)
+        mid=55;
+
+    if(mid!=50){
+        if(value < mid)
+            adj_value = (((float)value / mid) /2) * 100;
+        else
+            adj_value = ((((value-mid)/(100-mid)) /2)+0.5)*100;
+    }
+    return get_aspect_role_rating(adj_value,m_trait_bins.value(key));
 }
 
-float DwarfStats::get_aspect_role_rating(int value, QList<bin> m_bins){
+float DwarfStats::get_aspect_role_rating(float value, QList<bin> m_bins){
+    int min = 0;
+    int max = 0;
     for(int i=0; i<m_bins.length(); i++){
-        if(value > m_bins[i].min && value <= m_bins[i].max){
-            return ((((double)(value-m_bins[i].min) / (double)(m_bins[i].max - m_bins[i].min))
-                     * m_bins[i].probability)
+        min = m_bins[i].min -1;
+        max = m_bins[i].max;
+        if(value > min && value <= max)
+            return ((
+                        ((value - min) / (max - min))
+                        * m_bins[i].probability)
                     + m_bins[i].density);
-        }
     }
     return 0;
 }
+
+//float DwarfStats::get_skill_role_rating(int skill_id, int value){
+//    //range = max - min
+//    //percent = 100 * (x - min) / (max - min)
+
+//    int min = *std::min_element(m_dwarf_skills.value(skill_id)->begin(),m_dwarf_skills.value(skill_id)->end());
+//    int max = *std::max_element(m_dwarf_skills.value(skill_id)->begin(),m_dwarf_skills.value(skill_id)->end());
+//    if(value==0 || min==max)
+//        min = 0;
+
+//    return ((float)(value - min) / (float)(max-min));
+//}
 
 //float DwarfStats::get_skill_role_rating(int skill_id, int value){
 //    QVector<int> *skills = m_dwarf_skills.value(skill_id);

@@ -41,6 +41,9 @@ THE SOFTWARE.
 #include "QThreadPool"
 #include "rolecalc.h"
 #include "viewmanager.h"
+#include "languages.h"
+#include "reaction.h"
+#include "races.h"
 
 #ifdef Q_WS_WIN
 #define LAYOUT_SUBDIR "windows"
@@ -68,6 +71,7 @@ DFInstance::DFInstance(QObject* parent)
     , m_memory_remap_timer(new QTimer(this))
     , m_scan_speed_timer(new QTimer(this))
     , m_dwarf_race_id(0)
+    , m_dwarf_civ_id(0)
 {
     connect(m_scan_speed_timer, SIGNAL(timeout()),
             SLOT(calculate_scan_rate()));
@@ -276,6 +280,64 @@ void DFInstance::read_raws() {
     GameDataReader::ptr()->read_raws(m_df_dir);
 }
 
+
+void DFInstance::load_game_data()
+{
+    map_virtual_memory();
+    emit progress_message(tr("Loading languages"));
+    m_languages = Languages::get_languages(this);
+
+    emit progress_message(tr("Loading reactions"));
+    m_reactions.clear();
+
+
+    attach();
+    LOGI << "Reading reactions names...";
+    VIRTADDR reactions_vector = m_layout->address("reactions_vector");
+    reactions_vector += m_memory_correction;
+    QVector<VIRTADDR> reactions = enumerate_vector(reactions_vector);
+    TRACE << "FOUND" << reactions.size() << "reactions";
+    emit progress_range(0, reactions.size()-1);
+    if (!reactions.empty()) {
+        int i = 0;
+        foreach(VIRTADDR reaction_addr, reactions) {
+            Reaction* r = Reaction::get_reaction(this, reaction_addr);
+            m_reactions.insert(r->tag(), r);
+            emit progress_value(i++);
+        }
+    }
+    detach();
+
+    emit progress_message(tr("Loading races and castes"));
+    m_races.clear();
+
+
+    attach();
+    LOGI << "Reading races and castes...";
+    VIRTADDR races_vector = m_layout->address("races_vector");
+    races_vector += m_memory_correction;
+    QVector<VIRTADDR> races = enumerate_vector(races_vector);
+    TRACE << "FOUND" << races.size() << "races";
+    emit progress_range(0, races.size()-1);
+    if (!races.empty()) {
+        int i = 0;
+        foreach(VIRTADDR race_addr, races) {
+            m_races << Race::get_race(this, race_addr);
+            emit progress_value(i++);
+        }
+    }
+    detach();
+
+}
+
+QString DFInstance::get_language_word(VIRTADDR addr){
+    return m_languages->language_word(addr);
+}
+
+QString DFInstance::get_translated_word(VIRTADDR addr){
+    return m_languages->english_word(addr);
+}
+
 QVector<Dwarf*> DFInstance::load_dwarves() {
     map_virtual_memory();
     QVector<Dwarf*> dwarves;
@@ -287,11 +349,16 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
     // we're connected, make sure we have good addresses
     VIRTADDR creature_vector = m_layout->address("creature_vector");
-    creature_vector += m_memory_correction;
+    creature_vector += m_memory_correction;    
     VIRTADDR dwarf_race_index = m_layout->address("dwarf_race_index");
     dwarf_race_index += m_memory_correction;
     VIRTADDR current_year = m_layout->address("current_year");
     current_year += m_memory_correction;
+    VIRTADDR current_year_tick = m_layout->address("cur_year_tick");
+    current_year_tick += m_memory_correction;
+    m_cur_year_tick = read_int(current_year_tick);
+    VIRTADDR dwarf_civ_index = m_layout->address("dwarf_civ_index");
+    dwarf_civ_index += m_memory_correction;
 
     if (!is_valid_address(creature_vector)) {
         LOGW << "Active Memory Layout" << m_layout->filename() << "("
@@ -318,6 +385,9 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     emit progress_message(tr("Loading Dwarves"));
 
     attach();
+    m_dwarf_civ_id = read_word(dwarf_civ_index);
+    LOGD << "civilization id:" << hexify(m_dwarf_civ_id);
+
     // which race id is dwarven?
     m_dwarf_race_id = read_word(dwarf_race_index);
     LOGD << "dwarf race:" << hexify(m_dwarf_race_id);
@@ -325,7 +395,8 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     m_current_year = read_word(current_year);
     LOGD << "current year:" << m_current_year;
 
-    QVector<VIRTADDR> entries = enumerate_vector(creature_vector);
+    QVector<VIRTADDR> entries = get_creatures();
+
     emit progress_range(0, entries.size()-1);
     TRACE << "FOUND" << entries.size() << "creatures";
     bool hide_non_adults = DT->user_settings()->value("options/hide_children_and_babies",true).toBool();
@@ -372,8 +443,9 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 }
 
 void DFInstance::load_roles(){
-    t.start();
+    t.start();    
     calc_progress = 0;
+
     foreach(Dwarf *d, actual_dwarves){
         rolecalc *rc = new rolecalc(d);
         connect(rc,SIGNAL(done()),this,SLOT(calc_done()),Qt::QueuedConnection);
@@ -477,12 +549,30 @@ QVector<Squad*> DFInstance::load_squads() {
 void DFInstance::heartbeat() {
     // simple read attempt that will fail if the DF game isn't running a fort,
     // or isn't running at all
-    QVector<VIRTADDR> creatures = enumerate_vector(
-            m_layout->address("creature_vector") + m_memory_correction);
-    if (creatures.size() < 1) {
+//    QVector<VIRTADDR> creatures = enumerate_vector(
+//            m_layout->address("creature_vector") + m_memory_correction);
+    if (get_creatures().size() < 1) {
         // no game loaded, or process is gone
         emit connection_interrupted();
     }
+}
+
+QVector<VIRTADDR> DFInstance::get_creatures(){
+    VIRTADDR active_units = m_layout->address("creature_vector");
+    active_units += m_memory_correction;
+    VIRTADDR all_units = active_units - 0x10;
+    //first try the active unit list
+    QVector<VIRTADDR> entries = enumerate_vector(active_units);
+    if(entries.isEmpty()){
+        entries = enumerate_vector(all_units);
+    }else{
+        //test an entry, when doing a reclaim, there will be active creatures, but they won't be of the same civ
+        //so the dwarf creation will fail and return 0
+        Dwarf *d = Dwarf::get_dwarf(this,entries.at(0));
+        if(d==0)
+            entries = enumerate_vector(all_units);
+    }
+    return entries;
 }
 
 bool DFInstance::is_valid_address(const VIRTADDR &addr) {

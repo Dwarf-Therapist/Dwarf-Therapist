@@ -59,7 +59,7 @@ public:
     global_weight skills_weight;
     global_weight traits_weight;
 
-    QString role_details;
+    QString get_role_details();
 
     void create_role_details(QSettings &s);
 
@@ -69,6 +69,6 @@ protected:
     void parseAspect(QSettings &s, QString node, global_weight &g_weight, QHash<QString,aspect> &list);
     void write_aspect_group(QSettings &s, QString group_name, global_weight group_weight, float group_default_weight, QHash<QString,aspect> &list);
     QString build_aspect_detail(QString title, global_weight aspect_group_weight, float aspect_default_weight, QHash<QString,aspect> &list);
-
+    QString role_details;
 };
 #endif // ROLE_H

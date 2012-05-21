@@ -56,7 +56,8 @@ StateTableView::StateTableView(QWidget *parent)
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setSelectionMode(QAbstractItemView::ExtendedSelection);
     setIndentation(8);
-    setFocusPolicy(Qt::NoFocus); // keep the dotted border off of things
+    //setFocusPolicy(Qt::NoFocus); // keep the dotted border off of things
+    setFocusPolicy(Qt::ClickFocus);
 
     setItemDelegate(m_delegate);
     setHeader(m_header);
@@ -201,10 +202,10 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
             a->setData(group_name);
             connect(a, SIGNAL(triggered()), set, SLOT(toggle_for_dwarf_group()));
         } else { // single dwarf labor
-            // find the dwarf...
+            // find the dwarf...            
             int dwarf_id = idx.data(DwarfModel::DR_ID).toInt();
             Dwarf *d = m_model->get_dwarf_by_id(dwarf_id);
-            QAction *a = m.addAction(tr("Toggle %1 for %2").arg(set_name).arg(d->nice_name()));
+            QAction *a = m.addAction(tr("Toggle %1 for %2").arg(set_name).arg(d->nice_name()));            
             a->setData(dwarf_id);
             connect(a, SIGNAL(triggered()), set, SLOT(toggle_for_dwarf()));
         }
@@ -344,6 +345,7 @@ void StateTableView::select_dwarf(Dwarf *d) {
             }
         }
     }
+    m_selected = this->selectionModel()->selection();
 }
 /************************************************************************/
 /* Hey look, our own mouse handling (/rolleyes)                         */
@@ -366,10 +368,28 @@ void StateTableView::mouseReleaseEvent(QMouseEvent *event) {
 
 void StateTableView::clicked(const QModelIndex &idx) {
     if (m_last_button == Qt::LeftButton && // only activate on left-clicks
-        m_single_click_labor_changes && // only activated on single-click if the user set it that way
-        m_proxy && // we only do this for views that have proxies (dwarf views)
-        idx.column() != 0) // don't single-click activate the name column
-        m_proxy->cell_activated(idx);
+            m_single_click_labor_changes && // only activated on single-click if the user set it that way
+            m_proxy && // we only do this for views that have proxies (dwarf views)
+            idx.column() != 0) // don't single-click activate the name column
+    {
+        if(m_selected.count() > 1){
+            for(int i = 0; i<m_selected.count();i++){
+                const QModelIndex idx_sel = m_selected.at(i).indexes().at(idx.column());
+                m_proxy->cell_activated(idx_sel);
+                selectionModel()->select(
+                            QItemSelection(
+                                this->model()->index(idx_sel.row(),0),
+                                this->model()->index(idx_sel.row(),this->model()->columnCount()-1)),
+                            QItemSelectionModel::Select);
+            }
+        }else{
+            m_proxy->cell_activated(idx);
+        }
+    }else{
+        if(m_proxy && idx.column() == 0){
+            m_selected = selectionModel()->selection();
+        }
+    }
 }
 
 void StateTableView::header_clicked(int index) {
@@ -418,4 +438,11 @@ void StateTableView::restore_expanded_items() {
         expand(m_proxy->index(row, 0));
     }
     connect(this, SIGNAL(expanded(const QModelIndex &)), SLOT(index_expanded(const QModelIndex &)));
+}
+
+void StateTableView::keyPressEvent(QKeyEvent *event ){
+    if(event->key()==Qt::Key_Escape){
+        selectionModel()->clear();
+        m_selected.clear();
+    }
 }

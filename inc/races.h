@@ -20,57 +20,63 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef WORD_H
-#define WORD_H
+#ifndef RACES_H
+#define RACES_H
 
 #include <QtGui>
 #include "utils.h"
 
-class Dwarf;
 class DFInstance;
 class MemoryLayout;
+class Caste;
 
-class Word : public QObject {
+class Race : public QObject {
     Q_OBJECT
 public:
-    Word(DFInstance *df, VIRTADDR address, QObject *parent = 0);
-    virtual ~Word();
+    Race(DFInstance *df, VIRTADDR address, QObject *parent = 0);
+    virtual ~Race();
 
-    static Word* get_word(DFInstance *df, const VIRTADDR &address);
+    static Race* get_race(DFInstance *df, const VIRTADDR &address);
 
-    //! Return the memory address (in hex) of this creature in the remote DF process
+    //! Return the memory address (in hex) of this race in the remote DF process
     VIRTADDR address() {return m_address;}
 
-    QString base() {return m_base;}
-    QString noun() {return m_noun;}
-    QString plural_noun() {return m_plural_noun;}
+    int race_id() {return m_id;}
+    QString name() {return m_name;}
+    QString plural_name() {return m_name_plural;}
     QString adjective() {return m_adjective;}
-    QString prefix() {return m_prefix;}
-    QString verb() {return m_verb;}
-    QString present_simple_verb() {return m_present_simple_verb;}
-    QString past_simple_verb() {return m_past_simple_verb;}
-    QString past_participle_verb() {return m_past_participle_verb;}
-    QString present_participle_verb() {return m_present_participle_verb;}
+    QString description() {return m_description;}
+    QString baby_name() {return m_baby_name;}
+    QString baby_name_plural() {return m_baby_name_plural;}
+    QString child_name() {return m_child_name;}
+    QString child_name_plural() {return m_child_name_plural;}
+    VIRTADDR pref_string_vector() {return m_pref_string_vector;}
+    VIRTADDR pop_ratio_vector() {return m_pop_ratio_vector;}
+    VIRTADDR castes_vector() {return m_castes_vector;}
+    Caste *get_caste_by_id(int id) const {return m_castes.value(id, 0);}
 
-    void refresh_data();
+    void load_data();
 
 private:
     VIRTADDR m_address;
-    QString m_base;
-    QString m_noun;
-    QString m_plural_noun;
+    VIRTADDR m_pref_string_vector;
+    VIRTADDR m_pop_ratio_vector;
+    VIRTADDR m_castes_vector;
+    int m_id;
+    QString m_name;
+    QString m_name_plural;
     QString m_adjective;
-    QString m_prefix;
-    QString m_verb;
-    QString m_present_simple_verb;
-    QString m_past_simple_verb;
-    QString m_past_participle_verb;
-    QString m_present_participle_verb;
+    QString m_baby_name;
+    QString m_baby_name_plural;
+    QString m_child_name;
+    QString m_child_name_plural;
+    QString m_description;
+    QMap<int, Caste*> m_castes;
 
     DFInstance * m_df;
     MemoryLayout * m_mem;
 
-    void read_members();
+    void read_race();
 };
 
-#endif
+#endif // RACES_H

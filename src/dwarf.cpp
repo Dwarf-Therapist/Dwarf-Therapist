@@ -40,6 +40,9 @@ THE SOFTWARE.
 #include "militarypreference.h"
 #include "utils.h"
 #include "dwarfstats.h"
+#include "races.h"
+#include "caste.h"
+#include "reaction.h"
 
 Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     : QObject(parent)
@@ -67,6 +70,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_body_size(60000)
     , m_curse_name("")
     , m_animal_type(none)
+    , m_caste_id(-1)
 {
     read_settings();
     refresh_data();
@@ -129,6 +133,7 @@ void Dwarf::refresh_data() {
     // read everything we need
     read_id();
     read_race();
+    read_caste();
     read_first_name();
     read_last_name();
     read_nick_name();
@@ -143,7 +148,6 @@ void Dwarf::refresh_data() {
     read_turn_count();
     read_curse();
     read_sex();
-    read_caste();
     read_mood();
     read_body_size();
     read_animal_type(); //need skills loaded to check for hostiles
@@ -155,7 +159,26 @@ void Dwarf::refresh_data() {
     m_flag2 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags2"));
     m_pending_flag1 = m_flag1;
     m_pending_flag2 = m_flag2;
-    m_age = m_df->current_year() - m_df->read_short(m_address + m_mem->dwarf_offset("birth_year"));
+
+    //load time/date stuff for births/migrations
+    m_birth_year = m_df->read_short(m_address + m_mem->dwarf_offset("birth_year"));
+    m_age = m_df->current_year() - m_birth_year;
+    m_birth_time = m_df->read_int(m_address + m_mem->dwarf_offset("birth_time"));
+    quint32 current_year_time = m_df->current_year_time();
+    quint32 current_time = m_df->current_year() * 0x62700 + current_year_time;
+    quint32 arrival_time = current_time - m_turn_count;
+    quint32 ticks_per_day = 1200;
+    quint32 ticks_per_month = 28 * ticks_per_day;
+    quint32 ticks_per_season = 3 * ticks_per_month;
+    quint32 ticks_per_year = 12 * ticks_per_month;
+    quint32 arrival_year = arrival_time / ticks_per_year;
+    quint32 arrival_season = (arrival_time % ticks_per_year) / ticks_per_season;
+    quint32 arrival_month = (arrival_time % ticks_per_year) / ticks_per_month;
+    quint32 arrival_day = ((arrival_time % ticks_per_year) % ticks_per_month) / ticks_per_day;
+    quint32 time_since_birth = m_age * ticks_per_year + current_year_time - m_birth_time;
+    //this way we have the right sort order and all the data needed for the group by migration wave
+    m_migration_wave = 100000 * arrival_year + 10000 * arrival_season + 100 * arrival_month + arrival_day;
+    m_born_in_fortress = (time_since_birth == m_turn_count);
 
     TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name
             << "(" << m_translated_name << ")";
@@ -362,8 +385,11 @@ void Dwarf::read_last_name() {
         use_generic = true;
     }
 
-    m_last_name = read_chunked_name(addr, use_generic);
-    m_translated_last_name = read_chunked_name(addr);
+    m_translated_last_name = m_df->get_translated_word(addr);
+    if (use_generic)
+        m_last_name = m_translated_last_name;
+    else
+        m_last_name = m_df->get_language_word(addr);
 }
 
 
@@ -387,6 +413,8 @@ void Dwarf::calc_names() {
             m_translated_name = QString("'%1' %2").arg(m_pending_nick_name, m_translated_last_name);
         }
     }
+    m_nice_name = m_nice_name.trimmed();
+    m_translated_name = m_translated_name.trimmed();
     if (is_animal())
     {
         QString tametype = "";
@@ -429,10 +457,21 @@ void Dwarf::calc_names() {
             break;
         }
 
-        QString prof = (m_profession=="Child" ? " " + m_profession : "");
+        //QString prof = (m_profession=="Child" ? " " + m_profession : "");
         tametype = (tametype != "" ? " (" + tametype + ") " : " ");
 
-        m_nice_name = race_name(m_race_id) + prof + tametype + m_nice_name;
+        if (m_nice_name=="")
+        {
+            m_nice_name = "Stray " + race_name() + tametype;
+            m_translated_name = "Stray " + race_name();
+        }
+        else
+        {
+            m_nice_name += " " + race_name() + tametype;
+            m_translated_name += " " + race_name();
+        }
+
+        //m_nice_name = race_name(true) + prof + tametype + m_nice_name;
 
 
     }
@@ -549,10 +588,9 @@ void Dwarf::read_current_job() {
             if(sub_job_offset != -1) {
                 m_current_sub_job_id = m_df->read_string(current_job_addr + sub_job_offset);
                 if(!job->reactionClass.isEmpty() && !m_current_sub_job_id.isEmpty()) {
-                    RawObjectPtr reaction = GameDataReader::ptr()->
-                            get_reaction(job->reactionClass, m_current_sub_job_id);
-                    if(!reaction.isNull()) {
-                        m_current_job = capitalize(reaction->get_value("NAME", m_current_job));
+                    Reaction* reaction = m_df->get_reaction(m_current_sub_job_id);
+                    if(reaction!=0) {
+                        m_current_job = capitalize(reaction->name());
                         TRACE << "Sub job: " << m_current_sub_job_id << m_current_job;
                     }
                 }
@@ -618,26 +656,55 @@ Dwarf::DWARF_HAPPINESS Dwarf::happiness_from_score(int score) {
         return DH_ECSTATIC;
 }
 
-QString Dwarf::caste_name(short id) {
-    QString tmp_name = GameDataReader::ptr()->get_caste_name(id);
-    tmp_name = tmp_name.toLower().remove("female").remove("male").replace('_',' ');
-    if (tmp_name.size()>0 && tmp_name.trimmed() != ""){
-        tmp_name[0]=tmp_name[0].toUpper();
+QString Dwarf::caste_name() {
+    QString tmp_name = "Unknown";
+    Race* r = m_df->get_race(m_race_id);
+    if(m_caste_id >=0){
+        Caste* c = r->get_caste_by_id(m_caste_id);
+        tmp_name = c->name();
     }
-    if (tmp_name=="Male" || tmp_name=="Female" || tmp_name=="")
-        tmp_name="No caste";
     return tmp_name;
 }
 
-QString Dwarf::caste_desc(short id) {
-    QString tmp_desc = GameDataReader::ptr()->get_caste_desc(id);
+QString Dwarf::caste_desc() {
+    Race* r = m_df->get_race(m_race_id);
+    Caste* c = r->get_caste_by_id(m_caste_id);
+    QString tmp_desc = c->description();
     if(tmp_desc.size()>0)
         tmp_desc[0]=tmp_desc[0].toUpper();
     return tmp_desc;
 }
 
-QString Dwarf::race_name(int id) {
-    return GameDataReader::ptr()->get_race_name(id);
+QString Dwarf::race_name(bool base) {
+    QString race = "";
+    Race* r = m_df->get_race(m_race_id);
+    if (base)
+        race = r->name();
+    else if (profession()=="Baby")
+    {
+        race = r->baby_name();
+        if (race=="")
+        {
+            if (is_animal())
+                race = caste_name() + " Baby";
+            else
+                race = r->name() + " Baby";
+        }
+    }
+    else if (profession()=="Child")
+        race = r->child_name();
+    else if (profession()=="Trained War")
+        race = "War " + r->name();
+    else if (profession()=="Trained Hunter")
+        race = "Hunting " + r->name();
+    else
+    {
+        if (is_animal())
+            race = caste_name();
+        else
+            race = r->name();
+    }
+    return race;
 }
 
 QString Dwarf::happiness_name(DWARF_HAPPINESS happiness) {
@@ -657,6 +724,19 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     MemoryLayout *mem = df->memory_layout();
     TRACE << "attempting to load dwarf at" << addr << "using memory layout"
             << mem->game_version();
+
+    //only for test
+    bool check_all = false;
+    if (check_all)
+    {
+        Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
+        return unverified_dwarf;
+    }
+
+    WORD civ_id = df->read_word(addr + mem->dwarf_offset("civ"));
+    if (civ_id != df->dwarf_civ_id()){
+        return 0;
+    }
 
     quint32 flags1 = df->read_addr(addr + mem->dwarf_offset("flags1"));
     quint32 flags2 = df->read_addr(addr + mem->dwarf_offset("flags2"));
@@ -815,6 +895,8 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
             }
         }
 
+        //the civ_id and active unit vector check should take care of the kidnapped babies (UNTESTED)
+        /*
         //kidnapped flag? seems like it (0x200 is actually the 'rider' flag and sometimes flags unkidnapped babies)
         //however if a baby is dropped by a mother, this flag is also removed so still checking the 0x100 gone from map flag for now
         if(m_mood==8){ //babies have their own mood
@@ -825,6 +907,7 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
                 return 0;
             }
         }
+        */
 
     }
 
@@ -908,7 +991,7 @@ void Dwarf::read_traits() {
         if(val < 0)
             val = 0;
         if(val > 100)
-            val = 100;
+            val = 100;        
         m_traits.insert(i, val);
     }
 }
@@ -1203,7 +1286,8 @@ QString Dwarf::tooltip_text() {
         skill_summary.append(QString("<li>%1</li>").arg(skills->at(i).to_string()));
     }
     GameDataReader *gdr = GameDataReader::ptr();
-    for (int i = 0; i <= m_traits.size(); ++i) {
+    //traits start at 1..
+    for (int i = 0; i < m_traits.size(); ++i) {
         if (trait_is_active(i)){
             Trait *t = gdr->get_trait(i);
             if (!t)
@@ -1226,19 +1310,17 @@ QString Dwarf::tooltip_text() {
 
 
     QString tt = tr("<b><font size=5>%1</font><br/><font size=3>(%2)</font></b><br/>").arg(m_nice_name).arg(m_translated_name);
-    tt += tr("<br><b>Caste:</b> %1<br/>").arg(caste_name(m_caste_id));
+    tt += tr("<br><b>Caste:</b> %1<br/>").arg(caste_name());
     tt += tr("<b>Happiness:</b> %1 (%2)<br/>").arg(happiness_name(m_happiness)).arg(m_raw_happiness);
     tt += tr("<b>Profession:</b> %1<br/><br/>").arg(profession());
     tt += tr("<b>Skills:</b><ul>%1</ul><br/>").arg(skill_summary);
     tt += tr("<b>Traits:</b> %1<br/>").arg(trait_summary);
     tt += tr("<br/><b>Top %1 Roles:</b><ul>%2</ul><br/>").arg(max_roles).arg(roles_summary);
 
-    //unused at the moment tt += tr("<br/>%1<br/>").arg(caste_desc(m_caste_id));
+    tt += tr("<br/>%1<br/>").arg(caste_desc());
 
     if(s->value("options/highlight_cursed", false).toBool() && curse_name() != "")
         tt += tr("<br/><b>Curse:</b> Cursed to prowl the night as a %1!").arg(curse_name());
-
-    //tt += tr("body size: %1").arg(m_body_size);
     return tt.trimmed();
 }
 
@@ -1325,25 +1407,17 @@ int Dwarf::total_assigned_labors() {
     return ret_val;
 }
 
-Attribute::level Dwarf::get_attribute_rating(int attribute)
-{
-    //int mean_value = 0; //set the mean value to 0 so that we're working with the raw values rather than a value adjusted to the mean
-    //**finally i'm not using the mean at all
-    //LOGD << "mean " << mean_value << " attribute " << attribute << " caste " << m_caste_id;
-    //Attribute::level ret_value;
+Caste::attribute_level Dwarf::get_attribute_rating(int attribute)
+{    
     int value = m_attributes.value(attribute);
 
-    //modify the return 'rating' values so they're spread more from 1 to 15 so that when painting with graphics it shows more of a difference
-    //(ie, shows the diamond graphic on that draw type for high values, but still show a tiny square for low values)
-
-    Attribute *a = GameDataReader::ptr()->get_attribute(attribute);
-
-    //if we have level range overrides, get them here
-    for(int i = 0; i < a->m_levels.length(); i++){
-        if(value <= a->m_levels.at(i).limit)
-            return a->m_levels.at(i);
+    Race* r = m_df->get_race(m_race_id);
+    Caste::attribute_level l;
+    if(m_caste_id >=0){
+        Caste* c = r->get_caste_by_id(m_caste_id);
+        l = c->get_attribute_level(attribute,value);
     }
-    return a->m_levels.at(a->m_levels.count()-1);
+    return l;
 }
 
 void Dwarf::calc_role_ratings(){
@@ -1464,9 +1538,8 @@ void Dwarf::calc_role_ratings(){
                             aspect_value = 1.0;
                         if(a.is_neg)
                             aspect_value = 1-aspect_value;
-
                         rating_skill += (aspect_value*weight);
-                        //rating_skill = (DwarfStats::get_skill_role_rating(skill_id.toInt(), get_skill(skill_id.toInt()).actual_exp()) * weight);
+
                         total_weight += weight;
 
                     }
@@ -1497,4 +1570,12 @@ void Dwarf::update_rating_list(){
     qSort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(), &Dwarf::sort_ratings);
     //refresh the tooltip as well
     //tooltip_text();
+}
+
+Reaction *Dwarf::get_reaction()
+{
+    if(m_current_sub_job_id.isEmpty())
+        return 0;
+    else
+        return m_df->get_reaction(m_current_sub_job_id);
 }

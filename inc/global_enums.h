@@ -26,4 +26,5 @@ typedef enum{
     hostile=10 //custom
 } ANIMAL_TYPE;
 
+
 #endif // GLOBAL_ENUMS_H

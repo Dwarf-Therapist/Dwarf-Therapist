@@ -133,7 +133,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="lbl_pending_changes_lbl_2">
+       <widget class="QLabel" name="lbl_dwarfs">
         <property name="text">
          <string>Dwarfs</string>
         </property>

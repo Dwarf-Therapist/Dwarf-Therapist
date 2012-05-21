@@ -91,7 +91,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     //connect to df first, we need to read raws for some ui elements first!!!
-    connect_to_df();
+    //connect_to_df();
 
     m_view_manager = new ViewManager(m_model, m_proxy, this);
     ui->v_box->addWidget(m_view_manager);
@@ -122,7 +122,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menuWindows->addAction(ui->main_toolbar->toggleViewAction());
 
     LOGD << "setting up connections for MainWindow";
-    connect(m_model, SIGNAL(new_creatures_count(int,int,int)), this, SLOT(new_creatures_count(int,int,int)));
+    connect(m_model, SIGNAL(new_creatures_count(int,int,int, QString)), this, SLOT(new_creatures_count(int,int,int, QString)));
     connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
     connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
     connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
@@ -285,10 +285,11 @@ void MainWindow::connect_to_df() {
         if (m_df->memory_layout() && m_df->memory_layout()->is_complete()) {
             // if the memory layout is still being mapped don't read all this
             // in yet
-            DT->load_game_translation_tables(m_df);
+            //DT->load_game_translation_tables(m_df);
             connect(m_df, SIGNAL(connection_interrupted()),
                     SLOT(lost_df_connection()));
 
+            m_df->load_game_data();
             //Read raws once memory layout is complete
             m_df->read_raws();
             if(m_view_manager)
@@ -311,14 +312,19 @@ void MainWindow::connect_to_df() {
         if (m_df->memory_layout()->is_complete()) {
             // if the memory layout is still being mapped don't read all this
             // in yet
-            DT->load_game_translation_tables(m_df);
+            //DT->load_game_translation_tables(m_df);
             connect(m_df, SIGNAL(connection_interrupted()),
                     SLOT(lost_df_connection()));
 
+            m_df->load_game_data();
             //Read raws once memory layout is complete
             m_df->read_raws();
             if(m_view_manager)
                 m_view_manager->reload_views();
+            if (DT->user_settings()->value("options/read_on_startup",
+                                           true).toBool()) {
+                read_dwarves();
+            }
         }
     } else {
         m_force_connect = true;
@@ -553,13 +559,17 @@ void MainWindow::list_pending() {
         m_view_manager, SLOT(jump_to_dwarf(QTreeWidgetItem *, QTreeWidgetItem *)));
 }
 
-void MainWindow::new_creatures_count(int adults, int children, int babies) {
+void MainWindow::new_creatures_count(int adults, int children, int babies, QString race_name) {
     ui->lbl_dwarf_total->setText(tr("%1/%2/%3").arg(adults).arg(children).arg(babies));
     ui->lbl_dwarf_total->setToolTip(tr("%1 Adult%2<br>%3 Child%4<br>%5 Bab%6<br>%7 Total Population")
                                     .arg(adults).arg(adults == 1 ? "" : "s")
                                     .arg(children).arg(children == 1 ? "" : "ren")
                                     .arg(babies).arg(babies == 1 ? "y" : "ies")
                                     .arg(adults+children+babies));
+    ui->lbl_dwarfs->setText(race_name);
+    ui->lbl_filter->setText("Filter " + race_name);
+    ui->act_read_dwarves->setText("Read " + race_name);
+    //TODO: update other interface stuff for the race name when using a custom race
 }
 
 void MainWindow::draw_professions() {
@@ -775,7 +785,7 @@ void MainWindow::refresh_roles_data(){
     //GameDataReader::ptr()->load_roles();
 
     DT->emit_roles_changed();
-    GameDataReader::ptr()->load_sorted_roles();
+    GameDataReader::ptr()->load_role_mappings();
 
     refresh_role_menus();
     m_view_manager->update();

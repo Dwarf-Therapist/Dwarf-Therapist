@@ -28,11 +28,13 @@ THE SOFTWARE.
 #include "skill.h"
 #include "utils.h"
 #include "global_enums.h"
+#include "caste.h"
 
 
 class DFInstance;
 class MemoryLayout;
 class CustomProfession;
+class Reaction;
 
 class Dwarf : public QObject
 {
@@ -100,7 +102,7 @@ public:
     Q_INVOKABLE int get_raw_happiness() {return m_raw_happiness;}
 
     //! return the level of the specified attribute of this dwarf
-    Attribute::level get_attribute_rating(int attribute);
+    Caste::attribute_level get_attribute_rating(int attribute);
 
     //! return this dwarf's strength attribute score    
     Q_INVOKABLE int strength() {return m_attributes.value(Attribute::AT_STRENGTH,-1);}
@@ -315,14 +317,14 @@ public:
     //! static method for mapping a value in the enum ATTRIBUTES_TYPE to a meaningful text string
     static QString attribute_level_name(Attribute::ATTRIBUTES_TYPE attribute, short value);
 
-    //! static method for mapping a caste id to a meaningful text name string
-    static QString caste_name(short id);
+    //! method for mapping a caste id to a meaningful text name string
+    QString caste_name();
 
     //! static method for mapping a caste id to a meaningful text description string
-    static QString caste_desc(short id);
+    QString caste_desc();
 
     //! static method for mapping a race id to a meaningful text string
-    static QString race_name(int id);
+    QString race_name(bool base = false);
 
     //! used for building a datamodel that shows all pending changes this dwarf has queued up
     QTreeWidgetItem *get_pending_changes_tree();
@@ -335,6 +337,12 @@ public:
 
     //! returns true if this dwarf can have labors specified on it
     Q_INVOKABLE bool can_set_labors() {return m_can_set_labors;}
+
+    //birth year/time invokables
+    Q_INVOKABLE quint32 get_birth_time() { return m_birth_time; }
+    Q_INVOKABLE quint32 get_birth_year() { return m_birth_year; }
+    Q_INVOKABLE bool born_in_fortress() { return m_born_in_fortress; }
+    Q_INVOKABLE void set_born_in_fortress(bool val) { m_born_in_fortress = val; }
 
     QString first_name() const {
         //qDebug() << "first_name called (from script?)";
@@ -352,6 +360,8 @@ public:
     int body_size() {return m_body_size;}
 
     bool has_state(short id){return m_states.contains(id);}
+
+    Reaction *get_reaction();
 
     public slots:
         //! called when global user settings change
@@ -421,6 +431,9 @@ private:
     QHash<QString, float> m_role_ratings;
     QList<QPair<QString,float> > m_sorted_role_ratings;
     QVector<short> m_states;
+    bool m_born_in_fortress;
+    quint32 m_birth_year;
+    quint32 m_birth_time;
 
     // these methods read data from raw memory
     void read_id();

@@ -84,6 +84,7 @@ public:
     QList<QPair<QString, Role*>  > get_ordered_roles() {return m_ordered_roles;}
     QHash<int, Attribute*> get_attributes() {return m_attributes;}
     QVector<QString> get_default_roles() {return m_default_roles;}
+    QHash<int,QVector<Role*> > get_skill_roles() {return m_skill_roles;}
 
     Labor *get_labor(const int &labor_id);
     Trait *get_trait(const int &trait_id);
@@ -95,7 +96,7 @@ public:
     Role *get_role(const QString &name);
 
     void load_roles();
-    void load_sorted_roles();
+    void load_role_mappings();
 
     Attribute *get_attribute(int attribute){return m_attributes.value(attribute);}
 
@@ -129,9 +130,6 @@ public:
     QHash<QString, weapon> get_weapons() {return m_weapons;}
     QList<QPair<QString, weapon> > get_ordered_weapons() {return m_ordered_weapons;}
 
-    QString get_race_name(int race_id);
-    QString get_caste_name(int caste_id);
-    QString get_caste_desc(int caste_id);
     //int get_attribute_mean_value(int attribute, int caste) {return m_attributes_mean_value.value(caste).value(attribute);}
 
     void read_raws(QDir df_dir);
@@ -168,6 +166,7 @@ private:
     QHash<QString, Role*> m_dwarf_roles;
     QList<QPair<QString, Role*> > m_ordered_roles;
     QVector<QString> m_default_roles;
+    QHash<int,QVector<Role*> > m_skill_roles;
 
     QHash<QString, QRawObjectList> m_reaction_classes;
     QHash<QString, QRawObjectList> m_creatures_classes;

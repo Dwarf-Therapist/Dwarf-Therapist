@@ -34,14 +34,12 @@ public:
     Attribute(QSettings &s, QObject *parent = 0);
     QString name;
     int id;
-    //QHash<int, QString> m_levels;
-    //QList<float> m_limits;
 
-    struct level{
-        QString description;
-        int rating;
-        int limit;
-    };
+//    struct level{
+//        QString description;
+//        int rating;
+//        int limit;
+//    };
 
     typedef enum {
         AT_STRENGTH = 0,
@@ -65,13 +63,14 @@ public:
         AT_SOCIAL_AWARENESS=18
     } ATTRIBUTES_TYPE;
 
-    QList<level> m_levels;
+    //QList<level> m_levels;
+    QVector<QString> m_display_descriptions;
 
     ASPECT_TYPE m_aspect_type;
 
 
 protected:
-    int find_attribute_limit(int id, int level_index);
+    void load_role_bin(int id);
 };
 
 #endif // ATTRIBUTE_H

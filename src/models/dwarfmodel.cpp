@@ -41,7 +41,10 @@ THE SOFTWARE.
 #include "laborcolumn.h"
 #include "skillcolumn.h"
 #include "spacercolumn.h"
+#include "races.h"
 
+QStringList DwarfModel::m_seasons;
+QStringList DwarfModel::m_months;
 
 DwarfModel::DwarfModel(QObject *parent)
     : QStandardItemModel(parent)
@@ -94,71 +97,6 @@ void DwarfModel::load_dwarves() {
         m_squads[s->id()] = s;
     }
     m_df->detach();
-
-    QList<Dwarf *> dwarves = m_dwarves.values();
-    qSort(dwarves.begin(), dwarves.end(), compare_turn_count);
-
-    //updated migration taking into account animals courtesy of Shisimaru
-    int wave = 0;
-    int wave_animals = 0;
-    const int wave_gap = 33600;
-    long long last_turn = -1;
-    long long last_turn_animals = -1;
-    for( int i = 0; i < dwarves.size(); i++ ) {
-        if (dwarves[i]->is_animal()==false)
-        {
-            long long turn = dwarves[i]->turn_count();
-            if( last_turn != -1 && last_turn - turn > wave_gap ) {
-                wave++;
-            }
-            last_turn = turn;
-            dwarves[i]->set_migration_wave(wave);
-        }
-        if (dwarves[i]->is_animal()==true)
-        {
-            long long turn = dwarves[i]->turn_count();
-            if( last_turn_animals != -1 && last_turn_animals - turn > wave_gap ) {
-                wave_animals++;
-            }
-            last_turn_animals = turn;
-            dwarves[i]->set_migration_wave(wave_animals);
-        }
-    }
-
-#if 0
-    int wave = 0;
-    const int wave_gap = 33600;
-    long long last_turn = -1;
-    for( int i = 0; i < dwarves.size(); i++ ) {
-        long long turn = dwarves[i]->turn_count();
-        if( last_turn != -1 && last_turn - turn > wave_gap ) {
-            wave++;
-        }
-        last_turn = turn;
-        dwarves[i]->set_migration_wave(wave);
-    }
-
-    // NOTE: This way no longer works due to the fact that historical
-    // figures now arrive in migration waves
-    /*! Let's try to guess the wave a dwarf arrived in based on ID.
-    The game appears to assign ids to creates in a serial manner.
-    Since at least 1 season seems to pass in between waves there is a
-    high likelihood that dwarves arriving in a new wave will be folling
-    several other creatures such as groundhogs and the like, thus
-    producing a gap in IDs of more than 1
-    */
-    int last_id = 0;
-    int wave = 0;
-    QList<int> ids = m_dwarves.uniqueKeys(); // get all ids
-    qSort(ids); // now in order;
-    for (int i = 0; i < ids.size(); ++i) {
-        int id = ids.at(i);
-        if ((id - last_id) > 5)
-            wave++;
-        last_id = id;
-        m_dwarves[id]->set_migration_wave(wave);
-    }
-#endif
 }
 
 void DwarfModel::build_rows() {
@@ -188,15 +126,15 @@ void DwarfModel::build_rows() {
             header->setData(set->name(), Qt::UserRole);
             setHorizontalHeaderItem(start_col++, header);
             switch (col->type()) {
-                case CT_SPACER:
-                    {
-                        SpacerColumn *c = static_cast<SpacerColumn*>(col);
-                        emit set_index_as_spacer(start_col - 1);
-                        emit preferred_header_size(start_col - 1, c->width());
-                    }
-                    break;
-                default:
-                    emit preferred_header_size(start_col - 1, width);
+            case CT_SPACER:
+            {
+                SpacerColumn *c = static_cast<SpacerColumn*>(col);
+                emit set_index_as_spacer(start_col - 1);
+                emit preferred_header_size(start_col - 1, c->width());
+            }
+                break;
+            default:
+                emit preferred_header_size(start_col - 1, width);
             }
         }
     }
@@ -206,64 +144,62 @@ void DwarfModel::build_rows() {
     int n_adults=0;
     int n_children=0;
     int n_babies=0;
+    QString race_name = "";
+
+    //setup calendar
+    build_calendar();
+
     foreach(Dwarf *d, m_dwarves) {
         if (only_animals)
         {
+            race_name = "Animals";
             if(d->is_animal())
             {
                 switch (m_group_by) {
-                    default:
-                    case GB_NOTHING:
-                        m_grouped_dwarves[QString::number(d->id())].append(d);
-                        break;
-                    case GB_SEX:
-                        if (d->is_male())
-                            m_grouped_dwarves[tr("Males")].append(d);
-                        else
-                            m_grouped_dwarves[tr("Females")].append(d);
-                        break;
-                    case GB_MIGRATION_WAVE:
-                        m_grouped_dwarves[QString("Wave %1").arg(d->migration_wave())].append(d);
-                        break;
-                    case GB_PROFESSION:
-                    case GB_LEGENDARY:
-                    case GB_HAPPINESS:
-                    case GB_CASTE:
-                    case GB_CURRENT_JOB:
-                    case GB_MILITARY_STATUS:
-                    case GB_HIGHEST_SKILL:
-                    case GB_TOTAL_SKILL_LEVELS:
-                    case GB_ASSIGNED_LABORS:
-                    case GB_RACE:
-                        if (d->profession() == "Baby" ||
-                            d->profession() == "Child" ||
-                            d->profession() == "Trained War" ||
-                            d->profession() == "Trained Hunter")
-                        {
-                            m_grouped_dwarves[d->race_name(d->get_race_id()) + " " + d->profession()].append(d);
-                        }
-                        else
-                            m_grouped_dwarves[d->race_name(d->get_race_id())].append(d);
-                        break;
+                default:
+                case GB_NOTHING:
+                    m_grouped_dwarves[QString::number(d->id())].append(d);
+                    break;
+                case GB_SEX:
+                    if (d->is_male())
+                        m_grouped_dwarves[tr("Males")].append(d);
+                    else
+                        m_grouped_dwarves[tr("Females")].append(d);
+                    break;
+                case GB_MIGRATION_WAVE:
+                    m_grouped_dwarves[get_migration_desc(d)].append(d);
+                    break;
+                case GB_PROFESSION:
+                case GB_LEGENDARY:
+                case GB_HAPPINESS:
+                case GB_CASTE:
+                case GB_CURRENT_JOB:
+                case GB_MILITARY_STATUS:
+                case GB_HIGHEST_SKILL:
+                case GB_TOTAL_SKILL_LEVELS:
+                case GB_ASSIGNED_LABORS:
+                case GB_RACE:
+                    m_grouped_dwarves[d->race_name(true)].append(d);
+                    break;
 
-                    case GB_HAS_NICKNAME:
-                        {
-                            if (d->nickname().isEmpty()) {
-                                m_grouped_dwarves[tr("No Nickname")].append(d);
-                            } else {
-                                m_grouped_dwarves[tr("Has Nickname")].append(d);
-                            }
-                        }
-                        break;
-                    case GB_SQUAD:
-                        {
-                            if(d->squad_name().isEmpty()) {
-                                m_grouped_dwarves[tr("No Squad")].append(d);
-                            } else {
-                                m_grouped_dwarves[d->squad_name()].append(d);
-                            }
-                        }
-                        break;
+                case GB_HAS_NICKNAME:
+                {
+                    if (d->nickname().isEmpty()) {
+                        m_grouped_dwarves[tr("No Nickname")].append(d);
+                    } else {
+                        m_grouped_dwarves[tr("Has Nickname")].append(d);
+                    }
+                }
+                    break;
+                case GB_SQUAD:
+                {
+                    if(d->squad_name().isEmpty()) {
+                        m_grouped_dwarves[tr("No Squad")].append(d);
+                    } else {
+                        m_grouped_dwarves[d->squad_name()].append(d);
+                    }
+                }
+                    break;
                 }
 
                 if(d->profession()=="Child")
@@ -278,117 +214,113 @@ void DwarfModel::build_rows() {
         {
             if(!d->is_animal())
             {
-                switch (m_group_by) {
-                    default:
-                    case GB_NOTHING:
-                        m_grouped_dwarves[QString::number(d->id())].append(d);
-                        break;
-                    case GB_PROFESSION:
-                        m_grouped_dwarves[d->profession()].append(d);
-                        break;
-                    case GB_LEGENDARY:
-                    {
-                        int legendary_skills = 0;
-                        foreach(Skill s, *d->get_skills()) {
-                            if (s.rating() >= 15)
-                                legendary_skills++;
-                        }
-                        if (legendary_skills)
-                            m_grouped_dwarves[tr("Legends")].append(d);
-                        else
-                            m_grouped_dwarves[tr("Losers")].append(d);
-                    }
-                    break;
-                    case GB_SEX:
-                        if (d->is_male())
-                            m_grouped_dwarves[tr("Males")].append(d);
-                        else
-                            m_grouped_dwarves[tr("Females")].append(d);
-                        break;
-                    case GB_HAPPINESS:
-                        m_grouped_dwarves[d->happiness_name(d->get_happiness())].append(d);
-                        break;
-                    case GB_MIGRATION_WAVE:
-                        m_grouped_dwarves[QString("Wave %1").arg(d->migration_wave())].append(d);
-                        break;
-                    case GB_CASTE:
-                        m_grouped_dwarves[d->caste_name(d->get_caste_id())].append(d);
-                        break;
-                    case GB_RACE:
-                        {
-                            if (d->profession() == "Baby" ||
-                                d->profession() == "Child" ||
-                                d->profession() == "Trained War" ||
-                                d->profession() == "Trained Hunter")
-                            {
-                                m_grouped_dwarves[d->race_name(d->get_race_id()) + " " + d->profession()].append(d);
-                            }
-                            else
-                                m_grouped_dwarves[d->race_name(d->get_race_id())].append(d);
-                        }
-                        break;
+                if(race_name.isEmpty()){
+                    Race* r = m_df->get_race(d->get_race_id());
+                    race_name = r->plural_name();
+                }
 
-                    case GB_CURRENT_JOB:
-                        m_grouped_dwarves[d->current_job()].append(d);
-                        break;
-                    case GB_MILITARY_STATUS:
-                        {
-                            // groups
-                            if (d->profession() == "Baby" ||
-                                d->profession() == "Child") {
-                                m_grouped_dwarves[tr("Juveniles")].append(d);
-                            } else if (d->active_military() && !d->can_set_labors()) { // epic military
-                                m_grouped_dwarves[tr("Champions")].append(d);
-                            } else if (!d->can_set_labors()) {
-                                m_grouped_dwarves[tr("Nobles")].append(d);
-                            } else if (d->active_military()) {
-                                m_grouped_dwarves[tr("Active Military")].append(d);
-                            } else {
-                                m_grouped_dwarves[tr("Can Activate")].append(d);
-                            }
-                            /*
+                switch (m_group_by) {
+                default:
+                case GB_NOTHING:
+                    m_grouped_dwarves[QString::number(d->id())].append(d);
+                    break;
+                case GB_PROFESSION:
+                    m_grouped_dwarves[d->profession()].append(d);
+                    break;
+                case GB_LEGENDARY:
+                {
+                    int legendary_skills = 0;
+                    foreach(Skill s, *d->get_skills()) {
+                        if (s.rating() >= 15)
+                            legendary_skills++;
+                    }
+                    if (legendary_skills)
+                        m_grouped_dwarves[tr("Legends")].append(d);
+                    else
+                        m_grouped_dwarves[tr("Losers")].append(d);
+                }
+                    break;
+                case GB_SEX:
+                    if (d->is_male())
+                        m_grouped_dwarves[tr("Males")].append(d);
+                    else
+                        m_grouped_dwarves[tr("Females")].append(d);
+                    break;
+                case GB_HAPPINESS:
+                    m_grouped_dwarves[d->happiness_name(d->get_happiness())].append(d);
+                    break;
+                case GB_MIGRATION_WAVE:
+                    m_grouped_dwarves[get_migration_desc(d)].append(d);
+                    break;
+
+                case GB_CASTE:
+                    m_grouped_dwarves[d->caste_name()].append(d);
+                    break;
+                case GB_RACE:
+                    m_grouped_dwarves[d->race_name(true)].append(d);
+                    break;
+
+                case GB_CURRENT_JOB:
+                    m_grouped_dwarves[d->current_job()].append(d);
+                    break;
+                case GB_MILITARY_STATUS:
+                {
+                    // groups
+                    if (d->profession() == "Baby" ||
+                            d->profession() == "Child") {
+                        m_grouped_dwarves[tr("Juveniles")].append(d);
+                    } else if (d->active_military() && !d->can_set_labors()) { // epic military
+                        m_grouped_dwarves[tr("Champions")].append(d);
+                    } else if (!d->can_set_labors()) {
+                        m_grouped_dwarves[tr("Nobles")].append(d);
+                    } else if (d->active_military()) {
+                        m_grouped_dwarves[tr("Active Military")].append(d);
+                    } else {
+                        m_grouped_dwarves[tr("Can Activate")].append(d);
+                    }
+                    /*
                             4a) Heroes and Champions (who cannot deactivate)
                             4b) Non-Heroic Soldiers and Guards (who can deactivate)
                             4c) Civilians (who can activate)
                             4d) Juveniles (who may one day activate)
                             4e) Immigrant Nobles (who are forever off-limits)
                             */
-                        }
-                        break;
-                    case GB_HIGHEST_SKILL:
-                        {
-                            Skill highest = d->highest_skill();
-                            GameDataReader *gdr = GameDataReader::ptr();
-                            QString level = gdr->get_skill_level_name(highest.rating());
-                            m_grouped_dwarves[level].append(d);
-                        }
-                        break;
-                    case GB_TOTAL_SKILL_LEVELS:
-                        m_grouped_dwarves[tr("Levels: %1").arg(d->total_skill_levels())]
+                }
+                    break;
+                case GB_HIGHEST_SKILL:
+                {
+                    Skill highest = d->highest_skill();
+                    GameDataReader *gdr = GameDataReader::ptr();
+                    QString level = gdr->get_skill_level_name(highest.rating());
+                    m_grouped_dwarves[level].append(d);
+                }
+                    break;
+                case GB_TOTAL_SKILL_LEVELS:
+                    m_grouped_dwarves[tr("Levels: %1").arg(d->total_skill_levels())]
                             .append(d);
-                        break;
-                    case GB_ASSIGNED_LABORS:
-                        m_grouped_dwarves[tr("%1 Assigned Labors")
-                                          .arg(d->total_assigned_labors())].append(d);
-                        break;
-                    case GB_HAS_NICKNAME:
-                        {
-                            if (d->nickname().isEmpty()) {
-                                m_grouped_dwarves[tr("No Nickname")].append(d);
-                            } else {
-                                m_grouped_dwarves[tr("Has Nickname")].append(d);
-                            }
-                        }
-                        break;
-                    case GB_SQUAD:
-                        {
-                            if(d->squad_name().isEmpty()) {
-                                m_grouped_dwarves[tr("No Squad")].append(d);
-                            } else {
-                                m_grouped_dwarves[d->squad_name()].append(d);
-                            }
-                        }
-                        break;
+                    break;
+                case GB_ASSIGNED_LABORS:
+                    m_grouped_dwarves[tr("%1 Assigned Labors")
+                            .arg(d->total_assigned_labors())].append(d);
+                    break;
+                case GB_HAS_NICKNAME:
+                {
+                    if (d->nickname().isEmpty()) {
+                        m_grouped_dwarves[tr("No Nickname")].append(d);
+                    } else {
+                        m_grouped_dwarves[tr("Has Nickname")].append(d);
+                    }
+                }
+                    break;
+                case GB_SQUAD:
+                {
+                    if(d->squad_name().isEmpty()) {
+                        m_grouped_dwarves[tr("No Squad")].append(d);
+                    } else {
+                        m_grouped_dwarves[d->squad_name()].append(d);
+                    }
+                }
+                    break;
                 }
 
                 if(d->profession()=="Child")
@@ -403,9 +335,61 @@ void DwarfModel::build_rows() {
 
     foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
         build_row(key);
-        //n_creatures+=m_grouped_dwarves.value(key).count();
     }
-    emit new_creatures_count(n_adults,n_children,n_babies);
+    emit new_creatures_count(n_adults,n_children,n_babies,race_name);
+}
+
+QString DwarfModel::get_migration_desc(Dwarf *d){
+    qint32 wave = d->migration_wave();
+    quint32 season = 0;
+    quint32 year = 0;
+    quint32 month = 0;
+    quint32 day = 0;
+    QString suffix = "th";
+
+    day = (wave % 100) + 1;
+    month = (wave / 100) % 100;
+    season = (wave / 10000) % 10;
+    year = wave / 100000;
+    if ((day == 1) || (day == 21))
+        suffix = "st";
+    else if ((day == 2) || (day == 22))
+        suffix = "nd";
+    else if ((day == 3) || (day == 23))
+        suffix = "rd";
+    else
+        suffix = "th";
+    if (d->born_in_fortress())
+    {
+        return QString("Born on the %1%4 of %2 in the year %3").arg(day).arg(m_months.at(month)).arg(year).arg(suffix);
+    }
+    else
+    {
+        return QString("Arrived in the %2 of the year %1").arg(year).arg(m_seasons.at(season));
+    }
+    return "Unknown Arrival";
+}
+
+void DwarfModel::build_calendar(){
+    if(m_seasons.length()<=0 || m_months.length()<=0){
+        m_seasons.append("Spring");
+        m_seasons.append("Summer");
+        m_seasons.append("Autumn");
+        m_seasons.append("Winter");
+
+        m_months.append("Granite");
+        m_months.append("Slate");
+        m_months.append("Felsite");
+        m_months.append("Hematite");
+        m_months.append("Malachite");
+        m_months.append("Galena");
+        m_months.append("Limestone");
+        m_months.append("Sandstone");
+        m_months.append("Timber");
+        m_months.append("Moonstone");
+        m_months.append("Opal");
+        m_months.append("Obsidian");
+    }
 }
 
 void DwarfModel::build_row(const QString &key) {
@@ -571,6 +555,14 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
         QModelIndex right = index(rowCount(first_col) - 1, columnCount(first_col) - 1, first_col);
         emit dataChanged(left, right); // tell the view we changed every dwarf under this agg to pick up implicit exclusive changes
     } else {
+        //integer z;
+//        for(int i = 0; i < idx ->selectionModel()->selectedIndexes().count();i++)
+//        {
+//            QModelIndex id = this->selectionModel()->selectedIndexes().at(i);
+//            int id_dwarf = id.data(DwarfModel::DR_ID).toInt();
+//            Dwarf *d = m_model->get_dwarf_by_id(id_dwarf);
+//        }
+
         if (!dwarf_id) {
             LOGW << "dwarf_id was 0 for cell at" << idx << "!";
         } else {
@@ -635,8 +627,8 @@ QVector<Dwarf*> DwarfModel::get_dirty_dwarves() {
     foreach(Dwarf *d, m_dwarves) {
         if (d->pending_changes())
             dwarves.append(d);
-    }
-    return dwarves;
+    }    
+    return dwarves;    
 }
 
 QModelIndex DwarfModel::findOne(const QVariant &needle, int role, int column, const QModelIndex &start_index) {

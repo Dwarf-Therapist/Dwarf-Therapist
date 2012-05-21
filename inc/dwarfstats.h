@@ -41,12 +41,13 @@ public:
     static void load_attribute_bins(ASPECT_TYPE, QList<int>);
     static float get_attribute_role_rating(ASPECT_TYPE, int);
     static float get_trait_role_rating(ASPECT_TYPE, int);
-    static float get_skill_role_rating(int, int);
+    //static float get_skill_role_rating(int skill_id, int value);
 
     static QHash<ASPECT_TYPE, QList<bin> > m_trait_bins;
     static void load_trait_bins(ASPECT_TYPE, QList<int>);
 
     //static QHash<int, QVector<int>* > m_dwarf_skills;
+    //static void load_skills(QVector<Dwarf *> dwarves);
 
 private:
 //    static QVector<float> m_dwarf_skill_mean;
@@ -54,7 +55,7 @@ private:
 
     static QHash<ASPECT_TYPE, QList<bin> > m_attribute_bins;
 
-    static float get_aspect_role_rating(int value, QList<bin> m_bins);
+    static float get_aspect_role_rating(float value, QList<bin> m_bins);
 };
 
 #endif // DWARFSTATS_H

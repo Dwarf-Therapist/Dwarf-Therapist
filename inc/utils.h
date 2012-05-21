@@ -157,4 +157,14 @@ static inline QString capitalize(const QString & word) {
     return result;
 }
 
+static inline QString capitalizeEach(const QString & word){
+    QString result = word;
+    QStringList list = result.split(" ");
+    for(int i=0; i<list.length(); i++){
+        list[i] = capitalize(list[i]);
+    }
+    result = list.join(" ");
+    return result;
+}
+
 #endif // UTILS_H

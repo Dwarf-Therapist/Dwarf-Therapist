@@ -32,37 +32,30 @@ class Trait : public QObject {
 public:
     Trait(int trait_id, const QSettings &s, QObject *parent = 0)
 		: QObject(parent)
-	{
-		name = s.value("name", "UNKNOWN").toString();
+    {
+        name = s.value("name", "UNKNOWN").toString();
         this->trait_id = trait_id;// s.value("trait_id", -1).toInt();
-		m_level_string[0]  = s.value("level_0", "UNKNOWN TRAIT 0(" + name + ")").toString();
-		m_level_string[10] = s.value("level_1", "UNKNOWN TRAIT 1(" + name + ")").toString();
-		m_level_string[25] = s.value("level_2", "UNKNOWN TRAIT 2(" + name + ")").toString();
-		m_level_string[61] = s.value("level_3", "UNKNOWN TRAIT 3(" + name + ")").toString();
-		m_level_string[76] = s.value("level_4", "UNKNOWN TRAIT 4(" + name + ")").toString();
-		m_level_string[91] = s.value("level_5", "UNKNOWN TRAIT 5(" + name + ")").toString();
+        m_level_string[0]  = s.value("level_0", "UNKNOWN TRAIT 0(" + name + ")").toString();
+        m_level_string[10] = s.value("level_1", "UNKNOWN TRAIT 1(" + name + ")").toString();
+        m_level_string[25] = s.value("level_2", "UNKNOWN TRAIT 2(" + name + ")").toString();
+        m_level_string[61] = s.value("level_3", "UNKNOWN TRAIT 3(" + name + ")").toString();
+        m_level_string[76] = s.value("level_4", "UNKNOWN TRAIT 4(" + name + ")").toString();
+        m_level_string[91] = s.value("level_5", "UNKNOWN TRAIT 5(" + name + ")").toString();
 
         //setup aspect types and load bins
         QList<int> raws;
-        //immoderation (urge) and straightforwardness (honesty are +
-        if(trait_id==5 || trait_id==20){
+        raws << -1 << 11 << 27 << 44 << 65 << 78 << 92 << 100;
+
+        //immoderation (urge) and straightforwardness (honesty) are +
+        if(trait_id==4 || trait_id==19)
             m_aspect_type = positive;
-            raws << 0 << 11 << 27 << 44 << 65 << 78 << 92 << 100;
-            DwarfStats::load_trait_bins(positive, raws);
-        }
-        //vulnerability (stress) is -
-        else if(trait_id==6){
+        else if(trait_id==5) //vulnerability (stress) is -
             m_aspect_type = negative;
-            raws << 0 << 9 << 22 << 36 << 57 << 73 << 90 << 101;
-            DwarfStats::load_trait_bins(negative, raws);
-        }
-        //everything else
-        else{
+        else //everything else
             m_aspect_type = average;
-            raws << 0 << 10 << 25 << 40 << 61 << 76 << 91 << 101;
-            DwarfStats::load_trait_bins(average, raws);
-        }
-	}
+
+        DwarfStats::load_trait_bins(m_aspect_type, raws);
+    }
 
 	QString level_message(const short &val) {
 		if (val >= 91)

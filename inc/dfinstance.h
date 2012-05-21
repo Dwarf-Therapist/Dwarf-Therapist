@@ -31,6 +31,9 @@ class Dwarf;
 class Squad;
 class MemoryLayout;
 struct MemorySegment;
+class Languages;
+class Reaction;
+class Race;
 
 class DFInstance : public QObject {
     Q_OBJECT
@@ -51,6 +54,7 @@ public:
     QList<MemoryLayout*> get_layouts() { return m_memory_layouts.values(); }
     QDir get_df_dir() { return m_df_dir; }
     short current_year() {return (short)m_current_year;}
+    WORD dwarf_civ_id() {return m_dwarf_civ_id;}
 
     // brute force memory scanning methods
     bool is_valid_address(const VIRTADDR &addr);
@@ -111,6 +115,8 @@ public:
     virtual bool attach() = 0;
     virtual bool detach() = 0;
 
+    quint32 current_year_time() {return m_cur_year_tick;}
+
     // Windows string offsets
 #ifdef Q_WS_WIN
     static const int STRING_BUFFER_OFFSET = 4;  // Default value for older windows releases
@@ -135,6 +141,12 @@ public:
     virtual quint32 calculate_checksum() = 0;
     MemoryLayout *get_memory_layout(QString checksum, bool warn = true);
 
+    void load_game_data();
+    QString get_language_word(VIRTADDR addr);
+    QString get_translated_word(VIRTADDR addr);
+    Reaction * get_reaction(QString tag) { return m_reactions.value(tag, 0); }
+    Race * get_race(const uint & offset) { return m_races.value(offset, NULL); }
+
     public slots:
         // if a menu cancels our scan, we need to know how to stop
         void cancel_scan() {m_stop_scan = true;}
@@ -156,10 +168,12 @@ protected:
     QTimer *m_memory_remap_timer;
     QTimer *m_scan_speed_timer;
     WORD m_dwarf_race_id;
+    WORD m_dwarf_civ_id;
     WORD m_current_year;
     QDir m_df_dir;
     QVector<Dwarf*> actual_dwarves;
     int calc_progress;
+    quint32 m_cur_year_tick;
 
     /*! this hash will hold a map of all loaded and valid memory layouts found
         on disk, the key is a QString of the checksum since other OSs will use
@@ -184,6 +198,10 @@ signals:
 
 private:
     QTime t;
+    Languages* m_languages;
+    QHash<QString, Reaction *> m_reactions;
+    QVector<Race *> m_races;
+    QVector<VIRTADDR> get_creatures();
 };
 
 #endif // DFINSTANCE_H

@@ -66,7 +66,7 @@ public:
         void read_dwarves();
         void scan_memory();
         void new_pending_changes(int);
-        void new_creatures_count(int,int,int);
+        void new_creatures_count(int,int,int,QString);
         void lost_df_connection();
 
         //settings
