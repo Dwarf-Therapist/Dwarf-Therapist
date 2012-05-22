@@ -179,7 +179,9 @@ bool DFInstanceLinux::attach() {
 }
 
 bool DFInstanceLinux::detach() {
-    TRACE << "STARTING DETACH" << m_attach_count;
+    //TRACE << "STARTING DETACH" << m_attach_count;\
+    if(m_memory_file.isOpen())
+        m_memory_file.close();
     m_attach_count--;
     if (m_attach_count > 0) {
         TRACE << "NO NEED TO DETACH SKIPPING..." << m_attach_count;
@@ -196,13 +198,13 @@ int DFInstanceLinux::read_raw(const VIRTADDR &addr, int bytes, QByteArray &buffe
     attach();
 
     // open the memory virtual file for this proc (can only read once
-    // attached and child is stopped
-    QFile mem_file(QString("/proc/%1/mem").arg(m_pid));
-    if (!mem_file.open(QIODevice::ReadOnly)) {
-        LOGE << "Unable to open" << mem_file.fileName();
+    // attached and child is stopped    
+    if (!m_memory_file.isOpen() && !m_memory_file.open(QIODevice::ReadOnly)) {
+        LOGE << "Unable to open" << m_memory_file.fileName();
         detach();
         return 0;
     }
+
     int bytes_read = 0; // tracks how much we've read of what was asked for
     int step_size = 0x1000; // how many bytes to read each step
     QByteArray chunk(step_size, 0); // our temporary memory container
@@ -214,12 +216,11 @@ int DFInstanceLinux::read_raw(const VIRTADDR &addr, int bytes, QByteArray &buffe
     for(VIRTADDR ptr = addr; ptr < addr+ bytes; ptr += step_size) {
         if (ptr+step_size > addr + bytes)
             step_size = addr + bytes - ptr;
-        mem_file.seek(ptr);
-        chunk = mem_file.read(step_size);
+        m_memory_file.seek(ptr);
+        chunk = m_memory_file.read(step_size);
         buffer.replace(bytes_read, chunk.size(), chunk);
         bytes_read += chunk.size();
-    }
-    mem_file.close();
+    }    
     detach();
     return bytes_read;
 }

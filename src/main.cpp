@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 
 int main(int argc, char *argv[]) {
+    QApplication::setGraphicsSystem("raster");
     DwarfTherapist d(argc, argv);
     return d.exec();
 }

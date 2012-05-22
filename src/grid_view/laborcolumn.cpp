@@ -63,26 +63,28 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
 	item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
 	
     QString role_str="";
-    if (DT->user_settings()->value("options/show_toolbutton_text", true).toBool()) {
+    if (DT->user_settings()->value("options/show_roles_in_labor", true).toBool()) {
 
         float role_rating=0;
         if(m_skill_id != -1){
             QVector<Role*> found_roles = GameDataReader::ptr()->get_skill_roles().value(m_skill_id);
-            float sortVal = 0;
-            role_rating = 0;
+            if(found_roles.count() > 0){
+                float sortVal = 0;
+                role_rating = 0;
 
-            //just list roles and %
-            role_str = tr("<h4>Related Roles:</h4><ul style=\"margin-left:-30px; padding-left:0px;\">");
-            foreach(Role *r, found_roles){
-                role_rating = d->get_role_rating(r->name);
-                role_str += tr("<li>%1 (%2%)</li>").arg(r->name).arg(QString::number(role_rating,'f',2));
-                sortVal += role_rating;
-                if(d->labor_enabled(m_labor_id))
-                    sortVal += 1000;
+                //just list roles and %
+                role_str = tr("<h4>Related Roles:</h4><ul style=\"margin-left:-30px; padding-left:0px;\">");
+                foreach(Role *r, found_roles){
+                    role_rating = d->get_role_rating(r->name);
+                    role_str += tr("<li>%1 (%2%)</li>").arg(r->name).arg(QString::number(role_rating,'f',2));
+                    sortVal += role_rating;
+                    if(d->labor_enabled(m_labor_id))
+                        sortVal += 1000;
+                }
+                role_str += "</ul>";
+                sortVal /= found_roles.count();
+                item->setData(sortVal,DwarfModel::DR_SORT_VALUE);
             }
-            role_str += "</ul>";
-            sortVal /= found_roles.count();
-            item->setData(sortVal,DwarfModel::DR_SORT_VALUE);
         }
     }
 
