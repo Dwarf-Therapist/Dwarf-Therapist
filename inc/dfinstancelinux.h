@@ -26,7 +26,10 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "dwarf.h"
 
+#include <QHash>
+
 class MemoryLayout;
+class MemorySegment;
 
 class DFInstanceLinux : public DFInstance {
     Q_OBJECT
@@ -50,11 +53,25 @@ public:
     bool attach();
     bool detach();
 
-
 protected:
     uint calculate_checksum();
+
 private:
+    int wait_for_stopped();
+    VIRTADDR find_injection_address();
+    qint32 remote_syscall(int syscall_id,
+                          qint32 arg0 = 0, qint32 arg1 = 0, qint32 arg2 = 0,
+                          qint32 arg3 = 0, qint32 arg4 = 0, qint32 arg5 = 0);
+
+    VIRTADDR mmap_area(VIRTADDR start, int size);
+    VIRTADDR alloc_chunk(int size);
+    VIRTADDR get_string(const QString &str);
+
     QFile m_memory_file;
+    MemorySegment *m_executable;
+    VIRTADDR m_inject_addr;
+    VIRTADDR m_alloc_start, m_alloc_end;
+    QHash<QString, VIRTADDR> m_string_cache;
 };
 
 #endif // DFINSTANCE_H

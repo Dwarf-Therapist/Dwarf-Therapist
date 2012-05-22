@@ -82,7 +82,7 @@ void Squad::read_members() {
         int ref_id = m_df->read_int(member_addr);
         if(ref_id != -1) {
             foreach(Dwarf * d, dm->get_dwarves()) {
-                if(d->get_squad_ref_id() == ref_id) {
+                if(!d->is_animal() && d->get_squad_ref_id() == ref_id) {
                     TRACE << "Squad member ref_id" << ref_id << "refers to" << d->nice_name();
                     m_members << d;
                     d->m_squad_name = name();

@@ -349,7 +349,10 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
     // we're connected, make sure we have good addresses
     VIRTADDR creature_vector = m_layout->address("creature_vector");
-    creature_vector += m_memory_correction;    
+    creature_vector += m_memory_correction;
+    VIRTADDR active_creature_vector = m_layout->address("active_creature_vector");
+    active_creature_vector += m_memory_correction;
+
     VIRTADDR dwarf_race_index = m_layout->address("dwarf_race_index");
     dwarf_race_index += m_memory_correction;
     VIRTADDR current_year = m_layout->address("current_year");
@@ -360,7 +363,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     VIRTADDR dwarf_civ_index = m_layout->address("dwarf_civ_index");
     dwarf_civ_index += m_memory_correction;
 
-    if (!is_valid_address(creature_vector)) {
+    if (!is_valid_address(creature_vector) || !is_valid_address(active_creature_vector)) {
         LOGW << "Active Memory Layout" << m_layout->filename() << "("
                 << m_layout->game_version() << ")" << "contains an invalid"
                 << "creature_vector address. Either you are scanning a new "
@@ -549,28 +552,33 @@ QVector<Squad*> DFInstance::load_squads() {
 void DFInstance::heartbeat() {
     // simple read attempt that will fail if the DF game isn't running a fort,
     // or isn't running at all
-//    QVector<VIRTADDR> creatures = enumerate_vector(
-//            m_layout->address("creature_vector") + m_memory_correction);
-    if (get_creatures().size() < 1) {
+    if (!is_valid_address(m_memory_correction + m_layout->address("dwarf_race_index"))) {
         // no game loaded, or process is gone
         emit connection_interrupted();
     }
 }
 
 QVector<VIRTADDR> DFInstance::get_creatures(){
-    VIRTADDR active_units = m_layout->address("creature_vector");
+    VIRTADDR active_units = m_layout->address("active_creature_vector");
     active_units += m_memory_correction;
-    VIRTADDR all_units = active_units - 0x10;
+    VIRTADDR all_units = m_layout->address("creature_vector");
+    all_units += m_memory_correction;
+
     //first try the active unit list
     QVector<VIRTADDR> entries = enumerate_vector(active_units);
     if(entries.isEmpty()){
+        LOGD << "no active units (embark) using full unit list";
         entries = enumerate_vector(all_units);
     }else{
-        //test an entry, when doing a reclaim, there will be active creatures, but they won't be of the same civ
-        //so the dwarf creation will fail and return 0
-        Dwarf *d = Dwarf::get_dwarf(this,entries.at(0));
-        if(d==0)
-            entries = enumerate_vector(all_units);
+        //there are active units, but are they ours?
+        foreach(VIRTADDR entry, entries){
+            if(read_word(entry + m_layout->dwarf_offset("civ"))==m_dwarf_civ_id){
+                LOGD << "using active units";
+                return entries;
+            }
+        }
+        LOGD << "no active units with our civ (reclaim), using full unit list";
+        entries = enumerate_vector(all_units);
     }
     return entries;
 }

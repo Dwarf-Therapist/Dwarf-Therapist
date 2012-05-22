@@ -226,12 +226,9 @@ void Dwarf::read_body_size(){
 
 void Dwarf::read_animal_type(){
     if(is_animal()){
-        if(m_skills.size() <= 0){
-            qint32 animal_offset = m_df->memory_layout()->dwarf_offset("animal_type");
-            if(animal_offset>=0)
-                m_animal_type = static_cast<ANIMAL_TYPE>(m_df->read_int(m_address + animal_offset));
-        }else
-            m_animal_type = hostile;
+        qint32 animal_offset = m_df->memory_layout()->dwarf_offset("animal_type");
+        if(animal_offset>=0)
+            m_animal_type = static_cast<ANIMAL_TYPE>(m_df->read_int(m_address + animal_offset));
     }
 }
 
@@ -743,7 +740,7 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     quint32 flags3 = df->read_addr(addr + mem->dwarf_offset("flags3"));
     WORD race_id = df->read_word(addr + mem->dwarf_offset("race"));
 
-    if (race_id != df->dwarf_race_id()) { // animals and other non-dwarves loaded here
+    if((flags1 & 0x4000000) == 0x4000000) { // tame animals loaded here
 
         Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
         TRACE << "examining dwarf at" << hex << addr;
@@ -790,14 +787,6 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
                     delete unverified_dwarf;
                     return 0;
                 }
-            }
-
-            //exclude hostile and wild animals
-            if(unverified_dwarf->m_animal_type==hostile || unverified_dwarf->m_animal_type==wild_untamed){
-                TRACE << "Ignoring" << unverified_dwarf->nice_name()
-                        << "who appears to be a hostile or wild animal";
-                delete unverified_dwarf;
-                return 0;
             }
         }
         return unverified_dwarf;
@@ -922,7 +911,6 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
 
     return unverified_dwarf;
 }
-
 
 bool Dwarf::get_flag_value(int bit)
 {
@@ -1173,8 +1161,10 @@ void Dwarf::commit_pending() {
     m_df->write_raw(m_address + mem->dwarf_offset("recheck_equipment"), 1,
                     &recheck_equipment);
 
-    if (m_pending_nick_name != m_nick_name)
+    if (m_pending_nick_name != m_nick_name){
         m_df->write_string(m_address + mem->dwarf_offset("nick_name"), m_pending_nick_name);
+        //m_df->write_string(m_address + m_first_soul + 0x4 + mem->dwarf_offset("nick_name"), m_pending_nick_name);
+    }
     if (m_pending_custom_profession != m_custom_profession)
         m_df->write_string(m_address + mem->dwarf_offset("custom_profession"), m_pending_custom_profession);
     if (m_pending_flag1 != m_flag1)
