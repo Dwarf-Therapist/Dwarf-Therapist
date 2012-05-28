@@ -83,14 +83,18 @@ QVector<VIRTADDR> DFInstanceWindows::enumerate_vector(const VIRTADDR &addr) {
     int entries = (end - start) / sizeof(VIRTADDR);
     TRACE << "there appears to be" << entries << "entries in this vector";
 
+    if (entries > 5000) {
+        LOGW << "vector at" << hexify(addr) << "has over 5000 entries! (" <<
+                entries << ")";
+    }
+
     if (m_layout->is_complete()) {
         Q_ASSERT(start >= 0);
         Q_ASSERT(end >= 0);
         Q_ASSERT(end >= start);
         Q_ASSERT((end - start) % 4 == 0);
         Q_ASSERT(start % 4 == 0);
-        Q_ASSERT(end % 4 == 0);
-        Q_ASSERT(entries < 5000);
+        Q_ASSERT(end % 4 == 0);        
     }
 
     for (VIRTADDR ptr = start; ptr < end; ptr += 4 ) {
@@ -178,6 +182,7 @@ int DFInstanceWindows::write_raw(const VIRTADDR &addr, const int &bytes,
     int bytes_written = 0;
     WriteProcessMemory(m_proc, (LPVOID)addr, (void*)buffer,
                        sizeof(uchar) * bytes, (DWORD*)&bytes_written);
+
     Q_ASSERT(bytes_written == bytes);
     return bytes_written;
 }

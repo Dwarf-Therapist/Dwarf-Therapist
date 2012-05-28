@@ -28,7 +28,6 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "squad.h"
 #include "word.h"
-#include "utils.h"
 #include "gamedatareader.h"
 #include "memorylayout.h"
 #include "cp437codec.h"
@@ -289,44 +288,13 @@ void DFInstance::load_game_data()
 
     emit progress_message(tr("Loading reactions"));
     m_reactions.clear();
-
-
-    attach();
-    LOGI << "Reading reactions names...";
-    VIRTADDR reactions_vector = m_layout->address("reactions_vector");
-    reactions_vector += m_memory_correction;
-    QVector<VIRTADDR> reactions = enumerate_vector(reactions_vector);
-    TRACE << "FOUND" << reactions.size() << "reactions";
-    emit progress_range(0, reactions.size()-1);
-    if (!reactions.empty()) {
-        int i = 0;
-        foreach(VIRTADDR reaction_addr, reactions) {
-            Reaction* r = Reaction::get_reaction(this, reaction_addr);
-            m_reactions.insert(r->tag(), r);
-            emit progress_value(i++);
-        }
-    }
-    detach();
+    QFuture<void> f = QtConcurrent::run(this,&DFInstance::load_reactions);
+    f.waitForFinished();
 
     emit progress_message(tr("Loading races and castes"));
     m_races.clear();
-
-
-    attach();
-    LOGI << "Reading races and castes...";
-    VIRTADDR races_vector = m_layout->address("races_vector");
-    races_vector += m_memory_correction;
-    QVector<VIRTADDR> races = enumerate_vector(races_vector);
-    TRACE << "FOUND" << races.size() << "races";
-    emit progress_range(0, races.size()-1);
-    if (!races.empty()) {
-        int i = 0;
-        foreach(VIRTADDR race_addr, races) {
-            m_races << Race::get_race(this, race_addr);
-            emit progress_value(i++);
-        }
-    }
-    detach();
+    f = QtConcurrent::run(this,&DFInstance::load_races_castes);
+    f.waitForFinished();
 
 }
 
@@ -445,6 +413,42 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     return dwarves;
 }
 
+void DFInstance::load_reactions(){
+    attach();
+    //LOGI << "Reading reactions names...";
+    VIRTADDR reactions_vector = m_layout->address("reactions_vector");
+    reactions_vector += m_memory_correction;
+    QVector<VIRTADDR> reactions = enumerate_vector(reactions_vector);
+    //TRACE << "FOUND" << reactions.size() << "reactions";
+    //emit progress_range(0, reactions.size()-1);
+    if (!reactions.empty()) {
+        foreach(VIRTADDR reaction_addr, reactions) {
+            Reaction* r = Reaction::get_reaction(this, reaction_addr);
+            m_reactions.insert(r->tag(), r);
+            //emit progress_value(i++);
+        }
+    }
+    detach();
+}
+
+void DFInstance::load_races_castes(){
+    attach();
+    //LOGI << "Reading races and castes...";
+    VIRTADDR races_vector = m_layout->address("races_vector");
+    races_vector += m_memory_correction;
+    QVector<VIRTADDR> races = enumerate_vector(races_vector);
+    //TRACE << "FOUND" << races.size() << "races";
+    //emit progress_range(0, races.size()-1);
+    if (!races.empty()) {
+        foreach(VIRTADDR race_addr, races) {
+            m_races << Race::get_race(this, race_addr);
+            //emit progress_value(i++);
+        }
+    }
+    detach();
+}
+
+
 void DFInstance::load_roles(){
     t.start();    
     calc_progress = 0;
@@ -529,17 +533,21 @@ QVector<Squad*> DFInstance::load_squads() {
 
     QVector<VIRTADDR> entries = enumerate_vector(squad_vector);
     TRACE << "FOUND" << entries.size() << "squads";
+    //QVector<VIRTADDR> inactive_squads = enumerate_vector(m_memory_correction + m_layout->address("inactive_squad_vector"));
 
     if (!entries.empty()) {
         emit progress_range(0, entries.size()-1);
         Squad *s = NULL;
         int i = 0;
         foreach(VIRTADDR squad_addr, entries) {
+            //if(!inactive_squads.contains(squad_addr)){
             s = Squad::get_squad(this, squad_addr);
             if (s) {
-                TRACE << "FOUND SQUAD" << hexify(squad_addr) << s->name();
-                squads << s;
+//                LOGD << "FOUND SQUAD" << hexify(squad_addr) << s->name() << " alias: " << alias
+//                     << " member count: " << s->assigned_count() << " id: " << s->id();
+                squads.push_front(s);
             }
+            //}
             emit progress_value(i++);
         }
     }
@@ -1122,4 +1130,37 @@ void DFInstance::calculate_scan_rate() {
     QString msg = QString("%L1MB/s").arg(rate);
     emit scan_message(msg);
     m_bytes_scanned = 0;
+}
+
+VIRTADDR DFInstance::find_historical_figure(int hist_id){
+    if(m_hist_figures.count() <= 0)
+        load_hist_figures();
+    return m_hist_figures.value(hist_id);
+}
+
+void DFInstance::load_hist_figures(){
+    QVector<VIRTADDR> hist_figs = enumerate_vector(m_memory_correction + memory_layout()->address("historical_figures"));
+    int hist_id = 0;
+    foreach(VIRTADDR fig, hist_figs){
+        hist_id = read_int(fig + memory_layout()->hist_figure_offset("id"));
+        m_hist_figures.insert(hist_id,fig);
+    }
+}
+
+VIRTADDR DFInstance::find_fake_identity(int hist_id){
+    VIRTADDR fig = find_historical_figure(hist_id);
+    if(fig){
+        VIRTADDR fig_info = read_addr(fig + memory_layout()->hist_figure_offset("hist_fig_info"));
+        VIRTADDR rep_info = read_addr(fig_info + memory_layout()->hist_figure_offset("reputation"));
+        int cur_ident = read_int(rep_info + memory_layout()->hist_figure_offset("current_ident"));
+        if(m_fake_identities.count() == 0)
+            m_fake_identities = enumerate_vector(m_memory_correction + memory_layout()->address("fake_identities"));
+        foreach(VIRTADDR ident, m_fake_identities){
+            int fake_id = read_int(ident);
+            if(fake_id==cur_ident){
+                return ident;
+            }
+        }
+    }
+    return 0;
 }

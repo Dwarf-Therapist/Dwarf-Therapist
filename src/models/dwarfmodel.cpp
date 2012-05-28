@@ -94,7 +94,7 @@ void DwarfModel::load_dwarves() {
 
     m_squads.clear();
     foreach(Squad * s, m_df->load_squads()) {
-        m_squads[s->id()] = s;
+        m_squads[s->id()] = s;        
     }
     m_df->detach();
 }
@@ -173,15 +173,21 @@ void DwarfModel::build_rows() {
                 case GB_LEGENDARY:
                 case GB_HAPPINESS:
                 case GB_CASTE:
+                    m_grouped_dwarves[d->caste_name()].append(d);
+                    break;
                 case GB_CURRENT_JOB:
                 case GB_MILITARY_STATUS:
                 case GB_HIGHEST_SKILL:
                 case GB_TOTAL_SKILL_LEVELS:
                 case GB_ASSIGNED_LABORS:
                 case GB_RACE:
-                    m_grouped_dwarves[d->race_name(true)].append(d);
+                {
+                    QString grp_name = d->race_name(true);
+                    if(d->profession() != "")
+                        grp_name += " (" + d->race_name(false) + ")";
+                    m_grouped_dwarves[grp_name].append(d);
                     break;
-
+                }
                 case GB_HAS_NICKNAME:
                 {
                     if (d->nickname().isEmpty()) {
@@ -250,9 +256,12 @@ void DwarfModel::build_rows() {
                     m_grouped_dwarves[d->happiness_name(d->get_happiness())].append(d);
                     break;
                 case GB_MIGRATION_WAVE:
-                    m_grouped_dwarves[get_migration_desc(d)].append(d);
+                {
+                    if(DT->user_settings()->value("options/hide_children_and_babies",true).toBool() == false
+                        || (d->profession()!="Child" && d->profession()!="Baby"))
+                        m_grouped_dwarves[get_migration_desc(d)].append(d);
                     break;
-
+                }
                 case GB_CASTE:
                     m_grouped_dwarves[d->caste_name()].append(d);
                     break;
@@ -410,7 +419,7 @@ void DwarfModel::build_row(const QString &key) {
         root = new QStandardItem(title);
         root->setData(true, DR_IS_AGGREGATE);
         root->setData(key, DR_GROUP_NAME);
-        root->setData(0, DR_RATING);
+        root->setData(0, DR_RATING);        
         //root->setData(title, DR_SORT_VALUE);
         // for integer based values we want to make sure they sort by the int
         // values instead of the string values
@@ -426,6 +435,8 @@ void DwarfModel::build_row(const QString &key) {
             root->setData(first_dwarf->total_assigned_labors(), DR_SORT_VALUE);
         } else if (m_group_by == GB_CASTE) {
             root->setData(first_dwarf->get_caste_id(), DR_SORT_VALUE);
+        } else if (m_group_by == GB_SQUAD){
+            root->setData(first_dwarf->squad_id(), DR_ID);
         }
         root_row << root;
     }
@@ -449,10 +460,16 @@ void DwarfModel::build_row(const QString &key) {
             f.setBold(true);
             i_name->setFont(f);
         }
+        if(m_group_by==GB_SQUAD && d->squad_position()==0){
+            i_name->setText("*"+i_name->text());
+            QFont f = i_name->font();
+            f.setItalic(true);
+            i_name->setFont(f);
+        }
 
         if(s->value("options/highlight_cursed",false).toBool()){
             if(d->curse_name() != "")
-                i_name->setBackground(QBrush(col_curse));            
+                i_name->setBackground(QBrush(col_curse));
         }
 
         i_name->setToolTip(d->tooltip_text());
@@ -462,16 +479,21 @@ void DwarfModel::build_row(const QString &key) {
         i_name->setData(d->id(), DR_ID);
         QVariant sort_val;
         switch(m_group_by) {
-            case GB_PROFESSION:
-                sort_val = d->raw_profession();
-                break;
-            case GB_HAPPINESS:
-                sort_val = d->get_raw_happiness();
-                break;
-            case GB_NOTHING:
-            default:
+        case GB_PROFESSION:
+            sort_val = d->raw_profession();
+            break;
+        case GB_HAPPINESS:
+            sort_val = d->get_raw_happiness();
+            break;
+        case GB_SQUAD:
+            sort_val = d->squad_position();
+            if(sort_val.toInt() < 0)
                 sort_val = d->nice_name();
-                break;
+            break;
+        case GB_NOTHING:
+        default:
+            sort_val = d->nice_name();
+            break;
         }
 
         i_name->setData(sort_val, DR_SORT_VALUE);

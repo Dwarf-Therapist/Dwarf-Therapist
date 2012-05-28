@@ -34,7 +34,6 @@ class DwarfModelProxy;
 class StateTableView : public QTreeView
 {
     Q_OBJECT
-
 public:
     StateTableView(QWidget *parent = 0);
     ~StateTableView();
@@ -92,6 +91,9 @@ private:
         void custom_profession_from_dwarf();
         void reset_custom_profession();
         void set_custom_profession_text();
+        void set_squad_name();
+        void assign_to_squad();
+        void remove_squad();
 
 signals:
     void new_custom_profession(Dwarf *d);

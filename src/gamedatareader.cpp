@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include "math.h"
 
 
+
 GameDataReader::GameDataReader(QObject *parent)
     : QObject(parent)
 {

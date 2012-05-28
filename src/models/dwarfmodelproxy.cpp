@@ -142,39 +142,39 @@ void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role) {
     Qt::SortOrder order;
     if (column == 0) {
         switch(role) {
-            default:
-            case DSR_NAME_ASC:
-                order = Qt::AscendingOrder;                
-                setSortRole(DwarfModel::DR_SORT_VALUE);
-                break;
-            case DSR_NAME_DESC:
-                order = Qt::DescendingOrder;
-                setSortRole(DwarfModel::DR_SORT_VALUE);
-                break;
-            case DSR_ID_ASC:
-                order = Qt::AscendingOrder;
-                setSortRole(DwarfModel::DR_ID);
-                break;
-            case DSR_ID_DESC:
-                order = Qt::DescendingOrder;
-                setSortRole(DwarfModel::DR_ID);
-                break;
-            case DSR_GAME_ORDER:
-                order = Qt::AscendingOrder;
-                setSortRole(DwarfModel::DR_SORT_VALUE);
-                break;
+        default:
+        case DSR_NAME_ASC:
+            order = Qt::AscendingOrder;
+            setSortRole(DwarfModel::DR_SORT_VALUE);
+            break;
+        case DSR_NAME_DESC:
+            order = Qt::DescendingOrder;
+            setSortRole(DwarfModel::DR_SORT_VALUE);
+            break;
+        case DSR_ID_ASC:
+            order = Qt::AscendingOrder;
+            setSortRole(DwarfModel::DR_ID);
+            break;
+        case DSR_ID_DESC:
+            order = Qt::DescendingOrder;
+            setSortRole(DwarfModel::DR_ID);
+            break;
+        case DSR_GAME_ORDER:
+            order = Qt::AscendingOrder;
+            setSortRole(DwarfModel::DR_SORT_VALUE);
+            break;
         }
     } else {
         switch(role) {
-            default:
-            case DSR_NAME_ASC:
-            case DSR_ID_ASC:
-                order = Qt::AscendingOrder;
-                break;
-            case DSR_NAME_DESC:
-            case DSR_ID_DESC:
-                order = Qt::DescendingOrder;
-                break;
+        default:
+        case DSR_NAME_ASC:
+        case DSR_ID_ASC:
+            order = Qt::AscendingOrder;
+            break;
+        case DSR_NAME_DESC:
+        case DSR_ID_DESC:
+            order = Qt::DescendingOrder;
+            break;
         }
         setSortRole(DwarfModel::DR_SORT_VALUE);
     }

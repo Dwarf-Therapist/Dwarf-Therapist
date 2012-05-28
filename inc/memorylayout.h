@@ -32,6 +32,9 @@ public:
     uint caste_offset(const QString & key) {
         return m_caste_offsets.value(key, -1);
     }
+    uint hist_figure_offset(const QString & key){
+        return m_hist_fig_offsets.value(key, -1);
+    }
 
     QSettings * data() { return m_data; }
     uint job_detail(const QString &key) {return m_job_details.value(key, -1);}
@@ -70,6 +73,7 @@ private:
     AddressHash m_word_offsets;
     AddressHash m_race_offsets;
     AddressHash m_caste_offsets;
+    AddressHash m_hist_fig_offsets;
     QHash<uint, QString> m_valid_flags_1;
     QHash<uint, QString> m_valid_flags_2;
     QHash<uint, QString> m_invalid_flags_1;

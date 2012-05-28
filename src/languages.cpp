@@ -97,9 +97,10 @@ QString Languages::language_word(VIRTADDR addr)
     // front_compound, rear_compound, first_adjective, second_adjective, hypen_compound
     // the_x, of_x
     QVector<QString> words;
-    int language_id = m_df->read_int(addr + 0x2c);
+    int language_id = m_df->read_int(addr + m_df->memory_layout()->word_offset("language_id")); //language_name.language
+    //language_name.words
     for (int i=0; i< 7; i++){
-        QString word = word_chunk(m_df->read_addr(addr + i*4), language_id);
+        QString word = word_chunk(m_df->read_int(addr + m_df->memory_layout()->word_offset("words") + i*4), language_id);
         words.append(word);
     }
     QString first, second, third;
@@ -123,9 +124,10 @@ QString Languages::english_word(VIRTADDR addr)
     // the_x, of_x
     QVector<QString> words;
     for (int i=0; i< 7; i++){
-        //part of speech
-        short val = m_df->read_short(addr + 0x1C + 2*i);
-        QString word = word_chunk_declined(m_df->read_addr(addr + i*4), val);
+        //enum for what word type
+        short val = m_df->read_short(addr + m_df->memory_layout()->word_offset("word_type") + 2*i);
+        //words id to lookup based on the word type
+        QString word = word_chunk_declined(m_df->read_int(addr + m_df->memory_layout()->word_offset("words") + i*4), val);
         words.append(word);
     }
     QString first, second, third;

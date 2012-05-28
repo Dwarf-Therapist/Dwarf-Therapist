@@ -147,7 +147,7 @@ MainWindow::MainWindow(QWidget *parent)
     statusBar()->addPermanentWidget(m_lbl_status, 0);
     set_interface_enabled(false);
 
-    ui->cb_group_by->setItemData(0, DwarfModel::GB_NOTHING);
+    ui->cb_group_by->setItemData(0, DwarfModel::GB_NOTHING);    
     ui->cb_group_by->addItem(tr("Caste"), DwarfModel::GB_CASTE);
     ui->cb_group_by->addItem(tr("Current Job"), DwarfModel::GB_CURRENT_JOB);
     ui->cb_group_by->addItem(tr("Happiness"), DwarfModel::GB_HAPPINESS);
@@ -644,7 +644,7 @@ void MainWindow::import_gridviews() {
     if (d.exec()) {
         GridViewDock *dock = qobject_cast<GridViewDock*>(QObject::findChild<GridViewDock*>("GridViewDock"));
         if (dock)
-            dock->draw_views();
+            dock->draw_views();        
     }
 }
 
@@ -839,27 +839,27 @@ void MainWindow::new_filter_script_chosen(const QString &script_name) {
 }
 
 void MainWindow::print_gridview() {
-    QPrinter printer;
-    //printer.setOutputFileName("woot.pdf");
-    //printer.setOutputFormat(QPrinter::PdfFormat);
-    printer.setOrientation(QPrinter::Landscape);
-    QPrintDialog *d = new QPrintDialog(&printer, this);
-    d->setWindowTitle(tr("Print GridView"));
-    if (d->exec() != QDialog::Accepted) {
-        return;
-    }
+//    QPrinter printer;
+//    //printer.setOutputFileName("woot.pdf");
+//    //printer.setOutputFormat(QPrinter::PdfFormat);
+//    printer.setOrientation(QPrinter::Landscape);
+//    QPrintDialog *d = new QPrintDialog(&printer, this);
+//    d->setWindowTitle(tr("Print GridView"));
+//    if (d->exec() != QDialog::Accepted) {
+//        return;
+//    }
 
-    // print is configured and user accepted
-    QWidget *current_gv = get_view_manager()->currentWidget();
-    QPainter p(&printer);
-    QRect rect = p.viewport();
-    QSize size = current_gv->size();
-    size.scale(rect.size(), Qt::KeepAspectRatio);
-    p.setViewport(rect.x(), rect.y(), size.width(), size.height());
-    p.setWindow(current_gv->rect());
-    QPixmap pm = QPixmap::grabWidget(current_gv, current_gv->rect());
-    p.drawPixmap(0, 0, pm);
-    p.end();
+//    // print is configured and user accepted
+//    QWidget *current_gv = get_view_manager()->currentWidget();
+//    QPainter p(&printer);
+//    QRect rect = p.viewport();
+//    QSize size = current_gv->size();
+//    size.scale(rect.size(), Qt::KeepAspectRatio);
+//    p.setViewport(rect.x(), rect.y(), size.width(), size.height());
+//    p.setWindow(current_gv->rect());
+//    QPixmap pm = QPixmap::grabWidget(current_gv, current_gv->rect());
+//    p.drawPixmap(0, 0, pm);
+//    p.end();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

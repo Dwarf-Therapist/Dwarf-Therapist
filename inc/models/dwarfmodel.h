@@ -51,7 +51,7 @@ class DwarfModel : public QStandardItemModel {
     Q_OBJECT
 public:
     typedef enum {
-        GB_NOTHING = 0,
+        GB_NOTHING = 0,        
         GB_CASTE,
         GB_CURRENT_JOB,
         GB_HAPPINESS,
@@ -89,7 +89,7 @@ public:
 
     GROUP_BY current_grouping() const {return m_group_by;}
     const QMap<QString, QVector<Dwarf*> > *get_dwarf_groups() const {return &m_grouped_dwarves;}
-    Dwarf *get_dwarf_by_id(int id) const {return m_dwarves.value(id, 0);}
+    Dwarf *get_dwarf_by_id(int id) const {return m_dwarves.value(id, 0);}    
 
     QVector<Dwarf*> get_dirty_dwarves();
     QList<Dwarf*> get_dwarves() {return m_dwarves.values();}
@@ -106,6 +106,8 @@ public:
 
     static QStringList m_seasons;
     static QStringList m_months;
+
+    QHash<int, Squad*> squads() {return m_squads;}
 
     public slots:
         void build_row(const QString &key);

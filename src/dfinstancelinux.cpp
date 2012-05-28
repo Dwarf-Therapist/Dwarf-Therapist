@@ -92,7 +92,7 @@ QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
     } else {
         // when testing it's usually pretty bad to find a vector with more
         // than 5000 entries... so throw
-        Q_ASSERT_X(entries < 5000, "enumerate_vector", "more than 5000 entires");
+        //Q_ASSERT_X(entries < 5000, "enumerate_vector", "more than 5000 entires");
     }
 #endif
     QByteArray data(bytes, 0);

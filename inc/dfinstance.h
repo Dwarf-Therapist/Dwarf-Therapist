@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <QtGui>
 #include "utils.h"
 #include "word.h"
+#include "utils.h"
 
 class Dwarf;
 class Squad;
@@ -96,6 +97,8 @@ public:
     void read_raws();
     QVector<Dwarf*> load_dwarves();
     void load_roles();
+    void load_reactions();
+    void load_races_castes();
 
     QVector<Squad*> load_squads();
 
@@ -146,6 +149,10 @@ public:
     QString get_translated_word(VIRTADDR addr);
     Reaction * get_reaction(QString tag) { return m_reactions.value(tag, 0); }
     Race * get_race(const uint & offset) { return m_races.value(offset, NULL); }
+
+    VIRTADDR find_historical_figure(int hist_id);
+    VIRTADDR find_fake_identity(int hist_id);
+
 
     public slots:
         // if a menu cancels our scan, we need to know how to stop
@@ -202,6 +209,11 @@ private:
     QHash<QString, Reaction *> m_reactions;
     QVector<Race *> m_races;
     QVector<VIRTADDR> get_creatures();
+
+    QHash<int,VIRTADDR> m_hist_figures;
+    QVector<VIRTADDR> m_fake_identities;
+
+    void load_hist_figures();
 };
 
 #endif // DFINSTANCE_H

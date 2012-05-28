@@ -61,7 +61,9 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_raw_profession(-1)
     , m_can_set_labors(false)
     , m_current_job_id(-1)
-    , m_squad_ref_id(-1)
+    , m_squad_id(-1)
+    , m_squad_position(-1)
+    , m_hist_id(-1)
     , m_squad_name(QString::null)
     , m_flag1(0)
     , m_flag2(0)    
@@ -71,6 +73,8 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_curse_name("")
     , m_animal_type(none)
     , m_caste_id(-1)
+    , m_hist_nickname(0)
+    , m_fake_nickname(0)
 {
     read_settings();
     refresh_data();
@@ -135,7 +139,7 @@ void Dwarf::refresh_data() {
     read_race();
     read_caste();
     read_first_name();
-    read_last_name();
+    read_last_name(m_address + m_mem->dwarf_offset("first_name"));
     read_nick_name();
     calc_names(); //creates nice name.. which is used for debug messages so we need to do it first..
     read_profession();
@@ -144,8 +148,11 @@ void Dwarf::refresh_data() {
     read_states();  //read states before job
     read_current_job();
     read_souls();
-    read_squad_ref_id();
+    read_squad_info();
     read_turn_count();
+    //load time/date stuff for births/migrations
+    set_age(m_address + m_mem->dwarf_offset("birth_year"),m_address + m_mem->dwarf_offset("birth_time"));
+    //curse check will change the name and age
     read_curse();
     read_sex();
     read_mood();
@@ -160,10 +167,16 @@ void Dwarf::refresh_data() {
     m_pending_flag1 = m_flag1;
     m_pending_flag2 = m_flag2;
 
-    //load time/date stuff for births/migrations
-    m_birth_year = m_df->read_short(m_address + m_mem->dwarf_offset("birth_year"));
+
+
+    TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name
+            << "(" << m_translated_name << ")";
+}
+
+void Dwarf::set_age(VIRTADDR birth_year_offset, VIRTADDR birth_time_offset){
+    m_birth_year = m_df->read_int(birth_year_offset);
     m_age = m_df->current_year() - m_birth_year;
-    m_birth_time = m_df->read_int(m_address + m_mem->dwarf_offset("birth_time"));
+    m_birth_time = m_df->read_int(birth_time_offset);
     quint32 current_year_time = m_df->current_year_time();
     quint32 current_time = m_df->current_year() * 0x62700 + current_year_time;
     quint32 arrival_time = current_time - m_turn_count;
@@ -179,9 +192,6 @@ void Dwarf::refresh_data() {
     //this way we have the right sort order and all the data needed for the group by migration wave
     m_migration_wave = 100000 * arrival_year + 10000 * arrival_season + 100 * arrival_month + arrival_day;
     m_born_in_fortress = (time_since_birth == m_turn_count);
-
-    TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name
-            << "(" << m_translated_name << ")";
 }
 
 /*******************************************************************************
@@ -193,6 +203,7 @@ void Dwarf::read_id() {
     //m_id = m_address; // HACK: this will allow dwarfs in the list even when
     // the id offset isn't know for this version
     TRACE << "ID:" << m_id;
+    m_hist_id = m_df->read_int(m_address + m_mem->dwarf_offset("hist_id"));
 }
 
 void Dwarf::read_sex() {
@@ -249,68 +260,21 @@ void Dwarf::read_states(){
 void Dwarf::read_curse(){
     m_curse_name = m_df->read_string(m_address + m_mem->dwarf_offset("curse"));
 
-//    ////testing to find the assumed identity of vampires
-//    if(m_curse_name=="vampire"){// && m_first_name.toLower()=="ast"){
-//        LOGD << "checking vampire " << m_first_name << " id" << m_id << " unit_id: " << m_df->read_int(m_first_soul);
-//        //get the unit's historical figure ids
-//        int m_histid1 = m_df->read_int(m_address+0x08ac);
-//        int m_histid2 = m_df->read_int(m_address+0x08b0);
-//        LOGD << "vampire's historical ids are: " << m_histid1 << " and " << m_histid2;
-//        //load all assumed identities base + world + offset
-//        VIRTADDR addr_assumed_identities = 0xDC0000+0x1786ce8+0x55760-0x4;//34.05 -0x4   //0x241B434-34.04;
-//        QVector<VIRTADDR> assumed_idents = m_df->enumerate_vector(addr_assumed_identities);
-//        foreach(VIRTADDR ident, assumed_idents) {
-//            //get the hist_fig id in the assumed identity
-//            int assumed_id = m_df->read_short(ident+0x0078);
-//            int birth_year = m_df->read_int(ident+0x0080);
-//            QString assumed_name = m_df->read_string(ident+0x0004);
-//            QString assumed_lname = read_chunked_name(ident+0x003c,false);
-//            LOGD << "assumed identity id:" << assumed_id << " name: " << assumed_name << " " << assumed_lname << " born: " << birth_year;
-//            if(assumed_id==m_id || assumed_id==m_histid1 || assumed_id==m_histid2){
-//                TRACE << "pause";
-//            }
-//        }
-
-
-//        //load the historical figures: mem_correction(private blargh) + world + world history + figures offset
-//        VIRTADDR addr = 0xDC0000 + 0x1786ce8 + 0x5e9dc + 0x30; //0xC40000 + 0x1785ce8 + 0x5e9d8 + 0x20;//34.04 (broken?) //0x8E0000 + 0x1786ce8 + 0x5e9dc + 0x30; //34.05
-//        QVector<VIRTADDR> hist_figures = m_df->enumerate_vector(addr);
-//        foreach(VIRTADDR hist_figure, hist_figures) {
-//            LOGD << "found historical figure id:" << m_df->read_int(hist_figure+0xb8) << " unit_id:" << m_df->read_int(hist_figure+0xb4) << "name: " << m_df->read_string(hist_figure + 0x34) << " @ " << hexify(hist_figure);
-
-//            //get historical figure info
-//            VIRTADDR pnt_info = hist_figure + 0xf0;
-//            VIRTADDR addr_info = m_df->read_addr(pnt_info);
-
-//            //get the reputation structure
-//            VIRTADDR pnt_rep = addr_info + 0x2c;//0x3c;
-//            VIRTADDR addr_rep = m_df->read_addr(pnt_rep);
-//            //read the current identity
-//            int cur_ident = m_df->read_int(addr_rep + 0x10); //assumed identity?
-
-//            if(cur_ident>0){
-//                TRACE << "pause";
-//            }
-
-//            //load all identities for this creature
-//            QVector<VIRTADDR> idents = m_df->enumerate_vector(addr_rep + 0x14);
-//            foreach(VIRTADDR ident, idents){
-//                int ident_id = m_df->read_int(ident);
-//                TRACE << ident_id;
-//            }
-
-////            //load the assumed bad identities (all are -0x0a)
-////            addr = m_address + 0x1786ce8 + 0x55750;
-////            QVector<VIRTADDR> identities = m_df->enumerate_vector(addr);
-////            foreach(VIRTADDR identity, identities) {
-////                int hist_id = m_df->read_int(identity+0x78);
-////                if(hist_id==cur_ident){
-////                    TRACE << "pause";
-////                }
-////            }
-//        }
-//    }
-//    ////
+    //find the vampire's fake identity and use that name/age instead to match DF
+    if(m_curse_name.toLower()=="vampire"){
+        VIRTADDR fake_id = m_df->find_fake_identity(m_hist_id);
+        if(fake_id){
+            m_first_name = capitalize(m_df->read_string(fake_id + m_mem->hist_figure_offset("fake_name") + m_mem->dwarf_offset("first_name")));
+            m_fake_nickname = fake_id + m_mem->hist_figure_offset("fake_name") + m_mem->dwarf_offset("nick_name");
+            m_nick_name = m_df->read_string(m_fake_nickname);
+            read_last_name(fake_id + m_mem->hist_figure_offset("fake_name"));
+            calc_names();
+            //vamps also use a the fake age
+            set_age(fake_id + m_mem->hist_figure_offset("fake_birth_year"),fake_id + m_mem->hist_figure_offset("fake_birth_time"));
+            //(bug?) DF has the age of assumed identities off by 1 year
+            m_age -= 1;
+        }
+    }
 }
 
 void Dwarf::read_caste() {
@@ -373,20 +337,18 @@ QString Dwarf::read_chunked_name(const VIRTADDR &addr, bool use_generic) {
     return out;
 }
 
-void Dwarf::read_last_name() {
-    VIRTADDR addr = m_address + m_mem->dwarf_offset("last_name");
-
+void Dwarf::read_last_name(VIRTADDR name_offset) {
     //Generic
     bool use_generic = false;
     if (DT->user_settings()->value("options/use_generic_names", false).toBool()) {
         use_generic = true;
     }
 
-    m_translated_last_name = m_df->get_translated_word(addr);
+    m_translated_last_name = m_df->get_translated_word(name_offset);
     if (use_generic)
         m_last_name = m_translated_last_name;
     else
-        m_last_name = m_df->get_language_word(addr);
+        m_last_name = m_df->get_language_word(name_offset);
 }
 
 
@@ -395,6 +357,12 @@ void Dwarf::read_nick_name() {
                                     m_mem->dwarf_offset("nick_name"));
     TRACE << "\tNICKNAME:" << m_nick_name;
     m_pending_nick_name = m_nick_name;
+
+    if(!is_animal()){
+        //save the nickname address as we need to update it when nicknames are changed
+        m_hist_nickname = m_df->find_historical_figure(m_hist_id);
+        m_hist_nickname += m_mem->hist_figure_offset("hist_name") + m_mem->dwarf_offset("nick_name");
+    }
 }
 
 void Dwarf::calc_names() {
@@ -526,6 +494,10 @@ void Dwarf::read_profession() {
     } else {
         m_profession = prof_name;
     }
+
+    if(is_animal() && m_profession=="Peasant")
+        m_profession = ""; //adult animals have a profession of peasant by default, just ignore it for grouping
+
     TRACE << "reading profession for" << nice_name() << m_raw_profession <<
             prof_name;
     TRACE << "EFFECTIVE PROFESSION:" << m_profession;
@@ -838,20 +810,6 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
             }
         }
 
-        //the only valid_flag_2 was one to check damage to vision and then assume death??
-        //as expected this wasn't really filter out creatures and after adding the killed flag to invalid_flags_1
-        //this has become obsolete
-//        flags = mem->valid_flags_2();
-//        foreach(uint flag, flags.uniqueKeys()) {
-//            QString reason = flags[flag];
-//            if ((flags2 & flag) != flag) {
-//                LOGD << "Ignoring" << unverified_dwarf->nice_name() <<
-//                        "who appears to be" << reason;
-//                delete unverified_dwarf;
-//                return 0;
-//            }
-//        }
-
         flags = mem->invalid_flags_2();
         foreach(uint flag, flags.uniqueKeys()) {
             QString reason = flags[flag];
@@ -926,9 +884,10 @@ bool Dwarf::get_flag_value(int bit)
     return ((flg & mask)==mask);
 }
 
-void Dwarf::read_squad_ref_id() {
-    m_squad_ref_id = m_df->read_int(m_address + m_mem->dwarf_offset("squad_ref_id"));
-    TRACE << "Squad Reference ID:" << m_squad_ref_id;
+void Dwarf::read_squad_info() {
+    m_squad_id = m_df->read_int(m_address + m_mem->dwarf_offset("squad_id"));
+    m_squad_position = m_df->read_int(m_address + m_mem->dwarf_offset("squad_position"));
+    TRACE << "Squad ID:" << m_squad_id << " squad position: " << m_squad_position;
 }
 
 void Dwarf::read_turn_count() {
@@ -1155,15 +1114,15 @@ void Dwarf::commit_pending() {
     m_df->write_raw(addr, 102, buf.data());
 
     // We'll set the "recheck_equipment" flag because there was a labor change.
-    BYTE recheck_equipment = m_df->read_byte(m_address +
-                                     mem->dwarf_offset("recheck_equipment"));
-    recheck_equipment |= 1;
-    m_df->write_raw(m_address + mem->dwarf_offset("recheck_equipment"), 1,
-                    &recheck_equipment);
+    recheck_equipment();
 
     if (m_pending_nick_name != m_nick_name){
         m_df->write_string(m_address + mem->dwarf_offset("nick_name"), m_pending_nick_name);
-        //m_df->write_string(m_address + m_first_soul + 0x4 + mem->dwarf_offset("nick_name"), m_pending_nick_name);
+        m_df->write_string(m_first_soul + mem->soul_detail("name") + mem->dwarf_offset("nick_name"), m_pending_nick_name);
+        if(m_hist_nickname != 0)
+            m_df->write_string(m_hist_nickname, m_pending_nick_name);
+        if(m_fake_nickname != 0)
+            m_df->write_string(m_fake_nickname, m_pending_nick_name);
     }
     if (m_pending_custom_profession != m_custom_profession)
         m_df->write_string(m_address + mem->dwarf_offset("custom_profession"), m_pending_custom_profession);
@@ -1173,6 +1132,16 @@ void Dwarf::commit_pending() {
         m_df->write_raw(m_address + m_mem->dwarf_offset("flags2"), 4, &m_pending_flag2);
     refresh_data();
 }
+
+void Dwarf::recheck_equipment(){
+    // We'll set the "recheck_equipment" flag because there was a labor change.
+    BYTE recheck_equipment = m_df->read_byte(m_address +
+                                     m_df->memory_layout()->dwarf_offset("recheck_equipment"));
+    recheck_equipment |= 1;
+    m_df->write_raw(m_address + m_df->memory_layout()->dwarf_offset("recheck_equipment"), 1,
+                    &recheck_equipment);
+}
+
 
 void Dwarf::set_nickname(const QString &nick) {
     m_pending_nick_name = nick;

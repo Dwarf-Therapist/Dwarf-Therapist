@@ -56,6 +56,7 @@ void MemoryLayout::load_data() {
     read_group("word_offsets", m_word_offsets);
     read_group("race_offsets", m_race_offsets);
     read_group("caste_offsets", m_caste_offsets);
+    read_group("hist_figure", m_hist_fig_offsets);
 
     // flags
     int flag_count = m_data->beginReadArray("valid_flags_1");

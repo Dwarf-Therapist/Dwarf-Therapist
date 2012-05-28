@@ -162,7 +162,12 @@ public:
     Q_INVOKABLE int kinesthetic_sense() {return m_attributes.value(Attribute::AT_KINESTHETIC_SENSE,-1);}
 
     //! return this dwarf's squad reference id
-    Q_INVOKABLE int get_squad_ref_id() { return m_squad_ref_id; }
+    Q_INVOKABLE int squad_id() { return m_squad_id; }
+    Q_INVOKABLE int squad_position() { return m_squad_position;}
+    Q_INVOKABLE int historical_id() { return m_hist_id;}
+
+    void set_squad_id(int id) {m_squad_id=id;}
+    void set_squad_position(int pos) {m_squad_position=pos;}
 
     //! return this dwarf's caste id
     Q_INVOKABLE short get_caste_id() { return m_caste_id; }
@@ -363,6 +368,8 @@ public:
 
     Reaction *get_reaction();
 
+    void recheck_equipment();
+
     public slots:
         //! called when global user settings change
         void read_settings();
@@ -418,8 +425,10 @@ private:
     QHash<int, short> m_attributes;
     QMap<int, ushort> m_labors;
     QMap<int, ushort> m_pending_labors;
-    QList<QAction*> m_actions; // actions suitable for context menus
-    int m_squad_ref_id; //Dwarf reference that appears to be used by squad
+    QList<QAction*> m_actions; // actions suitable for context menus    
+    int m_squad_id;
+    int m_squad_position;
+    int m_hist_id;
     QString m_squad_name; //The name of the squad that the dwarf belongs to (if any)
     quint32 m_flag1;
     quint32 m_flag2;
@@ -434,6 +443,8 @@ private:
     bool m_born_in_fortress;
     quint32 m_birth_year;
     quint32 m_birth_time;
+    VIRTADDR m_hist_nickname;
+    VIRTADDR m_fake_nickname;
 
     // these methods read data from raw memory
     void read_id();
@@ -444,7 +455,7 @@ private:
     void read_caste();
     void read_race();
     void read_first_name();
-    void read_last_name();
+    void read_last_name(VIRTADDR name_offset);
     void read_nick_name();
     void read_states();
     void read_profession();
@@ -455,17 +466,16 @@ private:
     void read_skills();
     void read_attributes();
     void read_traits();
-    void read_squad_ref_id();
+    void read_squad_info();
     void read_flags();
     void read_turn_count();    
     void read_animal_type();
-
+    void set_age(VIRTADDR birth_year_offset, VIRTADDR birth_time_offset);
 
     // utility methods to assist with reading names made up of several words
     // from the language tables
     QString word_chunk(uint word, bool use_generic=false);
     QString read_chunked_name(const VIRTADDR &addr, bool use_generic=false);
-    QString read_squad_name(bool use_generic=false);
 
     // assembles component names into a nicely formatted single string
     void calc_names();

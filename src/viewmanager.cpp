@@ -360,7 +360,7 @@ void ViewManager::setCurrentIndex(int idx) {
     foreach(GridView *v, m_views) {
         if (v->name() == tabText(idx)) {
             QSettings *s = DT->user_settings();
-            s->setValue("read_animals",(tabText(idx).startsWith("Animals")));
+            s->setValue("read_animals",(bool)(tabText(idx).contains("animals",Qt::CaseInsensitive)));
             m_model->set_grid_view(v);
             m_model->build_rows();
             stv->header()->setResizeMode(QHeaderView::Fixed);

@@ -58,9 +58,6 @@ void RotatedHeader::read_settings() {
 
 
 void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const {
-    if (!rect.isValid() || idx == 0)
-        return QHeaderView::paintSection(p, rect, idx);
-
     QColor bg = model()->headerData(idx, Qt::Horizontal,
                                     Qt::BackgroundColorRole).value<QColor>();
     if (m_spacer_indexes.contains(idx)) {
@@ -193,7 +190,7 @@ void RotatedHeader::contextMenuEvent(QContextMenuEvent *evt) {
     int idx = logicalIndexAt(evt->pos());
     if (idx == 0) { //name header
         QMenu *m = new QMenu(this);
-        QAction *a = m->addAction(tr("Sort Alphabetically Ascending"), this, SLOT(sort_action()));
+        QAction *a = m->addAction(tr("Sort Alphabetically Ascending"), this, SLOT(sort_action()));        
         a->setData(DwarfModelProxy::DSR_NAME_ASC);
         a = m->addAction(tr("Sort Alphabetically Descending"), this, SLOT(sort_action()));
         a->setData(DwarfModelProxy::DSR_NAME_DESC);

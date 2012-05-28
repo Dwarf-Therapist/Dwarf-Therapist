@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "customprofession.h"
 #include "viewmanager.h"
+#include "squad.h"
 
 StateTableView::StateTableView(QWidget *parent)
     : QTreeView(parent)
@@ -166,7 +167,7 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 
     if (idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
         // we're on top of a dwarf's name
-        QMenu m(this); // this will be the popup menu
+        QMenu m(this); // this will be the popup menu        
         int id = idx.data(DwarfModel::DR_ID).toInt();
         Dwarf *d = m_model->get_dwarf_by_id(id);
         m.addActions(d->get_actions());
@@ -176,7 +177,7 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 
         QMenu sub(&m);
         sub.setTitle(tr("Custom Professions"));
-        QAction *a = sub.addAction(tr("Set custom profession name..."), this, SLOT(set_custom_profession_text()));
+        QAction *a = sub.addAction(tr("Set custom profession name..."), this, SLOT(set_custom_profession_text()));        
         a->setData(id);
         a = sub.addAction(tr("New custom profession from this dwarf..."), this, SLOT(custom_profession_from_dwarf()));
         a->setData(id);
@@ -187,14 +188,45 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
             sub.addAction(cp->get_name(), this, SLOT(apply_custom_profession()));
         }
         m.addMenu(&sub);
+
+        //SQUAD MENU ITEMS
+        m.addSeparator();
+        QMenu assign(&m);
+        if(m_model->squads().count() > 0 && d->profession() != "Child" && d->profession() != "Baby"){
+            assign.setTitle(tr("Assign to squad..."));
+            QIcon icon;
+            icon.addFile(QString::fromUtf8(":/img/add.png"), QSize(), QIcon::Normal, QIcon::Off);
+            foreach(int key, m_model->squads().uniqueKeys()){
+                Squad *s = m_model->squads().value(key);
+                if(d->squad_id() != s->id()){
+                    if(s->assigned_count() < 10){
+                        QAction *add=assign.addAction(tr("%1 (%2 members)").arg(s->name()).arg(s->assigned_count()), this, SLOT(assign_to_squad()));
+                        add->setData(s->id());
+                        add->setIcon(icon);
+                    }
+                }
+            }
+            if(assign.actions().count()>0)
+                m.addMenu(&assign);
+
+            //squad removal (can't remove captain if there are subordinates)
+            if(d->squad_id()!=-1){
+                icon.addFile(QString::fromUtf8(":/img/delete.png"), QSize(), QIcon::Normal, QIcon::Off);
+                if((d->squad_position()==0 && m_model->squads().value(d->squad_id())->assigned_count()==1) || d->squad_position() != 0){
+                    m.addAction(icon,tr("Remove from squad"),this,SLOT(remove_squad()));
+                }else{
+                    m.addAction(icon,tr("Remove subordinates first!"));
+                }
+            }
+        }
+
         m.exec(viewport()->mapToGlobal(event->pos()));
     } else if (idx.data(DwarfModel::DR_COL_TYPE).toInt() == CT_LABOR) {
         // labor column
         QMenu m(this); // this will be the popup menu
         QString set_name = idx.data(DwarfModel::DR_SET_NAME).toString();
         ViewColumnSet *set = DT->get_main_window()->get_view_manager()->get_active_view()->get_set(set_name);
-        if (idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) { //aggregate labor
-            QModelIndex first_col = idx.sibling(idx.row(), 0);
+        if (idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) { //aggregate labor            
             QString group_name = idx.data(DwarfModel::DR_GROUP_NAME).toString();
             QAction *a = m.addAction(tr("Toggle %1 for %2").arg(set_name).arg(group_name));
             a->setData(group_name);
@@ -208,17 +240,79 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
             connect(a, SIGNAL(triggered()), set, SLOT(toggle_for_dwarf()));
         }
         m.exec(viewport()->mapToGlobal(event->pos()));
+    } else if (idx.data(DwarfModel::DR_IS_AGGREGATE).toBool() && m_model->current_grouping()==DwarfModel::GB_SQUAD){
+        QMenu m(this);
+        QAction *a = m.addAction("Change Squad Name",this,SLOT(set_squad_name()));
+        a->setData(idx.data(DwarfModel::DR_ID));
+        m.exec(viewport()->mapToGlobal(event->pos()));
     }
+}
+
+void StateTableView::set_squad_name(){
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    Squad *s = m_model->squads().value(a->data().toInt());
+    bool ok;
+    QString alias = QInputDialog::getText(this, tr("New Squad Name"),
+         tr("Enter a new squad name for %1, or leave blank to reset "
+            "to their default name.").arg(s->name()), QLineEdit::Normal, "", &ok);
+    if(ok) {
+        int limit = 16;
+        if (alias.length() > limit) {
+            QMessageBox::warning(this, tr("Squad name too long"),
+                                 tr("Squad names must be under %1 characters "
+                                    "long.").arg(limit));
+            return;
+        }
+        s->rename_squad(alias);
+        m_model->load_dwarves();
+    }
+}
+
+void StateTableView::assign_to_squad(){
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    Squad *s = m_model->squads().value(a->data().toInt());
+
+    const QItemSelection sel = selectionModel()->selection();
+    foreach(QModelIndex i, sel.indexes()) {
+        if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool()){
+            int id = i.data(DwarfModel::DR_ID).toInt();
+            Dwarf *d = m_model->get_dwarf_by_id(id);
+            if (d) {
+                if(d->squad_id() != s->id()){ //don't add to squad if they're already in it..
+                    if(d->squad_id() != -1) //remove from old squad first
+                        s->remove_from_squad(d);
+                    s->assign_to_squad(d);
+                    m_model->setData(i, s->name(), DwarfModel::DR_GROUP_NAME);
+                }
+            }
+        }
+    }
+    if(m_model->current_grouping()==DwarfModel::GB_SQUAD)
+        m_model->load_dwarves();
+}
+void StateTableView::remove_squad(){
+    const QItemSelection sel = selectionModel()->selection();
+    foreach(QModelIndex i, sel.indexes()) {
+        if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool()){
+            int id = i.data(DwarfModel::DR_ID).toInt();
+            Dwarf *d = m_model->get_dwarf_by_id(id);
+            if (d) {
+                Squad *s = m_model->squads().value(d->squad_id());
+                s->remove_from_squad(d);
+                m_model->setData(i, "No Squad", DwarfModel::DR_GROUP_NAME);
+            }
+        }
+    }
+    if(m_model->current_grouping()==DwarfModel::GB_SQUAD)
+        m_model->load_dwarves();
 }
 
 void StateTableView::set_nickname() {
     const QItemSelection sel = selectionModel()->selection();
-    //QModelIndexList first_col;
-
     bool ok;
     QString new_nick = QInputDialog::getText(this, tr("New Nickname"),
-         tr("Enter a new nickname for the selected dwarves. Or leave blank to reset "
-            "to their default name."), QLineEdit::Normal,"", &ok);
+                                             tr("Enter a new nickname for the selected dwarves. Or leave blank to reset "
+                                                "to their default name."), QLineEdit::Normal,"", &ok);
     if(ok) {
         int limit = 16;
         if (new_nick.length() > limit) {
@@ -227,30 +321,19 @@ void StateTableView::set_nickname() {
                                     "long.").arg(limit));
             return;
         }
-    }
 
-    foreach(QModelIndex i, sel.indexes()) {
+        foreach(QModelIndex i, sel.indexes()) {
             if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool()){
-                //first_col << i;
-        //}
-
-    //    if (first_col.size() != 1) {
-    //        QMessageBox::warning(this, tr("Too many!"),
-    //                             tr("Slow down, killer. One at a time."));
-    //        return;
-    //    }
-
-
-        int id = i.data(DwarfModel::DR_ID).toInt();
-        Dwarf *d = m_model->get_dwarf_by_id(id);
-        if (d) {
-            d->set_nickname(new_nick);
-            m_model->setData(i, d->nice_name(), Qt::DisplayRole);
+                int id = i.data(DwarfModel::DR_ID).toInt();
+                Dwarf *d = m_model->get_dwarf_by_id(id);
+                if (d) {
+                    d->set_nickname(new_nick);
+                    m_model->setData(i, d->nice_name(), Qt::DisplayRole);
+                }
+            }
         }
+        m_model->calculate_pending();
     }
-}
-    m_model->calculate_pending();
-
 }
 
 void StateTableView::custom_profession_from_dwarf() {

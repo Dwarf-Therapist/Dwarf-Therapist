@@ -69,104 +69,97 @@ void Squad::read_id() {
 
 void Squad::read_name() {
     m_name = m_df->get_translated_word(m_address + m_mem->squad_offset("name"));
+    QString alias = m_df->read_string(m_address + m_mem->squad_offset("alias"));
+    if(alias != "")
+        m_name = alias;
     TRACE << "Name:" << m_name;    
 }
 
 void Squad::read_members() {
     DwarfModel * dm = DT->get_main_window()->get_model();
 
-    VIRTADDR member_vector = m_address + m_mem->squad_offset("members");
-    QVector<VIRTADDR> members = m_df->enumerate_vector(member_vector);
-    TRACE << "Squad" << m_id << ":" << m_name << "has" << members.size() << "members.";
-    foreach(VIRTADDR member_addr, members) {
-        int ref_id = m_df->read_int(member_addr);
-        if(ref_id != -1) {
-            foreach(Dwarf * d, dm->get_dwarves()) {
-                if(!d->is_animal() && d->get_squad_ref_id() == ref_id) {
-                    TRACE << "Squad member ref_id" << ref_id << "refers to" << d->nice_name();
-                    m_members << d;
-                    d->m_squad_name = name();
-                    break;
-                }
-            }
-        } else {
-            m_members << NULL;
+    //get a count of how many members we're looking for so we don't loop through the entire
+    //population unless it's worst case scenario
+    int count = 0;
+    members_addr = m_df->enumerate_vector(m_address + m_mem->squad_offset("members"));
+    foreach(VIRTADDR member_addr, members_addr) {
+        int member_id = m_df->read_int(member_addr);
+        if(member_id != -1)
+            count ++;
+    }
+
+    //rather than searching for the dwarf in the members of the squad, just check the squad id
+    foreach(Dwarf *d, dm->get_dwarves()){
+        if(!d->is_animal() && d->squad_id() == m_id) {
+            m_members << d;
+            d->m_squad_name = name();
+            if(assigned_count()==count)
+                break;
         }
     }
 }
 
-//! used by read_last_name to find word chunks
-Word * Squad::read_word(uint offset) {
-    Word * result = NULL;
-    uint word_id = m_df->read_int(m_address +
-        m_mem->squad_offset("name") + offset);
-    if(word_id != 0xFFFFFFFF) {
-        result = DT->get_word(word_id);
+int Squad::assigned_count(){
+    int count = 0;
+    foreach(Dwarf *d, m_members){
+        if(d!=0)
+            count ++;
     }
-    return result;
+    return count;
 }
 
-QString Squad::read_chunked_name() {
-    QString result = "The";
+void Squad::assign_to_squad(Dwarf *d){
+    int position = assigned_count();
 
-    //7 parts e.g.  ffffffff ffffffff 000006d4
-    //      ffffffff ffffffff 000002b1 ffffffff
+    //users could potentially select more than 10 and assign to squad
+    if(position==10)
+        return;
 
-    //Unknown
-    Word * word = read_word(0x00);
-    if(word)
-        result.append(" " + capitalize(word->base()));
+    //set the dwarf's squad id and position
+    m_df->write_int(d->address() + m_df->memory_layout()->dwarf_offset("squad_id"), m_id);
+    m_df->write_int(d->address() + m_df->memory_layout()->dwarf_offset("squad_position"), position);
 
-    //Unknown
-    word = read_word(0x04);
-    if(word)
-        result.append(" " + capitalize(word->base()));
+    d->set_squad_id(m_id);
+    d->set_squad_position(position);
+    d->squad_name() = name();
+    d->recheck_equipment();
 
-    //Verb
-    word = read_word(0x08);
-    if(word) {
-        result.append(" " + capitalize(word->adjective()));
+    //add the dwarf to our dt vector for grouping etc
+    m_members << d;
+    //add the dwarf's hist id to the squad, if it's not already there
+    foreach(VIRTADDR member_addr, members_addr) {
+        if(m_df->read_int(member_addr) == -1){
+            //also add to our pending squad changes
+            m_df->write_int(member_addr,d->historical_id());
+            break;
+        }
     }
+}
 
-    //Unknown
-    word = read_word(0x0C);
-    if(word)
-        result.append(" " + capitalize(word->base()));
+void Squad::remove_from_squad(Dwarf *d){
+    m_df->write_int(d->address() + m_df->memory_layout()->dwarf_offset("squad_id"),-1);
+    m_df->write_int(d->address() + m_df->memory_layout()->dwarf_offset("squad_position"),-1);
 
-    //Unknown
-    word = read_word(0x10);
-    if(word)
-        result.append(" " + capitalize(word->base()));
-
-    //Noun
-    word = read_word(0x14);
-    bool singular = false;
-    if(word) {
-        if(word->plural_noun().isEmpty()) {
-            result.append(" " + capitalize(word->noun()));
-            singular = true;
-        } else {
-            result.append(" " + capitalize(word->plural_noun()));
+    foreach(VIRTADDR member_addr, members_addr) {
+        if(m_df->read_int(member_addr) == d->historical_id()){
+            m_df->write_int(member_addr,-1);
+            break;
+        }
+    }
+    for(int i = 0; i < members().count()-1; i++){
+        if(members().at(i)==d){
+            members().remove(i);
+            break;
         }
     }
 
-    //of verb(noun)
-    word = read_word(0x18);
-    if(word) {
-        if( !word->verb().isEmpty() ) {
-            if(singular) {
-                result.append(" of " + capitalize(word->verb()));
-            } else {
-                result.append(" of " + capitalize(word->present_participle_verb()));
-            }
-        } else {
-            if(singular) {
-                result.append(" of " + capitalize(word->noun()));
-            } else {
-                result.append(" of " + capitalize(word->plural_noun()));
-            }
-        }
-    }
-
-    return result.trimmed();
+    d->set_squad_id(-1);
+    d->set_squad_position(-1);
+    d->squad_name() = "";
+    d->recheck_equipment();
 }
+
+void Squad::rename_squad(QString alias){
+    m_df->write_string(m_address + m_df->memory_layout()->squad_offset("alias"),alias);
+}
+

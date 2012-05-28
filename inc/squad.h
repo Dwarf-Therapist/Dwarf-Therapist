@@ -44,7 +44,12 @@ public:
     int id() {return m_id;}
     QString name() {return m_name;}
     QVector<Dwarf *> members() {return m_members;}
+    int assigned_count();
     void refresh_data();
+
+    void rename_squad(QString alias);
+    void assign_to_squad(Dwarf *d);
+    void remove_from_squad(Dwarf *d);
 
 private:
     VIRTADDR m_address;
@@ -54,12 +59,11 @@ private:
     MemoryLayout * m_mem;
     QVector<Dwarf *> m_members;
 
+    QVector<VIRTADDR> members_addr;
+
     void read_id();
     void read_name();
     void read_members();
-
-    Word * read_word(uint offset);
-    QString read_chunked_name();
 };
 
 #endif
