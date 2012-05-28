@@ -270,7 +270,7 @@ void StateTableView::set_squad_name(){
 
 void StateTableView::assign_to_squad(){
     QAction *a = qobject_cast<QAction*>(QObject::sender());
-    Squad *s = m_model->squads().value(a->data().toInt());
+    Squad *new_squad = m_model->squads().value(a->data().toInt());
 
     const QItemSelection sel = selectionModel()->selection();
     foreach(QModelIndex i, sel.indexes()) {
@@ -278,11 +278,11 @@ void StateTableView::assign_to_squad(){
             int id = i.data(DwarfModel::DR_ID).toInt();
             Dwarf *d = m_model->get_dwarf_by_id(id);
             if (d) {
-                if(d->squad_id() != s->id()){ //don't add to squad if they're already in it..
+                if(d->squad_id() != new_squad->id()){ //don't add to squad if they're already in it..
                     if(d->squad_id() != -1) //remove from old squad first
-                        s->remove_from_squad(d);
-                    s->assign_to_squad(d);
-                    m_model->setData(i, s->name(), DwarfModel::DR_GROUP_NAME);
+                        m_model->squads().value(d->squad_id())->remove_from_squad(d);
+
+                    new_squad->assign_to_squad(d);
                 }
             }
         }
@@ -298,8 +298,7 @@ void StateTableView::remove_squad(){
             Dwarf *d = m_model->get_dwarf_by_id(id);
             if (d) {
                 Squad *s = m_model->squads().value(d->squad_id());
-                s->remove_from_squad(d);
-                m_model->setData(i, "No Squad", DwarfModel::DR_GROUP_NAME);
+                s->remove_from_squad(d);                
             }
         }
     }
