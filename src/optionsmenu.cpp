@@ -31,6 +31,8 @@ THE SOFTWARE.
 #include "truncatingfilelogger.h"
 #include "uberdelegate.h"
 #include "mainwindow.h"
+#include "fortressentity.h"
+#include "dfinstance.h"
 
 OptionsMenu::OptionsMenu(QWidget *parent)
     : QDialog(parent)
@@ -40,45 +42,75 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     ui->setupUi(this);
 
     m_general_colors
-        << new CustomColor(tr("Skill"), tr("The color of the growing skill indicator box "
-            "inside a cell. Is not used when auto-contrast is enabled."), "skill", from_hex("0xAAAAAAFF"), this)
-        << new CustomColor(tr("Active Labor Cell"),
-            tr("Color shown for a cell when the labor is active for a dwarf."),
-            "active_labor", from_hex("0x7878B3FF"), this)
-        << new CustomColor(tr("Active Group Cell"),
-            tr("Color shown on an aggregate cell if <b>all</b> dwarves have this labor enabled."),
-            "active_group", from_hex("0x33FF33FF"), this)
-        << new CustomColor(tr("Inactive Group Cell"),
-            tr("Color shown on an aggregate cell if <b>none</b> of the dwarves have this labor enabled."),
-            "inactive_group", from_hex("0x00000020"), this)
-        << new CustomColor(tr("Partial Group Cell"),
-            tr("Color shown on an aggregate cell if <b>some</b> of the dwarves have this labor enabled."),
-            "partial_group", from_hex("0x00000060"), this)
-        << new CustomColor(tr("Selection Guides"),
-            tr("Color of the lines around cells when a row and/or column are selected."),
-            "guides", QColor(0x0099FF), this)
-        << new CustomColor(tr("Main Border"),
-            tr("Color of cell borders"),
-            "border", QColor(0xd9d9d9), this)
-        << new CustomColor(tr("Dirty Cell Indicator"),
-            tr("Border color of a cell that has pending changes. Set to main border color to disable this."),
-            "dirty_border", QColor(0xFF6600), this);
+            << new CustomColor(tr("Skill"), tr("The color of the growing skill indicator box "
+                                               "inside a cell. Is not used when auto-contrast is enabled."), "skill", from_hex("0xAAAAAAFF"), this)
+            << new CustomColor(tr("Active Labor Cell"),
+                               tr("Color shown for a cell when the labor is active for a dwarf."),
+                               "active_labor", from_hex("0x7878B3FF"), this)
+            << new CustomColor(tr("Active Group Cell"),
+                               tr("Color shown on an aggregate cell if <b>all</b> dwarves have this labor enabled."),
+                               "active_group", from_hex("0x33FF33FF"), this)
+            << new CustomColor(tr("Inactive Group Cell"),
+                               tr("Color shown on an aggregate cell if <b>none</b> of the dwarves have this labor enabled."),
+                               "inactive_group", from_hex("0x00000020"), this)
+            << new CustomColor(tr("Partial Group Cell"),
+                               tr("Color shown on an aggregate cell if <b>some</b> of the dwarves have this labor enabled."),
+                               "partial_group", from_hex("0x00000060"), this)
+            << new CustomColor(tr("Selection Guides"),
+                               tr("Color of the lines around cells when a row and/or column are selected."),
+                               "guides", QColor(0x0099FF), this)
+            << new CustomColor(tr("Main Border"),
+                               tr("Color of cell borders"),
+                               "border", QColor(0xd9d9d9), this)
+            << new CustomColor(tr("Dirty Cell Indicator"),
+                               tr("Border color of a cell that has pending changes. Set to main border color to disable this."),
+                               "dirty_border", QColor(0xFF6600), this);
 
     m_happiness_colors
-        << new CustomColor(tr("Ecstatic"), tr("Color shown in happiness columns when a dwarf is <b>ecstatic</b>."),
-            QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_ECSTATIC)), QColor(0x00FF00), this)
-        << new CustomColor(tr("Happy"), tr("Color shown in happiness columns when a dwarf is <b>happy</b>."),
-            QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_HAPPY)), QColor(0x71cc09), this)
-        << new CustomColor(tr("Content"), tr("Color shown in happiness columns when a dwarf is <b>quite content</b>."),
-            QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_CONTENT)), QColor(0xDDDD00), this)
-        << new CustomColor(tr("Fine"), tr("Color shown in happiness columns when a dwarf is <b>fine</b>."),
-            QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_FINE)), QColor(0xe7e2ab), this)
-        << new CustomColor(tr("Unhappy"), tr("Color shown in happiness columns when a dwarf is <b>unhappy</b>."),
-            QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_UNHAPPY)), QColor(0xffaa00), this)
-        << new CustomColor(tr("Very Unhappy"), tr("Color shown in happiness columns when a dwarf is <b>very unhappy</b>."),
-            QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_VERY_UNHAPPY)), QColor(0xCC0000), this)
-        << new CustomColor(tr("Miserable"), tr("Color shown in happiness columns when a dwarf is <b>miserable.</b>"),
-            QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_MISERABLE)), QColor(0xFF0000), this);
+            << new CustomColor(tr("Ecstatic"), tr("Color shown in happiness columns when a dwarf is <b>ecstatic</b>."),
+                               QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_ECSTATIC)), QColor(0x00FF00), this)
+            << new CustomColor(tr("Happy"), tr("Color shown in happiness columns when a dwarf is <b>happy</b>."),
+                               QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_HAPPY)), QColor(0x71cc09), this)
+            << new CustomColor(tr("Content"), tr("Color shown in happiness columns when a dwarf is <b>quite content</b>."),
+                               QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_CONTENT)), QColor(0xDDDD00), this)
+            << new CustomColor(tr("Fine"), tr("Color shown in happiness columns when a dwarf is <b>fine</b>."),
+                               QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_FINE)), QColor(0xe7e2ab), this)
+            << new CustomColor(tr("Unhappy"), tr("Color shown in happiness columns when a dwarf is <b>unhappy</b>."),
+                               QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_UNHAPPY)), QColor(0xffaa00), this)
+            << new CustomColor(tr("Very Unhappy"), tr("Color shown in happiness columns when a dwarf is <b>very unhappy</b>."),
+                               QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_VERY_UNHAPPY)), QColor(0xCC0000), this)
+            << new CustomColor(tr("Miserable"), tr("Color shown in happiness columns when a dwarf is <b>miserable.</b>"),
+                               QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_MISERABLE)), QColor(0xFF0000), this);
+
+    QColor m_noble_default = QColor(255,153,0);
+    m_noble_colors
+            << new CustomColor(tr("Bookkeeper"),tr("Highlight color for the bookkeeper."),
+                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::BOOKKEEPER)), m_noble_default, this)
+    << new CustomColor(tr("Broker"),tr("Highlight color for the broker."),
+                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::BROKER)), m_noble_default, this)
+    << new CustomColor(tr("Champion"),tr("Highlight color for the champion."),
+                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::CHAMPION)), m_noble_default, this)
+    << new CustomColor(tr("Chief Medical Dwarf"),tr("Highlight color for the chief medical dwarf."),
+                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::CHIEF_MEDICAL_DWARF)), m_noble_default, this)
+    << new CustomColor(tr("Hammerer"),tr("Highlight color for the hammerer."),
+                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::HAMMERER)), m_noble_default, this)
+    << new CustomColor(tr("Law"),tr("Highlight color for the captain of the guard and sherrif."),
+                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::LAW)), m_noble_default, this)
+    << new CustomColor(tr("Leader/Mayor"),tr("Highlight color for the expedition leader and mayor."),
+                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::LEADER)), m_noble_default, this)
+    << new CustomColor(tr("Manager"),tr("Highlight color for the manager."),
+                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::MANAGER)), m_noble_default, this)
+    << new CustomColor(tr("Militia"),tr("Highlight color for the militia commander and militia captains."),
+                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::MILITIA)), m_noble_default, this)
+    << new CustomColor(tr("Monarch"),tr("Highlight color for the king and queen."),
+                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::MONARCH)), m_noble_default, this)
+    << new CustomColor(tr("Royalty"),tr("Highlight color for the baron, baroness, duke, duchess, count and countess."),
+                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::ROYALTY)), m_noble_default, this)
+    << new CustomColor(tr("Multiple"),tr("Highlight color for dwarves holding multiple positions."),
+                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::MULTIPLE)), m_noble_default, this);
+
+    m_curse_color = new CustomColor(tr("Cursed"),tr("Cursed creatures will be highlighted with this color."),
+                                    "cursed",QColor(125,97,186),this);
 
     QVBoxLayout *main_layout = new QVBoxLayout;
     foreach(CustomColor *cc, m_general_colors) {
@@ -88,11 +120,22 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     ui->tab_grid_colors->setLayout(main_layout);
 
     QVBoxLayout *happiness_layout = new QVBoxLayout;
+    happiness_layout->addWidget(ui->cb_happiness_icons);
     foreach(CustomColor *cc, m_happiness_colors) {
         happiness_layout->addWidget(cc);
     }
     happiness_layout->setSpacing(0);
     ui->tab_happiness_colors->setLayout(happiness_layout);
+
+    QVBoxLayout *nobles_layout = new QVBoxLayout;
+    nobles_layout->addWidget(ui->cb_noble_highlight);
+    foreach(CustomColor *cc, m_noble_colors) {
+        nobles_layout->addWidget(cc);
+    }
+    nobles_layout->setSpacing(4);
+    ui->tab_noble_colors->setLayout(nobles_layout);
+
+    ui->horizontal_curse_layout->addWidget(m_curse_color);
 
     ui->cb_skill_drawing_method->addItem("Growing Center Box", UberDelegate::SDM_GROWING_CENTRAL_BOX);
     ui->cb_skill_drawing_method->addItem("Line Glyphs", UberDelegate::SDM_GLYPH_LINES);
@@ -133,6 +176,13 @@ void OptionsMenu::read_settings() {
         c = s->value(cc->get_config_key(), cc->get_default()).value<QColor>();
         cc->set_color(c);
     }
+    foreach(CustomColor *cc, m_noble_colors) {
+        c = s->value(cc->get_config_key(), cc->get_default()).value<QColor>();
+        cc->set_color(c);
+    }
+    c = s->value(m_curse_color->get_config_key(), m_curse_color->get_default()).value<QColor>();
+    m_curse_color->set_color(c);
+
     s->endGroup();
     s->beginGroup("grid");
     UberDelegate::SKILL_DRAWING_METHOD m = static_cast<UberDelegate::SKILL_DRAWING_METHOD>(s->value("skill_drawing_method", UberDelegate::SDM_GROWING_CENTRAL_BOX).toInt());
@@ -146,13 +196,13 @@ void OptionsMenu::read_settings() {
     ui->sb_cell_padding->setValue(s->value("cell_padding", 0).toInt());
     ui->cb_shade_column_headers->setChecked(s->value("shade_column_headers", true).toBool());
     ui->cb_header_text_direction->setChecked(s->value("header_text_bottom", false).toBool());
-    ui->cb_curse_highlight->setChecked(s->value("highlight_cursed", false).toBool());
 
     m_font = s->value("font", QFont("Segoe UI", 8)).value<QFont>();
     m_dirty_font = m_font;
     ui->lbl_current_font->setText(m_font.family() + " [" + QString::number(m_font.pointSize()) + "pt]");
-
+    ui->cb_happiness_icons->setChecked(s->value("happiness_icons",true).toBool());
     s->endGroup();
+
     ui->cb_read_dwarves_on_startup->setChecked(s->value("read_on_startup", true).toBool());
     ui->cb_auto_contrast->setChecked(s->value("auto_contrast", true).toBool());
     ui->cb_show_aggregates->setChecked(s->value("show_aggregates", true).toBool());
@@ -166,6 +216,8 @@ void OptionsMenu::read_settings() {
     ui->cb_labor_cheats->setChecked(s->value("allow_labor_cheats", false).toBool());
     ui->cb_hide_children->setChecked(s->value("hide_children_and_babies", false).toBool());
     ui->cb_generic_names->setChecked(s->value("use_generic_names", false).toBool());
+    ui->cb_curse_highlight->setChecked(s->value("highlight_cursed", false).toBool());
+    ui->cb_noble_highlight->setChecked(s->value("highlight_nobles", false).toBool());
 
     ui->dsb_attribute_weight->setValue(s->value("default_attributes_weight",1.0).toDouble());
     ui->dsb_skill_weight->setValue(s->value("default_skills_weight",1.0).toDouble());
@@ -193,6 +245,10 @@ void OptionsMenu::write_settings() {
         foreach(CustomColor *cc, m_happiness_colors) {
             s->setValue(cc->get_config_key(), cc->get_color());
         }
+        foreach(CustomColor *cc, m_noble_colors) {
+            s->setValue(cc->get_config_key(), cc->get_color());
+        }
+        s->setValue(m_curse_color->get_config_key(), m_curse_color->get_color());
         s->endGroup();
 
         s->beginGroup("grid");
@@ -202,6 +258,7 @@ void OptionsMenu::write_settings() {
         s->setValue("shade_column_headers", ui->cb_shade_column_headers->isChecked());
         s->setValue("header_text_bottom", ui->cb_header_text_direction->isChecked());
         s->setValue("font", m_font);
+        s->setValue("happiness_icons",ui->cb_happiness_icons->isChecked());
         s->endGroup();
 
         s->setValue("read_on_startup", ui->cb_read_dwarves_on_startup->isChecked());
@@ -218,6 +275,7 @@ void OptionsMenu::write_settings() {
         s->setValue("hide_children_and_babies", ui->cb_hide_children->isChecked());
         s->setValue("use_generic_names", ui->cb_generic_names->isChecked());
         s->setValue("highlight_cursed", ui->cb_curse_highlight->isChecked());
+        s->setValue("highlight_nobles", ui->cb_noble_highlight->isChecked());
 
         s->setValue("default_attributes_weight",ui->dsb_attribute_weight->value());
         s->setValue("default_skills_weight",ui->dsb_skill_weight->value());
@@ -256,6 +314,9 @@ void OptionsMenu::restore_defaults() {
     foreach(CustomColor *cc, m_happiness_colors) {
         cc->reset_to_default();
     }
+    foreach(CustomColor *cc, m_noble_colors) {
+        cc->reset_to_default();
+    }
     ui->cb_read_dwarves_on_startup->setChecked(true);
     ui->cb_auto_contrast->setChecked(true);
     ui->cb_show_aggregates->setChecked(true);
@@ -268,6 +329,12 @@ void OptionsMenu::restore_defaults() {
     ui->cb_alert_on_lost_connection->setChecked(true);
     ui->cb_labor_cheats->setChecked(false);
     ui->cb_header_text_direction->setChecked(false);
+    ui->cb_curse_highlight->setChecked(false);
+    ui->cb_happiness_icons->setChecked(false);
+    ui->cb_noble_highlight->setChecked(false);
+    ui->sb_roles_tooltip->setValue(3);
+    ui->sb_roles_pane->setValue(10);
+    ui->chk_roles_in_labor->setChecked(false);
 
 
     m_font = QFont("Segoe UI", 8);

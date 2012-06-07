@@ -48,7 +48,7 @@ public:
     void refresh_data();
 
     void rename_squad(QString alias);
-    void assign_to_squad(Dwarf *d);
+    int assign_to_squad(Dwarf *d);
     void remove_from_squad(Dwarf *d);
 
 private:

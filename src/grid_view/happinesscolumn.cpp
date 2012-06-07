@@ -45,6 +45,12 @@ HappinessColumn::HappinessColumn(const HappinessColumn &to_copy)
 QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
 	QStandardItem *item = init_cell(d);
 	
+    QString pixmap_name = QString(":status/img/%1.png").arg(Dwarf::happiness_name(d->get_happiness()));
+    if(pixmap_name=="")
+        pixmap_name = ":img/help.png";
+
+    item->setData(QIcon(pixmap_name), Qt::DecorationRole);
+
 	item->setData(CT_HAPPINESS, DwarfModel::DR_COL_TYPE);
 	item->setData(d->get_raw_happiness(), DwarfModel::DR_SORT_VALUE);
 	QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%4</h4>")
@@ -54,7 +60,8 @@ QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
 					  .arg(d->nice_name());
 	item->setToolTip(tooltip);
 	QColor bg = m_colors[d->get_happiness()];
-	item->setBackground(QBrush(bg));
+    item->setBackground(QBrush(bg));
+
 	return item;
 }
 

@@ -43,6 +43,13 @@ public:
     RotatedHeader *get_header() {return m_header;}
 
     QItemSelection m_selected;
+    int m_last_sorted_col;
+    Qt::SortOrder m_last_sort_order;
+
+    void restore_scroll_positions();
+
+    bool is_loading_rows;
+    bool is_active;
 
     public slots:
         void read_settings();
@@ -51,6 +58,7 @@ public:
         void jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* previous);
         void jump_to_profession(QListWidgetItem* current, QListWidgetItem* previous);
         void select_dwarf(Dwarf *d);
+
 
         // expand/collapse persistence
         void expandAll();
@@ -80,7 +88,9 @@ private:
     bool m_single_click_labor_changes;
     //! we have to store this ourselves since the click(), accept() etc... don't send which button caused them
     Qt::MouseButton m_last_button;
-    bool m_column_already_sorted;
+    bool m_column_already_sorted;    
+    int m_vscroll;
+    int m_hscroll;
 
     void keyPressEvent(QKeyEvent *event);
 
@@ -94,10 +104,13 @@ private:
         void set_squad_name();
         void assign_to_squad();
         void remove_squad();
+        void vscroll_value_changed(int value);
+        void hscroll_value_changed(int value);
 
 signals:
     void new_custom_profession(Dwarf *d);
     void dwarf_focus_changed(Dwarf *d);
+    void squad_leader_changed();
 
 };
 #endif // STATETABLEVIEW_H

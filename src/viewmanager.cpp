@@ -58,9 +58,10 @@ ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy,
     connect(tabBar(), SIGNAL(currentChanged(int)), SLOT(setCurrentIndex(int)));
     connect(this, SIGNAL(tabCloseRequested(int)),
             SLOT(remove_tab_for_gridview(int)));
-    connect(m_model, SIGNAL(need_redraw()), SLOT(redraw_current_tab()));
-
+    connect(m_model, SIGNAL(need_redraw()), SLOT(redraw_current_tab()));            
     draw_views();
+
+    m_squad_warning = new QErrorMessage(this);
 }
 
 void ViewManager::draw_add_tab_button() {
@@ -355,17 +356,19 @@ void ViewManager::setCurrentIndex(int idx) {
         LOGW << "tab switch to index" << idx << "requested but there are " <<
             "only" << count() << "tabs";
         return;
-    }
+    }    
     StateTableView *stv = get_stv(idx);
     foreach(GridView *v, m_views) {
         if (v->name() == tabText(idx)) {
+            stv->is_loading_rows = true;
             QSettings *s = DT->user_settings();
             s->setValue("read_animals",(bool)(tabText(idx).contains("animals",Qt::CaseInsensitive)));
             m_model->set_grid_view(v);
             m_model->build_rows();
             stv->header()->setResizeMode(QHeaderView::Fixed);
-            stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);            
-            stv->sortByColumn(0, Qt::AscendingOrder);
+            stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
+            stv->sortByColumn(stv->m_last_sorted_col,stv->m_last_sort_order);
+
             QList<Dwarf*> tmp_list;
             foreach(Dwarf *d, m_selected_dwarfs) {
                 tmp_list << d;
@@ -373,12 +376,21 @@ void ViewManager::setCurrentIndex(int idx) {
             foreach(Dwarf *d, tmp_list) {
                 stv->select_dwarf(d);
             }
+            stv->is_loading_rows = false;
+            stv->is_active = true;
             break;
         }
     }
     tabBar()->setCurrentIndex(idx);
-    stv->restore_expanded_items();
-    write_tab_order();    
+    stv->restore_expanded_items();    
+    write_tab_order();
+    StateTableView *curr = get_stv(m_last_index);
+    if(curr && curr != stv)
+        curr->is_active = false;
+    m_last_index = idx;
+    stv->restore_scroll_positions();
+//    if(m_selected_dwarfs.count() > 0)
+//        m_selected_dwarfs.at(0)->show_details();
 }
 
 void ViewManager::dwarf_selection_changed(const QItemSelection &selected,
@@ -420,6 +432,7 @@ int ViewManager::add_tab_for_gridview(GridView *v) {
                                     const QItemSelection &)),
             SLOT(dwarf_selection_changed(const QItemSelection &,
                                          const QItemSelection &)));
+    connect(stv,SIGNAL(squad_leader_changed()),this,SLOT(show_squad_warning()));
     stv->show();
     int new_idx = addTab(stv, v->name());
     write_tab_order();
@@ -485,3 +498,9 @@ void ViewManager::set_group_by(int group_by) {
 void ViewManager::redraw_current_tab() {
     setCurrentIndex(currentIndex());
 }
+
+void ViewManager::show_squad_warning(){
+    if(m_squad_warning)
+        m_squad_warning->showMessage(tr("It's advisable to open the Military screen in Dwarf Fortress after making any changes to squad leaders."));
+}
+

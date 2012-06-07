@@ -362,6 +362,8 @@ public:
         return m_turn_count;
     }
 
+    QString noble_position() {return m_noble_position;}
+
     int body_size() {return m_body_size;}
 
     bool has_state(short id){return m_states.contains(id);}
@@ -445,6 +447,7 @@ private:
     quint32 m_birth_time;
     VIRTADDR m_hist_nickname;
     VIRTADDR m_fake_nickname;
+    QString m_noble_position;
 
     // these methods read data from raw memory
     void read_id();
@@ -470,6 +473,7 @@ private:
     void read_flags();
     void read_turn_count();    
     void read_animal_type();
+    void read_noble_position();
     void set_age(VIRTADDR birth_year_offset, VIRTADDR birth_time_offset);
 
     // utility methods to assist with reading names made up of several words

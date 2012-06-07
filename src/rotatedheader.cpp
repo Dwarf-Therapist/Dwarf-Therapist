@@ -54,6 +54,8 @@ void RotatedHeader::read_settings() {
     }
     m_shade_column_headers = s->value("options/grid/shade_column_headers", true).toBool();
     m_header_text_bottom = s->value("options/grid/header_text_bottom", false).toBool();
+    m_font = s->value("options/grid/font", QFont("Segoe UI", 8)).value<QFont>();
+    m_font.setWeight(m_font.weight()+10);
 }
 
 
@@ -127,26 +129,29 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
     p->save();
     p->setPen(Qt::black);
     p->setRenderHint(QPainter::Antialiasing);
-    p->setFont(QFont("Verdana", 8));
+    //p->setFont(QFont("Trebuchet", 9, QFont::Normal));
+    p->setFont(m_font);
+
+    QFontMetrics fm = p->fontMetrics();
 
 //    if(data.length() > 20){
 //        data = data.mid(0,20);
 //        data += "...";
 //    }
-
     if (m_header_text_bottom)
     {
         //flip column header text to read from bottom to top (supposedly this is more readable...)
         p->translate(rect.x() + rect.width(), rect.height());
-        p->rotate(270);
-        p->drawText(4,-15,rect.height()-10,rect.width(),1,data);
+        p->rotate(270);                
+        //p->drawText(4,-opt.rect.width() + ((opt.rect.width() - fm.height())/2),rect.height(),rect.width(),Qt::AlignLeft,data);
+        p->drawText(4,-rect.width(),rect.height()-fm.height(),rect.width(),1,data);
 
     }
     else
     {
         p->translate(rect.x(), rect.y());
         p->rotate(90);
-        p->drawText(14, -4, data);
+        p->drawText(14, -3, data);
     }
     p->restore();
 }

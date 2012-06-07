@@ -32,9 +32,12 @@ Skill::Skill()
     , m_exp_progress(0)
     , m_rating(-1)
     , m_name("UNKNOWN")
+    , m_demotions(0)
+    , m_skill_color("#000000")
+    , m_rust_rating("")
 {}
 
-Skill::Skill(short id, uint exp, short rating)
+Skill::Skill(short id, uint exp, short rating, int demotions)
     : m_id(id)
     , m_exp(exp)
     , m_actual_exp(exp)
@@ -43,8 +46,8 @@ Skill::Skill(short id, uint exp, short rating)
     , m_exp_progress(0)
     , m_rating(rating > 20 ? 20 : rating)
     , m_name("UNKNOWN")
-{
-    // formula from http://df.magmawiki.com/index.php/40d:Attribute
+    , m_demotions(demotions)
+{    
     m_actual_exp = m_exp;
     for (int i = 0; i < m_rating; ++i) {
         m_actual_exp += 500 + (i * 100);
@@ -62,13 +65,36 @@ Skill::Skill(short id, uint exp, short rating)
     if (m_exp_for_next_level && m_exp_for_current_level) {
         m_exp_progress = ((float)m_exp / (float)(m_exp_for_next_level - m_exp_for_current_level)) * 100;
     }
+
+    //haha yeah i WISH it was that easy.
+//    if(m_demotions <= 1){
+//        m_rust_rating = "";
+//        m_skill_color = "#000000";
+//    }
+//    else if(m_demotions < 8){
+//        m_rust_rating = "Rusty";
+//        m_skill_color = "#cc6633";
+//    }
+//    else{
+//        m_rust_rating = "Very Rusty";
+//        m_skill_color = "#993300";
+//    }
+    //defaults
+    m_rust_rating = "";    
+    QPalette tt;
+    QBrush ttb = tt.light();
+    m_skill_color = ttb.color().name(); //default to current tooltip palette text color
 }
 
 QString Skill::to_string(bool include_level, bool include_exp_summary) const {
     GameDataReader *gdr = GameDataReader::ptr();
-    QString out;
+
+    QString out;    
+    out.append(QString("<font color=%1>").arg(m_skill_color));
+
     if (include_level)
-        out.append(QString("[%1] ").arg(m_rating));
+        out.append(QString("[%1] ").arg(m_rating));    
+    out.append(QString("<b>%1</b> ").arg(rust_rating()));
     QString skill_level = gdr->get_skill_level_name(m_rating);
     QString skill_name = gdr->get_skill_name(m_id);
     if (skill_level.isEmpty())
@@ -77,6 +103,8 @@ QString Skill::to_string(bool include_level, bool include_exp_summary) const {
         out.append(QString("<b>%1 %2</b>").arg(skill_level, skill_name));
     if (include_exp_summary)
         out.append(QString(" %1").arg(exp_summary()));
+
+    out.append(QString("</font>"));
     return out;
 }
 

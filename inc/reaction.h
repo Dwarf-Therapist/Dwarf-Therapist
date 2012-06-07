@@ -285,7 +285,7 @@ private:
         m[RS_GLAZING] = "GLAZING";
         m[RS_PRESSING] = "PRESSING";
         m[RS_BEEKEEPING] = "BEEKEEPING";
-        m[RS_WAX_WORKING] = "WAX_WORKING";
+        m[RS_WAX_WORKING] = "WAX_WORKING";        
         return m.value(skill_id, "UNKNOWN");
     }
 

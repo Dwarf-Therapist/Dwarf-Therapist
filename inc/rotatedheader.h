@@ -58,6 +58,7 @@ private:
     QList<int> m_spacer_indexes;
     bool m_shade_column_headers;
     bool m_header_text_bottom;
+    QFont m_font;
     int m_hovered_column;
 
     private slots:

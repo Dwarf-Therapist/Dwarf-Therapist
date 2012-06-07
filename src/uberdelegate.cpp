@@ -79,13 +79,14 @@ void UberDelegate::read_settings() {
     auto_contrast = s->value("options/auto_contrast", true).toBool();
     draw_aggregates = s->value("options/show_aggregates", true).toBool();
     m_skill_drawing_method = static_cast<SKILL_DRAWING_METHOD>(s->value("options/grid/skill_drawing_method", SDM_GROWING_CENTRAL_BOX).toInt());
+    draw_happiness_icons = s->value("options/grid/happiness_icons",true).toBool();
 }
 
 void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
     if (!proxy_idx.isValid()) {
         return;
     }
-    if (proxy_idx.column() == 0) { // we never do anything with the 0 col...
+    if (proxy_idx.column() == 0) {
         QStyledItemDelegate::paint(p, opt, proxy_idx);
         return;
     }
@@ -107,74 +108,111 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     if (m_proxy)
         model_idx = m_proxy->mapToSource(idx);
 
-    COLUMN_TYPE type = static_cast<COLUMN_TYPE>(model_idx.data(DwarfModel::DR_COL_TYPE).toInt());
-    QRect adjusted = opt.rect.adjusted(cell_padding, cell_padding, (cell_padding * -2) - 1, (cell_padding * -2) - 1);
+    COLUMN_TYPE type = static_cast<COLUMN_TYPE>(model_idx.data(DwarfModel::DR_COL_TYPE).toInt());    
+    QRect adjusted = opt.rect.adjusted(cell_padding, cell_padding, -cell_padding, -cell_padding);
     switch (type) {
-        case CT_SKILL:
-            {
-                short rating = model_idx.data(DwarfModel::DR_RATING).toInt();
-                QColor bg = paint_bg(adjusted, false, p, opt, idx);
-                paint_generic(adjusted, rating, bg, p, opt, idx);
-                paint_grid(adjusted, false, p, opt, idx);
-            }
-            break;
-        case CT_LABOR:
-            {
-                bool agg = model_idx.data(DwarfModel::DR_IS_AGGREGATE).toBool();
-                if (m_model->current_grouping() == DwarfModel::GB_NOTHING || !agg) {
-                    paint_labor(adjusted, p, opt, idx);
-                } else {
-                    if (draw_aggregates)
-                        paint_aggregate(adjusted, p, opt, idx);
-                }
-            }
-            break;
-        case CT_HAPPINESS:
-            {
-                paint_bg(adjusted, false, p, opt, idx);
-                p->save();
-                p->fillRect(adjusted, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
-                p->restore();
-                paint_grid(adjusted, false, p, opt, idx);
-            }
-            break;
-        case CT_ROLE:
-            {
-                QColor bg = paint_bg(adjusted, false, p, opt, idx);
-                int rating = model_idx.data(DwarfModel::DR_RATING).toInt();
-                paint_generic(adjusted, rating, bg, p, opt, idx);
-                paint_grid(adjusted, false, p, opt, idx);
-            }
-            break;
-        case CT_IDLE:
-            {
-                paint_bg(adjusted, false, p, opt, idx);
-                QIcon icon = idx.data(Qt::DecorationRole).value<QIcon>();
-                QPixmap pixmap = icon.pixmap(adjusted.size());
-                p->save();
-                p->drawPixmap(adjusted, pixmap);
-                p->restore();
-                paint_grid(adjusted, false, p, opt, idx);
-            }
-            break;
-        case CT_TRAIT:
-            {
-                short rating = model_idx.data(DwarfModel::DR_RATING).toInt();
-                rating = (rating-50) / 2.5; //scale rating to between -20 and 20 for drawing
-                QColor bg = paint_bg(adjusted, false, p, opt, idx);
-                paint_generic(adjusted, rating, bg, p, opt, idx);
-                paint_grid(adjusted, false, p, opt, idx);
-            }
-            break;
-        case CT_ATTRIBUTE:
-            {
-                short rating = model_idx.data(DwarfModel::DR_RATING).toInt();
-                QColor bg = paint_bg(adjusted, false, p, opt, idx);
-                paint_generic(adjusted, rating, bg, p, opt, idx);
-                paint_grid(adjusted, false, p, opt, idx);
+    case CT_SKILL:
+    {
+        short rating = model_idx.data(DwarfModel::DR_RATING).toInt();
+        QColor bg = paint_bg(adjusted, false, p, opt, idx);
+        paint_generic(adjusted, rating, bg, p, opt, idx);
+        paint_grid(adjusted, false, p, opt, idx);
+    }
+        break;
+    case CT_LABOR:
+    {
+        bool agg = model_idx.data(DwarfModel::DR_IS_AGGREGATE).toBool();
+        if (m_model->current_grouping() == DwarfModel::GB_NOTHING || !agg) {
+            paint_labor(adjusted, p, opt, idx);
+        } else {
+            if (draw_aggregates)
+                paint_aggregate(adjusted, p, opt, idx);
+        }
+    }
+        break;
+    case CT_HAPPINESS:
+    {
+        paint_bg(adjusted, false, p, opt, idx);
+        p->save();        
+        //QRadialGradient grad(adjusted.center(),adjusted.width()/2);
+        QLinearGradient grad(adjusted.topLeft(),adjusted.bottomRight());        
+        QColor col = model_idx.data(Qt::BackgroundColorRole).value<QColor>();
+        col.setAlpha(25);
+        grad.setColorAt(1,col);
+        col.setAlpha(255);
+        grad.setColorAt(0,col);
+        p->fillRect(adjusted, grad);
 
+        if(draw_happiness_icons){
+            QIcon icon = idx.data(Qt::DecorationRole).value<QIcon>();
+            //if our cell size is > icon size, just center the icon instead
+            QSize iconSize = icon.actualSize(adjusted.size());
+            QPixmap pixmap = icon.pixmap(adjusted.size());
+            if(adjusted.width() < iconSize.width()){
+                iconSize = adjusted.size();
             }
-            break;
+            p->drawPixmap(adjusted.x() + ((adjusted.width()-iconSize.width())/2),
+                          adjusted.y() + ((adjusted.height()-iconSize.height())/2),
+                          iconSize.width(),iconSize.height(),pixmap);
+        }
+
+        p->restore();
+        paint_grid(adjusted, false, p, opt, idx);
+    }
+        break;
+    case CT_ROLE:
+    {
+        QColor bg = paint_bg(adjusted, false, p, opt, idx);
+        int rating = model_idx.data(DwarfModel::DR_RATING).toInt();
+        paint_generic(adjusted, rating, bg, p, opt, idx);
+        paint_grid(adjusted, false, p, opt, idx);
+    }
+        break;
+    case CT_IDLE:
+    {
+        //paint_bg(adjusted, false, p, opt, idx);
+        QColor bg = QColor(175,175,175); //idx.data(DwarfModel::DR_DEFAULT_BG_COLOR).value<QColor>();
+        QLinearGradient grad(adjusted.topLeft(),adjusted.bottomRight());
+        bg.setAlpha(0);
+        grad.setColorAt(1,bg);
+        bg.setAlpha(255);
+        grad.setColorAt(0,bg);
+        p->fillRect(adjusted,grad);
+
+        p->save();
+        QIcon icon = idx.data(Qt::DecorationRole).value<QIcon>();
+        //if our cell size is > icon size, just center the icon instead
+        QSize iconSize = icon.actualSize(adjusted.size());
+        QPixmap pixmap = icon.pixmap(adjusted.size());
+        if(adjusted.width() < iconSize.width()){
+            iconSize = adjusted.size();
+        }
+        p->drawPixmap(adjusted.x() + ((adjusted.width()-iconSize.width())/2),
+                      adjusted.y() + ((adjusted.height()-iconSize.height())/2),
+                      iconSize.width(),iconSize.height(),pixmap);
+
+        p->restore();
+        paint_grid(adjusted, false, p, opt, idx);
+    }
+        break;
+    case CT_TRAIT:
+    {
+        short rating = model_idx.data(DwarfModel::DR_RATING).toInt();
+        rating = (rating-50) / 2.5; //scale rating to between -20 and 20 for drawing
+        QColor bg = paint_bg(adjusted, false, p, opt, idx);
+        paint_generic(adjusted, rating, bg, p, opt, idx);
+        paint_grid(adjusted, false, p, opt, idx);
+    }
+        break;
+    case CT_ATTRIBUTE:
+    {
+        short rating = model_idx.data(DwarfModel::DR_RATING).toInt();
+        QColor bg = paint_bg(adjusted, false, p, opt, idx);
+        paint_generic(adjusted, rating, bg, p, opt, idx);
+        paint_grid(adjusted, false, p, opt, idx);
+
+    }
+        break;
     case CT_WEAPON:
     {
         short rating = model_idx.data(DwarfModel::DR_RATING).toInt();
@@ -184,36 +222,36 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
 
     }
         break;
-        case CT_MILITARY_PREFERENCE:
-            {
-                bool agg = model_idx.data(DwarfModel::DR_IS_AGGREGATE).toBool();
-                if (m_model->current_grouping() == DwarfModel::GB_NOTHING || !agg) {
-                   paint_pref(adjusted, p, opt, idx);
-                } else {
-                    if (draw_aggregates)
-                        paint_aggregate(adjusted, p, opt, idx);
-                }
-            }
-            break;
-        case CT_FLAGS:
-            {
-            paint_flags(adjusted, p, opt, idx);
-            paint_grid(adjusted, false, p, opt, idx);
-            }
-            break;
-        case CT_DEFAULT:
-        case CT_SPACER:
-        default:
-            paint_bg(adjusted, false, p, opt, idx);
-            //QStyledItemDelegate::paint(p, opt, idx);
-            if (opt.state & QStyle::State_Selected) {
-                p->save();
-                p->setPen(color_guides);
-                p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
-                p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
-                p->restore();
-            }
-            break;
+    case CT_MILITARY_PREFERENCE:
+    {
+        bool agg = model_idx.data(DwarfModel::DR_IS_AGGREGATE).toBool();
+        if (m_model->current_grouping() == DwarfModel::GB_NOTHING || !agg) {
+            paint_pref(adjusted, p, opt, idx);
+        } else {
+            if (draw_aggregates)
+                paint_aggregate(adjusted, p, opt, idx);
+        }
+    }
+        break;
+    case CT_FLAGS:
+    {
+        paint_flags(adjusted, p, opt, idx);
+        paint_grid(adjusted, false, p, opt, idx);
+    }
+        break;
+    case CT_DEFAULT:
+    case CT_SPACER:
+    default:
+        paint_bg(adjusted, false, p, opt, idx);
+        //QStyledItemDelegate::paint(p, opt, idx);
+        if (opt.state & QStyle::State_Selected) {
+            p->save();
+            p->setPen(color_guides);
+            p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
+            p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
+            p->restore();
+        }
+        break;
     }
 }
 
@@ -224,9 +262,16 @@ QColor UberDelegate::paint_bg(const QRect &adjusted, bool active, QPainter *p, c
     QColor bg = idx.data(DwarfModel::DR_DEFAULT_BG_COLOR).value<QColor>();
     p->save();
     p->fillRect(opt.rect, QBrush(bg));
+
     if (active) {
         bg = color_active_labor;
-        p->fillRect(adjusted, QBrush(bg));
+        //p->fillRect(adjusted, QBrush(bg));
+        QLinearGradient grad(adjusted.topLeft(),adjusted.bottomRight());
+        bg.setAlpha(100);
+        grad.setColorAt(1,bg);
+        bg.setAlpha(255);
+        grad.setColorAt(0,bg);
+        p->fillRect(adjusted, grad);
     }
     p->restore();
     return bg;
@@ -251,7 +296,6 @@ void UberDelegate::paint_generic(const QRect &adjusted, int rating, QColor bg, Q
         }
         rating = abs(rating);
     }
-
     p->save();
     switch(m_skill_drawing_method) {
         default:
@@ -437,13 +481,13 @@ void UberDelegate::paint_aggregate(const QRect &adjusted, QPainter *p, const QSt
     if (!proxy_idx.isValid()) {
         return;
     }
-    QModelIndex model_idx = m_proxy->mapToSource(proxy_idx);
+    //QModelIndex model_idx = m_proxy->mapToSource(proxy_idx);
     QModelIndex first_col = m_proxy->index(proxy_idx.row(), 0, proxy_idx.parent());
     if (!first_col.isValid()) {
         return;
     }
 
-    QString group_name = proxy_idx.data(DwarfModel::DR_GROUP_NAME).toString();
+    //QString group_name = proxy_idx.data(DwarfModel::DR_GROUP_NAME).toString();
     int labor_id = proxy_idx.data(DwarfModel::DR_LABOR_ID).toInt();
 
     int dirty_count = 0;
@@ -475,20 +519,33 @@ void UberDelegate::paint_aggregate(const QRect &adjusted, QPainter *p, const QSt
 }
 
 void UberDelegate::paint_grid(const QRect &adjusted, bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &) const {
+    //0 cell padding causes some overlap/clipping, hence the checks and redraws here
     p->save(); // border last
     p->setBrush(Qt::NoBrush);
     if (dirty) {
         p->setPen(QPen(color_dirty_border, 1));
         p->drawRect(adjusted);
+        if(cell_padding==0){
+            p->drawLine(opt.rect.topRight(), opt.rect.bottomRight());
+            p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
+        }
     } else if (opt.state.testFlag(QStyle::State_Selected)) {
         p->setPen(color_border);
         p->drawRect(adjusted);
+        if(cell_padding==0)
+            p->drawLine(opt.rect.topRight(), opt.rect.bottomRight());
         p->setPen(color_guides);
         p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
         p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
-    } else {
-        p->setPen(color_border);
-        p->drawRect(adjusted);
+    } else {        
+        if(cell_padding==0){
+            p->setPen(color_border);
+            p->drawRect(adjusted);
+            p->drawLine(opt.rect.topRight(), opt.rect.bottomRight());
+        }else{
+            p->setPen(color_border);
+            p->drawRect(adjusted);
+        }
     }
     p->restore();
 }

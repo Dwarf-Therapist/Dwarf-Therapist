@@ -43,6 +43,7 @@ THE SOFTWARE.
 #include "languages.h"
 #include "reaction.h"
 #include "races.h"
+#include "fortressentity.h"
 
 #ifdef Q_WS_WIN
 #define LAYOUT_SUBDIR "windows"
@@ -315,6 +316,9 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         return dwarves;
     }
 
+    //load the fortress now as we need this data before loading squads and dwarfs
+    m_fortress = FortressEntity::get_entity(this,read_addr(m_memory_correction + m_layout->address("fortress_entity")));
+
     // we're connected, make sure we have good addresses
     VIRTADDR creature_vector = m_layout->address("creature_vector");
     creature_vector += m_memory_correction;
@@ -410,6 +414,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
     LOGI << "found" << dwarves.size() << "dwarves out of" << entries.size()
             << "creatures";
+
     return dwarves;
 }
 
@@ -492,7 +497,7 @@ void DFInstance::calc_done(){
 
         //update role columns
         //DT->emit_roles_changed();
-        DT->get_main_window()->get_view_manager()->redraw_current_tab();
+        //DT->get_main_window()->get_view_manager()->redraw_current_tab();
     }
 
 }
@@ -506,13 +511,17 @@ QVector<Squad*> DFInstance::load_squads() {
         return squads;
     }
 
+    //find fortress entity (0x165a474) in historical_entities
+    //VIRTADDR squads_addr = read_addr(m_memory_correction+0x0165a474); //main.fortress_entity
+    //squads_addr += (0xa50 - 0x4); //historical_entity.squads
+    //QVector<VIRTADDR> active_squads = enumerate_vector(squads_addr);
+
     // we're connected, make sure we have good addresses
     VIRTADDR squad_vector = m_layout->address("squad_vector");
     if(squad_vector == 0xFFFFFFFF) {
         LOGI << "Squads not supported for this version of Dwarf Fortress";
         return squads;
     }
-
     squad_vector += m_memory_correction;
 
     if (!is_valid_address(squad_vector)) {
@@ -533,27 +542,25 @@ QVector<Squad*> DFInstance::load_squads() {
 
     QVector<VIRTADDR> entries = enumerate_vector(squad_vector);
     TRACE << "FOUND" << entries.size() << "squads";
-    //QVector<VIRTADDR> inactive_squads = enumerate_vector(m_memory_correction + m_layout->address("inactive_squad_vector"));
 
     if (!entries.empty()) {
         emit progress_range(0, entries.size()-1);
         Squad *s = NULL;
         int i = 0;
         foreach(VIRTADDR squad_addr, entries) {
-            //if(!inactive_squads.contains(squad_addr)){
             s = Squad::get_squad(this, squad_addr);
             if (s) {
-//                LOGD << "FOUND SQUAD" << hexify(squad_addr) << s->name() << " alias: " << alias
-//                     << " member count: " << s->assigned_count() << " id: " << s->id();
-                squads.push_front(s);
+                //LOGD << "FOUND SQUAD" << hexify(squad_addr) << s->name() << " alias: " << alias
+                //<< " member count: " << s->assigned_count() << " id: " << s->id();
+                if(m_fortress->squad_is_active(s->id()))//if(active_squads.contains(s->id()))
+                    squads.push_front(s);
             }
-            //}
             emit progress_value(i++);
         }
     }
 
     detach();
-    LOGI << "Found" << squads.size() << "squads out of" << entries.size();
+    //LOGI << "Found" << squads.size() << "squads out of" << entries.size();
     return squads;
 }
 

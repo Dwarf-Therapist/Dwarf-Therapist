@@ -52,9 +52,9 @@ public:
 
     int custom_profession_from_dwarf(Dwarf *d);
 
-    QSettings *user_settings() {return m_user_settings;}
+    QSettings *user_settings() {return m_user_settings;}    
     OptionsMenu *get_options_menu() {return m_options_menu;}
-    Dwarf *get_dwarf_by_id(int dwarf_id);
+    Dwarf *get_dwarf_by_id(int dwarf_id);    
 
     void load_game_translation_tables(DFInstance *df);
     QString get_generic_word(const uint &offset) {return m_generic_words.value(offset, "UNKNOWN");}

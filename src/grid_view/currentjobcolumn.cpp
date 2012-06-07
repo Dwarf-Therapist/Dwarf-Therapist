@@ -47,9 +47,9 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
     QString pixmap_name(":img/help.png");
     if (job_id == -1) {
         if(d->is_on_break()){
-            pixmap_name = ":status/img/bullet_blue.png"; // break
+            pixmap_name = ":status/img/hourglass.png"; // break
         }else{
-            pixmap_name = ":status/img/bullet_red.png"; // idle
+            pixmap_name = ":status/img/cross-small.png"; // idle
         }
     } else {
         DwarfJob *job = GameDataReader::ptr()->get_job(job_id);
@@ -67,28 +67,30 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
 
             switch (job_type) {
             case DwarfJob::DJT_IDLE:                
-                pixmap_name = ":status/img/bullet_red.png";
+                pixmap_name = ":status/img/cross-small.png";
                 break;
             case DwarfJob::DJT_DIG:
-                pixmap_name = ":status/img/pickaxe.png";
+                pixmap_name = ":status/img/shovel.png";
                 break;
             case DwarfJob::DJT_CUT:
-                pixmap_name = ":status/img/axe.png";
+                pixmap_name = ":status/img/hatchet.png";
                 break;
-            case DwarfJob::DJT_REST:
-                pixmap_name = ":status/img/status_sleep.png";
+            case DwarfJob::DJT_SLEEP:{
+                pixmap_name = ":status/img/clock-moon-phase.png";
+                //item->setData(QColor(50,50,50), DwarfModel::DR_DEFAULT_BG_COLOR);
+            }
                 break;
             case DwarfJob::DJT_DRINK:
-                pixmap_name = ":status/img/status_drink.png";
+                pixmap_name = ":status/img/beer.png";
                 break;
             case DwarfJob::DJT_FOOD:
-                pixmap_name = ":status/img/cheese.png";
+                pixmap_name = ":status/img/cutlery.png";
                 break;
             case DwarfJob::DJT_BUILD:
-                pixmap_name = ":status/img/gear.png";
+                pixmap_name = ":status/img/hammer--plain.png";
                 break;
             case DwarfJob::DJT_HAUL:
-                pixmap_name = ":status/img/status_haul.png";
+                pixmap_name = ":status/img/cart-box.png";
                 break;
             case DwarfJob::DJT_FIGHT:
                 pixmap_name = ":status/img/status_fight2.png";
@@ -116,6 +118,168 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
                 break;
             case DwarfJob::DJT_BEE_KEEPING:
                 pixmap_name = ":status/img/bee_i_guess.png";
+                break;
+            case DwarfJob::DJT_STAIRS:
+                pixmap_name = ":status/img/stairs.png";
+                break;
+            case DwarfJob::DJT_FORTIFICATION:
+                pixmap_name = ":status/img/wall-brick.png";
+                break;
+            case DwarfJob::DJT_ENGRAVE:
+                pixmap_name = ":status/img/paint-brush.png";
+                break;
+            case DwarfJob::DJT_LEAF:
+                pixmap_name = ":status/img/leaf.png";
+                break;
+            case DwarfJob::DJT_BUILD_REMOVE:
+                pixmap_name = ":status/img/hammer--minus.png";
+                break;
+            case DwarfJob::DJT_BAG_ADD:
+                pixmap_name = ":status/img/paper-bag--plus.png";
+                break;
+            case DwarfJob::DJT_MONEY:
+                pixmap_name = ":status/img/money-coin.png";
+                break;
+            case DwarfJob::DJT_RETURN:
+                pixmap_name = ":status/img/arrow-return.png";
+                break;
+            case DwarfJob::DJT_PARTY:
+                pixmap_name = ":status/img/party-hat.png";
+                break;
+            case DwarfJob::DJT_SOAP:
+                pixmap_name = ":status/img/soap.png";
+                break;
+            case DwarfJob::DJT_SEEK:
+                pixmap_name = ":status/img/eye--arrow.png";
+                break;
+            case DwarfJob::DJT_GEM_CUT:
+                pixmap_name = ":status/img/diamond.png";
+                break;
+            case DwarfJob::DJT_GEM_ENCRUST:
+                pixmap_name = ":status/img/ruby.png";
+                break;
+            case DwarfJob::DJT_SEEDS:
+                pixmap_name = ":status/img/beans.png";
+                break;
+            case DwarfJob::DJT_LEAF_ARROW:
+                pixmap_name = ":status/img/leaf--arrow.png";
+                break;
+            case DwarfJob::DJT_WATER_ARROW:
+                pixmap_name = ":status/img/water--arrow.png";
+                break;
+            case DwarfJob::DJT_TOMBSTONE:
+                pixmap_name = ":status/img/headstone-rip.png";
+                break;
+            case DwarfJob::DJT_ANIMAL:
+                pixmap_name = ":status/img/animal.png";
+                break;
+            case DwarfJob::DJT_BOOK_OPEN:
+                pixmap_name = ":status/img/book-open-list.png";
+                break;
+            case DwarfJob::DJT_HANDSHAKE:
+                pixmap_name = ":status/img/hand-shake.png";
+                break;
+            case DwarfJob::DJT_CONSTRUCT:
+                pixmap_name = ":status/img/hammer-screwdriver.png";
+                break;
+            case DwarfJob::DJT_ABACUS:
+                pixmap_name = ":status/img/abacus.png";
+                break;
+            case DwarfJob::DJT_FURNACE:
+                pixmap_name = ":status/img/fire.png";
+                break;
+            case DwarfJob::DJT_REPORT:
+                pixmap_name = ":status/img/balloon-prohibition.png";
+                break;
+            case DwarfJob::DJT_JUSTICE:
+                pixmap_name = ":status/img/balance.png";
+                break;
+            case DwarfJob::DJT_SHIELD:
+                pixmap_name = ":status/img/shield.png";
+                break;
+            case DwarfJob::DJT_DEPOT:
+                pixmap_name = ":status/img/wooden-box--arrow.png";
+                break;
+            case DwarfJob::DJT_BROOM:
+                pixmap_name = ":status/img/broom.png";
+                break;
+            case DwarfJob::DJT_SWITCH:
+                pixmap_name = ":status/img/switch.png";
+                break;
+            case DwarfJob::DJT_CHAIN:
+                pixmap_name = ":status/img/chain.png";
+                break;
+            case DwarfJob::DJT_UNCHAIN:
+                pixmap_name = ":status/img/chain-unchain.png";
+                break;
+            case DwarfJob::DJT_FILL_WATER:
+                pixmap_name = ":status/img/water--plus.png";
+                break;
+            case DwarfJob::DJT_MARKET:
+                pixmap_name = ":status/img/store-market-stall.png";
+                break;
+            case DwarfJob::DJT_KNIFE:
+                pixmap_name = ":status/img/knife_bloody.png";
+                break;
+            case DwarfJob::DJT_BOW:
+                pixmap_name = ":status/img/bow.png";
+                break;
+            case DwarfJob::DJT_CHEESE:
+                pixmap_name = ":status/img/cheese.png";
+                break;
+            case DwarfJob::DJT_HELM:
+                pixmap_name = ":status/img/helm.png";
+                break;
+            case DwarfJob::DJT_GLOVE:
+                pixmap_name = ":status/img/glove.png";
+                break;
+            case DwarfJob::DJT_BOOT:
+                pixmap_name = ":status/img/boot.png";
+                break;
+            case DwarfJob::DJT_ARMOR:
+                pixmap_name = ":status/img/armor.png";
+                break;
+            case DwarfJob::DJT_FISH:
+                pixmap_name = ":status/img/fish.png";
+                break;
+            case DwarfJob::DJT_MILK:
+                pixmap_name = ":status/img/bow.png";
+                break;
+            case DwarfJob::DJT_REST:
+                pixmap_name = ":status/img/clock-moon-phase.png";
+                break;
+            case DwarfJob::DJT_COOKING:
+                pixmap_name = ":status/img/meat.png";
+                break;
+            case DwarfJob::DJT_BUCKET_POUR:
+                pixmap_name = ":status/img/paint-can--arrow.png";
+                break;
+            case DwarfJob::DJT_GIVE_LOVE:
+                pixmap_name = ":status/img/heart--arrow.png";
+                break;
+            case DwarfJob::DJT_DYE:
+                pixmap_name = ":status/img/color--plus.png";
+                break;
+            case DwarfJob::DJT_WEAPON:
+                pixmap_name = ":status/img/weapon.png";
+                break;
+            case DwarfJob::DJT_SWITCH_CONNECT:
+                pixmap_name = ":status/img/switch-network.png";
+                break;
+            case DwarfJob::DJT_ZONE_ADD:
+                pixmap_name = ":status/img/zone--plus.png";
+                break;
+            case DwarfJob::DJT_CRAFTS:
+                pixmap_name = ":status/img/crown.png";
+                break;
+            case DwarfJob::DJT_GEAR:
+                pixmap_name = ":status/img/gear-small.png";
+                break;
+            case DwarfJob::DJT_TROUBLE:
+                pixmap_name = ":status/img/hand-finger.png";
+                break;
+            case DwarfJob::DJT_STORAGE:
+                pixmap_name = ":status/img/box--plus.png";
                 break;
             default:
             case DwarfJob::DJT_DEFAULT:

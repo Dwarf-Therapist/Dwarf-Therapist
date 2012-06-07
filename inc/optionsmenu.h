@@ -52,6 +52,8 @@ private:
     bool m_reading_settings;
     QList<CustomColor*> m_general_colors;
     QList<CustomColor*> m_happiness_colors;
+    QList<CustomColor*> m_noble_colors;
+    CustomColor* m_curse_color;
     QFont m_font;
     QFont m_dirty_font;
 

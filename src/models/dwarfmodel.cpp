@@ -42,6 +42,7 @@ THE SOFTWARE.
 #include "skillcolumn.h"
 #include "spacercolumn.h"
 #include "races.h"
+#include "fortressentity.h"
 
 QStringList DwarfModel::m_seasons;
 QStringList DwarfModel::m_months;
@@ -88,9 +89,11 @@ void DwarfModel::load_dwarves() {
 
     m_df->attach();
 
+
     foreach(Dwarf *d, m_df->load_dwarves()) {
         m_dwarves[d->id()] = d;
     }
+
 
     m_squads.clear();
     foreach(Squad * s, m_df->load_squads()) {
@@ -450,27 +453,37 @@ void DwarfModel::build_row(const QString &key) {
         }
     }
 
-    QSettings *s = DT->user_settings();
-    QColor col_curse = QColor(136,000,255,175);
 
     foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
         QStandardItem *i_name = new QStandardItem(d->nice_name());
-        if (d->active_military()) {
-            QFont f = i_name->font();
+
+        //font settings ***
+        QFont f = i_name->font();
+        if (d->active_military()) {            
             f.setBold(true);
-            i_name->setFont(f);
         }
-        if(m_group_by==GB_SQUAD && d->squad_position()==0){
-            i_name->setText("*"+i_name->text());
-            QFont f = i_name->font();
-            f.setItalic(true);
-            i_name->setFont(f);
+        if((m_group_by==GB_SQUAD && d->squad_position()==0) || d->noble_position() != ""){            
+            i_name->setText(QString("%1 %2 %1").arg(QChar(0x263C)).arg(i_name->text()));
+            f.setItalic(true);            
+        }
+        i_name->setFont(f);
+        //******
+
+        //background gradients for curses, nobles, etc.
+        if(d && DT->user_settings()->value("options/highlight_nobles",false).toBool()){
+            if(d->noble_position() != "")
+                i_name->setData(build_gradient_brush(m_df->fortress()->get_noble_color(d->historical_id())
+                                                     ,200,0,QPoint(0,0),QPoint(1,0)),Qt::BackgroundRole);
+        }
+        if(d && DT->user_settings()->value("options/highlight_cursed",false).toBool()){
+            if(d->curse_name() != ""){ //QChar(0x2261) =
+                //i_name->setText(QString("%1 %2 %1").arg(QChar(0x203C)).arg(i_name->text()));
+                f.setItalic(true);
+                i_name->setData(build_gradient_brush(DT->user_settings()->value("options/colors/cursed", QColor(125,97,186)).value<QColor>()
+                                                     ,200,0,QPoint(0,0),QPoint(1,0)),Qt::BackgroundRole);
+            }
         }
 
-        if(s->value("options/highlight_cursed",false).toBool()){
-            if(d->curse_name() != "")
-                i_name->setBackground(QBrush(col_curse));
-        }
 
         i_name->setToolTip(d->tooltip_text());
         i_name->setStatusTip(d->nice_name());
@@ -717,4 +730,14 @@ void DwarfModel::dwarf_set_toggled(Dwarf *d) {
         QModelIndex right = index(left.row(), columnCount(left) - 1, left.parent());
         emit dataChanged(left, right);
     }
+}
+
+QBrush DwarfModel::build_gradient_brush(QColor base_col, int alpha_start, int alpha_finish, QPoint start, QPoint end){
+    QLinearGradient grad(start.x(),start.y(),end.x(),end.y());
+    grad.setCoordinateMode(QGradient::ObjectBoundingMode);
+    base_col.setAlpha(alpha_start);
+    grad.setColorAt(0,base_col);
+    base_col.setAlpha(alpha_finish);
+    grad.setColorAt(1,base_col);
+    return QBrush(grad);
 }

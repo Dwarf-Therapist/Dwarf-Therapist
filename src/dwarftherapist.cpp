@@ -127,11 +127,12 @@ void DwarfTherapist::read_settings() {
 
     // HACK!
     if (m_user_settings->value("it_feels_like_the_first_time", true).toBool() ||
-        !m_user_settings->contains("options/colors/happiness/1")) {
+            !m_user_settings->contains("options/colors/happiness/1") ||
+            !m_user_settings->contains("options/colors/nobles/1")) {
         m_options_menu->write_settings(); //write it out so that we can get default colors loaded
         emit settings_changed(); // this will cause delegates to get the right default colors
         m_user_settings->setValue("it_feels_like_the_first_time", false);
-    }
+    }    
 
     if (m_user_settings->value("options/show_toolbutton_text", true).toBool()) {
         m_main_window->get_toolbar()->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);

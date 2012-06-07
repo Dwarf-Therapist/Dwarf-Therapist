@@ -26,7 +26,6 @@ THE SOFTWARE.
 #include <QtGui>
 #include "utils.h"
 #include "word.h"
-#include "utils.h"
 
 class Dwarf;
 class Squad;
@@ -35,6 +34,7 @@ struct MemorySegment;
 class Languages;
 class Reaction;
 class Race;
+class FortressEntity;
 
 class DFInstance : public QObject {
     Q_OBJECT
@@ -94,7 +94,7 @@ public:
 
     // Methods for when we know how the data is layed out
     MemoryLayout *memory_layout() {return m_layout;}
-    void read_raws();
+    void read_raws();    
     QVector<Dwarf*> load_dwarves();
     void load_roles();
     void load_reactions();
@@ -152,7 +152,7 @@ public:
 
     VIRTADDR find_historical_figure(int hist_id);
     VIRTADDR find_fake_identity(int hist_id);
-
+    FortressEntity * fortress() {return m_fortress;}
 
     public slots:
         // if a menu cancels our scan, we need to know how to stop
@@ -206,6 +206,7 @@ signals:
 private:
     QTime t;
     Languages* m_languages;
+    FortressEntity* m_fortress;
     QHash<QString, Reaction *> m_reactions;
     QVector<Race *> m_races;
     QVector<VIRTADDR> get_creatures();

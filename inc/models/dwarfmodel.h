@@ -130,6 +130,7 @@ private:
     GROUP_BY m_group_by;
     int m_selected_col;
     GridView *m_gridview;
+    QBrush build_gradient_brush(QColor base_col, int alpha_start, int alpha_finish, QPoint start, QPoint end);
 
 signals:
     void new_pending_changes(int);

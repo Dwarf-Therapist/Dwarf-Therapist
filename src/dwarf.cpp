@@ -43,6 +43,7 @@ THE SOFTWARE.
 #include "races.h"
 #include "caste.h"
 #include "reaction.h"
+#include "fortressentity.h"
 
 Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     : QObject(parent)
@@ -75,6 +76,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_caste_id(-1)
     , m_hist_nickname(0)
     , m_fake_nickname(0)
+    , m_noble_position("")
 {
     read_settings();
     refresh_data();
@@ -158,6 +160,7 @@ void Dwarf::refresh_data() {
     read_mood();
     read_body_size();
     read_animal_type(); //need skills loaded to check for hostiles
+    read_noble_position();
 
     if(is_animal())
         calc_names(); //calculate names again as we need to check tameness for animals
@@ -166,8 +169,6 @@ void Dwarf::refresh_data() {
     m_flag2 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags2"));
     m_pending_flag1 = m_flag1;
     m_pending_flag2 = m_flag2;
-
-
 
     TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name
             << "(" << m_translated_name << ")";
@@ -501,6 +502,10 @@ void Dwarf::read_profession() {
     TRACE << "reading profession for" << nice_name() << m_raw_profession <<
             prof_name;
     TRACE << "EFFECTIVE PROFESSION:" << m_profession;
+}
+
+void Dwarf::read_noble_position(){
+    m_noble_position = m_df->fortress()->get_noble_positions(m_hist_id,m_is_male);
 }
 
 void Dwarf::read_labors() {
@@ -919,14 +924,15 @@ void Dwarf::read_skills() {
         rust = m_df->read_int(entry + 0x10);
         rust_counter = m_df->read_int(entry + 0x14);
         demotion_counter = m_df->read_int(entry + 0x18);
-
-        TRACE   << "reading skill at" << hex << entry << "type" << dec << type
-                << "rating" << rating << "xp:" << xp << "last_used:"
-                << last_used << "rust:" << rust << "rust counter:"
-                << rust_counter << "demotions:" << demotion_counter;
-        Skill s(type, xp, rating);
+        Skill s(type, xp, rating, demotion_counter);
         m_total_xp += s.actual_exp();
         m_skills.append(s);
+
+        if(rust > 0)
+        LOGD << nice_name() << m_profession << "reading skill at" << hex << entry << "type" << s.name()
+             << "rating" << rating << "xp:" << xp << "last_used:"
+             << last_used << "rust:" << rust << "rust counter:"
+             << rust_counter << "demotions:" << demotion_counter;
     }
 }
 
@@ -977,7 +983,7 @@ const Skill Dwarf::get_skill(int skill_id) {
             return s;
         }
     }
-    return Skill(skill_id, 0, -1);
+    return Skill(skill_id, 0, -1, 0);
 }
 
 short Dwarf::skill_rating(int skill_id) {
@@ -1271,8 +1277,10 @@ QString Dwarf::tooltip_text() {
     QString tt = tr("<b><font size=5>%1</font><br/><font size=3>(%2)</font></b><br/>").arg(m_nice_name).arg(m_translated_name);
     tt += tr("<br><b>Caste:</b> %1<br/>").arg(caste_name());
     tt += tr("<b>Happiness:</b> %1 (%2)<br/>").arg(happiness_name(m_happiness)).arg(m_raw_happiness);
-    tt += tr("<b>Profession:</b> %1<br/><br/>").arg(profession());
-    tt += tr("<b>Skills:</b><ul>%1</ul><br/>").arg(skill_summary);
+    tt += tr("<b>Profession:</b> %1<br/>").arg(profession());
+    if(m_noble_position != "")
+        tt += tr("<b>Noble Position%1:</b> %2<br/>").arg(m_noble_position.indexOf(",") > 0 ? "s" : "").arg(m_noble_position);
+    tt += tr("<br/><b>Skills:</b><ul>%1</ul><br/>").arg(skill_summary);
     tt += tr("<b>Traits:</b> %1<br/>").arg(trait_summary);
     tt += tr("<br/><b>Top %1 Roles:</b><ul>%2</ul><br/>").arg(max_roles).arg(roles_summary);
 
@@ -1338,7 +1346,7 @@ void Dwarf::copy_address_to_clipboard() {
 }
 
 Skill Dwarf::highest_skill() {
-    Skill highest(0, 0, 0);
+    Skill highest(0, 0, 0, 0);
     foreach(Skill s, m_skills) {
         if (s.rating() > highest.rating()) {
             highest = s;

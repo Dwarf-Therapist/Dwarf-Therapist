@@ -31,7 +31,7 @@ class Skill
 {
 public:
     Skill();
-    Skill(short id, uint exp, short rating);
+    Skill(short id, uint exp, short rating, int demotions);
 
     short id() const {return m_id;}
     short rating() const {return m_rating;}
@@ -40,6 +40,8 @@ public:
     uint exp_for_current_level() const {return m_exp_for_current_level;}
     uint exp_for_next_level() const {return m_exp_for_next_level;}
     QString exp_summary() const;
+    QString rust_rating() const {return m_rust_rating;}
+    QString skill_color() const {return m_skill_color;}
 
     QString to_string(bool include_level = true, bool include_exp_summary = true) const;
     //QString name() {return QString("(%1) %2").arg(m_id).arg(m_name);}
@@ -55,6 +57,9 @@ private:
     float m_exp_progress;
     short m_rating;
     QString m_name;
+    QString m_skill_color;
+    QString m_rust_rating;
+    int m_demotions;
 };
 
 #endif // SKILL_H

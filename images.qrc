@@ -79,5 +79,74 @@
         <file>img/lump.png</file>
         <file>img/spinning.png</file>
         <file>img/bullet_blue.png</file>
+        <file>img/stairs.png</file>
+        <file>img/wall-brick.png</file>
+        <file>img/leaf.png</file>
+        <file>img/shovel.png</file>
+        <file>img/hammer--minus.png</file>
+        <file>img/hammer--plain.png</file>
+        <file>img/cart-box.png</file>
+        <file>img/arrow-return.png</file>
+        <file>img/paper-bag--plus.png</file>
+        <file>img/party-hat.png</file>
+        <file>img/soap.png</file>
+        <file>img/eye--arrow.png</file>
+        <file>img/beans.png</file>
+        <file>img/diamond.png</file>
+        <file>img/ruby.png</file>
+        <file>img/leaf--arrow.png</file>
+        <file>img/water--arrow.png</file>
+        <file>img/animal.png</file>
+        <file>img/beer.png</file>
+        <file>img/book-open-list.png</file>
+        <file>img/headstone-rip.png</file>
+        <file>img/money-coin.png</file>
+        <file>img/hammer-screwdriver.png</file>
+        <file>img/hand-shake.png</file>
+        <file>img/abacus.png</file>
+        <file>img/cutlery.png</file>
+        <file>img/paint-brush.png</file>
+        <file>img/fire.png</file>
+        <file>img/balance.png</file>
+        <file>img/shield.png</file>
+        <file>img/wooden-box--arrow.png</file>
+        <file>img/broom.png</file>
+        <file>img/switch.png</file>
+        <file>img/chain.png</file>
+        <file>img/chain-unchain.png</file>
+        <file>img/glass--plus.png</file>
+        <file>img/store-market-stall.png</file>
+        <file>img/knife_bloody.png</file>
+        <file>img/bow.png</file>
+        <file>img/milk.png</file>
+        <file>img/armor.png</file>
+        <file>img/boot.png</file>
+        <file>img/fish.png</file>
+        <file>img/helm.png</file>
+        <file>img/glove.png</file>
+        <file>img/Content.png</file>
+        <file>img/Ecstatic.png</file>
+        <file>img/Fine.png</file>
+        <file>img/Happy.png</file>
+        <file>img/Miserable.png</file>
+        <file>img/Unhappy.png</file>
+        <file>img/Very Unhappy.png</file>
+        <file>img/hourglass.png</file>
+        <file>img/meat.png</file>
+        <file>img/water--plus.png</file>
+        <file>img/paint-can--arrow.png</file>
+        <file>img/heart--arrow.png</file>
+        <file>img/color--plus.png</file>
+        <file>img/weapon.png</file>
+        <file>img/switch-network.png</file>
+        <file>img/zone--plus.png</file>
+        <file>img/hand-finger.png</file>
+        <file>img/crown.png</file>
+        <file>img/gear-small.png</file>
+        <file>img/balloon-prohibition.png</file>
+        <file>img/cross-small.png</file>
+        <file>img/weather-moon-half.png</file>
+        <file>img/clock-moon-phase.png</file>
+        <file>img/box--plus.png</file>
     </qresource>
 </RCC>

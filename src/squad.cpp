@@ -108,12 +108,12 @@ int Squad::assigned_count(){
     return count;
 }
 
-void Squad::assign_to_squad(Dwarf *d){
+int Squad::assign_to_squad(Dwarf *d){
     int position = assigned_count();
 
     //users could potentially select more than 10 and assign to squad
     if(position==10)
-        return;
+        return -1;
 
     //set the dwarf's squad id and position
     m_df->write_int(d->address() + m_df->memory_layout()->dwarf_offset("squad_id"), m_id);
@@ -134,6 +134,8 @@ void Squad::assign_to_squad(Dwarf *d){
             break;
         }
     }
+
+    return position;
 }
 
 void Squad::remove_from_squad(Dwarf *d){

@@ -49,7 +49,60 @@ public:
         DJT_BEE_KEEPING,
         DJT_PRESSING,
         DJT_SPINNING,
-        DJT_POTTERY
+        DJT_POTTERY,
+        DJT_STAIRS,
+        DJT_FORTIFICATION,
+        DJT_ENGRAVE,
+        DJT_LEAF,
+        DJT_BUILD_REMOVE,
+        DJT_BAG_ADD,
+        DJT_MONEY,
+        DJT_RETURN,
+        DJT_PARTY,
+        DJT_SOAP,
+        DJT_SEEK,
+        DJT_GEM_CUT,
+        DJT_GEM_ENCRUST,
+        DJT_SEEDS,
+        DJT_LEAF_ARROW,
+        DJT_WATER_ARROW,
+        DJT_TOMBSTONE,
+        DJT_ANIMAL,
+        DJT_BOOK_OPEN,
+        DJT_HANDSHAKE,
+        DJT_CONSTRUCT,
+        DJT_ABACUS,
+        DJT_REPORT,
+        DJT_JUSTICE,
+        DJT_SHIELD,
+        DJT_DEPOT,
+        DJT_BROOM,
+        DJT_SWITCH,
+        DJT_CHAIN,
+        DJT_UNCHAIN,
+        DJT_FILL_WATER,
+        DJT_MARKET,
+        DJT_KNIFE,
+        DJT_BOW,
+        DJT_MILK,
+        DJT_CHEESE,
+        DJT_GLOVE,
+        DJT_BOOT,
+        DJT_ARMOR,
+        DJT_HELM,
+        DJT_FISH,
+        DJT_SLEEP,
+        DJT_COOKING,
+        DJT_BUCKET_POUR,
+        DJT_GIVE_LOVE,
+        DJT_DYE,
+        DJT_WEAPON,
+        DJT_SWITCH_CONNECT,
+        DJT_ZONE_ADD,
+        DJT_CRAFTS,
+        DJT_GEAR,
+        DJT_TROUBLE,
+        DJT_STORAGE
     } DWARF_JOB_TYPE;
 
     static DWARF_JOB_TYPE get_type(const QString &type) {
@@ -57,7 +110,7 @@ public:
         m["idle"] = DJT_IDLE;
         m["dig"] = DJT_DIG;
         m["cut"] = DJT_CUT;
-        m["rest"] = DJT_REST;
+        m["sleep"] = DJT_SLEEP;
         m["drink"] = DJT_DRINK;
         m["food"] = DJT_FOOD;
         m["build"] = DJT_BUILD;
@@ -74,6 +127,59 @@ public:
         m["spinning"] = DJT_SPINNING;
         m["pottery"] = DJT_POTTERY;
         m["glazing"] = DJT_POTTERY;
+        m["stair"] = DJT_STAIRS;
+        m["fortification"] = DJT_FORTIFICATION;
+        m["engrave"] = DJT_ENGRAVE;
+        m["leaf"] = DJT_LEAF;
+        m["build_remove"] = DJT_BUILD_REMOVE;
+        m["bag_add"] = DJT_BAG_ADD;
+        m["money"] = DJT_MONEY;
+        m["return"] = DJT_RETURN;
+        m["party"] = DJT_PARTY;
+        m["soap"] = DJT_SOAP;
+        m["seek"] = DJT_SEEK;
+        m["gem_cut"] = DJT_GEM_CUT;
+        m["gem_encrust"] = DJT_GEM_ENCRUST;
+        m["seeds"] = DJT_SEEDS;
+        m["harvest"] = DJT_LEAF_ARROW;
+        m["give_water"] = DJT_WATER_ARROW;
+        m["tombstone"] = DJT_TOMBSTONE;
+        m["animal"] = DJT_ANIMAL;
+        m["book"] = DJT_BOOK_OPEN;
+        m["construct"] = DJT_CONSTRUCT;
+        m["handshake"] = DJT_HANDSHAKE;
+        m["abacus"] = DJT_ABACUS;
+        m["report"] = DJT_REPORT;
+        m["justice"] = DJT_JUSTICE;
+        m["shield"] = DJT_SHIELD;
+        m["depot"] = DJT_DEPOT;
+        m["broom"] = DJT_BROOM;
+        m["switch"] = DJT_SWITCH;
+        m["chain"] = DJT_CHAIN;
+        m["unchain"] = DJT_UNCHAIN;
+        m["fill_water"] = DJT_FILL_WATER;
+        m["market"] = DJT_MARKET;
+        m["knife"] = DJT_KNIFE;
+        m["bow"] = DJT_BOW;
+        m["milk"] = DJT_MILK;
+        m["cheese"] = DJT_CHEESE;
+        m["glove"] = DJT_GLOVE;
+        m["boot"] = DJT_BOOT;
+        m["armor"] = DJT_ARMOR;
+        m["helm"] = DJT_HELM;
+        m["fish"] = DJT_FISH;
+        m["rest"] = DJT_REST;
+        m["cooking"] = DJT_COOKING;
+        m["bucket_pour"] = DJT_BUCKET_POUR;
+        m["give_love"] = DJT_GIVE_LOVE;
+        m["weapon"] = DJT_WEAPON;
+        m["dye"] = DJT_DYE;
+        m["switch_connect"] = DJT_SWITCH_CONNECT;
+        m["zone_add"] = DJT_ZONE_ADD;
+        m["crafts"] = DJT_CRAFTS;
+        m["gear"] = DJT_GEAR;
+        m["trouble"] = DJT_TROUBLE;
+        m["storage"] = DJT_STORAGE;
         return m.value(type.toLower(), DJT_DEFAULT);
     }
 

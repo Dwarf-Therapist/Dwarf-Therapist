@@ -388,6 +388,7 @@ void MainWindow::set_interface_enabled(bool enabled) {
 }
 
 void MainWindow::check_latest_version(bool show_result_on_equal) {
+    return;
     m_show_result_on_equal = show_result_on_equal;
     Version our_v(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
 

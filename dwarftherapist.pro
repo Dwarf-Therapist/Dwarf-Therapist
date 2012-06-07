@@ -177,7 +177,8 @@ HEADERS += inc/win_structs.h \
     inc/races.h \
     inc/languages.h \    
     inc/caste.h \
-    inc/reaction.h
+    inc/reaction.h \
+    inc/fortressentity.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -234,7 +235,8 @@ SOURCES += src/viewmanager.cpp \
     src/races.cpp \
     src/languages.cpp \    
     src/caste.cpp \
-    src/reaction.cpp
+    src/reaction.cpp \
+    src/fortressentity.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

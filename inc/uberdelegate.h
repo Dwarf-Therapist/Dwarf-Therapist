@@ -78,6 +78,7 @@ private:
     QPolygonF m_star_shape;
     QPolygonF m_diamond_shape;
     SKILL_DRAWING_METHOD m_skill_drawing_method;
+    bool draw_happiness_icons;
 
     void paint_cell(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
 

@@ -77,6 +77,8 @@ private:
     StateTableView *get_stv(int idx = -1);
     void add_weapons_view(QList<GridView*> &built_in_views);
     bool m_add_weapons_tab;
+    int m_last_index;
+    QErrorMessage *m_squad_warning;
 
 	private slots:
 		//! used when adding tabs via the tool button
@@ -86,6 +88,7 @@ private:
 		void remove_tab_for_gridview(int index);
 		void draw_add_tab_button();
         void dwarf_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
+        void show_squad_warning();
 
 signals:
 	void dwarf_focus_changed(Dwarf *d);

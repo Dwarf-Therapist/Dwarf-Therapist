@@ -48,6 +48,10 @@ StateTableView::StateTableView(QWidget *parent)
     , m_delegate(new UberDelegate(this))
     , m_header(new RotatedHeader(Qt::Horizontal, this))
     , m_expanded_rows(QList<int>())
+    , m_last_sorted_col(0)
+    , m_last_sort_order(Qt::AscendingOrder)
+    , m_vscroll(0)
+    , m_hscroll(0)
 {
     read_settings();
 
@@ -75,6 +79,9 @@ StateTableView::StateTableView(QWidget *parent)
             SLOT(clicked(const QModelIndex &)));
     connect(m_header, SIGNAL(sectionPressed(int)), SLOT(header_pressed(int)));
     connect(m_header, SIGNAL(sectionClicked(int)), SLOT(header_clicked(int)));
+
+    connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(hscroll_value_changed(int)));
+    connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(vscroll_value_changed(int)));
 }
 
 StateTableView::~StateTableView()
@@ -141,7 +148,7 @@ void StateTableView::jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem*) {
     if (d && d->m_name_idx.isValid()) {
         QModelIndex proxy_idx = m_proxy->mapFromSource(d->m_name_idx);
         if (proxy_idx.isValid()) {
-            scrollTo(proxy_idx);
+            //scrollTo(proxy_idx);
             selectionModel()->select(proxy_idx, QItemSelectionModel::SelectCurrent | QItemSelectionModel::Rows);
         }
     }
@@ -154,7 +161,7 @@ void StateTableView::jump_to_profession(QListWidgetItem* current, QListWidgetIte
     QModelIndexList matches = m_proxy->match(m_proxy->index(0,0), Qt::DisplayRole, prof_name);
     if (matches.size() > 0) {
         QModelIndex group_header = matches.at(0);
-        scrollTo(group_header);
+        //scrollTo(group_header);
         expand(group_header);
         selectionModel()->select(group_header, QItemSelectionModel::SelectCurrent | QItemSelectionModel::Rows);
     }
@@ -279,16 +286,22 @@ void StateTableView::assign_to_squad(){
             Dwarf *d = m_model->get_dwarf_by_id(id);
             if (d) {
                 if(d->squad_id() != new_squad->id()){ //don't add to squad if they're already in it..
-                    if(d->squad_id() != -1) //remove from old squad first
+                    if(d->squad_id() != -1){ //remove from old squad first
+                        if(d->squad_position()==0)
+                            emit squad_leader_changed();
                         m_model->squads().value(d->squad_id())->remove_from_squad(d);
+                    }
 
-                    new_squad->assign_to_squad(d);
+                    int new_pos = new_squad->assign_to_squad(d);
+                    if(new_pos==0)
+                        emit squad_leader_changed();
                 }
             }
         }
     }
     if(m_model->current_grouping()==DwarfModel::GB_SQUAD)
         m_model->load_dwarves();
+
 }
 void StateTableView::remove_squad(){
     const QItemSelection sel = selectionModel()->selection();
@@ -297,6 +310,8 @@ void StateTableView::remove_squad(){
             int id = i.data(DwarfModel::DR_ID).toInt();
             Dwarf *d = m_model->get_dwarf_by_id(id);
             if (d) {
+                if(d->squad_position()==0)
+                    emit squad_leader_changed();
                 Squad *s = m_model->squads().value(d->squad_id());
                 s->remove_from_squad(d);                
             }
@@ -474,8 +489,10 @@ void StateTableView::clicked(const QModelIndex &idx) {
 
 void StateTableView::header_clicked(int index) {
     if (!m_column_already_sorted && index > 0) {
-        m_header->setSortIndicator(index, Qt::DescendingOrder);        
+        m_header->setSortIndicator(index, Qt::DescendingOrder);
+        m_last_sorted_col = index;
     }
+    m_last_sort_order = m_header->sortIndicatorOrder();
 }
 
 void StateTableView::header_pressed(int index) {
@@ -525,4 +542,30 @@ void StateTableView::keyPressEvent(QKeyEvent *event ){
         selectionModel()->clear();
         m_selected.clear();
     }
+}
+
+void StateTableView::restore_scroll_positions(){
+    if(m_vscroll > verticalScrollBar()->maximum())
+        m_vscroll = verticalScrollBar()->maximum();
+    else if(m_vscroll < verticalScrollBar()->minimum())
+        m_vscroll = verticalScrollBar()->minimum();
+    verticalScrollBar()->setValue(m_vscroll);
+
+    if(m_hscroll > horizontalScrollBar()->maximum())
+        m_hscroll = horizontalScrollBar()->maximum();
+    else if(m_hscroll < verticalScrollBar()->minimum())
+        m_hscroll = horizontalScrollBar()->minimum();
+    horizontalScrollBar()->setValue(m_hscroll);
+}
+
+void StateTableView::vscroll_value_changed(int value){
+    //when loading rows, the slider will move back to the top
+    //on linux, changing tabs also resets the slider,
+    //so don't record the position of the scroll if it moves on an inactive view
+    if(!is_loading_rows && is_active)
+        m_vscroll = value;
+}
+void StateTableView::hscroll_value_changed(int value){
+    if(!is_loading_rows && is_active)
+        m_hscroll = value;
 }

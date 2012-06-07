@@ -94,7 +94,8 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
         if (rating > 15)
             adjusted_rating = QString("15 +%1").arg(rating - 15);
 
-        skill_str = tr("%1 %2<br/>[RAW LEVEL: <b><font color=blue>%3</font></b>]<br/><b>Experience:</b><br/>%4")
+        skill_str = tr("<b>%1</b> %2 %3<br/>[RAW LEVEL: <b>%4</b>]<br/><b>Experience:</b><br/>%5")
+                .arg(d->get_skill(m_skill_id).rust_rating())
                 .arg(gdr->get_skill_level_name(rating))
                 .arg(gdr->get_skill_name(m_skill_id))
                 .arg(adjusted_rating)

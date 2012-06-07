@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "trait.h"
 #include "dwarfstats.h"
+#include "utils.h"
 
 DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
@@ -42,6 +43,12 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     ui->lbl_age->setText(QString("Age: %1 years").arg(d->get_age()));
     ui->lbl_translated_name->setText(QString("(%1)").arg(d->translated_name()));
     ui->lbl_profession->setText(d->profession());
+    ui->lbl_noble->setText(d->noble_position());
+    if(d->noble_position()=="")
+        ui->lbl_noble->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Ignored);
+    else
+        ui->lbl_noble->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+
     ui->lbl_current_job->setText(QString("%1 %2").arg(d->current_job_id()).arg(d->current_job()));
 
     GameDataReader *gdr = GameDataReader::ptr();
@@ -49,12 +56,14 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     Dwarf::DWARF_HAPPINESS happiness = d->get_happiness();
     ui->lbl_happiness->setText(QString("<b>%1</b> (%2)").arg(d->happiness_name(happiness)).arg(d->get_raw_happiness()));
     QColor color = DT->user_settings()->value(
-        QString("options/colors/happiness/%1").arg(static_cast<int>(happiness))).value<QColor>();
-    QString style_sheet_color = QString("#%1%2%3")
-        .arg(color.red(), 2, 16, QChar('0'))
-        .arg(color.green(), 2, 16, QChar('0'))
-        .arg(color.blue(), 2, 16, QChar('0'));
-    ui->lbl_happiness->setStyleSheet(QString("background-color: %1;").arg(style_sheet_color));
+                QString("options/colors/happiness/%1").arg(static_cast<int>(happiness))).value<QColor>();
+    QPalette p;
+    QColor color2 = p.window().color();
+    ui->lbl_happiness->setStyleSheet(QString("background: QLinearGradient(x1:0,y1:0,x2:0.9,y1:0,stop:0 %1, stop:1 %2); color: %3")
+                                     .arg(QColor(color.red(),color.green(),color.blue()).name())
+                                     .arg(color2.name())
+                                     .arg(compliment(color).name())
+                                     );
 
     //save user changes before cleaning
     if(m_cleanup_list.count() > 0){
@@ -127,18 +136,25 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     for (int row = 0; row < skills->size(); ++row) {
         tw->setRowHeight(row, 18);
         Skill s = skills->at(row);
-        QTableWidgetItem *text = new QTableWidgetItem(s.name());
+        QTableWidgetItem *text = new QTableWidgetItem(QString("%1").arg(s.name()));
         QTableWidgetItem *level = new QTableWidgetItem;
         level->setData(0, d->skill_rating(s.id()));
+        level->setTextAlignment(Qt::AlignHCenter);
+        QColor rust = QColor(s.skill_color());
+        if(rust!=QColor(Qt::black)){
+            rust.setAlpha(0); //if we get rust stuff setup change this from transparent
+            level->setBackgroundColor(rust);
+        }
+        level->setToolTip(s.rust_rating());
 
 
         QProgressBar *pb = new QProgressBar(tw);
         pb->setRange(s.exp_for_current_level(), s.exp_for_next_level());
-        pb->setValue(s.actual_exp());
+        pb->setValue(s.actual_exp());        
+        pb->setDisabled(true);// this is to keep them from animating and looking all goofy
         pb->setToolTip(s.exp_summary());
-        pb->setDisabled(true);// this is to keep them from animating and looking all goofy        
 
-        tw->setItem(row, 0, text);
+        tw->setItem(row, 0, text);        
         tw->setItem(row, 1, level);
         tw->setCellWidget(row, 2, pb);
     }
@@ -256,10 +272,9 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     tw_roles->setGridStyle(Qt::NoPen);
     tw_roles->setAlternatingRowColors(true);
     tw_roles->setHorizontalHeaderLabels(QStringList() << "Role" << "Rating");
-    tw_roles->verticalHeader()->hide();
-    tw_roles->horizontalHeader()->setStretchLastSection(true);
+    tw_roles->verticalHeader()->hide();    
     tw_roles->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-    tw_roles->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
+    tw_roles->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
     tw_roles->setSortingEnabled(false);
     QString name = "";
     float val = 0.0;
@@ -275,7 +290,8 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
         QTableWidgetItem *role_name = new QTableWidgetItem(name);
         QTableWidgetItem *role_rating = new QTableWidgetItem;
-        role_rating->setData(0, static_cast<float>(static_cast<int>(val*100+0.5))/100);
+        role_rating->setData(0, static_cast<float>(static_cast<int>(val*100+0.5))/100);        
+        role_rating->setTextAlignment(Qt::AlignHCenter);
 
 
         if (val >= 50) {
@@ -289,7 +305,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         tw_roles->setItem(0, 0, role_name);
         tw_roles->setItem(0, 1, role_rating);
 
-        //role_rating->setToolTip(gdr->get_role(name)->role_details);
+        role_rating->setToolTip(gdr->get_role(name)->get_role_details());
     }
     tw_roles->setSortingEnabled(true);
     tw_roles->sortItems(m_role_sort_col, static_cast<Qt::SortOrder>(m_role_sort_desc));
