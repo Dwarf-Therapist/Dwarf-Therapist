@@ -90,7 +90,7 @@ QString Skill::to_string(bool include_level, bool include_exp_summary) const {
     GameDataReader *gdr = GameDataReader::ptr();
 
     QString out;    
-    out.append(QString("<font color=%1>").arg(m_skill_color));
+    //out.append(QString("<font color=%1>").arg(m_skill_color));
 
     if (include_level)
         out.append(QString("[%1] ").arg(m_rating));    
@@ -104,7 +104,7 @@ QString Skill::to_string(bool include_level, bool include_exp_summary) const {
     if (include_exp_summary)
         out.append(QString(" %1").arg(exp_summary()));
 
-    out.append(QString("</font>"));
+    //out.append(QString("</font>"));
     return out;
 }
 

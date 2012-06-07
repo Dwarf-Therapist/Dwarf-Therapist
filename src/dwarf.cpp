@@ -172,6 +172,7 @@ void Dwarf::refresh_data() {
 
     TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name
             << "(" << m_translated_name << ")";
+
 }
 
 void Dwarf::set_age(VIRTADDR birth_year_offset, VIRTADDR birth_time_offset){
