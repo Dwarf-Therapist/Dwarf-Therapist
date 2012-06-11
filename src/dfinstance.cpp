@@ -404,7 +404,10 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         }
 
         //load up role stuff now
-        load_roles();
+        //load_roles();
+        QFuture<void> f = QtConcurrent::run(this,&DFInstance::load_roles);
+        f.waitForFinished();
+        calc_done();
 
     } else {
         // we lost the fort!
@@ -455,21 +458,25 @@ void DFInstance::load_races_castes(){
 
 
 void DFInstance::load_roles(){
-    t.start();    
-    calc_progress = 0;
+//    t.start();
+//    calc_progress = 0;
+
+//    foreach(Dwarf *d, actual_dwarves){
+//        rolecalc *rc = new rolecalc(d);
+//        connect(rc,SIGNAL(done()),this,SLOT(calc_done()),Qt::QueuedConnection);
+//        QThreadPool::globalInstance()->start(rc);
+//    }
 
     foreach(Dwarf *d, actual_dwarves){
-        rolecalc *rc = new rolecalc(d);
-        connect(rc,SIGNAL(done()),this,SLOT(calc_done()),Qt::QueuedConnection);
-        QThreadPool::globalInstance()->start(rc);
+        d->calc_role_ratings();
     }
 }
 
 void DFInstance::calc_done(){    
     calc_progress ++;
     //emit progress_value(calc_progress);
-    emit progress_message(tr("Calculating roles...%1%").arg(QString::number(((float)calc_progress/(float)actual_dwarves.count())*100,'f',2)));   
-    if(calc_progress == actual_dwarves.count()){
+    //emit progress_message(tr("Calculating roles...%1%").arg(QString::number(((float)calc_progress/(float)actual_dwarves.count())*100,'f',2)));
+    //if(calc_progress == actual_dwarves.count()){
         foreach(Role *r, GameDataReader::ptr()->get_roles()){
             float mean = 0.0;
             float stdev = 0.0;
@@ -498,7 +505,7 @@ void DFInstance::calc_done(){
         //update role columns
         //DT->emit_roles_changed();
         //DT->get_main_window()->get_view_manager()->redraw_current_tab();
-    }
+    //}
 
 }
 

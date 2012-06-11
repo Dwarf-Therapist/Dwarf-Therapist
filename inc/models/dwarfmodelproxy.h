@@ -42,6 +42,7 @@ public:
     DwarfModelProxy(QObject *parent = 0);
     DwarfModel* get_dwarf_model() const;
     void sort(int column, Qt::SortOrder order);
+    Qt::SortOrder m_last_sort_order;
 public slots:
     void cell_activated(const QModelIndex &idx);    
     void setFilterFixedString(const QString &pattern);

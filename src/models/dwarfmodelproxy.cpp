@@ -34,6 +34,7 @@ THE SOFTWARE.
 DwarfModelProxy::DwarfModelProxy(QObject *parent)
     :QSortFilterProxyModel(parent)
     , m_engine(new QScriptEngine(this))
+    , m_last_sort_order(Qt::AscendingOrder)
 {}
 
 DwarfModel* DwarfModelProxy::get_dwarf_model() const {
@@ -164,6 +165,7 @@ void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role) {
             setSortRole(DwarfModel::DR_SORT_VALUE);
             break;
         }
+        m_last_sort_order = order;
     } else {
         switch(role) {
         default:
@@ -179,6 +181,6 @@ void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role) {
         setSortRole(DwarfModel::DR_SORT_VALUE);
     }
     setSortCaseSensitivity(Qt::CaseInsensitive);
-    setSortLocaleAware(true);
+    setSortLocaleAware(true);    
     QSortFilterProxyModel::sort(column, order);
 }

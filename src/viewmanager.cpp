@@ -367,6 +367,7 @@ void ViewManager::setCurrentIndex(int idx) {
             m_model->build_rows();
             stv->header()->setResizeMode(QHeaderView::Fixed);
             stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
+            m_proxy->sort(0,m_proxy->m_last_sort_order);
             stv->sortByColumn(stv->m_last_sorted_col,stv->m_last_sort_order);
 
             QList<Dwarf*> tmp_list;

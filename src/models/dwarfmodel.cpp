@@ -624,7 +624,7 @@ void DwarfModel::set_group_by(int group_by) {
     LOGD << "group_by now set to" << group_by;
     m_group_by = static_cast<GROUP_BY>(group_by);
     if (m_df)
-        build_rows();
+        build_rows();    
 }
 
 void DwarfModel::calculate_pending() {
