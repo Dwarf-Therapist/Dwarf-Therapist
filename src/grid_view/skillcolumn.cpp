@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include "dwarf.h"
 #include "dwarfstats.h"
+#include "dwarftherapist.h"
 
 SkillColumn::SkillColumn(const QString &title, const int &skill_id, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(title, CT_SKILL, set, parent)
@@ -53,6 +54,37 @@ QStandardItem *SkillColumn::build_cell(Dwarf *d) {
 	item->setData(rating, DwarfModel::DR_RATING);
 	item->setData(rating, DwarfModel::DR_SORT_VALUE);
 
+    QString role_str="";
+    if (DT->user_settings()->value("options/show_roles_in_skills", true).toBool()) {
+        float role_rating=0;
+        if(m_skill_id != -1){
+            //if we find a role with an exact match to the column name, use only this role
+            QVector<Role*> found_roles;
+//            Role* r = GameDataReader::ptr()->get_role(this->title());
+//            if(r)
+//                found_roles << r;
+//            else
+                found_roles = GameDataReader::ptr()->get_skill_roles().value(m_skill_id);
+            if(found_roles.count() > 0){
+
+                float sortVal = 0;
+                role_rating = 0;
+
+                //just list roles and %
+                role_str = tr("<h4>Related Role:</h4><ul style=\"margin-left:-30px; padding-left:0px;\">");
+                foreach(Role *r, found_roles){
+                    role_rating = d->get_role_rating(r->name);
+                    role_str += tr("<li>%1 (%2%)</li>").arg(r->name).arg(QString::number(role_rating,'f',2));
+                    sortVal += role_rating;
+                    if(d->get_skill(m_skill_id).actual_exp() > 0)
+                        sortVal += 1000;
+                }
+                role_str += "</ul>";
+                sortVal /= found_roles.count();
+                item->setData(sortVal,DwarfModel::DR_SORT_VALUE);
+            }
+        }
+    }
     QString skill_str;
     if (m_skill_id != -1 && rating > -1) {
         QString adjusted_rating = QString::number(rating);
@@ -68,9 +100,10 @@ QStandardItem *SkillColumn::build_cell(Dwarf *d) {
         // either the skill isn't a valid id, or they have 0 experience in it
 		skill_str = "0 experience";
 	}
-    item->setToolTip(QString("<h3>%1</h3>%2<br><h4>%3</h4>")
+    item->setToolTip(QString("<h3>%1</h3>%2%3<h4>%4</h4>")
                      .arg(m_title)
                      .arg(skill_str)
+                     .arg(role_str)
                      .arg(d->nice_name()));
 	return item;
 }

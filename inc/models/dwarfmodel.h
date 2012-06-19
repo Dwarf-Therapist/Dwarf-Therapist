@@ -105,7 +105,7 @@ public:
     QString get_migration_desc(Dwarf *d);
 
     static QStringList m_seasons;
-    static QStringList m_months;
+    static QStringList m_months;        
 
     QHash<int, Squad*> squads() {return m_squads;}
 

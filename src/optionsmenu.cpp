@@ -144,6 +144,7 @@ OptionsMenu::OptionsMenu(QWidget *parent)
 
     connect(ui->btn_restore_defaults, SIGNAL(pressed()), this, SLOT(restore_defaults()));
     connect(ui->btn_change_font, SIGNAL(pressed()), this, SLOT(show_font_chooser()));
+    connect(ui->btn_change_header_font, SIGNAL(pressed()), this, SLOT(show_header_font_chooser()));
     connect(ui->cb_auto_contrast, SIGNAL(toggled(bool)), m_general_colors[0], SLOT(setDisabled(bool)));
 
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tab_index_changed(int)));
@@ -195,12 +196,19 @@ void OptionsMenu::read_settings() {
     ui->sb_cell_size->setValue(s->value("cell_size", DEFAULT_CELL_SIZE).toInt());
     ui->sb_cell_padding->setValue(s->value("cell_padding", 0).toInt());
     ui->cb_shade_column_headers->setChecked(s->value("shade_column_headers", true).toBool());
+    ui->cb_shade_cells->setChecked(s->value("shade_cells", true).toBool());
     ui->cb_header_text_direction->setChecked(s->value("header_text_bottom", false).toBool());
 
     m_font = s->value("font", QFont("Segoe UI", 8)).value<QFont>();
     m_dirty_font = m_font;
     ui->lbl_current_font->setText(m_font.family() + " [" + QString::number(m_font.pointSize()) + "pt]");
+
+    m_header_font = s->value("header_font", QFont("Segoe UI", 9)).value<QFont>();
+    m_dirty_header_font = m_header_font;
+    ui->lbl_header_font->setText(m_header_font.family() + " [" + QString::number(m_header_font.pointSize()) + "pt]");
+
     ui->cb_happiness_icons->setChecked(s->value("happiness_icons",true).toBool());
+
     s->endGroup();
 
     ui->cb_read_dwarves_on_startup->setChecked(s->value("read_on_startup", true).toBool());
@@ -227,6 +235,7 @@ void OptionsMenu::read_settings() {
     ui->sb_roles_pane->setValue(s->value("role_count_pane",10).toInt());
 
     ui->chk_roles_in_labor->setChecked(s->value("show_roles_in_labor",true).toBool());
+    ui->chk_roles_in_skills->setChecked(s->value("show_roles_in_skills",true).toBool());
 
     s->endGroup();
 
@@ -256,8 +265,10 @@ void OptionsMenu::write_settings() {
         s->setValue("cell_size", ui->sb_cell_size->value());
         s->setValue("cell_padding", ui->sb_cell_padding->value());
         s->setValue("shade_column_headers", ui->cb_shade_column_headers->isChecked());
+        s->setValue("shade_cells", ui->cb_shade_cells->isChecked());
         s->setValue("header_text_bottom", ui->cb_header_text_direction->isChecked());
         s->setValue("font", m_font);
+        s->setValue("header_font", m_header_font);
         s->setValue("happiness_icons",ui->cb_happiness_icons->isChecked());
         s->endGroup();
 
@@ -283,6 +294,7 @@ void OptionsMenu::write_settings() {
         s->setValue("role_count_tooltip",ui->sb_roles_tooltip->value());
         s->setValue("role_count_pane",ui->sb_roles_pane->value());
         s->setValue("show_roles_in_labor",ui->chk_roles_in_labor->isChecked());
+        s->setValue("show_roles_in_skills",ui->chk_roles_in_skills->isChecked());
 
         s->endGroup();
     }
@@ -290,6 +302,7 @@ void OptionsMenu::write_settings() {
 
 void OptionsMenu::accept() {
     m_font = m_dirty_font;
+    m_header_font = m_dirty_header_font;
     write_settings();
     emit settings_changed();
     QDialog::accept();
@@ -303,6 +316,7 @@ void OptionsMenu::accept() {
 
 void OptionsMenu::reject() {
     m_dirty_font = m_font;
+    m_dirty_header_font = m_header_font;
     read_settings();
     QDialog::reject();
 }
@@ -341,6 +355,10 @@ void OptionsMenu::restore_defaults() {
     m_dirty_font = m_font;
     ui->lbl_current_font->setText(m_font.family() + " [" + QString::number(m_font.pointSize()) + "pt]");
 
+    m_header_font = QFont("Segoe UI", 8);
+    m_dirty_header_font = m_header_font;
+    ui->lbl_header_font->setText(m_header_font.family() + " [" + QString::number(m_header_font.pointSize()) + "pt]");
+
     ui->sb_cell_size->setValue(DEFAULT_CELL_SIZE);
     ui->sb_cell_padding->setValue(0);
 }
@@ -351,6 +369,15 @@ void OptionsMenu::show_font_chooser() {
     if (ok) {
         ui->lbl_current_font->setText(tmp.family() + " [" + QString::number(tmp.pointSize()) + "pt]");
         m_dirty_font = tmp;
+    }
+}
+
+void OptionsMenu::show_header_font_chooser() {
+    bool ok;
+    QFont tmp = QFontDialog::getFont(&ok, m_header_font, this, tr("Font used in main table"));
+    if (ok) {
+        ui->lbl_header_font->setText(tmp.family() + " [" + QString::number(tmp.pointSize()) + "pt]");
+        m_dirty_header_font = tmp;
     }
 }
 
@@ -367,10 +394,10 @@ void OptionsMenu::tab_index_changed(int index){
         int max_roles = GameDataReader::ptr()->get_roles().count();
         QString max_text = tr(" (max %1)").arg(max_roles);
 
-        ui->lbl_pane_roles->setText(ui->lbl_pane_roles->text() + max_text);
+        ui->lbl_pane_roles_max->setText(max_text);
         ui->sb_roles_pane->setMaximum(max_roles);
 
-        ui->lbl_tooltip_roles->setText(ui->lbl_tooltip_roles->text() + max_text);
+        ui->lbl_tooltip_roles_max->setText(max_text);
         ui->sb_roles_tooltip->setMaximum(max_roles);
     }
 }

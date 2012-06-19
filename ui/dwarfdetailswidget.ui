@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>358</width>
-    <height>154</height>
+    <height>175</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,6 +28,9 @@
        </property>
        <property name="text">
         <string>Urist McLabel</string>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

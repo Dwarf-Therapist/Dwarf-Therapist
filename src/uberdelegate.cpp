@@ -132,16 +132,8 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_HAPPINESS:
     {
-        paint_bg(adjusted, false, p, opt, idx);
+        paint_bg(adjusted, false, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
         p->save();        
-        //QRadialGradient grad(adjusted.center(),adjusted.width()/2);
-        QLinearGradient grad(adjusted.topLeft(),adjusted.bottomRight());        
-        QColor col = model_idx.data(Qt::BackgroundColorRole).value<QColor>();
-        col.setAlpha(25);
-        grad.setColorAt(1,col);
-        col.setAlpha(255);
-        grad.setColorAt(0,col);
-        p->fillRect(adjusted, grad);
 
         if(draw_happiness_icons){
             QIcon icon = idx.data(Qt::DecorationRole).value<QIcon>();
@@ -169,15 +161,8 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     }
         break;
     case CT_IDLE:
-    {
-        //paint_bg(adjusted, false, p, opt, idx);
-        QColor bg = QColor(175,175,175); //idx.data(DwarfModel::DR_DEFAULT_BG_COLOR).value<QColor>();
-        QLinearGradient grad(adjusted.topLeft(),adjusted.bottomRight());
-        bg.setAlpha(0);
-        grad.setColorAt(1,bg);
-        bg.setAlpha(255);
-        grad.setColorAt(0,bg);
-        p->fillRect(adjusted,grad);
+    {        
+        paint_bg(adjusted, false, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
 
         p->save();
         QIcon icon = idx.data(Qt::DecorationRole).value<QIcon>();
@@ -255,25 +240,33 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     }
 }
 
-QColor UberDelegate::paint_bg(const QRect &adjusted, bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
+QColor UberDelegate::paint_bg(const QRect &adjusted, bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const bool use_gradient, const QColor &col_override) const{
     QModelIndex idx = proxy_idx;
     if (m_proxy)
         idx = m_proxy->mapToSource(proxy_idx);
+
     QColor bg = idx.data(DwarfModel::DR_DEFAULT_BG_COLOR).value<QColor>();
     p->save();
-    p->fillRect(opt.rect, QBrush(bg));
+    p->fillRect(opt.rect, bg);
 
-    if (active) {
+    if(!active){
+        if (col_override != QColor(Qt::black))
+            bg = col_override;
+    }else
         bg = color_active_labor;
-        //p->fillRect(adjusted, QBrush(bg));
+
+    if((use_gradient || active) && DT->user_settings()->value("options/grid/shade_cells",true).toBool()){
         QLinearGradient grad(adjusted.topLeft(),adjusted.bottomRight());
-        bg.setAlpha(100);
+        bg.setAlpha(75);
         grad.setColorAt(1,bg);
         bg.setAlpha(255);
         grad.setColorAt(0,bg);
         p->fillRect(adjusted, grad);
+    }else{        
+        p->fillRect(adjusted, QBrush(bg));
     }
     p->restore();
+
     return bg;
 }
 
@@ -307,13 +300,15 @@ void UberDelegate::paint_generic(const QRect &adjusted, int rating, QColor bg, Q
                 p->setBrush(QBrush(c));
                 p->translate(opt.rect.x() + 2, opt.rect.y() + 2);
                 p->scale(opt.rect.width()-4, opt.rect.height()-4);
+//                p->translate(adjusted.x()+1, adjusted.y()+1);
+//                p->scale(adjusted.width()-2, opt.rect.height()-2);
                 p->drawPolygon(m_diamond_shape);
             } else if (rating > -1 && rating < 15) {
                 float size = 0;
                 size = 0.75f * ((rating + 1) / 15.0f); // even dabbling (0) should be drawn
-                float inset = (1.0f - size) / 2.0f;
-                p->translate(adjusted.x(), adjusted.y());
-                p->scale(adjusted.width(), adjusted.height());
+                float inset = (1.0f - size) / 2.0f;                
+                p->translate(adjusted.x()-inset,adjusted.y()-inset);
+                p->scale(adjusted.width()-size,adjusted.height()-size);
                 p->fillRect(QRectF(inset, inset, size, size), QBrush(c));
             }
             break;
@@ -518,36 +513,31 @@ void UberDelegate::paint_aggregate(const QRect &adjusted, QPainter *p, const QSt
     paint_grid(adjusted, dirty_count > 0, p, opt, proxy_idx);
 }
 
-void UberDelegate::paint_grid(const QRect &adjusted, bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &) const {
-    //0 cell padding causes some overlap/clipping, hence the checks and redraws here
-    p->save(); // border last
+void UberDelegate::paint_grid(const QRect &adjusted, bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &) const {    
     p->setBrush(Qt::NoBrush);
-    if (dirty) {
-        p->setPen(QPen(color_dirty_border, 1));
-        p->drawRect(adjusted);
-        if(cell_padding==0){
-            p->drawLine(opt.rect.topRight(), opt.rect.bottomRight());
+
+    //dirty labor
+    if(dirty){
+        p->setPen(QPen(color_dirty_border,1));
+    }else{
+        //normal white border
+        p->setPen(color_border);
+    }
+
+    //draw border (dirty or otherwise)
+    p->drawLine(adjusted.topRight(),adjusted.bottomRight());
+    p->drawLine(adjusted.topLeft(),adjusted.bottomLeft());
+    p->drawLine(adjusted.topRight(),adjusted.topLeft());
+    p->drawLine(adjusted.bottomLeft(),adjusted.bottomRight());
+
+    //draw guide along top/bottom
+    if(opt.state.testFlag(QStyle::State_Selected)){
+        if((cell_padding == 0 && !dirty) || cell_padding > 0){ //0 padding replaces the guide with the dirty border
+            p->setPen(color_guides);
+            p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
             p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
         }
-    } else if (opt.state.testFlag(QStyle::State_Selected)) {
-        p->setPen(color_border);
-        p->drawRect(adjusted);
-        if(cell_padding==0)
-            p->drawLine(opt.rect.topRight(), opt.rect.bottomRight());
-        p->setPen(color_guides);
-        p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
-        p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
-    } else {        
-        if(cell_padding==0){
-            p->setPen(color_border);
-            p->drawRect(adjusted);
-            p->drawLine(opt.rect.topRight(), opt.rect.bottomRight());
-        }else{
-            p->setPen(color_border);
-            p->drawRect(adjusted);
-        }
     }
-    p->restore();
 }
 
 QSize UberDelegate::sizeHint(const QStyleOptionViewItem &opt, const QModelIndex &idx) const {

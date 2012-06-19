@@ -124,13 +124,6 @@
         <file>img/fish.png</file>
         <file>img/helm.png</file>
         <file>img/glove.png</file>
-        <file>img/Content.png</file>
-        <file>img/Ecstatic.png</file>
-        <file>img/Fine.png</file>
-        <file>img/Happy.png</file>
-        <file>img/Miserable.png</file>
-        <file>img/Unhappy.png</file>
-        <file>img/Very Unhappy.png</file>
         <file>img/hourglass.png</file>
         <file>img/meat.png</file>
         <file>img/water--plus.png</file>
@@ -148,5 +141,14 @@
         <file>img/weather-moon-half.png</file>
         <file>img/clock-moon-phase.png</file>
         <file>img/box--plus.png</file>
+        <file>img/ale.png</file>
+        <file>img/moon.png</file>
+        <file>img/Very Unhappy.png</file>
+        <file>img/Content.png</file>
+        <file>img/Ecstatic.png</file>
+        <file>img/Fine.png</file>
+        <file>img/Miserable.png</file>
+        <file>img/Unhappy.png</file>
+        <file>img/Happy.png</file>
     </qresource>
 </RCC>

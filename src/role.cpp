@@ -48,8 +48,6 @@ Role::Role(QSettings &s, QObject *parent)
     parseAspect(s, "attributes", attributes_weight, attributes);
     parseAspect(s, "traits", traits_weight, traits);
     parseAspect(s, "skills", skills_weight, skills);
-
-    //create_role_details(s);
 }
 
 Role::Role(const Role &r){

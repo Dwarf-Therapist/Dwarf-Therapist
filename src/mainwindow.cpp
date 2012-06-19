@@ -139,6 +139,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->cb_filter_script, SIGNAL(currentIndexChanged(const QString &)), SLOT(new_filter_script_chosen(const QString &)));
     connect(m_script_dialog, SIGNAL(apply_script(const QString &)), m_proxy, SLOT(apply_script(const QString&)));
     connect(m_script_dialog, SIGNAL(scripts_changed()), SLOT(reload_filter_scripts()));
+    connect(m_view_manager,SIGNAL(group_changed(int)), this, SLOT(display_group(int)));
 
     m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
@@ -530,7 +531,7 @@ void MainWindow::scan_memory() {
 }
 
 void MainWindow::set_group_by(int group_by) {
-    write_settings();
+    //write_settings();
     m_view_manager->set_group_by(group_by);
 }
 
@@ -883,4 +884,13 @@ void MainWindow::set_progress_value(int value) {
         m_progress->setVisible(false);
         set_progress_message("");
     }
+}
+
+void MainWindow::display_group(const int group_by){
+    //this is a signal sent from the view manager when we change tabs and update grouping
+    //we also want to change the combobox's index, but not refresh the grid again
+    ui->cb_group_by->blockSignals(true);
+    ui->cb_group_by->setCurrentIndex(group_by);
+    //write_settings();
+    ui->cb_group_by->blockSignals(false);
 }

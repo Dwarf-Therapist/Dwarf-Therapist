@@ -78,7 +78,7 @@ private:
     void add_weapons_view(QList<GridView*> &built_in_views);
     bool m_add_weapons_tab;
     int m_last_index;
-    QErrorMessage *m_squad_warning;
+    QErrorMessage *m_squad_warning;    
 
 	private slots:
 		//! used when adding tabs via the tool button
@@ -93,6 +93,7 @@ private:
 signals:
 	void dwarf_focus_changed(Dwarf *d);
     void gridview_changed(const GridView*);
+    void group_changed(const int);
 		
 };
 

@@ -45,6 +45,8 @@ public:
     QItemSelection m_selected;
     int m_last_sorted_col;
     Qt::SortOrder m_last_sort_order;
+    int m_last_group_by;
+    DwarfModel *get_model() {return m_model;}
 
     void restore_scroll_positions();
 

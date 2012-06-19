@@ -574,7 +574,8 @@ QVector<Squad*> DFInstance::load_squads() {
 void DFInstance::heartbeat() {
     // simple read attempt that will fail if the DF game isn't running a fort,
     // or isn't running at all
-    if (!is_valid_address(m_memory_correction + m_layout->address("dwarf_race_index"))) {
+    QVector<VIRTADDR> trans = enumerate_vector(m_layout->address("translation_vector") + m_memory_correction);
+    if (trans.size() < 1) {
         // no game loaded, or process is gone
         emit connection_interrupted();
     }

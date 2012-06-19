@@ -36,7 +36,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>5</number>
      </property>
      <property name="iconSize">
       <size>
@@ -238,7 +238,7 @@
       <attribute name="title">
        <string>Grid Options</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,0,0,0,0">
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,0,0,0,0,0,0">
        <item>
         <widget class="QCheckBox" name="cb_auto_contrast">
          <property name="sizePolicy">
@@ -290,6 +290,22 @@
          </property>
          <property name="text">
           <string>Gradient Shade Column Headers</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_shade_cells">
+         <property name="toolTip">
+          <string/>
+         </property>
+         <property name="statusTip">
+          <string>When checked, this will apply a gradient to active labor, current job, and happiness grid cells.</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, this will apply a gradient to active labor, current job, and happiness grid cells.</string>
+         </property>
+         <property name="text">
+          <string>Gradient Shade Cells</string>
          </property>
         </widget>
        </item>
@@ -368,7 +384,7 @@
             <string/>
            </property>
            <property name="text">
-            <string>Font</string>
+            <string>Grid/View Row Font</string>
            </property>
           </widget>
          </item>
@@ -380,7 +396,7 @@
               <string/>
              </property>
              <property name="statusTip">
-              <string>The current active font.</string>
+              <string>The current active font for rows.</string>
              </property>
              <property name="whatsThis">
               <string>The current active font.</string>
@@ -397,6 +413,68 @@
              </property>
              <property name="whatsThis">
               <string>This controls which font is used for drawing text inside the labor grid.</string>
+             </property>
+             <property name="accessibleName">
+              <string/>
+             </property>
+             <property name="text">
+              <string>Change Font...</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_13">
+         <item>
+          <widget class="QLabel" name="lbl_header_font_title">
+           <property name="font">
+            <font>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="statusTip">
+            <string>This controls which font is used for drawing the text on column headers.</string>
+           </property>
+           <property name="whatsThis">
+            <string>This controls which font is used for drawing the text on column headers.</string>
+           </property>
+           <property name="accessibleName">
+            <string/>
+           </property>
+           <property name="text">
+            <string>Column Header Font</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_15">
+           <item>
+            <widget class="QLabel" name="lbl_header_font">
+             <property name="toolTip">
+              <string/>
+             </property>
+             <property name="statusTip">
+              <string>The current active font for headers.</string>
+             </property>
+             <property name="whatsThis">
+              <string>The current active font.</string>
+             </property>
+             <property name="text">
+              <string>CURRENT_FONT</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_change_header_font">
+             <property name="statusTip">
+              <string>This controls which font is used for drawing column header text.</string>
+             </property>
+             <property name="whatsThis">
+              <string>This controls which font is used for drawing column header text.</string>
              </property>
              <property name="accessibleName">
               <string/>
@@ -601,8 +679,8 @@
         <rect>
          <x>10</x>
          <y>20</y>
-         <width>551</width>
-         <height>237</height>
+         <width>594</width>
+         <height>244</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -835,6 +913,35 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QLabel" name="lbl_tooltip_roles_max">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="spacer_attribute_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>90</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
          </layout>
         </item>
         <item>
@@ -903,6 +1010,35 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QLabel" name="lbl_pane_roles_max">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="spacer_attribute_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>90</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
          </layout>
         </item>
         <item>
@@ -949,6 +1085,39 @@
             </property>
             <property name="text">
              <string>Show role information in labor columns</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_14">
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>80</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chk_roles_in_skills">
+            <property name="toolTip">
+             <string/>
+            </property>
+            <property name="statusTip">
+             <string>Shows all roles which have the skill in the column. Additionally sorts skill columns by 'has skill experience' and then by role ratings. Examples of skill columns: Axedwarf, Liar, Teacher, Fighter...</string>
+            </property>
+            <property name="text">
+             <string>Show role information in skill columns</string>
             </property>
            </widget>
           </item>

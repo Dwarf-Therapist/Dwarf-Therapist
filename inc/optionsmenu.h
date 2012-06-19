@@ -44,6 +44,7 @@ public:
         void reject();
         void restore_defaults();
         void show_font_chooser();
+        void show_header_font_chooser();
         void set_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&);
         void tab_index_changed(int index);
 
@@ -55,7 +56,9 @@ private:
     QList<CustomColor*> m_noble_colors;
     CustomColor* m_curse_color;
     QFont m_font;
+    QFont m_header_font;
     QFont m_dirty_font;
+    QFont m_dirty_header_font;
 
 signals:
     void color_changed(const QString &, const QColor &);

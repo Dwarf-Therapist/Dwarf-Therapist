@@ -57,6 +57,12 @@ QStandardItem *FlagColumn::build_cell(Dwarf *d) {
         item->setData(m_bit_pos, DwarfModel::DR_LABOR_ID);
         item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
         item->setBackground(QBrush(m_bg_color));
+        //hack to check butchering pets. currently this will cause the butchered parts to still be recognized as a pet
+        //and they'll put them into a burial recepticle, but won't use them as a food source
+        if(d->is_pet() && m_bit_pos == 49){
+            item->setToolTip(tr("<b>Please turn off pet availability first.</b><br/><br/>Sorry, pets cannot be butchered due to technical limitations!"));
+            item->setData(QBrush(QColor(187,34,34,200)),DwarfModel::DR_DEFAULT_BG_COLOR);
+        }
         return item;
 }
 

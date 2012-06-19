@@ -77,6 +77,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_hist_nickname(0)
     , m_fake_nickname(0)
     , m_noble_position("")
+    , m_is_pet(false)
 {
     read_settings();
     refresh_data();
@@ -167,12 +168,13 @@ void Dwarf::refresh_data() {
 
     m_flag1 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags1"));
     m_flag2 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags2"));
-    m_pending_flag1 = m_flag1;
-    m_pending_flag2 = m_flag2;
+
+    //currently only flags used are for cage and butcher animal
+    m_caged = m_flag1;
+    m_butcher = m_flag2;
 
     TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name
             << "(" << m_translated_name << ")";
-
 }
 
 void Dwarf::set_age(VIRTADDR birth_year_offset, VIRTADDR birth_time_offset){
@@ -221,7 +223,7 @@ void Dwarf::read_mood(){
 
 void Dwarf::read_body_size(){
     if(m_mem->dwarf_offset("body_size") != -1){
-        QVector<VIRTADDR> entries = m_df->enumerate_vector(m_address + m_mem->dwarf_offset("body_size"));
+        //default dwarf sizes
         if(m_profession=="Child")
             m_body_size = 15000;
         else if(m_profession=="Baby")
@@ -229,6 +231,7 @@ void Dwarf::read_body_size(){
         else
             m_body_size = 60000;
 
+        QVector<VIRTADDR> entries = m_df->enumerate_vector(m_address + m_mem->dwarf_offset("body_size"));
         foreach(VIRTADDR entry, entries) {
             m_body_size = m_body_size * ((float)entry / 100);
         }
@@ -242,6 +245,17 @@ void Dwarf::read_animal_type(){
         qint32 animal_offset = m_df->memory_layout()->dwarf_offset("animal_type");
         if(animal_offset>=0)
             m_animal_type = static_cast<ANIMAL_TYPE>(m_df->read_int(m_address + animal_offset));
+
+        //additional if it's an animal set a flag if it's currently a pet, as butchering available pets breaks shit in game
+        //due to not being able to remove the pet entry from the special_refs for the unit stuff
+        if(m_mem->dwarf_offset("specific_refs") != -1){
+            QVector<VIRTADDR> refs = m_df->enumerate_vector(m_address + m_mem->dwarf_offset("specific_refs"));
+            foreach(VIRTADDR ref, refs){
+                if(m_df->read_int(ref)==7){ //pet type
+                    m_is_pet = true;
+                }
+            }
+        }
     }
 }
 
@@ -577,6 +591,8 @@ void Dwarf::read_current_job() {
         short on_break_value = m_df->memory_layout()->job_detail("on_break_flag");
         m_is_on_break = has_state(on_break_value);
         m_current_job = m_is_on_break ? tr("On Break") : tr("No Job");
+        if(m_is_on_break)
+            m_current_job_id = -2;
     }
     TRACE << "CURRENT JOB:" << m_current_job_id << m_current_sub_job_id << m_current_job;
 }
@@ -878,11 +894,13 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
 
 bool Dwarf::get_flag_value(int bit)
 {
-    quint32 flg=m_pending_flag1;
+    //m_caged is the flags1
+    quint32 flg=m_caged;
     if(bit>31)
     {
+        //the slaughter flag is in flags2
         bit-=32;
-        flg=m_pending_flag2;
+        flg=m_butcher;
     }
     quint32 mask = 1;
     for (int i=0;i<bit;i++)
@@ -1081,10 +1099,12 @@ bool Dwarf::toggle_flag_bit(int bit) {
     quint32 mask = 1;
     for (int i=0;i<n;i++)
         mask<<=1;
-    if (bit>31)
-        m_pending_flag2^=mask;
-    else
-        m_pending_flag1^=mask;
+    if (bit>31){
+        //don't butcher if it's a pet, user will be notified via tooltip on column
+        if(!m_is_pet)
+            m_butcher^=mask;
+    }else
+        m_caged^=mask;
     return true;
 }
 
@@ -1094,9 +1114,9 @@ int Dwarf::pending_changes() {
         cnt++;
     if (m_custom_profession != m_pending_custom_profession)
         cnt++;
-    if (m_flag1 != m_pending_flag1)
+    if (m_flag1 != m_caged)
         cnt++;
-    if (m_flag2 != m_pending_flag2)
+    if (m_flag2 != m_butcher)
         cnt++;
     return cnt;
 }
@@ -1133,15 +1153,16 @@ void Dwarf::commit_pending() {
     }
     if (m_pending_custom_profession != m_custom_profession)
         m_df->write_string(m_address + mem->dwarf_offset("custom_profession"), m_pending_custom_profession);
-    if (m_pending_flag1 != m_flag1)
-        m_df->write_raw(m_address + m_mem->dwarf_offset("flags1"), 4, &m_pending_flag1);
-    if (m_pending_flag2 != m_flag2)
-        m_df->write_raw(m_address + m_mem->dwarf_offset("flags2"), 4, &m_pending_flag2);
+    if (m_caged != m_flag1)
+        m_df->write_raw(m_address + m_mem->dwarf_offset("flags1"), 4, &m_caged);
+    if (m_butcher != m_flag2)
+        m_df->write_raw(m_address + m_mem->dwarf_offset("flags2"), 4, &m_butcher);
+
     refresh_data();
 }
 
 void Dwarf::recheck_equipment(){
-    // We'll set the "recheck_equipment" flag because there was a labor change.
+    // set the "recheck_equipment" flag if there was a labor change, or squad change
     BYTE recheck_equipment = m_df->read_byte(m_address +
                                      m_df->memory_layout()->dwarf_offset("recheck_equipment"));
     recheck_equipment |= 1;
@@ -1177,15 +1198,15 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
     QTreeWidgetItem *d_item = new QTreeWidgetItem;
     d_item->setText(0, QString("%1 (%2)").arg(nice_name()).arg(labors.size()));
     d_item->setData(0, Qt::UserRole, id());
-    if (m_pending_flag1 != m_flag1) {
+    if (m_caged != m_flag1) {
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
-        i->setText(0, tr("Flag1 change to %1").arg(hexify(m_pending_flag1)));
+        i->setText(0, tr("Flag1 change to %1").arg(hexify(m_caged)));
         i->setIcon(0, QIcon(":img/book_edit.png"));
         i->setData(0, Qt::UserRole, id());
     }
-    if (m_pending_flag2 != m_flag2) {
+    if (m_butcher != m_flag2) {
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
-        i->setText(0, tr("Flag2 change to %1").arg(hexify(m_pending_flag2)));
+        i->setText(0, tr("Flag2 change to %1").arg(hexify(m_butcher)));
         i->setIcon(0, QIcon(":img/book_edit.png"));
         i->setData(0, Qt::UserRole, id());
     }

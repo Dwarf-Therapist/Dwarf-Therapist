@@ -74,6 +74,8 @@ public:
     //! false if the creature is a dwarf, true if not
     Q_INVOKABLE bool is_animal();
 
+    Q_INVOKABLE bool is_pet() {return m_is_pet;}
+
     //! return a text version of this dwarf's profession (will use custom profession if set)
     QString profession();
 
@@ -434,8 +436,8 @@ private:
     QString m_squad_name; //The name of the squad that the dwarf belongs to (if any)
     quint32 m_flag1;
     quint32 m_flag2;
-    quint32 m_pending_flag1;
-    quint32 m_pending_flag2;
+    quint32 m_caged;
+    quint32 m_butcher;
     short m_age;
     uint m_turn_count; // Dwarf turn count from start of fortress (as best we know)
     bool m_is_on_break;
@@ -448,6 +450,7 @@ private:
     VIRTADDR m_hist_nickname;
     VIRTADDR m_fake_nickname;
     QString m_noble_position;
+    bool m_is_pet;
 
     // these methods read data from raw memory
     void read_id();

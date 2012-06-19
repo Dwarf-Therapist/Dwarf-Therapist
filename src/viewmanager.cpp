@@ -40,7 +40,7 @@ ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy,
     : QTabWidget(parent)
     , m_model(dm)
     , m_proxy(proxy)
-    , m_add_tab_button(new QToolButton(this))    
+    , m_add_tab_button(new QToolButton(this))
 {
     m_proxy->setSourceModel(m_model);
     setTabsClosable(true);
@@ -204,6 +204,12 @@ void ViewManager::add_weapons_view(QList<GridView*> &built_in_views){
                 mv->add_set(vcs);
                 mv->set_is_custom(false);
             }
+            mv = this->get_view("Military-Alt.");
+            if(mv){
+                mv->remove_set("All Weapons");
+                mv->add_set(vcs);
+                mv->set_is_custom(false);
+            }
         }
         m_views << gv;
         built_in_views << gv;
@@ -341,6 +347,8 @@ void ViewManager::replace_view(GridView *old_view, GridView *new_view) {
     }
 }
 
+
+
 StateTableView *ViewManager::get_stv(int idx) {
     if (idx == -1)
         idx = currentIndex();
@@ -351,6 +359,7 @@ StateTableView *ViewManager::get_stv(int idx) {
     return 0;
 }
 
+
 void ViewManager::setCurrentIndex(int idx) {
     if (idx < 0 || idx > count()-1) {
         LOGW << "tab switch to index" << idx << "requested but there are " <<
@@ -358,15 +367,18 @@ void ViewManager::setCurrentIndex(int idx) {
         return;
     }    
     StateTableView *stv = get_stv(idx);
+
     foreach(GridView *v, m_views) {
         if (v->name() == tabText(idx)) {
             stv->is_loading_rows = true;
             QSettings *s = DT->user_settings();
             s->setValue("read_animals",(bool)(tabText(idx).contains("animals",Qt::CaseInsensitive)));
-            m_model->set_grid_view(v);
-            m_model->build_rows();
-            stv->header()->setResizeMode(QHeaderView::Fixed);
-            stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
+            m_model->set_grid_view(v);            
+            m_model->set_group_by(stv->m_last_group_by);
+            if(stv->header()->count() > 0){
+                stv->header()->setResizeMode(QHeaderView::Fixed);
+                stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
+            }
             m_proxy->sort(0,m_proxy->m_last_sort_order);
             stv->sortByColumn(stv->m_last_sorted_col,stv->m_last_sort_order);
 
@@ -382,16 +394,20 @@ void ViewManager::setCurrentIndex(int idx) {
             break;
         }
     }
-    tabBar()->setCurrentIndex(idx);
-    stv->restore_expanded_items();    
+
+    StateTableView *prev_view = get_stv(m_last_index);
+    if(prev_view && prev_view != stv){
+        prev_view->is_active = false;
+    }
+
+    tabBar()->setCurrentIndex(idx);      
+    stv->restore_expanded_items();
     write_tab_order();
-    StateTableView *curr = get_stv(m_last_index);
-    if(curr && curr != stv)
-        curr->is_active = false;
+
     m_last_index = idx;
     stv->restore_scroll_positions();
-//    if(m_selected_dwarfs.count() > 0)
-//        m_selected_dwarfs.at(0)->show_details();
+
+    emit group_changed(stv->m_last_group_by);
 }
 
 void ViewManager::dwarf_selection_changed(const QItemSelection &selected,
@@ -406,7 +422,7 @@ void ViewManager::dwarf_selection_changed(const QItemSelection &selected,
         Dwarf *d = DT->get_dwarf_by_id(dwarf_id);
         if (d)
             m_selected_dwarfs << d;
-    }
+    }    
 }
 
 int ViewManager::add_tab_from_action() {
@@ -491,8 +507,11 @@ void ViewManager::jump_to_profession(QListWidgetItem *current,
 }
 
 void ViewManager::set_group_by(int group_by) {
-    if (m_model)
-        m_model->set_group_by(group_by);
+    if (m_model){
+        //m_model->set_group_by(group_by);
+        //m_last_grouped = group_by;
+        get_stv(currentIndex())->m_last_group_by = group_by;
+    }
     redraw_current_tab();
 }
 

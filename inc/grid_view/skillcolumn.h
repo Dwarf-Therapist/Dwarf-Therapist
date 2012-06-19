@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define SKILL_COLUMN_H
 
 #include "viewcolumn.h"
+#include "role.h"
 
 class SkillColumn : public ViewColumn {
 public:

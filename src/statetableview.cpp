@@ -52,6 +52,7 @@ StateTableView::StateTableView(QWidget *parent)
     , m_last_sort_order(Qt::AscendingOrder)
     , m_vscroll(0)
     , m_hscroll(0)
+    , m_last_group_by(DwarfModel::GB_NOTHING)
 {
     read_settings();
 
@@ -120,7 +121,7 @@ void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
     connect(m_model, SIGNAL(preferred_header_size(int, int)), m_header, SLOT(resizeSection(int, int)));
     connect(m_model, SIGNAL(set_index_as_spacer(int)), m_header, SLOT(set_index_as_spacer(int)));
     connect(m_model, SIGNAL(clear_spacers()), m_header, SLOT(clear_spacers()));
-    set_single_click_labor_changes(DT->user_settings()->value("options/single_click_labor_changes", true).toBool());
+    set_single_click_labor_changes(DT->user_settings()->value("options/single_click_labor_changes", true).toBool());        
 }
 
 void StateTableView::new_custom_profession() {
@@ -323,10 +324,13 @@ void StateTableView::remove_squad(){
 
 void StateTableView::set_nickname() {
     const QItemSelection sel = selectionModel()->selection();
+    if(sel.count() <= 0)
+        return;
     bool ok;
     QString new_nick = QInputDialog::getText(this, tr("New Nickname"),
                                              tr("Enter a new nickname for the selected dwarves. Or leave blank to reset "
-                                                "to their default name."), QLineEdit::Normal,"", &ok);
+                                                "to their default name."), QLineEdit::Normal,
+                                             m_model->get_dwarf_by_id(sel.indexes().at(0).data(DwarfModel::DR_ID).toInt())->nickname(), &ok);
     if(ok) {
         int limit = 16;
         if (new_nick.length() > limit) {
@@ -481,9 +485,8 @@ void StateTableView::clicked(const QModelIndex &idx) {
             m_proxy->cell_activated(idx);
         }
     }else{
-        if(m_proxy && idx.column() == 0){
+        if(m_proxy && idx.column() == 0)
             m_selected = selectionModel()->selection();
-        }
     }
 }
 

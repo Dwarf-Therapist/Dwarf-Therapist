@@ -69,12 +69,12 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     if(m_cleanup_list.count() > 0){
         //save splitter settings
         QSplitter* old_splitter = qobject_cast<QSplitter *>(m_cleanup_list[0]);
-        m_splitter_sizes = old_splitter->saveState();
+        m_splitter_sizes = old_splitter->saveState();        
         QTableWidget *temp;
         //save skill sorts
         temp = qobject_cast<QTableWidget *>(m_cleanup_list[1]);
         m_skill_sort_col = temp->horizontalHeader()->sortIndicatorSection();
-        m_skill_sort_desc = temp->horizontalHeader()->sortIndicatorOrder();
+        m_skill_sort_desc = temp->horizontalHeader()->sortIndicatorOrder();        
         //save attribute sorts
         temp = qobject_cast<QTableWidget *>(m_cleanup_list[2]);
         m_attribute_sort_col = temp->horizontalHeader()->sortIndicatorSection();
@@ -104,9 +104,8 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         m_role_sort_desc = Qt::DescendingOrder;
     }
 
-
-    foreach(QObject *obj, m_cleanup_list) {
-        obj->deleteLater();
+    for(int i = m_cleanup_list.count()-1; i >=0; i--){
+        delete m_cleanup_list[i];
     }
     m_cleanup_list.clear();
 
@@ -188,6 +187,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
         QTableWidgetItem *attribute_name = new QTableWidgetItem(r->name);
         QTableWidgetItem *attribute_rating = new QTableWidgetItem;
+        attribute_rating->setTextAlignment(Qt::AlignHCenter);
         attribute_rating->setData(0,d->attribute(row));
 
         if (l.rating >= 0) {
@@ -236,6 +236,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             Trait *t = gdr->get_trait(row);
             QTableWidgetItem *trait_name = new QTableWidgetItem(t->name);
             QTableWidgetItem *trait_score = new QTableWidgetItem;
+            trait_score->setTextAlignment(Qt::AlignHCenter);
             trait_score->setData(0, val);
 
             int deviation = abs(50 - val);

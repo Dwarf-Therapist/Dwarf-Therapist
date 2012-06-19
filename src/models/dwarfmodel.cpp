@@ -112,7 +112,7 @@ void DwarfModel::build_rows() {
     TODO: Move this to the RotatedHeader class
     */
     int start_col = 1;
-    setHorizontalHeaderItem(0, new QStandardItem);
+    setHorizontalHeaderItem(0, new QStandardItem);    
     emit clear_spacers();
     QSettings *s = DT->user_settings();
     int width = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
@@ -489,7 +489,7 @@ void DwarfModel::build_row(const QString &key) {
         i_name->setStatusTip(d->nice_name());
         i_name->setData(false, DR_IS_AGGREGATE);
         i_name->setData(0, DR_RATING);
-        i_name->setData(d->id(), DR_ID);
+        i_name->setData(d->id(), DR_ID);        
         QVariant sort_val;
         switch(m_group_by) {
         case GB_PROFESSION:
@@ -625,6 +625,7 @@ void DwarfModel::set_group_by(int group_by) {
     m_group_by = static_cast<GROUP_BY>(group_by);
     if (m_df)
         build_rows();    
+
 }
 
 void DwarfModel::calculate_pending() {

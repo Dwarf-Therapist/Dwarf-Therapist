@@ -392,12 +392,12 @@ void GameDataReader::load_role_mappings(){
     m_ordered_roles.clear();
     QStringList role_names;
     foreach(Role *r, m_dwarf_roles) {
-        role_names << r->name;
+        role_names << r->name.toUpper();
     }
     qSort(role_names);
     foreach(QString name, role_names) {
         foreach(Role *r, m_dwarf_roles) {
-            if (r->name == name) {
+            if (r->name.toUpper() == name.toUpper()) {
                 m_ordered_roles << QPair<QString, Role*>(r->name, r);
                 break;
             }

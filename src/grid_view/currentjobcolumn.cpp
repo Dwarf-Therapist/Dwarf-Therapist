@@ -45,7 +45,7 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
     short job_id = d->current_job_id();
     QString pixmap_name(":img/help.png");
-    if (job_id == -1) {
+    if (job_id < 0) {
         if(d->is_on_break()){
             pixmap_name = ":status/img/hourglass.png"; // break
         }else{
@@ -76,12 +76,12 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
                 pixmap_name = ":status/img/hatchet.png";
                 break;
             case DwarfJob::DJT_SLEEP:{
-                pixmap_name = ":status/img/clock-moon-phase.png";
+                pixmap_name = ":status/img/moon.png";
                 //item->setData(QColor(50,50,50), DwarfModel::DR_DEFAULT_BG_COLOR);
             }
                 break;
             case DwarfJob::DJT_DRINK:
-                pixmap_name = ":status/img/beer.png";
+                pixmap_name = ":status/img/ale.png";
                 break;
             case DwarfJob::DJT_FOOD:
                 pixmap_name = ":status/img/cutlery.png";
@@ -243,10 +243,10 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
                 pixmap_name = ":status/img/fish.png";
                 break;
             case DwarfJob::DJT_MILK:
-                pixmap_name = ":status/img/bow.png";
+                pixmap_name = ":status/img/milk.png";
                 break;
             case DwarfJob::DJT_REST:
-                pixmap_name = ":status/img/clock-moon-phase.png";
+                pixmap_name = ":status/img/moon.png";
                 break;
             case DwarfJob::DJT_COOKING:
                 pixmap_name = ":status/img/meat.png";
@@ -292,6 +292,10 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
     
     item->setData(CT_IDLE, DwarfModel::DR_COL_TYPE);
     item->setData(d->current_job_id(), DwarfModel::DR_SORT_VALUE);
+    QColor bg = QColor(175,175,175);
+    if(DT->user_settings()->value("options/grid/shade_cells",true)==false)
+        bg = QColor(255,255,255);
+    item->setData(bg,Qt::BackgroundColorRole);
     QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%4</h4>")
         .arg(m_title)
         .arg(d->current_job())
