@@ -27,8 +27,6 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "dfinstance.h"
 
-#include <QtScript>
-
 class RoleColumn : public ViewColumn {
     Q_OBJECT
 public slots:

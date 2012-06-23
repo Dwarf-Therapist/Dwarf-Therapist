@@ -25,6 +25,7 @@ THE SOFTWARE.
 #define VIEW_MANAGER_H
 
 #include <QtGui>
+#include "columntypes.h"
 
 class Dwarf;
 class GridView;
@@ -55,6 +56,8 @@ public:
 		void write_tab_order();
 		void set_group_by(int group_by);
 		void redraw_current_tab();
+        void redraw_current_tab_headers();
+        void redraw_specific_header(int id, COLUMN_TYPE type);
 
 		GridView *get_view(const QString &name);
 		GridView *get_active_view();

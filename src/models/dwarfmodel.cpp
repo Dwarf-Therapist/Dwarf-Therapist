@@ -102,17 +102,38 @@ void DwarfModel::load_dwarves() {
     m_df->detach();
 }
 
-void DwarfModel::build_rows() {
-    // don't need to go delete the dwarf pointers in here, since the earlier foreach should have
-    // deleted them
-    m_grouped_dwarves.clear();
-    clear();
+void DwarfModel::update_header_info(int id, COLUMN_TYPE type){
+    int index = 0;
+    QSettings *s = DT->user_settings();
+    foreach(ViewColumnSet *set, m_gridview->sets()) {
+        foreach(ViewColumn *col, set->columns()) {
+            index ++;
+            if(col->type() == type){
+                switch(col->type()){
+                case CT_LABOR:
+                {
+                    LaborColumn *l = static_cast<LaborColumn*>(col);
+                    if(l->labor_id()==id){
+                        l->update_count(); //tell this column to update it's count
+                        int cnt = l->count();
+                        QStandardItem* header = this->horizontalHeaderItem(index);
+                        header->setData(col->bg_color(), Qt::BackgroundColorRole);
+                        header->setData(set->name(), Qt::UserRole);
+                        if(s->value("options/grid/show_labor_counts",false).toBool())
+                            header->setText(QString("%1 %2").arg(cnt).arg(col->title()).trimmed());
+                        header->setToolTip(tr("%1 have this labor enabled.").arg(cnt));
+                        return;
+                    }
+                }
+                }
+            }
+        }
+    }
+}
 
-    /*
-    TODO: Move this to the RotatedHeader class
-    */
+void DwarfModel::draw_headers(){
     int start_col = 1;
-    setHorizontalHeaderItem(0, new QStandardItem);    
+    setHorizontalHeaderItem(0, new QStandardItem);
     emit clear_spacers();
     QSettings *s = DT->user_settings();
     int width = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
@@ -124,7 +145,17 @@ void DwarfModel::build_rows() {
         emit set_index_as_spacer(start_col - 1);
         emit preferred_header_size(start_col - 1, width);*/
         foreach(ViewColumn *col, set->columns()) {
-            QStandardItem *header = new QStandardItem(col->title());
+            QString cnt = "";
+            QString h_name = col->title();
+            if(col->type()==CT_LABOR){
+                cnt = col->count() >= 0 ? QString::number(col->count()) : "";
+                if(s->value("options/grid/show_labor_counts",false).toBool())
+                    h_name = QString("%1 %2").arg(cnt).arg(col->title()).trimmed();
+            }
+            QStandardItem *header = new QStandardItem(h_name);
+            if(col->type()==CT_LABOR)
+                header->setToolTip(tr("%1 have this labor enabled.").arg(cnt));
+
             header->setData(col->bg_color(), Qt::BackgroundColorRole);
             header->setData(set->name(), Qt::UserRole);
             setHorizontalHeaderItem(start_col++, header);
@@ -141,6 +172,51 @@ void DwarfModel::build_rows() {
             }
         }
     }
+}
+
+void DwarfModel::build_rows() {
+    // don't need to go delete the dwarf pointers in here, since the earlier foreach should have
+    // deleted them
+    m_grouped_dwarves.clear();
+    clear();
+    draw_headers();
+    /*
+    TODO: Move this to the RotatedHeader class
+    */
+//    int start_col = 1;
+//    setHorizontalHeaderItem(0, new QStandardItem);
+//    emit clear_spacers();
+    QSettings *s = DT->user_settings();
+//    int width = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
+//    foreach(ViewColumnSet *set, m_gridview->sets()) {
+//        /*QStandardItem *set_header = new QStandardItem(set->name());
+//        set_header->setData(set->bg_color(), Qt::BackgroundColorRole);
+//        set_header->setData(true);
+//        setHorizontalHeaderItem(start_col++, set_header);
+//        emit set_index_as_spacer(start_col - 1);
+//        emit preferred_header_size(start_col - 1, width);*/
+//        foreach(ViewColumn *col, set->columns()) {
+//            QString cnt = "";
+//            if(col->type()==CT_LABOR){
+//                cnt = col->count() >= 0 ? QString::number(col->count()) : "";
+//            }
+//            QStandardItem *header = new QStandardItem(QString("%1 %2").arg(cnt).arg(col->title()).trimmed());
+//            header->setData(col->bg_color(), Qt::BackgroundColorRole);
+//            header->setData(set->name(), Qt::UserRole);
+//            setHorizontalHeaderItem(start_col++, header);
+//            switch (col->type()) {
+//            case CT_SPACER:
+//            {
+//                SpacerColumn *c = static_cast<SpacerColumn*>(col);
+//                emit set_index_as_spacer(start_col - 1);
+//                emit preferred_header_size(start_col - 1, c->width());
+//            }
+//                break;
+//            default:
+//                emit preferred_header_size(start_col - 1, width);
+//            }
+//        }
+//    }
 
     // populate dwarf maps
     bool only_animals = s->value("read_animals",false).toBool();

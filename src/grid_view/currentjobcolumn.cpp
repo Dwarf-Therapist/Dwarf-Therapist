@@ -93,7 +93,7 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
                 pixmap_name = ":status/img/cart-box.png";
                 break;
             case DwarfJob::DJT_FIGHT:
-                pixmap_name = ":status/img/status_fight2.png";
+                pixmap_name = ":status/img/crossed-swords.png";
                 break;
             case DwarfJob::DJT_MOOD:
                 pixmap_name = ":img/exclamation.png";
@@ -144,7 +144,7 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
                 pixmap_name = ":status/img/arrow-return.png";
                 break;
             case DwarfJob::DJT_PARTY:
-                pixmap_name = ":status/img/party-hat.png";
+                pixmap_name = ":status/img/rubber-balloons.png";
                 break;
             case DwarfJob::DJT_SOAP:
                 pixmap_name = ":status/img/soap.png";
@@ -246,7 +246,7 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
                 pixmap_name = ":status/img/milk.png";
                 break;
             case DwarfJob::DJT_REST:
-                pixmap_name = ":status/img/moon.png";
+                pixmap_name = ":status/img/bandaid--exclamation.png";
                 break;
             case DwarfJob::DJT_COOKING:
                 pixmap_name = ":status/img/meat.png";
@@ -280,6 +280,9 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
                 break;
             case DwarfJob::DJT_STORAGE:
                 pixmap_name = ":status/img/box--plus.png";
+                break;
+            case DwarfJob::DJT_BREW:
+                pixmap_name = ":status/img/ale--plus.png";
                 break;
             default:
             case DwarfJob::DJT_DEFAULT:

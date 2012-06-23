@@ -405,9 +405,12 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
         //load up role stuff now
         //load_roles();
-        QFuture<void> f = QtConcurrent::run(this,&DFInstance::load_roles);
+        QFuture<void> f = QtConcurrent::run(this,&DFInstance::load_roles_and_labor_counts);
         f.waitForFinished();
         calc_done();
+
+
+        DT->emit_labor_counts_updated();
 
     } else {
         // we lost the fort!
@@ -457,7 +460,7 @@ void DFInstance::load_races_castes(){
 }
 
 
-void DFInstance::load_roles(){
+void DFInstance::load_roles_and_labor_counts(){
 //    t.start();
 //    calc_progress = 0;
 
@@ -466,9 +469,24 @@ void DFInstance::load_roles(){
 //        connect(rc,SIGNAL(done()),this,SLOT(calc_done()),Qt::QueuedConnection);
 //        QThreadPool::globalInstance()->start(rc);
 //    }
+//    foreach(Dwarf *d, actual_dwarves){
+//        d->calc_role_ratings();
+//    }
 
+    m_enabled_labor_count.clear();
+    int cnt = 0;
     foreach(Dwarf *d, actual_dwarves){
         d->calc_role_ratings();
+        foreach(int key, d->get_labors().uniqueKeys()){
+            if(d->labor_enabled(key)){
+                if(m_enabled_labor_count.contains(key))
+                    cnt = m_enabled_labor_count.value(key)+1;
+                else
+                    cnt = 1;
+                m_enabled_labor_count.insert(key,cnt);
+            }
+        }
+
     }
 }
 
@@ -1156,9 +1174,14 @@ VIRTADDR DFInstance::find_historical_figure(int hist_id){
 void DFInstance::load_hist_figures(){
     QVector<VIRTADDR> hist_figs = enumerate_vector(m_memory_correction + memory_layout()->address("historical_figures"));
     int hist_id = 0;
+    //it may be possible to filter this list by only the current race.
+    //need to test whether or not vampires will steal names from other races
+    //this may also break nicknames on kings/queens if they belong to a different race...
     foreach(VIRTADDR fig, hist_figs){
-        hist_id = read_int(fig + memory_layout()->hist_figure_offset("id"));
-        m_hist_figures.insert(hist_id,fig);
+        //if(read_int(fig + 0x0002) == dwarf_race_id()){
+            hist_id = read_int(fig + memory_layout()->hist_figure_offset("id"));
+            m_hist_figures.insert(hist_id,fig);
+        //}
     }
 }
 

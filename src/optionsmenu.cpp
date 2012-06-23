@@ -88,7 +88,7 @@ OptionsMenu::OptionsMenu(QWidget *parent)
                                QString("nobles/%1").arg(static_cast<int>(FortressEntity::BOOKKEEPER)), m_noble_default, this)
     << new CustomColor(tr("Broker"),tr("Highlight color for the broker."),
                        QString("nobles/%1").arg(static_cast<int>(FortressEntity::BROKER)), m_noble_default, this)
-    << new CustomColor(tr("Champion"),tr("Highlight color for the champion."),
+    << new CustomColor(tr("Champions"),tr("Highlight color for champions."),
                        QString("nobles/%1").arg(static_cast<int>(FortressEntity::CHAMPION)), m_noble_default, this)
     << new CustomColor(tr("Chief Medical Dwarf"),tr("Highlight color for the chief medical dwarf."),
                        QString("nobles/%1").arg(static_cast<int>(FortressEntity::CHIEF_MEDICAL_DWARF)), m_noble_default, this)
@@ -96,17 +96,17 @@ OptionsMenu::OptionsMenu(QWidget *parent)
                        QString("nobles/%1").arg(static_cast<int>(FortressEntity::HAMMERER)), m_noble_default, this)
     << new CustomColor(tr("Law"),tr("Highlight color for the captain of the guard and sherrif."),
                        QString("nobles/%1").arg(static_cast<int>(FortressEntity::LAW)), m_noble_default, this)
-    << new CustomColor(tr("Leader/Mayor"),tr("Highlight color for the expedition leader and mayor."),
+    << new CustomColor(tr("Leader/Mayor"),tr("Highlight color for the expedition leaders and mayors."),
                        QString("nobles/%1").arg(static_cast<int>(FortressEntity::LEADER)), m_noble_default, this)
-    << new CustomColor(tr("Manager"),tr("Highlight color for the manager."),
+    << new CustomColor(tr("Manager"),tr("Highlight color for the managers."),
                        QString("nobles/%1").arg(static_cast<int>(FortressEntity::MANAGER)), m_noble_default, this)
-    << new CustomColor(tr("Militia"),tr("Highlight color for the militia commander and militia captains."),
+    << new CustomColor(tr("Militia"),tr("Highlight color for the militia commander, militia captains, lieutenants and generals."),
                        QString("nobles/%1").arg(static_cast<int>(FortressEntity::MILITIA)), m_noble_default, this)
-    << new CustomColor(tr("Monarch"),tr("Highlight color for the king and queen."),
+    << new CustomColor(tr("Monarch"),tr("Highlight color for kings and queens."),
                        QString("nobles/%1").arg(static_cast<int>(FortressEntity::MONARCH)), m_noble_default, this)
-    << new CustomColor(tr("Royalty"),tr("Highlight color for the baron, baroness, duke, duchess, count and countess."),
+    << new CustomColor(tr("Royalty"),tr("Highlight color for barons, baronesses, dukes, duchesses, counts, countesses, lords and ladies."),
                        QString("nobles/%1").arg(static_cast<int>(FortressEntity::ROYALTY)), m_noble_default, this)
-    << new CustomColor(tr("Multiple"),tr("Highlight color for dwarves holding multiple positions."),
+    << new CustomColor(tr("Multiple"),tr("Highlight color when holding multiple positions, or unknown positions."),
                        QString("nobles/%1").arg(static_cast<int>(FortressEntity::MULTIPLE)), m_noble_default, this);
 
     m_curse_color = new CustomColor(tr("Cursed"),tr("Cursed creatures will be highlighted with this color."),
@@ -208,7 +208,7 @@ void OptionsMenu::read_settings() {
     ui->lbl_header_font->setText(m_header_font.family() + " [" + QString::number(m_header_font.pointSize()) + "pt]");
 
     ui->cb_happiness_icons->setChecked(s->value("happiness_icons",true).toBool());
-
+    ui->cb_labor_counts->setChecked(s->value("show_labor_counts",false).toBool());
     s->endGroup();
 
     ui->cb_read_dwarves_on_startup->setChecked(s->value("read_on_startup", true).toBool());
@@ -226,6 +226,7 @@ void OptionsMenu::read_settings() {
     ui->cb_generic_names->setChecked(s->value("use_generic_names", false).toBool());
     ui->cb_curse_highlight->setChecked(s->value("highlight_cursed", false).toBool());
     ui->cb_noble_highlight->setChecked(s->value("highlight_nobles", false).toBool());
+    ui->cb_labor_exclusions->setChecked(s->value("labor_exclusions", true).toBool());
 
     ui->dsb_attribute_weight->setValue(s->value("default_attributes_weight",1.0).toDouble());
     ui->dsb_skill_weight->setValue(s->value("default_skills_weight",1.0).toDouble());
@@ -270,6 +271,7 @@ void OptionsMenu::write_settings() {
         s->setValue("font", m_font);
         s->setValue("header_font", m_header_font);
         s->setValue("happiness_icons",ui->cb_happiness_icons->isChecked());
+        s->setValue("show_labor_counts",ui->cb_labor_counts->isChecked());
         s->endGroup();
 
         s->setValue("read_on_startup", ui->cb_read_dwarves_on_startup->isChecked());
@@ -287,6 +289,7 @@ void OptionsMenu::write_settings() {
         s->setValue("use_generic_names", ui->cb_generic_names->isChecked());
         s->setValue("highlight_cursed", ui->cb_curse_highlight->isChecked());
         s->setValue("highlight_nobles", ui->cb_noble_highlight->isChecked());
+        s->setValue("labor_exclusions", ui->cb_labor_exclusions->isChecked());
 
         s->setValue("default_attributes_weight",ui->dsb_attribute_weight->value());
         s->setValue("default_skills_weight",ui->dsb_skill_weight->value());

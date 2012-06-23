@@ -121,7 +121,7 @@ int Squad::assign_to_squad(Dwarf *d){
 
     d->set_squad_id(m_id);
     d->set_squad_position(position);
-    d->squad_name() = name();
+    d->set_squad_name(name());
     d->recheck_equipment();
 
     //add the dwarf to our dt vector for grouping etc
@@ -157,7 +157,7 @@ void Squad::remove_from_squad(Dwarf *d){
 
     d->set_squad_id(-1);
     d->set_squad_position(-1);
-    d->squad_name() = "";
+    d->set_squad_name("");
     d->recheck_equipment();
 }
 

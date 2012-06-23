@@ -124,7 +124,7 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
     }
     */
 
-    QString data = this->model()->headerData(idx, Qt::Horizontal).toString();
+    QString data = this->model()->headerData(idx, Qt::Horizontal).toString();    
     p->save();
     p->setPen(Qt::black);
     p->setRenderHint(QPainter::TextAntialiasing);

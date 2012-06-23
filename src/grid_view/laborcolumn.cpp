@@ -20,7 +20,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-
 #include "laborcolumn.h"
 #include "gamedatareader.h"
 #include "columntypes.h"
@@ -28,24 +27,33 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "viewcolumnset.h"
 #include "dwarftherapist.h"
+#include "mainwindow.h"
+#include "dfinstance.h"
+#include "viewmanager.h"
 
 LaborColumn::LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(title, CT_LABOR, set, parent)
 	, m_labor_id(labor_id)
 	, m_skill_id(skill_id)
-{}
+{
+    connect(DT,SIGNAL(labor_counts_updated()), this, SLOT(update_count()));
+}
 
 LaborColumn::LaborColumn(QSettings &s, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(s, set, parent)
 	, m_labor_id(s.value("labor_id", -1).toInt())
 	, m_skill_id(s.value("skill_id", -1).toInt())
-{}
+{
+    connect(DT,SIGNAL(labor_counts_updated()), this, SLOT(update_count()));
+}
 
 LaborColumn::LaborColumn(const LaborColumn &to_copy) 
     : ViewColumn(to_copy)
     , m_labor_id(to_copy.m_labor_id)
     , m_skill_id(to_copy.m_skill_id)
-{}
+{
+    connect(DT,SIGNAL(labor_counts_updated()), this, SLOT(update_count()));
+}
 
 QStandardItem *LaborColumn::build_cell(Dwarf *d) {
 	GameDataReader *gdr = GameDataReader::ptr();
@@ -124,7 +132,7 @@ QStandardItem *LaborColumn::build_aggregate(const QString &group_name, const QVe
 	item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);
 	item->setData(group_name, DwarfModel::DR_GROUP_NAME);
 	item->setData(0, DwarfModel::DR_RATING);
-	item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
+	item->setData(m_set->name(), DwarfModel::DR_SET_NAME);    
 	return item;
 }
 
@@ -132,4 +140,8 @@ void LaborColumn::write_to_ini(QSettings &s) {
 	ViewColumn::write_to_ini(s); 
 	s.setValue("skill_id", m_skill_id); 
 	s.setValue("labor_id", m_labor_id);
+}
+
+void LaborColumn::update_count(){
+    m_count = DT->get_main_window()->get_DFInstance()->get_labor_count(m_labor_id);
 }

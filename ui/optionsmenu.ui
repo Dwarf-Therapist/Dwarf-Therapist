@@ -36,7 +36,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>5</number>
+      <number>0</number>
      </property>
      <property name="iconSize">
       <size>
@@ -209,6 +209,19 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="cb_labor_exclusions">
+         <property name="statusTip">
+          <string>When unchecked labor exclusions are ignored (wood cutting, mining and hunting primarily). &lt;b&gt;&lt;font color=&quot;red&quot;&gt;WARNING: Disabling this can cause equipment problems!&lt;/font&gt;&lt;/b&gt;</string>
+         </property>
+         <property name="whatsThis">
+          <string>When unchecked labor exclusions are ignored (wood cutting, mining and hunting primarily). &lt;b&gt;&lt;font color=&quot;red&quot;&gt;WARNING: Disabling this can cause equipment problems!&lt;/font&gt;&lt;/b&gt;</string>
+         </property>
+         <property name="text">
+          <string>Enforce Labor Exclusions</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <layout class="QHBoxLayout" name="horizontal_curse_layout">
          <property name="sizeConstraint">
           <enum>QLayout::SetFixedSize</enum>
@@ -238,7 +251,7 @@
       <attribute name="title">
        <string>Grid Options</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,0,0,0,0,0,0">
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,0,0,0,0,0,0,0">
        <item>
         <widget class="QCheckBox" name="cb_auto_contrast">
          <property name="sizePolicy">
@@ -328,6 +341,28 @@
          </property>
          <property name="text">
           <string>Column Header Text Bottom to Top</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_labor_counts">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string/>
+         </property>
+         <property name="statusTip">
+          <string>When checked, header text will be prefixed by the number of dwarfs with the labor enabled. This includes pending labors.</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, header text will be prefixed by the number of dwarfs with the labor enabled. This includes pending labors.</string>
+         </property>
+         <property name="text">
+          <string>Show Count in Labor Column Headers</string>
          </property>
         </widget>
        </item>
@@ -721,7 +756,7 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>50</width>
+              <width>75</width>
               <height>16777215</height>
              </size>
             </property>
@@ -769,7 +804,7 @@
            <widget class="QDoubleSpinBox" name="dsb_skill_weight">
             <property name="maximumSize">
              <size>
-              <width>50</width>
+              <width>75</width>
               <height>16777215</height>
              </size>
             </property>
@@ -817,7 +852,7 @@
            <widget class="QDoubleSpinBox" name="dsb_trait_weight">
             <property name="maximumSize">
              <size>
-              <width>50</width>
+              <width>75</width>
               <height>16777215</height>
              </size>
             </property>

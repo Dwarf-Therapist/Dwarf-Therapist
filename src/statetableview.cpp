@@ -259,31 +259,34 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 void StateTableView::set_squad_name(){
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     Squad *s = m_model->squads().value(a->data().toInt());
-    bool ok;
-    QString alias = QInputDialog::getText(this, tr("New Squad Name"),
-         tr("Enter a new squad name for %1, or leave blank to reset "
-            "to their default name.").arg(s->name()), QLineEdit::Normal, "", &ok);
-    if(ok) {
-        int limit = 16;
-        if (alias.length() > limit) {
-            QMessageBox::warning(this, tr("Squad name too long"),
-                                 tr("Squad names must be under %1 characters "
-                                    "long.").arg(limit));
-            return;
+    if(s){
+        bool ok;
+        QString alias = QInputDialog::getText(this, tr("New Squad Name"),
+                                              tr("Enter a new squad name for %1, or leave blank to reset "
+                                                 "to their default name.").arg(s->name()), QLineEdit::Normal, "", &ok);
+        if(ok) {
+            int limit = 16;
+            if (alias.length() > limit) {
+                QMessageBox::warning(this, tr("Squad name too long"),
+                                     tr("Squad names must be under %1 characters "
+                                        "long.").arg(limit));
+                return;
+            }
+            s->rename_squad(alias);
+            m_model->load_dwarves();
         }
-        s->rename_squad(alias);
-        m_model->load_dwarves();
     }
 }
 
 void StateTableView::assign_to_squad(){
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     Squad *new_squad = m_model->squads().value(a->data().toInt());
-
+    int id = -1;
     const QItemSelection sel = selectionModel()->selection();
     foreach(QModelIndex i, sel.indexes()) {
         if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool()){
-            int id = i.data(DwarfModel::DR_ID).toInt();
+            //int id = i.data(DwarfModel::DR_ID).toInt();
+            id = i.data(DwarfModel::DR_ID).toInt();
             Dwarf *d = m_model->get_dwarf_by_id(id);
             if (d) {
                 if(d->squad_id() != new_squad->id()){ //don't add to squad if they're already in it..
@@ -300,9 +303,14 @@ void StateTableView::assign_to_squad(){
             }
         }
     }
-    if(m_model->current_grouping()==DwarfModel::GB_SQUAD)
-        m_model->load_dwarves();
+    if(m_model->current_grouping()==DwarfModel::GB_SQUAD){
+        foreach(Dwarf *temp, m_model->get_dwarves()){
+            if (temp->id()==id)
+                int z=0;
+    }
 
+        DT->get_main_window()->get_view_manager()->redraw_current_tab();
+    }
 }
 void StateTableView::remove_squad(){
     const QItemSelection sel = selectionModel()->selection();
@@ -319,7 +327,7 @@ void StateTableView::remove_squad(){
         }
     }
     if(m_model->current_grouping()==DwarfModel::GB_SQUAD)
-        m_model->load_dwarves();
+        DT->get_main_window()->get_view_manager()->redraw_current_tab();
 }
 
 void StateTableView::set_nickname() {

@@ -519,6 +519,15 @@ void ViewManager::redraw_current_tab() {
     setCurrentIndex(currentIndex());
 }
 
+void ViewManager::redraw_current_tab_headers(){
+    m_model->draw_headers();
+}
+
+void ViewManager::redraw_specific_header(int id, COLUMN_TYPE type){
+    m_model->update_header_info(id,type);
+}
+
+
 void ViewManager::show_squad_warning(){
     if(m_squad_warning)
         m_squad_warning->showMessage(tr("It's advisable to open the Military screen in Dwarf Fortress after making any changes to squad leaders."));

@@ -96,11 +96,17 @@ public:
     MemoryLayout *memory_layout() {return m_layout;}
     void read_raws();    
     QVector<Dwarf*> load_dwarves();
-    void load_roles();
+    void load_roles_and_labor_counts();
     void load_reactions();
     void load_races_castes();
 
     QVector<Squad*> load_squads();
+
+    int get_labor_count(int id) {return m_enabled_labor_count.value(id,0);}
+    void update_labor_count(int id, int change)
+    {
+        m_enabled_labor_count[id] += change;
+    }
 
     // Set layout
     void set_memory_layout(MemoryLayout * layout) { m_layout = layout; }
@@ -180,7 +186,8 @@ protected:
     QDir m_df_dir;
     QVector<Dwarf*> actual_dwarves;
     int calc_progress;
-    quint32 m_cur_year_tick;
+    quint32 m_cur_year_tick;    
+    QHash<int,int> m_enabled_labor_count;
 
     /*! this hash will hold a map of all loaded and valid memory layouts found
         on disk, the key is a QString of the checksum since other OSs will use

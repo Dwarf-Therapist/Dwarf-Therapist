@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "viewcolumn.h"
 
 class LaborColumn : public ViewColumn {
+    Q_OBJECT
 public:
 	LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSet *set = 0, QObject *parent = 0);
     LaborColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
@@ -42,9 +43,13 @@ public:
 	// override
 	void write_to_ini(QSettings &s);
 
+
 protected:
 	int m_labor_id;
-	int m_skill_id;
+	int m_skill_id;    
+
+public slots:
+    void update_count();
 };
 
 #endif

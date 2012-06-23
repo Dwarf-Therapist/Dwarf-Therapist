@@ -34,6 +34,7 @@ ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,
     , m_override_set_colors(false)
     , m_set(set)
     , m_type(type)
+    , m_count(-1)
 {
     if (set) {
         set->add_column(this);
@@ -48,6 +49,7 @@ ViewColumn::ViewColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     , m_override_set_colors(s.value("override_color", false).toBool())
     , m_set(set)
     , m_type(get_column_type(s.value("type", "DEFAULT").toString()))
+    , m_count(-1)
 {
     if (set) {
         set->add_column(this);
@@ -64,6 +66,7 @@ ViewColumn::ViewColumn(const ViewColumn &to_copy)
     , m_override_set_colors(to_copy.m_override_set_colors)
     , m_set(to_copy.m_set)
     , m_type(to_copy.m_type)
+    , m_count(to_copy.m_count)
 {
     // cloning should not add it to the copy's set! You must add it manually!
     if (m_set && !m_override_set_colors)

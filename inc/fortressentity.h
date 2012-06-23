@@ -91,6 +91,11 @@ public:
         m["MILITIA_CAPTAIN"] = MILITIA;
         m["MILITIA_COMMANDER"] = MILITIA;
         m["MONARCH"] = MONARCH;
+        m["CUSTOM_CASTLE_HOLDER"] = ROYALTY; //seems this is used for lords/ladies
+        m["LIBRARIAN"] = BOOKKEEPER; //higher learning mod
+        //m["LEADER"] = MONARCH; //have seen queen as the name for this
+        m["GENERAL"] = MILITIA; //have seen princess and general for this
+        m["LIEUTENANT"] = MILITIA;
         return m.value(raw.toUpper());
     }
 

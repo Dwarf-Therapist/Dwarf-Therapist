@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <QVector>
 #include "defines.h"
 #include "role.h"
+#include "columntypes.h"
 
 class QListWidgetItem;
 class MainWindow;
@@ -65,6 +66,8 @@ public:
 
     void emit_settings_changed();
     void emit_roles_changed();
+    void emit_labor_counts_updated();
+    void update_specific_header(int id, COLUMN_TYPE type);
 
     public slots:
         void add_custom_profession();
@@ -95,6 +98,7 @@ private:
 signals:
     void settings_changed();
     void roles_changed();
+    void labor_counts_updated();
 };
 
 #endif

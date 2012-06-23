@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "memorylayout.h"
 #include "truncatingfilelogger.h"
+#include "viewmanager.h"
 
 DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     : QApplication(argc, argv)
@@ -372,3 +373,14 @@ void DwarfTherapist::emit_settings_changed(){
 void DwarfTherapist::emit_roles_changed(){
     emit roles_changed();
 }
+
+void DwarfTherapist::emit_labor_counts_updated(){
+    emit labor_counts_updated();
+    get_main_window()->get_view_manager()->redraw_current_tab_headers();
+}
+
+void DwarfTherapist::update_specific_header(int id, COLUMN_TYPE type){
+    get_main_window()->get_view_manager()->redraw_specific_header(id,type);
+}
+
+

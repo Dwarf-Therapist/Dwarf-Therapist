@@ -29,6 +29,9 @@ THE SOFTWARE.
 #include "trait.h"
 #include "dwarfstats.h"
 #include "utils.h"
+#include "mainwindow.h"
+#include "dfinstance.h"
+#include "fortressentity.h"
 
 DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
@@ -44,12 +47,15 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     ui->lbl_translated_name->setText(QString("(%1)").arg(d->translated_name()));
     ui->lbl_profession->setText(d->profession());
     ui->lbl_noble->setText(d->noble_position());
-    if(d->noble_position()=="")
+    if(d->noble_position()==""){
         ui->lbl_noble->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Ignored);
+        ui->lbl_noble_position->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Ignored);
+    }
     else
         ui->lbl_noble->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
 
-    ui->lbl_current_job->setText(QString("%1 %2").arg(d->current_job_id()).arg(d->current_job()));
+    ui->lbl_current_job->setText(QString("%1").arg(d->current_job()));
+    ui->lbl_current_job->setToolTip(tr("Job ID: %1").arg(QString::number(d->current_job_id())));
 
     GameDataReader *gdr = GameDataReader::ptr();
 
@@ -60,10 +66,19 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     QPalette p;
     QColor color2 = p.window().color();
     ui->lbl_happiness->setStyleSheet(QString("background: QLinearGradient(x1:0,y1:0,x2:0.9,y1:0,stop:0 %1, stop:1 %2); color: %3")
-                                     .arg(QColor(color.red(),color.green(),color.blue()).name())
+                                     .arg(color.name())
                                      .arg(color2.name())
                                      .arg(compliment(color).name())
                                      );
+
+    if(DT->user_settings()->value("options/highlight_nobles",false).toBool() && d->noble_position() != ""){
+        color = DT->get_main_window()->get_DFInstance()->fortress()->get_noble_color(d->historical_id());
+        ui->lbl_noble->setStyleSheet(QString("background: QLinearGradient(x1:0,y1:0,x2:0.9,y1:0,stop:0 %1, stop:1 %2); color: %3")
+                                     .arg(color.name())
+                                         .arg(color2.name())
+                                         .arg(compliment(color).name())
+                                         );
+    }
 
     //save user changes before cleaning
     if(m_cleanup_list.count() > 0){
@@ -182,7 +197,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         Attribute *r = gdr->get_attribute(row);
 
         tw_attributes->insertRow(0);
-        tw_attributes->setRowHeight(0, 14);
+        tw_attributes->setRowHeight(0, 18);
         Caste::attribute_level l = d->get_attribute_rating(row);
 
         QTableWidgetItem *attribute_name = new QTableWidgetItem(r->name);
@@ -190,10 +205,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         attribute_rating->setTextAlignment(Qt::AlignHCenter);
         attribute_rating->setData(0,d->attribute(row));
 
-        if (l.rating >= 0) {
-            attribute_rating->setBackground(QColor(255, 255, 255, 255));
-            attribute_rating->setForeground(QColor(0, 0, 0, 255));
-        } else {
+        if (l.rating < 0) {
             attribute_rating->setBackground(QColor(204, 0, 0, 128));
             attribute_rating->setForeground(QColor(0, 0, 128, 255));
         }
@@ -232,7 +244,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         if (d->trait_is_active(row))
         {
             tw_traits->insertRow(0);
-            tw_traits->setRowHeight(0, 14);
+            tw_traits->setRowHeight(0, 18);
             Trait *t = gdr->get_trait(row);
             QTableWidgetItem *trait_name = new QTableWidgetItem(t->name);
             QTableWidgetItem *trait_score = new QTableWidgetItem;
@@ -287,7 +299,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         val = roles.at(i).second;
 
         tw_roles->insertRow(0);
-        tw_roles->setRowHeight(0, 14);
+        tw_roles->setRowHeight(0, 18);
 
         QTableWidgetItem *role_name = new QTableWidgetItem(name);
         QTableWidgetItem *role_rating = new QTableWidgetItem;
@@ -295,10 +307,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         role_rating->setTextAlignment(Qt::AlignHCenter);
 
 
-        if (val >= 50) {
-            role_rating->setBackground(QColor(255, 255, 255, 255));
-            role_rating->setForeground(QColor(0, 0, 0, 255));
-        } else {
+        if (val < 50) {
             role_rating->setBackground(QColor(204, 0, 0, 128));
             role_rating->setForeground(QColor(0, 0, 128, 255));
         }

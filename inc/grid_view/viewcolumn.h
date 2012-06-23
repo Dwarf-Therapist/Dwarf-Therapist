@@ -54,6 +54,7 @@ public:
 	ViewColumnSet *set() {return m_set;}
     void set_viewcolumnset(ViewColumnSet *set) {m_set = set;}
 	virtual COLUMN_TYPE type() {return m_type;}
+    int count() {return m_count;}
 
 	QStandardItem *init_cell(Dwarf *d);
 	virtual QStandardItem *build_cell(Dwarf *d) = 0; // create a suitable item based on a dwarf
@@ -74,6 +75,7 @@ protected:
 	ViewColumnSet *m_set;
 	COLUMN_TYPE m_type;
 	QHash<Dwarf*, QStandardItem*> m_cells;
+    int m_count;
 };
 
 #endif

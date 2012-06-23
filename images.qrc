@@ -150,5 +150,9 @@
         <file>img/Miserable.png</file>
         <file>img/Unhappy.png</file>
         <file>img/Happy.png</file>
+        <file>img/rubber-balloons.png</file>
+        <file>img/bandaid--exclamation.png</file>
+        <file>img/ale--plus.png</file>
+        <file>img/crossed-swords.png</file>
     </qresource>
 </RCC>

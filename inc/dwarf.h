@@ -170,6 +170,7 @@ public:
 
     void set_squad_id(int id) {m_squad_id=id;}
     void set_squad_position(int pos) {m_squad_position=pos;}
+    void set_squad_name(QString name) {m_squad_name=name;}
 
     //! return this dwarf's caste id
     Q_INVOKABLE short get_caste_id() { return m_caste_id; }
@@ -197,6 +198,8 @@ public:
 
     //! number of activated labors
     Q_INVOKABLE int total_assigned_labors();
+
+    const QMap<int, ushort> get_labors() {return m_pending_labors;}
 
     //! return the sum total of all xp this dwarf has earned
     int total_xp() {return m_total_xp;}
@@ -374,6 +377,8 @@ public:
 
     void recheck_equipment();
 
+    void find_true_ident();
+
     public slots:
         //! called when global user settings change
         void read_settings();
@@ -477,6 +482,7 @@ private:
     void read_turn_count();    
     void read_animal_type();
     void read_noble_position();
+
     void set_age(VIRTADDR birth_year_offset, VIRTADDR birth_time_offset);
 
     // utility methods to assist with reading names made up of several words

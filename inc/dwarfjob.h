@@ -102,7 +102,8 @@ public:
         DJT_CRAFTS,
         DJT_GEAR,
         DJT_TROUBLE,
-        DJT_STORAGE
+        DJT_STORAGE,
+        DJT_BREW
     } DWARF_JOB_TYPE;
 
     static DWARF_JOB_TYPE get_type(const QString &type) {
@@ -180,6 +181,7 @@ public:
         m["gear"] = DJT_GEAR;
         m["trouble"] = DJT_TROUBLE;
         m["storage"] = DJT_STORAGE;
+        m["brew"] = DJT_BREW;
         return m.value(type.toLower(), DJT_DEFAULT);
     }
 
