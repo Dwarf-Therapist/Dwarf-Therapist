@@ -276,22 +276,9 @@ void Dwarf::read_states(){
 
 void Dwarf::read_curse(){
     m_curse_name = m_df->read_string(m_address + m_mem->dwarf_offset("curse"));
-
-//    //find the vampire's fake identity and use that name/age instead to match DF
-//    if(m_curse_name.toLower()=="vampire"){
-//        VIRTADDR fake_id = m_df->find_fake_identity(m_hist_id);
-//        if(fake_id){
-//            m_first_name = capitalize(m_df->read_string(fake_id + m_mem->hist_figure_offset("fake_name") + m_mem->dwarf_offset("first_name")));
-//            m_fake_nickname = fake_id + m_mem->hist_figure_offset("fake_name") + m_mem->dwarf_offset("nick_name");
-//            m_nick_name = m_df->read_string(m_fake_nickname);
-//            read_last_name(fake_id + m_mem->hist_figure_offset("fake_name"));
-//            calc_names();
-//            //vamps also use a the fake age
-//            set_age(fake_id + m_mem->hist_figure_offset("fake_birth_year"),fake_id + m_mem->hist_figure_offset("fake_birth_time"));
-//            //(bug?) DF has the age of assumed identities off by 1 year
-//            m_age -= 1;
-//        }
-//    }
+    //find the vampire's fake identity and use that name/age instead to match DF
+    if(m_curse_name.toLower()=="vampire")
+        find_true_ident();
 }
 
 void Dwarf::find_true_ident(){
@@ -815,8 +802,7 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
 
         //need to do a special check for migrants, they have both the incoming (0x0400 flag) and the dead flag (0x0002)
         if((flags1 & 0x00000402)==0x00000402){
-            LOGD << "Found migrant " << unverified_dwarf->nice_name();
-            unverified_dwarf->find_true_ident();
+            LOGD << "Found migrant " << unverified_dwarf->nice_name();            
             return unverified_dwarf;
         }
 
@@ -905,7 +891,6 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
         return 0;
     }
 
-    unverified_dwarf->find_true_ident();
     return unverified_dwarf;
 }
 
