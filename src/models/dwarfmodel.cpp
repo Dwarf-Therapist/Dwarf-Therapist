@@ -180,43 +180,7 @@ void DwarfModel::build_rows() {
     m_grouped_dwarves.clear();
     clear();
     draw_headers();
-    /*
-    TODO: Move this to the RotatedHeader class
-    */
-//    int start_col = 1;
-//    setHorizontalHeaderItem(0, new QStandardItem);
-//    emit clear_spacers();
     QSettings *s = DT->user_settings();
-//    int width = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
-//    foreach(ViewColumnSet *set, m_gridview->sets()) {
-//        /*QStandardItem *set_header = new QStandardItem(set->name());
-//        set_header->setData(set->bg_color(), Qt::BackgroundColorRole);
-//        set_header->setData(true);
-//        setHorizontalHeaderItem(start_col++, set_header);
-//        emit set_index_as_spacer(start_col - 1);
-//        emit preferred_header_size(start_col - 1, width);*/
-//        foreach(ViewColumn *col, set->columns()) {
-//            QString cnt = "";
-//            if(col->type()==CT_LABOR){
-//                cnt = col->count() >= 0 ? QString::number(col->count()) : "";
-//            }
-//            QStandardItem *header = new QStandardItem(QString("%1 %2").arg(cnt).arg(col->title()).trimmed());
-//            header->setData(col->bg_color(), Qt::BackgroundColorRole);
-//            header->setData(set->name(), Qt::UserRole);
-//            setHorizontalHeaderItem(start_col++, header);
-//            switch (col->type()) {
-//            case CT_SPACER:
-//            {
-//                SpacerColumn *c = static_cast<SpacerColumn*>(col);
-//                emit set_index_as_spacer(start_col - 1);
-//                emit preferred_header_size(start_col - 1, c->width());
-//            }
-//                break;
-//            default:
-//                emit preferred_header_size(start_col - 1, width);
-//            }
-//        }
-//    }
 
     // populate dwarf maps
     bool only_animals = s->value("read_animals",false).toBool();
@@ -529,17 +493,25 @@ void DwarfModel::build_row(const QString &key) {
         }
     }
 
+    QStandardItem *i_name = new QStandardItem(first_dwarf->nice_name());
+    QFont f = i_name->font();
+    QFontMetrics fm(f);
+    QChar symbol(0x263C);
+    if(!fm.inFont(QChar(0x263C))){
+        symbol = QChar(0x2261);
+        if(!fm.inFont(symbol))
+            symbol = QChar(0x002A);
+    }
 
     foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
-        QStandardItem *i_name = new QStandardItem(d->nice_name());
+        i_name = new QStandardItem(d->nice_name());
 
         //font settings ***
-        QFont f = i_name->font();
         if (d->active_military()) {            
             f.setBold(true);
         }
-        if((m_group_by==GB_SQUAD && d->squad_position()==0) || d->noble_position() != ""){            
-            i_name->setText(QString("%1 %2 %1").arg(QChar(0x263C)).arg(i_name->text()));
+        if((m_group_by==GB_SQUAD && d->squad_position()==0) || d->noble_position() != ""){
+            i_name->setText(QString("%1 %2 %1").arg(symbol).arg(i_name->text()));
             f.setItalic(true);            
         }
         i_name->setFont(f);
@@ -656,8 +628,8 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
 
         // if none or some are enabled, enable all of them
         bool enabled = (enabled_count < settable_dwarves);
-        foreach(Dwarf *d, m_grouped_dwarves.value(group_name)) {
-            d->set_labor(labor_id, enabled);
+        foreach(Dwarf *d, m_grouped_dwarves.value(group_name)) {            
+            d->set_labor(labor_id, enabled, false);
         }
 
         // tell the view what we touched...
@@ -665,14 +637,8 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
         QModelIndex left = index(0, 0, first_col);
         QModelIndex right = index(rowCount(first_col) - 1, columnCount(first_col) - 1, first_col);
         emit dataChanged(left, right); // tell the view we changed every dwarf under this agg to pick up implicit exclusive changes
+        DT->emit_labor_counts_updated(); //update column header text
     } else {
-        //integer z;
-//        for(int i = 0; i < idx ->selectionModel()->selectedIndexes().count();i++)
-//        {
-//            QModelIndex id = this->selectionModel()->selectedIndexes().at(i);
-//            int id_dwarf = id.data(DwarfModel::DR_ID).toInt();
-//            Dwarf *d = m_model->get_dwarf_by_id(id_dwarf);
-//        }
 
         if (!dwarf_id) {
             LOGW << "dwarf_id was 0 for cell at" << idx << "!";
@@ -730,6 +696,7 @@ void DwarfModel::commit_pending() {
         }
     }
     load_dwarves();
+
     emit new_pending_changes(0);
     emit need_redraw();
 }

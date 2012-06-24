@@ -1066,7 +1066,7 @@ bool Dwarf::toggle_labor(int labor_id) {
     return true;
 }
 
-void Dwarf::set_labor(int labor_id, bool enabled) {
+void Dwarf::set_labor(int labor_id, bool enabled, bool update_cols_realtime) {
     Labor *l = GameDataReader::ptr()->get_labor(labor_id);
     if (!l) {
         LOGD << "UNKNOWN LABOR: Bailing on set labor of id" << labor_id << "enabled?" << enabled << "for" << m_nice_name;
@@ -1084,16 +1084,25 @@ void Dwarf::set_labor(int labor_id, bool enabled) {
         foreach(int excluded, l->get_excluded_labors()) {
             if(labor_enabled(excluded)){
                 m_df->update_labor_count(excluded, -1);
-                DT->update_specific_header(excluded,CT_LABOR);
+                if(update_cols_realtime)
+                    DT->update_specific_header(excluded,CT_LABOR);
             }
             TRACE << "LABOR" << labor_id << "excludes" << excluded;
             m_pending_labors[excluded] = false;            
         }
     }
+    int change = 0;
+    if(labor_enabled(labor_id) && !enabled){
+        change = -1;
+    }else if(!labor_enabled(labor_id) && enabled){
+        change = 1;
+    }
+    if(change != 0){
+        m_df->update_labor_count(labor_id,enabled ? 1 : -1);
+        if(update_cols_realtime)
+            DT->update_specific_header(labor_id,CT_LABOR);
+    }
     m_pending_labors[labor_id] = enabled;
-
-    m_df->update_labor_count(labor_id,enabled ? 1 : -1);
-    DT->update_specific_header(labor_id,CT_LABOR);
 }
 
 bool Dwarf::toggle_flag_bit(int bit) {
@@ -1190,16 +1199,17 @@ void Dwarf::set_custom_profession_text(const QString &prof_text) {
     m_pending_custom_profession = prof_text;
 }
 
-int Dwarf::apply_custom_profession(CustomProfession *cp) {
+int Dwarf::apply_custom_profession(CustomProfession *cp) {        
     foreach(int labor_id, m_pending_labors.uniqueKeys()) {
         //only turn off all labours if it's NOT a mask
         if(!cp->is_mask())
-            set_labor(labor_id, false);
+            set_labor(labor_id, false,false);
     }
     foreach(int labor_id, cp->get_enabled_labors()) {
-        set_labor(labor_id, true); // only turn on what this prof has enabled...
+        set_labor(labor_id, true,false); // only turn on what this prof has enabled...
     }
-    m_pending_custom_profession = cp->get_name();
+    m_pending_custom_profession = cp->get_name();    
+
     return get_dirty_labors().size();
 }
 

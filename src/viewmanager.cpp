@@ -381,7 +381,7 @@ void ViewManager::setCurrentIndex(int idx) {
             }
             m_proxy->sort(0,m_proxy->m_last_sort_order);
             stv->sortByColumn(stv->m_last_sorted_col,stv->m_last_sort_order);
-
+            stv->m_selected.clear(); //will be reloaded below when re-selecting, however after committing, selection is cleared..
             QList<Dwarf*> tmp_list;
             foreach(Dwarf *d, m_selected_dwarfs) {
                 tmp_list << d;
@@ -415,14 +415,15 @@ void ViewManager::dwarf_selection_changed(const QItemSelection &selected,
     Q_UNUSED(selected);
     Q_UNUSED(deselected);
     QItemSelectionModel *selection = qobject_cast<QItemSelectionModel*>
-                                     (QObject::sender());
+                                     (QObject::sender());    
     m_selected_dwarfs.clear();
+
     foreach(QModelIndex idx, selection->selectedRows(0)) {
         int dwarf_id = idx.data(DwarfModel::DR_ID).toInt();
         Dwarf *d = DT->get_dwarf_by_id(dwarf_id);
         if (d)
             m_selected_dwarfs << d;
-    }    
+    }
 }
 
 int ViewManager::add_tab_from_action() {
@@ -508,8 +509,6 @@ void ViewManager::jump_to_profession(QListWidgetItem *current,
 
 void ViewManager::set_group_by(int group_by) {
     if (m_model){
-        //m_model->set_group_by(group_by);
-        //m_last_grouped = group_by;
         get_stv(currentIndex())->m_last_group_by = group_by;
     }
     redraw_current_tab();

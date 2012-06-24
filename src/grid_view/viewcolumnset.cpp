@@ -129,13 +129,14 @@ void ViewColumnSet::toggle_for_dwarf_group() {
     foreach(Dwarf *d, dm->get_dwarf_groups()->value(group_name)) {
         foreach(ViewColumn *vc, m_columns) {
             if (vc->type() == CT_LABOR) {
-                LaborColumn *lc = static_cast<LaborColumn*>(vc);
-                d->set_labor(lc->labor_id(), turn_on);
+                LaborColumn *lc = static_cast<LaborColumn*>(vc);                
+                d->set_labor(lc->labor_id(), turn_on, false);
             }
         }
     }
     dm->dwarf_group_toggled(group_name);
     DT->get_main_window()->get_model()->calculate_pending();
+    DT->emit_labor_counts_updated();
 }
 
 void ViewColumnSet::toggle_for_dwarf() {
@@ -161,13 +162,14 @@ void ViewColumnSet::toggle_for_dwarf(Dwarf *d) {
     bool turn_on = total_enabled < total_labors;
     foreach(ViewColumn *vc, m_columns) {
         if (vc->type() == CT_LABOR) {
-            LaborColumn *lc = static_cast<LaborColumn*>(vc);
-            d->set_labor(lc->labor_id(), turn_on);
+            LaborColumn *lc = static_cast<LaborColumn*>(vc);            
+            d->set_labor(lc->labor_id(), turn_on, false);
         }
     }
     DwarfModel *dm = DT->get_main_window()->get_model();
     dm->dwarf_set_toggled(d);
     dm->calculate_pending();
+    DT->emit_labor_counts_updated();
 }
 
 

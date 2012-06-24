@@ -285,7 +285,6 @@ void StateTableView::assign_to_squad(){
     const QItemSelection sel = selectionModel()->selection();
     foreach(QModelIndex i, sel.indexes()) {
         if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool()){
-            //int id = i.data(DwarfModel::DR_ID).toInt();
             id = i.data(DwarfModel::DR_ID).toInt();
             Dwarf *d = m_model->get_dwarf_by_id(id);
             if (d) {
@@ -303,14 +302,9 @@ void StateTableView::assign_to_squad(){
             }
         }
     }
-    if(m_model->current_grouping()==DwarfModel::GB_SQUAD){
-        foreach(Dwarf *temp, m_model->get_dwarves()){
-            if (temp->id()==id)
-                int z=0;
-    }
-
+    if(m_model->current_grouping()==DwarfModel::GB_SQUAD)
         DT->get_main_window()->get_view_manager()->redraw_current_tab();
-    }
+
 }
 void StateTableView::remove_squad(){
     const QItemSelection sel = selectionModel()->selection();
@@ -385,6 +379,7 @@ void StateTableView::apply_custom_profession() {
         }
     }
     m_model->calculate_pending();
+    DT->emit_labor_counts_updated();
 }
 
 void StateTableView::reset_custom_profession() {
@@ -452,7 +447,7 @@ void StateTableView::select_dwarf(Dwarf *d) {
             }
         }
     }
-    m_selected = this->selectionModel()->selection();
+    m_selected = selectionModel()->selection();
 }
 /************************************************************************/
 /* Hey look, our own mouse handling (/rolleyes)                         */

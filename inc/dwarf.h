@@ -286,7 +286,7 @@ public:
     exclusive partners of a labor, or weapon choice. It also defends against cheating by not allowing
     labors to be set on certain professions (Baby, Child, Nobles, etc...)
     */
-    void set_labor(int labor_id, bool enabled);
+    void set_labor(int labor_id, bool enabled, bool update_cols_realtime=true);
 
     //! convenience method that calls set_labor() and switches the state of the labor specified by labor_id
     bool toggle_labor(int labor_id);
@@ -367,7 +367,7 @@ public:
         return m_turn_count;
     }
 
-    QString noble_position() {return m_noble_position;}
+    Q_INVOKABLE QString noble_position() {return m_noble_position;}
 
     int body_size() {return m_body_size;}
 
