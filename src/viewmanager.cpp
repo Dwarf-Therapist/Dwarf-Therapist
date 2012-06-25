@@ -519,11 +519,15 @@ void ViewManager::redraw_current_tab() {
 }
 
 void ViewManager::redraw_current_tab_headers(){
+    get_stv(currentIndex())->is_loading_rows = true;
     m_model->draw_headers();
+    get_stv(currentIndex())->is_loading_rows = false;
 }
 
 void ViewManager::redraw_specific_header(int id, COLUMN_TYPE type){
+    get_stv(currentIndex())->is_loading_rows = true;
     m_model->update_header_info(id,type);
+    get_stv(currentIndex())->is_loading_rows = false;
 }
 
 

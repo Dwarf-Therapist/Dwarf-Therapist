@@ -493,18 +493,19 @@ void DwarfModel::build_row(const QString &key) {
         }
     }
 
-    QStandardItem *i_name = new QStandardItem(first_dwarf->nice_name());
-    QFont f = i_name->font();
-    QFontMetrics fm(f);
-    QChar symbol(0x263C);
-    if(!fm.inFont(QChar(0x263C))){
-        symbol = QChar(0x2261);
-        if(!fm.inFont(symbol))
-            symbol = QChar(0x002A);
-    }
+
 
     foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
-        i_name = new QStandardItem(d->nice_name());
+        QStandardItem *i_name = new QStandardItem(d->nice_name());
+
+        QFont f = i_name->font();
+        QFontMetrics fm(f);
+        QChar symbol(0x263C);
+        if(!fm.inFont(QChar(0x263C))){
+            symbol = QChar(0x2261);
+            if(!fm.inFont(symbol))
+                symbol = QChar(0x002A);
+        }
 
         //font settings ***
         if (d->active_military()) {            

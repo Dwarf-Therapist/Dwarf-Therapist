@@ -233,9 +233,10 @@ void Dwarf::read_body_size(){
             m_body_size = 60000;
 
         QVector<VIRTADDR> entries = m_df->enumerate_vector(m_address + m_mem->dwarf_offset("body_size"));
-        foreach(VIRTADDR entry, entries) {
+        foreach(VIRTADDR entry, entries) {            
             m_body_size = m_body_size * ((float)entry / 100);
         }
+
     }else{
         m_body_size = -1;
     }

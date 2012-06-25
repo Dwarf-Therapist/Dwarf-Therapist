@@ -104,11 +104,21 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     item->setData(draw_rating, DwarfModel::DR_RATING);
     item->setData(rating, DwarfModel::DR_SORT_VALUE);
 
-    item->setToolTip(QString("<h3>%1</h3>%2%3<h4>%4</h4>")
+    QPalette tt;
+    QColor norm_text = tt.toolTipText().color();
+
+    item->setToolTip(QString("<h3>%1</h3>%2%3%4%5<h4>%6 - %7</h4>")
                      .arg(tt_title)
                      .arg(desc)
                      .arg(group_name)
-                     .arg(d->nice_name()));
+                     .arg(tr("<br>1h: <font color=%1>%2</font> cm<sup>3</sup><br>")
+                          .arg(onehand ? norm_text.name() : QColor(Qt::red).name())
+                          .arg(m_weapon.singlegrasp_size))
+                     .arg(tr("2h: <font color=%1>%2</font> cm<sup>3</sup>")
+                          .arg(twohand ? norm_text.name() : QColor(Qt::red).name())
+                          .arg(m_weapon.multigrasp_size))
+                     .arg(d->nice_name())
+                     .arg(tr("%1 cm<sup>3</sup><br>").arg(body_size)));
     return item;
 }
 
