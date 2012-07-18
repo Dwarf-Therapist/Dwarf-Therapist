@@ -49,6 +49,11 @@ public:
     DwarfModel *get_model() {return m_model;}
 
     void restore_scroll_positions();
+    void set_scroll_positions(int v_value, int h_value);
+
+    //use these to read the scroll positions rather than the scrollbar itself, as sometimes we ignore the scrollbar changes
+    int vertical_scroll_position() {return m_vscroll;}
+    int horizontal_scroll_position() {return m_hscroll;}
 
     bool is_loading_rows;
     bool is_active;

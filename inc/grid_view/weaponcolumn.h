@@ -25,12 +25,13 @@ THE SOFTWARE.
 
 #include "viewcolumn.h"
 #include "dwarf.h"
+#include "weapon.h"
 
 class WeaponColumn : public ViewColumn {
     Q_OBJECT
 public:
 
-    WeaponColumn(const QString &title, GameDataReader::weapon w, ViewColumnSet *set = 0, QObject *parent = 0);
+    WeaponColumn(const QString &title, Weapon *w, ViewColumnSet *set = 0, QObject *parent = 0);
     WeaponColumn* clone() {return new WeaponColumn(*this);}
     QStandardItem *build_cell(Dwarf *d);
     QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
@@ -39,7 +40,7 @@ public:
     void write_to_ini(QSettings &s){ViewColumn::write_to_ini(s);}
 
 private:
-    GameDataReader::weapon m_weapon;
+    Weapon *m_weapon;
 };
 
 #endif // WEAPONCOLUMN_H

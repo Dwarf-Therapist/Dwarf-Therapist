@@ -47,6 +47,7 @@ public:
     
 	QList<GridView*> views() {return m_views;}
 	void add_view(GridView *view);
+    void add_weapons_view(QList<GridView*> &built_in_views);
 
 	public slots:
 		void setCurrentIndex(int);
@@ -78,7 +79,7 @@ private:
     QList<Dwarf*> m_selected_dwarfs;
 
     StateTableView *get_stv(int idx = -1);
-    void add_weapons_view(QList<GridView*> &built_in_views);
+
     bool m_add_weapons_tab;
     int m_last_index;
     QErrorMessage *m_squad_warning;    

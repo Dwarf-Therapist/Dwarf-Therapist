@@ -223,8 +223,11 @@
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontal_curse_layout">
+         <property name="spacing">
+          <number>6</number>
+         </property>
          <property name="sizeConstraint">
-          <enum>QLayout::SetFixedSize</enum>
+          <enum>QLayout::SetDefaultConstraint</enum>
          </property>
          <item>
           <widget class="QCheckBox" name="cb_curse_highlight">
@@ -251,7 +254,7 @@
       <attribute name="title">
        <string>Grid Options</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,0,0,0,0,0,0,0">
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0">
        <item>
         <widget class="QCheckBox" name="cb_auto_contrast">
          <property name="sizePolicy">
@@ -363,6 +366,50 @@
          </property>
          <property name="text">
           <string>Show Count in Labor Column Headers</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_sync_grouping">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string/>
+         </property>
+         <property name="statusTip">
+          <string>When checked, the selected grouping will be applied to all views. When unchecked grouping is saved for each view.</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, the selected grouping will be applied to all views. When unchecked grouping is saved for each view.</string>
+         </property>
+         <property name="text">
+          <string>Synchronize View Grouping</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_sync_scrolling">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string/>
+         </property>
+         <property name="statusTip">
+          <string>When checked, the current scroll positions will be applied to all views. This works best with synchronized grouping.</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, the current scroll positions will be applied to all views. This works best with synchronized grouping.</string>
+         </property>
+         <property name="text">
+          <string>Synchronize View Scroll Positions</string>
          </property>
         </widget>
        </item>
@@ -712,10 +759,10 @@
       <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>594</width>
-         <height>244</height>
+         <x>0</x>
+         <y>0</y>
+         <width>581</width>
+         <height>311</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -880,7 +927,7 @@
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>20</height>
+            <height>10</height>
            </size>
           </property>
          </spacer>
@@ -1087,7 +1134,7 @@
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>20</height>
+            <height>10</height>
            </size>
           </property>
          </spacer>
@@ -1116,10 +1163,43 @@
              <string/>
             </property>
             <property name="statusTip">
-             <string>Shows all roles which have the same skill as the labor uses. Additionally sorts labor columns by 'labor enabled' and then by role ratings.</string>
+             <string>Shows all roles which have the same skill as the labor uses in the labor column tooltips.</string>
             </property>
             <property name="text">
              <string>Show role information in labor columns</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_16">
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>100</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chk_labor_sort_by_roles">
+            <property name="toolTip">
+             <string/>
+            </property>
+            <property name="statusTip">
+             <string>Sorts labor columns by 'labor enabled' and then by role ratings.</string>
+            </property>
+            <property name="text">
+             <string>Include role ratings when sorting labor columns.</string>
             </property>
            </widget>
           </item>
@@ -1149,10 +1229,43 @@
              <string/>
             </property>
             <property name="statusTip">
-             <string>Shows all roles which have the skill in the column. Additionally sorts skill columns by 'has skill experience' and then by role ratings. Examples of skill columns: Axedwarf, Liar, Teacher, Fighter...</string>
+             <string>Shows all roles which have the skill in the column tooltips. Examples of skill column: Axedwarf, Liar, Teacher, Fighter...</string>
             </property>
             <property name="text">
              <string>Show role information in skill columns</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_18">
+          <item>
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>100</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chk_skills_sort_by_roles">
+            <property name="toolTip">
+             <string/>
+            </property>
+            <property name="statusTip">
+             <string>Sorts skill columns by 'has skill experience' and then by role ratings.</string>
+            </property>
+            <property name="text">
+             <string>Include role ratings when sorting skill columns.</string>
             </property>
            </widget>
           </item>

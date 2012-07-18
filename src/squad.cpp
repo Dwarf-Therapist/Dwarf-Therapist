@@ -77,63 +77,58 @@ void Squad::read_name() {
 
 void Squad::read_members() {
     DwarfModel * dm = DT->get_main_window()->get_model();
-
-    //get a count of how many members we're looking for so we don't loop through the entire
-    //population unless it's worst case scenario
-    int count = 0;
     members_addr = m_df->enumerate_vector(m_address + m_mem->squad_offset("members"));
-    foreach(VIRTADDR member_addr, members_addr) {
-        int member_id = m_df->read_int(member_addr);
-        if(member_id != -1)
-            count ++;
-    }
 
     //rather than searching for the dwarf in the members of the squad, just check the squad id
     foreach(Dwarf *d, dm->get_dwarves()){
-        if(!d->is_animal() && d->squad_id() == m_id) {
+        if(!d->is_animal() && d->profession() != "Child" && d->profession() != "Baby" && d->squad_id() == m_id) {
             m_members << d;
             d->m_squad_name = name();
-            if(assigned_count()==count)
-                break;
+            if(assigned_count()==m_members.count())
+                return;
         }
     }
 }
 
 int Squad::assigned_count(){
+    //use the addresses to determine the assigned dwarfs because
+    //if a dwarf dies in DF but isn't found, they're still assigned to the squad until found
+    //so simply counting the m_members isn't sufficient
     int count = 0;
-    foreach(Dwarf *d, m_members){
-        if(d!=0)
-            count ++;
+    foreach(VIRTADDR member_addr, members_addr) {
+        if(m_df->read_int(member_addr) != -1)
+            count++;
     }
     return count;
 }
 
 int Squad::assign_to_squad(Dwarf *d){
-    int position = assigned_count();
+    int assigned = assigned_count();
 
     //users could potentially select more than 10 and assign to squad
-    if(position==10)
+    if(assigned==10)
         return -1;
 
-    //set the dwarf's squad id and position
-    m_df->write_int(d->address() + m_df->memory_layout()->dwarf_offset("squad_id"), m_id);
-    m_df->write_int(d->address() + m_df->memory_layout()->dwarf_offset("squad_position"), position);
-
     d->set_squad_id(m_id);
-    d->set_squad_position(position);
     d->set_squad_name(name());
     d->recheck_equipment();
 
     //add the dwarf to our dt vector for grouping etc
     m_members << d;
-    //add the dwarf's hist id to the squad, if it's not already there
+    //add the dwarf's hist id to the first available position in the squad
+    int position = -1; //positions start at 0
     foreach(VIRTADDR member_addr, members_addr) {
+        position += 1;
         if(m_df->read_int(member_addr) == -1){
-            //also add to our pending squad changes
             m_df->write_int(member_addr,d->historical_id());
             break;
         }
     }
+    //save the position after looping through the mem addresses in the case of missing/dead dwarves still in the squad
+    d->set_squad_position(position);
+    //update the memory values immediately
+    m_df->write_int(d->address() + m_df->memory_layout()->dwarf_offset("squad_id"), m_id);
+    m_df->write_int(d->address() + m_df->memory_layout()->dwarf_offset("squad_position"), position);
 
     return position;
 }

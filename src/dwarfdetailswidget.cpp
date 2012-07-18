@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include "trait.h"
 #include "dwarfstats.h"
 #include "utils.h"
-#include "mainwindow.h"
 #include "dfinstance.h"
 #include "fortressentity.h"
 
@@ -72,7 +71,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
                                      );
 
     if(DT->user_settings()->value("options/highlight_nobles",false).toBool() && d->noble_position() != ""){
-        color = DT->get_main_window()->get_DFInstance()->fortress()->get_noble_color(d->historical_id());
+        color = DT->get_DFInstance()->fortress()->get_noble_color(d->historical_id());
         ui->lbl_noble->setStyleSheet(QString("background: QLinearGradient(x1:0,y1:0,x2:0.9,y1:0,stop:0 %1, stop:1 %2); color: %3")
                                      .arg(color.name())
                                          .arg(color2.name())
@@ -151,14 +150,21 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         tw->setRowHeight(row, 18);
         Skill s = skills->at(row);
         QTableWidgetItem *text = new QTableWidgetItem(QString("%1").arg(s.name()));
+
         QTableWidgetItem *level = new QTableWidgetItem;
         level->setData(0, d->skill_rating(s.id()));
         level->setTextAlignment(Qt::AlignHCenter);
-        QColor rust = QColor(s.skill_color());
-        if(rust!=QColor(Qt::black)){
-            rust.setAlpha(0); //if we get rust stuff setup change this from transparent
-            level->setBackgroundColor(rust);
+
+        if(s.id()==d->highest_moodable().id()){
+            text->setBackgroundColor(QColor(220, 220, 255, 255));
+            text->setToolTip(tr("%1").arg(d->had_mood() ? "Has already had a mood!" : "This is the highest moodable skill."));
         }
+
+//        QColor rust = QColor(s.skill_color());
+//        if(rust!=QColor(Qt::black)){
+//            rust.setAlpha(0); //if we get rust stuff setup change this from transparent
+//            level->setBackgroundColor(rust);
+//        }
         level->setToolTip(s.rust_rating());
 
 

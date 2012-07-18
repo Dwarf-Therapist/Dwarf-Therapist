@@ -107,7 +107,7 @@ GameDataReader::GameDataReader(QObject *parent)
                 break;
             }
         }
-    }
+    }        
 
     m_data_settings->beginGroup("skill_levels");
     foreach(QString k, m_data_settings->childKeys()) {
@@ -115,6 +115,10 @@ GameDataReader::GameDataReader(QObject *parent)
         m_skill_levels.insert(rating, m_data_settings->value(k, "UNKNOWN").toString());
     }
     m_data_settings->endGroup();
+
+    //load moodable skills http://dwarffortresswiki.org/index.php/Mood#Skills_and_workshops
+    m_moodable_skills << 28 << 37 << 49 << 2 << 16 << 3 << 30 << 31 <<
+                         35 << 36 << 4 << 55 << 34 << 29 << 0 << 33 << 12 << 27 << 13 << 32;
 
     m_data_settings->beginGroup("attribute_levels");
     foreach(QString k, m_data_settings->childKeys()) {
@@ -287,75 +291,6 @@ int GameDataReader::get_level_from_xp(int xp) {
         }
     }
     return ret_val;
-}
-
-void GameDataReader::load_weapon_list()
-{
-    m_weapons.clear();
-    QHash<QString, QRawObjectList>::iterator i;
-    for (i = m_weapon_classes.begin(); i != m_weapon_classes.end(); ++i)
-    {
-        //TODO: may be better to group weapons by skill instead
-        //ie all PIKE weapons together in their own list
-        foreach(RawObjectPtr obj, i.value()) {
-            if (obj->get_value(1).startsWith("ITEM_WEAPON"))
-            {
-                weapon w;
-
-                RawNodePtr temp =  obj->get_children("TWO_HANDED").at(0);
-                w.singlegrasp_size = temp->get_value(0).toLong();
-
-                temp = obj->get_children("MINIMUM_SIZE").at(0);
-                w.multigrasp_size = temp->get_value(0).toLong();
-
-                temp = obj->get_children("NAME").at(0);
-                w.name = temp->get_value(1);
-                w.name[0] = w.name[0].toUpper();
-
-                temp = obj->get_children("SKILL").at(0);
-                w.skill = temp->get_value(0,"Unknown");
-
-                m_weapons.insert(w.name,w);
-            }
-        }
-    }
-
-    m_ordered_weapons.clear();
-
-    QStringList weapon_names;
-    foreach(QString key, m_weapons.uniqueKeys()) {
-        weapon_names << key;
-    }
-
-    qSort(weapon_names);
-    foreach(QString name, weapon_names) {
-        m_ordered_weapons << QPair<QString, weapon>(name, m_weapons.value(name));
-    }
-}
-
-void GameDataReader::read_raws(QDir df_dir) {
-    QFileInfo creature_standard(df_dir, "raw/objects/creature_standard.txt");
-    QDir raw_dir = creature_standard.absoluteDir();
-    raw_dir.setFilter( QDir::Files );
-    QStringList filters;
-    filters << "creature_*.txt";
-    raw_dir.setNameFilters(filters);
-    raw_dir.setSorting(QDir::Name);
-    QFileInfoList infos = raw_dir.entryInfoList();
-    //read weapons
-    filters.clear();
-    filters << "*weapon*.txt";
-    raw_dir.setNameFilters(filters);
-    infos = raw_dir.entryInfoList();
-    int N=0;
-    for (QList<QFileInfo>::iterator info=infos.begin();info!=infos.end();info++)
-    {
-        m_weapon_classes[(*info).baseName()] = RawReader::read_weapons((*info), N);
-        TRACE << "Read " << m_weapon_classes[(*info).baseName()].size() << " " << (*info).baseName();
-        N+=m_weapon_classes[(*info).baseName()].size();
-    }
-
-    load_weapon_list();
 }
 
 void GameDataReader::load_roles(){

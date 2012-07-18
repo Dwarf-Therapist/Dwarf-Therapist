@@ -66,7 +66,7 @@ void FortressEntity::read_entity(){
     //load squads
     m_squads = m_df->enumerate_vector(m_address + m_mem->hist_entity_offset("squads"));
 
-    QVector<VIRTADDR> entities = m_df->enumerate_vector(m_df->get_memory_correction() + m_mem->address("historical_entities"));
+    QVector<VIRTADDR> entities = m_df->enumerate_vector(m_df->get_memory_correction() + m_mem->address("historical_entities_vector"));
     foreach(VIRTADDR ent, entities){
         //don't bother searching in non-civilization entities,
         //however as some reports have other races as nobles this is the only filtering we can do
@@ -84,7 +84,7 @@ void FortressEntity::read_entity(){
 
             foreach(VIRTADDR assign, assignments){
                 assign_pos_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_position_id"));
-                hist_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_hist_id"));
+                hist_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_hist_id"));                
                 if(hist_id > 0){
                     foreach(VIRTADDR pos, positions){
                         position_id = m_df->read_int(pos + m_mem->hist_entity_offset("position_id"));

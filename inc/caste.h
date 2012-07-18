@@ -50,6 +50,10 @@ public:
     QString description() {return m_description;}
     attribute_level get_attribute_level(int id, int value);
 
+    int adult_size() {return get_body_size(0);}
+    int child_size() {return get_body_size(0) / 2;} //get_body_size(1);}
+    int baby_size() {return get_body_size(0) / 4;} //get_body_size(2);}
+
     void load_data();
     void load_attribute_info();
 
@@ -59,6 +63,7 @@ private:
     QString m_race_name;
     QString m_name;
     QString m_description;    
+    QVector<int> m_body_sizes;
 
     struct att_range{
         QList<int> raw_bins;
@@ -71,6 +76,7 @@ private:
     MemoryLayout * m_mem;
 
     void read_caste();
+    int get_body_size(int index);
 };
 
 

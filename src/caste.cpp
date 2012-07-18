@@ -72,6 +72,14 @@ void Caste::read_caste() {
         }
     }
     m_description = m_df->read_string(m_address + m_mem->caste_offset("caste_descr"));
+
+
+//    could update this to read the child/baby sizes instead of just the adult size
+//    QVector<VIRTADDR> body_sizes = m_df->enumerate_vector(m_address + m_mem->caste_offset("body_sizes_vector"));
+//    foreach(VIRTADDR size, body_sizes){
+//        m_body_sizes.prepend((int)size);
+//    }
+    m_body_sizes.append(m_df->read_int(m_address + m_mem->caste_offset("adult_size")));
 }
 
 void Caste::load_attribute_info(){
@@ -136,5 +144,13 @@ Caste::attribute_level Caste::get_attribute_level(int id, int value)
     l.rating = 20;
 
     return l;
+}
+
+
+int Caste::get_body_size(int index){
+    if(m_body_sizes.size()>index)
+        return m_body_sizes.at(index);
+    else
+        return 0;
 }
 

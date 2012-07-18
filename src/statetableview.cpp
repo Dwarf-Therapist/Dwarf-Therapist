@@ -566,7 +566,7 @@ void StateTableView::restore_scroll_positions(){
 
 void StateTableView::vscroll_value_changed(int value){
     //when loading rows, the slider will move back to the top
-    //on linux, changing tabs also resets the slider,
+    //on linux, changing tabs also resets the slider of the previous tab,
     //so don't record the position of the scroll if it moves on an inactive view
     if(!is_loading_rows && is_active)
         m_vscroll = value;
@@ -574,4 +574,9 @@ void StateTableView::vscroll_value_changed(int value){
 void StateTableView::hscroll_value_changed(int value){
     if(!is_loading_rows && is_active)
         m_hscroll = value;
+}
+
+void StateTableView::set_scroll_positions(int v_value, int h_value){
+    m_vscroll = v_value;
+    m_hscroll = h_value;
 }

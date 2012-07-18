@@ -81,7 +81,8 @@ QStandardItem *SkillColumn::build_cell(Dwarf *d) {
                 }
                 role_str += "</ul>";
                 sortVal /= found_roles.count();
-                item->setData(sortVal,DwarfModel::DR_SORT_VALUE);
+                if(DT->user_settings()->value("options/sort_roles_in_skills", true).toBool())
+                    item->setData(sortVal,DwarfModel::DR_SORT_VALUE);
             }
         }
     }

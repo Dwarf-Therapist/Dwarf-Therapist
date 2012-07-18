@@ -46,6 +46,8 @@ THE SOFTWARE.
 #include "trait.h"
 #include "militarypreference.h"
 #include "ui_columneditdialog.h"
+#include "dfinstance.h"
+#include "weapon.h"
 
 GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent)
     : QDialog(parent)
@@ -441,8 +443,8 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     weapon_j_r->setTearOffEnabled(true);
     QMenu *weapon_m_z = m_weapon->addMenu(tr("S-Z"));
     weapon_m_z->setTearOffEnabled(true);
-    QPair<QString, GameDataReader::weapon> weapon_pair;
-    foreach(weapon_pair, gdr->get_ordered_weapons()) {
+    QPair<QString, Weapon*> weapon_pair;
+    foreach(weapon_pair, DT->get_DFInstance()->get_ordered_weapons()) {
         QMenu *menu_to_use = weapon_a_l;
         if (weapon_pair.first.at(0).toLower() > 'i')
             menu_to_use = weapon_j_r;
@@ -534,7 +536,7 @@ void GridViewDialog::add_weapon_column(){
         return;
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     QString key = a->data().toString();
-    new WeaponColumn(key,GameDataReader::ptr()->get_weapons().value(key),m_active_set,m_active_set);
+    new WeaponColumn(key,DT->get_DFInstance()->get_weapons().value(key),m_active_set,m_active_set);
     draw_columns_for_set(m_active_set);
 }
 

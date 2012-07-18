@@ -78,25 +78,53 @@ ScriptDialog::ScriptDialog(QWidget *parent)
 
 void ScriptDialog::clear_script() {
     ui->script_edit->clear();
+    ui->txt_script_name->clear();
+    ui->lbl_save_status->clear();
+    m_name = "";
 }
 
 void ScriptDialog::load_script(QString name, QString script){
-    ui->script_edit->setText(script);
+    ui->script_edit->setText(script);    
     m_name = name;
+    ui->txt_script_name->setText(m_name);
+    ui->lbl_save_status->clear();
 }
 
 void ScriptDialog::apply_pressed() {
     emit apply_script(ui->script_edit->toPlainText());
+    ui->lbl_save_status->setText(tr("Script has been applied but hasn't been saved."));
 }
 
-void ScriptDialog::save_pressed() {
-    bool ok=true;
-    if(m_name=="")
-        m_name = QInputDialog::getText(this, tr("Name this Script"), tr("Script Name:"), QLineEdit::Normal, QString(), &ok);
+void ScriptDialog::save_pressed() {        
+    QString m_old_name = m_name;
+    m_name = ui->txt_script_name->text();
 
-    if (ok) { // TODO: check for name collision
-        QSettings *s = DT->user_settings();
-        s->setValue(QString("filter_scripts/%1").arg(m_name), ui->script_edit->toPlainText());
+    QSettings *s = DT->user_settings();
+    int answer = QMessageBox::Yes;
+
+    if(m_old_name != m_name){
+        s->beginGroup("filter_scripts");
+        foreach(QString script_name, s->childKeys()){
+            if(m_name==script_name){
+                answer = QMessageBox::question(0,"Confirm Replace",
+                                               tr("A script with this name already exists and will be overwritten. Continue?"),
+                                               QMessageBox::Yes,QMessageBox::No);
+                break;
+            }
+        }
+        s->endGroup();
     }
+
+    if(answer == QMessageBox::No){
+        ui->lbl_save_status->setText(tr("Save cancelled."));
+        return;
+    }
+
+    if(m_old_name != m_name)
+        s->remove(QString("filter_scripts/%1").arg(m_old_name));
+
+    s->setValue(QString("filter_scripts/%1").arg(m_name), ui->script_edit->toPlainText());
     emit scripts_changed();
+
+    ui->lbl_save_status->setText(tr("Script saved successfully!"));
 }

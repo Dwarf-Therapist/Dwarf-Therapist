@@ -60,13 +60,6 @@ public:
         return m_instance;
     }
 
-    struct weapon{
-        QString name;
-        long singlegrasp_size;
-        long multigrasp_size;
-        QString skill;
-    };
-
     int get_int_for_key(QString key, short base = 16);
     int get_address(QString key) {return get_int_for_key("addresses/" + key);}
     int get_offset(QString key) {return get_int_for_key("offsets/" + key);}
@@ -127,20 +120,13 @@ public:
         return RawObjectPtr();
     }
 
-    QHash<QString, weapon> get_weapons() {return m_weapons;}
-    QList<QPair<QString, weapon> > get_ordered_weapons() {return m_ordered_weapons;}
-
-    //int get_attribute_mean_value(int attribute, int caste) {return m_attributes_mean_value.value(caste).value(attribute);}
-
-    void read_raws(QDir df_dir);
+    const QVector<int> moodable_skills() {return m_moodable_skills;}
 
 protected:
     GameDataReader(QObject *parent = 0);
 private:
     void load_race_names();
     void load_caste_names();
-    void load_weapon_list();
-    //void load_attributes_mean_value();
     static GameDataReader *m_instance;
     QSettings *m_data_settings;
 
@@ -169,14 +155,11 @@ private:
     QHash<int,QVector<Role*> > m_skill_roles;
 
     QHash<QString, QRawObjectList> m_reaction_classes;
-    QHash<QString, QRawObjectList> m_creatures_classes;
-    QHash<QString, QRawObjectList> m_weapon_classes;
+    QHash<QString, QRawObjectList> m_creatures_classes;    
 
     QHash<QString, QString> m_race_names;
     QHash<QString, QStringList> m_caste_names;
 
-    QHash<QString,weapon> m_weapons;
-    QList<QPair<QString, weapon> > m_ordered_weapons;
-    //QHash<int, QHash<int, int> > m_attributes_mean_value;
+    QVector<int> m_moodable_skills;
 };
 #endif

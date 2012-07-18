@@ -84,6 +84,7 @@ public:
         void draw_custom_profession_context_menu(const QPoint &);
         void add_new_filter_script();
         void edit_filter_script();
+        void remove_filter_script();
         void print_gridview();
 
         // version check

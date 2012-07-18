@@ -153,7 +153,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cb_group_by->addItem(tr("Current Job"), DwarfModel::GB_CURRENT_JOB);
     ui->cb_group_by->addItem(tr("Happiness"), DwarfModel::GB_HAPPINESS);
     ui->cb_group_by->addItem(tr("Has Nickname"),DwarfModel::GB_HAS_NICKNAME);
-    ui->cb_group_by->addItem(tr("Highest Skill"), DwarfModel::GB_HIGHEST_SKILL);
+    ui->cb_group_by->addItem(tr("Highest Moodable Skill"), DwarfModel::GB_HIGHEST_MOODABLE);
+    ui->cb_group_by->addItem(tr("Highest Skill"), DwarfModel::GB_HIGHEST_SKILL);    
     ui->cb_group_by->addItem(tr("Legendary Status"), DwarfModel::GB_LEGENDARY);
     ui->cb_group_by->addItem(tr("Migration Wave"),DwarfModel::GB_MIGRATION_WAVE);
     ui->cb_group_by->addItem(tr("Military Status"),DwarfModel::GB_MILITARY_STATUS);
@@ -292,7 +293,7 @@ void MainWindow::connect_to_df() {
 
             m_df->load_game_data();
             //Read raws once memory layout is complete
-            m_df->read_raws();
+            //m_df->read_raws();
             if(m_view_manager)
                 m_view_manager->reload_views();
         }
@@ -319,7 +320,7 @@ void MainWindow::connect_to_df() {
 
             m_df->load_game_data();
             //Read raws once memory layout is complete
-            m_df->read_raws();
+            //m_df->read_raws();
             if(m_view_manager)
                 m_view_manager->reload_views();
             if (DT->user_settings()->value("options/read_on_startup",
@@ -531,7 +532,6 @@ void MainWindow::scan_memory() {
 }
 
 void MainWindow::set_group_by(int group_by) {
-    //write_settings();
     m_view_manager->set_group_by(group_by);
 }
 
@@ -705,23 +705,79 @@ void MainWindow::edit_filter_script() {
     m_script_dialog->show();
 }
 
+void MainWindow::remove_filter_script(){
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    QString name =a->data().toString();
+
+    int answer = QMessageBox::question(0,"Confirm Remove",tr("Are you sure you want to remove script: <b>%1</b>?").arg(name),QMessageBox::Yes,QMessageBox::No);
+    if(answer == QMessageBox::Yes){
+        QSettings *s = DT->user_settings();
+        s->remove(QString("filter_scripts/%1").arg(name));
+    }
+    reload_filter_scripts();
+}
+
 void MainWindow::reload_filter_scripts() {
     ui->cb_filter_script->clear();
     ui->cb_filter_script->addItem(tr("None"));
 
     ui->menu_edit_filters->clear();
+    ui->menu_remove_script->clear();
     QSettings *s = DT->user_settings();
-    s->beginGroup("filter_scripts");
-    ui->cb_filter_script->addItems(s->childKeys());
 
+    QMap<QString,QString> m_scripts;
+    s->beginGroup("filter_scripts");
     foreach(QString script_name, s->childKeys()){
-        QStringList data;
-        data.append(script_name);
-        data.append(s->value(script_name).toString());
-        QAction *a = ui->menu_edit_filters->addAction(script_name,this,SLOT(edit_filter_script()) );
-        a->setData(data);
+        m_scripts.insert(script_name,s->value(script_name).toString());
     }
-    s->endGroup();    
+    s->endGroup();
+
+    QMap<QString, QString>::const_iterator i = m_scripts.constBegin();
+    while(i != m_scripts.constEnd()){
+        QStringList data;
+        data.append(i.key());
+        data.append(i.value());
+        QAction *a = ui->menu_edit_filters->addAction(i.key(),this,SLOT(edit_filter_script()) );
+        a->setData(data);
+
+        QAction *r = ui->menu_remove_script->addAction(i.key(),this,SLOT(remove_filter_script()) );
+        r->setData(i.key());
+        i++;
+    }
+    ui->cb_filter_script->addItems(m_scripts.uniqueKeys());
+
+
+//    s->beginGroup("filter_scripts");
+
+//    ui->cb_filter_script->addItems(s->childKeys());
+
+//    foreach(QString script_name, s->childKeys()){
+//        QStringList data;
+//        data.append(script_name);
+//        data.append(s->value(script_name).toString());
+//        QAction *a = ui->menu_edit_filters->addAction(script_name,this,SLOT(edit_filter_script()) );
+//        a->setData(data);
+
+//        QAction *r = ui->menu_remove_script->addAction(script_name,this,SLOT(remove_filter_script()) );
+//        r->setData(script_name);
+//    }
+//    s->endGroup();
+
+
+//    m_ordered_roles.clear();
+//    QStringList role_names;
+//    foreach(Role *r, m_dwarf_roles) {
+//        role_names << r->name.toUpper();
+//    }
+//    qSort(role_names);
+//    foreach(QString name, role_names) {
+//        foreach(Role *r, m_dwarf_roles) {
+//            if (r->name.toUpper() == name.toUpper()) {
+//                m_ordered_roles << QPair<QString, Role*>(r->name, r);
+//                break;
+//            }
+//        }
+//    }
 }
 
 void MainWindow::add_new_custom_role() {
@@ -747,12 +803,12 @@ void MainWindow::edit_custom_role() {
 void MainWindow::remove_custom_role(){
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     QString name = a->data().toString();
-    int answer = QMessageBox::question(0,"Confirm Remove",tr("Are you sure you want to remove role %1?").arg(name),QMessageBox::Yes,QMessageBox::No);
+    int answer = QMessageBox::question(0,"Confirm Remove",tr("Are you sure you want to remove role: <b>%1</b>?").arg(name),QMessageBox::Yes,QMessageBox::No);
     if(answer == QMessageBox::Yes){
         GameDataReader::ptr()->get_roles().remove(name);
 
         //prompt and remove columns??
-        answer = QMessageBox::question(0,"Clean Views",tr("Would you also like to remove role %1 from all custom views?").arg(name),QMessageBox::Yes,QMessageBox::No);
+        answer = QMessageBox::question(0,"Clean Views",tr("Would you also like to remove role <b>%1</b> from all custom views?").arg(name),QMessageBox::Yes,QMessageBox::No);
         if(answer == QMessageBox::Yes){
             ViewManager *vm = m_view_manager;
             foreach(GridView *gv, vm->views()){

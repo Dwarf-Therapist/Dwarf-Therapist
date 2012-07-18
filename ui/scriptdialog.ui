@@ -20,7 +20,21 @@
   <property name="sizeGripEnabled">
    <bool>true</bool>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="100,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,100,0">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="lbl_script_name">
+       <property name="text">
+        <string>Script Name:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="txt_script_name"/>
+     </item>
+    </layout>
+   </item>
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
@@ -119,6 +133,13 @@ p, li { white-space: pre-wrap; }
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
+      <widget class="QLabel" name="lbl_save_status">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -133,13 +154,19 @@ p, li { white-space: pre-wrap; }
      </item>
      <item>
       <widget class="QPushButton" name="btn_apply">
+       <property name="toolTip">
+        <string>Tests the current script, but doesn't save it.</string>
+       </property>
        <property name="text">
-        <string>Apply Script</string>
+        <string>Test Script</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="btn_save">
+       <property name="toolTip">
+        <string>Saves the current script.</string>
+       </property>
        <property name="text">
         <string>Save</string>
        </property>

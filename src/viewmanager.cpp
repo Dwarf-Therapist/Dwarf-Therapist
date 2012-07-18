@@ -34,6 +34,8 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "weaponcolumn.h"
 #include "spacercolumn.h"
+#include "dfinstance.h"
+#include "weapon.h"
 
 ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy,
                          QWidget *parent)
@@ -136,9 +138,12 @@ void ViewManager::reload_views() {
 }
 
 void ViewManager::add_weapons_view(QList<GridView*> &built_in_views){
-    if(GameDataReader::ptr()->get_ordered_weapons().length() > 0){
-        //add a special weapons view, this will dynamically change depending on the raws read
+    if(!DT->get_main_window())
+        return;
 
+    DFInstance *m_df = DT->get_DFInstance();
+    if(m_df->get_ordered_weapons().length() > 0){
+        //add a special weapons view, this will dynamically change depending on the raws read
 
         //    //group by skill type for display
         //    QHash<QString, QVector<GameDataReader::weapon>* > grouped_weapons;
@@ -165,20 +170,19 @@ void ViewManager::add_weapons_view(QList<GridView*> &built_in_views){
         //    built_in_views << gv;
 
         //group by weapon size..
-        QHash<QPair<long,long>, GameDataReader::weapon*> grouped_by_size;
-        QPair<QString, GameDataReader::weapon> wp;
-        foreach(wp, GameDataReader::ptr()->get_ordered_weapons()){
+        QHash<QPair<long,long>, Weapon*> grouped_by_size;
+        QPair<QString, Weapon*> wp;
+        foreach(wp, m_df->get_ordered_weapons()){
             QPair<long,long> key;
-            key.first = wp.second.singlegrasp_size;
-            key.second = wp.second.multigrasp_size;
+            key.first = wp.second->single_grasp();
+            key.second = wp.second->multi_grasp();
             if(!grouped_by_size.contains(key)){
-                GameDataReader::weapon *w = new GameDataReader::weapon;
-                w->singlegrasp_size = key.first;
-                w->multigrasp_size = key.second;
-                w->name = wp.second.name;
-                grouped_by_size.insert(key,w);
+                grouped_by_size.insert(key,wp.second);
             }else{
-                grouped_by_size.value(key)->name.append(", ").append(wp.second.name);
+                QString name = grouped_by_size.value(key)->name_plural();
+                Weapon *w = grouped_by_size.value(key);
+                w->name_plural(w->name_plural().append(", ").append(wp.second->name_plural()));
+                name = grouped_by_size.value(key)->name_plural();                
             }
         }
 
@@ -192,7 +196,7 @@ void ViewManager::add_weapons_view(QList<GridView*> &built_in_views){
         int count = grouped_by_size.count();
         QPair<long,long> wkeys;
         foreach(wkeys, grouped_by_size.uniqueKeys()){
-            new WeaponColumn(grouped_by_size.value(wkeys)->name,*grouped_by_size.value(wkeys),vcs,this);
+            new WeaponColumn(grouped_by_size.value(wkeys)->name_plural(), grouped_by_size.value(wkeys),vcs,this);
         }
         gv->add_set(vcs);
         gv->set_is_custom(false);
@@ -367,20 +371,37 @@ void ViewManager::setCurrentIndex(int idx) {
         return;
     }    
     StateTableView *stv = get_stv(idx);
+    StateTableView *prev_view = get_stv(m_last_index);
+    QSettings *s = DT->user_settings();
 
     foreach(GridView *v, m_views) {
         if (v->name() == tabText(idx)) {
             stv->is_loading_rows = true;
-            QSettings *s = DT->user_settings();
             s->setValue("read_animals",(bool)(tabText(idx).contains("animals",Qt::CaseInsensitive)));
             m_model->set_grid_view(v);            
-            m_model->set_group_by(stv->m_last_group_by);
+
+            if(s->value("options/grid/group_all_views",true).toBool()){
+                if(prev_view){
+                    m_model->set_group_by(prev_view->m_last_group_by);
+                    stv->m_last_group_by = prev_view->m_last_group_by;
+                }
+                else
+                    m_model->set_group_by(stv->m_last_group_by);
+            }
+            else
+                m_model->set_group_by(stv->m_last_group_by);
+
+            if(s->value("options/grid/scroll_all_views",false).toBool()){
+                if(prev_view)
+                    stv->set_scroll_positions(prev_view->vertical_scroll_position(), prev_view->horizontal_scroll_position());
+            }
+
             if(stv->header()->count() > 0){
                 stv->header()->setResizeMode(QHeaderView::Fixed);
                 stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
             }
-            m_proxy->sort(0,m_proxy->m_last_sort_order);
-            stv->sortByColumn(stv->m_last_sorted_col,stv->m_last_sort_order);
+            m_proxy->sort(0,m_proxy->m_last_sort_order); //group sort
+            stv->sortByColumn(stv->m_last_sorted_col,stv->m_last_sort_order); //individual column sort
             stv->m_selected.clear(); //will be reloaded below when re-selecting, however after committing, selection is cleared..
             QList<Dwarf*> tmp_list;
             foreach(Dwarf *d, m_selected_dwarfs) {
@@ -395,7 +416,6 @@ void ViewManager::setCurrentIndex(int idx) {
         }
     }
 
-    StateTableView *prev_view = get_stv(m_last_index);
     if(prev_view && prev_view != stv){
         prev_view->is_active = false;
     }
@@ -510,6 +530,7 @@ void ViewManager::jump_to_profession(QListWidgetItem *current,
 void ViewManager::set_group_by(int group_by) {
     if (m_model){
         get_stv(currentIndex())->m_last_group_by = group_by;
+        //m_model->set_group_by(group_by);
     }
     redraw_current_tab();
 }

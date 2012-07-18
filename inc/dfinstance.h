@@ -35,6 +35,7 @@ class Languages;
 class Reaction;
 class Race;
 class FortressEntity;
+class Weapon;
 
 class DFInstance : public QObject {
     Q_OBJECT
@@ -99,6 +100,7 @@ public:
     void load_roles_and_labor_counts();
     void load_reactions();
     void load_races_castes();
+    void load_weapons();
 
     QVector<Squad*> load_squads();
 
@@ -160,6 +162,9 @@ public:
     VIRTADDR find_fake_identity(int hist_id);
     FortressEntity * fortress() {return m_fortress;}
 
+    QHash<QString, Weapon *> get_weapons() {return m_weapons;}
+    QList<QPair<QString, Weapon *> > get_ordered_weapons() {return m_ordered_weapons;}
+
     public slots:
         // if a menu cancels our scan, we need to know how to stop
         void cancel_scan() {m_stop_scan = true;}
@@ -210,12 +215,15 @@ signals:
     void progress_range(int min, int max);
     void progress_value(int value);
 
-private:
-    QTime t;
+private:    
     Languages* m_languages;
     FortressEntity* m_fortress;
     QHash<QString, Reaction *> m_reactions;
     QVector<Race *> m_races;
+
+    QHash<QString,Weapon *> m_weapons;
+    QList<QPair<QString, Weapon *> > m_ordered_weapons;
+
     QVector<VIRTADDR> get_creatures();
 
     QHash<int,VIRTADDR> m_hist_figures;

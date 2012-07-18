@@ -149,6 +149,9 @@ OptionsMenu::OptionsMenu(QWidget *parent)
 
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tab_index_changed(int)));
 
+    connect(ui->chk_roles_in_labor, SIGNAL(stateChanged(int)), this, SLOT(roles_in_labor_changed(int)));
+    connect(ui->chk_roles_in_skills, SIGNAL(stateChanged(int)), this, SLOT(roles_in_skills_changed(int)));
+
     read_settings();
 }
 
@@ -209,6 +212,10 @@ void OptionsMenu::read_settings() {
 
     ui->cb_happiness_icons->setChecked(s->value("happiness_icons",true).toBool());
     ui->cb_labor_counts->setChecked(s->value("show_labor_counts",false).toBool());
+
+    ui->cb_sync_grouping->setChecked(s->value("group_all_views",true).toBool());
+    ui->cb_sync_scrolling->setChecked(s->value("scroll_all_views",false).toBool());
+
     s->endGroup();
 
     ui->cb_read_dwarves_on_startup->setChecked(s->value("read_on_startup", true).toBool());
@@ -237,6 +244,8 @@ void OptionsMenu::read_settings() {
 
     ui->chk_roles_in_labor->setChecked(s->value("show_roles_in_labor",true).toBool());
     ui->chk_roles_in_skills->setChecked(s->value("show_roles_in_skills",true).toBool());
+    ui->chk_labor_sort_by_roles->setChecked(s->value("sort_roles_in_labor",true).toBool());
+    ui->chk_skills_sort_by_roles->setChecked(s->value("sort_roles_in_skills",true).toBool());
 
     s->endGroup();
 
@@ -272,6 +281,8 @@ void OptionsMenu::write_settings() {
         s->setValue("header_font", m_header_font);
         s->setValue("happiness_icons",ui->cb_happiness_icons->isChecked());
         s->setValue("show_labor_counts",ui->cb_labor_counts->isChecked());
+        s->setValue("group_all_views",ui->cb_sync_grouping->isChecked());
+        s->setValue("scroll_all_views",ui->cb_sync_scrolling->isChecked());
         s->endGroup();
 
         s->setValue("read_on_startup", ui->cb_read_dwarves_on_startup->isChecked());
@@ -298,6 +309,8 @@ void OptionsMenu::write_settings() {
         s->setValue("role_count_pane",ui->sb_roles_pane->value());
         s->setValue("show_roles_in_labor",ui->chk_roles_in_labor->isChecked());
         s->setValue("show_roles_in_skills",ui->chk_roles_in_skills->isChecked());
+        s->setValue("sort_roles_in_labor",ui->chk_labor_sort_by_roles->isChecked());
+        s->setValue("sort_roles_in_skills",ui->chk_skills_sort_by_roles->isChecked());
 
         s->endGroup();
     }
@@ -352,7 +365,11 @@ void OptionsMenu::restore_defaults() {
     ui->sb_roles_tooltip->setValue(3);
     ui->sb_roles_pane->setValue(10);
     ui->chk_roles_in_labor->setChecked(false);
-
+    ui->cb_labor_counts->setChecked(false);
+    ui->cb_sync_grouping->setChecked(true);
+    ui->cb_sync_scrolling->setChecked(false);
+    ui->chk_labor_sort_by_roles->setChecked(true);
+    ui->chk_skills_sort_by_roles->setChecked(true);
 
     m_font = QFont("Segoe UI", 8);
     m_dirty_font = m_font;
@@ -403,4 +420,17 @@ void OptionsMenu::tab_index_changed(int index){
         ui->lbl_tooltip_roles_max->setText(max_text);
         ui->sb_roles_tooltip->setMaximum(max_roles);
     }
+}
+
+void OptionsMenu::roles_in_labor_changed(int state){
+    if(state==2)
+        ui->chk_labor_sort_by_roles->setEnabled(true);
+    else
+        ui->chk_labor_sort_by_roles->setEnabled(false);
+}
+void OptionsMenu::roles_in_skills_changed(int state){
+    if(state==2)
+        ui->chk_skills_sort_by_roles->setEnabled(true);
+    else
+        ui->chk_skills_sort_by_roles->setEnabled(false);
 }

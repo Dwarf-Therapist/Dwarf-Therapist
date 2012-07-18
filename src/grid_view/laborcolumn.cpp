@@ -27,7 +27,6 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "viewcolumnset.h"
 #include "dwarftherapist.h"
-#include "mainwindow.h"
 #include "dfinstance.h"
 #include "viewmanager.h"
 
@@ -91,7 +90,8 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
                 }
                 role_str += "</ul>";
                 sortVal /= found_roles.count();
-                item->setData(sortVal,DwarfModel::DR_SORT_VALUE);
+                if(DT->user_settings()->value("options/sort_roles_in_labor", true).toBool())
+                    item->setData(sortVal,DwarfModel::DR_SORT_VALUE);
             }
         }
     }
@@ -143,5 +143,5 @@ void LaborColumn::write_to_ini(QSettings &s) {
 }
 
 void LaborColumn::update_count(){
-    m_count = DT->get_main_window()->get_DFInstance()->get_labor_count(m_labor_id);
+    m_count = DT->get_DFInstance()->get_labor_count(m_labor_id);
 }

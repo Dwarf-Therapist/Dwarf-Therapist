@@ -43,6 +43,7 @@ THE SOFTWARE.
 #include "languages.h"
 #include "reaction.h"
 #include "races.h"
+#include "weapon.h"
 #include "fortressentity.h"
 
 #ifdef Q_WS_WIN
@@ -273,12 +274,12 @@ bool DFInstance::looks_like_vector_of_pointers(const VIRTADDR &addr) {
 
 }
 
-void DFInstance::read_raws() {
-    emit progress_message(tr("Reading raws"));
+//void DFInstance::read_raws() {
+//    emit progress_message(tr("Reading raws"));
 
-    LOGI << "Reading some game raws...";
-    GameDataReader::ptr()->read_raws(m_df_dir);
-}
+//    LOGI << "Reading some game raws...";
+//    GameDataReader::ptr()->read_raws(m_df_dir);
+//}
 
 
 void DFInstance::load_game_data()
@@ -297,6 +298,9 @@ void DFInstance::load_game_data()
     f = QtConcurrent::run(this,&DFInstance::load_races_castes);
     f.waitForFinished();
 
+    emit progress_message(tr("Loading weapons"));
+    f = QtConcurrent::run(this,&DFInstance::load_weapons);
+    f.waitForFinished();
 }
 
 QString DFInstance::get_language_word(VIRTADDR addr){
@@ -407,7 +411,9 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         //load_roles();
         QFuture<void> f = QtConcurrent::run(this,&DFInstance::load_roles_and_labor_counts);
         f.waitForFinished();
-        calc_done();
+        f = QtConcurrent::run(this,&DFInstance::calc_done);
+        f.waitForFinished();
+        //calc_done();
 
 
         DT->emit_labor_counts_updated();
@@ -439,6 +445,34 @@ void DFInstance::load_reactions(){
             //emit progress_value(i++);
         }
     }
+    detach();
+}
+
+void DFInstance::load_weapons(){
+    attach();
+    VIRTADDR weapons_vector = m_layout->address("weapons_vector");
+    weapons_vector += m_memory_correction;
+    QVector<VIRTADDR> weapons = enumerate_vector(weapons_vector);
+    m_weapons.clear();
+    if (!weapons.empty()) {
+        foreach(VIRTADDR weapon_addr, weapons) {
+            Weapon* w = Weapon::get_weapon(this, weapon_addr);
+            m_weapons.insert(w->name_plural(), w);
+        }
+    }
+
+    m_ordered_weapons.clear();
+
+    QStringList weapon_names;
+    foreach(QString key, m_weapons.uniqueKeys()) {
+        weapon_names << key;
+    }
+
+    qSort(weapon_names);
+    foreach(QString name, weapon_names) {
+        m_ordered_weapons << QPair<QString, Weapon *>(name, m_weapons.value(name));
+    }
+
     detach();
 }
 
@@ -518,7 +552,7 @@ void DFInstance::calc_done(){
         }
         actual_dwarves.clear();        
         //emit progress_value(calc_progress+1);
-        progress_message(QString("All roles loaded in %1 seconds.").arg(QString::number((float)t.elapsed()/1000,'f',2)));
+        //progress_message(QString("All roles loaded in %1 seconds.").arg(QString::number((float)t.elapsed()/1000,'f',2)));
 
         //update role columns
         //DT->emit_roles_changed();
@@ -535,11 +569,6 @@ QVector<Squad*> DFInstance::load_squads() {
         detach();
         return squads;
     }
-
-    //find fortress entity (0x165a474) in historical_entities
-    //VIRTADDR squads_addr = read_addr(m_memory_correction+0x0165a474); //main.fortress_entity
-    //squads_addr += (0xa50 - 0x4); //historical_entity.squads
-    //QVector<VIRTADDR> active_squads = enumerate_vector(squads_addr);
 
     // we're connected, make sure we have good addresses
     VIRTADDR squad_vector = m_layout->address("squad_vector");
@@ -575,9 +604,8 @@ QVector<Squad*> DFInstance::load_squads() {
         foreach(VIRTADDR squad_addr, entries) {
             s = Squad::get_squad(this, squad_addr);
             if (s) {
-                //LOGD << "FOUND SQUAD" << hexify(squad_addr) << s->name() << " alias: " << alias
-                //<< " member count: " << s->assigned_count() << " id: " << s->id();
-                if(m_fortress->squad_is_active(s->id()))//if(active_squads.contains(s->id()))
+                LOGD << "FOUND SQUAD" << hexify(squad_addr) << s->name() << " member count: " << s->assigned_count() << " id: " << s->id();
+                if(m_fortress->squad_is_active(s->id()))
                     squads.push_front(s);
             }
             emit progress_value(i++);
@@ -1168,17 +1196,18 @@ void DFInstance::calculate_scan_rate() {
 VIRTADDR DFInstance::find_historical_figure(int hist_id){
     if(m_hist_figures.count() <= 0)
         load_hist_figures();
+
     return m_hist_figures.value(hist_id);
 }
 
 void DFInstance::load_hist_figures(){
-    QVector<VIRTADDR> hist_figs = enumerate_vector(m_memory_correction + memory_layout()->address("historical_figures"));
+    QVector<VIRTADDR> hist_figs = enumerate_vector(m_memory_correction + memory_layout()->address("historical_figures_vector"));
     int hist_id = 0;
     //it may be possible to filter this list by only the current race.
     //need to test whether or not vampires will steal names from other races
     //this may also break nicknames on kings/queens if they belong to a different race...
     foreach(VIRTADDR fig, hist_figs){
-        //if(read_int(fig + 0x0002) == dwarf_race_id()){
+        //if(read_int(fig + 0x0002) == dwarf_race_id() || read_int(fig + 0x00a0) == dwarf_civ_id()){
             hist_id = read_int(fig + memory_layout()->hist_figure_offset("id"));
             m_hist_figures.insert(hist_id,fig);
         //}
@@ -1192,7 +1221,7 @@ VIRTADDR DFInstance::find_fake_identity(int hist_id){
         VIRTADDR rep_info = read_addr(fig_info + memory_layout()->hist_figure_offset("reputation"));
         int cur_ident = read_int(rep_info + memory_layout()->hist_figure_offset("current_ident"));
         if(m_fake_identities.count() == 0)
-            m_fake_identities = enumerate_vector(m_memory_correction + memory_layout()->address("fake_identities"));
+            m_fake_identities = enumerate_vector(m_memory_correction + memory_layout()->address("fake_identities_vector"));
         foreach(VIRTADDR ident, m_fake_identities){
             int fake_id = read_int(ident);
             if(fake_id==cur_ident){

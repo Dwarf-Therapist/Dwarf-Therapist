@@ -22,13 +22,12 @@ THE SOFTWARE.
 */
 
 #include "weaponcolumn.h"
-#include "gamedatareader.h"
 #include "viewcolumnset.h"
 #include "columntypes.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
 
-WeaponColumn::WeaponColumn(const QString &title, GameDataReader::weapon w, ViewColumnSet *set, QObject *parent)
+WeaponColumn::WeaponColumn(const QString &title, Weapon *w, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title, CT_WEAPON, set, parent)
     , m_weapon(w)
 {        
@@ -37,7 +36,7 @@ WeaponColumn::WeaponColumn(const QString &title, GameDataReader::weapon w, ViewC
 QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
 
-    if(m_weapon.name==""){
+    if(m_weapon->name_plural()==""){
         item->setData(CT_WEAPON, DwarfModel::DR_COL_TYPE);
         item->setData(0, DwarfModel::DR_RATING);
         item->setToolTip("Weapon not found.");
@@ -50,7 +49,7 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
         return item;
     }
 
-    QString wep = m_weapon.name.toLower();
+    QString wep = m_weapon->name_plural().toLower();
     if(wep.indexOf(",")>0)
         wep = "these weapons";
     short draw_rating = -2;
@@ -59,9 +58,9 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     bool onehand = false;
     bool twohand = false;        
     QString desc = tr("<b>Can only wield</b> %1 with <u>2 hands</u>.").arg(wep);
-    if(body_size > m_weapon.singlegrasp_size)
+    if(body_size > m_weapon->single_grasp())
         onehand = true;
-    if(body_size > m_weapon.multigrasp_size)
+    if(body_size > m_weapon->multi_grasp())
         twohand = true;
 
     //setup drawing ratings
@@ -77,20 +76,15 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     }
 
     QString group_name = "";
-    if(!m_weapon.skill.isEmpty()){
-        group_name = tr("<br><br>Skill Group: %1<br>").arg(m_weapon.skill.toLower());
-        group_name[0] = group_name[0].toUpper();
-    }
+//    if(m_weapon->melee_skill() >= 0){
+//        group_name = tr("<br><br>Melee Group: %1<br>").arg(m_weapon->melee_skill());
+//    }
+//    if(m_weapon->ranged_skill() >= 0){
+//        group_name += tr("<br><br>Ranged Group: %1<br>").arg(m_weapon->ranged_skill());
+//    }
 
     QString tt_title = m_title;
-    if(tt_title.indexOf(",")>0){
-         //shorten the tooltip title if necessary
-        int max = 50;
-        if(tt_title.length() < max)
-            max = tt_title.length();
-        tt_title = tt_title.mid(0,max);
-        if(tt_title.length() < m_title.length())
-            tt_title.append("...");
+    if(tt_title.indexOf(",")>0){        
         //add a weapon list to the description
         QStringList l = m_title.split(",",QString::SkipEmptyParts);
         desc += "<br><br><b>Weapons:</b><ul>";
@@ -98,11 +92,12 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
             desc.append(QString("<li>%1</li>").arg(l.at(i)));
         }
         desc.append("</ul>");
-    }
+    }else
+        desc.append("<br><br>");
 
     item->setData(CT_WEAPON, DwarfModel::DR_COL_TYPE);
     item->setData(draw_rating, DwarfModel::DR_RATING);
-    item->setData(rating, DwarfModel::DR_SORT_VALUE);
+    item->setData((rating * 100) + d->body_size(), DwarfModel::DR_SORT_VALUE);
 
     QPalette tt;
     QColor norm_text = tt.toolTipText().color();
@@ -111,14 +106,14 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
                      .arg(tt_title)
                      .arg(desc)
                      .arg(group_name)
-                     .arg(tr("<br>1h: <font color=%1>%2</font> cm<sup>3</sup><br>")
+                     .arg(tr("1h: <font color=%1>%2</font> cm<sup>3</sup><br>")
                           .arg(onehand ? norm_text.name() : QColor(Qt::red).name())
-                          .arg(m_weapon.singlegrasp_size))
+                          .arg(m_weapon->single_grasp()*10))
                      .arg(tr("2h: <font color=%1>%2</font> cm<sup>3</sup>")
                           .arg(twohand ? norm_text.name() : QColor(Qt::red).name())
-                          .arg(m_weapon.multigrasp_size))
+                          .arg(m_weapon->multi_grasp()*10))
                      .arg(d->nice_name())
-                     .arg(tr("%1 cm<sup>3</sup><br>").arg(body_size)));
+                     .arg(tr("%1 cm<sup>3</sup><br>").arg(body_size*10)));
     return item;
 }
 

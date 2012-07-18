@@ -167,4 +167,5 @@ static inline QString capitalizeEach(const QString & word){
     return result;
 }
 
+
 #endif // UTILS_H

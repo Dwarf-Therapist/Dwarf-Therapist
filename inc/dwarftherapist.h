@@ -30,15 +30,15 @@ THE SOFTWARE.
 #include "defines.h"
 #include "role.h"
 #include "columntypes.h"
+#include "mainwindow.h"
+#include "dfinstance.h"
 
 class QListWidgetItem;
-class MainWindow;
 class OptionsMenu;
 class QSettings;
 class CustomProfession;
 class Dwarf;
 class Word;
-class DFInstance;
 class LogManager;
 
 class DwarfTherapist : public QApplication {
@@ -63,6 +63,7 @@ public:
     Word * get_word(const uint & offset) { return m_language.value(offset, NULL); }
     bool labor_cheats_allowed() {return m_allow_labor_cheats;}
     LogManager *get_log_manager() {return m_log_mgr;}
+    DFInstance *get_DFInstance() {return m_main_window->get_DFInstance();}
 
     void emit_settings_changed();
     void emit_roles_changed();

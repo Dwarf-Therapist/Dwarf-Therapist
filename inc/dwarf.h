@@ -379,6 +379,9 @@ public:
 
     void find_true_ident();
 
+    Skill highest_moodable() {return get_skill(m_highest_moodable_skill);}
+    bool had_mood() {return m_had_mood;}
+
     public slots:
         //! called when global user settings change
         void read_settings();
@@ -404,7 +407,9 @@ private:
     DWARF_HAPPINESS m_happiness; // enum value of happiness
     int m_raw_happiness; // raw score before being turned into an enum
     bool m_is_male;
+
     int m_mood_id;
+    bool m_had_mood;
     QString m_curse_name;
     short m_caste_id;
     bool m_show_full_name;
@@ -456,15 +461,16 @@ private:
     VIRTADDR m_fake_nickname;
     QString m_noble_position;
     bool m_is_pet;
+    int m_highest_moodable_skill;
 
     // these methods read data from raw memory
     void read_id();
     void read_sex();
     void read_mood();
-    void read_body_size();
     void read_curse();
     void read_caste();
     void read_race();
+    void read_body_size();
     void read_first_name();
     void read_last_name(VIRTADDR name_offset);
     void read_nick_name();

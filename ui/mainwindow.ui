@@ -232,15 +232,26 @@
     </property>
     <widget class="QMenu" name="menu_edit_filters">
      <property name="title">
-      <string>Edit Filter Scripts...</string>
+      <string>Edit Filter Script</string>
      </property>
      <property name="icon">
       <iconset resource="../images.qrc">
        <normaloff>:/img/script_pencil.png</normaloff>:/img/script_pencil.png</iconset>
      </property>
     </widget>
+    <widget class="QMenu" name="menu_remove_script">
+     <property name="title">
+      <string>Remove Filter Script</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../images.qrc">
+       <normaloff>:/img/script_minus.png</normaloff>:/img/script_minus.png</iconset>
+     </property>
+    </widget>
     <addaction name="act_add_new_filter_script"/>
     <addaction name="menu_edit_filters"/>
+    <addaction name="separator"/>
+    <addaction name="menu_remove_script"/>
    </widget>
    <widget class="QMenu" name="menuRoles">
     <property name="title">
@@ -769,7 +780,7 @@
      <normaloff>:/img/script_plus.png</normaloff>:/img/script_plus.png</iconset>
    </property>
    <property name="text">
-    <string>Add New Filter Script...</string>
+    <string>Add New Filter Script</string>
    </property>
   </action>
   <action name="act_print">
@@ -806,6 +817,11 @@
    </property>
    <property name="text">
     <string>New Custom Role</string>
+   </property>
+  </action>
+  <action name="actionTest">
+   <property name="text">
+    <string>test</string>
    </property>
   </action>
  </widget>

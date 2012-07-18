@@ -47,6 +47,8 @@ public:
         void show_header_font_chooser();
         void set_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&);
         void tab_index_changed(int index);
+        void roles_in_labor_changed(int);
+        void roles_in_skills_changed(int);
 
 private:
     Ui::OptionsMenu *ui;

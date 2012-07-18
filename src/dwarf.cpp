@@ -79,6 +79,8 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_fake_nickname(0)
     , m_noble_position("")
     , m_is_pet(false)
+    , m_had_mood(false)
+    , m_highest_moodable_skill(-1)
 {
     read_settings();
     refresh_data();
@@ -138,10 +140,14 @@ void Dwarf::refresh_data() {
     m_mem = m_df->memory_layout();
     TRACE << "Starting refresh of dwarf data at" << hexify(m_address);
 
+    m_flag1 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags1"));
+    m_flag2 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags2"));
+
     // read everything we need
     read_id();
     read_race();
     read_caste();
+    read_body_size();
     read_first_name();
     read_last_name(m_address + m_mem->dwarf_offset("first_name"));
     read_nick_name();
@@ -159,16 +165,12 @@ void Dwarf::refresh_data() {
     //curse check will change the name and age
     read_curse();
     read_sex();
-    read_mood();
-    read_body_size();
+    read_mood();    
     read_animal_type(); //need skills loaded to check for hostiles
     read_noble_position();
 
     if(is_animal())
         calc_names(); //calculate names again as we need to check tameness for animals
-
-    m_flag1 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags1"));
-    m_flag2 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags2"));
 
     //currently only flags used are for cage and butcher animal
     m_caged = m_flag1;
@@ -220,26 +222,36 @@ void Dwarf::read_sex() {
 
 void Dwarf::read_mood(){
     m_mood_id = m_df->read_short(m_address + m_mem->dwarf_offset("mood"));
+    //also mark if they've had a mood
+    if((m_flag1 & 0x00000008)==0x00000008){
+        m_had_mood = true;
+    }    
 }
 
 void Dwarf::read_body_size(){
-    if(m_mem->dwarf_offset("body_size") != -1){
-        //default dwarf sizes
-        if(m_profession=="Child")
-            m_body_size = 15000;
-        else if(m_profession=="Baby")
-            m_body_size = 3000;
-        else
-            m_body_size = 60000;
+    //default dwarf sizes
+    if(m_profession=="Child")
+        m_body_size = 1500;
+    else if(m_profession=="Baby")
+        m_body_size = 300;
+    else
+        m_body_size = 6000;
 
-        QVector<VIRTADDR> entries = m_df->enumerate_vector(m_address + m_mem->dwarf_offset("body_size"));
-        foreach(VIRTADDR entry, entries) {            
-            m_body_size = m_body_size * ((float)entry / 100);
+    Race* r = m_df->get_race(m_race_id);
+    if(r){
+        if(m_caste_id >=0){
+            Caste* c = r->get_caste_by_id(m_caste_id);
+            if(c){
+                if(m_profession=="Child")
+                    m_body_size = c->child_size();
+                else if(m_profession=="Baby")
+                    m_body_size = c->baby_size();
+                else
+                    m_body_size = c->adult_size();
+            }
         }
-
-    }else{
-        m_body_size = -1;
     }
+
 }
 
 void Dwarf::read_animal_type(){
@@ -276,9 +288,12 @@ void Dwarf::read_states(){
 }
 
 void Dwarf::read_curse(){
-    m_curse_name = m_df->read_string(m_address + m_mem->dwarf_offset("curse"));
-    //find the vampire's fake identity and use that name/age instead to match DF
-    if(m_curse_name.toLower()=="vampire")
+    QString curse_name = m_df->read_string(m_address + m_mem->dwarf_offset("curse"));
+    if(curse_name != "")
+        m_curse_name = capitalizeEach(curse_name);
+
+    //if it's a vampire then find the vampire's fake identity and use that name/age instead to match DF
+    if(m_curse_name.toLower().contains("vampire"))
         find_true_ident();
 }
 
@@ -292,8 +307,6 @@ void Dwarf::find_true_ident(){
         calc_names();
         //vamps also use a the fake age
         set_age(fake_id + m_mem->hist_figure_offset("fake_birth_year"),fake_id + m_mem->hist_figure_offset("fake_birth_time"));
-        //(bug?) DF has the age of assumed identities off by 1 year
-        m_age -= 1;
     }
 }
 
@@ -554,6 +567,28 @@ void Dwarf::read_happiness() {
     m_happiness = happiness_from_score(m_raw_happiness);
     TRACE << "\tRAW HAPPINESS:" << m_raw_happiness;
     TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
+
+//    struct thought{
+//       int type;
+//       int sub_type;
+//       QString desc;
+//       int age;
+//    };
+
+//    if(!is_animal()){
+//        QVector<thought> m_thoughts;
+//        QVector<VIRTADDR> thoughts = m_df->enumerate_vector(m_address + 0x824 - 0x4);
+//        foreach(VIRTADDR addr, thoughts){
+//            thought t;
+//            t.type = m_df->read_int(addr);
+//            t.age = m_df->read_int(addr+0x4);
+//            t.sub_type = m_df->read_int(addr+0x8);
+//            if(t.sub_type != -1)
+//                int z = 0;
+//            m_thoughts << t;
+//        }
+//    }
+//    int z =0;
 }
 
 void Dwarf::read_current_job() {
@@ -860,7 +895,7 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
 
         //if it's not a vampire, and it's not a were-beast it's most likely not one of our dwarves
         if(unverified_dwarf->m_curse_name!=""){
-            if(!unverified_dwarf->m_curse_name.startsWith("were",Qt::CaseInsensitive) && unverified_dwarf->m_curse_name.toLower()!="vampire"){
+            if(!unverified_dwarf->m_curse_name.startsWith("were",Qt::CaseInsensitive) && !unverified_dwarf->m_curse_name.toLower().contains("vampire")){
                 LOGD << "Ignoring" << unverified_dwarf->nice_name()
                         << "who appears to be a cursed" << unverified_dwarf->m_curse_name;
                 delete unverified_dwarf;
@@ -914,7 +949,6 @@ bool Dwarf::get_flag_value(int bit)
 void Dwarf::read_squad_info() {
     m_squad_id = m_df->read_int(m_address + m_mem->dwarf_offset("squad_id"));    
     m_squad_position = m_df->read_int(m_address + m_mem->dwarf_offset("squad_position"));
-    TRACE << "Squad ID:" << m_squad_id << " squad position: " << m_squad_position;
 }
 
 void Dwarf::read_turn_count() {
@@ -950,11 +984,15 @@ void Dwarf::read_skills() {
         m_total_xp += s.actual_exp();
         m_skills.append(s);
 
-        if(rust > 0)
-        LOGD << nice_name() << m_profession << "reading skill at" << hex << entry << "type" << s.name()
-             << "rating" << rating << "xp:" << xp << "last_used:"
-             << last_used << "rust:" << rust << "rust counter:"
-             << rust_counter << "demotions:" << demotion_counter;
+        if(GameDataReader::ptr()->moodable_skills().contains(type) &&
+                (m_highest_moodable_skill == -1 || s.actual_exp() > m_skills.value(m_highest_moodable_skill).actual_exp()))
+            m_highest_moodable_skill = type;
+
+//        if(rust > 0)
+//        LOGD << nice_name() << m_profession << "reading skill at" << hex << entry << "type" << s.name()
+//             << "rating" << rating << "xp:" << xp << "last_used:"
+//             << last_used << "rust:" << rust << "rust counter:"
+//             << rust_counter << "demotions:" << demotion_counter;
     }
 }
 
@@ -990,6 +1028,7 @@ void Dwarf::read_attributes() {
         m_attributes.insert(i, (int)m_df->read_int(addr));
         addr+=0x1c;
     }
+
     //read the mental attributes, but append to our array (augment the key by the number of physical attribs)
     int phys_size = m_attributes.size();
     addr = m_first_soul + m_mem->soul_detail("mental_attrs");

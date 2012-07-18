@@ -105,12 +105,7 @@ QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
     }
     for(int i = 0; i < bytes; i += 4) {
         tmp_addr = decode_dword(data.mid(i, 4));
-        if (m_layout->is_complete()) {
-            if (is_valid_address(tmp_addr))
-                addrs << tmp_addr;
-        } else {
-            addrs << tmp_addr;
-        }
+        addrs << tmp_addr;
     }
     detach();
     return addrs;
