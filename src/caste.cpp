@@ -62,15 +62,18 @@ void Caste::load_data() {
 
 void Caste::read_caste() {
     m_tag = m_df->read_string(m_address);    
-    m_name = capitalizeEach(m_df->read_string(m_address + m_mem->caste_offset("caste_name")));
-    //needed for mods with caste's name not specified
-    if (m_name.toLower()==m_race_name.toLower())
-    {
-        if ((m_tag.toLower()!="male")&&(m_tag.toLower()!="female"))
-        {
-            m_name = capitalizeEach(m_tag.remove("_MALE").remove("_FEMALE").replace("_"," ").toLower());
-        }
-    }
+    m_name = capitalizeEach(m_df->read_string(m_address + m_mem->caste_offset("caste_name")));    
+//    //needed for mods with caste's name not specified
+
+//    !!!!doesn't work with mods that require hidden castes. mod creators shouldn't be creating castes with no names unless they want them hidden...
+
+//    if (m_name.toLower()==m_race_name.toLower())
+//    {
+//        if ((m_tag.toLower()!="male")&&(m_tag.toLower()!="female"))
+//        {
+//            m_name = capitalizeEach(m_tag.remove("_MALE").remove("_FEMALE").replace("_"," ").toLower());
+//        }
+//    }
     m_description = m_df->read_string(m_address + m_mem->caste_offset("caste_descr"));
 
 
