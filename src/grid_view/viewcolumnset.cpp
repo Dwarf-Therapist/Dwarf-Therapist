@@ -248,9 +248,9 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
             new RoleColumn(s, ret_val, parent);
             break;
         case CT_WEAPON:
-            new WeaponColumn(s.value("name").toString(),DT->get_main_window()->get_DFInstance()->get_weapons().value(s.value("name").toString()),ret_val,parent);
+            if(DT->get_main_window())
+                new WeaponColumn(s.value("name").toString(),DT->get_main_window()->get_DFInstance()->get_weapons().value(s.value("name").toString()),ret_val,parent);
             break;
-
         case CT_DEFAULT:
         default:
             LOGW << "unidentified column type in set" << ret_val->name() << "!";

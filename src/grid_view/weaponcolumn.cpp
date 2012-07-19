@@ -36,7 +36,7 @@ WeaponColumn::WeaponColumn(const QString &title, Weapon *w, ViewColumnSet *set, 
 QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
 
-    if(m_weapon->name_plural()==""){
+    if(!m_weapon || m_weapon->name_plural()==""){
         item->setData(CT_WEAPON, DwarfModel::DR_COL_TYPE);
         item->setData(0, DwarfModel::DR_RATING);
         item->setToolTip("Weapon not found.");
