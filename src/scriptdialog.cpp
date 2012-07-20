@@ -120,7 +120,7 @@ void ScriptDialog::save_pressed() {
         return;
     }
 
-    if(m_old_name != m_name)
+    if(m_old_name != m_name && m_old_name != "")
         s->remove(QString("filter_scripts/%1").arg(m_old_name));
 
     s->setValue(QString("filter_scripts/%1").arg(m_name), ui->script_edit->toPlainText());
