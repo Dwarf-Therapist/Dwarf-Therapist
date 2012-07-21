@@ -71,9 +71,9 @@ void Languages::load_data() {
         }
     }
     if (translation_vector != 0xFFFFFFFF && translation_vector != 0) {
-        QVector<uint> languages = m_df->enumerate_vector(translation_vector);
+        QVector<VIRTADDR> languages = m_df->enumerate_vector(translation_vector);
         int id = 0;
-        foreach(uint lang, languages) {
+        foreach(VIRTADDR lang, languages) {
             QString race_name = m_df->read_string(lang);
             TRACE << "FOUND LANG ENTRY" << hex << lang << race_name;
             uint lang_table = lang + word_table_offset - m_df->VECTOR_POINTER_OFFSET;
@@ -192,9 +192,13 @@ QString Languages::word_chunk_declined(uint word, short pos) {
 
 QString Languages::word_chunk(uint word, int language_id)
 {
-    QString out = "";
-    if (word != 0xFFFFFFFF) {
+    QString out = "";    
+    //if the language doesn't exist, use the last language (DF behaviour)
+    if (!m_words.contains(language_id))
+        language_id = m_words.count()-1;
+
+    if (word != 0xFFFFFFFF)
         out = m_words.value(language_id).at(word);
-    }
+
     return out;
 }
