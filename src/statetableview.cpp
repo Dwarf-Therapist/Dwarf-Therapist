@@ -292,7 +292,9 @@ void StateTableView::assign_to_squad(){
                     if(d->squad_id() != -1){ //remove from old squad first
                         if(d->squad_position()==0)
                             emit squad_leader_changed();
-                        m_model->squads().value(d->squad_id())->remove_from_squad(d);
+                        Squad *old_squad = m_model->squads().value(d->squad_id());
+                        if(old_squad)
+                            old_squad->remove_from_squad(d);
                     }
 
                     int new_pos = new_squad->assign_to_squad(d);
@@ -316,7 +318,8 @@ void StateTableView::remove_squad(){
                 if(d->squad_position()==0)
                     emit squad_leader_changed();
                 Squad *s = m_model->squads().value(d->squad_id());
-                s->remove_from_squad(d);                
+                if(s)
+                    s->remove_from_squad(d);
             }
         }
     }
