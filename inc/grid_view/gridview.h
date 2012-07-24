@@ -51,7 +51,7 @@ GridView
 class GridView : public QObject {
 	Q_OBJECT
 public:
-	GridView(QString name, QObject *parent = 0);
+    GridView(QString name, QObject *parent = 0);
 	GridView(const GridView &to_be_copied); // copy ctor
 	virtual ~GridView();
 
@@ -78,7 +78,7 @@ public:
 	void write_to_ini(QSettings &settings);
 
 	//! Factory function to create a gridview from a QSettings that has already been pointed at a gridview entry
-	static GridView *read_from_ini(QSettings &settings, QObject *parent = 0);
+    static GridView *read_from_ini(QSettings &settings, QObject *parent = 0);
 
 private:
 	bool m_active;

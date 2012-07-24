@@ -63,7 +63,7 @@ ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy,
     connect(m_model, SIGNAL(need_redraw()), SLOT(redraw_current_tab()));            
     draw_views();
 
-    m_squad_warning = new QErrorMessage(this);
+    m_squad_warning = new QErrorMessage(this);    
 }
 
 void ViewManager::draw_add_tab_button() {
@@ -358,6 +358,13 @@ StateTableView *ViewManager::get_stv(int idx) {
         idx = currentIndex();
     QWidget *w = widget(idx);
     if (w) {
+//    StateTableView *s;
+//    for(int i =0; w->children().count(); i++){
+//        s = qobject_cast<StateTableView*>(w->children().at(i));
+//        if(s)
+//            break;
+//    }
+//    return s;
         return qobject_cast<StateTableView*>(w);
     }
     return 0;
@@ -459,6 +466,7 @@ int ViewManager::add_tab_from_action() {
 
 int ViewManager::add_tab_for_gridview(GridView *v) {
     v->set_active(true);
+    //QScrollArea *sa = new QScrollArea(this);
     StateTableView *stv = new StateTableView(this);
     stv->setSortingEnabled(false);
     stv->set_model(m_model, m_proxy);
@@ -472,6 +480,7 @@ int ViewManager::add_tab_for_gridview(GridView *v) {
                                          const QItemSelection &)));
     connect(stv,SIGNAL(squad_leader_changed()),this,SLOT(show_squad_warning()));
     stv->show();
+    //int new_idx = addTab(sa, v->name());
     int new_idx = addTab(stv, v->name());
     write_tab_order();
     return new_idx;

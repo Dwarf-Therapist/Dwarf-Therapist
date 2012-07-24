@@ -68,6 +68,9 @@ StateTableView::StateTableView(QWidget *parent)
     setItemDelegate(m_delegate);
     setHeader(m_header);
 
+    verticalScrollBar()->setFocusPolicy(Qt::StrongFocus);
+    horizontalScrollBar()->setFocusPolicy(Qt::StrongFocus);
+
     // Set StaticContents to enable minimal repaints on resizes.
     viewport()->setAttribute(Qt::WA_StaticContents);
 
@@ -547,9 +550,31 @@ void StateTableView::restore_expanded_items() {
 }
 
 void StateTableView::keyPressEvent(QKeyEvent *event ){
-    if(event->key()==Qt::Key_Escape){
+    switch(event->key()){
+    case Qt::Key_Escape:
         selectionModel()->clear();
         m_selected.clear();
+        break;
+    case Qt::Key_PageDown:
+        verticalScrollBar()->setValue(verticalScrollBar()->value() + verticalScrollBar()->pageStep());
+        break;
+    case Qt::Key_PageUp:
+        verticalScrollBar()->setValue(verticalScrollBar()->value() - verticalScrollBar()->pageStep());
+        break;
+    case Qt::Key_Up:
+        verticalScrollBar()->setValue(verticalScrollBar()->value() - verticalScrollBar()->singleStep());
+        break;
+    case Qt::Key_Down:
+        verticalScrollBar()->setValue(verticalScrollBar()->value() + verticalScrollBar()->singleStep());
+        break;
+    case Qt::Key_Right:
+        horizontalScrollBar()->setValue(horizontalScrollBar()->value() + horizontalScrollBar()->singleStep());
+        break;
+    case Qt::Key_Left:
+        horizontalScrollBar()->setValue(horizontalScrollBar()->value() - horizontalScrollBar()->singleStep());
+        break;
+    default:
+        break;
     }
 }
 

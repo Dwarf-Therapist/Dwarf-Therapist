@@ -10,6 +10,12 @@
     <height>807</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="windowTitle">
    <string>Dwarf Therapist</string>
   </property>
@@ -195,6 +201,7 @@
     <addaction name="separator"/>
     <addaction name="act_export_gridviews"/>
     <addaction name="act_import_saved_gridviews"/>
+    <addaction name="act_print"/>
     <addaction name="separator"/>
     <addaction name="act_clear_user_settings"/>
     <addaction name="separator"/>
@@ -786,16 +793,16 @@
   <action name="act_print">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/printer.png</normaloff>:/img/printer.png</iconset>
+     <normaloff>:/img/camera.png</normaloff>:/img/camera.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Print...</string>
+    <string>&amp;Snapshot</string>
    </property>
    <property name="toolTip">
-    <string>Print the current grid view</string>
+    <string>Saves a snapshot of the current view as a png.</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+P</string>
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="act_clear_user_settings">

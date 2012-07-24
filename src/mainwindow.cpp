@@ -53,6 +53,7 @@ THE SOFTWARE.
 #include "roledialog.h"
 #include "viewcolumn.h"
 #include "rolecolumn.h"
+#include "statetableview.h"
 
 #include "dfinstance.h"
 #ifdef Q_WS_WIN
@@ -899,27 +900,74 @@ void MainWindow::new_filter_script_chosen(const QString &script_name) {
 }
 
 void MainWindow::print_gridview() {
-//    QPrinter printer;
-//    //printer.setOutputFileName("woot.pdf");
-//    //printer.setOutputFormat(QPrinter::PdfFormat);
-//    printer.setOrientation(QPrinter::Landscape);
-//    QPrintDialog *d = new QPrintDialog(&printer, this);
-//    d->setWindowTitle(tr("Print GridView"));
-//    if (d->exec() != QDialog::Accepted) {
-//        return;
-//    }
+    QWidget *curr = get_view_manager()->currentWidget();
+    if(!curr)
+        return;
+    StateTableView *s;
+    s = qobject_cast<StateTableView*>(curr);
 
-//    // print is configured and user accepted
-//    QWidget *current_gv = get_view_manager()->currentWidget();
-//    QPainter p(&printer);
-//    QRect rect = p.viewport();
-//    QSize size = current_gv->size();
-//    size.scale(rect.size(), Qt::KeepAspectRatio);
-//    p.setViewport(rect.x(), rect.y(), size.width(), size.height());
-//    p.setWindow(current_gv->rect());
-//    QPixmap pm = QPixmap::grabWidget(current_gv, current_gv->rect());
-//    p.drawPixmap(0, 0, pm);
-//    p.end();
+    if(!s)
+        return;
+
+    if(!m_view_manager || !m_view_manager->get_active_view())
+        return;
+
+    QString path = QFileDialog::getSaveFileName(this,tr("Save Snapshot"),m_view_manager->get_active_view()->name(),tr("PNG (*.png);;All Files (*)"));
+    if(path.isEmpty())
+        return;
+
+    int w = 0;
+    int h = 0;
+    QSize currSize = this->size();
+    QSize currMax = this->maximumSize();
+    QSize currMin = this->minimumSize();
+    int cell_size = DT->user_settings()->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
+
+    //currently this is just a hack to resize the form to ensure all rows/columns are showing
+    //then rendering to the painter and resizing back to the previous size
+    //it may be possible to avoid this by using the opengl libs and accessing the frame buffer
+
+    //calculate the width
+    int first_col_width = s->columnWidth(0);
+    w = first_col_width;
+    w += (this->width() - s->width());
+    foreach(ViewColumnSet *vcs, m_view_manager->get_active_view()->sets()){
+        foreach(ViewColumn *vc, vcs->columns()){
+            if(vc->type() != CT_SPACER)
+                w += cell_size;
+            else
+                w += DEFAULT_SPACER_WIDTH;
+        }
+    }
+    w += 2;
+
+    //calculate the height
+    h = (s->get_model()->total_row_count * cell_size) + s->get_header()->height();
+    h += (this->height() - s->height());
+    h += 2; //small buffer for the edge
+
+    if(this->maximumHeight() < h)
+        this->setMaximumHeight(h);
+    if(this->maximumWidth() < w)
+        this->setMaximumWidth(w);
+
+    this->setMinimumSize(100,100);
+    this->resize(w,h);
+
+    QImage img(QSize(s->width(),s->height()),QImage::Format_ARGB32_Premultiplied);
+    QPainter painter(&img);
+    painter.setRenderHints(QPainter::SmoothPixmapTransform);
+    s->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    s->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    s->render(&painter,QPoint(0,0),QRegion(0,0,s->width(),s->height()),QWidget::DrawChildren | QWidget::DrawWindowBackground);
+    painter.end();
+    img.save(path,"PNG");
+    s->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    s->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+    this->setMaximumSize(currMax);
+    this->setMinimumSize(currMin);
+    this->resize(currSize);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

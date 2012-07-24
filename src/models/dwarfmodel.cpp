@@ -182,6 +182,7 @@ void DwarfModel::build_rows() {
     // don't need to go delete the dwarf pointers in here, since the earlier foreach should have
     // deleted them
     m_grouped_dwarves.clear();
+    total_row_count = 0;
     clear();
     draw_headers();
     QSettings *s = DT->user_settings();
@@ -517,6 +518,7 @@ void DwarfModel::build_row(const QString &key) {
     }
 
     if (root) { // we have a parent, so we should draw an aggregate row
+        total_row_count += 1;
         foreach(ViewColumnSet *set, m_gridview->sets()) {
             foreach(ViewColumn *col, set->columns()) {
                 QStandardItem *item = col->build_aggregate(key, m_grouped_dwarves[key]);
@@ -529,7 +531,7 @@ void DwarfModel::build_row(const QString &key) {
 
     foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
         QStandardItem *i_name = new QStandardItem(d->nice_name());
-
+        total_row_count += 1;
         QFont f = i_name->font();
         QFontMetrics fm(f);
         QChar symbol(0x263C);

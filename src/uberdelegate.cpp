@@ -300,12 +300,10 @@ void UberDelegate::paint_generic(const QRect &adjusted, int rating, QColor bg, Q
                 p->setBrush(QBrush(c));
                 p->translate(opt.rect.x() + 2, opt.rect.y() + 2);
                 p->scale(opt.rect.width()-4, opt.rect.height()-4);
-//                p->translate(adjusted.x()+1, adjusted.y()+1);
-//                p->scale(adjusted.width()-2, opt.rect.height()-2);
                 p->drawPolygon(m_diamond_shape);
             } else if (rating > -1 && rating < 15) {
                 float size = 0;
-                size = 0.75f * ((rating + 1.25) / 15.0f); // even dabbling (0) should be drawn
+                size = 0.75f * ((rating + 1.1) / 15.0f); // even dabbling (0) should be drawn
                 float inset = (1.0f - size) / 2.0f;                
                 p->translate(adjusted.x()-inset,adjusted.y()-inset);
                 p->scale(adjusted.width()-size,adjusted.height()-size);
