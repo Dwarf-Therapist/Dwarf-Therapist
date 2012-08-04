@@ -41,6 +41,18 @@ public:
     uint weapon_offset(const QString & key){
         return m_weapon_offsets.value(key, -1);
     }
+    uint material_offset(const QString & key){
+        return m_material_offsets.value(key, -1);
+    }
+    uint plant_offset(const QString & key){
+        return m_plant_offsets.value(key, -1);
+    }
+    uint item_offset(const QString & key){
+        return m_item_offsets.value(key, -1);
+    }
+    uint descriptor_offset(const QString & key){
+        return m_descriptor_offsts.value(key, -1);
+    }
 
     QSettings * data() { return m_data; }
     uint job_detail(const QString &key) {return m_job_details.value(key, -1);}
@@ -82,6 +94,10 @@ private:
     AddressHash m_hist_fig_offsets;
     AddressHash m_hist_entity_offsets;
     AddressHash m_weapon_offsets;
+    AddressHash m_plant_offsets;
+    AddressHash m_item_offsets;
+    AddressHash m_material_offsets;
+    AddressHash m_descriptor_offsts;
     QHash<uint, QString> m_valid_flags_1;
     QHash<uint, QString> m_valid_flags_2;
     QHash<uint, QString> m_invalid_flags_1;

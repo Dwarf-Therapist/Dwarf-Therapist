@@ -109,9 +109,7 @@ void DwarfModel::update_header_info(int id, COLUMN_TYPE type){
         foreach(ViewColumn *col, set->columns()) {
             index ++;
             if(col->type() == type){
-                switch(col->type()){
-                case CT_LABOR:
-                {
+                if(col->type()==CT_LABOR){
                     LaborColumn *l = static_cast<LaborColumn*>(col);
                     if(l->labor_id()==id){
                         l->update_count(); //tell this column to update it's count
@@ -124,7 +122,6 @@ void DwarfModel::update_header_info(int id, COLUMN_TYPE type){
                         header->setToolTip(tr("%1 have this labor enabled.").arg(cnt));
                         return;
                     }
-                }
                 }
             }
         }

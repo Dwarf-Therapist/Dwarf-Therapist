@@ -54,6 +54,7 @@ THE SOFTWARE.
 #include "viewcolumn.h"
 #include "rolecolumn.h"
 #include "statetableview.h"
+#include "preferencesdock.h"
 
 #include "dfinstance.h"
 #ifdef Q_WS_WIN
@@ -115,11 +116,18 @@ MainWindow::MainWindow(QWidget *parent)
     dwarf_details_dock->setFloating(true);
     addDockWidget(Qt::RightDockWidgetArea, dwarf_details_dock);
 
+    PreferencesDock *pref_dock = new PreferencesDock(this);
+    pref_dock->setHidden(true);
+    pref_dock->setFloating(true);
+    addDockWidget(Qt::RightDockWidgetArea, pref_dock);
+
     ui->menu_docks->addAction(ui->dock_pending_jobs_list->toggleViewAction());
     ui->menu_docks->addAction(ui->dock_custom_professions->toggleViewAction());
     ui->menu_docks->addAction(grid_view_dock->toggleViewAction());
     ui->menu_docks->addAction(skill_legend_dock->toggleViewAction());
     ui->menu_docks->addAction(dwarf_details_dock->toggleViewAction());
+    ui->menu_docks->addAction(pref_dock->toggleViewAction());
+
     ui->menuWindows->addAction(ui->main_toolbar->toggleViewAction());
 
     LOGD << "setting up connections for MainWindow";
@@ -141,6 +149,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_script_dialog, SIGNAL(apply_script(const QString &)), m_proxy, SLOT(apply_script(const QString&)));
     connect(m_script_dialog, SIGNAL(scripts_changed()), SLOT(reload_filter_scripts()));
     connect(m_view_manager,SIGNAL(group_changed(int)), this, SLOT(display_group(int)));
+    connect(pref_dock,SIGNAL(item_selected(QStringList)),this,SLOT(preference_selected(QStringList)));
 
     m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
@@ -378,6 +387,11 @@ void MainWindow::read_dwarves() {
         m_dwarf_name_completer->setCompletionMode(QCompleter::PopupCompletion);
         m_dwarf_name_completer->setCaseSensitivity(Qt::CaseInsensitive);
         ui->le_filter_text->setCompleter(m_dwarf_name_completer);
+    }
+
+    PreferencesDock *dock = qobject_cast<PreferencesDock*>(QObject::findChild<PreferencesDock*>("dock_preferences"));
+    if(dock){
+        dock->refresh();
     }
 }
 
@@ -999,4 +1013,31 @@ void MainWindow::display_group(const int group_by){
     ui->cb_group_by->setCurrentIndex(group_by);
     //write_settings();
     ui->cb_group_by->blockSignals(false);
+}
+
+void MainWindow::preference_selected(QStringList names){
+    QString filter = "";
+    if(!names.empty()){
+        foreach(QString pref, names){
+            filter.append(QString("d.has_preference('%1') && ").arg(pref.toLower()));
+        }
+        filter.chop(4);
+
+        m_proxy->set_pref_script(filter);
+    }
+    else
+        m_proxy->set_pref_script("");
+
+    m_proxy->refresh_script();
+
+//    QString filter = name;
+//    if(!name.isEmpty()){
+//        filter = m_df->get_preference_stats().value(name).names.join("' || d.nice_name()=='");
+//        filter.prepend("(d.nice_name()=='").append("')");
+//        m_proxy->set_pref_script(filter);
+//    }
+//    else
+//        m_proxy->set_pref_script("");
+
+//    m_proxy->refresh_script();
 }

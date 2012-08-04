@@ -25,6 +25,7 @@ THE SOFTWARE.
 
 #include <QtGui>
 #include "utils.h"
+#include "material.h"
 
 class DFInstance;
 class MemoryLayout;
@@ -53,30 +54,35 @@ public:
     VIRTADDR pref_string_vector() {return m_pref_string_vector;}
     VIRTADDR pop_ratio_vector() {return m_pop_ratio_vector;}
     VIRTADDR castes_vector() {return m_castes_vector;}
+    Material *get_creature_material(int index);
     Caste *get_caste_by_id(int id) const {return m_castes.value(id, 0);}
 
     void load_data();
 
 private:
     VIRTADDR m_address;
-    VIRTADDR m_pref_string_vector;
-    VIRTADDR m_pop_ratio_vector;
-    VIRTADDR m_castes_vector;
+
     int m_id;
     QString m_name;
+    QString m_description;
     QString m_name_plural;
     QString m_adjective;
     QString m_baby_name;
     QString m_baby_name_plural;
     QString m_child_name;
-    QString m_child_name_plural;
-    QString m_description;
+    QString m_child_name_plural;    
     QMap<int, Caste*> m_castes;
+    QVector<Material*> m_creature_mats;
+
+    VIRTADDR m_pref_string_vector;
+    VIRTADDR m_pop_ratio_vector;
+    VIRTADDR m_castes_vector;
 
     DFInstance * m_df;
     MemoryLayout * m_mem;
 
     void read_race();
+    void load_materials();
 };
 
 #endif // RACES_H

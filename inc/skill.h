@@ -57,9 +57,9 @@ private:
     float m_exp_progress;
     short m_rating;
     QString m_name;
-    QString m_skill_color;
-    QString m_rust_rating;
     int m_demotions;
+    QString m_skill_color;
+    QString m_rust_rating;    
 };
 
 #endif // SKILL_H

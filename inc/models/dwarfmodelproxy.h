@@ -43,6 +43,11 @@ public:
     DwarfModel* get_dwarf_model() const;
     void sort(int column, Qt::SortOrder order);
     Qt::SortOrder m_last_sort_order;
+    QString current_script() {return m_active_filter_script;}
+    QString pref_script() {return m_pref_script;}
+    void set_pref_script(QString script) {m_pref_script = script;}
+    void refresh_script();
+
 public slots:
     void cell_activated(const QModelIndex &idx);    
     void setFilterFixedString(const QString &pattern);
@@ -56,6 +61,7 @@ private:
 	QString m_filter_text;
     QScriptEngine *m_engine;
     QString m_active_filter_script;
+    QString m_pref_script;
 };
 
 #endif

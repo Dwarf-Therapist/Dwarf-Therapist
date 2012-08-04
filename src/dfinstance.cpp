@@ -45,6 +45,8 @@ THE SOFTWARE.
 #include "races.h"
 #include "weapon.h"
 #include "fortressentity.h"
+#include "material.h"
+#include "plant.h"
 
 #ifdef Q_WS_WIN
 #define LAYOUT_SUBDIR "windows"
@@ -298,6 +300,9 @@ void DFInstance::load_game_data()
     f = QtConcurrent::run(this,&DFInstance::load_races_castes);
     f.waitForFinished();
 
+    f = QtConcurrent::run(this,&DFInstance::load_main_vectors);
+    f.waitForFinished();
+
     emit progress_message(tr("Loading weapons"));
     f = QtConcurrent::run(this,&DFInstance::load_weapons);
     f.waitForFinished();
@@ -409,7 +414,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
         //load up role stuff now
         //load_roles();
-        QFuture<void> f = QtConcurrent::run(this,&DFInstance::load_roles_and_labor_counts);
+        QFuture<void> f = QtConcurrent::run(this,&DFInstance::load_population_data);
         f.waitForFinished();
         f = QtConcurrent::run(this,&DFInstance::calc_done);
         f.waitForFinished();
@@ -448,11 +453,68 @@ void DFInstance::load_reactions(){
     detach();
 }
 
+void DFInstance::load_main_vectors(){
+    //world.raws.itemdefs.
+    QVector<VIRTADDR> weapons = enumerate_vector(m_memory_correction + m_layout->address("weapons_vector"));
+    m_item_vectors.insert(WEAPON,weapons);
+    QVector<VIRTADDR> traps = enumerate_vector(m_memory_correction + m_layout->address("trap_vector"));
+    m_item_vectors.insert(TRAPCOMP,traps);
+    QVector<VIRTADDR> toys = enumerate_vector(m_memory_correction + m_layout->address("toy_vector"));
+    m_item_vectors.insert(TOY,toys);
+    QVector<VIRTADDR> tools = enumerate_vector(m_memory_correction + m_layout->address("tool_vector"));
+    m_item_vectors.insert(TOOL,tools);
+    QVector<VIRTADDR> instruments = enumerate_vector(m_memory_correction + m_layout->address("instrument_vector"));
+    m_item_vectors.insert(INSTRUMENT,instruments);
+    QVector<VIRTADDR> armor = enumerate_vector(m_memory_correction + m_layout->address("armor_vector"));
+    m_item_vectors.insert(ARMOR,armor);
+    QVector<VIRTADDR> ammo = enumerate_vector(m_memory_correction + m_layout->address("ammo_vector"));
+    m_item_vectors.insert(AMMO,ammo);
+    QVector<VIRTADDR> siege_ammo = enumerate_vector(m_memory_correction + m_layout->address("siegeammo_vector"));
+    m_item_vectors.insert(SIEGEAMMO,siege_ammo);
+    QVector<VIRTADDR> gloves = enumerate_vector(m_memory_correction + m_layout->address("glove_vector"));
+    m_item_vectors.insert(GLOVES,gloves);
+    QVector<VIRTADDR> shoes = enumerate_vector(m_memory_correction + m_layout->address("shoe_vector"));
+    m_item_vectors.insert(SHOES,shoes);
+    QVector<VIRTADDR> shields = enumerate_vector(m_memory_correction + m_layout->address("shield_vector"));
+    m_item_vectors.insert(SHIELD,shields);
+    QVector<VIRTADDR> helms = enumerate_vector(m_memory_correction + m_layout->address("helm_vector"));
+    m_item_vectors.insert(HELM,helms);
+    QVector<VIRTADDR> pants = enumerate_vector(m_memory_correction + m_layout->address("pant_vector"));
+    m_item_vectors.insert(PANTS,pants);
+    QVector<VIRTADDR> food = enumerate_vector(m_memory_correction + m_layout->address("food_vector"));
+    m_item_vectors.insert(FOOD,food);
+
+    m_color_vector = enumerate_vector(m_memory_correction + m_layout->address("colors_vector"));
+    m_shape_vector = enumerate_vector(m_memory_correction + m_layout->address("shapes_vector"));
+
+    VIRTADDR addr = m_memory_correction + m_layout->address("base_materials");
+    int i = 0;
+    for(i = 0; i < 256; i++){
+        Material* m = Material::get_material(this, read_addr(addr), i);
+        m_base_materials.insert(i,m);
+        addr += 0x4;
+    }
+
+    //inorganics
+    addr = m_memory_correction + m_layout->address("inorganics_vector");
+    foreach(VIRTADDR mat, enumerate_vector(addr)){
+        //inorganic_raw.material
+        Material* m = Material::get_material(this, mat + m_layout->material_offset("inorganic_materials_vector"), 0);
+        m_inorganics_vector.append(m);
+    }
+
+    //plants
+    addr = m_memory_correction + m_layout->address("plants_vector");
+    QVector<VIRTADDR> vec = enumerate_vector(addr);
+    foreach(VIRTADDR plant, vec){
+        Plant* p = Plant::get_plant(this, plant, 0);
+        m_plants_vector.append(p);
+    }
+}
+
 void DFInstance::load_weapons(){
     attach();
-    VIRTADDR weapons_vector = m_layout->address("weapons_vector");
-    weapons_vector += m_memory_correction;
-    QVector<VIRTADDR> weapons = enumerate_vector(weapons_vector);
+    QVector<VIRTADDR> weapons = m_item_vectors.value(WEAPON); //enumerate_vector(weapons_vector);
     m_weapons.clear();
     if (!weapons.empty()) {
         foreach(VIRTADDR weapon_addr, weapons) {
@@ -484,30 +546,34 @@ void DFInstance::load_races_castes(){
     QVector<VIRTADDR> races = enumerate_vector(races_vector);
     //TRACE << "FOUND" << races.size() << "races";
     //emit progress_range(0, races.size()-1);
+    int i = 0;
     if (!races.empty()) {
         foreach(VIRTADDR race_addr, races) {
             m_races << Race::get_race(this, race_addr);
             //emit progress_value(i++);
+            LOGD << "race " << m_races.at(i)->name() << " index " << i;
+            i++;
         }
     }
     detach();
 }
 
 
-void DFInstance::load_roles_and_labor_counts(){
-//    t.start();
-//    calc_progress = 0;
+void DFInstance::load_population_data(){
+    //    t.start();
+    //    calc_progress = 0;
 
-//    foreach(Dwarf *d, actual_dwarves){
-//        rolecalc *rc = new rolecalc(d);
-//        connect(rc,SIGNAL(done()),this,SLOT(calc_done()),Qt::QueuedConnection);
-//        QThreadPool::globalInstance()->start(rc);
-//    }
-//    foreach(Dwarf *d, actual_dwarves){
-//        d->calc_role_ratings();
-//    }
+    //    foreach(Dwarf *d, actual_dwarves){
+    //        rolecalc *rc = new rolecalc(d);
+    //        connect(rc,SIGNAL(done()),this,SLOT(calc_done()),Qt::QueuedConnection);
+    //        QThreadPool::globalInstance()->start(rc);
+    //    }
+    //    foreach(Dwarf *d, actual_dwarves){
+    //        d->calc_role_ratings();
+    //    }
 
     m_enabled_labor_count.clear();
+    m_pref_counts.clear();
     int cnt = 0;
     foreach(Dwarf *d, actual_dwarves){
         d->calc_role_ratings();
@@ -518,6 +584,34 @@ void DFInstance::load_roles_and_labor_counts(){
                 else
                     cnt = 1;
                 m_enabled_labor_count.insert(key,cnt);
+            }
+        }
+
+        foreach(QString key, d->get_grouped_preferences().uniqueKeys()){
+            for(int i = 0; i < d->get_grouped_preferences().value(key)->count(); i++){
+
+                QString val = d->get_grouped_preferences().value(key)->at(i);
+                QString cat_name = key;
+                pref_stat p;
+                if(m_pref_counts.contains(val))
+                    p = m_pref_counts.value(val);
+                else{
+                    p.likes = 0;
+                    p.dislikes = 0;
+                }
+
+                if(key.toLower()=="dislikes"){
+                    cat_name = "Creature";
+                    p.dislikes++;
+                    p.names_dislikes.append(d->nice_name());
+                }else{
+                    p.likes++;
+                    p.names_likes.append(d->nice_name());
+                }
+
+                p.pref_category = cat_name;
+
+                m_pref_counts.insert(val,p);
             }
         }
 
@@ -1201,14 +1295,14 @@ VIRTADDR DFInstance::find_historical_figure(int hist_id){
 }
 
 void DFInstance::load_hist_figures(){
-    QVector<VIRTADDR> hist_figs = enumerate_vector(m_memory_correction + memory_layout()->address("historical_figures_vector"));
+    QVector<VIRTADDR> hist_figs = enumerate_vector(m_memory_correction + m_layout->address("historical_figures_vector"));
     int hist_id = 0;
     //it may be possible to filter this list by only the current race.
     //need to test whether or not vampires will steal names from other races
     //this may also break nicknames on kings/queens if they belong to a different race...
     foreach(VIRTADDR fig, hist_figs){
         //if(read_int(fig + 0x0002) == dwarf_race_id() || read_int(fig + 0x00a0) == dwarf_civ_id()){
-            hist_id = read_int(fig + memory_layout()->hist_figure_offset("id"));
+            hist_id = read_int(fig + m_layout->hist_figure_offset("id"));
             m_hist_figures.insert(hist_id,fig);
         //}
     }
@@ -1217,11 +1311,11 @@ void DFInstance::load_hist_figures(){
 VIRTADDR DFInstance::find_fake_identity(int hist_id){
     VIRTADDR fig = find_historical_figure(hist_id);
     if(fig){
-        VIRTADDR fig_info = read_addr(fig + memory_layout()->hist_figure_offset("hist_fig_info"));
-        VIRTADDR rep_info = read_addr(fig_info + memory_layout()->hist_figure_offset("reputation"));
-        int cur_ident = read_int(rep_info + memory_layout()->hist_figure_offset("current_ident"));
+        VIRTADDR fig_info = read_addr(fig + m_layout->hist_figure_offset("hist_fig_info"));
+        VIRTADDR rep_info = read_addr(fig_info + m_layout->hist_figure_offset("reputation"));
+        int cur_ident = read_int(rep_info + m_layout->hist_figure_offset("current_ident"));
         if(m_fake_identities.count() == 0)
-            m_fake_identities = enumerate_vector(m_memory_correction + memory_layout()->address("fake_identities_vector"));
+            m_fake_identities = enumerate_vector(m_memory_correction + m_layout->address("fake_identities_vector"));
         foreach(VIRTADDR ident, m_fake_identities){
             int fake_id = read_int(ident);
             if(fake_id==cur_ident){
@@ -1231,3 +1325,175 @@ VIRTADDR DFInstance::find_fake_identity(int hist_id){
     }
     return 0;
 }
+
+QVector<VIRTADDR> DFInstance::get_item_vector(ITEM_TYPE i){
+    if(m_item_vectors.contains(i))
+        return m_item_vectors.value(i);
+    else
+        return m_item_vectors.value(NONE);
+}
+
+QString DFInstance::get_item(int index, int subtype){
+    ITEM_TYPE itype = static_cast<ITEM_TYPE>(index);
+
+    QVector<VIRTADDR> items = get_item_vector(itype);
+    if(!items.empty() && subtype < items.count()){
+        QString name = read_string(items.at(subtype) + m_layout->item_offset("name_plural"));
+        if(itype==TRAPCOMP || itype==WEAPON){
+            name.prepend(" ").prepend(read_string(items.at(subtype) + m_layout->item_offset("adjective")));
+        }else if(itype==ARMOR || itype==PANTS){
+            name.prepend(" ").prepend(read_string(items.at(subtype) + m_layout->item_offset("mat_name")));
+        }
+        return name.trimmed();
+    }
+    else{
+        return Item::get_item_desc(itype);
+    }
+}
+
+QString DFInstance::get_color(int index){
+    if(index < m_color_vector.count())
+        return read_string(m_color_vector.at(index) + m_layout->descriptor_offset("color_name"));
+    else
+        return "unknown color";
+}
+
+QString DFInstance::get_shape(int index){
+    if(index < m_shape_vector.count())
+        return read_string(m_shape_vector.at(index) + m_layout->descriptor_offset("shape_name_plural"));
+    else
+        return "unknown shape";
+}
+
+Material *DFInstance::get_inorganic_material(int index){
+    if(index < m_inorganics_vector.count())
+        return m_inorganics_vector.at(index);
+    else
+        return new Material();
+}
+
+Plant *DFInstance::get_plant(int index){
+    if(index < m_plants_vector.count())
+        return m_plants_vector.at(index);
+    else
+        return new Plant();
+}
+
+Material *DFInstance::get_raw_material(int index){
+    return m_base_materials.value(index);
+}
+
+QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE itype){
+    Material *m = find_material(mat_index, mat_type);
+    QString name = "unknown";
+
+    if(mat_index < 0){
+        name = m->get_material_name(SOLID);
+    }
+    else if(mat_type == 0){
+        name = m->get_material_name(SOLID);
+    }
+    else if(mat_type < 19){
+       name = m->get_material_name(SOLID);
+    }
+    else if(mat_type < 219){
+        Race* r = get_race(mat_index);
+        if(r)
+        {
+            if(itype == DRINK || itype == LIQUID_MISC)
+                name = m->get_material_name(LIQUID);
+            else if(itype == CHEESE)
+                name = m->get_material_name(SOLID);
+            else
+            {
+                name = r->name().toLower();
+                name.append(" ");
+                name.append(m->get_material_name(SOLID));
+            }
+        }
+    }
+    else if(mat_type < 419)
+    {
+        VIRTADDR hist_figure = find_historical_figure(mat_index);
+        if(hist_figure){
+            Race *r = get_race(read_int(hist_figure + m_layout->hist_figure_offset("hist_race")));
+            QString fig_name = read_string(hist_figure + m_layout->hist_figure_offset("hist_name"));
+            if(r){
+                name = fig_name.append("'s ");
+                name.append(m->get_material_name(LIQUID));
+            }
+        }
+    }
+    else if(mat_type < 619){
+        Plant *p = get_plant(mat_index);
+        if(p){
+            name = p->name();
+
+            if(itype==LEAVES)
+                name = p->leaf_plural();
+            else if(itype==SEEDS)
+                name = p->seed_plural();
+            else if(itype==PLANT)
+                name = p->name_plural();
+
+            //specific plant material
+            if(m){
+                if(itype == NONE){
+                    QString sub_name = m->get_material_name(GENERIC);
+                    if(sub_name.toLower()=="thread")
+                        sub_name = m->get_material_name(SOLID).toLower().append(" fabric");
+                    name.append(" ").append(sub_name);
+                }
+                else if(itype == DRINK || itype == LIQUID_MISC)
+                    name = m->get_material_name(LIQUID);
+                else if(itype == POWDER_MISC || itype == CHEESE)
+                    name = m->get_material_name(POWDER);
+            }
+        }
+    }
+    return name.toLower();
+}
+
+Material *DFInstance::find_material(int mat_index, short mat_type){
+    int index = 0;
+    Material *m = new Material();
+
+    if(mat_index < 0){
+        m = get_raw_material(mat_type);
+    }
+    else if(mat_type == 0){
+        m = get_inorganic_material(mat_index);
+    }
+    else if(mat_type < 19){
+       m = get_raw_material(mat_type);
+    }
+    else if(mat_type < 219){
+        Race* r = get_race(mat_index);
+        if(r)
+        {
+            index = mat_type - 19; //base material types
+            m = r->get_creature_material(index);
+        }
+    }
+    else if(mat_type < 419)
+    {
+        VIRTADDR hist_figure = find_historical_figure(mat_index);
+        if(hist_figure){
+            Race *r = get_race(read_int(hist_figure + m_layout->hist_figure_offset("hist_race")));
+            if(r)
+                m = r->get_creature_material(mat_type-219);
+        }
+    }
+    else if(mat_type < 619){
+        Plant *p = get_plant(mat_index);
+        index = mat_type -419;
+        if(p)
+            if(index < p->material_count()){
+                m = p->get_plant_material(index);
+            }
+    }
+
+    return m;
+}
+
+

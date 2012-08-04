@@ -151,6 +151,7 @@ private:
         void edit_custom_role();
         void remove_custom_role();
         void display_group(const int);
+        void preference_selected(QStringList names);
 
 };
 

@@ -78,9 +78,10 @@ void Race::read_race() {
     m_pref_string_vector = m_address + m_mem->race_offset("pref_string_vector");
     m_pop_ratio_vector = m_address + m_mem->race_offset("pop_ratio_vector");
     m_castes_vector = m_address + m_mem->race_offset("castes_vector");
+
     //m_description = m_df->read_string(m_address + m_mem->caste_offset("caste_descr"));
     QVector<VIRTADDR> castes = m_df->enumerate_vector(m_castes_vector);
-    TRACE << "RACE " << m_name << " with " << castes.size() << "castes";
+    //LOGD << "RACE " << m_name << " (index:" << m_id << ") with " << castes.size() << "castes";
 
     if (!castes.empty()) {
         Caste *c = 0;
@@ -95,6 +96,27 @@ void Race::read_race() {
         }        
     }
     m_df->detach();
+}
+
+void Race::load_materials(){
+    //load creature's material list
+    QVector<VIRTADDR> mats = m_df->enumerate_vector(m_address + m_mem->race_offset("materials_vector"));
+    int i = 0;
+    foreach(VIRTADDR mat, mats){
+        Material *m = Material::get_material(m_df,mat,i);
+        m_creature_mats.append(m);
+        i++;
+    }
+}
+
+Material * Race::get_creature_material(int index){
+    if(m_creature_mats.empty()){
+        load_materials();
+    }
+    if(index < m_creature_mats.count())
+        return m_creature_mats.at(index);
+    else
+        return new Material();
 }
 
 

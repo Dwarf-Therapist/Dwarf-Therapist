@@ -290,10 +290,10 @@ private:
     }
 
     VIRTADDR m_address;
+    QString m_tag;
     QString m_name;
     QString m_skill;
-    short m_skill_id;
-    QString m_tag;
+    short m_skill_id;    
 
     DFInstance * m_df;
     MemoryLayout * m_mem;

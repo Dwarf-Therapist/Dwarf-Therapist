@@ -201,7 +201,7 @@ bool DFInstanceLinux::attach() {
 }
 
 bool DFInstanceLinux::detach() {
-    //TRACE << "STARTING DETACH" << m_attach_count;\
+    //TRACE << "STARTING DETACH" << m_attach_count;
     if(m_memory_file.isOpen())
         m_memory_file.close();
     m_attach_count--;

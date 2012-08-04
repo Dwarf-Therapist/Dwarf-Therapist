@@ -59,6 +59,10 @@ void MemoryLayout::load_data() {
     read_group("hist_figure_offsets", m_hist_fig_offsets);
     read_group("hist_entity_offsets", m_hist_entity_offsets);
     read_group("weapon_offsets", m_weapon_offsets);
+    read_group("plant_offsets", m_plant_offsets);
+    read_group("material_offsets", m_material_offsets);
+    read_group("item_offsets", m_item_offsets);
+    read_group("descriptor_offsets", m_descriptor_offsts);
 
     // flags
     int flag_count = m_data->beginReadArray("valid_flags_1");

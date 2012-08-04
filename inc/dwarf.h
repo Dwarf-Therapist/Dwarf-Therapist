@@ -382,6 +382,10 @@ public:
     Skill highest_moodable() {return get_skill(m_highest_moodable_skill);}
     bool had_mood() {return m_had_mood;}
 
+    QHash<QString, QStringList*> get_grouped_preferences() {return m_grouped_preferences;}
+
+    Q_INVOKABLE bool has_preference(QString pref_name);
+
     public slots:
         //! called when global user settings change
         void read_settings();
@@ -462,6 +466,8 @@ private:
     QString m_noble_position;
     bool m_is_pet;
     int m_highest_moodable_skill;
+    QMultiMap<int,QString> m_preferences;
+    QHash<QString, QStringList*> m_grouped_preferences;
 
     // these methods read data from raw memory
     void read_id();
@@ -488,6 +494,7 @@ private:
     void read_turn_count();    
     void read_animal_type();
     void read_noble_position();
+    void read_preferences();
 
     void set_age(VIRTADDR birth_year_offset, VIRTADDR birth_time_offset);
 
@@ -499,7 +506,7 @@ private:
     // assembles component names into a nicely formatted single string
     void calc_names();
 
-
+//QString find_material_name(int mat_index, short mat_type, ITEM_TYPE itype);
 
 signals:
     void name_changed();

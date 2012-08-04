@@ -50,7 +50,9 @@ Role::Role(QSettings &s, QObject *parent)
     parseAspect(s, "skills", skills_weight, skills);
 }
 
-Role::Role(const Role &r){
+Role::Role(const Role &r)
+    :QObject(r.parent())
+{
     attributes = r.attributes;
     skills = r.skills;
     traits = r.traits;

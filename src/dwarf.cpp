@@ -45,6 +45,8 @@ THE SOFTWARE.
 #include "reaction.h"
 #include "fortressentity.h"
 #include "columntypes.h"
+#include "material.h"
+#include "plant.h"
 
 Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     : QObject(parent)
@@ -168,6 +170,7 @@ void Dwarf::refresh_data() {
     read_mood();    
     read_animal_type(); //need skills loaded to check for hostiles
     read_noble_position();
+    read_preferences();
 
     if(is_animal())
         calc_names(); //calculate names again as we need to check tameness for animals
@@ -538,6 +541,101 @@ void Dwarf::read_profession() {
 
 void Dwarf::read_noble_position(){
     m_noble_position = m_df->fortress()->get_noble_positions(m_hist_id,m_is_male);
+}
+void Dwarf::read_preferences(){
+    if(is_animal())
+        return;
+
+    QVector<VIRTADDR> preferences = m_df->enumerate_vector(m_first_soul + m_mem->soul_detail("preferences"));
+    int pref_type;
+    int pref_id;
+    int item_sub_type;
+    short mat_type;
+    int mat_index;
+
+    QString pref_name = "Unknown";
+    ITEM_TYPE itype;
+
+    foreach(VIRTADDR pref, preferences){
+        pref_type = m_df->read_short(pref);
+        pref_id = m_df->read_short(pref + 0x2);
+        item_sub_type = m_df->read_short(pref + 0x4);
+        mat_type = m_df->read_short(pref + 0x6);
+        mat_index = m_df->read_int(pref + 0x8);
+        //short pref_string = m_df->read_short(pref + 0x10);
+
+        switch(pref_type){
+        case 0:
+            pref_name = m_df->find_material_name(mat_index,mat_type,NONE);
+            break;
+        case 1:
+        {
+            Race* r = m_df->get_race(pref_id);
+            if(r){
+                pref_name = r->plural_name().toLower();
+//                if(pref_string > -1){
+//                    QVector<VIRTADDR> pref_strings = m_df->enumerate_vector(r->address() + 0x108-0x4);
+//                    desc.append(" for their ").append(m_df->read_string(pref_strings.at(pref_string)));
+//                }                
+            }
+        }
+            break;
+        case 2:
+        {
+            itype = static_cast<ITEM_TYPE>(pref_id);
+            if(mat_index < 0 || itype==MEAT){
+                if(itype==FISH)
+                    mat_index = mat_type;
+                Race* r = m_df->get_race(mat_index);
+                if(r){
+                   pref_name = r->name().toLower();
+                }
+            }else{
+                pref_name = m_df->find_material_name(mat_index,mat_type,static_cast<ITEM_TYPE>(pref_id));
+            }
+        }
+            break;
+        case 3:
+        {
+            Race* r = m_df->get_race(pref_id);
+            if(r)
+                pref_name = r->plural_name().toLower();
+        }
+            break;
+        case 4:
+            itype = static_cast<ITEM_TYPE>(pref_id);
+            pref_name = m_df->get_item(pref_id,item_sub_type).toLower();
+            break;
+        case 5:
+            pref_name = m_df->get_plant(pref_id)->name_plural().toLower();
+            break;
+        case 6:
+            pref_name = m_df->get_plant(pref_id)->name_plural().toLower();
+            break;
+        case 7:
+            pref_name = m_df->get_color(pref_id).toLower();
+            break;
+        case 8:
+            pref_name = m_df->get_shape(pref_id).toLower();
+            break;
+        }
+        m_preferences.insert(pref_type,pref_name);
+    }
+
+
+    //group preferences into pref desc - values (string list)
+    QString desc_key;
+    foreach(int key, m_preferences.uniqueKeys()){
+        QMultiMap<int, QString>::iterator i = m_preferences.find(key);
+        while(i != m_preferences.end() && i.key() == key){
+            desc_key = Material::get_pref_desc(static_cast<PREF_TYPES>(key));
+            if(!m_grouped_preferences.contains(desc_key))
+                m_grouped_preferences.insert(desc_key, new QStringList);
+
+                m_grouped_preferences.value(desc_key)->append(i.value());
+            i++;
+        }
+    }
 }
 
 void Dwarf::read_labors() {
@@ -965,9 +1063,9 @@ void Dwarf::read_skills() {
     short type = 0;
     short rating = 0;
     int xp = 0;
-    int last_used = 0;
-    int rust = 0;
-    int rust_counter = 0;
+    //int last_used = 0;
+    //int rust = 0;
+    //int rust_counter = 0;
     int demotion_counter = 0;
     foreach(VIRTADDR entry, entries) {
         /* type, level, experience, last used counter, rust, rust counter,
@@ -976,16 +1074,16 @@ void Dwarf::read_skills() {
         type = m_df->read_short(entry);
         rating = m_df->read_short(entry + 0x04);
         xp = m_df->read_int(entry + 0x08);
-        last_used =m_df->read_int(entry + 0x0C);
-        rust = m_df->read_int(entry + 0x10);
-        rust_counter = m_df->read_int(entry + 0x14);
+        //last_used =m_df->read_int(entry + 0x0C);
+        //rust = m_df->read_int(entry + 0x10);
+        //rust_counter = m_df->read_int(entry + 0x14);
         demotion_counter = m_df->read_int(entry + 0x18);
         Skill s(type, xp, rating, demotion_counter);
         m_total_xp += s.actual_exp();
         m_skills.append(s);
 
         if(GameDataReader::ptr()->moodable_skills().contains(type) &&
-                (m_highest_moodable_skill == -1 || s.actual_exp() > m_skills.value(m_highest_moodable_skill).actual_exp()))
+                (m_highest_moodable_skill == -1 || s.actual_exp() > get_skill(m_highest_moodable_skill).actual_exp()))
             m_highest_moodable_skill = type;
 
 //        if(rust > 0)
@@ -1323,8 +1421,7 @@ QString Dwarf::tooltip_text() {
     qSort(*skills);
 
     QSettings *s = DT->user_settings();
-    bool show_dabbling = s->value("options/show_dabbling_in_tooltips", true)
-                         .toBool();
+    bool show_dabbling = s->value("options/show_dabbling_in_tooltips", true).toBool();
     for (int i = skills->size() - 1; i >= 0; --i) {
         // check options to see if we should show dabbling skills
         if (skills->at(i).rating() < 1 && !show_dabbling) {
@@ -1355,6 +1452,15 @@ QString Dwarf::tooltip_text() {
     }
     roles_summary.append("</ol>");
 
+    QString preference_summary = "<br><b>Preferences: </b>";
+    //preference_summary.append("<ul>");
+    foreach(QString key, m_grouped_preferences.uniqueKeys()){
+        preference_summary.append(m_grouped_preferences.value(key)->join(", ")).append(", ");
+        //preference_summary.append(tr("<li><b>%1:</b> %2</li>").arg(key).arg(m_grouped_preferences.value(key)->join(", ")));
+    }
+    if(!preference_summary.isEmpty())
+        preference_summary.chop(2);
+    //preference_summary.append("</ul>");
 
     QString tt = tr("<b><font size=5>%1</font><br/><font size=3>(%2)</font></b><br/>").arg(m_nice_name).arg(m_translated_name);
     tt += tr("<br><b>Caste:</b> %1<br/>").arg(caste_name());
@@ -1362,14 +1468,21 @@ QString Dwarf::tooltip_text() {
     tt += tr("<b>Profession:</b> %1<br/>").arg(profession());
     if(m_noble_position != "")
         tt += tr("<b>Noble Position%1:</b> %2<br/>").arg(m_noble_position.indexOf(",") > 0 ? "s" : "").arg(m_noble_position);
-    tt += tr("<br/><b>Skills:</b><ul>%1</ul><br/>").arg(skill_summary);
-    tt += tr("<b>Traits:</b> %1<br/>").arg(trait_summary);
-    tt += tr("<br/><b>Top %1 Roles:</b><ul>%2</ul><br/>").arg(max_roles).arg(roles_summary);
+
+    if(!m_skills.isEmpty())
+        tt += tr("<br/><b>Skills:</b><ul>%1</ul><br/>").arg(skill_summary);
+    if(!m_traits.isEmpty())
+        tt += tr("<br/><b>Traits:</b> %1").arg(trait_summary);
+    if(!m_preferences.isEmpty())
+        tt += tr("<br/>%1<br/>").arg(preference_summary);
+    if(!m_role_ratings.isEmpty() && max_roles != 0)
+        tt += tr("<br/><b>Top %1 Roles:</b><ul>%2</ul><br/>").arg(max_roles).arg(roles_summary);
 
     tt += tr("<br/>%1<br/>").arg(caste_desc());
 
     if(s->value("options/highlight_cursed", false).toBool() && curse_name() != "")
         tt += tr("<br/><b>Curse:</b> Cursed to prowl the night as a %1!").arg(curse_name());
+
     return tt.trimmed();
 }
 
@@ -1627,4 +1740,12 @@ Reaction *Dwarf::get_reaction()
         return 0;
     else
         return m_df->get_reaction(m_current_sub_job_id);
+}
+
+bool Dwarf::has_preference(QString pref_name){
+    foreach(QString key, m_grouped_preferences.uniqueKeys()){
+        if(m_grouped_preferences.value(key)->contains(pref_name))
+            return true;
+    }
+    return false;
 }

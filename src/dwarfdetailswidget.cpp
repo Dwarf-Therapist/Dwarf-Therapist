@@ -101,6 +101,10 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         temp = qobject_cast<QTableWidget *>(m_cleanup_list[4]);
         m_role_sort_col = temp->horizontalHeader()->sortIndicatorSection();
         m_role_sort_desc = temp->horizontalHeader()->sortIndicatorOrder();
+        //save preference sorts
+        temp = qobject_cast<QTableWidget *>(m_cleanup_list[5]);
+        m_pref_sort_col = temp->horizontalHeader()->sortIndicatorSection();
+        m_pref_sort_desc = temp->horizontalHeader()->sortIndicatorOrder();
     }else{//defaults
         //splitter
         m_splitter_sizes = DT->user_settings()->value("gui_options/detailPanesSizes").toByteArray();
@@ -116,6 +120,9 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         //role sorts
         m_role_sort_col = 1;
         m_role_sort_desc = Qt::DescendingOrder;
+        //pref sorts
+        m_pref_sort_col = 0;
+        m_pref_sort_desc = Qt::DescendingOrder;
     }
 
     for(int i = m_cleanup_list.count()-1; i >=0; i--){
@@ -326,6 +333,43 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     tw_roles->setSortingEnabled(true);
     tw_roles->sortItems(m_role_sort_col, static_cast<Qt::SortOrder>(m_role_sort_desc));
 
+
+    // PREFERENCES TABLE
+    QTableWidget *tw_prefs = new QTableWidget(this);
+    details_splitter->addWidget(tw_prefs);
+    m_cleanup_list << tw_prefs;
+    tw_prefs->setColumnCount(2);
+    tw_prefs->setEditTriggers(QTableWidget::NoEditTriggers);
+    tw_prefs->setWordWrap(true);
+    tw_prefs->setShowGrid(false);
+    tw_prefs->setGridStyle(Qt::NoPen);
+    tw_prefs->setAlternatingRowColors(true);
+    tw_prefs->setHorizontalHeaderLabels(QStringList() << "Type" << "Preferences");
+    tw_prefs->verticalHeader()->hide();
+    tw_prefs->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+    tw_prefs->horizontalHeader()->setResizeMode(1, QHeaderView::Stretch);
+    tw_prefs->setSortingEnabled(false);
+
+    QString prefs;
+    foreach(QString name, d->get_grouped_preferences().uniqueKeys()){
+
+        prefs = capitalize(d->get_grouped_preferences().value(name)->join(", "));
+
+        tw_prefs->insertRow(0);
+        tw_prefs->setRowHeight(0, 18);
+
+        QTableWidgetItem *pref_type = new QTableWidgetItem(name);
+        QTableWidgetItem *pref_values = new QTableWidgetItem(prefs);
+
+        tw_prefs->setItem(0, 0, pref_type);
+        tw_prefs->setItem(0, 1, pref_values);
+
+        pref_values->setToolTip(prefs);
+    }
+    tw_prefs->setSortingEnabled(true);
+    tw_prefs->sortItems(m_pref_sort_col, static_cast<Qt::SortOrder>(m_pref_sort_desc));
+
+    //resize based on user settings
     details_splitter->restoreState(m_splitter_sizes);
 }
 

@@ -77,12 +77,11 @@ private:
 	DwarfModelProxy *m_proxy;
 	QToolButton *m_add_tab_button;
     QList<Dwarf*> m_selected_dwarfs;
-
-    StateTableView *get_stv(int idx = -1);
-
     bool m_add_weapons_tab;
     int m_last_index;
     QErrorMessage *m_squad_warning;    
+
+    StateTableView *get_stv(int idx = -1);
 
 	private slots:
 		//! used when adding tabs via the tool button

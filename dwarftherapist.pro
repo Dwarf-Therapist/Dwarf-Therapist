@@ -178,7 +178,11 @@ HEADERS += inc/win_structs.h \
     inc/languages.h \    
     inc/caste.h \    
     inc/fortressentity.h \
-    inc/weapon.h
+    inc/weapon.h \
+    inc/material.h \
+    inc/plant.h \
+    inc/docks/preferencesdock.h \
+    inc/item.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -237,7 +241,10 @@ SOURCES += src/viewmanager.cpp \
     src/caste.cpp \
     src/reaction.cpp \
     src/fortressentity.cpp \
-    src/weapon.cpp
+    src/weapon.cpp \
+    src/material.cpp \
+    src/plant.cpp \
+    src/docks/preferencesdock.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

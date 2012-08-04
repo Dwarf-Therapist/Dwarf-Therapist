@@ -47,6 +47,8 @@ Skill::Skill(short id, uint exp, short rating, int demotions)
     , m_rating(rating > 20 ? 20 : rating)
     , m_name("UNKNOWN")
     , m_demotions(demotions)
+    , m_skill_color("#000000")
+    , m_rust_rating("")
 {    
     m_actual_exp = m_exp;
     for (int i = 0; i < m_rating; ++i) {

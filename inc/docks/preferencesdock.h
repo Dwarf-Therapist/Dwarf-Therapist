@@ -20,46 +20,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef DWARF_DETAILS_WIDGET_H
-#define DWARF_DETAILS_WIDGET_H
+#ifndef PREFERENCES_DOCK_H
+#define PREFERENCES_DOCK_H
 
 #include <QtGui>
 
-class Dwarf;
-
-namespace Ui {
-    class DwarfDetailsWidget;
-}
-
-class DwarfDetailsWidget: public QWidget {
+class PreferencesDock : public QDockWidget {
     Q_OBJECT
 public:
-    DwarfDetailsWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0);
-    public slots:
-        void show_dwarf(Dwarf *d);
+    PreferencesDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
-private:
-    Ui::DwarfDetailsWidget *ui;
-    QGridLayout *m_skills_layout;
-    QVector<QObject*> m_cleanup_list;
+    void refresh();
 
-    QByteArray m_splitter_sizes;
+protected:
+    QTableWidget *tw_prefs;
 
-    int m_skill_sort_col;
-    int m_skill_sort_desc;
+public slots:
+    //void cell_clicked(int r,int c);
+    void clear_filter();
+    void selection_changed();
 
-    int m_attribute_sort_col;
-    int m_attribute_sort_desc;
-
-    int m_trait_sort_col;
-    int m_trait_sort_desc;
-
-    int m_role_sort_col;
-    int m_role_sort_desc;
-
-    int m_pref_sort_col;
-    int m_pref_sort_desc;
+signals:
+    void item_selected(QStringList name);
 
 };
 
-#endif
+#endif // PREFERENCES_DOCK_H
+

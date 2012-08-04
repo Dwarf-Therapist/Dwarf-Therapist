@@ -59,8 +59,8 @@ public:
 
 private:
     VIRTADDR m_address;
-    QString m_tag;
     QString m_race_name;
+    QString m_tag;
     QString m_name;
     QString m_description;    
     QVector<int> m_body_sizes;

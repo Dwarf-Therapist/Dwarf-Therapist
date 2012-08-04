@@ -41,10 +41,8 @@ DwarfModel* DwarfModelProxy::get_dwarf_model() const {
     return static_cast<DwarfModel*>(sourceModel());
 }
 
-void DwarfModelProxy::cell_activated(const QModelIndex &idx) {
-    bool valid = idx.isValid();
-    QModelIndex new_idx = mapToSource(idx);
-    valid = new_idx.isValid();
+void DwarfModelProxy::cell_activated(const QModelIndex &idx) {    
+    QModelIndex new_idx = mapToSource(idx);    
     return get_dwarf_model()->cell_activated(new_idx);
 }
 
@@ -55,6 +53,10 @@ void DwarfModelProxy::setFilterFixedString(const QString &pattern) {
 
 void DwarfModelProxy::apply_script(const QString &script_body) {
     m_active_filter_script = script_body;
+    invalidateFilter();
+}
+
+void DwarfModelProxy::refresh_script(){
     invalidateFilter();
 }
 
@@ -89,12 +91,22 @@ bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source
         }
     }
 
-    if (dwarf_id && !m_active_filter_script.isEmpty()) {
+    if (dwarf_id && (!m_active_filter_script.isEmpty() || !m_pref_script.isEmpty())) {
         Dwarf *d = m->get_dwarf_by_id(dwarf_id);
         if (d) {
             QScriptValue d_obj = m_engine->newQObject(d);
             m_engine->globalObject().setProperty("d", d_obj);
-            matches = matches && m_engine->evaluate(m_active_filter_script).toBool();
+
+            //if we have a preference script, append it to the current script if one exists
+            //otherwise, just use our preference script
+            QString script = m_active_filter_script;
+            if(!m_pref_script.isEmpty()){
+                if(m_active_filter_script.isEmpty())
+                    script = m_pref_script;
+                else
+                    script.append(" && (").append(m_pref_script).append(")");
+            }
+            matches = matches && m_engine->evaluate(script).toBool();
         }
     }
 
