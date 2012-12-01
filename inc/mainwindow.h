@@ -86,6 +86,7 @@ public:
         void edit_filter_script();
         void remove_filter_script();
         void print_gridview();
+        void save_gridview();
 
         // version check
         void check_latest_version(bool show_result_on_equal=false);
@@ -112,6 +113,12 @@ public:
         void reload_filter_scripts();
 
         void add_new_custom_role();
+        void add_new_opt();
+        void refresh_opts_data();
+        void write_labor_optimizations();
+        void init_optimize();
+        void optimize(QString plan_name);
+
 
 private:
     DFInstance *m_df;
@@ -136,6 +143,11 @@ private:
     QString m_tmp_checksum;
     bool m_deleting_settings;
 
+    //optimize button and separator widgets and their corresponding toolbar actions
+    QAction *m_act_sep_optimize;
+    QAction *m_act_btn_optimize; //this is required in addition to the button to allow easy visibility toggling
+    QToolButton *m_btn_optimize;
+
     void closeEvent(QCloseEvent *evt); // override;
 
     void read_settings();
@@ -145,14 +157,19 @@ private:
     void refresh_roles_data();
     void write_custom_roles();
 
+    void refresh_opts_menus();
+
     private slots:
         void set_interface_enabled(bool);
         //role stuff
         void edit_custom_role();
         void remove_custom_role();
         void display_group(const int);
-        void preference_selected(QStringList names);
-
+        void preference_selected(QStringList names, QString category);
+        //optimization stuff
+        void edit_opt();
+        void remove_opt();
+        void done_editing_opt_plan(int result);
 };
 
 #endif // MAINWINDOW_H

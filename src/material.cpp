@@ -76,6 +76,29 @@ void Material::read_material() {
     m_state_names.insert(PASTE,m_df->read_string(m_address + m_mem->material_offset("paste_name")));
     m_state_names.insert(PRESSED, m_df->read_string(m_address + m_mem->material_offset("pressed_name")));
 
+/*
+    QString m_generic = m_df->read_string(m_address);
+
+    QString m_solid = m_df->read_string(m_address + m_mem->material_offset("solid_name"));
+    QString m_liquid = m_df->read_string(m_address + m_mem->material_offset("liquid_name"));
+    QString m_gas = m_df->read_string(m_address + m_mem->material_offset("gas_name"));
+    QString m_powder = m_df->read_string(m_address + m_mem->material_offset("powder_name"));
+    QString m_paste = m_df->read_string(m_address + m_mem->material_offset("paste_name"));
+    QString m_pressed = m_df->read_string(m_address + m_mem->material_offset("pressed_name"));
+
+    QString m_adj_solid = m_df->read_string(m_address + 0x014c);
+    QString m_adj_liquid = m_df->read_string(m_address + 0x0168);
+    QString m_adj_gas = m_df->read_string(m_address + 0x0184);
+    QString m_adj_powder = m_df->read_string(m_address + 0x1a0);
+    QString m_adj_paste = m_df->read_string(m_address + 0x1bc);
+    QString m_adj_pressed = m_df->read_string(m_address + 0x1d8);
+
+
+    QString m_prefix = m_df->read_string(m_address + 0x3dc);
+    QString m_stone = m_df->read_string(m_address + 0x54);
+    QString m_gem = m_df->read_string(m_address + 0x1c);
+    QString m_gem2 = m_df->read_string(m_address + 0x38);
+*/
 }
 
 QString Material::get_material_name(MATERIAL_STATES state){

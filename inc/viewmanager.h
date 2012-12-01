@@ -44,6 +44,7 @@ class ViewManager : public QTabWidget {
 public:
 	ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent = 0);
 
+    QList<Dwarf*> get_selected_dwarfs() {return m_selected_dwarfs;}
     
 	QList<GridView*> views() {return m_views;}
 	void add_view(GridView *view);
@@ -95,8 +96,9 @@ private:
 
 signals:
 	void dwarf_focus_changed(Dwarf *d);
-    void gridview_changed(const GridView*);
+    //void gridview_changed(const GridView*);
     void group_changed(const int);
+    void selection_changed();
 		
 };
 

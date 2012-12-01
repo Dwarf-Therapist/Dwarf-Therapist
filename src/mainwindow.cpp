@@ -55,6 +55,8 @@ THE SOFTWARE.
 #include "rolecolumn.h"
 #include "statetableview.h"
 #include "preferencesdock.h"
+#include "laboroptimizer.h"
+#include "optimizereditor.h"
 
 #include "dfinstance.h"
 #ifdef Q_WS_WIN
@@ -89,6 +91,8 @@ MainWindow::MainWindow(QWidget *parent)
     , m_try_download(true)
     , m_deleting_settings(false)
     , m_view_manager(0)
+    , m_btn_optimize(0)
+    , m_act_sep_optimize(0)
 {
     ui->setupUi(this);
 
@@ -149,7 +153,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_script_dialog, SIGNAL(apply_script(const QString &)), m_proxy, SLOT(apply_script(const QString&)));
     connect(m_script_dialog, SIGNAL(scripts_changed()), SLOT(reload_filter_scripts()));
     connect(m_view_manager,SIGNAL(group_changed(int)), this, SLOT(display_group(int)));
-    connect(pref_dock,SIGNAL(item_selected(QStringList)),this,SLOT(preference_selected(QStringList)));
+    connect(pref_dock,SIGNAL(item_selected(QStringList,QString)),this,SLOT(preference_selected(QStringList,QString)));
 
     m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
@@ -179,11 +183,10 @@ MainWindow::MainWindow(QWidget *parent)
     draw_professions();
     reload_filter_scripts();
     refresh_role_menus();
+    refresh_opts_menus();
 
     if (m_settings->value("options/check_for_updates_on_startup", true).toBool())
         check_latest_version();
-
-    //m_view_manager->reload_views();
 }
 
 MainWindow::~MainWindow() {
@@ -651,6 +654,11 @@ void MainWindow::import_custom_professions() {
     d.exec();
 }
 
+void MainWindow::save_gridview()
+{
+    m_model->save_rows();
+}
+
 void MainWindow::export_gridviews() {
     ImportExportDialog d(this);
     d.setup_for_gridview_export();
@@ -762,39 +770,6 @@ void MainWindow::reload_filter_scripts() {
         i++;
     }
     ui->cb_filter_script->addItems(m_scripts.uniqueKeys());
-
-
-//    s->beginGroup("filter_scripts");
-
-//    ui->cb_filter_script->addItems(s->childKeys());
-
-//    foreach(QString script_name, s->childKeys()){
-//        QStringList data;
-//        data.append(script_name);
-//        data.append(s->value(script_name).toString());
-//        QAction *a = ui->menu_edit_filters->addAction(script_name,this,SLOT(edit_filter_script()) );
-//        a->setData(data);
-
-//        QAction *r = ui->menu_remove_script->addAction(script_name,this,SLOT(remove_filter_script()) );
-//        r->setData(script_name);
-//    }
-//    s->endGroup();
-
-
-//    m_ordered_roles.clear();
-//    QStringList role_names;
-//    foreach(Role *r, m_dwarf_roles) {
-//        role_names << r->name.toUpper();
-//    }
-//    qSort(role_names);
-//    foreach(QString name, role_names) {
-//        foreach(Role *r, m_dwarf_roles) {
-//            if (r->name.toUpper() == name.toUpper()) {
-//                m_ordered_roles << QPair<QString, Role*>(r->name, r);
-//                break;
-//            }
-//        }
-//    }
 }
 
 void MainWindow::add_new_custom_role() {
@@ -857,8 +832,6 @@ void MainWindow::remove_custom_role(){
 }
 
 void MainWindow::refresh_roles_data(){
-    //GameDataReader::ptr()->load_roles();
-
     DT->emit_roles_changed();
     GameDataReader::ptr()->load_role_mappings();
 
@@ -1015,11 +988,15 @@ void MainWindow::display_group(const int group_by){
     ui->cb_group_by->blockSignals(false);
 }
 
-void MainWindow::preference_selected(QStringList names){
+void MainWindow::preference_selected(QStringList names, QString category){
     QString filter = "";
     if(!names.empty()){
         foreach(QString pref, names){
-            filter.append(QString("d.has_preference('%1') && ").arg(pref.toLower()));
+            if(category=="Creature"){
+                filter.append(QString("(d.has_preference(\"%1\", \"%2\") || d.has_preference(\"%1\", \"%3\")) && ").arg(pref.toLower()).arg(category).arg("Dislikes"));
+            }else{
+                filter.append(QString("d.has_preference(\"%1\", \"%2\") && ").arg(pref.toLower()).arg(category));
+            }
         }
         filter.chop(4);
 
@@ -1029,15 +1006,159 @@ void MainWindow::preference_selected(QStringList names){
         m_proxy->set_pref_script("");
 
     m_proxy->refresh_script();
+}
 
-//    QString filter = name;
-//    if(!name.isEmpty()){
-//        filter = m_df->get_preference_stats().value(name).names.join("' || d.nice_name()=='");
-//        filter.prepend("(d.nice_name()=='").append("')");
-//        m_proxy->set_pref_script(filter);
-//    }
-//    else
-//        m_proxy->set_pref_script("");
+void MainWindow::add_new_opt()
+{
+    optimizereditor *edit = new optimizereditor("", this);
+    connect(edit, SIGNAL(finished(int)), this, SLOT(done_editing_opt_plan(int)));
+    connect(m_view_manager, SIGNAL(selection_changed()), edit, SLOT(populationChanged()));
+    connect(m_proxy, SIGNAL(filter_changed()), edit, SLOT(populationChanged()));
+    edit->show();
+}
 
-//    m_proxy->refresh_script();
+void MainWindow::edit_opt() {
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    QString name = a->data().toString();
+    optimizereditor *edit = new optimizereditor(name, this);
+    connect(edit, SIGNAL(finished(int)), this, SLOT(done_editing_opt_plan(int)));
+    connect(m_view_manager, SIGNAL(selection_changed()), edit, SLOT(populationChanged()));
+    connect(m_proxy, SIGNAL(filter_changed()), edit, SLOT(populationChanged()));
+    edit->show();
+}
+
+void MainWindow::done_editing_opt_plan(int result){
+    if(result == QDialog::Accepted){
+        write_labor_optimizations();
+        refresh_opts_data();
+    }
+}
+
+void MainWindow::remove_opt(){
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    QString name = a->data().toString();
+    int answer = QMessageBox::question(0,"Confirm Remove",tr("Are you sure you want to remove optimization plan: <b>%1</b>?").arg(name),QMessageBox::Yes,QMessageBox::No);
+    if(answer == QMessageBox::Yes){
+        GameDataReader::ptr()->get_opt_plans().remove(name);
+        write_labor_optimizations();
+        refresh_opts_data();
+    }
+}
+
+void MainWindow::refresh_opts_data(){
+    GameDataReader::ptr()->refresh_opt_plans();
+    refresh_opts_menus();
+}
+
+void MainWindow::write_labor_optimizations(){
+    //save to the ini file
+    QSettings *s = DT->user_settings();
+    s->remove("labor_optimizations");
+
+    s->beginWriteArray("labor_optimizations");
+    int count = 0;
+    QHash<QString, laborOptimizerPlan*> plans = GameDataReader::ptr()->get_opt_plans();
+    foreach(QString key, plans.uniqueKeys()){
+        s->setArrayIndex(count);
+        plans.value(key)->write_to_ini(*s);
+        count++;
+    }
+    s->endArray();
+}
+
+void MainWindow::refresh_opts_menus() {
+    //setup the optimize button
+    if(!m_btn_optimize && ! m_act_sep_optimize){
+        m_btn_optimize = new QToolButton;
+        m_btn_optimize->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        m_btn_optimize->setText("&Optimize");
+        m_btn_optimize->setMinimumWidth(70);
+        m_btn_optimize->setObjectName("m_btn_optimize");
+        QIcon btn_icon;
+        btn_icon.addFile(QString::fromUtf8(":/img/control.png"), QSize(), QIcon::Normal, QIcon::Off);
+        m_btn_optimize->setIcon(btn_icon);
+        connect(m_btn_optimize, SIGNAL(clicked()), this, SLOT(init_optimize()));
+
+        m_act_btn_optimize = ui->main_toolbar->insertWidget(ui->act_options, m_btn_optimize);
+        m_act_sep_optimize = ui->main_toolbar->insertSeparator(ui->act_options);
+    }
+    QMenu *opt_menu = new QMenu(m_btn_optimize);
+
+    ui->menu_edit_opts->clear();
+    ui->menu_remove_opt->clear();
+    opt_menu->clear();
+
+    QList<QPair<QString, laborOptimizerPlan*> > plans = GameDataReader::ptr()->get_ordered_opt_plans();
+    QPair<QString, laborOptimizerPlan*> plan_pair;
+    foreach(plan_pair, plans){
+            QAction *edit = ui->menu_edit_opts->addAction(plan_pair.first,this,SLOT(edit_opt()));
+            edit->setData(plan_pair.first);
+
+            QAction *rem = ui->menu_remove_opt->addAction(plan_pair.first,this,SLOT(remove_opt()));
+            rem->setData(plan_pair.first);
+
+            QAction *o = opt_menu->addAction(plan_pair.first, this, SLOT(init_optimize()));
+            o->setData(plan_pair.first);
+    }
+
+
+    if(opt_menu->actions().count() <= 0){
+        if(m_btn_optimize->menu()){
+            m_btn_optimize->menu()->clear();
+            m_btn_optimize->setMenu(NULL);
+        }
+        m_btn_optimize->setPopupMode(QToolButton::DelayedPopup);
+        m_btn_optimize->setProperty("last_optimize","");
+        m_btn_optimize->setToolTip("");
+        m_act_btn_optimize->setVisible(false);
+        m_act_sep_optimize->setVisible(false);
+    }else if(opt_menu->actions().count() >= 1){
+        QString name = plans.at(0).first;
+        if(opt_menu->actions().count() == 1){
+            if(m_btn_optimize->menu()){
+                m_btn_optimize->menu()->clear();
+                m_btn_optimize->setMenu(NULL);
+            }
+            m_btn_optimize->setPopupMode(QToolButton::DelayedPopup);
+        }else{
+            m_btn_optimize->setMenu(opt_menu);
+            m_btn_optimize->setPopupMode(QToolButton::MenuButtonPopup);
+        }
+        m_btn_optimize->setProperty("last_optimize",name);
+        m_btn_optimize->setToolTip("Optimize selected using " + name);
+        m_act_btn_optimize->setVisible(true);
+        m_act_sep_optimize->setVisible(true);
+    }
+}
+
+void MainWindow::init_optimize(){
+    m_act_btn_optimize->setEnabled(false);
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    QString name = "";
+    if(a)
+        name = a->data().toString();
+    else
+        name = m_btn_optimize->property("last_optimize").toString();
+
+    if(!name.isEmpty()){
+        QFuture<void> f = QtConcurrent::run(this, &MainWindow::optimize,name);
+        f.waitForFinished();
+
+        m_btn_optimize->setProperty("last_optimize",name);
+        m_btn_optimize->setToolTip("Optimize selected using " + name);
+
+        m_model->calculate_pending();
+        DT->emit_labor_counts_updated();
+    }
+
+    m_act_btn_optimize->setEnabled(true);
+}
+
+void MainWindow::optimize(QString plan_name){
+    LaborOptimizer *o = new LaborOptimizer(GameDataReader::ptr()->get_opt_plans().value(plan_name),this);
+    QList<Dwarf*> dwarfs = m_view_manager->get_selected_dwarfs();
+    if(dwarfs.count() <= 0)
+        dwarfs = m_proxy->get_filtered_dwarves();
+
+    o->optimize_labors(dwarfs);
 }

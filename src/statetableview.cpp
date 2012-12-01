@@ -200,6 +200,10 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
         }
         m.addMenu(&sub);
 
+        //clear labor menu
+        m.addSeparator();
+        a = m.addAction(tr("Clear Labors"), this, SLOT(clear_selected_labors()));
+
         //SQUAD MENU ITEMS
         m.addSeparator();
         QMenu assign(&m);
@@ -257,6 +261,22 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
         a->setData(idx.data(DwarfModel::DR_ID));
         m.exec(viewport()->mapToGlobal(event->pos()));
     }
+}
+
+void StateTableView::clear_selected_labors(){
+    const QItemSelection sel = selectionModel()->selection();
+    int id = 0;
+    foreach(QModelIndex i, sel.indexes()) {
+        if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool()){
+            id = i.data(DwarfModel::DR_ID).toInt();
+            Dwarf *d = m_model->get_dwarf_by_id(id);
+            if (d) {
+                d->clear_labors();
+            }
+        }
+    }
+    m_model->calculate_pending();
+    DT->emit_labor_counts_updated();
 }
 
 void StateTableView::set_squad_name(){
@@ -440,7 +460,7 @@ void StateTableView::currentChanged(const QModelIndex &cur, const QModelIndex &)
 
 void StateTableView::select_dwarf(Dwarf *d) {
     for(int top = 0; top < m_proxy->rowCount(); ++top) {
-        QModelIndex idx = m_proxy->index(top, 0);
+        QModelIndex idx = m_proxy->index(top, 0);        
         if (idx.data(DwarfModel::DR_ID).toInt() == d->id()) {
             this->selectionModel()->select(idx, QItemSelectionModel::Select | QItemSelectionModel::Rows);
             break;

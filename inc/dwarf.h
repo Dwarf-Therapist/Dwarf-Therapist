@@ -58,12 +58,26 @@ public:
         DH_TOTAL_LEVELS
     } DWARF_HAPPINESS;
 
+    static const QString get_pref_desc(const PREF_TYPES &type) {
+        QMap<PREF_TYPES, QString> desc;
+        desc[LIKE_MATERIAL] = "Materials";
+        desc[LIKE_CREATURE] = "Creatures";
+        desc[LIKE_FOOD] = "Food & Drink";
+        desc[HATE_CREATURE] = "Dislikes";
+        desc[LIKE_ITEM] = "Items";
+        desc[LIKE_PLANT] = "Plants";
+        desc[LIKE_TREE] = "Trees";
+        desc[LIKE_COLOR] = "Colors";
+        desc[LIKE_SHAPE] = "Shapes";
+        return desc.value(type, "N/A");
+    }
+
     // getters
     //! Return the memory address (in hex) of this creature in the remote DF process
     VIRTADDR address() {return m_address;}
 
     //! return the the unique id for this creature
-    int id() {return m_id;}
+    const int id() {return m_id;}
 
     //! return whether or not the dwarf is on break
     bool is_on_break() {return m_is_on_break;}
@@ -201,6 +215,8 @@ public:
 
     const QMap<int, ushort> get_labors() {return m_pending_labors;}
 
+    void clear_labors();
+
     //! return the sum total of all xp this dwarf has earned
     int total_xp() {return m_total_xp;}
 
@@ -314,7 +330,7 @@ public:
     void reset_custom_profession() {m_pending_custom_profession = "";}
 
     void calc_role_ratings();
-    float get_role_rating(QString role_name);
+    float get_role_rating(QString role_name, bool raw = false);
     void set_role_rating(QString role_name, float value);
     void update_rating_list();
 
@@ -384,7 +400,9 @@ public:
 
     QHash<QString, QStringList*> get_grouped_preferences() {return m_grouped_preferences;}
 
-    Q_INVOKABLE bool has_preference(QString pref_name);
+    Q_INVOKABLE bool has_preference(QString pref_name, QString category = "", bool exactMatch = true);
+
+    int optimized_labors;
 
     public slots:
         //! called when global user settings change
@@ -456,6 +474,7 @@ private:
     uint m_turn_count; // Dwarf turn count from start of fortress (as best we know)
     bool m_is_on_break;
     QHash<QString, float> m_role_ratings;
+    QHash<QString, float> m_raw_role_ratings;
     QList<QPair<QString,float> > m_sorted_role_ratings;
     QVector<short> m_states;
     bool m_born_in_fortress;

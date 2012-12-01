@@ -510,6 +510,8 @@ void DFInstance::load_main_vectors(){
         Plant* p = Plant::get_plant(this, plant, 0);
         m_plants_vector.append(p);
     }
+
+
 }
 
 void DFInstance::load_weapons(){
@@ -587,20 +589,25 @@ void DFInstance::load_population_data(){
             }
         }
 
-        foreach(QString key, d->get_grouped_preferences().uniqueKeys()){
-            for(int i = 0; i < d->get_grouped_preferences().value(key)->count(); i++){
+        foreach(QString category_name, d->get_grouped_preferences().uniqueKeys()){
+            for(int i = 0; i < d->get_grouped_preferences().value(category_name)->count(); i++){
 
-                QString val = d->get_grouped_preferences().value(key)->at(i);
-                QString cat_name = key;
+                QString val = d->get_grouped_preferences().value(category_name)->at(i);
+                QString cat_name = category_name;
+
+                QPair<QString,QString> key_pair;
+                key_pair.first = cat_name;
+                key_pair.second = val;
+
                 pref_stat p;
-                if(m_pref_counts.contains(val))
-                    p = m_pref_counts.value(val);
+                if(m_pref_counts.contains(key_pair))
+                    p = m_pref_counts.value(key_pair);
                 else{
                     p.likes = 0;
                     p.dislikes = 0;
                 }
 
-                if(key.toLower()=="dislikes"){
+                if(category_name.toLower()=="dislikes"){
                     cat_name = "Creature";
                     p.dislikes++;
                     p.names_dislikes.append(d->nice_name());
@@ -611,11 +618,11 @@ void DFInstance::load_population_data(){
 
                 p.pref_category = cat_name;
 
-                m_pref_counts.insert(val,p);
+                m_pref_counts.insert(key_pair,p);
             }
         }
 
-    }
+    }    
 }
 
 void DFInstance::calc_done(){    
@@ -1441,7 +1448,7 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
                 if(itype == NONE){
                     QString sub_name = m->get_material_name(GENERIC);
                     if(sub_name.toLower()=="thread")
-                        sub_name = m->get_material_name(SOLID).toLower().append(" fabric");
+                        sub_name = m->get_material_name(SOLID).toLower().append(tr(" fabric"));
                     name.append(" ").append(sub_name);
                 }
                 else if(itype == DRINK || itype == LIQUID_MISC)

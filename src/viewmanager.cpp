@@ -451,6 +451,13 @@ void ViewManager::dwarf_selection_changed(const QItemSelection &selected,
         if (d)
             m_selected_dwarfs << d;
     }
+
+    if (m_selected_dwarfs.count() > 0)
+        DT->get_main_window()->set_progress_message(QString::number(m_selected_dwarfs.count()).append(" selected."));
+    else
+        DT->get_main_window()->set_progress_message("");
+
+    emit selection_changed();
 }
 
 int ViewManager::add_tab_from_action() {

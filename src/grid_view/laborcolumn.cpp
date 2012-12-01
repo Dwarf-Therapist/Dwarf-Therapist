@@ -63,7 +63,7 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
 	if (rating < 0 && d->labor_enabled(m_labor_id)) {
 		item->setData(float(rating + 0.5f), DwarfModel::DR_SORT_VALUE); // push assigned labors above no exp in sort order
 	} else {
-		item->setData(rating, DwarfModel::DR_SORT_VALUE);		
+        item->setData(rating, DwarfModel::DR_SORT_VALUE);
 	}
 	item->setData(rating, DwarfModel::DR_RATING);
 	item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);
@@ -72,17 +72,16 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
     QString role_str="";
     if (DT->user_settings()->value("options/show_roles_in_labor", true).toBool()) {
 
-        float role_rating=0;
+        float role_rating=0;        
         if(m_skill_id != -1){
             QVector<Role*> found_roles = GameDataReader::ptr()->get_skill_roles().value(m_skill_id);
             if(found_roles.count() > 0){
                 float sortVal = 0;
-                role_rating = 0;
-
+                role_rating = 0;                
                 //just list roles and %
                 role_str = tr("<h4>Related Roles:</h4><ul style=\"margin-left:-30px; padding-left:0px;\">");
                 foreach(Role *r, found_roles){
-                    role_rating = d->get_role_rating(r->name);
+                    role_rating = d->get_role_rating(r->name);                    
                     role_str += tr("<li>%1 (%2%)</li>").arg(r->name).arg(QString::number(role_rating,'f',2));
                     sortVal += role_rating;
                     if(d->labor_enabled(m_labor_id))

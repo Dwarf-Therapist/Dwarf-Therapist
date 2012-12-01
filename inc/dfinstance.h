@@ -175,6 +175,13 @@ public:
         QString pref_category;
     };
 
+    QVector<Material *> get_inorganic_materials() {return m_inorganics_vector;}
+    QHash<ITEM_TYPE, QVector<VIRTADDR> > get_items() {return m_item_vectors;}
+    QVector<VIRTADDR>  get_colors() {return m_color_vector;}
+    QVector<VIRTADDR> get_shapes() {return m_shape_vector;}
+    QVector<Plant *> get_plants() {return m_plants_vector;}
+    QHash<int, Material *> get_base_materials() {return m_base_materials;}
+
     QHash<QString, Weapon *> get_weapons() {return m_weapons;}
     QList<QPair<QString, Weapon *> > get_ordered_weapons() {return m_ordered_weapons;}
 
@@ -186,7 +193,7 @@ public:
     Material * get_raw_material(int index);
     Plant * get_plant(int index);
     QString find_material_name(int mat_index, short mat_type, ITEM_TYPE itype);
-    QHash<QString,pref_stat> get_preference_stats(){return m_pref_counts;}
+    QHash<QPair<QString,QString>,pref_stat> get_preference_stats(){return m_pref_counts;}
 
     public slots:
         // if a menu cancels our scan, we need to know how to stop
@@ -265,7 +272,7 @@ private:
     void load_hist_figures();
     Material * find_material(int mat_index, short mat_type);
 
-    QHash<QString, pref_stat> m_pref_counts;
+    QHash<QPair<QString,QString>, pref_stat> m_pref_counts;
 };
 
 #endif // DFINSTANCE_H

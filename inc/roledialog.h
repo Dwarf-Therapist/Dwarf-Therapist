@@ -34,6 +34,14 @@ private:
     void clear_table(QTableWidget &t);
 
     bool m_override;
+
+protected:
+    void closeEvent(QCloseEvent *){close_pressed();}
+    void keyPressEvent(QKeyEvent *e){
+        if(e->key()==Qt::Key_Escape)
+            close_pressed();
+    }
+
 private slots:
     void close_pressed();
     void save_pressed();

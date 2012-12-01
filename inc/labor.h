@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define LABOR_H
 
 #include <QtGui>
+#include "role.h"
 
 class Labor : public QObject {
     Q_OBJECT
@@ -34,6 +35,7 @@ public:
         , labor_id(s.value("id", -1).toInt())
         , skill_id(s.value("skill", -1).toInt())
         , requires_equipment(s.value("requires_equipment", false).toBool())
+        , is_hauling(s.value("hauling", false).toBool())
     {
         int excludes = s.beginReadArray("excludes");
         for (int i = 0; i < excludes; ++i) {
@@ -42,7 +44,7 @@ public:
             if (labor != -1)
                 m_excluded_labors << labor;
         }
-        s.endArray();
+        s.endArray();            
     }
 
     const QList<int> &get_excluded_labors() {
@@ -55,5 +57,7 @@ public:
     QList<int> m_excluded_labors; // list of other labors that this one is exclusive with
     bool requires_equipment; // when first assigned the dwarf should go find
                              // needed equipment (default is false)
+    bool is_hauling; //mark hauling labors for optimization purposes
+
 };
 #endif

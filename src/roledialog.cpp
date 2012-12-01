@@ -67,7 +67,7 @@ roleDialog::roleDialog(QWidget *parent, QString name) :
     connect(ui->tw_traits, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_trait_context_menu(const QPoint &)));
     connect(ui->tw_skills, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_skill_context_menu(const QPoint &)));
 
-    connect(ui->le_role_name, SIGNAL(textChanged(QString)), SLOT(name_changed(QString)));
+    connect(ui->le_role_name, SIGNAL(textChanged(QString)), SLOT(name_changed(QString)));    
 
     //set status tip info for weights
     QString stat = tr("This weight is the importance of %1 relative to %2 and %3. A higher weight gives more value. The current default is %4.");

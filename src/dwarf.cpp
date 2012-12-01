@@ -416,6 +416,7 @@ void Dwarf::calc_names() {
     }
     m_nice_name = m_nice_name.trimmed();
     m_translated_name = m_translated_name.trimmed();
+
     if (is_animal())
     {
         QString tametype = "";
@@ -628,11 +629,11 @@ void Dwarf::read_preferences(){
     foreach(int key, m_preferences.uniqueKeys()){
         QMultiMap<int, QString>::iterator i = m_preferences.find(key);
         while(i != m_preferences.end() && i.key() == key){
-            desc_key = Material::get_pref_desc(static_cast<PREF_TYPES>(key));
+            desc_key = get_pref_desc(static_cast<PREF_TYPES>(key));
             if(!m_grouped_preferences.contains(desc_key))
                 m_grouped_preferences.insert(desc_key, new QStringList);
 
-                m_grouped_preferences.value(desc_key)->append(i.value());
+            m_grouped_preferences.value(desc_key)->append(i.value());
             i++;
         }
     }
@@ -1204,6 +1205,13 @@ bool Dwarf::toggle_labor(int labor_id) {
     return true;
 }
 
+void Dwarf::clear_labors(){
+    foreach(int key, m_pending_labors.uniqueKeys()){
+        if(labor_enabled(key))
+            set_labor(key,false,false);
+    }
+}
+
 void Dwarf::set_labor(int labor_id, bool enabled, bool update_cols_realtime) {
     Labor *l = GameDataReader::ptr()->get_labor(labor_id);
     if (!l) {
@@ -1279,7 +1287,13 @@ int Dwarf::pending_changes() {
 }
 
 void Dwarf::clear_pending() {
-    refresh_data();
+    //update our header numbers before we refresh
+    foreach(int labor_id, m_pending_labors.uniqueKeys()) {
+        if (labor_id >= 0 && is_labor_state_dirty(labor_id))
+            m_df->update_labor_count(labor_id, labor_enabled(labor_id) ? -1 : 1);
+    }
+
+    refresh_data();    
 }
 
 void Dwarf::commit_pending() {
@@ -1716,10 +1730,14 @@ void Dwarf::calc_role_ratings(){
             }
         }
     }
+    m_raw_role_ratings = m_role_ratings;
 }
 
-float Dwarf::get_role_rating(QString role_name){
-    return m_role_ratings.value(role_name);
+float Dwarf::get_role_rating(QString role_name, bool raw){
+    if(raw)
+        return m_raw_role_ratings.value(role_name);
+    else
+        return m_role_ratings.value(role_name);
 }
 void Dwarf::set_role_rating(QString role_name, float value){
     m_role_ratings.insert(role_name,value);
@@ -1742,10 +1760,34 @@ Reaction *Dwarf::get_reaction()
         return m_df->get_reaction(m_current_sub_job_id);
 }
 
-bool Dwarf::has_preference(QString pref_name){
-    foreach(QString key, m_grouped_preferences.uniqueKeys()){
-        if(m_grouped_preferences.value(key)->contains(pref_name))
-            return true;
+bool Dwarf::has_preference(QString pref_name, QString category, bool exactMatch){
+    QRegExp str_search("(" + pref_name + ")",Qt::CaseInsensitive, QRegExp::RegExp);
+    QString pref = "";
+
+    if(category.isEmpty()){
+        if(exactMatch){
+            foreach(QString key, m_grouped_preferences.uniqueKeys()){
+                return m_grouped_preferences.value(key)->contains(pref_name,Qt::CaseInsensitive);
+            }
+        }else{
+            foreach(QString key, m_grouped_preferences.uniqueKeys()){
+                pref = m_grouped_preferences.value(key)->join(", ");
+                if(pref.contains(str_search))
+                    return true;
+            }
+        }
+
+        return false;
+    }else{
+        if(!m_grouped_preferences.keys().contains(category))
+            return false;
+        if(exactMatch){
+            return m_grouped_preferences.value(category)->contains(pref_name,Qt::CaseInsensitive);
+        }else{
+            pref = m_grouped_preferences.value(category)->join(", ");
+            if(pref.contains(str_search))
+                return true;
+        }
+        return false;
     }
-    return false;
 }

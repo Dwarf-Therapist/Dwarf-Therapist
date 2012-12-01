@@ -54,6 +54,7 @@ void DwarfModelProxy::setFilterFixedString(const QString &pattern) {
 void DwarfModelProxy::apply_script(const QString &script_body) {
     m_active_filter_script = script_body;
     invalidateFilter();
+    emit filter_changed();
 }
 
 void DwarfModelProxy::refresh_script(){
@@ -135,6 +136,7 @@ bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source
             }
         }
     }
+
     return matches;
 }
 
@@ -195,4 +197,24 @@ void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role) {
     setSortCaseSensitivity(Qt::CaseInsensitive);
     setSortLocaleAware(true);    
     QSortFilterProxyModel::sort(column, order);
+}
+
+QList<Dwarf*> DwarfModelProxy::get_filtered_dwarves(){
+    DwarfModel *m = get_dwarf_model();
+    QList<Dwarf*> dwarfs;
+
+    for(int i = 0; i < m->rowCount(); i++){
+        if(mapFromSource(m->index(i,0)).isValid()){
+            if (m->data(m->index(i, 0), DwarfModel::DR_IS_AGGREGATE).toBool()) {
+                for(int j = 0; j < m->item(i,0)->rowCount(); j++){
+                    if(mapFromSource(m->index(i,0).child(j,0)).isValid()){
+                        dwarfs.append(m->get_dwarf_by_id(m->item(i,0)->child(j,0)->data(DwarfModel::DR_ID).toInt()));
+                    }
+                }
+            }else{
+                dwarfs.append(m->get_dwarf_by_id(m->item(i,0)->data(DwarfModel::DR_ID).toInt()));
+            }
+        }
+    }
+    return dwarfs;
 }

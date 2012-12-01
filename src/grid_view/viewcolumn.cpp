@@ -102,3 +102,8 @@ void ViewColumn::write_to_ini(QSettings &s) {
         s.setValue("bg_color", to_hex(m_bg_color));
     }
 }
+
+QString ViewColumn::get_cell_value(Dwarf *d)
+{
+    return QString("%1").arg(m_cells.value(d)->data(DwarfModel::DR_SORT_VALUE).toString());
+}

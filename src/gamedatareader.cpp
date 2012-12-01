@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <QtDebug>
 #include "raws/rawreader.h"
 #include "math.h"
+#include "laboroptimizerplan.h"
 
 
 
@@ -165,6 +166,7 @@ GameDataReader::GameDataReader(QObject *parent)
     m_data_settings->endArray();
 
     load_roles();
+    load_optimization_plans();
 
     int professions = m_data_settings->beginReadArray("professions");
     m_professions.clear();
@@ -267,6 +269,10 @@ QString GameDataReader::get_trait_name(short trait_id) {
     return get_trait(trait_id)->name;
 }
 
+laborOptimizerPlan* GameDataReader::get_opt_plan(const QString &name){
+    return m_opt_plans.value(name);
+}
+
 DwarfJob *GameDataReader::get_job(const short &job_id) {
     return m_dwarf_jobs.value(job_id, 0);
 }
@@ -320,6 +326,37 @@ void GameDataReader::load_roles(){
     m_data_settings->endArray();
 
     load_role_mappings();
+}
+
+void GameDataReader::load_optimization_plans(){
+    //load labor optimization data
+    QSettings *u = DT->user_settings();
+    int labor_opts = u->beginReadArray("labor_optimizations");
+    for(short i=0; i < labor_opts; i++){
+        u->setArrayIndex(i);
+        laborOptimizerPlan *lo = new laborOptimizerPlan(*u, this);
+        m_opt_plans.insert(lo->name,lo);
+    }
+    u->endArray();
+
+    refresh_opt_plans();
+}
+
+void GameDataReader::refresh_opt_plans(){
+    m_ordered_opts.clear();
+    QStringList opt_names;
+    foreach(laborOptimizerPlan *l, m_opt_plans) {
+        opt_names << l->name.toUpper();
+    }
+    qSort(opt_names);
+    foreach(QString name, opt_names) {
+        foreach(laborOptimizerPlan *l, m_opt_plans) {
+            if (l->name.toUpper() == name.toUpper()) {
+                m_ordered_opts << QPair<QString, laborOptimizerPlan*>(l->name, l);
+                break;
+            }
+        }
+    }
 }
 
 void GameDataReader::load_role_mappings(){

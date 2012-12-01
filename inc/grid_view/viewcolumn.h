@@ -61,6 +61,8 @@ public:
 	virtual QStandardItem *build_aggregate(const QString &group_name, 
 										   const QVector<Dwarf*> &dwarves) = 0; // create an aggregate cell based on several dwarves
 
+    QString get_cell_value(Dwarf *d);
+
 	virtual void write_to_ini(QSettings &s);
 
 	public slots:

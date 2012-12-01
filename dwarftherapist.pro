@@ -182,7 +182,10 @@ HEADERS += inc/win_structs.h \
     inc/material.h \
     inc/plant.h \
     inc/docks/preferencesdock.h \
-    inc/item.h
+    inc/item.h \
+    inc/laboroptimizer.h \
+    inc/optimizereditor.h \
+    inc/laboroptimizerplan.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -244,7 +247,10 @@ SOURCES += src/viewmanager.cpp \
     src/weapon.cpp \
     src/material.cpp \
     src/plant.cpp \
-    src/docks/preferencesdock.cpp
+    src/docks/preferencesdock.cpp \
+    src/laboroptimizer.cpp \
+    src/optimizereditor.cpp \
+    src/laboroptimizerplan.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \
@@ -259,7 +265,8 @@ FORMS += ui/scriptdialog.ui \
     ui/columneditdialog.ui \
     ui/about.ui \
     ui/selectparentlayoutdialog.ui \
-    ui/roledialog.ui
+    ui/roledialog.ui \
+    ui/optimizereditor.ui
 RESOURCES += images.qrc
 
 OTHER_FILES += \

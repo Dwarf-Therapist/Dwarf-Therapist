@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define DWARF_MODEL_PROXY_H
 
 #include <QtGui>
+#include "dwarf.h"
 
 class DwarfModel;
 class QScriptEngine;
@@ -47,12 +48,16 @@ public:
     QString pref_script() {return m_pref_script;}
     void set_pref_script(QString script) {m_pref_script = script;}
     void refresh_script();
+    QList<Dwarf*> get_filtered_dwarves();
 
 public slots:
     void cell_activated(const QModelIndex &idx);    
     void setFilterFixedString(const QString &pattern);
     void sort(int, DwarfModelProxy::DWARF_SORT_ROLE);
     void apply_script(const QString &script_body);
+
+signals:
+    void filter_changed();
 
 protected:
     bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
@@ -61,7 +66,7 @@ private:
 	QString m_filter_text;
     QScriptEngine *m_engine;
     QString m_active_filter_script;
-    QString m_pref_script;
+    QString m_pref_script;    
 };
 
 #endif

@@ -31,17 +31,21 @@ public:
     PreferencesDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
     void refresh();
+    void filter();
 
 protected:
     QTableWidget *tw_prefs;
+    QRegExp m_filter;
 
 public slots:
     //void cell_clicked(int r,int c);
     void clear_filter();
+    void clear_search();
+    void search_changed(QString);
     void selection_changed();
 
 signals:
-    void item_selected(QStringList name);
+    void item_selected(QStringList name, QString category);
 
 };
 

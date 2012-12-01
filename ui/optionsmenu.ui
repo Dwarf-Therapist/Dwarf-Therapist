@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>608</width>
+    <width>612</width>
     <height>548</height>
    </rect>
   </property>
@@ -761,8 +761,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>581</width>
-         <height>311</height>
+         <width>571</width>
+         <height>341</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -778,18 +778,21 @@
             </property>
             <property name="minimumSize">
              <size>
-              <width>175</width>
+              <width>250</width>
               <height>20</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>175</width>
+              <width>250</width>
               <height>20</height>
              </size>
             </property>
             <property name="text">
              <string>Default Weight for Role Attributes</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -797,13 +800,13 @@
            <widget class="QDoubleSpinBox" name="dsb_attribute_weight">
             <property name="minimumSize">
              <size>
-              <width>20</width>
+              <width>90</width>
               <height>0</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>75</width>
+              <width>90</width>
               <height>16777215</height>
              </size>
             </property>
@@ -817,6 +820,22 @@
              <double>1.000000000000000</double>
             </property>
            </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_5">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Expanding</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>10</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </item>
@@ -832,26 +851,35 @@
             </property>
             <property name="minimumSize">
              <size>
-              <width>175</width>
+              <width>250</width>
               <height>20</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>175</width>
+              <width>250</width>
               <height>20</height>
              </size>
             </property>
             <property name="text">
              <string>Default Weight for Role Skills</string>
             </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
            </widget>
           </item>
           <item>
            <widget class="QDoubleSpinBox" name="dsb_skill_weight">
+            <property name="minimumSize">
+             <size>
+              <width>90</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
-              <width>75</width>
+              <width>90</width>
               <height>16777215</height>
              </size>
             </property>
@@ -865,6 +893,22 @@
              <double>1.000000000000000</double>
             </property>
            </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_6">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Expanding</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>10</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </item>
@@ -880,26 +924,35 @@
             </property>
             <property name="minimumSize">
              <size>
-              <width>175</width>
+              <width>250</width>
               <height>20</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>175</width>
+              <width>250</width>
               <height>20</height>
              </size>
             </property>
             <property name="text">
              <string>Default Weight for Role Traits</string>
             </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
            </widget>
           </item>
           <item>
            <widget class="QDoubleSpinBox" name="dsb_trait_weight">
+            <property name="minimumSize">
+             <size>
+              <width>90</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
-              <width>75</width>
+              <width>90</width>
               <height>16777215</height>
              </size>
             </property>
@@ -913,6 +966,22 @@
              <double>1.000000000000000</double>
             </property>
            </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_7">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Expanding</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>10</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </item>

@@ -110,6 +110,8 @@ public:
     static QStringList m_seasons;
     static QStringList m_months;        
 
+    void save_rows();
+
     QHash<int, Squad*> squads() {return m_squads;}
 
     int total_row_count;

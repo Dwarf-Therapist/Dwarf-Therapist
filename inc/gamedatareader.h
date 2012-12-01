@@ -33,6 +33,7 @@ class QSettings;
 #include "labor.h"
 #include "attribute.h"
 #include "role.h"
+#include "laboroptimizerplan.h"
 class Trait;
 class MilitaryPreference;
 class Profession;
@@ -74,14 +75,19 @@ public:
     QHash<int, MilitaryPreference*> get_military_preferences() {return m_military_preferences;}
     QHash<short, Profession*> get_professions() {return m_professions;}    
     QHash<QString, Role*>& get_roles(){return m_dwarf_roles;}
-    QList<QPair<QString, Role*>  > get_ordered_roles() {return m_ordered_roles;}
+    QList<QPair<QString, Role*> > get_ordered_roles() {return m_ordered_roles;}
     QHash<int, Attribute*> get_attributes() {return m_attributes;}
     QVector<QString> get_default_roles() {return m_default_roles;}
     QHash<int,QVector<Role*> > get_skill_roles() {return m_skill_roles;}
 
+    QList<QPair<QString, laborOptimizerPlan*> > get_ordered_opt_plans() {return m_ordered_opts;}
+    QHash<QString, laborOptimizerPlan*>& get_opt_plans(){return m_opt_plans;}
+    laborOptimizerPlan *get_opt_plan(const QString &name);
+
     Labor *get_labor(const int &labor_id);
     Trait *get_trait(const int &trait_id);
     QString get_trait_name(short trait_id);
+
 
     DwarfJob *get_job(const short &job_id);
     MilitaryPreference *get_military_preference(const int &mil_pref_id);
@@ -90,6 +96,8 @@ public:
 
     void load_roles();
     void load_role_mappings();
+    void load_optimization_plans();
+    void refresh_opt_plans();
 
     Attribute *get_attribute(int attribute){return m_attributes.value(attribute);}
 
@@ -153,6 +161,9 @@ private:
     QList<QPair<QString, Role*> > m_ordered_roles;
     QVector<QString> m_default_roles;
     QHash<int,QVector<Role*> > m_skill_roles;
+
+    QHash<QString, laborOptimizerPlan*> m_opt_plans;
+    QList<QPair<QString, laborOptimizerPlan*> > m_ordered_opts;
 
     QHash<QString, QRawObjectList> m_reaction_classes;
     QHash<QString, QRawObjectList> m_creatures_classes;    

@@ -199,6 +199,7 @@
     <addaction name="act_export_custom_professions"/>
     <addaction name="act_import_saved_custom_professions"/>
     <addaction name="separator"/>
+    <addaction name="act_export_csv"/>
     <addaction name="act_export_gridviews"/>
     <addaction name="act_import_saved_gridviews"/>
     <addaction name="act_print"/>
@@ -287,9 +288,40 @@
     <addaction name="separator"/>
     <addaction name="menu_remove_roles"/>
    </widget>
+   <widget class="QMenu" name="menuOptimizer">
+    <property name="title">
+     <string>Optimizer</string>
+    </property>
+    <widget class="QMenu" name="menu_edit_opts">
+     <property name="toolTip">
+      <string>Edit an existing optimization plan.</string>
+     </property>
+     <property name="title">
+      <string>Edit Optimization Plan</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../images.qrc">
+       <normaloff>:/img/script_pencil.png</normaloff>:/img/script_pencil.png</iconset>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menu_remove_opt">
+     <property name="title">
+      <string>Remove Optimization Plan</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../images.qrc">
+       <normaloff>:/img/script_minus.png</normaloff>:/img/script_minus.png</iconset>
+     </property>
+    </widget>
+    <addaction name="act_add_new_opt"/>
+    <addaction name="menu_edit_opts"/>
+    <addaction name="separator"/>
+    <addaction name="menu_remove_opt"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menuScripting"/>
    <addaction name="menuRoles"/>
+   <addaction name="menuOptimizer"/>
    <addaction name="menuWindows"/>
    <addaction name="menu_Help"/>
   </widget>
@@ -826,9 +858,25 @@
     <string>New Custom Role</string>
    </property>
   </action>
-  <action name="actionTest">
+  <action name="act_add_new_opt">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/script_plus.png</normaloff>:/img/script_plus.png</iconset>
+   </property>
    <property name="text">
-    <string>test</string>
+    <string>New Optimization Plan</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a new optimization plan.</string>
+   </property>
+  </action>
+  <action name="act_export_csv">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/table_go.png</normaloff>:/img/table_go.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export Current Grid View as CSV</string>
    </property>
   </action>
  </widget>
@@ -1233,6 +1281,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_add_new_opt</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>add_new_opt()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>403</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_export_csv</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>save_gridview()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>403</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -1259,5 +1339,7 @@
   <slot>print_gridview()</slot>
   <slot>clear_user_settings()</slot>
   <slot>add_new_custom_role()</slot>
+  <slot>add_new_opt()</slot>
+  <slot>save_gridview()</slot>
  </slots>
 </ui>

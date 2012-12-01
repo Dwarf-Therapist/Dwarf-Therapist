@@ -102,6 +102,87 @@ void DwarfModel::load_dwarves() {
     m_df->detach();
 }
 
+
+//Shisimaru's export to CSV
+void DwarfModel::save_rows() {
+    QString defaultPath = QString("%1.csv").arg(m_gridview->name());
+    QString fileName = QFileDialog::getSaveFileName(0 , tr("Save file as"), defaultPath, tr("csv files (*.csv)"));
+    if (fileName.length()==0)
+        return;
+    if (!fileName.endsWith(".csv"))
+        fileName.append(".csv");
+    QFile f( fileName );
+    if (f.exists())
+        f.remove();
+    f.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream out(&f);
+    QString val;
+    val.append("nice_name");
+    val.append(',');
+    foreach(ViewColumnSet *set, m_gridview->sets()) {
+        foreach(ViewColumn *col, set->columns()) {
+            if (col->type() != CT_SPACER)
+            {
+                val.append(col->title());
+                val.append(',');
+            }
+        }
+    }
+    val.remove(val.length()-1,1);
+    out << val << endl;
+    val.clear();
+
+    if(DT->user_settings()->value("options/hide_children_and_babies",true).toBool() == false)
+    {
+        foreach(Dwarf *d, m_dwarves)
+        {
+            //show babies
+            if (!d->is_animal())
+            {
+                val.append(d->nice_name());
+                val.append(',');
+                foreach(ViewColumnSet *set, m_gridview->sets()) {
+                    foreach(ViewColumn *col, set->columns()) {
+                        if (col->type() != CT_SPACER)
+                        {
+                            val.append(col->get_cell_value(d));
+                            val.append(',');
+                        }
+                    }
+                }
+                val.remove(val.length()-1,1);
+                out << val << endl;
+                val.clear();
+            }
+        }
+    }
+    else if(DT->user_settings()->value("options/hide_children_and_babies",true).toBool() == true)
+        {
+            foreach(Dwarf *d, m_dwarves)
+            {
+                //no babies
+                if (!d->is_animal() && d->profession()!="Child" && d->profession()!="Baby")
+                {
+                    val.append(d->nice_name());
+                    val.append(',');
+                    foreach(ViewColumnSet *set, m_gridview->sets()) {
+                        foreach(ViewColumn *col, set->columns()) {
+                            if (col->type() != CT_SPACER)
+                            {
+                                val.append(col->get_cell_value(d));
+                                val.append(',');
+                            }
+                        }
+                    }
+                    val.remove(val.length()-1,1);
+                    out << val << endl;
+                    val.clear();
+                }
+            }
+        }
+    f.close();
+}
+
 void DwarfModel::update_header_info(int id, COLUMN_TYPE type){
     int index = 0;
     QSettings *s = DT->user_settings();
@@ -491,13 +572,15 @@ void DwarfModel::build_row(const QString &key) {
         } else if (m_group_by == GB_HIGHEST_SKILL) {
             root->setData(first_dwarf->highest_skill().rating(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HIGHEST_MOODABLE) {
-            //root->setData(first_dwarf->highest_moodable()->rating(), DR_SORT_VALUE);
+            root->setData(first_dwarf->highest_moodable().name(), DR_SORT_VALUE);
         } else if (m_group_by == GB_TOTAL_SKILL_LEVELS) {
             root->setData(first_dwarf->total_skill_levels(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HAPPINESS) {
             root->setData(first_dwarf->get_happiness(), DR_SORT_VALUE);
         } else if (m_group_by == GB_ASSIGNED_LABORS) {
             root->setData(first_dwarf->total_assigned_labors(), DR_SORT_VALUE);
+        } else if (m_group_by == GB_PROFESSION) {
+            root->setData(first_dwarf->profession(), DR_SORT_VALUE);
         } else if (m_group_by == GB_CASTE) {
             root->setData(first_dwarf->get_caste_id(), DR_SORT_VALUE);
         } else if (m_group_by == GB_SQUAD){            
@@ -513,6 +596,7 @@ void DwarfModel::build_row(const QString &key) {
         }
         root_row << root;
     }
+
 
     if (root) { // we have a parent, so we should draw an aggregate row
         total_row_count += 1;
@@ -707,7 +791,7 @@ void DwarfModel::calculate_pending() {
     foreach(Dwarf *d, m_dwarves) {
         changes += d->pending_changes();
     }
-    emit new_pending_changes(changes);
+    emit new_pending_changes(changes);    
 }
 
 void DwarfModel::clear_pending() {
@@ -717,6 +801,7 @@ void DwarfModel::clear_pending() {
         }
     }
     //reset();
+    DT->emit_labor_counts_updated();
     emit new_pending_changes(0);
     emit need_redraw();
 }

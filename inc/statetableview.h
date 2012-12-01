@@ -113,6 +113,7 @@ private:
         void remove_squad();
         void vscroll_value_changed(int value);
         void hscroll_value_changed(int value);
+        void clear_selected_labors();
 
 signals:
     void new_custom_profession(Dwarf *d);
