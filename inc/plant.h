@@ -30,6 +30,8 @@ public:
     QString leaf_plural() {return m_leaf_name_plural;}
     QString seed_plural() {return m_seed_name_plural;}
 
+    QStringList get_names();
+
 private:
     int m_index;
     VIRTADDR m_address;

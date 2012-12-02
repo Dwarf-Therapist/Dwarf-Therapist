@@ -54,6 +54,8 @@ void LaborOptimizer::calc_population(bool load_labor_map){
     m_current_message.clear();
     for(int i = m_dwarfs.count()-1; i >= 0; i--){
         Dwarf *d = m_dwarfs.at(i);
+        if(!d)
+            continue;
 
         //exclude nobles, hospitalized dwarfs, children, babies and militia
         if(d->noble_position() != "" && plan->exclude_nobles){
@@ -224,7 +226,7 @@ void LaborOptimizer::update_ratios(){
 
     labors_exceed_pop = false;
     if(check_conflicts){
-
+        laborOptimizerPlan::detail *temp;
         foreach(laborOptimizerPlan::detail *det, plan->plan_details){
             if(det->priority > 0 && det->ratio > 0 && det->group_ratio <= 0){
 
@@ -232,11 +234,15 @@ void LaborOptimizer::update_ratios(){
                     //increase this labor's group ratio
                     det->group_ratio += det->ratio;
                     foreach(int id, gdr->get_labor(det->labor_id)->get_excluded_labors()){
-                        det->group_ratio += plan->job_exists(gdr->get_labor(id)->labor_id)->ratio;
+                        temp =  plan->job_exists(gdr->get_labor(id)->labor_id);
+                        if(temp)
+                            det->group_ratio += temp->ratio;
                     }
                     //set all related labors to the ratio total we just calculated
                     foreach(int id, gdr->get_labor(det->labor_id)->get_excluded_labors()){
-                        plan->job_exists(gdr->get_labor(id)->labor_id)->group_ratio = det->group_ratio;
+                        temp =  plan->job_exists(gdr->get_labor(id)->labor_id);
+                        if(temp)
+                            det->group_ratio += temp->ratio;
                     }
                     if(det->group_ratio / m_ratio_sum * m_total_jobs > m_total_population){
                         m_ratio_sum -= det->group_ratio;

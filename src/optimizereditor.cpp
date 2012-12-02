@@ -11,6 +11,7 @@ optimizereditor::optimizereditor(QString name, QWidget *parent) :
     is_editing(true)
 {
     ui->setupUi(this);
+    this->setAttribute(Qt::WA_DeleteOnClose,true);
 
     m_original_plan = GameDataReader::ptr()->get_opt_plans().take(name);
     if(!m_original_plan){
@@ -121,16 +122,11 @@ optimizereditor::optimizereditor(QString name, QWidget *parent) :
 }
 
 void optimizereditor::max_jobs_changed(int val){
-    //m_jobs_per_dwarf = val;
     m_plan->max_jobs_per_dwarf = val;
     refresh_job_counts();
 }
 
 void optimizereditor::hauler_percent_changed(int val){
-//    float haul = roundf(m_plan->max_jobs_per_dwarf * ((float)val / (float)100));
-//    QString msg = tr("After optimization any dwarf with less than %1 jobs will be assigned as a hauler.")
-//            .arg(QString::number(haul));
-//    ui->sb_hauler_percent->setToolTip(msg);
     m_plan->hauler_percent = val;
 }
 
@@ -138,8 +134,7 @@ void optimizereditor::auto_haul_changed(int val){
     m_plan->auto_haulers = val;
 }
 
-void optimizereditor::pop_percent_changed(int val){
-    //m_pop_percent = val;
+void optimizereditor::pop_percent_changed(int val){    
     m_plan->pop_percent = val;
     populationChanged();
 }
@@ -172,6 +167,7 @@ void optimizereditor::insert_row(laborOptimizerPlan::detail *d){
         cmb_roles->setCurrentIndex(index);
     else
         cmb_roles->setCurrentIndex(0);
+    connect(cmb_roles, SIGNAL(currentIndexChanged(QString)), this, SLOT(role_changed(QString)));
     ui->tw_labors->setCellWidget(row, 1, cmb_roles);
     sortableComboItem* cmbitem = new sortableComboItem;
     ui->tw_labors->setItem(row, 1, cmbitem);
@@ -200,10 +196,6 @@ void optimizereditor::insert_row(laborOptimizerPlan::detail *d){
     ui->tw_labors->setItem(row, 3, item);
 
     QTableWidgetItem *count = new QTableWidgetItem();
-//    int val = 0;
-//    if(d->priority > 0 && d->ratio > 0)
-//        val = calc_actual_count(d->ratio);
-//    count->setData(0, val);
     count->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     count->setTextAlignment(Qt::AlignHCenter);
     ui->tw_labors->setItem(row,4,count);
@@ -234,46 +226,23 @@ void optimizereditor::ratio_changed(double val){
         QModelIndex idx = ui->tw_labors->indexAt(w->pos());
         laborOptimizerPlan::detail *det = m_plan->job_exists(ui->tw_labors->item(idx.row(),0)->data(Qt::UserRole).toInt());
         if(det)
-            det->ratio = val;
-        //ui->tw_labors->item(idx.row(),4)->setData(0,calc_actual_count(static_cast<QDoubleSpinBox*>(ui->tw_labors->cellWidget(idx.row(),3))->value()));
+            det->ratio = val;        
     }
 
     refresh_job_counts();
 }
 
-
-//void optimizereditor::refresh_all_counts(){
-//    m_excluded = 0;
-//    m_target_population = 0;
-//    bool check_nobles = ui->chk_nobles->isChecked();
-//    bool check_military = ui->chk_military->isChecked();
-//    bool check_injured = ui->chk_injured->isChecked();
-
-//    if(check_nobles || check_military || check_injured){
-//        foreach(Dwarf *d, m_population){
-//            if(d)
-//                if((check_nobles && !d->noble_position().isEmpty()) || (check_military && d->active_military()) || (check_injured && d->current_job_id()==52))
-//                    m_excluded++;
-//        }
-//    }
-//    m_total_population = m_population.count() - m_excluded;
-//    m_target_population = (m_pop_percent/(float)100) * (float)m_total_population;
-
-//    refresh_job_counts();
-
-
-//    optimizer->calc_population();
-//    refresh_job_counts();
-//}
+void optimizereditor::role_changed(QString val){
+    QWidget *w = QApplication::focusWidget();
+    if(w){
+        QModelIndex idx = ui->tw_labors->indexAt(w->pos());
+        laborOptimizerPlan::detail *det = m_plan->job_exists(ui->tw_labors->item(idx.row(),0)->data(Qt::UserRole).toInt());
+        if(det)
+            det->role_name = val;
+    }
+}
 
 void optimizereditor::refresh_job_counts(){
-//    m_total_jobs = (roundf(m_target_population * m_jobs_per_dwarf));
-//    refresh_coverage();
-//    m_assigned_jobs = 0;
-//    for(int i = 0; i < ui->tw_labors->rowCount(); i++){
-//        m_assigned_jobs += ui->tw_labors->item(i,4)->data(0).toInt();
-//    }
-
     refresh_actual_counts();
 
     ui->lbl_jobs->setText("Total Jobs: " + QString::number(m_optimizer->total_raw_jobs()));
@@ -284,26 +253,8 @@ void optimizereditor::refresh_job_counts(){
     ui->lbl_counts->setText(pops);
     ui->lbl_counts->setToolTip(msg);
 
-//    QString haul = "???";
-//    haul = QString::number((m_population.count() - m_excluded) - (m_assigned_jobs / ui->sb_max_jobs->value()));
-//    ui->chk_auto->setText("Auto-assign Haulers (Approx. " + haul + " Dwarves)");
-
-//    QPalette pal;
-//    if(m_optimizer->assigned_jobs() > m_optimizer->total_raw_jobs()){
-//        //display_message("Warning! There are more jobs assigned than the workers are capable of handling!");
-//        pal = ui->lbl_workers->palette();
-//        pal.setColor(ui->lbl_workers->foregroundRole(), Qt::red);
-//    }else{
-//        pal.setColor(ui->lbl_workers->foregroundRole(), Qt::black);
-//    }
-    //ui->lbl_workers->setPalette(pal);
-
-    //ui->tw_labors->horizontalHeaderItem(3)->setToolTip(tr("Represents the ratio of the target %1 dwarves which should be assigned to the job.")
-    //                                                   .arg(QString::number(m_target_population)));
     ui->tw_labors->horizontalHeaderItem(3)->setToolTip(tr("Represents the ratio of the total job slots (%1) which should be assigned to the job.")
                                                        .arg(QString::number(m_optimizer->total_raw_jobs())));
-
-
 }
 
 void optimizereditor::filter_option_changed(){
@@ -316,26 +267,11 @@ void optimizereditor::filter_option_changed(){
 
 void optimizereditor::populationChanged(){
     find_target_population(); //update population and refresh counts
-//    float max;
-//    for(int i=0; i < ui->tw_labors->rowCount(); i++){
-//        max = (float)static_cast<QDoubleSpinBox*>(ui->tw_labors->cellWidget(i,3))->value();
-//        ui->tw_labors->item(i,4)->setData(0, calc_actual_count(max));
-//    }
-    //refresh_all_counts();
     refresh_job_counts();
 }
 
 
 void optimizereditor::refresh_actual_counts(){
-//    m_total_coverage = 0;
-//    for(int i = 0; i < ui->tw_labors->rowCount(); i++){
-//        m_total_coverage += (float)static_cast<QDoubleSpinBox*>(ui->tw_labors->cellWidget(i,3))->value();
-//    }
-//    for(int i = 0; i < ui->tw_labors->rowCount(); i++){
-//        float coverage = (float)static_cast<QDoubleSpinBox*>(ui->tw_labors->cellWidget(i,3))->value();
-//        ui->tw_labors->item(i,4)->setData(0, calc_actual_count(coverage));
-//    }
-
     m_optimizer->update_ratios();
 
     for(int i = 0; i < ui->tw_labors->rowCount(); i++){
@@ -358,7 +294,6 @@ void optimizereditor::find_target_population(){
     m_optimizer->update_population(get_dwarfs());
     m_optimizer->calc_population();
     refresh_job_counts();
-    //refresh_all_counts();
 }
 
 void optimizereditor::draw_labor_context_menu(const QPoint &p){
@@ -461,14 +396,6 @@ void optimizereditor::add_new_detail(int id){
     }
 }
 
-//bool optimizereditor::job_exists(int id){
-//    for(int i = 0; i < ui->tw_labors->rowCount(); i++){
-//        if(ui->tw_labors->item(i,0)->data(Qt::UserRole).toInt() == id)
-//            return true;
-//    }
-//    return false;
-//}
-
 QString optimizereditor::find_role(int id){
     Labor *l = GameDataReader::ptr()->get_labor(id);
 
@@ -480,33 +407,6 @@ QString optimizereditor::find_role(int id){
         return "";
     }
 }
-
-//void optimizereditor::save_details(laborOptimizerPlan *p){
-//    QTableWidget* table = ui->tw_labors;
-//    laborOptimizerPlan::detail *d;
-//    bool add;
-//    for(int i= 0; i < table->rowCount(); i++){
-//        add = false;
-//        int id = table->item(i,0)->data(Qt::UserRole).toInt();
-//        d = p->job_exists(id);
-//        if(!d){
-//            d = new laborOptimizerPlan::detail();
-//            add = true;
-//        }
-//        QComboBox *c = static_cast<QComboBox*>(table->cellWidget(i,1));
-//        QString role_name = c->itemData(c->currentIndex(), Qt::UserRole).toString();
-//        float priority = (float)static_cast<QDoubleSpinBox*>(table->cellWidget(i,2))->value();
-//        float max = static_cast<QDoubleSpinBox*>(table->cellWidget(i,3))->value();
-//        d->assigned_laborers = 0;
-//        d->labor_id = id;
-//        d->ratio = max;
-//        d->role_name = role_name;
-//        d->priority = priority;
-
-//        if(add)
-//            p->plan_details.append(d);
-//    }
-//}
 
 void optimizereditor::save(laborOptimizerPlan *p){
     p->exclude_military = ui->chk_military->isChecked();
@@ -560,10 +460,6 @@ void optimizereditor::display_message(QVector<QPair<int, QString> > messages){
     ui->treeMessages->collapseAll();
 
     if(ui->treeMessages->height() <= 5){
-//        QSplitterHandle *h = ui->splitter->handle(1);
-//        QPalette pal = h->palette();
-//        pal.setColor(h->backgroundRole(), QColor(0,102,255));
-//        h->setPalette(pal);
         QList<int> sizes;
         sizes.append(ui->treeMessages->height() - 15);
         sizes.append(15);
@@ -575,10 +471,6 @@ void optimizereditor::display_message(QVector<QPair<int, QString> > messages){
 
 void optimizereditor::clear_log(){
     ui->treeMessages->clear();
-//    QSplitterHandle *h = ui->splitter->handle(1);
-//    QPalette pal = h->palette();
-//    pal.setColor(h->backgroundRole(), QColor(139,137,137));
-//    h->setPalette(pal);
 }
 
 void optimizereditor::save_pressed(){
@@ -603,6 +495,7 @@ void optimizereditor::save_pressed(){
 
     //notify we're done
     this->accept();
+    disconnect();
 }
 
 void optimizereditor::cancel_pressed(){
@@ -610,6 +503,7 @@ void optimizereditor::cancel_pressed(){
     if(is_editing)
         GameDataReader::ptr()->get_opt_plans().insert(m_original_plan->name, m_original_plan);
     this->reject();
+    disconnect();
 }
 
 

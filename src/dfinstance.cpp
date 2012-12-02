@@ -454,6 +454,12 @@ void DFInstance::load_reactions(){
 }
 
 void DFInstance::load_main_vectors(){
+    //material templates
+    QVector<VIRTADDR> temps = enumerate_vector(m_memory_correction + m_layout->address("material_templates_vector"));
+    foreach(VIRTADDR addr, temps){
+        m_material_templates.insert(read_string(addr),addr);
+    }
+
     //world.raws.itemdefs.
     QVector<VIRTADDR> weapons = enumerate_vector(m_memory_correction + m_layout->address("weapons_vector"));
     m_item_vectors.insert(WEAPON,weapons);
@@ -499,7 +505,8 @@ void DFInstance::load_main_vectors(){
     addr = m_memory_correction + m_layout->address("inorganics_vector");
     foreach(VIRTADDR mat, enumerate_vector(addr)){
         //inorganic_raw.material
-        Material* m = Material::get_material(this, mat + m_layout->material_offset("inorganic_materials_vector"), 0);
+        //Material* m = Material::get_material(this, mat + m_layout->material_offset("inorganic_materials_vector"), 0);
+        Material* m = Material::get_material(this, mat, 0, true);
         m_inorganics_vector.append(m);
     }
 
@@ -553,7 +560,7 @@ void DFInstance::load_races_castes(){
         foreach(VIRTADDR race_addr, races) {
             m_races << Race::get_race(this, race_addr);
             //emit progress_value(i++);
-            LOGD << "race " << m_races.at(i)->name() << " index " << i;
+            //LOGD << "race " << m_races.at(i)->name() << " index " << i;
             i++;
         }
     }
@@ -1446,9 +1453,7 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
             //specific plant material
             if(m){
                 if(itype == NONE){
-                    QString sub_name = m->get_material_name(GENERIC);
-                    if(sub_name.toLower()=="thread")
-                        sub_name = m->get_material_name(SOLID).toLower().append(tr(" fabric"));
+                    QString sub_name = m->get_material_name(GENERIC);                    
                     name.append(" ").append(sub_name);
                 }
                 else if(itype == DRINK || itype == LIQUID_MISC)
@@ -1458,7 +1463,7 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
             }
         }
     }
-    return name.toLower();
+    return name.toLower().trimmed();
 }
 
 Material *DFInstance::find_material(int mat_index, short mat_type){

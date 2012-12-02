@@ -58,6 +58,9 @@ THE SOFTWARE.
 #include "laboroptimizer.h"
 #include "optimizereditor.h"
 
+#include "plant.h"
+#include "material.h"
+
 #include "dfinstance.h"
 #ifdef Q_WS_WIN
 #include "dfinstancewindows.h"
@@ -1155,7 +1158,12 @@ void MainWindow::init_optimize(){
 }
 
 void MainWindow::optimize(QString plan_name){
-    LaborOptimizer *o = new LaborOptimizer(GameDataReader::ptr()->get_opt_plans().value(plan_name),this);
+    laborOptimizerPlan *p = GameDataReader::ptr()->get_opt_plans().value(plan_name);
+    if(!p){
+        QMessageBox::information(this, tr("Plan Missing"), tr("Couldn't find optimization plan."));
+        return;
+    }
+    LaborOptimizer *o = new LaborOptimizer(p,this);
     QList<Dwarf*> dwarfs = m_view_manager->get_selected_dwarfs();
     if(dwarfs.count() <= 0)
         dwarfs = m_proxy->get_filtered_dwarves();

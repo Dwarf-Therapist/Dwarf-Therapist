@@ -175,6 +175,7 @@ public:
         QString pref_category;
     };
 
+    VIRTADDR get_material_template(QString temp_id) {return m_material_templates.value(temp_id);}
     QVector<Material *> get_inorganic_materials() {return m_inorganics_vector;}
     QHash<ITEM_TYPE, QVector<VIRTADDR> > get_items() {return m_item_vectors;}
     QVector<VIRTADDR>  get_colors() {return m_color_vector;}
@@ -268,6 +269,8 @@ private:
     QVector<Plant *> m_plants_vector;
     QVector<Material *> m_inorganics_vector;
     QHash<int, Material *> m_base_materials;
+
+    QHash<QString, VIRTADDR> m_material_templates;
 
     void load_hist_figures();
     Material * find_material(int mat_index, short mat_type);

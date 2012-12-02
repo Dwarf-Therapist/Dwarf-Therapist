@@ -37,24 +37,16 @@ private:
     laborOptimizerPlan *m_plan;
     bool is_editing;
     bool loading;
-    //QList<Dwarf*> m_population;
-//    int m_total_jobs;
-//    int m_assigned_jobs;
-//    int m_excluded; //counts nobles and military and injured
-//    int m_total_population; //total selected dwarves - excluded dwarves
-//    float m_target_population; //m_total_population * % population to use
-//    float m_total_coverage;
-//    int m_pop_percent;
-//    int m_jobs_per_dwarf;
     QList<Labor*> m_remaining_labors;
+
 
     void insert_row(laborOptimizerPlan::detail *d);
     void add_new_detail(int id);
-    QString find_role(int id);
-    //bool job_exists(int id);
+
     void save_details(laborOptimizerPlan *p);
     void save(laborOptimizerPlan *p);
 
+    QString find_role(int id);
     QList<Dwarf*> get_dwarfs();
     void find_target_population();    
 
@@ -68,12 +60,12 @@ private slots:
     void display_message(QString msg);
     void clear_log();
     void save_pressed();
-    void cancel_pressed();
-    //void refresh_all_counts();
+    void cancel_pressed();    
     void refresh_job_counts();
     void import_details();
     void export_details();
 
+    void role_changed(QString val);
     void ratio_changed(double);
     void priority_changed(double);
 
