@@ -51,6 +51,7 @@ void Languages::load_data() {
     TRACE << "Starting refresh of Language data at" << hexify(m_address);
 
     LOGD << "Loading language translation tables";
+    qDeleteAll(m_language);
     m_language.clear();
     m_words.clear();
 

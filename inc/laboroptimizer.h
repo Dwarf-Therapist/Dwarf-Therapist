@@ -24,9 +24,12 @@ THE SOFTWARE.
 #define LABOROPTIMIZER_H
 
 #include <QtGui>
-#include "dwarf.h"
-#include "labor.h"
-#include "laboroptimizerplan.h"
+
+class Dwarf;
+class Labor;
+class GameDataReader;
+class laborOptimizerPlan;
+class PlanDetail;
 
 class LaborOptimizer : public QObject {
     Q_OBJECT
@@ -57,7 +60,7 @@ protected:
     QList<Dwarf*> m_dwarfs;
     float m_ratio_sum;
 
-    int m_total_jobs;
+    float m_total_jobs;
     int m_raw_total_jobs;
     int m_estimated_assigned_jobs;    
     int m_total_population; //total selected dwarves - excluded dwarves
@@ -69,7 +72,8 @@ protected:
     struct dwarf_labor_map{
         float rating;
         Dwarf * d;
-        laborOptimizerPlan::detail *det;
+        //laborOptimizerPlan::detail *det;
+        PlanDetail *det;
     };
 
     struct less_than_key

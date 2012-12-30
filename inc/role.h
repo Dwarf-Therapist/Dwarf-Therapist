@@ -27,21 +27,20 @@ THE SOFTWARE.
 #include <QtGui>
 #include "math.h"
 
+class Preference;
+class RoleAspect;
+
 class Role : public QObject {
     Q_OBJECT
 public:
     Role();
     Role(QSettings &s, QObject *parent = 0);
     Role(const Role &r);
+    virtual ~Role();
 
     QString name;
     QString script;
     bool is_custom;
-
-    struct aspect{
-        bool is_neg;
-        float weight;
-    };
 
     struct global_weight{
         bool is_default;
@@ -50,25 +49,30 @@ public:
 
     //unfortunately we need to keep all the keys as a string and cast them so we can use the same functions
     //ie can't pass in a hash with <string, aspect> and <int, aspect>
-    QHash<QString, aspect> attributes;
-    QHash<QString, aspect> skills;
-    QHash<QString, aspect > traits;
+    QHash<QString, RoleAspect*> attributes;
+    QHash<QString, RoleAspect*> skills;
+    QHash<QString, RoleAspect*> traits;
+    QVector<Preference*> prefs;
 
     //global weights
     global_weight attributes_weight;
     global_weight skills_weight;
     global_weight traits_weight;
+    global_weight prefs_weight;
 
     QString get_role_details();
 
     void create_role_details(QSettings &s);
 
-    void write_to_ini(QSettings &s, float default_attributes_weight, float default_traits_weight, float default_skills_weight);
+    void write_to_ini(QSettings &s, float default_attributes_weight, float default_traits_weight, float default_skills_weight, float default_prefs_weight);
 
 protected:
-    void parseAspect(QSettings &s, QString node, global_weight &g_weight, QHash<QString,aspect> &list);
-    void write_aspect_group(QSettings &s, QString group_name, global_weight group_weight, float group_default_weight, QHash<QString,aspect> &list);
-    QString build_aspect_detail(QString title, global_weight aspect_group_weight, float aspect_default_weight, QHash<QString,aspect> &list);
+    void parseAspect(QSettings &s, QString node, global_weight &g_weight, QHash<QString, RoleAspect *> &list, float default_weight);
+    void parsePreferences(QSettings &s, QString node, global_weight &g_weight, float default_weight);
+    void write_aspect_group(QSettings &s, QString group_name, global_weight group_weight, float group_default_weight, QHash<QString, RoleAspect *> &list);
+    void write_pref_group(QSettings &s, float default_prefs_weight);
+    QString build_aspect_detail(QString title, global_weight aspect_group_weight, float aspect_default_weight, QHash<QString, RoleAspect *> &list);
+    QString build_preference_detail(float aspect_default_weight);
     QString role_details;
 };
 #endif // ROLE_H

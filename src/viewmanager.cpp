@@ -78,6 +78,7 @@ void ViewManager::draw_add_tab_button() {
 }
 
 void ViewManager::reload_views() {
+    //qDeleteAll(m_views);
     m_views.clear();
 
     QSettings *s = new QSettings(
@@ -93,7 +94,8 @@ void ViewManager::reload_views() {
         built_in_views << gv;
     }
     s->endArray();
-
+    delete(s);
+    s = 0;
 
     add_weapons_view(built_in_views);
 
@@ -132,6 +134,7 @@ void ViewManager::reload_views() {
         m_views << gv;
     }
     s->endArray();
+    s=0;
 
     LOGI << "Loaded" << m_views.size() << "views from disk";
     draw_add_tab_button();
@@ -178,11 +181,9 @@ void ViewManager::add_weapons_view(QList<GridView*> &built_in_views){
             key.second = wp.second->multi_grasp();
             if(!grouped_by_size.contains(key)){
                 grouped_by_size.insert(key,wp.second);
-            }else{
-                QString name = grouped_by_size.value(key)->name_plural();
+            }else{                
                 Weapon *w = grouped_by_size.value(key);
-                w->name_plural(w->name_plural().append(", ").append(wp.second->name_plural()));
-                name = grouped_by_size.value(key)->name_plural();                
+                w->group_name = w->group_name.append(", ").append(wp.second->name_plural());
             }
         }
 
@@ -196,7 +197,7 @@ void ViewManager::add_weapons_view(QList<GridView*> &built_in_views){
         int count = grouped_by_size.count();
         QPair<long,long> wkeys;
         foreach(wkeys, grouped_by_size.uniqueKeys()){
-            new WeaponColumn(grouped_by_size.value(wkeys)->name_plural(), grouped_by_size.value(wkeys),vcs,this);
+            new WeaponColumn(grouped_by_size.value(wkeys)->group_name, grouped_by_size.value(wkeys),vcs,this);
         }
         gv->add_set(vcs);
         gv->set_is_custom(false);
@@ -384,9 +385,21 @@ void ViewManager::setCurrentIndex(int idx) {
     foreach(GridView *v, m_views) {
         if (v->name() == tabText(idx)) {
             stv->is_loading_rows = true;
-            s->setValue("read_animals",(bool)(tabText(idx).contains("animals",Qt::CaseInsensitive)));
-            m_model->set_grid_view(v);            
 
+            s->setValue("read_animals",(bool)(tabText(idx).contains("animals",Qt::CaseInsensitive)));
+
+//            if(m_model && m_model->current_grid_view() && m_model->current_grid_view() && m_model->current_grid_view() != v){
+//                foreach(ViewColumnSet *set, m_model->current_grid_view()->sets()) {
+//                    foreach(ViewColumn *col, set->columns()) {
+//                        col->clear_cells();
+//                    }
+//                }
+//                m_model->current_grid_view()->clear();
+
+//                m_model->set_grid_view(v);
+//            }else
+//                int z = 0;
+            m_model->set_grid_view(v);
             if(s->value("options/grid/group_all_views",true).toBool()){
                 if(prev_view){
                     m_model->set_group_by(prev_view->m_last_group_by);
@@ -409,12 +422,8 @@ void ViewManager::setCurrentIndex(int idx) {
             }
             m_proxy->sort(0,m_proxy->m_last_sort_order); //group sort
             stv->sortByColumn(stv->m_last_sorted_col,stv->m_last_sort_order); //individual column sort
-            stv->m_selected.clear(); //will be reloaded below when re-selecting, however after committing, selection is cleared..
-            QList<Dwarf*> tmp_list;
+            stv->m_selected.clear(); //will be reloaded below when re-selecting, however after committing, selection is cleared..            
             foreach(Dwarf *d, m_selected_dwarfs) {
-                tmp_list << d;
-            }
-            foreach(Dwarf *d, tmp_list) {
                 stv->select_dwarf(d);
             }
             stv->is_loading_rows = false;
@@ -473,7 +482,6 @@ int ViewManager::add_tab_from_action() {
 
 int ViewManager::add_tab_for_gridview(GridView *v) {
     v->set_active(true);
-    //QScrollArea *sa = new QScrollArea(this);
     StateTableView *stv = new StateTableView(this);
     stv->setSortingEnabled(false);
     stv->set_model(m_model, m_proxy);
@@ -487,7 +495,6 @@ int ViewManager::add_tab_for_gridview(GridView *v) {
                                          const QItemSelection &)));
     connect(stv,SIGNAL(squad_leader_changed()),this,SLOT(show_squad_warning()));
     stv->show();
-    //int new_idx = addTab(sa, v->name());
     int new_idx = addTab(stv, v->name());
     write_tab_order();
     return new_idx;

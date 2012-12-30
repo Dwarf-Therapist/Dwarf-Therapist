@@ -30,10 +30,10 @@ THE SOFTWARE.
 
 // forward declaration
 class QSettings;
-#include "labor.h"
-#include "attribute.h"
-#include "role.h"
-#include "laboroptimizerplan.h"
+class Labor;
+class Attribute;
+class Role;
+class laborOptimizerPlan;
 class Trait;
 class MilitaryPreference;
 class Profession;
@@ -129,12 +129,14 @@ public:
     }
 
     const QVector<int> moodable_skills() {return m_moodable_skills;}
+    const int get_pref_from_skill(int skill_id) {return m_mood_skills_profession_map.value(skill_id);}
+
+    static QStringList m_seasons;
+    static QStringList m_months;
 
 protected:
     GameDataReader(QObject *parent = 0);
 private:
-    void load_race_names();
-    void load_caste_names();
     static GameDataReader *m_instance;
     QSettings *m_data_settings;
 
@@ -172,5 +174,10 @@ private:
     QHash<QString, QStringList> m_caste_names;
 
     QVector<int> m_moodable_skills;
+    QMap<int, int> m_mood_skills_profession_map;
+
+    void load_race_names();
+    void load_caste_names();
+    void build_calendar();
 };
 #endif

@@ -24,8 +24,9 @@ THE SOFTWARE.
 #define ROLECOLUMN_H
 
 #include "viewcolumn.h"
-#include "dwarf.h"
-#include "dfinstance.h"
+
+class Dwarf;
+class Role;
 
 class RoleColumn : public ViewColumn {
     Q_OBJECT
@@ -36,7 +37,7 @@ public:
     RoleColumn(const QString &title, Role *r, ViewColumnSet *set = 0, QObject *parent = 0);
     RoleColumn(QSettings &s, ViewColumnSet *set, QObject *parent);
     RoleColumn(const RoleColumn &to_copy); // copy ctor
-    RoleColumn* clone() {return new RoleColumn(*this);}
+    RoleColumn* clone() {return new RoleColumn(*this);}    
     QStandardItem *build_cell(Dwarf *d);
     QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 
@@ -45,6 +46,7 @@ public:
     //override
     void write_to_ini(QSettings &s){ViewColumn::write_to_ini(s);}
 
+public slots:
     void read_settings();
 
 

@@ -55,6 +55,7 @@ void Squad::refresh_data() {
     m_mem = m_df->memory_layout();
     TRACE << "Starting refresh of squad data at" << hexify(m_address);
 
+    qDeleteAll(m_members);
     m_members.clear();
 
     read_id();

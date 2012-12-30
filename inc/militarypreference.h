@@ -57,10 +57,8 @@ public:
         s.endArray();
     }
 
-    virtual ~MilitaryPreference() {
-        foreach(PreferenceValue *pv, m_values) {
-            delete pv;
-        }
+    virtual ~MilitaryPreference() {        
+        qDeleteAll(m_values);
         m_values.clear();
     }
 

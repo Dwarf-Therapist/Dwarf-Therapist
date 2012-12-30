@@ -31,6 +31,10 @@ THE SOFTWARE.
 #include "utils.h"
 #include "dfinstance.h"
 #include "fortressentity.h"
+#include "caste.h"
+#include "skill.h"
+#include "attribute.h"
+#include "attributelevel.h"
 
 DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
@@ -41,17 +45,38 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
 
 void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     // Draw the name/profession text labels...
-    ui->lbl_dwarf_name->setText(d->nice_name());
+    ui->lbl_dwarf_name->setText(QString("<img src='%1'> %2").arg(d->gender_icon_path()).arg(d->nice_name()));
+    ui->lbl_dwarf_name->setToolTip(tr("Name: %1").arg(ui->lbl_dwarf_name->text()));
+
     ui->lbl_age->setText(QString("Age: %1 years").arg(d->get_age()));
+    ui->lbl_age->setToolTip(d->get_migration_desc());
+
     ui->lbl_translated_name->setText(QString("(%1)").arg(d->translated_name()));
-    ui->lbl_profession->setText(d->profession());
-    ui->lbl_noble->setText(d->noble_position());
-    if(d->noble_position()==""){
-        ui->lbl_noble->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Ignored);
+    ui->lbl_translated_name->setToolTip(tr("Translated Name: %1").arg(ui->lbl_translated_name->text()));
+
+    ui->lbl_profession->setText(QString("<img src='%1'> %2").arg(d->profession_icon_path()).arg(d->profession()));
+    ui->lbl_profession->setToolTip(tr("Profession: %1").arg(ui->lbl_profession->text()));
+
+    if(d->noble_position().isEmpty()){
+        ui->lbl_noble_position->setText("");
         ui->lbl_noble_position->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Ignored);
+        ui->lbl_noble->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Ignored);
     }
-    else
-        ui->lbl_noble->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+    else{
+        ui->lbl_noble->setText(tr("<b>Noble Position%1</b>").arg(d->noble_position().contains(",") ? "s" : ""));
+        ui->lbl_noble_position->setText(d->noble_position());
+        ui->lbl_noble_position->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
+    }
+    ui->lbl_noble_position->setToolTip(ui->lbl_noble_position->text());
+
+    if(d->artifact_name().isEmpty()){
+        ui->lbl_artifact->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);
+        ui->lbl_artifact->setText("");
+    }else{
+        ui->lbl_artifact->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+        ui->lbl_artifact->setText(tr("Creator of '%1'").arg(d->artifact_name()));
+    }
+    ui->lbl_artifact->setToolTip(ui->lbl_artifact->text());
 
     ui->lbl_current_job->setText(QString("%1").arg(d->current_job()));
     ui->lbl_current_job->setToolTip(tr("Job ID: %1").arg(QString::number(d->current_job_id())));
@@ -72,7 +97,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
     if(DT->user_settings()->value("options/highlight_nobles",false).toBool() && d->noble_position() != ""){
         color = DT->get_DFInstance()->fortress()->get_noble_color(d->historical_id());
-        ui->lbl_noble->setStyleSheet(QString("background: QLinearGradient(x1:0,y1:0,x2:0.9,y1:0,stop:0 %1, stop:1 %2); color: %3")
+        ui->lbl_noble_position->setStyleSheet(QString("background: QLinearGradient(x1:0,y1:0,x2:0.9,y1:0,stop:0 %1, stop:1 %2); color: %3")
                                      .arg(color.name())
                                          .arg(color2.name())
                                          .arg(compliment(color).name())
@@ -140,8 +165,8 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
 
     // SKILLS TABLE
-    QVector<Skill> *skills = d->get_skills();
-    QTableWidget *tw = new QTableWidget(skills->size(), 3, this);
+    QVector<Skill*> *skills = d->get_skills();
+    QTableWidget *tw = new QTableWidget(0, 3, this);
     details_splitter->addWidget(tw);
     m_cleanup_list << tw;
     tw->setEditTriggers(QTableWidget::NoEditTriggers);
@@ -153,37 +178,49 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     tw->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
     tw->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
     tw->setSortingEnabled(false); // no sorting while we're inserting    
+    int real_count = 0;
     for (int row = 0; row < skills->size(); ++row) {
-        tw->setRowHeight(row, 18);
-        Skill s = skills->at(row);
-        QTableWidgetItem *text = new QTableWidgetItem(QString("%1").arg(s.name()));
+        Skill *s = skills->at(row);
+        if(s->rating() > -1)
+        {
+            real_count = tw->rowCount();
+            tw->insertRow(real_count);
+            tw->setRowHeight(real_count, 18);
+            QTableWidgetItem *text = new QTableWidgetItem(QString("%1").arg(s->name()));
 
-        QTableWidgetItem *level = new QTableWidgetItem;
-        level->setData(0, d->skill_rating(s.id()));
-        level->setTextAlignment(Qt::AlignHCenter);
+            QTableWidgetItem *level = new QTableWidgetItem;
+            level->setData(0, d->skill_rating(s->id()));
+            level->setTextAlignment(Qt::AlignHCenter);
 
-        if(s.id()==d->highest_moodable().id()){
-            text->setBackgroundColor(QColor(220, 220, 255, 255));
-            text->setToolTip(tr("%1").arg(d->had_mood() ? "Has already had a mood!" : "This is the highest moodable skill."));
+            if(s->id()==d->highest_moodable()->id()){
+                if(d->had_mood()){
+                    text->setBackgroundColor(QColor(153,102,34,255));
+                    text->setToolTip(tr("Has already had a mood!"));
+                }
+                else{
+                    text->setBackgroundColor(QColor(220, 220, 255, 255));
+                    text->setToolTip(tr("This is the highest moodable skill."));
+                }
+            }
+
+            //        QColor rust = QColor(s.skill_color());
+            //        if(rust!=QColor(Qt::black)){
+            //            rust.setAlpha(0); //if we get rust stuff setup change this from transparent
+            //            level->setBackgroundColor(rust);
+            //        }
+            level->setToolTip(s->rust_rating());
+
+
+            QProgressBar *pb = new QProgressBar(tw);
+            pb->setRange(s->exp_for_current_level(), s->exp_for_next_level());
+            pb->setValue(s->actual_exp());
+            pb->setDisabled(true);// this is to keep them from animating and looking all goofy
+            pb->setToolTip(s->exp_summary());
+
+            tw->setItem(real_count, 0, text);
+            tw->setItem(real_count, 1, level);
+            tw->setCellWidget(real_count, 2, pb);
         }
-
-//        QColor rust = QColor(s.skill_color());
-//        if(rust!=QColor(Qt::black)){
-//            rust.setAlpha(0); //if we get rust stuff setup change this from transparent
-//            level->setBackgroundColor(rust);
-//        }
-        level->setToolTip(s.rust_rating());
-
-
-        QProgressBar *pb = new QProgressBar(tw);
-        pb->setRange(s.exp_for_current_level(), s.exp_for_next_level());
-        pb->setValue(s.actual_exp());        
-        pb->setDisabled(true);// this is to keep them from animating and looking all goofy
-        pb->setToolTip(s.exp_summary());
-
-        tw->setItem(row, 0, text);        
-        tw->setItem(row, 1, level);
-        tw->setCellWidget(row, 2, pb);
     }
     tw->setSortingEnabled(true); // no sorting while we're inserting    
     tw->sortItems(m_skill_sort_col, static_cast<Qt::SortOrder>(m_skill_sort_desc));
@@ -211,7 +248,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
         tw_attributes->insertRow(0);
         tw_attributes->setRowHeight(0, 18);
-        Caste::attribute_level l = d->get_attribute_rating(row);
+        AttributeLevel l = d->get_attribute_rating(row);
 
         QTableWidgetItem *attribute_name = new QTableWidgetItem(r->name);
         QTableWidgetItem *attribute_rating = new QTableWidgetItem;
@@ -328,7 +365,9 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         tw_roles->setItem(0, 0, role_name);
         tw_roles->setItem(0, 1, role_rating);
 
-        role_rating->setToolTip(gdr->get_role(name)->get_role_details());
+        Role *r = gdr->get_role(name);
+        if(r)
+            role_rating->setToolTip(r->get_role_details());
     }
     tw_roles->setSortingEnabled(true);
     tw_roles->sortItems(m_role_sort_col, static_cast<Qt::SortOrder>(m_role_sort_desc));

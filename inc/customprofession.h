@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define CUSTOM_PROFESSION_H
 
 #include <QtGui>
+#include "customcolor.h"
 class Dwarf;
 
 namespace Ui
@@ -62,6 +63,15 @@ public:
 	//! Get the game-visible name of this profession
 	QString get_name() {return m_name;}
 
+    //! Get the icon resource name for this profession
+    QString get_icon_path() {return m_path;}
+    int get_icon_id() {return m_icon_id;}
+
+    //! Get the icon's text color for this profession
+    QColor get_color() {return m_color;}
+
+    QString get_text() {return m_txt;}
+
 	//! Check if our template has a particular labor enabled
 	bool is_active(int labor_id);
 
@@ -84,15 +94,27 @@ public:
 		void cancel() {return;}
 		void item_check_state_changed(QListWidgetItem*);
         void mask_changed(bool value);
+        void set_path(int id) {
+            m_icon_id = id;
+            m_path = ":/profession/img/profession icons/prof_" + QString::number(id) + ".png";}
+        void choose_icon();
+        void refresh_icon();
+        void set_color(QColor c){m_color = c;}
+        void set_text(QString s){m_txt = s;}
 
 private:
 	bool is_valid();
     Ui::CustomProfessionEditor *ui;
 	Dwarf *m_dwarf;
 	QString m_name;
+    QString m_path;
+    int m_icon_id;
 	QMap<int, bool> m_active_labors;
 	QDialog *m_dialog;
     bool m_is_mask;
+    CustomColor *m_color_chooser;
+    QColor m_color;
+    QString m_txt;
 
 };
 #endif

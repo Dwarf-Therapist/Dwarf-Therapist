@@ -37,6 +37,7 @@ class CustomProfession;
 class ViewManager;
 class Scanner;
 class ScriptDialog;
+class roleDialog;
 
 namespace Ui
 {
@@ -133,6 +134,7 @@ private:
     CustomProfession *m_temp_cp;
     Scanner *m_scanner;
     ScriptDialog *m_script_dialog;
+    roleDialog *m_role_editor;
     QHttp *m_http;
     bool m_reading_settings;
     bool m_show_result_on_equal; //! used during version checks
@@ -170,6 +172,7 @@ private:
         void edit_opt();
         void remove_opt();
         void done_editing_opt_plan(int result);
+        void done_editing_role(int result);
 };
 
 #endif // MAINWINDOW_H

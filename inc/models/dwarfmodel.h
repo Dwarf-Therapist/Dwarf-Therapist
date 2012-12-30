@@ -87,7 +87,8 @@ public:
     virtual ~DwarfModel();
     void set_instance(DFInstance *df) {m_df = df;}
     void set_grid_view(GridView *v) {m_gridview = v;}
-    void clear_all(); // reset everything to normal
+    GridView * current_grid_view() {return m_gridview;}
+    void clear_all(bool clr_pend); // reset everything to normal
 
 
     GROUP_BY current_grouping() const {return m_group_by;}
@@ -104,11 +105,6 @@ public:
     QList<QPersistentModelIndex> findAll(const QVariant &needle, int role = Qt::DisplayRole, int column = 0, QModelIndex start_index = QModelIndex());
 
     static bool compare_turn_count(const Dwarf *a, const Dwarf *b);
-    static void build_calendar();
-    QString get_migration_desc(Dwarf *d);
-
-    static QStringList m_seasons;
-    static QStringList m_months;        
 
     void save_rows();
 

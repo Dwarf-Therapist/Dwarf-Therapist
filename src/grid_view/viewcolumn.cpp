@@ -25,6 +25,9 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include "dwarf.h"
 #include "utils.h"
+#include "dwarftherapist.h"
+
+#include "truncatingfilelogger.h"
 
 ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,
                        QObject *parent)
@@ -34,12 +37,13 @@ ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,
     , m_override_set_colors(false)
     , m_set(set)
     , m_type(type)
-    , m_count(-1)
+    , m_count(-1)    
 {
     if (set) {
         set->add_column(this);
         m_bg_color = set->bg_color();
     }
+    connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 }
 
 ViewColumn::ViewColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
@@ -49,7 +53,7 @@ ViewColumn::ViewColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     , m_override_set_colors(s.value("override_color", false).toBool())
     , m_set(set)
     , m_type(get_column_type(s.value("type", "DEFAULT").toString()))
-    , m_count(-1)
+    , m_count(-1)    
 {
     if (set) {
         set->add_column(this);
@@ -57,6 +61,8 @@ ViewColumn::ViewColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     }
     if (m_override_set_colors)
         m_bg_color = from_hex(s.value("bg_color").toString());
+
+    connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 }
 
 ViewColumn::ViewColumn(const ViewColumn &to_copy)
@@ -66,11 +72,15 @@ ViewColumn::ViewColumn(const ViewColumn &to_copy)
     , m_override_set_colors(to_copy.m_override_set_colors)
     , m_set(to_copy.m_set)
     , m_type(to_copy.m_type)
-    , m_count(to_copy.m_count)
+    , m_count(to_copy.m_count)    
 {
     // cloning should not add it to the copy's set! You must add it manually!
     if (m_set && !m_override_set_colors)
         m_bg_color = m_set->bg_color();
+}
+
+ViewColumn::~ViewColumn(){
+    clear_cells();
 }
 
 QStandardItem *ViewColumn::init_cell(Dwarf *d) {
@@ -86,8 +96,13 @@ QStandardItem *ViewColumn::init_cell(Dwarf *d) {
     item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
     item->setData(false, DwarfModel::DR_IS_AGGREGATE);
     item->setData(d->id(), DwarfModel::DR_ID);
-    m_cells[d] = item;
+    m_cells[d] = item;    
+
     return item;
+}
+
+void ViewColumn::clear_cells(){
+    m_cells.clear();
 }
 
 void ViewColumn::write_to_ini(QSettings &s) {

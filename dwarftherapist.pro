@@ -185,7 +185,16 @@ HEADERS += inc/win_structs.h \
     inc/item.h \
     inc/laboroptimizer.h \
     inc/optimizereditor.h \
-    inc/laboroptimizerplan.h
+    inc/laboroptimizerplan.h \
+    inc/preference.h \
+    inc/flagarray.h \
+    inc/attributelevel.h \
+    inc/plandetail.h \
+    inc/roleaspect.h \
+    inc/grid_view/professioncolumn.h \
+    inc/sortabletableitems.h \
+    inc/iconchooser.h \
+    inc/grid_view/highestmoodcolumn.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -250,7 +259,11 @@ SOURCES += src/viewmanager.cpp \
     src/docks/preferencesdock.cpp \
     src/laboroptimizer.cpp \
     src/optimizereditor.cpp \
-    src/laboroptimizerplan.cpp
+    src/laboroptimizerplan.cpp \
+    src/preference.cpp \
+    src/grid_view/professioncolumn.cpp \
+    src/iconchooser.cpp \
+    src/grid_view/highestmoodcolumn.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

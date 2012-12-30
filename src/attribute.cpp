@@ -24,7 +24,6 @@ THE SOFTWARE.
 #include "attribute.h"
 #include "dwarfstats.h"
 
-
 Attribute::Attribute(QSettings &s, QObject *parent)
         : QObject(parent)
         , id(s.value("id",0).toInt())
@@ -48,30 +47,30 @@ void Attribute::load_role_bin(int id)
     //ratings, rather than comparing them to those in the same caste (obviously this mostly affects mods)
     QList<int> raws;
     //-
-    if(id==Attribute::AT_AGILITY)
+    if(id==AT_AGILITY)
     {
         raws << 150 << 600 << 800 << 900 << 1000 << 1100 << 1500 << 5000;        
         m_aspect_type = negative;
     }
     //avg
-    if (id==Attribute::AT_ENDURANCE || id==Attribute::AT_RECUPERATION || id==Attribute::AT_DISEASE_RESISTANCE ||
-            id==Attribute::AT_INTUITION || id==Attribute::AT_WILLPOWER || id==Attribute::AT_KINESTHETIC_SENSE ||
-            id==Attribute::AT_LINGUISTIC_ABILITY || id==Attribute::AT_MUSICALITY || id==Attribute::AT_EMPATHY ||
-            id==Attribute::AT_SOCIAL_AWARENESS)
+    if (id==AT_ENDURANCE || id==AT_RECUPERATION || id==AT_DISEASE_RESISTANCE ||
+            id==AT_INTUITION || id==AT_WILLPOWER || id==AT_KINESTHETIC_SENSE ||
+            id==AT_LINGUISTIC_ABILITY || id==AT_MUSICALITY || id==AT_EMPATHY ||
+            id==AT_SOCIAL_AWARENESS)
     {
         raws << 200 << 700 << 900 << 1000 << 1100 << 1300 << 2000 << 5000;
         m_aspect_type = average;
 
     }
     //+
-    if (id==Attribute::AT_STRENGTH || id==Attribute::AT_TOUGHNESS || id==Attribute::AT_ANALYTICAL_ABILITY ||
-            id==Attribute::AT_CREATIVITY || id==Attribute::AT_PATIENCE || id==Attribute::AT_MEMORY)
+    if (id==AT_STRENGTH || id==AT_TOUGHNESS || id==AT_ANALYTICAL_ABILITY ||
+            id==AT_CREATIVITY || id==AT_PATIENCE || id==AT_MEMORY)
     {
         raws << 450 << 950 << 1150 << 1250 << 1350 << 1550 << 2250 << 5000;
         m_aspect_type = positive;
     }
     //++
-    if( id==Attribute::AT_SPATIAL_SENSE || id==Attribute::AT_FOCUS)
+    if( id==AT_SPATIAL_SENSE || id==AT_FOCUS)
     {
         raws << 700 << 1200 << 1400 << 1500 << 1600 << 1800 << 2500 << 5000;
         m_aspect_type = double_positive;

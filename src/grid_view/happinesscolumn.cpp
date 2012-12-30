@@ -33,14 +33,14 @@ HappinessColumn::HappinessColumn(QString title, ViewColumnSet *set, QObject *par
 	: ViewColumn(title, CT_HAPPINESS, set, parent)
 	, m_colors(QMap<Dwarf::DWARF_HAPPINESS, QColor>())
 {
-	read_settings();
-	connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings())); // for color changes
+	read_settings();	
 }
 
 HappinessColumn::HappinessColumn(const HappinessColumn &to_copy)
     : ViewColumn(to_copy)
     , m_colors(to_copy.m_colors)
-{}
+{    
+}
 
 QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
 	QStandardItem *item = init_cell(d);
@@ -53,12 +53,12 @@ QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
 
 	item->setData(CT_HAPPINESS, DwarfModel::DR_COL_TYPE);
 	item->setData(d->get_raw_happiness(), DwarfModel::DR_SORT_VALUE);
-	QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%4</h4>")
-					  .arg(m_title)
+    QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%4</h4>")
+                      .arg(m_title)
 					  .arg(Dwarf::happiness_name(d->get_happiness()))
 					  .arg(d->get_raw_happiness())
-					  .arg(d->nice_name());
-	item->setToolTip(tooltip);
+                      .arg(d->nice_name());
+    item->setToolTip(tooltip);
 	QColor bg = m_colors[d->get_happiness()];
     item->setBackground(QBrush(bg));
 
@@ -77,8 +77,8 @@ QStandardItem *HappinessColumn::build_aggregate(const QString &, const QVector<D
 			lowest_dwarf = d->nice_name();
 		}
 	}
-	item->setToolTip(tr("<h3>%1</h3>Lowest Happiness in group: <b>%2: %3</b>")
-		.arg(m_title)
+    item->setToolTip(tr("<h3>%1</h3>Lowest Happiness in group: <b>%2: %3</b>")
+        .arg(m_title)
 		.arg(lowest_dwarf)
 		.arg(Dwarf::happiness_name(lowest)));
 	item->setData(m_colors[lowest], Qt::BackgroundColorRole);
@@ -87,14 +87,13 @@ QStandardItem *HappinessColumn::build_aggregate(const QString &, const QVector<D
 }
 
 void HappinessColumn::read_settings() {
-	QSettings *s = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
+    QSettings *s = DT->user_settings();
 	s->beginGroup("options/colors/happiness");
 	foreach(QString k, s->childKeys()) {
 		Dwarf::DWARF_HAPPINESS h = static_cast<Dwarf::DWARF_HAPPINESS>(k.toInt());
 		m_colors[h] = s->value(k).value<QColor>();
 	}
 	s->endGroup();
-	redraw_cells();
 }
 
 void HappinessColumn::redraw_cells() {

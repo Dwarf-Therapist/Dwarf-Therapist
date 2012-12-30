@@ -54,6 +54,9 @@
         <property name="statusTip">
          <string>Change how dwarves are grouped in the table</string>
         </property>
+        <property name="maxVisibleItems">
+         <number>30</number>
+        </property>
         <item>
          <property name="text">
           <string>Nothing</string>
@@ -92,7 +95,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="lbl_run_filter">
         <property name="text">
          <string>Run Filter Script</string>
         </property>
@@ -127,7 +130,7 @@
        <widget class="QLabel" name="lbl_dwarf_total">
         <property name="font">
          <font>
-          <pointsize>20</pointsize>
+          <pointsize>16</pointsize>
          </font>
         </property>
         <property name="toolTip">
@@ -149,7 +152,7 @@
        <widget class="QLabel" name="lbl_pending_changes">
         <property name="font">
          <font>
-          <pointsize>20</pointsize>
+          <pointsize>16</pointsize>
          </font>
         </property>
         <property name="text">
@@ -545,6 +548,9 @@
    <property name="text">
     <string>Read Dwarves</string>
    </property>
+   <property name="iconText">
+    <string>Read Dwarves</string>
+   </property>
    <property name="toolTip">
     <string>Attempt to load all Dwarves from DF</string>
    </property>
@@ -627,7 +633,10 @@
      <normaloff>:/img/table_delete.png</normaloff>:/img/table_delete.png</iconset>
    </property>
    <property name="text">
-    <string>Clear Pending Changes</string>
+    <string> C&amp;lear </string>
+   </property>
+   <property name="iconText">
+    <string> C&amp;lear </string>
    </property>
    <property name="toolTip">
     <string>Abort all uncomitted changes</string>
@@ -642,7 +651,10 @@
      <normaloff>:/img/table_go.png</normaloff>:/img/table_go.png</iconset>
    </property>
    <property name="text">
-    <string>Commit Pending Changes</string>
+    <string>&amp;Commit</string>
+   </property>
+   <property name="iconText">
+    <string> &amp;Commit </string>
    </property>
    <property name="toolTip">
     <string>Write all uncomitted changes to DF</string>

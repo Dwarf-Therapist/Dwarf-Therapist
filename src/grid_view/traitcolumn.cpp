@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "trait.h"
 #include "gamedatareader.h"
 #include "dwarfstats.h"
+#include "dwarftherapist.h"
 
 TraitColumn::TraitColumn(const QString &title, const short &trait_id, ViewColumnSet *set, QObject *parent) 
     : ViewColumn(title, CT_TRAIT, set, parent)
@@ -50,7 +51,8 @@ TraitColumn::TraitColumn(const TraitColumn &to_copy)
     : ViewColumn(to_copy)
     , m_trait_id(to_copy.m_trait_id)
     , m_trait(to_copy.m_trait)
-{}
+{
+}
 
 QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
@@ -73,6 +75,7 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
             .arg(msg)
             .arg(d->nice_name());
     item->setToolTip(tooltip);
+
     return item;
 }
 

@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include "defines.h"
 #include "labor.h"
 #include "profession.h"
+#include "dwarftherapist.h"
+#include "iconchooser.h"
 
 /*!
 Default ctor. Creates a blank skill template with no name
@@ -37,8 +39,10 @@ CustomProfession::CustomProfession(QObject *parent)
     , ui(new Ui::CustomProfessionEditor)
     , m_dwarf(0)
     , m_dialog(0)
-    , m_is_mask(false)
-{}
+    , m_is_mask(false)    
+    , m_color(Qt::black)
+{
+}
 
 /*!
 When passed in a pointer to a Dwarf, this new custom profession
@@ -56,6 +60,7 @@ CustomProfession::CustomProfession(Dwarf *d, QObject *parent)
     , m_dwarf(d)
     , m_dialog(0)
     , m_is_mask(false)
+    , m_color(Qt::black)
 {
     GameDataReader *gdr = GameDataReader::ptr();
     QList<Labor*> labors = gdr->get_ordered_labors();
@@ -63,7 +68,7 @@ CustomProfession::CustomProfession(Dwarf *d, QObject *parent)
     foreach(Labor *l, labors) {
         if (m_dwarf && m_dwarf->labor_enabled(l->labor_id))
             add_labor(l->labor_id);
-    }
+    }    
 }
 
 /*!
@@ -114,11 +119,19 @@ as a list of labors that can be enabled/disabled via checkboxes
 int CustomProfession::show_builder_dialog(QWidget *parent) {
     GameDataReader *gdr = GameDataReader::ptr();
 
-    m_dialog = new QDialog(parent);
+    m_dialog = new QDialog(parent);    
+
     ui->setupUi(m_dialog);
+
     ui->name_edit->setText(m_name);
+    refresh_icon();
     connect(ui->name_edit, SIGNAL(textChanged(const QString &)), this, SLOT(set_name(QString)));
     connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
+
+    m_color_chooser = new CustomColor("",tr("The color of the text drawn over the icon."),
+                                 "text_color", Qt::black, 0);
+    m_color_chooser->set_color(m_color);
+    ui->hLayoutText->insertWidget(3,m_color_chooser);
 
     QList<Labor*> labors = gdr->get_ordered_labors();
     int num_active = 0;
@@ -136,7 +149,7 @@ int CustomProfession::show_builder_dialog(QWidget *parent) {
     }
 
     ui->chk_mask->setChecked(m_is_mask);
-    ui->chk_mask->setToolTip("This profession's labours will be applied in addition to those already there.");
+    ui->chk_mask->setToolTip("This profession's labours will be applied in addition to any labors already enabled.");
     connect(ui->chk_mask,SIGNAL(clicked(bool)),this,SLOT(mask_changed(bool)));
 
     connect(ui->labor_list,
@@ -144,10 +157,16 @@ int CustomProfession::show_builder_dialog(QWidget *parent) {
             this,
             SLOT(item_check_state_changed(QListWidgetItem*)));
 
+    connect(ui->btnIcon,SIGNAL(clicked()),this,SLOT(choose_icon()));
 
     ui->lbl_skill_count->setNum(num_active);
+    ui->le_prefix->setText(m_txt);
+
     int code = m_dialog->exec();
+
+    m_color = m_color_chooser->get_color();
     m_dialog->deleteLater();
+    m_txt = ui->le_prefix->text();
     return code;
 }
 
@@ -213,4 +232,17 @@ void CustomProfession::delete_from_disk() {
     s.beginGroup("custom_professions");
     s.remove(m_name);
     s.endGroup();
+}
+
+void CustomProfession::choose_icon(){
+    IconChooser *ic = new IconChooser();
+    ic->exec();
+    m_icon_id = ic->selected_id;
+    m_path = ":/profession/img/profession icons/prof_" + QString::number(m_icon_id) + ".png";
+    refresh_icon();
+}
+
+void CustomProfession::refresh_icon(){
+    m_dialog->setWindowIcon(QIcon(m_path));
+    ui->lbl_icon->setText(QString("%2 <img src='%1'>").arg(m_path).arg("Icon"));
 }

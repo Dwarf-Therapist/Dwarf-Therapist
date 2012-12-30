@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include "uberdelegate.h"
 #include "dwarfmodel.h"
 #include "dwarfmodelproxy.h"
+#include "gamedatareader.h"
 #include "dwarf.h"
 #include "defines.h"
 #include "gridview.h"
@@ -31,6 +32,9 @@ THE SOFTWARE.
 #include "utils.h"
 #include "dwarftherapist.h"
 #include "militarypreference.h"
+#include "skill.h"
+#include "labor.h"
+#include "customprofession.h"
 
 UberDelegate::UberDelegate(QObject *parent)
     : QStyledItemDelegate(parent)
@@ -66,6 +70,8 @@ void UberDelegate::read_settings() {
     s->beginGroup("colors");
     color_skill = s->value("skill").value<QColor>();
     color_dirty_border = s->value("dirty_border").value<QColor>();
+    color_had_mood = s->value("had_mood_border").value<QColor>();
+    color_mood = s->value("highest_mood_border").value<QColor>();
     color_active_labor = s->value("active_labor").value<QColor>();
     color_active_group = s->value("active_group").value<QColor>();
     color_inactive_group= s->value("inactive_group").value<QColor>();
@@ -74,25 +80,27 @@ void UberDelegate::read_settings() {
     color_border = s->value("border").value<QColor>();
     s->endGroup();
     s->endGroup();
-    cell_size = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
+    cell_size = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();    
     cell_padding = s->value("options/grid/cell_padding", 0).toInt();
+    cell_size += (cell_padding*2)+2; //increase the cell size by padding
     auto_contrast = s->value("options/auto_contrast", true).toBool();
     draw_aggregates = s->value("options/show_aggregates", true).toBool();
     m_skill_drawing_method = static_cast<SKILL_DRAWING_METHOD>(s->value("options/grid/skill_drawing_method", SDM_GROWING_CENTRAL_BOX).toInt());
     draw_happiness_icons = s->value("options/grid/happiness_icons",true).toBool();
+    color_mood_cells = s->value("options/grid/color_mood_cells",false).toBool();
+    m_fnt = s->value("options/grid/font", QFont("Segoe UI", 8)).value<QFont>();
 }
 
 void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
     if (!proxy_idx.isValid()) {
         return;
     }
-    if (proxy_idx.column() == 0) {
+    if (proxy_idx.column() == 0) {        
         QStyledItemDelegate::paint(p, opt, proxy_idx);
         return;
     }
 
     paint_cell(p, opt, proxy_idx);
-
 
     if (m_model && proxy_idx.column() == m_model->selected_col()) {
         p->save();
@@ -108,15 +116,17 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     if (m_proxy)
         model_idx = m_proxy->mapToSource(idx);
 
-    COLUMN_TYPE type = static_cast<COLUMN_TYPE>(model_idx.data(DwarfModel::DR_COL_TYPE).toInt());    
+    COLUMN_TYPE type = static_cast<COLUMN_TYPE>(model_idx.data(DwarfModel::DR_COL_TYPE).toInt());        
     QRect adjusted = opt.rect.adjusted(cell_padding, cell_padding, -cell_padding, -cell_padding);
+
     switch (type) {
     case CT_SKILL:
     {
         short rating = model_idx.data(DwarfModel::DR_RATING).toInt();
         QColor bg = paint_bg(adjusted, false, p, opt, idx);
         paint_generic(adjusted, rating, bg, p, opt, idx);
-        paint_grid(adjusted, false, p, opt, idx);
+        //paint_grid(adjusted, false, p, opt, idx);
+        paint_mood_cell(adjusted,p,opt,idx,model_idx.data(DwarfModel::DR_LABOR_ID).toInt(),false);
     }
         break;
     case CT_LABOR:
@@ -132,24 +142,14 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_HAPPINESS:
     {
-        paint_bg(adjusted, false, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
-        p->save();        
-
+        paint_bg(adjusted, false, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());        
         if(draw_happiness_icons){
-            QIcon icon = idx.data(Qt::DecorationRole).value<QIcon>();
-            //if our cell size is > icon size, just center the icon instead
-            QSize iconSize = icon.actualSize(adjusted.size());
-            QPixmap pixmap = icon.pixmap(adjusted.size());
-            if(adjusted.width() < iconSize.width()){
-                iconSize = adjusted.size();
-            }
-            p->drawPixmap(adjusted.x() + ((adjusted.width()-iconSize.width())/2),
-                          adjusted.y() + ((adjusted.height()-iconSize.height())/2),
-                          iconSize.width(),iconSize.height(),pixmap);
+            paint_icon(adjusted,p,opt,idx);
+        }else{
+            p->save();
+            paint_grid(adjusted, false, p, opt, idx);
+            p->restore();
         }
-
-        p->restore();
-        paint_grid(adjusted, false, p, opt, idx);
     }
         break;
     case CT_ROLE:
@@ -163,21 +163,45 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     case CT_IDLE:
     {        
         paint_bg(adjusted, false, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
-
-        p->save();
-        QIcon icon = idx.data(Qt::DecorationRole).value<QIcon>();
-        //if our cell size is > icon size, just center the icon instead
-        QSize iconSize = icon.actualSize(adjusted.size());
-        QPixmap pixmap = icon.pixmap(adjusted.size());
-        if(adjusted.width() < iconSize.width()){
-            iconSize = adjusted.size();
+        paint_icon(adjusted,p,opt,idx);        
+    }
+        break;
+    case CT_PROFESSION:
+    {
+        paint_bg(adjusted, false, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
+        paint_icon(adjusted,p,opt,idx);
+        if(idx.data(DwarfModel::DR_RATING).toBool()){
+            CustomProfession *cp = DT->get_custom_profession(idx.data(DwarfModel::DR_RATING).toString()); //custom profession name
+            if(cp){
+                p->save();
+                QFont f(m_fnt);
+                f.setBold(true);
+                f.setPointSize(8); //icons are only 16x16, this is about the largest we can go and still get text inside
+                p->setPen(QPen(cp->get_color()));
+                QRect rtxt = adjusted;
+                rtxt.adjust(0,1,0,0);
+                p->setFont(f);
+                p->drawText(rtxt, Qt::AlignCenter, cp->get_text());
+                p->restore();
+                cp = 0;
+            }
         }
-        p->drawPixmap(adjusted.x() + ((adjusted.width()-iconSize.width())/2),
-                      adjusted.y() + ((adjusted.height()-iconSize.height())/2),
-                      iconSize.width(),iconSize.height(),pixmap);
+    }
+        break;
+    case CT_HIGHEST_MOOD:
+    {
+        paint_bg(adjusted, false, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
+        paint_icon(adjusted,p,opt,idx);
 
-        p->restore();
-        paint_grid(adjusted, false, p, opt, idx);
+        bool had_mood = idx.data(DwarfModel::DR_RATING).toBool();
+        if(had_mood){
+            p->save();
+            QRect moodr = adjusted;
+            moodr.adjust(2,2,-2,-2);
+            p->setPen(QPen(Qt::darkRed,2));
+            p->drawLine(moodr.bottomLeft(), moodr.topRight());
+            p->restore();
+        }
     }
         break;
     case CT_TRAIT:
@@ -238,6 +262,27 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         }
         break;
     }
+}
+
+void UberDelegate::paint_icon(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const
+{
+    QModelIndex idx = proxy_idx;
+    if (m_proxy)
+        idx = m_proxy->mapToSource(proxy_idx);
+
+    p->save();
+    QIcon icon = idx.data(Qt::DecorationRole).value<QIcon>();
+    QRect adj_with_borders(adjusted.topLeft(),adjusted.bottomRight());
+    adj_with_borders.adjust(0,0,-2,-2); //adjust for the grid lines so the image is inside
+    QPixmap pixmap = icon.pixmap(adj_with_borders.size());
+    QSize iconSize = icon.actualSize(pixmap.size());
+    //line width is one, so center the image inside that
+    QPointF topLeft(adjusted.x() + ((adjusted.width()-iconSize.width())/(float)2)
+                    ,adjusted.y() + ((adjusted.height()-iconSize.height())/(float)2));
+    p->drawPixmap(topLeft,pixmap);
+    p->restore();
+
+    paint_grid(adjusted, false, p, opt, idx);
 }
 
 QColor UberDelegate::paint_bg(const QRect &adjusted, bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const bool use_gradient, const QColor &col_override) const{
@@ -302,9 +347,9 @@ void UberDelegate::paint_generic(const QRect &adjusted, int rating, QColor bg, Q
                 p->scale(opt.rect.width()-4, opt.rect.height()-4);
                 p->drawPolygon(m_diamond_shape);
             } else if (rating > -1 && rating < 15) {
-                float size = 0;
-                size = 0.75f * ((rating + 1.1) / 15.0f); // even dabbling (0) should be drawn
-                float inset = (1.0f - size) / 2.0f;                
+                double size = 0;
+                size = 0.75f * ((rating + 1.1f) / 14.5f); // even dabbling (0) should be drawn
+                double inset = (1.0f - size) / 2.0f;
                 p->translate(adjusted.x()-inset,adjusted.y()-inset);
                 p->scale(adjusted.width()-size,adjusted.height()-size);
                 p->fillRect(QRectF(inset, inset, size, size), QBrush(c));
@@ -466,9 +511,44 @@ void UberDelegate::paint_labor(const QRect &adjusted, QPainter *p, const QStyleO
     bool dirty = d->is_labor_state_dirty(labor_id);
 
     QColor bg = paint_bg(adjusted, enabled, p, opt, proxy_idx);
-    paint_generic(adjusted, rating, bg, p, opt, proxy_idx);
-    paint_grid(adjusted, dirty, p, opt, proxy_idx);
+    paint_generic(adjusted, rating, bg, p, opt, proxy_idx);    
+
+    paint_mood_cell(adjusted,p,opt,proxy_idx,GameDataReader::ptr()->get_labor(labor_id)->skill_id, dirty);
 }
+
+void UberDelegate::paint_mood_cell(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, int skill_id, bool dirty) const {
+    QModelIndex idx = m_proxy->mapToSource(proxy_idx);
+    Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
+    if (!d) {
+        return QStyledItemDelegate::paint(p, opt, idx);
+    }
+
+    if(color_mood_cells && !dirty){ //dirty is always drawn over mood
+        if(d->highest_moodable()->rating() > -1 &&
+                skill_id == d->highest_moodable()->id()){
+            p->setPen(QPen(color_mood,2));
+
+            if(d->had_mood())
+                p->setPen(QPen(color_had_mood,2));
+
+            QRect moodr = adjusted;
+            moodr.adjust(1,1,0,0);
+
+            p->drawLine(moodr.topRight(),moodr.bottomRight());
+            p->drawLine(moodr.topLeft(),moodr.bottomLeft());
+            p->drawLine(moodr.topRight(),moodr.topLeft());
+            p->drawLine(moodr.bottomLeft(),moodr.bottomRight());
+
+            paint_grid(adjusted, dirty, p, opt, proxy_idx, false); //draw dirty border and guides
+        }else{
+            paint_grid(adjusted, dirty, p, opt, proxy_idx);
+        }
+
+    }else{
+        paint_grid(adjusted, dirty, p, opt, proxy_idx);
+    }
+}
+
 
 void UberDelegate::paint_aggregate(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
     if (!proxy_idx.isValid()) {
@@ -511,23 +591,26 @@ void UberDelegate::paint_aggregate(const QRect &adjusted, QPainter *p, const QSt
     paint_grid(adjusted, dirty_count > 0, p, opt, proxy_idx);
 }
 
-void UberDelegate::paint_grid(const QRect &adjusted, bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &) const {    
+void UberDelegate::paint_grid(const QRect &adjusted, bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &, bool draw_border) const {
     p->setBrush(Qt::NoBrush);
 
+    QRect rec_border = adjusted;
     //dirty labor
     if(dirty){
-        p->setPen(QPen(color_dirty_border,1));
+        p->setPen(QPen(color_dirty_border,2));
+        rec_border.adjust(1,1,0,0); //offset for thicker border
     }else{
         //normal white border
         p->setPen(color_border);
     }
 
-    //draw border (dirty or otherwise)
-    p->drawLine(adjusted.topRight(),adjusted.bottomRight());
-    p->drawLine(adjusted.topLeft(),adjusted.bottomLeft());
-    p->drawLine(adjusted.topRight(),adjusted.topLeft());
-    p->drawLine(adjusted.bottomLeft(),adjusted.bottomRight());
-
+    //draw border (dirty or otherwise), may have already been drawn for some cells (moodable skill/labor)
+    if(draw_border || dirty){
+        p->drawLine(rec_border.topRight(),rec_border.bottomRight());
+        p->drawLine(rec_border.topLeft(),rec_border.bottomLeft());
+        p->drawLine(rec_border.topRight(),rec_border.topLeft());
+        p->drawLine(rec_border.bottomLeft(),rec_border.bottomRight());
+    }
     //draw guide along top/bottom
     if(opt.state.testFlag(QStyle::State_Selected)){
         if((cell_padding == 0 && !dirty) || cell_padding > 0){ //0 padding replaces the guide with the dirty border

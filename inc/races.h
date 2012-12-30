@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 #include <QtGui>
 #include "utils.h"
-#include "material.h"
+#include "flagarray.h"
 
 class DFInstance;
 class MemoryLayout;
@@ -55,9 +55,15 @@ public:
     VIRTADDR pop_ratio_vector() {return m_pop_ratio_vector;}
     VIRTADDR castes_vector() {return m_castes_vector;}
     Material *get_creature_material(int index);
+    QVector<Material*> get_creature_materials();
     Caste *get_caste_by_id(int id) const {return m_castes.value(id, 0);}
 
     void load_data();
+    FlagArray* flags() {return m_flags;}
+
+    bool is_trainable();
+    bool is_milkable();
+    bool is_vermin_extractable();
 
 private:
     VIRTADDR m_address;
@@ -73,6 +79,7 @@ private:
     QString m_child_name_plural;    
     QMap<int, Caste*> m_castes;
     QVector<Material*> m_creature_mats;
+    FlagArray *m_flags;
 
     VIRTADDR m_pref_string_vector;
     VIRTADDR m_pop_ratio_vector;

@@ -43,8 +43,15 @@ public:
         void accept();
         void reject();
         void restore_defaults();
-        void show_font_chooser();
+
+        void show_row_font_chooser();
         void show_header_font_chooser();
+        void show_tooltip_font_chooser();
+        void show_main_font_chooser();
+
+        void show_font_chooser(QPair<QFont, QFont> &font_pair, QString msg, QLabel *l);
+        void show_current_font(QFont tmp, QLabel *l);
+
         void set_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&);
         void tab_index_changed(int index);
         void roles_in_labor_changed(int);
@@ -57,10 +64,23 @@ private:
     QList<CustomColor*> m_happiness_colors;
     QList<CustomColor*> m_noble_colors;
     CustomColor* m_curse_color;
-    QFont m_font;
-    QFont m_header_font;
-    QFont m_dirty_font;
-    QFont m_dirty_header_font;
+
+    //pair of normal/dirty fonts
+    QPair<QFont,QFont> m_row_font;
+    QPair<QFont,QFont> m_col_header_font;
+    QPair<QFont,QFont> m_tooltip_font;
+    QPair<QFont,QFont> m_main_font;
+
+//    QFont m_font; //row font
+//    QFont m_header_font;
+//    QFont m_tooltip_font;
+//    QFont m_main_font;
+
+//    QFont m_dirty_font;
+//    QFont m_dirty_header_font;
+//    QFont m_dirty_tooltip_font;
+//    QFont m_dirty_main_font;
+
 
 signals:
     void color_changed(const QString &, const QColor &);

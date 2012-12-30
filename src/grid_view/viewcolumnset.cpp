@@ -1,4 +1,4 @@
-/*
+/*  
 Dwarf Therapist
 Copyright (c) 2009 Trey Stout (chmod)
 
@@ -20,9 +20,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
+#include "viewcolumnset.h"
 #include "columntypes.h"
 #include "viewmanager.h"
-#include "viewcolumnset.h"
 #include "laborcolumn.h"
 #include "happinesscolumn.h"
 #include "spacercolumn.h"
@@ -43,6 +44,8 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include "gridviewdialog.h"
 #include "weaponcolumn.h"
+#include "professioncolumn.h"
+#include "highestmoodcolumn.h"
 
 ViewColumnSet::ViewColumnSet(QString name, QObject *parent)
     : QObject(parent)
@@ -250,6 +253,12 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
         case CT_WEAPON:
             if(DT->get_main_window())
                 new WeaponColumn(s.value("name").toString(),DT->get_main_window()->get_DFInstance()->get_weapons().value(s.value("name").toString()),ret_val,parent);
+            break;
+        case CT_PROFESSION:
+            new ProfessionColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
+            break;
+        case CT_HIGHEST_MOOD:
+            new HighestMoodColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
             break;
         case CT_DEFAULT:
         default:

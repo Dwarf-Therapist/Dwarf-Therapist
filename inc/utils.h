@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <QByteArray>
 #include <QColor>
 #include <QtGlobal>
+#include <QVariant>
 
 // valid for as long as DF stays 32bit
 typedef quint32 VIRTADDR;
@@ -167,5 +168,15 @@ static inline QString capitalizeEach(const QString & word){
     return result;
 }
 
+template <class T> class vPtr
+{
+public:
+    static T* asPtr(QVariant v){
+        return (T*)v.value<void *>();
+    }
+    static QVariant asQVariant(T* ptr){
+        return qVariantFromValue((void*) ptr);
+    }
+};
 
 #endif // UTILS_H

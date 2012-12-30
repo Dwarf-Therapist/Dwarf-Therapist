@@ -46,7 +46,9 @@ void RotatedHeader::column_hover(int col) {
 
 void RotatedHeader::read_settings() {
     QSettings *s = DT->user_settings();
+    int pad = s->value("options/grid/cell_padding", 0).toInt();
     int cell_size = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
+    cell_size += (2 + 2*pad);
     for(int i=1; i < count(); ++i) {
         if (!m_spacer_indexes.contains(i)) {
             resizeSection(i, cell_size);

@@ -65,6 +65,8 @@ public:
     QColor color_guides;
     QColor color_border;
     QColor color_dirty_border;
+    QColor color_mood;
+    QColor color_had_mood;
     QColor color_skill;
 
     int cell_size;
@@ -79,19 +81,24 @@ private:
     QPolygonF m_diamond_shape;
     SKILL_DRAWING_METHOD m_skill_drawing_method;
     bool draw_happiness_icons;
+    bool color_mood_cells;
+    QFont m_fnt;
 
     void paint_cell(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
 
-    void paint_grid(const QRect &adjusted, bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+    void paint_grid(const QRect &adjusted, bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, bool draw_border = true) const;
 
     //! return the bg color that was painted
     QColor paint_bg(const QRect &adjusted, bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const bool use_gradient = false, const QColor &col_override = Qt::black) const;
 
+
     void paint_generic(const QRect &adjusted, int rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
     void paint_labor(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+    void paint_mood_cell(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, int skill_id, bool dirty) const;
     void paint_pref(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
     void paint_flags(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
     void paint_aggregate(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+    void paint_icon(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
 
     private slots:
         void read_settings();

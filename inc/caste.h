@@ -25,10 +25,13 @@ THE SOFTWARE.
 
 #include <QtGui>
 #include "utils.h"
-#include "attribute.h"
+//#include "attribute.h"
 
 class DFInstance;
 class MemoryLayout;
+class Attribute;
+class AttributeLevel;
+class FlagArray;
 
 class Caste : public QObject {
     Q_OBJECT
@@ -41,14 +44,10 @@ public:
     //! Return the memory address (in hex) of this creature in the remote DF process
     VIRTADDR address() {return m_address;}
 
-    struct attribute_level{
-        QString description;
-        int rating;
-    };
-
     QString name() {return m_name;}
     QString description() {return m_description;}
-    attribute_level get_attribute_level(int id, int value);
+    AttributeLevel get_attribute_level(int id, int value);
+    AttributeLevel get_attribute_rating(int attribute);
 
     int adult_size() {return get_body_size(0);}
     int child_size() {return get_body_size(0) / 2;} //get_body_size(1);}
@@ -56,6 +55,12 @@ public:
 
     void load_data();
     void load_attribute_info();
+
+    FlagArray* flags() {return m_flags;}
+
+    bool is_trainable();
+    bool is_milkable();
+    bool has_extracts() {return m_has_extracts;}
 
 private:
     VIRTADDR m_address;
@@ -75,9 +80,12 @@ private:
     DFInstance * m_df;
     MemoryLayout * m_mem;
 
+    FlagArray *m_flags;
+
+    bool m_has_extracts;
+
     void read_caste();
     int get_body_size(int index);
 };
-
 
 #endif // CASTE_H

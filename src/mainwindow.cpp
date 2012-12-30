@@ -56,10 +56,9 @@ THE SOFTWARE.
 #include "statetableview.h"
 #include "preferencesdock.h"
 #include "laboroptimizer.h"
+#include "laboroptimizerplan.h"
 #include "optimizereditor.h"
-
-#include "plant.h"
-#include "material.h"
+#include "gamedatareader.h"
 
 #include "dfinstance.h"
 #ifdef Q_WS_WIN
@@ -86,6 +85,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_temp_cp(0)
     , m_scanner(0)
     , m_script_dialog(new ScriptDialog(this))
+    , m_role_editor(0)
     , m_http(0)
     , m_reading_settings(false)
     , m_show_result_on_equal(false)
@@ -94,8 +94,8 @@ MainWindow::MainWindow(QWidget *parent)
     , m_try_download(true)
     , m_deleting_settings(false)
     , m_view_manager(0)
-    , m_btn_optimize(0)
     , m_act_sep_optimize(0)
+    , m_btn_optimize(0)
 {
     ui->setupUi(this);
 
@@ -354,7 +354,7 @@ void MainWindow::connect_to_df() {
 void MainWindow::lost_df_connection() {
     LOGW << "lost connection to DF";
     if (m_df) {
-        m_model->clear_all();
+        m_model->clear_all(true);
         delete m_df;
         m_df = 0;
         set_interface_enabled(false);
@@ -370,8 +370,14 @@ void MainWindow::read_dwarves() {
         lost_df_connection();
         return;
     }
+
+    //clear preference dock's table
+    PreferencesDock *dock = qobject_cast<PreferencesDock*>(QObject::findChild<PreferencesDock*>("dock_preferences"));
+    if(dock)
+        dock->clear();
+
     m_model->set_instance(m_df);
-    m_model->load_dwarves();
+    m_model->load_dwarves();    
 
     if (m_model->get_dwarves().size() < 1) {
         lost_df_connection();
@@ -395,9 +401,15 @@ void MainWindow::read_dwarves() {
         ui->le_filter_text->setCompleter(m_dwarf_name_completer);
     }
 
-    PreferencesDock *dock = qobject_cast<PreferencesDock*>(QObject::findChild<PreferencesDock*>("dock_preferences"));
+    //refresh preference dock
     if(dock){
         dock->refresh();
+    }
+
+    if(!m_role_editor){
+        m_role_editor = new roleDialog(m_df, this);
+        connect(m_view_manager, SIGNAL(selection_changed()), m_role_editor, SLOT(selection_changed()),Qt::UniqueConnection);
+        connect(m_role_editor, SIGNAL(finished(int)), this, SLOT(done_editing_role(int)),Qt::UniqueConnection);
     }
 }
 
@@ -603,7 +615,7 @@ void MainWindow::draw_professions() {
     ui->list_custom_professions->clear();
     QVector<CustomProfession*> profs = DT->get_custom_professions();
     foreach(CustomProfession *cp, profs) {
-        new QListWidgetItem(cp->get_name(), ui->list_custom_professions);
+        new QListWidgetItem(QIcon(cp->get_icon_path()),cp->get_name(), ui->list_custom_professions);
     }
     connect(ui->list_custom_professions, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
         m_view_manager, SLOT(jump_to_profession(QListWidgetItem *, QListWidgetItem *)));
@@ -776,23 +788,27 @@ void MainWindow::reload_filter_scripts() {
 }
 
 void MainWindow::add_new_custom_role() {
-    roleDialog *edit = new roleDialog(this,"");
-
-    if(edit->exec() == QDialog::Accepted){
-        write_custom_roles();
-        refresh_roles_data();
-    }
+    m_role_editor->load_role("");
+//    connect(m_view_manager, SIGNAL(selection_changed()), m_role_editor, SLOT(selection_changed()),Qt::UniqueConnection);
+//    connect(m_role_editor, SIGNAL(finished(int)), this, SLOT(done_editing_role(int)),Qt::UniqueConnection);
+    m_role_editor->show();
 }
 
 void MainWindow::edit_custom_role() {
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     QString name = a->data().toString();
-    roleDialog *edit = new roleDialog(this,name);
-    if(edit->exec() == QDialog::Accepted){
+    //roleDialog *edit = new roleDialog(this,name);
+    m_role_editor->load_role(name);
+//    connect(m_view_manager, SIGNAL(selection_changed()), m_role_editor, SLOT(selection_changed()),Qt::UniqueConnection);
+//    connect(m_role_editor, SIGNAL(finished(int)), this, SLOT(done_editing_role(int)),Qt::UniqueConnection);
+    m_role_editor->show();
+}
+
+void MainWindow::done_editing_role(int result){
+    if(result == QDialog::Accepted){
         write_custom_roles();
         refresh_roles_data();
     }
-
 }
 
 void MainWindow::remove_custom_role(){
@@ -869,13 +885,14 @@ void MainWindow::write_custom_roles(){
     float default_attributes_weight = s->value("options/default_attributes_weight",1.0).toFloat();
     float default_skills_weight = s->value("options/default_skills_weight",1.0).toFloat();
     float default_traits_weight = s->value("options/default_traits_weight",1.0).toFloat();
+    float default_prefs_weight = s->value("options/default_prefs_weight",1.0).toFloat();
 
     s->beginWriteArray("custom_roles");
     int count = 0;
     foreach(Role *r, GameDataReader::ptr()->get_roles()){
         if(r->is_custom){
             s->setArrayIndex(count);
-            r->write_to_ini(*s, default_attributes_weight, default_traits_weight, default_skills_weight);
+            r->write_to_ini(*s, default_attributes_weight, default_traits_weight, default_skills_weight, default_prefs_weight);
             count++;
         }
     }
@@ -912,6 +929,7 @@ void MainWindow::print_gridview() {
     QSize currMax = this->maximumSize();
     QSize currMin = this->minimumSize();
     int cell_size = DT->user_settings()->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
+    int cell_pad = DT->user_settings()->value("options/grid/cell_padding", 0).toInt();
 
     //currently this is just a hack to resize the form to ensure all rows/columns are showing
     //then rendering to the painter and resizing back to the previous size
@@ -924,7 +942,7 @@ void MainWindow::print_gridview() {
     foreach(ViewColumnSet *vcs, m_view_manager->get_active_view()->sets()){
         foreach(ViewColumn *vc, vcs->columns()){
             if(vc->type() != CT_SPACER)
-                w += cell_size;
+                w += (cell_size+2+(2*cell_pad)); //+2 for lines
             else
                 w += DEFAULT_SPACER_WIDTH;
         }
@@ -932,7 +950,7 @@ void MainWindow::print_gridview() {
     w += 2;
 
     //calculate the height
-    h = (s->get_model()->total_row_count * cell_size) + s->get_header()->height();
+    h = (s->get_model()->total_row_count * (cell_size+2+(2*cell_pad))) + s->get_header()->height(); //+2 for lines
     h += (this->height() - s->height());
     h += 2; //small buffer for the edge
 
@@ -1076,7 +1094,7 @@ void MainWindow::refresh_opts_menus() {
         m_btn_optimize->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
         m_btn_optimize->setText("&Optimize");
         m_btn_optimize->setMinimumWidth(70);
-        m_btn_optimize->setObjectName("m_btn_optimize");
+        m_btn_optimize->setObjectName("m_btn_optimize");        
         QIcon btn_icon;
         btn_icon.addFile(QString::fromUtf8(":/img/control.png"), QSize(), QIcon::Normal, QIcon::Off);
         m_btn_optimize->setIcon(btn_icon);

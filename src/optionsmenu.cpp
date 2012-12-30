@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include "mainwindow.h"
 #include "fortressentity.h"
 #include "dfinstance.h"
+#include "gamedatareader.h"
 
 OptionsMenu::OptionsMenu(QWidget *parent)
     : QDialog(parent)
@@ -64,7 +65,13 @@ OptionsMenu::OptionsMenu(QWidget *parent)
                                "border", QColor(0xd9d9d9), this)
             << new CustomColor(tr("Dirty Cell Indicator"),
                                tr("Border color of a cell that has pending changes. Set to main border color to disable this."),
-                               "dirty_border", QColor(0xFF6600), this);
+                               "dirty_border", QColor(0xFF6600), this)
+            << new CustomColor(tr("Highest Moodable Skill"),
+                               tr("Border color of a labor or skill cell for the highest moodable skill which hasn't been used. This is only applied if the option to highlight mood cells is enabled."),
+                               "highest_mood_border", QColor(0x32cd32), this)
+            << new CustomColor(tr("Mood Finished"),
+                               tr("Border color of a labor or skill cell for the highest moodable skill which has already been finished. This is only applied if the option to highlight mood cells is enabled."),
+                               "had_mood_border", QColor(0x696969), this);
 
     m_happiness_colors
             << new CustomColor(tr("Ecstatic"), tr("Color shown in happiness columns when a dwarf is <b>ecstatic</b>."),
@@ -143,8 +150,12 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     ui->cb_skill_drawing_method->addItem("Numbers", UberDelegate::SDM_NUMERIC);
 
     connect(ui->btn_restore_defaults, SIGNAL(pressed()), this, SLOT(restore_defaults()));
-    connect(ui->btn_change_font, SIGNAL(pressed()), this, SLOT(show_font_chooser()));
+
+    connect(ui->btn_change_font, SIGNAL(pressed()), this, SLOT(show_row_font_chooser()));
     connect(ui->btn_change_header_font, SIGNAL(pressed()), this, SLOT(show_header_font_chooser()));
+    connect(ui->btn_change_tooltip_font, SIGNAL(pressed()), this, SLOT(show_tooltip_font_chooser()));
+    connect(ui->btn_change_main_font, SIGNAL(pressed()), this, SLOT(show_main_font_chooser()));
+
     connect(ui->cb_auto_contrast, SIGNAL(toggled(bool)), m_general_colors[0], SLOT(setDisabled(bool)));
 
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tab_index_changed(int)));
@@ -202,13 +213,14 @@ void OptionsMenu::read_settings() {
     ui->cb_shade_cells->setChecked(s->value("shade_cells", true).toBool());
     ui->cb_header_text_direction->setChecked(s->value("header_text_bottom", false).toBool());
 
-    m_font = s->value("font", QFont("Segoe UI", 8)).value<QFont>();
-    m_dirty_font = m_font;
-    ui->lbl_current_font->setText(m_font.family() + " [" + QString::number(m_font.pointSize()) + "pt]");
+    QFont temp = s->value("font", QFont("Segoe UI", 8)).value<QFont>();
+    m_row_font = qMakePair(temp,temp);
+    show_current_font(temp, ui->lbl_current_font);
 
-    m_header_font = s->value("header_font", QFont("Segoe UI", 9)).value<QFont>();
-    m_dirty_header_font = m_header_font;
-    ui->lbl_header_font->setText(m_header_font.family() + " [" + QString::number(m_header_font.pointSize()) + "pt]");
+    temp = s->value("header_font", QFont("Segoe UI", 9)).value<QFont>();
+    m_col_header_font = qMakePair(temp,temp);
+    show_current_font(temp, ui->lbl_header_font);
+
 
     ui->cb_happiness_icons->setChecked(s->value("happiness_icons",true).toBool());
     ui->cb_labor_counts->setChecked(s->value("show_labor_counts",false).toBool());
@@ -216,7 +228,18 @@ void OptionsMenu::read_settings() {
     ui->cb_sync_grouping->setChecked(s->value("group_all_views",true).toBool());
     ui->cb_sync_scrolling->setChecked(s->value("scroll_all_views",false).toBool());
 
-    s->endGroup();
+    ui->cb_moodable->setChecked(s->value("color_mood_cells",false).toBool());
+
+    s->endGroup();        
+
+    temp = s->value("tooltip_font", QFont("Segoe UI", 9)).value<QFont>();
+    m_tooltip_font = qMakePair(temp,temp);
+    show_current_font(temp,ui->lbl_current_tooltip);
+
+    temp = s->value("main_font", QFont("Segoe UI", 9)).value<QFont>();
+    m_main_font = qMakePair(temp,temp);
+    show_current_font(temp,ui->lbl_current_main_font);
+
 
     ui->cb_read_dwarves_on_startup->setChecked(s->value("read_on_startup", true).toBool());
     ui->cb_auto_contrast->setChecked(s->value("auto_contrast", true).toBool());
@@ -224,8 +247,7 @@ void OptionsMenu::read_settings() {
     ui->cb_single_click_labor_changes->setChecked(s->value("single_click_labor_changes", true).toBool());
     ui->cb_show_toolbar_text->setChecked(s->value("show_toolbutton_text", true).toBool());
     ui->cb_auto_expand->setChecked(s->value("auto_expand_groups", true).toBool());
-    ui->cb_show_full_dwarf_names->setChecked(s->value("show_full_dwarf_names", false).toBool());
-    ui->cb_show_dabbling_in_tooltip->setChecked(s->value("show_dabbling_in_tooltips", true).toBool());
+    ui->cb_show_full_dwarf_names->setChecked(s->value("show_full_dwarf_names", false).toBool());        
     ui->cb_check_for_updates_on_startup->setChecked(s->value("check_for_updates_on_startup", true).toBool());
     ui->cb_alert_on_lost_connection->setChecked(s->value("alert_on_lost_connection", true).toBool());
     ui->cb_labor_cheats->setChecked(s->value("allow_labor_cheats", false).toBool());
@@ -235,11 +257,27 @@ void OptionsMenu::read_settings() {
     ui->cb_noble_highlight->setChecked(s->value("highlight_nobles", false).toBool());
     ui->cb_labor_exclusions->setChecked(s->value("labor_exclusions", true).toBool());
 
+    ui->chk_show_caste->setChecked(s->value("tooltip_show_caste", true).toBool());
+    ui->chk_show_happiness->setChecked(s->value("tooltip_show_happiness", true).toBool());
+    ui->chk_show_icons->setChecked(s->value("tooltip_show_icons", true).toBool());
+    ui->chk_show_noble->setChecked(s->value("tooltip_show_noble", true).toBool());
+    ui->chk_show_prefs->setChecked(s->value("tooltip_show_preferences", true).toBool());
+    ui->chk_show_traits->setChecked(s->value("tooltip_show_traits", true).toBool());
+    ui->chk_show_prof->setChecked(s->value("tooltip_show_profession", true).toBool());
+    ui->chk_show_artifact->setChecked(s->value("tooltip_show_artifact",true).toBool());
+    ui->chk_show_highest_mood->setChecked(s->value("tooltip_show_mood", true).toBool());
+
+    ui->chk_show_roles->setChecked(s->value("tooltip_show_roles", true).toBool());
+    ui->sb_roles_tooltip->setValue(s->value("role_count_tooltip",3).toInt());
+
+    ui->chk_show_skills->setChecked(s->value("tooltip_show_skills", true).toBool());
+    ui->sb_min_skill_level->setValue(s->value("min_tooltip_skill_level",1).toInt());
+
+
     ui->dsb_attribute_weight->setValue(s->value("default_attributes_weight",1.0).toDouble());
     ui->dsb_skill_weight->setValue(s->value("default_skills_weight",1.0).toDouble());
     ui->dsb_trait_weight->setValue(s->value("default_traits_weight",1.0).toDouble());
-
-    ui->sb_roles_tooltip->setValue(s->value("role_count_tooltip",3).toInt());
+    ui->dsb_pref_weight->setValue(s->value("default_prefs_weight",1.0).toDouble());
     ui->sb_roles_pane->setValue(s->value("role_count_pane",10).toInt());
 
     ui->chk_roles_in_labor->setChecked(s->value("show_roles_in_labor",true).toBool());
@@ -277,9 +315,10 @@ void OptionsMenu::write_settings() {
         s->setValue("shade_column_headers", ui->cb_shade_column_headers->isChecked());
         s->setValue("shade_cells", ui->cb_shade_cells->isChecked());
         s->setValue("header_text_bottom", ui->cb_header_text_direction->isChecked());
-        s->setValue("font", m_font);
-        s->setValue("header_font", m_header_font);
+        s->setValue("font", m_row_font.first);
+        s->setValue("header_font", m_col_header_font.first);
         s->setValue("happiness_icons",ui->cb_happiness_icons->isChecked());
+        s->setValue("color_mood_cells", ui->cb_moodable->isChecked());
         s->setValue("show_labor_counts",ui->cb_labor_counts->isChecked());
         s->setValue("group_all_views",ui->cb_sync_grouping->isChecked());
         s->setValue("scroll_all_views",ui->cb_sync_scrolling->isChecked());
@@ -292,7 +331,7 @@ void OptionsMenu::write_settings() {
         s->setValue("show_toolbutton_text", ui->cb_show_toolbar_text->isChecked());
         s->setValue("auto_expand_groups", ui->cb_auto_expand->isChecked());
         s->setValue("show_full_dwarf_names", ui->cb_show_full_dwarf_names->isChecked());
-        s->setValue("show_dabbling_in_tooltips", ui->cb_show_dabbling_in_tooltip->isChecked());
+        s->setValue("min_tooltip_skill_level", ui->sb_min_skill_level->value());
         s->setValue("check_for_updates_on_startup", ui->cb_check_for_updates_on_startup->isChecked());
         s->setValue("alert_on_lost_connection", ui->cb_alert_on_lost_connection->isChecked());
         s->setValue("allow_labor_cheats", ui->cb_labor_cheats->isChecked());
@@ -301,10 +340,13 @@ void OptionsMenu::write_settings() {
         s->setValue("highlight_cursed", ui->cb_curse_highlight->isChecked());
         s->setValue("highlight_nobles", ui->cb_noble_highlight->isChecked());
         s->setValue("labor_exclusions", ui->cb_labor_exclusions->isChecked());
+        s->setValue("tooltip_font", m_tooltip_font.first);
+        s->setValue("main_font", m_main_font.first);
 
         s->setValue("default_attributes_weight",ui->dsb_attribute_weight->value());
         s->setValue("default_skills_weight",ui->dsb_skill_weight->value());
         s->setValue("default_traits_weight",ui->dsb_trait_weight->value());
+        s->setValue("default_prefs_weight",ui->dsb_pref_weight->value());
         s->setValue("role_count_tooltip",ui->sb_roles_tooltip->value());
         s->setValue("role_count_pane",ui->sb_roles_pane->value());
         s->setValue("show_roles_in_labor",ui->chk_roles_in_labor->isChecked());
@@ -312,13 +354,27 @@ void OptionsMenu::write_settings() {
         s->setValue("sort_roles_in_labor",ui->chk_labor_sort_by_roles->isChecked());
         s->setValue("sort_roles_in_skills",ui->chk_skills_sort_by_roles->isChecked());
 
+        s->setValue("tooltip_show_caste", ui->chk_show_caste->isChecked());
+        s->setValue("tooltip_show_happiness", ui->chk_show_happiness->isChecked());
+        s->setValue("tooltip_show_icons", ui->chk_show_icons->isChecked());
+        s->setValue("tooltip_show_noble", ui->chk_show_noble->isChecked());
+        s->setValue("tooltip_show_preferences", ui->chk_show_prefs->isChecked());
+        s->setValue("tooltip_show_traits", ui->chk_show_traits->isChecked());
+        s->setValue("tooltip_show_profession", ui->chk_show_prof->isChecked());
+        s->setValue("tooltip_show_roles", ui->chk_show_roles->isChecked());
+        s->setValue("tooltip_show_skills", ui->chk_show_skills->isChecked());
+        s->setValue("tooltip_show_artifact", ui->chk_show_artifact->isChecked());
+        s->setValue("tooltip_show_mood", ui->chk_show_highest_mood->isChecked());
+
         s->endGroup();
     }
 }
 
 void OptionsMenu::accept() {
-    m_font = m_dirty_font;
-    m_header_font = m_dirty_header_font;
+    m_row_font.first = m_row_font.second;
+    m_col_header_font.first = m_col_header_font.second;
+    m_tooltip_font.first = m_tooltip_font.second;
+    m_main_font.first = m_main_font.second;
     write_settings();
     emit settings_changed();
     QDialog::accept();
@@ -331,8 +387,10 @@ void OptionsMenu::accept() {
 }
 
 void OptionsMenu::reject() {
-    m_dirty_font = m_font;
-    m_dirty_header_font = m_header_font;
+    m_row_font.second = m_row_font.first;
+    m_col_header_font.second = m_col_header_font.first;
+    m_tooltip_font.second = m_tooltip_font.first;
+    m_main_font.second = m_main_font.first;
     read_settings();
     QDialog::reject();
 }
@@ -353,8 +411,8 @@ void OptionsMenu::restore_defaults() {
     ui->cb_single_click_labor_changes->setChecked(false);
     ui->cb_show_toolbar_text->setChecked(true);
     ui->cb_auto_expand->setChecked(false);
-    ui->cb_show_full_dwarf_names->setChecked(false);
-    ui->cb_show_dabbling_in_tooltip->setChecked(true);
+    ui->cb_show_full_dwarf_names->setChecked(false);    
+    ui->sb_min_skill_level->setValue(1);
     ui->cb_check_for_updates_on_startup->setChecked(true);
     ui->cb_alert_on_lost_connection->setChecked(true);
     ui->cb_labor_cheats->setChecked(false);
@@ -368,37 +426,68 @@ void OptionsMenu::restore_defaults() {
     ui->cb_labor_counts->setChecked(false);
     ui->cb_sync_grouping->setChecked(true);
     ui->cb_sync_scrolling->setChecked(false);
+    ui->cb_moodable->setChecked(false);
     ui->chk_labor_sort_by_roles->setChecked(true);
     ui->chk_skills_sort_by_roles->setChecked(true);
 
-    m_font = QFont("Segoe UI", 8);
-    m_dirty_font = m_font;
-    ui->lbl_current_font->setText(m_font.family() + " [" + QString::number(m_font.pointSize()) + "pt]");
+    ui->chk_show_caste->setChecked(true);
+    ui->chk_show_happiness->setChecked(true);
+    ui->chk_show_icons->setChecked(true);
+    ui->chk_show_noble->setChecked(true);
+    ui->chk_show_prefs->setChecked(true);
+    ui->chk_show_traits->setChecked(true);
+    ui->chk_show_prof->setChecked(true);
+    ui->chk_show_artifact->setChecked(true);
+    ui->chk_show_highest_mood->setChecked(false);
 
-    m_header_font = QFont("Segoe UI", 8);
-    m_dirty_header_font = m_header_font;
-    ui->lbl_header_font->setText(m_header_font.family() + " [" + QString::number(m_header_font.pointSize()) + "pt]");
+    ui->chk_show_roles->setChecked(true);
+    ui->chk_show_skills->setChecked(true);
+
+    QFont temp = QFont("Segoe UI", 8);
+    m_row_font = qMakePair(temp,temp);
+    show_current_font(temp,ui->lbl_current_font);
+
+    temp = QFont("Segoe UI", 8);
+    m_col_header_font = qMakePair(temp,temp);
+    show_current_font(temp,ui->lbl_header_font);
+
+    temp = QFont("Segoe UI", 8);
+    m_tooltip_font = qMakePair(temp,temp);
+    show_current_font(temp,ui->lbl_current_tooltip);
+
+    temp = QFont("Segoe UI", 9);
+    m_main_font = qMakePair(temp,temp);
+    show_current_font(temp,ui->lbl_current_main_font);
 
     ui->sb_cell_size->setValue(DEFAULT_CELL_SIZE);
     ui->sb_cell_padding->setValue(0);
 }
 
-void OptionsMenu::show_font_chooser() {
+void OptionsMenu::show_font_chooser(QPair<QFont,QFont> &font_pair, QString msg, QLabel *l) {
     bool ok;
-    QFont tmp = QFontDialog::getFont(&ok, m_font, this, tr("Font used in main table"));
+    QFont tmp = QFontDialog::getFont(&ok, font_pair.first, this, msg);
     if (ok) {
-        ui->lbl_current_font->setText(tmp.family() + " [" + QString::number(tmp.pointSize()) + "pt]");
-        m_dirty_font = tmp;
+        show_current_font(tmp,l);
+        font_pair.second = tmp;
     }
 }
 
-void OptionsMenu::show_header_font_chooser() {
-    bool ok;
-    QFont tmp = QFontDialog::getFont(&ok, m_header_font, this, tr("Font used in main table"));
-    if (ok) {
-        ui->lbl_header_font->setText(tmp.family() + " [" + QString::number(tmp.pointSize()) + "pt]");
-        m_dirty_header_font = tmp;
-    }
+void OptionsMenu::show_current_font(QFont tmp, QLabel *l){
+    l->setText(QString("%1 [%2]").arg(tmp.family()).arg(QString::number(tmp.pointSize())));
+    l->setFont(tmp);
+}
+
+void OptionsMenu::show_header_font_chooser(){
+    show_font_chooser(m_col_header_font,"Font used for grid/view column headers.",ui->lbl_header_font);
+}
+void OptionsMenu::show_row_font_chooser(){
+    show_font_chooser(m_row_font,"Font used for grid/view row headers.",ui->lbl_current_font);
+}
+void OptionsMenu::show_main_font_chooser(){
+    show_font_chooser(m_main_font,"General Dwarf Therapist font.",ui->lbl_current_main_font);
+}
+void OptionsMenu::show_tooltip_font_chooser(){
+    show_font_chooser(m_tooltip_font,"Font used for all tooltips.",ui->lbl_current_tooltip);
 }
 
 void OptionsMenu::set_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD &sdm) {

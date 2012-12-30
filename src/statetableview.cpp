@@ -102,6 +102,7 @@ void StateTableView::read_settings() {
     m_grid_size = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
     int pad = s->value("options/grid/cell_padding", 0).toInt();
     setIconSize(QSize(m_grid_size - 2 - pad * 2, m_grid_size - 2 - pad * 2));
+    //setIconSize(QSize(m_grid_size + 2 + pad * 2, m_grid_size + 2 + pad * 2));
 
     set_single_click_labor_changes(s->value("options/single_click_labor_changes", true).toBool());
     m_auto_expand_groups = s->value("options/auto_expand_groups", false).toBool();

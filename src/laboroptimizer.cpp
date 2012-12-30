@@ -33,7 +33,14 @@ After everything is optimized, any haulers are assigned with less than the speci
 */
 
 #include "laboroptimizer.h"
+#include "laboroptimizerplan.h"
+#include "plandetail.h"
+#include <algorithm>
+#include "gamedatareader.h"
 #include "dwarftherapist.h"
+#include "dwarf.h"
+#include "labor.h"
+#include "skill.h"
 
 LaborOptimizer::LaborOptimizer(laborOptimizerPlan *plan, QObject *parent)    
     :QObject(parent)
@@ -87,7 +94,7 @@ void LaborOptimizer::calc_population(bool load_labor_map){
                 //clear dwarf's existing labors
                 d->clear_labors();
                 d->optimized_labors = 0;
-                foreach(laborOptimizerPlan::detail *det, plan->plan_details){
+                foreach(PlanDetail *det, plan->plan_details){
                     //skip labor with <= 0 priority/max workers
                     if(det->priority > 0 && det->ratio > 0){
                         dwarf_labor_map dlm;
@@ -97,7 +104,7 @@ void LaborOptimizer::calc_population(bool load_labor_map){
                             dlm.rating = det->priority * d->get_role_rating(det->role_name, true);
                         }
                         else{
-                            dlm.rating = det->priority * (d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).actual_exp() / (float)29000 * 100);
+                            dlm.rating = det->priority * (d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id)->actual_exp() / (float)29000 * 100);
                             //dlm.rating = det->priority * (d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).rating() / 20.0 * 100);
                         }
                         m_labor_map.append(dlm);
@@ -212,25 +219,30 @@ void LaborOptimizer::optimize_labors(QList<Dwarf*> dwarfs){
 void LaborOptimizer::update_ratios(){
     m_ratio_sum = 0;
     m_estimated_assigned_jobs = 0;
-    m_total_jobs = (roundf(m_target_population * plan->max_jobs_per_dwarf));
-    m_raw_total_jobs = m_total_population * plan->max_jobs_per_dwarf;
+    m_total_jobs = m_target_population * plan->max_jobs_per_dwarf;//(roundf(m_target_population * plan->max_jobs_per_dwarf));
+    m_raw_total_jobs = m_total_jobs;
 
     //get ratio sum
-    foreach(laborOptimizerPlan::detail *det, plan->plan_details){
+    int count = 0;
+    foreach(PlanDetail *det, plan->plan_details){
         det->max_count = 0;
         det->group_ratio = 0;
         det->assigned_laborers = 0;
         if(det->priority > 0 && det->ratio > 0)
             m_ratio_sum += det->ratio;
-    }
+        else
+            int z = 0;
+
+        count++;
+    }    
 
     labors_exceed_pop = false;
     if(check_conflicts){
-        laborOptimizerPlan::detail *temp;
-        foreach(laborOptimizerPlan::detail *det, plan->plan_details){
+        PlanDetail *temp;
+        foreach(PlanDetail *det, plan->plan_details){
             if(det->priority > 0 && det->ratio > 0 && det->group_ratio <= 0){
 
-                if(gdr->get_labor(det->labor_id)->get_excluded_labors().count() > 0){
+                if(gdr->get_labor(det->labor_id)->get_excluded_labors().count() > 0){                                                            
                     //increase this labor's group ratio
                     det->group_ratio += det->ratio;
                     foreach(int id, gdr->get_labor(det->labor_id)->get_excluded_labors()){
@@ -242,7 +254,7 @@ void LaborOptimizer::update_ratios(){
                     foreach(int id, gdr->get_labor(det->labor_id)->get_excluded_labors()){
                         temp =  plan->job_exists(gdr->get_labor(id)->labor_id);
                         if(temp)
-                            det->group_ratio += temp->ratio;
+                            temp->group_ratio = det->group_ratio;
                     }
                     if(det->group_ratio / m_ratio_sum * m_total_jobs > m_total_population){
                         m_ratio_sum -= det->group_ratio;
@@ -258,7 +270,7 @@ void LaborOptimizer::update_ratios(){
 
     //if sum of job's coverage + conflicting job's coverage / total coverage > target population
     //job's max count = job's coverage / sum(job's coverage + conflicting coverages) * target population
-    foreach(laborOptimizerPlan::detail *det, plan->plan_details){
+    foreach(PlanDetail *det, plan->plan_details){
         if(det->priority > 0 && det->ratio > 0){
             //det->max_count = roundf(m_pop_count * (plan->pop_percent/(float)100) * (det->max_laborers/(float)100));
             if(det->group_ratio > 0 && labors_exceed_pop){
@@ -271,12 +283,10 @@ void LaborOptimizer::update_ratios(){
             m_estimated_assigned_jobs += det->max_count;
         }
     }
-
-    if(labors_exceed_pop)
-        m_estimated_assigned_jobs -= m_total_population;
-
 }
 
 void LaborOptimizer::update_population(QList<Dwarf*> m){
     m_dwarfs = m;
 }
+
+

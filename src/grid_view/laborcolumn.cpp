@@ -29,6 +29,8 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "dfinstance.h"
 #include "viewmanager.h"
+#include "skill.h"
+#include "labor.h"
 
 LaborColumn::LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(title, CT_LABOR, set, parent)
@@ -55,7 +57,7 @@ LaborColumn::LaborColumn(const LaborColumn &to_copy)
 }
 
 QStandardItem *LaborColumn::build_cell(Dwarf *d) {
-	GameDataReader *gdr = GameDataReader::ptr();
+    GameDataReader *gdr = GameDataReader::ptr();
 	QStandardItem *item = init_cell(d);
 
 	item->setData(CT_LABOR, DwarfModel::DR_COL_TYPE);
@@ -74,12 +76,12 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
 
         float role_rating=0;        
         if(m_skill_id != -1){
-            QVector<Role*> found_roles = GameDataReader::ptr()->get_skill_roles().value(m_skill_id);
+            QVector<Role*> found_roles = gdr->get_skill_roles().value(m_skill_id);
             if(found_roles.count() > 0){
                 float sortVal = 0;
                 role_rating = 0;                
                 //just list roles and %
-                role_str = tr("<h4>Related Roles:</h4><ul style=\"margin-left:-30px; padding-left:0px;\">");
+                role_str = tr("<h4>Related Roles:</h4><ul style=\"margin-left:-20px; padding-left:0px;\">");
                 foreach(Role *r, found_roles){
                     role_rating = d->get_role_rating(r->name);                    
                     role_str += tr("<li>%1 (%2%)</li>").arg(r->name).arg(QString::number(role_rating,'f',2));
@@ -95,23 +97,33 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
         }
     }
 
-    QString skill_str;
+    QString skill_str = "";
     if (m_skill_id != -1 && rating > -1) {
+        QString str_mood = "";
+        if(gdr->get_labor(m_labor_id)->skill_id == d->highest_moodable()->id()){
+            str_mood = tr("<br/><br/>This is the highest moodable skill.");
+            if(d->had_mood())
+                str_mood = tr("<br/><br/>Had a mood with this skill and crafted '%1'.").arg(d->artifact_name());
+        }
+
         QString adjusted_rating = QString::number(rating);
         if (rating > 15)
             adjusted_rating = QString("15 +%1").arg(rating - 15);
 
-        skill_str = tr("<b>%1</b> %2 %3<br/>[RAW LEVEL: <b>%4</b>]<br/><b>Experience:</b><br/>%5")
-                .arg(d->get_skill(m_skill_id).rust_rating())
+        skill_str = tr("<b>%1</b> %2 %3<br/>[RAW LEVEL: <b>%4</b>]<br/><b>Experience:</b><br/>%5%6")
+                .arg(d->get_skill(m_skill_id)->rust_rating())
                 .arg(gdr->get_skill_level_name(rating))
                 .arg(gdr->get_skill_name(m_skill_id))
                 .arg(adjusted_rating)
-                .arg(d->get_skill(m_skill_id).exp_summary());
+                .arg(d->get_skill(m_skill_id)->exp_summary())
+                .arg(str_mood);
     } else {
         // either the skill isn't a valid id, or they have 0 experience in it
 		skill_str = "0 experience";
 	}
-    item->setToolTip(QString("<h3>%1</h3>%2%3<h4>%4</h4>").arg(m_title).arg(skill_str).arg(role_str).arg(d->nice_name()));
+    QString tooltip = QString("<h3>%1</h3>%2%3<h4>%4</h4>").arg(m_title).arg(skill_str).arg(role_str).arg(d->nice_name());
+    item->setToolTip(tooltip);
+
 	return item;
 }
 

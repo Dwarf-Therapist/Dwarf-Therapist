@@ -4,6 +4,28 @@
 #include "qstring.h"
 
 typedef enum {
+    AT_STRENGTH = 0,
+    AT_AGILITY=1,
+    AT_TOUGHNESS=2,
+    AT_ENDURANCE=3,
+    AT_RECUPERATION=4,
+    AT_DISEASE_RESISTANCE=5,
+    AT_ANALYTICAL_ABILITY=6,
+    AT_FOCUS=7,
+    AT_WILLPOWER=8,
+    AT_CREATIVITY=9,
+    AT_INTUITION=10,
+    AT_PATIENCE=11,
+    AT_MEMORY=12,
+    AT_LINGUISTIC_ABILITY=13,
+    AT_SPATIAL_SENSE=14,
+    AT_MUSICALITY=15,
+    AT_KINESTHETIC_SENSE=16,
+    AT_EMPATHY=17,
+    AT_SOCIAL_AWARENESS=18
+} ATTRIBUTES_TYPE;
+
+typedef enum {
     triple_negative=-3,
     double_negative=-2,
     negative=-1,
@@ -81,7 +103,7 @@ typedef enum {
     FISH=48,
     FISH_RAW=49,
     VERMIN=50,
-    PET=51,
+    IS_PET=51,
     SEEDS=52,
     PLANT=53,
     SKIN_TANNED=54,
@@ -119,7 +141,7 @@ typedef enum {
     SLAB=86,
     EGG=87,
     BOOK=88,
-    NUM_OF_TYPES=89
+    NUM_OF_ITEM_TYPES=89
 } ITEM_TYPE;
 
 typedef enum {
@@ -133,6 +155,7 @@ typedef enum {
 } MATERIAL_STATES;
 
 typedef enum {
+    LIKES_NONE=-1,
     LIKE_MATERIAL=0,
     LIKE_CREATURE=1,
     LIKE_FOOD=2,
@@ -141,7 +164,8 @@ typedef enum {
     LIKE_PLANT=5,
     LIKE_TREE=6,
     LIKE_COLOR=7,
-    LIKE_SHAPE=8
+    LIKE_SHAPE=8,
+    LIKE_OUTDOORS=9
 } PREF_TYPES;
 
 //df-structures material_flags
@@ -214,7 +238,23 @@ typedef enum {
     DISPLAY_UNGLAZED=65,
     DO_NOT_CLEAN_GLOB=66,
     NO_STONE_STOCKPILE=67,
-    STOCKPILE_THREAD_METAL=68
+    STOCKPILE_THREAD_METAL=68,
+    NUM_OF_MATERIAL_FLAGS=69
 } MATERIAL_FLAGS;
+
+typedef enum{
+    VERMIN_FISH=9,
+    HATEABLE=72
+} CREATURE_FLAGS;
+
+typedef enum{
+    MILKABLE=29,
+    TRAINABLE_HUNTING=53,
+    PET=54,
+    PET_EXOTIC=55,
+    TRAINABLE_WAR=88,
+    HAS_EXTRACTS=200 //custom
+} CASTE_FLAGS;
+
 
 #endif // GLOBAL_ENUMS_H

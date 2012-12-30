@@ -30,6 +30,7 @@ class PreferencesDock : public QDockWidget {
 public:
     PreferencesDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
+    void clear();
     void refresh();
     void filter();
 

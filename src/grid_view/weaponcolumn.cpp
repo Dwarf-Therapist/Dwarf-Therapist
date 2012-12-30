@@ -26,11 +26,14 @@ THE SOFTWARE.
 #include "columntypes.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
+#include "dwarftherapist.h"
+#include "weapon.h"
 
 WeaponColumn::WeaponColumn(const QString &title, Weapon *w, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title, CT_WEAPON, set, parent)
     , m_weapon(w)
-{        
+{
+    connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 }
 
 QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
@@ -49,7 +52,7 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
         return item;
     }
 
-    QString wep = m_weapon->name_plural().toLower();
+    QString wep = m_weapon->group_name.toLower();
     if(wep.indexOf(",")>0)
         wep = "these weapons";
     short draw_rating = -2;
@@ -102,7 +105,7 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     QPalette tt;
     QColor norm_text = tt.toolTipText().color();
 
-    item->setToolTip(QString("<h3>%1</h3>%2%3%4%5<h4>%6 - %7</h4>")
+    QString tooltip = QString("<h3>%1</h3>%2%3%4%5<h4>%6 - %7</h4>")
                      .arg(tt_title)
                      .arg(desc)
                      .arg(group_name)
@@ -113,7 +116,10 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
                           .arg(twohand ? norm_text.name() : QColor(Qt::red).name())
                           .arg(m_weapon->multi_grasp()*10))
                      .arg(d->nice_name())
-                     .arg(tr("%1 cm<sup>3</sup><br>").arg(body_size*10)));
+                     .arg(tr("%1 cm<sup>3</sup><br>").arg(body_size*10));
+
+    item->setToolTip(tooltip);
+
     return item;
 }
 

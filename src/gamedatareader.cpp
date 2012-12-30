@@ -21,19 +21,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include <QtGui>
+#include <QtDebug>
 #include "gamedatareader.h"
 #include "labor.h"
 #include "trait.h"
+#include "attribute.h"
 #include "dwarfjob.h"
 #include "profession.h"
 #include "militarypreference.h"
 #include "defines.h"
-#include <QtDebug>
 #include "raws/rawreader.h"
 #include "math.h"
 #include "laboroptimizerplan.h"
 
-
+QStringList GameDataReader::m_seasons;
+QStringList GameDataReader::m_months;
 
 GameDataReader::GameDataReader(QObject *parent)
     : QObject(parent)
@@ -41,6 +43,8 @@ GameDataReader::GameDataReader(QObject *parent)
     QDir working_dir = QDir::current();
     QString filename = working_dir.absoluteFilePath("etc/game_data.ini");
     m_data_settings = new QSettings(filename, QSettings::IniFormat);
+
+    build_calendar();
 
     QStringList labor_names;
     int labors = m_data_settings->beginReadArray("labors");
@@ -51,6 +55,7 @@ GameDataReader::GameDataReader(QObject *parent)
         labor_names << l->name;
     }
     m_data_settings->endArray();
+    qDeleteAll(m_ordered_labors);
     m_ordered_labors.clear();
     qSort(labor_names);
     foreach(QString name, labor_names) {
@@ -118,8 +123,29 @@ GameDataReader::GameDataReader(QObject *parent)
     m_data_settings->endGroup();
 
     //load moodable skills http://dwarffortresswiki.org/index.php/Mood#Skills_and_workshops
-    m_moodable_skills << 28 << 37 << 49 << 2 << 16 << 3 << 30 << 31 <<
-                         35 << 36 << 4 << 55 << 34 << 29 << 0 << 33 << 12 << 27 << 13 << 32;
+    m_moodable_skills << 0 << 2 << 3 << 4 << 12 << 13 << 16 << 27 << 28 << 29 << 30 << 31 <<
+                         32 << 33 << 34 << 35 << 36 << 37 << 49 << 55;
+    //load a map of skills to the above moodable professions key = skill_id, value = prof_id
+    m_mood_skills_profession_map.insert(0,0);
+    m_mood_skills_profession_map.insert(2,2);
+    m_mood_skills_profession_map.insert(3,6);
+    m_mood_skills_profession_map.insert(4,7);
+    m_mood_skills_profession_map.insert(12,46);
+    m_mood_skills_profession_map.insert(13,28);
+    m_mood_skills_profession_map.insert(16,29);
+    m_mood_skills_profession_map.insert(27,16);
+    m_mood_skills_profession_map.insert(28,17);
+    m_mood_skills_profession_map.insert(29,14);
+    m_mood_skills_profession_map.insert(30,21);
+    m_mood_skills_profession_map.insert(31,22);
+    m_mood_skills_profession_map.insert(32,24);
+    m_mood_skills_profession_map.insert(33,25);
+    m_mood_skills_profession_map.insert(34,19);
+    m_mood_skills_profession_map.insert(35,30);
+    m_mood_skills_profession_map.insert(36,26);
+    m_mood_skills_profession_map.insert(37,27);
+    m_mood_skills_profession_map.insert(49,3);
+    m_mood_skills_profession_map.insert(55,60);
 
     m_data_settings->beginGroup("attribute_levels");
     foreach(QString k, m_data_settings->childKeys()) {
@@ -150,6 +176,7 @@ GameDataReader::GameDataReader(QObject *parent)
     }
 
     int job_names = m_data_settings->beginReadArray("dwarf_jobs");
+    qDeleteAll(m_dwarf_jobs);
     m_dwarf_jobs.clear();
     for (short i = 0; i < job_names; ++i) {
         m_data_settings->setArrayIndex(i);
@@ -169,6 +196,7 @@ GameDataReader::GameDataReader(QObject *parent)
     load_optimization_plans();
 
     int professions = m_data_settings->beginReadArray("professions");
+    qDeleteAll(m_professions);
     m_professions.clear();
     for(short i = 0; i < professions; ++i) {
         m_data_settings->setArrayIndex(i);
@@ -178,6 +206,7 @@ GameDataReader::GameDataReader(QObject *parent)
     m_data_settings->endArray();
 
     int mil_prefs = m_data_settings->beginReadArray("military_prefs");
+    qDeleteAll(m_military_preferences);
     m_military_preferences.clear();
     for(short i = 0; i < mil_prefs; ++i) {
         m_data_settings->setArrayIndex(i);
@@ -300,6 +329,7 @@ int GameDataReader::get_level_from_xp(int xp) {
 }
 
 void GameDataReader::load_roles(){
+    qDeleteAll(m_dwarf_roles);
     m_dwarf_roles.clear();
     m_default_roles.clear();
     //first add custom roles
@@ -322,6 +352,8 @@ void GameDataReader::load_roles(){
         //don't overwrite any custom role with the same name
         if(!m_dwarf_roles.contains(r->name))
             m_dwarf_roles.insert(r->name, r);
+        else
+            int z = 0;
     }
     m_data_settings->endArray();
 
@@ -329,6 +361,9 @@ void GameDataReader::load_roles(){
 }
 
 void GameDataReader::load_optimization_plans(){
+    qDeleteAll(m_opt_plans);
+    m_opt_plans.clear();
+
     //load labor optimization data
     QSettings *u = DT->user_settings();
     int labor_opts = u->beginReadArray("labor_optimizations");
@@ -360,7 +395,7 @@ void GameDataReader::refresh_opt_plans(){
 }
 
 void GameDataReader::load_role_mappings(){
-    //load sorted role list
+    //load sorted role list    
     m_ordered_roles.clear();
     QStringList role_names;
     foreach(Role *r, m_dwarf_roles) {
@@ -385,6 +420,28 @@ void GameDataReader::load_role_mappings(){
             roles.append(r);
             m_skill_roles.insert(key.toInt(),roles);
         }
+    }
+}
+
+void GameDataReader::build_calendar(){
+    if(m_seasons.length()<=0 || m_months.length()<=0){
+        m_seasons.append("Spring");
+        m_seasons.append("Summer");
+        m_seasons.append("Autumn");
+        m_seasons.append("Winter");
+
+        m_months.append("Granite");
+        m_months.append("Slate");
+        m_months.append("Felsite");
+        m_months.append("Hematite");
+        m_months.append("Malachite");
+        m_months.append("Galena");
+        m_months.append("Limestone");
+        m_months.append("Sandstone");
+        m_months.append("Timber");
+        m_months.append("Moonstone");
+        m_months.append("Opal");
+        m_months.append("Obsidian");
     }
 }
 

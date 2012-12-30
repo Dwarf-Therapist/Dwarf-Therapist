@@ -51,6 +51,26 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
 
     TRACE << "Creating settings object";
     m_user_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
+//    QString local_path = QApplication::applicationDirPath() + "/Dwarf Therapist.ini";
+//    if(!QFile::exists(local_path)){
+//        LOGI << "Local settings file not found, attempting to copy from user directory...";
+//        m_user_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
+//        if(QFile::copy(m_user_settings->fileName(), local_path)){
+//            m_user_settings = new QSettings(local_path, QSettings::IniFormat, this);
+//        }
+//    }else{
+//        //backup
+//        LOGI << "Using and backing up local Dwarf Therapist.ini";
+//        QFile::copy(local_path, QApplication::applicationDirPath() + "/Dwarf Therapist.ini.bak");
+//        m_user_settings = new QSettings(local_path, QSettings::IniFormat, this);
+//    }
+
+//    if(!m_user_settings){
+//        LOGI << "Failed to copy and/or open local Dwarf Therapist.ini, falling back to user ini.";
+//        m_user_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
+//    }
+
+
 
     TRACE << "Creating options menu";
     m_options_menu = new OptionsMenu;
@@ -151,7 +171,10 @@ void DwarfTherapist::read_settings() {
         foreach(QString prof, profession_names) {
             CustomProfession *cp = new CustomProfession(this);
             cp->set_name(prof);
+            cp->set_path(m_user_settings->value(QString("%1/icon_id").arg(prof),99).toInt());
             cp->set_mask(m_user_settings->value(QString("%1/is_mask").arg(prof),false).toBool());
+            cp->set_color(m_user_settings->value(QString("%1/text_color").arg(prof),Qt::black).value<QColor>());
+            cp->set_text(m_user_settings->value(QString("%1/text").arg(prof),"").toString());
             m_user_settings->beginGroup(prof);
             int size = m_user_settings->beginReadArray("labors");
             for(int i = 0; i < size; ++i) {
@@ -170,6 +193,11 @@ void DwarfTherapist::read_settings() {
 
     m_reading_settings = false;
     m_main_window->draw_professions();
+
+    QApplication::setFont(DT->user_settings()->value("options/main_font", QFont("Segoe UI", 9)).value<QFont>());
+
+    //set the application's tooltips
+    QToolTip::setFont(DT->user_settings()->value("options/tooltip_font", QFont("Segoe UI", 8)).value<QFont>());
     LOGD << "finished reading settings";
 }
 
@@ -181,7 +209,10 @@ void DwarfTherapist::write_settings() {
         foreach(CustomProfession *cp, m_custom_professions) {
             m_user_settings->beginGroup(cp->get_name());
             m_user_settings->setValue("is_mask",cp->is_mask());
-            m_user_settings->beginWriteArray("labors");
+            m_user_settings->setValue("icon_id",cp->get_icon_id());
+            m_user_settings->setValue("text", cp->get_text());
+            m_user_settings->setValue("text_color",cp->get_color());
+            m_user_settings->beginWriteArray("labors");            
             int i = 0;
             foreach(int labor_id, cp->get_enabled_labors()) {
                 m_user_settings->setArrayIndex(i++);
@@ -206,6 +237,9 @@ void DwarfTherapist::import_existing_professions() {
         if (!cp) { // import it
             cp = new CustomProfession(d, this);
             cp->set_name(prof);
+            cp->set_path(cp->get_icon_id());
+            cp->set_color(cp->get_color());
+            cp->set_text(cp->get_text());
             m_custom_professions << cp;
             imported++;
         }
@@ -322,6 +356,7 @@ Dwarf *DwarfTherapist::get_dwarf_by_id(int dwarf_id) {
 
 void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
     LOGD << "Loading language translation tables";
+    qDeleteAll(m_language);
     m_language.clear();
     m_generic_words.clear();
     m_dwarf_words.clear();

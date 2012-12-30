@@ -35,11 +35,13 @@ THE SOFTWARE.
 CurrentJobColumn::CurrentJobColumn(const QString &title, ViewColumnSet *set,
                        QObject *parent)
     : ViewColumn(title, CT_IDLE, set, parent)
-{}
+{    
+}
 
 CurrentJobColumn::CurrentJobColumn(const CurrentJobColumn &to_copy)
     : ViewColumn(to_copy)
-{}
+{    
+}
 
 QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
@@ -73,7 +75,7 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
                 pixmap_name = ":status/img/shovel.png";
                 break;
             case DwarfJob::DJT_CUT:
-                pixmap_name = ":status/img/hatchet.png";
+                pixmap_name = ":status/img/tree--minus.png";
                 break;
             case DwarfJob::DJT_SLEEP:{
                 pixmap_name = ":status/img/moon.png";
@@ -240,6 +242,9 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
                 pixmap_name = ":status/img/armor.png";
                 break;
             case DwarfJob::DJT_FISH:
+                pixmap_name = ":status/img/carp.png";
+                break;
+            case DwarfJob::DJT_RAW_FISH:
                 pixmap_name = ":status/img/fish.png";
                 break;
             case DwarfJob::DJT_MILK:
@@ -299,11 +304,12 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
     if(DT->user_settings()->value("options/grid/shade_cells",true)==false)
         bg = QColor(255,255,255);
     item->setData(bg,Qt::BackgroundColorRole);
+
     QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%4</h4>")
-        .arg(m_title)
-        .arg(d->current_job())
-        .arg(d->current_job_id())
-        .arg(d->nice_name());
+            .arg(m_title)
+            .arg(d->current_job())
+            .arg(d->current_job_id())
+            .arg(d->nice_name());
     item->setToolTip(tooltip);
     return item;
 }

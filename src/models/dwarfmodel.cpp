@@ -43,29 +43,38 @@ THE SOFTWARE.
 #include "spacercolumn.h"
 #include "races.h"
 #include "fortressentity.h"
-
-QStringList DwarfModel::m_seasons;
-QStringList DwarfModel::m_months;
+#include "gamedatareader.h"
 
 DwarfModel::DwarfModel(QObject *parent)
     : QStandardItemModel(parent)
     , m_df(0)
     , m_group_by(GB_NOTHING)
     , m_selected_col(-1)
+    , m_gridview(0x0)
 {
 }
 
 DwarfModel::~DwarfModel() {
-    clear_all();
+    clear_all(true);
 }
 
-void DwarfModel::clear_all() {
-    clear_pending();
-    foreach(Dwarf *d, m_dwarves) {
-        delete d;
-    }
+void DwarfModel::clear_all(bool clr_pend) {
+    if(clr_pend)
+        clear_pending();
+
+    qDeleteAll(m_dwarves);
     m_dwarves.clear();
     m_grouped_dwarves.clear();
+
+    if(m_gridview){
+        foreach(ViewColumnSet *set, m_gridview->sets()) {
+            foreach(ViewColumn *col, set->columns()) {
+                col->clear_cells();
+            }
+        }
+    }
+
+    total_row_count = 0;
     clear();
 }
 
@@ -80,21 +89,15 @@ void DwarfModel::section_right_clicked(int col) {
 
 void DwarfModel::load_dwarves() {
     // clear id->dwarf map
-    foreach(Dwarf *d, m_dwarves) {
-        delete d;
-    }
-    m_dwarves.clear();
-    if (rowCount())
-        removeRows(0, rowCount());
+    clear_all(false);
 
     m_df->attach();
-
 
     foreach(Dwarf *d, m_df->load_dwarves()) {
         m_dwarves[d->id()] = d;
     }
 
-
+    qDeleteAll(m_squads);
     m_squads.clear();
     foreach(Squad * s, m_df->load_squads()) {
         m_squads[s->id()] = s;        
@@ -103,7 +106,7 @@ void DwarfModel::load_dwarves() {
 }
 
 
-//Shisimaru's export to CSV
+//Shishimaru's export to CSV
 void DwarfModel::save_rows() {
     QString defaultPath = QString("%1.csv").arg(m_gridview->name());
     QString fileName = QFileDialog::getSaveFileName(0 , tr("Save file as"), defaultPath, tr("csv files (*.csv)"));
@@ -215,6 +218,8 @@ void DwarfModel::draw_headers(){
     emit clear_spacers();
     QSettings *s = DT->user_settings();
     int width = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
+    int pad = s->value("options/grid/cell_padding", 0).toInt();
+    width += (pad*2)+2;
     foreach(ViewColumnSet *set, m_gridview->sets()) {
         /*QStandardItem *set_header = new QStandardItem(set->name());
         set_header->setData(set->bg_color(), Qt::BackgroundColorRole);
@@ -259,9 +264,42 @@ void DwarfModel::draw_headers(){
 void DwarfModel::build_rows() {
     // don't need to go delete the dwarf pointers in here, since the earlier foreach should have
     // deleted them
+
+//    m_grouped_dwarves.clear();
+//    total_row_count = 0;
+//    clear();
+
     m_grouped_dwarves.clear();
-    total_row_count = 0;
+
+    foreach(ViewColumnSet *set, m_gridview->sets()) {
+        foreach(ViewColumn *col, set->columns()) {
+            col->clear_cells();
+        }
+    }
     clear();
+
+    total_row_count = 0;
+
+//    //delete all children of parent;
+//    QStandardItem * loopItem = this->invisibleRootItem(); //main loop item
+//    QList<QStandardItem *> carryItems; //Last In First Out stack of items
+//    QList<QStandardItem *> itemsToBeDeleted; //List of items to be deleted
+//    while (loopItem->rowCount())
+//    {
+//        itemsToBeDeleted << loopItem->takeRow(0);
+//        //if the row removed has children:
+//        if (itemsToBeDeleted.at(0)->hasChildren())
+//        {
+//            carryItems << loopItem;                 //put on the stack the current loopItem
+//            loopItem = itemsToBeDeleted.at(0);      //set the row with children as the loopItem
+//        }
+//        //if current loopItem has no more rows but carryItems list is not empty:
+//        if (!loopItem->rowCount() && !carryItems.isEmpty()) loopItem = carryItems.takeFirst();
+
+//    }
+//    qDeleteAll(itemsToBeDeleted);
+
+
     draw_headers();
     QSettings *s = DT->user_settings();
 
@@ -273,9 +311,6 @@ void DwarfModel::build_rows() {
     QString race_name = "";
 
     GameDataReader *gdr = GameDataReader::ptr();
-
-    //setup calendar
-    build_calendar();
 
     foreach(Dwarf *d, m_dwarves) {
         if (only_animals)
@@ -295,7 +330,7 @@ void DwarfModel::build_rows() {
                         m_grouped_dwarves[tr("Females")].append(d);
                     break;
                 case GB_MIGRATION_WAVE:
-                    m_grouped_dwarves[get_migration_desc(d)].append(d);
+                    m_grouped_dwarves[d->get_migration_desc()].append(d);
                     break;
                 case GB_PROFESSION:
                 case GB_LEGENDARY:
@@ -369,8 +404,8 @@ void DwarfModel::build_rows() {
                     case GB_LEGENDARY:
                     {
                         int legendary_skills = 0;
-                        foreach(Skill s, *d->get_skills()) {
-                            if (s.rating() >= 15)
+                        foreach(Skill *s, *d->get_skills()) {
+                            if (s->rating() >= 15)
                                 legendary_skills++;
                         }
                         if (legendary_skills)
@@ -390,7 +425,7 @@ void DwarfModel::build_rows() {
                         break;
                     case GB_MIGRATION_WAVE:
                     {
-                        m_grouped_dwarves[get_migration_desc(d)].append(d);
+                        m_grouped_dwarves[d->get_migration_desc()].append(d);
                         break;
                     }
                     case GB_CASTE:
@@ -429,9 +464,9 @@ void DwarfModel::build_rows() {
                         break;
                     case GB_HIGHEST_MOODABLE:
                     {
-                        Skill highest = d->highest_moodable();
-                        if(highest.rating() != -1 && !d->had_mood()){
-                            m_grouped_dwarves[highest.name()].append(d);
+                        Skill *highest = d->highest_moodable();
+                        if(highest->rating() != -1 && !d->had_mood()){
+                            m_grouped_dwarves[highest->name()].append(d);
                         }else{
                             if(d->had_mood())
                                 m_grouped_dwarves["~Had Mood~"].append(d);
@@ -442,8 +477,8 @@ void DwarfModel::build_rows() {
                         break;
                     case GB_HIGHEST_SKILL:
                     {
-                        Skill highest = d->highest_skill();
-                        QString level = gdr->get_skill_level_name(highest.rating());
+                        Skill *highest = d->highest_skill();
+                        QString level = gdr->get_skill_level_name(highest->rating());
                         m_grouped_dwarves[level].append(d);
                     }
                         break;
@@ -486,133 +521,75 @@ void DwarfModel::build_rows() {
         }
     }
 
+
     foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
         build_row(key);
     }
     emit new_creatures_count(n_adults,n_children,n_babies,race_name);
 }
 
-QString DwarfModel::get_migration_desc(Dwarf *d){
-    qint32 wave = d->migration_wave();
-    quint32 season = 0;
-    quint32 year = 0;
-    quint32 month = 0;
-    quint32 day = 0;
-    QString suffix = "th";
-
-    day = (wave % 100) + 1;
-    month = (wave / 100) % 100;
-    season = (wave / 10000) % 10;
-    year = wave / 100000;
-    if ((day == 1) || (day == 21))
-        suffix = "st";
-    else if ((day == 2) || (day == 22))
-        suffix = "nd";
-    else if ((day == 3) || (day == 23))
-        suffix = "rd";
-    else
-        suffix = "th";
-    if (d->born_in_fortress())
-    {
-        return QString("Born on the %1%4 of %2 in the year %3").arg(day).arg(m_months.at(month)).arg(year).arg(suffix);
-    }
-    else
-    {
-        return QString("Arrived in the %2 of the year %1").arg(year).arg(m_seasons.at(season));
-    }
-    return "Unknown Arrival";
-}
-
-void DwarfModel::build_calendar(){
-    if(m_seasons.length()<=0 || m_months.length()<=0){
-        m_seasons.append("Spring");
-        m_seasons.append("Summer");
-        m_seasons.append("Autumn");
-        m_seasons.append("Winter");
-
-        m_months.append("Granite");
-        m_months.append("Slate");
-        m_months.append("Felsite");
-        m_months.append("Hematite");
-        m_months.append("Malachite");
-        m_months.append("Galena");
-        m_months.append("Limestone");
-        m_months.append("Sandstone");
-        m_months.append("Timber");
-        m_months.append("Moonstone");
-        m_months.append("Opal");
-        m_months.append("Obsidian");
-    }
-}
-
 void DwarfModel::build_row(const QString &key) {
-    QIcon icn_f(":img/female.png");
-    QIcon icn_m(":img/male.png");
-    QStandardItem *root = 0;
-    QList<QStandardItem*> root_row;
+    QIcon icn_gender;
+    QStandardItem *agg_first_col = 0;
+    QList<QStandardItem*> agg_items;
     Dwarf *first_dwarf = m_grouped_dwarves.value(key).at(0);
     if (!first_dwarf) {
-        LOGE << "'Group by'' set for" << key << "has a bad ref for its first "
-                << "dwarf";
+        LOGE << "'Group by'' set for" << key << "has a bad ref for its first " << "dwarf";
         return;
     }
 
     if (m_group_by != GB_NOTHING) {
         // we need a root element to hold group members...
         QString title = QString("%1 (%2)").arg(key).arg(m_grouped_dwarves.value(key).size());
-        root = new QStandardItem(title);
-        root->setData(true, DR_IS_AGGREGATE);
-        root->setData(key, DR_GROUP_NAME);
-        root->setData(0, DR_RATING);        
+        agg_first_col = new QStandardItem(title);
+        agg_first_col->setData(true, DR_IS_AGGREGATE);
+        agg_first_col->setData(key, DR_GROUP_NAME);
+        agg_first_col->setData(0, DR_RATING);
         //root->setData(title, DR_SORT_VALUE);
         // for integer based values we want to make sure they sort by the int
         // values instead of the string values
         if (m_group_by == GB_MIGRATION_WAVE) {
-            root->setData(first_dwarf->migration_wave(), DR_SORT_VALUE);
+            agg_first_col->setData(first_dwarf->migration_wave(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HIGHEST_SKILL) {
-            root->setData(first_dwarf->highest_skill().rating(), DR_SORT_VALUE);
+            agg_first_col->setData(first_dwarf->highest_skill()->rating(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HIGHEST_MOODABLE) {
-            root->setData(first_dwarf->highest_moodable().name(), DR_SORT_VALUE);
+            agg_first_col->setData(first_dwarf->highest_moodable()->name(), DR_SORT_VALUE);
         } else if (m_group_by == GB_TOTAL_SKILL_LEVELS) {
-            root->setData(first_dwarf->total_skill_levels(), DR_SORT_VALUE);
+            agg_first_col->setData(first_dwarf->total_skill_levels(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HAPPINESS) {
-            root->setData(first_dwarf->get_happiness(), DR_SORT_VALUE);
+            agg_first_col->setData(first_dwarf->get_happiness(), DR_SORT_VALUE);
         } else if (m_group_by == GB_ASSIGNED_LABORS) {
-            root->setData(first_dwarf->total_assigned_labors(), DR_SORT_VALUE);
+            agg_first_col->setData(first_dwarf->total_assigned_labors(), DR_SORT_VALUE);
         } else if (m_group_by == GB_PROFESSION) {
-            root->setData(first_dwarf->profession(), DR_SORT_VALUE);
+            agg_first_col->setData(first_dwarf->profession(), DR_SORT_VALUE);
         } else if (m_group_by == GB_CASTE) {
-            root->setData(first_dwarf->get_caste_id(), DR_SORT_VALUE);
+            agg_first_col->setData(first_dwarf->get_caste_id(), DR_SORT_VALUE);
         } else if (m_group_by == GB_SQUAD){            
             int squad_id = first_dwarf->squad_id();
             if(squad_id != -1){
                 int squad_count = m_squads.value(first_dwarf->squad_id())->assigned_count();
                 title = QString("%1 (%2)").arg(key).arg(squad_count);
-                root->setText(title);
+                agg_first_col->setText(title);
                 if(squad_count != m_grouped_dwarves.value(key).size())
-                root->setToolTip("The count may be different as Dwarf Fortress keeps missing dead dwarves in squads until they're found.");
+                agg_first_col->setToolTip("The count may be different as Dwarf Fortress keeps missing dead dwarves in squads until they're found.");
             }
-            root->setData(squad_id, DR_ID);
+            agg_first_col->setData(squad_id, DR_ID);
         }
-        root_row << root;
+        agg_items << agg_first_col;
     }
 
-
-    if (root) { // we have a parent, so we should draw an aggregate row
+    if (agg_first_col) { // we have a parent, so we should draw an aggregate row
         total_row_count += 1;
         foreach(ViewColumnSet *set, m_gridview->sets()) {
             foreach(ViewColumn *col, set->columns()) {
                 QStandardItem *item = col->build_aggregate(key, m_grouped_dwarves[key]);
-                root_row << item;
+                agg_items << item;
             }
         }
     }
 
-
-
     foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
         QStandardItem *i_name = new QStandardItem(d->nice_name());
-        total_row_count += 1;
         QFont f = i_name->font();
         QFontMetrics fm(f);
         QChar symbol(0x263C);
@@ -675,30 +652,30 @@ void DwarfModel::build_row(const QString &key) {
 
         i_name->setData(sort_val, DR_SORT_VALUE);
 
-        if (d->is_male()) {
-            i_name->setIcon(icn_m);
-        } else {
-            i_name->setIcon(icn_f);
-        }
+        //set icons
+        icn_gender.addFile(d->gender_icon_path());
+        i_name->setIcon(icn_gender);
+
 
         QList<QStandardItem*> items;
         items << i_name;
         foreach(ViewColumnSet *set, m_gridview->sets()) {
-            foreach(ViewColumn *col, set->columns()) {
-                QStandardItem *item = col->build_cell(d);
+            foreach(ViewColumn *col, set->columns()) {                
+                QStandardItem *item = col->build_cell(d);                
                 items << item;
             }
         }
 
-        if (root) {
-            root->appendRow(items);
+        if (agg_first_col) {
+            agg_first_col->appendRow(items);
         } else {
             appendRow(items);
         }
         d->m_name_idx = indexFromItem(i_name);
+        total_row_count += 1;
     }
-    if (root) {
-        appendRow(root_row);
+    if (agg_first_col) {
+        appendRow(agg_items);
     }
 }
 
@@ -781,9 +758,9 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
 void DwarfModel::set_group_by(int group_by) {
     LOGD << "group_by now set to" << group_by;
     m_group_by = static_cast<GROUP_BY>(group_by);
-    if (m_df)
-        build_rows();    
 
+    if(m_df)
+        build_rows();
 }
 
 void DwarfModel::calculate_pending() {

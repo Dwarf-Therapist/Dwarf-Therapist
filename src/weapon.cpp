@@ -39,6 +39,15 @@ Weapon::Weapon(DFInstance *df, VIRTADDR address, QObject *parent)
     load_data();
 }
 
+Weapon::Weapon(const Weapon &w){
+    m_address = w.m_address;
+    m_name_plural = w.m_name_plural;
+    m_single_grasp_size = w.m_single_grasp_size;
+    m_multi_grasp_size = w.m_multi_grasp_size;
+    m_df = w.m_df;
+    m_mem = w.m_mem;
+}
+
 Weapon::~Weapon() {
 }
 
@@ -60,8 +69,10 @@ void Weapon::load_data() {
 
 void Weapon::read_weapon() {
     m_name_plural = capitalizeEach(m_df->read_string(m_address + m_df->memory_layout()->weapon_offset("name_plural"))); //plural
+    group_name = m_name_plural; //set to plural for default
     m_single_grasp_size = m_df->read_int(m_address + m_df->memory_layout()->weapon_offset("single_size")); //two_hand size
     m_multi_grasp_size = m_df->read_int(m_address + m_df->memory_layout()->weapon_offset("multi_size")); //minimum size
-//    m_melee_skill_id = m_df->read_int(m_address + 0x98);
-//    m_ranged_skill_id = m_df->read_int(m_address + 0x9a);
+    m_ammo = m_df->read_string(m_address + m_df->memory_layout()->weapon_offset("ammo"));
+    //short m_melee_skill_id = m_df->read_byte(m_address + 0x98);
+    //short m_ranged_skill_id = m_df->read_byte(m_address + 0x9a);
 }

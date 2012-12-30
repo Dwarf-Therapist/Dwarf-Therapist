@@ -23,10 +23,9 @@ THE SOFTWARE.
 #ifndef TRAIT_COLUMN_H
 #define TRAIT_COLUMN_H
 
-class Trait;
-
 #include "viewcolumn.h"
-#include "dwarf.h"
+
+class Trait;
 
 class TraitColumn : public ViewColumn {
     Q_OBJECT
@@ -40,6 +39,9 @@ public:
     short trait_id() const {return m_trait_id;}
 
     void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("trait_id", m_trait_id);}
+
+public slots:
+    //void read_settings();
 
 private:
     short m_trait_id;

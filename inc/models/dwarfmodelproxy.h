@@ -24,8 +24,9 @@ THE SOFTWARE.
 #define DWARF_MODEL_PROXY_H
 
 #include <QtGui>
-#include "dwarf.h"
+//#include "dwarf.h"
 
+class Dwarf;
 class DwarfModel;
 class QScriptEngine;
 

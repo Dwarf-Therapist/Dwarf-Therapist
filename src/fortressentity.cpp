@@ -40,6 +40,8 @@ FortressEntity::FortressEntity(DFInstance *df, VIRTADDR address, QObject *parent
 
 FortressEntity::~FortressEntity()
 {
+    noble_colors.clear();
+    m_nobles.clear();
 }
 
 FortressEntity* FortressEntity::get_entity(DFInstance *df, const VIRTADDR & address) {

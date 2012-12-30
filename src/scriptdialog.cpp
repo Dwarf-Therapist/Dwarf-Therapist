@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "trait.h"
 #include "skill.h"
 #include "dwarftherapist.h"
+#include "attribute.h"
 
 ScriptDialog::ScriptDialog(QWidget *parent)
     : QDialog(parent)

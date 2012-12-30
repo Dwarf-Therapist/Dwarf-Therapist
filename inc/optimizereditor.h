@@ -1,11 +1,15 @@
 #ifndef OPTIMIZEREDITOR_H
 #define OPTIMIZEREDITOR_H
 
-#include <QWidget>
-#include "dwarftherapist.h"
-#include "gamedatareader.h"
-#include "laboroptimizerplan.h"
-#include "laboroptimizer.h"
+#include <QtGui>
+
+class DwarfTherapist;
+class GameDataReader;
+class laborOptimizerPlan;
+class PlanDetail;
+class LaborOptimizer;
+class Dwarf;
+class Labor;
 
 namespace Ui {
 class optimizereditor;
@@ -40,7 +44,7 @@ private:
     QList<Labor*> m_remaining_labors;
 
 
-    void insert_row(laborOptimizerPlan::detail *d);
+    void insert_row(PlanDetail *d);
     void add_new_detail(int id);
 
     void save_details(laborOptimizerPlan *p);
@@ -76,38 +80,6 @@ private slots:
     void auto_haul_changed(int);
     void filter_option_changed();
 
-};
-
-class sortableTableWidgetItem : public QTableWidgetItem
-{
-public:
-    sortableTableWidgetItem(int type = Type) : QTableWidgetItem(type) {}
-    ~sortableTableWidgetItem () {}
-
-    bool operator<(const QTableWidgetItem& other) const
-    {
-        Q_ASSERT(tableWidget());
-        Q_ASSERT(tableWidget()->cellWidget(row(), column()));
-        Q_ASSERT(tableWidget()->cellWidget(other.row(), other.column()));
-        return tableWidget()->cellWidget(row(), column())->property("text").toString() <
-            tableWidget()->cellWidget(other.row(), other.column())->property("text").toString();
-    }
-};
-
-class sortableComboItem : public QTableWidgetItem
-{
-public:
-    sortableComboItem(int type = Type) : QTableWidgetItem(type) {}
-    ~sortableComboItem () {}
-
-    bool operator<(const QTableWidgetItem& other) const
-    {
-        Q_ASSERT(tableWidget());
-        Q_ASSERT(tableWidget()->cellWidget(row(), column()));
-        Q_ASSERT(tableWidget()->cellWidget(other.row(), other.column()));
-        return tableWidget()->cellWidget(row(), column())->property("currentText").toString() <
-            tableWidget()->cellWidget(other.row(), other.column())->property("currentText").toString();
-    }
 };
 
 #endif // OPTIMIZEREDITOR_H

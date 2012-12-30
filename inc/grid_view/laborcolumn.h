@@ -41,8 +41,7 @@ public:
 	void set_skill_id(int skill_id) {m_skill_id = skill_id;}
 
 	// override
-	void write_to_ini(QSettings &s);
-
+	void write_to_ini(QSettings &s);    
 
 protected:
 	int m_labor_id;
@@ -50,6 +49,7 @@ protected:
 
 public slots:
     void update_count();
+    //void read_settings();
 };
 
 #endif

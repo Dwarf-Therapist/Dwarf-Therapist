@@ -26,8 +26,8 @@ THE SOFTWARE.
 #include "truncatingfilelogger.h"
 #include <QtDebug>
 
-Material::Material()
-    : QObject(NULL)
+Material::Material(QObject *parent)
+    : QObject(parent)
     , m_index(-1)
     , m_address(0x0)
     , m_df(0x0)
@@ -48,6 +48,10 @@ Material::Material(DFInstance *df, VIRTADDR address, int index, bool inorganic, 
 }
 
 Material::~Material() {
+    delete(m_flags);
+    m_flags = 0;
+
+    m_state_names.clear();
 }
 
 Material* Material::get_material(DFInstance *df, const VIRTADDR & address, int index, bool inorganic) {
@@ -112,8 +116,6 @@ void Material::read_material() {
 
 */
 
-//    if(m_solid.toLower() == "adamantine")
-//        int z = 0;
 
     QString generic_state_name = m_df->read_string(m_address);
 //    foreach(VIRTADDR temp, templates){
@@ -143,37 +145,49 @@ void Material::read_material() {
 
     m_state_names.insert(GENERIC, generic_state_name);
 
-    //read the material flags
-    //get the array from the pointer
-    VIRTADDR flags_addr = m_df->read_addr(m_flag_address);
-    //size of the byte array
-    quint32 size_in_bytes = m_df->read_addr(m_flag_address + 0x4);
+    m_flags = new FlagArray(m_df, m_flag_address);
 
-    m_flags = new QBitArray(size_in_bytes * 8);
+//    //read the material flags
+//    //get the array from the pointer
+//    VIRTADDR flags_addr = m_df->read_addr(m_flag_address);
+//    //size of the byte array
+//    quint32 size_in_bytes = m_df->read_addr(m_flag_address + 0x4);
 
-    BYTE b;
-    int position;
-    for(int i = 0; i < size_in_bytes; i++){
-        position = 7;
-        b = m_df->read_byte(flags_addr);
-        if(b > 0){
-            for(int t=128; t>0; t = t/2){
-                if(b & t)
-                    m_flags->setBit(i*8 + position, true);
-                position--;
-            }
-        }
-        flags_addr += 0x1;
-    }
+//    m_flags = new QBitArray(size_in_bytes * 8);
+
+//    BYTE b;
+//    int position;
+//    for(int i = 0; i < size_in_bytes; i++){
+//        position = 7;
+//        b = m_df->read_byte(flags_addr);
+//        if(b > 0){
+//            for(int t=128; t>0; t = t/2){
+//                if(b & t)
+//                    m_flags->setBit(i*8 + position, true);
+//                position--;
+//            }
+//        }
+//        flags_addr += 0x1;
+//    }
+
+
+//    if(m_solid.toLower().indexOf("dye") > 0 || has_flag(POWDER_MISC_PLANT) || has_flag(CHEESE_PLANT)){
+//        QString val;
+//        for(int i =0; i < m_flags->size(); i++){
+//            val.append(m_flags->at(i) ? "1," : "0,");
+//        }
+//        val.chop(1);
+//        LOGW << m_solid << "," << val;
+//    }
 }
 
-bool Material::has_flag(MATERIAL_FLAGS f){
-    if((int)f < m_flags->count()){
-        return m_flags->at(f);
-    }else{
-        return false;
-    }
-}
+//bool Material::has_flag(MATERIAL_FLAGS f){
+//    if((int)f < m_flags->count()){
+//        return m_flags->at(f);
+//    }else{
+//        return false;
+//    }
+//}
 
 QString Material::get_material_name(MATERIAL_STATES state){
     if(m_state_names.contains(state))
@@ -181,3 +195,4 @@ QString Material::get_material_name(MATERIAL_STATES state){
     else
         return "Unknown";
 }
+

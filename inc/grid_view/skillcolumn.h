@@ -24,7 +24,6 @@ THE SOFTWARE.
 #define SKILL_COLUMN_H
 
 #include "viewcolumn.h"
-#include "role.h"
 
 class SkillColumn : public ViewColumn {
 public:
@@ -39,6 +38,9 @@ public:
 
 	//override
 	void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("skill_id", m_skill_id);}
+
+public slots:
+    //void read_settings();
 
 protected:
 	int m_skill_id;

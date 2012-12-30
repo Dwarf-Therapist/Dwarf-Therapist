@@ -37,7 +37,7 @@ QHash<ASPECT_TYPE, QList<DwarfStats::bin> > DwarfStats::m_trait_bins;
 float DwarfStats::calc_cdf(float mean, float stdev, float rawValue){
     double rating = 0.0;
 
-    if(mean==0 && stdev==0 && rawValue==0)
+    if((mean==0 && stdev==0 && rawValue==0) || stdev==0)
         return 0.5;
 
     //standardize the value

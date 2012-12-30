@@ -24,28 +24,34 @@ THE SOFTWARE.
 #define ATTRIBUTE_COLUMN_H
 
 #include "viewcolumn.h"
-#include "dwarf.h"
-#include "attribute.h"
+#include "global_enums.h"
+
+class ViewColumn;
+class Dwarf;
+class Attribute;
 
 class AttributeColumn : public ViewColumn {
     Q_OBJECT
 public:
 
-    AttributeColumn(const QString &title, Attribute::ATTRIBUTES_TYPE type, ViewColumnSet *set = 0, QObject *parent = 0);
+    AttributeColumn(const QString &title, ATTRIBUTES_TYPE type, ViewColumnSet *set = 0, QObject *parent = 0);
     AttributeColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
     AttributeColumn(const AttributeColumn &to_copy); // copy ctor
     AttributeColumn* clone() {return new AttributeColumn(*this);}
     QStandardItem *build_cell(Dwarf *d);
     QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 
-    Attribute::ATTRIBUTES_TYPE attribute() {return m_attribute_type;}
-    void set_attribute(Attribute::ATTRIBUTES_TYPE type) {m_attribute_type = type;}
+    ATTRIBUTES_TYPE attribute() {return m_attribute_type;}
+    void set_attribute(ATTRIBUTES_TYPE type) {m_attribute_type = type;}
 
     //override
     void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("attribute", m_attribute_type);}
 
+public slots:
+    //void read_settings();
+
 private:
-    Attribute::ATTRIBUTES_TYPE m_attribute_type;
+    ATTRIBUTES_TYPE m_attribute_type;
 };
 
 #endif

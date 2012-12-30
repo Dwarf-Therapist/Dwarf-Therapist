@@ -24,7 +24,8 @@ THE SOFTWARE.
 #define LABOROPTIMIZERPLAN_H
 
 #include <QtGui>
-#include "role.h"
+
+class PlanDetail;
 
 class laborOptimizerPlan : public QObject {
     Q_OBJECT
@@ -42,20 +43,21 @@ public:
     bool auto_haulers; //auto-assign remaining dwarfs as haulers
     float hauler_percent;
 
-    struct detail{
-        int labor_id;
-        QString role_name;
-        float priority;
-        float ratio; //ratio compared to other jobs
-        bool use_skill; //set if a role isn't specified
-        int max_count; //derived from the max_laborers * target population
-        int assigned_laborers; //used when applying optimization
-        float group_ratio;
-    };
+//    typedef struct detail{
+//        int labor_id;
+//        QString role_name;
+//        float priority;
+//        float ratio; //ratio compared to other jobs
+//        bool use_skill; //set if a role isn't specified
+//        int max_count; //derived from the max_laborers * target population
+//        int assigned_laborers; //used when applying optimization
+//        float group_ratio;
+//    } detail;
 
-    QVector<detail*> plan_details;
-
-    detail* job_exists(int labor_id);
+    //QVector<detail*> plan_details;
+    QVector<PlanDetail*> plan_details;
+    PlanDetail* job_exists(int labor_id);
+    //detail* job_exists(int labor_id);
     void remove_job(int labor_id);
 
     void write_to_ini(QSettings &s);

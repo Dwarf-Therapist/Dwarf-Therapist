@@ -28,24 +28,29 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include "dwarf.h"
 #include "viewcolumnset.h"
+#include "skill.h"
+#include "dwarftherapist.h"
 
 MilitaryPreferenceColumn::MilitaryPreferenceColumn(const QString &title, const int &labor_id, const int &skill_id, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(title, CT_MILITARY_PREFERENCE, set, parent)
 	, m_labor_id(labor_id)
 	, m_skill_id(skill_id)
-{}
+{
+}
 
 MilitaryPreferenceColumn::MilitaryPreferenceColumn(QSettings &s, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(s, set, parent)
 	, m_labor_id(s.value("labor_id", -1).toInt())
 	, m_skill_id(s.value("skill_id", -1).toInt())
-{}
+{
+}
 
 MilitaryPreferenceColumn::MilitaryPreferenceColumn(const MilitaryPreferenceColumn &to_copy) 
     : ViewColumn(to_copy)
     , m_labor_id(to_copy.m_labor_id)
     , m_skill_id(to_copy.m_skill_id)
-{}
+{
+}
 
 QStandardItem *MilitaryPreferenceColumn::build_cell(Dwarf *d) {
 	GameDataReader *gdr = GameDataReader::ptr();
@@ -67,21 +72,23 @@ QStandardItem *MilitaryPreferenceColumn::build_cell(Dwarf *d) {
 		if (rating > 15)
 			adjusted_rating = QString("15 +%1").arg(rating - 15);
         skill_str = tr("<b>%1</b> %2 %3<br/>[RAW LEVEL: <b><font color=blue>%4</font></b>]<br/><b>Experience:</b><br/>%5")
-                .arg(d->get_skill(m_skill_id).rust_rating())
+                .arg(d->get_skill(m_skill_id)->rust_rating())
                 .arg(gdr->get_skill_level_name(rating))
                 .arg(gdr->get_skill_name(m_skill_id))
                 .arg(adjusted_rating)
-                .arg(d->get_skill(m_skill_id).exp_summary());
+                .arg(d->get_skill(m_skill_id)->exp_summary());
     } else {
 		// either the skill isn't a valid id, or they have 0 experience in it
 		skill_str = "0 experience";
 	}
-    item->setToolTip(QString("<h3>%1</h3><b>USING: %2</b><br/>%3<h4>%4</h4>")
+    QString tooltip = QString("<h3>%1</h3><b>USING: %2</b><br/>%3<h4>%4</h4>")
         .arg(m_title)
         .arg(val_name)
         .arg(skill_str)
-        .arg(d->nice_name())
-    );
+        .arg(d->nice_name());
+
+    item->setToolTip(tooltip);
+
 	return item;
 }
 

@@ -46,6 +46,11 @@ Plant::Plant(DFInstance *df, VIRTADDR address, int index, QObject *parent)
 }
 
 Plant::~Plant() {
+    qDeleteAll(m_plant_mats);
+    m_plant_mats.clear();
+
+    delete(m_flags);
+    m_flags = 0;
 }
 
 Plant* Plant::get_plant(DFInstance *df, const VIRTADDR & address, int index) {
@@ -69,18 +74,26 @@ void Plant::read_plant() {
     m_plant_name_plural = m_df->read_string(m_address + m_mem->plant_offset("name_plural"));
     m_leaf_name_plural = m_df->read_string(m_address + m_mem->plant_offset("name_leaf_plural"));
     m_seed_name_plural = m_df->read_string(m_address + m_mem->plant_offset("name_seed_plural"));
+
+    m_flags = new FlagArray(m_df,m_address+m_mem->plant_offset("flags"));
 }
 
 void Plant::load_materials(){
     if(!m_df)
         return;
-    QVector<VIRTADDR> mats = m_df->enumerate_vector(m_address + m_mem->plant_offset("materials_vector"));
+    QVector<VIRTADDR> mats = m_df->enumerate_vector(m_address + m_mem->plant_offset("materials_vector"));    
     int i = 0;
     foreach(VIRTADDR mat, mats){
-        Material *m = Material::get_material(m_df,mat,i);
-        m_plant_mats.append(m);
+        m_plant_mats.append(Material::get_material(m_df,mat,i));
         i++;
     }
+}
+
+QVector<Material*> Plant::get_plant_materials(){
+    if(m_plant_mats.empty())
+        load_materials();
+
+    return m_plant_mats;
 }
 
 Material * Plant::get_plant_material(int index){
@@ -90,7 +103,7 @@ Material * Plant::get_plant_material(int index){
     if(index < m_plant_mats.count())
         return m_plant_mats.at(index);
     else
-        return new Material();
+        return new Material(0);
 }
 
 int Plant::material_count(){
@@ -108,11 +121,11 @@ QStringList Plant::get_names(){
 
     load_materials();
     foreach(Material *m, m_plant_mats){
-        if(m->has_flag(THREAD_PLANT) || m->has_flag(IS_WOOD))
+        if(m->flags()->has_flag(THREAD_PLANT) || m->flags()->has_flag(IS_WOOD))
             names.append(m_plant_name + " " + m->get_material_name(GENERIC));
-        if(m->has_flag(ALCOHOL_PLANT) || m->has_flag(LIQUID_MISC_PLANT))
+        if(m->flags()->has_flag(ALCOHOL_PLANT) || m->flags()->has_flag(LIQUID_MISC_PLANT))
             names.append(m->get_material_name(LIQUID));
-        if(m->has_flag(POWDER_MISC_PLANT) || m->has_flag(CHEESE_PLANT))
+        if(m->flags()->has_flag(POWDER_MISC_PLANT) || m->flags()->has_flag(CHEESE_PLANT))
             names.append(m->get_material_name(POWDER));
     }
     return names;

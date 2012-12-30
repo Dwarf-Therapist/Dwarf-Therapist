@@ -37,6 +37,8 @@ THE SOFTWARE.
 #include "militarypreferencecolumn.h"
 #include "rolecolumn.h"
 #include "weaponcolumn.h"
+#include "professioncolumn.h"
+#include "highestmoodcolumn.h"
 
 #include "defines.h"
 #include "statetableview.h"
@@ -48,6 +50,7 @@ THE SOFTWARE.
 #include "ui_columneditdialog.h"
 #include "dfinstance.h"
 #include "weapon.h"
+#include "attribute.h"
 
 GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent)
     : QDialog(parent)
@@ -370,6 +373,14 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
         a->setData(mp->labor_id);
     }
 
+    //MOODABLE SKILL
+    a = m->addAction(tr("Add Moodable Skill Column"), this, SLOT(add_highest_moodable_column()));
+    a->setToolTip(tr("Adds a single column that shows an icon representing a dwarf's highest moodable skill."));
+
+    //PROFESSION
+    a = m->addAction(tr("Add Profession"), this, SLOT(add_profession_column()));
+    a->setToolTip(tr("Adds a single column that shows an icon representing a dwarf's profession."));
+
     //ROLES
     QMenu *m_roles = m->addMenu(tr("Add Role Columns"));
     m_roles->setToolTip(tr("Role columns will show how well a dwarf can fill a particular role."));
@@ -517,7 +528,7 @@ void GridViewDialog::add_attribute_column() {
     if (!m_active_set)
         return;
     QAction *a = qobject_cast<QAction*>(QObject::sender());
-    Attribute::ATTRIBUTES_TYPE type = static_cast<Attribute::ATTRIBUTES_TYPE>(a->data().toInt());
+    ATTRIBUTES_TYPE type = static_cast<ATTRIBUTES_TYPE>(a->data().toInt());
     new AttributeColumn("", type, m_active_set, m_active_set);
     draw_columns_for_set(m_active_set);
 }
@@ -537,6 +548,20 @@ void GridViewDialog::add_weapon_column(){
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     QString key = a->data().toString();
     new WeaponColumn(key,DT->get_DFInstance()->get_weapons().value(key),m_active_set,m_active_set);
+    draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_profession_column(){
+    if (!m_active_set)
+        return;
+    new ProfessionColumn(tr("Profession"), m_active_set, m_active_set);
+    draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_highest_moodable_column(){
+    if (!m_active_set)
+        return;
+    new HighestMoodColumn(tr("Moodable Skill"), m_active_set, m_active_set);
     draw_columns_for_set(m_active_set);
 }
 

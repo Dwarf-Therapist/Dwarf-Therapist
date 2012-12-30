@@ -22,6 +22,7 @@ THE SOFTWARE.
 */
 
 #include "laboroptimizerplan.h"
+#include "plandetail.h"
 #include "dwarftherapist.h"
 #include "gamedatareader.h"
 
@@ -33,8 +34,8 @@ laborOptimizerPlan::laborOptimizerPlan()
     exclude_injured = true;
     max_jobs_per_dwarf = 20;
     auto_haulers = true;
-    pop_percent = 80.0;
-    hauler_percent = 50;
+    pop_percent = 80.0f;
+    hauler_percent = 50.0f;
 }
 
 laborOptimizerPlan::laborOptimizerPlan(QSettings &s, QObject *parent)
@@ -46,7 +47,7 @@ laborOptimizerPlan::laborOptimizerPlan(QSettings &s, QObject *parent)
     , max_jobs_per_dwarf(s.value("max_jobs_per_dwarf",20).toInt())
     , pop_percent(s.value("pop_percent",100).toFloat())
     , auto_haulers(s.value("auto_haulers",true).toBool())
-    , hauler_percent(s.value("hauler_percent",50).toFloat())
+    , hauler_percent(s.value("hauler_percent",50.0f).toFloat())
 {
     read_details(s);
 }
@@ -66,11 +67,12 @@ laborOptimizerPlan::laborOptimizerPlan(const laborOptimizerPlan &lop)
 }
 
 void laborOptimizerPlan::read_details(QSettings &s){
+    qDeleteAll(plan_details);
     plan_details.clear();
 
     int count = s.beginReadArray("jobs");
     for(int i=0; i<count; i++){
-        detail *d = new detail();
+        PlanDetail *d = new PlanDetail();
         s.setArrayIndex(i);
         d->labor_id = s.value("labor_id").toInt();
         QString role_name = s.value("role_name").toString();
@@ -97,13 +99,13 @@ void laborOptimizerPlan::write_to_ini(QSettings &s){
     s.setValue("injured", exclude_injured);
     s.setValue("max_jobs_per_dwarf", max_jobs_per_dwarf);
     s.setValue("auto_haulers", auto_haulers);
-    s.setValue("pop_percent", pop_percent);
-    s.setValue("hauler_percent", hauler_percent);
+    s.setValue("pop_percent", QString::number(pop_percent,'g',2));
+    s.setValue("hauler_percent", QString::number(hauler_percent,'g',2));
 
     if(plan_details.count() > 0){
         int count = 0;
         s.beginWriteArray("jobs", plan_details.count());
-        foreach(detail *d, plan_details){
+        foreach(PlanDetail *d, plan_details){
             s.setArrayIndex(count);
 
             s.setValue("labor_id", d->labor_id);
@@ -116,8 +118,8 @@ void laborOptimizerPlan::write_to_ini(QSettings &s){
     }
 }
 
-laborOptimizerPlan::detail *laborOptimizerPlan::job_exists(int labor_id){
-    foreach(detail *d, plan_details){
+PlanDetail *laborOptimizerPlan::job_exists(int labor_id){
+    foreach(PlanDetail *d, plan_details){
         if(d->labor_id == labor_id)
             return d;
     }
@@ -126,7 +128,7 @@ laborOptimizerPlan::detail *laborOptimizerPlan::job_exists(int labor_id){
 
 void laborOptimizerPlan::remove_job(int labor_id){
     for(int i=0; i<plan_details.count(); i++){
-        detail *d = plan_details.at(i);
+        PlanDetail *d = plan_details.at(i);
         if(d->labor_id == labor_id){
             plan_details.remove(i);
             return;

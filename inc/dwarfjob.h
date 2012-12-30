@@ -103,7 +103,8 @@ public:
         DJT_GEAR,
         DJT_TROUBLE,
         DJT_STORAGE,
-        DJT_BREW
+        DJT_BREW,
+        DJT_RAW_FISH
     } DWARF_JOB_TYPE;
 
     static DWARF_JOB_TYPE get_type(const QString &type) {
@@ -169,6 +170,7 @@ public:
         m["armor"] = DJT_ARMOR;
         m["helm"] = DJT_HELM;
         m["fish"] = DJT_FISH;
+        m["rawfish"] = DJT_RAW_FISH;
         m["rest"] = DJT_REST;
         m["cooking"] = DJT_COOKING;
         m["bucket_pour"] = DJT_BUCKET_POUR;
@@ -197,6 +199,7 @@ public:
     QString description;
     DWARF_JOB_TYPE type;
     QString reactionClass;
+
 };
 
 #endif

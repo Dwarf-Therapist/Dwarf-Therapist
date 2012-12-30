@@ -59,11 +59,11 @@ public:
         m[STATUE]="Statues";
         m[CORPSE]="Corpses";
         m[WEAPON]="Weapons";
-        m[ARMOR]="Armor";
-        m[SHOES]="Shoes";
-        m[SHIELD]="Shields";
-        m[HELM]="Helms";
-        m[GLOVES]="Gloves";
+        m[ARMOR]="Armor (Chest)";
+        m[SHOES]="Armor (Feet)";
+        m[SHIELD]="Armor (Shields)";
+        m[HELM]="Armor (Head)";
+        m[GLOVES]="Armor (Hands)";
         m[BOX]="Boxes";
         m[BIN]="Bins";
         m[ARMORSTAND]="Armor stands";
@@ -85,7 +85,7 @@ public:
         m[FISH]="Fish";
         m[FISH_RAW]="Raw fish";
         m[VERMIN]="Vermin";
-        m[PET]="Pets";
+        m[IS_PET]="Pets";
         m[SEEDS]="Seeds";
         m[PLANT]="Plants";
         m[SKIN_TANNED]="Tanned hide";
@@ -93,7 +93,7 @@ public:
         m[THREAD]="Thread";
         m[CLOTH]="Cloth";
         m[TOTEM]="Totems";
-        m[PANTS]="Pants";
+        m[PANTS]="Armor (Legs)";
         m[BACKPACK]="Backpacks";
         m[QUIVER]="Quivers";
         m[CATAPULTPARTS]="Catapult parts";
@@ -103,10 +103,10 @@ public:
         m[TRAPPARTS]="Mechanisms";
         m[TRAPCOMP]="Trap components";
         m[DRINK]="Alcohol";
-        m[POWDER_MISC]="Powder";
+        m[POWDER_MISC]="Flour, sugar and powders";
         m[CHEESE]="Cheese";
         m[FOOD]="Prepared food";
-        m[LIQUID_MISC]="Water, lye and extracts";
+        m[LIQUID_MISC]="Honey, syrup, milk, oils, etc.";
         m[COIN]="Coins";
         m[GLOB]="Fat";
         m[ROCK]="Rocks";

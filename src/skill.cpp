@@ -23,6 +23,8 @@ THE SOFTWARE.
 #include "skill.h"
 #include "gamedatareader.h"
 
+#include <QtGui>
+
 Skill::Skill()
     : m_id(-1)
     , m_exp(0)
@@ -66,9 +68,7 @@ Skill::Skill(short id, uint exp, short rating, int demotions)
 
     if (m_exp_for_next_level && m_exp_for_current_level) {
         m_exp_progress = ((float)m_exp / (float)(m_exp_for_next_level - m_exp_for_current_level)) * 100;
-    }
-
-    //haha yeah i WISH it was that easy.
+    }    
 //    if(m_demotions <= 1){
 //        m_rust_rating = "";
 //        m_skill_color = "#000000";
@@ -110,8 +110,8 @@ QString Skill::to_string(bool include_level, bool include_exp_summary) const {
     return out;
 }
 
-bool Skill::operator<(const Skill &s2) const {
-    return m_rating < s2.m_rating;
+bool Skill::operator<(const Skill *s2) const {
+    return m_rating < s2->m_rating;
 }
 
 QString Skill::exp_summary() const {

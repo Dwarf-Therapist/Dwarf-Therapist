@@ -26,8 +26,8 @@ THE SOFTWARE.
 #include <QtGui>
 #include "utils.h"
 #include "word.h"
-#include "item.h"
 #include "global_enums.h"
+//#include "item.h"
 
 class Dwarf;
 class Squad;
@@ -40,6 +40,7 @@ class FortressEntity;
 class Weapon;
 class Material;
 class Plant;
+class Item;
 
 class DFInstance : public QObject {
     Q_OBJECT
@@ -50,6 +51,9 @@ public:
 
     // factory ctor
     virtual bool find_running_copy(bool connectUnknown = false) = 0;
+
+    //testing for preference counts
+    //QHash<ITEM_TYPE,int> itype_counts;
 
     // accessors
     VIRTADDR get_heap_start_address() {return m_heap_start_address;}
@@ -101,7 +105,6 @@ public:
     MemoryLayout *memory_layout() {return m_layout;}
     void read_raws();    
     QVector<Dwarf*> load_dwarves();
-    void load_population_data();
     void load_reactions();
     void load_races_castes();
     void load_main_vectors();
@@ -109,7 +112,7 @@ public:
 
     QVector<Squad*> load_squads();
 
-    int get_labor_count(int id) {return m_enabled_labor_count.value(id,0);}
+    int get_labor_count(int id) const {return m_enabled_labor_count.value(id,0);}
     void update_labor_count(int id, int change)
     {
         m_enabled_labor_count[id] += change;
@@ -162,6 +165,7 @@ public:
     QString get_translated_word(VIRTADDR addr);
     Reaction * get_reaction(QString tag) { return m_reactions.value(tag, 0); }
     Race * get_race(const uint & offset) { return m_races.value(offset, NULL); }
+    QVector<Race *> get_races() {return m_races;}
 
     VIRTADDR find_historical_figure(int hist_id);
     VIRTADDR find_fake_identity(int hist_id);
@@ -181,10 +185,13 @@ public:
     QVector<VIRTADDR>  get_colors() {return m_color_vector;}
     QVector<VIRTADDR> get_shapes() {return m_shape_vector;}
     QVector<Plant *> get_plants() {return m_plants_vector;}
-    QHash<int, Material *> get_base_materials() {return m_base_materials;}
+    QVector<Material *> get_base_materials() {return m_base_materials;}
 
+    Weapon* get_weapon(QString name) {return m_weapons.value(name);}
     QHash<QString, Weapon *> get_weapons() {return m_weapons;}
     QList<QPair<QString, Weapon *> > get_ordered_weapons() {return m_ordered_weapons;}
+
+    Material * find_material(int mat_index, short mat_type);
 
     QVector<VIRTADDR> get_item_vector(ITEM_TYPE i);
     QString get_item(int index, int subtype);
@@ -194,12 +201,11 @@ public:
     Material * get_raw_material(int index);
     Plant * get_plant(int index);
     QString find_material_name(int mat_index, short mat_type, ITEM_TYPE itype);
-    QHash<QPair<QString,QString>,pref_stat> get_preference_stats(){return m_pref_counts;}
+    const QHash<QPair<QString,QString>,pref_stat*> get_preference_stats() {return m_pref_counts;}
 
     public slots:
         // if a menu cancels our scan, we need to know how to stop
         void cancel_scan() {m_stop_scan = true;}
-        void calc_done();
 protected:
     int m_pid;
     VIRTADDR m_base_addr;
@@ -221,11 +227,11 @@ protected:
     WORD m_current_year;
     QDir m_df_dir;
     QVector<Dwarf*> actual_dwarves;
-    int calc_progress;
     quint32 m_cur_year_tick;    
     QHash<int,int> m_enabled_labor_count;
 
-
+    void load_population_data();
+    void cdf_role_ratings();
 
     /*! this hash will hold a map of all loaded and valid memory layouts found
         on disk, the key is a QString of the checksum since other OSs will use
@@ -268,14 +274,13 @@ private:
 
     QVector<Plant *> m_plants_vector;
     QVector<Material *> m_inorganics_vector;
-    QHash<int, Material *> m_base_materials;
+    QVector<Material *> m_base_materials;
 
     QHash<QString, VIRTADDR> m_material_templates;
 
     void load_hist_figures();
-    Material * find_material(int mat_index, short mat_type);
 
-    QHash<QPair<QString,QString>, pref_stat> m_pref_counts;
+    QHash<QPair<QString,QString>, pref_stat*> m_pref_counts;
 };
 
 #endif // DFINSTANCE_H

@@ -82,7 +82,7 @@ void MemoryLayout::load_data() {
     m_data->endArray();
 
     flag_count = m_data->beginReadArray("valid_flags_2");
-    LOGD << "valid_flags_2 count: " << flag_count;
+    //LOGD << "valid_flags_2 count: " << flag_count;
     for (int i = 0; i < flag_count; ++i) {
         m_data->setArrayIndex(i);
         m_valid_flags_2.insert(read_hex("value"),

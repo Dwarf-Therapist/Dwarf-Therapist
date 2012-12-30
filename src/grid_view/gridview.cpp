@@ -70,9 +70,10 @@ void GridView::remove_set(QString name) {
         }
     }
     m_sets.removeOne(to_remove);
-};
+}
 
 void GridView::clear() {
+    qDeleteAll(m_sets);
     m_sets.clear();
 }
 

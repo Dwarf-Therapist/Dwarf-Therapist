@@ -20,13 +20,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+#include <QtDebug>
 #include "caste.h"
+#include "attribute.h"
 #include "dfinstance.h"
 #include "memorylayout.h"
 #include "truncatingfilelogger.h"
-#include <QtDebug>
 #include "gamedatareader.h"
-
+#include "attributelevel.h"
+#include "flagarray.h"
 
 Caste::Caste(DFInstance *df, VIRTADDR address, QString race_name, QObject *parent)
     : QObject(parent)
@@ -37,11 +39,19 @@ Caste::Caste(DFInstance *df, VIRTADDR address, QString race_name, QObject *paren
     , m_description(QString::null)
     , m_df(df)
     , m_mem(df->memory_layout())
+    , m_has_extracts(false)
 {
     load_data();
 }
 
 Caste::~Caste() {
+    delete(m_flags);
+    m_flags = 0;
+
+    m_body_sizes.clear();
+    m_ranges.clear();
+    m_df = 0;
+    m_mem = 0;
 }
 
 Caste* Caste::get_caste(DFInstance *df, const VIRTADDR & address, QString race_name) {
@@ -83,6 +93,24 @@ void Caste::read_caste() {
 //        m_body_sizes.prepend((int)size);
 //    }
     m_body_sizes.append(m_df->read_int(m_address + m_mem->caste_offset("adult_size")));
+    m_flags = new FlagArray(m_df, m_address + m_mem->caste_offset("flags"));
+
+    QVector<uint> extracts = m_df->enumerate_vector(m_address + m_mem->caste_offset("extracts"));
+    if(extracts.count() > 0)
+        m_has_extracts = true;
+}
+
+bool Caste::is_trainable(){
+    if((m_flags->has_flag(TRAINABLE_HUNTING) || m_flags->has_flag(TRAINABLE_WAR)) &&
+            (m_flags->has_flag(PET) || m_flags->has_flag(PET_EXOTIC))){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+bool Caste::is_milkable(){
+    return m_flags->has_flag(MILKABLE);
 }
 
 void Caste::load_attribute_info(){
@@ -117,13 +145,13 @@ void Caste::load_attribute_info(){
     }
 }
 
-Caste::attribute_level Caste::get_attribute_level(int id, int value)
+AttributeLevel Caste::get_attribute_level(int id, int value)
 {
     if(m_ranges.count()<=0)
         load_attribute_info();
 
     att_range r = m_ranges.value(id);
-    attribute_level l;
+    AttributeLevel l;
     l.rating = 0;
     int idx = 0;
     Attribute *a = GameDataReader::ptr()->get_attribute(id);

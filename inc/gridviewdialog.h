@@ -116,6 +116,8 @@ private:
         void add_military_preferences_column();
         void add_role_column();
         void add_weapon_column();
+        void add_profession_column();
+        void add_highest_moodable_column();
 };
 
 #endif

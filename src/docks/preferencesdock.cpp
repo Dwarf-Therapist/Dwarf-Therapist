@@ -79,18 +79,23 @@ PreferencesDock::PreferencesDock(QWidget *parent, Qt::WindowFlags flags)
     connect(btn_clear_search, SIGNAL(clicked()),this,SLOT(clear_search()));
 }
 
-void PreferencesDock::refresh(){
-    for(int i = tw_prefs->rowCount(); i >=0; i--){
-        tw_prefs->removeRow(i);
+void PreferencesDock::clear(){
+    for(int r = tw_prefs->rowCount(); r >=0; r--){
+        tw_prefs->removeRow(r);
     }
+    tw_prefs->clearContents();
+}
+
+void PreferencesDock::refresh(){
+    clear();
 
     if(DT && DT->get_DFInstance()){
-        QHash<QPair<QString,QString>,DFInstance::pref_stat > prefs = DT->get_DFInstance()->get_preference_stats();
+        QHash<QPair<QString,QString>,DFInstance::pref_stat* > prefs = DT->get_DFInstance()->get_preference_stats();
 
         tw_prefs->setSortingEnabled(false);
         QPair<QString,QString> key_pair;
         foreach(key_pair, prefs.uniqueKeys()){
-                DFInstance::pref_stat pref = prefs.value(key_pair);
+                DFInstance::pref_stat *pref = prefs.value(key_pair);
                 tw_prefs->insertRow(0);
                 tw_prefs->setRowHeight(0, 18);
 
@@ -99,20 +104,20 @@ void PreferencesDock::refresh(){
                 pref_name->setToolTip(pref_name->text());
 
                 QTableWidgetItem *pref_likes = new QTableWidgetItem();
-                pref_likes->setData(Qt::DisplayRole, (int)pref.likes);
+                pref_likes->setData(Qt::DisplayRole, (int)pref->likes);
                 pref_likes->setTextAlignment(Qt::AlignCenter);
-                pref.names_likes.sort();
-                pref_likes->setToolTip(pref.names_likes.join("<br>"));
+                pref->names_likes.sort();
+                pref_likes->setToolTip(pref->names_likes.join("<br>"));
 
                 QTableWidgetItem *pref_dislikes = new QTableWidgetItem();
-                pref_dislikes->setData(Qt::DisplayRole, (int)pref.dislikes);
+                pref_dislikes->setData(Qt::DisplayRole, (int)pref->dislikes);
                 pref_dislikes->setTextAlignment(Qt::AlignCenter);
-                pref.names_dislikes.sort();
-                pref_dislikes->setToolTip(pref.names_dislikes.join("<br>"));
+                pref->names_dislikes.sort();
+                pref_dislikes->setToolTip(pref->names_dislikes.join("<br>"));
 
                 QTableWidgetItem *pref_type = new QTableWidgetItem();
-                pref_type->setText(pref.pref_category);
-                pref_type->setToolTip(pref.pref_category);
+                pref_type->setText(pref->pref_category);
+                pref_type->setToolTip(pref->pref_category);
 
                 tw_prefs->setItem(0, 0, pref_name);
                 tw_prefs->setItem(0, 1, pref_likes);

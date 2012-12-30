@@ -1,8 +1,19 @@
 #include "optimizereditor.h"
 #include "ui_optimizereditor.h"
+#include "gamedatareader.h"
+
+#include "dwarftherapist.h"
 #include "viewmanager.h"
 #include "dwarfmodel.h"
 #include "dwarfmodelproxy.h"
+
+#include "laboroptimizer.h"
+#include "laboroptimizerplan.h"
+#include "plandetail.h"
+
+#include "sortabletableitems.h"
+
+#include "labor.h"
 #include "math.h"
 
 optimizereditor::optimizereditor(QString name, QWidget *parent) :
@@ -57,7 +68,7 @@ optimizereditor::optimizereditor(QString name, QWidget *parent) :
     find_target_population();
 
     loading = true;
-    foreach(laborOptimizerPlan::detail *d, m_plan->plan_details){
+    foreach(PlanDetail *d, m_plan->plan_details){
         insert_row(d);
     }
     ui->tw_labors->resizeRowsToContents();
@@ -139,7 +150,7 @@ void optimizereditor::pop_percent_changed(int val){
     populationChanged();
 }
 
-void optimizereditor::insert_row(laborOptimizerPlan::detail *d){
+void optimizereditor::insert_row(PlanDetail *d){
     QPair<QString, Role*> role_pair;
     Labor *l = GameDataReader::ptr()->get_labor(d->labor_id);
 
@@ -212,7 +223,7 @@ void optimizereditor::priority_changed(double val){
     QWidget *w = QApplication::focusWidget();
     if(w){
         QModelIndex idx = ui->tw_labors->indexAt(w->pos());
-        laborOptimizerPlan::detail *det = m_plan->job_exists(ui->tw_labors->item(idx.row(),0)->data(Qt::UserRole).toInt());
+        PlanDetail *det = m_plan->job_exists(ui->tw_labors->item(idx.row(),0)->data(Qt::UserRole).toInt());
         if(det)
             det->priority = val;
     }
@@ -224,7 +235,7 @@ void optimizereditor::ratio_changed(double val){
     QWidget *w = QApplication::focusWidget();
     if(w){
         QModelIndex idx = ui->tw_labors->indexAt(w->pos());
-        laborOptimizerPlan::detail *det = m_plan->job_exists(ui->tw_labors->item(idx.row(),0)->data(Qt::UserRole).toInt());
+        PlanDetail *det = m_plan->job_exists(ui->tw_labors->item(idx.row(),0)->data(Qt::UserRole).toInt());
         if(det)
             det->ratio = val;        
     }
@@ -236,7 +247,7 @@ void optimizereditor::role_changed(QString val){
     QWidget *w = QApplication::focusWidget();
     if(w){
         QModelIndex idx = ui->tw_labors->indexAt(w->pos());
-        laborOptimizerPlan::detail *det = m_plan->job_exists(ui->tw_labors->item(idx.row(),0)->data(Qt::UserRole).toInt());
+        PlanDetail *det = m_plan->job_exists(ui->tw_labors->item(idx.row(),0)->data(Qt::UserRole).toInt());
         if(det)
             det->role_name = val;
     }
@@ -275,7 +286,7 @@ void optimizereditor::refresh_actual_counts(){
     m_optimizer->update_ratios();
 
     for(int i = 0; i < ui->tw_labors->rowCount(); i++){
-        laborOptimizerPlan::detail *det = m_plan->job_exists(ui->tw_labors->item(i,0)->data(Qt::UserRole).toInt());
+        PlanDetail *det = m_plan->job_exists(ui->tw_labors->item(i,0)->data(Qt::UserRole).toInt());
         if(det)
             ui->tw_labors->item(i,4)->setData(0, det->max_count);
     }
@@ -316,6 +327,7 @@ void optimizereditor::draw_labor_context_menu(const QPoint &p){
     labor_s_z->setTearOffEnabled(true);
 
     bool exists;
+    qDeleteAll(m_remaining_labors);
     m_remaining_labors.clear();
     foreach(Labor *l, gdr->get_ordered_labors()) {
         exists = false;
@@ -382,7 +394,7 @@ void optimizereditor::remove_labor(){
 
 void optimizereditor::add_new_detail(int id){
     if(!m_plan->job_exists(id)){
-        laborOptimizerPlan::detail *d = new laborOptimizerPlan::detail();
+        PlanDetail *d = new PlanDetail();
         d->assigned_laborers = 0;
         d->labor_id = id;
         d->ratio = 1;
@@ -550,7 +562,7 @@ void optimizereditor::import_details(){
                  continue;
              }
 
-             laborOptimizerPlan::detail *d = new laborOptimizerPlan::detail();
+             PlanDetail *d = new PlanDetail();
              d->role_name = fields.at(0);
              d->labor_id = fields.at(1).toInt();
              d->priority = fields.at(2).toFloat();

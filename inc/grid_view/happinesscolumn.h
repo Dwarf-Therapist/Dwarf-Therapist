@@ -35,7 +35,7 @@ public:
 	QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 
 	public slots:
-		void read_settings();
+        void read_settings();
 		void redraw_cells();
 private:
 	QMap<Dwarf::DWARF_HAPPINESS, QColor> m_colors;

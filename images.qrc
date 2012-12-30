@@ -52,6 +52,8 @@
         <file>img/script_plus.png</file>
         <file>img/camera.png</file>
         <file>img/control.png</file>
+        <file>img/refresh.png</file>
+        <file>img/balloon-box.png</file>
     </qresource>
     <qresource prefix="/config">
         <file alias="default_gridviews">default_gridviews.dtg</file>
@@ -156,5 +158,115 @@
         <file>img/bandaid--exclamation.png</file>
         <file>img/ale--plus.png</file>
         <file>img/crossed-swords.png</file>
+        <file>img/tree--minus.png</file>
+        <file>img/carp.png</file>
+    </qresource>
+    <qresource prefix="/profession">
+        <file>img/profession icons/prof_10.png</file>
+        <file>img/profession icons/prof_11.png</file>
+        <file>img/profession icons/prof_12.png</file>
+        <file>img/profession icons/prof_13.png</file>
+        <file>img/profession icons/prof_14.png</file>
+        <file>img/profession icons/prof_15.png</file>
+        <file>img/profession icons/prof_16.png</file>
+        <file>img/profession icons/prof_17.png</file>
+        <file>img/profession icons/prof_18.png</file>
+        <file>img/profession icons/prof_19.png</file>
+        <file>img/profession icons/prof_20.png</file>
+        <file>img/profession icons/prof_21.png</file>
+        <file>img/profession icons/prof_22.png</file>
+        <file>img/profession icons/prof_23.png</file>
+        <file>img/profession icons/prof_24.png</file>
+        <file>img/profession icons/prof_25.png</file>
+        <file>img/profession icons/prof_26.png</file>
+        <file>img/profession icons/prof_27.png</file>
+        <file>img/profession icons/prof_28.png</file>
+        <file>img/profession icons/prof_29.png</file>
+        <file>img/profession icons/prof_30.png</file>
+        <file>img/profession icons/prof_31.png</file>
+        <file>img/profession icons/prof_32.png</file>
+        <file>img/profession icons/prof_33.png</file>
+        <file>img/profession icons/prof_34.png</file>
+        <file>img/profession icons/prof_35.png</file>
+        <file>img/profession icons/prof_36.png</file>
+        <file>img/profession icons/prof_37.png</file>
+        <file>img/profession icons/prof_38.png</file>
+        <file>img/profession icons/prof_39.png</file>
+        <file>img/profession icons/prof_40.png</file>
+        <file>img/profession icons/prof_41.png</file>
+        <file>img/profession icons/prof_42.png</file>
+        <file>img/profession icons/prof_43.png</file>
+        <file>img/profession icons/prof_44.png</file>
+        <file>img/profession icons/prof_45.png</file>
+        <file>img/profession icons/prof_46.png</file>
+        <file>img/profession icons/prof_47.png</file>
+        <file>img/profession icons/prof_48.png</file>
+        <file>img/profession icons/prof_49.png</file>
+        <file>img/profession icons/prof_50.png</file>
+        <file>img/profession icons/prof_51.png</file>
+        <file>img/profession icons/prof_52.png</file>
+        <file>img/profession icons/prof_53.png</file>
+        <file>img/profession icons/prof_54.png</file>
+        <file>img/profession icons/prof_55.png</file>
+        <file>img/profession icons/prof_56.png</file>
+        <file>img/profession icons/prof_57.png</file>
+        <file>img/profession icons/prof_58.png</file>
+        <file>img/profession icons/prof_59.png</file>
+        <file>img/profession icons/prof_60.png</file>
+        <file>img/profession icons/prof_61.png</file>
+        <file>img/profession icons/prof_62.png</file>
+        <file>img/profession icons/prof_63.png</file>
+        <file>img/profession icons/prof_64.png</file>
+        <file>img/profession icons/prof_65.png</file>
+        <file>img/profession icons/prof_66.png</file>
+        <file>img/profession icons/prof_67.png</file>
+        <file>img/profession icons/prof_68.png</file>
+        <file>img/profession icons/prof_69.png</file>
+        <file>img/profession icons/prof_70.png</file>
+        <file>img/profession icons/prof_71.png</file>
+        <file>img/profession icons/prof_72.png</file>
+        <file>img/profession icons/prof_73.png</file>
+        <file>img/profession icons/prof_74.png</file>
+        <file>img/profession icons/prof_75.png</file>
+        <file>img/profession icons/prof_76.png</file>
+        <file>img/profession icons/prof_77.png</file>
+        <file>img/profession icons/prof_78.png</file>
+        <file>img/profession icons/prof_79.png</file>
+        <file>img/profession icons/prof_80.png</file>
+        <file>img/profession icons/prof_81.png</file>
+        <file>img/profession icons/prof_82.png</file>
+        <file>img/profession icons/prof_83.png</file>
+        <file>img/profession icons/prof_84.png</file>
+        <file>img/profession icons/prof_85.png</file>
+        <file>img/profession icons/prof_86.png</file>
+        <file>img/profession icons/prof_87.png</file>
+        <file>img/profession icons/prof_88.png</file>
+        <file>img/profession icons/prof_89.png</file>
+        <file>img/profession icons/prof_90.png</file>
+        <file>img/profession icons/prof_91.png</file>
+        <file>img/profession icons/prof_92.png</file>
+        <file>img/profession icons/prof_93.png</file>
+        <file>img/profession icons/prof_94.png</file>
+        <file>img/profession icons/prof_95.png</file>
+        <file>img/profession icons/prof_96.png</file>
+        <file>img/profession icons/prof_97.png</file>
+        <file>img/profession icons/prof_98.png</file>
+        <file>img/profession icons/prof_99.png</file>
+        <file>img/profession icons/prof_100.png</file>
+        <file>img/profession icons/prof_101.png</file>
+        <file>img/profession icons/prof_102.png</file>
+        <file>img/profession icons/prof_103.png</file>
+        <file>img/profession icons/prof_104.png</file>
+        <file>img/profession icons/prof_105.png</file>
+        <file>img/profession icons/prof_106.png</file>
+        <file>img/profession icons/prof_1.png</file>
+        <file>img/profession icons/prof_2.png</file>
+        <file>img/profession icons/prof_3.png</file>
+        <file>img/profession icons/prof_4.png</file>
+        <file>img/profession icons/prof_5.png</file>
+        <file>img/profession icons/prof_6.png</file>
+        <file>img/profession icons/prof_7.png</file>
+        <file>img/profession icons/prof_8.png</file>
+        <file>img/profession icons/prof_9.png</file>
     </qresource>
 </RCC>

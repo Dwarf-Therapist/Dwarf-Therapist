@@ -25,7 +25,9 @@ THE SOFTWARE.
 
 #include <QString>
 #include <QStringList>
-#include "gamedatareader.h"
+//#include "gamedatareader.h"
+
+class GameDataReader;
 
 class Skill
 {
@@ -46,7 +48,15 @@ public:
     QString to_string(bool include_level = true, bool include_exp_summary = true) const;
     //QString name() {return QString("(%1) %2").arg(m_id).arg(m_name);}
     QString name() {return m_name;}
-    bool operator<(const Skill &s2) const;
+    bool operator<(const Skill *s2) const;
+
+    struct less_than_key
+    {
+        bool operator() (Skill* const& s1, Skill* const& s2)
+        {
+            return s1->rating() < s2->rating();
+        }
+    };
 
 private:
     short m_id;

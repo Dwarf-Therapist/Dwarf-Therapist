@@ -23,7 +23,8 @@ THE SOFTWARE.
 #ifndef VIEW_COLUMN_H
 #define VIEW_COLUMN_H
 
-#include <QtGui>
+#include <QStandardItem>
+#include <QSettings>
 #include "columntypes.h"
 
 class ViewColumnSet;
@@ -44,6 +45,7 @@ public:
 	ViewColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
     ViewColumn(const ViewColumn &to_copy); // copy ctor
     virtual ViewColumn* clone() = 0;
+    virtual ~ViewColumn();
 
 	QString title() {return m_title;}
 	void set_title(QString title) {m_title = title;}
@@ -62,12 +64,11 @@ public:
 										   const QVector<Dwarf*> &dwarves) = 0; // create an aggregate cell based on several dwarves
 
     QString get_cell_value(Dwarf *d);
-
 	virtual void write_to_ini(QSettings &s);
 
 	public slots:
 		virtual void read_settings() {}
-		void clear_cells() {m_cells.clear();}
+        void clear_cells();// {m_cells.clear();}
 		virtual void redraw_cells() {}
 
 protected:

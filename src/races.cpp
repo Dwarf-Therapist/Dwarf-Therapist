@@ -22,9 +22,9 @@ THE SOFTWARE.
 */
 #include "races.h"
 #include "caste.h"
-#include "dfinstance.h"
 #include "memorylayout.h"
 #include "truncatingfilelogger.h"
+#include "material.h"
 #include <QtDebug>
 
 Race::Race(DFInstance *df, VIRTADDR address, QObject *parent)
@@ -46,6 +46,16 @@ Race::Race(DFInstance *df, VIRTADDR address, QObject *parent)
 }
 
 Race::~Race() {
+    qDeleteAll(m_castes);
+    m_castes.clear();
+
+    qDeleteAll(m_creature_mats);
+    m_creature_mats.clear();
+
+    delete(m_flags);
+    m_flags = 0;
+
+    m_df = 0;
 }
 
 Race* Race::get_race(DFInstance *df, const VIRTADDR & address) {
@@ -83,6 +93,7 @@ void Race::read_race() {
     QVector<VIRTADDR> castes = m_df->enumerate_vector(m_castes_vector);
     //LOGD << "RACE " << m_name << " (index:" << m_id << ") with " << castes.size() << "castes";
 
+
     if (!castes.empty()) {
         Caste *c = 0;
         int i = 0;
@@ -90,11 +101,14 @@ void Race::read_race() {
             c = Caste::get_caste(m_df, caste_addr, m_name);
             if (c != 0) {
                 m_castes[i] = c;
-                TRACE << "FOUND CASTE " << hexify(caste_addr);
+                //LOGD << "FOUND CASTE " << hexify(caste_addr);
             }
             i++;
         }        
     }
+
+    m_flags = new FlagArray(m_df, m_address + m_mem->race_offset("flags"));
+
     m_df->detach();
 }
 
@@ -109,6 +123,13 @@ void Race::load_materials(){
     }
 }
 
+QVector<Material*> Race::get_creature_materials(){
+    if(m_creature_mats.empty()){
+        load_materials();
+    }
+    return m_creature_mats;
+}
+
 Material * Race::get_creature_material(int index){
     if(m_creature_mats.empty()){
         load_materials();
@@ -116,7 +137,34 @@ Material * Race::get_creature_material(int index){
     if(index < m_creature_mats.count())
         return m_creature_mats.at(index);
     else
-        return new Material();
+        return new Material(0);
+}
+
+bool Race::is_trainable(){
+    bool result = false;
+    if(m_castes.count() > 0)
+        if(m_castes.value(0,0)->is_trainable())
+            result = true;
+
+    return result;
+}
+
+bool Race::is_milkable(){
+    bool result = false;
+    if(m_castes.count() > 0)
+        if(m_castes.value(0)->is_milkable())
+            result = true;
+
+    return result;
+}
+
+bool Race::is_vermin_extractable(){
+    bool result = false;
+    if(m_castes.count() > 0)
+        if(m_castes.value(0)->has_extracts())
+            result = true;
+
+    return result;
 }
 
 

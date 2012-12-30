@@ -4,6 +4,7 @@
 #include <QtGui>
 #include "utils.h"
 #include "material.h"
+#include "flagarray.h"
 
 class DFInstance;
 class MemoryLayout;
@@ -22,6 +23,7 @@ public:
 
     int id() {return m_index;}
     Material *get_plant_material(int index);
+    QVector<Material*> get_plant_materials();
     int material_count();
     void load_data();
 
@@ -31,6 +33,7 @@ public:
     QString seed_plural() {return m_seed_name_plural;}
 
     QStringList get_names();
+    FlagArray* flags() {return m_flags;}
 
 private:
     int m_index;
@@ -38,6 +41,7 @@ private:
     DFInstance * m_df;
     MemoryLayout * m_mem;
     QVector<Material*> m_plant_mats;
+    FlagArray *m_flags;
 
     QString m_plant_name;
     QString m_plant_name_plural;

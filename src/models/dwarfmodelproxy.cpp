@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "defines.h"
 #include "dwarftherapist.h"
 #include "mainwindow.h"
+#include "gamedatareader.h"
 
 DwarfModelProxy::DwarfModelProxy(QObject *parent)
     :QSortFilterProxyModel(parent)
