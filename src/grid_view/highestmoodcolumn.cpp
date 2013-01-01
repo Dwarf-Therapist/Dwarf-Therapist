@@ -76,7 +76,7 @@ QStandardItem *HighestMoodColumn::build_cell(Dwarf *d) {
 
 
     QString str_mood = "";
-    str_mood = tr("<br/><br/>%1 is the highest moodable skill.").arg(capitalize(s->name()));
+    str_mood = tr("<br/><br/>%1 is the highest moodable skill.").arg(capitalize(gdr->get_skill_name(s->id(),true)));
     if(d->had_mood())
         str_mood = tr("<br/><br/>Has already had a mood as a %1 and crafted '%2'.").arg(capitalize(s->name())).arg(d->artifact_name());
 

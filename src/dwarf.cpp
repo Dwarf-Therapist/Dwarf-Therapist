@@ -1663,12 +1663,8 @@ QString Dwarf::tooltip_text() {
     if(!m_skills.isEmpty() && !skill_summary.isEmpty() && s->value("options/tooltip_show_skills",true).toBool())
         tt += tr("<h4 style=\"margin-top:5px; margin-bottom:5px;\"><b>Skills:</b></h4><ul style=\"margin-top:5px; margin-bottom:5px;\">%1</ul>").arg(skill_summary);
 
-    if(s->value("options/tooltip_show_mood",false).toBool()){
-        QString skill_name = "Craftsdwarf";
-        if(m_highest_moodable_skill != -1)
-            skill_name = gdr->get_skill_name(m_highest_moodable_skill);
-        tt += tr("<br/><b>Highest Moodable Skill:</b> %1<br/>").arg(skill_name);
-    }
+    if(s->value("options/tooltip_show_mood",false).toBool())
+        tt += tr("<br/><b>Highest Moodable Skill:</b> %1<br/>").arg(gdr->get_skill_name(m_highest_moodable_skill, true));
 
     if(!m_traits.isEmpty() && !trait_summary.isEmpty() && s->value("options/tooltip_show_traits",true).toBool())
         tt += tr("<br/><b>Traits:</b> %1").arg(trait_summary);

@@ -230,8 +230,6 @@ void LaborOptimizer::update_ratios(){
         det->assigned_laborers = 0;
         if(det->priority > 0 && det->ratio > 0)
             m_ratio_sum += det->ratio;
-        else
-            int z = 0;
 
         count++;
     }    

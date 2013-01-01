@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include "raws/rawreader.h"
 #include "math.h"
 #include "laboroptimizerplan.h"
+#include "skill.h"
 
 QStringList GameDataReader::m_seasons;
 QStringList GameDataReader::m_months;
@@ -260,8 +261,12 @@ QString GameDataReader::get_skill_level_name(short level) {
     //return get_string_for_key(QString("skill_levels/%1").arg(level));
 }
 
-QString GameDataReader::get_skill_name(short skill_id) {
-    return m_skills.value(skill_id, "UNKNOWN");
+QString GameDataReader::get_skill_name(short skill_id, bool moodable) {
+    QString name = m_skills.value(skill_id, "UNKNOWN");
+    if(moodable && name == "UNKNOWN")
+        name = "Craftsdwarf";
+
+    return name;
 }
 
 Role* GameDataReader::get_role(const QString &name) {
@@ -352,8 +357,6 @@ void GameDataReader::load_roles(){
         //don't overwrite any custom role with the same name
         if(!m_dwarf_roles.contains(r->name))
             m_dwarf_roles.insert(r->name, r);
-        else
-            int z = 0;
     }
     m_data_settings->endArray();
 

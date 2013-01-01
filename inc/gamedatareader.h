@@ -104,7 +104,7 @@ public:
     QString get_string_for_key(QString key);
     Profession* get_profession(const short &profession_id);
     QString get_skill_level_name(short level);
-    QString get_skill_name(short skill_id);
+    QString get_skill_name(short skill_id, bool moodable = false);
 
     QColor get_color(QString key);
 
