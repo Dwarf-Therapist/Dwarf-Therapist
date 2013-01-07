@@ -43,16 +43,16 @@ THE SOFTWARE.
 
 StateTableView::StateTableView(QWidget *parent)
     : QTreeView(parent)
+    , m_last_sorted_col(0)
+    , m_last_sort_order(Qt::AscendingOrder)
+    , m_last_group_by(DwarfModel::GB_NOTHING)
     , m_model(0)
     , m_proxy(0)
     , m_delegate(new UberDelegate(this))
     , m_header(new RotatedHeader(Qt::Horizontal, this))
-    , m_expanded_rows(QList<int>())
-    , m_last_sorted_col(0)
-    , m_last_sort_order(Qt::AscendingOrder)
+    , m_expanded_rows(QList<int>())        
     , m_vscroll(0)
-    , m_hscroll(0)
-    , m_last_group_by(DwarfModel::GB_NOTHING)
+    , m_hscroll(0)    
 {
     read_settings();
 
@@ -86,6 +86,7 @@ StateTableView::StateTableView(QWidget *parent)
 
     connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(hscroll_value_changed(int)));
     connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(vscroll_value_changed(int)));
+
 }
 
 StateTableView::~StateTableView()
@@ -613,15 +614,18 @@ void StateTableView::restore_scroll_positions(){
     horizontalScrollBar()->setValue(m_hscroll);
 }
 
+//when loading rows, the slider will move back to the top
+//on linux, changing tabs also resets the slider of the previous tab,
+//so don't record the position of the scroll if it moves on an inactive view
+
+//additionally when the model clears data after a read, it will reset the scroll positions
+
 void StateTableView::vscroll_value_changed(int value){
-    //when loading rows, the slider will move back to the top
-    //on linux, changing tabs also resets the slider of the previous tab,
-    //so don't record the position of the scroll if it moves on an inactive view
-    if(!is_loading_rows && is_active)
+    if(!is_loading_rows && is_active && !m_model->clearing_data)
         m_vscroll = value;
 }
 void StateTableView::hscroll_value_changed(int value){
-    if(!is_loading_rows && is_active)
+    if(!is_loading_rows && is_active && !m_model->clearing_data)
         m_hscroll = value;
 }
 

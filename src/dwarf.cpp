@@ -65,12 +65,19 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_happiness(DH_MISERABLE)
     , m_raw_happiness(0)
     , m_is_male(true)
+    , m_mood_id(-1)
+    , m_had_mood(false)
+    , m_artifact_name("")
+    , m_curse_name("")
+    , m_caste_id(-1)
     , m_show_full_name(false)
     , m_total_xp(0)
     , m_migration_wave(0)
+    , m_body_size(60000)
+    , m_animal_type(none)
     , m_raw_profession(-1)
     , m_can_set_labors(false)
-    , m_current_job_id(-1)
+    , m_current_job_id(-1)    
     , m_squad_id(-1)
     , m_squad_position(-1)
     , m_hist_id(-1)
@@ -78,19 +85,11 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_flag1(0)
     , m_flag2(0)    
     , m_age(0)    
-    , m_mood_id(-1)
-    , m_artifact_name("")
-    , m_body_size(60000)
-    , m_curse_name("")
-    , m_animal_type(none)
-    , m_caste_id(-1)
     , m_hist_nickname(0)
     , m_fake_nickname(0)
     , m_noble_position("")
-    , m_is_pet(false)
-    , m_had_mood(false)
-    , m_highest_moodable_skill(-1)
-    , m_include_pop_stats(true)
+    , m_is_pet(false)    
+    , m_highest_moodable_skill(-1)    
 {
     read_settings();
     refresh_data();
@@ -1214,22 +1213,34 @@ void Dwarf::read_skills() {
     short type = 0;
     short rating = 0;
     int xp = 0;
-    //int last_used = 0;
-    //int rust = 0;
-    //int rust_counter = 0;
+
+//    int last_used = 0;
+//    int rust = 0;
+//    int rust_counter = 0;
     int demotion_counter = 0;
+
+    int skill_rate = 100;
+    Race *r = m_df->get_race(m_race_id);
+    Caste *c = r->get_caste_by_id(m_caste_id);
+    if(c)
+        c->load_skill_rates();
+
     foreach(VIRTADDR entry, entries) {
-        /* type, level, experience, last used counter, rust, rust counter,
-        demotion counter
-        */
         type = m_df->read_short(entry);
         rating = m_df->read_short(entry + 0x04);
         xp = m_df->read_int(entry + 0x08);
-        //last_used =m_df->read_int(entry + 0x0C);
-        //rust = m_df->read_int(entry + 0x10);
-        //rust_counter = m_df->read_int(entry + 0x14);
-        demotion_counter = m_df->read_int(entry + 0x18);
-        Skill *s = new Skill(type, xp, rating, demotion_counter);
+
+//        last_used =m_df->read_int(entry + 0x0C);
+//        rust = m_df->read_int(entry + 0x10);
+//        rust_counter = m_df->read_int(entry + 0x14);
+//        demotion_counter = m_df->read_int(entry + 0x18);
+
+        //find the caste's skill rate
+        if(c){
+            skill_rate = c->get_skill_rate(type);
+        }
+
+        Skill *s = new Skill(type, xp, rating, demotion_counter, skill_rate);
         m_total_xp += s->actual_exp();
         m_skills.append(s);
 
@@ -1237,12 +1248,12 @@ void Dwarf::read_skills() {
                 (m_highest_moodable_skill == -1 || s->actual_exp() > get_skill(m_highest_moodable_skill)->actual_exp()))
             m_highest_moodable_skill = type;
 
-//        if(rust > 0)
-//        LOGD << nice_name() << m_profession << "reading skill at" << hex << entry << "type" << s.name()
-//             << "rating" << rating << "xp:" << xp << "last_used:"
-//             << last_used << "rust:" << rust << "rust counter:"
-//             << rust_counter << "demotions:" << demotion_counter;
-    }
+//        if(demotion_counter > 0)
+//            LOGD << nice_name() << m_profession << " reading:" << hex << entry << " skill:" << s->name()
+//                 << " rating:" << rating << " xp:" << xp << " last_used:"
+//                 << last_used << " rust:" << rust << " rust counter:"
+//                 << rust_counter << " demotions:" << demotion_counter;
+    }        
 }
 
 void Dwarf::read_traits() {
@@ -1895,9 +1906,11 @@ float Dwarf::calc_role_rating(Role *m_role){
 
 
     //************ SKILLS ************
+    float skill_rate_value = 0.0;
     if(m_role->skills.count()>0){
         total_weight = 0;
         aspect_value = 0;
+        skill_rate_value = 0;
         Skill *s;
         foreach(QString skill_id, m_role->skills.uniqueKeys()){
             a = m_role->skills.value(skill_id);
@@ -1906,6 +1919,13 @@ float Dwarf::calc_role_rating(Role *m_role){
             s = this->get_skill(skill_id.toInt());
             aspect_value = s->actual_exp();
             aspect_value = aspect_value / 29000;
+
+            if(m_df->show_skill_rates()){
+                skill_rate_value = s->skill_rate() / 500; //skill rate is capped at 500%, default is 100%
+                aspect_value += skill_rate_value;
+                aspect_value /= 2.0f; //equally weigh skill rate gain and the actually skill rating, may need adjustment
+            }
+
             if(aspect_value > 1.0)
                 aspect_value = 1.0;
             if(a->is_neg)

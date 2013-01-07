@@ -27,7 +27,6 @@ THE SOFTWARE.
 #include "utils.h"
 #include "word.h"
 #include "global_enums.h"
-//#include "item.h"
 
 class Dwarf;
 class Squad;
@@ -118,6 +117,8 @@ public:
         m_enabled_labor_count[id] += change;
     }
 
+
+
     // Set layout
     void set_memory_layout(MemoryLayout * layout) { m_layout = layout; }
 
@@ -135,6 +136,8 @@ public:
     virtual bool detach() = 0;
 
     quint32 current_year_time() {return m_cur_year_tick;}
+    bool show_skill_rates() const {return m_show_skill_rates;}
+    bool set_show_skill_rates(bool val) {m_show_skill_rates = val;}
 
     // Windows string offsets
 #ifdef Q_WS_WIN
@@ -281,6 +284,7 @@ private:
     void load_hist_figures();
 
     QHash<QPair<QString,QString>, pref_stat*> m_pref_counts;
+    bool m_show_skill_rates;
 };
 
 #endif // DFINSTANCE_H

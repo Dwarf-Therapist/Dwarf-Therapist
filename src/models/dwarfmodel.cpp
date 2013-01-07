@@ -59,6 +59,7 @@ DwarfModel::~DwarfModel() {
 }
 
 void DwarfModel::clear_all(bool clr_pend) {
+    clearing_data = true;
     if(clr_pend)
         clear_pending();
 
@@ -76,6 +77,7 @@ void DwarfModel::clear_all(bool clr_pend) {
 
     total_row_count = 0;
     clear();
+    clearing_data = false;
 }
 
 void DwarfModel::section_right_clicked(int col) {
@@ -201,8 +203,11 @@ void DwarfModel::update_header_info(int id, COLUMN_TYPE type){
                         QStandardItem* header = this->horizontalHeaderItem(index);
                         header->setData(col->bg_color(), Qt::BackgroundColorRole);
                         header->setData(set->name(), Qt::UserRole);
-                        if(s->value("options/grid/show_labor_counts",false).toBool())
-                            header->setText(QString("%1 %2").arg(cnt).arg(col->title()).trimmed());
+                        if(s->value("options/grid/show_labor_counts",false).toBool()){
+                            header->setText(QString("%1 %2")
+                                            .arg(cnt,2,10,QChar('0'))
+                                            .arg(col->title()).trimmed());
+                        }
                         header->setToolTip(tr("%1 have this labor enabled.").arg(cnt));
                         return;
                     }
@@ -228,17 +233,19 @@ void DwarfModel::draw_headers(){
         emit set_index_as_spacer(start_col - 1);
         emit preferred_header_size(start_col - 1, width);*/
         foreach(ViewColumn *col, set->columns()) {
-            QString cnt = "";
+            //QString cnt = "";
             QString h_name = col->title();
             if(col->type()==CT_LABOR){
-                cnt = col->count() >= 0 ? QString::number(col->count()) : "";
+                //cnt = col->count() >= 0 ? QString::number(col->count()) : "";
                 if(s->value("options/grid/show_labor_counts",false).toBool())
-                    h_name = QString("%1 %2").arg(cnt).arg(col->title()).trimmed();
+                    h_name = QString("%1 %2")
+                            .arg(col->count(),2,10,QChar('0'))
+                            .arg(col->title()).trimmed();
             }
 
             QStandardItem *header = new QStandardItem(h_name);
             if(col->type()==CT_LABOR)
-                header->setToolTip(tr("%1 have this labor enabled.").arg(cnt));
+                header->setToolTip(tr("%1 have this labor enabled.").arg(QString::number(col->count())));
             else if(col->type()==CT_WEAPON){
                 header->setToolTip(tr("<p>%1</p>").arg(col->title()));
             }

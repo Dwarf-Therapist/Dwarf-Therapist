@@ -300,21 +300,6 @@ void roleDialog::save_pressed(){
     m_role->is_custom = true;
 
     save_role(m_role);
-//    //attributes
-//    m_role->attributes_weight.weight = ui->dsb_attributes_weight->value();
-//    save_aspects(*ui->tw_attributes, m_role->attributes);
-
-//    //skills
-//    m_role->skills_weight.weight = ui->dsb_skills_weight->value();
-//    save_aspects(*ui->tw_skills,m_role->skills);
-
-//    //traits
-//    m_role->traits_weight.weight = ui->dsb_traits_weight->value();
-//    save_aspects(*ui->tw_traits,m_role->traits);
-
-//    //preferences
-//    m_role->prefs_weight.weight = ui->dsb_prefs_weight->value();
-//    save_prefs(m_role);
 
     //if we're updating/adding a role to replace a default remove the default role first
     if(m_override)

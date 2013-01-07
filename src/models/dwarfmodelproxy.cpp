@@ -32,10 +32,15 @@ THE SOFTWARE.
 #include "mainwindow.h"
 #include "gamedatareader.h"
 
+QString m_filter_text;
+QScriptEngine *m_engine;
+QString m_active_filter_script;
+QString m_pref_script;
+
 DwarfModelProxy::DwarfModelProxy(QObject *parent)
     :QSortFilterProxyModel(parent)
-    , m_engine(new QScriptEngine(this))
     , m_last_sort_order(Qt::AscendingOrder)
+    , m_engine(new QScriptEngine(this))    
 {}
 
 DwarfModel* DwarfModelProxy::get_dwarf_model() const {

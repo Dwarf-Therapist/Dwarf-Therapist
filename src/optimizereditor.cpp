@@ -16,34 +16,14 @@
 #include "labor.h"
 #include "math.h"
 
-optimizereditor::optimizereditor(QString name, QWidget *parent) :
+//optimizereditor::optimizereditor(QString name, QWidget *parent) :
+optimizereditor::optimizereditor(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::optimizereditor),
+    m_optimizer(0),
     is_editing(true)
 {
     ui->setupUi(this);
-    this->setAttribute(Qt::WA_DeleteOnClose,true);
-
-    m_original_plan = GameDataReader::ptr()->get_opt_plans().take(name);
-    if(!m_original_plan){
-        m_plan = new laborOptimizerPlan();
-        m_plan->name = "New Plan";
-        is_editing = false;
-    }else{
-        m_plan = new laborOptimizerPlan(*m_original_plan);
-    }
-
-    m_optimizer = new LaborOptimizer(m_plan,this);
-
-    ui->sb_max_jobs->setMaximum(GameDataReader::ptr()->get_ordered_labors().count());
-    ui->le_name->setText(m_plan->name);
-    ui->chk_military->setChecked(m_plan->exclude_military);
-    ui->chk_nobles->setChecked(m_plan->exclude_nobles);
-    ui->chk_auto->setChecked(m_plan->auto_haulers);
-    ui->chk_injured->setChecked(m_plan->exclude_injured);
-    ui->sb_max_jobs->setValue(m_plan->max_jobs_per_dwarf);
-    ui->sb_pop_percent->setValue(m_plan->pop_percent);
-    ui->sb_hauler_percent->setValue(m_plan->hauler_percent);
 
     ui->lbl_jobs->setToolTip("The total number of possible job slots available (workers x jobs per worker).");
     ui->lbl_workers->setToolTip("The number of job slots assigned.");
@@ -57,25 +37,13 @@ optimizereditor::optimizereditor(QString name, QWidget *parent) :
     ui->tw_labors->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
     ui->tw_labors->horizontalHeader()->setResizeMode(3, QHeaderView::ResizeToContents);
     ui->tw_labors->horizontalHeader()->setResizeMode(4, QHeaderView::ResizeToContents);    
-    //ui->tw_labors->setHorizontalHeaderLabels(QStringList() << "Job" << "Role" << "Priority" << "Max Workers (%)" << "Worker Count");
+
     ui->tw_labors->setHorizontalHeaderLabels(QStringList() << "Job" << "Role" << "Priority" << "Ratio" << "Worker Count");
 
     ui->tw_labors->horizontalHeaderItem(2)->setToolTip(tr("The role or skill used to rank dwarves for the job."));
     ui->tw_labors->horizontalHeaderItem(2)->setToolTip(tr("Determines how important assigning workers to the job is, in relation to other jobs."));    
     ui->tw_labors->horizontalHeaderItem(3)->setToolTip(tr("Represents the ratio of the population which should be assigned to the job. For example setting 1 for each job will distribute workers evenly among all jobs."));
     ui->tw_labors->horizontalHeaderItem(4)->setToolTip(tr("The actual number of dwarves which will be assigned to the job"));
-
-    find_target_population();
-
-    loading = true;
-    foreach(PlanDetail *d, m_plan->plan_details){
-        insert_row(d);
-    }
-    ui->tw_labors->resizeRowsToContents();
-    loading = false;
-
-    refresh_job_counts();
-
 
     connect(ui->btnOptimize, SIGNAL(clicked()), this, SLOT(test_optimize()));
     connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(save_pressed()));
@@ -101,14 +69,6 @@ optimizereditor::optimizereditor(QString name, QWidget *parent) :
     connect(ui->treeMessages, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
         DT->get_main_window()->get_view_manager(), SLOT(jump_to_dwarf(QTreeWidgetItem *, QTreeWidgetItem *)));
 
-    //update some of the tooltips
-    hauler_percent_changed(ui->sb_hauler_percent->value());
-    max_jobs_changed(m_plan->max_jobs_per_dwarf);
-
-    //setup the splitter options, and decorate the handle
-    ui->splitter->setStretchFactor(0,200);
-    ui->splitter->setStretchFactor(1,1);
-
     QSplitterHandle *h = ui->splitter->handle(1);
     QVBoxLayout *layout = new QVBoxLayout(h);
     layout->setSpacing(0);
@@ -130,6 +90,50 @@ optimizereditor::optimizereditor(QString name, QWidget *parent) :
     ui->splitter->setHandleWidth(l->height());
     ui->splitter->setChildrenCollapsible(false);
 
+}
+
+void optimizereditor::load_plan(QString name){
+    is_editing = true;
+
+    m_original_plan = GameDataReader::ptr()->get_opt_plans().take(name);
+    if(!m_original_plan){
+        m_plan = new laborOptimizerPlan();
+        m_plan->name = "New Plan";
+        is_editing = false;
+    }else{
+        m_plan = new laborOptimizerPlan(*m_original_plan);
+    }
+
+    m_optimizer = new LaborOptimizer(m_plan,this);
+
+    ui->sb_max_jobs->setMaximum(GameDataReader::ptr()->get_ordered_labors().count());
+    ui->le_name->setText(m_plan->name);
+    ui->chk_military->setChecked(m_plan->exclude_military);
+    ui->chk_nobles->setChecked(m_plan->exclude_nobles);
+    ui->chk_auto->setChecked(m_plan->auto_haulers);
+    ui->chk_injured->setChecked(m_plan->exclude_injured);
+    ui->sb_max_jobs->setValue(m_plan->max_jobs_per_dwarf);
+    ui->sb_pop_percent->setValue(m_plan->pop_percent);
+    ui->sb_hauler_percent->setValue(m_plan->hauler_percent);
+
+    find_target_population();
+
+    loading = true;
+    foreach(PlanDetail *d, m_plan->plan_details){
+        insert_row(d);
+    }
+    ui->tw_labors->resizeRowsToContents();
+    loading = false;
+
+    refresh_job_counts();
+
+    //update some of the tooltips
+    hauler_percent_changed(ui->sb_hauler_percent->value());
+    max_jobs_changed(m_plan->max_jobs_per_dwarf);
+
+    //setup the splitter options, and decorate the handle
+    ui->splitter->setStretchFactor(0,200);
+    ui->splitter->setStretchFactor(1,1);
 }
 
 void optimizereditor::max_jobs_changed(int val){
@@ -277,8 +281,10 @@ void optimizereditor::filter_option_changed(){
 }
 
 void optimizereditor::populationChanged(){
-    find_target_population(); //update population and refresh counts
-    refresh_job_counts();
+    if(m_optimizer){
+        find_target_population(); //update population and refresh counts
+        refresh_job_counts();
+    }
 }
 
 
@@ -327,7 +333,7 @@ void optimizereditor::draw_labor_context_menu(const QPoint &p){
     labor_s_z->setTearOffEnabled(true);
 
     bool exists;
-    qDeleteAll(m_remaining_labors);
+
     m_remaining_labors.clear();
     foreach(Labor *l, gdr->get_ordered_labors()) {
         exists = false;
@@ -507,7 +513,7 @@ void optimizereditor::save_pressed(){
 
     //notify we're done
     this->accept();
-    disconnect();
+    cleanup();
 }
 
 void optimizereditor::cancel_pressed(){
@@ -515,9 +521,19 @@ void optimizereditor::cancel_pressed(){
     if(is_editing)
         GameDataReader::ptr()->get_opt_plans().insert(m_original_plan->name, m_original_plan);
     this->reject();
-    disconnect();
+    cleanup();
 }
 
+void optimizereditor::cleanup(){
+    for(int i = ui->tw_labors->rowCount(); i >=0; i--){
+        ui->tw_labors->removeRow(i);
+    }
+    clear_log();
+
+    m_original_plan = 0;
+    m_plan = 0;
+    m_remaining_labors.clear();
+}
 
 void optimizereditor::import_details(){
     clear_log();

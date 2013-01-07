@@ -111,6 +111,7 @@ public:
     QHash<int, Squad*> squads() {return m_squads;}
 
     int total_row_count;
+    bool clearing_data;
 
 public slots:
     void draw_headers();

@@ -39,7 +39,7 @@ Caste::Caste(DFInstance *df, VIRTADDR address, QString race_name, QObject *paren
     , m_description(QString::null)
     , m_df(df)
     , m_mem(df->memory_layout())
-    , m_has_extracts(false)
+    , m_has_extracts(false)    
 {
     load_data();
 }
@@ -50,6 +50,8 @@ Caste::~Caste() {
 
     m_body_sizes.clear();
     m_ranges.clear();
+    m_skill_rates.clear();
+
     m_df = 0;
     m_mem = 0;
 }
@@ -98,6 +100,7 @@ void Caste::read_caste() {
     QVector<uint> extracts = m_df->enumerate_vector(m_address + m_mem->caste_offset("extracts"));
     if(extracts.count() > 0)
         m_has_extracts = true;
+
 }
 
 bool Caste::is_trainable(){
@@ -111,6 +114,33 @@ bool Caste::is_trainable(){
 
 bool Caste::is_milkable(){
     return m_flags->has_flag(MILKABLE);
+}
+
+void Caste::load_skill_rates(){
+    if(m_skill_rates.count() <= 0){
+        VIRTADDR addr = m_address + m_mem->caste_offset("skill_rates");
+        int val;
+        for(int skill_id=0; skill_id < GameDataReader::ptr()->get_total_skill_count(); skill_id++){
+            val = (int)m_df->read_int(addr);
+            m_skill_rates.insert(skill_id, val);
+            //a bit of a hack. sets a global variable to let us know if there are castes with significant xp bonuses
+            //which in turn determines if we show the column in the dwarf details pane, and in the skill/labor column tooltips
+            //rather than doing this, we could also just count unique castes used..
+            if((val-100) > 25){
+                m_bonuses.append(GameDataReader::ptr()->get_skill_name(skill_id));
+                if(!m_df->show_skill_rates())
+                    m_df->set_show_skill_rates(true);
+            }
+            addr += 0x4;
+        }
+    }
+}
+
+int Caste::get_skill_rate(int skill_id){
+    if(m_skill_rates.count() <= 0)
+        load_skill_rates();
+
+    return(m_skill_rates.value(skill_id,100));
 }
 
 void Caste::load_attribute_info(){
@@ -183,5 +213,20 @@ int Caste::get_body_size(int index){
         return m_body_sizes.at(index);
     else
         return 0;
+}
+
+QString Caste::description(){
+    if(m_bonuses.count() > 0){
+        QString list = m_bonuses.join(", ");
+        list = list.replace(list.lastIndexOf(","),2," and ");
+
+        return tr("%1 These %2 gain a significant xp bonus for <b>%3</b>.")
+                .arg(m_description)
+                .arg(m_race_name)
+                .arg(list);
+    }else{
+        return m_description;
+    }
+
 }
 

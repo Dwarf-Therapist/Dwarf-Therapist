@@ -26,8 +26,8 @@ THE SOFTWARE.
 
 Attribute::Attribute(QSettings &s, QObject *parent)
         : QObject(parent)
-        , id(s.value("id",0).toInt())
         , name(s.value("name", "UNKNOWN ATTRIBUTE").toString())
+        , id(s.value("id",0).toInt())        
 {
     int levels = s.beginReadArray("levels");
     for (int i = 0; i < levels; ++i) {

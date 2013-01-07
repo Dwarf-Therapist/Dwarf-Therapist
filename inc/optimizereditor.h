@@ -20,9 +20,11 @@ class optimizereditor : public QDialog
     Q_OBJECT
     
 public:
-    explicit optimizereditor(QString name, QWidget *parent = 0);
+    explicit optimizereditor(QWidget *parent);
     ~optimizereditor();
     bool event(QEvent *evt);
+
+    void load_plan(QString name);
 
 public slots:
     void populationChanged();
@@ -79,6 +81,8 @@ private slots:
     void hauler_percent_changed(int);
     void auto_haul_changed(int);
     void filter_option_changed();
+
+    void cleanup();
 
 };
 

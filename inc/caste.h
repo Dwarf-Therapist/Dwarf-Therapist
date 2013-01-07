@@ -45,16 +45,18 @@ public:
     VIRTADDR address() {return m_address;}
 
     QString name() {return m_name;}
-    QString description() {return m_description;}
+    QString description();// {return m_description;}
     AttributeLevel get_attribute_level(int id, int value);
     AttributeLevel get_attribute_rating(int attribute);
+
+    int get_skill_rate(int skill_id);
 
     int adult_size() {return get_body_size(0);}
     int child_size() {return get_body_size(0) / 2;} //get_body_size(1);}
     int baby_size() {return get_body_size(0) / 4;} //get_body_size(2);}
 
     void load_data();
-    void load_attribute_info();
+    void load_skill_rates();
 
     FlagArray* flags() {return m_flags;}
 
@@ -83,9 +85,12 @@ private:
     FlagArray *m_flags;
 
     bool m_has_extracts;
+    QHash<int,float> m_skill_rates;
+    QStringList m_bonuses;
 
     void read_caste();
     int get_body_size(int index);
+    void load_attribute_info();
 };
 
 #endif // CASTE_H

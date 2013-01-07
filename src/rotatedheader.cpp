@@ -150,7 +150,7 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
     {
         p->translate(rect.x(), rect.y());
         p->rotate(90);        
-        p->drawText(12, -((rect.width()-fm.height()) / 2) - (fm.height()/4), data); //wtf.. i have no idea but it's centered so i'll take it
+        p->drawText(7, -((rect.width()-fm.height()) / 2) - (fm.height()/4), data); //wtf.. i have no idea but it's centered so i'll take it
     }
     p->restore();
 }

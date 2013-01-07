@@ -1,10 +1,11 @@
 #ifndef HIGHESTMOODCOLUMN_H
 #define HIGHESTMOODCOLUMN_H
 
-#include "viewcolumn.h"
+#include "skillcolumn.h"
+
 class Dwarf;
 
-class HighestMoodColumn : public ViewColumn {
+class HighestMoodColumn : public SkillColumn {
     Q_OBJECT
 public:
     HighestMoodColumn(const QString &title, ViewColumnSet *set = 0, QObject *parent = 0);
@@ -13,8 +14,7 @@ public:
     QStandardItem *build_cell(Dwarf *d);
     QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 
-public slots:
-    //void read_settings();
+    void write_to_ini(QSettings &s);
 
 };
 

@@ -404,8 +404,6 @@ public:
 
     int optimized_labors;
 
-    bool include_in_pop_stats() {return m_include_pop_stats;}
-
     public slots:
         //! called when global user settings change
         void read_settings();
@@ -492,7 +490,6 @@ private:
     int m_highest_moodable_skill;
     QMultiMap<int, Preference*> m_preferences;
     QHash<QString, QStringList*> m_grouped_preferences;
-    bool m_include_pop_stats;
 
     // these methods read data from raw memory
     void read_id();

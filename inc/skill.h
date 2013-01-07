@@ -23,9 +23,8 @@ THE SOFTWARE.
 #ifndef SKILL_H
 #define SKILL_H
 
-#include <QString>
-#include <QStringList>
-//#include "gamedatareader.h"
+#include "qstring.h"
+#include "qstringlist.h"
 
 class GameDataReader;
 
@@ -33,7 +32,7 @@ class Skill
 {
 public:
     Skill();
-    Skill(short id, uint exp, short rating, int demotions);
+    Skill(short id, uint exp, short rating, int demotions, int skill_rate = 100);
 
     short id() const {return m_id;}
     short rating() const {return m_rating;}
@@ -44,6 +43,7 @@ public:
     QString exp_summary() const;
     QString rust_rating() const {return m_rust_rating;}
     QString skill_color() const {return m_skill_color;}
+    int skill_rate() const {return m_skill_rate;}
 
     QString to_string(bool include_level = true, bool include_exp_summary = true) const;
     //QString name() {return QString("(%1) %2").arg(m_id).arg(m_name);}
@@ -70,6 +70,7 @@ private:
     int m_demotions;
     QString m_skill_color;
     QString m_rust_rating;    
+    int m_skill_rate;
 };
 
 #endif // SKILL_H

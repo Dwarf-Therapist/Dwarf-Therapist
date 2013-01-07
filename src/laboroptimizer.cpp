@@ -50,6 +50,12 @@ LaborOptimizer::LaborOptimizer(laborOptimizerPlan *plan, QObject *parent)
     gdr = GameDataReader::ptr();
 }
 
+LaborOptimizer::~LaborOptimizer(){
+    gdr = 0;
+    m_labor_map.clear();
+    m_dwarfs.clear();
+}
+
 void LaborOptimizer::calc_population(bool load_labor_map){
     //clear the labor map
     m_labor_map.clear();

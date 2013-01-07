@@ -98,7 +98,7 @@ void Race::read_race() {
         Caste *c = 0;
         int i = 0;
         foreach(VIRTADDR caste_addr, castes) {
-            c = Caste::get_caste(m_df, caste_addr, m_name);
+            c = Caste::get_caste(m_df, caste_addr, m_name_plural);
             if (c != 0) {
                 m_castes[i] = c;
                 //LOGD << "FOUND CASTE " << hexify(caste_addr);

@@ -31,14 +31,13 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "skill.h"
 
-HighestMoodColumn::HighestMoodColumn(const QString &title, ViewColumnSet *set,
-                       QObject *parent)
-    : ViewColumn(title, CT_HIGHEST_MOOD, set, parent)
+HighestMoodColumn::HighestMoodColumn(const QString &title, ViewColumnSet *set, QObject *parent)
+    : SkillColumn(title,-1,set,parent,CT_HIGHEST_MOOD)
 {
 }
 
 HighestMoodColumn::HighestMoodColumn(const HighestMoodColumn &to_copy)
-    : ViewColumn(to_copy)
+    : SkillColumn(to_copy)
 {
 }
 
@@ -48,13 +47,11 @@ QStandardItem *HighestMoodColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
 
     Skill *s = d->highest_moodable();
-    QString skill_name = tr("Random Craftsdwarf");
+    m_skill_id = s->id();
 
     int img_id = 24;
-    if(s->rating() != -1){
+    if(s->rating() != -1)
         img_id = gdr->get_pref_from_skill(s->id()) + 1; //prof images start at 1, id start at 0
-        skill_name = s->name();
-    }
 
     QString pixmap_name = ":/profession/img/profession icons/prof_" + QString::number(img_id) + ".png";
     item->setData(QIcon(pixmap_name), Qt::DecorationRole);
@@ -74,36 +71,7 @@ QStandardItem *HighestMoodColumn::build_cell(Dwarf *d) {
         bg = QColor(255,255,255);
     item->setData(bg,Qt::BackgroundColorRole);
 
-
-    QString str_mood = "";
-    str_mood = tr("<br/><br/>%1 is the highest moodable skill.").arg(capitalize(gdr->get_skill_name(s->id(),true)));
-    if(d->had_mood())
-        str_mood = tr("<br/><br/>Has already had a mood as a %1 and crafted '%2'.").arg(capitalize(s->name())).arg(d->artifact_name());
-
-
-    QString skill_str;
-    if(s->id() != -1 && s->rating() > -1) {
-        QString adjusted_rating = QString::number(s->rating());
-        if (s->rating() > 15)
-            adjusted_rating = QString("15 +%1").arg(s->rating() - 15);
-        skill_str = tr("<b>%1</b> %2 %3<br/>[RAW LEVEL: <b><font color=blue>%4</font></b>]<br/><b>Experience:</b><br/>%5")
-                .arg(s->rust_rating())
-                .arg(gdr->get_skill_level_name(s->rating()))
-                .arg(gdr->get_skill_name(s->id()))
-                .arg(adjusted_rating)
-                .arg(s->exp_summary());
-    } else {
-        // either the skill isn't a valid id, or they have 0 experience in it
-        skill_str = "0 experience";
-    }
-    QString tooltip = QString("<h3>%1</h3>%2%3<h4>%4</h4>")
-            .arg(m_title)
-            .arg(skill_str)
-            .arg(str_mood)
-            .arg(d->nice_name());
-
-    item->setToolTip(tooltip);
-
+    set_tooltip(d,item, "", false, sort_val);
     s = 0;
 
     return item;
@@ -116,4 +84,8 @@ QStandardItem *HighestMoodColumn::build_aggregate(const QString &group_name,
     QStandardItem *item = new QStandardItem;
     item->setData(m_bg_color, DwarfModel::DR_DEFAULT_BG_COLOR);
     return item;
+}
+
+void HighestMoodColumn::write_to_ini(QSettings &s) {
+    ViewColumn::write_to_ini(s);
 }

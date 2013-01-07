@@ -1,27 +1,29 @@
 TEMPLATE = app
 TARGET = DwarfTherapist
 QT += network \
-    script
+    script \
+    core \
+    gui
 CONFIG(debug, debug|release) { 
     message(Debug Mode)
-    DESTDIR = bin/debug
-    MOC_DIR = bin/debug
-    UI_DIR = bin/debug
-    RCC_DIR = bin/debug
-    OBJECTS_DIR = bin/debug
+    DESTDIR = bin$${DIR_SEPARATOR}debug
+    MOC_DIR = bin$${DIR_SEPARATOR}debug
+    UI_DIR = bin$${DIR_SEPARATOR}debug
+    RCC_DIR = bin$${DIR_SEPARATOR}debug
+    OBJECTS_DIR = bin$${DIR_SEPARATOR}debug
 }
 else { 
     message(Release Mode)
-    DESTDIR = bin/release
-    MOC_DIR = bin/release
-    UI_DIR = bin/release
-    RCC_DIR = bin/release
-    OBJECTS_DIR = bin/release
+    DESTDIR = bin$${DIR_SEPARATOR}release
+    MOC_DIR = bin$${DIR_SEPARATOR}release
+    UI_DIR = bin$${DIR_SEPARATOR}release
+    RCC_DIR = bin$${DIR_SEPARATOR}release
+    OBJECTS_DIR = bin$${DIR_SEPARATOR}release
 }
 INCLUDEPATH += inc \
-    inc/models \
-    inc/grid_view \
-    inc/docks \
+    inc$${DIR_SEPARATOR}models \
+    inc$${DIR_SEPARATOR}grid_view \
+    inc$${DIR_SEPARATOR}docks \
     ui \
     thirdparty/qtcolorpicker-2.6
 win32 { 
@@ -29,7 +31,27 @@ win32 {
     RC_FILE = DwarfTherapist.rc
     LIBS += -lpsapi
     HEADERS += inc/dfinstancewindows.h
-    SOURCES += src/dfinstancewindows.cpp
+    SOURCES += src/dfinstancewindows.cpp    
+
+    #setup_files.path = $$DESTDIR
+    #setup_files.extra = ROBOCOPY /MIR "etc" ".\\$$DESTDIR\\etc";
+
+    check_log.path = $$DESTDIR
+    check_log.extra = if not exist $$DESTDIR\\log mkdir "$$DESTDIR\\log";
+
+    check_dirs.path = $$DESTDIR
+    check_dirs.extra = if not exist $$DESTDIR\\etc\\memory_layouts\\windows mkdir "$$DESTDIR\\etc\\memory_layouts\\windows";
+
+    copy_game_data.path = $$DESTDIR
+    copy_game_data.extra = copy /Y "etc\\game_data.ini" ".\\$$DESTDIR\\etc";
+
+    copy_mem_layouts.path = $$DESTDIR
+    copy_mem_layouts.extra = copy /Y "etc\\memory_layouts\\windows\\*" ".\\$$DESTDIR\\etc\\memory_layouts\\windows";
+
+    INSTALLS += check_log
+    INSTALLS += check_dirs
+    INSTALLS += copy_game_data
+    INSTALLS += copy_mem_layouts
 }
 else:macx { 
     message(Setting up for OSX)
@@ -284,5 +306,4 @@ RESOURCES += images.qrc
 
 OTHER_FILES += \
     src/dfinstanceosx.cpp
-
 

@@ -38,6 +38,7 @@ class ViewManager;
 class Scanner;
 class ScriptDialog;
 class roleDialog;
+class optimizereditor;
 
 namespace Ui
 {
@@ -135,6 +136,7 @@ private:
     Scanner *m_scanner;
     ScriptDialog *m_script_dialog;
     roleDialog *m_role_editor;
+    optimizereditor *m_optimize_plan_editor;
     QHttp *m_http;
     bool m_reading_settings;
     bool m_show_result_on_equal; //! used during version checks

@@ -23,9 +23,9 @@ THE SOFTWARE.
 #ifndef LABOR_COLUMN_H
 #define LABOR_COLUMN_H
 
-#include "viewcolumn.h"
+#include "skillcolumn.h"
 
-class LaborColumn : public ViewColumn {
+class LaborColumn : public SkillColumn {
     Q_OBJECT
 public:
 	LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSet *set = 0, QObject *parent = 0);
@@ -49,7 +49,6 @@ protected:
 
 public slots:
     void update_count();
-    //void read_settings();
 };
 
 #endif

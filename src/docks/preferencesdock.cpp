@@ -136,7 +136,7 @@ void PreferencesDock::selection_changed(){
     QString cat = "";
     if(indexList.count() > 0){
 
-        int row;
+        int row = 0;
         int prev_row=-1;
         foreach (QModelIndex index, indexList) {
             row = index.row();

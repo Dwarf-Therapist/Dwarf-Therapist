@@ -105,6 +105,7 @@ public:
     Profession* get_profession(const short &profession_id);
     QString get_skill_level_name(short level);
     QString get_skill_name(short skill_id, bool moodable = false);
+    int get_total_skill_count() {return m_skills.count();}
 
     QColor get_color(QString key);
 

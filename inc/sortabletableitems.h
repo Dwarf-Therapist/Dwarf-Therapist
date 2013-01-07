@@ -35,4 +35,11 @@ public:
     }
 };
 
+class sortablePercentTableWidgetItem : public QTableWidgetItem{
+public :
+    bool operator <(QTableWidgetItem *other){
+        return text().toInt() < other->text().toInt();
+    }
+};
+
 #endif // SORTABLETABLEITEMS_H

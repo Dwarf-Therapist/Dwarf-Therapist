@@ -63,7 +63,7 @@ THE SOFTWARE.
 
 
 DFInstance::DFInstance(QObject* parent)
-    : QObject(parent)
+    : QObject(parent)    
     , m_pid(0)
     , m_memory_correction(0)
     , m_stop_scan(false)
@@ -77,6 +77,7 @@ DFInstance::DFInstance(QObject* parent)
     , m_dwarf_race_id(0)
     , m_dwarf_civ_id(0)
     , m_fortress(0x0)
+    , m_show_skill_rates(false)
 {
     connect(m_scan_speed_timer, SIGNAL(timeout()),
             SLOT(calculate_scan_rate()));

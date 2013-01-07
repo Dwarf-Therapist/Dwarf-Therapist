@@ -251,7 +251,7 @@ typedef enum{
     MILKABLE=29,
     TRAINABLE_HUNTING=53,
     PET=54,
-    PET_EXOTIC=55,
+    PET_EXOTIC=55,    
     TRAINABLE_WAR=88,
     HAS_EXTRACTS=200 //custom
 } CASTE_FLAGS;

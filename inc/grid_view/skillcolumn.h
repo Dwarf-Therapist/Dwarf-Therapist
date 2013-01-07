@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 class SkillColumn : public ViewColumn {
 public:
-	SkillColumn(const QString &title, const int &skill_id, ViewColumnSet *set = 0, QObject *parent = 0);
+    SkillColumn(const QString &title, const int &skill_id, ViewColumnSet *set = 0, QObject *parent = 0, COLUMN_TYPE cType = CT_SKILL);
     SkillColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
     SkillColumn(const SkillColumn &to_copy); // copy ctor
     SkillColumn* clone() {return new SkillColumn(*this);}
@@ -37,13 +37,12 @@ public:
 	void set_skill_id(int skill_id) {m_skill_id = skill_id;}
 
 	//override
-	void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("skill_id", m_skill_id);}
-
-public slots:
-    //void read_settings();
+    //void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("skill_id", m_skill_id);}
+    void write_to_ini(QSettings &s);
 
 protected:
 	int m_skill_id;
+    void set_tooltip(Dwarf *d, QStandardItem *item, QString option_name, bool sorting_by_role, float sortVal);
 };
 
 #endif

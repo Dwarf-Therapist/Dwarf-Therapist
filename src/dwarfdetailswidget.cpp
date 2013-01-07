@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include "skill.h"
 #include "attribute.h"
 #include "attributelevel.h"
+#include "sortabletableitems.h"
 
 DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
@@ -166,19 +167,22 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
     // SKILLS TABLE
     QVector<Skill*> *skills = d->get_skills();
-    QTableWidget *tw = new QTableWidget(0, 3, this);
+    QTableWidget *tw = new QTableWidget(0, 4, this);
     details_splitter->addWidget(tw);
     m_cleanup_list << tw;
     tw->setEditTriggers(QTableWidget::NoEditTriggers);
     tw->setGridStyle(Qt::NoPen);
     tw->setAlternatingRowColors(true);
-    tw->setHorizontalHeaderLabels(QStringList() << "Skill" << "Level" << "Progress");
+    tw->setHorizontalHeaderLabels(QStringList() << "Skill" << "Level" << "Bonus" << "Progress");
     tw->verticalHeader()->hide();
     tw->horizontalHeader()->setStretchLastSection(true);
     tw->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
     tw->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
+    tw->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
     tw->setSortingEnabled(false); // no sorting while we're inserting    
     int real_count = 0;
+    int raw_bonus_xp = 100;
+    int bonus_xp = 0;
     for (int row = 0; row < skills->size(); ++row) {
         Skill *s = skills->at(row);
         if(s->rating() > -1)
@@ -186,21 +190,37 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             real_count = tw->rowCount();
             tw->insertRow(real_count);
             tw->setRowHeight(real_count, 18);
-            QTableWidgetItem *text = new QTableWidgetItem(QString("%1").arg(s->name()));
+
+            QTableWidgetItem *item_skill = new QTableWidgetItem(s->name());
+            if(s->id()==d->highest_moodable()->id()){
+                if(d->had_mood()){
+                    item_skill->setBackgroundColor(QColor(153,102,34,255));
+                    item_skill->setToolTip(tr("Has already had a mood!<br/>"));
+                }
+                else{
+                    item_skill->setBackgroundColor(QColor(220, 220, 255, 255));
+                    item_skill->setToolTip(tr("This is the highest moodable skill."));
+                }
+            }
 
             QTableWidgetItem *level = new QTableWidgetItem;
             level->setData(0, d->skill_rating(s->id()));
             level->setTextAlignment(Qt::AlignHCenter);
+            level->setToolTip(s->rust_rating());
 
-            if(s->id()==d->highest_moodable()->id()){
-                if(d->had_mood()){
-                    text->setBackgroundColor(QColor(153,102,34,255));
-                    text->setToolTip(tr("Has already had a mood!"));
-                }
-                else{
-                    text->setBackgroundColor(QColor(220, 220, 255, 255));
-                    text->setToolTip(tr("This is the highest moodable skill."));
-                }
+            raw_bonus_xp = s->skill_rate();
+            bonus_xp = raw_bonus_xp - 100;
+            sortablePercentTableWidgetItem *item_bonus = new sortablePercentTableWidgetItem();
+            item_bonus->setText(QString::number(bonus_xp,'f',0)+"%");
+            item_bonus->setTextAlignment(Qt::AlignHCenter);
+            if(bonus_xp != 0)
+                item_bonus->setToolTip(tr("Receives %1% <b>%2</b> experience than normal. (RAW: %3%)")
+                                       .arg(abs(bonus_xp))
+                                       .arg(bonus_xp > 0 ? "more" : "less")
+                                       .arg(raw_bonus_xp));
+            if(bonus_xp < 0){
+                item_bonus->setBackground(QColor(204, 0, 0, 128));
+                item_bonus->setForeground(QColor(0, 0, 128, 255));
             }
 
             //        QColor rust = QColor(s.skill_color());
@@ -208,7 +228,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             //            rust.setAlpha(0); //if we get rust stuff setup change this from transparent
             //            level->setBackgroundColor(rust);
             //        }
-            level->setToolTip(s->rust_rating());
+
 
 
             QProgressBar *pb = new QProgressBar(tw);
@@ -217,13 +237,17 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             pb->setDisabled(true);// this is to keep them from animating and looking all goofy
             pb->setToolTip(s->exp_summary());
 
-            tw->setItem(real_count, 0, text);
+            tw->setItem(real_count, 0, item_skill);
             tw->setItem(real_count, 1, level);
-            tw->setCellWidget(real_count, 2, pb);
+            tw->setItem(real_count, 2, item_bonus);
+            tw->setCellWidget(real_count, 3, pb);
         }
-    }
+    }    
     tw->setSortingEnabled(true); // no sorting while we're inserting    
     tw->sortItems(m_skill_sort_col, static_cast<Qt::SortOrder>(m_skill_sort_desc));
+
+    if(!DT->get_DFInstance()->show_skill_rates())
+        tw->removeColumn(2);
 
 
     // ATTRIBUTES TABLE
@@ -352,10 +376,9 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         tw_roles->setRowHeight(0, 18);
 
         QTableWidgetItem *role_name = new QTableWidgetItem(name);
-        QTableWidgetItem *role_rating = new QTableWidgetItem;
-        role_rating->setData(0, static_cast<float>(static_cast<int>(val*100+0.5))/100);        
+        sortablePercentTableWidgetItem *role_rating = new sortablePercentTableWidgetItem;
+        role_rating->setText(QString::number(val,'f',2)+"%");
         role_rating->setTextAlignment(Qt::AlignHCenter);
-
 
         if (val < 50) {
             role_rating->setBackground(QColor(204, 0, 0, 128));
@@ -411,4 +434,5 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     //resize based on user settings
     details_splitter->restoreState(m_splitter_sizes);
 }
+
 

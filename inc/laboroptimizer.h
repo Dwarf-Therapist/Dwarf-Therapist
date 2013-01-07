@@ -35,6 +35,7 @@ class LaborOptimizer : public QObject {
     Q_OBJECT
 public:
     LaborOptimizer(laborOptimizerPlan *plan, QObject *parent=0);
+    virtual ~LaborOptimizer();
 
     void optimize_labors();
     void optimize_labors(QList<Dwarf*> dwarfs);
@@ -49,7 +50,7 @@ public:
     const int total_population() {return m_total_population;}
     const int targeted_population() {return roundf(m_target_population);}
 public slots:
-        void calc_population(bool load_labor_map = false);
+    void calc_population(bool load_labor_map = false);
 
 signals:
     QString optimize_message(QVector<QPair<int, QString> >);
@@ -71,8 +72,7 @@ protected:
 
     struct dwarf_labor_map{
         float rating;
-        Dwarf * d;
-        //laborOptimizerPlan::detail *det;
+        Dwarf * d;        
         PlanDetail *det;
     };
 

@@ -87,7 +87,7 @@ QStandardItem *HappinessColumn::build_aggregate(const QString &, const QVector<D
 }
 
 void HappinessColumn::read_settings() {
-    QSettings *s = DT->user_settings();
+    QSettings *s = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 	s->beginGroup("options/colors/happiness");
 	foreach(QString k, s->childKeys()) {
 		Dwarf::DWARF_HAPPINESS h = static_cast<Dwarf::DWARF_HAPPINESS>(k.toInt());

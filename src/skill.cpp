@@ -37,9 +37,10 @@ Skill::Skill()
     , m_demotions(0)
     , m_skill_color("#000000")
     , m_rust_rating("")
+    , m_skill_rate(100)
 {}
 
-Skill::Skill(short id, uint exp, short rating, int demotions)
+Skill::Skill(short id, uint exp, short rating, int demotions, int skill_rate)
     : m_id(id)
     , m_exp(exp)
     , m_actual_exp(exp)
@@ -51,6 +52,7 @@ Skill::Skill(short id, uint exp, short rating, int demotions)
     , m_demotions(demotions)
     , m_skill_color("#000000")
     , m_rust_rating("")
+    , m_skill_rate(skill_rate)
 {    
     m_actual_exp = m_exp;
     for (int i = 0; i < m_rating; ++i) {

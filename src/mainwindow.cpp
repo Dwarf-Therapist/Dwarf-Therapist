@@ -79,6 +79,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_lbl_message(new QLabel(tr("Initializing"), this))
     , m_progress(new QProgressBar(this))
     , m_settings(0)
+    , m_view_manager(0)
     , m_model(new DwarfModel(this))
     , m_proxy(new DwarfModelProxy(this))
     , m_about_dialog(new AboutDialog(this))
@@ -86,14 +87,14 @@ MainWindow::MainWindow(QWidget *parent)
     , m_scanner(0)
     , m_script_dialog(new ScriptDialog(this))
     , m_role_editor(0)
+    , m_optimize_plan_editor(0)
     , m_http(0)
     , m_reading_settings(false)
     , m_show_result_on_equal(false)
     , m_dwarf_name_completer(0)
     , m_force_connect(false)
     , m_try_download(true)
-    , m_deleting_settings(false)
-    , m_view_manager(0)
+    , m_deleting_settings(false)    
     , m_act_sep_optimize(0)
     , m_btn_optimize(0)
 {
@@ -410,6 +411,12 @@ void MainWindow::read_dwarves() {
         m_role_editor = new roleDialog(m_df, this);
         connect(m_view_manager, SIGNAL(selection_changed()), m_role_editor, SLOT(selection_changed()),Qt::UniqueConnection);
         connect(m_role_editor, SIGNAL(finished(int)), this, SLOT(done_editing_role(int)),Qt::UniqueConnection);
+    }
+    if(!m_optimize_plan_editor){
+        m_optimize_plan_editor = new optimizereditor(this);
+        connect(m_view_manager, SIGNAL(selection_changed()), m_optimize_plan_editor, SLOT(populationChanged()), Qt::UniqueConnection);
+        connect(m_proxy, SIGNAL(filter_changed()), m_optimize_plan_editor, SLOT(populationChanged()), Qt::UniqueConnection);
+        connect(m_optimize_plan_editor, SIGNAL(finished(int)), this, SLOT(done_editing_opt_plan(int)), Qt::UniqueConnection);
     }
 }
 
@@ -789,18 +796,13 @@ void MainWindow::reload_filter_scripts() {
 
 void MainWindow::add_new_custom_role() {
     m_role_editor->load_role("");
-//    connect(m_view_manager, SIGNAL(selection_changed()), m_role_editor, SLOT(selection_changed()),Qt::UniqueConnection);
-//    connect(m_role_editor, SIGNAL(finished(int)), this, SLOT(done_editing_role(int)),Qt::UniqueConnection);
     m_role_editor->show();
 }
 
 void MainWindow::edit_custom_role() {
     QAction *a = qobject_cast<QAction*>(QObject::sender());
-    QString name = a->data().toString();
-    //roleDialog *edit = new roleDialog(this,name);
+    QString name = a->data().toString();    
     m_role_editor->load_role(name);
-//    connect(m_view_manager, SIGNAL(selection_changed()), m_role_editor, SLOT(selection_changed()),Qt::UniqueConnection);
-//    connect(m_role_editor, SIGNAL(finished(int)), this, SLOT(done_editing_role(int)),Qt::UniqueConnection);
     m_role_editor->show();
 }
 
@@ -1031,21 +1033,23 @@ void MainWindow::preference_selected(QStringList names, QString category){
 
 void MainWindow::add_new_opt()
 {
-    optimizereditor *edit = new optimizereditor("", this);
-    connect(edit, SIGNAL(finished(int)), this, SLOT(done_editing_opt_plan(int)));
-    connect(m_view_manager, SIGNAL(selection_changed()), edit, SLOT(populationChanged()));
-    connect(m_proxy, SIGNAL(filter_changed()), edit, SLOT(populationChanged()));
-    edit->show();
+//    optimizereditor *edit = new optimizereditor("", this);
+//    connect(edit, SIGNAL(finished(int)), this, SLOT(done_editing_opt_plan(int)));
+//    connect(m_view_manager, SIGNAL(selection_changed()), edit, SLOT(populationChanged()));
+//    connect(m_proxy, SIGNAL(filter_changed()), edit, SLOT(populationChanged()));
+    m_optimize_plan_editor->load_plan("");
+    m_optimize_plan_editor->show();
 }
 
 void MainWindow::edit_opt() {
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     QString name = a->data().toString();
-    optimizereditor *edit = new optimizereditor(name, this);
-    connect(edit, SIGNAL(finished(int)), this, SLOT(done_editing_opt_plan(int)));
-    connect(m_view_manager, SIGNAL(selection_changed()), edit, SLOT(populationChanged()));
-    connect(m_proxy, SIGNAL(filter_changed()), edit, SLOT(populationChanged()));
-    edit->show();
+    m_optimize_plan_editor->load_plan(name);
+    //optimizereditor *edit = new optimizereditor(name, this);
+//    connect(edit, SIGNAL(finished(int)), this, SLOT(done_editing_opt_plan(int)));
+//    connect(m_view_manager, SIGNAL(selection_changed()), edit, SLOT(populationChanged()));
+//    connect(m_proxy, SIGNAL(filter_changed()), edit, SLOT(populationChanged()));
+    m_optimize_plan_editor->show();
 }
 
 void MainWindow::done_editing_opt_plan(int result){
@@ -1146,7 +1150,7 @@ void MainWindow::refresh_opts_menus() {
             m_btn_optimize->setPopupMode(QToolButton::MenuButtonPopup);
         }
         m_btn_optimize->setProperty("last_optimize",name);
-        m_btn_optimize->setToolTip("Optimize selected using " + name);
+        m_btn_optimize->setToolTip(tr("Optimize labors using %1").arg(name));
         m_act_btn_optimize->setVisible(true);
         m_act_sep_optimize->setVisible(true);
     }
