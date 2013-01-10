@@ -17,40 +17,40 @@ public:
     uint string_buffer_offset();
     uint string_length_offset();
     uint string_cap_offset();
-    uint dwarf_offset(const QString &key) {
+    int dwarf_offset(const QString &key) {
         return m_dwarf_offsets.value(key, -1);
     }
-    uint squad_offset(const QString & key) {
+    int squad_offset(const QString & key) {
         return m_squad_offsets.value(key, -1);
     }
-    uint word_offset(const QString & key) {
+    int word_offset(const QString & key) {
         return m_word_offsets.value(key, -1);
     }
-    uint race_offset(const QString & key) {
+    int race_offset(const QString & key) {
         return m_race_offsets.value(key, -1);
     }
-    uint caste_offset(const QString & key) {
+    int caste_offset(const QString & key) {
         return m_caste_offsets.value(key, -1);
     }
-    uint hist_figure_offset(const QString & key){
+    int hist_figure_offset(const QString & key){
         return m_hist_fig_offsets.value(key, -1);
     }
-    uint hist_entity_offset(const QString & key){
+    int hist_entity_offset(const QString & key){
         return m_hist_entity_offsets.value(key, -1);
     }
-    uint weapon_offset(const QString & key){
+    int weapon_offset(const QString & key){
         return m_weapon_offsets.value(key, -1);
     }
-    uint material_offset(const QString & key){
+    int material_offset(const QString & key){
         return m_material_offsets.value(key, -1);
     }
-    uint plant_offset(const QString & key){
+    int plant_offset(const QString & key){
         return m_plant_offsets.value(key, -1);
     }
-    uint item_offset(const QString & key){
+    int item_offset(const QString & key){
         return m_item_offsets.value(key, -1);
     }
-    uint descriptor_offset(const QString & key){
+    int descriptor_offset(const QString & key){
         return m_descriptor_offsts.value(key, -1);
     }
 

@@ -26,57 +26,39 @@ THE SOFTWARE.
 #include <QtGui>
 #include "global_enums.h"
 #include "dwarfstats.h"
+#include "gamedatareader.h"
 
 class Trait : public QObject {
-	Q_OBJECT
-public:
-    Trait(int trait_id, const QSettings &s, QObject *parent = 0)
-		: QObject(parent)
-    {
-        name = s.value("name", "UNKNOWN").toString();
-        this->trait_id = trait_id;// s.value("trait_id", -1).toInt();
-        m_level_string[0]  = s.value("level_0", "UNKNOWN TRAIT 0(" + name + ")").toString();
-        m_level_string[10] = s.value("level_1", "UNKNOWN TRAIT 1(" + name + ")").toString();
-        m_level_string[25] = s.value("level_2", "UNKNOWN TRAIT 2(" + name + ")").toString();
-        m_level_string[61] = s.value("level_3", "UNKNOWN TRAIT 3(" + name + ")").toString();
-        m_level_string[76] = s.value("level_4", "UNKNOWN TRAIT 4(" + name + ")").toString();
-        m_level_string[91] = s.value("level_5", "UNKNOWN TRAIT 5(" + name + ")").toString();
+    Q_OBJECT
 
-        //setup aspect types and load bins
-        QList<int> raws;
-        raws << -1 << 11 << 27 << 44 << 65 << 78 << 92 << 100;
+private:
+    struct conflict{
+        int skill_id;
+        int limit;
+        bool gains_skill;
+    };
 
-        //immoderation (urge) and straightforwardness (honesty) are +
-        if(trait_id==4 || trait_id==19)
-            m_aspect_type = positive;
-        else if(trait_id==5) //vulnerability (stress) is -
-            m_aspect_type = negative;
-        else //everything else
-            m_aspect_type = average;
-
-        DwarfStats::load_trait_bins(m_aspect_type, raws);
-    }
-
-	QString level_message(const short &val) {
-		if (val >= 91)
-			return m_level_string[91];
-		else if (val >= 76)
-			return m_level_string[76];
-		else if (val >= 61)
-			return m_level_string[61];
-		else if (val >= 25)
-			return m_level_string[25];
-		else if (val >= 10)
-			return m_level_string[10];
-		else
-			return m_level_string[0];
-	}
-
-	QString name;
-	int trait_id;
-    ASPECT_TYPE m_aspect_type;
     //! this map will hold the minimum_value -> string (e.g. level 76-90 of Nervousness is "Is always tense and jittery")
-	QMap<int, QString> m_level_string;
+    QMap<int, QString> m_level_string;
+    //skill_id, limit
+    QHash<int,conflict> m_conflicts;
+    //message, limit
+    QHash<QString, int> m_special;
+
+public:
+    Trait(int trait_id, QSettings &s, QObject *parent = 0);
+
+    QString name;
+    int trait_id;
+    ASPECT_TYPE m_aspect_type;
+
+    QString level_message(const short &val);
+    QString conflicts_messages(const short &val);
+    QString special_messages(const short &val);
+
+    QString conflict_message(const short &skill_id, const short &val);
+
+
 };
 
 #endif

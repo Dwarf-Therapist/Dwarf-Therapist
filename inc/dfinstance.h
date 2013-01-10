@@ -137,7 +137,7 @@ public:
 
     quint32 current_year_time() {return m_cur_year_tick;}
     bool show_skill_rates() const {return m_show_skill_rates;}
-    bool set_show_skill_rates(bool val) {m_show_skill_rates = val;}
+    void set_show_skill_rates(bool val) {m_show_skill_rates = val;}
 
     // Windows string offsets
 #ifdef Q_WS_WIN

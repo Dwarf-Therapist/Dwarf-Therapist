@@ -35,11 +35,18 @@ public:
     }
 };
 
-class sortablePercentTableWidgetItem : public QTableWidgetItem{
+class sortableFloatTableWidgetItem : public QTableWidgetItem{
 public :
-    bool operator <(QTableWidgetItem *other){
-        return text().toInt() < other->text().toInt();
+    bool operator<(const QTableWidgetItem &other) const{
+        return data(Qt::UserRole).toFloat() < other.data(Qt::UserRole).toFloat();
     }
 };
+
+//class sortableSpecialTableWidgetItem : public QTableWidgetItem{
+//public :
+//    bool operator <(QTableWidgetItem *other){
+//        return data(Qt::UserRole) < other->data(Qt::UserRole);
+//    }
+//};
 
 #endif // SORTABLETABLEITEMS_H

@@ -254,7 +254,7 @@ public:
     Q_INVOKABLE int attribute(int attrib_id) {return m_attributes.value(attrib_id, -1);}
 
     //! returns the numeric rating for the this dwarf in the skill specified by skill_id
-    Q_INVOKABLE short skill_rating(int skill_id);
+    Q_INVOKABLE short skill_rating(int skill_id, bool raw = false);
 
     //! returns the numeric rating for the this dwarf in the skill associated with the labor specified by labor_id
     Q_INVOKABLE short labour_rating(int labor_id);

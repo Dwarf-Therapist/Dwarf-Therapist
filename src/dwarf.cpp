@@ -208,6 +208,7 @@ void Dwarf::refresh_data() {
 
     TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name
             << "(" << m_translated_name << ")";
+
 }
 
 void Dwarf::set_age(VIRTADDR birth_year_offset, VIRTADDR birth_time_offset){
@@ -288,11 +289,14 @@ void Dwarf::read_sex() {
 
 void Dwarf::read_mood(){
     m_mood_id = m_df->read_short(m_address + m_mem->dwarf_offset("mood"));
-    //also mark if they've had a mood
-    if((m_flag1 & 0x00000008)==0x00000008){
-        m_had_mood = true;
-    }        
-    m_artifact_name = m_df->get_translated_word(m_address + m_mem->dwarf_offset("artifact_name"));
+
+    if(m_mood_id < 0){
+        //also mark if they've had a mood, if they're not IN a mood
+        if((m_flag1 & 0x00000008)==0x00000008){
+            m_had_mood = true;
+            m_artifact_name = m_df->get_translated_word(m_address + m_mem->dwarf_offset("artifact_name"));
+        }
+    }
 }
 
 void Dwarf::read_body_size(){
@@ -1217,7 +1221,7 @@ void Dwarf::read_skills() {
 //    int last_used = 0;
 //    int rust = 0;
 //    int rust_counter = 0;
-    int demotion_counter = 0;
+//    int demotion_counter = 0;
 
     int skill_rate = 100;
     Race *r = m_df->get_race(m_race_id);
@@ -1238,9 +1242,9 @@ void Dwarf::read_skills() {
         //find the caste's skill rate
         if(c){
             skill_rate = c->get_skill_rate(type);
-        }
+        }        
 
-        Skill *s = new Skill(type, xp, rating, demotion_counter, skill_rate);
+        Skill *s = new Skill(type, xp, rating, skill_rate);
         m_total_xp += s->actual_exp();
         m_skills.append(s);
 
@@ -1248,11 +1252,11 @@ void Dwarf::read_skills() {
                 (m_highest_moodable_skill == -1 || s->actual_exp() > get_skill(m_highest_moodable_skill)->actual_exp()))
             m_highest_moodable_skill = type;
 
-//        if(demotion_counter > 0)
-//            LOGD << nice_name() << m_profession << " reading:" << hex << entry << " skill:" << s->name()
-//                 << " rating:" << rating << " xp:" << xp << " last_used:"
-//                 << last_used << " rust:" << rust << " rust counter:"
-//                 << rust_counter << " demotions:" << demotion_counter;
+//        if(rust > 0)
+//            LOGD << nice_name() << m_profession << " reading:" << entry << " skill:" << s->name()
+//                 << " rating:" << rating << " last_used:"
+//                 << last_used << " r.count:" << rust_counter << " r:" << rust
+//                 << " d.count:" << demotion_counter <<;
     }        
 }
 
@@ -1304,15 +1308,18 @@ Skill* Dwarf::get_skill(int skill_id) {
             return s;
         }
     }
-    m_skills.append(new Skill(skill_id, 0, -1, 0));
+    m_skills.append(new Skill(skill_id, 0, -1, 100));
     return m_skills.last();
 }
 
-short Dwarf::skill_rating(int skill_id) {
+short Dwarf::skill_rating(int skill_id, bool raw) {
     short retval = -1;
     foreach(Skill *s, m_skills) {
         if (s->id() == skill_id) {
-            retval = s->rating();
+            if(raw)
+                retval = s->raw_rating();
+            else
+               retval = s->capped_rating();
             break;
         }
     }
@@ -1602,7 +1609,7 @@ QString Dwarf::tooltip_text() {
 
         int max_level = s->value("options/min_tooltip_skill_level", true).toInt();
         for (int i = skills->size() - 1; i >= 0; --i) {
-            if (skills->at(i)->rating() < max_level) {
+            if (skills->at(i)->capped_rating() < max_level) {
                 continue;
             }
             skill_summary.append(QString("<li>%1</li>").arg(skills->at(i)->to_string()));
@@ -1610,12 +1617,26 @@ QString Dwarf::tooltip_text() {
     }
 
     if(s->value("options/tooltip_show_traits",true).toBool()){
+        QStringList notes;
         for (int i = 0; i < m_traits.size(); ++i) {
+            notes.clear();
             if (trait_is_active(i)){
                 Trait *t = gdr->get_trait(i);
                 if (!t)
                     continue;
-                trait_summary.append(QString("%1, ").arg(t->level_message(m_traits.value(i))));
+                int val = m_traits.value(i);
+                trait_summary.append(t->level_message(val));
+                QString temp = t->conflicts_messages(val);
+                if(!temp.isEmpty())
+                    notes.append("<u>" + temp + "</u>");
+                temp = t->special_messages(val);
+                if(!temp.isEmpty())
+                    notes.append(temp);
+
+                if(!notes.isEmpty())
+                    trait_summary.append(" (" + notes.join(" and ") + ")");
+
+                trait_summary.append(", ");
             }
         }
         if(trait_summary.lastIndexOf(",") == trait_summary.length()-2)
@@ -1627,15 +1648,16 @@ QString Dwarf::tooltip_text() {
         max_roles = s->value("options/role_count_tooltip",3).toInt();
         if(max_roles > m_sorted_role_ratings.count())
             max_roles = m_sorted_role_ratings.count();
-        roles_summary.append("<ol style=\"margin-top:5px; margin-bottom:5px;\">");
+        roles_summary.append("<ol style=\"margin-top:0px; margin-bottom:0px;\">");
         for(int i = 0; i < max_roles; i++){
-            roles_summary += tr("<li>%1  (%2%)</li>").arg(m_sorted_role_ratings.at(i).first).arg(QString::number(m_sorted_role_ratings.at(i).second,'f',2));
+            roles_summary += tr("<li>%1  (%2%)</li>").arg(m_sorted_role_ratings.at(i).first)
+                    .arg(QString::number(m_sorted_role_ratings.at(i).second,'f',2));
         }
         roles_summary.append("</ol>");
     }
 
     if(s->value("options/tooltip_show_preferences",true).toBool()){
-        preference_summary = "<br><b>Preferences: </b>";
+        preference_summary = "<b>Preferences: </b>";
         foreach(QString key, m_grouped_preferences.uniqueKeys()){
             preference_summary.append(m_grouped_preferences.value(key)->join(", ")).append(", ");
         }
@@ -1643,8 +1665,9 @@ QString Dwarf::tooltip_text() {
             preference_summary.chop(2);
     }
 
-    QString title;
 
+    QStringList tt;
+    QString title;
     if(s->value("options/tooltip_show_icons",true).toBool()){
         title += tr("<center><b><h3 style=\"margin:0;\"><img src='%1'>%2<img src='%3'></h3><h4 style=\"margin:0;\">(%4)</h4></b></center>")
                 .arg(m_icn_gender).arg(m_nice_name).arg(m_icn_prof).arg(m_translated_name);
@@ -1653,48 +1676,68 @@ QString Dwarf::tooltip_text() {
                 .arg(m_nice_name).arg(m_translated_name);
     }
 
-    QString tt = title;
     if(s->value("options/tooltip_show_artifact",true).toBool() && !m_artifact_name.isEmpty())
-        tt += tr("<center><i><h5 style=\"margin:0;\">Creator of '%2'</h5></i></center>").arg(m_artifact_name);
+        title.append(tr("<center><i><h5 style=\"margin:0;\">Creator of '%2'</h5></i></center>").arg(m_artifact_name));
 
-    tt += "<br/>";
+    tt.append(title);
 
     if(s->value("options/tooltip_show_caste",true).toBool())
-        tt += tr("<b>Caste:</b> %1<br/>").arg(caste_name());
+        tt.append(tr("<b>Caste:</b> %1").arg(caste_name()));
 
     if(s->value("options/tooltip_show_happiness",true).toBool())
-        tt += tr("<b>Happiness:</b> %1 (%2)<br/>").arg(happiness_name(m_happiness)).arg(m_raw_happiness);
+        tt.append(tr("<b>Happiness:</b> %1 (%2)").arg(happiness_name(m_happiness)).arg(m_raw_happiness));
 
     if(s->value("options/tooltip_show_noble",true).toBool())
-        tt += tr("<b>Profession:</b> %1<br/>").arg(profession());
+        tt.append(tr("<b>Profession:</b> %1").arg(profession()));
 
     if(m_noble_position != "" && s->value("options/tooltip_show_noble",true).toBool())
-        tt += tr("<b>Noble Position%1:</b> %2<br/>").arg(m_noble_position.indexOf(",") > 0 ? "s" : "").arg(m_noble_position);
+        tt.append(tr("<b>Noble Position%1:</b> %2").arg(m_noble_position.indexOf(",") > 0 ? "s" : "").arg(m_noble_position));
 
     if(!m_skills.isEmpty() && !skill_summary.isEmpty() && s->value("options/tooltip_show_skills",true).toBool())
-        tt += tr("<h4 style=\"margin-top:5px; margin-bottom:5px;\"><b>Skills:</b></h4><ul style=\"margin-top:5px; margin-bottom:5px;\">%1</ul>").arg(skill_summary);
+        tt.append(tr("<h4 style=\"margin:0px;\"><b>Skills:</b></h4><ul style=\"margin:0px;\">%1</ul>").arg(skill_summary));
 
     if(s->value("options/tooltip_show_mood",false).toBool())
-        tt += tr("<br/><b>Highest Moodable Skill:</b> %1<br/>").arg(gdr->get_skill_name(m_highest_moodable_skill, true));
+        tt.append(tr("<b>Highest Moodable Skill:</b> %1")
+                  .arg(gdr->get_skill_name(m_highest_moodable_skill, true)));
 
     if(!m_traits.isEmpty() && !trait_summary.isEmpty() && s->value("options/tooltip_show_traits",true).toBool())
-        tt += tr("<br/><b>Traits:</b> %1").arg(trait_summary);
+        tt.append(tr("<p style=\"margin:0px;\"><b>Traits:</b> %1</p>").arg(trait_summary));
 
     if(!m_preferences.isEmpty() && !preference_summary.isEmpty() && s->value("options/tooltip_show_preferences",true).toBool())
-        tt += tr("<br/>%1<br/>").arg(preference_summary);
+        tt.append(tr("<p style=\"margin:0px;\">%1</p>").arg(preference_summary));
 
     if(!m_role_ratings.isEmpty() && max_roles != 0 && s->value("options/tooltip_show_roles",true).toBool())
-        tt += tr("<h4 style=\"margin-top:5px; margin-bottom:5px;\"><b>Top %1 Roles:</b></h4>%2<br/>").arg(max_roles).arg(roles_summary);
+        tt.append(tr("<h4 style=\"margin:0px;\"><b>Top %1 Roles:</b></h4>%2").arg(max_roles).arg(roles_summary));
 
     if(s->value("options/tooltip_show_caste",true).toBool() && caste_desc() != "")
-        tt += tr("<br/>%1<br/>").arg(caste_desc());
+        tt.append(tr("%1").arg(caste_desc()));
 
     if(s->value("options/highlight_cursed", false).toBool() && curse_name() != "")
-        tt += tr("<br/><b>Curse:</b> Cursed to prowl the night as a %1!").arg(curse_name());
+        tt.append(tr("<b>Curse:</b> Cursed to prowl the night as a %1!").arg(curse_name()));
 
-    tt += "</p>";
+    //TEST READING SYNDROMES ******
+//    QList<int> syns;
+//    QStringList syn_names;
+//    QVector<VIRTADDR> active_syns = m_df->enumerate_vector(m_address + 0x918 - 0x4);
+//    QVector<VIRTADDR> all_syns = m_df->enumerate_vector(m_df->get_memory_correction() + 0x1875384-0x4);
+//    foreach(VIRTADDR syn, active_syns){
+//        bool is_sick = m_df->read_byte(syn + 0x38); //only show buffs/good syndromes?
+//        if(!is_sick){
+//            int id = m_df->read_int(syn);
+//            syns.append(m_df->read_int(syn));
 
-    return tt.trimmed();
+//            VIRTADDR syn_ptr = all_syns.at(id);
+//            QString name = m_df->read_string(syn_ptr);
+//            if(!name.trimmed().isEmpty())
+//                syn_names.append(name);
+//        }
+//    }
+//    if(syn_names.length()>0){
+//        tt += tr("<b>Buffs:</b> %1").arg(syn_names.join(", "));
+//    }
+    //******************************
+
+    return tt.join("<br/>");
 }
 
 
@@ -1752,9 +1795,9 @@ void Dwarf::copy_address_to_clipboard() {
 }
 
 Skill* Dwarf::highest_skill() {
-    Skill *highest = new Skill(0, 0, 0, 0);
+    Skill *highest = new Skill(-1, 0, -1, 100);
     foreach(Skill *s, m_skills) {
-        if (s->rating() > highest->rating()) {
+        if (s->actual_exp() > highest->actual_exp()) {
             highest = s;
         }
     }
@@ -1764,7 +1807,8 @@ Skill* Dwarf::highest_skill() {
 int Dwarf::total_skill_levels() {
     int ret_val = 0;
     foreach(Skill *s, m_skills) {
-        ret_val += s->rating();
+        if(s->raw_rating() > 0)
+            ret_val += s->raw_rating();
     }
     return ret_val;
 }
@@ -1917,7 +1961,7 @@ float Dwarf::calc_role_rating(Role *m_role){
             weight = a->weight;
 
             s = this->get_skill(skill_id.toInt());
-            aspect_value = s->actual_exp();
+            aspect_value = s->capped_exp();
             aspect_value = aspect_value / 29000;
 
             if(m_df->show_skill_rates()){

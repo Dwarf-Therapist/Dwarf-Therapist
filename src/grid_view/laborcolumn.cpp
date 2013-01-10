@@ -58,24 +58,21 @@ LaborColumn::LaborColumn(const LaborColumn &to_copy)
 
 QStandardItem *LaborColumn::build_cell(Dwarf *d) {
 	QStandardItem *item = init_cell(d);    
-    float sortVal = 0;
+    m_sort_val = 0;
     bool sorting_by_role = DT->user_settings()->value("options/sort_roles_in_labor", true).toBool();
-
-	item->setData(CT_LABOR, DwarfModel::DR_COL_TYPE);
     short rating = d->skill_rating(m_skill_id);
 
     if(d->labor_enabled(m_labor_id))
-        sortVal += 1000;
+        m_sort_val += 1000;
 
-    if(!sorting_by_role && DT->get_DFInstance()->show_skill_rates())
-        sortVal += rating + d->get_skill(m_skill_id)->skill_rate();
-
-    item->setData(sortVal, DwarfModel::DR_SORT_VALUE);
+    item->setData(CT_LABOR, DwarfModel::DR_COL_TYPE);
 	item->setData(rating, DwarfModel::DR_RATING);
 	item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);
 	item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
 
-    set_tooltip(d,item,"show_roles_in_labor",sorting_by_role,sortVal);
+    set_sorting(d,item,rating,sorting_by_role);
+    set_tooltip(d,item,"show_roles_in_labor",sorting_by_role);
+
 	return item;
 }
 

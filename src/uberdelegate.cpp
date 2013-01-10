@@ -524,8 +524,7 @@ void UberDelegate::paint_mood_cell(const QRect &adjusted, QPainter *p, const QSt
     }
 
     if(color_mood_cells && !dirty){ //dirty is always drawn over mood
-        if(d->highest_moodable()->rating() > -1 &&
-                skill_id == d->highest_moodable()->id()){
+        if(d->highest_moodable()->capped_rating() > -1 && skill_id == d->highest_moodable()->id()){
             p->setPen(QPen(color_mood,2));
 
             if(d->had_mood())

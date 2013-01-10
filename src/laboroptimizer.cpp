@@ -110,7 +110,7 @@ void LaborOptimizer::calc_population(bool load_labor_map){
                             dlm.rating = det->priority * d->get_role_rating(det->role_name, true);
                         }
                         else{
-                            dlm.rating = det->priority * (d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id)->actual_exp() / (float)29000 * 100);
+                            dlm.rating = det->priority * (d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id)->capped_exp() / (float)29000 * 100);
                             //dlm.rating = det->priority * (d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).rating() / 20.0 * 100);
                         }
                         m_labor_map.append(dlm);

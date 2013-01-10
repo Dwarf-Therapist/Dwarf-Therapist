@@ -185,7 +185,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     int bonus_xp = 0;
     for (int row = 0; row < skills->size(); ++row) {
         Skill *s = skills->at(row);
-        if(s->rating() > -1)
+        if(s->capped_rating() > -1)
         {
             real_count = tw->rowCount();
             tw->insertRow(real_count);
@@ -203,15 +203,28 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
                 }
             }
 
-            QTableWidgetItem *level = new QTableWidgetItem;
-            level->setData(0, d->skill_rating(s->id()));
+            sortableFloatTableWidgetItem *level = new sortableFloatTableWidgetItem();
+            level->setText(QString::number(d->skill_rating(s->id())));
+            level->setData(Qt::UserRole, (float)d->skill_rating(s->id(),true));
             level->setTextAlignment(Qt::AlignHCenter);
-            level->setToolTip(s->rust_rating());
+            QString l_tooltip = tr("RAW LEVEL: %1").arg(QString::number(s->raw_rating()));
+            //level->setToolTip(tr("RAW LEVEL: %1").arg(QString::number(s->raw_rating())));
+//            level->setToolTip(tr("RAW LEVEL: %1%2")
+//                              .arg(QString::number(s->raw_rating()))
+//                              .arg(s->rust() > 0 ? " <b>" + s->rust_rating() + "</b>" : ""));
+            if(s->is_losing_xp() > 0){
+                level->setBackgroundColor(s->rust_color());
+                level->setForeground(Qt::black);
+                l_tooltip += tr("<br/><br/>This skill has begun to lose experience!");
+            }
+            level->setToolTip(l_tooltip);
+
 
             raw_bonus_xp = s->skill_rate();
             bonus_xp = raw_bonus_xp - 100;
-            sortablePercentTableWidgetItem *item_bonus = new sortablePercentTableWidgetItem();
+            sortableFloatTableWidgetItem *item_bonus = new sortableFloatTableWidgetItem();
             item_bonus->setText(QString::number(bonus_xp,'f',0)+"%");
+            item_bonus->setData(Qt::UserRole, bonus_xp);
             item_bonus->setTextAlignment(Qt::AlignHCenter);
             if(bonus_xp != 0)
                 item_bonus->setToolTip(tr("Receives %1% <b>%2</b> experience than normal. (RAW: %3%)")
@@ -223,17 +236,12 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
                 item_bonus->setForeground(QColor(0, 0, 128, 255));
             }
 
-            //        QColor rust = QColor(s.skill_color());
-            //        if(rust!=QColor(Qt::black)){
-            //            rust.setAlpha(0); //if we get rust stuff setup change this from transparent
-            //            level->setBackgroundColor(rust);
-            //        }
-
-
-
             QProgressBar *pb = new QProgressBar(tw);
-            pb->setRange(s->exp_for_current_level(), s->exp_for_next_level());
-            pb->setValue(s->actual_exp());
+            pb->setRange(s->exp_for_current_level(), s->exp_for_next_level());            
+            if(s->is_losing_xp())
+                pb->setValue(s->exp_for_next_level());
+            else
+                pb->setValue(s->actual_exp());
             pb->setDisabled(true);// this is to keep them from animating and looking all goofy
             pb->setToolTip(s->exp_summary());
 
@@ -334,9 +342,25 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
                 trait_score->setForeground(QColor(0, 0, 128, 255));
             }
 
-            QString lvl_msg = t->level_message(val);
-            QTableWidgetItem *trait_msg = new QTableWidgetItem(lvl_msg);
-            trait_msg->setToolTip(lvl_msg);
+            QTableWidgetItem *trait_msg = new QTableWidgetItem();
+            QString msg = t->level_message(val);
+            QString temp = t->conflicts_messages(val);
+            if(!temp.isEmpty())
+                msg.append(". " + temp);
+            temp = t->special_messages(val);
+            if(!temp.isEmpty())
+                msg.append(". " + temp);
+            trait_msg->setText(msg);
+
+//            if(val < 50)
+//                trait_msg->setBackground(Trait::col_bad);
+//            else
+//                trait_msg->setBackground(Trait::col_good);
+            trait_msg->setToolTip(QString("%1<br/>%2<br/>%3")
+                                  .arg(t->level_message(val))
+                                  .arg(t->conflicts_messages(val))
+                                  .arg(t->special_messages(val)));
+
             tw_traits->setItem(0, 0, trait_name);
             tw_traits->setItem(0, 1, trait_score);
             tw_traits->setItem(0, 2, trait_msg);
@@ -376,8 +400,9 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         tw_roles->setRowHeight(0, 18);
 
         QTableWidgetItem *role_name = new QTableWidgetItem(name);
-        sortablePercentTableWidgetItem *role_rating = new sortablePercentTableWidgetItem;
+        sortableFloatTableWidgetItem *role_rating = new sortableFloatTableWidgetItem();
         role_rating->setText(QString::number(val,'f',2)+"%");
+        role_rating->setData(Qt::UserRole,val);
         role_rating->setTextAlignment(Qt::AlignHCenter);
 
         if (val < 50) {

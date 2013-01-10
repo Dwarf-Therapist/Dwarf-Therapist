@@ -36,13 +36,14 @@ public:
 	int skill_id() {return m_skill_id;}
 	void set_skill_id(int skill_id) {m_skill_id = skill_id;}
 
-	//override
-    //void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("skill_id", m_skill_id);}
+	//override    
     void write_to_ini(QSettings &s);
 
 protected:
 	int m_skill_id;
-    void set_tooltip(Dwarf *d, QStandardItem *item, QString option_name, bool sorting_by_role, float sortVal);
+    float m_sort_val;
+    void set_tooltip(Dwarf *d, QStandardItem *item, QString option_name, bool sorting_by_role);
+    void set_sorting(Dwarf *d, QStandardItem *item, int rating, bool sorting_by_role);
 };
 
 #endif

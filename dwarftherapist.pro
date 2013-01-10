@@ -285,7 +285,8 @@ SOURCES += src/viewmanager.cpp \
     src/preference.cpp \
     src/grid_view/professioncolumn.cpp \
     src/iconchooser.cpp \
-    src/grid_view/highestmoodcolumn.cpp
+    src/grid_view/highestmoodcolumn.cpp \
+    src/trait.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

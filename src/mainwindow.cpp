@@ -648,13 +648,13 @@ void MainWindow::draw_custom_profession_context_menu(const QPoint &p) {
 
 // web addresses
 void MainWindow::go_to_forums() {
-    QDesktopServices::openUrl(QUrl("http://udpviper.com/forums/viewforum.php?f=36"));
+    QDesktopServices::openUrl(QUrl("http://www.bay12forums.com/smf/index.php?topic=66525.0"));
 }
 void MainWindow::go_to_donate() {
-    QDesktopServices::openUrl(QUrl("http://code.google.com/p/dwarftherapist/wiki/Donations"));
+    QDesktopServices::openUrl(QUrl("http://code.google.com/r/splintermind-attributes/"));
 }
 void MainWindow::go_to_project_home() {
-    QDesktopServices::openUrl(QUrl("http://code.google.com/p/dwarftherapist"));
+    QDesktopServices::openUrl(QUrl("http://code.google.com/r/splintermind-attributes/"));
 }
 void MainWindow::go_to_new_issue() {
     QDesktopServices::openUrl(QUrl("http://code.google.com/p/dwarftherapist/issues/entry"));

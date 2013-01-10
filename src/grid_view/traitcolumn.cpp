@@ -64,7 +64,14 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
         msg = tr("%1 (%2)").arg(m_trait->level_message(score)).arg(score);
 
     if (d->trait_is_active(m_trait_id)==false)
-        msg += tr("<br><br>Not an active trait for this dwarf.");
+        msg += tr("<br/><br/>Not an active trait for this dwarf.");
+
+    QString temp = m_trait->conflicts_messages(score);
+    if(!temp.isEmpty())
+        msg += tr("<br/><br/>%1").arg(temp);
+    temp = m_trait->special_messages(score);
+    if(!temp.isEmpty())
+        msg += tr("<br/><br/>%1").arg(temp);
 
     item->setText(QString::number(score));
     item->setData(score, DwarfModel::DR_SORT_VALUE);

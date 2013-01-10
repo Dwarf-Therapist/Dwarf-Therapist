@@ -412,7 +412,7 @@ void DwarfModel::build_rows() {
                     {
                         int legendary_skills = 0;
                         foreach(Skill *s, *d->get_skills()) {
-                            if (s->rating() >= 15)
+                            if (s->capped_rating() >= 15)
                                 legendary_skills++;
                         }
                         if (legendary_skills)
@@ -472,7 +472,7 @@ void DwarfModel::build_rows() {
                     case GB_HIGHEST_MOODABLE:
                     {
                         Skill *highest = d->highest_moodable();
-                        if(highest->rating() != -1 && !d->had_mood()){
+                        if(highest->capped_rating() != -1 && !d->had_mood()){
                             m_grouped_dwarves[highest->name()].append(d);
                         }else{
                             if(d->had_mood())
@@ -485,7 +485,7 @@ void DwarfModel::build_rows() {
                     case GB_HIGHEST_SKILL:
                     {
                         Skill *highest = d->highest_skill();
-                        QString level = gdr->get_skill_level_name(highest->rating());
+                        QString level = gdr->get_skill_level_name(highest->capped_rating());
                         m_grouped_dwarves[level].append(d);
                     }
                         break;
@@ -558,7 +558,7 @@ void DwarfModel::build_row(const QString &key) {
         if (m_group_by == GB_MIGRATION_WAVE) {
             agg_first_col->setData(first_dwarf->migration_wave(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HIGHEST_SKILL) {
-            agg_first_col->setData(first_dwarf->highest_skill()->rating(), DR_SORT_VALUE);
+            agg_first_col->setData(first_dwarf->highest_skill()->actual_exp(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HIGHEST_MOODABLE) {
             agg_first_col->setData(first_dwarf->highest_moodable()->name(), DR_SORT_VALUE);
         } else if (m_group_by == GB_TOTAL_SKILL_LEVELS) {

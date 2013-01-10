@@ -50,7 +50,7 @@ QStandardItem *HighestMoodColumn::build_cell(Dwarf *d) {
     m_skill_id = s->id();
 
     int img_id = 24;
-    if(s->rating() != -1)
+    if(s->capped_rating() != -1)
         img_id = gdr->get_pref_from_skill(s->id()) + 1; //prof images start at 1, id start at 0
 
     QString pixmap_name = ":/profession/img/profession icons/prof_" + QString::number(img_id) + ".png";
@@ -58,20 +58,21 @@ QStandardItem *HighestMoodColumn::build_cell(Dwarf *d) {
 
     item->setData(CT_HIGHEST_MOOD, DwarfModel::DR_COL_TYPE);
     item->setData(d->had_mood(),DwarfModel::DR_RATING);
-    int sort_val = 50 + (s->id() * 100);
 
+    int id = s->id() < 0 ? 0 : s->id();
+    m_sort_val = 50 + (id * 100);
     if(d->had_mood())
-        sort_val = 0 - sort_val;
+        m_sort_val = 0 - m_sort_val;
 
-    sort_val += s->rating();
-    item->setData(sort_val, DwarfModel::DR_SORT_VALUE);
+    m_sort_val += s->raw_rating();
+    item->setData(m_sort_val, DwarfModel::DR_SORT_VALUE);
 
     QColor bg = QColor(175,175,175);
     if(DT->user_settings()->value("options/grid/shade_cells",true)==false)
         bg = QColor(255,255,255);
     item->setData(bg,Qt::BackgroundColorRole);
 
-    set_tooltip(d,item, "", false, sort_val);
+    set_tooltip(d,item, "", false);
     s = 0;
 
     return item;

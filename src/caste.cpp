@@ -120,7 +120,8 @@ void Caste::load_skill_rates(){
     if(m_skill_rates.count() <= 0){
         VIRTADDR addr = m_address + m_mem->caste_offset("skill_rates");
         int val;
-        for(int skill_id=0; skill_id < GameDataReader::ptr()->get_total_skill_count(); skill_id++){
+        int skill_count = GameDataReader::ptr()->get_total_skill_count();
+        for(int skill_id=0; skill_id < skill_count; skill_id++){
             val = (int)m_df->read_int(addr);
             m_skill_rates.insert(skill_id, val);
             //a bit of a hack. sets a global variable to let us know if there are castes with significant xp bonuses
@@ -131,6 +132,16 @@ void Caste::load_skill_rates(){
                 if(!m_df->show_skill_rates())
                     m_df->set_show_skill_rates(true);
             }
+
+//if rusting is ever figured out, these values are needed. after the array at "skill_rates" offset
+//there are 3 other arrays of the same length, for unused, rust_counter and the demotion_counter
+//            int unused = m_df->read_int(addr + 0x1d0);
+//            int rust_counter = m_df->read_int(addr + (0x1d0 *2));
+//            int demotion_counter = m_df->read_int(addr + (0x1d0 *3));
+
+//            if(unused != 8 || rust_counter != 16 || demotion_counter != 16) <- wiki is wrong, seems it's 8/16/16, not 8/8/16
+//                int z = 0;
+
             addr += 0x4;
         }
     }
