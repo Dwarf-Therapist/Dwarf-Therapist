@@ -38,6 +38,7 @@ class Trait;
 class MilitaryPreference;
 class Profession;
 class DwarfJob;
+class Thought;
 
 // exceptions
 class MissingValueException : public std::runtime_error {
@@ -71,12 +72,11 @@ public:
     QList<QPair<int, QString> > get_ordered_skills() {return m_ordered_skills;}
     QHash<int, Trait*> get_traits() {return m_traits;}
     QList<QPair<int, Trait*> > get_ordered_traits() {return m_ordered_traits;}
-    QList<QPair<int, Attribute*> > get_ordered_attributes() {return m_ordered_attributes;}
+    QList<QPair<int, QString> > get_ordered_attribute_names() {return m_ordered_attribute_names;}
     QHash<int, MilitaryPreference*> get_military_preferences() {return m_military_preferences;}
     QHash<short, Profession*> get_professions() {return m_professions;}    
     QHash<QString, Role*>& get_roles(){return m_dwarf_roles;}
     QList<QPair<QString, Role*> > get_ordered_roles() {return m_ordered_roles;}
-    QHash<int, Attribute*> get_attributes() {return m_attributes;}
     QVector<QString> get_default_roles() {return m_default_roles;}
     QHash<int,QVector<Role*> > get_skill_roles() {return m_skill_roles;}
 
@@ -88,6 +88,8 @@ public:
     Trait *get_trait(const int &trait_id);
     QString get_trait_name(short trait_id);
 
+    QMap<short, Thought*> get_thoughts(){return m_unit_thoughts;}
+    Thought *get_thought(short id){return m_unit_thoughts.value(id);}
 
     DwarfJob *get_job(const short &job_id);
     MilitaryPreference *get_military_preference(const int &mil_pref_id);
@@ -99,7 +101,7 @@ public:
     void load_optimization_plans();
     void refresh_opt_plans();
 
-    Attribute *get_attribute(int attribute){return m_attributes.value(attribute);}
+    QString get_attribute_name(int id){return m_attribute_names.value(id);}
 
     QString get_string_for_key(QString key);
     Profession* get_profession(const short &profession_id);
@@ -130,7 +132,7 @@ public:
     }
 
     const QVector<int> moodable_skills() {return m_moodable_skills;}
-    const int get_pref_from_skill(int skill_id) {return m_mood_skills_profession_map.value(skill_id);}
+    int get_pref_from_skill(int skill_id) const {return m_mood_skills_profession_map.value(skill_id);}
 
     static QStringList m_seasons;
     static QStringList m_months;
@@ -154,8 +156,10 @@ private:
     QHash<int, QString> m_skill_levels;
 
     QHash<int, int> m_attribute_levels;
-    QHash<int, Attribute*> m_attributes;
-    QList<QPair<int, Attribute*> > m_ordered_attributes;
+//    QHash<int, Attribute*> m_attributes;
+    QHash<int, QString> m_attribute_names;
+//    QList<QPair<int, Attribute*> > m_ordered_attributes;
+    QList<QPair<int,QString> > m_ordered_attribute_names;
 
     QHash<short, DwarfJob*> m_dwarf_jobs;
     QHash<short, Profession*> m_professions;
@@ -176,6 +180,8 @@ private:
 
     QVector<int> m_moodable_skills;
     QMap<int, int> m_mood_skills_profession_map;
+
+    QMap<short, Thought*> m_unit_thoughts;
 
     void load_race_names();
     void load_caste_names();

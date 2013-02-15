@@ -98,7 +98,8 @@ void ImportExportDialog::setup_for_profession_import() {
         CustomProfession *cp = new CustomProfession(DT);
         cp->set_name(s.value("name", "UNKNOWN").toString());
         cp->set_path(s.value(QString("icon_id"),99).toInt());
-        cp->set_color(s.value("text_color", Qt::black).value<QColor>());
+        cp->set_font_color(s.value("text_color", Qt::black).value<QColor>());
+        cp->set_bg_color(s.value("bg_color", Qt::black).value<QColor>());
         cp->set_text(s.value("text", "").toString());
         int labor_cnt = s.beginReadArray("labors");
         for(int j = 0; j < labor_cnt; ++j) {
@@ -319,7 +320,8 @@ void ImportExportDialog::export_selected_professions() {
         s.setArrayIndex(i++);
         s.setValue("name", cp->get_name());
         s.setValue("text", cp->get_text());
-        s.setValue("text_color", cp->get_color());
+        s.setValue("text_color", cp->get_font_color());
+        s.setValue("bg_color", cp->get_bg_color());
         s.setValue("is_mask",cp->is_mask());
         s.setValue("icon_id", cp->get_icon_id());
         s.beginWriteArray("labors");

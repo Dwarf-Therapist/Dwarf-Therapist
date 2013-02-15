@@ -53,7 +53,7 @@ FlagColumn::FlagColumn(const FlagColumn &to_copy)
 QStandardItem *FlagColumn::build_cell(Dwarf *d) {
         QStandardItem *item = init_cell(d);
 
-        item->setData(CT_FLAGS, DwarfModel::DR_COL_TYPE);
+        item->setData(CT_FLAGS, DwarfModel::DR_COL_TYPE);        
         short rating = 0;
         if (m_bit_value)
             rating = 1;

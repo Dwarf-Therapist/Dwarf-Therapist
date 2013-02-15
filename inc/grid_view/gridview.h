@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include <QtGui>
 
 class ViewColumnSet;
+class ViewColumn;
 class ViewManager;
 class GridViewDialog;
 
@@ -67,6 +68,7 @@ public:
 	bool is_active() {return m_active;}
 	void set_active(bool active) {m_active = active;}
 	ViewColumnSet *get_set(const QString &name);
+    ViewColumn *get_column(const int idx);
 	ViewColumnSet *get_set(int offset) {return m_sets.at(offset);}
 	void set_is_custom(bool is_custom) {m_is_custom = is_custom;}
 	bool is_custom() {return m_is_custom;}

@@ -31,8 +31,17 @@
   </property>
   <widget class="QWidget" name="main_widget">
    <layout class="QVBoxLayout" name="v_box">
+    <property name="spacing">
+     <number>9</number>
+    </property>
+    <property name="margin">
+     <number>9</number>
+    </property>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="spacing">
+       <number>6</number>
+      </property>
       <item>
        <widget class="QLabel" name="lbl_group_by">
         <property name="text">
@@ -47,6 +56,12 @@
        <widget class="QComboBox" name="cb_group_by">
         <property name="enabled">
          <bool>false</bool>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
         </property>
         <property name="toolTip">
          <string>Change how dwarves are grouped in the table</string>
@@ -146,6 +161,9 @@
         <property name="text">
          <string>Dwarfs</string>
         </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
        </widget>
       </item>
       <item>
@@ -203,13 +221,16 @@
     <addaction name="act_import_saved_custom_professions"/>
     <addaction name="separator"/>
     <addaction name="act_export_csv"/>
+    <addaction name="separator"/>
     <addaction name="act_export_gridviews"/>
     <addaction name="act_import_saved_gridviews"/>
+    <addaction name="separator"/>
     <addaction name="act_print"/>
     <addaction name="separator"/>
     <addaction name="act_clear_user_settings"/>
     <addaction name="separator"/>
     <addaction name="act_options"/>
+    <addaction name="separator"/>
     <addaction name="act_exit"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
@@ -233,6 +254,10 @@
     <widget class="QMenu" name="menu_docks">
      <property name="title">
       <string>Docks</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../images.qrc">
+       <normaloff>:/img/ui-layered-pane.png</normaloff>:/img/ui-layered-pane.png</iconset>
      </property>
     </widget>
     <addaction name="menu_docks"/>
@@ -352,6 +377,7 @@
    <addaction name="separator"/>
    <addaction name="act_options"/>
    <addaction name="act_exit"/>
+   <addaction name="separator"/>
    <addaction name="act_scan_memory"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -402,7 +428,7 @@
          </property>
          <property name="icon">
           <iconset resource="../images.qrc">
-           <normaloff>:/img/arrow_out.png</normaloff>:/img/arrow_out.png</iconset>
+           <normaloff>:/img/arrow-out.png</normaloff>:/img/arrow-out.png</iconset>
          </property>
         </widget>
        </item>
@@ -413,7 +439,7 @@
          </property>
          <property name="icon">
           <iconset resource="../images.qrc">
-           <normaloff>:/img/arrow_in.png</normaloff>:/img/arrow_in.png</iconset>
+           <normaloff>:/img/arrow-in.png</normaloff>:/img/arrow-in.png</iconset>
          </property>
         </widget>
        </item>
@@ -431,7 +457,7 @@
          </property>
          <property name="icon">
           <iconset resource="../images.qrc">
-           <normaloff>:/img/table_go.png</normaloff>:/img/table_go.png</iconset>
+           <normaloff>:/img/table--arrow.png</normaloff>:/img/table--arrow.png</iconset>
          </property>
         </widget>
        </item>
@@ -445,7 +471,7 @@
          </property>
          <property name="icon">
           <iconset resource="../images.qrc">
-           <normaloff>:/img/table_delete.png</normaloff>:/img/table_delete.png</iconset>
+           <normaloff>:/img/table--minus.png</normaloff>:/img/table--minus.png</iconset>
          </property>
         </widget>
        </item>
@@ -456,7 +482,7 @@
   </widget>
   <widget class="QDockWidget" name="dock_custom_professions">
    <property name="windowTitle">
-    <string>Custom Professions</string>
+    <string>Custom Professions &amp; Icons</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
@@ -464,21 +490,33 @@
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
-      <widget class="QListWidget" name="list_custom_professions">
-       <property name="font">
-        <font>
-         <pointsize>8</pointsize>
-        </font>
-       </property>
+      <widget class="QTreeWidget" name="tree_custom_professions">
        <property name="contextMenuPolicy">
         <enum>Qt::CustomContextMenu</enum>
        </property>
-       <property name="editTriggers">
-        <set>QAbstractItemView::NoEditTriggers</set>
+       <property name="showDropIndicator" stdset="0">
+        <bool>false</bool>
        </property>
        <property name="alternatingRowColors">
         <bool>true</bool>
        </property>
+       <property name="indentation">
+        <number>5</number>
+       </property>
+       <property name="uniformRowHeights">
+        <bool>false</bool>
+       </property>
+       <property name="sortingEnabled">
+        <bool>true</bool>
+       </property>
+       <attribute name="headerVisible">
+        <bool>false</bool>
+       </attribute>
+       <column>
+        <property name="text">
+         <string notr="true">1</string>
+        </property>
+       </column>
       </widget>
      </item>
      <item>
@@ -488,7 +526,7 @@
        </property>
        <property name="icon">
         <iconset resource="../images.qrc">
-         <normaloff>:/img/page_white_add.png</normaloff>:/img/page_white_add.png</iconset>
+         <normaloff>:/img/document--plus.png</normaloff>:/img/document--plus.png</iconset>
        </property>
       </widget>
      </item>
@@ -516,7 +554,7 @@
   <action name="act_exit">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/door_out.png</normaloff>:/img/door_out.png</iconset>
+     <normaloff>:/img/cross.png</normaloff>:/img/cross.png</iconset>
    </property>
    <property name="text">
     <string>E&amp;xit</string>
@@ -531,7 +569,7 @@
   <action name="act_about">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/tag_blue.png</normaloff>:/img/tag_blue.png</iconset>
+     <normaloff>:/img/question-frame.png</normaloff>:/img/question-frame.png</iconset>
    </property>
    <property name="text">
     <string>&amp;About</string>
@@ -543,7 +581,7 @@
   <action name="act_read_dwarves">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/drive_go.png</normaloff>:/img/drive_go.png</iconset>
+     <normaloff>:/img/refresh.png</normaloff>:/img/refresh.png</iconset>
    </property>
    <property name="text">
     <string>Read Dwarves</string>
@@ -552,10 +590,10 @@
     <string>Read Dwarves</string>
    </property>
    <property name="toolTip">
-    <string>Attempt to load all Dwarves from DF</string>
+    <string>Attempt to load all Dwarves from DF (CTRL+R)</string>
    </property>
    <property name="statusTip">
-    <string>Attempt to load all Dwarves from DF</string>
+    <string>Attempt to load all Dwarves from DF (CTRL+R)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
@@ -564,7 +602,7 @@
   <action name="act_scan_memory">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/drive_magnify.png</normaloff>:/img/drive_magnify.png</iconset>
+     <normaloff>:/img/memory-scan.png</normaloff>:/img/memory-scan.png</iconset>
    </property>
    <property name="text">
     <string>Scan Memory</string>
@@ -585,7 +623,7 @@
    </property>
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/arrow_out.png</normaloff>:/img/arrow_out.png</iconset>
+     <normaloff>:/img/arrow-out.png</normaloff>:/img/arrow-out.png</iconset>
    </property>
    <property name="text">
     <string>Expand All</string>
@@ -603,7 +641,7 @@
    </property>
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/arrow_in.png</normaloff>:/img/arrow_in.png</iconset>
+     <normaloff>:/img/arrow-in.png</normaloff>:/img/arrow-in.png</iconset>
    </property>
    <property name="text">
     <string>Collapse All</string>
@@ -630,7 +668,7 @@
    </property>
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/table_delete.png</normaloff>:/img/table_delete.png</iconset>
+     <normaloff>:/img/table--minus.png</normaloff>:/img/table--minus.png</iconset>
    </property>
    <property name="text">
     <string> C&amp;lear </string>
@@ -639,7 +677,16 @@
     <string> C&amp;lear </string>
    </property>
    <property name="toolTip">
-    <string>Abort all uncomitted changes</string>
+    <string>Abort all uncomitted changes (CTRL+E)</string>
+   </property>
+   <property name="statusTip">
+    <string>Abort all uncomitted changes (CTRL+E)</string>
+   </property>
+   <property name="whatsThis">
+    <string>Abort all uncomitted changes (CTRL+E)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
    </property>
   </action>
   <action name="act_commit_pending_changes">
@@ -648,7 +695,7 @@
    </property>
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/table_go.png</normaloff>:/img/table_go.png</iconset>
+     <normaloff>:/img/table--arrow.png</normaloff>:/img/table--arrow.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Commit</string>
@@ -657,25 +704,43 @@
     <string> &amp;Commit </string>
    </property>
    <property name="toolTip">
-    <string>Write all uncomitted changes to DF</string>
+    <string>Write all uncomitted changes to DF (CTRL+T)</string>
+   </property>
+   <property name="statusTip">
+    <string>Write all uncomitted changes to DF (CTRL+T)</string>
+   </property>
+   <property name="whatsThis">
+    <string>Write all uncomitted changes to DF (CTRL+T)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
    </property>
   </action>
   <action name="act_options">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/color_wheel.png</normaloff>:/img/color_wheel.png</iconset>
+     <normaloff>:/img/wrench-screwdriver.png</normaloff>:/img/wrench-screwdriver.png</iconset>
    </property>
    <property name="text">
-    <string>Options...</string>
+    <string>O&amp;ptions...</string>
    </property>
    <property name="toolTip">
-    <string>Open the options menu...</string>
+    <string>Open the options menu (CTRL+P)</string>
+   </property>
+   <property name="statusTip">
+    <string>Open the options menu (CTRL+P)</string>
+   </property>
+   <property name="whatsThis">
+    <string>Open the options menu (CTRL+P)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
    </property>
   </action>
   <action name="act_import_existing_professions">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/application_get.png</normaloff>:/img/application_get.png</iconset>
+     <normaloff>:/img/application-import.png</normaloff>:/img/application-import.png</iconset>
    </property>
    <property name="text">
     <string>Import Professions from DF</string>
@@ -687,7 +752,7 @@
   <action name="act_go_forums">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/world_go.png</normaloff>:/img/world_go.png</iconset>
+     <normaloff>:/img/globe--arrow.png</normaloff>:/img/globe--arrow.png</iconset>
    </property>
    <property name="text">
     <string>Discussion Forums</string>
@@ -699,7 +764,7 @@
   <action name="act_go_project_home">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/world_go.png</normaloff>:/img/world_go.png</iconset>
+     <normaloff>:/img/globe--arrow.png</normaloff>:/img/globe--arrow.png</iconset>
    </property>
    <property name="text">
     <string>Project Homepage</string>
@@ -711,7 +776,7 @@
   <action name="act_go_new_issue">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/world_go.png</normaloff>:/img/world_go.png</iconset>
+     <normaloff>:/img/globe--arrow.png</normaloff>:/img/globe--arrow.png</iconset>
    </property>
    <property name="text">
     <string>Request Feature / Report Bug</string>
@@ -762,7 +827,7 @@
    </property>
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/disk.png</normaloff>:/img/disk.png</iconset>
+     <normaloff>:/img/document-export.png</normaloff>:/img/document-export.png</iconset>
    </property>
    <property name="text">
     <string>Export Custom Professions...</string>
@@ -774,7 +839,7 @@
   <action name="act_import_saved_custom_professions">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/folder_page.png</normaloff>:/img/folder_page.png</iconset>
+     <normaloff>:/img/document-import.png</normaloff>:/img/document-import.png</iconset>
    </property>
    <property name="text">
     <string>Import Saved Custom Professions...</string>
@@ -786,10 +851,10 @@
   <action name="act_import_saved_gridviews">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/folder_page.png</normaloff>:/img/folder_page.png</iconset>
+     <normaloff>:/img/table-import.png</normaloff>:/img/table-import.png</iconset>
    </property>
    <property name="text">
-    <string>Import Saved Grid Views...</string>
+    <string>Import Grid Views...</string>
    </property>
    <property name="toolTip">
     <string>Import Grid Views from file</string>
@@ -798,7 +863,7 @@
   <action name="act_export_gridviews">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/disk.png</normaloff>:/img/disk.png</iconset>
+     <normaloff>:/img/table-export.png</normaloff>:/img/table-export.png</iconset>
    </property>
    <property name="text">
     <string>Export Grid Views...</string>
@@ -852,7 +917,7 @@
   <action name="act_clear_user_settings">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/table_delete.png</normaloff>:/img/table_delete.png</iconset>
+     <normaloff>:/status/img/broom.png</normaloff>:/status/img/broom.png</iconset>
    </property>
    <property name="text">
     <string>Clear User Settings...</string>
@@ -885,7 +950,7 @@
   <action name="act_export_csv">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/table_go.png</normaloff>:/img/table_go.png</iconset>
+     <normaloff>:/img/document-excel-csv.png</normaloff>:/img/document-excel-csv.png</iconset>
    </property>
    <property name="text">
     <string>Export Current Grid View as CSV</string>
@@ -898,7 +963,6 @@
   <tabstop>le_filter_text</tabstop>
   <tabstop>btn_clear_filter</tabstop>
   <tabstop>tree_pending</tabstop>
-  <tabstop>list_custom_professions</tabstop>
   <tabstop>btn_expand_all_pending</tabstop>
   <tabstop>btn_collapse_all_pending</tabstop>
   <tabstop>btn_commit</tabstop>

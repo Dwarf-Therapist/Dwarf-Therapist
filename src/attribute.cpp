@@ -23,58 +23,78 @@ THE SOFTWARE.
 
 #include "attribute.h"
 #include "dwarfstats.h"
+#include "dwarftherapist.h"
+#include "gamedatareader.h"
 
-Attribute::Attribute(QSettings &s, QObject *parent)
-        : QObject(parent)
-        , name(s.value("name", "UNKNOWN ATTRIBUTE").toString())
-        , id(s.value("id",0).toInt())        
+QHash<int, QVector<QString> > Attribute::m_display_descriptions;
+
+Attribute::Attribute()
+    : m_id(-1)
+    , m_value(0)
+    , m_max(0)
+    , m_rating_potential(-1)
+    , m_rating(-1)
+    , m_cti(0)
+    , m_descriptor("")
+    , m_descriptor_index(0)
 {
-    int levels = s.beginReadArray("levels");
-    for (int i = 0; i < levels; ++i) {
-        s.setArrayIndex(i);
-        m_display_descriptions.append(s.value("level_name").toString());
-    }
-    s.endArray();
-
-    //load bins for roles
-    load_role_bin(id);
 }
 
-void Attribute::load_role_bin(int id)
-{    
-    //these are still based on the default dwarf raws for now. because these bins are exclusively used for roles
-    //we DONT want to use caste information, as we want to compare all dwarfs to each other when generating role
-    //ratings, rather than comparing them to those in the same caste (obviously this mostly affects mods)
-    QList<int> raws;
-    //-
-    if(id==AT_AGILITY)
-    {
-        raws << 150 << 600 << 800 << 900 << 1000 << 1100 << 1500 << 5000;        
-        m_aspect_type = negative;
-    }
-    //avg
-    if (id==AT_ENDURANCE || id==AT_RECUPERATION || id==AT_DISEASE_RESISTANCE ||
-            id==AT_INTUITION || id==AT_WILLPOWER || id==AT_KINESTHETIC_SENSE ||
-            id==AT_LINGUISTIC_ABILITY || id==AT_MUSICALITY || id==AT_EMPATHY ||
-            id==AT_SOCIAL_AWARENESS)
-    {
-        raws << 200 << 700 << 900 << 1000 << 1100 << 1300 << 2000 << 5000;
-        m_aspect_type = average;
+Attribute::Attribute(int id, int value, int max, int cost_to_improve, int desc_index, QString desc)
+        : m_id(id)
+        , m_value(value)
+        , m_max(max)
+        , m_rating_potential(-1)
+        , m_rating(-1)
+        , m_cti(cost_to_improve)
+        , m_descriptor(desc)
+        , m_descriptor_index(desc_index)
+{
+}
 
+QString Attribute::find_descriptor(ATTRIBUTES_TYPE id, int index){
+    QString desc = "";
+    QVector<QString> descriptions = m_display_descriptions.value(id);
+    if(descriptions.count() > 0){
+        if(index < 0)
+             index = descriptions.count()-1;
+        desc = descriptions.at(index);
     }
-    //+
-    if (id==AT_STRENGTH || id==AT_TOUGHNESS || id==AT_ANALYTICAL_ABILITY ||
-            id==AT_CREATIVITY || id==AT_PATIENCE || id==AT_MEMORY)
-    {
-        raws << 450 << 950 << 1150 << 1250 << 1350 << 1550 << 2250 << 5000;
-        m_aspect_type = positive;
-    }
-    //++
-    if( id==AT_SPATIAL_SENSE || id==AT_FOCUS)
-    {
-        raws << 700 << 1200 << 1400 << 1500 << 1600 << 1800 << 2500 << 5000;
-        m_aspect_type = double_positive;
-    }
+    return desc;
+}
 
-    DwarfStats::load_attribute_bins(m_aspect_type, raws);
+QString Attribute::get_name(){
+    return GameDataReader::ptr()->get_attribute_name(m_id);
+}
+
+QString Attribute::get_value_display(){
+    return QString("%1/%2").arg(m_value,0,10).arg(m_max,0,10);
+}
+
+void Attribute::set_rating(float rating, bool potential){
+    if(potential)
+        m_rating_potential = rating;
+    else
+        m_rating = rating;
+}
+
+
+void Attribute::load_attribute_descriptors(QSettings &s){
+    if(m_display_descriptions.count() <= 0){
+        int attributes = s.beginReadArray("attributes");
+        int levels = 0;
+        for(int i = 0; i < attributes; ++i) {
+            QVector<QString> descriptors;
+            s.setArrayIndex(i);
+            int id = s.value("id",0).toInt();
+            levels = s.beginReadArray("levels");
+            for (int j = 0; j < levels; j++) {
+                s.setArrayIndex(j);
+                descriptors.append(s.value("level_name").toString());
+            }
+            s.endArray();
+            m_display_descriptions.insert(id,descriptors);
+        }
+        s.endArray();
+    }
 }

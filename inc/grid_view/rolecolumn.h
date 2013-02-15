@@ -37,7 +37,8 @@ public:
     RoleColumn(const QString &title, Role *r, ViewColumnSet *set = 0, QObject *parent = 0);
     RoleColumn(QSettings &s, ViewColumnSet *set, QObject *parent);
     RoleColumn(const RoleColumn &to_copy); // copy ctor
-    RoleColumn* clone() {return new RoleColumn(*this);}    
+    RoleColumn* clone() {return new RoleColumn(*this);}
+    virtual ~RoleColumn();
     QStandardItem *build_cell(Dwarf *d);
     QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 

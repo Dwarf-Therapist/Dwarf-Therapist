@@ -367,19 +367,19 @@ void roleDialog::draw_attribute_context_menu(const QPoint &p) {
     QMenu *m = new QMenu("Add Attribute",this);
     QModelIndex idx = ui->tw_attributes->indexAt(p);
     if (idx.isValid()) { // context on a row
-        m->addAction(QIcon(":img/delete.png"), tr("Remove Selected"), this, SLOT(remove_attribute()));
+        m->addAction(QIcon(":img/minus-circle.png"), tr("Remove Selected"), this, SLOT(remove_attribute()));
         m->addSeparator();
     }
     QAction *a;
     GameDataReader *gdr = GameDataReader::ptr();
 
-    QList<QPair<int, Attribute*> > atts = gdr->get_ordered_attributes();
-    QPair<int, Attribute*> att_pair;
+    QList<QPair<int, QString> > atts = gdr->get_ordered_attribute_names();
+    QPair<int, QString> att_pair;
     foreach(att_pair, atts){
-        if(!m_role->attributes.contains(att_pair.second->name.toLatin1().toLower())){
-            a = m->addAction(tr(att_pair.second->name.toLatin1()), this, SLOT(add_attribute()));
-            a->setData(att_pair.second->name.toLatin1());
-            a->setToolTip(tr("Include %1 as an aspect for this role.").arg(att_pair.second->name));
+        if(!m_role->attributes.contains(att_pair.second.toLatin1().toLower())){
+            a = m->addAction(tr(att_pair.second.toLatin1()), this, SLOT(add_attribute()));
+            a->setData(att_pair.second.toLatin1());
+            a->setToolTip(tr("Include %1 as an aspect for this role.").arg(att_pair.second));
         }
     }
 
@@ -406,7 +406,7 @@ void roleDialog::draw_skill_context_menu(const QPoint &p) {
     QMenu *m = new QMenu("Add Skill",this);
     QModelIndex idx = ui->tw_skills->indexAt(p);
     if (idx.isValid()) { // context on a row
-        m->addAction(QIcon(":img/delete.png"), tr("Remove Selected"), this, SLOT(remove_skill()));
+        m->addAction(QIcon(":img/minus-circle.png"), tr("Remove Selected"), this, SLOT(remove_skill()));
         m->addSeparator();
     }
     QAction *a;
@@ -452,7 +452,7 @@ void roleDialog::draw_trait_context_menu(const QPoint &p) {
     QMenu *m = new QMenu("Add Trait",this);
     QModelIndex idx = ui->tw_traits->indexAt(p);
     if (idx.isValid()) { // context on a row
-        m->addAction(QIcon(":img/delete.png"), tr("Remove Selected"), this, SLOT(remove_trait()));
+        m->addAction(QIcon(":img/minus-circle.png"), tr("Remove Selected"), this, SLOT(remove_trait()));
         m->addSeparator();
     }
     QAction *a;
@@ -491,7 +491,7 @@ void roleDialog::draw_prefs_context_menu(const QPoint &p) {
     QMenu *m = new QMenu("",this);
     QModelIndex idx = ui->tw_prefs->indexAt(p);
     if (idx.isValid()) { // context on a row
-        m->addAction(QIcon(":img/delete.png"), tr("Remove Selected"), this, SLOT(remove_pref()));
+        m->addAction(QIcon(":img/minus-circle.png"), tr("Remove Selected"), this, SLOT(remove_pref()));
         m->addSeparator();
     }
     m->exec(ui->tw_prefs->viewport()->mapToGlobal(p));
@@ -656,9 +656,9 @@ void roleDialog::load_material_prefs(QVector<Material*> mats, QString prefix_nam
             }
         }
 
-        if(parent && !m->flags()->no_flags() && !m->flags()->has_flag(BLOOD_MAP_DESCRIPTOR) && !m->flags()->has_flag(ICHOR_MAP_DESCRIPTOR) &&
-                !m->flags()->has_flag(GOO_MAP_DESCRIPTOR) && !m->flags()->has_flag(SLIME_MAP_DESCRIPTOR) &&
-                !m->flags()->has_flag(PUS_MAP_DESCRIPTOR) && !m->flags()->has_flag(ENTERS_BLOOD)){
+        if(parent && !m->flags().no_flags() && !m->flags().has_flag(BLOOD_MAP_DESCRIPTOR) && !m->flags().has_flag(ICHOR_MAP_DESCRIPTOR) &&
+                !m->flags().has_flag(GOO_MAP_DESCRIPTOR) && !m->flags().has_flag(SLIME_MAP_DESCRIPTOR) &&
+                !m->flags().has_flag(PUS_MAP_DESCRIPTOR) && !m->flags().has_flag(ENTERS_BLOOD)){
 
             p->set_category(pType);
             p->set_name(capitalize(name));
@@ -678,12 +678,12 @@ void roleDialog::load_plant_prefs(QVector<Plant*> plants){
     foreach(Plant *p, plants){
         name = capitalize(p->name_plural());
 
-        if(p->flags()->has_flag(7)){
+        if(p->flags().has_flag(7)){
             Preference *alcohol_pref = new Preference(LIKE_PLANT,name,this);
             alcohol_pref->add_flag(7);
             add_pref_to_tree(m_plants_alcohol,alcohol_pref);
         }
-        else if(p->flags()->has_flag(77) || p->flags()->has_flag(78)){
+        else if(p->flags().has_flag(77) || p->flags().has_flag(78)){
             Preference *tree_pref = new Preference(LIKE_TREE,name,this);
             add_pref_to_tree(m_trees,tree_pref);
         }else{
@@ -799,11 +799,11 @@ void roleDialog::load_creatures(){
 
         p = new Preference(LIKE_CREATURE, capitalize(r->name()),this);
 
-        if(r->flags()->has_flag(HATEABLE)){ //hateable creature flag
+        if(r->flags().has_flag(HATEABLE)){ //hateable creature flag
             parent = m_hateable;
             p->add_flag(HATEABLE);
         }
-        if(r->flags()->has_flag(VERMIN_FISH)){
+        if(r->flags().has_flag(VERMIN_FISH)){
             p->add_flag(VERMIN_FISH);
         }
         if(r->is_trainable()){
@@ -981,7 +981,7 @@ void roleDialog::add_pref_to_tree(QTreeWidgetItem *parent, Preference *p){
 }
 
 bool roleDialog::check_flag(Material *m, Preference *p, MATERIAL_FLAGS flag){
-    if(m->flags()->has_flag((int)flag)){
+    if(m->flags().has_flag((int)flag)){
         p->add_flag((int)flag);
         return true;
     }else{

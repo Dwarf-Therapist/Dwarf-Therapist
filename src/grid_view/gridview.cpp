@@ -88,6 +88,17 @@ ViewColumnSet *GridView::get_set(const QString &name) {
     return ret_val;
 }
 
+ViewColumn *GridView::get_column(const int idx){
+    int min = 0;
+    foreach(ViewColumnSet *set, m_sets){
+        if(idx <= (min + set->columns().count())){
+            return set->column_at(idx - min -1);
+        }
+        min += set->columns().count();
+    }
+    return 0;
+}
+
 void GridView::write_to_ini(QSettings &s) {
     s.setValue("name", m_name);
     s.setValue("active", m_active);

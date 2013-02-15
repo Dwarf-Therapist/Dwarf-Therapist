@@ -24,7 +24,6 @@ THE SOFTWARE.
 #define DWARF_MODEL_PROXY_H
 
 #include <QtGui>
-//#include "dwarf.h"
 
 class Dwarf;
 class DwarfModel;
@@ -33,28 +32,31 @@ class QScriptEngine;
 class DwarfModelProxy: public QSortFilterProxyModel {
     Q_OBJECT
 public:
+    //these roles are for the right click sorting of the name column
     typedef enum {
         DSR_NAME_ASC = 0,
         DSR_NAME_DESC,
         DSR_ID_ASC,
         DSR_ID_DESC,
-        DSR_GAME_ORDER
+        DSR_AGE_ASC,
+        DSR_AGE_DESC,
+        DSR_DEFAULT
     } DWARF_SORT_ROLE;
 
     DwarfModelProxy(QObject *parent = 0);
     DwarfModel* get_dwarf_model() const;
-    void sort(int column, Qt::SortOrder order);
-    Qt::SortOrder m_last_sort_order;
+    void sort(int column, Qt::SortOrder order);    
+    Qt::SortOrder m_last_sort_order;    
     QString current_script() {return m_active_filter_script;}
-    QString pref_script() {return m_pref_script;}
-    void set_pref_script(QString script) {m_pref_script = script;}
+    QString secondary_script() {return m_secondary_script;}
+    void set_secondary_script(QString script) {m_secondary_script = script;}
     void refresh_script();
     QList<Dwarf*> get_filtered_dwarves();
 
 public slots:
     void cell_activated(const QModelIndex &idx);    
     void setFilterFixedString(const QString &pattern);
-    void sort(int, DwarfModelProxy::DWARF_SORT_ROLE);
+    void sort(int, DwarfModelProxy::DWARF_SORT_ROLE, Qt::SortOrder order);
     void apply_script(const QString &script_body);
 
 signals:
@@ -67,7 +69,7 @@ private:
 	QString m_filter_text;
     QScriptEngine *m_engine;
     QString m_active_filter_script;
-    QString m_pref_script;    
+    QString m_secondary_script;
 };
 
 #endif

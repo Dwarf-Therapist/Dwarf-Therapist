@@ -77,16 +77,16 @@ void GridViewDock::draw_list_context_menu(const QPoint &pos) {
     QMenu m(this);
     if (gv) {
         if (gv->is_custom())
-            m.addAction(QIcon(":/img/application_edit.png"), tr("Edit..."),
+            m.addAction(QIcon(":/img/pencil.png"), tr("Edit..."),
                         this, SLOT(edit_view()));
         m.addAction(QIcon(":/img/page_copy.png"), tr("Copy..."),
                     this, SLOT(copy_view()));
         if (gv->is_custom()) {
-            m.addAction(QIcon(":/img/table_delete.png"), tr("Delete..."),
+            m.addAction(QIcon(":/img/table--minus.png"), tr("Delete..."),
                         this, SLOT(delete_view()));
         }
     } else { // whitespace
-        m.addAction(QIcon(":img/table_add.png"), tr("Add New GridView"),
+        m.addAction(QIcon(":img/table--plus.png"), tr("Add New GridView"),
                     this, SLOT(add_new_view()));
     }
     m.exec(ui->list_views->mapToGlobal(pos));

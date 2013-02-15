@@ -32,7 +32,7 @@ Preference::Preference(QObject *parent)
     ,m_name("")
     ,m_pType(LIKES_NONE)
     ,m_iType(NONE)
-    ,m_mat(0)
+    ,m_material_flags()
     ,m_exact_match(false)
 {}
 
@@ -42,17 +42,7 @@ Preference::Preference(PREF_TYPES category, ITEM_TYPE iType, QObject *parent)
     ,m_name("")
     ,m_pType(category)
     ,m_iType(iType)
-    ,m_mat(0)
-    ,m_exact_match(false)
-{}
-
-Preference::Preference(PREF_TYPES category, Material *m, QObject *parent)
-    :QObject(parent)
-    ,pref_aspect(new RoleAspect())
-    ,m_name("")
-    ,m_pType(category)
-    ,m_iType(NONE)
-    ,m_mat(m)
+    ,m_material_flags()
     ,m_exact_match(false)
 {}
 
@@ -62,19 +52,18 @@ Preference::Preference(PREF_TYPES category, QString name, QObject *parent)
     ,m_name(name)
     ,m_pType(category)
     ,m_iType(NONE)
-    ,m_mat(0)
+    ,m_material_flags()
     ,m_exact_match(false)
 {}
 
 Preference::~Preference(){
     delete(pref_aspect);
-    pref_aspect = 0;
-    m_mat = 0;
+    pref_aspect = 0;    
 }
 
 void Preference::add_flag(int flag){
-    if(!m_flags.contains(flag))
-        m_flags.append(flag);
+    if(!m_special_flags.contains(flag))
+        m_special_flags.append(flag);
 }
 
 int Preference::matches(Preference *role_pref){
@@ -88,27 +77,37 @@ int Preference::matches(Preference *role_pref){
         }
 
         //compare any other flags ie. weapon melee/ranged flags
-        if(role_pref->get_flags().count() > 0){
+        if(role_pref->special_flags().count() > 0){
             if(result==1)
                 result = 0; //reset to 0, only match on these flags
-            foreach(int f, role_pref->get_flags()){
-                if(m_flags.contains(f)){
+            foreach(int f, role_pref->special_flags()){
+                if(m_special_flags.contains(f)){
                     result = 1;
                 }
             }
         }
 
         //compare material flags
-        if(m_mat){
+        if(!m_material_flags.no_flags()){
             if(result == 0) //no match yet, so assume we'll get a match here unless a flag fails
                 result = 1;
-            foreach(int f, role_pref->get_flags()){
-                if(!m_mat->flags()->has_flag(f)){
+            foreach(int f, role_pref->special_flags()){
+                if(!m_material_flags.has_flag(f)){
                     result = 0;
                     break;
                 }
             }
         }
+//        if(m_mat){
+//            if(result == 0) //no match yet, so assume we'll get a match here unless a flag fails
+//                result = 1;
+//            foreach(int f, role_pref->special_flags()){
+//                if(!m_mat->flags().has_flag(f)){
+//                    result = 0;
+//                    break;
+//                }
+//            }
+//        }
 
         if(role_pref->exact_match())
             result = 0;

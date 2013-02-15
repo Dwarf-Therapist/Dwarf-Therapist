@@ -68,7 +68,7 @@
       </property>
       <property name="icon">
        <iconset resource="../images.qrc">
-        <normaloff>:/img/table_add.png</normaloff>:/img/table_add.png</iconset>
+        <normaloff>:/img/table--plus.png</normaloff>:/img/table--plus.png</iconset>
       </property>
      </widget>
     </item>

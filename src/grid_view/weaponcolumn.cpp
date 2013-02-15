@@ -42,21 +42,24 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     if(!m_weapon || m_weapon->name_plural()==""){
         item->setData(CT_WEAPON, DwarfModel::DR_COL_TYPE);
         item->setData(0, DwarfModel::DR_RATING);
+        item->setData(0, DwarfModel::DR_DISPLAY_RATING);
         item->setToolTip("Weapon not found.");
         return item;
     }
     if(d->body_size() < 0){
         item->setData(CT_WEAPON, DwarfModel::DR_COL_TYPE);
         item->setData(0, DwarfModel::DR_RATING);
+        item->setData(0, DwarfModel::DR_DISPLAY_RATING);
         item->setToolTip("Missing body_size offset!");
         return item;
     }
 
     QString wep = m_weapon->group_name.toLower();
     if(wep.indexOf(",")>0)
-        wep = "these weapons";
-    short draw_rating = -2;
-    short rating = 1;
+        wep = tr("these weapons");
+    float rating = 40; //values for 49-51 aren't shown for this column, this is the smallest red square we can get
+    QString numeric_rating = "/";
+    short sort_val = 1;
     int body_size = d->body_size();
     bool onehand = false;
     bool twohand = false;        
@@ -69,13 +72,15 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     //setup drawing ratings
     if(!onehand && !twohand){
         desc = tr("<b>Cannot wield</b> %1.").arg(wep);
-        draw_rating = -6;
-        rating = 0;
+        rating = 25; //this will give us a medium red square as the further from the median the larger the square gets
+        numeric_rating = "X";
+        sort_val = 0;
     }
     else if (twohand && onehand){
         desc = tr("<b>Can wield</b> %1 with one or two hands.").arg(wep);
-        draw_rating = 0;
-        rating = 2;
+        rating = 50; //again 49-51 are not drawn, so any value in there to draw nothing
+        numeric_rating = "";
+        sort_val = 2;
     }
 
     QString group_name = "";
@@ -99,8 +104,9 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
         desc.append("<br><br>");
 
     item->setData(CT_WEAPON, DwarfModel::DR_COL_TYPE);
-    item->setData(draw_rating, DwarfModel::DR_RATING);
-    item->setData((rating * 100) + d->body_size(), DwarfModel::DR_SORT_VALUE);
+    item->setData(rating, DwarfModel::DR_RATING);
+    item->setData(numeric_rating, DwarfModel::DR_DISPLAY_RATING);
+    item->setData((sort_val * 100) + d->body_size(), DwarfModel::DR_SORT_VALUE);
 
     QPalette tt;
     QColor norm_text = tt.toolTipText().color();

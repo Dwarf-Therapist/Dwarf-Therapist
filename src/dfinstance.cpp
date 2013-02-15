@@ -76,8 +76,10 @@ DFInstance::DFInstance(QObject* parent)
     , m_scan_speed_timer(new QTimer(this))
     , m_dwarf_race_id(0)
     , m_dwarf_civ_id(0)
+    , m_languages(0x0)
     , m_fortress(0x0)
-    , m_show_skill_rates(false)
+    , m_fortress_name("Unknown")
+    , m_fortress_name_translated("Unknown")
 {
     connect(m_scan_speed_timer, SIGNAL(timeout()),
             SLOT(calculate_scan_rate()));
@@ -128,6 +130,31 @@ DFInstance::~DFInstance() {
         delete(l);
     }
     m_memory_layouts.clear();
+
+    delete m_languages;
+    delete m_fortress;
+
+    qDeleteAll(m_inorganics_vector);
+    m_inorganics_vector.clear();
+    qDeleteAll(m_base_materials);
+    m_base_materials.clear();
+
+    qDeleteAll(m_reactions);
+    m_reactions.clear();
+    qDeleteAll(m_races);
+    m_races.clear();
+    qDeleteAll(m_weapons);
+    m_weapons.clear();
+    m_ordered_weapons.clear();
+    qDeleteAll(m_plants_vector);
+    m_plants_vector.clear();
+
+    qDeleteAll(m_pref_counts);
+    m_pref_counts.clear();
+
+    m_thought_counts.clear();
+
+    DwarfStats::cleanup();
 }
 
 BYTE DFInstance::read_byte(const VIRTADDR &addr) {
@@ -291,26 +318,69 @@ void DFInstance::load_game_data()
 {
     map_virtual_memory();
     emit progress_message(tr("Loading languages"));
+    if(m_languages){
+        delete m_languages;
+        m_languages = 0;
+    }
     m_languages = Languages::get_languages(this);
 
     emit progress_message(tr("Loading reactions"));
     qDeleteAll(m_reactions);
     m_reactions.clear();
-    QFuture<void> f = QtConcurrent::run(this,&DFInstance::load_reactions);
-    f.waitForFinished();
+    load_reactions();
+
+    emit progress_message(tr("Loading item and material lists"));
+    qDeleteAll(m_plants_vector);
+    m_plants_vector.clear();
+    qDeleteAll(m_inorganics_vector);
+    m_inorganics_vector.clear();
+    qDeleteAll(m_base_materials);
+    m_base_materials.clear();
+    load_main_vectors();
+
+    //load the currently played race before races and castes so we can load additional information for the current race being played
+    VIRTADDR dwarf_race_index = m_layout->address("dwarf_race_index");
+    dwarf_race_index += m_memory_correction;
+    if (!is_valid_address(dwarf_race_index)) {
+        LOGW << "Active Memory Layout" << m_layout->filename() << "("
+                << m_layout->game_version() << ")" << "contains an invalid"
+                << "dwarf_race_index address. Either you are scanning a new "
+                << "DF version or your config files are corrupted.";
+                m_dwarf_race_id = -1;
+    }else{
+        LOGD << "dwarf race index" << hexify(dwarf_race_index) <<
+            hexify(dwarf_race_index - m_memory_correction) << "(UNCORRECTED)";
+
+        // which race id is dwarven?
+        m_dwarf_race_id = read_short(dwarf_race_index);
+        LOGD << "dwarf race:" << hexify(m_dwarf_race_id);
+    }
+
 
     emit progress_message(tr("Loading races and castes"));
     qDeleteAll(m_races);
     m_races.clear();
-    f = QtConcurrent::run(this,&DFInstance::load_races_castes);
-    f.waitForFinished();
-
-    f = QtConcurrent::run(this,&DFInstance::load_main_vectors);
-    f.waitForFinished();
+    load_races_castes();
 
     emit progress_message(tr("Loading weapons"));
-    f = QtConcurrent::run(this,&DFInstance::load_weapons);
-    f.waitForFinished();
+    qDeleteAll(m_weapons);
+    m_weapons.clear();
+    m_ordered_weapons.clear();
+    load_weapons();
+
+    //load the fortress name
+    //fortress name is actually in the world data's site list
+    //we can access a list of the currently active sites and read the name from there
+    VIRTADDR world_data_addr = read_addr(m_memory_correction + m_layout->address("world_data"));
+    QVector<VIRTADDR> sites = enumerate_vector(world_data_addr + m_layout->address("active_sites_vector"));
+    foreach(VIRTADDR site, sites){
+        short t = read_short(site + m_layout->address("world_site_type"));
+        if(t==0){ //player fortress type
+            m_fortress_name = get_language_word(site);
+            m_fortress_name_translated = get_translated_word(site);
+            break;
+        }
+    }
 }
 
 QString DFInstance::get_language_word(VIRTADDR addr){
@@ -330,28 +400,16 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         return dwarves;
     }
 
-    //load the fortress now as we need this data before loading squads and dwarfs
-    if(m_fortress){
-        delete(m_fortress);
-        m_fortress = 0;
-    }
-    m_fortress = FortressEntity::get_entity(this,read_addr(m_memory_correction + m_layout->address("fortress_entity")));
-
     // we're connected, make sure we have good addresses
     VIRTADDR creature_vector = m_layout->address("creature_vector");
     creature_vector += m_memory_correction;
     VIRTADDR active_creature_vector = m_layout->address("active_creature_vector");
     active_creature_vector += m_memory_correction;
-
-    VIRTADDR dwarf_race_index = m_layout->address("dwarf_race_index");
-    dwarf_race_index += m_memory_correction;
     VIRTADDR current_year = m_layout->address("current_year");
     current_year += m_memory_correction;
     VIRTADDR current_year_tick = m_layout->address("cur_year_tick");
     current_year_tick += m_memory_correction;
     m_cur_year_tick = read_int(current_year_tick);
-    VIRTADDR dwarf_civ_index = m_layout->address("dwarf_civ_index");
-    dwarf_civ_index += m_memory_correction;
 
     if (!is_valid_address(creature_vector) || !is_valid_address(active_creature_vector)) {
         LOGW << "Active Memory Layout" << m_layout->filename() << "("
@@ -360,30 +418,39 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
                 << "DF version or your config files are corrupted.";
         return dwarves;
     }
-    if (!is_valid_address(dwarf_race_index)) {
-        LOGW << "Active Memory Layout" << m_layout->filename() << "("
-                << m_layout->game_version() << ")" << "contains an invalid"
-                << "dwarf_race_index address. Either you are scanning a new "
-                << "DF version or your config files are corrupted.";
+    //current race's offset was bad
+    if (m_dwarf_race_id < 0){
         return dwarves;
     }
+
+    //load the fortress historical entity
+    if(m_fortress){
+        delete(m_fortress);
+        m_fortress = 0;
+    }
+    VIRTADDR addr_fortress = m_memory_correction + m_layout->address("fortress_entity");
+    if (!is_valid_address(addr_fortress)) {
+        LOGW << "Active Memory Layout" << m_layout->filename() << "("
+                << m_layout->game_version() << ")" << "contains an invalid"
+                << "fortress identity address. Either you are scanning a new "
+                << "DF version or your config files are corrupted.";
+        return dwarves;
+    }    
+    m_fortress = FortressEntity::get_entity(this,read_addr(addr_fortress));    
+
+    VIRTADDR dwarf_civ_index = m_layout->address("dwarf_civ_index");
+    dwarf_civ_index += m_memory_correction;
 
     // both necessary addresses are valid, so let's try to read the creatures
     LOGD << "loading creatures from " << hexify(creature_vector) <<
             hexify(creature_vector - m_memory_correction) << "(UNCORRECTED)";
-    LOGD << "dwarf race index" << hexify(dwarf_race_index) <<
-            hexify(dwarf_race_index - m_memory_correction) << "(UNCORRECTED)";
     LOGD << "current year" << hexify(current_year) <<
             hexify(current_year - m_memory_correction) << "(UNCORRECTED)";
     emit progress_message(tr("Loading Dwarves"));
 
     attach();
-    m_dwarf_civ_id = read_word(dwarf_civ_index);
+    m_dwarf_civ_id = read_int(dwarf_civ_index);
     LOGD << "civilization id:" << hexify(m_dwarf_civ_id);
-
-    // which race id is dwarven?
-    m_dwarf_race_id = read_word(dwarf_race_index);
-    LOGD << "dwarf race:" << hexify(m_dwarf_race_id);
 
     m_current_year = read_word(current_year);
     LOGD << "current year:" << m_current_year;
@@ -393,24 +460,27 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     emit progress_range(0, entries.size()-1);
     TRACE << "FOUND" << entries.size() << "creatures";
     bool hide_non_adults = DT->user_settings()->value("options/hide_children_and_babies",true).toBool();
+    bool labor_cheats = DT->user_settings()->value("options/allow_labor_cheats",true).toBool();
+    QTime t;
+    t.start();
     if (!entries.empty()) {
         Dwarf *d = 0;
         int progress_count = 0;
 
         foreach(VIRTADDR creature_addr, entries) {
             d = Dwarf::get_dwarf(this, creature_addr);
-            if (d != 0) {
+            if(d){
                 dwarves.append(d); //add animals as well so we can show them
-                if(d->is_animal() == false){
-                    LOGD << "FOUND DWARF" << hexify(creature_addr)
-                         << d->nice_name();
+                if(!d->is_animal()){
+                    LOGD << "FOUND DWARF" << hexify(creature_addr) << d->nice_name();
+                    m_actual_dwarves.append(d);
+
                     //never calculate roles for babies
-                    if(d->profession() != "Baby"){
-                        //only calculate roles for children if they're set to be able to assign labours
-                        if(!hide_non_adults){
-                            actual_dwarves.append(d);
-                        }else if(d->profession() != "Child" ){
-                            actual_dwarves.append(d);
+                    //only calculate roles for children if they're shown and labor cheats are enabled
+                    if(!d->is_baby()){
+                        if(!d->is_child() || (labor_cheats && !hide_non_adults)){
+                            //dwarves_with_roles.append(d->id());
+                            m_labor_capable_dwarves.append(d);
                         }
                     }
 
@@ -420,22 +490,21 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
             }
             emit progress_value(progress_count++);
         }
-//        foreach(ITEM_TYPE i, itype_counts.uniqueKeys()){
-//            LOGW << Item::get_item_desc(i) << " count " << itype_counts.value(i);
-//        }
+        LOGD << "read " << dwarves.count() << " in " << t.elapsed() / 1000 << " seconds";
 
-        //load up role stuff now
-        //load_roles();
         m_enabled_labor_count.clear();
         qDeleteAll(m_pref_counts);
         m_pref_counts.clear();
+        m_thought_counts.clear();
+
         QFuture<void> f = QtConcurrent::run(this,&DFInstance::load_population_data);
         f.waitForFinished();
-
         f = QtConcurrent::run(this,&DFInstance::cdf_role_ratings);
         f.waitForFinished();
+
         //calc_done();
-        actual_dwarves.clear();
+        m_actual_dwarves.clear();
+        m_labor_capable_dwarves.clear();
 
         DT->emit_labor_counts_updated();
 
@@ -464,14 +533,13 @@ void DFInstance::load_population_data(){
     //        d->calc_role_ratings();
     //    }
 
-//    m_enabled_labor_count.clear();
-//    m_pref_counts.clear();
     int cnt = 0;
-    foreach(Dwarf *d, actual_dwarves){
-//        if(!d->include_in_pop_stats())
-//            continue;
+    foreach(Dwarf *d, m_actual_dwarves){
+        d->calc_attribute_ratings();
+        if(m_labor_capable_dwarves.contains(d))
+            d->calc_role_ratings();
 
-        d->calc_role_ratings();
+        //load labor counts
         foreach(int key, d->get_labors().uniqueKeys()){
             if(d->labor_enabled(key)){
                 if(m_enabled_labor_count.contains(key))
@@ -482,6 +550,7 @@ void DFInstance::load_population_data(){
             }
         }
 
+        //load preference counts
         foreach(QString category_name, d->get_grouped_preferences().uniqueKeys()){
             for(int i = 0; i < d->get_grouped_preferences().value(category_name)->count(); i++){
 
@@ -502,8 +571,8 @@ void DFInstance::load_population_data(){
                 }
 
                 //put liked and hated creatures together
-                if(category_name.toLower()=="dislikes"){
-                    cat_name = "Creature";
+                if(category_name.toLower()==tr("dislikes")){
+                    cat_name = tr("Creature");
                     p->dislikes++;
                     p->names_dislikes.append(d->nice_name());
                 }else{
@@ -515,6 +584,16 @@ void DFInstance::load_population_data(){
 
                 m_pref_counts.insert(key_pair,p);
             }
+        }
+
+        //load thought counts
+        foreach(short id, d->get_thoughts()){
+            QStringList names;
+            if(m_thought_counts.contains(id)){
+                names = m_thought_counts.value(id);
+            }
+            names.append(d->nice_name());
+            m_thought_counts.insert(id,names);
         }
 
     }
@@ -533,30 +612,24 @@ void DFInstance::cdf_role_ratings(){
         stdev = 0.0;
         count = 0;
 
-        foreach(Dwarf *d, actual_dwarves){
-//            if(!d->include_in_pop_stats())
-//                continue;
+        foreach(Dwarf *d, m_labor_capable_dwarves){
             count ++;
             mean += d->get_role_rating(r->name, true);
         }
         mean = mean / count;
 
-        foreach(Dwarf *d, actual_dwarves){
-//            if(!d->include_in_pop_stats())
-//                continue;
+        foreach(Dwarf *d, m_labor_capable_dwarves){
             stdev += pow(d->get_role_rating(r->name, true) - mean,2);
         }
         stdev = sqrt(stdev / (count-1));
 
-        foreach(Dwarf *d, actual_dwarves){
-//            if(!d->include_in_pop_stats())
-//                continue;
+        foreach(Dwarf *d, m_labor_capable_dwarves){
             d->set_role_rating(r->name, DwarfStats::calc_cdf(mean,stdev,d->get_role_rating(r->name, true))*100);
         }
 
     }
 
-    foreach(Dwarf *d, actual_dwarves){
+    foreach(Dwarf *d, m_labor_capable_dwarves){
 //        if(!d->include_in_pop_stats())
 //            continue;
         d->update_rating_list();
@@ -642,19 +715,22 @@ void DFInstance::load_main_vectors(){
 
     //inorganics
     addr = m_memory_correction + m_layout->address("inorganics_vector");
+    i = 0;
     foreach(VIRTADDR mat, enumerate_vector(addr)){
         //inorganic_raw.material
-        //Material* m = Material::get_material(this, mat + m_layout->material_offset("inorganic_materials_vector"), 0);
-        Material* m = Material::get_material(this, mat, 0, true);
+        Material* m = Material::get_material(this, mat, i, true);
         m_inorganics_vector.append(m);
+        i++;
     }
 
     //plants
     addr = m_memory_correction + m_layout->address("plants_vector");
+    i = 0;
     QVector<VIRTADDR> vec = enumerate_vector(addr);
     foreach(VIRTADDR plant, vec){
-        Plant* p = Plant::get_plant(this, plant, 0);
+        Plant* p = Plant::get_plant(this, plant, i);
         m_plants_vector.append(p);
+        i++;
     }
 
 
@@ -662,7 +738,7 @@ void DFInstance::load_main_vectors(){
 
 void DFInstance::load_weapons(){
     attach();
-    QVector<VIRTADDR> weapons = m_item_vectors.value(WEAPON); //enumerate_vector(weapons_vector);
+    QVector<VIRTADDR> weapons = m_item_vectors.value(WEAPON);
     qDeleteAll(m_weapons);
     m_weapons.clear();
     if (!weapons.empty()) {
@@ -688,19 +764,14 @@ void DFInstance::load_weapons(){
 }
 
 void DFInstance::load_races_castes(){
-    attach();
-    //LOGI << "Reading races and castes...";
+    attach();    
     VIRTADDR races_vector = m_layout->address("races_vector");
     races_vector += m_memory_correction;
     QVector<VIRTADDR> races = enumerate_vector(races_vector);
-    //TRACE << "FOUND" << races.size() << "races";
-    //emit progress_range(0, races.size()-1);
     int i = 0;
     if (!races.empty()) {
         foreach(VIRTADDR race_addr, races) {
-            m_races << Race::get_race(this, race_addr);
-            //emit progress_value(i++);
-            //LOGD << "race " << m_races.at(i)->name() << " index " << i;
+            m_races.append(Race::get_race(this, race_addr, i));
             i++;
         }
     }
@@ -1346,7 +1417,7 @@ VIRTADDR DFInstance::find_historical_figure(int hist_id){
     if(m_hist_figures.count() <= 0)
         load_hist_figures();
 
-    return m_hist_figures.value(hist_id);
+    return m_hist_figures.value(hist_id,0);
 }
 
 void DFInstance::load_hist_figures(){
@@ -1368,13 +1439,15 @@ VIRTADDR DFInstance::find_fake_identity(int hist_id){
     if(fig){
         VIRTADDR fig_info = read_addr(fig + m_layout->hist_figure_offset("hist_fig_info"));
         VIRTADDR rep_info = read_addr(fig_info + m_layout->hist_figure_offset("reputation"));
-        int cur_ident = read_int(rep_info + m_layout->hist_figure_offset("current_ident"));
-        if(m_fake_identities.count() == 0)
-            m_fake_identities = enumerate_vector(m_memory_correction + m_layout->address("fake_identities_vector"));
-        foreach(VIRTADDR ident, m_fake_identities){
-            int fake_id = read_int(ident);
-            if(fake_id==cur_ident){
-                return ident;
+        if(rep_info != 0){
+            int cur_ident = read_int(rep_info + m_layout->hist_figure_offset("current_ident"));
+            if(m_fake_identities.count() == 0) //lazy load fake identities
+                m_fake_identities = enumerate_vector(m_memory_correction + m_layout->address("fake_identities_vector"));
+            foreach(VIRTADDR ident, m_fake_identities){
+                int fake_id = read_int(ident);
+                if(fake_id==cur_ident){
+                    return ident;
+                }
             }
         }
     }
@@ -1431,7 +1504,7 @@ Plant *DFInstance::get_plant(int index){
     if(index < m_plants_vector.count())
         return m_plants_vector.at(index);
     else
-        return new Plant();
+        return new Plant(this);
 }
 
 Material *DFInstance::get_raw_material(int index){
@@ -1516,7 +1589,7 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
 
 Material *DFInstance::find_material(int mat_index, short mat_type){
     int index = 0;
-    Material *m = new Material(0);
+    Material *m = new Material(this);
 
     if(mat_index < 0){
         m = get_raw_material(mat_type);
@@ -1533,6 +1606,7 @@ Material *DFInstance::find_material(int mat_index, short mat_type){
         {
             index = mat_type - 19; //base material types
             m = r->get_creature_material(index);
+            r = 0;
         }
     }
     else if(mat_type < 419)
@@ -1540,8 +1614,10 @@ Material *DFInstance::find_material(int mat_index, short mat_type){
         VIRTADDR hist_figure = find_historical_figure(mat_index);
         if(hist_figure){
             Race *r = get_race(read_int(hist_figure + m_layout->hist_figure_offset("hist_race")));
-            if(r)
+            if(r){
                 m = r->get_creature_material(mat_type-219);
+                r = 0;
+            }
         }
     }
     else if(mat_type < 619){

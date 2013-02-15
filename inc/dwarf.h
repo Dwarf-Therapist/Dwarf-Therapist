@@ -26,17 +26,18 @@ THE SOFTWARE.
 #include <QtGui>
 #include "utils.h"
 #include "global_enums.h"
+#include "skill.h"
+#include "attribute.h"
 
 class DFInstance;
 class MemoryLayout;
 class CustomProfession;
 class Reaction;
 class Role;
-class Skill;
 class Preference;
+class Race;
 class Caste;
-class AttributeLevel;
-class Attribute;
+class Thought;
 
 
 class Dwarf : public QObject
@@ -68,7 +69,7 @@ public:
     VIRTADDR address() {return m_address;}
 
     //! return the the unique id for this creature
-    const int id() {return m_id;}
+    int id() const {return m_id;}
 
     //! return whether or not the dwarf is on break
     bool is_on_break() {return m_is_on_break;}
@@ -77,9 +78,13 @@ public:
     Q_INVOKABLE bool is_male() {return m_is_male;}
 
     //! false if the creature is a dwarf, true if not
-    Q_INVOKABLE bool is_animal();
+    Q_INVOKABLE bool is_animal() {return m_is_animal;}
 
     Q_INVOKABLE bool is_pet() {return m_is_pet;}
+
+    Q_INVOKABLE bool is_adult() {return (!m_is_child && !m_is_baby) ? true : false;}
+    Q_INVOKABLE bool is_child() {return m_is_child;}
+    Q_INVOKABLE bool is_baby() {return m_is_baby;}
 
     //! return a text version of this dwarf's profession (will use custom profession if set)
     QString profession();
@@ -91,7 +96,7 @@ public:
     QString custom_profession_name() {return m_pending_custom_profession;}
 
     //! return a printable name for this dwarf based on user-settings (may include nickname/firstname or both)
-    Q_INVOKABLE QString nice_name() {return m_nice_name;}
+    Q_INVOKABLE QString nice_name() const {return m_nice_name;}
 
     //! return the name of the curse afflicting this dwarf
     Q_INVOKABLE QString curse_name() {return m_curse_name;}
@@ -108,66 +113,62 @@ public:
     //! return the raw happiness score for this dwarf
     Q_INVOKABLE int get_raw_happiness() {return m_raw_happiness;}
 
-    //! return the level of the specified attribute of this dwarf
-    //attribute_level get_attribute_rating(int attribute);
-    AttributeLevel get_attribute_rating(int attribute);
-
     //! return this dwarf's strength attribute score    
-    Q_INVOKABLE int strength() {return m_attributes.value(AT_STRENGTH,-1);}
+    Q_INVOKABLE int strength() {return attribute((int)AT_STRENGTH);}
 
     //! return this dwarf's agility attribute score
-    Q_INVOKABLE int agility() {return m_attributes.value(AT_AGILITY,-1);}
+    Q_INVOKABLE int agility() {return attribute((int)AT_AGILITY);}
 
     //! return this dwarf's toughness attribute score
-    Q_INVOKABLE int toughness() {return m_attributes.value(AT_TOUGHNESS,-1);}
+    Q_INVOKABLE int toughness() {return attribute((int)AT_TOUGHNESS);}
 
     //! return this dwarf's endurance attribute score
-    Q_INVOKABLE int endurance() {return m_attributes.value(AT_ENDURANCE,-1);}
+    Q_INVOKABLE int endurance() {return attribute((int)AT_ENDURANCE);}
 
     //! return this dwarf's recuperation attribute score
-    Q_INVOKABLE int recuperation() {return m_attributes.value(AT_RECUPERATION,-1);}
+    Q_INVOKABLE int recuperation() {return attribute((int)AT_RECUPERATION);}
 
     //! return this dwarf's disease resistance attribute score
-    Q_INVOKABLE int disease_resistance() {return m_attributes.value(AT_DISEASE_RESISTANCE,-1);}
+    Q_INVOKABLE int disease_resistance() {return attribute((int)AT_DISEASE_RESISTANCE);}
 
     //! return this dwarf's willpower attribute score
-    Q_INVOKABLE int willpower() {return m_attributes.value(AT_WILLPOWER,-1);}
+    Q_INVOKABLE int willpower() {return attribute((int)AT_WILLPOWER);}
 
     //! return this dwarf's memory attribute score
-    Q_INVOKABLE int memory() {return m_attributes.value(AT_MEMORY,-1);}
+    Q_INVOKABLE int memory() {return attribute((int)AT_MEMORY);}
 
     //! return this dwarf's focus attribute score
-    Q_INVOKABLE int focus() {return m_attributes.value(AT_FOCUS,-1);}
+    Q_INVOKABLE int focus() {return attribute((int)AT_FOCUS);}
 
     //! return this dwarf's intuition attribute score
-    Q_INVOKABLE int intuition() {return m_attributes.value(AT_INTUITION,-1);}
+    Q_INVOKABLE int intuition() {return attribute((int)AT_INTUITION);}
 
     //! return this dwarf's patience attribute score
-    Q_INVOKABLE int patience() {return m_attributes.value(AT_PATIENCE,-1);}
+    Q_INVOKABLE int patience() {return attribute((int)AT_PATIENCE);}
 
     //! return this dwarf's empathy attribute score
-    Q_INVOKABLE int empathy() {return m_attributes.value(AT_EMPATHY,-1);}
+    Q_INVOKABLE int empathy() {return attribute((int)AT_EMPATHY);}
 
     //! return this dwarf's social awareness attribute score
-    Q_INVOKABLE int social_awareness() {return m_attributes.value(AT_SOCIAL_AWARENESS,-1);}
+    Q_INVOKABLE int social_awareness() {return attribute((int)AT_SOCIAL_AWARENESS);}
 
     //! return this dwarf's creativity attribute score
-    Q_INVOKABLE int creativity() {return m_attributes.value(AT_CREATIVITY,-1);}
+    Q_INVOKABLE int creativity() {return attribute((int)AT_CREATIVITY);}
 
     //! return this dwarf's musicality attribute score
-    Q_INVOKABLE int musicality() {return m_attributes.value(AT_MUSICALITY,-1);}
+    Q_INVOKABLE int musicality() {return attribute((int)AT_MUSICALITY);}
 
     //! return this dwarf's analytical ability attribute score
-    Q_INVOKABLE int analytical_ability() {return m_attributes.value(AT_ANALYTICAL_ABILITY,-1);}
+    Q_INVOKABLE int analytical_ability() {return attribute((int)AT_ANALYTICAL_ABILITY);}
 
     //! return this dwarf's linguistic ability attribute score
-    Q_INVOKABLE int linguistic_ability() {return m_attributes.value(AT_LINGUISTIC_ABILITY,-1);}
+    Q_INVOKABLE int linguistic_ability() {return attribute((int)AT_LINGUISTIC_ABILITY);}
 
     //! return this dwarf's spatial sense attribute score
-    Q_INVOKABLE int spatial_sense() {return m_attributes.value(AT_SPATIAL_SENSE,-1);}
+    Q_INVOKABLE int spatial_sense() {return attribute((int)AT_SPATIAL_SENSE);}
 
     //! return this dwarf's kinesthetic sense attribute score
-    Q_INVOKABLE int kinesthetic_sense() {return m_attributes.value(AT_KINESTHETIC_SENSE,-1);}
+    Q_INVOKABLE int kinesthetic_sense() {return attribute((int)AT_KINESTHETIC_SENSE);}
 
     //! return this dwarf's squad reference id
     Q_INVOKABLE int squad_id() { return m_squad_id; }
@@ -196,18 +197,21 @@ public:
     //! return this creature's Nth bit from flags
     Q_INVOKABLE bool get_flag_value(int bit);
 
+    static bool has_invalid_flags(const Dwarf *d, QHash<uint, QString> invalid_flags, quint32 dwarf_flags);
+
     //! return this dwarf's highest skill
-    Skill *highest_skill();
+    Skill highest_skill();
 
     //! sum total of all skill levels in any skill
     Q_INVOKABLE int total_skill_levels();
 
     //! number of activated labors
-    Q_INVOKABLE int total_assigned_labors();
+    Q_INVOKABLE int total_assigned_labors(bool include_hauling = true);
 
     const QMap<int, ushort> get_labors() {return m_pending_labors;}
 
     void clear_labors();
+    void assign_all_labors();
 
     //! return the sum total of all xp this dwarf has earned
     int total_xp() {return m_total_xp;}
@@ -222,12 +226,12 @@ public:
     Q_INVOKABLE bool active_military();
 
     //! return a vector of Skill objects that this dwarf has experience in
-    QVector<Skill*> *get_skills() {return &m_skills;}
+    QVector<Skill> *get_skills() {return &m_skills;}
 
-    QHash<int, short> get_attributes() {return m_attributes;}
+    QVector<Attribute> *get_attributes() {return &m_attributes;}
 
     //! return a skill object by skill_id
-    Skill *get_skill(int skill_id);
+    Skill get_skill(int skill_id);
 
     //! return all labors that the user has toggled, but not comitted to DF yet
     QVector<int> get_dirty_labors(); // returns labor ids
@@ -251,10 +255,11 @@ public:
 
     bool trait_is_active(int trait_id);
 
-    Q_INVOKABLE int attribute(int attrib_id) {return m_attributes.value(attrib_id, -1);}
+    Q_INVOKABLE int attribute(int attrib_id) {return get_attribute(attrib_id).value();}
+    Attribute get_attribute(int id);
 
     //! returns the numeric rating for the this dwarf in the skill specified by skill_id
-    Q_INVOKABLE short skill_rating(int skill_id, bool raw = false);
+    Q_INVOKABLE float skill_level(int skill_id, bool raw = false, bool precise = false);
 
     //! returns the numeric rating for the this dwarf in the skill associated with the labor specified by labor_id
     Q_INVOKABLE short labour_rating(int labor_id);
@@ -330,6 +335,8 @@ public:
     void set_role_rating(QString role_name, float value);
     void update_rating_list();
 
+    void calc_attribute_ratings();
+
     //! static method for mapping a numeric happiness score into a value of the enum DWARF_HAPPINESS
     static DWARF_HAPPINESS happiness_from_score(int score);
 
@@ -339,8 +346,12 @@ public:
     //! static method for mapping a value in the enum ATTRIBUTES_TYPE to a meaningful text string
     static QString attribute_level_name(ATTRIBUTES_TYPE attribute, short value);
 
+    Caste *get_caste() {return m_caste;}
+
     //! method for mapping a caste id to a meaningful text name string
     QString caste_name();
+
+    QString caste_tag();
 
     //! static method for mapping a caste id to a meaningful text description string
     QString caste_desc();
@@ -381,7 +392,7 @@ public:
 
     Q_INVOKABLE QString noble_position() {return m_noble_position;}
 
-    QString profession_icon_path() {return m_icn_prof;}
+    QPixmap profession_icon() {return m_icn_prof;}
     QString gender_icon_path() {return m_icn_gender;}
 
     int body_size() {return m_body_size;}
@@ -394,13 +405,18 @@ public:
 
     void find_true_ident();
 
-    Skill *highest_moodable() {return get_skill(m_highest_moodable_skill);}
+    Skill highest_moodable();
     bool had_mood() {return m_had_mood;}
     QString artifact_name() {return m_artifact_name;}
 
     QHash<QString, QStringList*> get_grouped_preferences() {return m_grouped_preferences;}
 
+    QList<short> get_thoughts() {return m_thoughts;}
+
     Q_INVOKABLE bool has_preference(QString pref_name, QString category = "", bool exactMatch = true);
+    Q_INVOKABLE bool has_thought(short id) {return m_thoughts.contains(id);}
+
+    QString get_thought_desc() {return m_thought_desc;}
 
     int optimized_labors;
 
@@ -417,8 +433,7 @@ public:
         void copy_address_to_clipboard();
 
         //sorts ratings
-        static bool sort_ratings(const QPair<QString,float> &r1,const QPair<QString,float> &r2){return r1.second > r2.second;}
-
+        static bool sort_ratings(const QPair<QString,float> &r1,const QPair<QString,float> &r2){return r1.second > r2.second;}                
 private:
     int m_id; // each creature in the game has a unique serial ID
     DFInstance *m_df;
@@ -452,16 +467,16 @@ private:
     QString m_custom_profession; // set by user
     QString m_pending_custom_profession; // uncommitted
     QString m_profession; // name of profession set by game
-    QString m_icn_prof; //path to icon for corresponding profession
+    QPixmap m_icn_prof;
     QString m_icn_gender;
     int m_raw_profession; // id of profession set by game
     bool m_can_set_labors; // used to prevent cheating
     short m_current_job_id;
     QString m_current_job;
     QString m_current_sub_job_id;
-    QVector<Skill*> m_skills;
+    QVector<Skill> m_skills;
     QHash<int, short> m_traits;
-    QHash<int, short> m_attributes;
+    QVector<Attribute> m_attributes;
     QMap<int, ushort> m_labors;
     QMap<int, ushort> m_pending_labors;
     QList<QAction*> m_actions; // actions suitable for context menus    
@@ -488,8 +503,17 @@ private:
     QString m_noble_position;
     bool m_is_pet;
     int m_highest_moodable_skill;
+    Race* m_race;
+    Caste* m_caste;
     QMultiMap<int, Preference*> m_preferences;
     QHash<QString, QStringList*> m_grouped_preferences;
+    QList<short> m_thoughts;
+    QString m_thought_desc;
+    bool m_is_child;
+    bool m_is_baby;
+    bool m_is_animal;
+    QString m_true_name; //used for vampires
+    int m_true_birth_year; //used for vampires
 
     // these methods read data from raw memory
     void read_id();
@@ -510,6 +534,7 @@ private:
     void read_souls();
     void read_skills();
     void read_attributes();
+    void load_attribute(VIRTADDR &addr, int id);
     void read_traits();
     void read_squad_info();
     void read_flags();

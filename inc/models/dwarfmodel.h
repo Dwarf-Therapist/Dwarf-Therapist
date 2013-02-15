@@ -25,11 +25,13 @@ THE SOFTWARE.
 
 #include <QtGui>
 #include "columntypes.h"
+
 class Dwarf;
 class DFInstance;
 class DwarfModel;
 class GridView;
 class Squad;
+class ViewColumn;
 
 /*
 class CreatureGroup : public QStandardItem {
@@ -52,8 +54,10 @@ class DwarfModel : public QStandardItemModel {
     Q_OBJECT
 public:
     typedef enum {
-        GB_NOTHING = 0,        
+        GB_NOTHING = 0,
+        GB_AGE,
         GB_CASTE,
+        GB_CASTE_TAG,
         GB_CURRENT_JOB,
         GB_HAPPINESS,
         GB_HAS_NICKNAME,
@@ -75,12 +79,17 @@ public:
         DR_SORT_VALUE,
         DR_IS_AGGREGATE,
         DR_LABOR_ID,
+        DR_SKILL_ID,
         DR_GROUP_NAME,
         DR_ID,
         DR_DEFAULT_BG_COLOR,
         DR_COL_TYPE,
         DR_SET_NAME,
-        DR_MEMBER_IDS // creature ids that belong to this aggregate
+        DR_BASE_SORT,
+        DR_SPECIAL_FLAG, //used by some columns to indicate different things, usually boolean
+        DR_DISPLAY_RATING, //this is the rating to use when determining drawing shapes, alternative to DR_RATING
+        DR_AGE, //right click sort on first column
+        DR_NAME //right click sort on first column
     } DATA_ROLES;
 
     DwarfModel(QObject *parent = 0);
@@ -104,8 +113,6 @@ public:
     QModelIndex findOne(const QVariant &needle, int role = Qt::DisplayRole, int column = 0, const QModelIndex &start_index = QModelIndex());
     QList<QPersistentModelIndex> findAll(const QVariant &needle, int role = Qt::DisplayRole, int column = 0, QModelIndex start_index = QModelIndex());
 
-    static bool compare_turn_count(const Dwarf *a, const Dwarf *b);
-
     void save_rows();
 
     QHash<int, Squad*> squads() {return m_squads;}
@@ -114,8 +121,9 @@ public:
     bool clearing_data;
 
 public slots:
-    void draw_headers();
+    void draw_headers();    
     void update_header_info(int id, COLUMN_TYPE type);
+
     void build_row(const QString &key);
     void build_rows();
     void set_group_by(int group_by);
@@ -137,6 +145,7 @@ private:
     int m_selected_col;
     GridView *m_gridview;
     QBrush build_gradient_brush(QColor base_col, int alpha_start, int alpha_finish, QPoint start, QPoint end);    
+    QString build_col_tooltip(ViewColumn *col);
 
 signals:
     void new_pending_changes(int);

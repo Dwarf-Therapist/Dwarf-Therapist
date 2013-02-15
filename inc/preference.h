@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <QtGui>
 #include "utils.h"
 #include "global_enums.h"
+#include "flagarray.h"
 
 class Material;
 class RoleAspect;
@@ -51,8 +52,7 @@ public:
 
     Preference(QObject *parent);
     Preference(PREF_TYPES category, QString name, QObject *parent = 0);
-    Preference(PREF_TYPES category, ITEM_TYPE iType, QObject *parent = 0);
-    Preference(PREF_TYPES category, Material *m, QObject *parent = 0);
+    Preference(PREF_TYPES category, ITEM_TYPE iType, QObject *parent = 0);    
     virtual ~Preference();
 
     int matches(Preference *role_pref);    
@@ -61,13 +61,14 @@ public:
     void set_name(QString value) {m_name = value;}
     void set_category(PREF_TYPES cat) {m_pType = cat;}
     void set_item_type(ITEM_TYPE iType) {m_iType = iType;}
-    void set_material(Material* m) {m_mat = m;}
+    //void set_material(Material* m) {m_mat = m;}
+    void set_material_flags(FlagArray f) {m_material_flags = f;}
     void set_exact(bool m) {m_exact_match = m;}
 
     QString get_name() {return m_name;}
     PREF_TYPES get_pref_category() {return m_pType;}
     ITEM_TYPE get_item_type() {return m_iType;}
-    QVector<int> get_flags() {return m_flags;}
+    QVector<int> special_flags() {return m_special_flags;}
     bool exact_match() {return m_exact_match;}
 
     RoleAspect *pref_aspect;
@@ -76,10 +77,11 @@ protected:
     QString m_name; //actual value to search for when doing string comparisons
     PREF_TYPES m_pType; //preference category
     ITEM_TYPE m_iType; //type of item for an dwarf's item preference
-    Material *m_mat; //references a dwarf's preference material
+    //Material *m_mat; //references a dwarf's preference material
+    FlagArray m_material_flags;
 
     //these flags are used when writing to the ini. they're specifically chosen to find matches of particular materials
-    QVector<int> m_flags;
+    QVector<int> m_special_flags;
 
     //if it's not a general category preference (ie. 'wood') an exact match of the string is required
     bool m_exact_match;

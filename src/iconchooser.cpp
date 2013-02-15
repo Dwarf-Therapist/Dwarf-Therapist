@@ -11,6 +11,7 @@ QImage scale(const QString &imageFileName)
 
 IconChooser::IconChooser(QWidget *parent)//QStringList imageNamesList, QWidget *parent) :
     : QDialog(parent)
+    , selected_id(-1)
   //, m_imageNamesList(imageNamesList)
 {
 

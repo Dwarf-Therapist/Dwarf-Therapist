@@ -37,18 +37,17 @@ public:
     LaborOptimizer(laborOptimizerPlan *plan, QObject *parent=0);
     virtual ~LaborOptimizer();
 
-    void optimize_labors();
     void optimize_labors(QList<Dwarf*> dwarfs);
 
     void update_population(QList<Dwarf*>);    
     void update_ratios();
 
     //getters
-    const int total_jobs() {return m_total_jobs;}
-    const int total_raw_jobs() {return m_raw_total_jobs;}
-    const int assigned_jobs() {return m_estimated_assigned_jobs;}
-    const int total_population() {return m_total_population;}
-    const int targeted_population() {return roundf(m_target_population);}
+    int total_jobs() const {return m_total_jobs;}
+    int total_raw_jobs() const {return m_raw_total_jobs;}
+    int assigned_jobs() const {return m_estimated_assigned_jobs;}
+    int total_population() const {return m_total_population;}
+    int targeted_population() const {return roundf(m_target_population);}
 public slots:
     void calc_population(bool load_labor_map = false);
 
@@ -86,6 +85,8 @@ protected:
 
     QVector<dwarf_labor_map> m_labor_map;
     QVector<QPair<int, QString> > m_current_message;
+
+    void optimize();
 
 };
 

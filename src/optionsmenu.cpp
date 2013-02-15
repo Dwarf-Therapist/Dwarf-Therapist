@@ -89,32 +89,34 @@ OptionsMenu::OptionsMenu(QWidget *parent)
             << new CustomColor(tr("Miserable"), tr("Color shown in happiness columns when a dwarf is <b>miserable.</b>"),
                                QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_MISERABLE)), QColor(0xFF0000), this);
 
-    QColor m_noble_default = QColor(255,153,0);
+    QColor m_noble_default = FortressEntity::default_noble_color;
     m_noble_colors
             << new CustomColor(tr("Bookkeeper"),tr("Highlight color for the bookkeeper."),
                                QString("nobles/%1").arg(static_cast<int>(FortressEntity::BOOKKEEPER)), m_noble_default, this)
-    << new CustomColor(tr("Broker"),tr("Highlight color for the broker."),
-                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::BROKER)), m_noble_default, this)
-    << new CustomColor(tr("Champions"),tr("Highlight color for champions."),
-                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::CHAMPION)), m_noble_default, this)
-    << new CustomColor(tr("Chief Medical Dwarf"),tr("Highlight color for the chief medical dwarf."),
-                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::CHIEF_MEDICAL_DWARF)), m_noble_default, this)
-    << new CustomColor(tr("Hammerer"),tr("Highlight color for the hammerer."),
-                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::HAMMERER)), m_noble_default, this)
-    << new CustomColor(tr("Law"),tr("Highlight color for the captain of the guard and sherrif."),
-                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::LAW)), m_noble_default, this)
-    << new CustomColor(tr("Leader/Mayor"),tr("Highlight color for the expedition leaders and mayors."),
-                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::LEADER)), m_noble_default, this)
-    << new CustomColor(tr("Manager"),tr("Highlight color for the managers."),
-                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::MANAGER)), m_noble_default, this)
-    << new CustomColor(tr("Militia"),tr("Highlight color for the militia commander, militia captains, lieutenants and generals."),
-                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::MILITIA)), m_noble_default, this)
-    << new CustomColor(tr("Monarch"),tr("Highlight color for kings and queens."),
-                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::MONARCH)), m_noble_default, this)
-    << new CustomColor(tr("Royalty"),tr("Highlight color for barons, baronesses, dukes, duchesses, counts, countesses, lords and ladies."),
-                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::ROYALTY)), m_noble_default, this)
-    << new CustomColor(tr("Multiple"),tr("Highlight color when holding multiple positions, or unknown positions."),
-                       QString("nobles/%1").arg(static_cast<int>(FortressEntity::MULTIPLE)), m_noble_default, this);
+            << new CustomColor(tr("Broker"),tr("Highlight color for the broker."),
+                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::BROKER)), m_noble_default, this)
+            << new CustomColor(tr("Champions"),tr("Highlight color for champions."),
+                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::CHAMPION)), m_noble_default, this)
+            << new CustomColor(tr("Chief Medical Dwarf"),tr("Highlight color for the chief medical dwarf."),
+                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::CHIEF_MEDICAL_DWARF)), m_noble_default, this)
+            << new CustomColor(tr("Hammerer"),tr("Highlight color for the hammerer."),
+                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::HAMMERER)), m_noble_default, this)
+            << new CustomColor(tr("Law"),tr("Highlight color for the captain of the guard and sherrif."),
+                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::LAW)), m_noble_default, this)
+            << new CustomColor(tr("Leader/Mayor"),tr("Highlight color for the expedition leaders and mayors."),
+                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::LEADER)), m_noble_default, this)
+            << new CustomColor(tr("Manager"),tr("Highlight color for the managers."),
+                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::MANAGER)), m_noble_default, this)
+            << new CustomColor(tr("Militia"),tr("Highlight color for the militia commander, militia captains, lieutenants and generals."),
+                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::MILITIA)), m_noble_default, this)
+            << new CustomColor(tr("Monarch"),tr("Highlight color for kings, queens, emperors and empresses."),
+                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::MONARCH)), m_noble_default, this)
+            << new CustomColor(tr("Royalty"),tr("Highlight color for barons, baronesses, dukes, duchesses, counts, countesses, lords and ladies."),
+                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::ROYALTY)), m_noble_default, this)
+            << new CustomColor(tr("Religious"),tr("Highlight color for high priests, priests and druids."),
+                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::RELIGIOUS)), m_noble_default, this)
+            << new CustomColor(tr("Multiple"),tr("Highlight color when holding multiple positions, or unknown positions."),
+                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::MULTIPLE)), m_noble_default, this);
 
     m_curse_color = new CustomColor(tr("Cursed"),tr("Cursed creatures will be highlighted with this color."),
                                     "cursed",QColor(125,97,186),this);
@@ -139,7 +141,7 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     foreach(CustomColor *cc, m_noble_colors) {
         nobles_layout->addWidget(cc);
     }
-    nobles_layout->setSpacing(4);
+    nobles_layout->setSpacing(2);
     ui->tab_noble_colors->setLayout(nobles_layout);
 
     ui->horizontal_curse_layout->addWidget(m_curse_color);
@@ -156,18 +158,16 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     connect(ui->btn_change_tooltip_font, SIGNAL(pressed()), this, SLOT(show_tooltip_font_chooser()));
     connect(ui->btn_change_main_font, SIGNAL(pressed()), this, SLOT(show_main_font_chooser()));
 
-    connect(ui->cb_auto_contrast, SIGNAL(toggled(bool)), m_general_colors[0], SLOT(setDisabled(bool)));
+    connect(ui->cb_auto_contrast, SIGNAL(toggled(bool)), m_general_colors.at(0), SLOT(setDisabled(bool)));
+    connect(ui->cb_moodable, SIGNAL(toggled(bool)), m_general_colors.at(8), SLOT(setEnabled(bool)));
+    connect(ui->cb_moodable, SIGNAL(toggled(bool)), m_general_colors.at(9), SLOT(setEnabled(bool)));
 
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tab_index_changed(int)));
-
-    connect(ui->chk_roles_in_labor, SIGNAL(stateChanged(int)), this, SLOT(roles_in_labor_changed(int)));
-    connect(ui->chk_roles_in_skills, SIGNAL(stateChanged(int)), this, SLOT(roles_in_skills_changed(int)));
 
     read_settings();
 }
 
 OptionsMenu::~OptionsMenu() {}
-
 
 bool OptionsMenu::event(QEvent *evt) {
     if (evt->type() == QEvent::StatusTip) {
@@ -175,6 +175,15 @@ bool OptionsMenu::event(QEvent *evt) {
         return true; // we've handled it, don't pass it
     }
     return QWidget::event(evt); // pass the event along the chain
+}
+
+void OptionsMenu::showEvent(QShowEvent *evt){
+    //if we haven't detected multiple castes (mods) skill rate isn't used, so hide the weight setting
+    if(!DT->multiple_castes){
+        ui->lbl_def_skill_rate_weight->setVisible(false);
+        ui->dsb_skill_rate_weight->setVisible(false);
+    }
+    QDialog::showEvent(evt);
 }
 
 void OptionsMenu::read_settings() {
@@ -228,8 +237,12 @@ void OptionsMenu::read_settings() {
     ui->cb_sync_grouping->setChecked(s->value("group_all_views",true).toBool());
     ui->cb_sync_scrolling->setChecked(s->value("scroll_all_views",false).toBool());
 
-    ui->cb_moodable->setChecked(s->value("color_mood_cells",false).toBool());
-
+    ui->cb_moodable->setChecked(s->value("color_mood_cells",false).toBool());    
+    //the signal to disable the color pickers doesn't fire on the initial read. this is a work around for the inital setting
+    if(!ui->cb_moodable->isChecked()){
+        m_general_colors.at(8)->setDisabled(true);
+        m_general_colors.at(9)->setDisabled(true);
+    }
     s->endGroup();        
 
     temp = s->value("tooltip_font", QFont("Segoe UI", 9)).value<QFont>();
@@ -266,6 +279,7 @@ void OptionsMenu::read_settings() {
     ui->chk_show_prof->setChecked(s->value("tooltip_show_profession", true).toBool());
     ui->chk_show_artifact->setChecked(s->value("tooltip_show_artifact",true).toBool());
     ui->chk_show_highest_mood->setChecked(s->value("tooltip_show_mood", true).toBool());
+    ui->chk_show_thoughts->setChecked(s->value("tooltip_show_thoughts", true).toBool());
 
     ui->chk_show_roles->setChecked(s->value("tooltip_show_roles", true).toBool());
     ui->sb_roles_tooltip->setValue(s->value("role_count_tooltip",3).toInt());
@@ -274,16 +288,16 @@ void OptionsMenu::read_settings() {
     ui->sb_min_skill_level->setValue(s->value("min_tooltip_skill_level",1).toInt());
 
 
-    ui->dsb_attribute_weight->setValue(s->value("default_attributes_weight",1.0).toDouble());
+    ui->dsb_attribute_weight->setValue(s->value("default_attributes_weight",0.25).toDouble());
     ui->dsb_skill_weight->setValue(s->value("default_skills_weight",1.0).toDouble());
-    ui->dsb_trait_weight->setValue(s->value("default_traits_weight",1.0).toDouble());
-    ui->dsb_pref_weight->setValue(s->value("default_prefs_weight",1.0).toDouble());
+    ui->dsb_trait_weight->setValue(s->value("default_traits_weight",0.20).toDouble());
+    ui->dsb_pref_weight->setValue(s->value("default_prefs_weight",0.15).toDouble());
+    ui->dsb_skill_rate_weight->setValue(s->value("default_skill_rate_weight",0.25).toDouble());
+    ui->dsb_att_potential_weight->setValue(s->value("default_attribute_potential_weight",0.50).toDouble());
     ui->sb_roles_pane->setValue(s->value("role_count_pane",10).toInt());
 
     ui->chk_roles_in_labor->setChecked(s->value("show_roles_in_labor",true).toBool());
     ui->chk_roles_in_skills->setChecked(s->value("show_roles_in_skills",true).toBool());
-    ui->chk_labor_sort_by_roles->setChecked(s->value("sort_roles_in_labor",true).toBool());
-    ui->chk_skills_sort_by_roles->setChecked(s->value("sort_roles_in_skills",true).toBool());
 
     s->endGroup();
 
@@ -347,12 +361,14 @@ void OptionsMenu::write_settings() {
         s->setValue("default_skills_weight",ui->dsb_skill_weight->value());
         s->setValue("default_traits_weight",ui->dsb_trait_weight->value());
         s->setValue("default_prefs_weight",ui->dsb_pref_weight->value());
+        s->setValue("default_skill_rate_weight",ui->dsb_skill_rate_weight->value());
+        s->setValue("default_attribute_potential_weight",ui->dsb_att_potential_weight->value());
+
         s->setValue("role_count_tooltip",ui->sb_roles_tooltip->value());
         s->setValue("role_count_pane",ui->sb_roles_pane->value());
+
         s->setValue("show_roles_in_labor",ui->chk_roles_in_labor->isChecked());
         s->setValue("show_roles_in_skills",ui->chk_roles_in_skills->isChecked());
-        s->setValue("sort_roles_in_labor",ui->chk_labor_sort_by_roles->isChecked());
-        s->setValue("sort_roles_in_skills",ui->chk_skills_sort_by_roles->isChecked());
 
         s->setValue("tooltip_show_caste", ui->chk_show_caste->isChecked());
         s->setValue("tooltip_show_happiness", ui->chk_show_happiness->isChecked());
@@ -365,6 +381,7 @@ void OptionsMenu::write_settings() {
         s->setValue("tooltip_show_skills", ui->chk_show_skills->isChecked());
         s->setValue("tooltip_show_artifact", ui->chk_show_artifact->isChecked());
         s->setValue("tooltip_show_mood", ui->chk_show_highest_mood->isChecked());
+        s->setValue("tooltip_show_thoughts", ui->chk_show_thoughts->isChecked());
 
         s->endGroup();
     }
@@ -379,11 +396,11 @@ void OptionsMenu::accept() {
     emit settings_changed();
     QDialog::accept();
     int answer = QMessageBox::question(
-            0, tr("Read Dwarves"),
-            tr("Would you like to apply the new options now (Read Dwarves)?"),
+            0, tr("Apply Options"),
+            tr("Would you like to apply the new options now (Read Data)?"),
             QMessageBox::Yes | QMessageBox::No);
     if (answer == QMessageBox::Yes)
-        DT->get_main_window()->read_dwarves();
+        DT->get_main_window()->read_dwarves();    
 }
 
 void OptionsMenu::reject() {
@@ -427,8 +444,6 @@ void OptionsMenu::restore_defaults() {
     ui->cb_sync_grouping->setChecked(true);
     ui->cb_sync_scrolling->setChecked(false);
     ui->cb_moodable->setChecked(false);
-    ui->chk_labor_sort_by_roles->setChecked(true);
-    ui->chk_skills_sort_by_roles->setChecked(true);
 
     ui->chk_show_caste->setChecked(true);
     ui->chk_show_happiness->setChecked(true);
@@ -439,9 +454,17 @@ void OptionsMenu::restore_defaults() {
     ui->chk_show_prof->setChecked(true);
     ui->chk_show_artifact->setChecked(true);
     ui->chk_show_highest_mood->setChecked(false);
+    ui->chk_show_thoughts->setCheckable(true);
+
+    ui->dsb_attribute_weight->setValue(0.25);
+    ui->dsb_pref_weight->setValue(0.15);
+    ui->dsb_skill_weight->setValue(1.0);
+    ui->dsb_trait_weight->setValue(0.20);
+    ui->dsb_skill_rate_weight->setValue(0.25);
+    ui->dsb_att_potential_weight->setValue(0.50);
 
     ui->chk_show_roles->setChecked(true);
-    ui->chk_show_skills->setChecked(true);
+    ui->chk_show_skills->setChecked(true);    
 
     QFont temp = QFont("Segoe UI", 8);
     m_row_font = qMakePair(temp,temp);
@@ -509,17 +532,4 @@ void OptionsMenu::tab_index_changed(int index){
         ui->lbl_tooltip_roles_max->setText(max_text);
         ui->sb_roles_tooltip->setMaximum(max_roles);
     }
-}
-
-void OptionsMenu::roles_in_labor_changed(int state){
-    if(state==2)
-        ui->chk_labor_sort_by_roles->setEnabled(true);
-    else
-        ui->chk_labor_sort_by_roles->setEnabled(false);
-}
-void OptionsMenu::roles_in_skills_changed(int state){
-    if(state==2)
-        ui->chk_skills_sort_by_roles->setEnabled(true);
-    else
-        ui->chk_skills_sort_by_roles->setEnabled(false);
 }

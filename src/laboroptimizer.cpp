@@ -81,7 +81,7 @@ void LaborOptimizer::calc_population(bool load_labor_map){
                 m_dwarfs.at(i)->clear_labors();
             m_dwarfs.removeAt(i);
         }
-        else if(d->profession()=="Baby"){
+        else if(d->is_baby()){
             m_dwarfs.removeAt(i);
         }
         else if(d->active_military() && plan->exclude_military){
@@ -90,7 +90,13 @@ void LaborOptimizer::calc_population(bool load_labor_map){
                 m_dwarfs.at(i)->clear_labors();
             m_dwarfs.removeAt(i);
         }
-        else if(d->profession()=="Child" && !labor_cheats){
+        else if(d->squad_id() > -1 && plan->exclude_squads){
+            m_current_message.append(QPair<int, QString> (d->id(), tr("Excluding %1 because they're in the %2 squad.").arg(d->nice_name()).arg(d->squad_name())));
+            if(load_labor_map)
+                m_dwarfs.at(i)->clear_labors();
+            m_dwarfs.removeAt(i);
+        }
+        else if(d->is_child() && !labor_cheats){
             m_current_message.append(QPair<int, QString> (d->id(), tr("Excluding %1 because they're a child.").arg(d->nice_name())));
             m_dwarfs.removeAt(i);
         }
@@ -110,7 +116,7 @@ void LaborOptimizer::calc_population(bool load_labor_map){
                             dlm.rating = det->priority * d->get_role_rating(det->role_name, true);
                         }
                         else{
-                            dlm.rating = det->priority * (d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id)->capped_exp() / (float)29000 * 100);
+                            dlm.rating = det->priority * (d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).capped_exp() / (float)MAX_CAPPED_XP * 100);
                             //dlm.rating = det->priority * (d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).rating() / 20.0 * 100);
                         }
                         m_labor_map.append(dlm);
@@ -131,14 +137,20 @@ void LaborOptimizer::calc_population(bool load_labor_map){
     }
 }
 
-void LaborOptimizer::optimize_labors(){
-    if(m_dwarfs.count() > 0)
-        optimize_labors(m_dwarfs);
+void LaborOptimizer::optimize_labors(QList<Dwarf*> dwarfs){
+    m_dwarfs = dwarfs;
+    if(m_dwarfs.count() > 0){
+//        QFuture<void> f = QtConcurrent::run(this, &LaborOptimizer::optimize);
+//        f.waitForFinished();
+        optimize();
+
+        m_current_message.clear();
+        m_current_message.append(QPair<int,QString>(0,tr("Optimization Complete.")));
+        emit optimize_message(m_current_message);
+    }
 }
 
-void LaborOptimizer::optimize_labors(QList<Dwarf*> dwarfs){
-      m_dwarfs = dwarfs;
-
+void LaborOptimizer::optimize(){
     //create the labor mapping
     calc_population(true);
 
@@ -148,7 +160,7 @@ void LaborOptimizer::optimize_labors(QList<Dwarf*> dwarfs){
     update_ratios();
 
     QHash<int, Dwarf*> haulers;
-    foreach(Dwarf *d, dwarfs){
+    foreach(Dwarf *d, m_dwarfs){
         haulers.insert(d->id(),d);
     }
 
@@ -219,7 +231,6 @@ void LaborOptimizer::optimize_labors(QList<Dwarf*> dwarfs){
         m_current_message.append(QPair<int,QString>(0,QString::number(haulers.count()) + " haulers have been assigned."));
         emit optimize_message(m_current_message);
     }
-
 }
 
 void LaborOptimizer::update_ratios(){

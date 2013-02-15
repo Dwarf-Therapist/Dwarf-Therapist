@@ -25,6 +25,9 @@ THE SOFTWARE.
 #include "dwarfmodelproxy.h"
 #include "dwarftherapist.h"
 #include "defines.h"
+#include "gridview.h"
+#include "viewcolumn.h"
+#include "viewcolumnset.h"
 
 RotatedHeader::RotatedHeader(Qt::Orientation orientation, QWidget *parent)
     : QHeaderView(orientation, parent)
@@ -63,9 +66,18 @@ void RotatedHeader::read_settings() {
 void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const {
     QColor bg = model()->headerData(idx, Qt::Horizontal,
                                     Qt::BackgroundColorRole).value<QColor>();
+
+    QBrush grad_brush = QBrush(bg);
+    if (m_shade_column_headers) {
+        QLinearGradient g(rect.topLeft(), rect.bottomLeft());
+        g.setColorAt(0.25, QColor(255, 255, 255, 10));
+        g.setColorAt(1.0, bg);
+        grad_brush = QBrush(g);
+    }
+
     if (m_spacer_indexes.contains(idx)) {
         p->save();
-        p->fillRect(rect, QBrush(bg));
+        p->fillRect(rect.adjusted(0,8,0,0), grad_brush);
         p->restore();
         return;
     }
@@ -83,8 +95,7 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
         state |= QStyle::State_Active;
     if (rect.contains(m_p))
         state |= QStyle::State_MouseOver;
-    if (sortIndicatorSection() == idx) {
-        //state |= QStyle::State_Sunken;
+    if (sortIndicatorSection() == idx) {        
         if (sortIndicatorOrder() == Qt::AscendingOrder) {
             opt.sortIndicator = QStyleOptionHeader::SortDown;
         } else {
@@ -98,15 +109,8 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
     opt.state = state;
     style()->drawControl(QStyle::CE_HeaderSection, &opt, p);
 
-    QBrush brush = QBrush(bg);
-    if (m_shade_column_headers) {
-        QLinearGradient g(rect.topLeft(), rect.bottomLeft());
-        g.setColorAt(0.25, QColor(255, 255, 255, 10));
-        g.setColorAt(1.0, bg);
-        brush = QBrush(g);
-    }
-    if (idx > 0)
-        p->fillRect(rect.adjusted(1,8,-1,-2), brush);
+    if (idx > 0)        
+        p->fillRect(rect.adjusted(1,8,-1,-2), grad_brush);
 
     if (sortIndicatorSection() == idx) {
         opt.rect = QRect(opt.rect.x() + opt.rect.width()/2 - 5, opt.rect.y(), 10, 8);
@@ -129,16 +133,10 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
     QString data = this->model()->headerData(idx, Qt::Horizontal).toString();    
     p->save();
     p->setPen(Qt::black);
-    p->setRenderHint(QPainter::TextAntialiasing);
-    //p->setFont(QFont("Trebuchet", 9, QFont::Normal));
+    p->setRenderHint(QPainter::TextAntialiasing);    
     p->setFont(m_font);
-
     QFontMetrics fm = p->fontMetrics();
 
-//    if(data.length() > 20){
-//        data = data.mid(0,20);
-//        data += "...";
-//    }
     if (m_header_text_bottom)
     {
         //flip column header text to read from bottom to top (supposedly this is more readable...)
@@ -180,7 +178,7 @@ void RotatedHeader::mousePressEvent(QMouseEvent *e) {
     m_p = e->pos();
     int idx = logicalIndexAt(e->pos());
     if (idx > 0 && idx < count() && e->button() == Qt::RightButton) {
-        emit section_right_clicked(idx);
+        emit section_right_clicked(idx);    
     }
     QHeaderView::mousePressEvent(e);
 }
@@ -192,36 +190,37 @@ void RotatedHeader::leaveEvent(QEvent *e) {
 
 void RotatedHeader::contextMenuEvent(QContextMenuEvent *evt) {
     int idx = logicalIndexAt(evt->pos());
+    QMenu *m = new QMenu(this);
+
     if (idx == 0) { //name header
-        QMenu *m = new QMenu(this);
-        QAction *a = m->addAction(tr("Sort Alphabetically Ascending"), this, SLOT(sort_action()));        
-        a->setData(DwarfModelProxy::DSR_NAME_ASC);
-        a = m->addAction(tr("Sort Alphabetically Descending"), this, SLOT(sort_action()));
-        a->setData(DwarfModelProxy::DSR_NAME_DESC);
-        a = m->addAction(tr("Sort by ID Ascending"), this, SLOT(sort_action()));
+        QAction *a = m->addAction(QIcon(":img/sort-number.png"), tr("Sort by Age Ascending"), this, SLOT(sort_action()));
+        a->setData(DwarfModelProxy::DSR_AGE_ASC);
+        a = m->addAction(QIcon(":img/sort-number-descending.png"),tr("Sort by Age Descending"), this, SLOT(sort_action()));
+        a->setData(DwarfModelProxy::DSR_AGE_DESC);
+        m->addSeparator();
+        a = m->addAction(QIcon(":img/sort-number.png"),tr("Sort by ID Ascending"), this, SLOT(sort_action()));
         a->setData(DwarfModelProxy::DSR_ID_ASC);
-        a = m->addAction(tr("Sort by ID Descending"), this, SLOT(sort_action()));
+        a = m->addAction(QIcon(":img/sort-number-descending.png"),tr("Sort by ID Descending"), this, SLOT(sort_action()));
         a->setData(DwarfModelProxy::DSR_ID_DESC);
-        a = m->addAction(tr("Sort in Game Order"), this, SLOT(sort_action()));
-        a->setData(DwarfModelProxy::DSR_GAME_ORDER);
-        m->exec(viewport()->mapToGlobal(evt->pos()));
-    } else {
-        /* Don't do this yet
-        // find out what set this is...
-        QString set_name = model()->headerData(idx, Qt::Horizontal, Qt::UserRole).toString();
-        QMenu *m = new QMenu(this);
-        QAction *a = m->addAction(tr("Toggle Set %1").arg(set_name),
-                                  this, SLOT(toggle_set_action()));
-        a->setData(set_name);
-        m->exec(viewport()->mapToGlobal(evt->pos()));
-        */
+        m->addSeparator();
+        a = m->addAction(QIcon(":img/sort-alphabet.png"),tr("Sort Alphabetically Ascending"), this, SLOT(sort_action()));
+        a->setData(DwarfModelProxy::DSR_NAME_ASC);
+        a = m->addAction(QIcon(":img/sort-alphabet-descending.png"),tr("Sort Alphabetically Descending"), this, SLOT(sort_action()));
+        a->setData(DwarfModelProxy::DSR_NAME_DESC);
     }
+    if(m)
+        m->exec(viewport()->mapToGlobal(evt->pos()));
 }
 
 void RotatedHeader::sort_action() {
     QAction *sender = qobject_cast<QAction*>(QObject::sender());
+    Qt::SortOrder order;
     DwarfModelProxy::DWARF_SORT_ROLE role = static_cast<DwarfModelProxy::DWARF_SORT_ROLE>(sender->data().toInt());
-    emit sort(0, role);
+    if(sender->text().toLower().contains(tr("desc")))
+        order = Qt::DescendingOrder;
+    else
+        order = Qt::AscendingOrder;
+    emit sort(0, role, order);
 }
 
 void RotatedHeader::toggle_set_action() {

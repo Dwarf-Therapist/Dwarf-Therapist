@@ -76,6 +76,7 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     item->setText(QString::number(score));
     item->setData(score, DwarfModel::DR_SORT_VALUE);
     item->setData(score, DwarfModel::DR_RATING);
+    item->setData(score, DwarfModel::DR_DISPLAY_RATING);
     
     QString tooltip = QString("<h3>%1</h3>%2<br><h4>%3</h4>")
             .arg(m_title)

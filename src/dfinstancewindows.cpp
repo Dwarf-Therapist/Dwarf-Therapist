@@ -89,8 +89,6 @@ QVector<VIRTADDR> DFInstanceWindows::enumerate_vector(const VIRTADDR &addr) {
     }
 
     if (m_layout->is_complete()) {
-        Q_ASSERT(start >= 0);
-        Q_ASSERT(end >= 0);
         Q_ASSERT(end >= start);
         Q_ASSERT((end - start) % 4 == 0);
         Q_ASSERT(start % 4 == 0);

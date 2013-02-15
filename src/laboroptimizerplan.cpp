@@ -32,6 +32,7 @@ laborOptimizerPlan::laborOptimizerPlan()
     exclude_nobles = true;
     exclude_military = true;
     exclude_injured = true;
+    exclude_squads = true;
     max_jobs_per_dwarf = 20;
     auto_haulers = true;
     pop_percent = 80.0f;
@@ -44,6 +45,7 @@ laborOptimizerPlan::laborOptimizerPlan(QSettings &s, QObject *parent)
     , exclude_nobles(s.value("nobles",true).toBool())
     , exclude_military(s.value("military",true).toBool())
     , exclude_injured(s.value("injured",true).toBool())
+    , exclude_squads(s.value("squads",true).toBool())
     , max_jobs_per_dwarf(s.value("max_jobs_per_dwarf",20).toInt())
     , pop_percent(s.value("pop_percent",100).toFloat())
     , auto_haulers(s.value("auto_haulers",true).toBool())
@@ -58,6 +60,7 @@ laborOptimizerPlan::laborOptimizerPlan(const laborOptimizerPlan &lop)
     plan_details = lop.plan_details;
     exclude_nobles = lop.exclude_nobles;
     exclude_military = lop.exclude_military;
+    exclude_squads = lop.exclude_squads;
     exclude_injured = lop.exclude_injured;
     max_jobs_per_dwarf = lop.max_jobs_per_dwarf;
     auto_haulers = lop.auto_haulers;
@@ -96,6 +99,7 @@ void laborOptimizerPlan::write_to_ini(QSettings &s){
     s.setValue("name",name);
     s.setValue("nobles", exclude_nobles);
     s.setValue("military", exclude_military);
+    s.setValue("squads", exclude_squads);
     s.setValue("injured", exclude_injured);
     s.setValue("max_jobs_per_dwarf", max_jobs_per_dwarf);
     s.setValue("auto_haulers", auto_haulers);

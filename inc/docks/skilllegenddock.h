@@ -31,11 +31,14 @@ class SkillLegendDock : public QDockWidget {
 public:
 	SkillLegendDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
-	public slots:
-		void set_SDM();
+	public slots:		
+        void set_SDM(int idx);
 
 signals:
 	void change_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&);
+
+private:
+    UberDelegate::SKILL_DRAWING_METHOD m_current_method;
 
 };
 

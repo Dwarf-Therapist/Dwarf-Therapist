@@ -39,15 +39,6 @@ Weapon::Weapon(DFInstance *df, VIRTADDR address, QObject *parent)
     load_data();
 }
 
-Weapon::Weapon(const Weapon &w){
-    m_address = w.m_address;
-    m_name_plural = w.m_name_plural;
-    m_single_grasp_size = w.m_single_grasp_size;
-    m_multi_grasp_size = w.m_multi_grasp_size;
-    m_df = w.m_df;
-    m_mem = w.m_mem;
-}
-
 Weapon::~Weapon() {
 }
 

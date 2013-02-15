@@ -55,6 +55,7 @@ optimizereditor::optimizereditor(QWidget *parent) :
     connect(ui->chk_military, SIGNAL(stateChanged(int)), this, SLOT(filter_option_changed()));
     connect(ui->chk_nobles, SIGNAL(stateChanged(int)), this, SLOT(filter_option_changed()));
     connect(ui->chk_injured, SIGNAL(stateChanged(int)), this, SLOT(filter_option_changed()));
+    connect(ui->chk_squads, SIGNAL(stateChanged(int)), this, SLOT(filter_option_changed()));
 
     connect(ui->sb_hauler_percent, SIGNAL(valueChanged(int)), this, SLOT(hauler_percent_changed(int)));
     connect(ui->chk_auto, SIGNAL(stateChanged(int)), this, SLOT(auto_haul_changed(int)));
@@ -109,6 +110,7 @@ void optimizereditor::load_plan(QString name){
     ui->sb_max_jobs->setMaximum(GameDataReader::ptr()->get_ordered_labors().count());
     ui->le_name->setText(m_plan->name);
     ui->chk_military->setChecked(m_plan->exclude_military);
+    ui->chk_squads->setChecked(m_plan->exclude_squads);
     ui->chk_nobles->setChecked(m_plan->exclude_nobles);
     ui->chk_auto->setChecked(m_plan->auto_haulers);
     ui->chk_injured->setChecked(m_plan->exclude_injured);
@@ -275,6 +277,7 @@ void optimizereditor::refresh_job_counts(){
 void optimizereditor::filter_option_changed(){
     m_plan->exclude_injured = ui->chk_injured->isChecked();
     m_plan->exclude_military = ui->chk_military->isChecked();
+    m_plan->exclude_squads = ui->chk_squads->isChecked();
     m_plan->exclude_nobles = ui->chk_nobles->isChecked();
 
     populationChanged();
@@ -317,13 +320,13 @@ void optimizereditor::draw_labor_context_menu(const QPoint &p){
     QMenu *m = new QMenu("",this);
     QModelIndex idx = ui->tw_labors->indexAt(p);
     if (idx.isValid()) { // context on a row
-        m->addAction(QIcon(":img/delete.png"), tr("Remove Selected"), this, SLOT(remove_labor()));
+        m->addAction(QIcon(":img/minus-circle.png"), tr("Remove Selected"), this, SLOT(remove_labor()));
         m->addSeparator();
     }
     QAction *a;
     GameDataReader *gdr = GameDataReader::ptr();
 
-    QIcon icn(":img/add.png");
+    QIcon icn(":img/plus-circle.png");
 
     QMenu *labor_a_l = m->addMenu(icn, tr("A-I"));
     labor_a_l->setTearOffEnabled(true);
@@ -428,6 +431,7 @@ QString optimizereditor::find_role(int id){
 
 void optimizereditor::save(laborOptimizerPlan *p){
     p->exclude_military = ui->chk_military->isChecked();
+    p->exclude_squads = ui->chk_squads->isChecked();
     p->exclude_nobles = ui->chk_nobles->isChecked();
     p->exclude_injured = ui->chk_injured->isChecked();
     p->max_jobs_per_dwarf = ui->sb_max_jobs->value();
@@ -602,15 +606,28 @@ void optimizereditor::import_details(){
                  insert_row(d);
              }
 
-         }else if(fields.count() == 8 && linenum == 1){
-             ui->le_name->setText(fields.at(0));
-             ui->sb_max_jobs->setValue(fields.at(1).toInt());
-             ui->sb_pop_percent->setValue(fields.at(2).toFloat());
-             ui->sb_hauler_percent->setValue(fields.at(3).toFloat());
-             ui->chk_military->setChecked(fields.at(4).toInt());
-             ui->chk_nobles->setChecked(fields.at(5).toInt());
-             ui->chk_injured->setChecked(fields.at(6).toInt());
-             ui->chk_auto->setChecked(fields.at(7).toInt());
+         }else if(fields.count() <= 9 && linenum == 1){
+             int count = fields.count();
+
+             if(count >= 1)
+                 ui->le_name->setText(fields.at(0));
+             if(count >= 2)
+                 ui->sb_max_jobs->setValue(fields.at(1).toInt());
+             if(count >= 3)
+                 ui->sb_pop_percent->setValue(fields.at(2).toFloat());
+             if(count >= 4)
+                 ui->sb_hauler_percent->setValue(fields.at(3).toFloat());
+             if(count >= 5)
+                 ui->chk_military->setChecked(fields.at(4).toInt());
+             if(count >= 6)
+                 ui->chk_nobles->setChecked(fields.at(5).toInt());
+             if(count >= 7)
+                 ui->chk_injured->setChecked(fields.at(6).toInt());
+             if(count >= 8)
+                 ui->chk_auto->setChecked(fields.at(7).toInt());
+             if(count >= 9)
+                 ui->chk_squads->setChecked(fields.at(8).toInt());
+
              save(m_plan);
          }else{
              display_message(tr("CSV has an invalid number of columns (%1) at line %2.")
@@ -647,7 +664,8 @@ void optimizereditor::export_details(){
      s << QString::number((int)ui->chk_military->isChecked()) + ",";
      s << QString::number((int)ui->chk_nobles->isChecked()) + ",";
      s << QString::number((int)ui->chk_injured->isChecked()) + ",";
-     s << QString::number((int)ui->chk_auto->isChecked()) + "\n";
+     s << QString::number((int)ui->chk_auto->isChecked()) + ",";
+     s << QString::number((int)ui->chk_squads->isChecked()) + "\n";
 
      for(int i = 0; i < ui->tw_labors->rowCount(); i++){
          QComboBox *c = static_cast<QComboBox*>(ui->tw_labors->cellWidget(i,1));

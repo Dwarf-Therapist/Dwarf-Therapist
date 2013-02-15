@@ -27,6 +27,9 @@ THE SOFTWARE.
 #include <QColor>
 #include <QtGlobal>
 #include <QVariant>
+#include <QPixmap>
+#include <QBuffer>
+#include <QIODevice>
 
 // valid for as long as DF stays 32bit
 typedef quint32 VIRTADDR;
@@ -178,5 +181,13 @@ public:
         return qVariantFromValue((void*) ptr);
     }
 };
+
+static inline QString embedPixmap(const QPixmap &img){
+    QByteArray ba;
+    QBuffer buffer(&ba);
+    buffer.open(QIODevice::WriteOnly);
+    img.save(&buffer, "PNG");
+    return QString("<img src=\"data:image/png;base64,%1\"/>").arg(QString(buffer.data().toBase64()));
+}
 
 #endif // UTILS_H

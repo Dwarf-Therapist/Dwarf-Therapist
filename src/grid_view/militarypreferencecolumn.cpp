@@ -35,14 +35,14 @@ MilitaryPreferenceColumn::MilitaryPreferenceColumn(const QString &title, const i
 	: ViewColumn(title, CT_MILITARY_PREFERENCE, set, parent)
 	, m_labor_id(labor_id)
 	, m_skill_id(skill_id)
-{
+{ 
 }
 
 MilitaryPreferenceColumn::MilitaryPreferenceColumn(QSettings &s, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(s, set, parent)
 	, m_labor_id(s.value("labor_id", -1).toInt())
 	, m_skill_id(s.value("skill_id", -1).toInt())
-{
+{    
 }
 
 MilitaryPreferenceColumn::MilitaryPreferenceColumn(const MilitaryPreferenceColumn &to_copy) 
@@ -57,12 +57,13 @@ QStandardItem *MilitaryPreferenceColumn::build_cell(Dwarf *d) {
 	QStandardItem *item = init_cell(d);
 
 	item->setData(CT_MILITARY_PREFERENCE, DwarfModel::DR_COL_TYPE);
-    short rating = d->skill_rating(m_skill_id);
+    short rating = d->skill_level(m_skill_id);
     short val = d->pref_value(m_labor_id);
     QString val_name = gdr->get_military_preference(m_labor_id)->value_name(val);
 
     item->setData(rating * (val + 1), DwarfModel::DR_SORT_VALUE); // push assigned labors above no exp in sort order
 	item->setData(rating, DwarfModel::DR_RATING);
+    item->setData(rating, DwarfModel::DR_DISPLAY_RATING);
 	item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);
 	item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
 	
@@ -72,11 +73,11 @@ QStandardItem *MilitaryPreferenceColumn::build_cell(Dwarf *d) {
 		if (rating > 15)
 			adjusted_rating = QString("15 +%1").arg(rating - 15);
         skill_str = tr("<b>%1</b> %2 %3<br/>[RAW LEVEL: <b><font color=blue>%4</font></b>]<br/><b>Experience:</b><br/>%5")
-                .arg(d->get_skill(m_skill_id)->rust_rating())
+                .arg(d->get_skill(m_skill_id).rust_rating())
                 .arg(gdr->get_skill_level_name(rating))
                 .arg(gdr->get_skill_name(m_skill_id))
                 .arg(adjusted_rating)
-                .arg(d->get_skill(m_skill_id)->exp_summary());
+                .arg(d->get_skill(m_skill_id).exp_summary());
     } else {
 		// either the skill isn't a valid id, or they have 0 experience in it
 		skill_str = "0 experience";

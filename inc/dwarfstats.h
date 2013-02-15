@@ -23,7 +23,11 @@ THE SOFTWARE.
 #ifndef DWARFSTATS_H
 #define DWARFSTATS_H
 
-#include "dwarf.h"
+#include "qhash.h"
+#include "qmap.h"
+#include "attribute.h"
+
+class Dwarf;
 
 class DwarfStats
 {
@@ -38,24 +42,34 @@ public:
         double probability;
     };
 
-    static void load_attribute_bins(ASPECT_TYPE, QList<int>);
-    static float get_attribute_role_rating(ASPECT_TYPE, int);
-    static float get_trait_role_rating(ASPECT_TYPE, int);
-    //static float get_skill_role_rating(int skill_id, int value);
+    struct att_info
+    {
+        //ratio, caste count
+        QMap<float,int> ratios_counts;
+        QList<bin> bins;
+    };
 
+    //caste attributes
+    static void load_att_caste_bins(int id, float ratio, QList<int> l);
+//    static float get_att_caste_role_rating(ATTRIBUTES_TYPE atype, int val); //old  version
+    static float get_att_caste_role_rating(Attribute &a);
+
+    //traits
+    static float get_trait_role_rating(ASPECT_TYPE, int);
     static QHash<ASPECT_TYPE, QList<bin> > m_trait_bins;
     static void load_trait_bins(ASPECT_TYPE, QList<int>);
 
-    //static QHash<int, QVector<int>* > m_dwarf_skills;
-    //static void load_skills(QVector<Dwarf *> dwarves);
+    static void cleanup();
+    static void set_att_potential_weight(float val){m_att_pot_weight = val;}
 
 private:
-//    static QVector<float> m_dwarf_skill_mean;
-//    static QVector<float> m_dwarf_skill_stdDev;
-
-    static QHash<ASPECT_TYPE, QList<bin> > m_attribute_bins;
-
+    static float m_att_pot_weight;
     static float get_aspect_role_rating(float value, QList<bin> m_bins);
+
+    static QHash<int, QHash<QString, att_info> > m_att_caste_bins;
+//    static QHash<ATTRIBUTES_TYPE, QVector<float>* > m_attribute_ratings;
+
+    static QList<bin> build_att_bins(QList<int>);
 };
 
 #endif // DWARFSTATS_H

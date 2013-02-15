@@ -40,12 +40,19 @@ THE SOFTWARE.
 #include "customprofession.h"
 #include "viewmanager.h"
 #include "squad.h"
+#include "gamedatareader.h"
+#include "profession.h"
+#include "labor.h"
+#include "truncatingfilelogger.h"
+
+StateTableView::~StateTableView()
+{}
 
 StateTableView::StateTableView(QWidget *parent)
     : QTreeView(parent)
     , m_last_sorted_col(0)
     , m_last_sort_order(Qt::AscendingOrder)
-    , m_last_group_by(DwarfModel::GB_NOTHING)
+    , m_last_group_by(-1)
     , m_model(0)
     , m_proxy(0)
     , m_delegate(new UberDelegate(this))
@@ -75,22 +82,18 @@ StateTableView::StateTableView(QWidget *parent)
     viewport()->setAttribute(Qt::WA_StaticContents);
 
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
-    connect(this, SIGNAL(expanded(const QModelIndex &)),
-            SLOT(index_expanded(const QModelIndex &)));
-    connect(this, SIGNAL(collapsed(const QModelIndex &)),
-            SLOT(index_collapsed(const QModelIndex &)));
-    connect(this, SIGNAL(clicked(const QModelIndex &)),
-            SLOT(clicked(const QModelIndex &)));
+
+    connect(this, SIGNAL(expanded(const QModelIndex &)),SLOT(index_expanded(const QModelIndex &)));
+    connect(this, SIGNAL(collapsed(const QModelIndex &)),SLOT(index_collapsed(const QModelIndex &)));
+
     connect(m_header, SIGNAL(sectionPressed(int)), SLOT(header_pressed(int)));
     connect(m_header, SIGNAL(sectionClicked(int)), SLOT(header_clicked(int)));
 
     connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(hscroll_value_changed(int)));
     connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(vscroll_value_changed(int)));
-
 }
 
-StateTableView::~StateTableView()
-{}
+
 
 void StateTableView::read_settings() {
     QSettings *s = DT->user_settings();
@@ -102,8 +105,7 @@ void StateTableView::read_settings() {
     //cell size
     m_grid_size = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
     int pad = s->value("options/grid/cell_padding", 0).toInt();
-    setIconSize(QSize(m_grid_size - 2 - pad * 2, m_grid_size - 2 - pad * 2));
-    //setIconSize(QSize(m_grid_size + 2 + pad * 2, m_grid_size + 2 + pad * 2));
+    setIconSize(QSize(m_grid_size - 2 - pad * 2, m_grid_size - 2 - pad * 2));    
 
     set_single_click_labor_changes(s->value("options/single_click_labor_changes", true).toBool());
     m_auto_expand_groups = s->value("options/auto_expand_groups", false).toBool();
@@ -117,16 +119,23 @@ void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
     m_delegate->set_model(model);
     m_delegate->set_proxy(proxy);
 
-    connect(m_header, SIGNAL(section_right_clicked(int)), m_model,
-            SLOT(section_right_clicked(int)));
-    connect(m_header, SIGNAL(sort(int, DwarfModelProxy::DWARF_SORT_ROLE)),
-            m_proxy, SLOT(sort(int, DwarfModelProxy::DWARF_SORT_ROLE)));
+    connect(m_header, SIGNAL(section_right_clicked(int)), m_model,SLOT(section_right_clicked(int)));
+    connect(m_header, SIGNAL(section_right_clicked(int)), this,SLOT(column_right_clicked(int)));
+    connect(m_header, SIGNAL(sort(int,DwarfModelProxy::DWARF_SORT_ROLE,Qt::SortOrder)),
+            m_proxy, SLOT(sort(int,DwarfModelProxy::DWARF_SORT_ROLE, Qt::SortOrder)));
 
-    connect(this, SIGNAL(activated(const QModelIndex&)), proxy, SLOT(cell_activated(const QModelIndex&)));
     connect(m_model, SIGNAL(preferred_header_size(int, int)), m_header, SLOT(resizeSection(int, int)));
     connect(m_model, SIGNAL(set_index_as_spacer(int)), m_header, SLOT(set_index_as_spacer(int)));
     connect(m_model, SIGNAL(clear_spacers()), m_header, SLOT(clear_spacers()));
-    set_single_click_labor_changes(DT->user_settings()->value("options/single_click_labor_changes", true).toBool());        
+
+    set_single_click_labor_changes(DT->user_settings()->value("options/single_click_labor_changes", true).toBool());
+    //if using double click, then wait until the cell is activated to change cell states
+    //if using single click, we can process the cell states immediately upon a click
+    if(!m_single_click_labor_changes)
+        connect(this, SIGNAL(activated(const QModelIndex&)), SLOT(activate_cells(const QModelIndex &)), Qt::UniqueConnection);
+    else
+        connect(this, SIGNAL(clicked(const QModelIndex&)), SLOT(activate_cells(const QModelIndex &)), Qt::UniqueConnection);
+
 }
 
 void StateTableView::new_custom_profession() {
@@ -160,14 +169,13 @@ void StateTableView::jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem*) {
     }
 }
 
-void StateTableView::jump_to_profession(QListWidgetItem* current, QListWidgetItem*) {
+void StateTableView::jump_to_profession(QTreeWidgetItem *current, QTreeWidgetItem *){
     if (!current)
         return;
-    QString prof_name = current->text();
+    QString prof_name = current->text(0);
     QModelIndexList matches = m_proxy->match(m_proxy->index(0,0), Qt::DisplayRole, prof_name);
     if (matches.size() > 0) {
-        QModelIndex group_header = matches.at(0);
-        //scrollTo(group_header);
+        QModelIndex group_header = matches.at(0);        
         expand(group_header);
         selectionModel()->select(group_header, QItemSelectionModel::SelectCurrent | QItemSelectionModel::Rows);
     }
@@ -182,12 +190,11 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
         // we're on top of a dwarf's name
         QMenu m(this); // this will be the popup menu        
         int id = idx.data(DwarfModel::DR_ID).toInt();
-        Dwarf *d = m_model->get_dwarf_by_id(id);
-        m.addActions(d->get_actions());
-        m.addSeparator();
+        Dwarf *d = m_model->get_dwarf_by_id(id);        
         m.addAction(tr("Set Nickname..."), this, SLOT(set_nickname()));
         m.addSeparator();
 
+        //CUSTOM PROFESSIONS
         QMenu sub(&m);
         sub.setTitle(tr("Custom Professions"));
         QAction *a = sub.addAction(tr("Set custom profession name..."), this, SLOT(set_custom_profession_text()));        
@@ -196,23 +203,25 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
         a->setData(id);
         sub.addAction(tr("Reset to default profession"), this, SLOT(reset_custom_profession()));
         sub.addSeparator();
-
         foreach(CustomProfession *cp, DT->get_custom_professions()) {
-            sub.addAction(cp->get_name(), this, SLOT(apply_custom_profession()));
+            sub.addAction(QIcon(cp->get_pixmap()), cp->get_name(), this, SLOT(apply_custom_profession()));
         }
         m.addMenu(&sub);
 
-        //clear labor menu
+        //ALL LABORS
         m.addSeparator();
-        a = m.addAction(tr("Clear Labors"), this, SLOT(clear_selected_labors()));
+        a = m.addAction(QIcon(":img/plus-circle.png"), tr("Assign All Labors"), this, SLOT(toggle_all_labors()));
+        a->setData(true);
+        a = m.addAction(QIcon(":img/minus-circle.png"), tr("Clear All Labors"), this, SLOT(toggle_all_labors()));
+        a->setData(false);
 
-        //SQUAD MENU ITEMS
+        //SQUAD
         m.addSeparator();
         QMenu assign(&m);
-        if(m_model->squads().count() > 0 && d->profession() != "Child" && d->profession() != "Baby"){
+        if(m_model->squads().count() > 0 && d->is_adult()){
             assign.setTitle(tr("Assign to squad..."));
             QIcon icon;
-            icon.addFile(QString::fromUtf8(":/img/add.png"), QSize(), QIcon::Normal, QIcon::Off);
+            icon.addFile(QString::fromUtf8(":/img/plus-circle.png"), QSize(), QIcon::Normal, QIcon::Off);
             foreach(int key, m_model->squads().uniqueKeys()){
                 Squad *s = m_model->squads().value(key);
                 if(d->squad_id() != s->id()){
@@ -228,7 +237,7 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 
             //squad removal (can't remove captain if there are subordinates)
             if(d->squad_id()!=-1){
-                icon.addFile(QString::fromUtf8(":/img/delete.png"), QSize(), QIcon::Normal, QIcon::Off);
+                icon.addFile(QString::fromUtf8(":/img/minus-circle.png"), QSize(), QIcon::Normal, QIcon::Off);
                 if((d->squad_position()==0 && m_model->squads().value(d->squad_id())->assigned_count()==1) || d->squad_position() != 0){
                     m.addAction(icon,tr("Remove from squad"),this,SLOT(remove_squad()));
                 }else{
@@ -236,6 +245,10 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
                 }
             }
         }
+
+        //dwarf actions (debug/memory stuff)
+        m.addSeparator();
+        m.addActions(d->get_actions());
 
         m.exec(viewport()->mapToGlobal(event->pos()));
     } else if (idx.data(DwarfModel::DR_COL_TYPE).toInt() == CT_LABOR) {
@@ -259,13 +272,56 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
         m.exec(viewport()->mapToGlobal(event->pos()));
     } else if (idx.data(DwarfModel::DR_IS_AGGREGATE).toBool() && m_model->current_grouping()==DwarfModel::GB_SQUAD){
         QMenu m(this);
-        QAction *a = m.addAction("Change Squad Name",this,SLOT(set_squad_name()));
+        QAction *a = m.addAction(tr("Change Squad Name"),this,SLOT(set_squad_name()));
         a->setData(idx.data(DwarfModel::DR_ID));
+        m.exec(viewport()->mapToGlobal(event->pos()));
+    } else if (idx.data(DwarfModel::DR_COL_TYPE).toInt() == CT_PROFESSION) {
+        QMenu m(this);
+        int id = idx.data(DwarfModel::DR_SORT_VALUE).toInt();
+        QString prof_name = GameDataReader::ptr()->get_profession(id)->name(true);
+        QAction *a = m.addAction(tr("Customize %1 Icon").arg(prof_name)
+                                 ,this,SLOT(edit_prof_icon()));
+        a->setData(id); //sort value is the profession id
+
+        if(DT->get_custom_prof_icon(id)){
+            a = m.addAction(QIcon(":img/minus-circle.png"), tr("Reset to Default"), this, SLOT(remove_prof_icon()));
+            a->setData(id);
+        }
+
         m.exec(viewport()->mapToGlobal(event->pos()));
     }
 }
 
-void StateTableView::clear_selected_labors(){
+void StateTableView::edit_prof_icon(){
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    int prof_id = a->data().toInt();
+    CustomProfession *cp = DT->get_custom_prof_icon(prof_id);
+    if(!cp){
+        cp = new CustomProfession(0,this);
+        cp->set_prof_id(prof_id);
+    }
+    int accepted = cp->show_builder_dialog(DT->get_main_window());
+    if (accepted) {
+        DT->get_custom_prof_icons().insert(prof_id, cp);
+        DT->write_settings();
+        DT->get_main_window()->draw_professions();
+    }
+}
+
+void StateTableView::remove_prof_icon(){
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    int prof_id = a->data().toInt();
+    CustomProfession *cp = DT->get_custom_prof_icon(prof_id);
+    if(cp){
+        cp->delete_from_disk();
+        DT->get_custom_prof_icons().remove(prof_id);
+        DT->get_main_window()->draw_professions();
+    }
+}
+
+void StateTableView::toggle_all_labors(){
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    bool enable = a->data().toBool();
     const QItemSelection sel = selectionModel()->selection();
     int id = 0;
     foreach(QModelIndex i, sel.indexes()) {
@@ -273,7 +329,10 @@ void StateTableView::clear_selected_labors(){
             id = i.data(DwarfModel::DR_ID).toInt();
             Dwarf *d = m_model->get_dwarf_by_id(id);
             if (d) {
-                d->clear_labors();
+                if(enable)
+                    d->assign_all_labors();
+                else
+                    d->clear_labors();
             }
         }
     }
@@ -364,9 +423,9 @@ void StateTableView::set_nickname() {
     if(ok) {
         int limit = 16;
         if (new_nick.length() > limit) {
-            QMessageBox::warning(this, tr("Nickname too long"),
-                                 tr("Nicknames must be under %1 characters "
-                                    "long.").arg(limit));
+            QMessageBox::warning(this, tr("Max Length Exceeded"),
+                                 tr("Due to technical limitations, nicknames must be under %1 characters "
+                                    "long. If you require a longer nickname, you'll have to set it within Dwarf Fortress!").arg(limit));
             return;
         }
 
@@ -460,6 +519,13 @@ void StateTableView::currentChanged(const QModelIndex &cur, const QModelIndex &)
     }
 }
 
+void StateTableView::select_all(){
+    expandAll();
+    selectAll();
+    m_selected_rows = selectionModel()->selectedRows(0);
+    m_selected = selectionModel()->selection();
+}
+
 void StateTableView::select_dwarf(Dwarf *d) {
     for(int top = 0; top < m_proxy->rowCount(); ++top) {
         QModelIndex idx = m_proxy->index(top, 0);        
@@ -475,6 +541,7 @@ void StateTableView::select_dwarf(Dwarf *d) {
             }
         }
     }
+    m_selected_rows = selectionModel()->selectedRows(0);
     m_selected = selectionModel()->selection();
 }
 /************************************************************************/
@@ -482,51 +549,173 @@ void StateTableView::select_dwarf(Dwarf *d) {
 /************************************************************************/
 void StateTableView::mousePressEvent(QMouseEvent *event) {
     m_last_button = event->button();
-    QTreeView::mousePressEvent(event);
+    m_last_cell = indexAt(QPoint(-1,-1));
+    //normally, after this event, rows are selected or deselected, before the clicked event is handled
+    //however if we have multiple selections, we don't want it to deselect rows when labor cells are toggled
+    //so we set a flag here to reselect the deselected rows in the selectionchanged event, and then let the clicked event be handled as normal
+
+    //if multiple rows are selected, and we're clicking on a cell within one of the selected rows, which isn't the name column
+    //then dont't deselect, otherwise behave as normal, unless it's the name column clicked, then we want to reselect again
+    QModelIndex idx = indexAt(event->pos());
+    int col = idx.column();
+    int row = idx.row();
+    bool intersects = false;
+    for(int i = 0; i < m_selected_rows.count(); i++){
+        if(m_selected_rows.at(i).row() == row){
+            intersects = true;
+            break;
+        }
+    }
+    if(m_selected_rows.count() > 1 && col != 0 && intersects){
+        m_toggling_multiple = true;
+    }else{
+        m_toggling_multiple = false;
+        m_selected_rows.clear();
+        m_selected.clear();
+    }
+
+    QTreeView::mousePressEvent(event);    
 }
+
 void StateTableView::mouseMoveEvent(QMouseEvent *event) {
     QModelIndex idx = indexAt(event->pos());
-    if (idx.isValid())
+    if(idx.isValid()){
         m_header->column_hover(idx.column());
+        //if we're dragging while holding down the left button, and not over the names
+        //then start painting labor cells
+        //if we're dragging over the names, allow it to select the rows
+        if(QApplication::mouseButtons() == Qt::LeftButton && !idx.column() == 0){
+            m_dragging = true;
+            activate_cells(idx);
+        }else{
+            if(idx.column() == 0){
+                m_selected_rows = selectionModel()->selectedRows(0);
+                m_selected = selectionModel()->selection();
+            }
+            else
+                m_dragging = false;
+        }
+    }
     QTreeView::mouseMoveEvent(event);
 }
 
 void StateTableView::mouseReleaseEvent(QMouseEvent *event) {
     m_last_button = event->button();
+    if(!m_dragging)
+            m_last_cell = indexAt(QPoint(-1,-1));    
     QTreeView::mouseReleaseEvent(event);
 }
 
-void StateTableView::clicked(const QModelIndex &idx) {
+void StateTableView::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected){
+    if(m_toggling_multiple){
+        selectionModel()->select(deselected, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+    }else if(m_dragging){
+        selectionModel()->select(selected, QItemSelectionModel::Deselect);
+    }else{
+        QTreeView::selectionChanged(selected,deselected);
+    }
+}
+
+void StateTableView::activate_cells(const QModelIndex &idx){
+    if(m_dragging && m_last_cell == idx){
+        return;
+    }
+
     if (m_last_button == Qt::LeftButton && // only activate on left-clicks
-            m_single_click_labor_changes && // only activated on single-click if the user set it that way
+            //m_single_click_labor_changes && // only activated on single-click if the user set it that way
             m_proxy && // we only do this for views that have proxies (dwarf views)
             idx.column() != 0) // don't single-click activate the name column
-    {
-        if(m_selected.count() > 1){
-            for(int i = 0; i<m_selected.count();i++){
-                const QModelIndex idx_sel = m_selected.at(i).indexes().at(idx.column());
-                m_proxy->cell_activated(idx_sel);
-                selectionModel()->select(
-                            QItemSelection(
-                                this->model()->index(idx_sel.row(),0),
-                                this->model()->index(idx_sel.row(),this->model()->columnCount()-1)),
-                            QItemSelectionModel::Select);
+    {        
+        if(m_toggling_multiple){
+            foreach(QModelIndex i, m_selected_rows){
+                QModelIndex p = i.parent();
+                if(p.isValid() && m_selected_rows.contains(p)){
+                    //this cell belongs to a parent (aggregate row which is also selected so ignore it
+                    //as it will be toggled when the parent is processed in cell_activated
+                }else{
+                    const QModelIndex idx_sel = m_proxy->index(i.row(),idx.column(),i.parent());
+                    m_proxy->cell_activated(idx_sel);
+                }
             }
         }else{
             m_proxy->cell_activated(idx);
         }
+        //update the column counts and any related exclusive labors
+        ViewColumn *c = m_model->current_grid_view()->get_column(idx.column());
+        if(c && c->type()==CT_LABOR){
+            int id = static_cast<LaborColumn*>(c)->labor_id();
+            DT->update_specific_header(id,c->type());
+            QList<int> related = GameDataReader::ptr()->get_labor(id)->get_excluded_labors();
+            foreach(int id, related)
+                DT->update_specific_header(id,c->type());
+        }
+        m_model->calculate_pending();
     }else{
-        if(m_proxy && idx.column() == 0)
+        if(m_proxy && idx.column() == 0){
+            m_selected_rows = selectionModel()->selectedRows(0);
             m_selected = selectionModel()->selection();
+        }
     }
+    m_last_cell = idx;
 }
 
 void StateTableView::header_clicked(int index) {
     if (!m_column_already_sorted && index > 0) {
-        m_header->setSortIndicator(index, Qt::DescendingOrder);
-        m_last_sorted_col = index;
+        m_header->setSortIndicator(index, Qt::DescendingOrder);       
     }
+    m_last_sorted_col = index;
     m_last_sort_order = m_header->sortIndicatorOrder();
+}
+
+void StateTableView::column_right_clicked(int idx){
+    QMenu *m = new QMenu(this);
+
+    ViewColumn *col = m_model->current_grid_view()->get_column(idx);
+    if(col && col->get_sortable_types().count() > 0){
+        QString title = "Sort " + get_column_type(col->type()).toLower().replace("_"," ") + " columns by..";
+        m->setWindowTitle(title);
+
+        QAction *a = m->addAction(title);
+        //initialize our little data struct we'll pass when a sort type is chosen
+        QList<QVariant> data;        
+        data << idx << col->type() << ViewColumn::CST_LEVEL;
+        QIcon current(":img/ui-button-navigation.png");
+        foreach(ViewColumn::COLUMN_SORT_TYPE sType, col->get_sortable_types()){
+            data.replace(2, sType);
+            a = m->addAction(capitalizeEach(ViewColumn::get_sort_type(sType).toLower().replace("_"," ")), this, SLOT(sort_column()));
+            a->setData(QVariant(data));
+            if(sType == col->get_current_sort())
+                a->setIcon(current);
+        }
+
+        m->exec(this->mapFrom(this,QCursor::pos()));
+    }
+}
+
+void StateTableView::sort_column(){
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    if(!a->data().canConvert<QVariantList>())
+        return;
+    QList<QVariant> data = a->data().toList();
+    int idx = data.at(0).toInt();
+    COLUMN_TYPE cType = static_cast<COLUMN_TYPE>(data.at(1).toInt());
+    ViewColumn::COLUMN_SORT_TYPE sType = static_cast<ViewColumn::COLUMN_SORT_TYPE>(data.at(2).toInt());
+
+    foreach(ViewColumnSet *set, m_model->current_grid_view()->sets()){
+        foreach(ViewColumn *c, set->columns()){
+            if(c->type() == cType){
+                c->refresh_sort(sType);
+            }
+        }
+    }
+    m_proxy->sort(idx,m_last_sort_order);
+    m_header->setSortIndicator(idx, m_last_sort_order);
+
+    //save what we're sorting by
+    ViewManager::save_column_sort(cType,sType);
+
+    //clear the guides
+    m_model->section_right_clicked(-1);
 }
 
 void StateTableView::header_pressed(int index) {
@@ -575,6 +764,7 @@ void StateTableView::keyPressEvent(QKeyEvent *event ){
     switch(event->key()){
     case Qt::Key_Escape:
         selectionModel()->clear();
+        m_selected_rows.clear();
         m_selected.clear();
         break;
     case Qt::Key_PageDown:

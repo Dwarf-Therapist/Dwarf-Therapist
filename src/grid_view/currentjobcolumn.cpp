@@ -46,7 +46,7 @@ CurrentJobColumn::CurrentJobColumn(const CurrentJobColumn &to_copy)
 QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
     short job_id = d->current_job_id();
-    QString pixmap_name(":img/help.png");
+    QString pixmap_name(":img/question-frame.png");
     if (job_id < 0) {
         if(d->is_on_break()){
             pixmap_name = ":status/img/hourglass.png"; // break
@@ -98,7 +98,7 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
                 pixmap_name = ":status/img/crossed-swords.png";
                 break;
             case DwarfJob::DJT_MOOD:
-                pixmap_name = ":img/exclamation.png";
+                pixmap_name = ":img/exclamation-red-frame.png";
                 break;
             case DwarfJob::DJT_FORGE:
                 pixmap_name = ":status/img/status_forge.png";
@@ -141,6 +141,9 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
                 break;
             case DwarfJob::DJT_MONEY:
                 pixmap_name = ":status/img/money-coin.png";
+                break;
+            case DwarfJob::DJT_TAX:
+                pixmap_name = ":status/img/money--arrow.png";
                 break;
             case DwarfJob::DJT_RETURN:
                 pixmap_name = ":status/img/arrow-return.png";
@@ -285,6 +288,21 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
                 break;
             case DwarfJob::DJT_STORAGE:
                 pixmap_name = ":status/img/box--plus.png";
+                break;
+            case DwarfJob::DJT_STORE_OWNED:
+                pixmap_name = ":status/img/safe--plus.png";
+                break;
+            case DwarfJob::DJT_CABINET_MAKE:
+                pixmap_name = ":status/img/drawer--plus.png";
+                break;
+            case DwarfJob::DJT_CABINET_STORE:
+                pixmap_name = ":status/img/drawer-open.png";
+                break;
+            case DwarfJob::DJT_DOOR_MAKE:
+                pixmap_name = ":status/img/door--plus.png";
+                break;
+            case DwarfJob::DJT_CHAIR_MAKE:
+                pixmap_name = ":status/img/chair--plus.png";
                 break;
             case DwarfJob::DJT_BREW:
                 pixmap_name = ":status/img/ale--plus.png";

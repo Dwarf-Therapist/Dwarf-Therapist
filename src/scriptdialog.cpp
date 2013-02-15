@@ -66,9 +66,9 @@ ScriptDialog::ScriptDialog(QWidget *parent)
 
     QString attribute_list = "<br><b>Attribute Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Attribute ID</th><th>Attribute</th></tr>";
-    QPair<int, Attribute*> att_pair;
-    foreach(att_pair, gdr->get_ordered_attributes()) {
-        attribute_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(att_pair.second->id).arg(att_pair.second->name));
+    QPair<int, QString> att_pair;
+    foreach(att_pair, gdr->get_ordered_attribute_names()) {
+        attribute_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(att_pair.first).arg(att_pair.second));
     }
     attribute_list.append("</table>");
     ui->text_help->append(attribute_list);

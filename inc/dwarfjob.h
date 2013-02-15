@@ -103,8 +103,14 @@ public:
         DJT_GEAR,
         DJT_TROUBLE,
         DJT_STORAGE,
+        DJT_STORE_OWNED,
         DJT_BREW,
-        DJT_RAW_FISH
+        DJT_RAW_FISH,
+        DJT_TAX,
+        DJT_CABINET_STORE,
+        DJT_CABINET_MAKE,
+        DJT_DOOR_MAKE,
+        DJT_CHAIR_MAKE
     } DWARF_JOB_TYPE;
 
     static DWARF_JOB_TYPE get_type(const QString &type) {
@@ -136,6 +142,7 @@ public:
         m["build_remove"] = DJT_BUILD_REMOVE;
         m["bag_add"] = DJT_BAG_ADD;
         m["money"] = DJT_MONEY;
+        m["tax"] = DJT_TAX;
         m["return"] = DJT_RETURN;
         m["party"] = DJT_PARTY;
         m["soap"] = DJT_SOAP;
@@ -183,8 +190,44 @@ public:
         m["gear"] = DJT_GEAR;
         m["trouble"] = DJT_TROUBLE;
         m["storage"] = DJT_STORAGE;
+        m["store_owned"] = DJT_STORE_OWNED;
         m["brew"] = DJT_BREW;
+        m["cabinet_store"] = DJT_CABINET_STORE;
+        m["cabinet_make"] = DJT_CABINET_MAKE;
+        m["door_make"] = DJT_DOOR_MAKE;
+        m["chair_make"] = DJT_CHAIR_MAKE;
         return m.value(type.toLower(), DJT_DEFAULT);
+    }
+
+    static QString get_job_mat_category_name(quint32 flags){
+        switch(flags){
+        case 0:
+            return tr("plant");
+        case 2:
+            return tr("wood");
+        case 4:
+            return tr("cloth");
+        case 8:
+            return tr("silk");
+        case 16:
+            return tr("leather");
+        case 32:
+            return tr("bone");
+        case 64:
+            return tr("shell");
+        case 128:
+            return tr("soap");
+        case 256:
+            return tr("tooth");
+        case 512:
+            return tr("horn");
+        case 1024:
+            return tr("pearl");
+        case 2048:
+            return tr("yarn");
+        }
+
+        return "unknown";
     }
 
     DwarfJob(short id, QString description, DWARF_JOB_TYPE type, QString reactionClass, QObject *parent = 0)

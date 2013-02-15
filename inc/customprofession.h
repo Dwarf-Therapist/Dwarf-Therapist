@@ -62,15 +62,23 @@ public:
 
 	//! Get the game-visible name of this profession
 	QString get_name() {return m_name;}
+    //! Get the name:: for this custom profession if it's an icon override
+    QString get_save_name();
 
     //! Get the icon resource name for this profession
     QString get_icon_path() {return m_path;}
     int get_icon_id() {return m_icon_id;}
 
     //! Get the icon's text color for this profession
-    QColor get_color() {return m_color;}
+    QColor get_font_color() {return m_font_color;}
+
+    //! Get the background color (exclusively for icon overrides)
+    QColor get_bg_color() {return m_bg_color;}
 
     QString get_text() {return m_txt;}
+
+    QPixmap get_pixmap();
+    QString get_embedded_pixmap();
 
 	//! Check if our template has a particular labor enabled
 	bool is_active(int labor_id);
@@ -85,11 +93,13 @@ public:
     bool is_mask(){return m_is_mask;}
     void set_mask(bool value){m_is_mask = value;}
 
+    int prof_id(){return m_id;}
+
 	public slots:
 		void add_labor(int labor_id) {set_labor(labor_id, true);}
 		void remove_labor(int labor_id) {set_labor(labor_id, false);}
 		void set_labor(int labor_id, bool active);
-		void set_name(QString name) {m_name = name;}
+        void set_name(QString name);
 		void accept();
 		void cancel() {return;}
 		void item_check_state_changed(QListWidgetItem*);
@@ -99,22 +109,36 @@ public:
             m_path = ":/profession/img/profession icons/prof_" + QString::number(id) + ".png";}
         void choose_icon();
         void refresh_icon();
-        void set_color(QColor c){m_color = c;}
+        void set_font_color(QColor c){m_font_color = c;}
+        void set_bg_color(QColor c){m_bg_color = c;}
         void set_text(QString s){m_txt = s;}
+        void set_prof_id(int val){m_id = val;}
+        void color_selected(QString key,QColor col);
+        void prefix_changed(QString val);
 
 private:
 	bool is_valid();
+    void create_image();
+    QFont* get_font();
     Ui::CustomProfessionEditor *ui;
 	Dwarf *m_dwarf;
-	QString m_name;
+    QString m_name;
     QString m_path;
     int m_icon_id;
 	QMap<int, bool> m_active_labors;
 	QDialog *m_dialog;
     bool m_is_mask;
-    CustomColor *m_color_chooser;
-    QColor m_color;
+
+    CustomColor *m_font_custom_color;
+    CustomColor *m_bg_custom_color;
+    QColor m_font_color;
+    QColor m_bg_color;
+
     QString m_txt;
+    int m_id;
+
+    QFont *m_fnt;
+    QPixmap m_pixmap;
 
 };
 #endif

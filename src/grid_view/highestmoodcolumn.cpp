@@ -34,11 +34,13 @@ THE SOFTWARE.
 HighestMoodColumn::HighestMoodColumn(const QString &title, ViewColumnSet *set, QObject *parent)
     : SkillColumn(title,-1,set,parent,CT_HIGHEST_MOOD)
 {
+    m_sortable_types.clear();
 }
 
 HighestMoodColumn::HighestMoodColumn(const HighestMoodColumn &to_copy)
     : SkillColumn(to_copy)
 {
+    m_sortable_types = to_copy.m_sortable_types;
 }
 
 
@@ -46,25 +48,25 @@ QStandardItem *HighestMoodColumn::build_cell(Dwarf *d) {
     GameDataReader *gdr = GameDataReader::ptr();
     QStandardItem *item = init_cell(d);
 
-    Skill *s = d->highest_moodable();
-    m_skill_id = s->id();
+    Skill s = d->highest_moodable();
+    m_skill_id = s.id();
 
     int img_id = 24;
-    if(s->capped_rating() != -1)
-        img_id = gdr->get_pref_from_skill(s->id()) + 1; //prof images start at 1, id start at 0
+    if(s.capped_level() != -1)
+        img_id = gdr->get_pref_from_skill(s.id()) + 1; //prof images start at 1, id start at 0
 
     QString pixmap_name = ":/profession/img/profession icons/prof_" + QString::number(img_id) + ".png";
     item->setData(QIcon(pixmap_name), Qt::DecorationRole);
 
     item->setData(CT_HIGHEST_MOOD, DwarfModel::DR_COL_TYPE);
-    item->setData(d->had_mood(),DwarfModel::DR_RATING);
+    item->setData(d->had_mood(),DwarfModel::DR_SPECIAL_FLAG);
 
-    int id = s->id() < 0 ? 0 : s->id();
+    int id = s.id() < 0 ? 0 : s.id();
     m_sort_val = 50 + (id * 100);
     if(d->had_mood())
         m_sort_val = 0 - m_sort_val;
 
-    m_sort_val += s->raw_rating();
+    m_sort_val += s.raw_level();
     item->setData(m_sort_val, DwarfModel::DR_SORT_VALUE);
 
     QColor bg = QColor(175,175,175);
@@ -72,8 +74,8 @@ QStandardItem *HighestMoodColumn::build_cell(Dwarf *d) {
         bg = QColor(255,255,255);
     item->setData(bg,Qt::BackgroundColorRole);
 
-    set_tooltip(d,item, "", false);
-    s = 0;
+    build_tooltip(d,false);
+    //s = 0;
 
     return item;
 }

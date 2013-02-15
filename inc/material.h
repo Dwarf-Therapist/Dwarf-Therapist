@@ -49,7 +49,7 @@ public:
     void load_data();        
     bool is_inorganic() {return m_inorganic;}
 
-    FlagArray* flags() {return m_flags;}
+    FlagArray flags() {return m_flags;}
 
     static const QString get_material_flag_desc(const MATERIAL_FLAGS &flag) {
         QMap<MATERIAL_FLAGS, QString> m;
@@ -76,12 +76,9 @@ private:
     VIRTADDR m_address;
     VIRTADDR m_flag_address;
     DFInstance * m_df;
-    MemoryLayout * m_mem;
-    //QBitArray *m_flags;
-    FlagArray *m_flags;
+    MemoryLayout * m_mem;    
+    FlagArray m_flags;
     bool m_inorganic;
-
-
     QHash<MATERIAL_STATES, QString> m_state_names;
 
     void read_material();

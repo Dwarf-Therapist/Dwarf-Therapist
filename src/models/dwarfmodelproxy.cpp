@@ -98,20 +98,20 @@ bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source
         }
     }
 
-    if (dwarf_id && (!m_active_filter_script.isEmpty() || !m_pref_script.isEmpty())) {
+    if (dwarf_id && (!m_active_filter_script.isEmpty() || !m_secondary_script.isEmpty())) {
         Dwarf *d = m->get_dwarf_by_id(dwarf_id);
         if (d) {
             QScriptValue d_obj = m_engine->newQObject(d);
             m_engine->globalObject().setProperty("d", d_obj);
 
-            //if we have a preference script, append it to the current script if one exists
-            //otherwise, just use our preference script
+            //if we have a secondary script, append it to the main script if one exists
+            //otherwise, just use our secondary script, could be expanded for multiple scripts
             QString script = m_active_filter_script;
-            if(!m_pref_script.isEmpty()){
+            if(!m_secondary_script.isEmpty()){
                 if(m_active_filter_script.isEmpty())
-                    script = m_pref_script;
+                    script = m_secondary_script;
                 else
-                    script.append(" && (").append(m_pref_script).append(")");
+                    script.append(" && (").append(m_secondary_script).append(")");
             }
             matches = matches && m_engine->evaluate(script).toBool();
         }
@@ -124,21 +124,7 @@ bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source
         if(dwarf_id && hide_children) {
             Dwarf *d = m->get_dwarf_by_id(dwarf_id);
             if(!d->is_animal()){
-
-                short baby_id = -1;
-                short child_id = -1;
-                foreach(Profession *p, GameDataReader::ptr()->get_professions()) {
-                    if (p->name(true) == "Baby") {
-                        baby_id = p->id();
-                    }
-                    if (p->name(true) == "Child") {
-                        child_id = p->id();
-                    }
-                    if(baby_id > 0 && child_id > 0)
-                        break;
-                }
-                matches = (d->raw_profession() != baby_id &&
-                        d->raw_profession() != child_id);
+                matches = (!d->is_baby() && !d->is_child());
             }
         }
     }
@@ -153,51 +139,38 @@ bool DwarfModelProxy::filterAcceptsColumn(int source_column, const QModelIndex &
 }
 
 void DwarfModelProxy::sort(int column, Qt::SortOrder order) {
-    if (order == Qt::AscendingOrder)
-        sort(column, DSR_NAME_ASC);
-    else
-        sort(column, DSR_NAME_DESC);
+    sort(column, DSR_DEFAULT, order);
 }
 
-void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role) {
-    Qt::SortOrder order;
+void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role, Qt::SortOrder order) {
     if (column == 0) {
         switch(role) {
-        default:
-        case DSR_NAME_ASC:
-            order = Qt::AscendingOrder;
+        default:           
             setSortRole(DwarfModel::DR_SORT_VALUE);
             break;
-        case DSR_NAME_DESC:
-            order = Qt::DescendingOrder;
-            setSortRole(DwarfModel::DR_SORT_VALUE);
+        case DSR_NAME_ASC:            
+            setSortRole(DwarfModel::DR_NAME);
             break;
-        case DSR_ID_ASC:
-            order = Qt::AscendingOrder;
+        case DSR_NAME_DESC:            
+            setSortRole(DwarfModel::DR_NAME);
+            break;
+        case DSR_ID_ASC:            
             setSortRole(DwarfModel::DR_ID);
             break;
-        case DSR_ID_DESC:
-            order = Qt::DescendingOrder;
+        case DSR_ID_DESC:            
             setSortRole(DwarfModel::DR_ID);
             break;
-        case DSR_GAME_ORDER:
-            order = Qt::AscendingOrder;
-            setSortRole(DwarfModel::DR_SORT_VALUE);
+        case DSR_AGE_ASC:            
+            setSortRole(DwarfModel::DR_AGE);
+            break;
+        case DSR_AGE_DESC:            
+            setSortRole(DwarfModel::DR_AGE);
             break;
         }
         m_last_sort_order = order;
     } else {
-        switch(role) {
-        default:
-        case DSR_NAME_ASC:
-        case DSR_ID_ASC:
-            order = Qt::AscendingOrder;
-            break;
-        case DSR_NAME_DESC:
-        case DSR_ID_DESC:
-            order = Qt::DescendingOrder;
-            break;
-        }
+        //not the name (0) column, and will always be passed in with DSR_DEFAULT
+        //so just set the sort value, as the order is passed in as well, and continue
         setSortRole(DwarfModel::DR_SORT_VALUE);
     }
     setSortCaseSensitivity(Qt::CaseInsensitive);

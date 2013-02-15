@@ -43,25 +43,21 @@ ProfessionColumn::ProfessionColumn(const ProfessionColumn &to_copy)
 
 
 QStandardItem *ProfessionColumn::build_cell(Dwarf *d) {
-    QStandardItem *item = init_cell(d);    
-    QString pixmap_name(d->profession_icon_path());
-    item->setData(QIcon(pixmap_name), Qt::DecorationRole);
+    QStandardItem *item = init_cell(d);        
+    item->setData(QIcon(d->profession_icon()), Qt::DecorationRole);
     item->setData(CT_PROFESSION, DwarfModel::DR_COL_TYPE);
-    item->setData(d->raw_profession(), DwarfModel::DR_SORT_VALUE);
-
-    //if there's a custom prof and it exists in our list, then we're using a custom icon, and we want to notify
-    //the delegate to draw text over the icon
-    item->setData(d->custom_profession_name(),DwarfModel::DR_RATING);
+    item->setData(d->raw_profession(), DwarfModel::DR_SORT_VALUE);    
 
     QColor bg = QColor(175,175,175);
     if(DT->user_settings()->value("options/grid/shade_cells",true)==false)
         bg = QColor(255,255,255);
     item->setData(bg,Qt::BackgroundColorRole);
 
-    QString tooltip = tr("<h3>%1</h3>%2 (%3)<h4>%4</h4>")
+    QString tooltip = tr("<h3>%1</h3>%2 (%3)<h5><i>%4</i></h5><h4>%5</h4>")
             .arg(m_title)
             .arg(d->profession())
             .arg(d->raw_profession())
+            .arg(tr("Right click to edit this profession's icon."))
             .arg(d->nice_name());
 
     item->setToolTip(tooltip);

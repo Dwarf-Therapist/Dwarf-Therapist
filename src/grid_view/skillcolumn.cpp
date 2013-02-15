@@ -31,70 +31,95 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "skill.h"
 #include "trait.h"
+#include "viewmanager.h"
 
 SkillColumn::SkillColumn(const QString &title, const int &skill_id, ViewColumnSet *set, QObject *parent, COLUMN_TYPE cType)
     : ViewColumn(title, cType, set, parent)
 	, m_skill_id(skill_id)
 {
+    m_sortable_types << CST_LEVEL << CST_ROLE_RATING << CST_SKILL_RATE;
+    m_current_sort = ViewManager::get_default_col_sort(cType);
 }
 
 SkillColumn::SkillColumn(QSettings &s, ViewColumnSet *set, QObject *parent) 
     : ViewColumn(s, set, parent)
     , m_skill_id(s.value("skill_id", -1).toInt())
 {
+    m_sortable_types << CST_LEVEL << CST_ROLE_RATING << CST_SKILL_RATE;
+    m_current_sort = ViewManager::get_default_col_sort(CT_SKILL);
 }
 
 SkillColumn::SkillColumn(const SkillColumn &to_copy) 
     : ViewColumn(to_copy)
     , m_skill_id(to_copy.m_skill_id)
 {
+    m_sortable_types = to_copy.m_sortable_types;
 }
 
 QStandardItem *SkillColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
-    m_sort_val = 0;
-    bool sorting_by_role = DT->user_settings()->value("options/sort_roles_in_skills", true).toBool();
-    short rating = d->skill_rating(m_skill_id);
-    //short raw_rating = d->skill_rating(m_skill_id,true);
+    //float level = d->skill_level(m_skill_id,false,true);
 
-    if(d->get_skill(m_skill_id)->actual_exp() > 0)
-        m_sort_val += 1000;
-
-    item->setData(CT_SKILL, DwarfModel::DR_COL_TYPE);
-    item->setData(rating, DwarfModel::DR_RATING);
-    item->setData(m_skill_id, DwarfModel::DR_LABOR_ID);
+    item->setData(CT_SKILL, DwarfModel::DR_COL_TYPE);    
+    item->setData(d->skill_level(m_skill_id), DwarfModel::DR_DISPLAY_RATING); //level rounded down
+    item->setData(d->skill_level(m_skill_id,false,true), DwarfModel::DR_RATING); //interpolated level
+    item->setData(m_skill_id, DwarfModel::DR_SKILL_ID);
     item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
 
-    set_sorting(d,item,rating,sorting_by_role);
-    set_tooltip(d,item,"show_roles_in_labor",sorting_by_role);
+    refresh_sort(d, m_current_sort);
+    build_tooltip(d,DT->user_settings()->value(QString("options/show_roles_in_skills"),true).toBool());
 
     return item;
 
 }
 
-void SkillColumn::set_sorting(Dwarf *d, QStandardItem *item, int rating, bool sorting_by_role){
-    float adj = 0;
-    if(!sorting_by_role){
-        //include the skill learning rate in the sorting. equally weigh the skill level and rate
-        adj = ((float)rating / 20) * 100; //can't use raw rating unless we know the limit for the skill (ie. max dwarf's raw level)
-
-        if(DT->get_DFInstance()->show_skill_rates()){
-            adj += (((float)d->get_skill(m_skill_id)->skill_rate() / 500.0f) * 100);
-            //m_sort_val += d->get_skill(m_skill_id)->skill_rate();
-            adj /= 2.0f;
-        }
-        m_sort_val += adj;
+void SkillColumn::refresh_sort(COLUMN_SORT_TYPE sType){
+    foreach(Dwarf *d, m_cells.uniqueKeys()){        
+        refresh_sort(d, sType);
     }
-    item->setData(m_sort_val, DwarfModel::DR_SORT_VALUE);
 }
 
-void SkillColumn::set_tooltip(Dwarf *d, QStandardItem *item, QString option_name, bool sorting_by_role){
+void SkillColumn::refresh_sort(Dwarf *d, COLUMN_SORT_TYPE sType){
+    if(get_sortable_types().count() > 0){
+        if(sType == CST_DEFAULT) //no default sort, use XP
+            sType = CST_LEVEL;
+        if(!m_sortable_types.contains(sType))
+            sType = m_sortable_types.at(0);
+
+
+        if(m_cells.value(d) && m_cells.value(d)->data(DwarfModel::DR_BASE_SORT).canConvert<float>()){
+            m_sort_val = m_cells.value(d)->data(DwarfModel::DR_BASE_SORT).toFloat();
+        }
+
+        if(sType == CST_ROLE_RATING){
+            if(m_skill_id != -1){
+                float m_role_sort_val = 0.0;
+                QVector<Role*> related_roles = GameDataReader::ptr()->get_skill_roles().value(m_skill_id);
+                if(related_roles.count() > 0){
+                    foreach(Role *r, related_roles){
+                        m_role_sort_val += d->get_role_rating(r->name);
+                    }
+                    m_role_sort_val /= related_roles.count();
+                    m_sort_val += m_role_sort_val;
+                }
+            }
+        }else if(sType == CST_SKILL_RATE){            
+            m_sort_val += d->get_skill(m_skill_id).skill_rate();
+        }else{//EXPERIENCE
+            m_sort_val += d->skill_level(m_skill_id,true,true);            
+        }
+    }
+    m_cells.value(d)->setData(m_sort_val, DwarfModel::DR_SORT_VALUE);
+    m_current_sort = sType;
+}
+
+void SkillColumn::build_tooltip(Dwarf *d, bool include_roles){
     GameDataReader *gdr = GameDataReader::ptr();
 
     //build the role section and adjust the sort value if necessary
     QString role_str="";
-    if(!option_name.isEmpty() && DT->user_settings()->value(QString("options/%1").arg(option_name), true).toBool()) {
-        float new_sort_val = m_sort_val;
+    //if(!option_name.isEmpty() && DT->user_settings()->value(QString("options/%1").arg(option_name), true).toBool()) {
+    if(include_roles){
         float role_rating=0;
         if(m_skill_id != -1){
             QVector<Role*> found_roles = gdr->get_skill_roles().value(m_skill_id);
@@ -104,31 +129,29 @@ void SkillColumn::set_tooltip(Dwarf *d, QStandardItem *item, QString option_name
                 role_str = tr("<h4>Related Roles:</h4><ul style=\"margin-left:-20px; padding-left:0px;\">");
                 foreach(Role *r, found_roles){
                     role_rating = d->get_role_rating(r->name);
-                    role_str += tr("<li>%1 (%2%)</li>").arg(r->name).arg(QString::number(role_rating,'f',2));
-                    new_sort_val += role_rating;
+                    role_str += tr("<li>%1 (%2%)</li>").arg(r->name).arg(QString::number(role_rating,'f',2));                    
                 }
                 role_str += "</ul>";
-                new_sort_val /= found_roles.count();
-                if(sorting_by_role){
-                    m_sort_val = new_sort_val;
-                    item->setData(m_sort_val,DwarfModel::DR_SORT_VALUE);
-                }
             }
         }
     }
 
     //skill bonus
     QString str_skill_rate = "";
-    if(DT->get_DFInstance()->show_skill_rates()){
-        int raw_bonus = d->get_skill(m_skill_id)->skill_rate();
+    if(DT->multiple_castes){
+        int raw_bonus = d->get_skill(m_skill_id).skill_rate();
         int bonus = raw_bonus - 100;
-        str_skill_rate = QString("<br><b>XP Bonus: </b>%1% [RAW: %2%]")
-                .arg(QString::number(bonus,'f',0))
-                .arg(QString::number(raw_bonus,'f',0));
+        if(bonus != 0){
+            QString prefix = bonus < 0 ? "Penalty" : "Bonus";
+            str_skill_rate = tr("<br><b>XP %1: </b>%2% [RAW: %3%]")
+                    .arg(prefix)
+                    .arg(QString::number(bonus,'f',0))
+                    .arg(QString::number(raw_bonus,'f',0));
+        }
     }
 
     QString str_mood = "";
-    if(m_skill_id == d->highest_moodable()->id()){
+    if(m_skill_id == d->highest_moodable().id()){
         str_mood = tr("<br/><br/>This is the highest moodable skill.");
         if(d->had_mood())
             str_mood = tr("<br/><br/>Had a mood with this skill and crafted '%1'.").arg(d->artifact_name());
@@ -136,8 +159,8 @@ void SkillColumn::set_tooltip(Dwarf *d, QStandardItem *item, QString option_name
 
     //skill xp, level, name, mood
     QString skill_str = "";
-    short rating = d->skill_rating(m_skill_id);
-    short raw_rating = d->skill_rating(m_skill_id, true);
+    short rating = d->skill_level(m_skill_id);
+    float raw_rating = d->skill_level(m_skill_id, true, true);
     if ((m_skill_id != -1 && rating > -1) || d->had_mood()) {
         if(m_skill_id == -1){
             skill_str = tr("%1 %2")
@@ -147,8 +170,8 @@ void SkillColumn::set_tooltip(Dwarf *d, QStandardItem *item, QString option_name
             skill_str = tr("%1 %2<br/><br/><b>[RAW LEVEL:</b> %3]<br/><b>Experience: </b>%4%5%6")
                     .arg(gdr->get_skill_level_name(rating))
                     .arg(gdr->get_skill_name(m_skill_id,true))
-                    .arg(QString::number(raw_rating))
-                    .arg(d->get_skill(m_skill_id)->exp_summary())
+                    .arg(QString::number((int)raw_rating))
+                    .arg(d->get_skill(m_skill_id).exp_summary())
                     .arg(str_skill_rate)
                     .arg(str_mood);
         }
@@ -179,7 +202,7 @@ void SkillColumn::set_tooltip(Dwarf *d, QStandardItem *item, QString option_name
             .arg(conflicts_str)
             .arg(d->nice_name());
 
-    item->setToolTip(tooltip);
+    m_cells.value(d)->setToolTip(tooltip);
 }
 
 QStandardItem *SkillColumn::build_aggregate(const QString &, const QVector<Dwarf*> &) {

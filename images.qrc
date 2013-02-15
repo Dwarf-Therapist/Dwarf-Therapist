@@ -34,7 +34,6 @@
         <file>img/find.png</file>
         <file>img/help.png</file>
         <file>img/book_edit.png</file>
-        <file>img/heart.png</file>
         <file>img/female.png</file>
         <file>img/male.png</file>
         <file>img/emoticon_grin.png</file>
@@ -44,7 +43,6 @@
         <file>img/exclamation.png</file>
         <file>img/bullet_red.png</file>
         <file>img/tick.png</file>
-        <file>img/arrow_switch.png</file>
         <file>img/printer_error.png</file>
         <file>img/printer.png</file>
         <file>img/script_minus.png</file>
@@ -54,6 +52,36 @@
         <file>img/control.png</file>
         <file>img/refresh.png</file>
         <file>img/balloon-box.png</file>
+        <file>img/ui-tab--plus.png</file>
+        <file>img/ui-button-navigation.png</file>
+        <file>img/minus-circle.png</file>
+        <file>img/plus-circle.png</file>
+        <file>img/wrench-screwdriver.png</file>
+        <file>img/arrow-in.png</file>
+        <file>img/arrow-out.png</file>
+        <file>img/table--arrow.png</file>
+        <file>img/table-export.png</file>
+        <file>img/table-import.png</file>
+        <file>img/table--minus.png</file>
+        <file>img/table--pencil.png</file>
+        <file>img/table--plus.png</file>
+        <file>img/memory-scan.png</file>
+        <file>img/application-import.png</file>
+        <file>img/document-export.png</file>
+        <file>img/document-import.png</file>
+        <file>img/document-excel-csv.png</file>
+        <file>img/document--plus.png</file>
+        <file>img/globe--arrow.png</file>
+        <file>img/question-frame.png</file>
+        <file>img/heart.png</file>
+        <file>img/ui-layered-pane.png</file>
+        <file>img/arrow-switch.png</file>
+        <file>img/exclamation-red-frame.png</file>
+        <file>img/pencil.png</file>
+        <file>img/sort-alphabet.png</file>
+        <file>img/sort-alphabet-descending.png</file>
+        <file>img/sort-number.png</file>
+        <file>img/sort-number-descending.png</file>
     </qresource>
     <qresource prefix="/config">
         <file alias="default_gridviews">default_gridviews.dtg</file>
@@ -160,6 +188,12 @@
         <file>img/crossed-swords.png</file>
         <file>img/tree--minus.png</file>
         <file>img/carp.png</file>
+        <file>img/drawer-open.png</file>
+        <file>img/drawer--plus.png</file>
+        <file>img/money--arrow.png</file>
+        <file>img/door--plus.png</file>
+        <file>img/chair--plus.png</file>
+        <file>img/safe--plus.png</file>
     </qresource>
     <qresource prefix="/profession">
         <file>img/profession icons/prof_10.png</file>
@@ -257,7 +291,6 @@
         <file>img/profession icons/prof_102.png</file>
         <file>img/profession icons/prof_103.png</file>
         <file>img/profession icons/prof_104.png</file>
-        <file>img/profession icons/prof_105.png</file>
         <file>img/profession icons/prof_106.png</file>
         <file>img/profession icons/prof_1.png</file>
         <file>img/profession icons/prof_2.png</file>
@@ -268,5 +301,6 @@
         <file>img/profession icons/prof_7.png</file>
         <file>img/profession icons/prof_8.png</file>
         <file>img/profession icons/prof_9.png</file>
+        <file>img/profession icons/prof_105.png</file>
     </qresource>
 </RCC>

@@ -27,37 +27,34 @@ THE SOFTWARE.
 #include "memorylayout.h"
 #include "truncatingfilelogger.h"
 #include "gamedatareader.h"
-#include "attributelevel.h"
 #include "flagarray.h"
 
-Caste::Caste(DFInstance *df, VIRTADDR address, QString race_name, QObject *parent)
+#include "dwarfstats.h"
+
+Caste::Caste(DFInstance *df, VIRTADDR address, int race_id, QString race_name, QObject *parent)
     : QObject(parent)
     , m_address(address)
+    , m_race_id(race_id)
     , m_race_name(race_name)
     , m_tag(QString::null)
     , m_name(QString::null)
     , m_description(QString::null)
     , m_df(df)
     , m_mem(df->memory_layout())
+    , m_flags()
     , m_has_extracts(false)    
 {
     load_data();
 }
 
 Caste::~Caste() {
-    delete(m_flags);
-    m_flags = 0;
-
     m_body_sizes.clear();
-    m_ranges.clear();
-    m_skill_rates.clear();
-
-    m_df = 0;
-    m_mem = 0;
+    m_attrib_ranges.clear();
+    m_skill_rates.clear();    
 }
 
-Caste* Caste::get_caste(DFInstance *df, const VIRTADDR & address, QString race_name) {
-    return new Caste(df, address, race_name);
+Caste* Caste::get_caste(DFInstance *df, const VIRTADDR & address, int race_id, QString race_name) {
+    return new Caste(df, address, race_id, race_name);
 }
 
 void Caste::load_data() {
@@ -88,14 +85,13 @@ void Caste::read_caste() {
 //    }
     m_description = m_df->read_string(m_address + m_mem->caste_offset("caste_descr"));
 
-
 //    could update this to read the child/baby sizes instead of just the adult size
 //    QVector<VIRTADDR> body_sizes = m_df->enumerate_vector(m_address + m_mem->caste_offset("body_sizes_vector"));
 //    foreach(VIRTADDR size, body_sizes){
 //        m_body_sizes.prepend((int)size);
 //    }
     m_body_sizes.append(m_df->read_int(m_address + m_mem->caste_offset("adult_size")));
-    m_flags = new FlagArray(m_df, m_address + m_mem->caste_offset("flags"));
+    m_flags = FlagArray(m_df, m_address + m_mem->caste_offset("flags"));
 
     QVector<uint> extracts = m_df->enumerate_vector(m_address + m_mem->caste_offset("extracts"));
     if(extracts.count() > 0)
@@ -104,8 +100,8 @@ void Caste::read_caste() {
 }
 
 bool Caste::is_trainable(){
-    if((m_flags->has_flag(TRAINABLE_HUNTING) || m_flags->has_flag(TRAINABLE_WAR)) &&
-            (m_flags->has_flag(PET) || m_flags->has_flag(PET_EXOTIC))){
+    if((m_flags.has_flag(TRAINABLE_HUNTING) || m_flags.has_flag(TRAINABLE_WAR)) &&
+            (m_flags.has_flag(PET) || m_flags.has_flag(PET_EXOTIC))){
         return true;
     }else{
         return false;
@@ -113,7 +109,7 @@ bool Caste::is_trainable(){
 }
 
 bool Caste::is_milkable(){
-    return m_flags->has_flag(MILKABLE);
+    return m_flags.has_flag(MILKABLE);
 }
 
 void Caste::load_skill_rates(){
@@ -124,24 +120,8 @@ void Caste::load_skill_rates(){
         for(int skill_id=0; skill_id < skill_count; skill_id++){
             val = (int)m_df->read_int(addr);
             m_skill_rates.insert(skill_id, val);
-            //a bit of a hack. sets a global variable to let us know if there are castes with significant xp bonuses
-            //which in turn determines if we show the column in the dwarf details pane, and in the skill/labor column tooltips
-            //rather than doing this, we could also just count unique castes used..
-            if((val-100) > 25){
+            if((val-100) >= 25)
                 m_bonuses.append(GameDataReader::ptr()->get_skill_name(skill_id));
-                if(!m_df->show_skill_rates())
-                    m_df->set_show_skill_rates(true);
-            }
-
-//if rusting is ever figured out, these values are needed. after the array at "skill_rates" offset
-//there are 3 other arrays of the same length, for unused, rust_counter and the demotion_counter
-//            int unused = m_df->read_int(addr + 0x1d0);
-//            int rust_counter = m_df->read_int(addr + (0x1d0 *2));
-//            int demotion_counter = m_df->read_int(addr + (0x1d0 *3));
-
-//            if(unused != 8 || rust_counter != 16 || demotion_counter != 16) <- wiki is wrong, seems it's 8/16/16, not 8/8/16
-//                int z = 0;
-
             addr += 0x4;
         }
     }
@@ -154,69 +134,94 @@ int Caste::get_skill_rate(int skill_id){
     return(m_skill_rates.value(skill_id,100));
 }
 
-void Caste::load_attribute_info(){
+void Caste::load_attribute_info(float ratio){
     //physical attributes (seems mental attribs follow so load them all at once)
     VIRTADDR base = m_address + m_mem->caste_offset("caste_phys_att_ranges");
+    VIRTADDR base_caps = m_address + m_mem->caste_offset("caste_att_caps");
+    VIRTADDR base_rates = m_address + m_mem->caste_offset("caste_att_rates");
+    int perc = 200; //the percentage of improvement default is 200
+    int limit = 5000; //absolute maximum any dwarf can achieve (last raw bin * perc)
+    int median = 0;
+    int display_max = 0; //maximum display descriptor value, seems to be the median + 1000?
+    int cost_to_improve = 500; //cost to improve default is 500
     for (int i=0; i<19; i++)
     {
-        att_range r;
-        int max = m_df->read_int(base + i*28 + 12) + 1000; //max is median + 1000
-
-        //load the raws, add the 0-first bin
-        r.raw_bins.append(0);
-        for (int j=0; j<7; j++)
-        {
+        att_range r;                                
+        for (int j=0; j<7; j++){
             int val = m_df->read_int(base + i*28 + j*4);            
-            r.raw_bins.append(val);
-            //TRACE << m_name << " " << i << " " << j << " " << val;
+            r.raw_bins.append(val);            
         }
-        //add the top range - 5000 bin
+        median = r.raw_bins.at(3);
+        display_max = median + 1000; //maybe this is based on the perc below?
+
+        //add a bin between the max raw value, and the 5000 limit, based on the max %
+        perc = m_df->read_int(base_caps + i*4);
+        limit = r.raw_bins.at(6) * (perc/100);
+        r.raw_bins.append(limit);            
+
+        //add the absolute max
         r.raw_bins.append(5000);
 
+        //also save the cost to improve for this attribute for the caste
+        cost_to_improve = m_df->read_int(base_rates + i*16);
+        m_attrib_costs.insert(i,cost_to_improve);
 
         //now load the display/descriptor ranges
         for(int k=0; k<9; k++){
             //avoid the median
             if(k!=4)
-                r.display_bins.prepend(max < 0 ? 0 : max);
-            max -= 250; //game spaces by 250 per description bin
-        }
-
-        m_ranges.insert(i,r);
-    }
+                r.display_bins.prepend(display_max < 0 ? 0 : display_max);
+            display_max -= 250; //game spaces by 250 per descriptor bin
+        }        
+        m_attrib_ranges.insert(i,r);
+        if(ratio > -1)
+            DwarfStats::load_att_caste_bins(i,ratio,r.raw_bins);
+    }    
 }
 
-AttributeLevel Caste::get_attribute_level(int id, int value)
-{
-    if(m_ranges.count()<=0)
+QPair<int, QString> Caste::get_attribute_descriptor_info(ATTRIBUTES_TYPE id, int value){
+    if(m_attrib_ranges.count()<=0)
         load_attribute_info();
 
-    att_range r = m_ranges.value(id);
-    AttributeLevel l;
-    l.rating = 0;
-    int idx = 0;
-    Attribute *a = GameDataReader::ptr()->get_attribute(id);
-    for(int i=0; i < r.display_bins.length(); i++){
-        if(value <= r.display_bins.at(i)){
-            if(i!=4){
-                if(i<4) //the middle bin is always 0
-                    idx=4;
-                else if(i>4)
-                    idx=5;
-                l.rating = r.display_bins.at(i) - r.raw_bins.at(idx);
-                if(l.rating==0)
-                    l.rating=250;
-                l.rating /= 66.66; //this is for our drawing rating (-15  -> +15)
-            }            
-            l.description = a->m_display_descriptions.at(i);
-            return l;
+    QPair<int, QString> ret;
+    att_range r = m_attrib_ranges.value((int)id);
+    if(value >= r.display_bins.at(r.display_bins.length()-1)){
+        ret.first = r.display_bins.length()-1;
+        ret.second = Attribute::find_descriptor(id,ret.first);
+    }else{
+        for(int i=0; i < r.display_bins.length(); i++){
+            if(value <= r.display_bins.at(i)){
+                ret.first = i;
+                ret.second = Attribute::find_descriptor(id,i);
+                break;
+            }
         }
     }
-    l.description = a->m_display_descriptions.at(a->m_display_descriptions.count()-1);
-    l.rating = 20;
 
-    return l;
+    //only append the caste's name to our playable race (don't do this for tame animals in the fort)
+    if(DT->multiple_castes && m_race_id == m_df->dwarf_race_id()){
+        ret.second == "" ? ret.second = QObject::tr("Average") : ret.second;
+        ret.second = QObject::tr("%1 for a %2.").arg(ret.second).arg(m_name);
+    }
+
+    return ret;
 }
+
+void Caste::load_trait_info(){
+//    if(m_trait_ranges.count() <= 0){
+//        VIRTADDR base = m_address + 0x4ec;
+//        for (int i=0; i<30; i++)
+//        {
+//            QList<short> ranges;
+//            ranges.append(m_df->read_short(base));//min
+//            ranges.append(m_df->read_short(base + 0x003c));//median
+//            ranges.append(m_df->read_short(base + 0x0078));//max
+//            m_trait_ranges.insert(i,ranges);
+//            base += 0x2;
+//        }
+//    }
+}
+
 
 
 int Caste::get_body_size(int index){
@@ -240,4 +245,3 @@ QString Caste::description(){
     }
 
 }
-

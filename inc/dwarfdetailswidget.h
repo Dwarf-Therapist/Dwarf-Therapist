@@ -35,14 +35,16 @@ class DwarfDetailsWidget: public QWidget {
     Q_OBJECT
 public:
     DwarfDetailsWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0);
-    public slots:
-        void show_dwarf(Dwarf *d);
+
+public slots:
+    void clear();
+    void show_dwarf(Dwarf *d);
 
 private:
     Ui::DwarfDetailsWidget *ui;
     QGridLayout *m_skills_layout;
-    QVector<QObject*> m_cleanup_list;
-
+//    QVector<QObject*> m_cleanup_list;
+    QVector<QTableWidget*> m_tables;
     QByteArray m_splitter_sizes;
 
     int m_skill_sort_col;
@@ -59,6 +61,10 @@ private:
 
     int m_pref_sort_col;
     int m_pref_sort_desc;
+
+    int m_current_id;
+
+    void clear_table(QTableWidget &t);
 
 };
 

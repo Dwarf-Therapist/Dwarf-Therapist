@@ -26,21 +26,42 @@ THE SOFTWARE.
 
 #include <QVector>
 #include <QSettings>
-
 #include "global_enums.h"
 
+class Attribute {
 
-class Attribute : public QObject {
-    Q_OBJECT
-public:
-    Attribute(QSettings &s, QObject *parent = 0);
-    QString name;
-    int id;
-    QVector<QString> m_display_descriptions;
-    ASPECT_TYPE m_aspect_type;
+public:    
+    Attribute();
+    Attribute(int id, int value, int max, int cost_to_improve = 500, int desc_index = 0, QString desc = "");
 
-protected:
-    void load_role_bin(int id);
+    int id(){return m_id;}
+    ATTRIBUTES_TYPE att_type(){return static_cast<ATTRIBUTES_TYPE>(m_id);}
+    QString get_value_display();
+    QString get_name();
+    QString get_descriptor(){return m_descriptor;}
+    int get_descriptor_rank(){return m_descriptor_index;}
+    int value() {return m_value;}
+    float rating(bool potential = false) {return (potential) ? m_rating_potential : m_rating;}
+    float max() {return m_max;}
+    float cti() {return m_cti;}
+
+    void set_rating(float rating, bool potential=false);
+
+    static void load_attribute_descriptors(QSettings &s);
+    static QString find_descriptor(ATTRIBUTES_TYPE, int index = -1);
+
+private:
+    int m_id;
+    int m_value;
+    int m_max;
+    float m_rating_potential;
+    float m_rating;
+    int m_cti; //cost to improve (caste specific)
+    QString m_descriptor; //caste specific depending on the bins
+    int m_descriptor_index;
+
+    static QHash<int, QVector<QString> > m_display_descriptions;
+
 };
 
 #endif // ATTRIBUTE_H

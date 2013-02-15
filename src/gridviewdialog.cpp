@@ -231,8 +231,8 @@ void GridViewDialog::draw_set_context_menu(const QPoint &p) {
     QMenu m(this);
     QModelIndex idx = ui->list_sets->indexAt(p);
     if (idx.isValid()) {
-        m.addAction(QIcon(":img/application_edit.png"), tr("Edit..."), this, SLOT(edit_set()));
-        m.addAction(QIcon(":img/delete.png"), tr("Remove"), this, SLOT(remove_set()));
+        m.addAction(QIcon(":img/table--pencil.png"), tr("Edit..."), this, SLOT(edit_set()));
+        m.addAction(QIcon(":img/minus-circle.png"), tr("Remove"), this, SLOT(remove_set()));
         m_temp_set = idx.row();
     } else {
         m.addAction(tr("Add New Set"), this, SLOT(add_set()));
@@ -308,8 +308,8 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     QMenu *m = new QMenu(this);
     QModelIndex idx = ui->list_columns->indexAt(p);
     if (idx.isValid()) { // context on a column
-        m->addAction(QIcon(":img/application_edit.png"), tr("Edit Selected"), this, SLOT(edit_column()));
-        m->addAction(QIcon(":img/delete.png"), tr("Remove Selected"), this, SLOT(remove_column()));
+        m->addAction(QIcon(":img/pencil.png"), tr("Edit Selected"), this, SLOT(edit_column()));
+        m->addAction(QIcon(":img/minus-circle.png"), tr("Remove Selected"), this, SLOT(remove_column()));
         m->addSeparator();
         m_temp_col = idx.row();
     } //else { // in whitespace
@@ -328,11 +328,11 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     //ATTRIBUTE
     QMenu *m_attr = m->addMenu(tr("Add Attribute Columns"));
     m_attr->setTearOffEnabled(true);
-    QList<QPair<int, Attribute*> > atts = gdr->get_ordered_attributes();
-    QPair<int, Attribute*> att_pair;
+    QList<QPair<int, QString> > atts = gdr->get_ordered_attribute_names();
+    QPair<int, QString> att_pair;
     foreach(att_pair, atts){
-        a = m_attr->addAction(tr(att_pair.second->name.toLatin1()), this, SLOT(add_attribute_column()));
-        a->setData(att_pair.second->id);
+        a = m_attr->addAction(tr(att_pair.second.toLatin1()), this, SLOT(add_attribute_column()));
+        a->setData(att_pair.first);
     }
 
     //HAPPINESS

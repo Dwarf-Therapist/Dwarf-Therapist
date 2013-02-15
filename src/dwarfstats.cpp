@@ -27,12 +27,10 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "truncatingfilelogger.h"
 
-//QHash<int, QVector<int>* > DwarfStats::m_dwarf_skills;
-//QVector <float> DwarfStats::m_dwarf_skill_mean;
-//QVector <float> DwarfStats::m_dwarf_skill_stdDev;
-
-QHash<ASPECT_TYPE, QList<DwarfStats::bin> > DwarfStats::m_attribute_bins;
 QHash<ASPECT_TYPE, QList<DwarfStats::bin> > DwarfStats::m_trait_bins;
+QHash<int, QHash<QString,DwarfStats::att_info> > DwarfStats::m_att_caste_bins;
+float DwarfStats::m_att_pot_weight;
+//QHash<ATTRIBUTES_TYPE, QVector<float>* > DwarfStats::m_attribute_ratings;
 
 float DwarfStats::calc_cdf(float mean, float stdev, float rawValue){
     double rating = 0.0;
@@ -59,124 +57,37 @@ float DwarfStats::calc_cdf(float mean, float stdev, float rawValue){
     return rating;
 }
 
-//void DwarfStats::load_skills(QVector<Dwarf *> dwarves){
-//    //initialize the hash table 115 skills
-//    for(int i=0; i < 116; i++){
-//        m_dwarf_skills[i] = new QVector<int>;
-//    }
-
-//    foreach(Dwarf *d, dwarves){
-//        if (d->is_animal() == false){
-//            QVector<Skill> *skills = d->get_skills();
-//            for (int i = 0; i < skills->size(); i++) {
-//                Skill s = skills->at(i);
-//                m_dwarf_skills.value(s.id())->append(s.actual_exp());
-//            }
-//        }
-//    }
-
-//    //find skill medians
-//    foreach(int id, m_dwarf_skills.uniqueKeys()){
-//        QVector<int> *values = m_dwarf_skills.value(id);
-//        float median = 0;
-//        if(values->count()>0){
-
-//            if (values->count() % 2 == 0){
-//                median = values->at(values->count() / 2 - 1);
-//                median += values->at(values->count() / 2);
-//                median /= 2;
-//            }
-//            else
-//                median = values->at(values->count()/2 -0.5);
-//        }
-//        m_dwarf_skill_mean.append(median);
-//    }
-//}
-
-void DwarfStats::load_attribute_bins(ASPECT_TYPE key, QList<int> raws){
-    if(!m_attribute_bins.contains(key))
-    {
-        QList<bin> m_bins;
-        bin temp;
-
-        //below first bin
-        temp.min = 0;
-        temp.density = 0.00;
-        temp.max = raws[0];
-        temp.probability = 0.01;
-        m_bins.append(temp);
-        //mid range bins
-        for(int i=0; i<7; i++){
-            temp.probability = 0.16333333333;
-            temp.density = temp.probability * i;
-            if(i>0)
-                temp.density = temp.density + 0.01;
-            temp.min = raws[i];
-            temp.max = raws[i+1];
-            m_bins.append(temp);
-        }
-        //adjust final bin's probability
-        m_bins[m_bins.length()-1].probability = 0.01;
-
-        m_attribute_bins.insert(key, m_bins);
-    }
-}
-
-float DwarfStats::get_attribute_role_rating(ASPECT_TYPE key, int value){
-    return get_aspect_role_rating(value, m_attribute_bins.value(key));
-}
-
-
 void DwarfStats::load_trait_bins(ASPECT_TYPE key, QList<int> raws){
     if(!m_trait_bins.contains(key))
     {
         QList<bin> m_bins;
         bin temp;
 
-        for(int i=0; i<7; i++){
-            switch(i){
-            case 0:
-                temp.density = 0;
-                temp.probability = 0.00375;
-                break;
-            case 1:
-                temp.density = 0.00375;
-                temp.probability = 0.01925;
-                break;
-            case 2:
-                temp.density = 0.023;
-                temp.probability = 0.08475;
-                break;
-            case 3:
-                temp.density = 0.10775;
-                temp.probability = 0.7845;
-                break;
-            case 4:
-                temp.density = 0.89225;
-                temp.probability = 0.08475;
-                break;
-            case 5:
-                temp.density = 0.977;
-                temp.probability = 0.01925;
-                break;
-            case 6:
-                temp.density = 0.99625;
-                temp.probability = 0.00375;
-                break;
-            }
+        QList<float> probabilities;
+        probabilities << 0.00375 << 0.01925 << 0.08475 << 0.7845 << 0.08475 << 0.01925 << 0.00375;
+        float den = raws[0]+1; //raw starts at 1 below lowest value
 
+        for(int i=0; i<7; i++){
+            temp.density = den;
+            temp.probability = probabilities.at(i);
             temp.min = raws[i];
             temp.max = raws[i+1]-1;
             m_bins.append(temp);
+            den += temp.probability;
         }
 
         m_trait_bins.insert(key, m_bins);
     }
 }
 
-float DwarfStats::get_trait_role_rating(ASPECT_TYPE key, int value){    
+float DwarfStats::get_trait_role_rating(ASPECT_TYPE key, int value){
+    //until it's verified how the castes' min/median/max raw values work,
+    //don't modify the value AT ALL
+    if(DT->multiple_castes)
+        return value;
+
     float mid = 50;
-    float adj_value = (float)value;
+    float fVal = (float)value;    
     if(key==negative)
         mid=45;
     else if(key==positive)
@@ -184,11 +95,11 @@ float DwarfStats::get_trait_role_rating(ASPECT_TYPE key, int value){
 
     if(mid!=50){
         if(value < mid)
-            adj_value = (((float)value / mid) /2) * 100;
+            fVal = (((float)value / mid) /2) * 100;
         else
-            adj_value = ((((value-mid)/(100-mid)) /2)+0.5)*100;
+            fVal = ((((value-mid)/(100-mid)) /2)+0.5)*100;
     }
-    return get_aspect_role_rating(adj_value,m_trait_bins.value(key));
+    return get_aspect_role_rating(fVal,m_trait_bins.value(key));
 }
 
 float DwarfStats::get_aspect_role_rating(float value, QList<bin> m_bins){
@@ -196,6 +107,8 @@ float DwarfStats::get_aspect_role_rating(float value, QList<bin> m_bins){
     int max = 0;
     for(int i=0; i<m_bins.length(); i++){
         min = m_bins[i].min -1;
+        if(min < 0)
+            min = 0;
         max = m_bins[i].max;
         if(value > min && value <= max)
             return ((
@@ -206,32 +119,237 @@ float DwarfStats::get_aspect_role_rating(float value, QList<bin> m_bins){
     return 0;
 }
 
-//float DwarfStats::get_skill_role_rating(int skill_id, int value){
-//    //range = max - min
-//    //percent = 100 * (x - min) / (max - min)
+QList<DwarfStats::bin> DwarfStats::build_att_bins(QList<int> raws){
+    QList<bin> m_bins;
+    bin temp;
 
-//    int min = *std::min_element(m_dwarf_skills.value(skill_id)->begin(),m_dwarf_skills.value(skill_id)->end());
-//    int max = *std::max_element(m_dwarf_skills.value(skill_id)->begin(),m_dwarf_skills.value(skill_id)->end());
-//    if(value==0 || min==max)
-//        min = 0;
+    //above/below the top/bottom bin are jammed into 1%, so our probability is shrunk to 98%
+    float prob = (float)(0.98f / (raws.count() - 2.0f)); //0.1633333333f;
+    //below first bin
+    temp.min = 0;
+    temp.density = 0.00;
+    temp.max = raws.at(0);
+    temp.probability = 0.01;
+    m_bins.append(temp);
+    //mid range bins
+    float den = temp.probability;
+    for(int i=0; i < raws.size()-1; i++){
+        temp.probability = prob;
+        temp.density = den;
+        if(i>0)
+            temp.density += 0.01;
+        temp.min = raws.at(i);
+        temp.max = raws.at(i+1);
+        m_bins.append(temp);
+        den += temp.probability;
+    }
+    //adjust final bin's probability & density (bin for > max value, but less than absolute 5000 limit)
+    m_bins[m_bins.length()-1].probability = 0.01;
+    m_bins[m_bins.length()-1].density -= 0.01;
 
-//    return ((float)(value - min) / (float)(max-min));
-//}
+    return m_bins;
+}
 
-//float DwarfStats::get_skill_role_rating(int skill_id, int value){
-//    QVector<int> *skills = m_dwarf_skills.value(skill_id);
-//    float result = 0.5;
-//    if(skills->count() > 0){
-//        float max = *std::max_element(skills->begin(),skills->end());
-//        float median = get_skill_mean(skill_id);
-//        if(median==max)
-//            median = max / 2; //drop the median so that max = 1.0 and 0 is scaled accordingly
+void DwarfStats::load_att_caste_bins(int id, float ratio, QList<int> l){
+    QString key = "";
+    for(int i = 0; i < l.count(); i++){
+        key.append(QString::number(l.at(i)));
+    }
 
-//        if(value<median){
-//            result = ((value-median) / ((max-value)+0.001)+1.0) / 2.0;
-//        }else{
-//            result =  ((median-value) / ((median-max)+0.001)+1.0) / 2.0;
-//        }
+    QHash<QString,att_info> stats;
+    att_info a;
+    //check for this set of raws in the specific attribute bin
+    if(!m_att_caste_bins.contains(id) || !m_att_caste_bins.value(id).contains(key)){        
+        a = att_info();
+
+        if(m_att_caste_bins.contains(id)){
+            stats = m_att_caste_bins.take(id);
+            if(stats.contains(key))
+                a = stats.take(key);
+        }
+
+        QList<bin> m_bins = build_att_bins(l);
+
+        //add the pdf bins
+        a.bins = m_bins;
+        //add this ratio with the first count
+        a.ratios_counts.insert(ratio,1);
+
+//        stats.insert(key,a);
+//        m_att_caste_bins.insert(id,stats);
+    }else{
+        //the bins already exist, add this ratio if it doesn't exist, or increase a count
+        stats = m_att_caste_bins.take(id);
+        a = stats.take(key);
+        int cnt = 1;
+        if(a.ratios_counts.contains(ratio)){
+            cnt = a.ratios_counts.value(ratio) + 1;
+        }
+        a.ratios_counts.insert(ratio,cnt);
+        //m_att_caste_bins.value(id).insert(key,a);
+    }
+
+    stats.insert(key,a);
+    m_att_caste_bins.insert(id,stats);
+
+//    if(a && !DT->using_caste_ranges() && a->ratios_counts.count() > 2)
+//        DT->set_use_caste_ranges(true);
+}
+
+//first version
+//float DwarfStats::get_att_caste_role_rating(ATTRIBUTES_TYPE atype, int val){
+//    if(!m_attribute_ratings.contains(atype)){
+//        QVector<float> *list = new QVector<float>(5000,0.0f);
+//        m_attribute_ratings.insert(atype,list);
 //    }
-//    return result;
+//    float ret_val = m_attribute_ratings.value(atype)->at(val-1);
+//    //if(ret_val <= 0){
+//        QHash<QString,att_info> stats = m_att_caste_bins.value(atype);
+//        att_info a;
+//        float sum = 0.0;
+//        float rating = 0.0;
+//        foreach(QString key, stats.uniqueKeys()){
+//            a = stats.value(key);
+//            rating = get_aspect_role_rating(val,a.bins);
+//            QMapIterator<float, int> i(a.ratios_counts);
+//            while (i.hasNext()) {
+//                i.next();
+//                sum += (rating * i.key() * i.value());
+//            }
+//        }
+//        m_attribute_ratings.value(atype)->replace(val-1,sum);
+//        ret_val = sum;
+//    //}
+//    return ret_val;
 //}
+
+float DwarfStats::get_att_caste_role_rating(Attribute &a){
+    att_info a_info;
+    float sum = 0.0;
+    float rating = 0.0;
+
+//    float sim1_sum = 0.0;
+//    float sim1_rating = 0.0;
+
+//    float sim2_sum = 0.0;
+//    float sim2_rating = 0.0;
+
+//    float sim3_sum = 0.0;
+//    float sim3_rating = 0.0;
+
+    float bonus_sum = 0.0;
+    float bonus_rating = 0.0;
+
+    float potential_value = 0.0;
+    float diff = a.max() - a.value();
+    float cti = a.cti(); //cost to improve
+    if(cti < 0)
+        cti = 0;
+    float gap = diff * 500 / cti;
+
+    //uses the cost to improve and the attributes maximum to apply a bonus
+    //based on the difference between the attribute's current value and the maximum possible
+    if(a.value() >= a.max()){
+        potential_value = a.value();
+    }else{
+        potential_value = 0.5f * (1-(gap/diff));
+        if(potential_value >= 0)
+            potential_value += 0.5f;
+        else
+            potential_value = -0.5f / (potential_value - 1.0f);
+        potential_value = a.value() + (potential_value * gap);
+    }
+
+
+//    int att_sim = 2000;
+//    int max_delta = 0;
+
+    QHash<QString,att_info> stats = m_att_caste_bins.value(a.att_type());
+    foreach(QString key, stats.uniqueKeys()){
+        a_info = stats.value(key);
+        rating = get_aspect_role_rating(a.value(),a_info.bins);
+
+//        //simulated 1 (default) ******
+//        att_sim = 2000;
+//        max_delta = (a.max() - a.value()) > att_sim ? att_sim : a.max() - a.value();
+//        sim1_rating = ((a.value() * 2 + max_delta) * max_delta) / 2.0f;
+//        sim1_rating += (att_sim - max_delta) * a.max();
+//        sim1_rating /= att_sim;
+//        sim1_rating /= 5000.0f;
+//        //******************
+
+//        att_sim = a_info.bins.at(4).min;
+//        att_sim = (att_sim * 500.0f) / a.cti();
+//        max_delta = (a.max() - a.value()) > att_sim ? att_sim : a.max() - a.value();
+
+//        //simulated 2 (using median and CTI / 5000)******
+//        sim2_rating = ((a.value() * 2 + max_delta) * max_delta) / 2.0f;
+//        sim2_rating += (att_sim - max_delta) * a.max();
+//        sim2_rating /= att_sim;
+//        sim2_rating /= 5000.0f;
+//        //******************
+
+//        //simulated 3 (using median and CTI through bins again)******
+//        sim3_rating = ((a.value() * 2 + max_delta) * max_delta) / 2.0f;
+//        sim3_rating += (att_sim - max_delta) * a.max();
+//        sim3_rating /= att_sim;
+//        sim3_rating = get_aspect_role_rating(sim3_rating,a_info.bins);
+//        //******************
+
+//        //simulated 4 (using median and CTI through bins again)******
+//        if(a.value() >= a.max()){
+//            bonus_rating = a.value();
+//        }else{
+//            gap = (a.max() - a.value()) * 500 / cti;
+//            bonus_rating = 0.5f * (1-gap / (a.max()-a.value()));
+//            if(bonus_rating >= 0)
+//                bonus_rating += 0.5f;
+//            else
+//                bonus_rating = -0.5f / (bonus_rating - 1.0f);
+//            bonus_rating = a.value() + (bonus_rating * gap);
+//        }
+
+        //pass the potential rating into the set of bins
+        bonus_rating = get_aspect_role_rating(potential_value, a_info.bins);
+        //******************
+
+        //apply the caste frequencies to the ratings
+        QMapIterator<float, int> i(a_info.ratios_counts);
+        while (i.hasNext()) {
+            i.next();
+            sum += (rating * i.key() * i.value());
+            bonus_sum += (bonus_rating * i.key() * i.value());
+//            sim1_sum += (sim1_rating * i.key() * i.value());
+//            sim2_sum += (sim2_rating * i.key() * i.value());
+//            sim3_sum += (sim3_rating * i.key() * i.value());            
+        }
+        //}
+        //m_attribute_ratings.value(atype)->replace(val-1,(float)(sum+sim4_sum)/2.0f);//sum);
+        //        if(atype == AT_AGILITY || atype == AT_STRENGTH){
+        //            LOGD << "attribute, value, max, reg, sim1, sim1avg, sim2, sim2avg, sim3, sim3avg, sim4, sim4avg";
+        //            LOGD << (int)atype << "," << val << "," << att_cap << "," << sum
+        //                 << "," << sim1_sum << "," << (float)(sum+sim1_sum)/2.0f
+        //                 << "," << sim2_sum << "," << (float)(sum+sim2_sum)/2.0f
+        //                 << "," << sim3_sum << "," << (float)(sum+sim3_sum)/2.0f
+        //                 << "," << sim4_sum << "," << (float)(sum+sim4_sum)/2.0f;
+        //        }
+    }
+
+    a.set_rating(sum); //base rating before any weights or bonus is applied, we'll use this for drawing so save it
+    a.set_rating((float)(sum * (1.0f-m_att_pot_weight))+(bonus_sum * m_att_pot_weight),true); //apply the weights and the bonus and save
+
+    return a.rating(true);
+}
+
+void DwarfStats::cleanup(){
+    //traits
+    m_trait_bins.clear();
+
+    //attributes
+    m_att_caste_bins.clear();
+//    foreach(ATTRIBUTES_TYPE key, m_attribute_ratings.uniqueKeys()){
+//        m_attribute_ratings.value(key)->clear();
+//    }
+//    qDeleteAll(m_attribute_ratings);
+//    m_attribute_ratings.clear();
+}

@@ -34,10 +34,10 @@ class Caste;
 class Race : public QObject {
     Q_OBJECT
 public:
-    Race(DFInstance *df, VIRTADDR address, QObject *parent = 0);
+    Race(DFInstance *df, VIRTADDR address,  int id, QObject *parent = 0);
     virtual ~Race();
 
-    static Race* get_race(DFInstance *df, const VIRTADDR &address);
+    static Race* get_race(DFInstance *df, const VIRTADDR &address, int id);
 
     //! Return the memory address (in hex) of this race in the remote DF process
     VIRTADDR address() {return m_address;}
@@ -59,11 +59,13 @@ public:
     Caste *get_caste_by_id(int id) const {return m_castes.value(id, 0);}
 
     void load_data();
-    FlagArray* flags() {return m_flags;}
+    FlagArray flags() {return m_flags;}
 
     bool is_trainable();
     bool is_milkable();
     bool is_vermin_extractable();
+
+    void load_caste_ratios();
 
 private:
     VIRTADDR m_address;
@@ -78,15 +80,17 @@ private:
     QString m_child_name;
     QString m_child_name_plural;    
     QMap<int, Caste*> m_castes;
-    QVector<Material*> m_creature_mats;
-    FlagArray *m_flags;
+    QVector<Material*> m_creature_mats;    
 
     VIRTADDR m_pref_string_vector;
     VIRTADDR m_pop_ratio_vector;
     VIRTADDR m_castes_vector;
 
     DFInstance * m_df;
-    MemoryLayout * m_mem;
+    MemoryLayout * m_mem;    
+    FlagArray m_flags;
+
+    bool loaded_stats;
 
     void read_race();
     void load_materials();

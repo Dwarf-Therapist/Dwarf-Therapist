@@ -38,18 +38,20 @@ SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags)
         QVBoxLayout *layout = new QVBoxLayout(main_widget);
 	main_widget->setLayout(layout);
 	
+    QHBoxLayout *l_type = new QHBoxLayout();
+    QLabel *lbl_type = new QLabel(this);
+    lbl_type->setText(tr("Drawing Method:"));
+    l_type->addWidget(lbl_type);
+    QComboBox *cmb_type = new QComboBox(this);
+    for(int i = 0; i < UberDelegate::SDM_TOTAL_METHODS; ++i) {
+        UberDelegate::SKILL_DRAWING_METHOD m = static_cast<UberDelegate::SKILL_DRAWING_METHOD>(i);
+        cmb_type->addItem(QString("Use %1").arg(UberDelegate::name_for_method(m)),m);
+    }
+    l_type->addWidget(cmb_type);
+    layout->addLayout(l_type);
+
 	StateTableView *stv = new StateTableView(this);
 	stv->setContextMenuPolicy(Qt::ActionsContextMenu);
-
-	QAction *a;
-	for(int i = 0; i < UberDelegate::SDM_TOTAL_METHODS; ++i) {
-		UberDelegate::SKILL_DRAWING_METHOD m = static_cast<UberDelegate::SKILL_DRAWING_METHOD>(i);
-		a = new QAction(QString("Use %1 Method")
-			.arg(UberDelegate::name_for_method(m)), stv);
-		a->setData(m);
-		connect(a, SIGNAL(triggered()), SLOT(set_SDM()));
-		stv->addAction(a);
-	}
 	
 	layout->addWidget(stv);
 	setWidget(main_widget);
@@ -61,23 +63,39 @@ SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags)
 		QStandardItem *name = new QStandardItem;
 		name->setText(GameDataReader::ptr()->get_skill_level_name(i));
 		QStandardItem *item = new QStandardItem;
-		item->setData(i, DwarfModel::DR_RATING);
+        float rating = (float)i + 0.002;
+        item->setData(rating, DwarfModel::DR_RATING);
+        item->setData(floor(rating), DwarfModel::DR_DISPLAY_RATING);
 		item->setData(CT_SKILL, DwarfModel::DR_COL_TYPE);
-		item->setData(Qt::white, DwarfModel::DR_DEFAULT_BG_COLOR);
+		item->setData(Qt::white, DwarfModel::DR_DEFAULT_BG_COLOR);        
 		sub_items << name << item;
 		m->appendRow(sub_items);
 	}
 	stv->setHeaderHidden(true);
+
+    int pad = DT->user_settings()->value("options/grid/cell_padding", 0).toInt();
+    int cell_size = DT->user_settings()->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
+    cell_size += (2 + 2*pad);
+
 	for(int i = 1; i < 16; ++i) {
-		stv->get_header()->resizeSection(i, 16);
+        stv->get_header()->resizeSection(i, cell_size);
 	}
 
+    m_current_method = static_cast<UberDelegate::SKILL_DRAWING_METHOD>(
+                DT->user_settings()->value("options/grid/skill_drawing_method",
+                                           UberDelegate::SDM_GROWING_CENTRAL_BOX).toInt());
+    cmb_type->setCurrentIndex(m_current_method);
+
+    connect(cmb_type, SIGNAL(currentIndexChanged(int)), this, SLOT(set_SDM(int)));
 	connect(this, SIGNAL(change_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&)),
 		DT->get_options_menu(), SLOT(set_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&)));
 }
 
-void SkillLegendDock::set_SDM() {
-	QAction *a = qobject_cast<QAction*>(QObject::sender());
-	UberDelegate::SKILL_DRAWING_METHOD sdm = static_cast<UberDelegate::SKILL_DRAWING_METHOD>(a->data().toInt());
-	emit change_skill_drawing_method(sdm);
+void SkillLegendDock::set_SDM(int idx){
+    QComboBox *c = qobject_cast<QComboBox*>(QObject::sender());
+    UberDelegate::SKILL_DRAWING_METHOD sdm = static_cast<UberDelegate::SKILL_DRAWING_METHOD>(c->itemData(idx, Qt::UserRole).toInt());
+    if(sdm != m_current_method){
+        emit change_skill_drawing_method(sdm);
+        m_current_method = sdm;
+    }
 }

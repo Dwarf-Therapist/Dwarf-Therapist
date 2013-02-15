@@ -82,7 +82,7 @@ void Squad::read_members() {
 
     //rather than searching for the dwarf in the members of the squad, just check the squad id
     foreach(Dwarf *d, dm->get_dwarves()){
-        if(!d->is_animal() && d->profession() != "Child" && d->profession() != "Baby" && d->squad_id() == m_id) {
+        if(!d->is_animal() && d->is_adult() && d->squad_id() == m_id) {
             m_members << d;
             d->m_squad_name = name();
             if(assigned_count()==m_members.count())

@@ -51,7 +51,7 @@ public:
 	GridView *view() {return m_view;}
 	void remove_column(int offset) {m_columns.removeAt(offset);}
 	void remove_column(ViewColumn *vc) {m_columns.removeAll(vc);}
-	ViewColumn *column_at(int offset) {return m_columns.at(offset);}
+    ViewColumn *column_at(int offset){return m_columns.at(offset);}
 
 	//! order of columns was changed by a view, so reflect those changes internally
 	void reorder_columns(const QStandardItemModel &model);

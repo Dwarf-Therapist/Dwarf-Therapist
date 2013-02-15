@@ -27,20 +27,25 @@ THE SOFTWARE.
 #include <QtDebug>
 #include "gamedatareader.h"
 
+QColor FortressEntity::default_noble_color = QColor(255,153,0);
+
+/*
+ *it seems this is more of a civilization entity instead of a fortress entity.
+ *it's a historical entity, but the name, for example, appears to reference the civilization, rather than the fortress
+ */
 
 FortressEntity::FortressEntity(DFInstance *df, VIRTADDR address, QObject *parent)
     : QObject(parent)
     , m_address(address)
     , m_df(df)
     , m_mem(df->memory_layout())
-    , default_noble_color(QColor(255,153,0))
 {
     load_data();
 }
 
 FortressEntity::~FortressEntity()
 {
-    noble_colors.clear();
+    m_noble_colors.clear();
     m_nobles.clear();
 }
 
@@ -61,11 +66,65 @@ void FortressEntity::load_data() {
 
 void FortressEntity::read_entity(){
     //read the position/noble colors
-    read_colors();
+    load_noble_colors();
 
     m_df->attach();
-    //for the moment we're only using this to load up the active squads and noble positions
+    //civ name
+//    m_name = m_df->get_language_word(m_address + 0x14);
+//    m_translated_name = m_df->get_translated_word(m_address + 0x14);
+
     //load squads
+    m_squads = m_df->enumerate_vector(m_address + m_mem->hist_entity_offset("squads"));
+
+    QVector<VIRTADDR> entities = m_df->enumerate_vector(m_df->get_memory_correction() + m_mem->address("historical_entities_vector"));
+    QHash<int, position> positions;
+    QString unk_name = tr("Unknown");
+    position pos_unk = {unk_name,unk_name,unk_name,m_noble_colors.value(MULTIPLE)};
+
+    int assign_pos_id;
+    int position_id;
+    int hist_id;
+    QString raw_name;
+
+    foreach(VIRTADDR ent, entities){
+        //don't bother searching in non-civilization entities,
+        //however as some reports have other races as nobles this is the only filtering we can do
+        //make sure to include the fortress positions as well
+        if(m_df->read_int(ent) == 0 || ent == m_address){
+
+            //load assignments and positions, mapping them to historical figure ids
+            QVector<VIRTADDR> addr_positions = m_df->enumerate_vector(ent + m_mem->hist_entity_offset("positions")); //positions in the fortress
+            QVector<VIRTADDR> addr_assignments = m_df->enumerate_vector(ent + m_mem->hist_entity_offset("assignments")); //assignments to positions
+
+
+            positions.clear();
+            foreach(VIRTADDR pos, addr_positions){
+                position_id = m_df->read_int(pos + m_mem->hist_entity_offset("position_id"));
+                position p;
+                p.name = m_df->read_string(pos + m_mem->hist_entity_offset("position_name"));
+                p.name_female = m_df->read_string(pos + m_mem->hist_entity_offset("position_female_name"));
+                p.name_male = m_df->read_string(pos + m_mem->hist_entity_offset("position_male_name"));
+                raw_name = m_df->read_string(pos);
+                p.highlight = m_noble_colors.value(get_color_type(raw_name));
+                positions.insert(position_id,p);
+            }
+
+            //may be better to check all the different responsibility flags and other flags like succession/appointed etc
+            //to get profiles of the different nobility types
+            foreach(VIRTADDR assign, addr_assignments){
+                assign_pos_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_position_id")); //position for the assignment
+                hist_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_hist_id")); //dwarf assigned
+                if(hist_id > 0){                    
+                    position p = positions.value(assign_pos_id, pos_unk);
+                    m_nobles.insert(hist_id,p);
+                }
+            }
+        }
+    }    
+    m_df->detach();
+}
+
+void FortressEntity::refresh(){
     m_squads = m_df->enumerate_vector(m_address + m_mem->hist_entity_offset("squads"));
 
     QVector<VIRTADDR> entities = m_df->enumerate_vector(m_df->get_memory_correction() + m_mem->address("historical_entities_vector"));
@@ -76,26 +135,28 @@ void FortressEntity::read_entity(){
         if(m_df->read_int(ent) == 0 || ent == m_address){
 
             //load assignments and positions, mapping them to historical figure ids
-            QVector<VIRTADDR> positions = m_df->enumerate_vector(ent + m_mem->hist_entity_offset("positions"));
-            QVector<VIRTADDR> assignments = m_df->enumerate_vector(ent + m_mem->hist_entity_offset("assignments"));
+            QVector<VIRTADDR> positions = m_df->enumerate_vector(ent + m_mem->hist_entity_offset("positions")); //positions in the fortress
+            QVector<VIRTADDR> assignments = m_df->enumerate_vector(ent + m_mem->hist_entity_offset("assignments")); //assignments to positions
 
             int assign_pos_id;
             int position_id;
             int hist_id;
             position p;
 
+            //may be better to check all the different responsibility flags and other flags like succession/appointed etc
+            //to get profiles of the different nobility types
             foreach(VIRTADDR assign, assignments){
-                assign_pos_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_position_id"));
-                hist_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_hist_id"));                
+                assign_pos_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_position_id")); //position for the assignment
+                hist_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_hist_id")); //dwarf assigned
                 if(hist_id > 0){
-                    foreach(VIRTADDR pos, positions){
+                    foreach(VIRTADDR pos, positions){ //load all positions first, then reference with the id, may be possible to load only once??
                         position_id = m_df->read_int(pos + m_mem->hist_entity_offset("position_id"));
                         if(assign_pos_id==position_id){
                             p.name = m_df->read_string(pos + m_mem->hist_entity_offset("position_name"));
                             p.name_female = m_df->read_string(pos + m_mem->hist_entity_offset("position_female_name"));
                             p.name_male = m_df->read_string(pos + m_mem->hist_entity_offset("position_male_name"));
                             QString raw_name = m_df->read_string(pos);
-                            p.highlight = noble_colors.value(get_color_type(raw_name));
+                            p.highlight = m_noble_colors.value(get_color_type(raw_name));
                             m_nobles.insert(hist_id, p);
                             break;
                         }
@@ -104,10 +165,8 @@ void FortressEntity::read_entity(){
             }
         }
     }
-    m_df->detach();
 }
-
-void FortressEntity::read_colors(){
+void FortressEntity::load_noble_colors(){
     QSettings *u = DT->user_settings();
 
     QColor c;
@@ -115,7 +174,7 @@ void FortressEntity::read_colors(){
     u->beginGroup("colors");
     for(int i = 0; i<12; i++){
         c = u->value(QString("nobles/%1").arg(i), default_noble_color).value<QColor>();
-        noble_colors.insert(static_cast<NOBLE_COLORS>(i),c); //i matches noble enum
+        m_noble_colors.insert(static_cast<NOBLE_COLORS>(i),c); //i matches noble enum
     }
     u->endGroup();
     u->endGroup();
@@ -142,7 +201,7 @@ QString FortressEntity::get_noble_positions(int hist_id, bool is_male){
 QColor FortressEntity::get_noble_color(int hist_id){
     QList<position> p = m_nobles.values(hist_id);
     if(p.size() > 1)
-        return noble_colors.value(MULTIPLE);
+        return m_noble_colors.value(MULTIPLE);
     else
         return p[0].highlight;
 

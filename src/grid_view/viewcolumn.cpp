@@ -96,6 +96,7 @@ QStandardItem *ViewColumn::init_cell(Dwarf *d) {
     item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
     item->setData(false, DwarfModel::DR_IS_AGGREGATE);
     item->setData(d->id(), DwarfModel::DR_ID);
+    item->setData(0,DwarfModel::DR_BASE_SORT);
     m_cells[d] = item;    
 
     return item;
@@ -122,3 +123,4 @@ QString ViewColumn::get_cell_value(Dwarf *d)
 {
     return QString("%1").arg(m_cells.value(d)->data(DwarfModel::DR_SORT_VALUE).toString());
 }
+

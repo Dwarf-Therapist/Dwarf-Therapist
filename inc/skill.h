@@ -25,22 +25,23 @@ THE SOFTWARE.
 
 #include "qstring.h"
 #include "qstringlist.h"
+#include "defines.h"
+#include "qcolor.h"
 
 class GameDataReader;
 
-class Skill : public QObject
+class Skill
 {
-    Q_OBJECT
 
 public:
     Skill();
-    Skill(short id, uint exp, short rating, int skill_rate = 100);
-
-    static int calc_xp(int level);
+    Skill(short id, uint exp, short rating, int rust, int skill_rate = 100);    
 
     short id() const {return m_id;}
-    short capped_rating() const {return m_capped_rating;}
-    short raw_rating() const {return m_raw_rating;}
+    short capped_level() const {return m_capped_level;}
+    float capped_level_precise() const;
+    short raw_level() const {return m_raw_level;}
+    float raw_level_precise() const;
     uint exp() const {return m_exp;}
     uint actual_exp() const {return m_actual_exp;}
     uint capped_exp() const {return m_capped_exp;}
@@ -49,20 +50,24 @@ public:
     bool is_losing_xp() const {return m_losing_xp;}
     QString exp_summary() const;
     QString rust_rating() const {return m_rust_rating;}
-    QString rust_color() const {return m_rust_color;}
-    int skill_rate() const {return m_skill_rate;}
+    //QString rust_color() const {return m_rust_color;}
+    QColor rust_color() const {return m_rust_color;}
+    int skill_rate() const {return m_skill_rate;}    
 
-    QString to_string(bool include_level = true, bool include_exp_summary = true) const;    
+    QString to_string(bool include_level = true, bool include_exp_summary = true, bool use_color = true) const;
     QString name() {return m_name;}
     bool operator<(const Skill *s2) const;
 
     struct less_than_key
     {
-        bool operator() (Skill* const& s1, Skill* const& s2)
+        bool operator() (Skill const& s1, Skill const& s2)
         {
-            return s1->raw_rating() < s2->raw_rating();
+            return s1.raw_level() < s2.raw_level();
         }
     };
+
+    static int get_xp_for_level(int level);
+    double get_simulated_rating();
 
 private:
     short m_id;
@@ -72,14 +77,22 @@ private:
     uint m_exp_for_current_level;
     uint m_exp_for_next_level;
     float m_exp_progress;
-    short m_capped_rating;
-    short m_raw_rating;
+    short m_capped_level;
+    short m_raw_level;
     QString m_name;
     int m_demotions;
-    QString m_rust_color;
+    //QString m_rust_color;
+    QColor m_rust_color;
     QString m_rust_rating;
     int m_skill_rate;
+    int m_rust;
     bool m_losing_xp;
+    //skill level, experience
+    static QHash<int,int> m_experience_levels;
+
+    static QHash<int,int> load_base_xp_levels();
+    static int xp_for_level(int level);
+    static float level_from_xp(int xp);
 };
 
 #endif // SKILL_H

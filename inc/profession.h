@@ -23,8 +23,8 @@ THE SOFTWARE.
 #ifndef PROFESSION_H
 #define PROFESSION_H
 
-#include <QString>
-#include <QStringList>
+#include "qstring.h"
+#include "qstringlist.h"
 
 class Profession {
 public:

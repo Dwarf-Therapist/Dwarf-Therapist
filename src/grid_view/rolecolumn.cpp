@@ -51,25 +51,33 @@ RoleColumn::RoleColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     connect(DT, SIGNAL(roles_changed()), this, SLOT(roles_changed()), Qt::UniqueConnection);
 }
 
+RoleColumn::~RoleColumn(){
+    m_role = 0;
+}
+
 QStandardItem *RoleColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
 
-    if(d->profession()=="Baby"){
-        item->setData(-20, DwarfModel::DR_RATING); //drawing value
-        item->setData(-20, DwarfModel::DR_SORT_VALUE);
+    if(d->is_baby()){
+        item->setData(-1, DwarfModel::DR_RATING);
+        item->setData(-1, DwarfModel::DR_DISPLAY_RATING);
+        item->setData(-2, DwarfModel::DR_SORT_VALUE);
         item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
         item->setToolTip(("<b>Babies aren't included in role calculations.</b>"));
+        return item;
+    }else if(d->is_child() && !DT->labor_cheats_allowed()){
+        item->setData(-1, DwarfModel::DR_RATING);
+        item->setData(-1, DwarfModel::DR_DISPLAY_RATING);
+        item->setData(-1, DwarfModel::DR_SORT_VALUE);
+        item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
+        item->setToolTip(("<b>Children are only included in role calculations if labor cheats are enabled.</b>"));
         return item;
     }
 
     if(m_role){
-
         float rating_total = d->get_role_rating(m_role->name);
-        float drawRating = 0.0;
-        if(rating_total >=0 && rating_total <= 100)
-            drawRating = (rating_total-50)/3.3;
-
-        item->setData((int)drawRating, DwarfModel::DR_RATING); //drawing value
+        item->setData(rating_total, DwarfModel::DR_RATING);
+        item->setData(roundf(rating_total), DwarfModel::DR_DISPLAY_RATING);
         item->setData(rating_total, DwarfModel::DR_SORT_VALUE);
         item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
 
@@ -82,7 +90,7 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
                 aspects_str += tr("<br/><b>Note:</b> A higher weight (w) puts greater value on the aspect. Default weights are not shown.");
                 match_str += aspects_str;
 
-                tooltip = QString("<h3>%1 - %3%</h3>%2<h4>%4 is a %3% fit for this role.</h4>")
+                tooltip = QString("<center><h3>%1 - %3%</h3></center>%2<h4>%4 is a %3% fit for this role.</h4>")
                         .arg(m_role->name)
                         .arg(match_str)
                         .arg(QString::number(rating_total,'f',2))
@@ -96,7 +104,7 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
             }
         } else {
             match_str = tr("Scripted role.<br/><br/>Value: %1<br/>").arg(QString::number(rating_total,'f',2));
-            tooltip = QString("<h3>%1 - %3</h3>%2<h4>%4</h4>")
+            tooltip = QString("<center><h3>%1 - %3</h3></center>%2<h4>%4</h4>")
                              .arg(m_role->name)
                              .arg(match_str)
                              .arg(QString::number(ceil(rating_total),'g',2))
@@ -105,8 +113,8 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
             item->setToolTip(tooltip);
         }
     }else{
-        item->setData(0, DwarfModel::DR_RATING); //drawing value
-        item->setData(0, DwarfModel::DR_SORT_VALUE);
+        item->setData(-1, DwarfModel::DR_RATING); //drawing value
+        item->setData(-1, DwarfModel::DR_SORT_VALUE);
         item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
         //role wasn't initialized, give the user a useful error message in the tooltip
         item->setToolTip("Role could not be found.");

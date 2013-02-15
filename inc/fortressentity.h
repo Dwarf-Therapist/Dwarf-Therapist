@@ -51,8 +51,9 @@ private:
     //squads this fortress has
     QVector<VIRTADDR> m_squads;
 
-    void read_entity();
-    void read_colors();
+    void read_entity();    
+    void load_noble_colors();
+    void refresh();
 
 public:    
     FortressEntity(DFInstance *df, VIRTADDR address, QObject *parent = 0);
@@ -71,7 +72,8 @@ public:
         HAMMERER=8,
         MANAGER=9,
         MILITIA=10,
-        MONARCH=11
+        MONARCH=11,
+        RELIGIOUS=12
     } NOBLE_COLORS;
 
     static NOBLE_COLORS get_color_type(const QString &raw) {
@@ -93,21 +95,40 @@ public:
         m["MONARCH"] = MONARCH;
         m["CUSTOM_CASTLE_HOLDER"] = ROYALTY; //seems this is used for lords/ladies
         m["LIBRARIAN"] = BOOKKEEPER; //higher learning mod
-        //m["LEADER"] = MONARCH; //have seen queen as the name for this
+        m["LEADER"] = MONARCH; //have seen queen as the name for this
         m["GENERAL"] = MILITIA; //have seen princess and general for this
         m["LIEUTENANT"] = MILITIA;
-        return m.value(raw.toUpper());
+        m["KING"] = MONARCH;
+        m["QUEEN"] = MONARCH;
+        m["CUSTOM_BANDIT_LEADER"] = LEADER;
+        m["CUSTOM_LAW_MAKER"] = LAW;
+        m["CUSTOM_MILITARY_GOALS"] = MILITIA;
+        m["CUSTOM_MILITARY_STRATEGIST"] = MILITIA;
+        m["HIGH_PRIEST"] = RELIGIOUS;
+        m["PRIEST"] = RELIGIOUS;
+        m["DRUID"] = RELIGIOUS;
+        m["IMPERATOR"] = MONARCH;
+
+        //if we don't have an exact match, try to match with something else
+        //as mods can specify raw values like XXX_BROKER for example
+        if(m.contains(raw.toUpper()))
+            return m.value(raw.toUpper());
+        else{
+            foreach(QString key, m.keys()){
+                if(raw.toUpper().contains(key))
+                    return m.value(key);
+            }
+            return MULTIPLE; //unknown
+        }
     }
 
     void load_data();
     VIRTADDR address() {return m_address;}
     QString get_noble_positions(int hist_id, bool is_male);
     QColor get_noble_color(int hist_id);
-    QColor default_noble_color;
-    QHash<NOBLE_COLORS, QColor> noble_colors;
+    static QColor default_noble_color;
+    QHash<NOBLE_COLORS, QColor> m_noble_colors;
     bool squad_is_active(int id) {return m_squads.contains(id);}
-
-
 };
 
 #endif

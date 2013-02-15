@@ -11,7 +11,6 @@ class Weapon : public QObject {
     Q_OBJECT
 public:
     Weapon(DFInstance *df, VIRTADDR address, QObject *parent = 0);
-    Weapon(const Weapon &w);
     virtual ~Weapon();
 
     static Weapon* get_weapon(DFInstance *df, const VIRTADDR &address);

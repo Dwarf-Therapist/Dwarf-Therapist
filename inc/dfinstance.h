@@ -51,9 +51,6 @@ public:
     // factory ctor
     virtual bool find_running_copy(bool connectUnknown = false) = 0;
 
-    //testing for preference counts
-    //QHash<ITEM_TYPE,int> itype_counts;
-
     // accessors
     VIRTADDR get_heap_start_address() {return m_heap_start_address;}
     quint32 get_memory_correction() {return m_memory_correction;}
@@ -136,8 +133,6 @@ public:
     virtual bool detach() = 0;
 
     quint32 current_year_time() {return m_cur_year_tick;}
-    bool show_skill_rates() const {return m_show_skill_rates;}
-    void set_show_skill_rates(bool val) {m_show_skill_rates = val;}
 
     // Windows string offsets
 #ifdef Q_WS_WIN
@@ -205,6 +200,9 @@ public:
     Plant * get_plant(int index);
     QString find_material_name(int mat_index, short mat_type, ITEM_TYPE itype);
     const QHash<QPair<QString,QString>,pref_stat*> get_preference_stats() {return m_pref_counts;}
+    const QHash<short, QStringList> get_thought_stats() {return m_thought_counts;}
+
+    QString fortress_name() const {return QString("%1, \"%2\"").arg(m_fortress_name).arg(m_fortress_name_translated);}
 
     public slots:
         // if a menu cancels our scan, we need to know how to stop
@@ -225,15 +223,17 @@ protected:
     QTimer *m_heartbeat_timer;
     QTimer *m_memory_remap_timer;
     QTimer *m_scan_speed_timer;
-    WORD m_dwarf_race_id;
-    WORD m_dwarf_civ_id;
+    short m_dwarf_race_id;
+    int m_dwarf_civ_id;
     WORD m_current_year;
     QDir m_df_dir;
-    QVector<Dwarf*> actual_dwarves;
+    QVector<Dwarf*> m_actual_dwarves;
+    QVector<Dwarf*> m_labor_capable_dwarves;
     quint32 m_cur_year_tick;    
     QHash<int,int> m_enabled_labor_count;
 
     void load_population_data();
+    void load_role_ratings(QVector<Dwarf*> &dwarves);
     void cdf_role_ratings();
 
     /*! this hash will hold a map of all loaded and valid memory layouts found
@@ -265,6 +265,9 @@ private:
 
     QHash<QString,Weapon *> m_weapons;
     QList<QPair<QString, Weapon *> > m_ordered_weapons;
+    QVector<Plant *> m_plants_vector;
+    QVector<Material *> m_inorganics_vector;
+    QVector<Material *> m_base_materials;
 
     QVector<VIRTADDR> get_creatures();
 
@@ -275,16 +278,15 @@ private:
     QVector<VIRTADDR> m_color_vector;
     QVector<VIRTADDR> m_shape_vector;
 
-    QVector<Plant *> m_plants_vector;
-    QVector<Material *> m_inorganics_vector;
-    QVector<Material *> m_base_materials;
-
     QHash<QString, VIRTADDR> m_material_templates;
 
     void load_hist_figures();
 
     QHash<QPair<QString,QString>, pref_stat*> m_pref_counts;
-    bool m_show_skill_rates;
+    //thought id, dwarf names
+    QHash<short, QStringList> m_thought_counts;
+    QString m_fortress_name;
+    QString m_fortress_name_translated;
 };
 
 #endif // DFINSTANCE_H

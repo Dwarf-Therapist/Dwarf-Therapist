@@ -37,6 +37,8 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "weapon.h"
 
+QMap<COLUMN_TYPE, ViewColumn::COLUMN_SORT_TYPE> ViewManager::m_default_column_sort;
+
 ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy,
                          QWidget *parent)
     : QTabWidget(parent)
@@ -50,24 +52,25 @@ ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy,
 
     reload_views();
 
-    m_add_tab_button->setIcon(QIcon(":img/tab_add.png"));
+    m_add_tab_button->setText(tr("Add "));
+    m_add_tab_button->setIcon(QIcon(":img/ui-tab--plus.png"));
     m_add_tab_button->setPopupMode(QToolButton::InstantPopup);
-    m_add_tab_button->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    m_add_tab_button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    m_add_tab_button->setToolTip(tr("Add an existing view. New views can be copied or created from the [Windows->Docks->Grid Views] dock."));
     draw_add_tab_button();
-    setCornerWidget(m_add_tab_button, Qt::TopLeftCorner);
+    setCornerWidget(m_add_tab_button, Qt::TopLeftCorner);    
 
     connect(tabBar(), SIGNAL(tabMoved(int, int)), SLOT(write_views()));
     connect(tabBar(), SIGNAL(currentChanged(int)), SLOT(setCurrentIndex(int)));
-    connect(this, SIGNAL(tabCloseRequested(int)),
-            SLOT(remove_tab_for_gridview(int)));
-    connect(m_model, SIGNAL(need_redraw()), SLOT(redraw_current_tab()));            
+    connect(this, SIGNAL(tabCloseRequested(int)), SLOT(remove_tab_for_gridview(int)));
+    connect(m_model, SIGNAL(need_redraw()), SLOT(redraw_current_tab()));                
     draw_views();
 
     m_squad_warning = new QErrorMessage(this);    
 }
 
 void ViewManager::draw_add_tab_button() {
-    QIcon icn(":img/tab_add.png");
+    QIcon icn(":img/ui-tab--plus.png");
     QMenu *m = new QMenu(this);
     foreach(GridView *v, m_views) {
         QAction *a = m->addAction(icn, "Add " + v->name(), this,
@@ -78,11 +81,19 @@ void ViewManager::draw_add_tab_button() {
 }
 
 void ViewManager::reload_views() {
-    //qDeleteAll(m_views);
     m_views.clear();
 
-    QSettings *s = new QSettings(
-            ":config/default_gridviews", QSettings::IniFormat);
+    QSettings *s = new QSettings(":config/default_gridviews", QSettings::IniFormat);
+    QSettings *u = DT->user_settings();
+
+    //read in the default column sorts
+    m_default_column_sort.clear();
+    for(int i = 0; i < CT_TOTAL_TYPES; i++){
+        QString val = u->value("options/grid/" + get_column_type(static_cast<COLUMN_TYPE>(i)),"").toString();
+        if(val != ""){
+            m_default_column_sort.insert(static_cast<COLUMN_TYPE>(i),ViewColumn::get_sort_type(val));
+        }
+    }
 
     int total_views = s->beginReadArray("gridviews");
     QList<GridView*> built_in_views;
@@ -99,13 +110,11 @@ void ViewManager::reload_views() {
 
     add_weapons_view(built_in_views);
 
-
-    // now read any gridviews out of the user's settings
-    s = DT->user_settings();
-    total_views = s->beginReadArray("gridviews");
+    // now read any gridviews out of the user's settings    
+    total_views = u->beginReadArray("gridviews");
     for (int i = 0; i < total_views; ++i) {
-        s->setArrayIndex(i);
-        GridView *gv = GridView::read_from_ini(*s, this);
+        u->setArrayIndex(i);
+        GridView *gv = GridView::read_from_ini(*u, this);
         bool name_taken = true;
         do {
             name_taken = false;
@@ -133,8 +142,8 @@ void ViewManager::reload_views() {
         gv->set_is_custom(true); // this came from a user's settings
         m_views << gv;
     }
-    s->endArray();
-    s=0;
+    u->endArray();
+    u=0;
 
     LOGI << "Loaded" << m_views.size() << "views from disk";
     draw_add_tab_button();
@@ -286,6 +295,11 @@ void ViewManager::write_views() {
     }
     s->endArray();
     write_tab_order();
+
+    //write the default sorting
+    foreach(COLUMN_TYPE cType, m_default_column_sort.uniqueKeys()){
+        s->setValue("options/grid/" + get_column_type(cType), ViewColumn::get_sort_type(m_default_column_sort.value(cType)));
+    }
 }
 
 void ViewManager::add_view(GridView *view) {
@@ -378,40 +392,56 @@ void ViewManager::setCurrentIndex(int idx) {
             "only" << count() << "tabs";
         return;
     }    
+
     StateTableView *stv = get_stv(idx);
     StateTableView *prev_view = get_stv(m_last_index);
-    QSettings *s = DT->user_settings();
 
+//    QFuture<void> f = QtConcurrent::run(this, &ViewManager::setupStateTable, idx, stv, prev_view);
+//    f.waitForFinished();
+
+
+    QSettings *s = DT->user_settings();
+    bool group_all = s->value("options/grid/group_all_views",true).toBool();
+    bool scroll_all = s->value("options/grid/scroll_all_views",false).toBool();
+    int default_group = s->value("gui_options/group_by",0).toInt();
+    int sel_group = 0;
     foreach(GridView *v, m_views) {
         if (v->name() == tabText(idx)) {
             stv->is_loading_rows = true;
 
             s->setValue("read_animals",(bool)(tabText(idx).contains("animals",Qt::CaseInsensitive)));
 
-//            if(m_model && m_model->current_grid_view() && m_model->current_grid_view() && m_model->current_grid_view() != v){
-//                foreach(ViewColumnSet *set, m_model->current_grid_view()->sets()) {
-//                    foreach(ViewColumn *col, set->columns()) {
-//                        col->clear_cells();
-//                    }
-//                }
-//                m_model->current_grid_view()->clear();
-
-//                m_model->set_grid_view(v);
-//            }else
-//                int z = 0;
             m_model->set_grid_view(v);
-            if(s->value("options/grid/group_all_views",true).toBool()){
-                if(prev_view){
-                    m_model->set_group_by(prev_view->m_last_group_by);
+            if(group_all){
+                if(prev_view){ //use the previous view's group, keep in sync
+                    sel_group = prev_view->m_last_group_by;
                     stv->m_last_group_by = prev_view->m_last_group_by;
+                }else{ //no prev view use the default
+                    sel_group = default_group;
+                    stv->m_last_group_by = default_group;
                 }
-                else
-                    m_model->set_group_by(stv->m_last_group_by);
+            }else{
+                if(stv->m_last_group_by < 0){
+                    sel_group = default_group; //group by nothing
+                    stv->m_last_group_by = default_group;
+                }else{
+                    sel_group = stv->m_last_group_by;
+                }
             }
-            else
-                m_model->set_group_by(stv->m_last_group_by);
+            m_model->set_group_by(sel_group);
+//            if(group_all && prev_view){
+//                    m_model->set_group_by(prev_view->m_last_group_by);
+//                    stv->m_last_group_by = prev_view->m_last_group_by;
+//            }else{
+//                if(stv->m_last_group_by < 0){
+//                    m_model->set_group_by(default_group);
+//                    stv->m_last_group_by = default_group;
+//                }else{
+//                    m_model->set_group_by(stv->m_last_group_by);
+//                }
+//            }
 
-            if(s->value("options/grid/scroll_all_views",false).toBool()){
+            if(scroll_all){
                 if(prev_view)
                     stv->set_scroll_positions(prev_view->vertical_scroll_position(), prev_view->horizontal_scroll_position());
             }
@@ -420,9 +450,20 @@ void ViewManager::setCurrentIndex(int idx) {
                 stv->header()->setResizeMode(QHeaderView::Fixed);
                 stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
             }
-            m_proxy->sort(0,m_proxy->m_last_sort_order); //group sort
+
+            //setup our sort types by column in case we've since changed them
+            foreach(ViewColumnSet *set, m_model->current_grid_view()->sets()){
+                foreach(ViewColumn *c, set->columns()){
+                    ViewColumn::COLUMN_SORT_TYPE cst = ViewManager::get_default_col_sort(c->type());
+                    if(c->get_sortable_types().count() > 0 && c->get_current_sort() != cst)
+                        c->refresh_sort(cst);
+                }
+            }
+            //restore sorting
+            m_proxy->sort(0,m_proxy->m_last_sort_order); //sort by the last sort order
             stv->sortByColumn(stv->m_last_sorted_col,stv->m_last_sort_order); //individual column sort
-            stv->m_selected.clear(); //will be reloaded below when re-selecting, however after committing, selection is cleared..            
+            stv->m_selected_rows.clear(); //will be reloaded below when re-selecting, however after committing, selection is cleared..
+            stv->m_selected.clear();
             foreach(Dwarf *d, m_selected_dwarfs) {
                 stv->select_dwarf(d);
             }
@@ -444,6 +485,8 @@ void ViewManager::setCurrentIndex(int idx) {
     stv->restore_scroll_positions();
 
     emit group_changed(stv->m_last_group_by);
+
+    s = 0;
 }
 
 void ViewManager::dwarf_selection_changed(const QItemSelection &selected,
@@ -493,7 +536,7 @@ int ViewManager::add_tab_for_gridview(GridView *v) {
                                     const QItemSelection &)),
             SLOT(dwarf_selection_changed(const QItemSelection &,
                                          const QItemSelection &)));
-    connect(stv,SIGNAL(squad_leader_changed()),this,SLOT(show_squad_warning()));
+    connect(stv,SIGNAL(squad_leader_changed()),this,SLOT(show_squad_warning()),Qt::UniqueConnection);
     stv->show();
     int new_idx = addTab(stv, v->name());
     write_tab_order();
@@ -543,8 +586,7 @@ void ViewManager::jump_to_dwarf(QTreeWidgetItem *current,
         stv->jump_to_dwarf(current, previous);
 }
 
-void ViewManager::jump_to_profession(QListWidgetItem *current,
-                                     QListWidgetItem *previous) {
+void ViewManager::jump_to_profession(QTreeWidgetItem *current, QTreeWidgetItem *previous){
     StateTableView *stv = get_stv();
     if (stv)
         stv->jump_to_profession(current, previous);
@@ -552,8 +594,7 @@ void ViewManager::jump_to_profession(QListWidgetItem *current,
 
 void ViewManager::set_group_by(int group_by) {
     if (m_model){
-        get_stv(currentIndex())->m_last_group_by = group_by;
-        //m_model->set_group_by(group_by);
+        get_stv(currentIndex())->m_last_group_by = group_by;        
     }
     redraw_current_tab();
 }
@@ -580,3 +621,23 @@ void ViewManager::show_squad_warning(){
         m_squad_warning->showMessage(tr("It's advisable to open the Military screen in Dwarf Fortress after making any changes to squad leaders."));
 }
 
+void ViewManager::save_column_sort(COLUMN_TYPE cType, ViewColumn::COLUMN_SORT_TYPE sType){
+    m_default_column_sort.insert(cType,sType);
+}
+
+void ViewManager::select_all(){
+    m_selected_dwarfs.clear();
+//    QList<Dwarf*> dwarfs = m_proxy->get_filtered_dwarves();
+//    if(dwarfs.count() <= 0)
+//        m_model->get_dwarves();
+    StateTableView *s = get_stv(currentIndex());
+//    foreach(Dwarf *d, dwarfs){
+//        s->select_dwarf(d);
+//    }
+    s->select_all();
+}
+
+void ViewManager::clear_selected(){
+    m_selected_dwarfs.clear();
+    DT->get_main_window()->set_progress_message("");
+}

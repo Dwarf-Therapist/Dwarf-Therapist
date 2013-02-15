@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define SKILL_COLUMN_H
 
 #include "viewcolumn.h"
+class Role;
 
 class SkillColumn : public ViewColumn {
 public:
@@ -39,11 +40,15 @@ public:
 	//override    
     void write_to_ini(QSettings &s);
 
+public slots:    
+    void refresh_sort(COLUMN_SORT_TYPE sType);
+
 protected:
 	int m_skill_id;
     float m_sort_val;
-    void set_tooltip(Dwarf *d, QStandardItem *item, QString option_name, bool sorting_by_role);
-    void set_sorting(Dwarf *d, QStandardItem *item, int rating, bool sorting_by_role);
+    void build_tooltip(Dwarf *d, bool include_roles);
+    void refresh_sort(Dwarf *d, COLUMN_SORT_TYPE sType = CST_LEVEL);
+
 };
 
 #endif

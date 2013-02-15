@@ -44,6 +44,7 @@ THE SOFTWARE.
 #include "races.h"
 #include "fortressentity.h"
 #include "gamedatareader.h"
+#include "dwarfjob.h"
 
 DwarfModel::DwarfModel(QObject *parent)
     : QStandardItemModel(parent)
@@ -67,7 +68,7 @@ void DwarfModel::clear_all(bool clr_pend) {
     m_dwarves.clear();
     m_grouped_dwarves.clear();
 
-    if(m_gridview){
+    if(m_gridview){        
         foreach(ViewColumnSet *set, m_gridview->sets()) {
             foreach(ViewColumn *col, set->columns()) {
                 col->clear_cells();
@@ -77,6 +78,7 @@ void DwarfModel::clear_all(bool clr_pend) {
 
     total_row_count = 0;
     clear();
+
     clearing_data = false;
 }
 
@@ -86,7 +88,7 @@ void DwarfModel::section_right_clicked(int col) {
     } else {
         m_selected_col = col;
     }
-    emit dataChanged(index(0, col), index(rowCount()-1, col));
+    emit dataChanged(index(0, col), index(rowCount()-1, col));    
 }
 
 void DwarfModel::load_dwarves() {
@@ -164,9 +166,8 @@ void DwarfModel::save_rows() {
     else if(DT->user_settings()->value("options/hide_children_and_babies",true).toBool() == true)
         {
             foreach(Dwarf *d, m_dwarves)
-            {
-                //no babies
-                if (!d->is_animal() && d->profession()!="Child" && d->profession()!="Baby")
+            {                
+                if (!d->is_animal() && d->is_adult())
                 {
                     val.append(d->nice_name());
                     val.append(',');
@@ -198,17 +199,16 @@ void DwarfModel::update_header_info(int id, COLUMN_TYPE type){
                 if(col->type()==CT_LABOR){
                     LaborColumn *l = static_cast<LaborColumn*>(col);
                     if(l->labor_id()==id){
-                        l->update_count(); //tell this column to update it's count
-                        int cnt = l->count();
+                        l->update_count(); //tell this column to update it's count                        
                         QStandardItem* header = this->horizontalHeaderItem(index);
                         header->setData(col->bg_color(), Qt::BackgroundColorRole);
                         header->setData(set->name(), Qt::UserRole);
                         if(s->value("options/grid/show_labor_counts",false).toBool()){
                             header->setText(QString("%1 %2")
-                                            .arg(cnt,2,10,QChar('0'))
+                                            .arg(l->count(),2,10,QChar('0'))
                                             .arg(col->title()).trimmed());
-                        }
-                        header->setToolTip(tr("%1 have this labor enabled.").arg(cnt));
+                        }                        
+                        header->setToolTip(build_col_tooltip(col));
                         return;
                     }
                 }
@@ -233,23 +233,16 @@ void DwarfModel::draw_headers(){
         emit set_index_as_spacer(start_col - 1);
         emit preferred_header_size(start_col - 1, width);*/
         foreach(ViewColumn *col, set->columns()) {
-            //QString cnt = "";
             QString h_name = col->title();
             if(col->type()==CT_LABOR){
-                //cnt = col->count() >= 0 ? QString::number(col->count()) : "";
                 if(s->value("options/grid/show_labor_counts",false).toBool())
                     h_name = QString("%1 %2")
                             .arg(col->count(),2,10,QChar('0'))
-                            .arg(col->title()).trimmed();
+                            .arg(col->title()).trimmed();                
             }
 
             QStandardItem *header = new QStandardItem(h_name);
-            if(col->type()==CT_LABOR)
-                header->setToolTip(tr("%1 have this labor enabled.").arg(QString::number(col->count())));
-            else if(col->type()==CT_WEAPON){
-                header->setToolTip(tr("<p>%1</p>").arg(col->title()));
-            }
-
+            header->setToolTip(build_col_tooltip(col));
             header->setData(col->bg_color(), Qt::BackgroundColorRole);
             header->setData(set->name(), Qt::UserRole);
             setHorizontalHeaderItem(start_col++, header);
@@ -266,6 +259,23 @@ void DwarfModel::draw_headers(){
             }
         }
     }
+}
+
+QString DwarfModel::build_col_tooltip(ViewColumn *col){
+    QStringList tooltip;
+    if(col->type()==CT_LABOR){
+        LaborColumn *l = static_cast<LaborColumn*>(col);
+        l->update_count(); //tell this column to update it's count
+        tooltip.append(tr("%1 have this labor enabled.").arg(QString::number(col->count())));
+    }
+    else if(col->type()==CT_WEAPON){
+        tooltip.append(tr("<p>%1</p>").arg(col->title()));
+    }
+
+    if(col->get_sortable_types().count() > 0)
+        tooltip.append(tr("Right click to change sort method."));
+
+    return tooltip.join("<br/><br/>");
 }
 
 void DwarfModel::build_rows() {
@@ -319,215 +329,138 @@ void DwarfModel::build_rows() {
 
     GameDataReader *gdr = GameDataReader::ptr();
 
+    if(only_animals)
+        race_name = tr("Animals");
+    else if(m_df){
+        Race* r = m_df->get_race(m_df->dwarf_race_id());
+        if(r)
+            race_name = r->plural_name();
+    }
+
     foreach(Dwarf *d, m_dwarves) {
-        if (only_animals)
-        {
-            race_name = "Animals";
-            if(d->is_animal())
-            {
-                switch (m_group_by) {
-                default:
-                case GB_NOTHING:
-                    m_grouped_dwarves[QString::number(d->id())].append(d);
-                    break;
-                case GB_SEX:
-                    if (d->is_male())
-                        m_grouped_dwarves[tr("Males")].append(d);
-                    else
-                        m_grouped_dwarves[tr("Females")].append(d);
-                    break;
-                case GB_MIGRATION_WAVE:
-                    m_grouped_dwarves[d->get_migration_desc()].append(d);
-                    break;
-                case GB_PROFESSION:
-                case GB_LEGENDARY:
-                case GB_HAPPINESS:
-                case GB_CASTE:
-                    m_grouped_dwarves[d->caste_name()].append(d);
-                    break;
-                case GB_CURRENT_JOB:
-                case GB_MILITARY_STATUS:
-                case GB_HIGHEST_SKILL:
-                case GB_HIGHEST_MOODABLE:
-                case GB_TOTAL_SKILL_LEVELS:
-                case GB_ASSIGNED_LABORS:
-                case GB_RACE:
-                {
-                    QString grp_name = d->race_name(true);
-                    if(d->profession() != "")
-                        grp_name += " (" + d->race_name(false) + ")";
-                    m_grouped_dwarves[grp_name].append(d);
-                    break;
-                }
-                case GB_HAS_NICKNAME:
-                {
-                    if (d->nickname().isEmpty()) {
-                        m_grouped_dwarves[tr("No Nickname")].append(d);
-                    } else {
-                        m_grouped_dwarves[tr("Has Nickname")].append(d);
-                    }
-                }
-                    break;
-                case GB_SQUAD:
-                {
-                    if(d->squad_name().isEmpty()) {
-                        m_grouped_dwarves[tr("No Squad")].append(d);
-                    } else {
-                        m_grouped_dwarves[d->squad_name()].append(d);
-                    }
-                }
-                    break;
-                }
-
-                if(d->profession()=="Child")
-                    n_children ++;
-                else if(d->profession()=="Baby")
-                    n_babies ++;
+        //shared groupings for both animals and the fortress race
+        if((only_animals && d->is_animal()) || (!d->is_animal() && !only_animals)){
+            if(m_group_by == GB_NOTHING){
+                m_grouped_dwarves[QString::number(d->id())].append(d);
+            }else if(m_group_by == GB_SEX){
+                if (d->is_male())
+                    m_grouped_dwarves[tr("Males")].append(d);
                 else
-                    n_adults ++;
+                    m_grouped_dwarves[tr("Females")].append(d);
+            }else if(m_group_by == GB_MIGRATION_WAVE){
+                m_grouped_dwarves[d->get_migration_desc()].append(d);
+            }else if(m_group_by == GB_AGE){
+                if(d->is_baby())
+                    m_grouped_dwarves[d->profession()].append(d);
+                else if (d->is_child())
+                    m_grouped_dwarves[d->profession()].append(d);
+                else{
+                    int base = (d->get_age() / 10) * 10;
+                    QString age_range = QString("%1 - %2").arg(base)
+                            .arg(base + 9);
+                    m_grouped_dwarves[age_range].append(d);
+                }
+            }else if(m_group_by == GB_CASTE){
+                m_grouped_dwarves[d->caste_name()].append(d);
+            }else if(m_group_by == GB_CASTE_TAG){
+                //strip off the underscores, male and female parts of the tag to group sexes
+                QString tag = d->caste_tag();
+                tag.replace("_", " ");
+                tag.replace(tr("FEMALE")," ");
+                tag.replace(tr("MALE")," ");
+                if(tag.trimmed().isEmpty())
+                    tag = race_name;
+                m_grouped_dwarves[capitalizeEach(tag.toLower())].append(d);
+            }else if(m_group_by == GB_RACE){
+                QString grp_name = d->race_name(true);
+                if(d->profession() != "" && d->is_animal()) //only append the base name to animals
+                    grp_name += " (" + d->race_name(false) + ")";
+                m_grouped_dwarves[grp_name].append(d);
+            }else if(m_group_by == GB_HAS_NICKNAME){
+                if (d->nickname().isEmpty()) {
+                    m_grouped_dwarves[tr("No Nickname")].append(d);
+                } else {
+                    m_grouped_dwarves[tr("Has Nickname")].append(d);
+                }
+            }else if(m_group_by == GB_SQUAD){
+                if(d->squad_name().isEmpty()) {
+                    m_grouped_dwarves[tr("No Squad")].append(d);
+                } else {
+                    m_grouped_dwarves[d->squad_name()].append(d);
+                }
             }
+
+            //update our counts for the display
+            if(d->is_child())
+                n_children ++;
+            else if(d->is_baby())
+                n_babies ++;
+            else
+                n_adults ++;
         }
-        else
-        {
-            if(!d->is_animal())
-            {
-                if(race_name.isEmpty()){
-                    Race* r = m_df->get_race(d->get_race_id());
-                    race_name = r->plural_name();
-                }
 
-                //if hiding children/babies, don't group them, otherwise the aggregate row total in the heading will be off
-                if(DT->user_settings()->value("options/hide_children_and_babies",true).toBool() == false
-                        || (d->profession()!="Child" && d->profession()!="Baby")){
+        //groups specific to the actual race we're playing (ie. dwarfs)
+        if(!d->is_animal() && !only_animals)
+        {            
+            //if hiding children/babies, don't group them, otherwise the aggregate row total in the heading will be off
+            if(DT->user_settings()->value("options/hide_children_and_babies",true).toBool() == false
+                    || (!d->is_child() && !d->is_baby())){
 
-                    switch (m_group_by) {
-                    default:
-                    case GB_NOTHING:
-                        m_grouped_dwarves[QString::number(d->id())].append(d);
-                        break;
-                    case GB_PROFESSION:
-                        m_grouped_dwarves[d->profession()].append(d);
-                        break;
-                    case GB_LEGENDARY:
-                    {
-                        int legendary_skills = 0;
-                        foreach(Skill *s, *d->get_skills()) {
-                            if (s->capped_rating() >= 15)
-                                legendary_skills++;
-                        }
-                        if (legendary_skills)
-                            m_grouped_dwarves[tr("Legends")].append(d);
+                if(m_group_by == GB_PROFESSION){
+                    m_grouped_dwarves[d->profession()].append(d);
+                }else if(m_group_by == GB_LEGENDARY){
+                    int legendary_skills = 0;
+                    foreach(Skill s, *d->get_skills()) {
+                        if (s.capped_level() >= 15)
+                            legendary_skills++;
+                    }
+                    if (legendary_skills)
+                        m_grouped_dwarves[tr("Legends")].append(d);
+                    else
+                        m_grouped_dwarves[tr("Losers")].append(d);
+                }else if(m_group_by == GB_HAPPINESS){
+                    m_grouped_dwarves[d->happiness_name(d->get_happiness())].append(d);
+                }else if(m_group_by == GB_CURRENT_JOB){
+                    QString job_desc = gdr->get_job(d->current_job_id())->description.replace(" ??","");
+                    m_grouped_dwarves[job_desc].append(d); //d->current_job()].append(d);
+                }else if(m_group_by == GB_MILITARY_STATUS){
+                    if (d->is_baby() || d->is_child()) {
+                        m_grouped_dwarves[tr("Juveniles")].append(d);
+                    } else if (d->active_military() && !d->can_set_labors()) { //master level military elites
+                        m_grouped_dwarves[tr("Champions")].append(d);
+                    } else if (!d->noble_position().isEmpty()) {
+                        m_grouped_dwarves[tr("Nobles")].append(d);
+                    } else if (d->active_military()) {
+                        m_grouped_dwarves[tr("Military (On Duty)")].append(d);
+                    } else if (d->squad_id() > -1){
+                        m_grouped_dwarves[tr("Military (Off Duty)")].append(d);
+                    }else {
+                        m_grouped_dwarves[tr("Can Activate")].append(d);
+                    }
+                }else if(m_group_by == GB_HIGHEST_MOODABLE){
+                    Skill highest = d->highest_moodable();
+                    if(highest.capped_level() != -1 && !d->had_mood()){
+                        m_grouped_dwarves[highest.name()].append(d);
+                    }else{
+                        if(d->had_mood())
+                            m_grouped_dwarves["~Had Mood~"].append(d);
                         else
-                            m_grouped_dwarves[tr("Losers")].append(d);
+                            m_grouped_dwarves["~Craft (Bone/Stone/Wood)~"].append(d);
                     }
-                        break;
-                    case GB_SEX:
-                        if (d->is_male())
-                            m_grouped_dwarves[tr("Males")].append(d);
-                        else
-                            m_grouped_dwarves[tr("Females")].append(d);
-                        break;
-                    case GB_HAPPINESS:
-                        m_grouped_dwarves[d->happiness_name(d->get_happiness())].append(d);
-                        break;
-                    case GB_MIGRATION_WAVE:
-                    {
-                        m_grouped_dwarves[d->get_migration_desc()].append(d);
-                        break;
-                    }
-                    case GB_CASTE:
-                        m_grouped_dwarves[d->caste_name()].append(d);
-                        break;
-                    case GB_RACE:
-                        m_grouped_dwarves[d->race_name(true)].append(d);
-                        break;
-
-                    case GB_CURRENT_JOB:
-                        m_grouped_dwarves[d->current_job()].append(d);
-                        break;
-                    case GB_MILITARY_STATUS:
-                    {
-                        // groups
-                        if (d->profession() == "Baby" ||
-                                d->profession() == "Child") {
-                            m_grouped_dwarves[tr("Juveniles")].append(d);
-                        } else if (d->active_military() && !d->can_set_labors()) { // epic military
-                            m_grouped_dwarves[tr("Champions")].append(d);
-                        } else if (!d->can_set_labors()) {
-                            m_grouped_dwarves[tr("Nobles")].append(d);
-                        } else if (d->active_military()) {
-                            m_grouped_dwarves[tr("Active Military")].append(d);
-                        } else {
-                            m_grouped_dwarves[tr("Can Activate")].append(d);
-                        }
-                        /*
-                            4a) Heroes and Champions (who cannot deactivate)
-                            4b) Non-Heroic Soldiers and Guards (who can deactivate)
-                            4c) Civilians (who can activate)
-                            4d) Juveniles (who may one day activate)
-                            4e) Immigrant Nobles (who are forever off-limits)
-                            */
-                    }
-                        break;
-                    case GB_HIGHEST_MOODABLE:
-                    {
-                        Skill *highest = d->highest_moodable();
-                        if(highest->capped_rating() != -1 && !d->had_mood()){
-                            m_grouped_dwarves[highest->name()].append(d);
-                        }else{
-                            if(d->had_mood())
-                                m_grouped_dwarves["~Had Mood~"].append(d);
-                            else
-                                m_grouped_dwarves["~Craft (Bone/Stone/Wood)~"].append(d);
-                        }
-                    }
-                        break;
-                    case GB_HIGHEST_SKILL:
-                    {
-                        Skill *highest = d->highest_skill();
-                        QString level = gdr->get_skill_level_name(highest->capped_rating());
-                        m_grouped_dwarves[level].append(d);
-                    }
-                        break;
-                    case GB_TOTAL_SKILL_LEVELS:
-                        m_grouped_dwarves[tr("Levels: %1").arg(d->total_skill_levels())]
-                                .append(d);
-                        break;
-                    case GB_ASSIGNED_LABORS:
-                        m_grouped_dwarves[tr("%1 Assigned Labors")
-                                .arg(d->total_assigned_labors())].append(d);
-                        break;
-                    case GB_HAS_NICKNAME:
-                    {
-                        if (d->nickname().isEmpty()) {
-                            m_grouped_dwarves[tr("No Nickname")].append(d);
-                        } else {
-                            m_grouped_dwarves[tr("Has Nickname")].append(d);
-                        }
-                    }
-                        break;
-                    case GB_SQUAD:
-                    {
-                        if(d->squad_name().isEmpty()) {
-                            m_grouped_dwarves[tr("No Squad")].append(d);
-                        } else {
-                            m_grouped_dwarves[d->squad_name()].append(d);
-                        }
-                    }
-                        break;
-                    }
+                }else if(m_group_by == GB_HIGHEST_SKILL){
+                    Skill highest = d->highest_skill();
+                    QString level = gdr->get_skill_level_name(highest.capped_level());
+                    m_grouped_dwarves[level].append(d);
+                }else if(m_group_by == GB_TOTAL_SKILL_LEVELS){
+                    m_grouped_dwarves[tr("Levels: %1").arg(d->total_skill_levels())]
+                            .append(d);
+                }else if(m_group_by == GB_ASSIGNED_LABORS){
+                    m_grouped_dwarves[tr("%1 Assigned Labors")
+                            .arg(d->total_assigned_labors())].append(d);
                 }
-
-                if(d->profession()=="Child")
-                    n_children ++;
-                else if(d->profession()=="Baby")
-                    n_babies ++;
-                else
-                    n_adults ++;
             }
         }
     }
-
 
     foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
         build_row(key);
@@ -539,6 +472,14 @@ void DwarfModel::build_row(const QString &key) {
     QIcon icn_gender;
     QStandardItem *agg_first_col = 0;
     QList<QStandardItem*> agg_items;
+    if(!m_grouped_dwarves.contains(key)){
+        LOGE << "Group by failed because key " << key << " wasn't found.";
+        return;
+    }
+    if(m_grouped_dwarves.value(key).count() <= 0){
+        LOGE << "Group by failed because there are no values for key " << key;
+        return;
+    }
     Dwarf *first_dwarf = m_grouped_dwarves.value(key).at(0);
     if (!first_dwarf) {
         LOGE << "'Group by'' set for" << key << "has a bad ref for its first " << "dwarf";
@@ -554,13 +495,17 @@ void DwarfModel::build_row(const QString &key) {
         agg_first_col->setData(0, DR_RATING);
         //root->setData(title, DR_SORT_VALUE);
         // for integer based values we want to make sure they sort by the int
-        // values instead of the string values
+        // values instead of the string values        
         if (m_group_by == GB_MIGRATION_WAVE) {
             agg_first_col->setData(first_dwarf->migration_wave(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HIGHEST_SKILL) {
-            agg_first_col->setData(first_dwarf->highest_skill()->actual_exp(), DR_SORT_VALUE);
+            agg_first_col->setData(first_dwarf->highest_skill().actual_exp(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HIGHEST_MOODABLE) {
-            agg_first_col->setData(first_dwarf->highest_moodable()->name(), DR_SORT_VALUE);
+            //make sure to show the had mood and generic craft moods at the bottom of the list
+            if(first_dwarf->had_mood() || first_dwarf->highest_moodable().capped_level() < 0)
+                agg_first_col->setData(QChar(128), DR_SORT_VALUE);
+            else
+                agg_first_col->setData(first_dwarf->highest_moodable().name(), DR_SORT_VALUE);
         } else if (m_group_by == GB_TOTAL_SKILL_LEVELS) {
             agg_first_col->setData(first_dwarf->total_skill_levels(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HAPPINESS) {
@@ -570,17 +515,27 @@ void DwarfModel::build_row(const QString &key) {
         } else if (m_group_by == GB_PROFESSION) {
             agg_first_col->setData(first_dwarf->profession(), DR_SORT_VALUE);
         } else if (m_group_by == GB_CASTE) {
-            agg_first_col->setData(first_dwarf->get_caste_id(), DR_SORT_VALUE);
-        } else if (m_group_by == GB_SQUAD){            
+            agg_first_col->setData(first_dwarf->caste_name(), DR_SORT_VALUE);
+        } else if (m_group_by == GB_CASTE_TAG){
+            agg_first_col->setData(first_dwarf->caste_tag(), DR_SORT_VALUE);
+        } else if (m_group_by == GB_AGE){
+            agg_first_col->setData(first_dwarf->get_age(), DR_SORT_VALUE);
+        } else if (m_group_by == GB_SQUAD){
             int squad_id = first_dwarf->squad_id();
             if(squad_id != -1){
                 int squad_count = m_squads.value(first_dwarf->squad_id())->assigned_count();
                 title = QString("%1 (%2)").arg(key).arg(squad_count);
                 agg_first_col->setText(title);
-                if(squad_count != m_grouped_dwarves.value(key).size())
-                agg_first_col->setToolTip("The count may be different as Dwarf Fortress keeps missing dead dwarves in squads until they're found.");
+                if(squad_count != m_grouped_dwarves.value(key).size()){
+                    agg_first_col->setToolTip(tr("The count may be different as Dwarf Fortress keeps missing, dead dwarves in squads until they're found."));
+                    agg_first_col->setIcon(QIcon(":img/exclamation-red-frame.png"));
+                }
+                agg_first_col->setData(squad_id, DR_SORT_VALUE);
+            }else{
+                //put non squads at the bottom of the groups when grouping by squad
+                agg_first_col->setData(QChar(128), DR_SORT_VALUE);
             }
-            agg_first_col->setData(squad_id, DR_ID);
+
         }
         agg_items << agg_first_col;
     }
@@ -596,7 +551,7 @@ void DwarfModel::build_row(const QString &key) {
     }
 
     foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
-        QStandardItem *i_name = new QStandardItem(d->nice_name());
+        QStandardItem *i_name = new QStandardItem(d->nice_name());        
         QFont f = i_name->font();
         QFontMetrics fm(f);
         QChar symbol(0x263C);
@@ -606,7 +561,7 @@ void DwarfModel::build_row(const QString &key) {
                 symbol = QChar(0x002A);
         }
 
-        //font settings ***
+        //font settings
         if (d->active_military()) {            
             f.setBold(true);
         }
@@ -614,8 +569,7 @@ void DwarfModel::build_row(const QString &key) {
             i_name->setText(QString("%1 %2 %1").arg(symbol).arg(i_name->text()));
             f.setItalic(true);            
         }
-        i_name->setFont(f);
-        //******
+        i_name->setFont(f);        
 
         //background gradients for curses, nobles, etc.
         if(d && DT->user_settings()->value("options/highlight_nobles",false).toBool()){
@@ -624,20 +578,24 @@ void DwarfModel::build_row(const QString &key) {
                                                      ,200,0,QPoint(0,0),QPoint(1,0)),Qt::BackgroundRole);
         }
         if(d && DT->user_settings()->value("options/highlight_cursed",false).toBool()){
-            if(d->curse_name() != ""){ //QChar(0x2261) =
-                //i_name->setText(QString("%1 %2 %1").arg(QChar(0x203C)).arg(i_name->text()));
+            if(d->curse_name() != ""){
                 f.setItalic(true);
                 i_name->setData(build_gradient_brush(DT->user_settings()->value("options/colors/cursed", QColor(125,97,186)).value<QColor>()
                                                      ,200,0,QPoint(0,0),QPoint(1,0)),Qt::BackgroundRole);
             }
-        }
-
+        }                
 
         i_name->setToolTip(d->tooltip_text());
         i_name->setStatusTip(d->nice_name());
         i_name->setData(false, DR_IS_AGGREGATE);
         i_name->setData(0, DR_RATING);
-        i_name->setData(d->id(), DR_ID);        
+        i_name->setData(d->id(), DR_ID);
+
+        //set the roles for the special right click sorting
+        i_name->setData(d->get_age(), DR_AGE);
+        i_name->setData(d->nice_name(), DR_NAME);
+
+        //set the sorting within groups when grouping
         QVariant sort_val;
         switch(m_group_by) {
         case GB_PROFESSION:
@@ -647,16 +605,20 @@ void DwarfModel::build_row(const QString &key) {
             sort_val = d->get_raw_happiness();
             break;
         case GB_SQUAD:
+        {
             sort_val = d->squad_position();
             if(sort_val.toInt() < 0)
                 sort_val = d->nice_name();
+        }
+            break;
+        case GB_AGE:
+            sort_val = d->get_age();
             break;
         case GB_NOTHING:
         default:
-            sort_val = d->nice_name();
+            sort_val = d->nice_name();            
             break;
         }
-
         i_name->setData(sort_val, DR_SORT_VALUE);
 
         //set icons
@@ -688,28 +650,35 @@ void DwarfModel::build_row(const QString &key) {
 
 void DwarfModel::cell_activated(const QModelIndex &idx) {
     QStandardItem *item = itemFromIndex(idx);
+    if(!item)
+        return;
     bool is_aggregate = item->data(DR_IS_AGGREGATE).toBool();
-    if (idx.column() == 0) {
-        if (is_aggregate)
-            return; // no double clicking aggregate names
-        int dwarf_id = item->data(DR_ID).toInt(); // TODO: handle no id
+
+    int dwarf_id = 0;
+    if(!is_aggregate && item->data(DR_ID).canConvert<int>()){
+        dwarf_id = item->data(DR_ID).toInt();
         if (!dwarf_id) {
             LOGW << "double clicked what should have been a dwarf name, but the ID wasn't set!";
             return;
         }
+    }
+
+    if (idx.column() == 0) {
+        if (is_aggregate)
+            return; // no double clicking aggregate names
+
         Dwarf *d = get_dwarf_by_id(dwarf_id);
         d->show_details();
         return;
     }
 
     COLUMN_TYPE type = static_cast<COLUMN_TYPE>(idx.data(DwarfModel::DR_COL_TYPE).toInt());
-    if (type != CT_LABOR && type != CT_MILITARY_PREFERENCE && type != CT_FLAGS)
+    if (type != CT_LABOR && type != CT_FLAGS)
         return;
 
     Q_ASSERT(item);
 
     int labor_id = item->data(DR_LABOR_ID).toInt();
-    int dwarf_id = item->data(DR_ID).toInt(); // TODO: handle no id
     if (is_aggregate) {
         QModelIndex first_col = idx.sibling(idx.row(), 0);
 
@@ -737,35 +706,27 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
         QModelIndex left = index(0, 0, first_col);
         QModelIndex right = index(rowCount(first_col) - 1, columnCount(first_col) - 1, first_col);
         emit dataChanged(left, right); // tell the view we changed every dwarf under this agg to pick up implicit exclusive changes
-        DT->emit_labor_counts_updated(); //update column header text
+        //DT->emit_labor_counts_updated(); //update column header text
     } else {
+        QModelIndex left = index(idx.parent().row(), 0, idx.parent().parent());
+        QModelIndex right = index(idx.parent().row(), columnCount(idx.parent()) - 1, idx.parent().parent());
+        emit dataChanged(left, right); // update the agg row
 
-        if (!dwarf_id) {
-            LOGW << "dwarf_id was 0 for cell at" << idx << "!";
-        } else {
-            QModelIndex left = index(idx.parent().row(), 0, idx.parent().parent());
-            QModelIndex right = index(idx.parent().row(), columnCount(idx.parent()) - 1, idx.parent().parent());
-            emit dataChanged(left, right); // update the agg row
-
-            left = index(idx.row(), 0, idx.parent());
-            right = index(idx.row(), columnCount(idx.parent()) - 1, idx.parent());
-            emit dataChanged(left, right); // update the dwarf row
-            if (type == CT_LABOR)
-                m_dwarves[dwarf_id]->toggle_labor(labor_id);
-            else if (type == CT_MILITARY_PREFERENCE)
-                m_dwarves[dwarf_id]->toggle_pref_value(labor_id);
-            else if (type == CT_FLAGS)
-                m_dwarves[dwarf_id]->toggle_flag_bit(labor_id);
-        }
+        left = index(idx.row(), 0, idx.parent());
+        right = index(idx.row(), columnCount(idx.parent()) - 1, idx.parent());
+        emit dataChanged(left, right); // update the dwarf row
+        if (type == CT_LABOR)
+            m_dwarves[dwarf_id]->toggle_labor(labor_id);
+        else if (type == CT_FLAGS)
+            m_dwarves[dwarf_id]->toggle_flag_bit(labor_id);
     }
-    calculate_pending();
+    //calculate_pending();
     TRACE << "toggling" << labor_id << "for dwarf:" << dwarf_id;
 }
 
 void DwarfModel::set_group_by(int group_by) {
     LOGD << "group_by now set to" << group_by;
     m_group_by = static_cast<GROUP_BY>(group_by);
-
     if(m_df)
         build_rows();
 }
@@ -841,21 +802,19 @@ QList<QPersistentModelIndex> DwarfModel::findAll(const QVariant &needle, int rol
     return ret_val;
 }
 
-bool DwarfModel::compare_turn_count(const Dwarf *a, const Dwarf *b) {
-    return a->turn_count() > b->turn_count();
-}
-
 void DwarfModel::dwarf_group_toggled(const QString &group_name) {
     QModelIndex agg_cell = findOne(group_name, DR_GROUP_NAME);
+    QModelIndex left;
+    QModelIndex right;
     if (agg_cell.isValid()) {
-        QModelIndex left = agg_cell;
-        QModelIndex right = index(agg_cell.row(), columnCount(agg_cell.parent()) -1, agg_cell.parent());
+        left = agg_cell;
+        right = index(agg_cell.row(), columnCount(agg_cell.parent()) -1, agg_cell.parent());
         emit dataChanged(left, right);
     }
     foreach (Dwarf *d, m_grouped_dwarves[group_name]) {
-        foreach(QModelIndex idx, findAll(d->id(), DR_ID, 0, agg_cell)) {
-            QModelIndex left = idx;
-            QModelIndex right = index(idx.row(), columnCount(idx.parent()) - 1, idx.parent());
+        foreach(QModelIndex idx, findAll(d->id(), DR_ID, 0, agg_cell)) {            
+            left = idx;
+            right = index(idx.row(), columnCount(idx.parent()) - 1, idx.parent());
             emit dataChanged(left, right);
         }
     }

@@ -29,8 +29,9 @@ THE SOFTWARE.
 #include "truncatingfilelogger.h"
 #include "dwarfstats.h"
 #include "caste.h"
-#include "attributelevel.h"
+#include "attribute.h"
 #include "dwarftherapist.h"
+#include "dwarf.h"
 
 AttributeColumn::AttributeColumn(const QString &title, ATTRIBUTES_TYPE type, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title, CT_ATTRIBUTE, set, parent)
@@ -75,30 +76,43 @@ AttributeColumn::AttributeColumn(const AttributeColumn &to_copy)
 
 QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
-    short rawVal = 0;
-    AttributeLevel l = d->get_attribute_rating(m_attribute_type);
-    if(l.rating>20)
-        l.rating=20;
-    QString msg;
+    Attribute a = d->get_attribute((int)m_attribute_type);
+    short rawVal = a.value();
+    QString descriptor = a.get_descriptor();
+    float rating = a.rating() * 100.0f;
 
-    msg = l.description;
-    rawVal = (int)d->attribute(m_attribute_type);
+    //if this is an animal, we won't have any caste balanced ratings, so just take a rating out of an arbitrary absolute of 2250
+    //that means any rating over 2250 will essentially be 100%, which is pretty reasonable, since
+    //scaling to 0-5000 makes the drawn squares fairly small
+    if(d->is_animal())
+        rating = (float)(a.value() / 2250.0f * 100.0f);
 
-    if (l.rating){ //(val) {
-        item->setData(l.rating);
+    //the rating is used for drawing, should be between 0-100 for attributes
+    item->setData(rating, DwarfModel::DR_RATING);
+    item->setData(roundf(rating), DwarfModel::DR_DISPLAY_RATING);
+
+    //if no descriptor (middle ranges) then set the rating to a middle (hidden) value
+    //this is primarily for vanilla, as the mid ranges don't have a description and are hidden in game
+    //for multiple castes, we may as well draw everything as the descriptors can be different for each caste
+    //since multiple castes append 'for a <caste name>' to the descriptor, this will only ever affect vanilla for now
+    if(!DT->multiple_castes && a.get_descriptor_rank() == 4){
+        item->setData(50.0f, DwarfModel::DR_RATING); //49-51 aren't drawn for attributes
+    }else{
+        descriptor != "" ? descriptor = "(" + descriptor + ")" : "";
     }
 
-    item->setData(rawVal, DwarfModel::DR_SORT_VALUE);
-    item->setData(l.rating, DwarfModel::DR_RATING);
+    //sort on the raw value
+    item->setData(rawVal, DwarfModel::DR_SORT_VALUE);    
     item->setData(CT_ATTRIBUTE, DwarfModel::DR_COL_TYPE);
 
-    QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%4</h4>")
-            .arg(m_title)
-            .arg(msg)
-            .arg(rawVal)
+    QString tooltip = QString("<h3>%1</h3><b>%2</b> %4<h4>%5</h4>")
+            .arg(m_title)            
+            .arg(a.get_value_display())
+            .arg(descriptor)
             .arg(d->nice_name());
 
     item->setToolTip(tooltip);
+
     return item;
 }
 

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>628</width>
+    <width>678</width>
     <height>589</height>
    </rect>
   </property>
@@ -332,13 +332,38 @@
           <string>Exclude active military.</string>
          </property>
          <property name="statusTip">
-          <string>Excludes those on &lt;b&gt;&lt;i&gt;active duty&lt;/i&gt;&lt;/b&gt; from optimization.</string>
+          <string>Excludes those on &lt;b&gt;&lt;i&gt;active duty&lt;/i&gt;&lt;/b&gt; from optimization, and clears their labors.</string>
          </property>
          <property name="layoutDirection">
           <enum>Qt::RightToLeft</enum>
          </property>
          <property name="text">
           <string>Exclude Active Military</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="chk_squads">
+         <property name="minimumSize">
+          <size>
+           <width>125</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Exclude squads</string>
+         </property>
+         <property name="statusTip">
+          <string>Exclude anyone belonging to a squad from optimization, and clears their labors.</string>
+         </property>
+         <property name="whatsThis">
+          <string>Exclude anyone belonging to a squad.</string>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
+         <property name="text">
+          <string>Exclude Squads</string>
          </property>
         </widget>
        </item>
@@ -524,6 +549,10 @@
        <property name="text">
         <string>Import</string>
        </property>
+       <property name="icon">
+        <iconset resource="../images.qrc">
+         <normaloff>:/img/document-import.png</normaloff>:/img/document-import.png</iconset>
+       </property>
       </widget>
      </item>
      <item>
@@ -536,6 +565,10 @@
        </property>
        <property name="text">
         <string>Export</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../images.qrc">
+         <normaloff>:/img/document-export.png</normaloff>:/img/document-export.png</iconset>
        </property>
       </widget>
      </item>

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>303</width>
-    <height>499</height>
+    <width>294</width>
+    <height>477</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -42,7 +42,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
+    <layout class="QHBoxLayout" name="hlayout_mask">
      <item>
       <widget class="QCheckBox" name="chk_mask">
        <property name="layoutDirection">
@@ -54,7 +54,7 @@
       </widget>
      </item>
      <item>
-      <spacer name="horizontalSpacer_2">
+      <spacer name="hSpacer_mask">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -171,6 +171,36 @@
     </layout>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="hlayout_bg_color">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetFixedSize</enum>
+     </property>
+     <item>
+      <widget class="QLabel" name="lbl_bg">
+       <property name="text">
+        <string>Background Color</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
     <widget class="QListWidget" name="labor_list">
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
@@ -196,7 +226,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_2">
+      <widget class="QLabel" name="lbl_selection_count">
        <property name="text">
         <string>Skills Selected</string>
        </property>
@@ -249,8 +279,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>242</x>
-     <y>347</y>
+     <x>283</x>
+     <y>466</y>
     </hint>
     <hint type="destinationlabel">
      <x>267</x>

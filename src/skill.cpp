@@ -24,112 +24,97 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include <QtGui>
 
+QHash<int,int> Skill::m_experience_levels = Skill::load_base_xp_levels();
+
 Skill::Skill()
-    : QObject()
-    , m_id(-1)
+    : m_id(-1)
     , m_exp(0)
     , m_actual_exp(0)
     , m_capped_exp(0)
     , m_exp_for_current_level(0)
     , m_exp_for_next_level(1)
     , m_exp_progress(0)
-    , m_capped_rating(-1)
-    , m_raw_rating(-1)
+    , m_capped_level(-1)
+    , m_raw_level(-1)
     , m_name("UNKNOWN")      
     , m_rust_rating("")
     , m_skill_rate(100)
 {}
 
-Skill::Skill(short id, uint exp, short rating, int skill_rate)
-    : QObject()
-    , m_id(id)
+Skill::Skill(short id, uint exp, short rating, int rust, int skill_rate)
+    //: QObject()
+    : m_id(id)
     , m_exp(exp)
     , m_actual_exp(exp)
     , m_exp_for_current_level(0)
     , m_exp_for_next_level(exp + 1)
     , m_exp_progress(0)
-    , m_raw_rating(rating)
+    , m_raw_level(rating)
     , m_name("UNKNOWN")     
     , m_rust_rating("")
-    , m_skill_rate(skill_rate)    
+    , m_skill_rate(skill_rate)
+    , m_rust(rust)
 {    
     m_name = GameDataReader::ptr()->get_skill_name(m_id);
     //defaults
-    m_rust_rating = "";
-//    QPalette tt;
-//    QBrush ttb = tt.light();
-//    m_rust_color = ttb.color().name(); //default to current tooltip palette text color
-    m_capped_rating = m_raw_rating > 20 ? 20 : m_raw_rating;
+    m_rust_rating = "";    
+    m_capped_level = m_raw_level > 20 ? 20 : m_raw_level;
 
     //current xp
-    m_actual_exp = m_exp + calc_xp(m_raw_rating);
+    m_actual_exp = m_exp + get_xp_for_level(m_raw_level);
     //xp capped at 29000 (used in role ratings, as more than +5 legendary doesn't impact jobs)
-    if(m_capped_rating==20){
-        m_capped_exp = 29000;
+    if(m_capped_level==20){
+        m_capped_exp = MAX_CAPPED_XP;
     }else{
-        m_capped_exp = m_exp + calc_xp(m_capped_rating);
+        m_capped_exp = m_exp + get_xp_for_level(m_capped_level);
     }
 
     //current xp for the level
-    m_exp_for_current_level = calc_xp(m_raw_rating);
+    m_exp_for_current_level = get_xp_for_level(m_raw_level);
     //xp for next level
-    m_exp_for_next_level = calc_xp(m_raw_rating+1);
+    m_exp_for_next_level = get_xp_for_level(m_raw_level+1);
 
     m_losing_xp = false;
-    if (m_exp_for_next_level && m_exp_for_current_level) {
-        m_exp_progress = ((float)m_exp / (float)(m_exp_for_next_level - m_exp_for_current_level)) * 100;
-        if(m_exp_progress > 100){ //indicates rusted
-            m_exp_progress = 100;
-            m_rust_rating = tr("Rusted");
-            m_rust_color = "#cc6633";
-            m_losing_xp = true;
+
+    if(m_exp_for_next_level && m_exp_for_current_level)
+        m_exp_progress = (float)(m_exp / (float)(m_exp_for_next_level - m_exp_for_current_level)) * 100;
+
+    if(m_exp_progress > 100){ //indicates losing xp
+        m_exp_progress = 100;
+        m_rust_rating = QObject::tr("Lost XP!");
+        m_rust_color = QColor("#B7410E");
+        m_losing_xp = true;
+    }else{
+        //check for normal rusting
+        float m_raw_precise = raw_level_precise();
+        if(m_raw_precise >= 4 && (m_raw_precise * 0.75) <= m_rust){
+            m_rust_rating = QObject::tr("V. Rusty");
+            m_rust_color = "#964B00";
+        }else if(m_raw_level > 0 && (m_raw_level * 0.5) <= m_rust){
+            m_rust_rating = QObject::tr("Rusty");
+            m_rust_color = "#CD7F32";
         }
     }
-
-
-
-    //as far as i can tell, the rust stuff is bugged/broken
-    //rust is capped at 6, and once it tries to pass this, it removes the rust description
-    //and stops calculating rust stuff? no idea..
-
-//    if(m_demotions <= 1){
-//        m_rust_rating = "";
-//        m_skill_color = "#000000";
-//    }
-//    else if(m_demotions < 8){
-//        m_rust_rating = "Rusty";
-//        m_skill_color = "#cc6633";
-//    }
-//    else{
-//        m_rust_rating = "Very Rusty";
-//        m_skill_color = "#993300";
-//    }
-
-//    if(m_rust > 0){
-//        m_rust_rating = tr("Rusted");
-//        m_rust_color = "#cc6633";
-//    }
 }
 
-QString Skill::to_string(bool include_level, bool include_exp_summary) const {
+
+QString Skill::to_string(bool include_level, bool include_exp_summary, bool use_color) const {
     GameDataReader *gdr = GameDataReader::ptr();
 
+    bool rusted = false;
+    if(!m_rust_rating.isEmpty())
+        rusted = true;
+
     QString out;    
-    out.append(QString("<font color=%1>").arg(m_rust_color));
 
-//    if (include_level){
-//        if(raw_rating() > 20)
-//            out.append(QString("[%1|%2] ").arg(m_capped_rating).arg(m_raw_rating));
-//        else
-//            out.append(QString("[%1] ").arg(m_capped_rating));
-//    }
+    if(rusted && use_color)
+        out.append(QString("<font color=%1>").arg(m_rust_color.name()));
+
     if(include_level)
-        out.append(QString("[%1] ").arg(m_raw_rating));
+        out.append(QString("[%1] ").arg(m_raw_level));
 
-    out.append(QString("<b>%1</b> ").arg(rust_rating()));
-
-    //df still shows the skill names based on the capped rating, not including rust
-    QString skill_level = gdr->get_skill_level_name(m_capped_rating);
+    //df still shows the skill names based on the capped rating, not including rust?
+    QString skill_level = gdr->get_skill_level_name(m_capped_level);
     QString skill_name = gdr->get_skill_name(m_id);
     if (skill_level.isEmpty())
         out.append(QString("<b>%1</b>").arg(skill_name));
@@ -138,30 +123,105 @@ QString Skill::to_string(bool include_level, bool include_exp_summary) const {
     if (include_exp_summary)
         out.append(QString(" %1").arg(exp_summary()));
 
-    out.append(QString("</font>"));
+    if(rusted){
+        out.append(QString("<b> %1</b>").arg(rust_rating()));
+        if(use_color)
+            out.append("</font>");
+    }
 
     return out;
 }
 
 bool Skill::operator<(const Skill *s2) const {
-    return m_capped_rating < s2->m_capped_rating;
+    return m_capped_level < s2->m_capped_level;
 }
 
 QString Skill::exp_summary() const {
-    if (m_capped_rating >= 20) {
-        return QString("TOTAL: %L1xp").arg(m_actual_exp);
+    if (m_capped_level >= 20) {
+        return QString("%L1xp").arg(m_actual_exp);
     }
 
     return QString("%L1/%L2xp (%L3%)")
             .arg(m_actual_exp)
             .arg(m_exp_for_next_level)
-            .arg(m_exp_progress, 0, 'f', 1);
+            .arg(m_exp_progress,0 , 'f', 1);
 }
 
-int Skill::calc_xp(int level){
-    int val = 0;
-    for (int i = 0; i < level; ++i) {
-        val += 500 + (i * 100);
+//used to initialize the standard xp levels
+QHash<int,int> Skill::load_base_xp_levels(){
+    QHash<int,int> exp;
+    for(int level = 0; level <= 20; level++){
+        exp.insert(level, xp_for_level(level));
     }
-    return val;
+    return exp;
+}
+
+int Skill::xp_for_level(int level){
+    if(level < 0)
+        return 0;
+    else
+        return ((50 * level) * (level + 9));
+
+}
+
+float Skill::level_from_xp(int xp){
+    return (xp / (225.0f + (5.0f*sqrt(2025.0f + (2.0f*xp)))));
+}
+
+int Skill::get_xp_for_level(int level){
+    if(!m_experience_levels.contains(level))
+        m_experience_levels.insert(level, xp_for_level(level));
+
+    return m_experience_levels.value(level);
+}
+
+float Skill::capped_level_precise() const{
+    if(m_capped_level >= 20){
+        return (float)m_capped_level;
+    }else{
+        return (float)m_capped_level + (float)(m_exp_progress / 100.0f);
+    }
+}
+
+float Skill::raw_level_precise() const{
+    return (float)m_raw_level + (float)(m_exp_progress / 100.0f);
+
+}
+
+//simulates xp gain based on skill rate to calculate a rating between 0 and 1, courtesy of Maklak
+double Skill::get_simulated_rating(){
+    int curr_xp = m_capped_exp;
+    int curr_level = m_capped_level;
+    int rate = m_skill_rate;
+
+    if (curr_xp >= MAX_CAPPED_XP)
+        return 20.0 / 20.0;
+
+    if (rate == 0)
+        return curr_level / 20.0;
+
+    int sim_xp = MAX_CAPPED_XP;
+    sim_xp = (sim_xp / 100.0) * rate; //This is how much XP will go towards skill learning.
+    double rating = 0.0;
+    int xp_gap = 0;
+
+    while ((sim_xp > 0) && (curr_level < 20))
+    {
+        xp_gap = get_xp_for_level(curr_level+1) - curr_xp;//xp to next level
+        if (xp_gap > sim_xp)
+            xp_gap = sim_xp;
+        sim_xp -= xp_gap;
+
+        rating += xp_gap * curr_level;
+
+        curr_level++;
+        curr_xp = get_xp_for_level(curr_level);
+    }
+
+    if (sim_xp > 0)
+        rating += 20 * sim_xp;
+    rating /= MAX_CAPPED_XP;
+    rating /= 20.0;
+    return rating;
+
 }

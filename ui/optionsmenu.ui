@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>683</width>
-    <height>546</height>
+    <width>723</width>
+    <height>569</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -36,7 +36,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <property name="iconSize">
       <size>
@@ -977,6 +977,19 @@
           </widget>
          </item>
          <item>
+          <widget class="QCheckBox" name="chk_show_thoughts">
+           <property name="toolTip">
+            <string>When checked shows the recent thoughts which affect overall happiness.</string>
+           </property>
+           <property name="statusTip">
+            <string>When checked shows the recent thoughts which affect overall happiness.</string>
+           </property>
+           <property name="text">
+            <string>Show happiness thoughts in the tooltip.</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QCheckBox" name="chk_show_noble">
            <property name="statusTip">
             <string>When checked lists all noble positions held.</string>
@@ -1389,18 +1402,18 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>250</width>
+               <width>200</width>
                <height>20</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>250</width>
+               <width>200</width>
                <height>20</height>
               </size>
              </property>
              <property name="text">
-              <string>Default Weight for Role Attributes</string>
+              <string>Default Attribute Weight</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1411,13 +1424,13 @@
             <widget class="QDoubleSpinBox" name="dsb_attribute_weight">
              <property name="minimumSize">
               <size>
-               <width>90</width>
+               <width>60</width>
                <height>0</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>90</width>
+               <width>60</width>
                <height>16777215</height>
               </size>
              </property>
@@ -1428,7 +1441,7 @@
               <double>0.250000000000000</double>
              </property>
              <property name="value">
-              <double>1.000000000000000</double>
+              <double>0.250000000000000</double>
              </property>
             </widget>
            </item>
@@ -1438,11 +1451,68 @@
               <enum>Qt::Horizontal</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Expanding</enum>
+              <enum>QSizePolicy::MinimumExpanding</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
                <width>10</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QLabel" name="lbl_role_potential_weight">
+             <property name="toolTip">
+              <string>When rating an attribute for a role, a bonus is given to the rating based on how much more it can potentially increase. A higher weight gives more importance on growth than the attribute's actual value. For example, setting this weight to 0.25 will weigh the attribute's value at 0.75, while setting this weight to 0.5 will also set the attribute's value at 0.5.</string>
+             </property>
+             <property name="statusTip">
+              <string>When rating an attribute for a role, a bonus is given to the rating based on how much more it can potentially increase. A higher weight gives more importance on growth than the attribute's actual value. For example, setting this weight to 0.25 will weigh the attribute's value at 0.75, while setting this weight to 0.5 will also set the attribute's value at 0.5.</string>
+             </property>
+             <property name="whatsThis">
+              <string>When rating an attribute for a role, a bonus is given to the rating based on how much more it can potentially increase. A higher weight gives more importance on growth than the attribute's actual value. For example, setting this weight to 0.25 will weigh the attribute's value at 0.75, while setting this weight to 0.5 will also set the attribute's value at 0.5.</string>
+             </property>
+             <property name="text">
+              <string>Attribute Potential Weight</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="dsb_att_potential_weight">
+             <property name="minimumSize">
+              <size>
+               <width>60</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string/>
+             </property>
+             <property name="statusTip">
+              <string>When determining an attribute's rating for a role, a rating on the current value, and on the maximum potential value are calculated. A higher weight here gives more importance on the potential rating, and less on the rating of the current value. For example, 0.25 will weigh the potential rating at 25%, and the current value rating at 75%. &lt;b&gt;A weight of zero will ignore the potential rating entirely.&lt;/b&gt;</string>
+             </property>
+             <property name="whatsThis">
+              <string>When determining an attribute's rating for a role, a rating on the current value, and on the maximum potential value are calculated. A higher weight here gives more importance on the potential rating, and less on the rating of the current value. For example, 0.25 will weigh the potential rating at 25%, and the current value rating at 75%. &lt;b&gt;A weight of zero will ignore the potential rating entirely.&lt;/b&gt;</string>
+             </property>
+             <property name="maximum">
+              <double>1.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.100000000000000</double>
+             </property>
+             <property name="value">
+              <double>0.500000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
                <height>20</height>
               </size>
              </property>
@@ -1462,18 +1532,18 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>250</width>
+               <width>200</width>
                <height>20</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>250</width>
+               <width>200</width>
                <height>20</height>
               </size>
              </property>
              <property name="text">
-              <string>Default Weight for Role Skills</string>
+              <string>Default Skill Weight</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1484,18 +1554,21 @@
             <widget class="QDoubleSpinBox" name="dsb_skill_weight">
              <property name="minimumSize">
               <size>
-               <width>90</width>
+               <width>60</width>
                <height>0</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>90</width>
+               <width>60</width>
                <height>16777215</height>
               </size>
              </property>
              <property name="statusTip">
               <string>This is the default role skill weight. Skill weights can be overridden in the Dwarf Therapist.ini.</string>
+             </property>
+             <property name="maximum">
+              <double>99.989999999999995</double>
              </property>
              <property name="singleStep">
               <double>0.250000000000000</double>
@@ -1511,11 +1584,89 @@
               <enum>Qt::Horizontal</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Expanding</enum>
+              <enum>QSizePolicy::MinimumExpanding</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
                <width>10</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QLabel" name="lbl_def_skill_rate_weight">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string>This is the weight to apply to skill learning rates, relative to the skill level. A higher weight means greater importance. For example at 0.25, the skill level has a corresponding weight of 0.75. At 0.5 skill rate weight, the level and skill rate are valued equally at 0.5 each. &lt;b&gt;Set to zero to exclude skill learning rates from role ratings.&lt;/b&gt;</string>
+             </property>
+             <property name="statusTip">
+              <string>This is the weight to apply to skill learning rates, relative to the skill level. A higher weight means greater importance. For example at 0.25, the skill level has a corresponding weight of 0.75. At 0.5 skill rate weight, the level and skill rate are valued equally at 0.5 each. &lt;b&gt;Set to zero to exclude skill learning rates from role ratings.&lt;/b&gt;</string>
+             </property>
+             <property name="text">
+              <string>Skill Learning Rate Weight</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="dsb_skill_rate_weight">
+             <property name="minimumSize">
+              <size>
+               <width>60</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>60</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string/>
+             </property>
+             <property name="statusTip">
+              <string>This is the weight to apply to skill learning rates, relative to the skill level. A higher weight means greater importance. For example at 0.25, the skill level has a corresponding weight of 0.75. At 0.5 skill rate weight, the level and skill rate are valued equally at 0.5 each. &lt;b&gt;Set to zero to ignore skill learning rates when determining role ratings.&lt;/b&gt;</string>
+             </property>
+             <property name="maximum">
+              <double>1.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.100000000000000</double>
+             </property>
+             <property name="value">
+              <double>0.250000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
                <height>20</height>
               </size>
              </property>
@@ -1535,18 +1686,18 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>250</width>
+               <width>200</width>
                <height>20</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>250</width>
+               <width>200</width>
                <height>20</height>
               </size>
              </property>
              <property name="text">
-              <string>Default Weight for Role Traits</string>
+              <string>Default Trait Weight</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1557,13 +1708,13 @@
             <widget class="QDoubleSpinBox" name="dsb_trait_weight">
              <property name="minimumSize">
               <size>
-               <width>90</width>
+               <width>60</width>
                <height>0</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>90</width>
+               <width>60</width>
                <height>16777215</height>
               </size>
              </property>
@@ -1574,7 +1725,7 @@
               <double>0.250000000000000</double>
              </property>
              <property name="value">
-              <double>1.000000000000000</double>
+              <double>0.250000000000000</double>
              </property>
             </widget>
            </item>
@@ -1608,18 +1759,18 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>250</width>
+               <width>200</width>
                <height>20</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>250</width>
+               <width>200</width>
                <height>20</height>
               </size>
              </property>
              <property name="text">
-              <string>Default Weight for Role Preferences</string>
+              <string>Default Preference Weight</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1630,13 +1781,13 @@
             <widget class="QDoubleSpinBox" name="dsb_pref_weight">
              <property name="minimumSize">
               <size>
-               <width>90</width>
+               <width>60</width>
                <height>0</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>90</width>
+               <width>60</width>
                <height>16777215</height>
               </size>
              </property>
@@ -1647,7 +1798,7 @@
               <double>0.250000000000000</double>
              </property>
              <property name="value">
-              <double>1.000000000000000</double>
+              <double>0.150000000000000</double>
              </property>
             </widget>
            </item>
@@ -1670,7 +1821,7 @@
           </layout>
          </item>
          <item>
-          <spacer name="verticalSpacer">
+          <spacer name="verticalSpacer_6">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
            </property>
@@ -1688,31 +1839,24 @@
          <item>
           <layout class="QHBoxLayout" name="hLayoutRoleTooltip">
            <item>
-            <spacer name="horizontalSpacer_11">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
+            <widget class="QLabel" name="label_7">
+             <property name="minimumSize">
               <size>
-               <width>80</width>
-               <height>20</height>
+               <width>200</width>
+               <height>0</height>
               </size>
              </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_7">
              <property name="maximumSize">
               <size>
-               <width>65</width>
+               <width>200</width>
                <height>20</height>
               </size>
              </property>
              <property name="text">
               <string>Show the top</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
             </widget>
            </item>
@@ -1720,7 +1864,7 @@
             <widget class="QSpinBox" name="sb_roles_pane">
              <property name="maximumSize">
               <size>
-               <width>50</width>
+               <width>60</width>
                <height>20</height>
               </size>
              </property>
@@ -1801,132 +1945,90 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_12">
            <item>
-            <spacer name="horizontalSpacer">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
+            <widget class="QCheckBox" name="chk_roles_in_labor">
+             <property name="minimumSize">
               <size>
-               <width>80</width>
-               <height>20</height>
+               <width>270</width>
+               <height>0</height>
               </size>
              </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="chk_roles_in_labor">
              <property name="toolTip">
               <string/>
              </property>
              <property name="statusTip">
               <string>Shows all roles which have the same skill as the labor uses in the labor column tooltips.</string>
              </property>
+             <property name="layoutDirection">
+              <enum>Qt::RightToLeft</enum>
+             </property>
              <property name="text">
               <string>Show role information in labor columns</string>
              </property>
             </widget>
            </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_16">
            <item>
-            <spacer name="horizontalSpacer_3">
+            <spacer name="horizontalSpacer">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
+              <enum>QSizePolicy::Expanding</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>100</width>
+               <width>250</width>
                <height>20</height>
               </size>
              </property>
             </spacer>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="chk_labor_sort_by_roles">
-             <property name="toolTip">
-              <string/>
-             </property>
-             <property name="statusTip">
-              <string>Sorts labor columns by 'labor enabled' and then by role ratings.</string>
-             </property>
-             <property name="text">
-              <string>Include role ratings when sorting labor columns.</string>
-             </property>
-            </widget>
            </item>
           </layout>
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_14">
            <item>
-            <spacer name="horizontalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
+            <widget class="QCheckBox" name="chk_roles_in_skills">
+             <property name="minimumSize">
               <size>
-               <width>80</width>
-               <height>20</height>
+               <width>270</width>
+               <height>0</height>
               </size>
              </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="chk_roles_in_skills">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>16777215</height>
+              </size>
+             </property>
              <property name="toolTip">
               <string/>
              </property>
              <property name="statusTip">
               <string>Shows all roles which have the skill in the column tooltips. Examples of skill column: Axedwarf, Liar, Teacher, Fighter...</string>
              </property>
+             <property name="layoutDirection">
+              <enum>Qt::RightToLeft</enum>
+             </property>
              <property name="text">
               <string>Show role information in skill columns</string>
              </property>
             </widget>
            </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_18">
            <item>
-            <spacer name="horizontalSpacer_4">
+            <spacer name="horizontalSpacer_2">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Fixed</enum>
+              <enum>QSizePolicy::Expanding</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>100</width>
+               <width>250</width>
                <height>20</height>
               </size>
              </property>
             </spacer>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="chk_skills_sort_by_roles">
-             <property name="toolTip">
-              <string/>
-             </property>
-             <property name="statusTip">
-              <string>Sorts skill columns by 'has skill experience' and then by role ratings.</string>
-             </property>
-             <property name="text">
-              <string>Include role ratings when sorting skill columns.</string>
-             </property>
-            </widget>
            </item>
           </layout>
          </item>
@@ -1999,8 +2101,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>432</x>
-     <y>378</y>
+     <x>533</x>
+     <y>558</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -2015,8 +2117,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>432</x>
-     <y>378</y>
+     <x>533</x>
+     <y>558</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

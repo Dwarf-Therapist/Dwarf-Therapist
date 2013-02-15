@@ -49,6 +49,9 @@ public:
 
     QVector<CustomProfession*> get_custom_professions() {return m_custom_professions;}
     CustomProfession *get_custom_profession(QString name);
+    CustomProfession *get_custom_prof_icon(int prof_id) {return m_custom_prof_icns.value(prof_id);}
+    QMap<int, CustomProfession*> &get_custom_prof_icons() {return m_custom_prof_icns;}
+
     MainWindow *get_main_window() {return m_main_window;}
 
     int custom_profession_from_dwarf(Dwarf *d);
@@ -65,6 +68,8 @@ public:
     LogManager *get_log_manager() {return m_log_mgr;}
     DFInstance *get_DFInstance() {return m_main_window->get_DFInstance();}
 
+    bool multiple_castes;
+
     void emit_settings_changed();
     void emit_roles_changed();
     void emit_labor_counts_updated();
@@ -74,10 +79,10 @@ public:
         void add_custom_profession();
         void add_custom_profession(CustomProfession *cp);
         void read_settings();
-        void write_settings();
+        void write_settings();        
         void import_existing_professions();
         void edit_custom_profession();
-        void edit_custom_profession(QListWidgetItem*);
+        void edit_custom_profession(QTreeWidgetItem *);
         void delete_custom_profession();
 
 private:
@@ -85,6 +90,7 @@ private:
     QVector<QString> m_dwarf_words;
     QVector<Word *> m_language;
     QVector<CustomProfession*> m_custom_professions;
+    QMap<int, CustomProfession*> m_custom_prof_icns;
     QSettings *m_user_settings;
     MainWindow *m_main_window;
     OptionsMenu *m_options_menu;
@@ -94,7 +100,7 @@ private:
 
     void setup_logging();
     void load_translator();
-
+    void save_custom_prof(CustomProfession *cp);
 
 signals:
     void settings_changed();

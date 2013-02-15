@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 #include <QtGui>
 #include "columntypes.h"
+#include "viewcolumn.h"
 
 class Dwarf;
 class GridView;
@@ -50,8 +51,13 @@ public:
 	void add_view(GridView *view);
     void add_weapons_view(QList<GridView*> &built_in_views);
 
+    static void save_column_sort(COLUMN_TYPE cType, ViewColumn::COLUMN_SORT_TYPE sType);
+    static ViewColumn::COLUMN_SORT_TYPE get_default_col_sort(COLUMN_TYPE cType){
+        return m_default_column_sort.value(cType,ViewColumn::CST_DEFAULT);
+    }
+
 	public slots:
-		void setCurrentIndex(int);
+		void setCurrentIndex(int);        
 		void reload_views();
 		void write_views();
 		void draw_views();
@@ -70,7 +76,11 @@ public:
 		void expand_all();
 		void collapse_all();
 		void jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* previous);
-		void jump_to_profession(QListWidgetItem* current, QListWidgetItem* previous);
+        void jump_to_profession(QTreeWidgetItem* current, QTreeWidgetItem* previous);
+
+        void select_all();
+
+        void clear_selected();
 
 private:
 	QList<GridView*> m_views;
@@ -82,7 +92,9 @@ private:
     int m_last_index;
     QErrorMessage *m_squad_warning;    
 
-    StateTableView *get_stv(int idx = -1);
+    StateTableView *get_stv(int idx = -1);    
+
+    static QMap<COLUMN_TYPE, ViewColumn::COLUMN_SORT_TYPE> m_default_column_sort;
 
 	private slots:
 		//! used when adding tabs via the tool button

@@ -305,10 +305,10 @@ void Role::write_pref_group(QSettings &s, float default_prefs_weight){
                 s.setValue("weight",QString::number(p->pref_aspect->weight,'g',2));
             }
 
-            s.beginWriteArray("flags",p->get_flags().count());
-            for(int j = 0; j < p->get_flags().count(); j++){
+            s.beginWriteArray("flags",p->special_flags().count());
+            for(int j = 0; j < p->special_flags().count(); j++){
                 s.setArrayIndex(j);
-                s.setValue("flag",p->get_flags().at(j));
+                s.setValue("flag",p->special_flags().at(j));
             }
             s.endArray();
         }

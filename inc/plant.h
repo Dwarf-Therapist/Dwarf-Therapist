@@ -12,7 +12,7 @@ class MemoryLayout;
 class Plant : public QObject {
     Q_OBJECT
 public:
-    Plant();
+    Plant(QObject *parent = 0);
     Plant(DFInstance *df, VIRTADDR address, int index, QObject *parent = 0);
     virtual ~Plant();
 
@@ -33,7 +33,7 @@ public:
     QString seed_plural() {return m_seed_name_plural;}
 
     QStringList get_names();
-    FlagArray* flags() {return m_flags;}
+    FlagArray flags() {return m_flags;}
 
 private:
     int m_index;
@@ -41,7 +41,7 @@ private:
     DFInstance * m_df;
     MemoryLayout * m_mem;
     QVector<Material*> m_plant_mats;
-    FlagArray *m_flags;
+    FlagArray m_flags;
 
     QString m_plant_name;
     QString m_plant_name_plural;

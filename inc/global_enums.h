@@ -253,6 +253,7 @@ typedef enum{
     PET=54,
     PET_EXOTIC=55,    
     TRAINABLE_WAR=88,
+    BLOODSUCKER=162, //vampires
     HAS_EXTRACTS=200 //custom
 } CASTE_FLAGS;
 

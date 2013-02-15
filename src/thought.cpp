@@ -1,6 +1,6 @@
 /*
 Dwarf Therapist
-Copyright (c) 2010 Justin Ehlert
+Copyright (c) 2009 Trey Stout (chmod)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,41 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef ATTRIBUTELEVEL_H
-#define ATTRIBUTELEVEL_H
+#include "thought.h"
+#include "gamedatareader.h"
 
-#include <QString>
+const QList<QColor> Thought::m_base_colors = Thought::set_base_colors();
 
-class AttributeLevel {
+Thought::Thought(int id, QSettings &s, QObject *parent)
+    : QObject(parent)
+    , m_title(s.value("title", "Unknown").toString())
+    , m_description(s.value("thought", m_title).toString())
+    , m_effect(s.value("value", 0).toInt())
+    , m_id(id)
+{
+    if(m_effect == 0){
+        m_color = c_neu();
+    }
+    else if(m_effect > 0){
+        m_color = c_pos();
+    }else{
+        m_color = c_neg();
+    }
+    //-1000 to +1000
+    //(x - from_min) * (to_max - to_min) / (from_max - from_min) + to_min
+    int alpha = (((m_effect + 50) * (255-75)) / 100) + 75;
+    if(alpha > 255)
+        alpha = 255;
+    else if(alpha < 0)
+        alpha = 0;
 
-public:
-    QString description;
-    int rating;
-};
+    if(m_effect < 0)
+        alpha = 255 - alpha;
 
-#endif // ATTRIBUTELEVEL_H
+    m_color.setAlpha(alpha);
+
+}
+
+Thought::Thought(QObject *parent)
+    :QObject(parent)
+{}

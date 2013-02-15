@@ -118,11 +118,13 @@ void ViewColumnSet::toggle_for_dwarf_group() {
 
     int total_enabled = 0;
     int total_labors = 0;
+    QList<int> labors;
     foreach(Dwarf *d, dm->get_dwarf_groups()->value(group_name)) {
         foreach(ViewColumn *vc, m_columns) {
             if (vc->type() == CT_LABOR) {
                 total_labors++;
                 LaborColumn *lc = static_cast<LaborColumn*>(vc);
+                labors.append(lc->labor_id());
                 if (d->labor_enabled(lc->labor_id()))
                     total_enabled++;
             }
@@ -130,12 +132,16 @@ void ViewColumnSet::toggle_for_dwarf_group() {
     }
     bool turn_on = total_enabled < total_labors;
     foreach(Dwarf *d, dm->get_dwarf_groups()->value(group_name)) {
-        foreach(ViewColumn *vc, m_columns) {
-            if (vc->type() == CT_LABOR) {
-                LaborColumn *lc = static_cast<LaborColumn*>(vc);                
-                d->set_labor(lc->labor_id(), turn_on, false);
-            }
+        foreach(int id, labors){
+            d->set_labor(id,turn_on,false);
         }
+
+//        foreach(ViewColumn *vc, m_columns) {
+//            if (vc->type() == CT_LABOR) {
+//                LaborColumn *lc = static_cast<LaborColumn*>(vc);
+//                d->set_labor(lc->labor_id(), turn_on, false);
+//            }
+//        }
     }
     dm->dwarf_group_toggled(group_name);
     DT->get_main_window()->get_model()->calculate_pending();
@@ -213,13 +219,12 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
     ViewColumnSet *ret_val = new ViewColumnSet(s.value("name", "UNKNOWN").toString(), parent);
     QString color_in_hex = s.value("bg_color", "0xFFFFFF").toString();
     QColor bg_color = from_hex(color_in_hex);
-    ret_val->set_bg_color(bg_color);
-
+    ret_val->set_bg_color(bg_color);    
     int total_columns = s.beginReadArray("columns");
     for (int i = 0; i < total_columns; ++i) {
         s.setArrayIndex(i);
-        QString ctype = s.value("type","").toString();
-        switch(get_column_type(s.value("type", "DEFAULT").toString())) {
+        COLUMN_TYPE cType = (get_column_type(s.value("type", "DEFAULT").toString()));
+        switch(cType) {
         case CT_SPACER:
             new SpacerColumn(s, ret_val, parent);
             break;

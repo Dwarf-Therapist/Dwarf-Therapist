@@ -47,11 +47,11 @@ public:
 protected:
     void leaveEvent(QEvent *e);
     void mouseMoveEvent(QMouseEvent *e);
-    void mousePressEvent(QMouseEvent *e);
+    void mousePressEvent(QMouseEvent *e);    
 
 signals:
     void section_right_clicked(int idx);
-    void sort(int, DwarfModelProxy::DWARF_SORT_ROLE);
+    void sort(int, DwarfModelProxy::DWARF_SORT_ROLE, Qt::SortOrder);
 
 private:
     QPoint m_p;
@@ -63,7 +63,7 @@ private:
 
     private slots:
         //! called by a sorting context menu action
-        void sort_action();
+        void sort_action();        
         //! called by context menu on sections
         void toggle_set_action();
 };

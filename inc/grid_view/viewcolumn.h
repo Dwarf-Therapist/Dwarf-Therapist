@@ -47,6 +47,36 @@ public:
     virtual ViewColumn* clone() = 0;
     virtual ~ViewColumn();
 
+    typedef enum {
+        CST_DEFAULT,
+        CST_SKILL_RATE,
+        CST_ROLE_RATING,
+        CST_LEVEL
+    } COLUMN_SORT_TYPE;
+
+    static inline QString get_sort_type(const COLUMN_SORT_TYPE &type) {
+        switch (type) {
+        case CST_SKILL_RATE: return "SKILL_RATE";
+        case CST_ROLE_RATING: return "ROLE_RATING";
+        case CST_LEVEL: return "LEVEL";
+        default:
+            return "???";
+        }
+        return "???";
+    }
+
+    static inline COLUMN_SORT_TYPE get_sort_type(const QString &name) {
+        if (name.toUpper() == "SKILL_RATE") {
+            return CST_SKILL_RATE;
+        } else if (name.toUpper() == "ROLE_RATING") {
+            return CST_ROLE_RATING;
+        } else if (name.toUpper() == "LEVEL") {
+            return CST_LEVEL;
+        }
+        return CST_DEFAULT;
+    }
+
+
 	QString title() {return m_title;}
 	void set_title(QString title) {m_title = title;}
 	bool override_color() {return m_override_set_colors;}
@@ -66,10 +96,14 @@ public:
     QString get_cell_value(Dwarf *d);
 	virtual void write_to_ini(QSettings &s);
 
+    QList<COLUMN_SORT_TYPE> get_sortable_types(){return m_sortable_types;}
+    COLUMN_SORT_TYPE get_current_sort() {return m_current_sort;}
+
 	public slots:
 		virtual void read_settings() {}
         void clear_cells();// {m_cells.clear();}
 		virtual void redraw_cells() {}
+        virtual void refresh_sort(COLUMN_SORT_TYPE) {}
 
 protected:
 	QString m_title;
@@ -79,6 +113,10 @@ protected:
 	COLUMN_TYPE m_type;
 	QHash<Dwarf*, QStandardItem*> m_cells;
     int m_count;
+    QList<COLUMN_SORT_TYPE> m_sortable_types;
+    COLUMN_SORT_TYPE m_current_sort;
 };
+
+//Q_DECLARE_METATYPE(ViewColumn::COLUMN_SORT_TYPE)
 
 #endif

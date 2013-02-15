@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "profession.h"
 #include "dwarftherapist.h"
 #include "iconchooser.h"
+#include "utils.h"
 
 /*!
 Default ctor. Creates a blank skill template with no name
@@ -39,8 +40,13 @@ CustomProfession::CustomProfession(QObject *parent)
     , ui(new Ui::CustomProfessionEditor)
     , m_dwarf(0)
     , m_dialog(0)
-    , m_is_mask(false)    
-    , m_color(Qt::black)
+    , m_is_mask(false)
+    , m_bg_custom_color(0x0)
+    , m_font_color(Qt::black)
+    , m_bg_color(Qt::transparent)
+    , m_txt("")
+    , m_id(-1)
+    , m_fnt(0x0)
 {
 }
 
@@ -60,7 +66,12 @@ CustomProfession::CustomProfession(Dwarf *d, QObject *parent)
     , m_dwarf(d)
     , m_dialog(0)
     , m_is_mask(false)
-    , m_color(Qt::black)
+    , m_bg_custom_color(0x0)
+    , m_font_color(Qt::black)
+    , m_bg_color(Qt::transparent)
+    , m_txt("")
+    , m_id(-1)
+    , m_fnt(0x0)
 {
     GameDataReader *gdr = GameDataReader::ptr();
     QList<Labor*> labors = gdr->get_ordered_labors();
@@ -124,49 +135,75 @@ int CustomProfession::show_builder_dialog(QWidget *parent) {
     ui->setupUi(m_dialog);
 
     ui->name_edit->setText(m_name);
-    refresh_icon();
     connect(ui->name_edit, SIGNAL(textChanged(const QString &)), this, SLOT(set_name(QString)));
     connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
 
-    m_color_chooser = new CustomColor("",tr("The color of the text drawn over the icon."),
+    //add font color chooser
+    m_font_custom_color = new CustomColor("",tr("The color of the text drawn over the icon."),
                                  "text_color", Qt::black, 0);
-    m_color_chooser->set_color(m_color);
-    ui->hLayoutText->insertWidget(3,m_color_chooser);
-
-    QList<Labor*> labors = gdr->get_ordered_labors();
-    int num_active = 0;
-    foreach(Labor *l, labors) {
-        QListWidgetItem *item = new QListWidgetItem(l->name, ui->labor_list);
-        item->setData(Qt::UserRole, l->labor_id);
-        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        if (is_active(l->labor_id)) {
-            item->setCheckState(Qt::Checked);
-            num_active++;
-        } else {
-            item->setCheckState(Qt::Unchecked);
-        }
-        ui->labor_list->addItem(item);
-    }
+    m_font_custom_color->set_color(m_font_color);
+    ui->hLayoutText->insertWidget(3,m_font_custom_color);
+    connect(m_font_custom_color, SIGNAL(color_changed(QString,QColor)), this, SLOT(color_selected(QString,QColor)));
 
     ui->chk_mask->setChecked(m_is_mask);
     ui->chk_mask->setToolTip("This profession's labours will be applied in addition to any labors already enabled.");
     connect(ui->chk_mask,SIGNAL(clicked(bool)),this,SLOT(mask_changed(bool)));
 
-    connect(ui->labor_list,
-            SIGNAL(itemChanged(QListWidgetItem*)),
-            this,
-            SLOT(item_check_state_changed(QListWidgetItem*)));
+    //add background color chooser
+    m_bg_custom_color = new CustomColor("",tr("The background color of the icon."),
+                                        "bg_color", Qt::transparent, 0);
+    m_bg_custom_color->set_color(m_bg_color);
+    connect(m_bg_custom_color, SIGNAL(color_changed(QString,QColor)), this, SLOT(color_selected(QString,QColor)));
+    ui->hlayout_bg_color->insertWidget(1,m_bg_custom_color);
 
+    //no id number means it's a custom profession which can have labors, otherwise it's simply an icon/text override
+    if(m_id < 0){
+        QList<Labor*> labors = gdr->get_ordered_labors();
+        int num_active = 0;
+        foreach(Labor *l, labors) {
+            QListWidgetItem *item = new QListWidgetItem(l->name, ui->labor_list);
+            item->setData(Qt::UserRole, l->labor_id);
+            item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+            if (is_active(l->labor_id)) {
+                item->setCheckState(Qt::Checked);
+                num_active++;
+            } else {
+                item->setCheckState(Qt::Unchecked);
+            }
+            ui->labor_list->addItem(item);
+        }
+
+        connect(ui->labor_list,
+                SIGNAL(itemChanged(QListWidgetItem*)),
+                this,
+                SLOT(item_check_state_changed(QListWidgetItem*)));
+
+        ui->lbl_skill_count->setNum(num_active);
+    }else{
+        //clear the mask stuff
+        ui->chk_mask->setVisible(false);
+        ui->lbl_selection_count->setVisible(false);
+        ui->lbl_skill_count->setVisible(false);
+        //hide the list
+        ui->labor_list->adjustSize();
+        ui->labor_list->setVisible(false);
+        //always show the prof name and lock it
+        ui->name_edit->setText(GameDataReader::ptr()->get_profession(m_id)->name(true));
+        ui->name_edit->setEnabled(false);
+        //disable resizing
+        m_dialog->adjustSize();
+        m_dialog->setSizeGripEnabled(false);
+        m_dialog->layout()->setSizeConstraint(QLayout::SetFixedSize);
+    }
+
+    refresh_icon();
     connect(ui->btnIcon,SIGNAL(clicked()),this,SLOT(choose_icon()));
 
-    ui->lbl_skill_count->setNum(num_active);
     ui->le_prefix->setText(m_txt);
+    connect(ui->le_prefix, SIGNAL(textChanged(QString)), this, SLOT(prefix_changed(QString)));
 
     int code = m_dialog->exec();
-
-    m_color = m_color_chooser->get_color();
-    m_dialog->deleteLater();
-    m_txt = ui->le_prefix->text();
+    m_dialog->deleteLater();    
     return code;
 }
 
@@ -223,6 +260,11 @@ void CustomProfession::item_check_state_changed(QListWidgetItem *item) {
     }
 }
 
+void CustomProfession::prefix_changed(QString val){
+    m_txt = val;
+    refresh_icon();
+}
+
 void CustomProfession::mask_changed(bool value){
     m_is_mask = value;
 }
@@ -230,7 +272,10 @@ void CustomProfession::mask_changed(bool value){
 void CustomProfession::delete_from_disk() {
     QSettings s(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
     s.beginGroup("custom_professions");
-    s.remove(m_name);
+    QString name = m_name;
+    if(m_id > -1)
+        m_name += "::" + QString::number(m_id);
+    s.remove(name);
     s.endGroup();
 }
 
@@ -242,7 +287,82 @@ void CustomProfession::choose_icon(){
     refresh_icon();
 }
 
+void CustomProfession::color_selected(QString key, QColor col){
+    if(key == "bg_color"){
+        m_bg_color = col;
+    }else{
+        m_font_color = col;
+    }
+    refresh_icon();
+}
+
 void CustomProfession::refresh_icon(){
-    m_dialog->setWindowIcon(QIcon(m_path));
-    ui->lbl_icon->setText(QString("%2 <img src='%1'>").arg(m_path).arg("Icon"));
+    create_image();
+    m_dialog->setWindowIcon(QIcon(m_pixmap));
+    if(m_path == "" || m_icon_id == -1)
+        ui->lbl_icon->setText(tr("No Icon."));
+    else{
+        ui->lbl_icon->setText(tr(""));
+        ui->lbl_icon->setPixmap(QPixmap(m_path));
+    }
+}
+
+void CustomProfession::create_image(){
+    if(m_icon_id > -1 && m_txt == ""){
+        m_pixmap = QPixmap(m_path); //default profession icon
+    }else{
+        QPainter p;
+        QPixmap icn(m_path);
+        m_pixmap = QPixmap(16,16);
+
+        //fill the background
+        m_pixmap.fill(m_bg_color);
+
+        p.begin(&m_pixmap);
+        //draw the icon if we have one
+        if(m_icon_id > -1)
+            p.drawPixmap(0,0,icn);
+        //draw the text
+
+        p.setPen(QPen(m_font_color));
+        QRect rtxt = m_pixmap.rect();
+        rtxt.adjust(0,1,0,0);
+        p.setFont(*get_font());
+        p.drawText(rtxt, Qt::AlignCenter, m_txt);
+        p.end();
+    }
+}
+
+QPixmap CustomProfession::get_pixmap(){
+    if(!m_pixmap)
+        create_image();
+    return m_pixmap;
+}
+
+QString CustomProfession::get_embedded_pixmap(){
+    if(!m_pixmap)
+        create_image();
+    return embedPixmap(m_pixmap);
+}
+
+QFont* CustomProfession::get_font(){
+    if(!m_fnt){
+        m_fnt = new QFont(DT->user_settings()->value("options/grid/font", QFont("Segoe UI", 8)).value<QFont>());
+        m_fnt->setBold(true);
+        m_fnt->setPointSize(8); //icons are only 16x16, this is about the largest font we can use and still get text inside
+    }
+    return m_fnt;
+}
+
+void CustomProfession::set_name(QString name){
+    //an icon override will be stored as name::id
+    QStringList names = name.split("::",QString::SkipEmptyParts);
+    m_name = names.at(0);
+}
+
+QString CustomProfession::get_save_name(){
+    if(m_id > -1)
+        return m_name + "::" + QString::number(m_id);
+    else
+        return m_name;
 }

@@ -32,16 +32,16 @@ AboutDialog::AboutDialog(MainWindow *parent)
 	, m_version(Version())
 {
 	ui->setupUi(this);
-    ui->lbl_our_version->setText(QString("VERSION %1 - BRANCH VERSION %2").arg(m_version.to_string()).arg("19.3"));
+    ui->lbl_our_version->setText(QString("VERSION %1 - BRANCH VERSION %2").arg(m_version.to_string()).arg("20.0"));
     connect(ui->pb_check_version, SIGNAL(clicked()), SLOT(check_version()));
 }
 
 void AboutDialog::set_latest_version(const Version &v) {
-//	if (m_version < v) {
+    if (m_version < v) {
 //		ui->lbl_up_to_date->setText("Update Available: <a href=\"http://code.google.com/p/dwarftherapist/downloads/list\">v" + v.to_string() + "</a>");
-//	} else {
+    } else {
 //		ui->lbl_up_to_date->setText(QString("This version is up to date (v%1)").arg(m_version.to_string()));
-//	}
+    }
 }
 
 void AboutDialog::version_check_failed() {

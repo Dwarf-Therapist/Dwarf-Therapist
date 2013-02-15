@@ -47,17 +47,19 @@ QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
 	
     QString pixmap_name = QString(":status/img/%1.png").arg(Dwarf::happiness_name(d->get_happiness()));
     if(pixmap_name=="")
-        pixmap_name = ":img/help.png";
+        pixmap_name = ":img/question-frame.png";
 
     item->setData(QIcon(pixmap_name), Qt::DecorationRole);
-
 	item->setData(CT_HAPPINESS, DwarfModel::DR_COL_TYPE);
-	item->setData(d->get_raw_happiness(), DwarfModel::DR_SORT_VALUE);
-    QString tooltip = QString("<h3>%1</h3>%2 (%3)<h4>%4</h4>")
-                      .arg(m_title)
-					  .arg(Dwarf::happiness_name(d->get_happiness()))
-					  .arg(d->get_raw_happiness())
-                      .arg(d->nice_name());
+	item->setData(d->get_raw_happiness(), DwarfModel::DR_SORT_VALUE);            
+
+    QString tooltip = QString("<h3>%1</h3>%2 (%3)<p>%4</p><h4>%5</h4>")
+            .arg(m_title)
+            .arg(Dwarf::happiness_name(d->get_happiness()))
+            .arg(d->get_raw_happiness())
+            .arg(d->get_thought_desc())
+            .arg(d->nice_name());
+
     item->setToolTip(tooltip);
 	QColor bg = m_colors[d->get_happiness()];
     item->setBackground(QBrush(bg));

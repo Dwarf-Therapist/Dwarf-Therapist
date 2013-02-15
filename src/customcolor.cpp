@@ -58,4 +58,5 @@ CustomColor::CustomColor(QString setting_name, QString tooltip, QString config_k
 
 void CustomColor::color_changed(const QColor &) {
 	m_dirty = true;
+    emit color_changed(m_config_key, m_picker->currentColor());
 }

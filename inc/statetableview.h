@@ -43,6 +43,7 @@ public:
     RotatedHeader *get_header() {return m_header;}
 
     QItemSelection m_selected;
+    QModelIndexList m_selected_rows;
     int m_last_sorted_col;
     Qt::SortOrder m_last_sort_order;
     int m_last_group_by;
@@ -63,9 +64,10 @@ public:
         void filter_dwarves(QString text);
         void set_single_click_labor_changes(bool enabled) {m_single_click_labor_changes = enabled;}
         void jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* previous);
-        void jump_to_profession(QListWidgetItem* current, QListWidgetItem* previous);
+        void jump_to_profession(QTreeWidgetItem* current, QTreeWidgetItem* previous);
         void select_dwarf(Dwarf *d);
-
+        void select_all();
+        void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
         // expand/collapse persistence
         void expandAll();
@@ -74,7 +76,7 @@ public:
         void index_collapsed(const QModelIndex &idx);
         void restore_expanded_items();
         void currentChanged(const QModelIndex &, const QModelIndex &);
-        void clicked(const QModelIndex &index);
+        void activate_cells(const QModelIndex &index);
         void header_pressed(int index);
         void header_clicked(int index);
 
@@ -95,10 +97,12 @@ private:
     bool m_single_click_labor_changes;
     //! we have to store this ourselves since the click(), accept() etc... don't send which button caused them
     Qt::MouseButton m_last_button;
-    bool m_column_already_sorted;    
+    bool m_column_already_sorted;
     int m_vscroll;
     int m_hscroll;
-
+    QModelIndex m_last_cell;
+    bool m_dragging;
+    bool m_toggling_multiple;
     void keyPressEvent(QKeyEvent *event);
 
     private slots:
@@ -113,7 +117,11 @@ private:
         void remove_squad();
         void vscroll_value_changed(int value);
         void hscroll_value_changed(int value);
-        void clear_selected_labors();
+        void toggle_all_labors();
+        void column_right_clicked(int);
+        void sort_column();
+        void edit_prof_icon();
+        void remove_prof_icon();
 
 signals:
     void new_custom_profession(Dwarf *d);

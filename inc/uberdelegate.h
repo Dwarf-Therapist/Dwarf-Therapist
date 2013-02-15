@@ -91,9 +91,10 @@ private:
     //! return the bg color that was painted
     QColor paint_bg(const QRect &adjusted, bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const bool use_gradient = false, const QColor &col_override = Qt::black) const;
 
+    void paint_values(const QRect &adjusted, float rating, QString text_rating, QColor bg, QPainter *p,
+                    const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, float median = 50.0f,
+                    float min_limit=5.0f, float max_limit=95.0f, float min_ignore=40.0f, float max_ignore=60.0f) const;
 
-    void paint_generic(const QRect &adjusted, int rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
-    void paint_labor(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
     void paint_mood_cell(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, int skill_id, bool dirty) const;
     void paint_pref(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
     void paint_flags(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;

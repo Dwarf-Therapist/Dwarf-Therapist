@@ -33,9 +33,9 @@ DwarfDetailsDock::DwarfDetailsDock(QWidget *parent, Qt::WindowFlags flags)
     setObjectName("dock_dwarf_details");
     setFeatures(QDockWidget::AllDockWidgetFeatures);
     setAllowedAreas(Qt::AllDockWidgetAreas);
-    QLabel *l = new QLabel(tr("Click on a dwarf name to show details here"), this);
-    l->setAlignment(Qt::AlignCenter);
-    setWidget(l);
+    lbl_info = new QLabel(tr("Click on a dwarf name to show details here"), this);
+    lbl_info->setAlignment(Qt::AlignCenter);
+    setWidget(lbl_info);
 }
 
 void DwarfDetailsDock::show_dwarf(Dwarf *d) {
@@ -53,5 +53,11 @@ QByteArray DwarfDetailsDock::splitter_sizes(){
         return split->saveState();
     else
         return NULL;
+}
+
+void DwarfDetailsDock::clear(){
+    m_widget->clear();
+    m_initialized = false;
+    setWidget(lbl_info);
 }
 

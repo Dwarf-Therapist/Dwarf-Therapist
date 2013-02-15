@@ -114,12 +114,15 @@ public:
         void new_filter_script_chosen(const QString &script_name);
         void reload_filter_scripts();
 
+        //roles
         void add_new_custom_role();
         void add_new_opt();
+
+        //optimizer
         void refresh_opts_data();
         void write_labor_optimizations();
         void init_optimize();
-        void optimize(QString plan_name);
+        void optimize(QString plan_name);        
 
 
 private:
@@ -132,7 +135,6 @@ private:
     DwarfModel *m_model;
     DwarfModelProxy *m_proxy;
     AboutDialog *m_about_dialog;
-    CustomProfession *m_temp_cp;
     Scanner *m_scanner;
     ScriptDialog *m_script_dialog;
     roleDialog *m_role_editor;
@@ -162,6 +164,7 @@ private:
     void write_custom_roles();
 
     void refresh_opts_menus();
+    void reset();
 
     private slots:
         void set_interface_enabled(bool);
@@ -170,6 +173,7 @@ private:
         void remove_custom_role();
         void display_group(const int);
         void preference_selected(QStringList names, QString category);
+        void thought_selected(QList<short> ids);
         //optimization stuff
         void edit_opt();
         void remove_opt();

@@ -45,6 +45,10 @@
        <property name="text">
         <string>Refresh</string>
        </property>
+       <property name="icon">
+        <iconset resource="../images.qrc">
+         <normaloff>:/img/refresh.png</normaloff>:/img/refresh.png</iconset>
+       </property>
       </widget>
      </item>
     </layout>
