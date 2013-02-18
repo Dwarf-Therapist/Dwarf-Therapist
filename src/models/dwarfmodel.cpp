@@ -101,12 +101,26 @@ void DwarfModel::load_dwarves() {
         m_dwarves[d->id()] = d;
     }
 
+    load_squads();
+
+    m_df->detach();
+}
+
+void DwarfModel::load_squads(bool refreshing){
     qDeleteAll(m_squads);
     m_squads.clear();
-    foreach(Squad * s, m_df->load_squads()) {
-        m_squads[s->id()] = s;        
+    foreach(Squad * s, m_df->load_squads(refreshing)) {
+        m_squads[s->id()] = s;
     }
-    m_df->detach();
+}
+
+void DwarfModel::refresh_squads(){
+    if(!m_df)
+        return;
+    //refresh the active squad list
+    m_df->fortress()->refresh_squads();
+    //refresh all squads
+    load_squads(true);
 }
 
 

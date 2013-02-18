@@ -396,10 +396,6 @@ void ViewManager::setCurrentIndex(int idx) {
     StateTableView *stv = get_stv(idx);
     StateTableView *prev_view = get_stv(m_last_index);
 
-//    QFuture<void> f = QtConcurrent::run(this, &ViewManager::setupStateTable, idx, stv, prev_view);
-//    f.waitForFinished();
-
-
     QSettings *s = DT->user_settings();
     bool group_all = s->value("options/grid/group_all_views",true).toBool();
     bool scroll_all = s->value("options/grid/scroll_all_views",false).toBool();
@@ -429,17 +425,6 @@ void ViewManager::setCurrentIndex(int idx) {
                 }
             }
             m_model->set_group_by(sel_group);
-//            if(group_all && prev_view){
-//                    m_model->set_group_by(prev_view->m_last_group_by);
-//                    stv->m_last_group_by = prev_view->m_last_group_by;
-//            }else{
-//                if(stv->m_last_group_by < 0){
-//                    m_model->set_group_by(default_group);
-//                    stv->m_last_group_by = default_group;
-//                }else{
-//                    m_model->set_group_by(stv->m_last_group_by);
-//                }
-//            }
 
             if(scroll_all){
                 if(prev_view)
@@ -538,7 +523,7 @@ int ViewManager::add_tab_for_gridview(GridView *v) {
                                          const QItemSelection &)));
     connect(stv,SIGNAL(squad_leader_changed()),this,SLOT(show_squad_warning()),Qt::UniqueConnection);
     stv->show();
-    int new_idx = addTab(stv, v->name());
+    int new_idx = addTab(stv, v->name());    
     write_tab_order();
     return new_idx;
 }

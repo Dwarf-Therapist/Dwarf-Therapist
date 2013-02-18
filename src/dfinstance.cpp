@@ -781,7 +781,7 @@ void DFInstance::load_races_castes(){
 
 
 
-QVector<Squad*> DFInstance::load_squads() {
+QVector<Squad*> DFInstance::load_squads(bool refreshing) {
 
     QVector<Squad*> squads;
     if (!m_is_ok) {
@@ -790,35 +790,38 @@ QVector<Squad*> DFInstance::load_squads() {
         return squads;
     }
 
-    // we're connected, make sure we have good addresses
-    VIRTADDR squad_vector = m_layout->address("squad_vector");
-    if(squad_vector == 0xFFFFFFFF) {
-        LOGI << "Squads not supported for this version of Dwarf Fortress";
-        return squads;
+    if(!refreshing){
+        // we're connected, make sure we have good addresses
+        m_squad_vector = m_layout->address("squad_vector");
+        if(m_squad_vector == 0xFFFFFFFF) {
+            LOGI << "Squads not supported for this version of Dwarf Fortress";
+            return squads;
+        }
+        m_squad_vector += m_memory_correction;
+
+        if (!is_valid_address(m_squad_vector)) {
+            LOGW << "Active Memory Layout" << m_layout->filename() << "("
+                 << m_layout->game_version() << ")" << "contains an invalid"
+                 << "squad_vector address. Either you are scanning a new "
+                 << "DF version or your config files are corrupted.";
+            return squads;
+        }
+
+        // both necessary addresses are valid, so let's try to read the creatures
+        LOGD << "loading squads from " << hexify(m_squad_vector) <<
+                hexify(m_squad_vector - m_memory_correction) << "(UNCORRECTED)";
+
+        emit progress_message(tr("Loading Squads"));
     }
-    squad_vector += m_memory_correction;
-
-    if (!is_valid_address(squad_vector)) {
-        LOGW << "Active Memory Layout" << m_layout->filename() << "("
-                << m_layout->game_version() << ")" << "contains an invalid"
-                << "squad_vector address. Either you are scanning a new "
-                << "DF version or your config files are corrupted.";
-        return squads;
-    }
-
-    // both necessary addresses are valid, so let's try to read the creatures
-    LOGD << "loading squads from " << hexify(squad_vector) <<
-            hexify(squad_vector - m_memory_correction) << "(UNCORRECTED)";
-
-    emit progress_message(tr("Loading Squads"));
 
     attach();
 
-    QVector<VIRTADDR> entries = enumerate_vector(squad_vector);
+    QVector<VIRTADDR> entries = enumerate_vector(m_squad_vector);
     TRACE << "FOUND" << entries.size() << "squads";
 
     if (!entries.empty()) {
-        emit progress_range(0, entries.size()-1);
+        if(!refreshing)
+            emit progress_range(0, entries.size()-1);
         Squad *s = NULL;
         int i = 0;
         foreach(VIRTADDR squad_addr, entries) {
@@ -828,7 +831,8 @@ QVector<Squad*> DFInstance::load_squads() {
                 if(m_fortress->squad_is_active(s->id()))
                     squads.push_front(s);
             }
-            emit progress_value(i++);
+            if(!refreshing)
+                emit progress_value(i++);
         }
     }
 
@@ -836,6 +840,7 @@ QVector<Squad*> DFInstance::load_squads() {
     //LOGI << "Found" << squads.size() << "squads out of" << entries.size();
     return squads;
 }
+
 
 void DFInstance::heartbeat() {
     // simple read attempt that will fail if the DF game isn't running a fort,

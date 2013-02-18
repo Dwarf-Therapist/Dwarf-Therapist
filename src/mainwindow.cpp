@@ -237,6 +237,8 @@ void MainWindow::read_settings() {
     { // GUI OPTIONS
         int group_by = m_settings->value("group_by", 0).toInt(); //this isn't an index, it's an enum
         group_by = ui->cb_group_by->itemData(group_by, Qt::UserRole).toInt(); //find the index of the enum
+        if(group_by < 0)
+            group_by = 0;
         ui->cb_group_by->setCurrentIndex(group_by);
         m_model->set_group_by(group_by);
     }
@@ -592,6 +594,8 @@ void MainWindow::set_group_by(int group_by) {
     if(!m_df)
         return;
     group_by = ui->cb_group_by->itemData(group_by, Qt::UserRole).toInt();
+    if(group_by < 0)
+        group_by = 0;
     m_view_manager->set_group_by(group_by);
 }
 
@@ -1059,6 +1063,8 @@ void MainWindow::display_group(const int group_by){
     //we also want to change the combobox's index, but not refresh the grid again
     ui->cb_group_by->blockSignals(true);
     int idx = ui->cb_group_by->findData(static_cast<DwarfModel::GROUP_BY>(group_by));
+    if(idx < 0)
+        idx = 0;
     ui->cb_group_by->setCurrentIndex(idx);
     //write_settings();
     ui->cb_group_by->blockSignals(false);

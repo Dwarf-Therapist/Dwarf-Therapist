@@ -420,6 +420,8 @@ public:
 
     int optimized_labors;
 
+    void read_squad_info();
+
     public slots:
         //! called when global user settings change
         void read_settings();
@@ -535,8 +537,7 @@ private:
     void read_skills();
     void read_attributes();
     void load_attribute(VIRTADDR &addr, int id);
-    void read_traits();
-    void read_squad_info();
+    void read_traits();    
     void read_flags();
     void read_turn_count();    
     void read_animal_type();

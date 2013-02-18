@@ -106,7 +106,7 @@ public:
     void load_main_vectors();
     void load_weapons();
 
-    QVector<Squad*> load_squads();
+    QVector<Squad*> load_squads(bool refreshing = false);
 
     int get_labor_count(int id) const {return m_enabled_labor_count.value(id,0);}
     void update_labor_count(int id, int change)
@@ -287,6 +287,8 @@ private:
     QHash<short, QStringList> m_thought_counts;
     QString m_fortress_name;
     QString m_fortress_name_translated;
+
+    VIRTADDR m_squad_vector;
 };
 
 #endif // DFINSTANCE_H

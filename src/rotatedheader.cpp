@@ -193,19 +193,21 @@ void RotatedHeader::contextMenuEvent(QContextMenuEvent *evt) {
     QMenu *m = new QMenu(this);
 
     if (idx == 0) { //name header
-        QAction *a = m->addAction(QIcon(":img/sort-number.png"), tr("Sort by Age Ascending"), this, SLOT(sort_action()));
+        QAction *a = m->addAction("Sort by..");
+        m->addSeparator();
+        a = m->addAction(QIcon(":img/sort-number.png"), tr("Age Ascending"), this, SLOT(sort_action()));
         a->setData(DwarfModelProxy::DSR_AGE_ASC);
-        a = m->addAction(QIcon(":img/sort-number-descending.png"),tr("Sort by Age Descending"), this, SLOT(sort_action()));
+        a = m->addAction(QIcon(":img/sort-number-descending.png"),tr("Age Descending"), this, SLOT(sort_action()));
         a->setData(DwarfModelProxy::DSR_AGE_DESC);
         m->addSeparator();
-        a = m->addAction(QIcon(":img/sort-number.png"),tr("Sort by ID Ascending"), this, SLOT(sort_action()));
+        a = m->addAction(QIcon(":img/sort-number.png"),tr("ID Ascending"), this, SLOT(sort_action()));
         a->setData(DwarfModelProxy::DSR_ID_ASC);
-        a = m->addAction(QIcon(":img/sort-number-descending.png"),tr("Sort by ID Descending"), this, SLOT(sort_action()));
+        a = m->addAction(QIcon(":img/sort-number-descending.png"),tr("ID Descending"), this, SLOT(sort_action()));
         a->setData(DwarfModelProxy::DSR_ID_DESC);
         m->addSeparator();
-        a = m->addAction(QIcon(":img/sort-alphabet.png"),tr("Sort Alphabetically Ascending"), this, SLOT(sort_action()));
+        a = m->addAction(QIcon(":img/sort-alphabet.png"),tr("Name Ascending"), this, SLOT(sort_action()));
         a->setData(DwarfModelProxy::DSR_NAME_ASC);
-        a = m->addAction(QIcon(":img/sort-alphabet-descending.png"),tr("Sort Alphabetically Descending"), this, SLOT(sort_action()));
+        a = m->addAction(QIcon(":img/sort-alphabet-descending.png"),tr("Name Descending"), this, SLOT(sort_action()));
         a->setData(DwarfModelProxy::DSR_NAME_DESC);
     }
     if(m)

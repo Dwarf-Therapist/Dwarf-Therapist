@@ -53,7 +53,6 @@ private:
 
     void read_entity();    
     void load_noble_colors();
-    void refresh();
 
 public:    
     FortressEntity(DFInstance *df, VIRTADDR address, QObject *parent = 0);
@@ -129,6 +128,8 @@ public:
     static QColor default_noble_color;
     QHash<NOBLE_COLORS, QColor> m_noble_colors;
     bool squad_is_active(int id) {return m_squads.contains(id);}
+
+    void refresh_squads();
 };
 
 #endif

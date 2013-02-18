@@ -69,7 +69,7 @@ public:
         m[ARMORSTAND]="Armor stands";
         m[WEAPONRACK]="Weapon racks";
         m[CABINET]="Cabinets";
-        m[FIGURINE]="Figuines";
+        m[FIGURINE]="Figurines";
         m[AMULET]="Amulets";
         m[SCEPTER]="Scepters";
         m[AMMO]="Ammo";

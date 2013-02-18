@@ -128,6 +128,8 @@ public slots:
     void build_rows();
     void set_group_by(int group_by);
     void load_dwarves();
+    void load_squads(bool refreshing = false);
+    void refresh_squads();
     void cell_activated(const QModelIndex &idx); // a grid cell was clicked/doubleclicked or enter was pressed on it
     void clear_pending();
     void commit_pending();

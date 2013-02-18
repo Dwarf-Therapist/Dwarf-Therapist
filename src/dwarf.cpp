@@ -365,7 +365,7 @@ void Dwarf::read_curse(){
         m_curse_name = capitalizeEach(curse_name);
 
         //if it's a vampire then find the vampire's fake identity and use that name/age instead to match DF
-        quint32 curse_flags = m_df->read_addr(m_address + m_mem->dwarf_offset("curse_flags1"));
+        quint32 curse_flags = m_df->read_addr(m_address + m_mem->dwarf_offset("curse_add_flags1"));
         if((curse_flags & 0x10000000)==0x10000000) //check bloodsucker flag in curse flags
             find_true_ident();
     }
@@ -1043,15 +1043,15 @@ QString Dwarf::happiness_name(DWARF_HAPPINESS happiness) {
 Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     MemoryLayout *mem = df->memory_layout();
     TRACE << "attempting to load dwarf at" << addr << "using memory layout"
-            << mem->game_version();
+          << mem->game_version();
 
     //only for test
-    bool check_all = false;
-    if (check_all)
-    {
-        Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
-        return unverified_dwarf;
-    }
+    //    bool check_all = false;
+    //    if (check_all)
+    //    {
+    //        Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
+    //        return unverified_dwarf;
+    //    }
 
     WORD civ_id = df->read_word(addr + mem->dwarf_offset("civ"));
     if (civ_id != df->dwarf_civ_id()){
@@ -1063,24 +1063,37 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     quint32 flags3 = df->read_addr(addr + mem->dwarf_offset("flags3"));
     WORD race_id = df->read_word(addr + mem->dwarf_offset("race"));
 
-    if((flags1 & 0x4000000) == 0x4000000) { // tame animals loaded here
+    bool is_tame_animal = false;
+    if((flags1 & 0x4000000) == 0x4000000)
+        is_tame_animal = true;
 
-        Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
-        TRACE << "examining dwarf at" << hex << addr;
-        TRACE << "FLAGS1 :" << hexify(flags1);
-        TRACE << "FLAGS2 :" << hexify(flags2);
-        TRACE << "FLAGS3 :" << hexify(flags3);
-        TRACE << "RACE   :" << hexify(race_id);
+    Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
+    TRACE << "examining creature at" << hex << addr;
+    TRACE << "FLAGS1 :" << hexify(flags1);
+    TRACE << "FLAGS2 :" << hexify(flags2);
+    TRACE << "FLAGS3 :" << hexify(flags3);
+    TRACE << "RACE   :" << hexify(race_id);
 
-        if (mem->is_complete()) {            
+    if (mem->is_complete()) {
+        if(!is_tame_animal){
+            //need to do a special check for migrants, they have both the incoming (0x0400 flag) and the dead flag (0x0002)
+            //also need to do a check for the migrant state, as some merchants can arrive with migrant and incoming flags as well
+            //but merchants won't have the migrant state
+            if((flags1 & 0x00000402)==0x00000402 && unverified_dwarf->has_state(7)){ //7=migrant
+                LOGD << "Found migrant " << unverified_dwarf->nice_name();
+                return unverified_dwarf;
+            }
 
-            if(has_invalid_flags(unverified_dwarf, mem->invalid_flags_1(),flags1) ||
-                    has_invalid_flags(unverified_dwarf, mem->invalid_flags_2(),flags2) ||
-                    has_invalid_flags(unverified_dwarf, mem->invalid_flags_3(),flags3)){
+            //if a dwarf has gone crazy (berserk=7,raving=6)
+            int m_mood = unverified_dwarf->m_mood_id;
+            if(m_mood==7 || m_mood==6){
+                LOGD << "Ignoring" << unverified_dwarf->nice_name()
+                     << "who appears to have lost their mind.";
                 delete unverified_dwarf;
                 return 0;
             }
 
+        }else{
             //exclude cursed animals
             if(!unverified_dwarf->curse_name().isEmpty()){
                 LOGD << "Ignoring animal " << unverified_dwarf->nice_name()
@@ -1089,33 +1102,6 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
                 return 0;
             }
         }
-        return unverified_dwarf;
-
-    }
-    Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
-    TRACE << "examining dwarf at" << hex << addr;
-    TRACE << "FLAGS1 :" << hexify(flags1);
-    TRACE << "FLAGS2 :" << hexify(flags2);
-    TRACE << "FLAGS3 :" << hexify(flags3);
-    TRACE << "RACE   :" << hexify(race_id);
-
-    if (mem->is_complete()) {        
-        //need to do a special check for migrants, they have both the incoming (0x0400 flag) and the dead flag (0x0002)
-        //also need to do a check for the migrant state, as some merchants can arrive with migrant and incoming flags as well
-        //but merchants won't have the migrant state
-        if((flags1 & 0x00000402)==0x00000402 && unverified_dwarf->has_state(7)){ //7=migrant
-            LOGD << "Found migrant " << unverified_dwarf->nice_name();            
-            return unverified_dwarf;
-        }
-
-        //if a dwarf has gone crazy (berserk=7,raving=6)
-        int m_mood = unverified_dwarf->m_mood_id;
-        if(m_mood==7 || m_mood==6){
-            LOGD << "Ignoring" << unverified_dwarf->nice_name()
-                 << "who appears to have lost their mind.";
-            delete unverified_dwarf;
-            return 0;
-        }
 
         if(has_invalid_flags(unverified_dwarf, mem->invalid_flags_1(),flags1) ||
                 has_invalid_flags(unverified_dwarf, mem->invalid_flags_2(),flags2) ||
@@ -1123,45 +1109,15 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
             delete unverified_dwarf;
             return 0;
         }
-        //the curse check below was specifically for cursed creatures that can pass all of the above flag checks and civ/race checks
-        //however, some mods use curses to setup different castes or things like that, so it's best to avoid this
-        //unfortunately this means creatures who pass all the above checks will show up in DT again...
-        //the only current workaround is to filter them out with a script
 
-//        //if it's not a vampire, and it's not a were-beast it's most likely not one of our dwarves
-//        if(unverified_dwarf->m_curse_name!=""){
-//            if(!unverified_dwarf->m_curse_name.startsWith("were",Qt::CaseInsensitive) && !unverified_dwarf->m_curse_name.toLower().contains("vampire")){
-//                LOGD << "Ignoring" << unverified_dwarf->nice_name()
-//                        << "who appears to be a cursed" << unverified_dwarf->m_curse_name;
-//                delete unverified_dwarf;
-//                return 0;
-//            }
-//        }
-
-        //the civ_id and active unit vector check should take care of the kidnapped babies (UNTESTED)
-        /*
-        //kidnapped flag? seems like it (0x200 is actually the 'rider' flag and sometimes flags unkidnapped babies)
-        //however if a baby is dropped by a mother, this flag is also removed so still checking the 0x100 gone from map flag for now
-        if(m_mood==8){ //babies have their own mood
-            if((flags1 & 0x100) == 0x100) {
-                LOGD << "Ignoring" << unverified_dwarf->nice_name() <<
-                        "who appears to be a kidnapped baby";
-                delete unverified_dwarf;
-                return 0;
-            }
+        //finally, if we've got no attributes at all, it's probably a corpse part (most likely from a mod)
+        if(unverified_dwarf->m_attributes.count() <=0 ){
+            LOGD << "Ignoring" << unverified_dwarf->nice_name() <<
+                    "who appears to be a corpse.";
+            delete unverified_dwarf;
+            return 0;
         }
-        */
-
     }
-
-    //finally, if we've got no attributes at all, it's probably a corpse part (most likely from a mod)
-    if(unverified_dwarf->m_attributes.count() <=0 ){
-        LOGD << "Ignoring" << unverified_dwarf->nice_name() <<
-                "who appears to be a corpse.";
-        delete unverified_dwarf;
-        return 0;
-    }
-
     return unverified_dwarf;
 }
 
@@ -1741,7 +1697,12 @@ QString Dwarf::tooltip_text() {
                   .arg(capitalizeEach(m_curse_name));
         //if we have an assumed identity, show it
         if(m_nice_name != m_true_name && !m_true_name.isEmpty()){
-            curse_text.append(tr(" by the name of %2, born in the year %3.").arg(m_true_name).arg(m_true_birth_year));
+            curse_text.append(tr(" by the name of %1, ").arg(m_true_name));
+            if(m_true_birth_year > 0){
+                curse_text.append(tr("born in the year %1.").arg(m_true_birth_year));
+            }else{
+                curse_text.append(tr("born %1 years before the Age of Myth.").arg(abs(m_true_birth_year)));
+            }
         }
         tt.append(curse_text);
     }

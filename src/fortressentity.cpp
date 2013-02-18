@@ -124,48 +124,10 @@ void FortressEntity::read_entity(){
     m_df->detach();
 }
 
-void FortressEntity::refresh(){
+void FortressEntity::refresh_squads(){
     m_squads = m_df->enumerate_vector(m_address + m_mem->hist_entity_offset("squads"));
-
-    QVector<VIRTADDR> entities = m_df->enumerate_vector(m_df->get_memory_correction() + m_mem->address("historical_entities_vector"));
-    foreach(VIRTADDR ent, entities){
-        //don't bother searching in non-civilization entities,
-        //however as some reports have other races as nobles this is the only filtering we can do
-        //make sure to include the fortress positions as well
-        if(m_df->read_int(ent) == 0 || ent == m_address){
-
-            //load assignments and positions, mapping them to historical figure ids
-            QVector<VIRTADDR> positions = m_df->enumerate_vector(ent + m_mem->hist_entity_offset("positions")); //positions in the fortress
-            QVector<VIRTADDR> assignments = m_df->enumerate_vector(ent + m_mem->hist_entity_offset("assignments")); //assignments to positions
-
-            int assign_pos_id;
-            int position_id;
-            int hist_id;
-            position p;
-
-            //may be better to check all the different responsibility flags and other flags like succession/appointed etc
-            //to get profiles of the different nobility types
-            foreach(VIRTADDR assign, assignments){
-                assign_pos_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_position_id")); //position for the assignment
-                hist_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_hist_id")); //dwarf assigned
-                if(hist_id > 0){
-                    foreach(VIRTADDR pos, positions){ //load all positions first, then reference with the id, may be possible to load only once??
-                        position_id = m_df->read_int(pos + m_mem->hist_entity_offset("position_id"));
-                        if(assign_pos_id==position_id){
-                            p.name = m_df->read_string(pos + m_mem->hist_entity_offset("position_name"));
-                            p.name_female = m_df->read_string(pos + m_mem->hist_entity_offset("position_female_name"));
-                            p.name_male = m_df->read_string(pos + m_mem->hist_entity_offset("position_male_name"));
-                            QString raw_name = m_df->read_string(pos);
-                            p.highlight = m_noble_colors.value(get_color_type(raw_name));
-                            m_nobles.insert(hist_id, p);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
+
 void FortressEntity::load_noble_colors(){
     QSettings *u = DT->user_settings();
 

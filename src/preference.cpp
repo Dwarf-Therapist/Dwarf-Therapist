@@ -98,16 +98,6 @@ int Preference::matches(Preference *role_pref){
                 }
             }
         }
-//        if(m_mat){
-//            if(result == 0) //no match yet, so assume we'll get a match here unless a flag fails
-//                result = 1;
-//            foreach(int f, role_pref->special_flags()){
-//                if(!m_mat->flags().has_flag(f)){
-//                    result = 0;
-//                    break;
-//                }
-//            }
-//        }
 
         if(role_pref->exact_match())
             result = 0;

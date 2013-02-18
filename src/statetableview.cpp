@@ -215,35 +215,51 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
         a = m.addAction(QIcon(":img/minus-circle.png"), tr("Clear All Labors"), this, SLOT(toggle_all_labors()));
         a->setData(false);
 
-        //SQUAD
+        //SQUADS
         m.addSeparator();
         QMenu assign(&m);
-        if(m_model->squads().count() > 0 && d->is_adult()){
-            assign.setTitle(tr("Assign to squad..."));
-            QIcon icon;
-            icon.addFile(QString::fromUtf8(":/img/plus-circle.png"), QSize(), QIcon::Normal, QIcon::Off);
-            foreach(int key, m_model->squads().uniqueKeys()){
-                Squad *s = m_model->squads().value(key);
-                if(d->squad_id() != s->id()){
-                    if(s->assigned_count() < 10){
-                        QAction *add=assign.addAction(tr("%1 (%2 members)").arg(s->name()).arg(s->assigned_count()), this, SLOT(assign_to_squad()));
+        if(d->is_adult()){
+            //always double check squads before showing the menu. a user might remove a squad and not refresh DT
+            m_model->refresh_squads();
+            //also refresh the dwarf
+            d->read_squad_info();
+            if(m_model->squads().count() <= 0){
+                a = m.addAction(tr("No squads found."));
+                a->setEnabled(false);
+            }else{
+                assign.setTitle(tr("Assign to squad..."));
+                QIcon icon;
+                icon.addFile(QString::fromUtf8(":/img/plus-circle.png"), QSize(), QIcon::Normal, QIcon::Off);
+                foreach(int key, m_model->squads().uniqueKeys()){
+                    Squad *s = m_model->squads().value(key);
+                    if(d->squad_id() != s->id()){
+                        QAction *add;
+                        if(s->assigned_count() < 10){
+                            add = assign.addAction(tr("%1 (%2 members)").arg(s->name()).arg(s->assigned_count()), this, SLOT(assign_to_squad()));
+                        }else{
+                            add = assign.addAction(tr("%1 (Full)").arg(s->name()));
+                            add->setEnabled(false);
+                        }
                         add->setData(s->id());
                         add->setIcon(icon);
                     }
                 }
-            }
-            if(assign.actions().count()>0)
-                m.addMenu(&assign);
+                if(assign.actions().count()>0)
+                    m.addMenu(&assign);
 
-            //squad removal (can't remove captain if there are subordinates)
-            if(d->squad_id()!=-1){
-                icon.addFile(QString::fromUtf8(":/img/minus-circle.png"), QSize(), QIcon::Normal, QIcon::Off);
-                if((d->squad_position()==0 && m_model->squads().value(d->squad_id())->assigned_count()==1) || d->squad_position() != 0){
-                    m.addAction(icon,tr("Remove from squad"),this,SLOT(remove_squad()));
-                }else{
-                    m.addAction(icon,tr("Remove subordinates first!"));
+                //squad removal (can't remove captain if there are subordinates)
+                if(d->squad_id()!=-1){
+                    icon.addFile(QString::fromUtf8(":/img/minus-circle.png"), QSize(), QIcon::Normal, QIcon::Off);
+                    if((d->squad_position()==0 && m_model->squads().value(d->squad_id())->assigned_count()==1) || d->squad_position() != 0){
+                        m.addAction(icon,tr("Remove from squad"),this,SLOT(remove_squad()));
+                    }else{
+                        m.addAction(icon,tr("Remove subordinates first!"));
+                    }
                 }
             }
+        }else{
+            a = m.addAction(tr("Ineligible for military."));
+            a->setEnabled(false);
         }
 
         //dwarf actions (debug/memory stuff)
@@ -371,6 +387,8 @@ void StateTableView::assign_to_squad(){
         if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool()){
             id = i.data(DwarfModel::DR_ID).toInt();
             Dwarf *d = m_model->get_dwarf_by_id(id);
+            //refresh dwarf info first
+            d->read_squad_info();
             if (d) {
                 if(d->squad_id() != new_squad->id()){ //don't add to squad if they're already in it..
                     if(d->squad_id() != -1){ //remove from old squad first
@@ -398,6 +416,8 @@ void StateTableView::remove_squad(){
         if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool()){
             int id = i.data(DwarfModel::DR_ID).toInt();
             Dwarf *d = m_model->get_dwarf_by_id(id);
+            //refresh dwarf info
+            d->read_squad_info();
             if (d) {
                 if(d->squad_position()==0)
                     emit squad_leader_changed();
