@@ -2,6 +2,7 @@
 #define GLOBAL_ENUMS_H
 
 #include "qstring.h"
+#include "qobject.h"
 
 typedef enum {
     AT_STRENGTH = 0,
@@ -48,7 +49,25 @@ typedef enum{
     unknown_trained=8,
     wild_untamed=9,
     hostile=10 //custom
-} ANIMAL_TYPE;
+} TRAINED_LEVEL;
+
+static inline QString get_animal_trained_descriptor(const TRAINED_LEVEL &type) {
+    switch (type) {
+    case semi_wild: return QObject::tr("Semi-wild");
+    case trained: return QObject::tr("Trained");
+    case well_trained: return QObject::tr("Well-trained");
+    case skillfully_trained: return QObject::tr("Skillfully Trained");
+    case expertly_trained: return QObject::tr("Expertly Trained");
+    case exceptionally_trained: return QObject::tr("Exceptionally Trained");
+    case masterfully_trained: return QObject::tr("Masterfully Trained");
+    case domesticated: return QObject::tr("Tame");
+    case wild_untamed: return QObject::tr("Wild");
+    case hostile: return QObject::tr("Hostile");
+    default:
+        return QObject::tr("Unknown");
+    }
+    return QObject::tr("Unknown");
+}
 
 typedef enum {
     NONE=-1,

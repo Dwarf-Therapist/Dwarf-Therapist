@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include "weaponcolumn.h"
 #include "professioncolumn.h"
 #include "highestmoodcolumn.h"
+#include "trainedcolumn.h"
 
 #include "defines.h"
 #include "statetableview.h"
@@ -432,6 +433,10 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     a = m->addAction("Add Spacer", this, SLOT(add_spacer_column()));
     a->setToolTip(tr("Adds a non-selectable spacer to this set. You can set a custom width and color on spacer columns."));
 
+    //TRAINED (animals)
+    a = m->addAction("Add Trained Level", this, SLOT(add_trained_column()));
+    a->setToolTip(tr("Adds a column showing the trained level of an animal."));
+
     //TRAIT
     QMenu *m_trait = m->addMenu(tr("Add Trait Column"));
     m_trait->setToolTip(tr("Trait columns show a read-only display of a dwarf's score in a particular trait."));
@@ -475,6 +480,14 @@ void GridViewDialog::add_spacer_column() {
         return;
 
     new SpacerColumn(tr("SPACER"), m_active_set, m_active_set);
+    draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_trained_column(){
+    if (!m_active_set)
+        return;
+
+    new TrainedColumn(tr("Training"),m_active_set, m_active_set);
     draw_columns_for_set(m_active_set);
 }
 

@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include "weaponcolumn.h"
 #include "professioncolumn.h"
 #include "highestmoodcolumn.h"
+#include "trainedcolumn.h"
 
 ViewColumnSet::ViewColumnSet(QString name, QObject *parent)
     : QObject(parent)
@@ -264,6 +265,9 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
             break;
         case CT_HIGHEST_MOOD:
             new HighestMoodColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
+            break;
+        case CT_TRAINED:
+            new TrainedColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
             break;
         case CT_DEFAULT:
         default:

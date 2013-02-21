@@ -38,6 +38,7 @@ Caste::Caste(DFInstance *df, VIRTADDR address, int race_id, QString race_name, Q
     , m_race_name(race_name)
     , m_tag(QString::null)
     , m_name(QString::null)
+    , m_name_plural(QString::null)
     , m_description(QString::null)
     , m_df(df)
     , m_mem(df->memory_layout())
@@ -71,7 +72,8 @@ void Caste::load_data() {
 
 void Caste::read_caste() {
     m_tag = m_df->read_string(m_address);    
-    m_name = capitalizeEach(m_df->read_string(m_address + m_mem->caste_offset("caste_name")));    
+    m_name = capitalizeEach(m_df->read_string(m_address + m_mem->caste_offset("caste_name")));
+    m_name_plural = capitalizeEach(m_df->read_string(m_address + m_mem->word_offset("noun_plural")));
 //    //needed for mods with caste's name not specified
 
 //    !!!!doesn't work with mods that require hidden castes. mod creators shouldn't be creating castes with no names unless they want them hidden...
@@ -100,8 +102,8 @@ void Caste::read_caste() {
 }
 
 bool Caste::is_trainable(){
-    if((m_flags.has_flag(TRAINABLE_HUNTING) || m_flags.has_flag(TRAINABLE_WAR)) &&
-            (m_flags.has_flag(PET) || m_flags.has_flag(PET_EXOTIC))){
+    if(m_flags.has_flag(TRAINABLE_HUNTING) || m_flags.has_flag(TRAINABLE_WAR) ||
+            m_flags.has_flag(PET) || m_flags.has_flag(PET_EXOTIC)){
         return true;
     }else{
         return false;

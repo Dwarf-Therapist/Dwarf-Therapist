@@ -49,6 +49,7 @@ public:
     };    
 
     QString name() {return m_name;}
+    QString name_plural() {return m_name_plural;}
     QString tag() {return m_tag;}
     QString description();
     QPair<int,QString> get_attribute_descriptor_info(ATTRIBUTES_TYPE id, int value);
@@ -81,6 +82,7 @@ private:
     QString m_race_name;
     QString m_tag;
     QString m_name;
+    QString m_name_plural;
     QString m_description;    
     QVector<int> m_body_sizes;
 

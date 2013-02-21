@@ -123,18 +123,6 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     QString text_rating = model_idx.data(DwarfModel::DR_DISPLAY_RATING).toString();
     float limit = 100.0;
 
-    //normally a skill/labor cell will report an interpolated value for the level (ie. 13.4)
-    //if we're drawing with either glyphs or numeric, we need the integer skill level instead
-    //assume that this is in the DR_RATING data
-//    if(m_skill_drawing_method == SDM_NUMERIC){
-//        //next check the column type, we don't want to draw the floor rounded rating for everything
-//        if(type == CT_SKILL || type == CT_LABOR || type == CT_TRAIT)
-//            rating = floor(rating);
-//        else{
-//            rating = round(rating);
-//        }
-//    }
-
     switch (type) {
     case CT_SKILL:
     {
@@ -235,19 +223,6 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     case CT_WEAPON:
     {
         QColor bg = paint_bg(adjusted, false, p, opt, idx);        
-        //special override for weapons, if it's drawn by numeric
-        //        if(m_skill_drawing_method == SDM_NUMERIC){
-        //            QString draw_value = idx.data(DwarfModel::DR_DISPLAY_RATING).toString();
-        //            if(rating==39)
-        //                draw_value = "/"; //partially use (with 2 hands)
-        //            else if(rating==25)
-        //                draw_value = tr("X"); //can't use
-
-        //            p->setPen(QColor(235,26,26));
-        //            p->drawText(opt.rect, Qt::AlignCenter, draw_value);
-        //        }else{
-        //            paint_values(adjusted, rating, bg, p, opt, idx, 50.0f, 1, 99, 49, 51);
-        //        }
         paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 1, 99, 49, 51);
         paint_grid(adjusted, false, p, opt, idx);
 
@@ -267,6 +242,14 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     case CT_FLAGS:
     {
         paint_flags(adjusted, p, opt, idx);
+        paint_grid(adjusted, false, p, opt, idx);
+    }
+        break;
+    case CT_TRAINED:
+    {
+        QColor bg = paint_bg(adjusted, false, p, opt, idx);
+        //arbitrary ignore range is used just to hide tame animals
+        paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 1.0f, 95.0f, 49.9f, 50.1f);
         paint_grid(adjusted, false, p, opt, idx);
     }
         break;

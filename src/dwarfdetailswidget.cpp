@@ -156,15 +156,16 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     if(d->id() == m_current_id)
         return;
 
-    // Draw the name/profession text labels...
     ui->lbl_dwarf_name->setText(QString("<img src='%1'> %2").arg(d->gender_icon_path()).arg(d->nice_name()));
     ui->lbl_dwarf_name->setToolTip(tr("Name: %1").arg(ui->lbl_dwarf_name->text()));
 
     ui->lbl_age->setText(QString("Age: %1 years").arg(d->get_age()));
     ui->lbl_age->setToolTip(d->get_migration_desc());
 
-    ui->lbl_translated_name->setText(QString("(%1)").arg(d->translated_name()));
-    ui->lbl_translated_name->setToolTip(tr("Translated Name: %1").arg(ui->lbl_translated_name->text()));
+    QString trans_name = d->translated_name();
+    ui->lbl_translated_name->setText(QString("%1").arg(trans_name.isEmpty() ? "" : "(" + trans_name + ")"));
+    if(!trans_name.isEmpty())
+        ui->lbl_translated_name->setToolTip(tr("Translated Name: %1").arg(trans_name));
 
     ui->lbl_profession->setText(QString("%1 %2").arg(embedPixmap(d->profession_icon())).arg(d->profession()));
     ui->lbl_profession->setToolTip(tr("Profession: %1").arg(ui->lbl_profession->text()));
@@ -188,6 +189,18 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         ui->lbl_artifact->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
         ui->lbl_artifact->setText(tr("Creator of '%1'").arg(d->artifact_name()));
     }
+
+    if(d->squad_name().isEmpty()){
+        ui->lbl_squad_name->setText("");
+        ui->lbl_squad_name->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Ignored);
+        ui->lbl_squad->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Ignored);
+    }
+    else{
+        ui->lbl_squad->setText(tr("<b>Squad</b>"));
+        ui->lbl_squad_name->setText(d->squad_name());
+        ui->lbl_squad_name->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
+    }
+
     ui->lbl_artifact->setToolTip(ui->lbl_artifact->text());
 
     ui->lbl_current_job->setText(QString("%1").arg(d->current_job()));

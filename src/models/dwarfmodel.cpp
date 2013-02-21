@@ -354,8 +354,10 @@ void DwarfModel::build_rows() {
     foreach(Dwarf *d, m_dwarves) {
         //shared groupings for both animals and the fortress race
         if((only_animals && d->is_animal()) || (!d->is_animal() && !only_animals)){
-            if(m_group_by == GB_NOTHING){
-                m_grouped_dwarves[QString::number(d->id())].append(d);
+            if(m_group_by == GB_NOTHING){                
+                m_grouped_dwarves[0].append(d);
+            }else if(m_group_by == GB_PROFESSION){
+                m_grouped_dwarves[d->profession()].append(d);
             }else if(m_group_by == GB_SEX){
                 if (d->is_male())
                     m_grouped_dwarves[tr("Males")].append(d);
@@ -375,9 +377,9 @@ void DwarfModel::build_rows() {
                     m_grouped_dwarves[age_range].append(d);
                 }
             }else if(m_group_by == GB_CASTE){
-                m_grouped_dwarves[d->caste_name()].append(d);
+                m_grouped_dwarves[d->caste_name(true)].append(d);
             }else if(m_group_by == GB_CASTE_TAG){
-                //strip off the underscores, male and female parts of the tag to group sexes
+                //strip off the underscores, male and female parts of the tag to group genders together
                 QString tag = d->caste_tag();
                 tag.replace("_", " ");
                 tag.replace(tr("FEMALE")," ");
@@ -386,22 +388,16 @@ void DwarfModel::build_rows() {
                     tag = race_name;
                 m_grouped_dwarves[capitalizeEach(tag.toLower())].append(d);
             }else if(m_group_by == GB_RACE){
-                QString grp_name = d->race_name(true);
-                if(d->profession() != "" && d->is_animal()) //only append the base name to animals
-                    grp_name += " (" + d->race_name(false) + ")";
-                m_grouped_dwarves[grp_name].append(d);
+                m_grouped_dwarves[d->race_name(true,true)].append(d);
             }else if(m_group_by == GB_HAS_NICKNAME){
                 if (d->nickname().isEmpty()) {
                     m_grouped_dwarves[tr("No Nickname")].append(d);
                 } else {
                     m_grouped_dwarves[tr("Has Nickname")].append(d);
-                }
-            }else if(m_group_by == GB_SQUAD){
-                if(d->squad_name().isEmpty()) {
-                    m_grouped_dwarves[tr("No Squad")].append(d);
-                } else {
-                    m_grouped_dwarves[d->squad_name()].append(d);
-                }
+                }            
+            }else{
+                if(only_animals && d->is_animal())
+                    m_grouped_dwarves["N/A"].append(d);
             }
 
             //update our counts for the display
@@ -420,9 +416,7 @@ void DwarfModel::build_rows() {
             if(DT->user_settings()->value("options/hide_children_and_babies",true).toBool() == false
                     || (!d->is_child() && !d->is_baby())){
 
-                if(m_group_by == GB_PROFESSION){
-                    m_grouped_dwarves[d->profession()].append(d);
-                }else if(m_group_by == GB_LEGENDARY){
+                if(m_group_by == GB_LEGENDARY){
                     int legendary_skills = 0;
                     foreach(Skill s, *d->get_skills()) {
                         if (s.capped_level() >= 15)
@@ -436,7 +430,7 @@ void DwarfModel::build_rows() {
                     m_grouped_dwarves[d->happiness_name(d->get_happiness())].append(d);
                 }else if(m_group_by == GB_CURRENT_JOB){
                     QString job_desc = gdr->get_job(d->current_job_id())->description.replace(" ??","");
-                    m_grouped_dwarves[job_desc].append(d); //d->current_job()].append(d);
+                    m_grouped_dwarves[job_desc].append(d);
                 }else if(m_group_by == GB_MILITARY_STATUS){
                     if (d->is_baby() || d->is_child()) {
                         m_grouped_dwarves[tr("Juveniles")].append(d);
@@ -471,6 +465,12 @@ void DwarfModel::build_rows() {
                 }else if(m_group_by == GB_ASSIGNED_LABORS){
                     m_grouped_dwarves[tr("%1 Assigned Labors")
                             .arg(d->total_assigned_labors())].append(d);
+                }else if(m_group_by == GB_SQUAD){
+                    if(d->squad_name().isEmpty()) {
+                        m_grouped_dwarves[tr("No Squad")].append(d);
+                    } else {
+                        m_grouped_dwarves[d->squad_name()].append(d);
+                    }
                 }
             }
         }
@@ -528,8 +528,10 @@ void DwarfModel::build_row(const QString &key) {
             agg_first_col->setData(first_dwarf->total_assigned_labors(), DR_SORT_VALUE);
         } else if (m_group_by == GB_PROFESSION) {
             agg_first_col->setData(first_dwarf->profession(), DR_SORT_VALUE);
+        } else if (m_group_by == GB_RACE){
+            agg_first_col->setData(first_dwarf->race_name(true,true), DR_SORT_VALUE);
         } else if (m_group_by == GB_CASTE) {
-            agg_first_col->setData(first_dwarf->caste_name(), DR_SORT_VALUE);
+            agg_first_col->setData(first_dwarf->caste_name(true), DR_SORT_VALUE);
         } else if (m_group_by == GB_CASTE_TAG){
             agg_first_col->setData(first_dwarf->caste_tag(), DR_SORT_VALUE);
         } else if (m_group_by == GB_AGE){

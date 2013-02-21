@@ -13,9 +13,7 @@ public:
     HighestMoodColumn* clone() {return new HighestMoodColumn(*this);}
     QStandardItem *build_cell(Dwarf *d);
     QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
-
     void write_to_ini(QSettings &s);
-
 };
 
 #endif // HIGHESTMOODCOLUMN_H

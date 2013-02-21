@@ -1062,6 +1062,16 @@
           </widget>
          </item>
          <item>
+          <widget class="QCheckBox" name="chk_show_squad">
+           <property name="statusTip">
+            <string>When checked, shows the squad name in the tooltip.</string>
+           </property>
+           <property name="text">
+            <string>Show squad name in the tooltip.</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <spacer name="verticalSpacer_3">
            <property name="orientation">
             <enum>Qt::Vertical</enum>

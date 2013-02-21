@@ -57,8 +57,7 @@ SkillColumn::SkillColumn(const SkillColumn &to_copy)
 }
 
 QStandardItem *SkillColumn::build_cell(Dwarf *d) {
-    QStandardItem *item = init_cell(d);
-    //float level = d->skill_level(m_skill_id,false,true);
+    QStandardItem *item = init_cell(d);    
 
     item->setData(CT_SKILL, DwarfModel::DR_COL_TYPE);    
     item->setData(d->skill_level(m_skill_id), DwarfModel::DR_DISPLAY_RATING); //level rounded down

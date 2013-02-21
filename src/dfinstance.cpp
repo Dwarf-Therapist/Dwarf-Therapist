@@ -485,12 +485,12 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
                     }
 
                 } else {
-                    TRACE << "FOUND OTHER CREATURE" << hexify(creature_addr);
+                    LOGD << "FOUND BEAST" << hexify(creature_addr) << d->nice_name();
                 }
             }
             emit progress_value(progress_count++);
         }
-        LOGD << "read " << dwarves.count() << " in " << t.elapsed() / 1000 << " seconds";
+        LOGD << "read " << dwarves.count() << " in " << t.elapsed() << "ms";
 
         m_enabled_labor_count.clear();
         qDeleteAll(m_pref_counts);

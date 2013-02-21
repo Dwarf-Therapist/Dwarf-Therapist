@@ -20,34 +20,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QtGui>
+#ifndef TRAINEDCOLUMN_H
+#define TRAINEDCOLUMN_H
 
-#include "aboutdialog.h"
-#include "dwarftherapist.h"
-#include "mainwindow.h"
+#include "viewcolumn.h"
+#include "global_enums.h"
 
-AboutDialog::AboutDialog(MainWindow *parent)
-	: QDialog(parent)
-	, ui(new Ui::AboutDialog)
-	, m_version(Version())
-{
-	ui->setupUi(this);
-    ui->lbl_our_version->setText(QString("VERSION %1 - BRANCH VERSION %2").arg(m_version.to_string()).arg("20.2"));
-    connect(ui->pb_check_version, SIGNAL(clicked()), SLOT(check_version()));
-}
+class ViewColumn;
+class Dwarf;
 
-void AboutDialog::set_latest_version(const Version &v) {
-    if (m_version < v) {
-//		ui->lbl_up_to_date->setText("Update Available: <a href=\"http://code.google.com/p/dwarftherapist/downloads/list\">v" + v.to_string() + "</a>");
-    } else {
-//		ui->lbl_up_to_date->setText(QString("This version is up to date (v%1)").arg(m_version.to_string()));
-    }
-}
+class TrainedColumn : public ViewColumn {
+    Q_OBJECT
+public:
+    TrainedColumn(const QString &title, ViewColumnSet *set = 0, QObject *parent = 0);
+    TrainedColumn(const TrainedColumn &to_copy); // copy ctor
+    TrainedColumn* clone() {return new TrainedColumn(*this);}
+    QStandardItem *build_cell(Dwarf *d);
+    QStandardItem *build_aggregate(const QString &, const QVector<Dwarf*> &);
 
-void AboutDialog::version_check_failed() {
-	ui->lbl_up_to_date->setText(tr("Version check failed"));
-}
+};
 
-void AboutDialog::check_version() {
-    DT->get_main_window()->check_latest_version(true);
-}
+#endif // TRAINEDCOLUMN_H

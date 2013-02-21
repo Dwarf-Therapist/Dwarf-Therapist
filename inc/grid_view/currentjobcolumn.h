@@ -36,8 +36,6 @@ public:
     QStandardItem *build_cell(Dwarf *d);
     QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 
-public slots:
-    //void read_settings();
 };
 
 #endif

@@ -217,7 +217,8 @@ HEADERS += inc/win_structs.h \
     inc/iconchooser.h \
     inc/grid_view/highestmoodcolumn.h \
     inc/thought.h \
-    inc/docks/thoughtsdock.h
+    inc/docks/thoughtsdock.h \
+    inc/grid_view/trainedcolumn.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -289,7 +290,8 @@ SOURCES += src/viewmanager.cpp \
     src/grid_view/highestmoodcolumn.cpp \
     src/trait.cpp \
     src/docks/thoughtsdock.cpp \
-    src/thought.cpp
+    src/thought.cpp \
+    src/grid_view/trainedcolumn.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

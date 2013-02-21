@@ -280,6 +280,7 @@ void OptionsMenu::read_settings() {
     ui->chk_show_artifact->setChecked(s->value("tooltip_show_artifact",true).toBool());
     ui->chk_show_highest_mood->setChecked(s->value("tooltip_show_mood", true).toBool());
     ui->chk_show_thoughts->setChecked(s->value("tooltip_show_thoughts", true).toBool());
+    ui->chk_show_squad->setChecked(s->value("tooltip_show_squad", true).toBool());
 
     ui->chk_show_roles->setChecked(s->value("tooltip_show_roles", true).toBool());
     ui->sb_roles_tooltip->setValue(s->value("role_count_tooltip",3).toInt());
@@ -382,6 +383,7 @@ void OptionsMenu::write_settings() {
         s->setValue("tooltip_show_artifact", ui->chk_show_artifact->isChecked());
         s->setValue("tooltip_show_mood", ui->chk_show_highest_mood->isChecked());
         s->setValue("tooltip_show_thoughts", ui->chk_show_thoughts->isChecked());
+        s->setValue("tooltip_show_squad", ui->chk_show_squad->isChecked());
 
         s->endGroup();
     }
@@ -455,6 +457,7 @@ void OptionsMenu::restore_defaults() {
     ui->chk_show_artifact->setChecked(true);
     ui->chk_show_highest_mood->setChecked(false);
     ui->chk_show_thoughts->setCheckable(true);
+    ui->chk_show_squad->setCheckable(true);
 
     ui->dsb_attribute_weight->setValue(0.25);
     ui->dsb_pref_weight->setValue(0.15);

@@ -79,8 +79,8 @@ public:
 
     //! false if the creature is a dwarf, true if not
     Q_INVOKABLE bool is_animal() {return m_is_animal;}
-
     Q_INVOKABLE bool is_pet() {return m_is_pet;}
+    Q_INVOKABLE TRAINED_LEVEL trained_level() {return m_animal_type;}
 
     Q_INVOKABLE bool is_adult() {return (!m_is_child && !m_is_baby) ? true : false;}
     Q_INVOKABLE bool is_child() {return m_is_child;}
@@ -197,7 +197,7 @@ public:
     //! return this creature's Nth bit from flags
     Q_INVOKABLE bool get_flag_value(int bit);
 
-    static bool has_invalid_flags(const Dwarf *d, QHash<uint, QString> invalid_flags, quint32 dwarf_flags);
+    static bool has_invalid_flags(const QString creature_name, QHash<uint, QString> invalid_flags, quint32 dwarf_flags);
 
     //! return this dwarf's highest skill
     Skill highest_skill();
@@ -349,7 +349,7 @@ public:
     Caste *get_caste() {return m_caste;}
 
     //! method for mapping a caste id to a meaningful text name string
-    QString caste_name();
+    QString caste_name(bool plural_name = false);
 
     QString caste_tag();
 
@@ -357,7 +357,7 @@ public:
     QString caste_desc();
 
     //! static method for mapping a race id to a meaningful text string
-    QString race_name(bool base = false);
+    QString race_name(bool base = false, bool plural_name = false);
 
     //! used for building a datamodel that shows all pending changes this dwarf has queued up
     QTreeWidgetItem *get_pending_changes_tree();
@@ -456,7 +456,7 @@ private:
     int m_total_xp;
     int m_migration_wave;
     int m_body_size;
-    ANIMAL_TYPE m_animal_type;
+    TRAINED_LEVEL m_animal_type;
 
     Q_PROPERTY(QString first_name READ first_name) // no setters (read-only)
     QString m_first_name; // set by game

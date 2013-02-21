@@ -118,6 +118,7 @@ private:
         void add_weapon_column();
         void add_profession_column();
         void add_highest_moodable_column();
+        void add_trained_column();
 };
 
 #endif
