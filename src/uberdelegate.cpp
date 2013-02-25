@@ -223,7 +223,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     case CT_WEAPON:
     {
         QColor bg = paint_bg(adjusted, false, p, opt, idx);        
-        paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 1, 99, 49, 51);
+        paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 1, 99, 49, 51, true);
         paint_grid(adjusted, false, p, opt, idx);
 
     }
@@ -247,9 +247,10 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_TRAINED:
     {
-        QColor bg = paint_bg(adjusted, false, p, opt, idx);
+        QColor bg = paint_bg(adjusted, false, p, opt, idx, false, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
+        //QColor bg = model_idx.data(Qt::BackgroundColorRole).value<QColor>();
         //arbitrary ignore range is used just to hide tame animals
-        paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 1.0f, 95.0f, 49.9f, 50.1f);
+        paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 1.0f, 95.0f, 49.9f, 50.1f, true);
         paint_grid(adjusted, false, p, opt, idx);
     }
         break;
@@ -320,7 +321,7 @@ QColor UberDelegate::paint_bg(const QRect &adjusted, bool active, QPainter *p, c
 }
 
 void UberDelegate::paint_values(const QRect &adjusted, float rating, QString text_rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt,
-                              const QModelIndex &idx, float median, float min_limit, float max_limit, float min_ignore, float max_ignore) const{
+                              const QModelIndex &idx, float median, float min_limit, float max_limit, float min_ignore, float max_ignore, bool bold_text) const{
 
     QColor c = color_skill;
     if (auto_contrast)
@@ -510,7 +511,13 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
     case SDM_NUMERIC:
         if (rating > -1) { // don't draw 0s everywhere
             p->setPen(c);
-            p->drawText(opt.rect, Qt::AlignCenter, text_rating); //QString::number((int)rating));
+            //for some reason df's masterwork glyph's quality is reduced when using bold
+            if(bold_text && !text_rating.contains(QChar(0x263C))){
+                QFont tmp = m_fnt;
+                tmp.setBold(true);
+                p->setFont(tmp);
+            }
+            p->drawText(opt.rect, Qt::AlignCenter, text_rating);
         }
         break;
     }

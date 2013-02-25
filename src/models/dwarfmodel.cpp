@@ -570,11 +570,11 @@ void DwarfModel::build_row(const QString &key) {
         QStandardItem *i_name = new QStandardItem(d->nice_name());        
         QFont f = i_name->font();
         QFontMetrics fm(f);
-        QChar symbol(0x263C);
-        if(!fm.inFont(QChar(0x263C))){
-            symbol = QChar(0x2261);
+        QChar symbol(0x263C); //masterwork symbol in df
+        if(!fm.inFont(symbol)){
+            symbol = QChar(0x2261); //3 horizontal lines
             if(!fm.inFont(symbol))
-                symbol = QChar(0x002A);
+                symbol = QChar(0x002A); //asterisk
         }
 
         //font settings

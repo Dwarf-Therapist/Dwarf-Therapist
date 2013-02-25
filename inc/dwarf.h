@@ -398,6 +398,7 @@ public:
     int body_size() {return m_body_size;}
 
     bool has_state(short id){return m_states.contains(id);}
+    int state_value(short id){return m_states.value(id,-1);}
 
     Reaction *get_reaction();
 
@@ -496,7 +497,7 @@ private:
     QHash<QString, float> m_role_ratings;
     QHash<QString, float> m_raw_role_ratings;
     QList<QPair<QString,float> > m_sorted_role_ratings;
-    QVector<short> m_states;
+    QHash<short, int> m_states;
     bool m_born_in_fortress;
     quint32 m_birth_year;
     quint32 m_birth_time;

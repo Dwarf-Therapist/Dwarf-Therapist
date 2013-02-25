@@ -76,7 +76,8 @@ Skill::Skill(short id, uint exp, short rating, int rust, int skill_rate)
 
     m_losing_xp = false;
 
-    if(m_exp_for_next_level && m_exp_for_current_level)
+
+    if(m_exp_for_next_level - m_exp_for_current_level > 0)
         m_exp_progress = (float)(m_exp / (float)(m_exp_for_next_level - m_exp_for_current_level)) * 100;
 
     if(m_exp_progress > 100){ //indicates losing xp
@@ -144,7 +145,7 @@ QString Skill::exp_summary() const {
     return QString("%L1/%L2xp (%L3%)")
             .arg(m_actual_exp)
             .arg(m_exp_for_next_level)
-            .arg(m_exp_progress,0 , 'f', 1);
+            .arg(m_exp_progress, 0, 'f', 1);
 }
 
 //used to initialize the standard xp levels

@@ -107,12 +107,6 @@ void Race::read_race() {
     //if this is the race that we're currently playing as, we need to load some extra data and set some flags
     if(m_id == m_df->dwarf_race_id()){
         load_caste_ratios();
-        //castes usually come in male/female pairs, vanilla only has 2 castes (dwarf male/female)
-        //if we have more castes then that, assume it's a mod with castes, with different skill rates, attribute and trait bins
-        //this could be split into a more granular check for different skill rates and different attributes
-        if((float)(castes.count() / 2) > 2.0f){
-            DT->multiple_castes = true;
-        }
     }
 
     m_flags = FlagArray(m_df, m_address + m_mem->race_offset("flags"));
@@ -121,30 +115,38 @@ void Race::read_race() {
 
 void Race::load_caste_ratios(){
     if(!loaded_stats){
-        QVector<short> ratios;
+        QVector<int> ratios;
         QVector<VIRTADDR> addrs = m_df->enumerate_vector(m_pop_ratio_vector);
 
         foreach(VIRTADDR addr, addrs){
-            ratios << (short)addr;
+            ratios << (int)addr;
         }        
 
         if(ratios.count() > 0){
             int sum = 0;
-            for(int i=0; i<ratios.count(); i++){
+            int valid_castes = 0;
+            for(int i=0; i < ratios.count(); i++){
                 sum += ratios.at(i);
             }
+
             float commonality = 0.0;
-            for(int idx=0; idx<m_castes.count();idx++){
+            for(int idx=0; idx < m_castes.count();idx++){
                 Caste *c = m_castes[idx];
                 //load attribute data                
                 commonality = (float)ratios.at(idx) / (float)sum;
-                c->load_attribute_info(commonality);
+                if(commonality > 0.0001){
+                    c->load_attribute_info(commonality);
+                    valid_castes++;
+                }
                 //load traits data
 //                c->load_trait_info();
 //                for(int t=0; t<30; t++){
-
-//                }
             }
+            //castes usually come in male/female pairs, vanilla only has 2 castes (dwarf male/female)
+            //if we have more castes then that, assume it's a mod with castes, with different skill rates, attribute and trait bins
+            //this could be split into a more granular check for different skill rates and different attributes
+            if(valid_castes > 2)
+                DT->multiple_castes = true;
         }
         loaded_stats = true;
     }

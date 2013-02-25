@@ -48,7 +48,7 @@ public:
             case SDM_GROWING_CENTRAL_BOX: return "Growing Central Box";
             case SDM_GLYPH_LINES: return "Line Glyphs";
             case SDM_GROWING_FILL: return "Growing Fill";
-            case SDM_NUMERIC: return "Numeric";
+            case SDM_NUMERIC: return "Text";
             default: return "UNKNOWN SDM";
         }
     }
@@ -93,7 +93,7 @@ private:
 
     void paint_values(const QRect &adjusted, float rating, QString text_rating, QColor bg, QPainter *p,
                     const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, float median = 50.0f,
-                    float min_limit=5.0f, float max_limit=95.0f, float min_ignore=40.0f, float max_ignore=60.0f) const;
+                    float min_limit=5.0f, float max_limit=95.0f, float min_ignore=40.0f, float max_ignore=60.0f, bool bold_text = false) const;
 
     void paint_mood_cell(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, int skill_id, bool dirty) const;
     void paint_pref(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;

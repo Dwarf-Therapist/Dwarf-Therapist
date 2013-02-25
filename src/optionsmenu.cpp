@@ -149,7 +149,7 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     ui->cb_skill_drawing_method->addItem("Growing Center Box", UberDelegate::SDM_GROWING_CENTRAL_BOX);
     ui->cb_skill_drawing_method->addItem("Line Glyphs", UberDelegate::SDM_GLYPH_LINES);
     ui->cb_skill_drawing_method->addItem("Growing Fill", UberDelegate::SDM_GROWING_FILL);
-    ui->cb_skill_drawing_method->addItem("Numbers", UberDelegate::SDM_NUMERIC);
+    ui->cb_skill_drawing_method->addItem("Text", UberDelegate::SDM_NUMERIC);
 
     connect(ui->btn_restore_defaults, SIGNAL(pressed()), this, SLOT(restore_defaults()));
 

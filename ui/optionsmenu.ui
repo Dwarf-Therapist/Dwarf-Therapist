@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>723</width>
-    <height>569</height>
+    <height>592</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -184,10 +184,10 @@
           <string/>
          </property>
          <property name="statusTip">
-          <string>When checked, show a text description for each icon on the toolbar</string>
+          <string>When checked, shows various information on the toolbar</string>
          </property>
          <property name="whatsThis">
-          <string>When checked, show a text description for each icon on the toolbar</string>
+          <string>When checked, shows various information on the toolbar</string>
          </property>
          <property name="text">
           <string>Show Toolbar Text</string>
@@ -281,7 +281,10 @@
        <item>
         <widget class="QCheckBox" name="cb_labor_cheats">
          <property name="statusTip">
-          <string>When checked, you can apply labors to dwarfs that the game does not allow such as children and nobles &lt;b&gt;&lt;font color=&quot;red&quot;&gt;This is cheating!&lt;/font&gt;&lt;/b&gt;</string>
+          <string>When checked, you can apply labors to dwarfs that the game does not allow such as children and nobles. &lt;b&gt;&lt;font color=&quot;red&quot;&gt;This is cheating!&lt;/font&gt;&lt;/b&gt;</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, you can apply labors to dwarfs that the game does not allow such as children and nobles. &lt;b&gt;&lt;font color=&quot;red&quot;&gt;This is cheating!&lt;/font&gt;&lt;/b&gt;</string>
          </property>
          <property name="text">
           <string>Allow Labor Setting on Anyone (I'm a dirty cheater)</string>
@@ -540,10 +543,10 @@
             <string/>
            </property>
            <property name="statusTip">
-            <string>This option controls how skills are represented within a labor or skill column.</string>
+            <string>This option controls how skills are represented within grid cells.</string>
            </property>
            <property name="whatsThis">
-            <string>This option controls how skills are represented within a labor or skill column.</string>
+            <string>This option controls how skills are represented within grid cells.</string>
            </property>
           </widget>
          </item>
@@ -622,10 +625,10 @@
               </size>
              </property>
              <property name="statusTip">
-              <string>This controls which font is used for drawing text inside the labor grid.</string>
+              <string>This controls which font is used for drawing text inside the grid cells.</string>
              </property>
              <property name="whatsThis">
-              <string>This controls which font is used for drawing text inside the labor grid.</string>
+              <string>This controls which font is used for drawing text inside the grid cells.</string>
              </property>
              <property name="accessibleName">
               <string/>

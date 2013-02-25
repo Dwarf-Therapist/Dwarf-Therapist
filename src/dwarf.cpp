@@ -331,10 +331,6 @@ void Dwarf::read_animal_type(){
         if(animal_offset>=0)
             m_animal_type = static_cast<TRAINED_LEVEL>(m_df->read_int(m_address + animal_offset));
 
-        if(m_animal_type == semi_wild){
-            int z = 0;
-        }
-
         //additional if it's an animal set a flag if it's currently a pet, as butchering available pets breaks shit in game
         //due to not being able to remove the pet entry from the special_refs for the unit stuff
         if(m_mem->dwarf_offset("specific_refs") != -1){
@@ -357,7 +353,8 @@ void Dwarf::read_states(){
         VIRTADDR states_addr = m_address + states_offset;
         QVector<uint> entries = m_df->enumerate_vector(states_addr);
         foreach(uint entry, entries) {
-            m_states.append(m_df->read_short(entry));
+            //m_states.append(m_df->read_short(entry));
+            m_states.insert(m_df->read_short(entry), m_df->read_short(entry+0x4));
         }
     }
 }
@@ -777,7 +774,12 @@ void Dwarf::read_preferences(){
 
     //add a special preference (actually a misc trait) for like outdoors
     if(has_state(14)){
-        p = new Preference(LIKE_OUTDOORS,tr("Does not mind being outdoors"),this);
+        int val = state_value(14);
+        QString pref = tr("Does not mind being outdoors, at least for a time.");
+        if(val == 2)
+            pref = tr("Likes working outdoors and grumbles only mildly at inclement weather.");
+
+        p = new Preference(LIKE_OUTDOORS,pref,this);
         p->add_flag(999);
         m_preferences.insert(LIKE_OUTDOORS,p);
     }
@@ -1096,10 +1098,9 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
 
     if (mem->is_complete()) {
         if(!is_tame && !is_caged){ //fortress civilian
-            //need to do a special check for migrants, they have both the incoming (0x0400 flag) and the dead flag (0x0002)
-            //also need to do a check for the migrant state, as some merchants can arrive with dead and incoming flags as well
-            //however they won't have the migrant state
-            if((flags1 & 0x00000402)==0x00000402 && unverified_dwarf->has_state(7)){ //7=migrant
+
+            //check for migrants
+            if(unverified_dwarf->state_value(7) > 0){
                 LOGD << "Found migrant " << unverified_dwarf->nice_name();
                 return unverified_dwarf;
             }
@@ -1121,6 +1122,7 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
             }
         }
 
+        //check other invalid flags (invaders, ghosts, dead, merchants, etc.)
         if(has_invalid_flags(unverified_dwarf->nice_name(), mem->invalid_flags_1(),flags1) ||
                 has_invalid_flags(unverified_dwarf->nice_name(), mem->invalid_flags_2(),flags2) ||
                 has_invalid_flags(unverified_dwarf->nice_name(), mem->invalid_flags_3(),flags3)){
@@ -1129,6 +1131,7 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
         }
 
         //finally, if we've got no attributes at all, it's probably a corpse part (most likely from a mod)
+        //again this may be unnecessary with the civ check
         if(unverified_dwarf->m_attributes.count() <=0 ){
             LOGD << "Ignoring" << unverified_dwarf->nice_name() <<
                     "who appears to be a corpse.";
