@@ -331,7 +331,8 @@ void Dwarf::read_animal_type(){
         if(animal_offset>=0)
             m_animal_type = static_cast<TRAINED_LEVEL>(m_df->read_int(m_address + animal_offset));
 
-        //additional if it's an animal set a flag if it's currently a pet, as butchering available pets breaks shit in game
+        //additionally if it's an animal set a flag if it's currently a pet
+        //since butchering available pets simply by setting the flag breaks shit in game
         //due to not being able to remove the pet entry from the special_refs for the unit stuff
         if(m_mem->dwarf_offset("specific_refs") != -1){
             QVector<VIRTADDR> refs = m_df->enumerate_vector(m_address + m_mem->dwarf_offset("specific_refs"));
@@ -346,14 +347,13 @@ void Dwarf::read_animal_type(){
 }
 
 void Dwarf::read_states(){
-    //vector holding a set of enum shorts, not pants
+    //set of misc. traits and a value (cave adapt, migrant, likes outdoors, etc..)
     m_states.clear();
     uint states_offset = m_mem->dwarf_offset("states");
     if(states_offset) {
         VIRTADDR states_addr = m_address + states_offset;
         QVector<uint> entries = m_df->enumerate_vector(states_addr);
         foreach(uint entry, entries) {
-            //m_states.append(m_df->read_short(entry));
             m_states.insert(m_df->read_short(entry), m_df->read_short(entry+0x4));
         }
     }
@@ -1862,24 +1862,22 @@ void Dwarf::calc_role_ratings(){
     m_sorted_role_ratings.clear();
 
     foreach(Role *m_role, GameDataReader::ptr()->get_roles()){
-        if(m_role){
-            //if we have a script, use that
-            if(m_role->script != ""){
-                QScriptEngine m_engine;
-                QScriptValue d_obj = m_engine.newQObject(this);
-                m_engine.globalObject().setProperty("d", d_obj);
-                float rating_total = m_engine.evaluate(m_role->script).toNumber(); //just show the raw value the script generates
-                m_role_ratings.insert(m_role->name,rating_total);
-            }else
-            {
-                m_role_ratings.insert(m_role->name, calc_role_rating(m_role)); //rating_total);
-            }
-        }
+        if(m_role)
+            m_role_ratings.insert(m_role->name, calc_role_rating(m_role));
     }
     m_raw_role_ratings = m_role_ratings;
 }
 
 float Dwarf::calc_role_rating(Role *m_role){
+    //if there's a script, use this in place of any aspects
+    if(!m_role->script.trimmed().isEmpty()){
+        QScriptEngine m_engine;
+        QScriptValue d_obj = m_engine.newQObject(this);
+        m_engine.globalObject().setProperty("d", d_obj);
+        return  m_engine.evaluate(m_role->script).toNumber(); //just show the raw value the script generates
+    }
+
+    //no script, calculate rating based on specified aspects
     float rating_att = 0.0;
     float rating_trait = 0.0;
     float rating_skill = 0.0;

@@ -256,7 +256,8 @@ QString Role::build_preference_detail(float aspect_default_weight){
 void Role::write_to_ini(QSettings &s, float default_attributes_weight, float default_traits_weight, float default_skills_weight, float default_prefs_weight){
     //name
     s.setValue("name",name);
-
+    if(!script.trimmed().isEmpty())
+        s.setValue("script", script);
     write_aspect_group(s,"attributes",attributes_weight,default_attributes_weight,attributes);
     write_aspect_group(s,"traits",traits_weight,default_traits_weight,traits);
     write_aspect_group(s,"skills",skills_weight,default_skills_weight,skills);

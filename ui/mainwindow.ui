@@ -315,6 +315,9 @@
     <addaction name="menu_edit_roles"/>
     <addaction name="separator"/>
     <addaction name="menu_remove_roles"/>
+    <addaction name="separator"/>
+    <addaction name="act_import_roles"/>
+    <addaction name="act_export_roles"/>
    </widget>
    <widget class="QMenu" name="menuOptimizer">
     <property name="title">
@@ -956,6 +959,24 @@
     <string>Export Current Grid View as CSV</string>
    </property>
   </action>
+  <action name="act_import_roles">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/document-export.png</normaloff>:/img/document-export.png</iconset>
+   </property>
+   <property name="text">
+    <string>Import Custom Roles</string>
+   </property>
+  </action>
+  <action name="act_export_roles">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/document-import.png</normaloff>:/img/document-import.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export Custom Roles</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
@@ -1389,6 +1410,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_import_roles</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>import_custom_roles()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>403</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_export_roles</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>export_custom_roles()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>403</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -1417,5 +1470,7 @@
   <slot>add_new_custom_role()</slot>
   <slot>add_new_opt()</slot>
   <slot>save_gridview()</slot>
+  <slot>export_custom_roles()</slot>
+  <slot>import_custom_roles()</slot>
  </slots>
 </ui>

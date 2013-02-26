@@ -77,6 +77,8 @@ public:
         void import_custom_professions();
         void export_gridviews();
         void import_gridviews();
+        void import_custom_roles();
+        void export_custom_roles();
         void clear_user_settings();
 
         // dialogs
@@ -117,6 +119,8 @@ public:
         //roles
         void add_new_custom_role();
         void add_new_opt();
+        void write_custom_roles();
+        void refresh_roles_data();
 
         //optimizer
         void refresh_opts_data();
@@ -160,8 +164,8 @@ private:
     void write_settings();
 
     void refresh_role_menus();
-    void refresh_roles_data();
-    void write_custom_roles();
+
+
 
     void refresh_opts_menus();
     void reset();

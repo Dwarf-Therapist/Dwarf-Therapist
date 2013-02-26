@@ -22,6 +22,8 @@
 #include "dwarf.h"
 #include "sortabletableitems.h"
 
+#include "qscriptengine.h"
+
 roleDialog::~roleDialog()
 {
     ui->tw_attributes->clear();
@@ -89,17 +91,22 @@ roleDialog::roleDialog(DFInstance *dfi, QWidget *parent) :
     color_override = QColor::fromRgb(153,102,34,255);
     color_default = QColor::fromRgb(255,255,255,255);
 
-    //setup the splitter options, and decorate the handle
-    //main splitter between prefs and aspects
-    ui->splitter_main->setStretchFactor(0,1);
+    //main splitter between aspects and script
+    ui->splitter_main->setStretchFactor(0,50);
     ui->splitter_main->setStretchFactor(1,1);
     decorate_splitter(ui->splitter_main);
 
-    //splitters between aspects
-    ui->splitter_aspects->setStretchFactor(0,3);
-    ui->splitter_aspects->setStretchFactor(1,2);
-    ui->splitter_aspects->setStretchFactor(2,2);
-    decorate_splitter(ui->splitter_aspects);
+    //setup the splitter options, and decorate the handle
+    //main splitter between aspects and prefs
+    ui->splitter_aspects_main->setStretchFactor(0,1);
+    ui->splitter_aspects_main->setStretchFactor(1,1);
+    decorate_splitter(ui->splitter_aspects_main);
+
+    //splitters between aspects on left side
+    ui->splitter_aspects_left->setStretchFactor(0,3);
+    ui->splitter_aspects_left->setStretchFactor(1,2);
+    ui->splitter_aspects_left->setStretchFactor(2,2);
+    decorate_splitter(ui->splitter_aspects_left);
 
     //preference splitter
     ui->splitter_prefs->setStretchFactor(0,2);
@@ -130,6 +137,7 @@ void roleDialog::load_role(QString role_name){
 
     //clear stuffs
     ui->le_role_name->clear();
+    ui->te_script->clear();
     clear_table(*ui->tw_attributes);
     clear_table(*ui->tw_prefs);
     clear_table(*ui->tw_skills);
@@ -154,6 +162,17 @@ void roleDialog::load_role(QString role_name){
     selection_changed();
     //refresh name background color
     name_changed(ui->le_role_name->text());
+
+    //if there's a script, enlarge the window
+    QList<int> sizes;
+    if(!m_role->script.isEmpty()){
+        sizes.append(50);
+        sizes.append(this->height() - 50);
+    }else{
+        sizes.append(this->height() - 50);
+        sizes.append(50);
+    }
+    ui->splitter_main->setSizes(sizes);
 }
 
 void roleDialog::decorate_splitter(QSplitter *s){
@@ -186,6 +205,7 @@ void roleDialog::decorate_splitter(QSplitter *s){
 
 void roleDialog::load_role_data(){
     ui->le_role_name->setText(m_role->name);
+    ui->te_script->setText(m_role->script);
     //global weights
     ui->dsb_attributes_weight->setValue(m_role->attributes_weight.weight);
     ui->dsb_traits_weight->setValue(m_role->traits_weight.weight);
@@ -314,6 +334,9 @@ void roleDialog::save_pressed(){
 }
 
 void roleDialog::save_role(Role *r){
+    //save any script
+    r->script = ui->te_script->toPlainText();
+
     //attributes
     r->attributes_weight.weight = ui->dsb_attributes_weight->value();
     save_aspects(*ui->tw_attributes, r->attributes);
@@ -1035,6 +1058,28 @@ void roleDialog::clear_search(){
 }
 
 void roleDialog::calc_new_role(){
+    //if using a script, check the syntax
+    QString script = ui->te_script->toPlainText().trimmed();
+    if(!script.isEmpty()){
+        QScriptEngine m_engine;
+        QScriptValue d_obj = m_engine.newQObject(m_dwarf);
+        m_engine.globalObject().setProperty("d", d_obj);
+        QScriptSyntaxCheckResult check = m_engine.checkSyntax(script);
+        if(check.state() != 2){
+        QString err_msg = (tr("<font color=red>Script Error: %1<br/>Line: %2, Column: %3</font>")
+                                         .arg(check.errorMessage())
+                                         .arg(check.errorLineNumber())
+                                         .arg(check.errorColumnNumber()));
+            ui->te_script->setStatusTip(err_msg);
+            ui->txt_status_tip->setText(err_msg);
+            return;
+        }else{
+            ui->te_script->setStatusTip(ui->te_script->whatsThis());
+        }
+    }else{
+        ui->te_script->setStatusTip(ui->te_script->whatsThis());
+    }
+
     Role *test = new Role(*m_role);
     save_role(test);
     ui->lbl_new->setText("New Raw Rating: " + QString::number(m_dwarf->calc_role_rating(test),'g',4) + "%");

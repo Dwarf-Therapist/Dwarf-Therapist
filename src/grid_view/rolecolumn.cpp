@@ -103,11 +103,18 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
                 match_str = tr("Incapable of filling this role.<br><br>Value: %1<br/>").arg(QString::number(rating_total,'f',2));
             }
         } else {
-            match_str = tr("Scripted role.<br/><br/>Value: %1<br/>").arg(QString::number(rating_total,'f',2));
+            QString r_script = m_role->script;
+            r_script.replace("d.","");
+            r_script.replace("()", "");
+            if(r_script.length() > 250)
+                r_script = r_script.mid(0,250) + "...";
+            match_str = tr("<b>Script:</b> %1<br/><br/><b>Raw Rating:</b> %2")
+                    .arg(r_script)
+                    .arg(rating_total, 0, 'f', 2);
             tooltip = QString("<center><h3>%1 - %3</h3></center>%2<h4>%4</h4>")
                              .arg(m_role->name)
                              .arg(match_str)
-                             .arg(QString::number(ceil(rating_total),'g',2))
+                             .arg(roundf(rating_total), 0, 'f', 0)
                              .arg(d->nice_name());
 
             item->setToolTip(tooltip);

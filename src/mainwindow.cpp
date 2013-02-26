@@ -343,8 +343,8 @@ void MainWindow::connect_to_df() {
                 read_dwarves();
             }
         }
-
-        this->setWindowTitle(QString("%1 %2").arg(tr("Dwarf Therapist - ")).arg(m_df->fortress_name()));
+        if(m_df)
+            this->setWindowTitle(QString("%1 %2").arg(tr("Dwarf Therapist - ")).arg(m_df->fortress_name()));
     }
 }
 
@@ -720,6 +720,18 @@ void MainWindow::export_custom_professions() {
 void MainWindow::import_custom_professions() {
     ImportExportDialog d(this);
     d.setup_for_profession_import();
+    d.exec();
+}
+
+void MainWindow::export_custom_roles(){
+    ImportExportDialog d(this);
+    d.setup_for_role_export();
+    d.exec();
+}
+
+void MainWindow::import_custom_roles(){
+    ImportExportDialog d(this);
+    d.setup_for_role_import();
     d.exec();
 }
 

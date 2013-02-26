@@ -30,6 +30,7 @@ namespace Ui {
 }
 class CustomProfession;
 class GridView;
+class Role;
 
 class ImportExportDialog : public QDialog {
 	Q_OBJECT
@@ -38,8 +39,12 @@ public:
 	ImportExportDialog(QWidget *parent = 0);
 	void setup_for_profession_export();
 	void setup_for_profession_import();
-	void setup_for_gridview_export();
+
+    void setup_for_gridview_export();
 	void setup_for_gridview_import();
+
+    void setup_for_role_export();
+    void setup_for_role_import();
 
 	public slots:
 		void accept();
@@ -48,27 +53,36 @@ private:
 	Ui::ImportExportDialog *ui;
 	QVector<CustomProfession*> m_profs;
 	QVector<GridView*> m_views;
+    QVector<Role*> m_roles;
 	QString m_path;
 
 	typedef enum {
 		MODE_IMPORT_PROFESSIONS,
 		MODE_EXPORT_PROFESSIONS,
 		MODE_IMPORT_GRIDVIEWS,
-		MODE_EXPORT_GRIDVIEWS
+        MODE_EXPORT_GRIDVIEWS,
+        MODE_IMPORT_ROLES,
+        MODE_EXPORT_ROLES
 	} DIALOG_MODE;
 
 	DIALOG_MODE m_mode;
 
 	QVector<CustomProfession*> get_profs();
 	QVector<GridView*> get_views();
+    QVector<Role*> get_roles();
 	
 	private slots:
 		void select_all();
 		void clear_selection();
-		void export_selected_professions();
+
+        void export_selected_professions();
 		void import_selected_professions();
+
 		void export_selected_gridviews();
 		void import_selected_gridviews();
+
+        void export_selected_roles();
+        void import_selected_roles();
 
 };
 
