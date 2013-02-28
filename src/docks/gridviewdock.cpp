@@ -50,18 +50,18 @@ void GridViewDock::draw_views() {
     ui->list_views->clear();
     QStringList view_names;
     foreach(GridView *v, m_manager->views()) {
-        view_names << v->name();
+        //exclude the built in weapons view from being copied as the columns are currently custom groups
+        if(!v->is_custom() && v->name() != tr("Weapons"))
+            view_names << v->name();
     }
     qSort(view_names);
-    foreach(QString name, view_names) {
+    foreach(QString name, view_names) {        
         foreach(GridView *v, m_manager->views()) {
             if (v->name() == name) {
-                QListWidgetItem *item = new QListWidgetItem(v->name(),
-                                                            ui->list_views);
+                QListWidgetItem *item = new QListWidgetItem(v->name(),ui->list_views);
                 if (!v->is_custom()) {
                     item->setForeground(Qt::gray);
-                    item->setToolTip(tr("Built-in View. Copy this view to "
-                                        "customize it."));
+                    item->setToolTip(tr("Built-in View. Copy this view to customize it."));
                 }
             }
         }
