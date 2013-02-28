@@ -104,7 +104,6 @@ void optimizereditor::load_plan(QString name){
     }else{
         m_plan = new laborOptimizerPlan(*m_original_plan);
     }
-
     m_optimizer = new LaborOptimizer(m_plan,this);
 
     ui->sb_max_jobs->setMaximum(GameDataReader::ptr()->get_ordered_labors().count());
@@ -534,9 +533,13 @@ void optimizereditor::cleanup(){
     }
     clear_log();
 
+    delete m_optimizer;
+    m_optimizer = 0;
+
     m_original_plan = 0;
     m_plan = 0;
     m_remaining_labors.clear();
+
 }
 
 void optimizereditor::import_details(){

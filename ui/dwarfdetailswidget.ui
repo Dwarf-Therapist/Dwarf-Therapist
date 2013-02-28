@@ -630,59 +630,9 @@
      <item>
       <layout class="QHBoxLayout" name="hLayoutSquad">
        <item>
-        <widget class="QLabel" name="lbl_squad">
-         <property name="palette">
-          <palette>
-           <active>
-            <colorrole role="WindowText">
-             <brush brushstyle="SolidPattern">
-              <color alpha="255">
-               <red>30</red>
-               <green>30</green>
-               <blue>30</blue>
-              </color>
-             </brush>
-            </colorrole>
-           </active>
-           <inactive>
-            <colorrole role="WindowText">
-             <brush brushstyle="SolidPattern">
-              <color alpha="255">
-               <red>30</red>
-               <green>30</green>
-               <blue>30</blue>
-              </color>
-             </brush>
-            </colorrole>
-           </inactive>
-           <disabled>
-            <colorrole role="WindowText">
-             <brush brushstyle="SolidPattern">
-              <color alpha="255">
-               <red>42</red>
-               <green>42</green>
-               <blue>42</blue>
-              </color>
-             </brush>
-            </colorrole>
-           </disabled>
-          </palette>
-         </property>
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Squad </string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QLabel" name="lbl_squad_name">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -726,12 +676,12 @@
          </property>
          <property name="font">
           <font>
-           <weight>75</weight>
-           <bold>true</bold>
+           <weight>50</weight>
+           <bold>false</bold>
           </font>
          </property>
          <property name="text">
-          <string>The Hammers of Bashing</string>
+          <string>Member of squad 'The Hammers of Bashing'.</string>
          </property>
          <property name="wordWrap">
           <bool>true</bool>

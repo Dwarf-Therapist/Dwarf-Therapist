@@ -232,18 +232,6 @@ void MainWindow::read_settings() {
         }
     }
     m_settings->endGroup();
-
-    m_settings->beginGroup("gui_options");
-    { // GUI OPTIONS
-        int group_by = m_settings->value("group_by", 0).toInt(); //this isn't an index, it's an enum
-        group_by = ui->cb_group_by->itemData(group_by, Qt::UserRole).toInt(); //find the index of the enum
-        if(group_by < 0)
-            group_by = 0;
-        ui->cb_group_by->setCurrentIndex(group_by);
-        m_model->set_group_by(group_by);
-    }
-    m_settings->endGroup();
-
     m_reading_settings = false;
 
 }
@@ -337,14 +325,20 @@ void MainWindow::connect_to_df() {
             connect(m_df, SIGNAL(connection_interrupted()), SLOT(lost_df_connection()));
 
             m_df->load_game_data();
-            if(m_view_manager)
+            if(m_view_manager){
                 m_view_manager->reload_views();
+                m_view_manager->draw_views();
+
+                GridViewDock *dock = qobject_cast<GridViewDock*>(QObject::findChild<GridViewDock*>("GridViewDock"));
+                if(dock)
+                    dock->draw_views();
+            }
             if (DT->user_settings()->value("options/read_on_startup", true).toBool()) {
                 read_dwarves();
             }
         }
         if(m_df)
-            this->setWindowTitle(QString("%1 %2").arg(tr("Dwarf Therapist - ")).arg(m_df->fortress_name()));
+            this->setWindowTitle(QString("%1 %2").arg(tr("Dwarf Therapist - ")).arg(m_df->fortress_name()));        
     }
 }
 
@@ -369,6 +363,16 @@ void MainWindow::read_dwarves() {
         return;
     }
 
+    //save the ids of the currently selected dwarfs
+    QVector<int> ids;
+    foreach(Dwarf *d, m_view_manager->get_selected_dwarfs()){
+        ids << d->id();
+    }
+    //clear selected dwarfs in the view
+    if(m_view_manager)
+        m_view_manager->clear_selected();
+
+    //clear data in each column for each view
     foreach(GridView *gv, m_view_manager->views()){
         foreach(ViewColumnSet *set, gv->sets()) {
             foreach(ViewColumn *col, set->columns()) {
@@ -392,6 +396,9 @@ void MainWindow::read_dwarves() {
     new_pending_changes(0);
     // cheap trick to setup the view correctly
     m_view_manager->redraw_current_tab();
+
+    //reselect the ids we saved above
+    m_view_manager->reselect(ids);
 
     // setup the filter auto-completer
     m_dwarf_names_list.clear();
@@ -427,8 +434,12 @@ void MainWindow::read_dwarves() {
 
     if(DT->multiple_castes && ui->cb_group_by->findData(DwarfModel::GB_CASTE_TAG) < 0){        
         //special grouping when using multiple castes, insert it after the caste group
+        ui->cb_group_by->blockSignals(true);
+        int grp_by = ui->cb_group_by->itemData(ui->cb_group_by->currentIndex()).toInt();
         ui->cb_group_by->insertItem(3, QIcon(":img/exclamation-red-frame.png"), tr("Caste Tag"), DwarfModel::GB_CASTE_TAG);
         ui->cb_group_by->setItemData(3, tr("Possible Spoilers! This may show special/hidden castes!"), Qt::ToolTipRole);
+        ui->cb_group_by->setCurrentIndex(ui->cb_group_by->findData(grp_by));
+        ui->cb_group_by->blockSignals(false);
     }
 }
 
@@ -751,7 +762,7 @@ void MainWindow::import_gridviews() {
     d.setup_for_gridview_import();
     if (d.exec()) {
         GridViewDock *dock = qobject_cast<GridViewDock*>(QObject::findChild<GridViewDock*>("GridViewDock"));
-        if (dock)
+        if(dock)
             dock->draw_views();        
     }
 }
@@ -865,6 +876,7 @@ void MainWindow::edit_custom_role() {
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     QString name = a->data().toString();
     if(m_role_editor){
+        connect(m_view_manager, SIGNAL(selection_changed()), m_role_editor, SLOT(selection_changed()),Qt::UniqueConnection);
         m_role_editor->load_role(name);
         m_role_editor->show();
     }
@@ -1069,6 +1081,7 @@ void MainWindow::set_progress_value(int value) {
         set_progress_message("");
     }
 }
+///////////////////////////////////////////////////////////////////////////////
 
 void MainWindow::display_group(const int group_by){
     //this is a signal sent from the view manager when we change tabs and update grouping
@@ -1077,8 +1090,7 @@ void MainWindow::display_group(const int group_by){
     int idx = ui->cb_group_by->findData(static_cast<DwarfModel::GROUP_BY>(group_by));
     if(idx < 0)
         idx = 0;
-    ui->cb_group_by->setCurrentIndex(idx);
-    //write_settings();
+    ui->cb_group_by->setCurrentIndex(idx);    
     ui->cb_group_by->blockSignals(false);
 }
 
@@ -1290,7 +1302,13 @@ void MainWindow::optimize(QString plan_name){
 void MainWindow::reset(){
     if(DT->multiple_castes){
         DT->multiple_castes = false;
+        int grp_by = ui->cb_group_by->itemData(ui->cb_group_by->currentIndex()).toInt();
+        if(grp_by == 3) //caste tag
+            grp_by = 2; //set to caste in case
+        ui->cb_group_by->blockSignals(true);
         ui->cb_group_by->removeItem(3); //GB_CASTE_TAG
+        ui->cb_group_by->setCurrentIndex(ui->cb_group_by->findData(grp_by));
+        ui->cb_group_by->blockSignals(false);
     }
     this->setWindowTitle("Dwarf Therapist - Disconnected");
 

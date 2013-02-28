@@ -91,7 +91,7 @@ void ThoughtsDock::refresh(){
     clear();
 
     if(DT && DT->get_DFInstance()){
-        QHash<short, QStringList> thoughts = DT->get_DFInstance()->get_thought_stats();
+        QHash<short, QPair<int,int> > thoughts = DT->get_DFInstance()->get_thought_stats();
 
         tw_thoughts->setSortingEnabled(false);
         QString tooltip;
@@ -100,8 +100,8 @@ void ThoughtsDock::refresh(){
                 tw_thoughts->setRowHeight(0, 18);
 
                 Thought *t = GameDataReader::ptr()->get_thought(id);
-                QStringList names = thoughts.value(id);
-                names.sort();
+                int total_count = thoughts.value(id).first;
+                int dwarf_count = thoughts.value(id).second;
                 tooltip = QString("<center><h4>%1</h4></center>%2 (%3)")
                         .arg(capitalize(t->title()))
                         .arg(capitalize(t->desc()))
@@ -116,9 +116,10 @@ void ThoughtsDock::refresh(){
                 item_title->setToolTip(tooltip);
 
                 QTableWidgetItem *item_count = new QTableWidgetItem();
-                item_count->setData(Qt::DisplayRole, (int)names.count());
+                item_count->setData(Qt::DisplayRole, dwarf_count);
                 item_count->setTextAlignment(Qt::AlignCenter);
-                item_count->setToolTip(names.join("<br/>"));
+                item_count->setToolTip(tr("This thought has occurred a total of %1 times among %2 civilians.<br/><br/>Click to show these individuals.")
+                                       .arg(total_count).arg(dwarf_count));
                 item_count->setBackgroundColor(t->color());
 
                 QTableWidgetItem *item_desc = new QTableWidgetItem();

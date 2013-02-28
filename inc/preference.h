@@ -52,7 +52,8 @@ public:
 
     Preference(QObject *parent);
     Preference(PREF_TYPES category, QString name, QObject *parent = 0);
-    Preference(PREF_TYPES category, ITEM_TYPE iType, QObject *parent = 0);    
+    Preference(PREF_TYPES category, ITEM_TYPE iType, QObject *parent = 0);
+    Preference(const Preference &p);
     virtual ~Preference();
 
     int matches(Preference *role_pref);    

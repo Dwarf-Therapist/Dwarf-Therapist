@@ -41,8 +41,7 @@ Skill::Skill()
     , m_skill_rate(100)
 {}
 
-Skill::Skill(short id, uint exp, short rating, int rust, int skill_rate)
-    //: QObject()
+Skill::Skill(short id, uint exp, short rating, int rust, int skill_rate)    
     : m_id(id)
     , m_exp(exp)
     , m_actual_exp(exp)

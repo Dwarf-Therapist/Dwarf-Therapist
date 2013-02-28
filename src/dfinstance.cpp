@@ -587,13 +587,17 @@ void DFInstance::load_population_data(){
         }
 
         //load thought counts
-        foreach(short id, d->get_thoughts()){
-            QStringList names;
+        QHash<short,int> d_thoughts = d->get_thoughts();
+        foreach(short id, d_thoughts.uniqueKeys()){
+            int total_count = 0;
+            int dwarf_count = 0;
             if(m_thought_counts.contains(id)){
-                names = m_thought_counts.value(id);
+                total_count = m_thought_counts.value(id).first;
+                dwarf_count = m_thought_counts.value(id).second;
             }
-            names.append(d->nice_name());
-            m_thought_counts.insert(id,names);
+            total_count += d_thoughts.value(id);
+            dwarf_count++;
+            m_thought_counts.insert(id,qMakePair(total_count,dwarf_count));
         }
 
     }

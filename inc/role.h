@@ -66,6 +66,7 @@ public:
 
     void write_to_ini(QSettings &s, float default_attributes_weight, float default_traits_weight, float default_skills_weight, float default_prefs_weight);
 
+    Preference* has_preference(QString name);
 protected:
     void parseAspect(QSettings &s, QString node, global_weight &g_weight, QHash<QString, RoleAspect *> &list, float default_weight);
     void parsePreferences(QSettings &s, QString node, global_weight &g_weight, float default_weight);

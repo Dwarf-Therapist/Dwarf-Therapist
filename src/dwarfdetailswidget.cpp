@@ -170,35 +170,31 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     ui->lbl_profession->setText(QString("%1 %2").arg(embedPixmap(d->profession_icon())).arg(d->profession()));
     ui->lbl_profession->setToolTip(tr("Profession: %1").arg(ui->lbl_profession->text()));
 
-    if(d->noble_position().isEmpty()){
-        ui->lbl_noble_position->setText("");
-        ui->lbl_noble_position->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Ignored);
-        ui->lbl_noble->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Ignored);
+    if(d->noble_position().isEmpty()){        
+        ui->lbl_noble_position->hide();
+        ui->lbl_noble->hide();
     }
     else{
         ui->lbl_noble->setText(tr("<b>Noble Position%1</b>").arg(d->noble_position().contains(",") ? "s" : ""));
         ui->lbl_noble_position->setText(d->noble_position());
-        ui->lbl_noble_position->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-    }
+        ui->lbl_noble_position->show();
+        ui->lbl_noble->show();
+    }    
     ui->lbl_noble_position->setToolTip(ui->lbl_noble_position->text());
 
     if(d->artifact_name().isEmpty()){
-        ui->lbl_artifact->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);
-        ui->lbl_artifact->setText("");
-    }else{
-        ui->lbl_artifact->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+        ui->lbl_artifact->hide();
+    }else{        
         ui->lbl_artifact->setText(tr("Creator of '%1'").arg(d->artifact_name()));
+        ui->lbl_artifact->show();
     }
 
-    if(d->squad_name().isEmpty()){
-        ui->lbl_squad_name->setText("");
-        ui->lbl_squad_name->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Ignored);
-        ui->lbl_squad->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Ignored);
+    if(d->squad_name().isEmpty()){        
+        ui->lbl_squad_name->hide();
     }
-    else{
-        ui->lbl_squad->setText(tr("<b>Squad</b>"));
-        ui->lbl_squad_name->setText(d->squad_name());
-        ui->lbl_squad_name->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
+    else{                
+        ui->lbl_squad_name->setText(tr("<b>Member of Squad <i>'%1'</i></b>").arg(d->squad_name()));
+        ui->lbl_squad_name->show();
     }
 
     ui->lbl_artifact->setToolTip(ui->lbl_artifact->text());
@@ -224,11 +220,12 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     if(DT->user_settings()->value("options/highlight_nobles",false).toBool() && d->noble_position() != ""){
         color = DT->get_DFInstance()->fortress()->get_noble_color(d->historical_id());
         ui->lbl_noble_position->setStyleSheet(QString("background: QLinearGradient(x1:0,y1:0,x2:0.9,y1:0,stop:0 %1, stop:1 %2); color: %3")
-                                     .arg(color.name())
-                                         .arg(color2.name())
-                                         .arg(compliment(color).name())
-                                         );
+                                              .arg(color.name())
+                                              .arg(color2.name())
+                                              .arg(compliment(color).name())
+                                              );
     }
+
 
     //clear tables
     clear_table(*ui->tw_skills);
@@ -238,14 +235,13 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     clear_table(*ui->tw_prefs);
 
     // SKILLS TABLE
-    QVector<Skill> *skills = d->get_skills();
+    QHash<int,Skill> *skills = d->get_skills();
     ui->tw_skills->setSortingEnabled(false);
     int real_count = 0;
     int raw_bonus_xp = 100;
     int bonus_xp = 0;
-    QString tooltip = "";
-    for (int row = 0; row < skills->size(); ++row) {
-        Skill s = skills->at(row);
+    QString tooltip = "";    
+    foreach(Skill s, skills->values()){
         if(s.capped_level() > -1)
         {
             real_count = ui->tw_skills->rowCount();

@@ -200,7 +200,7 @@ public:
     Plant * get_plant(int index);
     QString find_material_name(int mat_index, short mat_type, ITEM_TYPE itype);
     const QHash<QPair<QString,QString>,pref_stat*> get_preference_stats() {return m_pref_counts;}
-    const QHash<short, QStringList> get_thought_stats() {return m_thought_counts;}
+    const QHash<short, QPair<int, int> > get_thought_stats() {return m_thought_counts;}
 
     QString fortress_name() const {return QString("%1, \"%2\"").arg(m_fortress_name).arg(m_fortress_name_translated);}
 
@@ -284,7 +284,7 @@ private:
 
     QHash<QPair<QString,QString>, pref_stat*> m_pref_counts;
     //thought id, dwarf names
-    QHash<short, QStringList> m_thought_counts;
+    QHash<short, QPair<int,int> > m_thought_counts;
     QString m_fortress_name;
     QString m_fortress_name_translated;
 

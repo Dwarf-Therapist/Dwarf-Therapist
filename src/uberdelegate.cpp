@@ -241,8 +241,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_FLAGS:
     {
-        paint_flags(adjusted, p, opt, idx);
-        paint_grid(adjusted, false, p, opt, idx);
+        paint_flags(adjusted, p, opt, idx);        
     }
         break;
     case CT_TRAINED:
@@ -554,7 +553,10 @@ void UberDelegate::paint_flags(const QRect &adjusted, QPainter *p, const QStyleO
 
     int bit_pos = idx.data(DwarfModel::DR_LABOR_ID).toInt();
     bool val = d->get_flag_value(bit_pos);
+    bool dirty = d->is_flag_dirty(bit_pos);
+
     paint_bg(adjusted, val, p, opt, proxy_idx);
+    paint_grid(adjusted,dirty,p,opt,proxy_idx);
 }
 
 

@@ -126,6 +126,7 @@ Dwarf::~Dwarf() {
 
     m_traits.clear();    
     m_skills.clear();    
+    m_sorted_skills.clear();
     m_attributes.clear();
 
     m_labors.clear();
@@ -835,23 +836,35 @@ void Dwarf::read_happiness() {
         QMap<int,short> t;
         foreach(VIRTADDR addr, thoughts){
             short id = m_df->read_int(addr);
-            int time = m_df->read_int(addr + 0x4);
+            int time = m_df->read_int(addr + 0x4);            
+            //the age of a thought increases by 1 per frame
+            //to find how many days ago a thought was use: 10 frames per tick, 1200 ticks per day
             t.insertMulti(time,id);
         }        
 
+        int t_count = 0;
         foreach(int key, t.uniqueKeys()){
             QList<short> vals = t.values(key);
             for(int i = 0; i < vals.count(); i++) {
                 if(!m_thoughts.contains(vals.at(i)))
-                    m_thoughts.append(vals.at(i));
+                    t_count = 1;
+                else
+                    t_count = m_thoughts.take(vals.at(i)) + 1;
+
+                m_thoughts.insert(vals.at(i),t_count);
             }
         }
 
         QStringList display_desc;
-        foreach(int id, m_thoughts){
+        foreach(int id, m_thoughts.uniqueKeys()){
             Thought *t = GameDataReader::ptr()->get_thought(id);
-            if(t)
-                display_desc.append(QString("<font color=%1>%2</font>").arg(t->color().name()).arg(t->desc().toLower()));
+            if(t){
+                t_count = m_thoughts.value(id);
+                display_desc.append(QString("<font color=%1>%2%3</font>")
+                                    .arg(t->color().name())
+                                    .arg(t->desc().toLower())
+                                    .arg(t_count > 1 ? QString(" (x%1)").arg(t_count) : ""));
+            }
         }
 
         m_thought_desc = display_desc.join(", ");
@@ -921,6 +934,7 @@ void Dwarf::read_current_job() {
         if(m_is_on_break)
             m_current_job_id = -2;
     }
+    m_current_job = capitalizeEach(m_current_job);
     TRACE << "CURRENT JOB:" << m_current_job_id << m_current_sub_job_id << m_current_job;
 }
 
@@ -1057,7 +1071,7 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     TRACE << "attempting to load dwarf at" << addr << "using memory layout" << mem->game_version();
 
     //only for test
-//    bool check_all = false;
+//    bool check_all = true;
 //    if (check_all)
 //    {
 //        Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
@@ -1077,19 +1091,22 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     if(!is_caged){
         if(civ_id != df->dwarf_civ_id()) //non-animal, but wrong civ
             return 0;
-    }else if(!is_tame){
-        bool trainable = false;
-        //if it's a caged, trainable beast, keep it in our list
-        Race *r = df->get_race(race_id);
-        if(r){
-            trainable = r->is_trainable();
-            r = 0;
+    }else{
+        if(!is_tame){
+            bool trainable = false;
+            //if it's a caged, trainable beast, keep it in our list
+            Race *r = df->get_race(race_id);
+            if(r){
+                trainable = r->is_trainable();
+                r = 0;
+            }
+            if(!trainable)
+                return 0;
         }
-        if(!trainable)
-            return 0;
     }
 
     Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
+
     TRACE << "examining creature at" << hex << addr;
     TRACE << "FLAGS1 :" << hexify(flags1);
     TRACE << "FLAGS2 :" << hexify(flags2);
@@ -1157,7 +1174,7 @@ bool Dwarf::has_invalid_flags(const QString creature_name, QHash<uint, QString> 
 bool Dwarf::get_flag_value(int bit)
 {
     //m_caged is the flags1
-    quint32 flg=m_caged;
+    quint32 flg = m_caged;
     if(bit>31)
     {
         //the slaughter flag is in flags2
@@ -1208,17 +1225,12 @@ void Dwarf::read_skills() {
 
         Skill s = Skill(type, xp, rating, rust, skill_rate);
         m_total_xp += s.actual_exp();
-        m_skills.append(s);
+        m_skills.insert(s.id(),s);
+        m_sorted_skills.insertMulti(s.capped_level_precise(), s.id());
 
         if(GameDataReader::ptr()->moodable_skills().contains(type) &&
                 (m_highest_moodable_skill == -1 || s.actual_exp() > get_skill(m_highest_moodable_skill).actual_exp()))
             m_highest_moodable_skill = type;
-
-//        if(rust > 0)
-//            LOGD << nice_name() << m_profession << " reading:" << entry << " skill:" << s->name()
-//                 << " rating:" << rating << " last_used:"
-//                 << last_used << " r.count:" << rust_counter << " r:" << rust
-//                 << " d.count:" << demotion_counter <<;
     }        
 }
 
@@ -1277,38 +1289,35 @@ void Dwarf::load_attribute(VIRTADDR &addr, int id){
     addr+=0x1c;
 }
 
-Attribute Dwarf::get_attribute(int id){
-    return m_attributes.at(id);
+Attribute Dwarf::get_attribute(int id){    
+    if(id < m_attributes.count())
+        return m_attributes.at(id);
+    else
+        return Attribute(id,0,0);
 }
 
 Skill Dwarf::get_skill(int skill_id) {
-    foreach(Skill s, m_skills) {
-        if (s.id() == skill_id) {
-            return s;
-        }
+    if(!m_skills.contains(skill_id)){
+        Skill s = Skill(skill_id, 0, -1, 0, m_caste->get_skill_rate(skill_id));
+        m_skills.insert(skill_id,s);
+        m_sorted_skills.insertMulti(s.capped_level_precise(), skill_id);
     }
-    //skill doesn't exist
-    Skill s = Skill(skill_id, 0, -1, 0, m_caste->get_skill_rate(skill_id));
-    m_skills.append(s);
-    return m_skills.last();
+    return m_skills.value(skill_id);
 }
 
 float Dwarf::skill_level(int skill_id, bool raw, bool precise) {
     float retval = -1;
-    foreach(Skill s, m_skills) {
-        if (s.id() == skill_id) {
-            if(raw){
-                if(precise)
-                    retval = s.raw_level_precise();
-                else
-                    retval = s.raw_level();
-            }else{
-                if(precise)
-                    retval = s.capped_level_precise();
-                else
-                    retval = s.capped_level();
-            }
-            break;
+    if(m_skills.contains(skill_id)){
+        if(raw){
+            if(precise)
+                retval = m_skills.value(skill_id).raw_level_precise();
+            else
+                retval = m_skills.value(skill_id).raw_level();
+        }else{
+            if(precise)
+                retval = m_skills.value(skill_id).capped_level_precise();
+            else
+                retval = m_skills.value(skill_id).capped_level();
         }
     }
     return retval;
@@ -1436,6 +1445,14 @@ bool Dwarf::toggle_flag_bit(int bit) {
     }else
         m_caged^=mask;
     return true;
+}
+
+bool Dwarf::is_flag_dirty(int bit_pos){
+    if (bit_pos!=49){
+        return false;
+    }else{ //compare butcher flag
+        return m_butcher != m_flag2;
+    }
 }
 
 int Dwarf::pending_changes() {
@@ -1599,17 +1616,17 @@ QString Dwarf::tooltip_text() {
     if(max_roles > m_sorted_role_ratings.count())
         max_roles = m_sorted_role_ratings.count();
 
-    //in some mods animals, like golems, may have skills
+    //in some mods animals may have skills
     if(!m_skills.isEmpty() && s->value("options/tooltip_show_skills",true).toBool()){
-        QVector<Skill> *skills = get_skills();
-        qSort(skills->begin(),skills->end(),Skill::less_than_key());
-
         int max_level = s->value("options/min_tooltip_skill_level", true).toInt();
-        for (int i = skills->size() - 1; i >= 0; --i) {
-            if (skills->at(i).capped_level() < max_level) {
+        QMapIterator<float,int> i(m_sorted_skills);
+        i.toBack();
+        while(i.hasPrevious()){
+            i.previous();
+            if(m_skills.value(i.value()).capped_level() < max_level) {
                 continue;
             }
-            skill_summary.append(QString("<li>%1</li>").arg(skills->at(i).to_string()));
+            skill_summary.append(QString("<li>%1</li>").arg(m_skills.value(i.value()).to_string()));
         }
     }
 
@@ -1814,7 +1831,7 @@ void Dwarf::copy_address_to_clipboard() {
 
 Skill Dwarf::highest_skill() {
     Skill highest = Skill(-1, 0, -1, 0);
-    foreach(Skill s, m_skills) {
+    foreach(Skill s, m_skills.values()) {
         if (s.actual_exp() > highest.actual_exp()) {
             highest = s;
         }
@@ -1829,7 +1846,7 @@ Skill Dwarf::highest_moodable(){
 
 int Dwarf::total_skill_levels() {
     int ret_val = 0;
-    foreach(Skill s, m_skills) {
+    foreach(Skill s, m_skills.values()) {
         if(s.raw_level() > 0)
             ret_val += s.raw_level();
     }
@@ -1929,18 +1946,13 @@ float Dwarf::calc_role_rating(Role *m_role){
             else if(name == "empathy"){attrib_id = AT_EMPATHY;}
             else if(name == "social awareness"){attrib_id = AT_SOCIAL_AWARENESS;}
 
-//            aspect_value = DwarfStats::get_att_default_role_rating(
-//                        GameDataReader::ptr()->get_attributes().value(attrib_id)->m_aspect_type
-//                        , attribute(attrib_id));
-
-
             aspect_value = get_attribute(attrib_id).rating(true);
-            if(aspect_value < 0)
-                aspect_value = DwarfStats::get_att_caste_role_rating(m_attributes[attrib_id]);//get_attribute(attrib_id));
-
-//            aspect_value = DwarfStats::get_att_caste_role_rating(static_cast<ATTRIBUTES_TYPE>(attrib_id),attribute(attrib_id));
-
-
+            if(aspect_value < 0){
+                if(attrib_id < m_attributes.count())
+                    aspect_value = DwarfStats::get_att_caste_role_rating(m_attributes[attrib_id]);
+                else
+                    aspect_value = 0;
+            }
 
             if(a->is_neg)
                 aspect_value = 1-aspect_value;

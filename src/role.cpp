@@ -172,19 +172,28 @@ void Role::parsePreferences(QSettings &s, QString node, global_weight &g_weight,
 }
 
 void Role::create_role_details(QSettings &s){
-    //unfortunate to have to loop through everything twice, but we need to handle the case where the users
-    //change the global weights and re-build the string description. it's still better to do it here than when creating each cell
-    role_details = "<h4>Aspects:</h4>";
+    if(script.trimmed().isEmpty()){
+        //unfortunate to have to loop through everything twice, but we need to handle the case where the users
+        //change the global weights and re-build the string description. it's still better to do it here than when creating each cell
+        role_details = "<h4>Aspects:</h4>";
 
-    float default_attributes_weight = s.value("options/default_attributes_weight",1.0).toFloat();
-    float default_skills_weight = s.value("options/default_skills_weight",1.0).toFloat();
-    float default_traits_weight = s.value("options/default_traits_weight",1.0).toFloat();
-    float default_prefs_weight = s.value("options/default_prefs_weight",1.0).toFloat();
+        float default_attributes_weight = s.value("options/default_attributes_weight",1.0).toFloat();
+        float default_skills_weight = s.value("options/default_skills_weight",1.0).toFloat();
+        float default_traits_weight = s.value("options/default_traits_weight",1.0).toFloat();
+        float default_prefs_weight = s.value("options/default_prefs_weight",1.0).toFloat();
 
-    role_details += build_aspect_detail("Attributes",attributes_weight,default_attributes_weight,attributes);
-    role_details += build_aspect_detail("Skills",skills_weight,default_skills_weight,skills);
-    role_details += build_aspect_detail("Traits",traits_weight,default_traits_weight,traits);
-    role_details += build_preference_detail(default_prefs_weight);
+        role_details += build_aspect_detail("Attributes",attributes_weight,default_attributes_weight,attributes);
+        role_details += build_aspect_detail("Skills",skills_weight,default_skills_weight,skills);
+        role_details += build_aspect_detail("Traits",traits_weight,default_traits_weight,traits);
+        role_details += build_preference_detail(default_prefs_weight);
+    }else{
+        role_details = script;
+        role_details.replace("d.","");
+        role_details.replace("()", "");
+        if(role_details.length() > 250)
+            role_details = role_details.mid(0,250) + "...";
+        role_details = "<h4>Script:</h4>" + role_details;
+    }
 }
 
 QString Role::get_role_details(){
@@ -315,4 +324,12 @@ void Role::write_pref_group(QSettings &s, float default_prefs_weight){
         }
         s.endArray();
     }
+}
+
+Preference* Role::has_preference(QString name){
+    foreach(Preference *p, prefs){
+        if(QString::compare(p->get_name(), name, Qt::CaseInsensitive)==0)
+            return p;
+    }
+    return 0;
 }

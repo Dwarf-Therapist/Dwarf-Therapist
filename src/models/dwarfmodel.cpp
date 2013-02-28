@@ -293,13 +293,6 @@ QString DwarfModel::build_col_tooltip(ViewColumn *col){
 }
 
 void DwarfModel::build_rows() {
-    // don't need to go delete the dwarf pointers in here, since the earlier foreach should have
-    // deleted them
-
-//    m_grouped_dwarves.clear();
-//    total_row_count = 0;
-//    clear();
-
     m_grouped_dwarves.clear();
 
     foreach(ViewColumnSet *set, m_gridview->sets()) {
@@ -308,30 +301,13 @@ void DwarfModel::build_rows() {
         }
     }
     clear();
-
     total_row_count = 0;
 
-//    //delete all children of parent;
-//    QStandardItem * loopItem = this->invisibleRootItem(); //main loop item
-//    QList<QStandardItem *> carryItems; //Last In First Out stack of items
-//    QList<QStandardItem *> itemsToBeDeleted; //List of items to be deleted
-//    while (loopItem->rowCount())
-//    {
-//        itemsToBeDeleted << loopItem->takeRow(0);
-//        //if the row removed has children:
-//        if (itemsToBeDeleted.at(0)->hasChildren())
-//        {
-//            carryItems << loopItem;                 //put on the stack the current loopItem
-//            loopItem = itemsToBeDeleted.at(0);      //set the row with children as the loopItem
-//        }
-//        //if current loopItem has no more rows but carryItems list is not empty:
-//        if (!loopItem->rowCount() && !carryItems.isEmpty()) loopItem = carryItems.takeFirst();
-
-//    }
-//    qDeleteAll(itemsToBeDeleted);
-
-
     draw_headers();
+
+    if(m_dwarves.count() <= 0)
+        return;
+
     QSettings *s = DT->user_settings();
 
     // populate dwarf maps
@@ -418,7 +394,7 @@ void DwarfModel::build_rows() {
 
                 if(m_group_by == GB_LEGENDARY){
                     int legendary_skills = 0;
-                    foreach(Skill s, *d->get_skills()) {
+                    foreach(Skill s, d->get_skills()->values()) {
                         if (s.capped_level() >= 15)
                             legendary_skills++;
                     }
@@ -429,8 +405,8 @@ void DwarfModel::build_rows() {
                 }else if(m_group_by == GB_HAPPINESS){
                     m_grouped_dwarves[d->happiness_name(d->get_happiness())].append(d);
                 }else if(m_group_by == GB_CURRENT_JOB){
-                    QString job_desc = gdr->get_job(d->current_job_id())->description.replace(" ??","");
-                    m_grouped_dwarves[job_desc].append(d);
+                    QString job_desc = gdr->get_job(d->current_job_id())->description;
+                    m_grouped_dwarves[job_desc.replace(" ??","")].append(d);
                 }else if(m_group_by == GB_MILITARY_STATUS){
                     if (d->is_baby() || d->is_child()) {
                         m_grouped_dwarves[tr("Juveniles")].append(d);
@@ -741,7 +717,7 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
 }
 
 void DwarfModel::set_group_by(int group_by) {
-    LOGD << "group_by now set to" << group_by;
+    LOGD << "group_by now set to" << group_by << " for view " << current_grid_view()->name();
     m_group_by = static_cast<GROUP_BY>(group_by);
     if(m_df)
         build_rows();

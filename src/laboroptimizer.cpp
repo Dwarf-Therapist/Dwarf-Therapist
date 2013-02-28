@@ -52,7 +52,12 @@ LaborOptimizer::LaborOptimizer(laborOptimizerPlan *plan, QObject *parent)
 
 LaborOptimizer::~LaborOptimizer(){
     gdr = 0;
+    for(int i = 0; i < m_labor_map.count(); i++){
+        m_labor_map[i].d = 0;
+        m_labor_map[i].det = 0;
+    }
     m_labor_map.clear();
+
     m_dwarfs.clear();
 }
 

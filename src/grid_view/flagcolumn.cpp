@@ -55,7 +55,7 @@ QStandardItem *FlagColumn::build_cell(Dwarf *d) {
 
         item->setData(CT_FLAGS, DwarfModel::DR_COL_TYPE);        
         short rating = 0;
-        if (m_bit_value)
+        if(d->get_flag_value(m_bit_pos))
             rating = 1;
         item->setData(rating, DwarfModel::DR_SORT_VALUE);
         item->setData(m_bit_pos, DwarfModel::DR_LABOR_ID);

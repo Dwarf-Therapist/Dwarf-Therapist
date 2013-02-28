@@ -81,14 +81,14 @@ public:
         void select_all();
 
         void clear_selected();
+        void reselect(QVector<int> ids);
 
 private:
 	QList<GridView*> m_views;
 	DwarfModel *m_model;
 	DwarfModelProxy *m_proxy;
 	QToolButton *m_add_tab_button;
-    QList<Dwarf*> m_selected_dwarfs;
-    bool m_add_weapons_tab;
+    QList<Dwarf*> m_selected_dwarfs;    
     int m_last_index;
     QErrorMessage *m_squad_warning;    
 
@@ -107,8 +107,7 @@ private:
         void show_squad_warning();
 
 signals:
-	void dwarf_focus_changed(Dwarf *d);
-    //void gridview_changed(const GridView*);
+	void dwarf_focus_changed(Dwarf *d);    
     void group_changed(const int);
     void selection_changed();
 		

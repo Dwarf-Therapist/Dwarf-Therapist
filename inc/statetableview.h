@@ -66,6 +66,7 @@ public:
         void jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* previous);
         void jump_to_profession(QTreeWidgetItem* current, QTreeWidgetItem* previous);
         void select_dwarf(Dwarf *d);
+        void select_dwarf(int id);
         void select_all();
         void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 

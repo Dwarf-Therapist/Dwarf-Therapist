@@ -217,9 +217,7 @@ void roleDialog::load_role_data(){
     load_aspects_data(*ui->tw_traits, m_role->traits);
     load_aspects_data(*ui->tw_skills, m_role->skills);
 
-    Preference *p;
-    for(int i = 0; i < m_role->prefs.count(); i++){
-        p = m_role->prefs.at(i);
+    foreach(Preference *p, m_role->prefs){
         insert_pref_row(p);
     }
 }
@@ -365,20 +363,27 @@ void roleDialog::save_aspects(QTableWidget &table, QHash<QString, RoleAspect*> &
     }
 }
 
-void roleDialog::save_prefs(Role *r){
-    //qDeleteAll(r->prefs);
-    r->prefs.clear();
-    Preference *p;
+void roleDialog::save_prefs(Role *r){    
     for(int i= 0; i<ui->tw_prefs->rowCount(); i++){
-        p = vPtr<Preference>::asPtr(ui->tw_prefs->item(i,0)->data(Qt::UserRole));
-        float weight = p->pref_aspect->weight = static_cast<QDoubleSpinBox*>(ui->tw_prefs->cellWidget(i,1))->value();
+        float weight = static_cast<QDoubleSpinBox*>(ui->tw_prefs->cellWidget(i,1))->value();
+        Preference *p = vPtr<Preference>::asPtr(ui->tw_prefs->item(i,0)->data(Qt::UserRole));
+        //save the weight of the preference for the next use
         p->pref_aspect->weight = fabs(weight);
         p->pref_aspect->is_neg = weight < 0 ? true : false;
-        r->prefs.append(p);
+
+        //update the values of this preference in the role
+        Preference *rp = r->has_preference(p->get_name());
+        if(!rp){
+            rp = new Preference(*p);
+            r->prefs.append(rp);
+        }
+        rp->pref_aspect->weight = p->pref_aspect->weight;
+        rp->pref_aspect->is_neg = p->pref_aspect->is_neg;
     }
 }
 
 void roleDialog::close_pressed(){
+    m_dwarf = 0;
     //if we were editing and cancelled, put the role back!
     if(m_role && !m_role->name.trimmed().isEmpty())
         GameDataReader::ptr()->get_roles().insert(m_role->name,m_role);
@@ -1015,12 +1020,7 @@ bool roleDialog::check_flag(Material *m, Preference *p, MATERIAL_FLAGS flag){
 void roleDialog::item_double_clicked(QTreeWidgetItem *item, int col){
     if(item->childCount() <= 0){
         Preference *p = vPtr<Preference>::asPtr(item->data(col,Qt::UserRole));
-        if(p){
-            foreach(Preference *rp, m_role->prefs){
-                if(QString::compare(rp->get_name(),p->get_name(),Qt::CaseInsensitive)==0)
-                    return;
-            }
-            m_role->prefs.append(p);
+        if(p && !m_role->has_preference(p->get_name())){
             insert_pref_row(p);
         }
     }

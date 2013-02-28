@@ -225,8 +225,8 @@ public:
     //! return true if the dwarf's raw_profession is a military professions
     Q_INVOKABLE bool active_military();
 
-    //! return a vector of Skill objects that this dwarf has experience in
-    QVector<Skill> *get_skills() {return &m_skills;}
+    //! return a hash of skill_id,Skill objects that this dwarf has experience in
+    QHash<int, Skill> *get_skills() {return &m_skills;}
 
     QVector<Attribute> *get_attributes() {return &m_attributes;}
 
@@ -241,6 +241,8 @@ public:
 
     //! return true if the labor specified by labor_id has been toggled and not committed
     Q_INVOKABLE bool is_labor_state_dirty(int labor_id);
+
+    bool is_flag_dirty(int bit_pos);
 
     //! return the numeric value of a preference setting (uses labor ids for offset)
     short pref_value(const int &labor_id);
@@ -412,7 +414,7 @@ public:
 
     QHash<QString, QStringList*> get_grouped_preferences() {return m_grouped_preferences;}
 
-    QList<short> get_thoughts() {return m_thoughts;}
+    QHash<short, int> get_thoughts() {return m_thoughts;}
 
     Q_INVOKABLE bool has_preference(QString pref_name, QString category = "", bool exactMatch = true);
     Q_INVOKABLE bool has_thought(short id) {return m_thoughts.contains(id);}
@@ -477,7 +479,8 @@ private:
     short m_current_job_id;
     QString m_current_job;
     QString m_current_sub_job_id;
-    QVector<Skill> m_skills;
+    QHash<int,Skill> m_skills;
+    QMultiMap<float, int> m_sorted_skills; //level, skill_id
     QHash<int, short> m_traits;
     QVector<Attribute> m_attributes;
     QMap<int, ushort> m_labors;
@@ -510,7 +513,7 @@ private:
     Caste* m_caste;
     QMultiMap<int, Preference*> m_preferences;
     QHash<QString, QStringList*> m_grouped_preferences;
-    QList<short> m_thoughts;
+    QHash<short, int> m_thoughts;
     QString m_thought_desc;
     bool m_is_child;
     bool m_is_baby;
