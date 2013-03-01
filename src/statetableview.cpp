@@ -194,20 +194,22 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
         m.addAction(tr("Set Nickname..."), this, SLOT(set_nickname()));
         m.addSeparator();
 
+        QMenu custom_prof_menu(&m);
+        QMenu assign(&m);
+
         if(!d->is_animal()){
             //CUSTOM PROFESSIONS
-            QMenu sub(&m);
-            sub.setTitle(tr("Custom Professions"));
-            QAction *a = sub.addAction(tr("Set custom profession name..."), this, SLOT(set_custom_profession_text()));
+            custom_prof_menu.setTitle(tr("Custom Professions"));
+            QAction *a = custom_prof_menu.addAction(tr("Set custom profession name..."), this, SLOT(set_custom_profession_text()));
             a->setData(id);
-            a = sub.addAction(tr("New custom profession from this dwarf..."), this, SLOT(custom_profession_from_dwarf()));
+            a = custom_prof_menu.addAction(tr("New custom profession from this dwarf..."), this, SLOT(custom_profession_from_dwarf()));
             a->setData(id);
-            sub.addAction(tr("Reset to default profession"), this, SLOT(reset_custom_profession()));
-            sub.addSeparator();
+            custom_prof_menu.addAction(tr("Reset to default profession"), this, SLOT(reset_custom_profession()));
+            custom_prof_menu.addSeparator();
             foreach(CustomProfession *cp, DT->get_custom_professions()) {
-                sub.addAction(QIcon(cp->get_pixmap()), cp->get_name(), this, SLOT(apply_custom_profession()));
+                custom_prof_menu.addAction(QIcon(cp->get_pixmap()), cp->get_name(), this, SLOT(apply_custom_profession()));
             }
-            m.addMenu(&sub);
+            m.addMenu(&custom_prof_menu);
 
             //TOGGLE ALL LABORS
             m.addSeparator();
@@ -218,7 +220,6 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 
             //SQUADS
             m.addSeparator();
-            QMenu assign(&m);
             if(d->is_adult()){
                 //always double check squads before showing the menu. a user might remove a squad and not refresh DT
                 m_model->refresh_squads();
