@@ -205,7 +205,7 @@ void roleDialog::decorate_splitter(QSplitter *s){
 
 void roleDialog::load_role_data(){
     ui->le_role_name->setText(m_role->name);
-    ui->te_script->setText(m_role->script);
+    ui->te_script->setPlainText(m_role->script);
     //global weights
     ui->dsb_attributes_weight->setValue(m_role->attributes_weight.weight);
     ui->dsb_traits_weight->setValue(m_role->traits_weight.weight);

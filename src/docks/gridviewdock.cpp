@@ -51,8 +51,9 @@ void GridViewDock::draw_views() {
     QStringList view_names;
     foreach(GridView *v, m_manager->views()) {
         //exclude the built in weapons view from being copied as the columns are currently custom groups
-        if(!v->is_custom() && v->name() != tr("Weapons"))
-            view_names << v->name();
+        if(!v->is_custom() && v->name() == tr("Weapons"))
+            continue;
+        view_names << v->name();
     }
     qSort(view_names);
     foreach(QString name, view_names) {        

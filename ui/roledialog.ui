@@ -838,6 +838,9 @@
          <property name="whatsThis">
           <string>&lt;b&gt;&lt;font color=red&gt;WARNING: Any script set will be used in place of any attributes, skills, traits or preferences specified!!!&lt;/font&gt;&lt;/b&gt;</string>
          </property>
+         <property name="acceptRichText">
+          <bool>false</bool>
+         </property>
         </widget>
        </item>
       </layout>
