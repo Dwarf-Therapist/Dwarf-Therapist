@@ -72,8 +72,12 @@ protected:
     void parsePreferences(QSettings &s, QString node, global_weight &g_weight, float default_weight);
     void write_aspect_group(QSettings &s, QString group_name, global_weight group_weight, float group_default_weight, QHash<QString, RoleAspect *> &list);
     void write_pref_group(QSettings &s, float default_prefs_weight);
-    QString build_aspect_detail(QString title, global_weight aspect_group_weight, float aspect_default_weight, QHash<QString, RoleAspect *> &list);
-    QString build_preference_detail(float aspect_default_weight);
+
+    QString get_aspect_details(QString title, global_weight aspect_group_weight, float aspect_default_weight, QHash<QString, RoleAspect *> &list);
+    QString get_preference_details(float aspect_default_weight);
+
+    QString generate_details(QString title, global_weight aspect_group_weight,float aspect_default_weight, QMap<QString,global_weight> list);
+
     QString role_details;
 };
 #endif // ROLE_H

@@ -63,7 +63,7 @@ void ImportExportDialog::setup_for_profession_export() {
     ui->lbl_version->setText(v.to_string());
     ui->lbl_export_time->setText(t.toString());
     foreach(CustomProfession *cp, DT->get_custom_professions()) {
-        QString title = QString("%1 (%2)").arg(cp->get_name()).arg(cp->get_enabled_labors().size());
+        QString title = tr("%1 (%2 labors)").arg(cp->get_name()).arg(cp->get_enabled_labors().size());
         QListWidgetItem *i = new QListWidgetItem(title, ui->list_professions);
         i->setData(Qt::UserRole, cp->get_name());
         i->setData(Qt::UserRole+1, false); // not conflicting as far as we know
@@ -118,7 +118,7 @@ void ImportExportDialog::setup_for_profession_import() {
     ui->lbl_export_time->setText(t.toString());
     ui->lbl_professions_count->setText(QString::number(m_profs.size()));
     foreach(CustomProfession *cp, m_profs) {
-        QString title = QString("%1 (%2)").arg(cp->get_name())
+        QString title = tr("%1 (%2 labors)").arg(cp->get_name())
                         .arg(cp->get_enabled_labors().size());
         QListWidgetItem *i = new QListWidgetItem(title, ui->list_professions);
         i->setData(Qt::UserRole, cp->get_name());

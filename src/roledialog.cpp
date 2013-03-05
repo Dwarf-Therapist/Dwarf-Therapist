@@ -689,7 +689,8 @@ void roleDialog::load_material_prefs(QVector<Material*> mats, QString prefix_nam
                 !m->flags().has_flag(PUS_MAP_DESCRIPTOR) && !m->flags().has_flag(ENTERS_BLOOD)){
 
             p->set_category(pType);
-            p->set_name(capitalize(name));
+            p->set_name(capitalize(name));            
+            p->set_exact(true);
             add_pref_to_tree(parent,p);
         }
 //        else{
@@ -709,22 +710,27 @@ void roleDialog::load_plant_prefs(QVector<Plant*> plants){
         if(p->flags().has_flag(7)){
             Preference *alcohol_pref = new Preference(LIKE_PLANT,name,this);
             alcohol_pref->add_flag(7);
+            alcohol_pref->set_exact(true);
             add_pref_to_tree(m_plants_alcohol,alcohol_pref);
         }
         else if(p->flags().has_flag(77) || p->flags().has_flag(78)){
             Preference *tree_pref = new Preference(LIKE_TREE,name,this);
+            tree_pref->set_exact(true);
             add_pref_to_tree(m_trees,tree_pref);
         }else{
             Preference *shrub_pref = new Preference(LIKE_PLANT,name,this);
+            shrub_pref->set_exact(true);
             add_pref_to_tree(m_plants,shrub_pref);
         }
 
         name = capitalize(p->leaf_plural());
         Preference *leaf_pref = new Preference(LIKE_FOOD,name,this);
+        leaf_pref->set_exact(true);
         add_pref_to_tree(m_plants,leaf_pref);
 
         name = capitalize(p->seed_plural());
         Preference *seed_pref = new Preference(LIKE_FOOD,name,this);
+        seed_pref->set_exact(true);
         add_pref_to_tree(m_seeds,seed_pref);
 
         load_material_prefs(p->get_plant_materials(),p->name());
@@ -764,7 +770,7 @@ void roleDialog::load_items(){
 
             //add all item types as a group to the general categories
             Preference *p = new Preference(pType, itype,this);
-            p->set_name(name);
+            p->set_name(name);            
             if(item_crafts.contains(itype))
                 add_pref_to_tree(m_general_craft,p);
             else if(item_food.contains(itype) || item_drink.contains(itype))
@@ -772,11 +778,13 @@ void roleDialog::load_items(){
             else
                 add_pref_to_tree(m_general_item,p);
 
+            //specific items
             if(count > 1){
                 parent = init_parent_node(name);
                 for(int j = 0; j < count; j++){
                     Preference *p = new Preference(pType,itype,this);
                     p->set_name(capitalize(m_df->get_item(itype,j)));
+                    p->set_exact(true);
                     add_pref_to_tree(parent,p);
                 }
             }
@@ -826,6 +834,7 @@ void roleDialog::load_creatures(){
         parent = m_creatures; //default
 
         p = new Preference(LIKE_CREATURE, capitalize(r->name()),this);
+        p->set_exact(true);
 
         if(r->flags().has_flag(HATEABLE)){ //hateable creature flag
             parent = m_hateable;
@@ -875,10 +884,12 @@ void roleDialog::load_weapons(){
         p = new Preference(LIKE_ITEM,w->name_plural(),this);
         if(w->is_ranged()){
             p->add_flag(ITEMS_WEAPON_RANGED);
+            p->set_exact(true);
             add_pref_to_tree(ranged,p);
         }
         else{
             p->add_flag(ITEMS_WEAPON);
+            p->set_exact(true);
             add_pref_to_tree(melee,p);
         }
     }
@@ -990,8 +1001,8 @@ QTreeWidgetItem* roleDialog::init_parent_node(QString title){
 void roleDialog::add_pref_to_tree(QTreeWidgetItem *parent, Preference *p){
     if(!p->get_name().isEmpty()){
         //general items are never exact matches
-        if(parent != m_general_item)
-            p->set_exact(true);
+//        if(parent != m_general_item)
+//            p->set_exact(true);
 
         //set a default weight
         p->pref_aspect->weight = 0.5f;

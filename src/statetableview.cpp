@@ -61,7 +61,7 @@ StateTableView::StateTableView(QWidget *parent)
     , m_vscroll(0)
     , m_hscroll(0)    
 {
-    read_settings();
+    read_settings();    
 
     setMouseTracking(true);
     setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -706,7 +706,7 @@ void StateTableView::header_clicked(int index) {
         m_header->setSortIndicator(index, Qt::DescendingOrder);       
     }
     m_last_sorted_col = index;
-    m_last_sort_order = m_header->sortIndicatorOrder();
+    m_last_sort_order = m_header->sortIndicatorOrder();    
 }
 
 void StateTableView::column_right_clicked(int idx){

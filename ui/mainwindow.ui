@@ -845,7 +845,7 @@
      <normaloff>:/img/document-import.png</normaloff>:/img/document-import.png</iconset>
    </property>
    <property name="text">
-    <string>Import Saved Custom Professions...</string>
+    <string>Import Custom Professions...</string>
    </property>
    <property name="toolTip">
     <string>Import a custom professions file that was previously exported</string>
@@ -962,7 +962,7 @@
   <action name="act_import_roles">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/document-export.png</normaloff>:/img/document-export.png</iconset>
+     <normaloff>:/img/document-import.png</normaloff>:/img/document-import.png</iconset>
    </property>
    <property name="text">
     <string>Import Custom Roles</string>
@@ -971,7 +971,7 @@
   <action name="act_export_roles">
    <property name="icon">
     <iconset resource="../images.qrc">
-     <normaloff>:/img/document-import.png</normaloff>:/img/document-import.png</iconset>
+     <normaloff>:/img/document-export.png</normaloff>:/img/document-export.png</iconset>
    </property>
    <property name="text">
     <string>Export Custom Roles</string>
