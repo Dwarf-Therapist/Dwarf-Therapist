@@ -52,9 +52,9 @@ public slots:
         int dwarf_nickname_offset = gdr->get_int_for_key(
                 "ram_guesser/dwarf_nickname_offset", 16);
         QByteArray custom_nickname = gdr->get_string_for_key(
-                "ram_guesser/dwarf_nickname").toAscii();
+                "ram_guesser/dwarf_nickname").toLatin1();
         QByteArray custom_profession = gdr->get_string_for_key(
-                "ram_guesser/dwarf_custom_profession").toAscii();
+                "ram_guesser/dwarf_custom_profession").toLatin1();
 
         emit main_scan_total_steps(1);
         emit main_scan_progress(1);

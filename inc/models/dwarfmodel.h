@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef DWARF_MODEL_H
 #define DWARF_MODEL_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "columntypes.h"
 
 class Dwarf;
@@ -72,6 +72,7 @@ public:
         GB_SQUAD,
         GB_ASSIGNED_LABORS,
         GB_TOTAL_SKILL_LEVELS,
+        GB_HEALTH,
         GB_TOTAL
     } GROUP_BY;
     typedef enum {
@@ -83,13 +84,15 @@ public:
         DR_GROUP_NAME,
         DR_ID,
         DR_DEFAULT_BG_COLOR,
+        DR_DEFAULT_FG_COLOR,
         DR_COL_TYPE,
         DR_SET_NAME,
         DR_BASE_SORT,
         DR_SPECIAL_FLAG, //used by some columns to indicate different things, usually boolean
         DR_DISPLAY_RATING, //this is the rating to use when determining drawing shapes, alternative to DR_RATING
         DR_AGE, //right click sort on first column
-        DR_NAME //right click sort on first column
+        DR_NAME, //right click sort on first column
+        DR_SIZE //right click sort on first column
     } DATA_ROLES;
 
     DwarfModel(QObject *parent = 0);
@@ -112,8 +115,6 @@ public:
 
     QModelIndex findOne(const QVariant &needle, int role = Qt::DisplayRole, int column = 0, const QModelIndex &start_index = QModelIndex());
     QList<QPersistentModelIndex> findAll(const QVariant &needle, int role = Qt::DisplayRole, int column = 0, QModelIndex start_index = QModelIndex());
-
-    void save_rows();
 
     QHash<int, Squad*> squads() {return m_squads;}
 

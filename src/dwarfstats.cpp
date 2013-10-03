@@ -342,14 +342,11 @@ float DwarfStats::get_att_caste_role_rating(Attribute &a){
 }
 
 void DwarfStats::cleanup(){
+    LOGD << "cleaning up dwarfstats...";
     //traits
     m_trait_bins.clear();
 
     //attributes
     m_att_caste_bins.clear();
-//    foreach(ATTRIBUTES_TYPE key, m_attribute_ratings.uniqueKeys()){
-//        m_attribute_ratings.value(key)->clear();
-//    }
-//    qDeleteAll(m_attribute_ratings);
-//    m_attribute_ratings.clear();
+    LOGD << "done cleaning dwarfstats!";
 }

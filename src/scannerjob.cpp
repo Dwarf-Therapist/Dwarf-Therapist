@@ -22,13 +22,13 @@ THE SOFTWARE.
 */
 #include "scannerjob.h"
 #include "dfinstance.h"
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 #include "dfinstancewindows.h"
 #else
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
 #include "dfinstanceosx.h"
 #else
-#ifdef Q_WS_X11
+#ifdef Q_OS_X11
 #include "dfinstancelinux.h"
 #endif
 #endif
@@ -56,13 +56,13 @@ DFInstance *ScannerJob::df() {
 QString ScannerJob::m_layout_override_checksum("");
 
 bool ScannerJob::get_DFInstance() {
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     m_df = new DFInstanceWindows(this);
 #else
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     m_df = new DFInstanceOSX(this);
 #else
-#ifdef Q_WS_X11
+#ifdef Q_OS_X11
     m_df = new DFInstanceLinux(this);
 #endif
 #endif

@@ -86,6 +86,7 @@ void Race::read_race() {
     m_pref_string_vector = m_address + m_mem->race_offset("pref_string_vector");
     m_pop_ratio_vector = m_address + m_mem->race_offset("pop_ratio_vector");
     m_castes_vector = m_address + m_mem->race_offset("castes_vector");
+    m_materials_addr = m_df->enumerate_vector(m_address + m_mem->race_offset("materials_vector"));
 
     //m_description = m_df->read_string(m_address + m_mem->caste_offset("caste_descr"));
     QVector<VIRTADDR> castes = m_df->enumerate_vector(m_castes_vector);
@@ -95,13 +96,15 @@ void Race::read_race() {
         Caste *c = 0;
         int i = 0;
         foreach(VIRTADDR caste_addr, castes) {
-            c = Caste::get_caste(m_df, caste_addr, m_id, m_name_plural);
+            c = Caste::get_caste(m_df, caste_addr, this);
             if (c != 0) {
                 m_castes[i] = c;
                 //LOGD << "FOUND CASTE " << hexify(caste_addr);
             }
             i++;
         }        
+
+        m_tissues_addr = m_df->enumerate_vector(m_address + m_mem->race_offset("tissues_vector"));
     }
 
     //if this is the race that we're currently playing as, we need to load some extra data and set some flags
@@ -152,18 +155,21 @@ void Race::load_caste_ratios(){
     }
 }
 
-void Race::load_materials(){
+void Race::load_materials(int idx){
+    if(m_materials_addr.isEmpty())
+        return;
     //load creature's material list
-    QVector<VIRTADDR> mats = m_df->enumerate_vector(m_address + m_mem->race_offset("materials_vector"));
-    int i = 0;
-    foreach(VIRTADDR mat, mats){
-        Material *m = Material::get_material(m_df,mat,i);
-        m_creature_mats.append(m);
-        i++;
+    if(idx >= 0 && idx < m_materials_addr.size()){
+        Material *m = Material::get_material(m_df, m_materials_addr.at(idx) ,idx);
+        m_creature_mats.insert(idx,m);
+    }else{
+        for(int idx = 0; idx < m_materials_addr.size(); idx++){
+            load_materials(idx);
+        }
     }
 }
 
-QVector<Material*> Race::get_creature_materials(){
+QHash<int,Material*> Race::get_creature_materials(){
     if(m_creature_mats.empty()){
         load_materials();
     }
@@ -171,11 +177,11 @@ QVector<Material*> Race::get_creature_materials(){
 }
 
 Material * Race::get_creature_material(int index){
-    if(m_creature_mats.empty()){
-        load_materials();
+    if(!m_creature_mats.contains(index)){
+        load_materials(index);
     }
-    if(index < m_creature_mats.count()){
-        return m_creature_mats.at(index);
+    if(m_creature_mats.contains(index)){
+        return m_creature_mats.value(index);
     }else{
         return new Material(this);
     }
@@ -208,4 +214,9 @@ bool Race::is_vermin_extractable(){
     return result;
 }
 
-
+VIRTADDR Race::get_tissue_address(int index){
+    if(index > -1 && index < m_tissues_addr.size())
+        return m_tissues_addr.at(index);
+    else
+        return -1;
+}

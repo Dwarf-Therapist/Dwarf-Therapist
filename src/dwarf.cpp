@@ -82,8 +82,6 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_squad_position(-1)
     , m_hist_id(-1)
     , m_squad_name(QString::null)
-    , m_flag1(0)
-    , m_flag2(0)    
     , m_age(0)    
     , m_hist_nickname(0)
     , m_fake_nickname(0)
@@ -96,6 +94,8 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_is_baby(false)    
     , m_true_name("")
     , m_true_birth_year(0)
+    , m_validated(false)
+    , m_is_valid(false)
 {
     read_settings();
     refresh_data();
@@ -143,12 +143,126 @@ Dwarf::~Dwarf() {
 
     m_thoughts.clear();
 
+    m_syndrome_names.clear();
+
     m_race = 0;
     m_caste = 0;
     m_mem = 0;
     m_df = 0;
 
     disconnect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
+}
+
+Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
+    MemoryLayout *mem = df->memory_layout();
+    TRACE << "attempting to load dwarf at" << addr << "using memory layout" << mem->game_version();
+
+    //only for test
+//    bool check_all = true;
+//    if (check_all)
+//    {
+//        Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
+//        return unverified_dwarf;
+//    }
+    quint32 flags1 = df->read_addr(addr + mem->dwarf_offset("flags1"));
+    quint32 flags2 = df->read_addr(addr + mem->dwarf_offset("flags2"));
+    quint32 flags3 = df->read_addr(addr + mem->dwarf_offset("flags3"));
+
+    int civ_id = df->read_int(addr + mem->dwarf_offset("civ"));
+    int race_id = df->read_int(addr + mem->dwarf_offset("race"));
+
+    TRACE << "examining creature at" << hex << addr;
+    TRACE << "FLAGS1 :" << hexify(flags1);
+    TRACE << "FLAGS2 :" << hexify(flags2);
+    TRACE << "FLAGS3 :" << hexify(flags3);
+    TRACE << "RACE   :" << hexify(race_id);
+
+    bool is_caged = has_flag(0x2000000,flags1);
+    bool is_tame = has_flag(0x4000000,flags1);
+
+    if(!is_caged){
+        if(civ_id != df->dwarf_civ_id()){ //non-animal, but wrong civ            
+            return 0;
+        }
+    }else{
+        if(!is_tame){
+            bool trainable = false;
+            //if it's a caged, trainable beast, keep it in our list, but only if it's alive
+            Race *r = df->get_race(race_id);
+            if(r){
+                trainable = r->is_trainable();
+                r = 0;
+            }
+            if(!trainable){                
+                return 0;
+            }
+        }
+    }
+
+    Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
+    if(!unverified_dwarf->is_valid()){
+        delete unverified_dwarf;
+        return 0;
+    }else{
+        return unverified_dwarf;
+    }
+
+//    if (mem->is_complete()) {
+//        if(!is_tame && !is_caged){ //fortress civilian
+
+//            //check for migrants (which aren't dead)
+//            if(unverified_dwarf->state_value(7) > 0 && !has_flag(0x2,flags1) && !has_flag(0x1000,flags3)){
+//                LOGD << "Found migrant " << unverified_dwarf->nice_name();
+//                return unverified_dwarf;
+//            }
+
+//            //if a dwarf has gone crazy (berserk=7,raving=6)
+//            int m_mood = unverified_dwarf->m_mood_id;
+//            if(m_mood==7 || m_mood==6){
+//                LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to have lost their mind.";
+//                delete unverified_dwarf;
+//                return 0;
+//            }
+
+//        }else{ //tame or caged animals
+//            //exclude cursed animals, this may be unnecessary with the civ check
+//            if(!unverified_dwarf->curse_name().isEmpty()){
+//                LOGD << "Ignoring animal " << unverified_dwarf->nice_name() << "who appears to be cursed or undead";
+//                delete unverified_dwarf;
+//                return 0;
+//            }
+//        }
+
+//        //check other invalid flags (invaders, ghosts, dead, merchants, etc.)
+//        if(has_invalid_flags(unverified_dwarf->nice_name(), mem->invalid_flags_1(),flags1) ||
+//                has_invalid_flags(unverified_dwarf->nice_name(), mem->invalid_flags_2(),flags2) ||
+//                has_invalid_flags(unverified_dwarf->nice_name(), mem->invalid_flags_3(),flags3)){
+//            delete unverified_dwarf;
+//            return 0;
+//        }
+
+//        //finally, if we've got no attributes at all, it's probably a corpse part (most likely from a mod)
+//        //again this may be unnecessary with the civ check
+//        if(unverified_dwarf->m_attributes.count() <=0 ){
+//            LOGD << "Ignoring" << unverified_dwarf->nice_name() <<
+//                    "who appears to be a corpse.";
+//            delete unverified_dwarf;
+//            return 0;
+//        }
+//    }
+
+//    return unverified_dwarf;
+}
+
+bool Dwarf::has_invalid_flags(const QString creature_name, QHash<uint, QString> invalid_flags, quint32 dwarf_flags){
+    foreach(uint invalid_flag, invalid_flags.uniqueKeys()) {
+        QString reason = invalid_flags[invalid_flag];
+        if(has_flag(invalid_flag,dwarf_flags)) {
+            LOGD << "Ignoring" << creature_name << "who appears to be" << reason;
+            return true;
+        }
+    }
+    return false;
 }
 
 void Dwarf::read_settings() {
@@ -158,8 +272,7 @@ void Dwarf::read_settings() {
        subclass the QStandardItem for the name items in the main model
        */
     QSettings *s = DT->user_settings();
-    bool new_show_full_name = s->value("options/show_full_dwarf_names",
-                                       false).toBool();
+    bool new_show_full_name = s->value("options/show_full_dwarf_names",false).toBool();
     if (new_show_full_name != m_show_full_name) {
         calc_names();
         emit name_changed();
@@ -176,45 +289,139 @@ void Dwarf::refresh_data() {
     m_mem = m_df->memory_layout();
     TRACE << "Starting refresh of dwarf data at" << hexify(m_address);
 
-    m_flag1 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags1"));
-    m_flag2 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags2"));
+    quint32 flags1 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags1"));
+    quint32 flags2 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags2"));
+    quint32 flags3 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags3"));
 
-    // read everything we need, order is important
-    read_id();
+    m_unit_flags << flags1 << flags2 << flags3;
+
+    //read only the base information we need to validate if we should continue loading this dwarf
+    read_id();   
     read_race();
-    read_caste();    
     read_first_name();
     read_last_name(m_address + m_mem->dwarf_offset("first_name"));
     read_nick_name();
     calc_names(); //creates nice name.. which is used for debug messages so we need to do it first..
-    read_profession();
-    read_body_size();
-    read_labors();
-    read_happiness();
     read_states();  //read states before job
-    read_current_job();
-    read_souls();
-    read_squad_info();
-    read_turn_count();
-    //load time/date stuff for births/migrations
-    set_age(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time"));
-    //curse check will change the name and age
-    read_curse();
-    read_sex();
-    read_mood();    
-    read_animal_type(); //need skills loaded to check for hostiles
-    read_noble_position();
-    read_preferences();
+    read_soul();
 
-    if(m_is_animal)
-        calc_names(); //calculate names again as we need to check tameness for animals
+    // read everything we need, order is important
+    if(!m_validated)
+        this->is_valid();
+    if(m_is_valid){
+        read_caste();
+        read_profession();
+        read_body_size();
+        read_labors();
+        read_happiness();
+        read_squad_info(); //read squad before job
+        read_current_job();
+        read_soul_aspects(); //assumes soul already read, and requires caste to be read first
+        read_turn_count();
+        //load time/date stuff for births/migrations
+        set_age(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time"));
+        //curse check will change the name and age
+        read_curse();
+        read_sex();
+        read_mood();
+        read_animal_type(); //need skills loaded to check for hostiles
+        read_noble_position();
+        read_preferences();
+        read_syndromes();
 
-    //currently only flags used are for cage and butcher animal
-    m_caged = m_flag1;
-    m_butcher = m_flag2;
+        if(!m_is_animal || DT->user_settings()->value("options/animal_health", false).toBool()){
+            bool req_diagnosis = !DT->user_settings()->value("options/diagnosis_not_required", false).toBool();
+
+            //        LOGD << "Loading health for " << m_nice_name;
+            m_unit_health = UnitHealth(m_df,this,req_diagnosis);
+            //        LOGD << "Finished!";
+        }
+
+        if(m_is_animal)
+            calc_names(); //calculate names again as we need to check tameness for animals
+
+        //currently only flags used are for cage and butcher animal
+        m_caged = flags1;
+        m_butcher = flags2;
+
+    }
 
     TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
+}
 
+bool Dwarf::is_valid(){
+    if(m_validated)
+        return m_is_valid;
+
+    bool is_caged = has_flag(0x2000000,m_unit_flags.at(0));
+    bool is_tame = has_flag(0x4000000,m_unit_flags.at(0));
+
+    if (m_mem->is_complete()) {
+        if(!is_tame && !is_caged){ //fortress civilian
+
+            //check for migrants (which aren't dead/killed/ghosts)
+            if(this->state_value(7) > 0
+                    && !has_flag(0x2,m_unit_flags.at(0))
+                    && !has_flag(0x80,m_unit_flags.at(1))
+                    && !has_flag(0x1000,m_unit_flags.at(2))){
+                LOGD << "Found migrant " << this->nice_name();
+                m_validated = true;
+                m_is_valid = true;
+                return true;
+            }
+
+            //if a dwarf has gone crazy (berserk=7,raving=6)
+            int m_mood = this->m_mood_id;
+            if(m_mood==7 || m_mood==6){
+                LOGD << "Ignoring" << this->nice_name() << "who appears to have lost their mind.";
+                m_validated = true;
+                m_is_valid = false;
+                return false;
+            }
+
+        }else{ //tame or caged animals
+            //exclude cursed animals, this may be unnecessary with the civ check
+            //the full curse information hasn't been loaded yet, so just grab the curse name
+            QString curse_name = m_df->read_string(m_address + m_mem->dwarf_offset("curse"));
+            if(!curse_name.isEmpty()){
+                LOGD << "Ignoring animal " << this->nice_name() << "who appears to be cursed or undead";
+                m_validated = true;
+                m_is_valid = false;
+                return false;
+            }
+        }
+
+        //check other invalid flags (invaders, ghosts, dead, merchants, etc.)
+        if(has_invalid_flags(this->nice_name(), m_mem->invalid_flags_1(),m_unit_flags.at(0)) ||
+                has_invalid_flags(this->nice_name(), m_mem->invalid_flags_2(),m_unit_flags.at(1)) ||
+                has_invalid_flags(this->nice_name(), m_mem->invalid_flags_3(),m_unit_flags.at(2))){
+            m_validated = true;
+            m_is_valid = false;
+            return false;
+        }
+
+        if(!this->m_first_soul){
+            LOGD << "Ignoring" << this->nice_name() <<
+                    "who appears to be soulless.";
+            m_validated = true;
+            m_is_valid = false;
+            return false;
+        }
+//        //finally, if we've got no attributes at all, it's probably a corpse part (most likely from a mod)
+//        //again this may be unnecessary with the civ check
+//        if(this->m_attributes.count() <=0 ){
+//            LOGD << "Ignoring" << this->nice_name() <<
+//                    "who appears to be a corpse.";
+//            return false;
+//        }
+        m_validated = true;
+        m_is_valid = true;
+        return true;
+    }else{
+        m_validated = true;
+        m_is_valid = false;
+        return false;
+    }
 }
 
 void Dwarf::set_age(VIRTADDR birth_year_offset, VIRTADDR birth_time_offset){
@@ -298,7 +505,7 @@ void Dwarf::read_mood(){
 
     if(m_mood_id < 0){
         //also mark if they've had a mood, if they're not IN a mood
-        if((m_flag1 & 0x00000008)==0x00000008){
+        if(has_flag(0x00000008,m_unit_flags.at(0))){
             m_had_mood = true;
             m_artifact_name = m_df->get_translated_word(m_address + m_mem->dwarf_offset("artifact_name"));
         }
@@ -306,23 +513,39 @@ void Dwarf::read_mood(){
 }
 
 void Dwarf::read_body_size(){
-    //default dwarf sizes
-    if(m_is_child)
-        m_body_size = 1500;
-    else if(m_is_baby)
-        m_body_size = 300;
-    else
-        m_body_size = 6000;
+    //default caste size
+    m_body_size = body_size(true);
 
-    if(m_race){
+    //actual size of the creature
+    if(m_mem->dwarf_offset("body_size")){
+        QVector<VIRTADDR> entries = m_df->enumerate_vector(m_address + m_mem->dwarf_offset("body_size"));
+        foreach(VIRTADDR entry, entries) {
+            m_body_size = m_body_size * ((float)entry / 100);
+        }
+    }
+}
+
+int Dwarf::body_size(bool use_default){
+    //we include returning the default size because for the weapon columns, the size actually doesn't matter to DF (bug?)
+    if(use_default){
+        int def_size = 6000; //default adult size
+        if(m_is_baby)
+            def_size = 300;
+        else if(m_is_child)
+            def_size = 1500;
+
+        //now check the actual caste's size
         if(m_caste){
             if(m_is_child)
-                m_body_size = m_caste->child_size();
+                def_size = m_caste->child_size();
             else if(m_is_baby)
-                m_body_size = m_caste->baby_size();
+                def_size = m_caste->baby_size();
             else
-                m_body_size = m_caste->adult_size();
+                def_size = m_caste->adult_size();
         }
+        return def_size;
+    }else{
+        return m_body_size;
     }
 }
 
@@ -367,7 +590,7 @@ void Dwarf::read_curse(){
 
         //if it's a vampire then find the vampire's fake identity and use that name/age instead to match DF
         quint32 curse_flags = m_df->read_addr(m_address + m_mem->dwarf_offset("curse_add_flags1"));
-        if((curse_flags & 0x10000000)==0x10000000) //check bloodsucker flag in curse flags
+        if(has_flag(0x10000000, curse_flags)) //check bloodsucker flag in curse flags
             find_true_ident();
     }
 }
@@ -467,12 +690,12 @@ void Dwarf::read_nick_name() {
     TRACE << "\tNICKNAME:" << m_nick_name;
     m_pending_nick_name = m_nick_name;
 
-    if(!m_is_animal){
+    //if(!m_is_animal){
         //save the nickname address as we need to update it when nicknames are changed
         m_hist_nickname = m_df->find_historical_figure(m_hist_id);
         if(m_hist_nickname)
             m_hist_nickname += m_mem->hist_figure_offset("hist_name") + m_mem->dwarf_offset("nick_name");
-    }
+    //}
 }
 
 void Dwarf::calc_names() {
@@ -801,6 +1024,26 @@ void Dwarf::read_preferences(){
     }
 }
 
+void Dwarf::read_syndromes(){
+    m_syndrome_names.clear();
+//    QList<int> syns;
+    QVector<VIRTADDR> active_unit_syns = m_df->enumerate_vector(m_address + m_mem->dwarf_offset("active_syndrome_vector"));
+    foreach(VIRTADDR syn, active_unit_syns){
+        bool is_sick = m_df->read_byte(syn + m_mem->dwarf_offset("syn_sick_flag")); //only show buffs/good syndromes?
+        if(!is_sick){
+            int id = m_df->read_int(syn);
+//            syns.append(m_df->read_int(syn));
+
+            VIRTADDR syn_addr = m_df->get_syndrome(id);
+            if(syn_addr > 0){
+                QString name = m_df->read_string(syn_addr);
+                if(!name.trimmed().isEmpty() && !m_syndrome_names.contains(name,Qt::CaseInsensitive))
+                    m_syndrome_names.append(capitalizeEach(name));
+            }
+        }
+    }
+}
+
 void Dwarf::read_labors() {
     VIRTADDR addr = m_address + m_mem->dwarf_offset("labors");
     // read a big array of labors in one read, then pick and choose
@@ -927,18 +1170,25 @@ void Dwarf::read_current_job() {
             m_current_job = tr("Unknown job");
         }
 
-    } else {        
-        short on_break_value = m_mem->job_detail("on_break_flag");
-        m_is_on_break = has_state(on_break_value);
-        m_current_job = m_is_on_break ? tr("On Break") : tr("No Job");
-        if(m_is_on_break)
-            m_current_job_id = -2;
+    } else {
+        if(active_military()){
+            m_current_job = tr("Soldier");
+            m_current_job_id = -1;
+        }else{
+            short on_break_value = m_mem->job_detail("on_break_flag");
+            m_is_on_break = has_state(on_break_value);
+            m_current_job = m_is_on_break ? tr("On Break") : tr("No Job");
+            if(m_is_on_break)
+                m_current_job_id = -2;
+            else
+                m_current_job_id = -3;
+        }
     }
     m_current_job = capitalizeEach(m_current_job);
     TRACE << "CURRENT JOB:" << m_current_job_id << m_current_sub_job_id << m_current_job;
 }
 
-void Dwarf::read_souls() {
+void Dwarf::read_soul(){
     VIRTADDR soul_vector = m_address + m_mem->dwarf_offset("souls");
     QVector<VIRTADDR> souls = m_df->enumerate_vector(soul_vector);
     if (souls.size() != 1) {
@@ -946,11 +1196,19 @@ void Dwarf::read_souls() {
         return;
     }
     m_first_soul = souls.at(0);
+}
+
+void Dwarf::read_soul_aspects() {
+    if(!m_first_soul)
+        read_soul();
+
     read_skills();
     read_attributes();
     read_traits();
+
     TRACE << "SKILLS:" << m_skills.size();
     TRACE << "TRAITS:" << m_traits.size();
+    TRACE << "ATTRIBUTES:" << m_attributes.size();
 }
 
 
@@ -1066,110 +1324,7 @@ QString Dwarf::happiness_name(DWARF_HAPPINESS happiness) {
     }
 }
 
-Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
-    MemoryLayout *mem = df->memory_layout();
-    TRACE << "attempting to load dwarf at" << addr << "using memory layout" << mem->game_version();
 
-    //only for test
-//    bool check_all = true;
-//    if (check_all)
-//    {
-//        Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
-//        return unverified_dwarf;
-//    }
-
-    quint32 flags1 = df->read_addr(addr + mem->dwarf_offset("flags1"));
-    quint32 flags2 = df->read_addr(addr + mem->dwarf_offset("flags2"));
-    quint32 flags3 = df->read_addr(addr + mem->dwarf_offset("flags3"));
-
-    int civ_id = df->read_int(addr + mem->dwarf_offset("civ"));
-    int race_id = df->read_int(addr + mem->dwarf_offset("race"));
-
-    bool is_caged = ((flags1 & 0x2000000) == 0x2000000);
-    bool is_tame = ((flags1 & 0x4000000) == 0x4000000);
-
-    if(!is_caged){
-        if(civ_id != df->dwarf_civ_id()) //non-animal, but wrong civ
-            return 0;
-    }else{
-        if(!is_tame){
-            bool trainable = false;
-            //if it's a caged, trainable beast, keep it in our list
-            Race *r = df->get_race(race_id);
-            if(r){
-                trainable = r->is_trainable();
-                r = 0;
-            }
-            if(!trainable)
-                return 0;
-        }
-    }
-
-    Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
-
-    TRACE << "examining creature at" << hex << addr;
-    TRACE << "FLAGS1 :" << hexify(flags1);
-    TRACE << "FLAGS2 :" << hexify(flags2);
-    TRACE << "FLAGS3 :" << hexify(flags3);
-    TRACE << "RACE   :" << hexify(race_id);
-
-    if (mem->is_complete()) {
-        if(!is_tame && !is_caged){ //fortress civilian
-
-            //check for migrants
-            if(unverified_dwarf->state_value(7) > 0){
-                LOGD << "Found migrant " << unverified_dwarf->nice_name();
-                return unverified_dwarf;
-            }
-
-            //if a dwarf has gone crazy (berserk=7,raving=6)
-            int m_mood = unverified_dwarf->m_mood_id;
-            if(m_mood==7 || m_mood==6){
-                LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to have lost their mind.";
-                delete unverified_dwarf;
-                return 0;
-            }
-
-        }else{ //tame or caged animals
-            //exclude cursed animals, this may be unnecessary with the civ check
-            if(!unverified_dwarf->curse_name().isEmpty()){
-                LOGD << "Ignoring animal " << unverified_dwarf->nice_name() << "who appears to be cursed or undead";
-                delete unverified_dwarf;
-                return 0;
-            }
-        }
-
-        //check other invalid flags (invaders, ghosts, dead, merchants, etc.)
-        if(has_invalid_flags(unverified_dwarf->nice_name(), mem->invalid_flags_1(),flags1) ||
-                has_invalid_flags(unverified_dwarf->nice_name(), mem->invalid_flags_2(),flags2) ||
-                has_invalid_flags(unverified_dwarf->nice_name(), mem->invalid_flags_3(),flags3)){
-            delete unverified_dwarf;
-            return 0;
-        }
-
-        //finally, if we've got no attributes at all, it's probably a corpse part (most likely from a mod)
-        //again this may be unnecessary with the civ check
-        if(unverified_dwarf->m_attributes.count() <=0 ){
-            LOGD << "Ignoring" << unverified_dwarf->nice_name() <<
-                    "who appears to be a corpse.";
-            delete unverified_dwarf;
-            return 0;
-        }
-    }
-
-    return unverified_dwarf;
-}
-
-bool Dwarf::has_invalid_flags(const QString creature_name, QHash<uint, QString> invalid_flags, quint32 dwarf_flags){
-    foreach(uint invalid_flag, invalid_flags.uniqueKeys()) {
-        QString reason = invalid_flags[invalid_flag];
-        if ((dwarf_flags & invalid_flag) == invalid_flag) {
-            LOGD << "Ignoring" << creature_name << "who appears to be" << reason;
-            return true;
-        }
-    }
-    return false;
-}
 
 bool Dwarf::get_flag_value(int bit)
 {
@@ -1451,7 +1606,7 @@ bool Dwarf::is_flag_dirty(int bit_pos){
     if (bit_pos!=49){
         return false;
     }else{ //compare butcher flag
-        return m_butcher != m_flag2;
+        return m_butcher != m_unit_flags.at(1);
     }
 }
 
@@ -1461,9 +1616,9 @@ int Dwarf::pending_changes() {
         cnt++;
     if (m_custom_profession != m_pending_custom_profession)
         cnt++;
-    if (m_flag1 != m_caged)
+    if (m_unit_flags.at(0) != m_caged)
         cnt++;
-    if (m_flag2 != m_butcher)
+    if (m_unit_flags.at(1) != m_butcher)
         cnt++;
     return cnt;
 }
@@ -1505,9 +1660,9 @@ void Dwarf::commit_pending() {
     }
     if (m_pending_custom_profession != m_custom_profession)
         m_df->write_string(m_address + m_mem->dwarf_offset("custom_profession"), m_pending_custom_profession);
-    if (m_caged != m_flag1)
+    if (m_caged != m_unit_flags.at(0))
         m_df->write_raw(m_address + m_mem->dwarf_offset("flags1"), 4, &m_caged);
-    if (m_butcher != m_flag2)
+    if (m_butcher != m_unit_flags.at(1))
         m_df->write_raw(m_address + m_mem->dwarf_offset("flags2"), 4, &m_butcher);
 
     refresh_data();
@@ -1530,7 +1685,7 @@ void Dwarf::set_custom_profession_text(const QString &prof_text) {
     m_pending_custom_profession = prof_text;
 }
 
-int Dwarf::apply_custom_profession(CustomProfession *cp) {        
+int Dwarf::apply_custom_profession(CustomProfession *cp) {
     foreach(int labor_id, m_pending_labors.uniqueKeys()) {
         //only turn off all labours if it's NOT a mask
         if(!cp->is_mask())
@@ -1549,13 +1704,13 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
     QTreeWidgetItem *d_item = new QTreeWidgetItem;
     d_item->setText(0, QString("%1 (%2)").arg(nice_name()).arg(labors.size()));
     d_item->setData(0, Qt::UserRole, id());
-    if (m_caged != m_flag1) {
+    if (m_caged != m_unit_flags.at(0)) {
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
         i->setText(0, tr("Caged change to %1").arg(hexify(m_caged)));
         i->setIcon(0, QIcon(":img/book_edit.png"));
         i->setData(0, Qt::UserRole, id());
     }
-    if (m_butcher != m_flag2) {
+    if (m_butcher != m_unit_flags.at(1)) {
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
         i->setText(0, tr("Butcher change to %1").arg(hexify(m_butcher)));
         i->setIcon(0, QIcon(":img/book_edit.png"));
@@ -1697,6 +1852,12 @@ QString Dwarf::tooltip_text() {
     if(s->value("options/tooltip_show_caste",true).toBool())
         tt.append(tr("<b>Caste:</b> %1").arg(caste_name()));
 
+    if(m_is_animal || s->value("options/tooltip_show_age",true).toBool())
+        tt.append(tr("<b>Age:</b> %1 years old").arg(m_age));
+
+    if(m_is_animal || s->value("options/tooltip_show_size",true).toBool())
+        tt.append(tr("<b>Size:</b> %1cm<sup>3</sup>").arg(m_body_size * 10));
+
     if(!m_is_animal && s->value("options/tooltip_show_noble",true).toBool())
         tt.append(tr("<b>Profession:</b> %1").arg(profession()));
 
@@ -1706,7 +1867,7 @@ QString Dwarf::tooltip_text() {
     if(!m_is_animal && m_noble_position != "" && s->value("options/tooltip_show_noble",true).toBool())
         tt.append(tr("<b>Noble Position%1:</b> %2").arg(m_noble_position.indexOf(",") > 0 ? "s" : "").arg(m_noble_position));
 
-    if(s->value("options/tooltip_show_happiness",true).toBool())
+    if(!m_is_animal && s->value("options/tooltip_show_happiness",true).toBool())
         tt.append(tr("<b>Happiness:</b> %1 (%2)").arg(happiness_name(m_happiness)).arg(m_raw_happiness));
 
     if(!m_is_animal && !m_thought_desc.isEmpty() && s->value("options/tooltip_show_thoughts",true).toBool())
@@ -1731,6 +1892,41 @@ QString Dwarf::tooltip_text() {
     if(m_is_animal)
         tt.append(tr("<p style=\"margin:0px;\"><b>Trained Level:</b> %1</p>").arg(get_animal_trained_descriptor(m_animal_type)));
 
+    if(s->value("options/tooltip_show_health",false).toBool() && (!m_is_animal || (m_is_animal && s->value("options/animal_health",false).toBool()))){
+
+        bool symbols = s->value("options/tooltip_health_symbols",false).toBool();
+        bool colors = s->value("options/tooltip_health_colors",true).toBool();
+
+        //health info is in 3 sections: treatment, statuses and wounds
+        QString health_info = "";
+
+        QStringList treatments = m_unit_health.get_treatment_summary(colors,symbols);
+        if(treatments.size() > 0)
+           health_info.append(tr("<h4 style=\"margin:0px;\"><b>%1:</b></h4><ul style=\"margin:0px;\">%2</ul>").arg(tr("Treatment")).arg(treatments.join(", ")));
+
+        //combine statuses and wounds so it's more compact for the toolip
+        QStringList status_wound_summary = m_unit_health.get_status_summary(colors, symbols);
+        QMap<QString,QStringList> wound_summary = m_unit_health.get_wound_summary(colors, symbols);
+        if(wound_summary.size() > 0){
+            foreach(QString key, wound_summary.uniqueKeys()){
+                QStringList info = wound_summary.value(key);
+                foreach(QString i, info){
+                    if(!status_wound_summary.contains(i))
+                        status_wound_summary.append(i);
+                }
+            }
+
+            qSort(status_wound_summary);
+            health_info.append(tr("<h4 style=\"margin:0px;\"><b>%1:</b></h4><ul style=\"margin:0px;\">%2</ul>").arg(tr("Health Issues")).arg(status_wound_summary.join(", ")));
+        }
+
+        if(!health_info.isEmpty())
+            tt.append(health_info);
+    }
+
+    if(m_syndrome_names.size() > 0 && s->value("options/tooltip_show_buffs",false).toBool())
+        tt.append(tr("<b>Buffs:</b> %1<br/>").arg(m_syndrome_names.join(", ")));
+
     if(s->value("options/tooltip_show_caste",true).toBool() && caste_desc() != "")
         tt.append(tr("%1").arg(caste_desc()));
 
@@ -1749,28 +1945,6 @@ QString Dwarf::tooltip_text() {
         }
         tt.append(curse_text);
     }
-
-    //TEST READING SYNDROMES ******
-//    QList<int> syns;
-//    QStringList syn_names;
-//    QVector<VIRTADDR> active_syns = m_df->enumerate_vector(m_address + 0x918 - 0x4);
-//    QVector<VIRTADDR> all_syns = m_df->enumerate_vector(m_df->get_memory_correction() + 0x1875384-0x4);
-//    foreach(VIRTADDR syn, active_syns){
-//        bool is_sick = m_df->read_byte(syn + 0x38); //only show buffs/good syndromes?
-//        if(!is_sick){
-//            int id = m_df->read_int(syn);
-//            syns.append(m_df->read_int(syn));
-
-//            VIRTADDR syn_ptr = all_syns.at(id);
-//            QString name = m_df->read_string(syn_ptr);
-//            if(!name.trimmed().isEmpty())
-//                syn_names.append(name);
-//        }
-//    }
-//    if(syn_names.length()>0){
-//        tt += tr("<b>Buffs:</b> %1").arg(syn_names.join(", "));
-//    }
-    //******************************
 
     return tt.join("<br/>");
 }
@@ -1804,10 +1978,10 @@ void Dwarf::dump_memory_to_file() {
     d.cd("log");
     QFile *f = new QFile(d.filePath(filename), this);
     if (f->open(QFile::ReadWrite)) {
-        f->write(QString("NAME: %1\n").arg(nice_name()).toAscii());
-        f->write(QString("ADDRESS: %1\n").arg(hexify(m_address)).toAscii());
+        f->write(QString("NAME: %1\n").arg(nice_name()).toLatin1());
+        f->write(QString("ADDRESS: %1\n").arg(hexify(m_address)).toLatin1());
         QByteArray data = m_df->get_data(m_address, 0xb90);
-        f->write(m_df->pprint(data).toAscii());
+        f->write(m_df->pprint(data).toLatin1());
         f->close();
         QMessageBox::information(DT->get_main_window(), tr("Dumped"),
                                  tr("%1 has been dumped to %2")
@@ -1848,7 +2022,7 @@ int Dwarf::total_skill_levels() {
     int ret_val = 0;
     foreach(Skill s, m_skills.values()) {
         if(s.raw_level() > 0)
-            ret_val += s.raw_level();
+            ret_val += s.raw_level();        
     }
     return ret_val;
 }
@@ -2003,7 +2177,7 @@ float Dwarf::calc_role_rating(Role *m_role){
             s = this->get_skill(skill_id.toInt());
             aspect_value = s.capped_level_precise() / 20.0f;
 
-            if(DT->multiple_castes){
+            if(DT->show_skill_learn_rates){
                 //use a weighted average of the level and simulated xp rating
                 skill_rate_value = s.get_simulated_rating();
                 aspect_value = (aspect_value * (1.0f-skill_rate_weight)) + (skill_rate_value * skill_rate_weight);
@@ -2136,5 +2310,16 @@ bool Dwarf::has_preference(QString pref_name, QString category, bool exactMatch)
                 return true;
         }
         return false;
+    }
+}
+
+bool Dwarf::has_health_issue(int id, int idx){
+    if(idx < 0){
+        if(m_unit_health.get_most_severe(static_cast<eHealth::H_INFO>(id)))
+            return true;
+        else
+            return false;
+    }else{
+        return m_unit_health.has_info_detail(static_cast<eHealth::H_INFO>(id),idx);
     }
 }

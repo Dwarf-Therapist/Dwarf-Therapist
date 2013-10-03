@@ -34,7 +34,16 @@
     <property name="spacing">
      <number>9</number>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>9</number>
+    </property>
+    <property name="topMargin">
+     <number>9</number>
+    </property>
+    <property name="rightMargin">
+     <number>9</number>
+    </property>
+    <property name="bottomMargin">
      <number>9</number>
     </property>
     <item>
@@ -231,6 +240,8 @@
     <addaction name="separator"/>
     <addaction name="act_options"/>
     <addaction name="separator"/>
+    <addaction name="act_scan_memory"/>
+    <addaction name="separator"/>
     <addaction name="act_exit"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
@@ -380,8 +391,6 @@
    <addaction name="separator"/>
    <addaction name="act_options"/>
    <addaction name="act_exit"/>
-   <addaction name="separator"/>
-   <addaction name="act_scan_memory"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dock_pending_jobs_list">
@@ -602,24 +611,6 @@
     <string>Ctrl+R</string>
    </property>
   </action>
-  <action name="act_scan_memory">
-   <property name="icon">
-    <iconset resource="../images.qrc">
-     <normaloff>:/img/memory-scan.png</normaloff>:/img/memory-scan.png</iconset>
-   </property>
-   <property name="text">
-    <string>Scan Memory</string>
-   </property>
-   <property name="toolTip">
-    <string>Map out the RAM of Dwarf Fortress looking for known values</string>
-   </property>
-   <property name="statusTip">
-    <string>Map out the RAM of Dwarf Fortress looking for known values</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+M</string>
-   </property>
-  </action>
   <action name="act_expand_all">
    <property name="enabled">
     <bool>false</bool>
@@ -632,7 +623,10 @@
     <string>Expand All</string>
    </property>
    <property name="toolTip">
-    <string>Expand all groups</string>
+    <string>Expand all groups (CTRL+Right Arrow)</string>
+   </property>
+   <property name="statusTip">
+    <string>Expand all groups (CTRL+Right Arrow)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Right</string>
@@ -650,7 +644,10 @@
     <string>Collapse All</string>
    </property>
    <property name="toolTip">
-    <string>Collapse all groups</string>
+    <string>Collapse all groups (CTRL+Left Arrow)</string>
+   </property>
+   <property name="statusTip">
+    <string>Collapse all groups (CTRL+Left Arrow)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Left</string>
@@ -674,7 +671,7 @@
      <normaloff>:/img/table--minus.png</normaloff>:/img/table--minus.png</iconset>
    </property>
    <property name="text">
-    <string> C&amp;lear </string>
+    <string> C&amp;lear Pending Changes</string>
    </property>
    <property name="iconText">
     <string> C&amp;lear </string>
@@ -701,7 +698,7 @@
      <normaloff>:/img/table--arrow.png</normaloff>:/img/table--arrow.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Commit</string>
+    <string>&amp;Commit Pending Changes</string>
    </property>
    <property name="iconText">
     <string> &amp;Commit </string>
@@ -977,6 +974,29 @@
     <string>Export Custom Roles</string>
    </property>
   </action>
+  <action name="act_scan_memory">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/memory-scan.png</normaloff>:/img/memory-scan.png</iconset>
+   </property>
+   <property name="text">
+    <string>Scan Memory</string>
+   </property>
+   <property name="toolTip">
+    <string>Map out the RAM of Dwarf Fortress looking for known values</string>
+   </property>
+   <property name="statusTip">
+    <string>Map out the RAM of Dwarf Fortress looking for known values</string>
+   </property>
+   <property name="whatsThis">
+    <string>Map out the RAM of Dwarf Fortress looking for known values</string>
+   </property>
+  </action>
+  <action name="act_new_grid_view">
+   <property name="text">
+    <string>Add New View</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
@@ -1039,22 +1059,6 @@
     <hint type="destinationlabel">
      <x>399</x>
      <y>314</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>act_scan_memory</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>scan_memory()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>205</x>
-     <y>230</y>
     </hint>
    </hints>
   </connection>
@@ -1398,7 +1402,7 @@
    <sender>act_export_csv</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>save_gridview()</slot>
+   <slot>save_gridview_csv()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1442,6 +1446,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_scan_memory</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>scan_memory()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>403</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -1469,7 +1489,7 @@
   <slot>clear_user_settings()</slot>
   <slot>add_new_custom_role()</slot>
   <slot>add_new_opt()</slot>
-  <slot>save_gridview()</slot>
+  <slot>save_gridview_csv()</slot>
   <slot>export_custom_roles()</slot>
   <slot>import_custom_roles()</slot>
  </slots>

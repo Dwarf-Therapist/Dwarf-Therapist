@@ -40,6 +40,7 @@ THE SOFTWARE.
 #include "professioncolumn.h"
 #include "highestmoodcolumn.h"
 #include "trainedcolumn.h"
+#include "healthcolumn.h"
 
 #include "defines.h"
 #include "statetableview.h"
@@ -52,6 +53,8 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "weapon.h"
 #include "attribute.h"
+#include "unithealth.h"
+#include "healthcategory.h"
 
 GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent)
     : QDialog(parent)
@@ -73,13 +76,14 @@ GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent
 
     if (!m_pending_view->name().isEmpty()) { // looks like this is an edit...
         ui->le_name->setText(m_pending_view->name());
+        ui->cb_animals->setChecked(m_pending_view->show_animals());
         draw_sets();
         ui->buttonBox->setEnabled(!m_pending_view->name().isEmpty());
         m_is_editing = true;
         m_original_name = m_pending_view->name();
     }
-    ui->list_sets->installEventFilter(this);
-    ui->list_columns->installEventFilter(this);
+//    ui->list_sets->installEventFilter(this);
+//    ui->list_columns->installEventFilter(this);
 
     /*/ TODO: show a STV with a preview using this gridview...
     StateTableView *stv = new StateTableView(this);
@@ -92,22 +96,33 @@ GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent
     connect(ui->list_sets, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_set_context_menu(const QPoint &)));
     connect(ui->list_columns, SIGNAL(activated(const QModelIndex &)), SLOT(edit_column(const QModelIndex &)));
     connect(ui->list_columns, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_column_context_menu(const QPoint &)));
-    connect(ui->le_name, SIGNAL(textChanged(const QString &)), SLOT(check_name(const QString &)));
+    connect(ui->le_name, SIGNAL(textChanged(const QString &)), SLOT(check_name(const QString &)));   
+
+    connect(ui->list_columns->model(), SIGNAL(rowsRemoved(QModelIndex,int,int)), this, SLOT(column_removed(QModelIndex, int, int)));
+    connect(ui->list_sets->model(), SIGNAL(rowsRemoved(QModelIndex,int,int)), this, SLOT(set_removed(QModelIndex, int, int)));
 }
 
 QString GridViewDialog::name() {
      return ui->le_name->text();
 }
 
-bool GridViewDialog::eventFilter(QObject *sender, QEvent *evt) {
-    if (evt->type() == QEvent::ChildRemoved) {
-        if (sender == ui->list_columns)
-            column_order_changed();
-        else if (sender == ui->list_sets)
-            set_order_changed();
-    }
-    return false; // don't actually interrupt anything
+
+void GridViewDialog::column_removed(QModelIndex, int, int){
+    column_order_changed();
 }
+void GridViewDialog::set_removed(QModelIndex, int, int){
+    set_order_changed();
+}
+
+//bool GridViewDialog::eventFilter(QObject *sender, QEvent *evt) {
+//    if (evt->type() == QEvent::ChildRemoved) {
+//        if (sender == ui->list_columns)
+//            column_order_changed();
+//        else if (sender == ui->list_sets)
+//            set_order_changed();
+//    }
+//    return false; // don't actually interrupt anything
+//}
 
 void GridViewDialog::set_order_changed() {
     m_pending_view->reorder_sets(*m_set_model);
@@ -451,7 +466,7 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     }
 
     QMenu *m_weapon = m->addMenu(tr("Add Weapon Column"));
-    m_skill->setToolTip(tr("Weapon columns will show an indicator of whether the dwarf can wield the weapon with one hand, two hands or not at all."));
+    m_weapon->setToolTip(tr("Weapon columns will show an indicator of whether the dwarf can wield the weapon with one hand, two hands or not at all."));
     m_weapon->setTearOffEnabled(true);
     QMenu *weapon_a_l = m_weapon->addMenu(tr("A-I"));
     weapon_a_l->setTearOffEnabled(true);
@@ -470,6 +485,20 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
         a->setData(weapon_pair.first);
         a->setToolTip(tr("Add a column for weapon %1").arg(weapon_pair.first));
     }
+
+    //HEALTH
+    QMenu *m_health = m->addMenu(tr("Add Health Column"));
+    m_health->setToolTip(tr("Health columns will show various information about status, treatment and wounds."));
+    m_health->setTearOffEnabled(true);
+    QList<QPair<int,QString> > cat_names = UnitHealth::ordered_category_names();
+    QPair<int,QString> health_pair;
+    foreach(health_pair, cat_names){
+        QString name = health_pair.second;
+        QAction *a = m_health->addAction(name,this,SLOT(add_health_column()));
+        a->setData(health_pair.first);
+        a->setToolTip(tr("Add a column for %1").arg(name));
+    }
+
 
     //    }
     m->exec(ui->list_columns->viewport()->mapToGlobal(p));
@@ -564,6 +593,16 @@ void GridViewDialog::add_weapon_column(){
     draw_columns_for_set(m_active_set);
 }
 
+void GridViewDialog::add_health_column(){
+    if(!m_active_set)
+        return;
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    int key = a->data().toInt();
+//    new HealthColumn(UnitHealth::category_names().value(key),key,m_active_set,m_active_set);
+    new HealthColumn(UnitHealth::get_display_categories().value(key)->name(),key,m_active_set,m_active_set);
+    draw_columns_for_set(m_active_set);
+}
+
 void GridViewDialog::add_profession_column(){
     if (!m_active_set)
         return;
@@ -606,5 +645,7 @@ void GridViewDialog::accept() {
         }
     }
     m_pending_view->set_name(ui->le_name->text());
+    m_pending_view->set_show_animals(ui->cb_animals->isChecked());
+
     return QDialog::accept();
 }

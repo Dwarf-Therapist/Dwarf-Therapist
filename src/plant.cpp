@@ -80,7 +80,7 @@ void Plant::read_plant() {
 void Plant::load_materials(){
     if(!m_df)
         return;
-    QVector<VIRTADDR> mats = m_df->enumerate_vector(m_address + m_mem->plant_offset("materials_vector"));    
+    QVector<VIRTADDR> mats = m_df->enumerate_vector(m_address + m_mem->plant_offset("materials_vector"));
     int i = 0;
     foreach(VIRTADDR mat, mats){
         m_plant_mats.append(Material::get_material(m_df,mat,i));

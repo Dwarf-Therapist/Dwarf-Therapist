@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QtGui>
+#include <QtWidgets>
 #include <QtDebug>
 #include <unistd.h>
 #include <sys/syscall.h>
@@ -140,7 +140,7 @@ QString DFInstanceLinux::read_string(const VIRTADDR &addr) {
 
     QString ret_val(buf);
     CP437Codec *codec = new CP437Codec;
-    ret_val = codec->toUnicode(ret_val.toAscii());
+    ret_val = codec->toUnicode(ret_val.toLatin1());
     return ret_val;
 }
 

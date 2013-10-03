@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef GRID_VIEW_DOCK_H
 #define GRID_VIEW_DOCK_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class ViewManager;
 

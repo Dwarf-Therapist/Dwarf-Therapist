@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef MILITARY_PREFERENCE_H
 #define MILITARY_PREFERENCE_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "truncatingfilelogger.h"
 
 struct PreferenceValue {

@@ -24,7 +24,7 @@ THE SOFTWARE.
 #ifndef GRID_VIEW_H
 #define GRID_VIEW_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class ViewColumnSet;
 class ViewColumn;
@@ -60,6 +60,8 @@ public:
 
 	const QString name() const {return m_name;}
 	void set_name(const QString &name) {m_name = name;}
+    bool show_animals() const {return m_show_animals;}
+    void set_show_animals(const bool show_animals) {m_show_animals = show_animals;}
 	void add_set(ViewColumnSet *set);
 	void remove_set(QString name);
 	void remove_set(ViewColumnSet *set) {m_sets.removeAll(set);}
@@ -87,6 +89,7 @@ private:
 	QString m_name;
 	QList<ViewColumnSet*> m_sets;
 	bool m_is_custom;
+    bool m_show_animals;
 
 signals:
     void updated(const GridView*);

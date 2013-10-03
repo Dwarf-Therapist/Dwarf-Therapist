@@ -32,11 +32,11 @@ optimizereditor::optimizereditor(QWidget *parent) :
     //job/labor table
     ui->tw_labors->setEditTriggers(QTableWidget::AllEditTriggers);
     ui->tw_labors->verticalHeader()->hide();
-    ui->tw_labors->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-    ui->tw_labors->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
-    ui->tw_labors->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
-    ui->tw_labors->horizontalHeader()->setResizeMode(3, QHeaderView::ResizeToContents);
-    ui->tw_labors->horizontalHeader()->setResizeMode(4, QHeaderView::ResizeToContents);    
+    ui->tw_labors->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    ui->tw_labors->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    ui->tw_labors->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    ui->tw_labors->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+    ui->tw_labors->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);    
 
     ui->tw_labors->setHorizontalHeaderLabels(QStringList() << "Job" << "Role" << "Priority" << "Ratio" << "Worker Count");
 

@@ -47,6 +47,7 @@ THE SOFTWARE.
 #include "professioncolumn.h"
 #include "highestmoodcolumn.h"
 #include "trainedcolumn.h"
+#include "healthcolumn.h"
 
 ViewColumnSet::ViewColumnSet(QString name, QObject *parent)
     : QObject(parent)
@@ -104,10 +105,11 @@ void ViewColumnSet::add_column(ViewColumn *col) {
 }
 
 void ViewColumnSet::clear_columns() {
-    foreach(ViewColumn *col, m_columns) {
-        col->deleteLater();
-    }
-    m_columns.clear();
+//    foreach(ViewColumn *col, m_columns) {
+//        col->deleteLater();
+//    }
+//    m_columns.clear();
+    qDeleteAll(m_columns);
 }
 
 void ViewColumnSet::toggle_for_dwarf_group() {
@@ -193,6 +195,7 @@ void ViewColumnSet::reorder_columns(const QStandardItemModel &model) {
         foreach(ViewColumn *vc, m_columns) {
             if (vc->title() == title && vc->type() == type) {
                 new_cols << vc;
+                break;
             }
         }
     }
@@ -268,6 +271,9 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
             break;
         case CT_TRAINED:
             new TrainedColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
+            break;
+        case CT_HEALTH:
+            new HealthColumn(s.value("name","UNKNOWN").toString(), s.value("id",0).toInt(),ret_val,parent);
             break;
         case CT_DEFAULT:
         default:

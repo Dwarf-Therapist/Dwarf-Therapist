@@ -24,7 +24,7 @@ THE SOFTWARE.
 #define THOUGHTSDOCK_H
 
 
-#include <QtGui>
+#include <QtWidgets>
 
 class ThoughtsDock : public QDockWidget {
     Q_OBJECT

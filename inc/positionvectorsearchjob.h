@@ -63,7 +63,7 @@ public:
             uint bytes_to_backtrack = 0x200;
 
             // search for the needle, then search backwards for the token
-            QVector<uint> needle_hits = m_df->scan_mem(needle.toAscii());
+            QVector<uint> needle_hits = m_df->scan_mem(needle.toLatin1());
             emit scan_message(tr("Searching for %1").arg(needle));
             emit main_scan_total_steps(needle_hits.size());
             emit main_scan_progress(0);
@@ -84,7 +84,7 @@ public:
                                                  bytes_to_backtrack);
 
                 // search for the token c-string in the backtrack data
-                int token_offset = data.indexOf(token.toAscii());
+                int token_offset = data.indexOf(token.toLatin1());
                 if (token_offset != -1) {
                     // this may only be a c-string hit as well, so we need to
                     // try to make it a reference to a std::string.

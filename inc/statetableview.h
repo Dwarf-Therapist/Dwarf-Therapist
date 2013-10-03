@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef STATE_TABLE_VIEW_H
 #define STATE_TABLE_VIEW_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class UberDelegate;
 class RotatedHeader;
@@ -86,6 +86,8 @@ protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
+
 
 private:
     DwarfModel *m_model;
@@ -104,7 +106,7 @@ private:
     QModelIndex m_last_cell;
     bool m_dragging;
     bool m_toggling_multiple;
-    void keyPressEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent *event);    
 
     private slots:
         void set_nickname();

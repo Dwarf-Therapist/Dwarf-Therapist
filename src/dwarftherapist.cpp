@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QtGui>
+#include <QtWidgets>
 
 #include "dwarftherapist.h"
 #include "mainwindow.h"
@@ -41,6 +41,7 @@ THE SOFTWARE.
 DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     : QApplication(argc, argv)
     , multiple_castes(false)
+    , show_skill_learn_rates(false)
     , m_user_settings(0)
     , m_main_window(0)
     , m_options_menu(0)
@@ -176,8 +177,8 @@ void DwarfTherapist::read_settings() {
             cp->set_name(prof);
             cp->set_path(m_user_settings->value(QString("%1/icon_id").arg(prof),99).toInt());
             cp->set_mask(m_user_settings->value(QString("%1/is_mask").arg(prof),false).toBool());
-            cp->set_font_color(m_user_settings->value(QString("%1/text_color").arg(prof),Qt::black).value<QColor>());
-            cp->set_bg_color(m_user_settings->value(QString("%1/bg_color").arg(prof),Qt::transparent).value<QColor>());
+            cp->set_font_color(m_user_settings->value(QString("%1/text_color").arg(prof),QColor(Qt::black)).value<QColor>());
+            cp->set_bg_color(m_user_settings->value(QString("%1/bg_color").arg(prof),QColor(Qt::transparent)).value<QColor>());
             cp->set_text(m_user_settings->value(QString("%1/text").arg(prof),"").toString());
             cp->set_prof_id(m_user_settings->value(QString("%1/prof_id").arg(prof),-1).toInt());
             m_user_settings->beginGroup(prof);

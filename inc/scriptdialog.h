@@ -24,7 +24,7 @@ THE SOFTWARE.
 #ifndef SCRIPT_DIALOG_H
 #define SCRIPT_DIALOG_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "defines.h"
 
 namespace Ui {

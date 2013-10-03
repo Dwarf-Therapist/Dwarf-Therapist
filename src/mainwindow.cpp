@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QtGui>
+#include <QtWidgets>
 #include <QtNetwork>
 #include <QtDebug>
 
@@ -61,12 +61,14 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "thoughtsdock.h"
 #include "fortressentity.h"
+#include "preference.h"
+#include "healthlegenddock.h"
 
 #include "dfinstance.h"
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 #include "dfinstancewindows.h"
 #endif
-#ifdef Q_WS_X11
+#ifdef Q_OS_X11
 #include "dfinstancelinux.h"
 #endif
 #ifdef _OSX
@@ -135,6 +137,11 @@ MainWindow::MainWindow(QWidget *parent)
     thought_dock->setFloating(true);
     addDockWidget(Qt::RightDockWidgetArea, thought_dock);
 
+    HealthLegendDock *health_dock = new HealthLegendDock(this);
+    health_dock->setHidden(true);
+    health_dock->setFloating(true);
+    addDockWidget(Qt::RightDockWidgetArea, health_dock);
+
     ui->menu_docks->addAction(ui->dock_pending_jobs_list->toggleViewAction());
     ui->menu_docks->addAction(ui->dock_custom_professions->toggleViewAction());
     ui->menu_docks->addAction(grid_view_dock->toggleViewAction());
@@ -142,10 +149,13 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menu_docks->addAction(dwarf_details_dock->toggleViewAction());
     ui->menu_docks->addAction(pref_dock->toggleViewAction());
     ui->menu_docks->addAction(thought_dock->toggleViewAction());
+    ui->menu_docks->addAction(health_dock->toggleViewAction());
 
     ui->menuWindows->addAction(ui->main_toolbar->toggleViewAction());
 
     LOGD << "setting up connections for MainWindow";
+    connect(ui->main_toolbar, SIGNAL(toolButtonStyleChanged(Qt::ToolButtonStyle)),this, SLOT(main_toolbar_style_changed(Qt::ToolButtonStyle)));
+
     connect(m_model, SIGNAL(new_creatures_count(int,int,int, QString)), this, SLOT(new_creatures_count(int,int,int, QString)));
     connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
     connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
@@ -165,8 +175,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_script_dialog, SIGNAL(apply_script(const QString &)), m_proxy, SLOT(apply_script(const QString&)));
     connect(m_script_dialog, SIGNAL(scripts_changed()), SLOT(reload_filter_scripts()));
     connect(m_view_manager,SIGNAL(group_changed(int)), this, SLOT(display_group(int)));
-    connect(pref_dock,SIGNAL(item_selected(QStringList,QString)),this,SLOT(preference_selected(QStringList,QString)));
+    connect(pref_dock,SIGNAL(item_selected(QList<QPair<QString,QString> >)),this,SLOT(preference_selected(QList<QPair<QString,QString> >)));
     connect(thought_dock, SIGNAL(item_selected(QList<short>)), this, SLOT(thought_selected(QList<short>)));
+    connect(health_dock, SIGNAL(item_selected(QList<QPair<int,int> >)), this, SLOT(health_legend_selected(QList<QPair<int,int> >)));
 
 
     m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
@@ -182,6 +193,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cb_group_by->addItem(tr("Current Job"), DwarfModel::GB_CURRENT_JOB);
     ui->cb_group_by->addItem(tr("Happiness"), DwarfModel::GB_HAPPINESS);
     ui->cb_group_by->addItem(tr("Has Nickname"),DwarfModel::GB_HAS_NICKNAME);
+    ui->cb_group_by->addItem(tr("Health"),DwarfModel::GB_HEALTH);
     ui->cb_group_by->addItem(tr("Highest Moodable Skill"), DwarfModel::GB_HIGHEST_MOODABLE);
     ui->cb_group_by->addItem(tr("Highest Skill"), DwarfModel::GB_HIGHEST_SKILL);
     ui->cb_group_by->addItem(tr("Legendary Status"), DwarfModel::GB_LEGENDARY);
@@ -280,13 +292,13 @@ void MainWindow::connect_to_df() {
         reset();
     }
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     m_df = new DFInstanceWindows();
 #else
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     m_df = new DFInstanceOSX();
 #else
-#ifdef Q_WS_X11
+#ifdef Q_OS_X11
     m_df = new DFInstanceLinux();
 #endif
 #endif
@@ -460,132 +472,120 @@ void MainWindow::set_interface_enabled(bool enabled) {
 
 void MainWindow::check_latest_version(bool show_result_on_equal) {
     return;
-    m_show_result_on_equal = show_result_on_equal;
-    Version our_v(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
-
-    QHttpRequestHeader header("GET", "/version");
-    header.setValue("Host", "dt-tracker.appspot.com");
-    //header.setValue("Host", "localhost");
-    header.setValue("User-Agent", QString("DwarfTherapist %1").arg(our_v.to_string()));
-    if (m_http) {
-        m_http->deleteLater();
-    }
-    m_http = new QHttp(this);
-    m_http->setHost("dt-tracker.appspot.com");
-    //m_http->setHost("localhost", 8080);
-    disconnect(m_http, SIGNAL(done(bool)));
-    connect(m_http, SIGNAL(done(bool)), this, SLOT(version_check_finished(bool)));
-    m_http->request(header);
+    //TODO: check for updates
 }
 
 void MainWindow::version_check_finished(bool error) {
-    if (error) {
-        qWarning() << m_http->errorString();
-    }
-    QString data = QString(m_http->readAll());
-    QRegExp rx("(\\d+)\\.(\\d+)\\.(\\d+)");
-    int pos = rx.indexIn(data);
-    if (pos != -1) {
-        Version our_v(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
-        QString major = rx.cap(1);
-        QString minor = rx.cap(2);
-        QString patch = rx.cap(3);
-        Version newest_v(major.toInt(), minor.toInt(), patch.toInt());
-        LOGI << "RUNNING VERSION         :" << our_v.to_string();
-        LOGI << "LATEST AVAILABLE VERSION:" << newest_v.to_string();
-        if (our_v < newest_v) {
-            LOGI << "LATEST VERSION IS NEWER!";
-            QMessageBox *mb = new QMessageBox(this);
-            mb->setIcon(QMessageBox::Information);
-            mb->setWindowTitle(tr("Update Available"));
-            mb->setText(tr("A newer version of this application is available."));
-            QString link = tr("<br><a href=\"%1\">Click Here to Download v%2"
-                              "</a>")
-                           .arg(URL_DOWNLOAD_LIST)
-                           .arg(newest_v.to_string());
-            mb->setInformativeText(tr("You are currently running v%1. %2")
-                                   .arg(our_v.to_string()).arg(link));
-            mb->exec();
-        } else if (m_show_result_on_equal) {
-            QMessageBox *mb = new QMessageBox(this);
-            mb->setWindowTitle(tr("Up to Date"));
-            mb->setText(tr("You are running the most recent version of Dwarf "
-                           "Therapist."));
-            mb->exec();
-        }
-        m_about_dialog->set_latest_version(newest_v);
-    } else {
-        m_about_dialog->version_check_failed();
-    }
+//    if (error) {
+//        qWarning() <<  m_http->errorString();
+//    }
+//    QString data = QString(m_http->readAll());
+//    QRegExp rx("(\\d+)\\.(\\d+)\\.(\\d+)");
+//    int pos = rx.indexIn(data);
+
+//    if (pos != -1) {
+//        Version our_v(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
+//        QString major = rx.cap(1);
+//        QString minor = rx.cap(2);
+//        QString patch = rx.cap(3);
+//        Version newest_v(major.toInt(), minor.toInt(), patch.toInt());
+//        LOGI << "RUNNING VERSION         :" << our_v.to_string();
+//        LOGI << "LATEST AVAILABLE VERSION:" << newest_v.to_string();
+//        if (our_v < newest_v) {
+//            LOGI << "LATEST VERSION IS NEWER!";
+//            QMessageBox *mb = new QMessageBox(this);
+//            mb->setIcon(QMessageBox::Information);
+//            mb->setWindowTitle(tr("Update Available"));
+//            mb->setText(tr("A newer version of this application is available."));
+//            QString link = tr("<br><a href=\"%1\">Click Here to Download v%2"
+//                              "</a>")
+//                           .arg(URL_DOWNLOAD_LIST)
+//                           .arg(newest_v.to_string());
+//            mb->setInformativeText(tr("You are currently running v%1. %2")
+//                                   .arg(our_v.to_string()).arg(link));
+//            mb->exec();
+//        } else if (m_show_result_on_equal) {
+//            QMessageBox *mb = new QMessageBox(this);
+//            mb->setWindowTitle(tr("Up to Date"));
+//            mb->setText(tr("You are running the most recent version of Dwarf "
+//                           "Therapist."));
+//            mb->exec();
+//        }
+//        m_about_dialog->set_latest_version(newest_v);
+//    } else {
+//        m_about_dialog->version_check_failed();
+//    }
 }
 
 void MainWindow::check_for_layout(const QString & checksum) {
+    m_try_download = false;
+
     if(m_try_download &&
             (m_settings->value("options/check_for_updates_on_startup", true).toBool())) {
-        m_try_download = false;
+//        m_try_download = false;
 
-        LOGI << "Checking for layout for checksum: " << checksum;
-        m_tmp_checksum = checksum;
+//        LOGI << "Checking for layout for checksum: " << checksum;
+//        m_tmp_checksum = checksum;
 
-        Version our_v(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
+//        Version our_v(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
 
-        QString request = QString("/memory_layouts/checksum/%1").arg(checksum);
-        QHttpRequestHeader header("GET", request);
-        header.setValue("Host", "www.dwarftherapist.com");
-        header.setValue("User-Agent", QString("DwarfTherapist %1").arg(our_v.to_string()));
-        if (m_http) {
-            m_http->deleteLater();
-        }
-        m_http = new QHttp(this);
-        m_http->setHost("www.dwarftherapist.com");
+//        QString request = QString("/memory_layouts/checksum/%1").arg(checksum);
+//        QHttpRequestHeader header("GET", request);
+//        header.setValue("Host", "www.dwarftherapist.com");
+//        header.setValue("User-Agent", QString("DwarfTherapist %1").arg(our_v.to_string()));
+//        if (m_http) {
+//            m_http->deleteLater();
+//        }
+//        m_http = new QHttp(this);
+//        m_http->setHost("www.dwarftherapist.com");
 
-        disconnect(m_http, SIGNAL(done(bool)));
-        connect(m_http, SIGNAL(done(bool)), this, SLOT(layout_check_finished(bool)));
-        m_http->request(header);
+//        disconnect(m_http, SIGNAL(done(bool)));
+//        connect(m_http, SIGNAL(done(bool)), this, SLOT(layout_check_finished(bool)));
+//        m_http->request(header);
     } else if (!m_force_connect) {
         m_df->layout_not_found(checksum);
     }
 }
 
 void MainWindow::layout_check_finished(bool error) {
-    int status = m_http->lastResponse().statusCode();
-    LOGD << "Status: " << status;
+    //int status = m_http->lastResponse().statusCode();
+    //LOGD << "Status: " << status;
 
-    error = error || (status != 200);
-    if(!error) {
-        QTemporaryFile outFile("layout.ini");
-        if (!outFile.open())
-         return;
+//    error = error || (status != 200);
+//    if(!error) {
+//        QTemporaryFile outFile("layout.ini");
+//        if (!outFile.open())
+//         return;
 
-        QString fileName = outFile.fileName();
-        QTextStream out(&outFile);
-        out << m_http->readAll();
-        outFile.close();
+//        QString fileName = outFile.fileName();
+//        QTextStream out(&outFile);
+//        out << m_http->readAll();
+//        outFile.close();
 
-        QString version;
+//        QString version;
 
-        {
-            QSettings layout(fileName, QSettings::IniFormat);
-            version = layout.value("info/version_name", "").toString();
-        }
+//        {
+//            QSettings layout(fileName, QSettings::IniFormat);
+//            version = layout.value("info/version_name", "").toString();
+//        }
 
-        LOGD << "Found version" << version;
+//        LOGD << "Found version" << version;
 
-        if(m_df->add_new_layout(version, outFile)) {
-            QMessageBox *mb = new QMessageBox(this);
-            mb->setIcon(QMessageBox::Information);
-            mb->setWindowTitle(tr("New Memory Layout Added"));
-            mb->setText(tr("A new memory layout has been downloaded for this version of dwarf fortress!"));
-            mb->setInformativeText(tr("New layout for version %1 of Dwarf Fortress.").arg(version));
-            mb->exec();
+//        if(m_df->add_new_layout(version, outFile)) {
+//            QMessageBox *mb = new QMessageBox(this);
+//            mb->setIcon(QMessageBox::Information);
+//            mb->setWindowTitle(tr("New Memory Layout Added"));
+//            mb->setText(tr("A new memory layout has been downloaded for this version of dwarf fortress!"));
+//            mb->setInformativeText(tr("New layout for version %1 of Dwarf Fortress.").arg(version));
+//            mb->exec();
 
-            LOGD << "Reconnecting to Dwarf Fortress!";
-            m_force_connect = false;
-            connect_to_df();
-        } else {
-            error = true;
-        }
-    }
+//            LOGD << "Reconnecting to Dwarf Fortress!";
+//            m_force_connect = false;
+//            connect_to_df();
+//        } else {
+//            error = true;
+//        }
+//    }
 
     LOGD << "Error: " << error << " Force Connect: " << m_force_connect;
 
@@ -746,9 +746,49 @@ void MainWindow::import_custom_roles(){
     d.exec();
 }
 
-void MainWindow::save_gridview()
+void MainWindow::save_gridview_csv()
 {
-    m_model->save_rows();
+    GridView *gv = m_view_manager->get_active_view();
+
+    QString defaultPath = QString("%1.csv").arg(gv->name());
+    QString fileName = QFileDialog::getSaveFileName(0 , tr("Save file as"), defaultPath, tr("csv files (*.csv)"));
+    if (fileName.length()==0)
+        return;
+    if (!fileName.endsWith(".csv"))
+        fileName.append(".csv");
+    QFile f( fileName );
+    if (f.exists())
+        f.remove();
+    f.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream out(&f);
+
+    QStringList row;
+    row.append(tr("Name"));
+    foreach(ViewColumnSet *set, gv->sets()) {
+        foreach(ViewColumn *col, set->columns()) {
+            if (col->type() != CT_SPACER)
+                row.append(col->title());
+        }
+    }
+    out << row.join(",") << endl;
+    row.clear();
+
+    QList<Dwarf*> dwarves = m_proxy->get_filtered_dwarves();
+    bool hide_non_adults = DT->user_settings()->value("options/hide_children_and_babies",true).toBool();
+    foreach(Dwarf *d, dwarves){
+        if(d->is_animal() || d->is_adult() || (!hide_non_adults && !d->is_adult())){
+            row.append(d->nice_name());
+            foreach(ViewColumnSet *set, gv->sets()) {
+                foreach(ViewColumn *col, set->columns()) {
+                    if (col->type() != CT_SPACER)
+                        row.append(col->get_cell_value(d));
+                }
+            }
+            out << row.join(",") << endl;
+            row.clear();
+        }
+    }
+    f.close();
 }
 
 void MainWindow::export_gridviews() {
@@ -1094,22 +1134,42 @@ void MainWindow::display_group(const int group_by){
     ui->cb_group_by->blockSignals(false);
 }
 
-void MainWindow::preference_selected(QStringList names, QString category){
+void MainWindow::preference_selected(QList<QPair<QString,QString> > vals){
+    //pairs are of category, pref_name
     QString filter = "";
-    if(!names.empty()){
-        foreach(QString pref, names){
-            if(category=="Creature"){
-                filter.append(QString("(d.has_preference(\"%1\", \"%2\") || d.has_preference(\"%1\", \"%3\")) && ").arg(pref.toLower()).arg(category).arg("Dislikes"));
+    if(!vals.empty()){
+        QPair<QString,QString> pref;
+        //function args are reversed, pref_name, category
+        foreach(pref,vals){
+            if(pref.first == Preference::get_pref_desc(LIKE_CREATURE)){
+                filter.append(QString("(d.has_preference(\"%1\", \"%2\") || d.has_preference(\"%1\", \"%3\")) && ")
+                                              .arg(pref.second.toLower()).arg(pref.first)
+                                              .arg(Preference::get_pref_desc(HATE_CREATURE)));
             }else{
-                filter.append(QString("d.has_preference(\"%1\", \"%2\") && ").arg(pref.toLower()).arg(category));
+                filter.append(QString("d.has_preference(\"%1\", \"%2\") && ").arg(pref.second.toLower()).arg(pref.first));
             }
         }
         filter.chop(4);
-
         m_proxy->set_secondary_script(filter);
-    }
-    else
+    }else{
         m_proxy->set_secondary_script("");
+    }
+//    if(!names.empty()){
+//        foreach(QString pref, names){
+//            if(category==Preference::get_pref_desc(LIKE_CREATURE)){
+//                filter.append(QString("(d.has_preference(\"%1\", \"%2\") || d.has_preference(\"%1\", \"%3\")) && ")
+//                              .arg(pref.toLower()).arg(category)
+//                              .arg(Preference::get_pref_desc(HATE_CREATURE)));
+//            }else{
+//                filter.append(QString("d.has_preference(\"%1\", \"%2\") && ").arg(pref.toLower()).arg(category));
+//            }
+//        }
+//        filter.chop(4);
+
+//        m_proxy->set_secondary_script(filter);
+//    }
+//    else
+//        m_proxy->set_secondary_script("");
 
     m_proxy->refresh_script();
 }
@@ -1122,6 +1182,20 @@ void MainWindow::thought_selected(QList<short> ids){
         }
         filter.chop(4);
         m_proxy->set_secondary_script(filter);
+    }else{
+        m_proxy->set_secondary_script("");
+    }
+    m_proxy->refresh_script();
+}
+
+void MainWindow::health_legend_selected(QList<QPair<int, int> > vals){
+    QStringList filters;
+    if(!vals.isEmpty()){
+        QPair<int,int> key_pair;
+        foreach(key_pair, vals){
+            filters.append(QString("d.has_health_issue(%1,%2)").arg(QString::number(key_pair.first)).arg(QString::number(key_pair.second)));
+        }
+        m_proxy->set_secondary_script(filters.join(" && "));
     }else{
         m_proxy->set_secondary_script("");
     }
@@ -1192,9 +1266,13 @@ void MainWindow::write_labor_optimizations(){
 
 void MainWindow::refresh_opts_menus() {
     //setup the optimize button
-    if(!m_btn_optimize && ! m_act_sep_optimize){
-        m_btn_optimize = new QToolButton;
-        m_btn_optimize->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    if(!m_btn_optimize && ! m_act_sep_optimize){       
+        m_btn_optimize = new QToolButton(ui->main_toolbar);
+        if (DT->user_settings()->value("options/show_toolbutton_text", true).toBool()) {
+            m_btn_optimize->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        } else {
+            m_btn_optimize->setToolButtonStyle(Qt::ToolButtonIconOnly);
+        }
         m_btn_optimize->setText("&Optimize");
         m_btn_optimize->setMinimumWidth(70);
         m_btn_optimize->setObjectName("m_btn_optimize");
@@ -1297,6 +1375,11 @@ void MainWindow::optimize(QString plan_name){
         dwarfs = m_proxy->get_filtered_dwarves();
 
     o->optimize_labors(dwarfs);    
+}
+
+void MainWindow::main_toolbar_style_changed(Qt::ToolButtonStyle button_style){
+    //update any manually added buttons' style here
+    m_btn_optimize->setToolButtonStyle(button_style);
 }
 
 void MainWindow::reset(){

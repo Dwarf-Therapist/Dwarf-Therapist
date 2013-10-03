@@ -267,14 +267,87 @@ typedef enum{
 } CREATURE_FLAGS;
 
 typedef enum{
+    AMPHIBIOUS=0,
+    NO_EAT=13,
+    NO_DRINK=14,
+    NO_SLEEP=15,
+    WEB_IMMUNE=25,
+    IMMOBILE_LAND=27,
     MILKABLE=29,
+    NO_DIZZINESS=39,
+    NO_FEVERS=40,
     TRAINABLE_HUNTING=53,
     PET=54,
-    PET_EXOTIC=55,    
+    PET_EXOTIC=55,
+    NO_EXERT=63,
+    NO_PAIN=64,
+    EXTRAVISION=65,
+    NO_BREATHE=66,
+    NO_STUN=67,
+    NO_NAUSEA=68,
+    PARALYZE_IMMUNE=79,
+    GETS_WOUND_INFECTIONS=83,
     TRAINABLE_WAR=88,
+    FLIER=97,
     BLOODSUCKER=162, //vampires
     HAS_EXTRACTS=200 //custom
 } CASTE_FLAGS;
 
+namespace eHealth
+{
+typedef enum  {
+    HI_DIAGNOSIS = 0, //diagnosis and recovery
+    HI_BLEEDING = 1,
+    HI_BLOOD_LOSS = 2,
+    HI_PARALYSIS = 3,
+    HI_NUMBNESS = 4,
+    HI_FEVER = 5,
+    //HI_DIZZY = 6,
+    HI_PAIN = 7,
+    HI_MOVEMENT = 8,
+    HI_TIREDNESS = 9,
+    HI_BREATHING = 10,
+    HI_THIRST = 11,
+    HI_HUNGER = 12,
+    HI_SLEEPLESS = 13,
+    HI_NAUSEOUS = 14,
+    HI_VISION = 15,
+    HI_GUTTED = 16,
+    HI_STAND = 17,
+    HI_GRASP = 18,
+    HI_FLY = 19,
+    HI_NERVE = 20,
+    HI_ARTERY = 21,
+    HI_FRACTURE = 22,
+    HI_TENDON = 23,
+    HI_LIGAMENT = 24,
+    HI_SETTING = 25,
+    HI_DAMAGE = 26,
+    HI_TISSUE = 27,
+    HI_SWELLING = 28,
+    HI_INFECTION = 29,
+    HI_LACERATION = 30,
+    HI_SEVERED = 31, //old wounds = missing, fresh = severed
+    HI_ROT = 32,
+//    HI_RECOVERY = 33, //combined with diagnosis
+    HI_IMMOBILIZATION = 34,
+    HI_DRESSING = 35,
+    HI_CLEANING = 36,
+    HI_SURGERY = 37,
+    HI_SUTURES = 38,
+    HI_TRACTION = 39,
+    HI_CRUTCH = 40,
+    HI_OTHER = 41
+    } H_INFO;
+
+typedef enum {
+    TT_BONE,
+    TT_FAT,
+    TT_SKIN,
+    TT_MUSCLE,
+    TT_OTHER
+} TISSUE_TYPE;
+
+}
 
 #endif // GLOBAL_ENUMS_H

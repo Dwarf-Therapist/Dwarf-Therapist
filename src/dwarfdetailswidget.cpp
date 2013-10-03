@@ -35,6 +35,8 @@ THE SOFTWARE.
 #include "skill.h"
 #include "attribute.h"
 #include "sortabletableitems.h"
+#include "unithealth.h"
+#include "healthinfo.h"
 
 DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
@@ -53,9 +55,9 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     ui->tw_skills->setAlternatingRowColors(true);
     ui->tw_skills->setHorizontalHeaderLabels(QStringList() << "Skill" << "Level" << "Bonus" << "Progress");
     ui->tw_skills->verticalHeader()->hide();
-    ui->tw_skills->horizontalHeader()->setResizeMode(0, QHeaderView::Interactive);
-    ui->tw_skills->horizontalHeader()->setResizeMode(1, QHeaderView::Interactive);
-    ui->tw_skills->horizontalHeader()->setResizeMode(2, QHeaderView::Interactive);
+    ui->tw_skills->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+    ui->tw_skills->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
+    ui->tw_skills->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);
     ui->tw_skills->horizontalHeader()->setStretchLastSection(true);
     ui->tw_skills->horizontalHeader()->resizeSection(0,100);
     ui->tw_skills->horizontalHeader()->resizeSection(1,default_size);
@@ -69,9 +71,9 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     ui->tw_attributes->setAlternatingRowColors(true);
     ui->tw_attributes->setHorizontalHeaderLabels(QStringList() << "Attribute" << "Value" << "Max" << "Message");
     ui->tw_attributes->verticalHeader()->hide();
-    ui->tw_attributes->horizontalHeader()->setResizeMode(0, QHeaderView::Interactive);
-    ui->tw_attributes->horizontalHeader()->setResizeMode(1, QHeaderView::Interactive);
-    ui->tw_attributes->horizontalHeader()->setResizeMode(2, QHeaderView::Interactive);
+    ui->tw_attributes->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+    ui->tw_attributes->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
+    ui->tw_attributes->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);
     ui->tw_attributes->horizontalHeader()->setStretchLastSection(true);
     ui->tw_attributes->horizontalHeader()->resizeSection(0,100);
     ui->tw_attributes->horizontalHeader()->resizeSection(1,default_size);
@@ -85,8 +87,8 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     ui->tw_traits->setAlternatingRowColors(true);
     ui->tw_traits->setHorizontalHeaderLabels(QStringList() << "Trait" << "Raw" << "Message");
     ui->tw_traits->verticalHeader()->hide();
-    ui->tw_traits->horizontalHeader()->setResizeMode(0, QHeaderView::Interactive);
-    ui->tw_traits->horizontalHeader()->setResizeMode(1, QHeaderView::Interactive);
+    ui->tw_traits->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+    ui->tw_traits->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
     ui->tw_traits->horizontalHeader()->setStretchLastSection(true);
     ui->tw_traits->horizontalHeader()->resizeSection(0,100);
     ui->tw_traits->horizontalHeader()->resizeSection(1,default_size);
@@ -99,7 +101,7 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     ui->tw_roles->setAlternatingRowColors(true);
     ui->tw_roles->setHorizontalHeaderLabels(QStringList() << "Role" << "Rating");
     ui->tw_roles->verticalHeader()->hide();
-    ui->tw_roles->horizontalHeader()->setResizeMode(0, QHeaderView::Interactive);
+    ui->tw_roles->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
     ui->tw_roles->horizontalHeader()->setStretchLastSection(true);
     ui->tw_roles->horizontalHeader()->resizeSection(0,100);
 
@@ -111,35 +113,44 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     ui->tw_prefs->setAlternatingRowColors(true);
     ui->tw_prefs->setHorizontalHeaderLabels(QStringList() << "Type" << "Preferences");
     ui->tw_prefs->verticalHeader()->hide();
-    ui->tw_prefs->horizontalHeader()->setResizeMode(0, QHeaderView::Interactive);
+    ui->tw_prefs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
     ui->tw_prefs->horizontalHeader()->setStretchLastSection(true);
     ui->tw_prefs->horizontalHeader()->resizeSection(0,100);
+
+    ui->tw_health->setColumnCount(2);
+//    ui->tw_health->setEditTriggers(QTableWidget::NoEditTriggers);
+//    ui->tw_health->setWordWrap(true);
+//    ui->tw_health->setShowGrid(false);
+//    ui->tw_health->setGridStyle(Qt::NoPen);
+//    ui->tw_health->setAlternatingRowColors(true);
+//    ui->tw_health->setHorizontalHeaderLabels(QStringList() << "Body Part" << "Wounds");
+//    ui->tw_health->verticalHeader()->hide();
+//    ui->tw_health->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+//    ui->tw_health->horizontalHeader()->setStretchLastSection(true);
+//    ui->tw_health->horizontalHeader()->resizeSection(0,100);
 
     //splitter
     m_splitter_sizes = DT->user_settings()->value("gui_options/detailPanesSizes").toByteArray();
     ui->splitter->restoreState(m_splitter_sizes);
 
-    //TODO: store these as qpairs instead of individual vars
     //skill sorts
-    m_skill_sort_col = 1;
-    m_skill_sort_desc = Qt::DescendingOrder;
-    ui->tw_skills->sortItems(m_skill_sort_col, static_cast<Qt::SortOrder>(m_skill_sort_desc));
+    m_sorting << qMakePair(1,Qt::DescendingOrder);
+    ui->tw_skills->sortItems(1, Qt::DescendingOrder);
     //attribute sorts
-    m_attribute_sort_col = 0;
-    m_attribute_sort_desc = Qt::AscendingOrder;
-    ui->tw_attributes->sortItems(m_attribute_sort_col, static_cast<Qt::SortOrder>(m_attribute_sort_desc));
+    m_sorting << qMakePair(0,Qt::AscendingOrder);
+    ui->tw_attributes->sortItems(0, Qt::AscendingOrder);
     //trait sorts
-    m_trait_sort_col = 1;
-    m_trait_sort_desc = Qt::DescendingOrder;
-    ui->tw_traits->sortItems(m_trait_sort_col, static_cast<Qt::SortOrder>(m_trait_sort_desc));
+    m_sorting << qMakePair(1,Qt::DescendingOrder);
+    ui->tw_traits->sortItems(1, Qt::DescendingOrder);
     //role sorts
-    m_role_sort_col = 1;
-    m_role_sort_desc = Qt::DescendingOrder;
-    ui->tw_roles->sortItems(m_role_sort_col, static_cast<Qt::SortOrder>(m_role_sort_desc));
+    m_sorting << qMakePair(1,Qt::DescendingOrder);
+    ui->tw_roles->sortItems(1, Qt::DescendingOrder);
     //pref sorts
-    m_pref_sort_col = 0;
-    m_pref_sort_desc = Qt::DescendingOrder;
-    ui->tw_prefs->sortItems(m_pref_sort_col, static_cast<Qt::SortOrder>(m_pref_sort_desc));
+    m_sorting << qMakePair(0,Qt::DescendingOrder);
+    ui->tw_prefs->sortItems(0, Qt::DescendingOrder);
+    //health sorts
+    m_sorting << qMakePair(0,Qt::AscendingOrder);
+    ui->tw_health->sortItems(0, Qt::AscendingOrder);
 }
 
 void DwarfDetailsWidget::clear(){
@@ -233,6 +244,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     clear_table(*ui->tw_traits);
     clear_table(*ui->tw_roles);
     clear_table(*ui->tw_prefs);
+    ui->tw_health->clear();
 
     // SKILLS TABLE
     QHash<int,Skill> *skills = d->get_skills();
@@ -241,6 +253,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     int raw_bonus_xp = 100;
     int bonus_xp = 0;
     QString tooltip = "";    
+    bool no_bonuses = true;
     foreach(Skill s, skills->values()){
         if(s.capped_level() > -1)
         {
@@ -275,8 +288,13 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
             raw_bonus_xp = s.skill_rate();
             bonus_xp = raw_bonus_xp - 100;
+            if(no_bonuses && bonus_xp != 0)
+                no_bonuses = false;
             sortableFloatTableWidgetItem *item_bonus = new sortableFloatTableWidgetItem();
-            item_bonus->setText(QString::number(bonus_xp,'f',0)+"%");
+            if(bonus_xp != 0)
+                item_bonus->setText(QString::number(bonus_xp,'f',0)+"%");
+            else
+                item_bonus->setText("");
             item_bonus->setData(Qt::UserRole, bonus_xp);
             item_bonus->setTextAlignment(Qt::AlignHCenter);
             if(bonus_xp != 0)
@@ -305,8 +323,10 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         }
     }        
     ui->tw_skills->setSortingEnabled(true);
-    if(!DT->multiple_castes)
+    if(!DT->show_skill_learn_rates || no_bonuses)
         ui->tw_skills->hideColumn(2);
+    else
+        ui->tw_skills->showColumn(2);
 
     // ATTRIBUTES TABLE
     QVector<Attribute> *attributes = d->get_attributes();
@@ -461,8 +481,110 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     }
     ui->tw_prefs->setSortingEnabled(true);
 
+    // HEALTH TABLE
+    UnitHealth dHealth = d->get_unit_health();
+    if(!dHealth.isEmpty()){
+        //3 main parent nodes for treatment, status and wounds
+        QTreeWidgetItem *statuses = new QTreeWidgetItem;
+        statuses->setData(0, Qt::UserRole, tr("Status"));
+        statuses->setText(0,  tr("Status"));
+
+        QTreeWidgetItem *treatments = new QTreeWidgetItem;
+        treatments->setData(0, Qt::UserRole, tr("Treatments"));
+        treatments->setText(0,  tr("Treatments"));
+
+        QTreeWidgetItem *wounds = new QTreeWidgetItem;
+        wounds->setData(0, Qt::UserRole, tr("Wounds"));
+        wounds->setText(0,  tr("Wounds"));
+
+        //add the treatments
+        QHash<eHealth::H_INFO, QList<HealthInfo*> > t_info = dHealth.get_treatment_info();
+        foreach(eHealth::H_INFO h, t_info.uniqueKeys()){
+            QList<HealthInfo*> infos = t_info.value(h);
+            foreach(HealthInfo* hi, infos){
+                QTreeWidgetItem *node = new QTreeWidgetItem(treatments);
+                node->setData(0, Qt::UserRole, hi->symbol(false));
+                node->setData(0,Qt::TextColorRole, hi->color());
+                node->setText(0, hi->symbol(false));
+
+                node->setData(1, Qt::UserRole, hi->description(false));
+                node->setText(1,hi->description(false));
+            }
+        }
+
+        //add the statuses
+        QHash<eHealth::H_INFO, QList<HealthInfo*> > s_info = dHealth.get_status_info();
+        foreach(eHealth::H_INFO h, s_info.uniqueKeys()){
+            QList<HealthInfo*> infos = s_info.value(h);
+            foreach(HealthInfo* hi, infos){
+            //HealthInfo *hi = dHealth.get_most_severe(h);
+                QTreeWidgetItem *node = new QTreeWidgetItem(statuses);
+                node->setData(0, Qt::UserRole, hi->symbol(false));
+                node->setData(0,Qt::TextColorRole, hi->color());
+                node->setText(0, hi->symbol(false));
+
+                node->setData(1, Qt::UserRole, hi->description(false));
+                node->setText(1,hi->description(false));
+            }
+        }
+
+        //add each wounded body part as a node, and then each wound as a node of the body part
+        QHash<QString, QList<HealthInfo*> > wounds_info  = dHealth.get_wound_details();
+        QList<QTreeWidgetItem*> wound_nodes;
+        foreach(QString bp, wounds_info.uniqueKeys()){
+            QList<HealthInfo*> infos = wounds_info.value(bp);
+            //add the body part as the parent node
+            QString name = capitalizeEach(bp);
+            QTreeWidgetItem *body_part_node = new QTreeWidgetItem(wounds);
+            body_part_node->setData(0, Qt::UserRole, name);
+            body_part_node->setText(0, name);
+            wound_nodes.append(body_part_node);
+
+            foreach(HealthInfo* hi, infos){
+                QTreeWidgetItem *node = new QTreeWidgetItem(body_part_node);
+                node->setData(0, Qt::UserRole, hi->symbol(false));
+                node->setData(0,Qt::TextColorRole, hi->color());
+                node->setText(0, hi->symbol(false));
+
+                node->setData(1, Qt::UserRole, hi->description(false));
+                node->setText(1,hi->description(false));
+            }
+        }
+
+        if(statuses->childCount() > 0)
+            ui->tw_health->addTopLevelItem(statuses);
+        if(treatments->childCount() > 0)
+            ui->tw_health->addTopLevelItem(treatments);
+        if(wounds->childCount() > 0){
+            ui->tw_health->addTopLevelItem(wounds);
+            foreach(QTreeWidgetItem *i, wound_nodes){
+                i->setFirstColumnSpanned(true);
+            }
+            wound_nodes.clear();
+        }
+    }
+    if(ui->tw_health->topLevelItemCount() <= 0){
+        QTreeWidgetItem *noIssues = new QTreeWidgetItem;
+        noIssues->setData(0, Qt::UserRole, tr("No Health Issues."));
+        noIssues->setText(0,  tr("No Health Issues."));
+        ui->tw_health->addTopLevelItem(noIssues);
+        noIssues->setFirstColumnSpanned(true);
+    }
+
+    ui->tw_health->setSortingEnabled(true);
+    ui->tw_health->sortItems(0,Qt::AscendingOrder);
+    ui->tw_health->expandAll();
+
+
+
     m_current_id = d->id();
     d = 0;
+}
+
+QString DwarfDetailsWidget::clean_font_tags(QString val){
+    QString clean = val.remove(QRegExp("<font[^>]*color*=*#([0-9a-fA-F]{1,6})[^>]*>"));
+    clean = clean.remove("</font>");
+    return clean;
 }
 
 void DwarfDetailsWidget::clear_table(QTableWidget &t){

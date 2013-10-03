@@ -1,7 +1,7 @@
 #ifndef ICONCHOOSER_H
 #define ICONCHOOSER_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class IconChooser : public QDialog
 {

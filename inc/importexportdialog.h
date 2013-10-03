@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef IMPORT_EXPORT_DIALOG
 #define IMPORT_EXPORT_DIALOG
 
-#include <QtGui>
+#include <QtWidgets>
 
 namespace Ui {
 	class ImportExportDialog;

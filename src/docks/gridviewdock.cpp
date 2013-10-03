@@ -140,6 +140,7 @@ void GridViewDock::copy_view() {
     GridView *copy = new GridView(*view);
     copy->set_is_custom(true); // all copies are custom
     copy->set_name(view->name() + "(COPY)");
+    copy->set_show_animals(view->show_animals());
     m_manager->add_view(copy);
     m_manager->write_views();
     draw_views();

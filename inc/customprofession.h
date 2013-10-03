@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef CUSTOM_PROFESSION_H
 #define CUSTOM_PROFESSION_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "customcolor.h"
 class Dwarf;
 

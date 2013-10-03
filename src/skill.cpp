@@ -22,7 +22,7 @@ THE SOFTWARE.
 */
 #include "skill.h"
 #include "gamedatareader.h"
-#include <QtGui>
+#include <QtWidgets>
 
 QHash<int,int> Skill::m_experience_levels = Skill::load_base_xp_levels();
 

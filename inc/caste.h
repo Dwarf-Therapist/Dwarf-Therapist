@@ -23,22 +23,24 @@ THE SOFTWARE.
 #ifndef CASTE_H
 #define CASTE_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "utils.h"
 #include "global_enums.h"
 #include "flagarray.h"
+#include "races.h"
 
 class DFInstance;
 class MemoryLayout;
 class Attribute;
+class BodyPart;
 
 class Caste : public QObject {
     Q_OBJECT
 public:
-    Caste(DFInstance *df, VIRTADDR address, int race_id, QString race_name, QObject *parent = 0);
+    Caste(DFInstance *df, VIRTADDR address, Race *r, QObject *parent = 0);
     virtual ~Caste();
 
-    static Caste* get_caste(DFInstance *df, const VIRTADDR &address, int race_id, QString race_name);
+    static Caste* get_caste(DFInstance *df, const VIRTADDR &address, Race *r);
 
     //! Return the memory address (in hex) of this creature in the remote DF process
     VIRTADDR address() {return m_address;}
@@ -64,7 +66,7 @@ public:
     void load_data();
     void load_skill_rates();
 
-    FlagArray flags() {return m_flags;}
+    FlagArray flags() {return m_flags;}    
 
     bool is_trainable();
     bool is_milkable();
@@ -76,10 +78,11 @@ public:
     void load_attribute_info(float ratio = -1);
     void load_trait_info();    
 
+    BodyPart *get_body_part(int body_part_id);
+
 private:
     VIRTADDR m_address;
-    int m_race_id;
-    QString m_race_name;
+    Race *m_race;
     QString m_tag;
     QString m_name;
     QString m_name_plural;
@@ -105,6 +108,10 @@ private:
 
     void read_caste();
     int get_body_size(int index);
+
+    VIRTADDR m_body_addr;
+    QVector<VIRTADDR> m_body_parts_addr;
+    QHash<int, BodyPart*> m_body_parts;
 
 };
 

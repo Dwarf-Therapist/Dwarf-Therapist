@@ -60,7 +60,7 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     float rating = 40; //values for 49-51 aren't shown for this column, this is the smallest red square we can get
     QString numeric_rating = "/";
     short sort_val = 1;
-    int body_size = d->body_size();
+    int body_size = d->body_size(true); //use the default size, as DF doesn't take into account a creature's actual size when checking if they can use weapons
     bool onehand = false;
     bool twohand = false;        
     QString desc = tr("<b>Can only wield</b> %1 with <u>2 hands</u>.").arg(wep);
@@ -122,7 +122,7 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
                           .arg(twohand ? norm_text.name() : QColor(Qt::red).name())
                           .arg(m_weapon->multi_grasp()*10))
                      .arg(d->nice_name())
-                     .arg(tr("%1 cm<sup>3</sup><br>").arg(body_size*10));
+                     .arg(tr("%1 cm<sup>3</sup><br>").arg(d->body_size() * 10)); //however in the tooltip, show the actual size
 
     item->setToolTip(tooltip);
 

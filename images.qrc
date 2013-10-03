@@ -194,6 +194,7 @@
         <file>img/door--plus.png</file>
         <file>img/chair--plus.png</file>
         <file>img/safe--plus.png</file>
+        <file>img/exclamation-shield-frame.png</file>
     </qresource>
     <qresource prefix="/profession">
         <file>img/profession icons/prof_10.png</file>

@@ -30,6 +30,16 @@
      <item>
       <widget class="QLineEdit" name="le_name"/>
      </item>
+     <item>
+      <widget class="QCheckBox" name="cb_animals">
+       <property name="statusTip">
+        <string>If checked, only animals will be shown in this view.</string>
+       </property>
+       <property name="text">
+        <string>Animals Only</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>

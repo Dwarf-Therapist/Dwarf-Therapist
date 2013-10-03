@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef SKILL_LEGEND_DOCK_H
 #define SKILL_LEGEND_DOCK_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "uberdelegate.h"
 
 class SkillLegendDock : public QDockWidget {

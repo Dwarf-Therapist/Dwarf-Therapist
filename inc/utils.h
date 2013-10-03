@@ -190,4 +190,8 @@ static inline QString embedPixmap(const QPixmap &img){
     return QString("<img src=\"data:image/png;base64,%1\"/>").arg(QString(buffer.data().toBase64()));
 }
 
+static inline bool has_flag(int flag, int flags){
+    return ((flag & flags) == flag);
+}
+
 #endif // UTILS_H

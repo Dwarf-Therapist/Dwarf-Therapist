@@ -41,6 +41,7 @@ typedef enum {
     CT_PROFESSION,
     CT_HIGHEST_MOOD,
     CT_TRAINED,
+    CT_HEALTH,
     CT_TOTAL_TYPES    
 } COLUMN_TYPE;
 
@@ -73,7 +74,8 @@ static inline COLUMN_TYPE get_column_type(const QString &name) {
         return CT_HIGHEST_MOOD;
     } else if (name.toLower() == "trained"){
         return CT_TRAINED;
-    }
+    } else if (name.toLower() == "health")
+        return CT_HEALTH;
     return CT_DEFAULT;
 }
 
@@ -93,6 +95,7 @@ static inline QString get_column_type(const COLUMN_TYPE &type) {
     case CT_PROFESSION:             return "PROFESSION";
     case CT_HIGHEST_MOOD:           return "MOOD_SKILL";
     case CT_TRAINED:                return "TRAINED";
+    case CT_HEALTH:                 return "HEALTH";
     default:
         return "UNKNOWN";
     }

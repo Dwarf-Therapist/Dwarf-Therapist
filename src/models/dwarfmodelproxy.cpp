@@ -41,7 +41,9 @@ DwarfModelProxy::DwarfModelProxy(QObject *parent)
     :QSortFilterProxyModel(parent)
     , m_last_sort_order(Qt::AscendingOrder)
     , m_engine(new QScriptEngine(this))    
-{}
+{
+    this->setDynamicSortFilter(false);
+}
 
 DwarfModel* DwarfModelProxy::get_dwarf_model() const {
     return static_cast<DwarfModel*>(sourceModel());
@@ -160,11 +162,17 @@ void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role, Qt::SortOrder order
         case DSR_ID_DESC:            
             setSortRole(DwarfModel::DR_ID);
             break;
-        case DSR_AGE_ASC:            
+        case DSR_AGE_ASC:
             setSortRole(DwarfModel::DR_AGE);
             break;
-        case DSR_AGE_DESC:            
+        case DSR_AGE_DESC:
             setSortRole(DwarfModel::DR_AGE);
+            break;
+        case DSR_SIZE_ASC:
+            setSortRole(DwarfModel::DR_SIZE);
+            break;
+        case DSR_SIZE_DESC:
+            setSortRole(DwarfModel::DR_SIZE);
             break;
         }
         m_last_sort_order = order;

@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QtGui>
+#include <QtWidgets>
 #include "qmath.h"
 
 #include "mainwindow.h"
@@ -91,6 +91,7 @@ StateTableView::StateTableView(QWidget *parent)
 
     connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(hscroll_value_changed(int)));
     connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(vscroll_value_changed(int)));
+
 }
 
 
@@ -815,6 +816,12 @@ void StateTableView::keyPressEvent(QKeyEvent *event ){
     case Qt::Key_PageUp:
         verticalScrollBar()->setValue(verticalScrollBar()->value() - verticalScrollBar()->pageStep());
         break;
+    case Qt::Key_Home:
+        horizontalScrollBar()->setValue(horizontalScrollBar()->value() - horizontalScrollBar()->pageStep());
+        break;
+    case Qt::Key_End:
+        horizontalScrollBar()->setValue(horizontalScrollBar()->value() + horizontalScrollBar()->pageStep());
+        break;
     case Qt::Key_Up:
         verticalScrollBar()->setValue(verticalScrollBar()->value() - verticalScrollBar()->singleStep());
         break;
@@ -826,7 +833,7 @@ void StateTableView::keyPressEvent(QKeyEvent *event ){
         break;
     case Qt::Key_Left:
         horizontalScrollBar()->setValue(horizontalScrollBar()->value() - horizontalScrollBar()->singleStep());
-        break;
+        break;        
     default:
         break;
     }
@@ -853,15 +860,25 @@ void StateTableView::restore_scroll_positions(){
 //additionally when the model clears data after a read, it will reset the scroll positions
 
 void StateTableView::vscroll_value_changed(int value){
-    if(!is_loading_rows && is_active && !m_model->clearing_data)
+    if(!is_loading_rows && is_active && m_model != 0 && !m_model->clearing_data)
         m_vscroll = value;
 }
 void StateTableView::hscroll_value_changed(int value){
-    if(!is_loading_rows && is_active && !m_model->clearing_data)
+    if(!is_loading_rows && is_active && m_model != 0 && !m_model->clearing_data)
         m_hscroll = value;
 }
 
 void StateTableView::set_scroll_positions(int v_value, int h_value){
     m_vscroll = v_value;
     m_hscroll = h_value;
+}
+
+void StateTableView::wheelEvent(QWheelEvent *event){
+    if(event->modifiers() & Qt::ControlModifier || event->modifiers() & Qt::AltModifier){
+        QWheelEvent *evt_h = new QWheelEvent(event->posF(),event->globalPosF(),event->pixelDelta(),event->angleDelta(),
+                                             event->delta(),Qt::Horizontal,event->buttons(),event->modifiers());
+        QTreeView::wheelEvent(evt_h);
+    }else{
+        QTreeView::wheelEvent(event);
+    }
 }

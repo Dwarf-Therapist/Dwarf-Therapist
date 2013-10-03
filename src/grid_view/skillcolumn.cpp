@@ -137,7 +137,7 @@ void SkillColumn::build_tooltip(Dwarf *d, bool include_roles){
 
     //skill bonus
     QString str_skill_rate = "";
-    if(DT->multiple_castes){
+    if(DT->show_skill_learn_rates){
         int raw_bonus = d->get_skill(m_skill_id).skill_rate();
         int bonus = raw_bonus - 100;
         if(bonus != 0){

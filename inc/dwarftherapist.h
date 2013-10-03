@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 #define DT (static_cast<DwarfTherapist *>(QCoreApplication::instance()))
 
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <QVector>
 #include "defines.h"
 #include "role.h"
@@ -69,6 +69,7 @@ public:
     DFInstance *get_DFInstance() {return m_main_window->get_DFInstance();}
 
     bool multiple_castes;
+    bool show_skill_learn_rates;
 
     void emit_settings_changed();
     void emit_roles_changed();

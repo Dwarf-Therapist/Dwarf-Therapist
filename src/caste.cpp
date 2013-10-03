@@ -28,14 +28,15 @@ THE SOFTWARE.
 #include "truncatingfilelogger.h"
 #include "gamedatareader.h"
 #include "flagarray.h"
+#include "races.h"
+#include "bodypart.h"
 
 #include "dwarfstats.h"
 
-Caste::Caste(DFInstance *df, VIRTADDR address, int race_id, QString race_name, QObject *parent)
+Caste::Caste(DFInstance *df, VIRTADDR address, Race *r, QObject *parent)
     : QObject(parent)
     , m_address(address)
-    , m_race_id(race_id)
-    , m_race_name(race_name)
+    , m_race(r)
     , m_tag(QString::null)
     , m_name(QString::null)
     , m_name_plural(QString::null)
@@ -43,19 +44,22 @@ Caste::Caste(DFInstance *df, VIRTADDR address, int race_id, QString race_name, Q
     , m_df(df)
     , m_mem(df->memory_layout())
     , m_flags()
-    , m_has_extracts(false)    
+    , m_has_extracts(false)
+    , m_body_addr(0x0)
 {
     load_data();
 }
 
 Caste::~Caste() {
+    qDeleteAll(m_body_parts);
     m_body_sizes.clear();
     m_attrib_ranges.clear();
     m_skill_rates.clear();    
+    m_race = 0;
 }
 
-Caste* Caste::get_caste(DFInstance *df, const VIRTADDR & address, int race_id, QString race_name) {
-    return new Caste(df, address, race_id, race_name);
+Caste* Caste::get_caste(DFInstance *df, const VIRTADDR & address, Race *r) {
+    return new Caste(df, address, r);
 }
 
 void Caste::load_data() {
@@ -65,7 +69,7 @@ void Caste::load_data() {
     }
     // make sure our reference is up to date to the active memory layout
     m_mem = m_df->memory_layout();
-    TRACE << "Starting refresh of Caste data at" << hexify(m_address);
+    TRACE << "Starting refresh of Caste data at" << hexify(m_address);    
 
     read_caste();
 }
@@ -99,6 +103,8 @@ void Caste::read_caste() {
     if(extracts.count() > 0)
         m_has_extracts = true;
 
+    m_body_addr = m_address + m_mem->caste_offset("body_info");
+    m_body_parts_addr = m_df->enumerate_vector(m_body_addr - DFInstance::VECTOR_POINTER_OFFSET);
 }
 
 bool Caste::is_trainable(){
@@ -125,6 +131,8 @@ void Caste::load_skill_rates(){
             if((val-100) >= 25)
                 m_bonuses.append(GameDataReader::ptr()->get_skill_name(skill_id));
             addr += 0x4;
+            if(!DT->show_skill_learn_rates && val != 100)
+                DT->show_skill_learn_rates = true;
         }
     }
 }
@@ -201,7 +209,7 @@ QPair<int, QString> Caste::get_attribute_descriptor_info(ATTRIBUTES_TYPE id, int
     }
 
     //only append the caste's name to our playable race (don't do this for tame animals in the fort)
-    if(DT->multiple_castes && m_race_id == m_df->dwarf_race_id()){
+    if(DT->multiple_castes && m_race->race_id() == m_df->dwarf_race_id()){
         ret.second == "" ? ret.second = QObject::tr("Average") : ret.second;
         ret.second = QObject::tr("%1 for a %2.").arg(ret.second).arg(m_name);
     }
@@ -224,7 +232,17 @@ void Caste::load_trait_info(){
 //    }
 }
 
-
+BodyPart* Caste::get_body_part(int body_part_id){
+    if(body_part_id >= 0 && body_part_id < m_body_parts_addr.size()){
+        if(!m_body_parts.keys().contains(body_part_id)){
+            BodyPart *bp = new BodyPart(m_df,m_race,m_body_parts_addr.at(body_part_id),body_part_id);
+            m_body_parts.insert(body_part_id,bp);
+        }
+        return m_body_parts.value(body_part_id);
+    }else{
+        return new BodyPart();
+    }
+}
 
 int Caste::get_body_size(int index){
     if(m_body_sizes.size()>index)
@@ -240,7 +258,7 @@ QString Caste::description(){
 
         return tr("%1 These %2 gain a significant xp bonus for <b>%3</b>.")
                 .arg(m_description)
-                .arg(m_race_name)
+                .arg(m_race->plural_name())
                 .arg(list);
     }else{
         return m_description;

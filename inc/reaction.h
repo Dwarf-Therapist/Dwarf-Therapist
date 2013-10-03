@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef REACTION_H
 #define REACTION_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "utils.h"
 
 class DFInstance;
@@ -42,6 +42,7 @@ public:
 
     QString name() {return m_name;}
     QString skill() {return m_skill;}
+    short skill_id() {return m_skill_id;}
     QString tag() {return m_tag;}
 
     void load_data();

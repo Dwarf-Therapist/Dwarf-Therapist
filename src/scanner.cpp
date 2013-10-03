@@ -175,7 +175,7 @@ void Scanner::find_vector_by_length() {
 
     get_brute_force_address_range(params.start_addr, params.end_addr);
     params.target_count = target_count;
-    params.op = op.at(0).toAscii();
+    params.op = op.at(0).toLatin1();
 
     QByteArray needle((const char *)&params, sizeof(params));
     m_thread->set_meta(needle);
@@ -267,7 +267,7 @@ void Scanner::create_memory_layout() {
 void Scanner::find_std_string() {
     set_ui_enabled(false);
     prepare_new_thread(FIND_STD_STRING);
-    QByteArray needle = ui->le_null_terminated_string->text().toAscii();
+    QByteArray needle = ui->le_null_terminated_string->text().toLatin1();
     m_thread->set_meta(needle);
     run_thread_and_wait();
     set_ui_enabled(true);
@@ -377,7 +377,7 @@ void Scanner::find_narrowing() {
     set_ui_enabled(false);
     uint target_count = ui->le_narrowing_value->text().toInt();
     prepare_new_thread(FIND_NARROWING_VECTORS_OF_SIZE);
-    QByteArray needle = QString("%1").arg(target_count).toAscii();
+    QByteArray needle = QString("%1").arg(target_count).toLatin1();
     m_thread->set_meta(needle);
 
     if(ui->lbl_narrowing_result->text() != "nil") {

@@ -63,7 +63,7 @@ public:
                following to do
             */
             bool follow_ptr = true; // most of the time
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
             // windows does some hackery on strings less than 16 chars long
             if (m_needle.size() < 16) {
                 follow_ptr = false; // the string buffer will be in the string
@@ -85,7 +85,7 @@ public:
                         VIRTADDR str_ptr = ptr - m_df->memory_layout()->string_buffer_offset();
                         QString real_str = m_df->read_string(str_ptr);
                         LOGD << "found real str:" << real_str;
-                        if (real_str.toAscii() == m_needle) {
+                        if (real_str.toLatin1() == m_needle) {
                             emit found_offset(real_str, str_ptr);
                         } else {
                             emit found_offset(QString("Incomplete? '%1'")

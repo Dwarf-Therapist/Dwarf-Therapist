@@ -31,6 +31,7 @@ GridView::GridView(QString name, QObject *parent)
     , m_active(true)
     , m_name(name)
     , m_is_custom(true)
+    , m_show_animals(false)
 {}
 
 GridView::GridView(const GridView &to_be_copied)
@@ -38,6 +39,7 @@ GridView::GridView(const GridView &to_be_copied)
     , m_active(to_be_copied.m_active)
     , m_name(to_be_copied.m_name)
     , m_is_custom(to_be_copied.m_is_custom)
+    , m_show_animals(to_be_copied.m_show_animals)
 {
     foreach(ViewColumnSet *s, to_be_copied.sets()) {
         add_set(new ViewColumnSet((const ViewColumnSet)*s));
@@ -45,9 +47,10 @@ GridView::GridView(const GridView &to_be_copied)
 }
 
 GridView::~GridView() {
-    foreach(ViewColumnSet *set, m_sets) {
-        set->deleteLater();
-    }
+    qDeleteAll(m_sets);
+//    foreach(ViewColumnSet *set, m_sets) {
+//        set->deleteLater();
+//    }
 }
 
 void GridView::re_parent(QObject *parent) {
@@ -102,6 +105,7 @@ ViewColumn *GridView::get_column(const int idx){
 void GridView::write_to_ini(QSettings &s) {
     s.setValue("name", m_name);
     s.setValue("active", m_active);
+    s.setValue("animals", m_show_animals);
     s.beginWriteArray("sets", m_sets.size());
     int i = 0;
     foreach(ViewColumnSet *set, m_sets) {
@@ -115,6 +119,10 @@ GridView *GridView::read_from_ini(QSettings &s, QObject *parent) {
     GridView *ret_val = new GridView("", parent);
     ret_val->set_name(s.value("name", "UNKNOWN").toString());
     ret_val->set_active(s.value("active", true).toBool());
+    ret_val->set_show_animals(s.value("animals",false).toBool());
+    //support old views before the animal flag was available
+    if(!ret_val->show_animals() && ret_val->name().contains(tr("animal"),Qt::CaseInsensitive))
+        ret_val->set_show_animals(true);
 
     int total_sets = s.beginReadArray("sets");
     for (int i = 0; i < total_sets; ++i) {
@@ -137,6 +145,7 @@ void GridView::reorder_sets(const QStandardItemModel &model) {
         foreach(ViewColumnSet *set, m_sets) {
             if (set->name() == name) {
                 new_sets << set;
+                break;
             }
         }
     }

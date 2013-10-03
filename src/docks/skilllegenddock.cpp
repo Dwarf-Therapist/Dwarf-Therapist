@@ -67,7 +67,7 @@ SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags)
         item->setData(rating, DwarfModel::DR_RATING);
         item->setData(floor(rating), DwarfModel::DR_DISPLAY_RATING);
 		item->setData(CT_SKILL, DwarfModel::DR_COL_TYPE);
-		item->setData(Qt::white, DwarfModel::DR_DEFAULT_BG_COLOR);        
+        item->setData(QColor(Qt::white), DwarfModel::DR_DEFAULT_BG_COLOR);
 		sub_items << name << item;
 		m->appendRow(sub_items);
 	}

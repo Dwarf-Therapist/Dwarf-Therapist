@@ -49,9 +49,9 @@ ThoughtsDock::ThoughtsDock(QWidget *parent, Qt::WindowFlags flags)
     tw_thoughts->setSelectionBehavior(QAbstractItemView::SelectRows);
     tw_thoughts->setHorizontalHeaderLabels(QStringList() << "Thought" << "Count" << "Description");
     tw_thoughts->verticalHeader()->hide();
-    tw_thoughts->horizontalHeader()->setResizeMode(0, QHeaderView::Interactive);
-    tw_thoughts->horizontalHeader()->setResizeMode(1, QHeaderView::Interactive);
-    tw_thoughts->horizontalHeader()->setResizeMode(2, QHeaderView::Interactive);    
+    tw_thoughts->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+    tw_thoughts->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
+    tw_thoughts->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);    
     tw_thoughts->setColumnWidth(0,100);
     tw_thoughts->setColumnWidth(1,50);
     tw_thoughts->horizontalHeader()->setStretchLastSection(true);

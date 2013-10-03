@@ -61,7 +61,7 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     short score = d->trait(m_trait_id);
     QString msg = "???";
     if (m_trait)
-        msg = tr("%1 (%2)").arg(m_trait->level_message(score)).arg(score);
+        msg = tr("%1 (Raw: %2)").arg(m_trait->level_message(score)).arg(score);
 
     if (d->trait_is_active(m_trait_id)==false)
         msg += tr("<br/><br/>Not an active trait for this dwarf.");
@@ -73,14 +73,22 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     if(!temp.isEmpty())
         msg += tr("<br/><br/>%1").arg(temp);
 
+    int rating = score;
+    QString warning = "";
+    if(GameDataReader::ptr()->get_trait(m_trait_id)->inverted){
+        warning = tr("<br/><h5 style=\"margin:0;\"><font color=red>*This trait's score should be valued inversely!</font></h5>");
+        rating = 100 - score;
+    }
+
     item->setText(QString::number(score));
-    item->setData(score, DwarfModel::DR_SORT_VALUE);
-    item->setData(score, DwarfModel::DR_RATING);
-    item->setData(score, DwarfModel::DR_DISPLAY_RATING);
+    item->setData(rating, DwarfModel::DR_SORT_VALUE);
+    item->setData(rating, DwarfModel::DR_RATING);
+    item->setData(rating, DwarfModel::DR_DISPLAY_RATING);
     
-    QString tooltip = QString("<h3>%1</h3>%2<br><h4>%3</h4>")
+    QString tooltip = QString("<h3>%1</h3>%2<br>%3<h4>%4</h4>")
             .arg(m_title)
             .arg(msg)
+            .arg(warning)
             .arg(d->nice_name());
     item->setToolTip(tooltip);
 

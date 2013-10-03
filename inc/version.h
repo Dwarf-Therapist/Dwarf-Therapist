@@ -26,7 +26,7 @@ THE SOFTWARE.
 #include <QString>
 #include "defines.h"
 
-#ifdef Q_WS_X11
+#ifdef Q_OS_X11
 #undef major
 #undef minor
 #endif

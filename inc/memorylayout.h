@@ -51,7 +51,13 @@ public:
         return m_item_offsets.value(key, -1);
     }
     int descriptor_offset(const QString & key){
-        return m_descriptor_offsts.value(key, -1);
+        return m_descriptor_offsets.value(key, -1);
+    }
+    int health_offset(const QString & key){
+        return m_health_offsets.value(key, -1);
+    }
+    int wound_offset(const QString & key){
+        return m_unit_wound_offsets.value(key,-1);
     }
 
     QSettings * data() { return m_data; }
@@ -97,7 +103,9 @@ private:
     AddressHash m_plant_offsets;
     AddressHash m_item_offsets;
     AddressHash m_material_offsets;
-    AddressHash m_descriptor_offsts;
+    AddressHash m_descriptor_offsets;
+    AddressHash m_health_offsets;
+    AddressHash m_unit_wound_offsets;
     QHash<uint, QString> m_valid_flags_1;
     QHash<uint, QString> m_valid_flags_2;
     QHash<uint, QString> m_invalid_flags_1;

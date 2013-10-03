@@ -47,7 +47,7 @@ ImportExportDialog::ImportExportDialog(QWidget *parent)
 void ImportExportDialog::setup_for_profession_export() {
     m_mode = MODE_EXPORT_PROFESSIONS;
     QString default_path = QString("%1/%2")
-        .arg(QDesktopServices::storageLocation(QDesktopServices::DesktopLocation))
+        .arg(QStandardPaths::DesktopLocation)
         .arg("custom_professions.dtp");
     m_path = QFileDialog::getSaveFileName(this, tr("Choose a file to export to"),	default_path,
         "Dwarf Therapist Profession Exports (*.dtp);;All Files (*.*)");
@@ -75,7 +75,7 @@ void ImportExportDialog::setup_for_profession_export() {
 
 void ImportExportDialog::setup_for_profession_import() {
     m_mode = MODE_IMPORT_PROFESSIONS;
-    QString default_path = QString("%1/%2").arg(QDesktopServices::storageLocation(QDesktopServices::DesktopLocation), "custom_professions.dtp");
+    QString default_path = QString("%1/%2").arg(QStandardPaths::DesktopLocation).arg("custom_professions.dtp");
     m_path = QFileDialog::getOpenFileName(this, tr("Choose a file to import"), default_path,
         "Dwarf Therapist Profession Exports (*.dtp);;All Files (*.*)");
     if (m_path.isEmpty())
@@ -95,13 +95,14 @@ void ImportExportDialog::setup_for_profession_import() {
     QDateTime t = s.value("info/export_date").toDateTime();
 
     int cnt = s.beginReadArray("custom_professions");
+
     for(int i = 0; i < cnt; i++) {
         s.setArrayIndex(i);
         CustomProfession *cp = new CustomProfession(DT);
         cp->set_name(s.value("name", "UNKNOWN").toString());
         cp->set_path(s.value(QString("icon_id"),99).toInt());
-        cp->set_font_color(s.value("text_color", Qt::black).value<QColor>());
-        cp->set_bg_color(s.value("bg_color", Qt::black).value<QColor>());
+        cp->set_font_color(s.value("text_color", QColor(Qt::black)).value<QColor>());
+        cp->set_bg_color(s.value("bg_color", QColor(Qt::black)).value<QColor>());
         cp->set_text(s.value("text", "").toString());
         int labor_cnt = s.beginReadArray("labors");
         for(int j = 0; j < labor_cnt; ++j) {
@@ -155,7 +156,7 @@ void ImportExportDialog::setup_for_profession_import() {
 void ImportExportDialog::setup_for_gridview_export() {
     m_mode = MODE_EXPORT_GRIDVIEWS;
     QString default_path = QString("%1/%2")
-        .arg(QDesktopServices::storageLocation(QDesktopServices::DesktopLocation))
+        .arg(QStandardPaths::DesktopLocation)
         .arg("gridviews.dtg");
     m_path = QFileDialog::getSaveFileName(this, tr("Choose a file to export to"),
         default_path,  "Dwarf Therapist Grid View Exports (*.dtg);;All Files (*.*)");
@@ -184,7 +185,7 @@ void ImportExportDialog::setup_for_gridview_export() {
 void ImportExportDialog::setup_for_gridview_import() {
     m_mode = MODE_IMPORT_GRIDVIEWS;
     QString default_path = QString("%1/%2")
-        .arg(QDesktopServices::storageLocation(QDesktopServices::DesktopLocation))
+        .arg(QStandardPaths::DesktopLocation)
         .arg("gridviews.dtg");
     m_path = QFileDialog::getOpenFileName(this, tr("Choose a file to import"),
         default_path,  "Dwarf Therapist Grid View Exports (*.dtg);;All Files (*.*)");
@@ -248,7 +249,7 @@ void ImportExportDialog::setup_for_gridview_import() {
 void ImportExportDialog::setup_for_role_export() {
     m_mode = MODE_EXPORT_ROLES;
     QString default_path = QString("%1/%2")
-        .arg(QDesktopServices::storageLocation(QDesktopServices::DesktopLocation))
+        .arg(QStandardPaths::DesktopLocation)
         .arg("custom_roles.dtp");
     m_path = QFileDialog::getSaveFileName(this, tr("Choose a file to export to"),	default_path,
         "Dwarf Therapist Roles Exports (*.dtp);;All Files (*.*)");
@@ -280,7 +281,7 @@ void ImportExportDialog::setup_for_role_export() {
 
 void ImportExportDialog::setup_for_role_import() {
     m_mode = MODE_IMPORT_ROLES;
-    QString default_path = QString("%1/%2").arg(QDesktopServices::storageLocation(QDesktopServices::DesktopLocation), "custom_roles.dtp");
+    QString default_path = QString("%1/%2").arg(QStandardPaths::DesktopLocation).arg("custom_roles.dtp");
     m_path = QFileDialog::getOpenFileName(this, tr("Choose a file to import"), default_path,
         "Dwarf Therapist Roles Imports (*.dtp);;All Files (*.*)");
     if (m_path.isEmpty())

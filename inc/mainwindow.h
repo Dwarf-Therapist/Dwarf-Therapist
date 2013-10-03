@@ -24,7 +24,7 @@ THE SOFTWARE.
 #define MAINWINDOW_H
 
 #include <QtCore>
-#include <QtGui>
+#include <QtWidgets>
 #include <QtNetwork>
 
 class StateTableView;
@@ -90,7 +90,7 @@ public:
         void edit_filter_script();
         void remove_filter_script();
         void print_gridview();
-        void save_gridview();
+        void save_gridview_csv();
 
         // version check
         void check_latest_version(bool show_result_on_equal=false);
@@ -143,7 +143,7 @@ private:
     ScriptDialog *m_script_dialog;
     roleDialog *m_role_editor;
     optimizereditor *m_optimize_plan_editor;
-    QHttp *m_http;
+    QNetworkAccessManager *m_http;
     bool m_reading_settings;
     bool m_show_result_on_equal; //! used during version checks
     QCompleter *m_dwarf_name_completer;
@@ -176,13 +176,15 @@ private:
         void edit_custom_role();
         void remove_custom_role();
         void display_group(const int);
-        void preference_selected(QStringList names, QString category);
+        void preference_selected(QList<QPair<QString,QString> > vals);
         void thought_selected(QList<short> ids);
+        void health_legend_selected(QList<QPair<int,int> > vals);
         //optimization stuff
         void edit_opt();
         void remove_opt();
         void done_editing_opt_plan(int result);
         void done_editing_role(int result);
+        void main_toolbar_style_changed(Qt::ToolButtonStyle button_style);
 };
 
 #endif // MAINWINDOW_H

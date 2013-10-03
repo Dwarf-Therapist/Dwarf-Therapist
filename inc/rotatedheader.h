@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef ROTATED_HEADER_H
 #define ROTATED_HEADER_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "dwarfmodelproxy.h"
 
 class DwarfModel;

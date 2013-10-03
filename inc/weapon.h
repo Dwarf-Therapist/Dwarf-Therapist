@@ -1,7 +1,7 @@
 #ifndef WEAPON_H
 #define WEAPON_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "utils.h"
 
 class DFInstance;

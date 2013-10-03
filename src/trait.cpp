@@ -22,13 +22,14 @@ THE SOFTWARE.
 */
 #include "trait.h"
 #include "gamedatareader.h"
-#include <QtGui>
+#include <QtWidgets>
 
 Trait::Trait(int trait_id, QSettings &s, QObject *parent)
     : QObject(parent)
 {
     this->trait_id = trait_id;
     name = s.value("name", "UNKNOWN").toString();
+    inverted = s.value("inverted",false).toBool();
 
     //read in conflicting skills
     int count = s.beginReadArray("conflicts");

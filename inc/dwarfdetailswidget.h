@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef DWARF_DETAILS_WIDGET_H
 #define DWARF_DETAILS_WIDGET_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class Dwarf;
 
@@ -47,24 +47,12 @@ private:
     QVector<QTableWidget*> m_tables;
     QByteArray m_splitter_sizes;
 
-    int m_skill_sort_col;
-    int m_skill_sort_desc;
-
-    int m_attribute_sort_col;
-    int m_attribute_sort_desc;
-
-    int m_trait_sort_col;
-    int m_trait_sort_desc;
-
-    int m_role_sort_col;
-    int m_role_sort_desc;
-
-    int m_pref_sort_col;
-    int m_pref_sort_desc;
+    QList<QPair<int,Qt::SortOrder> > m_sorting;
 
     int m_current_id;
 
     void clear_table(QTableWidget &t);
+    QString clean_font_tags(QString val);
 
 };
 

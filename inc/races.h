@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef RACES_H
 #define RACES_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "utils.h"
 #include "flagarray.h"
 
@@ -55,7 +55,7 @@ public:
     VIRTADDR pop_ratio_vector() {return m_pop_ratio_vector;}
     VIRTADDR castes_vector() {return m_castes_vector;}
     Material *get_creature_material(int index);
-    QVector<Material*> get_creature_materials();
+    QHash<int, Material *> get_creature_materials();
     Caste *get_caste_by_id(int id) const {return m_castes.value(id, 0);}
 
     void load_data();
@@ -67,6 +67,7 @@ public:
 
     void load_caste_ratios();
 
+    VIRTADDR get_tissue_address(int index);
 private:
     VIRTADDR m_address;
 
@@ -80,11 +81,14 @@ private:
     QString m_child_name;
     QString m_child_name_plural;    
     QMap<int, Caste*> m_castes;
-    QVector<Material*> m_creature_mats;    
+    QHash<int,Material*> m_creature_mats;
 
     VIRTADDR m_pref_string_vector;
     VIRTADDR m_pop_ratio_vector;
     VIRTADDR m_castes_vector;
+
+    QVector<VIRTADDR> m_materials_addr;
+    QVector<VIRTADDR> m_tissues_addr;
 
     DFInstance * m_df;
     MemoryLayout * m_mem;    
@@ -93,7 +97,7 @@ private:
     bool loaded_stats;
 
     void read_race();
-    void load_materials();
+    void load_materials(int idx = -1);
 };
 
 #endif // RACES_H

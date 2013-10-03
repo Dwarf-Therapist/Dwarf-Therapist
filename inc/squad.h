@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef SQUAD_H
 #define SQUAD_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "utils.h"
 
 class Dwarf;

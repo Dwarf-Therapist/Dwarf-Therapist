@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef WORD_H
 #define WORD_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "utils.h"
 
 class Dwarf;

@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QtGui>
+#include <QtWidgets>
 #include "customprofession.h"
 #include "gamedatareader.h"
 #include "ui_customprofession.h"
@@ -355,9 +355,13 @@ QFont* CustomProfession::get_font(){
 }
 
 void CustomProfession::set_name(QString name){
-    //an icon override will be stored as name::id
-    QStringList names = name.split("::",QString::SkipEmptyParts);
-    m_name = names.at(0);
+    if(name.contains("::")){
+        //an icon override will be stored as name::id
+        QStringList names = name.split("::",QString::SkipEmptyParts);
+        m_name = names.at(0);
+    }else{
+        m_name = name;
+    }
 }
 
 QString CustomProfession::get_save_name(){

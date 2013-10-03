@@ -24,7 +24,7 @@ THE SOFTWARE.
 #ifndef ROLE_H
 #define ROLE_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "math.h"
 
 class Preference;

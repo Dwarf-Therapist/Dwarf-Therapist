@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QtGui>
+#include <QtWidgets>
 
 #include "optionsmenu.h"
 #include "customcolor.h"
@@ -121,12 +121,13 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     m_curse_color = new CustomColor(tr("Cursed"),tr("Cursed creatures will be highlighted with this color."),
                                     "cursed",QColor(125,97,186),this);
 
-    QVBoxLayout *main_layout = new QVBoxLayout;
+    QVBoxLayout *grid_layout = new QVBoxLayout;
+    grid_layout->addWidget(ui->cb_grid_health_colors);
     foreach(CustomColor *cc, m_general_colors) {
-        main_layout->addWidget(cc);
+        grid_layout->addWidget(cc);
     }
-    main_layout->setSpacing(0);
-    ui->tab_grid_colors->setLayout(main_layout);
+    grid_layout->setSpacing(0);
+    ui->tab_grid_colors->setLayout(grid_layout);
 
     QVBoxLayout *happiness_layout = new QVBoxLayout;
     happiness_layout->addWidget(ui->cb_happiness_icons);
@@ -180,7 +181,9 @@ bool OptionsMenu::event(QEvent *evt) {
 void OptionsMenu::showEvent(QShowEvent *evt){
     //if we haven't detected multiple castes (mods) skill rate isn't used, so hide the weight setting
     if(!DT->multiple_castes){
-        ui->lbl_def_skill_rate_weight->setVisible(false);
+        ui->lbl_def_skill_rate_weight->setVisible(false);        
+    }
+    if(!DT->show_skill_learn_rates){
         ui->dsb_skill_rate_weight->setVisible(false);
     }
     QDialog::showEvent(evt);
@@ -238,6 +241,8 @@ void OptionsMenu::read_settings() {
     ui->cb_sync_scrolling->setChecked(s->value("scroll_all_views",false).toBool());
 
     ui->cb_moodable->setChecked(s->value("color_mood_cells",false).toBool());    
+    ui->cb_gender_icons->setChecked(s->value("show_gender_icons",true).toBool());
+    ui->cb_grid_health_colors->setChecked(s->value("color_health_cells",true).toBool());
     //the signal to disable the color pickers doesn't fire on the initial read. this is a work around for the inital setting
     if(!ui->cb_moodable->isChecked()){
         m_general_colors.at(8)->setDisabled(true);
@@ -268,7 +273,9 @@ void OptionsMenu::read_settings() {
     ui->cb_generic_names->setChecked(s->value("use_generic_names", false).toBool());
     ui->cb_curse_highlight->setChecked(s->value("highlight_cursed", false).toBool());
     ui->cb_noble_highlight->setChecked(s->value("highlight_nobles", false).toBool());
-    ui->cb_labor_exclusions->setChecked(s->value("labor_exclusions", true).toBool());
+    ui->cb_labor_exclusions->setChecked(s->value("labor_exclusions", true).toBool());    
+    ui->cb_no_diagnosis->setChecked(s->value("diagnosis_not_required",false).toBool());
+    ui->cb_animal_health->setChecked(s->value("animal_health",false).toBool());
 
     ui->chk_show_caste->setChecked(s->value("tooltip_show_caste", true).toBool());
     ui->chk_show_happiness->setChecked(s->value("tooltip_show_happiness", true).toBool());
@@ -281,6 +288,13 @@ void OptionsMenu::read_settings() {
     ui->chk_show_highest_mood->setChecked(s->value("tooltip_show_mood", true).toBool());
     ui->chk_show_thoughts->setChecked(s->value("tooltip_show_thoughts", true).toBool());
     ui->chk_show_squad->setChecked(s->value("tooltip_show_squad", true).toBool());
+    ui->chk_show_age->setChecked(s->value("tooltip_show_age", true).toBool());
+    ui->chk_show_unit_size->setChecked(s->value("tooltip_show_size",true).toBool());
+    ui->chk_show_buffs->setChecked(s->value("tooltip_show_buffs",true).toBool());
+
+    ui->chk_show_health->setChecked(s->value("tooltip_show_health",false).toBool());
+    ui->chk_health_colors->setChecked(s->value("tooltip_health_colors",true).toBool());
+    ui->chk_health_symbols->setChecked(s->value("tooltip_health_symbols",false).toBool());
 
     ui->chk_show_roles->setChecked(s->value("tooltip_show_roles", true).toBool());
     ui->sb_roles_tooltip->setValue(s->value("role_count_tooltip",3).toInt());
@@ -334,6 +348,8 @@ void OptionsMenu::write_settings() {
         s->setValue("header_font", m_col_header_font.first);
         s->setValue("happiness_icons",ui->cb_happiness_icons->isChecked());
         s->setValue("color_mood_cells", ui->cb_moodable->isChecked());
+        s->setValue("show_gender_icons", ui->cb_gender_icons->isChecked());
+        s->setValue("color_health_cells", ui->cb_grid_health_colors->isChecked());
         s->setValue("show_labor_counts",ui->cb_labor_counts->isChecked());
         s->setValue("group_all_views",ui->cb_sync_grouping->isChecked());
         s->setValue("scroll_all_views",ui->cb_sync_scrolling->isChecked());
@@ -355,6 +371,8 @@ void OptionsMenu::write_settings() {
         s->setValue("highlight_cursed", ui->cb_curse_highlight->isChecked());
         s->setValue("highlight_nobles", ui->cb_noble_highlight->isChecked());
         s->setValue("labor_exclusions", ui->cb_labor_exclusions->isChecked());
+        s->setValue("diagnosis_not_required", ui->cb_no_diagnosis->isChecked());
+        s->setValue("animal_health", ui->cb_animal_health->isChecked());
         s->setValue("tooltip_font", m_tooltip_font.first);
         s->setValue("main_font", m_main_font.first);
 
@@ -384,6 +402,12 @@ void OptionsMenu::write_settings() {
         s->setValue("tooltip_show_mood", ui->chk_show_highest_mood->isChecked());
         s->setValue("tooltip_show_thoughts", ui->chk_show_thoughts->isChecked());
         s->setValue("tooltip_show_squad", ui->chk_show_squad->isChecked());
+        s->setValue("tooltip_show_age", ui->chk_show_age->isChecked());
+        s->setValue("tooltip_show_size", ui->chk_show_unit_size->isChecked());
+        s->setValue("tooltip_show_health", ui->chk_show_health->isChecked());
+        s->setValue("tooltip_health_colors", ui->chk_health_colors->isChecked());
+        s->setValue("tooltip_health_symbols", ui->chk_health_symbols->isChecked());
+        s->setValue("tooltip_show_buffs", ui->chk_show_buffs->isChecked());
 
         s->endGroup();
     }
@@ -446,6 +470,10 @@ void OptionsMenu::restore_defaults() {
     ui->cb_sync_grouping->setChecked(true);
     ui->cb_sync_scrolling->setChecked(false);
     ui->cb_moodable->setChecked(false);
+    ui->cb_gender_icons->setChecked(true);
+    ui->cb_grid_health_colors->setChecked(true);
+    ui->cb_no_diagnosis->setChecked(false);
+    ui->cb_animal_health->setChecked(false);
 
     ui->chk_show_caste->setChecked(true);
     ui->chk_show_happiness->setChecked(true);
@@ -456,8 +484,11 @@ void OptionsMenu::restore_defaults() {
     ui->chk_show_prof->setChecked(true);
     ui->chk_show_artifact->setChecked(true);
     ui->chk_show_highest_mood->setChecked(false);
-    ui->chk_show_thoughts->setCheckable(true);
-    ui->chk_show_squad->setCheckable(true);
+    ui->chk_show_thoughts->setChecked(true);
+    ui->chk_show_squad->setChecked(true);
+    ui->chk_show_unit_size->setChecked(true);
+    ui->chk_show_age->setChecked(true);
+    ui->chk_show_buffs->setChecked(false);
 
     ui->dsb_attribute_weight->setValue(0.25);
     ui->dsb_pref_weight->setValue(0.15);
@@ -468,6 +499,9 @@ void OptionsMenu::restore_defaults() {
 
     ui->chk_show_roles->setChecked(true);
     ui->chk_show_skills->setChecked(true);    
+    ui->chk_show_health->setChecked(false);
+    ui->chk_health_colors->setChecked(true);
+    ui->chk_health_symbols->setChecked(false);
 
     QFont temp = QFont("Segoe UI", 8);
     m_row_font = qMakePair(temp,temp);

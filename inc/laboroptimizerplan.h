@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef LABOROPTIMIZERPLAN_H
 #define LABOROPTIMIZERPLAN_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class PlanDetail;
 

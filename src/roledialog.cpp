@@ -47,29 +47,29 @@ roleDialog::roleDialog(DFInstance *dfi, QWidget *parent) :
     //attributes table
     ui->tw_attributes->setEditTriggers(QTableWidget::AllEditTriggers);
     ui->tw_attributes->verticalHeader()->hide();
-    ui->tw_attributes->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-    ui->tw_attributes->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
+    ui->tw_attributes->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    ui->tw_attributes->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     ui->tw_attributes->setHorizontalHeaderLabels(QStringList() << "Attribute" << "Weight");
     //skills table
     ui->tw_skills->setEditTriggers(QTableWidget::AllEditTriggers);
     ui->tw_skills->verticalHeader()->hide();
-    ui->tw_skills->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-    ui->tw_skills->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
+    ui->tw_skills->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    ui->tw_skills->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     ui->tw_skills->setHorizontalHeaderLabels(QStringList() << "Skill" << "Weight");
     //traits table
     ui->tw_traits->setEditTriggers(QTableWidget::AllEditTriggers);
     ui->tw_traits->verticalHeader()->hide();
-    ui->tw_traits->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-    ui->tw_traits->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
+    ui->tw_traits->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    ui->tw_traits->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     ui->tw_traits->setHorizontalHeaderLabels(QStringList() << "Trait" << "Weight");
     //preference table
     ui->tw_prefs->setColumnCount(4);
     ui->tw_prefs->setEditTriggers(QTableWidget::AllEditTriggers);
     ui->tw_prefs->verticalHeader()->hide();
-    ui->tw_prefs->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-    ui->tw_prefs->horizontalHeader()->setResizeMode(1, QHeaderView::ResizeToContents);
-    ui->tw_prefs->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
-    ui->tw_prefs->horizontalHeader()->setResizeMode(3, QHeaderView::ResizeToContents);
+    ui->tw_prefs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    ui->tw_prefs->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    ui->tw_prefs->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    ui->tw_prefs->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
     ui->tw_prefs->setHorizontalHeaderLabels(QStringList() << "Preference" << "Weight" << "Category" << "Item");
 
     connect(ui->btn_cancel, SIGNAL(clicked()), SLOT(close_pressed()));
@@ -989,9 +989,6 @@ void roleDialog::build_pref_tree(){
 
 QTreeWidgetItem* roleDialog::init_parent_node(QString title){
     QTreeWidgetItem *node = new QTreeWidgetItem;
-//    Preference *p = new Preference(category,iType);
-//    p->set_value(capitalize(title));
-//    node->setData(0, Qt::UserRole, vPtr<Preference>::asQVariant(p));
     node->setData(0, Qt::UserRole, title);
     node->setText(0, title);
     m_pref_list.insert(node,new QVector<Preference*>());
@@ -1108,6 +1105,7 @@ void roleDialog::selection_changed(){
             //ui->lbl_new->setText("New Raw Rating: " + QString::number(rating,'g',2) + "%");
             calc_new_role();
         }else{
+            m_dwarf = 0;
             ui->lbl_name->setText("Select a dwarf to view ratings.");
             ui->lbl_current->setText("");
             ui->lbl_new->setText("");

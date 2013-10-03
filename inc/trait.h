@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef TRAIT_H
 #define TRAIT_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "global_enums.h"
 #include "dwarfstats.h"
 #include "gamedatareader.h"
@@ -50,6 +50,7 @@ public:
 
     QString name;
     int trait_id;
+    bool inverted; //specifically when setting the drawn rating
     ASPECT_TYPE m_aspect_type;
 
     QString level_message(const short &val);

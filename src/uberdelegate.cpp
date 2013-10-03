@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QtGui>
+#include <QtWidgets>
 #include "uberdelegate.h"
 #include "dwarfmodel.h"
 #include "dwarfmodelproxy.h"
@@ -62,6 +62,11 @@ UberDelegate::UberDelegate(QObject *parent)
                     << QPointF(0.75, 0.5) // right
                     << QPointF(0.5, 0.9) //bottom
                     << QPointF(0.25, 0.5); // left
+
+//    m_diamond_shape << QPointF(5.0, 1.0) //top
+//                    << QPointF(7.5, 5.0) // right
+//                    << QPointF(5.0, 9.0) //bottom
+//                    << QPointF(2.5, 5.0); // left
 }
 
 void UberDelegate::read_settings() {
@@ -88,6 +93,7 @@ void UberDelegate::read_settings() {
     m_skill_drawing_method = static_cast<SKILL_DRAWING_METHOD>(s->value("options/grid/skill_drawing_method", SDM_GROWING_CENTRAL_BOX).toInt());
     draw_happiness_icons = s->value("options/grid/happiness_icons",true).toBool();
     color_mood_cells = s->value("options/grid/color_mood_cells",false).toBool();
+    color_health_cells = s->value("options/grid/color_health_cells",true).toBool();
     m_fnt = s->value("options/grid/font", QFont("Segoe UI", 8)).value<QFont>();
 }
 
@@ -253,6 +259,29 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         paint_grid(adjusted, false, p, opt, idx);
     }
         break;
+    case CT_HEALTH:
+    {
+        QColor bg = paint_bg(adjusted, false, p, opt, idx, false, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
+
+        //draw the symbol text in bold
+        p->save();
+        if (rating != 0) {
+            if(color_health_cells){
+                p->setPen(model_idx.data(Qt::TextColorRole).value<QColor>());
+            }else{
+                p->setPen(get_pen_color(bg));
+            }
+
+            QFont tmp = m_fnt;
+            tmp.setBold(true);
+            p->setFont(tmp);
+            p->drawText(opt.rect, Qt::AlignCenter, text_rating);
+        }
+        p->restore();
+
+        paint_grid(adjusted, false, p, opt, idx);
+    }
+        break;
     case CT_DEFAULT:
     case CT_SPACER:
     default:
@@ -319,12 +348,42 @@ QColor UberDelegate::paint_bg(const QRect &adjusted, bool active, QPainter *p, c
     return bg;
 }
 
+QColor UberDelegate::get_pen_color(const QColor bg) const{
+    QColor c = Qt::black;
+    if (auto_contrast){
+        c = compliment(bg);
+        if(c.toHsv().value() > 50){
+            return QColor(Qt::gray);
+        }else{
+            return QColor(Qt::black);
+        }
+    }
+    return c;
+}
+
 void UberDelegate::paint_values(const QRect &adjusted, float rating, QString text_rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt,
                               const QModelIndex &idx, float median, float min_limit, float max_limit, float min_ignore, float max_ignore, bool bold_text) const{
 
-    QColor c = color_skill;
+    QColor color_fill = color_skill;
+    QColor color_border = Qt::black;
+
+    QPen pn;
+    pn.setColor(color_border);
+    pn.setWidth(0);
+
+    pn.setColor(get_pen_color(bg));
+
     if (auto_contrast)
-        c = compliment(bg);
+        color_fill = compliment(bg);
+
+//    if (auto_contrast){
+//        c = compliment(bg);
+//        if(c.toHsv().value() > 50){
+//            pn.setColor(Qt::gray);
+//        }else{
+//            pn.setColor(Qt::black);
+//        }
+//    }
 
     QModelIndex model_idx = idx;
     if (m_proxy)
@@ -343,13 +402,14 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
     //so also adjust our negative drawing color to a bright orange
     if (rating < median){
         QColor neg = QColor("#DB241A");
-        if(auto_contrast &&  c.toHsv().value() == 255){
+        if(auto_contrast &&  color_fill.toHsv().value() == 255){
             neg.setGreen(neg.green() + 76);
             neg.setBlue(0);
-            c = QColor::fromHsv(neg.hue(), neg.saturation(), 200);
+            color_fill = QColor::fromHsv(neg.hue(), neg.saturation(), 200);
         }else{
-            c = neg;
+            color_fill = neg;
         }
+        pn.setColor(Qt::gray);
     }
 
     //check the median passed in and covert to normal: 0-50-100 if necessary
@@ -377,10 +437,10 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
         if (rating != 0 && (rating >= max_limit || rating <= min_limit)) {
             // draw diamond
             p->setRenderHint(QPainter::Antialiasing);
-            p->setPen(Qt::gray);
-            p->setBrush(QBrush(c));
+            p->setPen(pn);
+            p->setBrush(QBrush(color_fill));
             p->translate(opt.rect.x() + 2, opt.rect.y() + 2);
-            p->scale(opt.rect.width()-4, opt.rect.height()-4);
+            p->scale(opt.rect.width() - 4, opt.rect.height() - 4);
             p->drawPolygon(m_diamond_shape);
         } else if (rating > -1 && rating < max_limit) {            
             //0.05625 is the smallest dot we can draw here, so scale to ensure the smallest exp value (1/500 or .002) can always be drawn
@@ -393,17 +453,19 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
             double size = (((adj_rating-min_limit) * (perc_of_cell - 0.05625)) / (max_limit - min_limit)) + 0.05625;
             size = roundf(size * 100) / 100; //this is to aid in the problem of an odd number of pixel in an even size cell, or vice versa
             double inset = (1.0f - size) / 2.0f;
-            p->translate(adjusted.x()-inset,adjusted.y()-inset);
-            p->scale(adjusted.width()-size,adjusted.height()-size);
-            p->fillRect(QRectF(inset, inset, size, size), QBrush(c));
+            //p->translate(adjusted.x()-inset,adjusted.y()-inset);
+            p->translate(adjusted.x(),adjusted.y());
+            //p->scale(adjusted.width()-size,adjusted.height()-size);
+            p->scale(adjusted.width(),adjusted.height());
+            p->fillRect(QRectF(inset, inset, size, size), QBrush(color_fill));
         }
         break;
     case SDM_GROWING_FILL:
         if (rating >= max_limit) {
             // draw diamond
             p->setRenderHint(QPainter::Antialiasing);
-            p->setPen(Qt::gray);
-            p->setBrush(QBrush(c));
+            p->setPen(pn);
+            p->setBrush(QBrush(color_fill));
             p->translate(opt.rect.x() + 2, opt.rect.y() + 2);
             p->scale(opt.rect.width() - 4, opt.rect.height() - 4);
             p->drawPolygon(m_diamond_shape);
@@ -411,19 +473,22 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
             float size = 0.8f * (rating / max_limit) + 0.1f;
             p->translate(adjusted.x(), adjusted.y());
             p->scale(adjusted.width(), adjusted.height());
-            p->fillRect(QRectF(0, 0, size, 1), QBrush(c));
+            p->fillRect(QRectF(0, 0, size, 1), QBrush(color_fill));
         }
         break;
     case SDM_GLYPH_LINES:
     {
-        p->setBrush(QBrush(c));
-        p->setPen(c);
+        p->setBrush(QBrush(color_fill));
+        //match pen to brush for glyphs
+        pn.setColor(color_fill);
+        p->setPen(pn);
         p->translate(adjusted.x(), adjusted.y());
         p->scale(adjusted.width(), adjusted.height());
         QVector<QLineF> lines;
 
         if(rating >= max_limit){
             p->resetTransform();
+            p->setPen(pn);
             p->translate(adjusted.x() + adjusted.width()/2.0,
                          adjusted.y() + adjusted.height()/2.0);
             p->scale(adjusted.width(), adjusted.height());
@@ -509,7 +574,7 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
         break;
     case SDM_NUMERIC:
         if (rating > -1) { // don't draw 0s everywhere
-            p->setPen(c);
+            p->setPen(color_fill);
             //for some reason df's masterwork glyph's quality is reduced when using bold
             if(bold_text && !text_rating.contains(QChar(0x263C))){
                 QFont tmp = m_fnt;

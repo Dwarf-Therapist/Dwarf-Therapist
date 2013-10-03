@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef UBER_DELEGATE_H
 #define UBER_DELEGATE_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "gridview.h"
 
 class DwarfModel;
@@ -82,6 +82,7 @@ private:
     SKILL_DRAWING_METHOD m_skill_drawing_method;
     bool draw_happiness_icons;
     bool color_mood_cells;
+    bool color_health_cells;
     QFont m_fnt;
 
     void paint_cell(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
@@ -100,6 +101,8 @@ private:
     void paint_flags(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
     void paint_aggregate(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
     void paint_icon(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+
+    QColor get_pen_color(const QColor bg) const;
 
     private slots:
         void read_settings();

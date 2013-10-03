@@ -62,7 +62,9 @@ void MemoryLayout::load_data() {
     read_group("plant_offsets", m_plant_offsets);
     read_group("material_offsets", m_material_offsets);
     read_group("item_offsets", m_item_offsets);
-    read_group("descriptor_offsets", m_descriptor_offsts);
+    read_group("descriptor_offsets", m_descriptor_offsets);
+    read_group("health_offsets", m_health_offsets);
+    read_group("unit_wound_offsets", m_unit_wound_offsets);
 
     // flags
     int flag_count = m_data->beginReadArray("valid_flags_1");

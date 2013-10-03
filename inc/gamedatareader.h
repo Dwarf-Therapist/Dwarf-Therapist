@@ -132,7 +132,7 @@ public:
     }
 
     const QVector<int> moodable_skills() {return m_moodable_skills;}
-    int get_pref_from_skill(int skill_id) const {return m_mood_skills_profession_map.value(skill_id);}
+    int get_pref_from_skill(int skill_id) const {return m_mood_skills_profession_map.value(skill_id,-1);}
 
     static QStringList m_seasons;
     static QStringList m_months;

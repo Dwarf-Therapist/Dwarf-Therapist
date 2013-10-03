@@ -139,7 +139,6 @@ void ViewManager::reload_views() {
             }
         } while(name_taken);
 
-
         gv->set_is_custom(true); // this came from a user's settings
         m_views << gv;
     }
@@ -411,7 +410,7 @@ void ViewManager::setCurrentIndex(int idx) {
         if (v->name() == tabText(idx)) {
             stv->is_loading_rows = true;
 
-            s->setValue("read_animals",(bool)(tabText(idx).contains("animals",Qt::CaseInsensitive)));
+//            s->setValue("read_animals",(bool)(tabText(idx).contains("animals",Qt::CaseInsensitive)));
 
             m_model->set_grid_view(v);
             if(group_all){
@@ -438,8 +437,8 @@ void ViewManager::setCurrentIndex(int idx) {
             }
 
             if(stv->header()->count() > 0){
-                stv->header()->setResizeMode(QHeaderView::Fixed);
-                stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
+                stv->header()->setSectionResizeMode(QHeaderView::Fixed);
+                stv->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
             }
 
             //setup our sort types by column in case we've since changed them

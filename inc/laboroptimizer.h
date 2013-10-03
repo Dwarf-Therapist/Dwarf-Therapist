@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef LABOROPTIMIZER_H
 #define LABOROPTIMIZER_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class Dwarf;
 class Labor;

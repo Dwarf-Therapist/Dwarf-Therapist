@@ -3,7 +3,8 @@ TARGET = DwarfTherapist
 QT += network \
     script \
     core \
-    gui
+    gui \
+    widgets
 CONFIG(debug, debug|release) { 
     message(Debug Mode)
     DESTDIR = bin$${DIR_SEPARATOR}debug
@@ -218,7 +219,16 @@ HEADERS += inc/win_structs.h \
     inc/grid_view/highestmoodcolumn.h \
     inc/thought.h \
     inc/docks/thoughtsdock.h \
-    inc/grid_view/trainedcolumn.h
+    inc/grid_view/trainedcolumn.h \
+    inc/unithealth.h \
+    inc/unitwound.h \
+    inc/healthinfo.h \
+    inc/grid_view/healthcolumn.h \
+    inc/docks/healthlegenddock.h \
+    inc/bodypart.h \
+    inc/bodypartlayer.h \
+    inc/healthcategory.h \
+    inc/bodypartdamage.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -291,7 +301,11 @@ SOURCES += src/viewmanager.cpp \
     src/trait.cpp \
     src/docks/thoughtsdock.cpp \
     src/thought.cpp \
-    src/grid_view/trainedcolumn.cpp
+    src/grid_view/trainedcolumn.cpp \
+    src/unithealth.cpp \
+    src/unitwound.cpp \
+    src/grid_view/healthcolumn.cpp \
+    src/docks/healthlegenddock.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef PREFERENCES_DOCK_H
 #define PREFERENCES_DOCK_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class PreferencesDock : public QDockWidget {
     Q_OBJECT
@@ -46,7 +46,8 @@ public slots:
     void selection_changed();
 
 signals:
-    void item_selected(QStringList name, QString category);
+    void item_selected(QList<QPair<QString,QString> >);
+//    void item_selected(QStringList name, QString category);
 
 };
 

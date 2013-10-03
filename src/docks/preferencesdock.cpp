@@ -47,10 +47,10 @@ PreferencesDock::PreferencesDock(QWidget *parent, Qt::WindowFlags flags)
     tw_prefs->setSelectionBehavior(QAbstractItemView::SelectRows);
     tw_prefs->setHorizontalHeaderLabels(QStringList() << "Name" << "+" << "-" << "Type");
     tw_prefs->verticalHeader()->hide();
-    tw_prefs->horizontalHeader()->setResizeMode(0, QHeaderView::Interactive);
-    tw_prefs->horizontalHeader()->setResizeMode(1, QHeaderView::Interactive);
-    tw_prefs->horizontalHeader()->setResizeMode(2, QHeaderView::Interactive);
-    tw_prefs->horizontalHeader()->setResizeMode(3, QHeaderView::Interactive);
+    tw_prefs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+    tw_prefs->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
+    tw_prefs->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);
+    tw_prefs->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Interactive);
     tw_prefs->horizontalHeader()->setDefaultSectionSize(75);
     tw_prefs->horizontalHeader()->resizeSection(1,40);
     tw_prefs->horizontalHeader()->resizeSection(2,40);
@@ -104,13 +104,13 @@ void PreferencesDock::refresh(){
                 pref_name->setToolTip(pref_name->text());
 
                 QTableWidgetItem *pref_likes = new QTableWidgetItem();
-                pref_likes->setData(Qt::DisplayRole, (int)pref->likes);
+                pref_likes->setData(Qt::DisplayRole, pref->names_likes.size());
                 pref_likes->setTextAlignment(Qt::AlignCenter);
                 pref->names_likes.sort();
                 pref_likes->setToolTip(pref->names_likes.join("<br>"));
 
                 QTableWidgetItem *pref_dislikes = new QTableWidgetItem();
-                pref_dislikes->setData(Qt::DisplayRole, (int)pref->dislikes);
+                pref_dislikes->setData(Qt::DisplayRole, pref->names_dislikes.size());
                 pref_dislikes->setTextAlignment(Qt::AlignCenter);
                 pref->names_dislikes.sort();
                 pref_dislikes->setToolTip(pref->names_dislikes.join("<br>"));
@@ -131,22 +131,27 @@ void PreferencesDock::refresh(){
 }
 
 void PreferencesDock::selection_changed(){    
+    //pairs of category and preference
+    QList<QPair<QString,QString> > values;
     QModelIndexList indexList = tw_prefs->selectionModel()->selectedIndexes();
-    QStringList selected;
-    QString cat = "";
+//    QStringList selected;
+//    QString cat = "";
     if(indexList.count() > 0){
 
         int row = 0;
         int prev_row=-1;
         foreach (QModelIndex index, indexList) {
             row = index.row();
-            if(row != prev_row)
-                selected.append(tw_prefs->item(row,0)->text().toLower());
+            if(row != prev_row){
+                values.append(qMakePair(tw_prefs->item(row,3)->text(),tw_prefs->item(row,0)->text().toLower()));
+                //selected.append(tw_prefs->item(row,0)->text().toLower());
+            }
             prev_row = row;
         }
-        cat = tw_prefs->item(row,3)->text();
+//        cat = tw_prefs->item(row,3)->text();
     }
-    emit item_selected(selected, cat);
+//    emit item_selected(selected, cat);
+    emit item_selected(values);
 }
 
 void PreferencesDock::search_changed(QString val){

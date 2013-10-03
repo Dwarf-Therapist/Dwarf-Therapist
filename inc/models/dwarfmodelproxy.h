@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef DWARF_MODEL_PROXY_H
 #define DWARF_MODEL_PROXY_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class Dwarf;
 class DwarfModel;
@@ -40,6 +40,8 @@ public:
         DSR_ID_DESC,
         DSR_AGE_ASC,
         DSR_AGE_DESC,
+        DSR_SIZE_ASC,
+        DSR_SIZE_DESC,
         DSR_DEFAULT
     } DWARF_SORT_ROLE;
 

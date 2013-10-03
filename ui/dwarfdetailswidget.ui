@@ -17,7 +17,16 @@
    <property name="spacing">
     <number>2</number>
    </property>
-   <property name="margin">
+   <property name="leftMargin">
+    <number>2</number>
+   </property>
+   <property name="topMargin">
+    <number>2</number>
+   </property>
+   <property name="rightMargin">
+    <number>2</number>
+   </property>
+   <property name="bottomMargin">
     <number>2</number>
    </property>
    <item>
@@ -702,6 +711,19 @@
      <widget class="QTableWidget" name="tw_traits"/>
      <widget class="QTableWidget" name="tw_roles"/>
      <widget class="QTableWidget" name="tw_prefs"/>
+     <widget class="QTreeWidget" name="tw_health">
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <attribute name="headerVisible">
+       <bool>false</bool>
+      </attribute>
+      <column>
+       <property name="text">
+        <string notr="true">1</string>
+       </property>
+      </column>
+     </widget>
     </widget>
    </item>
   </layout>

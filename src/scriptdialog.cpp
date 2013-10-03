@@ -29,6 +29,9 @@ THE SOFTWARE.
 #include "skill.h"
 #include "dwarftherapist.h"
 #include "attribute.h"
+#include "unithealth.h"
+#include "healthcategory.h"
+#include "healthinfo.h"
 
 ScriptDialog::ScriptDialog(QWidget *parent)
     : QDialog(parent)
@@ -72,6 +75,24 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     }
     attribute_list.append("</table>");
     ui->text_help->append(attribute_list);
+
+    QString health_list = "<br><b>Health Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
+        "<tr><th width=24%>Category ID</th><th>Title</th><th>Descriptors</th></tr>";
+
+    QPair<int,QString> cat_pair;
+    foreach(cat_pair, UnitHealth::ordered_category_names()) {
+        HealthCategory *hc = UnitHealth::get_display_categories().value(cat_pair.first);
+        health_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td>").arg(hc->id()).arg(hc->name()));
+        health_list.append("<td><table border=0 cellpadding=1 cellspacing=1 width=100%>");
+        short idx = 0;
+        foreach(HealthInfo *hi, hc->descriptions()){
+            health_list.append(QString("<tr><td width=5%>%1</td><td>%2</td></tr>").arg(idx).arg(hi->description(false)));
+            idx++;
+        }
+        health_list.append("</table></td></tr>");
+    }
+    health_list.append("</table>");
+    ui->text_help->append(health_list);
 
     connect(ui->btn_apply, SIGNAL(clicked()), SLOT(apply_pressed()));
     connect(ui->btn_save, SIGNAL(clicked()), SLOT(save_pressed()));

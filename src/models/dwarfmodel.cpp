@@ -45,6 +45,7 @@ THE SOFTWARE.
 #include "fortressentity.h"
 #include "gamedatareader.h"
 #include "dwarfjob.h"
+#include "unithealth.h"
 
 DwarfModel::DwarfModel(QObject *parent)
     : QStandardItemModel(parent)
@@ -123,86 +124,6 @@ void DwarfModel::refresh_squads(){
     load_squads(true);
 }
 
-
-//Shishimaru's export to CSV
-void DwarfModel::save_rows() {
-    QString defaultPath = QString("%1.csv").arg(m_gridview->name());
-    QString fileName = QFileDialog::getSaveFileName(0 , tr("Save file as"), defaultPath, tr("csv files (*.csv)"));
-    if (fileName.length()==0)
-        return;
-    if (!fileName.endsWith(".csv"))
-        fileName.append(".csv");
-    QFile f( fileName );
-    if (f.exists())
-        f.remove();
-    f.open(QIODevice::WriteOnly | QIODevice::Text);
-    QTextStream out(&f);
-    QString val;
-    val.append("nice_name");
-    val.append(',');
-    foreach(ViewColumnSet *set, m_gridview->sets()) {
-        foreach(ViewColumn *col, set->columns()) {
-            if (col->type() != CT_SPACER)
-            {
-                val.append(col->title());
-                val.append(',');
-            }
-        }
-    }
-    val.remove(val.length()-1,1);
-    out << val << endl;
-    val.clear();
-
-    if(DT->user_settings()->value("options/hide_children_and_babies",true).toBool() == false)
-    {
-        foreach(Dwarf *d, m_dwarves)
-        {
-            //show babies
-            if (!d->is_animal())
-            {
-                val.append(d->nice_name());
-                val.append(',');
-                foreach(ViewColumnSet *set, m_gridview->sets()) {
-                    foreach(ViewColumn *col, set->columns()) {
-                        if (col->type() != CT_SPACER)
-                        {
-                            val.append(col->get_cell_value(d));
-                            val.append(',');
-                        }
-                    }
-                }
-                val.remove(val.length()-1,1);
-                out << val << endl;
-                val.clear();
-            }
-        }
-    }
-    else if(DT->user_settings()->value("options/hide_children_and_babies",true).toBool() == true)
-        {
-            foreach(Dwarf *d, m_dwarves)
-            {                
-                if (!d->is_animal() && d->is_adult())
-                {
-                    val.append(d->nice_name());
-                    val.append(',');
-                    foreach(ViewColumnSet *set, m_gridview->sets()) {
-                        foreach(ViewColumn *col, set->columns()) {
-                            if (col->type() != CT_SPACER)
-                            {
-                                val.append(col->get_cell_value(d));
-                                val.append(',');
-                            }
-                        }
-                    }
-                    val.remove(val.length()-1,1);
-                    out << val << endl;
-                    val.clear();
-                }
-            }
-        }
-    f.close();
-}
-
 void DwarfModel::update_header_info(int id, COLUMN_TYPE type){
     int index = 0;
     QSettings *s = DT->user_settings();
@@ -213,7 +134,7 @@ void DwarfModel::update_header_info(int id, COLUMN_TYPE type){
                 if(col->type()==CT_LABOR){
                     LaborColumn *l = static_cast<LaborColumn*>(col);
                     if(l->labor_id()==id){
-                        l->update_count(); //tell this column to update it's count                        
+                        l->update_count(); //tell this column to update it's count
                         QStandardItem* header = this->horizontalHeaderItem(index);
                         header->setData(col->bg_color(), Qt::BackgroundColorRole);
                         header->setData(set->name(), Qt::UserRole);
@@ -221,7 +142,7 @@ void DwarfModel::update_header_info(int id, COLUMN_TYPE type){
                             header->setText(QString("%1 %2")
                                             .arg(l->count(),2,10,QChar('0'))
                                             .arg(col->title()).trimmed());
-                        }                        
+                        }
                         header->setToolTip(build_col_tooltip(col));
                         return;
                     }
@@ -233,7 +154,9 @@ void DwarfModel::update_header_info(int id, COLUMN_TYPE type){
 
 void DwarfModel::draw_headers(){
     int start_col = 1;
-    setHorizontalHeaderItem(0, new QStandardItem);
+    QStandardItem *name_col = new QStandardItem();
+    name_col->setToolTip(tr("Right click to sort."));
+    setHorizontalHeaderItem(0, name_col);
     emit clear_spacers();
     QSettings *s = DT->user_settings();
     int width = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
@@ -308,10 +231,12 @@ void DwarfModel::build_rows() {
     if(m_dwarves.count() <= 0)
         return;
 
-    QSettings *s = DT->user_settings();
+//    QSettings *s = DT->user_settings();
+
+    bool animal_health = DT->user_settings()->value("options/animal_health",false).toBool();
 
     // populate dwarf maps
-    bool only_animals = s->value("read_animals",false).toBool();
+    bool only_animals = m_gridview->show_animals(); //s->value("read_animals",false).toBool();
     int n_adults=0;
     int n_children=0;
     int n_babies=0;
@@ -370,7 +295,19 @@ void DwarfModel::build_rows() {
                     m_grouped_dwarves[tr("No Nickname")].append(d);
                 } else {
                     m_grouped_dwarves[tr("Has Nickname")].append(d);
-                }            
+                }
+            }else if(m_group_by == GB_HEALTH && (animal_health || (!animal_health && !d->is_animal()))){
+                QStringList treatments = d->get_unit_health().get_treatment_summary(false,false);
+                QStringList statuses = d->get_unit_health().get_status_summary(false,false);
+                //QHash<QString, QStringList> wounds = d->get_unit_health()->get_wound_summary(false,false);
+                int fresh_wounds = d->get_unit_health().get_fresh_wound_count();
+                if(fresh_wounds > 0){
+                    m_grouped_dwarves[tr("Major Health Issues")].append(d);
+                }else if(treatments.size() > 0 || statuses.size() > 0){
+                    m_grouped_dwarves[tr("Minor Health Issues")].append(d);
+                }else{
+                    m_grouped_dwarves[tr("No Health Issues")].append(d);
+                }
             }else{
                 if(only_animals && d->is_animal())
                     m_grouped_dwarves["N/A"].append(d);
@@ -387,7 +324,7 @@ void DwarfModel::build_rows() {
 
         //groups specific to the actual race we're playing (ie. dwarfs)
         if(!d->is_animal() && !only_animals)
-        {            
+        {
             //if hiding children/babies, don't group them, otherwise the aggregate row total in the heading will be off
             if(DT->user_settings()->value("options/hide_children_and_babies",true).toBool() == false
                     || (!d->is_child() && !d->is_baby())){
@@ -405,7 +342,11 @@ void DwarfModel::build_rows() {
                 }else if(m_group_by == GB_HAPPINESS){
                     m_grouped_dwarves[d->happiness_name(d->get_happiness())].append(d);
                 }else if(m_group_by == GB_CURRENT_JOB){
-                    QString job_desc = gdr->get_job(d->current_job_id())->description;
+                    QString job_desc = GameDataReader::ptr()->get_job(d->current_job_id())->description;
+                    //if the job is some kind of reaction that doesn't use a material, use the reaction's name
+                    //otherwise, use the base job name, prior to replacing ?? with a material so they're grouped
+                    if(d->current_job_id() != 212 && !job_desc.contains("??"))
+                        job_desc = d->current_job();
                     m_grouped_dwarves[job_desc.replace(" ??","")].append(d);
                 }else if(m_group_by == GB_MILITARY_STATUS){
                     if (d->is_baby() || d->is_child()) {
@@ -527,7 +468,10 @@ void DwarfModel::build_row(const QString &key) {
                 //put non squads at the bottom of the groups when grouping by squad
                 agg_first_col->setData(QChar(128), DR_SORT_VALUE);
             }
-
+        } else if (m_group_by == GB_CURRENT_JOB){
+            //put idle, on break and soldiers at the top/bottom
+            if(first_dwarf->current_job_id() < 0)
+                agg_first_col->setData(QString::number(first_dwarf->current_job_id()), DR_SORT_VALUE);
         }
         agg_items << agg_first_col;
     }
@@ -541,6 +485,12 @@ void DwarfModel::build_row(const QString &key) {
             }
         }
     }
+
+    bool show_gender = DT->user_settings()->value("options/grid/show_gender_icons",true).toBool();
+    bool highlight_nobles = DT->user_settings()->value("options/highlight_nobles",false).toBool();
+    bool highlight_cursed = DT->user_settings()->value("options/highlight_cursed",false).toBool();
+    QBrush cursed_brush = build_gradient_brush(DT->user_settings()->value("options/colors/cursed", QColor(125,97,186)).value<QColor>()
+                                              ,200,0,QPoint(0,0),QPoint(1,0));
 
     foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
         QStandardItem *i_name = new QStandardItem(d->nice_name());        
@@ -564,16 +514,15 @@ void DwarfModel::build_row(const QString &key) {
         i_name->setFont(f);        
 
         //background gradients for curses, nobles, etc.
-        if(d && DT->user_settings()->value("options/highlight_nobles",false).toBool()){
+        if(d && highlight_nobles){
             if(d->noble_position() != "")
                 i_name->setData(build_gradient_brush(m_df->fortress()->get_noble_color(d->historical_id())
                                                      ,200,0,QPoint(0,0),QPoint(1,0)),Qt::BackgroundRole);
         }
-        if(d && DT->user_settings()->value("options/highlight_cursed",false).toBool()){
+        if(d && highlight_cursed){
             if(d->curse_name() != ""){
                 f.setItalic(true);
-                i_name->setData(build_gradient_brush(DT->user_settings()->value("options/colors/cursed", QColor(125,97,186)).value<QColor>()
-                                                     ,200,0,QPoint(0,0),QPoint(1,0)),Qt::BackgroundRole);
+                i_name->setData(cursed_brush,Qt::BackgroundRole);
             }
         }                
 
@@ -585,6 +534,7 @@ void DwarfModel::build_row(const QString &key) {
 
         //set the roles for the special right click sorting
         i_name->setData(d->get_age(), DR_AGE);
+        i_name->setData(d->body_size(), DR_SIZE);
         i_name->setData(d->nice_name(), DR_NAME);
 
         //set the sorting within groups when grouping
@@ -613,10 +563,11 @@ void DwarfModel::build_row(const QString &key) {
         }
         i_name->setData(sort_val, DR_SORT_VALUE);
 
-        //set icons
-        icn_gender.addFile(d->gender_icon_path());
-        i_name->setIcon(icn_gender);
-
+        //set gender icons
+        if(show_gender){
+            icn_gender.addFile(d->gender_icon_path());
+            i_name->setIcon(icn_gender);
+        }
 
         QList<QStandardItem*> items;
         items << i_name;

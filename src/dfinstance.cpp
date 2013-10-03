@@ -21,8 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QtDebug>
+#include <QtConcurrent/QtConcurrent>
 #include "defines.h"
 #include "dfinstance.h"
 #include "dwarf.h"
@@ -48,14 +49,15 @@ THE SOFTWARE.
 #include "material.h"
 #include "plant.h"
 #include "item.h"
+#include "preference.h"
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 #define LAYOUT_SUBDIR "windows"
 #else
-#ifdef Q_WS_X11
+#ifdef Q_OS_X11
 #define LAYOUT_SUBDIR "linux"
 #else
-#ifdef _OSX
+#ifdef Q_OS_MAC
 #define LAYOUT_SUBDIR "osx"
 #endif
 #endif
@@ -155,6 +157,7 @@ DFInstance::~DFInstance() {
     m_thought_counts.clear();
 
     DwarfStats::cleanup();
+    LOGD << "DFInstance baseclass virtual dtor all done!";
 }
 
 BYTE DFInstance::read_byte(const VIRTADDR &addr) {
@@ -455,19 +458,19 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     m_current_year = read_word(current_year);
     LOGD << "current year:" << m_current_year;
 
-    QVector<VIRTADDR> entries = get_creatures();
+    QVector<VIRTADDR> creatures_addrs = get_creatures();
 
-    emit progress_range(0, entries.size()-1);
-    TRACE << "FOUND" << entries.size() << "creatures";
+    emit progress_range(0, creatures_addrs.size()-1);
+    TRACE << "FOUND" << creatures_addrs.size() << "creatures";
     bool hide_non_adults = DT->user_settings()->value("options/hide_children_and_babies",true).toBool();
     bool labor_cheats = DT->user_settings()->value("options/allow_labor_cheats",true).toBool();
     QTime t;
     t.start();
-    if (!entries.empty()) {
+    if (!creatures_addrs.empty()) {
         Dwarf *d = 0;
         int progress_count = 0;
 
-        foreach(VIRTADDR creature_addr, entries) {
+        foreach(VIRTADDR creature_addr, creatures_addrs) {
             d = Dwarf::get_dwarf(this, creature_addr);
             if(d){
                 dwarves.append(d); //add animals as well so we can show them
@@ -514,7 +517,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     }
     detach();
 
-    LOGI << "found" << dwarves.size() << "dwarves out of" << entries.size()
+    LOGI << "found" << dwarves.size() << "dwarves out of" << creatures_addrs.size()
             << "creatures";
 
     return dwarves;
@@ -554,32 +557,31 @@ void DFInstance::load_population_data(){
         foreach(QString category_name, d->get_grouped_preferences().uniqueKeys()){
             for(int i = 0; i < d->get_grouped_preferences().value(category_name)->count(); i++){
 
-                QString val = d->get_grouped_preferences().value(category_name)->at(i);
+                QString pref = d->get_grouped_preferences().value(category_name)->at(i);
                 QString cat_name = category_name;
+                bool is_dislike = false;
+                //put liked and hated creatures together
+                if(category_name == Preference::get_pref_desc(HATE_CREATURE)){
+                    cat_name = Preference::get_pref_desc(LIKE_CREATURE);
+                    is_dislike = true;
+                }
 
                 QPair<QString,QString> key_pair;
                 key_pair.first = cat_name;
-                key_pair.second = val;
+                key_pair.second = pref;
 
                 pref_stat *p;
                 if(m_pref_counts.contains(key_pair))
-                    p = m_pref_counts.value(key_pair);
+                    p = m_pref_counts.take(key_pair);
                 else{
                     p = new pref_stat();
-                    p->likes = 0;
-                    p->dislikes = 0;
                 }
 
-                //put liked and hated creatures together
-                if(category_name.toLower()==tr("dislikes")){
-                    cat_name = tr("Creature");
-                    p->dislikes++;
+                if(is_dislike){
                     p->names_dislikes.append(d->nice_name());
-                }else{
-                    p->likes++;
+                }else{                    
                     p->names_likes.append(d->nice_name());
                 }
-
                 p->pref_category = cat_name;
 
                 m_pref_counts.insert(key_pair,p);
@@ -676,6 +678,9 @@ void DFInstance::load_main_vectors(){
         m_material_templates.insert(read_string(addr),addr);
     }
 
+    //syndromes
+    m_all_syndromes = enumerate_vector(m_memory_correction + m_layout->address("all_syndromes_vector"));
+
     //world.raws.itemdefs.
     QVector<VIRTADDR> weapons = enumerate_vector(m_memory_correction + m_layout->address("weapons_vector"));
     m_item_vectors.insert(WEAPON,weapons);
@@ -736,8 +741,6 @@ void DFInstance::load_main_vectors(){
         m_plants_vector.append(p);
         i++;
     }
-
-
 }
 
 void DFInstance::load_weapons(){
@@ -820,15 +823,15 @@ QVector<Squad*> DFInstance::load_squads(bool refreshing) {
 
     attach();
 
-    QVector<VIRTADDR> entries = enumerate_vector(m_squad_vector);
-    TRACE << "FOUND" << entries.size() << "squads";
+    QVector<VIRTADDR> squads_addr = enumerate_vector(m_squad_vector);
+    TRACE << "FOUND" << squads_addr.size() << "squads";
 
-    if (!entries.empty()) {
+    if (!squads_addr.empty()) {
         if(!refreshing)
-            emit progress_range(0, entries.size()-1);
+            emit progress_range(0, squads_addr.size()-1);
         Squad *s = NULL;
         int i = 0;
-        foreach(VIRTADDR squad_addr, entries) {
+        foreach(VIRTADDR squad_addr, squads_addr) {
             s = Squad::get_squad(this, squad_addr);
             if (s) {
                 LOGD << "FOUND SQUAD" << hexify(squad_addr) << s->name() << " member count: " << s->assigned_count() << " id: " << s->id();
@@ -841,16 +844,14 @@ QVector<Squad*> DFInstance::load_squads(bool refreshing) {
     }
 
     detach();
-    //LOGI << "Found" << squads.size() << "squads out of" << entries.size();
+    //LOGI << "Found" << squads.size() << "squads out of" << m_current_creatures.size();
     return squads;
 }
 
 
 void DFInstance::heartbeat() {
-    // simple read attempt that will fail if the DF game isn't running a fort,
-    // or isn't running at all
-    QVector<VIRTADDR> trans = enumerate_vector(m_layout->address("translation_vector") + m_memory_correction);
-    if (trans.size() < 1) {
+    // simple read attempt that will fail if the DF game isn't running a fort, or isn't running at all
+    if(get_creatures().size() < 1){
         // no game loaded, or process is gone
         emit connection_interrupted();
     }
@@ -865,17 +866,18 @@ QVector<VIRTADDR> DFInstance::get_creatures(){
     //first try the active unit list
     QVector<VIRTADDR> entries = enumerate_vector(active_units);
     if(entries.isEmpty()){
-        LOGD << "no active units (embark) using full unit list";
+//        LOGD << "no active units (embark) using full unit list";
         entries = enumerate_vector(all_units);
     }else{
         //there are active units, but are they ours?
+        int civ_offset = m_layout->dwarf_offset("civ");
         foreach(VIRTADDR entry, entries){
-            if(read_word(entry + m_layout->dwarf_offset("civ"))==m_dwarf_civ_id){
-                LOGD << "using active units";
+            if(read_word(entry + civ_offset)==m_dwarf_civ_id){
+//                LOGD << "using active units";
                 return entries;
             }
         }
-        LOGD << "no active units with our civ (reclaim), using full unit list";
+//        LOGD << "no active units with our civ (reclaim), using full unit list";
         entries = enumerate_vector(all_units);
     }
     return entries;
@@ -1643,3 +1645,10 @@ Material *DFInstance::find_material(int mat_index, short mat_type){
 }
 
 
+VIRTADDR DFInstance::get_syndrome(int idx){
+    if(idx >= 0 && idx < m_all_syndromes.size()){
+         {return m_all_syndromes.at(idx);}
+    }else{
+        return -1;
+    }
+}

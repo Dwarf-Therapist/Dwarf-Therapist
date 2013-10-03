@@ -24,7 +24,7 @@ THE SOFTWARE.
 #ifndef VIEW_MANAGER_H
 #define VIEW_MANAGER_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "columntypes.h"
 #include "viewcolumn.h"
 

@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>723</width>
-    <height>592</height>
+    <width>750</width>
+    <height>649</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,7 @@
    <iconset resource="../images.qrc">
     <normaloff>:/img/color_wheel.png</normaloff>:/img/color_wheel.png</iconset>
   </property>
-  <layout class="QVBoxLayout" name="vbox" stretch="3,1,0">
+  <layout class="QVBoxLayout" name="vbox" stretch="0,1,0">
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="enabled">
@@ -36,7 +36,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <property name="iconSize">
       <size>
@@ -328,6 +328,26 @@
         </layout>
        </item>
        <item>
+        <widget class="QCheckBox" name="cb_animal_health">
+         <property name="statusTip">
+          <string>When checked, loads and shows health for animals. This requires health columns to be added to a view set to show animals!</string>
+         </property>
+         <property name="text">
+          <string>Read Animal Health Information.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_no_diagnosis">
+         <property name="statusTip">
+          <string>When checked all wound details are shown, regardless of whether or not they've been diagnosed. When unchecked, details are only shown for diagnosed wounds.</string>
+         </property>
+         <property name="text">
+          <string>Always Show Wound Details (I'm a dirty cheater)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer_7">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -350,7 +370,7 @@
       <attribute name="title">
        <string>Grid Options</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0">
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
        <item>
         <widget class="QCheckBox" name="cb_auto_contrast">
          <property name="sizePolicy">
@@ -516,6 +536,22 @@
          </property>
          <property name="text">
           <string>Highlight moodable cells in labor/skill columns.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_gender_icons">
+         <property name="toolTip">
+          <string>When checked, shows the gender icons to the left of the name in the grid views.</string>
+         </property>
+         <property name="statusTip">
+          <string>When checked, shows the gender icons to the left of the name in the grid views.</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, shows the gender icons to the left of the name in the grid views.</string>
+         </property>
+         <property name="text">
+          <string>Show Gender Icons.</string>
          </property>
         </widget>
        </item>
@@ -941,138 +977,270 @@
           </layout>
          </item>
          <item>
-          <widget class="QCheckBox" name="chk_show_icons">
-           <property name="statusTip">
-            <string>When checked shows icons to either side of the name indication gender and profession.</string>
+          <layout class="QGridLayout" name="gridLayout">
+           <item row="5" column="0">
+            <widget class="QCheckBox" name="chk_show_artifact">
+             <property name="statusTip">
+              <string>When checked, shows the translated name of the created artifact.</string>
+             </property>
+             <property name="text">
+              <string>Show created artifact  in the tooltip.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QCheckBox" name="chk_show_prefs">
+             <property name="statusTip">
+              <string>When checked shows a list of likes and dislikes.</string>
+             </property>
+             <property name="whatsThis">
+              <string>When checked shows a list of likes and dislikes.</string>
+             </property>
+             <property name="text">
+              <string>Show preferences in the tooltip.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="2">
+            <widget class="QCheckBox" name="chk_show_traits">
+             <property name="statusTip">
+              <string>When checked shows a list of traits.</string>
+             </property>
+             <property name="whatsThis">
+              <string>When checked shows a list of traits.</string>
+             </property>
+             <property name="text">
+              <string>Show traits in the tooltip.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QCheckBox" name="chk_show_age">
+             <property name="statusTip">
+              <string>When checked, shows the unit's age in the tooltip. &lt;b&gt;This is always enabled for animals.&lt;/b&gt;</string>
+             </property>
+             <property name="text">
+              <string>Show age in the tooltip.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <spacer name="horizontalSpacer_20">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Fixed</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>150</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="0" column="0">
+            <widget class="QCheckBox" name="chk_show_icons">
+             <property name="statusTip">
+              <string>When checked shows icons to either side of the name indication gender and profession.</string>
+             </property>
+             <property name="whatsThis">
+              <string>When checked shows icons to either side of the name indication gender and profession.</string>
+             </property>
+             <property name="text">
+              <string>Show gender and profession icons in the tooltip.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QCheckBox" name="chk_show_prof">
+             <property name="statusTip">
+              <string>When checked, shows a description of the dwarf's profession.</string>
+             </property>
+             <property name="whatsThis">
+              <string>When checked, shows a description of the dwarf's profession.</string>
+             </property>
+             <property name="text">
+              <string>Show profession description in the tooltip.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QCheckBox" name="chk_show_caste">
+             <property name="statusTip">
+              <string>When checked shows the name of the caste and the caste's description. Especially useful with mods.</string>
+             </property>
+             <property name="whatsThis">
+              <string>When checked shows the name of the caste and the caste's description. Especially useful with mods.</string>
+             </property>
+             <property name="text">
+              <string>Show caste name and description in the tooltip.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QCheckBox" name="chk_show_happiness">
+             <property name="statusTip">
+              <string>When checked shows the happiness description and raw level.</string>
+             </property>
+             <property name="whatsThis">
+              <string>When checked shows the happiness description and raw level.</string>
+             </property>
+             <property name="text">
+              <string>Show happiness level in the tooltip.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QCheckBox" name="chk_show_noble">
+             <property name="statusTip">
+              <string>When checked lists all noble positions held.</string>
+             </property>
+             <property name="whatsThis">
+              <string>When checked lists all noble positions held.</string>
+             </property>
+             <property name="text">
+              <string>Show noble positions in the tooltip.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="2">
+            <widget class="QCheckBox" name="chk_show_thoughts">
+             <property name="toolTip">
+              <string>When checked shows the recent thoughts which affect overall happiness.</string>
+             </property>
+             <property name="statusTip">
+              <string>When checked shows the recent thoughts which affect overall happiness.</string>
+             </property>
+             <property name="text">
+              <string>Show happiness thoughts in the tooltip.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QCheckBox" name="chk_show_unit_size">
+             <property name="statusTip">
+              <string>When checked, shows the unit's size (in cm3) in the tooltip. This is particularly useful for military. &lt;b&gt;This is always enabled for animals.&lt;/b&gt;</string>
+             </property>
+             <property name="text">
+              <string>Show unit's size (cm3) in the tooltip.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="2">
+            <widget class="QCheckBox" name="chk_show_highest_mood">
+             <property name="statusTip">
+              <string>When checked, shows the highest moodable skill in the tooltip.</string>
+             </property>
+             <property name="text">
+              <string>Show highest moodable skill in the tooltip.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0">
+            <widget class="QCheckBox" name="chk_show_squad">
+             <property name="statusTip">
+              <string>When checked, shows the squad name in the tooltip.</string>
+             </property>
+             <property name="text">
+              <string>Show squad name in the tooltip.</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="2">
+            <widget class="QCheckBox" name="chk_show_buffs">
+             <property name="toolTip">
+              <string>When checked, shows the names of beneficial syndromes in the tooltip.</string>
+             </property>
+             <property name="statusTip">
+              <string>When checked, shows the names of beneficial syndromes in the tooltip.</string>
+             </property>
+             <property name="text">
+              <string>Show buffs in the tooltip.</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_9">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
            </property>
-           <property name="whatsThis">
-            <string>When checked shows icons to either side of the name indication gender and profession.</string>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>13</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="chk_show_health">
+           <property name="statusTip">
+            <string>When checked, shows a brief summary of health issues in the tooltip.</string>
            </property>
            <property name="text">
-            <string>Show gender and profession icons in the tooltip.</string>
+            <string>Show health summary in the tooltip.</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="chk_show_caste">
-           <property name="statusTip">
-            <string>When checked shows the name of the caste and the caste's description. Especially useful with mods.</string>
-           </property>
-           <property name="whatsThis">
-            <string>When checked shows the name of the caste and the caste's description. Especially useful with mods.</string>
-           </property>
-           <property name="text">
-            <string>Show caste name and description in the tooltip.</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="chk_show_happiness">
-           <property name="statusTip">
-            <string>When checked shows the happiness description and raw level.</string>
-           </property>
-           <property name="whatsThis">
-            <string>When checked shows the happiness description and raw level.</string>
-           </property>
-           <property name="text">
-            <string>Show happiness level in the tooltip.</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="chk_show_thoughts">
-           <property name="toolTip">
-            <string>When checked shows the recent thoughts which affect overall happiness.</string>
-           </property>
-           <property name="statusTip">
-            <string>When checked shows the recent thoughts which affect overall happiness.</string>
-           </property>
-           <property name="text">
-            <string>Show happiness thoughts in the tooltip.</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="chk_show_noble">
-           <property name="statusTip">
-            <string>When checked lists all noble positions held.</string>
-           </property>
-           <property name="whatsThis">
-            <string>When checked lists all noble positions held.</string>
-           </property>
-           <property name="text">
-            <string>Show noble positions in the tooltip.</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="chk_show_prof">
-           <property name="statusTip">
-            <string>When checked, shows a description of the dwarf's profession.</string>
-           </property>
-           <property name="whatsThis">
-            <string>When checked, shows a description of the dwarf's profession.</string>
-           </property>
-           <property name="text">
-            <string>Show profession description in the tooltip.</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="chk_show_prefs">
-           <property name="statusTip">
-            <string>When checked shows a list of likes and dislikes.</string>
-           </property>
-           <property name="whatsThis">
-            <string>When checked shows a list of likes and dislikes.</string>
-           </property>
-           <property name="text">
-            <string>Show preferences in the tooltip.</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="chk_show_traits">
-           <property name="statusTip">
-            <string>When checked shows a list of traits.</string>
-           </property>
-           <property name="whatsThis">
-            <string>When checked shows a list of traits.</string>
-           </property>
-           <property name="text">
-            <string>Show traits in the tooltip.</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="chk_show_artifact">
-           <property name="statusTip">
-            <string>When checked, shows the translated name of the created artifact.</string>
-           </property>
-           <property name="text">
-            <string>Show created artifact  in the tooltip.</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="chk_show_highest_mood">
-           <property name="statusTip">
-            <string>When checked, shows the highest moodable skill in the tooltip.</string>
-           </property>
-           <property name="text">
-            <string>Show highest moodable skill in the tooltip.</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="chk_show_squad">
-           <property name="statusTip">
-            <string>When checked, shows the squad name in the tooltip.</string>
-           </property>
-           <property name="text">
-            <string>Show squad name in the tooltip.</string>
-           </property>
-          </widget>
+          <layout class="QHBoxLayout" name="horizontalLayout_16">
+           <item>
+            <spacer name="horizontalSpacer_11">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Fixed</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chk_health_symbols">
+             <property name="statusTip">
+              <string>When checked, the health summary will be displayed in symbols, rather than a descriptive name. ie. A+ instead of Artery Torn.</string>
+             </property>
+             <property name="text">
+              <string>Use symbols in health summary.</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chk_health_colors">
+             <property name="statusTip">
+              <string>When checked, the health summary in the tooltip will be colored.</string>
+             </property>
+             <property name="text">
+              <string>Color health summary.</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_19">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
          </item>
          <item>
           <spacer name="verticalSpacer_3">
@@ -1085,7 +1253,7 @@
            <property name="sizeHint" stdset="0">
             <size>
              <width>20</width>
-             <height>10</height>
+             <height>13</height>
             </size>
            </property>
           </spacer>
@@ -1183,7 +1351,7 @@
            <property name="sizeHint" stdset="0">
             <size>
              <width>20</width>
-             <height>40</height>
+             <height>13</height>
             </size>
            </property>
           </spacer>
@@ -1220,7 +1388,7 @@
             <widget class="QLabel" name="label_5">
              <property name="maximumSize">
               <size>
-               <width>65</width>
+               <width>75</width>
                <height>20</height>
               </size>
              </property>
@@ -1320,6 +1488,28 @@
       <attribute name="title">
        <string>Grid Colors</string>
       </attribute>
+      <widget class="QCheckBox" name="cb_grid_health_colors">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>10</y>
+         <width>321</width>
+         <height>17</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>When checked, health columns will draw their symbols in color.</string>
+       </property>
+       <property name="statusTip">
+        <string>When checked, health columns will draw their symbols in color.</string>
+       </property>
+       <property name="whatsThis">
+        <string>When checked, health columns will draw their symbols in color.</string>
+       </property>
+       <property name="text">
+        <string>Use colors when drawing health symbols.</string>
+       </property>
+      </widget>
      </widget>
      <widget class="QWidget" name="tab_happiness_colors">
       <attribute name="icon">
@@ -2114,8 +2304,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>533</x>
-     <y>558</y>
+     <x>634</x>
+     <y>673</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -2130,8 +2320,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>533</x>
-     <y>558</y>
+     <x>634</x>
+     <y>673</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

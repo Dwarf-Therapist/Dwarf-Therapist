@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QtGui>
+#include <QtWidgets>
 #include <QtDebug>
 #include "gamedatareader.h"
 #include "labor.h"
@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include "laboroptimizerplan.h"
 #include "skill.h"
 #include "thought.h"
+#include "unithealth.h"
 
 QStringList GameDataReader::m_seasons;
 QStringList GameDataReader::m_months;
@@ -74,6 +75,9 @@ GameDataReader::GameDataReader(QObject *parent)
                        "ids are duplicated in game_data.ini");
         }
     }
+
+    //load health category descriptors
+    UnitHealth::load_health_descriptors(*m_data_settings);
 
     //load up the list of attributes and their descriptors
     Attribute::load_attribute_descriptors(*m_data_settings);
@@ -187,8 +191,10 @@ GameDataReader::GameDataReader(QObject *parent)
     int job_names = m_data_settings->beginReadArray("dwarf_jobs");
     qDeleteAll(m_dwarf_jobs);
     m_dwarf_jobs.clear();
-    m_dwarf_jobs[-2] = new DwarfJob(-2,"On Break", DwarfJob::DJT_IDLE, "", this);
-    m_dwarf_jobs[-1] = new DwarfJob(-1,"No Job", DwarfJob::DJT_DEFAULT, "", this);
+    //add custom jobs
+    m_dwarf_jobs[-1] = new DwarfJob(-1,tr("Soldier"), DwarfJob::DJT_SOLDIER, "", this);
+    m_dwarf_jobs[-2] = new DwarfJob(-2,tr("On Break"), DwarfJob::DJT_ON_BREAK, "", this);
+    m_dwarf_jobs[-3] = new DwarfJob(-3,tr("No Job"), DwarfJob::DJT_IDLE, "", this);
     for (short i = 0; i < job_names; ++i) {
         m_data_settings->setArrayIndex(i);
 

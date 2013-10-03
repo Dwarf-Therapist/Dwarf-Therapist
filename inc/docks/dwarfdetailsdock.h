@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef DWARF_DETAILS_H
 #define DWARF_DETAILS_H
 
-#include <QtGui>
+#include <QtWidgets>
 
 class Dwarf;
 class DwarfDetailsWidget;

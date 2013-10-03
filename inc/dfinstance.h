@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef DFINSTANCE_H
 #define DFINSTANCE_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "utils.h"
 #include "word.h"
 #include "global_enums.h"
@@ -135,19 +135,19 @@ public:
     quint32 current_year_time() {return m_cur_year_tick;}
 
     // Windows string offsets
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     static const int STRING_BUFFER_OFFSET = 4;  // Default value for older windows releases
     static const int STRING_LENGTH_OFFSET = 16; // Relative to STRING_BUFFER_OFFSET
     static const int STRING_CAP_OFFSET = 20;    // Relative to STRING_BUFFER_OFFSET
     static const int VECTOR_POINTER_OFFSET = 4;
 #endif
-#ifdef Q_WS_X11
+#ifdef Q_OS_X11
     static const int STRING_BUFFER_OFFSET = 0;
     static const int STRING_LENGTH_OFFSET = 0; // Dummy value
     static const int STRING_CAP_OFFSET = 0;    // Dummy value
     static const int VECTOR_POINTER_OFFSET = 0;
 #endif
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     static const int STRING_BUFFER_OFFSET = 0;
     static const int STRING_LENGTH_OFFSET = 0; // Dummy value
     static const int STRING_CAP_OFFSET = 0;    // Dummy value
@@ -172,11 +172,10 @@ public:
     struct pref_stat{
         QStringList names_likes;
         QStringList names_dislikes;
-        int likes;
-        int dislikes;
         QString pref_category;
     };
 
+    VIRTADDR get_syndrome(int idx);
     VIRTADDR get_material_template(QString temp_id) {return m_material_templates.value(temp_id);}
     QVector<Material *> get_inorganic_materials() {return m_inorganics_vector;}
     QHash<ITEM_TYPE, QVector<VIRTADDR> > get_items() {return m_item_vectors;}
@@ -279,6 +278,8 @@ private:
     QVector<VIRTADDR> m_shape_vector;
 
     QHash<QString, VIRTADDR> m_material_templates;
+
+    QVector<VIRTADDR> m_all_syndromes;
 
     void load_hist_figures();
 

@@ -33,7 +33,7 @@ RotatedHeader::RotatedHeader(Qt::Orientation orientation, QWidget *parent)
     : QHeaderView(orientation, parent)
     , m_hovered_column(-1)
 {
-    setClickable(true);
+    setSectionsClickable(true);
     setSortIndicatorShown(true);
     setMouseTracking(true);
 
@@ -200,6 +200,11 @@ void RotatedHeader::contextMenuEvent(QContextMenuEvent *evt) {
         a = m->addAction(QIcon(":img/sort-number-descending.png"),tr("Age Descending"), this, SLOT(sort_action()));
         a->setData(DwarfModelProxy::DSR_AGE_DESC);
         m->addSeparator();
+        a = m->addAction(QIcon(":img/sort-number.png"), tr("Body Size Ascending"), this, SLOT(sort_action()));
+        a->setData(DwarfModelProxy::DSR_SIZE_ASC);
+        a = m->addAction(QIcon(":img/sort-number-descending.png"),tr("Body Size Descending"), this, SLOT(sort_action()));
+        a->setData(DwarfModelProxy::DSR_SIZE_DESC);
+        m->addSeparator();
         a = m->addAction(QIcon(":img/sort-number.png"),tr("ID Ascending"), this, SLOT(sort_action()));
         a->setData(DwarfModelProxy::DSR_ID_ASC);
         a = m->addAction(QIcon(":img/sort-number-descending.png"),tr("ID Descending"), this, SLOT(sort_action()));
@@ -208,7 +213,7 @@ void RotatedHeader::contextMenuEvent(QContextMenuEvent *evt) {
         a = m->addAction(QIcon(":img/sort-alphabet.png"),tr("Name Ascending"), this, SLOT(sort_action()));
         a->setData(DwarfModelProxy::DSR_NAME_ASC);
         a = m->addAction(QIcon(":img/sort-alphabet-descending.png"),tr("Name Descending"), this, SLOT(sort_action()));
-        a->setData(DwarfModelProxy::DSR_NAME_DESC);
+        a->setData(DwarfModelProxy::DSR_NAME_DESC);        
     }
     if(m)
         m->exec(viewport()->mapToGlobal(evt->pos()));

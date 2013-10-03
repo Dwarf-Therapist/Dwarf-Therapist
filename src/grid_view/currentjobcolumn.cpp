@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include "reaction.h"
 
 CurrentJobColumn::CurrentJobColumn(const QString &title, ViewColumnSet *set,
-                       QObject *parent)
+                                   QObject *parent)
     : ViewColumn(title, CT_IDLE, set, parent)
 {    
 }
@@ -47,29 +47,33 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
     short job_id = d->current_job_id();
     QString pixmap_name(":img/question-frame.png");
-    if (job_id < 0) {
-        if(d->is_on_break()){
-            pixmap_name = ":status/img/hourglass.png"; // break
-        }else{
-            pixmap_name = ":status/img/cross-small.png"; // idle
-        }
-    } else {
-        DwarfJob *job = GameDataReader::ptr()->get_job(job_id);
-        if (job) {
+    DwarfJob *job = GameDataReader::ptr()->get_job(job_id);
+    if (job) {
 
-            DwarfJob::DWARF_JOB_TYPE job_type = job->type;
-            if(!job->reactionClass.isEmpty() && !d->current_sub_job_id().isEmpty()) {
-                Reaction* reaction = d->get_reaction();
-                if(reaction!=0) {
-                    job_type = DwarfJob::get_type(reaction->skill());
-                }
+        int pref_id = -1;
+        if(!job->reactionClass.isEmpty() && !d->current_sub_job_id().isEmpty()) {
+            Reaction* reaction = d->get_reaction();
+            if(reaction!=0) {
+                //job_type = DwarfJob::get_type(reaction->skill());
+                pref_id = GameDataReader::ptr()->get_pref_from_skill(reaction->skill_id());
             }
+        }
 
+        if(pref_id != -1){
+            pixmap_name = ":/profession/img/profession icons/prof_" + QString::number(pref_id+1) + ".png";  //offset for the image name
+            item->setData(QColor(50,50,50), DwarfModel::DR_DEFAULT_BG_COLOR); //shade the background
+        }else{
+            DwarfJob::DWARF_JOB_TYPE job_type = job->type;
             TRACE << "Dwarf: " << d->nice_name() << " job -" << job_id << ": (" << job->description << "," << job_type << ")";
-
             switch (job_type) {
-            case DwarfJob::DJT_IDLE:                
+            case DwarfJob::DJT_IDLE:
                 pixmap_name = ":status/img/cross-small.png";
+                break;
+            case DwarfJob::DJT_ON_BREAK:
+                pixmap_name = ":status/img/hourglass.png";
+                break;
+            case DwarfJob::DJT_SOLDIER:
+                pixmap_name = ":status/img/exclamation-shield-frame.png";
                 break;
             case DwarfJob::DJT_DIG:
                 pixmap_name = ":status/img/shovel.png";
@@ -77,10 +81,8 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
             case DwarfJob::DJT_CUT:
                 pixmap_name = ":status/img/tree--minus.png";
                 break;
-            case DwarfJob::DJT_SLEEP:{
+            case DwarfJob::DJT_SLEEP:
                 pixmap_name = ":status/img/moon.png";
-                //item->setData(QColor(50,50,50), DwarfModel::DR_DEFAULT_BG_COLOR);
-            }
                 break;
             case DwarfJob::DJT_DRINK:
                 pixmap_name = ":status/img/ale.png";
@@ -314,8 +316,9 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
             }
         }
     }
+
     item->setData(QIcon(pixmap_name), Qt::DecorationRole);
-    
+
     item->setData(CT_IDLE, DwarfModel::DR_COL_TYPE);
     item->setData(d->current_job_id(), DwarfModel::DR_SORT_VALUE);
     QColor bg = QColor(175,175,175);
@@ -333,7 +336,7 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
 }
 
 QStandardItem *CurrentJobColumn::build_aggregate(const QString &group_name,
-                                           const QVector<Dwarf*> &dwarves) {
+                                                 const QVector<Dwarf*> &dwarves) {
     Q_UNUSED(group_name);
     Q_UNUSED(dwarves);
     QStandardItem *item = new QStandardItem;

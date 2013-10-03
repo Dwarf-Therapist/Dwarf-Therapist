@@ -23,11 +23,12 @@ THE SOFTWARE.
 #ifndef DWARF_H
 #define DWARF_H
 
-#include <QtGui>
+#include <QtWidgets>
 #include "utils.h"
 #include "global_enums.h"
 #include "skill.h"
 #include "attribute.h"
+#include "unithealth.h"
 
 class DFInstance;
 class MemoryLayout;
@@ -185,14 +186,20 @@ public:
     //! return this creature's race id
     Q_INVOKABLE short get_race_id() { return m_race_id; }
 
+    //! return this creature's race
+    Race* get_race() { return m_race; }
+
     //! return this creature's age
     Q_INVOKABLE short get_age() { return m_age; }
 
     //! return this creature's flag1
-    Q_INVOKABLE quint32 get_flag1() { return m_flag1; }
+    Q_INVOKABLE quint32 get_flag1() { return m_unit_flags.at(0); }
 
     //! return this creature's flag2
-    Q_INVOKABLE quint32 get_flag2() { return m_flag2; }
+    Q_INVOKABLE quint32 get_flag2() { return m_unit_flags.at(1); }
+
+    //! return this creature's flag2
+    Q_INVOKABLE quint32 get_flag3() { return m_unit_flags.at(2); }
 
     //! return this creature's Nth bit from flags
     Q_INVOKABLE bool get_flag_value(int bit);
@@ -276,7 +283,7 @@ public:
     const QList<QPair<QString, float> > &sorted_role_ratings() {return m_sorted_role_ratings;}
 
     //! return the text string describing what this dwarf is currently doing ("Idle", "Construct Rock Door" etc...)
-    const QString &current_job() {return m_current_job;}
+    const QString &current_job() {return m_current_job;}    
 
     //! return the id of the job this dwarf is currently doing
     const short &current_job_id() {return m_current_job_id;}
@@ -290,6 +297,7 @@ public:
     //! return a formatted string suitable for showing in tooltips for this dwarf
     QString tooltip_text();
 
+    bool is_valid();
     // setters
     //! this will cause all data for this dwarf to be reset to game values (clears all pending uncomitted changes)
     void refresh_data();
@@ -397,7 +405,7 @@ public:
     QPixmap profession_icon() {return m_icn_prof;}
     QString gender_icon_path() {return m_icn_gender;}
 
-    int body_size() {return m_body_size;}
+    Q_INVOKABLE int body_size(bool use_default = false);
 
     bool has_state(short id){return m_states.contains(id);}
     int state_value(short id){return m_states.value(id,-1);}
@@ -418,8 +426,14 @@ public:
 
     Q_INVOKABLE bool has_preference(QString pref_name, QString category = "", bool exactMatch = true);
     Q_INVOKABLE bool has_thought(short id) {return m_thoughts.contains(id);}
+    Q_INVOKABLE bool has_health_issue(int id, int idx);
+
+    Q_INVOKABLE bool is_buffed() {return m_syndrome_names.length() > 0;}
+    Q_INVOKABLE QString buffs() {return m_syndrome_names.join(", ");}
 
     QString get_thought_desc() {return m_thought_desc;}
+
+    UnitHealth get_unit_health() {return m_unit_health;}
 
     int optimized_labors;
 
@@ -478,7 +492,7 @@ private:
     bool m_can_set_labors; // used to prevent cheating
     short m_current_job_id;
     QString m_current_job;
-    QString m_current_sub_job_id;
+    QString m_current_sub_job_id;    
     QHash<int,Skill> m_skills;
     QMultiMap<float, int> m_sorted_skills; //level, skill_id
     QHash<int, short> m_traits;
@@ -490,8 +504,7 @@ private:
     int m_squad_position;
     int m_hist_id;
     QString m_squad_name; //The name of the squad that the dwarf belongs to (if any)
-    quint32 m_flag1;
-    quint32 m_flag2;
+    QList<quint32> m_unit_flags;
     quint32 m_caged;
     quint32 m_butcher;
     short m_age;
@@ -520,6 +533,10 @@ private:
     bool m_is_animal;
     QString m_true_name; //used for vampires
     int m_true_birth_year; //used for vampires
+    UnitHealth m_unit_health;
+    bool m_validated;
+    bool m_is_valid;
+    QStringList m_syndrome_names;
 
     // these methods read data from raw memory
     void read_id();
@@ -537,7 +554,8 @@ private:
     void read_labors();
     void read_happiness();
     void read_current_job();
-    void read_souls();
+    void read_soul();
+    void read_soul_aspects();
     void read_skills();
     void read_attributes();
     void load_attribute(VIRTADDR &addr, int id);
@@ -547,6 +565,7 @@ private:
     void read_animal_type();
     void read_noble_position();
     void read_preferences();    
+    void read_syndromes();
 
     void set_age(VIRTADDR birth_year_offset, VIRTADDR birth_time_offset);
 
