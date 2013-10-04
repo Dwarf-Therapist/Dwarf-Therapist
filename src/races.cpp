@@ -44,6 +44,7 @@ Race::Race(DFInstance *df, VIRTADDR address, int id, QObject *parent)
     , m_df(df)
     , m_mem(df->memory_layout())
     , m_flags()
+    , loaded_stats(false)
 {
     load_data();
 }
@@ -87,6 +88,7 @@ void Race::read_race() {
     m_pop_ratio_vector = m_address + m_mem->race_offset("pop_ratio_vector");
     m_castes_vector = m_address + m_mem->race_offset("castes_vector");
     m_materials_addr = m_df->enumerate_vector(m_address + m_mem->race_offset("materials_vector"));
+    m_tissues_addr = m_df->enumerate_vector(m_address + m_mem->race_offset("tissues_vector"));
 
     //m_description = m_df->read_string(m_address + m_mem->caste_offset("caste_descr"));
     QVector<VIRTADDR> castes = m_df->enumerate_vector(m_castes_vector);
@@ -102,10 +104,8 @@ void Race::read_race() {
                 //LOGD << "FOUND CASTE " << hexify(caste_addr);
             }
             i++;
-        }        
-
-        m_tissues_addr = m_df->enumerate_vector(m_address + m_mem->race_offset("tissues_vector"));
-    }
+        }                
+    }    
 
     //if this is the race that we're currently playing as, we need to load some extra data and set some flags
     if(m_id == m_df->dwarf_race_id()){

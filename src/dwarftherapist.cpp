@@ -101,6 +101,17 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     m_main_window->show();
 }
 
+DwarfTherapist::~DwarfTherapist(){
+    qDeleteAll(m_language);
+    qDeleteAll(m_custom_prof_icns);
+    qDeleteAll(m_custom_professions);
+
+    delete m_user_settings;
+    delete m_options_menu;
+    delete m_main_window;
+    delete m_log_mgr;
+}
+
 void DwarfTherapist::setup_logging() {
     QStringList args = arguments();
     bool debug_logging = args.indexOf("-debug") != -1;
@@ -475,12 +486,13 @@ void DwarfTherapist::emit_roles_changed(){
 void DwarfTherapist::emit_labor_counts_updated(){
     if(m_main_window->get_DFInstance()){
         emit labor_counts_updated();
-        get_main_window()->get_view_manager()->redraw_current_tab_headers();
+        if(get_main_window()->get_view_manager())
+            get_main_window()->get_view_manager()->redraw_current_tab_headers();
     }
 }
 
 void DwarfTherapist::update_specific_header(int id, COLUMN_TYPE type){
-    if(m_main_window->get_DFInstance())
+    if(m_main_window->get_DFInstance() && get_main_window()->get_view_manager())
         get_main_window()->get_view_manager()->redraw_specific_header(id,type);
 }
 

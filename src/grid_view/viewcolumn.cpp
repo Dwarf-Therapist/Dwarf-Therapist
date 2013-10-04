@@ -81,6 +81,7 @@ ViewColumn::ViewColumn(const ViewColumn &to_copy)
 
 ViewColumn::~ViewColumn(){
     clear_cells();
+    m_set = 0;
 }
 
 QStandardItem *ViewColumn::init_cell(Dwarf *d) {

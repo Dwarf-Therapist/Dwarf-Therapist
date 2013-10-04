@@ -131,7 +131,8 @@ TruncatingFileLogger::~TruncatingFileLogger() {
             m_file->flush();
             m_file->close();
         }
-        m_file->deleteLater(); // the object not the file
+        //m_file->deleteLater(); // the object not the file
+        delete m_file;
     }
 }
 

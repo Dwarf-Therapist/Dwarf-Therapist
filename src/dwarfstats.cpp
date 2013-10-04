@@ -244,7 +244,7 @@ float DwarfStats::get_att_caste_role_rating(Attribute &a){
     float diff = a.max() - a.value();
     float cti = a.cti(); //cost to improve
     if(cti < 0)
-        cti = 0;
+        cti = 1;
     float gap = diff * 500 / cti;
 
     //uses the cost to improve and the attributes maximum to apply a bonus
@@ -342,11 +342,11 @@ float DwarfStats::get_att_caste_role_rating(Attribute &a){
 }
 
 void DwarfStats::cleanup(){
-    LOGD << "cleaning up dwarfstats...";
+//    LOGD << "cleaning up dwarfstats...";
     //traits
     m_trait_bins.clear();
 
     //attributes
     m_att_caste_bins.clear();
-    LOGD << "done cleaning dwarfstats!";
+//    LOGD << "done cleaning dwarfstats!";
 }

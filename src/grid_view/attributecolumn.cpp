@@ -79,7 +79,7 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     Attribute a = d->get_attribute((int)m_attribute_type);
     short rawVal = a.value();
     QString descriptor = a.get_descriptor();
-    float rating = a.rating() * 100.0f;
+    float rating = a.rating() * 100.0f;    
 
     //if this is an animal, we won't have any caste balanced ratings, so just take a rating out of an arbitrary absolute of 2250
     //that means any rating over 2250 will essentially be 100%, which is pretty reasonable, since
@@ -90,6 +90,7 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     //the rating is used for drawing, should be between 0-100 for attributes
     item->setData(rating, DwarfModel::DR_RATING);
     item->setData(roundf(rating), DwarfModel::DR_DISPLAY_RATING);
+
 
     //if no descriptor (middle ranges) then set the rating to a middle (hidden) value
     //this is primarily for vanilla, as the mid ranges don't have a description and are hidden in game

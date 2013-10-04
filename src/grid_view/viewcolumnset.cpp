@@ -68,6 +68,15 @@ ViewColumnSet::ViewColumnSet(const ViewColumnSet &copy)
     }
 }
 
+ViewColumnSet::~ViewColumnSet(){
+    foreach(ViewColumn *c, m_columns){
+        c->deleteLater();
+    }
+
+    m_columns.clear();
+    m_view = 0;
+}
+
 void ViewColumnSet::re_parent(QObject *parent) {
     setParent(parent);
     foreach(ViewColumn *vc, m_columns) {
@@ -110,6 +119,7 @@ void ViewColumnSet::clear_columns() {
 //    }
 //    m_columns.clear();
     qDeleteAll(m_columns);
+    m_columns.clear();
 }
 
 void ViewColumnSet::toggle_for_dwarf_group() {

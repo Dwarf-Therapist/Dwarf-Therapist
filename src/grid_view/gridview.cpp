@@ -47,10 +47,10 @@ GridView::GridView(const GridView &to_be_copied)
 }
 
 GridView::~GridView() {
-    qDeleteAll(m_sets);
-//    foreach(ViewColumnSet *set, m_sets) {
-//        set->deleteLater();
-//    }
+    foreach(ViewColumnSet *set, m_sets) {
+        set->deleteLater();
+    }
+    m_sets.clear();
 }
 
 void GridView::re_parent(QObject *parent) {

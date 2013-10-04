@@ -268,7 +268,7 @@ private:
     QVector<Material *> m_inorganics_vector;
     QVector<Material *> m_base_materials;
 
-    QVector<VIRTADDR> get_creatures();
+    QVector<VIRTADDR> get_creatures(bool report_progress = true);
 
     QHash<int,VIRTADDR> m_hist_figures;
     QVector<VIRTADDR> m_fake_identities;

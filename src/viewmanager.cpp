@@ -69,12 +69,28 @@ ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy,
     m_squad_warning = new QErrorMessage(this);    
 }
 
+ViewManager::~ViewManager(){
+    foreach(GridView *v, m_views){
+        v->deleteLater();
+    }
+
+    m_views.clear();
+
+    m_model = 0;
+    m_proxy = 0;
+    delete m_add_tab_button;
+    m_selected_dwarfs.clear();
+
+    delete m_squad_warning;
+}
+
 void ViewManager::draw_add_tab_button() {
+    std::sort(m_views.begin(), m_views.end(), GridView::name_custom_sort());
+
     QIcon icn(":img/ui-tab--plus.png");
     QMenu *m = new QMenu(this);
     foreach(GridView *v, m_views) {
-        QAction *a = m->addAction(icn, "Add " + v->name(), this,
-                                  SLOT(add_tab_from_action()));
+        QAction *a = m->addAction(icn, v->name(), this, SLOT(add_tab_from_action()));
         a->setData((qulonglong)v);
     }
     m_add_tab_button->setMenu(m);

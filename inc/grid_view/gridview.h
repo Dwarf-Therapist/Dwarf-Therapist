@@ -84,6 +84,19 @@ public:
 	//! Factory function to create a gridview from a QSettings that has already been pointed at a gridview entry
     static GridView *read_from_ini(QSettings &settings, QObject *parent = 0);
 
+    struct name_custom_sort
+    {
+        bool operator() (const GridView* g1, const GridView* g2) const
+        {
+//            if(g1->m_is_custom != g2->m_is_custom)
+//                return ((int)g1->m_is_custom >= (int)g2->m_is_custom);
+//            else
+//                 return (g1->m_name < g2->m_name);
+
+           return (g1->m_name < g2->m_name);
+        }
+    };
+
 private:
 	bool m_active;
 	QString m_name;

@@ -57,7 +57,7 @@ DwarfModel::DwarfModel(QObject *parent)
 }
 
 DwarfModel::~DwarfModel() {
-    clear_all(true);
+    clear_all(false);
 }
 
 void DwarfModel::clear_all(bool clr_pend) {

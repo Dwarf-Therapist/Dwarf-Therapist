@@ -155,7 +155,7 @@ int DFInstanceWindows::write_string(const VIRTADDR &addr, const QString &str) {
     CP437Codec *codec = new CP437Codec;
     QByteArray data = codec->fromUnicode(str);
     int bytes_written = write_raw(buffer_addr, len, data.data());
-    //delete codec; seems to cause Qt Warnings if you delete this.
+    delete codec; //seems to cause Qt Warnings if you delete this.
     return bytes_written;
 }
 

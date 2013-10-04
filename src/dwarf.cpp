@@ -103,9 +103,6 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
 
     // setup context actions
     m_actions.clear();
-//    QAction *show_details = new QAction(tr("Show Details..."), this);
-//    connect(show_details, SIGNAL(triggered()), SLOT(show_details()));
-//    m_actions << show_details;
     QAction *dump_mem = new QAction(tr("Dump Memory..."), this);
     connect(dump_mem, SIGNAL(triggered()), SLOT(dump_memory()));
     m_actions << dump_mem;
@@ -206,52 +203,6 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     }else{
         return unverified_dwarf;
     }
-
-//    if (mem->is_complete()) {
-//        if(!is_tame && !is_caged){ //fortress civilian
-
-//            //check for migrants (which aren't dead)
-//            if(unverified_dwarf->state_value(7) > 0 && !has_flag(0x2,flags1) && !has_flag(0x1000,flags3)){
-//                LOGD << "Found migrant " << unverified_dwarf->nice_name();
-//                return unverified_dwarf;
-//            }
-
-//            //if a dwarf has gone crazy (berserk=7,raving=6)
-//            int m_mood = unverified_dwarf->m_mood_id;
-//            if(m_mood==7 || m_mood==6){
-//                LOGD << "Ignoring" << unverified_dwarf->nice_name() << "who appears to have lost their mind.";
-//                delete unverified_dwarf;
-//                return 0;
-//            }
-
-//        }else{ //tame or caged animals
-//            //exclude cursed animals, this may be unnecessary with the civ check
-//            if(!unverified_dwarf->curse_name().isEmpty()){
-//                LOGD << "Ignoring animal " << unverified_dwarf->nice_name() << "who appears to be cursed or undead";
-//                delete unverified_dwarf;
-//                return 0;
-//            }
-//        }
-
-//        //check other invalid flags (invaders, ghosts, dead, merchants, etc.)
-//        if(has_invalid_flags(unverified_dwarf->nice_name(), mem->invalid_flags_1(),flags1) ||
-//                has_invalid_flags(unverified_dwarf->nice_name(), mem->invalid_flags_2(),flags2) ||
-//                has_invalid_flags(unverified_dwarf->nice_name(), mem->invalid_flags_3(),flags3)){
-//            delete unverified_dwarf;
-//            return 0;
-//        }
-
-//        //finally, if we've got no attributes at all, it's probably a corpse part (most likely from a mod)
-//        //again this may be unnecessary with the civ check
-//        if(unverified_dwarf->m_attributes.count() <=0 ){
-//            LOGD << "Ignoring" << unverified_dwarf->nice_name() <<
-//                    "who appears to be a corpse.";
-//            delete unverified_dwarf;
-//            return 0;
-//        }
-//    }
-
-//    return unverified_dwarf;
 }
 
 bool Dwarf::has_invalid_flags(const QString creature_name, QHash<uint, QString> invalid_flags, quint32 dwarf_flags){
@@ -716,65 +667,15 @@ void Dwarf::calc_names() {
 
     if(m_is_animal)
     {
-//        QString tametype = "";
-//        switch (m_animal_type) {
-//        case semi_wild:
-//            tametype = tr("Semi-wild");
-//            break;
-//        case trained:
-//            tametype = tr("Trained");
-//            break;
-//        case well_trained:
-//            tametype = tr("Well trained");
-//            break;
-//        case skillfully_trained:
-//            tametype = tr("Skillfully trained");
-//            break;
-//        case expertly_trained:
-//            tametype = tr("Expertly trained");
-//            break;
-//        case exceptionally_trained:
-//            tametype = tr("Exceptionally trained");
-//            break;
-//        case masterfully_trained:
-//            tametype = tr("Masterfully trained");
-//            break;
-//        case domesticated:
-//            tametype = tr("Domesticated");
-//            break;
-//        case unknown_trained:
-//            tametype = tr("Unknown");
-//            break;
-//        case wild_untamed:
-//            tametype = tr("Wild");
-//            break;
-//        case hostile:
-//            tametype = tr("Hostile");
-//            break;
-//        default:
-//            tametype = "";
-//            break;
-//        }
-
-//        tametype = (tametype != "" ? " (" + tametype + ") " : " ");
-
         if(m_nice_name=="")
         {
             m_nice_name = race_name();
             m_translated_name = "";
-            //m_nice_name = tr("Stray %1 %2").arg(race_name()).arg(tametype);
-            //m_translated_name = tr("Stray %1").arg(race_name());
         }
         else
         {
             m_nice_name = tr("%1 (%2)").arg(race_name()).arg(m_nice_name);
-            //m_nice_name += QString(", %1 %2").arg(race_name()).arg(tametype);
-            //m_translated_name += QString(", %1").arg(race_name());
         }        
-
-        //m_nice_name = race_name(true) + prof + tametype + m_nice_name;
-
-
     }
     // uncomment to put address at front of name
     //m_nice_name = QString("0x%1 %2").arg(m_address, 8, 16, QChar('0')).arg(m_nice_name);

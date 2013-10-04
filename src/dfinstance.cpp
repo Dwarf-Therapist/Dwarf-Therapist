@@ -127,7 +127,7 @@ DFInstance::DFInstance(QObject* parent)
 }
 
 DFInstance::~DFInstance() {
-    LOGD << "DFInstance baseclass virtual dtor!";
+//    LOGD << "DFInstance baseclass virtual dtor!";
     foreach(MemoryLayout *l, m_memory_layouts) {
         delete(l);
     }
@@ -157,7 +157,7 @@ DFInstance::~DFInstance() {
     m_thought_counts.clear();
 
     DwarfStats::cleanup();
-    LOGD << "DFInstance baseclass virtual dtor all done!";
+//    LOGD << "DFInstance baseclass virtual dtor all done!";
 }
 
 BYTE DFInstance::read_byte(const VIRTADDR &addr) {
@@ -851,13 +851,14 @@ QVector<Squad*> DFInstance::load_squads(bool refreshing) {
 
 void DFInstance::heartbeat() {
     // simple read attempt that will fail if the DF game isn't running a fort, or isn't running at all
-    if(get_creatures().size() < 1){
+    // it would be nice to find a less cumbersome read, but for now at least we know this works
+    if(get_creatures(false).size() < 1){
         // no game loaded, or process is gone
         emit connection_interrupted();
     }
 }
 
-QVector<VIRTADDR> DFInstance::get_creatures(){
+QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
     VIRTADDR active_units = m_layout->address("active_creature_vector");
     active_units += m_memory_correction;
     VIRTADDR all_units = m_layout->address("creature_vector");
@@ -866,18 +867,24 @@ QVector<VIRTADDR> DFInstance::get_creatures(){
     //first try the active unit list
     QVector<VIRTADDR> entries = enumerate_vector(active_units);
     if(entries.isEmpty()){
-//        LOGD << "no active units (embark) using full unit list";
+        if(report_progress){
+            LOGD << "no active units (embark) using full unit list";
+        }
         entries = enumerate_vector(all_units);
     }else{
         //there are active units, but are they ours?
         int civ_offset = m_layout->dwarf_offset("civ");
         foreach(VIRTADDR entry, entries){
             if(read_word(entry + civ_offset)==m_dwarf_civ_id){
-//                LOGD << "using active units";
+                if(report_progress){
+                    LOGD << "using active units";
+                }
                 return entries;
             }
         }
-//        LOGD << "no active units with our civ (reclaim), using full unit list";
+        if(report_progress){
+            LOGD << "no active units with our civ (reclaim), using full unit list";
+        }
         entries = enumerate_vector(all_units);
     }
     return entries;

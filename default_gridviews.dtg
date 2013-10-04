@@ -5,7 +5,7 @@ DT_version\patch=4
 export_date=@Variant(\0\0\0\x10\0%wN\x4\xc2\n\xa5\xff)
 
 [gridviews]
-size=13
+size=12
 1\name=Social
 1\active=true
 1\sets\size=1

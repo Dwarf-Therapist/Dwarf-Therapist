@@ -45,7 +45,7 @@ class DwarfTherapist : public QApplication {
     Q_OBJECT
 public:
     DwarfTherapist(int &argc, char **argv);
-    virtual ~DwarfTherapist(){}
+    virtual ~DwarfTherapist();
 
     QVector<CustomProfession*> get_custom_professions() {return m_custom_professions;}
     CustomProfession *get_custom_profession(QString name);

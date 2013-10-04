@@ -44,7 +44,7 @@ class ViewManager : public QTabWidget {
 	Q_OBJECT
 public:
 	ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent = 0);
-
+    virtual ~ViewManager();
     QList<Dwarf*> get_selected_dwarfs() {return m_selected_dwarfs;}
     
 	QList<GridView*> views() {return m_views;}

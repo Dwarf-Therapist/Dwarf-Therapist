@@ -34,7 +34,9 @@ win32 {
     HEADERS += inc/dfinstancewindows.h
     SOURCES += src/dfinstancewindows.cpp    
 
-    #setup_files.path = $$DESTDIR
+    DEFINES += NOMINMAX
+
+     #setup_files.path = $$DESTDIR
     #setup_files.extra = ROBOCOPY /MIR "etc" ".\\$$DESTDIR\\etc";
 
     check_log.path = $$DESTDIR

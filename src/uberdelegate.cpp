@@ -269,7 +269,11 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
             if(color_health_cells){
                 p->setPen(model_idx.data(Qt::TextColorRole).value<QColor>());
             }else{
-                p->setPen(get_pen_color(bg));
+                if(auto_contrast){
+                    p->setPen(compliment(bg));
+                }else{
+                    p->setPen(Qt::black);
+                }
             }
 
             QFont tmp = m_fnt;
@@ -364,14 +368,11 @@ QColor UberDelegate::get_pen_color(const QColor bg) const{
 void UberDelegate::paint_values(const QRect &adjusted, float rating, QString text_rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt,
                               const QModelIndex &idx, float median, float min_limit, float max_limit, float min_ignore, float max_ignore, bool bold_text) const{
 
-    QColor color_fill = color_skill;
-    QColor color_border = Qt::black;
+    QColor color_fill = color_skill;    
 
     QPen pn;
-    pn.setColor(color_border);
-    pn.setWidth(0);
-
     pn.setColor(get_pen_color(bg));
+    pn.setWidth(0);
 
     if (auto_contrast)
         color_fill = compliment(bg);
@@ -451,7 +452,7 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
             float perc_of_cell = 0.76f; //max amount of the cell to fill            
             //double size = (((adj_rating-min_limit) * (perc_of_cell - 0.05625)) / (max_limit - min_limit)) + 0.05625;            
             double size = (((adj_rating-min_limit) * (perc_of_cell - 0.05625)) / (max_limit - min_limit)) + 0.05625;
-            size = roundf(size * 100) / 100; //this is to aid in the problem of an odd number of pixel in an even size cell, or vice versa
+            //size = roundf(size * 100) / 100; //this is to aid in the problem of an odd number of pixel in an even size cell, or vice versa
             double inset = (1.0f - size) / 2.0f;
             //p->translate(adjusted.x()-inset,adjusted.y()-inset);
             p->translate(adjusted.x(),adjusted.y());

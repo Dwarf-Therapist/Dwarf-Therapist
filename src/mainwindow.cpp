@@ -219,7 +219,24 @@ MainWindow::MainWindow(QWidget *parent)
     new QShortcut(Qt::CTRL + Qt::Key_A, m_view_manager, SLOT(select_all()));
 }
 
-MainWindow::~MainWindow() {
+MainWindow::~MainWindow() {       
+    delete m_lbl_status;
+    delete m_lbl_message;
+    delete m_progress;
+
+    delete m_about_dialog;
+    delete m_scanner;
+    delete m_script_dialog;
+    delete m_role_editor;
+    delete m_optimize_plan_editor;
+    delete m_http;
+    delete m_dwarf_name_completer;
+
+    delete m_model;    
+    delete m_view_manager;
+    delete m_proxy;
+    delete m_df;
+    delete m_settings;
     delete ui;
 }
 
@@ -358,6 +375,7 @@ void MainWindow::lost_df_connection() {
     LOGW << "lost connection to DF";
     if (m_df) {
         m_model->clear_all(true);
+        m_df->disconnect();
         delete m_df;
         m_df = 0;                    
         reset();

@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define LABOROPTIMIZER_H
 
 #include <QtWidgets>
+#include "utils.h"
 
 class Dwarf;
 class Labor;

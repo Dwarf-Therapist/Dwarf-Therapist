@@ -39,6 +39,7 @@ class ViewColumnSet : public QObject {
 public:
 	ViewColumnSet(QString name, QObject *parent = 0);
 	ViewColumnSet(const ViewColumnSet &copy); //copy ctor
+    virtual ~ViewColumnSet();
 
     void re_parent(QObject *parent);
 

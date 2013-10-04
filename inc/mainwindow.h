@@ -126,7 +126,7 @@ public:
         void refresh_opts_data();
         void write_labor_optimizations();
         void init_optimize();
-        void optimize(QString plan_name);        
+        void optimize(QString plan_name);
 
 
 private:

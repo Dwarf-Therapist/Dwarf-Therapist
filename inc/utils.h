@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <QPixmap>
 #include <QBuffer>
 #include <QIODevice>
+#include <math.h>
 
 // valid for as long as DF stays 32bit
 typedef quint32 VIRTADDR;
@@ -111,18 +112,28 @@ static inline QString by_char(QByteArray arr) {
     return out;
 }
 
-static inline QColor compliment(const QColor &in_color) {
-    qreal brightness = (in_color.red() * 299 + in_color.green() * 587 + in_color.blue() * 114) / 255000.0;
+static inline QColor compliment(const QColor &in_color) {    
+//    qreal brightness = (in_color.red() * 299 + in_color.green() * 587 + in_color.blue() * 114) / 255000.0;
+    qreal brightness = sqrt(pow(in_color.redF(),2.0) * 0.241 +
+                            pow(in_color.greenF(),2.0) * 0.691 +
+                            pow(in_color.blueF(),2.0) * 0.068);
     QColor tmp = in_color.toHsv();
     int h = tmp.hue();
     int s = 25;
     int v;
-    if (brightness >= 0.5) {
+    if(brightness >= 0.5 || in_color.alpha() < 130) {
         v = 0;
     } else {
         v = 255;
     }
     return QColor::fromHsv(h, s, v);
+
+    //returns a true compliment color
+//    int r = (~in_color.red()) & 0xff;
+//    int b = (~in_color.blue()) & 0xff;
+//    int g = (~in_color.green()) & 0xff;
+////    int a = (~in_color.alpha()) & 0xff;
+//    return QColor(r,g,b,a);
 }
 
 static inline QColor from_hex(const QString &h) {
@@ -194,4 +205,9 @@ static inline bool has_flag(int flag, int flags){
     return ((flag & flags) == flag);
 }
 
+//static inline float roundf(float f){
+//    return floor(f + 0.5f);
+//}
+
 #endif // UTILS_H
+
