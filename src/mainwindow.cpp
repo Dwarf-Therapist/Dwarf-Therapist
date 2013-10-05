@@ -68,10 +68,10 @@ THE SOFTWARE.
 #ifdef Q_OS_WIN
 #include "dfinstancewindows.h"
 #endif
-#ifdef Q_OS_X11
+#ifdef Q_OS_LINUX
 #include "dfinstancelinux.h"
 #endif
-#ifdef _OSX
+#ifdef Q_OS_MAC
 #include "dfinstanceosx.h"
 #endif
 
@@ -315,7 +315,7 @@ void MainWindow::connect_to_df() {
 #ifdef Q_OS_MAC
     m_df = new DFInstanceOSX();
 #else
-#ifdef Q_OS_X11
+#ifdef Q_OS_LINUX
     m_df = new DFInstanceLinux();
 #endif
 #endif
@@ -724,7 +724,7 @@ void MainWindow::draw_custom_profession_context_menu(const QPoint &p) {
 
 // web addresses
 void MainWindow::go_to_forums() {
-    QDesktopServices::openUrl(QUrl("http://www.bay12forums.com/smf/index.php?topic=66525.0"));
+    QDesktopServices::openUrl(QUrl("http://www.bay12forums.com/smf/index.php?topic=122968.0"));
 }
 void MainWindow::go_to_donate() {
     QDesktopServices::openUrl(QUrl("http://code.google.com/r/splintermind-attributes/"));

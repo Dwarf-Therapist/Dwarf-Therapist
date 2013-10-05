@@ -54,7 +54,7 @@ THE SOFTWARE.
 #ifdef Q_OS_WIN
 #define LAYOUT_SUBDIR "windows"
 #else
-#ifdef Q_OS_X11
+#ifdef Q_OS_LINUX
 #define LAYOUT_SUBDIR "linux"
 #else
 #ifdef Q_OS_MAC

@@ -141,7 +141,7 @@ public:
     static const int STRING_CAP_OFFSET = 20;    // Relative to STRING_BUFFER_OFFSET
     static const int VECTOR_POINTER_OFFSET = 4;
 #endif
-#ifdef Q_OS_X11
+#ifdef Q_OS_LINUX
     static const int STRING_BUFFER_OFFSET = 0;
     static const int STRING_LENGTH_OFFSET = 0; // Dummy value
     static const int STRING_CAP_OFFSET = 0;    // Dummy value

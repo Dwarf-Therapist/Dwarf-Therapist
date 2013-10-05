@@ -28,7 +28,7 @@ THE SOFTWARE.
 #ifdef Q_OS_MAC
 #include "dfinstanceosx.h"
 #else
-#ifdef Q_OS_X11
+#ifdef Q_OS_LINUX
 #include "dfinstancelinux.h"
 #endif
 #endif
@@ -62,7 +62,7 @@ bool ScannerJob::get_DFInstance() {
 #ifdef Q_OS_MAC
     m_df = new DFInstanceOSX(this);
 #else
-#ifdef Q_OS_X11
+#ifdef Q_OS_LINUX
     m_df = new DFInstanceLinux(this);
 #endif
 #endif

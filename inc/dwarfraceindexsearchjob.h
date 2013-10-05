@@ -34,7 +34,7 @@ http://www.opensource.org/licenses/mit-license.php
 #ifdef Q_OS_WIN
 #define RACE_INDEX_MAGIC_REFERENCE ((const ushort)0x3966)
 #endif
-#ifdef Q_OS_X11
+#ifdef Q_OS_LINUX
 #define RACE_INDEX_MAGIC_REFERENCE ((const ushort)0xbf0f)
 #endif
 #ifdef Q_OS_MAC
