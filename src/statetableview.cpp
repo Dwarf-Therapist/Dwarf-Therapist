@@ -44,6 +44,7 @@ THE SOFTWARE.
 #include "profession.h"
 #include "labor.h"
 #include "truncatingfilelogger.h"
+#include "defaultfonts.h"
 
 StateTableView::~StateTableView()
 {}
@@ -100,7 +101,7 @@ void StateTableView::read_settings() {
     QSettings *s = DT->user_settings();
 
     //font
-    QFont fnt = s->value("options/grid/font", QFont("Segoe UI", 8)).value<QFont>();
+    QFont fnt = s->value("options/grid/font", QFont(DefaultFonts::getRowFontName(), DefaultFonts::getRowFontSize())).value<QFont>();
     setFont(fnt);
 
     //cell size
@@ -215,7 +216,7 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
             //TOGGLE ALL LABORS
             m.addSeparator();
             a = m.addAction(QIcon(":img/plus-circle.png"), tr("Assign All Labors"), this, SLOT(toggle_all_labors()));
-            a->setData(true);
+            a->setData(true);            
             a = m.addAction(QIcon(":img/minus-circle.png"), tr("Clear All Labors"), this, SLOT(toggle_all_labors()));
             a->setData(false);
 

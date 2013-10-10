@@ -26,37 +26,37 @@ THE SOFTWARE.
 #include "customcolor.h"
 
 CustomColor::CustomColor(QString setting_name, QString tooltip, QString config_key, QColor default_color, QWidget *parent)
-	: QWidget(parent)
-	, m_name(setting_name)
-	, m_tooltip(tooltip)
-	, m_config_key(config_key)
-        , m_picker(new QtColorPicker(this, -1, true))
-        , m_label(new QLabel(setting_name, this))
-	, m_default(default_color)
-        , m_last_color(default_color)
-	, m_dirty(false)
+    : QWidget(parent)
+    , m_name(setting_name)
+    , m_tooltip(tooltip)
+    , m_config_key(config_key)
+    , m_picker(new QtColorPicker(this, -1, true))
+    , m_label(new QLabel(setting_name, this))
+    , m_default(default_color)
+    , m_last_color(default_color)
+    , m_dirty(false)
 {
-	m_label->setBuddy(m_picker);
-	m_label->setStatusTip(m_tooltip);
-	m_picker->insertColor(default_color, tr("Default"));
-	//m_picker->setToolTip(m_tooltip);
-	m_picker->setStatusTip(m_tooltip);
-	m_picker->setStandardColors();
-	m_picker->setCurrentColor(default_color);
-	m_picker->setStyleSheet("text-align: left;");
-	m_last_color = m_picker->currentColor();
+    m_label->setBuddy(m_picker);
+    m_label->setStatusTip(m_tooltip);
+    m_picker->insertColor(default_color, tr("Default"));
+    //m_picker->setToolTip(m_tooltip);
+    m_picker->setStatusTip(m_tooltip);
+    m_picker->setStandardColors();
+    m_picker->setCurrentColor(default_color);
+    m_picker->setStyleSheet("text-align: left;");
+    m_last_color = m_picker->currentColor();
 
-	QHBoxLayout *hbox = new QHBoxLayout(this);
-	hbox->setSpacing(2);
-	hbox->setMargin(0);
-	hbox->addWidget(m_picker);
-	hbox->addWidget(m_label);
-	this->setLayout(hbox);
-	
-	connect(m_picker, SIGNAL(colorChanged(const QColor &)), this, SLOT(color_changed(const QColor &)));
+    QHBoxLayout *hbox = new QHBoxLayout(this);
+    hbox->setSpacing(2);
+    hbox->setMargin(0);
+    hbox->addWidget(m_picker);
+    hbox->addWidget(m_label);
+    this->setLayout(hbox);
+
+    connect(m_picker, SIGNAL(colorChanged(const QColor &)), this, SLOT(color_changed(const QColor &)));
 }
 
 void CustomColor::color_changed(const QColor &) {
-	m_dirty = true;
+    m_dirty = true;
     emit color_changed(m_config_key, m_picker->currentColor());
 }

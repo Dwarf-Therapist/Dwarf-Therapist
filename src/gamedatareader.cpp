@@ -84,19 +84,17 @@ GameDataReader::GameDataReader(QObject *parent)
 
     //load up some simple lists of the attributes and their names, as well as an ordered list
     int attributes = m_data_settings->beginReadArray("attributes");
+    QStringList attribute_names;
     for(int i = 0; i < attributes; ++i) {
         m_data_settings->setArrayIndex(i);
         //Attribute *a = new Attribute(*m_data_settings, this);
         int id = m_data_settings->value("id",0).toInt();
         QString name = m_data_settings->value("name","unknown").toString();
         m_attribute_names.insert(id,name);
+        attribute_names << name;
     }
     m_data_settings->endArray();  
 
-    QStringList attribute_names;
-    foreach(QString name, m_attribute_names.values()) {
-        attribute_names << name;
-    }
     qSort(attribute_names);
     foreach(QString sorted_name, attribute_names) {
         foreach(int id, m_attribute_names.uniqueKeys()) {
@@ -105,19 +103,25 @@ GameDataReader::GameDataReader(QObject *parent)
                 break;
             }
         }
-    }    
+    }
 
-    m_data_settings->beginGroup("skill_names");
+    m_data_settings->beginGroup("attribute_levels");
     foreach(QString k, m_data_settings->childKeys()) {
-        int skill_id = k.toInt();
-        m_skills.insert(skill_id, m_data_settings->value(k, "UNKNOWN").toString());
+        int num_attributes = k.toInt();
+        m_attribute_levels.insert(num_attributes, m_data_settings->value(k).toInt());
     }
     m_data_settings->endGroup();
 
+    m_data_settings->beginGroup("skill_names");
     QStringList skill_names;
-    foreach(QString name, m_skills) {
+    foreach(QString k, m_data_settings->childKeys()) {
+        int skill_id = k.toInt();
+        QString name = m_data_settings->value(k, "UNKNOWN").toString();
+        m_skills.insert(skill_id, name);
         skill_names << name;
     }
+    m_data_settings->endGroup();
+
     qSort(skill_names);
     foreach(QString name, skill_names) {
         foreach(int skill_id, m_skills.uniqueKeys()) {
@@ -160,24 +164,17 @@ GameDataReader::GameDataReader(QObject *parent)
     m_mood_skills_profession_map.insert(49,3);
     m_mood_skills_profession_map.insert(55,60);
 
-    m_data_settings->beginGroup("attribute_levels");
-    foreach(QString k, m_data_settings->childKeys()) {
-        int num_attributes = k.toInt();
-        m_attribute_levels.insert(num_attributes, m_data_settings->value(k).toInt());
-    }
-    m_data_settings->endGroup();
 
     int traits = m_data_settings->beginReadArray("traits");
+    QStringList trait_names;
     for(int i = 0; i < traits; i++) {
         m_data_settings->setArrayIndex(i);
-        Trait *t = new Trait(i,*m_data_settings, this);
+        Trait *t = new Trait(i,*m_data_settings, this);        
         m_traits.insert(i, t);
-    }
-    m_data_settings->endArray();
-    QStringList trait_names;
-    foreach(Trait *t, m_traits) {
         trait_names << t->name;
     }
+    m_data_settings->endArray();
+
     qSort(trait_names);
     foreach(QString name, trait_names) {
         foreach(Trait *t, m_traits) {
@@ -188,14 +185,18 @@ GameDataReader::GameDataReader(QObject *parent)
         }
     }
 
-    int job_names = m_data_settings->beginReadArray("dwarf_jobs");
+    int job_count = m_data_settings->beginReadArray("dwarf_jobs");
     qDeleteAll(m_dwarf_jobs);
     m_dwarf_jobs.clear();
+    QStringList job_names;
     //add custom jobs
     m_dwarf_jobs[-1] = new DwarfJob(-1,tr("Soldier"), DwarfJob::DJT_SOLDIER, "", this);
+    job_names << m_dwarf_jobs[-1]->description;
     m_dwarf_jobs[-2] = new DwarfJob(-2,tr("On Break"), DwarfJob::DJT_ON_BREAK, "", this);
+    job_names << m_dwarf_jobs[-2]->description;
     m_dwarf_jobs[-3] = new DwarfJob(-3,tr("No Job"), DwarfJob::DJT_IDLE, "", this);
-    for (short i = 0; i < job_names; ++i) {
+    job_names << m_dwarf_jobs[-3]->description;
+    for (short i = 0; i < job_count; ++i) {
         m_data_settings->setArrayIndex(i);
 
         QString name = m_data_settings->value("name", "???").toString();
@@ -204,8 +205,18 @@ GameDataReader::GameDataReader(QObject *parent)
         DwarfJob::DWARF_JOB_TYPE type = DwarfJob::get_type(job_type);
 
         m_dwarf_jobs[i] =  new DwarfJob(i, name, type, reactionClass, this);
+        job_names << name;
     }
     m_data_settings->endArray();
+    qSort(job_names);
+    foreach(QString name, job_names) {
+        foreach(DwarfJob *j, m_dwarf_jobs) {
+            if (j->description == name) {
+                m_ordered_jobs << QPair<int, QString>(j->id, name);
+                break;
+            }
+        }
+    }
 
     load_roles();
     load_optimization_plans();

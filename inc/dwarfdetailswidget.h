@@ -51,8 +51,13 @@ private:
 
     int m_current_id;
 
-    void clear_table(QTableWidget &t);
-    QString clean_font_tags(QString val);
+    void clear_table(QTableWidget &t);    
+    QString build_gradient(QColor c1, QColor c2);
+
+    static QColor color_low;
+    static QColor color_high;
+    static QColor color_mood_high;
+    static QColor color_mood_had;
 
 };
 

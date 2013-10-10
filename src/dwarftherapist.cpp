@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include "truncatingfilelogger.h"
 #include "viewmanager.h"
 #include "dwarfstats.h"
+#include "defaultfonts.h"
 
 DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     : QApplication(argc, argv)
@@ -215,10 +216,10 @@ void DwarfTherapist::read_settings() {
     m_reading_settings = false;
     m_main_window->draw_professions();
 
-    QApplication::setFont(DT->user_settings()->value("options/main_font", QFont("Segoe UI", 9)).value<QFont>());
+    QApplication::setFont(DT->user_settings()->value("options/main_font", QFont(DefaultFonts::getMainFontName(), DefaultFonts::getMainFontSize())).value<QFont>());
 
     //set the application's tooltips
-    QToolTip::setFont(DT->user_settings()->value("options/tooltip_font", QFont("Segoe UI", 8)).value<QFont>());
+    QToolTip::setFont(DT->user_settings()->value("options/tooltip_font", QFont(DefaultFonts::getTooltipFontName(), DefaultFonts::getTooltipFontSize())).value<QFont>());
 
     //set a variable we'll use in the dwarfstats for role calcs
     DwarfStats::set_att_potential_weight(DT->user_settings()->value("options/default_attribute_potential_weight",0.5f).toFloat());    

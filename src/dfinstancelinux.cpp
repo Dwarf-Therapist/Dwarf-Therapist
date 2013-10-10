@@ -697,3 +697,7 @@ VIRTADDR DFInstanceLinux::get_string(const QString &str) {
 
     return m_string_cache[str] = addr;
 }
+
+bool DFInstance::authorize(){
+    return true;
+}

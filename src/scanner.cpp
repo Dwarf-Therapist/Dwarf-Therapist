@@ -239,6 +239,11 @@ void Scanner::create_memory_layout() {
                 SLOT(report_address(const QString&, const quint32&)));
         run_thread_and_wait();
 
+        prepare_new_thread(FIND_CURRENT_YEAR);
+        connect(m_thread, SIGNAL(found_address(const QString&, const quint32&)), creator,
+                SLOT(report_address(const QString&, const quint32&)));
+        run_thread_and_wait();
+
         prepare_new_thread(FIND_SQUADS_VECTOR);
         connect(m_thread, SIGNAL(found_address(const QString&, const quint32&)), creator,
                 SLOT(report_address(const QString&, const quint32&)));
@@ -441,6 +446,13 @@ void Scanner::print_narrowing() {
 void Scanner::find_squad_vector() {
     set_ui_enabled(false);
     prepare_new_thread(FIND_SQUADS_VECTOR);
+    run_thread_and_wait();
+    set_ui_enabled(true);
+}
+
+void Scanner::find_current_year() {
+    set_ui_enabled(false);
+    prepare_new_thread(FIND_CURRENT_YEAR);
     run_thread_and_wait();
     set_ui_enabled(true);
 }

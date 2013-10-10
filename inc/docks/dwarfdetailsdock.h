@@ -29,18 +29,21 @@ class Dwarf;
 class DwarfDetailsWidget;
 
 class DwarfDetailsDock : public QDockWidget {
-	Q_OBJECT
+    Q_OBJECT
 public:
     DwarfDetailsDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
-    public slots:
-        void show_dwarf(Dwarf *d);
-        void clear();
-        QByteArray splitter_sizes();
+    int current_id() {return m_current_id;}
+
+public slots:
+    void show_dwarf(Dwarf *d);
+    void clear(bool reinit = true);
+    QByteArray splitter_sizes();
 
 private:
     DwarfDetailsWidget *m_widget;
     bool m_initialized;
     QLabel *lbl_info;
+    int m_current_id;
 };
 
 #endif

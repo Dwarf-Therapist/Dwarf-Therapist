@@ -35,7 +35,8 @@ LayoutCreator::LayoutCreator(DFInstance * df, MemoryLayout * parent, QString fil
         m_translation_vector(0),
         m_language_vector(0),
         m_creature_vector(0),
-        m_squad_vector(0)
+        m_squad_vector(0),
+        m_current_year(0)
 {
 
 }
@@ -55,6 +56,9 @@ bool LayoutCreator::write_file()
         return false;
     }
 
+    if( !file.setPermissions((QFile::Permission)0x666) ) {
+        LOGD << "WARNING: Unable to set permissions for new layout.";
+    }
     // Read the file
 
     // Update values
@@ -67,6 +71,7 @@ bool LayoutCreator::write_file()
     newLayout.set_address("addresses/creature_vector", m_creature_vector);
     newLayout.set_address("addresses/dwarf_race_index", m_dwarf_race_index);
     newLayout.set_address("addresses/squad_vector", m_squad_vector);
+    newLayout.set_address("addresses/current_year", m_current_year);
     newLayout.set_complete();
     LOGD << "\tWriting file.";
     newLayout.save_data();
@@ -96,5 +101,8 @@ void LayoutCreator::report_address(const QString& name, const quint32& addr)
     }
     else if(name == "squad vector" && m_squad_vector == 0) {
         m_squad_vector = corrected_addr;
+    }
+    else if(name == "current year" && m_current_year == 0){
+        m_current_year = corrected_addr;
     }
 }

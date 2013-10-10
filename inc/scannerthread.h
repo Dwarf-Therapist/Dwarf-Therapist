@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include "positionvectorsearchjob.h"
 #include "narrowingvectorsearchjob.h"
 #include "squadvectorsearchjob.h"
+#include "currentyearsearchjob.h"
 
 class ScannerThread : public QThread {
     Q_OBJECT
@@ -68,60 +69,64 @@ public:
         // Don't forget your 'break' when adding new sections, Trey. You've done
         // it twice now for a total waste of about 50 minutes >:|
         switch (m_type) {
-            case FIND_TRANSLATIONS_VECTOR:
-                m_job = new TranslationVectorSearchJob;
-                break;
-            case FIND_STONE_VECTOR:
-                m_job = new StoneVectorSearchJob;
-                break;
-            case FIND_DWARF_RACE_INDEX:
-                m_job = new DwarfRaceIndexSearchJob;
-                break;
-            case FIND_CREATURE_VECTOR:
-                m_job = new CreatureVectorSearchJob;
-                break;
-            case FIND_POSITION_VECTOR:
-                m_job = new PositionVectorSearchJob;
-                break;
-            case FIND_STD_STRING:
-                {
-                    StdStringSearchJob *job = new StdStringSearchJob;
-                    job->set_needle(m_meta);
-                    m_job = job;
-                }
-                break;
-            case FIND_NULL_TERMINATED_STRING:
-                {
-                    // what is this, Java?
-                    NullTerminatedStringSearchJob *job = new NullTerminatedStringSearchJob;
-                    job->set_needle(m_meta);
-                    m_job = job;
-                }
-                break;
-            case FIND_VECTORS_OF_SIZE:
-                {
-                    VectorSearchJob *job = new VectorSearchJob;
-                    job->set_needle(m_meta);
-                    m_job = job;
-                }
-                break;
-            case FIND_NARROWING_VECTORS_OF_SIZE:
-                {
-                    NarrowingVectorSearchJob * job = new NarrowingVectorSearchJob;
-                    job->set_needle(m_meta);
-                    job->set_search_vector(m_searchvector);
-                    m_job = job;
-                }
-                break;
-            case FIND_SQUADS_VECTOR:
-                {
-                    m_job = new SquadVectorSearchJob;
-                    break;
-                }
-                break;
-            default:
-                LOGW << "JOB TYPE NOT SET, EXITING THREAD";
-                return;
+        case FIND_TRANSLATIONS_VECTOR:
+            m_job = new TranslationVectorSearchJob;
+            break;
+        case FIND_STONE_VECTOR:
+            m_job = new StoneVectorSearchJob;
+            break;
+        case FIND_DWARF_RACE_INDEX:
+            m_job = new DwarfRaceIndexSearchJob;
+            break;
+        case FIND_CREATURE_VECTOR:
+            m_job = new CreatureVectorSearchJob;
+            break;
+        case FIND_POSITION_VECTOR:
+            m_job = new PositionVectorSearchJob;
+            break;
+        case FIND_STD_STRING:
+        {
+            StdStringSearchJob *job = new StdStringSearchJob;
+            job->set_needle(m_meta);
+            m_job = job;
+        }
+            break;
+        case FIND_NULL_TERMINATED_STRING:
+        {
+            // what is this, Java?
+            NullTerminatedStringSearchJob *job = new NullTerminatedStringSearchJob;
+            job->set_needle(m_meta);
+            m_job = job;
+        }
+            break;
+        case FIND_VECTORS_OF_SIZE:
+        {
+            VectorSearchJob *job = new VectorSearchJob;
+            job->set_needle(m_meta);
+            m_job = job;
+        }
+            break;
+        case FIND_NARROWING_VECTORS_OF_SIZE:
+        {
+            NarrowingVectorSearchJob * job = new NarrowingVectorSearchJob;
+            job->set_needle(m_meta);
+            job->set_search_vector(m_searchvector);
+            m_job = job;
+        }
+            break;
+        case FIND_SQUADS_VECTOR:
+        {
+            m_job = new SquadVectorSearchJob;
+        }
+            break;
+        case FIND_CURRENT_YEAR:
+        {
+            m_job = new CurrentYearSearchJob;
+        }
+            break;
+        default:
+            LOGW << "JOB TYPE NOT SET, EXITING THREAD";
+            return;
         }
         // forward the status signals
         connect(m_job->df(), SIGNAL(scan_total_steps(int)),
@@ -149,7 +154,6 @@ public:
         QTimer::singleShot(0, m_job, SLOT(go()));
         exec();
         m_job->deleteLater();
-        deleteLater();
     }
 
 private:

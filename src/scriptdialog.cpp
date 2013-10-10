@@ -39,44 +39,54 @@ ScriptDialog::ScriptDialog(QWidget *parent)
 {
     ui->setupUi(this);
 
+    //TODO: convert to tables/trees and add in a search (and sort?) function/options
 
     GameDataReader *gdr = GameDataReader::ptr();
-    QString labor_list = "<br><b>Labor Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
+    QString labor_list = "<b>Labor Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Labor ID</th><th>Labor</th></tr>";
     foreach(Labor *l, gdr->get_ordered_labors()) {
         labor_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(l->labor_id, 2, 10, QChar('0')).arg(l->name));
     }
     labor_list.append("</table>");
-    ui->text_help->append(labor_list);
+    ui->text_labors->append(labor_list);
 
-    QString trait_list = "<br><b>Traits Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
-        "<tr><th width=24%>Trait ID</th><th>Trait</th></tr>";
-    QPair<int, Trait*> trait_pair;
-    foreach(trait_pair, gdr->get_ordered_traits()) {
-        trait_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(trait_pair.second->trait_id).arg(trait_pair.second->name));
-    }
-    trait_list.append("</table>");
-    ui->text_help->append(trait_list);
-
-    QString skill_list = "<br><b>Skills Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
+    QString skill_list = "<b>Skills Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Skill ID</th><th>Skill</th></tr>";
     QPair<int, QString> skill_pair;
     foreach(skill_pair, gdr->get_ordered_skills()) {
         skill_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(skill_pair.first).arg(skill_pair.second));
     }
     skill_list.append("</table>");
-    ui->text_help->append(skill_list);
+    ui->text_skills->append(skill_list);
 
-    QString attribute_list = "<br><b>Attribute Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
+    QString attribute_list = "<b>Attribute Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Attribute ID</th><th>Attribute</th></tr>";
     QPair<int, QString> att_pair;
     foreach(att_pair, gdr->get_ordered_attribute_names()) {
         attribute_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(att_pair.first).arg(att_pair.second));
     }
     attribute_list.append("</table>");
-    ui->text_help->append(attribute_list);
+    ui->text_att_traits->append(attribute_list);
 
-    QString health_list = "<br><b>Health Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
+    QString trait_list = "<b>Traits Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
+        "<tr><th width=24%>Trait ID</th><th>Trait</th></tr>";
+    QPair<int, Trait*> trait_pair;
+    foreach(trait_pair, gdr->get_ordered_traits()) {
+        trait_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(trait_pair.second->trait_id).arg(trait_pair.second->name));
+    }
+    trait_list.append("</table>");
+    ui->text_att_traits->append(trait_list);
+
+    QString job_list = "<b>Job Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
+        "<tr><th width=24%>Job ID</th><th>Job</th></tr>";
+    QPair<int, QString> job_pair;
+    foreach(job_pair, gdr->get_ordered_jobs()) {
+        job_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(job_pair.first).arg(job_pair.second));
+    }
+    job_list.append("</table>");
+    ui->text_jobs->append(job_list);
+
+    QString health_list = "<b>Health Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Category ID</th><th>Title</th><th>Descriptors</th></tr>";
 
     QPair<int,QString> cat_pair;
@@ -92,10 +102,28 @@ ScriptDialog::ScriptDialog(QWidget *parent)
         health_list.append("</table></td></tr>");
     }
     health_list.append("</table>");
-    ui->text_help->append(health_list);
+    ui->text_health->append(health_list);
 
     connect(ui->btn_apply, SIGNAL(clicked()), SLOT(apply_pressed()));
     connect(ui->btn_save, SIGNAL(clicked()), SLOT(save_pressed()));
+
+    ui->text_att_traits->moveCursor(QTextCursor::Start);
+    ui->text_att_traits->ensureCursorVisible();
+
+    ui->text_health->moveCursor(QTextCursor::Start);
+    ui->text_health->ensureCursorVisible();
+
+    ui->text_help->moveCursor(QTextCursor::Start);
+    ui->text_help->ensureCursorVisible();
+
+    ui->text_jobs->moveCursor(QTextCursor::Start);
+    ui->text_jobs->ensureCursorVisible();
+
+    ui->text_labors->moveCursor(QTextCursor::Start);
+    ui->text_labors->ensureCursorVisible();
+
+    ui->text_skills->moveCursor(QTextCursor::Start);
+    ui->text_skills->ensureCursorVisible();
 }
 
 void ScriptDialog::clear_script() {

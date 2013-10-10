@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "gridview.h"
 #include "viewcolumn.h"
 #include "viewcolumnset.h"
+#include "defaultfonts.h"
 
 RotatedHeader::RotatedHeader(Qt::Orientation orientation, QWidget *parent)
     : QHeaderView(orientation, parent)
@@ -59,7 +60,7 @@ void RotatedHeader::read_settings() {
     }
     m_shade_column_headers = s->value("options/grid/shade_column_headers", true).toBool();
     m_header_text_bottom = s->value("options/grid/header_text_bottom", false).toBool();
-    m_font = s->value("options/grid/header_font", QFont("Segoe UI", 8)).value<QFont>();
+    m_font = s->value("options/grid/header_font", QFont(DefaultFonts::getRowFontName(), DefaultFonts::getRowFontSize())).value<QFont>();
 }
 
 

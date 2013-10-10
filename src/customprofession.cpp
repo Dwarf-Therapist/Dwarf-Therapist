@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "iconchooser.h"
 #include "utils.h"
+#include "defaultfonts.h"
 
 /*!
 Default ctor. Creates a blank skill template with no name
@@ -347,7 +348,7 @@ QString CustomProfession::get_embedded_pixmap(){
 
 QFont* CustomProfession::get_font(){
     if(!m_fnt){
-        m_fnt = new QFont(DT->user_settings()->value("options/grid/font", QFont("Segoe UI", 8)).value<QFont>());
+        m_fnt = new QFont(DT->user_settings()->value("options/grid/font", QFont(DefaultFonts::getRowFontName(), DefaultFonts::getRowFontSize())).value<QFont>());
         m_fnt->setBold(true);
         m_fnt->setPointSize(8); //icons are only 16x16, this is about the largest font we can use and still get text inside
     }

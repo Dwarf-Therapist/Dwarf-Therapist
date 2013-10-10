@@ -31,9 +31,12 @@ THE SOFTWARE.
 */
 
 #include "dwarftherapist.h"
+#include "dfinstance.h"
 
 int main(int argc, char *argv[]) {
-    //QApplication::setGraphicsSystem("raster");
+    if(!DFInstance::authorize()){
+        return 0;
+    }
     DwarfTherapist d(argc, argv);
     return d.exec();
 }

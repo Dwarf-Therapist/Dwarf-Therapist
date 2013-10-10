@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include "skill.h"
 #include "labor.h"
 #include "customprofession.h"
+#include "defaultfonts.h"
 
 UberDelegate::UberDelegate(QObject *parent)
     : QStyledItemDelegate(parent)
@@ -94,7 +95,7 @@ void UberDelegate::read_settings() {
     draw_happiness_icons = s->value("options/grid/happiness_icons",true).toBool();
     color_mood_cells = s->value("options/grid/color_mood_cells",false).toBool();
     color_health_cells = s->value("options/grid/color_health_cells",true).toBool();
-    m_fnt = s->value("options/grid/font", QFont("Segoe UI", 8)).value<QFont>();
+    m_fnt = s->value("options/grid/font", QFont(DefaultFonts::getRowFontName(), DefaultFonts::getRowFontSize())).value<QFont>();
 }
 
 void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {

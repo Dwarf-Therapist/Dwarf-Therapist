@@ -92,6 +92,8 @@ public:
     Thought *get_thought(short id){return m_unit_thoughts.value(id);}
 
     DwarfJob *get_job(const short &job_id);
+    QList<QPair<int, QString> > get_ordered_jobs() {return m_ordered_jobs;}
+
     MilitaryPreference *get_military_preference(const int &mil_pref_id);
 
     Role *get_role(const QString &name);
@@ -162,6 +164,8 @@ private:
     QList<QPair<int,QString> > m_ordered_attribute_names;
 
     QHash<short, DwarfJob*> m_dwarf_jobs;
+    QList<QPair<int, QString> > m_ordered_jobs;
+
     QHash<short, Profession*> m_professions;
 
     QHash<QString, Role*> m_dwarf_roles;

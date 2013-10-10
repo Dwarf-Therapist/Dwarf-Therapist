@@ -82,6 +82,20 @@
             </property>
            </widget>
           </item>
+          <item row="1" column="0">
+           <widget class="QPushButton" name="btn_find_dwarf_race_index">
+            <property name="text">
+             <string>Locate Dwarf Race Index</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QPushButton" name="btn_find_squad_vector">
+            <property name="text">
+             <string>Locate Squads Vector</string>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="1">
            <widget class="QPushButton" name="btn_find_position_vector">
             <property name="enabled">
@@ -89,13 +103,6 @@
             </property>
             <property name="text">
              <string>Locate Position Vector</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QPushButton" name="btn_find_dwarf_race_index">
-            <property name="text">
-             <string>Locate Dwarf Race Index</string>
             </property>
            </widget>
           </item>
@@ -116,14 +123,14 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
-           <widget class="QPushButton" name="btn_find_squad_vector">
+          <item row="4" column="0">
+           <widget class="QPushButton" name="btn_find_current_year">
             <property name="text">
-             <string>Locate Squads Vector</string>
+             <string>Locate Current Year</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="4" column="1">
            <widget class="QPushButton" name="btn_create_memory_layout">
             <property name="text">
              <string>Create New Layout</string>
@@ -183,7 +190,7 @@
                  <bool>true</bool>
                 </property>
                 <attribute name="buttonGroup">
-                 <string>buttonGroup</string>
+                 <string notr="true">buttonGroup</string>
                 </attribute>
                </widget>
               </item>
@@ -193,7 +200,7 @@
                  <string>dec</string>
                 </property>
                 <attribute name="buttonGroup">
-                 <string>buttonGroup</string>
+                 <string notr="true">buttonGroup</string>
                 </attribute>
                </widget>
               </item>
@@ -1027,6 +1034,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>btn_find_current_year</sender>
+   <signal>clicked()</signal>
+   <receiver>ScannerDialog</receiver>
+   <slot>find_current_year()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>803</x>
+     <y>161</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>553</x>
+     <y>380</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>find_creature_vector()</slot>
@@ -1047,6 +1070,7 @@
   <slot>print_narrowing()</slot>
   <slot>find_squad_vector()</slot>
   <slot>change_operator()</slot>
+  <slot>find_current_year()</slot>
  </slots>
  <buttongroups>
   <buttongroup name="buttonGroup"/>

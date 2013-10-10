@@ -63,17 +63,8 @@ THE SOFTWARE.
 #include "fortressentity.h"
 #include "preference.h"
 #include "healthlegenddock.h"
-
 #include "dfinstance.h"
-#ifdef Q_OS_WIN
-#include "dfinstancewindows.h"
-#endif
-#ifdef Q_OS_LINUX
-#include "dfinstancelinux.h"
-#endif
-#ifdef Q_OS_MAC
-#include "dfinstanceosx.h"
-#endif
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -217,6 +208,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     //add CTRL+A to select all currently filtered/visible dwarves
     new QShortcut(Qt::CTRL + Qt::Key_A, m_view_manager, SLOT(select_all()));
+    raise();
 }
 
 MainWindow::~MainWindow() {       
@@ -309,17 +301,8 @@ void MainWindow::connect_to_df() {
         reset();
     }
 
-#ifdef Q_OS_WIN
-    m_df = new DFInstanceWindows();
-#else
-#ifdef Q_OS_MAC
-    m_df = new DFInstanceOSX();
-#else
-#ifdef Q_OS_LINUX
-    m_df = new DFInstanceLinux();
-#endif
-#endif
-#endif
+    m_df = DFInstance::newInstance();
+
     // find_running_copy can fail for several reasons, and will take care of
     // logging and notifying the user.
     if (m_force_connect && m_df && m_df->find_running_copy(true)) {
@@ -393,6 +376,13 @@ void MainWindow::read_dwarves() {
         return;
     }
 
+    //clear the selected dwarf's details, save the id of the one we're showing
+    int dock_id = -1;
+    DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));
+    if(dock){
+        dock_id = dock->current_id();
+        dock->clear(false);
+    }
     //save the ids of the currently selected dwarfs
     QVector<int> ids;
     foreach(Dwarf *d, m_view_manager->get_selected_dwarfs()){
@@ -430,11 +420,19 @@ void MainWindow::read_dwarves() {
     //reselect the ids we saved above
     m_view_manager->reselect(ids);
 
-    // setup the filter auto-completer
+    // setup the filter auto-completer and reselect our dwarf for the details dock
     m_dwarf_names_list.clear();
+    bool dwarf_found = false;
     foreach(Dwarf *d, m_model->get_dwarves()) {
         m_dwarf_names_list << d->nice_name();
+        if(dock_id > 0 && !dwarf_found && d->id() == dock_id){
+            dock->show_dwarf(d);
+            dwarf_found = true;
+        }
     }
+    if(!dwarf_found)
+        dock->clear(false);
+
     if (!m_dwarf_name_completer) {
         m_dwarf_name_completer = new QCompleter(m_dwarf_names_list, this);
         m_dwarf_name_completer->setCompletionMode(QCompleter::PopupCompletion);
@@ -574,6 +572,10 @@ void MainWindow::layout_check_finished(bool error) {
 //        QTemporaryFile outFile("layout.ini");
 //        if (!outFile.open())
 //         return;
+
+//    if( !outFile.setPermissions((QFile::Permission)0x666) ) {
+//        LOGD << "WARNING: Unable to set permissions for new layout.";
+//    }
 
 //        QString fileName = outFile.fileName();
 //        QTextStream out(&outFile);

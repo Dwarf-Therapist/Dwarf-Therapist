@@ -38,6 +38,11 @@ THE SOFTWARE.
 #include "unithealth.h"
 #include "healthinfo.h"
 
+QColor DwarfDetailsWidget::color_low = QColor(168, 10, 44, 135);
+QColor DwarfDetailsWidget::color_high = QColor(0, 60, 128, 135);
+QColor DwarfDetailsWidget::color_mood_had = QColor(125, 125, 125, 105);
+QColor DwarfDetailsWidget::color_mood_high = QColor(60, 148, 19, 135);
+
 DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
     , ui(new Ui::DwarfDetailsWidget)
@@ -118,16 +123,6 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     ui->tw_prefs->horizontalHeader()->resizeSection(0,100);
 
     ui->tw_health->setColumnCount(2);
-//    ui->tw_health->setEditTriggers(QTableWidget::NoEditTriggers);
-//    ui->tw_health->setWordWrap(true);
-//    ui->tw_health->setShowGrid(false);
-//    ui->tw_health->setGridStyle(Qt::NoPen);
-//    ui->tw_health->setAlternatingRowColors(true);
-//    ui->tw_health->setHorizontalHeaderLabels(QStringList() << "Body Part" << "Wounds");
-//    ui->tw_health->verticalHeader()->hide();
-//    ui->tw_health->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
-//    ui->tw_health->horizontalHeader()->setStretchLastSection(true);
-//    ui->tw_health->horizontalHeader()->resizeSection(0,100);
 
     //splitter
     m_splitter_sizes = DT->user_settings()->value("gui_options/detailPanesSizes").toByteArray();
@@ -218,23 +213,15 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     Dwarf::DWARF_HAPPINESS happiness = d->get_happiness();
     ui->lbl_happiness->setText(QString("<b>%1</b> (%2)").arg(d->happiness_name(happiness)).arg(d->get_raw_happiness()));
     ui->lbl_happiness->setToolTip(d->get_thought_desc());
-    QColor color = DT->user_settings()->value(
-                QString("options/colors/happiness/%1").arg(static_cast<int>(happiness))).value<QColor>();
-    QPalette p;
-    QColor color2 = p.window().color();
-    ui->lbl_happiness->setStyleSheet(QString("background: QLinearGradient(x1:0,y1:0,x2:0.9,y1:0,stop:0 %1, stop:1 %2); color: %3")
-                                     .arg(color.name())
-                                     .arg(color2.name())
-                                     .arg(compliment(color).name())
-                                     );
 
-    if(DT->user_settings()->value("options/highlight_nobles",false).toBool() && d->noble_position() != ""){
+    QPalette p;
+    QColor color = DT->user_settings()->value(QString("options/colors/happiness/%1").arg(static_cast<int>(happiness))).value<QColor>();        
+    QColor color2 = p.window().color();
+    ui->lbl_happiness->setStyleSheet(build_gradient(color,color2));
+
+    if(DT->user_settings()->value("options/highlight_nobles",false).toBool() && d->noble_position() != ""){        
         color = DT->get_DFInstance()->fortress()->get_noble_color(d->historical_id());
-        ui->lbl_noble_position->setStyleSheet(QString("background: QLinearGradient(x1:0,y1:0,x2:0.9,y1:0,stop:0 %1, stop:1 %2); color: %3")
-                                              .arg(color.name())
-                                              .arg(color2.name())
-                                              .arg(compliment(color).name())
-                                              );
+        ui->lbl_noble_position->setStyleSheet(build_gradient(color,color2));
     }
 
 
@@ -265,11 +252,13 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             tooltip = tr("<center><h4>%1</h4></center>").arg(s.name());
             if(s.id()==d->highest_moodable().id()){
                 if(d->had_mood()){
-                    item_skill->setBackgroundColor(QColor(153,102,34,255));
+                    item_skill->setBackgroundColor(color_mood_had);
+                    item_skill->setForeground(compliment(color_mood_had));
                     tooltip.append(tr("<p>Has already had a mood!</p>"));
                 }
                 else{
-                    item_skill->setBackgroundColor(QColor(220, 220, 255, 255));
+                    item_skill->setBackgroundColor(color_mood_high);
+                    item_skill->setForeground(compliment(color_mood_high));
                     tooltip.append(tr("<p>This is the highest moodable skill.</p>"));
                 }
             }
@@ -280,8 +269,10 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             item_level->setData(Qt::UserRole, (float)d->skill_level(s.id(),true,true));
             item_level->setTextAlignment(Qt::AlignHCenter);
             if(s.rust_rating() != ""){
-                item_level->setBackgroundColor(s.rust_color());
-                item_level->setForeground(Qt::black);
+                QColor col_rust = s.rust_color();
+                col_rust.setAlpha(215);
+                item_level->setBackgroundColor(col_rust);
+                item_level->setForeground(compliment(col_rust));//Qt::black);
             }
             item_level->setToolTip(s.to_string(true,true,false));
 
@@ -303,8 +294,8 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
                                        .arg(bonus_xp > 0 ? "more" : "less")
                                        .arg(raw_bonus_xp));
             if(bonus_xp < 0){
-                item_bonus->setBackground(QColor(204, 0, 0, 128));
-                item_bonus->setForeground(QColor(0, 0, 128, 255));
+                item_bonus->setBackground(color_low);
+                item_bonus->setForeground(compliment(color_low));
             }
 
             QProgressBar *pb = new QProgressBar(ui->tw_skills);
@@ -331,6 +322,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     // ATTRIBUTES TABLE
     QVector<Attribute> *attributes = d->get_attributes();
     ui->tw_attributes->setSortingEnabled(false);
+
     for (int row = 0; row < attributes->size(); ++row) {
         ui->tw_attributes->insertRow(0);
         ui->tw_attributes->setRowHeight(0, 18);
@@ -346,8 +338,8 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         attribute_rating->setData(Qt::UserRole, a.value());
         attribute_rating->setToolTip(a.get_value_display());
         if(a.get_descriptor_rank() <= 3) { //3 is the last bin before the median group
-            attribute_rating->setBackground(QColor(204, 0, 0, 128));
-            attribute_rating->setForeground(QColor(0, 0, 128, 255));
+            attribute_rating->setBackground(color_low);
+            attribute_rating->setForeground(compliment(color_low));
         }
         attribute_rating->setToolTip(a.get_value_display());
 
@@ -393,11 +385,11 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
             int deviation = abs(50 - val);
             if (deviation >= 41) {
-                trait_score->setBackground(QColor(0, 0, 128, 255));
-                trait_score->setForeground(QColor(255, 255, 255, 255));
+                trait_score->setBackground(color_high);
+                trait_score->setForeground(compliment(color_high));
             } else if (deviation >= 25) {
-                trait_score->setBackground(QColor(220, 220, 255, 255));
-                trait_score->setForeground(QColor(0, 0, 128, 255));
+                trait_score->setBackground(color_low);
+                trait_score->setForeground(compliment(color_low));
             }
 
             QTableWidgetItem *trait_msg = new QTableWidgetItem();
@@ -445,8 +437,8 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         role_rating->setTextAlignment(Qt::AlignHCenter);
 
         if (val < 50) {
-            role_rating->setBackground(QColor(204, 0, 0, 128));
-            role_rating->setForeground(QColor(0, 0, 128, 255));
+            role_rating->setBackground(color_low);
+            role_rating->setForeground(compliment(color_low));
         }
 
         ui->tw_roles->setItem(0, 0, role_name);
@@ -581,16 +573,19 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     d = 0;
 }
 
-QString DwarfDetailsWidget::clean_font_tags(QString val){
-    QString clean = val.remove(QRegExp("<font[^>]*color*=*#([0-9a-fA-F]{1,6})[^>]*>"));
-    clean = clean.remove("</font>");
-    return clean;
-}
-
 void DwarfDetailsWidget::clear_table(QTableWidget &t){
     for(int i = t.rowCount(); i >=0; i--){
         t.removeRow(i);
     }
+}
+
+QString DwarfDetailsWidget::build_gradient(QColor c1, QColor c2){
+    return QString("background: QLinearGradient(x1:0,y1:0,x2:0.9,y1:0,stop:0 rgba(%1,%2,%3,%4), stop:1 rgba(%5,%6,%7,%8)); color: %3")
+            .arg(c1.red()).arg(c1.green())
+            .arg(c1.blue()).arg(c1.alpha())
+            .arg(c2.red()).arg(c2.green())
+            .arg(c2.blue()).arg(c2.alpha())
+            .arg(compliment(c1).name());
 }
 
 

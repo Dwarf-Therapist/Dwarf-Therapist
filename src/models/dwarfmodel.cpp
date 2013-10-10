@@ -489,8 +489,8 @@ void DwarfModel::build_row(const QString &key) {
     bool show_gender = DT->user_settings()->value("options/grid/show_gender_icons",true).toBool();
     bool highlight_nobles = DT->user_settings()->value("options/highlight_nobles",false).toBool();
     bool highlight_cursed = DT->user_settings()->value("options/highlight_cursed",false).toBool();
-    QBrush cursed_brush = build_gradient_brush(DT->user_settings()->value("options/colors/cursed", QColor(125,97,186)).value<QColor>()
-                                              ,200,0,QPoint(0,0),QPoint(1,0));
+    QColor curse_col = DT->user_settings()->value("options/colors/cursed", QColor(125,97,186, 200)).value<QColor>();
+    QBrush cursed_brush = build_gradient_brush(curse_col,curse_col.alpha(),0,QPoint(0,0),QPoint(1,0));
 
     foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
         QStandardItem *i_name = new QStandardItem(d->nice_name());        
@@ -515,9 +515,10 @@ void DwarfModel::build_row(const QString &key) {
 
         //background gradients for curses, nobles, etc.
         if(d && highlight_nobles){
-            if(d->noble_position() != "")
-                i_name->setData(build_gradient_brush(m_df->fortress()->get_noble_color(d->historical_id())
-                                                     ,200,0,QPoint(0,0),QPoint(1,0)),Qt::BackgroundRole);
+            if(d->noble_position() != ""){
+                QColor col = m_df->fortress()->get_noble_color(d->historical_id());
+                i_name->setData(build_gradient_brush(col,col.alpha(),0,QPoint(0,0),QPoint(1,0)),Qt::BackgroundRole);
+            }
         }
         if(d && highlight_cursed){
             if(d->curse_name() != ""){

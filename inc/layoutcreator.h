@@ -25,6 +25,7 @@ protected:
     quint32 m_language_vector;
     quint32 m_creature_vector;
     quint32 m_squad_vector;
+    quint32 m_current_year;
 
 private slots:
     void report_address(const QString&, const quint32&);

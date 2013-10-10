@@ -286,7 +286,7 @@ public:
     const QString &current_job() {return m_current_job;}    
 
     //! return the id of the job this dwarf is currently doing
-    const short &current_job_id() {return m_current_job_id;}
+    Q_INVOKABLE short current_job_id() {return m_current_job_id;}
 
     //! return the id of the sub job this dwarf is currently doing
     const QString &current_sub_job_id() { return m_current_sub_job_id; }

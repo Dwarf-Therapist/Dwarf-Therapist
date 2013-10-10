@@ -27,7 +27,7 @@ THE SOFTWARE.
 #include <QtDebug>
 #include "gamedatareader.h"
 
-QColor FortressEntity::default_noble_color = QColor(255,153,0);
+QColor FortressEntity::default_noble_color = QColor(255,153,0,180);
 
 /*
  *it seems this is more of a civilization entity instead of a fortress entity.

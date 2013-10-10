@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "viewcolumnset.h"
 #include "dwarftherapist.h"
+#include "defaultfonts.h"
 
 TrainedColumn::TrainedColumn(const QString &title, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title, CT_TRAINED, set, parent)
@@ -48,7 +49,7 @@ QStandardItem *TrainedColumn::build_cell(Dwarf *d){
 
     QChar sym_master(0x263C); //masterwork symbol in df
     QChar sym_exceptional(0x2261); //3 horizontal lines
-    QFontMetrics fm(DT->user_settings()->value("options/grid/font", QFont("Segoe UI", 8)).value<QFont>());
+    QFontMetrics fm(DT->user_settings()->value("options/grid/font", QFont(DefaultFonts::getRowFontName(), DefaultFonts::getRowFontSize())).value<QFont>());
     bool symbols_ok = false;
     if(fm.inFont(sym_master) && fm.inFont(sym_exceptional)){
         symbols_ok = true;

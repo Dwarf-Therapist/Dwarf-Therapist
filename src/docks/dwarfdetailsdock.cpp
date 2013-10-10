@@ -22,11 +22,13 @@ THE SOFTWARE.
 */
 #include "dwarfdetailsdock.h"
 #include "dwarfdetailswidget.h"
+#include "dwarf.h"
 
 DwarfDetailsDock::DwarfDetailsDock(QWidget *parent, Qt::WindowFlags flags)
     : QDockWidget(parent, flags)
     , m_widget(new DwarfDetailsWidget(this))
     , m_initialized(false)
+    , m_current_id(-1)
 {
     m_widget->hide();
     setWindowTitle(tr("Dwarf Details"));
@@ -45,6 +47,7 @@ void DwarfDetailsDock::show_dwarf(Dwarf *d) {
         setWidget(m_widget);
         m_widget->show();
     }  
+    m_current_id = d->id();
 }
 
 QByteArray DwarfDetailsDock::splitter_sizes(){
@@ -55,9 +58,12 @@ QByteArray DwarfDetailsDock::splitter_sizes(){
         return NULL;
 }
 
-void DwarfDetailsDock::clear(){
+void DwarfDetailsDock::clear(bool reinit){
     m_widget->clear();
-    m_initialized = false;
-    setWidget(lbl_info);
+    m_current_id = -1;
+    if(reinit){
+        m_initialized = false;
+        setWidget(lbl_info);
+    }
 }
 

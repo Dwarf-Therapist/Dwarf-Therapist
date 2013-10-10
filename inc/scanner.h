@@ -75,6 +75,7 @@ private:
 
         void find_squad_vector();
         void change_operator();
+        void find_current_year();
 
 };
 #endif

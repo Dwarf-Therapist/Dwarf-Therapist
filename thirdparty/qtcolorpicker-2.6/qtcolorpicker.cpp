@@ -889,12 +889,10 @@ void ColorPickerPopup::regenerateGrid()
 */
 void ColorPickerPopup::getColorFromDialog()
 {
-    bool ok;
-    QRgb rgb = QColorDialog::getRgba(lastSel.rgba(), &ok, parentWidget());
-    if (!ok)
-	return;
+    QColor col = QColorDialog::getColor(lastSel, parentWidget(), "", QColorDialog::ShowAlphaChannel);
+    if(!col.isValid())
+        return;
 
-    QColor col = QColor::fromRgba(rgb);
 	insertColor(col, tr("Custom (#%1)").arg(to_hex(col)), -1);
     lastSel = col;
     emit selected(col);

@@ -22,17 +22,6 @@ THE SOFTWARE.
 */
 #include "scannerjob.h"
 #include "dfinstance.h"
-#ifdef Q_OS_WIN
-#include "dfinstancewindows.h"
-#else
-#ifdef Q_OS_MAC
-#include "dfinstanceosx.h"
-#else
-#ifdef Q_OS_LINUX
-#include "dfinstancelinux.h"
-#endif
-#endif
-#endif
 
 ScannerJob::ScannerJob(SCANNER_JOB_TYPE job_type)
     : m_job_type(job_type)
@@ -56,17 +45,8 @@ DFInstance *ScannerJob::df() {
 QString ScannerJob::m_layout_override_checksum("");
 
 bool ScannerJob::get_DFInstance() {
-#ifdef Q_OS_WIN
-    m_df = new DFInstanceWindows(this);
-#else
-#ifdef Q_OS_MAC
-    m_df = new DFInstanceOSX(this);
-#else
-#ifdef Q_OS_LINUX
-    m_df = new DFInstanceLinux(this);
-#endif
-#endif
-#endif
+
+    m_df = DFInstance::newInstance();
     bool result = m_df->find_running_copy(true);
 
     if(!m_layout_override_checksum.isEmpty()) {

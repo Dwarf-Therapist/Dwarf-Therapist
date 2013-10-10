@@ -43,17 +43,18 @@ public:
     QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 
     Role* get_role() {return m_role;}
+    QString target_role_name() {return m_role_name;}
 
     //override
-    void write_to_ini(QSettings &s){ViewColumn::write_to_ini(s);}
+    void write_to_ini(QSettings &s);
 
 public slots:
     void read_settings();
 
 
-
 protected:
     Role *m_role;
+    QString m_role_name;
 };
 
 #endif // ROLECOLUMN_H

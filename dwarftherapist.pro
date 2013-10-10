@@ -60,7 +60,7 @@ else:macx {
     message(Setting up for OSX)
     HEADERS += ./inc/dfinstanceosx.h
     OBJECTIVE_SOURCES += ./src/dfinstanceosx.mm
-    ICON = hammer.ico
+    ICON = hammer.icns
     LIBS += -framework Cocoa
     LIBS += -framework Carbon
     LIBS += -framework Security
@@ -77,7 +77,7 @@ else:macx {
     QMAKE_BUNDLE_DATA += etc
 
     layouts.path = Contents/MacOS/etc/memory_layouts/osx
-    layouts.files += etc/memory_layouts/osx/v0.34.03.ini
+    layouts.files += etc/memory_layouts/osx/v034.11.ini
     QMAKE_BUNDLE_DATA += layouts
 }
 else:unix {
@@ -230,7 +230,9 @@ HEADERS += inc/win_structs.h \
     inc/bodypart.h \
     inc/bodypartlayer.h \
     inc/healthcategory.h \
-    inc/bodypartdamage.h
+    inc/bodypartdamage.h \
+    inc/currentyearsearchjob.h \
+    inc/defaultfonts.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -307,7 +309,8 @@ SOURCES += src/viewmanager.cpp \
     src/unithealth.cpp \
     src/unitwound.cpp \
     src/grid_view/healthcolumn.cpp \
-    src/docks/healthlegenddock.cpp
+    src/docks/healthlegenddock.cpp \
+    src/defaultfonts.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \
@@ -325,7 +328,3 @@ FORMS += ui/scriptdialog.ui \
     ui/roledialog.ui \
     ui/optimizereditor.ui
 RESOURCES += images.qrc
-
-OTHER_FILES += \
-    src/dfinstanceosx.cpp
-

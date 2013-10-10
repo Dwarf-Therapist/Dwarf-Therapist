@@ -32,22 +32,34 @@ THE SOFTWARE.
 
 RoleColumn::RoleColumn(const QString &title, Role *r, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title,CT_ROLE,set,parent)
-    ,m_role(r)
+    , m_role(r)
+    , m_role_name("")
 {
+    if(m_role)
+        m_role_name = r->name;
+    else
+        m_role_name = m_title;
     connect(DT, SIGNAL(roles_changed()), this, SLOT(roles_changed()), Qt::UniqueConnection);
 }
 
 RoleColumn::RoleColumn(const RoleColumn &to_copy)
     : ViewColumn(to_copy)
     , m_role(to_copy.m_role)
-{
+    , m_role_name(to_copy.m_role_name)
+{    
     connect(DT, SIGNAL(roles_changed()), this, SLOT(roles_changed()), Qt::UniqueConnection);
 }
 
 RoleColumn::RoleColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     : ViewColumn(s, set, parent)
-{
-    m_role = GameDataReader::ptr()->get_role(s.value("name").toString());
+    , m_role_name("")
+{    
+    //older versions required the column title to match the role name, so fall back to that if 'role_id' doesn't exist
+    m_role = GameDataReader::ptr()->get_role(s.value("role_id",s.value("name").toString()).toString());
+    if(m_role)
+        m_role_name = m_role->name;
+    else
+        m_role_name = m_title;
     connect(DT, SIGNAL(roles_changed()), this, SLOT(roles_changed()), Qt::UniqueConnection);
 }
 
@@ -135,7 +147,6 @@ QStandardItem *RoleColumn::build_aggregate(const QString &group_name, const QVec
 
 void RoleColumn::read_settings() {
     if(m_role){
-
         //reset role's global weights to the new default weights, but only if they were using them in the first place
         QSettings *s = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
         if(m_role->attributes_weight.is_default)
@@ -148,21 +159,21 @@ void RoleColumn::read_settings() {
             m_role->prefs_weight.weight = s->value(QString("options/default_prefs_weight")).toFloat();
 
         m_role->create_role_details(*s); //rebuild the description
+        m_role_name = m_role->name;
         delete(s);
         s = 0;
     }
 }
 
 void RoleColumn::roles_changed(){
-    //see if perhaps we have a new role created that fits the missing role
+    //see if perhaps we have a new role created that fits the target or missing role
     //or if our role has been updated
-    if(!m_role || GameDataReader::ptr()->get_role(this->title()) != m_role)
-        m_role = GameDataReader::ptr()->get_role(this->title());
-
-    //update the column header if the role's name has changed
-    if(m_role){
-        if(m_role->name != this->title())
-            this->set_title(m_role->name);
-    }
+    if(!m_role || GameDataReader::ptr()->get_role(m_role_name) != m_role)
+        m_role = GameDataReader::ptr()->get_role(m_role_name);
 }
 
+void RoleColumn::write_to_ini(QSettings &s) {
+    ViewColumn::write_to_ini(s);
+    if(m_role)
+        s.setValue("role_id", m_role->name);
+}

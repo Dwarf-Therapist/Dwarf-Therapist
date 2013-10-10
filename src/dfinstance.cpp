@@ -53,12 +53,15 @@ THE SOFTWARE.
 
 #ifdef Q_OS_WIN
 #define LAYOUT_SUBDIR "windows"
+#include "dfinstancewindows.h"
 #else
 #ifdef Q_OS_LINUX
 #define LAYOUT_SUBDIR "linux"
+#include "dfinstancelinux.h"
 #else
 #ifdef Q_OS_MAC
 #define LAYOUT_SUBDIR "osx"
+#include "dfinstanceosx.h"
 #endif
 #endif
 #endif
@@ -126,6 +129,20 @@ DFInstance::DFInstance(QObject* parent)
     }
 }
 
+DFInstance * DFInstance::newInstance(){
+#ifdef Q_OS_WIN
+    return new DFInstanceWindows();
+#else
+#ifdef Q_OS_MAC
+    return new DFInstanceOSX();
+#else
+#ifdef Q_OS_LINUX
+    return new DFInstanceLinux();
+#endif
+#endif
+#endif
+}
+
 DFInstance::~DFInstance() {
 //    LOGD << "DFInstance baseclass virtual dtor!";
     foreach(MemoryLayout *l, m_memory_layouts) {
@@ -159,6 +176,10 @@ DFInstance::~DFInstance() {
     DwarfStats::cleanup();
 //    LOGD << "DFInstance baseclass virtual dtor all done!";
 }
+
+//bool DFInstance::authorize(){
+//    return true;
+//}
 
 BYTE DFInstance::read_byte(const VIRTADDR &addr) {
     QByteArray out;

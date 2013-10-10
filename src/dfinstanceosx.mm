@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QtWidgets>
+#include <QtGui>
 #include <QtDebug>
 
 #include "dfinstance.h"
@@ -57,18 +57,71 @@ THE SOFTWARE.
 #endif /* MACH64 */
 
 DFInstanceOSX::DFInstanceOSX(QObject* parent)
-	: DFInstance(parent)	
-{   
+    : DFInstance(parent)
+{
 }
 
 DFInstanceOSX::~DFInstanceOSX() {
+    if(m_attach_count > 0) {
+        detach();
+    }
 }
 
 QVector<uint> DFInstanceOSX::enumerate_vector(const uint &addr) {
-    attach();
     QVector<uint> addrs;
+    if (!addr)
+        return addrs;
+
+    if( !attach() ) {
+        return addrs;
+    }
+
+    VIRTADDR start = read_addr(addr);
+    VIRTADDR end = read_addr(addr + 4);
+    int bytes = end - start;
+    int entries = bytes / 4;
+    TRACE << "enumerating vector at" << hex << addr << "START" << start << "END" << end << "UNVERIFIED ENTRIES" << dec << entries;
+    VIRTADDR tmp_addr = 0;
+
+    if (entries > 5000) {
+        LOGW << "vector at" << hexify(addr) << "has over 5000 entries! (" << entries << ")";
+    }
+
+    QByteArray data(bytes, 0);
+    int bytes_read = read_raw(start, bytes, data);
+    if (bytes_read != bytes && m_layout->is_complete()) {
+        LOGW << "Tried to read" << bytes << "bytes but only got" << bytes_read;
+        detach();
+        return addrs;
+    }
+    for(int i = 0; i < bytes; i += 4) {
+        tmp_addr = decode_dword(data.mid(i, 4));
+        addrs << tmp_addr;
+    }
     detach();
     return addrs;
+}
+
+QString DFInstanceOSX::read_string(const VIRTADDR &addr) {
+    VIRTADDR buffer_addr = read_addr(addr);
+    int upper_size = 256;
+    QByteArray buf(upper_size, 0);
+    read_raw(buffer_addr, upper_size, buf);
+
+    QString ret_val(buf);
+    CP437Codec *codec = new CP437Codec;
+    ret_val = codec->toUnicode(ret_val.toAscii());
+    return ret_val;
+}
+
+int DFInstanceOSX::write_string(const VIRTADDR &addr, const QString &str) {
+    Q_UNUSED(addr);
+    Q_UNUSED(str);
+    return 0;
+}
+
+int DFInstanceOSX::write_int(const VIRTADDR &addr, const int &val) {
+    return write_raw(addr, sizeof(int), (void*)&val);
 }
 
 uint DFInstanceOSX::calculate_checksum() {
@@ -91,35 +144,68 @@ uint DFInstanceOSX::calculate_checksum() {
     return md5;
 }
 
-QString DFInstanceOSX::read_string(const uint &addr) {
-	QString ret_val = "FOO";
-	return ret_val;
-}
-
-int DFInstanceOSX::write_string(const uint &addr, const QString &str) {
-    Q_UNUSED(addr);
-    Q_UNUSED(str);
-	return 0;
-}
-
-int DFInstanceOSX::write_int(const uint &addr, const int &val) {
-    return 0;
-}
-
 bool DFInstanceOSX::attach() {
+    kern_return_t result;
+    if(m_attach_count > 0) {
+        m_attach_count++;
+        return true;
+    }
+
+    result = task_suspend(m_task);
+    if ( result != KERN_SUCCESS ) {
+        return false;
+    }
+    m_attach_count++;
     return true;
 }
 
 bool DFInstanceOSX::detach() {
-	return true;
+    kern_return_t result;
+
+    if( m_attach_count == 0 ) {
+        return true;
+    }
+
+    if( m_attach_count > 1 ) {
+        m_attach_count--;
+        return true;
+    }
+
+    result = task_resume(m_task);
+    if ( result != KERN_SUCCESS ) {
+        return false;
+    }
+    m_attach_count--;
+    return true;
 }
 
 int DFInstanceOSX::read_raw(const VIRTADDR &addr, int bytes, QByteArray &buffer) {
-    return 0;
+    kern_return_t result;
+
+    vm_size_t readsize = 0;
+
+    result = vm_read_overwrite(m_task, addr, bytes,
+                               (vm_address_t)buffer.data(),
+                               &readsize );
+
+    if ( result != KERN_SUCCESS ) {
+        LOGW << "Unable to read " << bytes << " byte(s) from " << hexify(addr) <<
+        "into buffer" << &buffer << endl;
+        return 0;
+    }
+
+    return readsize;
 }
 
 int DFInstanceOSX::write_raw(const VIRTADDR &addr, const int &bytes, void *buffer) {
-    return 0;
+    kern_return_t result;
+
+    result = vm_write( m_task,  addr,  (vm_offset_t)buffer,  bytes );
+    if ( result != KERN_SUCCESS ) {
+        return 0;
+    }
+
+    return bytes;
 }
 
 bool DFInstanceOSX::find_running_copy(bool connect_anyway) {
@@ -157,9 +243,8 @@ bool DFInstanceOSX::find_running_copy(bool connect_anyway) {
     }
 
     m_is_ok = true;
-    m_layout = get_memory_layout(hexify(calculate_checksum()).toLower(), !connect_anyway);
-
     map_virtual_memory();
+    m_layout = get_memory_layout(hexify(calculate_checksum()).toLower(), !connect_anyway);
 
     [authPool release];
 
@@ -167,42 +252,45 @@ bool DFInstanceOSX::find_running_copy(bool connect_anyway) {
 }
 
 void DFInstanceOSX::map_virtual_memory() {
-    if (m_regions.isEmpty()) {
-        if (!m_is_ok)
-            return;
-
-        kern_return_t result;
-
-        mach_vm_address_t address = 0x0;
-        mach_vm_size_t size = 0;
-        vm_region_basic_info_data_64_t info;
-        mach_msg_type_number_t infoCnt = VM_REGION_BASIC_INFO_COUNT_64;
-        mach_port_t object_name = 0;
-
-        m_lowest_address = 0;
-        do
-        {
-            // get the next region
-            result = mach_vm_region( m_task, &address, &size, VM_REGION_BASIC_INFO_64, (vm_region_info_t)(&info), &infoCnt, &object_name );
-
-            if ( result == KERN_SUCCESS ) {
-                if ((info.protection & VM_PROT_READ) == VM_PROT_READ  && (info.protection & VM_PROT_WRITE) == VM_PROT_WRITE) {
-                    MemorySegment *segment = new MemorySegment("", address, address+size);
-                    TRACE << "Adding segment: " << address << ":" << address+size << " prot: " << info.protection;
-                    m_regions << segment;
-
-                    if(m_lowest_address == 0)
-                        m_lowest_address = address;
-                    if(address < m_lowest_address)
-                        m_lowest_address = address;
-                    if((address + size) > m_highest_address)
-                        m_highest_address = (address + size);
-                }
-            }
-
-            address = address + size;
-        } while (result != KERN_INVALID_ADDRESS);
+    foreach(MemorySegment *seg, m_regions) {
+        delete(seg);
     }
+    m_regions.clear();
+    if (!m_is_ok)
+        return;
+
+    kern_return_t result;
+
+    mach_vm_address_t address = 0x0;
+    mach_vm_size_t size = 0;
+    vm_region_basic_info_data_64_t info;
+    mach_msg_type_number_t infoCnt = VM_REGION_BASIC_INFO_COUNT_64;
+    mach_port_t object_name = 0;
+
+    m_lowest_address = 0;
+    do
+    {
+        // get the next region
+        result = mach_vm_region( m_task, &address, &size, VM_REGION_BASIC_INFO_64, (vm_region_info_t)(&info), &infoCnt, &object_name );
+
+        if ( result == KERN_SUCCESS ) {
+            if ((info.protection & VM_PROT_READ) == VM_PROT_READ  && (info.protection & VM_PROT_WRITE) == VM_PROT_WRITE) {
+                MemorySegment *segment = new MemorySegment("", address, address+size);
+                TRACE << "Adding segment: " << address << ":" << address+size << " prot: " << info.protection;
+                m_regions << segment;
+
+                if(m_lowest_address == 0)
+                    m_lowest_address = address;
+                if(address < m_lowest_address)
+                    m_lowest_address = address;
+                if((address + size) > m_highest_address)
+                    m_highest_address = (address + size);
+            }
+        }
+
+        address = address + size;
+    } while (result != KERN_INVALID_ADDRESS);
+    LOGD << "Mapped " << m_regions.size() << " memory regions.";
 }
 
 bool DFInstance::authorize() {
@@ -210,14 +298,20 @@ bool DFInstance::authorize() {
     OSStatus status;
     AuthorizationRef authorizationRef;
 
-    if( DFInstanceOSX::isAuthorized() ) {
-         return true;
-    }
-
     char therapistExe[1024];
     uint32_t size = sizeof(therapistExe);
     _NSGetExecutablePath(therapistExe, &size);
-    printf("Therapist path: %s\n", therapistExe);
+    //NSLog(@"Therapist path: %s\n", therapistExe);
+
+    if( DFInstanceOSX::isAuthorized() ) {
+        // Ensure we're in the correct path
+        QDir dir(therapistExe);
+        dir.makeAbsolute();
+        dir.cdUp();
+        chdir(dir.absolutePath().toLocal8Bit());
+        fflush(stdout);
+        return true;
+    }
 
     // AuthorizationCreate and pass NULL as the initial
     // AuthorizationRights set so that the AuthorizationRef gets created
@@ -290,4 +384,5 @@ bool DFInstanceOSX::checkPermissions() {
     return ([applicationAttributes filePosixPermissions] == 1517 && [[applicationAttributes fileGroupOwnerAccountName] isEqualToString: @"procmod"]);
     [authPool release];
 }
+
 

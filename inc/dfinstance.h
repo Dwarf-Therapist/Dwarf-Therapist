@@ -132,7 +132,9 @@ public:
     virtual bool attach() = 0;
     virtual bool detach() = 0;
 
+    static bool authorize();
     quint32 current_year_time() {return m_cur_year_tick;}
+    static DFInstance * newInstance();
 
     // Windows string offsets
 #ifdef Q_OS_WIN

@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include "fortressentity.h"
 #include "dfinstance.h"
 #include "gamedatareader.h"
+#include "defaultfonts.h"
 
 OptionsMenu::OptionsMenu(QWidget *parent)
     : QDialog(parent)
@@ -225,11 +226,11 @@ void OptionsMenu::read_settings() {
     ui->cb_shade_cells->setChecked(s->value("shade_cells", true).toBool());
     ui->cb_header_text_direction->setChecked(s->value("header_text_bottom", false).toBool());
 
-    QFont temp = s->value("font", QFont("Segoe UI", 8)).value<QFont>();
+    QFont temp = s->value("font", QFont(DefaultFonts::getRowFontName(), DefaultFonts::getRowFontSize())).value<QFont>();
     m_row_font = qMakePair(temp,temp);
     show_current_font(temp, ui->lbl_current_font);
 
-    temp = s->value("header_font", QFont("Segoe UI", 9)).value<QFont>();
+    temp = s->value("header_font", QFont(DefaultFonts::getHeaderFontName(), DefaultFonts::getHeaderFontSize())).value<QFont>();
     m_col_header_font = qMakePair(temp,temp);
     show_current_font(temp, ui->lbl_header_font);
 
@@ -250,11 +251,11 @@ void OptionsMenu::read_settings() {
     }
     s->endGroup();        
 
-    temp = s->value("tooltip_font", QFont("Segoe UI", 9)).value<QFont>();
+    temp = s->value("tooltip_font", QFont(DefaultFonts::getTooltipFontName(), DefaultFonts::getTooltipFontSize())).value<QFont>();
     m_tooltip_font = qMakePair(temp,temp);
     show_current_font(temp,ui->lbl_current_tooltip);
 
-    temp = s->value("main_font", QFont("Segoe UI", 9)).value<QFont>();
+    temp = s->value("main_font", QFont(DefaultFonts::getMainFontName(), DefaultFonts::getMainFontSize())).value<QFont>();
     m_main_font = qMakePair(temp,temp);
     show_current_font(temp,ui->lbl_current_main_font);
 
@@ -503,19 +504,19 @@ void OptionsMenu::restore_defaults() {
     ui->chk_health_colors->setChecked(true);
     ui->chk_health_symbols->setChecked(false);
 
-    QFont temp = QFont("Segoe UI", 8);
+    QFont temp = QFont(DefaultFonts::getRowFontName(), DefaultFonts::getRowFontSize());
     m_row_font = qMakePair(temp,temp);
     show_current_font(temp,ui->lbl_current_font);
 
-    temp = QFont("Segoe UI", 8);
+    temp = QFont(DefaultFonts::getHeaderFontName(), DefaultFonts::getHeaderFontSize());
     m_col_header_font = qMakePair(temp,temp);
     show_current_font(temp,ui->lbl_header_font);
 
-    temp = QFont("Segoe UI", 8);
+    temp = QFont(DefaultFonts::getTooltipFontName(), DefaultFonts::getTooltipFontSize());
     m_tooltip_font = qMakePair(temp,temp);
     show_current_font(temp,ui->lbl_current_tooltip);
 
-    temp = QFont("Segoe UI", 9);
+    temp = QFont(DefaultFonts::getMainFontName(), DefaultFonts::getMainFontSize());
     m_main_font = qMakePair(temp,temp);
     show_current_font(temp,ui->lbl_current_main_font);
 
