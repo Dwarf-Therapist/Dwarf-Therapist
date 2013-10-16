@@ -148,7 +148,11 @@ DFInstance::~DFInstance() {
     foreach(MemoryLayout *l, m_memory_layouts) {
         delete(l);
     }
-    m_memory_layouts.clear();
+    m_memory_layouts.clear();    
+    m_layout = 0;
+
+    qDeleteAll(m_regions);
+    m_regions.clear();
 
     delete m_languages;
     delete m_fortress;
@@ -174,6 +178,7 @@ DFInstance::~DFInstance() {
     m_thought_counts.clear();
 
     DwarfStats::cleanup();
+    UnitHealth::cleanup();
 //    LOGD << "DFInstance baseclass virtual dtor all done!";
 }
 

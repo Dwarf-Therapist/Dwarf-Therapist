@@ -91,6 +91,11 @@ class LogAppender : public QObject {
 public:
     explicit LogAppender(const QString &module, TruncatingFileLogger *logger,
                          LOG_LEVEL min_level, LogAppender *parent_appender = 0);
+    virtual ~LogAppender(){
+        m_parent_appender = 0;
+        m_logger = 0;
+    }
+
     virtual QString module_name();
     LOG_LEVEL minimum_level() {return m_minimum_level;}
     void set_minimum_level(LOG_LEVEL lvl);
@@ -113,6 +118,12 @@ public:
     explicit LogManager(QObject *parent = 0);
     TruncatingFileLogger *add_logger(const QString &path);
     TruncatingFileLogger *get_logger(const QString &path=QString());
+    virtual ~LogManager(){
+        qDeleteAll(m_loggers);
+        m_loggers.clear();
+        qDeleteAll(m_appenders);
+        m_appenders.clear();
+    }
 
     LogAppender *add_appender(const QString &module_name,
                               TruncatingFileLogger *logger,

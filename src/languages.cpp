@@ -35,6 +35,11 @@ Languages::Languages(DFInstance *df, QObject *parent)
 }
 
 Languages::~Languages() {
+    qDeleteAll(m_language);
+    m_language.clear();
+    m_words.clear();
+    m_mem = 0;
+    m_df = 0;
 }
 
 Languages* Languages::get_languages(DFInstance *df) {

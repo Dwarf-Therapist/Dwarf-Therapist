@@ -84,19 +84,21 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     ui->tw_attributes->horizontalHeader()->resizeSection(1,default_size);
     ui->tw_attributes->horizontalHeader()->resizeSection(2,default_size);
 
-    ui->tw_traits->setColumnCount(3);
+    ui->tw_traits->setColumnCount(4);
     ui->tw_traits->setEditTriggers(QTableWidget::NoEditTriggers);
     ui->tw_traits->setWordWrap(true);
     ui->tw_traits->setShowGrid(false);
     ui->tw_traits->setGridStyle(Qt::NoPen);
     ui->tw_traits->setAlternatingRowColors(true);
-    ui->tw_traits->setHorizontalHeaderLabels(QStringList() << "Trait" << "Raw" << "Message");
+    ui->tw_traits->setHorizontalHeaderLabels(QStringList() << "Trait" << "Rating" << "Raw" << "Message");
     ui->tw_traits->verticalHeader()->hide();
     ui->tw_traits->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
     ui->tw_traits->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
+    ui->tw_traits->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);
     ui->tw_traits->horizontalHeader()->setStretchLastSection(true);
     ui->tw_traits->horizontalHeader()->resizeSection(0,100);
     ui->tw_traits->horizontalHeader()->resizeSection(1,default_size);
+    ui->tw_traits->horizontalHeader()->resizeSection(2,default_size);
 
     ui->tw_roles->setColumnCount(2);
     ui->tw_roles->setEditTriggers(QTableWidget::NoEditTriggers);
@@ -121,6 +123,7 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     ui->tw_prefs->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
     ui->tw_prefs->horizontalHeader()->setStretchLastSection(true);
     ui->tw_prefs->horizontalHeader()->resizeSection(0,100);
+
 
     ui->tw_health->setColumnCount(2);
 
@@ -379,18 +382,23 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             Trait *t = gdr->get_trait(row);
             QTableWidgetItem *trait_name = new QTableWidgetItem(t->name);
             trait_name->setToolTip(tr("<center><h4>%1</h4></center>").arg(t->name));
+            QTableWidgetItem *trait_raw = new QTableWidgetItem;
+            trait_raw->setTextAlignment(Qt::AlignHCenter);
+            trait_raw->setData(0, val);
             QTableWidgetItem *trait_score = new QTableWidgetItem;
             trait_score->setTextAlignment(Qt::AlignHCenter);
-            trait_score->setData(0, val);
 
-            int deviation = abs(50 - val);
-            if (deviation >= 41) {
+            int rating = val;
+            if(t->inverted)
+                rating = 100-val;
+            if (rating >= 91) {
                 trait_score->setBackground(color_high);
                 trait_score->setForeground(compliment(color_high));
-            } else if (deviation >= 25) {
+            } else if (rating <= 25) {
                 trait_score->setBackground(color_low);
                 trait_score->setForeground(compliment(color_low));
             }
+            trait_score->setData(0,rating);
 
             QTableWidgetItem *trait_msg = new QTableWidgetItem();
             QString msg = t->level_message(val);
@@ -409,7 +417,8 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
             ui->tw_traits->setItem(0, 0, trait_name);
             ui->tw_traits->setItem(0, 1, trait_score);
-            ui->tw_traits->setItem(0, 2, trait_msg);
+            ui->tw_traits->setItem(0, 2, trait_raw);
+            ui->tw_traits->setItem(0, 3, trait_msg);
         }
     }
     ui->tw_traits->setSortingEnabled(true);
@@ -587,5 +596,6 @@ QString DwarfDetailsWidget::build_gradient(QColor c1, QColor c2){
             .arg(c2.blue()).arg(c2.alpha())
             .arg(compliment(c1).name());
 }
+
 
 

@@ -169,7 +169,16 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     read_settings();
 }
 
-OptionsMenu::~OptionsMenu() {}
+OptionsMenu::~OptionsMenu() {
+    qDeleteAll(m_general_colors);
+    m_general_colors.clear();
+    qDeleteAll(m_noble_colors);
+    m_noble_colors.clear();
+    qDeleteAll(m_happiness_colors);
+    m_happiness_colors.clear();
+    m_curse_color = 0;
+    delete ui;
+}
 
 bool OptionsMenu::event(QEvent *evt) {
     if (evt->type() == QEvent::StatusTip) {
@@ -235,7 +244,7 @@ void OptionsMenu::read_settings() {
     show_current_font(temp, ui->lbl_header_font);
 
 
-    ui->cb_happiness_icons->setChecked(s->value("happiness_icons",true).toBool());
+    ui->cb_happiness_icons->setChecked(s->value("happiness_icons",false).toBool());
     ui->cb_labor_counts->setChecked(s->value("show_labor_counts",false).toBool());
 
     ui->cb_sync_grouping->setChecked(s->value("group_all_views",true).toBool());

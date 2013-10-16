@@ -25,7 +25,7 @@ THE SOFTWARE.
 *
 * \section intro_sec Introduction
 *
-* Dwarf Therapist is written in C++ using Qt 4.6.0. It is meant to be used as
+* Dwarf Therapist is written in C++ using Qt 5.1.1. It is meant to be used as
 * an addon for the game Dwarf Fortress.
 *
 */

@@ -34,7 +34,7 @@ class Scanner: public QDialog {
     Q_OBJECT
 public:
     Scanner(DFInstance *df, MainWindow *parent = 0);
-    virtual ~Scanner(){}
+    virtual ~Scanner();
 
     public slots:
         void report_address(const QString&, const quint32&);

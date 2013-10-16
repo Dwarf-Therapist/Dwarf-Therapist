@@ -253,6 +253,11 @@ GameDataReader::GameDataReader(QObject *parent)
 
 }
 
+GameDataReader::~GameDataReader(){
+    delete m_instance;
+    m_data_settings = 0;
+}
+
 int GameDataReader::get_int_for_key(QString key, short base) {
     if (!m_data_settings->contains(key)) {
         LOGE << tr("Couldn't find key '%1' in file '%2'").arg(key)

@@ -126,6 +126,10 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     ui->text_skills->ensureCursorVisible();
 }
 
+ScriptDialog::~ScriptDialog(){
+    delete ui;
+}
+
 void ScriptDialog::clear_script() {
     ui->script_edit->clear();
     ui->txt_script_name->clear();

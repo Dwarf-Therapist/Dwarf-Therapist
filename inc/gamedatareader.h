@@ -141,6 +141,7 @@ public:
 
 protected:
     GameDataReader(QObject *parent = 0);
+    virtual ~GameDataReader();
 private:
     static GameDataReader *m_instance;
     QSettings *m_data_settings;

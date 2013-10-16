@@ -1379,7 +1379,7 @@ float Dwarf::skill_level(int skill_id, bool raw, bool precise) {
     return retval;
 }
 
-short Dwarf::labour_rating(int labor_id) {
+short Dwarf::labor_rating(int labor_id) {
     GameDataReader *gdr = GameDataReader::ptr();
     Labor *l = gdr->get_labor(labor_id);
     if (l)

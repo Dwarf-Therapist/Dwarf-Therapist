@@ -43,6 +43,7 @@ public:
     UnitHealth();
     UnitHealth(DFInstance *df, Dwarf *d, bool req_diagnosis);
     virtual ~UnitHealth();
+    static void cleanup();
 
     static QStringList get_all_category_desc(eHealth::H_INFO hs, bool symbol_only = false, bool colored = true);
 

@@ -132,7 +132,7 @@ static inline QColor compliment(const QColor &in_color, bool true_compliment = f
             int r = (~in_color.red()) & 0xff;
             int b = (~in_color.blue()) & 0xff;
             int g = (~in_color.green()) & 0xff;
-            int a = in_color.alpha(); //leave the alpha the same
+//            int a = in_color.alpha(); //leave the alpha the same
         //    int a = (~in_color.alpha()) & 0xff;
             return QColor(r,g,b,255);
     }

@@ -92,7 +92,7 @@ void UberDelegate::read_settings() {
     auto_contrast = s->value("options/auto_contrast", true).toBool();
     draw_aggregates = s->value("options/show_aggregates", true).toBool();
     m_skill_drawing_method = static_cast<SKILL_DRAWING_METHOD>(s->value("options/grid/skill_drawing_method", SDM_GROWING_CENTRAL_BOX).toInt());
-    draw_happiness_icons = s->value("options/grid/happiness_icons",true).toBool();
+    draw_happiness_icons = s->value("options/grid/happiness_icons",false).toBool();
     color_mood_cells = s->value("options/grid/color_mood_cells",false).toBool();
     color_health_cells = s->value("options/grid/color_health_cells",true).toBool();
     m_fnt = s->value("options/grid/font", QFont(DefaultFonts::getRowFontName(), DefaultFonts::getRowFontSize())).value<QFont>();

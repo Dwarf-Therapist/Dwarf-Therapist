@@ -271,7 +271,7 @@ public:
     Q_INVOKABLE float skill_level(int skill_id, bool raw = false, bool precise = false);
 
     //! returns the numeric rating for the this dwarf in the skill associated with the labor specified by labor_id
-    Q_INVOKABLE short labour_rating(int labor_id);
+    Q_INVOKABLE short labor_rating(int labor_id);
 
     //! return a hashmap of trait_id to trait score for this dwarf
     const QHash<int, short> &traits() {return m_traits;}

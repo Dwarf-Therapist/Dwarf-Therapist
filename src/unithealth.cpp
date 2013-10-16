@@ -608,3 +608,7 @@ void UnitHealth::load_health_descriptors(QSettings &s){
     }
 }
 
+void UnitHealth::cleanup(){
+    qDeleteAll(m_health_descriptions);
+    m_health_descriptions.clear();
+}

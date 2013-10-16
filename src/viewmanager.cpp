@@ -100,9 +100,7 @@ void ViewManager::reload_views() {
     m_views.clear();
     m_last_index = -1;
 
-    QSettings *s = new QSettings(":config/default_gridviews", QSettings::IniFormat);
     QSettings *u = DT->user_settings();
-
     //read in the default column sorts
     m_default_column_sort.clear();
     for(int i = 0; i < CT_TOTAL_TYPES; i++){
@@ -112,19 +110,48 @@ void ViewManager::reload_views() {
         }
     }
 
-    int total_views = s->beginReadArray("gridviews");
+    int total_views = 0;
+    QSettings *s = 0x0;
+
+    QStringList view_names;
+    //start with any overriding default views in the /etc folder there might be
+    QDir working_dir = QDir::current();
+    QString filename = working_dir.absoluteFilePath("etc/default_gridviews.dtg");
+    if(QFile::exists(filename)){
+        s = new QSettings(filename, QSettings::IniFormat);
+        if(s){
+            total_views = s->beginReadArray("gridviews");
+            QList<GridView*> built_in_views;
+            for (int i = 0; i < total_views; ++i) {
+                s->setArrayIndex(i);
+                GridView *gv = GridView::read_from_ini(*s, this);
+                gv->set_is_custom(false); // this is a default view
+                m_views << gv;
+                built_in_views << gv;
+                view_names.append(gv->name());
+            }
+            s->endArray();
+        }
+    }
+
+    //packaged default views, if we've already loaded an override for a view, don't include these views
+    s = new QSettings(":config/default_gridviews", QSettings::IniFormat);
+    total_views = s->beginReadArray("gridviews");
     QList<GridView*> built_in_views;
     for (int i = 0; i < total_views; ++i) {
         s->setArrayIndex(i);
         GridView *gv = GridView::read_from_ini(*s, this);
         gv->set_is_custom(false); // this is a default view
-        m_views << gv;
-        built_in_views << gv;
+        if(!view_names.contains(gv->name())){
+            m_views << gv;
+            built_in_views << gv;
+        }
     }
     s->endArray();
     delete(s);
     s = 0;
 
+    //special default weapon view
     add_weapons_view(built_in_views);
 
     // now read any gridviews out of the user's settings    

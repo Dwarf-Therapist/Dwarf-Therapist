@@ -26,6 +26,13 @@
 
 roleDialog::~roleDialog()
 {
+    m_df = 0;
+    m_dwarf = 0;
+    m_role = 0;
+
+    qDeleteAll(m_pref_list);
+    m_pref_list.clear();
+
     ui->tw_attributes->clear();
     ui->tw_prefs->clear();
     ui->tw_skills->clear();

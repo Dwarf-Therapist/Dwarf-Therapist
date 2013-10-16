@@ -42,6 +42,12 @@ Scanner::Scanner(DFInstance *df, MainWindow *parent)
     set_ui_enabled(true);
 }
 
+Scanner::~Scanner(){
+    m_df = 0;
+    m_thread = 0;
+    delete ui;
+}
+
 void Scanner::cancel_scan() {
     m_stop_scanning = true;
     m_df->cancel_scan();
