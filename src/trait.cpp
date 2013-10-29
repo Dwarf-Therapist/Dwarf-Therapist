@@ -137,3 +137,13 @@ QString Trait::special_messages(const short &val){
     }
     return items.join(tr(" and "));
 }
+
+bool Trait::default_ranges(int id, short min, short median, short max){
+    //immoderation (urge) and straightforwardness (honesty) are +
+    if(id==4 || id==19)
+        return (min==0 && median==55 && max==100);
+    else if(id==5) //vulnerability (stress) is -
+        return (min==0 && median==45 && max==100);
+    else //everything else
+        return (min==0 && median==50 && max==100);
+}

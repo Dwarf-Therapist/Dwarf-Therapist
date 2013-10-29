@@ -99,14 +99,8 @@ QStandardItem *TrainedColumn::build_cell(Dwarf *d){
 }
 
 
-QStandardItem *TrainedColumn::build_aggregate(const QString &, const QVector<Dwarf *> &){
-    QStandardItem *item = new QStandardItem;
-    QColor bg;
-    if (m_override_set_colors)
-        bg = m_bg_color;
-    else
-        bg = m_set->bg_color();
-    item->setData(bg, Qt::BackgroundColorRole);
-    item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
+QStandardItem *TrainedColumn::build_aggregate(const QString &group_name, const QVector<Dwarf *> &dwarves){
+    Q_UNUSED(dwarves);
+    QStandardItem *item = init_aggregate(group_name);
     return item;
 }

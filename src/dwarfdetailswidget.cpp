@@ -206,6 +206,14 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         ui->lbl_squad_name->show();
     }
 
+    if(!DT->multiple_castes){
+        ui->lbl_caste->hide();
+    }else{
+        ui->lbl_caste->setText(tr("<b>Caste: %1</b>").arg(d->caste_name()));
+        ui->lbl_caste->show();
+        ui->lbl_caste->setToolTip(d->caste_desc());
+    }
+
     ui->lbl_artifact->setToolTip(ui->lbl_artifact->text());
 
     ui->lbl_current_job->setText(QString("%1").arg(d->current_job()));
@@ -589,7 +597,7 @@ void DwarfDetailsWidget::clear_table(QTableWidget &t){
 }
 
 QString DwarfDetailsWidget::build_gradient(QColor c1, QColor c2){
-    return QString("background: QLinearGradient(x1:0,y1:0,x2:0.9,y1:0,stop:0 rgba(%1,%2,%3,%4), stop:1 rgba(%5,%6,%7,%8)); color: %3")
+    return QString("background: QLinearGradient(x1:0,y1:0,x2:0.9,y2:0,stop:0 rgba(%1,%2,%3,%4), stop:1 rgba(%5,%6,%7,%8)); color: %9")
             .arg(c1.red()).arg(c1.green())
             .arg(c1.blue()).arg(c1.alpha())
             .arg(c2.red()).arg(c2.green())

@@ -219,7 +219,23 @@ void CustomProfession::accept() {
     if (!is_valid()) {
         return;
     }
+    //if we have a dwarf we created the profession from, assign them to the profession as well
+    if(m_dwarf){
+        int answer = QMessageBox::question(
+                    0, tr("Apply Profession"),
+                    tr("Would you like to apply this profession now to the original dwarf it was created from?"),
+                    QMessageBox::Yes | QMessageBox::No);
+        if (answer == QMessageBox::Yes) {
+            m_dwarf->apply_custom_profession(this);
+        }
+    }
+    m_dwarf = 0;
     m_dialog->accept();
+}
+
+void CustomProfession::cancel(){
+    m_dwarf = 0;
+    return;
 }
 
 /*!

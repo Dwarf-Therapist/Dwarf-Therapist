@@ -59,7 +59,7 @@ public:
 
     QString conflict_message(const short &skill_id, const short &val);
 
-
+    static bool default_ranges(int id, short min, short median, short max);
 };
 
 #endif

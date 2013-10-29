@@ -61,7 +61,7 @@ public:
 		void reload_views();
 		void write_views();
 		void draw_views();
-		void write_tab_order();
+        void write_tab_settings();
 		void set_group_by(int group_by);
 		void redraw_current_tab();
         void redraw_current_tab_headers();
@@ -82,6 +82,8 @@ public:
 
         void clear_selected();
         void reselect(QVector<int> ids);
+
+        void refresh_custom_professions();
 
 private:
 	QList<GridView*> m_views;

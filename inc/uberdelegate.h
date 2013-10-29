@@ -72,7 +72,7 @@ public:
     int cell_size;
     int cell_padding;
     bool auto_contrast;
-    bool draw_aggregates;
+    bool show_aggregates;
 
 private:
     DwarfModel *m_model;
@@ -85,9 +85,12 @@ private:
     bool color_health_cells;
     QFont m_fnt;
 
-    void paint_cell(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+
+    void paint_cell(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const bool drawing_aggregate) const;
 
     void paint_grid(const QRect &adjusted, bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, bool draw_border = true) const;
+
+    void paint_guide_borders(const QStyleOptionViewItem &opt, QPainter *p, const bool drawing_aggregate) const;
 
     //! return the bg color that was painted
     QColor paint_bg(const QRect &adjusted, bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const bool use_gradient = false, const QColor &col_override = Qt::black) const;
@@ -99,7 +102,7 @@ private:
     void paint_mood_cell(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, int skill_id, bool dirty) const;
     void paint_pref(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
     void paint_flags(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
-    void paint_aggregate(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+    void paint_labor_aggregate(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
     void paint_icon(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
 
     QColor get_pen_color(const QColor bg) const;

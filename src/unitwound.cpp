@@ -224,6 +224,11 @@ void UnitWound::read_wound(){
                         idx = 2;
                     else if(has_flag(0x0001,wpd.wound_flags1)) //cut
                         idx = 4;
+                    else if(has_flag(0x80000,wpd.wound_flags1)) //broken
+                        idx = 6;
+                    else if(has_flag(0x200000,wpd.wound_flags1)) //gouged
+                        idx = 8;
+
                     //cur_pen < max = cut/torn/smashed OPEN, else cut/torn/smashed APART
                     if(wpd.cur_pen < wpd.pen_max)
                         idx++;

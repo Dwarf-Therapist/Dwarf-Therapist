@@ -83,7 +83,7 @@ void DwarfStats::load_trait_bins(ASPECT_TYPE key, QList<int> raws){
 float DwarfStats::get_trait_role_rating(ASPECT_TYPE key, int value){
     //until it's verified how the castes' min/median/max raw values work,
     //don't modify the value AT ALL
-    if(DT->multiple_castes)
+    if(DT->traits_modified)
         return (float)value/100.0f;
 
     float mid = 50;

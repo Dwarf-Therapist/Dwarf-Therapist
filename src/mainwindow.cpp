@@ -645,8 +645,7 @@ void MainWindow::new_pending_changes(int cnt) {
 }
 
 void MainWindow::list_pending() {
-    disconnect(ui->tree_pending, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
-        0, 0);
+    disconnect(ui->tree_pending, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), 0, 0);
     ui->tree_pending->clear();
     foreach(Dwarf *d, m_model->get_dirty_dwarves()) {
         ui->tree_pending->addTopLevelItem(d->get_pending_changes_tree());
@@ -700,6 +699,8 @@ void MainWindow::draw_professions() {
     ui->tree_custom_professions->blockSignals(false);
     connect(ui->tree_custom_professions, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
         m_view_manager, SLOT(jump_to_profession(QTreeWidgetItem *, QTreeWidgetItem *)),Qt::UniqueConnection);
+
+    m_view_manager->refresh_custom_professions();
 }
 
 void MainWindow::draw_custom_profession_context_menu(const QPoint &p) {
@@ -1294,7 +1295,8 @@ void MainWindow::refresh_opts_menus() {
             m_btn_optimize->setToolButtonStyle(Qt::ToolButtonIconOnly);
         }
         m_btn_optimize->setText("&Optimize");
-        m_btn_optimize->setMinimumWidth(70);
+        m_btn_optimize->setStatusTip("Optimize (CTRL+O)");
+        //m_btn_optimize->setMinimumWidth(70);
         m_btn_optimize->setObjectName("m_btn_optimize");
         m_btn_optimize->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
         new QShortcut(Qt::CTRL + Qt::Key_O, this, SLOT(init_optimize()));
@@ -1413,6 +1415,8 @@ void MainWindow::reset(){
         ui->cb_group_by->setCurrentIndex(ui->cb_group_by->findData(grp_by));
         ui->cb_group_by->blockSignals(false);
     }
+    DT->traits_modified = false;
+
     this->setWindowTitle("Dwarf Therapist - Disconnected");
 
     DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));

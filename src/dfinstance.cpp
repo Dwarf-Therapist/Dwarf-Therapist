@@ -126,7 +126,7 @@ DFInstance::DFInstance(QObject* parent)
         LOGE << "No valid memory layouts found in the following directories..."
                 << QDir::searchPaths("memory_layouts");
         qApp->exit(ERROR_NO_VALID_LAYOUTS);
-    }
+    }               
 }
 
 DFInstance * DFInstance::newInstance(){
@@ -178,13 +178,9 @@ DFInstance::~DFInstance() {
     m_thought_counts.clear();
 
     DwarfStats::cleanup();
-    UnitHealth::cleanup();
+//    UnitHealth::cleanup();
 //    LOGD << "DFInstance baseclass virtual dtor all done!";
 }
-
-//bool DFInstance::authorize(){
-//    return true;
-//}
 
 BYTE DFInstance::read_byte(const VIRTADDR &addr) {
     QByteArray out;

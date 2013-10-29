@@ -103,6 +103,33 @@ QStandardItem *ViewColumn::init_cell(Dwarf *d) {
     return item;
 }
 
+QStandardItem *ViewColumn::init_aggregate(QString group_name){
+    QStandardItem *item = new QStandardItem;
+
+    item->setStatusTip(m_title + " :: " + group_name);
+
+    QColor bg;
+    if (m_override_set_colors)
+        bg = m_bg_color;
+    else
+        bg = m_set->bg_color();
+    item->setData(bg, Qt::BackgroundColorRole);
+    item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
+
+    item->setData(group_name, DwarfModel::DR_GROUP_NAME);
+
+    //when setting up an aggregate column, if it's required that the cells have something drawn, then
+    //make sure to set the column type, otherwise nothing will be drawn
+    //item->setData(m_type, DwarfModel::DR_COL_TYPE);
+
+    item->setData(-1, DwarfModel::DR_RATING);
+    item->setData(-1, DwarfModel::DR_DISPLAY_RATING);
+    item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
+
+    item->setData(true, DwarfModel::DR_IS_AGGREGATE);
+    return item;
+}
+
 void ViewColumn::clear_cells(){
     m_cells.clear();
 }

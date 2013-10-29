@@ -111,7 +111,7 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     QPalette tt;
     QColor norm_text = tt.toolTipText().color();
 
-    QString tooltip = QString("<h3>%1</h3>%2%3%4%5<h4>%6 - %7</h4>")
+    QString tooltip = QString("<center><h3>%1</h3></center>%2%3%4%5<h4>%6 - %7</h4>")
                      .arg(tt_title)
                      .arg(desc)
                      .arg(group_name)
@@ -129,14 +129,8 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     return item;
 }
 
-QStandardItem *WeaponColumn::build_aggregate(const QString &, const QVector<Dwarf*> &) {
-    QStandardItem *item = new QStandardItem;
-    QColor bg;
-    if (m_override_set_colors)
-        bg = m_bg_color;
-    else
-        bg = m_set->bg_color();
-    item->setData(bg, Qt::BackgroundColorRole);
-    item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
+QStandardItem *WeaponColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
+    Q_UNUSED(dwarves);
+    QStandardItem *item = init_aggregate(group_name);
     return item;
 }

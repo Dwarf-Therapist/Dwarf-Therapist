@@ -80,12 +80,9 @@ QStandardItem *HighestMoodColumn::build_cell(Dwarf *d) {
     return item;
 }
 
-QStandardItem *HighestMoodColumn::build_aggregate(const QString &group_name,
-                                           const QVector<Dwarf*> &dwarves) {
-    Q_UNUSED(group_name);
+QStandardItem *HighestMoodColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
     Q_UNUSED(dwarves);
-    QStandardItem *item = new QStandardItem;
-    item->setData(m_bg_color, DwarfModel::DR_DEFAULT_BG_COLOR);
+    QStandardItem *item = init_aggregate(group_name);
     return item;
 }
 

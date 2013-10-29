@@ -90,8 +90,9 @@ public:
 
 	QStandardItem *init_cell(Dwarf *d);
 	virtual QStandardItem *build_cell(Dwarf *d) = 0; // create a suitable item based on a dwarf
-	virtual QStandardItem *build_aggregate(const QString &group_name, 
-										   const QVector<Dwarf*> &dwarves) = 0; // create an aggregate cell based on several dwarves
+    QStandardItem *init_aggregate(QString group_name);
+    virtual QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) = 0; // create an aggregate cell based on several dwarves
+//    QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 
     QString get_cell_value(Dwarf *d);
 	virtual void write_to_ini(QSettings &s);

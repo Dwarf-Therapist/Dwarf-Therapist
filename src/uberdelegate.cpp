@@ -54,20 +54,15 @@ UberDelegate::UberDelegate(QObject *parent)
         // skip a point on each iteration by moving 4*pi/5 around the circle
         // which is basically .8 * pi
         m_star_shape << QPointF(
-            0.4 * cos(i * pi * 0.8), // x
-            0.4 * sin(i * pi * 0.8)  // y
-            );
+                            0.4 * cos(i * pi * 0.8), // x
+                            0.4 * sin(i * pi * 0.8)  // y
+                            );
     }
 
     m_diamond_shape << QPointF(0.5, 0.1) //top
                     << QPointF(0.75, 0.5) // right
                     << QPointF(0.5, 0.9) //bottom
                     << QPointF(0.25, 0.5); // left
-
-//    m_diamond_shape << QPointF(5.0, 1.0) //top
-//                    << QPointF(7.5, 5.0) // right
-//                    << QPointF(5.0, 9.0) //bottom
-//                    << QPointF(2.5, 5.0); // left
 }
 
 void UberDelegate::read_settings() {
@@ -86,11 +81,11 @@ void UberDelegate::read_settings() {
     color_border = s->value("border").value<QColor>();
     s->endGroup();
     s->endGroup();
-    cell_size = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();    
+    cell_size = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
     cell_padding = s->value("options/grid/cell_padding", 0).toInt();
     cell_size += (cell_padding*2)+2; //increase the cell size by padding
     auto_contrast = s->value("options/auto_contrast", true).toBool();
-    draw_aggregates = s->value("options/show_aggregates", true).toBool();
+    show_aggregates = s->value("options/show_aggregates", true).toBool();
     m_skill_drawing_method = static_cast<SKILL_DRAWING_METHOD>(s->value("options/grid/skill_drawing_method", SDM_GROWING_CENTRAL_BOX).toInt());
     draw_happiness_icons = s->value("options/grid/happiness_icons",false).toBool();
     color_mood_cells = s->value("options/grid/color_mood_cells",false).toBool();
@@ -102,28 +97,46 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
     if (!proxy_idx.isValid()) {
         return;
     }
-    if (proxy_idx.column() == 0) {        
+
+    bool cell_is_agg = proxy_idx.data(DwarfModel::DR_IS_AGGREGATE).toBool();
+    bool drawing_aggregate = false;
+    if(m_model && m_model->current_grouping() != DwarfModel::GB_NOTHING && show_aggregates && cell_is_agg)
+        drawing_aggregate = true;
+
+    //name column's cells are drawn differently
+    if (proxy_idx.column() == 0) {
         QStyledItemDelegate::paint(p, opt, proxy_idx);
-        return;
-    }
+        //draw a line under the name's cell if it's an aggregate row
+//        if(drawing_aggregate){
+//            p->save();
+//            p->setPen(QPen(QColor(Qt::black)));
+//            p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
+//            p->restore();
+//        }
+//                return;
+    }else{
 
-    paint_cell(p, opt, proxy_idx);
+        //all other cells
+        paint_cell(p, opt, proxy_idx,drawing_aggregate);
 
-    if (m_model && proxy_idx.column() == m_model->selected_col()) {
-        p->save();
-        p->setPen(QPen(color_guides));
-        p->drawLine(opt.rect.topLeft(), opt.rect.bottomLeft());
-        p->drawLine(opt.rect.topRight(), opt.rect.bottomRight());
-        p->restore();
+        //vertical guide lines when columns are selected
+        if (m_model && proxy_idx.column() == m_model->selected_col()) {
+            p->save();
+            p->setPen(QPen(color_guides));
+            p->drawLine(opt.rect.topLeft(), opt.rect.bottomLeft());
+            p->drawLine(opt.rect.topRight(), opt.rect.bottomRight());
+            p->restore();
+        }
     }
+    paint_guide_borders(opt,p,drawing_aggregate);
 }
 
-void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx) const {
+void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &idx, const bool drawing_aggregate) const {
     QModelIndex model_idx = idx;
     if (m_proxy)
         model_idx = m_proxy->mapToSource(idx);
 
-    COLUMN_TYPE type = static_cast<COLUMN_TYPE>(model_idx.data(DwarfModel::DR_COL_TYPE).toInt());        
+    COLUMN_TYPE type = static_cast<COLUMN_TYPE>(model_idx.data(DwarfModel::DR_COL_TYPE).toInt());
     QRect adjusted = opt.rect.adjusted(cell_padding, cell_padding, -cell_padding, -cell_padding);
 
     float rating = model_idx.data(DwarfModel::DR_RATING).toFloat();
@@ -143,8 +156,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_LABOR:
     {
-        bool agg = model_idx.data(DwarfModel::DR_IS_AGGREGATE).toBool();
-        if (m_model->current_grouping() == DwarfModel::GB_NOTHING || !agg) {                        
+        if (!drawing_aggregate) {
             Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
             if (!d) {
                 return QStyledItemDelegate::paint(p, opt, idx);
@@ -159,16 +171,14 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
                 paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 0, 0, limit, 0, 0);
 
             paint_mood_cell(adjusted,p,opt,idx,GameDataReader::ptr()->get_labor(labor_id)->skill_id, dirty);
-
-        } else {
-            if (draw_aggregates)
-                paint_aggregate(adjusted, p, opt, idx);
+        }else {
+            paint_labor_aggregate(adjusted, p, opt, idx);
         }
     }
         break;
     case CT_HAPPINESS:
     {
-        paint_bg(adjusted, false, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());        
+        paint_bg(adjusted, false, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
         if(draw_happiness_icons){
             paint_icon(adjusted,p,opt,idx);
         }else{
@@ -180,15 +190,15 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_ROLE:
     {
-        QColor bg = paint_bg(adjusted, false, p, opt, idx);        
+        QColor bg = paint_bg(adjusted, false, p, opt, idx);
         paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 2.0f, 98.0f);
         paint_grid(adjusted, false, p, opt, idx);
     }
         break;
     case CT_IDLE:
-    {        
+    {
         paint_bg(adjusted, false, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
-        paint_icon(adjusted,p,opt,idx);        
+        paint_icon(adjusted,p,opt,idx);
     }
         break;
     case CT_PROFESSION:
@@ -214,47 +224,43 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_TRAIT:
     {
-        QColor bg = paint_bg(adjusted, false, p, opt, idx);        
+        QColor bg = paint_bg(adjusted, false, p, opt, idx);
         paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50, 10, 90);
         paint_grid(adjusted, false, p, opt, idx);
     }
         break;
     case CT_ATTRIBUTE:
-    {        
-        QColor bg = paint_bg(adjusted, false, p, opt, idx);                        
+    {
+        QColor bg = paint_bg(adjusted, false, p, opt, idx);
         paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 2.0f, 98.0f, 49.0f, 51.0f);
         paint_grid(adjusted, false, p, opt, idx);
-
     }
         break;
     case CT_WEAPON:
     {
-        QColor bg = paint_bg(adjusted, false, p, opt, idx);        
+        QColor bg = paint_bg(adjusted, false, p, opt, idx);
         paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 1, 99, 49, 51, true);
         paint_grid(adjusted, false, p, opt, idx);
 
     }
         break;
-    case CT_MILITARY_PREFERENCE:
+    case CT_MILITARY_PREFERENCE: //this column type needs to be removed
     {
-        bool agg = model_idx.data(DwarfModel::DR_IS_AGGREGATE).toBool();
-        if (m_model->current_grouping() == DwarfModel::GB_NOTHING || !agg) {
+        if (!drawing_aggregate) {
             paint_pref(adjusted, p, opt, idx);
         } else {
-            if (draw_aggregates)
-                paint_aggregate(adjusted, p, opt, idx);
+            paint_labor_aggregate(adjusted, p, opt, idx);
         }
     }
         break;
     case CT_FLAGS:
     {
-        paint_flags(adjusted, p, opt, idx);        
+        paint_flags(adjusted, p, opt, idx);
     }
         break;
     case CT_TRAINED:
     {
         QColor bg = paint_bg(adjusted, false, p, opt, idx, false, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
-        //QColor bg = model_idx.data(Qt::BackgroundColorRole).value<QColor>();
         //arbitrary ignore range is used just to hide tame animals
         paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 1.0f, 95.0f, 49.9f, 50.1f, true);
         paint_grid(adjusted, false, p, opt, idx);
@@ -290,14 +296,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     case CT_DEFAULT:
     case CT_SPACER:
     default:
-        paint_bg(adjusted, false, p, opt, idx);        
-        if (opt.state & QStyle::State_Selected) {
-            p->save();
-            p->setPen(color_guides);
-            p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
-            p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
-            p->restore();
-        }
+        paint_bg(adjusted, false, p, opt, idx);
         break;
     }
 }
@@ -345,7 +344,7 @@ QColor UberDelegate::paint_bg(const QRect &adjusted, bool active, QPainter *p, c
         bg.setAlpha(255);
         grad.setColorAt(0,bg);
         p->fillRect(adjusted, grad);
-    }else{        
+    }else{
         p->fillRect(adjusted, QBrush(bg));
     }
     p->restore();
@@ -367,9 +366,9 @@ QColor UberDelegate::get_pen_color(const QColor bg) const{
 }
 
 void UberDelegate::paint_values(const QRect &adjusted, float rating, QString text_rating, QColor bg, QPainter *p, const QStyleOptionViewItem &opt,
-                              const QModelIndex &idx, float median, float min_limit, float max_limit, float min_ignore, float max_ignore, bool bold_text) const{
+                                const QModelIndex &idx, float median, float min_limit, float max_limit, float min_ignore, float max_ignore, bool bold_text) const{
 
-    QColor color_fill = color_skill;    
+    QColor color_fill = color_skill;
 
     QPen pn;
     pn.setColor(get_pen_color(bg));
@@ -377,15 +376,6 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
 
     if (auto_contrast)
         color_fill = compliment(bg);
-
-//    if (auto_contrast){
-//        c = compliment(bg);
-//        if(c.toHsv().value() > 50){
-//            pn.setColor(Qt::gray);
-//        }else{
-//            pn.setColor(Qt::black);
-//        }
-//    }
 
     QModelIndex model_idx = idx;
     if (m_proxy)
@@ -435,7 +425,7 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
     p->save();
     switch(m_skill_drawing_method) {
     default:
-    case SDM_GROWING_CENTRAL_BOX:                
+    case SDM_GROWING_CENTRAL_BOX:
         if (rating != 0 && (rating >= max_limit || rating <= min_limit)) {
             // draw diamond
             p->setRenderHint(QPainter::Antialiasing);
@@ -444,14 +434,14 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
             p->translate(opt.rect.x() + 2, opt.rect.y() + 2);
             p->scale(opt.rect.width() - 4, opt.rect.height() - 4);
             p->drawPolygon(m_diamond_shape);
-        } else if (rating > -1 && rating < max_limit) {            
+        } else if (rating > -1 && rating < max_limit) {
             //0.05625 is the smallest dot we can draw here, so scale to ensure the smallest exp value (1/500 or .002) can always be drawn
             //relative to our maximum limit for this range. this could still be improved to take into account the cell size, as having even
             //smaller cells than the default (16) may not draw very low dabbling skill xp levels
             //float offset = (225 * max_limit - 8 * perc_of_cell) / (4000*perc_of_cell + 225);
             //double size = perc_of_cell * ((roundf(adj_rating)+offset) / (max_limit-offset))
-            float perc_of_cell = 0.76f; //max amount of the cell to fill            
-            //double size = (((adj_rating-min_limit) * (perc_of_cell - 0.05625)) / (max_limit - min_limit)) + 0.05625;            
+            float perc_of_cell = 0.76f; //max amount of the cell to fill
+            //double size = (((adj_rating-min_limit) * (perc_of_cell - 0.05625)) / (max_limit - min_limit)) + 0.05625;
             double size = (((adj_rating-min_limit) * (perc_of_cell - 0.05625)) / (max_limit - min_limit)) + 0.05625;
             //size = roundf(size * 100) / 100; //this is to aid in the problem of an odd number of pixel in an even size cell, or vice versa
             double inset = (1.0f - size) / 2.0f;
@@ -664,17 +654,15 @@ void UberDelegate::paint_mood_cell(const QRect &adjusted, QPainter *p, const QSt
 }
 
 
-void UberDelegate::paint_aggregate(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
+void UberDelegate::paint_labor_aggregate(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
     if (!proxy_idx.isValid()) {
         return;
     }
-    //QModelIndex model_idx = m_proxy->mapToSource(proxy_idx);
     QModelIndex first_col = m_proxy->index(proxy_idx.row(), 0, proxy_idx.parent());
     if (!first_col.isValid()) {
         return;
     }
 
-    //QString group_name = proxy_idx.data(DwarfModel::DR_GROUP_NAME).toString();
     int labor_id = proxy_idx.data(DwarfModel::DR_LABOR_ID).toInt();
 
     int dirty_count = 0;
@@ -692,20 +680,38 @@ void UberDelegate::paint_aggregate(const QRect &adjusted, QPainter *p, const QSt
 
     QStyledItemDelegate::paint(p, opt, proxy_idx); // slap on the main bg
 
+//    float rating = 0.0;
     p->save();
-    if (enabled_count == m_proxy->rowCount(first_col)) {
+    if (m_proxy->rowCount(first_col) > 0 && enabled_count == m_proxy->rowCount(first_col)) {
         p->fillRect(adjusted, QBrush(color_active_group));
     } else if (enabled_count > 0) {
         p->fillRect(adjusted, QBrush(color_partial_group));
+//        rating = (float)enabled_count / (float)m_proxy->rowCount(first_col) * 100.0f;
+
+        if(auto_contrast){
+            p->setPen(compliment(color_partial_group));
+        }else{
+            p->setPen(Qt::black);
+        }
+        QFont tmp = m_fnt;
+        //tmp.setBold(true);
+        p->setFont(tmp);
+        p->drawText(opt.rect, Qt::AlignCenter, QString::number(enabled_count));
+
     } else {
         p->fillRect(adjusted, QBrush(color_inactive_group));
     }
     p->restore();
 
+    //    if(rating > 0)
+    //        paint_values(adjusted,rating,QString::number(rating),color_partial_group,p,opt,proxy_idx,0,0,100,0,0);
+
     paint_grid(adjusted, dirty_count > 0, p, opt, proxy_idx);
+
 }
 
 void UberDelegate::paint_grid(const QRect &adjusted, bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &, bool draw_border) const {
+    Q_UNUSED(opt);
     p->setBrush(Qt::NoBrush);
 
     QRect rec_border = adjusted;
@@ -725,13 +731,23 @@ void UberDelegate::paint_grid(const QRect &adjusted, bool dirty, QPainter *p, co
         p->drawLine(rec_border.topRight(),rec_border.topLeft());
         p->drawLine(rec_border.bottomLeft(),rec_border.bottomRight());
     }
-    //draw guide along top/bottom
-    if(opt.state.testFlag(QStyle::State_Selected)){
-        if((cell_padding == 0 && !dirty) || cell_padding > 0){ //0 padding replaces the guide with the dirty border
-            p->setPen(color_guides);
-            p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
-            p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
-        }
+}
+
+void UberDelegate::paint_guide_borders(const QStyleOptionViewItem &opt, QPainter *p, const bool drawing_aggregate) const {
+    //draw either the guide along the top/bottom or the aggregate border
+    if(opt.state.testFlag(QStyle::State_Selected)) {
+        p->save();
+        p->setPen(color_guides);
+        p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
+        p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
+        p->restore();
+    }else if(drawing_aggregate){
+        // the original idea was to make the aggregate rows more visible with borders... but it looks pretty bad..
+//        p->save();
+//        p->setPen(QPen(QColor(Qt::black)));
+//        p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
+//        p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
+//        p->restore();
     }
 }
 

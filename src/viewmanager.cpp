@@ -314,10 +314,13 @@ void ViewManager::draw_views() {
     LOGD << QString("redrew views in %L1ms").arg(start.msecsTo(stop));
 }
 
-void ViewManager::write_tab_order() {
+void ViewManager::write_tab_settings() {
     QStringList tab_order;
+    QString view_name;
     for (int i = 0; i < count(); ++i) {
-        tab_order << tabText(i);
+        view_name = tabText(i);
+        tab_order << view_name;
+        DT->user_settings()->setValue(QString("gui_options/%1_group_by").arg(view_name),get_stv(i)->m_last_group_by);
     }
     DT->user_settings()->setValue("gui_options/tab_order", tab_order);
 }
@@ -340,7 +343,7 @@ void ViewManager::write_views() {
         gv->write_to_ini(*s);
     }
     s->endArray();
-    write_tab_order();
+    write_tab_settings();
 
     //write the default sorting
     foreach(COLUMN_TYPE cType, m_default_column_sort.uniqueKeys()){
@@ -431,7 +434,6 @@ StateTableView *ViewManager::get_stv(int idx) {
     return 0;
 }
 
-
 void ViewManager::setCurrentIndex(int idx) {   
     if (idx < 0 || idx > count()-1) {
         LOGW << "tab switch to index" << idx << "requested but there are " <<
@@ -445,15 +447,14 @@ void ViewManager::setCurrentIndex(int idx) {
     QSettings *s = DT->user_settings();
     bool group_all = s->value("options/grid/group_all_views",true).toBool();
     bool scroll_all = s->value("options/grid/scroll_all_views",false).toBool();
-    int default_group = s->value("gui_options/group_by",0).toInt();
+    int default_group = s->value("gui_options/group_by",0).toInt(); //used when groups are synchronized
     if(default_group < 0)
         default_group = 0;
-    int sel_group = 0;
+
+    int sel_group = 0;    
     foreach(GridView *v, m_views) {
         if (v->name() == tabText(idx)) {
             stv->is_loading_rows = true;
-
-//            s->setValue("read_animals",(bool)(tabText(idx).contains("animals",Qt::CaseInsensitive)));
 
             m_model->set_grid_view(v);
             if(group_all){
@@ -465,9 +466,13 @@ void ViewManager::setCurrentIndex(int idx) {
                     stv->m_last_group_by = default_group;
                 }
             }else{
+                int default_view_group_by = stv->m_default_group_by; //use the default for the specific view
+                if(default_view_group_by < 0)
+                    default_view_group_by = 0;
+
                 if(stv->m_last_group_by < 0){
-                    sel_group = default_group;
-                    stv->m_last_group_by = default_group;
+                    sel_group = default_view_group_by;
+                    stv->m_last_group_by = default_view_group_by;
                 }else{
                     sel_group = stv->m_last_group_by;
                 }
@@ -512,7 +517,7 @@ void ViewManager::setCurrentIndex(int idx) {
 
     tabBar()->setCurrentIndex(idx);      
     stv->restore_expanded_items();
-    write_tab_order();
+    write_tab_settings();
 
     m_last_index = idx;
     stv->restore_scroll_positions();
@@ -562,6 +567,7 @@ int ViewManager::add_tab_for_gridview(GridView *v) {
     stv->setSortingEnabled(false);
     stv->set_model(m_model, m_proxy);
     stv->setSortingEnabled(true);
+    stv->set_default_group(v->name());
     connect(stv, SIGNAL(dwarf_focus_changed(Dwarf*)),
             SIGNAL(dwarf_focus_changed(Dwarf*))); // pass-thru
     connect(stv->selectionModel(),
@@ -572,7 +578,7 @@ int ViewManager::add_tab_for_gridview(GridView *v) {
     connect(stv,SIGNAL(squad_leader_changed()),this,SLOT(show_squad_warning()),Qt::UniqueConnection);
     stv->show();
     int new_idx = addTab(stv, v->name());    
-    write_tab_order();
+    write_tab_settings();
     return new_idx;
 }
 
@@ -597,7 +603,7 @@ void ViewManager::remove_tab_for_gridview(int idx) {
     }
     widget(idx)->deleteLater();
     removeTab(idx);
-    write_tab_order();
+    write_tab_settings();
 }
 
 void ViewManager::expand_all() {
@@ -673,4 +679,10 @@ void ViewManager::reselect(QVector<int> ids){
     foreach(int id, ids){
         get_stv(currentIndex())->select_dwarf(id);
     }
+}
+
+void ViewManager::refresh_custom_professions(){
+    StateTableView *s = get_stv(currentIndex());
+    if(s)
+        s->build_custom_profession_menu();
 }

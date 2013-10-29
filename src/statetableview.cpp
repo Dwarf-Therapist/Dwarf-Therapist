@@ -54,13 +54,14 @@ StateTableView::StateTableView(QWidget *parent)
     , m_last_sorted_col(0)
     , m_last_sort_order(Qt::AscendingOrder)
     , m_last_group_by(-1)
+    , m_default_group_by(-1)
     , m_model(0)
     , m_proxy(0)
     , m_delegate(new UberDelegate(this))
     , m_header(new RotatedHeader(Qt::Horizontal, this))
     , m_expanded_rows(QList<int>())        
     , m_vscroll(0)
-    , m_hscroll(0)    
+    , m_hscroll(0)        
 {
     read_settings();    
 
@@ -88,13 +89,56 @@ StateTableView::StateTableView(QWidget *parent)
     connect(this, SIGNAL(collapsed(const QModelIndex &)),SLOT(index_collapsed(const QModelIndex &)));
 
     connect(m_header, SIGNAL(sectionPressed(int)), SLOT(header_pressed(int)));
-    connect(m_header, SIGNAL(sectionClicked(int)), SLOT(header_clicked(int)));
+    connect(m_header, SIGNAL(sectionClicked(int)), SLOT(header_clicked(int)));    
 
     connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(hscroll_value_changed(int)));
     connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(vscroll_value_changed(int)));
 
+    m = new QMenu(this);
+    m->addAction(tr("Set Nickname..."), this, SLOT(set_nickname()));
+    m->addSeparator();
+
+    custom_prof_menu = new QMenu(m);
+
+    //CUSTOM PROFESSIONS
+    custom_prof_menu->setTitle(tr("Custom Professions"));
+    custom_prof_menu->setTearOffEnabled(true);
+    custom_prof_menu->setWindowTitle("Custom Professions");
+
+    build_custom_profession_menu();
+    m->addMenu(custom_prof_menu);
+
+    //TOGGLE ALL LABORS
+    m->addSeparator();
+    m_assign_labors = m->addAction(QIcon(":img/plus-circle.png"), tr("Assign All Labors"), this, SLOT(toggle_all_row_labors()));
+    m_assign_labors->setData(true);
+    m_assign_skilled_labors = m->addAction(QIcon(":img/plus-white.png"), tr("Assign Skilled Labors"), this, SLOT(toggle_skilled_row_labors()));
+    m_assign_skilled_labors->setStatusTip(tr("Assigns all labors above 'Dabbling'."));
+    m_remove_labors = m->addAction(QIcon(":img/minus-circle.png"), tr("Clear All Labors"), this, SLOT(toggle_all_row_labors()));
+    m_remove_labors->setData(false);
+
+    m->addSeparator();
+    m_clear = m->addAction(QIcon(":img/table--minus.png"),tr("Clear pending changes."),this,SLOT(clear_pending()));
+    m_commit = m->addAction(QIcon(":img/table--arrow.png"),tr("Commit changes."),this,SLOT(commit_pending()));
+    m->addSeparator();
+
+    squads_menu = new QMenu(m);
+    m_unassign_squad = new QAction(QIcon(QString::fromUtf8(":/img/minus-circle.png")),"",m);
+    m->addSeparator();
+    debug_menu = new QMenu(m);
+    debug_menu->setTitle(tr("Memory Tools"));
 }
 
+void StateTableView::build_custom_profession_menu(){
+    custom_prof_menu->clear();
+    m_prof_name = custom_prof_menu->addAction(QIcon(":img/ui-text-field-select.png"), tr("Set custom profession name..."), this, SLOT(set_custom_profession_text()));
+    m_professions = custom_prof_menu->addAction(QIcon(":img/new.png"), tr("New custom profession from this dwarf..."), this, SLOT(custom_profession_from_dwarf()));
+    custom_prof_menu->addAction(QIcon(":img/ui-text-field-clear-button.png"), tr("Reset to default profession"), this, SLOT(reset_custom_profession()));
+    custom_prof_menu->addSeparator();
+    foreach(CustomProfession *cp, DT->get_custom_professions()) {
+        custom_prof_menu->addAction(QIcon(cp->get_pixmap()), cp->get_name(), this, SLOT(apply_custom_profession()));
+    }
+}
 
 
 void StateTableView::read_settings() {
@@ -111,6 +155,10 @@ void StateTableView::read_settings() {
 
     set_single_click_labor_changes(s->value("options/single_click_labor_changes", true).toBool());
     m_auto_expand_groups = s->value("options/auto_expand_groups", false).toBool();
+}
+
+void StateTableView::set_default_group(QString name){
+        m_default_group_by = DT->user_settings()->value(QString("gui_options/%1_group_by").arg(name),-1).toInt();
 }
 
 void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
@@ -188,50 +236,67 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
     if (!idx.isValid())
         return;
 
-    if (idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
+    if(idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
         // we're on top of a dwarf's name
-        QMenu m(this); // this will be the popup menu
+//        QMenu m(this); // this will be the popup menu
         int id = idx.data(DwarfModel::DR_ID).toInt();
         Dwarf *d = m_model->get_dwarf_by_id(id);
-        m.addAction(tr("Set Nickname..."), this, SLOT(set_nickname()));
-        m.addSeparator();
 
-        QMenu custom_prof_menu(&m);
-        QMenu assign(&m);
+//        m.addAction(tr("Set Nickname..."), this, SLOT(set_nickname()));
+//        m.addSeparator();
 
-        if(!d->is_animal()){
-            //CUSTOM PROFESSIONS
-            custom_prof_menu.setTitle(tr("Custom Professions"));
-            QAction *a = custom_prof_menu.addAction(tr("Set custom profession name..."), this, SLOT(set_custom_profession_text()));
-            a->setData(id);
-            a = custom_prof_menu.addAction(tr("New custom profession from this dwarf..."), this, SLOT(custom_profession_from_dwarf()));
-            a->setData(id);
-            custom_prof_menu.addAction(tr("Reset to default profession"), this, SLOT(reset_custom_profession()));
-            custom_prof_menu.addSeparator();
-            foreach(CustomProfession *cp, DT->get_custom_professions()) {
-                custom_prof_menu.addAction(QIcon(cp->get_pixmap()), cp->get_name(), this, SLOT(apply_custom_profession()));
-            }
-            m.addMenu(&custom_prof_menu);
+//        QMenu custom_prof_menu(&m);
+//        QMenu assign(&m);
+//        QMenu squads(m);
+//        QAction *a;
 
-            //TOGGLE ALL LABORS
-            m.addSeparator();
-            a = m.addAction(QIcon(":img/plus-circle.png"), tr("Assign All Labors"), this, SLOT(toggle_all_labors()));
-            a->setData(true);            
-            a = m.addAction(QIcon(":img/minus-circle.png"), tr("Clear All Labors"), this, SLOT(toggle_all_labors()));
-            a->setData(false);
+//        if(m->actions().contains(m_no_squads))
+//            m->removeAction(m_no_squads);
+
+        //remove any dynamically changed menus
+        m->removeAction(squads_menu->menuAction());
+        m->removeAction(debug_menu->menuAction());
+        m->removeAction(m_unassign_squad);
+
+        if(!d->is_animal()){            
+
+//            //CUSTOM PROFESSIONS
+            custom_prof_menu->setEnabled(true);
+//            custom_prof_menu.setTitle(tr("Custom Professions"));
+//            QAction *a = custom_prof_menu.addAction(tr("Set custom profession name..."), this, SLOT(set_custom_profession_text()));
+//            a->setData(id);
+//            a = custom_prof_menu.addAction(tr("New custom profession from this dwarf..."), this, SLOT(custom_profession_from_dwarf()));
+//            a->setData(id);
+//            custom_prof_menu.addAction(tr("Reset to default profession"), this, SLOT(reset_custom_profession()));
+//            custom_prof_menu.addSeparator();
+//            foreach(CustomProfession *cp, DT->get_custom_professions()) {
+//                custom_prof_menu.addAction(QIcon(cp->get_pixmap()), cp->get_name(), this, SLOT(apply_custom_profession()));
+//            }
+//            m.addMenu(&custom_prof_menu);
+
+//            //TOGGLE ALL LABORS
+//            m.addSeparator();
+//            a = m.addAction(QIcon(":img/plus-circle.png"), tr("Assign All Labors"), this, SLOT(toggle_all_labors()));
+//            a->setData(true);
+//            a = m.addAction(QIcon(":img/minus-circle.png"), tr("Clear All Labors"), this, SLOT(toggle_all_labors()));
+//            a->setData(false);
 
             //SQUADS
-            m.addSeparator();
+//            m->addSeparator();
             if(d->is_adult()){
                 //always double check squads before showing the menu. a user might remove a squad and not refresh DT
                 m_model->refresh_squads();
                 //also refresh the dwarf
                 d->read_squad_info();
                 if(m_model->squads().count() <= 0){
-                    a = m.addAction(tr("No squads found."));
-                    a->setEnabled(false);
+//                    m_no_squads = m->addAction(tr("No squads found."));
+//                    m_no_squads->setEnabled(false);
+                    squads_menu->setTitle(tr("No squads found."));
+                    squads_menu->setEnabled(false);
+                    m->addMenu(squads_menu);
                 }else{
-                    assign.setTitle(tr("Assign to squad..."));
+                    squads_menu->setTitle(tr("Assign to squad..."));
+                    squads_menu->clear();
                     QIcon icon;
                     icon.addFile(QString::fromUtf8(":/img/plus-circle.png"), QSize(), QIcon::Normal, QIcon::Off);
                     foreach(int key, m_model->squads().uniqueKeys()){
@@ -239,76 +304,111 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
                         if(d->squad_id() != s->id()){
                             QAction *add;
                             if(s->assigned_count() < 10){
-                                add = assign.addAction(tr("%1 (%2 members)").arg(s->name()).arg(s->assigned_count()), this, SLOT(assign_to_squad()));
+                                add = squads_menu->addAction(tr("%1 (%2 members)").arg(s->name()).arg(s->assigned_count()), this, SLOT(assign_to_squad()));
                             }else{
-                                add = assign.addAction(tr("%1 (Full)").arg(s->name()));
+                                add = squads_menu->addAction(tr("%1 (Full)").arg(s->name()));
                                 add->setEnabled(false);
                             }
                             add->setData(s->id());
                             add->setIcon(icon);
                         }
                     }
-                    if(assign.actions().count()>0)
-                        m.addMenu(&assign);
+                    if(squads_menu->actions().count()>0)
+                        m->addMenu(squads_menu);
 
                     //squad removal (can't remove captain if there are subordinates)
-                    if(d->squad_id()!=-1){
-                        icon.addFile(QString::fromUtf8(":/img/minus-circle.png"), QSize(), QIcon::Normal, QIcon::Off);
+                    if(d->squad_id() != -1){
+//                        icon.addFile(QString::fromUtf8(":/img/minus-circle.png"), QSize(), QIcon::Normal, QIcon::Off);
                         if((d->squad_position()==0 && m_model->squads().value(d->squad_id())->assigned_count()==1) || d->squad_position() != 0){
-                            m.addAction(icon,tr("Remove from squad"),this,SLOT(remove_squad()));
+                            m_unassign_squad->setText(tr("Remove from squad."));
+                            connect(m_unassign_squad,SIGNAL(triggered()),this, SLOT(remove_squad()));
+                            m->addAction(m_unassign_squad);
+//                            m->addAction(icon,tr("Remove from squad"),this,SLOT(remove_squad()));
                         }else{
-                            m.addAction(icon,tr("Remove subordinates first!"));
+                            m_unassign_squad->setText(tr("Remove subordinates first!"));
+                            disconnect(m_unassign_squad, SIGNAL(triggered()), this, SLOT(remove_squad()));
+                            m->addAction(m_unassign_squad);
+//                            m->addAction(icon,tr("Remove subordinates first!"));
                         }
                     }
                 }
             }else{
-                a = m.addAction(tr("Ineligible for military."));
-                a->setEnabled(false);
+                squads_menu->setTitle(tr("Ineligible for military."));
+                squads_menu->actions().clear();
+                squads_menu->setEnabled(false);
+                m->addMenu(squads_menu);
+//                a = m->addAction(tr("Ineligible for military."));
+//                a->setEnabled(false);
             }
+        }else{
+            //animal, hide stuffs
+            custom_prof_menu->hideTearOffMenu();
+            custom_prof_menu->setEnabled(false);
+            m_assign_labors->setEnabled(false);
+            m_assign_skilled_labors->setEnabled(false);
+            m_remove_labors->setEnabled(false);
         }
-        //dwarf actions (debug/memory stuff)
-        m.addSeparator();
-        m.addActions(d->get_actions());
+        m->addSeparator();
 
-        m.exec(viewport()->mapToGlobal(event->pos()));
+        m_commit->setData(id);
+        m_clear->setData(id);
+
+        if(d->pending_changes() > 0){
+            m_commit->setVisible(true);
+            m_clear->setVisible(true);
+        }else{
+            m_commit->setVisible(false);
+            m_clear->setVisible(false);
+        }
+
+        //dwarf actions (debug/memory stuff)
+        m->addSeparator();
+//        m->addActions(d->get_actions());
+        debug_menu->clear();
+        debug_menu->addActions(d->get_mem_actions());
+        m->addMenu(debug_menu);
+
+        m->exec(viewport()->mapToGlobal(event->pos()));
     } else if (idx.data(DwarfModel::DR_COL_TYPE).toInt() == CT_LABOR) {
         // labor column
-        QMenu m(this); // this will be the popup menu
+//        QMenu m(this); // this will be the popup menu
+        QMenu labor(this);
         QString set_name = idx.data(DwarfModel::DR_SET_NAME).toString();
         ViewColumnSet *set = DT->get_main_window()->get_view_manager()->get_active_view()->get_set(set_name);
         if (idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) { //aggregate labor            
             QString group_name = idx.data(DwarfModel::DR_GROUP_NAME).toString();
-            QAction *a = m.addAction(tr("Toggle %1 for %2").arg(set_name).arg(group_name));
+            QAction *a = labor.addAction(tr("Toggle %1 for %2").arg(set_name).arg(group_name));
             a->setData(group_name);
             connect(a, SIGNAL(triggered()), set, SLOT(toggle_for_dwarf_group()));
         } else { // single dwarf labor
             // find the dwarf...            
             int dwarf_id = idx.data(DwarfModel::DR_ID).toInt();
             Dwarf *d = m_model->get_dwarf_by_id(dwarf_id);
-            QAction *a = m.addAction(tr("Toggle %1 for %2").arg(set_name).arg(d->nice_name()));            
+            QAction *a = labor.addAction(tr("Toggle %1 for %2").arg(set_name).arg(d->nice_name()));
             a->setData(dwarf_id);
             connect(a, SIGNAL(triggered()), set, SLOT(toggle_for_dwarf()));
         }
-        m.exec(viewport()->mapToGlobal(event->pos()));
+        labor.exec(viewport()->mapToGlobal(event->pos()));
     } else if (idx.data(DwarfModel::DR_IS_AGGREGATE).toBool() && m_model->current_grouping()==DwarfModel::GB_SQUAD){
-        QMenu m(this);
-        QAction *a = m.addAction(tr("Change Squad Name"),this,SLOT(set_squad_name()));
+//        QMenu m(this);
+        QMenu squad_name(this);
+        QAction *a = squad_name.addAction(tr("Change Squad Name"),this,SLOT(set_squad_name()));
         a->setData(idx.data(DwarfModel::DR_ID));
-        m.exec(viewport()->mapToGlobal(event->pos()));
+        squad_name.exec(viewport()->mapToGlobal(event->pos()));
     } else if (idx.data(DwarfModel::DR_COL_TYPE).toInt() == CT_PROFESSION) {
-        QMenu m(this);
+//        QMenu m(this);
+        QMenu prof_icon(this);
         int id = idx.data(DwarfModel::DR_SORT_VALUE).toInt();
         QString prof_name = GameDataReader::ptr()->get_profession(id)->name(true);
-        QAction *a = m.addAction(tr("Customize %1 Icon").arg(prof_name)
-                                 ,this,SLOT(edit_prof_icon()));
+        QAction *a = prof_icon.addAction(tr("Customize %1 Icon").arg(prof_name),this,SLOT(edit_prof_icon()));
         a->setData(id); //sort value is the profession id
 
         if(DT->get_custom_prof_icon(id)){
-            a = m.addAction(QIcon(":img/minus-circle.png"), tr("Reset to Default"), this, SLOT(remove_prof_icon()));
+            a = prof_icon.addAction(QIcon(":img/minus-circle.png"), tr("Reset to Default"), this, SLOT(remove_prof_icon()));
             a->setData(id);
         }
 
-        m.exec(viewport()->mapToGlobal(event->pos()));
+        prof_icon.exec(viewport()->mapToGlobal(event->pos()));
     }
 }
 
@@ -339,11 +439,11 @@ void StateTableView::remove_prof_icon(){
     }
 }
 
-void StateTableView::toggle_all_labors(){
+void StateTableView::toggle_all_row_labors(){
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     bool enable = a->data().toBool();
-    const QItemSelection sel = selectionModel()->selection();
     int id = 0;
+    const QItemSelection sel = selectionModel()->selection();
     foreach(QModelIndex i, sel.indexes()) {
         if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool()){
             id = i.data(DwarfModel::DR_ID).toInt();
@@ -358,6 +458,60 @@ void StateTableView::toggle_all_labors(){
     }
     m_model->calculate_pending();
     DT->emit_labor_counts_updated();
+}
+
+void StateTableView::toggle_column_labors(){
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    if(!a->data().canConvert<QVariantList>())
+        return;
+    QList<QVariant> data = a->data().toList();
+    int labor_id = data.at(0).toInt();
+    bool enable = data.at(1).toBool();
+    bool skilled = data.at(2).toBool();
+    foreach(Dwarf *d, m_model->get_dwarves()){
+        if(skilled)
+            d->toggle_skilled_labor(labor_id);
+        else
+            d->set_labor(labor_id,enable,false);
+    }
+    m_model->calculate_pending();
+    DT->emit_labor_counts_updated();
+}
+
+void StateTableView::toggle_skilled_row_labors(){
+    const QItemSelection sel = selectionModel()->selection();
+    int id = 0;
+    foreach(QModelIndex i, sel.indexes()) {
+        if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool()){
+            id = i.data(DwarfModel::DR_ID).toInt();
+            Dwarf *d = m_model->get_dwarf_by_id(id);
+            if (d) {
+                d->toggle_skilled_labors();
+            }
+        }
+    }
+    m_model->calculate_pending();
+    DT->emit_labor_counts_updated();
+}
+
+void StateTableView::commit_pending(){
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    int id = a->data().toInt();
+    Dwarf *d = m_model->get_dwarf_by_id(id);
+    if(d){
+        d->commit_pending();
+        m_model->calculate_pending();
+    }
+}
+
+void StateTableView::clear_pending(){
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    int id = a->data().toInt();
+    Dwarf *d = m_model->get_dwarf_by_id(id);
+    if(d){
+        d->clear_pending();
+        m_model->calculate_pending();
+    }
 }
 
 void StateTableView::set_squad_name(){
@@ -376,8 +530,11 @@ void StateTableView::set_squad_name(){
                                         "long.").arg(limit));
                 return;
             }
+            QModelIndex idx = m_model->findOne(s->name(),DwarfModel::DR_GROUP_NAME);
+            if(idx.isValid()){
+                m_model->itemFromIndex(idx)->setText(QString("%1 (%2)").arg(alias).arg(s->assigned_count()));
+            }
             s->rename_squad(alias);
-            m_model->load_dwarves();
         }
     }
 }
@@ -531,13 +688,17 @@ void StateTableView::set_custom_profession_text() {
 
 }
 
-void StateTableView::currentChanged(const QModelIndex &cur, const QModelIndex &) {
+void StateTableView::currentChanged(const QModelIndex &cur, const QModelIndex &idx) {
     // current item changed, so find out what dwarf the current item is for...
     if (!m_proxy) // special case tables (like skill legend, don't have a proxy)
         return;
     int id = m_proxy->data(cur, DwarfModel::DR_ID).toInt();
     Dwarf *d = m_model->get_dwarf_by_id(id);
     if (d) {
+        if(idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()){
+            m_prof_name->setData(id);
+            m_professions->setData(id);
+        }
         //LOGD << "focus changed to" << d->nice_name();
         emit dwarf_focus_changed(d);
     }
@@ -552,23 +713,8 @@ void StateTableView::select_all(){
 
 void StateTableView::select_dwarf(Dwarf *d) {
     select_dwarf(d->id());
-//    for(int top = 0; top < m_proxy->rowCount(); ++top) {
-//        QModelIndex idx = m_proxy->index(top, 0);
-//        if (idx.data(DwarfModel::DR_ID).toInt() == d->id()) {
-//            this->selectionModel()->select(idx, QItemSelectionModel::Select | QItemSelectionModel::Rows);
-//            break;
-//        } else if (m_proxy->rowCount(idx)) { // has children
-//            for (int sub = 0; sub < m_proxy->rowCount(idx); ++sub) {
-//                QModelIndex sub_idx = m_proxy->index(sub, 0, idx);
-//                if (sub_idx.data(DwarfModel::DR_ID).toInt() == d->id()) {
-//                    this->selectionModel()->select(sub_idx, QItemSelectionModel::Select | QItemSelectionModel::Rows);
-//                }
-//            }
-//        }
-//    }
-//    m_selected_rows = selectionModel()->selectedRows(0);
-//    m_selected = selectionModel()->selection();
 }
+
 void StateTableView::select_dwarf(int id) {
     for(int top = 0; top < m_proxy->rowCount(); ++top) {
         QModelIndex idx = m_proxy->index(top, 0);
@@ -732,6 +878,25 @@ void StateTableView::column_right_clicked(int idx){
                 a->setIcon(current);
         }
 
+        //args: labor_id, enable, skilled_only
+        if(col->type() == CT_LABOR){
+            int labor_id = static_cast<LaborColumn*>(col)->labor_id();
+            m->addSeparator();
+            a = m->addAction(QIcon(":img/plus-circle.png"),tr("Assign %1 to everyone.").arg(col->title()),this, SLOT(toggle_column_labors()));
+            data.clear();
+            data << labor_id << true << false;
+            a->setData(QVariant(data));
+
+            a = m->addAction(QIcon(":img/plus-white.png"),tr("Assign %1 to skilled workers only.").arg(col->title()),this, SLOT(toggle_column_labors()));
+            data.replace(2,true); //skilled only
+            a->setData(QVariant(data));
+
+            a = m->addAction(QIcon(":img/minus-circle.png"),tr("Unassign %1 from everyone.").arg(col->title()),this, SLOT(toggle_column_labors()));
+            data.replace(1,false); //disable
+            data.replace(2, false); //ignore skill
+            a->setData(QVariant(data));
+        }
+
         m->exec(this->mapFrom(this,QCursor::pos()));
     }
 }
@@ -761,6 +926,8 @@ void StateTableView::sort_column(){
     //clear the guides
     m_model->section_right_clicked(-1);
 }
+
+
 
 void StateTableView::header_pressed(int index) {
     m_column_already_sorted = (m_header->sortIndicatorSection() == index);

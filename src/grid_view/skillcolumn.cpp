@@ -166,7 +166,7 @@ void SkillColumn::build_tooltip(Dwarf *d, bool include_roles){
                     .arg(gdr->get_skill_name(m_skill_id,true))
                     .arg(str_mood);
         }else{
-            skill_str = tr("%1 %2<br/><br/><b>[RAW LEVEL:</b> %3]<br/><b>Experience: </b>%4%5%6")
+            skill_str = tr("<center><h4 style=\"margin:0;\">%1 %2</h4></center><br/><b>[RAW LEVEL:</b> %3]<br/><b>Experience: </b>%4%5%6")
                     .arg(gdr->get_skill_level_name(rating))
                     .arg(gdr->get_skill_name(m_skill_id,true))
                     .arg(QString::number((int)raw_rating))
@@ -194,7 +194,7 @@ void SkillColumn::build_tooltip(Dwarf *d, bool include_roles){
                 .arg(conflicting_traits.join(", "));
     }
 
-    QString tooltip = QString("<h3>%1</h3>%2%3%4<h4>%5</h4>")
+    QString tooltip = QString("<center><h3 style=\"margin:0;\">%1</h3></center>%2%3%4<h4>%5</h4>")
             .arg(m_title)
             .arg(skill_str)
             .arg(role_str)
@@ -204,15 +204,9 @@ void SkillColumn::build_tooltip(Dwarf *d, bool include_roles){
     m_cells.value(d)->setToolTip(tooltip);
 }
 
-QStandardItem *SkillColumn::build_aggregate(const QString &, const QVector<Dwarf*> &) {
-	QStandardItem *item = new QStandardItem;
-	QColor bg;
-	if (m_override_set_colors)
-		bg = m_bg_color;
-	else
-		bg = m_set->bg_color();
-	item->setData(bg, Qt::BackgroundColorRole);
-	item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
+QStandardItem *SkillColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
+    Q_UNUSED(dwarves);
+    QStandardItem *item = init_aggregate(group_name);
 	return item;
 }
 

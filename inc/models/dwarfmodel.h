@@ -138,6 +138,8 @@ public slots:
     void dwarf_group_toggled(const QString &group_name);
     void dwarf_set_toggled(Dwarf *d);
 
+    void read_settings();
+
 private:
     DFInstance *m_df;
     QMap<int, Dwarf*> m_dwarves;
@@ -147,8 +149,12 @@ private:
     GROUP_BY m_group_by;
     int m_selected_col;
     GridView *m_gridview;
+    QFont m_font;
+    QChar m_symbol;
+
     QBrush build_gradient_brush(QColor base_col, int alpha_start, int alpha_finish, QPoint start, QPoint end);    
     QString build_col_tooltip(ViewColumn *col);
+    QFont get_font(bool bold = false, bool italic = false, bool underline = false);
 
 signals:
     void new_pending_changes(int);

@@ -53,7 +53,7 @@ QStandardItem *ProfessionColumn::build_cell(Dwarf *d) {
         bg = QColor(255,255,255);
     item->setData(bg,Qt::BackgroundColorRole);
 
-    QString tooltip = tr("<h3>%1</h3>%2 (%3)<h5><i>%4</i></h5><h4>%5</h4>")
+    QString tooltip = tr("<center><h3>%1</h3><h4>%2 (%3)</h4></center><h5><i>%4</i></h5><h4>%5</h4>")
             .arg(m_title)
             .arg(d->profession())
             .arg(d->raw_profession())
@@ -64,12 +64,9 @@ QStandardItem *ProfessionColumn::build_cell(Dwarf *d) {
     return item;
 }
 
-QStandardItem *ProfessionColumn::build_aggregate(const QString &group_name,
-                                           const QVector<Dwarf*> &dwarves) {
-    Q_UNUSED(group_name);
+QStandardItem *ProfessionColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
     Q_UNUSED(dwarves);
-    QStandardItem *item = new QStandardItem;
-    item->setData(m_bg_color, DwarfModel::DR_DEFAULT_BG_COLOR);
+    QStandardItem *item = init_aggregate(group_name);
     return item;
 }
 

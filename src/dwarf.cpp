@@ -102,24 +102,24 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 
     // setup context actions
-    m_actions.clear();
+    m_actions_memory.clear();
     QAction *dump_mem = new QAction(tr("Dump Memory..."), this);
     connect(dump_mem, SIGNAL(triggered()), SLOT(dump_memory()));
-    m_actions << dump_mem;
+    m_actions_memory << dump_mem;
     QAction *dump_mem_to_file = new QAction(tr("Dump Memory To File"), this);
     connect(dump_mem_to_file, SIGNAL(triggered()), SLOT(dump_memory_to_file()));
-    m_actions << dump_mem_to_file;
+    m_actions_memory << dump_mem_to_file;
     QAction *copy_address_to_clipboard = new QAction(
             tr("Copy Address to Clipboard"), this);
     connect(copy_address_to_clipboard, SIGNAL(triggered()),
             SLOT(copy_address_to_clipboard()));
-    m_actions << copy_address_to_clipboard;
+    m_actions_memory << copy_address_to_clipboard;
 }
 
 
 Dwarf::~Dwarf() {
-    qDeleteAll(m_actions);
-    m_actions.clear();
+    qDeleteAll(m_actions_memory);
+    m_actions_memory.clear();
 
     m_traits.clear();    
     m_skills.clear();    
@@ -1439,6 +1439,17 @@ void Dwarf::assign_all_labors(){
         if(!labor_enabled(key))
             set_labor(key,true,false);
     }
+}
+
+void Dwarf::toggle_skilled_labors(){
+    foreach(int key, m_pending_labors.uniqueKeys()){
+        toggle_skilled_labor(key);
+    }
+}
+
+void Dwarf::toggle_skilled_labor(int labor_id){
+    bool enable = labor_rating(labor_id) >= 1; //ignore dabbling
+    set_labor(labor_id,enable,false);
 }
 
 void Dwarf::set_labor(int labor_id, bool enabled, bool update_cols_realtime) {

@@ -554,10 +554,10 @@
     <string>&amp;Connect To DF</string>
    </property>
    <property name="toolTip">
-    <string>Attempt connecting to a running copy of Dwarf Fortress</string>
+    <string>Attempt connecting to a running copy of Dwarf Fortress (CTRL+C)</string>
    </property>
    <property name="statusTip">
-    <string>Attempt connecting to a running copy of Dwarf Fortress</string>
+    <string>Attempt connecting to a running copy of Dwarf Fortress. (CTRL+C)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+C</string>
@@ -572,10 +572,10 @@
     <string>E&amp;xit</string>
    </property>
    <property name="toolTip">
-    <string>Close Dwarf Therapist</string>
+    <string>Close Dwarf Therapist (CTRL+X)</string>
    </property>
    <property name="statusTip">
-    <string>Close Dwarf Therapist</string>
+    <string>Close Dwarf Therapist (CTRL+X)</string>
    </property>
   </action>
   <action name="act_about">

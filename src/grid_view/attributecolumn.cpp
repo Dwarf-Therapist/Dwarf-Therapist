@@ -106,7 +106,7 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     item->setData(rawVal, DwarfModel::DR_SORT_VALUE);    
     item->setData(CT_ATTRIBUTE, DwarfModel::DR_COL_TYPE);
 
-    QString tooltip = QString("<h3>%1</h3><b>%2</b> %4<h4>%5</h4>")
+    QString tooltip = QString("<center><h3>%1</h3></center><b>%2</b> %4<h4>%5</h4>")
             .arg(m_title)            
             .arg(a.get_value_display())
             .arg(descriptor)
@@ -117,10 +117,8 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     return item;
 }
 
-QStandardItem *AttributeColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
-    Q_UNUSED(group_name);
+QStandardItem *AttributeColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves){
     Q_UNUSED(dwarves);
-    QStandardItem *item = new QStandardItem;
-    item->setData(m_bg_color, DwarfModel::DR_DEFAULT_BG_COLOR);
+    QStandardItem *item = init_aggregate(group_name);
     return item;
 }

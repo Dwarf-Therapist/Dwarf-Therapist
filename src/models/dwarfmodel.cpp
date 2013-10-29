@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include "statetableview.h"
 #include "truncatingfilelogger.h"
 #include "dwarftherapist.h"
+#include "defaultfonts.h"
 
 #include "columntypes.h"
 #include "gridview.h"
@@ -54,6 +55,8 @@ DwarfModel::DwarfModel(QObject *parent)
     , m_selected_col(-1)
     , m_gridview(0x0)
 {
+    connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
+    read_settings();
 }
 
 DwarfModel::~DwarfModel() {
@@ -200,19 +203,27 @@ void DwarfModel::draw_headers(){
 
 QString DwarfModel::build_col_tooltip(ViewColumn *col){
     QStringList tooltip;
+
+    QString title = col->title();
+    //the weapon column has a list of weapons as the title, but we'll include that after the generic title below
+    if(col->type() == CT_WEAPON)
+        title = tr("Weapon");
+
+    tooltip.append(tr("<center><h4 style=\"margin:0;\">%1</h4></center>").arg(title));
+
+    //add any additional column information here
     if(col->type()==CT_LABOR){
         LaborColumn *l = static_cast<LaborColumn*>(col);
         l->update_count(); //tell this column to update it's count
-        tooltip.append(tr("%1 have this labor enabled.").arg(QString::number(col->count())));
-    }
-    else if(col->type()==CT_WEAPON){
-        tooltip.append(tr("<p>%1</p>").arg(col->title()));
+        tooltip.append(tr("%1 have this labor enabled.</br>").arg(QString::number(col->count())));
+    }else if(col->type() == CT_WEAPON){
+        tooltip.append(col->title());
     }
 
     if(col->get_sortable_types().count() > 0)
         tooltip.append(tr("Right click to change sort method."));
 
-    return tooltip.join("<br/><br/>");
+    return tooltip.join("<br/>");
 }
 
 void DwarfModel::build_rows() {
@@ -421,6 +432,9 @@ void DwarfModel::build_row(const QString &key) {
         // we need a root element to hold group members...
         QString title = QString("%1 (%2)").arg(key).arg(m_grouped_dwarves.value(key).size());
         agg_first_col = new QStandardItem(title);
+        //bold aggregate titles
+        agg_first_col->setData(get_font(true), Qt::FontRole);
+//        agg_first_col->setData(build_gradient_brush(QColor(Qt::gray),125,0,QPoint(0,0),QPoint(1,0)),Qt::BackgroundRole);
         agg_first_col->setData(true, DR_IS_AGGREGATE);
         agg_first_col->setData(key, DR_GROUP_NAME);
         agg_first_col->setData(0, DR_RATING);
@@ -464,6 +478,8 @@ void DwarfModel::build_row(const QString &key) {
                     agg_first_col->setIcon(QIcon(":img/exclamation-red-frame.png"));
                 }
                 agg_first_col->setData(squad_id, DR_SORT_VALUE);
+                agg_first_col->setData(squad_id,DR_ID);
+                agg_first_col->setData(key,DR_GROUP_NAME);
             }else{
                 //put non squads at the bottom of the groups when grouping by squad
                 agg_first_col->setData(QChar(128), DR_SORT_VALUE);
@@ -481,7 +497,7 @@ void DwarfModel::build_row(const QString &key) {
         foreach(ViewColumnSet *set, m_gridview->sets()) {
             foreach(ViewColumn *col, set->columns()) {
                 QStandardItem *item = col->build_aggregate(key, m_grouped_dwarves[key]);
-                agg_items << item;
+                agg_items << item;                
             }
         }
     }
@@ -492,28 +508,32 @@ void DwarfModel::build_row(const QString &key) {
     QColor curse_col = DT->user_settings()->value("options/colors/cursed", QColor(125,97,186, 200)).value<QColor>();
     QBrush cursed_brush = build_gradient_brush(curse_col,curse_col.alpha(),0,QPoint(0,0),QPoint(1,0));
 
+
+
     foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
         QStandardItem *i_name = new QStandardItem(d->nice_name());        
-        QFont f = i_name->font();
-        QFontMetrics fm(f);
-        QChar symbol(0x263C); //masterwork symbol in df
-        if(!fm.inFont(symbol)){
-            symbol = QChar(0x2261); //3 horizontal lines
-            if(!fm.inFont(symbol))
-                symbol = QChar(0x002A); //asterisk
-        }
+//        QFont f = i_name->font();
+//        QFontMetrics fm(f);
+//        QChar symbol(0x263C); //masterwork symbol in df
+//        if(!fm.inFont(symbol)){
+//            symbol = QChar(0x2261); //3 horizontal lines
+//            if(!fm.inFont(symbol))
+//                symbol = QChar(0x002A); //asterisk
+//        }
 
+        bool name_italic = false;
         //font settings
-        if (d->active_military()) {            
-            f.setBold(true);
-        }
+//        if (d->active_military()) {
+//            f.setBold(true);
+//        }
         if((m_group_by==GB_SQUAD && d->squad_position()==0) || d->noble_position() != ""){
-            i_name->setText(QString("%1 %2 %1").arg(symbol).arg(i_name->text()));
-            f.setItalic(true);            
+            i_name->setText(QString("%1 %2 %1").arg(m_symbol).arg(i_name->text()));
+//            f.setItalic(true);
+            name_italic = true;
         }
-        i_name->setFont(f);        
+//        i_name->setFont(f);
 
-        //background gradients for curses, nobles, etc.
+        //background gradients for nobles, etc.
         if(d && highlight_nobles){
             if(d->noble_position() != ""){
                 QColor col = m_df->fortress()->get_noble_color(d->historical_id());
@@ -522,11 +542,13 @@ void DwarfModel::build_row(const QString &key) {
         }
         if(d && highlight_cursed){
             if(d->curse_name() != ""){
-                f.setItalic(true);
+//                f.setItalic(true);
+                name_italic = true;
                 i_name->setData(cursed_brush,Qt::BackgroundRole);
             }
-        }                
+        }
 
+        i_name->setData(get_font(d->active_military(),name_italic),Qt::FontRole);
         i_name->setToolTip(d->tooltip_text());
         i_name->setStatusTip(d->nice_name());
         i_name->setData(false, DR_IS_AGGREGATE);
@@ -788,4 +810,29 @@ QBrush DwarfModel::build_gradient_brush(QColor base_col, int alpha_start, int al
     base_col.setAlpha(alpha_finish);
     grad.setColorAt(1,base_col);
     return QBrush(grad);
+}
+
+void DwarfModel::read_settings(){
+    //font
+    m_font = DT->user_settings()->value("options/grid/font", QFont(DefaultFonts::getRowFontName(), DefaultFonts::getRowFontSize())).value<QFont>();
+
+    //noble symbol
+    QFontMetrics fm(m_font);
+    m_symbol = QChar(0x263C); //masterwork symbol in df
+    if(!fm.inFont(m_symbol)){
+        m_symbol = QChar(0x2261); //3 horizontal lines
+        if(!fm.inFont(m_symbol))
+            m_symbol = QChar(0x002A); //asterisk
+    }
+}
+
+QFont DwarfModel::get_font(bool bold, bool italic, bool underline){
+    QFont ret = m_font;
+    if(bold)
+        ret.setBold(true);
+    if(italic)
+        ret.setItalic(true);
+    if(underline)
+        ret.setUnderline(true);
+    return ret;
 }

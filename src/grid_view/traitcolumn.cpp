@@ -85,7 +85,7 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     item->setData(rating, DwarfModel::DR_RATING);
     item->setData(rating, DwarfModel::DR_DISPLAY_RATING);
     
-    QString tooltip = QString("<h3>%1</h3>%2<br>%3<h4>%4</h4>")
+    QString tooltip = QString("<center><h3>%1</h3></center>%2<br>%3<h4>%4</h4>")
             .arg(m_title)
             .arg(msg)
             .arg(warning)
@@ -95,10 +95,8 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     return item;
 }
 
-QStandardItem *TraitColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
-    Q_UNUSED(group_name);
+QStandardItem *TraitColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {    
     Q_UNUSED(dwarves);
-    QStandardItem *item = new QStandardItem;
-    item->setData(m_bg_color, DwarfModel::DR_DEFAULT_BG_COLOR);
+    QStandardItem *item = init_aggregate(group_name);
     return item;
 }

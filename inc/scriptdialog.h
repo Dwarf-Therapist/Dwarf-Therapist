@@ -47,7 +47,7 @@ private:
 
     private slots:
         void apply_pressed();
-        void save_pressed();
+        void save_pressed();        
 
 signals:
         //! tell the app to run the script currently being edited

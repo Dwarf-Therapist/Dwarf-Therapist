@@ -47,7 +47,10 @@ public:
     int m_last_sorted_col;
     Qt::SortOrder m_last_sort_order;
     int m_last_group_by;
+    int m_default_group_by;
     DwarfModel *get_model() {return m_model;}
+
+    void set_default_group(QString name);
 
     void restore_scroll_positions();
     void set_scroll_positions(int v_value, int h_value);
@@ -79,7 +82,9 @@ public:
         void currentChanged(const QModelIndex &, const QModelIndex &);
         void activate_cells(const QModelIndex &index);
         void header_pressed(int index);
-        void header_clicked(int index);
+        void header_clicked(int index);        
+
+        void build_custom_profession_menu();
 
 protected:
     virtual void contextMenuEvent(QContextMenuEvent *event);
@@ -87,7 +92,6 @@ protected:
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void wheelEvent(QWheelEvent *event);
-
 
 private:
     DwarfModel *m_model;
@@ -106,7 +110,25 @@ private:
     QModelIndex m_last_cell;
     bool m_dragging;
     bool m_toggling_multiple;
+    QString m_view_name;
     void keyPressEvent(QKeyEvent *event);    
+
+    QMenu *m;
+    QMenu *custom_prof_menu;
+    QMenu *squads_menu;
+    QMenu *debug_menu;
+
+    QAction *m_prof_name;
+    QAction *m_professions;
+
+    QAction *m_assign_labors;
+    QAction *m_assign_skilled_labors;
+    QAction *m_remove_labors;
+
+    QAction *m_unassign_squad;
+
+    QAction *m_clear;
+    QAction *m_commit;
 
     private slots:
         void set_nickname();
@@ -120,11 +142,15 @@ private:
         void remove_squad();
         void vscroll_value_changed(int value);
         void hscroll_value_changed(int value);
-        void toggle_all_labors();
+        void toggle_all_row_labors();
+        void toggle_skilled_row_labors();
+        void toggle_column_labors();
         void column_right_clicked(int);
         void sort_column();
         void edit_prof_icon();
-        void remove_prof_icon();
+        void remove_prof_icon();        
+        void commit_pending();
+        void clear_pending();
 
 signals:
     void new_custom_profession(Dwarf *d);

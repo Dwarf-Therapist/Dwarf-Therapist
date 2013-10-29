@@ -102,6 +102,9 @@ public:
     //! return the name of the curse afflicting this dwarf
     Q_INVOKABLE QString curse_name() {return m_curse_name;}
 
+    //! convenience function for checking the curse name
+    Q_INVOKABLE bool is_cursed() {return (!m_curse_name.trimmed().isEmpty());}
+
     //! return a printable name for this dwarf where each dwarven word is translated to english (not game human)
     QString translated_name() {return m_translated_name;}
 
@@ -219,6 +222,8 @@ public:
 
     void clear_labors();
     void assign_all_labors();
+    void toggle_skilled_labors();
+    void toggle_skilled_labor(int labor_id);
 
     //! return the sum total of all xp this dwarf has earned
     int total_xp() {return m_total_xp;}
@@ -257,9 +262,7 @@ public:
     //! sets a numeric value on a preference to the next value in the chain (uses labor ids for offset)
     void toggle_pref_value(const int &labor_id);
 
-    /*! return this dwarf's numeric score for the trait specified by trait_id,
-    will return -1 if the trait is in the average range (non-extreme values)
-    */
+    //! return this dwarf's numeric score for the trait specified by trait_id
     Q_INVOKABLE short trait(int trait_id) {return m_traits.value(trait_id, -1);}
 
     bool trait_is_active(int trait_id);
@@ -320,12 +323,6 @@ public:
     //! toggle the n_bit bit of the flag
     bool toggle_flag_bit(int n_bit);
 
-    //! undo any uncomitted changes to this dwarf (reset back to game-state)
-    void clear_pending();
-
-    //! write all uncommitted pending changes back to the game (DANGEROUS METHOD)
-    void commit_pending();
-
     //! set's the pending custom profession text for this dwarf
     void set_custom_profession_text(const QString &prof_text);
 
@@ -376,7 +373,7 @@ public:
     QModelIndex m_name_idx;
 
     //! get's a list of QActions that can be activated on this dwarf, suitable for adding to Toolbars or context menus
-    QList<QAction*> get_actions() {return m_actions;}
+    QList<QAction*> get_mem_actions() {return m_actions_memory;}
 
     //! returns true if this dwarf can have labors specified on it
     Q_INVOKABLE bool can_set_labors() {return m_can_set_labors;}
@@ -451,6 +448,11 @@ public:
         //! copy this dwarf's memory address to the clipboard (debugging)
         void copy_address_to_clipboard();
 
+        //! undo any uncomitted changes to this dwarf (reset back to game-state)
+        void clear_pending();
+        //! write all uncommitted pending changes back to the game (DANGEROUS METHOD)
+        void commit_pending();
+
         //sorts ratings
         static bool sort_ratings(const QPair<QString,float> &r1,const QPair<QString,float> &r2){return r1.second > r2.second;}                
 private:
@@ -499,7 +501,7 @@ private:
     QVector<Attribute> m_attributes;
     QMap<int, ushort> m_labors;
     QMap<int, ushort> m_pending_labors;
-    QList<QAction*> m_actions; // actions suitable for context menus    
+    QList<QAction*> m_actions_memory; // actions suitable for context menus    
     int m_squad_id;
     int m_squad_position;
     int m_hist_id;

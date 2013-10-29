@@ -70,19 +70,12 @@ QStandardItem *FlagColumn::build_cell(Dwarf *d) {
         return item;
 }
 
-QStandardItem *FlagColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &) {
-        QStandardItem *item = new QStandardItem;
-        item->setStatusTip(m_title + " :: " + group_name);
-        QColor bg;
-        if (m_override_set_colors) {
-                bg = m_bg_color;
-        } else {
-                bg = set()->bg_color();
-        }
-        item->setData(CT_FLAGS, DwarfModel::DR_COL_TYPE);
-        item->setData(m_bit_pos, DwarfModel::DR_LABOR_ID);
-        item->setData(bg, Qt::BackgroundColorRole);
-        return item;
+QStandardItem *FlagColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
+    Q_UNUSED(dwarves);
+    QStandardItem *item = init_aggregate(group_name);
+    item->setData(CT_FLAGS, DwarfModel::DR_COL_TYPE);
+    item->setData(m_bit_pos, DwarfModel::DR_LABOR_ID);
+    return item;
 }
 
 void FlagColumn::write_to_ini(QSettings &s) {

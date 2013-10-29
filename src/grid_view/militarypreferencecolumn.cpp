@@ -93,18 +93,9 @@ QStandardItem *MilitaryPreferenceColumn::build_cell(Dwarf *d) {
 	return item;
 }
 
-QStandardItem *MilitaryPreferenceColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &) {
-	Q_UNUSED(group_name);
-	QStandardItem *item = new QStandardItem;
-	item->setData(CT_MILITARY_PREFERENCE, DwarfModel::DR_COL_TYPE);
-	
-	QColor bg;
-	if (m_override_set_colors) {
-		bg = m_bg_color;
-	} else {
-		bg = set()->bg_color();
-	}
-	item->setData(bg, Qt::BackgroundColorRole);
+QStandardItem *MilitaryPreferenceColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
+    Q_UNUSED(dwarves);
+    QStandardItem *item = init_aggregate(group_name);
 	return item;
 }
 

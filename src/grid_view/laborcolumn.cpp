@@ -78,24 +78,11 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
 	return item;
 }
 
-QStandardItem *LaborColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &) {
-	QStandardItem *item = new QStandardItem;
-	item->setStatusTip(m_title + " :: " + group_name);
-	QColor bg;
-	if (m_override_set_colors) {
-		bg = m_bg_color;
-	} else {
-		bg = set()->bg_color();
-	}
-	item->setData(CT_LABOR, DwarfModel::DR_COL_TYPE);
-	item->setData(bg, Qt::BackgroundColorRole);
-	item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
-	item->setData(true, DwarfModel::DR_IS_AGGREGATE);
-	item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);
-	item->setData(group_name, DwarfModel::DR_GROUP_NAME);
-	item->setData(0, DwarfModel::DR_RATING);
-    item->setData(0, DwarfModel::DR_DISPLAY_RATING);
-	item->setData(m_set->name(), DwarfModel::DR_SET_NAME);    
+QStandardItem *LaborColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
+    Q_UNUSED(dwarves);
+    QStandardItem *item = init_aggregate(group_name);
+    item->setData(CT_LABOR, DwarfModel::DR_COL_TYPE);
+	item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);	
 	return item;
 }
 

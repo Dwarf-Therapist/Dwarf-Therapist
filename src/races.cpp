@@ -134,16 +134,15 @@ void Race::load_caste_ratios(){
 
             float commonality = 0.0;
             for(int idx=0; idx < m_castes.count();idx++){
-                Caste *c = m_castes[idx];
-                //load attribute data                
+                Caste *c = m_castes[idx];                            
                 commonality = (float)ratios.at(idx) / (float)sum;
                 if(commonality > 0.0001){
+                    //load attribute data
                     c->load_attribute_info(commonality);
+                    //load traits data
+                    c->load_trait_info();
                     valid_castes++;
                 }
-                //load traits data
-//                c->load_trait_info();
-//                for(int t=0; t<30; t++){
             }
             //castes usually come in male/female pairs, vanilla only has 2 castes (dwarf male/female)
             //if we have more castes then that, assume it's a mod with castes, with different skill rates, attribute and trait bins

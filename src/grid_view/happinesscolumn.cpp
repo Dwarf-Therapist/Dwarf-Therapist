@@ -53,7 +53,7 @@ QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
 	item->setData(CT_HAPPINESS, DwarfModel::DR_COL_TYPE);
 	item->setData(d->get_raw_happiness(), DwarfModel::DR_SORT_VALUE);            
 
-    QString tooltip = QString("<h3>%1</h3>%2 (%3)<p>%4</p><h4>%5</h4>")
+    QString tooltip = QString("<center><h3>%1</h3><h4>%2 (%3)</h4></center><p>%4</p><h4>%5</h4>")
             .arg(m_title)
             .arg(Dwarf::happiness_name(d->get_happiness()))
             .arg(d->get_raw_happiness())
@@ -67,8 +67,8 @@ QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
 	return item;
 }
 
-QStandardItem *HappinessColumn::build_aggregate(const QString &, const QVector<Dwarf*> &dwarves) {
-	QStandardItem *item = new QStandardItem;
+QStandardItem *HappinessColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
+    QStandardItem *item = init_aggregate(group_name);
 	// find lowest happiness of all dwarfs this set represents, and show that color (so low happiness still pops out in a big group)
 	Dwarf::DWARF_HAPPINESS lowest = Dwarf::DH_ECSTATIC;
 	QString lowest_dwarf = "Nobody";
@@ -79,7 +79,7 @@ QStandardItem *HappinessColumn::build_aggregate(const QString &, const QVector<D
 			lowest_dwarf = d->nice_name();
 		}
 	}
-    item->setToolTip(tr("<h3>%1</h3>Lowest Happiness in group: <b>%2: %3</b>")
+    item->setToolTip(tr("<center><h3>%1</h3></center>Lowest Happiness in group: <b>%2: %3</b>")
         .arg(m_title)
 		.arg(lowest_dwarf)
 		.arg(Dwarf::happiness_name(lowest)));

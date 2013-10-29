@@ -52,7 +52,7 @@ public:
 
                 return m_layers.value(id);
         }else{
-            return BodyPartLayer(0,-1,0x0,0x0);
+            return BodyPartLayer(0,-1,m_df,m_race);
         }
     }
 

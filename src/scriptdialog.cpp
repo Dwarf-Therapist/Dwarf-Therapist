@@ -123,7 +123,7 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     ui->text_labors->ensureCursorVisible();
 
     ui->text_skills->moveCursor(QTextCursor::Start);
-    ui->text_skills->ensureCursorVisible();
+    ui->text_skills->ensureCursorVisible();   
 }
 
 ScriptDialog::~ScriptDialog(){

@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "flagarray.h"
 #include "races.h"
 #include "bodypart.h"
+#include "trait.h"
 
 #include "dwarfstats.h"
 
@@ -218,18 +219,25 @@ QPair<int, QString> Caste::get_attribute_descriptor_info(ATTRIBUTES_TYPE id, int
 }
 
 void Caste::load_trait_info(){
-//    if(m_trait_ranges.count() <= 0){
-//        VIRTADDR base = m_address + 0x4ec;
-//        for (int i=0; i<30; i++)
-//        {
-//            QList<short> ranges;
-//            ranges.append(m_df->read_short(base));//min
-//            ranges.append(m_df->read_short(base + 0x003c));//median
-//            ranges.append(m_df->read_short(base + 0x0078));//max
-//            m_trait_ranges.insert(i,ranges);
-//            base += 0x2;
-//        }
-//    }
+    //currently the only thing we're checking traits for is if they don't use the default trait values
+    //if they don't use the default trait values, then we're not going to use the bins when calculating role ratings for trats
+    if(!DT->traits_modified && m_trait_ranges.count() <= 0){
+        VIRTADDR base = m_address + m_mem->caste_offset("caste_trait_ranges");
+        for (int i=0; i<30; i++)
+        {
+            QList<short> ranges;
+            ranges.append(m_df->read_short(base));//min
+            ranges.append(m_df->read_short(base + 0x003c));//median
+            ranges.append(m_df->read_short(base + 0x0078));//max
+//            m_trait_ranges.insert(i,ranges); // no need to store any of this for now
+            base += 0x2;
+
+            if(!Trait::default_ranges(i,ranges.at(0),ranges.at(1),ranges.at(2))){
+                DT->traits_modified = true;
+                break;
+            }
+        }
+    }
 }
 
 BodyPart* Caste::get_body_part(int body_part_id){

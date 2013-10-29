@@ -101,7 +101,7 @@ public:
 		void set_labor(int labor_id, bool active);
         void set_name(QString name);
 		void accept();
-		void cancel() {return;}
+        void cancel();
 		void item_check_state_changed(QListWidgetItem*);
         void mask_changed(bool value);
         void set_path(int id) {
