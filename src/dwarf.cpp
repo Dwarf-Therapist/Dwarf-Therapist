@@ -267,6 +267,7 @@ void Dwarf::refresh_data() {
         read_happiness();
         read_squad_info(); //read squad before job
         read_current_job();
+        read_mood(); //read before skills (soul aspect)
         read_soul_aspects(); //assumes soul already read, and requires caste to be read first
         read_turn_count();
         //load time/date stuff for births/migrations
@@ -274,7 +275,6 @@ void Dwarf::refresh_data() {
         //curse check will change the name and age
         read_curse();
         read_sex();
-        read_mood();
         read_animal_type(); //need skills loaded to check for hostiles
         read_noble_position();
         read_preferences();
@@ -459,6 +459,7 @@ void Dwarf::read_mood(){
         if(has_flag(0x00000008,m_unit_flags.at(0))){
             m_had_mood = true;
             m_artifact_name = m_df->get_translated_word(m_address + m_mem->dwarf_offset("artifact_name"));
+            m_highest_moodable_skill = m_df->read_short(m_address +m_mem->dwarf_offset("mood_skill"));
         }
     }
 }
@@ -1277,17 +1278,19 @@ void Dwarf::read_skills() {
         //find the caste's skill rate
         if(m_caste){
             skill_rate = m_caste->get_skill_rate(type);
-        }        
+        }
 
         Skill s = Skill(type, xp, rating, rust, skill_rate);
         m_total_xp += s.actual_exp();
         m_skills.insert(s.id(),s);
         m_sorted_skills.insertMulti(s.capped_level_precise(), s.id());
 
-        if(GameDataReader::ptr()->moodable_skills().contains(type) &&
-                (m_highest_moodable_skill == -1 || s.actual_exp() > get_skill(m_highest_moodable_skill).actual_exp()))
-            m_highest_moodable_skill = type;
-    }        
+        if(!m_had_mood){
+            if(GameDataReader::ptr()->moodable_skills().contains(type) &&
+                    (m_highest_moodable_skill == -1 || s.actual_exp() > get_skill(m_highest_moodable_skill).actual_exp()))
+                m_highest_moodable_skill = type;
+        }
+    }
 }
 
 void Dwarf::read_traits() {
