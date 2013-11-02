@@ -423,7 +423,7 @@ public:
 
     Q_INVOKABLE bool has_preference(QString pref_name, QString category = "", bool exactMatch = true);
     Q_INVOKABLE bool has_thought(short id) {return m_thoughts.contains(id);}
-    Q_INVOKABLE bool has_health_issue(int id, int idx);
+    Q_INVOKABLE bool has_health_issue(int id, int idx = -1);
 
     Q_INVOKABLE bool is_buffed() {return m_syndrome_names.length() > 0;}
     Q_INVOKABLE QString buffs() {return m_syndrome_names.join(", ");}

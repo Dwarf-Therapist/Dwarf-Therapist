@@ -468,7 +468,7 @@ void StateTableView::toggle_column_labors(){
     int labor_id = data.at(0).toInt();
     bool enable = data.at(1).toBool();
     bool skilled = data.at(2).toBool();
-    foreach(Dwarf *d, m_model->get_dwarves()){
+    foreach(Dwarf *d, m_proxy->get_filtered_dwarves()){
         if(skilled)
             d->toggle_skilled_labor(labor_id);
         else
