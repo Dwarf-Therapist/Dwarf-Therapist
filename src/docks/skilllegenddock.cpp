@@ -30,7 +30,7 @@ THE SOFTWARE.
 #include "optionsmenu.h"
 
 SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags) 
-	: QDockWidget(parent, flags)
+    : BaseDock(parent, flags)
 {
 	setObjectName("dock_skill_legend");
 	setWindowTitle(tr("Skill Legend"));

@@ -20,12 +20,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+#include "basedock.h"
 #include "dwarfdetailsdock.h"
 #include "dwarfdetailswidget.h"
 #include "dwarf.h"
 
 DwarfDetailsDock::DwarfDetailsDock(QWidget *parent, Qt::WindowFlags flags)
-    : QDockWidget(parent, flags)
+    : BaseDock(parent, flags)
     , m_widget(new DwarfDetailsWidget(this))
     , m_initialized(false)
     , m_current_id(-1)
@@ -66,4 +67,3 @@ void DwarfDetailsDock::clear(bool reinit){
         setWidget(lbl_info);
     }
 }
-

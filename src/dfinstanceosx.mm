@@ -23,6 +23,11 @@ THE SOFTWARE.
 #include <QtGui>
 #include <QtDebug>
 
+#include "Foundation/NSAutoreleasePool.h"
+#include "Foundation/NSFileManager.h"
+#include "Foundation/NSBundle.h"
+#include "AppKit/NSWorkspace.h"
+
 #include "dfinstance.h"
 #include "dfinstanceosx.h"
 #include "defines.h"
@@ -110,7 +115,7 @@ QString DFInstanceOSX::read_string(const VIRTADDR &addr) {
 
     QString ret_val(buf);
     CP437Codec *codec = new CP437Codec;
-    ret_val = codec->toUnicode(ret_val.toAscii());
+    ret_val = codec->toUnicode(ret_val.toLatin1());
     return ret_val;
 }
 
@@ -208,7 +213,7 @@ int DFInstanceOSX::write_raw(const VIRTADDR &addr, const int &bytes, void *buffe
     return bytes;
 }
 
-bool DFInstanceOSX::find_running_copy(bool connect_anyway) {
+bool DFInstanceOSX::find_running_copy(bool connect_anyway) {    
     NSAutoreleasePool *authPool = [[NSAutoreleasePool alloc] init];
 
     NSWorkspace *workspace = [NSWorkspace sharedWorkspace];

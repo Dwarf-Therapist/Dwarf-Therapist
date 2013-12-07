@@ -443,8 +443,9 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
                 << "DF version or your config files are corrupted.";
         return dwarves;
     }
+
     //current race's offset was bad
-    if (m_dwarf_race_id < 0){
+    if (!DT->arena_mode && m_dwarf_race_id < 0){
         return dwarves;
     }
 

@@ -24,9 +24,9 @@ THE SOFTWARE.
 #define THOUGHTSDOCK_H
 
 
-#include <QtWidgets>
+#include "basedock.h"
 
-class ThoughtsDock : public QDockWidget {
+class ThoughtsDock : public BaseDock {
     Q_OBJECT
 public:
     ThoughtsDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
@@ -47,6 +47,9 @@ public slots:
 
 signals:
     void item_selected(QList<short>);
+
+private:
+    void closeEvent(QCloseEvent *event);
 
 };
 

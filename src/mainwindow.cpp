@@ -105,7 +105,7 @@ MainWindow::MainWindow(QWidget *parent)
     /* docks! */
     GridViewDock *grid_view_dock = new GridViewDock(m_view_manager, this);
     grid_view_dock->setHidden(true); // hide by default
-    grid_view_dock->setFloating(true);
+    grid_view_dock->setFloating(false);
     addDockWidget(Qt::RightDockWidgetArea, grid_view_dock);
 
     SkillLegendDock *skill_legend_dock = new SkillLegendDock(this);
@@ -157,19 +157,27 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->tree_pending, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
             m_view_manager, SLOT(jump_to_dwarf(QTreeWidgetItem *, QTreeWidgetItem *)));
+
     connect(ui->tree_custom_professions, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(draw_custom_profession_context_menu(QPoint)));
     connect(ui->tree_custom_professions,SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
             m_view_manager, SLOT(jump_to_profession(QTreeWidgetItem*,QTreeWidgetItem*)));
 
     connect(m_view_manager, SIGNAL(dwarf_focus_changed(Dwarf*)), dwarf_details_dock, SLOT(show_dwarf(Dwarf*)));
     connect(ui->cb_filter_script, SIGNAL(currentIndexChanged(const QString &)), SLOT(new_filter_script_chosen(const QString &)));
-    connect(m_script_dialog, SIGNAL(apply_script(const QString &)), m_proxy, SLOT(apply_script(const QString&)));
+
+    connect(m_script_dialog, SIGNAL(test_script(QString)),m_proxy,SLOT(test_script(QString)));
     connect(m_script_dialog, SIGNAL(scripts_changed()), SLOT(reload_filter_scripts()));
+    connect(m_script_dialog, SIGNAL(accepted()),m_proxy,SLOT(clear_test()));
+    connect(m_script_dialog, SIGNAL(rejected()), m_proxy, SLOT(clear_test()));
+
     connect(m_view_manager,SIGNAL(group_changed(int)), this, SLOT(display_group(int)));
     connect(pref_dock,SIGNAL(item_selected(QList<QPair<QString,QString> >)),this,SLOT(preference_selected(QList<QPair<QString,QString> >)));
     connect(thought_dock, SIGNAL(item_selected(QList<short>)), this, SLOT(thought_selected(QList<short>)));
     connect(health_dock, SIGNAL(item_selected(QList<QPair<int,int> >)), this, SLOT(health_legend_selected(QList<QPair<int,int> >)));
 
+    connect(ui->btn_clear_filters, SIGNAL(clicked()),this,SLOT(clear_all_filters()));
+
+    connect(m_proxy, SIGNAL(filter_changed()),this,SLOT(refresh_active_scripts()));
 
     m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
@@ -706,7 +714,7 @@ void MainWindow::draw_professions() {
 void MainWindow::draw_custom_profession_context_menu(const QPoint &p) {
     QModelIndex idx = ui->tree_custom_professions->indexAt(p);
     if (!idx.isValid() || ui->tree_custom_professions->itemAt(p)->childCount() > 0)
-        return;
+        return;    
 
     QString cp_name = idx.data().toString();
     int prof_id = idx.data(Qt::UserRole).toInt();
@@ -724,6 +732,7 @@ void MainWindow::draw_custom_profession_context_menu(const QPoint &p) {
     a->setData(data);
     m.exec(ui->tree_custom_professions->viewport()->mapToGlobal(p));
 }
+
 
 // web addresses
 void MainWindow::go_to_forums() {
@@ -897,7 +906,7 @@ void MainWindow::remove_filter_script(){
 
 void MainWindow::reload_filter_scripts() {
     ui->cb_filter_script->clear();
-    ui->cb_filter_script->addItem(tr("None"));
+    ui->cb_filter_script->addItem("");
 
     ui->menu_edit_filters->clear();
     ui->menu_remove_script->clear();
@@ -1047,7 +1056,12 @@ void MainWindow::write_custom_roles(){
 
 
 void MainWindow::new_filter_script_chosen(const QString &script_name) {
-    m_proxy->apply_script(DT->user_settings()->value(QString("filter_scripts/%1").arg(script_name), QString()).toString());
+    if(!script_name.trimmed().isEmpty()){
+        m_proxy->apply_script(script_name,DT->user_settings()->value(QString("filter_scripts/%1").arg(script_name), QString()).toString());
+        ui->cb_filter_script->blockSignals(true);
+        ui->cb_filter_script->setCurrentIndex(0);
+        ui->cb_filter_script->blockSignals(false);
+    }
 }
 
 void MainWindow::print_gridview() {
@@ -1171,26 +1185,10 @@ void MainWindow::preference_selected(QList<QPair<QString,QString> > vals){
             }
         }
         filter.chop(4);
-        m_proxy->set_secondary_script(filter);
+        m_proxy->apply_script("preferences", filter);
     }else{
-        m_proxy->set_secondary_script("");
+        m_proxy->clear_script("preferences");
     }
-//    if(!names.empty()){
-//        foreach(QString pref, names){
-//            if(category==Preference::get_pref_desc(LIKE_CREATURE)){
-//                filter.append(QString("(d.has_preference(\"%1\", \"%2\") || d.has_preference(\"%1\", \"%3\")) && ")
-//                              .arg(pref.toLower()).arg(category)
-//                              .arg(Preference::get_pref_desc(HATE_CREATURE)));
-//            }else{
-//                filter.append(QString("d.has_preference(\"%1\", \"%2\") && ").arg(pref.toLower()).arg(category));
-//            }
-//        }
-//        filter.chop(4);
-
-//        m_proxy->set_secondary_script(filter);
-//    }
-//    else
-//        m_proxy->set_secondary_script("");
 
     m_proxy->refresh_script();
 }
@@ -1202,23 +1200,23 @@ void MainWindow::thought_selected(QList<short> ids){
             filter.append(QString("d.has_thought(%1) && ").arg(QString::number(id)));
         }
         filter.chop(4);
-        m_proxy->set_secondary_script(filter);
+        m_proxy->apply_script("thoughts",filter);
     }else{
-        m_proxy->set_secondary_script("");
+        m_proxy->clear_script("thoughts");
     }
     m_proxy->refresh_script();
 }
 
 void MainWindow::health_legend_selected(QList<QPair<int, int> > vals){
-    QStringList filters;
+    QStringList filters;    
     if(!vals.isEmpty()){
         QPair<int,int> key_pair;
-        foreach(key_pair, vals){
+        foreach(key_pair, vals){            
             filters.append(QString("d.has_health_issue(%1,%2)").arg(QString::number(key_pair.first)).arg(QString::number(key_pair.second)));
         }
-        m_proxy->set_secondary_script(filters.join(" && "));
+        m_proxy->apply_script("health",filters.join(" && "));
     }else{
-        m_proxy->set_secondary_script("");
+        m_proxy->clear_script("health");
     }
     m_proxy->refresh_script();
 }
@@ -1438,4 +1436,41 @@ void MainWindow::reset(){
     }
 
     new_creatures_count(0,0,0,tr("Dwarfs"));
+}
+
+void MainWindow::clear_filter(){
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    QString name = a->data().toString();
+    m_proxy->clear_script(name);
+}
+
+void MainWindow::clear_all_filters(){
+    ui->le_filter_text->clear();
+    m_proxy->clear_script();
+}
+
+void MainWindow::refresh_active_scripts(){
+    QList<QString> names = m_proxy->get_script_names();
+    ui->btn_clear_filters->setMenu(NULL);
+    QMenu *scripts = new QMenu(ui->btn_clear_filters);
+    foreach(QString n, names){
+        QAction *a = scripts->addAction(QIcon(":img/cross.png"), capitalizeEach(n),this,SLOT(clear_filter()));
+        a->setData(n);
+    }
+
+    int script_count = scripts->actions().count();
+
+    if(script_count <= 0){
+        if(ui->btn_clear_filters->menu()){
+            ui->btn_clear_filters->menu()->clear();
+            ui->btn_clear_filters->setMenu(NULL);
+        }
+        ui->btn_clear_filters->setText(tr("Active Filters"));
+        ui->btn_clear_filters->setPopupMode(QToolButton::DelayedPopup);
+    }else{
+        ui->btn_clear_filters->setMenu(scripts);
+        ui->btn_clear_filters->setPopupMode(QToolButton::MenuButtonPopup);
+        ui->btn_clear_filters->setText(QString::number(script_count) + (" Active Filters"));
+    }
+    ui->btn_clear_filters->updateGeometry();
 }

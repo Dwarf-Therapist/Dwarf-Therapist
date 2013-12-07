@@ -149,6 +149,7 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     //health sorts
     m_sorting << qMakePair(0,Qt::AscendingOrder);
     ui->tw_health->sortItems(0, Qt::AscendingOrder);
+
 }
 
 void DwarfDetailsWidget::clear(){
@@ -168,7 +169,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     ui->lbl_dwarf_name->setText(QString("<img src='%1'> %2").arg(d->gender_icon_path()).arg(d->nice_name()));
     ui->lbl_dwarf_name->setToolTip(tr("Name: %1").arg(ui->lbl_dwarf_name->text()));
 
-    ui->lbl_age->setText(QString("Age: %1 years").arg(d->get_age()));
+    ui->lbl_age->setText(d->get_age_formatted());
     ui->lbl_age->setToolTip(d->get_migration_desc());
 
     QString trans_name = d->translated_name();
@@ -432,16 +433,16 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     ui->tw_traits->setSortingEnabled(true);
 
     // ROLES TABLE
-    QList<QPair<QString, float> > roles = d->sorted_role_ratings();
+    QList<Role::simple_rating> roles = d->sorted_role_ratings();
     ui->tw_roles->setSortingEnabled(false);
     QString name = "";
     float val = 0.0;
     int max = DT->user_settings()->value("options/role_count_pane",10).toInt();
-    if(max > d->sorted_role_ratings().count())
-        max = d->sorted_role_ratings().count();
+    if(max > roles.count())
+        max = roles.count();
     for(int i = 0; i < max; i++){
-        name = roles.at(i).first;
-        val = roles.at(i).second;
+        name = roles.at(i).name;
+        val = roles.at(i).rating;
 
         ui->tw_roles->insertRow(0);
         ui->tw_roles->setRowHeight(0, 18);
@@ -450,7 +451,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         role_name->setToolTip(tr("<center><h4>%1</h4></center>").arg(name));
         sortableFloatTableWidgetItem *role_rating = new sortableFloatTableWidgetItem();
         role_rating->setText(QString::number(val,'f',2)+"%");
-        role_rating->setData(Qt::UserRole,val);
+        role_rating->setData(Qt::UserRole,max - i);
         role_rating->setTextAlignment(Qt::AlignHCenter);
 
         if (val < 50) {

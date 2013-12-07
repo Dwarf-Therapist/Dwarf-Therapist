@@ -522,7 +522,7 @@ void ViewManager::setCurrentIndex(int idx) {
     m_last_index = idx;
     stv->restore_scroll_positions();
 
-    emit group_changed(stv->m_last_group_by);
+        emit group_changed(stv->m_last_group_by);
 
     s = 0;
 }

@@ -86,6 +86,7 @@
         <file>img/new.png</file>
         <file>img/ui-text-field-select.png</file>
         <file>img/ui-text-field-clear-button.png</file>
+        <file>img/tables.png</file>
     </qresource>
     <qresource prefix="/config">
         <file alias="default_gridviews">default_gridviews.dtg</file>

@@ -112,7 +112,7 @@ static inline QString by_char(QByteArray arr) {
     return out;
 }
 
-static inline QColor compliment(const QColor &in_color, bool true_compliment = false) {
+static inline QColor compliment(const QColor &in_color, bool true_compliment = false, float brighness_threshold = 0.50) {
     if(!true_compliment){
         //    qreal brightness = (in_color.red() * 299 + in_color.green() * 587 + in_color.blue() * 114) / 255000.0;
         qreal brightness = sqrt(pow(in_color.redF(),2.0) * 0.241 +
@@ -122,7 +122,7 @@ static inline QColor compliment(const QColor &in_color, bool true_compliment = f
         int h = tmp.hue();
         int s = 25;
         int v;
-        if(brightness >= 0.5 || in_color.alpha() < 130) {
+        if(brightness >= brighness_threshold || in_color.alpha() < 130) {
             v = 0;
         } else {
             v = 255;

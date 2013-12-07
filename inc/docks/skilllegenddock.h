@@ -23,10 +23,10 @@ THE SOFTWARE.
 #ifndef SKILL_LEGEND_DOCK_H
 #define SKILL_LEGEND_DOCK_H
 
-#include <QtWidgets>
+#include "basedock.h"
 #include "uberdelegate.h"
 
-class SkillLegendDock : public QDockWidget {
+class SkillLegendDock : public BaseDock {
 	Q_OBJECT
 public:
 	SkillLegendDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);

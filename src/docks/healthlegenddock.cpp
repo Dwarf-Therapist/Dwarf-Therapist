@@ -25,7 +25,7 @@ THE SOFTWARE.
 #include "healthcategory.h"
 
 HealthLegendDock::HealthLegendDock(QWidget *parent, Qt::WindowFlags flags)
-    : QDockWidget(parent, flags)
+    : BaseDock(parent, flags)
 {
     setWindowTitle(tr("Health Legend"));
     setObjectName("dock_health_legend");
@@ -47,13 +47,10 @@ HealthLegendDock::HealthLegendDock(QWidget *parent, Qt::WindowFlags flags)
     legend->setColumnCount(2);
     legend->setColumnWidth(0,100);
 
-//    QHash<int, QList<HealthInfo*> > display_categories = UnitHealth::get_display_categories();
-//    QHash<int, QString> category_names = UnitHealth::category_names();
 
     legend->setSortingEnabled(false);
-    //foreach(int id, display_categories.uniqueKeys()){
     foreach(HealthCategory *hc, UnitHealth::get_display_categories()){
-        QString name = hc->name();//category_names.value(id);
+        QString name = hc->name();
 
         QTreeWidgetItem* parent_node = new QTreeWidgetItem();
         parent_node->setData(0, Qt::UserRole, hc->id());
@@ -61,7 +58,7 @@ HealthLegendDock::HealthLegendDock(QWidget *parent, Qt::WindowFlags flags)
         parent_node->setText(0, name);
 
         //add parent node
-        foreach(HealthInfo* hi, hc->descriptions()){ //display_categories.value(id)){
+        foreach(HealthInfo* hi, hc->descriptions()){
             QTreeWidgetItem *node = new QTreeWidgetItem(parent_node);
 
             node->setData(0, Qt::UserRole, hi->severity());
@@ -170,10 +167,16 @@ void HealthLegendDock::selection_changed(){
             id = item->data(0,Qt::UserRole).toInt();
         }
         values.append(qMakePair(id,idx));
-    }
-    emit item_selected(values);
+    }     
+        emit item_selected(values);
 }
 
 void HealthLegendDock::clear_filter(){
     legend->clearSelection();
+}
+
+void HealthLegendDock::closeEvent(QCloseEvent *event){
+    clear_search();
+    clear_filter();
+    event->accept();
 }

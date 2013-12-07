@@ -65,7 +65,7 @@ public:
     public slots:
         void read_settings();
         void filter_dwarves(QString text);
-        void set_single_click_labor_changes(bool enabled) {m_single_click_labor_changes = enabled;}
+        void set_single_click_labor_changes(bool enabled);
         void jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* previous);
         void jump_to_profession(QTreeWidgetItem* current, QTreeWidgetItem* previous);
         void select_dwarf(Dwarf *d);

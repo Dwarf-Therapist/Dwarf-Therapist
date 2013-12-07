@@ -24,7 +24,7 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 
 PreferencesDock::PreferencesDock(QWidget *parent, Qt::WindowFlags flags)
-    : QDockWidget(parent, flags)
+    : BaseDock(parent, flags)
 {
     setWindowTitle(tr("Preferences"));
     setObjectName("dock_preferences");
@@ -76,7 +76,9 @@ PreferencesDock::PreferencesDock(QWidget *parent, Qt::WindowFlags flags)
     connect(tw_prefs,SIGNAL(itemSelectionChanged()),this,SLOT(selection_changed()));
     connect(btn, SIGNAL(clicked()),this,SLOT(clear_filter()));
     connect(le_search, SIGNAL(textChanged(QString)),this, SLOT(search_changed(QString)));
-    connect(btn_clear_search, SIGNAL(clicked()),this,SLOT(clear_search()));
+    connect(btn_clear_search, SIGNAL(clicked()),this,SLOT(clear_search()));    
+
+//    this->installEventFilter(this);
 }
 
 void PreferencesDock::clear(){
@@ -134,8 +136,6 @@ void PreferencesDock::selection_changed(){
     //pairs of category and preference
     QList<QPair<QString,QString> > values;
     QModelIndexList indexList = tw_prefs->selectionModel()->selectedIndexes();
-//    QStringList selected;
-//    QString cat = "";
     if(indexList.count() > 0){
 
         int row = 0;
@@ -144,13 +144,10 @@ void PreferencesDock::selection_changed(){
             row = index.row();
             if(row != prev_row){
                 values.append(qMakePair(tw_prefs->item(row,3)->text(),tw_prefs->item(row,0)->text().toLower()));
-                //selected.append(tw_prefs->item(row,0)->text().toLower());
             }
             prev_row = row;
         }
-//        cat = tw_prefs->item(row,3)->text();
     }
-//    emit item_selected(selected, cat);
     emit item_selected(values);
 }
 
@@ -171,11 +168,17 @@ void PreferencesDock::filter(){
 }
 
 void PreferencesDock::clear_filter(){
-    tw_prefs->clearSelection();
+    tw_prefs->clearSelection();    
 }
 
 void PreferencesDock::clear_search(){
     QLineEdit *s = qobject_cast<QLineEdit*>(QObject::findChild<QLineEdit*>("le_search"));
     if(s)
         s->setText("");
+}
+
+void PreferencesDock::closeEvent(QCloseEvent *event){
+    clear_search();
+    clear_filter();
+    event->accept();
 }

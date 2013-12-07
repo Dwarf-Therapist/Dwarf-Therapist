@@ -123,7 +123,7 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     ui->text_labors->ensureCursorVisible();
 
     ui->text_skills->moveCursor(QTextCursor::Start);
-    ui->text_skills->ensureCursorVisible();   
+    ui->text_skills->ensureCursorVisible();           
 }
 
 ScriptDialog::~ScriptDialog(){
@@ -138,14 +138,14 @@ void ScriptDialog::clear_script() {
 }
 
 void ScriptDialog::load_script(QString name, QString script){
-    ui->script_edit->setText(script);    
+    ui->script_edit->setPlainText(script);
     m_name = name;
     ui->txt_script_name->setText(m_name);
     ui->lbl_save_status->clear();
 }
 
 void ScriptDialog::apply_pressed() {
-    emit apply_script(ui->script_edit->toPlainText());
+    emit test_script(ui->script_edit->toPlainText());
     ui->lbl_save_status->setText(tr("Script has been applied but hasn't been saved."));
 }
 
@@ -181,4 +181,8 @@ void ScriptDialog::save_pressed() {
     emit scripts_changed();
 
     ui->lbl_save_status->setText(tr("Script saved successfully!"));
+}
+
+void ScriptDialog::close_pressed(){
+    this->reject();
 }

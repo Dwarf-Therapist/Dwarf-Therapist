@@ -49,17 +49,21 @@ public:
     DwarfModel* get_dwarf_model() const;
     void sort(int column, Qt::SortOrder order);    
     Qt::SortOrder m_last_sort_order;    
-    QString current_script() {return m_active_filter_script;}
-    QString secondary_script() {return m_secondary_script;}
-    void set_secondary_script(QString script) {m_secondary_script = script;}
+
+    QList<QString> get_script_names() {return m_scripts.keys();}
+    QString get_script(const QString script_name) {return m_scripts.value(script_name);}
+    void clear_script(const QString script_name = "");
+
     void refresh_script();
-    QList<Dwarf*> get_filtered_dwarves();
+    QList<Dwarf*> get_filtered_dwarves();       
 
 public slots:
     void cell_activated(const QModelIndex &idx);    
     void setFilterFixedString(const QString &pattern);
     void sort(int, DwarfModelProxy::DWARF_SORT_ROLE, Qt::SortOrder order);
-    void apply_script(const QString &script_body);
+    void apply_script(const QString &script_name, const QString &script_body);
+    void test_script(const QString &script_body);
+    void clear_test();
 
 signals:
     void filter_changed();
@@ -69,9 +73,9 @@ protected:
 	bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const;
 private:
 	QString m_filter_text;
-    QScriptEngine *m_engine;
-    QString m_active_filter_script;
-    QString m_secondary_script;
+    QString m_test_script;
+    QScriptEngine *m_engine;    
+    QHash<QString,QString> m_scripts;
 };
 
 #endif

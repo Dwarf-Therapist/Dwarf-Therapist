@@ -23,11 +23,11 @@ THE SOFTWARE.
 #ifndef HEALTHLEGENDDOCK_H
 #define HEALTHLEGENDDOCK_H
 
-#include <QtWidgets>
+#include "basedock.h"
 #include "healthinfo.h"
 #include "unithealth.h"
 
-class HealthLegendDock : public QDockWidget {
+class HealthLegendDock : public BaseDock {
     Q_OBJECT
 public:
     HealthLegendDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
@@ -41,6 +41,8 @@ private:
 
     void search_legend(QString val);
     bool m_collapsed;
+
+    void closeEvent(QCloseEvent *event);
 
 protected slots:
     void search_changed(QString val);

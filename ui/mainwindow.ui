@@ -91,7 +91,7 @@
       <item>
        <widget class="QLabel" name="lbl_filter">
         <property name="text">
-         <string>Filter Dwarves</string>
+         <string>Search</string>
         </property>
        </widget>
       </item>
@@ -99,29 +99,9 @@
        <widget class="QLineEdit" name="le_filter_text"/>
       </item>
       <item>
-       <widget class="QPushButton" name="btn_clear_filter">
-        <property name="toolTip">
-         <string>Clear Filter Text</string>
-        </property>
-        <property name="statusTip">
-         <string>Clear Filter Text</string>
-        </property>
-        <property name="whatsThis">
-         <string>This will clear the filter box and show all dwarves</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="../images.qrc">
-          <normaloff>:/img/cross.png</normaloff>:/img/cross.png</iconset>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QLabel" name="lbl_run_filter">
         <property name="text">
-         <string>Run Filter Script</string>
+         <string>Add Filter</string>
         </property>
        </widget>
       </item>
@@ -135,6 +115,32 @@
           <string>None</string>
          </property>
         </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="btn_clear_filters">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Click to clear all active filters, or use the drop down to clear specific filters.</string>
+        </property>
+        <property name="statusTip">
+         <string>Click to clear all active filters, or use the drop down to clear specific filters.</string>
+        </property>
+        <property name="text">
+         <string>Active Filters</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../images.qrc">
+          <normaloff>:/img/cross.png</normaloff>:/img/cross.png</iconset>
+        </property>
+        <property name="popupMode">
+         <enum>QToolButton::DelayedPopup</enum>
+        </property>
+        <property name="toolButtonStyle">
+         <enum>Qt::ToolButtonTextBesideIcon</enum>
+        </property>
        </widget>
       </item>
       <item>
@@ -393,7 +399,7 @@
    <addaction name="act_exit"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <widget class="QDockWidget" name="dock_pending_jobs_list">
+  <widget class="BaseDock" name="dock_pending_jobs_list">
    <property name="windowTitle">
     <string>Pending Labor Changes</string>
    </property>
@@ -434,38 +440,15 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
-        <widget class="QPushButton" name="btn_expand_all_pending">
-         <property name="text">
-          <string>Expand All</string>
-         </property>
-         <property name="icon">
-          <iconset resource="../images.qrc">
-           <normaloff>:/img/arrow-out.png</normaloff>:/img/arrow-out.png</iconset>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btn_collapse_all_pending">
-         <property name="text">
-          <string>Collapse All</string>
-         </property>
-         <property name="icon">
-          <iconset resource="../images.qrc">
-           <normaloff>:/img/arrow-in.png</normaloff>:/img/arrow-in.png</iconset>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
-       <item>
         <widget class="QPushButton" name="btn_commit">
          <property name="enabled">
           <bool>false</bool>
          </property>
-         <property name="text">
+         <property name="toolTip">
           <string>Commit Changes</string>
+         </property>
+         <property name="text">
+          <string/>
          </property>
          <property name="icon">
           <iconset resource="../images.qrc">
@@ -478,12 +461,43 @@
          <property name="enabled">
           <bool>false</bool>
          </property>
-         <property name="text">
+         <property name="toolTip">
           <string>Clear Changes</string>
+         </property>
+         <property name="text">
+          <string/>
          </property>
          <property name="icon">
           <iconset resource="../images.qrc">
            <normaloff>:/img/table--minus.png</normaloff>:/img/table--minus.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_expand_all_pending">
+         <property name="toolTip">
+          <string>Expand All</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../images.qrc">
+           <normaloff>:/img/arrow-out.png</normaloff>:/img/arrow-out.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_collapse_all_pending">
+         <property name="toolTip">
+          <string>Collapse All</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../images.qrc">
+           <normaloff>:/img/arrow-in.png</normaloff>:/img/arrow-in.png</iconset>
          </property>
         </widget>
        </item>
@@ -492,7 +506,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dock_custom_professions">
+  <widget class="BaseDock" name="dock_custom_professions">
    <property name="windowTitle">
     <string>Custom Professions &amp; Icons</string>
    </property>
@@ -999,15 +1013,20 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>BaseDock</class>
+   <extends>QDockWidget</extends>
+   <header location="global">basedock.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>cb_group_by</tabstop>
   <tabstop>le_filter_text</tabstop>
-  <tabstop>btn_clear_filter</tabstop>
   <tabstop>tree_pending</tabstop>
   <tabstop>btn_expand_all_pending</tabstop>
   <tabstop>btn_collapse_all_pending</tabstop>
-  <tabstop>btn_commit</tabstop>
-  <tabstop>btn_clear</tabstop>
   <tabstop>btn_new_custom_profession</tabstop>
  </tabstops>
  <resources>
@@ -1235,22 +1254,6 @@
     <hint type="destinationlabel">
      <x>564</x>
      <y>373</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>btn_clear_filter</sender>
-   <signal>clicked()</signal>
-   <receiver>le_filter_text</receiver>
-   <slot>clear()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>382</x>
-     <y>439</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>348</x>
-     <y>437</y>
     </hint>
    </hints>
   </connection>

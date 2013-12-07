@@ -157,6 +157,20 @@ void StateTableView::read_settings() {
     m_auto_expand_groups = s->value("options/auto_expand_groups", false).toBool();
 }
 
+void StateTableView::set_single_click_labor_changes(bool enabled){
+    m_single_click_labor_changes = enabled;
+
+    //if using double click, then wait until the cell is activated to change cell states
+    //if using single click, we can process the cell states immediately upon a click
+    if(!m_single_click_labor_changes){
+        connect(this,SIGNAL(doubleClicked(QModelIndex)),SLOT(activate_cells(QModelIndex)),Qt::UniqueConnection);
+        disconnect(this,SIGNAL(clicked(QModelIndex)),this,SLOT(activate_cells(QModelIndex)));
+    }else{
+        connect(this, SIGNAL(clicked(const QModelIndex&)), SLOT(activate_cells(const QModelIndex &)), Qt::UniqueConnection);
+        disconnect(this,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(activate_cells(QModelIndex)));
+    }
+}
+
 void StateTableView::set_default_group(QString name){
         m_default_group_by = DT->user_settings()->value(QString("gui_options/%1_group_by").arg(name),-1).toInt();
 }
@@ -179,13 +193,6 @@ void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
     connect(m_model, SIGNAL(clear_spacers()), m_header, SLOT(clear_spacers()));
 
     set_single_click_labor_changes(DT->user_settings()->value("options/single_click_labor_changes", true).toBool());
-    //if using double click, then wait until the cell is activated to change cell states
-    //if using single click, we can process the cell states immediately upon a click
-    if(!m_single_click_labor_changes)
-        connect(this, SIGNAL(activated(const QModelIndex&)), SLOT(activate_cells(const QModelIndex &)), Qt::UniqueConnection);
-    else
-        connect(this, SIGNAL(clicked(const QModelIndex&)), SLOT(activate_cells(const QModelIndex &)), Qt::UniqueConnection);
-
 }
 
 void StateTableView::new_custom_profession() {
@@ -237,21 +244,9 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
         return;
 
     if(idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
-        // we're on top of a dwarf's name
-//        QMenu m(this); // this will be the popup menu
+        // we're on top of a name
         int id = idx.data(DwarfModel::DR_ID).toInt();
         Dwarf *d = m_model->get_dwarf_by_id(id);
-
-//        m.addAction(tr("Set Nickname..."), this, SLOT(set_nickname()));
-//        m.addSeparator();
-
-//        QMenu custom_prof_menu(&m);
-//        QMenu assign(&m);
-//        QMenu squads(m);
-//        QAction *a;
-
-//        if(m->actions().contains(m_no_squads))
-//            m->removeAction(m_no_squads);
 
         //remove any dynamically changed menus
         m->removeAction(squads_menu->menuAction());
@@ -260,43 +255,24 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 
         if(!d->is_animal()){            
 
-//            //CUSTOM PROFESSIONS
             custom_prof_menu->setEnabled(true);
-//            custom_prof_menu.setTitle(tr("Custom Professions"));
-//            QAction *a = custom_prof_menu.addAction(tr("Set custom profession name..."), this, SLOT(set_custom_profession_text()));
-//            a->setData(id);
-//            a = custom_prof_menu.addAction(tr("New custom profession from this dwarf..."), this, SLOT(custom_profession_from_dwarf()));
-//            a->setData(id);
-//            custom_prof_menu.addAction(tr("Reset to default profession"), this, SLOT(reset_custom_profession()));
-//            custom_prof_menu.addSeparator();
-//            foreach(CustomProfession *cp, DT->get_custom_professions()) {
-//                custom_prof_menu.addAction(QIcon(cp->get_pixmap()), cp->get_name(), this, SLOT(apply_custom_profession()));
-//            }
-//            m.addMenu(&custom_prof_menu);
+            m_assign_labors->setEnabled(true);
+            m_assign_skilled_labors->setEnabled(true);
+            m_remove_labors->setEnabled(true);
 
-//            //TOGGLE ALL LABORS
-//            m.addSeparator();
-//            a = m.addAction(QIcon(":img/plus-circle.png"), tr("Assign All Labors"), this, SLOT(toggle_all_labors()));
-//            a->setData(true);
-//            a = m.addAction(QIcon(":img/minus-circle.png"), tr("Clear All Labors"), this, SLOT(toggle_all_labors()));
-//            a->setData(false);
-
-            //SQUADS
-//            m->addSeparator();
             if(d->is_adult()){
                 //always double check squads before showing the menu. a user might remove a squad and not refresh DT
                 m_model->refresh_squads();
                 //also refresh the dwarf
                 d->read_squad_info();
                 if(m_model->squads().count() <= 0){
-//                    m_no_squads = m->addAction(tr("No squads found."));
-//                    m_no_squads->setEnabled(false);
                     squads_menu->setTitle(tr("No squads found."));
                     squads_menu->setEnabled(false);
                     m->addMenu(squads_menu);
                 }else{
                     squads_menu->setTitle(tr("Assign to squad..."));
                     squads_menu->clear();
+                    squads_menu->setEnabled(true);
                     QIcon icon;
                     icon.addFile(QString::fromUtf8(":/img/plus-circle.png"), QSize(), QIcon::Normal, QIcon::Off);
                     foreach(int key, m_model->squads().uniqueKeys()){
@@ -318,17 +294,14 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 
                     //squad removal (can't remove captain if there are subordinates)
                     if(d->squad_id() != -1){
-//                        icon.addFile(QString::fromUtf8(":/img/minus-circle.png"), QSize(), QIcon::Normal, QIcon::Off);
                         if((d->squad_position()==0 && m_model->squads().value(d->squad_id())->assigned_count()==1) || d->squad_position() != 0){
                             m_unassign_squad->setText(tr("Remove from squad."));
                             connect(m_unassign_squad,SIGNAL(triggered()),this, SLOT(remove_squad()));
                             m->addAction(m_unassign_squad);
-//                            m->addAction(icon,tr("Remove from squad"),this,SLOT(remove_squad()));
                         }else{
                             m_unassign_squad->setText(tr("Remove subordinates first!"));
                             disconnect(m_unassign_squad, SIGNAL(triggered()), this, SLOT(remove_squad()));
                             m->addAction(m_unassign_squad);
-//                            m->addAction(icon,tr("Remove subordinates first!"));
                         }
                     }
                 }
@@ -337,8 +310,6 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
                 squads_menu->actions().clear();
                 squads_menu->setEnabled(false);
                 m->addMenu(squads_menu);
-//                a = m->addAction(tr("Ineligible for military."));
-//                a->setEnabled(false);
             }
         }else{
             //animal, hide stuffs
@@ -774,7 +745,7 @@ void StateTableView::mouseMoveEvent(QMouseEvent *event) {
         //if we're dragging while holding down the left button, and not over the names
         //then start painting labor cells
         //if we're dragging over the names, allow it to select the rows
-        if(QApplication::mouseButtons() == Qt::LeftButton && !idx.column() == 0){
+        if(m_last_button == Qt::LeftButton && !idx.column() == 0){
             m_dragging = true;
             activate_cells(idx);
         }else{
@@ -790,7 +761,7 @@ void StateTableView::mouseMoveEvent(QMouseEvent *event) {
 }
 
 void StateTableView::mouseReleaseEvent(QMouseEvent *event) {
-    m_last_button = event->button();
+    m_last_button = Qt::NoButton;//event->button();
     if(!m_dragging)
             m_last_cell = indexAt(QPoint(-1,-1));    
     QTreeView::mouseReleaseEvent(event);
@@ -811,8 +782,7 @@ void StateTableView::activate_cells(const QModelIndex &idx){
         return;
     }
 
-    if (m_last_button == Qt::LeftButton && // only activate on left-clicks
-            //m_single_click_labor_changes && // only activated on single-click if the user set it that way
+    if (//m_last_button == Qt::LeftButton && // only activate on left-clicks
             m_proxy && // we only do this for views that have proxies (dwarf views)
             idx.column() != 0) // don't single-click activate the name column
     {        

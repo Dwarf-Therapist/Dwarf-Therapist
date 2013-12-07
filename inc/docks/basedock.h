@@ -20,48 +20,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-
-#ifndef SCRIPT_DIALOG_H
-#define SCRIPT_DIALOG_H
+#ifndef BASEDOCK_H
+#define BASEDOCK_H
 
 #include <QtWidgets>
-#include "defines.h"
 
-namespace Ui {
-class ScriptDialog;
-}
-
-class ScriptDialog : public QDialog {
+class BaseDock : public QDockWidget {
     Q_OBJECT
 public:
-    ScriptDialog(QWidget *parent = 0);
-    virtual ~ScriptDialog();
-public slots:
-    //! clear the script editing box
-    void clear_script();
-    void load_script(QString name, QString script);
-
-private:
-    Ui::ScriptDialog *ui;
-    QString m_name;
-
-private slots:
-    void close_pressed();
-    void apply_pressed();
-    void save_pressed();
-
-protected:
-    void closeEvent(QCloseEvent *){close_pressed();}
-    void keyPressEvent(QKeyEvent *e){
-        if(e->key()==Qt::Key_Escape)
-            close_pressed();
+    BaseDock(QWidget *parent = 0, Qt::WindowFlags flags = 0)
+        :QDockWidget(parent,flags)
+    {
+        connect(this,SIGNAL(topLevelChanged(bool)),this,SLOT(floating_changed(bool)));
     }
 
-signals:
-    //! tell the app to run the script currently being edited
-    void test_script( const QString &script_body);
-    //! tell the app that the user has just saved a script
-    void scripts_changed();
+private slots:
+    void floating_changed(bool floating){
+        if(this->isVisible() && floating){
+            this->setWindowFlags(Qt::Window);
+            QPoint pos = this->pos();
+            if(pos.x() < 0)
+                pos.setX(0);
+            if(pos.y() < 0)
+                pos.setY(0);
+            this->move(pos);
+            this->show();
+        }
+    }
+
 };
 
-#endif
+#endif // BASEDOCK_H

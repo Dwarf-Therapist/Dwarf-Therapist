@@ -34,8 +34,7 @@ THE SOFTWARE.
 
 QString m_filter_text;
 QScriptEngine *m_engine;
-QString m_active_filter_script;
-QString m_pref_script;
+//QString m_active_filter_script;
 
 DwarfModelProxy::DwarfModelProxy(QObject *parent)
     :QSortFilterProxyModel(parent)
@@ -59,8 +58,30 @@ void DwarfModelProxy::setFilterFixedString(const QString &pattern) {
     QSortFilterProxyModel::setFilterFixedString(pattern);
 }
 
-void DwarfModelProxy::apply_script(const QString &script_body) {
-    m_active_filter_script = script_body;
+void DwarfModelProxy::apply_script(const QString &script_name, const QString &script_body) {
+    m_scripts.insert(script_name,script_body);
+    invalidateFilter();
+    emit filter_changed();
+}
+
+void DwarfModelProxy::test_script(const QString &script_body){
+    m_test_script = script_body;
+    invalidateFilter();
+    emit filter_changed();
+}
+
+void DwarfModelProxy::clear_test(){
+    m_test_script.clear();
+    invalidateFilter();
+    emit filter_changed();
+}
+
+void DwarfModelProxy::clear_script(const QString script_name){
+    if(!script_name.isEmpty()){
+        m_scripts.remove(script_name);
+    }else{
+        m_scripts.clear();
+    }
     invalidateFilter();
     emit filter_changed();
 }
@@ -100,22 +121,21 @@ bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source
         }
     }
 
-    if (dwarf_id && (!m_active_filter_script.isEmpty() || !m_secondary_script.isEmpty())) {
+    if (dwarf_id && (m_scripts.count() > 0 || !m_test_script.isEmpty())){//(!m_active_filter_script.isEmpty() || !m_secondary_script.isEmpty())) {
         Dwarf *d = m->get_dwarf_by_id(dwarf_id);
         if (d) {
             QScriptValue d_obj = m_engine->newQObject(d);
             m_engine->globalObject().setProperty("d", d_obj);
 
-            //if we have a secondary script, append it to the main script if one exists
-            //otherwise, just use our secondary script, could be expanded for multiple scripts
-            QString script = m_active_filter_script;
-            if(!m_secondary_script.isEmpty()){
-                if(m_active_filter_script.isEmpty())
-                    script = m_secondary_script;
-                else
-                    script.append(" && (").append(m_secondary_script).append(")");
+            QStringList scripts;
+            foreach(QString s, m_scripts.values()){
+                scripts.append(s);
             }
-            matches = matches && m_engine->evaluate(script).toBool();
+            //if we're testing a script, apply that as well
+            if(!m_test_script.trimmed().isEmpty())
+                scripts.append(m_test_script);
+
+            matches = matches && m_engine->evaluate("(" + scripts.join(") && (") + ")").toBool();
         }
     }
 

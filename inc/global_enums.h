@@ -263,7 +263,9 @@ typedef enum {
 
 typedef enum{
     VERMIN_FISH=9,
-    HATEABLE=72
+    CAN_LEARN=71,
+    HATEABLE=72,
+    CAN_SPEAK=89
 } CREATURE_FLAGS;
 
 typedef enum{
@@ -289,9 +291,31 @@ typedef enum{
     GETS_WOUND_INFECTIONS=83,
     TRAINABLE_WAR=88,
     FLIER=97,
+    CRAZED=161, //werebeasts
     BLOODSUCKER=162, //vampires
     HAS_EXTRACTS=200 //custom
 } CASTE_FLAGS;
+
+namespace eCurse{
+typedef enum {
+    NONE = -1,
+    VAMPIRE = 0,
+    WEREBEAST = 1,
+    OTHER = 2
+} CURSE_TYPE;
+
+typedef enum {
+    OPPOSED_TO_LIFE = 2,
+    NOT_LIVING = 4,
+    NO_EAT = 65536,
+    NO_DRINK = 131072,
+    BLOODSUCKER = 268435456
+} CURSE_FLAGS1;
+
+typedef enum {
+    NO_AGING = 1
+} CURSE_FLAGS2;
+}
 
 namespace eHealth
 {
@@ -329,7 +353,7 @@ typedef enum  {
     HI_LACERATION = 30,
     HI_SEVERED = 31, //old wounds = missing, fresh = severed
     HI_ROT = 32,
-//    HI_RECOVERY = 33, //combined with diagnosis
+    //    HI_RECOVERY = 33, //combined with diagnosis
     HI_IMMOBILIZATION = 34,
     HI_DRESSING = 35,
     HI_CLEANING = 36,
@@ -338,7 +362,7 @@ typedef enum  {
     HI_TRACTION = 39,
     HI_CRUTCH = 40,
     HI_OTHER = 41
-    } H_INFO;
+} H_INFO;
 
 typedef enum {
     TT_BONE,

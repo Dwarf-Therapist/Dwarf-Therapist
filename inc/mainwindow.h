@@ -81,14 +81,22 @@ public:
         void export_custom_roles();
         void clear_user_settings();
 
-        // dialogs
+        // about
         void show_about();
+
+        //pending changes
         void list_pending();
+
+        //custom profession
         void draw_professions();
         void draw_custom_profession_context_menu(const QPoint &);
+
+        //filter scripts
         void add_new_filter_script();
         void edit_filter_script();
         void remove_filter_script();
+
+        //gridview exporting
         void print_gridview();
         void save_gridview_csv();
 
@@ -128,6 +136,9 @@ public:
         void init_optimize();
         void optimize(QString plan_name);
 
+        //filter scripts
+        void refresh_active_scripts();
+        void clear_filter();
 
 private:
     DFInstance *m_df;
@@ -165,10 +176,8 @@ private:
 
     void refresh_role_menus();
 
-
-
     void refresh_opts_menus();
-    void reset();
+    void reset();       
 
     private slots:
         void set_interface_enabled(bool);
@@ -185,6 +194,7 @@ private:
         void done_editing_opt_plan(int result);
         void done_editing_role(int result);
         void main_toolbar_style_changed(Qt::ToolButtonStyle button_style);
+        void clear_all_filters();
 };
 
 #endif // MAINWINDOW_H

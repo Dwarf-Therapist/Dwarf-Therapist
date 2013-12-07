@@ -44,12 +44,13 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     , multiple_castes(false)
     , show_skill_learn_rates(false)
     , traits_modified(false)
+    , arena_mode(false) //manually set this to true to do arena testing (very hackish, all units will be animals)
     , m_user_settings(0)
     , m_main_window(0)
     , m_options_menu(0)
     , m_reading_settings(false)
     , m_allow_labor_cheats(false)
-    , m_log_mgr(0)    
+    , m_log_mgr(0)
 {
     setup_logging();
     load_translator();
@@ -89,7 +90,6 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     connect(m_options_menu, SIGNAL(settings_changed()), this, SLOT(read_settings()));
     connect(m_main_window->ui->act_options, SIGNAL(triggered()), m_options_menu, SLOT(exec()));
     connect(m_main_window->ui->act_import_existing_professions, SIGNAL(triggered()), this, SLOT(import_existing_professions()));
-    //connect(m_main_window->ui->list_custom_professions, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(edit_custom_profession(QListWidgetItem*)));
     connect(m_main_window->ui->tree_custom_professions, SIGNAL(itemActivated(QTreeWidgetItem*,int)), this, SLOT(edit_custom_profession(QTreeWidgetItem*)));
     connect(m_main_window->ui->act_add_custom_profession, SIGNAL(triggered()), this, SLOT(add_custom_profession()));
     connect(m_main_window->ui->le_filter_text, SIGNAL(textChanged(const QString&)), m_main_window->get_proxy(), SLOT(setFilterFixedString(const QString&)));

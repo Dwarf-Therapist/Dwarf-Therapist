@@ -26,7 +26,7 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 
 ThoughtsDock::ThoughtsDock(QWidget *parent, Qt::WindowFlags flags)
-    : QDockWidget(parent, flags)
+    : BaseDock(parent, flags)
 {
     setWindowTitle(tr("Thoughts"));
     setObjectName("dock_thoughts");
@@ -178,3 +178,8 @@ void ThoughtsDock::clear_search(){
         s->setText("");
 }
 
+void ThoughtsDock::closeEvent(QCloseEvent *event){
+    clear_search();
+    clear_filter();
+    event->accept();
+}

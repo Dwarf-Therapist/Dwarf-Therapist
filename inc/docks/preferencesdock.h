@@ -23,9 +23,9 @@ THE SOFTWARE.
 #ifndef PREFERENCES_DOCK_H
 #define PREFERENCES_DOCK_H
 
-#include <QtWidgets>
+#include "basedock.h"
 
-class PreferencesDock : public QDockWidget {
+class PreferencesDock : public BaseDock {
     Q_OBJECT
 public:
     PreferencesDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
@@ -47,7 +47,9 @@ public slots:
 
 signals:
     void item_selected(QList<QPair<QString,QString> >);
-//    void item_selected(QStringList name, QString category);
+
+private:
+    void closeEvent(QCloseEvent *event);
 
 };
 

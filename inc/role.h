@@ -47,6 +47,12 @@ public:
         float weight;
     };
 
+    struct simple_rating{
+        bool is_custom;
+        float rating;
+        QString name;
+    };
+
     //unfortunately we need to keep all the keys as a string and cast them so we can use the same functions
     //ie can't pass in a hash with <string, aspect> and <int, aspect>
     QHash<QString, RoleAspect*> attributes;

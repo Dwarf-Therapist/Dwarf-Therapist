@@ -80,10 +80,21 @@ void Race::read_race() {
     TRACE << "RACE " << m_name << " at " << hexify(m_address);
     m_name_plural = capitalize(m_df->read_string(m_address + m_mem->race_offset("name_plural")));
     m_adjective = capitalize(m_df->read_string(m_address + m_mem->race_offset("adjective")));
+
     m_baby_name = capitalize(m_df->read_string(m_address + m_mem->race_offset("baby_name_singular")));
+    if(m_baby_name == "")
+        m_baby_name = m_name + tr(" Baby");
     m_baby_name_plural = capitalize(m_df->read_string(m_address + m_mem->race_offset("baby_name_plural")));
+    if(m_baby_name_plural == "")
+        m_baby_name_plural = m_name_plural + tr(" Babies");
+
     m_child_name = capitalize(m_df->read_string(m_address + m_mem->race_offset("child_name_singular")));
+    if(m_child_name == "")
+        m_child_name = m_name + tr(" Offspring");
     m_child_name_plural = capitalize(m_df->read_string(m_address + m_mem->race_offset("child_name_plural")));
+    if(m_child_name_plural == "")
+        m_child_name_plural = m_name + tr(" Offsprings");
+
     m_pref_string_vector = m_address + m_mem->race_offset("pref_string_vector");
     m_pop_ratio_vector = m_address + m_mem->race_offset("pop_ratio_vector");
     m_castes_vector = m_address + m_mem->race_offset("castes_vector");
@@ -112,7 +123,7 @@ void Race::read_race() {
         load_caste_ratios();
     }
 
-    m_flags = FlagArray(m_df, m_address + m_mem->race_offset("flags"));
+    m_flags = FlagArray(m_df, m_address + m_mem->race_offset("flags"));    
     m_df->detach();
 }
 

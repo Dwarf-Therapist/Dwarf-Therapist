@@ -72,7 +72,7 @@ void DwarfModel::clear_all(bool clr_pend) {
     m_dwarves.clear();
     m_grouped_dwarves.clear();
 
-    if(m_gridview){        
+    if(m_gridview){
         foreach(ViewColumnSet *set, m_gridview->sets()) {
             foreach(ViewColumn *col, set->columns()) {
                 col->clear_cells();
@@ -92,7 +92,7 @@ void DwarfModel::section_right_clicked(int col) {
     } else {
         m_selected_col = col;
     }
-    emit dataChanged(index(0, col), index(rowCount()-1, col));    
+    emit dataChanged(index(0, col), index(rowCount()-1, col));
 }
 
 void DwarfModel::load_dwarves() {
@@ -178,7 +178,7 @@ void DwarfModel::draw_headers(){
                 if(s->value("options/grid/show_labor_counts",false).toBool())
                     h_name = QString("%1 %2")
                             .arg(col->count(),2,10,QChar('0'))
-                            .arg(col->title()).trimmed();                
+                            .arg(col->title()).trimmed();
             }
 
             QStandardItem *header = new QStandardItem(h_name);
@@ -242,7 +242,7 @@ void DwarfModel::build_rows() {
     if(m_dwarves.count() <= 0)
         return;
 
-//    QSettings *s = DT->user_settings();
+    //    QSettings *s = DT->user_settings();
 
     bool animal_health = DT->user_settings()->value("options/animal_health",false).toBool();
 
@@ -266,7 +266,7 @@ void DwarfModel::build_rows() {
     foreach(Dwarf *d, m_dwarves) {
         //shared groupings for both animals and the fortress race
         if((only_animals && d->is_animal()) || (!d->is_animal() && !only_animals)){
-            if(m_group_by == GB_NOTHING){                
+            if(m_group_by == GB_NOTHING){
                 m_grouped_dwarves[0].append(d);
             }else if(m_group_by == GB_PROFESSION){
                 m_grouped_dwarves[d->profession()].append(d);
@@ -278,15 +278,18 @@ void DwarfModel::build_rows() {
             }else if(m_group_by == GB_MIGRATION_WAVE){
                 m_grouped_dwarves[d->get_migration_desc()].append(d);
             }else if(m_group_by == GB_AGE){
-                if(d->is_baby())
+                if(d->is_baby()){
                     m_grouped_dwarves[d->profession()].append(d);
-                else if (d->is_child())
-                    m_grouped_dwarves[d->profession()].append(d);
-                else{
-                    int base = (d->get_age() / 10) * 10;
-                    QString age_range = QString("%1 - %2").arg(base)
-                            .arg(base + 9);
-                    m_grouped_dwarves[age_range].append(d);
+                }else{
+                    int age = d->get_age();
+                    if(age < 10){
+                        m_grouped_dwarves[d->get_age_formatted()].append(d);
+                    }else{
+                        int base = (age / 10) * 10;
+                        QString age_range = tr("%1 - %2 Years").arg(base)
+                                .arg(base + 9);
+                        m_grouped_dwarves[age_range].append(d);
+                    }
                 }
             }else if(m_group_by == GB_CASTE){
                 m_grouped_dwarves[d->caste_name(true)].append(d);
@@ -434,13 +437,13 @@ void DwarfModel::build_row(const QString &key) {
         agg_first_col = new QStandardItem(title);
         //bold aggregate titles
         agg_first_col->setData(get_font(true), Qt::FontRole);
-//        agg_first_col->setData(build_gradient_brush(QColor(Qt::gray),125,0,QPoint(0,0),QPoint(1,0)),Qt::BackgroundRole);
+        //        agg_first_col->setData(build_gradient_brush(QColor(Qt::gray),125,0,QPoint(0,0),QPoint(1,0)),Qt::BackgroundRole);
         agg_first_col->setData(true, DR_IS_AGGREGATE);
         agg_first_col->setData(key, DR_GROUP_NAME);
         agg_first_col->setData(0, DR_RATING);
         //root->setData(title, DR_SORT_VALUE);
         // for integer based values we want to make sure they sort by the int
-        // values instead of the string values        
+        // values instead of the string values
         if (m_group_by == GB_MIGRATION_WAVE) {
             agg_first_col->setData(first_dwarf->migration_wave(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HIGHEST_SKILL) {
@@ -497,7 +500,7 @@ void DwarfModel::build_row(const QString &key) {
         foreach(ViewColumnSet *set, m_gridview->sets()) {
             foreach(ViewColumn *col, set->columns()) {
                 QStandardItem *item = col->build_aggregate(key, m_grouped_dwarves[key]);
-                agg_items << item;                
+                agg_items << item;
             }
         }
     }
@@ -506,45 +509,48 @@ void DwarfModel::build_row(const QString &key) {
     bool highlight_nobles = DT->user_settings()->value("options/highlight_nobles",false).toBool();
     bool highlight_cursed = DT->user_settings()->value("options/highlight_cursed",false).toBool();
     QColor curse_col = DT->user_settings()->value("options/colors/cursed", QColor(125,97,186, 200)).value<QColor>();
-    QBrush cursed_brush = build_gradient_brush(curse_col,curse_col.alpha(),0,QPoint(0,0),QPoint(1,0));
+    QBrush cursed_bg = build_gradient_brush(curse_col,curse_col.alpha(),0,QPoint(0,0),QPoint(1,0));
+    QBrush cursed_bg_light = build_gradient_brush(curse_col, 50,0,QPoint(0,0),QPoint(1,0)); //keep a weakly highlighted version
 
 
 
     foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
-        QStandardItem *i_name = new QStandardItem(d->nice_name());        
-//        QFont f = i_name->font();
-//        QFontMetrics fm(f);
-//        QChar symbol(0x263C); //masterwork symbol in df
-//        if(!fm.inFont(symbol)){
-//            symbol = QChar(0x2261); //3 horizontal lines
-//            if(!fm.inFont(symbol))
-//                symbol = QChar(0x002A); //asterisk
-//        }
-
+        QStandardItem *i_name = new QStandardItem(d->nice_name());
         bool name_italic = false;
-        //font settings
-//        if (d->active_military()) {
-//            f.setBold(true);
-//        }
+
         if((m_group_by==GB_SQUAD && d->squad_position()==0) || d->noble_position() != ""){
             i_name->setText(QString("%1 %2 %1").arg(m_symbol).arg(i_name->text()));
-//            f.setItalic(true);
             name_italic = true;
         }
-//        i_name->setFont(f);
 
-        //background gradients for nobles, etc.
+        //background gradients for nobles
         if(d && highlight_nobles){
             if(d->noble_position() != ""){
                 QColor col = m_df->fortress()->get_noble_color(d->historical_id());
                 i_name->setData(build_gradient_brush(col,col.alpha(),0,QPoint(0,0),QPoint(1,0)),Qt::BackgroundRole);
+                i_name->setData(compliment(col,false,0.25),Qt::ForegroundRole);
             }
         }
+
+        //set cursed colors
         if(d && highlight_cursed){
-            if(d->curse_name() != ""){
-//                f.setItalic(true);
+            switch(d->get_curse_type()){
+            case eCurse::VAMPIRE:
+            case eCurse::WEREBEAST:
+            {
                 name_italic = true;
-                i_name->setData(cursed_brush,Qt::BackgroundRole);
+                i_name->setData(cursed_bg,Qt::BackgroundRole);
+                i_name->setData(compliment(curse_col,false,0.25),Qt::ForegroundRole);
+            }
+                break;
+            case eCurse::OTHER:
+            {
+                name_italic = true;
+                i_name->setData(cursed_bg_light,Qt::BackgroundRole);
+            }
+                break;
+            default:
+                break;
             }
         }
 
@@ -581,7 +587,7 @@ void DwarfModel::build_row(const QString &key) {
             break;
         case GB_NOTHING:
         default:
-            sort_val = d->nice_name();            
+            sort_val = d->nice_name();
             break;
         }
         i_name->setData(sort_val, DR_SORT_VALUE);
@@ -595,8 +601,8 @@ void DwarfModel::build_row(const QString &key) {
         QList<QStandardItem*> items;
         items << i_name;
         foreach(ViewColumnSet *set, m_gridview->sets()) {
-            foreach(ViewColumn *col, set->columns()) {                
-                QStandardItem *item = col->build_cell(d);                
+            foreach(ViewColumn *col, set->columns()) {
+                QStandardItem *item = col->build_cell(d);
                 items << item;
             }
         }
@@ -663,7 +669,7 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
 
         // if none or some are enabled, enable all of them
         bool enabled = (enabled_count < settable_dwarves);
-        foreach(Dwarf *d, m_grouped_dwarves.value(group_name)) {            
+        foreach(Dwarf *d, m_grouped_dwarves.value(group_name)) {
             d->set_labor(labor_id, enabled, false);
         }
 
@@ -702,7 +708,7 @@ void DwarfModel::calculate_pending() {
     foreach(Dwarf *d, m_dwarves) {
         changes += d->pending_changes();
     }
-    emit new_pending_changes(changes);    
+    emit new_pending_changes(changes);
 }
 
 void DwarfModel::clear_pending() {
@@ -734,8 +740,8 @@ QVector<Dwarf*> DwarfModel::get_dirty_dwarves() {
     foreach(Dwarf *d, m_dwarves) {
         if (d->pending_changes())
             dwarves.append(d);
-    }    
-    return dwarves;    
+    }
+    return dwarves;
 }
 
 QModelIndex DwarfModel::findOne(const QVariant &needle, int role, int column, const QModelIndex &start_index) {
@@ -778,7 +784,7 @@ void DwarfModel::dwarf_group_toggled(const QString &group_name) {
         emit dataChanged(left, right);
     }
     foreach (Dwarf *d, m_grouped_dwarves[group_name]) {
-        foreach(QModelIndex idx, findAll(d->id(), DR_ID, 0, agg_cell)) {            
+        foreach(QModelIndex idx, findAll(d->id(), DR_ID, 0, agg_cell)) {
             left = idx;
             right = index(idx.row(), columnCount(idx.parent()) - 1, idx.parent());
             emit dataChanged(left, right);

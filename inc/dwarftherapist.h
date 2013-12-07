@@ -71,6 +71,7 @@ public:
     bool multiple_castes;
     bool show_skill_learn_rates;
     bool traits_modified;
+    bool arena_mode;
 
     void emit_settings_changed();
     void emit_roles_changed();

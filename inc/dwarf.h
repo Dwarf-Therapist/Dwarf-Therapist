@@ -39,6 +39,7 @@ class Preference;
 class Race;
 class Caste;
 class Thought;
+class Syndrome;
 
 
 class Dwarf : public QObject
@@ -104,6 +105,8 @@ public:
 
     //! convenience function for checking the curse name
     Q_INVOKABLE bool is_cursed() {return (!m_curse_name.trimmed().isEmpty());}
+
+    eCurse::CURSE_TYPE get_curse_type() {return m_curse_type;}
 
     //! return a printable name for this dwarf where each dwarven word is translated to english (not game human)
     QString translated_name() {return m_translated_name;}
@@ -194,6 +197,7 @@ public:
 
     //! return this creature's age
     Q_INVOKABLE short get_age() { return m_age; }
+    QString get_age_formatted();
 
     //! return this creature's flag1
     Q_INVOKABLE quint32 get_flag1() { return m_unit_flags.at(0); }
@@ -283,7 +287,7 @@ public:
     const QHash<QString, float> &role_ratings() {return m_role_ratings;}
 
     //! return a hashmap of roles and ratings for this dwarf, sorted by rating
-    const QList<QPair<QString, float> > &sorted_role_ratings() {return m_sorted_role_ratings;}
+    const QList<Role::simple_rating> &sorted_role_ratings();
 
     //! return the text string describing what this dwarf is currently doing ("Idle", "Construct Rock Door" etc...)
     const QString &current_job() {return m_current_job;}    
@@ -338,7 +342,7 @@ public:
 
     void calc_role_ratings();
     float calc_role_rating(Role *);
-    float get_role_rating(QString role_name, bool raw = false);
+    Q_INVOKABLE float get_role_rating(QString role_name, bool raw = false);
     void set_role_rating(QString role_name, float value);
     void update_rating_list();
 
@@ -425,8 +429,13 @@ public:
     Q_INVOKABLE bool has_thought(short id) {return m_thoughts.contains(id);}
     Q_INVOKABLE bool has_health_issue(int id, int idx = -1);
 
-    Q_INVOKABLE bool is_buffed() {return m_syndrome_names.length() > 0;}
-    Q_INVOKABLE QString buffs() {return m_syndrome_names.join(", ");}
+    Q_INVOKABLE bool is_buffed();
+    Q_INVOKABLE QString buffs();
+
+    Q_INVOKABLE bool has_syndrome(QString name);
+    Q_INVOKABLE QString syndromes();
+
+    QString get_syndrome_names(bool include_buffs, bool include_sick);
 
     QString get_thought_desc() {return m_thought_desc;}
 
@@ -454,7 +463,24 @@ public:
         void commit_pending();
 
         //sorts ratings
-        static bool sort_ratings(const QPair<QString,float> &r1,const QPair<QString,float> &r2){return r1.second > r2.second;}                
+        static bool sort_ratings(const Role::simple_rating &r1, const Role::simple_rating &r2){return r1.rating > r2.rating;}
+        static bool sort_ratings_custom(const Role::simple_rating &r1, const Role::simple_rating &r2){
+            if(r1.is_custom)
+                return true;
+            else if(r2.is_custom)
+                return false;
+            else
+                return r1.rating > r2.rating;
+        }
+
+//        static bool sort_ratings(const QPair<QString,QPair<float,bool> > &r1,const QPair<QString,QPair<float,bool> > &r2){return r1.second.second > r2.second.second;}
+//        static bool sort_ratings_custom(const QPair<QString,QPair<float,bool> > &r1,const QPair<QString,QPair<float,bool> > &r2){
+//            if(r1.second.second)
+//                return true;
+//            else
+//                return r1.second.first > r2.second.first;
+//        }
+
 private:
     int m_id; // each creature in the game has a unique serial ID
     DFInstance *m_df;
@@ -510,11 +536,13 @@ private:
     quint32 m_caged;
     quint32 m_butcher;
     short m_age;
+    short m_age_in_months;
     uint m_turn_count; // Dwarf turn count from start of fortress (as best we know)
     bool m_is_on_break;
     QHash<QString, float> m_role_ratings;
     QHash<QString, float> m_raw_role_ratings;
-    QList<QPair<QString,float> > m_sorted_role_ratings;
+    QList<Role::simple_rating> m_sorted_role_ratings;
+    QList<QPair<QString,float> > m_sorted_custom_role_ratings;
     QHash<short, int> m_states;
     bool m_born_in_fortress;
     quint32 m_birth_year;
@@ -538,7 +566,10 @@ private:
     UnitHealth m_unit_health;
     bool m_validated;
     bool m_is_valid;
-    QStringList m_syndrome_names;
+    QList<Syndrome> m_syndromes;
+    quint32 m_curse_flags;
+//    quint32 m_curse_flags2;
+    eCurse::CURSE_TYPE m_curse_type;
 
     // these methods read data from raw memory
     void read_id();

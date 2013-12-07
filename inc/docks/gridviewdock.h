@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef GRID_VIEW_DOCK_H
 #define GRID_VIEW_DOCK_H
 
-#include <QtWidgets>
+#include "basedock.h"
 
 class ViewManager;
 
@@ -31,7 +31,7 @@ namespace Ui {
 	class GridViewDock;
 }
 
-class GridViewDock : public QDockWidget {
+class GridViewDock : public BaseDock {
 	Q_OBJECT
 public:
 	GridViewDock(ViewManager *mgr, QWidget *parent = 0, Qt::WindowFlags flags = 0);
@@ -46,11 +46,14 @@ private:
 	Ui::GridViewDock *ui;
 	QListWidgetItem *m_tmp_item;
 
+    short current_view_is_custom();
+
 	private slots:
 		void edit_view();
 		void edit_view(QListWidgetItem*);
 		void copy_view();
 		void delete_view();
+        void item_clicked(QListWidgetItem*);
 };
 
 #endif

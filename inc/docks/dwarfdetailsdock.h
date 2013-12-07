@@ -23,12 +23,13 @@ THE SOFTWARE.
 #ifndef DWARF_DETAILS_H
 #define DWARF_DETAILS_H
 
-#include <QtWidgets>
+//#include <QtWidgets>
+#include "basedock.h"
 
 class Dwarf;
 class DwarfDetailsWidget;
 
-class DwarfDetailsDock : public QDockWidget {
+class DwarfDetailsDock : public BaseDock {
     Q_OBJECT
 public:
     DwarfDetailsDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);

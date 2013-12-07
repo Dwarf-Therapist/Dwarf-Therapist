@@ -26,11 +26,8 @@ THE SOFTWARE.
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "dfinstance.h"
-//#include "dwarf.h"
 
-//class DFInstance;
 class Dwarf;
-
 class MemoryLayout;
 
 class DFInstanceWindows : public DFInstance {

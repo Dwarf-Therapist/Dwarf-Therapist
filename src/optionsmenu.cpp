@@ -288,6 +288,7 @@ void OptionsMenu::read_settings() {
     ui->cb_animal_health->setChecked(s->value("animal_health",false).toBool());
 
     ui->chk_show_caste->setChecked(s->value("tooltip_show_caste", true).toBool());
+    ui->chk_show_caste_desc->setChecked(s->value("tooltip_show_caste_desc", true).toBool());
     ui->chk_show_happiness->setChecked(s->value("tooltip_show_happiness", true).toBool());
     ui->chk_show_icons->setChecked(s->value("tooltip_show_icons", true).toBool());
     ui->chk_show_noble->setChecked(s->value("tooltip_show_noble", true).toBool());
@@ -300,7 +301,9 @@ void OptionsMenu::read_settings() {
     ui->chk_show_squad->setChecked(s->value("tooltip_show_squad", true).toBool());
     ui->chk_show_age->setChecked(s->value("tooltip_show_age", true).toBool());
     ui->chk_show_unit_size->setChecked(s->value("tooltip_show_size",true).toBool());
-    ui->chk_show_buffs->setChecked(s->value("tooltip_show_buffs",true).toBool());
+    ui->chk_show_buffs->setChecked(s->value("tooltip_show_buffs",false).toBool());
+    ui->chk_show_syn_names->setChecked(s->value("tooltip_show_syn_names",false).toBool());
+    ui->chk_show_syn_class->setChecked(s->value("tooltip_show_syn_classes",false).toBool());
 
     ui->chk_show_health->setChecked(s->value("tooltip_show_health",false).toBool());
     ui->chk_health_colors->setChecked(s->value("tooltip_health_colors",true).toBool());
@@ -321,6 +324,7 @@ void OptionsMenu::read_settings() {
     ui->dsb_att_potential_weight->setValue(s->value("default_attribute_potential_weight",0.50).toDouble());
     ui->sb_roles_pane->setValue(s->value("role_count_pane",10).toInt());
 
+    ui->chk_custom_roles->setChecked(s->value("show_custom_roles",false).toBool());
     ui->chk_roles_in_labor->setChecked(s->value("show_roles_in_labor",true).toBool());
     ui->chk_roles_in_skills->setChecked(s->value("show_roles_in_skills",true).toBool());
 
@@ -396,10 +400,12 @@ void OptionsMenu::write_settings() {
         s->setValue("role_count_tooltip",ui->sb_roles_tooltip->value());
         s->setValue("role_count_pane",ui->sb_roles_pane->value());
 
+        s->setValue("show_custom_roles",ui->chk_custom_roles->isChecked());
         s->setValue("show_roles_in_labor",ui->chk_roles_in_labor->isChecked());
         s->setValue("show_roles_in_skills",ui->chk_roles_in_skills->isChecked());
 
         s->setValue("tooltip_show_caste", ui->chk_show_caste->isChecked());
+        s->setValue("tooltip_show_caste_desc", ui->chk_show_caste_desc->isChecked());
         s->setValue("tooltip_show_happiness", ui->chk_show_happiness->isChecked());
         s->setValue("tooltip_show_icons", ui->chk_show_icons->isChecked());
         s->setValue("tooltip_show_noble", ui->chk_show_noble->isChecked());
@@ -418,6 +424,8 @@ void OptionsMenu::write_settings() {
         s->setValue("tooltip_health_colors", ui->chk_health_colors->isChecked());
         s->setValue("tooltip_health_symbols", ui->chk_health_symbols->isChecked());
         s->setValue("tooltip_show_buffs", ui->chk_show_buffs->isChecked());
+        s->setValue("tooltip_show_syn_names",ui->chk_show_syn_names->isChecked());
+        s->setValue("tooltip_show_syn_classes",ui->chk_show_syn_class->isChecked());
 
         s->endGroup();
     }
@@ -475,6 +483,7 @@ void OptionsMenu::restore_defaults() {
     ui->cb_noble_highlight->setChecked(false);
     ui->sb_roles_tooltip->setValue(3);
     ui->sb_roles_pane->setValue(10);
+    ui->chk_custom_roles->setChecked(false);
     ui->chk_roles_in_labor->setChecked(false);
     ui->cb_labor_counts->setChecked(false);
     ui->cb_sync_grouping->setChecked(true);
@@ -486,6 +495,7 @@ void OptionsMenu::restore_defaults() {
     ui->cb_animal_health->setChecked(false);
 
     ui->chk_show_caste->setChecked(true);
+    ui->chk_show_caste_desc->setChecked(true);
     ui->chk_show_happiness->setChecked(true);
     ui->chk_show_icons->setChecked(true);
     ui->chk_show_noble->setChecked(true);
@@ -499,6 +509,8 @@ void OptionsMenu::restore_defaults() {
     ui->chk_show_unit_size->setChecked(true);
     ui->chk_show_age->setChecked(true);
     ui->chk_show_buffs->setChecked(false);
+    ui->chk_show_syn_names->setChecked(false);
+    ui->chk_show_syn_class->setChecked(false);
 
     ui->dsb_attribute_weight->setValue(0.25);
     ui->dsb_pref_weight->setValue(0.15);

@@ -232,7 +232,9 @@ HEADERS += inc/win_structs.h \
     inc/healthcategory.h \
     inc/bodypartdamage.h \
     inc/currentyearsearchjob.h \
-    inc/defaultfonts.h
+    inc/defaultfonts.h \
+    inc/docks/basedock.h \
+    inc/syndrome.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
