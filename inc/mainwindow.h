@@ -27,6 +27,8 @@ THE SOFTWARE.
 #include <QtWidgets>
 #include <QtNetwork>
 
+#include "thoughtsdock.h"
+
 class StateTableView;
 class DFInstance;
 class DwarfModel;

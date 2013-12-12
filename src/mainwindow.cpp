@@ -99,6 +99,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_view_manager = new ViewManager(m_model, m_proxy, this);
     ui->v_box->addWidget(m_view_manager);
+    setCentralWidget(ui->main_widget);
 
     setTabPosition(Qt::AllDockWidgetAreas, QTabWidget::North);
 
@@ -110,27 +111,27 @@ MainWindow::MainWindow(QWidget *parent)
 
     SkillLegendDock *skill_legend_dock = new SkillLegendDock(this);
     skill_legend_dock->setHidden(true); // hide by default
-    skill_legend_dock->setFloating(true);
+    skill_legend_dock->setFloating(false);
     addDockWidget(Qt::RightDockWidgetArea, skill_legend_dock);
 
     DwarfDetailsDock *dwarf_details_dock = new DwarfDetailsDock(this);
     dwarf_details_dock->setHidden(true);
-    dwarf_details_dock->setFloating(true);
+    dwarf_details_dock->setFloating(false);
     addDockWidget(Qt::RightDockWidgetArea, dwarf_details_dock);
 
     PreferencesDock *pref_dock = new PreferencesDock(this);
     pref_dock->setHidden(true);
-    pref_dock->setFloating(true);
+    pref_dock->setFloating(false);
     addDockWidget(Qt::RightDockWidgetArea, pref_dock);
 
     ThoughtsDock *thought_dock = new ThoughtsDock(this);
     thought_dock->setHidden(true);
-    thought_dock->setFloating(true);
+    thought_dock->setFloating(false);
     addDockWidget(Qt::RightDockWidgetArea, thought_dock);
 
     HealthLegendDock *health_dock = new HealthLegendDock(this);
     health_dock->setHidden(true);
-    health_dock->setFloating(true);
+    health_dock->setFloating(false);
     addDockWidget(Qt::RightDockWidgetArea, health_dock);
 
     ui->menu_docks->addAction(ui->dock_pending_jobs_list->toggleViewAction());
@@ -214,6 +215,7 @@ MainWindow::MainWindow(QWidget *parent)
     if (m_settings->value("options/check_for_updates_on_startup", true).toBool())
         check_latest_version();
 
+
     //add CTRL+A to select all currently filtered/visible dwarves
     new QShortcut(Qt::CTRL + Qt::Key_A, m_view_manager, SLOT(select_all()));
     raise();
@@ -256,6 +258,7 @@ void MainWindow::read_settings() {
             if (!state.isEmpty()) {
                 restoreState(state);
             }
+
         }catch(...){
             //this can sometimes crash, no idea why
         }

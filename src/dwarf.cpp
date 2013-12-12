@@ -992,8 +992,9 @@ QString Dwarf::syndromes(){
 }
 
 QString Dwarf::get_syndrome_names(bool include_buffs, bool include_sick) {
-    bool show_name = DT->user_settings()->value("options/tooltip_show_syn_names",true).toBool();
-    bool show_class = DT->user_settings()->value("options/tooltip_show_syn_classes",false).toBool();
+    short d_type = DT->user_settings()->value("options/syndrome_display_type",0).toInt();
+    bool show_name = (d_type == 0 || d_type ==2);
+    bool show_class = (d_type >= 1);
     QStringList names;
     foreach(Syndrome s, m_syndromes){
         if((include_buffs && !s.is_sickness()) || (include_sick && s.is_sickness())){

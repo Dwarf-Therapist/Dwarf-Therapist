@@ -302,9 +302,13 @@ void OptionsMenu::read_settings() {
     ui->chk_show_age->setChecked(s->value("tooltip_show_age", true).toBool());
     ui->chk_show_unit_size->setChecked(s->value("tooltip_show_size",true).toBool());
     ui->chk_show_buffs->setChecked(s->value("tooltip_show_buffs",false).toBool());
-    ui->chk_show_syn_names->setChecked(s->value("tooltip_show_syn_names",false).toBool());
-    ui->chk_show_syn_class->setChecked(s->value("tooltip_show_syn_classes",false).toBool());
-
+    short syn_option = s->value("syndrome_display_type",0).toInt();
+    if(syn_option == 0)
+        ui->rad_syn_names->setChecked(true);
+    else if(syn_option == 1)
+        ui->rad_syn_classes->setChecked(true);
+    else
+        ui->rad_syn_both->setChecked(true);
     ui->chk_show_health->setChecked(s->value("tooltip_show_health",false).toBool());
     ui->chk_health_colors->setChecked(s->value("tooltip_health_colors",true).toBool());
     ui->chk_health_symbols->setChecked(s->value("tooltip_health_symbols",false).toBool());
@@ -424,8 +428,13 @@ void OptionsMenu::write_settings() {
         s->setValue("tooltip_health_colors", ui->chk_health_colors->isChecked());
         s->setValue("tooltip_health_symbols", ui->chk_health_symbols->isChecked());
         s->setValue("tooltip_show_buffs", ui->chk_show_buffs->isChecked());
-        s->setValue("tooltip_show_syn_names",ui->chk_show_syn_names->isChecked());
-        s->setValue("tooltip_show_syn_classes",ui->chk_show_syn_class->isChecked());
+        short val = 0;
+        if(ui->rad_syn_classes->isChecked())
+            val = 1;
+        else if(ui->rad_syn_both->isChecked())
+            val = 2;
+        s->setValue("syndrome_display_type", val);
+
 
         s->endGroup();
     }
@@ -509,8 +518,7 @@ void OptionsMenu::restore_defaults() {
     ui->chk_show_unit_size->setChecked(true);
     ui->chk_show_age->setChecked(true);
     ui->chk_show_buffs->setChecked(false);
-    ui->chk_show_syn_names->setChecked(false);
-    ui->chk_show_syn_class->setChecked(false);
+    ui->rad_syn_names->setChecked(true);
 
     ui->dsb_attribute_weight->setValue(0.25);
     ui->dsb_pref_weight->setValue(0.15);

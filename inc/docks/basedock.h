@@ -34,9 +34,15 @@ public:
         connect(this,SIGNAL(topLevelChanged(bool)),this,SLOT(floating_changed(bool)));
     }
 
-private slots:
+public slots:
     void floating_changed(bool floating){
-        if(this->isVisible() && floating){
+    //it's currently pretty buggy to do this on linux. no idea why... yet..
+    #ifdef Q_OS_LINUX
+        return;
+    #endif
+
+        bool vis = this->isVisible();
+        if(floating){
             this->setWindowFlags(Qt::Window);
             QPoint pos = this->pos();
             if(pos.x() < 0)
@@ -44,7 +50,9 @@ private slots:
             if(pos.y() < 0)
                 pos.setY(0);
             this->move(pos);
-            this->show();
+
+            if(vis)
+                this->show();
         }
     }
 

@@ -36,7 +36,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <property name="iconSize">
       <size>
@@ -1509,34 +1509,32 @@
           </spacer>
          </item>
          <item>
-          <widget class="QCheckBox" name="chk_show_syn_names">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="toolTip">
-            <string>When checked, shows the name of the syndrome in the tooltip. If a syndrome doesn't have a name, the class name will be used by default.</string>
-           </property>
+          <widget class="QRadioButton" name="rad_syn_names">
            <property name="statusTip">
-            <string>When checked, shows the name of the syndrome in the tooltip. If a syndrome doesn't have a name, the class name will be used by default.</string>
+            <string>Show only the syndrome names. If a syndrome doesn't have a name, the class name will be used instead.</string>
            </property>
            <property name="text">
-            <string>Show syndrome names.</string>
+            <string>Show Name</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="chk_show_syn_class">
-           <property name="toolTip">
-            <string>When checked, always shows the class name(s) of the syndrome. This is particularly useful when syndromes don't have unique/descriptive names.</string>
-           </property>
+          <widget class="QRadioButton" name="rad_syn_classes">
            <property name="statusTip">
-            <string>When checked, always shows the class name(s) of the syndrome. This is particularly useful when syndromes don't have unique/descriptive names.</string>
+            <string>Show the syndrome's class name(s). This is particularly useful with mods that don't have uniquely named syndromes.</string>
            </property>
            <property name="text">
-            <string>Show syndrome class names.</string>
+            <string>Show Class Name(s)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="rad_syn_both">
+           <property name="statusTip">
+            <string>Show both the syndrome name, and any class names.</string>
+           </property>
+           <property name="text">
+            <string>Show Both</string>
            </property>
           </widget>
          </item>

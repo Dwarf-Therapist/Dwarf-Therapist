@@ -457,7 +457,7 @@ static const char nop_code_bytes[injection_size] = {
        addresses to multiples of 16 bytes. It consists
        of RET and a sequence of NOPs. The NOPs are not
        supposed to be used, so they can be overwritten. */
-    0xC3, 0x90, 0x90, 0x90
+    static_cast<char>(0xC3), static_cast<char>(0x90), static_cast<char>(0x90), static_cast<char>(0x90)
 };
 
 static QByteArray nop_code(nop_code_bytes, injection_size);
@@ -467,7 +467,7 @@ static const char injection_code_bytes[injection_size] = {
        original RET, but adds:
            INT 80h
            INT 3h (breakpoint) */
-    0xC3, 0xCD, 0x80, 0xCC
+    static_cast<char>(0xC3), static_cast<char>(0xCD), static_cast<char>(0x80), static_cast<char>(0xCC)
 };
 
 static QByteArray injection_code(injection_code_bytes, injection_size);

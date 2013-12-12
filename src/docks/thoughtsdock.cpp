@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 ThoughtsDock::ThoughtsDock(QWidget *parent, Qt::WindowFlags flags)
     : BaseDock(parent, flags)
-{
+{    
     setWindowTitle(tr("Thoughts"));
     setObjectName("dock_thoughts");
     setFeatures(QDockWidget::AllDockWidgetFeatures);

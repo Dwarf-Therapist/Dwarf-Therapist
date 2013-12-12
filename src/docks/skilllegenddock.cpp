@@ -31,7 +31,7 @@ THE SOFTWARE.
 
 SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags) 
     : BaseDock(parent, flags)
-{
+{    
 	setObjectName("dock_skill_legend");
 	setWindowTitle(tr("Skill Legend"));
 	QWidget *main_widget = new QWidget(this);
