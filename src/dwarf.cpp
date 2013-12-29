@@ -547,12 +547,16 @@ void Dwarf::read_states(){
 void Dwarf::read_curse(){
     m_curse_name = capitalizeEach(m_df->read_string(m_address + m_mem->dwarf_offset("curse")));
 
+   // quint32 curse_rem_flags1 = m_df->read_addr(m_address + 0x05ac);
+
     if(!m_curse_name.isEmpty()){
         m_curse_type = eCurse::OTHER;
 
         //keep track of the curse type; currently vampires and werebeasts are the only truly cursed creatures we
         //want to be aware of for the purpose of highlighting them
-        if(has_flag(eCurse::BLOODSUCKER, m_curse_flags)){
+
+        //TODO: check for removed flags as well
+        if(has_flag(eCurse::BLOODSUCKER, m_curse_flags)){ //if(!has_flag(eCurse::BLOODSUCKER, m_curse_rem_flags) && has_flag(eCurse::BLOODSUCKER,m_curse_flags)){
             //if it's a vampire then find the vampire's fake identity and use that name/age instead to match DF
             find_true_ident();
             m_curse_type = eCurse::VAMPIRE;

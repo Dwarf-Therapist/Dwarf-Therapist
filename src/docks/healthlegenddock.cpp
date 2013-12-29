@@ -46,6 +46,7 @@ HealthLegendDock::HealthLegendDock(QWidget *parent, Qt::WindowFlags flags)
     legend->setProperty("showSortIndicator",QVariant(true));
     legend->setColumnCount(2);
     legend->setColumnWidth(0,100);
+    legend->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
 
     legend->setSortingEnabled(false);
@@ -106,7 +107,7 @@ HealthLegendDock::HealthLegendDock(QWidget *parent, Qt::WindowFlags flags)
     connect(le_search, SIGNAL(textChanged(QString)), this, SLOT(search_changed(QString)));
     connect(btn_clear_search, SIGNAL(clicked()),this,SLOT(clear_search()));
     connect(btn_toggle_tree, SIGNAL(clicked()), this, SLOT(toggle_tree()));
-    connect(legend, SIGNAL(itemSelectionChanged()), this, SLOT(selection_changed()));
+    connect(legend, SIGNAL(itemSelectionChanged()), this, SLOT(selection_changed()));    
 }
 
 void HealthLegendDock::toggle_tree(){
