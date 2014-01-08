@@ -259,6 +259,7 @@ void Dwarf::refresh_data() {
     read_nick_name();
     calc_names(); //creates nice name.. which is used for debug messages so we need to do it first..
     read_states();  //read states before job
+    read_mood(); //read before skills (soul aspect)
     read_soul();
 
     // read everything we need, order is important
@@ -272,7 +273,6 @@ void Dwarf::refresh_data() {
         read_happiness();
         read_squad_info(); //read squad before job
         read_current_job();
-        read_mood(); //read before skills (soul aspect)
         read_soul_aspects(); //assumes soul already read, and requires caste to be read first
         read_turn_count();
         //load time/date stuff for births/migrations
@@ -326,9 +326,9 @@ bool Dwarf::is_valid(){
                 return true;
             }
 
-            //if a dwarf has gone crazy (berserk=7,raving=6)
+            //if a dwarf has gone crazy (berserk=7,raving=6,melancholy=5)
             int m_mood = this->m_mood_id;
-            if(m_mood==7 || m_mood==6){
+            if(m_mood==7 || m_mood==6 || m_mood==5){
                 LOGD << "Ignoring " << this->nice_name() << "who appears to have lost their mind.";
                 m_validated = true;
                 m_is_valid = false;
