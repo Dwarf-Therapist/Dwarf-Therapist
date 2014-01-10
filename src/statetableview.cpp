@@ -519,6 +519,8 @@ void StateTableView::assign_to_squad(){
         if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool()){
             id = i.data(DwarfModel::DR_ID).toInt();
             Dwarf *d = m_model->get_dwarf_by_id(id);
+            if(!d->is_adult())
+                continue;
             //refresh dwarf info first
             d->read_squad_info();
             if (d) {
