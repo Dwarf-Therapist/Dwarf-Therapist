@@ -103,6 +103,11 @@ float DwarfStats::get_trait_role_rating(ASPECT_TYPE key, int value){
 }
 
 float DwarfStats::get_aspect_role_rating(float value, QList<bin> m_bins){
+    if(value > m_bins[m_bins.length()-1].max){
+        m_bins[m_bins.length()-1].max = value;
+        //return 1.0;
+    }
+
     int min = 0;
     int max = 0;
     for(int i=0; i<m_bins.length(); i++){
@@ -146,7 +151,9 @@ QList<DwarfStats::bin> DwarfStats::build_att_bins(QList<int> raws){
     //adjust final bin's probability & density (bin for > max value, but less than absolute 5000 limit)
     m_bins[m_bins.length()-1].probability = 0.01;
     m_bins[m_bins.length()-1].density -= 0.01;
-
+    //check the last bin
+    if(m_bins[m_bins.length()-1].min > m_bins[m_bins.length()-1].max)
+        m_bins[m_bins.length()-1].max = m_bins[m_bins.length()-1].min * 1.5;
     return m_bins;
 }
 

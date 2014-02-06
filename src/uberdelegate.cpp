@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include "columntypes.h"
 #include "utils.h"
 #include "dwarftherapist.h"
-#include "militarypreference.h"
 #include "skill.h"
 #include "labor.h"
 #include "customprofession.h"
@@ -107,13 +106,13 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
     if (proxy_idx.column() == 0) {
         QStyledItemDelegate::paint(p, opt, proxy_idx);
         //draw a line under the name's cell if it's an aggregate row
-//        if(drawing_aggregate){
-//            p->save();
-//            p->setPen(QPen(QColor(Qt::black)));
-//            p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
-//            p->restore();
-//        }
-//                return;
+        //        if(drawing_aggregate){
+        //            p->save();
+        //            p->setPen(QPen(QColor(Qt::black)));
+        //            p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
+        //            p->restore();
+        //        }
+        //                return;
     }else{
 
         //all other cells
@@ -188,6 +187,26 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         }
     }
         break;
+    case CT_EQUIPMENT:
+    {
+        int wear_level = idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt();
+        paint_bg(adjusted, false, p, opt, idx,true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
+        paint_wear_cell(adjusted,p,opt,idx,wear_level);
+    }
+        break;
+    case CT_ITEMTYPE:
+    {
+        QColor bg = paint_bg(adjusted, false, p, opt, idx,true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
+        //if we're drawing numbers, we only want to draw counts for squads
+        //this is a special case because we're drawing different information if it's text mode
+        if(m_skill_drawing_method == SDM_NUMERIC && rating == 100)
+            rating = -1;
+        paint_values(adjusted, rating, text_rating, bg, p, opt, idx,90.0f,5.0f,95.0f,99.99f,102.0f,false);
+        //paint_grid(adjusted, false, p, opt, idx);
+        int wear_level = idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt();
+        paint_wear_cell(adjusted,p,opt,idx,wear_level);
+    }
+        break;
     case CT_ROLE:
     {
         QColor bg = paint_bg(adjusted, false, p, opt, idx);
@@ -242,15 +261,6 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 1, 99, 49, 51, true);
         paint_grid(adjusted, false, p, opt, idx);
 
-    }
-        break;
-    case CT_MILITARY_PREFERENCE: //this column type needs to be removed
-    {
-        if (!drawing_aggregate) {
-            paint_pref(adjusted, p, opt, idx);
-        } else {
-            paint_labor_aggregate(adjusted, p, opt, idx);
-        }
     }
         break;
     case CT_FLAGS:
@@ -580,27 +590,6 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
     p->restore();
 }
 
-void UberDelegate::paint_pref(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
-    QModelIndex idx = m_proxy->mapToSource(proxy_idx);
-    Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
-    if (!d) {
-        return QStyledItemDelegate::paint(p, opt, idx);
-    }
-
-    int labor_id = idx.data(DwarfModel::DR_LABOR_ID).toInt();
-    short val = d->pref_value(labor_id);
-    QString symbol = GameDataReader::ptr()->get_military_preference(labor_id)->value_symbol(val);
-    bool dirty = d->is_labor_state_dirty(labor_id);
-
-    QColor bg = paint_bg(adjusted, false, p, opt, proxy_idx);
-    p->save();
-    if (auto_contrast)
-        p->setPen(QPen(compliment(bg)));
-    p->drawText(opt.rect, Qt::AlignCenter, symbol);
-    p->restore();
-    paint_grid(adjusted, dirty, p, opt, proxy_idx);
-}
-
 void UberDelegate::paint_flags(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
     QModelIndex idx = m_proxy->mapToSource(proxy_idx);
     Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
@@ -616,6 +605,35 @@ void UberDelegate::paint_flags(const QRect &adjusted, QPainter *p, const QStyleO
     paint_grid(adjusted,dirty,p,opt,proxy_idx);
 }
 
+void UberDelegate::paint_wear_cell(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const int wear_level) const {
+    if(!m_proxy){
+        paint_grid(adjusted, false, p, opt, proxy_idx);
+        return;
+    }
+
+    if(wear_level > 0){
+//        int alpha = 255;
+//        if(wear_level == 2)
+//            alpha = 190;
+//        if(wear_level == 1)
+//            alpha = 125;
+        QColor wear_color = Item::color_wear();
+        QPen wear_pen = QPen(wear_color,2);
+        p->setPen(wear_pen);
+
+        QRect border = adjusted;
+        border.adjust(1,1,0,0);
+
+        p->drawLine(border.topRight(),border.bottomRight());
+        p->drawLine(border.topLeft(),border.bottomLeft());
+        p->drawLine(border.topRight(),border.topLeft());
+        p->drawLine(border.bottomLeft(),border.bottomRight());
+
+        paint_grid(adjusted, false, p, opt, proxy_idx, false); //draw dirty border and guides
+    }else{
+        paint_grid(adjusted, false, p, opt, proxy_idx);
+    }
+}
 
 void UberDelegate::paint_mood_cell(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, int skill_id, bool dirty) const {
     if(!m_proxy){ //skill legend won't have a proxy
@@ -680,13 +698,13 @@ void UberDelegate::paint_labor_aggregate(const QRect &adjusted, QPainter *p, con
 
     QStyledItemDelegate::paint(p, opt, proxy_idx); // slap on the main bg
 
-//    float rating = 0.0;
+    //    float rating = 0.0;
     p->save();
     if (m_proxy->rowCount(first_col) > 0 && enabled_count == m_proxy->rowCount(first_col)) {
         p->fillRect(adjusted, QBrush(color_active_group));
     } else if (enabled_count > 0) {
         p->fillRect(adjusted, QBrush(color_partial_group));
-//        rating = (float)enabled_count / (float)m_proxy->rowCount(first_col) * 100.0f;
+        //        rating = (float)enabled_count / (float)m_proxy->rowCount(first_col) * 100.0f;
 
         if(auto_contrast){
             p->setPen(compliment(color_partial_group));
@@ -743,11 +761,11 @@ void UberDelegate::paint_guide_borders(const QStyleOptionViewItem &opt, QPainter
         p->restore();
     }else if(drawing_aggregate){
         // the original idea was to make the aggregate rows more visible with borders... but it looks pretty bad..
-//        p->save();
-//        p->setPen(QPen(QColor(Qt::black)));
-//        p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
-//        p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
-//        p->restore();
+        //        p->save();
+        //        p->setPen(QPen(QColor(Qt::black)));
+        //        p->drawLine(opt.rect.topLeft(), opt.rect.topRight());
+        //        p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
+        //        p->restore();
     }
 }
 

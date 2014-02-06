@@ -79,17 +79,6 @@ void Caste::read_caste() {
     m_tag = m_df->read_string(m_address);    
     m_name = capitalizeEach(m_df->read_string(m_address + m_mem->caste_offset("caste_name")));
     m_name_plural = capitalizeEach(m_df->read_string(m_address + m_mem->word_offset("noun_plural")));
-//    //needed for mods with caste's name not specified
-
-//    !!!!doesn't work with mods that require hidden castes. mod creators shouldn't be creating castes with no names unless they want them hidden...
-
-//    if (m_name.toLower()==m_race_name.toLower())
-//    {
-//        if ((m_tag.toLower()!="male")&&(m_tag.toLower()!="female"))
-//        {
-//            m_name = capitalizeEach(m_tag.remove("_MALE").remove("_FEMALE").replace("_"," ").toLower());
-//        }
-//    }
     m_description = m_df->read_string(m_address + m_mem->caste_offset("caste_descr"));
 
 //    could update this to read the child/baby sizes instead of just the adult size
@@ -197,7 +186,7 @@ QPair<int, QString> Caste::get_attribute_descriptor_info(ATTRIBUTES_TYPE id, int
     QPair<int, QString> ret;
     att_range r = m_attrib_ranges.value((int)id);
     if(value >= r.display_bins.at(r.display_bins.length()-1)){
-        ret.first = r.display_bins.length()-1;
+        ret.first = r.display_bins.length();
         ret.second = Attribute::find_descriptor(id,ret.first);
     }else{
         for(int i=0; i < r.display_bins.length(); i++){

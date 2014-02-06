@@ -36,7 +36,6 @@ THE SOFTWARE.
 #include "dwarfdetailswidget.h"
 #include "mainwindow.h"
 #include "profession.h"
-#include "militarypreference.h"
 #include "dwarfstats.h"
 #include "races.h"
 #include "reaction.h"
@@ -51,9 +50,16 @@ THE SOFTWARE.
 #include "material.h"
 #include "caste.h"
 #include "attribute.h"
-#include "weapon.h"
+#include "itemweaponsubtype.h"
 #include "roleaspect.h"
 #include "thought.h"
+
+#include "itemweapon.h"
+#include "itemarmor.h"
+#include "itemammo.h"
+#include "uniform.h"
+
+#include "squad.h"
 
 Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     : QObject(parent)
@@ -65,7 +71,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_race_id(-1)
     , m_happiness(DH_MISERABLE)
     , m_raw_happiness(0)
-    , m_is_male(true)
+    , m_gender(SEX_UNK)
     , m_mood_id(-1)
     , m_had_mood(false)
     , m_artifact_name("")
@@ -97,6 +103,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_true_birth_year(0)
     , m_validated(false)
     , m_is_valid(false)
+    , m_uniform(0x0)
     , m_curse_type(eCurse::NONE)
 {
     read_settings();
@@ -142,9 +149,10 @@ Dwarf::~Dwarf() {
     m_grouped_preferences.clear();
 
     m_thoughts.clear();
-
     m_syndromes.clear();
+    m_inventory_grouped.clear();
 
+    m_uniform = 0;
     m_race = 0;
     m_caste = 0;
     m_mem = 0;
@@ -249,7 +257,7 @@ void Dwarf::refresh_data() {
     m_unit_flags << flags1 << flags2 << flags3;
 
     m_curse_flags = m_df->read_addr(m_address + m_mem->dwarf_offset("curse_add_flags1"));
-//    m_curse_flags2 = m_df->read_addr(m_address + m_mem->dwarf_offset("curse_add_flags2"));
+    //    m_curse_flags2 = m_df->read_addr(m_address + m_mem->dwarf_offset("curse_add_flags2"));
 
     //read only the base information we need to validate if we should continue loading this dwarf
     read_id();
@@ -272,18 +280,19 @@ void Dwarf::refresh_data() {
         read_labors();
         read_happiness();
         read_squad_info(); //read squad before job
+        read_uniform();
         read_current_job();
-        read_soul_aspects(); //assumes soul already read, and requires caste to be read first
-        read_turn_count();
-        //load time/date stuff for births/migrations
+        read_syndromes(); //read syndromes before attributes
         set_age(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time"));
         //curse check will change the name and age
-        read_curse();
+        read_curse(); //read curse before attributes
+        read_soul_aspects(); //assumes soul already read, and requires caste to be read first
+        //load time/date stuff for births/migrations
+        read_turn_count();
         read_sex();
         read_animal_type(); //need skills loaded to check for hostiles
         read_noble_position();
         read_preferences();
-        read_syndromes();
 
         if(!m_is_animal || DT->user_settings()->value("options/animal_health", false).toBool()){
             bool req_diagnosis = !DT->user_settings()->value("options/diagnosis_not_required", false).toBool();
@@ -292,6 +301,7 @@ void Dwarf::refresh_data() {
             m_unit_health = UnitHealth(m_df,this,req_diagnosis);
             //        LOGD << "Finished!";
         }
+        read_inventory();
 
         if(m_is_animal)
             calc_names(); //calculate names again as we need to check tameness for animals
@@ -450,14 +460,16 @@ void Dwarf::read_id() {
 
 void Dwarf::read_sex() {
     // TODO: actually break down this caste
-    BYTE sex = m_df->read_byte(m_address + m_mem->dwarf_offset("sex"));
-    m_is_male = (int)sex == 1;
-    TRACE << "MALE:" << m_is_male;
-
-    if(m_is_male)
+    quint8 sex = m_df->read_byte(m_address + m_mem->dwarf_offset("sex"));
+    TRACE << "GENDER:" << sex;
+    m_gender = static_cast<GENDER_TYPE>(sex);
+    if(m_gender == SEX_UNK){
+        m_icn_gender = tr(":img/question-white.png");
+    }else if(m_gender == SEX_M){
         m_icn_gender = tr(":img/male.png");
-    else
+    }else{
         m_icn_gender = tr(":img/female.png");
+    }
 }
 
 void Dwarf::read_mood(){
@@ -547,7 +559,7 @@ void Dwarf::read_states(){
 void Dwarf::read_curse(){
     m_curse_name = capitalizeEach(m_df->read_string(m_address + m_mem->dwarf_offset("curse")));
 
-   // quint32 curse_rem_flags1 = m_df->read_addr(m_address + 0x05ac);
+    // quint32 curse_rem_flags1 = m_df->read_addr(m_address + 0x05ac);
 
     if(!m_curse_name.isEmpty()){
         m_curse_type = eCurse::OTHER;
@@ -563,7 +575,7 @@ void Dwarf::read_curse(){
         }
         //normally werebeasts are set apart by having NO_AGING, however mods don't conform to this..
         if(m_curse_name.startsWith("were",Qt::CaseInsensitive))
-                m_curse_type = eCurse::WEREBEAST;
+            m_curse_type = eCurse::WEREBEAST;
 
         /* until we get a save to actually test this, we'll have to rely on parsing the curse name
         int normal_race = m_df->read_int(m_address + 0x9d0);
@@ -748,7 +760,7 @@ void Dwarf::read_profession() {
     QString prof_name = tr("Unknown Profession %1").arg(m_raw_profession);
     if (p) {
         m_can_set_labors = p->can_assign_labors();
-        prof_name = p->name(m_is_male);
+        prof_name = p->name(is_male());
     } else {
         LOGE << tr("Read unknown profession with id '%1' for dwarf '%2'")
                 .arg(m_raw_profession).arg(m_nice_name);
@@ -790,7 +802,7 @@ void Dwarf::read_profession() {
 }
 
 void Dwarf::read_noble_position(){
-    m_noble_position = m_df->fortress()->get_noble_positions(m_hist_id,m_is_male);
+    m_noble_position = m_df->fortress()->get_noble_positions(m_hist_id,is_male());
 }
 void Dwarf::read_preferences(){
     if(m_is_animal)
@@ -883,12 +895,12 @@ void Dwarf::read_preferences(){
             break;
         case 4: //like item
         {
-            pref_name = m_df->get_item(pref_id,item_sub_type).toLower();
+            pref_name = m_df->get_preference_item_name(pref_id,item_sub_type).toLower();
             p->set_item_type(itype);
 
             //special case for weapon items. find the weapon and set ranged/melee flag for comparison
             if(itype == WEAPON){
-                Weapon *w = m_df->get_weapon(capitalizeEach(pref_name));
+                ItemWeaponSubtype *w = m_df->get_weapon_def(capitalizeEach(pref_name));
                 if(w && w->is_ranged())
                     p->add_flag(ITEMS_WEAPON_RANGED);
                 else
@@ -965,9 +977,33 @@ void Dwarf::read_syndromes(){
     bool show_cursed = DT->user_settings()->value("options/highlight_cursed",false).toBool();
     foreach(VIRTADDR syn, active_unit_syns){
         Syndrome s = Syndrome(m_df,syn);
-        if(show_cursed || (!show_cursed && !s.display_name().contains("vampcurse",Qt::CaseInsensitive) && !s.display_name().contains("werecurse",Qt::CaseInsensitive)))
+        if(show_cursed || (!show_cursed && !s.display_name().contains("vampcurse",Qt::CaseInsensitive) && !s.display_name().contains("werecurse",Qt::CaseInsensitive))){
             m_syndromes.append(s);
+            QHash<ATTRIBUTES_TYPE,QPair<int,int> > syn_changes = s.get_attribute_changes();
+            if(syn_changes.count() > 0){
+                QPair<int,int> vals;
+                foreach(ATTRIBUTES_TYPE a_type,syn_changes.keys()){
+                    vals = s.get_attribute_changes().value(a_type);
+                    QPair<float,int> totals;
+                    if(!m_attribute_mods.contains(a_type))
+                        totals = qMakePair(1.0f,0);
+                    else
+                        totals = m_attribute_mods.value(a_type);
+
+                    //add valid percentage changes
+                    if(vals.first != 100 && vals.first != 0)
+                        totals.first *= ((float)vals.first/100.0f);
+                    //add valid flat increases
+                    if(vals.second != 0){
+                        totals.second += vals.second;
+                    }
+                    if((totals.first != 1 && totals.first != 0) || totals.second != 0)
+                        m_attribute_mods.insert(a_type,totals);
+                }
+            }
+        }
     }
+    //    qSort(m_syndromes.begin(),m_syndromes.end(),&Syndrome::sort_date_time);
 }
 
 bool Dwarf::is_buffed(){
@@ -1002,7 +1038,10 @@ QString Dwarf::get_syndrome_names(bool include_buffs, bool include_sick) {
     QStringList names;
     foreach(Syndrome s, m_syndromes){
         if((include_buffs && !s.is_sickness()) || (include_sick && s.is_sickness())){
-            names.append(s.display_name(show_name,show_class));
+            QString syn = s.display_name(show_name,show_class);
+            //            if(!s.syn_effects().isEmpty())
+            //                syn.append(tr("(%1)").arg(s.syn_effects()));
+            names.append(syn);
         }
     }
     return names.join(", ");
@@ -1022,11 +1061,6 @@ void Dwarf::read_labors() {
         bool enabled = buf.at(l->labor_id) > 0;
         m_labors[l->labor_id] = enabled;
         m_pending_labors[l->labor_id] = enabled;
-    }
-    // also store prefs in this structure
-    foreach(MilitaryPreference *mp, gdr->get_military_preferences()) {
-        m_labors[mp->labor_id] = static_cast<ushort>(buf[mp->labor_id]);
-        m_pending_labors[mp->labor_id] = static_cast<ushort>(buf[mp->labor_id]);
     }
 }
 
@@ -1310,7 +1344,248 @@ bool Dwarf::get_flag_value(int bit)
 void Dwarf::read_squad_info() {
     m_squad_id = m_df->read_int(m_address + m_mem->dwarf_offset("squad_id"));
     m_squad_position = m_df->read_int(m_address + m_mem->dwarf_offset("squad_position"));
+    if(m_squad_id >= 0 && !m_is_animal && is_adult()){
+        m_squad_name = m_df->get_squad(m_squad_id)->name();
+    }
 }
+
+void Dwarf::read_uniform(){
+    if(!m_is_animal && is_adult()){
+        if(m_squad_id >= 0){
+            Squad *s = m_df->get_squad(m_squad_id);
+            if(s != 0){
+                //military uniform
+                m_uniform = s->get_uniform(m_squad_position);
+            }
+        }else{
+            //build a work uniform
+            short sub_type = -1;
+            short job_skill = -1;
+            m_uniform = new Uniform(m_df,this);
+            if(labor_enabled(0)){//mining
+                job_skill = 0; //mining skill
+                m_uniform->add_uniform_item(WEAPON,sub_type,job_skill);
+            }else if(labor_enabled(10)){//woodcutting
+                job_skill = 38; //axe skill
+                m_uniform->add_uniform_item(WEAPON,sub_type,job_skill);
+            }else if(labor_enabled(44)){//hunter
+                //add a weapon
+                job_skill = 44; //crossbow skill
+                m_uniform->add_uniform_item(WEAPON,sub_type,job_skill);
+                //add quiver
+                m_uniform->add_uniform_item(QUIVER,sub_type,-1);
+                //add ammo
+                m_uniform->add_uniform_item(AMMO,sub_type,-1);
+            }
+            if(!m_uniform->has_items()){
+                delete m_uniform;
+                m_uniform = 0;
+            }
+        }
+    }
+}
+
+void Dwarf::read_inventory(){    
+    bool has_shirt = false;
+    int shoes_count = 0;
+    bool has_pants = false;
+
+    QVector<VIRTADDR> used_items = m_df->enumerate_vector(m_address + m_mem->dwarf_offset("used_items_vector"));
+    QHash<int,int> item_affection;
+    foreach(VIRTADDR item_used, used_items){
+        item_affection.insert(m_df->read_int(item_used),m_df->read_int(item_used+m_mem->dwarf_offset("affection_level")));
+    }
+
+    short inv_type = -1;
+    short bp_id = -1;
+    QString category_name = "";
+    foreach(VIRTADDR inventory_item_addr, m_df->enumerate_vector(m_address + m_mem->dwarf_offset("inventory"))){
+        inv_type = m_df->read_short(inventory_item_addr + m_mem->dwarf_offset("inventory_item_mode"));
+        bp_id = m_df->read_short(inventory_item_addr + m_mem->dwarf_offset("inventory_item_bodypart"));
+
+        if(inv_type == 1 || inv_type == 2 || inv_type == 4 || inv_type == 8){
+            if(bp_id >= 0)
+                category_name = m_caste->get_body_part(bp_id)->name();
+            else
+                category_name = Item::missing_group_name();
+
+            VIRTADDR item_ptr = m_df->read_addr(inventory_item_addr);
+            Item *i = new Item(m_df,item_ptr,this);
+            ITEM_TYPE i_type = i->item_type();
+
+            int affection_level = item_affection.value(i->id());
+            if(affection_level > 0)
+                i->set_affection(affection_level);
+
+            if(i_type == WEAPON){
+                ItemWeapon *iw = new ItemWeapon(*i);
+                process_inv_item(category_name,iw);
+
+            }else if(Item::is_armor_type(i_type)){
+                ItemArmor *ir = new ItemArmor(*i);
+                process_inv_item(category_name,ir);
+
+                if(i_type == PANTS && !has_pants)
+                    has_pants = true;
+                else if(i_type == ARMOR && !has_shirt)
+                    has_shirt = true;
+                else if(i_type == SHOES)
+                    shoes_count++;
+
+                if(ir->wear() > m_inventory_wear.value(i_type))
+                    m_inventory_wear.insert(i_type,ir->wear());
+
+            }else if(Item::is_supplies(i_type) || Item::is_ranged_equipment(i_type)){
+                process_inv_item(category_name,i);
+            }
+
+            //process any items inside this item (ammo, food?, drink?)
+            if(i->contained_items().count() > 0){
+                foreach(Item *contained_item, i->contained_items()){
+                    process_inv_item(category_name,contained_item,true);
+                }
+            }
+        }
+    }
+
+    //missing uniform items
+    if(m_uniform && m_uniform->get_missing_items().count() > 0){
+        QString cat_name = Item::missing_group_name();
+        foreach(ITEM_TYPE itype, m_uniform->get_missing_items().uniqueKeys()){
+            foreach(ItemDefUniform *u, m_uniform->get_missing_items().value(itype)){
+                Item *i = new Item(m_df,u,this);
+                if(itype == WEAPON){
+                    ItemWeapon *iw = new ItemWeapon(*i);
+                    process_inv_item(cat_name,iw);
+                }else if(itype == AMMO){ //check before ranged equipment to cast it properly
+                    ItemAmmo *ia = new ItemAmmo(*i);
+                    process_inv_item(cat_name,ia);
+                }else if(Item::is_armor_type(itype)){
+                    ItemArmor *ir = new ItemArmor(*i);
+                    process_inv_item(cat_name,ir);
+                }else if(Item::is_supplies(itype) || Item::is_ranged_equipment(itype)){
+                    process_inv_item(cat_name,i);
+                }
+            }
+        }
+    }
+
+    //ensure babies and animals have 100 coverage rating as they don't wear anything
+    if(m_is_baby || m_is_animal){
+        has_pants = true;
+        has_shirt = true;
+        shoes_count = 2;
+    }
+
+    //set our coverage ratings. currently this is only important for the 3 clothing types that, if missing, give bad thoughts
+    if(has_pants){
+        m_coverage_ratings.insert(PANTS,100.0f);
+    }else{
+        m_coverage_ratings.insert(PANTS,0.0f);
+        m_missing_counts.insert(PANTS,1);
+        process_inv_item(Item::uncovered_group_name(),new Item(PANTS,tr("Legs Uncovered!"),this));
+    }
+    if(has_shirt){
+        m_coverage_ratings.insert(ARMOR,100.0f);
+    }else{
+        m_coverage_ratings.insert(ARMOR,0);
+        m_missing_counts.insert(ARMOR,1);
+        process_inv_item(Item::uncovered_group_name(),new Item(ARMOR,tr("Chest Uncovered!"),this));
+    }
+    //for shoes, compare how many they're wearing compared to how many legs they've still got
+    float limb_count =  m_unit_health.limb_count();
+    float foot_coverage = 100.0f;
+    if(limb_count > 0)
+        foot_coverage = shoes_count / limb_count * 100.0f;
+    if(foot_coverage < 100.0f){
+        process_inv_item(Item::uncovered_group_name(),new Item(SHOES,tr("Feet Uncovered!"),this));
+        m_missing_counts.insert(SHOES,limb_count - shoes_count);
+    }
+    m_coverage_ratings.insert(SHOES,foot_coverage);
+}
+
+void Dwarf::process_inv_item(QString category, Item *item, bool is_contained_item){
+    if(m_uniform)
+        m_uniform->check_uniform(category,item);
+
+    //don't process items contained in other items
+    if(is_contained_item)
+        return;
+
+    //if the item is one of these, group it together under the other equipment category by changing the type
+    //now that we've checked against the uniform
+    //also change the item type so it's grouped properly in the display
+    //if we ever want individual columns for backpack, quiver, etc. this should be removed
+    //    ITEM_TYPE itype = item->item_type();
+//    if(Item::is_supplies(itype)){
+//        itype = SUPPLIES;
+//        item->item_type(SUPPLIES);
+//    }else if(Item::is_melee_equipment(itype)){
+//        itype = MELEE_EQUIPMENT;
+//        item->item_type(MELEE_EQUIPMENT);
+//    }else if(Item::is_ranged_equipment(itype)){
+//        itype = RANGED_EQUIPMENT;
+//        item->item_type(RANGED_EQUIPMENT);
+//    }
+
+    //add the item to the display list by body part
+    QList<Item*> items;
+    if(m_inventory_grouped.contains(category))
+        items = m_inventory_grouped.take(category);
+    items.append(item);
+    if(items.length() > 0){
+        m_inventory_grouped.insert(category,items);
+    }
+}
+
+//returns 1-3, higher being more worn out items
+int Dwarf::get_inventory_wear(ITEM_TYPE itype){
+    if(itype == NONE){
+        int worst_wear=0;
+        foreach(int rating, m_inventory_wear.values()){
+            if(rating > worst_wear)
+                worst_wear = rating;
+        }
+        return worst_wear;
+    }else{
+        return m_inventory_wear.value(itype);
+    }
+    return 0;
+}
+
+int Dwarf::get_missing_equip_count(ITEM_TYPE itype){
+    int count = 0;
+    if(m_uniform)
+        count = m_uniform->get_missing_equip_count(itype);
+    else
+        count = m_missing_counts.value(itype);
+    return count;
+}
+
+float Dwarf::get_uniform_rating(ITEM_TYPE itype){
+    if(m_uniform)
+        return m_uniform->get_uniform_rating(itype);
+    else
+        return 100;
+}
+
+float Dwarf::get_coverage_rating(ITEM_TYPE itype){
+    float rating = 100.0f;
+    if(itype == NONE){
+        rating = 0;
+        foreach(int val, m_coverage_ratings.values()){
+            rating += val;
+        }
+        rating /= (float)m_coverage_ratings.count();
+    }else{
+        if(m_coverage_ratings.contains(itype))
+            rating = m_coverage_ratings.value(itype);
+    }
+    if(rating > 100)
+        rating = 100;
+    return rating;
+}
+
 
 void Dwarf::read_turn_count() {
     m_turn_count = m_df->read_int(m_address + m_mem->dwarf_offset("turn_count"));
@@ -1378,7 +1653,7 @@ bool Dwarf::trait_is_active(int trait_id){
     return true;
 }
 
-void Dwarf::read_attributes() {    
+void Dwarf::read_attributes() {
     m_attributes.clear();
     //read the physical attributes
     VIRTADDR addr = m_address + m_mem->dwarf_offset("physical_attrs");
@@ -1395,23 +1670,29 @@ void Dwarf::read_attributes() {
 
 void Dwarf::load_attribute(VIRTADDR &addr, int id){
     int cti = 500;
+    ATTRIBUTES_TYPE att_id = static_cast<ATTRIBUTES_TYPE>(id);
     QPair<int,QString> desc; //index, description of descriptor
 
     int value = (int)m_df->read_int(addr);
     int limit = (int)m_df->read_int(addr+0x4);
+    //    if(limit > 5000)
+    //        limit = 5000;
 
-    if(limit > 5000)
-        limit = 5000;
+    if(m_attribute_mods.contains(att_id)){
+        value *= m_attribute_mods.value(att_id).first;
+        value += m_attribute_mods.value(att_id).second;
+    }
+
     if(m_caste){
         cti = m_caste->get_attribute_cost_to_improve(id);
-        desc = m_caste->get_attribute_descriptor_info(static_cast<ATTRIBUTES_TYPE>(id),value);
+        desc = m_caste->get_attribute_descriptor_info(att_id,value);
     }
     Attribute a = Attribute(id, value, limit, cti, desc.first, desc.second);
     m_attributes.append(a);
     addr+=0x1c;
 }
 
-Attribute Dwarf::get_attribute(int id){    
+Attribute Dwarf::get_attribute(int id){
     if(id < m_attributes.count())
         return m_attributes.at(id);
     else
@@ -1470,12 +1751,6 @@ short Dwarf::pref_value(const int &labor_id) {
     return m_pending_labors.value(labor_id);
 }
 
-void Dwarf::toggle_pref_value(const int &labor_id) {
-    short next_val = GameDataReader::ptr()->get_military_preference(labor_id)->next_val(pref_value(labor_id));
-    m_pending_labors[labor_id] = next_val;
-}
-
-
 bool Dwarf::labor_enabled(int labor_id) {
     return m_pending_labors.value(labor_id, false);
 }
@@ -1494,7 +1769,7 @@ QVector<int> Dwarf::get_dirty_labors() {
     return labors;
 }
 
-bool Dwarf::toggle_labor(int labor_id) {    
+bool Dwarf::toggle_labor(int labor_id) {
     set_labor(labor_id, !m_pending_labors[labor_id], false);
     return true;
 }
@@ -1617,7 +1892,7 @@ void Dwarf::clear_pending() {
     refresh_data();
 }
 
-void Dwarf::commit_pending() {    
+void Dwarf::commit_pending() {
     int addr = m_address + m_mem->dwarf_offset("labors");
 
     QByteArray buf(102, 0);
@@ -1720,15 +1995,6 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
     }
     foreach(int labor_id, labors) {
         Labor *l = GameDataReader::ptr()->get_labor(labor_id);
-        MilitaryPreference *mp = GameDataReader::ptr()->get_military_preference(labor_id);
-
-        if (!l || l->labor_id != labor_id) {
-            // this may be a mil pref not a labor..
-            if (!mp || mp->labor_id != labor_id) {
-                LOGW << "somehow got a change to an unknown labor with id:" << labor_id;
-                continue;
-            }
-        }
 
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
         if (l) {
@@ -1738,9 +2004,6 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
             } else {
                 i->setIcon(0, QIcon(":img/minus-circle.png"));
             }
-        } else if (mp) {
-            i->setText(0, QString("Set %1 to %2").arg(mp->name).arg(mp->value_name(pref_value(labor_id))));
-            i->setIcon(0, QIcon(":img/arrow-switch.png"));
         }
         i->setData(0, Qt::UserRole, id());
     }
@@ -1801,8 +2064,8 @@ QString Dwarf::tooltip_text() {
         if(!sorted_roles.isEmpty() && max_roles > 0 && s->value("options/tooltip_show_roles",true).toBool()){
             roles_summary.append("<ol style=\"margin-top:0px; margin-bottom:0px;\">");
             for(int i = 0; i < max_roles; i++){
-                    roles_summary += tr("<li>%1  (%2%)</li>").arg(sorted_roles.at(i).name)
-                            .arg(QString::number(sorted_roles.at(i).rating,'f',2));
+                roles_summary += tr("<li>%1  (%2%)</li>").arg(sorted_roles.at(i).name)
+                        .arg(QString::number(sorted_roles.at(i).rating,'f',2));
             }
             roles_summary.append("</ol>");
         }
@@ -2212,7 +2475,7 @@ float Dwarf::calc_role_rating(Role *m_role){
 
                     //if it's a weapon, and a match, ensure the dwarf can actually wield it as well
                     if(match_count > 0 && role_pref->get_item_type() == WEAPON){
-                        Weapon *w = m_df->get_weapon(capitalizeEach(dwarf_pref->get_name()));
+                        ItemWeaponSubtype *w = m_df->get_weapon_def(capitalizeEach(dwarf_pref->get_name()));
                         if(!w || (m_body_size < w->single_grasp() && m_body_size < w->multi_grasp()))
                             match_count = 0;
                     }
@@ -2249,10 +2512,10 @@ float Dwarf::calc_role_rating(Role *m_role){
 }
 
 const QList<Role::simple_rating> &Dwarf::sorted_role_ratings(){
-//    if(DT->user_settings()->value("options/show_custom_roles",false).toBool())
-//        return m_sorted_custom_role_ratings;
-//    else
-//        return m_sorted_role_ratings;
+    //    if(DT->user_settings()->value("options/show_custom_roles",false).toBool())
+    //        return m_sorted_custom_role_ratings;
+    //    else
+    //        return m_sorted_role_ratings;
     return m_sorted_role_ratings;
 }
 
@@ -2265,7 +2528,7 @@ float Dwarf::get_role_rating(QString role_name, bool raw){
 void Dwarf::set_role_rating(QString role_name, float value){
     m_role_ratings.insert(role_name,value);
 }
-void Dwarf::update_rating_list(){    
+void Dwarf::update_rating_list(){
     GameDataReader *gdr = GameDataReader::ptr();
     //keep a sorted list of the ratings as well
     foreach(QString name, m_role_ratings.uniqueKeys()){
@@ -2274,16 +2537,16 @@ void Dwarf::update_rating_list(){
         sr.rating = m_role_ratings.value(name);
         sr.name = name;
         m_sorted_role_ratings.append(sr);
-//        if(GameDataReader::ptr()->get_role(name)->is_custom)
-//            m_sorted_custom_role_ratings << qMakePair(name,m_role_ratings.value(name));
+        //        if(GameDataReader::ptr()->get_role(name)->is_custom)
+        //            m_sorted_custom_role_ratings << qMakePair(name,m_role_ratings.value(name));
     }
     if(DT->user_settings()->value("options/show_custom_roles",false).toBool()){
         qSort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(),&Dwarf::sort_ratings_custom);
     }else{
         qSort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(),&Dwarf::sort_ratings);
     }
-//    qSort(m_sorted_custom_role_ratings.begin(),m_sorted_custom_role_ratings.end(), &Dwarf::sort_ratings);
-//    qSort(m_sorted_custom_role_ratings.begin(),m_sorted_custom_role_ratings.end(), &Dwarf::sort_ratings);
+    //    qSort(m_sorted_custom_role_ratings.begin(),m_sorted_custom_role_ratings.end(), &Dwarf::sort_ratings);
+    //    qSort(m_sorted_custom_role_ratings.begin(),m_sorted_custom_role_ratings.end(), &Dwarf::sort_ratings);
     //refresh the tooltip as well
     //tooltip_text();
 }

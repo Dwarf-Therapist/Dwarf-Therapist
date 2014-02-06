@@ -160,7 +160,11 @@ typedef enum {
     SLAB=86,
     EGG=87,
     BOOK=88,
-    NUM_OF_ITEM_TYPES=89
+    NUM_OF_ITEM_TYPES=89,
+    SUPPLIES=999,
+    ARTIFACTS=1000,
+    MELEE_EQUIPMENT=1001,
+    RANGED_EQUIPMENT=1002
 } ITEM_TYPE;
 
 typedef enum {
@@ -372,6 +376,23 @@ typedef enum {
     TT_OTHER
 } TISSUE_TYPE;
 
+}
+
+typedef enum {
+    SEX_UNK = -1,
+    SEX_F = 0,
+    SEX_M = 1
+} GENDER_TYPE;
+
+static inline QString get_gender_desc(const GENDER_TYPE &type) {
+    switch (type) {
+    case SEX_UNK: return QObject::tr("Other");
+    case SEX_F: return QObject::tr("Female");
+    case SEX_M: return QObject::tr("Male");
+    default:
+        return QObject::tr("Unknown");
+    }
+    return QObject::tr("Unknown");
 }
 
 #endif // GLOBAL_ENUMS_H

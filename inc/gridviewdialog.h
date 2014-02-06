@@ -115,14 +115,14 @@ private:
 		void add_skill_column();
         void add_idle_column();
         void add_trait_column();
-        void add_attribute_column();
-        void add_military_preferences_column();
+        void add_attribute_column();        
         void add_role_column();
         void add_weapon_column();
         void add_health_column();
         void add_profession_column();
         void add_highest_moodable_column();
         void add_trained_column();
+        void add_equipment_column();
 };
 
 #endif

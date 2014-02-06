@@ -36,10 +36,10 @@ class Languages;
 class Reaction;
 class Race;
 class FortressEntity;
-class Weapon;
+class ItemWeaponSubtype;
 class Material;
 class Plant;
-class Item;
+
 
 class DFInstance : public QObject {
     Q_OBJECT
@@ -106,7 +106,10 @@ public:
     void load_main_vectors();
     void load_weapons();
 
+    void load_fortress();
+
     QVector<Squad*> load_squads(bool refreshing = false);
+    Squad * get_squad(int id);
 
     int get_labor_count(int id) const {return m_enabled_labor_count.value(id,0);}
     void update_labor_count(int id, int change)
@@ -171,6 +174,8 @@ public:
     VIRTADDR find_fake_identity(int hist_id);
     FortressEntity * fortress() {return m_fortress;}
 
+    void index_item_vector(ITEM_TYPE itype);
+
     struct pref_stat{
         QStringList names_likes;
         QStringList names_dislikes;
@@ -180,20 +185,26 @@ public:
     VIRTADDR get_syndrome(int idx);
     VIRTADDR get_material_template(QString temp_id) {return m_material_templates.value(temp_id);}
     QVector<Material *> get_inorganic_materials() {return m_inorganics_vector;}
-    QHash<ITEM_TYPE, QVector<VIRTADDR> > get_items() {return m_item_vectors;}
+    QHash<ITEM_TYPE, QVector<VIRTADDR> > get_item_def() {return m_itemdef_vectors;}
     QVector<VIRTADDR>  get_colors() {return m_color_vector;}
     QVector<VIRTADDR> get_shapes() {return m_shape_vector;}
     QVector<Plant *> get_plants() {return m_plants_vector;}
     QVector<Material *> get_base_materials() {return m_base_materials;}
 
-    Weapon* get_weapon(QString name) {return m_weapons.value(name);}
-    QHash<QString, Weapon *> get_weapons() {return m_weapons;}
-    QList<QPair<QString, Weapon *> > get_ordered_weapons() {return m_ordered_weapons;}
+    ItemWeaponSubtype* get_weapon_def(QString name) {return m_weapon_defs.value(name);}
+    QHash<QString, ItemWeaponSubtype *> get_weapon_defs() {return m_weapon_defs;}
+    QList<QPair<QString, ItemWeaponSubtype *> > get_ordered_weapon_defs() {return m_ordered_weapon_defs;}
 
     Material * find_material(int mat_index, short mat_type);
 
     QVector<VIRTADDR> get_item_vector(ITEM_TYPE i);
-    QString get_item(int index, int subtype);
+    QString get_preference_item_name(int index, int subtype);
+
+    VIRTADDR get_item_address(ITEM_TYPE itype, int item_id);
+
+    QString get_item_name(ITEM_TYPE itype, int subtype, short mat_type, int mat_index, int mat_class = -1);
+    QString get_item_name(ITEM_TYPE itype,int item_id);
+
     QString get_color(int index);
     QString get_shape(int index);
     Material * get_inorganic_material(int index);
@@ -202,6 +213,7 @@ public:
     QString find_material_name(int mat_index, short mat_type, ITEM_TYPE itype);
     const QHash<QPair<QString,QString>,pref_stat*> get_preference_stats() {return m_pref_counts;}
     const QHash<short, QPair<int, int> > get_thought_stats() {return m_thought_counts;}
+
 
     QString fortress_name() const {return QString("%1, \"%2\"").arg(m_fortress_name).arg(m_fortress_name_translated);}
 
@@ -264,8 +276,8 @@ private:
     QHash<QString, Reaction *> m_reactions;
     QVector<Race *> m_races;
 
-    QHash<QString,Weapon *> m_weapons;
-    QList<QPair<QString, Weapon *> > m_ordered_weapons;
+    QHash<QString,ItemWeaponSubtype *> m_weapon_defs;
+    QList<QPair<QString, ItemWeaponSubtype *> > m_ordered_weapon_defs;
     QVector<Plant *> m_plants_vector;
     QVector<Material *> m_inorganics_vector;
     QVector<Material *> m_base_materials;
@@ -275,7 +287,10 @@ private:
     QHash<int,VIRTADDR> m_hist_figures;
     QVector<VIRTADDR> m_fake_identities;
 
-    QHash<ITEM_TYPE, QVector<VIRTADDR> > m_item_vectors;
+    QHash<ITEM_TYPE, QVector<VIRTADDR> > m_itemdef_vectors;
+    QHash<ITEM_TYPE, QVector<VIRTADDR> > m_items_vectors;
+    QHash<ITEM_TYPE, QHash<int,VIRTADDR> >  m_mapped_items;
+
     QVector<VIRTADDR> m_color_vector;
     QVector<VIRTADDR> m_shape_vector;
 
@@ -292,6 +307,8 @@ private:
     QString m_fortress_name_translated;
 
     VIRTADDR m_squad_vector;
+
+    QVector<Squad*> m_squads;
 };
 
 #endif // DFINSTANCE_H

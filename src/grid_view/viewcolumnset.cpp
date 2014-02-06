@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include "traitcolumn.h"
 #include "attributecolumn.h"
 #include "rolecolumn.h"
-#include "militarypreferencecolumn.h"
 #include "gamedatareader.h"
 #include "truncatingfilelogger.h"
 #include "labor.h"
@@ -48,6 +47,8 @@ THE SOFTWARE.
 #include "highestmoodcolumn.h"
 #include "trainedcolumn.h"
 #include "healthcolumn.h"
+#include "equipmentcolumn.h"
+#include "itemtypecolumn.h"
 
 ViewColumnSet::ViewColumnSet(QString name, QObject *parent)
     : QObject(parent)
@@ -260,9 +261,6 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
         case CT_ATTRIBUTE:
             new AttributeColumn(s, ret_val, parent);
             break;
-        case CT_MILITARY_PREFERENCE:
-            new MilitaryPreferenceColumn(s, ret_val, parent);
-            break;
         case CT_FLAGS:
             new FlagColumn(s, ret_val, parent);
             break;
@@ -271,7 +269,7 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
             break;
         case CT_WEAPON:
             if(DT->get_main_window())
-                new WeaponColumn(s.value("name").toString(),DT->get_main_window()->get_DFInstance()->get_weapons().value(s.value("name").toString()),ret_val,parent);
+                new WeaponColumn(s.value("name").toString(),DT->get_main_window()->get_DFInstance()->get_weapon_defs().value(s.value("name").toString()),ret_val,parent);
             break;
         case CT_PROFESSION:
             new ProfessionColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
@@ -284,6 +282,12 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
             break;
         case CT_HEALTH:
             new HealthColumn(s.value("name","UNKNOWN").toString(), s.value("id",0).toInt(),ret_val,parent);
+            break;
+        case CT_EQUIPMENT:
+            new EquipmentColumn(s.value("name","UNKNOWN").toString(),ret_val,parent);
+            break;
+        case CT_ITEMTYPE:
+            new ItemTypeColumn(s.value("name","").toString(),static_cast<ITEM_TYPE>(s.value("item_type",NONE).toInt()),ret_val,parent);
             break;
         case CT_DEFAULT:
         default:

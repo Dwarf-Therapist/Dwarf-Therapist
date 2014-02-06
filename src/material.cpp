@@ -53,8 +53,8 @@ Material::~Material() {
     m_state_names.clear();
 }
 
-Material* Material::get_material(DFInstance *df, const VIRTADDR & address, int index, bool inorganic) {
-    return new Material(df, address, index, inorganic);
+Material* Material::get_material(DFInstance *df, const VIRTADDR & address, int index, bool inorganic, QObject *parent) {
+    return new Material(df, address, index, inorganic, parent);
 }
 
 void Material::load_data() {
@@ -98,7 +98,9 @@ void Material::read_material() {
         }
     }
 
-    if(generic_state_name.toLower() == tr("thread")){
+    m_flags = FlagArray(m_df,m_flag_address);
+
+    if(m_flags.has_flag(24)){
         generic_state_name = m_state_names[SOLID] + tr(" fabric");
     }
 
@@ -106,7 +108,6 @@ void Material::read_material() {
 
     m_state_names.insert(GENERIC, generic_state_name);
     //m_flags = new FlagArray(m_df,m_flag_address);
-    m_flags = FlagArray(m_df,m_flag_address);
 }
 
 QString Material::get_material_name(MATERIAL_STATES state){

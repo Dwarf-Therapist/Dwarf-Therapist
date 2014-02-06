@@ -35,7 +35,7 @@ THE SOFTWARE.
 #include "weaponcolumn.h"
 #include "spacercolumn.h"
 #include "dfinstance.h"
-#include "weapon.h"
+#include "itemweaponsubtype.h"
 
 QMap<COLUMN_TYPE, ViewColumn::COLUMN_SORT_TYPE> ViewManager::m_default_column_sort;
 
@@ -197,7 +197,7 @@ void ViewManager::add_weapons_view(QList<GridView*> &built_in_views){
         return;
 
     DFInstance *m_df = DT->get_DFInstance();
-    if(m_df->get_ordered_weapons().length() > 0){
+    if(m_df->get_ordered_weapon_defs().length() > 0){
         //add a special weapons view, this will dynamically change depending on the raws read
 
         //    //group by skill type for display
@@ -224,20 +224,20 @@ void ViewManager::add_weapons_view(QList<GridView*> &built_in_views){
         //    m_views << gv;
         //    built_in_views << gv;
 
-        //group by weapon size..
-        QHash<QPair<long,long>, Weapon*> grouped_by_size;
-        QPair<QString, Weapon*> wp;
-        foreach(wp, m_df->get_ordered_weapons()){
-            QPair<long,long> key;
-            key.first = wp.second->single_grasp();
-            key.second = wp.second->multi_grasp();
-            if(!grouped_by_size.contains(key)){
-                grouped_by_size.insert(key,wp.second);
-            }else{                
-                Weapon *w = grouped_by_size.value(key);
-                w->group_name = w->group_name.append(", ").append(wp.second->name_plural());
-            }
-        }
+//        //group by weapon size.. this is still impossible to find anything
+//        QHash<QPair<long,long>, Weapon*> grouped_by_size;
+//        QPair<QString, Weapon*> wp;
+//        foreach(wp, m_df->get_ordered_weapons()){
+//            QPair<long,long> key;
+//            key.first = wp.second->single_grasp();
+//            key.second = wp.second->multi_grasp();
+//            if(!grouped_by_size.contains(key)){
+//                grouped_by_size.insert(key,wp.second);
+//            }else{
+//                Weapon *w = grouped_by_size.value(key);
+//                w->group_name = w->group_name.append(", ").append(wp.second->name_plural());
+//            }
+//        }
 
         GridView *gv = this->get_view("Weapons");
         if(!gv)
@@ -245,16 +245,24 @@ void ViewManager::add_weapons_view(QList<GridView*> &built_in_views){
         else
             gv->clear();
 
+//        ViewColumnSet *vcs = new ViewColumnSet("All Weapons", this);
+//        int count = grouped_by_size.count();
+//        QPair<long,long> wkeys;
+//        foreach(wkeys, grouped_by_size.uniqueKeys()){
+//            new WeaponColumn(grouped_by_size.value(wkeys)->group_name, grouped_by_size.value(wkeys),vcs,this);
+//        }
+
         ViewColumnSet *vcs = new ViewColumnSet("All Weapons", this);
-        int count = grouped_by_size.count();
-        QPair<long,long> wkeys;
-        foreach(wkeys, grouped_by_size.uniqueKeys()){
-            new WeaponColumn(grouped_by_size.value(wkeys)->group_name, grouped_by_size.value(wkeys),vcs,this);
+        int count = m_df->get_ordered_weapon_defs().length();
+        QPair<QString,ItemWeaponSubtype*> wp;
+        foreach(wp, m_df->get_ordered_weapon_defs()){
+            new WeaponColumn(wp.first,wp.second,vcs,this);
         }
+
         gv->add_set(vcs);
         gv->set_is_custom(false);
-        //if the weapon columns count <=10 append the columns onto the military tab as well
-        if(count<=10){
+        //if the weapon columns count <= the vanilla df weapon count, append the columns onto the military tab as well
+        if(count<=24){
             GridView *mv = this->get_view("Military");
             if(mv){
                 mv->remove_set("All Weapons");
@@ -322,7 +330,8 @@ void ViewManager::write_tab_settings() {
         tab_order << view_name;
         DT->user_settings()->setValue(QString("gui_options/%1_group_by").arg(view_name),get_stv(i)->m_last_group_by);
     }
-    DT->user_settings()->setValue("gui_options/tab_order", tab_order);
+    if(!tab_order.isEmpty())
+        DT->user_settings()->setValue("gui_options/tab_order", tab_order);
 }
 
 void ViewManager::write_views() {

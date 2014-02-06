@@ -48,7 +48,7 @@ UnitHealth::UnitHealth(DFInstance *df, Dwarf *d, bool req_diagnosis)
     read_health_info();
     read_wounds();
 
-    //sort everything by serverity
+    //sort everything by severity
     foreach(eHealth::H_INFO key, m_status_info.uniqueKeys()){
         QList<HealthInfo*> list = m_status_info.take(key);
         std::sort(list.begin(),list.end(),HealthInfo::less_than_severity());
@@ -283,7 +283,7 @@ void UnitHealth::read_health_info(){
     //seems can't stand is set when drowning, unconscious?, or laying on the ground (0x8000 flag check)
     if(!m_dwarf->get_caste()->flags().has_flag(IMMOBILE_LAND)){
         short limb_stand_max = m_df->read_short(m_dwarf_addr + base_limbs_addr);
-        short limb_stand_count = m_df->read_short(m_dwarf_addr + base_limbs_addr + 0x2);
+        limb_stand_count = m_df->read_short(m_dwarf_addr + base_limbs_addr + 0x2);
 
         if(limb_stand_max > 0){
             bool fallen_down = (has_flag(0x8000,m_dwarf->get_flag1()) && !sleeping);
@@ -485,7 +485,6 @@ BodyPartDamage UnitHealth::get_body_part(int body_part_id){
     }
     return m_body_parts.value(body_part_id);
 }
-
 
 HealthInfo *UnitHealth::get_most_severe(eHealth::H_INFO h){
     if(m_treatment_info.contains(h)){

@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "unithealth.h"
 #include "healthcategory.h"
 #include "healthinfo.h"
+#include "item.h"
 
 ScriptDialog::ScriptDialog(QWidget *parent)
     : QDialog(parent)
@@ -104,6 +105,19 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     health_list.append("</table>");
     ui->text_health->append(health_list);
 
+
+    QString item_list = "<b>Item Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
+        "<tr><th width=24%>Item Type ID</th><th>Name</th></tr>";
+    QMap<QString,int> item_types;
+    for(int i=0; i < NUM_OF_ITEM_TYPES; i++){
+        item_types.insert(Item::get_item_name_plural(static_cast<ITEM_TYPE>(i)),i);
+    }
+    foreach(QString name, item_types.uniqueKeys()){
+        item_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(QString::number(item_types.value(name))).arg(name));
+    }
+    item_list.append("</table>");
+    ui->text_items->append(item_list);
+
     connect(ui->btn_apply, SIGNAL(clicked()), SLOT(apply_pressed()));
     connect(ui->btn_save, SIGNAL(clicked()), SLOT(save_pressed()));
 
@@ -123,7 +137,10 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     ui->text_labors->ensureCursorVisible();
 
     ui->text_skills->moveCursor(QTextCursor::Start);
-    ui->text_skills->ensureCursorVisible();           
+    ui->text_skills->ensureCursorVisible();
+
+    ui->text_items->moveCursor(QTextCursor::Start);
+    ui->text_items->ensureCursorVisible();
 }
 
 ScriptDialog::~ScriptDialog(){

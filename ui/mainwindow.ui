@@ -568,13 +568,13 @@
     <string>&amp;Connect To DF</string>
    </property>
    <property name="toolTip">
-    <string>Attempt connecting to a running copy of Dwarf Fortress (CTRL+C)</string>
+    <string>Attempt connecting to a running copy of Dwarf Fortress (CTRL+SHIFT+C)</string>
    </property>
    <property name="statusTip">
-    <string>Attempt connecting to a running copy of Dwarf Fortress. (CTRL+C)</string>
+    <string>Attempt connecting to a running copy of Dwarf Fortress. (CTRL+SHIFT+C)</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+C</string>
+    <string>Ctrl+Shift+C</string>
    </property>
   </action>
   <action name="act_exit">

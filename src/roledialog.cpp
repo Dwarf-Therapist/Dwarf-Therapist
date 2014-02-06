@@ -12,7 +12,7 @@
 #include "mainwindow.h"
 #include "gridview.h"
 #include "rolecolumn.h"
-#include "weapon.h"
+#include "itemweaponsubtype.h"
 #include "roleaspect.h"
 #include "preference.h"
 #include "item.h"
@@ -300,7 +300,7 @@ void roleDialog::insert_pref_row(Preference *p){
     ui->tw_prefs->setItem(row,2,ptype);
 
     QTableWidgetItem *itype = new QTableWidgetItem();
-    itype->setData(0, Item::get_item_desc(p->get_item_type()));
+    itype->setData(0, Item::get_item_name_plural(p->get_item_type()));
     itype->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     ui->tw_prefs->setItem(row,3,itype);
 
@@ -759,7 +759,7 @@ void roleDialog::load_items(){
     item_crafts << BRACELET << RING << SCEPTER << INSTRUMENT << CROWN << FIGURINE << AMULET << EARRING << TOY << GOBLET << TOTEM;
 
     QTreeWidgetItem *parent;
-    QHash<ITEM_TYPE, QVector<VIRTADDR> > item_list = m_df->get_items();
+    QHash<ITEM_TYPE, QVector<VIRTADDR> > item_list = m_df->get_item_def();
     int count;
 
     PREF_TYPES pType = LIKE_ITEM;
@@ -768,7 +768,7 @@ void roleDialog::load_items(){
 
         if(!item_ignore.contains(itype)){
             count = item_list.value(itype).count();
-            QString name = Item::get_item_desc(itype);
+            QString name = Item::get_item_name_plural(itype);
 
             if(item_food.contains(itype) || item_drink.contains(itype))
                 pType = LIKE_FOOD;
@@ -790,7 +790,7 @@ void roleDialog::load_items(){
                 parent = init_parent_node(name);
                 for(int j = 0; j < count; j++){
                     Preference *p = new Preference(pType,itype,this);
-                    p->set_name(capitalize(m_df->get_item(itype,j)));
+                    p->set_name(capitalize(m_df->get_preference_item_name(itype,j)));
                     p->set_exact(true);
                     add_pref_to_tree(parent,p);
                 }
@@ -887,7 +887,7 @@ void roleDialog::load_weapons(){
     p->set_name("Weapons (Melee)");
     add_pref_to_tree(m_general_item, p);
 
-    foreach(Weapon *w, m_df->get_weapons()){
+    foreach(ItemWeaponSubtype *w, m_df->get_weapon_defs()){
         p = new Preference(LIKE_ITEM,w->name_plural(),this);
         if(w->is_ranged()){
             p->add_flag(ITEMS_WEAPON_RANGED);

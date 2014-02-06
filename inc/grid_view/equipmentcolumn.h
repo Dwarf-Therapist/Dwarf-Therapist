@@ -20,34 +20,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef MILITARY_PREFERENCE_COLUMN_H
-#define MILITARY_PREFERENCE_COLUMN_H
+#ifndef EQUIPMENTCOLUMN_H
+#define EQUIPMENTCOLUMN_H
 
-#include "viewcolumn.h"
+#include "itemtypecolumn.h"
+#include "global_enums.h"
 
-class MilitaryPreferenceColumn : public ViewColumn {
+class Dwarf;
+class Item;
+
+class EquipmentColumn : public ItemTypeColumn {
+    Q_OBJECT
 public:
-    MilitaryPreferenceColumn(const QString &title, const int &labor_id, const int &skill_id, ViewColumnSet *set = 0, QObject *parent = 0);
-    MilitaryPreferenceColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
-    MilitaryPreferenceColumn(const MilitaryPreferenceColumn &to_copy); // copy ctor
-    MilitaryPreferenceColumn* clone() {return new MilitaryPreferenceColumn(*this);}
+
+    EquipmentColumn(const QString &title, ViewColumnSet *set = 0, QObject *parent = 0);
+    EquipmentColumn(const EquipmentColumn &to_copy); // copy ctor
+    EquipmentColumn* clone() {return new EquipmentColumn(*this);}
     QStandardItem *build_cell(Dwarf *d);
-    QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
+    QStandardItem *build_aggregate(const QString &, const QVector<Dwarf*> &);
 
-    int labor_id() {return m_labor_id;}
-    void set_labor_id(int labor_id) {m_labor_id = labor_id;}
-    int skill_id() {return m_skill_id;}
-    void set_skill_id(int skill_id) {m_skill_id = skill_id;}
-
-    // override
-    void write_to_ini(QSettings &s);
-
-public slots:
-    //void read_settings();
-
-protected:
-    int m_labor_id;
-    int m_skill_id;
 };
 
-#endif
+#endif // EQUIPMENTCOLUMN_H

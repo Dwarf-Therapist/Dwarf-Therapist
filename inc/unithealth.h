@@ -86,6 +86,8 @@ public:
 
     QVector<VIRTADDR> layer_status_flags;
 
+    short limb_count() {return limb_stand_count;}
+
 private:
     DFInstance *m_df;
     VIRTADDR m_dwarf_addr;    
@@ -113,6 +115,7 @@ private:
     int m_fresh_wounds;
     bool m_req_diagnosis;
 
+    short limb_stand_count;
 protected:
     void read_health_info();
     void read_wounds();

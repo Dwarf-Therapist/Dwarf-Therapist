@@ -20,30 +20,48 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef WEAPONCOLUMN_H
-#define WEAPONCOLUMN_H
+#ifndef ITEMAMMO_H
+#define ITEMAMMO_H
 
-#include "viewcolumn.h"
+#include "item.h"
+#include "itemammosubtype.h"
 
-class ItemWeaponSubtype;
-
-class WeaponColumn : public ViewColumn {
-    Q_OBJECT
+class ItemAmmo : public Item {
 public:
 
-    WeaponColumn(const QString &title, ItemWeaponSubtype *w, ViewColumnSet *set = 0, QObject *parent = 0);
-    WeaponColumn* clone() {return new WeaponColumn(*this);}
-    QStandardItem *build_cell(Dwarf *d);
-    QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
+    ItemAmmo(const Item &baseItem)
+        :Item(baseItem)
+    {
+        read_def();
+    }
 
-    //override
-    void write_to_ini(QSettings &s){ViewColumn::write_to_ini(s);}
+    ItemAmmo(DFInstance *df, VIRTADDR item_addr)
+        :Item(df,item_addr)
+    {
+        read_def();
+    }
 
-public slots:
-    //void read_settings();
+    virtual ~ItemAmmo(){
+        m_df = 0;
+        m_ammo_def = 0;
+    }
+
+    ItemAmmoSubtype * get_details(){return m_ammo_def;}
+    short item_subtype(){return m_ammo_def->subType();}
 
 private:
-    ItemWeaponSubtype *m_weapon;
+    ItemAmmoSubtype *m_ammo_def;
+
+    void read_def(){
+        if(m_addr > 0){
+            m_ammo_def =  ItemAmmoSubtype::get_ammo(m_df,m_df->read_addr(m_addr+m_df->memory_layout()->item_offset("item_def")),this);
+            m_ammo_def->set_item_type(m_iType);
+            if(m_stack_size <= 1)
+                m_item_name = m_ammo_def->name();
+            else
+                m_item_name = m_ammo_def->name_plural();
+        }
+    }
 };
 
-#endif // WEAPONCOLUMN_H
+#endif // ITEMAMMO_H

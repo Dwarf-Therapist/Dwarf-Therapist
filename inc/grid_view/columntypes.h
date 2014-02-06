@@ -33,8 +33,7 @@ typedef enum {
     CT_HAPPINESS,
     CT_IDLE,
     CT_TRAIT,
-    CT_ATTRIBUTE,
-    CT_MILITARY_PREFERENCE,
+    CT_ATTRIBUTE,    
     CT_FLAGS,
     CT_ROLE,
     CT_WEAPON,
@@ -42,7 +41,9 @@ typedef enum {
     CT_HIGHEST_MOOD,
     CT_TRAINED,
     CT_HEALTH,
-    CT_TOTAL_TYPES    
+    CT_EQUIPMENT,
+    CT_ITEMTYPE,
+    CT_TOTAL_TYPES
 } COLUMN_TYPE;
 
 static inline COLUMN_TYPE get_column_type(const QString &name) {
@@ -59,9 +60,7 @@ static inline COLUMN_TYPE get_column_type(const QString &name) {
     } else if (name.toLower() == "trait") {
         return CT_TRAIT;
     } else if (name.toLower() == "attribute") {
-        return CT_ATTRIBUTE;
-    } else if (name.toLower() == "military_preference") {
-        return CT_MILITARY_PREFERENCE;
+        return CT_ATTRIBUTE;    
     } else if (name.toLower() == "flags") {
         return CT_FLAGS;
     } else if (name.toLower() == "role"){
@@ -74,8 +73,12 @@ static inline COLUMN_TYPE get_column_type(const QString &name) {
         return CT_HIGHEST_MOOD;
     } else if (name.toLower() == "trained"){
         return CT_TRAINED;
-    } else if (name.toLower() == "health")
+    } else if (name.toLower() == "health"){
         return CT_HEALTH;
+    }else if (name.toLower() == "equipment"){
+        return CT_EQUIPMENT;
+    }else if (name.toLower() == "itemtype")
+        return CT_ITEMTYPE;
     return CT_DEFAULT;
 }
 
@@ -87,8 +90,7 @@ static inline QString get_column_type(const COLUMN_TYPE &type) {
     case CT_HAPPINESS:              return "HAPPINESS";
     case CT_IDLE:                   return "IDLE";
     case CT_TRAIT:                  return "TRAIT";
-    case CT_ATTRIBUTE:              return "ATTRIBUTE";
-    case CT_MILITARY_PREFERENCE:    return "MILITARY_PREFERENCE";
+    case CT_ATTRIBUTE:              return "ATTRIBUTE";    
     case CT_FLAGS:                  return "FLAGS";
     case CT_ROLE:                   return "ROLE";
     case CT_WEAPON:                 return "WEAPON";
@@ -96,6 +98,8 @@ static inline QString get_column_type(const COLUMN_TYPE &type) {
     case CT_HIGHEST_MOOD:           return "MOOD_SKILL";
     case CT_TRAINED:                return "TRAINED";
     case CT_HEALTH:                 return "HEALTH";
+    case CT_EQUIPMENT:           return "EQUIPMENT";
+    case CT_ITEMTYPE:               return "ITEMTYPE";
     default:
         return "UNKNOWN";
     }

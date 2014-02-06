@@ -101,11 +101,12 @@ void DwarfModel::load_dwarves() {
 
     m_df->attach();
 
+    m_df->load_fortress();
+    load_squads();
+
     foreach(Dwarf *d, m_df->load_dwarves()) {
         m_dwarves[d->id()] = d;
     }
-
-    load_squads();
 
     m_df->detach();
 }
@@ -271,10 +272,7 @@ void DwarfModel::build_rows() {
             }else if(m_group_by == GB_PROFESSION){
                 m_grouped_dwarves[d->profession()].append(d);
             }else if(m_group_by == GB_SEX){
-                if (d->is_male())
-                    m_grouped_dwarves[tr("Males")].append(d);
-                else
-                    m_grouped_dwarves[tr("Females")].append(d);
+                m_grouped_dwarves[get_gender_desc(d->get_gender())].append(d);
             }else if(m_group_by == GB_MIGRATION_WAVE){
                 m_grouped_dwarves[d->get_migration_desc()].append(d);
             }else if(m_group_by == GB_AGE){

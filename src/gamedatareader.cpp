@@ -28,7 +28,6 @@ THE SOFTWARE.
 #include "attribute.h"
 #include "dwarfjob.h"
 #include "profession.h"
-#include "militarypreference.h"
 #include "defines.h"
 #include "raws/rawreader.h"
 #include "math.h"
@@ -231,16 +230,6 @@ GameDataReader::GameDataReader(QObject *parent)
     }
     m_data_settings->endArray();
 
-    int mil_prefs = m_data_settings->beginReadArray("military_prefs");
-    qDeleteAll(m_military_preferences);
-    m_military_preferences.clear();
-    for(short i = 0; i < mil_prefs; ++i) {
-        m_data_settings->setArrayIndex(i);
-        MilitaryPreference *p = new MilitaryPreference(*m_data_settings, this);
-        m_military_preferences.insert(p->labor_id, p);
-    }
-    m_data_settings->endArray();    
-
     //thoughts
     int t_count = m_data_settings->beginReadArray("unit_thoughts");
     m_unit_thoughts.clear();
@@ -343,10 +332,6 @@ laborOptimizerPlan* GameDataReader::get_opt_plan(const QString &name){
 
 DwarfJob *GameDataReader::get_job(const short &job_id) {
     return m_dwarf_jobs.value(job_id, 0);
-}
-
-MilitaryPreference *GameDataReader::get_military_preference(const int &mil_pref_id) {
-    return m_military_preferences.value(mil_pref_id, 0);
 }
 
 int GameDataReader::get_xp_for_next_attribute_level(int current_number_of_attributes) {

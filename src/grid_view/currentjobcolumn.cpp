@@ -326,11 +326,11 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
         bg = QColor(255,255,255);
     item->setData(bg,Qt::BackgroundColorRole);
 
-    QString tooltip = QString("<center><h3>%1</h3></center>%2 (%3)<h4>%4</h4>")
+    QString tooltip = QString("<center><h3>%1</h3>%2 (%3)%4</center>")
             .arg(m_title)
             .arg(d->current_job())
             .arg(d->current_job_id())
-            .arg(d->nice_name());
+            .arg(tooltip_name_footer(d));
     item->setToolTip(tooltip);
     return item;
 }

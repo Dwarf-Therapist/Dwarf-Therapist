@@ -121,7 +121,7 @@ void UnitWound::read_wound(){
     if(m_dwarf->get_caste()->flags().has_flag(GETS_WOUND_INFECTIONS) && has_flag(0x00000020,general_flags))
         m_infection = true;
 
-    QVector<VIRTADDR> addr_wounded_parts = m_df->enumerate_vector(m_addr);
+    QVector<VIRTADDR> addr_wounded_parts = m_df->enumerate_vector(m_addr+mem->wound_offset("parts"));
 
     foreach(VIRTADDR wounded_part, addr_wounded_parts){
         wounded_part_details wpd;
@@ -315,8 +315,7 @@ void UnitWound::read_wound(){
             */
 
             //            int jammed_fracture_layer = m_df->read_int(wounded_part + 0x74);
-            //            if(jammed_fracture_layer > 0)
-            //                int z = 0;
+            //            if(jammed_fracture_layer > 0)            
 
         }
 

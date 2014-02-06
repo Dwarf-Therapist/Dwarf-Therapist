@@ -194,12 +194,12 @@ void SkillColumn::build_tooltip(Dwarf *d, bool include_roles){
                 .arg(conflicting_traits.join(", "));
     }
 
-    QString tooltip = QString("<center><h3 style=\"margin:0;\">%1</h3></center>%2%3%4<h4>%5</h4>")
+    QString tooltip = QString("<center><h3 style=\"margin:0;\">%1</h3></center>%2%3%4%5")
             .arg(m_title)
             .arg(skill_str)
             .arg(role_str)
             .arg(conflicts_str)
-            .arg(d->nice_name());
+            .arg(tooltip_name_footer(d));
 
     m_cells.value(d)->setToolTip(tooltip);
 }

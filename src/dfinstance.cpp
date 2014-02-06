@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include "word.h"
 #include "gamedatareader.h"
 #include "memorylayout.h"
-#include "cp437codec.h"
 #include "dwarftherapist.h"
 #include "memorysegment.h"
 #include "truncatingfilelogger.h"
@@ -44,11 +43,13 @@ THE SOFTWARE.
 #include "languages.h"
 #include "reaction.h"
 #include "races.h"
-#include "weapon.h"
+#include "itemweaponsubtype.h"
 #include "fortressentity.h"
 #include "material.h"
 #include "plant.h"
 #include "item.h"
+#include "itemweapon.h"
+#include "itemarmor.h"
 #include "preference.h"
 
 #ifdef Q_OS_WIN
@@ -68,7 +69,7 @@ THE SOFTWARE.
 
 
 DFInstance::DFInstance(QObject* parent)
-    : QObject(parent)    
+    : QObject(parent)
     , m_pid(0)
     , m_memory_correction(0)
     , m_stop_scan(false)
@@ -116,7 +117,7 @@ DFInstance::DFInstance(QObject* parent)
             MemoryLayout *temp = new MemoryLayout(info.absoluteFilePath());
             if (temp && temp->is_valid()) {
                 LOGD << "adding valid layout" << temp->game_version()
-                        << temp->checksum();
+                     << temp->checksum();
                 m_memory_layouts.insert(temp->checksum().toLower(), temp);
             }
         }
@@ -124,9 +125,9 @@ DFInstance::DFInstance(QObject* parent)
     // if no memory layouts were found that's a critical error
     if (m_memory_layouts.size() < 1) {
         LOGE << "No valid memory layouts found in the following directories..."
-                << QDir::searchPaths("memory_layouts");
+             << QDir::searchPaths("memory_layouts");
         qApp->exit(ERROR_NO_VALID_LAYOUTS);
-    }               
+    }
 }
 
 DFInstance * DFInstance::newInstance(){
@@ -144,11 +145,11 @@ DFInstance * DFInstance::newInstance(){
 }
 
 DFInstance::~DFInstance() {
-//    LOGD << "DFInstance baseclass virtual dtor!";
+    //    LOGD << "DFInstance baseclass virtual dtor!";
     foreach(MemoryLayout *l, m_memory_layouts) {
         delete(l);
     }
-    m_memory_layouts.clear();    
+    m_memory_layouts.clear();
     m_layout = 0;
 
     qDeleteAll(m_regions);
@@ -166,9 +167,9 @@ DFInstance::~DFInstance() {
     m_reactions.clear();
     qDeleteAll(m_races);
     m_races.clear();
-    qDeleteAll(m_weapons);
-    m_weapons.clear();
-    m_ordered_weapons.clear();
+    qDeleteAll(m_weapon_defs);
+    m_weapon_defs.clear();
+    m_ordered_weapon_defs.clear();
     qDeleteAll(m_plants_vector);
     m_plants_vector.clear();
 
@@ -178,8 +179,8 @@ DFInstance::~DFInstance() {
     m_thought_counts.clear();
 
     DwarfStats::cleanup();
-//    UnitHealth::cleanup();
-//    LOGD << "DFInstance baseclass virtual dtor all done!";
+    //    UnitHealth::cleanup();
+    //    LOGD << "DFInstance baseclass virtual dtor all done!";
 }
 
 BYTE DFInstance::read_byte(const VIRTADDR &addr) {
@@ -322,22 +323,14 @@ bool DFInstance::looks_like_vector_of_pointers(const VIRTADDR &addr) {
     LOGD << "LOOKS LIKE VECTOR? unverified entries:" << entries;
 
     return start >=0 &&
-           end >=0 &&
-           end >= start &&
-           (end-start) % 4 == 0 &&
-           start % 4 == 0 &&
-           end % 4 == 0 &&
-           entries < 10000;
+            end >=0 &&
+            end >= start &&
+            (end-start) % 4 == 0 &&
+            start % 4 == 0 &&
+            end % 4 == 0 &&
+            entries < 10000;
 
 }
-
-//void DFInstance::read_raws() {
-//    emit progress_message(tr("Reading raws"));
-
-//    LOGI << "Reading some game raws...";
-//    GameDataReader::ptr()->read_raws(m_df_dir);
-//}
-
 
 void DFInstance::load_game_data()
 {
@@ -368,13 +361,13 @@ void DFInstance::load_game_data()
     dwarf_race_index += m_memory_correction;
     if (!is_valid_address(dwarf_race_index)) {
         LOGW << "Active Memory Layout" << m_layout->filename() << "("
-                << m_layout->game_version() << ")" << "contains an invalid"
-                << "dwarf_race_index address. Either you are scanning a new "
-                << "DF version or your config files are corrupted.";
-                m_dwarf_race_id = -1;
+             << m_layout->game_version() << ")" << "contains an invalid"
+             << "dwarf_race_index address. Either you are scanning a new "
+             << "DF version or your config files are corrupted.";
+        m_dwarf_race_id = -1;
     }else{
         LOGD << "dwarf race index" << hexify(dwarf_race_index) <<
-            hexify(dwarf_race_index - m_memory_correction) << "(UNCORRECTED)";
+                hexify(dwarf_race_index - m_memory_correction) << "(UNCORRECTED)";
 
         // which race id is dwarven?
         m_dwarf_race_id = read_short(dwarf_race_index);
@@ -388,9 +381,9 @@ void DFInstance::load_game_data()
     load_races_castes();
 
     emit progress_message(tr("Loading weapons"));
-    qDeleteAll(m_weapons);
-    m_weapons.clear();
-    m_ordered_weapons.clear();
+    qDeleteAll(m_weapon_defs);
+    m_weapon_defs.clear();
+    m_ordered_weapon_defs.clear();
     load_weapons();
 
     //load the fortress name
@@ -438,9 +431,9 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
     if (!is_valid_address(creature_vector) || !is_valid_address(active_creature_vector)) {
         LOGW << "Active Memory Layout" << m_layout->filename() << "("
-                << m_layout->game_version() << ")" << "contains an invalid"
-                << "creature_vector address. Either you are scanning a new "
-                << "DF version or your config files are corrupted.";
+             << m_layout->game_version() << ")" << "contains an invalid"
+             << "creature_vector address. Either you are scanning a new "
+             << "DF version or your config files are corrupted.";
         return dwarves;
     }
 
@@ -448,21 +441,6 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     if (!DT->arena_mode && m_dwarf_race_id < 0){
         return dwarves;
     }
-
-    //load the fortress historical entity
-    if(m_fortress){
-        delete(m_fortress);
-        m_fortress = 0;
-    }
-    VIRTADDR addr_fortress = m_memory_correction + m_layout->address("fortress_entity");
-    if (!is_valid_address(addr_fortress)) {
-        LOGW << "Active Memory Layout" << m_layout->filename() << "("
-                << m_layout->game_version() << ")" << "contains an invalid"
-                << "fortress identity address. Either you are scanning a new "
-                << "DF version or your config files are corrupted.";
-        return dwarves;
-    }    
-    m_fortress = FortressEntity::get_entity(this,read_addr(addr_fortress));    
 
     VIRTADDR dwarf_civ_index = m_layout->address("dwarf_civ_index");
     dwarf_civ_index += m_memory_correction;
@@ -541,7 +519,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     detach();
 
     LOGI << "found" << dwarves.size() << "dwarves out of" << creatures_addrs.size()
-            << "creatures";
+         << "creatures";
 
     return dwarves;
 }
@@ -602,7 +580,7 @@ void DFInstance::load_population_data(){
 
                 if(is_dislike){
                     p->names_dislikes.append(d->nice_name());
-                }else{                    
+                }else{
                     p->names_likes.append(d->nice_name());
                 }
                 p->pref_category = cat_name;
@@ -659,8 +637,8 @@ void DFInstance::cdf_role_ratings(){
     }
 
     foreach(Dwarf *d, m_labor_capable_dwarves){
-//        if(!d->include_in_pop_stats())
-//            continue;
+        //        if(!d->include_in_pop_stats())
+        //            continue;
         d->update_rating_list();
     }
     //actual_dwarves.clear();
@@ -705,34 +683,68 @@ void DFInstance::load_main_vectors(){
     m_all_syndromes = enumerate_vector(m_memory_correction + m_layout->address("all_syndromes_vector"));
 
     //world.raws.itemdefs.
-    QVector<VIRTADDR> weapons = enumerate_vector(m_memory_correction + m_layout->address("weapons_vector"));
-    m_item_vectors.insert(WEAPON,weapons);
-    QVector<VIRTADDR> traps = enumerate_vector(m_memory_correction + m_layout->address("trap_vector"));
-    m_item_vectors.insert(TRAPCOMP,traps);
-    QVector<VIRTADDR> toys = enumerate_vector(m_memory_correction + m_layout->address("toy_vector"));
-    m_item_vectors.insert(TOY,toys);
-    QVector<VIRTADDR> tools = enumerate_vector(m_memory_correction + m_layout->address("tool_vector"));
-    m_item_vectors.insert(TOOL,tools);
-    QVector<VIRTADDR> instruments = enumerate_vector(m_memory_correction + m_layout->address("instrument_vector"));
-    m_item_vectors.insert(INSTRUMENT,instruments);
-    QVector<VIRTADDR> armor = enumerate_vector(m_memory_correction + m_layout->address("armor_vector"));
-    m_item_vectors.insert(ARMOR,armor);
-    QVector<VIRTADDR> ammo = enumerate_vector(m_memory_correction + m_layout->address("ammo_vector"));
-    m_item_vectors.insert(AMMO,ammo);
-    QVector<VIRTADDR> siege_ammo = enumerate_vector(m_memory_correction + m_layout->address("siegeammo_vector"));
-    m_item_vectors.insert(SIEGEAMMO,siege_ammo);
-    QVector<VIRTADDR> gloves = enumerate_vector(m_memory_correction + m_layout->address("glove_vector"));
-    m_item_vectors.insert(GLOVES,gloves);
-    QVector<VIRTADDR> shoes = enumerate_vector(m_memory_correction + m_layout->address("shoe_vector"));
-    m_item_vectors.insert(SHOES,shoes);
-    QVector<VIRTADDR> shields = enumerate_vector(m_memory_correction + m_layout->address("shield_vector"));
-    m_item_vectors.insert(SHIELD,shields);
-    QVector<VIRTADDR> helms = enumerate_vector(m_memory_correction + m_layout->address("helm_vector"));
-    m_item_vectors.insert(HELM,helms);
-    QVector<VIRTADDR> pants = enumerate_vector(m_memory_correction + m_layout->address("pant_vector"));
-    m_item_vectors.insert(PANTS,pants);
-    QVector<VIRTADDR> food = enumerate_vector(m_memory_correction + m_layout->address("food_vector"));
-    m_item_vectors.insert(FOOD,food);
+    QVector<VIRTADDR> weapons = enumerate_vector(m_memory_correction + m_layout->address("itemdef_weapons_vector"));
+    m_itemdef_vectors.insert(WEAPON,weapons);
+    QVector<VIRTADDR> traps = enumerate_vector(m_memory_correction + m_layout->address("itemdef_trap_vector"));
+    m_itemdef_vectors.insert(TRAPCOMP,traps);
+    QVector<VIRTADDR> toys = enumerate_vector(m_memory_correction + m_layout->address("itemdef_toy_vector"));
+    m_itemdef_vectors.insert(TOY,toys);
+    QVector<VIRTADDR> tools = enumerate_vector(m_memory_correction + m_layout->address("itemdef_tool_vector"));
+    m_itemdef_vectors.insert(TOOL,tools);
+    QVector<VIRTADDR> instruments = enumerate_vector(m_memory_correction + m_layout->address("itemdef_instrument_vector"));
+    m_itemdef_vectors.insert(INSTRUMENT,instruments);
+    QVector<VIRTADDR> armor = enumerate_vector(m_memory_correction + m_layout->address("itemdef_armor_vector"));
+    m_itemdef_vectors.insert(ARMOR,armor);
+    QVector<VIRTADDR> ammo = enumerate_vector(m_memory_correction + m_layout->address("itemdef_ammo_vector"));
+    m_itemdef_vectors.insert(AMMO,ammo);
+    QVector<VIRTADDR> siege_ammo = enumerate_vector(m_memory_correction + m_layout->address("itemdef_siegeammo_vector"));
+    m_itemdef_vectors.insert(SIEGEAMMO,siege_ammo);
+    QVector<VIRTADDR> gloves = enumerate_vector(m_memory_correction + m_layout->address("itemdef_glove_vector"));
+    m_itemdef_vectors.insert(GLOVES,gloves);
+    QVector<VIRTADDR> shoes = enumerate_vector(m_memory_correction + m_layout->address("itemdef_shoe_vector"));
+    m_itemdef_vectors.insert(SHOES,shoes);
+    QVector<VIRTADDR> shields = enumerate_vector(m_memory_correction + m_layout->address("itemdef_shield_vector"));
+    m_itemdef_vectors.insert(SHIELD,shields);
+    QVector<VIRTADDR> helms = enumerate_vector(m_memory_correction + m_layout->address("itemdef_helm_vector"));
+    m_itemdef_vectors.insert(HELM,helms);
+    QVector<VIRTADDR> pants = enumerate_vector(m_memory_correction + m_layout->address("itemdef_pant_vector"));
+    m_itemdef_vectors.insert(PANTS,pants);
+    QVector<VIRTADDR> food = enumerate_vector(m_memory_correction + m_layout->address("itemdef_food_vector"));
+    m_itemdef_vectors.insert(FOOD,food);
+
+    //load actual weapons and armor
+    weapons = enumerate_vector(m_memory_correction + m_layout->address("weapons_vector"));
+    m_items_vectors.insert(WEAPON,weapons);
+    shields = enumerate_vector(m_memory_correction + m_layout->address("shields_vector"));
+    m_items_vectors.insert(SHIELD,shields);
+
+    pants = enumerate_vector(m_memory_correction + m_layout->address("pants_vector"));
+    m_items_vectors.insert(PANTS,pants);
+    armor = enumerate_vector(m_memory_correction + m_layout->address("armor_vector"));
+    m_items_vectors.insert(ARMOR,armor);
+    shoes = enumerate_vector(m_memory_correction + m_layout->address("shoes_vector"));
+    m_items_vectors.insert(SHOES,shoes);
+    helms = enumerate_vector(m_memory_correction + m_layout->address("helms_vector"));
+    m_items_vectors.insert(HELM,helms);
+    gloves = enumerate_vector(m_memory_correction + m_layout->address("gloves_vector"));
+    m_items_vectors.insert(GLOVES,gloves);
+
+    //load other equipment
+    QVector<VIRTADDR> quivers = enumerate_vector(m_memory_correction + m_layout->address("quivers_vector"));
+    m_items_vectors.insert(QUIVER,quivers);
+    QVector<VIRTADDR> backpacks = enumerate_vector(m_memory_correction + m_layout->address("backpacks_vector"));
+    m_items_vectors.insert(BACKPACK,backpacks);
+    QVector<VIRTADDR> crutches = enumerate_vector(m_memory_correction + m_layout->address("crutches_vector"));
+    m_items_vectors.insert(CRUTCH,crutches);
+    QVector<VIRTADDR> flasks = enumerate_vector(m_memory_correction + m_layout->address("flasks_vector"));
+    m_items_vectors.insert(FLASK,flasks);
+    ammo = enumerate_vector(m_memory_correction + m_layout->address("ammo_vector"));
+    m_items_vectors.insert(AMMO,ammo);
+
+    //load artifacts
+    QVector<VIRTADDR> artifacts = enumerate_vector(m_memory_correction + m_layout->address("artifacts_vector"));
+    m_items_vectors.insert(ARTIFACTS,artifacts);
+
 
     m_color_vector = enumerate_vector(m_memory_correction + m_layout->address("colors_vector"));
     m_shape_vector = enumerate_vector(m_memory_correction + m_layout->address("shapes_vector"));
@@ -740,17 +752,17 @@ void DFInstance::load_main_vectors(){
     VIRTADDR addr = m_memory_correction + m_layout->address("base_materials");
     int i = 0;
     for(i = 0; i < 256; i++){
-        Material* m = Material::get_material(this, read_addr(addr), i);
+        Material* m = Material::get_material(this, read_addr(addr), i, false, this);
         m_base_materials.append(m);
         addr += 0x4;
-    }        
+    }
 
     //inorganics
     addr = m_memory_correction + m_layout->address("inorganics_vector");
     i = 0;
     foreach(VIRTADDR mat, enumerate_vector(addr)){
         //inorganic_raw.material
-        Material* m = Material::get_material(this, mat, i, true);
+        Material* m = Material::get_material(this, mat, i, true, this);
         m_inorganics_vector.append(m);
         i++;
     }
@@ -768,33 +780,33 @@ void DFInstance::load_main_vectors(){
 
 void DFInstance::load_weapons(){
     attach();
-    QVector<VIRTADDR> weapons = m_item_vectors.value(WEAPON);
-    qDeleteAll(m_weapons);
-    m_weapons.clear();
+    QVector<VIRTADDR> weapons = m_itemdef_vectors.value(WEAPON);
+    qDeleteAll(m_weapon_defs);
+    m_weapon_defs.clear();
     if (!weapons.empty()) {
         foreach(VIRTADDR weapon_addr, weapons) {
-            Weapon* w = Weapon::get_weapon(this, weapon_addr);
-            m_weapons.insert(w->name_plural(), w);
+            ItemWeaponSubtype* w = ItemWeaponSubtype::get_weapon(this, weapon_addr, this);
+            m_weapon_defs.insert(w->name_plural(), w);
         }
     }
 
-    m_ordered_weapons.clear();
+    m_ordered_weapon_defs.clear();
 
     QStringList weapon_names;
-    foreach(QString key, m_weapons.uniqueKeys()) {
+    foreach(QString key, m_weapon_defs.uniqueKeys()) {
         weapon_names << key;
     }
 
     qSort(weapon_names);
     foreach(QString name, weapon_names) {
-        m_ordered_weapons << QPair<QString, Weapon *>(name, m_weapons.value(name));
+        m_ordered_weapon_defs << QPair<QString, ItemWeaponSubtype *>(name, m_weapon_defs.value(name));
     }
 
     detach();
 }
 
 void DFInstance::load_races_castes(){
-    attach();    
+    attach();
     VIRTADDR races_vector = m_layout->address("races_vector");
     races_vector += m_memory_correction;
     QVector<VIRTADDR> races = enumerate_vector(races_vector);
@@ -808,7 +820,22 @@ void DFInstance::load_races_castes(){
     detach();
 }
 
-
+void DFInstance::load_fortress(){
+    //load the fortress historical entity
+    if(m_fortress){
+        delete(m_fortress);
+        m_fortress = 0;
+    }
+    VIRTADDR addr_fortress = m_memory_correction + m_layout->address("fortress_entity");
+    if (!is_valid_address(addr_fortress)) {
+        LOGW << "Active Memory Layout" << m_layout->filename() << "("
+             << m_layout->game_version() << ")" << "contains an invalid"
+             << "fortress identity address. Either you are scanning a new "
+             << "DF version or your config files are corrupted.";
+    }else{
+        m_fortress = FortressEntity::get_entity(this,read_addr(addr_fortress));
+    }
+}
 
 
 QVector<Squad*> DFInstance::load_squads(bool refreshing) {
@@ -868,7 +895,16 @@ QVector<Squad*> DFInstance::load_squads(bool refreshing) {
 
     detach();
     //LOGI << "Found" << squads.size() << "squads out of" << m_current_creatures.size();
-    return squads;
+    m_squads = squads;
+    return m_squads;
+}
+
+Squad* DFInstance::get_squad(int id){
+    foreach(Squad *s, m_squads){
+        if(s->id() == id)
+            return s;
+    }
+    return 0;
 }
 
 
@@ -1047,8 +1083,8 @@ QString DFInstance::read_dwarf_name(const VIRTADDR &addr) {
 
 
 QVector<VIRTADDR> DFInstance::find_vectors_in_range(const int &max_entries,
-                                                const VIRTADDR &start_address,
-                                                const int &range_length) {
+                                                    const VIRTADDR &start_address,
+                                                    const int &range_length) {
     QByteArray data = get_data(start_address, range_length);
     QVector<VIRTADDR> vectors;
     VIRTADDR int1 = 0; // holds the start val
@@ -1136,17 +1172,17 @@ QVector<VIRTADDR> DFInstance::find_vectors(int num_entries, int fuzz/* =0 */,
                 int1 = decode_int(buffer.mid(offset, entry_size));
                 int2 = decode_int(buffer.mid(offset + entry_size, entry_size));
                 if (int1 && int2 && int2 >= int1
-                    && int1 % 4 == 0
-                    && int2 % 4 == 0
-                    //&& is_valid_address(int1)
-                    //&& is_valid_address(int2)
-                    ) {
+                        && int1 % 4 == 0
+                        && int2 % 4 == 0
+                        //&& is_valid_address(int1)
+                        //&& is_valid_address(int2)
+                        ) {
                     int bytes = int2 - int1;
                     int entries = bytes / entry_size;
                     int diff = entries - num_entries;
                     if (qAbs(diff) <= fuzz) {
                         VIRTADDR vector_addr = addr + offset -
-                                               VECTOR_POINTER_OFFSET;
+                                VECTOR_POINTER_OFFSET;
                         QVector<VIRTADDR> addrs = enumerate_vector(vector_addr);
                         diff = addrs.size() - num_entries;
                         if (qAbs(diff) <= fuzz) {
@@ -1175,7 +1211,7 @@ QVector<VIRTADDR> DFInstance::find_vectors(int num_entries, int fuzz/* =0 */,
 }
 
 QVector<VIRTADDR> DFInstance::find_vectors_ext(int num_entries, const char op,
-                              const uint start_addr, const uint end_addr, int entry_size/* =4 */) {
+                                               const uint start_addr, const uint end_addr, int entry_size/* =4 */) {
     /*
     glibc++ does vectors like so...
     |4bytes      | 4bytes    | 4bytes
@@ -1252,11 +1288,11 @@ QVector<VIRTADDR> DFInstance::find_vectors_ext(int num_entries, const char op,
                 int1 = decode_int(buffer.mid(offset, entry_size));
                 int2 = decode_int(buffer.mid(offset + entry_size, entry_size));
                 if (int1 && int2 && int2 >= int1
-                    && int1 % 4 == 0
-                    && int2 % 4 == 0
-                    //&& is_valid_address(int1)
-                    //&& is_valid_address(int2)
-                    ) {
+                        && int1 % 4 == 0
+                        && int2 % 4 == 0
+                        //&& is_valid_address(int1)
+                        //&& is_valid_address(int2)
+                        ) {
                     int bytes = int2 - int1;
                     int entries = bytes / entry_size;
                     if (entries > 0 && entries < 1000) {
@@ -1289,7 +1325,7 @@ QVector<VIRTADDR> DFInstance::find_vectors_ext(int num_entries, const char op,
 }
 
 QVector<VIRTADDR> DFInstance::find_vectors(int num_entries, const QVector<VIRTADDR> & search_set,
-                               int fuzz/* =0 */, int entry_size/* =4 */) {
+                                           int fuzz/* =0 */, int entry_size/* =4 */) {
 
     m_stop_scan = false; //! if ever set true, bail from the inner loop
     QVector<VIRTADDR> vectors; //! return value collection of vectors found
@@ -1376,8 +1412,8 @@ MemoryLayout *DFInstance::get_memory_layout(QString checksum, bool) {
 
     if (m_is_ok) {
         LOGI << "Detected Dwarf Fortress version"
-                << ret_val->game_version() << "using MemoryLayout from"
-                << ret_val->filename();
+             << ret_val->game_version() << "using MemoryLayout from"
+             << ret_val->filename();
     }
 
     return ret_val;
@@ -1422,18 +1458,18 @@ void DFInstance::layout_not_found(const QString & checksum) {
 
     foreach(MemoryLayout * l, layouts) {
         supported_vers.append(
-                QString("<li><b>%1</b>(<font color=\"#444444\">%2"
-                        "</font>)</li>")
-                .arg(l->game_version())
-                .arg(l->checksum()));
+                    QString("<li><b>%1</b>(<font color=\"#444444\">%2"
+                            "</font>)</li>")
+                    .arg(l->game_version())
+                    .arg(l->checksum()));
     }
 
     QMessageBox *mb = new QMessageBox(qApp->activeWindow());
     mb->setIcon(QMessageBox::Critical);
     mb->setWindowTitle(tr("Unidentified Game Version"));
     mb->setText(tr("I'm sorry but I don't know how to talk to this "
-        "version of Dwarf Fortress! (checksum:%1)<br><br> <b>Supported "
-        "Versions:</b><ul>%2</ul>").arg(checksum).arg(supported_vers));
+                   "version of Dwarf Fortress! (checksum:%1)<br><br> <b>Supported "
+                   "Versions:</b><ul>%2</ul>").arg(checksum).arg(supported_vers));
     mb->setInformativeText(tr("<a href=\"%1\">Click Here to find out "
                               "more online</a>.")
                            .arg(URL_SUPPORTED_GAME_VERSIONS));
@@ -1448,11 +1484,12 @@ void DFInstance::layout_not_found(const QString & checksum) {
 
 void DFInstance::calculate_scan_rate() {
     float rate = (m_bytes_scanned / 1024.0f / 1024.0f) /
-                 (m_scan_speed_timer->interval() / 1000.0f);
+            (m_scan_speed_timer->interval() / 1000.0f);
     QString msg = QString("%L1MB/s").arg(rate);
     emit scan_message(msg);
     m_bytes_scanned = 0;
 }
+
 
 VIRTADDR DFInstance::find_historical_figure(int hist_id){
     if(m_hist_figures.count() <= 0)
@@ -1469,8 +1506,8 @@ void DFInstance::load_hist_figures(){
     //this may also break nicknames on kings/queens if they belong to a different race...
     foreach(VIRTADDR fig, hist_figs){
         //if(read_int(fig + 0x0002) == dwarf_race_id() || read_int(fig + 0x00a0) == dwarf_civ_id()){
-            hist_id = read_int(fig + m_layout->hist_figure_offset("id"));
-            m_hist_figures.insert(hist_id,fig);
+        hist_id = read_int(fig + m_layout->hist_figure_offset("id"));
+        m_hist_figures.insert(hist_id,fig);
         //}
     }
 }
@@ -1496,28 +1533,98 @@ VIRTADDR DFInstance::find_fake_identity(int hist_id){
 }
 
 QVector<VIRTADDR> DFInstance::get_item_vector(ITEM_TYPE i){
-    if(m_item_vectors.contains(i))
-        return m_item_vectors.value(i);
+    if(m_itemdef_vectors.contains(i))
+        return m_itemdef_vectors.value(i);
     else
-        return m_item_vectors.value(NONE);
+        return m_itemdef_vectors.value(NONE);
 }
 
-QString DFInstance::get_item(int index, int subtype){
+QString DFInstance::get_preference_item_name(int index, int subtype){
     ITEM_TYPE itype = static_cast<ITEM_TYPE>(index);
 
     QVector<VIRTADDR> items = get_item_vector(itype);
-    if(!items.empty() && subtype < items.count()){
-        QString name = read_string(items.at(subtype) + m_layout->item_offset("name_plural"));
+    if(!items.empty() && (subtype >=0 && subtype < items.count())){
+        QString name = read_string(items.at(subtype) + m_layout->item_subtype_offset("name_plural"));
         if(itype==TRAPCOMP || itype==WEAPON){
-            name.prepend(" ").prepend(read_string(items.at(subtype) + m_layout->item_offset("adjective")));
+            name.prepend(" ").prepend(read_string(items.at(subtype) + m_layout->item_subtype_offset("adjective")));
         }else if(itype==ARMOR || itype==PANTS){
-            name.prepend(" ").prepend(read_string(items.at(subtype) + m_layout->item_offset("mat_name")));
+            name.prepend(" ").prepend(read_string(items.at(subtype) + m_layout->armor_subtype_offset("mat_name")));
         }
         return name.trimmed();
     }
     else{
-        return Item::get_item_desc(itype);
+        return Item::get_item_name_plural(itype);
     }
+}
+
+VIRTADDR DFInstance::get_item_address(ITEM_TYPE itype, int item_id){
+    if(m_mapped_items.value(itype).count() <= 0)
+        index_item_vector(itype);
+    if(m_mapped_items.contains(itype)){
+        if(m_mapped_items.value(itype).contains(item_id))
+            return m_mapped_items.value(itype).value(item_id);
+    }
+    return 0;
+}
+
+QString DFInstance::get_item_name(ITEM_TYPE itype, int item_id){
+    if(m_mapped_items.value(itype).count() <= 0)
+        index_item_vector(itype);
+
+    if(itype == ARTIFACTS){
+        VIRTADDR addr = m_mapped_items.value(itype).value(item_id);
+        QString name = read_dwarf_name(addr+0x4);
+        //name = read_dwarf_word(addr+0x4);
+        name = get_language_word(addr+0x4);
+        return name;
+    }else{
+        if(itype == WEAPON){
+            ItemWeapon w = ItemWeapon(this,m_mapped_items.value(itype).value(item_id));
+            return w.display_name(true);
+        }else if(Item::is_armor_type(itype)){
+            ItemArmor a = ItemArmor(this,m_mapped_items.value(itype).value(item_id));
+            return a.display_name(true);
+        }else{
+            Item i = Item(this,m_mapped_items.value(itype).value(item_id));
+            return i.display_name(true);
+        }
+        return tr("Specific ") + capitalizeEach(get_item_name(itype,-1,-1,-1));
+    }
+}
+
+void DFInstance::index_item_vector(ITEM_TYPE itype){
+    QHash<int,VIRTADDR> items;
+    int offset = 0x18;
+    if(itype == ARTIFACTS)
+        offset = 0x0;
+    foreach(VIRTADDR addr, m_items_vectors.value(itype)){
+        items.insert(read_int(addr+offset),addr);
+    }
+    m_mapped_items.insert(itype,items);
+}
+
+QString DFInstance::get_item_name(ITEM_TYPE itype, int subtype, short mat_type, int mat_index, int mat_class){
+    QVector<VIRTADDR> items = get_item_vector(itype);
+    QStringList name_parts;
+    QString mat_name = "";
+
+    if(mat_class >= 0){
+        mat_name = Material::get_mat_class_desc(mat_class);
+    }else{
+        if(mat_index >= 0 || mat_type >= 0)
+            mat_name = find_material_name(mat_index,mat_type,itype);
+    }
+    name_parts.append(mat_name);
+
+    if(!items.empty() && (subtype >=0 && subtype < items.count())){
+        name_parts.append(read_string(items.at(subtype) + 0x3c));
+        if(itype==TRAPCOMP || itype==WEAPON)//{
+            name_parts.append(read_string(items.at(subtype) + m_layout->armor_subtype_offset("adjective")));
+    }
+    else{
+        name_parts.append(Item::get_item_name(itype));
+    }
+    return name_parts.join(" ").trimmed();
 }
 
 QString DFInstance::get_color(int index){
@@ -1534,7 +1641,7 @@ QString DFInstance::get_shape(int index){
         return "unknown shape";
 }
 
-Material *DFInstance::get_inorganic_material(int index){
+Material *DFInstance::get_inorganic_material(int index){    
     if(index < m_inorganics_vector.count())
         return m_inorganics_vector.at(index);
     else
@@ -1569,7 +1676,7 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
         name = m->get_material_name(SOLID);
     }
     else if(mat_type < 19){
-       name = m->get_material_name(SOLID);
+        name = m->get_material_name(SOLID);
     }
     else if(mat_type < 219){
         Race* r = get_race(mat_index);
@@ -1613,7 +1720,7 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
 
             //specific plant material
             if(m){
-                if(itype == NONE){
+                if(itype==NONE){
                     QString sub_name = m->get_material_name(GENERIC);
                     name.append(" ").append(sub_name);
                 }
@@ -1621,6 +1728,11 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
                     name = m->get_material_name(LIQUID);
                 else if(itype == POWDER_MISC || itype == CHEESE)
                     name = m->get_material_name(POWDER);
+                else if(Item::is_armor_type(itype)){
+                    QString sub_name = m->get_material_name(SOLID);
+                    name.append(" ").append(sub_name);
+                }
+
             }
         }
     }
@@ -1639,7 +1751,7 @@ Material *DFInstance::find_material(int mat_index, short mat_type){
         m = get_inorganic_material(mat_index);
     }
     else if(mat_type < 19){
-       m = get_raw_material(mat_type);
+        m = get_raw_material(mat_type);
     }
     else if(mat_type < 219){
         Race* r = get_race(mat_index);
@@ -1677,7 +1789,7 @@ Material *DFInstance::find_material(int mat_index, short mat_type){
 
 VIRTADDR DFInstance::get_syndrome(int idx){
     if(idx >= 0 && idx < m_all_syndromes.size()){
-         {return m_all_syndromes.at(idx);}
+        {return m_all_syndromes.at(idx);}
     }else{
         return -1;
     }

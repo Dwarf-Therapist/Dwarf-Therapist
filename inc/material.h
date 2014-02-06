@@ -38,7 +38,7 @@ public:
     Material(DFInstance *df, VIRTADDR address, int index, bool inorganic = false, QObject *parent = 0);
     virtual ~Material();
 
-    static Material* get_material(DFInstance *df, const VIRTADDR &address, int index, bool inorganic = false);
+    static Material* get_material(DFInstance *df, const VIRTADDR &address, int index, bool inorganic = false, QObject *parent = 0);
 
     //! Return the memory address (in hex) of this Material in the remote DF process
     VIRTADDR address() {return m_address;}
@@ -69,6 +69,26 @@ public:
         m[THREAD_PLANT]=tr("Cloth");
         m[YARN]=tr("Yarn");
         return m.value(flag, "Missing Description");
+    }
+
+    static const QString get_mat_class_desc(const int mat_class){
+        QMap<int, QString> m;
+        m[1]=tr("Leather");
+        m[2]=tr("Cloth");
+        m[3]=tr("Wooden");
+        m[5]=tr("Stone");
+        m[14]=tr("Metal");
+        m[16]=tr("Metal");
+        m[17]=tr("Gem");
+        m[18]=tr("Bone");
+        m[19]=tr("Shell");
+        m[20]=tr("Pearl");
+        m[21]=tr("Tooth");
+        m[22]=tr("Horn");
+        m[27]=tr("Plant Fiber");
+        m[28]=tr("Silk");
+        m[29]=tr("Yarn");
+        return m.value(mat_class, "???");
     }
 
 private:

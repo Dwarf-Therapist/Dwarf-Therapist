@@ -85,11 +85,11 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     item->setData(rating, DwarfModel::DR_RATING);
     item->setData(rating, DwarfModel::DR_DISPLAY_RATING);
     
-    QString tooltip = QString("<center><h3>%1</h3></center>%2<br>%3<h4>%4</h4>")
+    QString tooltip = QString("<center><h3>%1</h3></center>%2<br>%3%4")
             .arg(m_title)
             .arg(msg)
             .arg(warning)
-            .arg(d->nice_name());
+            .arg(tooltip_name_footer(d));
     item->setToolTip(tooltip);
 
     return item;

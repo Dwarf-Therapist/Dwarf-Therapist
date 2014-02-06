@@ -29,6 +29,9 @@ THE SOFTWARE.
 #include "skill.h"
 #include "attribute.h"
 #include "unithealth.h"
+#include "item.h"
+#include "itemdefuniform.h"
+//#include "itemarmor.h"
 
 class DFInstance;
 class MemoryLayout;
@@ -40,7 +43,8 @@ class Race;
 class Caste;
 class Thought;
 class Syndrome;
-
+class ItemArmor;
+class Uniform;
 
 class Dwarf : public QObject
 {
@@ -76,8 +80,9 @@ public:
     //! return whether or not the dwarf is on break
     bool is_on_break() {return m_is_on_break;}
 
-    //! true if the creature is male, false if female or "it"
-    Q_INVOKABLE bool is_male() {return m_is_male;}
+    //-1 = none, 0 = female, 1 = male
+    Q_INVOKABLE GENDER_TYPE get_gender() {return m_gender;}
+    Q_INVOKABLE bool is_male() {return (m_gender == SEX_M);}
 
     //! false if the creature is a dwarf, true if not
     Q_INVOKABLE bool is_animal() {return m_is_animal;}
@@ -263,9 +268,6 @@ public:
     //! return the numeric value of a preference setting (uses labor ids for offset)
     short pref_value(const int &labor_id);
 
-    //! sets a numeric value on a preference to the next value in the chain (uses labor ids for offset)
-    void toggle_pref_value(const int &labor_id);
-
     //! return this dwarf's numeric score for the trait specified by trait_id
     Q_INVOKABLE short trait(int trait_id) {return m_traits.value(trait_id, -1);}
 
@@ -439,8 +441,19 @@ public:
 
     QString get_thought_desc() {return m_thought_desc;}
 
-    UnitHealth get_unit_health() {return m_unit_health;}
+    UnitHealth get_unit_health() {return m_unit_health;}    
 
+    //! returns a list of items, grouped by body part name
+    QHash<QString,QList<Item*> > get_inventory_grouped(){return m_inventory_grouped;}
+
+    //! returns a percentage of the crucial clothing (shirt, shoes, pants)
+    Q_INVOKABLE float get_coverage_rating(ITEM_TYPE itype = NONE);
+    //! returns the number of items missing
+    Q_INVOKABLE int get_missing_equip_count(ITEM_TYPE itype = NONE);
+    //! returns a percentage of the inventory items / uniform items
+    Q_INVOKABLE float get_uniform_rating(ITEM_TYPE itype = NONE);
+    //! returns a percentage of how worn out items a dwarf is wearing
+    Q_INVOKABLE int get_inventory_wear(ITEM_TYPE itype = NONE);
     int optimized_labors;
 
     void read_squad_info();
@@ -471,15 +484,7 @@ public:
                 return false;
             else
                 return r1.rating > r2.rating;
-        }
-
-//        static bool sort_ratings(const QPair<QString,QPair<float,bool> > &r1,const QPair<QString,QPair<float,bool> > &r2){return r1.second.second > r2.second.second;}
-//        static bool sort_ratings_custom(const QPair<QString,QPair<float,bool> > &r1,const QPair<QString,QPair<float,bool> > &r2){
-//            if(r1.second.second)
-//                return true;
-//            else
-//                return r1.second.first > r2.second.first;
-//        }
+        }        
 
 private:
     int m_id; // each creature in the game has a unique serial ID
@@ -490,7 +495,7 @@ private:
     int m_race_id; // each creature has racial ID
     DWARF_HAPPINESS m_happiness; // enum value of happiness
     int m_raw_happiness; // raw score before being turned into an enum
-    bool m_is_male;
+    GENDER_TYPE m_gender;
 
     int m_mood_id;
     bool m_had_mood;
@@ -567,10 +572,20 @@ private:
     bool m_validated;
     bool m_is_valid;
     QList<Syndrome> m_syndromes;
-    quint32 m_curse_flags;
-//    quint32 m_curse_flags2;
-    eCurse::CURSE_TYPE m_curse_type;
+    quint32 m_curse_flags;    
+    Uniform* m_uniform;
 
+    //! inventory grouped by body part /category
+    QHash<QString,QList<Item*> > m_inventory_grouped;
+    //! inventory coverage ratings
+    QHash<ITEM_TYPE,int> m_coverage_ratings;
+    //! inventory wear levels
+    QHash<ITEM_TYPE,int> m_inventory_wear;
+    QHash<ITEM_TYPE,int> m_missing_counts;
+
+    //quint32 m_curse_flags2;
+    eCurse::CURSE_TYPE m_curse_type;
+    QHash<ATTRIBUTES_TYPE,QPair<float,int> > m_attribute_mods; //modification of attributes via syndromes (and curses?)
     // these methods read data from raw memory
     void read_id();
     void read_sex();
@@ -599,6 +614,10 @@ private:
     void read_noble_position();
     void read_preferences();    
     void read_syndromes();
+    void read_inventory();
+    void read_uniform();
+
+    void process_inv_item(QString category, Item *item, bool is_contained_item=false);
 
     void set_age(VIRTADDR birth_year_offset, VIRTADDR birth_time_offset);
 

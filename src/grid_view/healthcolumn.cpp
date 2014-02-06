@@ -112,11 +112,11 @@ QStandardItem *HealthColumn::build_cell(Dwarf *d) {
     item->setData(rating, DwarfModel::DR_RATING);
     item->setData(symbol, DwarfModel::DR_DISPLAY_RATING);
 
-    QString tooltip = QString("<center><b><h3 style=\"margin:0;\">%1</h3><h5 style=\"margin:0;\">%2</h4></b></center><br>%3<h4>%4</h4>")
+    QString tooltip = QString("<center><b><h3 style=\"margin:0;\">%1</h3><h5 style=\"margin:0;\">%2</h4></b></center><br>%3%4")
             .arg(m_title)
             .arg(symbols)
             .arg(health_summary)
-            .arg(d->nice_name());
+            .arg(tooltip_name_footer(d));
     item->setToolTip(tooltip);
 
     return item;

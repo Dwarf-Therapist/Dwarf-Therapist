@@ -112,7 +112,8 @@ void Race::read_race() {
             c = Caste::get_caste(m_df, caste_addr, this);
             if (c != 0) {
                 m_castes[i] = c;
-                //LOGD << "FOUND CASTE " << hexify(caste_addr);
+//                if(m_id == m_df->dwarf_race_id())
+//                    LOGD << "FOUND CASTE " << hexify(caste_addr) << " IDX " << i << " NAME " << c->name();
             }
             i++;
         }                
@@ -170,7 +171,7 @@ void Race::load_materials(int idx){
         return;
     //load creature's material list
     if(idx >= 0 && idx < m_materials_addr.size()){
-        Material *m = Material::get_material(m_df, m_materials_addr.at(idx) ,idx);
+        Material *m = Material::get_material(m_df, m_materials_addr.at(idx) ,idx, false, this);
         m_creature_mats.insert(idx,m);
     }else{
         for(int idx = 0; idx < m_materials_addr.size(); idx++){

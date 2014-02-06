@@ -48,7 +48,7 @@ public:
     struct att_range{
         QList<int> raw_bins;
         QList<int> display_bins;
-    };    
+    };
 
     QString name() {return m_name;}
     QString name_plural() {return m_name_plural;}
@@ -66,7 +66,7 @@ public:
     void load_data();
     void load_skill_rates();
 
-    FlagArray flags() {return m_flags;}    
+    FlagArray flags() {return m_flags;}
 
     bool is_trainable();
     bool is_milkable();
@@ -76,7 +76,7 @@ public:
     Caste::att_range get_attribute_range(int attrib_id) {return m_attrib_ranges.value(attrib_id);}
 
     void load_attribute_info(float ratio = -1);
-    void load_trait_info();    
+    void load_trait_info();
 
     BodyPart *get_body_part(int body_part_id);
 
@@ -86,7 +86,7 @@ private:
     QString m_tag;
     QString m_name;
     QString m_name_plural;
-    QString m_description;    
+    QString m_description;
     QVector<int> m_body_sizes;
 
     QHash<int,att_range> m_attrib_ranges;

@@ -20,14 +20,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include "weapon.h"
+#include "itemweaponsubtype.h"
 #include "dfinstance.h"
 #include "memorylayout.h"
 #include "truncatingfilelogger.h"
 #include <QtDebug>
 
-
-Weapon::Weapon(DFInstance *df, VIRTADDR address, QObject *parent)
+ItemWeaponSubtype::ItemWeaponSubtype(DFInstance *df, VIRTADDR address, QObject *parent)
     : QObject(parent)
     , m_address(address)
     , m_name_plural(QString::null)    
@@ -39,14 +38,14 @@ Weapon::Weapon(DFInstance *df, VIRTADDR address, QObject *parent)
     load_data();
 }
 
-Weapon::~Weapon() {
+ItemWeaponSubtype::~ItemWeaponSubtype() {
 }
 
-Weapon* Weapon::get_weapon(DFInstance *df, const VIRTADDR & address) {
-    return new Weapon(df, address);
+ItemWeaponSubtype* ItemWeaponSubtype::get_weapon(DFInstance *df, const VIRTADDR & address, QObject *parent) {
+    return new ItemWeaponSubtype(df, address, parent);
 }
 
-void Weapon::load_data() {
+void ItemWeaponSubtype::load_data() {
     if (!m_df || !m_df->memory_layout() || !m_df->memory_layout()->is_valid()) {
         LOGW << "load of weapons called but we're not connected";
         return;
@@ -58,12 +57,14 @@ void Weapon::load_data() {
     read_weapon();
 }
 
-void Weapon::read_weapon() {
-    m_name_plural = capitalizeEach(m_df->read_string(m_address + m_df->memory_layout()->weapon_offset("name_plural"))); //plural
+void ItemWeaponSubtype::read_weapon() {
+    m_subType = m_df->read_short(m_address + m_df->memory_layout()->item_subtype_offset("sub_type"));
+    m_name = capitalizeEach(m_df->read_string(m_address + m_df->memory_layout()->item_subtype_offset("name")));
+    m_name_plural = capitalizeEach(m_df->read_string(m_address + m_df->memory_layout()->item_subtype_offset("name_plural"))); //plural
     group_name = m_name_plural; //set to plural for default
-    m_single_grasp_size = m_df->read_int(m_address + m_df->memory_layout()->weapon_offset("single_size")); //two_hand size
-    m_multi_grasp_size = m_df->read_int(m_address + m_df->memory_layout()->weapon_offset("multi_size")); //minimum size
-    m_ammo = m_df->read_string(m_address + m_df->memory_layout()->weapon_offset("ammo"));
-    //short m_melee_skill_id = m_df->read_byte(m_address + 0x98);
-    //short m_ranged_skill_id = m_df->read_byte(m_address + 0x9a);
+    m_single_grasp_size = m_df->read_int(m_address + m_df->memory_layout()->weapon_subtype_offset("single_size")); //two_hand size
+    m_multi_grasp_size = m_df->read_int(m_address + m_df->memory_layout()->weapon_subtype_offset("multi_size")); //minimum size
+    m_ammo = m_df->read_string(m_address + m_df->memory_layout()->weapon_subtype_offset("ammo"));
+    m_melee_skill_id = m_df->read_short(m_address + m_df->memory_layout()->weapon_subtype_offset("melee_skill"));
+    m_ranged_skill_id = m_df->read_short(m_address + m_df->memory_layout()->weapon_subtype_offset("ranged_skill"));
 }

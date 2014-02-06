@@ -35,7 +35,6 @@ THE SOFTWARE.
 #include "utils.h"
 #include "gamedatareader.h"
 #include "memorylayout.h"
-#include "cp437codec.h"
 #include "win_structs.h"
 #include "memorysegment.h"
 #include "dwarftherapist.h"
@@ -127,11 +126,8 @@ QString DFInstanceWindows::read_string(const uint &addr) {
     Q_ASSERT_X(len < (1 << 16), "read_string",
                "String must be of sane length!");
 
-    QByteArray buffer = get_data(buffer_addr, len);
-    CP437Codec *codec = new CP437Codec;
-    QString ret_val = codec->toUnicode(buffer);
-//    delete codec; // CAUSES EXCEPTION ON EXIT!!
-    return ret_val;
+    QByteArray buf = get_data(buffer_addr, len);
+    return QTextCodec::codecForName("IBM 437")->toUnicode(buf);
 }
 
 int DFInstanceWindows::write_string(const VIRTADDR &addr, const QString &str) {
@@ -152,8 +148,7 @@ int DFInstanceWindows::write_string(const VIRTADDR &addr, const QString &str) {
     int len = qMin<int>(str.length(), cap);
     write_int(addr + memory_layout()->string_length_offset(), len);
 
-    CP437Codec *codec = new CP437Codec;
-    QByteArray data = codec->fromUnicode(str);
+    QByteArray data = QTextCodec::codecForName("IBM 437")->fromUnicode(str);
     int bytes_written = write_raw(buffer_addr, len, data.data());
 //    delete codec; //CAUSES EXCEPTION ON EXIT!!
     return bytes_written;

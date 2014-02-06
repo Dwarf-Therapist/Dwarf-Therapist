@@ -139,7 +139,6 @@ HEADERS += inc/win_structs.h \
     inc/profession.h \
     inc/optionsmenu.h \
     inc/nullterminatedstringsearchjob.h \
-    inc/militarypreference.h \
     inc/memorysegment.h \
     inc/memorylayout.h \
     inc/mainwindow.h \
@@ -155,7 +154,6 @@ HEADERS += inc/win_structs.h \
     inc/defines.h \
     inc/customprofession.h \
     inc/customcolor.h \
-    inc/cp437codec.h \
     inc/aboutdialog.h \
     inc/models/dwarfmodelproxy.h \
     inc/models/dwarfmodel.h \
@@ -164,7 +162,6 @@ HEADERS += inc/win_structs.h \
     inc/grid_view/traitcolumn.h \
     inc/grid_view/spacercolumn.h \
     inc/grid_view/skillcolumn.h \
-    inc/grid_view/militarypreferencecolumn.h \
     inc/grid_view/laborcolumn.h \
     inc/grid_view/currentjobcolumn.h \
     inc/grid_view/happinesscolumn.h \
@@ -203,7 +200,6 @@ HEADERS += inc/win_structs.h \
     inc/languages.h \    
     inc/caste.h \    
     inc/fortressentity.h \
-    inc/weapon.h \
     inc/material.h \
     inc/plant.h \
     inc/docks/preferencesdock.h \
@@ -234,7 +230,17 @@ HEADERS += inc/win_structs.h \
     inc/currentyearsearchjob.h \
     inc/defaultfonts.h \
     inc/docks/basedock.h \
-    inc/syndrome.h
+    inc/syndrome.h \
+    inc/itemweapon.h \
+    inc/itemarmor.h \
+    inc/grid_view/equipmentcolumn.h \
+    inc/grid_view/itemtypecolumn.h \
+    inc/itemdefuniform.h \
+    inc/uniform.h \
+    inc/itemammo.h \
+    inc/itemarmorsubtype.h \
+    inc/itemammosubtype.h \
+    inc/itemweaponsubtype.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -266,7 +272,6 @@ SOURCES += src/viewmanager.cpp \
     src/grid_view/traitcolumn.cpp \
     src/grid_view/spacercolumn.cpp \
     src/grid_view/skillcolumn.cpp \
-    src/grid_view/militarypreferencecolumn.cpp \
     src/grid_view/laborcolumn.cpp \
     src/grid_view/currentjobcolumn.cpp \
     src/grid_view/happinesscolumn.cpp \
@@ -293,7 +298,6 @@ SOURCES += src/viewmanager.cpp \
     src/caste.cpp \
     src/reaction.cpp \
     src/fortressentity.cpp \
-    src/weapon.cpp \
     src/material.cpp \
     src/plant.cpp \
     src/docks/preferencesdock.cpp \
@@ -312,7 +316,12 @@ SOURCES += src/viewmanager.cpp \
     src/unitwound.cpp \
     src/grid_view/healthcolumn.cpp \
     src/docks/healthlegenddock.cpp \
-    src/defaultfonts.cpp
+    src/defaultfonts.cpp \
+    src/grid_view/equipmentcolumn.cpp \
+    src/grid_view/itemtypecolumn.cpp \
+    src/item.cpp \
+    src/uniform.cpp \
+    src/itemweaponsubtype.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

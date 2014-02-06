@@ -30,6 +30,8 @@ THE SOFTWARE.
 #include "mainwindow.h"
 #include "truncatingfilelogger.h"
 
+#include "uniform.h"
+
 Squad::Squad(DFInstance *df, VIRTADDR address, QObject *parent)
     : QObject(parent)
     , m_address(address)
@@ -40,6 +42,8 @@ Squad::Squad(DFInstance *df, VIRTADDR address, QObject *parent)
 }
 
 Squad::~Squad() {
+    m_df = 0;
+    m_uniforms.clear();
 }
 
 Squad* Squad::get_squad(DFInstance *df, const VIRTADDR & address) {
@@ -55,7 +59,7 @@ void Squad::refresh_data() {
     m_mem = m_df->memory_layout();
     TRACE << "Starting refresh of squad data at" << hexify(m_address);
 
-    qDeleteAll(m_members);
+    //qDeleteAll(m_members);
     m_members.clear();
 
     read_id();
@@ -73,22 +77,52 @@ void Squad::read_name() {
     QString alias = m_df->read_string(m_address + m_mem->squad_offset("alias"));
     if(alias != "")
         m_name = alias;
-    TRACE << "Name:" << m_name;    
+    TRACE << "Name:" << m_name;
 }
 
 void Squad::read_members() {
-    DwarfModel * dm = DT->get_main_window()->get_model();
     members_addr = m_df->enumerate_vector(m_address + m_mem->squad_offset("members"));
 
-    //rather than searching for the dwarf in the members of the squad, just check the squad id
-    foreach(Dwarf *d, dm->get_dwarves()){
-        if(!d->is_animal() && d->is_adult() && d->squad_id() == m_id) {
-            m_members << d;
-            d->m_squad_name = name();
-            if(assigned_count()==m_members.count())
-                return;
+    short carry_food = m_df->read_short(m_address+m_mem->squad_offset("carry_food"));
+    short carry_water = m_df->read_short(m_address+m_mem->squad_offset("carry_water"));
+    int carry_ammo = m_df->enumerate_vector(m_address+m_mem->squad_offset("ammunition")).count();
+
+    //read the uniforms
+    int position = 0;    
+    Uniform *u;
+    foreach(VIRTADDR addr, members_addr){
+        u = new Uniform(m_df,this);
+
+        m_members.append(m_df->read_int(addr));        
+        read_equip_category(addr+m_mem->squad_offset("armor_vector"),ARMOR,u);
+        read_equip_category(addr+m_mem->squad_offset("helm_vector"),HELM,u);
+        read_equip_category(addr+m_mem->squad_offset("pants_vector"),PANTS,u);
+        read_equip_category(addr+m_mem->squad_offset("gloves_vector"),GLOVES,u);
+        read_equip_category(addr+m_mem->squad_offset("shoes_vector"),SHOES,u);
+        read_equip_category(addr+m_mem->squad_offset("shield_vector"),SHIELD,u);
+        read_equip_category(addr+m_mem->squad_offset("weapon_vector"),WEAPON,u);
+
+        //add other items
+        if(carry_ammo){
+            u->add_uniform_item(addr+m_mem->squad_offset("quiver"),QUIVER);
+            u->add_uniform_item(AMMO,-1,-1);
         }
+        if(carry_food)
+            u->add_uniform_item(addr+m_mem->squad_offset("backpack"),BACKPACK);
+        if(carry_water)
+            u->add_uniform_item(addr+m_mem->squad_offset("flask"),FLASK);
+
+        m_uniforms.insert(position,u);
+        position++;
     }
+}
+
+void Squad::read_equip_category(VIRTADDR vec_addr, ITEM_TYPE itype, Uniform *u){
+    QVector<VIRTADDR> uniform_items = m_df->enumerate_vector(vec_addr);
+    foreach(VIRTADDR uItem_addr, uniform_items){
+        u->add_uniform_item(uItem_addr,itype,-1); //don't count the items yet
+    }
+    u->add_equip_count(itype,uniform_items.count());
 }
 
 int Squad::assigned_count(){
@@ -115,7 +149,8 @@ int Squad::assign_to_squad(Dwarf *d){
     d->recheck_equipment();
 
     //add the dwarf to our dt vector for grouping etc
-    m_members << d;
+    //    m_members << d;
+    m_members.append(d->id());
     //add the dwarf's hist id to the first available position in the squad
     int position = -1; //positions start at 0
     foreach(VIRTADDR member_addr, members_addr) {
@@ -145,7 +180,7 @@ void Squad::remove_from_squad(Dwarf *d){
         }
     }
     for(int i = 0; i < members().count()-1; i++){
-        if(members().at(i)==d){
+        if(members().at(i)==d->id()){//d){
             members().remove(i);
             break;
         }

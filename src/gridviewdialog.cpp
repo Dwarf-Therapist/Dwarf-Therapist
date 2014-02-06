@@ -34,13 +34,13 @@ THE SOFTWARE.
 #include "currentjobcolumn.h"
 #include "traitcolumn.h"
 #include "attributecolumn.h"
-#include "militarypreferencecolumn.h"
 #include "rolecolumn.h"
 #include "weaponcolumn.h"
 #include "professioncolumn.h"
 #include "highestmoodcolumn.h"
 #include "trainedcolumn.h"
 #include "healthcolumn.h"
+#include "equipmentcolumn.h"
 
 #include "defines.h"
 #include "statetableview.h"
@@ -48,10 +48,9 @@ THE SOFTWARE.
 #include "labor.h"
 #include "utils.h"
 #include "trait.h"
-#include "militarypreference.h"
 #include "ui_columneditdialog.h"
 #include "dfinstance.h"
-#include "weapon.h"
+#include "itemweaponsubtype.h"
 #include "attribute.h"
 #include "unithealth.h"
 #include "healthcategory.h"
@@ -351,15 +350,53 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
         a->setData(att_pair.first);
     }
 
+    //EQUIPMENT
+    a = m->addAction(tr("Add Equipment"), this, SLOT(add_equipment_column()));
+    a->setToolTip(tr("Adds a color coded column that shows if a dwarf is fully clothed. Also shows all equipment in the tooltip grouped by body part."));
+
     //HAPPINESS
     a = m->addAction(tr("Add Happiness"), this, SLOT(add_happiness_column()));
     a->setToolTip(tr("Adds a single column that shows a color-coded happiness indicator for "
                      "each dwarf. You can customize the colors used in the options menu."));
 
+    //HEALTH
+    QMenu *m_health = m->addMenu(tr("Add Health Column"));
+    m_health->setToolTip(tr("Health columns will show various information about status, treatment and wounds."));
+    m_health->setTearOffEnabled(true);
+    QList<QPair<int,QString> > cat_names = UnitHealth::ordered_category_names();
+    QPair<int,QString> health_pair;
+    foreach(health_pair, cat_names){
+        QString name = health_pair.second;
+        QAction *a = m_health->addAction(name,this,SLOT(add_health_column()));
+        a->setData(health_pair.first);
+        a->setToolTip(tr("Add a column for %1").arg(name));
+    }
+
     //IDLE
     a = m->addAction(tr("Add Idle/Current Job"), this, SLOT(add_idle_column()));
     a->setToolTip(tr("Adds a single column that shows a the current idle state for a dwarf."));
 
+    //INVENTORY
+    QMenu *m_inventory = m->addMenu(tr("Add Inventory Column"));
+    m_inventory->setToolTip(tr("Shows the currently equipped inventory of a particular item category."));
+    m_inventory->setTearOffEnabled(true);
+    QList<ITEM_TYPE> item_cats;
+    item_cats << AMMO << ARMOR << SHOES << GLOVES << HELM << PANTS << SHIELD << BACKPACK << FLASK << QUIVER << WEAPON;
+    foreach(ITEM_TYPE itype, item_cats){
+        QString name = Item::get_item_name_plural(itype);
+        QAction *a = m_inventory->addAction(name.replace("&","&&"),this,SLOT(add_equipment_column()));
+        a->setData(itype);
+        a->setToolTip(tr("Add a column for %1").arg(name));
+    }
+    item_cats.clear();
+    m_inventory->addSeparator();
+    item_cats << SUPPLIES << RANGED_EQUIPMENT << MELEE_EQUIPMENT; //groups
+    foreach(ITEM_TYPE itype, item_cats){
+        QString name = Item::get_item_name_plural(itype);
+        QAction *a = m_inventory->addAction(name.replace("&","&&"),this,SLOT(add_equipment_column()));
+        a->setData(itype);
+        a->setToolTip(tr("Add a column for %1").arg(name));
+    }
 
     //LABOUR
     QMenu *m_labor = m->addMenu(tr("Add Labor Column"));
@@ -380,13 +417,6 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
         QAction *a = menu_to_use->addAction(l->name, this, SLOT(add_labor_column()));
         a->setData(l->labor_id);
         a->setToolTip(tr("Add a column for labor %1 (ID%2)").arg(l->name).arg(l->labor_id));
-    }
-
-    //MILITARY
-    QMenu *m_mil_prefs = m->addMenu(tr("Add Military Columns"));
-    foreach(MilitaryPreference* mp, gdr->get_military_preferences()) {
-        a = m_mil_prefs->addAction(mp->name, this, SLOT(add_military_preferences_column()));
-        a->setData(mp->labor_id);
     }
 
     //MOODABLE SKILL
@@ -474,8 +504,8 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     weapon_j_r->setTearOffEnabled(true);
     QMenu *weapon_m_z = m_weapon->addMenu(tr("S-Z"));
     weapon_m_z->setTearOffEnabled(true);
-    QPair<QString, Weapon*> weapon_pair;
-    foreach(weapon_pair, DT->get_DFInstance()->get_ordered_weapons()) {
+    QPair<QString, ItemWeaponSubtype*> weapon_pair;
+    foreach(weapon_pair, DT->get_DFInstance()->get_ordered_weapon_defs()) {
         QMenu *menu_to_use = weapon_a_l;
         if (weapon_pair.first.at(0).toLower() > 'i')
             menu_to_use = weapon_j_r;
@@ -486,18 +516,6 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
         a->setToolTip(tr("Add a column for weapon %1").arg(weapon_pair.first));
     }
 
-    //HEALTH
-    QMenu *m_health = m->addMenu(tr("Add Health Column"));
-    m_health->setToolTip(tr("Health columns will show various information about status, treatment and wounds."));
-    m_health->setTearOffEnabled(true);
-    QList<QPair<int,QString> > cat_names = UnitHealth::ordered_category_names();
-    QPair<int,QString> health_pair;
-    foreach(health_pair, cat_names){
-        QString name = health_pair.second;
-        QAction *a = m_health->addAction(name,this,SLOT(add_health_column()));
-        a->setData(health_pair.first);
-        a->setToolTip(tr("Add a column for %1").arg(name));
-    }
 
 
     //    }
@@ -520,6 +538,20 @@ void GridViewDialog::add_trained_column(){
     draw_columns_for_set(m_active_set);
 }
 
+void GridViewDialog::add_equipment_column(){
+    if (!m_active_set)
+        return;
+
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    if(a->data().isValid()){
+        ITEM_TYPE itype = static_cast<ITEM_TYPE>(a->data().toInt());
+        QString name = a->text();
+        new ItemTypeColumn(name.replace("&&","&"),itype,m_active_set,m_active_set);
+    }else{
+        new EquipmentColumn(tr("Equipment"),m_active_set, m_active_set);
+    }
+    draw_columns_for_set(m_active_set);
+}
 void GridViewDialog::add_happiness_column() {
     if (!m_active_set)
         return;
@@ -589,7 +621,7 @@ void GridViewDialog::add_weapon_column(){
         return;
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     QString key = a->data().toString();
-    new WeaponColumn(key,DT->get_DFInstance()->get_weapons().value(key),m_active_set,m_active_set);
+    new WeaponColumn(key,DT->get_DFInstance()->get_weapon_defs().value(key),m_active_set,m_active_set);
     draw_columns_for_set(m_active_set);
 }
 
@@ -614,16 +646,6 @@ void GridViewDialog::add_highest_moodable_column(){
     if (!m_active_set)
         return;
     new HighestMoodColumn(tr("Moodable Skill"), m_active_set, m_active_set);
-    draw_columns_for_set(m_active_set);
-}
-
-void GridViewDialog::add_military_preferences_column() {
-    if (!m_active_set)
-        return;
-    QAction *a = qobject_cast<QAction*>(QObject::sender());
-    int labor_id = a->data().toInt();
-    MilitaryPreference *mp = GameDataReader::ptr()->get_military_preference(labor_id);
-    new MilitaryPreferenceColumn(mp->name, mp->labor_id, mp->skill_id, m_active_set, m_active_set);
     draw_columns_for_set(m_active_set);
 }
 

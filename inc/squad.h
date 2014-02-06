@@ -25,11 +25,14 @@ THE SOFTWARE.
 
 #include <QtWidgets>
 #include "utils.h"
+#include "global_enums.h"
+//#include "itemdefuniform.h"
 
 class Dwarf;
 class Word;
 class DFInstance;
 class MemoryLayout;
+class Uniform;
 
 class Squad : public QObject {
     Q_OBJECT
@@ -43,7 +46,8 @@ public:
     VIRTADDR address() {return m_address;}
     int id() {return m_id;}
     QString name() {return m_name;}
-    QVector<Dwarf *> members() {return m_members;}
+    //QVector<Dwarf *> members() {return m_members;}
+    QVector<int> members() {return m_members;}
     int assigned_count();
     void refresh_data();
 
@@ -51,19 +55,26 @@ public:
     int assign_to_squad(Dwarf *d);
     void remove_from_squad(Dwarf *d);
 
+//    int get_equip_count(ITEM_TYPE itype,int position);
+//    QHash<ITEM_TYPE,QList<ItemDefUniform*> > get_uniform(int position) {return m_uniform.value(position);}
+    Uniform* get_uniform(int position){return m_uniforms.value(position);}
+
 private:
     VIRTADDR m_address;
     int m_id;
     QString m_name;
     DFInstance * m_df;
-    MemoryLayout * m_mem;
-    QVector<Dwarf *> m_members;
+    MemoryLayout * m_mem;    
+    QVector<int> m_members;
 
     QVector<VIRTADDR> members_addr;
+
+    QHash<int,Uniform*> m_uniforms;
 
     void read_id();
     void read_name();
     void read_members();
+    void read_equip_category(VIRTADDR vec_addr, ITEM_TYPE itype, Uniform *u);
 };
 
 #endif

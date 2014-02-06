@@ -37,7 +37,6 @@ THE SOFTWARE.
 #include "utils.h"
 #include "gamedatareader.h"
 #include "memorylayout.h"
-#include "cp437codec.h"
 #include "memorysegment.h"
 #include "truncatingfilelogger.h"
 
@@ -138,10 +137,8 @@ QString DFInstanceLinux::read_string(const VIRTADDR &addr) {
     QByteArray buf(upper_size, 0);
     read_raw(buffer_addr, upper_size, buf);
 
-    QString ret_val(buf);
-    CP437Codec *codec = new CP437Codec;
-    ret_val = codec->toUnicode(ret_val.toLatin1());
-    return ret_val;
+    buf.truncate(buf.indexOf(QChar('\0')));
+    return QTextCodec::codecForName("IBM 437")->toUnicode(buf);
 }
 
 int DFInstanceLinux::write_string(const VIRTADDR &addr, const QString &str) {
@@ -678,8 +675,7 @@ VIRTADDR DFInstanceLinux::get_string(const QString &str) {
     if (m_string_cache.contains(str))
         return m_string_cache[str];
 
-    CP437Codec *codec = new CP437Codec;
-    QByteArray data = codec->fromUnicode(str);
+    QByteArray data = QTextCodec::codecForName("IBM 437")->fromUnicode(str);
 
     STLStringHeader header;
     header.capacity = header.length = data.length();

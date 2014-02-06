@@ -53,12 +53,12 @@ QStandardItem *ProfessionColumn::build_cell(Dwarf *d) {
         bg = QColor(255,255,255);
     item->setData(bg,Qt::BackgroundColorRole);
 
-    QString tooltip = tr("<center><h3>%1</h3><h4>%2 (%3)</h4></center><h5><i>%4</i></h5><h4>%5</h4>")
+    QString tooltip = tr("<center><h3>%1</h3><h4>%2 (%3)</h4></center><h5><i>%4</i></h5>%5")
             .arg(m_title)
             .arg(d->profession())
             .arg(d->raw_profession())
             .arg(tr("Right click to edit this profession's icon."))
-            .arg(d->nice_name());
+            .arg(tooltip_name_footer(d));
 
     item->setToolTip(tooltip);
     return item;

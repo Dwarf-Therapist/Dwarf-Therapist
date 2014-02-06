@@ -5,12 +5,6 @@
 #include "utils.h"
 #include "global_enums.h"
 #include "defines.h"
-//#include "preference.h"
-//#include "role.h"
-//#include "material.h"
-//#include "plant.h"
-//#include "item.h"
-//#include "races.h"
 
 class DFInstance;
 class Preference;

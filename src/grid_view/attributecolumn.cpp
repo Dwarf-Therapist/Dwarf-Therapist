@@ -59,7 +59,7 @@ AttributeColumn::AttributeColumn(const QString &title, ATTRIBUTES_TYPE type, Vie
             case AT_SPATIAL_SENSE: m_title = tr("Spatial Sense");  break;
             case AT_WILLPOWER: m_title = tr("Willpower");  break;
         }
-    }    
+    }        
 }
 
 AttributeColumn::AttributeColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
@@ -106,11 +106,11 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     item->setData(rawVal, DwarfModel::DR_SORT_VALUE);    
     item->setData(CT_ATTRIBUTE, DwarfModel::DR_COL_TYPE);
 
-    QString tooltip = QString("<center><h3>%1</h3></center><b>%2</b> %4<h4>%5</h4>")
+    QString tooltip = QString("<center><h3>%1</h3></center><b>%2</b> %3%4")
             .arg(m_title)            
             .arg(a.get_value_display())
             .arg(descriptor)
-            .arg(d->nice_name());
+            .arg(tooltip_name_footer(d));
 
     item->setToolTip(tooltip);
 

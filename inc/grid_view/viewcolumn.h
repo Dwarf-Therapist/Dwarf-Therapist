@@ -116,6 +116,8 @@ protected:
     int m_count;
     QList<COLUMN_SORT_TYPE> m_sortable_types;
     COLUMN_SORT_TYPE m_current_sort;
+
+    QString tooltip_name_footer(Dwarf *d);
 };
 
 //Q_DECLARE_METATYPE(ViewColumn::COLUMN_SORT_TYPE)

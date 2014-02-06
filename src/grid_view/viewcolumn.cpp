@@ -152,3 +152,7 @@ QString ViewColumn::get_cell_value(Dwarf *d)
     return QString("%1").arg(m_cells.value(d)->data(DwarfModel::DR_SORT_VALUE).toString());
 }
 
+QString ViewColumn::tooltip_name_footer(Dwarf *d){
+    return QString("<center><h4>%1</h4></center>").arg(d->nice_name());
+}
+

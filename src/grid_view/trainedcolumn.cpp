@@ -91,9 +91,9 @@ QStandardItem *TrainedColumn::build_cell(Dwarf *d){
     item->setData(rating, DwarfModel::DR_RATING); //other drawing 0-100
     item->setData(sort_val, DwarfModel::DR_SORT_VALUE);    
 
-    QString tooltip = QString("<center><h3>%1</h3><h4>%3</h4></center>")
+    QString tooltip = QString("<center><h3>%1</h3></center>%2")
             .arg(desc)
-            .arg(d->nice_name());
+            .arg(tooltip_name_footer(d));
     item->setToolTip(tooltip);
     return item;
 }

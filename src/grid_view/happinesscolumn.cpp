@@ -53,12 +53,12 @@ QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
 	item->setData(CT_HAPPINESS, DwarfModel::DR_COL_TYPE);
 	item->setData(d->get_raw_happiness(), DwarfModel::DR_SORT_VALUE);            
 
-    QString tooltip = QString("<center><h3>%1</h3><h4>%2 (%3)</h4></center><p>%4</p><h4>%5</h4>")
+    QString tooltip = QString("<center><h3>%1</h3><h4>%2 (%3)</h4></center><p>%4</p>%5")
             .arg(m_title)
             .arg(Dwarf::happiness_name(d->get_happiness()))
             .arg(d->get_raw_happiness())
             .arg(d->get_thought_desc())
-            .arg(d->nice_name());
+            .arg(tooltip_name_footer(d));
 
     item->setToolTip(tooltip);
 	QColor bg = m_colors[d->get_happiness()];
@@ -77,12 +77,14 @@ QStandardItem *HappinessColumn::build_aggregate(const QString &group_name, const
 		if (tmp <= lowest) {
 			lowest = tmp;
 			lowest_dwarf = d->nice_name();
+            if(lowest == Dwarf::DH_VERY_UNHAPPY)
+                break;
 		}
 	}
     item->setToolTip(tr("<center><h3>%1</h3></center>Lowest Happiness in group: <b>%2: %3</b>")
         .arg(m_title)
 		.arg(lowest_dwarf)
-		.arg(Dwarf::happiness_name(lowest)));
+        .arg(Dwarf::happiness_name(lowest)));
 	item->setData(m_colors[lowest], Qt::BackgroundColorRole);
 	item->setData(m_colors[lowest], DwarfModel::DR_DEFAULT_BG_COLOR);
 	return item;

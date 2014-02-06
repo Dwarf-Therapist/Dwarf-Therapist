@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <utils.h>
 #include <dfinstance.h>
 #include <memorylayout.h>
+#include <gamedatareader.h>
 
 class Syndrome{
 
@@ -43,23 +44,38 @@ public:
     {
         m_df = df;
         m_addr = addr;
-        MemoryLayout *m_mem = m_df->memory_layout();
+        m_mem = m_df->memory_layout();
+
+//        m_year = m_df->read_int(m_addr + 0x4);
+//        m_time = m_df->read_int(m_addr + 0x8);
 
         m_id = m_df->read_int(addr);
-        m_is_sickness = m_df->read_byte(m_addr + m_mem->dwarf_offset("syn_sick_flag"));
+        m_is_sickness = m_df->read_byte(m_addr + m_mem->dwarf_offset("syn_sick_flag"));     
 
         VIRTADDR syn_addr = m_df->get_syndrome(m_id);
         if(syn_addr > 0){
             m_name = capitalizeEach(m_df->read_string(syn_addr));
-
             //SYN_CLASS tokens
             QRegExp rx = QRegExp("[-_\\*~@#\\^]");
-            QVector<VIRTADDR> classes_addr = m_df->enumerate_vector(syn_addr + m_mem->dwarf_offset("syn_classes_vector"));
+            QVector<VIRTADDR> classes_addr = m_df->enumerate_vector(syn_addr + m_mem->syndrome_offset("syn_classes_vector"));
             foreach(VIRTADDR class_addr, classes_addr){
                 QString class_name = m_df->read_string(class_addr);
                 class_name = class_name.replace(rx," ");
                 if(!class_name.trimmed().isEmpty())
                     m_class_names.append(capitalizeEach(class_name.trimmed().toLower()));
+            }
+
+            QVector<VIRTADDR> effects = m_df->enumerate_vector(syn_addr + m_mem->syndrome_offset("cie_effects"));
+            foreach(VIRTADDR ce_addr, effects){
+                VIRTADDR vtable = m_df->read_addr(ce_addr);
+                int type = m_df->read_int(m_df->read_addr(vtable)+0x1);
+                if(type ==25){
+                    //physical attribute changes
+                    load_attribute_changes(ce_addr,(int)AT_STRENGTH,5,m_mem->syndrome_offset("cie_phys"));
+                }else if(type==26){
+                    //mental attribute changes
+                    load_attribute_changes(ce_addr,(int)AT_ANALYTICAL_ABILITY,12,m_mem->syndrome_offset("cie_ment"));
+                }
             }
         }
     }
@@ -102,11 +118,46 @@ public:
         return "???";
     }
 
+    void load_attribute_changes(VIRTADDR addr, int start_idx, int count, int add_offset){
+        int idx_offset = 0;
+        int idx = 0;
+        for(idx = 0; idx <=count; idx++){
+            idx_offset = 0x4 * idx;
+            QPair<int,int> att_change;
+            att_change.first = m_df->read_int(addr+m_mem->syndrome_offset("cie_first_perc")+idx_offset);
+            att_change.second = m_df->read_int(addr+add_offset+idx_offset);
+            //only keep track of attribute changes that actually... change something
+            if((att_change.first != 0 && att_change.first != 100) || att_change.second != 0){
+                m_attribute_changes.insert(static_cast<ATTRIBUTES_TYPE>(idx+start_idx),att_change);
+            }
+        }
+    }
+
+    QString syn_effects(){
+        if(m_syn_effects.count() <= 0 && m_attribute_changes.count() > 0){
+            foreach(ATTRIBUTES_TYPE a_type,m_attribute_changes.keys()){
+                QStringList att_effects;
+                QString att_desc = GameDataReader::ptr()->get_attribute_name(a_type).left(3);
+                int perc = m_attribute_changes.value(a_type).first;
+                int add = m_attribute_changes.value(a_type).second;
+                if(perc != 100 && perc != 0)
+                    att_effects.append(QString((perc > 0) ? "+" : "-").append(QString::number(perc)).append("%"));
+                if(add != 0)
+                    att_effects.append(QString(add > 0 ? "+" : "-").append(QString::number(add)));
+                att_desc.append(" " + att_effects.join("|"));
+                m_syn_effects.append(att_desc);
+            }
+        }
+        return m_syn_effects.join(", ");
+    }
+
+    QHash<ATTRIBUTES_TYPE,QPair<int,int> > get_attribute_changes() {return m_attribute_changes;}
+
     bool operator==(const Syndrome &other) const {
         if(this == &other)
             return true;
         return (this->m_id == other.m_id);
-    }
+    } 
 
 private:
     DFInstance *m_df;
@@ -115,7 +166,14 @@ private:
     bool m_is_sickness;
     QString m_name;
     QStringList m_class_names;
+    QStringList m_syn_effects;
     int m_id;
+    int m_year;
+    int m_time;
+    //pairs of percent change, and flat additive changes
+    QHash<ATTRIBUTES_TYPE,QPair<int,int> > m_attribute_changes;
+
 };
 
 #endif // SYNDROME_H
+

@@ -38,8 +38,8 @@ public:
     int hist_entity_offset(const QString & key){
         return m_hist_entity_offsets.value(key, -1);
     }
-    int weapon_offset(const QString & key){
-        return m_weapon_offsets.value(key, -1);
+    int weapon_subtype_offset(const QString & key){
+        return m_weapon_subtype_offsets.value(key, -1);
     }
     int material_offset(const QString & key){
         return m_material_offsets.value(key, -1);
@@ -47,8 +47,8 @@ public:
     int plant_offset(const QString & key){
         return m_plant_offsets.value(key, -1);
     }
-    int item_offset(const QString & key){
-        return m_item_offsets.value(key, -1);
+    int item_subtype_offset(const QString & key){
+        return m_item_subtype_offsets.value(key, -1);
     }
     int descriptor_offset(const QString & key){
         return m_descriptor_offsets.value(key, -1);
@@ -59,6 +59,22 @@ public:
     int wound_offset(const QString & key){
         return m_unit_wound_offsets.value(key,-1);
     }
+    int item_offset(const QString & key){
+        return m_item_offsets.value(key,-1);
+    }
+    int item_filter_offset(const QString & key){
+        return m_item_filter_offsets.value(key,-1);
+    }
+    int armor_subtype_offset(const QString & key){
+        return m_armor_subtype_offsets.value(key,-1);
+    }
+    int general_ref_offset(const QString & key){
+        return m_general_ref_offsets.value(key,-1);
+    }
+    int syndrome_offset(const QString & key){
+        return m_syndrome_offsets.value(key,-1);
+    }
+
 
     QSettings * data() { return m_data; }
     uint job_detail(const QString &key) {return m_job_details.value(key, -1);}
@@ -99,13 +115,19 @@ private:
     AddressHash m_caste_offsets;
     AddressHash m_hist_fig_offsets;
     AddressHash m_hist_entity_offsets;
-    AddressHash m_weapon_offsets;
+    AddressHash m_weapon_subtype_offsets;
     AddressHash m_plant_offsets;
-    AddressHash m_item_offsets;
+    AddressHash m_item_subtype_offsets;
     AddressHash m_material_offsets;
     AddressHash m_descriptor_offsets;
     AddressHash m_health_offsets;
     AddressHash m_unit_wound_offsets;
+    AddressHash m_armor_subtype_offsets;
+    AddressHash m_item_offsets;
+    AddressHash m_item_filter_offsets;
+    AddressHash m_general_ref_offsets;
+    AddressHash m_syndrome_offsets;
+
     QHash<uint, QString> m_valid_flags_1;
     QHash<uint, QString> m_valid_flags_2;
     QHash<uint, QString> m_invalid_flags_1;

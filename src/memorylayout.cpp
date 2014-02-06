@@ -54,17 +54,29 @@ void MemoryLayout::load_data() {
     read_group("soul_details", m_soul_details);
     read_group("squad_offsets", m_squad_offsets);
     read_group("word_offsets", m_word_offsets);
+
     read_group("race_offsets", m_race_offsets);
     read_group("caste_offsets", m_caste_offsets);
+
     read_group("hist_figure_offsets", m_hist_fig_offsets);
     read_group("hist_entity_offsets", m_hist_entity_offsets);
-    read_group("weapon_offsets", m_weapon_offsets);
+
     read_group("plant_offsets", m_plant_offsets);
     read_group("material_offsets", m_material_offsets);
+
+    read_group("weapon_subtype_offsets", m_weapon_subtype_offsets);
+    read_group("armor_subtype_offsets", m_armor_subtype_offsets);
+    read_group("item_subtype_offsets", m_item_subtype_offsets);
     read_group("item_offsets", m_item_offsets);
+    read_group("item_filter_offsets", m_item_filter_offsets);
+
     read_group("descriptor_offsets", m_descriptor_offsets);
+    read_group("general_ref_offsets", m_general_ref_offsets);
+
     read_group("health_offsets", m_health_offsets);
     read_group("unit_wound_offsets", m_unit_wound_offsets);
+
+    read_group("syndrome_offsets", m_syndrome_offsets);
 
     // flags
     int flag_count = m_data->beginReadArray("valid_flags_1");

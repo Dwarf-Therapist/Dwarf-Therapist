@@ -102,7 +102,7 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
                 aspects_str += tr("<br/><b>Note:</b> A higher weight (w) puts greater value on the aspect. Default weights are not shown.");
                 match_str += aspects_str;
 
-                tooltip = QString("<center><h3>%1 - %3%</h3></center>%2<h4>%4 is a %3% fit for this role.</h4>")
+                tooltip = QString("<center><h3>%1 - %3%</h3></center>%2<center><h4>%4 is a %3% fit for this role.</h4></center>")
                         .arg(m_role->name)
                         .arg(match_str)
                         .arg(QString::number(rating_total,'f',2))
@@ -118,11 +118,11 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
             match_str = tr("%1<h4><b>Raw Rating:</b> %2</h4>")
                     .arg(m_role->get_role_details())
                     .arg(rating_total, 0, 'f', 2);
-            tooltip = QString("<center><h3>%1 - %3</h3></center>%2<h4>%4</h4>")
+            tooltip = QString("<center><h3>%1 - %3</h3></center>%2%4")
                              .arg(m_role->name)
                              .arg(match_str)
                              .arg(roundf(rating_total), 0, 'f', 0)
-                             .arg(d->nice_name());
+                             .arg(tooltip_name_footer(d));
 
             item->setToolTip(tooltip);
         }

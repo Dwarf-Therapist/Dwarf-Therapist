@@ -27,9 +27,10 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include "dwarf.h"
 #include "dwarftherapist.h"
-#include "weapon.h"
+#include "itemweaponsubtype.h"
+#include "gamedatareader.h"
 
-WeaponColumn::WeaponColumn(const QString &title, Weapon *w, ViewColumnSet *set, QObject *parent)
+WeaponColumn::WeaponColumn(const QString &title, ItemWeaponSubtype *w, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title, CT_WEAPON, set, parent)
     , m_weapon(w)
 {
@@ -57,16 +58,23 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     QString wep = m_weapon->group_name.toLower();
     if(wep.indexOf(",")>0)
         wep = tr("these weapons");
+    else
+        wep = capitalizeEach(wep);
     float rating = 40; //values for 49-51 aren't shown for this column, this is the smallest red square we can get
     QString numeric_rating = "/";
     short sort_val = 1;
-    int body_size = d->body_size(true); //use the default size, as DF doesn't take into account a creature's actual size when checking if they can use weapons
+
+    //caste size determines can/can't wield
+    //if can wield, then the individual's size determines 1h/2h
+
+    //use the default size, as DF doesn't take into account a creature's actual size when checking if they can use weapons
+    int caste_size = d->body_size(true);
     bool onehand = false;
-    bool twohand = false;        
+    bool twohand = false;
     QString desc = tr("<b>Can only wield</b> %1 with <u>2 hands</u>.").arg(wep);
-    if(body_size > m_weapon->single_grasp())
+    if(caste_size > m_weapon->single_grasp())
         onehand = true;
-    if(body_size > m_weapon->multi_grasp())
+    if(caste_size > m_weapon->multi_grasp())
         twohand = true;
 
     //setup drawing ratings
@@ -83,16 +91,16 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
         sort_val = 2;
     }
 
-    QString group_name = "";
-//    if(m_weapon->melee_skill() >= 0){
-//        group_name = tr("<br><br>Melee Group: %1<br>").arg(m_weapon->melee_skill());
-//    }
-//    if(m_weapon->ranged_skill() >= 0){
-//        group_name += tr("<br><br>Ranged Group: %1<br>").arg(m_weapon->ranged_skill());
-//    }
+    QStringList weapon_skills;
+    if(m_weapon->melee_skill() >= 0){
+        weapon_skills.append(tr("<b>Melee Skill:</b> %1").arg(GameDataReader::ptr()->get_skill_name(m_weapon->melee_skill())));
+    }
+    if(m_weapon->ranged_skill() >= 0){
+        weapon_skills.append(tr("<b>Ranged Skill:</b> %1").arg(GameDataReader::ptr()->get_skill_name(m_weapon->ranged_skill())));
+    }
 
     QString tt_title = m_title;
-    if(tt_title.indexOf(",")>0){        
+    if(tt_title.indexOf(",")>0){
         //add a weapon list to the description
         QStringList l = m_title.split(",",QString::SkipEmptyParts);
         desc += "<br><br><b>Weapons:</b><ul>";
@@ -108,21 +116,20 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     item->setData(numeric_rating, DwarfModel::DR_DISPLAY_RATING);
     item->setData((sort_val * 100) + d->body_size(), DwarfModel::DR_SORT_VALUE);
 
-    QPalette tt;
-    QColor norm_text = tt.toolTipText().color();
+    QColor norm_text = QApplication::palette().shadow().color();
 
-    QString tooltip = QString("<center><h3>%1</h3></center>%2%3%4%5<h4>%6 - %7</h4>")
-                     .arg(tt_title)
-                     .arg(desc)
-                     .arg(group_name)
-                     .arg(tr("1h: <font color=%1>%2</font> cm<sup>3</sup><br>")
-                          .arg(onehand ? norm_text.name() : QColor(Qt::red).name())
-                          .arg(m_weapon->single_grasp()*10))
-                     .arg(tr("2h: <font color=%1>%2</font> cm<sup>3</sup>")
-                          .arg(twohand ? norm_text.name() : QColor(Qt::red).name())
-                          .arg(m_weapon->multi_grasp()*10))
-                     .arg(d->nice_name())
-                     .arg(tr("%1 cm<sup>3</sup><br>").arg(d->body_size() * 10)); //however in the tooltip, show the actual size
+    QString tooltip = QString("<center><h3>%1</h3></center>%2%3%4%5<center><h4>%6 - %7</h4></center>")
+            .arg(tt_title)
+            .arg(desc)
+            .arg(weapon_skills.join("<br>").append("<br/><br/>"))
+            .arg(tr("1h: <font color=%1>%2</font> cm<sup>3</sup><br>")
+                 .arg(onehand ? norm_text.name() : QColor(Qt::red).name())
+                 .arg(m_weapon->single_grasp()*10))
+            .arg(tr("2h: <font color=%1>%2</font> cm<sup>3</sup>")
+                 .arg(twohand ? norm_text.name() : QColor(Qt::red).name())
+                 .arg(m_weapon->multi_grasp()*10))
+            .arg(d->nice_name())
+            .arg(tr("%1 cm<sup>3</sup>").arg(d->body_size() * 10)); //however in the tooltip, show the actual size
 
     item->setToolTip(tooltip);
 
