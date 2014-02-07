@@ -64,6 +64,7 @@ THE SOFTWARE.
 #include "preference.h"
 #include "healthlegenddock.h"
 #include "dfinstance.h"
+#include "squad.h"
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -414,6 +415,8 @@ void MainWindow::read_dwarves() {
     m_model->clear_all(false);
 
     m_model->set_instance(m_df);
+    m_df->load_fortress();
+    m_df->load_squads(false);
     m_model->load_dwarves();    
 
     set_progress_message("Setting up interface...");
@@ -661,6 +664,11 @@ void MainWindow::list_pending() {
     foreach(Dwarf *d, m_model->get_dirty_dwarves()) {
         ui->tree_pending->addTopLevelItem(d->get_pending_changes_tree());
     }
+    foreach(Squad *s, m_df->squads()){
+        if(s->pending_changes())
+            ui->tree_pending->addTopLevelItem(s->get_pending_changes_tree());
+    }
+
     ui->tree_pending->expandAll();
     connect(ui->tree_pending, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
         m_view_manager, SLOT(jump_to_dwarf(QTreeWidgetItem *, QTreeWidgetItem *)));

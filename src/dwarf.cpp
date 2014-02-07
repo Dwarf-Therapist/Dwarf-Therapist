@@ -85,10 +85,10 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_raw_profession(-1)
     , m_can_set_labors(false)
     , m_current_job_id(-1)
-    , m_squad_id(-1)
-    , m_squad_position(-1)
     , m_hist_id(-1)
-    , m_squad_name(QString::null)
+    , m_squad_id(-1)
+    , m_squad_position(-1)    
+    , m_pending_squad_name(QString::null)
     , m_age(0)
     , m_hist_nickname(0)
     , m_fake_nickname(0)
@@ -686,12 +686,10 @@ void Dwarf::read_nick_name() {
     TRACE << "\tNICKNAME:" << m_nick_name;
     m_pending_nick_name = m_nick_name;
 
-    //if(!m_is_animal){
-    //save the nickname address as we need to update it when nicknames are changed
-    m_hist_nickname = m_df->find_historical_figure(m_hist_id);
-    if(m_hist_nickname)
-        m_hist_nickname += m_mem->hist_figure_offset("hist_name") + m_mem->dwarf_offset("nick_name");
-    //}
+    //save the historical figure's nickname address as we need to update it when nicknames are changed
+    VIRTADDR hist_addr = m_df->find_historical_figure(m_hist_id);
+    if(hist_addr)
+        m_hist_nickname = hist_addr + m_mem->hist_figure_offset("hist_name") + m_mem->dwarf_offset("nick_name");
 }
 
 void Dwarf::calc_names() {
@@ -1343,19 +1341,21 @@ bool Dwarf::get_flag_value(int bit)
 
 void Dwarf::read_squad_info() {
     m_squad_id = m_df->read_int(m_address + m_mem->dwarf_offset("squad_id"));
+    m_pending_squad_id = m_squad_id;
     m_squad_position = m_df->read_int(m_address + m_mem->dwarf_offset("squad_position"));
-    if(m_squad_id >= 0 && !m_is_animal && is_adult()){
-        m_squad_name = m_df->get_squad(m_squad_id)->name();
+    m_pending_squad_position = m_squad_position;
+    if(m_pending_squad_id >= 0 && !m_is_animal && is_adult()){
+        m_pending_squad_name = m_df->get_squad(m_pending_squad_id)->name();
     }
 }
 
 void Dwarf::read_uniform(){
     if(!m_is_animal && is_adult()){
-        if(m_squad_id >= 0){
-            Squad *s = m_df->get_squad(m_squad_id);
+        if(m_pending_squad_id >= 0){
+            Squad *s = m_df->get_squad(m_pending_squad_id);
             if(s != 0){
                 //military uniform
-                m_uniform = s->get_uniform(m_squad_position);
+                m_uniform = s->get_uniform(m_pending_squad_position);
             }
         }else{
             //build a work uniform
@@ -1385,7 +1385,11 @@ void Dwarf::read_uniform(){
     }
 }
 
-void Dwarf::read_inventory(){    
+void Dwarf::read_inventory(){
+    m_coverage_ratings.clear();
+    m_inventory_wear.clear();
+    m_inventory_grouped.clear();
+
     bool has_shirt = false;
     int shoes_count = 0;
     bool has_pants = false;
@@ -1511,22 +1515,6 @@ void Dwarf::process_inv_item(QString category, Item *item, bool is_contained_ite
     //don't process items contained in other items
     if(is_contained_item)
         return;
-
-    //if the item is one of these, group it together under the other equipment category by changing the type
-    //now that we've checked against the uniform
-    //also change the item type so it's grouped properly in the display
-    //if we ever want individual columns for backpack, quiver, etc. this should be removed
-    //    ITEM_TYPE itype = item->item_type();
-//    if(Item::is_supplies(itype)){
-//        itype = SUPPLIES;
-//        item->item_type(SUPPLIES);
-//    }else if(Item::is_melee_equipment(itype)){
-//        itype = MELEE_EQUIPMENT;
-//        item->item_type(MELEE_EQUIPMENT);
-//    }else if(Item::is_ranged_equipment(itype)){
-//        itype = RANGED_EQUIPMENT;
-//        item->item_type(RANGED_EQUIPMENT);
-//    }
 
     //add the item to the display list by body part
     QList<Item*> items;
@@ -1873,6 +1861,8 @@ int Dwarf::pending_changes() {
     int cnt = get_dirty_labors().size();
     if (m_nick_name != m_pending_nick_name)
         cnt++;
+    if(m_squad_id != m_pending_squad_id)
+        cnt++;
     if (m_custom_profession != m_pending_custom_profession)
         cnt++;
     if (m_unit_flags.at(0) != m_caged)
@@ -1889,10 +1879,20 @@ void Dwarf::clear_pending() {
             m_df->update_labor_count(labor_id, labor_enabled(labor_id) ? -1 : 1);
     }
 
+    //revert any squad changes
+    if(m_pending_squad_id != m_squad_id){
+        if(m_pending_squad_id >= 0){
+            m_df->get_squad(m_pending_squad_id)->remove_from_squad(this);
+        }
+        if(m_squad_id >= 0){
+            m_df->get_squad(m_squad_id)->assign_to_squad(this);
+        }
+    }
+
     refresh_data();
 }
 
-void Dwarf::commit_pending() {
+void Dwarf::commit_pending(bool single) {
     int addr = m_address + m_mem->dwarf_offset("labors");
 
     QByteArray buf(102, 0);
@@ -1924,7 +1924,37 @@ void Dwarf::commit_pending() {
     if (m_butcher != m_unit_flags.at(1))
         m_df->write_raw(m_address + m_mem->dwarf_offset("flags2"), 4, &m_butcher);
 
+    int pen_sq_id = -1;
+    int pen_sq_pos = -1;
+    QString pen_sq_name = "";
+    //currently we can't apply squad changes individually
+    if(m_pending_squad_id != m_squad_id){
+        if(!single){
+            Squad *s;
+            if(m_pending_squad_id > -1){
+                s = m_df->get_squad(m_pending_squad_id);
+                if(s)
+                    s->assign_to_squad(this,true);
+            }else{
+                s = m_df->get_squad(m_squad_id);
+                if(s)
+                    s->remove_from_squad(this,true);
+            }
+        }else{
+            pen_sq_id = m_pending_squad_id;
+            pen_sq_pos = m_pending_squad_position;
+            pen_sq_name = m_pending_squad_name;
+        }
+    }
+
     refresh_data();
+
+    if(single){
+        //restore our pending squad changes
+        m_pending_squad_id = pen_sq_id;
+        m_pending_squad_position = pen_sq_pos;
+        m_pending_squad_name = pen_sq_name;
+    }
 }
 
 void Dwarf::recheck_equipment(){
@@ -1961,18 +1991,20 @@ int Dwarf::apply_custom_profession(CustomProfession *cp) {
 QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
     QVector<int> labors = get_dirty_labors();
     QTreeWidgetItem *d_item = new QTreeWidgetItem;
-    d_item->setText(0, QString("%1 (%2)").arg(nice_name()).arg(labors.size()));
+    d_item->setText(0, QString("%1 (%2)").arg(nice_name()).arg(pending_changes()));
     d_item->setData(0, Qt::UserRole, id());
     if (m_caged != m_unit_flags.at(0)) {
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
         i->setText(0, tr("Caged change to %1").arg(hexify(m_caged)));
         i->setIcon(0, QIcon(":img/book_edit.png"));
+        i->setToolTip(0, i->text(0));
         i->setData(0, Qt::UserRole, id());
     }
     if (m_butcher != m_unit_flags.at(1)) {
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
         i->setText(0, tr("Butcher change to %1").arg(hexify(m_butcher)));
         i->setIcon(0, QIcon(":img/book_edit.png"));
+        i->setToolTip(0, i->text(0));
         i->setData(0, Qt::UserRole, id());
     }
     if (m_pending_nick_name != m_nick_name) {
@@ -1982,6 +2014,7 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
             nick = tr("DEFAULT");
         i->setText(0, tr("Nickname change to %1").arg(nick));
         i->setIcon(0, QIcon(":img/book_edit.png"));
+        i->setToolTip(0, i->text(0));
         i->setData(0, Qt::UserRole, id());
     }
     if (m_pending_custom_profession != m_custom_profession) {
@@ -1991,6 +2024,22 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
             prof = tr("DEFAULT");
         i->setText(0, tr("Profession change to %1").arg(prof));
         i->setIcon(0, QIcon(":img/book_edit.png"));
+        i->setToolTip(0, i->text(0));
+        i->setData(0, Qt::UserRole, id());
+    }
+    if (m_pending_squad_id != m_squad_id){
+        QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
+        QString title = "";
+        QString icn = "plus-circle.png";
+        if(m_pending_squad_id < 0){
+            title = tr("Remove from squad %1").arg(m_df->get_squad(m_squad_id)->name());
+            icn = "minus-circle.png";
+        }else{
+            title = tr("Assign to squad %1").arg(m_pending_squad_name);
+        }
+        i->setText(0,title);
+        i->setIcon(0, QIcon(QString(":img/%1").arg(icn)));
+        i->setToolTip(0, i->text(0));
         i->setData(0, Qt::UserRole, id());
     }
     foreach(int labor_id, labors) {
@@ -2004,6 +2053,7 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
             } else {
                 i->setIcon(0, QIcon(":img/minus-circle.png"));
             }
+            i->setToolTip(0, i->text(0));
         }
         i->setData(0, Qt::UserRole, id());
     }
@@ -2109,8 +2159,8 @@ QString Dwarf::tooltip_text() {
     if(!m_is_animal && s->value("options/tooltip_show_noble",true).toBool())
         tt.append(tr("<b>Profession:</b> %1").arg(profession()));
 
-    if(!m_is_animal && m_squad_id > -1 && s->value("options/tooltip_show_squad",true).toBool())
-        tt.append(tr("<b>Squad:</b> %1").arg(m_squad_name));
+    if(!m_is_animal && m_pending_squad_id > -1 && s->value("options/tooltip_show_squad",true).toBool())
+        tt.append(tr("<b>Squad:</b> %1").arg(m_pending_squad_name));
 
     if(!m_is_animal && m_noble_position != "" && s->value("options/tooltip_show_noble",true).toBool())
         tt.append(tr("<b>Noble Position%1:</b> %2").arg(m_noble_position.indexOf(",") > 0 ? "s" : "").arg(m_noble_position));
@@ -2600,4 +2650,17 @@ bool Dwarf::has_health_issue(int id, int idx){
     }else{
         return m_unit_health.has_info_detail(static_cast<eHealth::H_INFO>(id),idx);
     }
+}
+
+QString Dwarf::squad_name(){
+    return m_pending_squad_name;
+}
+
+void Dwarf::update_squad_info(int squad_id, int position, QString name){
+    m_pending_squad_id = squad_id;
+    m_pending_squad_position = position;
+    m_pending_squad_name = name;
+    //try to update the uniform and inventory
+    read_uniform();
+    read_inventory();
 }

@@ -59,11 +59,11 @@ StateTableView::StateTableView(QWidget *parent)
     , m_proxy(0)
     , m_delegate(new UberDelegate(this))
     , m_header(new RotatedHeader(Qt::Horizontal, this))
-    , m_expanded_rows(QList<int>())        
+    , m_expanded_rows(QList<int>())
     , m_vscroll(0)
-    , m_hscroll(0)        
+    , m_hscroll(0)
 {
-    read_settings();    
+    read_settings();
 
     setMouseTracking(true);
     setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -89,7 +89,7 @@ StateTableView::StateTableView(QWidget *parent)
     connect(this, SIGNAL(collapsed(const QModelIndex &)),SLOT(index_collapsed(const QModelIndex &)));
 
     connect(m_header, SIGNAL(sectionPressed(int)), SLOT(header_pressed(int)));
-    connect(m_header, SIGNAL(sectionClicked(int)), SLOT(header_clicked(int)));    
+    connect(m_header, SIGNAL(sectionClicked(int)), SLOT(header_clicked(int)));
 
     connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(hscroll_value_changed(int)));
     connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(vscroll_value_changed(int)));
@@ -151,7 +151,7 @@ void StateTableView::read_settings() {
     //cell size
     m_grid_size = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
     int pad = s->value("options/grid/cell_padding", 0).toInt();
-    setIconSize(QSize(m_grid_size - 2 - pad * 2, m_grid_size - 2 - pad * 2));    
+    setIconSize(QSize(m_grid_size - 2 - pad * 2, m_grid_size - 2 - pad * 2));
 
     set_single_click_labor_changes(s->value("options/single_click_labor_changes", true).toBool());
     m_auto_expand_groups = s->value("options/auto_expand_groups", false).toBool();
@@ -172,7 +172,7 @@ void StateTableView::set_single_click_labor_changes(bool enabled){
 }
 
 void StateTableView::set_default_group(QString name){
-        m_default_group_by = DT->user_settings()->value(QString("gui_options/%1_group_by").arg(name),-1).toInt();
+    m_default_group_by = DT->user_settings()->value(QString("gui_options/%1_group_by").arg(name),-1).toInt();
 }
 
 void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
@@ -232,7 +232,7 @@ void StateTableView::jump_to_profession(QTreeWidgetItem *current, QTreeWidgetIte
     QString prof_name = current->text(0);
     QModelIndexList matches = m_proxy->match(m_proxy->index(0,0), Qt::DisplayRole, prof_name);
     if (matches.size() > 0) {
-        QModelIndex group_header = matches.at(0);        
+        QModelIndex group_header = matches.at(0);
         expand(group_header);
         selectionModel()->select(group_header, QItemSelectionModel::SelectCurrent | QItemSelectionModel::Rows);
     }
@@ -253,7 +253,7 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
         m->removeAction(debug_menu->menuAction());
         m->removeAction(m_unassign_squad);
 
-        if(!d->is_animal()){            
+        if(!d->is_animal()){
 
             custom_prof_menu->setEnabled(true);
             m_assign_labors->setEnabled(true);
@@ -261,11 +261,7 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
             m_remove_labors->setEnabled(true);
 
             if(d->is_adult()){
-                //always double check squads before showing the menu. a user might remove a squad and not refresh DT
-                m_model->refresh_squads();
-                //also refresh the dwarf
-                d->read_squad_info();
-                if(m_model->squads().count() <= 0){
+                if(m_model->active_squads().count() <= 0){
                     squads_menu->setTitle(tr("No squads found."));
                     squads_menu->setEnabled(false);
                     m->addMenu(squads_menu);
@@ -275,8 +271,7 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
                     squads_menu->setEnabled(true);
                     QIcon icon;
                     icon.addFile(QString::fromUtf8(":/img/plus-circle.png"), QSize(), QIcon::Normal, QIcon::Off);
-                    foreach(int key, m_model->squads().uniqueKeys()){
-                        Squad *s = m_model->squads().value(key);
+                    foreach(Squad *s, m_model->active_squads()){
                         if(d->squad_id() != s->id()){
                             QAction *add;
                             if(s->assigned_count() < 10){
@@ -294,14 +289,17 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 
                     //squad removal (can't remove captain if there are subordinates)
                     if(d->squad_id() != -1){
-                        if((d->squad_position()==0 && m_model->squads().value(d->squad_id())->assigned_count()==1) || d->squad_position() != 0){
-                            m_unassign_squad->setText(tr("Remove from squad."));
-                            connect(m_unassign_squad,SIGNAL(triggered()),this, SLOT(remove_squad()));
-                            m->addAction(m_unassign_squad);
-                        }else{
-                            m_unassign_squad->setText(tr("Remove subordinates first!"));
-                            disconnect(m_unassign_squad, SIGNAL(triggered()), this, SLOT(remove_squad()));
-                            m->addAction(m_unassign_squad);
+                        Squad *s = m_model->get_squad(d->squad_id());
+                        if(s){
+                            if((d->squad_position()==0 && s->assigned_count()==1) || d->squad_position() != 0){
+                                m_unassign_squad->setText(tr("Remove from squad."));
+                                connect(m_unassign_squad,SIGNAL(triggered()),this, SLOT(remove_squad()));
+                                m->addAction(m_unassign_squad);
+                            }else{
+                                m_unassign_squad->setText(tr("Remove subordinates first!"));
+                                disconnect(m_unassign_squad, SIGNAL(triggered()), this, SLOT(remove_squad()));
+                                m->addAction(m_unassign_squad);
+                            }
                         }
                     }
                 }
@@ -334,7 +332,7 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 
         //dwarf actions (debug/memory stuff)
         m->addSeparator();
-//        m->addActions(d->get_actions());
+        //        m->addActions(d->get_actions());
         debug_menu->clear();
         debug_menu->addActions(d->get_mem_actions());
         m->addMenu(debug_menu);
@@ -342,17 +340,17 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
         m->exec(viewport()->mapToGlobal(event->pos()));
     } else if (idx.data(DwarfModel::DR_COL_TYPE).toInt() == CT_LABOR) {
         // labor column
-//        QMenu m(this); // this will be the popup menu
+        //        QMenu m(this); // this will be the popup menu
         QMenu labor(this);
         QString set_name = idx.data(DwarfModel::DR_SET_NAME).toString();
         ViewColumnSet *set = DT->get_main_window()->get_view_manager()->get_active_view()->get_set(set_name);
-        if (idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) { //aggregate labor            
+        if (idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) { //aggregate labor
             QString group_name = idx.data(DwarfModel::DR_GROUP_NAME).toString();
             QAction *a = labor.addAction(tr("Toggle %1 for %2").arg(set_name).arg(group_name));
             a->setData(group_name);
             connect(a, SIGNAL(triggered()), set, SLOT(toggle_for_dwarf_group()));
         } else { // single dwarf labor
-            // find the dwarf...            
+            // find the dwarf...
             int dwarf_id = idx.data(DwarfModel::DR_ID).toInt();
             Dwarf *d = m_model->get_dwarf_by_id(dwarf_id);
             QAction *a = labor.addAction(tr("Toggle %1 for %2").arg(set_name).arg(d->nice_name()));
@@ -361,13 +359,13 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
         }
         labor.exec(viewport()->mapToGlobal(event->pos()));
     } else if (idx.data(DwarfModel::DR_IS_AGGREGATE).toBool() && m_model->current_grouping()==DwarfModel::GB_SQUAD){
-//        QMenu m(this);
+        //        QMenu m(this);
         QMenu squad_name(this);
         QAction *a = squad_name.addAction(tr("Change Squad Name"),this,SLOT(set_squad_name()));
         a->setData(idx.data(DwarfModel::DR_ID));
         squad_name.exec(viewport()->mapToGlobal(event->pos()));
     } else if (idx.data(DwarfModel::DR_COL_TYPE).toInt() == CT_PROFESSION) {
-//        QMenu m(this);
+        //        QMenu m(this);
         QMenu prof_icon(this);
         int id = idx.data(DwarfModel::DR_SORT_VALUE).toInt();
         QString prof_name = GameDataReader::ptr()->get_profession(id)->name(true);
@@ -470,8 +468,9 @@ void StateTableView::commit_pending(){
     int id = a->data().toInt();
     Dwarf *d = m_model->get_dwarf_by_id(id);
     if(d){
-        d->commit_pending();
+        d->commit_pending(true);
         m_model->calculate_pending();
+        DT->get_main_window()->get_view_manager()->redraw_current_tab();
     }
 }
 
@@ -482,12 +481,13 @@ void StateTableView::clear_pending(){
     if(d){
         d->clear_pending();
         m_model->calculate_pending();
+        DT->get_main_window()->get_view_manager()->redraw_current_tab();
     }
 }
 
 void StateTableView::set_squad_name(){
     QAction *a = qobject_cast<QAction*>(QObject::sender());
-    Squad *s = m_model->squads().value(a->data().toInt());
+    Squad *s = m_model->get_squad(a->data().toInt());
     if(s){
         bool ok;
         QString alias = QInputDialog::getText(this, tr("New Squad Name"),
@@ -506,63 +506,78 @@ void StateTableView::set_squad_name(){
                 m_model->itemFromIndex(idx)->setText(QString("%1 (%2)").arg(alias).arg(s->assigned_count()));
             }
             s->rename_squad(alias);
+            m_model->calculate_pending();
         }
     }
 }
 
 void StateTableView::assign_to_squad(){
     QAction *a = qobject_cast<QAction*>(QObject::sender());
-    Squad *new_squad = m_model->squads().value(a->data().toInt());
+    Squad *new_squad = m_model->get_squad(a->data().toInt());
+    if(new_squad == 0){
+        return;
+    }else{
+        connect(new_squad,SIGNAL(squad_leader_changed()),this,SLOT(emit_squad_leader_changed()));
+    }
     int id = -1;
     const QItemSelection sel = selectionModel()->selection();
+    if(sel.count() <= 0)
+        return;
     foreach(QModelIndex i, sel.indexes()) {
         if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool()){
             id = i.data(DwarfModel::DR_ID).toInt();
             Dwarf *d = m_model->get_dwarf_by_id(id);
-            if(!d->is_adult())
-                continue;
-            //refresh dwarf info first
-            d->read_squad_info();
-            if (d) {
-                if(d->squad_id() != new_squad->id()){ //don't add to squad if they're already in it..
-                    if(d->squad_id() != -1){ //remove from old squad first
-                        if(d->squad_position()==0)
-                            emit squad_leader_changed();
-                        Squad *old_squad = m_model->squads().value(d->squad_id());
-                        if(old_squad)
-                            old_squad->remove_from_squad(d);
-                    }
+            new_squad->assign_to_squad(d);
+            //            if(!d->is_adult())
+            //                continue;
+            //            //refresh dwarf info first
+            ////            d->read_squad_info();
+            //            if (d) {
+            //                if(d->squad_id() != new_squad->id()){ //don't add to squad if they're already in it..
+            //                    if(d->squad_id() != -1){ //remove from old squad first
+            //                        if(d->squad_position()==0)
+            //                            emit squad_leader_changed();
+            //                        Squad *old_squad = m_model->active_squads().value(d->squad_id());
+            //                        if(old_squad)
+            //                            old_squad->remove_from_squad(d);
+            //                    }
 
-                    int new_pos = new_squad->assign_to_squad(d);
-                    if(new_pos==0)
-                        emit squad_leader_changed();
-                }
-            }
+            //                    int new_pos = new_squad->assign_to_squad(d);
+            //                    if(new_pos==0){
+            //                        emit squad_leader_changed();
+            //                    }
+            //                }
+            //            }
         }
     }
-    if(m_model->current_grouping()==DwarfModel::GB_SQUAD)
-        DT->get_main_window()->get_view_manager()->redraw_current_tab();
-
+    disconnect(new_squad,SIGNAL(squad_leader_changed()),this,SLOT(emit_squad_leader_changed()));
+    m_model->calculate_pending();
+    //    if(m_model->current_grouping()==DwarfModel::GB_SQUAD)
+    DT->get_main_window()->get_view_manager()->redraw_current_tab();
 }
 void StateTableView::remove_squad(){
     const QItemSelection sel = selectionModel()->selection();
+    if(sel.count() <= 0)
+        return;
+
     foreach(QModelIndex i, sel.indexes()) {
         if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool()){
             int id = i.data(DwarfModel::DR_ID).toInt();
             Dwarf *d = m_model->get_dwarf_by_id(id);
             //refresh dwarf info
-            d->read_squad_info();
+            //            d->read_squad_info();
             if (d) {
                 if(d->squad_position()==0)
                     emit squad_leader_changed();
-                Squad *s = m_model->squads().value(d->squad_id());
+                Squad *s = m_model->get_squad(d->squad_id());
                 if(s)
                     s->remove_from_squad(d);
             }
         }
     }
-    if(m_model->current_grouping()==DwarfModel::GB_SQUAD)
-        DT->get_main_window()->get_view_manager()->redraw_current_tab();
+    m_model->calculate_pending();
+    //    if(m_model->current_grouping()==DwarfModel::GB_SQUAD)
+    DT->get_main_window()->get_view_manager()->redraw_current_tab();
 }
 
 void StateTableView::set_nickname() {
@@ -643,7 +658,7 @@ void StateTableView::set_custom_profession_text() {
         if (warn)
             QMessageBox::warning(this, tr("Name too long!"), tr("Profession names must be 15 characters or shorter!"));
         prof_name = QInputDialog::getText(this, tr("New Custom Profession Name"),
-            tr("Custom Profession"), QLineEdit::Normal, QString(), &ok);
+                                          tr("Custom Profession"), QLineEdit::Normal, QString(), &ok);
         if (!ok)
             return;
         warn = prof_name.length() > 15;
@@ -737,7 +752,7 @@ void StateTableView::mousePressEvent(QMouseEvent *event) {
         m_selected.clear();
     }
 
-    QTreeView::mousePressEvent(event);    
+    QTreeView::mousePressEvent(event);
 }
 
 void StateTableView::mouseMoveEvent(QMouseEvent *event) {
@@ -765,7 +780,7 @@ void StateTableView::mouseMoveEvent(QMouseEvent *event) {
 void StateTableView::mouseReleaseEvent(QMouseEvent *event) {
     m_last_button = Qt::NoButton;//event->button();
     if(!m_dragging)
-            m_last_cell = indexAt(QPoint(-1,-1));    
+        m_last_cell = indexAt(QPoint(-1,-1));
     QTreeView::mouseReleaseEvent(event);
 }
 
@@ -787,7 +802,7 @@ void StateTableView::activate_cells(const QModelIndex &idx){
     if (//m_last_button == Qt::LeftButton && // only activate on left-clicks
             m_proxy && // we only do this for views that have proxies (dwarf views)
             idx.column() != 0) // don't single-click activate the name column
-    {        
+    {
         if(m_toggling_multiple){
             foreach(QModelIndex i, m_selected_rows){
                 QModelIndex p = i.parent();
@@ -823,10 +838,10 @@ void StateTableView::activate_cells(const QModelIndex &idx){
 
 void StateTableView::header_clicked(int index) {
     if (!m_column_already_sorted && index > 0) {
-        m_header->setSortIndicator(index, Qt::DescendingOrder);       
+        m_header->setSortIndicator(index, Qt::DescendingOrder);
     }
     m_last_sorted_col = index;
-    m_last_sort_order = m_header->sortIndicatorOrder();    
+    m_last_sort_order = m_header->sortIndicatorOrder();
 }
 
 void StateTableView::column_right_clicked(int idx){
@@ -839,7 +854,7 @@ void StateTableView::column_right_clicked(int idx){
 
         QAction *a = m->addAction(title);
         //initialize our little data struct we'll pass when a sort type is chosen
-        QList<QVariant> data;        
+        QList<QVariant> data;
         data << idx << col->type() << ViewColumn::CST_LEVEL;
         QIcon current(":img/ui-button-navigation.png");
         foreach(ViewColumn::COLUMN_SORT_TYPE sType, col->get_sortable_types()){
@@ -973,7 +988,7 @@ void StateTableView::keyPressEvent(QKeyEvent *event ){
         break;
     case Qt::Key_Left:
         horizontalScrollBar()->setValue(horizontalScrollBar()->value() - horizontalScrollBar()->singleStep());
-        break;        
+        break;
     default:
         break;
     }

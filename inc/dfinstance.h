@@ -108,7 +108,7 @@ public:
 
     void load_fortress();
 
-    QVector<Squad*> load_squads(bool refreshing = false);
+    QList<Squad*> load_squads(bool refreshing = false);
     Squad * get_squad(int id);
 
     int get_labor_count(int id) const {return m_enabled_labor_count.value(id,0);}
@@ -216,6 +216,7 @@ public:
 
 
     QString fortress_name() const {return QString("%1, \"%2\"").arg(m_fortress_name).arg(m_fortress_name_translated);}
+    QList<Squad*> squads() {return m_squads;}
 
     public slots:
         // if a menu cancels our scan, we need to know how to stop
@@ -248,6 +249,7 @@ protected:
     void load_population_data();
     void load_role_ratings(QVector<Dwarf*> &dwarves);
     void cdf_role_ratings();
+
 
     /*! this hash will hold a map of all loaded and valid memory layouts found
         on disk, the key is a QString of the checksum since other OSs will use
@@ -308,7 +310,7 @@ private:
 
     VIRTADDR m_squad_vector;
 
-    QVector<Squad*> m_squads;
+    QList<Squad*> m_squads;
 };
 
 #endif // DFINSTANCE_H

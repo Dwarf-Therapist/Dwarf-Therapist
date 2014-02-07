@@ -151,11 +151,17 @@ private:
         void remove_prof_icon();        
         void commit_pending();
         void clear_pending();
+        //a squad object will emit a signal that we'll slot here,
+        //and then emit another signal for the parent object to handle
+        void emit_squad_leader_changed(){
+            emit squad_leader_changed();
+        }
 
 signals:
     void new_custom_profession(Dwarf *d);
     void dwarf_focus_changed(Dwarf *d);
     void squad_leader_changed();
+
 
 };
 #endif // STATETABLEVIEW_H

@@ -838,9 +838,9 @@ void DFInstance::load_fortress(){
 }
 
 
-QVector<Squad*> DFInstance::load_squads(bool refreshing) {
+QList<Squad *> DFInstance::load_squads(bool refreshing) {
 
-    QVector<Squad*> squads;
+    QList<Squad*> squads;
     if (!m_is_ok) {
         LOGW << "not connected";
         detach();
@@ -876,30 +876,34 @@ QVector<Squad*> DFInstance::load_squads(bool refreshing) {
     QVector<VIRTADDR> squads_addr = enumerate_vector(m_squad_vector);
     TRACE << "FOUND" << squads_addr.size() << "squads";
 
+    qDeleteAll(m_squads);
+    m_squads.clear();
+
     if (!squads_addr.empty()) {
         if(!refreshing)
             emit progress_range(0, squads_addr.size()-1);
-        Squad *s = NULL;
-        int i = 0;
+
+        int squad_count = 0;
         foreach(VIRTADDR squad_addr, squads_addr) {
+            Squad *s = NULL;
             s = Squad::get_squad(this, squad_addr);
-            if (s) {
+            if(s) {
                 LOGD << "FOUND SQUAD" << hexify(squad_addr) << s->name() << " member count: " << s->assigned_count() << " id: " << s->id();
-                if(m_fortress->squad_is_active(s->id()))
-                    squads.push_front(s);
+                if(m_fortress->squad_is_active(s->id())){
+                    m_squads.push_front(s);
+                }
             }
             if(!refreshing)
-                emit progress_value(i++);
+                emit progress_value(squad_count++);
         }
     }
 
     detach();
     //LOGI << "Found" << squads.size() << "squads out of" << m_current_creatures.size();
-    m_squads = squads;
     return m_squads;
 }
 
-Squad* DFInstance::get_squad(int id){
+Squad* DFInstance::get_squad(int id){    
     foreach(Squad *s, m_squads){
         if(s->id() == id)
             return s;

@@ -96,6 +96,19 @@ void Uniform::add_equip_count(ITEM_TYPE itype, int count){
         add_equip_count(RANGED_EQUIPMENT,count);
 }
 
+void Uniform::clear(){
+    m_equip_counts.clear();
+//    foreach(QList<ItemDefUniform*> items,m_uniform_items.values()){
+//        qDeleteAll(items);
+//    }
+//    m_uniform_items.clear();
+////    foreach(QList<ItemDefUniform*> items,m_missing_items.values()){
+////        qDeleteAll(items);
+////    }
+    m_missing_items.clear();
+    m_first_check = true;
+}
+
 int Uniform::get_equip_count(ITEM_TYPE itype){
     return m_equip_counts.value(itype,-1);
 }
@@ -114,19 +127,6 @@ int Uniform::get_missing_equip_count(ITEM_TYPE itype){
             if(missing_type == itype || Item::type_in_group(itype,missing_type))
                 count += m_missing_items.value(missing_type).count();
         }
-
-//        if(itype == SUPPLIES){
-//            count =  m_missing_items.value(BACKPACK).count();
-//            count +=  m_missing_items.value(FLASK).count();
-//        }else if(itype == MELEE_EQUIPMENT){
-//            count =  m_missing_items.value(WEAPON).count();
-//            count +=  m_missing_items.value(SHIELD).count();
-//        }else if(itype == RANGED_EQUIPMENT){
-//            count =  m_missing_items.value(QUIVER).count();
-//            count +=  m_missing_items.value(AMMO).count();
-//        }else{
-//            count = m_missing_items.value(itype).count();
-//        }
     }
     return count;
 }

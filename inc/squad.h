@@ -45,19 +45,18 @@ public:
     //! Return the memory address (in hex) of this creature in the remote DF process
     VIRTADDR address() {return m_address;}
     int id() {return m_id;}
-    QString name() {return m_name;}
-    //QVector<Dwarf *> members() {return m_members;}
-    QVector<int> members() {return m_members;}
-    int assigned_count();
-    void refresh_data();
+    QString name() {return m_name;}    
+    int assigned_count();    
 
     void rename_squad(QString alias);
-    int assign_to_squad(Dwarf *d);
-    void remove_from_squad(Dwarf *d);
-
-//    int get_equip_count(ITEM_TYPE itype,int position);
-//    QHash<ITEM_TYPE,QList<ItemDefUniform*> > get_uniform(int position) {return m_uniform.value(position);}
+    void assign_to_squad(Dwarf *d, bool committing = false);
+    bool remove_from_squad(Dwarf *d, bool committing = false);
     Uniform* get_uniform(int position){return m_uniforms.value(position);}
+
+    QTreeWidgetItem* get_pending_changes_tree();
+    void commit_pending();
+    void clear_pending();
+    int pending_changes();
 
 private:
     VIRTADDR m_address;
@@ -65,16 +64,22 @@ private:
     QString m_name;
     DFInstance * m_df;
     MemoryLayout * m_mem;    
-    QVector<int> m_members;
-
-    QVector<VIRTADDR> members_addr;
-
+    //! position, dwarf hist_id
+    QMap<int,int> m_members;
+    QVector<VIRTADDR> m_members_addr;
     QHash<int,Uniform*> m_uniforms;
+    bool m_inactive;
+    QString m_pending_name;
 
+    void read_data();
     void read_id();
     void read_name();
     void read_members();
     void read_equip_category(VIRTADDR vec_addr, ITEM_TYPE itype, Uniform *u);
+    int find_position(int hist_id);
+
+signals:
+    void squad_leader_changed();
 };
 
 #endif

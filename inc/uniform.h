@@ -33,7 +33,7 @@ class Uniform : public QObject {
     Q_OBJECT
 public:
     Uniform(DFInstance *df, QObject *parent = 0);
-    virtual ~Uniform();
+    virtual ~Uniform();    
 
     int get_equip_count(ITEM_TYPE itype);
     int get_missing_equip_count(ITEM_TYPE itype);
@@ -50,6 +50,8 @@ public:
     void add_uniform_item(ITEM_TYPE itype, ItemDefUniform *uItem, int count);
 
     bool has_items(){return m_uniform_items.count();}
+
+    void clear();
 
 protected:
     DFInstance *m_df;

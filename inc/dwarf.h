@@ -183,13 +183,11 @@ public:
     Q_INVOKABLE int kinesthetic_sense() {return attribute((int)AT_KINESTHETIC_SENSE);}
 
     //! return this dwarf's squad reference id
-    Q_INVOKABLE int squad_id() { return m_squad_id; }
-    Q_INVOKABLE int squad_position() { return m_squad_position;}
+    Q_INVOKABLE int squad_id(bool original = false) { return (original ? m_squad_id : m_pending_squad_id);}
+    Q_INVOKABLE int squad_position(bool original = false) { return (original ? m_squad_position : m_pending_squad_position);}
     Q_INVOKABLE int historical_id() { return m_hist_id;}
 
-    void set_squad_id(int id) {m_squad_id=id;}
-    void set_squad_position(int pos) {m_squad_position=pos;}
-    void set_squad_name(QString name) {m_squad_name=name;}
+    void update_squad_info(int squad_id, int position, QString name);
 
     //! return this dwarf's caste id
     Q_INVOKABLE short get_caste_id() { return m_caste_id; }
@@ -395,9 +393,10 @@ public:
         return m_first_name;
     }
 
-    QString squad_name() const {
-        return m_squad_name;
-    }
+//    QString squad_name() const {
+//        return m_squad_name;
+//    }
+    QString squad_name();
 
     uint turn_count() const {
         return m_turn_count;
@@ -456,7 +455,6 @@ public:
     Q_INVOKABLE int get_inventory_wear(ITEM_TYPE itype = NONE);
     int optimized_labors;
 
-    void read_squad_info();
 
     public slots:
         //! called when global user settings change
@@ -473,7 +471,7 @@ public:
         //! undo any uncomitted changes to this dwarf (reset back to game-state)
         void clear_pending();
         //! write all uncommitted pending changes back to the game (DANGEROUS METHOD)
-        void commit_pending();
+        void commit_pending(bool single=false);
 
         //sorts ratings
         static bool sort_ratings(const Role::simple_rating &r1, const Role::simple_rating &r2){return r1.rating > r2.rating;}
@@ -533,10 +531,12 @@ private:
     QMap<int, ushort> m_labors;
     QMap<int, ushort> m_pending_labors;
     QList<QAction*> m_actions_memory; // actions suitable for context menus    
+    int m_hist_id;
     int m_squad_id;
     int m_squad_position;
-    int m_hist_id;
-    QString m_squad_name; //The name of the squad that the dwarf belongs to (if any)
+    int m_pending_squad_id;
+    int m_pending_squad_position;
+    QString m_pending_squad_name; //The name of the squad that the dwarf belongs to (if any)
     QList<quint32> m_unit_flags;
     quint32 m_caged;
     quint32 m_butcher;
@@ -614,6 +614,7 @@ private:
     void read_noble_position();
     void read_preferences();    
     void read_syndromes();
+    void read_squad_info();
     void read_inventory();
     void read_uniform();
 

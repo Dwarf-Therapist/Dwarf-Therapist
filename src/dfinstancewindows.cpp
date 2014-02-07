@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include "win_structs.h"
 #include "memorysegment.h"
 #include "dwarftherapist.h"
+#include "cp437codec.h"
 
 DFInstanceWindows::DFInstanceWindows(QObject* parent)
     : DFInstance(parent)
@@ -127,7 +128,11 @@ QString DFInstanceWindows::read_string(const uint &addr) {
                "String must be of sane length!");
 
     QByteArray buf = get_data(buffer_addr, len);
-    return QTextCodec::codecForName("IBM 437")->toUnicode(buf);
+    QTextCodec *c = new CP437Codec();
+    return c->toUnicode(buf);
+
+    //the line below would be nice, but apparently a ~20mb *.icu library is required for that single call to qtextcodec...wtf. really.
+    //return QTextCodec::codecForName("IBM 437")->toUnicode(buf);
 }
 
 int DFInstanceWindows::write_string(const VIRTADDR &addr, const QString &str) {
@@ -150,7 +155,6 @@ int DFInstanceWindows::write_string(const VIRTADDR &addr, const QString &str) {
 
     QByteArray data = QTextCodec::codecForName("IBM 437")->fromUnicode(str);
     int bytes_written = write_raw(buffer_addr, len, data.data());
-//    delete codec; //CAUSES EXCEPTION ON EXIT!!
     return bytes_written;
 }
 

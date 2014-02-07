@@ -113,7 +113,7 @@ void FortressEntity::read_entity(){
             //to get profiles of the different nobility types
             foreach(VIRTADDR assign, addr_assignments){
                 assign_pos_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_position_id")); //position for the assignment
-                hist_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_hist_id")); //dwarf assigned
+                hist_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_hist_id")); //dwarf assigned                
                 if(hist_id > 0){                    
                     position p = positions.value(assign_pos_id, pos_unk);
                     m_nobles.insert(hist_id,p);

@@ -101,8 +101,8 @@ void DwarfModel::load_dwarves() {
 
     m_df->attach();
 
-    m_df->load_fortress();
-    load_squads();
+//    m_df->load_fortress();
+//    m_df->load_squads();
 
     foreach(Dwarf *d, m_df->load_dwarves()) {
         m_dwarves[d->id()] = d;
@@ -111,21 +111,11 @@ void DwarfModel::load_dwarves() {
     m_df->detach();
 }
 
-void DwarfModel::load_squads(bool refreshing){
-    qDeleteAll(m_squads);
-    m_squads.clear();
-    foreach(Squad * s, m_df->load_squads(refreshing)) {
-        m_squads[s->id()] = s;
-    }
+QList<Squad*> DwarfModel::active_squads(){
+    return m_df->squads();
 }
-
-void DwarfModel::refresh_squads(){
-    if(!m_df)
-        return;
-    //refresh the active squad list
-    m_df->fortress()->refresh_squads();
-    //refresh all squads
-    load_squads(true);
+Squad* DwarfModel::get_squad(int id){
+    return m_df->get_squad(id);
 }
 
 void DwarfModel::update_header_info(int id, COLUMN_TYPE type){
@@ -471,7 +461,7 @@ void DwarfModel::build_row(const QString &key) {
         } else if (m_group_by == GB_SQUAD){
             int squad_id = first_dwarf->squad_id();
             if(squad_id != -1){
-                int squad_count = m_squads.value(first_dwarf->squad_id())->assigned_count();
+                int squad_count = m_df->get_squad(first_dwarf->squad_id())->assigned_count();
                 title = QString("%1 (%2)").arg(key).arg(squad_count);
                 agg_first_col->setText(title);
                 if(squad_count != m_grouped_dwarves.value(key).size()){
@@ -706,22 +696,39 @@ void DwarfModel::calculate_pending() {
     foreach(Dwarf *d, m_dwarves) {
         changes += d->pending_changes();
     }
+    foreach(Squad *s, m_df->squads()){
+        changes += s->pending_changes();
+    }
+
     emit new_pending_changes(changes);
 }
 
 void DwarfModel::clear_pending() {
+    //clear squads before we refresh dwarf data
+    foreach(Squad *s, m_df->squads()){
+        if(s->pending_changes())
+            s->clear_pending();
+    }
+
     foreach(Dwarf *d, m_dwarves) {
         if (d->pending_changes()) {
             d->clear_pending();
         }
     }
-    //reset();
+    //reset();    
     DT->emit_labor_counts_updated();
     emit new_pending_changes(0);
     emit need_redraw();
 }
 
 void DwarfModel::commit_pending() {
+    //before committing, commit squad name changes, and then refresh our squads
+    m_df->fortress()->refresh_squads(); //update our fortress squad list first
+    foreach(Squad *s, m_df->squads()){
+        s->commit_pending();
+    }
+    m_df->load_squads(true);
+
     foreach(Dwarf *d, m_dwarves) {
         if (d->pending_changes()) {
             d->commit_pending();

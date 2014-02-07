@@ -116,7 +116,8 @@ public:
     QModelIndex findOne(const QVariant &needle, int role = Qt::DisplayRole, int column = 0, const QModelIndex &start_index = QModelIndex());
     QList<QPersistentModelIndex> findAll(const QVariant &needle, int role = Qt::DisplayRole, int column = 0, QModelIndex start_index = QModelIndex());
 
-    QHash<int, Squad*> squads() {return m_squads;}
+    QList<Squad *> active_squads();
+    Squad* get_squad(int id);
 
     int total_row_count;
     bool clearing_data;
@@ -128,9 +129,7 @@ public slots:
     void build_row(const QString &key);
     void build_rows();
     void set_group_by(int group_by);
-    void load_dwarves();
-    void load_squads(bool refreshing = false);
-    void refresh_squads();
+    void load_dwarves();   
     void cell_activated(const QModelIndex &idx); // a grid cell was clicked/doubleclicked or enter was pressed on it
     void clear_pending();
     void commit_pending();
@@ -144,8 +143,6 @@ private:
     DFInstance *m_df;
     QMap<int, Dwarf*> m_dwarves;
     QMap<QString, QVector<Dwarf*> > m_grouped_dwarves;
-    //! squad_leader_id -> squad object
-    QHash<int, Squad*> m_squads;
     GROUP_BY m_group_by;
     int m_selected_col;
     GridView *m_gridview;

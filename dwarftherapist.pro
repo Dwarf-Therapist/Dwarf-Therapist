@@ -240,7 +240,8 @@ HEADERS += inc/win_structs.h \
     inc/itemammo.h \
     inc/itemarmorsubtype.h \
     inc/itemammosubtype.h \
-    inc/itemweaponsubtype.h
+    inc/itemweaponsubtype.h \
+    inc/cp437codec.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
