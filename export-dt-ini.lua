@@ -336,7 +336,7 @@ offset('cie_ment',df.creature_interaction_effect_ment_att_changest,'ment_att_add
 vector('syn_classes_vector',df.syndrome,'syn_class')
 
 header('unit_wound_offsets')
-offset('parts',df.unit_wound,'parts')
+vector('parts',df.unit_wound,'parts')
 offset('id',df.unit_wound.T_parts,'body_part_id')
 offset('layer',df.unit_wound.T_parts,'layer_idx')
 offset('general_flags',df.unit_wound,'flags')

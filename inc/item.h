@@ -40,7 +40,7 @@ public:
     Item(ITEM_TYPE itype,QString name, QObject *parent = 0);
     virtual ~Item();
 
-    static const int MAX_AFFECTION = 1000;
+    static const int MAX_AFFECTION = 10000;
 
     static const QString get_item_name_plural(const ITEM_TYPE &type) {
         QMap<ITEM_TYPE, QString> m;
