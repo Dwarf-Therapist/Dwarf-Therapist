@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "Foundation/NSBundle.h"
 #include "AppKit/NSWorkspace.h"
 
+#include "cp437codec.h"
 #include "dfinstance.h"
 #include "dfinstanceosx.h"
 #include "defines.h"
@@ -59,6 +60,8 @@ THE SOFTWARE.
 #define VM_REGION_BASIC_INFO_COUNT_64 VM_REGION_BASIC_INFO_COUNT
 #define VM_REGION_BASIC_INFO_64 VM_REGION_BASIC_INFO
 #endif /* MACH64 */
+
+static CP437Codec cp437Codec;
 
 DFInstanceOSX::DFInstanceOSX(QObject* parent)
     : DFInstance(parent)
@@ -98,6 +101,11 @@ QVector<uint> DFInstanceOSX::enumerate_vector(const uint &addr) {
         detach();
         return addrs;
     }
+    else if (bytes_read == -1) {
+        LOGW << "Failed to read" << hexify(start);
+        detach();
+        return addrs;
+    }
     for(int i = 0; i < bytes; i += 4) {
         tmp_addr = decode_dword(data.mid(i, 4));
         addrs << tmp_addr;
@@ -110,10 +118,15 @@ QString DFInstanceOSX::read_string(const VIRTADDR &addr) {
     VIRTADDR buffer_addr = read_addr(addr);
     int upper_size = 256;
     QByteArray buf(upper_size, 0);
-    read_raw(buffer_addr, upper_size, buf);
+    int bytes_read = read_raw(buffer_addr, upper_size, buf);
+    //if (bytes_read == -1) {
+        //LOGW << "Failed to read from" << hexify(addr);
+        //throw -1;
+    //}
 
-    buf.truncate(buf.indexOf(QChar('\0')));
-    return QTextCodec::codecForName("IBM 437")->toUnicode(buf);
+    QString ret_val(buf);
+    ret_val = cp437Codec.toUnicode(ret_val.toLatin1());
+    return ret_val;
 }
 
 int DFInstanceOSX::write_string(const VIRTADDR &addr, const QString &str) {
@@ -191,9 +204,9 @@ int DFInstanceOSX::read_raw(const VIRTADDR &addr, int bytes, QByteArray &buffer)
                                &readsize );
 
     if ( result != KERN_SUCCESS ) {
-        LOGW << "Unable to read " << bytes << " byte(s) from " << hexify(addr) <<
-        "into buffer" << &buffer << endl;
-        return 0;
+        //LOGW << "Unable to read " << bytes << " byte(s) from " << hexify(addr) <<
+        //"into buffer" << &buffer << endl;
+        return -1;
     }
 
     return readsize;
@@ -204,7 +217,9 @@ int DFInstanceOSX::write_raw(const VIRTADDR &addr, const int &bytes, void *buffe
 
     result = vm_write( m_task,  addr,  (vm_offset_t)buffer,  bytes );
     if ( result != KERN_SUCCESS ) {
-        return 0;
+        //LOGW << "Unable to write " << bytes << " byte(s) from " << hexify(addr) <<
+        //"into buffer" << &buffer << endl;
+        return -1;
     }
 
     return bytes;
