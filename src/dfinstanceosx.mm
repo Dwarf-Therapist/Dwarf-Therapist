@@ -124,9 +124,8 @@ QString DFInstanceOSX::read_string(const VIRTADDR &addr) {
         //throw -1;
     //}
 
-    QString ret_val(buf);
-    ret_val = cp437Codec.toUnicode(ret_val.toLatin1());
-    return ret_val;
+    buf.truncate(buf.indexOf(QChar('\0')));
+    return cp437Codec.toUnicode(buf);
 }
 
 int DFInstanceOSX::write_string(const VIRTADDR &addr, const QString &str) {
