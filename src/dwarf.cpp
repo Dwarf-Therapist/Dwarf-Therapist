@@ -1421,7 +1421,7 @@ void Dwarf::read_inventory(){
             if(affection_level > 0)
                 i->set_affection(affection_level);
 
-            if(i_type == WEAPON){
+            if(i_type == WEAPON){                
                 ItemWeapon *iw = new ItemWeapon(*i);
                 process_inv_item(category_name,iw);
 

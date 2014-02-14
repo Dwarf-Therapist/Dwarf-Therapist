@@ -257,8 +257,8 @@ void Item::build_display_name(){
     if(m_layer_name != "")
         m_display_name.append(QString(" (%1)").arg(capitalizeEach(m_layer_name)));
 
-    //weapons/shields that aren't artifacts (named) yet
-    if(m_affection > 50 && m_affection < MAX_AFFECTION){
+    //weapons/shields that aren't artifacts (named) yet, seems around 300 (3%) they become attached?
+    if(m_affection >= 300 && m_affection < MAX_AFFECTION){
         m_display_name.append(QObject::tr(" (%1% Named)").arg(QString::number((float)m_affection / MAX_AFFECTION * 100.0f,'f',0)));
     }
 
