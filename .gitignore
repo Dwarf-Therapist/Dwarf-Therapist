@@ -16,3 +16,6 @@ ui_*.h
 moc_*.cpp
 moc_*.h
 *.o
+
+.DS_Store
+.qmake.stash
