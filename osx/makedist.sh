@@ -12,7 +12,7 @@ cp -f ../LICENSE.txt /Volumes/Dwarf\ Therapist/
 cp -f ../README.txt /Volumes/Dwarf\ Therapist/
 rm -f /Volumes/Dwarf\ Therapist/DwarfTherapist.app/Contents/MacOS/log/run.log
 
-macdeployqt /Volumes/Dwarf\ Therapist/DwarfTherapist.app -no-plugins
+macdeployqt /Volumes/Dwarf\ Therapist/DwarfTherapist.app
 
 hdiutil eject /volumes/Dwarf\ Therapist/
 hdiutil convert ../../dist/DwarfTherapist.sparseimage -format UDBZ -o ../../dist/DwarfTherapist.dmg
