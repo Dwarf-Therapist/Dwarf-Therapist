@@ -128,7 +128,7 @@ QString DFInstanceWindows::read_string(const uint &addr) {
                "String must be of sane length!");
 
     QByteArray buf = get_data(buffer_addr, len);
-    QTextCodec *c = new CP437Codec();
+    CP437Codec *c = new CP437Codec();
     return c->toUnicode(buf);
 
     //the line below would be nice, but apparently a ~20mb *.icu library is required for that single call to qtextcodec...wtf. really.

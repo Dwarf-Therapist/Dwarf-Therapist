@@ -31,7 +31,7 @@ THE SOFTWARE.
 
 HappinessColumn::HappinessColumn(QString title, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(title, CT_HAPPINESS, set, parent)
-	, m_colors(QMap<Dwarf::DWARF_HAPPINESS, QColor>())
+    , m_colors(QMap<DWARF_HAPPINESS, QColor>())
 {
 	read_settings();	
 }
@@ -70,14 +70,14 @@ QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
 QStandardItem *HappinessColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
     QStandardItem *item = init_aggregate(group_name);
 	// find lowest happiness of all dwarfs this set represents, and show that color (so low happiness still pops out in a big group)
-	Dwarf::DWARF_HAPPINESS lowest = Dwarf::DH_ECSTATIC;
+    DWARF_HAPPINESS lowest = DH_ECSTATIC;
 	QString lowest_dwarf = "Nobody";
 	foreach(Dwarf *d, dwarves) {
-		Dwarf::DWARF_HAPPINESS tmp = d->get_happiness();
+        DWARF_HAPPINESS tmp = d->get_happiness();
 		if (tmp <= lowest) {
 			lowest = tmp;
 			lowest_dwarf = d->nice_name();
-            if(lowest == Dwarf::DH_VERY_UNHAPPY)
+            if(lowest == DH_VERY_UNHAPPY)
                 break;
 		}
 	}
@@ -94,7 +94,7 @@ void HappinessColumn::read_settings() {
     QSettings *s = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 	s->beginGroup("options/colors/happiness");
 	foreach(QString k, s->childKeys()) {
-		Dwarf::DWARF_HAPPINESS h = static_cast<Dwarf::DWARF_HAPPINESS>(k.toInt());
+        DWARF_HAPPINESS h = static_cast<DWARF_HAPPINESS>(k.toInt());
 		m_colors[h] = s->value(k).value<QColor>();
 	}
 	s->endGroup();

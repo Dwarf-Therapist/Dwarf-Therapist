@@ -61,6 +61,11 @@ THE SOFTWARE.
 
 #include "squad.h"
 
+quint32 Dwarf::ticks_per_day = 1200;
+quint32 Dwarf::ticks_per_month = 28 * Dwarf::ticks_per_day;
+quint32 Dwarf::ticks_per_season = 3 * Dwarf::ticks_per_month;
+quint32 Dwarf::ticks_per_year = 12 * Dwarf::ticks_per_month;
+
 Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     : QObject(parent)
     , m_id(-1)
@@ -99,6 +104,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_caste(0)
     , m_is_child(false)
     , m_is_baby(false)
+    , m_is_animal(false)
     , m_true_name("")
     , m_true_birth_year(0)
     , m_validated(false)
@@ -282,13 +288,12 @@ void Dwarf::refresh_data() {
         read_squad_info(); //read squad before job
         read_uniform();
         read_current_job();
-        read_syndromes(); //read syndromes before attributes
-        set_age(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time"));
+        read_syndromes(); //read syndromes before attributes        
+        read_turn_count(); //load time/date stuff for births/migrations - read before age
+        set_age_and_migration(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time"));
         //curse check will change the name and age
         read_curse(); //read curse before attributes
         read_soul_aspects(); //assumes soul already read, and requires caste to be read first
-        //load time/date stuff for births/migrations
-        read_turn_count();
         read_sex();
         read_animal_type(); //need skills loaded to check for hostiles
         read_noble_position();
@@ -391,17 +396,13 @@ bool Dwarf::is_valid(){
     }
 }
 
-void Dwarf::set_age(VIRTADDR birth_year_offset, VIRTADDR birth_time_offset){          
+void Dwarf::set_age_and_migration(VIRTADDR birth_year_offset, VIRTADDR birth_time_offset){
     m_birth_year = m_df->read_int(birth_year_offset);
     m_age = m_df->current_year() - m_birth_year;
     m_birth_time = m_df->read_int(birth_time_offset);
     quint32 current_year_time = m_df->current_year_time();
-    quint32 current_time = m_df->current_year() * 0x62700 + current_year_time;
+    quint32 current_time = m_df->current_time();
     quint32 arrival_time = current_time - m_turn_count;
-    quint32 ticks_per_day = 1200;
-    quint32 ticks_per_month = 28 * ticks_per_day;
-    quint32 ticks_per_season = 3 * ticks_per_month;
-    quint32 ticks_per_year = 12 * ticks_per_month;
     quint32 arrival_year = arrival_time / ticks_per_year;
     quint32 arrival_season = (arrival_time % ticks_per_year) / ticks_per_season;
     quint32 arrival_month = (arrival_time % ticks_per_year) / ticks_per_month;
@@ -427,14 +428,14 @@ QString Dwarf::get_migration_desc(){
     month = (wave / 100) % 100;
     season = (wave / 10000) % 10;
     year = wave / 100000;
+
     if ((day == 1) || (day == 21))
         suffix = "st";
     else if ((day == 2) || (day == 22))
         suffix = "nd";
     else if ((day == 3) || (day == 23))
         suffix = "rd";
-    else
-        suffix = "th";
+
     if(m_born_in_fortress)
     {
         return QString("Born on the %1%4 of %2 in the year %3").arg(day).arg(GameDataReader::ptr()->m_months.at(month)).arg(year).arg(suffix);
@@ -604,7 +605,7 @@ void Dwarf::find_true_ident(){
         read_last_name(fake_id + m_mem->hist_figure_offset("fake_name"));
         calc_names();
         //vamps also use a fake age
-        set_age(fake_id + m_mem->hist_figure_offset("fake_birth_year"),fake_id + m_mem->hist_figure_offset("fake_birth_time"));
+        set_age_and_migration(fake_id + m_mem->hist_figure_offset("fake_birth_year"),fake_id + m_mem->hist_figure_offset("fake_birth_time"));
     }
 }
 
@@ -1226,7 +1227,7 @@ bool Dwarf::active_military() {
 
 
 
-Dwarf::DWARF_HAPPINESS Dwarf::happiness_from_score(int score) {
+DWARF_HAPPINESS Dwarf::happiness_from_score(int score) {
     if (score < 1)
         return DH_MISERABLE;
     else if (score <= 25)
@@ -2375,6 +2376,8 @@ float Dwarf::calc_role_rating(Role *m_role){
         return  m_engine.evaluate(m_role->script).toNumber(); //just show the raw value the script generates
     }
 
+    TRACE << "reading role " << m_role->name << " for unit " << m_nice_name;
+
     //no script, calculate rating based on specified aspects
     float rating_att = 0.0;
     float rating_trait = 0.0;
@@ -2397,8 +2400,7 @@ float Dwarf::calc_role_rating(Role *m_role){
     float weight = 1.0;
 
     //**************** ATTRIBUTES ****************
-    if(m_role->attributes.count()>0){
-
+    if(m_role->attributes.count()>0){        
         int attrib_id = 0;
         aspect_value = 0;
         foreach(QString name, m_role->attributes.uniqueKeys()){
@@ -2472,7 +2474,7 @@ float Dwarf::calc_role_rating(Role *m_role){
     //************ SKILLS ************
     float skill_rate_value = 0.0;
     float skill_rate_weight = DT->user_settings()->value("options/default_skill_rate_weight",0.25).toDouble();
-    if(m_role->skills.count()>0){
+    if(m_role->skills.count()>0){        
         total_weight = 0;
         aspect_value = 0;
         skill_rate_value = 0;
@@ -2505,7 +2507,7 @@ float Dwarf::calc_role_rating(Role *m_role){
     //********************************
 
     //************ PREFERENCES ************
-    if(m_role->prefs.count()>0){
+    if(m_role->prefs.count()>0){        
         total_weight = 0;
         aspect_value = 0;
         Preference *dwarf_pref;

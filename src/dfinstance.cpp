@@ -179,8 +179,6 @@ DFInstance::~DFInstance() {
     m_thought_counts.clear();
 
     DwarfStats::cleanup();
-    //    UnitHealth::cleanup();
-    //    LOGD << "DFInstance baseclass virtual dtor all done!";
 }
 
 BYTE DFInstance::read_byte(const VIRTADDR &addr) {
@@ -458,6 +456,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
     m_current_year = read_word(current_year);
     LOGD << "current year:" << m_current_year;
+    m_cur_time = (int)m_current_year * 0x62700 + m_cur_year_tick;
 
     QVector<VIRTADDR> creatures_addrs = get_creatures();
 

@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "gamedatareader.h"
 #include "defaultfonts.h"
+#include "global_enums.h"
 
 OptionsMenu::OptionsMenu(QWidget *parent)
     : QDialog(parent)
@@ -76,19 +77,19 @@ OptionsMenu::OptionsMenu(QWidget *parent)
 
     m_happiness_colors
             << new CustomColor(tr("Ecstatic"), tr("Color shown in happiness columns when a dwarf is <b>ecstatic</b>."),
-                               QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_ECSTATIC)), QColor(0x00FF00), this)
+                               QString("happiness/%1").arg(static_cast<int>(DH_ECSTATIC)), QColor(0x00FF00), this)
             << new CustomColor(tr("Happy"), tr("Color shown in happiness columns when a dwarf is <b>happy</b>."),
-                               QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_HAPPY)), QColor(0x71cc09), this)
+                               QString("happiness/%1").arg(static_cast<int>(DH_HAPPY)), QColor(0x71cc09), this)
             << new CustomColor(tr("Content"), tr("Color shown in happiness columns when a dwarf is <b>quite content</b>."),
-                               QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_CONTENT)), QColor(0xDDDD00), this)
+                               QString("happiness/%1").arg(static_cast<int>(DH_CONTENT)), QColor(0xDDDD00), this)
             << new CustomColor(tr("Fine"), tr("Color shown in happiness columns when a dwarf is <b>fine</b>."),
-                               QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_FINE)), QColor(0xe7e2ab), this)
+                               QString("happiness/%1").arg(static_cast<int>(DH_FINE)), QColor(0xe7e2ab), this)
             << new CustomColor(tr("Unhappy"), tr("Color shown in happiness columns when a dwarf is <b>unhappy</b>."),
-                               QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_UNHAPPY)), QColor(0xffaa00), this)
+                               QString("happiness/%1").arg(static_cast<int>(DH_UNHAPPY)), QColor(0xffaa00), this)
             << new CustomColor(tr("Very Unhappy"), tr("Color shown in happiness columns when a dwarf is <b>very unhappy</b>."),
-                               QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_VERY_UNHAPPY)), QColor(0xCC0000), this)
+                               QString("happiness/%1").arg(static_cast<int>(DH_VERY_UNHAPPY)), QColor(0xCC0000), this)
             << new CustomColor(tr("Miserable"), tr("Color shown in happiness columns when a dwarf is <b>miserable.</b>"),
-                               QString("happiness/%1").arg(static_cast<int>(Dwarf::DH_MISERABLE)), QColor(0xFF0000), this);
+                               QString("happiness/%1").arg(static_cast<int>(DH_MISERABLE)), QColor(0xFF0000), this);
 
     QColor m_noble_default = FortressEntity::default_noble_color;
     m_noble_colors

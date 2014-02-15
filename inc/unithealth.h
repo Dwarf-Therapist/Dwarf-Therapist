@@ -77,7 +77,7 @@ public:
     QHash<eHealth::H_INFO, QList<HealthInfo*> > get_treatment_info() {return m_treatment_info;}
     QHash<eHealth::H_INFO, QList<HealthInfo*> > get_status_info() {return m_status_info;}
 
-    int get_fresh_wound_count() {return m_fresh_wounds;}
+    bool has_critical_wounds() {return m_critical_wounds;}
 
     BodyPartDamage get_body_part(int body_part_id);
 
@@ -112,7 +112,7 @@ private:
     //keep a list of each body part, and the related health info
     QHash<QString, QList<HealthInfo*> > m_wound_details;
 
-    int m_fresh_wounds;
+    bool m_critical_wounds;
     bool m_req_diagnosis;
 
     short limb_stand_count;

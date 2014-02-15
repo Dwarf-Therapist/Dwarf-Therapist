@@ -222,7 +222,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
     GameDataReader *gdr = GameDataReader::ptr();
 
-    Dwarf::DWARF_HAPPINESS happiness = d->get_happiness();
+    DWARF_HAPPINESS happiness = d->get_happiness();
     ui->lbl_happiness->setText(QString("<b>%1</b> (%2)").arg(d->happiness_name(happiness)).arg(d->get_raw_happiness()));
     ui->lbl_happiness->setToolTip(d->get_thought_desc());
 

@@ -314,6 +314,7 @@ void MainWindow::connect_to_df() {
     }
 
     m_df = DFInstance::newInstance();
+    GameDataReader::ptr()->refresh_traits();
 
     // find_running_copy can fail for several reasons, and will take care of
     // logging and notifying the user.

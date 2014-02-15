@@ -54,7 +54,7 @@ UnitWound::UnitWound(DFInstance *df, VIRTADDR base_addr, Dwarf *d, UnitHealth *u
     ,m_diagnosed(false)
     ,m_sutured(false)
     ,m_infection(false)
-    ,m_recent_count(0)
+    ,m_is_critical(false)
 {
     read_wound();
 }
@@ -69,7 +69,7 @@ UnitWound::UnitWound(DFInstance *df, int body_part_id, UnitHealth *uh)
     ,m_diagnosed(false)
     ,m_sutured(false)
     ,m_infection(false)
-    ,m_recent_count(0)
+    ,m_is_critical(false)
 {
     BodyPartDamage bp = m_unitHealth->get_body_part(body_part_id);
     BodyPartDamage parent = m_unitHealth->get_body_part(bp.body_part()->parent());
@@ -109,7 +109,7 @@ void UnitWound::read_wound(){
     quint32 general_flags = m_df->read_addr(m_addr + mem->wound_offset("general_flags"));
 
     if(has_flag(0x00000001,general_flags))
-        m_severed = true;
+        m_severed = true;    
     if(has_flag(0x00000002,general_flags))
         m_mortal = true;
     if(has_flag(0x00000004,general_flags))
@@ -120,6 +120,8 @@ void UnitWound::read_wound(){
         m_sutured = true;
     if(m_dwarf->get_caste()->flags().has_flag(GETS_WOUND_INFECTIONS) && has_flag(0x00000020,general_flags))
         m_infection = true;
+
+    m_is_critical = (m_severed || m_mortal);
 
     QVector<VIRTADDR> addr_wounded_parts = m_df->enumerate_vector(m_addr+mem->wound_offset("parts"));
 
@@ -205,6 +207,7 @@ void UnitWound::read_wound(){
                     if(desc_index.size() > 0){
                         wpd.wnd_info.insert(eHealth::HI_FRACTURE,desc_index);
                         wpd.visible = true;
+                        m_is_critical = true;
                     }
                 }else{ //other tissue (fat, skin, muscle) damage seems to have the same descriptors
 
@@ -280,6 +283,7 @@ void UnitWound::read_wound(){
                     break;
                 case 4: //melted
                     desc_index.append(0);
+                    m_is_critical = true;
                     break;
                 case 6: //frozen
                     desc_index.append(5);
@@ -323,11 +327,11 @@ void UnitWound::read_wound(){
         wpd.bleeding = m_df->read_int(wounded_part + mem->wound_offset("bleeding"));
         if(wpd.bleeding){
             add_detail(wpd,eHealth::HI_BLEEDING,(wpd.bleeding >= 3),(wpd.bleeding < 3));
+            m_is_critical = true;
         }
 
         m_wounded_parts.append(wpd);
     }
-    m_recent_count++;
 }
 
 void UnitWound::add_detail(wounded_part_details &wpd, eHealth::H_INFO id, bool idx0, bool idx1, bool idx2){

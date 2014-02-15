@@ -137,6 +137,7 @@ public:
 
     static bool authorize();
     quint32 current_year_time() {return m_cur_year_tick;}
+    quint32 current_time() {return m_cur_time;}
     static DFInstance * newInstance();
 
     // Windows string offsets
@@ -244,6 +245,7 @@ protected:
     QVector<Dwarf*> m_actual_dwarves;
     QVector<Dwarf*> m_labor_capable_dwarves;
     quint32 m_cur_year_tick;    
+    quint32 m_cur_time;
     QHash<int,int> m_enabled_labor_count;
 
     void load_population_data();

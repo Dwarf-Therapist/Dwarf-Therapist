@@ -25,6 +25,7 @@ THE SOFTWARE.
 
 #include "viewcolumn.h"
 #include "dwarf.h"
+#include "global_enums.h"
 
 class HappinessColumn : public ViewColumn {
 public:
@@ -38,7 +39,7 @@ public:
         void read_settings();
 		void redraw_cells();
 private:
-	QMap<Dwarf::DWARF_HAPPINESS, QColor> m_colors;
+    QMap<DWARF_HAPPINESS, QColor> m_colors;
 };
 
 #endif

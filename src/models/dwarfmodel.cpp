@@ -299,13 +299,14 @@ void DwarfModel::build_rows() {
                     m_grouped_dwarves[tr("Has Nickname")].append(d);
                 }
             }else if(m_group_by == GB_HEALTH && (animal_health || (!animal_health && !d->is_animal()))){
-                QStringList treatments = d->get_unit_health().get_treatment_summary(false,false);
-                QStringList statuses = d->get_unit_health().get_status_summary(false,false);
-                //QHash<QString, QStringList> wounds = d->get_unit_health()->get_wound_summary(false,false);
-                int fresh_wounds = d->get_unit_health().get_fresh_wound_count();
-                if(fresh_wounds > 0){
-                    m_grouped_dwarves[tr("Major Health Issues")].append(d);
-                }else if(treatments.size() > 0 || statuses.size() > 0){
+                int treatments = d->get_unit_health().get_treatment_summary(false,false).count();
+                int statuses = d->get_unit_health().get_status_summary(false,false).count();
+                int wounds = d->get_unit_health().get_wound_details().count();
+
+                bool critical_wounds = d->get_unit_health().has_critical_wounds();
+                if(critical_wounds > 0){
+                    m_grouped_dwarves[tr("Critical Health Issues")].append(d);
+                }else if(treatments > 0 || statuses > 0 || wounds > 0){
                     m_grouped_dwarves[tr("Minor Health Issues")].append(d);
                 }else{
                     m_grouped_dwarves[tr("No Health Issues")].append(d);
@@ -433,7 +434,7 @@ void DwarfModel::build_row(const QString &key) {
         // for integer based values we want to make sure they sort by the int
         // values instead of the string values
         if (m_group_by == GB_MIGRATION_WAVE) {
-            agg_first_col->setData(first_dwarf->migration_wave(), DR_SORT_VALUE);
+            agg_first_col->setData(first_dwarf->migration_wave(), DR_SORT_VALUE);            
         } else if (m_group_by == GB_HIGHEST_SKILL) {
             agg_first_col->setData(first_dwarf->highest_skill().actual_exp(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HIGHEST_MOODABLE) {

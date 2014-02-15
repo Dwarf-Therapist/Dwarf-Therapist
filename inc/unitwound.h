@@ -81,7 +81,7 @@ public:
 
     QList<wounded_part_details> get_wounded_parts() {return m_wounded_parts;}
 
-    bool is_recent() {return (m_recent_count > 0);}
+    bool is_critical() {return m_is_critical;}
 private:
     DFInstance *m_df;
     VIRTADDR m_addr;
@@ -99,7 +99,7 @@ protected:
     QVector<short> enumerate_short_vector(VIRTADDR &addr);
     void read_wound();    
     void add_detail(wounded_part_details &wpd, eHealth::H_INFO id, bool idx0, bool idx1 = false, bool idx2 = false);
-    int m_recent_count;
+    bool m_is_critical;
 };
 
 #endif // UNITWOUND_H

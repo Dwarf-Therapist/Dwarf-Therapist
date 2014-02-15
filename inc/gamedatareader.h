@@ -99,6 +99,7 @@ public:
     void load_role_mappings();
     void load_optimization_plans();
     void refresh_opt_plans();
+    void refresh_traits();
 
     QString get_attribute_name(int id){return m_attribute_names.value(id);}
 

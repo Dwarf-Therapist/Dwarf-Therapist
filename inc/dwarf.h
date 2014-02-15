@@ -53,22 +53,13 @@ class Dwarf : public QObject
     Dwarf(DFInstance *df, const uint &addr, QObject *parent=0); //private, use the static get_dwarf() method
 
 public:
-    static Dwarf* get_dwarf(DFInstance *df, const VIRTADDR &address);
-    //static Dwarf* get_creature(DFInstance *df, const VIRTADDR &address);
+    static Dwarf* get_dwarf(DFInstance *df, const VIRTADDR &address);   
     virtual ~Dwarf();
 
-    typedef enum {
-        DH_MISERABLE = 0,
-        DH_VERY_UNHAPPY,
-        DH_UNHAPPY,
-        DH_FINE,
-        DH_CONTENT,
-        DH_HAPPY,
-        DH_ECSTATIC,
-        DH_TOTAL_LEVELS
-    } DWARF_HAPPINESS;
-
-
+    static quint32 ticks_per_day;
+    static quint32 ticks_per_month;
+    static quint32 ticks_per_season;
+    static quint32 ticks_per_year;
 
     // getters
     //! Return the memory address (in hex) of this creature in the remote DF process
@@ -609,7 +600,7 @@ private:
     void load_attribute(VIRTADDR &addr, int id);
     void read_traits();    
     void read_flags();
-    void read_turn_count();    
+    void read_turn_count();
     void read_animal_type();
     void read_noble_position();
     void read_preferences();    
@@ -620,7 +611,7 @@ private:
 
     void process_inv_item(QString category, Item *item, bool is_contained_item=false);
 
-    void set_age(VIRTADDR birth_year_offset, VIRTADDR birth_time_offset);
+    void set_age_and_migration(VIRTADDR birth_year_offset, VIRTADDR birth_time_offset);
 
     // utility methods to assist with reading names made up of several words
     // from the language tables

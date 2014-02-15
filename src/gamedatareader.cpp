@@ -163,26 +163,7 @@ GameDataReader::GameDataReader(QObject *parent)
     m_mood_skills_profession_map.insert(49,3);
     m_mood_skills_profession_map.insert(55,60);
 
-
-    int traits = m_data_settings->beginReadArray("traits");
-    QStringList trait_names;
-    for(int i = 0; i < traits; i++) {
-        m_data_settings->setArrayIndex(i);
-        Trait *t = new Trait(i,*m_data_settings, this);        
-        m_traits.insert(i, t);
-        trait_names << t->name;
-    }
-    m_data_settings->endArray();
-
-    qSort(trait_names);
-    foreach(QString name, trait_names) {
-        foreach(Trait *t, m_traits) {
-            if (t->name == name) {
-                m_ordered_traits << QPair<int, Trait*>(t->trait_id, t);
-                break;
-            }
-        }
-    }
+    refresh_traits();
 
     int job_count = m_data_settings->beginReadArray("dwarf_jobs");
     qDeleteAll(m_dwarf_jobs);
@@ -397,6 +378,32 @@ void GameDataReader::load_optimization_plans(){
     u->endArray();
 
     refresh_opt_plans();
+}
+
+void GameDataReader::refresh_traits(){
+    qDeleteAll(m_traits);
+    m_traits.clear();
+    m_ordered_traits.clear();
+
+    int traits = m_data_settings->beginReadArray("traits");
+    QStringList trait_names;
+    for(int i = 0; i < traits; i++) {
+        m_data_settings->setArrayIndex(i);
+        Trait *t = new Trait(i,*m_data_settings, this);
+        m_traits.insert(i, t);
+        trait_names << t->name;
+    }
+    m_data_settings->endArray();
+
+    qSort(trait_names);
+    foreach(QString name, trait_names) {
+        foreach(Trait *t, m_traits) {
+            if (t->name == name) {
+                m_ordered_traits << QPair<int, Trait*>(t->trait_id, t);
+                break;
+            }
+        }
+    }
 }
 
 void GameDataReader::refresh_opt_plans(){

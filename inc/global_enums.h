@@ -5,6 +5,17 @@
 #include "qobject.h"
 
 typedef enum {
+    DH_MISERABLE = 0,
+    DH_VERY_UNHAPPY,
+    DH_UNHAPPY,
+    DH_FINE,
+    DH_CONTENT,
+    DH_HAPPY,
+    DH_ECSTATIC,
+    DH_TOTAL_LEVELS
+} DWARF_HAPPINESS;
+
+typedef enum {
     AT_STRENGTH = 0,
     AT_AGILITY=1,
     AT_TOUGHNESS=2,

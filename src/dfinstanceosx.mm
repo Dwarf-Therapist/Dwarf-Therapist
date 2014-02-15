@@ -61,8 +61,6 @@ THE SOFTWARE.
 #define VM_REGION_BASIC_INFO_64 VM_REGION_BASIC_INFO
 #endif /* MACH64 */
 
-static CP437Codec cp437Codec;
-
 DFInstanceOSX::DFInstanceOSX(QObject* parent)
     : DFInstance(parent)
 {
@@ -118,14 +116,15 @@ QString DFInstanceOSX::read_string(const VIRTADDR &addr) {
     VIRTADDR buffer_addr = read_addr(addr);
     int upper_size = 256;
     QByteArray buf(upper_size, 0);
-    int bytes_read = read_raw(buffer_addr, upper_size, buf);
+    bytes_read = read_raw(buffer_addr, upper_size, buf);
     //if (bytes_read == -1) {
         //LOGW << "Failed to read from" << hexify(addr);
         //throw -1;
     //}
 
     buf.truncate(buf.indexOf(QChar('\0')));
-    return cp437Codec.toUnicode(buf);
+    CP437Codec *c = new CP437Codec();
+    return c->toUnicode(buf);
 }
 
 int DFInstanceOSX::write_string(const VIRTADDR &addr, const QString &str) {

@@ -34,7 +34,7 @@ UnitHealth::UnitHealth()
     :m_df(0x0)
     ,m_dwarf_addr(0x0)
     ,m_dwarf(0x0)
-    ,m_fresh_wounds(0)
+    ,m_critical_wounds(false)
     ,m_req_diagnosis(false)
 {
 }
@@ -42,7 +42,7 @@ UnitHealth::UnitHealth(DFInstance *df, Dwarf *d, bool req_diagnosis)
     :m_df(df)
     ,m_dwarf_addr(d->address())
     ,m_dwarf(d)
-    ,m_fresh_wounds(0)
+    ,m_critical_wounds(false)
     ,m_req_diagnosis(req_diagnosis)
 {    
     read_health_info();
@@ -268,10 +268,13 @@ void UnitHealth::read_health_info(){
         if(!m_dwarf->get_caste()->flags().has_flag(AMPHIBIOUS)){
             if(has_flag(0x00000020,m_dwarf->get_flag1())){
                 vals.push_front(1); //drowning
+                m_critical_wounds = true;
                 //        drowning = true;
             }
-            if(!has_flag(0x10000000,m_dwarf->get_flag2()))
+            if(!has_flag(0x10000000,m_dwarf->get_flag2())){
                 vals.push_front(0); //missing breathing part (can't breathe)
+                m_critical_wounds = true;
+            }
             else if(has_flag(0x20000000,m_dwarf->get_flag2()))
                 vals.push_front(2); //trouble breathing
         }
@@ -344,19 +347,26 @@ void UnitHealth::read_health_info(){
     int blood_max = m_df->read_short(m_dwarf_addr + mem->dwarf_offset("blood"));
     int blood_curr = m_df->read_short(m_dwarf_addr + mem->dwarf_offset("blood")+0x4);
     float blood_perc = (float)blood_curr / (float)blood_max;
-    if(blood_perc > 0)
+    if(blood_perc > 0){
         add_info(eHealth::HI_BLOOD_LOSS, (blood_perc < 0.25),(blood_perc < 0.50));
+        if(blood_perc <= 0.5)
+            m_critical_wounds = true;
+    }
 
     //check hunger    
     if(!m_dwarf->get_caste()->flags().has_flag(NO_EAT)){
         counter = m_df->read_int(m_dwarf_addr + base_counter3_addr + 0x10);
         add_info(eHealth::HI_HUNGER, (counter >= 75000),(counter >= 50000));
+        if(counter >= 75000)
+            m_critical_wounds = true;
     }
 
     //check thirst
     if(!m_dwarf->get_caste()->flags().has_flag(NO_DRINK)){
         counter = m_df->read_int(m_dwarf_addr + base_counter3_addr + 0x14);
         add_info(eHealth::HI_THIRST, (counter >= 50000),(counter >= 25000));
+        if(counter >= 50000)
+            m_critical_wounds = true;
     }
 
     //check drowsiness
@@ -375,6 +385,8 @@ void UnitHealth::read_health_info(){
     if(!m_dwarf->get_caste()->flags().has_flag(PARALYZE_IMMUNE)){
         counter = m_df->read_int(m_dwarf_addr + base_counter3_addr);
         add_info(eHealth::HI_PARALYSIS, (counter >= 100), (counter >= 50), (counter >= 1));
+        if(counter >= 100)
+            m_critical_wounds = true;
     }
 
     //check numbness
@@ -406,7 +418,10 @@ void UnitHealth::read_health_info(){
     }
 
     //gutted
-    add_info(eHealth::HI_GUTTED, (has_flag(0x00004000, m_dwarf->get_flag2())));
+    bool gutted = has_flag(0x00004000, m_dwarf->get_flag2());
+    add_info(eHealth::HI_GUTTED, gutted);
+    if(gutted)
+        m_critical_wounds = true;
 }
 
 void UnitHealth::read_wounds(){
@@ -459,11 +474,11 @@ void UnitHealth::build_wounds_summary(){
             QList<HealthInfo*> info_summary = m_wound_details.take(bp_name);
             foreach(HealthInfo* hi, wnd_details){
                 add_info(hi,info_summary);
-            }
+            }            
             if(info_summary.size() > 0){
                 m_wound_details.insert(bp_name,info_summary);
-                if(w.is_recent())
-                    m_fresh_wounds++;
+                if(!m_critical_wounds && w.is_critical())
+                    m_critical_wounds = true;
             }
         }
     }
