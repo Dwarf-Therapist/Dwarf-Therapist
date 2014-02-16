@@ -195,36 +195,50 @@ bool DFInstanceOSX::detach() {
 
 int DFInstanceOSX::read_raw(const VIRTADDR &addr, int bytes, QByteArray &buffer) {
     kern_return_t result;
-
     vm_size_t readsize = 0;
+    int bytes_read = 0; // tracks how much we've read of what was asked for
+    int step_size = 0x1000; // how many bytes to read each step
+    QByteArray chunk(step_size, 0); // our temporary memory container
+    buffer.fill(0, bytes); // zero our buffer
 
-    result = vm_read_overwrite(m_task, addr, bytes,
-                               (vm_address_t)buffer.data(),
-                               &readsize );
-
-    if ( result != KERN_SUCCESS ) {
-        //LOGW << "Unable to read " << bytes << " byte(s) from " << hexify(addr) <<
-        //"into buffer" << &buffer << endl;
-        return -1;
+    // try to attach, will be ignored if we're already attached
+    attach();
+    for(VIRTADDR ptr = addr; ptr < addr + bytes; ptr += step_size) {
+        if (ptr + step_size > addr + bytes) {
+            step_size = addr + bytes - ptr;
+        }
+        result = vm_read_overwrite(m_task, ptr, step_size,
+                          (vm_address_t) chunk.data(),
+                          &readsize);
+        //if ( result != KERN_SUCCESS ) {
+            //LOGW << "Unable to read " << bytes << " byte(s) from " <<
+            //hexify(addr) << "into buffer" << &buffer << endl;
+            //detach();
+            //return -1;
+        //}
+        buffer.replace(bytes_read, chunk.size(), chunk);
+        bytes_read += readsize;
     }
-
-    return readsize;
+    detach();
+    return bytes_read;
 }
 
 int DFInstanceOSX::write_raw(const VIRTADDR &addr, const int &bytes, void *buffer) {
     kern_return_t result;
 
+    attach();
     result = vm_write( m_task,  addr,  (vm_offset_t)buffer,  bytes );
-    if ( result != KERN_SUCCESS ) {
-        //LOGW << "Unable to write " << bytes << " byte(s) from " << hexify(addr) <<
-        //"into buffer" << &buffer << endl;
-        return -1;
-    }
-
+    //if ( result != KERN_SUCCESS ) {
+        //LOGW << "Unable to write " << bytes << " byte(s) from " <<
+        //hexify(addr) << "into buffer" << &buffer << endl;
+        //detach();
+        //return -1;
+    //}
+    detach();
     return bytes;
 }
 
-bool DFInstanceOSX::find_running_copy(bool connect_anyway) {    
+bool DFInstanceOSX::find_running_copy(bool connect_anyway) {
     NSAutoreleasePool *authPool = [[NSAutoreleasePool alloc] init];
 
     NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
