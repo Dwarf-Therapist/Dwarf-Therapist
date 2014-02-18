@@ -34,11 +34,11 @@ sudo make install
 Additionally, you'll most likely need to run Dwarf Therapist with sudo. This is due to ptrace protection that exists on some flavours of linux.
 
 Alternatively you can create a script that will run Dwarf Therapist as a child of Dwarf Fortress:
-''''
+````
 #!/bin/bash
 set -e
 cd df_linux 
 ./df &
 cd ../dwarftherapist 
 exec ./bin/release/DwarfTherapist
-''''
+````
