@@ -40,6 +40,8 @@ THE SOFTWARE.
 #include "memorysegment.h"
 #include "truncatingfilelogger.h"
 
+#include "cp437codec.h"
+
 struct STLStringHeader {
     quint32 length;
     quint32 capacity;
@@ -138,7 +140,8 @@ QString DFInstanceLinux::read_string(const VIRTADDR &addr) {
     read_raw(buffer_addr, upper_size, buf);
 
     buf.truncate(buf.indexOf(QChar('\0')));
-    return QTextCodec::codecForName("IBM 437")->toUnicode(buf);
+    CP437Codec *c = new CP437Codec();
+    return c->fromUnicode(buf);
 }
 
 int DFInstanceLinux::write_string(const VIRTADDR &addr, const QString &str) {
@@ -675,7 +678,8 @@ VIRTADDR DFInstanceLinux::get_string(const QString &str) {
     if (m_string_cache.contains(str))
         return m_string_cache[str];
 
-    QByteArray data = QTextCodec::codecForName("IBM 437")->fromUnicode(str);
+    CP437Codec *c = new CP437Codec();
+    QByteArray data = c->fromUnicode(str);
 
     STLStringHeader header;
     header.capacity = header.length = data.length();

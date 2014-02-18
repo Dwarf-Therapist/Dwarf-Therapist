@@ -99,7 +99,7 @@ else:unix {
     INSTALLS += application
 
     doc.path = /usr/share/doc/dwarftherapist
-    doc.extra = cp COPYRIGHT $(INSTALL_ROOT)/usr/share/doc/dwarftherapist/copyright; cp README $(INSTALL_ROOT)/usr/share/doc/dwarftherapist/README.Debian
+    doc.extra = cp LICENSE $(INSTALL_ROOT)/usr/share/doc/dwarftherapist/copyright; cp README.md $(INSTALL_ROOT)/usr/share/doc/dwarftherapist/README.Debian
     INSTALLS += doc
 
     icon.path = /usr/share/pixmaps

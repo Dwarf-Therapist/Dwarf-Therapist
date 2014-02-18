@@ -132,6 +132,7 @@ QString DFInstanceWindows::read_string(const uint &addr) {
     return c->toUnicode(buf);
 
     //the line below would be nice, but apparently a ~20mb *.icu library is required for that single call to qtextcodec...wtf. really.
+    //it's also been pretty bad performance-wise on linux, so it may be best to forget about it entirely
     //return QTextCodec::codecForName("IBM 437")->toUnicode(buf);
 }
 
