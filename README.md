@@ -16,6 +16,7 @@ If you'd like to help support this project [![Donate](http://dl.dropbox.com/u/18
 There currently isn't a packaged version for linux. Here are the instructions to build from source:
 
 #### Required Packages
+* qtchooser
 * qtbase5-dev, qtbase5-dev-tools, qtscript5-dev
 * qt5-qmake
 * libqt5script5, libqt5scripttools5
@@ -25,7 +26,7 @@ There currently isn't a packaged version for linux. Here are the instructions to
 ````
 git clone http://github.com/splintermind/Dwarf-Therapist dwarftherapist
 cd dwarftherapist
-qmake
+qmake -qt=5
 sudo make install
 ````
 
