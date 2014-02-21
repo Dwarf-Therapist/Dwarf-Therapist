@@ -1,22 +1,27 @@
-Detailed instructions for building DwarfTherapist are located on the Google Project Page:
-http://code.google.com/p/dwarftherapist/wiki/BuildingDwarfTherapist
-
-However, the short of it is as follows:
+Instructions for how to build from source are as follows:
 
 For Windows, download the QTCreator IDE and open the dwarftherapist.pro file.  You can build
 from within QTCreator.
 
-For Linux, either follow the Windows instructions above, or do the following:
+For Linux, do the following:
 
-# Install the qt4 dev tools.  You're on your own for non debian/apt systems
-	> sudo apt-get install qt4-qmake qt4-dev-tools
+# Install the qt5 dev tools and qtchooser.  You're on your own for non-debian-derived systems.
+	> sudo apt-get install qt5-qmake qtbase5-dev-tools qtchooser
+	or you can use your favorite package manager.
 
-#Checkout the project
-	> hg clone https://dwarftherapist.googlecode.com/hg/ dwarftherapist
+# Clone the project using git
+	> git clone git://github.com/splintermind/Dwarf-Therapist.git
 
-#Build the project
-	> cd dwarftherapist
-	> qmake
+# Build the project
+	> cd Dwarf-Therapist
+	> qmake -qt=5
 	> make
 
+This will take some time.  Get a cup of coffee.
 
+The executable is ./Dwarf-Therapist/bin/release/DwarfTherapist.  You will have to run it as sudo, i.e.:
+	(from the df_linux folder)
+	>sudo ./Dwarf-Therapist/bin/release/DwarfTherapist
+
+If your build fails, the easiest way to start over again is to go to the df_linux folder and run
+	> rm -rf Dwarf-Therapist
