@@ -19,9 +19,9 @@ For Linux, do the following:
 
 This will take some time.  Get a cup of coffee.
 
-The executable is ./Dwarf-Therapist/bin/release/DwarfTherapist.  You will have to run it as sudo, i.e.:
-	(from the df_linux folder)
-	>sudo ./Dwarf-Therapist/bin/release/DwarfTherapist
+The executable is in your /usr/bin folder  You will have to run it as sudo, i.e.:
+	(from a command line)
+	>sudo dwarftherapist
 
 If your build fails, the easiest way to start over again is to go to the df_linux folder and run
 	> rm -rf Dwarf-Therapist
