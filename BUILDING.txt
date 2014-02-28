@@ -5,23 +5,69 @@ from within QTCreator.
 
 For Linux, do the following:
 
-# Install the qt5 dev tools and qtchooser.  You're on your own for non-debian-derived systems.
-	> sudo apt-get install qt5-qmake qtbase5-dev-tools qtchooser
-	or you can use your favorite package manager.
+# Install required packages
+* qtchooser
+* qtbase5-dev
+* qtbase5-dev-tools
+* qtscript5-dev
+* qt5-qmake
+* libqt5script5
+* libqt5scripttools5
+* libqxt-core0 
+* libqxt-gui0
+
+For Debian-derived (Ubuntu, Mint, etc.) distributions, you can run the following command from a terminal:
+
+    > sudo apt-get install qtchooser qtbase5-dev qtbase5-dev-tools qtscript5-dev qt5-qmake libqt5script5 libqt5scripttools5 libqxt-core0 libqxt-gui0
+
 
 # Clone the project using git
-	> git clone git://github.com/splintermind/Dwarf-Therapist.git
+Clone the project to wherever you like.  The location doesn't really matter.
+
+    > git clone git://github.com/splintermind/Dwarf-Therapist.git
+
 
 # Build the project
-	> cd Dwarf-Therapist
-	> qmake -qt=5
-	> make
 
-This will take some time.  Get a cup of coffee.
+    > cd Dwarf-Therapist
+    > qmake -qt=5
+    > make
 
+This will take some time.  Get a cup of coffee.  Once your build is complete, run
+
+    > sudo make install
+
+If you want, you can now remove the folder you cloned from github.
+
+If your build fails for whatever reason, the easiest way to start over again is to go to wherever you cloned the project and run
+
+    > rm -rf Dwarf-Therapist
+
+and you can restart with cloning the project.
+
+If you are having problems with building, ask on the Splintermind thread in the Bay12Forums.  (http://www.bay12forums.com/smf/index.php?topic=122968)
+
+
+# Run the program
 The executable is in your /usr/bin folder  You will have to run it as sudo, i.e.:
-	(from a command line)
-	>sudo dwarftherapist
 
-If your build fails, the easiest way to start over again is to go to the df_linux folder and run
-	> rm -rf Dwarf-Therapist
+    > sudo dwarftherapist
+
+
+# Uninstallation
+
+You can remove the program two ways:
+
+Automated: if you still have the folder you cloned from github, run
+    > sudo make uninstall
+in that directory.
+
+Manually: using sudo rm -rf, remove:
+
+* /etc/bin/dwarftherapist
+* /usr/bin/X11/dwarftherapist
+* /usr/share/dwarftherapist/*
+* /usr/share/applications/dwarftherapist.desktop
+* /usr/share/doc/dwarftherapist/*
+* /usr/share/pixmaps/dwarftherapist.png
+* /usr/share/pixmaps/dwarftherapist.xpm
