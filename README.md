@@ -13,26 +13,10 @@ If you'd like to help support this project [![Donate](http://dl.dropbox.com/u/18
 * [Download Latest Version for OSX DF 34.11](http://dffd.wimbli.com/file.php?id=8418 "DFFD")
 
 ### Linux
-There currently isn't a packaged version for linux. Here are the instructions to build from source:
+There currently isn't a packaged version for linux. You can find the instructions to build from source [here](https://github.com/splintermind/Dwarf-Therapist/blob/master/BUILDING.txt).
 
-#### Required Packages
-* qtchooser
-* qtbase5-dev, qtbase5-dev-tools, qtscript5-dev
-* qt5-qmake
-* libqt5script5, libqt5scripttools5
-* libqxt-core0, libqxt-gui0
-
-#### Building
-````
-git clone http://github.com/splintermind/Dwarf-Therapist dwarftherapist
-cd dwarftherapist
-qmake -qt=5
-sudo make install
-````
-
-**If the build is unsuccessful, be sure to remove any *.o or *.moc files in the bin/release folder before rebuilding.**
-
-Additionally, you'll most likely need to run Dwarf Therapist with sudo. This is due to ptrace protection that exists on some flavours of linux.
+### Running the program
+You'll most likely need to run Dwarf Therapist with sudo. This is due to ptrace protection that exists on some flavours of linux.
 
 Alternatively you can create a script that will run Dwarf Therapist as a child of Dwarf Fortress:
 ````
