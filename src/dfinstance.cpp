@@ -471,7 +471,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         int progress_count = 0;
 
         foreach(VIRTADDR creature_addr, creatures_addrs) {
-            d = Dwarf::get_dwarf(this, creature_addr);
+            d = Dwarf::get_dwarf(this, creature_addr);            
             if(d){
                 dwarves.append(d); //add animals as well so we can show them
                 if(!d->is_animal()){
@@ -1659,7 +1659,7 @@ Plant *DFInstance::get_plant(int index){
 }
 
 Material *DFInstance::get_raw_material(int index){
-    if(index < m_base_materials.size())
+    if(index >= 0 && index < m_base_materials.size())
         return m_base_materials.at(index);
     else
         return new Material(this);
@@ -1667,7 +1667,7 @@ Material *DFInstance::get_raw_material(int index){
 
 QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE itype){
     Material *m = find_material(mat_index, mat_type);
-    QString name = "unknown";
+    QString name = "";
 
     if(!m)
         return name;

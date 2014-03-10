@@ -267,6 +267,7 @@ void Dwarf::refresh_data() {
 
     //read only the base information we need to validate if we should continue loading this dwarf
     read_id();
+    //LOGD << "checking unit id:" << m_id;
     read_race();
     read_first_name();
     read_last_name(m_address + m_mem->dwarf_offset("first_name"));

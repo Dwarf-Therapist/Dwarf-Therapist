@@ -70,12 +70,14 @@ UnitWound::UnitWound(DFInstance *df, int body_part_id, UnitHealth *uh)
     ,m_sutured(false)
     ,m_infection(false)
     ,m_is_critical(false)
-{
+{    
     BodyPartDamage bp = m_unitHealth->get_body_part(body_part_id);
-    BodyPartDamage parent = m_unitHealth->get_body_part(bp.body_part()->parent());
-
-    if(parent.is_missing())
-        return;
+    BodyPartDamage parent;
+    if(bp.body_part()->parent() > 0){
+        parent = m_unitHealth->get_body_part(bp.body_part()->parent());
+        if(parent.is_missing())
+            return;
+    }
 
     wounded_part_details wpd;
     wpd.body_part_id = body_part_id;

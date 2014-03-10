@@ -114,6 +114,6 @@ QString Material::get_material_name(MATERIAL_STATES state){
     if(m_state_names.contains(state))
         return m_state_names.value(state);
     else
-        return "Unknown";
+        return "";
 }
 
