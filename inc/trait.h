@@ -44,6 +44,8 @@ private:
     QHash<int,conflict> m_conflicts;
     //message, limit
     QHash<QString, int> m_special;
+    //limits
+    QList<int> m_limits;
 
 public:
     Trait(int trait_id, QSettings &s, QObject *parent = 0);

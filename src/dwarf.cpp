@@ -1632,9 +1632,18 @@ void Dwarf::read_traits() {
             val = 100;
         m_traits.insert(i, val);
     }
+
+    //check the misc. traits for the level of detachment and add a special trait for it
+    if(!m_is_animal && has_state(15)){
+        int val = state_value(15);
+        m_traits.insert(30,val);
+    }
 }
 
 bool Dwarf::trait_is_active(int trait_id){
+    //if it's a special trait, always show it
+    if(trait_id >= 30)
+        return true;
     short val = trait(trait_id);
     int deviation = abs(val - 50); // how far from the norm is this trait?
     if (deviation <= 10) {

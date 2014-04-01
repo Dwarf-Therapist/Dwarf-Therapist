@@ -58,7 +58,7 @@ float DwarfStats::calc_cdf(float mean, float stdev, float rawValue){
 }
 
 void DwarfStats::load_trait_bins(ASPECT_TYPE key, QList<int> raws){
-    if(!m_trait_bins.contains(key))
+    if(key != unknown_aspect && !m_trait_bins.contains(key))
     {
         QList<bin> m_bins;
         bin temp;
@@ -83,7 +83,7 @@ void DwarfStats::load_trait_bins(ASPECT_TYPE key, QList<int> raws){
 float DwarfStats::get_trait_role_rating(ASPECT_TYPE key, int value){
     //until it's verified how the castes' min/median/max raw values work,
     //don't modify the value AT ALL
-    if(DT->traits_modified)
+    if(DT->traits_modified || key == unknown_aspect)
         return (float)value/100.0f;
 
     float mid = 50;

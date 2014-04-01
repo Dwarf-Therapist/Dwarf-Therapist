@@ -16,7 +16,11 @@ If you'd like to help support this project [![Donate](http://dl.dropbox.com/u/18
 There currently isn't a packaged version for linux. You can find the instructions to build from source [here](https://github.com/splintermind/Dwarf-Therapist/blob/master/BUILDING.txt).
 
 ### Running the program
-You'll most likely need to run Dwarf Therapist with sudo. This is due to ptrace protection that exists on some flavours of linux.
+You'll most likely need to run Dwarf Therapist with sudo. This is due to ptrace protection that exists on some flavours of linux. You can explicitly give Dwarf Therapist permission to ptrace with:
+
+````
+sudo apt-get install libcap2-bin && sudo setcap cap_sys_ptrace=eip ./bin/release/DwarfTherapist
+````
 
 Alternatively you can create a script that will run Dwarf Therapist as a child of Dwarf Fortress:
 ````

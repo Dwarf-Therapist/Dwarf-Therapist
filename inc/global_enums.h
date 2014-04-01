@@ -38,6 +38,7 @@ typedef enum {
 } ATTRIBUTES_TYPE;
 
 typedef enum {
+    unknown_aspect=-9,
     triple_negative=-3,
     double_negative=-2,
     negative=-1,
