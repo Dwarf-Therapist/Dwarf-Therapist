@@ -211,4 +211,3 @@ static inline bool has_flag(int flag, int flags){
 //}
 
 #endif // UTILS_H
-

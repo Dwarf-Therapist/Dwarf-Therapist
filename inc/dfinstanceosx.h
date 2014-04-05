@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "dwarf.h"
 
+#include <QHash>
+
 class MemoryLayout;
 
 class DFInstanceOSX : public DFInstance {
@@ -59,6 +61,10 @@ protected:
     uint calculate_checksum();
     vm_map_t m_task;
     QString m_loc_of_dfexe;
+
+private:
+    uintptr_t get_string(const QString &str);
+    QHash<QString, uintptr_t> m_string_cache;
 };
 
 #endif // DFINSTANCE_H
