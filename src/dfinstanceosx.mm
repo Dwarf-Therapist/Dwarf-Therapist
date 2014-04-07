@@ -61,6 +61,12 @@ THE SOFTWARE.
 #define VM_REGION_BASIC_INFO_64 VM_REGION_BASIC_INFO
 #endif /* MACH64 */
 
+struct STLStringHeader {
+    quint32 length;
+    quint32 capacity;
+    qint32 refcnt;
+};
+
 DFInstanceOSX::DFInstanceOSX(QObject* parent)
     : DFInstance(parent)
 {
@@ -129,9 +135,18 @@ QString DFInstanceOSX::read_string(const VIRTADDR &addr) {
 }
 
 int DFInstanceOSX::write_string(const VIRTADDR &addr, const QString &str) {
-    Q_UNUSED(addr);
-    Q_UNUSED(str);
-    return 0;
+    // Ensure this operation is done as one transaction
+    attach();
+    uintptr_t buffer_addr = get_string(str);
+    if (buffer_addr) {
+        // 1: This unavoidably leaks the old buffer; our own
+        //    cannot be deallocated anyway.
+        // 2: The string is truncated to sizeof(VIRTADDR),
+        //    but come on, no-one will use strings that long :)
+        write_raw(addr, sizeof(VIRTADDR), &buffer_addr);
+    }
+    detach();
+    return buffer_addr ? str.length() : 0;
 }
 
 int DFInstanceOSX::write_int(const VIRTADDR &addr, const int &val) {
@@ -323,6 +338,30 @@ void DFInstanceOSX::map_virtual_memory() {
     LOGD << "Mapped " << m_regions.size() << " memory regions.";
 }
 
+uintptr_t DFInstanceOSX::get_string(const QString &str) {
+    if (m_string_cache.contains(str))
+        return m_string_cache[str];
+
+    CP437Codec *c = new CP437Codec();
+    QByteArray data = c->fromUnicode(str);
+
+    STLStringHeader header;
+    header.capacity = header.length = data.length();
+    header.refcnt = 1000000; // huge refcnt to avoid dealloc
+
+    QByteArray buf((char*)&header, sizeof(header));
+    buf.append(data);
+    buf.append(char(0));
+
+    uintptr_t addr = (uintptr_t) malloc(buf.length());
+    if (addr) {
+        write_raw(addr, buf.length(), buf.data());
+        addr += sizeof(header);
+    }
+
+    return m_string_cache[str] = addr;
+}
+
 bool DFInstance::authorize() {
     // Create authorization reference
     OSStatus status;
@@ -414,5 +453,3 @@ bool DFInstanceOSX::checkPermissions() {
     return ([applicationAttributes filePosixPermissions] == 1517 && [[applicationAttributes fileGroupOwnerAccountName] isEqualToString: @"procmod"]);
     [authPool release];
 }
-
-
