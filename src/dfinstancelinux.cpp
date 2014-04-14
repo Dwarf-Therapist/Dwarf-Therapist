@@ -141,7 +141,7 @@ QString DFInstanceLinux::read_string(const VIRTADDR &addr) {
 
     buf.truncate(buf.indexOf(QChar('\0')));
     CP437Codec *c = new CP437Codec();
-    return c->fromUnicode(buf);
+    return c->toUnicode(buf);
 }
 
 int DFInstanceLinux::write_string(const VIRTADDR &addr, const QString &str) {
