@@ -135,6 +135,8 @@ QString DFInstanceOSX::read_string(const VIRTADDR &addr) {
 }
 
 int DFInstanceOSX::write_string(const VIRTADDR &addr, const QString &str) {
+    return 0; //the code below can potentially crash DF, which is unacceptable
+
     // Ensure this operation is done as one transaction
     attach();
     uintptr_t buffer_addr = get_string(str);
