@@ -619,7 +619,7 @@ private:
     QString read_chunked_name(const VIRTADDR &addr, bool use_generic=false);
 
     // assembles component names into a nicely formatted single string
-    void calc_names();
+    void build_names();
 
 signals:
     void name_changed();

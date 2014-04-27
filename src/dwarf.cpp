@@ -241,7 +241,7 @@ void Dwarf::read_settings() {
     QSettings *s = DT->user_settings();
     bool new_show_full_name = s->value("options/show_full_dwarf_names",false).toBool();
     if (new_show_full_name != m_show_full_name) {
-        calc_names();
+        build_names();
         emit name_changed();
     }
     m_show_full_name = new_show_full_name;
@@ -272,7 +272,7 @@ void Dwarf::refresh_data() {
     read_first_name();
     read_last_name(m_address + m_mem->dwarf_offset("first_name"));
     read_nick_name();
-    calc_names(); //creates nice name.. which is used for debug messages so we need to do it first..
+    build_names(); //creates nice name.. which is used for debug messages so we need to do it first..
     read_states();  //read states before job
     read_mood(); //read before skills (soul aspect)
     read_soul();
@@ -281,9 +281,8 @@ void Dwarf::refresh_data() {
     if(!m_validated)
         this->is_valid();
     if(m_is_valid){
-        read_caste();
+        read_caste(); //read before age
         read_profession();
-        read_body_size();
         read_labors();
         read_happiness();
         read_squad_info(); //read squad before job
@@ -291,7 +290,8 @@ void Dwarf::refresh_data() {
         read_current_job();
         read_syndromes(); //read syndromes before attributes        
         read_turn_count(); //load time/date stuff for births/migrations - read before age
-        set_age_and_migration(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time"));
+        set_age_and_migration(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time")); //set age before profession
+        read_body_size(); //body size after caste and age
         //curse check will change the name and age
         read_curse(); //read curse before attributes
         read_soul_aspects(); //assumes soul already read, and requires caste to be read first
@@ -310,7 +310,7 @@ void Dwarf::refresh_data() {
         read_inventory();
 
         if(m_is_animal)
-            calc_names(); //calculate names again as we need to check tameness for animals
+            build_names(); //calculate names again as we need to check tameness for animals
 
         //currently only flags used are for cage and butcher animal
         m_caged = flags1;
@@ -413,8 +413,14 @@ void Dwarf::set_age_and_migration(VIRTADDR birth_year_offset, VIRTADDR birth_tim
     m_migration_wave = 100000 * arrival_year + 10000 * arrival_season + 100 * arrival_month + arrival_day;
     m_born_in_fortress = (time_since_birth == m_turn_count);
 
-    if(m_age == 0)
-        m_age_in_months = time_since_birth / ticks_per_month;
+    m_age_in_months = time_since_birth / ticks_per_month;
+
+    if(m_caste){
+        if(m_age == 0 || time_since_birth < m_caste->baby_age() * ticks_per_year)
+            m_is_baby = true;
+        else if(time_since_birth < m_caste->child_age() * ticks_per_year)
+            m_is_child = true;
+    }
 }
 
 QString Dwarf::get_migration_desc(){
@@ -604,7 +610,7 @@ void Dwarf::find_true_ident(){
         m_fake_nickname = fake_id + m_mem->hist_figure_offset("fake_name") + m_mem->dwarf_offset("nick_name");
         m_nick_name = m_df->read_string(m_fake_nickname);
         read_last_name(fake_id + m_mem->hist_figure_offset("fake_name"));
-        calc_names();
+        build_names();
         //vamps also use a fake age
         set_age_and_migration(fake_id + m_mem->hist_figure_offset("fake_birth_year"),fake_id + m_mem->hist_figure_offset("fake_birth_time"));
     }
@@ -694,7 +700,7 @@ void Dwarf::read_nick_name() {
         m_hist_nickname = hist_addr + m_mem->hist_figure_offset("hist_name") + m_mem->dwarf_offset("nick_name");
 }
 
-void Dwarf::calc_names() {
+void Dwarf::build_names() {
     if (m_pending_nick_name.isEmpty()) {
         m_nice_name = QString("%1 %2").arg(m_first_name, m_last_name);
         m_translated_name = QString("%1 %2").arg(m_first_name, m_translated_last_name);
@@ -794,11 +800,6 @@ void Dwarf::read_profession() {
     TRACE << "reading profession for" << nice_name() << m_raw_profession <<
              prof_name;
     TRACE << "EFFECTIVE PROFESSION:" << m_profession;
-
-    if(m_profession == tr("Child"))
-        m_is_child = true;
-    else if (m_profession == tr("Baby"))
-        m_is_baby = true;
 }
 
 void Dwarf::read_noble_position(){
@@ -1978,7 +1979,7 @@ void Dwarf::recheck_equipment(){
 
 void Dwarf::set_nickname(const QString &nick) {
     m_pending_nick_name = nick;
-    calc_names();
+    build_names();
 }
 
 void Dwarf::set_custom_profession_text(const QString &prof_text) {

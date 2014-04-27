@@ -63,6 +63,9 @@ public:
     int child_size() {return get_body_size(0) / 2;} //get_body_size(1);}
     int baby_size() {return get_body_size(0) / 4;} //get_body_size(2);}
 
+    int child_age() {return m_child_age;}
+    int baby_age() {return m_baby_age;}
+
     void load_data();
     void load_skill_rates();
 
@@ -88,6 +91,8 @@ private:
     QString m_name_plural;
     QString m_description;
     QVector<int> m_body_sizes;
+    int m_baby_age;
+    int m_child_age;
 
     QHash<int,att_range> m_attrib_ranges;
 
