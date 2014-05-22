@@ -291,7 +291,7 @@ void DwarfModel::build_rows() {
                     tag = race_name;
                 m_grouped_dwarves[capitalizeEach(tag.toLower())].append(d);
             }else if(m_group_by == GB_RACE){
-                m_grouped_dwarves[d->race_name(true,true)].append(d);
+                m_grouped_dwarves[capitalizeEach(d->race_name(true,true))].append(d);
             }else if(m_group_by == GB_HAS_NICKNAME){
                 if (d->nickname().isEmpty()) {
                     m_grouped_dwarves[tr("No Nickname")].append(d);

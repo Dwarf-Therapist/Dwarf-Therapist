@@ -54,7 +54,7 @@ Race::~Race() {
     m_castes.clear();
 
     qDeleteAll(m_creature_mats);
-    m_creature_mats.clear();    
+    m_creature_mats.clear();
 }
 
 Race* Race::get_race(DFInstance *df, const VIRTADDR & address, int id) {
@@ -81,19 +81,36 @@ void Race::read_race() {
     m_name_plural = capitalize(m_df->read_string(m_address + m_mem->race_offset("name_plural")));
     m_adjective = capitalize(m_df->read_string(m_address + m_mem->race_offset("adjective")));
 
+    m_child_name = capitalize(m_df->read_string(m_address + m_mem->race_offset("child_name_singular")));
+    m_child_name_plural = capitalize(m_df->read_string(m_address + m_mem->race_offset("child_name_plural")));
+
     m_baby_name = capitalize(m_df->read_string(m_address + m_mem->race_offset("baby_name_singular")));
+    m_baby_name_plural = capitalize(m_df->read_string(m_address + m_mem->race_offset("baby_name_plural")));
+
+    if(m_baby_name == "" && m_child_name != "")
+        m_baby_name = m_child_name;
+    if(m_baby_name_plural == "" && m_child_name_plural != "")
+        m_baby_name_plural = m_child_name_plural;
+
+    if(m_child_name == "" && m_baby_name != "")
+        m_child_name = m_baby_name;
+    if(m_child_name_plural == "" && m_baby_name_plural  != "")
+        m_child_name_plural = m_baby_name_plural;
+
     if(m_baby_name == "")
         m_baby_name = m_name + tr(" Baby");
-    m_baby_name_plural = capitalize(m_df->read_string(m_address + m_mem->race_offset("baby_name_plural")));
     if(m_baby_name_plural == "")
         m_baby_name_plural = m_name_plural + tr(" Babies");
 
-    m_child_name = capitalize(m_df->read_string(m_address + m_mem->race_offset("child_name_singular")));
     if(m_child_name == "")
         m_child_name = m_name + tr(" Offspring");
-    m_child_name_plural = capitalize(m_df->read_string(m_address + m_mem->race_offset("child_name_plural")));
     if(m_child_name_plural == "")
         m_child_name_plural = m_name + tr(" Offsprings");
+
+    m_child_name = capitalizeEach(m_child_name);
+    m_child_name_plural = capitalizeEach(m_child_name_plural);
+    m_baby_name = capitalizeEach(m_baby_name);
+    m_baby_name_plural = capitalizeEach(m_baby_name_plural);
 
     m_pref_string_vector = m_address + m_mem->race_offset("pref_string_vector");
     m_pop_ratio_vector = m_address + m_mem->race_offset("pop_ratio_vector");
@@ -116,15 +133,15 @@ void Race::read_race() {
 //                    LOGD << "FOUND CASTE " << hexify(caste_addr) << " IDX " << i << " NAME " << c->name();
             }
             i++;
-        }                
-    }    
+        }
+    }
 
     //if this is the race that we're currently playing as, we need to load some extra data and set some flags
     if(m_id == m_df->dwarf_race_id()){
         load_caste_ratios();
     }
 
-    m_flags = FlagArray(m_df, m_address + m_mem->race_offset("flags"));    
+    m_flags = FlagArray(m_df, m_address + m_mem->race_offset("flags"));
     m_df->detach();
 }
 
@@ -135,7 +152,7 @@ void Race::load_caste_ratios(){
 
         foreach(VIRTADDR addr, addrs){
             ratios << (int)addr;
-        }        
+        }
 
         if(ratios.count() > 0){
             int sum = 0;
@@ -146,7 +163,7 @@ void Race::load_caste_ratios(){
 
             float commonality = 0.0;
             for(int idx=0; idx < m_castes.count();idx++){
-                Caste *c = m_castes[idx];                            
+                Caste *c = m_castes[idx];
                 commonality = (float)ratios.at(idx) / (float)sum;
                 if(commonality > 0.0001){
                     //load attribute data

@@ -281,8 +281,7 @@ void Dwarf::refresh_data() {
     if(!m_validated)
         this->is_valid();
     if(m_is_valid){
-        read_caste(); //read before age
-        read_profession();
+        read_caste(); //read before age        
         read_labors();
         read_happiness();
         read_squad_info(); //read squad before job
@@ -291,6 +290,7 @@ void Dwarf::refresh_data() {
         read_syndromes(); //read syndromes before attributes        
         read_turn_count(); //load time/date stuff for births/migrations - read before age
         set_age_and_migration(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time")); //set age before profession
+        read_profession(); //read profession before building the names
         read_body_size(); //body size after caste and age
         //curse check will change the name and age
         read_curse(); //read curse before attributes
@@ -716,16 +716,25 @@ void Dwarf::build_names() {
     m_nice_name = m_nice_name.trimmed();
     m_translated_name = m_translated_name.trimmed();
 
-    if(m_is_animal)
-    {
-        if(m_nice_name=="")
-        {
-            m_nice_name = race_name();
-            m_translated_name = "";
+    if(m_is_animal){
+        QString creature_name = "";
+        if(is_adult()){
+            creature_name = caste_name();
+            //for adult animals, check their profession for training and adjust the name accordingly
+            if (m_raw_profession == 99) //trained war
+                creature_name = tr("War ") + m_race->name();
+            else if (m_raw_profession == 98) //trained hunt
+                creature_name = tr("Hunting ") + m_race->name();
+        }else{
+            creature_name = race_name();
         }
-        else
-        {
-            m_nice_name = tr("%1 (%2)").arg(race_name()).arg(m_nice_name);
+
+        //check for a pet name
+        if(m_nice_name==""){
+            m_nice_name = creature_name;
+            m_translated_name = "";
+        }else{
+            m_nice_name = tr("%1 (%2)").arg(creature_name).arg(m_nice_name);
         }
     }
     // uncomment to put address at front of name
@@ -778,15 +787,24 @@ void Dwarf::read_profession() {
         m_profession = prof_name;
     }
 
-    if(is_animal() && m_profession==tr("Peasant"))
-        m_profession = tr("Adult"); //adult animals have a profession of peasant by default, just use adult
+    if(is_animal()){
+        if(m_raw_profession == 102 && is_adult())
+            m_profession = tr("Adult"); //adult animals have a profession of peasant by default, just use adult
+        else if(m_is_child){
+            m_profession = tr("Child");
+            m_raw_profession = 103;
+        }else if(m_is_baby){
+            m_profession = tr("Baby");
+            m_raw_profession = 104;
+        }
+    }
 
-    int prof_id = 90; //default to none
+    int img_idx = 102; //default to peasant
     if(m_raw_profession > -1 && m_raw_profession < GameDataReader::ptr()->get_professions().count())
-        prof_id = m_raw_profession + 1; //images start at 1, professions at 0, offest to match image
+        img_idx = m_raw_profession + 1; //images start at 1, professions at 0, offest to match image
 
     //set the default path for the profession icon
-    m_icn_prof = QPixmap(":/profession/img/profession icons/prof_" + QString::number(prof_id) + ".png");
+    m_icn_prof = QPixmap(":/profession/img/profession icons/prof_" + QString::number(img_idx) + ".png");
     //see if we have a custom profession or icon override
     CustomProfession *cp;
     if(!m_custom_profession.isEmpty()){
@@ -1280,33 +1298,25 @@ QString Dwarf::race_name(bool base, bool plural_name) {
     QString r_name = "";
     if(!m_race)
         return r_name;
-    if (base){
-        if(!plural_name)
-            r_name = m_race->name();
-        else
-            r_name = m_race->plural_name();
-    }else if (m_is_baby){
-        r_name = m_race->baby_name();
-        if (r_name=="")
-        {
-            if (m_is_animal)
-                r_name = caste_name() + " Baby";
-            else
-                r_name = m_race->name() + " Baby";
-        }
-    }
-    else if (m_is_child)
-        r_name = m_race->child_name();
-    else if (profession()==tr("Trained War"))
-        r_name = tr("War ") + m_race->name();
-    else if (profession()==tr("Trained Hunter"))
-        r_name = tr("Hunting ") + m_race->name();
+
+    if(!plural_name)
+        r_name = m_race->name();
     else
-    {
-        if (m_is_animal)
-            r_name = caste_name();
+        r_name = m_race->plural_name();
+
+    if(base)
+        return r_name;
+
+    if(m_is_baby){
+        if(!plural_name)
+            r_name = m_race->baby_name();
         else
-            r_name = m_race->name();
+            r_name = m_race->baby_name_plural();
+    }else if (m_is_child){
+        if(!plural_name)
+            r_name = m_race->child_name();
+        else
+            r_name = m_race->child_name_plural();
     }
     return capitalizeEach(r_name);
 }
