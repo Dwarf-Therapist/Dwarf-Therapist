@@ -67,8 +67,6 @@ void LaborOptimizer::calc_population(bool load_labor_map){
     m_total_population = 0;
 
     //setup our new map
-    bool labor_cheats = DT->user_settings()->value("options/allow_labor_cheats",true).toBool();
-
     m_current_message.clear();
     for(int i = m_dwarfs.count()-1; i >= 0; i--){
         Dwarf *d = m_dwarfs.at(i);
@@ -101,7 +99,7 @@ void LaborOptimizer::calc_population(bool load_labor_map){
                 m_dwarfs.at(i)->clear_labors();
             m_dwarfs.removeAt(i);
         }
-        else if(d->is_child() && !labor_cheats){
+        else if(d->is_child() && !DT->labor_cheats_allowed()){
             m_current_message.append(QPair<int, QString> (d->id(), tr("Excluding %1 because they're a child.").arg(d->nice_name())));
             m_dwarfs.removeAt(i);
         }

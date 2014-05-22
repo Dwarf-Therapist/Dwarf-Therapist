@@ -437,7 +437,7 @@ void OptionsMenu::write_settings() {
         s->setValue("syndrome_display_type", val);
 
 
-        s->endGroup();
+        s->endGroup();       
     }
 }
 

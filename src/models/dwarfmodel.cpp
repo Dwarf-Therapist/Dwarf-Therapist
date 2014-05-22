@@ -329,8 +329,7 @@ void DwarfModel::build_rows() {
         if(!d->is_animal() && !only_animals)
         {
             //if hiding children/babies, don't group them, otherwise the aggregate row total in the heading will be off
-            if(DT->user_settings()->value("options/hide_children_and_babies",true).toBool() == false
-                    || (!d->is_child() && !d->is_baby())){
+            if(!DT->hide_non_adults() || (!d->is_child() && !d->is_baby())){
 
                 if(m_group_by == GB_LEGENDARY){
                     int legendary_skills = 0;

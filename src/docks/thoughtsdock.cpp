@@ -160,7 +160,7 @@ void ThoughtsDock::search_changed(QString val){
 
 void ThoughtsDock::filter(){
     for(int i = 0; i < tw_thoughts->rowCount(); i++){
-        if(m_filter.isEmpty() || tw_thoughts->item(i,0)->text().contains(m_filter)){
+        if(m_filter.isEmpty() || tw_thoughts->item(i,0)->text().contains(m_filter) || tw_thoughts->item(i,2)->text().contains(m_filter)){
             tw_thoughts->setRowHidden(i,false);
         }else{
             tw_thoughts->setRowHidden(i,true);

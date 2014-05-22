@@ -93,8 +93,7 @@ void DwarfModelProxy::refresh_script(){
 bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
     bool matches = true;
 
-    int dwarf_id = 0;
-    QSettings *s = DT->user_settings();
+    int dwarf_id = 0;    
     const DwarfModel *m = get_dwarf_model();
     if (m->current_grouping() == DwarfModel::GB_NOTHING) {
         QModelIndex idx = m->index(source_row, 0, source_parent);
@@ -141,9 +140,8 @@ bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source
 
     //filter children and babies if necessary, but only check this if we've already got a match with a filter
     //DOESNT apply to animals!!
-    if(matches){
-        bool hide_children = s->value("options/hide_children_and_babies",false).toBool();
-        if(dwarf_id && hide_children) {
+    if(matches){        
+        if(dwarf_id && DT->hide_non_adults()) {
             Dwarf *d = m->get_dwarf_by_id(dwarf_id);
             if(!d->is_animal()){
                 matches = (!d->is_baby() && !d->is_child());

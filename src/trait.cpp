@@ -92,8 +92,6 @@ Trait::Trait(int trait_id, QSettings &s, QObject *parent)
 
 QString Trait::level_message(const short &val){
     QString ret_val;
-    if(trait_id == 30)
-        int z = 0;
     QMapIterator<int,QString> i(m_level_string);
     i.toBack();
     while(i.hasPrevious()){

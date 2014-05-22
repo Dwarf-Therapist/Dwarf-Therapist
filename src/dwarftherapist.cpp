@@ -50,6 +50,7 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     , m_options_menu(0)
     , m_reading_settings(false)
     , m_allow_labor_cheats(false)
+    , m_hide_non_adults(false)
     , m_log_mgr(0)
 {
     setup_logging();
@@ -213,6 +214,7 @@ void DwarfTherapist::read_settings() {
     m_user_settings->endGroup();
 
     m_allow_labor_cheats = m_user_settings->value("options/allow_labor_cheats", false).toBool();
+    m_hide_non_adults = m_user_settings->value("options/hide_children_and_babies",false).toBool();
 
     m_reading_settings = false;
     m_main_window->draw_professions();

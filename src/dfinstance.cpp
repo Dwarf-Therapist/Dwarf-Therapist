@@ -462,8 +462,6 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
     emit progress_range(0, creatures_addrs.size()-1);
     TRACE << "FOUND" << creatures_addrs.size() << "creatures";
-    bool hide_non_adults = DT->user_settings()->value("options/hide_children_and_babies",true).toBool();
-    bool labor_cheats = DT->user_settings()->value("options/allow_labor_cheats",true).toBool();
     QTime t;
     t.start();
     if (!creatures_addrs.empty()) {
@@ -471,7 +469,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         int progress_count = 0;
 
         foreach(VIRTADDR creature_addr, creatures_addrs) {
-            d = Dwarf::get_dwarf(this, creature_addr);            
+            d = Dwarf::get_dwarf(this, creature_addr);
             if(d){
                 dwarves.append(d); //add animals as well so we can show them
                 if(!d->is_animal()){
@@ -481,7 +479,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
                     //never calculate roles for babies
                     //only calculate roles for children if they're shown and labor cheats are enabled
                     if(!d->is_baby()){
-                        if(!d->is_child() || (labor_cheats && !hide_non_adults)){
+                        if(!d->is_child() || (DT->labor_cheats_allowed() && !DT->hide_non_adults())){
                             //dwarves_with_roles.append(d->id());
                             m_labor_capable_dwarves.append(d);
                         }
@@ -553,55 +551,55 @@ void DFInstance::load_population_data(){
             }
         }
 
-        //load preference counts
-        foreach(QString category_name, d->get_grouped_preferences().uniqueKeys()){
-            for(int i = 0; i < d->get_grouped_preferences().value(category_name)->count(); i++){
+        //load preference/thought totals, excluding babies/children according to settings
+        if(d->is_adult() || (!d->is_adult() && !DT->hide_non_adults())){
+            foreach(QString category_name, d->get_grouped_preferences().uniqueKeys()){
+                for(int i = 0; i < d->get_grouped_preferences().value(category_name)->count(); i++){
 
-                QString pref = d->get_grouped_preferences().value(category_name)->at(i);
-                QString cat_name = category_name;
-                bool is_dislike = false;
-                //put liked and hated creatures together
-                if(category_name == Preference::get_pref_desc(HATE_CREATURE)){
-                    cat_name = Preference::get_pref_desc(LIKE_CREATURE);
-                    is_dislike = true;
+                    QString pref = d->get_grouped_preferences().value(category_name)->at(i);
+                    QString cat_name = category_name;
+                    bool is_dislike = false;
+                    //put liked and hated creatures together
+                    if(category_name == Preference::get_pref_desc(HATE_CREATURE)){
+                        cat_name = Preference::get_pref_desc(LIKE_CREATURE);
+                        is_dislike = true;
+                    }
+
+                    QPair<QString,QString> key_pair;
+                    key_pair.first = cat_name;
+                    key_pair.second = pref;
+
+                    pref_stat *p;
+                    if(m_pref_counts.contains(key_pair))
+                        p = m_pref_counts.take(key_pair);
+                    else{
+                        p = new pref_stat();
+                    }
+
+                    if(is_dislike){
+                        p->names_dislikes.append(d->nice_name());
+                    }else{
+                        p->names_likes.append(d->nice_name());
+                    }
+                    p->pref_category = cat_name;
+
+                    m_pref_counts.insert(key_pair,p);
                 }
+            }
 
-                QPair<QString,QString> key_pair;
-                key_pair.first = cat_name;
-                key_pair.second = pref;
-
-                pref_stat *p;
-                if(m_pref_counts.contains(key_pair))
-                    p = m_pref_counts.take(key_pair);
-                else{
-                    p = new pref_stat();
+            QHash<short,int> d_thoughts = d->get_thoughts();
+            foreach(short id, d_thoughts.uniqueKeys()){
+                int total_count = 0;
+                int dwarf_count = 0;
+                if(m_thought_counts.contains(id)){
+                    total_count = m_thought_counts.value(id).first;
+                    dwarf_count = m_thought_counts.value(id).second;
                 }
-
-                if(is_dislike){
-                    p->names_dislikes.append(d->nice_name());
-                }else{
-                    p->names_likes.append(d->nice_name());
-                }
-                p->pref_category = cat_name;
-
-                m_pref_counts.insert(key_pair,p);
+                total_count += d_thoughts.value(id);
+                dwarf_count++;
+                m_thought_counts.insert(id,qMakePair(total_count,dwarf_count));
             }
         }
-
-        //load thought counts
-        QHash<short,int> d_thoughts = d->get_thoughts();
-        foreach(short id, d_thoughts.uniqueKeys()){
-            int total_count = 0;
-            int dwarf_count = 0;
-            if(m_thought_counts.contains(id)){
-                total_count = m_thought_counts.value(id).first;
-                dwarf_count = m_thought_counts.value(id).second;
-            }
-            total_count += d_thoughts.value(id);
-            dwarf_count++;
-            m_thought_counts.insert(id,qMakePair(total_count,dwarf_count));
-        }
-
     }
 }
 

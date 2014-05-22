@@ -65,6 +65,7 @@ public:
     QString get_dwarf_word(const uint &offset) {return m_dwarf_words.value(offset, get_generic_word(offset));}
     Word * get_word(const uint & offset) { return m_language.value(offset, NULL); }
     bool labor_cheats_allowed() {return m_allow_labor_cheats;}
+    bool hide_non_adults() {return m_hide_non_adults;}
     LogManager *get_log_manager() {return m_log_mgr;}
     DFInstance *get_DFInstance() {return m_main_window->get_DFInstance();}
 
@@ -99,6 +100,7 @@ private:
     OptionsMenu *m_options_menu;
     bool m_reading_settings;
     bool m_allow_labor_cheats;
+    bool m_hide_non_adults;
     LogManager *m_log_mgr;
 
     void setup_logging();

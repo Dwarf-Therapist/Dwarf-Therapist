@@ -815,10 +815,9 @@ void MainWindow::save_gridview_csv()
     out << row.join(",") << endl;
     row.clear();
 
-    QList<Dwarf*> dwarves = m_proxy->get_filtered_dwarves();
-    bool hide_non_adults = DT->user_settings()->value("options/hide_children_and_babies",true).toBool();
+    QList<Dwarf*> dwarves = m_proxy->get_filtered_dwarves();    
     foreach(Dwarf *d, dwarves){
-        if(d->is_animal() || d->is_adult() || (!hide_non_adults && !d->is_adult())){
+        if(d->is_animal() || d->is_adult() || (!DT->hide_non_adults() && !d->is_adult())){
             row.append(d->nice_name());
             foreach(ViewColumnSet *set, gv->sets()) {
                 foreach(ViewColumn *col, set->columns()) {
