@@ -64,7 +64,6 @@ in that directory.
 
 Manually: using sudo rm -rf, remove:
 
-* /etc/bin/dwarftherapist
 * /usr/bin/X11/dwarftherapist
 * /usr/share/dwarftherapist/*
 * /usr/share/applications/dwarftherapist.desktop
