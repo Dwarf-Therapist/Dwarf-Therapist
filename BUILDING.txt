@@ -51,7 +51,7 @@ If you are having problems with building, ask on the Splintermind thread in the 
 # Run the program
 The executable is in your /usr/bin folder  You will have to run it as sudo, i.e.:
 
-    > sudo dwarftherapist
+    > sudo DwarfTherapist
 
 
 # Uninstallation
