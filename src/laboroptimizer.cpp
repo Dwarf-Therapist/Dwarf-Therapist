@@ -252,7 +252,10 @@ void LaborOptimizer::optimize(){
         }
         //dwarf has available labor slots? target laborers reached?
         if(!has_conficting_labor && dlm.d->optimized_labors < plan->max_jobs_per_dwarf && dlm.det->assigned_laborers < dlm.det->max_count){
-            LOGD << "Job:" << GameDataReader::ptr()->get_labor(dlm.det->labor_id)->name << " Role:" << dlm.det->role_name << " Dwarf:" << dlm.d->nice_name() << " Rating:" << dlm.rating;
+
+            LOGD << "Job:" << GameDataReader::ptr()->get_labor(dlm.det->labor_id)->name << " Role:" << dlm.det->role_name << " Dwarf:" << dlm.d->nice_name()
+                 << " Rating:" << dlm.rating << " Raw Rating:" << dlm.d->get_role_rating(dlm.det->role_name,true);
+
             dlm.d->set_labor(dlm.det->labor_id, true, false);
             dlm.det->assigned_laborers++;
             dlm.d->optimized_labors++;              
