@@ -334,7 +334,9 @@ public:
     void calc_role_ratings();
     float calc_role_rating(Role *);
     Q_INVOKABLE float get_role_rating(QString role_name, bool raw = false);
+    Q_INVOKABLE float get_adjusted_role_rating(QString role_name){return m_adjusted_role_ratings.value(role_name);}
     void set_role_rating(QString role_name, float value);
+    void set_adjusted_role_rating(QString role_name, float value);
     void update_rating_list();
 
     void calc_attribute_ratings();
@@ -535,6 +537,7 @@ private:
     short m_age_in_months;
     uint m_turn_count; // Dwarf turn count from start of fortress (as best we know)
     bool m_is_on_break;
+    QHash<QString, float> m_adjusted_role_ratings;
     QHash<QString, float> m_role_ratings;
     QHash<QString, float> m_raw_role_ratings;
     QList<Role::simple_rating> m_sorted_role_ratings;

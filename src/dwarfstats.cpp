@@ -30,6 +30,7 @@ THE SOFTWARE.
 QHash<ASPECT_TYPE, QList<DwarfStats::bin> > DwarfStats::m_trait_bins;
 QHash<int, QHash<QString,DwarfStats::att_info> > DwarfStats::m_att_caste_bins;
 float DwarfStats::m_att_pot_weight;
+//float DwarfStats::m_role_mean;
 //QHash<ATTRIBUTES_TYPE, QVector<float>* > DwarfStats::m_attribute_ratings;
 
 float DwarfStats::calc_cdf(float mean, float stdev, float rawValue){

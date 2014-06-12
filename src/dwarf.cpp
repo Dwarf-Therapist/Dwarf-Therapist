@@ -2601,6 +2601,10 @@ float Dwarf::get_role_rating(QString role_name, bool raw){
 void Dwarf::set_role_rating(QString role_name, float value){
     m_role_ratings.insert(role_name,value);
 }
+void Dwarf::set_adjusted_role_rating(QString role_name, float value){
+    m_adjusted_role_ratings.insert(role_name,value);
+}
+
 void Dwarf::update_rating_list(){
     GameDataReader *gdr = GameDataReader::ptr();
     //keep a sorted list of the ratings as well

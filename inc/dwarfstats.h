@@ -35,6 +35,9 @@ class DwarfStats
 public:
     static float calc_cdf(float mean, float stdev, float rawValue);    
 
+    //static void set_role_mean(float mean){m_role_mean = mean;}
+    //static float get_role_mean(){return m_role_mean;}
+
     struct bin{
         int min;
         int max;
@@ -70,6 +73,7 @@ private:
 //    static QHash<ATTRIBUTES_TYPE, QVector<float>* > m_attribute_ratings;
 
     static QList<bin> build_att_bins(QList<int>);
+    //static float m_role_mean;
 };
 
 #endif // DWARFSTATS_H

@@ -62,8 +62,8 @@ private slots:
     void add_remaining_jobs();
     void remove_labor();
     void test_optimize();
-    void display_message(QVector<QPair<int, QString> >);
-    void display_message(QString msg);
+    void display_message(QVector<QPair<int, QString> >,bool is_warning = false);
+    void display_message(QString msg, bool is_warning = false);
     void clear_log();
     void save_pressed();
     void cancel_pressed();    

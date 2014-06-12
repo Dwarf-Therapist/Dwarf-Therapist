@@ -41,6 +41,7 @@ After everything is optimized, any haulers are assigned with less than the speci
 #include "dwarf.h"
 #include "labor.h"
 #include "skill.h"
+#include "rolestats.h"
 
 LaborOptimizer::LaborOptimizer(laborOptimizerPlan *plan, QObject *parent)    
     :QObject(parent)
@@ -66,20 +67,23 @@ void LaborOptimizer::calc_population(bool load_labor_map){
     m_labor_map.clear();
     m_total_population = 0;
 
+    if(load_labor_map)
+        adjust_ratings();
+
     //setup our new map
     m_current_message.clear();
     for(int i = m_dwarfs.count()-1; i >= 0; i--){
         Dwarf *d = m_dwarfs.at(i);
-        if(!d)
+        if(!d || d->is_animal())
             continue;
 
         //exclude nobles, hospitalized dwarfs, children, babies and militia
         if(d->noble_position() != "" && plan->exclude_nobles){
-            m_current_message.append(QPair<int, QString> (d->id(), tr("Excluding %1 because they're a noble.").arg(d->nice_name())));
+            m_current_message.append(QPair<int, QString> (d->id(), tr("(Noble) %1").arg(d->nice_name())));
             m_dwarfs.removeAt(i);
         }
         else if(d->current_job_id() == 52 && plan->exclude_injured){
-            m_current_message.append(QPair<int, QString> (d->id(), tr("Excluding %1 because they're hospitalized.").arg(d->nice_name())));
+            m_current_message.append(QPair<int, QString> (d->id(), tr("(Hospitalized) %1").arg(d->nice_name())));
             if(load_labor_map)
                 m_dwarfs.at(i)->clear_labors();
             m_dwarfs.removeAt(i);
@@ -88,19 +92,19 @@ void LaborOptimizer::calc_population(bool load_labor_map){
             m_dwarfs.removeAt(i);
         }
         else if(d->active_military() && plan->exclude_military){
-            m_current_message.append(QPair<int, QString> (d->id(), tr("Excluding %1 because they're on active duty.").arg(d->nice_name())));
+            m_current_message.append(QPair<int, QString> (d->id(), tr("(Active Duty) %1").arg(d->nice_name())));
             if(load_labor_map)
                 m_dwarfs.at(i)->clear_labors();
             m_dwarfs.removeAt(i);
         }
         else if(d->squad_id() > -1 && plan->exclude_squads){
-            m_current_message.append(QPair<int, QString> (d->id(), tr("Excluding %1 because they're in the %2 squad.").arg(d->nice_name()).arg(d->squad_name())));
+            m_current_message.append(QPair<int, QString> (d->id(), tr("(Squad) %1").arg(d->nice_name()).arg(d->squad_name())));
             if(load_labor_map)
                 m_dwarfs.at(i)->clear_labors();
             m_dwarfs.removeAt(i);
         }
         else if(d->is_child() && !DT->labor_cheats_allowed()){
-            m_current_message.append(QPair<int, QString> (d->id(), tr("Excluding %1 because they're a child.").arg(d->nice_name())));
+            m_current_message.append(QPair<int, QString> (d->id(), tr("(Child) %1").arg(d->nice_name())));
             m_dwarfs.removeAt(i);
         }
         else{
@@ -116,11 +120,11 @@ void LaborOptimizer::calc_population(bool load_labor_map){
                         dlm.d = d;
                         dlm.det = det;
                         if(!det->role_name.isEmpty()){
-                            dlm.rating = det->priority * d->get_role_rating(det->role_name, true);
+                            //dlm.rating = d->get_role_rating(det->role_name, true);//det->priority * d->get_role_rating(det->role_name, true);
+                            dlm.rating = d->get_adjusted_role_rating(det->role_name) * det->priority;
                         }
-                        else{
-                            dlm.rating = det->priority * (d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).capped_exp() / (float)MAX_CAPPED_XP * 100);
-                            //dlm.rating = det->priority * (d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).rating() / 20.0 * 100);
+                        else{                            
+                            dlm.rating = d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).capped_exp() / (float)MAX_CAPPED_XP * 100 * det->priority;//det->priority * (d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).capped_exp() / (float)MAX_CAPPED_XP * 100);
                         }
                         m_labor_map.append(dlm);
                     }
@@ -137,6 +141,56 @@ void LaborOptimizer::calc_population(bool load_labor_map){
                                                         .arg(m_current_message.count() > 1 ? "s" : "")));
         if(load_labor_map)
             emit optimize_message(m_current_message);
+    }
+}
+
+void LaborOptimizer::adjust_ratings(){
+    QList<RoleStats*> m_role_stats;
+    QHash<QString, RoleStats*> m_role_stats_by_name;
+
+    int num_roles = 0;
+
+    RoleStats *rs;
+    foreach(PlanDetail *det, plan->plan_details){
+        if(!m_role_stats_by_name.contains(det->role_name)){
+            rs = new RoleStats(det->role_name);
+            double mean = 0.0;
+            int count = 0;
+            foreach(Dwarf *d, m_dwarfs){
+                count ++;
+                double rating = d->get_role_rating(det->role_name,true);
+                mean += rating;
+                rs->add_rating(rating);
+            }
+            rs->set_mean(mean / (double)count);
+            m_role_stats.append(rs);
+            m_role_stats_by_name.insert(det->role_name,rs);
+        }
+    }
+
+    qSort(m_role_stats.begin(),m_role_stats.end(),&RoleStats::sort_means);
+    double max_mean = m_role_stats.first()->get_mean();
+    double min_mean = m_role_stats.last()->get_mean();
+    double log_mean_diff = log(max_mean-min_mean);
+
+    num_roles = m_role_stats.count();
+    int rank = num_roles;
+    double max_rank_log_mean = 0.0;
+    foreach(RoleStats *rs, m_role_stats){
+        rs->set_mean_rank(rank,num_roles);
+        rank--;
+        if(rs->get_rank_log_mean() > max_rank_log_mean)
+            max_rank_log_mean = rs->get_rank_log_mean();
+    }
+    foreach(RoleStats *rs, m_role_stats){
+        rs->calc_priority_adjustment(log_mean_diff,max_rank_log_mean);
+        //m_role_stats_by_name.insert(rs->role_name(),rs);
+    }
+
+    foreach(Dwarf *d, m_dwarfs){
+        foreach(RoleStats *rs, m_role_stats){
+            d->set_adjusted_role_rating(rs->role_name(), m_role_stats_by_name.value(rs->role_name())->adjusted_role_rating(d->get_role_rating(rs->role_name(),true))*100.0f);
+        }
     }
 }
 
@@ -158,7 +212,12 @@ void LaborOptimizer::optimize(){
     calc_population(true);
 
     //sort list by the weighted rating
-    std::sort(m_labor_map.begin(),m_labor_map.end(),LaborOptimizer::less_than_key());
+    std::sort(m_labor_map.begin(),m_labor_map.end(),LaborOptimizer::compare_priority_then_rating());
+    std::sort(m_labor_map.begin(),m_labor_map.end(),LaborOptimizer::compare_rating());
+
+//    foreach(dwarf_labor_map dlm, m_labor_map){
+//        LOGD << "Rating:" << dlm.rating << " Priority:" << dlm.det->priority;
+//    }
 
     update_ratios();
 
@@ -172,6 +231,8 @@ void LaborOptimizer::optimize(){
     Labor *l;        
     //QHash<int, QList<Dwarf*> > conflicts;
     //QList<Dwarf*> conflicting_dwarves;
+
+    QList<int> m_missing_roles;
     foreach(dwarf_labor_map dlm, m_labor_map){
         l = gdr->get_labor(dlm.det->labor_id);
         //check conflicting labors
@@ -186,19 +247,30 @@ void LaborOptimizer::optimize(){
                     break;
                 }
             }
+            if(dlm.det->use_skill && !m_missing_roles.contains(dlm.det->labor_id))
+                m_missing_roles.append(dlm.det->labor_id);
         }
-
         //dwarf has available labor slots? target laborers reached?
         if(!has_conficting_labor && dlm.d->optimized_labors < plan->max_jobs_per_dwarf && dlm.det->assigned_laborers < dlm.det->max_count){
+            LOGD << "Job:" << GameDataReader::ptr()->get_labor(dlm.det->labor_id)->name << " Role:" << dlm.det->role_name << " Dwarf:" << dlm.d->nice_name() << " Rating:" << dlm.rating;
             dlm.d->set_labor(dlm.det->labor_id, true, false);
             dlm.det->assigned_laborers++;
-            dlm.d->optimized_labors++;
+            dlm.d->optimized_labors++;              
         }
 
         if(plan->auto_haulers){
             if(dlm.d->optimized_labors >= roundf((float)plan->max_jobs_per_dwarf * (plan->hauler_percent/(float)100)))
                 haulers.remove(dlm.d->id());
         }
+    }
+
+    if(m_missing_roles.count() > 0){
+        m_current_message.clear();
+        m_current_message.append(QPair<int,QString>(0,tr("%1 labors are missing roles and may not have accurate ratings!").arg(QString::number(m_missing_roles.count()))));
+        foreach(int id, m_missing_roles){
+            m_current_message.append(qMakePair(id,gdr->ptr()->get_labor(id)->name));
+        }
+        emit optimize_message(m_current_message,true);
     }
 
     //emit optimize_message(QString::number(conflicting_count) + " conflicting labors could not be assigned.");
@@ -239,7 +311,7 @@ void LaborOptimizer::optimize(){
 void LaborOptimizer::update_ratios(){
     m_ratio_sum = 0;
     m_estimated_assigned_jobs = 0;
-    m_total_jobs = m_target_population * plan->max_jobs_per_dwarf;//(roundf(m_target_population * plan->max_jobs_per_dwarf));
+    m_total_jobs = m_target_population * plan->max_jobs_per_dwarf;
     m_raw_total_jobs = m_total_jobs;
 
     //get ratio sum

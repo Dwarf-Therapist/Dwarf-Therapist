@@ -178,6 +178,8 @@ int Skill::get_xp_for_level(int level){
 float Skill::capped_level_precise() const{
     if(m_capped_level >= 20){
         return (float)m_capped_level;
+    }else if(m_capped_level <= 0){
+        return 0.0;
     }else{
         return (float)m_capped_level + (float)(m_exp_progress / 100.0f);
     }

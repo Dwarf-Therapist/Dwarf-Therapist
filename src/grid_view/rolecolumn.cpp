@@ -87,7 +87,7 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
     }
 
     if(m_role){
-        float rating_total = d->get_role_rating(m_role->name);
+        float rating_total = d->get_role_rating(m_role->name,false);
         item->setData(rating_total, DwarfModel::DR_RATING);
         item->setData(roundf(rating_total), DwarfModel::DR_DISPLAY_RATING);
         item->setData(rating_total, DwarfModel::DR_SORT_VALUE);

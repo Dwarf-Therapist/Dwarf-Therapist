@@ -25,12 +25,13 @@ THE SOFTWARE.
 
 #include <QtWidgets>
 #include "utils.h"
+#include "plandetail.h"
 
 class Dwarf;
 class Labor;
 class GameDataReader;
 class laborOptimizerPlan;
-class PlanDetail;
+//class PlanDetail;
 
 class LaborOptimizer : public QObject {
     Q_OBJECT
@@ -53,7 +54,7 @@ public slots:
     void calc_population(bool load_labor_map = false);
 
 signals:
-    QString optimize_message(QVector<QPair<int, QString> >);
+    QString optimize_message(QVector<QPair<int, QString> >,bool is_warning = false);
 
 protected:
     GameDataReader *gdr;
@@ -76,7 +77,7 @@ protected:
         PlanDetail *det;
     };
 
-    struct less_than_key
+    struct compare_rating
     {
         bool operator() (dwarf_labor_map dlm1, dwarf_labor_map dlm2)
         {
@@ -84,11 +85,24 @@ protected:
         }
     };
 
+    struct compare_priority_then_rating
+    {
+        bool operator() (dwarf_labor_map dlm1, dwarf_labor_map dlm2)
+        {
+            if(dlm2.det->priority < dlm1.det->priority)
+                return true;
+            else if(dlm2.det->priority > dlm1.det->priority)
+                return false;
+            else
+                return (dlm2.rating < dlm1.rating);
+        }
+    };
+
     QVector<dwarf_labor_map> m_labor_map;
     QVector<QPair<int, QString> > m_current_message;
 
     void optimize();
-
+    void adjust_ratings();
 };
 
 #endif // LABOROPTIMIZER_H

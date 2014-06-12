@@ -253,8 +253,12 @@ void optimizereditor::role_changed(QString val){
     if(w){
         QModelIndex idx = ui->tw_labors->indexAt(w->pos());
         PlanDetail *det = m_plan->job_exists(ui->tw_labors->item(idx.row(),0)->data(Qt::UserRole).toInt());
-        if(det)
-            det->role_name = val;
+        if(det){
+            if(GameDataReader::ptr()->get_roles().contains(val))
+                det->role_name = val;
+            else
+                det->role_name = "";
+        }
     }
 }
 
@@ -446,28 +450,31 @@ void optimizereditor::test_optimize(){
 
     save(m_plan);
 
-    connect(m_optimizer, SIGNAL(optimize_message(QVector<QPair<int, QString> >)), this, SLOT(display_message(QVector<QPair<int, QString> >)));
+    connect(m_optimizer, SIGNAL(optimize_message(QVector<QPair<int, QString> >,bool)), this, SLOT(display_message(QVector<QPair<int, QString> >,bool)));
 
     find_target_population();
 
     m_optimizer->optimize_labors(get_dwarfs());
     DT->get_main_window()->get_model()->calculate_pending();
     DT->emit_labor_counts_updated();
-    disconnect(m_optimizer, SIGNAL(optimize_message(QVector<QPair<int, QString> >)), this, SLOT(display_message(QVector<QPair<int, QString> >)));
+    disconnect(m_optimizer, SIGNAL(optimize_message(QVector<QPair<int, QString> >,bool)), this, SLOT(display_message(QVector<QPair<int, QString> >,bool)));
 }
 
-void optimizereditor::display_message(QString msg){
+void optimizereditor::display_message(QString msg, bool is_warning){
     QVector<QPair<int, QString> > new_msg;
     new_msg.append(QPair<int,QString>(0,msg));
-    display_message(new_msg);
+    display_message(new_msg, is_warning);
 }
 
-void optimizereditor::display_message(QVector<QPair<int, QString> > messages){
+void optimizereditor::display_message(QVector<QPair<int, QString> > messages, bool is_warning){
     ui->treeMessages->blockSignals(true);
 
     QTreeWidgetItem *p_item = new QTreeWidgetItem;
     p_item->setData(0, Qt::UserRole, messages.at(0).first);
     p_item->setText(0, messages.at(0).second);
+    if(is_warning){
+        p_item->setForeground(0,QColor("#DB241A"));
+    }
 
     if(messages.count() > 1){
         for(int i = 1; i < messages.count(); i++){
@@ -548,7 +555,7 @@ void optimizereditor::import_details(){
 
     QFile file(path);
      if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
-         display_message("File could not be opened.");
+         display_message("File could not be opened.",true);
          return;
      }
 
@@ -571,17 +578,17 @@ void optimizereditor::import_details(){
          if(fields.count() == 4){
              fields.at(1).toInt(&check);
              if(!check){
-                 display_message("Invalid labor id (2nd column) at line " + QString::number(linenum));
+                 display_message("Invalid labor id (2nd column) at line " + QString::number(linenum),true);
                  continue;
              }
              fields.at(2).toFloat(&check);
              if(!check){
-                 display_message("Invalid priority (3rd column) at line " + QString::number(linenum));
+                 display_message("Invalid priority (3rd column) at line " + QString::number(linenum),true);
                  continue;
              }
              fields.at(3).toFloat(&check);
              if(!check){
-                 display_message("Invalid population percent (4th column) at line " + QString::number(linenum));
+                 display_message("Invalid population percent (4th column) at line " + QString::number(linenum),true);
                  continue;
              }
 
@@ -600,7 +607,7 @@ void optimizereditor::import_details(){
                      msg = "Role [" + role_name + "] was used instead.";
                  display_message("The role for " + GameDataReader::ptr()->get_labor(d->labor_id)->name +
                                  " [" + d->role_name + "] could not be found. " +
-                                         msg + " (line " + QString::number(linenum) + ")");
+                                         msg + " (line " + QString::number(linenum) + ")",true);
                  d->role_name = role_name;
              }
 
@@ -634,7 +641,7 @@ void optimizereditor::import_details(){
              save(m_plan);
          }else{
              display_message(tr("CSV has an invalid number of columns (%1) at line %2.")
-                             .arg(QString::number(fields.count())).arg(QString::number(linenum)));
+                             .arg(QString::number(fields.count())).arg(QString::number(linenum)),true);
          }
 
      }     
@@ -654,7 +661,7 @@ void optimizereditor::export_details(){
 
     QFile file(path);
      if (!file.open(QIODevice::WriteOnly | QIODevice::Text)){
-         display_message("File could not be opened.");
+         display_message("File could not be opened.",true);
          return;
      }
 

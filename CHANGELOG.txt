@@ -1,3 +1,896 @@
+### Version 21.8 Patch Notes
+
+***
+
+- fixed typos in game_data, added missing value for a thought
+- fixed various item names and added translation support
+- fixed an issue where children/babies still showed in the preferences and thoughts dock when they had been hidden in the options
+- the thoughts dock can be searched by thought descriptions, rather than just by title
+- animals use adult/child/baby as their 'professions' if they're not war/hunt trained
+- the display name for adult animals is now the caste name
+- tweaked animals to always use a child or baby name before going to a generic placeholder name
+
+### Version 21.7 Patch Notes
+
+***
+
+- children and babies are now determined by their age relative to their caste's child/baby age specification, instead of relying on the profession name
+- age in months is now always calculated, since it's sometimes used for animal offspring
+
+### Version 21.6 Patch Notes
+
+***
+
+- fixed linux accents showing up as '?'
+
+### Version 21.5 Patch Notes
+
+***
+
+- added a special personality trait for detachment
+
+### Version 21.4 Patch Notes
+
+***
+
+- fix for items with missing/invalid materials
+- fix for old wounds on body parts which was causing a crash
+- updated the 'unknown' material name to a blank description instead
+
+### Version 21.3 Patch Notes
+
+***
+
+- updated linux build instructions
+- fixed a linux offset
+- small performance tweak for linux string operations
+
+### Version 21.2 Patch Notes
+
+***
+
+- fixed an issue with the migration wave descriptions
+- fixed a crash when reconnecting to dwarf fortress following a disconnect
+- updated the health groups to better differentiate between critical and minor wounds
+
+- fixes a crash issue on osx after the admin password prompt
+
+### Version 21.1 Patch Notes
+
+***
+
+- fix for one of the windows health offsets
+- fixes the amount of weapon/shield affection before naming
+
+### Version 21.0 Patch Notes
+
+***
+
+- added new equipment/itemtype columns for military and labors
+- added melee/ranged skill info to weapon columns
+- weapons are no longer grouped in view columns. each weapon has it's own column so you can actually find them
+- unit's with an unknown gender should be shown properly
+- centralized the name footer on tooltips
+- syndrome attribute changes are now reflected in a unit's attribute values
+- squad members are no longer instantly changed, but instead require a commit (like everything else)
+
+- same change as above for squad name changes
+- this also means that now squad changes appear in the pending commits and can be cleared
+- removed the obsolete military preference column
+
+- the codec file for ibm code page 437 shouldn't be required from now on
+- fixed the accent issue on linux (osx as well?)
+- fixed a few small remaining memory leaks related to materials and races/castes
+- fixed an issue where a unit with an attribute well over the maximum possible was drawn incorrectly
+
+### Version 20.7.1 Patch Notes
+
+***
+
+- minor fix for the health legend to allow multiple selections for filtering
+
+### Version 20.7 Patch Notes
+
+***
+
+- docks can be minimized once detached from the main window currently disabled on linux
+- all active syndromes are now displayed, divided into 'buffs' and 'ailments' in the tooltip
+- vampcurse and werecurse won't show in the syndrome list when hiding cursed creatures
+- additional options have been added to choose how to display syndromes in the tooltips
+- an option has been added to ensure that your custom roles appear before any default roles in the tooltips and details dock
+- babies will show their age in months where applicable
+- scripts can be used to check for syndromes with d.has_syndrome(syn name or part of name)
+- vampires and werebeasts are highlighted separately from 'other' cursed creatures, who will have a faded highlight
+- multiple scripts can now be applied at the same time
+- the filtering has been changed so that all currently active filters are visible and can be individually removed
+- slightly tweaked the noble/cursed highlighting so if a very dark background is chosen, the text will be a more readable white
+- when grouped by age, units with < 10 years are grouped into single years
+- an option has been added for caste descriptions (was linked with the caste name) in tooltips, since some mods' are getting pretty wordy with their castes' descriptions
+- fixed the crash on exit in windows
+- fixed copy/pasting script stuff
+- if an animal doesn't have a child/baby name, 'offspring'/'baby' is appended to the race name
+- fixed opposed_to_life creatures from showing up in the unit list
+
+### Version 20.6.6 Patch Notes
+
+***
+
+- fix for possessed (no exp) moods
+- fix where the wrong skill was highlighted once an artifact was created, and then another skill was increased higher
+- has_health_issue second parameter is optional
+- toggling labors by column incorporates filters now
+
+### Version 20.6.5 Patch Notes
+
+***
+
+- updated happiness icons
+- caste traits are checked more accurately when determining if 'bins' should be used for role ratings. this results in more precise ratings when traits' min/max isn't changed from the default values.
+- added is_cursed() for scripts
+- skilled labors (above dabbling) can be toggled by row, or by column
+- labors can be cleared or set by column
+- the custom profession section of the right click context menu can be torn off to apply/change them more easily
+- when creating a custom profession from a dwarf, you'll now be prompted to immediately apply the profession to the selected dwarf.
+- added commit/clear to the right click context menu, to allow commit/clear for individual dwarfs
+- aggregate rows now show a number for labors
+- aggregate row titles are bolded
+- grouping is saved/loaded for each individual view
+- added tooltips to column headers
+- added missing tissue damage to health view (broken, gouged)
+
+### Version 20.6.4 Patch Notes
+
+***
+
+- osx memory layout has been completed
+- labour_rating has been renamed to labor_rating for consistency (check your scripts!!)
+- added an additional column to the trait display on the dwarf detail dock for the actual rating.
+- changed the coloring of trait values on the dwarf detail dock to be consistent with attributes etc. (ie. red for low, blue for high)
+- fixed an issue where happiness icons were unintentionally on by default
+- adding a default_gridviews.dtg to the /etc folder allows for replacing the built-in default views by naming the view the same as one of the default built-in views
+
+- adding uniquely named views to a default_gridviews.dtg in the /etc folder will add the additional views as default views
+
+### Version 20.6.3 Patch Notes
+
+***
+
+roles
+- role columns now support changing their column text in custom views. previously the column title had to match the role name.
+- osx support
+
+- merged Tareq's osx patch, the memory layout for 34.11 is included, but is missing the offests for syndromes and the health stuff. still need to update offsets.
+- added Tareq's default font code
+- user interface
+
+- the dwarf details dock now refreshes after a read (if the dwarf can be found)
+- modified the highlight colors in the dwarf details pane (moods, high/low skills etc.)
+- the gradients for nobles, happiness and cursed dwarfs now correctly incorporates the chosen color's alpha channel
+
+scripts
+- exposed the current_job_id() for scripts
+- revamped the script ui to show tabs for the various reference tables
+- added a job reference table
+
+### Version 20.6.2 Patch Notes
+
+***
+
+- updated linux/mac global macros
+- inverted the anger trait
+- updated the forum link
+
+### Version 20.6.1 Patch Notes
+
+***
+
+- v.20.6 updated the project to qt 5.1.1
+- resource file changes
+
+- added new default view for labor (resmar's), health, and adjusted animals
+- designated some traits to be rated inversely when drawn (ie. high depression raw trait value is actually bad)
+- added more job icons
+- fixed a few thought descriptions
+- quality of life improvements and new options
+
+- show/hide the gender icon to the left of the names in the views
+- show/hide 'buffs' in the dwarf tooltip
+- custom gridviews can be set to show animals only
+- ctrl or alt + mouse scroll horizontally scrolls views. home/end can also be used for horizontal scrolling
+- expand/collapse all shortcut keys are displayed
+
+new features
+- beneficial syndromes (buffs) have been added to the dwarf tooltip. (BETA)
+- health information is now available this includes: (BETA)
+- a default health view
+- health section added to the dwarf details pane
+- health legend dock, which allows searching and filtering
+- brief tooltip summary with colors/symbols (all optional)
+- limit showing wound details based on diagnosis (optional)
+- health information for animals (optional)
+
+bug fixes
+- selecting multiple preferences filters correctly
+- migrants who arrive only to be immediately killed should no longer be showing up
+- quickly closing and relaunching another DF game shouldn't break attributes/roles anymore
+- rearranging columns and sets in custom gridviews wouldn't save and/or caused a crashed
+- exporting the current view properly applies any filtering currently on the view
+- naming a custom profession caused a crash
+- optimize button's style adheres to the rest of the toolbar (show/hide button text)
+
+other
+- optimized the loading of creatures
+- optimized material loading
+
+### Version 20.5 Patch Notes
+
+***
+
+- adjusted the descriptions of some of the thoughts which can be positive of negative to read neutrally
+- fixed some default role preferences which required quotes around the names
+- fixed some default role preferences which specified exact matches when they shouldn't
+- fixed the preferences in the role editor which were being specified as exact matches when they shouldn't
+- refactored roles to display their aspects in order of weight, and then name
+- role aspects also always show the weights in the description
+- role aspects are grouped (by weight) into a single comma delimited line when there are more than 3 aspects
+
+### Version 20.4 Patch Notes
+
+***
+
+- fixed the right click menu to assign squads and custom professions
+
+### Version 20.3 Patch Notes
+
+***
+
+- fixed a problem with custom role scripts removing some characters when loading to edit
+- fixed a problem with custom views not showing up for editing in the dock window
+
+### Version 20.2 Patch Notes
+
+***
+
+- fixed typos in game_data.ini and tweaked some job descriptions
+- added trained level column for animals
+- wild caged, trainable (war, hunting, pet, exotic pet) animals will show up in DT now
+- updated default animal view to include profession and trained column
+- removed the 'Stray' description of animals that haven't been named (pets), and removed the trained level in the animal's name
+- fixed invalid groups for animals
+- grouping animals by race and caste work properly and animals can be grouped by profession (to distinguish war/hunt vs untrained)
+- added squad name to the dwarf tooltip (with option) and to the dwarf detail pane
+- fixed anger trait for marksdwarf role
+- renamed numeric drawing mode to text for clarity
+- added functions to check the 'state' values (misc. traits)
+- updated the migrant check to look exclusively at the migrant misc. trait / state
+- split the outdoor preference into it's two levels. they still count as the same preference.
+- fixed role trait ratings being way too high in mods with multiple castes
+- modified the trained column for animals to show symbols when using text drawing mode
+- when drawing in text mode the text is bold
+- fixed a problem where castes without a pop_ratio tag were still showing up, due to the ratio defaulting to 1
+- fixed the progress percent for skills with xp below the first level's max (500)
+- adjusted a few of the explanations/descriptions in the options menu
+- added import/export capability for custom roles
+- added GUI support in the role editor for roles with scripts
+- role columns with scripts now show the first 250 chars of the script
+- added syntax checking for role scripts
+- the recent thoughts dock now shows the total number of a specific thought rather than all names in the tooltip
+- recent thoughts now include how many times they've occurred
+- after refreshing/reading dwarfs the current selection will be reselected
+- when editing roles the estimated values will update automatically when changing the selected dwarf
+- toggling butching highlights the cell border (like toggling labors)
+- caged/butcher columns for animals can be sorted
+- removed the right click menu from animals for squads, custom profs, etc.
+- fixed role preferences sharing weights across custom roles
+- fixed a bug causing a crash when editing custom roles
+- fixed the weapon view from always being added, whether or not it was actually opened by the user
+- fixed current job information being truncated after grouping by current job
+- i think the issue with the group by being set to -1 sometimes is resolved now
+- changed skills to be stored in a hash to speed up finding skill levels
+
+### Version 20.1 Patch Notes
+
+***
+
+- instead of hiding full squads in the menu, they're shown but disabled
+- instead of showing no menu actions at all when no squads are present, a disabled menu explaining that either the dwarf isn't eligible for military duty, or that no squads have been created
+- squad information is refreshed when right clicking on dwarves, to prevent cases where players forget to refresh DT after adding/removing squads
+- added checks to hopefully prevent the group by from selecting nothing
+- the fields in the dwarf details pane will wrap their text now. this stops the dock from resizing when highlighting a dwarf with long descriptions of job, name, noble positions, etc.
+- fixed cursed dwarves not showing their true names and birth year in the tooltip
+- fixed cursed dwarves not showing their fake names correctly
+- fixed typos in the game_data file (roles, items, thoughts)
+
+### Version 20.0 Patch Notes
+
+***
+
+Views
+- added default trait view
+- added alternate social view with related traits which affect the skills
+- modified background of default social view columns to be slightly darker
+- added text and changed the icon of the 'add new grid view' button to make it more obvious
+- added tooltips to the panes when adding new sets/columns to views
+
+Recent Thoughts
+- a dwarf's recent thoughts (most recent first) can be viewed in a dwarf's tooltip, and the happiness cell's tooltip in the grid
+- added an additional dock window to view the population's thoughts with counts and effects on happiness
+
+Custom Professions
+- custom profession icons can now have a background color in addition to an icon and text
+- the default profession icons can be modified by right clicking on them
+- custom profession icons or changed default profession icons now show properly in tooltips, the dwarf pane, etc..
+
+Roles
+- roles now use a weighted average of the interpolated skill level and a simulated rating method which takes into account the dwarf's learning rate for the skill.
+- added an option in the defaults to choose the weight for the skill rates relative to the skill level (only applies with mods with multiple castes)
+- roles now use a weighted average of the attribute's value, and it's potential value
+- added an additional weight for attribute's potential relative to the attribute's value
+
+Skills & Rust
+- default skill rates (100%) aren't shown in the skill tooltips any longer
+- skill rust levels are now shown in varying colors of orange in the tooltip and the dwarf details pane.
+
+Mod Support (Specifically with Multiple Castes)
+- when using multiple castes attribute ratings are determined from a combined method incorporating the caste's frequency, and the attribute's potential
+- when using multiple castes the vanilla trait shifting of the median values is disabled as it seems the raw trait ranges are currently broken
+- additionally the attributes with multiple castes will append the caste name to the descriptor for clarity (ie. very strong for a caste-name-here). this doesn't apply to animals.
+- when not using multiple castes all skill learning rate displays and calculations are disabled and hidden
+- attributes are drawn on an absolute rating now, so you don't need to group by caste to discern values
+
+Groups & Sorting
+- added group by age
+- added group by caste tag (only visible when using mods with multiple castes) with appropriate spoiler warning
+- added sorting by age to the right click menu on the main column
+- sorting while grouping sorts not only the dwarfs in the groups, but the groups themselves (applies to most groupings)
+
+Attributes
+- attributes now show the maximum possible (dwarf specific) in the attribute tooltip and on the dwarf detail pane
+
+Column Sorting
+- columns can be right clicked and the sort method can be changed. this is exclusively for labor/skill columns at the moment
+- the sort type for each column type is saved/loaded when dt quits/starts
+- fixed an issue with the sorting where sorting by the first column wouldn't be remembered after switching tabs
+
+Current Jobs
+- the current job now also shows the material being used. when grouping, the groups are set by the category of job.
+- added a few more job icons
+- fixed a bug where carve fortification wouldn't show up as a job
+
+Labor Optimizer
+- squads can now be excluded from labor optimizations
+
+Skill Legend
+- fixed a bug in the skill legend dock causing a crash
+- the skill legend now draws with the current cell padding and size
+- added a dropdown menu to choose the skill drawing method
+
+Interface & Interaction Changes
+- added global hotkeys for optimize, commit and clear pending changes, CTRL+A now selects all dwarfs in the current view
+- shift+left clicking now works to select a range of dwarfs
+- left clicking and dragging can be used to select multiple dwarfs
+- left clicking and dragging can be used to 'paint' labor cells (toggling labors on/off)
+- the columns in the dwarf details pane are adjustable
+- added 'assign all labors' to the right click menu on dwarfs
+- updated and added icons for the main interface and menus
+
+Other Fixes & Tweaks
+- removed children from role calculations, unless labor cheats are enabled
+- cursed creatures are now read even if they're not vampires or werewolves to support mods like bentfort
+- cursed creature's true name and birth year is now shown in the tooltip, instead of the generic description
+- added support for more types of nobles and they should be highlighted more accurately
+- screenshot current view is working again
+- the growing center box drawing method should be more accurate and consistent
+- drawing with numeric will always show all values, unlike other drawing methods which may hide some
+- changed the default baby profession icon to pink to differentiate from children at a glance
+- updated the script information and added a few more function calls
+- fixed spelling mistakes in the default roles
+- fixed a crash with different versions and window sizes
+- many optimization tweaks
+
+### Version 19.3 Patch Notes
+
+***
+
+- added the conflicting skills and special notes for traits to tooltips, details panel and trait column
+- added checks for skills which are losing experience, which are highlighted in orange in the tooltip and on the details pane
+- tweaked the skill/labor column sorting to weight skill rates and skill level equally
+- skills now show raw levels and correct experience in the tooltips
+- removed test roles from the defaults
+- when a dwarf goes into a mood, the artifact name is hidden until they've actually completed it
+
+### Version 19.2 Patch Notes
+
+***
+
+Skill Rate Experience Bonuses
+- NOTE: the bonus xp information will only be shown if significant skill rates (>125%) are found. this means for vanilla, you won't see any skill bonus information, as normally everything is at 100% (the normal/default)
+- added skill xp rates offset and list to castes
+- roles take into account skill xp rates now, balanced with the skill ratings equally
+- added skill xp rate information on skill related columns, and the dwarf details pane
+- changed the sorting of skill/labor columns to sort on the rating + skill xp bonus when applicable (ie. not role sorting)
+- caste descriptions in the tooltip now list all skills with a skill xp rate > 25%
+
+Fixes & Tweaks
+- adjusted formatting on labor, skill and highest moodable columns
+- the counts on the labor column headers are now padded to 2 places (ie. 09)
+- adjusted the starting location of the header text when drawing from top to bottom (default) so it's nearer to the top edge
+- added missing military tactics skill
+- fixed bug where clearing the model's data/rows reset the scroll positions
+- fixed the happiness column drawing black squares on load
+- fixed alchemy labor column
+- fixed background color of the default ambusher column
+- fixed crash when editing labor optimization plan when opening the context menu
+
+### Version 19.1 Patch Notes
+
+***
+
+- added a check in linux for multiple dwarf fortress processes
+- fixed broken leader/manager default role
+- fixed highest moodable skill name to show 'Craftsdwarf' instead of 'Unknown' when a dwarf doesn't have a specific skill
+
+### Version 19.0 Patch Notes
+
+***
+
+Interface Changes
+- the grid now adheres to the cell size/padding set in the options properly
+- increased the line thickness of the dirty border so it's more visible
+- updated the group by dropdown to show all items rather than only 10
+- added options for global font and global tooltip font
+
+Moodable Skills & Artifacts
+- new options have been added to highlight moodable skill cells and which colors to highlight with
+- added moodable skill information on labor, skill and dwarf tooltips
+- added a new column to show moodable skill icons and whether or not they've already had a skill
+
+Role Changes
+- preferences can now be added to roles. these can either be specific things (Oak trees) or categories (Weapons)
+- updated all built in roles to include core/basic preferences.
+- when editing/adding roles the currently selected dwarf is shown as an example to aid in setting weights
+
+Tooltip Changes
+- added a set of options to choose what is displayed in the tooltip (hovering over dwarf)
+- replaced the show dabbling skills option with a dropdown to select a minimum skill level to show
+- added gender and profession icons to the dwarf details pane and the tooltips (tooltip icons can be turned off in the options)
+
+Profession & Job Changes
+- added new job icon for fishing, updated fell tree icon
+- added a new column to show profession icons (icons courtesy of NW_Kohaku, thanks!)
+- custom professions can now have customized icons/text which will replace the default profession icons
+
+Fixes
+- final optimization tweaks and a few important bug fixes to optimizations
+- fixed a case where merchants could show up as part of the fortress population prior to entering the map
+- fixed a couple broken default roles
+- fixed the missing custom profession properties which weren't being exported properly
+- fixed a bug on some linux systems with the optimizer's std::sort
+- fixed most memory leaks (still a few left)
+- fixed editing roles not setting the correct default weights
+- cursed animals are excluded properly
+- merchants who also appear as migrants won't show up anymore
+
+### v18.1 (DF 34.07 - DF 34.11 Windows SDL & Linux) 
+
+***
+
+- optimization feature bug fixes
+- fix for 'wood' showing up in different languages
+
+### v18.0
+
+***
+
+- new labor optimization feature (optimization algorithm courtesy of Thistleknot)
+- added search box to preference window
+- new file menu action to export the current view to csv (Shishimaru)
+- added new action to the grid context menu to clear the labors of currently selected dwarves
+- added a selection count in the bottom status bar
+- the preference dock now distinguishes between preferences of the same name, but different categories
+- clearing pending changes now updates column headers appropriately
+- exiting custom role editing by clicking on the window's X no longer removes the role from the list
+- sorting first column when grouped by profession works properly now
+
+### v17.0 (DF 34.07 - DF 34.11 Windows SDL & Linux) 
+
+***
+
+- added preferences (materials, items, food, drink etc.)
+- added a new table to the dwarf details pane to show preferences
+- added a new dockable window showing preferences and their respective counts
+- fixed a bug finding the highest moodable skill
+
+### v16.0 (DF 34.07 - DF 34.11 Windows SDL & Linux) >>DOWNLOAD<<
+
+***
+
+- fixed linux flags for merchants, merchant guards, etc
+- adult body size is read from caste now
+- weapons are read from memory now rather than the raws
+- added grouping by moodable skill
+- highest moodable skill is highlighted in the dwarf details pane
+- added a menu to remove filter scripts
+- editing filter scripts now also allows editing of the script name
+- added an option to sort by roles in labour columns
+- added an option to sort by roles in skills columns
+- added an option to synchronize scrolling between all views
+- added an option to synchronize grouping between all views
+- added a tooltip on squad groups to explain the difference in counts when DF still has dead/missing dwarves in squads
+- fixed squad assignment/removal bugs
+- fixed curse highlighting for various levels of vampires (lesser vampire, etc.)
+- fixed hidden castes from showing up with the id number rather than the caste name
+- fixed low level skills not drawing properly
+
+### v15.3 (DF 34.07 - DF 34.11 Windows SDL & Linux) >>DOWNLOAD<<
+
+***
+
+- fixed incorrect italicized dwarf names
+- fixed vertical scrollbar not scrolling to last position after a read
+- added weapon and dwarf sizes to weapon column tooltips
+
+### v15.2
+
+***
+
+- fixed performance issues when changing multiple labors on multiple dwarves at once (this includes custom professions)
+- fixed crash when attempting to set labors immediately after committing pending changes
+- noble positions can be checked from scripts with d.noble_position()
+
+### v15.1
+
+***
+
+- quick fix for nickname problem
+
+### v15.0
+
+***
+
+- all nobles (including lords/ladies) should be identified properly now
+- fixed the issue with the views going blank after assigning/removing from squads
+- added tooltips to labor column headers showing how many dwarves currently have the labor enabled
+- added an additional option to show the enabled labor count on the column header name ie. 5 Mining
+- added an option to ignore exclusive labors
+- about dialog shows branch version
+- adjusted the dwarf details pane gui
+- updated starting fight icon
+- changed rest icon
+- changed party icon to balloons
+- added brew icon
+- can use d.noble_position() for script purposes
+
+### v14 (DF 34.07 - DF 34.11 Windows SDL & Linux)
+
+***
+
+- added new default military-alt view which includes roles
+- added teacher, student, armor, shield roles to default military tab
+- added option to apply gradients on happiness, job and enabled labor cells
+- grids/views remember their group setting
+- added/updated sleep, beer icon
+- fixed milking job icon
+- added options to show role information in skill columns
+- column header text is always centered
+- added option to set column header font used
+- cell drawing squares are centered again properly
+- fixed cell drawing/painting borders, sizes
+- pets are no longer butcherable, indicated by a red shaded square
+- DF connection test will occur immediately now
+- on break and idle will sort/group properly
+- fixed a bug causing the details pane to show multiple dwarf details
+- fixed role sorting in context menus
+- when changing a nickname the current nickname is shown in the input box
+- dwarf name on the details pane is word wrapped
+- see commit log for offset changes
+
+### v13 (DF 34.07 - DF 34.11 Windows SDL & Linux)
+
+***
+
+- added new current job icons (work in progress, i'm not completely satisfied with them)
+- if the cell size is larger than the job/happiness icon, the icon will be centered rather than stretched
+- added icons for happiness with menu option to enable/disable them
+- nobles are italicized and marked with the masterwork symbol
+- new option to highlight nobles and choose colors
+- added color chooser for the curse color when highlighting cursed dwarves
+- noble positions added to tooltip and dwarf detail pane
+- grid header columns now use the same font as defined for the grid (this may require it's own font option, i'll wait on feedback)
+- the squad list now only shows only the active squads
+- tabs/views remember sort and scroll positions (tab/view specific)
+- added gradients to current job cells, happiness cells, happiness label
+- fixed some text/background contrast issues
+- fixed cell padding
+- cursed highlighting works on linux now
+- added a message to check military screen after adding/removing a squad leader
+- see commit log for offset changes
+
+### v12 (DF 34.07 - DF 34.10 Windows SDL & Linux)
+
+***
+
+- renamed traits to match the wiki/token names
+- fixed a few job names
+- castes, races and reactions loading optimized
+- dwarfs can be assigned/removed from squads via right-click menu on views. you can assign/remove multiple dwarfs at once. this is done immediately and if grouping by squad the view will be refreshed automatically. only squads with positions available are shown. there may be some invalid squads, i haven't sorted out a way to filter them yet.
+- squads can be renamed via right click menu on views (when grouping by squad)
+- when grouping by squad, squads are sorted by position, captains are italicized and prefixed with *
+- vampires now show their fake names/ages to match DF
+- nicknames are now set properly and won't disappear after notable kills
+- animals can be grouped on caste
+- grouping animals on race groups by the race name, then child/baby name: dog (puppy)
+- grouping on migration wave will properly hide child/baby groups according to options
+- fixed improperly drawn sort arrow on first column for linux
+- fixed nicknames applying even after clicking cancel
+- added some additional flags to filter out dwarfs (courtesy of ag, i haven't tested them)
+
+
+### v11.1 (DF 34.08 - DF 34.10 SDL)
+
+***
+
+- fixed labor column sorting when there are no related roles - added swimmer skill column to military default view
+- applied ag's linux patch for nicknames and performance issues on linux
+- fixed a bug with modded games (masterwork) showing tame animals as hostile
+- added missing linux offsets to layout files
+- some squad loading optimization
+- fixed a bug on linux regarding the active vs full unit list offsets (they now have their own separate offsets)
+- added missing roles (bowyer, cheesemaker, trapper, small animal dissector, dyer, fish cleaner, fish dissector, clothier, siege engineer)
+- included the fix for conflicting labors (hunting/mining/woodcutting)
+- attribute description ranges, and drawing icon (ie. 'strong', 'very strong'..) are based on caste values now. columns are still sorted on the absolute value, however the description and the drawing icon (square, number..) are relative to the caste. essentially this means for modders the descriptions in DT will match those in game.
+- castes, races and reactions are read from memory now to give more accurate and correct race/reaction descriptions
+- you can now CTRL+left click dwarfs to select them, and then toggle multiple labors at once
+- ESC now deselects all currently selected dwarfs
+- added an option under roles to show role ratings in labor columns. this additionally changes the sorting of labor columns to sort by labor enabled and then role rating so the dwarfs with the labor enabled are still shown on top
+- fixed role trait ratings and tweaked accuracy
+- migration issues completely resolved now, and grouping by migration wave shows season and year of arrival/birth
+- custom animal views can show animal attributes (ensure your custom view starts with Animals
+- active unit lists are used instead of the full list, which should resolve issues like kidnapped babies, etc..
+
+### v10.3 (DF 34.04 - DF 34.08) >>DOWNLOAD<<
+
+***
+
+- added new jobs and minecart hauling labors
+- added new minecart labor to default views
+- updated memory offsets and added new layout files
+- always show animal children regardles of options
+- fixed role display/editing bugs
+- now hides hostile/wild animals
+- shows how trained animals are in the names on the animals tab
+- counts show up for animals now
+- added animal type offsets
+- updated linux offsets for turn count
+- babies are excluded from role calculations now and added a tooltip on roles for babies saying just that
+- children are only included in role calculations if they're shown
+- threaded the heavy role calc work (well most of it)
+- fixed some custom role editing bugs
+- changed the migrant check back to the previous flag checks, misc traits don't seem to work for it 
+
+Roles
+- added user interface for custom roles (scripts not supported)
+- added top roles in dwarf tooltip (number can be set in options)
+- the number of roles in the dwarf detail pane can be set in the options now
+- modified the way roles ratings are calculated again. it now rates aspects on more static/absolute values and then ranks dwarves according to each other. due to this the mean/stdev/etc. functions are no longer available for scripts as they're no longer calculated. (thanks to thistleknot, thuvian and dreiche2 for your help on this)
+- more default roles have been added/adjusted
+
+Interface
+- all the tables in the dwarf details pane can be re-sized or hidden and settings are saved
+- the population count now displays a breakdown of adults/children/babies including a tooltip with totals
+- sort direction/column for the tables in the dwarf details pane is remembered
+- fixed more sorting issues on menus and more menus have tear-off enabled
+- fixed some minor drawing issues
+- custom professions can now be marked as being a mask. if set as a mask they will only add labours
+- made some adjustments to the progress bar on the bottom and messages
+- tweaked trait/skill/role tooltips
+- when editing custom views you don't have to find white space to add columns anymore
+- added a tooltip to the version message at the bottom right which shows the path of the file being used (for those who make copies in the layout folder...)
+
+Weapon Columns
+- a new type of column has been added to compare a dwarf's size to the requirements of weapons to aid in determining which dwarves can use which weapons
+- all weapons are read from the raws and are automatically grouped by sizes and added to their own view
+- additionally, if there are 10 or less grouped weapon columns, it will append it to the military view as well
+- an indicator and tooltip is shown for whether or not the dwarf can one-hand, two-hand or is unable to use the weapons in the group
+- individual weapon columns can also be added just like other columns. This doesn't apply for the grouped columns as they're generated dynamically on load. If there's enough demand I'll look into making them available
+
+Other/Fixes
+- migration waves should be grouping dwarves properly (courtesy of Shishimar)
+- added another check for corpse/zombies to ensure they don't show up in DT
+- traits are capped at 0 and 100 for those few crazy values that sometimes occur
+- if not showing cursed dwarves, the 'drinking blood' job is changed to 'drink'
+- added linux layout for 34.07
+
+### v9.1 (DF 34.04 - DF 34.07)
+
+***
+
+- added layouts for 34.07
+- added layouts for 34.06
+- slightly tweaked the role formula once again for even shinier results
+- fixed the sorting by name 
+
+### v8 (DF 34.04 - DF 34.05)
+
+***
+
+- removed the labels for strength, agility, etc. on the dwarf details pane, and added a new table for attributes similar to traits and skills.
+- modified the role rating system, it should be much more accurate now (credit to Thistleknot)
+- added attribute, trait and skills global weights to the options
+- after saving options, you are now prompted to read the dwarves again, as most options require a read.
+- added many more default roles
+- changed the syntax of custom roles. see the game_data.ini for plenty of examples
+- updated all craft related roles to weigh creativity the most
+- custom roles have been moved to the dwarf therapist.ini. they should be added under the [custom_roles] heading
+- custom roles can now override a default role column if it is given the same name
+- d.skill_mean(id), d.skill_stdev(id), d.trait_mean(id), d.trait_stdev(id) have been added for scripting purposes
+- scripted role columns will now draw correctly as long as the value is between 0 and 100
+- all menus when adding columns to custom views can be 'torn off' to aid in adding many columns at once (click the --- line at the top to tear off)
+- fixed changed/missing current jobs
+- migrants not on the map yet will show up in DT again
+
+### v7 (DF 34.04 - DF 34.05)
+
+***
+
+- castes are working and additionally they're read from the [CASTE_NAME] raw tag so modders can utilize the feature (thanks meph!)
+- fixed merchants' guards showing up in dt (reported by alagon)
+- 'on break' now works properly and is identified with a blue dot, as opposed to the 'idle' red dot, and groups properly
+- the edit script window now works
+- slightly darkened some text for readability
+- removed the average attribute descriptions
+- added skill and attribute reference tables, and sorted traits in the filter scripts window
+- added standard deviation and mean script functions for attributes
+- added skill rating function for scripts
+- trait columns now draw their values properly (same as attributes)
+- added 36 default role columns, with default weights of 1.25 for traits, 0.75 for skills, and 0.25 for attributes (modifiable in the game_data.ini)
+
+Guide to Roles
+Q. How does the weighting work?
+A. Weights come in two main categories: individually or globally. Individual weights are placed on individual aspects (trait, attribute, skill) and give them value relative to the others in the group. For example, if you wanted strength to be worth more than agility relative to attributes, you would give strength a higher weight.
+
+The second category is for the global weights. These are applied to each of the 3 aspect groups (attributes, skills and traits) after individual weights are applied. Essentially this is like saying, for example: "I would like attributes, in general, to be worth more than traits". 
+
+Q. How do I add a custom role?
+A. Navigate to your Dwarf Therapist.ini file. Append [custom_roles] to the end of the file if it's not already there. Within this section is where you can define custom roles. The first line should be size=x, where x is the number of custom roles you have. Finally add the aspects for the roles. Here is an example of a chief medical dwarf: 
+
+1/name="Chief Medical"
+1/attributes_weight=1.0 (optional weight for the attributes group, if not supplied will use value in options)
+1/skills_weight=1.0 (optional weight for the skills group, if not supplied will use value in options)
+1/traits_weight=1.0 (optional weight for the traits group, if not supplied will use value in options)
+1/attributes/size=3 (number of attributes)
+1/attributes/1/id=analytical ability
+1/attributes/1/weight=0.5 (optional individual weight)
+1/attributes/2/id=memory
+1/attributes/3/id=intuition
+1/skills/size=1 (number of skills)
+1/skills/1/id=60
+1/traits/size = 2 (number of traits)
+1/traits/1/id=20
+1/traits/2/id=23
+
+Notes:
+You can look up trait and skill id numbers by opening the script->new script menu. The right side contains reference tables.
+The 1 at the beginning of the line is the role's index or id. The next custom role added to this list would replace all 1/ at the beginning with 2/. 
+
+Q. How do I create a custom role that uses a script?
+A. You add these the same as a regular custom role, however you leave out all the attribute/trait/skill sections and simply add a script="" area. For example:
+1/name="Script Column"
+1/script="your script here"
+
+Note that you should not use scripts that have comparison operators (<, >, >=, =) and do not put comments in the script. The script should result in a value for each dwarf. 
+
+Q. How do I value an aspect inversely? (ie. less strength is better)
+A. Simply add a - sign before the id of the attribute, skill or trait. For example:
+1/name="Weak Dwarf"
+1/attributes/size=1
+1/attributes/1/id=-strength
+
+Q. How do I replace one of the default roles in the Roles view?
+A.Simply add a custom role with the same name. It will be used in place of the default role on the Roles tab with that name.
+
+Additional Role Information:
+
+Role columns allow users to specify which aspects (attributes, traits and skills) they would like associated with a particular role. these roles can be weighted on the individual elements, as well as the groups. syntax for creating roles is as follows:
+
+<number>/name="<role name>" <number>/attributes="<attribute group weight>::<attribute name 1>:<individual weight 1>, <attribute name 2>:<individual weight 2>..."
+<number>/skills="<skill group weight>::<skill id 1>:<individual weight 1>, <skill id 2>:<individual weight 2>..."
+<number>/traits="<trait group weight>::<trait id 1>:<individual weight 1>, <trait id 2>:<individual weight 2>"
+<number>/script=""
+
+script is optional and will be used instead of any aspects, so it's either a script, or aspects.
+
+Examples:
+
+Chief Medical Dwarf with attributes: analytical, memory and intuition, traits: helpfulness and compassion, and skills: diagnostician
+1/name="Chief Medical"
+1/attributes="0.25::analytical ability:1.0, memory:1.0, intuition:1.0"
+1/skills="0.75::60:1.0"
+1/traits="1.25::20:1.0, 23:1.0"
+Weak Lawdwarf (hammerer that has less chance to kill)
+36/name="Lawdwarf (Weak)"
+36/attributes="0.25::-strength,-agility,-endurance"
+36/traits="1.25::-1"
+36/skills=""
+here we use the - to denote that we don't want these aspects, so this will rate the weakest dwarf, not prone to anger as the best choice for a weak lawdwarf.
+
+all the id numbers can be found in the game_data.ini, or if you create a new script via the menu, there are tables there as well. 
+
+### v6 (DF 34.04 - DF 34.05)
+
+***
+
+- modified attributes to only show above/below the average (chrisadams3997) and color those attributes below in red
+- altered the attribute levels to range from -15 to 15 to keep drawing consistent and make it obvious when using numeric display
+- cursed dwarves other than vampires and werebeasts will no longer show up (looking at you profane husks!)
+- added an option to highlight cursed dwarves (vampires and werebeasts)
+- added some test code to find assumed identities of vampires, but no luck yet
+- added preliminary files for 34.05 (incomplete)
+
+### v5 (DF 34.04)
+
+***
+
+- fixed attribute ranges/descriptions for real
+- code cleanup
+- kidnapped babies shouldn't show up anymore (untested)
+- altered low range threshold for some attributes where it appears to be 252 rather than 250
+- disabled the auto-updating on this branch so the altered ini files aren't overwritten
+
+### v4 (DF 34.04)
+
+***
+
+- fixed attribute ranges
+- added attribute description for missing ranges
+- added invalid flag to check for ghosts
+- berserk/raving dwarves no longer show up
+- fixed a bug where dwarves which should have shown up weren't
+- fixed castes (untested)
+- fixed sex offset
+- fixed animal tab availability
+- fixed display bug in tooltips for attributes
+- added offset for curse (can be used to find vampires)
+- added offset for moods
+- added offset for castes
+- fixed bug where after the initial load the dwarf count was way off until another tab was selected
+- updated code for physical and mental attributes to read as an array rather than storing an offset for each one
+
+
+### v3 (DF 34.03-34.04)
+
+***
+
+- fixed issues with mental attributes and their level/ratings not aligning properly
+- added offsets for 34.03 and 34.04 and respective files
+- updated offsets for mental attributes
+
+### v2 (DF 34.01-34.02)
+
+***
+
+- added mental attribute offsets (willpower, musicality, etc..)
+- added new default view/tab for attributes
+- added option to draw the column headers from top to bottom
+- fixed a bug when applying filters while hiding children/babies
+- slightly tweaked the threshold for traits so more of them are visible
+- included the current year offset so ages show up properly
+
+### v1 (DF 34.01)
+
+***
+
+- adds strength, agility, toughness, endurance and disease resistance
+- updated attribute columns to draw based on user settings (numbers, growing boxes, etc.)
+- modified the scaling on attributes to better utilize the draw types (for example with growing boxes the highest attribute will show a diamond, the lowest the tiny square)
+- updated the default views to include all attributes on the military tab
+- updated the default views to show "Average" instead of a blank for attribute values that fall close to the mean
+- seems like animals are also working but it shows hidden and merchant animals as well, haven't really tested it
+- adds the ability to set nicknames to multiple dwarves at once
+
+
+
+
 RELEASE 0.6.12 (February 18, 2012)
 CHANGES SINCE 0.6.11
 ===============================================================================
@@ -35,9 +928,9 @@ CHANGES SINCE 0.6.8
 MAJOR CHANGES:
  * Support for most new job types (with icons!)
  * Support for automatic downloading of layout files. 
-		(Can be disabled by disabling the version check in preferences)
+      (Can be disabled by disabling the version check in preferences)
  * This is the first version of Dwarf Therapist that reads RAW files, so please 
-		post any issues found
+      post any issues found
 
  BUG FIXES:
  * Fixed issue 313 - Stuck loading squads on older versions of Dwarf Fortress
@@ -84,10 +977,10 @@ MAJOR CHANGES:
  * Support for 0.31.17 (graphics + legacy versions)
  * Fixed Dwarf Race Index scanning on linux
  * Added a new Layout Wizard feature for creating new layouts
-	Basically, when you get the version not found message, click ok, connect, then
-	scan memory.  From there, click the Create New Layout, type in the new version and filename, and
-	select the most recent file.  If the dwarf offsets haven't change, it should generate the layout
-	for you automatically.  Follow instructions in GUI.
+   Basically, when you get the version not found message, click ok, connect, then
+   scan memory.  From there, click the Create New Layout, type in the new version and filename, and
+   select the most recent file.  If the dwarf offsets haven't change, it should generate the layout
+   for you automatically.  Follow instructions in GUI.
  * Fixed issue 295 - Importing asks for incorrect file extension
 
 RELEASE 0.6.4 (October 4, 2010)
@@ -130,7 +1023,7 @@ CHANGES SINCE 0.5.7
 MAJOR CHANGES:
  * Support for 0.31.13 (graphics + legacy versions)
  * NOTE: Release 0.6.0 will only support Dwarf fortress 0.31.13 and above *
-	* Support for previous versions may be added in a future release *
+   * Support for previous versions may be added in a future release *
 
 
 RELEASE 0.5.7 (July 13, 2010)
@@ -383,27 +1276,27 @@ RELEASE 0.3.2 (September 13, 2009)
 CHANGES SINCE 0.3.1
 ===============================================================================
 MAJOR CHANGES:
-	* added support for 40d15 & 40d16 on Windows
-	* re-implemented experience display. Tooltips now show experience as: 
-	  "current/nextlevel (%progress)" (issue 67)
-	* Fixed up tooltips for skill and labor columns to nicely show skills with 
-	  true level and experience (issues 75,77)
-	* Fixed the window finding issues on XP and Vista (Thanks to Guhndahb and 
-	  0x517A5D) 
+   * added support for 40d15 & 40d16 on Windows
+   * re-implemented experience display. Tooltips now show experience as: 
+     "current/nextlevel (%progress)" (issue 67)
+   * Fixed up tooltips for skill and labor columns to nicely show skills with 
+     true level and experience (issues 75,77)
+   * Fixed the window finding issues on XP and Vista (Thanks to Guhndahb and 
+     0x517A5D) 
 MINOR CHANGES:
-	* Added non-labor setting professions (child, baby, noble etc...) This 
-	  should keep users from setting illegal labors (issue 60)
-	* tooltips now show the generic translation of a dwarf's name (issues 68, 
-	  70, 76)
-	* fixed a bug where the translation tables were read despite having 0 values
-	  (issues 68, 70, 76)
-	* Labor changes not added if Read Dwarves is pressed before Commit Changes 
-	  (issue 69)
-	* Got rid of both library dependencies on both windows and linux (they are 
-	  statically compiled in making building easier)
-	* Windows now maps memory segments the same way linux does, this prevents 
-	  access violations etc..., making sure we only read known committed 
-	  readable memory segments
+   * Added non-labor setting professions (child, baby, noble etc...) This 
+     should keep users from setting illegal labors (issue 60)
+   * tooltips now show the generic translation of a dwarf's name (issues 68, 
+     70, 76)
+   * fixed a bug where the translation tables were read despite having 0 values
+     (issues 68, 70, 76)
+   * Labor changes not added if Read Dwarves is pressed before Commit Changes 
+     (issue 69)
+   * Got rid of both library dependencies on both windows and linux (they are 
+     statically compiled in making building easier)
+   * Windows now maps memory segments the same way linux does, this prevents 
+     access violations etc..., making sure we only read known committed 
+     readable memory segments
 FEATURE REQUESTS:
  * Added option to show full dwarf names in the options menu (requires 
    re-reading the dwarfs due to caching) (issue 66)
@@ -419,7 +1312,7 @@ FEATURE REQUESTS:
  * Skill objects now default to a -1 rating instead of 0 (this was causing a 
    merge between dabbling and 0 experience) (issues 75,77)
  * reworked the dwarf tooltips (show profession in tooltip) (issues 68, 70, 
-	 76)
+    76)
  
 
 RELEASE 0.3.1 (August 19, 2009)
@@ -443,15 +1336,15 @@ CHANGES SINCE 0.3.0
    underneath
  * Fixed a bug where the Viewmanager would try to draw tabs with invalid indexes
  * (Fixed issue 55): Confirm overwrite if View or Set name exists
-	 This dialog only pops up when you aren't editing. To prevent accidental 
-	 clobbering.
-	 Cases where it shows up:
-		 Edit View1, change the name to View2(which already exists)
-		 New view, change the name to View2(which already exists)
-		 Will not show up on edit if the original name was View3 and you save it as 
-		   View3.
-	 Since it doesn't show up in the general case, I've opted to not implement 
-	 the "don't ask me again" checkbox
+    This dialog only pops up when you aren't editing. To prevent accidental 
+    clobbering.
+    Cases where it shows up:
+       Edit View1, change the name to View2(which already exists)
+       New view, change the name to View2(which already exists)
+       Will not show up on edit if the original name was View3 and you save it as 
+         View3.
+    Since it doesn't show up in the general case, I've opted to not implement 
+    the "don't ask me again" checkbox
  * (Fixed issue 54) Blank name is allowed for set name
  * (Fixed issue 53) Main window doesn't show changes after changing group by
  * generic_useless.ini set wasn't correct, so I removed it

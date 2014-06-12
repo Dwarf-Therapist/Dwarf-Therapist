@@ -241,7 +241,9 @@ HEADERS += inc/win_structs.h \
     inc/itemarmorsubtype.h \
     inc/itemammosubtype.h \
     inc/itemweaponsubtype.h \
-    inc/cp437codec.h
+    inc/cp437codec.h \
+    inc/rolestats.h \
+    inc/ecdf.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -322,7 +324,8 @@ SOURCES += src/viewmanager.cpp \
     src/grid_view/itemtypecolumn.cpp \
     src/item.cpp \
     src/uniform.cpp \
-    src/itemweaponsubtype.cpp
+    src/itemweaponsubtype.cpp \
+    src/ecdf.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \
