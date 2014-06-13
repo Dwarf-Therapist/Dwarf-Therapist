@@ -325,7 +325,8 @@ SOURCES += src/viewmanager.cpp \
     src/item.cpp \
     src/uniform.cpp \
     src/itemweaponsubtype.cpp \
-    src/ecdf.cpp
+    src/ecdf.cpp \
+    src/rolestats.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

@@ -169,34 +169,8 @@ void LaborOptimizer::adjust_ratings(){
         }
     }
 
-    //sort by the mean and find the min/max and log of the difference
     qSort(m_role_stats.begin(),m_role_stats.end(),&RoleStats::sort_means);
-//    double max_mean = m_role_stats.first()->get_mean();
-//    double min_mean = m_role_stats.last()->get_mean();
-//    double log_mean_diff = log(max_mean-min_mean);
-
     num_roles = m_role_stats.count();
-//    int rank = num_roles;
-//    double max_rank_log_mean = 0.0;
-//    //set the inverted rank based on the mean of the role's ratings
-//    foreach(RoleStats *rs, m_role_stats){
-//        rs->set_mean_rank(rank,num_roles);
-//        rank--;
-//        if(rs->get_rank_log_mean() > max_rank_log_mean)
-//            max_rank_log_mean = rs->get_rank_log_mean();
-//    }
-//    //use the above values to calculate the base priority for each role
-//    foreach(RoleStats *rs, m_role_stats){
-//        rs->calc_priority_adjustment(log_mean_diff,max_rank_log_mean);
-//    }
-//    //finally adjust the raw role ratings for each dwarf for this optimization plan
-//    foreach(Dwarf *d, m_dwarfs){
-//        foreach(RoleStats *rs, m_role_stats){
-//            d->set_adjusted_role_rating(rs->role_name(), m_role_stats_by_name.value(rs->role_name())->adjust_role_rating(d->get_role_rating(rs->role_name(),true))*100.0f);
-//        }
-//    }
-
-
     int rank = 1;
     foreach(RoleStats *rs, m_role_stats){
         rs->calc_priority_adjustment(num_roles, rank);
@@ -205,7 +179,6 @@ void LaborOptimizer::adjust_ratings(){
         }
         rank ++;
     }
-
 
     qDeleteAll(m_role_stats);
     m_role_stats.clear();
