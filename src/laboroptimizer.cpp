@@ -147,51 +147,69 @@ void LaborOptimizer::calc_population(bool load_labor_map){
 void LaborOptimizer::adjust_ratings(){
     QList<RoleStats*> m_role_stats;
     QHash<QString, RoleStats*> m_role_stats_by_name;
-
-    int num_roles = 0;
-
     RoleStats *rs;
+    int num_roles = 0;
+    double total = 0.0;
+
+    //loop through each unique role, and load up the ratings into stat objects
     foreach(PlanDetail *det, plan->plan_details){
-        if(!m_role_stats_by_name.contains(det->role_name)){
+        if(!det->role_name.trimmed().isEmpty() && !m_role_stats_by_name.contains(det->role_name)){
             rs = new RoleStats(det->role_name);
-            double mean = 0.0;
-            int count = 0;
-            foreach(Dwarf *d, m_dwarfs){
-                count ++;
+            total = 0;
+            foreach(Dwarf *d, m_dwarfs){                
                 double rating = d->get_role_rating(det->role_name,true);
-                mean += rating;
+                total += rating;
                 rs->add_rating(rating);
             }
-            rs->set_mean(mean / (double)count);
+            //since we're looping through all the ratings now anyway
+            //set the mean of the raw ratings at the same time
+            rs->set_mean(total / (double)m_dwarfs.count());
             m_role_stats.append(rs);
             m_role_stats_by_name.insert(det->role_name,rs);
         }
     }
 
+    //sort by the mean and find the min/max and log of the difference
     qSort(m_role_stats.begin(),m_role_stats.end(),&RoleStats::sort_means);
-    double max_mean = m_role_stats.first()->get_mean();
-    double min_mean = m_role_stats.last()->get_mean();
-    double log_mean_diff = log(max_mean-min_mean);
+//    double max_mean = m_role_stats.first()->get_mean();
+//    double min_mean = m_role_stats.last()->get_mean();
+//    double log_mean_diff = log(max_mean-min_mean);
 
     num_roles = m_role_stats.count();
-    int rank = num_roles;
-    double max_rank_log_mean = 0.0;
+//    int rank = num_roles;
+//    double max_rank_log_mean = 0.0;
+//    //set the inverted rank based on the mean of the role's ratings
+//    foreach(RoleStats *rs, m_role_stats){
+//        rs->set_mean_rank(rank,num_roles);
+//        rank--;
+//        if(rs->get_rank_log_mean() > max_rank_log_mean)
+//            max_rank_log_mean = rs->get_rank_log_mean();
+//    }
+//    //use the above values to calculate the base priority for each role
+//    foreach(RoleStats *rs, m_role_stats){
+//        rs->calc_priority_adjustment(log_mean_diff,max_rank_log_mean);
+//    }
+//    //finally adjust the raw role ratings for each dwarf for this optimization plan
+//    foreach(Dwarf *d, m_dwarfs){
+//        foreach(RoleStats *rs, m_role_stats){
+//            d->set_adjusted_role_rating(rs->role_name(), m_role_stats_by_name.value(rs->role_name())->adjust_role_rating(d->get_role_rating(rs->role_name(),true))*100.0f);
+//        }
+//    }
+
+
+    int rank = 1;
     foreach(RoleStats *rs, m_role_stats){
-        rs->set_mean_rank(rank,num_roles);
-        rank--;
-        if(rs->get_rank_log_mean() > max_rank_log_mean)
-            max_rank_log_mean = rs->get_rank_log_mean();
-    }
-    foreach(RoleStats *rs, m_role_stats){
-        rs->calc_priority_adjustment(log_mean_diff,max_rank_log_mean);
-        //m_role_stats_by_name.insert(rs->role_name(),rs);
+        rs->calc_priority_adjustment(num_roles, rank);
+        foreach(Dwarf *d, m_dwarfs){
+            d->set_adjusted_role_rating(rs->role_name(), m_role_stats_by_name.value(rs->role_name())->adjust_role_rating(d->get_role_rating(rs->role_name(),true))*100.0f);
+        }
+        rank ++;
     }
 
-    foreach(Dwarf *d, m_dwarfs){
-        foreach(RoleStats *rs, m_role_stats){
-            d->set_adjusted_role_rating(rs->role_name(), m_role_stats_by_name.value(rs->role_name())->adjusted_role_rating(d->get_role_rating(rs->role_name(),true))*100.0f);
-        }
-    }
+
+    qDeleteAll(m_role_stats);
+    m_role_stats.clear();
+    m_role_stats_by_name.clear();
 }
 
 void LaborOptimizer::optimize_labors(QList<Dwarf*> dwarfs){

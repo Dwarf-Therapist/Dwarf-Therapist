@@ -32,7 +32,7 @@
   private:
     QVector<double> m_sorted;
     QVector<double>::const_iterator b, e;
-    double n;
+    double n;    
   };
 
 #endif // ECDF_H
