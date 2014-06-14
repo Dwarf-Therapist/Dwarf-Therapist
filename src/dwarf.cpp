@@ -2506,6 +2506,8 @@ float Dwarf::calc_role_rating(Role *m_role){
 
             s = this->get_skill(skill_id.toInt());
             aspect_value = s.capped_level_precise() / 20.0f;
+            if(aspect_value < 0)
+                aspect_value = 0;
 
             if(DT->show_skill_learn_rates){
                 //use a weighted average of the level and simulated xp rating

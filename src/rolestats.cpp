@@ -52,23 +52,23 @@ void RoleStats::calc_priority_adjustment(int total_roles, int rank){
 }
 
 double RoleStats::adjust_role_rating(double raw_role_rating){
+    double new_rating = 0.0;
     if(m_use_alt_conversion){
+        if((m_max_rating - m_min_rating) != 0)
+            new_rating = (raw_role_rating - m_min_rating) / (m_max_rating-m_min_rating);
         if(raw_role_rating > 0){
-            LOGD << "*** Using alternate adjustment for role " << m_role_name
-                 << " raw rating " << raw_role_rating << " new rating:" << ((raw_role_rating - m_min_rating) / (m_max_rating-m_min_rating));
+            LOGD << "*** Using alternate adjustment for role " << m_role_name << " raw rating " << raw_role_rating << " new rating:" << new_rating;
         }
-        return ((raw_role_rating - m_min_rating) / (m_max_rating-m_min_rating));
     }else{
-        return (get_ecdf_rating(raw_role_rating) * m_priority_adjustment);
+        new_rating = get_ecdf_rating(raw_role_rating) * m_priority_adjustment;
     }
+    return new_rating;
 }
 
 void RoleStats::load_ecdf_data(){
     m_ecdf = new ECDF(m_ratings);
     m_max_rating = m_ecdf->sorted_data().last();
     m_min_rating = m_ecdf->sorted_data().first();
-    if(m_max_rating == 0)
-        m_max_rating = 1.0;
     double total = 0.0;
     foreach(double raw_rating, m_ratings){
         double val = m_ecdf->fplus(raw_rating);
