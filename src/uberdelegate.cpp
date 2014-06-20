@@ -90,6 +90,7 @@ void UberDelegate::read_settings() {
     draw_happiness_icons = s->value("options/grid/happiness_icons",false).toBool();
     color_mood_cells = s->value("options/grid/color_mood_cells",false).toBool();
     color_health_cells = s->value("options/grid/color_health_cells",true).toBool();
+    color_attribute_syns = s->value("options/grid/color_attribute_syns",true).toBool();
     m_fnt = s->value("options/grid/font", QFont(DefaultFonts::getRowFontName(), DefaultFonts::getRowFontSize())).value<QFont>();
 }
 
@@ -253,7 +254,13 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     {
         QColor bg = paint_bg(adjusted, false, p, opt, idx);
         paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 2.0f, 98.0f, 49.0f, 51.0f);
-        paint_grid(adjusted, false, p, opt, idx);
+
+        if(color_attribute_syns && idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt() > 0){
+            paint_border(adjusted,p,Attribute::color_affected_by_syns());
+            paint_grid(adjusted, false, p, opt, idx, false);
+        }else{
+            paint_grid(adjusted, false, p, opt, idx);
+        }
     }
         break;
     case CT_WEAPON:
@@ -613,23 +620,7 @@ void UberDelegate::paint_wear_cell(const QRect &adjusted, QPainter *p, const QSt
     }
 
     if(wear_level > 0){
-//        int alpha = 255;
-//        if(wear_level == 2)
-//            alpha = 190;
-//        if(wear_level == 1)
-//            alpha = 125;
-        QColor wear_color = Item::color_wear();
-        QPen wear_pen = QPen(wear_color,2);
-        p->setPen(wear_pen);
-
-        QRect border = adjusted;
-        border.adjust(1,1,0,0);
-
-        p->drawLine(border.topRight(),border.bottomRight());
-        p->drawLine(border.topLeft(),border.bottomLeft());
-        p->drawLine(border.topRight(),border.topLeft());
-        p->drawLine(border.bottomLeft(),border.bottomRight());
-
+        paint_border(adjusted,p,Item::color_wear());
         paint_grid(adjusted, false, p, opt, proxy_idx, false); //draw dirty border and guides
     }else{
         paint_grid(adjusted, false, p, opt, proxy_idx);
@@ -649,19 +640,10 @@ void UberDelegate::paint_mood_cell(const QRect &adjusted, QPainter *p, const QSt
 
     if(color_mood_cells && !dirty){ //dirty is always drawn over mood
         if((d->had_mood() || d->highest_moodable().capped_level() > -1) && skill_id == d->highest_moodable().id()){
-            p->setPen(QPen(color_mood,2));
-
+            QColor mood = color_mood;
             if(d->had_mood())
-                p->setPen(QPen(color_had_mood,2));
-
-            QRect moodr = adjusted;
-            moodr.adjust(1,1,0,0);
-
-            p->drawLine(moodr.topRight(),moodr.bottomRight());
-            p->drawLine(moodr.topLeft(),moodr.bottomLeft());
-            p->drawLine(moodr.topRight(),moodr.topLeft());
-            p->drawLine(moodr.bottomLeft(),moodr.bottomRight());
-
+                mood = color_had_mood;
+            paint_border(adjusted,p,mood);
             paint_grid(adjusted, dirty, p, opt, proxy_idx, false); //draw dirty border and guides
         }else{
             paint_grid(adjusted, dirty, p, opt, proxy_idx);
@@ -670,6 +652,24 @@ void UberDelegate::paint_mood_cell(const QRect &adjusted, QPainter *p, const QSt
     }else{
         paint_grid(adjusted, dirty, p, opt, proxy_idx);
     }
+}
+
+void UberDelegate::paint_border(const QRect &adjusted, QPainter *p, const QColor &color) const{
+    QRect thick_border = adjusted;
+    thick_border.adjust(1,1,0,0);
+
+    p->setPen(QPen(color,2));
+
+    QPoint topRight = QPoint(thick_border.topRight().x(),thick_border.topRight().y()+2);
+    QPoint bottomRight = QPoint(thick_border.bottomRight().x(),thick_border.bottomRight().y()-2);
+
+    QPoint topLeft = QPoint(thick_border.topLeft().x(),thick_border.topLeft().y()+2);
+    QPoint bottomLeft = QPoint(thick_border.bottomLeft().x(),thick_border.bottomLeft().y()-2);
+
+    p->drawLine(topRight,bottomRight);
+    p->drawLine(topLeft,bottomLeft);
+    p->drawLine(thick_border.topRight(),thick_border.topLeft());
+    p->drawLine(thick_border.bottomLeft(),thick_border.bottomRight());
 }
 
 

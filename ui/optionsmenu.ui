@@ -36,7 +36,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <property name="iconSize">
       <size>
@@ -370,7 +370,7 @@
       <attribute name="title">
        <string>Grid Options</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
        <item>
         <widget class="QCheckBox" name="cb_auto_contrast">
          <property name="sizePolicy">
@@ -536,6 +536,22 @@
          </property>
          <property name="text">
           <string>Highlight moodable cells in labor/skill columns.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_attribute_syns">
+         <property name="toolTip">
+          <string>When checked, any attributes which are affected by syndromes will be highlighted with a blue border.</string>
+         </property>
+         <property name="statusTip">
+          <string>When checked, any attributes which are affected by syndromes will be highlighted with a blue border.</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, any attributes which are affected by syndromes will be highlighted with a blue border.</string>
+         </property>
+         <property name="text">
+          <string>Highlight the cells of attributes affected by syndromes.</string>
          </property>
         </widget>
        </item>

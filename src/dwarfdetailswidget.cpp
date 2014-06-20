@@ -352,10 +352,9 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             attribute_rating->setForeground(compliment(color_low));
         }
 
-
         if(a.syndrome_names().count() > 0){
-            attribute_name->setBackground(color_high);
-            attribute_name->setForeground(compliment(color_high));
+            attribute_name->setBackground(Attribute::color_affected_by_syns());
+            attribute_name->setForeground(compliment(Attribute::color_affected_by_syns()));
             tooltip = tr("<center><h4>%1</h4></center>%2").arg(a.get_name()).arg(a.get_syndrome_desc());
         }else{
             tooltip = tr("<center><h4>%1</h4></center>").arg(a.get_name());

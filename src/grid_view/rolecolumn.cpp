@@ -69,19 +69,17 @@ RoleColumn::~RoleColumn(){
 
 QStandardItem *RoleColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
+    //defaults
+    item->setData(-1, DwarfModel::DR_RATING);
+    item->setData(-1, DwarfModel::DR_DISPLAY_RATING);
+    item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
 
     if(d->is_baby()){
-        item->setData(-1, DwarfModel::DR_RATING);
-        item->setData(-1, DwarfModel::DR_DISPLAY_RATING);
         item->setData(-2, DwarfModel::DR_SORT_VALUE);
-        item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
         item->setToolTip(("<b>Babies aren't included in role calculations.</b>"));
         return item;
     }else if(d->is_child() && !DT->labor_cheats_allowed()){
-        item->setData(-1, DwarfModel::DR_RATING);
-        item->setData(-1, DwarfModel::DR_DISPLAY_RATING);
-        item->setData(-1, DwarfModel::DR_SORT_VALUE);
-        item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
+        item->setData(-1, DwarfModel::DR_SORT_VALUE);        
         item->setToolTip(("<b>Children are only included in role calculations if labor cheats are enabled.</b>"));
         return item;
     }
@@ -91,7 +89,7 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
         item->setData(rating_total, DwarfModel::DR_RATING);
         item->setData(roundf(rating_total), DwarfModel::DR_DISPLAY_RATING);
         item->setData(rating_total, DwarfModel::DR_SORT_VALUE);
-        item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
+        item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);        
 
         QString raw_rating = "RAW:" + QString::number(d->get_role_rating(m_role->name,true),'f',4);
 

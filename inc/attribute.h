@@ -24,10 +24,9 @@ THE SOFTWARE.
 #ifndef ATTRIBUTE_H
 #define ATTRIBUTE_H
 
-#include <QVector>
-#include <QSettings>
-#include <QStringList>
+#include <QtCore>
 #include "global_enums.h"
+#include "qcolor.h"
 
 class Attribute {
 
@@ -56,6 +55,7 @@ public:
     static QString find_descriptor(ATTRIBUTES_TYPE, int index = -1);
 
     static ATTRIBUTES_TYPE get_attribute_type(QString name);
+    static const QColor color_affected_by_syns() {return QColor(0, 60, 128, 135);}
 
 private:
     int m_id;

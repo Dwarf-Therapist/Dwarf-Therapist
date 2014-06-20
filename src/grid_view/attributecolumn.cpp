@@ -69,7 +69,8 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     //the rating is used for drawing, should be between 0-100 for attributes
     item->setData(rating, DwarfModel::DR_RATING);
     item->setData(roundf(rating), DwarfModel::DR_DISPLAY_RATING);
-
+    //flag so we know if we need to draw a border or not
+    item->setData(a.syndrome_names().count(),DwarfModel::DR_SPECIAL_FLAG);
 
     //if no descriptor (middle ranges) then set the rating to a middle (hidden) value
     //this is primarily for vanilla, as the mid ranges don't have a description and are hidden in game

@@ -83,6 +83,7 @@ private:
     bool draw_happiness_icons;
     bool color_mood_cells;
     bool color_health_cells;
+    bool color_attribute_syns;
     QFont m_fnt;
 
 
@@ -104,6 +105,8 @@ private:
     void paint_flags(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
     void paint_labor_aggregate(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
     void paint_icon(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
+
+    void paint_border(const QRect &adjusted, QPainter *p, const QColor &color) const;
 
     QColor get_pen_color(const QColor bg) const;
 

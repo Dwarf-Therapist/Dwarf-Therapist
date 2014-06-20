@@ -251,7 +251,8 @@ void OptionsMenu::read_settings() {
     ui->cb_sync_grouping->setChecked(s->value("group_all_views",true).toBool());
     ui->cb_sync_scrolling->setChecked(s->value("scroll_all_views",false).toBool());
 
-    ui->cb_moodable->setChecked(s->value("color_mood_cells",false).toBool());    
+    ui->cb_moodable->setChecked(s->value("color_mood_cells",false).toBool());
+    ui->cb_attribute_syns->setChecked(s->value("color_attribute_syns",true).toBool());
     ui->cb_gender_icons->setChecked(s->value("show_gender_icons",true).toBool());
     ui->cb_grid_health_colors->setChecked(s->value("color_health_cells",true).toBool());
     //the signal to disable the color pickers doesn't fire on the initial read. this is a work around for the inital setting
@@ -367,6 +368,7 @@ void OptionsMenu::write_settings() {
         s->setValue("header_font", m_col_header_font.first);
         s->setValue("happiness_icons",ui->cb_happiness_icons->isChecked());
         s->setValue("color_mood_cells", ui->cb_moodable->isChecked());
+        s->setValue("color_attribute_syns", ui->cb_attribute_syns->isChecked());
         s->setValue("show_gender_icons", ui->cb_gender_icons->isChecked());
         s->setValue("color_health_cells", ui->cb_grid_health_colors->isChecked());
         s->setValue("show_labor_counts",ui->cb_labor_counts->isChecked());
@@ -503,6 +505,7 @@ void OptionsMenu::restore_defaults() {
     ui->cb_grid_health_colors->setChecked(true);
     ui->cb_no_diagnosis->setChecked(false);
     ui->cb_animal_health->setChecked(false);
+    ui->cb_attribute_syns->setChecked(true);
 
     ui->chk_show_caste->setChecked(true);
     ui->chk_show_caste_desc->setChecked(true);
