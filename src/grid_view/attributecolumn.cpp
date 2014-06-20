@@ -83,10 +83,10 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     }
 
     //sort on the raw value
-    item->setData(rawVal, DwarfModel::DR_SORT_VALUE);    
-    item->setData(CT_ATTRIBUTE, DwarfModel::DR_COL_TYPE);
+    item->setData(rawVal, DwarfModel::DR_SORT_VALUE);
+    item->setData(CT_ATTRIBUTE, DwarfModel::DR_COL_TYPE);    
 
-    QString tooltip = QString("<center><h3>%1</h3><b>%2</b><br/>%3<br/>%4<br/>%5</center>")
+    QString tooltip = QString("<center><h3>%1</h3><b>%2</b><br/>%3<br/><br/>%4%5</center>")
             .arg(m_title)            
             .arg(a.get_value_display())
             .arg(descriptor)

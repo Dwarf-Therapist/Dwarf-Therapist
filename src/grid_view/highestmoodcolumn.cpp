@@ -60,6 +60,7 @@ QStandardItem *HighestMoodColumn::build_cell(Dwarf *d) {
 
     item->setData(CT_HIGHEST_MOOD, DwarfModel::DR_COL_TYPE);
     item->setData(d->had_mood(),DwarfModel::DR_SPECIAL_FLAG);
+    set_export_role(DwarfModel::DR_SPECIAL_FLAG);
 
     int id = s.id() < 0 ? 0 : s.id();
     m_sort_val = 50 + (id * 100);

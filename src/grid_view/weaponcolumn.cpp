@@ -40,17 +40,15 @@ WeaponColumn::WeaponColumn(const QString &title, ItemWeaponSubtype *w, ViewColum
 QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
 
+    item->setData(CT_WEAPON, DwarfModel::DR_COL_TYPE);
+    item->setData(0, DwarfModel::DR_RATING);
+    item->setData(0, DwarfModel::DR_DISPLAY_RATING);
+
     if(!m_weapon || m_weapon->name_plural()==""){
-        item->setData(CT_WEAPON, DwarfModel::DR_COL_TYPE);
-        item->setData(0, DwarfModel::DR_RATING);
-        item->setData(0, DwarfModel::DR_DISPLAY_RATING);
         item->setToolTip("Weapon not found.");
         return item;
     }
     if(d->body_size() < 0){
-        item->setData(CT_WEAPON, DwarfModel::DR_COL_TYPE);
-        item->setData(0, DwarfModel::DR_RATING);
-        item->setData(0, DwarfModel::DR_DISPLAY_RATING);
         item->setToolTip("Missing body_size offset!");
         return item;
     }
@@ -115,6 +113,7 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     item->setData(rating, DwarfModel::DR_RATING);
     item->setData(numeric_rating, DwarfModel::DR_DISPLAY_RATING);
     item->setData((sort_val * 100) + d->body_size(), DwarfModel::DR_SORT_VALUE);
+    set_export_role(DwarfModel::DR_DISPLAY_RATING);
 
     QColor norm_text = QApplication::palette().shadow().color();
 

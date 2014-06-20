@@ -71,6 +71,7 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
     item->setData(d->skill_level(m_skill_id), DwarfModel::DR_DISPLAY_RATING); //level rounded down
 	item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);
 	item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
+    set_export_role(DwarfModel::DR_RATING);
 
     refresh_sort(d, m_current_sort);
     build_tooltip(d, DT->user_settings()->value(QString("options/show_roles_in_labor"), true).toBool());

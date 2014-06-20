@@ -60,6 +60,7 @@ QStandardItem *EquipmentColumn::build_cell(Dwarf *d){
     item->setData(CT_EQUIPMENT, DwarfModel::DR_COL_TYPE);
     item->setData(rating, DwarfModel::DR_RATING); //other drawing 0-100
     item->setData(sort_val, DwarfModel::DR_SORT_VALUE);
+    set_export_role(DwarfModel::DR_RATING);
 
     QString tooltip = QString("<center><h3>%1</h3></center>%2%3")
             .arg(m_title)

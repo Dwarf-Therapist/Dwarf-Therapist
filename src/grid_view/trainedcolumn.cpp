@@ -89,7 +89,8 @@ QStandardItem *TrainedColumn::build_cell(Dwarf *d){
     item->setData(CT_TRAINED, DwarfModel::DR_COL_TYPE);
     item->setData(draw_rating, DwarfModel::DR_DISPLAY_RATING); //numeric drawing, single digits
     item->setData(rating, DwarfModel::DR_RATING); //other drawing 0-100
-    item->setData(sort_val, DwarfModel::DR_SORT_VALUE);    
+    item->setData(sort_val, DwarfModel::DR_SORT_VALUE);
+    set_export_role(DwarfModel::DR_RATING);
 
     QString tooltip = QString("<center><h3>%1</h3></center>%2")
             .arg(desc)

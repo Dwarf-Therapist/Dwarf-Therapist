@@ -22,7 +22,7 @@ THE SOFTWARE.
 */
 #include "viewcolumnset.h"
 #include "viewcolumn.h"
-#include "dwarfmodel.h"
+//#include "dwarfmodel.h"
 #include "dwarf.h"
 #include "utils.h"
 #include "dwarftherapist.h"
@@ -37,7 +37,8 @@ ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,
     , m_override_set_colors(false)
     , m_set(set)
     , m_type(type)
-    , m_count(-1)    
+    , m_count(-1)
+    , m_export_data_role(DwarfModel::DR_SORT_VALUE)
 {
     if (set) {
         set->add_column(this);
@@ -53,7 +54,8 @@ ViewColumn::ViewColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     , m_override_set_colors(s.value("override_color", false).toBool())
     , m_set(set)
     , m_type(get_column_type(s.value("type", "DEFAULT").toString()))
-    , m_count(-1)    
+    , m_count(-1)
+    , m_export_data_role(DwarfModel::DR_SORT_VALUE)
 {
     if (set) {
         set->add_column(this);
@@ -72,7 +74,8 @@ ViewColumn::ViewColumn(const ViewColumn &to_copy)
     , m_override_set_colors(to_copy.m_override_set_colors)
     , m_set(to_copy.m_set)
     , m_type(to_copy.m_type)
-    , m_count(to_copy.m_count)    
+    , m_count(to_copy.m_count)
+    , m_export_data_role(to_copy.m_export_data_role)
 {
     // cloning should not add it to the copy's set! You must add it manually!
     if (m_set && !m_override_set_colors)
@@ -149,7 +152,7 @@ void ViewColumn::write_to_ini(QSettings &s) {
 
 QString ViewColumn::get_cell_value(Dwarf *d)
 {
-    return QString("%1").arg(m_cells.value(d)->data(DwarfModel::DR_SORT_VALUE).toString());
+    return QString("%1").arg(m_cells.value(d)->data(m_export_data_role).toString());
 }
 
 QString ViewColumn::tooltip_name_footer(Dwarf *d){

@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <QStandardItem>
 #include <QSettings>
 #include "columntypes.h"
+#include "dwarfmodel.h"
 
 class ViewColumnSet;
 class Dwarf;
@@ -100,6 +101,8 @@ public:
     QList<COLUMN_SORT_TYPE> get_sortable_types(){return m_sortable_types;}
     COLUMN_SORT_TYPE get_current_sort() {return m_current_sort;}
 
+    void set_export_role(DwarfModel::DATA_ROLES new_role){m_export_data_role = new_role;}
+
 	public slots:
 		virtual void read_settings() {}
         void clear_cells();// {m_cells.clear();}
@@ -114,6 +117,7 @@ protected:
 	COLUMN_TYPE m_type;
 	QHash<Dwarf*, QStandardItem*> m_cells;
     int m_count;
+    DwarfModel::DATA_ROLES m_export_data_role;
     QList<COLUMN_SORT_TYPE> m_sortable_types;
     COLUMN_SORT_TYPE m_current_sort;
 

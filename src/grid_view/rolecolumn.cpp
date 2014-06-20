@@ -89,7 +89,7 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
         item->setData(rating_total, DwarfModel::DR_RATING);
         item->setData(roundf(rating_total), DwarfModel::DR_DISPLAY_RATING);
         item->setData(rating_total, DwarfModel::DR_SORT_VALUE);
-        item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);        
+        item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
 
         QString raw_rating = "RAW:" + QString::number(d->get_role_rating(m_role->name,true),'f',4);
 

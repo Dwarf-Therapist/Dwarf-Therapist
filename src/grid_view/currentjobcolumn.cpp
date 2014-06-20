@@ -318,9 +318,9 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
     }
 
     item->setData(QIcon(pixmap_name), Qt::DecorationRole);
-
     item->setData(CT_IDLE, DwarfModel::DR_COL_TYPE);
     item->setData(d->current_job_id(), DwarfModel::DR_SORT_VALUE);
+
     QColor bg = QColor(175,175,175);
     if(DT->user_settings()->value("options/grid/shade_cells",true)==false)
         bg = QColor(255,255,255);

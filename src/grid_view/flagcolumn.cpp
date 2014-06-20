@@ -57,7 +57,7 @@ QStandardItem *FlagColumn::build_cell(Dwarf *d) {
         short rating = 0;
         if(d->get_flag_value(m_bit_pos))
             rating = 1;
-        item->setData(rating, DwarfModel::DR_SORT_VALUE);
+        item->setData(rating, DwarfModel::DR_SORT_VALUE);        
         item->setData(m_bit_pos, DwarfModel::DR_LABOR_ID);
         item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
         item->setBackground(QBrush(m_bg_color));
