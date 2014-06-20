@@ -26,39 +26,48 @@ THE SOFTWARE.
 
 #include <QVector>
 #include <QSettings>
+#include <QStringList>
 #include "global_enums.h"
 
 class Attribute {
 
 public:    
     Attribute();
-    Attribute(int id, int value, int max, int cost_to_improve = 500, int desc_index = 0, QString desc = "");
+    Attribute(int id, int value, int display_value, int max, int cost_to_improve = 500, int desc_index = 0, QString desc = "");
 
     int id(){return m_id;}
     ATTRIBUTES_TYPE att_type(){return static_cast<ATTRIBUTES_TYPE>(m_id);}
     QString get_value_display();
+    QString get_syndrome_desc();
     QString get_name();
     QString get_descriptor(){return m_descriptor;}
     int get_descriptor_rank(){return m_descriptor_index;}
     int value() {return m_value;}
+    int display_value(){return m_display_value;}
     float rating(bool potential = false) {return (potential) ? m_rating_potential : m_rating;}
+    QStringList syndrome_names(){return m_syn_names;}
     float max() {return m_max;}
     float cti() {return m_cti;}
 
     void set_rating(float rating, bool potential=false);
+    void set_syn_names(QStringList names);
 
     static void load_attribute_descriptors(QSettings &s);
     static QString find_descriptor(ATTRIBUTES_TYPE, int index = -1);
 
+    static ATTRIBUTES_TYPE get_attribute_type(QString name);
+
 private:
     int m_id;
-    int m_value;
+    int m_value; //raw value including permanent syndrome effects
+    int m_display_value; //raw value including permanent and temporary syndrome effects
     int m_max;
     float m_rating_potential;
     float m_rating;
     int m_cti; //cost to improve (caste specific)
     QString m_descriptor; //caste specific depending on the bins
     int m_descriptor_index;
+    QStringList m_syn_names;
 
     static QHash<int, QVector<QString> > m_display_descriptions;
 

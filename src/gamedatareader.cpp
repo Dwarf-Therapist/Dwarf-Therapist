@@ -85,11 +85,11 @@ GameDataReader::GameDataReader(QObject *parent)
     int attributes = m_data_settings->beginReadArray("attributes");
     QStringList attribute_names;
     for(int i = 0; i < attributes; ++i) {
-        m_data_settings->setArrayIndex(i);
-        //Attribute *a = new Attribute(*m_data_settings, this);
+        m_data_settings->setArrayIndex(i);        
         int id = m_data_settings->value("id",0).toInt();
         QString name = m_data_settings->value("name","unknown").toString();
         m_attribute_names.insert(id,name);
+        m_attributes_by_name.insert(name.toUpper(),static_cast<ATTRIBUTES_TYPE>(id));
         attribute_names << name;
     }
     m_data_settings->endArray();  

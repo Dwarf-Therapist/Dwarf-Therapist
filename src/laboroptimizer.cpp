@@ -45,7 +45,7 @@ After everything is optimized, any haulers are assigned with less than the speci
 
 LaborOptimizer::LaborOptimizer(laborOptimizerPlan *plan, QObject *parent)    
     :QObject(parent)
-    , plan(plan)        
+    , plan(plan)
 {    
     check_conflicts = DT->user_settings()->value("options/labor_exclusions",true).toBool();
     gdr = GameDataReader::ptr();
@@ -123,7 +123,7 @@ void LaborOptimizer::calc_population(bool load_labor_map){
                             //dlm.rating = d->get_role_rating(det->role_name, true);//det->priority * d->get_role_rating(det->role_name, true);
                             dlm.rating = d->get_adjusted_role_rating(det->role_name) * det->priority;
                         }
-                        else{                            
+                        else{
                             dlm.rating = d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).capped_exp() / (float)MAX_CAPPED_XP * 100 * det->priority;//det->priority * (d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).capped_exp() / (float)MAX_CAPPED_XP * 100);
                         }
                         m_labor_map.append(dlm);
@@ -156,7 +156,7 @@ void LaborOptimizer::adjust_ratings(){
         if(!det->role_name.trimmed().isEmpty() && !m_role_stats_by_name.contains(det->role_name)){
             rs = new RoleStats(det->role_name);
             total = 0;
-            foreach(Dwarf *d, m_dwarfs){                
+            foreach(Dwarf *d, m_dwarfs){
                 double rating = d->get_role_rating(det->role_name,true);
                 total += rating;
                 rs->add_rating(rating);
@@ -188,8 +188,8 @@ void LaborOptimizer::adjust_ratings(){
 void LaborOptimizer::optimize_labors(QList<Dwarf*> dwarfs){
     m_dwarfs = dwarfs;
     if(m_dwarfs.count() > 0){
-//        QFuture<void> f = QtConcurrent::run(this, &LaborOptimizer::optimize);
-//        f.waitForFinished();
+        //        QFuture<void> f = QtConcurrent::run(this, &LaborOptimizer::optimize);
+        //        f.waitForFinished();
         optimize();
 
         m_current_message.clear();
@@ -206,9 +206,9 @@ void LaborOptimizer::optimize(){
     std::sort(m_labor_map.begin(),m_labor_map.end(),LaborOptimizer::compare_priority_then_rating());
     std::sort(m_labor_map.begin(),m_labor_map.end(),LaborOptimizer::compare_rating());
 
-//    foreach(dwarf_labor_map dlm, m_labor_map){
-//        LOGD << "Rating:" << dlm.rating << " Priority:" << dlm.det->priority;
-//    }
+    //    foreach(dwarf_labor_map dlm, m_labor_map){
+    //        LOGD << "Rating:" << dlm.rating << " Priority:" << dlm.det->priority;
+    //    }
 
     update_ratios();
 
@@ -218,8 +218,8 @@ void LaborOptimizer::optimize(){
     }
 
     //optimize
-    bool has_conficting_labor = false;    
-    Labor *l;        
+    bool has_conficting_labor = false;
+    Labor *l;
     //QHash<int, QList<Dwarf*> > conflicts;
     //QList<Dwarf*> conflicting_dwarves;
 
@@ -232,9 +232,9 @@ void LaborOptimizer::optimize(){
             foreach(int excluded, l->get_excluded_labors()) {
                 if(dlm.d->labor_enabled(excluded)){
                     has_conficting_labor = true;
-//                    conflicting_dwarves = conflicts.value(dlm.det->labor_id);
-//                    conflicting_dwarves.append(dlm.d);
-//                    conflicts.insert(dlm.det->labor_id, conflicting_dwarves);
+                    //                    conflicting_dwarves = conflicts.value(dlm.det->labor_id);
+                    //                    conflicting_dwarves.append(dlm.d);
+                    //                    conflicts.insert(dlm.det->labor_id, conflicting_dwarves);
                     break;
                 }
             }
@@ -249,7 +249,7 @@ void LaborOptimizer::optimize(){
 
             dlm.d->set_labor(dlm.det->labor_id, true, false);
             dlm.det->assigned_laborers++;
-            dlm.d->optimized_labors++;              
+            dlm.d->optimized_labors++;
         }
 
         if(plan->auto_haulers){
@@ -268,19 +268,19 @@ void LaborOptimizer::optimize(){
     }
 
     //emit optimize_message(QString::number(conflicting_count) + " conflicting labors could not be assigned.");
-//    if(conflicts.count() > 0){
-//        foreach(int id, conflicts.uniqueKeys()){
-//            m_current_message.clear();
-//            m_current_message.append(QPair<int,QString>(0,tr("%1 %2 labors not assigned due to conflicts.")
-//                                                        .arg(QString::number(conflicts.value(id).count())).arg(gdr->get_labor(id)->name)));
-//            foreach(Dwarf *d, conflicts.value(id)){
-//                m_current_message.append(QPair<int,QString>(d->id(),d->nice_name()));
-//            }
-//            emit optimize_message(m_current_message);
-//            //        emit optimize_message(tr("%1 %2 not assigned due to conflicting labors.")
-//            //                              .arg(QString::number(conflicts.value(id))).arg(gdr->get_labor(id)->name));
-//        }
-//    }
+    //    if(conflicts.count() > 0){
+    //        foreach(int id, conflicts.uniqueKeys()){
+    //            m_current_message.clear();
+    //            m_current_message.append(QPair<int,QString>(0,tr("%1 %2 labors not assigned due to conflicts.")
+    //                                                        .arg(QString::number(conflicts.value(id).count())).arg(gdr->get_labor(id)->name)));
+    //            foreach(Dwarf *d, conflicts.value(id)){
+    //                m_current_message.append(QPair<int,QString>(d->id(),d->nice_name()));
+    //            }
+    //            emit optimize_message(m_current_message);
+    //            //        emit optimize_message(tr("%1 %2 not assigned due to conflicting labors.")
+    //            //                              .arg(QString::number(conflicts.value(id))).arg(gdr->get_labor(id)->name));
+    //        }
+    //    }
 
     //get a list of hauling labors (for now this includes burial, cleaning, recovering wounded)
     QList<Labor*> skill_less_jobs = gdr->get_ordered_labors();
@@ -318,7 +318,7 @@ void LaborOptimizer::update_ratios(){
             m_ratio_sum += det->ratio;
 
         count++;
-    }    
+    }
 
     labors_exceed_pop = false;
     if(check_conflicts){
@@ -326,7 +326,7 @@ void LaborOptimizer::update_ratios(){
         foreach(PlanDetail *det, plan->plan_details){
             if(det->priority > 0 && det->ratio > 0 && det->group_ratio <= 0){
 
-                if(gdr->get_labor(det->labor_id)->get_excluded_labors().count() > 0){                                                            
+                if(gdr->get_labor(det->labor_id)->get_excluded_labors().count() > 0){
                     //increase this labor's group ratio
                     det->group_ratio += det->ratio;
                     foreach(int id, gdr->get_labor(det->labor_id)->get_excluded_labors()){

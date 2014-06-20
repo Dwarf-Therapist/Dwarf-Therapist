@@ -93,6 +93,8 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
         item->setData(rating_total, DwarfModel::DR_SORT_VALUE);
         item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
 
+        QString raw_rating = "RAW:" + QString::number(d->get_role_rating(m_role->name,true),'f',4);
+
         QString match_str;
         QString aspects_str;
         QString tooltip;
@@ -102,11 +104,12 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
                 aspects_str += tr("<br/><b>Note:</b> A higher weight (w) puts greater value on the aspect. Default weights are not shown.");
                 match_str += aspects_str;
 
-                tooltip = QString("<center><h3>%1 - %3%</h3></center>%2<center><h4>%4 is a %3% fit for this role.</h4></center>")
+                tooltip = QString("<center><h3>%1 - %3%</h3></center>%2<center><h4>%4 is a %3% fit for this role.</h4></center>%5")
                         .arg(m_role->name)
                         .arg(match_str)
-                        .arg(QString::number(rating_total,'f',2))
-                        .arg(d->nice_name());
+                        .arg(QString::number(rating_total,'f',2))                        
+                        .arg(d->nice_name())
+                        .arg(raw_rating);
 
                 item->setToolTip(tooltip);
 
@@ -118,11 +121,12 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
             match_str = tr("%1<h4><b>Raw Rating:</b> %2</h4>")
                     .arg(m_role->get_role_details())
                     .arg(rating_total, 0, 'f', 2);
-            tooltip = QString("<center><h3>%1 - %3</h3></center>%2%4")
+            tooltip = QString("<center><h3>%1 - %3</h3></center>%2%4%5")
                              .arg(m_role->name)
                              .arg(match_str)
                              .arg(roundf(rating_total), 0, 'f', 0)
-                             .arg(tooltip_name_footer(d));
+                             .arg(tooltip_name_footer(d))
+                    .arg(raw_rating);
 
             item->setToolTip(tooltip);
         }

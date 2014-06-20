@@ -31,6 +31,7 @@ QHash<int, QVector<QString> > Attribute::m_display_descriptions;
 Attribute::Attribute()
     : m_id(-1)
     , m_value(0)
+    , m_display_value(0)
     , m_max(0)
     , m_rating_potential(-1)
     , m_rating(-1)
@@ -40,9 +41,10 @@ Attribute::Attribute()
 {
 }
 
-Attribute::Attribute(int id, int value, int max, int cost_to_improve, int desc_index, QString desc)
+Attribute::Attribute(int id, int value, int display_value, int max, int cost_to_improve, int desc_index, QString desc)
         : m_id(id)
         , m_value(value)
+        , m_display_value(display_value)
         , m_max(max)
         , m_rating_potential(-1)
         , m_rating(-1)
@@ -68,7 +70,14 @@ QString Attribute::get_name(){
 }
 
 QString Attribute::get_value_display(){
-    return QString("%1/%2").arg(m_value,0,10).arg(m_max,0,10);
+    return QString("%1/%2").arg(m_display_value,0,10).arg(m_max,0,10);
+}
+
+QString Attribute::get_syndrome_desc(){
+    if(m_syn_names.count() > 0)
+        return QString("Currently affected by %1").arg(m_syn_names.join(", "));
+    else
+        return "";
 }
 
 void Attribute::set_rating(float rating, bool potential){
@@ -78,6 +87,9 @@ void Attribute::set_rating(float rating, bool potential){
         m_rating = rating;
 }
 
+void Attribute::set_syn_names(QStringList names){
+    m_syn_names = names;
+}
 
 void Attribute::load_attribute_descriptors(QSettings &s){
     if(m_display_descriptions.count() <= 0){

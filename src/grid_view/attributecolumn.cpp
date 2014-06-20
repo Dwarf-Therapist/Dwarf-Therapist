@@ -37,29 +37,8 @@ AttributeColumn::AttributeColumn(const QString &title, ATTRIBUTES_TYPE type, Vie
     : ViewColumn(title, CT_ATTRIBUTE, set, parent)
     , m_attribute_type(type)
 {
-    if (title.isEmpty()) { // Determine title based on type if no title was passed in
-        switch(type) {
-            case AT_STRENGTH:  m_title = tr("Strength");   break;
-            case AT_AGILITY:   m_title = tr("Agility");    break;
-            case AT_TOUGHNESS: m_title = tr("Toughness");  break;
-            case AT_ENDURANCE: m_title = tr("Endurance");  break;
-            case AT_RECUPERATION: m_title = tr("Recuperation");  break;
-            case AT_DISEASE_RESISTANCE: m_title = tr("Disease resistance");  break;
-            case AT_ANALYTICAL_ABILITY: m_title = tr("Analytical Ability");  break;
-            case AT_CREATIVITY: m_title = tr("Creativity");  break;
-            case AT_EMPATHY: m_title = tr("Empathy");  break;
-            case AT_FOCUS: m_title = tr("Focus");  break;
-            case AT_INTUITION: m_title = tr("Intuition");  break;
-            case AT_KINESTHETIC_SENSE: m_title = tr("Kinesthetic Sense");  break;
-            case AT_LINGUISTIC_ABILITY: m_title = tr("Linguistic Ability");  break;
-            case AT_MEMORY: m_title = tr("Memory");  break;
-            case AT_MUSICALITY: m_title = tr("Musicality");  break;
-            case AT_PATIENCE: m_title = tr("Patience");  break;
-            case AT_SOCIAL_AWARENESS: m_title = tr("Social Awareness");  break;
-            case AT_SPATIAL_SENSE: m_title = tr("Spatial Sense");  break;
-            case AT_WILLPOWER: m_title = tr("Willpower");  break;
-        }
-    }        
+    if (title.isEmpty()) // Determine title based on type if no title was passed in
+        m_title = GameDataReader::ptr()->get_attribute_name((int)type);
 }
 
 AttributeColumn::AttributeColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
@@ -106,10 +85,11 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     item->setData(rawVal, DwarfModel::DR_SORT_VALUE);    
     item->setData(CT_ATTRIBUTE, DwarfModel::DR_COL_TYPE);
 
-    QString tooltip = QString("<center><h3>%1</h3></center><b>%2</b> %3%4")
+    QString tooltip = QString("<center><h3>%1</h3><b>%2</b><br/>%3<br/>%4<br/>%5</center>")
             .arg(m_title)            
             .arg(a.get_value_display())
             .arg(descriptor)
+            .arg(a.get_syndrome_desc())
             .arg(tooltip_name_footer(d));
 
     item->setToolTip(tooltip);

@@ -998,26 +998,42 @@ void Dwarf::read_syndromes(){
         Syndrome s = Syndrome(m_df,syn);
         if(show_cursed || (!show_cursed && !s.display_name().contains("vampcurse",Qt::CaseInsensitive) && !s.display_name().contains("werecurse",Qt::CaseInsensitive))){
             m_syndromes.append(s);
-            QHash<ATTRIBUTES_TYPE,QPair<int,int> > syn_changes = s.get_attribute_changes();
+            QHash<ATTRIBUTES_TYPE,Syndrome::syn_att_change> syn_changes = s.get_attribute_changes();
             if(syn_changes.count() > 0){
-                QPair<int,int> vals;
+                Syndrome::syn_att_change att_change_detail;
                 foreach(ATTRIBUTES_TYPE a_type,syn_changes.keys()){
-                    vals = s.get_attribute_changes().value(a_type);
+                    att_change_detail = s.get_attribute_changes().value(a_type);
                     QPair<float,int> totals;
-                    if(!m_attribute_mods.contains(a_type))
-                        totals = qMakePair(1.0f,0);
-                    else
-                        totals = m_attribute_mods.value(a_type);
+                    if(att_change_detail.is_permanent){
+                        if(!m_attribute_mods_perm.contains(a_type))
+                            totals = qMakePair(1.0f,0);
+                        else
+                            totals = m_attribute_mods_perm.value(a_type);
+                    }else{
+                        if(!m_attribute_mods_temp.contains(a_type))
+                            totals = qMakePair(1.0f,0);
+                        else
+                            totals = m_attribute_mods_temp.value(a_type);
+                    }
 
                     //add valid percentage changes
-                    if(vals.first != 100 && vals.first != 0)
-                        totals.first *= ((float)vals.first/100.0f);
+                    if(att_change_detail.percent != 100 && att_change_detail.percent != 0)
+                        totals.first *= ((float)att_change_detail.percent/100.0f);
                     //add valid flat increases
-                    if(vals.second != 0){
-                        totals.second += vals.second;
+                    if(att_change_detail.added != 0){
+                        totals.second += att_change_detail.added;
                     }
-                    if((totals.first != 1 && totals.first != 0) || totals.second != 0)
-                        m_attribute_mods.insert(a_type,totals);
+                    if((totals.first != 1 && totals.first != 0) || totals.second != 0){
+                        if(att_change_detail.is_permanent)
+                            m_attribute_mods_perm.insert(a_type,totals);
+                        else
+                            m_attribute_mods_temp.insert(a_type,totals);
+
+                        QStringList syns = m_attribute_syndromes.take(a_type);
+                        if(!syns.contains(s.display_name(true,false)))
+                            syns.append(s.display_name(true,false));
+                        m_attribute_syndromes.insert(a_type,syns);
+                    }
                 }
             }
         }
@@ -1684,20 +1700,39 @@ void Dwarf::load_attribute(VIRTADDR &addr, int id){
     QPair<int,QString> desc; //index, description of descriptor
 
     int value = (int)m_df->read_int(addr);
+    int display_value = value;
     int limit = (int)m_df->read_int(addr+0x4);
-    //    if(limit > 5000)
-    //        limit = 5000;
 
-    if(m_attribute_mods.contains(att_id)){
-        value *= m_attribute_mods.value(att_id).first;
-        value += m_attribute_mods.value(att_id).second;
+    //apply any permanent syndrome changes to the raw/base value
+    int perm_add = 0;
+    int perm_perc = 1;
+    if(m_attribute_mods_perm.contains(att_id)){
+        perm_perc = m_attribute_mods_perm.value(att_id).first;
+        value *= perm_perc;
+        perm_add = m_attribute_mods_perm.value(att_id).second;
+        value += perm_add;
+    }
+    //apply temp syndrome changes to the display value
+    if(m_attribute_mods_temp.contains(att_id)){
+        display_value *= perm_perc;
+        display_value *= m_attribute_mods_temp.value(att_id).first;
+
+        display_value += perm_add;
+        display_value += m_attribute_mods_temp.value(att_id).second;
+    }else{
+        display_value *= perm_perc;
+        display_value += perm_add;
     }
 
     if(m_caste){
         cti = m_caste->get_attribute_cost_to_improve(id);
-        desc = m_caste->get_attribute_descriptor_info(att_id,value);
+        desc = m_caste->get_attribute_descriptor_info(att_id, display_value);
     }
-    Attribute a = Attribute(id, value, limit, cti, desc.first, desc.second);
+    Attribute a = Attribute(id, value, display_value, limit, cti, desc.first, desc.second);
+
+    if(m_attribute_syndromes.contains(att_id))
+        a.set_syn_names(m_attribute_syndromes.value(att_id));
+
     m_attributes.append(a);
     addr+=0x1c;
 }
@@ -1706,7 +1741,7 @@ Attribute Dwarf::get_attribute(int id){
     if(id < m_attributes.count())
         return m_attributes.at(id);
     else
-        return Attribute(id,0,0);
+        return Attribute(id,0,0,0);
 }
 
 Skill Dwarf::get_skill(int skill_id) {
@@ -2428,27 +2463,8 @@ float Dwarf::calc_role_rating(Role *m_role){
             a = m_role->attributes.value(name);
             weight = a->weight;
 
-            name = name.toLower();
             //map the user's attribute name to enum
-            if(name == "strength"){attrib_id = AT_STRENGTH;}
-            else if(name == "agility"){attrib_id = AT_AGILITY;}
-            else if(name == "toughness"){attrib_id = AT_TOUGHNESS;}
-            else if(name == "endurance"){attrib_id = AT_ENDURANCE;}
-            else if(name == "recuperation"){attrib_id = AT_RECUPERATION;}
-            else if(name == "disease resistance"){attrib_id = AT_DISEASE_RESISTANCE;}
-            else if(name == "analytical ability"){attrib_id = AT_ANALYTICAL_ABILITY;}
-            else if(name == "focus"){attrib_id = AT_FOCUS;}
-            else if(name == "willpower"){attrib_id = AT_WILLPOWER;}
-            else if(name == "creativity"){attrib_id = AT_CREATIVITY;}
-            else if(name == "intuition"){attrib_id = AT_INTUITION;}
-            else if(name == "patience"){attrib_id = AT_PATIENCE;}
-            else if(name == "memory"){attrib_id = AT_MEMORY;}
-            else if(name == "linguistic ability"){attrib_id = AT_LINGUISTIC_ABILITY;}
-            else if(name == "spatial sense"){attrib_id = AT_SPATIAL_SENSE;}
-            else if(name == "musicality"){attrib_id = AT_MUSICALITY;}
-            else if(name == "kinesthetic sense"){attrib_id = AT_KINESTHETIC_SENSE;}
-            else if(name == "empathy"){attrib_id = AT_EMPATHY;}
-            else if(name == "social awareness"){attrib_id = AT_SOCIAL_AWARENESS;}
+            attrib_id = GameDataReader::ptr()->get_attribute_type(name.toUpper());
 
             aspect_value = get_attribute(attrib_id).rating(true);
             if(aspect_value < 0){

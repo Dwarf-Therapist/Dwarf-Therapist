@@ -579,7 +579,10 @@ private:
 
     //quint32 m_curse_flags2;
     eCurse::CURSE_TYPE m_curse_type;
-    QHash<ATTRIBUTES_TYPE,QPair<float,int> > m_attribute_mods; //modification of attributes via syndromes (and curses?)
+    QHash<ATTRIBUTES_TYPE,QPair<float,int> > m_attribute_mods_perm; //permanent modification of attributes via syndromes (and curses?)
+    QHash<ATTRIBUTES_TYPE,QPair<float,int> > m_attribute_mods_temp; //temporary modification of attributes via syndromes (and curses?)
+    QHash<ATTRIBUTES_TYPE,QStringList> m_attribute_syndromes;
+
     // these methods read data from raw memory
     void read_id();
     void read_sex();

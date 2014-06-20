@@ -341,19 +341,26 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         Attribute a = attributes->at(row);
 
         QTableWidgetItem *attribute_name = new QTableWidgetItem(a.get_name());
-        tooltip = tr("<center><h4>%1</h4></center>").arg(a.get_name());
-        attribute_name->setToolTip(tooltip);
 
         sortableFloatTableWidgetItem *attribute_rating = new sortableFloatTableWidgetItem;
         attribute_rating->setTextAlignment(Qt::AlignHCenter);
-        attribute_rating->setText(QString::number(a.value()));
-        attribute_rating->setData(Qt::UserRole, a.value());
+        attribute_rating->setText(QString::number(a.display_value()));
+        attribute_rating->setData(Qt::UserRole, a.display_value());
         attribute_rating->setToolTip(a.get_value_display());
         if(a.get_descriptor_rank() <= 3) { //3 is the last bin before the median group
             attribute_rating->setBackground(color_low);
             attribute_rating->setForeground(compliment(color_low));
         }
-        attribute_rating->setToolTip(a.get_value_display());
+
+
+        if(a.syndrome_names().count() > 0){
+            attribute_name->setBackground(color_high);
+            attribute_name->setForeground(compliment(color_high));
+            tooltip = tr("<center><h4>%1</h4></center>%2").arg(a.get_name()).arg(a.get_syndrome_desc());
+        }else{
+            tooltip = tr("<center><h4>%1</h4></center>").arg(a.get_name());
+        }
+        attribute_name->setToolTip(tooltip);
 
         sortableFloatTableWidgetItem *attribute_max = new sortableFloatTableWidgetItem;
         attribute_max->setTextAlignment(Qt::AlignHCenter);

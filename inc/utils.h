@@ -206,8 +206,4 @@ static inline bool has_flag(int flag, int flags){
     return ((flag & flags) == flag);
 }
 
-//static inline float roundf(float f){
-//    return floor(f + 0.5f);
-//}
-
 #endif // UTILS_H

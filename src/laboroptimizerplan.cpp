@@ -79,11 +79,7 @@ void laborOptimizerPlan::read_details(QSettings &s){
         s.setArrayIndex(i);
         d->labor_id = s.value("labor_id").toInt();
         QString role_name = s.value("role_name").toString();
-
-        if(GameDataReader::ptr()->get_roles().contains(role_name))
-            d->role_name = role_name;
-        else
-            d->role_name = "";
+        d->role_name = role_name;
 
         if(role_name=="")
             d->use_skill = true;

@@ -329,6 +329,7 @@ offset('inventory_item_bodypart',df.unit_inventory_item,'body_part_id')
 
 header('syndrome_offsets')
 vector('cie_effects',df.syndrome,'ce')
+offset('cie_end',df.creature_interaction_effect,'end')
 offset('cie_first_perc',df.creature_interaction_effect_phys_att_changest,'phys_att_perc') --same for mental
 --prior to commit 1bbd3a87077a573484b60e551dd388fae20fdd7c these are unknown
 --offset('cie_phys',df.creature_interaction_effect_phys_att_changest,'phys_att_unk')

@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include <stdexcept>
 #include <QtCore>
 #include "raws/rawobjectlist.h"
+#include "global_enums.h"
 
 // forward declaration
 class QSettings;
@@ -102,6 +103,7 @@ public:
     void refresh_traits();
 
     QString get_attribute_name(int id){return m_attribute_names.value(id);}
+    ATTRIBUTES_TYPE get_attribute_type(QString name){return m_attributes_by_name.value(name);}
 
     QString get_string_for_key(QString key);
     Profession* get_profession(const short &profession_id);
@@ -156,6 +158,7 @@ private:
 
     QHash<int, int> m_attribute_levels;
     QHash<int, QString> m_attribute_names;
+    QHash<QString, ATTRIBUTES_TYPE> m_attributes_by_name;
     QList<QPair<int,QString> > m_ordered_attribute_names;
 
     QHash<short, DwarfJob*> m_dwarf_jobs;

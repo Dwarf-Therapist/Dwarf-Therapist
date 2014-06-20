@@ -32,7 +32,13 @@ THE SOFTWARE.
 
 class Syndrome{
 
-public:
+public:    
+    struct syn_att_change{
+        int percent;
+        int added;
+        bool is_permanent;
+    };
+
     Syndrome(){
         m_is_sickness = false;
         m_name   = "Unknown";
@@ -69,12 +75,13 @@ public:
             foreach(VIRTADDR ce_addr, effects){
                 VIRTADDR vtable = m_df->read_addr(ce_addr);
                 int type = m_df->read_int(m_df->read_addr(vtable)+0x1);
+                int end = m_df->read_int(ce_addr + m_mem->syndrome_offset("cie_end"));
                 if(type ==25){
                     //physical attribute changes
-                    load_attribute_changes(ce_addr,(int)AT_STRENGTH,5,m_mem->syndrome_offset("cie_phys"));
+                    load_attribute_changes(ce_addr,(int)AT_STRENGTH,5,m_mem->syndrome_offset("cie_phys"),end);
                 }else if(type==26){
                     //mental attribute changes
-                    load_attribute_changes(ce_addr,(int)AT_ANALYTICAL_ABILITY,12,m_mem->syndrome_offset("cie_ment"));
+                    load_attribute_changes(ce_addr,(int)AT_ANALYTICAL_ABILITY,12,m_mem->syndrome_offset("cie_ment"),end);
                 }
             }
         }
@@ -83,7 +90,7 @@ public:
     QStringList class_names() {return m_class_names;}
     QString name() {return m_name;}
     int id() {return m_id;}
-    bool is_sickness() {return m_is_sickness;}
+    bool is_sickness() {return m_is_sickness;}    
 
     QString display_name(bool show_name = true,bool show_class = true){
         QString c_names = "???";
@@ -118,16 +125,22 @@ public:
         return "???";
     }
 
-    void load_attribute_changes(VIRTADDR addr, int start_idx, int count, int add_offset){
+    void load_attribute_changes(VIRTADDR addr, int start_idx, int count, int add_offset, int end){
         int idx_offset = 0;
-        int idx = 0;
+        int idx = 0;        
         for(idx = 0; idx <=count; idx++){
             idx_offset = 0x4 * idx;
-            QPair<int,int> att_change;
-            att_change.first = m_df->read_int(addr+m_mem->syndrome_offset("cie_first_perc")+idx_offset);
-            att_change.second = m_df->read_int(addr+add_offset+idx_offset);
+            syn_att_change att_change;
+            att_change.percent = m_df->read_int(addr+m_mem->syndrome_offset("cie_first_perc")+idx_offset);
+            att_change.added = m_df->read_int(addr+add_offset+idx_offset);
+            if(end < 0)
+                att_change.is_permanent = true;
+            else
+                att_change.is_permanent = false;
+
             //only keep track of attribute changes that actually... change something
-            if((att_change.first != 0 && att_change.first != 100) || att_change.second != 0){
+            if((att_change.percent != 0 && att_change.percent != 100) || att_change.added != 0){
+                //m_attribute_changes.insert(static_cast<ATTRIBUTES_TYPE>(idx+start_idx),att_change);
                 m_attribute_changes.insert(static_cast<ATTRIBUTES_TYPE>(idx+start_idx),att_change);
             }
         }
@@ -138,8 +151,8 @@ public:
             foreach(ATTRIBUTES_TYPE a_type,m_attribute_changes.keys()){
                 QStringList att_effects;
                 QString att_desc = GameDataReader::ptr()->get_attribute_name(a_type).left(3);
-                int perc = m_attribute_changes.value(a_type).first;
-                int add = m_attribute_changes.value(a_type).second;
+                int perc = m_attribute_changes.value(a_type).percent;
+                int add = m_attribute_changes.value(a_type).added;
                 if(perc != 100 && perc != 0)
                     att_effects.append(QString((perc > 0) ? "+" : "-").append(QString::number(perc)).append("%"));
                 if(add != 0)
@@ -151,7 +164,7 @@ public:
         return m_syn_effects.join(", ");
     }
 
-    QHash<ATTRIBUTES_TYPE,QPair<int,int> > get_attribute_changes() {return m_attribute_changes;}
+    QHash<ATTRIBUTES_TYPE, syn_att_change> get_attribute_changes() {return m_attribute_changes;}
 
     bool operator==(const Syndrome &other) const {
         if(this == &other)
@@ -169,9 +182,9 @@ private:
     QStringList m_syn_effects;
     int m_id;
     int m_year;
-    int m_time;
+    int m_time;    
     //pairs of percent change, and flat additive changes
-    QHash<ATTRIBUTES_TYPE,QPair<int,int> > m_attribute_changes;
+    QHash<ATTRIBUTES_TYPE, syn_att_change> m_attribute_changes;
 
 };
 

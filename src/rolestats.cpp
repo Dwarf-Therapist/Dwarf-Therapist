@@ -69,6 +69,7 @@ void RoleStats::load_ecdf_data(){
     m_ecdf = new ECDF(m_ratings);
     m_max_rating = m_ecdf->sorted_data().last();
     m_min_rating = m_ecdf->sorted_data().first();
+
     double total = 0.0;
     foreach(double raw_rating, m_ratings){
         double val = m_ecdf->fplus(raw_rating);
