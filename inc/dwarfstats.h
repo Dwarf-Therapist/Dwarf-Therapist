@@ -27,6 +27,9 @@ THE SOFTWARE.
 #include "qmap.h"
 #include "attribute.h"
 
+#include "truncatingfilelogger.h"
+#include "ecdf.h"
+
 class Dwarf;
 
 class DwarfStats
@@ -56,6 +59,7 @@ public:
     static void load_att_caste_bins(int id, float ratio, QList<int> l);
 //    static float get_att_caste_role_rating(ATTRIBUTES_TYPE atype, int val); //old  version
     static float get_att_caste_role_rating(Attribute &a);
+    static float calc_att_potential_rating(int value, float max, float cti);
 
     //traits
     static float get_trait_role_rating(ASPECT_TYPE, int);
@@ -64,6 +68,46 @@ public:
 
     static void cleanup();
     static void set_att_potential_weight(float val){m_att_pot_weight = val;}
+    static float get_att_potential_weight(){return m_att_pot_weight;}
+
+    static float get_empty_skill_rating(){return m_skill_padding;}
+
+    static void init_attributes(QVector<double> attribute_values){
+        delete atts;
+        atts = new ECDF(attribute_values);
+    }
+    static double get_att_ecdf(int val){
+        return atts->fplus((double)val);
+    }
+
+    static void init_traits(QVector<double> trait_values){
+        delete traits;
+        traits = new ECDF(trait_values);
+    }
+    static double get_trait_ecdf(int val){
+        return traits->fplus((double)val);
+    }
+
+    static void init_skills(QVector<double> skill_values){
+        delete skills;
+        skills = new ECDF(skill_values);
+        double total = 0.0;
+        foreach(double val, skill_values){
+            if(val != 0){
+                total += skills->fplus_deskew(val);
+            }
+        }
+        m_skill_padding = 0.5-(total / skill_values.count()/2);
+        LOGD << "Skill ECDF Padding Value:" << m_skill_padding;
+    }
+    static double get_skill_ecdf(float val){
+        double ret = 0.0;
+        if(val <= 0)
+            ret = m_skill_padding;
+        else
+            ret = (skills->fplus_deskew(val)/2.0f) + m_skill_padding;
+        return ret;
+    }
 
 private:
     static float m_att_pot_weight;
@@ -74,6 +118,12 @@ private:
 
     static QList<bin> build_att_bins(QList<int>);
     //static float m_role_mean;
+
+    static ECDF *atts;
+    static ECDF *skills;
+    static ECDF *traits;
+
+    static double m_skill_padding;
 };
 
 #endif // DWARFSTATS_H

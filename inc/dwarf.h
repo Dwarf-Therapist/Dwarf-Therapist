@@ -237,8 +237,8 @@ public:
 
     //! return a hash of skill_id,Skill objects that this dwarf has experience in
     QHash<int, Skill> *get_skills() {return &m_skills;}
-
     QVector<Attribute> *get_attributes() {return &m_attributes;}
+    QHash<int, short> *get_traits(){return &m_traits;}
 
     //! return a skill object by skill_id
     Skill get_skill(int skill_id);
@@ -331,15 +331,15 @@ public:
     */
     void reset_custom_profession() {m_pending_custom_profession = "";}
 
-    void calc_role_ratings();
-    float calc_role_rating(Role *);
+    void calc_role_ratings(bool new_method = false);
+    float calc_role_rating(Role *, bool new_method = false);
     Q_INVOKABLE float get_role_rating(QString role_name, bool raw = false);
     Q_INVOKABLE float get_adjusted_role_rating(QString role_name){return m_adjusted_role_ratings.value(role_name);}
     void set_role_rating(QString role_name, float value);
     void set_adjusted_role_rating(QString role_name, float value);
     void update_rating_list();
 
-    void calc_attribute_ratings();
+    void calc_attribute_ratings(bool new_method = false);
 
     //! static method for mapping a numeric happiness score into a value of the enum DWARF_HAPPINESS
     static DWARF_HAPPINESS happiness_from_score(int score);

@@ -25,6 +25,7 @@
   public:
     ECDF(const QVector<double> &unsorted);
     double fplus(double x)const;  // fraction of data <= x
+    double fplus_deskew(double)const;
     double fminus(double x)const; // fraction of data < x;
     double operator()(double x, bool leq = true)const{
       return leq ? fplus(x) : fminus(x);}
@@ -32,7 +33,9 @@
   private:
     QVector<double> m_sorted;
     QVector<double>::const_iterator b, e;
-    double n;    
+    double n;
+    int m_zero_counts;
+    int m_non_zero_counts;
   };
 
 #endif // ECDF_H

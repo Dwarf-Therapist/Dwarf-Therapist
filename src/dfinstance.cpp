@@ -67,7 +67,6 @@ THE SOFTWARE.
 #endif
 #endif
 
-
 DFInstance::DFInstance(QObject* parent)
     : QObject(parent)
     , m_pid(0)
@@ -498,15 +497,24 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         m_pref_counts.clear();
         m_thought_counts.clear();
 
+        m_new_role_method = true;
+
         t.restart();
         QFuture<void> f = QtConcurrent::run(this,&DFInstance::load_population_data);
         f.waitForFinished();
         LOGD << "loaded population data in  " << t.elapsed() << "ms";
 
-        t.restart();
-        f = QtConcurrent::run(this,&DFInstance::cdf_role_ratings);
-        f.waitForFinished();        
-        LOGD << "calculated role ratings in " << t.elapsed() << "ms";
+        if(m_new_role_method){
+            t.restart();
+            f = QtConcurrent::run(this,&DFInstance::load_role_ratings);
+            f.waitForFinished();
+            LOGD << "calculated new role ratings in " << t.elapsed() << "ms";
+        }else{
+            t.restart();
+            f = QtConcurrent::run(this,&DFInstance::cdf_role_ratings);
+            f.waitForFinished();
+            LOGD << "calculated role ratings in " << t.elapsed() << "ms";
+        }
 
         //calc_done();
         m_actual_dwarves.clear();
@@ -540,11 +548,12 @@ void DFInstance::load_population_data(){
     //    }
 
     int cnt = 0;
-    foreach(Dwarf *d, m_actual_dwarves){
-        d->calc_attribute_ratings();
-        if(m_labor_capable_dwarves.contains(d))
-            d->calc_role_ratings();
-
+    foreach(Dwarf *d, m_actual_dwarves){        
+        if(!m_new_role_method){
+            d->calc_attribute_ratings();
+            if(m_labor_capable_dwarves.contains(d))
+                d->calc_role_ratings();
+        }
         //load labor counts
         foreach(int key, d->get_labors().uniqueKeys()){
             if(d->labor_enabled(key)){
@@ -616,13 +625,6 @@ void DFInstance::load_population_data(){
     float role_stdev = 0.0;
     int role_count = 0;
 
-//    float mean = 0.0;
-//    float stdev = 0.0;
-//    int count = 0;
-
-//    bool use_total_cdf = false;
-//    bool balance_total = false;
-
     foreach(Role *r, GameDataReader::ptr()->get_roles()){
         role_mean = 0.0;
         role_stdev = 0.0;
@@ -631,97 +633,21 @@ void DFInstance::load_population_data(){
         foreach(Dwarf *d, m_labor_capable_dwarves){
             role_count ++;
             role_mean += d->get_role_rating(r->name, true);
-//            rs->add_rating(d->get_role_rating(r->name, true));
         }        
-//        mean += role_mean;
         role_mean = role_mean / role_count;
-//        rs->set_mean(role_mean);
-//        count += role_count;
 
         foreach(Dwarf *d, m_labor_capable_dwarves){
             role_stdev += pow(d->get_role_rating(r->name, true) - role_mean,2);
         }
-//        stdev += role_stdev;
         role_stdev = sqrt(role_stdev / (role_count-1));
 
-//        if (!use_total_cdf){
         foreach(Dwarf *d, m_labor_capable_dwarves){
             d->set_role_rating(r->name, DwarfStats::calc_cdf(role_mean,role_stdev,d->get_role_rating(r->name, true))*100);
         }
-//        }
-
-//        m_role_stats.append(rs);
     }
 
-//    qSort(m_role_stats.begin(),m_role_stats.end(),&RoleStats::sort_means);
-//    double max_mean = m_role_stats.first()->get_mean();
-//    double min_mean = m_role_stats.last()->get_mean();
-//    double log_mean_diff = log(max_mean-min_mean);
-
-//    int num_roles = GameDataReader::ptr()->get_roles().count();
-//    int rank = num_roles;
-//    double max_rank_log_mean = 0.0;
-//    foreach(RoleStats *rs, m_role_stats){
-//        rs->set_mean_rank(rank,num_roles);
-//        rank--;
-//        if(rs->get_rank_log_mean() > max_rank_log_mean)
-//            max_rank_log_mean = rs->get_rank_log_mean();
-//    }
-//    QHash<QString, RoleStats*> m_role_stats_by_name;
-//    foreach(RoleStats *rs, m_role_stats){
-//        rs->calc_priority_adjustment(log_mean_diff,max_rank_log_mean);
-//        m_role_stats_by_name.insert(rs->role_name(),rs);
-//    }
-
-//    foreach(Dwarf *d, m_labor_capable_dwarves){
-//        foreach(Role *r, GameDataReader::ptr()->get_roles()){
-//            d->set_adjusted_role_rating(r->name, m_role_stats_by_name.value(r->name)->adjusted_role_rating(d->get_role_rating(r->name,true))*100.0f);
-//        }
-//    }
-
-//    mean = mean / count;
-//    DwarfStats::set_role_mean(mean);
-//    stdev = sqrt(stdev/(count-1));
-//    if (use_total_cdf){
-//        foreach(Role *r, GameDataReader::ptr()->get_roles()){
-//            //adjust the role ratings based on all role ratings
-//            foreach(Dwarf *d, m_labor_capable_dwarves){
-//                if(!balance_total)
-//                    d->set_role_rating(r->name, DwarfStats::calc_cdf(mean,stdev,d->get_role_rating(r->name, true))*100);
-//                else
-//                    d->set_role_rating(r->name, DwarfStats::calc_cdf(mean,stdev,d->get_role_rating(r->name, true)));
-//            }
-
-//            //recalculate each individual role ratings again compared to their respective roles, but on the new global raw rating
-//            if (balance_total){
-//                role_mean = 0.0;
-//                role_stdev = 0.0;
-//                role_count = 0;
-
-//                foreach(Dwarf *d, m_labor_capable_dwarves){
-//                    role_count ++;
-//                    role_mean += (d->get_role_rating(r->name, false));
-//                }
-//                role_mean = role_mean / role_count;
-
-//                foreach(Dwarf *d, m_labor_capable_dwarves){
-//                    role_stdev += pow(d->get_role_rating(r->name, false) - role_mean,2);
-//                }
-//                role_stdev = sqrt(role_stdev / (role_count-1));
-
-//                foreach(Dwarf *d, m_labor_capable_dwarves){
-//                    d->set_role_rating(r->name, DwarfStats::calc_cdf(role_mean,role_stdev,d->get_role_rating(r->name, false))*100);
-//                }
-//            }
-//        }
-//    }
-
-
-    foreach(Dwarf *d, m_labor_capable_dwarves){
-        //        if(!d->include_in_pop_stats())
-        //            continue;
-        d->update_rating_list();
-    }
+    foreach(Dwarf *d, m_labor_capable_dwarves)
+        d->update_rating_list();    
     //actual_dwarves.clear();
 
     //emit progress_value(calc_progress+1);
@@ -731,7 +657,39 @@ void DFInstance::load_population_data(){
     //DT->emit_roles_changed();
     //DT->get_main_window()->get_view_manager()->redraw_current_tab();
     //}
+}
 
+ void DFInstance::load_role_ratings(){
+        QVector<double> attribute_values;
+        QVector<double> skill_values;
+        QVector<double> trait_values;
+
+        float skill_val;
+        foreach(Dwarf *d, m_labor_capable_dwarves){
+            QVector<Attribute> *attributes = d->get_attributes();
+            for(int idx=0;idx<attributes->size();idx++){
+                Attribute a = attributes->at(idx);
+                attribute_values.append(a.value());
+            }
+            foreach(int id, GameDataReader::ptr()->get_skills().keys()){
+                skill_val = d->skill_level(id,false,true); //capped interpolated level
+                if(skill_val <= 0)
+                    skill_val = 0;
+                skill_values.append(skill_val);
+            }
+            foreach(int val, d->get_traits()->values()){
+                trait_values.append(val);
+            }
+        }
+        DwarfStats::init_skills(skill_values);
+        DwarfStats::init_attributes(attribute_values);
+        DwarfStats::init_traits(trait_values);
+
+        foreach(Dwarf *d, m_labor_capable_dwarves){
+            d->calc_role_ratings(true);
+            d->update_rating_list();
+            d->calc_attribute_ratings();
+        }
 }
 
 

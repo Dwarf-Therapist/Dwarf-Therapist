@@ -33,6 +33,12 @@ float DwarfStats::m_att_pot_weight;
 //float DwarfStats::m_role_mean;
 //QHash<ATTRIBUTES_TYPE, QVector<float>* > DwarfStats::m_attribute_ratings;
 
+ECDF *DwarfStats::atts;
+ECDF *DwarfStats::traits;
+ECDF *DwarfStats::skills;
+
+double DwarfStats::m_skill_padding;
+
 float DwarfStats::calc_cdf(float mean, float stdev, float rawValue){
     double rating = 0.0;
 
@@ -231,19 +237,33 @@ void DwarfStats::load_att_caste_bins(int id, float ratio, QList<int> l){
 //    return ret_val;
 //}
 
+float DwarfStats::calc_att_potential_rating(int value, float max, float cti){
+    float potential_value = 0.0;
+    float diff = max - value;
+    if(cti < 0)
+        cti = 1.0;
+    float gap = diff * 500 / cti;
+
+    //uses the cost to improve and the attributes maximum to apply a bonus
+    //based on the difference between the attribute's current value and the maximum possible
+    if(value >= max){
+        potential_value = value;
+    }else{
+        potential_value = 0.5f * (1-(gap/diff));
+        if(potential_value >= 0)
+            potential_value += 0.5f;
+        else
+            potential_value = -0.5f / (potential_value - 1.0f);
+        potential_value = value + (potential_value * gap);
+    }
+
+    return potential_value;
+}
+
 float DwarfStats::get_att_caste_role_rating(Attribute &a){
     att_info a_info;
     float sum = 0.0;
     float rating = 0.0;
-
-//    float sim1_sum = 0.0;
-//    float sim1_rating = 0.0;
-
-//    float sim2_sum = 0.0;
-//    float sim2_rating = 0.0;
-
-//    float sim3_sum = 0.0;
-//    float sim3_rating = 0.0;
 
     float bonus_sum = 0.0;
     float bonus_rating = 0.0;
@@ -268,54 +288,10 @@ float DwarfStats::get_att_caste_role_rating(Attribute &a){
         potential_value = a.value() + (potential_value * gap);
     }
 
-
-//    int att_sim = 2000;
-//    int max_delta = 0;
-
     QHash<QString,att_info> stats = m_att_caste_bins.value(a.att_type());
     foreach(QString key, stats.uniqueKeys()){
         a_info = stats.value(key);
         rating = get_aspect_role_rating(a.value(),a_info.bins);
-
-//        //simulated 1 (default) ******
-//        att_sim = 2000;
-//        max_delta = (a.max() - a.value()) > att_sim ? att_sim : a.max() - a.value();
-//        sim1_rating = ((a.value() * 2 + max_delta) * max_delta) / 2.0f;
-//        sim1_rating += (att_sim - max_delta) * a.max();
-//        sim1_rating /= att_sim;
-//        sim1_rating /= 5000.0f;
-//        //******************
-
-//        att_sim = a_info.bins.at(4).min;
-//        att_sim = (att_sim * 500.0f) / a.cti();
-//        max_delta = (a.max() - a.value()) > att_sim ? att_sim : a.max() - a.value();
-
-//        //simulated 2 (using median and CTI / 5000)******
-//        sim2_rating = ((a.value() * 2 + max_delta) * max_delta) / 2.0f;
-//        sim2_rating += (att_sim - max_delta) * a.max();
-//        sim2_rating /= att_sim;
-//        sim2_rating /= 5000.0f;
-//        //******************
-
-//        //simulated 3 (using median and CTI through bins again)******
-//        sim3_rating = ((a.value() * 2 + max_delta) * max_delta) / 2.0f;
-//        sim3_rating += (att_sim - max_delta) * a.max();
-//        sim3_rating /= att_sim;
-//        sim3_rating = get_aspect_role_rating(sim3_rating,a_info.bins);
-//        //******************
-
-//        //simulated 4 (using median and CTI through bins again)******
-//        if(a.value() >= a.max()){
-//            bonus_rating = a.value();
-//        }else{
-//            gap = (a.max() - a.value()) * 500 / cti;
-//            bonus_rating = 0.5f * (1-gap / (a.max()-a.value()));
-//            if(bonus_rating >= 0)
-//                bonus_rating += 0.5f;
-//            else
-//                bonus_rating = -0.5f / (bonus_rating - 1.0f);
-//            bonus_rating = a.value() + (bonus_rating * gap);
-//        }
 
         //pass the potential rating into the set of bins
         bonus_rating = get_aspect_role_rating(potential_value, a_info.bins);
@@ -326,21 +302,8 @@ float DwarfStats::get_att_caste_role_rating(Attribute &a){
         while (i.hasNext()) {
             i.next();
             sum += (rating * i.key() * i.value());
-            bonus_sum += (bonus_rating * i.key() * i.value());
-//            sim1_sum += (sim1_rating * i.key() * i.value());
-//            sim2_sum += (sim2_rating * i.key() * i.value());
-//            sim3_sum += (sim3_rating * i.key() * i.value());            
+            bonus_sum += (bonus_rating * i.key() * i.value());        
         }
-        //}
-        //m_attribute_ratings.value(atype)->replace(val-1,(float)(sum+sim4_sum)/2.0f);//sum);
-        //        if(atype == AT_AGILITY || atype == AT_STRENGTH){
-        //            LOGD << "attribute, value, max, reg, sim1, sim1avg, sim2, sim2avg, sim3, sim3avg, sim4, sim4avg";
-        //            LOGD << (int)atype << "," << val << "," << att_cap << "," << sum
-        //                 << "," << sim1_sum << "," << (float)(sum+sim1_sum)/2.0f
-        //                 << "," << sim2_sum << "," << (float)(sum+sim2_sum)/2.0f
-        //                 << "," << sim3_sum << "," << (float)(sum+sim3_sum)/2.0f
-        //                 << "," << sim4_sum << "," << (float)(sum+sim4_sum)/2.0f;
-        //        }
     }
 
     a.set_rating(sum); //base rating before any weights or bonus is applied, we'll use this for drawing so save it
@@ -353,8 +316,11 @@ void DwarfStats::cleanup(){
 //    LOGD << "cleaning up dwarfstats...";
     //traits
     m_trait_bins.clear();
-
     //attributes
     m_att_caste_bins.clear();
+
+    skills = 0;
+    atts = 0;
+    traits = 0;
 //    LOGD << "done cleaning dwarfstats!";
 }

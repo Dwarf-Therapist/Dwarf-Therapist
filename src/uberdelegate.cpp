@@ -212,7 +212,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     case CT_ROLE:
     {
         QColor bg = paint_bg(adjusted, false, p, opt, idx);
-        paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f,2.0f,98.0f);//DwarfStats::get_role_mean(),2.0f,98.0f);
+        paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 2.0f, 98.0f);//DwarfStats::get_role_mean(),2.0f,98.0f);
         paint_grid(adjusted, false, p, opt, idx);
     }
         break;

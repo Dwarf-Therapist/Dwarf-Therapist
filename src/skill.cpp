@@ -195,14 +195,24 @@ double Skill::get_simulated_rating(){
     int rate = m_skill_rate;
 
     if (curr_xp >= MAX_CAPPED_XP)
-        return 20.0 / 20.0;
+        return 1.0;
 
     if (rate == 0)
         return curr_level / 20.0;
 
+    double rating = get_simulated_level() / 20.0f;
+    return rating;
+
+}
+
+double Skill::get_simulated_level(){
+    int curr_xp = m_capped_exp;
+    int curr_level = m_capped_level;
+    int rate = m_skill_rate;
+
     int sim_xp = MAX_CAPPED_XP;
     sim_xp = (sim_xp / 100.0) * rate; //This is how much XP will go towards skill learning.
-    double rating = 0.0;
+    double sim_level = 0.0;
     int xp_gap = 0;
 
     while ((sim_xp > 0) && (curr_level < 20))
@@ -212,16 +222,14 @@ double Skill::get_simulated_rating(){
             xp_gap = sim_xp;
         sim_xp -= xp_gap;
 
-        rating += xp_gap * curr_level;
+        sim_level += xp_gap * curr_level;
 
         curr_level++;
         curr_xp = get_xp_for_level(curr_level);
     }
 
     if (sim_xp > 0)
-        rating += 20 * sim_xp;
-    rating /= MAX_CAPPED_XP;
-    rating /= 20.0;
-    return rating;
-
+        sim_level += 20 * sim_xp;
+    sim_level /= MAX_CAPPED_XP;
+    return sim_level;
 }

@@ -68,6 +68,7 @@ public:
 
     static int get_xp_for_level(int level);
     double get_simulated_rating();
+    double get_simulated_level();
 
 private:
     short m_id;

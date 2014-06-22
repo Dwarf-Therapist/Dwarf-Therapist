@@ -19,30 +19,41 @@
 #include "ecdf.h"
 #include <algorithm>
 
-  typedef QVector<double> VEC;
-  typedef VEC::iterator IT;
-  typedef VEC::const_iterator CIT;
-  using std::sort;
-  using std::upper_bound;
-  using std::lower_bound;
+typedef QVector<double> VEC;
+typedef VEC::iterator IT;
+typedef VEC::const_iterator CIT;
+using std::sort;
+using std::upper_bound;
+using std::lower_bound;
 
-  ECDF::ECDF(const VEC & unsorted)
+ECDF::ECDF(const VEC & unsorted)
     : m_sorted(unsorted)
-  {
+{
     std::sort(m_sorted.begin(), m_sorted.end());
     b = m_sorted.begin();
     e = m_sorted.end();
     n = static_cast<double>(m_sorted.size());
-  }
+    m_zero_counts = m_sorted.lastIndexOf(0)+1;
+    m_non_zero_counts = m_sorted.count() - m_zero_counts;
+}
 
-  double ECDF::fplus(double x)const{
+double ECDF::fplus(double x)const{
     CIT it = upper_bound(b, e, x);
     unsigned pos = it-b;  // it is the first element >= x
     return pos/n;
-  }
+}
 
-  double ECDF::fminus(double x)const{
+double ECDF::fplus_deskew(double x)const{
+    if(x == 0)
+        return 0;
+    CIT it = upper_bound(b, e, x);
+    unsigned pos = it-b;  // it is the first element >= x
+    double ret = (pos-(float)m_zero_counts)/(float)m_non_zero_counts;
+    return ret;
+}
+
+double ECDF::fminus(double x)const{
     CIT it = lower_bound(b,e, x);
     unsigned pos = it-b;
     return pos/n;
-  }
+}
