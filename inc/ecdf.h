@@ -24,6 +24,8 @@
     // empirical CDF
   public:
     ECDF(const QVector<double> &unsorted);
+    ECDF();
+    void set_list(const QVector<double> &unsorted);
     double fplus(double x)const;  // fraction of data <= x
     double fplus_deskew(double)const;
     double fminus(double x)const; // fraction of data < x;
@@ -33,6 +35,7 @@
   private:
     QVector<double> m_sorted;
     QVector<double>::const_iterator b, e;
+    void init_list();
     double n;
     int m_zero_counts;
     int m_non_zero_counts;

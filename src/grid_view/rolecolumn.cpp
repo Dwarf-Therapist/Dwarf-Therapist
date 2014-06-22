@@ -30,6 +30,8 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "truncatingfilelogger.h"
 
+#include "labor.h"
+
 RoleColumn::RoleColumn(const QString &title, Role *r, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title,CT_ROLE,set,parent)
     , m_role(r)
@@ -73,6 +75,7 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
     item->setData(-1, DwarfModel::DR_RATING);
     item->setData(-1, DwarfModel::DR_DISPLAY_RATING);
     item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
+    item->setData(false,DwarfModel::DR_SPECIAL_FLAG);
 
     if(d->is_baby()){
         item->setData(-2, DwarfModel::DR_SORT_VALUE);
@@ -93,6 +96,31 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
 
         QString raw_rating = "RAW:" + QString::number(d->get_role_rating(m_role->name,true),'f',4);
 
+        QHash<int, QVector<Role*> > skill_roles = GameDataReader::ptr()->get_skill_roles();
+        QList<int> related_skills;
+        foreach(int key, skill_roles.uniqueKeys()){
+            QVector<Role*> s_roles = skill_roles.value(key);
+            if(s_roles.contains(m_role))
+                related_skills.append(key);
+        }
+        QList<QVariant> related_labors;
+        QStringList labor_names;
+        foreach(Labor *l, GameDataReader::ptr()->get_ordered_labors()){
+            if(related_skills.contains(l->skill_id)){
+                related_labors.append(l->labor_id);
+                labor_names.append(l->name);
+            }
+        }
+//        QList<QVariant> enabled_labors;
+//        foreach(int labor_id, related_labors){
+//            if(d->labor_enabled(labor_id)){
+//                 enabled_labors.append(labor_id);
+//            }
+//        }
+        QString labors_desc = "";
+        labors_desc = QString("<br/><br/><b>Associated Labors:</b> %1").arg(labor_names.count() <= 0 ? "None" : labor_names.join(", "));
+        item->setData(related_labors,DwarfModel::DR_SPECIAL_FLAG);
+
         QString match_str;
         QString aspects_str;
         QString tooltip;
@@ -102,12 +130,13 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
                 aspects_str += tr("<br/><b>Note:</b> A higher weight (w) puts greater value on the aspect. Default weights are not shown.");
                 match_str += aspects_str;
 
-                tooltip = QString("<center><h3>%1 - %3%</h3></center>%2<center><h4>%4 is a %3% fit for this role.</h4></center>%5")
+                tooltip = QString("<center><h3>%1 - %3%</h3></center>%2%6<center><h4>%4 is a %3% fit for this role.</h4></center>%5")
                         .arg(m_role->name)
                         .arg(match_str)
                         .arg(QString::number(rating_total,'f',2))                        
                         .arg(d->nice_name())
-                        .arg(raw_rating);
+                        .arg(raw_rating)
+                        .arg(labors_desc);
 
                 item->setToolTip(tooltip);
 

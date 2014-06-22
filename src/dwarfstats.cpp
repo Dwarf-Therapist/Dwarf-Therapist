@@ -33,11 +33,13 @@ float DwarfStats::m_att_pot_weight;
 //float DwarfStats::m_role_mean;
 //QHash<ATTRIBUTES_TYPE, QVector<float>* > DwarfStats::m_attribute_ratings;
 
-ECDF *DwarfStats::atts;
-ECDF *DwarfStats::traits;
-ECDF *DwarfStats::skills;
+QSharedPointer<ECDF> DwarfStats::skills;
+QSharedPointer<ECDF> DwarfStats::atts;
+QSharedPointer<ECDF> DwarfStats::traits;
+QSharedPointer<ECDF> DwarfStats::prefs;
 
 double DwarfStats::m_skill_padding;
+double DwarfStats::m_pref_padding;
 
 float DwarfStats::calc_cdf(float mean, float stdev, float rawValue){
     double rating = 0.0;
@@ -210,33 +212,6 @@ void DwarfStats::load_att_caste_bins(int id, float ratio, QList<int> l){
 //        DT->set_use_caste_ranges(true);
 }
 
-//first version
-//float DwarfStats::get_att_caste_role_rating(ATTRIBUTES_TYPE atype, int val){
-//    if(!m_attribute_ratings.contains(atype)){
-//        QVector<float> *list = new QVector<float>(5000,0.0f);
-//        m_attribute_ratings.insert(atype,list);
-//    }
-//    float ret_val = m_attribute_ratings.value(atype)->at(val-1);
-//    //if(ret_val <= 0){
-//        QHash<QString,att_info> stats = m_att_caste_bins.value(atype);
-//        att_info a;
-//        float sum = 0.0;
-//        float rating = 0.0;
-//        foreach(QString key, stats.uniqueKeys()){
-//            a = stats.value(key);
-//            rating = get_aspect_role_rating(val,a.bins);
-//            QMapIterator<float, int> i(a.ratios_counts);
-//            while (i.hasNext()) {
-//                i.next();
-//                sum += (rating * i.key() * i.value());
-//            }
-//        }
-//        m_attribute_ratings.value(atype)->replace(val-1,sum);
-//        ret_val = sum;
-//    //}
-//    return ret_val;
-//}
-
 float DwarfStats::calc_att_potential_rating(int value, float max, float cti){
     float potential_value = 0.0;
     float diff = max - value;
@@ -268,25 +243,7 @@ float DwarfStats::get_att_caste_role_rating(Attribute &a){
     float bonus_sum = 0.0;
     float bonus_rating = 0.0;
 
-    float potential_value = 0.0;
-    float diff = a.max() - a.value();
-    float cti = a.cti(); //cost to improve
-    if(cti < 0)
-        cti = 1;
-    float gap = diff * 500 / cti;
-
-    //uses the cost to improve and the attributes maximum to apply a bonus
-    //based on the difference between the attribute's current value and the maximum possible
-    if(a.value() >= a.max()){
-        potential_value = a.value();
-    }else{
-        potential_value = 0.5f * (1-(gap/diff));
-        if(potential_value >= 0)
-            potential_value += 0.5f;
-        else
-            potential_value = -0.5f / (potential_value - 1.0f);
-        potential_value = a.value() + (potential_value * gap);
-    }
+    float potential_value = calc_att_potential_rating(a.value(),a.max(),a.cti());
 
     QHash<QString,att_info> stats = m_att_caste_bins.value(a.att_type());
     foreach(QString key, stats.uniqueKeys()){
@@ -319,8 +276,8 @@ void DwarfStats::cleanup(){
     //attributes
     m_att_caste_bins.clear();
 
-    skills = 0;
-    atts = 0;
-    traits = 0;
+//    skills = 0;
+//    atts = 0;
+//    traits = 0;
 //    LOGD << "done cleaning dwarfstats!";
 }

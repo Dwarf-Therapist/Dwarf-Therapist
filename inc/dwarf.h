@@ -61,6 +61,8 @@ public:
     static quint32 ticks_per_season;
     static quint32 ticks_per_year;
 
+    DFInstance * get_df_instance(){return m_df;}
+
     // getters
     //! Return the memory address (in hex) of this creature in the remote DF process
     VIRTADDR address() {return m_address;}
@@ -239,6 +241,7 @@ public:
     QHash<int, Skill> *get_skills() {return &m_skills;}
     QVector<Attribute> *get_attributes() {return &m_attributes;}
     QHash<int, short> *get_traits(){return &m_traits;}
+    QMultiMap<int,Preference*> *get_preferences(){return &m_preferences;}
 
     //! return a skill object by skill_id
     Skill get_skill(int skill_id);

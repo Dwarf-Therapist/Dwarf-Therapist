@@ -2588,38 +2588,33 @@ float Dwarf::calc_role_rating(Role *m_role, bool new_method){
     //********************************
 
     //************ PREFERENCES ************
+    int raw_pref_match_count = 0;
     if(m_role->prefs.count()>0){
         total_weight = 0;
         aspect_value = 0;
         Preference *dwarf_pref;
         int total_match_count = 0;
         int key = 0;
-        int match_count;
+        int match_count;        
         foreach(Preference *role_pref,m_role->prefs){
             total_match_count = 0;
             key = role_pref->get_pref_category();
             QMultiMap<int, Preference *>::iterator i = m_preferences.find(key);
             while(i != m_preferences.end() && i.key() == key){
                 dwarf_pref = i.value();
-                match_count = dwarf_pref->matches(role_pref);
-
-                //if(match_count > 0)
-                    //LOGD << nice_name() << " " << dwarf_pref->get_name() << " matches " << role_pref->get_name();
-
-                    //if it's a weapon, and a match, ensure the dwarf can actually wield it as well
-                    if(match_count > 0 && role_pref->get_item_type() == WEAPON){
-                        ItemWeaponSubtype *w = m_df->get_weapon_def(capitalizeEach(dwarf_pref->get_name()));
-                        if(!w || (m_body_size < w->single_grasp() && m_body_size < w->multi_grasp()))
-                            match_count = 0;
-                    }
+                match_count = dwarf_pref->matches(role_pref);                
+                if(match_count > 1)
+                    match_count = 1;
                 total_match_count += match_count;
+                raw_pref_match_count += match_count;
                 i++;
             }
 
-            if(total_match_count > 0)
-                aspect_value = 1.0;
-            else
-                aspect_value = 0.0;
+            if(total_match_count > 1)
+                int z = 0;
+
+            aspect_value = (double)total_match_count/(double)m_role->prefs.count()/(double)m_df->get_preference_stats().count();
+            aspect_value = DwarfStats::get_pref_ecdf(aspect_value);
 
             weight = role_pref->pref_aspect->weight;
             if(role_pref->pref_aspect->is_neg)
@@ -2637,6 +2632,9 @@ float Dwarf::calc_role_rating(Role *m_role, bool new_method){
         //if all skills were 0, and we don't have att/traits either, then reset skills to 0
         if(raw_skill_level_total == 0 && m_role->attributes.count() <= 0 && m_role->traits.count() <= 0)
             rating_skill = 0;
+        //if all prefs were 0 and we don't have att/skills/traits either then reset prefs to 0
+        if(raw_pref_match_count == 0 && m_role->attributes.count() <= 0 && m_role->skills.count() <= 0 && m_role->traits.count() <= 0)
+            rating_prefs = 0;
     }
 
     //weighted average percentile total

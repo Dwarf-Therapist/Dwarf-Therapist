@@ -56,7 +56,7 @@ public:
     Preference(const Preference &p);
     virtual ~Preference();
 
-    int matches(Preference *role_pref);    
+    int matches(Preference *role_pref, Dwarf *d = 0);
 
     void add_flag(int);
     void set_name(QString value) {m_name = value;}

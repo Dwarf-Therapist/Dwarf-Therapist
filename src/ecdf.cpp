@@ -26,9 +26,22 @@ using std::sort;
 using std::upper_bound;
 using std::lower_bound;
 
+ECDF::ECDF(){
+}
+
 ECDF::ECDF(const VEC & unsorted)
     : m_sorted(unsorted)
 {
+    init_list();
+}
+
+void ECDF::set_list(const QVector<double> &unsorted){
+    m_sorted.clear();
+    m_sorted = unsorted;
+    init_list();
+}
+
+void ECDF::init_list(){
     std::sort(m_sorted.begin(), m_sorted.end());
     b = m_sorted.begin();
     e = m_sorted.end();

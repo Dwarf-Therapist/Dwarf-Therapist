@@ -73,24 +73,49 @@ public:
     static float get_empty_skill_rating(){return m_skill_padding;}
 
     static void init_attributes(QVector<double> attribute_values){
-        delete atts;
-        atts = new ECDF(attribute_values);
+        if(atts == 0)
+            atts = QSharedPointer<ECDF>(new ECDF(attribute_values));
+        atts->set_list(attribute_values);
     }
     static double get_att_ecdf(int val){
         return atts->fplus((double)val);
     }
 
     static void init_traits(QVector<double> trait_values){
-        delete traits;
-        traits = new ECDF(trait_values);
+        if(traits == 0)
+            traits = QSharedPointer<ECDF>(new ECDF(trait_values));
+        traits->set_list(trait_values);
     }
     static double get_trait_ecdf(int val){
         return traits->fplus((double)val);
     }
 
+    static void init_prefs(QVector<double> pref_values){
+        if(prefs == 0)
+            prefs = QSharedPointer<ECDF>(new ECDF(pref_values));
+        prefs->set_list(pref_values);
+        double total = 0.0;
+        foreach(double val, pref_values){
+            if(val != 0){
+                total += prefs->fplus_deskew(val);
+            }
+        }
+        m_pref_padding = 0.5-(total / pref_values.count()/2);
+        LOGD << "Preference ECDF Padding Value:" << m_pref_padding;
+    }
+    static double get_pref_ecdf(double val){
+        double ret = 0.0;
+        if(val <= 0)
+            ret = m_pref_padding;
+        else
+            ret = (prefs->fplus_deskew(val)/2.0f) + m_pref_padding;
+        return ret;
+    }
+
     static void init_skills(QVector<double> skill_values){
-        delete skills;
-        skills = new ECDF(skill_values);
+        if(skills == 0)
+            skills = QSharedPointer<ECDF>(new ECDF(skill_values));
+        skills->set_list(skill_values);
         double total = 0.0;
         foreach(double val, skill_values){
             if(val != 0){
@@ -119,11 +144,13 @@ private:
     static QList<bin> build_att_bins(QList<int>);
     //static float m_role_mean;
 
-    static ECDF *atts;
-    static ECDF *skills;
-    static ECDF *traits;
+    static QSharedPointer<ECDF> atts;
+    static QSharedPointer<ECDF> skills;
+    static QSharedPointer<ECDF> traits;
+    static QSharedPointer<ECDF> prefs;
 
     static double m_skill_padding;
+    static double m_pref_padding;
 };
 
 #endif // DWARFSTATS_H

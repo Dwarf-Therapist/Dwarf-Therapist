@@ -178,8 +178,8 @@ void Caste::load_attribute_info(float ratio){
             display_max -= 250; //game spaces by 250 per descriptor bin
         }        
         m_attrib_ranges.insert(i,r);
-        if(ratio > -1)
-            DwarfStats::load_att_caste_bins(i,ratio,r.raw_bins);
+//        if(ratio > -1)
+//            DwarfStats::load_att_caste_bins(i,ratio,r.raw_bins);
     }    
 }
 

@@ -528,31 +528,10 @@ void StateTableView::assign_to_squad(){
             id = i.data(DwarfModel::DR_ID).toInt();
             Dwarf *d = m_model->get_dwarf_by_id(id);
             new_squad->assign_to_squad(d);
-            //            if(!d->is_adult())
-            //                continue;
-            //            //refresh dwarf info first
-            ////            d->read_squad_info();
-            //            if (d) {
-            //                if(d->squad_id() != new_squad->id()){ //don't add to squad if they're already in it..
-            //                    if(d->squad_id() != -1){ //remove from old squad first
-            //                        if(d->squad_position()==0)
-            //                            emit squad_leader_changed();
-            //                        Squad *old_squad = m_model->active_squads().value(d->squad_id());
-            //                        if(old_squad)
-            //                            old_squad->remove_from_squad(d);
-            //                    }
-
-            //                    int new_pos = new_squad->assign_to_squad(d);
-            //                    if(new_pos==0){
-            //                        emit squad_leader_changed();
-            //                    }
-            //                }
-            //            }
         }
     }
     disconnect(new_squad,SIGNAL(squad_leader_changed()),this,SLOT(emit_squad_leader_changed()));
-    m_model->calculate_pending();
-    //    if(m_model->current_grouping()==DwarfModel::GB_SQUAD)
+    m_model->calculate_pending();    
     DT->get_main_window()->get_view_manager()->redraw_current_tab();
 }
 void StateTableView::remove_squad(){
@@ -564,8 +543,6 @@ void StateTableView::remove_squad(){
         if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool()){
             int id = i.data(DwarfModel::DR_ID).toInt();
             Dwarf *d = m_model->get_dwarf_by_id(id);
-            //refresh dwarf info
-            //            d->read_squad_info();
             if (d) {
                 if(d->squad_position()==0)
                     emit squad_leader_changed();
@@ -576,7 +553,6 @@ void StateTableView::remove_squad(){
         }
     }
     m_model->calculate_pending();
-    //    if(m_model->current_grouping()==DwarfModel::GB_SQUAD)
     DT->get_main_window()->get_view_manager()->redraw_current_tab();
 }
 

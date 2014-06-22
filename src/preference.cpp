@@ -25,6 +25,8 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "material.h"
 #include "roleaspect.h"
+#include "dwarf.h"
+#include "itemweapon.h"
 
 Preference::Preference(QObject *parent)
     :QObject(parent)
@@ -82,7 +84,7 @@ void Preference::add_flag(int flag){
         m_special_flags.append(flag);
 }
 
-int Preference::matches(Preference *role_pref){
+int Preference::matches(Preference *role_pref, Dwarf *d){
     int result = 0;
 
     if(m_pType == role_pref->get_pref_category()){
@@ -119,6 +121,15 @@ int Preference::matches(Preference *role_pref){
             result = 0;
 
         result += exact_matches(role_pref->get_name());
+
+        if(d){
+            //if it's a weapon, and a match, ensure the dwarf can actually wield it as well
+            if(result > 0 && role_pref->get_item_type() == WEAPON){
+                ItemWeaponSubtype *w = d->get_df_instance()->get_weapon_def(capitalizeEach(m_name));
+                if(!w || (d->body_size() < w->single_grasp() && d->body_size() < w->multi_grasp()))
+                    result = 0;
+            }
+        }
 
     }
 

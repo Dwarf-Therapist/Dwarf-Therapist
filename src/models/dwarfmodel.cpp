@@ -633,7 +633,7 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
     }
 
     COLUMN_TYPE type = static_cast<COLUMN_TYPE>(idx.data(DwarfModel::DR_COL_TYPE).toInt());
-    if (type != CT_LABOR && type != CT_FLAGS)
+    if (type != CT_LABOR && type != CT_FLAGS && type != CT_ROLE)
         return;
 
     Q_ASSERT(item);
@@ -679,6 +679,11 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
             m_dwarves[dwarf_id]->toggle_labor(labor_id);
         else if (type == CT_FLAGS)
             m_dwarves[dwarf_id]->toggle_flag_bit(labor_id);
+        else if (type == CT_ROLE){
+            QVariantList labors = item->data(DwarfModel::DR_SPECIAL_FLAG).toList();
+            foreach(QVariant id, labors)
+                m_dwarves[dwarf_id]->toggle_labor(id.toInt());
+        }
     }
     //calculate_pending();
     TRACE << "toggling" << labor_id << "for dwarf:" << dwarf_id;

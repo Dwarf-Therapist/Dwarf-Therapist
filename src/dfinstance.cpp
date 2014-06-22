@@ -548,7 +548,7 @@ void DFInstance::load_population_data(){
     //    }
 
     int cnt = 0;
-    foreach(Dwarf *d, m_actual_dwarves){        
+    foreach(Dwarf *d, m_actual_dwarves){
         if(!m_new_role_method){
             d->calc_attribute_ratings();
             if(m_labor_capable_dwarves.contains(d))
@@ -617,7 +617,7 @@ void DFInstance::load_population_data(){
     }
 }
 
-    void DFInstance::cdf_role_ratings(){
+void DFInstance::cdf_role_ratings(){
     //emit progress_value(calc_progress);
     //emit progress_message(tr("Calculating roles...%1%").arg(QString::number(((float)calc_progress/(float)actual_dwarves.count())*100,'f',2)));
     //if(calc_progress == actual_dwarves.count()){
@@ -633,7 +633,7 @@ void DFInstance::load_population_data(){
         foreach(Dwarf *d, m_labor_capable_dwarves){
             role_count ++;
             role_mean += d->get_role_rating(r->name, true);
-        }        
+        }
         role_mean = role_mean / role_count;
 
         foreach(Dwarf *d, m_labor_capable_dwarves){
@@ -647,7 +647,7 @@ void DFInstance::load_population_data(){
     }
 
     foreach(Dwarf *d, m_labor_capable_dwarves)
-        d->update_rating_list();    
+        d->update_rating_list();
     //actual_dwarves.clear();
 
     //emit progress_value(calc_progress+1);
@@ -659,37 +659,58 @@ void DFInstance::load_population_data(){
     //}
 }
 
- void DFInstance::load_role_ratings(){
-        QVector<double> attribute_values;
-        QVector<double> skill_values;
-        QVector<double> trait_values;
+void DFInstance::load_role_ratings(){
+    QVector<double> attribute_values;
+    QVector<double> skill_values;
+    QVector<double> trait_values;
+    QVector<double> pref_values;
 
-        float skill_val;
-        foreach(Dwarf *d, m_labor_capable_dwarves){
-            QVector<Attribute> *attributes = d->get_attributes();
-            for(int idx=0;idx<attributes->size();idx++){
-                Attribute a = attributes->at(idx);
-                attribute_values.append(a.value());
-            }
-            foreach(int id, GameDataReader::ptr()->get_skills().keys()){
-                skill_val = d->skill_level(id,false,true); //capped interpolated level
-                if(skill_val <= 0)
-                    skill_val = 0;
-                skill_values.append(skill_val);
-            }
-            foreach(int val, d->get_traits()->values()){
-                trait_values.append(val);
-            }
+    float skill_val;
+    foreach(Dwarf *d, m_labor_capable_dwarves){
+        QVector<Attribute> *attributes = d->get_attributes();
+        for(int idx=0;idx<attributes->size();idx++){
+            Attribute a = attributes->at(idx);
+            attribute_values.append(a.value());
         }
-        DwarfStats::init_skills(skill_values);
-        DwarfStats::init_attributes(attribute_values);
-        DwarfStats::init_traits(trait_values);
+        foreach(int id, GameDataReader::ptr()->get_skills().keys()){
+            skill_val = d->skill_level(id,false,true); //capped interpolated level
+            if(skill_val <= 0)
+                skill_val = 0;
+            skill_values.append(skill_val);
+        }
+        foreach(int val, d->get_traits()->values()){
+            trait_values.append(val);
+        }
+        Preference *dwarf_pref;
+        foreach(Role *r, GameDataReader::ptr()->get_roles().values()){
+            double matches = 0;
+            foreach(Preference *role_pref,r->prefs){
+                int key = role_pref->get_pref_category();
+                QMultiMap<int, Preference *>::iterator i = d->get_preferences()->find(key);
+                while(i != d->get_preferences()->end() && i.key() == key){
+                    dwarf_pref = i.value();
+                    if(dwarf_pref->matches(role_pref) > 0)
+                        matches++;
+                    i++;
+                }
+            }
+            if(r->prefs.count() > 0)
+                pref_values.append(matches/(double)r->prefs.count()/(double)m_pref_counts.count());
+            else
+                pref_values.append(0);
+        }
 
-        foreach(Dwarf *d, m_labor_capable_dwarves){
-            d->calc_role_ratings(true);
-            d->update_rating_list();
-            d->calc_attribute_ratings();
-        }
+    }
+    DwarfStats::init_skills(skill_values);
+    DwarfStats::init_attributes(attribute_values);
+    DwarfStats::init_traits(trait_values);
+    DwarfStats::init_prefs(pref_values);
+
+    foreach(Dwarf *d, m_labor_capable_dwarves){
+        d->calc_role_ratings(true);
+        d->update_rating_list();
+        d->calc_attribute_ratings(true);
+    }
 }
 
 
