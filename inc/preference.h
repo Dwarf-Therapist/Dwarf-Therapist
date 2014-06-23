@@ -56,7 +56,7 @@ public:
     Preference(const Preference &p);
     virtual ~Preference();
 
-    int matches(Preference *role_pref, Dwarf *d = 0);
+    int matches(Preference *role_pref, QString role_name, Dwarf *d = 0);
 
     void add_flag(int);
     void set_name(QString value) {m_name = value;}
@@ -65,6 +65,8 @@ public:
     //void set_material(Material* m) {m_mat = m;}
     void set_material_flags(FlagArray f) {m_material_flags = f;}
     void set_exact(bool m) {m_exact_match = m;}
+
+    int get_match_count(QString role_name);
 
     QString get_name() {return m_name;}
     PREF_TYPES get_pref_category() {return m_pType;}
@@ -88,6 +90,8 @@ protected:
     bool m_exact_match;
 
     int exact_matches(QString searchval);
+
+    QHash<QString,int> m_role_matches; //keeps a count of pref matches for each role
 };
 
 #endif // PREFERENCE_H

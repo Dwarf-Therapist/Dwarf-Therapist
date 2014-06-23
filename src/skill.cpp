@@ -39,6 +39,7 @@ Skill::Skill()
     , m_name("UNKNOWN")      
     , m_rust_rating("")
     , m_skill_rate(100)
+    , m_role_rating(-1)
 {}
 
 Skill::Skill(short id, uint exp, short rating, int rust, int skill_rate)    
@@ -53,6 +54,7 @@ Skill::Skill(short id, uint exp, short rating, int rust, int skill_rate)
     , m_rust_rating("")
     , m_skill_rate(skill_rate)
     , m_rust(rust)
+    , m_role_rating(-1)
 {    
     m_name = GameDataReader::ptr()->get_skill_name(m_id);
     //defaults
@@ -232,4 +234,23 @@ double Skill::get_simulated_level(){
         sim_level += 20 * sim_xp;
     sim_level /= MAX_CAPPED_XP;
     return sim_level;
+}
+
+double Skill::get_role_rating(){
+    if(m_role_rating < 0){
+        if(DT->show_skill_learn_rates){
+            m_role_rating = capped_level_precise();
+            if(m_role_rating < 0)
+                m_role_rating = 0;
+            double simulated_value = get_simulated_level();
+            float skill_rate_weight = DT->user_settings()->value("options/default_skill_rate_weight",0.25).toDouble();
+            m_role_rating = (m_role_rating * (1.0f-skill_rate_weight)) + (simulated_value * skill_rate_weight);
+            m_role_rating = DwarfStats::get_skill_ecdf(m_role_rating);
+        }else{
+            m_role_rating = DwarfStats::get_skill_ecdf(capped_level_precise());
+        }
+        if(m_role_rating < 0)
+            m_role_rating = 0;
+    }
+    return m_role_rating;
 }

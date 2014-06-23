@@ -84,7 +84,7 @@ void Preference::add_flag(int flag){
         m_special_flags.append(flag);
 }
 
-int Preference::matches(Preference *role_pref, Dwarf *d){
+int Preference::matches(Preference *role_pref, QString role_name, Dwarf *d){
     int result = 0;
 
     if(m_pType == role_pref->get_pref_category()){
@@ -133,7 +133,16 @@ int Preference::matches(Preference *role_pref, Dwarf *d){
 
     }
 
+    m_role_matches.insert(role_name,result);
+
     return result;
+}
+
+int Preference::get_match_count(QString role_name){
+    if(m_role_matches.contains(role_name))
+        return m_role_matches.value(role_name);
+    else
+        return 0;
 }
 
 int Preference::exact_matches(QString searchval){

@@ -689,13 +689,13 @@ void DFInstance::load_role_ratings(){
                 QMultiMap<int, Preference *>::iterator i = d->get_preferences()->find(key);
                 while(i != d->get_preferences()->end() && i.key() == key){
                     dwarf_pref = i.value();
-                    if(dwarf_pref->matches(role_pref) > 0)
+                    if(dwarf_pref->matches(role_pref,r->name) > 0)
                         matches++;
                     i++;
                 }
             }
             if(r->prefs.count() > 0)
-                pref_values.append(matches/(double)r->prefs.count()/(double)m_pref_counts.count());
+                pref_values.append(matches/(double)r->prefs.count());///(double)m_pref_counts.count());
             else
                 pref_values.append(0);
         }
