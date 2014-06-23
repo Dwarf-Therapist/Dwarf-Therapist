@@ -236,7 +236,7 @@ double Skill::get_simulated_level(){
     return sim_level;
 }
 
-double Skill::get_role_rating(){
+double Skill::get_role_rating(bool no_skill_is_zero){
     if(m_role_rating < 0){
         if(DT->show_skill_learn_rates){
             m_role_rating = capped_level_precise();
@@ -252,5 +252,8 @@ double Skill::get_role_rating(){
         if(m_role_rating < 0)
             m_role_rating = 0;
     }
-    return m_role_rating;
+    if(no_skill_is_zero && m_capped_level <= 0)
+        return 0.0001;
+    else
+        return m_role_rating;
 }

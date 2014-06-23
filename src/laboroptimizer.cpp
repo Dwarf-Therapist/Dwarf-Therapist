@@ -67,8 +67,8 @@ void LaborOptimizer::calc_population(bool load_labor_map){
     m_labor_map.clear();
     m_total_population = 0;
 
-    if(load_labor_map)
-        adjust_ratings();
+//    if(load_labor_map)
+//        adjust_ratings();
 
     //setup our new map
     m_current_message.clear();
@@ -119,12 +119,13 @@ void LaborOptimizer::calc_population(bool load_labor_map){
                         dwarf_labor_map dlm;
                         dlm.d = d;
                         dlm.det = det;
-                        if(!det->role_name.isEmpty()){
-                            //dlm.rating = d->get_role_rating(det->role_name, true);//det->priority * d->get_role_rating(det->role_name, true);
-                            dlm.rating = d->get_adjusted_role_rating(det->role_name) * det->priority;
+                        if(!det->role_name.isEmpty()){                            
+                            //dlm.rating = d->get_adjusted_role_rating(det->role_name) * det->priority;
+                            dlm.rating = d->get_role_rating(det->role_name,true) * det->priority;
                         }
                         else{
-                            dlm.rating = d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).capped_exp() / (float)MAX_CAPPED_XP * 100 * det->priority;//det->priority * (d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).capped_exp() / (float)MAX_CAPPED_XP * 100);
+                            dlm.rating = d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).get_role_rating(true) * 100 * det->priority;
+                            //dlm.rating = d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).capped_exp() / (float)MAX_CAPPED_XP * 100 * det->priority;
                         }
                         m_labor_map.append(dlm);
                     }
