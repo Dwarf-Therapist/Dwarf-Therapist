@@ -56,7 +56,7 @@ AttributeColumn::AttributeColumn(const AttributeColumn &to_copy)
 QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
     Attribute a = d->get_attribute((int)m_attribute_type);
-    short rawVal = a.value();
+    short rawVal = a.get_value();
     QString descriptor = a.get_descriptor();
     float rating = a.rating() * 100.0f;    
 
@@ -64,7 +64,7 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     //that means any rating over 2250 will essentially be 100%, which is pretty reasonable, since
     //scaling to 0-5000 makes the drawn squares fairly small
     if(d->is_animal())
-        rating = (float)(a.value() / 2250.0f * 100.0f);
+        rating = (float)(a.get_value() / 2250.0f * 100.0f);
 
     //the rating is used for drawing, should be between 0-100 for attributes
     item->setData(rating, DwarfModel::DR_RATING);

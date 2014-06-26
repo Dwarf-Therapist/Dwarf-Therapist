@@ -71,7 +71,8 @@ public:
     static int get_xp_for_level(int level);
     double get_simulated_rating();
     double get_simulated_level();
-    double get_role_rating(bool no_skill_is_zero = false);
+    double get_rating(bool ensure_non_zero = false);
+    double get_balanced_level();
 
 private:
     short m_id;
@@ -90,7 +91,8 @@ private:
     int m_skill_rate;
     int m_rust;
     bool m_losing_xp;
-    double m_role_rating;
+    double m_rating;
+    double m_balanced_level;
     //skill level, experience
     static QHash<int,int> m_experience_levels;
 

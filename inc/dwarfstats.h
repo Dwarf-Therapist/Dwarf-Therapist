@@ -38,8 +38,16 @@ class DwarfStats
 public:
     static float calc_cdf(float mean, float stdev, float rawValue);    
 
-    //static void set_role_mean(float mean){m_role_mean = mean;}
-    //static float get_role_mean(){return m_role_mean;}
+    static void set_role_stats(float min, float max, float median){
+        m_role_min = min;
+        m_role_max = max;
+        m_role_median  = median;
+    }
+
+    static float get_role_median(){return m_role_median;}
+    static float get_role_min(){return m_role_min;}
+    static float get_role_max(){return m_role_max;}
+
 
     struct bin{
         int min;
@@ -59,7 +67,7 @@ public:
     static void load_att_caste_bins(int id, float ratio, QList<int> l);
 //    static float get_att_caste_role_rating(ATTRIBUTES_TYPE atype, int val); //old  version
     static float get_att_caste_role_rating(Attribute &a);
-    static float calc_att_potential_rating(int value, float max, float cti);
+    static float calc_att_potential_value(int value, float max, float cti);
 
     //traits
     static float get_trait_role_rating(ASPECT_TYPE, int);
@@ -70,87 +78,77 @@ public:
     static void set_att_potential_weight(float val){m_att_pot_weight = val;}
     static float get_att_potential_weight(){return m_att_pot_weight;}
 
-    static float get_empty_skill_rating(){return m_skill_padding;}
+    static void set_skill_rate_weight(float val){m_skill_rate_weight = val;}
+    static float get_skill_rate_weight(){return m_skill_rate_weight;}
 
-    static void init_attributes(QVector<double> attribute_values){
+//    static float get_empty_skill_rating(){return m_skill_padding;}
+
+    static void init_attributes(QVector<double> attribute_values, QVector<double> attribute_raw_values){
         if(atts == 0)
             atts = QSharedPointer<ECDF>(new ECDF(attribute_values));
-        atts->set_list(attribute_values);
+        else
+            atts->set_list(attribute_values);
+        if(atts_raw == 0)
+            atts_raw = QSharedPointer<ECDF>(new ECDF(attribute_raw_values));
+        else
+            atts_raw->set_list(attribute_raw_values);
     }
-    static double get_att_ecdf(int val){
-        return atts->fplus((double)val);
+    static double get_att_ecdf(int val,bool raw = false){
+        if(raw)
+            return atts_raw->fplus((double)val);
+        else
+            return atts->favg((double)val);
     }
 
     static void init_traits(QVector<double> trait_values){
         if(traits == 0)
             traits = QSharedPointer<ECDF>(new ECDF(trait_values));
-        traits->set_list(trait_values);
+        else
+            traits->set_list(trait_values);
     }
     static double get_trait_ecdf(int val){
-        return traits->fplus((double)val);
+        return traits->favg((double)val);
     }
 
     static void init_prefs(QVector<double> pref_values){
         if(prefs == 0)
             prefs = QSharedPointer<ECDF>(new ECDF(pref_values));
-        prefs->set_list(pref_values);
-        double total = 0.0;
-        foreach(double val, pref_values){
-            if(val != 0){
-                total += prefs->fplus_deskew(val);
-            }
-        }
-        m_pref_padding = 0.5-(total / pref_values.count()/2);
-        LOGD << "Preference ECDF Padding Value:" << m_pref_padding;
+        else
+            prefs->set_list(pref_values);
     }
     static double get_pref_ecdf(double val){
-        double ret = 0.0;
-        if(val <= 0)
-            ret = m_pref_padding;
-        else
-            ret = (prefs->fplus_deskew(val)/2.0f) + m_pref_padding;
-        return ret;
+        return prefs->favg(val);
     }
 
     static void init_skills(QVector<double> skill_values){
         if(skills == 0)
             skills = QSharedPointer<ECDF>(new ECDF(skill_values));
-        skills->set_list(skill_values);
-        double total = 0.0;
-        foreach(double val, skill_values){
-            if(val != 0){
-                total += skills->fplus_deskew(val);
-            }
-        }
-        m_skill_padding = 0.5-(total / skill_values.count()/2);
-        LOGD << "Skill ECDF Padding Value:" << m_skill_padding;
+        else
+            skills->set_list(skill_values);
     }
     static double get_skill_ecdf(float val){
-        double ret = 0.0;
-        if(val <= 0)
-            ret = m_skill_padding;
-        else
-            ret = (skills->fplus_deskew(val)/2.0f) + m_skill_padding;
-        return ret;
+        return skills->favg(val);
     }
 
 private:
     static float m_att_pot_weight;
+    static float m_skill_rate_weight;
+
     static float get_aspect_role_rating(float value, QList<bin> m_bins);
 
     static QHash<int, QHash<QString, att_info> > m_att_caste_bins;
 //    static QHash<ATTRIBUTES_TYPE, QVector<float>* > m_attribute_ratings;
 
     static QList<bin> build_att_bins(QList<int>);
-    //static float m_role_mean;
+    static float m_role_min;
+    static float m_role_max;
+    static float m_role_median;
 
     static QSharedPointer<ECDF> atts;
+    static QSharedPointer<ECDF> atts_raw;
     static QSharedPointer<ECDF> skills;
     static QSharedPointer<ECDF> traits;
     static QSharedPointer<ECDF> prefs;
-
-    static double m_skill_padding;
-    static double m_pref_padding;
 };
 
 #endif // DWARFSTATS_H

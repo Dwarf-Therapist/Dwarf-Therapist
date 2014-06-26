@@ -39,7 +39,8 @@ Skill::Skill()
     , m_name("UNKNOWN")      
     , m_rust_rating("")
     , m_skill_rate(100)
-    , m_role_rating(-1)
+    , m_rating(-1)
+    , m_balanced_level(-1)
 {}
 
 Skill::Skill(short id, uint exp, short rating, int rust, int skill_rate)    
@@ -54,7 +55,8 @@ Skill::Skill(short id, uint exp, short rating, int rust, int skill_rate)
     , m_rust_rating("")
     , m_skill_rate(skill_rate)
     , m_rust(rust)
-    , m_role_rating(-1)
+    , m_rating(-1)
+    , m_balanced_level(-1)
 {    
     m_name = GameDataReader::ptr()->get_skill_name(m_id);
     //defaults
@@ -236,24 +238,33 @@ double Skill::get_simulated_level(){
     return sim_level;
 }
 
-double Skill::get_role_rating(bool no_skill_is_zero){
-    if(m_role_rating < 0){
-        if(DT->show_skill_learn_rates){
-            m_role_rating = capped_level_precise();
-            if(m_role_rating < 0)
-                m_role_rating = 0;
-            double simulated_value = get_simulated_level();
-            float skill_rate_weight = DT->user_settings()->value("options/default_skill_rate_weight",0.25).toDouble();
-            m_role_rating = (m_role_rating * (1.0f-skill_rate_weight)) + (simulated_value * skill_rate_weight);
-            m_role_rating = DwarfStats::get_skill_ecdf(m_role_rating);
-        }else{
-            m_role_rating = DwarfStats::get_skill_ecdf(capped_level_precise());
+//returns a weighted average of the current level and the simulated level with skill rate
+double Skill::get_balanced_level(){
+    if(m_balanced_level < 0){
+        float curr_level = capped_level_precise();
+        if(curr_level < 0)
+            curr_level = 0;
+        float skill_rate_weight = DwarfStats::get_skill_rate_weight();
+        if(!DT->show_skill_learn_rates){
+            skill_rate_weight = 0;
         }
-        if(m_role_rating < 0)
-            m_role_rating = 0;
+        double simulated_level = get_simulated_level();
+        m_balanced_level = (curr_level * (1.0f-skill_rate_weight)) + (simulated_level * skill_rate_weight);
+        if(m_balanced_level < 0)
+            m_balanced_level = 0;
     }
-    if(no_skill_is_zero && m_capped_level <= 0)
+    return m_balanced_level;
+}
+
+double Skill::get_rating(bool ensure_non_zero){
+    if(m_rating < 0){
+        m_rating = DwarfStats::get_skill_ecdf(get_balanced_level());
+        if(m_rating < 0)
+            m_rating = 0;
+    }
+    //this is just for optimization to ensure that this rating will match the lowest possible role rating (0.0001) for comparison
+    if(ensure_non_zero && m_rating == 0)
         return 0.0001;
     else
-        return m_role_rating;
+        return m_rating;
 }

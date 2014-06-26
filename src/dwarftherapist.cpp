@@ -224,7 +224,8 @@ void DwarfTherapist::read_settings() {
     QToolTip::setFont(DT->user_settings()->value("options/tooltip_font", QFont(DefaultFonts::getTooltipFontName(), DefaultFonts::getTooltipFontSize())).value<QFont>());
 
     //set a variable we'll use in the dwarfstats for role calcs
-    DwarfStats::set_att_potential_weight(DT->user_settings()->value("options/default_attribute_potential_weight",0.5f).toFloat());    
+    DwarfStats::set_att_potential_weight(DT->user_settings()->value("options/default_attribute_potential_weight",0.5f).toFloat());
+    DwarfStats::set_skill_rate_weight(DT->user_settings()->value("options/default_skill_rate_weight",0.25f).toFloat());
     LOGD << "finished reading settings";
 }
 

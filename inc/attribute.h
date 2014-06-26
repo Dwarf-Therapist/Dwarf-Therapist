@@ -41,9 +41,11 @@ public:
     QString get_name();
     QString get_descriptor(){return m_descriptor;}
     int get_descriptor_rank(){return m_descriptor_index;}
-    int value() {return m_value;}
+    int get_value() {return m_value;}
+    float get_potential_value();
+    float get_balanced_value();
     int display_value(){return m_display_value;}
-    float rating(bool potential = false) {return (potential) ? m_rating_potential : m_rating;}
+    float rating(bool potential = false);
     QStringList syndrome_names(){return m_syn_names;}
     float max() {return m_max;}
     float cti() {return m_cti;}
@@ -60,6 +62,8 @@ public:
 private:
     int m_id;
     int m_value; //raw value including permanent syndrome effects
+    float m_value_potential;
+    float m_value_balanced;
     int m_display_value; //raw value including permanent and temporary syndrome effects
     int m_max;
     float m_rating_potential;
@@ -67,7 +71,7 @@ private:
     int m_cti; //cost to improve (caste specific)
     QString m_descriptor; //caste specific depending on the bins
     int m_descriptor_index;
-    QStringList m_syn_names;
+    QStringList m_syn_names;    
 
     static QHash<int, QVector<QString> > m_display_descriptions;
 

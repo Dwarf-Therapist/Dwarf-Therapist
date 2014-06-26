@@ -661,19 +661,19 @@ void DFInstance::cdf_role_ratings(){
 
 void DFInstance::load_role_ratings(){
     QVector<double> attribute_values;
+    QVector<double> attribute_raw_values;
     QVector<double> skill_values;
     QVector<double> trait_values;
     QVector<double> pref_values;
 
     float skill_val;
     foreach(Dwarf *d, m_labor_capable_dwarves){
-        QVector<Attribute> *attributes = d->get_attributes();
-        for(int idx=0;idx<attributes->size();idx++){
-            Attribute a = attributes->at(idx);
-            attribute_values.append(a.value());
+        foreach(int id, GameDataReader::ptr()->get_attributes().keys()){
+            attribute_values.append(d->get_attribute(id).get_balanced_value());
+            attribute_raw_values.append(d->get_attribute(id).get_value());
         }
         foreach(int id, GameDataReader::ptr()->get_skills().keys()){
-            skill_val = d->skill_level(id,false,true); //capped interpolated level
+            skill_val = d->get_skill(id).get_balanced_level();
             if(skill_val <= 0)
                 skill_val = 0;
             skill_values.append(skill_val);
@@ -702,15 +702,37 @@ void DFInstance::load_role_ratings(){
 
     }
     DwarfStats::init_skills(skill_values);
-    DwarfStats::init_attributes(attribute_values);
+    DwarfStats::init_attributes(attribute_values,attribute_raw_values);
     DwarfStats::init_traits(trait_values);
     DwarfStats::init_prefs(pref_values);
 
+    QList<float> role_ratings;
+
     foreach(Dwarf *d, m_labor_capable_dwarves){
-        d->calc_role_ratings(true);
+        role_ratings.append(d->calc_role_ratings(true));
         d->update_rating_list();
-        d->calc_attribute_ratings(true);
+        d->calc_attribute_ratings();
     }
+
+    float max = 0;
+    float min = 0;
+    float median = 0;
+    if(role_ratings.count() > 0){
+        QList<float>::Iterator i_min = std::min_element(role_ratings.begin(),role_ratings.end());
+        QList<float>::Iterator i_max = std::max_element(role_ratings.begin(),role_ratings.end());
+        max = *i_max;
+        min = *i_min;
+        median = 0;
+        float n = (float)role_ratings.count() / 2.0f;
+        if(role_ratings.count() % 2 == 0){
+            std::nth_element(role_ratings.begin(),role_ratings.begin()+(int)n,role_ratings.end());
+            median = 0.5*(role_ratings.at((int)n)+role_ratings.at((int)n-1));
+        }else{
+            std::nth_element(role_ratings.begin(),role_ratings.begin()-(int)n,role_ratings.end());
+            median =  role_ratings.at((int)n);
+        }
+    }
+    DwarfStats::set_role_stats(min,max,median);
 }
 
 

@@ -38,35 +38,60 @@ ECDF::ECDF(const VEC & unsorted)
 void ECDF::set_list(const QVector<double> &unsorted){
     m_sorted.clear();
     m_sorted = unsorted;
+    m_skew = false;
+    m_skew_padding = 0.0;
     init_list();
 }
 
 void ECDF::init_list(){
-    std::sort(m_sorted.begin(), m_sorted.end());
+    qSort(m_sorted.begin(), m_sorted.end());
     b = m_sorted.begin();
     e = m_sorted.end();
     n = static_cast<double>(m_sorted.size());
-    m_zero_counts = m_sorted.lastIndexOf(0)+1;
-    m_non_zero_counts = m_sorted.count() - m_zero_counts;
+//    m_min_count = m_sorted.lastIndexOf(0)+1;//m_sorted.lastIndexOf(m_sorted.first())+1;
+//    m_other_count = m_sorted.count() - m_min_count;
+
+//    if((float)m_min_count / (float)m_sorted.count() > 0.5f){
+//        m_skew = true;
+//        double total = 0.0;
+//        foreach(double val, m_sorted){
+//            if(val != 0)
+//                total += fplus(val);
+//        }
+//        m_skew_padding = 0.5-(total / m_sorted.count()/2);
+//    }
 }
 
 double ECDF::fplus(double x)const{
     CIT it = upper_bound(b, e, x);
-    unsigned pos = it-b;  // it is the first element >= x
-    return pos/n;
+    unsigned pos = it-b;  // it is the first element >= x        
+    return (pos/n);
+//    if(!m_skew){
+//        return pos/n;
+//    }else{
+//        if(x <= 0){
+//            return m_skew_padding;
+//        }else{
+//            return (((pos-(float)m_min_count)/(float)m_other_count) / 2) + m_skew_padding;
+//        }
+//    }
 }
 
-double ECDF::fplus_deskew(double x)const{
-    if(x == 0)
-        return 0;
-    CIT it = upper_bound(b, e, x);
-    unsigned pos = it-b;  // it is the first element >= x
-    double ret = (pos-(float)m_zero_counts)/(float)m_non_zero_counts;
-    return ret;
-}
+//double ECDF::fplus_deskew(double x)const{
+//    if(x == 0)
+//        return 0;
+//    CIT it = upper_bound(b, e, x);
+//    unsigned pos = it-b;  // it is the first element >= x
+//    double ret = (pos-(float)m_zero_counts)/(float)m_non_zero_counts;
+//    return ret;
+//}
 
 double ECDF::fminus(double x)const{
     CIT it = lower_bound(b,e, x);
     unsigned pos = it-b;
     return pos/n;
+}
+
+double ECDF::favg(double x) const{
+    return ((fplus(x)+fminus(x))/2.0f);
 }

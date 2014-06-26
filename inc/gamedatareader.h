@@ -104,6 +104,7 @@ public:
     void refresh_traits();
 
     QString get_attribute_name(int id){return m_attribute_names.value(id);}
+    QHash<int,QString> get_attributes(){return m_attribute_names;}
     ATTRIBUTES_TYPE get_attribute_type(QString name){return m_attributes_by_name.value(name);}
 
     QString get_string_for_key(QString key);

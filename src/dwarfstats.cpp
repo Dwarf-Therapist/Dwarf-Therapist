@@ -29,17 +29,20 @@ THE SOFTWARE.
 
 QHash<ASPECT_TYPE, QList<DwarfStats::bin> > DwarfStats::m_trait_bins;
 QHash<int, QHash<QString,DwarfStats::att_info> > DwarfStats::m_att_caste_bins;
+
 float DwarfStats::m_att_pot_weight;
-//float DwarfStats::m_role_mean;
+float DwarfStats::m_skill_rate_weight;
+
+float DwarfStats::m_role_min;
+float DwarfStats::m_role_max;
+float DwarfStats::m_role_median;
 //QHash<ATTRIBUTES_TYPE, QVector<float>* > DwarfStats::m_attribute_ratings;
 
 QSharedPointer<ECDF> DwarfStats::skills;
 QSharedPointer<ECDF> DwarfStats::atts;
+QSharedPointer<ECDF> DwarfStats::atts_raw;
 QSharedPointer<ECDF> DwarfStats::traits;
 QSharedPointer<ECDF> DwarfStats::prefs;
-
-double DwarfStats::m_skill_padding;
-double DwarfStats::m_pref_padding;
 
 float DwarfStats::calc_cdf(float mean, float stdev, float rawValue){
     double rating = 0.0;
@@ -212,7 +215,7 @@ void DwarfStats::load_att_caste_bins(int id, float ratio, QList<int> l){
 //        DT->set_use_caste_ranges(true);
 }
 
-float DwarfStats::calc_att_potential_rating(int value, float max, float cti){
+float DwarfStats::calc_att_potential_value(int value, float max, float cti){
     float potential_value = 0.0;
     float diff = max - value;
     if(cti < 0)
@@ -243,12 +246,12 @@ float DwarfStats::get_att_caste_role_rating(Attribute &a){
     float bonus_sum = 0.0;
     float bonus_rating = 0.0;
 
-    float potential_value = calc_att_potential_rating(a.value(),a.max(),a.cti());
+    float potential_value = calc_att_potential_value(a.get_value(),a.max(),a.cti());
 
     QHash<QString,att_info> stats = m_att_caste_bins.value(a.att_type());
     foreach(QString key, stats.uniqueKeys()){
         a_info = stats.value(key);
-        rating = get_aspect_role_rating(a.value(),a_info.bins);
+        rating = get_aspect_role_rating(a.get_value(),a_info.bins);
 
         //pass the potential rating into the set of bins
         bonus_rating = get_aspect_role_rating(potential_value, a_info.bins);

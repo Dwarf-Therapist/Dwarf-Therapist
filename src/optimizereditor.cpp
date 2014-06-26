@@ -40,8 +40,8 @@ optimizereditor::optimizereditor(QWidget *parent) :
 
     ui->tw_labors->setHorizontalHeaderLabels(QStringList() << "Job" << "Role" << "Priority" << "Ratio" << "Worker Count");
 
-    ui->tw_labors->horizontalHeaderItem(2)->setToolTip(tr("The role or skill used to rank dwarves for the job."));
-    ui->tw_labors->horizontalHeaderItem(2)->setToolTip(tr("Determines how important assigning workers to the job is, in relation to other jobs."));    
+    ui->tw_labors->horizontalHeaderItem(1)->setToolTip(tr("The role or labor skill used to rank dwarves for the job."));
+    ui->tw_labors->horizontalHeaderItem(2)->setToolTip(tr("Determines how important assigning workers to the job is, in relation to other jobs. A 0.2 difference between priorties is advised for best results."));
     ui->tw_labors->horizontalHeaderItem(3)->setToolTip(tr("Represents the ratio of the population which should be assigned to the job. For example setting 1 for each job will distribute workers evenly among all jobs."));
     ui->tw_labors->horizontalHeaderItem(4)->setToolTip(tr("The actual number of dwarves which will be assigned to the job"));
 
@@ -189,10 +189,11 @@ void optimizereditor::insert_row(PlanDetail *d){
     ui->tw_labors->setItem(row, 1, cmbitem);
 
     QDoubleSpinBox *sb_priority = new QDoubleSpinBox();
-    sb_priority->setMinimum(0.01);
-    sb_priority->setMaximum(1);
-    sb_priority->setSingleStep(0.1);
-    sb_priority->setDecimals(4);
+    sb_priority->setStatusTip(tr("It is advised to keep a minimum difference of 0.2 between priorities for best results."));
+    sb_priority->setMinimum(0.00);
+    sb_priority->setMaximum(20.0);
+    sb_priority->setSingleStep(0.2);
+    sb_priority->setDecimals(2);
     sb_priority->setWrapping(true);
     sb_priority->setValue(d->priority);
     connect(sb_priority, SIGNAL(valueChanged(double)), this, SLOT(priority_changed(double)));

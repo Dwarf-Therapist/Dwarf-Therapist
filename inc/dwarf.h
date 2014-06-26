@@ -265,7 +265,7 @@ public:
 
     bool trait_is_active(int trait_id);
 
-    Q_INVOKABLE int attribute(int attrib_id) {return get_attribute(attrib_id).value();}
+    Q_INVOKABLE int attribute(int attrib_id) {return get_attribute(attrib_id).get_value();}
     Attribute get_attribute(int id);
 
     //! returns the numeric rating for the this dwarf in the skill specified by skill_id
@@ -334,7 +334,7 @@ public:
     */
     void reset_custom_profession() {m_pending_custom_profession = "";}
 
-    void calc_role_ratings(bool new_method = false);
+    QList<float> calc_role_ratings(bool new_method = false);
     float calc_role_rating(Role *, bool new_method = false);
     Q_INVOKABLE float get_role_rating(QString role_name, bool raw = false);
     Q_INVOKABLE float get_adjusted_role_rating(QString role_name){return m_adjusted_role_ratings.value(role_name);}
@@ -342,7 +342,7 @@ public:
     void set_adjusted_role_rating(QString role_name, float value);
     void update_rating_list();
 
-    void calc_attribute_ratings(bool new_method = false);
+    void calc_attribute_ratings();
 
     //! static method for mapping a numeric happiness score into a value of the enum DWARF_HAPPINESS
     static DWARF_HAPPINESS happiness_from_score(int score);

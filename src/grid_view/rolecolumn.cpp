@@ -89,10 +89,25 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
 
     if(m_role){
         float rating_total = d->get_role_rating(m_role->name,false);
-        item->setData(rating_total, DwarfModel::DR_RATING);
+
+        float adjusted_rating = rating_total;
+//        if(adjusted_rating > 0.0001){
+//            float min = DwarfStats::get_role_min();
+//            float max = DwarfStats::get_role_max();
+//            float median = DwarfStats::get_role_median();
+//            if(adjusted_rating >= median)
+//                adjusted_rating = (((adjusted_rating - median) * (100.0f - 50.00f)) / (max - median)) + median;
+//            else
+//                adjusted_rating = (((adjusted_rating - min) * (50.00f - 0.0f)) / ((median-0.01) - min)) + 0.0f;
+
+////                    adjusted_rating = (((adjusted_rating - min) * (100.0f - 0.0f)) / (max-min)) + 0.0f;
+//        }
+
+        item->setData(adjusted_rating, DwarfModel::DR_RATING);
         item->setData(roundf(rating_total), DwarfModel::DR_DISPLAY_RATING);
-        item->setData(rating_total, DwarfModel::DR_SORT_VALUE);
+        item->setData(adjusted_rating, DwarfModel::DR_SORT_VALUE);
         item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
+        set_export_role(DwarfModel::DR_DISPLAY_RATING);
 
         QString raw_rating = "RAW:" + QString::number(d->get_role_rating(m_role->name,true),'f',4);
 
@@ -111,12 +126,7 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
                 labor_names.append(l->name);
             }
         }
-//        QList<QVariant> enabled_labors;
-//        foreach(int labor_id, related_labors){
-//            if(d->labor_enabled(labor_id)){
-//                 enabled_labors.append(labor_id);
-//            }
-//        }
+
         QString labors_desc = "";
         labors_desc = QString("<br/><br/><b>Associated Labors:</b> %1").arg(labor_names.count() <= 0 ? "None" : labor_names.join(", "));
         item->setData(related_labors,DwarfModel::DR_SPECIAL_FLAG);
