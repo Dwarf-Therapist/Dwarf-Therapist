@@ -1651,20 +1651,20 @@ void Dwarf::read_skills() {
 
 void Dwarf::read_traits() {
     VIRTADDR addr = m_first_soul + m_mem->soul_detail("traits");
-    m_traits.clear();
+    m_traits.clear();    
     for (int i = 0; i < 30; ++i) {
         short val = m_df->read_short(addr + i * 2);
         if(val < 0)
             val = 0;
         if(val > 100)
-            val = 100;
+            val = 100;        
         m_traits.insert(i, val);
     }
 
     //check the misc. traits for the level of detachment and add a special trait for it
     if(!m_is_animal && has_state(15)){
-        int val = state_value(15);
-        m_traits.insert(30,val);
+        int val = state_value(15);        
+        m_traits.insert(30,val);        
     }
 }
 
@@ -2414,6 +2414,8 @@ void Dwarf::calc_attribute_ratings(){
 }
 
 QList<float> Dwarf::calc_role_ratings(bool new_method){
+    LOGD << ":::::::::::::::::::::::::::::::::::::::::::::::::::";
+    LOGD << m_nice_name;
     m_role_ratings.clear();
     m_sorted_role_ratings.clear();
     m_sorted_custom_role_ratings.clear();
@@ -2441,6 +2443,8 @@ float Dwarf::calc_role_rating(Role *m_role, bool new_method){
     }
 
     TRACE << "reading role " << m_role->name << " for unit " << m_nice_name;
+    LOGD << "  +" << m_role->name;
+//    QTime t;
 
     //no script, calculate rating based on specified aspects
     float rating_att = 0.0;
@@ -2468,6 +2472,7 @@ float Dwarf::calc_role_rating(Role *m_role, bool new_method){
 
     //**************** ATTRIBUTES ****************
 //    float m_pot_att_weight = DwarfStats::get_att_potential_weight();
+//    t.start();
     if(m_role->attributes.count()>0){
         int attrib_id = 0;
         aspect_value = 0;
@@ -2495,10 +2500,12 @@ float Dwarf::calc_role_rating(Role *m_role, bool new_method){
         }
         rating_att = (rating_att / total_weight) * 100; //weighted average percentile
     }
+//    LOGD << "calculated role " << m_role->name << " attributes in " << t.elapsed() << "ms";
     //********************************
 
 
     //**************** TRAITS ****************
+//    t.restart();
     if(m_role->traits.count()>0)
     {
         total_weight = 0;
@@ -2517,9 +2524,11 @@ float Dwarf::calc_role_rating(Role *m_role, bool new_method){
         }
         rating_trait = (rating_trait / total_weight) * 100;//weighted average percentile
     }
+//    LOGD << "calculated role " << m_role->name << " traits in " << t.elapsed() << "ms";
     //********************************
 
     //************ SKILLS ************
+//    t.restart();
     float total_skill_rates = 0.0;
     if(m_role->skills.count()>0){
         total_weight = 0;
@@ -2530,9 +2539,6 @@ float Dwarf::calc_role_rating(Role *m_role, bool new_method){
             weight = a->weight;
 
             s = this->get_skill(skill_id.toInt());
-            aspect_value = s.get_balanced_level();
-            if(aspect_value < 0)
-                aspect_value = 0;
             total_skill_rates += s.skill_rate();
 
             aspect_value = s.get_rating();
@@ -2545,7 +2551,7 @@ float Dwarf::calc_role_rating(Role *m_role, bool new_method){
             rating_skill += (aspect_value*weight);
             total_weight += weight;
         }
-
+//        LOGD << "calculated role " << m_role->name << " skills in " << t.elapsed() << "ms";
         if(total_skill_rates <= 0){
             //this unit cannot improve the skills associated with this role so cancel any rating
             return 0.0001;
@@ -2556,6 +2562,7 @@ float Dwarf::calc_role_rating(Role *m_role, bool new_method){
     //********************************
 
     //************ PREFERENCES ************
+//    t.restart();
     int raw_pref_match_count = 0;
     if(m_role->prefs.count()>0){
         total_weight = 0;
@@ -2588,7 +2595,7 @@ float Dwarf::calc_role_rating(Role *m_role, bool new_method){
         }
         rating_prefs = (rating_prefs / total_weight) * 100;//weighted average percentile
     }
-
+//    LOGD << "calculated role " << m_role->name << " traits in " << t.elapsed() << "ms";
     //********************************
 
 //    if(new_method){
@@ -2607,6 +2614,16 @@ float Dwarf::calc_role_rating(Role *m_role, bool new_method){
 
     if(new_method && rating_total == 0)
         rating_total = 0.0001;
+
+//    if((m_first_name == "Uksosner" || m_first_name == "Kolesa") && m_role->name == "Fisherdwarf"){
+//        LOGD << m_nice_name << "-" << m_role->name;
+        LOGD << "      -att:" << rating_att;
+        LOGD << "      -skills:" << rating_skill;
+        LOGD << "      -traits:" << rating_trait;
+        LOGD << "      -prefs:" << rating_prefs;
+        LOGD << "      -total:" << rating_total;
+        LOGD << "  ------------------------------------------------------";
+//    }
 
     return rating_total;
 }
@@ -2653,6 +2670,20 @@ void Dwarf::update_rating_list(){
     //    qSort(m_sorted_custom_role_ratings.begin(),m_sorted_custom_role_ratings.end(), &Dwarf::sort_ratings);
     //refresh the tooltip as well
     //tooltip_text();
+}
+
+int Dwarf::get_role_pref_match_count(Role *r){
+    int matches = 0;
+    foreach(Preference *role_pref,r->prefs){
+        int key = role_pref->get_pref_category();
+        QMultiMap<int, Preference *>::iterator i = m_preferences.find(key);
+        while(i != m_preferences.end() && i.key() == key){            
+            if(static_cast<Preference*>(i.value())->matches(role_pref,r->name,this)>0)
+                matches++;
+            i++;
+        }
+    }
+    return matches;
 }
 
 Reaction *Dwarf::get_reaction()

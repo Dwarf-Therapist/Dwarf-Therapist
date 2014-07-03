@@ -446,18 +446,13 @@ void roleDialog::draw_skill_context_menu(const QPoint &p) {
     }
     QAction *a;
     GameDataReader *gdr = GameDataReader::ptr();
+    ContextMenuHelper cmh;
 
-    QMenu *skill_a_l = m->addMenu(tr("A-I"));
-    QMenu *skill_j_r = m->addMenu(tr("J-R"));
-    QMenu *skill_m_z = m->addMenu(tr("S-Z"));
+    cmh.add_sub_menus(m,gdr->get_ordered_skills().count()/15,false);
     QPair<int, QString> skill_pair;
     foreach(skill_pair, gdr->get_ordered_skills()) {
         if(!m_role->skills.contains((QString)skill_pair.first)){
-            QMenu *menu_to_use = skill_a_l;
-            if (skill_pair.second.at(0).toLower() > 'i')
-                menu_to_use = skill_j_r;
-            if (skill_pair.second.at(0).toLower() > 'r')
-                menu_to_use = skill_m_z;
+            QMenu *menu_to_use = cmh.find_menu(m,skill_pair.second);
             a = menu_to_use->addAction(skill_pair.second, this, SLOT(add_skill()));
             a->setData(skill_pair.first);
             a->setToolTip(tr("Include %1 (ID %2) as an aspect for this role.)").arg(skill_pair.second).arg(skill_pair.first));
@@ -492,13 +487,15 @@ void roleDialog::draw_trait_context_menu(const QPoint &p) {
     }
     QAction *a;
     GameDataReader *gdr = GameDataReader::ptr();
-
+    ContextMenuHelper cmh;
+    cmh.add_sub_menus(m,2,false);
     QList<QPair<int, Trait*> > traits = gdr->get_ordered_traits();
     QPair<int, Trait*> trait_pair;
     foreach(trait_pair, traits) {
-        if(!m_role->traits.contains((QString)trait_pair.first)){
+        if(!m_role->traits.contains((QString)trait_pair.first)){            
             Trait *t = trait_pair.second;
-            a = m->addAction(t->name, this, SLOT(add_trait()));
+            QMenu *menu_to_use = cmh.find_menu(m,t->name);
+            a = menu_to_use->addAction(t->name, this, SLOT(add_trait()));
             a->setData(trait_pair.first);
             a->setToolTip(tr("Include %1 (ID %2) as an aspect for this role.").arg(t->name).arg(trait_pair.first));
         }

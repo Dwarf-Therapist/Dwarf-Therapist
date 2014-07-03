@@ -240,8 +240,11 @@ public:
     //! return a hash of skill_id,Skill objects that this dwarf has experience in
     QHash<int, Skill> *get_skills() {return &m_skills;}
     QVector<Attribute> *get_attributes() {return &m_attributes;}
-    QHash<int, short> *get_traits(){return &m_traits;}
-    QMultiMap<int,Preference*> *get_preferences(){return &m_preferences;}
+    QHash<int, short> *get_traits(){return &m_traits;}    
+    void load_trait_values(QVector<double> &list);
+    QMultiMap<int,Preference*> *get_preferences(){return &m_preferences;}    
+
+    int get_role_pref_match_count(Role *r);
 
     //! return a skill object by skill_id
     Skill get_skill(int skill_id);
@@ -261,7 +264,12 @@ public:
     short pref_value(const int &labor_id);
 
     //! return this dwarf's numeric score for the trait specified by trait_id
-    Q_INVOKABLE short trait(int trait_id) {return m_traits.value(trait_id, -1);}
+    Q_INVOKABLE short trait(int trait_id) {
+        if(m_traits.contains(trait_id))
+            return m_traits[trait_id];
+        else
+            return -1;
+    }
 
     bool trait_is_active(int trait_id);
 
@@ -478,7 +486,7 @@ public:
                 return false;
             else
                 return r1.rating > r2.rating;
-        }        
+        }                
 
 private:
     int m_id; // each creature in the game has a unique serial ID
@@ -522,7 +530,7 @@ private:
     QString m_current_sub_job_id;    
     QHash<int,Skill> m_skills;
     QMultiMap<float, int> m_sorted_skills; //level, skill_id
-    QHash<int, short> m_traits;
+    QHash<int, short> m_traits;    
     QVector<Attribute> m_attributes;
     QMap<int, ushort> m_labors;
     QMap<int, ushort> m_pending_labors;

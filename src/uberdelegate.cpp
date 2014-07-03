@@ -203,8 +203,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         //this is a special case because we're drawing different information if it's text mode
         if(m_skill_drawing_method == SDM_NUMERIC && rating == 100)
             rating = -1;
-        paint_values(adjusted, rating, text_rating, bg, p, opt, idx,90.0f,5.0f,95.0f,99.99f,102.0f,false);
-        //paint_grid(adjusted, false, p, opt, idx);
+        paint_values(adjusted, rating, text_rating, bg, p, opt, idx,90.0f,5.0f,95.0f,99.99f,102.0f,false);        
         int wear_level = idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt();
         paint_wear_cell(adjusted,p,opt,idx,wear_level);
     }
@@ -212,6 +211,8 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     case CT_ROLE:
     {
         bool active_labors = false;
+        int dirty_alpha = 255;
+        bool dirty = false;
         Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
         if(d){
             if(idx.data(DwarfModel::DR_SPECIAL_FLAG).canConvert<QVariantList>()){
@@ -222,12 +223,28 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
                         break;
                     }
                 }
+                int dirty_count = 0;
+                foreach(QVariant id, labors){
+                    if(d->is_labor_state_dirty(id.toInt())){
+                        dirty = true;
+                        dirty_count++;
+                    }
+                }
+                if(dirty)
+                    dirty_alpha = (255 * ((float)dirty_count / labors.count()));
             }
         }
         double limit_range = (DwarfStats::get_role_max() - DwarfStats::get_role_min()) * 0.05;
         QColor bg = paint_bg(adjusted, active_labors, p, opt, idx);
-        paint_values(adjusted, rating, text_rating, bg, p, opt, idx,50.0f, DwarfStats::get_role_min() + limit_range,DwarfStats::get_role_max() - limit_range);
-        paint_grid(adjusted, false, p, opt, idx);
+        paint_values(adjusted, rating, text_rating, bg, p, opt, idx,50.0f, DwarfStats::get_role_min() + limit_range,DwarfStats::get_role_max() - limit_range,45.0f,55.0f);
+        if(dirty){
+            QColor color_dirty_adjusted = color_dirty_border;
+            color_dirty_adjusted.setAlpha(dirty_alpha);
+            paint_grid(adjusted,false,p,opt,idx);
+            paint_border(adjusted,p,color_dirty_adjusted);
+        }else{
+            paint_grid(adjusted, dirty, p, opt, idx);
+        }
     }
         break;
     case CT_IDLE:
@@ -632,9 +649,15 @@ void UberDelegate::paint_wear_cell(const QRect &adjusted, QPainter *p, const QSt
         paint_grid(adjusted, false, p, opt, proxy_idx);
         return;
     }
-
     if(wear_level > 0){
-        paint_border(adjusted,p,Item::color_wear());
+        int alpha = 255;
+        if(wear_level == 2)
+            alpha = 190;
+        if(wear_level == 1)
+            alpha = 135;
+        QColor wear_color = Item::color_wear();
+        wear_color.setAlpha(alpha);
+        paint_border(adjusted,p,wear_color);
         paint_grid(adjusted, false, p, opt, proxy_idx, false); //draw dirty border and guides
     }else{
         paint_grid(adjusted, false, p, opt, proxy_idx);

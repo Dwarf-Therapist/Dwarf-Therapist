@@ -99,6 +99,8 @@ private:
     static QHash<int,int> load_base_xp_levels();
     static int xp_for_level(int level);
     static float level_from_xp(int xp);
+
+    static int MAX_CAPPED_XP;
 };
 
 #endif // SKILL_H

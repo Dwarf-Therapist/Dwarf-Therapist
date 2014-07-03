@@ -172,6 +172,7 @@ private:
     QList<QPair<QString, Role*> > m_ordered_roles;
     QVector<QString> m_default_roles;
     QHash<int,QVector<Role*> > m_skill_roles;
+    QHash<int,int> m_skill_labors; //mapping of skills to labors
 
     QHash<QString, laborOptimizerPlan*> m_opt_plans;
     QList<QPair<QString, laborOptimizerPlan*> > m_ordered_opts;

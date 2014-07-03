@@ -88,43 +88,21 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
     }
 
     if(m_role){
-        float rating_total = d->get_role_rating(m_role->name,false);
+        float role_rating = d->get_role_rating(m_role->name,false);
 
-        float adjusted_rating = rating_total;
-//        if(adjusted_rating > 0.0001){
-//            float min = DwarfStats::get_role_min();
-//            float max = DwarfStats::get_role_max();
-//            float median = DwarfStats::get_role_median();
-//            if(adjusted_rating >= median)
-//                adjusted_rating = (((adjusted_rating - median) * (100.0f - 50.00f)) / (max - median)) + median;
-//            else
-//                adjusted_rating = (((adjusted_rating - min) * (50.00f - 0.0f)) / ((median-0.01) - min)) + 0.0f;
-
-////                    adjusted_rating = (((adjusted_rating - min) * (100.0f - 0.0f)) / (max-min)) + 0.0f;
-//        }
-
-        item->setData(adjusted_rating, DwarfModel::DR_RATING);
-        item->setData(roundf(rating_total), DwarfModel::DR_DISPLAY_RATING);
-        item->setData(adjusted_rating, DwarfModel::DR_SORT_VALUE);
+        item->setData(role_rating, DwarfModel::DR_RATING);
+        item->setData(roundf(role_rating), DwarfModel::DR_DISPLAY_RATING);
+        item->setData(role_rating, DwarfModel::DR_SORT_VALUE);
         item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
         set_export_role(DwarfModel::DR_DISPLAY_RATING);
 
-        QString raw_rating = "RAW:" + QString::number(d->get_role_rating(m_role->name,true),'f',4);
-
-        QHash<int, QVector<Role*> > skill_roles = GameDataReader::ptr()->get_skill_roles();
-        QList<int> related_skills;
-        foreach(int key, skill_roles.uniqueKeys()){
-            QVector<Role*> s_roles = skill_roles.value(key);
-            if(s_roles.contains(m_role))
-                related_skills.append(key);
-        }
         QList<QVariant> related_labors;
         QStringList labor_names;
-        foreach(Labor *l, GameDataReader::ptr()->get_ordered_labors()){
-            if(related_skills.contains(l->skill_id)){
-                related_labors.append(l->labor_id);
-                labor_names.append(l->name);
-            }
+
+        foreach(int labor_id, m_role->get_labors()){
+            Labor *l = GameDataReader::ptr()->get_labor(labor_id);
+            labor_names.append(l->name);
+            related_labors.append(labor_id);
         }
 
         QString labors_desc = "";
@@ -135,35 +113,33 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
         QString aspects_str;
         QString tooltip;
         if (m_role->script == "") {
-            if(rating_total >= 0){
+            if(role_rating >= 0){
                 aspects_str = m_role->get_role_details();
                 aspects_str += tr("<br/><b>Note:</b> A higher weight (w) puts greater value on the aspect. Default weights are not shown.");
                 match_str += aspects_str;
 
-                tooltip = QString("<center><h3>%1 - %3%</h3></center>%2%6<center><h4>%4 is a %3% fit for this role.</h4></center>%5")
+                tooltip = QString("<center><h3>%1 - %3%</h3></center>%2%5<center><h4>%4 is a %3% fit for this role.</h4></center>")
                         .arg(m_role->name)
                         .arg(match_str)
-                        .arg(QString::number(rating_total,'f',2))                        
-                        .arg(d->nice_name())
-                        .arg(raw_rating)
+                        .arg(QString::number(role_rating,'f',2))
+                        .arg(d->nice_name())                        
                         .arg(labors_desc);
 
                 item->setToolTip(tooltip);
 
 
             }else{
-                match_str = tr("Incapable of filling this role.<br><br>Value: %1<br/>").arg(QString::number(rating_total,'f',2));
+                match_str = tr("Incapable of filling this role.<br><br>Value: %1<br/>").arg(QString::number(role_rating,'f',2));
             }
         } else {
             match_str = tr("%1<h4><b>Raw Rating:</b> %2</h4>")
                     .arg(m_role->get_role_details())
-                    .arg(rating_total, 0, 'f', 2);
-            tooltip = QString("<center><h3>%1 - %3</h3></center>%2%4%5")
+                    .arg(role_rating, 0, 'f', 2);
+            tooltip = QString("<center><h3>%1 - %3</h3></center>%2%4")
                              .arg(m_role->name)
                              .arg(match_str)
-                             .arg(roundf(rating_total), 0, 'f', 0)
-                             .arg(tooltip_name_footer(d))
-                    .arg(raw_rating);
+                             .arg(roundf(role_rating), 0, 'f', 0)
+                             .arg(tooltip_name_footer(d));
 
             item->setToolTip(tooltip);
         }

@@ -31,12 +31,12 @@ optimizereditor::optimizereditor(QWidget *parent) :
 
     //job/labor table
     ui->tw_labors->setEditTriggers(QTableWidget::AllEditTriggers);
-    ui->tw_labors->verticalHeader()->hide();
+    ui->tw_labors->verticalHeader()->hide();    
     ui->tw_labors->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     ui->tw_labors->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-    ui->tw_labors->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-    ui->tw_labors->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
-    ui->tw_labors->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);    
+    ui->tw_labors->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);
+    ui->tw_labors->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Interactive);
+    ui->tw_labors->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Interactive);
 
     ui->tw_labors->setHorizontalHeaderLabels(QStringList() << "Job" << "Role" << "Priority" << "Ratio" << "Worker Count");
 
@@ -63,9 +63,9 @@ optimizereditor::optimizereditor(QWidget *parent) :
     connect(ui->btnImport, SIGNAL(clicked()), this, SLOT(import_details()));
     connect(ui->btnExport, SIGNAL(clicked()), this, SLOT(export_details()));
 
-    connect(ui->tw_labors, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(draw_labor_context_menu(QPoint)));
-    connect(ui->tw_labors->horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)), ui->tw_labors, SLOT(resizeColumnsToContents()));
-    connect(ui->tw_labors->horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)), ui->tw_labors, SLOT(resizeRowsToContents()));
+    connect(ui->tw_labors, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(draw_labor_context_menu(QPoint)));    
+//    connect(ui->tw_labors->horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)), ui->tw_labors, SLOT(resizeColumnsToContents()));
+//    connect(ui->tw_labors->horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)), ui->tw_labors, SLOT(resizeRowsToContents()));
 
     connect(ui->treeMessages, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
         DT->get_main_window()->get_view_manager(), SLOT(jump_to_dwarf(QTreeWidgetItem *, QTreeWidgetItem *)));
@@ -123,7 +123,10 @@ void optimizereditor::load_plan(QString name){
     foreach(PlanDetail *d, m_plan->plan_details){
         insert_row(d);
     }
+    ui->tw_labors->hide();
+    ui->tw_labors->resizeColumnsToContents();
     ui->tw_labors->resizeRowsToContents();
+    ui->tw_labors->show();
     loading = false;
 
     refresh_job_counts();
@@ -390,8 +393,10 @@ void optimizereditor::add_job(){
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     int id = a->data().toInt();
     add_new_detail(id);
+    ui->tw_labors->hide();
     ui->tw_labors->resizeColumnsToContents();
     ui->tw_labors->resizeRowsToContents();
+    ui->tw_labors->show();
 }
 void optimizereditor::remove_labor(){
     for(int i=ui->tw_labors->rowCount()-1; i>=0; i--){
@@ -401,8 +406,10 @@ void optimizereditor::remove_labor(){
         }
     }
     refresh_job_counts();
+    ui->tw_labors->hide();
     ui->tw_labors->resizeColumnsToContents();
     ui->tw_labors->resizeRowsToContents();
+    ui->tw_labors->show();
 }
 
 void optimizereditor::add_new_detail(int id){
@@ -648,8 +655,10 @@ void optimizereditor::import_details(){
      }     
      loading = false;
      file.close();
+     ui->tw_labors->hide();
      ui->tw_labors->resizeColumnsToContents();
      ui->tw_labors->resizeRowsToContents();
+     ui->tw_labors->show();
 
      refresh_job_counts();
 

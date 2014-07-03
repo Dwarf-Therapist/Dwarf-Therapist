@@ -33,38 +33,24 @@ THE SOFTWARE.
 class RoleStats{
 
 public:
-    RoleStats(QString role_name);
-    virtual ~RoleStats();
+    RoleStats(const QVector<double> &unsorted,bool hack=false);
+    virtual ~RoleStats(){
+//        m_raws = 0;
+//        m_upper = 0;
+    }
 
-    void calc_priority_adjustment(int total_roles, int rank);
-    double adjust_role_rating(double raw_role_rating);
-
-    double priority_adjustment(){return m_priority_adjustment;}
-    void add_rating(double val){m_ratings.append(val);}
-
-    void set_mean(double val){m_mean = val;}
-    double get_mean(){return m_mean;}
-
-    QString role_name(){return m_role_name;}
-
-    static bool sort_means(const RoleStats *r1, const RoleStats *r2){return r1->m_mean > r2->m_mean;}
+    double get_rating(double val);
+    void set_list(const QVector<double> &unsorted);
 
 private:
-    QString m_role_name;
-    double m_mean;
-    double m_priority_adjustment;
-    double m_ecdf_rating_average;
-    double m_max_rating;
-    double m_min_rating;
-    bool m_use_alt_conversion;
-
-    QVector<double> m_ratings;
-    QHash<QString,double> m_ecdf_ratings;
-    ECDF *m_ecdf;
-
-    void load_ecdf_data();
-    double get_ecdf_rating(double raw_role_rating);
-    QString rating_key(double rating);
+    QSharedPointer<ECDF> m_raws; //primary ecdf based on the initial vector
+    QSharedPointer<ECDF> m_upper; //special ecdf for values over the median. used if min = median
+    double m_median; //median of m_sorted.favg values
+    double m_sum_over_median; //sum of all the values of m_sorted > median
+    double m_sum_upper; //sum ((fplus(x) + fminus(x))/4.0)+0.5 where x is a value in m_upper
+    double m_factor;
+    bool m_hack;
+    void init_list();
 };
 
 #endif // ROLESTATS_H

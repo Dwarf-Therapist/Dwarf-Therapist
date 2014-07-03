@@ -29,17 +29,20 @@ using std::lower_bound;
 ECDF::ECDF(){
 }
 
-ECDF::ECDF(const VEC & unsorted)
-    : m_sorted(unsorted)
+ECDF::ECDF(const QVector<double> &unsorted)
 {
+    //m_sorted = QVector<double>(unsorted);
+    m_sorted = unsorted;
     init_list();
 }
 
 void ECDF::set_list(const QVector<double> &unsorted){
-    m_sorted.clear();
+//    m_sorted.clear();
+//    m_sorted = QVector<double>(unsorted);
     m_sorted = unsorted;
     m_skew = false;
     m_skew_padding = 0.0;
+    m_median = 0.0;
     init_list();
 }
 
@@ -48,6 +51,7 @@ void ECDF::init_list(){
     b = m_sorted.begin();
     e = m_sorted.end();
     n = static_cast<double>(m_sorted.size());
+
 //    m_min_count = m_sorted.lastIndexOf(0)+1;//m_sorted.lastIndexOf(m_sorted.first())+1;
 //    m_other_count = m_sorted.count() - m_min_count;
 
@@ -92,6 +96,6 @@ double ECDF::fminus(double x)const{
     return pos/n;
 }
 
-double ECDF::favg(double x) const{
+double ECDF::favg(double x) {
     return ((fplus(x)+fminus(x))/2.0f);
 }

@@ -68,6 +68,9 @@ public:
 
     QString get_role_details();
 
+    void set_labors(QList<int> list){m_labors = list;}
+    QList<int> get_labors() {return m_labors;}
+
     void create_role_details(QSettings &s);
 
     void write_to_ini(QSettings &s, float default_attributes_weight, float default_traits_weight, float default_skills_weight, float default_prefs_weight);
@@ -85,5 +88,6 @@ protected:
     QString generate_details(QString title, global_weight aspect_group_weight,float aspect_default_weight, QMap<QString,global_weight> list);
 
     QString role_details;
+    QList<int> m_labors; //labors associated via the skills in the role
 };
 #endif // ROLE_H

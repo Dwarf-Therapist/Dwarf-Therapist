@@ -243,7 +243,8 @@ HEADERS += inc/win_structs.h \
     inc/itemweaponsubtype.h \
     inc/cp437codec.h \
     inc/rolestats.h \
-    inc/ecdf.h
+    inc/ecdf.h \
+    inc/contextmenuhelper.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \

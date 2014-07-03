@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 #include "truncatingfilelogger.h"
 #include "ecdf.h"
+#include "rolestats.h"
 
 class Dwarf;
 
@@ -85,7 +86,7 @@ public:
 
     static void init_attributes(QVector<double> attribute_values, QVector<double> attribute_raw_values){
         if(atts == 0)
-            atts = QSharedPointer<ECDF>(new ECDF(attribute_values));
+            atts = QSharedPointer<RoleStats>(new RoleStats(attribute_values));
         else
             atts->set_list(attribute_values);
         if(atts_raw == 0)
@@ -97,37 +98,37 @@ public:
         if(raw)
             return atts_raw->fplus((double)val);
         else
-            return atts->favg((double)val);
+            return atts->get_rating(val);//atts->favg((double)val);
     }
 
     static void init_traits(QVector<double> trait_values){
         if(traits == 0)
-            traits = QSharedPointer<ECDF>(new ECDF(trait_values));
+            traits = QSharedPointer<RoleStats>(new RoleStats(trait_values,true));
         else
             traits->set_list(trait_values);
     }
     static double get_trait_ecdf(int val){
-        return traits->favg((double)val);
+        return traits->get_rating(val);//favg((double)val);
     }
 
     static void init_prefs(QVector<double> pref_values){
         if(prefs == 0)
-            prefs = QSharedPointer<ECDF>(new ECDF(pref_values));
+            prefs = QSharedPointer<RoleStats>(new RoleStats(pref_values));
         else
             prefs->set_list(pref_values);
     }
     static double get_pref_ecdf(double val){
-        return prefs->favg(val);
+        return prefs->get_rating(val);//favg((double)val);
     }
 
     static void init_skills(QVector<double> skill_values){
         if(skills == 0)
-            skills = QSharedPointer<ECDF>(new ECDF(skill_values));
+            skills = QSharedPointer<RoleStats>(new RoleStats(skill_values));
         else
             skills->set_list(skill_values);
     }
     static double get_skill_ecdf(float val){
-        return skills->favg(val);
+        return skills->get_rating(val);//favg((double)val);
     }
 
 private:
@@ -144,11 +145,11 @@ private:
     static float m_role_max;
     static float m_role_median;
 
-    static QSharedPointer<ECDF> atts;
+    static QSharedPointer<RoleStats> atts;
     static QSharedPointer<ECDF> atts_raw;
-    static QSharedPointer<ECDF> skills;
-    static QSharedPointer<ECDF> traits;
-    static QSharedPointer<ECDF> prefs;
+    static QSharedPointer<RoleStats> skills;
+    static QSharedPointer<RoleStats> traits;
+    static QSharedPointer<RoleStats> prefs;
 };
 
 #endif // DWARFSTATS_H

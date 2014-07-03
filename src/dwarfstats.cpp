@@ -38,11 +38,11 @@ float DwarfStats::m_role_max;
 float DwarfStats::m_role_median;
 //QHash<ATTRIBUTES_TYPE, QVector<float>* > DwarfStats::m_attribute_ratings;
 
-QSharedPointer<ECDF> DwarfStats::skills;
-QSharedPointer<ECDF> DwarfStats::atts;
+QSharedPointer<RoleStats> DwarfStats::skills;
+QSharedPointer<RoleStats> DwarfStats::atts;
 QSharedPointer<ECDF> DwarfStats::atts_raw;
-QSharedPointer<ECDF> DwarfStats::traits;
-QSharedPointer<ECDF> DwarfStats::prefs;
+QSharedPointer<RoleStats> DwarfStats::traits;
+QSharedPointer<RoleStats> DwarfStats::prefs;
 
 float DwarfStats::calc_cdf(float mean, float stdev, float rawValue){
     double rating = 0.0;

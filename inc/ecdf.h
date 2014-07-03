@@ -29,7 +29,7 @@
     double fplus(double x)const;  // fraction of data <= x
 //    double fplus_deskew(double)const;
     double fminus(double x)const; // fraction of data < x;
-    double favg(double x) const;
+    double favg(double x) ;
     double operator()(double x, bool leq = true)const{
       return leq ? fplus(x) : fminus(x);}
     const QVector<double> & sorted_data()const{return m_sorted;}
@@ -43,6 +43,7 @@
     int m_other_count;
     bool m_skew;
     double m_skew_padding;
+    double m_median;
   };
 
 #endif // ECDF_H

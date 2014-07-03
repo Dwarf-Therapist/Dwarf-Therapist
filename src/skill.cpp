@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include <QtWidgets>
 
 QHash<int,int> Skill::m_experience_levels = Skill::load_base_xp_levels();
+int Skill::MAX_CAPPED_XP = 29000;
 
 Skill::Skill()
     : m_id(-1)
@@ -210,31 +211,39 @@ double Skill::get_simulated_rating(){
 }
 
 double Skill::get_simulated_level(){
+    if ((int)m_capped_exp >= MAX_CAPPED_XP)
+        return 20.0f;
+
+    if (m_skill_rate == 0)
+        return m_capped_level;
+
     int curr_xp = m_capped_exp;
     int curr_level = m_capped_level;
     int rate = m_skill_rate;
 
     int sim_xp = MAX_CAPPED_XP;
-    sim_xp = (sim_xp / 100.0) * rate; //This is how much XP will go towards skill learning.
+    sim_xp = (sim_xp / 100.0f) * rate; //This is how much XP will go towards skill learning.
+    double total_xp = sim_xp;
     double sim_level = 0.0;
     int xp_gap = 0;
 
-    while ((sim_xp > 0) && (curr_level < 20))
+    while ((sim_xp > 0) && (curr_level < 20.0))
     {
         xp_gap = get_xp_for_level(curr_level+1) - curr_xp;//xp to next level
         if (xp_gap > sim_xp)
             xp_gap = sim_xp;
-        sim_xp -= xp_gap;
-
         sim_level += xp_gap * curr_level;
-
         curr_level++;
         curr_xp = get_xp_for_level(curr_level);
+        sim_xp -= xp_gap;
     }
 
     if (sim_xp > 0)
         sim_level += 20 * sim_xp;
-    sim_level /= MAX_CAPPED_XP;
+    sim_level /= total_xp;
+
+    Q_ASSERT(sim_level <= 20.0);
+
     return sim_level;
 }
 

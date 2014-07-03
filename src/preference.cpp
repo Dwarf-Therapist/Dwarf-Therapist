@@ -76,7 +76,8 @@ Preference::Preference(const Preference &p)
 
 Preference::~Preference(){
     delete(pref_aspect);
-    pref_aspect = 0;    
+    pref_aspect = 0;
+    m_role_matches.clear();
 }
 
 void Preference::add_flag(int flag){
@@ -126,14 +127,16 @@ int Preference::matches(Preference *role_pref, QString role_name, Dwarf *d){
             //if it's a weapon, and a match, ensure the dwarf can actually wield it as well
             if(result > 0 && role_pref->get_item_type() == WEAPON){
                 ItemWeaponSubtype *w = d->get_df_instance()->get_weapon_def(capitalizeEach(m_name));
-                if(!w || (d->body_size() < w->single_grasp() && d->body_size() < w->multi_grasp()))
+                if(!w || d->body_size() < w->multi_grasp())
                     result = 0;
+                w = 0;
             }
         }
 
     }
 
-    m_role_matches.insert(role_name,result);
+    int curr_count = get_match_count(role_name);
+    m_role_matches.insert(role_name,result+curr_count);
 
     return result;
 }

@@ -666,7 +666,7 @@ void DFInstance::load_role_ratings(){
     QVector<double> trait_values;
     QVector<double> pref_values;
 
-    float skill_val;
+    double skill_val = 0.0;    
     foreach(Dwarf *d, m_labor_capable_dwarves){
         foreach(int id, GameDataReader::ptr()->get_attributes().keys()){
             attribute_values.append(d->get_attribute(id).get_balanced_value());
@@ -678,41 +678,53 @@ void DFInstance::load_role_ratings(){
                 skill_val = 0;
             skill_values.append(skill_val);
         }
-        foreach(int val, d->get_traits()->values()){
-            trait_values.append(val);
+
+        foreach(short val, d->get_traits()->values()){
+            trait_values.append((double)val);
         }
-        Preference *dwarf_pref;
+
         foreach(Role *r, GameDataReader::ptr()->get_roles().values()){
-            double matches = 0;
-            foreach(Preference *role_pref,r->prefs){
-                int key = role_pref->get_pref_category();
-                QMultiMap<int, Preference *>::iterator i = d->get_preferences()->find(key);
-                while(i != d->get_preferences()->end() && i.key() == key){
-                    dwarf_pref = i.value();
-                    if(dwarf_pref->matches(role_pref,r->name) > 0)
-                        matches++;
-                    i++;
-                }
-            }
+            double pref_matches = 0.0;
+            if(d->get_role_pref_match_count(r) > 0)
+                pref_matches++;
             if(r->prefs.count() > 0)
-                pref_values.append(matches/(double)r->prefs.count());///(double)m_pref_counts.count());
+                pref_values.append(pref_matches/(double)r->prefs.count());///(double)m_pref_counts.count());
             else
                 pref_values.append(0);
         }
 
     }
-    DwarfStats::init_skills(skill_values);
-    DwarfStats::init_attributes(attribute_values,attribute_raw_values);
+    QTime tr;
+    tr.start();
+    LOGD << "Role Trait Info:";
     DwarfStats::init_traits(trait_values);
+    LOGD << "     - loaded trait role data in " << tr.elapsed() << "ms";
+
+    LOGD << "Role Skills Info:";
+    DwarfStats::init_skills(skill_values);
+    LOGD << "     - loaded skill role data in " << tr.elapsed() << "ms";
+
+    LOGD << "Role Attributes Info:";
+    DwarfStats::init_attributes(attribute_values,attribute_raw_values);
+    LOGD << "     - loaded attribute role data in " << tr.elapsed() << "ms";
+
+    LOGD << "Role Preferences Info:";
     DwarfStats::init_prefs(pref_values);
+    LOGD << "     - loaded preference role data in " << tr.elapsed() << "ms";
 
-    QList<float> role_ratings;
-
+    float avg = 0;
+    QList<float> role_ratings;    
     foreach(Dwarf *d, m_labor_capable_dwarves){
-        role_ratings.append(d->calc_role_ratings(true));
+        QList<float> ratings = d->calc_role_ratings(true);
+        foreach(float rating, ratings){
+            avg+=rating;
+        }
+        role_ratings.append(ratings);
+//        role_ratings.append(d->calc_role_ratings(true));
         d->update_rating_list();
         d->calc_attribute_ratings();
     }
+    avg /= role_ratings.count();
 
     float max = 0;
     float min = 0;
@@ -733,6 +745,11 @@ void DFInstance::load_role_ratings(){
         }
     }
     DwarfStats::set_role_stats(min,max,median);
+    LOGD << "Overall Role Rating Stats";
+    LOGD << "     - Min: " << min;
+    LOGD << "     - Max: " << max;
+    LOGD << "     - Median: " << median;
+    LOGD << "     - Average: " << avg;
 }
 
 
