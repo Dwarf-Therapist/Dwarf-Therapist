@@ -30,10 +30,17 @@ THE SOFTWARE.
 #include "itemweaponsubtype.h"
 #include "gamedatareader.h"
 
-WeaponColumn::WeaponColumn(const QString &title, ItemWeaponSubtype *w, ViewColumnSet *set, QObject *parent)
-    : ViewColumn(title, CT_WEAPON, set, parent)
+WeaponColumn::WeaponColumn(QSettings &s, ItemWeaponSubtype *w, ViewColumnSet *set, QObject *parent)
+    : ViewColumn(s, set, parent)
     , m_weapon(w)
 {
+    connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
+}
+
+WeaponColumn::WeaponColumn(const QString &title, ItemWeaponSubtype *w, ViewColumnSet *set, QObject *parent)
+    : ViewColumn(title, CT_WEAPON, set, parent)
+    , m_weapon(w)    
+{    
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 }
 

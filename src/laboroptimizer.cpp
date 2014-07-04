@@ -95,7 +95,7 @@ void LaborOptimizer::calc_population(bool load_labor_map){
             m_dwarfs.removeAt(i);
         }
         else if(d->squad_id() > -1 && plan->exclude_squads){
-            m_current_message.append(QPair<int, QString> (d->id(), tr("(Squad) %1").arg(d->nice_name()).arg(d->squad_name())));
+            m_current_message.append(QPair<int, QString> (d->id(), tr("(Squad) %1, %2").arg(d->nice_name()).arg(d->squad_name())));
             if(load_labor_map)
                 m_dwarfs.at(i)->clear_labors();
             m_dwarfs.removeAt(i);

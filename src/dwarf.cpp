@@ -1899,8 +1899,8 @@ bool Dwarf::toggle_flag_bit(int bit) {
     for (int i=0;i<n;i++)
         mask<<=1;
     if (bit>31){
-        //don't butcher if it's a pet, user will be notified via tooltip on column
-        if(!m_is_pet)
+        //don't butcher if it's a pet, user will be notified via tooltip on column, same for non-butcherable
+        if(!m_is_pet && m_caste->can_butcher())
             m_butcher^=mask;
     }else
         m_caged^=mask;
@@ -2443,7 +2443,7 @@ float Dwarf::calc_role_rating(Role *m_role, bool new_method){
     }
 
     TRACE << "reading role " << m_role->name << " for unit " << m_nice_name;
-    LOGD << "  +" << m_role->name;
+    LOGD << "  +" << m_role->name << "-" << m_nice_name;
 //    QTime t;
 
     //no script, calculate rating based on specified aspects
@@ -2615,12 +2615,12 @@ float Dwarf::calc_role_rating(Role *m_role, bool new_method){
     if(new_method && rating_total == 0)
         rating_total = 0.0001;
 
-//    if((m_first_name == "Uksosner" || m_first_name == "Kolesa") && m_role->name == "Fisherdwarf"){
+//    if(rating_total >= 0.73 && m_role->name == "Miner"){
 //        LOGD << m_nice_name << "-" << m_role->name;
-        LOGD << "      -att:" << rating_att;
+        LOGD << "      -attributes:" << rating_att;
         LOGD << "      -skills:" << rating_skill;
         LOGD << "      -traits:" << rating_trait;
-        LOGD << "      -prefs:" << rating_prefs;
+        LOGD << "      -preferences:" << rating_prefs;
         LOGD << "      -total:" << rating_total;
         LOGD << "  ------------------------------------------------------";
 //    }

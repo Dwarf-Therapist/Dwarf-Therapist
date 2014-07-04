@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "viewcolumnset.h"
 #include "dwarftherapist.h"
+#include "caste.h"
 
 FlagColumn::FlagColumn(QString title, int bit_pos, bool bit_value, ViewColumnSet *set, QObject *parent)
         : ViewColumn(title, CT_FLAGS, set, parent)
@@ -53,20 +54,32 @@ FlagColumn::FlagColumn(const FlagColumn &to_copy)
 QStandardItem *FlagColumn::build_cell(Dwarf *d) {
         QStandardItem *item = init_cell(d);
 
-        item->setData(CT_FLAGS, DwarfModel::DR_COL_TYPE);        
+        item->setData(CT_FLAGS, DwarfModel::DR_COL_TYPE);
+        item->setData(false,DwarfModel::DR_SPECIAL_FLAG); //default
+
         short rating = 0;
         if(d->get_flag_value(m_bit_pos))
-            rating = 1;
-        item->setData(rating, DwarfModel::DR_SORT_VALUE);        
-        item->setData(m_bit_pos, DwarfModel::DR_LABOR_ID);
-        item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
-        item->setBackground(QBrush(m_bg_color));
+            rating = 1;      
         //check to fix butchering pets. currently this will cause the butchered parts to still be recognized as a pet
         //and they'll put them into a burial recepticle, but won't use them as a food source
-        if(d->is_pet() && m_bit_pos == 49){
-            item->setToolTip(tr("<b>Please turn off pet availability first.</b><br/><br/>Sorry, pets cannot be butchered due to technical limitations!"));
-            item->setData(QBrush(QColor(187,34,34,200)),DwarfModel::DR_DEFAULT_BG_COLOR);
+        if(m_bit_pos == 49){
+            if(d->is_pet()){
+                item->setToolTip(tr("<b>Please turn off pet availability first.</b><br/><br/>Sorry, pets cannot be butchered due to technical limitations!"));
+                item->setData(QBrush(QColor(187,34,34,200)),Qt::BackgroundColorRole);
+                item->setData(true,DwarfModel::DR_SPECIAL_FLAG); //indicates that the cell is disabled
+                rating = -1;
+            }else if(!d->get_caste()->can_butcher()){
+                item->setToolTip(tr("<b>This creature cannot be butchered!</b>"));
+                item->setData(QBrush(QColor(187,34,34,200)),Qt::BackgroundColorRole);
+                item->setData(true,DwarfModel::DR_SPECIAL_FLAG); //indicates that the cell is disabled
+                rating = -1;
+            }
+
         }
+
+        item->setData(rating, DwarfModel::DR_SORT_VALUE);
+        item->setData(m_bit_pos, DwarfModel::DR_LABOR_ID);
+        item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
         return item;
 }
 

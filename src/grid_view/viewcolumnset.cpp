@@ -244,7 +244,7 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
             new SpacerColumn(s, ret_val, parent);
             break;
         case CT_HAPPINESS:
-            new HappinessColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
+            new HappinessColumn(s, ret_val, parent);
             break;
         case CT_LABOR:
             new LaborColumn(s, ret_val, parent);
@@ -253,7 +253,7 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
             new SkillColumn(s, ret_val, parent);
             break;
         case CT_IDLE:
-            new CurrentJobColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
+            new CurrentJobColumn(s, ret_val, parent);
             break;
         case CT_TRAIT:
             new TraitColumn(s, ret_val, parent);
@@ -269,25 +269,25 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
             break;
         case CT_WEAPON:
             if(DT->get_main_window())
-                new WeaponColumn(s.value("name").toString(),DT->get_main_window()->get_DFInstance()->get_weapon_defs().value(s.value("name").toString()),ret_val,parent);
+                new WeaponColumn(s,DT->get_main_window()->get_DFInstance()->get_weapon_defs().value(s.value("name").toString()),ret_val,parent);
             break;
         case CT_PROFESSION:
-            new ProfessionColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
+            new ProfessionColumn(s, ret_val, parent);
             break;
         case CT_HIGHEST_MOOD:
-            new HighestMoodColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
+            new HighestMoodColumn(s, ret_val, parent);
             break;
         case CT_TRAINED:
-            new TrainedColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
+            new TrainedColumn(s, ret_val, parent);
             break;
         case CT_HEALTH:
-            new HealthColumn(s.value("name","UNKNOWN").toString(), s.value("id",0).toInt(),ret_val,parent);
+            new HealthColumn(s,ret_val,parent);
             break;
         case CT_EQUIPMENT:
-            new EquipmentColumn(s.value("name","UNKNOWN").toString(),ret_val,parent);
+            new EquipmentColumn(s,ret_val,parent);
             break;
         case CT_ITEMTYPE:
-            new ItemTypeColumn(s.value("name","").toString(),static_cast<ITEM_TYPE>(s.value("item_type",NONE).toInt()),ret_val,parent);
+            new ItemTypeColumn(s,ret_val,parent);
             break;
         case CT_DEFAULT:
         default:

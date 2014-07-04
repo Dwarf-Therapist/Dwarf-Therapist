@@ -299,10 +299,15 @@ public:
     virtual short ranged_skill(){return -1;}
 
     QString display_name(bool colored = false);
+    bool equals(const Item &);
 
     void set_affection(int level);
 
     QList<Item*> contained_items() {return m_contained_items;}
+    int get_stack_size(){return m_stack_size;}
+    void add_to_stack(int num){m_stack_size+=num;}
+    QString get_material_name(){return m_material_name;}
+    short get_quality(){return m_quality;}
 
 protected:
     DFInstance *m_df;
@@ -326,6 +331,7 @@ protected:
     void read_data();
     void set_default_name(Material *m);
     void build_display_name();
+    QString get_quality_symbol();
 
 };
 #endif // ITEM_H

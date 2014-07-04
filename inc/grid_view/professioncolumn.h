@@ -7,6 +7,7 @@ class Dwarf;
 class ProfessionColumn : public ViewColumn {
     Q_OBJECT
 public:
+    ProfessionColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
     ProfessionColumn(const QString &title, ViewColumnSet *set = 0, QObject *parent = 0);
     ProfessionColumn(const ProfessionColumn &to_copy); // copy ctor
     ProfessionColumn* clone() {return new ProfessionColumn(*this);}

@@ -32,6 +32,7 @@ class Dwarf;
 class TrainedColumn : public ViewColumn {
     Q_OBJECT
 public:
+    TrainedColumn(QSettings &s, ViewColumnSet *set, QObject *parent = 0);
     TrainedColumn(const QString &title, ViewColumnSet *set = 0, QObject *parent = 0);
     TrainedColumn(const TrainedColumn &to_copy); // copy ctor
     TrainedColumn* clone() {return new TrainedColumn(*this);}

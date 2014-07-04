@@ -28,6 +28,11 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "defaultfonts.h"
 
+TrainedColumn::TrainedColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
+: ViewColumn(s, set, parent)
+{
+}
+
 TrainedColumn::TrainedColumn(const QString &title, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title, CT_TRAINED, set, parent)
 {
@@ -85,7 +90,7 @@ QStandardItem *TrainedColumn::build_cell(Dwarf *d){
     }
 
 
-    item->setBackground(QBrush(QColor(225,225,225)));
+//    item->setBackground(QBrush(QColor(225,225,225)));
     item->setData(CT_TRAINED, DwarfModel::DR_COL_TYPE);
     item->setData(draw_rating, DwarfModel::DR_DISPLAY_RATING); //numeric drawing, single digits
     item->setData(rating, DwarfModel::DR_RATING); //other drawing 0-100

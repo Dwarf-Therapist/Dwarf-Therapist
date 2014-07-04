@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 class HappinessColumn : public ViewColumn {
 public:
+    HappinessColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
 	HappinessColumn(QString title, ViewColumnSet *set = 0, QObject *parent = 0);
     HappinessColumn(const HappinessColumn &to_copy); // copy ctor
     HappinessColumn* clone() {return new HappinessColumn(*this);}

@@ -29,6 +29,13 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "defines.h"
 
+HappinessColumn::HappinessColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
+    : ViewColumn(s, set, parent)
+    , m_colors(QMap<DWARF_HAPPINESS, QColor>())
+{
+    read_settings();
+}
+
 HappinessColumn::HappinessColumn(QString title, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(title, CT_HAPPINESS, set, parent)
     , m_colors(QMap<DWARF_HAPPINESS, QColor>())
@@ -62,7 +69,8 @@ QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
 
     item->setToolTip(tooltip);
 	QColor bg = m_colors[d->get_happiness()];
-    item->setBackground(QBrush(bg));
+//    item->setBackground(QBrush(bg));
+    item->setData(bg,Qt::BackgroundColorRole);
 
 	return item;
 }
@@ -86,7 +94,7 @@ QStandardItem *HappinessColumn::build_aggregate(const QString &group_name, const
 		.arg(lowest_dwarf)
         .arg(Dwarf::happiness_name(lowest)));
 	item->setData(m_colors[lowest], Qt::BackgroundColorRole);
-	item->setData(m_colors[lowest], DwarfModel::DR_DEFAULT_BG_COLOR);
+//    item->setData(m_colors[lowest], DwarfModel::DR_DEFAULT_BG_COLOR);
 	return item;
 }
 
@@ -101,8 +109,8 @@ void HappinessColumn::read_settings() {
 }
 
 void HappinessColumn::redraw_cells() {
-	/*foreach(Dwarf *d, m_cells.uniqueKeys()) {
+    foreach(Dwarf *d, m_cells.uniqueKeys()) {
         if (d && m_cells[d] && m_cells[d]->model())
-		    m_cells[d]->setBackground(m_colors[d->get_happiness()]);
-	}*/
+            m_cells[d]->setBackground(m_colors[d->get_happiness()]);
+    }
 }

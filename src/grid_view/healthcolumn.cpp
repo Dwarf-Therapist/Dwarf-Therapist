@@ -39,7 +39,7 @@ HealthColumn::HealthColumn(const QString &title, int categoryID, ViewColumnSet *
 
 HealthColumn::HealthColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     : ViewColumn(s, set, parent)
-    , m_id(s.value("id", -1).toInt())
+    , m_id(s.value("id", 0).toInt())
 {
 }
 

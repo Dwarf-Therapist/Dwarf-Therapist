@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "truncatingfilelogger.h"
 #include "fortressentity.h"
 #include "uniform.h"
+#include "math.h"
 
 Squad::Squad(DFInstance *df, VIRTADDR address, QObject *parent)
     : QObject(parent)
@@ -91,7 +92,7 @@ void Squad::read_members() {
 
     //read the uniforms
     int position = 0;
-    Uniform *u;
+    Uniform *u;    
     foreach(VIRTADDR addr, m_members_addr){
         u = new Uniform(m_df,this);
 

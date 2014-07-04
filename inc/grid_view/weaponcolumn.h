@@ -31,6 +31,7 @@ class WeaponColumn : public ViewColumn {
     Q_OBJECT
 public:
 
+    WeaponColumn(QSettings &s, ItemWeaponSubtype *w, ViewColumnSet *set = 0, QObject *parent = 0);
     WeaponColumn(const QString &title, ItemWeaponSubtype *w, ViewColumnSet *set = 0, QObject *parent = 0);
     WeaponColumn* clone() {return new WeaponColumn(*this);}
     QStandardItem *build_cell(Dwarf *d);

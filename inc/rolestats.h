@@ -44,12 +44,14 @@ public:
 
 private:
     QSharedPointer<ECDF> m_raws; //primary ecdf based on the initial vector
-    QSharedPointer<ECDF> m_upper; //special ecdf for values over the median. used if min = median
+    QSharedPointer<ECDF> m_upper; //special ecdf for values over the median. used if min = median    
     double m_median; //median of m_sorted.favg values
     double m_sum_over_median; //sum of all the values of m_sorted > median
-    double m_sum_upper; //sum ((fplus(x) + fminus(x))/4.0)+0.5 where x is a value in m_upper
+    double m_sum_upper; //sum ((fplus(x) + fminus(x))/4.0)+0.5 where x is a value in m_upper    
     double m_factor;
-    bool m_hack;
+    bool m_hack;    
+    double m_upper_minmax_diff;
+    double m_upper_raw_min; //the raw value associated with the first upper value
     void init_list();
 };
 

@@ -7,7 +7,8 @@ class Dwarf;
 
 class HighestMoodColumn : public SkillColumn {
     Q_OBJECT
-public:
+public:    
+    HighestMoodColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
     HighestMoodColumn(const QString &title, ViewColumnSet *set = 0, QObject *parent = 0);
     HighestMoodColumn(const HighestMoodColumn &to_copy); // copy ctor
     HighestMoodColumn* clone() {return new HighestMoodColumn(*this);}

@@ -74,6 +74,7 @@ public:
     bool is_trainable();
     bool is_milkable();
     bool has_extracts() {return m_has_extracts;}
+    bool can_butcher() {return m_can_butcher;}
 
     QList<int> get_attribute_raws(int attrib_id) {return m_attrib_ranges.value(attrib_id).raw_bins;}
     Caste::att_range get_attribute_range(int attrib_id) {return m_attrib_ranges.value(attrib_id);}
@@ -102,6 +103,7 @@ private:
     FlagArray m_flags;
 
     bool m_has_extracts;
+    bool m_can_butcher;
     QHash<int,float> m_skill_rates;
     QStringList m_bonuses;
 

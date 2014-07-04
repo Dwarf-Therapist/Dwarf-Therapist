@@ -157,10 +157,20 @@ void Item::read_data(){
                     m_artifact_name = m_df->get_item_name(ARTIFACTS,artifact_id);
                     break;
                 }
-            }else if(ref_type == 10 && m_iType == QUIVER){ //type of container item
+            }else if(ref_type == 10 && m_iType == QUIVER){ //type of container item, could be expanded to show food and drink
                 int item_id = m_df->read_int(ref+m_df->memory_layout()->general_ref_offset("item_id"));
                 VIRTADDR ammo_addr = m_df->get_item_address(AMMO,item_id);
-                m_contained_items.append(new ItemAmmo(m_df,ammo_addr));
+                ItemAmmo *ia = new ItemAmmo(m_df,ammo_addr);
+                bool appended = false;
+                foreach(Item *i, m_contained_items){
+                    if(i->equals(*ia)){
+                        i->add_to_stack(ia->get_stack_size());
+                        appended = true;
+                        break;
+                    }
+                }
+                if(!appended)
+                    m_contained_items.append(ia);
             }
         }
     }
@@ -181,6 +191,11 @@ QString Item::display_name(bool colored){
         }
     }
 }
+
+bool Item::equals(const Item &i){
+    return (i.m_quality == m_quality && i.m_material_name == m_material_name && i.m_item_name == m_item_name);
+}
+
 
 void Item::set_default_name(Material *m){
     //only handling equipment for now
@@ -203,31 +218,8 @@ void Item::set_affection(int level)
 }
 
 void Item::build_display_name(){
-    QString symbol_q;
+    QString symbol_q = get_quality_symbol();
     QString symbol_w;
-
-    switch(m_quality){
-    case 1:{
-        symbol_q = QString("-");
-    }break;
-    case 2:{
-        symbol_q = QString("+");
-    }break;
-    case 3:{
-        symbol_q = QChar(0x002A);
-    }break;
-    case 4:{
-        symbol_q = QChar(0x2261);
-    }break;
-    case 5:{
-        symbol_q = QChar(0x263C);
-    }break;
-    case 6:{
-        symbol_q = QChar('!'); //artifact?
-    }break;
-    default:
-        symbol_q = "";
-    }
 
     switch(m_wear){
     case 1:{
@@ -272,4 +264,31 @@ void Item::build_display_name(){
     //override the color if there's wear, as it indicates this is an actual item
     if(m_wear > 0)
         m_color_display = Item::color_wear();
+}
+
+QString Item::get_quality_symbol(){
+    QString symbol_q;
+    switch(m_quality){
+    case 1:{
+        symbol_q = QString("-");
+    }break;
+    case 2:{
+        symbol_q = QString("+");
+    }break;
+    case 3:{
+        symbol_q = QChar(0x002A);
+    }break;
+    case 4:{
+        symbol_q = QChar(0x2261);
+    }break;
+    case 5:{
+        symbol_q = QChar(0x263C);
+    }break;
+    case 6:{
+        symbol_q = QChar('!'); //artifact?
+    }break;
+    default:
+        symbol_q = "";
+    }
+    return symbol_q;
 }

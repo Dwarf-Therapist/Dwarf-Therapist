@@ -124,8 +124,9 @@ int Uniform::get_missing_equip_count(ITEM_TYPE itype){
         }
     }else{
         foreach(ITEM_TYPE missing_type, m_missing_items.uniqueKeys()){
-            if(missing_type == itype || Item::type_in_group(itype,missing_type))
+            if(missing_type == itype || Item::type_in_group(itype,missing_type)){
                 count += m_missing_items.value(missing_type).count();
+            }
         }
     }
     return count;
@@ -181,7 +182,7 @@ void Uniform::check_uniform(QString category_name, Item *item){
                             (u->job_skill() < 0 || (u->job_skill() == item->melee_skill() || u->job_skill() == item->ranged_skill()))
                             )
                         )
-                {
+                {                    
                     QList<ItemDefUniform*> uItems = m_missing_items.take(itype);
                     uItems.removeAt(idx);
                     if(uItems.count() > 0)
