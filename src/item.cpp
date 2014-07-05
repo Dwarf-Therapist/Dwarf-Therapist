@@ -51,14 +51,14 @@ Item::Item(DFInstance *df, ItemDefUniform *u, QObject *parent)
     :QObject(parent)
     ,m_df(df)
     ,m_addr(0x0)
-    ,m_iType(u->item_type())
+    ,m_iType(u->item_type())    
     ,m_wear(0)
     ,m_mat_type(u->mat_type())
     ,m_mat_idx(u->mat_index())
-    ,m_quality(-1)
+    ,m_quality(-1)    
     ,m_id(u->id())
-    ,m_affection(0)
-    ,m_stack_size(0)
+    ,m_affection(0)    
+    ,m_stack_size(u->get_stack_size())
 {
     if(m_id > 0){
         //find the actual item's address

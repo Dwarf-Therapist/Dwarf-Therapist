@@ -844,7 +844,6 @@ void DFInstance::load_main_vectors(){
     QVector<VIRTADDR> artifacts = enumerate_vector(m_memory_correction + m_layout->address("artifacts_vector"));
     m_items_vectors.insert(ARTIFACTS,artifacts);
 
-
     m_color_vector = enumerate_vector(m_memory_correction + m_layout->address("colors_vector"));
     m_shape_vector = enumerate_vector(m_memory_correction + m_layout->address("shapes_vector"));
 

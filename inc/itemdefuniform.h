@@ -43,6 +43,7 @@ public:
         , m_id(-1)
         , m_indv_choice(-1)
         , m_job_skill(-1)
+        , m_stack_size(1)
     {
         read_data();
     }
@@ -60,6 +61,7 @@ public:
         , m_id(item_id)
         , m_indv_choice(-1)
         , m_job_skill(-1)
+        , m_stack_size(1)
     {
     }
 
@@ -76,6 +78,7 @@ public:
         , m_id(-1)
         , m_indv_choice(-1)
         , m_job_skill(job_skill)
+        , m_stack_size(1)
     {
     }
 
@@ -92,6 +95,7 @@ public:
         , m_id(uItem.m_id)
         , m_indv_choice(uItem.m_indv_choice)
         , m_job_skill(uItem.m_job_skill)
+        , m_stack_size(uItem.m_stack_size)
     {
     }
 
@@ -111,6 +115,9 @@ public:
     int indv_choice(){return m_indv_choice;}
     short job_skill(){return m_job_skill;}
 
+    int get_stack_size(){return m_stack_size;}
+    void add_to_stack(int num){m_stack_size+=num;}
+
 private:
     VIRTADDR m_address;
     DFInstance * m_df;
@@ -123,6 +130,7 @@ private:
     int m_id;
     int m_indv_choice;
     short m_job_skill;
+    int m_stack_size;
 
     void read_data(){
         if(m_address > 0){

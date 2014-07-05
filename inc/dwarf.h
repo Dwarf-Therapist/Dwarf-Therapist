@@ -486,7 +486,7 @@ public:
                 return false;
             else
                 return r1.rating > r2.rating;
-        }                
+        }
 
 private:
     int m_id; // each creature in the game has a unique serial ID

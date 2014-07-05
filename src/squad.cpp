@@ -84,16 +84,28 @@ void Squad::read_name() {
 
 
 void Squad::read_members() {
+    VIRTADDR addr;
     m_members_addr = m_df->enumerate_vector(m_address + m_mem->squad_offset("members"));
+    int member_count = 0;
+    foreach(addr, m_members_addr){
+        if(m_df->read_int(addr)>0)
+            member_count++;
+    }
 
     short carry_food = m_df->read_short(m_address+m_mem->squad_offset("carry_food"));
     short carry_water = m_df->read_short(m_address+m_mem->squad_offset("carry_water"));
-    int carry_ammo = m_df->enumerate_vector(m_address+m_mem->squad_offset("ammunition")).count();
+    int ammo_count = 0;
+    foreach(addr, m_df->enumerate_vector(m_address+m_mem->squad_offset("ammunition"))){
+        ammo_count += m_df->read_int(addr+0xc);//TODO: add proper offset
+    }
+    int ammo_each = 0;
+    if(member_count > 0  && ammo_count > 0)
+        ammo_each = ceil((float)ammo_count / member_count);
 
     //read the uniforms
     int position = 0;
     Uniform *u;    
-    foreach(VIRTADDR addr, m_members_addr){
+    foreach(addr, m_members_addr){
         u = new Uniform(m_df,this);
 
         m_members.insert(position,m_df->read_int(addr));
@@ -106,9 +118,9 @@ void Squad::read_members() {
         read_equip_category(addr+m_mem->squad_offset("weapon_vector"),WEAPON,u);
 
         //add other items
-        if(carry_ammo){
+        if(ammo_count > 0){
             u->add_uniform_item(addr+m_mem->squad_offset("quiver"),QUIVER);
-            u->add_uniform_item(AMMO,-1,-1);
+            u->add_uniform_item(AMMO,-1,-1,ammo_each);
         }
         if(carry_food)
             u->add_uniform_item(addr+m_mem->squad_offset("backpack"),BACKPACK);
@@ -124,9 +136,9 @@ void Squad::read_members() {
 void Squad::read_equip_category(VIRTADDR vec_addr, ITEM_TYPE itype, Uniform *u){
     QVector<VIRTADDR> uniform_items = m_df->enumerate_vector(vec_addr);
     foreach(VIRTADDR uItem_addr, uniform_items){
-        u->add_uniform_item(uItem_addr,itype,-1); //don't count the items yet
+        u->add_uniform_item(uItem_addr,itype,1);
     }
-    u->add_equip_count(itype,uniform_items.count());
+    //u->add_equip_count(itype,uniform_items.count());
 }
 
 int Squad::assigned_count(){

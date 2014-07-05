@@ -89,6 +89,7 @@ void RoleStats::init_list(){
         bool min_max_flag = ((m_raws->sorted_data().last() / m_raws->sorted_data().at((int)((m_upper->sorted_data().count() *0.75f)+upper_start_idx))) > 5);
 
         if(min_max_flag){
+            LOGD << "     - adjusting with min/max";
             m_upper_raw_min = m_raws->sorted_data().at(upper_start_idx);
             m_upper_minmax_diff = (m_raws->sorted_data().last() - m_upper_raw_min) * 1.01f;
         }
@@ -121,7 +122,7 @@ void RoleStats::init_list(){
     LOGD << "     - min raw value: " << m_raws->sorted_data().first() << "max raw value: " << m_raws->sorted_data().last();
     LOGD << "     - first quartile: " << first_quartile;
     LOGD << "     - second quartile: " << m_median;
-    LOGD << "     - third quartile: " << third_quartile;
+    LOGD << "     - third quartile: " << third_quartile;    
     if(m_factor > 0){
         LOGD << "     - number of values > median: " << m_upper->sorted_data().count();
         LOGD << "     - factor: " << m_factor;
