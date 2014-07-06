@@ -183,7 +183,7 @@ QString Item::display_name(bool colored){
         }
         if(colored){
             if(!m_color_display.isValid()){;
-                m_color_display = QApplication::palette().shadow().color();
+                m_color_display = QApplication::palette().toolTipText().color();
             }
             return QString("<font color=%1>%2</font>").arg(m_color_display.name()).arg(m_display_name);
         }else{

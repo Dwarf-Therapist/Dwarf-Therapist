@@ -122,7 +122,7 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     item->setData((sort_val * 100) + d->body_size(), DwarfModel::DR_SORT_VALUE);
     set_export_role(DwarfModel::DR_DISPLAY_RATING);
 
-    QColor norm_text = QApplication::palette().shadow().color();
+    QColor norm_text = QApplication::palette().toolTipText().color();
 
     QString tooltip = QString("<center><h3>%1</h3></center>%2%3%4%5<center><h4>%6 - %7</h4></center>")
             .arg(tt_title)
