@@ -2434,8 +2434,7 @@ int Dwarf::total_assigned_labors(bool include_hauling) {
     return ret_val;
 }
 
-//calculates the caste weighted attribute ratings, taking into account potential gain
-//this should always be done prior to the first role rating calculations so the values are already stored
+//load all the attribute display ratings
 void Dwarf::calc_attribute_ratings(){
     for(int i = 0; i < m_attributes.count(); i++){
         float val = DwarfStats::get_attribute_rating(m_attributes[i].get_value(), true);
@@ -2444,6 +2443,8 @@ void Dwarf::calc_attribute_ratings(){
 }
 
 QList<float> Dwarf::calc_role_ratings(){
+    calc_attribute_ratings();
+
     LOGD << ":::::::::::::::::::::::::::::::::::::::::::::::::::";
     LOGD << m_nice_name;
     m_role_ratings.clear();

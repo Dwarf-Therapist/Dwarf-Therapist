@@ -33,7 +33,7 @@ THE SOFTWARE.
 class RoleStats{
 
 public:
-    RoleStats(const QVector<double> &unsorted,bool hack=false);
+    RoleStats(const QVector<double> &unsorted);
     virtual ~RoleStats(){
 //        m_raws = 0;
 //        m_upper = 0;
@@ -57,7 +57,6 @@ private:
     double m_sum_over_median; //sum of all the values of m_sorted > median
     double m_sum_upper; //sum ((fplus(x) + fminus(x))/4.0)+0.5 where x is a value in m_upper    
     double m_factor;
-    bool m_hack;    
     bool m_multi_transform_all;
     double m_upper_minmax_diff;
     double m_upper_raw_min; //the raw value associated with the first upper value

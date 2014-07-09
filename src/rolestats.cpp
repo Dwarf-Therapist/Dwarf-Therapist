@@ -24,9 +24,8 @@ THE SOFTWARE.
 #include "rolestats.h"
 #include <numeric>
 
-RoleStats::RoleStats(const QVector<double> &unsorted, bool hack)
+RoleStats::RoleStats(const QVector<double> &unsorted)
 {
-    m_hack = hack;
     m_raws = QSharedPointer<ECDF>(new ECDF(unsorted));
     init_list();
 }
@@ -47,7 +46,7 @@ void RoleStats::init_list(){
     m_upper_minmax_diff = -1;
     m_upper_raw_min = -1;
     m_multi_transform_all = false;
-
+    m_transformations.clear();
 
     if(m_upper == 0)
         m_upper = QSharedPointer<ECDF>(new ECDF());

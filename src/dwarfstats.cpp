@@ -87,7 +87,7 @@ double DwarfStats::get_attribute_rating(int val,bool raw){
 
 void DwarfStats::init_traits(QVector<double> trait_values){
     if(m_traits == 0)
-        m_traits = QSharedPointer<RoleStats>(new RoleStats(trait_values,true));
+        m_traits = QSharedPointer<RoleStats>(new RoleStats(trait_values));
     else
         m_traits->set_list(trait_values);
 }

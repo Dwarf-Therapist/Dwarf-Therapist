@@ -41,9 +41,6 @@ ECDF::ECDF(const QVector<double> &unsorted)
 
 void ECDF::set_list(const QVector<double> &unsorted){
     m_sorted = unsorted;
-    m_skew = false;
-    m_skew_padding = 0.0;
-    m_median = 0.0;
     init_list();
 }
 

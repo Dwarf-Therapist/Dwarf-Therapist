@@ -660,7 +660,6 @@ void DFInstance::load_role_ratings(){
         }
         role_ratings.append(ratings);
         d->update_rating_list();
-        d->calc_attribute_ratings();
     }
 
     float max = 0;
