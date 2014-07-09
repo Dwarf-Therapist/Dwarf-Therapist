@@ -141,7 +141,7 @@ int Caste::get_skill_rate(int skill_id){
     return(m_skill_rates.value(skill_id,100));
 }
 
-void Caste::load_attribute_info(float ratio){
+void Caste::load_attribute_info(){
     //physical attributes (seems mental attribs follow so load them all at once)
     VIRTADDR base = m_address + m_mem->caste_offset("caste_phys_att_ranges");
     VIRTADDR base_caps = m_address + m_mem->caste_offset("caste_att_caps");
@@ -181,8 +181,6 @@ void Caste::load_attribute_info(float ratio){
             display_max -= 250; //game spaces by 250 per descriptor bin
         }        
         m_attrib_ranges.insert(i,r);
-//        if(ratio > -1)
-//            DwarfStats::load_att_caste_bins(i,ratio,r.raw_bins);
     }    
 }
 
@@ -214,26 +212,10 @@ QPair<int, QString> Caste::get_attribute_descriptor_info(ATTRIBUTES_TYPE id, int
     return ret;
 }
 
-void Caste::load_trait_info(){
-    //currently the only thing we're checking traits for is if they don't use the default trait values
-    //if they don't use the default trait values, then we're not going to use the bins when calculating role ratings for trats
-    if(!DT->traits_modified && m_trait_ranges.count() <= 0){
-        VIRTADDR base = m_address + m_mem->caste_offset("caste_trait_ranges");
-        for (int i=0; i<30; i++)
-        {
-            QList<short> ranges;
-            ranges.append(m_df->read_short(base));//min
-            ranges.append(m_df->read_short(base + 0x003c));//median
-            ranges.append(m_df->read_short(base + 0x0078));//max
-//            m_trait_ranges.insert(i,ranges); // no need to store any of this for now
-            base += 0x2;
-
-            if(!Trait::default_ranges(i,ranges.at(0),ranges.at(1),ranges.at(2))){
-                DT->traits_modified = true;
-                break;
-            }
-        }
-    }
+int Caste::get_attribute_cost_to_improve(int id){
+    if(m_attrib_ranges.count()<=0)
+        load_attribute_info();
+     return m_attrib_costs.value(id);
 }
 
 BodyPart* Caste::get_body_part(int body_part_id){

@@ -248,26 +248,30 @@ double Skill::get_simulated_level(){
 }
 
 //returns a weighted average of the current level and the simulated level with skill rate
-double Skill::get_balanced_level(){
+void Skill::calculate_balanced_level(){
     if(m_balanced_level < 0){
         float curr_level = capped_level_precise();
         if(curr_level < 0)
             curr_level = 0;
-        float skill_rate_weight = DwarfStats::get_skill_rate_weight();
+        double skill_rate_weight = DwarfStats::get_skill_rate_weight();
         if(!DT->show_skill_learn_rates){
             skill_rate_weight = 0;
         }
         double simulated_level = get_simulated_level();
-        m_balanced_level = (curr_level * (1.0f-skill_rate_weight)) + (simulated_level * skill_rate_weight);
+        m_balanced_level = (double)((curr_level * (1.0f-skill_rate_weight)) + (simulated_level * skill_rate_weight));
         if(m_balanced_level < 0)
             m_balanced_level = 0;
     }
+}
+
+double Skill::get_balanced_level(){
+    calculate_balanced_level();
     return m_balanced_level;
 }
 
 double Skill::get_rating(bool ensure_non_zero){
     if(m_rating < 0){
-        m_rating = DwarfStats::get_skill_ecdf(get_balanced_level());
+        m_rating = DwarfStats::get_skill_rating(get_balanced_level());
         if(m_rating < 0)
             m_rating = 0;
     }

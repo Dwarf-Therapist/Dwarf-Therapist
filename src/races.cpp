@@ -163,13 +163,8 @@ void Race::load_caste_ratios(){
 
             float commonality = 0.0;
             for(int idx=0; idx < m_castes.count();idx++){
-                Caste *c = m_castes[idx];
                 commonality = (float)ratios.at(idx) / (float)sum;
                 if(commonality > 0.0001){
-                    //load attribute data
-                    c->load_attribute_info(commonality);
-                    //load traits data
-                    c->load_trait_info();
                     valid_castes++;
                 }
             }

@@ -44,6 +44,7 @@ public:
     int get_value() {return m_value;}
     float get_potential_value();
     float get_balanced_value();
+    void calculate_balanced_value();
     int display_value(){return m_display_value;}
     float rating(bool potential = false);
     QStringList syndrome_names(){return m_syn_names;}

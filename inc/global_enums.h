@@ -37,17 +37,6 @@ typedef enum {
     AT_SOCIAL_AWARENESS=18
 } ATTRIBUTES_TYPE;
 
-typedef enum {
-    unknown_aspect=-9,
-    triple_negative=-3,
-    double_negative=-2,
-    negative=-1,
-    average=0,
-    positive=1,
-    double_positive=2,
-    triple_positive=3
-} ASPECT_TYPE;
-
 typedef enum{
     none=-1, //custom
     semi_wild=0,

@@ -100,7 +100,7 @@ void Attribute::set_rating(float rating, bool potential){
 float Attribute::rating(bool potential){
     if(potential){
         if(m_rating_potential < 0){
-            m_rating_potential = DwarfStats::get_att_ecdf(get_balanced_value());
+            m_rating_potential = DwarfStats::get_attribute_rating(get_balanced_value());
         }
         return m_rating_potential;
     }else{
@@ -108,11 +108,15 @@ float Attribute::rating(bool potential){
     }
 }
 float Attribute::get_balanced_value(){
+    calculate_balanced_value();
+    return m_value_balanced;
+}
+
+void Attribute::calculate_balanced_value(){
     if(m_value_balanced < 0){
         float m_pot_att_weight = DwarfStats::get_att_potential_weight();
         m_value_balanced = (m_value * (1.0f-m_pot_att_weight)) + (get_potential_value() * m_pot_att_weight);
     }
-    return m_value_balanced;
 }
 
 void Attribute::set_syn_names(QStringList names){

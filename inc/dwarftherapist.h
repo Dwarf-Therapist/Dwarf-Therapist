@@ -70,8 +70,7 @@ public:
     DFInstance *get_DFInstance() {return m_main_window->get_DFInstance();}
 
     bool multiple_castes;
-    bool show_skill_learn_rates;
-    bool traits_modified;
+    bool show_skill_learn_rates;    
     bool arena_mode;
 
     void emit_settings_changed();

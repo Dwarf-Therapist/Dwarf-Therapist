@@ -73,6 +73,7 @@ public:
     double get_simulated_level();
     double get_rating(bool ensure_non_zero = false);
     double get_balanced_level();
+    void calculate_balanced_level();
 
 private:
     short m_id;

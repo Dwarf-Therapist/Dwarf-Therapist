@@ -249,7 +249,6 @@ protected:
     QHash<int,int> m_enabled_labor_count;
 
     void load_population_data();    
-    void cdf_role_ratings();
     void load_role_ratings();
 
 
@@ -312,9 +311,7 @@ private:
 
     VIRTADDR m_squad_vector;
 
-    QList<Squad*> m_squads;
-
-    bool m_new_role_method;
+    QList<Squad*> m_squads;    
 };
 
 #endif // DFINSTANCE_H

@@ -1424,7 +1424,6 @@ void MainWindow::reset(){
         ui->cb_group_by->setCurrentIndex(ui->cb_group_by->findData(grp_by));
         ui->cb_group_by->blockSignals(false);
     }
-    DT->traits_modified = false;
 
     this->setWindowTitle("Dwarf Therapist - Disconnected");
 

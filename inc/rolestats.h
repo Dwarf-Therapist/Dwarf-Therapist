@@ -39,20 +39,42 @@ public:
 //        m_upper = 0;
     }
 
+    struct transform_stats{
+        double average;
+        double median;
+        double min;
+        double max;
+    };
+
     double get_rating(double val);
     void set_list(const QVector<double> &unsorted);
 
 private:
     QSharedPointer<ECDF> m_raws; //primary ecdf based on the initial vector
     QSharedPointer<ECDF> m_upper; //special ecdf for values over the median. used if min = median    
-    double m_median; //median of m_sorted.favg values
+    double m_ecdf_median; //median of m_sorted.favg values
+    double m_raw_median;
     double m_sum_over_median; //sum of all the values of m_sorted > median
     double m_sum_upper; //sum ((fplus(x) + fminus(x))/4.0)+0.5 where x is a value in m_upper    
     double m_factor;
     bool m_hack;    
+    bool m_multi_transform_all;
     double m_upper_minmax_diff;
     double m_upper_raw_min; //the raw value associated with the first upper value
+    double m_transform_one_percent;
     void init_list();
+
+    double find_median(QVector<double> v);
+    double range_transform(double val, double min, double mid, double max);
+
+    QList<transform_stats> m_transformations;
+    bool load_transformations(QVector<double> list);
+    transform_stats load_list_stats(const QVector<double> list, bool save = true);
+    void calculate_factor_value(bool using_default, int upper_start_idx);
+
+    double get_transformations_rating(double val);
+    bool transform_valid(transform_stats ts, bool mid_is_avg);
+
 };
 
 #endif // ROLESTATS_H

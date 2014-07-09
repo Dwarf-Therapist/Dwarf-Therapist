@@ -87,13 +87,13 @@ public:
     Q_INVOKABLE bool is_baby() {return m_is_baby;}
 
     //! return a text version of this dwarf's profession (will use custom profession if set)
-    QString profession();
+    Q_INVOKABLE QString profession();
 
     //! return the raw game-set profession for a dwarf
     Q_INVOKABLE int raw_profession() {return m_raw_profession;}
 
     //! custom profession string (if set)
-    QString custom_profession_name() {return m_pending_custom_profession;}
+    Q_INVOKABLE QString custom_profession_name() {return m_pending_custom_profession;}
 
     //! return a printable name for this dwarf based on user-settings (may include nickname/firstname or both)
     Q_INVOKABLE QString nice_name() const {return m_nice_name;}
@@ -342,8 +342,8 @@ public:
     */
     void reset_custom_profession() {m_pending_custom_profession = "";}
 
-    QList<float> calc_role_ratings(bool new_method = false);
-    float calc_role_rating(Role *, bool new_method = false);
+    QList<float> calc_role_ratings();
+    float calc_role_rating(Role *);
     Q_INVOKABLE float get_role_rating(QString role_name, bool raw = false);
     Q_INVOKABLE float get_adjusted_role_rating(QString role_name){return m_adjusted_role_ratings.value(role_name);}
     void set_role_rating(QString role_name, float value);
@@ -364,12 +364,12 @@ public:
     Caste *get_caste() {return m_caste;}
 
     //! method for mapping a caste id to a meaningful text name string
-    QString caste_name(bool plural_name = false);
+    Q_INVOKABLE QString caste_name(bool plural_name = false);
 
-    QString caste_tag();
+    Q_INVOKABLE QString caste_tag();
 
     //! static method for mapping a caste id to a meaningful text description string
-    QString caste_desc();
+    Q_INVOKABLE QString caste_desc();
 
     //! static method for mapping a race id to a meaningful text string
     QString race_name(bool base = false, bool plural_name = false);

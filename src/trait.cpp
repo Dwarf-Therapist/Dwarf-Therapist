@@ -68,25 +68,10 @@ Trait::Trait(int trait_id, QSettings &s, QObject *parent)
         m_level_string[61] = s.value("level_3", "").toString();
         m_level_string[76] = s.value("level_4", "").toString();
         m_level_string[91] = s.value("level_5", "").toString();
-
-        //setup aspect types and load bins
-        QList<int> raws;
-        raws << -1 << 11 << 27 << 44 << 65 << 78 << 92 << 100;
-
-        //immoderation (urge) and straightforwardness (honesty) are +
-        if(trait_id==4 || trait_id==19)
-            m_aspect_type = positive;
-        else if(trait_id==5) //vulnerability (stress) is -
-            m_aspect_type = negative;
-        else //everything else
-            m_aspect_type = average;
-
-        DwarfStats::load_trait_bins(m_aspect_type, raws);
     }else{
         for(int i = 0; i < m_limits.length(); i++){
             m_level_string[m_limits.at(i)] = s.value(QString("level_%1").arg(QString::number(i))).toString();
         }
-        m_aspect_type = unknown_aspect;
     }
 }
 
@@ -145,14 +130,4 @@ QString Trait::special_messages(const short &val){
         }
     }
     return items.join(tr(" and "));
-}
-
-bool Trait::default_ranges(int id, short min, short median, short max){
-    //immoderation (urge) and straightforwardness (honesty) are +
-    if(id==4 || id==19)
-        return (min==0 && median==55 && max==100);
-    else if(id==5) //vulnerability (stress) is -
-        return (min==0 && median==45 && max==100);
-    else //everything else
-        return (min==0 && median==50 && max==100);
 }
