@@ -452,7 +452,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     LOGD << "civilization id:" << hexify(m_dwarf_civ_id);
 
     m_current_year = read_word(current_year);
-    LOGD << "current year:" << m_current_year;
+    LOGI << "current year:" << m_current_year;
     m_cur_time = (int)m_current_year * 0x62700 + m_cur_year_tick;
 
     QVector<VIRTADDR> creatures_addrs = get_creatures();
@@ -470,7 +470,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
             if(d){
                 dwarves.append(d); //add animals as well so we can show them
                 if(!d->is_animal()){
-                    LOGD << "FOUND DWARF" << hexify(creature_addr) << d->nice_name();
+                    LOGD << "FOUND UNIT" << hexify(creature_addr) << d->nice_name();
                     m_actual_dwarves.append(d);
 
                     //never calculate roles for babies
@@ -488,7 +488,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
             }
             emit progress_value(progress_count++);
         }
-        LOGD << "read " << dwarves.count() << " in " << t.elapsed() << "ms";
+        LOGI << "read " << dwarves.count() << " in " << t.elapsed() << "ms";
 
         m_enabled_labor_count.clear();
         qDeleteAll(m_pref_counts);
@@ -498,12 +498,12 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         t.restart();
         QFuture<void> f = QtConcurrent::run(this,&DFInstance::load_population_data);
         f.waitForFinished();
-        LOGD << "loaded population data in  " << t.elapsed() << "ms";
+        LOGI << "loaded population data in" << t.elapsed() << "ms";
 
         t.restart();
         f = QtConcurrent::run(this,&DFInstance::load_role_ratings);
         f.waitForFinished();
-        LOGD << "calculated new role ratings in " << t.elapsed() << "ms";
+        LOGI << "calculated roles in" << t.elapsed() << "ms";
 
         //calc_done();
         m_actual_dwarves.clear();
@@ -517,8 +517,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     }
     detach();
 
-    LOGI << "found" << dwarves.size() << "dwarves out of" << creatures_addrs.size()
-         << "creatures";
+    LOGI << "found" << dwarves.size() << "dwarves out of" << creatures_addrs.size() << "creatures";
 
     return dwarves;
 }
@@ -635,21 +634,21 @@ void DFInstance::load_role_ratings(){
 
     QTime tr;
     tr.start();
-    LOGD << "Role Trait Info:";
+    TRACE << "Role Trait Info:";
     DwarfStats::init_traits(trait_values);
-    LOGD << "     - loaded trait role data in " << tr.elapsed() << "ms";
+    TRACE << "     - loaded trait role data in " << tr.elapsed() << "ms";
 
-    LOGD << "Role Skills Info:";
+    TRACE << "Role Skills Info:";
     DwarfStats::init_skills(skill_values);
-    LOGD << "     - loaded skill role data in " << tr.elapsed() << "ms";
+    TRACE << "     - loaded skill role data in " << tr.elapsed() << "ms";
 
-    LOGD << "Role Attributes Info:";    
+    TRACE << "Role Attributes Info:";
     DwarfStats::init_attributes(attribute_values,attribute_raw_values);    
-    LOGD << "     - loaded attribute role data in " << tr.elapsed() << "ms";
+    TRACE << "     - loaded attribute role data in " << tr.elapsed() << "ms";
 
-    LOGD << "Role Preferences Info:";
+    TRACE << "Role Preferences Info:";
     DwarfStats::init_prefs(pref_values);
-    LOGD << "     - loaded preference role data in " << tr.elapsed() << "ms";
+    TRACE << "     - loaded preference role data in " << tr.elapsed() << "ms";
 
     float avg = 0;
     QList<float> role_ratings;
@@ -682,11 +681,11 @@ void DFInstance::load_role_ratings(){
         }
     }    
     DwarfStats::set_role_stats(min,max,median);
-    LOGD << "Overall Role Rating Stats";
-    LOGD << "     - Min: " << min;
-    LOGD << "     - Max: " << max;
-    LOGD << "     - Median: " << median;
-    LOGD << "     - Average: " << avg;
+    TRACE << "Overall Role Rating Stats";
+    TRACE << "     - Min: " << min;
+    TRACE << "     - Max: " << max;
+    TRACE << "     - Median: " << median;
+    TRACE << "     - Average: " << avg;
 }
 
 

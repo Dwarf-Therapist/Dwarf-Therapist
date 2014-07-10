@@ -71,7 +71,7 @@ private:
     static float m_role_median;
 
     static QSharedPointer<RoleStats> m_attributes;
-    static QSharedPointer<ECDF> m_attributes_raw;
+    static QSharedPointer<RoleStats> m_attributes_raw;
     static QSharedPointer<RoleStats> m_skills;
     static QSharedPointer<RoleStats> m_traits;
     static QSharedPointer<RoleStats> m_preferences;

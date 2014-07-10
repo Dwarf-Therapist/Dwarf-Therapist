@@ -295,7 +295,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     case CT_ATTRIBUTE:
     {
         QColor bg = paint_bg(adjusted, p, opt, idx);
-        paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 2.0f, 98.0f, 49.0f, 51.0f);
+        paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 2.0f, 98.0f);
 
         if(color_attribute_syns && idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt() > 0){
             paint_border(adjusted,p,Attribute::color_affected_by_syns());

@@ -73,7 +73,7 @@ public:
         m[ARMOR]=QObject::tr("Armors (Chest)");
         m[SHOES]=QObject::tr("Armors (Feet)");
         m[SHIELD]=QObject::tr("Armors (Shields)");
-        m[HELM]=QObject::tr("Armosr (Head)");
+        m[HELM]=QObject::tr("Armors (Head)");
         m[GLOVES]=QObject::tr("Armors (Hands)");
         m[BOX]=QObject::tr("Boxes");
         m[BIN]=QObject::tr("Bins");

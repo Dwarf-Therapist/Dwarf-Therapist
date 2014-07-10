@@ -36,7 +36,7 @@ float DwarfStats::m_role_median;
 
 QSharedPointer<RoleStats> DwarfStats::m_skills;
 QSharedPointer<RoleStats> DwarfStats::m_attributes;
-QSharedPointer<ECDF> DwarfStats::m_attributes_raw;
+QSharedPointer<RoleStats> DwarfStats::m_attributes_raw;
 QSharedPointer<RoleStats> DwarfStats::m_traits;
 QSharedPointer<RoleStats> DwarfStats::m_preferences;
 
@@ -74,13 +74,13 @@ void DwarfStats::init_attributes(QVector<double> attribute_values, QVector<doubl
     else
         m_attributes->set_list(attribute_values);
     if(m_attributes_raw == 0)
-        m_attributes_raw = QSharedPointer<ECDF>(new ECDF(attribute_raw_values));
+        m_attributes_raw = QSharedPointer<RoleStats>(new RoleStats(attribute_raw_values));
     else
         m_attributes_raw->set_list(attribute_raw_values);
 }
 double DwarfStats::get_attribute_rating(int val,bool raw){
     if(raw)
-        return m_attributes_raw->favg((double)val);
+        return m_attributes_raw->get_rating((double)val);//m_attributes_raw->favg((double)val);
     else
         return m_attributes->get_rating(val);
 }

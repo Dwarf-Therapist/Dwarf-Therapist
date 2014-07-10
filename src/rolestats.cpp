@@ -67,9 +67,9 @@ void RoleStats::init_list(){
         double ecdf_q1 = ecdf_avgs.at(idx_mid/2.0f);
         double ecdf_q3 = ecdf_avgs.at(ecdf_avgs.count() *0.75);
 
-        LOGD << "     - first quartile (ecdf/rank): " << ecdf_q1;
-        LOGD << "     - second quartile (ecdf/rank): " << m_ecdf_median;
-        LOGD << "     - third quartile (ecdf/rank): " << ecdf_q3;
+        TRACE << "     - first quartile (ecdf/rank): " << ecdf_q1;
+        TRACE << "     - second quartile (ecdf/rank): " << m_ecdf_median;
+        TRACE << "     - third quartile (ecdf/rank): " << ecdf_q3;
 
         QVector<double>::Iterator i_last = std::upper_bound(ecdf_avgs.begin()+(idx_mid -1),ecdf_avgs.end(),m_ecdf_median);
         int upper_start_idx = i_last - ecdf_avgs.begin();
@@ -77,7 +77,7 @@ void RoleStats::init_list(){
 
         //check upper max / upper 3rd quartile > 5.0 to determine if additional adjustment is needed on the values > median
         float q4_q3_check = (m_raws->sorted_data().last() / m_raws->sorted_data().at((int)((m_upper->sorted_data().count() *0.75f)+upper_start_idx)));
-        LOGD << "     - checking q4/q3 = " << q4_q3_check;
+        TRACE << "     - checking q4/q3 = " << q4_q3_check;
         if(q4_q3_check > 5.0f){
             //use the default ecdf/rank for the lower values, and a minmax conversion for upper values
             calculate_factor_value(false,upper_start_idx);
@@ -98,22 +98,20 @@ void RoleStats::init_list(){
         load_transformations(m_raws->sorted_data());
     }
 
-    double total = 0.0;
-    foreach(double val, m_raws->sorted_data()){
-        total += get_rating(val);
+    if(DT->get_log_manager()->get_appender("core")->minimum_level() == LL_TRACE){
+        double total = std::accumulate(m_raws->sorted_data().begin(),m_raws->sorted_data().end(),0.0);
+        transform_stats ts = load_list_stats(m_raws->sorted_data(),false);
+        TRACE << "     - total raw values: " << m_raws->sorted_data().count();
+        TRACE << "     - median raw values: " << ts.median;
+        TRACE << "     - average of raw values: " << ts.average;
+        TRACE << "     - min raw value: " << m_raws->sorted_data().first() << "max raw value: " << m_raws->sorted_data().last();
+        if(m_factor > 0){
+            TRACE << "     - number of values > median: " << m_upper->sorted_data().count();
+            TRACE << "     - factor: " << m_factor;
+        }
+        TRACE << "     - average of final ratings: " << (total / m_raws->sorted_data().count());
+        TRACE << "     ------------------------------";
     }
-
-    transform_stats ts = load_list_stats(m_raws->sorted_data(),false);
-
-    LOGD << "     - total raw values: " << m_raws->sorted_data().count();
-    LOGD << "     - median raw values: " << ts.median;
-    LOGD << "     - average of raw values: " << ts.average;
-    LOGD << "     - min raw value: " << m_raws->sorted_data().first() << "max raw value: " << m_raws->sorted_data().last();
-    if(m_factor > 0){
-        LOGD << "     - number of values > median: " << m_upper->sorted_data().count();
-        LOGD << "     - factor: " << m_factor;
-    }
-    LOGD << "     - average of final ratings: " << (total / m_raws->sorted_data().count());
 }
 
 double RoleStats::get_rating(double val){

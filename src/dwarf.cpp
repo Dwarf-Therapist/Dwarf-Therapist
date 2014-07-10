@@ -2445,8 +2445,9 @@ void Dwarf::calc_attribute_ratings(){
 QList<float> Dwarf::calc_role_ratings(){
     calc_attribute_ratings();
 
-    LOGD << ":::::::::::::::::::::::::::::::::::::::::::::::::::";
-    LOGD << m_nice_name;
+    TRACE << ":::::::::::::::::::::::::::::::::::::::::::::::::::";
+    TRACE << m_nice_name;
+
     m_role_ratings.clear();
     m_sorted_role_ratings.clear();
     m_sorted_custom_role_ratings.clear();
@@ -2472,8 +2473,7 @@ float Dwarf::calc_role_rating(Role *m_role){
         return  m_engine.evaluate(m_role->script).toNumber(); //just show the raw value the script generates
     }
 
-    TRACE << "reading role " << m_role->name << " for unit " << m_nice_name;
-    LOGD << "  +" << m_role->name << "-" << m_nice_name;
+    TRACE << "  +" << m_role->name << "-" << m_nice_name;
 
     //no script, calculate rating based on specified aspects
     float rating_att = 0.0;
@@ -2557,7 +2557,7 @@ float Dwarf::calc_role_rating(Role *m_role){
             total_skill_rates += s.skill_rate();
             aspect_value = s.get_rating();
 
-            LOGI << "      * skill:" << s.name() << "lvl:" << s.capped_level_precise() << "sim. lvl:" << s.get_simulated_level() << "balanced lvl:" << s.get_balanced_level()
+            TRACE << "      * skill:" << s.name() << "lvl:" << s.capped_level_precise() << "sim. lvl:" << s.get_simulated_level() << "balanced lvl:" << s.get_balanced_level()
                  << "rating:" << s.get_rating();
 
             if(aspect_value > 1.0)
@@ -2619,24 +2619,17 @@ float Dwarf::calc_role_rating(Role *m_role){
     if(rating_total == 0)
         rating_total = 0.0001;
 
-//    if(rating_total >= 0.73 && m_role->name == "Miner"){
-//        LOGD << m_nice_name << "-" << m_role->name;
-        LOGD << "      -attributes:" << rating_att;
-        LOGD << "      -skills:" << rating_skill;
-        LOGD << "      -traits:" << rating_trait;
-        LOGD << "      -preferences:" << rating_prefs;
-        LOGD << "      -total:" << rating_total;
-        LOGD << "  ------------------------------------------------------";
-//    }
+    TRACE << "      -attributes:" << rating_att;
+    TRACE << "      -skills:" << rating_skill;
+    TRACE << "      -traits:" << rating_trait;
+    TRACE << "      -preferences:" << rating_prefs;
+    TRACE << "      -total:" << rating_total;
+    TRACE << "  ------------------------------------------------------";
 
     return rating_total;
 }
 
 const QList<Role::simple_rating> &Dwarf::sorted_role_ratings(){
-    //    if(DT->user_settings()->value("options/show_custom_roles",false).toBool())
-    //        return m_sorted_custom_role_ratings;
-    //    else
-    //        return m_sorted_role_ratings;
     return m_sorted_role_ratings;
 }
 
@@ -2662,18 +2655,12 @@ void Dwarf::update_rating_list(){
         sr.rating = m_role_ratings.value(name);
         sr.name = name;
         m_sorted_role_ratings.append(sr);
-        //        if(GameDataReader::ptr()->get_role(name)->is_custom)
-        //            m_sorted_custom_role_ratings << qMakePair(name,m_role_ratings.value(name));
     }
     if(DT->user_settings()->value("options/show_custom_roles",false).toBool()){
         qSort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(),&Dwarf::sort_ratings_custom);
     }else{
         qSort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(),&Dwarf::sort_ratings);
     }
-    //    qSort(m_sorted_custom_role_ratings.begin(),m_sorted_custom_role_ratings.end(), &Dwarf::sort_ratings);
-    //    qSort(m_sorted_custom_role_ratings.begin(),m_sorted_custom_role_ratings.end(), &Dwarf::sort_ratings);
-    //refresh the tooltip as well
-    //tooltip_text();
 }
 
 int Dwarf::get_role_pref_match_count(Role *r){
@@ -2714,7 +2701,6 @@ bool Dwarf::has_preference(QString pref_name, QString category, bool exactMatch)
                     return true;
             }
         }
-
         return false;
     }else{
         if(!m_grouped_preferences.keys().contains(category))
