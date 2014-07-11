@@ -52,12 +52,12 @@ bool LayoutCreator::write_file()
     QFile file(m_parent->filename());
     if(!file.copy(m_file_name)) {
         //TODO: Error handling
-        LOGD << "\tError copying file to new location!";
+        LOGI << "\tError copying file to new location!";
         return false;
     }
 
     if( !file.setPermissions((QFile::Permission)0x666) ) {
-        LOGD << "WARNING: Unable to set permissions for new layout.";
+        LOGI << "WARNING: Unable to set permissions for new layout.";
     }
     // Read the file
 
@@ -73,7 +73,7 @@ bool LayoutCreator::write_file()
     newLayout.set_address("addresses/squad_vector", m_squad_vector);
     newLayout.set_address("addresses/current_year", m_current_year);
     newLayout.set_complete();
-    LOGD << "\tWriting file.";
+    LOGI << "\tWriting file.";
     newLayout.save_data();
     return true;
 }

@@ -244,7 +244,8 @@ public:
     void load_trait_values(QVector<double> &list);
     QMultiMap<int,Preference*> *get_preferences(){return &m_preferences;}    
 
-    int get_role_pref_match_count(Role *r);
+    QList<double> get_role_pref_match_counts(Role *r);
+    double get_role_pref_match_counts(Preference *role_pref);
 
     //! return a skill object by skill_id
     Skill get_skill(int skill_id);

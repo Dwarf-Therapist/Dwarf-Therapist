@@ -77,7 +77,6 @@ Preference::Preference(const Preference &p)
 Preference::~Preference(){
     delete(pref_aspect);
     pref_aspect = 0;
-    m_role_matches.clear();
 }
 
 void Preference::add_flag(int flag){
@@ -85,7 +84,7 @@ void Preference::add_flag(int flag){
         m_special_flags.append(flag);
 }
 
-int Preference::matches(Preference *role_pref, QString role_name, Dwarf *d){
+int Preference::matches(Preference *role_pref, Dwarf *d){
     int result = 0;
 
     if(m_pType == role_pref->get_pref_category()){
@@ -99,9 +98,11 @@ int Preference::matches(Preference *role_pref, QString role_name, Dwarf *d){
         if(role_pref->special_flags().count() > 0){
             if(result==1)
                 result = 0; //reset to 0, only match on these flags
-            foreach(int f, role_pref->special_flags()){
-                if(m_special_flags.contains(f)){
-                    result = 1;
+            if(m_special_flags.count() > 0){
+                foreach(int f, role_pref->special_flags()){
+                    if(m_special_flags.contains(f)){
+                        result = 1;
+                    }
                 }
             }
         }
@@ -118,10 +119,12 @@ int Preference::matches(Preference *role_pref, QString role_name, Dwarf *d){
             }
         }
 
+        //check for an exact match on the string, if this is required, reset our result again and check
         if(role_pref->exact_match())
             result = 0;
 
-        result += exact_matches(role_pref->get_name());
+        if(result <= 0) //only check for an exact match if we don't already have a match
+            result = exact_matches(role_pref->get_name());
 
         if(d){
             //if it's a weapon, and a match, ensure the dwarf can actually wield it as well
@@ -135,17 +138,7 @@ int Preference::matches(Preference *role_pref, QString role_name, Dwarf *d){
 
     }
 
-    int curr_count = get_match_count(role_name);
-    m_role_matches.insert(role_name,result+curr_count);
-
     return result;
-}
-
-int Preference::get_match_count(QString role_name){
-    if(m_role_matches.contains(role_name))
-        return m_role_matches.value(role_name);
-    else
-        return 0;
 }
 
 int Preference::exact_matches(QString searchval){

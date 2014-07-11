@@ -319,7 +319,7 @@ void ViewManager::draw_views() {
         setCurrentIndex(0);
     }
     QTime stop = QTime::currentTime();
-    LOGD << QString("redrew views in %L1ms").arg(start.msecsTo(stop));
+    LOGI << QString("redrew views in %L1ms").arg(start.msecsTo(stop));
 }
 
 void ViewManager::write_tab_settings() {

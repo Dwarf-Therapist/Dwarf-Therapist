@@ -271,7 +271,7 @@ void MainWindow::read_settings() {
 
 void MainWindow::write_settings() {
     if (m_settings && !m_reading_settings) {
-        LOGD << "beginning to write settings";
+        LOGI << "beginning to write settings";
         QByteArray geom = saveGeometry();
         QByteArray state = saveState();
         m_settings->beginGroup("window");
@@ -289,7 +289,7 @@ void MainWindow::write_settings() {
         }
         m_settings->endGroup();
 
-        LOGD << "finished writing settings";
+        LOGI << "finished writing settings";
     }
 }
 
@@ -304,9 +304,9 @@ void MainWindow::closeEvent(QCloseEvent *evt) {
 }
 
 void MainWindow::connect_to_df() {
-    LOGD << "attempting connection to running DF game";
+    LOGI << "attempting connection to running DF game";
     if (m_df) {
-        LOGD << "already connected, disconnecting";
+        LOGI << "already connected, disconnecting";
         delete m_df;
         set_interface_enabled(false);
         m_df = 0;            
@@ -322,17 +322,17 @@ void MainWindow::connect_to_df() {
         m_scanner = new Scanner(m_df, this);
 
         if(m_df->memory_layout()){
-            LOGD << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
+            LOGI << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
             m_lbl_status->setText(tr("Connected to %1").arg(m_df->memory_layout()->game_version()));
             m_lbl_status->setToolTip(tr("Currently using layout file: %1").arg(m_df->memory_layout()->filename()));
         }else{
-            LOGD << "Connection to unknown DF Version established.";
+            LOGI << "Connection to unknown DF Version established.";
             m_lbl_status->setText("Connected to unknown version");
         }
         m_force_connect = false;
     } else if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
         m_scanner = new Scanner(m_df, this);
-        LOGD << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
+        LOGI << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
         m_lbl_status->setText(tr("Connected to %1").arg(m_df->memory_layout()->game_version()));
         m_lbl_status->setToolTip(tr("Currently using layout file: %1").arg(m_df->memory_layout()->filename()));
         m_force_connect = false;
@@ -622,7 +622,7 @@ void MainWindow::layout_check_finished(bool error) {
 //        }
 //    }
 
-    LOGD << "Error: " << error << " Force Connect: " << m_force_connect;
+    LOGI << "Error: " << error << " Force Connect: " << m_force_connect;
 
     if(error) {
         m_df->layout_not_found(m_tmp_checksum);

@@ -225,7 +225,7 @@ bool Dwarf::has_invalid_flags(const QString creature_name, QHash<uint, QString> 
     foreach(uint invalid_flag, invalid_flags.uniqueKeys()) {
         QString reason = invalid_flags[invalid_flag];
         if(has_flag(invalid_flag,dwarf_flags)) {
-            LOGD << "Ignoring" << creature_name << "who appears to be" << reason;
+            LOGI << "Ignoring" << creature_name << "who appears to be" << reason;
             return true;
         }
     }
@@ -358,7 +358,7 @@ bool Dwarf::is_valid(){
                     && !has_flag(0x2,m_unit_flags.at(0))
                     && !has_flag(0x80,m_unit_flags.at(1))
                     && !has_flag(0x1000,m_unit_flags.at(2))){
-                LOGD << "Found migrant " << this->nice_name();
+                LOGI << "Found migrant " << this->nice_name();
                 m_validated = true;
                 m_is_valid = true;
                 return true;
@@ -367,7 +367,7 @@ bool Dwarf::is_valid(){
             //if a dwarf has gone crazy (berserk=7,raving=6,melancholy=5)
             int m_mood = this->m_mood_id;
             if(m_mood==7 || m_mood==6 || m_mood==5){
-                LOGD << "Ignoring " << this->nice_name() << "who appears to have lost their mind.";
+                LOGI << "Ignoring " << this->nice_name() << "who appears to have lost their mind.";
                 m_validated = true;
                 m_is_valid = false;
                 return false;
@@ -375,7 +375,7 @@ bool Dwarf::is_valid(){
 
             //check opposed to life
             if(has_flag(eCurse::OPPOSED_TO_LIFE,m_curse_flags)){
-                LOGD << "Ignoring " << this->nice_name() << " who appears to be a hostile undead!";
+                LOGI << "Ignoring " << this->nice_name() << " who appears to be a hostile undead!";
                 m_validated = true;
                 m_is_valid = false;
                 return false;
@@ -386,7 +386,7 @@ bool Dwarf::is_valid(){
             //the full curse information hasn't been loaded yet, so just read the curse name
             QString curse_name = m_df->read_string(m_address + m_mem->dwarf_offset("curse"));
             if(!curse_name.isEmpty()){
-                LOGD << "Ignoring animal " << this->nice_name() << "who appears to be cursed or undead";
+                LOGI << "Ignoring animal " << this->nice_name() << "who appears to be cursed or undead";
                 m_validated = true;
                 m_is_valid = false;
                 return false;
@@ -403,7 +403,7 @@ bool Dwarf::is_valid(){
         }
 
         if(!this->m_first_soul){
-            LOGD << "Ignoring" << this->nice_name() <<
+            LOGI << "Ignoring" << this->nice_name() <<
                     "who appears to be soulless.";
             m_validated = true;
             m_is_valid = false;
@@ -835,8 +835,7 @@ void Dwarf::read_profession() {
     if(cp)
         m_icn_prof = cp->get_pixmap();
 
-    TRACE << "reading profession for" << nice_name() << m_raw_profession <<
-             prof_name;
+    LOGD << "reading profession for" << nice_name() << m_raw_profession << prof_name;
     TRACE << "EFFECTIVE PROFESSION:" << m_profession;
 }
 
@@ -1247,7 +1246,7 @@ void Dwarf::read_soul(){
     VIRTADDR soul_vector = m_address + m_mem->dwarf_offset("souls");
     QVector<VIRTADDR> souls = m_df->enumerate_vector(soul_vector);
     if (souls.size() != 1) {
-        LOGD << nice_name() << "has" << souls.size() << "souls!";
+        LOGI << nice_name() << "has" << souls.size() << "souls!";
         return;
     }
     m_first_soul = souls.at(0);
@@ -2445,8 +2444,8 @@ void Dwarf::calc_attribute_ratings(){
 QList<float> Dwarf::calc_role_ratings(){
     calc_attribute_ratings();
 
-    TRACE << ":::::::::::::::::::::::::::::::::::::::::::::::::::";
-    TRACE << m_nice_name;
+    LOGD << ":::::::::::::::::::::::::::::::::::::::::::::::::::";
+    LOGD << m_nice_name;
 
     m_role_ratings.clear();
     m_sorted_role_ratings.clear();
@@ -2473,7 +2472,7 @@ float Dwarf::calc_role_rating(Role *m_role){
         return  m_engine.evaluate(m_role->script).toNumber(); //just show the raw value the script generates
     }
 
-    TRACE << "  +" << m_role->name << "-" << m_nice_name;
+    LOGD << "  +" << m_role->name << "-" << m_nice_name;
 
     //no script, calculate rating based on specified aspects
     float rating_att = 0.0;
@@ -2557,7 +2556,7 @@ float Dwarf::calc_role_rating(Role *m_role){
             total_skill_rates += s.skill_rate();
             aspect_value = s.get_rating();
 
-            TRACE << "      * skill:" << s.name() << "lvl:" << s.capped_level_precise() << "sim. lvl:" << s.get_simulated_level() << "balanced lvl:" << s.get_balanced_level()
+            LOGD << "      * skill:" << s.name() << "lvl:" << s.capped_level_precise() << "sim. lvl:" << s.get_simulated_level() << "balanced lvl:" << s.get_balanced_level()
                  << "rating:" << s.get_rating();
 
             if(aspect_value > 1.0)
@@ -2582,22 +2581,8 @@ float Dwarf::calc_role_rating(Role *m_role){
     if(m_role->prefs.count()>0){
         total_weight = 0;
         aspect_value = 0;
-        int total_match_count = 0;
-        int key = 0;
-        int match_count = 0;
         foreach(Preference *role_pref,m_role->prefs){
-            total_match_count = 0;
-            key = role_pref->get_pref_category();
-            QMultiMap<int, Preference *>::iterator i = m_preferences.find(key);
-            while(i != m_preferences.end() && i.key() == key){
-                match_count = static_cast<Preference*>(i.value())->get_match_count(m_role->name);
-                if(match_count > 1)
-                    match_count = 1;
-                total_match_count += match_count;
-                i++;
-            }
-
-            aspect_value = (double)total_match_count/(double)m_role->prefs.count();
+            aspect_value = get_role_pref_match_counts(role_pref);
             aspect_value = DwarfStats::get_preference_rating(aspect_value);
 
             weight = role_pref->pref_aspect->weight;
@@ -2619,12 +2604,12 @@ float Dwarf::calc_role_rating(Role *m_role){
     if(rating_total == 0)
         rating_total = 0.0001;
 
-    TRACE << "      -attributes:" << rating_att;
-    TRACE << "      -skills:" << rating_skill;
-    TRACE << "      -traits:" << rating_trait;
-    TRACE << "      -preferences:" << rating_prefs;
-    TRACE << "      -total:" << rating_total;
-    TRACE << "  ------------------------------------------------------";
+    LOGD << "      -attributes:" << rating_att;
+    LOGD << "      -skills:" << rating_skill;
+    LOGD << "      -traits:" << rating_trait;
+    LOGD << "      -preferences:" << rating_prefs;
+    LOGD << "      -total:" << rating_total;
+    LOGD << "  ------------------------------------------------------";
 
     return rating_total;
 }
@@ -2663,18 +2648,26 @@ void Dwarf::update_rating_list(){
     }
 }
 
-int Dwarf::get_role_pref_match_count(Role *r){
-    int matches = 0;
+QList<double> Dwarf::get_role_pref_match_counts(Role *r){
+    QList<double> ratings;
     foreach(Preference *role_pref,r->prefs){
+        ratings.append(get_role_pref_match_counts(role_pref));
+    }
+    return ratings;
+}
+
+double Dwarf::get_role_pref_match_counts(Preference *role_pref){
+        double matches = 0;
         int key = role_pref->get_pref_category();
         QMultiMap<int, Preference *>::iterator i = m_preferences.find(key);
-        while(i != m_preferences.end() && i.key() == key){            
-            if(static_cast<Preference*>(i.value())->matches(role_pref,r->name,this)>0)
-                matches++;
+        while(i != m_preferences.end() && i.key() == key){
+            matches += (double)static_cast<Preference*>(i.value())->matches(role_pref,this);
             i++;
         }
-    }
-    return matches;
+        if(matches > 1.0)
+            matches = 1.0f + (matches / 10.0f);
+
+        return matches;
 }
 
 Reaction *Dwarf::get_reaction()

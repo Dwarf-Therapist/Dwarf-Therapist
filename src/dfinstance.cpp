@@ -115,7 +115,7 @@ DFInstance::DFInstance(QObject* parent)
         foreach(QFileInfo info, files) {
             MemoryLayout *temp = new MemoryLayout(info.absoluteFilePath());
             if (temp && temp->is_valid()) {
-                LOGD << "adding valid layout" << temp->game_version()
+                LOGI << "adding valid layout" << temp->game_version()
                      << temp->checksum();
                 m_memory_layouts.insert(temp->checksum().toLower(), temp);
             }
@@ -470,7 +470,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
             if(d){
                 dwarves.append(d); //add animals as well so we can show them
                 if(!d->is_animal()){
-                    LOGD << "FOUND UNIT" << hexify(creature_addr) << d->nice_name();
+                    LOGI << "FOUND UNIT" << hexify(creature_addr) << d->nice_name();
                     m_actual_dwarves.append(d);
 
                     //never calculate roles for babies
@@ -483,7 +483,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
                     }
 
                 } else {
-                    LOGD << "FOUND BEAST" << hexify(creature_addr) << d->nice_name();
+                    LOGI << "FOUND BEAST" << hexify(creature_addr) << d->nice_name();
                 }
             }
             emit progress_value(progress_count++);
@@ -622,33 +622,32 @@ void DFInstance::load_role_ratings(){
         }
 
         foreach(Role *r, GameDataReader::ptr()->get_roles().values()){
-            double pref_matches = d->get_role_pref_match_count(r);
-
-            if(r->prefs.count() > 0)
-                pref_values.append(pref_matches/(double)r->prefs.count());
-            else
-                pref_values.append(0);
+            if(r->prefs.count() > 0){
+                foreach(double rating, d->get_role_pref_match_counts(r)){
+                    pref_values.append(rating);
+                }
+            }
         }
 
     }
 
     QTime tr;
     tr.start();
-    TRACE << "Role Trait Info:";
+    LOGD << "Role Trait Info:";
     DwarfStats::init_traits(trait_values);
-    TRACE << "     - loaded trait role data in " << tr.elapsed() << "ms";
+    LOGD << "     - loaded trait role data in " << tr.elapsed() << "ms";
 
-    TRACE << "Role Skills Info:";
+    LOGD << "Role Skills Info:";
     DwarfStats::init_skills(skill_values);
-    TRACE << "     - loaded skill role data in " << tr.elapsed() << "ms";
+    LOGD << "     - loaded skill role data in " << tr.elapsed() << "ms";
 
-    TRACE << "Role Attributes Info:";
+    LOGD << "Role Attributes Info:";
     DwarfStats::init_attributes(attribute_values,attribute_raw_values);    
-    TRACE << "     - loaded attribute role data in " << tr.elapsed() << "ms";
+    LOGD << "     - loaded attribute role data in " << tr.elapsed() << "ms";
 
-    TRACE << "Role Preferences Info:";
+    LOGD << "Role Preferences Info:";
     DwarfStats::init_prefs(pref_values);
-    TRACE << "     - loaded preference role data in " << tr.elapsed() << "ms";
+    LOGD << "     - loaded preference role data in " << tr.elapsed() << "ms";
 
     float avg = 0;
     QList<float> role_ratings;
@@ -681,11 +680,11 @@ void DFInstance::load_role_ratings(){
         }
     }    
     DwarfStats::set_role_stats(min,max,median);
-    TRACE << "Overall Role Rating Stats";
-    TRACE << "     - Min: " << min;
-    TRACE << "     - Max: " << max;
-    TRACE << "     - Median: " << median;
-    TRACE << "     - Average: " << avg;
+    LOGD << "Overall Role Rating Stats";
+    LOGD << "     - Min: " << min;
+    LOGD << "     - Max: " << max;
+    LOGD << "     - Median: " << median;
+    LOGD << "     - Average: " << avg;
 }
 
 
@@ -922,7 +921,7 @@ QList<Squad *> DFInstance::load_squads(bool refreshing) {
             Squad *s = NULL;
             s = Squad::get_squad(this, squad_addr);
             if(s) {
-                LOGD << "FOUND SQUAD" << hexify(squad_addr) << s->name() << " member count: " << s->assigned_count() << " id: " << s->id();
+                LOGI << "FOUND SQUAD" << hexify(squad_addr) << s->name() << " member count: " << s->assigned_count() << " id: " << s->id();
                 if(m_fortress->squad_is_active(s->id())){
                     m_squads.push_front(s);
                 }
@@ -965,7 +964,7 @@ QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
     QVector<VIRTADDR> entries = enumerate_vector(active_units);
     if(entries.isEmpty()){
         if(report_progress){
-            LOGD << "no active units (embark) using full unit list";
+            LOGI << "no active units (embark) using full unit list";
         }
         entries = enumerate_vector(all_units);
     }else{
@@ -974,13 +973,13 @@ QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
         foreach(VIRTADDR entry, entries){
             if(read_word(entry + civ_offset)==m_dwarf_civ_id){
                 if(report_progress){
-                    LOGD << "using active units";
+                    LOGI << "using active units";
                 }
                 return entries;
             }
         }
         if(report_progress){
-            LOGD << "no active units with our civ (reclaim), using full unit list";
+            LOGI << "no active units with our civ (reclaim), using full unit list";
         }
         entries = enumerate_vector(all_units);
     }
@@ -1437,14 +1436,14 @@ QVector<VIRTADDR> DFInstance::find_vectors(int num_entries, const QVector<VIRTAD
 
 MemoryLayout *DFInstance::get_memory_layout(QString checksum, bool) {
     checksum = checksum.toLower();
-    LOGD << "DF's checksum is:" << checksum;
+    LOGI << "DF's checksum is:" << checksum;
 
     MemoryLayout *ret_val = NULL;
     ret_val = m_memory_layouts.value(checksum, NULL);
     m_is_ok = ret_val != NULL && ret_val->is_valid();
 
     if(!m_is_ok) {
-        LOGD << "Could not find layout for checksum" << checksum;
+        LOGI << "Could not find layout for checksum" << checksum;
         DT->get_main_window()->check_for_layout(checksum);
     }
 
@@ -1470,7 +1469,7 @@ bool DFInstance::add_new_layout(const QString & version, QFile & file) {
         return false;
     }
 
-    LOGD << "Copying: " << file.fileName() << " to " << newFileName;
+    LOGI << "Copying: " << file.fileName() << " to " << newFileName;
     if(!file.copy(newFileName)) {
         LOGW << "Error renaming layout file!";
         return false;
@@ -1478,7 +1477,7 @@ bool DFInstance::add_new_layout(const QString & version, QFile & file) {
 
     MemoryLayout *temp = new MemoryLayout(newFileName);
     if (temp && temp->is_valid()) {
-        LOGD << "adding valid layout" << temp->game_version() << temp->checksum();
+        LOGI << "adding valid layout" << temp->game_version() << temp->checksum();
         m_memory_layouts.insert(temp->checksum().toLower(), temp);
     }
     return true;
