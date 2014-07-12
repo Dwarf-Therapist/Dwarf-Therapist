@@ -28,6 +28,10 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "defines.h"
 
+SpacerColumn::SpacerColumn(int col_width, int col_idx, ViewColumnSet *set, QObject *parent)
+    : ViewColumn("", CT_SPACER, set, parent, col_idx)
+    , m_width(col_width)
+{}
 
 SpacerColumn::SpacerColumn(QString title, ViewColumnSet *set, QObject *parent) 
 	: ViewColumn(title, CT_SPACER, set, parent)
@@ -35,7 +39,7 @@ SpacerColumn::SpacerColumn(QString title, ViewColumnSet *set, QObject *parent)
 {}
 
 SpacerColumn::SpacerColumn(QSettings &s, ViewColumnSet *set, QObject *parent) 
-	: ViewColumn(s, set, parent)
+    : ViewColumn("",CT_SPACER, set, parent)
 	, m_width(s.value("width", DEFAULT_SPACER_WIDTH).toInt())
 {}
 
@@ -46,6 +50,11 @@ SpacerColumn::SpacerColumn(const SpacerColumn &to_copy)
 
 QStandardItem *SpacerColumn::build_cell(Dwarf *d) {
 	QStandardItem *item = init_cell(d);
+    item->setData(d->get_global_sort_key(),DwarfModel::DR_GLOBAL);
+        if(m_width <= 0){
+            item->setData(QColor(Qt::transparent), DwarfModel::DR_DEFAULT_BG_COLOR);
+            item->setData(QColor(Qt::transparent),Qt::BackgroundColorRole);
+        }
 	return item;
 }
 
@@ -56,7 +65,9 @@ QStandardItem *SpacerColumn::build_aggregate(const QString &group_name, const QV
 }
 
 void SpacerColumn::write_to_ini(QSettings &s) {
-	ViewColumn::write_to_ini(s);
-	if (m_width)
-		s.setValue("width", m_width);
+    if(m_width > 0){
+        ViewColumn::write_to_ini(s);
+        if (m_width)
+            s.setValue("width", m_width);
+    }
 }

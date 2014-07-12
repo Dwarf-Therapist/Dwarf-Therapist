@@ -44,7 +44,7 @@ public:
     void re_parent(QObject *parent);
 
 	QString name() {return m_name;}
-	void add_column(ViewColumn *col);
+    void add_column(ViewColumn *col, int idx=-1);
 	void clear_columns();
 	void set_bg_color(const QColor &color) {m_bg_color = color;}
 	QColor bg_color() {return m_bg_color;}
@@ -58,9 +58,9 @@ public:
 	void reorder_columns(const QStandardItemModel &model);
 
 	//! persist this structure to disk
-	void write_to_ini(QSettings &s);
+    void write_to_ini(QSettings &s, int start_idx=0);
 	//! factory method for creating a set based on a QSettings that has been pointed at a set entry
-	static ViewColumnSet *read_from_ini(QSettings &s, QObject *parent = 0);
+    static ViewColumnSet *read_from_ini(QSettings &s, QObject *parent = 0, int set_num = -1);
 
 	public slots:
 		void set_name(const QString &name);

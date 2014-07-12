@@ -204,7 +204,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         //this is a special case because we're drawing different information if it's text mode
         if(m_skill_drawing_method == SDM_NUMERIC && rating == 100)
             rating = -1;
-        paint_values(adjusted, rating, text_rating, bg, p, opt, idx,90.0f,5.0f,95.0f,99.99f,102.0f,false);        
+        paint_values(adjusted, rating, text_rating, bg, p, opt, idx,90.0f,5.0f,95.0f,99.99f,102.0f,false);
         int wear_level = idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt();
         paint_wear_cell(adjusted,p,opt,idx,wear_level);
     }
@@ -249,7 +249,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         paint_values(adjusted, rating, text_rating, bg, p, opt, idx,50.0f, DwarfStats::get_role_min() + limit_range,DwarfStats::get_role_max() - limit_range,45.0f,55.0f);
         if(dirty){
             QColor color_dirty_adjusted = color_dirty_border;
-            color_dirty_adjusted.setAlpha(dirty_alpha);            
+            color_dirty_adjusted.setAlpha(dirty_alpha);
             paint_border(adjusted,p,color_dirty_adjusted);
             paint_grid(adjusted,false,p,opt,idx,false);
         }else{
@@ -353,11 +353,14 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         paint_grid(adjusted, false, p, opt, idx);
     }
         break;
-    case CT_DEFAULT:
     case CT_SPACER:
+    case CT_DEFAULT:
     default:
-        paint_bg(adjusted, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
+    {
+        if(adjusted.width() > 0)
+            paint_bg(adjusted, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
         break;
+    }
     }
 }
 

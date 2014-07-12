@@ -507,8 +507,30 @@ void ViewManager::setCurrentIndex(int idx) {
                 }
             }
             //restore sorting
-            m_proxy->sort(0,m_proxy->m_last_sort_order); //sort by the last sort order
-            stv->sortByColumn(stv->m_last_sorted_col,stv->m_last_sort_order); //individual column sort
+//            m_proxy->sort(0,m_proxy->m_last_sort_order); //sort by the last sort order
+//            stv->sortByColumn(stv->m_last_sorted_col,stv->m_last_sort_order); //individual column sort
+
+            if(prev_view){
+//                if(m_proxy->m_last_sort_role != DwarfModelProxy::DSR_GLOBAL && prev_view->m_last_sorted_col == 1){
+//                    m_proxy->sort(1, m_proxy->m_last_sort_role, m_proxy->m_last_sort_order); //sort by previous first column context selection
+//                }else{
+//                    m_proxy->sort(1, DwarfModelProxy::DSR_GLOBAL, prev_view->m_last_sort_order); //sort by global key
+//                }
+                m_proxy->sort(0, m_proxy->m_last_sort_role, m_proxy->m_last_sort_order); //sort the groups/name column
+                if(prev_view->m_last_sorted_col != 0 && m_proxy->m_last_sort_role == DwarfModelProxy::DSR_DEFAULT){
+                    stv->sortByColumn(1, prev_view->m_last_sort_order); //global sort
+                    stv->m_last_sorted_col = prev_view->m_last_sorted_col;
+                }else{
+                    stv->m_last_sorted_col = 0;
+                }
+                stv->m_last_sort_order = prev_view->m_last_sort_order;
+            }else{
+                m_proxy->sort(1, m_proxy->m_last_sort_role, m_proxy->m_last_sort_order);
+                stv->m_last_sort_order = m_proxy->m_last_sort_order;
+            }
+
+
+
             stv->m_selected_rows.clear(); //will be reloaded below when re-selecting, however after committing, selection is cleared..
             stv->m_selected.clear();
             foreach(Dwarf *d, m_selected_dwarfs) {
@@ -531,7 +553,7 @@ void ViewManager::setCurrentIndex(int idx) {
     m_last_index = idx;
     stv->restore_scroll_positions();
 
-        emit group_changed(stv->m_last_group_by);
+    emit group_changed(stv->m_last_group_by);
 
     s = 0;
 }
@@ -574,6 +596,7 @@ int ViewManager::add_tab_for_gridview(GridView *v) {
     v->set_active(true);
     StateTableView *stv = new StateTableView(this);
     stv->setSortingEnabled(false);
+    stv->sortByColumn(0,Qt::AscendingOrder);
     stv->set_model(m_model, m_proxy);
     stv->setSortingEnabled(true);
     stv->set_default_group(v->name());

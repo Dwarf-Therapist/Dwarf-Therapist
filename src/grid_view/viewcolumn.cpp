@@ -30,7 +30,7 @@ THE SOFTWARE.
 #include "truncatingfilelogger.h"
 
 ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,
-                       QObject *parent)
+                       QObject *parent, int col_idx)
     : QObject(parent)
     , m_title(title)
     , m_bg_color(Qt::red) //! should stand out if it doesn't get set
@@ -41,7 +41,7 @@ ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,
     , m_export_data_role(DwarfModel::DR_SORT_VALUE)
 {
     if (set) {
-        set->add_column(this);
+        set->add_column(this,col_idx);
         m_bg_color = set->bg_color();
     }
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
@@ -159,3 +159,8 @@ QString ViewColumn::tooltip_name_footer(Dwarf *d){
     return QString("<center><h4>%1</h4></center>").arg(d->nice_name());
 }
 
+void ViewColumn::update_global_sort_key(){
+    foreach(Dwarf *d, m_cells.uniqueKeys()){
+        d->set_global_sort_key(static_cast<QVariant>(m_cells.value(d)->data(DwarfModel::DR_SORT_VALUE)));
+    }
+}

@@ -89,7 +89,7 @@ void ViewColumnSet::set_name(const QString &name) {
     m_name = name;
 }
 
-void ViewColumnSet::add_column(ViewColumn *col) {
+void ViewColumnSet::add_column(ViewColumn *col,int idx) {
     bool name_ok = false;
     while (!name_ok) {
         name_ok = true;
@@ -111,7 +111,10 @@ void ViewColumnSet::add_column(ViewColumn *col) {
             }
         }
     }
-    m_columns << col;
+    if(idx == -1)
+        m_columns << col;
+    else
+        m_columns.insert(idx,col);
 }
 
 void ViewColumnSet::clear_columns() {
@@ -218,23 +221,26 @@ void ViewColumnSet::reorder_columns(const QStandardItemModel &model) {
     }
 }
 
-void ViewColumnSet::write_to_ini(QSettings &s) {
+void ViewColumnSet::write_to_ini(QSettings &s, int start_idx) {
     s.setValue("name", m_name);
     s.setValue("bg_color", to_hex(m_bg_color));
     s.beginWriteArray("columns", m_columns.size());
     int i = 0;
-    foreach(ViewColumn *vc, m_columns) {
+    for(int idx=start_idx;idx < m_columns.count(); idx++){
         s.setArrayIndex(i++);
-        vc->write_to_ini(s);
+        m_columns.at(idx)->write_to_ini(s);
     }
     s.endArray();
 }
 
-ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
+ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent, int set_num) {
     ViewColumnSet *ret_val = new ViewColumnSet(s.value("name", "UNKNOWN").toString(), parent);
     QString color_in_hex = s.value("bg_color", "0xFFFFFF").toString();
     QColor bg_color = from_hex(color_in_hex);
-    ret_val->set_bg_color(bg_color);    
+    ret_val->set_bg_color(bg_color);
+    if(set_num == 0)
+        new SpacerColumn(0,0, ret_val, parent);
+
     int total_columns = s.beginReadArray("columns");
     for (int i = 0; i < total_columns; ++i) {
         s.setArrayIndex(i);

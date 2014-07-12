@@ -92,7 +92,8 @@ public:
         DR_DISPLAY_RATING, //this is the rating to use when determining drawing shapes, alternative to DR_RATING
         DR_AGE, //right click sort on first column
         DR_NAME, //right click sort on first column
-        DR_SIZE //right click sort on first column
+        DR_SIZE, //right click sort on first column
+        DR_GLOBAL
     } DATA_ROLES;
 
     DwarfModel(QObject *parent = 0);

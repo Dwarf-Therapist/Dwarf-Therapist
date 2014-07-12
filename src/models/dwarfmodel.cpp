@@ -428,12 +428,12 @@ void DwarfModel::build_row(const QString &key) {
         //        agg_first_col->setData(build_gradient_brush(QColor(Qt::gray),125,0,QPoint(0,0),QPoint(1,0)),Qt::BackgroundRole);
         agg_first_col->setData(true, DR_IS_AGGREGATE);
         agg_first_col->setData(key, DR_GROUP_NAME);
-        agg_first_col->setData(0, DR_RATING);
+        agg_first_col->setData(0, DR_RATING);        
         //root->setData(title, DR_SORT_VALUE);
         // for integer based values we want to make sure they sort by the int
         // values instead of the string values
         if (m_group_by == GB_MIGRATION_WAVE) {
-            agg_first_col->setData(first_dwarf->migration_wave(), DR_SORT_VALUE);            
+            agg_first_col->setData(first_dwarf->migration_wave(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HIGHEST_SKILL) {
             agg_first_col->setData(first_dwarf->highest_skill().actual_exp(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HIGHEST_MOODABLE) {
@@ -480,6 +480,7 @@ void DwarfModel::build_row(const QString &key) {
             if(first_dwarf->current_job_id() < 0)
                 agg_first_col->setData(QString::number(first_dwarf->current_job_id()), DR_SORT_VALUE);
         }
+        agg_first_col->setData(agg_first_col->data(DR_SORT_VALUE),DR_GLOBAL);
         agg_items << agg_first_col;
     }
 
@@ -554,6 +555,8 @@ void DwarfModel::build_row(const QString &key) {
         i_name->setData(d->body_size(), DR_SIZE);
         i_name->setData(d->nice_name(), DR_NAME);
 
+        i_name->setData(d->get_global_sort_key(), DR_GLOBAL);
+
         //set the sorting within groups when grouping
         QVariant sort_val;
         switch(m_group_by) {
@@ -579,6 +582,7 @@ void DwarfModel::build_row(const QString &key) {
             break;
         }
         i_name->setData(sort_val, DR_SORT_VALUE);
+//        i_name->setData(sort_val, DR_GLOBAL);
 
         //set gender icons
         if(show_gender){

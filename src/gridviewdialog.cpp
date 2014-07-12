@@ -70,6 +70,10 @@ GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent
     ui->list_sets->setModel(m_set_model);
     ui->list_columns->setModel(m_col_model);
 
+    //remove the global sort column
+    if(m_pending_view->sets().count() > 0)
+        m_pending_view->get_set(0)->remove_column(0);
+
     connect(ui->list_sets->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)),
         SLOT(set_selection_changed(const QItemSelection&, const QItemSelection&)));
 
@@ -488,29 +492,6 @@ void GridViewDialog::all_clicked(){
         draw_columns_for_set(m_active_set);
 }
 
-//void GridViewDialog::add_all(){
-//    if (!m_active_set)
-//        return;
-//    QAction *a = qobject_cast<QAction*>(QObject::sender());
-//    if(a){
-//        QMenu *parent_menu = qobject_cast<QMenu*>(a->parent());
-//        if(parent_menu){
-//            foreach(QAction *root_action, parent_menu->actions()){
-//                if(root_action->data().isValid())
-//                    root_action->trigger();
-//            }
-//            QList<QMenu*> menus = parent_menu->findChildren<QMenu*>();
-//            foreach(QMenu *m, menus){
-//                foreach(QAction *sub_action, m->actions()){
-//                    if(sub_action->data().isValid())
-//                        sub_action->trigger();
-//                }
-//            }
-//        }
-//    }
-//    draw_columns_for_set(m_active_set);
-//}
-
 void GridViewDialog::add_spacer_column() {
     if (!m_active_set)
         return;
@@ -657,6 +638,12 @@ void GridViewDialog::accept() {
     }
     m_pending_view->set_name(ui->le_name->text());
     m_pending_view->set_show_animals(ui->cb_animals->isChecked());
+
+    //add the global sort column
+    if(m_pending_view->sets().count() > 0){
+        ViewColumnSet *first_set = m_pending_view->get_set(0);
+        new SpacerColumn(0,0,first_set,first_set);
+    }
 
     return QDialog::accept();
 }

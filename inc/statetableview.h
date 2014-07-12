@@ -82,7 +82,8 @@ public:
         void currentChanged(const QModelIndex &, const QModelIndex &);
         void activate_cells(const QModelIndex &index);
         void header_pressed(int index);
-        void header_clicked(int index);        
+        void header_clicked(int index);
+//        void named_column_sort(int,DwarfModelProxy::DWARF_SORT_ROLE, Qt::SortOrder);
 
         void build_custom_profession_menu();
 

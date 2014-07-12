@@ -42,7 +42,7 @@ I can think of a need for:
 class ViewColumn : public QObject {
 	Q_OBJECT
 public:
-	ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set = 0, QObject *parent = 0);
+    ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set = 0, QObject *parent = 0, int col_idx = -1);
 	ViewColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
     ViewColumn(const ViewColumn &to_copy); // copy ctor
     virtual ViewColumn* clone() = 0;
@@ -108,6 +108,7 @@ public:
         void clear_cells();// {m_cells.clear();}
 		virtual void redraw_cells() {}
         virtual void refresh_sort(COLUMN_SORT_TYPE) {}
+        void update_global_sort_key();
 
 protected:
 	QString m_title;

@@ -818,7 +818,19 @@ void StateTableView::header_clicked(int index) {
     }
     m_last_sorted_col = index;
     m_last_sort_order = m_header->sortIndicatorOrder();
+
+    if(index > 0){
+        ViewColumn *col = m_model->current_grid_view()->get_column(index);
+        col->update_global_sort_key();
+    }
 }
+
+//void StateTableView::named_column_sort(int,DwarfModelProxy::DWARF_SORT_ROLE, Qt::SortOrder){
+////    foreach(Dwarf *d, m_proxy->get_dwarf_model()->get_dwarves()){
+////        d->set_global_sort_key(d->nice_name());
+////    }
+////    m_proxy->sort(0);
+//}
 
 void StateTableView::column_right_clicked(int idx){
     QMenu *m = new QMenu(this);
@@ -880,6 +892,10 @@ void StateTableView::sort_column(){
             }
         }
     }
+
+    if(idx > 0)
+        m_model->current_grid_view()->get_column(idx)->update_global_sort_key();
+
     m_proxy->sort(idx,m_last_sort_order);
     m_header->setSortIndicator(idx, m_last_sort_order);
 
