@@ -488,7 +488,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
             }
             emit progress_value(progress_count++);
         }
-        LOGI << "read " << dwarves.count() << " in " << t.elapsed() << "ms";
+        LOGI << "read" << dwarves.count() << "units in" << t.elapsed() << "ms";
 
         m_enabled_labor_count.clear();
         qDeleteAll(m_pref_counts);
@@ -692,15 +692,17 @@ void DFInstance::load_reactions(){
     attach();
     //LOGI << "Reading reactions names...";
     VIRTADDR reactions_vector = m_layout->address("reactions_vector");
-    reactions_vector += m_memory_correction;
-    QVector<VIRTADDR> reactions = enumerate_vector(reactions_vector);
-    //TRACE << "FOUND" << reactions.size() << "reactions";
-    //emit progress_range(0, reactions.size()-1);
-    if (!reactions.empty()) {
-        foreach(VIRTADDR reaction_addr, reactions) {
-            Reaction* r = Reaction::get_reaction(this, reaction_addr);
-            m_reactions.insert(r->tag(), r);
-            //emit progress_value(i++);
+    if(m_layout->is_valid_address(reactions_vector)){
+        reactions_vector += m_memory_correction;
+        QVector<VIRTADDR> reactions = enumerate_vector(reactions_vector);
+        //TRACE << "FOUND" << reactions.size() << "reactions";
+        //emit progress_range(0, reactions.size()-1);
+        if (!reactions.empty()) {
+            foreach(VIRTADDR reaction_addr, reactions) {
+                Reaction* r = Reaction::get_reaction(this, reaction_addr);
+                m_reactions.insert(r->tag(), r);
+                //emit progress_value(i++);
+            }
         }
     }
     detach();

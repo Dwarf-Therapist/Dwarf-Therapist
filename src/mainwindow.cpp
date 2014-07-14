@@ -389,6 +389,8 @@ void MainWindow::read_dwarves() {
         return;
     }
 
+    QTime t;
+    t.start();
     //clear the selected dwarf's details, save the id of the one we're showing
     int dock_id = -1;
     DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));
@@ -412,6 +414,7 @@ void MainWindow::read_dwarves() {
                 col->clear_cells();
             }
         }
+        gv->set_rows_built();
     }
     m_model->clear_all(false);
 
@@ -429,7 +432,31 @@ void MainWindow::read_dwarves() {
 
     set_interface_enabled(true);
     new_pending_changes(0);
-    // cheap trick to setup the view correctly
+
+    //on a read of the data we need to find all the columns that we sorted on, and set our sort keys for the groups
+    if(m_model->get_global_sort_info().count() > 0){
+        QPair<QString,int> key_pair;
+        foreach(int group_id, m_model->get_global_sort_info().uniqueKeys()){
+            key_pair = m_model->get_global_sort_info().value(group_id);
+            //sorting on the name column is handled by the model proxy
+            if(key_pair.second <= 0)
+                continue;
+            //find the view of the column that was used to sort for this group
+            GridView *gv = m_view_manager->get_view(key_pair.first);
+            if(gv){
+                //find the specific column that was sorted on
+                ViewColumn *vc = gv->get_column(key_pair.second);
+                if(vc){
+                    LOGI << "refreshing global sort for group" << group_id << "with keys from gridview" << gv->name() << "column" << vc->title();
+                    //update each dwarf's sort key for the group, based on the cell's sort role
+                    foreach(Dwarf *d, m_model->get_dwarves()){
+                        QStandardItem *item = vc->build_cell(d);
+                        d->set_global_sort_key(group_id, item->data(DwarfModel::DR_SORT_VALUE));
+                    }
+                }
+            }
+        }
+    }
     m_view_manager->redraw_current_tab();
 
     //reselect the ids we saved above
@@ -484,6 +511,8 @@ void MainWindow::read_dwarves() {
         ui->cb_group_by->setCurrentIndex(ui->cb_group_by->findData(grp_by));
         ui->cb_group_by->blockSignals(false);
     }
+
+    LOGI << "completed read in" << t.elapsed() << "ms";
 }
 
 void MainWindow::set_interface_enabled(bool enabled) {

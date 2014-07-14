@@ -164,7 +164,7 @@ void DwarfModelProxy::sort(int column, Qt::SortOrder order) {
 }
 
 void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role, Qt::SortOrder order) {
-    if (column == 0) {
+    if (column == 0) {        
         switch(role) {
         default:            
             setSortRole(DwarfModel::DR_SORT_VALUE);

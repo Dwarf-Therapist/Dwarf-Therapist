@@ -173,6 +173,7 @@ void StateTableView::set_single_click_labor_changes(bool enabled){
 
 void StateTableView::set_default_group(QString name){
     m_default_group_by = DT->user_settings()->value(QString("gui_options/%1_group_by").arg(name),-1).toInt();
+    m_view_name = name;
 }
 
 void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
@@ -186,8 +187,8 @@ void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
     connect(m_header, SIGNAL(section_right_clicked(int)), m_model,SLOT(section_right_clicked(int)));
     connect(m_header, SIGNAL(section_right_clicked(int)), this,SLOT(column_right_clicked(int)));
     connect(m_header, SIGNAL(sort(int,DwarfModelProxy::DWARF_SORT_ROLE,Qt::SortOrder)),
-            m_proxy, SLOT(sort(int,DwarfModelProxy::DWARF_SORT_ROLE, Qt::SortOrder)));
-
+            this, SLOT(sort_named_column(int,DwarfModelProxy::DWARF_SORT_ROLE,Qt::SortOrder)));
+            //m_proxy, SLOT(sort(int,DwarfModelProxy::DWARF_SORT_ROLE, Qt::SortOrder)));
     connect(m_model, SIGNAL(preferred_header_size(int, int)), m_header, SLOT(resizeSection(int, int)));
     connect(m_model, SIGNAL(set_index_as_spacer(int)), m_header, SLOT(set_index_as_spacer(int)));
     connect(m_model, SIGNAL(clear_spacers()), m_header, SLOT(clear_spacers()));
@@ -821,8 +822,20 @@ void StateTableView::header_clicked(int index) {
 
     if(index > 0){
         ViewColumn *col = m_model->current_grid_view()->get_column(index);
-        col->update_global_sort_key();
+        col->update_global_sort_key(m_last_group_by);
+        if(index > 1)
+            m_model->set_global_sort_col(m_view_name,index);
+    }else{
+        m_model->set_global_group_sort_info(m_proxy->m_last_sort_role,m_proxy->m_last_sort_order);
+        //if the user explicitly sorts by the first column, remove the other sort
+        m_model->set_global_sort_col(m_view_name,-1);
     }
+}
+
+//this handles the right click context menu sorting on the first (name) column of any/all gridviews
+void StateTableView::sort_named_column(int column, DwarfModelProxy::DWARF_SORT_ROLE role, Qt::SortOrder order) {
+    m_proxy->sort(column,role,order);
+    m_model->set_global_group_sort_info(m_proxy->m_last_sort_role,m_proxy->m_last_sort_order);
 }
 
 //void StateTableView::named_column_sort(int,DwarfModelProxy::DWARF_SORT_ROLE, Qt::SortOrder){
@@ -893,8 +906,15 @@ void StateTableView::sort_column(){
         }
     }
 
-    if(idx > 0)
-        m_model->current_grid_view()->get_column(idx)->update_global_sort_key();
+    if(idx > 0){
+        m_model->current_grid_view()->get_column(idx)->update_global_sort_key(m_last_group_by);
+        if(idx > 1)
+            m_model->set_global_sort_col(m_view_name,idx);
+    }else{
+        m_model->set_global_group_sort_info(m_proxy->m_last_sort_role,m_proxy->m_last_sort_order);
+        //if the user explicitly sorts by the first column, remove the other sort
+        m_model->set_global_sort_col(m_view_name,-1);
+    }
 
     m_proxy->sort(idx,m_last_sort_order);
     m_header->setSortIndicator(idx, m_last_sort_order);
@@ -906,6 +926,10 @@ void StateTableView::sort_column(){
     m_model->section_right_clicked(-1);
 }
 
+void StateTableView::set_last_group_by(int group_id){
+    m_model->update_global_sort_col(m_last_group_by,group_id);
+    m_last_group_by = group_id;
+}
 
 
 void StateTableView::header_pressed(int index) {

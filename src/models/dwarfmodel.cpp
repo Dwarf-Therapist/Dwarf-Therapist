@@ -54,6 +54,8 @@ DwarfModel::DwarfModel(QObject *parent)
     , m_group_by(GB_NOTHING)
     , m_selected_col(-1)
     , m_gridview(0x0)
+//    , m_global_sort_col(-1)
+//    , m_global_sort_view("")
 {
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
     read_settings();
@@ -398,6 +400,7 @@ void DwarfModel::build_rows() {
     foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
         build_row(key);
     }
+
     emit new_creatures_count(n_adults,n_children,n_babies,race_name);
 }
 
@@ -555,7 +558,7 @@ void DwarfModel::build_row(const QString &key) {
         i_name->setData(d->body_size(), DR_SIZE);
         i_name->setData(d->nice_name(), DR_NAME);
 
-        i_name->setData(d->get_global_sort_key(), DR_GLOBAL);
+        i_name->setData(d->get_global_sort_key(m_group_by), DR_GLOBAL);
 
         //set the sorting within groups when grouping
         QVariant sort_val;
@@ -594,10 +597,11 @@ void DwarfModel::build_row(const QString &key) {
         items << i_name;
         foreach(ViewColumnSet *set, m_gridview->sets()) {
             foreach(ViewColumn *col, set->columns()) {
-                QStandardItem *item = col->build_cell(d);
+                QStandardItem *item = col->build_cell(d);                
                 items << item;
             }
         }
+        m_gridview->get_column(1)->update_global_sort_key(m_group_by,d); //update the hidden global sort column's related cell global sort value
 
         if (agg_first_col) {
             agg_first_col->appendRow(items);
@@ -610,6 +614,23 @@ void DwarfModel::build_row(const QString &key) {
     if (agg_first_col) {
         appendRow(agg_items);
     }
+}
+void DwarfModel::set_global_group_sort_info(int role, Qt::SortOrder order){
+    m_global_group_sort_info.insert(m_group_by,qMakePair(role,order));
+}
+void DwarfModel::set_global_sort_col(QString grid_view_name, int col_idx){
+    if(col_idx < 0)
+        m_global_sort_info.remove(m_group_by);
+    else
+        m_global_sort_info.insert(m_group_by, qMakePair(grid_view_name,col_idx));
+}
+void DwarfModel::update_global_sort_col(int old_group, int new_group){
+//    if(old_group != -1){
+//        QPair<QString, int> old_pair = m_global_sort_info.take(old_group);
+//        m_global_sort_info.insert(new_group,old_pair);
+//    }
+    if(!m_global_sort_info.keys().contains(new_group))
+        m_global_sort_info.insert(new_group,qMakePair(this->m_gridview->name(),0));
 }
 
 void DwarfModel::cell_activated(const QModelIndex &idx) {
@@ -694,10 +715,11 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
 }
 
 void DwarfModel::set_group_by(int group_by) {
-    LOGD << "group_by now set to" << group_by << " for view " << current_grid_view()->name();
+    LOGI << "group_by now set to" << group_by << " for view " << current_grid_view()->name();
     m_group_by = static_cast<GROUP_BY>(group_by);
-    if(m_df)
-        build_rows();
+    if(m_df){
+        build_rows();        
+    }
 }
 
 void DwarfModel::calculate_pending() {

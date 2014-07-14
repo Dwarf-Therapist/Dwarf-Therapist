@@ -486,7 +486,6 @@ void Dwarf::read_id() {
     // the id offset isn't know for this version
     TRACE << "ID:" << m_id;
     m_hist_id = m_df->read_int(m_address + m_mem->dwarf_offset("hist_id"));
-    m_global_sort_key = m_id;
 }
 
 void Dwarf::read_sex() {

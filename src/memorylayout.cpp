@@ -179,5 +179,7 @@ void MemoryLayout::set_complete() {
     m_data->setValue("info/complete", "true");
 }
 
-
+bool MemoryLayout::is_valid_address(uint address){
+    return (address != 0x000);
+}
 

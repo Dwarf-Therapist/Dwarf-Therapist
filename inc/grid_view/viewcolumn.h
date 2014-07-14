@@ -108,7 +108,7 @@ public:
         void clear_cells();// {m_cells.clear();}
 		virtual void redraw_cells() {}
         virtual void refresh_sort(COLUMN_SORT_TYPE) {}
-        void update_global_sort_key();
+        void update_global_sort_key(int group_id, Dwarf *d = 0);
 
 protected:
 	QString m_title;

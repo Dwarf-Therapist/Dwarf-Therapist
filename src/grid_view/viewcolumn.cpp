@@ -159,8 +159,12 @@ QString ViewColumn::tooltip_name_footer(Dwarf *d){
     return QString("<center><h4>%1</h4></center>").arg(d->nice_name());
 }
 
-void ViewColumn::update_global_sort_key(){
-    foreach(Dwarf *d, m_cells.uniqueKeys()){
-        d->set_global_sort_key(static_cast<QVariant>(m_cells.value(d)->data(DwarfModel::DR_SORT_VALUE)));
+void ViewColumn::update_global_sort_key(int group_id, Dwarf *d){
+    if(d){
+        m_cells[d]->setData(d->get_global_sort_key(group_id),DwarfModel::DR_GLOBAL);
+    }else{
+        foreach(Dwarf *d, m_cells.uniqueKeys()){
+            d->set_global_sort_key(group_id,static_cast<QVariant>(m_cells.value(d)->data(DwarfModel::DR_SORT_VALUE)));
+        }
     }
 }

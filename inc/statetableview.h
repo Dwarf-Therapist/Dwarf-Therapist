@@ -24,12 +24,13 @@ THE SOFTWARE.
 #define STATE_TABLE_VIEW_H
 
 #include <QtWidgets>
+#include "dwarfmodelproxy.h"
 
 class UberDelegate;
 class RotatedHeader;
 class Dwarf;
 class DwarfModel;
-class DwarfModelProxy;
+//class DwarfModelProxy;
 
 class StateTableView : public QTreeView
 {
@@ -46,11 +47,14 @@ public:
     QModelIndexList m_selected_rows;
     int m_last_sorted_col;
     Qt::SortOrder m_last_sort_order;
-    int m_last_group_by;
     int m_default_group_by;
     DwarfModel *get_model() {return m_model;}
 
+    int get_last_group_by(){return m_last_group_by;}
+    void set_last_group_by(int group_id);
     void set_default_group(QString name);
+
+    QString get_view_name(){return m_view_name;}
 
     void restore_scroll_positions();
     void set_scroll_positions(int v_value, int h_value);
@@ -95,6 +99,7 @@ protected:
     void wheelEvent(QWheelEvent *event);
 
 private:
+    int m_last_group_by;
     DwarfModel *m_model;
     DwarfModelProxy *m_proxy;
     UberDelegate *m_delegate;
@@ -148,6 +153,7 @@ private:
         void toggle_column_labors();
         void column_right_clicked(int);
         void sort_column();
+        void sort_named_column(int column, DwarfModelProxy::DWARF_SORT_ROLE role, Qt::SortOrder order);
         void edit_prof_icon();
         void remove_prof_icon();        
         void commit_pending();

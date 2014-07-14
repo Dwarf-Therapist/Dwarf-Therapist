@@ -50,7 +50,7 @@ SpacerColumn::SpacerColumn(const SpacerColumn &to_copy)
 
 QStandardItem *SpacerColumn::build_cell(Dwarf *d) {
 	QStandardItem *item = init_cell(d);
-    item->setData(d->get_global_sort_key(),DwarfModel::DR_GLOBAL);
+    item->setData(d->nice_name(),DwarfModel::DR_GLOBAL); //default
         if(m_width <= 0){
             item->setData(QColor(Qt::transparent), DwarfModel::DR_DEFAULT_BG_COLOR);
             item->setData(QColor(Qt::transparent),Qt::BackgroundColorRole);

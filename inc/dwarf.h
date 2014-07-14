@@ -460,8 +460,8 @@ public:
     Q_INVOKABLE int get_inventory_wear(ITEM_TYPE itype = NONE);
     int optimized_labors;
 
-    void set_global_sort_key(QVariant val){m_global_sort_key = val;}
-    QVariant get_global_sort_key(){return m_global_sort_key;}
+    void set_global_sort_key(int group_id, QVariant val){m_global_sort_keys.insert(group_id,val);}
+    QVariant get_global_sort_key(int group_id){return m_global_sort_keys.value(group_id,-1);}
 
     public slots:
         //! called when global user settings change
@@ -597,7 +597,7 @@ private:
     QHash<ATTRIBUTES_TYPE,QPair<float,int> > m_attribute_mods_temp; //temporary modification of attributes via syndromes (and curses?)
     QHash<ATTRIBUTES_TYPE,QStringList> m_attribute_syndromes;
 
-    QVariant m_global_sort_key;
+    QHash<int,QVariant> m_global_sort_keys;
 
     // these methods read data from raw memory
     void read_id();

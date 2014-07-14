@@ -96,7 +96,7 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
         state |= QStyle::State_Active;
     if (rect.contains(m_p))
         state |= QStyle::State_MouseOver;
-    if (sortIndicatorSection() == idx) {        
+    if (sortIndicatorSection() == idx) {
         if (sortIndicatorOrder() == Qt::AscendingOrder) {
             opt.sortIndicator = QStyleOptionHeader::SortDown;
         } else {
