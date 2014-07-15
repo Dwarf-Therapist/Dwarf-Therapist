@@ -433,24 +433,24 @@ void MainWindow::read_dwarves() {
     set_interface_enabled(true);
     new_pending_changes(0);
 
-    //on a read of the data we need to find all the columns that we sorted on, and set our sort keys for the groups
+    //on a read of the data, find all the columns that were sorted on, and rebuild the sort keys for each dwarf, for each sort group
     if(m_model->get_global_sort_info().count() > 0){
         QPair<QString,int> key_pair;
         foreach(int group_id, m_model->get_global_sort_info().uniqueKeys()){
             key_pair = m_model->get_global_sort_info().value(group_id);
-            //sorting on the name column is handled by the model proxy
+            //sorting on the name column is handled by the model proxy and persists through reads
             if(key_pair.second <= 0)
                 continue;
-            //find the view of the column that was used to sort for this group
+            //find the view containing the column that was used to sort for this group
             GridView *gv = m_view_manager->get_view(key_pair.first);
             if(gv){
                 //find the specific column that was sorted on
                 ViewColumn *vc = gv->get_column(key_pair.second);
                 if(vc){
-                    LOGI << "refreshing global sort for group" << group_id << "with keys from gridview" << gv->name() << "column" << vc->title();
+                    LOGD << "refreshing global sort for group" << group_id << "with keys from gridview" << gv->name() << "column" << vc->title();
                     //update each dwarf's sort key for the group, based on the cell's sort role
                     foreach(Dwarf *d, m_model->get_dwarves()){
-                        QStandardItem *item = vc->build_cell(d);
+                        QStandardItem *item = vc->build_cell(d); //sort role is calculated/built when the cell is built
                         d->set_global_sort_key(group_id, item->data(DwarfModel::DR_SORT_VALUE));
                     }
                 }

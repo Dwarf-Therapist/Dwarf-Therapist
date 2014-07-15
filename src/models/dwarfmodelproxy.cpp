@@ -199,7 +199,7 @@ void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role, Qt::SortOrder order
     } else {
         //not the name (0) column, and will always be passed in with DSR_DEFAULT
         //so just set the sort value, as the order is passed in as well, and continue
-        if(column == 1)
+        if(column == GLOBAL_SORT_COL_IDX)
             setSortRole(DwarfModel::DR_GLOBAL);
         else
             setSortRole(DwarfModel::DR_SORT_VALUE);

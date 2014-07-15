@@ -595,13 +595,15 @@ void DwarfModel::build_row(const QString &key) {
 
         QList<QStandardItem*> items;
         items << i_name;
+        int col_idx = 1;
         foreach(ViewColumnSet *set, m_gridview->sets()) {
             foreach(ViewColumn *col, set->columns()) {
-                QStandardItem *item = col->build_cell(d);                
+                QStandardItem *item = col->build_cell(d);
+                if(col_idx == GLOBAL_SORT_COL_IDX)//update the hidden global sort column's related cell global sort value
+                    item->setData(d->get_global_sort_key(m_group_by),DwarfModel::DR_GLOBAL);
                 items << item;
             }
-        }
-        m_gridview->get_column(1)->update_global_sort_key(m_group_by,d); //update the hidden global sort column's related cell global sort value
+        }        
 
         if (agg_first_col) {
             agg_first_col->appendRow(items);
@@ -624,13 +626,9 @@ void DwarfModel::set_global_sort_col(QString grid_view_name, int col_idx){
     else
         m_global_sort_info.insert(m_group_by, qMakePair(grid_view_name,col_idx));
 }
-void DwarfModel::update_global_sort_col(int old_group, int new_group){
-//    if(old_group != -1){
-//        QPair<QString, int> old_pair = m_global_sort_info.take(old_group);
-//        m_global_sort_info.insert(new_group,old_pair);
-//    }
-    if(!m_global_sort_info.keys().contains(new_group))
-        m_global_sort_info.insert(new_group,qMakePair(this->m_gridview->name(),0));
+void DwarfModel::update_global_sort_col(int group_id){
+    if(!m_global_sort_info.keys().contains(group_id))
+        m_global_sort_info.insert(group_id,qMakePair(this->m_gridview->name(),0));
 }
 
 void DwarfModel::cell_activated(const QModelIndex &idx) {

@@ -46,4 +46,6 @@ THE SOFTWARE.
 
 #define ERROR_NO_VALID_LAYOUTS 500
 
+#define GLOBAL_SORT_COL_IDX 1
+
 #endif

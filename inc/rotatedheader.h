@@ -35,6 +35,7 @@ public:
     void paintSection(QPainter *p, const QRect &rect, int idx) const;
 
     void column_hover(int col);
+    void set_last_sorted_idx(int idx){m_last_sorted_idx = idx;}
 
     QSize sizeHint() const;
     public slots:
@@ -60,6 +61,7 @@ private:
     bool m_header_text_bottom;
     QFont m_font;
     int m_hovered_column;
+    int m_last_sorted_idx; //tracks the last sorted column from the user. internal column sorting (global sort) can't be shown as the column is hidden
 
     private slots:
         //! called by a sorting context menu action

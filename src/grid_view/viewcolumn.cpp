@@ -22,11 +22,9 @@ THE SOFTWARE.
 */
 #include "viewcolumnset.h"
 #include "viewcolumn.h"
-//#include "dwarfmodel.h"
 #include "dwarf.h"
 #include "utils.h"
 #include "dwarftherapist.h"
-
 #include "truncatingfilelogger.h"
 
 ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,
@@ -157,14 +155,4 @@ QString ViewColumn::get_cell_value(Dwarf *d)
 
 QString ViewColumn::tooltip_name_footer(Dwarf *d){
     return QString("<center><h4>%1</h4></center>").arg(d->nice_name());
-}
-
-void ViewColumn::update_global_sort_key(int group_id, Dwarf *d){
-    if(d){
-        m_cells[d]->setData(d->get_global_sort_key(group_id),DwarfModel::DR_GLOBAL);
-    }else{
-        foreach(Dwarf *d, m_cells.uniqueKeys()){
-            d->set_global_sort_key(group_id,static_cast<QVariant>(m_cells.value(d)->data(DwarfModel::DR_SORT_VALUE)));
-        }
-    }
 }

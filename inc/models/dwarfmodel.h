@@ -108,7 +108,7 @@ public:
 
     void set_global_group_sort_info(int role, Qt::SortOrder order);
     void set_global_sort_col(QString grid_view_name, int col_idx);
-    void update_global_sort_col(int old_group, int new_group);
+    void update_global_sort_col(int group_id);
 
     GROUP_BY current_grouping() const {return m_group_by;}
     const QMap<QString, QVector<Dwarf*> > *get_dwarf_groups() const {return &m_grouped_dwarves;}

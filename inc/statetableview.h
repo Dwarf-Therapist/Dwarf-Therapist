@@ -49,6 +49,7 @@ public:
     Qt::SortOrder m_last_sort_order;
     int m_default_group_by;
     DwarfModel *get_model() {return m_model;}
+    DwarfModelProxy *get_proxy() {return m_proxy;}
 
     int get_last_group_by(){return m_last_group_by;}
     void set_last_group_by(int group_id);
@@ -99,7 +100,6 @@ protected:
     void wheelEvent(QWheelEvent *event);
 
 private:
-    int m_last_group_by;
     DwarfModel *m_model;
     DwarfModelProxy *m_proxy;
     UberDelegate *m_delegate;
@@ -111,6 +111,7 @@ private:
     //! we have to store this ourselves since the click(), accept() etc... don't send which button caused them
     Qt::MouseButton m_last_button;
     bool m_column_already_sorted;
+    int m_last_group_by;
     int m_vscroll;
     int m_hscroll;
     QModelIndex m_last_cell;
@@ -152,12 +153,14 @@ private:
         void toggle_skilled_row_labors();
         void toggle_column_labors();
         void column_right_clicked(int);
-        void sort_column();
+        void change_column_sort_method();
         void sort_named_column(int column, DwarfModelProxy::DWARF_SORT_ROLE role, Qt::SortOrder order);
         void edit_prof_icon();
         void remove_prof_icon();        
         void commit_pending();
         void clear_pending();
+        void update_sort_info(int index);
+        void set_global_sort_keys(int);
         //a squad object will emit a signal that we'll slot here,
         //and then emit another signal for the parent object to handle
         void emit_squad_leader_changed(){

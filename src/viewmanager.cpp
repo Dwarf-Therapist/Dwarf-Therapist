@@ -443,11 +443,7 @@ StateTableView *ViewManager::get_stv(int idx) {
     return 0;
 }
 
-void ViewManager::setCurrentIndex(int idx){
-    setCurrentIndex(idx,true);
-}
-
-void ViewManager::setCurrentIndex(int idx, bool enable_sorting) {
+void ViewManager::setCurrentIndex(int idx) {
     if (idx < 0 || idx > count()-1) {
         LOGW << "tab switch to index" << idx << "requested but there are " <<
             "only" << count() << "tabs";
@@ -511,12 +507,12 @@ void ViewManager::setCurrentIndex(int idx, bool enable_sorting) {
                         c->refresh_sort(cst);
                 }
             }
-            //restore sorting
+
+            //original sorting per view sorting
 //            m_proxy->sort(0,m_proxy->m_last_sort_order); //sort by the last sort order
 //            stv->sortByColumn(stv->m_last_sorted_col,stv->m_last_sort_order); //individual column sort
 
-            if(enable_sorting)
-                stv->setSortingEnabled(true);
+            stv->setSortingEnabled(true);
 
             if(prev_view){
                 m_proxy->sort(0, static_cast<DwarfModelProxy::DWARF_SORT_ROLE>(m_model->get_global_group_sort_info().value(stv->get_last_group_by()).first),
@@ -525,20 +521,14 @@ void ViewManager::setCurrentIndex(int idx, bool enable_sorting) {
                 QPair<QString,int> key_pair = m_model->get_global_sort_info().value(stv->get_last_group_by());
                 if(key_pair.second != 0){
                     LOGI << "sorting view" << stv->get_view_name() << "with the global sort for the group";
-                    stv->sortByColumn(1, prev_view->m_last_sort_order); //global sort
-                    stv->m_last_sorted_col = prev_view->m_last_sorted_col;
+                    stv->sortByColumn(1, prev_view->m_last_sort_order); //global sort                    
                 }else{
                     LOGI << "not sorting view" << stv->get_view_name();
-                    stv->m_last_sorted_col = 0;
                 }
                 stv->m_last_sort_order = prev_view->m_last_sort_order;
             }else{
                 m_proxy->sort(0,DwarfModelProxy::DSR_DEFAULT,Qt::AscendingOrder);
-//                m_proxy->sort(1, m_proxy->m_last_sort_role, m_proxy->m_last_sort_order);
-//                stv->m_last_sort_order = m_proxy->m_last_sort_order;
             }
-
-
 
             stv->m_selected_rows.clear(); //will be reloaded below when re-selecting, however after committing, selection is cleared..
             stv->m_selected.clear();

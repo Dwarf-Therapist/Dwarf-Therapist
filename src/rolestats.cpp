@@ -78,7 +78,7 @@ void RoleStats::init_list(){
         //check upper max / upper 3rd quartile > 5.0 to determine if additional adjustment is needed on the values > median
         float q4_q3_check = (m_raws->sorted_data().last() / m_raws->sorted_data().at((int)((m_upper->sorted_data().count() *0.75f)+upper_start_idx)));
         LOGD << "     - checking q4/q3 = " << q4_q3_check;
-        if(q4_q3_check > 5.0f){
+        if(q4_q3_check > 2.0f){
             //use the default ecdf/rank for the lower values, and a minmax conversion for upper values
             calculate_factor_value(false,upper_start_idx);
         }else{

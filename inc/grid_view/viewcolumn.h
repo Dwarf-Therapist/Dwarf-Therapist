@@ -88,6 +88,7 @@ public:
     void set_viewcolumnset(ViewColumnSet *set) {m_set = set;}
 	virtual COLUMN_TYPE type() {return m_type;}
     int count() {return m_count;}
+    QHash<Dwarf*,QStandardItem*> cells() {return m_cells;}
 
 	QStandardItem *init_cell(Dwarf *d);
 	virtual QStandardItem *build_cell(Dwarf *d) = 0; // create a suitable item based on a dwarf
@@ -108,7 +109,6 @@ public:
         void clear_cells();// {m_cells.clear();}
 		virtual void redraw_cells() {}
         virtual void refresh_sort(COLUMN_SORT_TYPE) {}
-        void update_global_sort_key(int group_id, Dwarf *d = 0);
 
 protected:
 	QString m_title;

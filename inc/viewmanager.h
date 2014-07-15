@@ -56,8 +56,6 @@ public:
         return m_default_column_sort.value(cType,ViewColumn::CST_DEFAULT);
     }
 
-    void setCurrentIndex(int,bool enable_sorting);
-
 	public slots:
         void setCurrentIndex(int idx);
 		void reload_views();
