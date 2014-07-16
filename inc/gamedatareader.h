@@ -40,6 +40,7 @@ class MilitaryPreference;
 class Profession;
 class DwarfJob;
 class Thought;
+class Belief;
 
 // exceptions
 class MissingValueException : public std::runtime_error {
@@ -87,7 +88,8 @@ public:
 
     Labor *get_labor(const int &labor_id);
     Trait *get_trait(const int &trait_id);
-    QString get_trait_name(short trait_id);
+    QString get_trait_name(const short &trait_id);
+    Belief *get_belief(const int &belief_id);
 
     QMap<short, Thought*> get_thoughts(){return m_unit_thoughts;}
     Thought *get_thought(short id){return m_unit_thoughts.value(id);}
@@ -101,7 +103,7 @@ public:
     void load_role_mappings();
     void load_optimization_plans();
     void refresh_opt_plans();
-    void refresh_traits();
+    void refresh_facets();
 
     QString get_attribute_name(int id){return m_attribute_names.value(id);}
     QHash<int,QString> get_attributes(){return m_attribute_names;}
@@ -138,6 +140,8 @@ public:
     const QVector<int> moodable_skills() {return m_moodable_skills;}
     int get_pref_from_skill(int skill_id) const {return m_mood_skills_profession_map.value(skill_id,-1);}
 
+    QString get_goal_desc(int id){return m_goals.value(id).second;}
+
     static QStringList m_seasons;
     static QStringList m_months;
 
@@ -153,6 +157,8 @@ private:
 
     QHash<int, Trait*> m_traits;
     QList<QPair<int, Trait*> > m_ordered_traits;
+
+    QHash<int, Belief*> m_beliefs;
 
     QHash<int, QString> m_skills;
     QList<QPair<int, QString> > m_ordered_skills;    
@@ -187,6 +193,8 @@ private:
     QMap<int, int> m_mood_skills_profession_map;
 
     QMap<short, Thought*> m_unit_thoughts;
+
+    QHash<int,QPair<QString,QString> > m_goals; //id key with pair name and desc
 
     void load_race_names();
     void load_caste_names();

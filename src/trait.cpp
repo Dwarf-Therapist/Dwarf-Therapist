@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include <QtWidgets>
 
+//personality facets
 Trait::Trait(int trait_id, QSettings &s, QObject *parent)
     : QObject(parent)
 {
@@ -31,17 +32,17 @@ Trait::Trait(int trait_id, QSettings &s, QObject *parent)
     name = s.value("name", "UNKNOWN").toString();
     inverted = s.value("inverted",false).toBool();
 
-    //read in conflicting skills
+    //read in conflicting beliefs
     int count = s.beginReadArray("conflicts");
-    int skill_id;
+    int belief_id;
     for(int i = 0; i < count; i++) {
         s.setArrayIndex(i);
-        skill_id = s.value("skill_id").toInt();
+        belief_id = s.value("belief_id").toInt();
         conflict c;
         c.limit = s.value("limit").toInt();
-        c.skill_id = abs(skill_id);
-        c.gains_skill = skill_id > 0 ? true : false;
-        m_conflicts.insert(c.skill_id,c);
+        c.beliefl_id = abs(belief_id);
+        c.gains_skill = belief_id > 0 ? true : false;
+        m_conflicts.insert(c.beliefl_id,c);
     }
     s.endArray();
 
@@ -102,15 +103,18 @@ QString Trait::conflicts_messages(const short &val){
 }
 
 QString Trait::conflict_message(const short &skill_id, const short &val){
-    if(m_conflicts.contains(skill_id)){
-        conflict c = m_conflicts.value(skill_id);
+    Q_UNUSED(skill_id);
+    Q_UNUSED(val);
+    //TODO: still unknown effects in DF2014
+//    if(m_conflicts.contains(skill_id)){
+//        conflict c = m_conflicts.value(skill_id);
 
-        if((c.limit < 0 && abs(val) < abs(c.limit)) || (c.limit > 0 && abs(val) > abs(c.limit))){
-            return tr("%1 be a %2")
-                    .arg(!c.gains_skill ? tr("Cannot") : tr("Can"))
-                    .arg(GameDataReader::ptr()->get_skill_name(abs(skill_id)));
-        }
-    }
+//        if((c.limit < 0 && abs(val) < abs(c.limit)) || (c.limit > 0 && abs(val) > abs(c.limit))){
+//            return tr("%1 be a %2")
+//                    .arg(!c.gains_skill ? tr("Cannot") : tr("Can"))
+//                    .arg(GameDataReader::ptr()->get_skill_name(abs(skill_id)));
+//        }
+//    }
     return "";
 }
 

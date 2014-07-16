@@ -33,14 +33,14 @@ class Trait : public QObject {
 
 private:
     struct conflict{
-        int skill_id;
+        int beliefl_id;
         int limit;
         bool gains_skill;
     };
 
-    //! this map will hold the minimum_value -> string (e.g. level 76-90 of Nervousness is "Is always tense and jittery")
+    //! this map will hold the minimum_value -> string (e.g. level 76-90 of ANXIETY_PROPENSITY is "Is always tense and jittery")
     QMap<int, QString> m_level_string;
-    //skill_id, limit
+    //belief_id, limit
     QHash<int,conflict> m_conflicts;
     //message, limit
     QHash<QString, int> m_special;

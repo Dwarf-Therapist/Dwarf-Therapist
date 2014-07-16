@@ -533,7 +533,9 @@ private:
     QString m_current_sub_job_id;    
     QHash<int,Skill> m_skills;
     QMultiMap<float, int> m_sorted_skills; //level, skill_id
-    QHash<int, short> m_traits;    
+    QHash<int, short> m_traits;
+    QHash<int, short> m_goals;
+    QHash<int, short> m_beliefs;
     QVector<Attribute> m_attributes;
     QMap<int, ushort> m_labors;
     QMap<int, ushort> m_pending_labors;
@@ -620,7 +622,7 @@ private:
     void read_skills();
     void read_attributes();
     void load_attribute(VIRTADDR &addr, int id);
-    void read_traits();    
+    void read_personality();
     void read_flags();
     void read_turn_count();
     void read_animal_type();

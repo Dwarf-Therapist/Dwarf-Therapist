@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include "skill.h"
 #include "thought.h"
 #include "unithealth.h"
+#include "belief.h"
 
 QStringList GameDataReader::m_seasons;
 QStringList GameDataReader::m_months;
@@ -164,7 +165,32 @@ GameDataReader::GameDataReader(QObject *parent)
     m_mood_skills_profession_map.insert(49,3);
     m_mood_skills_profession_map.insert(55,60);
 
-    refresh_traits();
+    //facets
+    refresh_facets();
+
+    //goals
+    int goal_count = m_data_settings->beginReadArray("goals");
+    QStringList goal_names;
+    for(int i = 0; i < goal_count; ++i) {
+        m_data_settings->setArrayIndex(i);
+        int id = m_data_settings->value("id",-1).toInt();
+        QString name = m_data_settings->value("name","unknown").toString();
+        QString desc = m_data_settings->value("desc","").toString();
+        goal_names << name;
+        m_goals.insert(id,qMakePair(name,desc));
+    }
+    m_data_settings->endArray();
+
+    //beliefs
+    int beliefs = m_data_settings->beginReadArray("beliefs");
+    QStringList belief_names;
+    for(int i = 0; i < beliefs; i++) {
+        m_data_settings->setArrayIndex(i);
+        Belief *b = new Belief(i,*m_data_settings, this);
+        m_beliefs.insert(i, b);
+        belief_names << b->name;
+    }
+    m_data_settings->endArray();
 
     int job_count = m_data_settings->beginReadArray("dwarf_jobs");
     qDeleteAll(m_dwarf_jobs);
@@ -304,7 +330,11 @@ Trait *GameDataReader::get_trait(const int &trait_id) {
     return m_traits.value(trait_id, 0);
 }
 
-QString GameDataReader::get_trait_name(short trait_id) {
+Belief *GameDataReader::get_belief(const int &belief_id) {
+    return m_beliefs.value(belief_id, 0);
+}
+
+QString GameDataReader::get_trait_name(const short &trait_id) {
     return get_trait(trait_id)->name;
 }
 
@@ -381,12 +411,12 @@ void GameDataReader::load_optimization_plans(){
     refresh_opt_plans();
 }
 
-void GameDataReader::refresh_traits(){
+void GameDataReader::refresh_facets(){
     qDeleteAll(m_traits);
     m_traits.clear();
     m_ordered_traits.clear();
 
-    int traits = m_data_settings->beginReadArray("traits");
+    int traits = m_data_settings->beginReadArray("facets");
     QStringList trait_names;
     for(int i = 0; i < traits; i++) {
         m_data_settings->setArrayIndex(i);

@@ -243,7 +243,8 @@ HEADERS += inc/win_structs.h \
     inc/cp437codec.h \
     inc/rolestats.h \
     inc/ecdf.h \
-    inc/contextmenuhelper.h
+    inc/contextmenuhelper.h \
+    inc/belief.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -326,7 +327,8 @@ SOURCES += src/viewmanager.cpp \
     src/uniform.cpp \
     src/itemweaponsubtype.cpp \
     src/ecdf.cpp \
-    src/rolestats.cpp
+    src/rolestats.cpp \
+    src/belief.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

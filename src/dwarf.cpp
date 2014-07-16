@@ -1258,7 +1258,7 @@ void Dwarf::read_soul_aspects() {
 
     read_skills();
     read_attributes();
-    read_traits();
+    read_personality();
 
     TRACE << "SKILLS:" << m_skills.size();
     TRACE << "TRAITS:" << m_traits.size();
@@ -1673,10 +1673,11 @@ void Dwarf::read_skills() {
     }
 }
 
-void Dwarf::read_traits() {
+void Dwarf::read_personality() {
     VIRTADDR addr = m_first_soul + m_mem->soul_detail("traits");
     m_traits.clear();    
-    for (int i = 0; i < 30; ++i) {
+    int trait_count = GameDataReader::ptr()->get_traits().count();
+    for (int i = 0; i < trait_count; ++i) {
         short val = m_df->read_short(addr + i * 2);
         if(val < 0)
             val = 0;
@@ -1685,11 +1686,32 @@ void Dwarf::read_traits() {
         m_traits.insert(i, val);
     }
 
-    //check the misc. traits for the level of detachment and add a special trait for it
-    if(!m_is_animal && has_state(15)){
-        int val = state_value(15);        
-        m_traits.insert(30,val);        
+    QVector<VIRTADDR> m_goals_addrs = m_df->enumerate_vector(m_first_soul + m_mem->soul_detail("goals"));
+    foreach(addr, m_goals_addrs){
+        VIRTADDR goal_addr = m_df->read_addr(addr);
+        int goal_type = m_df->read_addr(goal_addr + 0x0008);
+        if(goal_type >= 0){
+            short val = m_df->read_short(goal_addr + 0x000c);
+            m_goals.insert(goal_type,val);
+        }
     }
+
+    QVector<VIRTADDR> m_beliefs_addrs = m_df->enumerate_vector(m_first_soul + m_mem->soul_detail("beliefs"));
+    foreach(addr, m_beliefs_addrs){
+        VIRTADDR belief_addr = m_df->read_addr(addr);
+        int belief_id = m_df->read_addr(belief_addr);
+        if(belief_id >= 0){
+            short val = m_df->read_short(belief_addr + 0x0004);
+            m_beliefs.insert(belief_id,val);
+        }
+    }
+
+    //TODO: see if this is still affecting things in DF2014
+//    //check the misc. traits for the level of detachment and add a special trait for it
+//    if(!m_is_animal && has_state(15)){
+//        int val = state_value(15);
+//        m_traits.insert(41,val);
+//    }
 }
 
 bool Dwarf::trait_is_active(int trait_id){
