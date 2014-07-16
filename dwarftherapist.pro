@@ -89,9 +89,8 @@ else:unix {
     target.path = /usr/bin
     INSTALLS += target
 
-    bin.path = /usr/bin
-    bin.files += bin/release/DwarfTherapist
-    bin.files += dist/dwarftherapist
+    bin.path = /usr/bin; cp dist/dwarftherapist $(INSTALL_ROOT)/usr/bin/dwarftherapist
+    bin.files += bin/release/DwarfTherapist; chmod +x $(INSTALL_ROOT)/usr/bin/dwarftherapist
     INSTALLS += bin
 
     application.path = /usr/share/applications
