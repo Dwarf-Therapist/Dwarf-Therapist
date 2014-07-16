@@ -704,8 +704,19 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
             m_dwarves[dwarf_id]->toggle_flag_bit(labor_id);
         else if (type == CT_ROLE){
             QVariantList labors = item->data(DwarfModel::DR_SPECIAL_FLAG).toList();
-            foreach(QVariant id, labors)
-                m_dwarves[dwarf_id]->toggle_labor(id.toInt());
+            int limit = ceil((double)labors.count() / 2.0f);
+            int enabled = 0;
+            Dwarf *d  = m_dwarves[dwarf_id];
+            bool enabling = true;
+            foreach(QVariant id, labors){
+                if(d->labor_enabled(id.toInt()))
+                    enabled++;
+            }
+            if((enabled < limit && enabled > 0) || enabled == labors.count())
+                enabling = false;
+            foreach(QVariant id, labors){
+                d->set_labor(id.toInt(),enabling,false);
+            }
         }
     }
     //calculate_pending();

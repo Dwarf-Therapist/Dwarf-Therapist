@@ -234,7 +234,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
                 if(active_labors)
                     active_alpha = (255 * ((float)active_count / labors.count()));
                 if(dirty)
-                    dirty_alpha = (255 * ((float)dirty_count / labors.count()));
+                    dirty_alpha = (255 * ((float)dirty_count / labors.count()));                                
             }
         }
         QColor bg;

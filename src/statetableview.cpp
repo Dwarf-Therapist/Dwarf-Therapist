@@ -680,7 +680,7 @@ void StateTableView::select_dwarf(Dwarf *d) {
     select_dwarf(d->id());
 }
 
-void StateTableView::select_dwarf(int id) {
+void StateTableView::select_dwarf(int id) {    
     for(int top = 0; top < m_proxy->rowCount(); ++top) {
         QModelIndex idx = m_proxy->index(top, 0);
         if (idx.data(DwarfModel::DR_ID).toInt() == id) {
