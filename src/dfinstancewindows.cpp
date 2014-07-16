@@ -75,9 +75,9 @@ uint DFInstanceWindows::calculate_checksum() {
 QVector<VIRTADDR> DFInstanceWindows::enumerate_vector(const VIRTADDR &addr) {
     TRACE << "beginning vector enumeration at" << hex << addr;
     QVector<VIRTADDR> addresses;
-    VIRTADDR start = read_addr(addr + 4);
+    VIRTADDR start = read_addr(addr);
     TRACE << "start of vector" << hex << start;
-    VIRTADDR end = read_addr(addr + 8);
+    VIRTADDR end = read_addr(addr + 4);
     TRACE << "end of vector" << hex << end;
 
     int entries = (end - start) / sizeof(VIRTADDR);
@@ -88,12 +88,20 @@ QVector<VIRTADDR> DFInstanceWindows::enumerate_vector(const VIRTADDR &addr) {
                 entries << ")";
     }
 
+#ifdef _DEBUG
     if (m_layout->is_complete()) {
-        Q_ASSERT(end >= start);
-        Q_ASSERT((end - start) % 4 == 0);
-        Q_ASSERT(start % 4 == 0);
-        Q_ASSERT(end % 4 == 0);        
+        Q_ASSERT_X(start > 0, "enumerate_vector", "start pointer must be larger than 0");
+        Q_ASSERT_X(end > 0, "enumerate_vector", "End must be larger than start!");
+        Q_ASSERT_X(start % 4 == 0, "enumerate_vector", "Start must be divisible by 4");
+        Q_ASSERT_X(end % 4 == 0, "enumerate_vector", "End must be divisible by 4");
+        Q_ASSERT_X(end >= start, "enumerate_vector", "End must be >= start!");
+        Q_ASSERT_X((end - start) % 4 == 0, "enumerate_vector", "end - start must be divisible by 4");
+    } else {
+        // when testing it's usually pretty bad to find a vector with more
+        // than 50000 entries... so throw
+        //Q_ASSERT_X(entries < 50000, "enumerate_vector", "more than 5000 entires");
     }
+#endif
 
     for (VIRTADDR ptr = start; ptr < end; ptr += 4 ) {
         VIRTADDR a = read_addr(ptr);
