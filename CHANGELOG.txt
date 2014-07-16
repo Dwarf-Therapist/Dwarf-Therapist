@@ -1,3 +1,12 @@
+### Version 22.0 Patch Notes
+
+***
+
+- overhauled role calculations to allow side by side role comparison and better labor optimization (Thistleknot)
+- updated the labor optimizer to use the new role calculations. this also has the benefit that the optimization plan priorities are now correctly enforced (ie. higher priority is always assigned jobs first)
+- gridview sorting now persists between all views with the same 'group by' set. for example every view grouped by caste will maintain the same sorting, every view grouped by migration wave a distinct sorting, etc.
+- role cells in the gridviews show the related labors and if they're active or pending a change. the related labor is determined by finding the labors associated with the role's skills.
+
 ### Version 21.8 Patch Notes
 
 ***
