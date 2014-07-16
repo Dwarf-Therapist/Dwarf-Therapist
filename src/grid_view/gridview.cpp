@@ -108,9 +108,9 @@ void GridView::write_to_ini(QSettings &s) {
     s.setValue("animals", m_show_animals);
     s.beginWriteArray("sets", m_sets.size());
     int i = 0;
-    foreach(ViewColumnSet *set, m_sets) {
+    for(int idx = 0; idx < m_sets.count(); idx++){
         s.setArrayIndex(i++);
-        set->write_to_ini(s);
+        m_sets.at(idx)->write_to_ini(s,(idx==0 ? 1 : 0)); //exclude the first column of the first set (global sort)
     }
     s.endArray();
 }
@@ -124,10 +124,10 @@ GridView *GridView::read_from_ini(QSettings &s, QObject *parent) {
     if(!ret_val->show_animals() && ret_val->name().contains(tr("animal"),Qt::CaseInsensitive))
         ret_val->set_show_animals(true);
 
-    int total_sets = s.beginReadArray("sets");
+    int total_sets = s.beginReadArray("sets");    
     for (int i = 0; i < total_sets; ++i) {
         s.setArrayIndex(i);
-        ViewColumnSet *set = ViewColumnSet::read_from_ini(s, parent);
+        ViewColumnSet *set = ViewColumnSet::read_from_ini(s, parent, i);
         if (set)
             ret_val->add_set(set);
     }

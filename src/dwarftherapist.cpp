@@ -43,7 +43,6 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     : QApplication(argc, argv)
     , multiple_castes(false)
     , show_skill_learn_rates(false)
-    , traits_modified(false)
     , arena_mode(false) //manually set this to true to do arena testing (very hackish, all units will be animals)
     , m_user_settings(0)
     , m_main_window(0)
@@ -120,10 +119,6 @@ void DwarfTherapist::setup_logging() {
     bool debug_logging = args.indexOf("-debug") != -1;
     bool trace_logging = args.indexOf("-trace") != -1;
 
-    //TODO REMOVE ME
-    // debug logging on by default for the early builds...
-    debug_logging = true;
-
     LOG_LEVEL min_level = LL_INFO;
     if (trace_logging) {
         min_level = LL_TRACE;
@@ -160,7 +155,7 @@ void DwarfTherapist::load_translator() {
 }
 
 void DwarfTherapist::read_settings() {
-    LOGD << "beginning to read settings";
+    LOGI << "beginning to read settings";
     m_reading_settings = true; // don't allow writes while we're reading...
 
     // HACK!
@@ -221,11 +216,12 @@ void DwarfTherapist::read_settings() {
 
     QApplication::setFont(DT->user_settings()->value("options/main_font", QFont(DefaultFonts::getMainFontName(), DefaultFonts::getMainFontSize())).value<QFont>());    
     //set the application's tooltips
-    QToolTip::setFont(DT->user_settings()->value("options/tooltip_font", QFont(DefaultFonts::getTooltipFontName(), DefaultFonts::getTooltipFontSize())).value<QFont>());
+    QToolTip::setFont(DT->user_settings()->value("options/tooltip_font", QFont(DefaultFonts::getTooltipFontName(), DefaultFonts::getTooltipFontSize())).value<QFont>());    
 
     //set a variable we'll use in the dwarfstats for role calcs
-    DwarfStats::set_att_potential_weight(DT->user_settings()->value("options/default_attribute_potential_weight",0.5f).toFloat());    
-    LOGD << "finished reading settings";
+    DwarfStats::set_att_potential_weight(DT->user_settings()->value("options/default_attribute_potential_weight",0.5f).toFloat());
+    DwarfStats::set_skill_rate_weight(DT->user_settings()->value("options/default_skill_rate_weight",0.25f).toFloat());
+    LOGI << "finished reading settings";
 }
 
 void DwarfTherapist::write_settings() {
@@ -433,7 +429,7 @@ Dwarf *DwarfTherapist::get_dwarf_by_id(int dwarf_id) {
 }
 
 void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
-    LOGD << "Loading language translation tables";
+    LOGI << "Loading language translation tables";
     qDeleteAll(m_language);
     m_language.clear();
     m_generic_words.clear();
@@ -448,9 +444,9 @@ void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
 
     df->attach();
     if (generic_lang_table != 0xFFFFFFFF && generic_lang_table != 0) {
-        LOGD << "Loading generic strings from" << hex << generic_lang_table;
+        LOGI << "Loading generic strings from" << hex << generic_lang_table;
         QVector<uint> generic_words = df->enumerate_vector(generic_lang_table);
-        LOGD << "generic words" << generic_words.size();
+        LOGI << "generic words" << generic_words.size();
         foreach(uint word_ptr, generic_words) {
             m_generic_words << df->read_string(word_ptr);
             m_language << Word::get_word(df, word_ptr);
@@ -462,14 +458,14 @@ void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
         uint dwarf_entry = 0;
         foreach(uint lang, languages) {
             QString race_name = df->read_string(lang);
-            LOGD << "FOUND LANG ENTRY" << hex << lang << race_name;
+            LOGI << "FOUND LANG ENTRY" << hex << lang << race_name;
             if (race_name == "DWARF")
                 dwarf_entry = lang;
         }
         uint dwarf_lang_table = dwarf_entry + word_table_offset - df->VECTOR_POINTER_OFFSET;
-        LOGD << "Loading dwarf strings from" << hex << dwarf_lang_table;
+        LOGI << "Loading dwarf strings from" << hex << dwarf_lang_table;
         QVector<uint> dwarf_words = df->enumerate_vector(dwarf_lang_table);
-        LOGD << "dwarf words" << dwarf_words.size();
+        LOGI << "dwarf words" << dwarf_words.size();
 
         foreach(uint word_ptr, dwarf_words) {
             m_dwarf_words << df->read_string(word_ptr);

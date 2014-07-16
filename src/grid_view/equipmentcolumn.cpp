@@ -29,6 +29,11 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "defaultfonts.h"
 
+EquipmentColumn::EquipmentColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
+    :ItemTypeColumn(s,set,parent)
+{
+}
+
 EquipmentColumn::EquipmentColumn(const QString &title, ViewColumnSet *set, QObject *parent)
     :ItemTypeColumn(title,NONE,set,parent,CT_EQUIPMENT)
 {
@@ -56,7 +61,8 @@ QStandardItem *EquipmentColumn::build_cell(Dwarf *d){
 
     float sort_val = rating - d->get_inventory_wear();
     item->setData(d->get_inventory_wear(),DwarfModel::DR_SPECIAL_FLAG);
-    item->setBackground(QBrush(rating_color));
+//    item->setBackground(QBrush(rating_color));
+    item->setData(rating_color,Qt::BackgroundColorRole);
     item->setData(CT_EQUIPMENT, DwarfModel::DR_COL_TYPE);
     item->setData(rating, DwarfModel::DR_RATING); //other drawing 0-100
     item->setData(sort_val, DwarfModel::DR_SORT_VALUE);

@@ -67,9 +67,6 @@ void LaborOptimizer::calc_population(bool load_labor_map){
     m_labor_map.clear();
     m_total_population = 0;
 
-    if(load_labor_map)
-        adjust_ratings();
-
     //setup our new map
     m_current_message.clear();
     for(int i = m_dwarfs.count()-1; i >= 0; i--){
@@ -98,7 +95,7 @@ void LaborOptimizer::calc_population(bool load_labor_map){
             m_dwarfs.removeAt(i);
         }
         else if(d->squad_id() > -1 && plan->exclude_squads){
-            m_current_message.append(QPair<int, QString> (d->id(), tr("(Squad) %1").arg(d->nice_name()).arg(d->squad_name())));
+            m_current_message.append(QPair<int, QString> (d->id(), tr("(Squad) %1, %2").arg(d->nice_name()).arg(d->squad_name())));
             if(load_labor_map)
                 m_dwarfs.at(i)->clear_labors();
             m_dwarfs.removeAt(i);
@@ -119,12 +116,13 @@ void LaborOptimizer::calc_population(bool load_labor_map){
                         dwarf_labor_map dlm;
                         dlm.d = d;
                         dlm.det = det;
-                        if(!det->role_name.isEmpty()){
-                            //dlm.rating = d->get_role_rating(det->role_name, true);//det->priority * d->get_role_rating(det->role_name, true);
-                            dlm.rating = d->get_adjusted_role_rating(det->role_name) * det->priority;
+                        if(!det->role_name.isEmpty()){                            
+                            //dlm.rating = d->get_adjusted_role_rating(det->role_name) * det->priority;
+                            dlm.rating = d->get_role_rating(det->role_name,true) * det->priority;
                         }
                         else{
-                            dlm.rating = d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).capped_exp() / (float)MAX_CAPPED_XP * 100 * det->priority;//det->priority * (d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).capped_exp() / (float)MAX_CAPPED_XP * 100);
+                            dlm.rating = d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).get_rating(true) * 100.0f * det->priority;
+                            //dlm.rating = d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).capped_exp() / (float)MAX_CAPPED_XP * 100 * det->priority;
                         }
                         m_labor_map.append(dlm);
                     }
@@ -144,46 +142,6 @@ void LaborOptimizer::calc_population(bool load_labor_map){
     }
 }
 
-void LaborOptimizer::adjust_ratings(){
-    QList<RoleStats*> m_role_stats;
-    QHash<QString, RoleStats*> m_role_stats_by_name;
-    RoleStats *rs;
-    int num_roles = 0;
-    double total = 0.0;
-
-    //loop through each unique role, and load up the ratings into stat objects
-    foreach(PlanDetail *det, plan->plan_details){
-        if(!det->role_name.trimmed().isEmpty() && !m_role_stats_by_name.contains(det->role_name)){
-            rs = new RoleStats(det->role_name);
-            total = 0;
-            foreach(Dwarf *d, m_dwarfs){
-                double rating = d->get_role_rating(det->role_name,true);
-                total += rating;
-                rs->add_rating(rating);
-            }
-            //since we're looping through all the ratings now anyway
-            //set the mean of the raw ratings at the same time
-            rs->set_mean(total / (double)m_dwarfs.count());
-            m_role_stats.append(rs);
-            m_role_stats_by_name.insert(det->role_name,rs);
-        }
-    }
-
-    qSort(m_role_stats.begin(),m_role_stats.end(),&RoleStats::sort_means);
-    num_roles = m_role_stats.count();
-    int rank = 1;
-    foreach(RoleStats *rs, m_role_stats){
-        rs->calc_priority_adjustment(num_roles, rank);
-        foreach(Dwarf *d, m_dwarfs){
-            d->set_adjusted_role_rating(rs->role_name(), m_role_stats_by_name.value(rs->role_name())->adjust_role_rating(d->get_role_rating(rs->role_name(),true))*100.0f);
-        }
-        rank ++;
-    }
-
-    qDeleteAll(m_role_stats);
-    m_role_stats.clear();
-    m_role_stats_by_name.clear();
-}
 
 void LaborOptimizer::optimize_labors(QList<Dwarf*> dwarfs){
     m_dwarfs = dwarfs;

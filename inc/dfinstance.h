@@ -248,9 +248,8 @@ protected:
     quint32 m_cur_time;
     QHash<int,int> m_enabled_labor_count;
 
-    void load_population_data();
-    void load_role_ratings(QVector<Dwarf*> &dwarves);
-    void cdf_role_ratings();
+    void load_population_data();    
+    void load_role_ratings();
 
 
     /*! this hash will hold a map of all loaded and valid memory layouts found
@@ -312,7 +311,7 @@ private:
 
     VIRTADDR m_squad_vector;
 
-    QList<Squad*> m_squads;
+    QList<Squad*> m_squads;    
 };
 
 #endif // DFINSTANCE_H

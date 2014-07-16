@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include <QtWidgets>
 #include "defines.h"
 #include "customcolor.h"
+#include "contextmenuhelper.h"
 
 class ViewManager;
 class GridView;
@@ -34,95 +35,96 @@ class ViewColumnSet;
 class ViewColumn;
 
 namespace Ui {
-	class GridViewDialog;
+class GridViewDialog;
 }
 
 class GridViewDialog : public QDialog {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	typedef enum {
-		GPDT_TITLE = Qt::UserRole,
-		GPDT_BG_COLOR,
-		GPDT_OVERRIDE_BG_COLOR,
-		GPDT_WIDTH,
-		GPDT_COLUMN_TYPE
-	} GRIDVIEW_PENDING_DATA_TYPE;
-	GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent = 0);
+    typedef enum {
+        GPDT_TITLE = Qt::UserRole,
+        GPDT_BG_COLOR,
+        GPDT_OVERRIDE_BG_COLOR,
+        GPDT_WIDTH,
+        GPDT_COLUMN_TYPE
+    } GRIDVIEW_PENDING_DATA_TYPE;
+    GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent = 0);
+    virtual ~GridViewDialog();
 
-	//! used to hack into the list of sets, since they don't seem to send a proper re-order signal
-    //bool eventFilter(QObject *, QEvent *);
-	QString name();
-	GridView *view() {return m_view;}
-	GridView *pending_view() {return m_pending_view;}
-	ViewManager *manager() {return m_manager;}
-	
-	public slots:
-		void accept();
-		void set_selection_changed(const QItemSelection&, const QItemSelection&);
-		void draw_columns_for_set(ViewColumnSet *set);
+    QString name();
+    GridView *view() {return m_view;}
+    GridView *pending_view() {return m_pending_view;}
+    ViewManager *manager() {return m_manager;}
 
+public slots:
+    void accept();
+    void set_selection_changed(const QItemSelection&, const QItemSelection&);
+    void draw_columns_for_set(ViewColumnSet *set);
 
 private:
-	Ui::GridViewDialog *ui;
-	GridView *m_view;
-	GridView *m_pending_view;
-	ViewManager *m_manager;
-	bool m_is_editing;
-	QString m_original_name;
-	QStandardItemModel *m_set_model;
-	QStandardItemModel *m_col_model;
-	int m_temp_set;
-	int m_temp_col;
-	ViewColumnSet *m_active_set;
+    Ui::GridViewDialog *ui;
+    GridView *m_view;
+    GridView *m_pending_view;
+    ViewManager *m_manager;
+    bool m_is_editing;
+    QString m_original_name;
+    QStandardItemModel *m_set_model;
+    QStandardItemModel *m_col_model;
+    int m_temp_set;
+    int m_temp_col;
+    ViewColumnSet *m_active_set;
+    ContextMenuHelper *m_cmh;
 
-	private slots:
-		//! for redrawing sets in the edit dialog
-		void draw_sets();
-		//! called when the order of sets changes
-		void set_order_changed();
-		//! called when the order of columns changes        
-		void column_order_changed();
-		//! makes sure the name for this view is ok
-		void check_name(const QString &);
-		//! add the currently selected set in the combobox to this view's set list
-		void add_set();
-        //! when a row from the column list is moved, handling the view's row removed allows us to re-order
-        void column_removed(QModelIndex, int, int);
-        void set_removed(QModelIndex, int, int);
+private slots:
+    //! for redrawing sets in the edit dialog
+    void draw_sets();
+    //! called when the order of sets changes
+    void set_order_changed();
+    //! called when the order of columns changes
+    void column_order_changed();
+    //! makes sure the name for this view is ok
+    void check_name(const QString &);
+    //! add the currently selected set in the combobox to this view's set list
+    void add_set();
+    //! when a row from the column list is moved, handling the view's row removed allows us to re-order
+    void column_removed(QModelIndex, int, int);
+    void set_removed(QModelIndex, int, int);
 
-		//! overridden context menu for the set list
-		void draw_set_context_menu(const QPoint &);
-		//! edit the details of a set (from a double-click)
-		void edit_set(const QModelIndex &); 
-		//! edit the details of a set (from an action)
-		void edit_set();
-		//! called from the context menu
-		void remove_set();
+    //! overridden context menu for the set list
+    void draw_set_context_menu(const QPoint &);
+    //! edit the details of a set (from a double-click)
+    void edit_set(const QModelIndex &);
+    //! edit the details of a set (from an action)
+    void edit_set();
+    //! called from the context menu
+    void remove_set();
 
-		//! overridden context menu for the set list
-		void draw_column_context_menu(const QPoint &);
-		//! edit the details of a column (from a double-click)
-		void edit_column(const QModelIndex &); 
-		//! edit the details of a column (from an action)
-		void edit_column();
-		//! called from the context menu
-		void remove_column();
+    //! overridden context menu for the set list
+    void draw_column_context_menu(const QPoint &);
+    //! edit the details of a column (from a double-click)
+    void edit_column(const QModelIndex &);
+    //! edit the details of a column (from an action)
+    void edit_column();
+    //! called from the context menu
+    void remove_column();
 
-		//! column adders
-		void add_spacer_column();
-		void add_happiness_column();
-		void add_labor_column();
-		void add_skill_column();
-        void add_idle_column();
-        void add_trait_column();
-        void add_attribute_column();        
-        void add_role_column();
-        void add_weapon_column();
-        void add_health_column();
-        void add_profession_column();
-        void add_highest_moodable_column();
-        void add_trained_column();
-        void add_equipment_column();
+    //! column adders
+    void all_clicked();
+
+    void add_spacer_column();
+    void add_happiness_column();
+    void add_labor_column();
+    void add_skill_column();
+    void add_idle_column();
+    void add_trait_column();
+    void add_attribute_column();
+    void add_role_column();
+    void add_weapon_column();
+    void add_health_column();
+    void add_profession_column();
+    void add_highest_moodable_column();
+    void add_trained_column();
+    void add_equipment_column();
 };
 
 #endif

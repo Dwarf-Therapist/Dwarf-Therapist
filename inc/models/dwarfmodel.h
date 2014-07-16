@@ -92,7 +92,8 @@ public:
         DR_DISPLAY_RATING, //this is the rating to use when determining drawing shapes, alternative to DR_RATING
         DR_AGE, //right click sort on first column
         DR_NAME, //right click sort on first column
-        DR_SIZE //right click sort on first column
+        DR_SIZE, //right click sort on first column
+        DR_GLOBAL
     } DATA_ROLES;
 
     DwarfModel(QObject *parent = 0);
@@ -102,6 +103,12 @@ public:
     GridView * current_grid_view() {return m_gridview;}
     void clear_all(bool clr_pend); // reset everything to normal
 
+    QHash<int,QPair<QString,int> > get_global_sort_info() {return m_global_sort_info;}
+    QHash<int,QPair<int,Qt::SortOrder> > get_global_group_sort_info(){return m_global_group_sort_info;} //stores the last role and order for a group by key
+
+    void set_global_group_sort_info(int role, Qt::SortOrder order);
+    void set_global_sort_col(QString grid_view_name, int col_idx);
+    void update_global_sort_col(int group_id);
 
     GROUP_BY current_grouping() const {return m_group_by;}
     const QMap<QString, QVector<Dwarf*> > *get_dwarf_groups() const {return &m_grouped_dwarves;}
@@ -148,6 +155,11 @@ private:
     GridView *m_gridview;
     QFont m_font;
     QChar m_symbol;
+
+//    int m_global_sort_col;
+//    QString m_global_sort_view;
+    QHash<int,QPair<QString,int> > m_global_sort_info; //keeps a pair of gridview name, column idx for each group by type used
+    QHash<int,QPair<int,Qt::SortOrder> > m_global_group_sort_info;
 
     QBrush build_gradient_brush(QColor base_col, int alpha_start, int alpha_finish, QPoint start, QPoint end);    
     QString build_col_tooltip(ViewColumn *col);

@@ -37,17 +37,6 @@ typedef enum {
     AT_SOCIAL_AWARENESS=18
 } ATTRIBUTES_TYPE;
 
-typedef enum {
-    unknown_aspect=-9,
-    triple_negative=-3,
-    double_negative=-2,
-    negative=-1,
-    average=0,
-    positive=1,
-    double_positive=2,
-    triple_positive=3
-} ASPECT_TYPE;
-
 typedef enum{
     none=-1, //custom
     semi_wild=0,
@@ -294,6 +283,7 @@ typedef enum{
     MILKABLE=29,
     NO_DIZZINESS=39,
     NO_FEVERS=40,
+    NOT_BUTCHERABLE=46,
     TRAINABLE_HUNTING=53,
     PET=54,
     PET_EXOTIC=55,

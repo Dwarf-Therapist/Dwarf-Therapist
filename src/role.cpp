@@ -55,7 +55,6 @@ Role::Role(QSettings &s, QObject *parent)
     parseAspect(s, "traits", traits_weight, traits, u->value("options/default_traits_weight",1.0).toFloat());
     parseAspect(s, "skills", skills_weight, skills, u->value("options/default_skills_weight",1.0).toFloat());
     parsePreferences(s, "prefs", prefs_weight, u->value("options/default_prefs_weight",1.0).toFloat());
-
 }
 
 Role::Role(const Role &r)

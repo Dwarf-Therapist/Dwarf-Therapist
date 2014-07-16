@@ -52,14 +52,14 @@ StateTableView::~StateTableView()
 StateTableView::StateTableView(QWidget *parent)
     : QTreeView(parent)
     , m_last_sorted_col(0)
-    , m_last_sort_order(Qt::AscendingOrder)
-    , m_last_group_by(-1)
+    , m_last_sort_order(Qt::AscendingOrder)    
     , m_default_group_by(-1)
     , m_model(0)
     , m_proxy(0)
     , m_delegate(new UberDelegate(this))
     , m_header(new RotatedHeader(Qt::Horizontal, this))
     , m_expanded_rows(QList<int>())
+    , m_last_group_by(-1)
     , m_vscroll(0)
     , m_hscroll(0)
 {
@@ -89,7 +89,7 @@ StateTableView::StateTableView(QWidget *parent)
     connect(this, SIGNAL(collapsed(const QModelIndex &)),SLOT(index_collapsed(const QModelIndex &)));
 
     connect(m_header, SIGNAL(sectionPressed(int)), SLOT(header_pressed(int)));
-    connect(m_header, SIGNAL(sectionClicked(int)), SLOT(header_clicked(int)));
+    connect(m_header, SIGNAL(sectionClicked(int)), SLOT(header_clicked(int)));    
 
     connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(hscroll_value_changed(int)));
     connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(vscroll_value_changed(int)));
@@ -173,6 +173,7 @@ void StateTableView::set_single_click_labor_changes(bool enabled){
 
 void StateTableView::set_default_group(QString name){
     m_default_group_by = DT->user_settings()->value(QString("gui_options/%1_group_by").arg(name),-1).toInt();
+    m_view_name = name;
 }
 
 void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
@@ -186,8 +187,8 @@ void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
     connect(m_header, SIGNAL(section_right_clicked(int)), m_model,SLOT(section_right_clicked(int)));
     connect(m_header, SIGNAL(section_right_clicked(int)), this,SLOT(column_right_clicked(int)));
     connect(m_header, SIGNAL(sort(int,DwarfModelProxy::DWARF_SORT_ROLE,Qt::SortOrder)),
-            m_proxy, SLOT(sort(int,DwarfModelProxy::DWARF_SORT_ROLE, Qt::SortOrder)));
-
+            this, SLOT(sort_named_column(int,DwarfModelProxy::DWARF_SORT_ROLE,Qt::SortOrder)));
+            //m_proxy, SLOT(sort(int,DwarfModelProxy::DWARF_SORT_ROLE, Qt::SortOrder)));
     connect(m_model, SIGNAL(preferred_header_size(int, int)), m_header, SLOT(resizeSection(int, int)));
     connect(m_model, SIGNAL(set_index_as_spacer(int)), m_header, SLOT(set_index_as_spacer(int)));
     connect(m_model, SIGNAL(clear_spacers()), m_header, SLOT(clear_spacers()));
@@ -528,31 +529,10 @@ void StateTableView::assign_to_squad(){
             id = i.data(DwarfModel::DR_ID).toInt();
             Dwarf *d = m_model->get_dwarf_by_id(id);
             new_squad->assign_to_squad(d);
-            //            if(!d->is_adult())
-            //                continue;
-            //            //refresh dwarf info first
-            ////            d->read_squad_info();
-            //            if (d) {
-            //                if(d->squad_id() != new_squad->id()){ //don't add to squad if they're already in it..
-            //                    if(d->squad_id() != -1){ //remove from old squad first
-            //                        if(d->squad_position()==0)
-            //                            emit squad_leader_changed();
-            //                        Squad *old_squad = m_model->active_squads().value(d->squad_id());
-            //                        if(old_squad)
-            //                            old_squad->remove_from_squad(d);
-            //                    }
-
-            //                    int new_pos = new_squad->assign_to_squad(d);
-            //                    if(new_pos==0){
-            //                        emit squad_leader_changed();
-            //                    }
-            //                }
-            //            }
         }
     }
     disconnect(new_squad,SIGNAL(squad_leader_changed()),this,SLOT(emit_squad_leader_changed()));
-    m_model->calculate_pending();
-    //    if(m_model->current_grouping()==DwarfModel::GB_SQUAD)
+    m_model->calculate_pending();    
     DT->get_main_window()->get_view_manager()->redraw_current_tab();
 }
 void StateTableView::remove_squad(){
@@ -564,8 +544,6 @@ void StateTableView::remove_squad(){
         if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool()){
             int id = i.data(DwarfModel::DR_ID).toInt();
             Dwarf *d = m_model->get_dwarf_by_id(id);
-            //refresh dwarf info
-            //            d->read_squad_info();
             if (d) {
                 if(d->squad_position()==0)
                     emit squad_leader_changed();
@@ -576,7 +554,6 @@ void StateTableView::remove_squad(){
         }
     }
     m_model->calculate_pending();
-    //    if(m_model->current_grouping()==DwarfModel::GB_SQUAD)
     DT->get_main_window()->get_view_manager()->redraw_current_tab();
 }
 
@@ -703,7 +680,7 @@ void StateTableView::select_dwarf(Dwarf *d) {
     select_dwarf(d->id());
 }
 
-void StateTableView::select_dwarf(int id) {
+void StateTableView::select_dwarf(int id) {    
     for(int top = 0; top < m_proxy->rowCount(); ++top) {
         QModelIndex idx = m_proxy->index(top, 0);
         if (idx.data(DwarfModel::DR_ID).toInt() == id) {
@@ -836,12 +813,17 @@ void StateTableView::activate_cells(const QModelIndex &idx){
     m_last_cell = idx;
 }
 
-void StateTableView::header_clicked(int index) {
+void StateTableView::header_clicked(int index) {    
     if (!m_column_already_sorted && index > 0) {
         m_header->setSortIndicator(index, Qt::DescendingOrder);
     }
-    m_last_sorted_col = index;
-    m_last_sort_order = m_header->sortIndicatorOrder();
+    update_sort_info(index);
+}
+
+//this handles the right click context menu sorting on the first (name) column of any/all gridviews
+void StateTableView::sort_named_column(int column, DwarfModelProxy::DWARF_SORT_ROLE role, Qt::SortOrder order) {
+    m_proxy->sort(column,role,order);
+    m_model->set_global_group_sort_info(m_proxy->m_last_sort_role,m_proxy->m_last_sort_order);
 }
 
 void StateTableView::column_right_clicked(int idx){
@@ -859,7 +841,7 @@ void StateTableView::column_right_clicked(int idx){
         QIcon current(":img/ui-button-navigation.png");
         foreach(ViewColumn::COLUMN_SORT_TYPE sType, col->get_sortable_types()){
             data.replace(2, sType);
-            a = m->addAction(capitalizeEach(ViewColumn::get_sort_type(sType).toLower().replace("_"," ")), this, SLOT(sort_column()));
+            a = m->addAction(capitalizeEach(ViewColumn::get_sort_type(sType).toLower().replace("_"," ")), this, SLOT(change_column_sort_method()));
             a->setData(QVariant(data));
             if(sType == col->get_current_sort())
                 a->setIcon(current);
@@ -888,7 +870,7 @@ void StateTableView::column_right_clicked(int idx){
     }
 }
 
-void StateTableView::sort_column(){
+void StateTableView::change_column_sort_method(){
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     if(!a->data().canConvert<QVariantList>())
         return;
@@ -904,8 +886,8 @@ void StateTableView::sort_column(){
             }
         }
     }
-    m_proxy->sort(idx,m_last_sort_order);
-    m_header->setSortIndicator(idx, m_last_sort_order);
+
+    update_sort_info(idx);
 
     //save what we're sorting by
     ViewManager::save_column_sort(cType,sType);
@@ -914,6 +896,43 @@ void StateTableView::sort_column(){
     m_model->section_right_clicked(-1);
 }
 
+void StateTableView::update_sort_info(int index){
+    m_header->set_last_sorted_idx(index);
+    m_last_sorted_col = index;
+    m_last_sort_order = m_header->sortIndicatorOrder();
+
+    if(index > 0){
+        set_global_sort_keys(index);
+        if(index > GLOBAL_SORT_COL_IDX)
+            m_model->set_global_sort_col(m_view_name,index);
+    }else{
+        m_model->set_global_group_sort_info(m_proxy->m_last_sort_role,m_proxy->m_last_sort_order);
+        //if the user explicitly sorts by the first column, remove the other sort
+        m_model->set_global_sort_col(m_view_name,-1);
+    }
+}
+
+void StateTableView::set_global_sort_keys(int index){
+    //update each unit with their row index from the sorted view
+    ViewColumn *col = m_model->current_grid_view()->get_column(index);
+    if(col){
+        int rank = 0;
+        QModelIndex idx;
+        foreach(Dwarf *d, col->cells().uniqueKeys()){
+            idx = col->cells().value(d)->index(); //get the index in the model
+            idx = m_proxy->mapFromSource(idx); //get the index in the proxy
+            rank = idx.row(); //row in the sorted view
+            if(m_last_sort_order == Qt::DescendingOrder)
+                rank = col->cells().count() - rank;
+            d->set_global_sort_key(m_last_group_by,rank);
+        }
+    }
+}
+
+void StateTableView::set_last_group_by(int group_id){
+    m_model->update_global_sort_col(group_id);
+    m_last_group_by = group_id;
+}
 
 
 void StateTableView::header_pressed(int index) {

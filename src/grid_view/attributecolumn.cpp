@@ -56,7 +56,7 @@ AttributeColumn::AttributeColumn(const AttributeColumn &to_copy)
 QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
     Attribute a = d->get_attribute((int)m_attribute_type);
-    short rawVal = a.value();
+    short rawVal = a.get_value();
     QString descriptor = a.get_descriptor();
     float rating = a.rating() * 100.0f;    
 
@@ -64,7 +64,7 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     //that means any rating over 2250 will essentially be 100%, which is pretty reasonable, since
     //scaling to 0-5000 makes the drawn squares fairly small
     if(d->is_animal())
-        rating = (float)(a.value() / 2250.0f * 100.0f);
+        rating = (float)(a.get_value() / 2250.0f * 100.0f);
 
     //the rating is used for drawing, should be between 0-100 for attributes
     item->setData(rating, DwarfModel::DR_RATING);
@@ -72,25 +72,27 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     //flag so we know if we need to draw a border or not
     item->setData(a.syndrome_names().count(),DwarfModel::DR_SPECIAL_FLAG);
 
-    //if no descriptor (middle ranges) then set the rating to a middle (hidden) value
-    //this is primarily for vanilla, as the mid ranges don't have a description and are hidden in game
-    //for multiple castes, we may as well draw everything as the descriptors can be different for each caste
-    //since multiple castes append 'for a <caste name>' to the descriptor, this will only ever affect vanilla for now
-    if(!DT->multiple_castes && a.get_descriptor_rank() == 4){
-        item->setData(50.0f, DwarfModel::DR_RATING); //49-51 aren't drawn for attributes
-    }else{
+    if(DT->multiple_castes){
         descriptor != "" ? descriptor = "(" + descriptor + ")" : "";
     }
 
     //sort on the raw value
     item->setData(rawVal, DwarfModel::DR_SORT_VALUE);
-    item->setData(CT_ATTRIBUTE, DwarfModel::DR_COL_TYPE);    
+    item->setData(CT_ATTRIBUTE, DwarfModel::DR_COL_TYPE);
 
-    QString tooltip = QString("<center><h3>%1</h3><b>%2</b><br/>%3<br/><br/>%4%5</center>")
+    if(!descriptor.isEmpty()){
+        descriptor = QString("%1%2").arg("<br/>").arg(descriptor);
+    }
+    QString syn_desc = a.get_syndrome_desc();
+    if(!syn_desc.isEmpty()){
+        syn_desc = QString("%1%1%2").arg("<br/>").arg(syn_desc);
+    }
+
+    QString tooltip = QString("<center><h3>%1</h3><b>%2</b>%3%4%5</center>")
             .arg(m_title)            
             .arg(a.get_value_display())
             .arg(descriptor)
-            .arg(a.get_syndrome_desc())
+            .arg(syn_desc)
             .arg(tooltip_name_footer(d));
 
     item->setToolTip(tooltip);

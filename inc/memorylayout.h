@@ -13,6 +13,7 @@ public:
     QString game_version() {return m_game_version;}
     QString checksum() {return m_checksum;}
     uint address(const QString &key) {return m_addresses.value(key, -1);}
+    bool is_valid_address(uint address);
     uint offset(const QString &key) {return m_offsets.value(key, -1);}
     uint string_buffer_offset();
     uint string_length_offset();

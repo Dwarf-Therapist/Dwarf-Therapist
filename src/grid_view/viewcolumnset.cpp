@@ -89,7 +89,7 @@ void ViewColumnSet::set_name(const QString &name) {
     m_name = name;
 }
 
-void ViewColumnSet::add_column(ViewColumn *col) {
+void ViewColumnSet::add_column(ViewColumn *col,int idx) {
     bool name_ok = false;
     while (!name_ok) {
         name_ok = true;
@@ -111,7 +111,10 @@ void ViewColumnSet::add_column(ViewColumn *col) {
             }
         }
     }
-    m_columns << col;
+    if(idx == -1)
+        m_columns << col;
+    else
+        m_columns.insert(idx,col);
 }
 
 void ViewColumnSet::clear_columns() {
@@ -218,23 +221,26 @@ void ViewColumnSet::reorder_columns(const QStandardItemModel &model) {
     }
 }
 
-void ViewColumnSet::write_to_ini(QSettings &s) {
+void ViewColumnSet::write_to_ini(QSettings &s, int start_idx) {
     s.setValue("name", m_name);
     s.setValue("bg_color", to_hex(m_bg_color));
     s.beginWriteArray("columns", m_columns.size());
     int i = 0;
-    foreach(ViewColumn *vc, m_columns) {
+    for(int idx=start_idx;idx < m_columns.count(); idx++){
         s.setArrayIndex(i++);
-        vc->write_to_ini(s);
+        m_columns.at(idx)->write_to_ini(s);
     }
     s.endArray();
 }
 
-ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
+ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent, int set_num) {
     ViewColumnSet *ret_val = new ViewColumnSet(s.value("name", "UNKNOWN").toString(), parent);
     QString color_in_hex = s.value("bg_color", "0xFFFFFF").toString();
     QColor bg_color = from_hex(color_in_hex);
-    ret_val->set_bg_color(bg_color);    
+    ret_val->set_bg_color(bg_color);
+    if(set_num == 0)
+        new SpacerColumn(0,0, ret_val, parent);
+
     int total_columns = s.beginReadArray("columns");
     for (int i = 0; i < total_columns; ++i) {
         s.setArrayIndex(i);
@@ -244,7 +250,7 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
             new SpacerColumn(s, ret_val, parent);
             break;
         case CT_HAPPINESS:
-            new HappinessColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
+            new HappinessColumn(s, ret_val, parent);
             break;
         case CT_LABOR:
             new LaborColumn(s, ret_val, parent);
@@ -253,7 +259,7 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
             new SkillColumn(s, ret_val, parent);
             break;
         case CT_IDLE:
-            new CurrentJobColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
+            new CurrentJobColumn(s, ret_val, parent);
             break;
         case CT_TRAIT:
             new TraitColumn(s, ret_val, parent);
@@ -269,25 +275,25 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent) {
             break;
         case CT_WEAPON:
             if(DT->get_main_window())
-                new WeaponColumn(s.value("name").toString(),DT->get_main_window()->get_DFInstance()->get_weapon_defs().value(s.value("name").toString()),ret_val,parent);
+                new WeaponColumn(s,DT->get_main_window()->get_DFInstance()->get_weapon_defs().value(s.value("name").toString()),ret_val,parent);
             break;
         case CT_PROFESSION:
-            new ProfessionColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
+            new ProfessionColumn(s, ret_val, parent);
             break;
         case CT_HIGHEST_MOOD:
-            new HighestMoodColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
+            new HighestMoodColumn(s, ret_val, parent);
             break;
         case CT_TRAINED:
-            new TrainedColumn(s.value("name", "UNKNOWN").toString(), ret_val, parent);
+            new TrainedColumn(s, ret_val, parent);
             break;
         case CT_HEALTH:
-            new HealthColumn(s.value("name","UNKNOWN").toString(), s.value("id",0).toInt(),ret_val,parent);
+            new HealthColumn(s,ret_val,parent);
             break;
         case CT_EQUIPMENT:
-            new EquipmentColumn(s.value("name","UNKNOWN").toString(),ret_val,parent);
+            new EquipmentColumn(s,ret_val,parent);
             break;
         case CT_ITEMTYPE:
-            new ItemTypeColumn(s.value("name","").toString(),static_cast<ITEM_TYPE>(s.value("item_type",NONE).toInt()),ret_val,parent);
+            new ItemTypeColumn(s,ret_val,parent);
             break;
         case CT_DEFAULT:
         default:

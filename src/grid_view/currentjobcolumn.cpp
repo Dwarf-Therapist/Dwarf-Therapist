@@ -32,8 +32,12 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "reaction.h"
 
-CurrentJobColumn::CurrentJobColumn(const QString &title, ViewColumnSet *set,
-                                   QObject *parent)
+CurrentJobColumn::CurrentJobColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
+    : ViewColumn(s,set,parent)
+{
+}
+
+CurrentJobColumn::CurrentJobColumn(const QString &title, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title, CT_IDLE, set, parent)
 {    
 }
@@ -321,10 +325,10 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
     item->setData(CT_IDLE, DwarfModel::DR_COL_TYPE);
     item->setData(d->current_job_id(), DwarfModel::DR_SORT_VALUE);
 
-    QColor bg = QColor(175,175,175);
-    if(DT->user_settings()->value("options/grid/shade_cells",true)==false)
-        bg = QColor(255,255,255);
-    item->setData(bg,Qt::BackgroundColorRole);
+//    QColor bg = QColor(175,175,175);
+//    if(DT->user_settings()->value("options/grid/shade_cells",true)==false)
+//        bg = QColor(255,255,255);
+//    item->setData(bg,Qt::BackgroundColorRole);
 
     QString tooltip = QString("<center><h3>%1</h3>%2 (%3)%4</center>")
             .arg(m_title)

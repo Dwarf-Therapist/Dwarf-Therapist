@@ -67,7 +67,6 @@ THE SOFTWARE.
 #endif
 #endif
 
-
 DFInstance::DFInstance(QObject* parent)
     : QObject(parent)
     , m_pid(0)
@@ -116,7 +115,7 @@ DFInstance::DFInstance(QObject* parent)
         foreach(QFileInfo info, files) {
             MemoryLayout *temp = new MemoryLayout(info.absoluteFilePath());
             if (temp && temp->is_valid()) {
-                LOGD << "adding valid layout" << temp->game_version()
+                LOGI << "adding valid layout" << temp->game_version()
                      << temp->checksum();
                 m_memory_layouts.insert(temp->checksum().toLower(), temp);
             }
@@ -177,8 +176,6 @@ DFInstance::~DFInstance() {
     m_pref_counts.clear();
 
     m_thought_counts.clear();
-
-    DwarfStats::cleanup();
 }
 
 BYTE DFInstance::read_byte(const VIRTADDR &addr) {
@@ -455,7 +452,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     LOGD << "civilization id:" << hexify(m_dwarf_civ_id);
 
     m_current_year = read_word(current_year);
-    LOGD << "current year:" << m_current_year;
+    LOGI << "current year:" << m_current_year;
     m_cur_time = (int)m_current_year * 0x62700 + m_cur_year_tick;
 
     QVector<VIRTADDR> creatures_addrs = get_creatures();
@@ -473,7 +470,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
             if(d){
                 dwarves.append(d); //add animals as well so we can show them
                 if(!d->is_animal()){
-                    LOGD << "FOUND DWARF" << hexify(creature_addr) << d->nice_name();
+                    LOGI << "FOUND UNIT" << hexify(creature_addr) << d->nice_name();
                     m_actual_dwarves.append(d);
 
                     //never calculate roles for babies
@@ -486,12 +483,12 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
                     }
 
                 } else {
-                    LOGD << "FOUND BEAST" << hexify(creature_addr) << d->nice_name();
+                    LOGI << "FOUND BEAST" << hexify(creature_addr) << d->nice_name();
                 }
             }
             emit progress_value(progress_count++);
         }
-        LOGD << "read " << dwarves.count() << " in " << t.elapsed() << "ms";
+        LOGI << "read" << dwarves.count() << "units in" << t.elapsed() << "ms";
 
         m_enabled_labor_count.clear();
         qDeleteAll(m_pref_counts);
@@ -501,12 +498,12 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         t.restart();
         QFuture<void> f = QtConcurrent::run(this,&DFInstance::load_population_data);
         f.waitForFinished();
-        LOGD << "loaded population data in  " << t.elapsed() << "ms";
+        LOGI << "loaded population data in" << t.elapsed() << "ms";
 
         t.restart();
-        f = QtConcurrent::run(this,&DFInstance::cdf_role_ratings);
-        f.waitForFinished();        
-        LOGD << "calculated role ratings in " << t.elapsed() << "ms";
+        f = QtConcurrent::run(this,&DFInstance::load_role_ratings);
+        f.waitForFinished();
+        LOGI << "calculated roles in" << t.elapsed() << "ms";
 
         //calc_done();
         m_actual_dwarves.clear();
@@ -520,8 +517,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     }
     detach();
 
-    LOGI << "found" << dwarves.size() << "dwarves out of" << creatures_addrs.size()
-         << "creatures";
+    LOGI << "found" << dwarves.size() << "dwarves out of" << creatures_addrs.size() << "creatures";
 
     return dwarves;
 }
@@ -539,20 +535,16 @@ void DFInstance::load_population_data(){
     //        d->calc_role_ratings();
     //    }
 
-    int cnt = 0;
+    int labor_count = 0;
     foreach(Dwarf *d, m_actual_dwarves){
-        d->calc_attribute_ratings();
-        if(m_labor_capable_dwarves.contains(d))
-            d->calc_role_ratings();
-
         //load labor counts
         foreach(int key, d->get_labors().uniqueKeys()){
             if(d->labor_enabled(key)){
                 if(m_enabled_labor_count.contains(key))
-                    cnt = m_enabled_labor_count.value(key)+1;
+                    labor_count = m_enabled_labor_count.value(key)+1;
                 else
-                    cnt = 1;
-                m_enabled_labor_count.insert(key,cnt);
+                    labor_count = 1;
+                m_enabled_labor_count.insert(key,labor_count);
             }
         }
 
@@ -608,130 +600,91 @@ void DFInstance::load_population_data(){
     }
 }
 
-    void DFInstance::cdf_role_ratings(){
-    //emit progress_value(calc_progress);
-    //emit progress_message(tr("Calculating roles...%1%").arg(QString::number(((float)calc_progress/(float)actual_dwarves.count())*100,'f',2)));
-    //if(calc_progress == actual_dwarves.count()){
-    float role_mean = 0.0;
-    float role_stdev = 0.0;
-    int role_count = 0;
-
-//    float mean = 0.0;
-//    float stdev = 0.0;
-//    int count = 0;
-
-//    bool use_total_cdf = false;
-//    bool balance_total = false;
-
-    foreach(Role *r, GameDataReader::ptr()->get_roles()){
-        role_mean = 0.0;
-        role_stdev = 0.0;
-        role_count = 0;
-
-        foreach(Dwarf *d, m_labor_capable_dwarves){
-            role_count ++;
-            role_mean += d->get_role_rating(r->name, true);
-//            rs->add_rating(d->get_role_rating(r->name, true));
-        }        
-//        mean += role_mean;
-        role_mean = role_mean / role_count;
-//        rs->set_mean(role_mean);
-//        count += role_count;
-
-        foreach(Dwarf *d, m_labor_capable_dwarves){
-            role_stdev += pow(d->get_role_rating(r->name, true) - role_mean,2);
-        }
-//        stdev += role_stdev;
-        role_stdev = sqrt(role_stdev / (role_count-1));
-
-//        if (!use_total_cdf){
-        foreach(Dwarf *d, m_labor_capable_dwarves){
-            d->set_role_rating(r->name, DwarfStats::calc_cdf(role_mean,role_stdev,d->get_role_rating(r->name, true))*100);
-        }
-//        }
-
-//        m_role_stats.append(rs);
-    }
-
-//    qSort(m_role_stats.begin(),m_role_stats.end(),&RoleStats::sort_means);
-//    double max_mean = m_role_stats.first()->get_mean();
-//    double min_mean = m_role_stats.last()->get_mean();
-//    double log_mean_diff = log(max_mean-min_mean);
-
-//    int num_roles = GameDataReader::ptr()->get_roles().count();
-//    int rank = num_roles;
-//    double max_rank_log_mean = 0.0;
-//    foreach(RoleStats *rs, m_role_stats){
-//        rs->set_mean_rank(rank,num_roles);
-//        rank--;
-//        if(rs->get_rank_log_mean() > max_rank_log_mean)
-//            max_rank_log_mean = rs->get_rank_log_mean();
-//    }
-//    QHash<QString, RoleStats*> m_role_stats_by_name;
-//    foreach(RoleStats *rs, m_role_stats){
-//        rs->calc_priority_adjustment(log_mean_diff,max_rank_log_mean);
-//        m_role_stats_by_name.insert(rs->role_name(),rs);
-//    }
-
-//    foreach(Dwarf *d, m_labor_capable_dwarves){
-//        foreach(Role *r, GameDataReader::ptr()->get_roles()){
-//            d->set_adjusted_role_rating(r->name, m_role_stats_by_name.value(r->name)->adjusted_role_rating(d->get_role_rating(r->name,true))*100.0f);
-//        }
-//    }
-
-//    mean = mean / count;
-//    DwarfStats::set_role_mean(mean);
-//    stdev = sqrt(stdev/(count-1));
-//    if (use_total_cdf){
-//        foreach(Role *r, GameDataReader::ptr()->get_roles()){
-//            //adjust the role ratings based on all role ratings
-//            foreach(Dwarf *d, m_labor_capable_dwarves){
-//                if(!balance_total)
-//                    d->set_role_rating(r->name, DwarfStats::calc_cdf(mean,stdev,d->get_role_rating(r->name, true))*100);
-//                else
-//                    d->set_role_rating(r->name, DwarfStats::calc_cdf(mean,stdev,d->get_role_rating(r->name, true)));
-//            }
-
-//            //recalculate each individual role ratings again compared to their respective roles, but on the new global raw rating
-//            if (balance_total){
-//                role_mean = 0.0;
-//                role_stdev = 0.0;
-//                role_count = 0;
-
-//                foreach(Dwarf *d, m_labor_capable_dwarves){
-//                    role_count ++;
-//                    role_mean += (d->get_role_rating(r->name, false));
-//                }
-//                role_mean = role_mean / role_count;
-
-//                foreach(Dwarf *d, m_labor_capable_dwarves){
-//                    role_stdev += pow(d->get_role_rating(r->name, false) - role_mean,2);
-//                }
-//                role_stdev = sqrt(role_stdev / (role_count-1));
-
-//                foreach(Dwarf *d, m_labor_capable_dwarves){
-//                    d->set_role_rating(r->name, DwarfStats::calc_cdf(role_mean,role_stdev,d->get_role_rating(r->name, false))*100);
-//                }
-//            }
-//        }
-//    }
-
+void DFInstance::load_role_ratings(){
+    QVector<double> attribute_values;
+    QVector<double> attribute_raw_values;
+    QVector<double> skill_values;
+    QVector<double> trait_values;
+    QVector<double> pref_values;
 
     foreach(Dwarf *d, m_labor_capable_dwarves){
-        //        if(!d->include_in_pop_stats())
-        //            continue;
+        foreach(int id, GameDataReader::ptr()->get_attributes().keys()){
+            attribute_values.append(d->get_attribute(id).get_balanced_value());
+            attribute_raw_values.append(d->get_attribute(id).get_value());
+        }
+
+        foreach(int id, GameDataReader::ptr()->get_skills().keys()){
+            skill_values.append(d->get_skill(id).get_balanced_level());
+        }
+
+        foreach(short val, d->get_traits()->values()){
+            trait_values.append((double)val);
+        }
+
+        foreach(Role *r, GameDataReader::ptr()->get_roles().values()){
+            if(r->prefs.count() > 0){
+                foreach(double rating, d->get_role_pref_match_counts(r)){
+                    pref_values.append(rating);
+                }
+            }
+        }
+
+    }
+
+    QTime tr;
+    tr.start();
+    LOGD << "Role Trait Info:";
+    DwarfStats::init_traits(trait_values);
+    LOGD << "     - loaded trait role data in " << tr.elapsed() << "ms";
+
+    LOGD << "Role Skills Info:";
+    DwarfStats::init_skills(skill_values);
+    LOGD << "     - loaded skill role data in " << tr.elapsed() << "ms";
+
+    LOGD << "Role Attributes Info:";
+    DwarfStats::init_attributes(attribute_values,attribute_raw_values);    
+    LOGD << "     - loaded attribute role data in " << tr.elapsed() << "ms";
+
+    LOGD << "Role Preferences Info:";
+    DwarfStats::init_prefs(pref_values);
+    LOGD << "     - loaded preference role data in " << tr.elapsed() << "ms";
+
+    float avg = 0;
+    QList<float> role_ratings;
+    foreach(Dwarf *d, m_labor_capable_dwarves){
+        QList<float> ratings = d->calc_role_ratings();
+        foreach(float rating, ratings){
+            avg+=rating;
+        }
+        role_ratings.append(ratings);
         d->update_rating_list();
     }
-    //actual_dwarves.clear();
 
-    //emit progress_value(calc_progress+1);
-    //progress_message(QString("All roles loaded in %1 seconds.").arg(QString::number((float)t.elapsed()/1000,'f',2)));
-
-    //update role columns
-    //DT->emit_roles_changed();
-    //DT->get_main_window()->get_view_manager()->redraw_current_tab();
-    //}
-
+    float max = 0;
+    float min = 0;
+    float median = 0;
+    if(role_ratings.count() > 0){
+        avg /= role_ratings.count();
+        QList<float>::Iterator i_min = std::min_element(role_ratings.begin(),role_ratings.end());
+        QList<float>::Iterator i_max = std::max_element(role_ratings.begin(),role_ratings.end());
+        max = *i_max;
+        min = *i_min;
+        median = 0;
+        float n = (float)role_ratings.count() / 2.0f;
+        if(role_ratings.count() % 2 == 0){
+            std::nth_element(role_ratings.begin(),role_ratings.begin()+(int)n,role_ratings.end());
+            median = 0.5*(role_ratings.at((int)n)+role_ratings.at((int)n-1));
+        }else{
+            std::nth_element(role_ratings.begin(),role_ratings.begin()+(int)n,role_ratings.end());
+            median =  role_ratings.at((int)n);
+        }
+    }    
+    DwarfStats::set_role_stats(min,max,median);
+    LOGD << "Overall Role Rating Stats";
+    LOGD << "     - Min: " << min;
+    LOGD << "     - Max: " << max;
+    LOGD << "     - Median: " << median;
+    LOGD << "     - Average: " << avg;
 }
 
 
@@ -739,15 +692,17 @@ void DFInstance::load_reactions(){
     attach();
     //LOGI << "Reading reactions names...";
     VIRTADDR reactions_vector = m_layout->address("reactions_vector");
-    reactions_vector += m_memory_correction;
-    QVector<VIRTADDR> reactions = enumerate_vector(reactions_vector);
-    //TRACE << "FOUND" << reactions.size() << "reactions";
-    //emit progress_range(0, reactions.size()-1);
-    if (!reactions.empty()) {
-        foreach(VIRTADDR reaction_addr, reactions) {
-            Reaction* r = Reaction::get_reaction(this, reaction_addr);
-            m_reactions.insert(r->tag(), r);
-            //emit progress_value(i++);
+    if(m_layout->is_valid_address(reactions_vector)){
+        reactions_vector += m_memory_correction;
+        QVector<VIRTADDR> reactions = enumerate_vector(reactions_vector);
+        //TRACE << "FOUND" << reactions.size() << "reactions";
+        //emit progress_range(0, reactions.size()-1);
+        if (!reactions.empty()) {
+            foreach(VIRTADDR reaction_addr, reactions) {
+                Reaction* r = Reaction::get_reaction(this, reaction_addr);
+                m_reactions.insert(r->tag(), r);
+                //emit progress_value(i++);
+            }
         }
     }
     detach();
@@ -825,7 +780,6 @@ void DFInstance::load_main_vectors(){
     //load artifacts
     QVector<VIRTADDR> artifacts = enumerate_vector(m_memory_correction + m_layout->address("artifacts_vector"));
     m_items_vectors.insert(ARTIFACTS,artifacts);
-
 
     m_color_vector = enumerate_vector(m_memory_correction + m_layout->address("colors_vector"));
     m_shape_vector = enumerate_vector(m_memory_correction + m_layout->address("shapes_vector"));
@@ -969,7 +923,7 @@ QList<Squad *> DFInstance::load_squads(bool refreshing) {
             Squad *s = NULL;
             s = Squad::get_squad(this, squad_addr);
             if(s) {
-                LOGD << "FOUND SQUAD" << hexify(squad_addr) << s->name() << " member count: " << s->assigned_count() << " id: " << s->id();
+                LOGI << "FOUND SQUAD" << hexify(squad_addr) << s->name() << " member count: " << s->assigned_count() << " id: " << s->id();
                 if(m_fortress->squad_is_active(s->id())){
                     m_squads.push_front(s);
                 }
@@ -1012,7 +966,7 @@ QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
     QVector<VIRTADDR> entries = enumerate_vector(active_units);
     if(entries.isEmpty()){
         if(report_progress){
-            LOGD << "no active units (embark) using full unit list";
+            LOGI << "no active units (embark) using full unit list";
         }
         entries = enumerate_vector(all_units);
     }else{
@@ -1021,13 +975,13 @@ QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
         foreach(VIRTADDR entry, entries){
             if(read_word(entry + civ_offset)==m_dwarf_civ_id){
                 if(report_progress){
-                    LOGD << "using active units";
+                    LOGI << "using active units";
                 }
                 return entries;
             }
         }
         if(report_progress){
-            LOGD << "no active units with our civ (reclaim), using full unit list";
+            LOGI << "no active units with our civ (reclaim), using full unit list";
         }
         entries = enumerate_vector(all_units);
     }
@@ -1484,14 +1438,14 @@ QVector<VIRTADDR> DFInstance::find_vectors(int num_entries, const QVector<VIRTAD
 
 MemoryLayout *DFInstance::get_memory_layout(QString checksum, bool) {
     checksum = checksum.toLower();
-    LOGD << "DF's checksum is:" << checksum;
+    LOGI << "DF's checksum is:" << checksum;
 
     MemoryLayout *ret_val = NULL;
     ret_val = m_memory_layouts.value(checksum, NULL);
     m_is_ok = ret_val != NULL && ret_val->is_valid();
 
     if(!m_is_ok) {
-        LOGD << "Could not find layout for checksum" << checksum;
+        LOGI << "Could not find layout for checksum" << checksum;
         DT->get_main_window()->check_for_layout(checksum);
     }
 
@@ -1517,7 +1471,7 @@ bool DFInstance::add_new_layout(const QString & version, QFile & file) {
         return false;
     }
 
-    LOGD << "Copying: " << file.fileName() << " to " << newFileName;
+    LOGI << "Copying: " << file.fileName() << " to " << newFileName;
     if(!file.copy(newFileName)) {
         LOGW << "Error renaming layout file!";
         return false;
@@ -1525,7 +1479,7 @@ bool DFInstance::add_new_layout(const QString & version, QFile & file) {
 
     MemoryLayout *temp = new MemoryLayout(newFileName);
     if (temp && temp->is_valid()) {
-        LOGD << "adding valid layout" << temp->game_version() << temp->checksum();
+        LOGI << "adding valid layout" << temp->game_version() << temp->checksum();
         m_memory_layouts.insert(temp->checksum().toLower(), temp);
     }
     return true;
@@ -1805,11 +1759,11 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
 
             //specific plant material
             if(m){
-                if(itype==NONE){
+                //if(itype==NONE){
                     QString sub_name = m->get_material_name(GENERIC);
                     name.append(" ").append(sub_name);
-                }
-                else if(itype == DRINK || itype == LIQUID_MISC)
+                //}
+                if(itype == DRINK || itype == LIQUID_MISC)
                     name = m->get_material_name(LIQUID);
                 else if(itype == POWDER_MISC || itype == CHEESE)
                     name = m->get_material_name(POWDER);

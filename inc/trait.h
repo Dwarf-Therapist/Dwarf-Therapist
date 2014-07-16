@@ -53,15 +53,12 @@ public:
     QString name;
     int trait_id;
     bool inverted; //specifically when setting the drawn rating
-    ASPECT_TYPE m_aspect_type;
 
     QString level_message(const short &val);
     QString conflicts_messages(const short &val);
     QString special_messages(const short &val);
 
     QString conflict_message(const short &skill_id, const short &val);
-
-    static bool default_ranges(int id, short min, short median, short max);
 };
 
 #endif

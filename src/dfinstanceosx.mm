@@ -274,7 +274,7 @@ bool DFInstanceOSX::find_running_copy(bool connect_anyway) {
             m_pid = [[application objectForKey:
                                             @"NSApplicationProcessIdentifier"]
                                             intValue];
-            LOGD << "Found running copy, pid:" << m_pid << "path:" << m_loc_of_dfexe;
+            LOGI << "Found running copy, pid:" << m_pid << "path:" << m_loc_of_dfexe;
         }
     }
 

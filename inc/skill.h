@@ -27,6 +27,8 @@ THE SOFTWARE.
 #include "qstringlist.h"
 #include "defines.h"
 #include "qcolor.h"
+#include "dwarftherapist.h"
+#include "dwarfstats.h"
 
 class GameDataReader;
 
@@ -68,6 +70,10 @@ public:
 
     static int get_xp_for_level(int level);
     double get_simulated_rating();
+    double get_simulated_level();
+    double get_rating(bool ensure_non_zero = false);
+    double get_balanced_level();
+    void calculate_balanced_level();
 
 private:
     short m_id;
@@ -86,12 +92,16 @@ private:
     int m_skill_rate;
     int m_rust;
     bool m_losing_xp;
+    double m_rating;
+    double m_balanced_level;
     //skill level, experience
     static QHash<int,int> m_experience_levels;
 
     static QHash<int,int> load_base_xp_levels();
     static int xp_for_level(int level);
     static float level_from_xp(int xp);
+
+    static int MAX_CAPPED_XP;
 };
 
 #endif // SKILL_H

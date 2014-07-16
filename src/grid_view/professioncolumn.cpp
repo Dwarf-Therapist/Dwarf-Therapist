@@ -30,8 +30,12 @@ THE SOFTWARE.
 #include "defines.h"
 #include "gamedatareader.h"
 
-ProfessionColumn::ProfessionColumn(const QString &title, ViewColumnSet *set,
-                       QObject *parent)
+ProfessionColumn::ProfessionColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
+ : ViewColumn(s, set, parent)
+{
+}
+
+ProfessionColumn::ProfessionColumn(const QString &title, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title, CT_PROFESSION, set, parent)
 {
 }
@@ -48,10 +52,10 @@ QStandardItem *ProfessionColumn::build_cell(Dwarf *d) {
     item->setData(CT_PROFESSION, DwarfModel::DR_COL_TYPE);
     item->setData(d->raw_profession(), DwarfModel::DR_SORT_VALUE);    
 
-    QColor bg = QColor(175,175,175);
-    if(DT->user_settings()->value("options/grid/shade_cells",true)==false)
-        bg = QColor(255,255,255);
-    item->setData(bg,Qt::BackgroundColorRole);
+//    QColor bg = QColor(175,175,175);
+//    if(DT->user_settings()->value("options/grid/shade_cells",true)==false)
+//        bg = QColor(255,255,255);
+//    item->setData(bg,Qt::BackgroundColorRole);
 
     QString tooltip = tr("<center><h3>%1</h3><h4>%2 (%3)</h4></center><h5><i>%4</i></h5>%5")
             .arg(m_title)

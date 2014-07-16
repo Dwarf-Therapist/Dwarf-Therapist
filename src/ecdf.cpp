@@ -18,31 +18,51 @@
 
 #include "ecdf.h"
 #include <algorithm>
+#include <QObject>
+#include <QtCore>
+#include <QStringList>
+#include "truncatingfilelogger.h"
 
-  typedef QVector<double> VEC;
-  typedef VEC::iterator IT;
-  typedef VEC::const_iterator CIT;
-  using std::sort;
-  using std::upper_bound;
-  using std::lower_bound;
+typedef QVector<double> VEC;
+typedef VEC::iterator IT;
+typedef VEC::const_iterator CIT;
+using std::sort;
+using std::upper_bound;
+using std::lower_bound;
 
-  ECDF::ECDF(const VEC & unsorted)
-    : m_sorted(unsorted)
-  {
-    std::sort(m_sorted.begin(), m_sorted.end());
+ECDF::ECDF(){
+}
+
+ECDF::ECDF(const QVector<double> &unsorted)
+{
+    m_sorted = unsorted;
+    init_list();
+}
+
+void ECDF::set_list(const QVector<double> &unsorted){
+    m_sorted = unsorted;
+    init_list();
+}
+
+void ECDF::init_list(){
+    qSort(m_sorted.begin(), m_sorted.end());
     b = m_sorted.begin();
     e = m_sorted.end();
     n = static_cast<double>(m_sorted.size());
-  }
+}
 
-  double ECDF::fplus(double x)const{
+double ECDF::fplus(double x)const{
     CIT it = upper_bound(b, e, x);
     unsigned pos = it-b;  // it is the first element >= x
-    return pos/n;
-  }
+    return (pos/n);
+}
 
-  double ECDF::fminus(double x)const{
+double ECDF::fminus(double x)const{
     CIT it = lower_bound(b,e, x);
     unsigned pos = it-b;
     return pos/n;
-  }
+}
+
+double ECDF::favg(double x) {
+    return ((fplus(x)+fminus(x))/2.0f);
+}

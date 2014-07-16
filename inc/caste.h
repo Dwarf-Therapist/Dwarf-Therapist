@@ -55,7 +55,7 @@ public:
     QString tag() {return m_tag;}
     QString description();
     QPair<int,QString> get_attribute_descriptor_info(ATTRIBUTES_TYPE id, int value);
-    int get_attribute_cost_to_improve(int id) {return m_attrib_costs.value(id);}
+    int get_attribute_cost_to_improve(int id);
 
     int get_skill_rate(int skill_id);
 
@@ -74,12 +74,12 @@ public:
     bool is_trainable();
     bool is_milkable();
     bool has_extracts() {return m_has_extracts;}
+    bool can_butcher() {return m_can_butcher;}
 
     QList<int> get_attribute_raws(int attrib_id) {return m_attrib_ranges.value(attrib_id).raw_bins;}
     Caste::att_range get_attribute_range(int attrib_id) {return m_attrib_ranges.value(attrib_id);}
 
-    void load_attribute_info(float ratio = -1);
-    void load_trait_info();
+    void load_attribute_info();
 
     BodyPart *get_body_part(int body_part_id);
 
@@ -102,6 +102,7 @@ private:
     FlagArray m_flags;
 
     bool m_has_extracts;
+    bool m_can_butcher;
     QHash<int,float> m_skill_rates;
     QStringList m_bonuses;
 

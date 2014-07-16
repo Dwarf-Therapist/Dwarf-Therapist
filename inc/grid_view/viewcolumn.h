@@ -42,7 +42,7 @@ I can think of a need for:
 class ViewColumn : public QObject {
 	Q_OBJECT
 public:
-	ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set = 0, QObject *parent = 0);
+    ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set = 0, QObject *parent = 0, int col_idx = -1);
 	ViewColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
     ViewColumn(const ViewColumn &to_copy); // copy ctor
     virtual ViewColumn* clone() = 0;
@@ -88,6 +88,7 @@ public:
     void set_viewcolumnset(ViewColumnSet *set) {m_set = set;}
 	virtual COLUMN_TYPE type() {return m_type;}
     int count() {return m_count;}
+    QHash<Dwarf*,QStandardItem*> cells() {return m_cells;}
 
 	QStandardItem *init_cell(Dwarf *d);
 	virtual QStandardItem *build_cell(Dwarf *d) = 0; // create a suitable item based on a dwarf

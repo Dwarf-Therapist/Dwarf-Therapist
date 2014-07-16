@@ -39,6 +39,7 @@ QScriptEngine *m_engine;
 DwarfModelProxy::DwarfModelProxy(QObject *parent)
     :QSortFilterProxyModel(parent)
     , m_last_sort_order(Qt::AscendingOrder)
+    , m_last_sort_role(DSR_NAME_ASC)
     , m_engine(new QScriptEngine(this))    
 {
     this->setDynamicSortFilter(false);
@@ -163,9 +164,9 @@ void DwarfModelProxy::sort(int column, Qt::SortOrder order) {
 }
 
 void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role, Qt::SortOrder order) {
-    if (column == 0) {
+    if (column == 0) {        
         switch(role) {
-        default:           
+        default:            
             setSortRole(DwarfModel::DR_SORT_VALUE);
             break;
         case DSR_NAME_ASC:            
@@ -193,11 +194,15 @@ void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role, Qt::SortOrder order
             setSortRole(DwarfModel::DR_SIZE);
             break;
         }
+        m_last_sort_role = role;
         m_last_sort_order = order;
     } else {
         //not the name (0) column, and will always be passed in with DSR_DEFAULT
         //so just set the sort value, as the order is passed in as well, and continue
-        setSortRole(DwarfModel::DR_SORT_VALUE);
+        if(column == GLOBAL_SORT_COL_IDX)
+            setSortRole(DwarfModel::DR_GLOBAL);
+        else
+            setSortRole(DwarfModel::DR_SORT_VALUE);
     }
     setSortCaseSensitivity(Qt::CaseInsensitive);
     setSortLocaleAware(true);    

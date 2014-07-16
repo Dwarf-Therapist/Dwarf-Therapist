@@ -48,7 +48,8 @@ public:
     DwarfModelProxy(QObject *parent = 0);
     DwarfModel* get_dwarf_model() const;
     void sort(int column, Qt::SortOrder order);    
-    Qt::SortOrder m_last_sort_order;    
+    Qt::SortOrder m_last_sort_order;
+    DWARF_SORT_ROLE m_last_sort_role;
 
     QList<QString> get_script_names() {return m_scripts.keys();}
     QString get_script(const QString script_name) {return m_scripts.value(script_name);}

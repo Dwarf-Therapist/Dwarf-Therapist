@@ -30,6 +30,7 @@ class Dwarf;
 class CurrentJobColumn : public ViewColumn {
     Q_OBJECT
 public:
+    CurrentJobColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
     CurrentJobColumn(const QString &title, ViewColumnSet *set = 0, QObject *parent = 0);
     CurrentJobColumn(const CurrentJobColumn &to_copy); // copy ctor
     CurrentJobColumn* clone() {return new CurrentJobColumn(*this);}

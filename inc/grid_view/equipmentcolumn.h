@@ -33,6 +33,7 @@ class EquipmentColumn : public ItemTypeColumn {
     Q_OBJECT
 public:
 
+    EquipmentColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
     EquipmentColumn(const QString &title, ViewColumnSet *set = 0, QObject *parent = 0);
     EquipmentColumn(const EquipmentColumn &to_copy); // copy ctor
     EquipmentColumn* clone() {return new EquipmentColumn(*this);}

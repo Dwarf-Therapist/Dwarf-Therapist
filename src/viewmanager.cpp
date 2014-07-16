@@ -319,7 +319,7 @@ void ViewManager::draw_views() {
         setCurrentIndex(0);
     }
     QTime stop = QTime::currentTime();
-    LOGD << QString("redrew views in %L1ms").arg(start.msecsTo(stop));
+    LOGI << QString("redrew views in %L1ms").arg(start.msecsTo(stop));
 }
 
 void ViewManager::write_tab_settings() {
@@ -328,7 +328,7 @@ void ViewManager::write_tab_settings() {
     for (int i = 0; i < count(); ++i) {
         view_name = tabText(i);
         tab_order << view_name;
-        DT->user_settings()->setValue(QString("gui_options/%1_group_by").arg(view_name),get_stv(i)->m_last_group_by);
+        DT->user_settings()->setValue(QString("gui_options/%1_group_by").arg(view_name),get_stv(i)->get_last_group_by());
     }
     if(!tab_order.isEmpty())
         DT->user_settings()->setValue("gui_options/tab_order", tab_order);
@@ -443,7 +443,7 @@ StateTableView *ViewManager::get_stv(int idx) {
     return 0;
 }
 
-void ViewManager::setCurrentIndex(int idx) {   
+void ViewManager::setCurrentIndex(int idx) {
     if (idx < 0 || idx > count()-1) {
         LOGW << "tab switch to index" << idx << "requested but there are " <<
             "only" << count() << "tabs";
@@ -464,26 +464,27 @@ void ViewManager::setCurrentIndex(int idx) {
     foreach(GridView *v, m_views) {
         if (v->name() == tabText(idx)) {
             stv->is_loading_rows = true;
+            stv->setSortingEnabled(false);
 
             m_model->set_grid_view(v);
             if(group_all){
-                if(prev_view && prev_view->m_last_group_by > -1){ //use the previous view's group, keep in sync
-                    sel_group = prev_view->m_last_group_by;
-                    stv->m_last_group_by = prev_view->m_last_group_by;
+                if(prev_view && prev_view->get_last_group_by() > -1){ //use the previous view's group, keep in sync
+                    sel_group = prev_view->get_last_group_by();
+                    stv->set_last_group_by(prev_view->get_last_group_by());
                 }else{ //no prev view use the default
                     sel_group = default_group;
-                    stv->m_last_group_by = default_group;
+                    stv->set_last_group_by(default_group);
                 }
             }else{
                 int default_view_group_by = stv->m_default_group_by; //use the default for the specific view
                 if(default_view_group_by < 0)
                     default_view_group_by = 0;
 
-                if(stv->m_last_group_by < 0){
+                if(stv->get_last_group_by() < 0){
                     sel_group = default_view_group_by;
-                    stv->m_last_group_by = default_view_group_by;
+                    stv->set_last_group_by(default_view_group_by);
                 }else{
-                    sel_group = stv->m_last_group_by;
+                    sel_group = stv->get_last_group_by();
                 }
             }            
             m_model->set_group_by(sel_group);
@@ -506,9 +507,29 @@ void ViewManager::setCurrentIndex(int idx) {
                         c->refresh_sort(cst);
                 }
             }
-            //restore sorting
-            m_proxy->sort(0,m_proxy->m_last_sort_order); //sort by the last sort order
-            stv->sortByColumn(stv->m_last_sorted_col,stv->m_last_sort_order); //individual column sort
+
+            //original sorting per view sorting
+//            m_proxy->sort(0,m_proxy->m_last_sort_order); //sort by the last sort order
+//            stv->sortByColumn(stv->m_last_sorted_col,stv->m_last_sort_order); //individual column sort
+
+            stv->setSortingEnabled(true);
+
+            if(prev_view){
+                m_proxy->sort(0, static_cast<DwarfModelProxy::DWARF_SORT_ROLE>(m_model->get_global_group_sort_info().value(stv->get_last_group_by()).first),
+                              m_model->get_global_group_sort_info().value(stv->get_last_group_by()).second); //sort the groups/name column                
+                //if there's a second sort on a specific column, apply that sort as well
+                QPair<QString,int> key_pair = m_model->get_global_sort_info().value(stv->get_last_group_by());
+                if(key_pair.second != 0){
+                    LOGI << "sorting view" << stv->get_view_name() << "with the global sort for the group";
+                    stv->sortByColumn(1, prev_view->m_last_sort_order); //global sort                    
+                }else{
+                    LOGI << "not sorting view" << stv->get_view_name();
+                }
+                stv->m_last_sort_order = prev_view->m_last_sort_order;
+            }else{
+                m_proxy->sort(0,DwarfModelProxy::DSR_DEFAULT,Qt::AscendingOrder);
+            }
+
             stv->m_selected_rows.clear(); //will be reloaded below when re-selecting, however after committing, selection is cleared..
             stv->m_selected.clear();
             foreach(Dwarf *d, m_selected_dwarfs) {
@@ -524,14 +545,14 @@ void ViewManager::setCurrentIndex(int idx) {
         prev_view->is_active = false;
     }
 
-    tabBar()->setCurrentIndex(idx);      
+    //tabBar()->setCurrentIndex(idx);
     stv->restore_expanded_items();
     write_tab_settings();
 
     m_last_index = idx;
     stv->restore_scroll_positions();
 
-        emit group_changed(stv->m_last_group_by);
+    emit group_changed(stv->get_last_group_by());
 
     s = 0;
 }
@@ -574,9 +595,10 @@ int ViewManager::add_tab_for_gridview(GridView *v) {
     v->set_active(true);
     StateTableView *stv = new StateTableView(this);
     stv->setSortingEnabled(false);
+    stv->sortByColumn(0,Qt::AscendingOrder);
     stv->set_model(m_model, m_proxy);
     stv->setSortingEnabled(true);
-    stv->set_default_group(v->name());
+    stv->set_default_group(v->name());    
     connect(stv, SIGNAL(dwarf_focus_changed(Dwarf*)),
             SIGNAL(dwarf_focus_changed(Dwarf*))); // pass-thru
     connect(stv->selectionModel(),
@@ -642,7 +664,7 @@ void ViewManager::jump_to_profession(QTreeWidgetItem *current, QTreeWidgetItem *
 
 void ViewManager::set_group_by(int group_by) {
     if (m_model){
-        get_stv(currentIndex())->m_last_group_by = group_by;        
+        get_stv(currentIndex())->set_last_group_by(group_by);
     }
     redraw_current_tab();
 }

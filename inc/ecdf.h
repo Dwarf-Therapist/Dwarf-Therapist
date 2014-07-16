@@ -24,15 +24,19 @@
     // empirical CDF
   public:
     ECDF(const QVector<double> &unsorted);
+    ECDF();
+    void set_list(const QVector<double> &unsorted);
     double fplus(double x)const;  // fraction of data <= x
     double fminus(double x)const; // fraction of data < x;
+    double favg(double x) ;
     double operator()(double x, bool leq = true)const{
       return leq ? fplus(x) : fminus(x);}
-    const QVector<double> & sorted_data()const{return m_sorted;}
+    const QVector<double> & sorted_data()const{return m_sorted;}    
   private:
     QVector<double> m_sorted;
     QVector<double>::const_iterator b, e;
-    double n;    
+    void init_list();
+    double n;
   };
 
 #endif // ECDF_H

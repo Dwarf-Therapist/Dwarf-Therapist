@@ -54,6 +54,8 @@ DwarfModel::DwarfModel(QObject *parent)
     , m_group_by(GB_NOTHING)
     , m_selected_col(-1)
     , m_gridview(0x0)
+//    , m_global_sort_col(-1)
+//    , m_global_sort_view("")
 {
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
     read_settings();
@@ -398,6 +400,7 @@ void DwarfModel::build_rows() {
     foreach(QString key, m_grouped_dwarves.uniqueKeys()) {
         build_row(key);
     }
+
     emit new_creatures_count(n_adults,n_children,n_babies,race_name);
 }
 
@@ -428,12 +431,12 @@ void DwarfModel::build_row(const QString &key) {
         //        agg_first_col->setData(build_gradient_brush(QColor(Qt::gray),125,0,QPoint(0,0),QPoint(1,0)),Qt::BackgroundRole);
         agg_first_col->setData(true, DR_IS_AGGREGATE);
         agg_first_col->setData(key, DR_GROUP_NAME);
-        agg_first_col->setData(0, DR_RATING);
+        agg_first_col->setData(0, DR_RATING);        
         //root->setData(title, DR_SORT_VALUE);
         // for integer based values we want to make sure they sort by the int
         // values instead of the string values
         if (m_group_by == GB_MIGRATION_WAVE) {
-            agg_first_col->setData(first_dwarf->migration_wave(), DR_SORT_VALUE);            
+            agg_first_col->setData(first_dwarf->migration_wave(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HIGHEST_SKILL) {
             agg_first_col->setData(first_dwarf->highest_skill().actual_exp(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HIGHEST_MOODABLE) {
@@ -480,6 +483,7 @@ void DwarfModel::build_row(const QString &key) {
             if(first_dwarf->current_job_id() < 0)
                 agg_first_col->setData(QString::number(first_dwarf->current_job_id()), DR_SORT_VALUE);
         }
+        agg_first_col->setData(agg_first_col->data(DR_SORT_VALUE),DR_GLOBAL);
         agg_items << agg_first_col;
     }
 
@@ -554,6 +558,8 @@ void DwarfModel::build_row(const QString &key) {
         i_name->setData(d->body_size(), DR_SIZE);
         i_name->setData(d->nice_name(), DR_NAME);
 
+        i_name->setData(d->get_global_sort_key(m_group_by), DR_GLOBAL);
+
         //set the sorting within groups when grouping
         QVariant sort_val;
         switch(m_group_by) {
@@ -579,6 +585,7 @@ void DwarfModel::build_row(const QString &key) {
             break;
         }
         i_name->setData(sort_val, DR_SORT_VALUE);
+//        i_name->setData(sort_val, DR_GLOBAL);
 
         //set gender icons
         if(show_gender){
@@ -588,12 +595,15 @@ void DwarfModel::build_row(const QString &key) {
 
         QList<QStandardItem*> items;
         items << i_name;
+        int col_idx = 1;
         foreach(ViewColumnSet *set, m_gridview->sets()) {
             foreach(ViewColumn *col, set->columns()) {
                 QStandardItem *item = col->build_cell(d);
+                if(col_idx == GLOBAL_SORT_COL_IDX)//update the hidden global sort column's related cell global sort value
+                    item->setData(d->get_global_sort_key(m_group_by),DwarfModel::DR_GLOBAL);
                 items << item;
             }
-        }
+        }        
 
         if (agg_first_col) {
             agg_first_col->appendRow(items);
@@ -606,6 +616,19 @@ void DwarfModel::build_row(const QString &key) {
     if (agg_first_col) {
         appendRow(agg_items);
     }
+}
+void DwarfModel::set_global_group_sort_info(int role, Qt::SortOrder order){
+    m_global_group_sort_info.insert(m_group_by,qMakePair(role,order));
+}
+void DwarfModel::set_global_sort_col(QString grid_view_name, int col_idx){
+    if(col_idx < 0)
+        m_global_sort_info.remove(m_group_by);
+    else
+        m_global_sort_info.insert(m_group_by, qMakePair(grid_view_name,col_idx));
+}
+void DwarfModel::update_global_sort_col(int group_id){
+    if(!m_global_sort_info.keys().contains(group_id))
+        m_global_sort_info.insert(group_id,qMakePair(this->m_gridview->name(),0));
 }
 
 void DwarfModel::cell_activated(const QModelIndex &idx) {
@@ -633,7 +656,7 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
     }
 
     COLUMN_TYPE type = static_cast<COLUMN_TYPE>(idx.data(DwarfModel::DR_COL_TYPE).toInt());
-    if (type != CT_LABOR && type != CT_FLAGS)
+    if (type != CT_LABOR && type != CT_FLAGS && type != CT_ROLE)
         return;
 
     Q_ASSERT(item);
@@ -679,16 +702,33 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
             m_dwarves[dwarf_id]->toggle_labor(labor_id);
         else if (type == CT_FLAGS)
             m_dwarves[dwarf_id]->toggle_flag_bit(labor_id);
+        else if (type == CT_ROLE){
+            QVariantList labors = item->data(DwarfModel::DR_SPECIAL_FLAG).toList();
+            int limit = ceil((double)labors.count() / 2.0f);
+            int enabled = 0;
+            Dwarf *d  = m_dwarves[dwarf_id];
+            bool enabling = true;
+            foreach(QVariant id, labors){
+                if(d->labor_enabled(id.toInt()))
+                    enabled++;
+            }
+            if((enabled < limit && enabled > 0) || enabled == labors.count())
+                enabling = false;
+            foreach(QVariant id, labors){
+                d->set_labor(id.toInt(),enabling,false);
+            }
+        }
     }
     //calculate_pending();
     TRACE << "toggling" << labor_id << "for dwarf:" << dwarf_id;
 }
 
 void DwarfModel::set_group_by(int group_by) {
-    LOGD << "group_by now set to" << group_by << " for view " << current_grid_view()->name();
+    LOGI << "group_by now set to" << group_by << " for view " << current_grid_view()->name();
     m_group_by = static_cast<GROUP_BY>(group_by);
-    if(m_df)
-        build_rows();
+    if(m_df){
+        build_rows();        
+    }
 }
 
 void DwarfModel::calculate_pending() {

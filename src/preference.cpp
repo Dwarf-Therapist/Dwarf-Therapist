@@ -25,6 +25,8 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "material.h"
 #include "roleaspect.h"
+#include "dwarf.h"
+#include "itemweapon.h"
 
 Preference::Preference(QObject *parent)
     :QObject(parent)
@@ -74,7 +76,7 @@ Preference::Preference(const Preference &p)
 
 Preference::~Preference(){
     delete(pref_aspect);
-    pref_aspect = 0;    
+    pref_aspect = 0;
 }
 
 void Preference::add_flag(int flag){
@@ -82,7 +84,7 @@ void Preference::add_flag(int flag){
         m_special_flags.append(flag);
 }
 
-int Preference::matches(Preference *role_pref){
+int Preference::matches(Preference *role_pref, Dwarf *d){
     int result = 0;
 
     if(m_pType == role_pref->get_pref_category()){
@@ -96,9 +98,11 @@ int Preference::matches(Preference *role_pref){
         if(role_pref->special_flags().count() > 0){
             if(result==1)
                 result = 0; //reset to 0, only match on these flags
-            foreach(int f, role_pref->special_flags()){
-                if(m_special_flags.contains(f)){
-                    result = 1;
+            if(m_special_flags.count() > 0){
+                foreach(int f, role_pref->special_flags()){
+                    if(m_special_flags.contains(f)){
+                        result = 1;
+                    }
                 }
             }
         }
@@ -115,10 +119,22 @@ int Preference::matches(Preference *role_pref){
             }
         }
 
+        //check for an exact match on the string, if this is required, reset our result again and check
         if(role_pref->exact_match())
             result = 0;
 
-        result += exact_matches(role_pref->get_name());
+        if(result <= 0) //only check for an exact match if we don't already have a match
+            result = exact_matches(role_pref->get_name());
+
+        if(d){
+            //if it's a weapon, and a match, ensure the dwarf can actually wield it as well
+            if(result > 0 && role_pref->get_item_type() == WEAPON){
+                ItemWeaponSubtype *w = d->get_df_instance()->get_weapon_def(capitalizeEach(m_name));
+                if(!w || d->body_size() < w->multi_grasp())
+                    result = 0;
+                w = 0;
+            }
+        }
 
     }
 

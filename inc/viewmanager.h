@@ -57,7 +57,7 @@ public:
     }
 
 	public slots:
-		void setCurrentIndex(int);        
+        void setCurrentIndex(int idx);
 		void reload_views();
 		void write_views();
 		void draw_views();

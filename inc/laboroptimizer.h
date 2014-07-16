@@ -101,8 +101,7 @@ protected:
     QVector<dwarf_labor_map> m_labor_map;
     QVector<QPair<int, QString> > m_current_message;
 
-    void optimize();
-    void adjust_ratings();
+    void optimize();    
 };
 
 #endif // LABOROPTIMIZER_H

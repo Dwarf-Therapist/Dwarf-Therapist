@@ -171,7 +171,6 @@ void GridViewDock::copy_view() {
     copy->set_name(view->name() + "(COPY)");
     copy->set_show_animals(view->show_animals());
     m_manager->add_view(copy);
-    m_manager->write_views();
     draw_views();
     m_tmp_item = 0;
 }

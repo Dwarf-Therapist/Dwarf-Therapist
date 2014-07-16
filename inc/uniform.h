@@ -35,19 +35,19 @@ public:
     Uniform(DFInstance *df, QObject *parent = 0);
     virtual ~Uniform();    
 
-    int get_equip_count(ITEM_TYPE itype);
+    int get_required_count(ITEM_TYPE itype);
     int get_missing_equip_count(ITEM_TYPE itype);
 
     QHash<ITEM_TYPE,QList<ItemDefUniform*> > get_uniform() {return m_uniform_items;}
     QHash<ITEM_TYPE,QList<ItemDefUniform*> > get_missing_items(){return m_missing_items;}
     float get_uniform_rating(ITEM_TYPE itype);
-    void check_uniform(QString category_name, Item *item);
+    void check_uniform(QString category_name, Item *item_inv);
 
     void add_equip_count(ITEM_TYPE itype, int count);
 
     void add_uniform_item(VIRTADDR ptr, ITEM_TYPE itype, int count=1);
     void add_uniform_item(ITEM_TYPE itype, short sub_type, short job_skill, int count=1);
-    void add_uniform_item(ITEM_TYPE itype, ItemDefUniform *uItem, int count);
+    void add_uniform_item(ITEM_TYPE itype, ItemDefUniform *uItem, int count=1);
 
     bool has_items(){return m_uniform_items.count();}
 
@@ -56,7 +56,7 @@ public:
 protected:
     DFInstance *m_df;
 
-    QHash<ITEM_TYPE,int> m_equip_counts;
+    QHash<ITEM_TYPE,int> m_equip_counts; //the original equipment counts for the uniform, and group counts
     QHash<ITEM_TYPE,QList<ItemDefUniform*> > m_uniform_items;
     QHash<ITEM_TYPE,QList<ItemDefUniform*> > m_missing_items;
 

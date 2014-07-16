@@ -37,9 +37,9 @@ ItemTypeColumn::ItemTypeColumn(const QString &title, const ITEM_TYPE &itype, Vie
 }
 
 ItemTypeColumn::ItemTypeColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
-    : ViewColumn(s, set, parent)
-    , m_iType(NONE)
+    : ViewColumn(s, set, parent)    
 {
+    m_iType = static_cast<ITEM_TYPE>(s.value("item_type",NONE).toInt());
 }
 
 ItemTypeColumn::ItemTypeColumn(const ItemTypeColumn &to_copy)
@@ -97,16 +97,21 @@ QString ItemTypeColumn::build_tooltip_desc(Dwarf *d){
             QString bp_group = "";
             if(grouped_equipment.value(bp_name).length() > 0){
                 QString items;
+                bool container_added = false;
                 foreach(Item *i, grouped_equipment.value(bp_name)){
                     if(i->item_type() == m_iType || m_iType == NONE || Item::type_in_group(m_iType,i->item_type())){
                         items.append(QString("<li>%1</li>").arg(i->display_name(true)));
-                        if(i->contained_items().count() > 0){
+                        container_added = true;
+                    }
+                    if(i->contained_items().count() > 0){
+                        if(container_added)
                             items.append(list_header);
-                            foreach(Item *c, i->contained_items()){
+                        foreach(Item *c, i->contained_items()){
+                            if(c->item_type() == m_iType || m_iType == NONE || Item::type_in_group(m_iType,c->item_type()))
                                 items.append(QString("<li>%1</li>").arg(c->display_name(true)));
-                            }
-                            items.append(list_footer);
                         }
+                        if(container_added)
+                            items.append(list_footer);
                     }
                 }
                 if(!items.isEmpty())

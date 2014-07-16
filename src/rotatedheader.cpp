@@ -33,6 +33,7 @@ THE SOFTWARE.
 RotatedHeader::RotatedHeader(Qt::Orientation orientation, QWidget *parent)
     : QHeaderView(orientation, parent)
     , m_hovered_column(-1)
+    , m_last_sorted_idx(0)
 {
     setSectionsClickable(true);
     setSortIndicatorShown(true);
@@ -96,7 +97,7 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
         state |= QStyle::State_Active;
     if (rect.contains(m_p))
         state |= QStyle::State_MouseOver;
-    if (sortIndicatorSection() == idx) {        
+    if (m_last_sorted_idx == idx) {
         if (sortIndicatorOrder() == Qt::AscendingOrder) {
             opt.sortIndicator = QStyleOptionHeader::SortDown;
         } else {
@@ -110,10 +111,10 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
     opt.state = state;
     style()->drawControl(QStyle::CE_HeaderSection, &opt, p);
 
-    if (idx > 0)        
+    if (idx > 0)
         p->fillRect(rect.adjusted(1,8,-1,-2), grad_brush);
 
-    if (sortIndicatorSection() == idx) {
+    if (m_last_sorted_idx == idx) {
         opt.rect = QRect(opt.rect.x() + opt.rect.width()/2 - 5, opt.rect.y(), 10, 8);
         style()->drawPrimitive(QStyle::PE_IndicatorHeaderArrow, &opt, p);
     }

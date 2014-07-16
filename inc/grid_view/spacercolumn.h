@@ -27,6 +27,7 @@ THE SOFTWARE.
 
 class SpacerColumn : public ViewColumn {
 public:
+    SpacerColumn(int col_width, int col_idx, ViewColumnSet *set = 0, QObject *parent = 0);
 	SpacerColumn(QString title, ViewColumnSet *set = 0, QObject *parent = 0);
 	SpacerColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
     SpacerColumn(const SpacerColumn &to_copy); //! copy ctor

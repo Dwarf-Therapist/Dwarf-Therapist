@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "global_enums.h"
 #include "defines.h"
+#include "contextmenuhelper.h"
 
 class DFInstance;
 class Preference;

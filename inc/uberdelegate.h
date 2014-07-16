@@ -84,6 +84,7 @@ private:
     bool color_mood_cells;
     bool color_health_cells;
     bool color_attribute_syns;
+    bool gradient_cell_bg;
     QFont m_fnt;
 
 
@@ -94,7 +95,10 @@ private:
     void paint_guide_borders(const QStyleOptionViewItem &opt, QPainter *p, const bool drawing_aggregate) const;
 
     //! return the bg color that was painted
-    QColor paint_bg(const QRect &adjusted, bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const bool use_gradient = false, const QColor &col_override = Qt::black) const;
+    //! drawing labor bg cells (shaded for active possibly)
+    QColor paint_bg_active(const QRect &adjusted, bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const QColor &active_col_override = Qt::black) const;
+    //! drawing any other cell that cannot be active (non-labor)
+    QColor paint_bg(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const bool use_gradient = true, const QColor &col_override = Qt::black) const;
 
     void paint_values(const QRect &adjusted, float rating, QString text_rating, QColor bg, QPainter *p,
                     const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, float median = 50.0f,

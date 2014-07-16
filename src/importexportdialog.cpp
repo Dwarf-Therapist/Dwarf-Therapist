@@ -53,7 +53,7 @@ void ImportExportDialog::setup_for_profession_export() {
         "Dwarf Therapist Profession Exports (*.dtp);;All Files (*.*)");
     if (m_path.isEmpty())
         return; // they cancelled
-    LOGD << "exporting custom professions to:" << m_path;
+    LOGI << "exporting custom professions to:" << m_path;
 
     setWindowTitle(tr("Export Custom Professions"));
     ui->buttonBox->addButton(tr("Export Selected"), QDialogButtonBox::YesRole);
@@ -80,7 +80,7 @@ void ImportExportDialog::setup_for_profession_import() {
         "Dwarf Therapist Profession Exports (*.dtp);;All Files (*.*)");
     if (m_path.isEmpty())
         return; // they cancelled
-    LOGD << "importing custom professions from:" << m_path;
+    LOGI << "importing custom professions from:" << m_path;
 
     setWindowTitle(tr("Import Custom Professions"));
     ui->buttonBox->addButton(tr("Import Selected"), QDialogButtonBox::YesRole);
@@ -162,7 +162,7 @@ void ImportExportDialog::setup_for_gridview_export() {
         default_path,  "Dwarf Therapist Grid View Exports (*.dtg);;All Files (*.*)");
     if (m_path.isEmpty())
         return; // they cancelled
-    LOGD << "exporting grid views to:" << m_path;
+    LOGI << "exporting grid views to:" << m_path;
     setWindowTitle(tr("Export Grid Views"));
     ui->buttonBox->addButton(tr("Export Selected"), QDialogButtonBox::YesRole);
     Version v;
@@ -189,7 +189,7 @@ void ImportExportDialog::setup_for_gridview_import() {
         .arg("gridviews.dtg");
     m_path = QFileDialog::getOpenFileName(this, tr("Choose a file to import"),
         default_path,  "Dwarf Therapist Grid View Exports (*.dtg);;All Files (*.*)");
-    LOGD << "importing grid views from:" << m_path;
+    LOGI << "importing grid views from:" << m_path;
 
     setWindowTitle(tr("Import Grid Views"));
     ui->buttonBox->addButton(tr("Import Selected"), QDialogButtonBox::YesRole);
@@ -255,7 +255,7 @@ void ImportExportDialog::setup_for_role_export() {
         "Dwarf Therapist Roles Exports (*.dtp);;All Files (*.*)");
     if (m_path.isEmpty())
         return; // they cancelled
-    LOGD << "exporting custom roles to:" << m_path;
+    LOGI << "exporting custom roles to:" << m_path;
 
     setWindowTitle(tr("Export Custom Roles"));
     ui->buttonBox->addButton(tr("Export Selected"), QDialogButtonBox::YesRole);
@@ -286,7 +286,7 @@ void ImportExportDialog::setup_for_role_import() {
         "Dwarf Therapist Roles Imports (*.dtp);;All Files (*.*)");
     if (m_path.isEmpty())
         return; // they cancelled
-    LOGD << "importing custom roles from:" << m_path;
+    LOGI << "importing custom roles from:" << m_path;
 
     setWindowTitle(tr("Import Custom Roles"));
     ui->buttonBox->addButton(tr("Import Selected"), QDialogButtonBox::YesRole);

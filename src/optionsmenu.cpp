@@ -191,11 +191,9 @@ bool OptionsMenu::event(QEvent *evt) {
 
 void OptionsMenu::showEvent(QShowEvent *evt){
     //if we haven't detected multiple castes (mods) skill rate isn't used, so hide the weight setting
-    if(!DT->multiple_castes){
-        ui->lbl_def_skill_rate_weight->setVisible(false);        
-    }
     if(!DT->show_skill_learn_rates){
         ui->dsb_skill_rate_weight->setVisible(false);
+        ui->lbl_def_skill_rate_weight->setVisible(false);
     }
     QDialog::showEvent(evt);
 }

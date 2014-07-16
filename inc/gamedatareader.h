@@ -79,6 +79,7 @@ public:
     QList<QPair<QString, Role*> > get_ordered_roles() {return m_ordered_roles;}
     QVector<QString> get_default_roles() {return m_default_roles;}
     QHash<int,QVector<Role*> > get_skill_roles() {return m_skill_roles;}
+    QHash<int,QString> get_skills(){return m_skills;}
 
     QList<QPair<QString, laborOptimizerPlan*> > get_ordered_opt_plans() {return m_ordered_opts;}
     QHash<QString, laborOptimizerPlan*>& get_opt_plans(){return m_opt_plans;}
@@ -103,6 +104,7 @@ public:
     void refresh_traits();
 
     QString get_attribute_name(int id){return m_attribute_names.value(id);}
+    QHash<int,QString> get_attributes(){return m_attribute_names;}
     ATTRIBUTES_TYPE get_attribute_type(QString name){return m_attributes_by_name.value(name);}
 
     QString get_string_for_key(QString key);
@@ -170,6 +172,7 @@ private:
     QList<QPair<QString, Role*> > m_ordered_roles;
     QVector<QString> m_default_roles;
     QHash<int,QVector<Role*> > m_skill_roles;
+    QHash<int,int> m_skill_labors; //mapping of skills to labors
 
     QHash<QString, laborOptimizerPlan*> m_opt_plans;
     QList<QPair<QString, laborOptimizerPlan*> > m_ordered_opts;

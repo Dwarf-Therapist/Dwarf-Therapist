@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include <QtWidgets>
 
 QHash<int,int> Skill::m_experience_levels = Skill::load_base_xp_levels();
+int Skill::MAX_CAPPED_XP = 29000;
 
 Skill::Skill()
     : m_id(-1)
@@ -39,6 +40,8 @@ Skill::Skill()
     , m_name("UNKNOWN")      
     , m_rust_rating("")
     , m_skill_rate(100)
+    , m_rating(-1)
+    , m_balanced_level(-1)
 {}
 
 Skill::Skill(short id, uint exp, short rating, int rust, int skill_rate)    
@@ -53,6 +56,8 @@ Skill::Skill(short id, uint exp, short rating, int rust, int skill_rate)
     , m_rust_rating("")
     , m_skill_rate(skill_rate)
     , m_rust(rust)
+    , m_rating(-1)
+    , m_balanced_level(-1)
 {    
     m_name = GameDataReader::ptr()->get_skill_name(m_id);
     //defaults
@@ -195,33 +200,84 @@ double Skill::get_simulated_rating(){
     int rate = m_skill_rate;
 
     if (curr_xp >= MAX_CAPPED_XP)
-        return 20.0 / 20.0;
+        return 1.0;
 
     if (rate == 0)
         return curr_level / 20.0;
 
+    double rating = get_simulated_level() / 20.0f;
+    return rating;
+
+}
+
+double Skill::get_simulated_level(){
+    if ((int)m_capped_exp >= MAX_CAPPED_XP)
+        return 20.0f;
+
+    if (m_skill_rate == 0)
+        return m_capped_level;
+
+    int curr_xp = m_capped_exp;
+    int curr_level = m_capped_level;
+    int rate = m_skill_rate;
+
     int sim_xp = MAX_CAPPED_XP;
-    sim_xp = (sim_xp / 100.0) * rate; //This is how much XP will go towards skill learning.
-    double rating = 0.0;
+    sim_xp = (sim_xp / 100.0f) * rate; //This is how much XP will go towards skill learning.
+    double total_xp = sim_xp;
+    double sim_level = 0.0;
     int xp_gap = 0;
 
-    while ((sim_xp > 0) && (curr_level < 20))
+    while ((sim_xp > 0) && (curr_level < 20.0))
     {
         xp_gap = get_xp_for_level(curr_level+1) - curr_xp;//xp to next level
         if (xp_gap > sim_xp)
             xp_gap = sim_xp;
-        sim_xp -= xp_gap;
-
-        rating += xp_gap * curr_level;
-
+        sim_level += xp_gap * curr_level;
         curr_level++;
         curr_xp = get_xp_for_level(curr_level);
+        sim_xp -= xp_gap;
     }
 
     if (sim_xp > 0)
-        rating += 20 * sim_xp;
-    rating /= MAX_CAPPED_XP;
-    rating /= 20.0;
-    return rating;
+        sim_level += 20 * sim_xp;
+    sim_level /= total_xp;
 
+    Q_ASSERT(sim_level <= 20.0);
+
+    return sim_level;
+}
+
+//returns a weighted average of the current level and the simulated level with skill rate
+void Skill::calculate_balanced_level(){
+    if(m_balanced_level < 0){
+        float curr_level = capped_level_precise();
+        if(curr_level < 0)
+            curr_level = 0;
+        double skill_rate_weight = DwarfStats::get_skill_rate_weight();
+        if(!DT->show_skill_learn_rates){
+            skill_rate_weight = 0;
+        }
+        double simulated_level = get_simulated_level();
+        m_balanced_level = (double)((curr_level * (1.0f-skill_rate_weight)) + (simulated_level * skill_rate_weight));
+        if(m_balanced_level < 0)
+            m_balanced_level = 0;
+    }
+}
+
+double Skill::get_balanced_level(){
+    calculate_balanced_level();
+    return m_balanced_level;
+}
+
+double Skill::get_rating(bool ensure_non_zero){
+    if(m_rating < 0){
+        m_rating = DwarfStats::get_skill_rating(get_balanced_level());
+        if(m_rating < 0)
+            m_rating = 0;
+    }
+    //this is just for optimization to ensure that this rating will match the lowest possible role rating (0.0001) for comparison
+    if(ensure_non_zero && m_rating == 0)
+        return 0.0001;
+    else
+        return m_rating;
 }

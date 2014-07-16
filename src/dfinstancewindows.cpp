@@ -67,7 +67,7 @@ uint DFInstanceWindows::calculate_checksum() {
 
     quint32 timestamp = read_addr(pe_header + 4 + 2 * 2);
     QDateTime compile_timestamp = QDateTime::fromTime_t(timestamp);
-    LOGD << "Target EXE was compiled at " <<
+    LOGI << "Target EXE was compiled at " <<
             compile_timestamp.toString(Qt::ISODate);
     return timestamp;
 }
@@ -186,7 +186,7 @@ int DFInstanceWindows::write_raw(const VIRTADDR &addr, const int &bytes,
 }
 
 bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
-    LOGD << "attempting to find running copy of DF by window handle";
+    LOGI << "attempting to find running copy of DF by window handle";
     m_is_ok = false;
 
     HWND hwnd = FindWindow(L"OpenGL", L"Dwarf Fortress");
@@ -202,14 +202,14 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
         LOGW << "can't find running copy";
         return m_is_ok;
     }
-    LOGD << "found copy with HWND: " << hwnd;
+    LOGI << "found copy with HWND: " << hwnd;
 
     DWORD pid = 0;
     GetWindowThreadProcessId(hwnd, &pid);
     if (pid == 0) {
         return m_is_ok;
     }
-    LOGD << "PID of process is: " << pid;
+    LOGI << "PID of process is: " << pid;
     m_pid = pid;
     m_hwnd = hwnd;
 
@@ -217,13 +217,13 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
                          | PROCESS_VM_READ
                          | PROCESS_VM_OPERATION
                          | PROCESS_VM_WRITE, false, m_pid);
-    LOGD << "PROC HANDLE:" << m_proc;
+    LOGI << "PROC HANDLE:" << m_proc;
     if (m_proc == NULL) {
         LOGE << "Error opening process!" << GetLastError();
     }
 
     PVOID peb_addr = GetPebAddress(m_proc);
-    LOGD << "PEB is at: " << hex << peb_addr;
+    LOGI << "PEB is at: " << hex << peb_addr;
 
     QString connection_error = tr("I'm sorry. I'm having trouble connecting to "
                                   "DF. I can't seem to locate the PEB address "
@@ -236,7 +236,7 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
         PEB peb;
         DWORD bytes = 0;
         if (ReadProcessMemory(m_proc, (PCHAR)peb_addr, &peb, sizeof(PEB), &bytes)) {
-            LOGD << "read" << bytes << "bytes BASE ADDR is at: " << hex << peb.ImageBaseAddress;
+            LOGI << "read" << bytes << "bytes BASE ADDR is at: " << hex << peb.ImageBaseAddress;
             m_base_addr = (int)peb.ImageBaseAddress;
             m_is_ok = true;
         } else {
@@ -258,8 +258,8 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
     }
 
     m_memory_correction = (int)m_base_addr - 0x0400000;
-    LOGD << "base address:" << hexify(m_base_addr);
-    LOGD << "memory correction:" << hexify(m_memory_correction);
+    LOGI << "base address:" << hexify(m_base_addr);
+    LOGI << "memory correction:" << hexify(m_memory_correction);
 
     map_virtual_memory();
 
@@ -272,7 +272,7 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
     DWORD lenModName = 0;
     if ((lenModName = GetModuleFileNameExA(m_proc, NULL, modName, MAX_PATH)) != 0) {
         QString exe_path = QString::fromLocal8Bit(modName, lenModName);
-        LOGD << "GetModuleFileNameEx returned: " << exe_path;
+        LOGI << "GetModuleFileNameEx returned: " << exe_path;
         QFileInfo exe(exe_path);
         m_df_dir = exe.absoluteDir();
         LOGI << "Dwarf fortress path:" << m_df_dir.absolutePath();

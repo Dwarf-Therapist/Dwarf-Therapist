@@ -271,7 +271,7 @@ void MainWindow::read_settings() {
 
 void MainWindow::write_settings() {
     if (m_settings && !m_reading_settings) {
-        LOGD << "beginning to write settings";
+        LOGI << "beginning to write settings";
         QByteArray geom = saveGeometry();
         QByteArray state = saveState();
         m_settings->beginGroup("window");
@@ -289,7 +289,7 @@ void MainWindow::write_settings() {
         }
         m_settings->endGroup();
 
-        LOGD << "finished writing settings";
+        LOGI << "finished writing settings";
     }
 }
 
@@ -304,9 +304,9 @@ void MainWindow::closeEvent(QCloseEvent *evt) {
 }
 
 void MainWindow::connect_to_df() {
-    LOGD << "attempting connection to running DF game";
+    LOGI << "attempting connection to running DF game";
     if (m_df) {
-        LOGD << "already connected, disconnecting";
+        LOGI << "already connected, disconnecting";
         delete m_df;
         set_interface_enabled(false);
         m_df = 0;            
@@ -322,17 +322,17 @@ void MainWindow::connect_to_df() {
         m_scanner = new Scanner(m_df, this);
 
         if(m_df->memory_layout()){
-            LOGD << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
+            LOGI << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
             m_lbl_status->setText(tr("Connected to %1").arg(m_df->memory_layout()->game_version()));
             m_lbl_status->setToolTip(tr("Currently using layout file: %1").arg(m_df->memory_layout()->filename()));
         }else{
-            LOGD << "Connection to unknown DF Version established.";
+            LOGI << "Connection to unknown DF Version established.";
             m_lbl_status->setText("Connected to unknown version");
         }
         m_force_connect = false;
     } else if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
         m_scanner = new Scanner(m_df, this);
-        LOGD << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
+        LOGI << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
         m_lbl_status->setText(tr("Connected to %1").arg(m_df->memory_layout()->game_version()));
         m_lbl_status->setToolTip(tr("Currently using layout file: %1").arg(m_df->memory_layout()->filename()));
         m_force_connect = false;
@@ -389,6 +389,8 @@ void MainWindow::read_dwarves() {
         return;
     }
 
+    QTime t;
+    t.start();
     //clear the selected dwarf's details, save the id of the one we're showing
     int dock_id = -1;
     DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));
@@ -412,6 +414,7 @@ void MainWindow::read_dwarves() {
                 col->clear_cells();
             }
         }
+        gv->set_rows_built();
     }
     m_model->clear_all(false);
 
@@ -429,7 +432,31 @@ void MainWindow::read_dwarves() {
 
     set_interface_enabled(true);
     new_pending_changes(0);
-    // cheap trick to setup the view correctly
+
+    //on a read of the data, find all the columns that were sorted on, and rebuild the sort keys for each dwarf, for each sort group
+    if(m_model->get_global_sort_info().count() > 0){
+        QPair<QString,int> key_pair;
+        foreach(int group_id, m_model->get_global_sort_info().uniqueKeys()){
+            key_pair = m_model->get_global_sort_info().value(group_id);
+            //sorting on the name column is handled by the model proxy and persists through reads
+            if(key_pair.second <= 0)
+                continue;
+            //find the view containing the column that was used to sort for this group
+            GridView *gv = m_view_manager->get_view(key_pair.first);
+            if(gv){
+                //find the specific column that was sorted on
+                ViewColumn *vc = gv->get_column(key_pair.second);
+                if(vc){
+                    LOGD << "refreshing global sort for group" << group_id << "with keys from gridview" << gv->name() << "column" << vc->title();
+                    //update each dwarf's sort key for the group, based on the cell's sort role
+                    foreach(Dwarf *d, m_model->get_dwarves()){
+                        QStandardItem *item = vc->build_cell(d); //sort role is calculated/built when the cell is built
+                        d->set_global_sort_key(group_id, item->data(DwarfModel::DR_SORT_VALUE));
+                    }
+                }
+            }
+        }
+    }
     m_view_manager->redraw_current_tab();
 
     //reselect the ids we saved above
@@ -484,6 +511,8 @@ void MainWindow::read_dwarves() {
         ui->cb_group_by->setCurrentIndex(ui->cb_group_by->findData(grp_by));
         ui->cb_group_by->blockSignals(false);
     }
+
+    LOGI << "completed read in" << t.elapsed() << "ms";
 }
 
 void MainWindow::set_interface_enabled(bool enabled) {
@@ -622,7 +651,7 @@ void MainWindow::layout_check_finished(bool error) {
 //        }
 //    }
 
-    LOGD << "Error: " << error << " Force Connect: " << m_force_connect;
+    LOGI << "Error: " << error << " Force Connect: " << m_force_connect;
 
     if(error) {
         m_df->layout_not_found(m_tmp_checksum);
@@ -1424,7 +1453,6 @@ void MainWindow::reset(){
         ui->cb_group_by->setCurrentIndex(ui->cb_group_by->findData(grp_by));
         ui->cb_group_by->blockSignals(false);
     }
-    DT->traits_modified = false;
 
     this->setWindowTitle("Dwarf Therapist - Disconnected");
 

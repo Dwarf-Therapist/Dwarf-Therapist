@@ -55,6 +55,7 @@ GameDataReader::GameDataReader(QObject *parent)
         Labor *l = new Labor(*m_data_settings, this);
         m_labors.insert(l->labor_id, l);
         labor_names << l->name;
+        m_skill_labors.insert(l->skill_id,l->labor_id);
     }
     m_data_settings->endArray();
     qDeleteAll(m_ordered_labors);
@@ -440,15 +441,22 @@ void GameDataReader::load_role_mappings(){
         }
     }
 
-    //load a mapping of skills to roles as well (used for showing roles in labor columns)
+    //load a mapping of skills to roles as well (used for showing roles in labor cell tooltips)
+    //also load roles with which labors they use based on their skills (used to toggle labors in role cells)
     m_skill_roles.clear();
+    int skill_id;
     foreach(Role *r, m_dwarf_roles){
         QVector<Role*> roles;
+        QList<int> labors;
         foreach(QString key, r->skills.uniqueKeys()){
-            roles = m_skill_roles.value(key.toInt());
+            skill_id = key.toInt();
+            roles = m_skill_roles.value(skill_id);
             roles.append(r);
-            m_skill_roles.insert(key.toInt(),roles);
+            m_skill_roles.insert(skill_id,roles);
+            if(m_skill_labors.contains(skill_id))
+                labors.append(m_skill_labors.value(skill_id));
         }
+        r->set_labors(labors);
     }
 }
 

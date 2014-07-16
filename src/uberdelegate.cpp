@@ -92,6 +92,7 @@ void UberDelegate::read_settings() {
     color_health_cells = s->value("options/grid/color_health_cells",true).toBool();
     color_attribute_syns = s->value("options/grid/color_attribute_syns",true).toBool();
     m_fnt = s->value("options/grid/font", QFont(DefaultFonts::getRowFontName(), DefaultFonts::getRowFontSize())).value<QFont>();
+    gradient_cell_bg = s->value("options/grid/shade_cells",true).toBool();
 }
 
 void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
@@ -147,7 +148,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     switch (type) {
     case CT_SKILL:
     {
-        QColor bg = paint_bg(adjusted, false, p, opt, idx);
+        QColor bg = paint_bg(adjusted, p, opt, idx);
         limit = 15.0;
         if(rating >= 0)
             paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 0, 0, limit, 0, 0);
@@ -166,7 +167,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
             bool enabled = d->labor_enabled(labor_id);
             bool dirty = d->is_labor_state_dirty(labor_id);
 
-            QColor bg = paint_bg(adjusted, enabled, p, opt, idx);
+            QColor bg = paint_bg_active(adjusted, enabled, p, opt, idx);
             limit = 15.0;
             if(rating >= 0)
                 paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 0, 0, limit, 0, 0);
@@ -179,7 +180,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_HAPPINESS:
     {
-        paint_bg(adjusted, false, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
+        paint_bg(adjusted, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
         if(draw_happiness_icons){
             paint_icon(adjusted,p,opt,idx);
         }else{
@@ -192,44 +193,85 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     case CT_EQUIPMENT:
     {
         int wear_level = idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt();
-        paint_bg(adjusted, false, p, opt, idx,true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
+        paint_bg(adjusted, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
         paint_wear_cell(adjusted,p,opt,idx,wear_level);
     }
         break;
     case CT_ITEMTYPE:
     {
-        QColor bg = paint_bg(adjusted, false, p, opt, idx,true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
+        QColor bg = paint_bg(adjusted, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
         //if we're drawing numbers, we only want to draw counts for squads
         //this is a special case because we're drawing different information if it's text mode
         if(m_skill_drawing_method == SDM_NUMERIC && rating == 100)
             rating = -1;
         paint_values(adjusted, rating, text_rating, bg, p, opt, idx,90.0f,5.0f,95.0f,99.99f,102.0f,false);
-        //paint_grid(adjusted, false, p, opt, idx);
         int wear_level = idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt();
         paint_wear_cell(adjusted,p,opt,idx,wear_level);
     }
         break;
     case CT_ROLE:
     {
-        QColor bg = paint_bg(adjusted, false, p, opt, idx);
-        paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f,2.0f,98.0f);//DwarfStats::get_role_mean(),2.0f,98.0f);
-        paint_grid(adjusted, false, p, opt, idx);
+        bool active_labors = false;
+        int dirty_alpha = 255;
+        int active_alpha = 255;
+        bool dirty = false;
+        Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
+        if(d){
+            if(idx.data(DwarfModel::DR_SPECIAL_FLAG).canConvert<QVariantList>()){
+                QVariantList labors = idx.data(DwarfModel::DR_SPECIAL_FLAG).toList();
+                int active_count = 0;
+                int dirty_count = 0;
+                foreach(QVariant id, labors){
+                    if(d->labor_enabled(id.toInt())){
+                        active_labors = true;
+                        active_count++;
+                    }
+                    if(d->is_labor_state_dirty(id.toInt())){
+                        dirty = true;
+                        dirty_count++;
+                    }
+                }
+                if(active_labors)
+                    active_alpha = (255 * ((float)active_count / labors.count()));
+                if(dirty)
+                    dirty_alpha = (255 * ((float)dirty_count / labors.count()));                                
+            }
+        }
+        QColor bg;
+        QColor color_active_adjusted = color_active_labor;
+        if(active_labors){
+            color_active_adjusted.setAlpha(active_alpha);
+            bg = paint_bg_active(adjusted, active_labors, p, opt, idx, color_active_adjusted);
+        }else{
+            bg = paint_bg(adjusted, p, opt, idx);
+        }
+        double limit_range = (DwarfStats::get_role_max() - DwarfStats::get_role_min()) * 0.05;
+        paint_values(adjusted, rating, text_rating, bg, p, opt, idx,50.0f, DwarfStats::get_role_min() + limit_range,DwarfStats::get_role_max() - limit_range,45.0f,55.0f);
+        if(dirty){
+            QColor color_dirty_adjusted = color_dirty_border;
+            color_dirty_adjusted.setAlpha(dirty_alpha);
+            paint_border(adjusted,p,color_dirty_adjusted);
+            paint_grid(adjusted,false,p,opt,idx,false);
+        }else{
+            paint_grid(adjusted, dirty, p, opt, idx);
+        }
     }
         break;
     case CT_IDLE:
     {
-        paint_bg(adjusted, false, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
+        paint_bg(adjusted, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
         paint_icon(adjusted,p,opt,idx);
     }
         break;
     case CT_PROFESSION:
     {
+        paint_bg(adjusted, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
         paint_icon(adjusted,p,opt,idx);
     }
         break;
     case CT_HIGHEST_MOOD:
     {
-        paint_bg(adjusted, false, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
+        paint_bg(adjusted, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
         paint_icon(adjusted,p,opt,idx);
 
         bool had_mood = idx.data(DwarfModel::DR_SPECIAL_FLAG).toBool();
@@ -245,15 +287,15 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_TRAIT:
     {
-        QColor bg = paint_bg(adjusted, false, p, opt, idx);
+        QColor bg = paint_bg(adjusted, p, opt, idx);
         paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50, 10, 90);
         paint_grid(adjusted, false, p, opt, idx);
     }
         break;
     case CT_ATTRIBUTE:
     {
-        QColor bg = paint_bg(adjusted, false, p, opt, idx);
-        paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 2.0f, 98.0f, 49.0f, 51.0f);
+        QColor bg = paint_bg(adjusted, p, opt, idx);
+        paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 2.0f, 98.0f);
 
         if(color_attribute_syns && idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt() > 0){
             paint_border(adjusted,p,Attribute::color_affected_by_syns());
@@ -265,7 +307,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_WEAPON:
     {
-        QColor bg = paint_bg(adjusted, false, p, opt, idx);
+        QColor bg = paint_bg(adjusted, p, opt, idx);
         paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 1, 99, 49, 51, true);
         paint_grid(adjusted, false, p, opt, idx);
 
@@ -278,7 +320,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_TRAINED:
     {
-        QColor bg = paint_bg(adjusted, false, p, opt, idx, false, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
+        QColor bg = paint_bg(adjusted, p, opt, idx, false, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
         //arbitrary ignore range is used just to hide tame animals
         paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 1.0f, 95.0f, 49.9f, 50.1f, true);
         paint_grid(adjusted, false, p, opt, idx);
@@ -286,7 +328,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_HEALTH:
     {
-        QColor bg = paint_bg(adjusted, false, p, opt, idx, false, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
+        QColor bg = paint_bg(adjusted, p, opt, idx, false, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
 
         //draw the symbol text in bold
         p->save();
@@ -311,11 +353,14 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         paint_grid(adjusted, false, p, opt, idx);
     }
         break;
-    case CT_DEFAULT:
     case CT_SPACER:
+    case CT_DEFAULT:
     default:
-        paint_bg(adjusted, false, p, opt, idx);
+    {
+        if(adjusted.width() > 0)
+            paint_bg(adjusted, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
         break;
+    }
     }
 }
 
@@ -340,7 +385,7 @@ void UberDelegate::paint_icon(const QRect &adjusted, QPainter *p, const QStyleOp
     paint_grid(adjusted, false, p, opt, idx);
 }
 
-QColor UberDelegate::paint_bg(const QRect &adjusted, bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const bool use_gradient, const QColor &col_override) const{
+QColor UberDelegate::paint_bg_active(const QRect &adjusted, bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const QColor &active_col_override) const{
     QModelIndex idx = proxy_idx;
     if (m_proxy)
         idx = m_proxy->mapToSource(proxy_idx);
@@ -349,18 +394,44 @@ QColor UberDelegate::paint_bg(const QRect &adjusted, bool active, QPainter *p, c
     p->save();
     p->fillRect(opt.rect, bg);
 
-    if(!active){
-        if (col_override != QColor(Qt::black))
-            bg = col_override;
-    }else
-        bg = color_active_labor;
+    if(active){
+        if(active_col_override != QColor(Qt::black))
+            bg = active_col_override;
+        else
+            bg = color_active_labor;
+    }
 
-    if((use_gradient || active) && DT->user_settings()->value("options/grid/shade_cells",true).toBool()){
+    if(gradient_cell_bg){
         QLinearGradient grad(adjusted.topLeft(),adjusted.bottomRight());
+        grad.setColorAt(0,bg);
         bg.setAlpha(75);
         grad.setColorAt(1,bg);
-        bg.setAlpha(255);
+        p->fillRect(adjusted, grad);
+    }else{
+        p->fillRect(adjusted, QBrush(bg));
+    }
+    p->restore();
+
+    return bg;
+}
+
+QColor UberDelegate::paint_bg(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const bool use_gradient, const QColor &col_override) const{
+    QModelIndex idx = proxy_idx;
+    if (m_proxy)
+        idx = m_proxy->mapToSource(proxy_idx);
+
+    QColor bg = idx.data(DwarfModel::DR_DEFAULT_BG_COLOR).value<QColor>();
+    p->save();
+    p->fillRect(opt.rect, bg);
+
+    if (col_override != QColor(Qt::black))
+        bg = col_override;
+
+    if(use_gradient && gradient_cell_bg){
+        QLinearGradient grad(adjusted.topLeft(),adjusted.bottomRight());        
         grad.setColorAt(0,bg);
+        bg.setAlpha(75);
+        grad.setColorAt(1,bg);        
         p->fillRect(adjusted, grad);
     }else{
         p->fillRect(adjusted, QBrush(bg));
@@ -605,11 +676,16 @@ void UberDelegate::paint_flags(const QRect &adjusted, QPainter *p, const QStyleO
         return QStyledItemDelegate::paint(p, opt, idx);
     }
 
+    bool cell_disabled = idx.data(DwarfModel::DR_SPECIAL_FLAG).toBool();
     int bit_pos = idx.data(DwarfModel::DR_LABOR_ID).toInt();
-    bool val = d->get_flag_value(bit_pos);
+    bool active = d->get_flag_value(bit_pos);
     bool dirty = d->is_flag_dirty(bit_pos);
 
-    paint_bg(adjusted, val, p, opt, proxy_idx);
+    if(!cell_disabled)
+        paint_bg_active(adjusted, active, p, opt, proxy_idx); //draw normally
+    else
+        paint_bg_active(adjusted, true, p, opt, proxy_idx, proxy_idx.data(Qt::BackgroundColorRole).value<QColor>()); //draw red as set in the column
+
     paint_grid(adjusted,dirty,p,opt,proxy_idx);
 }
 
@@ -618,9 +694,15 @@ void UberDelegate::paint_wear_cell(const QRect &adjusted, QPainter *p, const QSt
         paint_grid(adjusted, false, p, opt, proxy_idx);
         return;
     }
-
     if(wear_level > 0){
-        paint_border(adjusted,p,Item::color_wear());
+        int alpha = 255;
+        if(wear_level == 2)
+            alpha = 190;
+        if(wear_level == 1)
+            alpha = 135;
+        QColor wear_color = Item::color_wear();
+        wear_color.setAlpha(alpha);
+        paint_border(adjusted,p,wear_color);
         paint_grid(adjusted, false, p, opt, proxy_idx, false); //draw dirty border and guides
     }else{
         paint_grid(adjusted, false, p, opt, proxy_idx);

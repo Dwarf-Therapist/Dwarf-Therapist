@@ -27,53 +27,54 @@ THE SOFTWARE.
 #include "qmap.h"
 #include "attribute.h"
 
+#include "truncatingfilelogger.h"
+#include "ecdf.h"
+#include "rolestats.h"
+
 class Dwarf;
 
 class DwarfStats
 {
 
 public:
-    static float calc_cdf(float mean, float stdev, float rawValue);    
 
-    //static void set_role_mean(float mean){m_role_mean = mean;}
-    //static float get_role_mean(){return m_role_mean;}
+    static void set_role_stats(float min, float max, float median);
+    static float get_role_median(){return m_role_median;}
+    static float get_role_min(){return m_role_min;}
+    static float get_role_max(){return m_role_max;}
 
-    struct bin{
-        int min;
-        int max;
-        double density;
-        double probability;
-    };
-
-    struct att_info
-    {
-        //ratio, caste count
-        QMap<float,int> ratios_counts;
-        QList<bin> bins;
-    };
-
-    //caste attributes
-    static void load_att_caste_bins(int id, float ratio, QList<int> l);
-//    static float get_att_caste_role_rating(ATTRIBUTES_TYPE atype, int val); //old  version
-    static float get_att_caste_role_rating(Attribute &a);
-
-    //traits
-    static float get_trait_role_rating(ASPECT_TYPE, int);
-    static QHash<ASPECT_TYPE, QList<bin> > m_trait_bins;
-    static void load_trait_bins(ASPECT_TYPE, QList<int>);
-
-    static void cleanup();
     static void set_att_potential_weight(float val){m_att_pot_weight = val;}
+    static void set_skill_rate_weight(float val){m_skill_rate_weight = val;}
+
+    static float get_att_potential_weight(){return m_att_pot_weight;}
+    static float get_skill_rate_weight(){return m_skill_rate_weight;}
+    static float calc_att_potential_value(int value, float max, float cti);
+
+    static void init_attributes(QVector<double> attribute_values, QVector<double> attribute_raw_values);
+    static double get_attribute_rating(int val,bool raw = false);
+
+    static void init_traits(QVector<double> trait_values);
+    static double get_trait_rating(int val);
+
+    static void init_prefs(QVector<double> pref_values);
+    static double get_preference_rating(double val);
+
+    static void init_skills(QVector<double> skill_values);
+    static double get_skill_rating(double val);
 
 private:
     static float m_att_pot_weight;
-    static float get_aspect_role_rating(float value, QList<bin> m_bins);
+    static float m_skill_rate_weight;
 
-    static QHash<int, QHash<QString, att_info> > m_att_caste_bins;
-//    static QHash<ATTRIBUTES_TYPE, QVector<float>* > m_attribute_ratings;
+    static float m_role_min;
+    static float m_role_max;
+    static float m_role_median;
 
-    static QList<bin> build_att_bins(QList<int>);
-    //static float m_role_mean;
+    static QSharedPointer<RoleStats> m_attributes;
+    static QSharedPointer<RoleStats> m_attributes_raw;
+    static QSharedPointer<RoleStats> m_skills;
+    static QSharedPointer<RoleStats> m_traits;
+    static QSharedPointer<RoleStats> m_preferences;
 };
 
 #endif // DWARFSTATS_H
