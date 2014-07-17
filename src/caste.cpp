@@ -94,6 +94,11 @@ void Caste::read_caste() {
     m_child_age = m_df->read_int(m_address + m_mem->caste_offset("child_age"));
     m_flags = FlagArray(m_df, m_address + m_mem->caste_offset("flags"));
 
+    if(m_child_age < 0)
+        m_child_age = 0;
+    if(m_baby_age < 0)
+        m_baby_age = 0;
+
     QVector<uint> extracts = m_df->enumerate_vector(m_address + m_mem->caste_offset("extracts"));
     if(extracts.count() > 0)
         m_has_extracts = true;

@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "skill.h"
 #include "trait.h"
+#include "belief.h"
 #include "dwarfjob.h"
 #include "defines.h"
 #include "gamedatareader.h"
@@ -1674,11 +1675,13 @@ void Dwarf::read_skills() {
 }
 
 void Dwarf::read_personality() {
-    VIRTADDR addr = m_first_soul + m_mem->soul_detail("traits");
+    VIRTADDR personality_addr = m_first_soul + m_mem->soul_detail("personality");
+
+    VIRTADDR traits_addr = personality_addr + m_mem->soul_detail("traits");
     m_traits.clear();    
     int trait_count = GameDataReader::ptr()->get_traits().count();
     for (int i = 0; i < trait_count; ++i) {
-        short val = m_df->read_short(addr + i * 2);
+        short val = m_df->read_short(traits_addr + i * 2);
         if(val < 0)
             val = 0;
         if(val > 100)
@@ -1686,22 +1689,20 @@ void Dwarf::read_personality() {
         m_traits.insert(i, val);
     }
 
-    QVector<VIRTADDR> m_goals_addrs = m_df->enumerate_vector(m_first_soul + m_mem->soul_detail("goals"));
-    foreach(addr, m_goals_addrs){
-        VIRTADDR goal_addr = m_df->read_addr(addr);
-        int goal_type = m_df->read_addr(goal_addr + 0x0008);
+    QVector<VIRTADDR> m_goals_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("goals"));
+    foreach(VIRTADDR addr, m_goals_addrs){        
+        int goal_type = m_df->read_addr(addr + 0x0004);
         if(goal_type >= 0){
-            short val = m_df->read_short(goal_addr + 0x000c);
+            short val = m_df->read_short(addr + 0x0008);
             m_goals.insert(goal_type,val);
         }
     }
 
-    QVector<VIRTADDR> m_beliefs_addrs = m_df->enumerate_vector(m_first_soul + m_mem->soul_detail("beliefs"));
-    foreach(addr, m_beliefs_addrs){
-        VIRTADDR belief_addr = m_df->read_addr(addr);
-        int belief_id = m_df->read_addr(belief_addr);
+    QVector<VIRTADDR> m_beliefs_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("beliefs"));
+    foreach(VIRTADDR addr, m_beliefs_addrs){        
+        int belief_id = m_df->read_int(addr);
         if(belief_id >= 0){
-            short val = m_df->read_short(belief_addr + 0x0004);
+            short val = m_df->read_short(addr + 0x0004);
             m_beliefs.insert(belief_id,val);
         }
     }
@@ -1716,7 +1717,7 @@ void Dwarf::read_personality() {
 
 bool Dwarf::trait_is_active(int trait_id){
     //if it's a special trait, always show it
-    if(trait_id >= 30)
+    if(trait_id >= 50)
         return true;
     short val = trait(trait_id);
     int deviation = abs(val - 50); // how far from the norm is this trait?
@@ -2172,7 +2173,7 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
 QString Dwarf::tooltip_text() {
     QSettings *s = DT->user_settings();
     GameDataReader *gdr = GameDataReader::ptr();
-    QString skill_summary, trait_summary, roles_summary, preference_summary;
+    QString skill_summary, trait_summary, roles_summary, preference_summary, goals_summary, beliefs_summary;
     int max_roles = s->value("options/role_count_tooltip",3).toInt();
     if(max_roles > sorted_role_ratings().count())
         max_roles = sorted_role_ratings().count();
@@ -2218,6 +2219,27 @@ QString Dwarf::tooltip_text() {
             if(trait_summary.lastIndexOf(",") == trait_summary.length()-2)
                 trait_summary.chop(2);
         }
+
+        //beliefs
+        QStringList beliefs_list;
+        foreach(int belief_id, m_beliefs.uniqueKeys()) {
+            Belief *b = gdr->get_belief(belief_id);
+            if (!b)
+                continue;
+            int val = m_beliefs.value(belief_id);
+            beliefs_list.append(capitalize(b->level_message(val)));
+        }
+        if(beliefs_list.size() > 0)
+            beliefs_summary = beliefs_list.join(". ");
+
+        //goals
+        QStringList goal_list;
+        for(int i=0;i<m_goals.size();i++){
+            QString desc = capitalize(gdr->get_goal_desc(m_goals.keys().at(i)));
+            goal_list.append(desc);
+        }
+        if(goal_list.size() > 0)
+            goals_summary = goal_list.join(". ");
 
         QList<Role::simple_rating> sorted_roles = sorted_role_ratings();
         if(!sorted_roles.isEmpty() && max_roles > 0 && s->value("options/tooltip_show_roles",true).toBool()){
@@ -2289,6 +2311,12 @@ QString Dwarf::tooltip_text() {
 
     if(!trait_summary.isEmpty())
         tt.append(tr("<p style=\"margin:0px;\"><b>Traits:</b> %1</p>").arg(trait_summary));
+
+    if(!beliefs_summary.isEmpty())
+        tt.append(tr("<p style=\"margin:0px;\"><b>Beliefs:</b> %1</p>").arg(beliefs_summary));
+
+    if(!goals_summary.isEmpty())
+        tt.append(tr("<p style=\"margin:0px;\"><b>Goals:</b> %1</p>").arg(goals_summary));
 
     if(!preference_summary.isEmpty())
         tt.append(tr("<p style=\"margin:0px;\">%1</p>").arg(preference_summary));

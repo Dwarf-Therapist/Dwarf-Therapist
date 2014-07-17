@@ -178,6 +178,8 @@ sub generate_dt_ini($$$$$) {
     emit_addr 'caste_phys_att_ranges',%all,'caste_raw','attributes.phys_att_range';
     emit_addr 'caste_att_rates',%all,'caste_raw','attributes.phys_att_rates';
     emit_addr 'caste_att_caps',%all,'caste_raw','attributes.phys_att_cap_perc';
+    emit_addr 'baby_age',%all,'caste_raw','misc.baby_age';
+    emit_addr 'child_age',%all,'caste_raw','misc.child_age';
     emit_addr 'adult_size',%all,'caste_raw','misc.adult_size';
     emit_addr 'flags',%all,'caste_raw','flags';
     emit_addr 'extracts',%all,'caste_raw','extracts.extract_matidx',$vbias;
@@ -353,7 +355,10 @@ sub generate_dt_ini($$$$$) {
     emit_addr 'mental_attrs',%all,'unit_soul','mental_attrs';
     emit_addr 'skills',%all,'unit_soul','skills',$vbias;
     emit_addr 'preferences',%all,'unit_soul','preferences',$vbias;
-    emit_addr 'traits',%all,'unit_soul','traits';
+    emit_addr 'personality',%all,'unit_soul','personality';
+    emit_addr 'beliefs',%all,'unit_personality','values';
+    emit_addr 'goals',%all,'unit_personality','dreams';
+    emit_addr 'traits',%all,'unit_personality','traits';
 
     emit_header 'job_details';
     emit_addr 'id',%all,'job','job_type';
