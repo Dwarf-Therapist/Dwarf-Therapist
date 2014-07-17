@@ -285,6 +285,8 @@ public:
 
     //! return a hashmap of trait_id to trait score for this dwarf
     const QHash<int, short> &traits() {return m_traits;}
+    QHash<int, short> &goals() {return m_goals;}
+    QHash<int, short> &beliefs() {return m_beliefs;}
 
     //! return a hashmap of roles and ratings for this dwarf
     const QHash<QString, float> &role_ratings() {return m_role_ratings;}

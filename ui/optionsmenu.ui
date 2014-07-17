@@ -1005,13 +1005,13 @@
          <item row="4" column="2">
           <widget class="QCheckBox" name="chk_show_traits">
            <property name="statusTip">
-            <string>When checked shows a list of traits.</string>
+            <string>When checked shows the personality traits, goals and personal beliefs.</string>
            </property>
            <property name="whatsThis">
-            <string>When checked shows a list of traits.</string>
+            <string>When checked shows the personality traits, goals and personal beliefs.</string>
            </property>
            <property name="text">
-            <string>Show traits in the tooltip.</string>
+            <string>Show personality in the tooltip.</string>
            </property>
           </widget>
          </item>

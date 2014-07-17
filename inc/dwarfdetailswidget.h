@@ -54,6 +54,8 @@ private:
     void clear_table(QTableWidget &t);    
     QString build_gradient(QColor c1, QColor c2);
 
+    void add_personality_row(QString title, int raw_value, QString info, QString tooltip, QColor override = Qt::black);
+
     static QColor color_low;
     static QColor color_high;
     static QColor color_mood_high;

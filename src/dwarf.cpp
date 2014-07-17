@@ -1693,11 +1693,12 @@ void Dwarf::read_personality() {
     foreach(VIRTADDR addr, m_goals_addrs){        
         int goal_type = m_df->read_addr(addr + 0x0004);
         if(goal_type >= 0){
-            short val = m_df->read_short(addr + 0x0008);
+            short val = m_df->read_short(addr + 0x0008); //goal met?
             m_goals.insert(goal_type,val);
         }
     }
 
+    //these appear to only be the beliefs that are in conflict, or different from the entity/race's beliefs
     QVector<VIRTADDR> m_beliefs_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("beliefs"));
     foreach(VIRTADDR addr, m_beliefs_addrs){        
         int belief_id = m_df->read_int(addr);
@@ -2173,7 +2174,7 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
 QString Dwarf::tooltip_text() {
     QSettings *s = DT->user_settings();
     GameDataReader *gdr = GameDataReader::ptr();
-    QString skill_summary, trait_summary, roles_summary, preference_summary, goals_summary, beliefs_summary;
+    QString skill_summary, personality_summary, roles_summary, preference_summary, goals_summary, beliefs_summary;
     int max_roles = s->value("options/role_count_tooltip",3).toInt();
     if(max_roles > sorted_role_ratings().count())
         max_roles = sorted_role_ratings().count();
@@ -2193,53 +2194,55 @@ QString Dwarf::tooltip_text() {
     }
 
     if(!m_is_animal){
-        if(!m_traits.isEmpty() && s->value("options/tooltip_show_traits",true).toBool()){
-            QStringList notes;
-            for (int i = 0; i < m_traits.size(); ++i) {
-                notes.clear();
-                if (trait_is_active(i)){
-                    Trait *t = gdr->get_trait(i);
-                    if (!t)
-                        continue;
-                    int val = m_traits.value(i);
-                    trait_summary.append(t->level_message(val));
-                    QString temp = t->conflicts_messages(val);
-                    if(!temp.isEmpty())
-                        notes.append("<u>" + temp + "</u>");
-                    temp = t->special_messages(val);
-                    if(!temp.isEmpty())
-                        notes.append(temp);
+        if(s->value("options/tooltip_show_traits",true).toBool()){
+            if(!m_traits.isEmpty()){
+                QStringList notes;
+                for (int i = 0; i < m_traits.size(); ++i) {
+                    notes.clear();
+                    if (trait_is_active(i)){
+                        Trait *t = gdr->get_trait(i);
+                        if (!t)
+                            continue;
+                        int val = m_traits.value(i);
+                        personality_summary.append(capitalize(t->level_message(val)));
+                        QString temp = t->conflicts_messages(val);
+                        if(!temp.isEmpty())
+                            notes.append("<u>" + temp + "</u>");
+                        temp = t->special_messages(val);
+                        if(!temp.isEmpty())
+                            notes.append(temp);
 
-                    if(!notes.isEmpty())
-                        trait_summary.append(" (" + notes.join(" and ") + ")");
+                        if(!notes.isEmpty())
+                            personality_summary.append(" (" + notes.join(" and ") + ")");
 
-                    trait_summary.append(", ");
+                        personality_summary.append(". ");
+                    }
                 }
+//                if(trait_summary.lastIndexOf(".") == trait_summary.length()-2)
+//                    trait_summary.chop(2);
             }
-            if(trait_summary.lastIndexOf(",") == trait_summary.length()-2)
-                trait_summary.chop(2);
-        }
 
-        //beliefs
-        QStringList beliefs_list;
-        foreach(int belief_id, m_beliefs.uniqueKeys()) {
-            Belief *b = gdr->get_belief(belief_id);
-            if (!b)
-                continue;
-            int val = m_beliefs.value(belief_id);
-            beliefs_list.append(capitalize(b->level_message(val)));
-        }
-        if(beliefs_list.size() > 0)
-            beliefs_summary = beliefs_list.join(". ");
+            //beliefs
+            QStringList beliefs_list;
+            foreach(int belief_id, m_beliefs.uniqueKeys()) {
+                Belief *b = gdr->get_belief(belief_id);
+                if (!b)
+                    continue;
+                int val = m_beliefs.value(belief_id);
+                beliefs_list.append(capitalize(b->level_message(val)));
+            }
+            if(beliefs_list.size() > 0)
+                personality_summary.append(QString("<font color=%1>%2. </font>").arg("#209C9E").arg(beliefs_list.join(". ")));
 
-        //goals
-        QStringList goal_list;
-        for(int i=0;i<m_goals.size();i++){
-            QString desc = capitalize(gdr->get_goal_desc(m_goals.keys().at(i)));
-            goal_list.append(desc);
+            //goals
+            QStringList goal_list;
+            for(int i=0;i<m_goals.size();i++){
+                QString desc = capitalize(gdr->get_goal_desc(m_goals.keys().at(i)));
+                goal_list.append(desc);
+            }
+            if(goal_list.size() > 0)
+                personality_summary.append(QString("<font color=%1>%2.</font>").arg("#E8BE15").arg(goal_list.join(". ")));
         }
-        if(goal_list.size() > 0)
-            goals_summary = goal_list.join(". ");
 
         QList<Role::simple_rating> sorted_roles = sorted_role_ratings();
         if(!sorted_roles.isEmpty() && max_roles > 0 && s->value("options/tooltip_show_roles",true).toBool()){
@@ -2309,14 +2312,14 @@ QString Dwarf::tooltip_text() {
         tt.append(tr("<b>Highest Moodable Skill:</b> %1")
                   .arg(gdr->get_skill_name(m_highest_moodable_skill, true)));
 
-    if(!trait_summary.isEmpty())
-        tt.append(tr("<p style=\"margin:0px;\"><b>Traits:</b> %1</p>").arg(trait_summary));
+    if(!personality_summary.isEmpty())
+        tt.append(tr("<p style=\"margin:0px;\"><b>Personality:</b> %1</p>").arg(personality_summary));
 
-    if(!beliefs_summary.isEmpty())
-        tt.append(tr("<p style=\"margin:0px;\"><b>Beliefs:</b> %1</p>").arg(beliefs_summary));
+//    if(!beliefs_summary.isEmpty())
+//        tt.append(tr("<h4 style=\"margin:0px;\"><b>Beliefs:</b></h4> %1").arg(beliefs_summary));
 
-    if(!goals_summary.isEmpty())
-        tt.append(tr("<p style=\"margin:0px;\"><b>Goals:</b> %1</p>").arg(goals_summary));
+//    if(!goals_summary.isEmpty())
+//        tt.append(tr("<h4 style=\"margin:0px;\"><b>Goals:</b></h4> %1").arg(goals_summary));
 
     if(!preference_summary.isEmpty())
         tt.append(tr("<p style=\"margin:0px;\">%1</p>").arg(preference_summary));

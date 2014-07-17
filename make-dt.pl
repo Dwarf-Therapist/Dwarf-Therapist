@@ -332,6 +332,7 @@ sub generate_dt_ini($$$$$) {
     
     emit_header 'syndrome_offsets';
     emit_addr 'cie_effects',%all,'syndrome','ce',$vbias;
+    emit_addr 'cie_end',%all,'creature_interaction_effect','end';
     emit_addr 'cie_first_perc',%all,'creature_interaction_effect_phys_att_changest','phys_att_perc'; #same for mental
     emit_addr 'cie_phys',%all,'creature_interaction_effect_phys_att_changest','phys_att_add';
     emit_addr 'cie_ment',%all,'creature_interaction_effect_ment_att_changest','ment_att_add';

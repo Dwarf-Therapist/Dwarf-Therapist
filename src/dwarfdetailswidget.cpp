@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include "sortabletableitems.h"
 #include "unithealth.h"
 #include "healthinfo.h"
+#include "belief.h"
 
 QColor DwarfDetailsWidget::color_low = QColor(168, 10, 44, 135);
 QColor DwarfDetailsWidget::color_high = QColor(0, 60, 128, 135);
@@ -84,21 +85,21 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     ui->tw_attributes->horizontalHeader()->resizeSection(1,default_size);
     ui->tw_attributes->horizontalHeader()->resizeSection(2,default_size);
 
-    ui->tw_traits->setColumnCount(4);
+    ui->tw_traits->setColumnCount(3);
     ui->tw_traits->setEditTriggers(QTableWidget::NoEditTriggers);
     ui->tw_traits->setWordWrap(true);
     ui->tw_traits->setShowGrid(false);
     ui->tw_traits->setGridStyle(Qt::NoPen);
     ui->tw_traits->setAlternatingRowColors(true);
-    ui->tw_traits->setHorizontalHeaderLabels(QStringList() << "Trait" << "Rating" << "Raw" << "Message");
+    ui->tw_traits->setHorizontalHeaderLabels(QStringList() << "Item" << "Value" << "Message");
     ui->tw_traits->verticalHeader()->hide();
     ui->tw_traits->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
     ui->tw_traits->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
-    ui->tw_traits->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);
+//    ui->tw_traits->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);
     ui->tw_traits->horizontalHeader()->setStretchLastSection(true);
     ui->tw_traits->horizontalHeader()->resizeSection(0,100);
     ui->tw_traits->horizontalHeader()->resizeSection(1,default_size);
-    ui->tw_traits->horizontalHeader()->resizeSection(2,default_size);
+//    ui->tw_traits->horizontalHeader()->resizeSection(2,default_size);
 
     ui->tw_roles->setColumnCount(2);
     ui->tw_roles->setEditTriggers(QTableWidget::NoEditTriggers);
@@ -384,38 +385,15 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     ui->tw_attributes->setSortingEnabled(true);
 
 
-    // TRAITS TABLE
+    // PERSONALITY TABLE
     QHash<int, short> traits = d->traits();
     ui->tw_traits->setSortingEnabled(false);
-    for (int row = 0; row < traits.size(); ++row) {
-        short val = traits[row];
-
-        if (d->trait_is_active(row))
-        {
-            ui->tw_traits->insertRow(0);
-            ui->tw_traits->setRowHeight(0, 18);
-            Trait *t = gdr->get_trait(row);
-            QTableWidgetItem *trait_name = new QTableWidgetItem(t->name);
-            trait_name->setToolTip(tr("<center><h4>%1</h4></center>").arg(t->name));
-            QTableWidgetItem *trait_raw = new QTableWidgetItem;
-            trait_raw->setTextAlignment(Qt::AlignHCenter);
-            trait_raw->setData(0, val);
-            QTableWidgetItem *trait_score = new QTableWidgetItem;
-            trait_score->setTextAlignment(Qt::AlignHCenter);
-
-            int rating = val;
-            if(t->inverted)
-                rating = 100-val;
-            if (rating >= 91) {
-                trait_score->setBackground(color_high);
-                trait_score->setForeground(compliment(color_high));
-            } else if (rating <= 25) {
-                trait_score->setBackground(color_low);
-                trait_score->setForeground(compliment(color_low));
-            }
-            trait_score->setData(0,rating);
-
-            QTableWidgetItem *trait_msg = new QTableWidgetItem();
+    for (int trait_id = 0; trait_id < traits.size(); ++trait_id) {
+        if (d->trait_is_active(trait_id))
+        {            
+            Trait *t = gdr->get_trait(trait_id);
+            short val = traits[trait_id];
+            //build the info message
             QString msg = t->level_message(val);
             QString temp = t->conflicts_messages(val);
             if(!temp.isEmpty())
@@ -423,19 +401,31 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             temp = t->special_messages(val);
             if(!temp.isEmpty())
                 msg.append(". " + temp);
-            trait_msg->setText(msg);
 
-            trait_msg->setToolTip(QString("%1<br/>%2<br/>%3")
-                                  .arg(t->level_message(val))
-                                  .arg(t->conflicts_messages(val))
-                                  .arg(t->special_messages(val)));
+            //build the tooltip
+            QString tooltip = QString("%1<br/>%2<br/>%3")
+                    .arg(t->level_message(val))
+                    .arg(t->conflicts_messages(val))
+                    .arg(t->special_messages(val));
 
-            ui->tw_traits->setItem(0, 0, trait_name);
-            ui->tw_traits->setItem(0, 1, trait_score);
-            ui->tw_traits->setItem(0, 2, trait_raw);
-            ui->tw_traits->setItem(0, 3, trait_msg);
+            add_personality_row(t->name,val,msg,tooltip);
         }
     }
+    //also append goals
+    foreach(int id, d->goals().uniqueKeys()){
+        QString name = "~" + gdr->get_goal_name(id);
+        QString desc = gdr->get_goal_desc(id);
+        add_personality_row(name,0,desc,desc,QColor(232,190,21,135));
+    }
+    //and personal beliefs
+    foreach(int id, d->beliefs().uniqueKeys()){
+        Belief *b = gdr->get_belief(id);
+        short val = d->beliefs().value(id);
+        QString name = "~" + b->name;
+        QString desc = b->level_message(val);
+        add_personality_row(name,val,desc,desc,QColor(32,156,158,135));
+    }
+
     ui->tw_traits->setSortingEnabled(true);
 
     // ROLES TABLE
@@ -595,6 +585,43 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
     m_current_id = d->id();
     d = 0;
+}
+
+void DwarfDetailsWidget::add_personality_row(QString title, int raw_value, QString info, QString tooltip, QColor override){
+    ui->tw_traits->insertRow(0);
+    ui->tw_traits->setRowHeight(0, 18);
+
+    QTableWidgetItem *trait_name = new QTableWidgetItem(title);
+    trait_name->setToolTip(tr("<center><h4>%1</h4></center>").arg(title));
+
+    QTableWidgetItem *trait_raw = new QTableWidgetItem;
+    trait_raw->setTextAlignment(Qt::AlignHCenter);
+    trait_raw->setData(0, raw_value);
+
+    QTableWidgetItem *trait_msg = new QTableWidgetItem();
+    trait_msg->setText(info);
+    trait_msg->setToolTip(tooltip);
+
+    if(override == Qt::black){
+        if (raw_value >= 91) {
+            trait_raw->setBackground(color_high);
+            trait_raw->setForeground(compliment(color_high));
+        } else if (raw_value <= 25) {
+            trait_raw->setBackground(color_low);
+            trait_raw->setForeground(compliment(color_low));
+        }
+    }else{
+        trait_name->setBackground(override);
+        trait_name->setForeground(compliment(override));
+        trait_raw->setBackground(override);
+        trait_raw->setForeground(compliment(override));
+        trait_msg->setBackground(override);
+        trait_msg->setForeground(compliment(override));
+    }
+
+    ui->tw_traits->setItem(0, 0, trait_name);
+    ui->tw_traits->setItem(0, 1, trait_raw);
+    ui->tw_traits->setItem(0, 2, trait_msg);
 }
 
 void DwarfDetailsWidget::clear_table(QTableWidget &t){

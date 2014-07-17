@@ -51,5 +51,5 @@ QString Belief::level_message(const short &val){
             break;
         }
     }
-    return ret_val;
+    return capitalize(ret_val);
 }

@@ -40,9 +40,9 @@ Trait::Trait(int trait_id, QSettings &s, QObject *parent)
         belief_id = s.value("belief_id").toInt();
         conflict c;
         c.limit = s.value("limit").toInt();
-        c.beliefl_id = abs(belief_id);
+        c.belief_id = abs(belief_id);
         c.gains_skill = belief_id > 0 ? true : false;
-        m_conflicts.insert(c.beliefl_id,c);
+        m_conflicts.insert(c.belief_id,c);
     }
     s.endArray();
 
@@ -87,7 +87,7 @@ QString Trait::level_message(const short &val){
             break;
         }
     }
-    return ret_val;
+    return capitalize(ret_val);
 }
 
 

@@ -33,7 +33,7 @@ class Trait : public QObject {
 
 private:
     struct conflict{
-        int beliefl_id;
+        int belief_id;
         int limit;
         bool gains_skill;
     };
