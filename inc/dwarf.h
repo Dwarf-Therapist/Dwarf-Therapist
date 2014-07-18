@@ -212,6 +212,8 @@ public:
     //! return this dwarf's highest skill
     Skill highest_skill();
 
+    Q_INVOKABLE int rust_level() {return m_worst_rust_level;}
+
     //! sum total of all skill levels in any skill
     Q_INVOKABLE int total_skill_levels();
 
@@ -447,7 +449,9 @@ public:
 
     QString get_thought_desc() {return m_thought_desc;}
 
-    UnitHealth get_unit_health() {return m_unit_health;}    
+    UnitHealth get_unit_health() {return m_unit_health;}
+
+    Q_INVOKABLE int goals_realized(){return m_goals_realized;}
 
     //! returns a list of items, grouped by body part name
     QHash<QString,QList<Item*> > get_inventory_grouped(){return m_inventory_grouped;}
@@ -586,6 +590,8 @@ private:
     QList<Syndrome> m_syndromes;
     quint32 m_curse_flags;    
     Uniform* m_uniform;
+    int m_goals_realized;
+    int m_worst_rust_level;
 
     //! inventory grouped by body part /category
     QHash<QString,QList<Item*> > m_inventory_grouped;

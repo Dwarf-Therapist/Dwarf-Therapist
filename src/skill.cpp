@@ -42,6 +42,7 @@ Skill::Skill()
     , m_skill_rate(100)
     , m_rating(-1)
     , m_balanced_level(-1)
+    , m_rust_level(0)
 {}
 
 Skill::Skill(short id, uint exp, short rating, int rust, int skill_rate)    
@@ -58,6 +59,7 @@ Skill::Skill(short id, uint exp, short rating, int rust, int skill_rate)
     , m_rust(rust)
     , m_rating(-1)
     , m_balanced_level(-1)
+    , m_rust_level(0)
 {    
     m_name = GameDataReader::ptr()->get_skill_name(m_id);
     //defaults
@@ -79,8 +81,6 @@ Skill::Skill(short id, uint exp, short rating, int rust, int skill_rate)
     m_exp_for_next_level = get_xp_for_level(m_raw_level+1);
 
     m_losing_xp = false;
-
-
     if(m_exp_for_next_level - m_exp_for_current_level > 0)
         m_exp_progress = (float)(m_exp / (float)(m_exp_for_next_level - m_exp_for_current_level)) * 100;
 
@@ -89,15 +89,18 @@ Skill::Skill(short id, uint exp, short rating, int rust, int skill_rate)
         m_rust_rating = QObject::tr("Lost XP!");
         m_rust_color = QColor("#B7410E");
         m_losing_xp = true;
+        m_rust_level = 3;
     }else{
         //check for normal rusting
         float m_raw_precise = raw_level_precise();
         if(m_raw_precise >= 4 && (m_raw_precise * 0.75) <= m_rust){
             m_rust_rating = QObject::tr("V. Rusty");
             m_rust_color = "#964B00";
+            m_rust_level = 2;
         }else if(m_raw_level > 0 && (m_raw_level * 0.5) <= m_rust){
             m_rust_rating = QObject::tr("Rusty");
             m_rust_color = "#CD7F32";
+            m_rust_level = 1;
         }
     }
 }
@@ -171,6 +174,20 @@ int Skill::xp_for_level(int level){
 
 float Skill::level_from_xp(int xp){
     return (xp / (225.0f + (5.0f*sqrt(2025.0f + (2.0f*xp)))));
+}
+
+QString Skill::get_rust_level_desc(int rust_level){
+    QString ret_val;
+    if(rust_level >= 3){
+        ret_val = QObject::tr("Lost Experience");
+    }else if(rust_level == 2){
+        ret_val = QObject::tr("Very Rusty");
+    }else if(rust_level == 1){
+        ret_val = QObject::tr("Rusty");
+    }else{
+        ret_val = QObject::tr("No Rust");
+    }
+    return ret_val;
 }
 
 int Skill::get_xp_for_level(int level){

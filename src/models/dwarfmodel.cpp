@@ -345,6 +345,10 @@ void DwarfModel::build_rows() {
                         m_grouped_dwarves[tr("Losers")].append(d);
                 }else if(m_group_by == GB_HAPPINESS){
                     m_grouped_dwarves[d->happiness_name(d->get_happiness())].append(d);
+                }else if(m_group_by == GB_GOALS){
+                    m_grouped_dwarves[tr("%1 Goals Realized").arg(d->goals_realized())].append(d);
+                }else if(m_group_by == GB_SKILL_RUST){
+                    m_grouped_dwarves[Skill::get_rust_level_desc(d->rust_level())].append(d);
                 }else if(m_group_by == GB_CURRENT_JOB){
                     QString job_desc = GameDataReader::ptr()->get_job(d->current_job_id())->description;
                     //if the job is some kind of reaction that doesn't use a material, use the reaction's name
@@ -447,6 +451,10 @@ void DwarfModel::build_row(const QString &key) {
                 agg_first_col->setData(first_dwarf->highest_moodable().name(), DR_SORT_VALUE);
         } else if (m_group_by == GB_TOTAL_SKILL_LEVELS) {
             agg_first_col->setData(first_dwarf->total_skill_levels(), DR_SORT_VALUE);
+        } else if (m_group_by == GB_GOALS) {
+            agg_first_col->setData(first_dwarf->goals_realized(), DR_SORT_VALUE);
+        } else if (m_group_by == GB_SKILL_RUST) {
+            agg_first_col->setData(first_dwarf->rust_level(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HAPPINESS) {
             agg_first_col->setData(first_dwarf->get_happiness(), DR_SORT_VALUE);
         } else if (m_group_by == GB_ASSIGNED_LABORS) {

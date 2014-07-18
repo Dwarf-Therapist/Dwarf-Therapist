@@ -141,7 +141,7 @@ public:
     const QVector<int> moodable_skills() {return m_moodable_skills;}
     int get_pref_from_skill(int skill_id) const {return m_mood_skills_profession_map.value(skill_id,-1);}
 
-    QString get_goal_desc(int id){return capitalize(m_goals.value(id).second);}
+    QString get_goal_desc(int id, bool realized);
     QString get_goal_name(int id){return capitalize(m_goals.value(id).first);}
 
     static QStringList m_seasons;

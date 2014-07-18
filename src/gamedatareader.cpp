@@ -308,6 +308,13 @@ Profession* GameDataReader::get_profession(const short &profession_id) {
     return m_professions.value(profession_id, 0);
 }
 
+QString GameDataReader::get_goal_desc(int id, bool realized){
+    QString desc = capitalize(m_goals.value(id).second);
+    if(realized)
+        desc.append(tr(", and this dream was realized"));
+    return desc;
+}
+
 QStringList GameDataReader::get_child_groups(QString section) {
     m_data_settings->beginGroup(section);
     QStringList groups = m_data_settings->childGroups();

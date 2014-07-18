@@ -111,6 +111,8 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_validated(false)
     , m_is_valid(false)
     , m_uniform(0x0)
+    , m_goals_realized(0)
+    , m_worst_rust_level(0)
     , m_curse_type(eCurse::NONE)
 {
     read_settings();
@@ -1671,6 +1673,9 @@ void Dwarf::read_skills() {
                     (m_highest_moodable_skill == -1 || s.actual_exp() > get_skill(m_highest_moodable_skill).actual_exp()))
                 m_highest_moodable_skill = type;
         }
+
+        if(s.rust_level() > m_worst_rust_level)
+            m_worst_rust_level = s.rust_level();
     }
 }
 
@@ -1690,10 +1695,12 @@ void Dwarf::read_personality() {
     }
 
     QVector<VIRTADDR> m_goals_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("goals"));
-    foreach(VIRTADDR addr, m_goals_addrs){        
-        int goal_type = m_df->read_addr(addr + 0x0004);
+    foreach(VIRTADDR addr, m_goals_addrs){
+        int goal_type = m_df->read_int(addr + 0x0004);
         if(goal_type >= 0){
-            short val = m_df->read_short(addr + 0x0008); //goal met?
+            short val = m_df->read_short(addr + 0x001c); //goal realized
+            if(val > 0)
+                m_goals_realized++;
             m_goals.insert(goal_type,val);
         }
     }
@@ -2237,7 +2244,7 @@ QString Dwarf::tooltip_text() {
             //goals
             QStringList goal_list;
             for(int i=0;i<m_goals.size();i++){
-                QString desc = capitalize(gdr->get_goal_desc(m_goals.keys().at(i)));
+                QString desc = capitalize(gdr->get_goal_desc(m_goals.keys().at(i),(bool)m_goals.values().at(i)));
                 goal_list.append(desc);
             }
             if(goal_list.size() > 0)

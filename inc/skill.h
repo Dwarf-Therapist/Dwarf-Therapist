@@ -52,6 +52,7 @@ public:
     bool is_losing_xp() const {return m_losing_xp;}
     QString exp_summary() const;
     QString rust_rating() const {return m_rust_rating;}
+    int rust_level() const {return m_rust_level;}
     //QString rust_color() const {return m_rust_color;}
     QColor rust_color() const {return m_rust_color;}
     int skill_rate() const {return m_skill_rate;}    
@@ -69,6 +70,8 @@ public:
     };
 
     static int get_xp_for_level(int level);
+    static QString get_rust_level_desc(int rust_level);
+
     double get_simulated_rating();
     double get_simulated_level();
     double get_rating(bool ensure_non_zero = false);
@@ -94,12 +97,13 @@ private:
     bool m_losing_xp;
     double m_rating;
     double m_balanced_level;
+    int m_rust_level; //purely for grouping, higher is worse
     //skill level, experience
     static QHash<int,int> m_experience_levels;
 
     static QHash<int,int> load_base_xp_levels();
     static int xp_for_level(int level);
-    static float level_from_xp(int xp);
+    static float level_from_xp(int xp);    
 
     static int MAX_CAPPED_XP;
 };

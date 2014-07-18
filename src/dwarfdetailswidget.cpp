@@ -414,7 +414,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     //also append goals
     foreach(int id, d->goals().uniqueKeys()){
         QString name = "~" + gdr->get_goal_name(id);
-        QString desc = gdr->get_goal_desc(id);
+        QString desc = gdr->get_goal_desc(id,d->goals().value(id));
         add_personality_row(name,0,desc,desc,QColor(232,190,21,135));
     }
     //and personal beliefs
