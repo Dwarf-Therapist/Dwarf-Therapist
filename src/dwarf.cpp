@@ -1366,7 +1366,7 @@ QString Dwarf::happiness_name(DWARF_HAPPINESS happiness) {
     case DH_VERY_UNHAPPY: return tr("Very Unhappy");
     case DH_UNHAPPY: return tr("Unhappy");
     case DH_FINE: return tr("Fine");
-    case DH_CONTENT: return tr("Content");
+    case DH_CONTENT: return tr("Quite Content");
     case DH_HAPPY: return tr("Happy");
     case DH_ECSTATIC: return tr("Ecstatic");
     default: return "UNKNOWN";
