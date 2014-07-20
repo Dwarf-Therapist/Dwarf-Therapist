@@ -92,6 +92,7 @@ void RoleStats::init_list(){
                 //use the default ecdf/rank for the lower values
                 calculate_factor_value(true,upper_start_idx);
             }else{
+                LOGD << "     - setting up multiple transformations failed, using ecdf/rank for values above median";
                 m_transformations.clear();
                 calculate_factor_value(true,upper_start_idx);
             }
