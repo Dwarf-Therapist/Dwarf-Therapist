@@ -1397,7 +1397,9 @@ void Dwarf::read_squad_info() {
     m_squad_position = m_df->read_int(m_address + m_mem->dwarf_offset("squad_position"));
     m_pending_squad_position = m_squad_position;
     if(m_pending_squad_id >= 0 && !m_is_animal && is_adult()){
-        m_pending_squad_name = m_df->get_squad(m_pending_squad_id)->name();
+        Squad *s = m_df->get_squad(m_pending_squad_id);
+        if(s)
+            m_pending_squad_name = s->name();
     }
 }
 
@@ -1405,7 +1407,7 @@ void Dwarf::read_uniform(){
     if(!m_is_animal && is_adult()){
         if(m_pending_squad_id >= 0){
             Squad *s = m_df->get_squad(m_pending_squad_id);
-            if(s != 0){
+            if(s){
                 //military uniform
                 m_uniform = s->get_uniform(m_pending_squad_position);
             }
@@ -2000,10 +2002,14 @@ void Dwarf::clear_pending() {
     //revert any squad changes
     if(m_pending_squad_id != m_squad_id){
         if(m_pending_squad_id >= 0){
-            m_df->get_squad(m_pending_squad_id)->remove_from_squad(this);
+            Squad *s = m_df->get_squad(m_pending_squad_id);
+            if(s)
+                s->remove_from_squad(this);
         }
         if(m_squad_id >= 0){
-            m_df->get_squad(m_squad_id)->assign_to_squad(this);
+            Squad *s = m_df->get_squad(m_squad_id);
+            if(s)
+                s->assign_to_squad(this);
         }
     }
 
@@ -2149,7 +2155,7 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
         QString title = "";
         QString icn = "plus-circle.png";
-        if(m_pending_squad_id < 0){
+        if(m_pending_squad_id < 0 && m_df->get_squad(m_squad_id) > 0){
             title = tr("Remove from squad %1").arg(m_df->get_squad(m_squad_id)->name());
             icn = "minus-circle.png";
         }else{
@@ -2724,8 +2730,9 @@ double Dwarf::get_role_pref_match_counts(Preference *role_pref){
             matches += (double)static_cast<Preference*>(i.value())->matches(role_pref,this);
             i++;
         }
+        //give a 0.1 bonus for each match after the first, this only applies when getting matches for groups
         if(matches > 1.0)
-            matches = 1.0f + (matches / 10.0f);
+            matches = 1.0f + ((matches-1.0f) / 10.0f);
 
         return matches;
 }

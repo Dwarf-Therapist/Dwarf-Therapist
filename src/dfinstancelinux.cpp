@@ -69,44 +69,22 @@ QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
         return addrs;
 
     attach();
+    VIRTADDR tmp_addr = 0;
     VIRTADDR start = read_addr(addr);
     VIRTADDR end = read_addr(addr + 4);
     int bytes = end - start;
-    int entries = bytes / 4;
-    TRACE << "enumerating vector at" << hex << addr << "START" << start
-        << "END" << end << "UNVERIFIED ENTRIES" << dec << entries;
-    VIRTADDR tmp_addr = 0;
-
-    if (entries > 5000) {
-        LOGW << "vector at" << hexify(addr) << "has over 5000 entries! (" <<
-                entries << ")";
-    }
-
-#ifdef _DEBUG
-    if (m_layout->is_complete()) {
-        Q_ASSERT_X(start > 0, "enumerate_vector", "start pointer must be larger than 0");
-        Q_ASSERT_X(end > 0, "enumerate_vector", "End must be larger than start!");
-        Q_ASSERT_X(start % 4 == 0, "enumerate_vector", "Start must be divisible by 4");
-        Q_ASSERT_X(end % 4 == 0, "enumerate_vector", "End must be divisible by 4");
-        Q_ASSERT_X(end >= start, "enumerate_vector", "End must be >= start!");
-        Q_ASSERT_X((end - start) % 4 == 0, "enumerate_vector", "end - start must be divisible by 4");
-    } else {
-        // when testing it's usually pretty bad to find a vector with more
-        // than 5000 entries... so throw
-        //Q_ASSERT_X(entries < 5000, "enumerate_vector", "more than 5000 entires");
-    }
-#endif
-    QByteArray data(bytes, 0);
-    int bytes_read = read_raw(start, bytes, data);
-    if (bytes_read != bytes && m_layout->is_complete()) {
-        LOGW << "Tried to read" << bytes << "bytes but only got"
-                << bytes_read;
-        detach();
-        return addrs;
-    }
-    for(int i = 0; i < bytes; i += 4) {
-        tmp_addr = decode_dword(data.mid(i, 4));
-        addrs << tmp_addr;
+    if(check_vector(start,end,addr)){
+        QByteArray data(bytes, 0);
+        int bytes_read = read_raw(start, bytes, data);
+        if (bytes_read != bytes && m_layout->is_complete()) {
+            LOGW << "Tried to read" << bytes << "bytes but only got" << bytes_read;
+            detach();
+            return addrs;
+        }
+        for(int i = 0; i < bytes; i += 4) {
+            tmp_addr = decode_dword(data.mid(i, 4));
+            addrs << tmp_addr;
+        }
     }
     detach();
     return addrs;

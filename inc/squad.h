@@ -37,10 +37,10 @@ class Uniform;
 class Squad : public QObject {
     Q_OBJECT
 public:
-    Squad(DFInstance *df, VIRTADDR address, QObject *parent = 0);
+    Squad(int id, DFInstance *df, VIRTADDR address, QObject *parent = 0);
     virtual ~Squad();
 
-    static Squad* get_squad(DFInstance *df, const VIRTADDR &address);
+    static Squad* get_squad(int id, DFInstance *df, const VIRTADDR &address);
 
     //! Return the memory address (in hex) of this creature in the remote DF process
     VIRTADDR address() {return m_address;}

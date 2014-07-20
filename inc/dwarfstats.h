@@ -38,11 +38,6 @@ class DwarfStats
 
 public:
 
-    static void set_role_stats(float min, float max, float median);
-    static float get_role_median(){return m_role_median;}
-    static float get_role_min(){return m_role_min;}
-    static float get_role_max(){return m_role_max;}
-
     static void set_att_potential_weight(float val){m_att_pot_weight = val;}
     static void set_skill_rate_weight(float val){m_skill_rate_weight = val;}
 
@@ -62,19 +57,19 @@ public:
     static void init_skills(QVector<double> skill_values);
     static double get_skill_rating(double val);
 
+    static void init_roles(QVector<double> role_ratings);
+    static double get_role_rating(double val);
+
 private:
     static float m_att_pot_weight;
     static float m_skill_rate_weight;
-
-    static float m_role_min;
-    static float m_role_max;
-    static float m_role_median;
 
     static QSharedPointer<RoleStats> m_attributes;
     static QSharedPointer<RoleStats> m_attributes_raw;
     static QSharedPointer<RoleStats> m_skills;
     static QSharedPointer<RoleStats> m_traits;
     static QSharedPointer<RoleStats> m_preferences;
+    static QSharedPointer<RoleStats> m_roles;
 };
 
 #endif // DWARFSTATS_H

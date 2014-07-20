@@ -250,6 +250,7 @@ protected:
 
     void load_population_data();    
     void load_role_ratings();
+    bool check_vector(const VIRTADDR start, const VIRTADDR end, const VIRTADDR addr);
 
 
     /*! this hash will hold a map of all loaded and valid memory layouts found
@@ -311,7 +312,7 @@ private:
 
     VIRTADDR m_squad_vector;
 
-    QList<Squad*> m_squads;    
+    QList<Squad*> m_squads;
 };
 
 #endif // DFINSTANCE_H

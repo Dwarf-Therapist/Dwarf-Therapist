@@ -80,39 +80,32 @@ DFInstanceOSX::~DFInstanceOSX() {
 
 QVector<uint> DFInstanceOSX::enumerate_vector(const uint &addr) {
     QVector<uint> addrs;
-    if (!addr)
+    if(!addr)
+        return addrs;
+    if(!attach())
         return addrs;
 
-    if( !attach() ) {
-        return addrs;
-    }
-
+    VIRTADDR tmp_addr = 0;
     VIRTADDR start = read_addr(addr);
     VIRTADDR end = read_addr(addr + 4);
     int bytes = end - start;
-    int entries = bytes / 4;
-    TRACE << "enumerating vector at" << hex << addr << "START" << start << "END" << end << "UNVERIFIED ENTRIES" << dec << entries;
-    VIRTADDR tmp_addr = 0;
-
-    if (entries > 5000) {
-        LOGW << "vector at" << hexify(addr) << "has over 5000 entries! (" << entries << ")";
-    }
-
-    QByteArray data(bytes, 0);
-    int bytes_read = read_raw(start, bytes, data);
-    if (bytes_read != bytes && m_layout->is_complete()) {
-        LOGW << "Tried to read" << bytes << "bytes but only got" << bytes_read;
-        detach();
-        return addrs;
-    }
-    else if (bytes_read == -1) {
-        LOGW << "Failed to read" << hexify(start);
-        detach();
-        return addrs;
-    }
-    for(int i = 0; i < bytes; i += 4) {
-        tmp_addr = decode_dword(data.mid(i, 4));
-        addrs << tmp_addr;
+    if(check_vector(start,end,addr)){
+        QByteArray data(bytes, 0);
+        int bytes_read = read_raw(start, bytes, data);
+        if (bytes_read != bytes && m_layout->is_complete()) {
+            LOGW << "Tried to read" << bytes << "bytes but only got" << bytes_read;
+            detach();
+            return addrs;
+        }
+        else if (bytes_read == -1) {
+            LOGW << "Failed to read" << hexify(start);
+            detach();
+            return addrs;
+        }
+        for(int i = 0; i < bytes; i += 4) {
+            tmp_addr = decode_dword(data.mid(i, 4));
+            addrs << tmp_addr;
+        }
     }
     detach();
     return addrs;
@@ -381,6 +374,10 @@ bool DFInstance::authorize() {
         dir.cdUp();
         chdir(dir.absolutePath().toLocal8Bit());
         fflush(stdout);
+
+        // Authorization for remote memory access on OS X trips Qt's setuid detection
+        QCoreApplication::setSetuidAllowed(true);
+
         return true;
     }
 

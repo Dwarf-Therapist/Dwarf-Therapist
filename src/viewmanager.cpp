@@ -486,7 +486,7 @@ void ViewManager::setCurrentIndex(int idx) {
                 }else{
                     sel_group = stv->get_last_group_by();
                 }
-            }            
+            }
             m_model->set_group_by(sel_group);
 
             if(scroll_all){

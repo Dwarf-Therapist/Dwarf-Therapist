@@ -143,6 +143,35 @@ DFInstance * DFInstance::newInstance(){
 #endif
 }
 
+bool DFInstance::check_vector(const VIRTADDR start, const VIRTADDR end, const VIRTADDR addr){
+    TRACE << "beginning vector enumeration at" << hex << addr;
+    TRACE << "start of vector" << hex << start;
+    TRACE << "end of vector" << hex << end;
+
+    int entries = (end - start) / sizeof(VIRTADDR);
+    TRACE << "there appears to be" << entries << "entries in this vector";
+
+    bool is_acceptable_size = true;
+
+    if (entries > 500000) {
+        LOGW << "vector at" << hexify(addr) << "has over 500000 entries! (" << entries << ")";
+        is_acceptable_size = false;
+    }else if (entries > 100000){
+        LOGW << "vector at" << hexify(addr) << "has over 100000 entries! (" << entries << ")";
+        is_acceptable_size = false;
+    }else if (entries > 50000){
+        LOGW << "vector at" << hexify(addr) << "has over 50000 entries! (" << entries << ")";
+    }else if (entries > 10000){
+        LOGW << "vector at" << hexify(addr) << "has over 10000 entries! (" << entries << ")";
+    }
+
+    if(!is_acceptable_size){
+        LOGI << "vector at" << hexify(addr) << "was not read due to an unacceptable size! (" << entries << ")";
+    }
+
+    return is_acceptable_size;
+}
+
 DFInstance::~DFInstance() {
     //    LOGD << "DFInstance baseclass virtual dtor!";
     foreach(MemoryLayout *l, m_memory_layouts) {
@@ -649,42 +678,48 @@ void DFInstance::load_role_ratings(){
     DwarfStats::init_prefs(pref_values);
     LOGD << "     - loaded preference role data in " << tr.elapsed() << "ms";
 
-    float avg = 0;
-    QList<float> role_ratings;
+    float role_rating_avg = 0;
+    bool calc_role_avg = (DT->get_log_manager()->get_appender("core")->minimum_level() <= LL_DEBUG);
+
+    QVector<double> all_role_ratings;
     foreach(Dwarf *d, m_labor_capable_dwarves){
-        QList<float> ratings = d->calc_role_ratings();
-        foreach(float rating, ratings){
-            avg+=rating;
+        foreach(float rating, d->calc_role_ratings()){
+            all_role_ratings.append(rating);
+            if(calc_role_avg)
+                role_rating_avg+=rating;
         }
-        role_ratings.append(ratings);
         d->update_rating_list();
     }
+    DwarfStats::init_roles(all_role_ratings);
+    LOGD << "     - loaded role drawing data in " << tr.elapsed() << "ms";
 
-    float max = 0;
-    float min = 0;
-    float median = 0;
-    if(role_ratings.count() > 0){
-        avg /= role_ratings.count();
-        QList<float>::Iterator i_min = std::min_element(role_ratings.begin(),role_ratings.end());
-        QList<float>::Iterator i_max = std::max_element(role_ratings.begin(),role_ratings.end());
-        max = *i_max;
-        min = *i_min;
-        median = 0;
-        float n = (float)role_ratings.count() / 2.0f;
-        if(role_ratings.count() % 2 == 0){
-            std::nth_element(role_ratings.begin(),role_ratings.begin()+(int)n,role_ratings.end());
-            median = 0.5*(role_ratings.at((int)n)+role_ratings.at((int)n-1));
-        }else{
-            std::nth_element(role_ratings.begin(),role_ratings.begin()+(int)n,role_ratings.end());
-            median =  role_ratings.at((int)n);
+    if(DT->get_log_manager()->get_appender("core")->minimum_level() <= LL_DEBUG){
+        float max = 0;
+        float min = 0;
+        float median = 0;
+        if(all_role_ratings.count() > 0){
+            role_rating_avg /= all_role_ratings.count();
+            QVector<double>::Iterator i_min = std::min_element(all_role_ratings.begin(),all_role_ratings.end());
+            QVector<double>::Iterator i_max = std::max_element(all_role_ratings.begin(),all_role_ratings.end());
+            max = *i_max;
+            min = *i_min;
+            median = 0;
+            float n = (float)all_role_ratings.count() / 2.0f;
+            if(all_role_ratings.count() % 2 == 0){
+                std::nth_element(all_role_ratings.begin(),all_role_ratings.begin()+(int)n,all_role_ratings.end());
+                median = 0.5*(all_role_ratings.at((int)n)+all_role_ratings.at((int)n-1));
+            }else{
+                std::nth_element(all_role_ratings.begin(),all_role_ratings.begin()+(int)n,all_role_ratings.end());
+                median =  all_role_ratings.at((int)n);
+            }
         }
-    }    
-    DwarfStats::set_role_stats(min,max,median);
-    LOGD << "Overall Role Rating Stats";
-    LOGD << "     - Min: " << min;
-    LOGD << "     - Max: " << max;
-    LOGD << "     - Median: " << median;
-    LOGD << "     - Average: " << avg;
+        LOGD << "Overall Role Rating Stats";
+        LOGD << "     - Min: " << min;
+        LOGD << "     - Max: " << max;
+        LOGD << "     - Median: " << median;
+        LOGD << "     - Average: " << role_rating_avg;
+    }
+
 }
 
 
@@ -899,7 +934,6 @@ QList<Squad *> DFInstance::load_squads(bool refreshing) {
             return squads;
         }
 
-        // both necessary addresses are valid, so let's try to read the creatures
         LOGD << "loading squads from " << hexify(m_squad_vector) <<
                 hexify(m_squad_vector - m_memory_correction) << "(UNCORRECTED)";
 
@@ -909,7 +943,7 @@ QList<Squad *> DFInstance::load_squads(bool refreshing) {
     attach();
 
     QVector<VIRTADDR> squads_addr = enumerate_vector(m_squad_vector);
-    TRACE << "FOUND" << squads_addr.size() << "squads";
+    LOGI << "FOUND" << squads_addr.size() << "squads";
 
     qDeleteAll(m_squads);
     m_squads.clear();
@@ -918,16 +952,20 @@ QList<Squad *> DFInstance::load_squads(bool refreshing) {
         if(!refreshing)
             emit progress_range(0, squads_addr.size()-1);
 
-        int squad_count = 0;
+        int squad_count = 0;                
         foreach(VIRTADDR squad_addr, squads_addr) {
-            Squad *s = NULL;
-            s = Squad::get_squad(this, squad_addr);
-            if(s) {
-                LOGI << "FOUND SQUAD" << hexify(squad_addr) << s->name() << " member count: " << s->assigned_count() << " id: " << s->id();
-                if(m_fortress->squad_is_active(s->id())){
-                    m_squads.push_front(s);
+            int id = squad_addr + m_layout->squad_offset("id"); //check the id before loading the squad
+            if(m_fortress->squad_is_active(id)){
+                Squad *s = NULL;
+                s = Squad::get_squad(id, this, squad_addr);
+                if(s) {
+                    LOGI << "FOUND ACTIVE SQUAD" << hexify(squad_addr) << s->name() << " member count: " << s->assigned_count() << " id: " << s->id();
+                    if(m_fortress->squad_is_active(s->id())){
+                        m_squads.push_front(s);
+                    }
                 }
             }
+
             if(!refreshing)
                 emit progress_value(squad_count++);
         }

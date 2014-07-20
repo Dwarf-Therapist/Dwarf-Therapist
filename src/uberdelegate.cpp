@@ -245,8 +245,9 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         }else{
             bg = paint_bg(adjusted, p, opt, idx);
         }
-        double limit_range = (DwarfStats::get_role_max() - DwarfStats::get_role_min()) * 0.05;
-        paint_values(adjusted, rating, text_rating, bg, p, opt, idx,50.0f, DwarfStats::get_role_min() + limit_range,DwarfStats::get_role_max() - limit_range,45.0f,55.0f);
+
+        paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 5.0f, 95.0f, 42.5f, 57.5f);
+
         if(dirty){
             QColor color_dirty_adjusted = color_dirty_border;
             color_dirty_adjusted.setAlpha(dirty_alpha);
@@ -501,10 +502,12 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
                 adj_rating = adj_rating / median * 50.0f;
             }else{
                 adj_rating = ((adj_rating - median) / (100.0f-median) * 50.0f) + 50.0f;
+                //adj_rating = (((adj_rating - min_limit) * (100.0f - 0)) / (max_limit - min_limit)) + 0;
             }
         }
         //also invert the value if it was below the median, and rescale our drawing values from 0-50 and 50-100
         if(adj_rating > 50.0f){
+            //adj_rating = (((adj_rating - 0) * (100.0f - 50.0f)) / (max_limit - min_limit)) + 50.0f;
             adj_rating = (adj_rating - 50.0f) * 2.0f;
         }else{
             adj_rating = 100 - (adj_rating * 2.0f);
@@ -526,17 +529,13 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
         } else if (rating > -1 && rating < max_limit) {
             //0.05625 is the smallest dot we can draw here, so scale to ensure the smallest exp value (1/500 or .002) can always be drawn
             //relative to our maximum limit for this range. this could still be improved to take into account the cell size, as having even
-            //smaller cells than the default (16) may not draw very low dabbling skill xp levels
-            //float offset = (225 * max_limit - 8 * perc_of_cell) / (4000*perc_of_cell + 225);
-            //double size = perc_of_cell * ((roundf(adj_rating)+offset) / (max_limit-offset))
+            //smaller cells than the default (16) may not draw very low dabbling skill xp levels            
             float perc_of_cell = 0.76f; //max amount of the cell to fill
-            //double size = (((adj_rating-min_limit) * (perc_of_cell - 0.05625)) / (max_limit - min_limit)) + 0.05625;
             double size = (((adj_rating-min_limit) * (perc_of_cell - 0.05625)) / (max_limit - min_limit)) + 0.05625;
+            //double size = (((adj_rating-0) * (perc_of_cell - 0.05625)) / (100.0f-0)) + 0.05625;
             //size = roundf(size * 100) / 100; //this is to aid in the problem of an odd number of pixel in an even size cell, or vice versa
             double inset = (1.0f - size) / 2.0f;
-            //p->translate(adjusted.x()-inset,adjusted.y()-inset);
             p->translate(adjusted.x(),adjusted.y());
-            //p->scale(adjusted.width()-size,adjusted.height()-size);
             p->scale(adjusted.width(),adjusted.height());
             p->fillRect(QRectF(inset, inset, size, size), QBrush(color_fill));
         }

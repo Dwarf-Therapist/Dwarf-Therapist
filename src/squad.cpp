@@ -33,11 +33,12 @@ THE SOFTWARE.
 #include "uniform.h"
 #include "math.h"
 
-Squad::Squad(DFInstance *df, VIRTADDR address, QObject *parent)
+Squad::Squad(int id, DFInstance *df, VIRTADDR address, QObject *parent)
     : QObject(parent)
     , m_address(address)
     , m_df(df)
     , m_mem(df->memory_layout())
+    , m_id(id)
 {
     read_data();
 }
@@ -47,8 +48,8 @@ Squad::~Squad() {
     m_uniforms.clear();
 }
 
-Squad* Squad::get_squad(DFInstance *df, const VIRTADDR & address) {
-    return new Squad(df, address);
+Squad* Squad::get_squad(int id, DFInstance *df, const VIRTADDR & address) {
+    return new Squad(id, df, address);
 }
 
 void Squad::read_data() {
@@ -63,7 +64,8 @@ void Squad::read_data() {
     //qDeleteAll(m_members);
     m_members.clear();
 
-    read_id();
+    if(m_id < 0)
+        read_id();
     read_name();
     read_members();
 }

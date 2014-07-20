@@ -472,16 +472,19 @@ void DwarfModel::build_row(const QString &key) {
         } else if (m_group_by == GB_SQUAD){
             int squad_id = first_dwarf->squad_id();
             if(squad_id != -1){
-                int squad_count = m_df->get_squad(first_dwarf->squad_id())->assigned_count();
-                title = QString("%1 (%2)").arg(key).arg(squad_count);
-                agg_first_col->setText(title);
-                if(squad_count != m_grouped_dwarves.value(key).size()){
-                    agg_first_col->setToolTip(tr("The count may be different as Dwarf Fortress keeps missing, dead dwarves in squads until they're found."));
-                    agg_first_col->setIcon(QIcon(":img/exclamation-red-frame.png"));
+                Squad *s = m_df->get_squad(first_dwarf->squad_id());
+                if(s){
+                    int squad_count = s->assigned_count();
+                    title = QString("%1 (%2)").arg(key).arg(squad_count);
+                    agg_first_col->setText(title);
+                    if(squad_count != m_grouped_dwarves.value(key).size()){
+                        agg_first_col->setToolTip(tr("The count may be different as Dwarf Fortress keeps missing, dead dwarves in squads until they're found."));
+                        agg_first_col->setIcon(QIcon(":img/exclamation-red-frame.png"));
+                    }
+                    agg_first_col->setData(squad_id, DR_SORT_VALUE);
+                    agg_first_col->setData(squad_id,DR_ID);
+                    agg_first_col->setData(key,DR_GROUP_NAME);
                 }
-                agg_first_col->setData(squad_id, DR_SORT_VALUE);
-                agg_first_col->setData(squad_id,DR_ID);
-                agg_first_col->setData(key,DR_GROUP_NAME);
             }else{
                 //put non squads at the bottom of the groups when grouping by squad
                 agg_first_col->setData(QChar(128), DR_SORT_VALUE);
@@ -518,7 +521,7 @@ void DwarfModel::build_row(const QString &key) {
         QStandardItem *i_name = new QStandardItem(d->nice_name());
         bool name_italic = false;
 
-        if((m_group_by==GB_SQUAD && d->squad_position()==0) || d->noble_position() != ""){
+        if((m_group_by==GB_SQUAD && (m_df->get_squad(d->squad_id()) && d->squad_position()==0)) || d->noble_position() != ""){
             i_name->setText(QString("%1 %2 %1").arg(m_symbol).arg(i_name->text()));
             name_italic = true;
         }
@@ -735,7 +738,10 @@ void DwarfModel::set_group_by(int group_by) {
     LOGI << "group_by now set to" << group_by << " for view " << current_grid_view()->name();
     m_group_by = static_cast<GROUP_BY>(group_by);
     if(m_df){
-        build_rows();        
+        QTime t;
+        t.start();
+        build_rows();
+        LOGI << "loaded rows for" << m_gridview->name() << t.elapsed() << "ms";
     }
 }
 

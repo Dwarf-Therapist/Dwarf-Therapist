@@ -30,21 +30,12 @@ THE SOFTWARE.
 float DwarfStats::m_att_pot_weight;
 float DwarfStats::m_skill_rate_weight;
 
-float DwarfStats::m_role_min;
-float DwarfStats::m_role_max;
-float DwarfStats::m_role_median;
-
 QSharedPointer<RoleStats> DwarfStats::m_skills;
 QSharedPointer<RoleStats> DwarfStats::m_attributes;
 QSharedPointer<RoleStats> DwarfStats::m_attributes_raw;
 QSharedPointer<RoleStats> DwarfStats::m_traits;
 QSharedPointer<RoleStats> DwarfStats::m_preferences;
-
-void DwarfStats::set_role_stats(float min, float max, float median){
-    m_role_min = min;
-    m_role_max = max;
-    m_role_median  = median;
-}
+QSharedPointer<RoleStats> DwarfStats::m_roles;
 
 float DwarfStats::calc_att_potential_value(int value, float max, float cti){
     float potential_value = 0.0;
@@ -113,4 +104,14 @@ void DwarfStats::init_skills(QVector<double> skill_values){
 }
 double DwarfStats::get_skill_rating(double val){
     return m_skills->get_rating(val);
+}
+
+void DwarfStats::init_roles(QVector<double> role_ratings){
+    if(m_roles == 0)
+        m_roles = QSharedPointer<RoleStats>(new RoleStats(role_ratings));
+    else
+        m_roles->set_list(role_ratings);
+}
+double DwarfStats::get_role_rating(double val){
+    return m_roles->get_rating(val);
 }
