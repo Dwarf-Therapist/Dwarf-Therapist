@@ -168,8 +168,7 @@ void optimizereditor::insert_row(PlanDetail *d){
     ui->tw_labors->insertRow(row);    
     ui->tw_labors->setRowHeight(row,18);
 
-    title = l->name;
-    title[0]=title[0].toUpper();
+    title = capitalize(l->name);
     QTableWidgetItem *name = new QTableWidgetItem();
     name->setData(0,title);
     name->setData(Qt::UserRole,d->labor_id);

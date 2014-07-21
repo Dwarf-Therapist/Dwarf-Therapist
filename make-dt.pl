@@ -359,6 +359,7 @@ sub generate_dt_ini($$$$$) {
     emit_addr 'personality',%all,'unit_soul','personality';
     emit_addr 'beliefs',%all,'unit_personality','values';
     emit_addr 'goals',%all,'unit_personality','dreams';
+    emit_addr 'goal_realized',%all,'unit_personality::anon5','unk8';
     emit_addr 'traits',%all,'unit_personality','traits';
 
     emit_header 'job_details';

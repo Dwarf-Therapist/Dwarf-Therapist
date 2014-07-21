@@ -34,11 +34,11 @@ THE SOFTWARE.
 #include "math.h"
 
 Squad::Squad(int id, DFInstance *df, VIRTADDR address, QObject *parent)
-    : QObject(parent)
+    : QObject(parent)    
     , m_address(address)
+    , m_id(id)
     , m_df(df)
     , m_mem(df->memory_layout())
-    , m_id(id)
 {
     read_data();
 }

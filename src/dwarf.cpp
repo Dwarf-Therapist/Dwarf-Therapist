@@ -1700,7 +1700,7 @@ void Dwarf::read_personality() {
     foreach(VIRTADDR addr, m_goals_addrs){
         int goal_type = m_df->read_int(addr + 0x0004);
         if(goal_type >= 0){
-            short val = m_df->read_short(addr + 0x001c); //goal realized
+            short val = m_df->read_short(addr + m_mem->soul_detail("goal_realized")); //goal realized
             if(val > 0)
                 m_goals_realized++;
             m_goals.insert(goal_type,val);
