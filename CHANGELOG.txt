@@ -1,3 +1,28 @@
+### Version 23.1 Patch Notes
+
+***
+
+- added missing immortality goal
+- reduced personality trait descriptions where possible
+- added a group for skill rust. currently just groups into the different levels of rust, using the worst rust level found among each unit's skills
+- added a group for goals realized. since it's unknown yet whether or not unit's can have multiple goals, i've opted to go with a count of realized goals for now.
+- since goal realization is now detected, the goal description has been updated with 'and that goal was realized' when applicable
+- skill rust level can also be checked via scripts. eg d.rust_level() > 0/1/2/3, higher being more rust
+- set the value of realized goals in the dwarf details pane to 100 if the goal has been realized
+- changed 'content' to 'quite content' as per the game status
+- fix for older worlds with many inactive squads being loaded which was slowing down the read
+- fix for units that belong to inexistent squads
+- fixed role rating drawings in cells in certain edge cases
+
+### Version 23.0 Patch Notes
+
+***
+
+- updated for DF2014
+- added new skills, updated job descriptions
+- added support for the new personality facets, goals and beliefs
+- removed old incompatible memory layouts
+
 ### Version 22.0 Patch Notes
 
 ***
