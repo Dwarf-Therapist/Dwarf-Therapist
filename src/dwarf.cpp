@@ -2155,7 +2155,7 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
         QString title = "";
         QString icn = "plus-circle.png";
-        if(m_pending_squad_id < 0 && m_df->get_squad(m_squad_id) > 0){
+        if(m_pending_squad_id < 0 && m_df->get_squad(m_squad_id) != 0){
             title = tr("Remove from squad %1").arg(m_df->get_squad(m_squad_id)->name());
             icn = "minus-circle.png";
         }else{

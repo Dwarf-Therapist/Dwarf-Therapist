@@ -30,6 +30,7 @@ INCLUDEPATH += inc \
 win32 { 
     message(Setting up for Windows)
     RC_FILE = DwarfTherapist.rc
+    LIBS += -luser32
     LIBS += -lpsapi
     HEADERS += inc/dfinstancewindows.h
     SOURCES += src/dfinstancewindows.cpp    
