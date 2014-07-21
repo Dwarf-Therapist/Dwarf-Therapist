@@ -30,15 +30,15 @@ THE SOFTWARE.
 #define URL_DOWNLOAD_LIST "http://code.google.com/p/dwarftherapist/downloads/list"
 
 #ifndef DT_VERSION_MAJOR
-    #define DT_VERSION_MAJOR 0
+    #define DT_VERSION_MAJOR 23
 #endif
 
 #ifndef DT_VERSION_MINOR
-    #define DT_VERSION_MINOR 6
+    #define DT_VERSION_MINOR 1
 #endif
 
 #ifndef DT_VERSION_PATCH
-    #define DT_VERSION_PATCH 12
+    #define DT_VERSION_PATCH 0
 #endif
 
 #define DEFAULT_CELL_SIZE 16

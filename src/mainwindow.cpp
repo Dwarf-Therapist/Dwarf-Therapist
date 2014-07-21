@@ -365,7 +365,7 @@ void MainWindow::connect_to_df() {
             }
         }
         if(m_df)
-            this->setWindowTitle(QString("%1 %2").arg(tr("Dwarf Therapist - ")).arg(m_df->fortress_name()));        
+            this->setWindowTitle(QString("%1 %2").arg(tr("Dwarf Therapist - ")).arg(m_df->fortress_name()));
     }
 }
 
@@ -515,6 +515,7 @@ void MainWindow::read_dwarves() {
     }
 
     LOGI << "completed read in" << t.elapsed() << "ms";
+    set_progress_message(tr("Version %1").arg(Version().to_string()));
 }
 
 void MainWindow::set_interface_enabled(bool enabled) {
@@ -533,11 +534,13 @@ void MainWindow::set_interface_enabled(bool enabled) {
 }
 
 void MainWindow::check_latest_version(bool show_result_on_equal) {
+    Q_UNUSED(show_result_on_equal);
     return;
     //TODO: check for updates
 }
 
 void MainWindow::version_check_finished(bool error) {
+    Q_UNUSED(error);
 //    if (error) {
 //        qWarning() <<  m_http->errorString();
 //    }
