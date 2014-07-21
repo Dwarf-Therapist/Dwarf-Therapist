@@ -388,14 +388,16 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     // PERSONALITY TABLE
     QHash<int, short> traits = d->traits();
     ui->tw_traits->setSortingEnabled(false);
-    for (int trait_id = 0; trait_id < traits.size(); ++trait_id) {
+    QColor trait_color;
+    for (int trait_id = 0; trait_id < traits.size(); ++trait_id) {       
         if (d->trait_is_active(trait_id))
-        {            
+        {
+            trait_color = QColor(Qt::black);
             Trait *t = gdr->get_trait(trait_id);
             short val = traits[trait_id];
             //build the info message
             QString msg = t->level_message(val);
-            QString temp = t->conflicts_messages(val);
+            QString temp = t->skill_conflicts_msgs(val);
             if(!temp.isEmpty())
                 msg.append(". " + temp);
             temp = t->special_messages(val);
@@ -403,12 +405,21 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
                 msg.append(". " + temp);
 
             //build the tooltip
-            QString tooltip = QString("%1<br/>%2<br/>%3")
-                    .arg(t->level_message(val))
-                    .arg(t->conflicts_messages(val))
-                    .arg(t->special_messages(val));
+            QStringList tooltip_info;
+            tooltip_info << t->level_message(val) << t->skill_conflicts_msgs(val) << t->special_messages(val);
+            if(d->trait_is_conflicted(trait_id)){
+                trait_color = color_low;
+                QStringList conflicts_msg;
+                foreach(short belief_id, d->trait_conflicts(trait_id)){
+                    conflicts_msg.append(gdr->get_belief_name(belief_id));
+                    add_belief_row(belief_id,d,true); //add the conflicting entity belief to compare
+                }
+                tooltip_info[0].append(tr(", but has conflicted feelings due to their cultural beliefs about %1").arg(conflicts_msg.join(", ")));
+            }
 
-            add_personality_row(t->name,val,msg,tooltip);
+            tooltip_info.removeAll("");
+
+            add_personality_row(t->name,val,msg,tooltip_info.join("<br/>"),trait_color);
         }
     }
     //also append goals
@@ -419,11 +430,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     }
     //and personal beliefs
     foreach(int id, d->beliefs().uniqueKeys()){
-        Belief *b = gdr->get_belief(id);
-        short val = d->beliefs().value(id);
-        QString name = "~" + b->name;
-        QString desc = b->level_message(val);
-        add_personality_row(name,val,desc,desc,QColor(32,156,158,135));
+        add_belief_row(id,d);
     }
 
     ui->tw_traits->setSortingEnabled(true);
@@ -587,12 +594,26 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     d = 0;
 }
 
+void DwarfDetailsWidget::add_belief_row(int belief_id, Dwarf *d, bool is_cultural){
+    Belief *b = GameDataReader::ptr()->get_belief(belief_id);
+    short val = d->get_belief_value(belief_id);
+    QString name = "~" + b->name;
+    QString desc = b->level_message(val);
+    QString tooltip = desc;
+    QColor col = QColor(32,156,158,135);
+    if(is_cultural){
+        col = color_low;
+        name.append(QString("<h5 style=\"margin:0px;\">%1</h5>").arg(tr("*This is a cultural belief.")));
+    }
+    add_personality_row(name,val,desc,tooltip,col);
+}
+
 void DwarfDetailsWidget::add_personality_row(QString title, int raw_value, QString info, QString tooltip, QColor override){
     ui->tw_traits->insertRow(0);
     ui->tw_traits->setRowHeight(0, 18);
 
-    QTableWidgetItem *trait_name = new QTableWidgetItem(title);
-    trait_name->setToolTip(tr("<center><h4>%1</h4></center>").arg(title));
+    QTableWidgetItem *trait_name = new QTableWidgetItem(title.mid(0,title.indexOf("<")));
+    trait_name->setToolTip(tr("<center><h4 style=\"margin:0px;\">%1</h4></center>").arg(title));
 
     QTableWidgetItem *trait_raw = new QTableWidgetItem;
     trait_raw->setTextAlignment(Qt::AlignHCenter);
@@ -603,20 +624,20 @@ void DwarfDetailsWidget::add_personality_row(QString title, int raw_value, QStri
     trait_msg->setToolTip(tooltip);
 
     if(override == Qt::black){
-        if (raw_value >= 91) {
-            trait_raw->setBackground(color_high);
-            trait_raw->setForeground(compliment(color_high));
-        } else if (raw_value <= 25) {
-            trait_raw->setBackground(color_low);
-            trait_raw->setForeground(compliment(color_low));
-        }
+//        if (raw_value >= 91) {
+//            trait_raw->setBackground(color_high);
+//            trait_raw->setForeground(compliment(color_high));
+//        } else if (raw_value <= 25) {
+//            trait_raw->setBackground(color_low);
+//            trait_raw->setForeground(compliment(color_low));
+//        }
     }else{
         trait_name->setBackground(override);
         trait_name->setForeground(compliment(override));
-        trait_raw->setBackground(override);
-        trait_raw->setForeground(compliment(override));
-        trait_msg->setBackground(override);
-        trait_msg->setForeground(compliment(override));
+//        trait_raw->setBackground(override);
+//        trait_raw->setForeground(compliment(override));
+//        trait_msg->setBackground(override);
+//        trait_msg->setForeground(compliment(override));
     }
 
     ui->tw_traits->setItem(0, 0, trait_name);

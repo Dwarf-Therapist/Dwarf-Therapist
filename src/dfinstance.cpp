@@ -653,30 +653,34 @@ void DFInstance::load_role_ratings(){
         foreach(Role *r, GameDataReader::ptr()->get_roles().values()){
             if(r->prefs.count() > 0){
                 foreach(double rating, d->get_role_pref_match_counts(r)){
-                    pref_values.append(rating);
+                    if(rating > 0){
+                        pref_values.append(rating);
+                        pref_values << 0; //assume for every match there's a non-match
+                    }
                 }
             }
         }
 
     }
+    pref_values << 0; //pad a final 0 to prefs to ensure median = 0
 
     QTime tr;
     tr.start();
     LOGD << "Role Trait Info:";
     DwarfStats::init_traits(trait_values);
-    LOGD << "     - loaded trait role data in " << tr.elapsed() << "ms";
+    LOGD << "     - loaded trait role data in" << tr.elapsed() << "ms";
 
     LOGD << "Role Skills Info:";
     DwarfStats::init_skills(skill_values);
-    LOGD << "     - loaded skill role data in " << tr.elapsed() << "ms";
+    LOGD << "     - loaded skill role data in" << tr.elapsed() << "ms";
 
     LOGD << "Role Attributes Info:";
     DwarfStats::init_attributes(attribute_values,attribute_raw_values);    
-    LOGD << "     - loaded attribute role data in " << tr.elapsed() << "ms";
+    LOGD << "     - loaded attribute role data in" << tr.elapsed() << "ms";
 
     LOGD << "Role Preferences Info:";
     DwarfStats::init_prefs(pref_values);
-    LOGD << "     - loaded preference role data in " << tr.elapsed() << "ms";
+    LOGD << "     - loaded preference role data in" << tr.elapsed() << "ms";
 
     float role_rating_avg = 0;
     bool calc_role_avg = (DT->get_log_manager()->get_appender("core")->minimum_level() <= LL_DEBUG);
@@ -690,8 +694,9 @@ void DFInstance::load_role_ratings(){
         }
         d->update_rating_list();
     }
+    LOGD << "Role Drawing Info:";
     DwarfStats::init_roles(all_role_ratings);
-    LOGD << "     - loaded role drawing data in " << tr.elapsed() << "ms";
+    LOGD << "     - loaded role drawing data in" << tr.elapsed() << "ms";
 
     if(DT->get_log_manager()->get_appender("core")->minimum_level() <= LL_DEBUG){
         float max = 0;

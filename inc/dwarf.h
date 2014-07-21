@@ -275,6 +275,8 @@ public:
     }
 
     bool trait_is_active(int trait_id);
+    bool trait_is_conflicted(const int &trait_id);
+    QList<short> trait_conflicts(const int &trait_id){return m_conflicting_beliefs.values(trait_id);}
 
     Q_INVOKABLE int attribute(int attrib_id) {return get_attribute(attrib_id).get_value();}
     Attribute get_attribute(int id);
@@ -289,6 +291,7 @@ public:
     const QHash<int, short> &traits() {return m_traits;}
     QHash<int, short> &goals() {return m_goals;}
     QHash<int, short> &beliefs() {return m_beliefs;}
+    short get_belief_value(int belief_id);
 
     //! return a hashmap of roles and ratings for this dwarf
     const QHash<QString, float> &role_ratings() {return m_role_ratings;}
@@ -542,6 +545,7 @@ private:
     QHash<int, short> m_traits;
     QHash<int, short> m_goals;
     QHash<int, short> m_beliefs;
+    QMultiHash<int,short> m_conflicting_beliefs; //trait_id, conflicting belief_id(s)
     QVector<Attribute> m_attributes;
     QMap<int, ushort> m_labors;
     QMap<int, ushort> m_pending_labors;

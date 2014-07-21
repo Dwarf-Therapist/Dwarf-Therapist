@@ -1682,47 +1682,62 @@ void Dwarf::read_skills() {
 }
 
 void Dwarf::read_personality() {
-    VIRTADDR personality_addr = m_first_soul + m_mem->soul_detail("personality");
+    if(!m_is_animal){
+        VIRTADDR personality_addr = m_first_soul + m_mem->soul_detail("personality");
 
-    VIRTADDR traits_addr = personality_addr + m_mem->soul_detail("traits");
-    m_traits.clear();    
-    int trait_count = GameDataReader::ptr()->get_traits().count();
-    for (int i = 0; i < trait_count; ++i) {
-        short val = m_df->read_short(traits_addr + i * 2);
-        if(val < 0)
-            val = 0;
-        if(val > 100)
-            val = 100;        
-        m_traits.insert(i, val);
-    }
+        VIRTADDR traits_addr = personality_addr + m_mem->soul_detail("traits");
+        m_traits.clear();
+        int trait_count = GameDataReader::ptr()->get_traits().count();
 
-    QVector<VIRTADDR> m_goals_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("goals"));
-    foreach(VIRTADDR addr, m_goals_addrs){
-        int goal_type = m_df->read_int(addr + 0x0004);
-        if(goal_type >= 0){
-            short val = m_df->read_short(addr + m_mem->soul_detail("goal_realized")); //goal realized
-            if(val > 0)
-                m_goals_realized++;
-            m_goals.insert(goal_type,val);
+        for (int i = 0; i < trait_count; ++i) {
+            short val = m_df->read_short(traits_addr + i * 2);
+            if(val < 0)
+                val = 0;
+            if(val > 100)
+                val = 100;
+            m_traits.insert(i, val);
+
+            QList<int> conflicts = GameDataReader::ptr()->get_trait(i)->get_conflicting_beliefs();
+            foreach(int belief_id, conflicts){
+                int entity_val = m_df->fortress()->get_belief_value(belief_id);
+                if((entity_val >= 10 && val < 40)  || (entity_val < -10 && val > 60)){
+                    m_conflicting_beliefs.insertMulti(i,belief_id);                    
+                }
+            }
         }
-    }
 
-    //these appear to only be the beliefs that are in conflict, or different from the entity/race's beliefs
-    QVector<VIRTADDR> m_beliefs_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("beliefs"));
-    foreach(VIRTADDR addr, m_beliefs_addrs){        
-        int belief_id = m_df->read_int(addr);
-        if(belief_id >= 0){
-            short val = m_df->read_short(addr + 0x0004);
-            m_beliefs.insert(belief_id,val);
+        QVector<VIRTADDR> m_goals_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("goals"));
+        foreach(VIRTADDR addr, m_goals_addrs){
+            int goal_type = m_df->read_int(addr + 0x0004);
+            if(goal_type >= 0){
+                short val = m_df->read_short(addr + m_mem->soul_detail("goal_realized")); //goal realized
+                if(val > 0)
+                    m_goals_realized++;
+                m_goals.insert(goal_type,val);
+            }
         }
-    }
 
-    //TODO: see if this is still affecting things in DF2014
-//    //check the misc. traits for the level of detachment and add a special trait for it
-//    if(!m_is_animal && has_state(15)){
-//        int val = state_value(15);
-//        m_traits.insert(41,val);
-//    }
+        //these appear to only be the beliefs that are different from the entity/race's beliefs
+        QVector<VIRTADDR> m_beliefs_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("beliefs"));
+        foreach(VIRTADDR addr, m_beliefs_addrs){
+            int belief_id = m_df->read_int(addr);
+            if(belief_id >= 0){
+                short val = m_df->read_short(addr + 0x0004);
+                m_beliefs.insert(belief_id,val);
+            }
+        }
+
+        //TODO: see if this is still affecting things in DF2014
+        //    //check the misc. traits for the level of detachment and add a special trait for it
+        //    if(!m_is_animal && has_state(15)){
+        //        int val = state_value(15);
+        //        m_traits.insert(41,val);
+        //    }
+    }
+}
+
+bool Dwarf::trait_is_conflicted(const int &trait_id){
+    return (m_conflicting_beliefs.values(trait_id).count() > 0);
 }
 
 bool Dwarf::trait_is_active(int trait_id){
@@ -1735,6 +1750,13 @@ bool Dwarf::trait_is_active(int trait_id){
         return false;
     }
     return true;
+}
+
+short Dwarf::get_belief_value(int belief_id){
+    if(!m_beliefs.contains(belief_id))
+        return m_df->fortress()->get_belief_value(belief_id);
+    else
+        return m_beliefs.value(belief_id);
 }
 
 void Dwarf::read_attributes() {
@@ -2187,7 +2209,7 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
 QString Dwarf::tooltip_text() {
     QSettings *s = DT->user_settings();
     GameDataReader *gdr = GameDataReader::ptr();
-    QString skill_summary, personality_summary, roles_summary, preference_summary, goals_summary, beliefs_summary;
+    QString skill_summary, personality_summary, roles_summary, preference_summary;
     int max_roles = s->value("options/role_count_tooltip",3).toInt();
     if(max_roles > sorted_role_ratings().count())
         max_roles = sorted_role_ratings().count();
@@ -2208,6 +2230,7 @@ QString Dwarf::tooltip_text() {
 
     if(!m_is_animal){
         if(s->value("options/tooltip_show_traits",true).toBool()){
+            QString conflict_color = QColor(176,23,31).name();
             if(!m_traits.isEmpty()){
                 QStringList notes;
                 for (int i = 0; i < m_traits.size(); ++i) {
@@ -2217,8 +2240,11 @@ QString Dwarf::tooltip_text() {
                         if (!t)
                             continue;
                         int val = m_traits.value(i);
-                        personality_summary.append(capitalize(t->level_message(val)));
-                        QString temp = t->conflicts_messages(val);
+                        QString msg = capitalize(t->level_message(val));
+                        if(trait_is_conflicted(i))
+                            msg = QString("<font color=%1>%2</font>").arg(conflict_color).arg(msg);
+                        personality_summary.append(msg);
+                        QString temp = t->skill_conflicts_msgs(val);
                         if(!temp.isEmpty())
                             notes.append("<u>" + temp + "</u>");
                         temp = t->special_messages(val);
@@ -2231,8 +2257,6 @@ QString Dwarf::tooltip_text() {
                         personality_summary.append(". ");
                     }
                 }
-//                if(trait_summary.lastIndexOf(".") == trait_summary.length()-2)
-//                    trait_summary.chop(2);
             }
 
             //beliefs
@@ -2327,12 +2351,6 @@ QString Dwarf::tooltip_text() {
 
     if(!personality_summary.isEmpty())
         tt.append(tr("<p style=\"margin:0px;\"><b>Personality:</b> %1</p>").arg(personality_summary));
-
-//    if(!beliefs_summary.isEmpty())
-//        tt.append(tr("<h4 style=\"margin:0px;\"><b>Beliefs:</b></h4> %1").arg(beliefs_summary));
-
-//    if(!goals_summary.isEmpty())
-//        tt.append(tr("<h4 style=\"margin:0px;\"><b>Goals:</b></h4> %1").arg(goals_summary));
 
     if(!preference_summary.isEmpty())
         tt.append(tr("<p style=\"margin:0px;\">%1</p>").arg(preference_summary));
@@ -2647,18 +2665,26 @@ float Dwarf::calc_role_rating(Role *m_role){
     if(m_role->prefs.count()>0){
         total_weight = 0;
         aspect_value = 0;
+        float total_matches = 0;
         foreach(Preference *role_pref,m_role->prefs){
             aspect_value = get_role_pref_match_counts(role_pref);
-            aspect_value = DwarfStats::get_preference_rating(aspect_value);
+            //preferences are slightly different due to their binary nature. large numbers of preferences result in a very low weighted average
+            //so if there isn't a match, don't include it in the weighted average to try to keep roles relatively equal regardless of how many preferences they have
+            if(aspect_value > 0){
+                aspect_value = DwarfStats::get_preference_rating(aspect_value);
+                total_matches += aspect_value;
+                weight = role_pref->pref_aspect->weight;
+                if(role_pref->pref_aspect->is_neg)
+                    aspect_value = 1-aspect_value;
 
-            weight = role_pref->pref_aspect->weight;
-            if(role_pref->pref_aspect->is_neg)
-                aspect_value = 1-aspect_value;
-
-            rating_prefs += (aspect_value*weight);
-            total_weight += weight;
+                rating_prefs += (aspect_value*weight);
+                total_weight += weight;
+            }
         }
-        rating_prefs = (rating_prefs / total_weight) * 100.0f;//weighted average percentile
+        if(total_weight > 0)
+            rating_prefs = (rating_prefs / total_weight) * 100.0f;//weighted average percentile
+        else
+            rating_prefs = 0;
     }
     //********************************
 

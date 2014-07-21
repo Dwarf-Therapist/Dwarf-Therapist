@@ -32,8 +32,8 @@ class Trait : public QObject {
     Q_OBJECT
 
 private:
-    struct conflict{
-        int belief_id;
+    struct skill_conflict{
+        int skill_id;
         int limit;
         bool gains_skill;
     };
@@ -41,7 +41,9 @@ private:
     //! this map will hold the minimum_value -> string (e.g. level 76-90 of ANXIETY_PROPENSITY is "Is always tense and jittery")
     QMap<int, QString> m_level_string;
     //belief_id, limit
-    QHash<int,conflict> m_conflicts;
+    QList<int> m_belief_conflicts;
+    //skill_id, limit
+    QHash<int,skill_conflict> m_skill_conflicts;
     //message, limit
     QHash<QString, int> m_special;
     //limits
@@ -55,10 +57,13 @@ public:
     bool inverted; //specifically when setting the drawn rating
 
     QString level_message(const short &val);
-    QString conflicts_messages(const short &val);
+    QString skill_conflicts_msgs(const short &val);
+    QString skill_conflict_msg(const short &skill_id, const short &val);
+
+    QString belief_conflicts_names();
     QString special_messages(const short &val);
 
-    QString conflict_message(const short &skill_id, const short &val);
+    QList<int> get_conflicting_beliefs(){return m_belief_conflicts;}
 };
 
 #endif

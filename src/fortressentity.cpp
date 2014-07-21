@@ -121,6 +121,15 @@ void FortressEntity::read_entity(){
             }
         }
     }    
+    //"historical_entity","2","0x8b0","0x80","static-array","resources.values","int32_t",""
+    VIRTADDR beliefs_addr = m_address + 0x8b0;
+    for(int i = 0; i < GameDataReader::ptr()->get_total_belief_count();i++){
+        short val = m_df->read_short(beliefs_addr + i * 4);
+        if(val > 100)
+            val = 100;
+        m_beliefs.insert(i, val);
+    }
+
     m_df->detach();
 }
 

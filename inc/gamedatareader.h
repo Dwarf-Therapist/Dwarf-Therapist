@@ -81,7 +81,7 @@ public:
     QList<QPair<QString, Role*> > get_ordered_roles() {return m_ordered_roles;}
     QVector<QString> get_default_roles() {return m_default_roles;}
     QHash<int,QVector<Role*> > get_skill_roles() {return m_skill_roles;}
-    QHash<int,QString> get_skills(){return m_skills;}
+    QHash<int,QString> get_skills(){return m_skills;}    
 
     QList<QPair<QString, laborOptimizerPlan*> > get_ordered_opt_plans() {return m_ordered_opts;}
     QHash<QString, laborOptimizerPlan*>& get_opt_plans(){return m_opt_plans;}
@@ -91,6 +91,7 @@ public:
     Trait *get_trait(const int &trait_id);
     QString get_trait_name(const short &trait_id);
     Belief *get_belief(const int &belief_id);
+    QString get_belief_name(const int &belief_id);
 
     QMap<short, Thought*> get_thoughts(){return m_unit_thoughts;}
     Thought *get_thought(short id){return m_unit_thoughts.value(id);}
@@ -115,6 +116,7 @@ public:
     QString get_skill_level_name(short level);
     QString get_skill_name(short skill_id, bool moodable = false);
     int get_total_skill_count() {return m_skills.count();}
+    int get_total_belief_count() {return m_beliefs.count();}
 
     QColor get_color(QString key);
 

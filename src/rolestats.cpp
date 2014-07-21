@@ -132,7 +132,6 @@ double RoleStats::get_rating(double val){
             if(val <= m_raw_median){
                 rating *= m_factor;
             }else{
-                //Q_ASSERT(m_upper_raw_min > 0);
                 if(m_upper_raw_min > 0)
                     rating = ((val - m_upper_raw_min)/m_upper_minmax_diff/2.0f+0.5f); //minmax
                 else

@@ -50,6 +50,8 @@ private:
 
     //squads this fortress has
     QVector<VIRTADDR> m_squads;
+    //values/beliefs (id,value)
+    QHash<int,short> m_beliefs;
 
     void read_entity();    
     void load_noble_colors();
@@ -130,6 +132,8 @@ public:
     bool squad_is_active(int id) {return m_squads.contains(id);}
 
     void refresh_squads();
+
+    short get_belief_value(int id){return m_beliefs.value(id);}
 };
 
 #endif

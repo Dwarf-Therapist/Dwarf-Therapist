@@ -66,7 +66,7 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     if (d->trait_is_active(m_trait_id)==false)
         msg += tr("<br/><br/>Not an active trait for this dwarf.");
 
-    QString temp = m_trait->conflicts_messages(score);
+    QString temp = m_trait->skill_conflicts_msgs(score);
     if(!temp.isEmpty())
         msg += tr("<br/><br/>%1").arg(temp);
     temp = m_trait->special_messages(score);

@@ -345,6 +345,10 @@ QString GameDataReader::get_trait_name(const short &trait_id) {
     return get_trait(trait_id)->name;
 }
 
+QString GameDataReader::get_belief_name(const int &belief_id) {
+    return get_belief(belief_id)->name;
+}
+
 laborOptimizerPlan* GameDataReader::get_opt_plan(const QString &name){
     return m_opt_plans.value(name);
 }
