@@ -25,6 +25,15 @@ THE SOFTWARE.
 
 const QList<QColor> Thought::m_base_colors = Thought::set_base_colors();
 
+Thought::Thought(int id, QObject *parent)
+    : QObject(parent)
+    , m_title(QString("%1 - Unknown").arg(QString::number(id)))
+    , m_description("This is an unknown thought, please report it!")
+    , m_effect(0)
+    , m_id(id)
+{
+}
+
 Thought::Thought(int id, QSettings &s, QObject *parent)
     : QObject(parent)
     , m_title(s.value("title", "Unknown").toString())
@@ -54,7 +63,3 @@ Thought::Thought(int id, QSettings &s, QObject *parent)
     m_color.setAlpha(alpha);
 
 }
-
-Thought::Thought(QObject *parent)
-    :QObject(parent)
-{}

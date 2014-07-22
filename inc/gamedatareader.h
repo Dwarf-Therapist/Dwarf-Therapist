@@ -94,7 +94,7 @@ public:
     QString get_belief_name(const int &belief_id);
 
     QMap<short, Thought*> get_thoughts(){return m_unit_thoughts;}
-    Thought *get_thought(short id){return m_unit_thoughts.value(id);}
+    Thought *get_thought(short id);
 
     DwarfJob *get_job(const short &job_id);
     QList<QPair<int, QString> > get_ordered_jobs() {return m_ordered_jobs;}

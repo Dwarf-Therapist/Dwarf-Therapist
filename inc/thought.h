@@ -58,7 +58,7 @@ private:
     static const QColor c_neg(){return m_base_colors.at(2);}
 
 public:
-    Thought(QObject *parent = 0);
+    Thought(int id, QObject *parent = 0);
     Thought(int id, QSettings &s, QObject *parent = 0);
 
     QString title() {return m_title;}

@@ -349,6 +349,13 @@ QString GameDataReader::get_belief_name(const int &belief_id) {
     return get_belief(belief_id)->name;
 }
 
+Thought *GameDataReader::get_thought(short id){
+    if(!m_unit_thoughts.contains(id)){
+        m_unit_thoughts.insert(id, new Thought(id, this));
+    }
+    return m_unit_thoughts.value(id);
+}
+
 laborOptimizerPlan* GameDataReader::get_opt_plan(const QString &name){
     return m_opt_plans.value(name);
 }

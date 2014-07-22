@@ -474,7 +474,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
             hexify(creature_vector - m_memory_correction) << "(UNCORRECTED)";
     LOGD << "current year" << hexify(current_year) <<
             hexify(current_year - m_memory_correction) << "(UNCORRECTED)";
-    emit progress_message(tr("Loading Dwarves"));
+    emit progress_message(tr("Loading Units"));
 
     attach();
     m_dwarf_civ_id = read_int(dwarf_civ_index);
