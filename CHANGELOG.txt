@@ -1,3 +1,15 @@
+### Version 23.2 Patch Notes
+
+***
+
+- adjusted preferences to even out roles with many preferences vs those with very few
+- conflicting traits and beliefs are now shown in the dwarf detail pane (highlighted in red) along with their full descriptions of the conflict
+- fixed active squads not showing up
+- removed the background colors and used them for the text color in the dwarf details pane (rust, moodable skill, beliefs, goals) to prevent a rainbow atrocity
+- trait cells are now highlighted with a dynamic opacity border (darker means more conflicts) if they conflict with a cultural belief
+- changing the group by now resets the sorting to the group's aggregate values, rather than keeping the previous sort method
+- added a new thought, and support for unknown thoughts
+
 ### Version 23.1 Patch Notes
 
 ***
