@@ -306,8 +306,6 @@ void ViewManager::draw_views() {
     }
     if (tab_order.size() > 0) {
         foreach(QString name, tab_order) {
-//            if (name == "Weapons")
-//                m_add_weapons_tab = true;
             foreach(GridView *v, m_views) {
                 if (v->name() == name)
                     add_tab_for_gridview(v);

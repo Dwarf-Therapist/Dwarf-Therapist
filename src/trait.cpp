@@ -140,7 +140,7 @@ QString Trait::belief_conflicts_names(){
     return items.join(tr(" and "));
 }
 
-QString Trait::belief_conficts_msgs(QList<short> conflicting_beliefs){
+QString Trait::belief_conficts_msgs(short raw_value, QList<short> conflicting_beliefs){
     if(conflicting_beliefs.size() <= 0)
         return "";
 
@@ -153,7 +153,7 @@ QString Trait::belief_conficts_msgs(QList<short> conflicting_beliefs){
     QString last_msg;
     if(conflicts_msg.count() > 1)
         last_msg = conflicts_msg.takeLast();
-    QString msgs = tr(", but is conflicted because their culture %1").arg(conflicts_msg.join(", "));
+    QString msgs = (raw_value > 50 ? tr(", but") : tr(", and")) + tr(" is conflicted because their culture %1").arg(conflicts_msg.join(", "));
     if(!last_msg.isEmpty()){
         msgs.append(tr(" and ") + last_msg);
     }

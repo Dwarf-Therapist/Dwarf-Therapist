@@ -290,8 +290,9 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     {
         QColor bg = paint_bg(adjusted, p, opt, idx);
         paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50, 10, 90);
-        if(idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt() > 0){
-            paint_border(adjusted,p,QColor(168, 10, 44, 255));
+        int alpha = idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt();
+        if(alpha > 0){
+            paint_border(adjusted,p,QColor(168, 10, 44, alpha));
             paint_grid(adjusted, false, p, opt, idx, false);
         }else{
             paint_grid(adjusted, false, p, opt, idx);

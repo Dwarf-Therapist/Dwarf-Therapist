@@ -57,11 +57,12 @@ TraitColumn::TraitColumn(const TraitColumn &to_copy)
 QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
     item->setData(CT_TRAIT, DwarfModel::DR_COL_TYPE);
+    item->setData(0, DwarfModel::DR_SPECIAL_FLAG); //default, special flag stores the alpha for the border
 
     short raw_value = d->trait(m_trait_id);
     QStringList infos;
     if (m_trait)
-        infos << m_trait->level_message(raw_value).append(m_trait->belief_conficts_msgs(d->trait_conflicts(m_trait_id)));
+        infos << m_trait->level_message(raw_value).append(m_trait->belief_conficts_msgs(raw_value,d->trait_conflicts(m_trait_id)));
 
     if (d->trait_is_active(m_trait_id)==false)
         infos << tr("Not an active trait for this dwarf.");
@@ -69,10 +70,17 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     infos << m_trait->skill_conflicts_msgs(raw_value);
     infos <<m_trait->special_messages(raw_value);
 
+    int conflicting_belief_count = m_trait->get_conflicting_beliefs().count();
+    if(conflicting_belief_count > 0){
+        infos << QString("<br/>This trait can conflict with %1").arg(m_trait->belief_conflicts_names());
+    }
+
     infos.removeAll("");
 
-    if(d->trait_is_conflicted(m_trait_id))
-        item->setData(1,DwarfModel::DR_SPECIAL_FLAG);
+    if(d->trait_is_conflicted(m_trait_id)){
+        int alpha = 255 * ((float)d->trait_conflicts(m_trait_id).count() / (float)conflicting_belief_count);
+        item->setData(alpha, DwarfModel::DR_SPECIAL_FLAG);
+    }
 
     item->setText(QString::number(raw_value));
     item->setData(raw_value, DwarfModel::DR_SORT_VALUE);
@@ -80,7 +88,7 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     item->setData(raw_value, DwarfModel::DR_DISPLAY_RATING);
     set_export_role(DwarfModel::DR_RATING);
     
-    QString tooltip = QString("<center><h3>%1</h3><b>Value: %2</b><br/>%3<br/></center>%4")
+    QString tooltip = QString("<center><h3>%1</h3><b>Value: %2</b></center><br/>%3<br/>%4")
             .arg(m_title)
             .arg(d->trait(m_trait_id))
             .arg(infos.join("<br/>"))

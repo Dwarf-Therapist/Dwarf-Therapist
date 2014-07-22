@@ -397,7 +397,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             short val = traits[trait_id];
             //build the info message
             QStringList msg_items;
-            msg_items << QString("%1%2").arg(t->level_message(val)).arg(t->belief_conficts_msgs(d->trait_conflicts(trait_id))) << t->skill_conflicts_msgs(val) << t->special_messages(val);
+            msg_items << QString("%1%2").arg(t->level_message(val)).arg(t->belief_conficts_msgs(val,d->trait_conflicts(trait_id))) << t->skill_conflicts_msgs(val) << t->special_messages(val);
             msg_items.removeAll("");
 
             //build the tooltip
