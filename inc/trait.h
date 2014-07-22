@@ -60,10 +60,14 @@ public:
     QString skill_conflicts_msgs(const short &val);
     QString skill_conflict_msg(const short &skill_id, const short &val);
 
+    QString belief_conficts_msgs(QList<short> conflicting_beliefs);
     QString belief_conflicts_names();
     QString special_messages(const short &val);
 
     QList<int> get_conflicting_beliefs(){return m_belief_conflicts;}
+
+    static QColor goal_color;
+    static QColor belief_color;
 };
 
 #endif

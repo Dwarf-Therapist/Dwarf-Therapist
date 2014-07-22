@@ -230,7 +230,7 @@ public:
     //! return the sum total of all xp this dwarf has earned
     int total_xp() {return m_total_xp;}
 
-    //! return the probable migration wave this dwarf arrived in (purely a guess)
+    //! return the migration wave
     int migration_wave() {return m_migration_wave;}
 
     //! returns a description of birth or migration

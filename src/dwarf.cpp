@@ -2269,7 +2269,7 @@ QString Dwarf::tooltip_text() {
                 beliefs_list.append(capitalize(b->level_message(val)));
             }
             if(beliefs_list.size() > 0)
-                personality_summary.append(QString("<font color=%1>%2. </font>").arg("#209C9E").arg(beliefs_list.join(". ")));
+                personality_summary.append(QString("<font color=%1>%2. </font>").arg(Trait::belief_color.name()).arg(beliefs_list.join(". ")));
 
             //goals
             QStringList goal_list;
@@ -2278,7 +2278,7 @@ QString Dwarf::tooltip_text() {
                 goal_list.append(desc);
             }
             if(goal_list.size() > 0)
-                personality_summary.append(QString("<font color=%1>%2.</font>").arg("#E8BE15").arg(goal_list.join(". ")));
+                personality_summary.append(QString("<font color=%1>%2.</font>").arg(Trait::goal_color.name()).arg(goal_list.join(". ")));
         }
 
         QList<Role::simple_rating> sorted_roles = sorted_role_ratings();

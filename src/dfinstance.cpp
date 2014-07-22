@@ -630,6 +630,9 @@ void DFInstance::load_population_data(){
 }
 
 void DFInstance::load_role_ratings(){
+    if(m_labor_capable_dwarves.size() <= 0)
+        return;
+
     QVector<double> attribute_values;
     QVector<double> attribute_raw_values;
     QVector<double> skill_values;
@@ -959,7 +962,7 @@ QList<Squad *> DFInstance::load_squads(bool refreshing) {
 
         int squad_count = 0;                
         foreach(VIRTADDR squad_addr, squads_addr) {
-            int id = squad_addr + m_layout->squad_offset("id"); //check the id before loading the squad
+            int id = read_int(squad_addr + m_layout->squad_offset("id")); //check the id before loading the squad
             if(m_fortress->squad_is_active(id)){
                 Squad *s = NULL;
                 s = Squad::get_squad(id, this, squad_addr);

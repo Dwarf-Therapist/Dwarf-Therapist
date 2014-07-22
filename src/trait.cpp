@@ -24,6 +24,10 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include <QtWidgets>
 #include "belief.h"
+#include "fortressentity.h"
+
+QColor Trait::goal_color = QColor(255,153,0,255);
+QColor Trait::belief_color = QColor(32,156,158,255);
 
 //personality facets
 Trait::Trait(int trait_id, QSettings &s, QObject *parent)
@@ -97,7 +101,7 @@ QString Trait::level_message(const short &val){
             ret_val = i.value();
             break;
         }
-    }
+    }            
     return capitalize(ret_val);
 }
 
@@ -128,12 +132,32 @@ QString Trait::skill_conflict_msg(const short &skill_id, const short &val){
     return "";
 }
 
-QString Trait::belief_conflicts_names(){
+QString Trait::belief_conflicts_names(){    
     QStringList items;
     foreach(int belief_id, m_belief_conflicts){
         items.append(GameDataReader::ptr()->get_belief_name(belief_id));
     }
     return items.join(tr(" and "));
+}
+
+QString Trait::belief_conficts_msgs(QList<short> conflicting_beliefs){
+    if(conflicting_beliefs.size() <= 0)
+        return "";
+
+    QStringList conflicts_msg;
+    FortressEntity *fort = DT->get_DFInstance()->fortress();
+    foreach(short belief_id, conflicting_beliefs){
+        Belief *b = GameDataReader::ptr()->get_belief(belief_id);
+        conflicts_msg.append(QString("%1 (%2)").arg(b->level_message(fort->get_belief_value(belief_id)).toLower()).arg(b->name));
+    }
+    QString last_msg;
+    if(conflicts_msg.count() > 1)
+        last_msg = conflicts_msg.takeLast();
+    QString msgs = tr(", but is conflicted because their culture %1").arg(conflicts_msg.join(", "));
+    if(!last_msg.isEmpty()){
+        msgs.append(tr(" and ") + last_msg);
+    }
+    return msgs;
 }
 
 QString Trait::special_messages(const short &val){

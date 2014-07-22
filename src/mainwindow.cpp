@@ -415,8 +415,7 @@ void MainWindow::read_dwarves() {
             foreach(ViewColumn *col, set->columns()) {
                 col->clear_cells();
             }
-        }
-        gv->set_rows_built();
+        }        
     }
     m_model->clear_all(false);
 

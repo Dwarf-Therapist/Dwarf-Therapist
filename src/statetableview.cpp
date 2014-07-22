@@ -62,6 +62,7 @@ StateTableView::StateTableView(QWidget *parent)
     , m_last_group_by(-1)
     , m_vscroll(0)
     , m_hscroll(0)
+    , m_view_name("")
 {
     read_settings();
 

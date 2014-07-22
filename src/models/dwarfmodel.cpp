@@ -266,7 +266,7 @@ void DwarfModel::build_rows() {
             }else if(m_group_by == GB_SEX){
                 m_grouped_dwarves[get_gender_desc(d->get_gender())].append(d);
             }else if(m_group_by == GB_MIGRATION_WAVE){
-                m_grouped_dwarves[d->get_migration_desc()].append(d);
+                m_grouped_dwarves[d->get_migration_desc()].append(d);                
             }else if(m_group_by == GB_AGE){
                 if(d->is_baby()){
                     m_grouped_dwarves[d->profession()].append(d);
@@ -435,7 +435,7 @@ void DwarfModel::build_row(const QString &key) {
         //        agg_first_col->setData(build_gradient_brush(QColor(Qt::gray),125,0,QPoint(0,0),QPoint(1,0)),Qt::BackgroundRole);
         agg_first_col->setData(true, DR_IS_AGGREGATE);
         agg_first_col->setData(key, DR_GROUP_NAME);
-        agg_first_col->setData(0, DR_RATING);        
+        agg_first_col->setData(0, DR_RATING);
         //root->setData(title, DR_SORT_VALUE);
         // for integer based values we want to make sure they sort by the int
         // values instead of the string values

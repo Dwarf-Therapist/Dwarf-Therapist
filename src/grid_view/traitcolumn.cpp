@@ -58,39 +58,32 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
     item->setData(CT_TRAIT, DwarfModel::DR_COL_TYPE);
 
-    short score = d->trait(m_trait_id);
-    QString msg = "???";
+    short raw_value = d->trait(m_trait_id);
+    QStringList infos;
     if (m_trait)
-        msg = tr("%1 (Raw: %2)").arg(m_trait->level_message(score)).arg(score);
+        infos << m_trait->level_message(raw_value).append(m_trait->belief_conficts_msgs(d->trait_conflicts(m_trait_id)));
 
     if (d->trait_is_active(m_trait_id)==false)
-        msg += tr("<br/><br/>Not an active trait for this dwarf.");
+        infos << tr("Not an active trait for this dwarf.");
 
-    QString temp = m_trait->skill_conflicts_msgs(score);
-    if(!temp.isEmpty())
-        msg += tr("<br/><br/>%1").arg(temp);
-    temp = m_trait->special_messages(score);
-    if(!temp.isEmpty())
-        msg += tr("<br/><br/>%1").arg(temp);
+    infos << m_trait->skill_conflicts_msgs(raw_value);
+    infos <<m_trait->special_messages(raw_value);
 
-    int rating = score;
-    QString warning = "";
-    if(GameDataReader::ptr()->get_trait(m_trait_id)->inverted){
-        warning = tr("<br/><h5 style=\"margin:0;\"><font color=red>*This trait's score should be valued inversely!</font></h5>");
-        rating = 100 - score;
-    }
+    infos.removeAll("");
 
-    item->setText(QString::number(score));
-    item->setData(rating, DwarfModel::DR_SORT_VALUE);
-    item->setData(rating, DwarfModel::DR_RATING);
-    item->setData(rating, DwarfModel::DR_DISPLAY_RATING);
-    item->setData(score, DwarfModel::DR_SPECIAL_FLAG);
-    set_export_role(DwarfModel::DR_SPECIAL_FLAG);
+    if(d->trait_is_conflicted(m_trait_id))
+        item->setData(1,DwarfModel::DR_SPECIAL_FLAG);
+
+    item->setText(QString::number(raw_value));
+    item->setData(raw_value, DwarfModel::DR_SORT_VALUE);
+    item->setData(raw_value, DwarfModel::DR_RATING);
+    item->setData(raw_value, DwarfModel::DR_DISPLAY_RATING);
+    set_export_role(DwarfModel::DR_RATING);
     
-    QString tooltip = QString("<center><h3>%1</h3></center>%2<br>%3%4")
+    QString tooltip = QString("<center><h3>%1</h3><b>Value: %2</b><br/>%3<br/></center>%4")
             .arg(m_title)
-            .arg(msg)
-            .arg(warning)
+            .arg(d->trait(m_trait_id))
+            .arg(infos.join("<br/>"))
             .arg(tooltip_name_footer(d));
     item->setToolTip(tooltip);
 

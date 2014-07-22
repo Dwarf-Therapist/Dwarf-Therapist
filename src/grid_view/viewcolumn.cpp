@@ -117,12 +117,7 @@ QStandardItem *ViewColumn::init_aggregate(QString group_name){
     item->setData(bg, Qt::BackgroundColorRole);
     item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
 
-    item->setData(group_name, DwarfModel::DR_GROUP_NAME);
-
-    //when setting up an aggregate column, if it's required that the cells have something drawn, then
-    //make sure to set the column type, otherwise nothing will be drawn
-    //item->setData(m_type, DwarfModel::DR_COL_TYPE);
-
+    item->setData(group_name, DwarfModel::DR_GROUP_NAME);    
     item->setData(-1, DwarfModel::DR_RATING);
     item->setData(-1, DwarfModel::DR_DISPLAY_RATING);
     item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
