@@ -140,6 +140,9 @@ Dwarf::~Dwarf() {
     m_actions_memory.clear();
 
     m_traits.clear();
+    m_beliefs.clear();
+    m_conflicting_beliefs.clear();
+
     m_skills.clear();
     m_sorted_skills.clear();
     m_attributes.clear();
@@ -1685,23 +1688,37 @@ void Dwarf::read_personality() {
     if(!m_is_animal){
         VIRTADDR personality_addr = m_first_soul + m_mem->soul_detail("personality");
 
+        //read personal beliefs before traits, as a dwarf will have a conflict with either personal beliefs or cultural beliefs
+        QVector<VIRTADDR> m_beliefs_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("beliefs"));
+        UnitBelief ub;
+        foreach(VIRTADDR addr, m_beliefs_addrs){
+            int belief_id = m_df->read_int(addr);
+            if(belief_id >= 0){
+                short val = m_df->read_short(addr + 0x0004);
+                ub.belief_id = belief_id;
+                ub.belief_value = val;
+                ub.is_personal = true;
+                m_beliefs.insert(belief_id, ub);
+            }
+        }
+
         VIRTADDR traits_addr = personality_addr + m_mem->soul_detail("traits");
         m_traits.clear();
         int trait_count = GameDataReader::ptr()->get_traits().count();
 
-        for (int i = 0; i < trait_count; ++i) {
-            short val = m_df->read_short(traits_addr + i * 2);
+        for (int trait_id = 0; trait_id < trait_count; ++trait_id) {
+            short val = m_df->read_short(traits_addr + trait_id * 2);
             if(val < 0)
                 val = 0;
             if(val > 100)
                 val = 100;
-            m_traits.insert(i, val);
+            m_traits.insert(trait_id, val);
 
-            QList<int> conflicts = GameDataReader::ptr()->get_trait(i)->get_conflicting_beliefs();
-            foreach(int belief_id, conflicts){
-                int entity_val = m_df->fortress()->get_belief_value(belief_id);
-                if((entity_val >= 10 && val < 40)  || (entity_val < -10 && val > 60)){
-                    m_conflicting_beliefs.insertMulti(i,belief_id);                    
+            QList<int> possible_conflicts = GameDataReader::ptr()->get_trait(trait_id)->get_conflicting_beliefs();
+            foreach(int belief_id, possible_conflicts){
+                UnitBelief ub = get_unit_belief(belief_id);
+                if((ub.belief_value > 10 && val < 40)  || (ub.belief_value < -10 && val > 60)){
+                    m_conflicting_beliefs.insertMulti(trait_id, ub);
                 }
             }
         }
@@ -1714,16 +1731,6 @@ void Dwarf::read_personality() {
                 if(val > 0)
                     m_goals_realized++;
                 m_goals.insert(goal_type,val);
-            }
-        }
-
-        //these appear to only be the beliefs that are different from the entity/race's beliefs
-        QVector<VIRTADDR> m_beliefs_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("beliefs"));
-        foreach(VIRTADDR addr, m_beliefs_addrs){
-            int belief_id = m_df->read_int(addr);
-            if(belief_id >= 0){
-                short val = m_df->read_short(addr + 0x0004);
-                m_beliefs.insert(belief_id,val);
             }
         }
 
@@ -1752,11 +1759,17 @@ bool Dwarf::trait_is_active(int trait_id){
     return true;
 }
 
-short Dwarf::get_belief_value(int belief_id){
-    if(!m_beliefs.contains(belief_id))
-        return m_df->fortress()->get_belief_value(belief_id);
-    else
-        return m_beliefs.value(belief_id);
+bool Dwarf::belief_is_active(int belief_id){
+    return (m_beliefs.value(belief_id).is_personal && abs(m_beliefs.value(belief_id).belief_value) > 10);
+}
+
+//this returns either the personal belief (if it exists), or the cultural belief (default)
+UnitBelief Dwarf::get_unit_belief(int belief_id){
+    if(!m_beliefs.contains(belief_id)){
+        UnitBelief ub(belief_id,m_df->fortress()->get_belief_value(belief_id),false);
+        m_beliefs.insert(belief_id,ub);
+    }
+    return m_beliefs.value(belief_id);
 }
 
 void Dwarf::read_attributes() {
@@ -2233,15 +2246,15 @@ QString Dwarf::tooltip_text() {
             QString conflict_color = QColor(176,23,31).name();
             if(!m_traits.isEmpty()){
                 QStringList notes;
-                for (int i = 0; i < m_traits.size(); ++i) {
+                for (int trait_id = 0; trait_id < m_traits.size(); ++trait_id) {
                     notes.clear();
-                    if (trait_is_active(i)){
-                        Trait *t = gdr->get_trait(i);
+                    if (trait_is_active(trait_id)){
+                        Trait *t = gdr->get_trait(trait_id);
                         if (!t)
                             continue;
-                        int val = m_traits.value(i);
+                        int val = m_traits.value(trait_id);
                         QString msg = capitalize(t->level_message(val));
-                        if(trait_is_conflicted(i))
+                        if(trait_is_conflicted(trait_id))
                             msg = QString("<font color=%1>%2</font>").arg(conflict_color).arg(msg);
                         personality_summary.append(msg);
                         QString temp = t->skill_conflicts_msgs(val);
@@ -2262,10 +2275,12 @@ QString Dwarf::tooltip_text() {
             //beliefs
             QStringList beliefs_list;
             foreach(int belief_id, m_beliefs.uniqueKeys()) {
+                if(!belief_is_active(belief_id))
+                    continue;
                 Belief *b = gdr->get_belief(belief_id);
                 if (!b)
                     continue;
-                int val = m_beliefs.value(belief_id);
+                int val = m_beliefs.value(belief_id).belief_value;
                 beliefs_list.append(capitalize(b->level_message(val)));
             }
             if(beliefs_list.size() > 0)

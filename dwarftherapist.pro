@@ -245,7 +245,8 @@ HEADERS += inc/win_structs.h \
     inc/rolestats.h \
     inc/ecdf.h \
     inc/contextmenuhelper.h \
-    inc/belief.h
+    inc/belief.h \
+    inc/unitbelief.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \

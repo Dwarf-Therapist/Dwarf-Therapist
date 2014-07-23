@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include "columntypes.h"
 #include "mainwindow.h"
 #include "dfinstance.h"
-
 class QListWidgetItem;
 class OptionsMenu;
 class QSettings;
@@ -43,7 +42,7 @@ class LogManager;
 
 class DwarfTherapist : public QApplication {
     Q_OBJECT
-public:
+public:   
     DwarfTherapist(int &argc, char **argv);
     virtual ~DwarfTherapist();
 

@@ -246,7 +246,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
             bg = paint_bg(adjusted, p, opt, idx);
         }
 
-        paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 2.5f, 95.0f, 42.5f, 57.5f);
+        paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 5.0f, 95.0f, 40.0f, 60.0f);
 
         if(dirty){
             QColor color_dirty_adjusted = color_dirty_border;

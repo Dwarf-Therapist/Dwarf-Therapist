@@ -206,4 +206,16 @@ static inline bool has_flag(int flag, int flags){
     return ((flag & flags) == flag);
 }
 
+static inline QString nice_list(QStringList values){
+    QString ret_val = "";
+    QString last_msg;
+    if(values.count() > 1)
+        last_msg = values.takeLast();
+    ret_val = values.join(", ");
+    if(!last_msg.isEmpty()){
+        ret_val.append(QObject::tr(" and ") + last_msg);
+    }
+    return ret_val;
+}
+
 #endif // UTILS_H

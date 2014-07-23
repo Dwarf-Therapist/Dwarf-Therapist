@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include "dwarfstats.h"
 #include "defaultfonts.h"
 
+
 DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     : QApplication(argc, argv)
     , multiple_castes(false)

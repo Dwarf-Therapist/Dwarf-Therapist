@@ -24,7 +24,6 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include <QtWidgets>
 #include "belief.h"
-#include "fortressentity.h"
 
 QColor Trait::goal_color = QColor(255,153,0,255);
 QColor Trait::belief_color = QColor(32,156,158,255);
@@ -140,23 +139,28 @@ QString Trait::belief_conflicts_names(){
     return items.join(tr(" and "));
 }
 
-QString Trait::belief_conficts_msgs(short raw_value, QList<short> conflicting_beliefs){
+QString Trait::belief_conficts_msgs(short raw_value, QList<UnitBelief> conflicting_beliefs){
     if(conflicting_beliefs.size() <= 0)
         return "";
 
-    QStringList conflicts_msg;
-    FortressEntity *fort = DT->get_DFInstance()->fortress();
-    foreach(short belief_id, conflicting_beliefs){
+    QStringList cultural_conflicts;
+    QStringList personal_conflicts;
+    foreach(UnitBelief ub, conflicting_beliefs){
+        short belief_id = ub.belief_id;
         Belief *b = GameDataReader::ptr()->get_belief(belief_id);
-        conflicts_msg.append(QString("%1 (%2)").arg(b->level_message(fort->get_belief_value(belief_id)).toLower()).arg(b->name));
+        QString msg = QString("%1 (%2)").arg(b->level_message(ub.belief_value).toLower()).arg(b->name);
+        if(ub.is_personal){
+            personal_conflicts.append(msg);
+        }else{
+            cultural_conflicts.append(msg);
+        }
     }
-    QString last_msg;
-    if(conflicts_msg.count() > 1)
-        last_msg = conflicts_msg.takeLast();
-    QString msgs = (raw_value > 50 ? tr(", but") : tr(", and")) + tr(" is conflicted because their culture %1").arg(conflicts_msg.join(", "));
-    if(!last_msg.isEmpty()){
-        msgs.append(tr(" and ") + last_msg);
-    }
+    QStringList combined;
+    if(cultural_conflicts.size() > 0)
+        combined << (raw_value > 50 ? tr(", but") : tr(", and")) + tr(" is conflicted because their culture %1").arg(nice_list(cultural_conflicts));
+    if(personal_conflicts.size() > 0)
+        combined << tr(" although %1").arg(nice_list(personal_conflicts));
+    QString msgs = nice_list(combined);
     return msgs;
 }
 

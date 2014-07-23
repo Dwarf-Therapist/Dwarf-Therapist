@@ -72,7 +72,7 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
     QBrush grad_brush = QBrush(bg);
     if (m_shade_column_headers) {
         QLinearGradient g(rect.topLeft(), rect.bottomLeft());
-        g.setColorAt(0.25, QColor(255, 255, 255, 10));
+        g.setColorAt(0.05, QColor(255, 255, 255, 10));
         g.setColorAt(1.0, bg);
         grad_brush = QBrush(g);
     }
@@ -132,7 +132,7 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
     }
     */
 
-    QString data = this->model()->headerData(idx, Qt::Horizontal).toString();    
+    QString data = this->model()->headerData(idx, Qt::Horizontal).toString();
     p->save();
     p->setPen(Qt::black);
     p->setRenderHint(QPainter::TextAntialiasing);    
@@ -143,7 +143,7 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
     {
         //flip column header text to read from bottom to top (supposedly this is more readable...)
         p->translate(rect.x() + rect.width(), rect.height());
-        p->rotate(270);                        
+        p->rotate(-90);
         p->drawText(4,-rect.width() + ((rect.width()-fm.height()) / 2),rect.height()-10,rect.width(),1,data);
     }
     else

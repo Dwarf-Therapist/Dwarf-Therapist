@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include "unithealth.h"
 #include "item.h"
 #include "itemdefuniform.h"
-//#include "itemarmor.h"
+#include "unitbelief.h"
 
 class DFInstance;
 class MemoryLayout;
@@ -276,7 +276,7 @@ public:
 
     bool trait_is_active(int trait_id);
     bool trait_is_conflicted(const int &trait_id);
-    QList<short> trait_conflicts(const int &trait_id){return m_conflicting_beliefs.values(trait_id);}
+    QList<UnitBelief> trait_conflicts(const int &trait_id){return m_conflicting_beliefs.values(trait_id);}
 
     Q_INVOKABLE int attribute(int attrib_id) {return get_attribute(attrib_id).get_value();}
     Attribute get_attribute(int id);
@@ -290,8 +290,10 @@ public:
     //! return a hashmap of trait_id to trait score for this dwarf
     const QHash<int, short> &traits() {return m_traits;}
     QHash<int, short> &goals() {return m_goals;}
-    QHash<int, short> &beliefs() {return m_beliefs;}
-    short get_belief_value(int belief_id);
+
+    bool belief_is_active(int belief_id);
+    QHash<int, UnitBelief> &beliefs() {return m_beliefs;}
+    UnitBelief get_unit_belief(int belief_id);
 
     //! return a hashmap of roles and ratings for this dwarf
     const QHash<QString, float> &role_ratings() {return m_role_ratings;}
@@ -544,8 +546,8 @@ private:
     QMultiMap<float, int> m_sorted_skills; //level, skill_id
     QHash<int, short> m_traits;
     QHash<int, short> m_goals;
-    QHash<int, short> m_beliefs;
-    QMultiHash<int,short> m_conflicting_beliefs; //trait_id, conflicting belief_id(s)
+    QHash<int, UnitBelief> m_beliefs;
+    QMultiHash<int, UnitBelief> m_conflicting_beliefs; //trait_id, conflicting belief_id(s)
     QVector<Attribute> m_attributes;
     QMap<int, ushort> m_labors;
     QMap<int, ushort> m_pending_labors;

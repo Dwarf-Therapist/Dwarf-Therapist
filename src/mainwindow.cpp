@@ -71,7 +71,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , m_df(0)
-    , m_lbl_status(new QLabel(tr("not connected"), this))
+    , m_lbl_status(new QLabel(tr("Disconnected"), this))
     , m_lbl_message(new QLabel(tr("Initializing"), this))
     , m_progress(new QProgressBar(this))
     , m_settings(0)
@@ -325,18 +325,16 @@ void MainWindow::connect_to_df() {
 
         if(m_df->memory_layout()){
             LOGI << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
-            m_lbl_status->setText(tr("Connected to %1").arg(m_df->memory_layout()->game_version()));
-            m_lbl_status->setToolTip(tr("Currently using layout file: %1").arg(m_df->memory_layout()->filename()));
+            set_status_message(tr("Connected to DF %1").arg(m_df->memory_layout()->game_version()),tr("Currently using layout file: %1").arg(m_df->memory_layout()->filename()));
         }else{
             LOGI << "Connection to unknown DF Version established.";
-            m_lbl_status->setText("Connected to unknown version");
+            set_status_message("Connected to unknown version!","");
         }
         m_force_connect = false;
     } else if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
         m_scanner = new Scanner(m_df, this);
         LOGI << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
-        m_lbl_status->setText(tr("Connected to %1").arg(m_df->memory_layout()->game_version()));
-        m_lbl_status->setToolTip(tr("Currently using layout file: %1").arg(m_df->memory_layout()->filename()));
+        set_status_message(tr("Connected to DF %1").arg(m_df->memory_layout()->game_version()),tr("Currently using layout file: %1").arg(m_df->memory_layout()->filename()));
         m_force_connect = false;
     } else {
         m_force_connect = true;
@@ -369,6 +367,11 @@ void MainWindow::connect_to_df() {
     }
 }
 
+void MainWindow::set_status_message(QString msg, QString tooltip_msg){
+    m_lbl_status->setText(tr("%1 - DT Version %2").arg(msg).arg(Version().to_string()));
+    m_lbl_status->setToolTip(tr("<span>%1</span>").arg(tooltip_msg));
+}
+
 void MainWindow::lost_df_connection() {
     LOGW << "lost connection to DF";
     if (m_df) {
@@ -378,10 +381,9 @@ void MainWindow::lost_df_connection() {
         m_df = 0;                    
         reset();
         set_interface_enabled(false);
-        m_lbl_status->setText(tr("Not Connected"));
-        QMessageBox::information(this, tr("Unable to talk to Dwarf Fortress"),
-            tr("Dwarf Fortress has either stopped running, or you unloaded "
-               "your game. Please re-connect when a fort is loaded."));
+        QString details = tr("Dwarf Fortress has either stopped running, or you unloaded your game. Please re-connect when a fort is loaded.");
+        set_status_message(tr("Disconnected"), details);
+        QMessageBox::information(this, tr("Unable to talk to Dwarf Fortress"), details);
     }
 }
 
@@ -514,7 +516,7 @@ void MainWindow::read_dwarves() {
     }
 
     LOGI << "completed read in" << t.elapsed() << "ms";
-    set_progress_message(tr("Version %1").arg(Version().to_string()));
+    set_progress_message("");
 }
 
 void MainWindow::set_interface_enabled(bool enabled) {

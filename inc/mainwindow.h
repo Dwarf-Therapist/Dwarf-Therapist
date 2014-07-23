@@ -70,7 +70,7 @@ public:
         void read_dwarves();
         void scan_memory();
         void new_pending_changes(int);
-        void new_creatures_count(int,int,int,QString);
+        void new_creatures_count(int,int,int,QString);        
         void lost_df_connection();
 
         //settings
@@ -116,10 +116,11 @@ public:
         void go_to_project_home();
         void go_to_new_issue();
 
-        // progress
+        // progress/status
         void set_progress_message(const QString &msg);
         void set_progress_range(int min, int max);
         void set_progress_value(int value);
+        void set_status_message(QString msg, QString tooltip_msg);
 
         // misc
         void show_dwarf_details_dock(Dwarf *d = 0);

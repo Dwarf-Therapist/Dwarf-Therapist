@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "global_enums.h"
 #include "dwarfstats.h"
 #include "gamedatareader.h"
+#include "unitbelief.h"
 
 class Trait : public QObject {
     Q_OBJECT
@@ -60,7 +61,7 @@ public:
     QString skill_conflicts_msgs(const short &val);
     QString skill_conflict_msg(const short &skill_id, const short &val);
 
-    QString belief_conficts_msgs(short raw_value, QList<short> conflicting_beliefs);
+    QString belief_conficts_msgs(short raw_value, QList<UnitBelief> conflicting_beliefs);
     QString belief_conflicts_names();
     QString special_messages(const short &val);
 

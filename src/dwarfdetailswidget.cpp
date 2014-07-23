@@ -389,6 +389,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     QHash<int, short> traits = d->traits();
     ui->tw_traits->setSortingEnabled(false);
     QColor trait_color;
+    QList<int> conflicted_beliefs;
     for (int trait_id = 0; trait_id < traits.size(); ++trait_id) {       
         if (d->trait_is_active(trait_id))
         {
@@ -403,8 +404,9 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             //build the tooltip
             if(d->trait_is_conflicted(trait_id)){
                 trait_color = color_low;
-                foreach(short belief_id, d->trait_conflicts(trait_id)){                    
-                    add_belief_row(belief_id,d,true); //add the conflicting entity belief to compare
+                foreach(UnitBelief ub, d->trait_conflicts(trait_id)){
+                    add_belief_row(ub.belief_id,d,true); //add the conflicting entity belief to compare
+                    conflicted_beliefs.append(ub.belief_id);
                 }
             }
             QString msg = msg_items.join(". ");
@@ -417,9 +419,10 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         QString desc = gdr->get_goal_desc(id,d->goals().value(id));
         add_personality_row(name,d->goals().value(id)*100,desc,desc,Trait::goal_color);
     }
-    //and personal beliefs
-    foreach(int id, d->beliefs().uniqueKeys()){
-        add_belief_row(id,d);
+    //add any personal beliefs that haven't already been added when the conflicts were checked
+    foreach(UnitBelief ub, d->beliefs()){
+        if(d->belief_is_active(ub.belief_id) && !conflicted_beliefs.contains(ub.belief_id))
+            add_belief_row(ub.belief_id,d);
     }
 
     ui->tw_traits->setSortingEnabled(true);
@@ -584,7 +587,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
 void DwarfDetailsWidget::add_belief_row(int belief_id, Dwarf *d, bool is_cultural){
     Belief *b = GameDataReader::ptr()->get_belief(belief_id);
-    short val = d->get_belief_value(belief_id);
+    short val = d->get_unit_belief(belief_id).belief_value;
     QString name = "~" + b->name;
     QString desc = b->level_message(val);
     QString tooltip = desc;
