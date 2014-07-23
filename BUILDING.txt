@@ -24,7 +24,23 @@ For Debian-derived (Ubuntu, Mint, etc.) distributions, you can run the following
 # Clone the project using git
 Clone the project to wherever you like.  The location doesn't really matter.
 
+For 34.11 and older use the main branch:
+
     > git clone git://github.com/splintermind/Dwarf-Therapist.git
+    
+For 40.00 and newer use the DF2012 branch:
+
+    > git clone git://github.com/splintermind/Dwarf-Therapist.git DF2014
+    
+If you already have the older version checked out and you'd like to move to the new branch:
+
+    > git checkout DF2014
+    > git pull
+    
+    If you receive any errors about uncommitted changes:
+    
+        > git status # tells you what files have changed
+        > git checkout -- # put the listed files between the dashes and hash
 
 
 # Build the project
