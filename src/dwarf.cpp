@@ -1689,15 +1689,12 @@ void Dwarf::read_personality() {
         VIRTADDR personality_addr = m_first_soul + m_mem->soul_detail("personality");
 
         //read personal beliefs before traits, as a dwarf will have a conflict with either personal beliefs or cultural beliefs
-        QVector<VIRTADDR> m_beliefs_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("beliefs"));
-        UnitBelief ub;
+        QVector<VIRTADDR> m_beliefs_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("beliefs"));        
         foreach(VIRTADDR addr, m_beliefs_addrs){
             int belief_id = m_df->read_int(addr);
             if(belief_id >= 0){
                 short val = m_df->read_short(addr + 0x0004);
-                ub.belief_id = belief_id;
-                ub.belief_value = val;
-                ub.is_personal = true;
+                UnitBelief ub(belief_id,val,true);
                 m_beliefs.insert(belief_id, ub);
             }
         }
@@ -1717,7 +1714,7 @@ void Dwarf::read_personality() {
             QList<int> possible_conflicts = GameDataReader::ptr()->get_trait(trait_id)->get_conflicting_beliefs();
             foreach(int belief_id, possible_conflicts){
                 UnitBelief ub = get_unit_belief(belief_id);
-                if((ub.belief_value > 10 && val < 40)  || (ub.belief_value < -10 && val > 60)){
+                if((ub.belief_value() > 10 && val < 40)  || (ub.belief_value() < -10 && val > 60)){
                     m_conflicting_beliefs.insertMulti(trait_id, ub);
                 }
             }
@@ -1759,8 +1756,8 @@ bool Dwarf::trait_is_active(int trait_id){
     return true;
 }
 
-bool Dwarf::belief_is_active(int belief_id){
-    return (m_beliefs.value(belief_id).is_personal && abs(m_beliefs.value(belief_id).belief_value) > 10);
+bool Dwarf::belief_is_active(const int &belief_id){
+    return (m_beliefs.value(belief_id).is_active());
 }
 
 //this returns either the personal belief (if it exists), or the cultural belief (default)
@@ -2279,9 +2276,8 @@ QString Dwarf::tooltip_text() {
                     continue;
                 Belief *b = gdr->get_belief(belief_id);
                 if (!b)
-                    continue;
-                int val = m_beliefs.value(belief_id).belief_value;
-                beliefs_list.append(capitalize(b->level_message(val)));
+                    continue;                
+                beliefs_list.append(capitalize(b->level_message(m_beliefs.value(belief_id).belief_value())));
             }
             if(beliefs_list.size() > 0)
                 personality_summary.append(QString("<font color=%1>%2. </font>").arg(Trait::belief_color.name()).arg(beliefs_list.join(". ")));

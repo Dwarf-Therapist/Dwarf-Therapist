@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "global_enums.h"
 #include "dwarfstats.h"
 #include "gamedatareader.h"
+#include "fortressentity.h"
 
 class Belief : public QObject {
     Q_OBJECT
@@ -41,6 +42,7 @@ public:
     QString name;
     int m_id;
 
+    bool is_active(const short &personal_val);
     QString level_message(const short &val);
 };
 

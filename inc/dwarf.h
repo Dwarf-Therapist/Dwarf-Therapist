@@ -291,7 +291,7 @@ public:
     const QHash<int, short> &traits() {return m_traits;}
     QHash<int, short> &goals() {return m_goals;}
 
-    bool belief_is_active(int belief_id);
+    bool belief_is_active(const int &belief_id);
     QHash<int, UnitBelief> &beliefs() {return m_beliefs;}
     UnitBelief get_unit_belief(int belief_id);
 

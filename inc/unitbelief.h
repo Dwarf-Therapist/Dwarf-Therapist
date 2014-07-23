@@ -25,32 +25,46 @@ THE SOFTWARE.
 
 #include <QObject>
 #include <QString>
+#include "belief.h"
 
 class UnitBelief{
 public:
     UnitBelief(short id, int value, bool is_personal)
-        : belief_id(id)
-        , belief_value(value)
-        , is_personal(is_personal)
+        : m_belief_id(id)
+        , m_belief_value(value)
+        , m_is_personal(is_personal)
     {
+        check_active(id,value);
     }
 
     UnitBelief()
-        : belief_id(-1)
-        , belief_value(-999)
-        , is_personal(true)
-    {
+        : m_belief_id(-1)
+        , m_belief_value(-999)
+        , m_is_personal(true)
+        , m_is_active(false)
+    {        
     }
 
-    short belief_id;
-    int belief_value;
-    bool is_personal;
-
-    bool operator==(const UnitBelief &other) const {
-        if(this == &other)
-            return true;
-        return (this->belief_id == other.belief_id);
+    void check_active(short id, int val){
+        Belief *b = GameDataReader::ptr()->get_belief(id);
+        if(b){
+            m_is_active = b->is_active(val);
+        }
     }
+
+    short belief_id() const {return m_belief_id;}
+    int belief_value() const {return m_belief_value;}
+    bool is_personal() const {return m_is_personal;}
+
+    bool is_active() const{
+        return (m_is_personal && m_is_active);
+    }
+
+private:
+    short m_belief_id;
+    int m_belief_value;
+    bool m_is_personal;
+    bool m_is_active;
 
 };
 

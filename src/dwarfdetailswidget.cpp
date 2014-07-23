@@ -350,9 +350,6 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         attribute_rating->setText(QString::number(a.display_value()));
         attribute_rating->setData(Qt::UserRole, a.display_value());
         attribute_rating->setToolTip(a.get_value_display());
-        if(a.get_descriptor_rank() <= 3) { //3 is the last bin before the median group
-            attribute_rating->setForeground(color_low);
-        }
 
         if(a.syndrome_names().count() > 0){
             attribute_name->setForeground(Attribute::color_affected_by_syns());
@@ -377,6 +374,14 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
         QTableWidgetItem *attribute_msg = new QTableWidgetItem(lvl_msg);
         attribute_msg->setToolTip(lvl_msg);
+
+        if(a.get_descriptor_rank() <= 3) { //3 is the last bin before the median group
+            attribute_name->setForeground(color_low);
+            attribute_rating->setForeground(color_low);
+            attribute_max->setForeground(color_low);
+            attribute_msg->setForeground(color_low);
+        }
+
         ui->tw_attributes->setItem(0, 0, attribute_name);
         ui->tw_attributes->setItem(0, 1, attribute_rating);
         ui->tw_attributes->setItem(0, 2, attribute_max);
@@ -405,8 +410,8 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             if(d->trait_is_conflicted(trait_id)){
                 trait_color = color_low;
                 foreach(UnitBelief ub, d->trait_conflicts(trait_id)){
-                    add_belief_row(ub.belief_id,d,true); //add the conflicting entity belief to compare
-                    conflicted_beliefs.append(ub.belief_id);
+                    add_belief_row(ub.belief_id(),d,true); //add the conflicting entity belief to compare
+                    conflicted_beliefs.append(ub.belief_id());
                 }
             }
             QString msg = msg_items.join(". ");
@@ -421,8 +426,8 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     }
     //add any personal beliefs that haven't already been added when the conflicts were checked
     foreach(UnitBelief ub, d->beliefs()){
-        if(d->belief_is_active(ub.belief_id) && !conflicted_beliefs.contains(ub.belief_id))
-            add_belief_row(ub.belief_id,d);
+        if(d->belief_is_active(ub.belief_id()) && !conflicted_beliefs.contains(ub.belief_id()))
+            add_belief_row(ub.belief_id(),d);
     }
 
     ui->tw_traits->setSortingEnabled(true);
@@ -587,7 +592,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
 void DwarfDetailsWidget::add_belief_row(int belief_id, Dwarf *d, bool is_cultural){
     Belief *b = GameDataReader::ptr()->get_belief(belief_id);
-    short val = d->get_unit_belief(belief_id).belief_value;
+    short val = d->get_unit_belief(belief_id).belief_value();
     QString name = "~" + b->name;
     QString desc = b->level_message(val);
     QString tooltip = desc;
@@ -616,6 +621,8 @@ void DwarfDetailsWidget::add_personality_row(QString title, int raw_value, QStri
 
     if(override != Qt::black){
         trait_name->setForeground(override);
+        trait_raw->setForeground(override);
+        trait_msg->setForeground(override);
     }
 
     ui->tw_traits->setItem(0, 0, trait_name);

@@ -146,10 +146,10 @@ QString Trait::belief_conficts_msgs(short raw_value, QList<UnitBelief> conflicti
     QStringList cultural_conflicts;
     QStringList personal_conflicts;
     foreach(UnitBelief ub, conflicting_beliefs){
-        short belief_id = ub.belief_id;
+        short belief_id = ub.belief_id();
         Belief *b = GameDataReader::ptr()->get_belief(belief_id);
-        QString msg = QString("%1 (%2)").arg(b->level_message(ub.belief_value).toLower()).arg(b->name);
-        if(ub.is_personal){
+        QString msg = QString("%1 (%2)").arg(b->level_message(ub.belief_value()).toLower()).arg(b->name);
+        if(ub.is_personal()){
             personal_conflicts.append(msg);
         }else{
             cultural_conflicts.append(msg);

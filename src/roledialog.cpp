@@ -631,7 +631,7 @@ void roleDialog::load_material_prefs(QVector<Material*> mats, QString prefix_nam
         }else if(check_flag(m,p,IS_GLASS) || check_flag(m,p,CRYSTAL_GLASSABLE)){
             parent = m_glass;
         }else if(check_flag(m,p,IS_METAL)){
-            parent = m_metals;
+            parent = m_metals;            
         }else if(check_flag(m,p,IS_WOOD)){
             parent = m_wood;
         }else if(check_flag(m,p,IS_STONE)){

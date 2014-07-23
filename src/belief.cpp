@@ -40,6 +40,26 @@ Belief::Belief(int id, QSettings &s, QObject *parent)
     m_level_string[41] = s.value("level_6", "").toString();
 }
 
+bool Belief::is_active(const short &personal_val){
+    //if the cultural value is between the neutral ranges (-10 to 10) it will be active outside that range
+    //otherwise, use the range where the cultural value was found as the limits for active or not
+    //eg. cultural norm is 15, so anything outside the 11 to 26 range is active
+    int entity_val = DT->get_DFInstance()->fortress()->get_belief_value(m_id);
+    if(abs(entity_val) <= 10){
+        return (abs(personal_val) > 10);
+    }else{
+        QMapIterator<int,QString> i(m_level_string);
+        i.toBack();
+        while(i.hasPrevious()){
+            i.previous();
+            if(entity_val >= i.key()){
+                return (personal_val < i.key() || (i.hasPrevious() && personal_val >= i.peekPrevious().key()));
+            }
+        }
+        return false;
+    }
+}
+
 QString Belief::level_message(const short &val){
     QString ret_val;
     QMapIterator<int,QString> i(m_level_string);
