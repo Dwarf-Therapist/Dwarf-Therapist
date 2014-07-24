@@ -28,7 +28,7 @@ For 34.11 and older use the main branch:
 
     > git clone git://github.com/splintermind/Dwarf-Therapist.git
     
-For 40.00 and newer use the DF2012 branch:
+For 40.00 and newer use the DF2014 branch:
 
     > git clone git://github.com/splintermind/Dwarf-Therapist.git DF2014
     
