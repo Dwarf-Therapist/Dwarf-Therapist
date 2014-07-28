@@ -1,3 +1,11 @@
+### Version 23.3 Patch Notes
+
+***
+
+- fixes for which beliefs should be shown in the tooltips/details pane
+- fixed game_data.ini for hero profession labors and descriptions
+- traits are checked for conflicts with personal beliefs in addition to cultural conflicts
+
 ### Version 23.2 Patch Notes
 
 ***
