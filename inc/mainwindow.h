@@ -90,7 +90,7 @@ public:
         void list_pending();
 
         //custom profession
-        void draw_professions();
+        void load_customizations();
         void draw_custom_profession_context_menu(const QPoint &);
 
         //filter scripts
@@ -192,6 +192,7 @@ private:
         void thought_selected(QList<short> ids);
         void health_legend_selected(QList<QPair<int,int> > vals);
         //optimization stuff
+        void toggle_opts_menu();
         void edit_opt();
         void remove_opt();
         void done_editing_opt_plan(int result);

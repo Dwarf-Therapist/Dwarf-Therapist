@@ -47,9 +47,6 @@ public:
     //override
     void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("attribute", m_attribute_type);}
 
-public slots:
-    //void read_settings();
-
 private:
     ATTRIBUTES_TYPE m_attribute_type;
 };

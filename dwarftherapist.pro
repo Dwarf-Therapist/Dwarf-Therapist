@@ -194,7 +194,6 @@ HEADERS += inc/win_structs.h \
     inc/global_enums.h \
     inc/grid_view/weaponcolumn.h \
     inc/roledialog.h \
-    inc/rolecalc.h \
     inc/reaction.h \
     inc/races.h \
     inc/languages.h \    
@@ -246,7 +245,11 @@ HEADERS += inc/win_structs.h \
     inc/ecdf.h \
     inc/contextmenuhelper.h \
     inc/belief.h \
-    inc/unitbelief.h
+    inc/unitbelief.h \
+    inc/superlabor.h \
+    inc/grid_view/superlaborcolumn.h \
+    inc/grid_view/customprofessioncolumn.h \
+    inc/multilabor.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -298,7 +301,6 @@ SOURCES += src/viewmanager.cpp \
     src/attribute.cpp \
     src/grid_view/weaponcolumn.cpp \
     src/roledialog.cpp \
-    src/rolecalc.cpp \
     src/races.cpp \
     src/languages.cpp \    
     src/caste.cpp \
@@ -330,7 +332,11 @@ SOURCES += src/viewmanager.cpp \
     src/itemweaponsubtype.cpp \
     src/ecdf.cpp \
     src/rolestats.cpp \
-    src/belief.cpp
+    src/belief.cpp \
+    src/grid_view/superlaborcolumn.cpp \
+    src/superlabor.cpp \
+    src/multilabor.cpp \
+    src/grid_view/customprofessioncolumn.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \
@@ -346,5 +352,6 @@ FORMS += ui/scriptdialog.ui \
     ui/about.ui \
     ui/selectparentlayoutdialog.ui \
     ui/roledialog.ui \
-    ui/optimizereditor.ui
+    ui/optimizereditor.ui \
+    ui/superlabor.ui
 RESOURCES += images.qrc

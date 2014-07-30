@@ -32,12 +32,12 @@ THE SOFTWARE.
 #include "item.h"
 #include "itemdefuniform.h"
 #include "unitbelief.h"
+#include "role.h"
 
 class DFInstance;
 class MemoryLayout;
 class CustomProfession;
 class Reaction;
-class Role;
 class Preference;
 class Race;
 class Caste;
@@ -94,6 +94,8 @@ public:
 
     //! custom profession string (if set)
     Q_INVOKABLE QString custom_profession_name() {return m_pending_custom_profession;}
+
+    bool is_custom_profession_dirty(QString name);
 
     //! return a printable name for this dwarf based on user-settings (may include nickname/firstname or both)
     Q_INVOKABLE QString nice_name() const {return m_nice_name;}
@@ -345,12 +347,12 @@ public:
     /*! sets the pending custom profession text for this dwarf as well as sets all labors for
     this dwarf to match the labor template of the CustomProfession object.
     */
-    int apply_custom_profession(CustomProfession *cp); // return # of pending changes
+    void apply_custom_profession(CustomProfession *cp);
 
     /*! clears the pending custom profession text for this dwarf. This will cause the dwarf to
     show up as their default profession in game
     */
-    void reset_custom_profession() {m_pending_custom_profession = "";}
+    void reset_custom_profession(bool reset_labors = false);
 
     QList<float> calc_role_ratings();
     float calc_role_rating(Role *);

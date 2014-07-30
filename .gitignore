@@ -1,10 +1,5 @@
-Makefile
-Makefile.Debug
-Makefile.Release
-object_script.DwarfTherapist
-object_script.DwarfTherapist.Debug
-object_script.DwarfTherapist.Release
-dwarftherapist.pro.user
+Makefile*
+object_script.*
 
 bin/*
 debug/*
@@ -16,7 +11,53 @@ ui_*.h
 moc_*.cpp
 moc_*.h
 *.o
-*~
 
-.DS_Store
 .qmake.stash
+.qmake.cache
+translations/qtmobility_untranslated.ts
+translations/qtmobility_*.qm
+ 
+#Symbian specific
+*.mmp
+*.pkg
+bld.inf*
+ABLD.BAT
+*.mk
+*.rss
+*.sis
+*.loc
+*.sisx
+.make.cache
+qmakepluginstubs
+ 
+#Carbide project files
+*.project
+*.cproject
+*.settings
+plugin_commonU.def
+ 
+#Visual Studio files
+*.sln
+*.vcproj
+*.suo
+*.ncb
+*.user
+ 
+#QtCreator project files
+*.pro.user
+=======
+*.pro.user*
+*~
+ 
+#Failed patch
+*.orig
+*.rej
+
+#Windows Specific
+*.exe
+*.dll
+Thumbs.db
+desktop.ini
+
+#OSX
+.DS_Store

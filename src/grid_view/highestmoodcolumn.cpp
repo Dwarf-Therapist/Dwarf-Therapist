@@ -35,18 +35,20 @@ HighestMoodColumn::HighestMoodColumn(QSettings &s, ViewColumnSet *set, QObject *
     : SkillColumn(s,set,parent)
 {
     m_sortable_types.clear();
+    m_type = CT_HIGHEST_MOOD;
 }
 
 HighestMoodColumn::HighestMoodColumn(const QString &title, ViewColumnSet *set, QObject *parent)
     : SkillColumn(title,-1,set,parent,CT_HIGHEST_MOOD)
 {
-    m_sortable_types.clear();
+    m_sortable_types.clear();    
 }
 
 HighestMoodColumn::HighestMoodColumn(const HighestMoodColumn &to_copy)
     : SkillColumn(to_copy)
 {
     m_sortable_types = to_copy.m_sortable_types;
+    m_type = CT_HIGHEST_MOOD;
 }
 
 

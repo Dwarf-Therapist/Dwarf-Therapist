@@ -121,12 +121,13 @@ private:
     void keyPressEvent(QKeyEvent *event);    
 
     QMenu *m;
-    QMenu *custom_prof_menu;
+    QMenu *customization_menu;
     QMenu *squads_menu;
     QMenu *debug_menu;
 
     QAction *m_prof_name;
     QAction *m_professions;
+    QAction *m_super_labors;
 
     QAction *m_assign_labors;
     QAction *m_assign_skilled_labors;
@@ -139,36 +140,41 @@ private:
 
     private slots:
         void set_nickname();
-        void new_custom_profession();
-        void apply_custom_profession();
-        void custom_profession_from_dwarf();
-        void reset_custom_profession();
+
         void set_custom_profession_text();
-        void set_squad_name();
-        void assign_to_squad();
-        void remove_squad();
+        void apply_custom_profession();
+        void reset_custom_profession();
+        void custom_profession_from_dwarf();
+
+        void super_labor_from_dwarf();
+
         void vscroll_value_changed(int value);
         void hscroll_value_changed(int value);
         void toggle_all_row_labors();
+
         void toggle_skilled_row_labors();
         void toggle_column_labors();
         void column_right_clicked(int);
+
         void change_column_sort_method();
-        void sort_named_column(int column, DwarfModelProxy::DWARF_SORT_ROLE role, Qt::SortOrder order);
-        void edit_prof_icon();
-        void remove_prof_icon();        
+        void sort_named_column(int column, DwarfModelProxy::DWARF_SORT_ROLE role, Qt::SortOrder order);     
+
         void commit_pending();
         void clear_pending();
+
         void update_sort_info(int index);
         void set_global_sort_keys(int);
+
         //a squad object will emit a signal that we'll slot here,
         //and then emit another signal for the parent object to handle
         void emit_squad_leader_changed(){
             emit squad_leader_changed();
         }
+        void set_squad_name();
+        void assign_to_squad();
+        void remove_squad();
 
-signals:
-    void new_custom_profession(Dwarf *d);
+signals:    
     void dwarf_focus_changed(Dwarf *d);
     void squad_leader_changed();
 

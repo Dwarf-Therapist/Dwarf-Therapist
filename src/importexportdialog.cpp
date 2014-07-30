@@ -97,20 +97,8 @@ void ImportExportDialog::setup_for_profession_import() {
     int cnt = s.beginReadArray("custom_professions");
 
     for(int i = 0; i < cnt; i++) {
-        s.setArrayIndex(i);
-        CustomProfession *cp = new CustomProfession(DT);
-        cp->set_name(s.value("name", "UNKNOWN").toString());
-        cp->set_path(s.value(QString("icon_id"),99).toInt());
-        cp->set_font_color(s.value("text_color", QColor(Qt::black)).value<QColor>());
-        cp->set_bg_color(s.value("bg_color", QColor(Qt::black)).value<QColor>());
-        cp->set_text(s.value("text", "").toString());
-        int labor_cnt = s.beginReadArray("labors");
-        for(int j = 0; j < labor_cnt; ++j) {
-            s.setArrayIndex(j);
-            cp->add_labor(s.childKeys()[0].toInt());
-        }
-        s.endArray();
-        m_profs << cp;
+        s.setArrayIndex(i);        
+        m_profs.append(new CustomProfession(s,DT));
     }
     s.endArray();
 
@@ -353,8 +341,8 @@ void ImportExportDialog::clear_selection() {
     }
 }
 
-QVector<CustomProfession*> ImportExportDialog::get_profs() {
-    QVector<CustomProfession*> out;
+QList<CustomProfession *> ImportExportDialog::get_profs() {
+    QList<CustomProfession*> out;
     for(int i = 0; i < ui->list_professions->count(); ++i) {
         QListWidgetItem *item = static_cast<QListWidgetItem*>(ui->list_professions->item(i));
         if (item->checkState() != Qt::Checked)
@@ -368,8 +356,8 @@ QVector<CustomProfession*> ImportExportDialog::get_profs() {
     return out;
 }
 
-QVector<GridView*> ImportExportDialog::get_views() {
-    QVector<GridView*> out;
+QList<GridView *> ImportExportDialog::get_views() {
+    QList<GridView*> out;
     for(int i = 0; i < ui->list_professions->count(); ++i) {
         QListWidgetItem *item = static_cast<QListWidgetItem*>(ui->list_professions->item(i));
         if (item->checkState() != Qt::Checked)
@@ -383,8 +371,8 @@ QVector<GridView*> ImportExportDialog::get_views() {
     return out;
 }
 
-QVector<Role*> ImportExportDialog::get_roles(){
-    QVector<Role*> out;
+QList<Role *> ImportExportDialog::get_roles(){
+    QList<Role*> out;
     for(int i = 0; i < ui->list_professions->count(); i++){
         QListWidgetItem *item = static_cast<QListWidgetItem*>(ui->list_professions->item(i));
         if(item->checkState() != Qt::Checked)
@@ -470,26 +458,13 @@ void ImportExportDialog::export_selected_professions() {
     s.beginWriteArray("custom_professions");
     foreach(CustomProfession *cp, get_profs()) {
         s.setArrayIndex(i++);
-        s.setValue("name", cp->get_name());
-        s.setValue("text", cp->get_text());
-        s.setValue("text_color", cp->get_font_color());
-        s.setValue("bg_color", cp->get_bg_color());
-        s.setValue("is_mask",cp->is_mask());
-        s.setValue("icon_id", cp->get_icon_id());
-        s.beginWriteArray("labors");
-        int j = 0;
-        foreach(int labor_id, cp->get_enabled_labors()) {
-            s.setArrayIndex(j++);
-            s.setValue(QString::number(labor_id), true);
-        }
-        s.endArray();
+        cp->export_to_file(s);       
         exported++;
     }
     s.endArray();
     s.sync();
     if (exported)
-        QMessageBox::information(this, tr("Export Successful"),
-            tr("Exported %n custom profession(s)", "", exported));
+        QMessageBox::information(this, tr("Export Successful"),tr("Exported %n custom profession(s)", "", exported));
     m_profs.clear();
 }
 
@@ -512,11 +487,8 @@ void ImportExportDialog::import_selected_roles(){
 }
 
 void ImportExportDialog::import_selected_professions() {
-    int imported = 0;
-    foreach(CustomProfession *cp, get_profs()) {
-        DT->add_custom_profession(cp);
-        imported++;
-    }
+    int imported = m_profs.count();
+    DT->add_custom_professions(m_profs);
     if (imported)
         QMessageBox::information(this, tr("Import Successful"),
             tr("Imported %n custom profession(s)", "", imported));

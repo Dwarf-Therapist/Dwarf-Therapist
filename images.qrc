@@ -88,6 +88,7 @@
         <file>img/ui-text-field-clear-button.png</file>
         <file>img/tables.png</file>
         <file>img/question-white.png</file>
+        <file>img/table-insert-column.png</file>
     </qresource>
     <qresource prefix="/config">
         <file alias="default_gridviews">default_gridviews.dtg</file>
@@ -198,7 +199,7 @@
         <file>img/Fine.png</file>
         <file>img/Happy.png</file>
         <file>img/Miserable.png</file>
-        <file>img/Content.png</file>
+        <file>img/Quite Content.png</file>
         <file>img/Unhappy.png</file>
         <file>img/Very Unhappy.png</file>
     </qresource>

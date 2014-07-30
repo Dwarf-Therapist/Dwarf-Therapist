@@ -86,31 +86,47 @@ void SkillColumn::refresh_sort(Dwarf *d, COLUMN_SORT_TYPE sType){
         if(!m_sortable_types.contains(sType))
             sType = m_sortable_types.at(0);
 
-
+        //apply the base sort first, this may be for things like active labor or other initial adjustments
         if(m_cells.value(d) && m_cells.value(d)->data(DwarfModel::DR_BASE_SORT).canConvert<float>()){
-            m_sort_val = m_cells.value(d)->data(DwarfModel::DR_BASE_SORT).toFloat();
+            m_sort_val = get_base_sort(d);
         }
 
         if(sType == CST_ROLE_RATING){
-            if(m_skill_id != -1){
-                float m_role_sort_val = 0.0;
-                QVector<Role*> related_roles = GameDataReader::ptr()->get_skill_roles().value(m_skill_id);
-                if(related_roles.count() > 0){
-                    foreach(Role *r, related_roles){
-                        m_role_sort_val += d->get_role_rating(r->name);
-                    }
-                    m_role_sort_val /= related_roles.count();
-                    m_sort_val += m_role_sort_val;
-                }
-            }
+            m_sort_val += get_role_rating(d);
         }else if(sType == CST_SKILL_RATE){            
-            m_sort_val += d->get_skill(m_skill_id).skill_rate();
+            m_sort_val += get_skill_rate_rating(m_skill_id,d);
         }else{//EXPERIENCE
-            m_sort_val += d->skill_level(m_skill_id,true,true);            
+            m_sort_val += get_skill_rating(m_skill_id,d);
         }
     }
     m_cells.value(d)->setData(m_sort_val, DwarfModel::DR_SORT_VALUE);
     m_current_sort = sType;
+}
+
+float SkillColumn::get_base_sort(Dwarf *d){
+    return  m_cells.value(d)->data(DwarfModel::DR_BASE_SORT).toFloat();
+}
+
+float SkillColumn::get_role_rating(Dwarf *d){
+    float m_role_sort_val = 0.0;
+    if(m_skill_id != -1){
+        QVector<Role*> related_roles = GameDataReader::ptr()->get_skill_roles().value(m_skill_id);
+        if(related_roles.count() > 0){
+            foreach(Role *r, related_roles){
+                m_role_sort_val += d->get_role_rating(r->name);
+            }
+            m_role_sort_val /= related_roles.count();
+        }
+    }
+    return m_role_sort_val;
+}
+
+float SkillColumn::get_skill_rating(int id, Dwarf *d){
+    return d->skill_level(id,true,true);
+}
+
+float SkillColumn::get_skill_rate_rating(int id, Dwarf *d){
+    return d->get_skill(id).skill_rate();
 }
 
 void SkillColumn::build_tooltip(Dwarf *d, bool include_roles){

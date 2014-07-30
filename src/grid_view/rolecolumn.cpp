@@ -75,7 +75,7 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
     item->setData(-1, DwarfModel::DR_RATING);
     item->setData(-1, DwarfModel::DR_DISPLAY_RATING);
     item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
-    item->setData(false,DwarfModel::DR_SPECIAL_FLAG);
+    item->setData(-1,DwarfModel::DR_LABORS);
 
     if(d->is_baby()){
         item->setData(-2, DwarfModel::DR_SORT_VALUE);
@@ -107,7 +107,7 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
 
         QString labors_desc = "";
         labors_desc = QString("<br/><br/><b>Associated Labors:</b> %1").arg(labor_names.count() <= 0 ? "None" : labor_names.join(", "));
-        item->setData(related_labors,DwarfModel::DR_SPECIAL_FLAG);
+        item->setData(related_labors,DwarfModel::DR_LABORS);
 
         QString match_str;
         QString aspects_str;

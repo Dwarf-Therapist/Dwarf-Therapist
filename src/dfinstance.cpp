@@ -38,7 +38,6 @@ THE SOFTWARE.
 #include "limits"
 #include "dwarfstats.h"
 #include "QThreadPool"
-#include "rolecalc.h"
 #include "viewmanager.h"
 #include "languages.h"
 #include "reaction.h"
@@ -552,18 +551,6 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 }
 
 void DFInstance::load_population_data(){
-    //    t.start();
-    //    calc_progress = 0;
-
-    //    foreach(Dwarf *d, actual_dwarves){
-    //        rolecalc *rc = new rolecalc(d);
-    //        connect(rc,SIGNAL(done()),this,SLOT(calc_done()),Qt::QueuedConnection);
-    //        QThreadPool::globalInstance()->start(rc);
-    //    }
-    //    foreach(Dwarf *d, actual_dwarves){
-    //        d->calc_role_ratings();
-    //    }
-
     int labor_count = 0;
     foreach(Dwarf *d, m_actual_dwarves){
         //load labor counts

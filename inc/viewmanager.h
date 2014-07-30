@@ -84,6 +84,7 @@ public:
         void reselect(QVector<int> ids);
 
         void refresh_custom_professions();
+        void rebuild_global_sort_keys();
 
 private:
 	QList<GridView*> m_views;

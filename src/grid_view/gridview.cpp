@@ -47,9 +47,7 @@ GridView::GridView(const GridView &to_be_copied)
 }
 
 GridView::~GridView() {
-    foreach(ViewColumnSet *set, m_sets) {
-        set->deleteLater();
-    }
+    qDeleteAll(m_sets);
     m_sets.clear();
 }
 

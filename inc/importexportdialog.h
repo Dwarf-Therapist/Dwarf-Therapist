@@ -51,9 +51,9 @@ public:
 
 private:
 	Ui::ImportExportDialog *ui;
-	QVector<CustomProfession*> m_profs;
-	QVector<GridView*> m_views;
-    QVector<Role*> m_roles;
+    QList<CustomProfession*> m_profs;
+    QList<GridView*> m_views;
+    QList<Role*> m_roles;
 	QString m_path;
 
 	typedef enum {
@@ -67,9 +67,9 @@ private:
 
 	DIALOG_MODE m_mode;
 
-	QVector<CustomProfession*> get_profs();
-	QVector<GridView*> get_views();
-    QVector<Role*> get_roles();
+    QList<CustomProfession*> get_profs();
+    QList<GridView*> get_views();
+    QList<Role*> get_roles();
 	
 	private slots:
 		void select_all();

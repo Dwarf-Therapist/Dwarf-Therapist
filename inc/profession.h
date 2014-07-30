@@ -34,10 +34,11 @@ public:
         , m_female_name(s.value("female_name", m_name).toString())
         , m_is_military(s.value("is_military", false).toBool())
         , m_can_assign_labors(s.value("can_assign_labors", true).toBool())
-    {}
+    {
+    }
 
     const short &id() const {return m_id;}
-    QString name(const bool &male) const {
+    QString name(const bool &male = true) const {
         return male ? m_name : m_female_name;
     }
     const bool &is_military() const {return m_is_military;}

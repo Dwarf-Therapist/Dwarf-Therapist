@@ -41,6 +41,8 @@ THE SOFTWARE.
 #include "trainedcolumn.h"
 #include "healthcolumn.h"
 #include "equipmentcolumn.h"
+#include "superlaborcolumn.h"
+#include "customprofessioncolumn.h"
 
 #include "defines.h"
 #include "statetableview.h"
@@ -54,6 +56,8 @@ THE SOFTWARE.
 #include "attribute.h"
 #include "unithealth.h"
 #include "healthcategory.h"
+#include "superlabor.h"
+#include "customprofession.h"
 
 GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent)
     : QDialog(parent)
@@ -351,12 +355,25 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     GameDataReader *gdr = GameDataReader::ptr();
 
     //ATTRIBUTE
-    QMenu *m_attr = m_cmh->create_title_menu(m, tr("Attribute Columns"),"");
+    QMenu *m_attr = m_cmh->create_title_menu(m, tr("Attribute"),"");
     QList<QPair<int, QString> > atts = gdr->get_ordered_attribute_names();
     QPair<int, QString> att_pair;
     foreach(att_pair, atts){
         a = m_attr->addAction(tr(att_pair.second.toLatin1()), this, SLOT(add_attribute_column()));
         a->setData(att_pair.first);
+    }
+
+    //CURRENT JOB
+    a = m->addAction(tr("Current Job"), this, SLOT(add_idle_column()));
+    a->setToolTip(tr("Adds a single column that shows a the current idle state for a dwarf."));
+
+    //CUSTOM PROFESSIONS
+    QMenu *m_custom_profs = m_cmh->create_title_menu(m,tr("Custom Profession"),tr("Columns which can apply or remove a custom profession and its labors."));
+    m_cmh->add_sub_menus(m_custom_profs,2);
+    foreach(CustomProfession *cp, DT->get_custom_professions()){
+            QMenu *menu_to_use = m_cmh->find_menu(m_custom_profs,cp->get_name());
+            QAction *a = menu_to_use->addAction(cp->get_name(), this, SLOT(add_custom_prof_column()));
+            a->setData(cp->get_name());
     }
 
     //EQUIPMENT
@@ -381,12 +398,8 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
         a->setToolTip(tr("Add a column for %1").arg(name));
     }
 
-    //IDLE
-    a = m->addAction(tr("Idle/Current Job"), this, SLOT(add_idle_column()));
-    a->setToolTip(tr("Adds a single column that shows a the current idle state for a dwarf."));
-
     //INVENTORY
-    QMenu *m_inventory = m_cmh->create_title_menu(m,tr("Inventory Column"),tr("Shows the currently equipped inventory of a particular item category."));
+    QMenu *m_inventory = m_cmh->create_title_menu(m,tr("Inventory"),tr("Shows the currently equipped inventory of a particular item category."));
     QList<ITEM_TYPE> item_cats;
     item_cats << AMMO << ARMOR << SHOES << GLOVES << HELM << PANTS << SHIELD << BACKPACK << FLASK << QUIVER << WEAPON;
     foreach(ITEM_TYPE itype, item_cats){
@@ -406,7 +419,7 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     }
 
     //LABOUR
-    QMenu *m_labor = m_cmh->create_title_menu(m,tr("Labor Column"),tr("Labor columns function as toggle switches for individual labors on a dwarf."));
+    QMenu *m_labor = m_cmh->create_title_menu(m,tr("Labor"),tr("Labor columns function as toggle switches for individual labors on a dwarf."));
     m_cmh->add_sub_menus(m_labor,5);
     foreach(Labor *l, gdr->get_ordered_labors()) {
         QMenu *menu_to_use = m_cmh->find_menu(m_labor,l->name);
@@ -416,7 +429,7 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     }
 
     //MOODABLE SKILL
-    a = m->addAction(tr("Moodable Skill Column"), this, SLOT(add_highest_moodable_column()));
+    a = m->addAction(tr("Moodable Skill"), this, SLOT(add_highest_moodable_column()));
     a->setToolTip(tr("Adds a single column that shows an icon representing a dwarf's highest moodable skill."));
 
     //PROFESSION
@@ -424,7 +437,7 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     a->setToolTip(tr("Adds a single column that shows an icon representing a dwarf's profession."));
 
     //ROLES
-    QMenu *m_roles = m_cmh->create_title_menu(m,tr("Role Columns"),tr("Role columns will show how well a dwarf can fill a particular role."));
+    QMenu *m_roles = m_cmh->create_title_menu(m,tr("Role"),tr("Role columns will show how well a dwarf can fill a particular role."));
     m_cmh->add_sub_menus(m_roles,gdr->get_ordered_roles().count() / 20);
     QList<QPair<QString, Role*> > roles = gdr->get_ordered_roles();
     QPair<QString, Role*> role_pair;
@@ -437,7 +450,7 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     }
 
     //SKILL
-    QMenu *m_skill = m_cmh->create_title_menu(m,tr("Skill Column"), tr("Skill columns function as a read-only display of a dwarf's skill in a particular area."));
+    QMenu *m_skill = m_cmh->create_title_menu(m,tr("Skill"), tr("Skill columns function as a read-only display of a dwarf's skill in a particular area."));
     m_cmh->add_sub_menus(m_skill,gdr->get_ordered_skills().count() / 15);
     QPair<int, QString> skill_pair;
     foreach(skill_pair, gdr->get_ordered_skills()) {
@@ -451,12 +464,21 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     a = m->addAction("Spacer", this, SLOT(add_spacer_column()));
     a->setToolTip(tr("Adds a non-selectable spacer to this set. You can set a custom width and color on spacer columns."));
 
+    //SUPER LABORS
+    QMenu *m_super_labors = m_cmh->create_title_menu(m,tr("Super Labor"),tr("Columns which toggle multiple labors at a time."));
+    m_cmh->add_sub_menus(m_super_labors,2);
+    foreach(SuperLabor *sl, DT->get_super_labors()) {
+        QMenu *menu_to_use = m_cmh->find_menu(m_super_labors,sl->get_name());
+        QAction *a = menu_to_use->addAction(sl->get_name(), this, SLOT(add_super_labor_column()));
+        a->setData(sl->get_name());
+    }
+
     //TRAINED (animals)
     a = m->addAction("Trained Level", this, SLOT(add_trained_column()));
     a->setToolTip(tr("Adds a column showing the trained level of an animal."));
 
     //TRAIT
-    QMenu *m_trait = m_cmh->create_title_menu(m, tr("Add Trait Column"),tr("Trait columns show a read-only display of a dwarf's score in a particular trait."));
+    QMenu *m_trait = m_cmh->create_title_menu(m, tr("Trait"),tr("Trait columns show a read-only display of a dwarf's score in a particular trait."));
     m_cmh->add_sub_menus(m_trait,2);
     QList<QPair<int, Trait*> > traits = gdr->get_ordered_traits();
     QPair<int, Trait*> trait_pair;
@@ -469,7 +491,7 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     }
 
     //WEAPONS
-    QMenu *m_weapon = m_cmh->create_title_menu(m, tr("Add Weapon Column"),
+    QMenu *m_weapon = m_cmh->create_title_menu(m, tr("Weapon"),
                                         tr("Weapon columns will show an indicator of whether the dwarf can wield the weapon with one hand, two hands or not at all."));
     //add_sub_menus(m_weapon,DT->get_DFInstance()->get_ordered_weapon_defs().count() / 15,true);
     m_cmh->add_sub_menus(m_weapon,DT->get_DFInstance()->get_ordered_weapon_defs().count() / 15);
@@ -522,6 +544,7 @@ void GridViewDialog::add_equipment_column(){
     }
     draw_columns_for_set(m_active_set);
 }
+
 void GridViewDialog::add_happiness_column() {
     if (!m_active_set)
         return;
@@ -547,6 +570,34 @@ void GridViewDialog::add_labor_column() {
         return;
     }
     new LaborColumn(l->name, l->labor_id, l->skill_id, m_active_set, m_active_set);
+    draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_super_labor_column() {
+    if (!m_active_set)
+        return;
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    QString name = a->data().toString();
+    SuperLabor *sl = DT->get_super_labor(name);
+    if (!sl) {
+        LOGE << tr("Failed to find super labor %1!").arg(name);
+        return;
+    }
+    new SuperLaborColumn(name,name,m_active_set,m_active_set);
+    draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_custom_prof_column() {
+    if (!m_active_set)
+        return;
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    QString name = a->data().toString();
+    CustomProfession *cp = DT->get_custom_profession(name);
+    if (!cp) {
+        LOGE << tr("Failed to find custom profession %1!").arg(name);
+        return;
+    }
+    new CustomProfessionColumn(name,name,m_active_set,m_active_set);
     draw_columns_for_set(m_active_set);
 }
 
@@ -600,7 +651,6 @@ void GridViewDialog::add_health_column(){
         return;
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     int key = a->data().toInt();
-//    new HealthColumn(UnitHealth::category_names().value(key),key,m_active_set,m_active_set);
     new HealthColumn(UnitHealth::get_display_categories().value(key)->name(),key,m_active_set,m_active_set);
     draw_columns_for_set(m_active_set);
 }

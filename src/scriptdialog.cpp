@@ -50,6 +50,7 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     }
     labor_list.append("</table>");
     ui->text_labors->append(labor_list);
+    ui->text_labors->setReadOnly(true);
 
     QString skill_list = "<b>Skills Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Skill ID</th><th>Skill</th></tr>";
@@ -59,6 +60,7 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     }
     skill_list.append("</table>");
     ui->text_skills->append(skill_list);
+    ui->text_skills->setReadOnly(true);
 
     QString attribute_list = "<b>Attribute Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Attribute ID</th><th>Attribute</th></tr>";
@@ -77,6 +79,7 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     }
     trait_list.append("</table>");
     ui->text_att_traits->append(trait_list);
+    ui->text_att_traits->setReadOnly(true);
 
     QString job_list = "<b>Job Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Job ID</th><th>Job</th></tr>";
@@ -86,6 +89,7 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     }
     job_list.append("</table>");
     ui->text_jobs->append(job_list);
+    ui->text_jobs->setReadOnly(true);
 
     QString health_list = "<b>Health Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Category ID</th><th>Title</th><th>Descriptors</th></tr>";
@@ -104,6 +108,7 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     }
     health_list.append("</table>");
     ui->text_health->append(health_list);
+    ui->text_health->setReadOnly(true);
 
 
     QString item_list = "<b>Item Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
@@ -117,6 +122,7 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     }
     item_list.append("</table>");
     ui->text_items->append(item_list);
+    ui->text_items->setReadOnly(true);
 
     connect(ui->btn_apply, SIGNAL(clicked()), SLOT(apply_pressed()));
     connect(ui->btn_save, SIGNAL(clicked()), SLOT(save_pressed()));

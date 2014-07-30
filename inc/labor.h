@@ -51,6 +51,17 @@ public:
         return m_excluded_labors;
     }
 
+    static bool hauling_compare(Labor *l1, Labor *l2)
+    {
+        if(l2->is_hauling < l1->is_hauling)
+            return false;
+        else if(l1->is_hauling < l2->is_hauling)
+            return true;
+        else
+            return l1->name < l2->name;
+    }
+
+
     QString name;
     int labor_id;
     int skill_id;

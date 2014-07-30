@@ -209,53 +209,95 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         paint_wear_cell(adjusted,p,opt,idx,wear_level);
     }
         break;
-    case CT_ROLE:
+    case CT_ROLE: case CT_SUPER_LABOR: case CT_CUSTOM_PROFESSION:
     {
-        bool active_labors = false;
+        Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
+
+        bool check_active = true;
+        bool is_dirty = false;
+        bool is_active = false;
+        bool cp_border = false;
+
+        if(type == CT_CUSTOM_PROFESSION){
+            QString custom_prof_name = idx.data(DwarfModel::DR_CUSTOM_PROF).toString();
+            if(!custom_prof_name.isEmpty()){
+                if(d->profession() == custom_prof_name)
+                    cp_border = true;
+                is_dirty = d->is_custom_profession_dirty(custom_prof_name);
+            }
+        }
+
         int dirty_alpha = 255;
         int active_alpha = 255;
-        bool dirty = false;
-        Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
+        int min_alpha = 75;        
+
         if(d){
-            if(idx.data(DwarfModel::DR_SPECIAL_FLAG).canConvert<QVariantList>()){
-                QVariantList labors = idx.data(DwarfModel::DR_SPECIAL_FLAG).toList();
+            if(idx.data(DwarfModel::DR_LABORS).canConvert<QVariantList>()){
+                QVariantList labors = idx.data(DwarfModel::DR_LABORS).toList();
                 int active_count = 0;
                 int dirty_count = 0;
                 foreach(QVariant id, labors){
                     if(d->labor_enabled(id.toInt())){
-                        active_labors = true;
+                        is_active = true;
                         active_count++;
                     }
                     if(d->is_labor_state_dirty(id.toInt())){
-                        dirty = true;
+                        is_dirty = true;
                         dirty_count++;
                     }
                 }
-                if(active_labors)
-                    active_alpha = (255 * ((float)active_count / labors.count()));
-                if(dirty)
-                    dirty_alpha = (255 * ((float)dirty_count / labors.count()));                                
+                float perc = 0.0;
+                if(check_active && is_active){
+                    perc = (float)active_count / labors.count();
+                    if(labors.count() > 5){
+                        if(perc <= 0.33)
+                            active_alpha = 63;
+                        else if(perc <= 0.66)
+                            active_alpha = 127;
+                        else if(perc <= 0.90)
+                            active_alpha = 190;
+                    }else{
+                        active_alpha *= perc;
+                    }
+                }
+                if(is_dirty){
+                    if(dirty_count > 0){
+                        dirty_alpha = (255 * ((float)dirty_count / labors.count()));
+                        if(dirty_alpha < min_alpha)
+                            dirty_alpha = min_alpha;
+                    }
+                }
             }
         }
+
         QColor bg;
         QColor color_active_adjusted = color_active_labor;
-        if(active_labors){
+        if(is_active){
             color_active_adjusted.setAlpha(active_alpha);
-            bg = paint_bg_active(adjusted, active_labors, p, opt, idx, color_active_adjusted);
+            bg = paint_bg_active(adjusted, is_active, p, opt, idx, color_active_adjusted);
         }else{
             bg = paint_bg(adjusted, p, opt, idx);
         }
 
-        paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 5.0f, 95.0f, 40.0f, 60.0f);
+        if(type == CT_ROLE){
+            paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 5.0f, 95.0f, 40.0f, 60.0f);
+        }else if(rating >= 0){
+            limit = 15.0f;
+            paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 0, 0, limit, 0, 0);
+        }
 
-        if(dirty){
+        if(is_dirty){
             QColor color_dirty_adjusted = color_dirty_border;
             color_dirty_adjusted.setAlpha(dirty_alpha);
             paint_border(adjusted,p,color_dirty_adjusted);
             paint_grid(adjusted,false,p,opt,idx,false);
+        }else if(cp_border){
+            paint_border(adjusted,p,color_active_labor);
+            paint_grid(adjusted, false, p, opt, idx,false);
         }else{
-            paint_grid(adjusted, dirty, p, opt, idx);
+            paint_grid(adjusted, false, p, opt, idx);
         }
+
     }
         break;
     case CT_IDLE:
@@ -411,7 +453,7 @@ QColor UberDelegate::paint_bg_active(const QRect &adjusted, bool active, QPainte
     if(gradient_cell_bg){
         QLinearGradient grad(adjusted.topLeft(),adjusted.bottomRight());
         grad.setColorAt(0,bg);
-        bg.setAlpha(75);
+        bg.setAlpha(70);
         grad.setColorAt(1,bg);
         p->fillRect(adjusted, grad);
     }else{

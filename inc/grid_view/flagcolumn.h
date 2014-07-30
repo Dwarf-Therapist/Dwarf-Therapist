@@ -42,8 +42,6 @@ public:
 
         // override
         void write_to_ini(QSettings &s);
-public slots:
-    //void read_settings();
 
 protected:
         int m_bit_pos;

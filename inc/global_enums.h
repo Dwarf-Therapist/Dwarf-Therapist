@@ -381,6 +381,12 @@ typedef enum {
 }
 
 typedef enum {
+    CUSTOM_ICON,
+    CUSTOM_PROF,
+    CUSTOM_SUPER
+} CUSTOMIZATION_TYPE;
+
+typedef enum {
     SEX_UNK = -1,
     SEX_F = 0,
     SEX_M = 1

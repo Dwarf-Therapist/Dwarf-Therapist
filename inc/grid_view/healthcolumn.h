@@ -43,9 +43,6 @@ public:
     //override
     void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("id", m_id);}
 
-public slots:
-    //void read_settings();
-
 private:
     int m_id;
 };

@@ -40,9 +40,6 @@ public:
 
     void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("trait_id", m_trait_id);}
 
-public slots:
-    //void read_settings();
-
 private:
     short m_trait_id;
     Trait *m_trait;

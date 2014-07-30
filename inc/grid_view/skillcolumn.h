@@ -49,6 +49,11 @@ protected:
     void build_tooltip(Dwarf *d, bool include_roles);
     void refresh_sort(Dwarf *d, COLUMN_SORT_TYPE sType = CST_LEVEL);
 
+    virtual float get_base_sort(Dwarf *d);
+    virtual float get_role_rating(Dwarf *d);
+    virtual float get_skill_rating(int id, Dwarf *d);
+    virtual float get_skill_rate_rating(int id, Dwarf *d);
+
 };
 
 #endif
