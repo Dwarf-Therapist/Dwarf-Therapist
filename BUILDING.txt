@@ -18,7 +18,7 @@ For Linux, do the following:
 
 For Debian-derived (Ubuntu, Mint, etc.) distributions, you can run the following command from a terminal:
 
-    > sudo apt-get install qtchooser qtbase5-dev qtbase5-dev-tools qtscript5-dev qt5-qmake libqt5script5 libqt5scripttools5 libqxt-core0 libqxt-gui0
+    > sudo apt-get install git qtchooser qtbase5-dev qtbase5-dev-tools qtscript5-dev qt5-qmake libqt5script5 libqt5scripttools5 libqxt-core0 libqxt-gui0
 
 
 # Clone the project using git
@@ -30,7 +30,7 @@ For 34.11 and older use the main branch:
     
 For 40.00 and newer use the DF2014 branch:
 
-    > git clone git://github.com/splintermind/Dwarf-Therapist.git DF2014
+    > git clone git://github.com/splintermind/Dwarf-Therapist.git -b DF2014
     
 If you already have the older version checked out and you'd like to move to the new branch:
 
@@ -65,9 +65,13 @@ If you are having problems with building, ask on the Splintermind thread in the 
 
 
 # Run the program
-The executable is in your /usr/bin folder and should be run via the dwarftherapist script also in /usr/bin
+Make the script executable, run
 
-    > sh dwarftherapist
+    > sudo chmod +x /usr/bin/dwarftherapist
+
+The executable is in your /usr/bin folder and has be run via the dwarftherapist script also in /usr/bin
+
+    > dwarftherapist
 
 
 # Uninstallation
