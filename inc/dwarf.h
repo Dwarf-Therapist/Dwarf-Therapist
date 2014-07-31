@@ -73,7 +73,6 @@ public:
     //! return whether or not the dwarf is on break
     bool is_on_break() {return m_is_on_break;}
 
-    //-1 = none, 0 = female, 1 = male
     Q_INVOKABLE GENDER_TYPE get_gender() {return m_gender;}
     Q_INVOKABLE bool is_male() {return (m_gender == SEX_M);}
 
@@ -119,63 +118,29 @@ public:
 
     //! return the raw happiness score for this dwarf
     Q_INVOKABLE int get_raw_happiness() {return m_raw_happiness;}
-
-    //! return this dwarf's strength attribute score    
+    //! return specific attribute values
     Q_INVOKABLE int strength() {return attribute((int)AT_STRENGTH);}
-
-    //! return this dwarf's agility attribute score
     Q_INVOKABLE int agility() {return attribute((int)AT_AGILITY);}
-
-    //! return this dwarf's toughness attribute score
     Q_INVOKABLE int toughness() {return attribute((int)AT_TOUGHNESS);}
-
-    //! return this dwarf's endurance attribute score
     Q_INVOKABLE int endurance() {return attribute((int)AT_ENDURANCE);}
-
-    //! return this dwarf's recuperation attribute score
     Q_INVOKABLE int recuperation() {return attribute((int)AT_RECUPERATION);}
-
-    //! return this dwarf's disease resistance attribute score
     Q_INVOKABLE int disease_resistance() {return attribute((int)AT_DISEASE_RESISTANCE);}
-
-    //! return this dwarf's willpower attribute score
     Q_INVOKABLE int willpower() {return attribute((int)AT_WILLPOWER);}
-
-    //! return this dwarf's memory attribute score
     Q_INVOKABLE int memory() {return attribute((int)AT_MEMORY);}
-
-    //! return this dwarf's focus attribute score
     Q_INVOKABLE int focus() {return attribute((int)AT_FOCUS);}
-
-    //! return this dwarf's intuition attribute score
     Q_INVOKABLE int intuition() {return attribute((int)AT_INTUITION);}
-
-    //! return this dwarf's patience attribute score
     Q_INVOKABLE int patience() {return attribute((int)AT_PATIENCE);}
-
-    //! return this dwarf's empathy attribute score
     Q_INVOKABLE int empathy() {return attribute((int)AT_EMPATHY);}
-
-    //! return this dwarf's social awareness attribute score
     Q_INVOKABLE int social_awareness() {return attribute((int)AT_SOCIAL_AWARENESS);}
-
-    //! return this dwarf's creativity attribute score
     Q_INVOKABLE int creativity() {return attribute((int)AT_CREATIVITY);}
-
-    //! return this dwarf's musicality attribute score
     Q_INVOKABLE int musicality() {return attribute((int)AT_MUSICALITY);}
-
-    //! return this dwarf's analytical ability attribute score
     Q_INVOKABLE int analytical_ability() {return attribute((int)AT_ANALYTICAL_ABILITY);}
-
-    //! return this dwarf's linguistic ability attribute score
     Q_INVOKABLE int linguistic_ability() {return attribute((int)AT_LINGUISTIC_ABILITY);}
-
-    //! return this dwarf's spatial sense attribute score
     Q_INVOKABLE int spatial_sense() {return attribute((int)AT_SPATIAL_SENSE);}
-
-    //! return this dwarf's kinesthetic sense attribute score
     Q_INVOKABLE int kinesthetic_sense() {return attribute((int)AT_KINESTHETIC_SENSE);}
+    //! attribute value from id
+    Q_INVOKABLE int attribute(int attrib_id) {return get_attribute(attrib_id).get_value();}
+    Attribute get_attribute(int id);
 
     //! return this dwarf's squad reference id
     Q_INVOKABLE int squad_id(bool original = false) { return (original ? m_squad_id : m_pending_squad_id);}
@@ -233,7 +198,7 @@ public:
     int total_xp() {return m_total_xp;}
 
     //! return the migration wave
-    int migration_wave() {return m_migration_wave;}
+    Q_INVOKABLE int migration_wave() {return m_migration_wave;}
 
     //! returns a description of birth or migration
     QString get_migration_desc();
@@ -280,9 +245,6 @@ public:
     bool trait_is_conflicted(const int &trait_id);
     QList<UnitBelief> trait_conflicts(const int &trait_id){return m_conflicting_beliefs.values(trait_id);}
 
-    Q_INVOKABLE int attribute(int attrib_id) {return get_attribute(attrib_id).get_value();}
-    Attribute get_attribute(int id);
-
     //! returns the numeric rating for the this dwarf in the skill specified by skill_id
     Q_INVOKABLE float skill_level(int skill_id, bool raw = false, bool precise = false);
 
@@ -296,6 +258,7 @@ public:
     bool belief_is_active(const int &belief_id);
     QHash<int, UnitBelief> &beliefs() {return m_beliefs;}
     UnitBelief get_unit_belief(int belief_id);
+    Q_INVOKABLE int belief_value(int belief_id){return get_unit_belief(belief_id).belief_value();}
 
     //! return a hashmap of roles and ratings for this dwarf
     const QHash<QString, float> &role_ratings() {return m_role_ratings;}
@@ -324,7 +287,7 @@ public:
     void refresh_data();
 
     //! set the pending nickname for this dwarf (does not auto-commit)
-    Q_INVOKABLE void set_nickname(const QString &nick);
+    void set_nickname(const QString &nick);
 
     //! set the migration wave this dwarf (DwarfModel currently calls this with its best guess)
     void set_migration_wave(const int &wave_number) {m_migration_wave = wave_number;}
@@ -377,9 +340,7 @@ public:
 
     //! method for mapping a caste id to a meaningful text name string
     Q_INVOKABLE QString caste_name(bool plural_name = false);
-
     Q_INVOKABLE QString caste_tag();
-
     //! static method for mapping a caste id to a meaningful text description string
     Q_INVOKABLE QString caste_desc();
 
@@ -409,9 +370,6 @@ public:
         return m_first_name;
     }
 
-//    QString squad_name() const {
-//        return m_squad_name;
-//    }
     QString squad_name();
 
     uint turn_count() const {
@@ -458,6 +416,8 @@ public:
 
     UnitHealth get_unit_health() {return m_unit_health;}
 
+    Q_INVOKABLE bool has_goal(int goal_id){return m_goals.contains(goal_id);}
+    //! number of goals realized
     Q_INVOKABLE int goals_realized(){return m_goals_realized;}
 
     //! returns a list of items, grouped by body part name

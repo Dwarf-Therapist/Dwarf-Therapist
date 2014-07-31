@@ -42,6 +42,7 @@ public:
     QString name;
     int m_id;
 
+    int belief_id(){return m_id;}
     bool is_active(const short &personal_val);
     QString level_message(const short &val);
 };

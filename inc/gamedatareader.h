@@ -81,7 +81,9 @@ public:
     QList<QPair<QString, Role*> > get_ordered_roles() {return m_ordered_roles;}
     QVector<QString> get_default_roles() {return m_default_roles;}
     QHash<int,QVector<Role*> > get_skill_roles() {return m_skill_roles;}    
-    QHash<int,QString> get_skills(){return m_skills;}    
+    QHash<int,QString> get_skills(){return m_skills;}
+    QList<QPair<int,QString> > get_ordered_beliefs(){return m_ordered_beliefs;}
+    QList<QPair<int,QString> > get_ordered_goals(){return m_ordered_goals;}
 
     QList<QPair<QString, laborOptimizerPlan*> > get_ordered_opt_plans() {return m_ordered_opts;}
     QHash<QString, laborOptimizerPlan*>& get_opt_plans(){return m_opt_plans;}
@@ -163,6 +165,10 @@ private:
     QList<QPair<int, Trait*> > m_ordered_traits;
 
     QHash<int, Belief*> m_beliefs;
+    QList<QPair<int,QString> > m_ordered_beliefs;
+
+    QHash<int,QPair<QString,QString> > m_goals; //id key with pair name and desc
+    QList<QPair<int,QString> > m_ordered_goals;
 
     QHash<int, QString> m_skills;
     QList<QPair<int, QString> > m_ordered_skills;    
@@ -197,8 +203,6 @@ private:
     QMap<int, int> m_mood_skills_profession_map;
 
     QMap<short, Thought*> m_unit_thoughts;
-
-    QHash<int,QPair<QString,QString> > m_goals; //id key with pair name and desc
 
     void load_race_names();
     void load_caste_names();

@@ -42,6 +42,7 @@ ScriptDialog::ScriptDialog(QWidget *parent)
 
     //TODO: convert to tables/trees and add in a search (and sort?) function/options
 
+    //LABORS
     GameDataReader *gdr = GameDataReader::ptr();
     QString labor_list = "<b>Labor Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Labor ID</th><th>Labor</th></tr>";
@@ -50,8 +51,10 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     }
     labor_list.append("</table>");
     ui->text_labors->append(labor_list);
-    ui->text_labors->setReadOnly(true);
+    ui->splitter_labors->setStretchFactor(0,1);
+    ui->splitter_labors->setStretchFactor(1,3);
 
+    //SKILLS
     QString skill_list = "<b>Skills Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Skill ID</th><th>Skill</th></tr>";
     QPair<int, QString> skill_pair;
@@ -60,8 +63,10 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     }
     skill_list.append("</table>");
     ui->text_skills->append(skill_list);
-    ui->text_skills->setReadOnly(true);
+    ui->splitter_skills->setStretchFactor(0,1);
+    ui->splitter_skills->setStretchFactor(1,3);
 
+    //ATTRIBUTES
     QString attribute_list = "<b>Attribute Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Attribute ID</th><th>Attribute</th></tr>";
     QPair<int, QString> att_pair;
@@ -69,18 +74,41 @@ ScriptDialog::ScriptDialog(QWidget *parent)
         attribute_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(att_pair.first).arg(att_pair.second));
     }
     attribute_list.append("</table>");
-    ui->text_att_traits->append(attribute_list);
+    ui->text_attributes->append(attribute_list);
+    ui->splitter_attributes->setStretchFactor(0,1);
+    ui->splitter_attributes->setStretchFactor(1,3);
 
-    QString trait_list = "<b>Traits Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
+    //PERSONALITY
+    QString trait_list = "<b>Trait Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Trait ID</th><th>Trait</th></tr>";
     QPair<int, Trait*> trait_pair;
     foreach(trait_pair, gdr->get_ordered_traits()) {
         trait_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(trait_pair.second->trait_id).arg(trait_pair.second->name));
     }
     trait_list.append("</table>");
-    ui->text_att_traits->append(trait_list);
-    ui->text_att_traits->setReadOnly(true);
+    ui->text_personality->append(trait_list);
 
+    QString belief_list = "<b>Belief Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
+        "<tr><th width=24%>Belief ID</th><th>Belief</th></tr>";
+    QPair<int, QString> belief_pair;
+    foreach(belief_pair, gdr->get_ordered_beliefs()) {
+        belief_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(belief_pair.first).arg(belief_pair.second));
+    }
+    belief_list.append("</table>");
+    ui->text_personality->append(belief_list);
+
+    QString goal_list = "<b>Goal Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
+        "<tr><th width=24%>Goal ID</th><th>Goal</th></tr>";
+    QPair<int, QString> goal_pair;
+    foreach(goal_pair, gdr->get_ordered_goals()) {
+        goal_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(goal_pair.first).arg(goal_pair.second));
+    }
+    goal_list.append("</table>");
+    ui->text_personality->append(goal_list);
+    ui->splitter_personality->setStretchFactor(0,1);
+    ui->splitter_personality->setStretchFactor(1,3);
+
+    //JOBS/PROFESSIONS
     QString job_list = "<b>Job Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Job ID</th><th>Job</th></tr>";
     QPair<int, QString> job_pair;
@@ -88,9 +116,11 @@ ScriptDialog::ScriptDialog(QWidget *parent)
         job_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(job_pair.first).arg(job_pair.second));
     }
     job_list.append("</table>");
-    ui->text_jobs->append(job_list);
-    ui->text_jobs->setReadOnly(true);
+    ui->text_jobs->append(job_list);    
+    ui->splitter_job->setStretchFactor(0,1);
+    ui->splitter_job->setStretchFactor(1,3);
 
+    //HEALTH
     QString health_list = "<b>Health Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Category ID</th><th>Title</th><th>Descriptors</th></tr>";
 
@@ -107,10 +137,11 @@ ScriptDialog::ScriptDialog(QWidget *parent)
         health_list.append("</table></td></tr>");
     }
     health_list.append("</table>");
-    ui->text_health->append(health_list);
-    ui->text_health->setReadOnly(true);
+    ui->text_health->append(health_list);    
+    ui->splitter_health->setStretchFactor(0,1);
+    ui->splitter_health->setStretchFactor(1,3);
 
-
+    //EQUIPMENT/ITEMS
     QString item_list = "<b>Item Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Item Type ID</th><th>Name</th></tr>";
     QMap<QString,int> item_types;
@@ -122,13 +153,14 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     }
     item_list.append("</table>");
     ui->text_items->append(item_list);
-    ui->text_items->setReadOnly(true);
+    ui->splitter_equip->setStretchFactor(0,1);
+    ui->splitter_equip->setStretchFactor(1,3);
 
     connect(ui->btn_apply, SIGNAL(clicked()), SLOT(apply_pressed()));
     connect(ui->btn_save, SIGNAL(clicked()), SLOT(save_pressed()));
 
-    ui->text_att_traits->moveCursor(QTextCursor::Start);
-    ui->text_att_traits->ensureCursorVisible();
+    ui->text_attributes->moveCursor(QTextCursor::Start);
+    ui->text_attributes->ensureCursorVisible();
 
     ui->text_health->moveCursor(QTextCursor::Start);
     ui->text_health->ensureCursorVisible();
@@ -147,6 +179,9 @@ ScriptDialog::ScriptDialog(QWidget *parent)
 
     ui->text_items->moveCursor(QTextCursor::Start);
     ui->text_items->ensureCursorVisible();
+
+    ui->text_personality->moveCursor(QTextCursor::Start);
+    ui->text_personality->ensureCursorVisible();
 }
 
 ScriptDialog::~ScriptDialog(){

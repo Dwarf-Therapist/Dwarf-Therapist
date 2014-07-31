@@ -181,6 +181,17 @@ GameDataReader::GameDataReader(QObject *parent)
     }
     m_data_settings->endArray();
 
+    qSort(goal_names);
+    foreach(QString name, goal_names) {
+        foreach(int goal_id, m_goals.uniqueKeys()) {
+            if (m_goals.value(goal_id).first == name) {
+                m_ordered_goals << qMakePair(goal_id,name);
+                break;
+            }
+        }
+    }
+
+
     //beliefs
     int beliefs = m_data_settings->beginReadArray("beliefs");
     QStringList belief_names;
@@ -191,6 +202,15 @@ GameDataReader::GameDataReader(QObject *parent)
         belief_names << b->name;
     }
     m_data_settings->endArray();
+    qSort(belief_names);
+    foreach(QString name, belief_names) {
+        foreach(Belief *b, m_beliefs) {
+            if (b->name == name) {
+                m_ordered_beliefs << qMakePair(b->belief_id(),get_belief_name(b->belief_id()));
+                break;
+            }
+        }
+    }
 
     int job_count = m_data_settings->beginReadArray("dwarf_jobs");
     qDeleteAll(m_dwarf_jobs);
