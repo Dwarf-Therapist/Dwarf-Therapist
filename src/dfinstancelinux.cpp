@@ -25,9 +25,11 @@ THE SOFTWARE.
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <sys/ptrace.h>
+#include <sys/uio.h>
 #include <sys/user.h>
 #include <sys/mman.h>
 #include <errno.h>
+#include <error.h>
 #include <wait.h>
 
 #include "dfinstance.h"
@@ -193,7 +195,7 @@ bool DFInstanceLinux::detach() {
     return m_attach_count > 0;
 }
 
-int DFInstanceLinux::read_raw(const VIRTADDR &addr, int bytes, QByteArray &buffer) {
+int DFInstanceLinux::read_raw_ptrace(const VIRTADDR &addr, size_t bytes, QByteArray &buffer) {
     // try to attach, will be ignored if we're already attached
     attach();
 
@@ -225,8 +227,30 @@ int DFInstanceLinux::read_raw(const VIRTADDR &addr, int bytes, QByteArray &buffe
     return bytes_read;
 }
 
-int DFInstanceLinux::write_raw(const VIRTADDR &addr, const int &bytes,
-                               void *buffer) {
+int DFInstanceLinux::read_raw(const VIRTADDR &addr, size_t bytes, QByteArray &buffer) {
+    ssize_t bytes_read;
+    buffer.fill(0, bytes); // zero our buffer
+
+    struct iovec local_iov[1];
+    struct iovec remote_iov[1];
+    local_iov[0].iov_base = buffer.data();
+    remote_iov[0].iov_base = (void *)addr;
+    local_iov[0].iov_len = remote_iov[0].iov_len = bytes;
+
+    bytes_read = process_vm_readv(m_pid, local_iov, 1, remote_iov, 1, 0);
+    if (bytes_read == -1) {
+        if (errno == ENOSYS) {
+            return read_raw_ptrace(addr, bytes, buffer);
+        } else {
+            error(0, errno, "error reading %u bytes from 0x%0u to %p", bytes, addr, buffer.data());
+        }
+    }
+
+    return bytes_read;
+}
+
+int DFInstanceLinux::write_raw_ptrace(const VIRTADDR &addr, const size_t &bytes,
+                                      void *buffer) {
     // try to attach, will be ignored if we're already attached
     attach();
 
@@ -281,6 +305,31 @@ int DFInstanceLinux::write_raw(const VIRTADDR &addr, const int &bytes,
     }
     // attempt to detach, will be ignored if we're several layers into an attach chain
     detach();
+    // tell the caller how many bytes we wrote
+    return bytes_written;
+}
+
+int DFInstanceLinux::write_raw(const VIRTADDR &addr, const size_t &bytes,
+                               void *buffer) {
+    ssize_t bytes_written;
+
+    struct iovec local_iov[1];
+    struct iovec remote_iov[1];
+    local_iov[0].iov_base = buffer;
+    remote_iov[0].iov_base = (void *)addr;
+    local_iov[0].iov_len = remote_iov[0].iov_len = bytes;
+
+    bytes_written = process_vm_writev(m_pid, local_iov, 1, remote_iov, 1, 0);
+    if (bytes_written == -1) {
+        if (errno == ENOSYS) {
+            return write_raw_ptrace(addr, bytes, buffer);
+        } else {
+            perror("process_vm_writev");
+        }
+    }
+
+    LOGD << "WROTE" << bytes << "bytes from" << buffer << "to" << addr;
+
     // tell the caller how many bytes we wrote
     return bytes_written;
 }
