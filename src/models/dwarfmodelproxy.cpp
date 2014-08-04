@@ -32,15 +32,11 @@ THE SOFTWARE.
 #include "mainwindow.h"
 #include "gamedatareader.h"
 
-QString m_filter_text;
-QScriptEngine *m_engine;
-//QString m_active_filter_script;
-
 DwarfModelProxy::DwarfModelProxy(QObject *parent)
     :QSortFilterProxyModel(parent)
     , m_last_sort_order(Qt::AscendingOrder)
     , m_last_sort_role(DSR_NAME_ASC)
-    , m_engine(new QScriptEngine(this))    
+    , m_engine(new QScriptEngine(this))
 {
     this->setDynamicSortFilter(false);
 }
@@ -50,13 +46,22 @@ DwarfModel* DwarfModelProxy::get_dwarf_model() const {
 }
 
 void DwarfModelProxy::cell_activated(const QModelIndex &idx) {    
-    QModelIndex new_idx = mapToSource(idx);    
+    QModelIndex new_idx = mapToSource(idx);
     return get_dwarf_model()->cell_activated(new_idx);
 }
 
+//this is called when the text of the filter box changes, pattern being the text typed in
 void DwarfModelProxy::setFilterFixedString(const QString &pattern) {
+    if(pattern.length() <= 2 && !pattern.isEmpty()){
+        if(!m_filter_text.isEmpty())
+            m_filter_text = "";
+        return;
+    }
+
     m_filter_text = pattern;
-    QSortFilterProxyModel::setFilterFixedString(pattern);
+    //QSortFilterProxyModel::setFilterFixedString(pattern);
+    //setup to match any dwarf things that could match this
+    invalidateFilter();
 }
 
 void DwarfModelProxy::apply_script(const QString &script_name, const QString &script_body) {
@@ -94,34 +99,52 @@ void DwarfModelProxy::refresh_script(){
 bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
     bool matches = true;
 
-    int dwarf_id = 0;    
+    int dwarf_id = 0;
     const DwarfModel *m = get_dwarf_model();
-    if (m->current_grouping() == DwarfModel::GB_NOTHING) {
+    //check non-grouped items
+    if(m->current_grouping() == DwarfModel::GB_NOTHING) {
         QModelIndex idx = m->index(source_row, 0, source_parent);
         dwarf_id = m->data(idx, DwarfModel::DR_ID).toInt();
-        QString data = m->data(idx, filterRole()).toString();
-        if (!m_filter_text.isEmpty())
+        QString data = m->data(idx, filterRole()).toString(); //check the name for a match
+        if (!m_filter_text.isEmpty()){
             matches = matches && data.contains(m_filter_text, Qt::CaseInsensitive);
-    } else {
+            //if no match, check prefs
+            if(!matches){
+                Dwarf *d = m->get_dwarf_by_id(dwarf_id);
+                matches = d->has_preference(m_filter_text,"",false);
+            }
+        }
+    }else {
+        //check groups, if even one child has a match, keep the aggregate row
         QModelIndex tmp_idx = m->index(source_row, 0, source_parent);
         QStandardItem *item = m->itemFromIndex(tmp_idx);
         if (m->data(tmp_idx, DwarfModel::DR_IS_AGGREGATE).toBool()) {
-            int matches = 0;
+            bool child_matches = false;
             for(int i = 0; i < item->rowCount(); ++i) {
-                if (filterAcceptsRow(i, tmp_idx)) // a child matches
-                    matches++;
+                if (filterAcceptsRow(i, tmp_idx)){ // a child matches
+                    child_matches = true;
+                    break;
+                }
             }
-            matches = matches && matches > 0;
+            matches = matches && child_matches;
         } else {
+            //item within a group
             QModelIndex idx = m->index(source_row, 0, source_parent);
             dwarf_id = m->data(idx, DwarfModel::DR_ID).toInt();
             QString data = m->data(idx, filterRole()).toString();
-            if (!m_filter_text.isEmpty())
+            if (!m_filter_text.isEmpty()){
                 matches = matches && data.contains(m_filter_text, Qt::CaseInsensitive);
+                //if no match, check prefs
+                if(!matches){
+                    Dwarf *d = m->get_dwarf_by_id(dwarf_id);
+                    matches = d->has_preference(m_filter_text,"",false);
+                }
+            }
         }
     }
 
-    if (dwarf_id && (m_scripts.count() > 0 || !m_test_script.isEmpty())){//(!m_active_filter_script.isEmpty() || !m_secondary_script.isEmpty())) {
+    //apply any other active scripts, or test scripts currently in use, unless we've already found a match for this row
+    if(dwarf_id && (m_scripts.count() > 0 || !m_test_script.isEmpty())){
         Dwarf *d = m->get_dwarf_by_id(dwarf_id);
         if (d) {
             QScriptValue d_obj = m_engine->newQObject(d);
@@ -141,7 +164,7 @@ bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source
 
     //filter children and babies if necessary, but only check this if we've already got a match with a filter
     //DOESNT apply to animals!!
-    if(matches){        
+    if(matches){
         if(dwarf_id && DT->hide_non_adults()) {
             Dwarf *d = m->get_dwarf_by_id(dwarf_id);
             if(!d->is_animal()){
@@ -164,21 +187,21 @@ void DwarfModelProxy::sort(int column, Qt::SortOrder order) {
 }
 
 void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role, Qt::SortOrder order) {
-    if (column == 0) {        
+    if (column == 0) {
         switch(role) {
-        default:            
+        default:
             setSortRole(DwarfModel::DR_SORT_VALUE);
             break;
-        case DSR_NAME_ASC:            
+        case DSR_NAME_ASC:
             setSortRole(DwarfModel::DR_NAME);
             break;
-        case DSR_NAME_DESC:            
+        case DSR_NAME_DESC:
             setSortRole(DwarfModel::DR_NAME);
             break;
-        case DSR_ID_ASC:            
+        case DSR_ID_ASC:
             setSortRole(DwarfModel::DR_ID);
             break;
-        case DSR_ID_DESC:            
+        case DSR_ID_DESC:
             setSortRole(DwarfModel::DR_ID);
             break;
         case DSR_AGE_ASC:
@@ -205,7 +228,7 @@ void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role, Qt::SortOrder order
             setSortRole(DwarfModel::DR_SORT_VALUE);
     }
     setSortCaseSensitivity(Qt::CaseInsensitive);
-    setSortLocaleAware(true);    
+    setSortLocaleAware(true);
     QSortFilterProxyModel::sort(column, order);
 }
 

@@ -129,7 +129,6 @@ void FortressEntity::read_entity(){
             val = 100;
         m_beliefs.insert(i, val);
     }
-
     m_df->detach();
 }
 

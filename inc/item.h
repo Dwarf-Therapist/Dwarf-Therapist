@@ -292,7 +292,7 @@ public:
     void item_type(ITEM_TYPE newType){m_iType = newType;}
 
     int mat_index(){return m_mat_idx;}
-    short mat_type(){return m_mat_type;}
+    short mat_type(){return m_mat_type;}    
 
     virtual short item_subtype(){return -1;}
     virtual short melee_skill(){return -1;}
@@ -315,7 +315,7 @@ protected:
     ITEM_TYPE m_iType;
     short m_wear;
     short m_mat_type;
-    int m_mat_idx;
+    int m_mat_idx;    
     short m_quality;
     QString m_material_name;
     QString m_item_name;

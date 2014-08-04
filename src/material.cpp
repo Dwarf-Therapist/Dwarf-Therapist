@@ -99,15 +99,13 @@ void Material::read_material() {
     }
 
     m_flags = FlagArray(m_df,m_flag_address);
-
     if(m_flags.has_flag(24)){
         generic_state_name = m_state_names[SOLID] + tr(" fabric");
-    }
+    }    
 
     //int material_value = m_df->read_int(m_address + 0x244);
 
-    m_state_names.insert(GENERIC, generic_state_name);
-    //m_flags = new FlagArray(m_df,m_flag_address);
+    m_state_names.insert(GENERIC, generic_state_name);    
 }
 
 QString Material::get_material_name(MATERIAL_STATES state){

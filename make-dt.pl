@@ -92,7 +92,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'races_vector',%globals,'world','world.raws.creatures.all';
     emit_addr 'reactions_vector',%globals,'world','world.raws.reactions';
     emit_addr 'historical_figures_vector',%globals,'world','world.history.figures';
-    emit_addr 'fake_identities_vector',%globals,'world','world.assumed_identities.all';
+    emit_addr 'fake_identities_vector',%globals,'world','world.identities.all';
     emit_addr 'fortress_entity',%globals,'ui','ui.main.fortress_entity';
     emit_addr 'historical_entities_vector',%globals,'world','world.entities.all';
     emit_addr 'itemdef_weapons_vector',%globals,'world','world.raws.itemdefs.weapons';
@@ -205,9 +205,9 @@ sub generate_dt_ini($$$$) {
     emit_addr 'hist_fig_info',%all,'historical_figure','info';
     emit_addr 'reputation',%all,'historical_figure_info','reputation';
     emit_addr 'current_ident',%all,'historical_figure_info::anon13','cur_identity';
-    emit_addr 'fake_name',%all,'assumed_identity','name';
-    emit_addr 'fake_birth_year',%all,'assumed_identity','birth_year';
-    emit_addr 'fake_birth_time',%all,'assumed_identity','birth_second';
+    emit_addr 'fake_name',%all,'identity','name';
+    emit_addr 'fake_birth_year',%all,'identity','birth_year';
+    emit_addr 'fake_birth_time',%all,'identity','birth_second';
 
     emit_header 'item_offsets'; 
     emit_addr 'item_def',%all,'item_ammost','subtype'; #currently same for all

@@ -643,16 +643,11 @@ void DFInstance::load_role_ratings(){
         foreach(Role *r, GameDataReader::ptr()->get_roles().values()){
             if(r->prefs.count() > 0){
                 foreach(double rating, d->get_role_pref_match_counts(r)){
-                    if(rating > 0){
-                        pref_values.append(rating);
-                        pref_values << 0; //assume for every match there's a non-match
-                    }
+                    pref_values.append(rating);
                 }
             }
         }
-
     }
-    pref_values << 0; //pad a final 0 to prefs to ensure median = 0
 
     QTime tr;
     tr.start();
@@ -1675,7 +1670,7 @@ void DFInstance::index_item_vector(ITEM_TYPE itype){
     m_mapped_items.insert(itype,items);
 }
 
-QString DFInstance::get_item_name(ITEM_TYPE itype, int subtype, short mat_type, int mat_index, int mat_class){
+QString DFInstance::get_item_name(ITEM_TYPE itype, int subtype, short mat_type, int mat_index, MATERIAL_CLASS mat_class){
     QVector<VIRTADDR> items = get_item_vector(itype);
     QStringList name_parts;
     QString mat_name = "";
@@ -1792,17 +1787,15 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
 
             //specific plant material
             if(m){
-                //if(itype==NONE){
-                    QString sub_name = m->get_material_name(GENERIC);
-                    name.append(" ").append(sub_name);
-                //}
                 if(itype == DRINK || itype == LIQUID_MISC)
                     name = m->get_material_name(LIQUID);
                 else if(itype == POWDER_MISC || itype == CHEESE)
                     name = m->get_material_name(POWDER);
                 else if(Item::is_armor_type(itype)){
-                    QString sub_name = m->get_material_name(SOLID);
-                    name.append(" ").append(sub_name);
+                    //don't include the 'fabric' part if it's a armor (item?) ie. pig tail fiber coat, not pig tail fiber fabric coat
+                    name = p->name().append(" ").append(m->get_material_name(SOLID));
+                }else{
+                    name.append(" ").append(m->get_material_name(GENERIC));
                 }
 
             }

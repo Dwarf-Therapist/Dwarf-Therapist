@@ -39,9 +39,9 @@ public:
         , m_subType(-1)
         , m_matType(-1)
         , m_mat_index(-1)
-        , m_mat_class(-1)
+        , m_mat_class(MC_NONE)
         , m_id(-1)
-        , m_indv_choice(-1)
+        , m_indv_choice(false)
         , m_job_skill(-1)
         , m_stack_size(1)
     {
@@ -57,9 +57,9 @@ public:
         , m_subType(-1)
         , m_matType(-1)
         , m_mat_index(-1)
-        , m_mat_class(-1)
+        , m_mat_class(MC_NONE)
         , m_id(item_id)
-        , m_indv_choice(-1)
+        , m_indv_choice(false)
         , m_job_skill(-1)
         , m_stack_size(1)
     {
@@ -74,9 +74,9 @@ public:
         , m_subType(sub_type)
         , m_matType(-1)
         , m_mat_index(-1)
-        , m_mat_class(-1)
+        , m_mat_class(MC_NONE)
         , m_id(-1)
-        , m_indv_choice(-1)
+        , m_indv_choice(false)
         , m_job_skill(job_skill)
         , m_stack_size(1)
     {
@@ -110,9 +110,9 @@ public:
     short item_subtype() {return m_subType;}
     short mat_type() {return m_matType;}
     int mat_index() {return m_mat_index;}
-    short mat_class(){return m_mat_class;}
+    MATERIAL_CLASS mat_class(){return m_mat_class;}
     int id(){return m_id;}
-    int indv_choice(){return m_indv_choice;}
+    bool indv_choice(){return m_indv_choice;}
     short job_skill(){return m_job_skill;}
 
     int get_stack_size(){return m_stack_size;}
@@ -126,9 +126,9 @@ private:
     short m_subType;
     short m_matType;
     int m_mat_index;
-    short m_mat_class;
+    MATERIAL_CLASS m_mat_class;
     int m_id;
-    int m_indv_choice;
+    bool m_indv_choice;
     short m_job_skill;
     int m_stack_size;
 
@@ -139,10 +139,13 @@ private:
             VIRTADDR uniform_addr = m_address + m_df->memory_layout()->squad_offset("uniform_item_filter"); //filter offset start
             m_iType = static_cast<ITEM_TYPE>(m_df->read_short(uniform_addr));
             m_subType = m_df->read_short(uniform_addr + m_df->memory_layout()->item_filter_offset("item_subtype"));
-            m_mat_class = m_df->read_short(uniform_addr + m_df->memory_layout()->item_filter_offset("mat_class"));
+            m_mat_class = static_cast<MATERIAL_CLASS>(m_df->read_short(uniform_addr + m_df->memory_layout()->item_filter_offset("mat_class")));
             m_matType = m_df->read_short(uniform_addr + m_df->memory_layout()->item_filter_offset("mat_type"));
             m_mat_index = m_df->read_int(uniform_addr + m_df->memory_layout()->item_filter_offset("mat_index"));
-            m_indv_choice = m_df->read_int(m_address + m_df->memory_layout()->squad_offset("uniform_indv_choice"));
+            //individual choice is stored in a bit array, first bit (any) second (melee) third (ranged)
+            //currently we only care if one is set or not. it may be ok just to check for a weapon type as well
+            quint32 inv_choice_flags = m_df->read_addr(m_address + m_df->memory_layout()->squad_offset("uniform_indv_choice"));
+            m_indv_choice = (has_flag(1,inv_choice_flags) || has_flag(2,inv_choice_flags) || has_flag(4,inv_choice_flags));
         }
     }
 };

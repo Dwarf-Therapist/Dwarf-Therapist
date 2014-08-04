@@ -49,7 +49,7 @@ public:
     void load_data();        
     bool is_inorganic() {return m_inorganic;}
 
-    FlagArray flags() {return m_flags;}
+    FlagArray flags() {return m_flags;}    
 
     static const QString get_material_flag_desc(const MATERIAL_FLAGS &flag) {
         QMap<MATERIAL_FLAGS, QString> m;
@@ -73,21 +73,22 @@ public:
 
     static const QString get_mat_class_desc(const int mat_class){
         QMap<int, QString> m;
-        m[1]=tr("Leather");
-        m[2]=tr("Cloth");
-        m[3]=tr("Wooden");
-        m[5]=tr("Stone");
-        m[14]=tr("Metal");
-        m[16]=tr("Metal");
-        m[17]=tr("Gem");
-        m[18]=tr("Bone");
-        m[19]=tr("Shell");
-        m[20]=tr("Pearl");
-        m[21]=tr("Tooth");
-        m[22]=tr("Horn");
-        m[27]=tr("Plant Fiber");
-        m[28]=tr("Silk");
-        m[29]=tr("Yarn");
+        m[MC_LEATHER]=tr("Leather");
+        m[MC_CLOTH]=tr("Cloth");
+        m[MC_WOOD]=tr("Wooden");
+        m[MC_STONE]=tr("Stone");
+        m[MC_METAL_AMMO]=tr("Metal");
+        m[MC_METAL_AMMO2]=tr("Metal");
+        m[MC_METAL_ARMOR]=tr("Metal");
+        m[MC_GEM]=tr("Gem");
+        m[MC_BONE]=tr("Bone");
+        m[MC_SHELL]=tr("Shell");
+        m[MC_PEARL]=tr("Pearl");
+        m[MC_TOOTH]=tr("Tooth");
+        m[MC_HORN]=tr("Horn");
+        m[MC_PLANT_FIBER]=tr("Plant Fiber");
+        m[MC_SILK]=tr("Silk");
+        m[MC_YARN]=tr("Yarn");
         return m.value(mat_class, "???");
     }
 
@@ -99,7 +100,7 @@ private:
     MemoryLayout * m_mem;    
     FlagArray m_flags;
     bool m_inorganic;
-    QHash<MATERIAL_STATES, QString> m_state_names;
+    QHash<MATERIAL_STATES, QString> m_state_names;    
 
     void read_material();
 };

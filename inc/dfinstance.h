@@ -203,7 +203,7 @@ public:
 
     VIRTADDR get_item_address(ITEM_TYPE itype, int item_id);
 
-    QString get_item_name(ITEM_TYPE itype, int subtype, short mat_type, int mat_index, int mat_class = -1);
+    QString get_item_name(ITEM_TYPE itype, int subtype, short mat_type, int mat_index, MATERIAL_CLASS mat_class = MC_NONE);
     QString get_item_name(ITEM_TYPE itype,int item_id);
 
     QString get_color(int index);

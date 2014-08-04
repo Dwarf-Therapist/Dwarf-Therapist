@@ -67,6 +67,8 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "squad.h"
 
+#include "eventfilterlineedit.h"
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -452,24 +454,67 @@ void MainWindow::read_dwarves() {
     m_view_manager->reselect(ids);
 
     // setup the filter auto-completer and reselect our dwarf for the details dock
-    m_dwarf_names_list.clear();
     bool dwarf_found = false;
-    foreach(Dwarf *d, m_model->get_dwarves()) {
-        m_dwarf_names_list << d->nice_name();
+    QStandardItemModel *filters = new QStandardItemModel(this);
+    foreach(Dwarf *d, m_model->get_dwarves()){
+        QStandardItem *i = new QStandardItem(d->nice_name());
+        i->setData(d->nice_name(),DwarfModel::DR_SPECIAL_FLAG);
+        filters->appendRow(i);
         if(dock_id > 0 && !dwarf_found && d->id() == dock_id){
             dock->show_dwarf(d);
             dwarf_found = true;
         }
     }
+
+    QHash<QPair<QString,QString>,DFInstance::pref_stat* > prefs = DT->get_DFInstance()->get_preference_stats();
+    QPair<QString,QString> key_pair;
+    foreach(key_pair, prefs.uniqueKeys()){
+        QStandardItem *i = new QStandardItem(key_pair.second);
+        i->setData(key_pair.second,DwarfModel::DR_SPECIAL_FLAG);
+        QVariantList data;
+        data << key_pair.first << key_pair.second;
+        i->setData("PREF",Qt::UserRole);
+        i->setData(data,Qt::UserRole+1);
+        filters->appendRow(i);
+    }
     if(!dwarf_found)
         dock->clear(false);
 
+    filters->sort(0,Qt::AscendingOrder);
+
     if (!m_dwarf_name_completer) {
-        m_dwarf_name_completer = new QCompleter(m_dwarf_names_list, this);
-        m_dwarf_name_completer->setCompletionMode(QCompleter::PopupCompletion);
+        m_dwarf_name_completer = new QCompleter(filters,this);
+        m_dwarf_name_completer->setCompletionMode(QCompleter::UnfilteredPopupCompletion);
+        m_dwarf_name_completer->setCompletionRole(DwarfModel::DR_SPECIAL_FLAG);
         m_dwarf_name_completer->setCaseSensitivity(Qt::CaseInsensitive);
         ui->le_filter_text->setCompleter(m_dwarf_name_completer);
     }
+
+    //apply a filter when an item is clicked with the mouse in the popup list
+    connect(m_dwarf_name_completer->popup(),SIGNAL(clicked(QModelIndex)),this,SLOT(apply_filter(QModelIndex)));
+    //we need a custom event filter to intercept the enter key and emit our own signal to filter when enter is hit
+    EventFilterLineEdit *filter = new EventFilterLineEdit(ui->le_filter_text);
+    m_dwarf_name_completer->popup()->installEventFilter(filter);
+    connect(filter,SIGNAL(enterPressed(QModelIndex)),this,SLOT(apply_filter(QModelIndex)));
+
+//    m_dwarf_names_list.clear();
+//    bool dwarf_found = false;
+//    foreach(Dwarf *d, m_model->get_dwarves()) {
+//        m_dwarf_names_list << d->nice_name();
+//        if(dock_id > 0 && !dwarf_found && d->id() == dock_id){
+//            dock->show_dwarf(d);
+//            dwarf_found = true;
+//        }
+//    }
+//    if(!dwarf_found)
+//        dock->clear(false);
+
+//    if (!m_dwarf_name_completer) {
+//        m_dwarf_name_completer = new QCompleter(m_dwarf_names_list, this);
+//        m_dwarf_name_completer->setCompletionMode(QCompleter::PopupCompletion);
+//        m_dwarf_name_completer->setCaseSensitivity(Qt::CaseInsensitive);
+//        ui->le_filter_text->setCompleter(m_dwarf_name_completer);
+//    }
 
     //refresh preference dock    
     PreferencesDock *d_prefs = qobject_cast<PreferencesDock*>(QObject::findChild<PreferencesDock*>("dock_preferences"));
@@ -503,6 +548,21 @@ void MainWindow::read_dwarves() {
 
     LOGI << "completed read in" << t.elapsed() << "ms";
     set_progress_message("");
+}
+
+void MainWindow::apply_filter(){
+    apply_filter(m_dwarf_name_completer->currentIndex());
+}
+
+void MainWindow::apply_filter(QModelIndex idx){
+    if(idx.data(Qt::UserRole) == "PREF"){
+        QVariantList data = idx.data(Qt::UserRole+1).toList();
+        QList<QPair<QString,QString> > prefs;
+        QPair<QString,QString> pref_pair = qMakePair(data.at(0).toString(),data.at(1).toString());
+        prefs << pref_pair;
+        preference_selected(prefs,QString("%1: %2").arg(pref_pair.first).arg(pref_pair.second));
+    }
+    ui->le_filter_text->clear();
 }
 
 void MainWindow::set_interface_enabled(bool enabled) {
@@ -1220,8 +1280,10 @@ void MainWindow::display_group(const int group_by){
     ui->cb_group_by->blockSignals(false);
 }
 
-void MainWindow::preference_selected(QList<QPair<QString,QString> > vals){
+void MainWindow::preference_selected(QList<QPair<QString,QString> > vals, QString filter_name){
     //pairs are of category, pref_name
+    if(filter_name.isEmpty())
+        filter_name = tr("Preferences");
     QString filter = "";
     if(!vals.empty()){
         QPair<QString,QString> pref;
@@ -1236,9 +1298,9 @@ void MainWindow::preference_selected(QList<QPair<QString,QString> > vals){
             }
         }
         filter.chop(4);
-        m_proxy->apply_script("preferences", filter);
+        m_proxy->apply_script(filter_name, filter);
     }else{
-        m_proxy->clear_script("preferences");
+        m_proxy->clear_script(filter_name);
     }
 
     m_proxy->refresh_script();
@@ -1533,3 +1595,5 @@ void MainWindow::refresh_active_scripts(){
     }
     ui->btn_clear_filters->updateGeometry();
 }
+
+

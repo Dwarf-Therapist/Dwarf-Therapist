@@ -863,6 +863,7 @@ void Dwarf::read_preferences(){
     ITEM_TYPE itype;
     PREF_TYPES ptype;
     Preference *p;
+    QStringList valid_prefs;
     foreach(VIRTADDR pref, preferences){
         pref_type = m_df->read_short(pref);
         pref_id = m_df->read_short(pref + 0x2);
@@ -985,7 +986,13 @@ void Dwarf::read_preferences(){
             m_preferences.insert(pref_type, p);
         //        if(itype < NUM_OF_TYPES && itype != NONE)
         //            LOGW << pref_name << " " << (int)itype << " " << Item::get_item_desc(itype);
+
+        if(pref_type <= 6)
+            valid_prefs.append(pref_name);
     }
+
+    //load a pref string purely for filtering purposes
+    m_pref_search = valid_prefs.join(" ");
 
     //add a special preference (actually a misc trait) for like outdoors
     if(has_state(14)){
@@ -2603,7 +2610,7 @@ float Dwarf::calc_role_rating(Role *m_role){
     float global_pref_weight = m_role->prefs.count() <= 0 ? 0 : m_role->prefs_weight.weight;
 
     if((global_att_weight + global_skill_weight + global_trait_weight + global_pref_weight) == 0)
-        return 0.0001;
+        return 50.0f;
 
     RoleAspect *a;
 
@@ -2711,7 +2718,7 @@ float Dwarf::calc_role_rating(Role *m_role){
         if(total_weight > 0)
             rating_prefs = (rating_prefs / total_weight) * 100.0f;//weighted average percentile
         else
-            rating_prefs = 0;
+            rating_prefs = DwarfStats::get_preference_rating(0.0f) * 100.0f;
     }
     //********************************
 
@@ -2804,15 +2811,9 @@ bool Dwarf::has_preference(QString pref_name, QString category, bool exactMatch)
 
     if(category.isEmpty()){
         if(exactMatch){
-            foreach(QString key, m_grouped_preferences.uniqueKeys()){
-                return m_grouped_preferences.value(key)->contains(pref_name,Qt::CaseInsensitive);
-            }
+            return m_pref_search.contains(pref_name, Qt::CaseInsensitive);
         }else{
-            foreach(QString key, m_grouped_preferences.uniqueKeys()){
-                pref = m_grouped_preferences.value(key)->join(", ");
-                if(pref.contains(str_search))
-                    return true;
-            }
+            return m_pref_search.contains(str_search);
         }
         return false;
     }else{
@@ -2821,7 +2822,7 @@ bool Dwarf::has_preference(QString pref_name, QString category, bool exactMatch)
         if(exactMatch){
             return m_grouped_preferences.value(category)->contains(pref_name,Qt::CaseInsensitive);
         }else{
-            pref = m_grouped_preferences.value(category)->join(", ");
+            pref = m_grouped_preferences.value(category)->join(" ");
             if(pref.contains(str_search))
                 return true;
         }

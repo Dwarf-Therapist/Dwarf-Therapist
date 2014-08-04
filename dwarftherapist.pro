@@ -253,7 +253,8 @@ HEADERS += inc/win_structs.h \
     inc/superlabor.h \
     inc/grid_view/superlaborcolumn.h \
     inc/grid_view/customprofessioncolumn.h \
-    inc/multilabor.h
+    inc/multilabor.h \
+    inc/eventfilterlineedit.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \

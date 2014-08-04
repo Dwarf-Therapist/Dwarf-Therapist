@@ -70,12 +70,12 @@ void Uniform::add_uniform_item(ITEM_TYPE itype, ItemDefUniform *uItem, int count
     if(uItem->item_type() == NONE)
         uItem->item_type(itype);
 
-    uItem->add_to_stack(count-1); //uniform items always assume 1
+    uItem->add_to_stack(count-1); //uniform item stack size start at 1
 
     QList<ItemDefUniform*> items = m_uniform_items.take(itype);
     items.append(uItem);
     if(itype == SHOES || itype == GLOVES){
-        items.append(new ItemDefUniform(*uItem));        
+        items.append(new ItemDefUniform(*uItem));
     }
     if(items.length() > 0){
         m_uniform_items.insert(itype,items);
@@ -107,8 +107,7 @@ void Uniform::clear(){
     m_first_check = true;
 }
 
-int Uniform::get_required_count(ITEM_TYPE itype){
-    //return m_equip_counts.value(itype,-1);
+int Uniform::get_remaining_required(ITEM_TYPE itype){
     int count = 0;
     foreach(ITEM_TYPE key, m_uniform_items.uniqueKeys()){
         QList<ItemDefUniform*> items = m_uniform_items.value(key);
@@ -120,31 +119,41 @@ int Uniform::get_required_count(ITEM_TYPE itype){
     return count;
 }
 
-int Uniform::get_missing_equip_count(ITEM_TYPE itype){
+int Uniform::get_missing_equip_count(ITEM_TYPE itype){    
     int count = 0;
     if(m_missing_items.count() == 0)
         return count;
+    if(m_missing_counts.count() <= 0){
+        load_missing_counts();
+    }
+    return m_missing_counts.value(itype);
+}
 
-    if(itype == NONE){
-        foreach(QList<ItemDefUniform*> items, m_missing_items.values()){
-            //count += items.count();
-            foreach(ItemDefUniform *u, items){
-                if(u->get_stack_size() > 0)
-                    count += u->get_stack_size();
+void Uniform::load_missing_counts(){
+    //ensure we have a NONE and group counts
+    m_missing_counts.insert(NONE,0);
+    m_missing_counts.insert(MELEE_EQUIPMENT,0);
+    m_missing_counts.insert(RANGED_EQUIPMENT,0);
+    m_missing_counts.insert(SUPPLIES,0);
+
+    foreach(ITEM_TYPE itype, m_missing_items.uniqueKeys()){
+        foreach(ItemDefUniform *item_miss, m_missing_items.value(itype)){
+            int missing_count = m_missing_counts.value(itype,0);
+            int item_qty = item_miss->get_stack_size();
+            if(item_qty > 0){
+                missing_count += item_qty;
+                m_missing_counts[NONE] += item_qty;
+                //add group counts as well
+                if(Item::is_melee_equipment(itype))
+                    m_missing_counts[MELEE_EQUIPMENT] += item_qty;
+                else if(Item::is_supplies(itype))
+                    m_missing_counts[SUPPLIES] += item_qty;
+                else if(Item::is_ranged_equipment(itype))
+                    m_missing_counts[RANGED_EQUIPMENT] += item_qty;
             }
-        }
-    }else{
-        foreach(ITEM_TYPE missing_type, m_missing_items.uniqueKeys()){
-            if(missing_type == itype || Item::type_in_group(itype,missing_type)){
-//                count += m_missing_items.value(missing_type).count();
-                foreach(ItemDefUniform *u, m_missing_items.value(missing_type)){
-                    if(u->get_stack_size() > 0)
-                        count += u->get_stack_size();
-                }
-            }
+            m_missing_counts.insert(itype,missing_count);
         }
     }
-    return count;
 }
 
 float Uniform::get_uniform_rating(ITEM_TYPE itype){
@@ -152,21 +161,21 @@ float Uniform::get_uniform_rating(ITEM_TYPE itype){
     if(m_first_check)
         return rating;
 
-    float original = 0;
+    float required = 0;
     float missing = get_missing_equip_count(itype);
 
     if(itype != NONE){
-        original = (float)m_equip_counts.value(itype);
+        required = (float)m_equip_counts.value(itype);
     }else{
         foreach(ITEM_TYPE i,m_equip_counts.uniqueKeys()){
             if(i <= NUM_OF_ITEM_TYPES)
-                original += m_equip_counts.value(i,0);
+                required += m_equip_counts.value(i,0);
         }
     }
 
-    if(original <= 0)
-        original = 1;
-    rating = (original-missing) / original * 100.0f;
+    if(required <= 0)
+        required = 1;
+    rating = (required-missing) / required * 100.0f;
 
     if(rating > 100)
         rating = 100.0f;
@@ -188,46 +197,38 @@ void Uniform::check_uniform(QString category_name, Item *item_inv){
         //check our uniform's item list
         if(m_missing_items.value(itype).count() > 0){
             int idx = 0;
-            int req_count = get_required_count(item_inv->item_type());
+            //get the qty of this item type still required, based on the stack size
+            int req_count = get_remaining_required(item_inv->item_type());
+            int inv_qty = item_inv->get_stack_size();
             for(idx = m_missing_items.value(itype).count()-1; idx >= 0; idx--){
-//                if(req_count <= 0)
-//                    break;
-                ItemDefUniform *u = m_missing_items.value(itype).at(idx);
-//            foreach(ItemDefUniform *u, m_missing_items.value(itype)){
-                if((u->id() > -1 && u->id() == item_inv->id()) || u->indv_choice() ||
+                //if the inventory quantity has been used up, or the required item count for the uniform met, quit
+                if(inv_qty <= 0 || req_count <= 0)
+                    break;
+                ItemDefUniform *item_miss = m_missing_items.value(itype).at(idx); //get a missing item of the same type
+
+                //check for a match based on more criteria
+                if((item_miss->id() > -1 && item_miss->id() == item_inv->id()) || item_miss->indv_choice() ||
                         (
-                            (u->item_subtype() < 0 || u->item_subtype() == item_inv->item_subtype()) &&
-                            (u->mat_type() < 0 || u->mat_type()==item_inv->mat_type()) &&
-                            (u->mat_index() < 0 || u->mat_index()==item_inv->mat_index()) &&
-                            (u->job_skill() < 0 || (u->job_skill() == item_inv->melee_skill() || u->job_skill() == item_inv->ranged_skill()))
+                            (item_miss->item_subtype() < 0 || item_miss->item_subtype() == item_inv->item_subtype()) &&
+                            (item_miss->mat_type() < 0 || item_miss->mat_type()==item_inv->mat_type()) &&
+                            (item_miss->mat_index() < 0 || item_miss->mat_index()==item_inv->mat_index()) &&
+                            (item_miss->job_skill() < 0 || (item_miss->job_skill() == item_inv->melee_skill() || item_miss->job_skill() == item_inv->ranged_skill()))
                             )
                         )
                 {
-//                    if(item_inv->get_stack_size() >= req_count || req_count <= 0){
-//                        u->add_to_stack(-req_count);
-//                        if(u->get_stack_size() <= 0)
-//                            m_missing_items.values(itype).removeAt(idx);
-//                    }else{
-//                        m_missing_items.values(itype).removeAt(idx);
-//                    }
-                    QList<ItemDefUniform*> uItems = m_missing_items.take(itype);
-                    if(req_count <= 0){
-                        uItems.removeAt(idx);
-                    }else{
-                        uItems.at(idx)->add_to_stack(-item_inv->get_stack_size());
-                        if(uItems.at(idx)->get_stack_size() <= 0)
-                            uItems.removeAt(idx);
-                        req_count -= item_inv->get_stack_size();
+                    QList<ItemDefUniform*> missing_items = m_missing_items.take(itype);
+
+                    req_count -= inv_qty; //reduce the required count
+                    missing_items.at(idx)->add_to_stack(-inv_qty); //reduce the uniform item's stack
+                    int curr_qty = missing_items.at(idx)->get_stack_size(); //after applying the inventory quantity
+                    if(curr_qty <= 0){
+                        inv_qty = abs(curr_qty); //update the leftover inventory quantity
+                        missing_items.removeAt(idx); //item isn't missing, remove it
                     }
-                    if(uItems.count() > 0)
-                        m_missing_items.insert(itype,uItems);
-//                    QList<ItemDefUniform*> uItems = m_missing_items.take(itype);
-//                    uItems.removeAt(idx);
-//                    if(uItems.count() > 0)
-//                        m_missing_items.insert(itype,uItems);
-//                    break;
+
+                    if(missing_items.count() > 0)
+                        m_missing_items.insert(itype,missing_items);
                 }
-//                idx++;
             }
         }
     }

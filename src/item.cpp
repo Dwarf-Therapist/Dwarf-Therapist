@@ -34,7 +34,7 @@ Item::Item(const Item &i)
     m_iType = i.m_iType;
     m_wear = i.m_wear;
     m_mat_type = i.m_mat_type;
-    m_mat_idx = i.m_mat_idx;
+    m_mat_idx = i.m_mat_idx;    
     m_quality = i.m_quality;
     m_material_name = i.m_material_name;
     m_item_name = i.m_item_name;
@@ -54,7 +54,7 @@ Item::Item(DFInstance *df, ItemDefUniform *u, QObject *parent)
     ,m_iType(u->item_type())    
     ,m_wear(0)
     ,m_mat_type(u->mat_type())
-    ,m_mat_idx(u->mat_index())
+    ,m_mat_idx(u->mat_index())    
     ,m_quality(-1)    
     ,m_id(u->id())
     ,m_affection(0)    
@@ -67,8 +67,8 @@ Item::Item(DFInstance *df, ItemDefUniform *u, QObject *parent)
     }else{
         QVector<VIRTADDR> item_defs = m_df->get_item_vector(m_iType);
 
-        int mat_class = u->mat_class();
-        if(mat_class >= 0){
+        MATERIAL_CLASS mat_class = u->mat_class();
+        if(mat_class != MC_NONE){
             m_material_name = Material::get_mat_class_desc(mat_class);
         }else{
             if(m_mat_idx >= 0 || m_mat_type >= 0)
@@ -83,7 +83,7 @@ Item::Item(DFInstance *df, ItemDefUniform *u, QObject *parent)
             //get base item name
             m_item_name = Item::get_item_name(m_iType);
             //check skill type
-            if(u->indv_choice() <= 0 && u->job_skill() >= 0)
+            if(!u->indv_choice() && u->job_skill() >= 0)
                 m_item_name.append(QObject::tr(" of %1 skill type").arg(GameDataReader::ptr()->get_skill_name(u->job_skill())));
 
         }
@@ -98,7 +98,7 @@ Item::Item(DFInstance *df, VIRTADDR item_addr, QObject *parent)
     ,m_addr(item_addr)
     ,m_wear(0)
     ,m_mat_type(-1)
-    ,m_mat_idx(-1)
+    ,m_mat_idx(-1)    
     ,m_quality(-1)
     ,m_id(-1)
     ,m_affection(0)
@@ -114,7 +114,7 @@ Item::Item(ITEM_TYPE itype, QString name, QObject *parent)
     ,m_iType(itype)
     ,m_wear(0)
     ,m_mat_type(-1)
-    ,m_mat_idx(-1)
+    ,m_mat_idx(-1)    
     ,m_quality(-1)
     ,m_id(-1)
     ,m_affection(0)
@@ -143,7 +143,7 @@ void Item::read_data(){
         m_quality = m_df->read_short(m_addr+m_df->memory_layout()->item_offset("quality"));
 
         Material *m = m_df->find_material(m_mat_idx,m_mat_type);
-        m_material_name = capitalizeEach(m_df->find_material_name(m_mat_idx,m_mat_type,m_iType));
+        m_material_name = capitalizeEach(m_df->find_material_name(m_mat_idx,m_mat_type,m_iType));        
 
         set_default_name(m);
 

@@ -188,7 +188,9 @@ private:
         void edit_custom_role();
         void remove_custom_role();
         void display_group(const int);
-        void preference_selected(QList<QPair<QString,QString> > vals);
+        void apply_filter();
+        void apply_filter(QModelIndex);
+        void preference_selected(QList<QPair<QString,QString> > vals, QString filter_name = "");
         void thought_selected(QList<short> ids);
         void health_legend_selected(QList<QPair<int,int> > vals);
         //optimization stuff
