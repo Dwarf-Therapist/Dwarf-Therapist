@@ -34,7 +34,7 @@ THE SOFTWARE.
 #endif
 
 #ifndef DT_VERSION_MINOR
-    #define DT_VERSION_MINOR 3
+    #define DT_VERSION_MINOR 4
 #endif
 
 #ifndef DT_VERSION_PATCH

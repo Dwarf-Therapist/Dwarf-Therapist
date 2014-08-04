@@ -1,3 +1,12 @@
+### Version 23.4 Patch Notes
+
+***
+
+- added memory layouts for 40.06
+- the filter box on the top for names can also be used to search preferences (BETA)
+- adjusts preferences in roles for edge cases and weights
+- fixes inconsistency with the equipment columns
+
 ### Version 23.3 Patch Notes
 
 ***
