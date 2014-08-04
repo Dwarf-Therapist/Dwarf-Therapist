@@ -99,6 +99,7 @@ else:unix {
 
     bin_mod.path = /usr/bin
     bin_mod.extra = chmod +x $(INSTALL_ROOT)/usr/bin/dwarftherapist
+    bin_mod.depends = install_bin
     INSTALLS += bin_mod
 
     application.path = /usr/share/applications
