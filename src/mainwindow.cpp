@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include <QtWidgets>
-#include <QtNetwork>
 #include <QtDebug>
 
 #include "mainwindow.h"
@@ -86,7 +85,6 @@ MainWindow::MainWindow(QWidget *parent)
     , m_script_dialog(new ScriptDialog(this))
     , m_role_editor(0)
     , m_optimize_plan_editor(0)
-    , m_http(0)
     , m_reading_settings(false)
     , m_show_result_on_equal(false)
     , m_dwarf_name_completer(0)
@@ -245,8 +243,7 @@ MainWindow::~MainWindow() {
     delete m_scanner;
     delete m_script_dialog;
     delete m_role_editor;
-    delete m_optimize_plan_editor;
-    delete m_http;
+    delete m_optimize_plan_editor;    
     delete m_dwarf_name_completer;
 
     delete m_model;    

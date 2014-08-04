@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 #include <QtCore>
 #include <QtWidgets>
-#include <QtNetwork>
+//#include <QtNetwork>
 
 #include "thoughtsdock.h"
 
@@ -157,7 +157,6 @@ private:
     ScriptDialog *m_script_dialog;
     roleDialog *m_role_editor;
     optimizereditor *m_optimize_plan_editor;
-    QNetworkAccessManager *m_http;
     bool m_reading_settings;
     bool m_show_result_on_equal; //! used during version checks
     QCompleter *m_dwarf_name_completer;

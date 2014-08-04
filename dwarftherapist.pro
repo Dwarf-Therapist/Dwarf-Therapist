@@ -24,7 +24,7 @@ QMAKE_CFLAGS += $$(CFLAGS)
 QMAKE_CXXFLAGS += $$(CXXFLAGS)
 QMAKE_LFLAGS += $$(LDFLAGS)
 
-NCLUDEPATH += inc \
+INCLUDEPATH += inc \
     inc$${DIR_SEPARATOR}models \
     inc$${DIR_SEPARATOR}grid_view \
     inc$${DIR_SEPARATOR}docks \
