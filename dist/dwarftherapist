@@ -1,27 +1,243 @@
 #!/bin/bash
-cd /usr/share/dwarftherapist
 
-#Search for the appropriate SUDO application
-_foundprog=
-findprog () {
-    _foundprog=`which $1`
-    return $?
+#Dwarf-Therapist Starter
+#Copyright (c) 2014 Markus Heppner javongcherub@gmail.com
+
+#Permission is hereby granted, free of charge, to any person obtaining a copy
+#of this software and associated documentation files (the "Software"), to deal
+#in the Software without restriction, including without limitation the rights
+#to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#copies of the Software, and to permit persons to whom the Software is
+#furnished to do so, subject to the following conditions:
+#The above copyright notice and this permission notice shall be included in
+#all copies or substantial portions of the Software.
+
+#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#THE SOFTWARE.
+
+#http://www.opensource.org/licenses/mit-license.php
+
+# Prevent running script with sh
+if [ -z "$BASH_VERSION" ]; then
+    echo "sh not supported. Please run:\n\n  . $(readlink -n -m $0)\n\n  dwarftherapist" 
+    exit 1 
+fi 
+
+##########################################
+##
+##   SETTINGS / CONFIG
+##
+##########################################
+
+## $_DT_BINARY
+## Set path to 'DwarfTherapist' binary
+_DT_BINARY="/usr/bin/DwarfTherapist"
+
+## $_ETC_BASE_FOLDER
+## Set folder containing 'etc/memory_layouts/linux/*'
+## DwarfTherapist needs to be run from within this folder, because relative path 'etc/memory_layouts/OS/' is hardcoded in binary
+##
+_ETC_BASE_FOLDER="/usr/share/dwarftherapist/"
+
+##_NOTIFY_ICON
+## Set path to icon used for notify-send
+_NOTIFY_ICON="/usr/share/pixmaps/dwarftherapist.png"
+
+##########################################
+##
+##   FUNCTIONS
+##
+##########################################
+
+function send_notification() {
+    # Try to notifiy-send messages, so user can see important errors even if DwarfTherapist is not run from console
+    if [ $(which notify-send) ] ;
+    then
+        notify-send -t 7000 -i "${_NOTIFY_ICON}" \
+        "DwarfTherapist" \
+        "$1"
+    else
+        # Use xmessage as backup for notifiy_send
+        [ $(which xmessage) ] && echo -e "$1" | xmessage -title 'dwarftherpist' -center -buttons " CLOSE " -file -
+    fi
+    # Terminal output
+    echo -e "$1"
 }
 
-SUDO=
-if findprog gksudo; then
-	SUDO=gksudo
-elif findprog kdesudo; then
-	SUDO=kdesudo
-else
-	SUDO=sudo
-fi
+function verify_dt_binary {
+    # String to send_notification
+    _MSG_no_binary="ERROR: ${_DT_BINARY} not found.\n\
+        \nVerify \$_DT_BINARY defined in $(readlink -m $0) script is set correctly."
+        
+    # Verify DwarfTherapist binary exists
+    if [ $(which ${_DT_BINARY}) ] ;
+    then
+        return 0                  
+    else
+        # Send $_MSG_ & exit script
+        send_notification "$_MSG_no_binary"
+        exit 1
+    fi
+}
 
-if [ -f /proc/sys/kernel/yama/ptrace_scope ] && [ `cat /proc/sys/kernel/yama/ptrace_scope` -eq 1 ]; then
-	echo Dwarf therapist needs to run as root because user ptrace is disabled
-	$SUDO /usr/bin/DwarfTherapist
-else
-	/usr/bin/DwarfTherapist
-fi
+function verify_etc_base_folder {
+    # String to send_notification
+    _MSG_no_etc_folder="ERROR: Folder ${_ETC_BASE_FOLDER} not found. Unable to read memory layouts.\n\
+        \nVerify \$_ETC_BASE_FOLDER defined in $(readlink -n -m $0) script is set correctly."
+        
+    # Convert $_ETC_BASE_FOLDER to an absolute path, just in case
+    _ETC_BASE_FOLDER=$(readlink -n -m ${_ETC_BASE_FOLDER})
+    
+    # Verify $_ETC_BASE_FOLDER exists
+    if [ -e ${_ETC_BASE_FOLDER} ] && [ -d ${_ETC_BASE_FOLDER} ] ;
+    then
+        # Change directory to $_ETC_BASE_FOLDER so DwarfTherapist can find memory layouts
+        cd ${_ETC_BASE_FOLDER}
+        return 0
+    else
+        # Send $_MSG_ & exit script
+        send_notification "$_MSG_no_etc_folder"
+        exit 1
+    fi
+}
 
+function check_ptrace_state {
+    # If script is run with root privileges set $_SUDO="" & exit function
+    if [ $USER = "root" ]; then
+        _SUDO=""
+        return 0
+    fi
+    
+    # Verify "cap_sys_ptrace=eip" is not set and yama.ptrace is enabled, then provide appropriate sudo command
+    if [ ! "$(getcap ${_DT_BINARY})" ] && [ -f /proc/sys/kernel/yama/ptrace_scope ] && [ "$(cat /proc/sys/kernel/yama/ptrace_scope)" == "1" ] ;
+    then
+        _SUDO=sudo
+        [ $(which kdesudo) ] && _SUDO=kdesudo
+        [ $(which gksudo) ] && _SUDO=gksudo
+        [ $(which kdesu) ] && _SUDO=kdesu
+        [ $(which gksu) ] && _SUDO=gksu
+        return 2
+    else
+        # If "cap_sys_ptrace=eip" is set or yama.ptrace disabled, DwarfTherapist can run without sudo
+        _SUDO=""
+        return 0
+    fi
+}
 
+function provide_gui_to_setcap {
+    # Text blocks for xmessage window
+    _DIALOG_HEAD="++==================================================================================================
+    \n||
+    \n||  DwarfTherapist needs to run as root because user ptrace is disabled.
+    \n||  In order to start DwarfTherapist without root privileges run:
+    \n||
+    \n||  > ${_SUDO} setcap cap_sys_ptrace=eip ${_DT_BINARY}
+    \n||"
+    _DIALOG_NOT_SETCAP="\n||  WARNING: SETCAP NOT FOUND ! setcap is part of libcap2-bin.
+    \n||
+    \n|| Open terminal and run apt-get for Debian/Ubuntu or pacman for Arch:
+    \n||
+    \n|| > sudo apt-get install libcap2-bin
+    \n|| > sudo pacman -S libcap
+    \n||"
+    _DIALOG_Q_HEAD="\n++==================================================================================================
+    \n||
+    \n||  Do you want to ?
+    \n||"
+    _DIALOG_Q_RUN_ROOT="\n||  RUN AS ROOT........${_SUDO} ${_DT_BINARY}
+    \n||"
+    _DIALOG_Q_SETCAP="\n||  SETCAP PTRACE......${_SUDO} setcap cap_sys_ptrace=eip ${_DT_BINARY}
+    \n||"
+    _DIALOG_Q_TERMINAL="\n||  OPEN TERMINAL......to install libcap2-bin
+    \n||"
+    _DIALOG_LINE_TAIL="\n++=================================================================================================="
+    
+    # while function "check_ptrace_state" not set _SUDO=""
+    while [ "${_SUDO}" != "" ]
+    do
+        # If neither gksu / kdesu are installed send notification in case user not running script from terminal & exit function
+        if [ "${_SUDO}" == "sudo" ] ; then
+            send_notification "DwarfTherapist needs to run with sudo from terminal because user ptrace is disabled and gksudo/kdesudo not installed.\nIn order to start DwarfTherapist without root privileges install 'libcap2-bin' or your corresponding package.\n(ArchLinux: 'libcap') ...then run:\n\nsudo setcap cap_sys_ptrace=eip ${_DT_BINARY}\n"
+            return 2
+        fi
+        
+        # Check if libcap2 is already installed
+        if [ $(which setcap) ] ; then
+            # Setcap was found, set $_buttons and $_DIALOG accordingly 
+            # (_buttons="<buttonname[1]>:<return_value[1]>,<buttonname[X]:<return_value[X]>"
+            _buttons=" RUN AS ROOT :2, SETCAP PTRACE :3, EXIT :0"
+            _DIALOG="${_DIALOG_HEAD}${_DIALOG_Q_HEAD}${_DIALOG_Q_RUN_ROOT}${_DIALOG_Q_SETCAP}${_DIALOG_LINE_TAIL}"
+        else
+            # Setcap was NOT found, $_buttons and $_DIALOG accordingly
+            _buttons=" RUN AS ROOT :2, CHECK AGAIN :5, OPEN TERMINAL :4, EXIT :0"
+            _DIALOG="${_DIALOG_HEAD}${_DIALOG_LINE_TAIL}${_DIALOG_NOT_SETCAP}${_DIALOG_Q_HEAD}${_DIALOG_Q_RUN_ROOT}${_DIALOG_Q_TERMINAL}${_DIALOG_LINE_TAIL}"
+        fi 
+        
+        # Show xmessage dialog with $_buttons $_DIALOG; Read return value provided by buttons
+        echo -e ${_DIALOG} | xmessage -title 'dwarftherpist' -center -buttons "${_buttons}" -file -
+        _return_value=$(echo $?)
+        
+        case ${_return_value} in
+            0) # EXIT, exit script
+                exit 0
+            ;;
+            2) # RUN AS ROOT, exit function
+                return 2
+            ;;
+            3) # SETCAP PTRACE, verify setcap command is installed and apply to DwarfTherapist
+                [ $(which setcap) ] && ${_SUDO} setcap cap_sys_ptrace=eip ${_DT_BINARY} 
+            ;;
+            4) # OPEN TERMINAL, open default terminal & xmessage window again
+                x-terminal-emulator &
+            ;;
+            5) ;; # CHECK AGAIN, refresh window
+        esac
+        
+            # if 'setcap cap_sys_ptrace=eip ${_DT_BINARY}' successful, _SUDO=""
+            check_ptrace_state
+    done
+}
+
+# VERIFY_LOG_FOLDER
+function verify_log_folder {
+    # String to send_notification
+    _MSG_no_log_folder="WARNING: '$USER' has no access permissions for ${_ETC_BASE_FOLDER}/log.\n\
+    \nDwarfTherapist can not write logfile, in order to enable logging run:\n\
+    \nsudo chmod 777 ${_ETC_BASE_FOLDER}/log\
+    \nsudo chmod 777 ${_ETC_BASE_FOLDER}/log/run.log"
+    
+    # Verify user can write in /log/run.log and _SUDO=""
+    if [ ! -w ${_ETC_BASE_FOLDER}/log ] && [ ! -w ${_ETC_BASE_FOLDER}/log/run.log ] && [ "${_SUDO}" == "" ] ; then
+        # Send $_MSG_ only once per day in case user doesn't care about logs
+        [ "$(date +%F)" != "$(cat /tmp/.dwarf-therapist/log_warning-was-shown 2>/dev/null)" ] &&  send_notification "${_MSG_no_log_folder}"
+        # write date in tmp file
+        mkdir -p /tmp/.dwarf-therapist
+        date +%F > /tmp/.dwarf-therapist/log_warning-was-shown
+    fi
+}
+
+##########################################
+##
+##   Run functions / binary
+##
+##########################################
+
+verify_dt_binary
+
+verify_etc_base_folder
+
+check_ptrace_state
+
+provide_gui_to_setcap
+
+# Strike the earth!
+${_SUDO} ${_DT_BINARY}
+
+verify_log_folder
+
+exit 0
