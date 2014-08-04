@@ -81,6 +81,8 @@ else:macx {
     QMAKE_BUNDLE_DATA += etc
 
     layouts.path = Contents/MacOS/etc/memory_layouts/osx
+    layouts.files += etc/memory_layouts/osx/v0.40.04_osx.ini
+    layouts.files += etc/memory_layouts/osx/v0.40.05_osx.ini
     layouts.files += etc/memory_layouts/osx/v0.40.06_osx.ini
     QMAKE_BUNDLE_DATA += layouts
 }
