@@ -13,7 +13,7 @@ If you'd like to help support this project [![Donate](http://dl.dropbox.com/u/18
 * [Download Latest Version for OSX DF 34.11](http://dffd.wimbli.com/file.php?id=8418 "DFFD")
 
 ### Linux
-There currently isn't a packaged version for linux. You can find the instructions to build from source [here](https://github.com/splintermind/Dwarf-Therapist/blob/master/BUILDING.txt).
+There currently isn't a packaged version for linux. You can find the instructions to build from source [here](https://github.com/splintermind/Dwarf-Therapist/blob/DF2014/BUILDING.txt).
 
 ### Running the program
 You'll most likely need to run Dwarf Therapist with sudo. This is due to ptrace protection that exists on some flavours of linux. You can explicitly give Dwarf Therapist permission to ptrace with:
