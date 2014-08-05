@@ -1537,9 +1537,6 @@ void DFInstance::layout_not_found(const QString & checksum) {
     mb->setText(tr("I'm sorry but I don't know how to talk to this "
                    "version of Dwarf Fortress! (checksum:%1)<br><br> <b>Supported "
                    "Versions:</b><ul>%2</ul>").arg(checksum).arg(supported_vers));
-    mb->setInformativeText(tr("<a href=\"%1\">Click Here to find out "
-                              "more online</a>.")
-                           .arg(URL_SUPPORTED_GAME_VERSIONS));
 
     /*
     mb->setDetailedText(tr("Failed to locate a memory layout file for "
