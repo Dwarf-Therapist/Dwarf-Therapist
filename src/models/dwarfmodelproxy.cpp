@@ -21,8 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <QtScript>
-
 #include "dwarfmodelproxy.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
@@ -36,7 +34,7 @@ DwarfModelProxy::DwarfModelProxy(QObject *parent)
     :QSortFilterProxyModel(parent)
     , m_last_sort_order(Qt::AscendingOrder)
     , m_last_sort_role(DSR_NAME_ASC)
-    , m_engine(new QScriptEngine(this))
+    , m_engine(new QJSEngine(this))    
 {
     this->setDynamicSortFilter(false);
 }
@@ -147,7 +145,7 @@ bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source
     if(dwarf_id && (m_scripts.count() > 0 || !m_test_script.isEmpty())){
         Dwarf *d = m->get_dwarf_by_id(dwarf_id);
         if (d) {
-            QScriptValue d_obj = m_engine->newQObject(d);
+            QJSValue d_obj = m_engine->newQObject(d);
             m_engine->globalObject().setProperty("d", d_obj);
 
             QStringList scripts;

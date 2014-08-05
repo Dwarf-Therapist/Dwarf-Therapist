@@ -23,11 +23,11 @@ THE SOFTWARE.
 #ifndef DWARF_MODEL_PROXY_H
 #define DWARF_MODEL_PROXY_H
 
+#include <QJSEngine>
 #include <QtWidgets>
 
 class Dwarf;
 class DwarfModel;
-class QScriptEngine;
 
 class DwarfModelProxy: public QSortFilterProxyModel {
     Q_OBJECT
@@ -75,7 +75,7 @@ protected:
 private:
 	QString m_filter_text;
     QString m_test_script;
-    QScriptEngine *m_engine;    
+    QJSEngine *m_engine;
     QHash<QString,QString> m_scripts;
 };
 

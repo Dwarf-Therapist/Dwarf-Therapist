@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include <QVector>
-#include <QtScript>
+#include <QJSEngine>
 #include <QDebug>
 #include "dwarf.h"
 #include "dfinstance.h"
@@ -2586,8 +2586,8 @@ QList<float> Dwarf::calc_role_ratings(){
 float Dwarf::calc_role_rating(Role *m_role){
     //if there's a script, use this in place of any aspects
     if(!m_role->script.trimmed().isEmpty()){
-        QScriptEngine m_engine;
-        QScriptValue d_obj = m_engine.newQObject(this);
+        QJSEngine m_engine;
+        QJSValue d_obj = m_engine.newQObject(this);
         m_engine.globalObject().setProperty("d", d_obj);
         return  m_engine.evaluate(m_role->script).toNumber(); //just show the raw value the script generates
     }
