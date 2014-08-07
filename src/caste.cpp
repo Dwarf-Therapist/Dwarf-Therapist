@@ -90,9 +90,12 @@ void Caste::read_caste() {
 //        m_body_sizes.prepend((int)size);
 //    }
     m_body_sizes.append(m_df->read_int(m_address + m_mem->caste_offset("adult_size")));
-    m_baby_age = m_df->read_int(m_address + m_mem->caste_offset("baby_age"));
-    m_child_age = m_df->read_int(m_address + m_mem->caste_offset("child_age"));
     m_flags = FlagArray(m_df, m_address + m_mem->caste_offset("flags"));
+
+    if(m_flags.has_flag(BABY))
+        m_baby_age = m_df->read_int(m_address + m_mem->caste_offset("baby_age"));
+    if(m_flags.has_flag(CHILD))
+        m_child_age = m_df->read_int(m_address + m_mem->caste_offset("child_age"));
 
     if(m_child_age < 0)
         m_child_age = 0;

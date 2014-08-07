@@ -299,6 +299,7 @@ typedef enum{
     NO_EAT=13,
     NO_DRINK=14,
     NO_SLEEP=15,
+    FLIER=19,
     WEB_IMMUNE=25,
     IMMOBILE_LAND=27,
     MILKABLE=29,
@@ -317,7 +318,8 @@ typedef enum{
     PARALYZE_IMMUNE=79,
     GETS_WOUND_INFECTIONS=83,
     TRAINABLE_WAR=88,
-    FLIER=97,
+    BABY=97,
+    CHILD=98,
     CRAZED=161, //werebeasts
     BLOODSUCKER=162, //vampires
     HAS_EXTRACTS=200 //custom

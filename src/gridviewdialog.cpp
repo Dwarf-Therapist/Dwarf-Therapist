@@ -492,8 +492,7 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
 
     //WEAPONS
     QMenu *m_weapon = m_cmh->create_title_menu(m, tr("Weapon"),
-                                        tr("Weapon columns will show an indicator of whether the dwarf can wield the weapon with one hand, two hands or not at all."));
-    //add_sub_menus(m_weapon,DT->get_DFInstance()->get_ordered_weapon_defs().count() / 15,true);
+                                        tr("Weapon columns will show an indicator of whether the dwarf can wield the weapon with one hand, two hands or not at all."));    
     m_cmh->add_sub_menus(m_weapon,DT->get_DFInstance()->get_ordered_weapon_defs().count() / 15);
     QPair<QString, ItemWeaponSubtype*> weapon_pair;
     foreach(weapon_pair, DT->get_DFInstance()->get_ordered_weapon_defs()) {

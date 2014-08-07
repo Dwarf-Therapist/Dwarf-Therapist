@@ -44,9 +44,13 @@ public :
     }
 
     void add_sub_menus(QMenu *m, int groups, bool add_all=true){
-        int step = 26 / groups;
+        int step = 26;
+        if(groups > 0)
+            step = 26 / groups;
+
         if(step >= 26)
             return;
+
         if(step <= 0)
             step = 1;
         QMenu *tmp;
