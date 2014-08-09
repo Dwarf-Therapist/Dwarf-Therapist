@@ -2604,11 +2604,23 @@ float Dwarf::calc_role_rating(Role *m_role){
     double aspect_value = 0.0;
 
     //adjust our global weights here to 0 if the aspect count is <= 0
-    float global_att_weight = m_role->attributes.count() <= 0 ? 0 : m_role->attributes_weight.weight;
-    float global_skill_weight = m_role->skills.count() <= 0 ? 0 : m_role->skills_weight.weight;
-    float global_trait_weight = m_role->traits.count() <= 0 ? 0 : m_role->traits_weight.weight;
-    float global_pref_weight = m_role->prefs.count() <= 0 ? 0 : m_role->prefs_weight.weight;
+    float global_att_weight = m_role->attributes_weight.weight;; //m_role->attributes.count() <= 0 ? 0 : m_role->attributes_weight.weight;
+    if (m_role->attributes.count() <= 0)
+        rating_att = 50.0f;
 
+    float global_skill_weight = m_role->skills_weight.weight; // m_role->skills.count() <= 0 ? 0 : m_role->skills_weight.weight;
+    if (m_role->skills.count() <= 0)
+        rating_skill = 50.0f;
+
+    float global_trait_weight = m_role->traits_weight.weight; // m_role->traits.count() <= 0 ? 0 : m_role->traits_weight.weight;
+    if (m_role->traits.count() <= 0)
+        rating_trait = 50.0f;
+
+    float global_pref_weight = m_role->prefs_weight.weight; // m_role->prefs.count() <= 0 ? 0 : m_role->prefs_weight.weight;
+    if (m_role->prefs.count() <= 0)
+        rating_prefs = 50.0f;
+
+    //if there is nothing in the role... return .5
     if((global_att_weight + global_skill_weight + global_trait_weight + global_pref_weight) == 0)
         return 50.0f;
 
@@ -2690,7 +2702,7 @@ float Dwarf::calc_role_rating(Role *m_role){
         }
         if(total_skill_rates <= 0){
             //this unit cannot improve the skills associated with this role so cancel any rating
-            return 0.0001;
+            //return 0.0001;
         }else{
             rating_skill = (rating_skill / total_weight) * 100.0f;//weighted average percentile
         }
