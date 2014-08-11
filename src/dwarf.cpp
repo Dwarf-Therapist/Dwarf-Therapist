@@ -2690,8 +2690,6 @@ float Dwarf::calc_role_rating(Role *m_role){
             //this unit cannot improve the skills associated with this role so cancel any rating
             return 0.0001;
         }else{
-            if(rating_skill <= 0)
-                int z = 0;
             rating_skill = (rating_skill / total_weight) * 100.0f;//weighted average percentile
         }
     }else{
