@@ -291,6 +291,8 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
+    <addaction name="act_help"/>
+    <addaction name="separator"/>
     <addaction name="act_go_project_home"/>
     <addaction name="act_go_forums"/>
     <addaction name="act_go_new_issue"/>
@@ -430,6 +432,8 @@
    <addaction name="act_commit_pending_changes"/>
    <addaction name="separator"/>
    <addaction name="act_options"/>
+   <addaction name="act_help"/>
+   <addaction name="separator"/>
    <addaction name="act_exit"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -1096,6 +1100,18 @@
     <string>Add Super Labor</string>
    </property>
   </action>
+  <action name="act_help">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/img/book-question.png</normaloff>:/img/book-question.png</iconset>
+   </property>
+   <property name="text">
+    <string>Manual</string>
+   </property>
+   <property name="toolTip">
+    <string>Open the Dwarf Therapist manual.</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -1565,6 +1581,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_help</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>open_help()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>403</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -1595,5 +1627,6 @@
   <slot>save_gridview_csv()</slot>
   <slot>export_custom_roles()</slot>
   <slot>import_custom_roles()</slot>
+  <slot>open_help()</slot>
  </slots>
 </ui>

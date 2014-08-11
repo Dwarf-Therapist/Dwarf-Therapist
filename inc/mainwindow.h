@@ -116,6 +116,9 @@ public:
         void go_to_project_home();
         void go_to_new_issue();
 
+        //help
+        void open_help();
+
         // progress/status
         void set_progress_message(const QString &msg);
         void set_progress_range(int min, int max);

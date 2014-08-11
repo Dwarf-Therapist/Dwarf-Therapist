@@ -1,3 +1,14 @@
+### Version 23.5 Patch Notes
+
+***
+
+- added memory layouts for 40.07 (win/linux)
+- fixed an issue where animals always appeared to be babies
+- updated roles to center around the 50% more
+- added new labors to the game_data.ini
+- updated the default gridviews to include discipline, new full/compact views and the new labors
+- added a context menu to clear only the custom profession name
+
 ### Version 23.4 Patch Notes
 
 ***

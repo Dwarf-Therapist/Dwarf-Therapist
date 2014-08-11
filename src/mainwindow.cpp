@@ -857,6 +857,11 @@ void MainWindow::go_to_new_issue() {
     QDesktopServices::openUrl(QUrl("https://github.com/splintermind/Dwarf-Therapist/issues?state=open"));
 }
 
+void MainWindow::open_help(){
+    QString manual_path = QString("file://%1/Therapist Manual.pdf").arg(QCoreApplication::applicationDirPath());
+    QDesktopServices::openUrl(QUrl::fromLocalFile(manual_path));
+}
+
 QToolBar *MainWindow::get_toolbar() {
     return ui->main_toolbar;
 }
