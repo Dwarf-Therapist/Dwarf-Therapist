@@ -1467,7 +1467,7 @@ void Dwarf::read_inventory(){
         inv_type = m_df->read_short(inventory_item_addr + m_mem->dwarf_offset("inventory_item_mode"));
         bp_id = m_df->read_short(inventory_item_addr + m_mem->dwarf_offset("inventory_item_bodypart"));
 
-        if(inv_type == 1 || inv_type == 2 || inv_type == 4 || inv_type == 8){
+        if(inv_type == 1 || inv_type == 2 || inv_type == 4 || inv_type == 8 || inv_type == 10){
             if(bp_id >= 0)
                 category_name = m_caste->get_body_part(bp_id)->name();
             else

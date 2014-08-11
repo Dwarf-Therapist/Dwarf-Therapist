@@ -1,3 +1,10 @@
+### Version 23.6 Patch Notes
+
+***
+
+- fixes an issue where weapons strapped to the body weren't included in inventory
+- fixes an issue where assigning a specific weapon to a squad member wouldn't show up as a conflict/missing item
+
 ### Version 23.5.1 Patch Notes
 
 ***

@@ -206,8 +206,12 @@ void Uniform::check_uniform(QString category_name, Item *item_inv){
                     break;
                 ItemDefUniform *item_miss = m_missing_items.value(itype).at(idx); //get a missing item of the same type
 
+                //check for a specific item id
+                if(item_miss->id() > -1 && item_miss->id() != item_inv->id())
+                    continue;
+
                 //check for a match based on more criteria
-                if((item_miss->id() > -1 && item_miss->id() == item_inv->id()) || item_miss->indv_choice() ||
+                if(item_miss->indv_choice() ||
                         (
                             (item_miss->item_subtype() < 0 || item_miss->item_subtype() == item_inv->item_subtype()) &&
                             (item_miss->mat_type() < 0 || item_miss->mat_type()==item_inv->mat_type()) &&
