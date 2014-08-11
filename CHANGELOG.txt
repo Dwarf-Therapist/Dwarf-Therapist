@@ -1,3 +1,9 @@
+### Version 23.5.1 Patch Notes
+
+***
+
+- added missing recovering wounded labor to the full labors view
+
 ### Version 23.5 Patch Notes
 
 ***
