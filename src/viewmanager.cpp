@@ -299,7 +299,7 @@ void ViewManager::draw_views() {
     QStringList tab_order = DT->user_settings()->value(
             "gui_options/tab_order").toStringList();
     if (tab_order.size() == 0) {
-        tab_order << "Labors" << "Military" << "Social" << "Attributes" << "Roles" << "Animals";
+        tab_order << "Labors Full" << "Military" << "Social" << "Attributes" << "Roles" << "Animals";
     }    
     if (tab_order.size() > 0) {
         foreach(QString name, tab_order) {

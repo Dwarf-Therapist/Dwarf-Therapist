@@ -189,10 +189,14 @@ void UnitHealth::add_info(HealthInfo *hi, QList<HealthInfo *> &info_list){
 void UnitHealth::read_health_info(){
     MemoryLayout *mem = m_df->memory_layout();
     VIRTADDR unit_health_addr = m_df->read_addr(m_dwarf_addr + mem->dwarf_offset("unit_health_info"));
-    //health flags contain the requests for treatment info
-    quint32 health_flags = m_df->read_int(unit_health_addr + 0x4);
-    //read bp flags for inoperable rot
-    health_req_flags = m_df->enumerate_vector(unit_health_addr + 0x8 - DFInstance::VECTOR_POINTER_OFFSET);
+
+    quint32 health_flags = 0;
+    if(unit_health_addr > 0){
+        //health flags contain the requests for treatment info
+        health_flags = m_df->read_int(unit_health_addr + 0x4);
+        //read bp flags for inoperable rot
+        health_req_flags = m_df->enumerate_vector(unit_health_addr + 0x8);
+    }
     //1 << 2 << 4 << 8 << 16 << 32 << 64 << 128 << 256 << 512 << 1024 match with..
     //diagnosis, recovery, unk, immobilization, dressing, cleaning, surgery, suture, setting, traction, crutch
     //these only have a single description associated with them. we also want to avoid the 4th (unknown) request

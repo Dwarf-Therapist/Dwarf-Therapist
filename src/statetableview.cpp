@@ -96,7 +96,7 @@ StateTableView::StateTableView(QWidget *parent)
     connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(vscroll_value_changed(int)));
 
     m = new QMenu(this);
-    m->addAction(tr("Set Nickname..."), this, SLOT(set_nickname()));
+    m->addAction(QIcon(":img/ui-text-field-select.png"),tr("Set Nickname..."), this, SLOT(set_nickname()));
     m->addSeparator();
 
     customization_menu = new QMenu(m);
@@ -133,9 +133,11 @@ StateTableView::StateTableView(QWidget *parent)
 void StateTableView::build_custom_profession_menu(){
     customization_menu->clear();
     m_prof_name = customization_menu->addAction(QIcon(":img/ui-text-field-select.png"), tr("Set custom profession name..."), this, SLOT(set_custom_profession_text()));
+    customization_menu->addAction(QIcon(":img/ui-text-field-clear-button.png"), tr("Clear custom profession name"), this, SLOT(set_custom_profession_text()));
+    customization_menu->addAction(tr("Reset to default profession"), this, SLOT(reset_custom_profession()));
+    customization_menu->addSeparator();
     m_professions = customization_menu->addAction(QIcon(":img/new.png"), tr("New custom profession from this unit..."), this, SLOT(custom_profession_from_dwarf()));
-    m_super_labors = customization_menu->addAction(QIcon(":img/new.png"), tr("New super labor from this unit..."), this, SLOT(super_labor_from_dwarf()));
-    customization_menu->addAction(QIcon(":img/ui-text-field-clear-button.png"), tr("Reset to default profession"), this, SLOT(reset_custom_profession()));
+    m_super_labors = customization_menu->addAction(QIcon(":img/new.png"), tr("New super labor column from this unit..."), this, SLOT(super_labor_from_dwarf()));
     customization_menu->addSeparator();
     foreach(CustomProfession *cp, DT->get_custom_professions()) {
         customization_menu->addAction(QIcon(cp->get_pixmap()), cp->get_name(), this, SLOT(apply_custom_profession()));
@@ -599,20 +601,21 @@ void StateTableView::reset_custom_profession() {
     m_model->calculate_pending();
 }
 
-void StateTableView::set_custom_profession_text() {
-    QString prof_name;
-    bool warn = false;
-    do {
-        bool ok;
-        if (warn)
-            QMessageBox::warning(this, tr("Name too long!"), tr("Profession names must be 15 characters or shorter!"));
-        prof_name = QInputDialog::getText(this, tr("New Custom Profession Name"),
-                                          tr("Custom Profession"), QLineEdit::Normal, QString(), &ok);
-        if (!ok)
-            return;
-        warn = prof_name.length() > 15;
-    } while(warn);
-
+void StateTableView::set_custom_profession_text(QString prof_name) {
+    prof_name = prof_name.trimmed();
+    if(!prof_name.isEmpty()){
+        bool warn = false;
+        do {
+            bool ok;
+            if (warn)
+                QMessageBox::warning(this, tr("Name too long!"), tr("Profession names must be 15 characters or shorter!"));
+            prof_name = QInputDialog::getText(this, tr("New Custom Profession Name"),
+                                              tr("Custom Profession"), QLineEdit::Normal, QString(), &ok);
+            if (!ok)
+                return;
+            warn = prof_name.length() > 15;
+        } while(warn);
+    }
     const QItemSelection sel = selectionModel()->selection();
     foreach(const QModelIndex idx, sel.indexes()) {
         if (idx.column() == 0 && !idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
@@ -622,7 +625,6 @@ void StateTableView::set_custom_profession_text() {
         }
     }
     m_model->calculate_pending();
-
 }
 
 void StateTableView::currentChanged(const QModelIndex &cur, const QModelIndex &idx) {

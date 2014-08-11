@@ -141,8 +141,8 @@ private:
     private slots:
         void set_nickname();
 
-        void set_custom_profession_text();
-        void apply_custom_profession();
+        void set_custom_profession_text(QString prof_name = "");
+        void apply_custom_profession();        
         void reset_custom_profession();
         void custom_profession_from_dwarf();
 

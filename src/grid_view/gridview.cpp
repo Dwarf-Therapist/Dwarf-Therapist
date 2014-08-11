@@ -46,8 +46,7 @@ GridView::GridView(const GridView &to_be_copied)
     }
 }
 
-GridView::~GridView() {
-    qDeleteAll(m_sets);
+GridView::~GridView() {    
     m_sets.clear();
 }
 

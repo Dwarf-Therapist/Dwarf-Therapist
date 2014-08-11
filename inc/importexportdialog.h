@@ -37,14 +37,14 @@ class ImportExportDialog : public QDialog {
 
 public:
 	ImportExportDialog(QWidget *parent = 0);
-	void setup_for_profession_export();
-	void setup_for_profession_import();
+    bool setup_for_profession_export();
+    bool setup_for_profession_import();
 
-    void setup_for_gridview_export();
-	void setup_for_gridview_import();
+    bool setup_for_gridview_export();
+    bool setup_for_gridview_import();
 
-    void setup_for_role_export();
-    void setup_for_role_import();
+    bool setup_for_role_export();
+    bool setup_for_role_import();
 
 	public slots:
 		void accept();

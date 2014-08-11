@@ -44,7 +44,7 @@ ImportExportDialog::ImportExportDialog(QWidget *parent)
     connect(ui->btn_select_all, SIGNAL(clicked()), SLOT(select_all()));
 }
 
-void ImportExportDialog::setup_for_profession_export() {
+bool ImportExportDialog::setup_for_profession_export() {
     m_mode = MODE_EXPORT_PROFESSIONS;
     QString default_path = QString("%1/%2")
         .arg(QStandardPaths::DesktopLocation)
@@ -52,7 +52,7 @@ void ImportExportDialog::setup_for_profession_export() {
     m_path = QFileDialog::getSaveFileName(this, tr("Choose a file to export to"),	default_path,
         "Dwarf Therapist Profession Exports (*.dtp);;All Files (*.*)");
     if (m_path.isEmpty())
-        return; // they cancelled
+        return false; //cancelled
     LOGI << "exporting custom professions to:" << m_path;
 
     setWindowTitle(tr("Export Custom Professions"));
@@ -71,15 +71,16 @@ void ImportExportDialog::setup_for_profession_export() {
         m_profs << cp;
     }
     ui->lbl_professions_count->setText(QString::number(m_profs.size()));
+    return true;
 }
 
-void ImportExportDialog::setup_for_profession_import() {
+bool ImportExportDialog::setup_for_profession_import() {
     m_mode = MODE_IMPORT_PROFESSIONS;
     QString default_path = QString("%1/%2").arg(QStandardPaths::DesktopLocation).arg("custom_professions.dtp");
     m_path = QFileDialog::getOpenFileName(this, tr("Choose a file to import"), default_path,
         "Dwarf Therapist Profession Exports (*.dtp);;All Files (*.*)");
     if (m_path.isEmpty())
-        return; // they cancelled
+        return false; //cancelled
     LOGI << "importing custom professions from:" << m_path;
 
     setWindowTitle(tr("Import Custom Professions"));
@@ -139,9 +140,10 @@ void ImportExportDialog::setup_for_profession_import() {
             i->setToolTip(tr("You already have a custom profession with this name!"));
         }
     }
+    return true;
 }
 
-void ImportExportDialog::setup_for_gridview_export() {
+bool ImportExportDialog::setup_for_gridview_export() {
     m_mode = MODE_EXPORT_GRIDVIEWS;
     QString default_path = QString("%1/%2")
         .arg(QStandardPaths::DesktopLocation)
@@ -149,7 +151,7 @@ void ImportExportDialog::setup_for_gridview_export() {
     m_path = QFileDialog::getSaveFileName(this, tr("Choose a file to export to"),
         default_path,  "Dwarf Therapist Grid View Exports (*.dtg);;All Files (*.*)");
     if (m_path.isEmpty())
-        return; // they cancelled
+        return false; //cancelled
     LOGI << "exporting grid views to:" << m_path;
     setWindowTitle(tr("Export Grid Views"));
     ui->buttonBox->addButton(tr("Export Selected"), QDialogButtonBox::YesRole);
@@ -168,9 +170,10 @@ void ImportExportDialog::setup_for_gridview_export() {
         m_views << gv;
     }
     ui->lbl_professions_count->setText(QString::number(m_views.size()));
+    return true;
 }
 
-void ImportExportDialog::setup_for_gridview_import() {
+bool ImportExportDialog::setup_for_gridview_import() {
     m_mode = MODE_IMPORT_GRIDVIEWS;
     QString default_path = QString("%1/%2")
         .arg(QStandardPaths::DesktopLocation)
@@ -230,11 +233,12 @@ void ImportExportDialog::setup_for_gridview_import() {
             i->setToolTip(tr("You already have a grid view with this name!"));
         }
     }
+    return true;
 }
 
 
 
-void ImportExportDialog::setup_for_role_export() {
+bool ImportExportDialog::setup_for_role_export() {
     m_mode = MODE_EXPORT_ROLES;
     QString default_path = QString("%1/%2")
         .arg(QStandardPaths::DesktopLocation)
@@ -242,7 +246,7 @@ void ImportExportDialog::setup_for_role_export() {
     m_path = QFileDialog::getSaveFileName(this, tr("Choose a file to export to"),	default_path,
         "Dwarf Therapist Roles Exports (*.dtp);;All Files (*.*)");
     if (m_path.isEmpty())
-        return; // they cancelled
+        return false; //cancelled
     LOGI << "exporting custom roles to:" << m_path;
 
     setWindowTitle(tr("Export Custom Roles"));
@@ -265,15 +269,16 @@ void ImportExportDialog::setup_for_role_export() {
         }
     }
     ui->lbl_professions_count->setText(QString::number(m_roles.size()));
+    return true;
 }
 
-void ImportExportDialog::setup_for_role_import() {
+bool ImportExportDialog::setup_for_role_import() {
     m_mode = MODE_IMPORT_ROLES;
     QString default_path = QString("%1/%2").arg(QStandardPaths::DesktopLocation).arg("custom_roles.dtp");
     m_path = QFileDialog::getOpenFileName(this, tr("Choose a file to import"), default_path,
         "Dwarf Therapist Roles Imports (*.dtp);;All Files (*.*)");
     if (m_path.isEmpty())
-        return; // they cancelled
+        return false; //cancelled
     LOGI << "importing custom roles from:" << m_path;
 
     setWindowTitle(tr("Import Custom Roles"));
@@ -320,6 +325,7 @@ void ImportExportDialog::setup_for_role_import() {
             i->setToolTip(tr("You already have a custom role with this name!"));
         }
     }
+    return true;
 }
 
 
