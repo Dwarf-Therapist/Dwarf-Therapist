@@ -2601,36 +2601,22 @@ float Dwarf::calc_role_rating(Role *m_role){
     float rating_prefs = 0.0;
     float rating_total = 0.0;
 
-    double aspect_value = 0.0;
+    //use the role's aspect section weights (these are defaulted to the global weights)
+    float global_att_weight = m_role->attributes_weight.weight;
+    float global_skill_weight = m_role->skills_weight.weight;
+    float global_trait_weight = m_role->traits_weight.weight;
+    float global_pref_weight = m_role->prefs_weight.weight;
 
-    //adjust our global weights here to 0 if the aspect count is <= 0
-    float global_att_weight = m_role->attributes_weight.weight;; //m_role->attributes.count() <= 0 ? 0 : m_role->attributes_weight.weight;
-    if (m_role->attributes.count() <= 0)
-        rating_att = 50.0f;
-
-    float global_skill_weight = m_role->skills_weight.weight; // m_role->skills.count() <= 0 ? 0 : m_role->skills_weight.weight;
-    if (m_role->skills.count() <= 0)
-        rating_skill = 50.0f;
-
-    float global_trait_weight = m_role->traits_weight.weight; // m_role->traits.count() <= 0 ? 0 : m_role->traits_weight.weight;
-    if (m_role->traits.count() <= 0)
-        rating_trait = 50.0f;
-
-    float global_pref_weight = m_role->prefs_weight.weight; // m_role->prefs.count() <= 0 ? 0 : m_role->prefs_weight.weight;
-    if (m_role->prefs.count() <= 0)
-        rating_prefs = 50.0f;
-
-    //if there is nothing in the role... return .5
+    //without weights, there's nothing to calculate
     if((global_att_weight + global_skill_weight + global_trait_weight + global_pref_weight) == 0)
         return 50.0f;
 
     RoleAspect *a;
-
-    //read the attributes, traits and skills, and calculate the ratings
+    double aspect_value = 0.0;
     float total_weight = 0.0;
     float weight = 1.0;
 
-    //**************** ATTRIBUTES ****************
+    //ATTRIBUTES
     if(m_role->attributes.count()>0){
         int attrib_id = 0;
         aspect_value = 0;
@@ -2649,13 +2635,12 @@ float Dwarf::calc_role_rating(Role *m_role){
 
         }
         rating_att = (rating_att / total_weight) * 100.0f; //weighted average percentile
+    }else{
+        rating_att = 50.0f;
     }
-    //********************************
 
-
-    //**************** TRAITS ****************
-    if(m_role->traits.count()>0)
-    {
+    //TRAITS
+    if(m_role->traits.count()>0){
         total_weight = 0;
         aspect_value = 0;
         foreach(QString trait_id, m_role->traits.uniqueKeys()){
@@ -2671,10 +2656,11 @@ float Dwarf::calc_role_rating(Role *m_role){
             total_weight += weight;
         }
         rating_trait = (rating_trait / total_weight) * 100.0f;//weighted average percentile
+    }else{
+        rating_trait = 50.0f;
     }
-    //********************************
 
-    //************ SKILLS ************
+    //SKILLS
     float total_skill_rates = 0.0;
     if(m_role->skills.count()>0){
         total_weight = 0;
@@ -2702,14 +2688,17 @@ float Dwarf::calc_role_rating(Role *m_role){
         }
         if(total_skill_rates <= 0){
             //this unit cannot improve the skills associated with this role so cancel any rating
-            //return 0.0001;
+            return 0.0001;
         }else{
+            if(rating_skill <= 0)
+                int z = 0;
             rating_skill = (rating_skill / total_weight) * 100.0f;//weighted average percentile
         }
+    }else{
+        rating_skill = 50.0f;
     }
-    //********************************
 
-    //************ PREFERENCES ************
+    //PREFERENCES
     if(m_role->prefs.count()>0){
         total_weight = 0;
         aspect_value = 0;
@@ -2731,8 +2720,9 @@ float Dwarf::calc_role_rating(Role *m_role){
             rating_prefs = (rating_prefs / total_weight) * 100.0f;//weighted average percentile
         else
             rating_prefs = DwarfStats::get_preference_rating(0.0f) * 100.0f;
+    }else{
+        rating_prefs = 50.0f;
     }
-    //********************************
 
     //weighted average percentile total
     rating_total = ((rating_att * global_att_weight)+(rating_skill * global_skill_weight)
