@@ -6,41 +6,31 @@ from within QTCreator.
 For Linux, do the following:
 
 # Install required packages
-* qtchooser
+* qt5-qmake
 * qtbase5-dev
 * qtbase5-dev-tools
-* qtscript5-dev
-* qt5-qmake
-* libqt5script5
-* libqt5scripttools5
-* libqxt-core0 
-* libqxt-gui0
+* qtdeclarative5-dev
 
 For Debian-derived (Ubuntu, Mint, etc.) distributions, you can run the following command from a terminal:
 
-    > sudo apt-get install git qtchooser qtbase5-dev qtbase5-dev-tools qtscript5-dev qt5-qmake libqt5script5 libqt5scripttools5 libqxt-core0 libqxt-gui0
+    > sudo apt-get install git qt5-qmake qtbase5-dev qtbase5-dev-tools
 
 
 # Clone the project using git
 Clone the project to wherever you like.  The location doesn't really matter.
 
-For 34.11 and older use the main branch:
+For 34.11 and older use the DF2012 branch:
 
-    > git clone git://github.com/splintermind/Dwarf-Therapist.git
+    > git clone git://github.com/splintermind/Dwarf-Therapist.git -b DF2012
     
 For 40.00 and newer use the DF2014 branch:
 
-    > git clone git://github.com/splintermind/Dwarf-Therapist.git -b DF2014
+    > git clone git://github.com/splintermind/Dwarf-Therapist.git
     
 If you already have the older version checked out and you'd like to move to the new branch:
 
-    > git checkout DF2014
+    > git checkout -f DF2014
     > git pull
-    
-    If you receive any errors about uncommitted changes:
-    
-        > git status # tells you what files have changed
-        > git checkout -- # put the listed files between the dashes and hash
 
 
 # Build the project
@@ -84,9 +74,8 @@ in that directory.
 
 Manually: using sudo rm -rf, remove:
 
-* /usr/bin/X11/dwarftherapist
-* /usr/share/dwarftherapist/*
+* /usr/bin/{dwarftherapist,DwarfTherapist}
+* /usr/share/dwarftherapist/
 * /usr/share/applications/dwarftherapist.desktop
-* /usr/share/doc/dwarftherapist/*
-* /usr/share/pixmaps/dwarftherapist.png
-* /usr/share/pixmaps/dwarftherapist.xpm
+* /usr/share/doc/dwarftherapist/
+* /usr/share/pixmaps/dwarftherapist.*
