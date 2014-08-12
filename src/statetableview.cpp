@@ -133,7 +133,7 @@ StateTableView::StateTableView(QWidget *parent)
 void StateTableView::build_custom_profession_menu(){
     customization_menu->clear();
     m_prof_name = customization_menu->addAction(QIcon(":img/ui-text-field-select.png"), tr("Set custom profession name..."), this, SLOT(set_custom_profession_text()));
-    customization_menu->addAction(QIcon(":img/ui-text-field-clear-button.png"), tr("Clear custom profession name"), this, SLOT(set_custom_profession_text()));
+    customization_menu->addAction(QIcon(":img/ui-text-field-clear-button.png"), tr("Clear custom profession name"), this, SLOT(clear_custom_profession_text()));
     customization_menu->addAction(tr("Reset to default profession"), this, SLOT(reset_custom_profession()));
     customization_menu->addSeparator();
     m_professions = customization_menu->addAction(QIcon(":img/new.png"), tr("New custom profession from this unit..."), this, SLOT(custom_profession_from_dwarf()));
@@ -601,9 +601,9 @@ void StateTableView::reset_custom_profession() {
     m_model->calculate_pending();
 }
 
-void StateTableView::set_custom_profession_text(QString prof_name) {
-    prof_name = prof_name.trimmed();
-    if(!prof_name.isEmpty()){
+void StateTableView::set_custom_profession_text(bool prompt) {
+    QString prof_name = "";
+    if(prompt){
         bool warn = false;
         do {
             bool ok;
@@ -625,6 +625,10 @@ void StateTableView::set_custom_profession_text(QString prof_name) {
         }
     }
     m_model->calculate_pending();
+}
+
+void StateTableView::clear_custom_profession_text(){
+    set_custom_profession_text(false);
 }
 
 void StateTableView::currentChanged(const QModelIndex &cur, const QModelIndex &idx) {
