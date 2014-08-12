@@ -812,8 +812,11 @@ void DFInstance::load_main_vectors(){
     VIRTADDR addr = m_memory_correction + m_layout->address("base_materials");
     int i = 0;
     for(i = 0; i < 256; i++){
-        Material* m = Material::get_material(this, read_addr(addr), i, false, this);
-        m_base_materials.append(m);
+        VIRTADDR mat_addr = read_addr(addr);
+        if(mat_addr > 0){
+            Material* m = Material::get_material(this, mat_addr, i, false, this);
+            m_base_materials.append(m);
+        }
         addr += 0x4;
     }
 

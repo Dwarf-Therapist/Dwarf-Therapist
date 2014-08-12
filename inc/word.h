@@ -45,7 +45,7 @@ public:
     QString noun() {return m_noun;}
     QString plural_noun() {return m_plural_noun;}
     QString adjective() {return m_adjective;}
-    QString prefix() {return m_prefix;}
+//    QString prefix() {return m_prefix;}
     QString verb() {return m_verb;}
     QString present_simple_verb() {return m_present_simple_verb;}
     QString past_simple_verb() {return m_past_simple_verb;}
@@ -60,7 +60,7 @@ private:
     QString m_noun;
     QString m_plural_noun;
     QString m_adjective;
-    QString m_prefix;
+//    QString m_prefix;
     QString m_verb;
     QString m_present_simple_verb;
     QString m_past_simple_verb;

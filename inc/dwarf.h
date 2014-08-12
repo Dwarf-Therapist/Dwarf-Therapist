@@ -614,11 +614,6 @@ private:
 
     void set_age_and_migration(VIRTADDR birth_year_offset, VIRTADDR birth_time_offset);
 
-    // utility methods to assist with reading names made up of several words
-    // from the language tables
-    QString word_chunk(uint word, bool use_generic=false);
-    QString read_chunked_name(const VIRTADDR &addr, bool use_generic=false);
-
     // assembles component names into a nicely formatted single string
     void build_names();
 

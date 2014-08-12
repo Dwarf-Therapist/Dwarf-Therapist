@@ -60,9 +60,9 @@ void Languages::load_data() {
     m_language.clear();
     m_words.clear();
 
-    uint generic_lang_table = m_mem->address("language_vector") + m_df->get_memory_correction();
-    uint translation_vector = m_mem->address("translation_vector") + m_df->get_memory_correction();
-    uint word_table_offset = m_mem->offset("word_table");
+    VIRTADDR generic_lang_table = m_mem->address("language_vector") + m_df->get_memory_correction();
+    VIRTADDR translation_vector = m_mem->address("translation_vector") + m_df->get_memory_correction();
+    VIRTADDR word_table_offset = m_mem->offset("word_table");
     TRACE << "LANGUAGES VECTOR" << hex << translation_vector;
     TRACE << "GENERIC LANGUAGE VECTOR" << hex << generic_lang_table;
     TRACE << "WORD TABLE OFFSET" << hex << word_table_offset;
@@ -70,9 +70,9 @@ void Languages::load_data() {
     m_df->attach();
     if (generic_lang_table != 0xFFFFFFFF && generic_lang_table != 0) {
         LOGD << "Loading generic strings from" << hex << generic_lang_table;
-        QVector<uint> generic_words = m_df->enumerate_vector(generic_lang_table);
+        QVector<VIRTADDR> generic_words = m_df->enumerate_vector(generic_lang_table);
         LOGD << "generic words" << generic_words.size();
-        foreach(uint word_ptr, generic_words) {
+        foreach(VIRTADDR word_ptr, generic_words) {
             m_language << Word::get_word(m_df, word_ptr);
         }
     }
@@ -82,12 +82,12 @@ void Languages::load_data() {
         foreach(VIRTADDR lang, languages) {
             QString race_name = m_df->read_string(lang);
             TRACE << "FOUND LANG ENTRY" << hex << lang << race_name;
-            uint lang_table = lang + word_table_offset - m_df->VECTOR_POINTER_OFFSET;
+            VIRTADDR lang_table = lang + word_table_offset - m_df->VECTOR_POINTER_OFFSET;
             TRACE << "Loading " << race_name << " strings from" << hex << lang_table;
-            QVector<uint> lang_words = m_df->enumerate_vector(lang_table);
+            QVector<VIRTADDR> lang_words = m_df->enumerate_vector(lang_table);
             TRACE << race_name << " words" << lang_words.size();
             QStringList words_list;
-            foreach(uint word_ptr, lang_words) {
+            foreach(VIRTADDR word_ptr, lang_words) {
                 words_list.append(m_df->read_string(word_ptr));
             }
             m_words.insert(id, words_list);
