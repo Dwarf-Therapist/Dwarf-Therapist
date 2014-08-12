@@ -2,6 +2,7 @@
 #define ROLEDIALOG_H
 
 #include <QtWidgets>
+#include <QJSEngine>
 #include "utils.h"
 #include "global_enums.h"
 #include "defines.h"

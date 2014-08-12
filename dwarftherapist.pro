@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = DwarfTherapist
 QT += concurrent \
-    script \
+    qml \
     widgets
 CONFIG(debug, debug|release) { 
     message(Debug Mode)
@@ -91,7 +91,6 @@ else:unix {
     HEADERS += inc/dfinstancelinux.h
     SOURCES += src/dfinstancelinux.cpp
 
-    message(Setting up for Linux Install)
     target.path = /usr/bin
     INSTALLS += target
 
