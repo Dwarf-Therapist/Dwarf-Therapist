@@ -144,7 +144,7 @@ private:
             m_mat_index = m_df->read_int(uniform_addr + m_df->memory_layout()->item_filter_offset("mat_index"));
             //individual choice is stored in a bit array, first bit (any) second (melee) third (ranged)
             //currently we only care if one is set or not. it may be ok just to check for a weapon type as well
-            quint32 inv_choice_flags = m_df->read_addr(m_address + m_df->memory_layout()->squad_offset("uniform_indv_choice"));
+            quint32 inv_choice_flags = m_df->read_addr(m_address + m_df->memory_layout()->squad_offset("uniform_indiv_choice"));
             m_indv_choice = (has_flag(1,inv_choice_flags) || has_flag(2,inv_choice_flags) || has_flag(4,inv_choice_flags));
         }
     }

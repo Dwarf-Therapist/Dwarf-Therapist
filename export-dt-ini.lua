@@ -368,7 +368,7 @@ address('shoes_vector',df.squad_position,'uniform','shoes')
 address('shield_vector',df.squad_position,'uniform','shield')
 address('weapon_vector',df.squad_position,'uniform','weapon')
 address('uniform_item_filter',df.squad_uniform_spec,'item_filter')
-address('uniform_indv_choice',df.squad_uniform_spec,'indiv_choice')
+address('uniform_indiv_choice',df.squad_uniform_spec,'indiv_choice')
 
 -- Final creation of the file
 
