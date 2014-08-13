@@ -296,20 +296,29 @@ void ViewManager::draw_views() {
     }
     connect(tabBar(), SIGNAL(currentChanged(int)), SLOT(setCurrentIndex(int)), Qt::UniqueConnection);
 
-    QStringList tab_order = DT->user_settings()->value(
-            "gui_options/tab_order").toStringList();
+    QStringList tab_order = DT->user_settings()->value("gui_options/tab_order").toStringList();
+    QString default_view_name = tr("Labors Full"); //default view to use if none are found/loaded
     if (tab_order.size() == 0) {
-        tab_order << "Labors Full" << "Military" << "Social" << "Attributes" << "Roles" << "Animals";
-    }    
+        tab_order << default_view_name << "Military" << "Social" << "Attributes" << "Roles" << "Animals";
+    }
+    GridView *v_default = 0; //keep a reference to the default view
     if (tab_order.size() > 0) {
         foreach(QString name, tab_order) {
             foreach(GridView *v, m_views) {
                 if (v->name() == name){
                     add_tab_for_gridview(v);
                 }
+                if(v->name() == default_view_name)
+                    v_default = v;
             }
         }
     }
+    if(count() <= 0){ //there must always be at least one view
+        if(v_default == 0)
+            v_default = m_views.first();
+        add_tab_for_gridview(v_default);
+    }
+
     setCurrentWidget(widget(0));
     QTime stop = QTime::currentTime();
     LOGI << QString("redrew views in %L1ms").arg(start.msecsTo(stop));
@@ -672,7 +681,7 @@ void ViewManager::redraw_current_tab() {
     setCurrentIndex(currentIndex());
 }
 
-void ViewManager::redraw_current_tab_headers(){
+void ViewManager::redraw_current_tab_headers(){    
     get_stv(currentIndex())->is_loading_rows = true;
     m_model->draw_headers();
     get_stv(currentIndex())->is_loading_rows = false;
