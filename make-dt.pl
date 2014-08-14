@@ -300,6 +300,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'mood',%all,'unit','mood';
     emit_addr 'birth_year',%all,'unit','relations.birth_year';
     emit_addr 'birth_time',%all,'unit','relations.birth_time';
+    emit_addr 'pet_owner_id',%all,'unit','relations.pet_owner_id';
     emit_addr 'current_job',%all,'unit','job.current_job';
     emit_addr 'physical_attrs',%all,'unit','body.physical_attrs';
     emit_addr 'body_size',%all,'unit','appearance.body_modifiers';

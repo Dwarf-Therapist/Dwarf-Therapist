@@ -63,18 +63,19 @@ QStandardItem *FlagColumn::build_cell(Dwarf *d) {
         //check to fix butchering pets. currently this will cause the butchered parts to still be recognized as a pet
         //and they'll put them into a burial recepticle, but won't use them as a food source
         if(m_bit_pos == 49){
+            bool disabled = false;
             if(d->is_pet()){
-                item->setToolTip(tr("<b>Please turn off pet availability first.</b><br/><br/>Sorry, pets cannot be butchered due to technical limitations!"));
-                item->setData(QBrush(QColor(187,34,34,200)),Qt::BackgroundColorRole);
-                item->setData(true,DwarfModel::DR_SPECIAL_FLAG); //indicates that the cell is disabled
-                rating = -1;
+                item->setToolTip(tr("<b>Pets cannot be butchered!</b>"));
+                disabled = true;
             }else if(!d->get_caste()->can_butcher()){
                 item->setToolTip(tr("<b>This creature cannot be butchered!</b>"));
+                disabled = true;
+            }
+            if(disabled){
                 item->setData(QBrush(QColor(187,34,34,200)),Qt::BackgroundColorRole);
                 item->setData(true,DwarfModel::DR_SPECIAL_FLAG); //indicates that the cell is disabled
                 rating = -1;
             }
-
         }
 
         item->setData(rating, DwarfModel::DR_SORT_VALUE);

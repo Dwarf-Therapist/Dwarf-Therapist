@@ -566,15 +566,12 @@ void Dwarf::read_animal_type(){
 
         //additionally if it's an animal set a flag if it's currently a pet
         //since butchering available pets simply by setting the flag breaks shit in game
-        //due to not being able to remove the pet entry from the special_refs for the unit stuff
-        if(m_mem->dwarf_offset("specific_refs") != -1){
-            QVector<VIRTADDR> refs = m_df->enumerate_vector(m_address + m_mem->dwarf_offset("specific_refs"));
-            foreach(VIRTADDR ref, refs){
-                if(m_df->read_int(ref)==7){ //pet type
-                    m_is_pet = true;
-                    break;
-                }
-            }
+        qint32 owner_offset = m_mem->dwarf_offset("pet_owner_id");
+        if(owner_offset >=0){
+            int pet_owner_id = m_df->read_int(m_address + owner_offset); //check for an owner
+            m_is_pet = (pet_owner_id > 0);
+        }else{
+            m_is_pet = (!m_first_name.isEmpty() && !m_last_name.isEmpty()); //assume that a first and last name on an animal is a pet
         }
     }
 }
@@ -2060,7 +2057,7 @@ void Dwarf::commit_pending(bool single) {
     if (m_caged != m_unit_flags.at(0))
         m_df->write_raw(m_address + m_mem->dwarf_offset("flags1"), 4, &m_caged);
     if (m_butcher != m_unit_flags.at(1))
-        m_df->write_raw(m_address + m_mem->dwarf_offset("flags2"), 4, &m_butcher);
+        m_df->write_raw(m_address + m_mem->dwarf_offset("flags2"), 4, &m_butcher);    
 
     int pen_sq_id = -1;
     int pen_sq_pos = -1;
