@@ -1405,6 +1405,7 @@ void Dwarf::read_uniform(){
 }
 
 void Dwarf::read_inventory(){
+    LOGD << "reading inventory for" << m_nice_name;
     m_coverage_ratings.clear();
     m_inventory_wear.clear();
     m_inventory_grouped.clear();
@@ -1422,6 +1423,7 @@ void Dwarf::read_inventory(){
     short inv_type = -1;
     short bp_id = -1;
     QString category_name = "";
+    int inv_count = 0;
     foreach(VIRTADDR inventory_item_addr, m_df->enumerate_vector(m_address + m_mem->dwarf_offset("inventory"))){
         inv_type = m_df->read_short(inventory_item_addr + m_mem->dwarf_offset("inventory_item_mode"));
         bp_id = m_df->read_short(inventory_item_addr + m_mem->dwarf_offset("inventory_item_bodypart"));
@@ -1435,6 +1437,8 @@ void Dwarf::read_inventory(){
             VIRTADDR item_ptr = m_df->read_addr(inventory_item_addr);
             Item *i = new Item(m_df,item_ptr,this);
             ITEM_TYPE i_type = i->item_type();
+
+            LOGD << "  + found inventory item:" << i->display_name(false);
 
             int affection_level = item_affection.value(i->id());
             if(affection_level > 0)
@@ -1468,8 +1472,12 @@ void Dwarf::read_inventory(){
                     process_inv_item(category_name,contained_item,true);
                 }
             }
+            inv_count++;
+        }else{
+            LOGD << "  - skipping inventory item due to invalid type (" << inv_type <<")";
         }
-    }
+    }    
+    LOGD << "  total inventory items found:" << inv_count;
 
     //missing uniform items
     if(m_uniform && m_uniform->get_missing_items().count() > 0){
