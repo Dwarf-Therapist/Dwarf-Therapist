@@ -94,7 +94,7 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
         item->setData(roundf(raw_rating), DwarfModel::DR_DISPLAY_RATING);
         item->setData(raw_rating, DwarfModel::DR_SORT_VALUE);
         item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
-        set_export_role(DwarfModel::DR_RATING);
+        set_export_role(DwarfModel::DR_DISPLAY_RATING);
 
         QList<QVariant> related_labors;
         QStringList labor_names;

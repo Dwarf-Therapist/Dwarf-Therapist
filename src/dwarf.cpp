@@ -1438,16 +1438,14 @@ void Dwarf::read_inventory(){
             Item *i = new Item(m_df,item_ptr,this);
             ITEM_TYPE i_type = i->item_type();
 
-            LOGD << "  + found inventory item:" << i->display_name(false);
-
             int affection_level = item_affection.value(i->id());
             if(affection_level > 0)
                 i->set_affection(affection_level);
 
-            if(i_type == WEAPON){                
+            if(i_type == WEAPON){
                 ItemWeapon *iw = new ItemWeapon(*i);
                 process_inv_item(category_name,iw);
-
+                LOGD << "  + found weapon:" << iw->display_name(false);
             }else if(Item::is_armor_type(i_type)){
                 ItemArmor *ir = new ItemArmor(*i);
                 process_inv_item(category_name,ir);
@@ -1462,19 +1460,24 @@ void Dwarf::read_inventory(){
                 if(ir->wear() > m_inventory_wear.value(i_type))
                     m_inventory_wear.insert(i_type,ir->wear());
 
+                LOGD << "  + found armor/clothing:" << ir->display_name(false);
             }else if(Item::is_supplies(i_type) || Item::is_ranged_equipment(i_type)){
                 process_inv_item(category_name,i);
+                LOGD << "  + found supplies/ammo/quiver:" << i->display_name(false);
+            }else{
+                LOGD << "  + found other item:" << i->display_name(false);
             }
 
             //process any items inside this item (ammo, food?, drink?)
             if(i->contained_items().count() > 0){
                 foreach(Item *contained_item, i->contained_items()){
                     process_inv_item(category_name,contained_item,true);
+                    LOGD << "    + contained item(s):" << contained_item->display_name(false);
                 }
             }
             inv_count++;
         }else{
-            LOGD << "  - skipping inventory item due to invalid type (" << inv_type <<")";
+            LOGD << "  - skipping inventory item due to invalid type (" + QString::number(inv_type) + ")";
         }
     }    
     LOGD << "  total inventory items found:" << inv_count;
