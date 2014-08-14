@@ -58,7 +58,7 @@ public:
     static bool checkPermissions();
 
 protected:
-    uint calculate_checksum();
+    QString calculate_checksum();
     vm_map_t m_task;
     QString m_loc_of_dfexe;
 

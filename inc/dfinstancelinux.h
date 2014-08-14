@@ -54,7 +54,7 @@ public:
     bool detach();
 
 protected:
-    uint calculate_checksum();
+    QString calculate_checksum();
 
 private:
     int wait_for_stopped();

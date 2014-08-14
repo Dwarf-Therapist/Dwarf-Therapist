@@ -59,7 +59,7 @@ public:
 
 protected:
     // handy util methods
-    uint calculate_checksum();
+    QString calculate_checksum();
 
     HWND m_hwnd;
     HANDLE m_proc;

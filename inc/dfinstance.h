@@ -161,7 +161,7 @@ public:
 #endif
 
     // handy util methods
-    virtual quint32 calculate_checksum() = 0;
+    virtual QString calculate_checksum() = 0;
     MemoryLayout *get_memory_layout(QString checksum, bool warn = true);
 
     void load_game_data();
