@@ -23,7 +23,8 @@ THE SOFTWARE.
 #ifndef SQUAD_H
 #define SQUAD_H
 
-#include <QtWidgets>
+#include <QObject>
+#include <QTreeWidgetItem>
 #include "utils.h"
 #include "global_enums.h"
 //#include "itemdefuniform.h"

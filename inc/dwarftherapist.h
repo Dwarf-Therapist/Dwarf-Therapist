@@ -25,7 +25,8 @@ THE SOFTWARE.
 
 #define DT (static_cast<DwarfTherapist *>(QCoreApplication::instance()))
 
-#include <QtWidgets/QApplication>
+#include <QApplication>
+#include <QTreeWidgetItem>
 #include <QVector>
 #include "defines.h"
 #include "columntypes.h"

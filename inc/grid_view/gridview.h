@@ -24,7 +24,12 @@ THE SOFTWARE.
 #ifndef GRID_VIEW_H
 #define GRID_VIEW_H
 
-#include <QtWidgets>
+#include <QObject>
+#include <QString>
+#include <QStandardItemModel>
+#include <QPainter>
+#include <QStyleOptionViewItem>
+#include <QSettings>
 
 class ViewColumnSet;
 class ViewColumn;

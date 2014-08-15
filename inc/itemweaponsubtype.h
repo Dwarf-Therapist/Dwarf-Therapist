@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef ITEMWEAPONSUBTYPE_H
 #define ITEMWEAPONSUBTYPE_H
 
-#include <QtWidgets>
+#include <QObject>
 #include "utils.h"
 
 class DFInstance;

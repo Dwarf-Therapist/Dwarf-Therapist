@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#include <QMessageBox>
 #include "scriptdialog.h"
 #include "ui_scriptdialog.h"
 #include "gamedatareader.h"

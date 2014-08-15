@@ -23,7 +23,10 @@ THE SOFTWARE.
 #ifndef DWARF_DETAILS_WIDGET_H
 #define DWARF_DETAILS_WIDGET_H
 
-#include <QtWidgets>
+#include <QWidget>
+#include <QGridLayout>
+#include <QTableWidget>
+
 class Dwarf;
 
 namespace Ui {

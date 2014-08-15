@@ -23,7 +23,8 @@ THE SOFTWARE.
 #ifndef DFINSTANCE_H
 #define DFINSTANCE_H
 
-#include <QtWidgets>
+#include <QDir>
+#include <QFile>
 #include "utils.h"
 #include "word.h"
 #include "global_enums.h"

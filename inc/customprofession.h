@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef CUSTOM_PROFESSION_H
 #define CUSTOM_PROFESSION_H
 
-#include <QtWidgets>
+#include <QObject>
 #include "customcolor.h"
 #include "multilabor.h"
 class Dwarf;

@@ -23,6 +23,7 @@ THE SOFTWARE.
 #ifndef FLAGARRAY_H
 #define FLAGARRAY_H
 
+#include <QBitArray>
 #include "truncatingfilelogger.h"
 
 class MemoryLayout;

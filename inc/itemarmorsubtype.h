@@ -23,6 +23,7 @@ THE SOFTWARE.
 #ifndef ITEMARMORSUBTYPE_H
 #define ITEMARMORSUBTYPE_H
 
+#include <QObject>
 #include "utils.h"
 #include "dfinstance.h"
 #include "memorylayout.h"

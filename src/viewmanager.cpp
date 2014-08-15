@@ -20,6 +20,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+#include <QMenu>
+#include <QMessageBox>
+#include <QInputDialog>
+#include <QHeaderView>
 #include "viewmanager.h"
 #include "statetableview.h"
 #include "dwarfmodel.h"

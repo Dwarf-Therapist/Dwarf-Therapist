@@ -23,6 +23,7 @@ THE SOFTWARE.
 #ifndef OPTIONS_MENU_H
 #define OPTIONS_MENU_H
 
+#include <QDialog>
 #include "ui_optionsmenu.h"
 #include "uberdelegate.h"
 

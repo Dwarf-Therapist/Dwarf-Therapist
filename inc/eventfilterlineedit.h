@@ -1,7 +1,8 @@
 #ifndef EVENTFILTERLINEEDIT_H
 #define EVENTFILTERLINEEDIT_H
 
-#include <QtWidgets>
+#include <QKeyEvent>
+#include <QLineEdit>
 #include "truncatingfilelogger.h"
 
 class EventFilterLineEdit : public QObject

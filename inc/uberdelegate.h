@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef UBER_DELEGATE_H
 #define UBER_DELEGATE_H
 
-#include <QtWidgets>
+#include <QStyledItemDelegate>
 #include "gridview.h"
 
 class DwarfModel;

@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef CUSTOM_COLOR_H
 #define CUSTOM_COLOR_H
 
-#include <QtWidgets>
+#include <QWidget>
 #include "qtcolorpicker.h"
 
 

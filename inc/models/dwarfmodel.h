@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef DWARF_MODEL_H
 #define DWARF_MODEL_H
 
-#include <QtWidgets>
+#include <QStandardItemModel>
 #include "columntypes.h"
 
 class Dwarf;

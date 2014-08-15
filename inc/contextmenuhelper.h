@@ -23,7 +23,8 @@ THE SOFTWARE.
 #ifndef CONTEXTMENUHELPER_H
 #define CONTEXTMENUHELPER_H
 
-#include <QtWidgets>
+#include <QMenu>
+#include <QObject>
 
 class ContextMenuHelper : public QObject
 {

@@ -21,6 +21,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#if QT_VERSION >= 0x050000
+# include <QRegularExpresson>
+#else
+# include <QRegExp>
+#endif
 #include "healthcolumn.h"
 #include "columntypes.h"
 #include "viewcolumnset.h"

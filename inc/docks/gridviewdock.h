@@ -23,6 +23,7 @@ THE SOFTWARE.
 #ifndef GRID_VIEW_DOCK_H
 #define GRID_VIEW_DOCK_H
 
+#include <QListWidgetItem>
 #include "basedock.h"
 
 class ViewManager;

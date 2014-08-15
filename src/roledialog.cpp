@@ -1,3 +1,5 @@
+#include <QMessageBox>
+#include <QJSEngine>
 #include "roledialog.h"
 #include "utils.h"
 #include "ui_roledialog.h"

@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#include <QFormLayout>
+#include <QMessageBox>
 #include "gridviewdialog.h"
 #include "ui_gridviewdialog.h"
 #include "viewmanager.h"

@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef LABOR_H
 #define LABOR_H
 
-#include <QtWidgets>
+#include <QObject>
 #include "role.h"
 
 class Labor : public QObject {

@@ -24,7 +24,9 @@ THE SOFTWARE.
 #ifndef GRID_VIEW_DIALOG_H
 #define GRID_VIEW_DIALOG_H
 
-#include <QtWidgets>
+#include <QDialog>
+#include <QItemSelection>
+#include <QStandardItemModel>
 #include "defines.h"
 #include "customcolor.h"
 #include "contextmenuhelper.h"

@@ -51,7 +51,10 @@ void RoleStats::init_list(){
     if(m_upper == 0)
         m_upper = QSharedPointer<ECDF>(new ECDF());
     else
-        m_upper.reset(new ECDF());
+    {
+	QSharedPointer<ECDF> new_ptr(new ECDF());
+        m_upper.swap(new_ptr);
+    }
 
     m_raw_median = find_median(m_raws->sorted_data());
 

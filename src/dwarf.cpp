@@ -23,6 +23,11 @@ THE SOFTWARE.
 #include <QVector>
 #include <QJSEngine>
 #include <QDebug>
+#include <QAction>
+#include <QDialog>
+#include <QTextEdit>
+#include <QMessageBox>
+#include <QClipboard>
 #include "dwarf.h"
 #include "dfinstance.h"
 #include "skill.h"

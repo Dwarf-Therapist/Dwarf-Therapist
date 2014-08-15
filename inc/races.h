@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef RACES_H
 #define RACES_H
 
-#include <QtWidgets>
+#include <QObject>
 #include "utils.h"
 #include "flagarray.h"
 

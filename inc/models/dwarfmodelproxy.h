@@ -23,8 +23,8 @@ THE SOFTWARE.
 #ifndef DWARF_MODEL_PROXY_H
 #define DWARF_MODEL_PROXY_H
 
+#include <QSortFilterProxyModel>
 #include <QJSEngine>
-#include <QtWidgets>
 #include "global_enums.h"
 
 class Dwarf;

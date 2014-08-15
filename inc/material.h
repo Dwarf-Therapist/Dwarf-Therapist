@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include <QtWidgets>
+#include <QObject>
 #include "utils.h"
 #include "global_enums.h"
 #include "flagarray.h"

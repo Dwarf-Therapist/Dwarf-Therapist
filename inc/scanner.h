@@ -23,6 +23,7 @@ THE SOFTWARE.
 #ifndef SCANNER_H
 #define SCANNER_H
 
+#include <QDialog>
 #include "mainwindow.h"
 #include "ui_scannerdialog.h"
 #include "scannerjob.h"

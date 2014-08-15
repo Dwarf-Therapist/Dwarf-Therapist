@@ -25,6 +25,7 @@ THE SOFTWARE.
 
 
 #include "basedock.h"
+#include <QTableWidget>
 
 class ThoughtsDock : public BaseDock {
     Q_OBJECT

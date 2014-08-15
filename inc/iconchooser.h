@@ -1,7 +1,10 @@
 #ifndef ICONCHOOSER_H
 #define ICONCHOOSER_H
 
-#include <QtWidgets>
+#include <QDialog>
+#include <QStandardItemModel>
+#include <QFutureWatcher>
+#include <QListView>
 
 class IconChooser : public QDialog
 {

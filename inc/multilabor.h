@@ -1,9 +1,10 @@
 #ifndef  MULTILABOR_H
 #define MULTILABOR_H
 
-#include <QtWidgets>
 #include "gamedatareader.h"
 #include "labor.h"
+#include <QComboBox>
+#include <QListWidget>
 
 class Dwarf;
 

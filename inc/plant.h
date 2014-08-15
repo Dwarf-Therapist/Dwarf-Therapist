@@ -1,7 +1,7 @@
 #ifndef PLANT_H
 #define PLANT_H
 
-#include <QtWidgets>
+#include <QObject>
 #include "utils.h"
 #include "material.h"
 #include "flagarray.h"

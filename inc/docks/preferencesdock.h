@@ -23,6 +23,8 @@ THE SOFTWARE.
 #ifndef PREFERENCES_DOCK_H
 #define PREFERENCES_DOCK_H
 
+#include <QTableWidget>
+#include <QRegExp>
 #include "basedock.h"
 
 class PreferencesDock : public BaseDock {

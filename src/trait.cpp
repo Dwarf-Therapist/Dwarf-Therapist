@@ -22,7 +22,6 @@ THE SOFTWARE.
 */
 #include "trait.h"
 #include "gamedatareader.h"
-#include <QtWidgets>
 #include "belief.h"
 
 QColor Trait::goal_color = QColor(255,153,0,255);

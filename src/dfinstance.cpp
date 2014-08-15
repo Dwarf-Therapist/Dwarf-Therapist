@@ -21,9 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <QtWidgets>
 #include <QtDebug>
-#include <QtConcurrent/QtConcurrent>
+#include <QMessageBox>
+#include <QtConcurrent>
 #include "defines.h"
 #include "dfinstance.h"
 #include "dwarf.h"

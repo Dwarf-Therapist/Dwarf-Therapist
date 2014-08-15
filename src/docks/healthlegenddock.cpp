@@ -21,6 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#include <QVBoxLayout>
+#include <QHeaderView>
+#include <QCloseEvent>
 #include "healthlegenddock.h"
 #include "healthcategory.h"
 

@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef LANGUAGES_H
 #define LANGUAGES_H
 
-#include <QtWidgets>
+#include <QObject>
 #include "utils.h"
 
 class DFInstance;

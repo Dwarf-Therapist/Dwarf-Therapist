@@ -23,6 +23,7 @@ THE SOFTWARE.
 #ifndef ITEMDEFUNIFORM_H
 #define ITEMDEFUNIFORM_H
 
+#include <QObject>
 #include "utils.h"
 #include "dfinstance.h"
 #include "memorylayout.h"

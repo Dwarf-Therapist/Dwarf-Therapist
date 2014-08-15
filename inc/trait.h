@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef TRAIT_H
 #define TRAIT_H
 
-#include <QtWidgets>
+#include <QObject>
 #include "global_enums.h"
 #include "dwarfstats.h"
 #include "gamedatareader.h"

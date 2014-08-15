@@ -23,6 +23,7 @@ THE SOFTWARE.
 #ifndef UNIFORM_H
 #define UNIFORM_H
 
+#include <QObject>
 #include "global_enums.h"
 #include "itemdefuniform.h"
 #include "item.h"

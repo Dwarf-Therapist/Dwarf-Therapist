@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef LABOROPTIMIZER_H
 #define LABOROPTIMIZER_H
 
-#include <QtWidgets>
+#include <QObject>
 #include "utils.h"
 #include "plandetail.h"
 

@@ -23,6 +23,7 @@ THE SOFTWARE.
 #ifndef ABOUT_DIALOG_H
 #define ABOUT_DIALOG_H
 
+#include <QDialog>
 #include "mainwindow.h"
 #include "ui_about.h"
 #include "version.h"

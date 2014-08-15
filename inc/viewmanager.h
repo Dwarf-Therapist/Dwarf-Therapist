@@ -24,7 +24,11 @@ THE SOFTWARE.
 #ifndef VIEW_MANAGER_H
 #define VIEW_MANAGER_H
 
-#include <QtWidgets>
+#include <QTabWidget>
+#include <QTreeWidgetItem>
+#include <QToolButton>
+#include <QErrorMessage>
+#include <QItemSelection>
 #include "columntypes.h"
 #include "viewcolumn.h"
 

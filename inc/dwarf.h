@@ -23,7 +23,6 @@ THE SOFTWARE.
 #ifndef DWARF_H
 #define DWARF_H
 
-#include <QtWidgets>
 #include "utils.h"
 #include "global_enums.h"
 #include "skill.h"

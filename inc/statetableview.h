@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef STATE_TABLE_VIEW_H
 #define STATE_TABLE_VIEW_H
 
-#include <QtWidgets>
+#include <QTreeWidgetItem>
 #include "dwarfmodelproxy.h"
 
 class UberDelegate;

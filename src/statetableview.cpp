@@ -20,7 +20,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QtWidgets>
+#include <QScrollBar>
+#include <QMenu>
+#include <QInputDialog>
+#include <QMessageBox>
+#include <QLineEdit>
 #include "qmath.h"
 
 #include "mainwindow.h"
@@ -1028,8 +1032,9 @@ void StateTableView::set_scroll_positions(int v_value, int h_value){
 
 void StateTableView::wheelEvent(QWheelEvent *event){
     if(event->modifiers() & Qt::ControlModifier || event->modifiers() & Qt::AltModifier){
-        QWheelEvent *evt_h = new QWheelEvent(event->posF(),event->globalPosF(),event->pixelDelta(),event->angleDelta(),
-                                             event->delta(),Qt::Horizontal,event->buttons(),event->modifiers());
+        QWheelEvent *evt_h = new QWheelEvent(
+                event->posF(), event->globalPosF(), event->pixelDelta(), event->angleDelta(),
+                event->delta(), Qt::Horizontal, event->buttons(), event->modifiers());
         QTreeView::wheelEvent(evt_h);
     }else{
         QTreeView::wheelEvent(event);

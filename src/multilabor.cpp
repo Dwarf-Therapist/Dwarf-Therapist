@@ -1,3 +1,4 @@
+#include <QDialog>
 #include "multilabor.h"
 #include "labor.h"
 #include "dwarf.h"

@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define ITEM_H
 
 #include <QtCore>
+#include <QObject>
 #include "truncatingfilelogger.h"
 #include "global_enums.h"
 #include "material.h"

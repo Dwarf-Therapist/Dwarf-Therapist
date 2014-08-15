@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef BASEDOCK_H
 #define BASEDOCK_H
 
-#include <QtWidgets>
+#include <QDockWidget>
 
 class BaseDock : public QDockWidget {
     Q_OBJECT

@@ -23,6 +23,7 @@ THE SOFTWARE.
 #ifndef ITEMAMMOSUBTYPE_H
 #define ITEMAMMOSUBTYPE_H
 
+#include <QObject>
 #include "utils.h"
 #include "dfinstance.h"
 #include "memorylayout.h"

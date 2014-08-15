@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef REACTION_H
 #define REACTION_H
 
-#include <QtWidgets>
+#include <QObject>
 #include "utils.h"
 
 class DFInstance;

@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define DWARF_JOB_H
 
 #include <QtCore>
+#include <QObject>
 #include "truncatingfilelogger.h"
 
 class DwarfJob : public QObject {

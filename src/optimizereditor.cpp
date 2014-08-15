@@ -1,3 +1,7 @@
+#include <QComboBox>
+#include <QMessageBox>
+#include <QMenu>
+#include <QFileDialog>
 #include "optimizereditor.h"
 #include "ui_optimizereditor.h"
 #include "gamedatareader.h"

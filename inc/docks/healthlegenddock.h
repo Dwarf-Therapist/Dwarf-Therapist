@@ -23,6 +23,8 @@ THE SOFTWARE.
 #ifndef HEALTHLEGENDDOCK_H
 #define HEALTHLEGENDDOCK_H
 
+#include <QPushButton>
+#include <QLineEdit>
 #include "basedock.h"
 #include "healthinfo.h"
 #include "unithealth.h"

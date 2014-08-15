@@ -23,7 +23,6 @@ THE SOFTWARE.
 #ifndef BELIEF_H
 #define BELIEF_H
 
-#include <QtWidgets>
 #include "global_enums.h"
 #include "dwarfstats.h"
 #include "gamedatareader.h"

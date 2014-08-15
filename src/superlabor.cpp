@@ -22,6 +22,7 @@ THE SOFTWARE.
 */
 
 #include <QWidget>
+#include <QMessageBox>
 #include "superlabor.h"
 #include "ui_superlabor.h"
 #include "gamedatareader.h"

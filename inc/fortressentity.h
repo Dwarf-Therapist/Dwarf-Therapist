@@ -22,7 +22,7 @@ THE SOFTWARE.
 */
 #ifndef HIST_ENTITY_H
 #define HIST_ENTITY_H
-#include <QtWidgets>
+#include <QObject>
 #include "utils.h"
 #include "global_enums.h"
 
