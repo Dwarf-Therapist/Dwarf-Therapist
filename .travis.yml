@@ -1,0 +1,26 @@
+language: cpp
+matrix:
+  allow_failures:
+    - env: QTVER="qt5" QMAKESPEC=linux-clang
+  fast_finish: true
+env:
+  global:
+    - CXXFLAGS="-Werror"
+  matrix:
+    - QTVER="qt4"
+    - QTVER="qt5"
+    - QTVER="qt5" TARGET=debug
+    - QTVER="qt5" QMAKESPEC=linux-clang
+before_install:
+  - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
+  - sudo apt-get update -q
+  - sudo apt-get install -q qt4-qmake libqt4-dev qt5-qmake qtbase5-dev qtbase5-dev-tools qtdeclarative5-dev
+script:
+  - qmake -qt=$QTVER -v
+  - qmake -qt=$QTVER
+  - make -j3 $TARGET
+notifications:
+  irc:
+    channels:
+      - "chat.freenode.net#dwarftherapist"
+    use_notice: true
