@@ -127,7 +127,7 @@ typedef enum {
     SEEDS=52,
     PLANT=53,
     SKIN_TANNED=54,
-    LEAVES=55,
+    LEAVES_FRUIT=55,
     THREAD=56,
     CLOTH=57,
     TOTEM=58,
@@ -408,6 +408,13 @@ typedef enum {
     CUSTOM_PROF,
     CUSTOM_SUPER
 } CUSTOMIZATION_TYPE;
+
+typedef enum {
+    SCR_DEFAULT,
+    SCR_PREF, //one or more prefs chosen from the dock
+    SCR_PREF_EXP, //explicitly chosen from the filter text search
+    SCR_ALL
+} FILTER_SCRIPT_TYPE;
 
 typedef enum {
     SEX_UNK = -1,

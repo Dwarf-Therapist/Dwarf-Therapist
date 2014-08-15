@@ -1778,12 +1778,12 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
         if(p){
             name = p->name();
 
-            if(itype==LEAVES)
+            if(itype==LEAVES_FRUIT)
                 name = p->leaf_plural();
             else if(itype==SEEDS)
                 name = p->seed_plural();
             else if(itype==PLANT)
-                name = p->name_plural();
+                name = p->name_plural();            
 
             //specific plant material
             if(m){
@@ -1794,8 +1794,10 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
                 else if(Item::is_armor_type(itype)){
                     //don't include the 'fabric' part if it's a armor (item?) ie. pig tail fiber coat, not pig tail fiber fabric coat
                     name = p->name().append(" ").append(m->get_material_name(SOLID));
-                }else{
-                    name.append(" ").append(m->get_material_name(GENERIC));
+                }else if(m->flags().has_flag(LEAF_MAT) && m->flags().has_flag(STRUCTURAL_PLANT_MAT)){
+                    name = p->name().append(" ").append(m->get_material_name(GENERIC));//fruit
+                }else if(itype == NONE || m->flags().has_flag(IS_WOOD)){
+                    name.append(" ").append(m->get_material_name(GENERIC));                    
                 }
 
             }

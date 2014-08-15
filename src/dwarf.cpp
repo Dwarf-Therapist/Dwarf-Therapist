@@ -103,6 +103,9 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_highest_moodable_skill(-1)
     , m_race(0)
     , m_caste(0)
+    , m_pref_search(QString::null)
+    , m_pref_tooltip(QString::null)
+    , m_thought_desc(QString::null)
     , m_is_child(false)
     , m_is_baby(false)
     , m_is_animal(false)
@@ -943,8 +946,7 @@ void Dwarf::read_preferences(){
         //        if(itype < NUM_OF_TYPES && itype != NONE)
         //            LOGW << pref_name << " " << (int)itype << " " << Item::get_item_desc(itype);
 
-        if(pref_type <= 6)
-            valid_prefs.append(pref_name);
+        valid_prefs.append(pref_name);
     }
 
     //load a pref string purely for filtering purposes
@@ -953,28 +955,67 @@ void Dwarf::read_preferences(){
     //add a special preference (actually a misc trait) for like outdoors
     if(has_state(14)){
         int val = state_value(14);
-        QString pref = tr("Does not mind being outdoors, at least for a time.");
+        QString pref = tr("Does not mind being outdoors");
         if(val == 2)
-            pref = tr("Likes working outdoors and grumbles only mildly at inclement weather.");
+            pref = tr("Likes working outdoors");
 
         p = new Preference(LIKE_OUTDOORS,pref,this);
         p->add_flag(999);
         m_preferences.insert(LIKE_OUTDOORS,p);
     }
 
+    bool build_tooltip = (!m_is_animal && !m_preferences.isEmpty() && DT->user_settings()->value("options/tooltip_show_preferences",true).toBool());
     //group preferences into pref desc - values (string list)
     QString desc_key;
+    pref_name = "";
+    //lists for the tooltip
+    QStringList likes;
+    QStringList consume;
+    QStringList hates;
+    QStringList other;
     foreach(int key, m_preferences.uniqueKeys()){
         QMultiMap<int, Preference *>::iterator i = m_preferences.find(key);
         while(i != m_preferences.end() && i.key() == key){
-            desc_key = Preference::get_pref_desc(static_cast<PREF_TYPES>(key));
-            if(!m_grouped_preferences.contains(desc_key))
-                m_grouped_preferences.insert(desc_key, new QStringList);
-
-            p = (Preference*)i.value();
-            m_grouped_preferences.value(desc_key)->append(p->get_name());
+            PREF_TYPES pType = static_cast<PREF_TYPES>(key);
+            desc_key = Preference::get_pref_desc(pType);
+            pref_name = static_cast<Preference*>(i.value())->get_name();
+            if(!pref_name.isEmpty()){
+                //create/append to groups based on the categories description
+                if(!m_grouped_preferences.contains(desc_key))
+                    m_grouped_preferences.insert(desc_key, new QStringList);
+                m_grouped_preferences.value(desc_key)->append(pref_name);
+                //build the tooltip at the same time, organizing by likes, dislikes
+                if(build_tooltip){
+                    pref_name = pref_name.toLower();
+                    if(pType == LIKE_ITEM || pType == LIKE_MATERIAL || pType == LIKE_PLANT || pType == LIKE_TREE || pType == LIKE_CREATURE){
+                        likes.append(pref_name);
+                    }else if(pType == LIKE_FOOD){
+                        consume.append(pref_name);
+                    }else if(pType == LIKE_COLOR){
+                        likes.append(tr("the color ").append(pref_name));
+                    }else if(pType == LIKE_SHAPE){
+                        likes.append(tr("the shape of ").append(pref_name));
+                    }else if(pType == HATE_CREATURE){
+                        hates.append(pref_name);
+                    }else{
+                        other.append(capitalize(pref_name));
+                    }
+                }
+            }
             i++;
         }
+    }
+    if(build_tooltip){
+        m_pref_tooltip = tr("<b>Preferences: </b>");
+        if(likes.count()>0)
+            m_pref_tooltip.append(tr("Likes ")).append(nice_list(likes)).append(". ");
+        if(consume.count()>0)
+            m_pref_tooltip.append(tr("Prefers to consume ")).append(nice_list(consume)).append(". ");
+        if(hates.count()>0)
+            m_pref_tooltip.append(tr("Hates ")).append(nice_list(hates)).append(". ");
+        if(other.count()>0)
+            m_pref_tooltip.append(nice_list(other)).append(". ");
+        m_pref_tooltip = m_pref_tooltip.trimmed();
     }
 }
 
@@ -2211,7 +2252,7 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
 QString Dwarf::tooltip_text() {
     QSettings *s = DT->user_settings();
     GameDataReader *gdr = GameDataReader::ptr();
-    QString skill_summary, personality_summary, roles_summary, preference_summary;
+    QString skill_summary, personality_summary, roles_summary;
     int max_roles = s->value("options/role_count_tooltip",3).toInt();
     if(max_roles > sorted_role_ratings().count())
         max_roles = sorted_role_ratings().count();
@@ -2293,15 +2334,6 @@ QString Dwarf::tooltip_text() {
             }
             roles_summary.append("</ol>");
         }
-
-        if(!m_preferences.isEmpty() && s->value("options/tooltip_show_preferences",true).toBool()){
-            preference_summary = "<b>Preferences: </b>";
-            foreach(QString key, m_grouped_preferences.uniqueKeys()){
-                preference_summary.append(m_grouped_preferences.value(key)->join(", ")).append(", ");
-            }
-            if(!preference_summary.isEmpty())
-                preference_summary.chop(2);
-        }
     }
 
 
@@ -2355,8 +2387,8 @@ QString Dwarf::tooltip_text() {
     if(!personality_summary.isEmpty())
         tt.append(tr("<p style=\"margin:0px;\"><b>Personality:</b> %1</p>").arg(personality_summary));
 
-    if(!preference_summary.isEmpty())
-        tt.append(tr("<p style=\"margin:0px;\">%1</p>").arg(preference_summary));
+    if(!m_pref_tooltip.isEmpty())
+        tt.append(tr("<p style=\"margin:0px;\">%1</p>").arg(m_pref_tooltip));
 
     if(!roles_summary.isEmpty())
         tt.append(tr("<h4 style=\"margin:0px;\"><b>Top %1 Roles:</b></h4>%2").arg(max_roles).arg(roles_summary));
@@ -2770,6 +2802,10 @@ Reaction *Dwarf::get_reaction()
         return 0;
     else
         return m_df->get_reaction(m_current_sub_job_id);
+}
+
+bool Dwarf::find_preference(QString pref_name, QString category_name){
+    return has_preference(pref_name,category_name,false);
 }
 
 bool Dwarf::has_preference(QString pref_name, QString category, bool exactMatch){

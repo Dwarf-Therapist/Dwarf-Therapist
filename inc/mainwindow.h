@@ -28,6 +28,7 @@ THE SOFTWARE.
 //#include <QtNetwork>
 
 #include "thoughtsdock.h"
+#include "global_enums.h"
 
 class StateTableView;
 class DFInstance;
@@ -192,7 +193,7 @@ private:
         void display_group(const int);
         void apply_filter();
         void apply_filter(QModelIndex);
-        void preference_selected(QList<QPair<QString,QString> > vals, QString filter_name = "");
+        void preference_selected(QList<QPair<QString,QString> > vals, QString filter_name = "", FILTER_SCRIPT_TYPE pType = SCR_PREF);
         void thought_selected(QList<short> ids);
         void health_legend_selected(QList<QPair<int,int> > vals);
         //optimization stuff

@@ -470,7 +470,7 @@ void MainWindow::read_dwarves() {
         i->setData(key_pair.second,DwarfModel::DR_SPECIAL_FLAG);
         QVariantList data;
         data << key_pair.first << key_pair.second;
-        i->setData("PREF",Qt::UserRole);
+        i->setData(SCR_PREF_EXP,Qt::UserRole);
         i->setData(data,Qt::UserRole+1);
         filters->appendRow(i);
     }
@@ -552,12 +552,12 @@ void MainWindow::apply_filter(){
 }
 
 void MainWindow::apply_filter(QModelIndex idx){
-    if(idx.data(Qt::UserRole) == "PREF"){
+    if(idx.data(Qt::UserRole) == SCR_PREF_EXP){
         QVariantList data = idx.data(Qt::UserRole+1).toList();
         QList<QPair<QString,QString> > prefs;
         QPair<QString,QString> pref_pair = qMakePair(data.at(0).toString(),data.at(1).toString());
         prefs << pref_pair;
-        preference_selected(prefs,QString("%1: %2").arg(pref_pair.first).arg(pref_pair.second));
+        preference_selected(prefs,QString("%1: %2").arg(pref_pair.first).arg(pref_pair.second),SCR_PREF_EXP);
     }
     ui->le_filter_text->clear();
 }
@@ -1283,25 +1283,36 @@ void MainWindow::display_group(const int group_by){
     ui->cb_group_by->blockSignals(false);
 }
 
-void MainWindow::preference_selected(QList<QPair<QString,QString> > vals, QString filter_name){
+void MainWindow::preference_selected(QList<QPair<QString,QString> > vals, QString filter_name, FILTER_SCRIPT_TYPE pType){
+    if(pType == SCR_PREF)
+        m_proxy->clear_script(pType,false);
     //pairs are of category, pref_name
-    if(filter_name.isEmpty())
-        filter_name = tr("Preferences");
     QString filter = "";
+    QStringList pref_names;
     if(!vals.empty()){
         QPair<QString,QString> pref;
+        bool create_name = (filter_name.isEmpty());
         //function args are reversed, pref_name, category
         foreach(pref,vals){
             if(pref.first == Preference::get_pref_desc(LIKE_CREATURE)){
-                filter.append(QString("(d.has_preference(\"%1\", \"%2\") || d.has_preference(\"%1\", \"%3\")) && ")
+                filter.append(QString("(d.find_preference(\"%1\", \"%2\") || d.find_preference(\"%1\", \"%3\")) && ")
                                               .arg(pref.second.toLower()).arg(pref.first)
                                               .arg(Preference::get_pref_desc(HATE_CREATURE)));
             }else{
-                filter.append(QString("d.has_preference(\"%1\", \"%2\") && ").arg(pref.second.toLower()).arg(pref.first));
+                filter.append(QString("d.find_preference(\"%1\", \"%2\") && ").arg(pref.second.toLower()).arg(pref.first));
+            }
+            if(create_name){
+                if(vals.count() == 1)
+                    filter_name = tr("%1: %2").arg(capitalize(pref.first)).arg(capitalize(pref.second));
+                else
+                    pref_names.append(QString("%1 (%2)").arg(capitalize(pref.second)).arg(capitalize(pref.first)));
             }
         }
         filter.chop(4);
-        m_proxy->apply_script(filter_name, filter);
+        if(pref_names.count()>0)
+            filter_name = tr("Preferences: ").append(pref_names.join(","));
+
+        m_proxy->apply_script(filter_name, filter, pType);
     }else{
         m_proxy->clear_script(filter_name);
     }
@@ -1578,7 +1589,7 @@ void MainWindow::refresh_active_scripts(){
     ui->btn_clear_filters->setMenu(NULL);
     QMenu *scripts = new QMenu(ui->btn_clear_filters);
     foreach(QString n, names){
-        QAction *a = scripts->addAction(QIcon(":img/cross.png"), capitalizeEach(n),this,SLOT(clear_filter()));
+        QAction *a = scripts->addAction(QIcon(":img/cross.png"), capitalizeEach(n.replace("&","&&")),this,SLOT(clear_filter()));
         a->setData(n);
     }
 

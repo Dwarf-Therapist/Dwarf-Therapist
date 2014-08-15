@@ -401,6 +401,7 @@ public:
     QHash<short, int> get_thoughts() {return m_thoughts;}
 
     Q_INVOKABLE bool has_preference(QString pref_name, QString category = "", bool exactMatch = true);
+    Q_INVOKABLE bool find_preference(QString pref_name,QString category_name);
     Q_INVOKABLE bool has_thought(short id) {return m_thoughts.contains(id);}
     Q_INVOKABLE bool has_health_issue(int id, int idx = -1);
 
@@ -546,6 +547,7 @@ private:
     QMultiMap<int, Preference*> m_preferences;
     QHash<QString, QStringList*> m_grouped_preferences;
     QString m_pref_search;
+    QString m_pref_tooltip;
     QHash<short, int> m_thoughts;
     QString m_thought_desc;
     bool m_is_child;

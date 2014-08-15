@@ -100,7 +100,7 @@ public:
         m[SEEDS]=QObject::tr("Seeds");
         m[PLANT]=QObject::tr("Plants");
         m[SKIN_TANNED]=QObject::tr("Tanned Hides");
-        m[LEAVES]=QObject::tr("Leaves");
+        m[LEAVES_FRUIT]=QObject::tr("Leaves");
         m[THREAD]=QObject::tr("Threads");
         m[CLOTH]=QObject::tr("Cloths");
         m[TOTEM]=QObject::tr("Totems");
@@ -198,7 +198,7 @@ public:
         m[SEEDS]=QObject::tr("Seed");
         m[PLANT]=QObject::tr("Plant");
         m[SKIN_TANNED]=QObject::tr("Tanned Hide");
-        m[LEAVES]=QObject::tr("Leaf");
+        m[LEAVES_FRUIT]=QObject::tr("Leaf");
         m[THREAD]=QObject::tr("Thread");
         m[CLOTH]=QObject::tr("Cloth");
         m[TOTEM]=QObject::tr("Totem");

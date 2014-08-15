@@ -747,7 +747,7 @@ void roleDialog::load_items(){
               << TRAPPARTS << FOOD << GLOB << ROCK << PIPE_SECTION << ORTHOPEDIC_CAST << EGG << BOOK << WEAPON;
 
     //some items should be mapped to food preference category
-    item_food << MEAT << FISH << SEEDS << PLANT << POWDER_MISC << CHEESE << LEAVES;
+    item_food << MEAT << FISH << SEEDS << PLANT << POWDER_MISC << CHEESE << LEAVES_FRUIT;
     //and some to drink preference category (same as food in df for now)
     item_drink << DRINK << LIQUID_MISC;
     //add craft items to separate category to change the menu
@@ -830,39 +830,35 @@ void roleDialog::load_creatures(){
     p->set_name("Creatures (Extractable)");
     add_pref_to_tree(m_general_creature, p);
 
-
-    QTreeWidgetItem *parent;
     foreach(Race *r, m_df->get_races()){
-        parent = m_creatures; //default
-
         p = new Preference(LIKE_CREATURE, capitalize(r->name()),this);
         p->set_exact(true);
 
-        if(r->flags().has_flag(HATEABLE)){ //hateable creature flag
-            parent = m_hateable;
+        bool hated = false;
+
+        if(r->flags().has_flag(HATEABLE)){
             p->add_flag(HATEABLE);
+            add_pref_to_tree(m_hateable,p);
+            hated = true;
         }
         if(r->flags().has_flag(VERMIN_FISH)){
             p->add_flag(VERMIN_FISH);
         }
-        if(r->is_trainable()){
-            parent = m_trainable;
+        if(r->is_trainable()){            
             p->add_flag(TRAINABLE_HUNTING);
             p->add_flag(TRAINABLE_WAR);
+            add_pref_to_tree(m_trainable,p);
         }
-        if(r->is_milkable()){
-            parent = m_milkable;
+        if(r->is_milkable()){            
             p->add_flag(MILKABLE);
+            add_pref_to_tree(m_milkable,p);
         }
-        if(r->is_vermin_extractable()){
-            parent = m_extracts;
+        if(r->is_vermin_extractable()){            
             p->add_flag(HAS_EXTRACTS);
-        }
-
-        add_pref_to_tree(parent,p);
-
-
-        //load_material_prefs(r->get_creature_materials(), r->name());
+            add_pref_to_tree(m_extracts,p);
+        }                  
+         if(!hated)
+             add_pref_to_tree(m_creatures,p);
     }
 }
 

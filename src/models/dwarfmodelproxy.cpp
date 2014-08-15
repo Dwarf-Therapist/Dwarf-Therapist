@@ -62,8 +62,11 @@ void DwarfModelProxy::setFilterFixedString(const QString &pattern) {
     invalidateFilter();
 }
 
-void DwarfModelProxy::apply_script(const QString &script_name, const QString &script_body) {
-    m_scripts.insert(script_name,script_body);
+void DwarfModelProxy::apply_script(const QString &script_name, const QString &script_body, const FILTER_SCRIPT_TYPE &sType){
+    script_info si;
+    si.script_body = script_body;
+    si.script_type = sType;
+    m_scripts.insert(script_name,si);
     invalidateFilter();
     emit filter_changed();
 }
@@ -88,6 +91,25 @@ void DwarfModelProxy::clear_script(const QString script_name){
     }
     invalidateFilter();
     emit filter_changed();
+}
+
+void DwarfModelProxy::clear_script(const FILTER_SCRIPT_TYPE sType, const bool refresh){
+    if(sType == SCR_ALL){
+        m_scripts.clear();
+    }else{
+        QHashIterator<QString,script_info> i(m_scripts);
+        i.toBack();
+        while (i.hasPrevious()) {
+            i.previous();
+            if(static_cast<script_info>(i.value()).script_type == sType){
+                m_scripts.remove(i.key());
+            }
+        }
+    }
+    if(refresh){
+        invalidateFilter();
+        emit filter_changed();
+    }
 }
 
 void DwarfModelProxy::refresh_script(){
@@ -149,8 +171,8 @@ bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source
             m_engine->globalObject().setProperty("d", d_obj);
 
             QStringList scripts;
-            foreach(QString s, m_scripts.values()){
-                scripts.append(s);
+            foreach(script_info si, m_scripts.values()){
+                scripts.append(si.script_body);
             }
             //if we're testing a script, apply that as well
             if(!m_test_script.trimmed().isEmpty())
