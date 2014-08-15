@@ -1,5 +1,13 @@
 #include <QMessageBox>
-#include <QJSEngine>
+
+#if QT_VERSION < 0x050000
+# include <QScriptEngine>
+# define QJSEngine QScriptEngine
+# define QJSValue QScriptValue
+#else
+# include <QJSEngine>
+#endif
+
 #include "roledialog.h"
 #include "utils.h"
 #include "ui_roledialog.h"
@@ -23,6 +31,10 @@
 #include "races.h"
 #include "dwarf.h"
 #include "sortabletableitems.h"
+
+#if QT_VERSION < 0x050000
+# define setSectionResizeMode setResizeMode
+#endif
 
 roleDialog::~roleDialog()
 {
@@ -1084,7 +1096,11 @@ void roleDialog::calc_new_role(){
                 m_engine.globalObject().setProperty("__internal_role_return_value_check", ret);
                 err_msg = tr("<font color=red>Script returned %1 instead of number</font>")
                                  .arg(m_engine.evaluate(QString("typeof __internal_role_return_value_check")).toString());
+#if QT_VERSION < 0x050000
+                m_engine.globalObject().setProperty("__internal_role_return_value_check", QScriptValue());
+#else
                 m_engine.globalObject().deleteProperty("__internal_role_return_value_check");
+#endif
             }
             ui->te_script->setStatusTip(err_msg);
             ui->txt_status_tip->setText(err_msg);

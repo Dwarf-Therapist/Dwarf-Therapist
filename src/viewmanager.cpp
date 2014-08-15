@@ -42,6 +42,10 @@ THE SOFTWARE.
 #include "itemweaponsubtype.h"
 #include "dwarf.h"
 
+#if QT_VERSION < 0x050000
+# define setSectionResizeMode setResizeMode
+#endif
+
 QMap<COLUMN_TYPE, ViewColumn::COLUMN_SORT_TYPE> ViewManager::m_default_column_sort;
 
 ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy,
@@ -496,8 +500,13 @@ void ViewManager::setCurrentIndex(int idx) {
             }
 
             if(stv->header()->count() > 0){
+#if QT_VERSION >= 0x050000
                 stv->header()->setSectionResizeMode(QHeaderView::Fixed);
                 stv->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+#else
+                stv->header()->setResizeMode(QHeaderView::Fixed);
+                stv->header()->setResizeMode(0, QHeaderView::ResizeToContents);
+#endif
             }
 
             //setup our sort types by column in case we've since changed them

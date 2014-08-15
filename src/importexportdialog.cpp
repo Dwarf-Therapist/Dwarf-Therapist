@@ -20,9 +20,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QStandardPaths>
+#if QT_VERSION >= 0x050000
+# include <QStandardPaths>
+#else
+# include <QDesktopServices>
+# define QStandardPaths QDesktopServices
+#endif
 #include "importexportdialog.h"
 #include "ui_importexportdialog.h"
 #include "dwarftherapist.h"
@@ -38,6 +44,15 @@ THE SOFTWARE.
 #include "role.h"
 #include "roleaspect.h"
 
+static QString _get_dir(QStandardPaths::StandardLocation locationId)
+{
+#if QT_VERSION >= 0x050000
+    return QStandardPaths::writableLocation(locationId);
+#else
+    return QDesktopServices::storageLocation(locationId);
+#endif
+}
+
 ImportExportDialog::ImportExportDialog(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::ImportExportDialog)
@@ -50,7 +65,7 @@ ImportExportDialog::ImportExportDialog(QWidget *parent)
 bool ImportExportDialog::setup_for_profession_export() {
     m_mode = MODE_EXPORT_PROFESSIONS;
     QString default_path = QString("%1/%2")
-        .arg(QStandardPaths::DesktopLocation)
+        .arg(_get_dir(QStandardPaths::DesktopLocation))
         .arg("custom_professions.dtp");
     m_path = QFileDialog::getSaveFileName(this, tr("Choose a file to export to"),	default_path,
         "Dwarf Therapist Profession Exports (*.dtp);;All Files (*.*)");
@@ -79,7 +94,7 @@ bool ImportExportDialog::setup_for_profession_export() {
 
 bool ImportExportDialog::setup_for_profession_import() {
     m_mode = MODE_IMPORT_PROFESSIONS;
-    QString default_path = QString("%1/%2").arg(QStandardPaths::DesktopLocation).arg("custom_professions.dtp");
+    QString default_path = QString("%1/%2").arg(_get_dir(QStandardPaths::DesktopLocation)).arg("custom_professions.dtp");
     m_path = QFileDialog::getOpenFileName(this, tr("Choose a file to import"), default_path,
         "Dwarf Therapist Profession Exports (*.dtp);;All Files (*.*)");
     if (m_path.isEmpty())
@@ -149,7 +164,7 @@ bool ImportExportDialog::setup_for_profession_import() {
 bool ImportExportDialog::setup_for_gridview_export() {
     m_mode = MODE_EXPORT_GRIDVIEWS;
     QString default_path = QString("%1/%2")
-        .arg(QStandardPaths::DesktopLocation)
+        .arg(_get_dir(QStandardPaths::DesktopLocation))
         .arg("gridviews.dtg");
     m_path = QFileDialog::getSaveFileName(this, tr("Choose a file to export to"),
         default_path,  "Dwarf Therapist Grid View Exports (*.dtg);;All Files (*.*)");
@@ -179,7 +194,7 @@ bool ImportExportDialog::setup_for_gridview_export() {
 bool ImportExportDialog::setup_for_gridview_import() {
     m_mode = MODE_IMPORT_GRIDVIEWS;
     QString default_path = QString("%1/%2")
-        .arg(QStandardPaths::DesktopLocation)
+        .arg(_get_dir(QStandardPaths::DesktopLocation))
         .arg("gridviews.dtg");
     m_path = QFileDialog::getOpenFileName(this, tr("Choose a file to import"),
         default_path,  "Dwarf Therapist Grid View Exports (*.dtg);;All Files (*.*)");
@@ -244,7 +259,7 @@ bool ImportExportDialog::setup_for_gridview_import() {
 bool ImportExportDialog::setup_for_role_export() {
     m_mode = MODE_EXPORT_ROLES;
     QString default_path = QString("%1/%2")
-        .arg(QStandardPaths::DesktopLocation)
+        .arg(_get_dir(QStandardPaths::DesktopLocation))
         .arg("custom_roles.dtp");
     m_path = QFileDialog::getSaveFileName(this, tr("Choose a file to export to"),	default_path,
         "Dwarf Therapist Roles Exports (*.dtp);;All Files (*.*)");
@@ -277,7 +292,7 @@ bool ImportExportDialog::setup_for_role_export() {
 
 bool ImportExportDialog::setup_for_role_import() {
     m_mode = MODE_IMPORT_ROLES;
-    QString default_path = QString("%1/%2").arg(QStandardPaths::DesktopLocation).arg("custom_roles.dtp");
+    QString default_path = QString("%1/%2").arg(_get_dir(QStandardPaths::DesktopLocation)).arg("custom_roles.dtp");
     m_path = QFileDialog::getOpenFileName(this, tr("Choose a file to import"), default_path,
         "Dwarf Therapist Roles Imports (*.dtp);;All Files (*.*)");
     if (m_path.isEmpty())

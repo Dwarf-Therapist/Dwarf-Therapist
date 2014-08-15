@@ -20,6 +20,10 @@
 #include "labor.h"
 #include "math.h"
 
+#if QT_VERSION < 0x050000
+# define setSectionResizeMode setResizeMode
+#endif
+
 //optimizereditor::optimizereditor(QString name, QWidget *parent) :
 optimizereditor::optimizereditor(QWidget *parent) :
     QDialog(parent),

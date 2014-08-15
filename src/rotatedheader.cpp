@@ -39,7 +39,11 @@ RotatedHeader::RotatedHeader(Qt::Orientation orientation, QWidget *parent)
     , m_hovered_column(-1)
     , m_last_sorted_idx(0)
 {
+#if QT_VERSION >= 0x050000
     setSectionsClickable(true);
+#else
+    setClickable(true);
+#endif
     setSortIndicatorShown(true);
     setMouseTracking(true);
 

@@ -2,7 +2,8 @@ TEMPLATE = app
 TARGET = DwarfTherapist
 QT += concurrent \
     qml \
-    widgets
+    widgets \
+    script
 CONFIG(debug, debug|release) { 
     message(Debug Mode)
     DESTDIR = bin$${DIR_SEPARATOR}debug

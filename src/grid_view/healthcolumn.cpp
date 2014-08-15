@@ -106,7 +106,12 @@ QStandardItem *HealthColumn::build_cell(Dwarf *d) {
         //find the matching descriptions in the category in the summary, bold and color them
         QList<HealthInfo*> cat_infos = UnitHealth::get_display_categories().value(hs)->descriptions();
         foreach(HealthInfo *h_info, cat_infos){
-            QRegularExpression re("((?<=, )|(?<=[>])|^)" + h_info->description(false));
+#if QT_VERSION >= 0x050000
+            QRegularExpression
+#else
+            QRegExp
+#endif
+                               re("((?<=, )|(?<=[>])|^)" + h_info->description(false));
             if(re.isValid())
                 health_summary.replace(re, QString("<b>%2</b>").arg(h_info->description(true)));
         }

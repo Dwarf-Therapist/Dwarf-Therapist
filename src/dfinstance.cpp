@@ -23,7 +23,9 @@ THE SOFTWARE.
 
 #include <QtDebug>
 #include <QMessageBox>
-#include <QtConcurrent>
+#if QT_VERSION >= 0x050000
+# include <QtConcurrent>
+#endif
 #include "defines.h"
 #include "dfinstance.h"
 #include "dwarf.h"

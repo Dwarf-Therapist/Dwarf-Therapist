@@ -1033,8 +1033,12 @@ void StateTableView::set_scroll_positions(int v_value, int h_value){
 void StateTableView::wheelEvent(QWheelEvent *event){
     if(event->modifiers() & Qt::ControlModifier || event->modifiers() & Qt::AltModifier){
         QWheelEvent *evt_h = new QWheelEvent(
+#if QT_VERSION >= 0x050000
                 event->posF(), event->globalPosF(), event->pixelDelta(), event->angleDelta(),
                 event->delta(), Qt::Horizontal, event->buttons(), event->modifiers());
+#else
+                event->pos(), event->globalPos(), event->delta(), event->buttons(), event->modifiers(), Qt::Horizontal);
+#endif
         QTreeView::wheelEvent(evt_h);
     }else{
         QTreeView::wheelEvent(event);

@@ -30,6 +30,11 @@ THE SOFTWARE.
 #include "mainwindow.h"
 #include "gamedatareader.h"
 
+#if QT_VERSION < 0x050000
+# define QJSEngine QScriptEngine
+# define QJSValue QScriptValue
+#endif
+
 DwarfModelProxy::DwarfModelProxy(QObject *parent)
     :QSortFilterProxyModel(parent)
     , m_last_sort_order(Qt::AscendingOrder)

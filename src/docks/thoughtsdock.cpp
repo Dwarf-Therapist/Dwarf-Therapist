@@ -30,6 +30,10 @@ THE SOFTWARE.
 #include "thought.h"
 #include "gamedatareader.h"
 
+#if QT_VERSION < 0x050000
+# define setSectionResizeMode setResizeMode
+#endif
+
 ThoughtsDock::ThoughtsDock(QWidget *parent, Qt::WindowFlags flags)
     : BaseDock(parent, flags)
 {    
