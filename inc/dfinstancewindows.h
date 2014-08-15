@@ -39,11 +39,11 @@ public:
     bool find_running_copy(bool connect_anyway = false);
 
     QVector<VIRTADDR> enumerate_vector(const VIRTADDR &addr);
-    int read_raw(const VIRTADDR &addr, int bytes, QByteArray &buffer);
+    int read_raw(const VIRTADDR &addr, size_t bytes, QByteArray &buffer);
     QString read_string(const VIRTADDR &addr);
 
     // Writing
-    int write_raw(const VIRTADDR &addr, const int &bytes, void *buffer);
+    int write_raw(const VIRTADDR &addr, const size_t &bytes, void *buffer);
     int write_string(const VIRTADDR &addr, const QString &str);
     int write_int(const VIRTADDR &addr, const int &val);
 

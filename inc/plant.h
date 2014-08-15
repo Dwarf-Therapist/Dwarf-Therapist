@@ -32,7 +32,6 @@ public:
     QString leaf_plural() {return m_leaf_name_plural;}
     QString seed_plural() {return m_seed_name_plural;}
 
-    QStringList get_names();
     FlagArray flags() {return m_flags;}
 
 private:

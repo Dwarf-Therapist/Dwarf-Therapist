@@ -110,22 +110,3 @@ int Plant::material_count(){
         load_materials();
     return m_plant_mats.count();
 }
-
-QStringList Plant::get_names(){
-    QStringList names;
-
-    names.append(m_plant_name_plural);
-    names.append(m_leaf_name_plural);
-    names.append(m_seed_name_plural);
-
-    load_materials();
-    foreach(Material *m, m_plant_mats){
-        if(m->flags().has_flag(THREAD_PLANT) || m->flags().has_flag(IS_WOOD))
-            names.append(m_plant_name + " " + m->get_material_name(GENERIC));
-        if(m->flags().has_flag(ALCOHOL_PLANT) || m->flags().has_flag(LIQUID_MISC_PLANT))
-            names.append(m->get_material_name(LIQUID));
-        if(m->flags().has_flag(POWDER_MISC_PLANT) || m->flags().has_flag(CHEESE_PLANT))
-            names.append(m->get_material_name(POWDER));
-    }
-    return names;
-}

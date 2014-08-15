@@ -123,8 +123,7 @@ public:
     void set_memory_layout(MemoryLayout * layout) { m_layout = layout; }
 
     // Writing
-    virtual int write_raw(const VIRTADDR &addr, const size_t &bytes,
-                          void *buffer) = 0;
+    virtual int write_raw(const VIRTADDR &addr, const size_t &bytes,void *buffer) = 0;
     virtual int write_string(const VIRTADDR &addr, const QString &str) = 0;
     virtual int write_int(const VIRTADDR &addr, const int &val) = 0;
 
