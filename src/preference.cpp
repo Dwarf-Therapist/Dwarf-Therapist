@@ -142,10 +142,5 @@ int Preference::matches(Preference *role_pref, Dwarf *d){
 }
 
 int Preference::exact_matches(QString searchval){
-    QRegExp str_search("(" + searchval + ")",Qt::CaseInsensitive,QRegExp::RegExp);
-    if(m_name.contains(str_search)){
-        return str_search.captureCount();
-    }else{
-        return 0;
-    }
+    return m_name.count(searchval, Qt::CaseInsensitive);
 }

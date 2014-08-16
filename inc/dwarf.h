@@ -400,7 +400,7 @@ public:
 
     QHash<short, int> get_thoughts() {return m_thoughts;}
 
-    Q_INVOKABLE bool has_preference(QString pref_name, QString category = "", bool exactMatch = true);
+    Q_INVOKABLE bool has_preference(QString pref_name, QString category = "");
     Q_INVOKABLE bool find_preference(QString pref_name,QString category_name);
     Q_INVOKABLE bool has_thought(short id) {return m_thoughts.contains(id);}
     Q_INVOKABLE bool has_health_issue(int id, int idx = -1);
