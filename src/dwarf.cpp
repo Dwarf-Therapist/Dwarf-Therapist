@@ -2805,31 +2805,17 @@ Reaction *Dwarf::get_reaction()
 }
 
 bool Dwarf::find_preference(QString pref_name, QString category_name){
-    return has_preference(pref_name,category_name,false);
+    return has_preference(pref_name,category_name);
 }
 
-bool Dwarf::has_preference(QString pref_name, QString category, bool exactMatch){
-    QRegExp str_search("(" + pref_name + ")",Qt::CaseInsensitive, QRegExp::RegExp);
-    QString pref = "";
-
+bool Dwarf::has_preference(QString pref_name, QString category){
     if(category.isEmpty()){
-        if(exactMatch){
-            return m_pref_search.contains(pref_name, Qt::CaseInsensitive);
-        }else{
-            return m_pref_search.contains(str_search);
-        }
-        return false;
+        return m_pref_search.contains(pref_name, Qt::CaseInsensitive);
     }else{
         if(!m_grouped_preferences.keys().contains(category))
             return false;
-        if(exactMatch){
-            return m_grouped_preferences.value(category)->contains(pref_name,Qt::CaseInsensitive);
-        }else{
-            pref = m_grouped_preferences.value(category)->join(" ");
-            if(pref.contains(str_search))
-                return true;
-        }
-        return false;
+        QString pref = m_grouped_preferences.value(category)->join(" ");
+        return pref.contains(pref_name);
     }
 }
 

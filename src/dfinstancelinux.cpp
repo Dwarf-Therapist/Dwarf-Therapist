@@ -423,33 +423,42 @@ void DFInstanceLinux::map_virtual_memory() {
     uint end_addr = 0;
     bool ok;
 
-    QRegExp rx("^([a-f\\d]+)-([a-f\\d]+)\\s([rwxsp-]{4})\\s+[\\d\\w]{8}\\s+[\\d\\w]{2}:[\\d\\w]{2}\\s+(\\d+)\\s*(.+)\\s*$");
+#if QT_VERSION >= 0x050000
+    QRegularExpression
+#else
+    QRegExp
+#endif
+        rx("^([a-f\\d]+)-([a-f\\d]+)\\s([rwxsp-]{4})\\s+[\\d\\w]{8}\\s+[\\d\\w]{2}:[\\d\\w]{2}\\s+(\\d+)\\s*(.+)\\s*$");
+    QString mf = QFile::symLinkTarget(QString("/proc/%1/exe").arg(m_pid));
     do {
         line = f.readLine();
-        // parse the first line to see find the base
-        if (rx.indexIn(line) != -1) {
-            //LOGD << "RANGE" << rx.cap(1) << "-" << rx.cap(2) << "PERMS" <<
-            //        rx.cap(3) << "INODE" << rx.cap(4) << "PATH" << rx.cap(5);
-            start_addr = rx.cap(1).toUInt(&ok, 16);
-            end_addr = rx.cap(2).toUInt(&ok, 16);
-            QString perms = rx.cap(3).trimmed();
-            int inode = rx.cap(4).toInt();
-            QString path = rx.cap(5).trimmed();
+#if QT_VERSION >= 0x050000
+        QRegularExpressionMatch match = rx.match(line);
+#define cap match.captured
+        if (match.hasMatch()) {
+#else
+#define cap rx.cap
+        if (rx.exactMatch(line)) {
+#endif
+            start_addr = cap(1).toUInt(&ok, 16);
+            end_addr = cap(2).toUInt(&ok, 16);
+            QString perms = cap(3);
+            int inode = cap(4).toInt();
+            QString path = cap(5);
+#if QT_VERSION < 0x050000
+#undef cap
+#endif
 
-            //LOGD << "RANGE" << hex << start_addr << "-" << end_addr << perms
-            //        << inode << "PATH >" << path << "<";
             bool keep_it = false;
             bool main_file = false;
             if (path.contains("[heap]") || path.contains("[stack]") || path.contains("[vdso]"))  {
                 keep_it = true;
-            } else if (perms.contains("r") && inode && path == QFile::symLinkTarget(QString("/proc/%1/exe").arg(m_pid))) {
+            } else if (perms.contains("r") && inode && path == mf) {
                 keep_it = true;
                 main_file = true;
             } else {
                 keep_it = path.isEmpty();
             }
-            // uncomment to search HEAP only
-            //keep_it = path.contains("[heap]");
             keep_it = true;
 
             if (keep_it && end_addr > start_addr) {
