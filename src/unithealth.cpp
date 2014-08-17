@@ -86,7 +86,7 @@ void UnitHealth::add_info(eHealth::H_INFO id, bool idx0, bool idx1, bool idx2, b
         return;
 
     QList<short> desc_index;
-    bool multiple = m_health_descriptions.value(id)->allows_multiple();
+    bool multiple = get_health_description(id)->allows_multiple();
     if(multiple){
         if(idx0)
             desc_index.append(0);
@@ -112,9 +112,9 @@ void UnitHealth::add_info(eHealth::H_INFO id, bool idx0, bool idx1, bool idx2, b
 void UnitHealth::add_info(eHealth::H_INFO h, QList<short> indexes, bool wound_visible){
     //figure out which list we should be adding the info to
     QList<HealthInfo*> info_list;
-    if(m_health_descriptions.value(h)->diff_subitem_types()){
+    if(get_health_description(h)->diff_subitem_types()){
         foreach(short idx, indexes){
-            HealthInfo *hi = m_health_descriptions.value(h)->description(idx);
+            HealthInfo *hi = get_health_description(h)->description(idx);
             if(hi){
                 if(hi->is_status()){
                     info_list = m_status_info.take(h);
@@ -137,19 +137,19 @@ void UnitHealth::add_info(eHealth::H_INFO h, QList<short> indexes, bool wound_vi
             }
         }
     }else{
-        if(m_health_descriptions.value(h)->is_status()){
+        if(get_health_description(h)->is_status()){
             info_list = m_status_info.take(h);
             add_info(h,indexes,info_list);
             if(info_list.size() > 0)
                 m_status_info.insert(h,info_list);
         }
-        if(m_health_descriptions.value(h)->is_treatment()){
+        if(get_health_description(h)->is_treatment()){
             info_list = m_treatment_info.take(h);
             add_info(h,indexes,info_list);
             if(info_list.size() > 0)
                 m_treatment_info.insert(h,info_list);
         }
-        if(wound_visible && m_health_descriptions.value(h)->is_wound()){
+        if(wound_visible && get_health_description(h)->is_wound()){
             info_list = m_wounds_info.take(h);
             add_info(h,indexes,info_list);
             if(info_list.size() > 0)
@@ -171,7 +171,7 @@ void UnitHealth::add_info(HealthInfo *hi, QList<HealthInfo *> &info_list){
     bool replaced = false;
     bool ignore = false;
     for(int list_index = 0; list_index < info_list.count(); list_index++){
-        if(!m_health_descriptions.value(hi->h_category())->allows_multiple() && hi->h_category() == info_list.at(list_index)->h_category()){
+        if(!get_health_description(hi->h_category())->allows_multiple() && hi->h_category() == info_list.at(list_index)->h_category()){
             if(info_list.at(list_index)->severity() > hi->severity()){
                 info_list.replace(list_index,hi);
                 replaced = true;
@@ -535,7 +535,7 @@ bool UnitHealth::has_info_detail(eHealth::H_INFO h, int idx){
 }
 
 QStringList UnitHealth::get_all_category_desc(eHealth::H_INFO hs, bool symbol_only, bool colored){
-    return m_health_descriptions.value(hs)->get_all_descriptions(symbol_only,colored);
+    return get_health_description(hs)->get_all_descriptions(symbol_only,colored);
 }
 
 QMap<QString, QStringList> UnitHealth::get_wound_summary(bool colored, bool symbols){
@@ -582,7 +582,7 @@ QStringList UnitHealth::get_status_summary(bool colored, bool symbols){
         QStringList summary = m_status_summary.value(key);
         foreach(eHealth::H_INFO h, m_status_info.uniqueKeys()){
             if(m_status_info.value(h).count() > 0){
-                if(m_health_descriptions.value(h)->allows_multiple()){ //m_display_descriptions.value(h).at(0)->can_have_multiple()){
+                if(get_health_description(h)->allows_multiple()){ //m_display_descriptions.value(h).at(0)->can_have_multiple()){
                     foreach(HealthInfo *hi,m_status_info.value(h)){
                         summary.append(hi->formatted_value(colored,symbols));
                     }
@@ -598,7 +598,7 @@ QStringList UnitHealth::get_status_summary(bool colored, bool symbols){
 }
 
 HealthInfo* UnitHealth::get_health_info(eHealth::H_INFO hs, short idx){
-    return m_health_descriptions.value((int)hs)->description(idx);
+    return get_health_description((int)hs)->description(idx);
 }
 
 void UnitHealth::load_health_descriptors(QSettings &s){
@@ -623,6 +623,14 @@ void UnitHealth::load_health_descriptors(QSettings &s){
                 }
             }
         }
+    }
+}
+
+HealthCategory *UnitHealth::get_health_description(int id){
+    if(m_health_descriptions.contains(id)){
+        return m_health_descriptions.value(id);
+    }else{
+        return new HealthCategory();
     }
 }
 
