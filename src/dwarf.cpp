@@ -103,7 +103,6 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_highest_moodable_skill(-1)
     , m_race(0)
     , m_caste(0)
-    , m_pref_search(QString::null)
     , m_pref_tooltip(QString::null)
     , m_thought_desc(QString::null)
     , m_is_child(false)
@@ -821,8 +820,7 @@ void Dwarf::read_preferences(){
     QString pref_name = "Unknown";
     ITEM_TYPE itype;
     PREF_TYPES ptype;
-    Preference *p;
-    QStringList valid_prefs;
+    Preference *p;    
     foreach(VIRTADDR pref, preferences){
         pref_type = m_df->read_short(pref);
         pref_id = m_df->read_short(pref + 0x2);
@@ -946,11 +944,8 @@ void Dwarf::read_preferences(){
         //        if(itype < NUM_OF_TYPES && itype != NONE)
         //            LOGW << pref_name << " " << (int)itype << " " << Item::get_item_desc(itype);
 
-        valid_prefs.append(pref_name);
+        m_pref_names.append(pref_name);
     }
-
-    //load a pref string purely for filtering purposes
-    m_pref_search = valid_prefs.join(" ");
 
     //add a special preference (actually a misc trait) for like outdoors
     if(has_state(14)){
@@ -2810,12 +2805,11 @@ bool Dwarf::find_preference(QString pref_name, QString category_name){
 
 bool Dwarf::has_preference(QString pref_name, QString category){
     if(category.isEmpty()){
-        return m_pref_search.contains(pref_name, Qt::CaseInsensitive);
+        return m_pref_names.contains(pref_name,Qt::CaseInsensitive);
     }else{
         if(!m_grouped_preferences.keys().contains(category))
             return false;
-        QString pref = m_grouped_preferences.value(category)->join(" ");
-        return pref.contains(pref_name);
+        return m_grouped_preferences.value(category)->contains(pref_name,Qt::CaseInsensitive);
     }
 }
 

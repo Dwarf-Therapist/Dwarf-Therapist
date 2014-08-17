@@ -546,7 +546,7 @@ private:
     Caste* m_caste;
     QMultiMap<int, Preference*> m_preferences;
     QHash<QString, QStringList*> m_grouped_preferences;
-    QString m_pref_search;
+    QStringList m_pref_names;
     QString m_pref_tooltip;
     QHash<short, int> m_thoughts;
     QString m_thought_desc;
