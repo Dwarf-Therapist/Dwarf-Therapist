@@ -222,7 +222,7 @@ public:
         // if a menu cancels our scan, we need to know how to stop
         void cancel_scan() {m_stop_scan = true;}
 protected:
-    int m_pid;
+    pid_t m_pid;
     VIRTADDR m_base_addr;
     quint32 m_memory_correction;
     VIRTADDR m_lowest_address;

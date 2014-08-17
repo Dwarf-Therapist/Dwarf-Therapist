@@ -337,19 +337,28 @@ int DFInstanceLinux::write_raw(const VIRTADDR &addr, const size_t &bytes,
 bool DFInstanceLinux::find_running_copy(bool connect_anyway) {
     // find PID of DF
     TRACE << "attempting to find running copy of DF by executable name";
-    QProcess *proc = new QProcess(this);
-    QStringList args;
-    args << "dwarfort.exe"; // 0.31.04 and earlier
-    args << "Dwarf_Fortress"; // 0.31.05+
-    proc->start("pidof", args);
-    proc->waitForFinished(1000);
-    if (proc->exitCode() == 0) { //found it
-        QByteArray out = proc->readAllStandardOutput();
-        QStringList str_pids = QString(out).split(" ");
-        str_pids.sort();
-        if(str_pids.count() > 1){
+
+    QStringList str_pids;
+    QDirIterator iter("/proc");
+    while (iter.hasNext()) {
+        QString fn = iter.next();
+        if (iter.fileInfo().isDir()) {
+            QFile file(QString("%1/comm").arg(fn));
+            if (file.open(QIODevice::ReadOnly)) {
+                QByteArray comm = file.readAll();
+                if (comm == "dwarfort.exe\n" || comm == "Dwarf_Fortress\n") {
+                    str_pids << iter.fileName();
+                }
+            }
+        }
+    }
+
+    int count = str_pids.count();
+    if (count) { //found it
+        if (count > 1) {
+            str_pids.sort();
             m_pid = QInputDialog::getItem(0, tr("Warning"),tr("Multiple Dwarf Fortress processes found, please choose the process to use."),str_pids,str_pids.count()-1,false).toInt();
-        }else{
+        } else {
             m_pid = str_pids.at(0).toInt();
         }
 
