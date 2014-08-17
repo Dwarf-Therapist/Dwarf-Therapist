@@ -92,23 +92,16 @@ QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
     return addrs;
 }
 
-uint DFInstanceLinux::calculate_checksum() {
+QString DFInstanceLinux::calculate_checksum() {
     // ELF binaries don't seem to store a linker timestamp, so just MD5 the file.
-    uint md5 = 0; // we're going to throw away a lot of this checksum we just need 4bytes worth
-    QProcess *proc = new QProcess(this);
-    QStringList args;
-    args << "md5sum";
-    args << QString("/proc/%1/exe").arg(m_pid);
-    proc->start("/usr/bin/env", args);
-    if (proc->waitForReadyRead(3000)) {
-        QByteArray out = proc->readAll();
-        QString str_md5(out);
-        QStringList chunks = str_md5.split(" ");
-        str_md5 = chunks[0];
-        bool ok;
-        md5 = str_md5.mid(0, 8).toUInt(&ok,16); // use the first 8 bytes
-        TRACE << "GOT MD5:" << md5;
+    QFile proc(QString("/proc/%1/exe").arg(m_pid));
+    QCryptographicHash hash(QCryptographicHash::Md5);
+    if (!proc.open(QIODevice::ReadOnly) || !hash.addData(&proc)) {
+        LOGE << "FAILED TO READ DF EXECUTABLE";
+        return QString("UNKNOWN");
     }
+    QString md5 = hexify(hash.result().mid(0, 4)).toLower();
+    TRACE << "GOT MD5:" << md5;
     return md5;
 }
 
@@ -394,10 +387,9 @@ bool DFInstanceLinux::find_running_copy(bool connect_anyway) {
     LOGD << "base_addr:" << m_base_addr << "HEX" << hex << m_base_addr;
     m_is_ok = m_base_addr > 0;
 
-    uint checksum = calculate_checksum();
-    LOGI << "DF's checksum is" << hexify(checksum);
+    QString checksum = calculate_checksum();
     if (m_is_ok) {
-        m_layout = get_memory_layout(hexify(checksum).toLower(), !connect_anyway);
+        m_layout = get_memory_layout(checksum.toLower(), !connect_anyway);
     }
 
     //Get dwarf fortress directory
@@ -697,9 +689,9 @@ VIRTADDR DFInstanceLinux::mmap_area(VIRTADDR start, int size) {
 }
 
 VIRTADDR DFInstanceLinux::alloc_chunk(int size) {
-    if (size > 1048576 || size <= 0)
+    if (size > 1048576) {
         return 0;
-
+    }
     if ((m_alloc_end - m_alloc_start) < size) {
         int apages = (size*2 + 4095)/4096;
         int asize = apages*4096;
