@@ -1,9 +1,12 @@
 TEMPLATE = app
 TARGET = DwarfTherapist
-QT += concurrent \
-    qml \
-    widgets \
-    script
+QT += concurrent widgets
+lessThan(QT_MAJOR_VERSION, 5) {
+    QT += script
+}
+else {
+    QT += qml
+}
 CONFIG(debug, debug|release) { 
     message(Debug Mode)
     DESTDIR = bin$${DIR_SEPARATOR}debug
