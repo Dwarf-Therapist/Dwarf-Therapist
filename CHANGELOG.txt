@@ -1,3 +1,23 @@
+### Version 24.0 Patch Notes
+
+***
+
+- 40.09 win/linux layouts
+- fixes setting only the custom profession name
+- fixes a crash when loading without valid default views
+- fixes a crash when loading without health information
+- adjusted the description of the thought for talked to something more generic
+- changed the role cell's export value to the raw role rating, instead of the drawn rating
+- pets can no longer be butchered
+- updated the preferences section in the unit tooltip to categorize and give better descriptions so it's easier to pick out materials or food.
+- updated the script filtering to properly look in specified categories. eg gems could match both items 'large gems' or shapes 'gems'
+- adding a filter from the preference dock gives a better description of what the filter contains
+- creatures are added to multiple lists in the role preference section (eg. rats are trainable and hateable)
+- added burial and vehicle hauling to the default 'full labors' view
+
+- many optimizations, clean-up and code updates, especially for linux (Hello71)
+- compile optimizations and backwards compatibility for QT4 (myk002)
+
 ### Version 23.6 Patch Notes
 
 ***
