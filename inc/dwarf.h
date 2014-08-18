@@ -111,7 +111,7 @@ public:
     QString translated_name() {return m_translated_name;}
 
     //! return the string nickname for this dwarf (if set)
-    QString nickname() {return m_pending_nick_name;}
+    Q_INVOKABLE QString nickname() {return m_pending_nick_name;}
 
     //! return the happiness level of this dwarf
     DWARF_HAPPINESS get_happiness() {return m_happiness;}
@@ -285,6 +285,8 @@ public:
     // setters
     //! this will cause all data for this dwarf to be reset to game values (clears all pending uncomitted changes)
     void refresh_data();
+    //! refresh only the data affected by committing or clearing pending changes
+    void refresh_minimal_data();
 
     //! set the pending nickname for this dwarf (does not auto-commit)
     void set_nickname(const QString &nick);
@@ -582,6 +584,7 @@ private:
 
     // these methods read data from raw memory
     void read_id();
+    void read_flags();
     void read_sex();
     void read_mood();
     void read_curse();
@@ -601,8 +604,7 @@ private:
     void read_skills();
     void read_attributes();
     void load_attribute(VIRTADDR &addr, int id);
-    void read_personality();
-    void read_flags();
+    void read_personality();    
     void read_turn_count();
     void read_animal_type();
     void read_noble_position();
