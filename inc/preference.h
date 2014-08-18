@@ -86,8 +86,6 @@ protected:
 
     //if it's not a general category preference (ie. 'wood') an exact match of the string is required
     bool m_exact_match;
-
-    int exact_matches(QString searchval);
 };
 
 #endif // PREFERENCE_H

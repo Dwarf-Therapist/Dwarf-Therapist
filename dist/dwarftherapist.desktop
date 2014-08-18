@@ -1,12 +1,10 @@
 [Desktop Entry]
-Encoding=UTF-8
+Version=1.0
 Name=Dwarf Therapist
-Version=0.6.5
 Comment=Dwarf Viewer and Manager for Dwarf Fortress
 Exec=dwarftherapist
 TryExec=dwarftherapist
 Icon=dwarftherapist
 Terminal=false
 Type=Application
-Categories=Game
-
+Categories=Game;Qt;

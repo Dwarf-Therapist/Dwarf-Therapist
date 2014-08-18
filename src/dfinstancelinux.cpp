@@ -93,23 +93,16 @@ QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
     return addrs;
 }
 
-uint DFInstanceLinux::calculate_checksum() {
+QString DFInstanceLinux::calculate_checksum() {
     // ELF binaries don't seem to store a linker timestamp, so just MD5 the file.
-    uint md5 = 0; // we're going to throw away a lot of this checksum we just need 4bytes worth
-    QProcess *proc = new QProcess(this);
-    QStringList args;
-    args << "md5sum";
-    args << QString("/proc/%1/exe").arg(m_pid);
-    proc->start("/usr/bin/env", args);
-    if (proc->waitForReadyRead(3000)) {
-        QByteArray out = proc->readAll();
-        QString str_md5(out);
-        QStringList chunks = str_md5.split(" ");
-        str_md5 = chunks[0];
-        bool ok;
-        md5 = str_md5.mid(0, 8).toUInt(&ok,16); // use the first 8 bytes
-        TRACE << "GOT MD5:" << md5;
+    QFile proc(QString("/proc/%1/exe").arg(m_pid));
+    QCryptographicHash hash(QCryptographicHash::Md5);
+    if (!proc.open(QIODevice::ReadOnly) || !hash.addData(&proc)) {
+        LOGE << "FAILED TO READ DF EXECUTABLE";
+        return QString("UNKNOWN");
     }
+    QString md5 = hexify(hash.result().mid(0, 4)).toLower();
+    TRACE << "GOT MD5:" << md5;
     return md5;
 }
 
@@ -338,19 +331,28 @@ int DFInstanceLinux::write_raw(const VIRTADDR &addr, const size_t &bytes,
 bool DFInstanceLinux::find_running_copy(bool connect_anyway) {
     // find PID of DF
     TRACE << "attempting to find running copy of DF by executable name";
-    QProcess *proc = new QProcess(this);
-    QStringList args;
-    args << "dwarfort.exe"; // 0.31.04 and earlier
-    args << "Dwarf_Fortress"; // 0.31.05+
-    proc->start("pidof", args);
-    proc->waitForFinished(1000);
-    if (proc->exitCode() == 0) { //found it
-        QByteArray out = proc->readAllStandardOutput();
-        QStringList str_pids = QString(out).split(" ");
-        str_pids.sort();
-        if(str_pids.count() > 1){
+
+    QStringList str_pids;
+    QDirIterator iter("/proc");
+    while (iter.hasNext()) {
+        QString fn = iter.next();
+        if (iter.fileInfo().isDir()) {
+            QFile file(QString("%1/comm").arg(fn));
+            if (file.open(QIODevice::ReadOnly)) {
+                QByteArray comm = file.readAll();
+                if (comm == "dwarfort.exe\n" || comm == "Dwarf_Fortress\n") {
+                    str_pids << iter.fileName();
+                }
+            }
+        }
+    }
+
+    int count = str_pids.count();
+    if (count) { //found it
+        if (count > 1) {
+            str_pids.sort();
             m_pid = QInputDialog::getItem(0, tr("Warning"),tr("Multiple Dwarf Fortress processes found, please choose the process to use."),str_pids,str_pids.count()-1,false).toInt();
-        }else{
+        } else {
             m_pid = str_pids.at(0).toInt();
         }
 
@@ -386,10 +388,9 @@ bool DFInstanceLinux::find_running_copy(bool connect_anyway) {
     LOGD << "base_addr:" << m_base_addr << "HEX" << hex << m_base_addr;
     m_is_ok = m_base_addr > 0;
 
-    uint checksum = calculate_checksum();
-    LOGI << "DF's checksum is" << hexify(checksum);
+    QString checksum = calculate_checksum();
     if (m_is_ok) {
-        m_layout = get_memory_layout(hexify(checksum).toLower(), !connect_anyway);
+        m_layout = get_memory_layout(checksum.toLower(), !connect_anyway);
     }
 
     //Get dwarf fortress directory
@@ -424,33 +425,42 @@ void DFInstanceLinux::map_virtual_memory() {
     uint end_addr = 0;
     bool ok;
 
-    QRegExp rx("^([a-f\\d]+)-([a-f\\d]+)\\s([rwxsp-]{4})\\s+[\\d\\w]{8}\\s+[\\d\\w]{2}:[\\d\\w]{2}\\s+(\\d+)\\s*(.+)\\s*$");
+#if QT_VERSION >= 0x050000
+    QRegularExpression
+#else
+    QRegExp
+#endif
+        rx("^([a-f\\d]+)-([a-f\\d]+)\\s([rwxsp-]{4})\\s+[\\d\\w]{8}\\s+[\\d\\w]{2}:[\\d\\w]{2}\\s+(\\d+)\\s*(.+)\\s*$");
+    QString mf = QFile::symLinkTarget(QString("/proc/%1/exe").arg(m_pid));
     do {
         line = f.readLine();
-        // parse the first line to see find the base
-        if (rx.indexIn(line) != -1) {
-            //LOGD << "RANGE" << rx.cap(1) << "-" << rx.cap(2) << "PERMS" <<
-            //        rx.cap(3) << "INODE" << rx.cap(4) << "PATH" << rx.cap(5);
-            start_addr = rx.cap(1).toUInt(&ok, 16);
-            end_addr = rx.cap(2).toUInt(&ok, 16);
-            QString perms = rx.cap(3).trimmed();
-            int inode = rx.cap(4).toInt();
-            QString path = rx.cap(5).trimmed();
+#if QT_VERSION >= 0x050000
+        QRegularExpressionMatch match = rx.match(line);
+#define cap match.captured
+        if (match.hasMatch()) {
+#else
+#define cap rx.cap
+        if (rx.exactMatch(line)) {
+#endif
+            start_addr = cap(1).toUInt(&ok, 16);
+            end_addr = cap(2).toUInt(&ok, 16);
+            QString perms = cap(3);
+            int inode = cap(4).toInt();
+            QString path = cap(5);
+#if QT_VERSION < 0x050000
+#undef cap
+#endif
 
-            //LOGD << "RANGE" << hex << start_addr << "-" << end_addr << perms
-            //        << inode << "PATH >" << path << "<";
             bool keep_it = false;
             bool main_file = false;
             if (path.contains("[heap]") || path.contains("[stack]") || path.contains("[vdso]"))  {
                 keep_it = true;
-            } else if (perms.contains("r") && inode && path == QFile::symLinkTarget(QString("/proc/%1/exe").arg(m_pid))) {
+            } else if (perms.contains("r") && inode && path == mf) {
                 keep_it = true;
                 main_file = true;
             } else {
                 keep_it = path.isEmpty();
             }
-            // uncomment to search HEAP only
-            //keep_it = path.contains("[heap]");
             keep_it = true;
 
             if (keep_it && end_addr > start_addr) {
@@ -680,9 +690,9 @@ VIRTADDR DFInstanceLinux::mmap_area(VIRTADDR start, int size) {
 }
 
 VIRTADDR DFInstanceLinux::alloc_chunk(int size) {
-    if (size > 1048576 || size <= 0)
+    if (size > 1048576) {
         return 0;
-
+    }
     if ((m_alloc_end - m_alloc_start) < size) {
         int apages = (size*2 + 4095)/4096;
         int asize = apages*4096;

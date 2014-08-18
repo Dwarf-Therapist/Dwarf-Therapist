@@ -11,7 +11,16 @@ class HealthCategory{
 
 public:
     HealthCategory(){
+        m_id = -1;
+        m_color = "#000000";
+        m_multiple = false;
+        m_type_flags = 2;
         m_individual_types = false;
+
+        HealthInfo *hi = new HealthInfo();
+        m_descriptors.insert(0,hi);
+
+        m_color = QColor(m_color_name);
     }
 
     HealthCategory(QSettings &s)
@@ -71,7 +80,7 @@ public:
         if(idx >= 0 && idx < m_descriptors.size())
             return m_descriptors.at(idx);
         else
-            return 0;
+            return new HealthInfo();
     }
 
     bool diff_subitem_types() {return m_individual_types;}

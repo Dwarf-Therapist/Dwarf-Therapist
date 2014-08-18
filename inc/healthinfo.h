@@ -13,9 +13,9 @@ class HealthInfo{
 public:
     HealthInfo()
     {
-        m_description = "Unknown";
-         m_symbol = "Unk";
-         m_color_name = "#000000";
+        m_description = QObject::tr("Missing");
+         m_symbol = "???";
+         m_color_name = "#FF0000";
          m_severity = 99;
     }
 

@@ -163,6 +163,9 @@ static inline QString to_hex(const QColor &c) {
 static inline QString hexify(const uint &num) {
     return QString("0x%1").arg(num, 8, 16, QChar('0'));
 }
+static inline QString hexify(const QByteArray &bytes) {
+    return QString("0x%1").arg(QString(bytes.toHex()), 8, QChar('0'));
+}
 
 static inline QString capitalize(const QString & word) {
     QString result = word;

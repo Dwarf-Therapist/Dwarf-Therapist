@@ -136,7 +136,7 @@ bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source
             //if no match, check prefs
             if(!matches){
                 Dwarf *d = m->get_dwarf_by_id(dwarf_id);
-                matches = d->has_preference(m_filter_text,"",false);
+                matches = d->has_preference(m_filter_text,"");
             }
         }
     }else {
@@ -162,7 +162,7 @@ bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source
                 //if no match, check prefs
                 if(!matches){
                     Dwarf *d = m->get_dwarf_by_id(dwarf_id);
-                    matches = d->has_preference(m_filter_text,"",false);
+                    matches = d->has_preference(m_filter_text,"");
                 }
             }
         }

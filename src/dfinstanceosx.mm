@@ -148,23 +148,16 @@ int DFInstanceOSX::write_int(const VIRTADDR &addr, const int &val) {
     return write_raw(addr, sizeof(int), (void*)&val);
 }
 
-uint DFInstanceOSX::calculate_checksum() {
+QString DFInstanceLinux::calculate_checksum() {
     // ELF binaries don't seem to store a linker timestamp, so just MD5 the file.
-    uint md5 = 0; // we're going to throw away a lot of this checksum we just need 4bytes worth
-    QProcess *proc = new QProcess(this);
-    QStringList args;
-    args << "-q";
-    args << m_loc_of_dfexe;
-    proc->start("md5", args);
-    if (proc->waitForReadyRead(3000)) {
-        QByteArray out = proc->readAll();
-        QString str_md5(out);
-        QStringList chunks = str_md5.split(" ");
-        str_md5 = chunks[0];
-        bool ok;
-        md5 = str_md5.mid(0, 8).toUInt(&ok,16); // use the first 8 bytes
-        TRACE << "GOT MD5:" << md5;
+    QFile proc(QString("/proc/%1/exe").arg(m_pid));
+    QCryptographicHash hash(QCryptographicHash::Md5);
+    if (!proc.open(QIODevice::ReadOnly) || !hash.addData(&proc)) {
+        LOGE << "FAILED TO READ DF EXECUTABLE";
+        return QString("UNKNOWN");
     }
+    QString md5 = hexify(hash.result().mid(0, 4).toLower());
+    TRACE << "GOT MD5:" << md5;
     return md5;
 }
 
@@ -284,7 +277,7 @@ bool DFInstanceOSX::find_running_copy(bool connect_anyway) {
 
     m_is_ok = true;
     map_virtual_memory();
-    m_layout = get_memory_layout(hexify(calculate_checksum()).toLower(), !connect_anyway);
+    m_layout = get_memory_layout(calculate_checksum(), !connect_anyway);
 
     [authPool release];
 

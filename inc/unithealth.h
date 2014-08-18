@@ -107,6 +107,7 @@ private:
 
     static QHash<int, HealthCategory*> m_health_descriptions;
     static QList<QPair<int, QString> > m_ordered_category_names;
+    static HealthCategory *get_health_description(int id);
 
     QVector<UnitWound> m_wounds;
     //keep a list of each body part, and the related health info

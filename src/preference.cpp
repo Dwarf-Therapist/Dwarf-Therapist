@@ -119,16 +119,19 @@ int Preference::matches(Preference *role_pref, Dwarf *d){
             }
         }
 
-        //check for an exact match on the string, if this is required, reset our result again and check
+        //check for an exact match on the string, if this is required, reset our result again and check        
         if(role_pref->exact_match())
-            result = 0;
+            result = 0;                    
 
-        if(result <= 0) //only check for an exact match if we don't already have a match
-            result = exact_matches(role_pref->get_name());
+        if(result <= 0){ //only check for an exact match if we don't already have a match
+            result = (QString::compare(role_pref->get_name(),m_name,Qt::CaseInsensitive) == 0);
+        }
+
 
         if(d){
             //if it's a weapon, and a match, ensure the dwarf can actually wield it as well
-            if(result > 0 && role_pref->get_item_type() == WEAPON){
+            if(result > 0 && (role_pref->get_item_type() == WEAPON ||
+                              (role_pref->special_flags().count() > 0 && (special_flags().contains((int)ITEMS_WEAPON) || special_flags().contains((int)ITEMS_WEAPON_RANGED))))){
                 ItemWeaponSubtype *w = d->get_df_instance()->get_weapon_def(capitalizeEach(m_name));
                 if(!w || d->body_size() < w->multi_grasp())
                     result = 0;
@@ -139,13 +142,4 @@ int Preference::matches(Preference *role_pref, Dwarf *d){
     }
 
     return result;
-}
-
-int Preference::exact_matches(QString searchval){
-    QRegExp str_search("(" + searchval + ")",Qt::CaseInsensitive,QRegExp::RegExp);
-    if(m_name.contains(str_search)){
-        return str_search.captureCount();
-    }else{
-        return 0;
-    }
 }

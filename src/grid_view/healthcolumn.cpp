@@ -104,16 +104,18 @@ QStandardItem *HealthColumn::build_cell(Dwarf *d) {
         rating = 100 - hi->severity();
 
         //find the matching descriptions in the category in the summary, bold and color them
-        QList<HealthInfo*> cat_infos = UnitHealth::get_display_categories().value(hs)->descriptions();
-        foreach(HealthInfo *h_info, cat_infos){
+        if(UnitHealth::get_display_categories().count() > 0 && UnitHealth::get_display_categories().contains(hs)){
+            QList<HealthInfo*> cat_infos = UnitHealth::get_display_categories().value(hs)->descriptions();
+            foreach(HealthInfo *h_info, cat_infos){
 #if QT_VERSION >= 0x050000
-            QRegularExpression
+                QRegularExpression
 #else
-            QRegExp
+                QRegExp
 #endif
-                               re("((?<=, )|(?<=[>])|^)" + h_info->description(false));
-            if(re.isValid())
-                health_summary.replace(re, QString("<b>%2</b>").arg(h_info->description(true)));
+                                   re("((?<=, )|(?<=[>])|^)" + h_info->description(false));
+                if(re.isValid())
+                    health_summary.replace(re, QString("<b>%2</b>").arg(h_info->description(true)));
+            }
         }
         item->setData(hi->color(),Qt::TextColorRole);
     }

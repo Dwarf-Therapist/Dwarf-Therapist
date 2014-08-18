@@ -13,7 +13,7 @@ For Linux, do the following:
 
 For Debian-derived (Ubuntu, Mint, etc.) distributions, you can run the following command from a terminal:
 
-    > sudo apt-get install git qt5-qmake qtbase5-dev qtbase5-dev-tools
+    > sudo apt-get install qt5-qmake qtbase5-dev qtbase5-dev-tools qtdeclarative5-dev
 
 
 # Clone the project using git

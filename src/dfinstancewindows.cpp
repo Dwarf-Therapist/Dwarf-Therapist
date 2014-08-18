@@ -50,7 +50,7 @@ DFInstanceWindows::~DFInstanceWindows() {
     }
 }
 
-uint DFInstanceWindows::calculate_checksum() {
+QString DFInstanceWindows::calculate_checksum() {
     BYTE expect_M = read_byte(m_base_addr);
     BYTE expect_Z = read_byte(m_base_addr + 0x1);
 
@@ -68,7 +68,7 @@ uint DFInstanceWindows::calculate_checksum() {
     QDateTime compile_timestamp = QDateTime::fromTime_t(timestamp);
     LOGI << "Target EXE was compiled at " <<
             compile_timestamp.toString(Qt::ISODate);
-    return timestamp;
+    return hexify(timestamp).toLower();
 }
 
 QVector<VIRTADDR> DFInstanceWindows::enumerate_vector(const VIRTADDR &addr) {
@@ -157,7 +157,7 @@ int DFInstanceWindows::read_raw(const VIRTADDR &addr, size_t bytes,
 }
 
 int DFInstanceWindows::write_raw(const VIRTADDR &addr, const size_t &bytes,void *buffer) {
-    int bytes_written = 0;
+    size_t bytes_written = 0;
     WriteProcessMemory(m_proc, (LPVOID)addr, (void*)buffer,
                        sizeof(uchar) * bytes, (DWORD*)&bytes_written);
 
@@ -227,7 +227,7 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
     }
 
     if (m_is_ok) {
-        m_layout = get_memory_layout(hexify(calculate_checksum()).toLower(), !connect_anyway);
+        m_layout = get_memory_layout(calculate_checksum(), !connect_anyway);
     }
 
     if(!m_is_ok) {

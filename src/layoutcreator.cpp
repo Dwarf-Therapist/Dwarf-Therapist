@@ -63,7 +63,7 @@ bool LayoutCreator::write_file()
 
     // Update values
     MemoryLayout newLayout(m_file_name, m_parent->data());
-    QString checksum = hexify(m_df->calculate_checksum());
+    QString checksum = m_df->calculate_checksum();
     newLayout.set_game_version(m_version_name);
     newLayout.set_checksum(checksum);
     newLayout.set_address("addresses/translation_vector", m_translation_vector);

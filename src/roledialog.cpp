@@ -1048,7 +1048,11 @@ void roleDialog::item_double_clicked(QTreeWidgetItem *item, int col){
 
 void roleDialog::search_prefs(QString val){
     val = "(" + val.replace(" ", "|") + ")";
-    QRegExp filter = QRegExp(val,Qt::CaseInsensitive, QRegExp::RegExp);
+#if QT_VERSION >= 0x050000
+    QRegularExpression filter(val, QRegularExpression::CaseInsensitiveOption);
+#else
+    QRegExp filter(val, Qt::CaseInsensitive);
+#endif
     int hidden;
     for(int i = 0; i < ui->treePrefs->topLevelItemCount(); i++){
         hidden = 0;

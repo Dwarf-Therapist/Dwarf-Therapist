@@ -78,6 +78,9 @@ GameDataReader::GameDataReader(QObject *parent)
 
     //load health category descriptors
     UnitHealth::load_health_descriptors(*m_data_settings);
+    if(UnitHealth::get_display_categories().count() <= 0){
+        LOGW << tr("Missing health information in game_data.ini!!");
+    }
 
     //load up the list of attributes and their descriptors
     Attribute::load_attribute_descriptors(*m_data_settings);
