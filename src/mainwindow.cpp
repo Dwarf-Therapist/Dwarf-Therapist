@@ -1611,6 +1611,7 @@ void MainWindow::refresh_active_scripts(){
         ui->btn_clear_filters->setText(QString::number(script_count) + (" Active Filters"));
     }
     ui->btn_clear_filters->updateGeometry();
+    m_view_manager->expand_all();
 }
 
 
