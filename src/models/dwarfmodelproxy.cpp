@@ -55,11 +55,10 @@ void DwarfModelProxy::setFilterFixedString(const QString &pattern) {
             m_filter_text = "";
         return;
     }
-
     m_filter_text = pattern;
-    //QSortFilterProxyModel::setFilterFixedString(pattern);
-    //setup to match any dwarf things that could match this
+
     invalidateFilter();
+    emit filter_changed();
 }
 
 void DwarfModelProxy::apply_script(const QString &script_name, const QString &script_body, const FILTER_SCRIPT_TYPE &sType){
