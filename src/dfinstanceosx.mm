@@ -148,7 +148,7 @@ int DFInstanceOSX::write_int(const VIRTADDR &addr, const int &val) {
     return write_raw(addr, sizeof(int), (void*)&val);
 }
 
-QString DFInstanceLinux::calculate_checksum() {
+QString DFInstanceOSX::calculate_checksum() {
     // ELF binaries don't seem to store a linker timestamp, so just MD5 the file.
     QFile proc(QString("/proc/%1/exe").arg(m_pid));
     QCryptographicHash hash(QCryptographicHash::Md5);
