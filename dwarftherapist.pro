@@ -36,24 +36,21 @@ win32 {
     LIBS += -luser32
     LIBS += -lpsapi
     HEADERS += inc/dfinstancewindows.h
-    SOURCES += src/dfinstancewindows.cpp    
+    SOURCES += src/dfinstancewindows.cpp
 
     DEFINES += NOMINMAX
 
-     #setup_files.path = $$DESTDIR
-    #setup_files.extra = ROBOCOPY /MIR "etc" ".\\$$DESTDIR\\etc";
-
     check_log.path = $$DESTDIR
-    check_log.extra = if not exist $$DESTDIR\\log mkdir "$$DESTDIR\\log";
+    check_log.extra = if not exist $$DESTDIR/log mkdir "$$DESTDIR/log";
 
     check_dirs.path = $$DESTDIR
-    check_dirs.extra = if not exist $$DESTDIR\\etc\\memory_layouts\\windows mkdir "$$DESTDIR\\etc\\memory_layouts\\windows";
+    check_dirs.extra = if not exist $$DESTDIR/share/memory_layouts/windows mkdir "$$DESTDIR/share/memory_layouts/windows";
 
     copy_game_data.path = $$DESTDIR
-    copy_game_data.extra = copy /Y "etc\\game_data.ini" ".\\$$DESTDIR\\etc";
+    copy_game_data.extra = copy /Y "share/game_data.ini" "./$$DESTDIR/share";
 
     copy_mem_layouts.path = $$DESTDIR
-    copy_mem_layouts.extra = copy /Y "etc\\memory_layouts\\windows\\*" ".\\$$DESTDIR\\etc\\memory_layouts\\windows";
+    copy_mem_layouts.extra = copy /Y "share/memory_layouts/windows/*" "./$$DESTDIR/share/memory_layouts/windows";
 
     INSTALLS += check_log
     INSTALLS += check_dirs
@@ -76,18 +73,19 @@ else:macx {
     log.path = Contents/MacOS/log
     QMAKE_BUNDLE_DATA += log
 
-    etc.path = Contents/MacOS/etc
-    etc.files += etc/game_data.ini
-    QMAKE_BUNDLE_DATA += etc
+    share.path = Contents/MacOS/share
+    share.files += share/game_data.ini
+    QMAKE_BUNDLE_DATA += share
 
     layouts.path = Contents/MacOS/etc/memory_layouts/osx
-    layouts.files += etc/memory_layouts/osx/v0.40.04_osx.ini
-    layouts.files += etc/memory_layouts/osx/v0.40.05_osx.ini
-    layouts.files += etc/memory_layouts/osx/v0.40.06_osx.ini
-    layouts.files += etc/memory_layouts/osx/v0.40.07_osx.ini
-    layouts.files += etc/memory_layouts/osx/v0.40.08_osx.ini
-    layouts.files += etc/memory_layouts/osx/v0.40.09_osx.ini
-    layouts.files += etc/memory_layouts/osx/v0.40.10_osx.ini
+    layouts.path = Contents/MacOS/share/memory_layouts/osx
+    layouts.files += share/memory_layouts/osx/v0.40.04_osx.ini
+    layouts.files += share/memory_layouts/osx/v0.40.05_osx.ini
+    layouts.files += share/memory_layouts/osx/v0.40.06_osx.ini
+    layouts.files += share/memory_layouts/osx/v0.40.07_osx.ini
+    layouts.files += share/memory_layouts/osx/v0.40.08_osx.ini
+    layouts.files += share/memory_layouts/osx/v0.40.09_osx.ini
+    layouts.files += share/memory_layouts/osx/v0.40.10_osx.ini
     QMAKE_BUNDLE_DATA += layouts
 }
 else:unix {
@@ -121,12 +119,12 @@ else:unix {
     icon.files += img/dwarftherapist.xpm
     INSTALLS += icon
 
-    memory_layouts.path = /usr/share/dwarftherapist/etc/memory_layouts/linux
-    memory_layouts.files += etc/memory_layouts/linux/*
+    memory_layouts.path = /usr/share/dwarftherapist/memory_layouts/linux
+    memory_layouts.files += share/memory_layouts/linux/*
     INSTALLS += memory_layouts
 
-    game_data.path = /usr/share/dwarftherapist/etc
-    game_data.files += etc/game_data.ini
+    game_data.path = /usr/share/dwarftherapist
+    game_data.files += share/game_data.ini
     INSTALLS += game_data
 }
 

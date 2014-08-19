@@ -3,6 +3,6 @@ set -e
 
 unlink /usr/share/games/dwarf-therapist/log
 rm -rf /var/log/DwarfTherapist
-rm -f /usr/share/games/dwarf-therapist/etc/memory_layouts/linux/*
+rm -f /usr/share/games/dwarf-therapist/memory_layouts/linux/*
 
 #DEBHELPER#

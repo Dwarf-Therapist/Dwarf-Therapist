@@ -102,7 +102,7 @@ DFInstance::DFInstance(QObject* parent)
     search_paths << working_dir.path();
 
     QString subdir = LAYOUT_SUBDIR;
-    search_paths << QString("etc/memory_layouts/%1").arg(subdir);
+    search_paths << QString("%1/../share/memory_layouts/%2").arg(QCoreApplication::applicationDirPath(), subdir);
 
     TRACE << "Searching for MemoryLayout ini files in the following directories";
     foreach(QString path, search_paths) {
@@ -1491,7 +1491,7 @@ bool DFInstance::add_new_layout(const QString & version, QFile & file) {
     newFileName.replace("(", "").replace(")", "").replace(" ", "_");
     newFileName +=  ".ini";
 
-    QFileInfo newFile(QDir(QString("etc/memory_layouts/%1").arg(LAYOUT_SUBDIR)), newFileName);
+    QFileInfo newFile(QDir(QString("share/memory_layouts/%1").arg(LAYOUT_SUBDIR)), newFileName);
     newFileName = newFile.absoluteFilePath();
 
     if(!file.exists()) {

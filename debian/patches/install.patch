@@ -33,9 +33,9 @@ Index: dwarf-therapist-21.8/dwarftherapist.pro
  
 -    share.path = /usr/share/dwarftherapist
 +    share.path = /usr/share/games/dwarf-therapist
-     share.extra = mkdir -p $(INSTALL_ROOT)/usr/share/dwarftherapist/etc; \
-         mkdir -p $(INSTALL_ROOT)/usr/share/dwarftherapist/etc/memory_layouts; \
-         mkdir -p $(INSTALL_ROOT)/usr/share/dwarftherapist/etc/memory_layouts/linux; \
+     share.extra = mkdir -p $(INSTALL_ROOT)/usr/share/dwarftherapist; \
+         mkdir -p $(INSTALL_ROOT)/usr/share/dwarftherapist/memory_layouts; \
+         mkdir -p $(INSTALL_ROOT)/usr/share/dwarftherapist/memory_layouts/linux; \
 Index: dwarf-therapist-21.8/dist/dwarftherapist
 ===================================================================
 --- dwarf-therapist-21.8.orig/dist/dwarftherapist	2014-06-20 15:50:53.000000000 +0200
