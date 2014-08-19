@@ -206,7 +206,7 @@ bool DFInstanceOSX::detach() {
 
 int DFInstanceOSX::read_raw(const VIRTADDR &addr, USIZE bytes, QByteArray &buffer) {
     kern_return_t result;
-    USIZE readsize = 0;
+    vm_size_t readsize = 0;
     int bytes_read = 0; // tracks how much we've read of what was asked for
     int step_size = 0x1000; // how many bytes to read each step
     QByteArray chunk(step_size, 0); // our temporary memory container
