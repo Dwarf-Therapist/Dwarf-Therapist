@@ -34,7 +34,7 @@ THE SOFTWARE.
 
 // valid for as long as DF stays 32bit
 typedef quint32 VIRTADDR;
-typedef quint32 SIZE;
+typedef quint32 USIZE;
 typedef qint32 SSIZE;
 typedef quint8 BYTE;
 typedef quint16 WORD;

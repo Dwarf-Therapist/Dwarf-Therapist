@@ -196,7 +196,7 @@ bool DFInstanceLinux::detach() {
     return m_attach_count > 0;
 }
 
-int DFInstanceLinux::read_raw_ptrace(const VIRTADDR &addr, SIZE bytes, QByteArray &buffer) {
+int DFInstanceLinux::read_raw_ptrace(const VIRTADDR &addr, USIZE bytes, QByteArray &buffer) {
     // try to attach, will be ignored if we're already attached
     attach();
 
@@ -228,7 +228,7 @@ int DFInstanceLinux::read_raw_ptrace(const VIRTADDR &addr, SIZE bytes, QByteArra
     return bytes_read;
 }
 
-int DFInstanceLinux::read_raw(const VIRTADDR &addr, SIZE bytes, QByteArray &buffer) {
+int DFInstanceLinux::read_raw(const VIRTADDR &addr, USIZE bytes, QByteArray &buffer) {
     SSIZE bytes_read;
     buffer.fill(0, bytes); // zero our buffer
 
@@ -250,7 +250,7 @@ int DFInstanceLinux::read_raw(const VIRTADDR &addr, SIZE bytes, QByteArray &buff
     return bytes_read;
 }
 
-int DFInstanceLinux::write_raw_ptrace(const VIRTADDR &addr, const SIZE &bytes,
+int DFInstanceLinux::write_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes,
                                       void *buffer) {
     // try to attach, will be ignored if we're already attached
     attach();
@@ -310,7 +310,7 @@ int DFInstanceLinux::write_raw_ptrace(const VIRTADDR &addr, const SIZE &bytes,
     return bytes_written;
 }
 
-int DFInstanceLinux::write_raw(const VIRTADDR &addr, const SIZE &bytes,
+int DFInstanceLinux::write_raw(const VIRTADDR &addr, const USIZE &bytes,
                                void *buffer) {
     SSIZE bytes_written;
 
@@ -696,7 +696,7 @@ VIRTADDR DFInstanceLinux::mmap_area(VIRTADDR start, int size) {
     return return_value;
 }
 
-VIRTADDR DFInstanceLinux::alloc_chunk(SIZE size) {
+VIRTADDR DFInstanceLinux::alloc_chunk(USIZE size) {
     if (size > 1048576) {
         return 0;
     }

@@ -201,7 +201,7 @@ bool DFInstanceOSX::detach() {
     return true;
 }
 
-int DFInstanceOSX::read_raw(const VIRTADDR &addr, SIZE bytes, QByteArray &buffer) {
+int DFInstanceOSX::read_raw(const VIRTADDR &addr, USIZE bytes, QByteArray &buffer) {
     kern_return_t result;
     SIZE readsize = 0;
     int bytes_read = 0; // tracks how much we've read of what was asked for
@@ -231,7 +231,7 @@ int DFInstanceOSX::read_raw(const VIRTADDR &addr, SIZE bytes, QByteArray &buffer
     return bytes_read;
 }
 
-int DFInstanceOSX::write_raw(const VIRTADDR &addr, const SIZE &bytes, void *buffer) {
+int DFInstanceOSX::write_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer) {
     kern_return_t result;
 
     attach();

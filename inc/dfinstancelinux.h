@@ -40,13 +40,13 @@ public:
     // factory ctor
     bool find_running_copy(bool connect_anyway = false);
     QVector<VIRTADDR> enumerate_vector(const uint &addr);
-    int read_raw_ptrace(const VIRTADDR &addr, SIZE bytes, QByteArray &buffer);
-    int read_raw(const VIRTADDR &addr, SIZE bytes, QByteArray &buffer);
+    int read_raw_ptrace(const VIRTADDR &addr, USIZE bytes, QByteArray &buffer);
+    int read_raw(const VIRTADDR &addr, USIZE bytes, QByteArray &buffer);
     QString read_string(const VIRTADDR &addr);
 
     // Writing
-    int write_raw_ptrace(const VIRTADDR &addr, const SIZE &bytes, void *buffer);
-    int write_raw(const VIRTADDR &addr, const SIZE &bytes, void *buffer);
+    int write_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes, void *buffer);
+    int write_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer);
     int write_string(const VIRTADDR &addr, const QString &str);
     int write_int(const VIRTADDR &addr, const int &val);
 
@@ -66,7 +66,7 @@ private:
                           qint32 arg3 = 0, qint32 arg4 = 0, qint32 arg5 = 0);
 
     VIRTADDR mmap_area(VIRTADDR start, int size);
-    VIRTADDR alloc_chunk(SIZE size);
+    VIRTADDR alloc_chunk(USIZE size);
     VIRTADDR get_string(const QString &str);
 
     QFile m_memory_file;
