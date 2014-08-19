@@ -68,7 +68,9 @@ struct STLStringHeader {
 };
 
 DFInstanceOSX::DFInstanceOSX(QObject* parent)
-    : DFInstance(parent)
+    : DFInstance(parent),
+      m_alloc_start(0),
+      m_alloc_end(0)
 {
 }
 
@@ -127,7 +129,7 @@ QString DFInstanceOSX::read_string(const VIRTADDR &addr) {
     return c->toUnicode(buf);
 }
 
-int DFInstanceOSX::write_string(const VIRTADDR &addr, const QString &str) {    
+int DFInstanceOSX::write_string(const VIRTADDR &addr, const QString &str) {
     // Ensure this operation is done as one transaction
     attach();
     uintptr_t buffer_addr = get_string(str);
@@ -235,6 +237,7 @@ int DFInstanceOSX::write_raw(const VIRTADDR &addr, const USIZE &bytes, void *buf
     kern_return_t result;
 
     attach();
+
     result = vm_write( m_task,  addr,  (vm_offset_t)buffer,  bytes );
     //if ( result != KERN_SUCCESS ) {
         //LOGW << "Unable to write " << bytes << " byte(s) from " <<
@@ -331,6 +334,42 @@ void DFInstanceOSX::map_virtual_memory() {
     LOGD << "Mapped " << m_regions.size() << " memory regions.";
 }
 
+VIRTADDR DFInstanceOSX::alloc_chunk(mach_vm_size_t size) {
+    if (size > 1048576 || size <= 0) {
+        return 0;
+    }
+
+    if ((m_alloc_end - m_alloc_start) < size) {
+        int apages = (size * 2 + 4095)/4096;
+        int asize = apages * 4096;
+
+        vm_address_t new_block;
+
+        kern_return_t err;
+
+        if (m_alloc_start == 0) {
+            err = vm_allocate( m_task, &new_block, asize, VM_FLAGS_ANYWHERE );
+        } else {
+            new_block = m_alloc_end;
+            err = vm_allocate( m_task, &new_block, asize, VM_FLAGS_FIXED );
+        }
+
+        if (err != KERN_SUCCESS) {
+            return 0;
+        }
+
+        if (new_block != m_alloc_end) {
+            m_alloc_start = new_block;
+        }
+        m_alloc_end = new_block + asize;
+    }
+
+    VIRTADDR rv = m_alloc_start;
+    m_alloc_start += size;
+
+    return rv;
+}
+
 uintptr_t DFInstanceOSX::get_string(const QString &str) {
     if (m_string_cache.contains(str))
         return m_string_cache[str];
@@ -340,13 +379,14 @@ uintptr_t DFInstanceOSX::get_string(const QString &str) {
 
     STLStringHeader header;
     header.capacity = header.length = data.length();
-    header.refcnt = 1000000; // huge refcnt to avoid dealloc
+    header.refcnt = -1; // huge refcnt to avoid dealloc
 
     QByteArray buf((char*)&header, sizeof(header));
     buf.append(data);
     buf.append(char(0));
 
-    uintptr_t addr = (uintptr_t) malloc(buf.length());
+    VIRTADDR addr = alloc_chunk(buf.length());
+
     if (addr) {
         write_raw(addr, buf.length(), buf.data());
         addr += sizeof(header);

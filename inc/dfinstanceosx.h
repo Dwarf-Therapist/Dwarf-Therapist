@@ -65,6 +65,10 @@ protected:
 private:
     uintptr_t get_string(const QString &str);
     QHash<QString, uintptr_t> m_string_cache;
+
+    VIRTADDR alloc_chunk(mach_vm_size_t size);
+    VIRTADDR m_alloc_start, m_alloc_end;
+    int m_alloc_remaining, m_size_allocated;
 };
 
 #endif // DFINSTANCE_H
