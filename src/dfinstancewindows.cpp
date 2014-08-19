@@ -148,7 +148,7 @@ int DFInstanceWindows::write_int(const VIRTADDR &addr, const int &val) {
     return bytes_written;
 }
 
-int DFInstanceWindows::read_raw(const VIRTADDR &addr, size_t bytes,
+int DFInstanceWindows::read_raw(const VIRTADDR &addr, SIZE bytes,
                                 QByteArray &buffer) {
     buffer.fill(0, bytes);
     int bytes_read = 0;
@@ -157,8 +157,8 @@ int DFInstanceWindows::read_raw(const VIRTADDR &addr, size_t bytes,
     return bytes_read;
 }
 
-int DFInstanceWindows::write_raw(const VIRTADDR &addr, const size_t &bytes,void *buffer) {
-    size_t bytes_written = 0;
+int DFInstanceWindows::write_raw(const VIRTADDR &addr, const SIZE &bytes,void *buffer) {
+    SIZE bytes_written = 0;
     WriteProcessMemory(m_proc, (LPVOID)addr, (void*)buffer,
                        sizeof(uchar) * bytes, (DWORD*)&bytes_written);
 
