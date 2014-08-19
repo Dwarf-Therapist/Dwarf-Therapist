@@ -60,51 +60,15 @@ void RoleStats::init_list(){
 
     //indicates the data is badly skewed on the top end, and requires additional work
     if(m_raws->sorted_data().at((int)m_raws->sorted_data().size()/4.0) == m_raw_median){
-        QVector<double> ecdf_avgs;
-        foreach(double val, m_raws->sorted_data()){
-            ecdf_avgs.append(m_raws->favg(val));
-        }
-
-        int idx_mid = (double)ecdf_avgs.count() / 2.0f;
-        m_ecdf_median = find_median(ecdf_avgs);
-        double ecdf_q1 = ecdf_avgs.at(idx_mid/2.0f);
-        double ecdf_q3 = ecdf_avgs.at(ecdf_avgs.count() *0.75);
-
-        LOGD << "     - first quartile (ecdf/rank): " << ecdf_q1;
-        LOGD << "     - second quartile (ecdf/rank): " << m_ecdf_median;
-        LOGD << "     - third quartile (ecdf/rank): " << ecdf_q3;
-
-        QVector<double>::Iterator i_last = std::upper_bound(ecdf_avgs.begin()+(idx_mid -1),ecdf_avgs.end(),m_ecdf_median);
-        int upper_start_idx = i_last - ecdf_avgs.begin();
-
-        float q4_q3_check = 0;
-        if(upper_start_idx < m_raws->sorted_data().size()){
-            m_upper->set_list(ecdf_avgs.mid(upper_start_idx)); //upper ecdf from the avg ecdf values
-            //check upper max / upper 3rd quartile > 5.0 to determine if additional adjustment is needed on the values > median
-            float q3 = m_raws->sorted_data().at((int)((m_upper->sorted_data().count() *0.75f)+upper_start_idx));
-            if(q3 > 0)
-                q4_q3_check = (m_raws->sorted_data().last() / q3);
-        }
-        LOGD << "     - checking q4/q3 = " << q4_q3_check;
-        if(q4_q3_check > 2.0f){
-            //use the default ecdf/rank for the lower values, and a minmax conversion for upper values
-            calculate_factor_value(false,upper_start_idx);
-        }else{
-            //use multiple transformations for the upper values
-            if(load_transformations(m_raws->sorted_data().mid(upper_start_idx))){
-                //use the default ecdf/rank for the lower values
-                calculate_factor_value(true,upper_start_idx);
-            }else{
-                LOGD << "     - setting up multiple transformations failed, using ecdf/rank for values above median";
-                m_transformations.clear();
-                calculate_factor_value(true,upper_start_idx);
-            }
-        }
-        ecdf_avgs.clear();
+        split_list();
     }else{
         m_multi_transform_all = true;
         //use multiple transformations for all values        
-        load_transformations(m_raws->sorted_data());
+        if(!load_transformations(m_raws->sorted_data())){
+            m_transformations.clear();
+            m_multi_transform_all = false;
+            split_list();
+        }
     }
 
     if(DT->get_log_manager()->get_appender("core")->minimum_level() <= LL_DEBUG){
@@ -125,6 +89,50 @@ void RoleStats::init_list(){
         LOGD << "     - average of final ratings:" << (total / m_raws->sorted_data().count());
         LOGD << "     ------------------------------";
     }
+}
+
+void RoleStats::split_list(){
+    QVector<double> ecdf_avgs;
+    foreach(double val, m_raws->sorted_data()){
+        ecdf_avgs.append(m_raws->favg(val));
+    }
+
+    int idx_mid = (double)ecdf_avgs.count() / 2.0f;
+    m_ecdf_median = find_median(ecdf_avgs);
+    double ecdf_q1 = ecdf_avgs.at(idx_mid/2.0f);
+    double ecdf_q3 = ecdf_avgs.at(ecdf_avgs.count() *0.75);
+
+    LOGD << "     - first quartile (ecdf/rank): " << ecdf_q1;
+    LOGD << "     - second quartile (ecdf/rank): " << m_ecdf_median;
+    LOGD << "     - third quartile (ecdf/rank): " << ecdf_q3;
+
+    QVector<double>::Iterator i_last = std::upper_bound(ecdf_avgs.begin()+(idx_mid -1),ecdf_avgs.end(),m_ecdf_median);
+    int upper_start_idx = i_last - ecdf_avgs.begin();
+
+    float q4_q3_check = 0;
+    if(upper_start_idx < m_raws->sorted_data().size()){
+        m_upper->set_list(ecdf_avgs.mid(upper_start_idx)); //upper ecdf from the avg ecdf values
+        //check upper max / upper 3rd quartile > 5.0 to determine if additional adjustment is needed on the values > median
+        float q3 = m_raws->sorted_data().at((int)((m_upper->sorted_data().count() *0.75f)+upper_start_idx));
+        if(q3 > 0)
+            q4_q3_check = (m_raws->sorted_data().last() / q3);
+    }
+    LOGD << "     - checking q4/q3 = " << q4_q3_check;
+    if(q4_q3_check > 2.0f){
+        //use the default ecdf/rank for the lower values, and a minmax conversion for upper values
+        calculate_factor_value(false,upper_start_idx);
+    }else{
+        //use multiple transformations for the upper values
+        if(load_transformations(m_raws->sorted_data().mid(upper_start_idx))){
+            //use the default ecdf/rank for the lower values
+            calculate_factor_value(true,upper_start_idx);
+        }else{
+            LOGD << "     - setting up multiple transformations failed, using ecdf/rank for values above median";
+            m_transformations.clear();
+            calculate_factor_value(true,upper_start_idx);
+        }
+    }
+    ecdf_avgs.clear();
 }
 
 double RoleStats::get_rating(double val){

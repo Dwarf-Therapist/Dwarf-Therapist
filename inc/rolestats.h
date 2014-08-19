@@ -74,6 +74,8 @@ private:
     double get_transformations_rating(double val);
     bool transform_valid(transform_stats ts, bool mid_is_avg);
 
+    void split_list();
+
 };
 
 #endif // ROLESTATS_H
