@@ -68,7 +68,7 @@ public:
     bool looks_like_vector_of_pointers(const VIRTADDR &addr);
 
     // revamped memory reading
-    virtual int read_raw(const VIRTADDR &addr, size_t bytes, QByteArray &buf) = 0;
+    virtual int read_raw(const VIRTADDR &addr, SIZE bytes, QByteArray &buf) = 0;
     virtual BYTE read_byte(const VIRTADDR &addr);
     virtual WORD read_word(const VIRTADDR &addr);
     virtual VIRTADDR read_addr(const VIRTADDR &addr);
@@ -124,7 +124,7 @@ public:
     void set_memory_layout(MemoryLayout * layout) { m_layout = layout; }
 
     // Writing
-    virtual int write_raw(const VIRTADDR &addr, const size_t &bytes,void *buffer) = 0;
+    virtual int write_raw(const VIRTADDR &addr, const SIZE &bytes,void *buffer) = 0;
     virtual int write_string(const VIRTADDR &addr, const QString &str) = 0;
     virtual int write_int(const VIRTADDR &addr, const int &val) = 0;
 

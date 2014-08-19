@@ -196,7 +196,7 @@ bool DFInstanceLinux::detach() {
     return m_attach_count > 0;
 }
 
-int DFInstanceLinux::read_raw_ptrace(const VIRTADDR &addr, size_t bytes, QByteArray &buffer) {
+int DFInstanceLinux::read_raw_ptrace(const VIRTADDR &addr, SIZE bytes, QByteArray &buffer) {
     // try to attach, will be ignored if we're already attached
     attach();
 
@@ -228,14 +228,14 @@ int DFInstanceLinux::read_raw_ptrace(const VIRTADDR &addr, size_t bytes, QByteAr
     return bytes_read;
 }
 
-int DFInstanceLinux::read_raw(const VIRTADDR &addr, size_t bytes, QByteArray &buffer) {
-    ssize_t bytes_read;
+int DFInstanceLinux::read_raw(const VIRTADDR &addr, SIZE bytes, QByteArray &buffer) {
+    SSIZE bytes_read;
     buffer.fill(0, bytes); // zero our buffer
 
     struct iovec local_iov[1];
     struct iovec remote_iov[1];
     local_iov[0].iov_base = buffer.data();
-    remote_iov[0].iov_base = (void *)addr;
+    remote_iov[0].iov_base = (void *)(intptr_t)addr;
     local_iov[0].iov_len = remote_iov[0].iov_len = bytes;
 
     bytes_read = process_vm_readv(m_pid, local_iov, 1, remote_iov, 1, 0);
@@ -250,7 +250,7 @@ int DFInstanceLinux::read_raw(const VIRTADDR &addr, size_t bytes, QByteArray &bu
     return bytes_read;
 }
 
-int DFInstanceLinux::write_raw_ptrace(const VIRTADDR &addr, const size_t &bytes,
+int DFInstanceLinux::write_raw_ptrace(const VIRTADDR &addr, const SIZE &bytes,
                                       void *buffer) {
     // try to attach, will be ignored if we're already attached
     attach();
@@ -310,14 +310,14 @@ int DFInstanceLinux::write_raw_ptrace(const VIRTADDR &addr, const size_t &bytes,
     return bytes_written;
 }
 
-int DFInstanceLinux::write_raw(const VIRTADDR &addr, const size_t &bytes,
+int DFInstanceLinux::write_raw(const VIRTADDR &addr, const SIZE &bytes,
                                void *buffer) {
-    ssize_t bytes_written;
+    SSIZE bytes_written;
 
     struct iovec local_iov[1];
     struct iovec remote_iov[1];
     local_iov[0].iov_base = buffer;
-    remote_iov[0].iov_base = (void *)addr;
+    remote_iov[0].iov_base = (void *)(intptr_t)addr;
     local_iov[0].iov_len = remote_iov[0].iov_len = bytes;
 
     bytes_written = process_vm_writev(m_pid, local_iov, 1, remote_iov, 1, 0);
@@ -696,7 +696,7 @@ VIRTADDR DFInstanceLinux::mmap_area(VIRTADDR start, int size) {
     return return_value;
 }
 
-VIRTADDR DFInstanceLinux::alloc_chunk(int size) {
+VIRTADDR DFInstanceLinux::alloc_chunk(SIZE size) {
     if (size > 1048576) {
         return 0;
     }
