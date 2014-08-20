@@ -597,7 +597,7 @@ qint32 DFInstanceLinux::remote_syscall(int syscall_id,
     /* Prepare the injected code */
     QByteArray inj_area_save;
     if (read_raw(inj_addr, injection_size, inj_area_save) < injection_size ||
-        write_raw(inj_addr, injection_size, (void*)injection_code_bytes) < injection_size) {
+        write_raw_ptrace(inj_addr, injection_size, (void*)injection_code_bytes) < injection_size) {
         LOGE << "Could not prepare the injection area";
         return -1;
     }
@@ -669,7 +669,7 @@ qint32 DFInstanceLinux::remote_syscall(int syscall_id,
 
     /* Restore the modified injection area (not really necessary,
        since it is supposed to be inside unused padding, but...) */
-    if (write_raw(inj_addr, injection_size, inj_area_save.data()) < injection_size) {
+    if (write_raw_ptrace(inj_addr, injection_size, inj_area_save.data()) < injection_size) {
         LOGE << "Could not restore the injection area";
     }
 
