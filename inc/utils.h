@@ -162,7 +162,7 @@ static inline QString to_hex(const QColor &c) {
         .arg(c.blue(), 2, 16, QChar('0'))
         .arg(c.alpha(), 2, 16, QChar('0'));
 }
-static inline QString hexify(const uint &num) {
+static inline QString hexify(const quint32 &num) {
     return QString("0x%1").arg(num, 8, 16, QChar('0'));
 }
 static inline QString hexify(const QByteArray &bytes) {
