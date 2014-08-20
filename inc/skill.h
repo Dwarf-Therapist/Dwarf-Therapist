@@ -89,7 +89,6 @@ private:
     short m_capped_level;
     short m_raw_level;
     QString m_name;
-    int m_demotions;    
     QColor m_rust_color;
     QString m_rust_rating;
     int m_skill_rate;
