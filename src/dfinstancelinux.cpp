@@ -30,7 +30,6 @@ THE SOFTWARE.
 #include <sys/user.h>
 #include <sys/mman.h>
 #include <errno.h>
-#include <error.h>
 #include <wait.h>
 
 #include "dfinstance.h"
@@ -243,7 +242,7 @@ int DFInstanceLinux::read_raw(const VIRTADDR &addr, USIZE bytes, QByteArray &buf
         if (errno == ENOSYS) {
             return read_raw_ptrace(addr, bytes, buffer);
         } else {
-            error(0, errno, "error reading %u bytes from 0x%0u to %p", bytes, addr, buffer.data());
+            LOGE << "READ_RAW:" << QString(strerror(errno)) << "READING" << bytes << "BYTES FROM" << hexify(addr) << "TO" << buffer.data();
         }
     }
 
@@ -270,7 +269,7 @@ int DFInstanceLinux::write_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes,
     uint steps = bytes / stepsize;
     if (bytes % stepsize)
         steps++;
-    LOGD << "WRITE_RAW: WILL WRITE" << bytes << "bytes over" << steps << "steps, with stepsize " << stepsize;
+    LOGD << "WRITE_RAW_PTRACE: WILL WRITE" << bytes << "BYTES FROM" << buffer << "TO" << hexify(addr) << "OVER" << steps << "STEPS, WITH STEPSIZE " << stepsize;
 
     // we want to make sure that given the case where (bytes % stepsize != 0) we don't
     // clobber data past where we meant to write. So we're first going to read
@@ -295,7 +294,7 @@ int DFInstanceLinux::write_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes,
         QByteArray tmp_data_str((char*)&tmp_data, stepsize);
         LOGD << "WRITE_RAW:" << hex << addr + offset << "HEX" << tmp_data_str.toHex();
         if (ptrace(PTRACE_POKEDATA, m_pid, addr + offset, tmp_data) != 0) {
-            perror("write word");
+            LOGE << "WRITE_RAW_PTRACE:" << QString(strerror(errno)) << "WRITING" << bytes << "BYTES FROM" << buffer << "TO" << hexify(addr);
             break;
         } else {
             bytes_written += stepsize;
@@ -325,11 +324,13 @@ int DFInstanceLinux::write_raw(const VIRTADDR &addr, const USIZE &bytes,
         if (errno == ENOSYS) {
             return write_raw_ptrace(addr, bytes, buffer);
         } else {
-            perror("process_vm_writev");
+            LOGE << "WRITE_RAW:" << QString(strerror(errno)) << "WRITING" << bytes << "BYTES FROM" << buffer << "TO" << hexify(addr);
         }
+    } else if ((USIZE)bytes_written != bytes) {
+        LOGW << "WRITE_RAW: PARTIALLY WROTE:" << bytes_written << "BYTES OF" << bytes << "BYTES FROM" << buffer << "TO" << hexify(addr);
+    } else {
+        LOGD << "WRITE_RAW: WROTE" << bytes << "BYTES FROM" << buffer << "TO" << hexify(addr);
     }
-
-    LOGD << "WROTE" << bytes << "bytes from" << buffer << "to" << addr;
 
     // tell the caller how many bytes we wrote
     return bytes_written;
