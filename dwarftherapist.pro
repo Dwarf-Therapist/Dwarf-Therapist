@@ -24,7 +24,7 @@ else {
     OBJECTS_DIR = bin$${DIR_SEPARATOR}release
 }
 
-QMAKE_CXX = $$(CXX)
+QMAKE_CXX += $$(CXX)
 QMAKE_CXXFLAGS += $$(CXXFLAGS)
 QMAKE_LFLAGS += $$(LDFLAGS)
 

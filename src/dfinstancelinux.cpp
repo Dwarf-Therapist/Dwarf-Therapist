@@ -239,10 +239,9 @@ int DFInstanceLinux::read_raw(const VIRTADDR &addr, USIZE bytes, QByteArray &buf
 
     bytes_read = process_vm_readv(m_pid, local_iov, 1, remote_iov, 1, 0);
     if (bytes_read == -1) {
-        if (errno == ENOSYS) {
-            return read_raw_ptrace(addr, bytes, buffer);
-        } else {
+        if (errno) {
             LOGE << "READ_RAW:" << QString(strerror(errno)) << "READING" << bytes << "BYTES FROM" << hexify(addr) << "TO" << buffer.data();
+            return read_raw_ptrace(addr, bytes, buffer);
         }
     }
 
