@@ -75,6 +75,7 @@ public:
         GB_HEALTH,
         GB_GOALS,
         GB_SKILL_RUST,
+        GB_ASSIGNED_SKILLED_LABORS,
         GB_TOTAL
     } GROUP_BY;
     typedef enum {

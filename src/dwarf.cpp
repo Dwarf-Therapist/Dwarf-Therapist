@@ -2586,12 +2586,11 @@ int Dwarf::total_skill_levels() {
     return ret_val;
 }
 
-int Dwarf::total_assigned_labors(bool include_hauling) {
-    // get the list of identified labors from game_data.ini
+int Dwarf::total_assigned_labors(bool include_skill_less) {
     int ret_val = 0;
     GameDataReader *gdr = GameDataReader::ptr();
     foreach(Labor *l, gdr->get_ordered_labors()) {
-        if(!include_hauling && l->is_hauling)
+        if(!include_skill_less && l->skill_id < 0)
             continue;
         if (m_labors[l->labor_id] > 0)
             ret_val++;

@@ -44,7 +44,8 @@ public:
             if (labor != -1)
                 m_excluded_labors << labor;
         }
-        s.endArray();            
+        s.endArray();
+        is_skilled = (skill_id > -1);
     }
 
     const QList<int> &get_excluded_labors() {
@@ -61,6 +62,16 @@ public:
             return l1->name < l2->name;
     }
 
+    static bool skilled_compare(Labor *l1, Labor *l2)
+    {
+        if(l1->is_skilled < l2->is_skilled)
+            return false;
+        else if(l2->is_skilled < l1->is_skilled)
+            return true;
+        else
+            return l1->name < l2->name;
+    }
+
 
     QString name;
     int labor_id;
@@ -69,6 +80,7 @@ public:
     bool requires_equipment; // when first assigned the dwarf should go find
                              // needed equipment (default is false)
     bool is_hauling; //mark hauling labors for optimization purposes
+    bool is_skilled; //indicate if a labor requires some skill
 
 };
 #endif

@@ -185,7 +185,7 @@ public:
     Q_INVOKABLE int total_skill_levels();
 
     //! number of activated labors
-    Q_INVOKABLE int total_assigned_labors(bool include_hauling = true);
+    Q_INVOKABLE int total_assigned_labors(bool include_skill_less = true);
 
     const QMap<int, ushort> get_labors() {return m_pending_labors;}
 

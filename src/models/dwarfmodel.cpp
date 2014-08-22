@@ -385,9 +385,10 @@ void DwarfModel::build_rows() {
                 }else if(m_group_by == GB_TOTAL_SKILL_LEVELS){
                     m_grouped_dwarves[tr("Levels: %1").arg(d->total_skill_levels())]
                             .append(d);
-                }else if(m_group_by == GB_ASSIGNED_LABORS){
+                }else if(m_group_by == GB_ASSIGNED_LABORS || m_group_by == GB_ASSIGNED_SKILLED_LABORS){
+                    bool include_hauling = (m_group_by == GB_ASSIGNED_LABORS);
                     m_grouped_dwarves[tr("%1 Assigned Labors")
-                            .arg(d->total_assigned_labors())].append(d);
+                            .arg(d->total_assigned_labors(include_hauling))].append(d);
                 }else if(m_group_by == GB_SQUAD){
                     if(d->squad_name().isEmpty()) {
                         m_grouped_dwarves[tr("No Squad")].append(d);
@@ -455,8 +456,9 @@ void DwarfModel::build_row(const QString &key) {
             agg_first_col->setData(first_dwarf->rust_level(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HAPPINESS) {
             agg_first_col->setData(first_dwarf->get_happiness(), DR_SORT_VALUE);
-        } else if (m_group_by == GB_ASSIGNED_LABORS) {
-            agg_first_col->setData(first_dwarf->total_assigned_labors(), DR_SORT_VALUE);
+        } else if (m_group_by == GB_ASSIGNED_LABORS || m_group_by == GB_ASSIGNED_SKILLED_LABORS) {
+            bool include_hauling = (m_group_by == GB_ASSIGNED_LABORS);
+            agg_first_col->setData(first_dwarf->total_assigned_labors(include_hauling), DR_SORT_VALUE);
         } else if (m_group_by == GB_PROFESSION) {
             agg_first_col->setData(first_dwarf->profession(), DR_SORT_VALUE);
         } else if (m_group_by == GB_RACE){
