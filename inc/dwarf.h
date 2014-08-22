@@ -95,6 +95,7 @@ public:
 
     bool is_custom_profession_dirty(QString name);
 
+    Q_INVOKABLE bool name_matches(QString val) const {return m_nice_name.contains(val,Qt::CaseInsensitive);}
     //! return a printable name for this dwarf based on user-settings (may include nickname/firstname or both)
     Q_INVOKABLE QString nice_name() const {return m_nice_name;}
 
