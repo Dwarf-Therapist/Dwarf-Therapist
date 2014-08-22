@@ -108,6 +108,7 @@ public:
     void load_weapons();
 
     void load_fortress();
+    void load_fortress_name();
 
     QList<Squad*> load_squads(bool refreshing = false);
     Squad * get_squad(int id);
@@ -216,7 +217,7 @@ public:
     const QHash<short, QPair<int, int> > get_thought_stats() {return m_thought_counts;}
 
 
-    QString fortress_name() const {return QString("%1, \"%2\"").arg(m_fortress_name).arg(m_fortress_name_translated);}
+    const QString fortress_name();
     QList<Squad*> squads() {return m_squads;}
 
     public slots:

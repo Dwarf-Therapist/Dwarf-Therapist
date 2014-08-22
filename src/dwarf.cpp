@@ -504,18 +504,20 @@ QString Dwarf::get_migration_desc(){
 *******************************************************************************/
 
 void Dwarf::read_id() {
-    m_id = m_df->read_int(m_address + m_mem->dwarf_offset("id"));
-    //m_id = m_address; // HACK: this will allow dwarfs in the list even when
-    // the id offset isn't know for this version
-    TRACE << "ID:" << m_id;
+    m_id = m_df->read_int(m_address + m_mem->dwarf_offset("id"));        
     m_hist_id = m_df->read_int(m_address + m_mem->dwarf_offset("hist_id"));
+    TRACE << "UNIT ID:" << m_id << "HIST_FIG_ID:" << m_hist_id;
 }
 
 void Dwarf::read_sex() {
-    // TODO: actually break down this caste
-    quint8 sex = m_df->read_byte(m_address + m_mem->dwarf_offset("sex"));
+    BYTE sex = m_df->read_byte(m_address + m_mem->dwarf_offset("sex"));
     TRACE << "GENDER:" << sex;
-    m_gender = static_cast<GENDER_TYPE>(sex);
+    m_gender = static_cast<GENDER_TYPE>(sex);    
+//    if(m_first_soul){
+//        quint32 orientation = m_df->read_int(m_first_soul + 0x78);
+//        m_unit_flags << orientation;
+//        LOGI << m_nice_name << "orientation" << orientation << "gender" << sex;
+//    }
     if(m_gender == SEX_UNK){
         m_icn_gender = tr(":img/question-white.png");
     }else if(m_gender == SEX_M){

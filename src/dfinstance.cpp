@@ -84,8 +84,8 @@ DFInstance::DFInstance(QObject* parent)
     , m_dwarf_civ_id(0)
     , m_languages(0x0)
     , m_fortress(0x0)
-    , m_fortress_name("Unknown")
-    , m_fortress_name_translated("Unknown")
+    , m_fortress_name(tr("Embarking"))
+    , m_fortress_name_translated("")
 {
     connect(m_scan_speed_timer, SIGNAL(timeout()),
             SLOT(calculate_scan_rate()));
@@ -155,19 +155,18 @@ bool DFInstance::check_vector(const VIRTADDR start, const VIRTADDR end, const VI
     bool is_acceptable_size = true;
 
     if (entries > 500000) {
-        LOGW << "vector at" << hexify(addr) << "has over 500000 entries! (" << entries << ")";
+        LOGW << "vector at" << hexify(addr) << "has over 500.000 entries! (" << entries << ")";
         is_acceptable_size = false;
-    }else if (entries > 100000){
-        LOGW << "vector at" << hexify(addr) << "has over 100000 entries! (" << entries << ")";
-        is_acceptable_size = false;
+    }else if (entries > 250000){
+        LOGW << "vector at" << hexify(addr) << "has over 250.000 entries! (" << entries << ")";
     }else if (entries > 50000){
-        LOGW << "vector at" << hexify(addr) << "has over 50000 entries! (" << entries << ")";
+        LOGW << "vector at" << hexify(addr) << "has over 50.000 entries! (" << entries << ")";
     }else if (entries > 10000){
-        LOGW << "vector at" << hexify(addr) << "has over 10000 entries! (" << entries << ")";
+        LOGW << "vector at" << hexify(addr) << "has over 10.000 entries! (" << entries << ")";
     }
 
     if(!is_acceptable_size){
-        LOGI << "vector at" << hexify(addr) << "was not read due to an unacceptable size! (" << entries << ")";
+        LOGE << "vector at" << hexify(addr) << "was not read due to an unacceptable size! (" << entries << ")";
     }
 
     return is_acceptable_size;
@@ -411,19 +410,7 @@ void DFInstance::load_game_data()
     m_ordered_weapon_defs.clear();
     load_weapons();
 
-    //load the fortress name
-    //fortress name is actually in the world data's site list
-    //we can access a list of the currently active sites and read the name from there
-    VIRTADDR world_data_addr = read_addr(m_memory_correction + m_layout->address("world_data"));
-    QVector<VIRTADDR> sites = enumerate_vector(world_data_addr + m_layout->address("active_sites_vector"));
-    foreach(VIRTADDR site, sites){
-        short t = read_short(site + m_layout->address("world_site_type"));
-        if(t==0){ //player fortress type
-            m_fortress_name = get_language_word(site);
-            m_fortress_name_translated = get_translated_word(site);
-            break;
-        }
-    }
+    load_fortress_name();
 }
 
 QString DFInstance::get_language_word(VIRTADDR addr){
@@ -900,6 +887,31 @@ void DFInstance::load_fortress(){
     }else{
         m_fortress = FortressEntity::get_entity(this,read_addr(addr_fortress));
     }
+    if(m_fortress_name_translated.isEmpty())
+        load_fortress_name();
+}
+
+void DFInstance::load_fortress_name(){
+    //load the fortress name
+    //fortress name is actually in the world data's site list
+    //we can access a list of the currently active sites and read the name from there
+    VIRTADDR world_data_addr = read_addr(m_memory_correction + m_layout->address("world_data"));
+    QVector<VIRTADDR> sites = enumerate_vector(world_data_addr + m_layout->address("active_sites_vector"));
+    foreach(VIRTADDR site, sites){
+        short t = read_short(site + m_layout->address("world_site_type"));
+        if(t==0){ //player fortress type
+            m_fortress_name = get_language_word(site);
+            m_fortress_name_translated = get_translated_word(site);
+            break;
+        }
+    }
+}
+
+const QString DFInstance::fortress_name(){
+    QString name = m_fortress_name;
+    if(!m_fortress_name_translated.isEmpty())
+        name.append(QString(", \"%1\"").arg(m_fortress_name_translated));
+    return name;
 }
 
 

@@ -374,8 +374,6 @@ void MainWindow::connect_to_df() {
                 read_dwarves();
             }
         }
-        if(m_df)
-            this->setWindowTitle(QString("%1 %2").arg(tr("Dwarf Therapist - ")).arg(m_df->fortress_name()));
     }
 }
 
@@ -497,25 +495,6 @@ void MainWindow::read_dwarves() {
     m_dwarf_name_completer->popup()->installEventFilter(filter);
     connect(filter,SIGNAL(enterPressed(QModelIndex)),this,SLOT(apply_filter(QModelIndex)));
 
-//    m_dwarf_names_list.clear();
-//    bool dwarf_found = false;
-//    foreach(Dwarf *d, m_model->get_dwarves()) {
-//        m_dwarf_names_list << d->nice_name();
-//        if(dock_id > 0 && !dwarf_found && d->id() == dock_id){
-//            dock->show_dwarf(d);
-//            dwarf_found = true;
-//        }
-//    }
-//    if(!dwarf_found)
-//        dock->clear(false);
-
-//    if (!m_dwarf_name_completer) {
-//        m_dwarf_name_completer = new QCompleter(m_dwarf_names_list, this);
-//        m_dwarf_name_completer->setCompletionMode(QCompleter::PopupCompletion);
-//        m_dwarf_name_completer->setCaseSensitivity(Qt::CaseInsensitive);
-//        ui->le_filter_text->setCompleter(m_dwarf_name_completer);
-//    }
-
     //refresh preference dock    
     PreferencesDock *d_prefs = qobject_cast<PreferencesDock*>(QObject::findChild<PreferencesDock*>("dock_preferences"));
     if(d_prefs){
@@ -545,6 +524,8 @@ void MainWindow::read_dwarves() {
         ui->cb_group_by->setCurrentIndex(ui->cb_group_by->findData(grp_by));
         ui->cb_group_by->blockSignals(false);
     }
+
+    this->setWindowTitle(QString("%1 %2").arg(tr("Dwarf Therapist - ")).arg(m_df->fortress_name()));
 
     LOGI << "completed read in" << t.elapsed() << "ms";
     set_progress_message("");
