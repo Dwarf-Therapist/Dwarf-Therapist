@@ -25,7 +25,7 @@ Gentoo-based
 
 ::
 
-    sudo emerge -av qtcore qtdeclarative # Qt 4 (Currently only Qt 4 is supported)
+    sudo emerge -av qtcore # Qt 4 (Currently only Qt 4 is supported)
     
 * As Gentoo only supports Qt 4, qmake doesn't have a -qt paramater. Otherwise, follow the instructions as below
 
