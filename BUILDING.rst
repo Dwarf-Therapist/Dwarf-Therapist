@@ -20,6 +20,15 @@ Debian-based
     sudo apt-get install qt4-qmake libqt4-dev # Qt 4
     sudo apt-get install qt5-qmake qtbase5-dev qtbase5-dev-tools qtdeclarative5-dev # Qt 5
 
+Gentoo-based
+************
+
+::
+
+    sudo emerge -av qtcore qtdeclarative # Qt 4 (Currently only Qt 4 is supported)
+    
+* As Gentoo only supports Qt 4, qmake doesn't have a -qt paramater. Otherwise, follow the instructions as below
+
 Building
 --------
 
