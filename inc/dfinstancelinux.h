@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include <QHash>
 
 class MemoryLayout;
-class MemorySegment;
 
 class DFInstanceLinux : public DFInstance {
     Q_OBJECT
