@@ -156,6 +156,7 @@ void DwarfModel::draw_headers(){
     int width = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
     int pad = s->value("options/grid/cell_padding", 0).toInt();
     width += (pad*2)+2;
+    QString max_title = "";
     foreach(ViewColumnSet *set, m_gridview->sets()) {
         /*QStandardItem *set_header = new QStandardItem(set->name());
         set_header->setData(set->bg_color(), Qt::BackgroundColorRole);
@@ -172,11 +173,14 @@ void DwarfModel::draw_headers(){
                             .arg(col->title()).trimmed();
             }
 
+            if(h_name.length() > max_title.length())
+                max_title = h_name;
+
             QStandardItem *header = new QStandardItem(h_name);
             header->setToolTip(build_col_tooltip(col));
             header->setData(col->bg_color(), Qt::BackgroundColorRole);
             header->setData(set->name(), Qt::UserRole);
-            setHorizontalHeaderItem(start_col++, header);
+            setHorizontalHeaderItem(start_col++, header);            
             switch (col->type()) {
             case CT_SPACER:
             {
@@ -188,8 +192,9 @@ void DwarfModel::draw_headers(){
             default:
                 emit preferred_header_size(start_col - 1, width);
             }
-        }
+        }        
     }
+    emit preferred_header_height(max_title);
 }
 
 QString DwarfModel::build_col_tooltip(ViewColumn *col){

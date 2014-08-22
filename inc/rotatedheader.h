@@ -41,6 +41,7 @@ public:
     public slots:
         void read_settings();
         void resizeSection(int logicalIndex, int size );
+        void set_header_height(QString max_title);
         void set_index_as_spacer(int idx);
         void clear_spacers();
         void contextMenuEvent(QContextMenuEvent *);
@@ -62,6 +63,7 @@ private:
     QFont m_font;
     int m_hovered_column;
     int m_last_sorted_idx; //tracks the last sorted column from the user. internal column sorting (global sort) can't be shown as the column is hidden
+    int m_preferred_height;
 
     private slots:
         //! called by a sorting context menu action

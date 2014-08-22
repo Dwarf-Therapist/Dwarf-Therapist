@@ -174,6 +174,7 @@ signals:
     void new_pending_changes(int);
     void new_creatures_count(int,int,int,QString);
     void preferred_header_size(int section, int width);
+    void preferred_header_height(QString);
     void set_index_as_spacer(int);
     void clear_spacers();
     void need_redraw();

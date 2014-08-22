@@ -38,6 +38,7 @@ RotatedHeader::RotatedHeader(Qt::Orientation orientation, QWidget *parent)
     : QHeaderView(orientation, parent)
     , m_hovered_column(-1)
     , m_last_sorted_idx(0)
+    , m_preferred_height(150)
 {
 #if QT_VERSION >= 0x050000
     setSectionsClickable(true);
@@ -46,7 +47,6 @@ RotatedHeader::RotatedHeader(Qt::Orientation orientation, QWidget *parent)
 #endif
     setSortIndicatorShown(true);
     setMouseTracking(true);
-
     read_settings();
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 }
@@ -149,7 +149,7 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 
     if (m_header_text_bottom)
     {
-        //flip column header text to read from bottom to top (supposedly this is more readable...)
+        //flip column header text to read from bottom to top
         p->translate(rect.x() + rect.width(), rect.height());
         p->rotate(-90);
         p->drawText(4,-rect.width() + ((rect.width()-fm.height()) / 2),rect.height()-10,rect.width(),1,data);
@@ -167,6 +167,13 @@ void RotatedHeader::resizeSection(int logicalIndex, int size) {
     QHeaderView::resizeSection(logicalIndex, size);
 }
 
+void RotatedHeader::set_header_height(QString max_title){
+    QFontMetrics fm(m_font);
+    m_preferred_height = fm.width(max_title)+15;
+    if(m_preferred_height <= 0)
+        m_preferred_height = 150;
+}
+
 void RotatedHeader::set_index_as_spacer(int idx) {
     m_spacer_indexes << idx;
 }
@@ -176,7 +183,7 @@ void RotatedHeader::clear_spacers() {
 }
 
 QSize RotatedHeader::sizeHint() const {
-    return QSize(32, 150);
+    return QSize(32, m_preferred_height);
 }
 
 void RotatedHeader::mouseMoveEvent(QMouseEvent *e) {

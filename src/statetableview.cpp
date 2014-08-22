@@ -80,7 +80,7 @@ StateTableView::StateTableView(QWidget *parent)
     setFocusPolicy(Qt::ClickFocus);
 
     setItemDelegate(m_delegate);
-    setHeader(m_header);
+    setHeader(m_header);    
 
     verticalScrollBar()->setFocusPolicy(Qt::StrongFocus);
     horizontalScrollBar()->setFocusPolicy(Qt::StrongFocus);
@@ -200,6 +200,8 @@ void StateTableView::set_model(DwarfModel *model, DwarfModelProxy *proxy) {
     connect(m_model, SIGNAL(preferred_header_size(int, int)), m_header, SLOT(resizeSection(int, int)));
     connect(m_model, SIGNAL(set_index_as_spacer(int)), m_header, SLOT(set_index_as_spacer(int)));
     connect(m_model, SIGNAL(clear_spacers()), m_header, SLOT(clear_spacers()));
+
+    connect(m_model,SIGNAL(preferred_header_height(QString)),m_header,SLOT(set_header_height(QString)));
 
     set_single_click_labor_changes(DT->user_settings()->value("options/single_click_labor_changes", true).toBool());
 }
