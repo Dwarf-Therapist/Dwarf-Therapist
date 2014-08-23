@@ -7,22 +7,8 @@ lessThan(QT_MAJOR_VERSION, 5) {
 else {
     QT += qml
 }
-CONFIG(debug, debug|release) { 
-    message(Debug Mode)
-    DESTDIR = bin$${DIR_SEPARATOR}debug
-    MOC_DIR = bin$${DIR_SEPARATOR}debug
-    UI_DIR = bin$${DIR_SEPARATOR}debug
-    RCC_DIR = bin$${DIR_SEPARATOR}debug
-    OBJECTS_DIR = bin$${DIR_SEPARATOR}debug
-}
-else { 
-    message(Release Mode)
-    DESTDIR = bin$${DIR_SEPARATOR}release
-    MOC_DIR = bin$${DIR_SEPARATOR}release
-    UI_DIR = bin$${DIR_SEPARATOR}release
-    RCC_DIR = bin$${DIR_SEPARATOR}release
-    OBJECTS_DIR = bin$${DIR_SEPARATOR}release
-}
+CONFIG += debug_and_release \
+    warn_on
 
 QMAKE_CXXFLAGS += $$(CXXFLAGS)
 QMAKE_LFLAGS += $$(LDFLAGS)
@@ -33,7 +19,18 @@ INCLUDEPATH += inc \
     inc$${DIR_SEPARATOR}docks \
     ui \
     thirdparty/qtcolorpicker-2.6
-win32 { 
+
+Release:DESTDIR = release
+Release:OBJECTS_DIR = release/.obj
+Release:MOC_DIR = release/.moc
+Release:UI_DIR = release/.ui
+
+Debug:DESTDIR = debug
+Debug:OBJECTS_DIR = debug/.obj
+Debug:MOC_DIR = debug/.moc
+Debug:UI_DIR = debug/.ui
+
+win32 {
     message(Setting up for Windows)
     RC_FILE = DwarfTherapist.rc
     LIBS += -luser32
@@ -63,7 +60,7 @@ win32 {
     INSTALLS += copy_game_data
     INSTALLS += copy_mem_layouts
 }
-else:macx { 
+else:macx {
     message(Setting up for OSX)
     HEADERS += ./inc/dfinstanceosx.h
     OBJECTIVE_SOURCES += ./src/dfinstanceosx.mm
