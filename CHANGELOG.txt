@@ -1,3 +1,25 @@
+### Version 25.0 Patch Notes
+
+***
+
+- 40.10 win/linux layouts
+- added name_matches function for partial name matches in scripts
+- appended a count of how many units are currently displayed when scripts are active to the population text
+- added the final two labors (alchemy and animal care) to the 'labors full' view 
+- added a new group by for 'total assigned skilled labors'
+- added more material place-holders in job descriptions
+- changed the script function for total_assigned_labors to include/exclude skill-less labors, instead of hauling
+- changed the header columns to automatically adjust their height based on the text length
+- when testing new scripts, errors will be reported at the bottom of the window
+
+- fixed multiple issues with scripts where any optional arguments were ignored (test your scripts!)
+- fixes an issue where it was necessary to restart after embarking to see the fortress name
+- fixes an issue where worlds with large amounts of historical figures wouldn't find vampires (among other things)
+- fixes OSX string writing (nicknames, custom professions, etc.)
+- fix for an edge case crash with roles when all attributes are hacked to approx. max level
+- fix for the default font (ShiroiKuma)
+- more optimizations and clean-up (Hello71)
+
 ### Version 24.0 Patch Notes
 
 ***

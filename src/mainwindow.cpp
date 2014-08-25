@@ -760,7 +760,7 @@ void MainWindow::refresh_pop_counts(){
                                     .arg(m_pop_info.children).arg(m_pop_info.children == 1 ? "" : "ren")
                                     .arg(m_pop_info.infants).arg(m_pop_info.infants == 1 ? "y" : "ies")
                                     .arg(m_pop_info.adults+m_pop_info.children+m_pop_info.infants)
-                                    .arg((m_pop_info.filtered >= 0 ? tr("<h4>Currently filtered to %1.</h4>").arg(m_pop_info.filtered) : "")));
+                                    .arg((m_pop_info.filtered >= 0 ? tr("<h4>Showing %1 due to filters.</h4>").arg(m_pop_info.filtered) : "")));
     ui->lbl_dwarfs->setText(m_pop_info.race_name);
     ui->lbl_filter->setText(tr("Filter %1").arg(m_pop_info.race_name));
     ui->act_read_dwarves->setText(tr("Read %1").arg(m_pop_info.race_name));
