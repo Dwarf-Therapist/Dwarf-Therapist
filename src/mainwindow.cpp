@@ -95,7 +95,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_try_download(true)
     , m_deleting_settings(false)    
     , m_act_sep_optimize(0)
-    , m_btn_optimize(0)
+    , m_btn_optimize(0)    
 {
     ui->setupUi(this);
 
@@ -737,15 +737,33 @@ void MainWindow::list_pending() {
 }
 
 void MainWindow::new_creatures_count(int adults, int children, int babies, QString race_name) {
-    ui->lbl_dwarf_total->setText(tr("%1/%2/%3").arg(adults).arg(children).arg(babies));
-    ui->lbl_dwarf_total->setToolTip(tr("%1 Adult%2<br>%3 Child%4<br>%5 Bab%6<br>%7 Total Population")
-                                    .arg(adults).arg(adults == 1 ? "" : "s")
-                                    .arg(children).arg(children == 1 ? "" : "ren")
-                                    .arg(babies).arg(babies == 1 ? "y" : "ies")
-                                    .arg(adults+children+babies));
-    ui->lbl_dwarfs->setText(race_name);
-    ui->lbl_filter->setText(tr("Filter %1").arg(race_name));
-    ui->act_read_dwarves->setText(tr("Read %1").arg(race_name));
+    //on tab change recheck the filtered count if there are active scripts
+    if(QString::compare(race_name,m_pop_info.race_name,Qt::CaseInsensitive) != 0){
+        if(m_proxy->active_scripts())
+            m_pop_info.filtered = m_proxy->get_filtered_dwarves().count();
+        else
+            m_pop_info.filtered = -1;
+    }
+
+    m_pop_info.race_name = race_name;
+    m_pop_info.adults = adults;
+    m_pop_info.children = children;
+    m_pop_info.infants = babies;
+    refresh_pop_counts();
+}
+
+void MainWindow::refresh_pop_counts(){
+    ui->lbl_dwarf_total->setText(tr("%1/%2/%3%4").arg(m_pop_info.adults).arg(m_pop_info.children).arg(m_pop_info.infants)
+                                 .arg((m_pop_info.filtered >= 0 ? QString(" (%1)").arg(m_pop_info.filtered) : "")));
+    ui->lbl_dwarf_total->setToolTip(tr("%1 Adult%2<br/>%3 Child%4<br/>%5 Bab%6<br/>%7 Total Population%8")
+                                    .arg(m_pop_info.adults).arg(m_pop_info.adults == 1 ? "" : "s")
+                                    .arg(m_pop_info.children).arg(m_pop_info.children == 1 ? "" : "ren")
+                                    .arg(m_pop_info.infants).arg(m_pop_info.infants == 1 ? "y" : "ies")
+                                    .arg(m_pop_info.adults+m_pop_info.children+m_pop_info.infants)
+                                    .arg((m_pop_info.filtered >= 0 ? tr("<h4>Currently filtered to %1.</h4>").arg(m_pop_info.filtered) : "")));
+    ui->lbl_dwarfs->setText(m_pop_info.race_name);
+    ui->lbl_filter->setText(tr("Filter %1").arg(m_pop_info.race_name));
+    ui->act_read_dwarves->setText(tr("Read %1").arg(m_pop_info.race_name));
     //TODO: update other interface stuff for the race name when using a custom race
 }
 
@@ -1579,21 +1597,21 @@ void MainWindow::refresh_active_scripts(){
     }
 
     int script_count = scripts->actions().count();
-
-    if(script_count <= 0){
+    if(!m_proxy->active_scripts()){
         if(ui->btn_clear_filters->menu()){
             ui->btn_clear_filters->menu()->clear();
             ui->btn_clear_filters->setMenu(NULL);
         }
         ui->btn_clear_filters->setText(tr("Active Filters"));
         ui->btn_clear_filters->setPopupMode(QToolButton::DelayedPopup);
+        m_pop_info.filtered = -1;
     }else{
         ui->btn_clear_filters->setMenu(scripts);
         ui->btn_clear_filters->setPopupMode(QToolButton::MenuButtonPopup);
         ui->btn_clear_filters->setText(QString::number(script_count) + (" Active Filters"));
+        m_pop_info.filtered = m_proxy->get_filtered_dwarves().count();
     }
     ui->btn_clear_filters->updateGeometry();
     m_view_manager->expand_all();
+    refresh_pop_counts();
 }
-
-

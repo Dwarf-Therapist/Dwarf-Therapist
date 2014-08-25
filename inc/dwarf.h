@@ -185,7 +185,7 @@ public:
     Q_INVOKABLE int total_skill_levels();
 
     //! number of activated labors
-    Q_INVOKABLE int total_assigned_labors(bool include_skill_less = true);
+    Q_INVOKABLE int total_assigned_labors(bool include_skill_less);
 
     const QMap<int, ushort> get_labors() {return m_pending_labors;}
 
@@ -245,8 +245,13 @@ public:
     bool trait_is_conflicted(const int &trait_id);
     QList<UnitBelief> trait_conflicts(const int &trait_id){return m_conflicting_beliefs.values(trait_id);}
 
-    //! returns the numeric rating for the this dwarf in the skill specified by skill_id
-    Q_INVOKABLE float skill_level(int skill_id, bool raw = false, bool precise = false);
+    //! returns the numeric rating for the this dwarf in the skill specified by skill_id    
+    float get_skill_level(int skill_id, bool raw = false, bool precise = false);
+    //! convenience functions for skill level
+    float skill_level(int skill_id);
+    float skill_level_raw(int skill_id);
+    float skill_level_precise(int skill_id);
+    float skill_level_raw_precise(int skill_id);
 
     //! returns the numeric rating for the this dwarf in the skill associated with the labor specified by labor_id
     Q_INVOKABLE short labor_rating(int labor_id);
@@ -321,10 +326,8 @@ public:
 
     QList<float> calc_role_ratings();
     float calc_role_rating(Role *);
-    Q_INVOKABLE float get_role_rating(QString role_name, bool raw = false);
-    Q_INVOKABLE float get_adjusted_role_rating(QString role_name){return m_adjusted_role_ratings.value(role_name);}
-    void set_role_rating(QString role_name, float value);
-    void set_adjusted_role_rating(QString role_name, float value);
+    Q_INVOKABLE float get_role_rating(QString role_name);
+    void set_role_rating(QString role_name, float value);    
     void update_rating_list();
 
     void calc_attribute_ratings();
@@ -403,9 +406,10 @@ public:
     QHash<short, int> get_thoughts() {return m_thoughts;}
 
     Q_INVOKABLE bool has_preference(QString pref_name, QString category = "");
-    Q_INVOKABLE bool find_preference(QString pref_name,QString category_name);
+    Q_INVOKABLE bool find_preference(QString pref_name, QString category_name);
     Q_INVOKABLE bool has_thought(short id) {return m_thoughts.contains(id);}
-    Q_INVOKABLE bool has_health_issue(int id, int idx = -1);
+    //! only used in scripts
+    Q_INVOKABLE bool has_health_issue(int id, int idx);
 
     Q_INVOKABLE bool is_buffed();
     Q_INVOKABLE QString buffs();
@@ -529,10 +533,8 @@ private:
     short m_age;
     short m_age_in_months;
     uint m_turn_count; // Dwarf turn count from start of fortress (as best we know)
-    bool m_is_on_break;
-    QHash<QString, float> m_adjusted_role_ratings;
-    QHash<QString, float> m_role_ratings;
-    QHash<QString, float> m_raw_role_ratings;
+    bool m_is_on_break;    
+    QHash<QString, float> m_role_ratings;    
     QList<Role::simple_rating> m_sorted_role_ratings;
     QList<QPair<QString,float> > m_sorted_custom_role_ratings;
     QHash<short, int> m_states;

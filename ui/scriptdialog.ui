@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>894</width>
-    <height>593</height>
+    <width>801</width>
+    <height>596</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,6 +21,21 @@
    <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>4</number>
+   </property>
+   <property name="leftMargin">
+    <number>4</number>
+   </property>
+   <property name="topMargin">
+    <number>4</number>
+   </property>
+   <property name="rightMargin">
+    <number>4</number>
+   </property>
+   <property name="bottomMargin">
+    <number>4</number>
+   </property>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
@@ -36,35 +51,54 @@
     </layout>
    </item>
    <item>
-    <widget class="QSplitter" name="splitter">
+    <widget class="QSplitter" name="splitter_main">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="midLineWidth">
-      <number>0</number>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="handleWidth">
-      <number>8</number>
+      <number>4</number>
      </property>
      <property name="childrenCollapsible">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
-     <widget class="QPlainTextEdit" name="script_edit">
-      <property name="font">
-       <font>
-        <family>Courier New</family>
-       </font>
+     <widget class="QSplitter" name="splitter_script">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
       </property>
+      <property name="handleWidth">
+       <number>4</number>
+      </property>
+      <widget class="QPlainTextEdit" name="script_edit">
+       <property name="font">
+        <font>
+         <family>Courier New</family>
+        </font>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="txt_status_tip">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
      </widget>
      <widget class="QTabWidget" name="tabInfo">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tabHelp">
        <attribute name="title">
@@ -100,7 +134,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Courier New,courier'; font-size:8pt; color:#0000ff;&quot;&gt;d.total_assigned_labors(false) &amp;amp;&amp;amp; &amp;lt;= 0 &amp;amp;&amp;amp; d.squad_id() &amp;lt; 0&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-style:italic;&quot;&gt;Show citizens without noble positions and with either no material preferences, or no item preferences&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Courier New,courier'; font-size:8pt; color:#0000ff;&quot;&gt;d.noble_position() == &amp;quot;&amp;quot; &amp;amp;&amp;amp; (!d.has_preference('','Items',false) &amp;amp;&amp;amp; !d.has_preference('','Materials',false)) || !d.has_preference('','Items',false) || !d.has_preference('','Materials',false)&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Courier New,courier'; font-size:8pt; color:#0000ff;&quot;&gt;d.noble_position() == &amp;quot;&amp;quot; &amp;amp;&amp;amp; (!d.has_preference('','Items') &amp;amp;&amp;amp; !d.has_preference('','Materials')) || !d.has_preference('','Items') || !d.has_preference('','Materials')&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;General Unit Methods&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-style:italic;&quot;&gt;The following methods can be called on the &amp;quot;d&amp;quot; object to get more information about a unit.&lt;/span&gt;&lt;/p&gt;
@@ -127,7 +161,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;string &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;get_caste_name()&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;string &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;get_caste_desc()&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;short &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;get_race_id()&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;bool &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;has_preference(&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;string &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#0000ff;&quot;&gt;pref_name, &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;string &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#0000ff;&quot;&gt;pref_category, &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;bool &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#0000ff;&quot;&gt;exact_match) &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-style:italic; color:#000000;&quot;&gt;**category and exact_match are optional and are empty and true respectively by default&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;bool &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;has_preference(&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;string &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#0000ff;&quot;&gt;pref_name, &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;string &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#0000ff;&quot;&gt;pref_category) &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-style:italic; color:#000000;&quot;&gt;**leave pref_category blank to search in all categories. eg. has_preference(copper,&amp;quot;&amp;quot;)&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;bool &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;has_thought(&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;short &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#0000ff;&quot;&gt;id)&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#0000ff;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;Animal Methods&lt;/span&gt;&lt;/p&gt;
@@ -136,7 +170,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;int &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;trained_level&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt;()&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;Role Methods&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;float&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;get_role_rating&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt;(&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;string&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#0000ff;&quot;&gt;role_name&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt;, &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;bool&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#0000ff;&quot;&gt;raw_value&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt;) &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-style:italic;&quot;&gt;**the raw argument is optional, and returns the rating before comparison with others.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;float&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;get_role_rating&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt;(&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;string&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#0000ff;&quot;&gt;role_name&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt;)&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;Squad &amp;amp; Military Methods&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; color:#aa0000;&quot;&gt;bool &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;active_military&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt;()&lt;/span&gt;&lt;/p&gt;
@@ -163,6 +197,12 @@ p, li { white-space: pre-wrap; }
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <widget class="QSplitter" name="splitter_attributes">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
@@ -219,6 +259,12 @@ p, li { white-space: pre-wrap; }
        <layout class="QVBoxLayout" name="verticalLayout_7">
         <item>
          <widget class="QSplitter" name="splitter_health">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
@@ -231,7 +277,7 @@ p, li { white-space: pre-wrap; }
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;bool &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;has_health_issue&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;(&lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;int &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#0000ff;&quot;&gt;health_category&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;, &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;int &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#0000ff;&quot;&gt;descriptor_index&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;) &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-style:italic;&quot;&gt;**descriptor_index is optional. if excluded all items in the category are checked&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;bool &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;has_health_issue&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;(&lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;int &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#0000ff;&quot;&gt;health_category&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;, &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;int &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#0000ff;&quot;&gt;descriptor_index&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;) &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-style:italic;&quot;&gt;**use -1 as the descriptor_index to match anything in the category&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
           <widget class="QTextEdit" name="text_health">
@@ -262,7 +308,7 @@ p, li { white-space: pre-wrap; }
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; font-style:italic; color:#000000;&quot;&gt;**All arguments are optional, and if excluded will return values for all items&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; font-style:italic; color:#000000;&quot;&gt;**Use -1 to return totals for all items&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt; font-style:italic; color:#000000;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;float &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#000000;&quot;&gt;get_coverage_rating&lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;(int &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#0000ff;&quot;&gt;item_type_id&lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;) &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-style:italic; color:#000000;&quot;&gt;**returns a percentage of basic clothing coverage (feet, legs, chest)&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;int &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#000000;&quot;&gt;get_missing_equip_count&lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;(int &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#0000ff;&quot;&gt;item_type_id&lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;) &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-style:italic; color:#000000;&quot;&gt;**returns the number of missing items&lt;/span&gt;&lt;/p&gt;
@@ -286,6 +332,12 @@ p, li { white-space: pre-wrap; }
        <layout class="QVBoxLayout" name="verticalLayout_9">
         <item>
          <widget class="QSplitter" name="splitter_personality">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
@@ -367,7 +419,7 @@ p, li { white-space: pre-wrap; }
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;int &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;total_assigned_labors&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;(&lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;bool &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#0000ff;&quot;&gt;include_skill_less&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;) &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-style:italic;&quot;&gt;**include_skill_less is true by default if not specified. skill-less labors are primarily hauling, but also includes labors like lever pulling, recovering wounded, etc.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;int &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;total_assigned_labors&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;(&lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;bool &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#0000ff;&quot;&gt;include_skill_less&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;) &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-style:italic;&quot;&gt;**skill-less labors are primarily hauling, but also includes labors like lever pulling, recovering wounded, etc.&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;bool &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;can_set_labors&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;()&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;bool &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;labor_enabled&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;(&lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;int &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#0000ff;&quot;&gt;labor_id&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;)&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;bool &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;is_labor_state_dirty&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;(&lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;int &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#0000ff;&quot;&gt;labor_id&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;)&lt;/span&gt;&lt;/p&gt;
@@ -402,7 +454,10 @@ p, li { white-space: pre-wrap; }
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;float &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;skill_level&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;(&lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;int &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#0000ff;&quot;&gt;skill_id&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;, &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;bool &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#0000ff;&quot;&gt;raw&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;, &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;bool &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#0000ff;&quot;&gt;precise&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;) &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-style:italic;&quot;&gt;**raw uses the uncapped skill level, precise returns a decimal skill level (13.6) both are false by default&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;float &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;skill_level&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;() &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-style:italic;&quot;&gt;**returns the skill level as seen in game (eg. 4)&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;float &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;skill_level_precise&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;() &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-style:italic;&quot;&gt;**returns the interpolated skill level (eg. 4.7)&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;float &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;skill_level_raw&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;() &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-style:italic;&quot;&gt;**returns the raw skill level, which can exceed  20 (eg. 120)&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;float &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;skill_level_raw_precise&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;() &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-style:italic;&quot;&gt;**returns the interpolated raw skill level (eg. 120.9)&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;int &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;rust_level()&lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-style:italic;&quot;&gt;**returns the worst level of rust found in the unit's skills, higher indicating more rust&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#aa0000;&quot;&gt;int &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;total_skill_levels()&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>

@@ -63,6 +63,7 @@ public:
     DWARF_SORT_ROLE m_last_sort_role;
 
     QList<QString> get_script_names() {return m_scripts.keys();}
+    bool active_scripts(){return (!m_test_script.isEmpty() || m_scripts.keys().count() > 0);}
     QString get_script(const QString script_name) {return m_scripts.value(script_name).script_body;}
     void clear_script(const QString script_name = "");
     void clear_script(const FILTER_SCRIPT_TYPE sType, const bool refresh);

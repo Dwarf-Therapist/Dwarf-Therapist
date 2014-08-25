@@ -118,7 +118,7 @@ void LaborOptimizer::calc_population(bool load_labor_map){
                         dlm.det = det;
                         if(!det->role_name.isEmpty()){                            
                             //dlm.rating = d->get_adjusted_role_rating(det->role_name) * det->priority;
-                            dlm.rating = d->get_role_rating(det->role_name,true) * det->priority;
+                            dlm.rating = d->get_role_rating(det->role_name) * det->priority;
                         }
                         else{
                             dlm.rating = d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).get_rating(true) * 100.0f * det->priority;
@@ -203,7 +203,7 @@ void LaborOptimizer::optimize(){
         if(!has_conficting_labor && dlm.d->optimized_labors < plan->max_jobs_per_dwarf && dlm.det->assigned_laborers < dlm.det->max_count){
 
             LOGD << "Job:" << GameDataReader::ptr()->get_labor(dlm.det->labor_id)->name << " Role:" << dlm.det->role_name << " Dwarf:" << dlm.d->nice_name()
-                 << " Rating:" << dlm.rating << " Raw Rating:" << dlm.d->get_role_rating(dlm.det->role_name,true);
+                 << " Rating:" << dlm.rating << " Raw Rating:" << dlm.d->get_role_rating(dlm.det->role_name);
 
             dlm.d->set_labor(dlm.det->labor_id, true, false);
             dlm.det->assigned_laborers++;

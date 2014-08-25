@@ -285,8 +285,8 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             item_skill->setToolTip(tooltip);
 
             sortableFloatTableWidgetItem *item_level = new sortableFloatTableWidgetItem();
-            item_level->setText(QString::number(d->skill_level(s.id())));
-            item_level->setData(Qt::UserRole, (float)d->skill_level(s.id(),true,true));
+            item_level->setText(QString::number(d->get_skill_level(s.id())));
+            item_level->setData(Qt::UserRole, (float)d->get_skill_level(s.id(),true,true));
             item_level->setTextAlignment(Qt::AlignHCenter);
             if(s.rust_rating() != ""){
                 QColor col_rust = s.rust_color();

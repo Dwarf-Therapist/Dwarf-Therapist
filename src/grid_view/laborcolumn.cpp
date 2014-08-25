@@ -67,8 +67,8 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
         item->setData(1000, DwarfModel::DR_BASE_SORT);
 
     item->setData(CT_LABOR, DwarfModel::DR_COL_TYPE);
-    item->setData(d->skill_level(m_skill_id,false,true), DwarfModel::DR_RATING); //interpolated level
-    item->setData(d->skill_level(m_skill_id), DwarfModel::DR_DISPLAY_RATING); //level rounded down
+    item->setData(d->get_skill_level(m_skill_id,false,true), DwarfModel::DR_RATING); //interpolated level
+    item->setData(d->get_skill_level(m_skill_id), DwarfModel::DR_DISPLAY_RATING); //level rounded down
 	item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);
 	item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
     set_export_role(DwarfModel::DR_RATING);

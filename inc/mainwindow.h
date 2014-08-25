@@ -68,13 +68,21 @@ public:
 
     Ui::MainWindow *ui;
 
+    struct pop_info{
+        QString race_name;
+        int adults;
+        int children;
+        int infants;
+        int filtered;
+    };
+
     public slots:
         // DF related
         void connect_to_df();
         void read_dwarves();
         void scan_memory();
         void new_pending_changes(int);
-        void new_creatures_count(int,int,int,QString);        
+        void new_creatures_count(int, int, int, QString);
         void lost_df_connection();
 
         //settings
@@ -172,6 +180,7 @@ private:
     bool m_try_download;
     QString m_tmp_checksum;
     bool m_deleting_settings;
+    pop_info m_pop_info;
 
     //optimize button and separator widgets and their corresponding toolbar actions
     QAction *m_act_sep_optimize;
@@ -187,6 +196,8 @@ private:
 
     void refresh_opts_menus();
     void reset();       
+
+    void refresh_pop_counts();
 
     private slots:
         void set_interface_enabled(bool);

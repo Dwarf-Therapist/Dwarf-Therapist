@@ -60,8 +60,8 @@ QStandardItem *SkillColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);    
 
     item->setData(CT_SKILL, DwarfModel::DR_COL_TYPE);    
-    item->setData(d->skill_level(m_skill_id), DwarfModel::DR_DISPLAY_RATING); //level rounded down
-    item->setData(d->skill_level(m_skill_id,false,true), DwarfModel::DR_RATING); //interpolated level
+    item->setData(d->get_skill_level(m_skill_id), DwarfModel::DR_DISPLAY_RATING); //level rounded down
+    item->setData(d->get_skill_level(m_skill_id,false,true), DwarfModel::DR_RATING); //interpolated level
     item->setData(m_skill_id, DwarfModel::DR_SKILL_ID);
     item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
     set_export_role(DwarfModel::DR_RATING);
@@ -122,7 +122,7 @@ float SkillColumn::get_role_rating(Dwarf *d){
 }
 
 float SkillColumn::get_skill_rating(int id, Dwarf *d){
-    return d->skill_level(id,true,true);
+    return d->get_skill_level(id,true,true);
 }
 
 float SkillColumn::get_skill_rate_rating(int id, Dwarf *d){
@@ -175,8 +175,8 @@ void SkillColumn::build_tooltip(Dwarf *d, bool include_roles){
 
     //skill xp, level, name, mood
     QString skill_str = "";
-    short rating = d->skill_level(m_skill_id);
-    float raw_rating = d->skill_level(m_skill_id, true, true);
+    short rating = d->get_skill_level(m_skill_id);
+    float raw_rating = d->get_skill_level(m_skill_id, true, true);
     if ((m_skill_id != -1 && rating > -1) || d->had_mood()) {
         if(m_skill_id == -1){
             skill_str = tr("%1 %2")

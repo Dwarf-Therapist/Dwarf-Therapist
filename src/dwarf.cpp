@@ -164,8 +164,7 @@ Dwarf::~Dwarf() {
 
     m_labors.clear();
     m_pending_labors.clear();
-    m_role_ratings.clear();
-    m_raw_role_ratings.clear();
+    m_role_ratings.clear();    
     m_sorted_role_ratings.clear();
     m_sorted_custom_role_ratings.clear();
     m_states.clear();
@@ -1892,7 +1891,20 @@ Skill Dwarf::get_skill(int skill_id) {
     return m_skills.value(skill_id);
 }
 
-float Dwarf::skill_level(int skill_id, bool raw, bool precise) {
+float Dwarf::skill_level(int skill_id){
+    return get_skill_level(skill_id,false,false);
+}
+float Dwarf::skill_level_raw(int skill_id){
+    return get_skill_level(skill_id,true,false);
+}
+float Dwarf::skill_level_precise(int skill_id){
+    return get_skill_level(skill_id,false,true);
+}
+float Dwarf::skill_level_raw_precise(int skill_id){
+    return get_skill_level(skill_id,true,true);
+}
+
+float Dwarf::get_skill_level(int skill_id, bool raw, bool precise) {
     float retval = -1;
     if(m_skills.contains(skill_id)){
         if(raw){
@@ -1914,7 +1926,7 @@ short Dwarf::labor_rating(int labor_id) {
     GameDataReader *gdr = GameDataReader::ptr();
     Labor *l = gdr->get_labor(labor_id);
     if (l)
-        return skill_level(l->skill_id);
+        return get_skill_level(l->skill_id);
     else
         return -1;
 }
@@ -2623,8 +2635,7 @@ QList<float> Dwarf::calc_role_ratings(){
             m_role_ratings.insert(m_role->name, rating);
             valid_ratings.append(rating);
         }
-    }
-    m_raw_role_ratings = m_role_ratings;
+    }    
     return valid_ratings;
 }
 
@@ -2789,17 +2800,11 @@ const QList<Role::simple_rating> &Dwarf::sorted_role_ratings(){
     return m_sorted_role_ratings;
 }
 
-float Dwarf::get_role_rating(QString role_name, bool raw){
-    if(raw)
-        return m_raw_role_ratings.value(role_name);
-    else
-        return m_role_ratings.value(role_name);
+float Dwarf::get_role_rating(QString role_name){
+    return m_role_ratings.value(role_name);
 }
 void Dwarf::set_role_rating(QString role_name, float value){
     m_role_ratings.insert(role_name,value);
-}
-void Dwarf::set_adjusted_role_rating(QString role_name, float value){
-    m_adjusted_role_ratings.insert(role_name,value);
 }
 
 void Dwarf::update_rating_list(){

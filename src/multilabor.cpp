@@ -164,7 +164,7 @@ void MultiLabor::refresh(){
                     ratings[ML_ACTIVE] = 1000;
 
                 if(skill_id >= 0){
-                    ratings[ML_SKILL] += d->skill_level(l->skill_id,false,true); //capped rating, ignore non-skilled labors
+                    ratings[ML_SKILL] += d->get_skill_level(l->skill_id,false,true); //capped rating, ignore non-skilled labors
                     ratings[ML_SKILL_RATE] += d->get_skill(l->skill_id).skill_rate();
                 }
 
@@ -173,11 +173,11 @@ void MultiLabor::refresh(){
                     if(skill_id >= 0){
                         QVector<Role*> roles = gdr->get_skill_roles().value(l->skill_id);
                         if(roles.size() > 0){
-                            ratings[ML_ROLE] += d->get_role_rating(roles.first()->name,true);
+                            ratings[ML_ROLE] += d->get_role_rating(roles.first()->name);
                         }
                     }
                 }else if(!m_ratings.contains(d->id())){
-                    ratings[ML_ROLE] = d->get_role_rating(m_role_name,true);
+                    ratings[ML_ROLE] = d->get_role_rating(m_role_name);
                 }
                 m_ratings.insert(d->id(),ratings);
             }
@@ -193,7 +193,7 @@ void MultiLabor::refresh(){
                 m_ratings[d->id()][ML_SKILL_RATE] = 0;
             }
 //            if(m_active_labors.count() > 0)
-//                m_ratings[d->id()][LLB_ACTIVE] = (1000.0f * ((float)m_ratings[d->id()][LLB_ACTIVE]/(float)m_active_labors.count()));
+//                m_ratings[d->id()][ML_ACTIVE] = (1000.0f * ((float)m_ratings[d->id()][ML_ACTIVE]/(float)m_active_labors.count()));
         }
     }
     read_settings();

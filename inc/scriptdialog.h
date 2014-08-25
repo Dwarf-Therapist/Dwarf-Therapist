@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include <QKeyEvent>
 #include "defines.h"
 
+#include <QTextEdit>
+
 namespace Ui {
 class ScriptDialog;
 }
@@ -37,14 +39,19 @@ class ScriptDialog : public QDialog {
 public:
     ScriptDialog(QWidget *parent = 0);
     virtual ~ScriptDialog();
+    bool event(QEvent *evt);
+
 public slots:
     //! clear the script editing box
     void clear_script();
-    void load_script(QString name, QString script);
+    void load_script(QString name, QString script);    
 
 private:
     Ui::ScriptDialog *ui;
     QString m_name;
+    void reposition_horiz_splitters();
+    void reposition_cursors();
+    bool script_is_valid();
 
 private slots:
     void close_pressed();

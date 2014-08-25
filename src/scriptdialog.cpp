@@ -34,6 +34,15 @@ THE SOFTWARE.
 #include "healthcategory.h"
 #include "healthinfo.h"
 #include "item.h"
+#include "dwarf.h"
+
+#if QT_VERSION < 0x050000
+# include <QScriptEngine>
+# define QJSEngine QScriptEngine
+# define QJSValue QScriptValue
+#else
+# include <QJSEngine>
+#endif
 
 ScriptDialog::ScriptDialog(QWidget *parent)
     : QDialog(parent)
@@ -52,8 +61,6 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     }
     labor_list.append("</table>");
     ui->text_labors->append(labor_list);
-    ui->splitter_labors->setStretchFactor(0,1);
-    ui->splitter_labors->setStretchFactor(1,3);
 
     //SKILLS
     QString skill_list = "<b>Skills Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
@@ -64,8 +71,6 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     }
     skill_list.append("</table>");
     ui->text_skills->append(skill_list);
-    ui->splitter_skills->setStretchFactor(0,1);
-    ui->splitter_skills->setStretchFactor(1,3);
 
     //ATTRIBUTES
     QString attribute_list = "<b>Attribute Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
@@ -76,8 +81,6 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     }
     attribute_list.append("</table>");
     ui->text_attributes->append(attribute_list);
-    ui->splitter_attributes->setStretchFactor(0,1);
-    ui->splitter_attributes->setStretchFactor(1,3);
 
     //PERSONALITY
     QString trait_list = "<b>Trait Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
@@ -106,8 +109,6 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     }
     goal_list.append("</table>");
     ui->text_personality->append(goal_list);
-    ui->splitter_personality->setStretchFactor(0,1);
-    ui->splitter_personality->setStretchFactor(1,3);
 
     //JOBS/PROFESSIONS
     QString job_list = "<b>Job Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
@@ -118,8 +119,6 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     }
     job_list.append("</table>");
     ui->text_jobs->append(job_list);    
-    ui->splitter_job->setStretchFactor(0,1);
-    ui->splitter_job->setStretchFactor(1,3);
 
     //HEALTH
     QString health_list = "<b>Health Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
@@ -139,8 +138,6 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     }
     health_list.append("</table>");
     ui->text_health->append(health_list);    
-    ui->splitter_health->setStretchFactor(0,1);
-    ui->splitter_health->setStretchFactor(1,3);
 
     //EQUIPMENT/ITEMS
     QString item_list = "<b>Item Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
@@ -154,35 +151,32 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     }
     item_list.append("</table>");
     ui->text_items->append(item_list);
-    ui->splitter_equip->setStretchFactor(0,1);
-    ui->splitter_equip->setStretchFactor(1,3);
 
     connect(ui->btn_apply, SIGNAL(clicked()), SLOT(apply_pressed()));
     connect(ui->btn_save, SIGNAL(clicked()), SLOT(save_pressed()));
 
-    ui->text_attributes->moveCursor(QTextCursor::Start);
-    ui->text_attributes->ensureCursorVisible();
+    //reposition widgets
+    reposition_horiz_splitters();
+    reposition_cursors();
+    //adjust script splitter
+    ui->splitter_script->setStretchFactor(0,8);
+    ui->splitter_script->setStretchFactor(1,1);
+}
 
-    ui->text_health->moveCursor(QTextCursor::Start);
-    ui->text_health->ensureCursorVisible();
+void ScriptDialog::reposition_horiz_splitters(){
+    foreach(QSplitter *s, ui->tabInfo->findChildren<QSplitter*>()){
+        if(!s->orientation() == Qt::Horizontal)
+            continue;
+        s->setStretchFactor(0,1);
+        s->setStretchFactor(1,3);
+    }
+}
 
-    ui->text_help->moveCursor(QTextCursor::Start);
-    ui->text_help->ensureCursorVisible();
-
-    ui->text_jobs->moveCursor(QTextCursor::Start);
-    ui->text_jobs->ensureCursorVisible();
-
-    ui->text_labors->moveCursor(QTextCursor::Start);
-    ui->text_labors->ensureCursorVisible();
-
-    ui->text_skills->moveCursor(QTextCursor::Start);
-    ui->text_skills->ensureCursorVisible();
-
-    ui->text_items->moveCursor(QTextCursor::Start);
-    ui->text_items->ensureCursorVisible();
-
-    ui->text_personality->moveCursor(QTextCursor::Start);
-    ui->text_personality->ensureCursorVisible();
+void ScriptDialog::reposition_cursors(){
+    foreach(QTextEdit *te, ui->tabInfo->findChildren<QTextEdit*>()){
+        te->moveCursor(QTextCursor::Start);
+        te->ensureCursorVisible();
+    }
 }
 
 ScriptDialog::~ScriptDialog(){
@@ -204,8 +198,51 @@ void ScriptDialog::load_script(QString name, QString script){
 }
 
 void ScriptDialog::apply_pressed() {
-    emit test_script(ui->script_edit->toPlainText());
-    ui->lbl_save_status->setText(tr("Script has been applied but hasn't been saved."));
+    ui->lbl_save_status->clear();
+    if(script_is_valid()){
+        emit test_script(ui->script_edit->toPlainText());
+        ui->lbl_save_status->setText(tr("Script has been applied but hasn't been saved."));
+    }
+}
+
+bool ScriptDialog::script_is_valid(){
+    QString script = ui->script_edit->toPlainText().trimmed();
+    Dwarf *m_dwarf = 0;
+    if(DT->get_dwarves().count()>0){
+        m_dwarf = DT->get_dwarves().at(0);
+    }
+    if(!script.isEmpty() && m_dwarf){
+        QJSEngine m_engine;
+        QJSValue d_obj = m_engine.newQObject(m_dwarf);
+        m_engine.globalObject().setProperty("d", d_obj);
+        QJSValue ret = m_engine.evaluate(script);
+        if(!ret.isBool()){
+            QString err_msg;
+            if(ret.isError()) {
+                err_msg = tr("<font color=red>%1: %2<br/>%3</font>")
+                                 .arg(ret.property("name").toString())
+                                 .arg(ret.property("message").toString())
+                                 .arg(ret.property("stack").toString().replace("\n", "<br/>"));
+            }else{
+                m_engine.globalObject().setProperty("__internal_script_return_value_check", ret);
+                err_msg = tr("<font color=red>Script returned %1 instead of boolean</font>")
+                                 .arg(m_engine.evaluate(QString("typeof __internal_scripte_return_value_check")).toString());
+#if QT_VERSION < 0x050000
+                m_engine.globalObject().setProperty("__internal_script_return_value_check", QScriptValue());
+#else
+                m_engine.globalObject().deleteProperty("__internal_script_return_value_check");
+#endif
+            }
+            ui->script_edit->setStatusTip(err_msg);
+            ui->txt_status_tip->setText(err_msg);
+            return false;
+        }else{
+            ui->script_edit->setStatusTip(ui->script_edit->whatsThis());
+        }
+    }else{
+        ui->script_edit->setStatusTip(ui->script_edit->whatsThis());
+    }
+    return true;
 }
 
 void ScriptDialog::save_pressed() {        
@@ -244,4 +281,12 @@ void ScriptDialog::save_pressed() {
 
 void ScriptDialog::close_pressed(){
     this->reject();
+}
+
+bool ScriptDialog::event(QEvent *evt) {
+    if (evt->type() == QEvent::StatusTip) {
+        ui->txt_status_tip->setHtml(static_cast<QStatusTipEvent*>(evt)->tip());
+        return true; // we've handled it, don't pass it
+    }
+    return QWidget::event(evt); // pass the event along the chain
 }
