@@ -7,9 +7,11 @@ If you'd like to help support this project [![Donate](http://dl.dropbox.com/u/18
 ### [Change Log](https://github.com/splintermind/Dwarf-Therapist/wiki/Change-Log "Full Change Log")
 
 ### Windows
+* [Download Latest Version for Windows DF 40.10](http://dffd.wimbli.com/file.php?id=9040 "DFFD")
 * [Download Latest Version for Windows DF 34.11](http://dffd.wimbli.com/file.php?id=7184 "DFFD")
 
 ### OSX
+* [Download Latest Version for OSX DF 40.10](http://dffd.wimbli.com/file.php?id=9127 "DFFD")
 * [Download Latest Version for OSX DF 34.11](http://dffd.wimbli.com/file.php?id=8418 "DFFD")
 
 ### Linux
