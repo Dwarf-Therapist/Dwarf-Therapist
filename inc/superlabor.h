@@ -36,7 +36,7 @@ namespace Ui
 class SuperLabor : public MultiLabor  {
     Q_OBJECT
 public:
-    SuperLabor(QObject *parent = 0);    
+    SuperLabor(QObject *parent = 0);
     SuperLabor(QSettings &s, QObject *parent = 0);
     SuperLabor(Dwarf *d, QObject *parent = 0);
 
@@ -51,7 +51,7 @@ public slots:
 //    void data_changed(QVariant data);
 
 private:
-    Ui::SuperLaborEditor *ui;    
+    Ui::SuperLaborEditor *ui;
     bool is_valid();
     void load_cp_labors(CustomProfession *cp);
 

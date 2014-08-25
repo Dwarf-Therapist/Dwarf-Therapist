@@ -45,7 +45,7 @@ public:
     QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 
     //override
-    void write_to_ini(QSettings &s);    
+    void write_to_ini(QSettings &s);
 protected:
     QString m_id;
     QPointer<MultiLabor> ml;
@@ -58,7 +58,7 @@ protected:
     virtual MultiLabor* get_base_object();
     void init();
 
-protected slots:    
+protected slots:
     virtual void customizations_changed();
     virtual float get_rating(int id, MultiLabor::ML_RATING_TYPE);
 };

@@ -31,7 +31,7 @@
     double favg(double x) ;
     double operator()(double x, bool leq = true)const{
       return leq ? fplus(x) : fminus(x);}
-    const QVector<double> & sorted_data()const{return m_sorted;}    
+    const QVector<double> & sorted_data()const{return m_sorted;}
   private:
     QVector<double> m_sorted;
     QVector<double>::const_iterator b, e;

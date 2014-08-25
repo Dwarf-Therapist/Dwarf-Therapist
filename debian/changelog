@@ -10,7 +10,7 @@ dwarftherapist (0.6.10-1) maverick; urgency=low
   * Closes issue 318 - Support for 0.31.21
   * Closes issue 319 - 31.21 Windows
   * Fixed issue 276 - Job Names Incorrect
- 
+
  -- Justin <ehlertjd@gmail.com>  Tue, 15 Mar 2011 18:35:03 -0500
 
 dwarftherapist (0.6.9-2) lucid; urgency=low
@@ -23,7 +23,7 @@ dwarftherapist (0.6.9-2) lucid; urgency=low
 dwarftherapist (0.6.9-1) lucid; urgency=low
 
   * Support for 0.31.19 (graphics + legacy versions)
-  * Added Skills, Labors, and Professions for Shearing, Spinning, Pottery, Glazing, Pressing, Bee Keeping and Wax Working 
+  * Added Skills, Labors, and Professions for Shearing, Spinning, Pottery, Glazing, Pressing, Bee Keeping and Wax Working
   * Support for most new job types (with icons!)
 
  -- Justin <ehlertjd@gmail.com>  Thu, 17 Feb 2011 17:07:30 -0600

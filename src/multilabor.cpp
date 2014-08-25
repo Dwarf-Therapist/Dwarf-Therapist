@@ -94,7 +94,7 @@ void MultiLabor::load_labors(QListWidget *labor_list){
             item->setBackground(QBrush());
         }
         labor_list->addItem(item);
-    }    
+    }
     connect(labor_list,SIGNAL(itemChanged(QListWidgetItem*)),this,SLOT(labor_item_check_changed(QListWidgetItem*)),Qt::UniqueConnection);
     emit selected_count_changed(m_selected_count);
 }
@@ -148,7 +148,7 @@ void MultiLabor::refresh(){
     int skill_id = -1;
     if(labors.count() > 0){
         foreach(int labor_id, labors){
-            Labor *l = GameDataReader::ptr()->get_labor(labor_id);            
+            Labor *l = GameDataReader::ptr()->get_labor(labor_id);
             QString name = l->name;
             skill_id = l->skill_id;
             if(skill_id >= 0)

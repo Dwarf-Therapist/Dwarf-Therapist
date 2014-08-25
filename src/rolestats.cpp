@@ -63,7 +63,7 @@ void RoleStats::init_list(){
         split_list();
     }else{
         m_multi_transform_all = true;
-        //use multiple transformations for all values        
+        //use multiple transformations for all values
         if(!load_transformations(m_raws->sorted_data())){
             m_transformations.clear();
             m_multi_transform_all = false;

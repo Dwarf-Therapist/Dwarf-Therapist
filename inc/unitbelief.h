@@ -42,7 +42,7 @@ public:
         , m_belief_value(-999)
         , m_is_personal(true)
         , m_is_active(false)
-    {        
+    {
     }
 
     void check_active(short id, int val){

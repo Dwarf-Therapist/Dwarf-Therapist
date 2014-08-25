@@ -1,4 +1,4 @@
-/*  
+/*
 Dwarf Therapist
 Copyright (c) 2009 Trey Stout (chmod)
 
@@ -189,7 +189,7 @@ void ViewColumnSet::toggle_for_dwarf(Dwarf *d) {
     bool turn_on = total_enabled < total_labors;
     foreach(ViewColumn *vc, m_columns) {
         if (vc->type() == CT_LABOR) {
-            LaborColumn *lc = static_cast<LaborColumn*>(vc);            
+            LaborColumn *lc = static_cast<LaborColumn*>(vc);
             d->set_labor(lc->labor_id(), turn_on, false);
         }
     }

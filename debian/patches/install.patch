@@ -44,11 +44,11 @@ Index: dwarf-therapist-21.8/dist/dwarftherapist
  #!/bin/bash
 -cd /usr/share/dwarftherapist
 +cd /usr/share/games/dwarf-therapist
- 
+
  #Search for the appropriate SUDO application
  _foundprog=
 @@ -19,9 +19,9 @@
- 
+
  if [ -f /proc/sys/kernel/yama/ptrace_scope ] && [ `cat /proc/sys/kernel/yama/ptrace_scope` -eq 1 ]; then
  	echo Dwarf therapist needs to run as root because user ptrace is disabled
 -	$SUDO /usr/bin/DwarfTherapist
@@ -57,8 +57,8 @@ Index: dwarf-therapist-21.8/dist/dwarftherapist
 -	/usr/bin/DwarfTherapist
 +	/usr/games/DwarfTherapist
  fi
- 
- 
+
+
 Index: dwarf-therapist-21.8/dist/dwarftherapist.desktop
 ===================================================================
 --- dwarf-therapist-21.8.orig/dist/dwarftherapist.desktop	2014-06-20 15:50:53.000000000 +0200

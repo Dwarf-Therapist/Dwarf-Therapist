@@ -24,9 +24,9 @@
 
 # Prevent running script with sh
 if [ -z "$BASH_VERSION" ]; then
-    echo "sh not supported. Please run:\n\n  . $(readlink -n -m $0)\n\n  dwarftherapist" 
-    exit 1 
-fi 
+    echo "sh not supported. Please run:\n\n  . $(readlink -n -m $0)\n\n  dwarftherapist"
+    exit 1
+fi
 
 ##########################################
 ##
@@ -73,11 +73,11 @@ function verify_dt_binary {
     # String to send_notification
     _MSG_no_binary="ERROR: ${_DT_BINARY} not found.\n\
         \nVerify \$_DT_BINARY defined in $(readlink -m $0) script is set correctly."
-        
+
     # Verify DwarfTherapist binary exists
     if [ $(which ${_DT_BINARY}) ] ;
     then
-        return 0                  
+        return 0
     else
         # Send $_MSG_ & exit script
         send_notification "$_MSG_no_binary"
@@ -89,10 +89,10 @@ function verify_etc_base_folder {
     # String to send_notification
     _MSG_no_etc_folder="ERROR: Folder ${_ETC_BASE_FOLDER} not found. Unable to read memory layouts.\n\
         \nVerify \$_ETC_BASE_FOLDER defined in $(readlink -n -m $0) script is set correctly."
-        
+
     # Convert $_ETC_BASE_FOLDER to an absolute path, just in case
     _ETC_BASE_FOLDER=$(readlink -n -m ${_ETC_BASE_FOLDER})
-    
+
     # Verify $_ETC_BASE_FOLDER exists
     if [ -e ${_ETC_BASE_FOLDER} ] && [ -d ${_ETC_BASE_FOLDER} ] ;
     then
@@ -112,7 +112,7 @@ function check_ptrace_state {
         _SUDO=""
         return 0
     fi
-    
+
     # Verify "cap_sys_ptrace=eip" is not set and yama.ptrace is enabled, then provide appropriate sudo command
     if [ ! "$(getcap ${_DT_BINARY})" ] && [ -f /proc/sys/kernel/yama/ptrace_scope ] && [ "$(cat /proc/sys/kernel/yama/ptrace_scope)" == "1" ] ;
     then
@@ -156,7 +156,7 @@ function provide_gui_to_setcap {
     _DIALOG_Q_TERMINAL="\n||  OPEN TERMINAL......to install libcap2-bin
     \n||"
     _DIALOG_LINE_TAIL="\n++=================================================================================================="
-    
+
     # while function "check_ptrace_state" not set _SUDO=""
     while [ "${_SUDO}" != "" ]
     do
@@ -165,10 +165,10 @@ function provide_gui_to_setcap {
             send_notification "DwarfTherapist needs to run with sudo from terminal because user ptrace is disabled and gksudo/kdesudo not installed.\nIn order to start DwarfTherapist without root privileges install 'libcap2-bin' or your corresponding package.\n(ArchLinux: 'libcap') ...then run:\n\nsudo setcap cap_sys_ptrace=eip ${_DT_BINARY}\n"
             return 2
         fi
-        
+
         # Check if libcap2 is already installed
         if [ $(which setcap) ] ; then
-            # Setcap was found, set $_buttons and $_DIALOG accordingly 
+            # Setcap was found, set $_buttons and $_DIALOG accordingly
             # (_buttons="<buttonname[1]>:<return_value[1]>,<buttonname[X]:<return_value[X]>"
             _buttons=" RUN AS ROOT :2, SETCAP PTRACE :3, EXIT :0"
             _DIALOG="${_DIALOG_HEAD}${_DIALOG_Q_HEAD}${_DIALOG_Q_RUN_ROOT}${_DIALOG_Q_SETCAP}${_DIALOG_LINE_TAIL}"
@@ -176,12 +176,12 @@ function provide_gui_to_setcap {
             # Setcap was NOT found, $_buttons and $_DIALOG accordingly
             _buttons=" RUN AS ROOT :2, CHECK AGAIN :5, OPEN TERMINAL :4, EXIT :0"
             _DIALOG="${_DIALOG_HEAD}${_DIALOG_LINE_TAIL}${_DIALOG_NOT_SETCAP}${_DIALOG_Q_HEAD}${_DIALOG_Q_RUN_ROOT}${_DIALOG_Q_TERMINAL}${_DIALOG_LINE_TAIL}"
-        fi 
-        
+        fi
+
         # Show xmessage dialog with $_buttons $_DIALOG; Read return value provided by buttons
         echo -e ${_DIALOG} | xmessage -title 'dwarftherpist' -center -buttons "${_buttons}" -file -
         _return_value=$(echo $?)
-        
+
         case ${_return_value} in
             0) # EXIT, exit script
                 exit 0
@@ -190,14 +190,14 @@ function provide_gui_to_setcap {
                 return 2
             ;;
             3) # SETCAP PTRACE, verify setcap command is installed and apply to DwarfTherapist
-                [ $(which setcap) ] && ${_SUDO} setcap cap_sys_ptrace=eip ${_DT_BINARY} 
+                [ $(which setcap) ] && ${_SUDO} setcap cap_sys_ptrace=eip ${_DT_BINARY}
             ;;
             4) # OPEN TERMINAL, open default terminal & xmessage window again
                 x-terminal-emulator &
             ;;
             5) ;; # CHECK AGAIN, refresh window
         esac
-        
+
             # if 'setcap cap_sys_ptrace=eip ${_DT_BINARY}' successful, _SUDO=""
             check_ptrace_state
     done
@@ -210,7 +210,7 @@ function verify_log_folder {
     \nDwarfTherapist can not write logfile, in order to enable logging run:\n\
     \nsudo chmod 777 ${_ETC_BASE_FOLDER}/log\
     \nsudo chmod 777 ${_ETC_BASE_FOLDER}/log/run.log"
-    
+
     # Verify user can write in /log/run.log and _SUDO=""
     if [ ! -w ${_ETC_BASE_FOLDER}/log ] && [ ! -w ${_ETC_BASE_FOLDER}/log/run.log ] && [ "${_SUDO}" == "" ] ; then
         # Send $_MSG_ only once per day in case user doesn't care about logs
