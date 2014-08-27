@@ -137,7 +137,13 @@ void DwarfTherapist::setup_logging() {
 
     //setup logging
     m_log_mgr = new LogManager(this);
-    TruncatingFileLogger *log = m_log_mgr->add_logger("log/run.log");
+    TruncatingFileLogger *log = m_log_mgr->add_logger(
+#ifdef Q_OS_LINUX
+    ""
+#else
+    "log/run.log"
+#endif
+    );
     if (log) {
         LogAppender *app = m_log_mgr->add_appender("core", log, LL_TRACE);
         if (app) {

@@ -111,20 +111,25 @@ TruncatingFileLogger::TruncatingFileLogger(const QString &path, QObject *parent)
     , m_path(path)
     , m_file(0)
 {
-    QFileInfo info(m_path);
-    info.makeAbsolute();
-    QDir d(info.absolutePath());
+    if (path.isEmpty()) {
+        m_file = new QFile(this);
+        m_file->open(stderr, QIODevice::WriteOnly | QIODevice::Text);
+    } else {
+        QFileInfo info(m_path);
+        info.makeAbsolute();
+        QDir d(info.absolutePath());
 
-    if (!d.exists()) {
-        d.mkpath(d.absolutePath());
-    }
-    m_path = info.absoluteFilePath();
+        if (!d.exists()) {
+            d.mkpath(d.absolutePath());
+        }
+        m_path = info.absoluteFilePath();
 
-    // open the path we were given...
-    m_file = new QFile(m_path);
-    if (!m_file->open(QIODevice::WriteOnly | QIODevice::Truncate |
-                      QIODevice::Text)) {
-        qCritical() << "Could not open " << m_path << " for writing!" << m_file->errorString();
+        // open the path we were given...
+        m_file = new QFile(m_path);
+        if (!m_file->open(QIODevice::WriteOnly | QIODevice::Truncate |
+                          QIODevice::Text)) {
+            qCritical() << "Could not open " << m_path << " for writing!" << m_file->errorString();
+        }
     }
 }
 
