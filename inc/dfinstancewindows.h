@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define DFINSTANCE_WINDOWS_H
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <tlhelp32.h>
 #include "dfinstance.h"
 
 class Dwarf;
@@ -38,14 +39,14 @@ public:
     // factory ctor
     bool find_running_copy(bool connect_anyway = false);
 
-    QVector<VIRTADDR> enumerate_vector(const VIRTADDR &addr);
-    int read_raw(const VIRTADDR &addr, USIZE bytes, QByteArray &buffer);
+    QString get_last_error();
+
+    USIZE read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer);
     QString read_string(const VIRTADDR &addr);
 
     // Writing
-    int write_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer);
-    int write_string(const VIRTADDR &addr, const QString &str);
-    int write_int(const VIRTADDR &addr, const int &val);
+    USIZE write_raw(const VIRTADDR &addr, const USIZE &bytes, const void *buffer);
+    USIZE write_string(const VIRTADDR &addr, const QString &str);
 
     // pure virtual methods
     void map_virtual_memory();

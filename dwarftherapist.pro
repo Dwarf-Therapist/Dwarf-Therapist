@@ -130,8 +130,7 @@ else:unix {
 
 # Translation files
 TRANSLATIONS += ./dwarftherapist_en.ts
-HEADERS += inc/win_structs.h \
-    inc/viewmanager.h \
+HEADERS += inc/viewmanager.h \
     inc/version.h \
     inc/utils.h \
     inc/uberdelegate.h \

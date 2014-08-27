@@ -65,6 +65,7 @@ struct STLStringHeader {
 
 DFInstanceLinux::DFInstanceLinux(QObject* parent)
     : DFInstance(parent)
+    , m_pid(0)
     , m_executable(NULL)
     , m_inject_addr(-1)
     , m_alloc_start(0)
@@ -77,33 +78,6 @@ DFInstanceLinux::~DFInstanceLinux() {
     if (m_attach_count > 0) {
         detach();
     }
-}
-
-QVector<uint> DFInstanceLinux::enumerate_vector(const uint &addr) {
-    QVector<uint> addrs;
-    if (!addr)
-        return addrs;
-
-    attach();
-    VIRTADDR tmp_addr = 0;
-    VIRTADDR start = read_addr(addr);
-    VIRTADDR end = read_addr(addr + 4);
-    int bytes = end - start;
-    if(check_vector(start,end,addr)){
-        QByteArray data(bytes, 0);
-        int bytes_read = read_raw(start, bytes, data);
-        if (bytes_read != bytes && m_layout->is_complete()) {
-            LOGW << "Tried to read" << bytes << "bytes but only got" << bytes_read;
-            detach();
-            return addrs;
-        }
-        for(int i = 0; i < bytes; i += 4) {
-            tmp_addr = decode_dword(data.mid(i, 4));
-            addrs << tmp_addr;
-        }
-    }
-    detach();
-    return addrs;
 }
 
 QString DFInstanceLinux::calculate_checksum() {
@@ -126,19 +100,15 @@ QString DFInstanceLinux::calculate_checksum() {
     return md5;
 }
 
-
 QString DFInstanceLinux::read_string(const VIRTADDR &addr) {
-    VIRTADDR buffer_addr = read_addr(addr);
-    int upper_size = 256;
-    QByteArray buf(upper_size, 0);
-    read_raw(buffer_addr, upper_size, buf);
+    char buf[STRING_SIZE];
+    read_raw(read_addr(addr), STRING_SIZE, (void *)buf);
 
-    buf.truncate(buf.indexOf(QChar('\0')));
     CP437Codec *c = new CP437Codec();
     return c->toUnicode(buf);
 }
 
-int DFInstanceLinux::write_string(const VIRTADDR &addr, const QString &str) {
+USIZE DFInstanceLinux::write_string(const VIRTADDR &addr, const QString &str) {
     // Ensure this operation is done as one transaction
     attach();
     VIRTADDR buffer_addr = get_string(str);
@@ -148,10 +118,6 @@ int DFInstanceLinux::write_string(const VIRTADDR &addr, const QString &str) {
         write_raw(addr, sizeof(VIRTADDR), &buffer_addr);
     detach();
     return buffer_addr ? str.length() : 0;
-}
-
-int DFInstanceLinux::write_int(const VIRTADDR &addr, const int &val) {
-    return write_raw(addr, sizeof(int), (void*)&val);
 }
 
 int DFInstanceLinux::wait_for_stopped() {
@@ -209,39 +175,28 @@ bool DFInstanceLinux::detach() {
     return m_attach_count > 0;
 }
 
-int DFInstanceLinux::read_raw_ptrace(const VIRTADDR &addr, USIZE bytes, QByteArray &buffer) {
+USIZE DFInstanceLinux::read_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes, void *buffer) {
+    int bytes_read = 0;
+
     // try to attach, will be ignored if we're already attached
     attach();
 
     // open the memory virtual file for this proc (can only read once
-    // attached and child is stopped    
+    // attached and child is stopped
     if (!m_memory_file.isOpen() && !m_memory_file.open(QIODevice::ReadOnly)) {
         LOGE << "Unable to open" << m_memory_file.fileName();
         detach();
-        return 0;
+        return bytes_read;
     }
 
-    int bytes_read = 0; // tracks how much we've read of what was asked for
-    int step_size = 0x1000; // how many bytes to read each step
-    QByteArray chunk(step_size, 0); // our temporary memory container
-    buffer.fill(0, bytes); // zero our buffer
-    int steps = bytes / step_size;
-    if (bytes % step_size)
-        steps++;
+    m_memory_file.seek(addr);
+    bytes_read = m_memory_file.read(static_cast<char *>(buffer), bytes);
 
-    for(VIRTADDR ptr = addr; ptr < addr+ bytes; ptr += step_size) {
-        if (ptr+step_size > addr + bytes)
-            step_size = addr + bytes - ptr;
-        m_memory_file.seek(ptr);
-        chunk = m_memory_file.read(step_size);
-        buffer.replace(bytes_read, chunk.size(), chunk);
-        bytes_read += chunk.size();
-    }    
     detach();
     return bytes_read;
 }
 
-int DFInstanceLinux::read_raw(const VIRTADDR &addr, USIZE bytes, QByteArray &buffer) {
+USIZE DFInstanceLinux::read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer) {
     if (!process_vm_readv) {
         if (!m_warned_glibc) {
             LOGI << "glibc does not support process_vm_* API, falling back to ptrace";
@@ -251,18 +206,18 @@ int DFInstanceLinux::read_raw(const VIRTADDR &addr, USIZE bytes, QByteArray &buf
     }
 
     SSIZE bytes_read;
-    buffer.fill(0, bytes); // zero our buffer
+    memset(buffer, 0, bytes);
 
     struct iovec local_iov[1];
     struct iovec remote_iov[1];
-    local_iov[0].iov_base = buffer.data();
-    remote_iov[0].iov_base = (void *)(intptr_t)addr;
+    local_iov[0].iov_base = buffer;
+    remote_iov[0].iov_base = reinterpret_cast<void *>(addr);
     local_iov[0].iov_len = remote_iov[0].iov_len = bytes;
 
     bytes_read = process_vm_readv(m_pid, local_iov, 1, remote_iov, 1, 0);
     if (bytes_read == -1) {
         if (errno) {
-            LOGE << "READ_RAW:" << QString(strerror(errno)) << "READING" << bytes << "BYTES FROM" << hexify(addr) << "TO" << buffer.data();
+            LOGE << "READ_RAW:" << QString(strerror(errno)) << "READING" << bytes << "BYTES FROM" << hexify(addr) << "TO" << buffer;
             return read_raw_ptrace(addr, bytes, buffer);
         }
     }
@@ -270,8 +225,8 @@ int DFInstanceLinux::read_raw(const VIRTADDR &addr, USIZE bytes, QByteArray &buf
     return bytes_read;
 }
 
-int DFInstanceLinux::write_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes,
-                                      void *buffer) {
+USIZE DFInstanceLinux::write_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes,
+                                        const void *buffer) {
     // try to attach, will be ignored if we're already attached
     attach();
 
@@ -330,8 +285,8 @@ int DFInstanceLinux::write_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes,
     return bytes_written;
 }
 
-int DFInstanceLinux::write_raw(const VIRTADDR &addr, const USIZE &bytes,
-                               void *buffer) {
+USIZE DFInstanceLinux::write_raw(const VIRTADDR &addr, const USIZE &bytes,
+                                 const void *buffer) {
     if (!process_vm_writev) {
         if (!m_warned_glibc) {
             LOGI << "glibc does not support process_vm_* API, falling back to ptrace";
@@ -344,7 +299,7 @@ int DFInstanceLinux::write_raw(const VIRTADDR &addr, const USIZE &bytes,
 
     struct iovec local_iov[1];
     struct iovec remote_iov[1];
-    local_iov[0].iov_base = buffer;
+    local_iov[0].iov_base = const_cast<void *>(buffer);
     remote_iov[0].iov_base = (void *)(intptr_t)addr;
     local_iov[0].iov_len = remote_iov[0].iov_len = bytes;
 
@@ -521,7 +476,7 @@ void DFInstanceLinux::map_virtual_memory() {
 
 /* Support for executing system calls in the context of the game process. */
 
-static const int injection_size = 4;
+static const USIZE injection_size = 4;
 
 static const char nop_code_bytes[injection_size] = {
     /* This is the byte pattern used to pad function

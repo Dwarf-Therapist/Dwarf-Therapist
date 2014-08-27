@@ -40,14 +40,13 @@ public:
 
     // factory ctor
     bool find_running_copy(bool connect_anyway = false);
-    QVector<VIRTADDR> enumerate_vector(const uint &addr);
-    int read_raw(const VIRTADDR &addr, USIZE bytes, QByteArray &buffer);
+    USIZE read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer);
+    using DFInstance::read_raw;
     QString read_string(const VIRTADDR &addr);
 
     // Writing
-    int write_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer);
-    int write_string(const VIRTADDR &addr, const QString &str);
-    int write_int(const VIRTADDR &addr, const int &val);
+    USIZE write_raw(const VIRTADDR &addr, const USIZE &bytes, const void *buffer);
+    USIZE write_string(const VIRTADDR &addr, const QString &str);
 
     void map_virtual_memory();
 

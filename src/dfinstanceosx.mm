@@ -81,39 +81,6 @@ DFInstanceOSX::~DFInstanceOSX() {
     }
 }
 
-QVector<uint> DFInstanceOSX::enumerate_vector(const uint &addr) {
-    QVector<uint> addrs;
-    if(!addr)
-        return addrs;
-    if(!attach())
-        return addrs;
-
-    VIRTADDR tmp_addr = 0;
-    VIRTADDR start = read_addr(addr);
-    VIRTADDR end = read_addr(addr + 4);
-    int bytes = end - start;
-    if(check_vector(start,end,addr)){
-        QByteArray data(bytes, 0);
-        int bytes_read = read_raw(start, bytes, data);
-        if (bytes_read != bytes && m_layout->is_complete()) {
-            LOGW << "Tried to read" << bytes << "bytes but only got" << bytes_read;
-            detach();
-            return addrs;
-        }
-        else if (bytes_read == -1) {
-            LOGW << "Failed to read" << hexify(start);
-            detach();
-            return addrs;
-        }
-        for(int i = 0; i < bytes; i += 4) {
-            tmp_addr = decode_dword(data.mid(i, 4));
-            addrs << tmp_addr;
-        }
-    }
-    detach();
-    return addrs;
-}
-
 QString DFInstanceOSX::read_string(const VIRTADDR &addr) {
     VIRTADDR buffer_addr = read_addr(addr);
     int upper_size = 256;
@@ -130,7 +97,7 @@ QString DFInstanceOSX::read_string(const VIRTADDR &addr) {
     return c->toUnicode(buf);
 }
 
-int DFInstanceOSX::write_string(const VIRTADDR &addr, const QString &str) {
+USIZE DFInstanceOSX::write_string(const VIRTADDR &addr, const QString &str) {
     // Ensure this operation is done as one transaction
     attach();
     uintptr_t buffer_addr = get_string(str);
@@ -143,10 +110,6 @@ int DFInstanceOSX::write_string(const VIRTADDR &addr, const QString &str) {
     }
     detach();
     return buffer_addr ? str.length() : 0;
-}
-
-int DFInstanceOSX::write_int(const VIRTADDR &addr, const int &val) {
-    return write_raw(addr, sizeof(int), (void*)&val);
 }
 
 QString DFInstanceOSX::calculate_checksum() {
@@ -204,50 +167,22 @@ bool DFInstanceOSX::detach() {
     return true;
 }
 
-int DFInstanceOSX::read_raw(const VIRTADDR &addr, USIZE bytes, QByteArray &buffer) {
-    kern_return_t result;
-    vm_size_t readsize = 0;
-    int bytes_read = 0; // tracks how much we've read of what was asked for
-    int step_size = 0x1000; // how many bytes to read each step
-    QByteArray chunk(step_size, 0); // our temporary memory container
-    buffer.fill(0, bytes); // zero our buffer
+USIZE DFInstanceOSX::read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer) {
+    USIZE bytes_read = 0;
+    memset(buffer, 0, bytes);
 
     // try to attach, will be ignored if we're already attached
     attach();
-    for(VIRTADDR ptr = addr; ptr < addr + bytes; ptr += step_size) {
-        if (ptr + step_size > addr + bytes) {
-            step_size = addr + bytes - ptr;
-        }
-        result = vm_read_overwrite(m_task, ptr, step_size,
-                          (vm_address_t) chunk.data(),
-                          &readsize);
-        //if ( result != KERN_SUCCESS ) {
-            //LOGW << "Unable to read " << bytes << " byte(s) from " <<
-            //hexify(addr) << "into buffer" << &buffer << endl;
-            //detach();
-            //return -1;
-        //}
-        buffer.replace(bytes_read, chunk.size(), chunk);
-        bytes_read += readsize;
-    }
+    vm_read_overwrite(m_task, (vm_address_t)addr, bytes, (vm_address_t)buffer, static_cast<vm_size_t*>(&bytes_read));
     detach();
     return bytes_read;
 }
 
-int DFInstanceOSX::write_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer) {
-    kern_return_t result;
-
+USIZE DFInstanceOSX::write_raw(const VIRTADDR &addr, const USIZE &bytes, const void *buffer) {
     attach();
-
-    result = vm_write( m_task,  addr,  (vm_offset_t)buffer,  bytes );
-    //if ( result != KERN_SUCCESS ) {
-        //LOGW << "Unable to write " << bytes << " byte(s) from " <<
-        //hexify(addr) << "into buffer" << &buffer << endl;
-        //detach();
-        //return -1;
-    //}
+    kern_return_t result = vm_write(m_task, (vm_address_t)addr, (pointer_t)buffer, bytes);
     detach();
-    return bytes;
+    return result == KERN_SUCCESS ? bytes : 0;
 }
 
 bool DFInstanceOSX::find_running_copy(bool connect_anyway) {
@@ -259,6 +194,7 @@ bool DFInstanceOSX::find_running_copy(bool connect_anyway) {
     unsigned i, len = [launchedApps count];
 
     // compile process array
+    pid_t pid;
     for ( i = 0; i < len; i++ ) {
         NSDictionary *application = [launchedApps objectAtIndex:i];
         if ( [[application objectForKey:@"NSApplicationName"]
@@ -266,15 +202,15 @@ bool DFInstanceOSX::find_running_copy(bool connect_anyway) {
 
             m_loc_of_dfexe = QString( [[application objectForKey:
                                      @"NSApplicationPath"] UTF8String]);
-            m_pid = [[application objectForKey:
+            pid = [[application objectForKey:
                                             @"NSApplicationProcessIdentifier"]
                                             intValue];
-            LOGI << "Found running copy, pid:" << m_pid << "path:" << m_loc_of_dfexe;
+            LOGI << "Found running copy, pid:" << pid << "path:" << m_loc_of_dfexe;
         }
     }
 
-    kern_return_t kret = task_for_pid( current_task(), m_pid, &m_task );
-    if (m_pid == 0 || ! (kret == KERN_SUCCESS)) {
+    kern_return_t kret = task_for_pid( current_task(), pid, &m_task );
+    if (pid == 0 || ! (kret == KERN_SUCCESS)) {
         QMessageBox::warning(0, tr("Warning"),
                              tr("Unable to locate a running copy of Dwarf "
                                 "Fortress, are you sure it's running?"));

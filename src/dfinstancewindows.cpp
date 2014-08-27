@@ -35,7 +35,6 @@ THE SOFTWARE.
 #include "utils.h"
 #include "gamedatareader.h"
 #include "memorylayout.h"
-#include "win_structs.h"
 #include "memorysegment.h"
 #include "dwarftherapist.h"
 #include "cp437codec.h"
@@ -51,26 +50,24 @@ DFInstanceWindows::~DFInstanceWindows() {
     }
 }
 
-QString DFInstanceWindows::calculate_checksum() {    
+QString DFInstanceWindows::get_last_error() {
+    LPWSTR bufPtr = NULL;
+    DWORD err = GetLastError();
+    FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                   FORMAT_MESSAGE_FROM_SYSTEM |
+                   FORMAT_MESSAGE_IGNORE_INSERTS,
+                   NULL, err, 0, (LPWSTR)&bufPtr, 0, NULL);
+    const QString result =
+        (bufPtr) ? QString::fromUtf16((const ushort*)bufPtr).trimmed() :
+                   QString("Unknown Error %1").arg(err);
+    LocalFree(bufPtr);
+    return result;
+}
+
+QString DFInstanceWindows::calculate_checksum() {
     QDateTime compile_timestamp = QDateTime::fromTime_t(m_pe_header.FileHeader.TimeDateStamp);
     LOGI << "Target EXE was compiled at " << compile_timestamp.toString(Qt::ISODate);
     return hexify(m_pe_header.FileHeader.TimeDateStamp).toLower();
-}
-
-QVector<VIRTADDR> DFInstanceWindows::enumerate_vector(const VIRTADDR &addr) {
-    QVector<VIRTADDR> addresses;
-    VIRTADDR start = read_addr(addr);
-    VIRTADDR end = read_addr(addr + 4);
-    if(check_vector(start,end,addr)){
-        for (VIRTADDR ptr = start; ptr < end; ptr += 4 ) {
-            VIRTADDR a = read_addr(ptr);
-            addresses.append(a);
-        }
-        TRACE << "FOUND" << addresses.size()<< "addresses in vector at" << hexify(addr);
-    }else{
-        TRACE << "vector at" << hexify(addr) << "failed the check";
-    }
-    return addresses;
 }
 
 QString DFInstanceWindows::read_string(const uint &addr) {
@@ -103,7 +100,7 @@ QString DFInstanceWindows::read_string(const uint &addr) {
     //return QTextCodec::codecForName("IBM 437")->toUnicode(buf);
 }
 
-int DFInstanceWindows::write_string(const VIRTADDR &addr, const QString &str) {
+USIZE DFInstanceWindows::write_string(const VIRTADDR &addr, const QString &str) {
     /*
 
       THIS IS TOTALLY DANGEROUS
@@ -126,26 +123,19 @@ int DFInstanceWindows::write_string(const VIRTADDR &addr, const QString &str) {
     return bytes_written;
 }
 
-int DFInstanceWindows::write_int(const VIRTADDR &addr, const int &val) {
-    int bytes_written = 0;
-    WriteProcessMemory(m_proc, (LPVOID)addr, &val, sizeof(int),
-                       (DWORD*)&bytes_written);
-    return bytes_written;
-}
-
-int DFInstanceWindows::read_raw(const VIRTADDR &addr, USIZE bytes,
-                                QByteArray &buffer) {
-    buffer.fill(0, bytes);
-    int bytes_read = 0;
-    ReadProcessMemory(m_proc, (LPCVOID)addr, (char*)buffer.data(),
-                      sizeof(BYTE) * bytes, (DWORD*)&bytes_read);
+USIZE DFInstanceWindows::read_raw(const VIRTADDR &addr, const USIZE &bytes,
+                                void *buffer) {
+    ZeroMemory(buffer, bytes);
+    USIZE bytes_read = 0;
+    ReadProcessMemory(m_proc, reinterpret_cast<LPCVOID>(addr), buffer,
+                      bytes, reinterpret_cast<SIZE_T*>(&bytes_read));
     return bytes_read;
 }
 
-int DFInstanceWindows::write_raw(const VIRTADDR &addr, const USIZE &bytes,void *buffer) {
+USIZE DFInstanceWindows::write_raw(const VIRTADDR &addr, const USIZE &bytes, const void *buffer) {
     USIZE bytes_written = 0;
-    WriteProcessMemory(m_proc, (LPVOID)addr, (void*)buffer,
-                       sizeof(uchar) * bytes, (DWORD*)&bytes_written);
+    WriteProcessMemory(m_proc, reinterpret_cast<LPVOID>(addr), buffer,
+                       bytes, reinterpret_cast<SIZE_T*>(&bytes_written));
 
     Q_ASSERT(bytes_written == bytes);
     return bytes_written;
@@ -176,52 +166,40 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
         return m_is_ok;
     }
     LOGI << "PID of process is: " << pid;
-    m_pid = pid;
     m_hwnd = hwnd;
 
     m_proc = OpenProcess(PROCESS_QUERY_INFORMATION
                          | PROCESS_VM_READ
                          | PROCESS_VM_OPERATION
-                         | PROCESS_VM_WRITE, false, m_pid);
+                         | PROCESS_VM_WRITE, false, pid);
     LOGI << "PROC HANDLE:" << m_proc;
     if (m_proc == NULL) {
-        LOGE << "Error opening process!" << GetLastError();
+        LOGE << "Error opening process!" << get_last_error();
     }
 
-    PVOID peb_addr = GetPebAddress(m_proc);
-    LOGI << "PEB is at: " << hex << peb_addr;
-
-    QString connection_error = tr("I'm sorry. I'm having trouble connecting to "
-                                  "DF. I can't seem to locate the PEB address "
-                                  "of the process. \n\nPlease re-launch DF and "
-                                  "try again.");
-    if (peb_addr == 0){
-        QMessageBox::critical(0, tr("Connection Error"), connection_error);
-        qCritical() << "PEB address came back as 0";
+    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, pid);
+    if (snapshot == INVALID_HANDLE_VALUE) {
+        LOGE << "Error creating toolhelp32 snapshot!" << get_last_error();
     } else {
-        PEB peb;
-        DWORD bytes = 0;
-        if (ReadProcessMemory(m_proc, (PCHAR)peb_addr, &peb, sizeof(PEB), &bytes)) {
-            LOGI << "read" << bytes << "bytes. ImageBaseAddress is at: " << hex << peb.ImageBaseAddress;
-
-            //get the dos stub from the pe block
-            ReadProcessMemory(m_proc,peb.ImageBaseAddress, &m_dos_header, sizeof(m_dos_header),NULL);
+        MODULEENTRY32 me32;
+        me32.dwSize = sizeof(MODULEENTRY32);
+        if (!Module32First(snapshot, &me32)) {
+            LOGE << "Error enumerating modules!" << get_last_error();
+        } else {
+            m_base_addr = (intptr_t)me32.modBaseAddr;
+            read_raw(m_base_addr, sizeof(m_dos_header), &m_dos_header);
             if(m_dos_header.e_magic != IMAGE_DOS_SIGNATURE){
                 qWarning() << "invalid executable";
             }
 
             //the dos stub contains a relative address to the pe header, which is used to get the pe header information
-            ReadProcessMemory(m_proc,(LPBYTE)peb.ImageBaseAddress + m_dos_header.e_lfanew, &m_pe_header, sizeof(m_pe_header),NULL);
+            read_raw(m_base_addr + m_dos_header.e_lfanew, sizeof(m_pe_header), &m_pe_header);
             if(m_pe_header.Signature != IMAGE_NT_SIGNATURE){
                 qWarning() << "unsupported PE header type";
             }
-
             m_is_ok = true;
-        } else {
-            QMessageBox::critical(0, tr("Connection Error"), connection_error);
-            qCritical() << "unable to read remote PEB!" << GetLastError();
-            m_is_ok = false;
         }
+        CloseHandle(snapshot);     // Must clean up the snapshot object!
     }
 
     if (m_is_ok){
@@ -229,9 +207,7 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
         //pass the imagebase address - the default windows linker address to the memory layout
         //for use with global addresses (anyting in the [addresses] section of the layout file
         m_layout->set_base_address(m_pe_header.OptionalHeader.ImageBase - 0x00400000);
-    }
-
-    if(!m_is_ok) {
+    } else {
         if(connect_anyway)
             m_is_ok = true;
         else // time to bail
@@ -282,19 +258,20 @@ void DFInstanceWindows::map_virtual_memory() {
             info.wProcessorLevel <<
             info.wProcessorRevision;
     TRACE << "PAGE SIZE" << info.dwPageSize;
-    TRACE << "MIN ADDRESS:" << hexify((uint)info.lpMinimumApplicationAddress);
-    TRACE << "MAX ADDRESS:" << hexify((uint)info.lpMaximumApplicationAddress);
 
-    uint start = (uint)info.lpMinimumApplicationAddress;
-    uint max_address = (uint)info.lpMaximumApplicationAddress;
+    VIRTADDR start = (intptr_t)info.lpMinimumApplicationAddress;
+    VIRTADDR max_address = (intptr_t)info.lpMaximumApplicationAddress;
+    TRACE << "MIN ADDRESS:" << hexify(start);
+    TRACE << "MAX ADDRESS:" << hexify(max_address);
+
     int page_size = info.dwPageSize;
     int accepted = 0;
     int rejected = 0;
-    uint segment_start = start;
-    uint segment_size = page_size;
+    VIRTADDR segment_start = start;
+    USIZE segment_size = page_size;
     while (start < max_address) {
         MEMORY_BASIC_INFORMATION mbi;
-        int sz = VirtualQueryEx(m_proc, (void*)start, &mbi,
+        int sz = VirtualQueryEx(m_proc, reinterpret_cast<LPCVOID>(start), &mbi,
                                 sizeof(MEMORY_BASIC_INFORMATION));
         if (sz != sizeof(MEMORY_BASIC_INFORMATION)) {
             // incomplete data returned. increment start and move on...
@@ -302,8 +279,8 @@ void DFInstanceWindows::map_virtual_memory() {
             continue;
         }
 
-        segment_start = (uint)mbi.BaseAddress;
-        segment_size = (uint)mbi.RegionSize;
+        segment_start = (intptr_t)mbi.BaseAddress;
+        segment_size = (USIZE)mbi.RegionSize;
         if (mbi.State == MEM_COMMIT
             //&& !(mbi.Protect & PAGE_GUARD)
             && (mbi.Protect & PAGE_EXECUTE_READ ||

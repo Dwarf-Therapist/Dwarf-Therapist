@@ -23,6 +23,8 @@ THE SOFTWARE.
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <QCoreApplication>
+#include <QDir>
 #include <QByteArray>
 #include <QColor>
 #include <QtGlobal>
@@ -39,58 +41,28 @@ typedef qint32 SSIZE;
 typedef quint8 BYTE;
 typedef quint16 WORD;
 
-static inline QByteArray encode_short(short num) {
-    char *bytes;
-    bytes = (char*)&num;
-    QByteArray arr(bytes, sizeof(short));
+static inline QByteArray encode_short(const short &num) {
+    QByteArray arr(reinterpret_cast<const char *>(&num), sizeof(short));
     return arr;
 }
 
-static inline QByteArray encode(int num) {
-    char *bytes;
-    bytes = (char*)&num;
-    QByteArray arr(bytes, sizeof(int));
+static inline QByteArray encode(const int &num) {
+    QByteArray arr(reinterpret_cast<const char *>(&num), sizeof(int));
     return arr;
 }
 
-static inline QByteArray encode(VIRTADDR num) {
-    char *bytes;
-    bytes = (char*)&num;
-    QByteArray arr(bytes, sizeof(uint));
+static inline QByteArray encode(const VIRTADDR &num) {
+    QByteArray arr(reinterpret_cast<const char *>(&num), sizeof(VIRTADDR));
     return arr;
 }
 
 static inline QByteArray encode(const ushort &num) {
-    char *bytes;
-    bytes = (char*)&num;
-    QByteArray arr(bytes, sizeof(ushort));
+    QByteArray arr(reinterpret_cast<const char *>(&num), sizeof(ushort));
     return arr;
 }
 
-static inline BYTE decode_byte(const QByteArray &arr) {
-    BYTE *out_ptr = (BYTE*)arr.constData();
-    return *out_ptr;
-}
-
-static inline WORD decode_word(const QByteArray &arr) {
-    WORD *out_ptr = (WORD*)arr.constData();
-    return *out_ptr;
-}
-
-static inline quint32 decode_dword(const QByteArray &arr) {
-    quint32 *out_ptr = (quint32*)arr.constData();
-    return *out_ptr;
-}
-
 static inline int decode_int(const QByteArray &arr) {
-    const char* data = arr.constData();
-    int *out_ptr = (int*)data;
-    return *out_ptr;
-}
-
-static inline short decode_short(const QByteArray &arr) {
-    short *out_ptr = (short*)arr.constData();
-    return *out_ptr;
+    return *arr.constData();
 }
 
 static inline QByteArray encode_skillpattern(short skill, short exp, short rating) {
@@ -221,6 +193,18 @@ static inline QString nice_list(QStringList values){
         ret_val.append(QObject::tr(" and ") + last_msg);
     }
     return ret_val;
+}
+
+static inline QStringList find_files_list(const QString &subdir, const QString &file){
+    QStringList out;
+    QString working_dir = QDir::current().path();
+    QString appdir = QCoreApplication::applicationDirPath();
+    out << QString("%1/%2/%3").arg(appdir, subdir, file);
+    out << QString("%1/../%2/%3").arg(appdir, subdir, file);
+    out << QString("%1/%2").arg(working_dir, file);
+    out << QString("%1/../%2/%3").arg(working_dir, subdir, file);
+    out << QString("%1/%2/%3").arg(working_dir, subdir, file);
+    return out;
 }
 
 #endif // UTILS_H

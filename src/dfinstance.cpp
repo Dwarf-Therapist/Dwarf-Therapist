@@ -70,7 +70,6 @@ THE SOFTWARE.
 
 DFInstance::DFInstance(QObject* parent)
     : QObject(parent)
-    , m_pid(0)
     , m_stop_scan(false)
     , m_is_ok(true)
     , m_bytes_scanned(0)
@@ -95,17 +94,8 @@ DFInstance::DFInstance(QObject* parent)
     // checking before we're connected
     connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
 
-    // We need to scan for memory layout files to get a list of DF versions this
-    // DT version can talk to. Start by building up a list of search paths
-    QDir working_dir = QDir::current();
-    QStringList search_paths;
-    search_paths << working_dir.path();
-
-    QString subdir = LAYOUT_SUBDIR;
-    search_paths << QString("%1/../share/memory_layouts/%2").arg(QCoreApplication::applicationDirPath(), subdir);
-
     TRACE << "Searching for MemoryLayout ini files in the following directories";
-    foreach(QString path, search_paths) {
+    foreach(QString path, find_files_list("share", QString("memory_layouts/%1").arg(LAYOUT_SUBDIR))) {
         TRACE<< path;
         QDir d(path);
         d.setNameFilters(QStringList() << "*.ini");
@@ -206,34 +196,63 @@ DFInstance::~DFInstance() {
     m_thought_counts.clear();
 }
 
+QVector<VIRTADDR> DFInstance::enumerate_vector(const VIRTADDR &addr) {
+    QVector<VIRTADDR> out;
+    VIRTADDR start = read_addr(addr);
+    VIRTADDR end = read_addr(addr + 4);
+    USIZE bytes = end - start;
+    USIZE naddrs = bytes / sizeof(VIRTADDR);
+    if (check_vector(start, end, addr)){
+        VIRTADDR* data = new VIRTADDR[naddrs];
+        read_raw(start, bytes, data);
+        std::vector<VIRTADDR> vec(data, data + naddrs);
+        out = QVector<VIRTADDR>::fromStdVector(vec);
+        TRACE << "FOUND" << out.size() << "addresses in vector at" << hexify(addr);
+    }
+    return out;
+}
+
+USIZE DFInstance::read_raw(const VIRTADDR &addr, const USIZE &bytes, QByteArray &buffer) {
+    buffer.resize(bytes);
+    return read_raw(addr, bytes, buffer.data());
+}
+
 BYTE DFInstance::read_byte(const VIRTADDR &addr) {
-    QByteArray out;
-    read_raw(addr, sizeof(BYTE), out);
-    return out.at(0);
+    BYTE out;
+    read_raw(addr, sizeof(BYTE), (void *)&out);
+    return out;
 }
 
 WORD DFInstance::read_word(const VIRTADDR &addr) {
-    QByteArray out;
-    read_raw(addr, sizeof(WORD), out);
-    return decode_word(out);
+    WORD out;
+    read_raw(addr, sizeof(WORD), (void *)&out);
+    return out;
 }
 
 VIRTADDR DFInstance::read_addr(const VIRTADDR &addr) {
-    QByteArray out;
-    read_raw(addr, sizeof(VIRTADDR), out);
-    return decode_dword(out);
+    VIRTADDR out;
+    read_raw(addr, sizeof(VIRTADDR), (void *)&out);
+    return out;
 }
 
 qint16 DFInstance::read_short(const VIRTADDR &addr) {
-    QByteArray out;
-    read_raw(addr, sizeof(qint16), out);
-    return decode_short(out);
+    qint16 out;
+    read_raw(addr, sizeof(qint16), (void *)&out);
+    return out;
 }
 
 qint32 DFInstance::read_int(const VIRTADDR &addr) {
-    QByteArray out;
-    read_raw(addr, sizeof(qint32), out);
-    return decode_int(out);
+    qint32 out;
+    read_raw(addr, sizeof(qint32), (void *)&out);
+    return out;
+}
+
+USIZE DFInstance::write_int(const VIRTADDR &addr, const int &val) {
+    return write_raw(addr, sizeof(int), static_cast<const void*>(&val));
+}
+
+USIZE DFInstance::write_raw(const VIRTADDR &addr, const USIZE &bytes, const QByteArray &buffer) {
+    return write_raw(addr, bytes, buffer.data());
 }
 
 QVector<VIRTADDR> DFInstance::scan_mem(const QByteArray &needle, const uint start_addr, const uint end_addr) {

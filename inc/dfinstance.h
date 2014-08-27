@@ -65,15 +65,16 @@ public:
     bool looks_like_vector_of_pointers(const VIRTADDR &addr);
 
     // revamped memory reading
-    virtual int read_raw(const VIRTADDR &addr, USIZE bytes, QByteArray &buf) = 0;
-    virtual BYTE read_byte(const VIRTADDR &addr);
-    virtual WORD read_word(const VIRTADDR &addr);
-    virtual VIRTADDR read_addr(const VIRTADDR &addr);
-    virtual qint16 read_short(const VIRTADDR &addr);
-    virtual qint32 read_int(const VIRTADDR &addr);
+    virtual USIZE read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buf) = 0;
+    USIZE read_raw(const VIRTADDR &addr, const USIZE &bytes, QByteArray &buffer);
+    BYTE read_byte(const VIRTADDR &addr);
+    WORD read_word(const VIRTADDR &addr);
+    VIRTADDR read_addr(const VIRTADDR &addr);
+    qint16 read_short(const VIRTADDR &addr);
+    qint32 read_int(const VIRTADDR &addr);
 
     // memory reading
-    virtual QVector<VIRTADDR> enumerate_vector(const VIRTADDR &addr) = 0;
+    QVector<VIRTADDR> enumerate_vector(const VIRTADDR &addr);
     virtual QString read_string(const VIRTADDR &addr) = 0;
 
     QVector<VIRTADDR> scan_mem(const QByteArray &needle, const uint start_addr=0, const uint end_addr=0xffffffff);
@@ -122,9 +123,10 @@ public:
     void set_memory_layout(MemoryLayout * layout) { m_layout = layout; }
 
     // Writing
-    virtual int write_raw(const VIRTADDR &addr, const USIZE &bytes,void *buffer) = 0;
-    virtual int write_string(const VIRTADDR &addr, const QString &str) = 0;
-    virtual int write_int(const VIRTADDR &addr, const int &val) = 0;
+    virtual USIZE write_raw(const VIRTADDR &addr, const USIZE &bytes, const void *buffer) = 0;
+    USIZE write_raw(const VIRTADDR &addr, const USIZE &bytes, const QByteArray &buffer);
+    virtual USIZE write_string(const VIRTADDR &addr, const QString &str) = 0;
+    USIZE write_int(const VIRTADDR &addr, const int &val);
 
     bool add_new_layout(const QString & version, QFile & file);
     void layout_not_found(const QString & checksum);
@@ -221,7 +223,6 @@ public:
         // if a menu cancels our scan, we need to know how to stop
         void cancel_scan() {m_stop_scan = true;}
 protected:
-    pid_t m_pid;
     VIRTADDR m_lowest_address;
     VIRTADDR m_highest_address;    
     bool m_stop_scan; // flag that gets set to stop scan loops
