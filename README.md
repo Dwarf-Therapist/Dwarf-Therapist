@@ -28,8 +28,8 @@ Alternatively you can create a script that will run Dwarf Therapist as a child o
 ````
 #!/bin/bash
 set -e
-cd df_linux 
+cd df_linux
 ./df &
-cd ../dwarftherapist 
+cd ../dwarftherapist
 exec ./bin/release/DwarfTherapist
 ````

@@ -217,7 +217,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="src/dfinstancewindows.cpp" line="247"/>
-        <source>I&apos;m sorry. I&apos;m having trouble connecting to DF. I can&apos;t seem to locate the PEB address of the process. 
+        <source>I&apos;m sorry. I&apos;m having trouble connecting to DF. I can&apos;t seem to locate the PEB address of the process.
 
 Please re-launch DF and try again.</source>
         <translation type="unfinished"></translation>

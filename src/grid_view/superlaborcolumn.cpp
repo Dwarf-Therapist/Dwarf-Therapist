@@ -65,7 +65,7 @@ void SuperLaborColumn::init(){
     ml = QPointer<MultiLabor>(get_base_object());
 }
 
-QStandardItem *SuperLaborColumn::build_cell(Dwarf *d) {    
+QStandardItem *SuperLaborColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
     item->setData(CT_SUPER_LABOR, DwarfModel::DR_COL_TYPE);
 
@@ -77,7 +77,7 @@ QStandardItem *SuperLaborColumn::build_cell(Dwarf *d) {
         return item;
     }else{
         refresh(d,item);
-    }    
+    }
     return item;
 }
 

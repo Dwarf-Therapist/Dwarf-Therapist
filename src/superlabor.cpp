@@ -141,7 +141,7 @@ void SuperLabor::delete_from_disk() {
     s.endArray();
 }
 
-void SuperLabor::save(QSettings &s){        
+void SuperLabor::save(QSettings &s){
     s.setValue("id",m_name);
     s.setValue("role_name",m_role_name);
 

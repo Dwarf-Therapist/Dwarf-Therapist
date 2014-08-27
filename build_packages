@@ -1,13 +1,13 @@
 #!/bin/bash
 #Build source descriptor
-debuild -us -uc -S 
+debuild -us -uc -S
 
 #Other dists in pbuilder
 for dist in "lucid" "maverick" "sid" "lenny"
 do
 	#32-bit
 	sudo rm -rf ~/pbuilder/${dist}-i386_result/*
-	sudo pbuilder-dist $dist i386 build ../*.dsc 
+	sudo pbuilder-dist $dist i386 build ../*.dsc
 
 	mkdir -p ../packages/dists
 	mkdir -p ../packages/dists/$dist
@@ -19,7 +19,7 @@ do
 
 	#64-bit
 	sudo rm -rf ~/pbuilder/${dist}_result/*
-	sudo pbuilder-dist $dist build ../*.dsc 
+	sudo pbuilder-dist $dist build ../*.dsc
 
 	mkdir -p ../packages/dists
 	mkdir -p ../packages/dists/$dist

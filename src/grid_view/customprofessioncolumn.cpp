@@ -56,7 +56,7 @@ void CustomProfessionColumn::init(){
 }
 
 QStandardItem *CustomProfessionColumn::build_cell(Dwarf *d) {
-    QStandardItem *item = init_cell(d);    
+    QStandardItem *item = init_cell(d);
     item->setData(CT_CUSTOM_PROFESSION, DwarfModel::DR_COL_TYPE);
 
     if(ml.isNull()){
