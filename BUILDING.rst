@@ -26,8 +26,9 @@ Gentoo-based
 ::
 
     sudo emerge -av qtcore # Qt 4 (Currently only Qt 4 is supported)
-    
-* As Gentoo only supports Qt 4, qmake doesn't have a -qt paramater. Otherwise, follow the instructions as below
+
+* As Gentoo only supports Qt 4, qmake doesn't have a -qt parameter.
+  Otherwise, follow the instructions as below.
 
 Building
 --------
@@ -36,11 +37,14 @@ Building
 
     qmake -qt=4 # Qt 4 on Debian-based
     qmake -qt=5 # Qt 5 on Debian-based
+    qmake # Qt 4 on most other distros
     make -j$(nproc) # Run as many jobs as processing units
 
-For instructions on where to find qmake and how to invoke it on other distros, see your distribution's documentation.
+For instructions on exactly where to find qmake and how to invoke it on other distros, consult your distribution's documentation.
 
-This will take some time.  Get a cup of coffee.  Once your build is complete, run::
+This will take 2–10 minutes, depending on CPU.
+Get a cup of coffee.
+Once your build is complete, run::
 
     sudo make install
 
