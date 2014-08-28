@@ -492,12 +492,12 @@ void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
     m_generic_words.clear();
     m_dwarf_words.clear();
 
-    uint generic_lang_table = df->memory_layout()->address("language_vector") + df->get_memory_correction();
-    uint translation_vector = df->memory_layout()->address("translation_vector") + df->get_memory_correction();
-    uint word_table_offset = df->memory_layout()->offset("word_table");
-    TRACE << "LANGUAGES VECTOR" << hex << translation_vector;
-    TRACE << "GENERIC LANGUAGE VECTOR" << hex << generic_lang_table;
-    TRACE << "WORD TABLE OFFSET" << hex << word_table_offset;
+    VIRTADDR generic_lang_table = df->memory_layout()->address("language_vector");
+    VIRTADDR translation_vector = df->memory_layout()->address("translation_vector");
+    VIRTADDR word_table_offset = df->memory_layout()->offset("word_table");
+    TRACE << "LANGUAGES VECTOR" << hexify(translation_vector);
+    TRACE << "GENERIC LANGUAGE VECTOR" << hexify(generic_lang_table);
+    TRACE << "WORD TABLE OFFSET" << hexify(word_table_offset);
 
     df->attach();
     if (generic_lang_table != 0xFFFFFFFF && generic_lang_table != 0) {

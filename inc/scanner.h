@@ -47,6 +47,7 @@ private:
     ScannerThread *m_thread;
     Ui::ScannerDialog *ui;
     bool m_stop_scanning;
+    VIRTADDR m_base_addr;
 
     QVector<VIRTADDR> m_narrow;
 

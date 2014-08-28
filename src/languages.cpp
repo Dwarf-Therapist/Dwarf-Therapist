@@ -60,16 +60,16 @@ void Languages::load_data() {
     m_language.clear();
     m_words.clear();
 
-    VIRTADDR generic_lang_table = m_mem->address("language_vector") + m_df->get_memory_correction();
-    VIRTADDR translation_vector = m_mem->address("translation_vector") + m_df->get_memory_correction();
+    VIRTADDR generic_lang_table = m_mem->address("language_vector");
+    VIRTADDR translation_vector = m_mem->address("translation_vector");
     VIRTADDR word_table_offset = m_mem->offset("word_table");
-    TRACE << "LANGUAGES VECTOR" << hex << translation_vector;
-    TRACE << "GENERIC LANGUAGE VECTOR" << hex << generic_lang_table;
-    TRACE << "WORD TABLE OFFSET" << hex << word_table_offset;
+    TRACE << "LANGUAGES VECTOR" << hexify(translation_vector);
+    TRACE << "GENERIC LANGUAGE VECTOR" << hexify(generic_lang_table);
+    TRACE << "WORD TABLE OFFSET" << hexify(word_table_offset);
 
     m_df->attach();
     if (generic_lang_table != 0xFFFFFFFF && generic_lang_table != 0) {
-        LOGD << "Loading generic strings from" << hex << generic_lang_table;
+        LOGD << "Loading generic strings from" << hexify(generic_lang_table);
         QVector<VIRTADDR> generic_words = m_df->enumerate_vector(generic_lang_table);
         LOGD << "generic words" << generic_words.size();
         foreach(VIRTADDR word_ptr, generic_words) {

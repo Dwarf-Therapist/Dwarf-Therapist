@@ -28,7 +28,7 @@ protected:
     quint32 m_current_year;
 
 private slots:
-    void report_address(const QString&, const quint32&);
+    void report_global_address(const QString&, const quint32&);
 };
 
 #endif // LAYOUT_CREATOR_H

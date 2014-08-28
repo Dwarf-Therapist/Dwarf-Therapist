@@ -71,7 +71,6 @@ THE SOFTWARE.
 DFInstance::DFInstance(QObject* parent)
     : QObject(parent)
     , m_pid(0)
-    , m_memory_correction(0)
     , m_stop_scan(false)
     , m_is_ok(true)
     , m_bytes_scanned(0)
@@ -381,20 +380,17 @@ void DFInstance::load_game_data()
     load_main_vectors();
 
     //load the currently played race before races and castes so we can load additional information for the current race being played
-    VIRTADDR dwarf_race_index = m_layout->address("dwarf_race_index");
-    dwarf_race_index += m_memory_correction;
-    if (!is_valid_address(dwarf_race_index)) {
+    VIRTADDR dwarf_race_index_addr = m_layout->address("dwarf_race_index");
+    if (!is_valid_address(dwarf_race_index_addr)) {
         LOGW << "Active Memory Layout" << m_layout->filename() << "("
              << m_layout->game_version() << ")" << "contains an invalid"
              << "dwarf_race_index address. Either you are scanning a new "
              << "DF version or your config files are corrupted.";
         m_dwarf_race_id = -1;
     }else{
-        LOGD << "dwarf race index" << hexify(dwarf_race_index) <<
-                hexify(dwarf_race_index - m_memory_correction) << "(UNCORRECTED)";
-
+        LOGD << "dwarf race index" << hexify(dwarf_race_index_addr) << hexify(dwarf_race_index_addr) << "(UNCORRECTED)";
         // which race id is dwarven?
-        m_dwarf_race_id = read_short(dwarf_race_index);
+        m_dwarf_race_id = read_short(dwarf_race_index_addr);
         LOGD << "dwarf race:" << hexify(m_dwarf_race_id);
     }
 
@@ -432,13 +428,9 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
     // we're connected, make sure we have good addresses
     VIRTADDR creature_vector = m_layout->address("creature_vector");
-    creature_vector += m_memory_correction;
     VIRTADDR active_creature_vector = m_layout->address("active_creature_vector");
-    active_creature_vector += m_memory_correction;
     VIRTADDR current_year = m_layout->address("current_year");
-    current_year += m_memory_correction;
     VIRTADDR current_year_tick = m_layout->address("cur_year_tick");
-    current_year_tick += m_memory_correction;
     m_cur_year_tick = read_int(current_year_tick);
 
     if (!is_valid_address(creature_vector) || !is_valid_address(active_creature_vector)) {
@@ -452,20 +444,17 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     //current race's offset was bad
     if (!DT->arena_mode && m_dwarf_race_id < 0){
         return dwarves;
-    }
-
-    VIRTADDR dwarf_civ_index = m_layout->address("dwarf_civ_index");
-    dwarf_civ_index += m_memory_correction;
+    }    
 
     // both necessary addresses are valid, so let's try to read the creatures
-    LOGD << "loading creatures from " << hexify(creature_vector) <<
-            hexify(creature_vector - m_memory_correction) << "(UNCORRECTED)";
-    LOGD << "current year" << hexify(current_year) <<
-            hexify(current_year - m_memory_correction) << "(UNCORRECTED)";
+    VIRTADDR dwarf_civ_idx_addr = m_layout->address("dwarf_civ_index");
+    LOGD << "loading creatures from " << hexify(creature_vector);
+    LOGD << "loading current year from" << hexify(current_year);
+
     emit progress_message(tr("Loading Units"));
 
     attach();
-    m_dwarf_civ_id = read_int(dwarf_civ_index);
+    m_dwarf_civ_id = read_int(dwarf_civ_idx_addr);
     LOGD << "civilization id:" << hexify(m_dwarf_civ_id);
 
     m_current_year = read_word(current_year);
@@ -706,8 +695,7 @@ void DFInstance::load_reactions(){
     attach();
     //LOGI << "Reading reactions names...";
     VIRTADDR reactions_vector = m_layout->address("reactions_vector");
-    if(m_layout->is_valid_address(reactions_vector)){
-        reactions_vector += m_memory_correction;
+    if(m_layout->is_valid_address(reactions_vector)){        
         QVector<VIRTADDR> reactions = enumerate_vector(reactions_vector);
         //TRACE << "FOUND" << reactions.size() << "reactions";
         //emit progress_range(0, reactions.size()-1);
@@ -724,81 +712,81 @@ void DFInstance::load_reactions(){
 
 void DFInstance::load_main_vectors(){
     //material templates
-    QVector<VIRTADDR> temps = enumerate_vector(m_memory_correction + m_layout->address("material_templates_vector"));
+    QVector<VIRTADDR> temps = enumerate_vector(m_layout->address("material_templates_vector"));
     foreach(VIRTADDR addr, temps){
         m_material_templates.insert(read_string(addr),addr);
     }
 
     //syndromes
-    m_all_syndromes = enumerate_vector(m_memory_correction + m_layout->address("all_syndromes_vector"));
+    m_all_syndromes = enumerate_vector(m_layout->address("all_syndromes_vector"));
 
     //world.raws.itemdefs.
-    QVector<VIRTADDR> weapons = enumerate_vector(m_memory_correction + m_layout->address("itemdef_weapons_vector"));
+    QVector<VIRTADDR> weapons = enumerate_vector(m_layout->address("itemdef_weapons_vector"));
     m_itemdef_vectors.insert(WEAPON,weapons);
-    QVector<VIRTADDR> traps = enumerate_vector(m_memory_correction + m_layout->address("itemdef_trap_vector"));
+    QVector<VIRTADDR> traps = enumerate_vector(m_layout->address("itemdef_trap_vector"));
     m_itemdef_vectors.insert(TRAPCOMP,traps);
-    QVector<VIRTADDR> toys = enumerate_vector(m_memory_correction + m_layout->address("itemdef_toy_vector"));
+    QVector<VIRTADDR> toys = enumerate_vector(m_layout->address("itemdef_toy_vector"));
     m_itemdef_vectors.insert(TOY,toys);
-    QVector<VIRTADDR> tools = enumerate_vector(m_memory_correction + m_layout->address("itemdef_tool_vector"));
+    QVector<VIRTADDR> tools = enumerate_vector(m_layout->address("itemdef_tool_vector"));
     m_itemdef_vectors.insert(TOOL,tools);
-    QVector<VIRTADDR> instruments = enumerate_vector(m_memory_correction + m_layout->address("itemdef_instrument_vector"));
+    QVector<VIRTADDR> instruments = enumerate_vector(m_layout->address("itemdef_instrument_vector"));
     m_itemdef_vectors.insert(INSTRUMENT,instruments);
-    QVector<VIRTADDR> armor = enumerate_vector(m_memory_correction + m_layout->address("itemdef_armor_vector"));
+    QVector<VIRTADDR> armor = enumerate_vector(m_layout->address("itemdef_armor_vector"));
     m_itemdef_vectors.insert(ARMOR,armor);
-    QVector<VIRTADDR> ammo = enumerate_vector(m_memory_correction + m_layout->address("itemdef_ammo_vector"));
+    QVector<VIRTADDR> ammo = enumerate_vector(m_layout->address("itemdef_ammo_vector"));
     m_itemdef_vectors.insert(AMMO,ammo);
-    QVector<VIRTADDR> siege_ammo = enumerate_vector(m_memory_correction + m_layout->address("itemdef_siegeammo_vector"));
+    QVector<VIRTADDR> siege_ammo = enumerate_vector(m_layout->address("itemdef_siegeammo_vector"));
     m_itemdef_vectors.insert(SIEGEAMMO,siege_ammo);
-    QVector<VIRTADDR> gloves = enumerate_vector(m_memory_correction + m_layout->address("itemdef_glove_vector"));
+    QVector<VIRTADDR> gloves = enumerate_vector(m_layout->address("itemdef_glove_vector"));
     m_itemdef_vectors.insert(GLOVES,gloves);
-    QVector<VIRTADDR> shoes = enumerate_vector(m_memory_correction + m_layout->address("itemdef_shoe_vector"));
+    QVector<VIRTADDR> shoes = enumerate_vector(m_layout->address("itemdef_shoe_vector"));
     m_itemdef_vectors.insert(SHOES,shoes);
-    QVector<VIRTADDR> shields = enumerate_vector(m_memory_correction + m_layout->address("itemdef_shield_vector"));
+    QVector<VIRTADDR> shields = enumerate_vector(m_layout->address("itemdef_shield_vector"));
     m_itemdef_vectors.insert(SHIELD,shields);
-    QVector<VIRTADDR> helms = enumerate_vector(m_memory_correction + m_layout->address("itemdef_helm_vector"));
+    QVector<VIRTADDR> helms = enumerate_vector(m_layout->address("itemdef_helm_vector"));
     m_itemdef_vectors.insert(HELM,helms);
-    QVector<VIRTADDR> pants = enumerate_vector(m_memory_correction + m_layout->address("itemdef_pant_vector"));
+    QVector<VIRTADDR> pants = enumerate_vector(m_layout->address("itemdef_pant_vector"));
     m_itemdef_vectors.insert(PANTS,pants);
-    QVector<VIRTADDR> food = enumerate_vector(m_memory_correction + m_layout->address("itemdef_food_vector"));
+    QVector<VIRTADDR> food = enumerate_vector(m_layout->address("itemdef_food_vector"));
     m_itemdef_vectors.insert(FOOD,food);
 
     //load actual weapons and armor
-    weapons = enumerate_vector(m_memory_correction + m_layout->address("weapons_vector"));
+    weapons = enumerate_vector(m_layout->address("weapons_vector"));
     m_items_vectors.insert(WEAPON,weapons);
-    shields = enumerate_vector(m_memory_correction + m_layout->address("shields_vector"));
+    shields = enumerate_vector(m_layout->address("shields_vector"));
     m_items_vectors.insert(SHIELD,shields);
 
-    pants = enumerate_vector(m_memory_correction + m_layout->address("pants_vector"));
+    pants = enumerate_vector(m_layout->address("pants_vector"));
     m_items_vectors.insert(PANTS,pants);
-    armor = enumerate_vector(m_memory_correction + m_layout->address("armor_vector"));
+    armor = enumerate_vector(m_layout->address("armor_vector"));
     m_items_vectors.insert(ARMOR,armor);
-    shoes = enumerate_vector(m_memory_correction + m_layout->address("shoes_vector"));
+    shoes = enumerate_vector(m_layout->address("shoes_vector"));
     m_items_vectors.insert(SHOES,shoes);
-    helms = enumerate_vector(m_memory_correction + m_layout->address("helms_vector"));
+    helms = enumerate_vector(m_layout->address("helms_vector"));
     m_items_vectors.insert(HELM,helms);
-    gloves = enumerate_vector(m_memory_correction + m_layout->address("gloves_vector"));
+    gloves = enumerate_vector(m_layout->address("gloves_vector"));
     m_items_vectors.insert(GLOVES,gloves);
 
     //load other equipment
-    QVector<VIRTADDR> quivers = enumerate_vector(m_memory_correction + m_layout->address("quivers_vector"));
+    QVector<VIRTADDR> quivers = enumerate_vector(m_layout->address("quivers_vector"));
     m_items_vectors.insert(QUIVER,quivers);
-    QVector<VIRTADDR> backpacks = enumerate_vector(m_memory_correction + m_layout->address("backpacks_vector"));
+    QVector<VIRTADDR> backpacks = enumerate_vector(m_layout->address("backpacks_vector"));
     m_items_vectors.insert(BACKPACK,backpacks);
-    QVector<VIRTADDR> crutches = enumerate_vector(m_memory_correction + m_layout->address("crutches_vector"));
+    QVector<VIRTADDR> crutches = enumerate_vector(m_layout->address("crutches_vector"));
     m_items_vectors.insert(CRUTCH,crutches);
-    QVector<VIRTADDR> flasks = enumerate_vector(m_memory_correction + m_layout->address("flasks_vector"));
+    QVector<VIRTADDR> flasks = enumerate_vector(m_layout->address("flasks_vector"));
     m_items_vectors.insert(FLASK,flasks);
-    ammo = enumerate_vector(m_memory_correction + m_layout->address("ammo_vector"));
+    ammo = enumerate_vector(m_layout->address("ammo_vector"));
     m_items_vectors.insert(AMMO,ammo);
 
     //load artifacts
-    QVector<VIRTADDR> artifacts = enumerate_vector(m_memory_correction + m_layout->address("artifacts_vector"));
+    QVector<VIRTADDR> artifacts = enumerate_vector(m_layout->address("artifacts_vector"));
     m_items_vectors.insert(ARTIFACTS,artifacts);
 
-    m_color_vector = enumerate_vector(m_memory_correction + m_layout->address("colors_vector"));
-    m_shape_vector = enumerate_vector(m_memory_correction + m_layout->address("shapes_vector"));
+    m_color_vector = enumerate_vector(m_layout->address("colors_vector"));
+    m_shape_vector = enumerate_vector(m_layout->address("shapes_vector"));
 
-    VIRTADDR addr = m_memory_correction + m_layout->address("base_materials");
+    VIRTADDR addr = m_layout->address("base_materials");
     int i = 0;
     for(i = 0; i < 256; i++){
         VIRTADDR mat_addr = read_addr(addr);
@@ -810,7 +798,7 @@ void DFInstance::load_main_vectors(){
     }
 
     //inorganics
-    addr = m_memory_correction + m_layout->address("inorganics_vector");
+    addr = m_layout->address("inorganics_vector");
     i = 0;
     foreach(VIRTADDR mat, enumerate_vector(addr)){
         //inorganic_raw.material
@@ -820,7 +808,7 @@ void DFInstance::load_main_vectors(){
     }
 
     //plants
-    addr = m_memory_correction + m_layout->address("plants_vector");
+    addr = m_layout->address("plants_vector");
     i = 0;
     QVector<VIRTADDR> vec = enumerate_vector(addr);
     foreach(VIRTADDR plant, vec){
@@ -859,14 +847,13 @@ void DFInstance::load_weapons(){
 
 void DFInstance::load_races_castes(){
     attach();
-    VIRTADDR races_vector = m_layout->address("races_vector");
-    races_vector += m_memory_correction;
-    QVector<VIRTADDR> races = enumerate_vector(races_vector);
-    int i = 0;
+    VIRTADDR races_vector_addr = m_layout->address("races_vector");
+    QVector<VIRTADDR> races = enumerate_vector(races_vector_addr);
+    int idx = 0;
     if (!races.empty()) {
         foreach(VIRTADDR race_addr, races) {
-            m_races.append(Race::get_race(this, race_addr, i));
-            i++;
+            m_races.append(Race::get_race(this, race_addr, idx));
+            idx++;
         }
     }
     detach();
@@ -878,7 +865,7 @@ void DFInstance::load_fortress(){
         delete(m_fortress);
         m_fortress = 0;
     }
-    VIRTADDR addr_fortress = m_memory_correction + m_layout->address("fortress_entity");
+    VIRTADDR addr_fortress = m_layout->address("fortress_entity");
     if (!is_valid_address(addr_fortress)) {
         LOGW << "Active Memory Layout" << m_layout->filename() << "("
              << m_layout->game_version() << ")" << "contains an invalid"
@@ -895,7 +882,7 @@ void DFInstance::load_fortress_name(){
     //load the fortress name
     //fortress name is actually in the world data's site list
     //we can access a list of the currently active sites and read the name from there
-    VIRTADDR world_data_addr = read_addr(m_memory_correction + m_layout->address("world_data"));
+    VIRTADDR world_data_addr = read_addr(m_layout->address("world_data"));
     QVector<VIRTADDR> sites = enumerate_vector(world_data_addr + m_layout->address("active_sites_vector"));
     foreach(VIRTADDR site, sites){
         short t = read_short(site + m_layout->address("world_site_type"));
@@ -930,8 +917,7 @@ QList<Squad *> DFInstance::load_squads(bool refreshing) {
         if(m_squad_vector == 0xFFFFFFFF) {
             LOGI << "Squads not supported for this version of Dwarf Fortress";
             return squads;
-        }
-        m_squad_vector += m_memory_correction;
+        }        
 
         if (!is_valid_address(m_squad_vector)) {
             LOGW << "Active Memory Layout" << m_layout->filename() << "("
@@ -941,8 +927,7 @@ QList<Squad *> DFInstance::load_squads(bool refreshing) {
             return squads;
         }
 
-        LOGD << "loading squads from " << hexify(m_squad_vector) <<
-                hexify(m_squad_vector - m_memory_correction) << "(UNCORRECTED)";
+        LOGD << "loading squads from " << hexify(m_squad_vector);
 
         emit progress_message(tr("Loading Squads"));
     }
@@ -1002,10 +987,8 @@ void DFInstance::heartbeat() {
 }
 
 QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
-    VIRTADDR active_units = m_layout->address("active_creature_vector");
-    active_units += m_memory_correction;
-    VIRTADDR all_units = m_layout->address("creature_vector");
-    all_units += m_memory_correction;
+    VIRTADDR active_units = m_layout->address("active_creature_vector");    
+    VIRTADDR all_units = m_layout->address("creature_vector");    
 
     //first try the active unit list
     QVector<VIRTADDR> entries = enumerate_vector(active_units);
@@ -1580,7 +1563,7 @@ VIRTADDR DFInstance::find_historical_figure(int hist_id){
 }
 
 void DFInstance::load_hist_figures(){
-    QVector<VIRTADDR> hist_figs = enumerate_vector(m_memory_correction + m_layout->address("historical_figures_vector"));
+    QVector<VIRTADDR> hist_figs = enumerate_vector(m_layout->address("historical_figures_vector"));
     int hist_id = 0;
     //it may be possible to filter this list by only the current race.
     //need to test whether or not vampires will steal names from other races
@@ -1601,7 +1584,7 @@ VIRTADDR DFInstance::find_fake_identity(int hist_id){
         if(rep_info != 0){
             int cur_ident = read_int(rep_info + m_layout->hist_figure_offset("current_ident"));
             if(m_fake_identities.count() == 0) //lazy load fake identities
-                m_fake_identities = enumerate_vector(m_memory_correction + m_layout->address("fake_identities_vector"));
+                m_fake_identities = enumerate_vector(m_layout->address("fake_identities_vector"));
             foreach(VIRTADDR ident, m_fake_identities){
                 int fake_id = read_int(ident);
                 if(fake_id==cur_ident){

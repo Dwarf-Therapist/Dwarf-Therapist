@@ -53,9 +53,6 @@ public:
     virtual bool find_running_copy(bool connectUnknown = false) = 0;
 
     // accessors
-    VIRTADDR get_heap_start_address() {return m_heap_start_address;}
-    quint32 get_memory_correction() {return m_memory_correction;}
-    VIRTADDR get_base_address() {return m_base_addr;}
     bool is_ok() {return m_is_ok;}
     WORD dwarf_race_id() {return m_dwarf_race_id;}
     QList<MemoryLayout*> get_layouts() { return m_memory_layouts.values(); }
@@ -225,11 +222,8 @@ public:
         void cancel_scan() {m_stop_scan = true;}
 protected:
     pid_t m_pid;
-    VIRTADDR m_base_addr;
-    quint32 m_memory_correction;
     VIRTADDR m_lowest_address;
-    VIRTADDR m_highest_address;
-    VIRTADDR m_heap_start_address;
+    VIRTADDR m_highest_address;    
     bool m_stop_scan; // flag that gets set to stop scan loops
     bool m_is_ok;
     int m_bytes_scanned;

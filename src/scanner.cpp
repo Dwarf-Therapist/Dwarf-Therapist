@@ -37,6 +37,7 @@ Scanner::Scanner(DFInstance *df, MainWindow *parent)
     , m_thread(0)
     , ui(new Ui::ScannerDialog)
     , m_stop_scanning(false)
+    , m_base_addr(df->memory_layout()->get_base_addr())
 {
     ui->setupUi(this);
     set_ui_enabled(true);
@@ -66,7 +67,7 @@ void Scanner::set_ui_enabled(bool enabled) {
 }
 
 void Scanner::report_address(const QString &msg, const quint32 &addr) {
-    VIRTADDR corrected_addr = addr - m_df->get_memory_correction();
+    VIRTADDR corrected_addr = addr - m_base_addr;
     QString out = QString("<b>%1\t= <font color=blue>%2</font> "
                           "(uncorrected:%3)\n")
         .arg(msg)
@@ -232,27 +233,27 @@ void Scanner::create_memory_layout() {
 
         prepare_new_thread(FIND_DWARF_RACE_INDEX);
         connect(m_thread, SIGNAL(found_address(const QString&, const quint32&)), creator,
-                SLOT(report_address(const QString&, const quint32&)));
+                SLOT(report_global_address(const QString&, const quint32&)));
         run_thread_and_wait();
 
         prepare_new_thread(FIND_TRANSLATIONS_VECTOR);
         connect(m_thread, SIGNAL(found_address(const QString&, const quint32&)), creator,
-                SLOT(report_address(const QString&, const quint32&)));
+                SLOT(report_global_address(const QString&, const quint32&)));
         run_thread_and_wait();
 
         prepare_new_thread(FIND_CREATURE_VECTOR);
         connect(m_thread, SIGNAL(found_address(const QString&, const quint32&)), creator,
-                SLOT(report_address(const QString&, const quint32&)));
+                SLOT(report_global_address(const QString&, const quint32&)));
         run_thread_and_wait();
 
         prepare_new_thread(FIND_CURRENT_YEAR);
         connect(m_thread, SIGNAL(found_address(const QString&, const quint32&)), creator,
-                SLOT(report_address(const QString&, const quint32&)));
+                SLOT(report_global_address(const QString&, const quint32&)));
         run_thread_and_wait();
 
         prepare_new_thread(FIND_SQUADS_VECTOR);
         connect(m_thread, SIGNAL(found_address(const QString&, const quint32&)), creator,
-                SLOT(report_address(const QString&, const quint32&)));
+                SLOT(report_global_address(const QString&, const quint32&)));
         run_thread_and_wait();
 
         ScannerJob::m_layout_override_checksum = "";

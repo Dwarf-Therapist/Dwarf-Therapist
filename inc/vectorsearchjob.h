@@ -30,6 +30,7 @@ http://www.opensource.org/licenses/mit-license.php
 #include "defines.h"
 #include "truncatingfilelogger.h"
 #include "utils.h"
+#include "memorylayout.h"
 
 struct VectorSearchParams {
     char op;
@@ -73,7 +74,7 @@ public:
                 if(count < 200) {
                     emit found_address("vector found at", addr);
                 } else {
-                    VIRTADDR corrected_addr = addr - m_df->get_memory_correction();
+                    VIRTADDR corrected_addr = addr - m_df->memory_layout()->get_base_addr();
                     LOGD << "Extra vector address found:"
                             << hexify(corrected_addr) << "uncorrected:" << hexify(addr);
                 }

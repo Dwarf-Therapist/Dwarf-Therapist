@@ -10,6 +10,7 @@ MemoryLayout::MemoryLayout(const QString &filename)
     , m_checksum(QString::null)
     , m_data(0)
     , m_complete(true)
+    , m_base_addr(0)
 {
     TRACE << "Attempting to contruct MemoryLayout from file " << filename;
     QFileInfo info(m_filename);
@@ -25,7 +26,8 @@ MemoryLayout::MemoryLayout(const QString & filename, QSettings * data):
     m_filename(filename),
     m_checksum(QString::null),
     m_data(NULL),
-    m_complete(false)
+    m_complete(false),
+    m_base_addr(0)
 {
     m_data = new QSettings(m_filename, QSettings::IniFormat);
     foreach(QString key, data->allKeys()) {

@@ -12,12 +12,18 @@ public:
     bool is_valid();
     QString game_version() {return m_game_version;}
     QString checksum() {return m_checksum;}
-    uint address(const QString &key) {return m_addresses.value(key, -1);}
     bool is_valid_address(uint address);
+    void set_base_address(int addr){m_base_addr = addr;}
     uint offset(const QString &key) {return m_offsets.value(key, -1);}
     uint string_buffer_offset();
     uint string_length_offset();
     uint string_cap_offset();
+
+    uint get_base_addr(){return m_base_addr;} //only used by the scanner
+
+    uint address(const QString &key) { //globals
+        return m_addresses.value(key, -1) + m_base_addr;
+    }
     int dwarf_offset(const QString &key) {
         return m_dwarf_offsets.value(key, -1);
     }
@@ -136,6 +142,7 @@ private:
     QHash<uint, QString> m_invalid_flags_3;
     QSettings *m_data;
     bool m_complete;
+    int m_base_addr;
 
     void load_data();
     uint read_hex(QString key);

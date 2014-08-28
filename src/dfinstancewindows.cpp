@@ -51,25 +51,10 @@ DFInstanceWindows::~DFInstanceWindows() {
     }
 }
 
-QString DFInstanceWindows::calculate_checksum() {
-    BYTE expect_M = read_byte(m_base_addr);
-    BYTE expect_Z = read_byte(m_base_addr + 0x1);
-
-    if (expect_M != 'M' || expect_Z != 'Z') {
-        qWarning() << "invalid executable";
-    }
-    uint pe_header = m_base_addr + read_int(m_base_addr + 30 * 2);
-    BYTE expect_P = read_byte(pe_header);
-    BYTE expect_E = read_byte(pe_header + 0x1);
-    if (expect_P != 'P' || expect_E != 'E') {
-        qWarning() << "PE header invalid";
-    }
-
-    quint32 timestamp = read_addr(pe_header + 4 + 2 * 2);
-    QDateTime compile_timestamp = QDateTime::fromTime_t(timestamp);
-    LOGI << "Target EXE was compiled at " <<
-            compile_timestamp.toString(Qt::ISODate);
-    return hexify(timestamp).toLower();
+QString DFInstanceWindows::calculate_checksum() {    
+    QDateTime compile_timestamp = QDateTime::fromTime_t(m_pe_header.FileHeader.TimeDateStamp);
+    LOGI << "Target EXE was compiled at " << compile_timestamp.toString(Qt::ISODate);
+    return hexify(m_pe_header.FileHeader.TimeDateStamp).toLower();
 }
 
 QVector<VIRTADDR> DFInstanceWindows::enumerate_vector(const VIRTADDR &addr) {
@@ -217,8 +202,20 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
         PEB peb;
         DWORD bytes = 0;
         if (ReadProcessMemory(m_proc, (PCHAR)peb_addr, &peb, sizeof(PEB), &bytes)) {
-            LOGI << "read" << bytes << "bytes BASE ADDR is at: " << hex << peb.ImageBaseAddress;
-            m_base_addr = (int)peb.ImageBaseAddress;
+            LOGI << "read" << bytes << "bytes. ImageBaseAddress is at: " << hex << peb.ImageBaseAddress;
+
+            //get the dos stub from the pe block
+            ReadProcessMemory(m_proc,peb.ImageBaseAddress, &m_dos_header, sizeof(m_dos_header),NULL);
+            if(m_dos_header.e_magic != IMAGE_DOS_SIGNATURE){
+                qWarning() << "invalid executable";
+            }
+
+            //the dos stub contains a relative address to the pe header, which is used to get the pe header information
+            ReadProcessMemory(m_proc,(LPBYTE)peb.ImageBaseAddress + m_dos_header.e_lfanew, &m_pe_header, sizeof(m_pe_header),NULL);
+            if(m_pe_header.Signature != IMAGE_NT_SIGNATURE){
+                qWarning() << "unsupported PE header type";
+            }
+
             m_is_ok = true;
         } else {
             QMessageBox::critical(0, tr("Connection Error"), connection_error);
@@ -227,8 +224,11 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
         }
     }
 
-    if (m_is_ok) {
+    if (m_is_ok){
         m_layout = get_memory_layout(calculate_checksum(), !connect_anyway);
+        //pass the imagebase address - the default windows linker address to the memory layout
+        //for use with global addresses (anyting in the [addresses] section of the layout file
+        m_layout->set_base_address(m_pe_header.OptionalHeader.ImageBase - 0x00400000);
     }
 
     if(!m_is_ok) {
@@ -237,10 +237,6 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
         else // time to bail
             return m_is_ok;
     }
-
-    m_memory_correction = (int)m_base_addr - 0x0400000;
-    LOGI << "base address:" << hexify(m_base_addr);
-    LOGI << "memory correction:" << hexify(m_memory_correction);
 
     map_virtual_memory();
 

@@ -70,17 +70,15 @@ public slots:
         if( end_addr == 0 ) {
             end_addr = 0x02000000;
         }
-        end_addr += m_df->get_memory_correction();
+        end_addr += m_df->memory_layout()->get_base_addr();
 
         uint current_year = 0;
         LOGD << "Searching for current year, up to " << hex << end_addr;
-        foreach(uint ptr, m_df->scan_mem(search, m_df->get_memory_correction(), end_addr)) {
+        foreach(uint ptr, m_df->scan_mem(search, m_df->memory_layout()->get_base_addr(), end_addr)) {
             LOGD << "\tCurrent Year PTR" << hex << ptr;
             current_year = ptr;
         }
         if( current_year ) {
-            // We'll just report the last address. It should almost always be the last address found
-            // if we have dwarf_race_index
             emit found_address("current year", current_year);
         }
         emit quit();

@@ -483,10 +483,6 @@ void DFInstanceLinux::map_virtual_memory() {
                     LOGD << "executable" << segment->to_string();
                 }
             }
-            if (path.contains("[heap]")) {
-                //LOGD << "setting heap start address at" << hex << start_addr;
-                m_heap_start_address = start_addr;
-            }
         }
     } while (!line.isEmpty());
     f.close();

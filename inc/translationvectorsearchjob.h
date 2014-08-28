@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "defines.h"
 #include "truncatingfilelogger.h"
 #include "gamedatareader.h"
+#include "memorylayout.h"
 #include "utils.h"
 
 class TranslationVectorSearchJob : public ScannerJob {
@@ -125,7 +126,7 @@ public slots:
                         LOGD << "\tTRANSLATIONS VECTOR AT" << hex << vec;
                         LOGD << "\tDWARF TRANS OBJECT" << hex << langs.at(0) << "WORD TABLE" << dwarf_lang_table;
                         LOGD << "\tOFFSET FROM WORD TABLE" << hex << word_table_offset;
-                        LOGD << "\tFINAL ADDRESS" << QString("0x%1").arg(vec - m_df->get_memory_correction(), 8, 16, QChar('0'));
+                        LOGD << "\tFINAL ADDRESS" << QString("0x%1").arg(vec - m_df->memory_layout()->get_base_addr(), 8, 16, QChar('0'));
                         emit found_address("translation_vector", vec);
                         break;
                     }

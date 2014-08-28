@@ -63,6 +63,9 @@ protected:
 
     HWND m_hwnd;
     HANDLE m_proc;
+
+    IMAGE_DOS_HEADER m_dos_header;
+    IMAGE_NT_HEADERS m_pe_header;
 };
 
 #endif // DFINSTANCE_H

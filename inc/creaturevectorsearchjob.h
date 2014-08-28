@@ -82,39 +82,6 @@ public slots:
             }
         }
 
-        /*
-        QByteArray skillpattern_miner = encode_skillpattern(0, 3340, 4);
-        QByteArray skillpattern_metalsmith = encode_skillpattern(29, 0, 2);
-        QByteArray skillpattern_swordsman = encode_skillpattern(40, 462, 3);
-        QByteArray skillpattern_pump_operator = encode_skillpattern(65, 462, 1);
-
-        needle = custom_profession;
-        foreach(int prof, scan_mem_find_all(needle, dwarf, dwarf + 0x1000)) {
-                qDebug() << "Custom Profession Offset" << prof - dwarf - 4;
-        }
-
-        return creature_vector_address;
-
-        QVector<QByteArray> patterns;
-        patterns.append(skillpattern_miner);
-        patterns.append(skillpattern_metalsmith);
-        patterns.append(skillpattern_swordsman);
-        patterns.append(skillpattern_pump_operator);
-
-        QVector< QVector<int> > addresses;
-        addresses.reserve(patterns.size());
-        for (int i = 0; i < 4; ++i) {
-                QVector<int> lst;
-                emit scan_message("scanning for skill pattern" + QString::number(i));
-                foreach(int skill, scan_mem_find_all(patterns[i], 0, m_memory_size + m_base_addr - m_memory_correction)) {
-                        qDebug() << "FOUND SKILL PATTERN" << i << by_char(patterns[i]) << "AT" << hex << skill;
-                        lst.append(skill);
-                }
-                addresses.append(lst);
-                break;
-        }
-        */
-
         emit quit();
     }
 };

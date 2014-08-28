@@ -135,7 +135,7 @@ public slots:
         foreach(VIRTADDR squad_vec, squad_vectors) {
             VIRTADDR addr = squad_vec - DFInstance::VECTOR_POINTER_OFFSET;
 
-            VIRTADDR corrected_addr = addr - m_df->get_memory_correction();
+            VIRTADDR corrected_addr = addr - m_df->memory_layout()->get_base_addr();
             LOGD << "Squad vector address found:"
                     << hexify(corrected_addr) << "uncorrected:" << hexify(addr);
 
