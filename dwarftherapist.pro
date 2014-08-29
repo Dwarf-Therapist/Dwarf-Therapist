@@ -40,9 +40,6 @@ win32 {
 
     DEFINES += NOMINMAX
 
-    check_log.path = $$DESTDIR
-    check_log.extra = if not exist $$DESTDIR/log mkdir "$$DESTDIR/log";
-
     check_dirs.path = $$DESTDIR
     check_dirs.extra = if not exist $$DESTDIR/share/memory_layouts/windows mkdir "$$DESTDIR/share/memory_layouts/windows";
 
@@ -52,7 +49,6 @@ win32 {
     copy_mem_layouts.path = $$DESTDIR
     copy_mem_layouts.extra = copy /Y "share/memory_layouts/windows/*" "./$$DESTDIR/share/memory_layouts/windows";
 
-    INSTALLS += check_log
     INSTALLS += check_dirs
     INSTALLS += copy_game_data
     INSTALLS += copy_mem_layouts

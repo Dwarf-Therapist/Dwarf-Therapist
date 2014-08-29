@@ -4,7 +4,16 @@ BUILDING DWARF THERAPIST
 
 Windows
 =======
-Download the Qt Creator IDE and open the dwarftherapist.pro file.
+Download the Qt Creator IDE and open the dwarftherapist.pro project.
+
+You must perform one of the following steps to have DT run properly in Qt Creator. They are listed in approximate order of recommendation:
+
+- Change default build step: Run ``make`` (aka jom) with arguments ``first install``.
+- Set the *run* working directory to ``%{sourceDir}``.
+- Disable shadow build.
+- Manually copy the ``share`` directory from the clone to the build location, i.e. ``%{buildDir}`` or ``%{buildDir}/<build type>``.
+
+In order to allow DT to run properly *outside* of Qt Creator, add a custom build step: ``<location of Git Bash>`` with argument ``%{sourceDir}/windeployqt.sh`` running in ``%{buildDir}``.
 
 Linux
 =====
