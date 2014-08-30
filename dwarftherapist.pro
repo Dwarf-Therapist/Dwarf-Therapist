@@ -353,7 +353,8 @@ SOURCES += src/viewmanager.cpp \
     src/grid_view/superlaborcolumn.cpp \
     src/superlabor.cpp \
     src/multilabor.cpp \
-    src/grid_view/customprofessioncolumn.cpp
+    src/grid_view/customprofessioncolumn.cpp \
+    src/syndrome.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

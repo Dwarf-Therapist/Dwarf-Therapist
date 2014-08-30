@@ -883,7 +883,7 @@ void DFInstance::load_fortress_name(){
     //fortress name is actually in the world data's site list
     //we can access a list of the currently active sites and read the name from there
     VIRTADDR world_data_addr = read_addr(m_layout->address("world_data"));
-    QVector<VIRTADDR> sites = enumerate_vector(world_data_addr + m_layout->address("active_sites_vector"));
+    QVector<VIRTADDR> sites = enumerate_vector(world_data_addr + m_layout->address("active_sites_vector",false));
     foreach(VIRTADDR site, sites){
         short t = read_short(site + m_layout->address("world_site_type"));
         if(t==0){ //player fortress type
