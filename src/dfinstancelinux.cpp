@@ -44,6 +44,19 @@ THE SOFTWARE.
 
 #include "cp437codec.h"
 
+extern ssize_t process_vm_readv(pid_t pid,
+                                const struct iovec *local_iov,
+                                unsigned long liovcnt,
+                                const struct iovec *remote_iov,
+                                unsigned long riovcnt,
+                                unsigned long flags) __attribute__ ((weak));
+extern ssize_t process_vm_writev(pid_t pid,
+                                 const struct iovec *local_iov,
+                                 unsigned long liovcnt,
+                                 const struct iovec *remote_iov,
+                                 unsigned long riovcnt,
+                                 unsigned long flags) __attribute__ ((weak));
+
 struct STLStringHeader {
     quint32 length;
     quint32 capacity;
@@ -56,6 +69,7 @@ DFInstanceLinux::DFInstanceLinux(QObject* parent)
     , m_inject_addr(-1)
     , m_alloc_start(0)
     , m_alloc_end(0)
+    , m_warned_glibc(0)
 {
 }
 
@@ -228,6 +242,14 @@ int DFInstanceLinux::read_raw_ptrace(const VIRTADDR &addr, USIZE bytes, QByteArr
 }
 
 int DFInstanceLinux::read_raw(const VIRTADDR &addr, USIZE bytes, QByteArray &buffer) {
+    if (!process_vm_readv) {
+        if (!m_warned_glibc) {
+            LOGI << "glibc does not support process_vm_* API, falling back to ptrace";
+            m_warned_glibc = true;
+        }
+        return read_raw_ptrace(addr, bytes, buffer);
+    }
+
     SSIZE bytes_read;
     buffer.fill(0, bytes); // zero our buffer
 
@@ -310,6 +332,14 @@ int DFInstanceLinux::write_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes,
 
 int DFInstanceLinux::write_raw(const VIRTADDR &addr, const USIZE &bytes,
                                void *buffer) {
+    if (!process_vm_writev) {
+        if (!m_warned_glibc) {
+            LOGI << "glibc does not support process_vm_* API, falling back to ptrace";
+            m_warned_glibc = true;
+        }
+        return write_raw_ptrace(addr, bytes, buffer);
+    }
+
     SSIZE bytes_written;
 
     struct iovec local_iov[1];
