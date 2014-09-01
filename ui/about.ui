@@ -36,16 +36,7 @@
    <property name="spacing">
     <number>0</number>
    </property>
-   <property name="leftMargin">
-    <number>0</number>
-   </property>
-   <property name="topMargin">
-    <number>0</number>
-   </property>
-   <property name="rightMargin">
-    <number>0</number>
-   </property>
-   <property name="bottomMargin">
+   <property name="margin">
     <number>0</number>
    </property>
    <item>
@@ -59,25 +50,6 @@
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <widget class="QLabel" name="lbl_our_version">
-      <property name="geometry">
-       <rect>
-        <x>220</x>
-        <y>39</y>
-        <width>121</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>VERSION %1</string>
-      </property>
-     </widget>
      <widget class="QLabel" name="label_title">
       <property name="geometry">
        <rect>
@@ -87,17 +59,14 @@
         <height>41</height>
        </rect>
       </property>
-      <property name="font">
-       <font>
-        <family>Segoe UI</family>
-        <pointsize>22</pointsize>
-       </font>
-      </property>
       <property name="styleSheet">
        <string/>
       </property>
       <property name="text">
-       <string>Dwarf Therapist</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:22pt;&quot;&gt;Dwarf Therapist &lt;/span&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;%1&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="textFormat">
+       <enum>Qt::RichText</enum>
       </property>
       <property name="alignment">
        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -136,7 +105,7 @@
        <rect>
         <x>20</x>
         <y>70</y>
-        <width>231</width>
+        <width>341</width>
         <height>16</height>
        </rect>
       </property>
@@ -144,10 +113,6 @@
        <string>Compiled with Qt %1, running with Qt %2</string>
       </property>
      </widget>
-     <zorder>label_title</zorder>
-     <zorder>lbl_image</zorder>
-     <zorder>lbl_our_version</zorder>
-     <zorder>lbl_qt_version</zorder>
     </widget>
    </item>
    <item>

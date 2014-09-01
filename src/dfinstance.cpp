@@ -23,9 +23,6 @@ THE SOFTWARE.
 
 #include <QtDebug>
 #include <QMessageBox>
-#if QT_VERSION >= 0x050000
-# include <QtConcurrent>
-#endif
 #include "defines.h"
 #include "dfinstance.h"
 #include "dwarf.h"
@@ -201,13 +198,10 @@ QVector<VIRTADDR> DFInstance::enumerate_vector(const VIRTADDR &addr) {
     VIRTADDR start = read_addr(addr);
     VIRTADDR end = read_addr(addr + 4);
     USIZE bytes = end - start;
-    USIZE naddrs = bytes / sizeof(VIRTADDR);
     if (check_vector(start, end, addr)){
-        VIRTADDR* data = new VIRTADDR[naddrs];
-        read_raw(start, bytes, data);
-        std::vector<VIRTADDR> vec(data, data + naddrs);
-        out = QVector<VIRTADDR>::fromStdVector(vec);
-        TRACE << "FOUND" << out.size() << "addresses in vector at" << hexify(addr);
+        out.resize(bytes / sizeof(VIRTADDR));
+        USIZE bytes_read = read_raw(start, bytes, out.data());
+        TRACE << "FOUND" << bytes_read / sizeof(VIRTADDR) << "addresses in vector at" << hexify(addr);
     }
     return out;
 }
@@ -219,36 +213,36 @@ USIZE DFInstance::read_raw(const VIRTADDR &addr, const USIZE &bytes, QByteArray 
 
 BYTE DFInstance::read_byte(const VIRTADDR &addr) {
     BYTE out;
-    read_raw(addr, sizeof(BYTE), (void *)&out);
+    read_raw(addr, sizeof(BYTE), &out);
     return out;
 }
 
 WORD DFInstance::read_word(const VIRTADDR &addr) {
     WORD out;
-    read_raw(addr, sizeof(WORD), (void *)&out);
+    read_raw(addr, sizeof(WORD), &out);
     return out;
 }
 
 VIRTADDR DFInstance::read_addr(const VIRTADDR &addr) {
     VIRTADDR out;
-    read_raw(addr, sizeof(VIRTADDR), (void *)&out);
+    read_raw(addr, sizeof(VIRTADDR), &out);
     return out;
 }
 
 qint16 DFInstance::read_short(const VIRTADDR &addr) {
     qint16 out;
-    read_raw(addr, sizeof(qint16), (void *)&out);
+    read_raw(addr, sizeof(qint16), &out);
     return out;
 }
 
 qint32 DFInstance::read_int(const VIRTADDR &addr) {
     qint32 out;
-    read_raw(addr, sizeof(qint32), (void *)&out);
+    read_raw(addr, sizeof(qint32), &out);
     return out;
 }
 
 USIZE DFInstance::write_int(const VIRTADDR &addr, const int &val) {
-    return write_raw(addr, sizeof(int), static_cast<const void*>(&val));
+    return write_raw(addr, sizeof(int), &val);
 }
 
 USIZE DFInstance::write_raw(const VIRTADDR &addr, const USIZE &bytes, const QByteArray &buffer) {
@@ -463,7 +457,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     //current race's offset was bad
     if (!DT->arena_mode && m_dwarf_race_id < 0){
         return dwarves;
-    }    
+    }
 
     // both necessary addresses are valid, so let's try to read the creatures
     VIRTADDR dwarf_civ_idx_addr = m_layout->address("dwarf_civ_index");
@@ -521,13 +515,11 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         m_thought_counts.clear();
 
         t.restart();
-        QFuture<void> f = QtConcurrent::run(this,&DFInstance::load_population_data);
-        f.waitForFinished();
+        load_population_data();
         LOGI << "loaded population data in" << t.elapsed() << "ms";
 
         t.restart();
-        f = QtConcurrent::run(this,&DFInstance::load_role_ratings);
-        f.waitForFinished();
+        load_role_ratings();
         LOGI << "calculated roles in" << t.elapsed() << "ms";
 
         //calc_done();
@@ -655,7 +647,7 @@ void DFInstance::load_role_ratings(){
     LOGD << "     - loaded skill role data in" << tr.elapsed() << "ms";
 
     LOGD << "Role Attributes Info:";
-    DwarfStats::init_attributes(attribute_values,attribute_raw_values);    
+    DwarfStats::init_attributes(attribute_values,attribute_raw_values);
     LOGD << "     - loaded attribute role data in" << tr.elapsed() << "ms";
 
     LOGD << "Role Preferences Info:";
@@ -714,7 +706,7 @@ void DFInstance::load_reactions(){
     attach();
     //LOGI << "Reading reactions names...";
     VIRTADDR reactions_vector = m_layout->address("reactions_vector");
-    if(m_layout->is_valid_address(reactions_vector)){        
+    if(m_layout->is_valid_address(reactions_vector)){
         QVector<VIRTADDR> reactions = enumerate_vector(reactions_vector);
         //TRACE << "FOUND" << reactions.size() << "reactions";
         //emit progress_range(0, reactions.size()-1);
@@ -936,7 +928,7 @@ QList<Squad *> DFInstance::load_squads(bool refreshing) {
         if(m_squad_vector == 0xFFFFFFFF) {
             LOGI << "Squads not supported for this version of Dwarf Fortress";
             return squads;
-        }        
+        }
 
         if (!is_valid_address(m_squad_vector)) {
             LOGW << "Active Memory Layout" << m_layout->filename() << "("
@@ -963,7 +955,7 @@ QList<Squad *> DFInstance::load_squads(bool refreshing) {
         if(!refreshing)
             emit progress_range(0, squads_addr.size()-1);
 
-        int squad_count = 0;                
+        int squad_count = 0;
         foreach(VIRTADDR squad_addr, squads_addr) {
             int id = read_int(squad_addr + m_layout->squad_offset("id")); //check the id before loading the squad
             if(m_fortress->squad_is_active(id)){
@@ -987,7 +979,7 @@ QList<Squad *> DFInstance::load_squads(bool refreshing) {
     return m_squads;
 }
 
-Squad* DFInstance::get_squad(int id){    
+Squad* DFInstance::get_squad(int id){
     foreach(Squad *s, m_squads){
         if(s->id() == id)
             return s;
@@ -1006,8 +998,8 @@ void DFInstance::heartbeat() {
 }
 
 QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
-    VIRTADDR active_units = m_layout->address("active_creature_vector");    
-    VIRTADDR all_units = m_layout->address("creature_vector");    
+    VIRTADDR active_units = m_layout->address("active_creature_vector");
+    VIRTADDR all_units = m_layout->address("creature_vector");
 
     //first try the active unit list
     QVector<VIRTADDR> entries = enumerate_vector(active_units);
@@ -1724,7 +1716,7 @@ QString DFInstance::get_shape(int index){
         return "unknown shape";
 }
 
-Material *DFInstance::get_inorganic_material(int index){    
+Material *DFInstance::get_inorganic_material(int index){
     if(index < m_inorganics_vector.count())
         return m_inorganics_vector.at(index);
     else
@@ -1799,7 +1791,7 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
             else if(itype==SEEDS)
                 name = p->seed_plural();
             else if(itype==PLANT)
-                name = p->name_plural();            
+                name = p->name_plural();
 
             //specific plant material
             if(m){
@@ -1813,7 +1805,7 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
                 }else if(m->flags().has_flag(LEAF_MAT) && m->flags().has_flag(STRUCTURAL_PLANT_MAT)){
                     name = p->name().append(" ").append(m->get_material_name(GENERIC));//fruit
                 }else if(itype == NONE || m->flags().has_flag(IS_WOOD)){
-                    name.append(" ").append(m->get_material_name(GENERIC));                    
+                    name.append(" ").append(m->get_material_name(GENERIC));
                 }
 
             }
@@ -1876,4 +1868,8 @@ VIRTADDR DFInstance::get_syndrome(int idx){
     }else{
         return -1;
     }
+}
+
+bool DFInstance::authorize() {
+    return true;
 }

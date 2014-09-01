@@ -146,8 +146,6 @@ void LaborOptimizer::calc_population(bool load_labor_map){
 void LaborOptimizer::optimize_labors(QList<Dwarf*> dwarfs){
     m_dwarfs = dwarfs;
     if(m_dwarfs.count() > 0){
-        //        QFuture<void> f = QtConcurrent::run(this, &LaborOptimizer::optimize);
-        //        f.waitForFinished();
         optimize();
 
         m_current_message.clear();

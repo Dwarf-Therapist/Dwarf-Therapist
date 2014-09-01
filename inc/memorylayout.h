@@ -1,6 +1,7 @@
 #ifndef MEMORY_LAYOUT_H
 #define MEMORY_LAYOUT_H
 
+#include "utils.h"
 #include <QtCore>
 
 class MemoryLayout {
@@ -12,16 +13,16 @@ public:
     bool is_valid();
     QString game_version() {return m_game_version;}
     QString checksum() {return m_checksum;}
-    bool is_valid_address(uint address);
-    void set_base_address(int addr){m_base_addr = addr;}
+    bool is_valid_address(VIRTADDR address);
+    void set_base_address(VIRTADDR addr){m_base_addr = addr;}
     uint offset(const QString &key) {return m_offsets.value(key, -1);}
     uint string_buffer_offset();
     uint string_length_offset();
     uint string_cap_offset();
 
-    uint get_base_addr(){return m_base_addr;} //only used by the scanner
+    VIRTADDR get_base_addr(){return m_base_addr;} //only used by the scanner
 
-    uint address(const QString &key, const bool is_global = true) { //globals
+    VIRTADDR address(const QString &key, const bool is_global = true) { //globals
         return m_addresses.value(key, -1) + (is_global ? m_base_addr : 0);
     }
     int dwarf_offset(const QString &key) {
@@ -106,7 +107,7 @@ public:
     }
 
 private:
-    typedef QHash<QString, uint> AddressHash;
+    typedef QHash<QString, VIRTADDR> AddressHash;
 
     QString m_filename;
     QString m_checksum;
@@ -142,7 +143,7 @@ private:
     QHash<uint, QString> m_invalid_flags_3;
     QSettings *m_data;
     bool m_complete;
-    int m_base_addr;
+    VIRTADDR m_base_addr;
 
     void load_data();
     uint read_hex(QString key);

@@ -41,11 +41,6 @@ typedef qint32 SSIZE;
 typedef quint8 BYTE;
 typedef quint16 WORD;
 
-static inline QByteArray encode_short(const short &num) {
-    QByteArray arr(reinterpret_cast<const char *>(&num), sizeof(short));
-    return arr;
-}
-
 static inline QByteArray encode(const int &num) {
     QByteArray arr(reinterpret_cast<const char *>(&num), sizeof(int));
     return arr;
@@ -65,51 +60,20 @@ static inline int decode_int(const QByteArray &arr) {
     return *arr.constData();
 }
 
-static inline QByteArray encode_skillpattern(short skill, short exp, short rating) {
-    QByteArray bytes;
-    bytes.reserve(6);
-    bytes[0] = static_cast<uchar>(skill);
-    bytes[1] = static_cast<uchar>(skill >> 8);
-    bytes[2] = static_cast<uchar>(exp);
-    bytes[3] = static_cast<uchar>(exp >> 8);
-    bytes[4] = static_cast<uchar>(rating);
-    bytes[5] = static_cast<uchar>(rating >> 8);
-    return bytes;
-}
-
-static inline QString by_char(QByteArray arr) {
-    QString out;
-    for(int i=0; i < arr.size(); i++) {
-        out += QString::number(arr.at(i), 16);
-        out += " ";
+static inline QColor complement(const QColor &in_color, float brightness_threshold = 0.50) {
+    qreal brightness = sqrt(pow(in_color.redF(),2.0) * 0.241 +
+                            pow(in_color.greenF(),2.0) * 0.691 +
+                            pow(in_color.blueF(),2.0) * 0.068);
+    QColor tmp = in_color.toHsv();
+    int h = tmp.hue();
+    int s = 25;
+    int v;
+    if(brightness >= brightness_threshold || in_color.alpha() < 130) {
+        v = 0;
+    } else {
+        v = 255;
     }
-    return out;
-}
-
-static inline QColor compliment(const QColor &in_color, bool true_compliment = false, float brighness_threshold = 0.50) {
-    if(!true_compliment){
-        //    qreal brightness = (in_color.red() * 299 + in_color.green() * 587 + in_color.blue() * 114) / 255000.0;
-        qreal brightness = sqrt(pow(in_color.redF(),2.0) * 0.241 +
-                                pow(in_color.greenF(),2.0) * 0.691 +
-                                pow(in_color.blueF(),2.0) * 0.068);
-        QColor tmp = in_color.toHsv();
-        int h = tmp.hue();
-        int s = 25;
-        int v;
-        if(brightness >= brighness_threshold || in_color.alpha() < 130) {
-            v = 0;
-        } else {
-            v = 255;
-        }
-        return QColor::fromHsv(h, s, v);
-    }else{
-            int r = (~in_color.red()) & 0xff;
-            int b = (~in_color.blue()) & 0xff;
-            int g = (~in_color.green()) & 0xff;
-//            int a = in_color.alpha(); //leave the alpha the same
-        //    int a = (~in_color.alpha()) & 0xff;
-            return QColor(r,g,b,255);
-    }
+    return QColor::fromHsv(h, s, v);
 }
 
 static inline QColor from_hex(const QString &h) {
@@ -134,8 +98,11 @@ static inline QString to_hex(const QColor &c) {
         .arg(c.blue(), 2, 16, QChar('0'))
         .arg(c.alpha(), 2, 16, QChar('0'));
 }
-static inline QString hexify(const quint32 &num) {
-    return QString("0x%1").arg(num, 8, 16, QChar('0'));
+static inline QString hexify(const quint64 &num) {
+    int width = 8;
+    if (num >> 32)
+        width = 16;
+    return QString("0x%1").arg(num, width, 16, QChar('0'));
 }
 static inline QString hexify(const QByteArray &bytes) {
     return QString("0x%1").arg(QString(bytes.toHex()), 8, QChar('0'));
@@ -207,6 +174,8 @@ static inline QStringList find_files_list(const QString &file){
     out << QString("%1/../share/dwarftherapist/%2").arg(appdir, file);
     // cwd/game_data.ini
     out << QString("%1/%2").arg(working_dir, file);
+    // cwd/share/game_data.ini
+    out << QString("%1/share/%2").arg(working_dir, file);
     return out;
 }
 

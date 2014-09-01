@@ -60,6 +60,8 @@ protected:
     QString calculate_checksum();
 
 private:
+    SSIZE process_vm(long number, const VIRTADDR &addr
+                     , const USIZE &bytes, void *buffer);
     int wait_for_stopped();
     VIRTADDR find_injection_address();
     qint32 remote_syscall(int syscall_id,
@@ -75,7 +77,7 @@ private:
     VIRTADDR m_inject_addr;
     VIRTADDR m_alloc_start, m_alloc_end;
     QHash<QString, VIRTADDR> m_string_cache;
-    bool m_warned_glibc;
+    bool m_warned_pvm;
 };
 
 #endif // DFINSTANCE_H

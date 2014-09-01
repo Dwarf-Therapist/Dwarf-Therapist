@@ -118,7 +118,7 @@ ScriptDialog::ScriptDialog(QWidget *parent)
         job_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(job_pair.first).arg(job_pair.second));
     }
     job_list.append("</table>");
-    ui->text_jobs->append(job_list);    
+    ui->text_jobs->append(job_list);
 
     //HEALTH
     QString health_list = "<b>Health Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
@@ -137,7 +137,7 @@ ScriptDialog::ScriptDialog(QWidget *parent)
         health_list.append("</table></td></tr>");
     }
     health_list.append("</table>");
-    ui->text_health->append(health_list);    
+    ui->text_health->append(health_list);
 
     //EQUIPMENT/ITEMS
     QString item_list = "<b>Item Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
@@ -245,7 +245,7 @@ bool ScriptDialog::script_is_valid(){
     return true;
 }
 
-void ScriptDialog::save_pressed() {        
+void ScriptDialog::save_pressed() {
     QString m_old_name = m_name;
     m_name = ui->txt_script_name->text();
 
