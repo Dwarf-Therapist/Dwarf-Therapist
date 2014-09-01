@@ -20,36 +20,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef BELIEF_H
-#define BELIEF_H
+#ifndef BELIEFCOLUMN_H
+#define BELIEFCOLUMN_H
 
+#include "viewcolumn.h"
 #include "global_enums.h"
-#include "dwarfstats.h"
-#include "gamedatareader.h"
-#include "fortressentity.h"
 
-class Belief : public QObject {
+class ViewColumn;
+class Dwarf;
+class Belief;
+
+class BeliefColumn : public ViewColumn {
     Q_OBJECT
-
-private:
-    //! this map will hold the minimum_value -> string (e.g. level 76-90 of ANXIETY_PROPENSITY is "Is always tense and jittery")
-    QMap<int, QString> m_level_string;
-    QList<int> m_trait_conflicts;
-
 public:
-    Belief(int id, QSettings &s, QObject *parent = 0);
 
-    QString name;
-    int m_id;
+    BeliefColumn(const QString &title, int belief_id, ViewColumnSet *set = 0, QObject *parent = 0);
+    BeliefColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
+    BeliefColumn(const BeliefColumn &to_copy); // copy ctor
+    BeliefColumn* clone() {return new BeliefColumn(*this);}
+    QStandardItem *build_cell(Dwarf *d);
+    QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 
     int belief_id(){return m_id;}
-    bool is_active(const short &personal_val);
-    QString level_message(const short &val);
 
-    void add_conflict(int trait_id);
-    QList<int> get_trait_conflicts(){return m_trait_conflicts;}
-    QString trait_conflict_names();
+    //override
+    void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("belief_id", m_id);}
 
+private:
+    int m_id;
 };
 
-#endif
+#endif // BELIEFCOLUMN_H

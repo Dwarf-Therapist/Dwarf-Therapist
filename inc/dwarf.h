@@ -242,8 +242,8 @@ public:
     }
 
     bool trait_is_active(int trait_id);
-    bool trait_is_conflicted(const int &trait_id);
-    QList<UnitBelief> trait_conflicts(const int &trait_id){return m_conflicting_beliefs.values(trait_id);}
+    bool trait_is_conflicted(const int &trait_id);    
+    QList<UnitBelief> trait_conflicts(const int &trait_id){return m_conflicting_beliefs.values(trait_id);}    
 
     //! returns the numeric rating for the this dwarf in the skill specified by skill_id    
     float get_skill_level(int skill_id, bool raw = false, bool precise = false);
@@ -516,7 +516,7 @@ private:
     QHash<int, short> m_traits;
     QHash<int, short> m_goals;
     QHash<int, UnitBelief> m_beliefs;
-    QMultiHash<int, UnitBelief> m_conflicting_beliefs; //trait_id, conflicting belief_id(s)
+    QMultiHash<int, UnitBelief> m_conflicting_beliefs; //trait_id, conflicting belief_id(s)    
     QVector<Attribute> m_attributes;
     QMap<int, ushort> m_labors;
     QMap<int, ushort> m_pending_labors;

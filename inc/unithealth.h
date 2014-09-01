@@ -81,7 +81,7 @@ public:
 
     BodyPartDamage get_body_part(int body_part_id);
 
-    bool isEmpty() {return (m_df = 0x0);}
+    bool isEmpty() {return (m_df == 0x0);}
     bool required_diagnosis() {return m_req_diagnosis;}
 
     QVector<VIRTADDR> layer_status_flags;

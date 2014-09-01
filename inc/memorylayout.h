@@ -21,8 +21,8 @@ public:
 
     uint get_base_addr(){return m_base_addr;} //only used by the scanner
 
-    uint address(const QString &key) { //globals
-        return m_addresses.value(key, -1) + m_base_addr;
+    uint address(const QString &key, const bool is_global = true) { //globals
+        return m_addresses.value(key, -1) + (is_global ? m_base_addr : 0);
     }
     int dwarf_offset(const QString &key) {
         return m_dwarf_offsets.value(key, -1);

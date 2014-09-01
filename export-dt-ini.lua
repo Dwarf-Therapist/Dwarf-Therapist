@@ -317,6 +317,7 @@ address('cie_first_perc',df.creature_interaction_effect_phys_att_changest,'phys_
 address('cie_phys',df.creature_interaction_effect_phys_att_changest,'phys_att_add')
 address('cie_ment',df.creature_interaction_effect_ment_att_changest,'ment_att_add')
 address('syn_classes_vector',df.syndrome,'syn_class')
+address('trans_race_id',df.creature_interaction_effect_body_transformationst,'race')
 
 header('unit_wound_offsets')
 address('parts',df.unit_wound,'parts')

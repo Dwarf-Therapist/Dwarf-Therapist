@@ -327,7 +327,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         }
     }
         break;
-    case CT_TRAIT:
+    case CT_TRAIT: case CT_BELIEF:
     {
         QColor bg = paint_bg(adjusted, p, opt, idx);
         paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50, 10, 90);

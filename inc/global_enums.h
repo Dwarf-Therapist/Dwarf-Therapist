@@ -291,7 +291,8 @@ typedef enum{
     VERMIN_FISH=9,
     CAN_LEARN=71,
     HATEABLE=72,
-    CAN_SPEAK=89
+    CAN_SPEAK=89,
+    NIGHT_CREATURE=99
 } CREATURE_FLAGS;
 
 typedef enum{

@@ -177,9 +177,6 @@ GameDataReader::GameDataReader(QObject *parent)
     m_mood_skills_profession_map.insert(49,3);
     m_mood_skills_profession_map.insert(55,60);
 
-    //facets
-    refresh_facets();
-
     //goals
     int goal_count = m_data_settings->beginReadArray("goals");
     QStringList goal_names;
@@ -223,6 +220,9 @@ GameDataReader::GameDataReader(QObject *parent)
             }
         }
     }
+
+    //facets (after beliefs)
+    refresh_facets();
 
     int job_count = m_data_settings->beginReadArray("dwarf_jobs");
     qDeleteAll(m_dwarf_jobs);
@@ -468,10 +468,16 @@ void GameDataReader::refresh_facets(){
 
     int traits = m_data_settings->beginReadArray("facets");
     QStringList trait_names;
-    for(int i = 0; i < traits; i++) {
-        m_data_settings->setArrayIndex(i);
-        Trait *t = new Trait(i,*m_data_settings, this);
-        m_traits.insert(i, t);
+    for(int trait_id = 0; trait_id < traits; trait_id++) {
+        m_data_settings->setArrayIndex(trait_id);
+        Trait *t = new Trait(trait_id,*m_data_settings, this);
+        m_traits.insert(trait_id, t);
+
+        foreach(int belief_id, t->get_conflicting_beliefs()){
+            if(m_beliefs.contains(belief_id))
+                m_beliefs[belief_id]->add_conflict(trait_id);
+        }
+
         trait_names << t->name;
     }
     m_data_settings->endArray();

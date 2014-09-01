@@ -339,6 +339,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'cie_phys',%all,'creature_interaction_effect_phys_att_changest','phys_att_add';
     emit_addr 'cie_ment',%all,'creature_interaction_effect_ment_att_changest','ment_att_add';
     emit_addr 'syn_classes_vector',%all,'syndrome','syn_class';
+    emit_addr 'trans_race_id',%all,'creature_interaction_effect_body_transformationst','race';
 
     emit_header 'unit_wound_offsets';
     emit_addr 'parts',%all,'unit_wound','parts';

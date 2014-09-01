@@ -299,7 +299,7 @@ void Dwarf::refresh_data() {
         read_squad_info(); //read squad before job
         read_uniform();
         read_current_job();
-        read_syndromes(); //read syndromes before attributes        
+        read_syndromes(); //read syndromes before attributes
         read_turn_count(); //load time/date stuff for births/migrations - read before age
         set_age_and_migration(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time")); //set age before profession
         read_profession(); //read profession before building the names
@@ -607,10 +607,10 @@ void Dwarf::read_states(){
     }
 }
 
-void Dwarf::read_curse(){
-    m_curse_name = capitalizeEach(m_df->read_string(m_address + m_mem->dwarf_offset("curse")));  
+void Dwarf::read_curse(){    
+    QString curse_name = capitalizeEach(m_df->read_string(m_address + m_mem->dwarf_offset("curse")));
 
-    if(!m_curse_name.isEmpty()){
+    if(!curse_name.isEmpty()){
         m_curse_type = eCurse::OTHER;
 
         //keep track of the curse type; currently vampires and werebeasts are the only truly cursed creatures we
@@ -621,22 +621,9 @@ void Dwarf::read_curse(){
             //if it's a vampire then find the vampire's fake identity and use that name/age instead to match DF
             find_true_ident();
             m_curse_type = eCurse::VAMPIRE;
-        }
-        //normally werebeasts are set apart by having NO_AGING, however mods don't conform to this..
-        if(m_curse_name.startsWith("were",Qt::CaseInsensitive))
-            m_curse_type = eCurse::WEREBEAST;
+        }        
 
-        /* until we get a save to actually test this, we'll have to rely on parsing the curse name
-        int normal_race = m_df->read_int(m_address + 0x9d0);
-        int were_race = m_df->read_int(m_address + 0x9c8);
-        Race *r = m_df->get_race(were_race);
-
-        if(normal_race != were_race && r->get_caste_by_id(0)->flags().has_flag(CRAZED)){
-            m_curse_type = eCurse::WEREBEAST;
-            if(m_curse_name == "")
-                m_curse_name = r->name();
-        }
-        */
+        m_curse_name == curse_name;
     }
 }
 
@@ -1049,46 +1036,68 @@ void Dwarf::read_syndromes(){
     QVector<VIRTADDR> active_unit_syns = m_df->enumerate_vector(m_address + m_mem->dwarf_offset("active_syndrome_vector"));
     //when showing syndromes, be sure to exclude 'vampcurse' and 'werecurse' if we're hiding cursed dwarves
     bool show_cursed = DT->user_settings()->value("options/highlight_cursed",false).toBool();
+    bool is_curse = false;
     foreach(VIRTADDR syn, active_unit_syns){
         Syndrome s = Syndrome(m_df,syn);
-        if(show_cursed || (!show_cursed && !s.display_name().contains("vampcurse",Qt::CaseInsensitive) && !s.display_name().contains("werecurse",Qt::CaseInsensitive))){
-            m_syndromes.append(s);
-            QHash<ATTRIBUTES_TYPE,Syndrome::syn_att_change> syn_changes = s.get_attribute_changes();
-            if(syn_changes.count() > 0){
-                Syndrome::syn_att_change att_change_detail;
-                foreach(ATTRIBUTES_TYPE a_type,syn_changes.keys()){
-                    att_change_detail = s.get_attribute_changes().value(a_type);
-                    QPair<float,int> totals;
-                    if(att_change_detail.is_permanent){
-                        if(!m_attribute_mods_perm.contains(a_type))
-                            totals = qMakePair(1.0f,0);
-                        else
-                            totals = m_attribute_mods_perm.value(a_type);
-                    }else{
-                        if(!m_attribute_mods_temp.contains(a_type))
-                            totals = qMakePair(1.0f,0);
-                        else
-                            totals = m_attribute_mods_temp.value(a_type);
-                    }
+        if(s.display_name().contains("vampcurse",Qt::CaseInsensitive))
+            is_curse = true;
+        if(s.has_transformation()){
+            int race_id = s.get_transform_race();
+            if(race_id >= 0){
+                Race *r_trans = m_df->get_race(race_id);
+                Caste *c_trans = r_trans->get_caste_by_id(0);
+                if(r_trans && r_trans->flags().has_flag(NIGHT_CREATURE) && c_trans && c_trans->flags().has_flag(CRAZED)){
+                    is_curse = true;
+                    m_curse_type = eCurse::WEREBEAST;
+                    m_curse_name = r_trans->name();
+                }
+            }else if(s.display_name().contains("werecurse",Qt::CaseInsensitive)){
+                //older version without the necessary offset, use a generic name if it seems like a werecurse
+                is_curse = true;
+                m_curse_type = eCurse::WEREBEAST;
+                m_curse_name = tr("Werebeast");
+            }
+        }
 
-                    //add valid percentage changes
-                    if(att_change_detail.percent != 100 && att_change_detail.percent != 0)
-                        totals.first *= ((float)att_change_detail.percent/100.0f);
-                    //add valid flat increases
-                    if(att_change_detail.added != 0){
-                        totals.second += att_change_detail.added;
-                    }
-                    if((totals.first != 1 && totals.first != 0) || totals.second != 0){
-                        if(att_change_detail.is_permanent)
-                            m_attribute_mods_perm.insert(a_type,totals);
-                        else
-                            m_attribute_mods_temp.insert(a_type,totals);
+        if(!show_cursed && is_curse)
+            continue;
 
-                        QStringList syns = m_attribute_syndromes.take(a_type);
-                        if(!syns.contains(s.display_name(true,false)))
-                            syns.append(s.display_name(true,false));
-                        m_attribute_syndromes.insert(a_type,syns);
-                    }
+        m_syndromes.append(s);
+        QHash<ATTRIBUTES_TYPE,Syndrome::syn_att_change> syn_changes = s.get_attribute_changes();
+        if(syn_changes.count() > 0){
+            Syndrome::syn_att_change att_change_detail;
+            foreach(ATTRIBUTES_TYPE a_type,syn_changes.keys()){
+                att_change_detail = s.get_attribute_changes().value(a_type);
+                QPair<float,int> totals;
+                if(att_change_detail.is_permanent){
+                    if(!m_attribute_mods_perm.contains(a_type))
+                        totals = qMakePair(1.0f,0);
+                    else
+                        totals = m_attribute_mods_perm.value(a_type);
+                }else{
+                    if(!m_attribute_mods_temp.contains(a_type))
+                        totals = qMakePair(1.0f,0);
+                    else
+                        totals = m_attribute_mods_temp.value(a_type);
+                }
+
+                //add valid percentage changes
+                if(att_change_detail.percent != 100 && att_change_detail.percent != 0)
+                    totals.first *= ((float)att_change_detail.percent/100.0f);
+                //add valid flat increases
+                if(att_change_detail.added != 0){
+                    totals.second += att_change_detail.added;
+                }
+                if((totals.first != 1 && totals.first != 0) || totals.second != 0){
+                    if(att_change_detail.is_permanent)
+                        m_attribute_mods_perm.insert(a_type,totals);
+                    else
+                        m_attribute_mods_temp.insert(a_type,totals);
+
+                    QStringList syns = m_attribute_syndromes.take(a_type);
+                    if(!syns.contains(s.display_name(true,false)))
+                        syns.append(s.display_name(true,false));
+                    m_attribute_syndromes.insert(a_type,syns);
                 }
             }
         }
@@ -1739,6 +1748,7 @@ void Dwarf::read_personality() {
 
         VIRTADDR traits_addr = personality_addr + m_mem->soul_detail("traits");
         m_traits.clear();
+        m_conflicting_beliefs.clear();
         int trait_count = GameDataReader::ptr()->get_traits().count();
         for (int trait_id = 0; trait_id < trait_count; ++trait_id) {
             short val = m_df->read_short(traits_addr + trait_id * 2);
@@ -1748,12 +1758,12 @@ void Dwarf::read_personality() {
                 val = 100;
             m_traits.insert(trait_id, val);
 
-            QList<int> possible_conflicts = GameDataReader::ptr()->get_trait(trait_id)->get_conflicting_beliefs();
-            m_conflicting_beliefs.clear();
+            QList<int> possible_conflicts = GameDataReader::ptr()->get_trait(trait_id)->get_conflicting_beliefs();            
             foreach(int belief_id, possible_conflicts){
                 UnitBelief ub = get_unit_belief(belief_id);
                 if((ub.belief_value() > 10 && val < 40)  || (ub.belief_value() < -10 && val > 60)){
-                    m_conflicting_beliefs.insertMulti(trait_id, ub);
+                    m_beliefs[belief_id].add_trait_conflict(trait_id);
+                    m_conflicting_beliefs.insertMulti(trait_id, ub);                    
                 }
             }
         }

@@ -51,6 +51,7 @@ THE SOFTWARE.
 #include "itemtypecolumn.h"
 #include "superlaborcolumn.h"
 #include "customprofessioncolumn.h"
+#include "beliefcolumn.h"
 
 ViewColumnSet::ViewColumnSet(QString name, QObject *parent)
     : QObject(parent)
@@ -301,6 +302,9 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent, int s
             break;
         case CT_CUSTOM_PROFESSION:
             new CustomProfessionColumn(s,ret_val,parent);
+            break;
+        case CT_BELIEF:
+            new BeliefColumn(s,ret_val,parent);
             break;
         case CT_DEFAULT:
         default:
