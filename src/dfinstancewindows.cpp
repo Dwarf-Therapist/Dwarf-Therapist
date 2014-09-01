@@ -186,14 +186,14 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
         if (!Module32First(snapshot, &me32)) {
             LOGE << "Error enumerating modules!" << get_last_error();
         } else {
-            intptr_t m_base_addr = (intptr_t)me32.modBaseAddr;
-            read_raw(m_base_addr, sizeof(m_dos_header), &m_dos_header);
+            VIRTADDR base_addr = (intptr_t)me32.modBaseAddr;
+            read_raw(base_addr, sizeof(m_dos_header), &m_dos_header);
             if(m_dos_header.e_magic != IMAGE_DOS_SIGNATURE){
                 qWarning() << "invalid executable";
             }
 
             //the dos stub contains a relative address to the pe header, which is used to get the pe header information
-            read_raw(m_base_addr + m_dos_header.e_lfanew, sizeof(m_pe_header), &m_pe_header);
+            read_raw(base_addr + m_dos_header.e_lfanew, sizeof(m_pe_header), &m_pe_header);
             if(m_pe_header.Signature != IMAGE_NT_SIGNATURE){
                 qWarning() << "unsupported PE header type";
             }
