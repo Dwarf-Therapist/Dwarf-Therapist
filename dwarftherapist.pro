@@ -41,13 +41,13 @@ win32 {
     DEFINES += NOMINMAX
 
     check_dirs.path = $$DESTDIR
-    check_dirs.extra = if not exist $$DESTDIR/share/memory_layouts/windows mkdir "$$DESTDIR/share/memory_layouts/windows";
+    check_dirs.extra = if not exist $$DESTDIR\\share\\memory_layouts\\windows mkdir "$$DESTDIR\\share\\memory_layouts\\windows";
 
     copy_game_data.path = $$DESTDIR
-    copy_game_data.extra = copy /Y "share/game_data.ini" "./$$DESTDIR/share";
+    copy_game_data.extra = copy /Y "share\\game_data.ini" ".\\$$DESTDIR\\share";
 
     copy_mem_layouts.path = $$DESTDIR
-    copy_mem_layouts.extra = copy /Y "share/memory_layouts/windows/*" "./$$DESTDIR/share/memory_layouts/windows";
+    copy_mem_layouts.extra = copy /Y "share\\memory_layouts\\windows\\*" ".\\$$DESTDIR\\share\\memory_layouts\\windows";
 
     INSTALLS += check_dirs
     INSTALLS += copy_game_data

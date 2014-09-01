@@ -186,7 +186,7 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
         if (!Module32First(snapshot, &me32)) {
             LOGE << "Error enumerating modules!" << get_last_error();
         } else {
-            m_base_addr = (intptr_t)me32.modBaseAddr;
+            intptr_t m_base_addr = (intptr_t)me32.modBaseAddr;
             read_raw(m_base_addr, sizeof(m_dos_header), &m_dos_header);
             if(m_dos_header.e_magic != IMAGE_DOS_SIGNATURE){
                 qWarning() << "invalid executable";
