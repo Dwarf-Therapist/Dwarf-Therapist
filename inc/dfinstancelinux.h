@@ -73,6 +73,7 @@ private:
     VIRTADDR m_inject_addr;
     VIRTADDR m_alloc_start, m_alloc_end;
     QHash<QString, VIRTADDR> m_string_cache;
+    bool m_warned_glibc;
 };
 
 #endif // DFINSTANCE_H
