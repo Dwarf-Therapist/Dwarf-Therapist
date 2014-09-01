@@ -1,6 +1,7 @@
 Makefile*
 object_script.*
 
+*.exe
 debug/*
 release/*
 ui/*.h

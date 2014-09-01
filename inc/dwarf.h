@@ -119,28 +119,28 @@ public:
     //! return the raw happiness score for this dwarf
     Q_INVOKABLE int get_raw_happiness() {return m_raw_happiness;}
     //! return specific attribute values
-    Q_INVOKABLE int strength() {return attribute((int)AT_STRENGTH);}
-    Q_INVOKABLE int agility() {return attribute((int)AT_AGILITY);}
-    Q_INVOKABLE int toughness() {return attribute((int)AT_TOUGHNESS);}
-    Q_INVOKABLE int endurance() {return attribute((int)AT_ENDURANCE);}
-    Q_INVOKABLE int recuperation() {return attribute((int)AT_RECUPERATION);}
-    Q_INVOKABLE int disease_resistance() {return attribute((int)AT_DISEASE_RESISTANCE);}
-    Q_INVOKABLE int willpower() {return attribute((int)AT_WILLPOWER);}
-    Q_INVOKABLE int memory() {return attribute((int)AT_MEMORY);}
-    Q_INVOKABLE int focus() {return attribute((int)AT_FOCUS);}
-    Q_INVOKABLE int intuition() {return attribute((int)AT_INTUITION);}
-    Q_INVOKABLE int patience() {return attribute((int)AT_PATIENCE);}
-    Q_INVOKABLE int empathy() {return attribute((int)AT_EMPATHY);}
-    Q_INVOKABLE int social_awareness() {return attribute((int)AT_SOCIAL_AWARENESS);}
-    Q_INVOKABLE int creativity() {return attribute((int)AT_CREATIVITY);}
-    Q_INVOKABLE int musicality() {return attribute((int)AT_MUSICALITY);}
-    Q_INVOKABLE int analytical_ability() {return attribute((int)AT_ANALYTICAL_ABILITY);}
-    Q_INVOKABLE int linguistic_ability() {return attribute((int)AT_LINGUISTIC_ABILITY);}
-    Q_INVOKABLE int spatial_sense() {return attribute((int)AT_SPATIAL_SENSE);}
-    Q_INVOKABLE int kinesthetic_sense() {return attribute((int)AT_KINESTHETIC_SENSE);}
+    Q_INVOKABLE int strength() {return attribute(AT_STRENGTH);}
+    Q_INVOKABLE int agility() {return attribute(AT_AGILITY);}
+    Q_INVOKABLE int toughness() {return attribute(AT_TOUGHNESS);}
+    Q_INVOKABLE int endurance() {return attribute(AT_ENDURANCE);}
+    Q_INVOKABLE int recuperation() {return attribute(AT_RECUPERATION);}
+    Q_INVOKABLE int disease_resistance() {return attribute(AT_DISEASE_RESISTANCE);}
+    Q_INVOKABLE int willpower() {return attribute(AT_WILLPOWER);}
+    Q_INVOKABLE int memory() {return attribute(AT_MEMORY);}
+    Q_INVOKABLE int focus() {return attribute(AT_FOCUS);}
+    Q_INVOKABLE int intuition() {return attribute(AT_INTUITION);}
+    Q_INVOKABLE int patience() {return attribute(AT_PATIENCE);}
+    Q_INVOKABLE int empathy() {return attribute(AT_EMPATHY);}
+    Q_INVOKABLE int social_awareness() {return attribute(AT_SOCIAL_AWARENESS);}
+    Q_INVOKABLE int creativity() {return attribute(AT_CREATIVITY);}
+    Q_INVOKABLE int musicality() {return attribute(AT_MUSICALITY);}
+    Q_INVOKABLE int analytical_ability() {return attribute(AT_ANALYTICAL_ABILITY);}
+    Q_INVOKABLE int linguistic_ability() {return attribute(AT_LINGUISTIC_ABILITY);}
+    Q_INVOKABLE int spatial_sense() {return attribute(AT_SPATIAL_SENSE);}
+    Q_INVOKABLE int kinesthetic_sense() {return attribute(AT_KINESTHETIC_SENSE);}
     //! attribute value from id
-    Q_INVOKABLE int attribute(int attrib_id) {return get_attribute(attrib_id).get_value();}
-    Attribute get_attribute(int id);
+    Q_INVOKABLE int attribute(ATTRIBUTES_TYPE attrib_id) {return get_attribute(attrib_id).get_value();}
+    Attribute get_attribute(ATTRIBUTES_TYPE id);
 
     //! return this dwarf's squad reference id
     Q_INVOKABLE int squad_id(bool original = false) { return (original ? m_squad_id : m_pending_squad_id);}
@@ -605,7 +605,7 @@ private:
     void read_soul_aspects();
     void read_skills();
     void read_attributes();
-    void load_attribute(VIRTADDR &addr, int id);
+    void load_attribute(VIRTADDR &addr, ATTRIBUTES_TYPE id);
     void read_personality();    
     void read_turn_count();
     void read_animal_type();

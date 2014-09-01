@@ -8,7 +8,7 @@ Download the Qt Creator IDE and open the dwarftherapist.pro project.
 
 You must perform one of the following steps to have DT run properly in Qt Creator. They are listed in approximate order of recommendation:
 
-- Change default build step: Run ``make`` (aka jom) with arguments ``first install``.
+- Change default build step: Run ``make`` (aka nmake, jom) with arguments ``first install``.
 - Set the *run* working directory to ``%{sourceDir}``.
 - Disable shadow build.
 - Manually copy the ``share`` directory from the clone to the build location, i.e. ``%{buildDir}`` or ``%{buildDir}/<build type>``.

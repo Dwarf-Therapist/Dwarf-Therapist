@@ -40,14 +40,16 @@ win32 {
 
     DEFINES += NOMINMAX
 
+    PRO_FILE_PWD = $$replace(_PRO_FILE_PWD_, /, \\)
+
     check_dirs.path = $$DESTDIR
     check_dirs.extra = if not exist $$DESTDIR\\share\\memory_layouts\\windows mkdir "$$DESTDIR\\share\\memory_layouts\\windows";
 
     copy_game_data.path = $$DESTDIR
-    copy_game_data.extra = copy /Y "share\\game_data.ini" ".\\$$DESTDIR\\share";
+    copy_game_data.extra = copy /Y "$$PRO_FILE_PWD\\share\\game_data.ini" ".\\$$DESTDIR\\share";
 
     copy_mem_layouts.path = $$DESTDIR
-    copy_mem_layouts.extra = copy /Y "share\\memory_layouts\\windows\\*" ".\\$$DESTDIR\\share\\memory_layouts\\windows";
+    copy_mem_layouts.extra = copy /Y "$$PRO_FILE_PWD\\share\\memory_layouts\\windows\\*" ".\\$$DESTDIR\\share\\memory_layouts\\windows";
 
     INSTALLS += check_dirs
     INSTALLS += copy_game_data

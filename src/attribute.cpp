@@ -29,7 +29,7 @@ THE SOFTWARE.
 QHash<int, QVector<QString> > Attribute::m_display_descriptions;
 
 Attribute::Attribute()
-    : m_id(-1)
+    : m_id(AT_NONE)
     , m_value(0)
     , m_value_potential(-1)
     , m_value_balanced(-1)
@@ -43,7 +43,7 @@ Attribute::Attribute()
 {
 }
 
-Attribute::Attribute(int id, int value, int display_value, int max, int cost_to_improve, int desc_index, QString desc)
+Attribute::Attribute(ATTRIBUTES_TYPE id, int value, int display_value, int max, int cost_to_improve, int desc_index, QString desc)
         : m_id(id)
         , m_value(value)
         , m_value_potential(-1)

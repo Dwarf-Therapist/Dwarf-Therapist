@@ -647,7 +647,7 @@ void GridViewDialog::add_attribute_column() {
         return;
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     ATTRIBUTES_TYPE type = static_cast<ATTRIBUTES_TYPE>(a->data().toInt());
-    new AttributeColumn(GameDataReader::ptr()->get_attribute_name((int)type), type, m_active_set, m_active_set);
+    new AttributeColumn(GameDataReader::ptr()->get_attribute_name(type), type, m_active_set, m_active_set);
     draw_columns_for_set(m_active_set);
 }
 
