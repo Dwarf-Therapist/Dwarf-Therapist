@@ -29,42 +29,25 @@ THE SOFTWARE.
 
 class UnitBelief{
 public:
-    UnitBelief(short id, int value, bool is_personal)
-        : m_belief_id(id)
-        , m_belief_value(value)
-        , m_is_personal(is_personal)
-    {
-        check_active(id,value);
-    }
+    UnitBelief();
+    UnitBelief(short id, int value, bool is_personal);
 
-    UnitBelief()
-        : m_belief_id(-1)
-        , m_belief_value(-999)
-        , m_is_personal(true)
-        , m_is_active(false)
-    {
-    }
-
-    void check_active(short id, int val){
-        Belief *b = GameDataReader::ptr()->get_belief(id);
-        if(b){
-            m_is_active = b->is_active(val);
-        }
-    }
+    void check_active(short id, int val);
 
     short belief_id() const {return m_belief_id;}
     int belief_value() const {return m_belief_value;}
     bool is_personal() const {return m_is_personal;}
+    bool is_active() const{return (m_is_personal && m_is_active);} 
 
-    bool is_active() const{
-        return (m_is_personal && m_is_active);
-    }
+    QList<int> trait_conflicts(){return m_trait_conflicts;}
+    void add_trait_conflict(int trait_id){m_trait_conflicts.append(trait_id);}
 
 private:
     short m_belief_id;
     int m_belief_value;
     bool m_is_personal;
     bool m_is_active;
+    QList<int> m_trait_conflicts;
 
 };
 

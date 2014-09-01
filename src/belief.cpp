@@ -72,3 +72,16 @@ QString Belief::level_message(const short &val){
     }
     return capitalize(ret_val);
 }
+
+void Belief::add_conflict(int trait_id){
+    if(!m_trait_conflicts.contains(trait_id))
+        m_trait_conflicts.append(trait_id);
+}
+
+QString Belief::trait_conflict_names(){
+    QStringList items;
+    foreach(int trait_id, m_trait_conflicts){
+        items.append(GameDataReader::ptr()->get_trait_name(trait_id));
+    }
+    return nice_list(items);
+}

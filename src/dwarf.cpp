@@ -1748,6 +1748,7 @@ void Dwarf::read_personality() {
 
         VIRTADDR traits_addr = personality_addr + m_mem->soul_detail("traits");
         m_traits.clear();
+        m_conflicting_beliefs.clear();
         int trait_count = GameDataReader::ptr()->get_traits().count();
         for (int trait_id = 0; trait_id < trait_count; ++trait_id) {
             short val = m_df->read_short(traits_addr + trait_id * 2);
@@ -1757,12 +1758,12 @@ void Dwarf::read_personality() {
                 val = 100;
             m_traits.insert(trait_id, val);
 
-            QList<int> possible_conflicts = GameDataReader::ptr()->get_trait(trait_id)->get_conflicting_beliefs();
-            m_conflicting_beliefs.clear();
+            QList<int> possible_conflicts = GameDataReader::ptr()->get_trait(trait_id)->get_conflicting_beliefs();            
             foreach(int belief_id, possible_conflicts){
                 UnitBelief ub = get_unit_belief(belief_id);
                 if((ub.belief_value() > 10 && val < 40)  || (ub.belief_value() < -10 && val > 60)){
-                    m_conflicting_beliefs.insertMulti(trait_id, ub);
+                    m_beliefs[belief_id].add_trait_conflict(trait_id);
+                    m_conflicting_beliefs.insertMulti(trait_id, ub);                    
                 }
             }
         }

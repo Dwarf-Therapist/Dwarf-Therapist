@@ -129,6 +129,7 @@ private slots:
     void add_equipment_column();
     void add_super_labor_column();
     void add_custom_prof_column();
+    void add_belief_column();
 };
 
 #endif

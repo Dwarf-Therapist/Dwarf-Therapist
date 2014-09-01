@@ -20,36 +20,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef BELIEF_H
-#define BELIEF_H
-
-#include "global_enums.h"
-#include "dwarfstats.h"
+#include "unitbelief.h"
 #include "gamedatareader.h"
-#include "fortressentity.h"
+#include "trait.h"
 
-class Belief : public QObject {
-    Q_OBJECT
+UnitBelief::UnitBelief()
+    : m_belief_id(-1)
+    , m_belief_value(-999)
+    , m_is_personal(true)
+    , m_is_active(false)
+{
+}
 
-private:
-    //! this map will hold the minimum_value -> string (e.g. level 76-90 of ANXIETY_PROPENSITY is "Is always tense and jittery")
-    QMap<int, QString> m_level_string;
-    QList<int> m_trait_conflicts;
+UnitBelief::UnitBelief(short id, int value, bool is_personal)
+    : m_belief_id(id)
+    , m_belief_value(value)
+    , m_is_personal(is_personal)
+{
+    check_active(id,value);
+}
 
-public:
-    Belief(int id, QSettings &s, QObject *parent = 0);
-
-    QString name;
-    int m_id;
-
-    int belief_id(){return m_id;}
-    bool is_active(const short &personal_val);
-    QString level_message(const short &val);
-
-    void add_conflict(int trait_id);
-    QList<int> get_trait_conflicts(){return m_trait_conflicts;}
-    QString trait_conflict_names();
-
-};
-
-#endif
+void UnitBelief::check_active(short id, int val){
+    Belief *b = GameDataReader::ptr()->get_belief(id);
+    if(b){
+        m_is_active = b->is_active(val);
+    }
+}

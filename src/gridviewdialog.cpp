@@ -45,6 +45,7 @@ THE SOFTWARE.
 #include "equipmentcolumn.h"
 #include "superlaborcolumn.h"
 #include "customprofessioncolumn.h"
+#include "beliefcolumn.h"
 
 #include "defines.h"
 #include "statetableview.h"
@@ -365,6 +366,18 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
         a->setData(att_pair.first);
     }
 
+    //BELIEFS
+    QMenu *m_belief = m_cmh->create_title_menu(m, tr("Belief"),tr("Belief columns show a read-only display of a dwarf's score in a particular Belief."));
+    m_cmh->add_sub_menus(m_belief,2);
+    QList<QPair<int, QString> > beliefs = gdr->get_ordered_beliefs();
+    QPair<int, QString> b_pair;
+    foreach(b_pair, beliefs) {
+        QMenu *menu_to_use = m_cmh->find_menu(m_belief,b_pair.second);
+        QAction *a = menu_to_use->addAction(b_pair.second, this, SLOT(add_belief_column()));
+        a->setData(b_pair.first);
+        a->setToolTip(tr("Add a column for Belief %1 (ID%2)").arg(b_pair.second).arg(b_pair.first));
+    }
+
     //CURRENT JOB
     a = m->addAction(tr("Current Job"), this, SLOT(add_idle_column()));
     a->setToolTip(tr("Adds a single column that shows a the current idle state for a dwarf."));
@@ -617,6 +630,15 @@ void GridViewDialog::add_trait_column() {
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     int trait_id = a->data().toInt();
     new TraitColumn(GameDataReader::ptr()->get_trait(trait_id)->name, trait_id, m_active_set, m_active_set);
+    draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_belief_column() {
+    if (!m_active_set)
+        return;
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    int belief_id = a->data().toInt();
+    new BeliefColumn(GameDataReader::ptr()->get_belief_name(belief_id), belief_id, m_active_set, m_active_set);
     draw_columns_for_set(m_active_set);
 }
 

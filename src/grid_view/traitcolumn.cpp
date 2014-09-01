@@ -72,7 +72,7 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
 
     int conflicting_belief_count = m_trait->get_conflicting_beliefs().count();
     if(conflicting_belief_count > 0){
-        infos << QString("<br/>This trait can conflict with %1").arg(m_trait->belief_conflicts_names());
+        infos << tr("<br/>This trait can conflict with %1").arg(m_trait->belief_conflicts_names());
     }
 
     infos.removeAll("");
@@ -90,7 +90,7 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     
     QString tooltip = QString("<center><h3>%1</h3><b>Value: %2</b></center><br/>%3<br/>%4")
             .arg(m_title)
-            .arg(d->trait(m_trait_id))
+            .arg(raw_value)
             .arg(infos.join("<br/>"))
             .arg(tooltip_name_footer(d));
     item->setToolTip(tooltip);
