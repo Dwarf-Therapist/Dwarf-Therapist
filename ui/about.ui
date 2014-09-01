@@ -62,10 +62,10 @@
      <widget class="QLabel" name="lbl_our_version">
       <property name="geometry">
        <rect>
-        <x>19</x>
-        <y>60</y>
-        <width>331</width>
-        <height>20</height>
+        <x>220</x>
+        <y>39</y>
+        <width>121</width>
+        <height>16</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -75,7 +75,7 @@
        </sizepolicy>
       </property>
       <property name="text">
-       <string>VERSION</string>
+       <string>VERSION %1</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_title">
@@ -131,6 +131,23 @@
        <bool>true</bool>
       </property>
      </widget>
+     <widget class="QLabel" name="lbl_qt_version">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>70</y>
+        <width>231</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Compiled with Qt %1, running with Qt %2</string>
+      </property>
+     </widget>
+     <zorder>label_title</zorder>
+     <zorder>lbl_image</zorder>
+     <zorder>lbl_our_version</zorder>
+     <zorder>lbl_qt_version</zorder>
     </widget>
    </item>
    <item>
@@ -148,13 +165,16 @@
       <item>
        <widget class="QLabel" name="lbl_text">
         <property name="text">
-         <string>Copyright &amp;copy; 2009,2010 Trey Stout. &lt;a href=&quot;http://udpviper.com/forums&quot;&gt;UDP Viper&lt;/a&gt;&lt;br&gt;Most icons provided by &lt;a href=&quot;http://p.yusukekamiyamane.com/&quot;&gt;Yusuke Kamiyamane</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copyright © 2009, 2010 Trey Stout (&lt;a href=&quot;http://udpviper.com/forums&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;UDP Viper&lt;/span&gt;&lt;/a&gt;), © 2012–2014 splintermind, other contributors (see CONTRIBUTORS). Most icons provided by &lt;a href=&quot;http://p.yusukekamiyamane.com/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Yusuke Kamiyamane&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="textFormat">
          <enum>Qt::RichText</enum>
         </property>
         <property name="alignment">
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
         </property>
         <property name="openExternalLinks">
          <bool>true</bool>
