@@ -120,7 +120,7 @@ void ViewManager::reload_views() {
     int total_views = 0;
     QSettings *s = 0x0;
 
-    foreach(QString path, find_files_list("share", "default_gridviews.dtg")) {
+    foreach(QString path, find_files_list("default_gridviews.dtg")) {
         if (QFile::exists(path)) {
             LOGI << "Found default_gridviews.dtg:" << path;
             s = new QSettings(path, QSettings::IniFormat);

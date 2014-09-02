@@ -43,7 +43,7 @@ GameDataReader::GameDataReader(QObject *parent)
     : QObject(parent)
     , m_data_settings(0)
 {
-    foreach(QString path, find_files_list("share", "game_data.ini")) {
+    foreach(QString path, find_files_list("game_data.ini")) {
         if (QFile::exists(path)) {
             LOGI << "Found game_data.ini:" << path;
             m_data_settings = new QSettings(path, QSettings::IniFormat);

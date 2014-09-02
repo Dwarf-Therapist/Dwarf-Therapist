@@ -95,7 +95,7 @@ DFInstance::DFInstance(QObject* parent)
     connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
 
     TRACE << "Searching for MemoryLayout ini files in the following directories";
-    foreach(QString path, find_files_list("share", QString("memory_layouts/%1").arg(LAYOUT_SUBDIR))) {
+    foreach(QString path, find_files_list(QString("memory_layouts/%1").arg(LAYOUT_SUBDIR))) {
         TRACE<< path;
         QDir d(path);
         d.setNameFilters(QStringList() << "*.ini");
