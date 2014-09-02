@@ -772,6 +772,8 @@ void MainWindow::load_customizations() {
     CustomProfession *cp;
     ui->tree_custom_professions->clear();
 
+    ui->tree_custom_professions->setSortingEnabled(false);
+
     //add custom professions
     QTreeWidgetItem *cps = new QTreeWidgetItem();
     cps->setText(0,"Custom Professions");
@@ -815,6 +817,10 @@ void MainWindow::load_customizations() {
 
     ui->tree_custom_professions->expandAll();
     ui->tree_custom_professions->blockSignals(false);
+
+    ui->tree_custom_professions->sortItems(-1,Qt::AscendingOrder);
+    ui->tree_custom_professions->setSortingEnabled(true);
+
     connect(ui->tree_custom_professions, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
         m_view_manager, SLOT(jump_to_profession(QTreeWidgetItem *, QTreeWidgetItem *)),Qt::UniqueConnection);
 

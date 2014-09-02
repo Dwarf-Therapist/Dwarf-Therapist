@@ -108,7 +108,7 @@ private:
     QVector<QString> m_generic_words;
     QVector<QString> m_dwarf_words;
     QVector<Word *> m_language;
-    QHash<QString,CustomProfession*> m_custom_professions;
+    QMap<QString,CustomProfession*> m_custom_professions;
     QMap<int, CustomProfession*> m_custom_prof_icns;
     QHash<QString,SuperLabor*> m_super_labors;
     QSettings *m_user_settings;
