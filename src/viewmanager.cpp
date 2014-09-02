@@ -461,7 +461,7 @@ void ViewManager::setCurrentIndex(int idx) {
 
     QSettings *s = DT->user_settings();
     bool group_all = s->value("options/grid/group_all_views",true).toBool();
-    bool scroll_all = s->value("options/grid/scroll_all_views",false).toBool();
+    bool scroll_all = s->value("options/grid/scroll_all_views",true).toBool();
     int default_group = s->value("gui_options/group_by",0).toInt(); //used when groups are synchronized
     if(default_group < 0)
         default_group = 0;

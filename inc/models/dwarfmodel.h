@@ -158,11 +158,22 @@ private:
     GROUP_BY m_group_by;
     int m_selected_col;
     GridView *m_gridview;
+
+    //options
     QFont m_font;
     QChar m_symbol;
+    QColor m_curse_col;
+    QBrush m_cursed_bg;
+    QBrush m_cursed_bg_light;
+    bool m_animal_health;
+    bool m_show_gender;
+    bool m_decorate_nobles;
+    bool m_highlight_nobles;
+    bool m_highlight_cursed;
+    bool m_show_labor_counts;
+    int m_cell_width;
+    int m_cell_padding;
 
-//    int m_global_sort_col;
-//    QString m_global_sort_view;
     QHash<int,QPair<QString,int> > m_global_sort_info; //keeps a pair of gridview name, column idx for each group by type used
     QHash<int,QPair<int,Qt::SortOrder> > m_global_group_sort_info;
 

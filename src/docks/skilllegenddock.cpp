@@ -83,7 +83,7 @@ SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags)
 
     m_current_method = static_cast<UberDelegate::SKILL_DRAWING_METHOD>(
                 DT->user_settings()->value("options/grid/skill_drawing_method",
-                                           UberDelegate::SDM_GROWING_CENTRAL_BOX).toInt());
+                                           UberDelegate::SDM_NUMERIC).toInt());
     cmb_type->setCurrentIndex(m_current_method);
 
     connect(cmb_type, SIGNAL(currentIndexChanged(int)), this, SLOT(set_SDM(int)));

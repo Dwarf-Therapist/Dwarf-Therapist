@@ -119,8 +119,7 @@ Squad* DwarfModel::get_squad(int id){
 }
 
 void DwarfModel::update_header_info(int id, COLUMN_TYPE type){
-    int index = 0;
-    QSettings *s = DT->user_settings();
+    int index = 0;    
     foreach(ViewColumnSet *set, m_gridview->sets()) {
         foreach(ViewColumn *col, set->columns()) {
             index ++;
@@ -132,7 +131,7 @@ void DwarfModel::update_header_info(int id, COLUMN_TYPE type){
                         QStandardItem* header = this->horizontalHeaderItem(index);
                         header->setData(col->bg_color(), Qt::BackgroundColorRole);
                         header->setData(set->name(), Qt::UserRole);
-                        if(s->value("options/grid/show_labor_counts",false).toBool()){
+                        if(m_show_labor_counts){
                             header->setText(QString("%1 %2")
                                             .arg(l->count(),2,10,QChar('0'))
                                             .arg(col->title()).trimmed());
@@ -151,11 +150,8 @@ void DwarfModel::draw_headers(){
     QStandardItem *name_col = new QStandardItem();
     name_col->setToolTip(tr("Right click to sort."));
     setHorizontalHeaderItem(0, name_col);
-    emit clear_spacers();
-    QSettings *s = DT->user_settings();
-    int width = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
-    int pad = s->value("options/grid/cell_padding", 0).toInt();
-    width += (pad*2)+2;
+    emit clear_spacers();    
+
     QString max_title = "";
     foreach(ViewColumnSet *set, m_gridview->sets()) {
         /*QStandardItem *set_header = new QStandardItem(set->name());
@@ -167,7 +163,7 @@ void DwarfModel::draw_headers(){
         foreach(ViewColumn *col, set->columns()) {
             QString h_name = col->title();
             if(col->type()==CT_LABOR){
-                if(s->value("options/grid/show_labor_counts",false).toBool())
+                if(m_show_labor_counts)
                     h_name = QString("%1 %2")
                             .arg(col->count(),2,10,QChar('0'))
                             .arg(col->title()).trimmed();
@@ -190,7 +186,7 @@ void DwarfModel::draw_headers(){
             }
                 break;
             default:
-                emit preferred_header_size(start_col - 1, width);
+                emit preferred_header_size(start_col - 1, m_cell_width);
             }
         }        
     }
@@ -238,12 +234,8 @@ void DwarfModel::build_rows() {
     if(m_dwarves.count() <= 0)
         return;
 
-    //    QSettings *s = DT->user_settings();
-
-    bool animal_health = DT->user_settings()->value("options/animal_health",false).toBool();
-
     // populate dwarf maps
-    bool only_animals = m_gridview->show_animals(); //s->value("read_animals",false).toBool();
+    bool only_animals = m_gridview->show_animals();
     int n_adults=0;
     int n_children=0;
     int n_babies=0;
@@ -303,7 +295,7 @@ void DwarfModel::build_rows() {
                 } else {
                     m_grouped_dwarves[tr("Has Nickname")].append(d);
                 }
-            }else if(m_group_by == GB_HEALTH && (animal_health || (!animal_health && !d->is_animal()))){
+            }else if(m_group_by == GB_HEALTH && (m_animal_health || (!m_animal_health && !d->is_animal()))){
                 int treatments = d->get_unit_health().get_treatment_summary(false,false).count();
                 int statuses = d->get_unit_health().get_status_summary(false,false).count();
                 int wounds = d->get_unit_health().get_wound_details().count();
@@ -513,26 +505,19 @@ void DwarfModel::build_row(const QString &key) {
         }
     }
 
-    bool show_gender = DT->user_settings()->value("options/grid/show_gender_icons",true).toBool();
-    bool highlight_nobles = DT->user_settings()->value("options/highlight_nobles",false).toBool();
-    bool highlight_cursed = DT->user_settings()->value("options/highlight_cursed",false).toBool();
-    QColor curse_col = DT->user_settings()->value("options/colors/cursed", QColor(125,97,186, 200)).value<QColor>();
-    QBrush cursed_bg = build_gradient_brush(curse_col,curse_col.alpha(),0,QPoint(0,0),QPoint(1,0));
-    QBrush cursed_bg_light = build_gradient_brush(curse_col, 50,0,QPoint(0,0),QPoint(1,0)); //keep a weakly highlighted version
-
-
-
     foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
         QStandardItem *i_name = new QStandardItem(d->nice_name());
         bool name_italic = false;
 
-        if((m_group_by==GB_SQUAD && (m_df->get_squad(d->squad_id()) && d->squad_position()==0)) || d->noble_position() != ""){
-            i_name->setText(QString("%1 %2 %1").arg(m_symbol).arg(i_name->text()));
-            name_italic = true;
+        if(m_decorate_nobles){
+            if((m_group_by==GB_SQUAD && (m_df->get_squad(d->squad_id()) && d->squad_position()==0)) || d->noble_position() != ""){
+                i_name->setText(QString("%1 %2 %1").arg(m_symbol).arg(i_name->text()));
+                name_italic = true;
+            }
         }
 
         //background gradients for nobles
-        if(d && highlight_nobles){
+        if(d && m_highlight_nobles){
             if(d->noble_position() != ""){
                 QColor col = m_df->fortress()->get_noble_color(d->historical_id());
                 i_name->setData(build_gradient_brush(col,col.alpha(),0,QPoint(0,0),QPoint(1,0)),Qt::BackgroundRole);
@@ -541,20 +526,20 @@ void DwarfModel::build_row(const QString &key) {
         }
 
         //set cursed colors
-        if(d && highlight_cursed){
+        if(d && m_highlight_cursed){
             switch(d->get_curse_type()){
             case eCurse::VAMPIRE:
             case eCurse::WEREBEAST:
             {
                 name_italic = true;
-                i_name->setData(cursed_bg,Qt::BackgroundRole);
-                i_name->setData(compliment(curse_col,false,0.25),Qt::ForegroundRole);
+                i_name->setData(m_cursed_bg,Qt::BackgroundRole);
+                i_name->setData(compliment(m_curse_col,false,0.25),Qt::ForegroundRole);
             }
                 break;
             case eCurse::OTHER:
             {
                 name_italic = true;
-                i_name->setData(cursed_bg_light,Qt::BackgroundRole);
+                i_name->setData(m_cursed_bg_light,Qt::BackgroundRole);
             }
                 break;
             default:
@@ -604,7 +589,7 @@ void DwarfModel::build_row(const QString &key) {
 //        i_name->setData(sort_val, DR_GLOBAL);
 
         //set gender icons
-        if(show_gender){
+        if(m_show_gender){
             icn_gender.addFile(d->gender_icon_path());
             i_name->setIcon(icn_gender);
         }
@@ -898,8 +883,10 @@ QBrush DwarfModel::build_gradient_brush(QColor base_col, int alpha_start, int al
 }
 
 void DwarfModel::read_settings(){
+    QSettings *s = DT->user_settings();
+
     //font
-    m_font = DT->user_settings()->value("options/grid/font", QFont(DefaultFonts::getRowFontName(), DefaultFonts::getRowFontSize())).value<QFont>();
+    m_font = s->value("options/grid/font", QFont(DefaultFonts::getRowFontName(), DefaultFonts::getRowFontSize())).value<QFont>();
 
     //noble symbol
     QFontMetrics fm(m_font);
@@ -909,6 +896,19 @@ void DwarfModel::read_settings(){
         if(!fm.inFont(m_symbol))
             m_symbol = QChar(0x002A); //asterisk
     }
+
+    m_animal_health = DT->user_settings()->value("options/animal_health",false).toBool();
+    m_show_gender = s->value("options/grid/show_gender_icons",true).toBool();
+    m_decorate_nobles = s->value("options/grid/decorate_noble_names",false).toBool();
+    m_highlight_nobles = s->value("options/highlight_nobles",true).toBool();
+    m_highlight_cursed = s->value("options/highlight_cursed",false).toBool();
+    m_curse_col = s->value("options/colors/cursed", FortressEntity::get_default_color(FortressEntity::CURSED)).value<QColor>();
+    m_cursed_bg = build_gradient_brush(m_curse_col,m_curse_col.alpha(),0,QPoint(0,0),QPoint(1,0));
+    m_cursed_bg_light = build_gradient_brush(m_curse_col, 50,0,QPoint(0,0),QPoint(1,0)); //keep a weakly highlighted version
+    m_show_labor_counts = s->value("options/grid/show_labor_counts",false).toBool();
+    m_cell_width = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
+    m_cell_padding = s->value("options/grid/cell_padding", 0).toInt();
+    m_cell_width += (m_cell_padding*2)+2;
 }
 
 QFont DwarfModel::get_font(bool bold, bool italic, bool underline){

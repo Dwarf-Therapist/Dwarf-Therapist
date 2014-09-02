@@ -21,13 +21,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include "fortressentity.h"
+#include "dwarftherapist.h"
 #include "dfinstance.h"
 #include "memorylayout.h"
-#include "truncatingfilelogger.h"
-#include <QtDebug>
 #include "gamedatareader.h"
 
-QColor FortressEntity::default_noble_color = QColor(255,153,0,180);
+QHash<FortressEntity::NOBLE_COLORS, QColor> FortressEntity::m_noble_colors;
+QMap<QString,FortressEntity::NOBLE_COLORS> FortressEntity::m_raw_color_map = FortressEntity::build_color_map();
 
 /*
  *it seems this is more of a civilization entity instead of a fortress entity.
@@ -41,6 +41,8 @@ FortressEntity::FortressEntity(DFInstance *df, VIRTADDR address, QObject *parent
     , m_mem(df->memory_layout())
 {
     load_data();
+
+    connect(DT,SIGNAL(settings_changed()),this,SLOT(load_noble_colors()));
 }
 
 FortressEntity::~FortressEntity()
@@ -66,7 +68,8 @@ void FortressEntity::load_data() {
 
 void FortressEntity::read_entity(){
     //read the position/noble colors
-    load_noble_colors();
+    if(m_noble_colors.count() <= 0)
+        load_noble_colors();
 
     m_df->attach();
     //civ name
@@ -137,17 +140,59 @@ void FortressEntity::refresh_squads(){
 }
 
 void FortressEntity::load_noble_colors(){
+    m_noble_colors.clear();
     QSettings *u = DT->user_settings();
 
-    QColor c;
     u->beginGroup("options");
     u->beginGroup("colors");
-    for(int i = 0; i<12; i++){
-        c = u->value(QString("nobles/%1").arg(i), default_noble_color).value<QColor>();
-        m_noble_colors.insert(static_cast<NOBLE_COLORS>(i),c); //i matches noble enum
+    for(int idx = 0; idx < CURSED; idx++){
+        NOBLE_COLORS nc_type = static_cast<NOBLE_COLORS>(idx);
+        m_noble_colors.insert(nc_type,u->value(QString("nobles/%1").arg(idx), get_default_color(nc_type)).value<QColor>());
     }
     u->endGroup();
     u->endGroup();
+}
+
+QColor FortressEntity::get_default_color(NOBLE_COLORS nc_type){
+    switch(nc_type){
+    case MULTIPLE:
+        return QColor(112,116,83,180);
+        break;
+    case LAW: case HAMMERER:
+        return QColor(74,143,41,180);
+        break;
+    case LEADER: case MONARCH: case ROYALTY:
+        return QColor(133,0,131,180);
+        break;
+    case MILITIA:
+        return QColor(24,117,255,180);
+        break;
+    case CHIEF_MEDICAL_DWARF:
+        return QColor(237,67,83, 255);
+        break;
+    case CURSED:
+        return QColor(125,97,186, 255);
+        break;
+    default:
+        return QColor(255,153,0,180);
+        break;
+    }
+}
+
+FortressEntity::NOBLE_COLORS FortressEntity::get_color_type(const QString &raw) {
+    //if we don't have an exact match, try to match with something else
+    //as mods can specify raw values like XXX_BROKER for example
+    if(m_raw_color_map.contains(raw.toUpper()))
+        return m_raw_color_map.value(raw.toUpper());
+    else{
+        QString val = raw;
+        val = val.replace(" ","_").toUpper();
+        foreach(QString key, m_raw_color_map.keys()){
+            if(val.contains(key))
+                return m_raw_color_map.value(key);
+        }
+        return MULTIPLE; //unknown
+    }
 }
 
 QString FortressEntity::get_noble_positions(int hist_id, bool is_male){
@@ -175,5 +220,41 @@ QColor FortressEntity::get_noble_color(int hist_id){
     else
         return p[0].highlight;
 
-    return default_noble_color;
+    return m_noble_colors.value(MULTIPLE); //unknown
+}
+
+QMap<QString, FortressEntity::NOBLE_COLORS> FortressEntity::build_color_map(){
+    QMap<QString, NOBLE_COLORS> m;
+    m["BOOKKEEPER"] = BOOKKEEPER;
+    m["BROKER"] = BROKER;
+    m["BARON"] = ROYALTY;
+    m["DUKE"] = ROYALTY;
+    m["COUNT"] = ROYALTY;
+    m["CAPTAIN_OF_THE_GUARD"] = LAW;
+    m["CHAMPION"] = CHAMPION;
+    m["CHIEF_MEDICAL_DWARF"] = CHIEF_MEDICAL_DWARF;
+    m["EXPEDITION_LEADER"] = LEADER;
+    m["MAYOR"] = LEADER;
+    m["HAMMERER"] = HAMMERER;
+    m["MANAGER"] = MANAGER;
+    m["MILITIA_CAPTAIN"] = MILITIA;
+    m["MILITIA_COMMANDER"] = MILITIA;
+    m["MONARCH"] = MONARCH;
+    m["CUSTOM_CASTLE_HOLDER"] = ROYALTY; //seems this is used for lords/ladies
+    m["LIBRARIAN"] = BOOKKEEPER; //higher learning mod
+    m["LEADER"] = MONARCH; //have seen queen as the name for this
+    m["GENERAL"] = MILITIA; //have seen princess and general for this
+    m["LIEUTENANT"] = MILITIA;
+    m["KING"] = MONARCH;
+    m["QUEEN"] = MONARCH;
+    m["CUSTOM_BANDIT_LEADER"] = LEADER;
+    m["CUSTOM_LAW_MAKER"] = LAW;
+    m["CUSTOM_MILITARY_GOALS"] = MILITIA;
+    m["CUSTOM_MILITARY_STRATEGIST"] = MILITIA;
+    m["HIGH_PRIEST"] = RELIGIOUS;
+    m["PRIEST"] = RELIGIOUS;
+    m["DRUID"] = RELIGIOUS;
+    m["IMPERATOR"] = MONARCH;
+    m["CURSED"] = CURSED;
+    return m;
 }

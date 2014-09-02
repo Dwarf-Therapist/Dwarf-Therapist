@@ -241,6 +241,9 @@
        </item>
        <item>
         <widget class="QCheckBox" name="cb_check_for_updates_on_startup">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="statusTip">
           <string>When checked, Dwarf Therapist will go online at the time of launch and notify you if there is an update available.</string>
          </property>
@@ -333,7 +336,7 @@
           <string>When checked, loads and shows health for animals. This requires health columns to be added to a view set to show animals!</string>
          </property>
          <property name="text">
-          <string>Read Animal Health Information.</string>
+          <string>Read Animal Health Information</string>
          </property>
         </widget>
        </item>
@@ -370,7 +373,7 @@
       <attribute name="title">
        <string>Grid Options</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
        <item>
         <widget class="QCheckBox" name="cb_auto_contrast">
          <property name="sizePolicy">
@@ -535,7 +538,7 @@
           <string>When checked, this will use the colors defined in the grid colors tab to change the border color of highest moodable skills, or skills which have already had a mood.</string>
          </property>
          <property name="text">
-          <string>Highlight moodable cells in labor/skill columns.</string>
+          <string>Highlight moodable cells in labor/skill columns</string>
          </property>
         </widget>
        </item>
@@ -551,7 +554,7 @@
           <string>When checked, any attributes which are affected by syndromes will be highlighted with a blue border.</string>
          </property>
          <property name="text">
-          <string>Highlight the cells of attributes affected by syndromes.</string>
+          <string>Highlight attribute cells affected by syndromes</string>
          </property>
         </widget>
        </item>
@@ -567,7 +570,23 @@
           <string>When checked, shows the gender icons to the left of the name in the grid views.</string>
          </property>
          <property name="text">
-          <string>Show Gender Icons.</string>
+          <string>Show Gender Icons</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cb_decorate_nobles">
+         <property name="toolTip">
+          <string>When checked, italicizes and adds the masterwork symbol around noble names.</string>
+         </property>
+         <property name="statusTip">
+          <string>When checked, italicizes and adds the masterwork symbol around noble names.</string>
+         </property>
+         <property name="whatsThis">
+          <string>When checked, italicizes and adds the masterwork symbol around noble names.</string>
+         </property>
+         <property name="text">
+          <string>Decorate Noble Names</string>
          </property>
         </widget>
        </item>

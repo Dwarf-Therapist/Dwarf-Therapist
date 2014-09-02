@@ -236,7 +236,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     QColor color2 = p.window().color();
     ui->lbl_happiness->setStyleSheet(build_gradient(color,color2));
 
-    if(DT->user_settings()->value("options/highlight_nobles",false).toBool() && d->noble_position() != ""){        
+    if(DT->user_settings()->value("options/highlight_nobles",true).toBool() && d->noble_position() != ""){
         color = DT->get_DFInstance()->fortress()->get_noble_color(d->historical_id());
         ui->lbl_noble_position->setStyleSheet(build_gradient(color,color2));
     }

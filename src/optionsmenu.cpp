@@ -92,37 +92,28 @@ OptionsMenu::OptionsMenu(QWidget *parent)
             << new CustomColor(tr("Miserable"), tr("Color shown in happiness columns when a dwarf is <b>miserable.</b>"),
                                QString("happiness/%1").arg(static_cast<int>(DH_MISERABLE)), QColor(0xFF0000), this);
 
-    QColor m_noble_default = FortressEntity::default_noble_color;
-    m_noble_colors
-            << new CustomColor(tr("Bookkeeper"),tr("Highlight color for the bookkeeper."),
-                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::BOOKKEEPER)), m_noble_default, this)
-            << new CustomColor(tr("Broker"),tr("Highlight color for the broker."),
-                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::BROKER)), m_noble_default, this)
-            << new CustomColor(tr("Champions"),tr("Highlight color for champions."),
-                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::CHAMPION)), m_noble_default, this)
-            << new CustomColor(tr("Chief Medical Dwarf"),tr("Highlight color for the chief medical dwarf."),
-                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::CHIEF_MEDICAL_DWARF)), m_noble_default, this)
-            << new CustomColor(tr("Hammerer"),tr("Highlight color for the hammerer."),
-                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::HAMMERER)), m_noble_default, this)
-            << new CustomColor(tr("Law"),tr("Highlight color for the captain of the guard and sherrif."),
-                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::LAW)), m_noble_default, this)
-            << new CustomColor(tr("Leader/Mayor"),tr("Highlight color for the expedition leaders and mayors."),
-                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::LEADER)), m_noble_default, this)
-            << new CustomColor(tr("Manager"),tr("Highlight color for the managers."),
-                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::MANAGER)), m_noble_default, this)
-            << new CustomColor(tr("Militia"),tr("Highlight color for the militia commander, militia captains, lieutenants and generals."),
-                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::MILITIA)), m_noble_default, this)
-            << new CustomColor(tr("Monarch"),tr("Highlight color for kings, queens, emperors and empresses."),
-                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::MONARCH)), m_noble_default, this)
-            << new CustomColor(tr("Royalty"),tr("Highlight color for barons, baronesses, dukes, duchesses, counts, countesses, lords and ladies."),
-                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::ROYALTY)), m_noble_default, this)
-            << new CustomColor(tr("Religious"),tr("Highlight color for high priests, priests and druids."),
-                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::RELIGIOUS)), m_noble_default, this)
-            << new CustomColor(tr("Multiple"),tr("Highlight color when holding multiple positions, or unknown positions."),
-                               QString("nobles/%1").arg(static_cast<int>(FortressEntity::MULTIPLE)), m_noble_default, this);
+    QList<QPair<QString,QString> > noble_color_desc;
+    noble_color_desc << qMakePair(tr("Bookkeeper"),tr("Highlight color for the bookkeeper."));
+    noble_color_desc << qMakePair(tr("Broker"),tr("Highlight color for the broker."));
+    noble_color_desc << qMakePair(tr("Champions"),tr("Highlight color for champions."));
+    noble_color_desc << qMakePair(tr("Chief Medical"),tr("Highlight color for the chief medical dwarf."));
+    noble_color_desc << qMakePair(tr("Hammerer"),tr("Highlight color for the hammerer."));
+    noble_color_desc << qMakePair(tr("Law (Guards, Sherrif)"),tr("Highlight color for the captain of the guard and sherrif."));
+    noble_color_desc << qMakePair(tr("Leader && Mayor"),tr("Highlight color for the expedition leaders and mayors."));
+    noble_color_desc << qMakePair(tr("Manager"),tr("Highlight color for the managers."));
+    noble_color_desc << qMakePair(tr("Militia"),tr("Highlight color for the militia commander, militia captains, lieutenants and generals."));
+    noble_color_desc << qMakePair(tr("Monarch"),tr("Highlight color for kings, queens, emperors and empresses."));
+    noble_color_desc << qMakePair(tr("Royalty (Baron, Duchess, etc.)"),tr("Highlight color for barons, baronesses, dukes, duchesses, counts, countesses, lords and ladies."));
+    noble_color_desc << qMakePair(tr("Religious (Priests, Druids)"),tr("Highlight color for high priests, priests and druids."));
+    noble_color_desc << qMakePair(tr("Multiple"),tr("Highlight color when holding multiple positions, or unknown positions."));
+    QPair<QString,QString> nc_pair;
+    foreach(nc_pair, noble_color_desc){
+        FortressEntity::NOBLE_COLORS nc_type = FortressEntity::get_color_type(nc_pair.second);
+        m_noble_colors << new CustomColor(nc_pair.first,nc_pair.second,QString("nobles/%1").arg((int)nc_type),FortressEntity::get_default_color(nc_type),this);
+    }
 
     m_curse_color = new CustomColor(tr("Cursed"),tr("Cursed creatures will be highlighted with this color."),
-                                    "cursed",QColor(125,97,186),this);
+                                    "cursed",FortressEntity::get_default_color(FortressEntity::CURSED),this);
 
     QVBoxLayout *grid_layout = new QVBoxLayout;
     grid_layout->addWidget(ui->cb_grid_health_colors);
@@ -248,12 +239,13 @@ void OptionsMenu::read_settings() {
     ui->cb_labor_counts->setChecked(s->value("show_labor_counts",false).toBool());
 
     ui->cb_sync_grouping->setChecked(s->value("group_all_views",true).toBool());
-    ui->cb_sync_scrolling->setChecked(s->value("scroll_all_views",false).toBool());
+    ui->cb_sync_scrolling->setChecked(s->value("scroll_all_views",true).toBool());
 
     ui->cb_moodable->setChecked(s->value("color_mood_cells",false).toBool());
     ui->cb_attribute_syns->setChecked(s->value("color_attribute_syns",true).toBool());
     ui->cb_gender_icons->setChecked(s->value("show_gender_icons",true).toBool());
     ui->cb_grid_health_colors->setChecked(s->value("color_health_cells",true).toBool());
+    ui->cb_decorate_nobles->setChecked(s->value("decorate_noble_names",false).toBool());
     //the signal to disable the color pickers doesn't fire on the initial read. this is a work around for the inital setting
     if(!ui->cb_moodable->isChecked()){
         m_general_colors.at(8)->setDisabled(true);
@@ -283,7 +275,7 @@ void OptionsMenu::read_settings() {
     ui->cb_hide_children->setChecked(s->value("hide_children_and_babies", false).toBool());
     ui->cb_generic_names->setChecked(s->value("use_generic_names", false).toBool());
     ui->cb_curse_highlight->setChecked(s->value("highlight_cursed", false).toBool());
-    ui->cb_noble_highlight->setChecked(s->value("highlight_nobles", false).toBool());
+    ui->cb_noble_highlight->setChecked(s->value("highlight_nobles", true).toBool());
     ui->cb_labor_exclusions->setChecked(s->value("labor_exclusions", true).toBool());    
     ui->cb_no_diagnosis->setChecked(s->value("diagnosis_not_required",false).toBool());
     ui->cb_animal_health->setChecked(s->value("animal_health",false).toBool());
@@ -373,6 +365,7 @@ void OptionsMenu::write_settings() {
         s->setValue("show_labor_counts",ui->cb_labor_counts->isChecked());
         s->setValue("group_all_views",ui->cb_sync_grouping->isChecked());
         s->setValue("scroll_all_views",ui->cb_sync_scrolling->isChecked());
+        s->setValue("decorate_noble_names",ui->cb_decorate_nobles->isChecked());
         s->endGroup();
 
         s->setValue("read_on_startup", ui->cb_read_dwarves_on_startup->isChecked());
@@ -477,6 +470,7 @@ void OptionsMenu::restore_defaults() {
     foreach(CustomColor *cc, m_noble_colors) {
         cc->reset_to_default();
     }
+
     ui->cb_read_dwarves_on_startup->setChecked(true);
     ui->cb_auto_contrast->setChecked(true);
     ui->cb_show_aggregates->setChecked(true);
@@ -491,20 +485,21 @@ void OptionsMenu::restore_defaults() {
     ui->cb_header_text_direction->setChecked(false);
     ui->cb_curse_highlight->setChecked(false);
     ui->cb_happiness_icons->setChecked(false);
-    ui->cb_noble_highlight->setChecked(false);
+    ui->cb_noble_highlight->setChecked(true);
     ui->sb_roles_tooltip->setValue(3);
     ui->sb_roles_pane->setValue(10);
     ui->chk_custom_roles->setChecked(false);
     ui->chk_roles_in_labor->setChecked(false);
     ui->cb_labor_counts->setChecked(false);
     ui->cb_sync_grouping->setChecked(true);
-    ui->cb_sync_scrolling->setChecked(false);
+    ui->cb_sync_scrolling->setChecked(true);
     ui->cb_moodable->setChecked(false);
     ui->cb_gender_icons->setChecked(true);
     ui->cb_grid_health_colors->setChecked(true);
     ui->cb_no_diagnosis->setChecked(false);
     ui->cb_animal_health->setChecked(false);
     ui->cb_attribute_syns->setChecked(true);
+    ui->cb_decorate_nobles->setChecked(false);
 
     ui->chk_show_caste->setChecked(true);
     ui->chk_show_caste_desc->setChecked(true);
@@ -554,6 +549,8 @@ void OptionsMenu::restore_defaults() {
 
     ui->sb_cell_size->setValue(DEFAULT_CELL_SIZE);
     ui->sb_cell_padding->setValue(0);
+
+    set_skill_drawing_method(UberDelegate::SDM_NUMERIC);
 }
 
 void OptionsMenu::show_font_chooser(QPair<QFont,QFont> &font_pair, QString msg, QLabel *l) {

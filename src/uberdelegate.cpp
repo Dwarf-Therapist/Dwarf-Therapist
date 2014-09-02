@@ -85,7 +85,7 @@ void UberDelegate::read_settings() {
     cell_size += (cell_padding*2)+2; //increase the cell size by padding
     auto_contrast = s->value("options/auto_contrast", true).toBool();
     show_aggregates = s->value("options/show_aggregates", true).toBool();
-    m_skill_drawing_method = static_cast<SKILL_DRAWING_METHOD>(s->value("options/grid/skill_drawing_method", SDM_GROWING_CENTRAL_BOX).toInt());
+    m_skill_drawing_method = static_cast<SKILL_DRAWING_METHOD>(s->value("options/grid/skill_drawing_method", SDM_NUMERIC).toInt());
     draw_happiness_icons = s->value("options/grid/happiness_icons",false).toBool();
     color_mood_cells = s->value("options/grid/color_mood_cells",false).toBool();
     color_health_cells = s->value("options/grid/color_health_cells",true).toBool();
