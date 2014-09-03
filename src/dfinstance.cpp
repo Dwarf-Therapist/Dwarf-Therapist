@@ -906,7 +906,7 @@ void DFInstance::load_fortress_name(){
     VIRTADDR world_data_addr = read_addr(m_layout->address("world_data"));
     QVector<VIRTADDR> sites = enumerate_vector(world_data_addr + m_layout->address("active_sites_vector",false));
     foreach(VIRTADDR site, sites){
-        short t = read_short(site + m_layout->address("world_site_type"));
+        short t = read_short(site + m_layout->address("world_site_type",false));
         if(t==0){ //player fortress type
             m_fortress_name = get_language_word(site);
             m_fortress_name_translated = get_translated_word(site);
