@@ -1128,7 +1128,7 @@ void roleDialog::selection_changed(){
             m_dwarf = dwarfs.at(0);
         if(m_dwarf){
             ui->lbl_name->setText(m_dwarf->nice_name());
-            float rating = m_dwarf->get_role_rating(m_role->name);
+            float rating = m_dwarf->get_raw_role_rating(m_role->name);
             ui->lbl_current->setText("Current Raw Rating: " + QString::number(rating,'g',4) + "%");
             //ui->lbl_new->setText("New Raw Rating: " + QString::number(rating,'g',2) + "%");
             calc_new_role();

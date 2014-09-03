@@ -164,7 +164,8 @@ Dwarf::~Dwarf() {
 
     m_labors.clear();
     m_pending_labors.clear();
-    m_role_ratings.clear();    
+    m_role_ratings.clear();
+    m_raw_role_ratings.clear();
     m_sorted_role_ratings.clear();
     m_sorted_custom_role_ratings.clear();
     m_states.clear();
@@ -2628,28 +2629,27 @@ void Dwarf::calc_attribute_ratings(){
     }
 }
 
-QList<float> Dwarf::calc_role_ratings(){
+QList<double> Dwarf::calc_role_ratings(){
     calc_attribute_ratings();
 
     LOGD << ":::::::::::::::::::::::::::::::::::::::::::::::::::";
     LOGD << m_nice_name;
 
     m_role_ratings.clear();
+    m_raw_role_ratings.clear();
     m_sorted_role_ratings.clear();
-    m_sorted_custom_role_ratings.clear();
-    QList<float> valid_ratings;
-    float rating = 0.0;
+    m_sorted_custom_role_ratings.clear();    
+    double rating = 0.0;
     foreach(Role *m_role, GameDataReader::ptr()->get_roles()){
         if(m_role){
             rating = calc_role_rating(m_role);
-            m_role_ratings.insert(m_role->name, rating);
-            valid_ratings.append(rating);
+            m_raw_role_ratings.insert(m_role->name, rating);
         }
     }    
-    return valid_ratings;
+    return m_raw_role_ratings.values();
 }
 
-float Dwarf::calc_role_rating(Role *m_role){
+double Dwarf::calc_role_rating(Role *m_role){
     //if there's a script, use this in place of any aspects
     if(!m_role->script.trimmed().isEmpty()){
         QJSEngine m_engine;
@@ -2661,11 +2661,11 @@ float Dwarf::calc_role_rating(Role *m_role){
     LOGD << "  +" << m_role->name << "-" << m_nice_name;
 
     //no script, calculate rating based on specified aspects
-    float rating_att = 0.0;
-    float rating_trait = 0.0;
-    float rating_skill = 0.0;
-    float rating_prefs = 0.0;
-    float rating_total = 0.0;
+    double rating_att = 0.0;
+    double rating_trait = 0.0;
+    double rating_skill = 0.0;
+    double rating_prefs = 0.0;
+    double rating_total = 0.0;
 
     //use the role's aspect section weights (these are defaulted to the global weights)
     float global_att_weight = m_role->attributes_weight.weight;
@@ -2813,19 +2813,21 @@ const QList<Role::simple_rating> &Dwarf::sorted_role_ratings(){
 float Dwarf::get_role_rating(QString role_name){
     return m_role_ratings.value(role_name);
 }
-void Dwarf::set_role_rating(QString role_name, float value){
-    m_role_ratings.insert(role_name,value);
+float Dwarf::get_raw_role_rating(QString role_name){
+    return m_raw_role_ratings.value(role_name);
 }
 
-void Dwarf::update_rating_list(){
+void Dwarf::refresh_role_display_ratings(){
     GameDataReader *gdr = GameDataReader::ptr();
-    //keep a sorted list of the ratings as well
-    foreach(QString name, m_role_ratings.uniqueKeys()){
+    //keep a sorted list of the display ratings for tooltips, detail pane, etc.
+    foreach(QString name, m_raw_role_ratings.uniqueKeys()){
         Role::simple_rating sr;
         sr.is_custom = gdr->get_role(name)->is_custom;
-        sr.rating = m_role_ratings.value(name);
+        float display_rating = DwarfStats::get_role_rating(m_raw_role_ratings.value(name)) * 100.0f;
+        m_role_ratings.insert(name,display_rating);
+        sr.rating = display_rating;
         sr.name = name;
-        m_sorted_role_ratings.append(sr);
+        m_sorted_role_ratings.append(sr);        
     }
     if(DT->user_settings()->value("options/show_custom_roles",false).toBool()){
         qSort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(),&Dwarf::sort_ratings_custom);

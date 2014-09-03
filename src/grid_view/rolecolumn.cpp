@@ -88,13 +88,13 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
     }
 
     if(m_role){
-        float raw_rating = d->get_role_rating(m_role->name);
-        float drawn_rating = DwarfStats::get_role_rating((float)raw_rating) * 100.0f;
+        float raw_rating = d->get_raw_role_rating(m_role->name);
+        float drawn_rating = d->get_role_rating(m_role->name);
         item->setData(drawn_rating, DwarfModel::DR_RATING);
-        item->setData(roundf(raw_rating), DwarfModel::DR_DISPLAY_RATING);
+        item->setData(roundf(drawn_rating), DwarfModel::DR_DISPLAY_RATING);
         item->setData(raw_rating, DwarfModel::DR_SORT_VALUE);
         item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
-        set_export_role(DwarfModel::DR_DISPLAY_RATING);
+        set_export_role(DwarfModel::DR_SORT_VALUE);
 
         QList<QVariant> related_labors;
         QStringList labor_names;
@@ -121,7 +121,7 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
                 tooltip = QString("<center><h3>%1 - %3%</h3></center>%2%5<center><h4>%4 is a %3% fit for this role.</h4></center>")
                         .arg(m_role->name)
                         .arg(match_str)
-                        .arg(QString::number(raw_rating,'f',2))
+                        .arg(QString::number(drawn_rating,'f',2))
                         .arg(d->nice_name())                        
                         .arg(labors_desc);
 

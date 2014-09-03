@@ -669,16 +669,18 @@ void DFInstance::load_role_ratings(){
 
     QVector<double> all_role_ratings;
     foreach(Dwarf *d, m_labor_capable_dwarves){
-        foreach(float rating, d->calc_role_ratings()){
+        foreach(double rating, d->calc_role_ratings()){
             all_role_ratings.append(rating);
             if(calc_role_avg)
                 role_rating_avg+=rating;
         }
-        d->update_rating_list();
     }
-    LOGD << "Role Drawing Info:";
+    LOGD << "Role Display Info:";
     DwarfStats::init_roles(all_role_ratings);
-    LOGD << "     - loaded role drawing data in" << tr.elapsed() << "ms";
+    foreach(Dwarf *d, m_labor_capable_dwarves){
+        d->refresh_role_display_ratings();
+    }
+    LOGD << "     - loaded role display data in" << tr.elapsed() << "ms";
 
     if(DT->get_log_manager()->get_appender("core")->minimum_level() <= LL_DEBUG){
         float max = 0;
