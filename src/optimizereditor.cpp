@@ -538,6 +538,7 @@ void optimizereditor::save_pressed(){
 
     //notify we're done
     this->accept();
+    delete m_original_plan;
     cleanup();
 }
 
@@ -546,6 +547,7 @@ void optimizereditor::cancel_pressed(){
     if(is_editing)
         GameDataReader::ptr()->get_opt_plans().insert(m_original_plan->name, m_original_plan);
     this->reject();
+    delete m_plan;
     cleanup();
 }
 

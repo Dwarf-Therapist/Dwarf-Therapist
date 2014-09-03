@@ -35,6 +35,7 @@ public:
     laborOptimizerPlan();
     laborOptimizerPlan(QSettings &s, QObject *parent = 0);
     laborOptimizerPlan(const laborOptimizerPlan &lop);
+    virtual ~laborOptimizerPlan();
 
     QString name;
     bool exclude_nobles;

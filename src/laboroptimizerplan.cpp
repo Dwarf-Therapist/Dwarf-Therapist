@@ -57,7 +57,6 @@ laborOptimizerPlan::laborOptimizerPlan(QSettings &s, QObject *parent)
 laborOptimizerPlan::laborOptimizerPlan(const laborOptimizerPlan &lop)
     :QObject(lop.parent())
 {
-    plan_details = lop.plan_details;
     exclude_nobles = lop.exclude_nobles;
     exclude_military = lop.exclude_military;
     exclude_squads = lop.exclude_squads;
@@ -66,7 +65,15 @@ laborOptimizerPlan::laborOptimizerPlan(const laborOptimizerPlan &lop)
     auto_haulers = lop.auto_haulers;
     pop_percent = lop.pop_percent;
     hauler_percent = lop.hauler_percent;
-    name = lop.name;    
+    name = lop.name;
+    foreach(PlanDetail *pd, lop.plan_details){
+        PlanDetail *tmp = new PlanDetail(*pd);
+        plan_details.append(tmp);
+    }
+}
+
+laborOptimizerPlan::~laborOptimizerPlan(){
+    qDeleteAll(plan_details);
 }
 
 void laborOptimizerPlan::read_details(QSettings &s){

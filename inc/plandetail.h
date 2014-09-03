@@ -18,6 +18,18 @@ public:
         assigned_laborers = 0;
         group_ratio = 0;
     }
+    PlanDetail(const PlanDetail &pd)
+        :QObject(pd.parent())
+        , labor_id(pd.labor_id)
+        , role_name(pd.role_name)
+        , priority(pd.priority)
+        , ratio(pd.ratio)
+        , use_skill(pd.use_skill)
+        , max_count(0)
+        , assigned_laborers(pd.assigned_laborers)
+        , group_ratio(pd.group_ratio)
+    {
+    }
 
     int labor_id;
     QString role_name;
