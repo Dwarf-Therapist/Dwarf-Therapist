@@ -417,40 +417,4 @@ typedef enum {
     SCR_ALL
 } FILTER_SCRIPT_TYPE;
 
-typedef enum {
-    SEX_UNK = -1,
-    SEX_F = 0,
-    SEX_M = 1
-} GENDER_TYPE;
-
-typedef enum {
-    ORIENT_ASEXUAL,
-    ORIENT_BISEXUAL,
-    ORIENT_HOMO,
-    ORIENT_HETERO
-} SEX_ORIENT_TYPE;
-
-static inline QString get_gender_desc(const GENDER_TYPE &type) {
-    switch (type) {
-    case SEX_UNK: return QObject::tr("Other");
-    case SEX_F: return QObject::tr("Female");
-    case SEX_M: return QObject::tr("Male");
-    default:
-        return QObject::tr("Unknown");
-    }
-    return QObject::tr("Unknown");
-}
-
-static inline QString get_orientation_desc(const SEX_ORIENT_TYPE &type) {
-    switch (type) {
-    case ORIENT_ASEXUAL: return QObject::tr("Asexual");
-    case ORIENT_HOMO: return QObject::tr("Homosexual");
-    case ORIENT_HETERO: return QObject::tr("Heterosexual");
-    case ORIENT_BISEXUAL: return QObject::tr("Bisexual");
-    default:
-        return "";
-    }
-    return "";
-}
-
 #endif // GLOBAL_ENUMS_H

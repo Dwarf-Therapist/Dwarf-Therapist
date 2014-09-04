@@ -72,6 +72,42 @@ public:
     //! return whether or not the dwarf is on break
     bool is_on_break() {return m_is_on_break;}
 
+    typedef enum {
+        SEX_UNK = -1,
+        SEX_F = 0,
+        SEX_M = 1
+    } GENDER_TYPE;
+
+    typedef enum {
+        ORIENT_ASEXUAL,
+        ORIENT_BISEXUAL,
+        ORIENT_HOMO,
+        ORIENT_HETERO
+    } SEX_ORIENT_TYPE;
+
+    static QString get_gender_desc(const GENDER_TYPE &type) {
+        switch (type) {
+        case SEX_UNK: return QObject::tr("Other");
+        case SEX_F: return QObject::tr("Female");
+        case SEX_M: return QObject::tr("Male");
+        default:
+            return QObject::tr("Unknown");
+        }
+        return QObject::tr("Unknown");
+    }
+
+    static QString get_orientation_desc(const SEX_ORIENT_TYPE &type) {
+        switch (type) {
+        case ORIENT_ASEXUAL: return QObject::tr("Asexual");
+        case ORIENT_HOMO: return QObject::tr("Homosexual");
+        case ORIENT_HETERO: return QObject::tr("Heterosexual");
+        case ORIENT_BISEXUAL: return QObject::tr("Bisexual");
+        default:
+            return "";
+        }
+        return "";
+    }
+
     struct unit_gender{
         GENDER_TYPE gender;
         SEX_ORIENT_TYPE orientation;
@@ -87,7 +123,6 @@ public:
     QString get_gender_orient_desc() {return m_gender_info.full_desc;}
     Q_INVOKABLE bool is_male() {return (m_gender_info.gender == SEX_M);}
 
-    //! false if the creature is a dwarf, true if not
     Q_INVOKABLE bool is_animal() {return m_is_animal;}
     Q_INVOKABLE bool is_pet() {return m_is_pet;}
     Q_INVOKABLE TRAINED_LEVEL trained_level() {return m_animal_type;}

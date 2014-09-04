@@ -171,7 +171,10 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     if(d->id() == m_current_id)
         return;
 
-    ui->lbl_dwarf_name->setText(QString("<img src='%1'> %2").arg(d->gender_icon_path()).arg(d->nice_name()));
+    ui->lbl_gender->setText(QString("<img src='%1'>").arg(d->gender_icon_path()));
+    ui->lbl_gender->setToolTip(d->get_gender_orient_desc());
+
+    ui->lbl_dwarf_name->setText(d->nice_name());
     ui->lbl_dwarf_name->setToolTip(tr("Name: %1").arg(ui->lbl_dwarf_name->text()));
 
     ui->lbl_age->setText(d->get_age_formatted());
@@ -182,7 +185,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     if(!trans_name.isEmpty())
         ui->lbl_translated_name->setToolTip(tr("Translated Name: %1").arg(trans_name));
 
-    ui->lbl_profession->setText(QString("%1 %2").arg(embedPixmap(d->profession_icon())).arg(d->profession()));
+    ui->lbl_profession->setText(QString("%2 %1").arg(embedPixmap(d->profession_icon())).arg(d->profession()));
     ui->lbl_profession->setToolTip(tr("Profession: %1").arg(ui->lbl_profession->text()));
 
     if(d->noble_position().isEmpty()){        

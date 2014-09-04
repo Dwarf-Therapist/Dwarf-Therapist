@@ -466,6 +466,8 @@ void DwarfModel::build_row(const QString &key) {
             agg_first_col->setData(first_dwarf->caste_tag(), DR_SORT_VALUE);
         } else if (m_group_by == GB_AGE){
             agg_first_col->setData(first_dwarf->get_age(), DR_SORT_VALUE);
+        } else if (m_group_by == GB_SEX){
+            agg_first_col->setData(first_dwarf->get_gender_orient_desc(), DR_SORT_VALUE);
         } else if (m_group_by == GB_SQUAD){
             int squad_id = first_dwarf->squad_id();
             if(squad_id != -1){
