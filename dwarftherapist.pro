@@ -82,6 +82,7 @@ else:macx {
     layouts.files += share/memory_layouts/osx/v0.40.08_osx.ini
     layouts.files += share/memory_layouts/osx/v0.40.09_osx.ini
     layouts.files += share/memory_layouts/osx/v0.40.10_osx.ini
+    layouts.files += share/memory_layouts/osx/v0.40.11_osx.ini
     QMAKE_BUNDLE_DATA += layouts
 }
 else:unix {
