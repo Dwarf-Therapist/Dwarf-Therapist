@@ -524,8 +524,9 @@ void Dwarf::read_gender_orientation() {
         icon_name.append("female");
     }
 
-    if(m_gender_info.gender != SEX_UNK && m_first_soul){
-        quint32 orientation = m_df->read_addr(m_first_soul + 0x0078);
+    int orient_offset = m_mem->soul_detail("orientation");
+    if(m_gender_info.gender != SEX_UNK && m_first_soul && orient_offset != -1){
+        quint32 orientation = m_df->read_addr(m_first_soul + orient_offset);
         m_gender_info.male_interest = has_flag(0x0002,orientation);
         m_gender_info.male_commit = has_flag(0x0004,orientation);
         m_gender_info.female_interest = has_flag(0x0008, orientation);

@@ -356,6 +356,7 @@ sub generate_dt_ini($$$$) {
 
     emit_header 'soul_details';
     emit_addr 'name',%all,'unit_soul','name';
+    emit_addr 'orientation',%all,'unit_soul','orientation_flags'
     emit_addr 'mental_attrs',%all,'unit_soul','mental_attrs';
     emit_addr 'skills',%all,'unit_soul','skills';
     emit_addr 'preferences',%all,'unit_soul','preferences';

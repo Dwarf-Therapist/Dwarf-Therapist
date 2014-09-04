@@ -334,6 +334,7 @@ address('max_pen',df.unit_wound.T_parts,'max_penetration_perc')
 
 header('soul_details')
 address('name',df.unit_soul,'name')
+address('orientation',df.unit_soul,'orientation_flags')
 address('mental_attrs',df.unit_soul,'mental_attrs')
 address('skills',df.unit_soul,'skills')
 address('preferences',df.unit_soul,'preferences')
