@@ -168,7 +168,7 @@ bool DFInstanceOSX::detach() {
 }
 
 USIZE DFInstanceOSX::read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer) {
-    USIZE bytes_read = 0;
+    vm_size_t bytes_read = 0;
     memset(buffer, 0, bytes);
 
     // try to attach, will be ignored if we're already attached
