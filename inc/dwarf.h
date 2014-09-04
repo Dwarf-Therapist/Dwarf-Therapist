@@ -72,8 +72,20 @@ public:
     //! return whether or not the dwarf is on break
     bool is_on_break() {return m_is_on_break;}
 
-    Q_INVOKABLE GENDER_TYPE get_gender() {return m_gender;}
-    Q_INVOKABLE bool is_male() {return (m_gender == SEX_M);}
+    struct unit_gender{
+        GENDER_TYPE gender;
+        SEX_ORIENT_TYPE orientation;
+        bool male_commit;
+        bool female_commit;
+        bool male_interest;
+        bool female_interest;
+        QString full_desc;
+    };
+
+    Q_INVOKABLE GENDER_TYPE get_gender() {return m_gender_info.gender;}
+    Q_INVOKABLE SEX_ORIENT_TYPE get_orientation() {return m_gender_info.orientation;}
+    QString get_gender_orient_desc() {return m_gender_info.full_desc;}
+    Q_INVOKABLE bool is_male() {return (m_gender_info.gender == SEX_M);}
 
     //! false if the creature is a dwarf, true if not
     Q_INVOKABLE bool is_animal() {return m_is_animal;}
@@ -480,8 +492,6 @@ private:
     int m_race_id; // each creature has racial ID
     DWARF_HAPPINESS m_happiness; // enum value of happiness
     int m_raw_happiness; // raw score before being turned into an enum
-    GENDER_TYPE m_gender;
-
     int m_mood_id;
     bool m_had_mood;
     QString m_artifact_name;
@@ -568,6 +578,7 @@ private:
     Uniform* m_uniform;
     int m_goals_realized;
     int m_worst_rust_level;
+    unit_gender m_gender_info;
 
     //! inventory grouped by body part /category
     QHash<QString,QList<Item*> > m_inventory_grouped;
@@ -588,7 +599,7 @@ private:
     // these methods read data from raw memory
     void read_id();
     void read_flags();
-    void read_sex();
+    void read_gender_orientation();
     void read_mood();
     void read_curse();
     void read_caste();
@@ -616,6 +627,8 @@ private:
     void read_squad_info();
     void read_inventory();
     void read_uniform();
+
+    QString get_gender_icon_suffix(bool male_flag, bool female_flag, bool checking_interest = false);
 
     void process_inv_item(QString category, Item *item, bool is_contained_item=false);
 

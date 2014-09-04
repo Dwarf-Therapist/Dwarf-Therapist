@@ -423,6 +423,13 @@ typedef enum {
     SEX_M = 1
 } GENDER_TYPE;
 
+typedef enum {
+    ORIENT_ASEXUAL,
+    ORIENT_BISEXUAL,
+    ORIENT_HOMO,
+    ORIENT_HETERO
+} SEX_ORIENT_TYPE;
+
 static inline QString get_gender_desc(const GENDER_TYPE &type) {
     switch (type) {
     case SEX_UNK: return QObject::tr("Other");
@@ -432,6 +439,18 @@ static inline QString get_gender_desc(const GENDER_TYPE &type) {
         return QObject::tr("Unknown");
     }
     return QObject::tr("Unknown");
+}
+
+static inline QString get_orientation_desc(const SEX_ORIENT_TYPE &type) {
+    switch (type) {
+    case ORIENT_ASEXUAL: return QObject::tr("Asexual");
+    case ORIENT_HOMO: return QObject::tr("Homosexual");
+    case ORIENT_HETERO: return QObject::tr("Heterosexual");
+    case ORIENT_BISEXUAL: return QObject::tr("Bisexual");
+    default:
+        return "";
+    }
+    return "";
 }
 
 #endif // GLOBAL_ENUMS_H

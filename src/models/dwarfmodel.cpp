@@ -258,8 +258,8 @@ void DwarfModel::build_rows() {
                 m_grouped_dwarves[0].append(d);
             }else if(m_group_by == GB_PROFESSION){
                 m_grouped_dwarves[d->profession()].append(d);
-            }else if(m_group_by == GB_SEX){
-                m_grouped_dwarves[get_gender_desc(d->get_gender())].append(d);
+            }else if(m_group_by == GB_SEX){                
+                m_grouped_dwarves[d->get_gender_orient_desc()].append(d);
             }else if(m_group_by == GB_MIGRATION_WAVE){
                 m_grouped_dwarves[d->get_migration_desc()].append(d);                
             }else if(m_group_by == GB_AGE){

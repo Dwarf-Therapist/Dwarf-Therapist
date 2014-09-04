@@ -89,8 +89,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_first_soul(0)
     , m_race_id(-1)
     , m_happiness(DH_MISERABLE)
-    , m_raw_happiness(0)
-    , m_gender(SEX_UNK)
+    , m_raw_happiness(0)    
     , m_mood_id(-1)
     , m_had_mood(false)
     , m_artifact_name("")
@@ -308,7 +307,7 @@ void Dwarf::refresh_data() {
         //curse check will change the name and age
         read_curse(); //read curse before attributes
         read_soul_aspects(); //assumes soul already read, and requires caste to be read first
-        read_sex();
+        read_gender_orientation();
         read_animal_type(); //need skills loaded to check for hostiles
         read_noble_position();
         read_preferences();
@@ -509,22 +508,62 @@ void Dwarf::read_id() {
     TRACE << "UNIT ID:" << m_id << "HIST_FIG_ID:" << m_hist_id;
 }
 
-void Dwarf::read_sex() {
+void Dwarf::read_gender_orientation() {
     BYTE sex = m_df->read_byte(m_address + m_mem->dwarf_offset("sex"));
     TRACE << "GENDER:" << sex;
-    m_gender = static_cast<GENDER_TYPE>(sex);    
-//    if(m_first_soul){
-//        quint32 orientation = m_df->read_int(m_first_soul + 0x78);
-//        m_unit_flags << orientation;
-//        LOGI << m_nice_name << "orientation" << orientation << "gender" << sex;
-//    }
-    if(m_gender == SEX_UNK){
-        m_icn_gender = tr(":img/question-white.png");
-    }else if(m_gender == SEX_M){
-        m_icn_gender = tr(":img/male.png");
+    m_gender_info.gender = static_cast<GENDER_TYPE>(sex);
+    m_gender_info.orientation = ORIENT_HETERO; //default
+
+    QStringList icon_name;
+
+    if(m_gender_info.gender == SEX_UNK){
+        icon_name.append("question-white");
+    }else if(m_gender_info.gender == SEX_M){
+        icon_name.append("male");
     }else{
-        m_icn_gender = tr(":img/female.png");
+        icon_name.append("female");
     }
+
+    if(m_gender_info.gender != SEX_UNK && m_first_soul){
+        quint32 orientation = m_df->read_addr(m_first_soul + 0x0078);
+        m_gender_info.male_interest = has_flag(0x0002,orientation);
+        m_gender_info.male_commit = has_flag(0x0004,orientation);
+        m_gender_info.female_interest = has_flag(0x0008, orientation);
+        m_gender_info.female_commit = has_flag(0x0010, orientation);
+
+        //check the commitment/breed bits first. this determines animal breeding, and will override the interest bit, seemingly
+        //for example, a male dwarf, with interest in males and commitment to females will marry a female
+        icon_name.append(get_gender_icon_suffix(m_gender_info.male_commit,m_gender_info.female_commit));
+    }
+    icon_name.removeAll("");
+    m_icn_gender = QString(":img/%1.png").arg(icon_name.join("-"));
+
+    QStringList gender_desc;
+    gender_desc << get_gender_desc(m_gender_info.gender) << get_orientation_desc(m_gender_info.orientation);
+    gender_desc.removeAll("");
+    m_gender_info.full_desc = gender_desc.join(" - ");
+}
+
+QString Dwarf::get_gender_icon_suffix(bool male_flag, bool female_flag, bool checking_interest){
+    QString suffix = "";
+    if(male_flag && female_flag){
+        suffix ="bi";
+        m_gender_info.orientation = ORIENT_BISEXUAL;
+    }else if(male_flag && m_gender_info.gender == SEX_M){
+        suffix ="male";
+        m_gender_info.orientation = ORIENT_HOMO;
+    }else if(female_flag && m_gender_info.gender == SEX_F){
+        suffix ="female";
+        m_gender_info.orientation = ORIENT_HOMO;
+    }else if(!male_flag && !female_flag){
+        if(m_is_animal || checking_interest){
+            suffix ="asexual";
+            m_gender_info.orientation = ORIENT_ASEXUAL;
+        }else{
+            return get_gender_icon_suffix(m_gender_info.male_interest,m_gender_info.female_interest,true);
+        }
+    }
+    return suffix;
 }
 
 void Dwarf::read_mood(){

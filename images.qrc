@@ -90,6 +90,12 @@
         <file>img/question-white.png</file>
         <file>img/table-insert-column.png</file>
         <file>img/book-question.png</file>
+        <file>img/male-male.png</file>
+        <file>img/female-bi.png</file>
+        <file>img/female-female.png</file>
+        <file>img/male-bi.png</file>
+        <file>img/female-asexual.png</file>
+        <file>img/male-asexual.png</file>
     </qresource>
     <qresource prefix="/config">
         <file alias="default_gridviews">share/default_gridviews.dtg</file>
