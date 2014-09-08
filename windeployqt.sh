@@ -2,6 +2,8 @@
 
 set -e
 
+PATH="$PATH:/bin"
+
 source="${BASH_SOURCE%\\*}"
 source="${source%/*}"
 : ${source:=$1}
@@ -47,19 +49,22 @@ for d in "" debug release; do
         fi
 
         printf "Tracing dependencies... "
-        "$depends" -c -oc:"$d"/depends.csv "$dt" || [[ $? == 10 ]] || exit $?
+        "$depends" -c -oc:"$d"/depends.csv "$dt" || [[ $? == 10 ]]
         printf "done.\n"
         while read dep; do
-            if [[ $dep == ,* ]]; then
-                rdep=${dep#,\"}
+            if [[ $dep == ,* ]] || [[ $dep == 6,* ]]; then
+                rdep=${dep#?,\"}
                 deps+="${rdep%%\"*} "
             fi
         done < "$d"/depends.csv
-        rm "$d"/depends.csv
 
-        printf "Copying dependencies... "
-        robocopy -sl -np -njh -njs "$QTDIR\\bin" "$d"/ $deps
-        printf "done.\n"
+	if [[ -n $deps ]]; then
+		printf "Copying dependencies... "
+		robocopy -sl -np -njh -njs "$QTDIR\\bin" "$d"/ $deps || [[ $? == 2 || $? == 3 ]]
+		printf "done.\n"
+	else
+		printf "No dependencies to copy.\n"
+	fi
     fi
 done
 

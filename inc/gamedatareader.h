@@ -109,8 +109,8 @@ public:
     void refresh_opt_plans();
     void refresh_facets();
 
-    QString get_attribute_name(int id){return m_attribute_names.value(id);}
-    QHash<int,QString> get_attributes(){return m_attribute_names;}
+    QString get_attribute_name(ATTRIBUTES_TYPE id){return m_attribute_names.value(id);}
+    QHash<ATTRIBUTES_TYPE,QString> get_attributes(){return m_attribute_names;}
     ATTRIBUTES_TYPE get_attribute_type(QString name){return m_attributes_by_name.value(name);}
 
     QString get_string_for_key(QString key);
@@ -175,7 +175,7 @@ private:
     QHash<int, QString> m_skill_levels;
 
     QHash<int, int> m_attribute_levels;
-    QHash<int, QString> m_attribute_names;
+    QHash<ATTRIBUTES_TYPE, QString> m_attribute_names;
     QHash<QString, ATTRIBUTES_TYPE> m_attributes_by_name;
     QList<QPair<int,QString> > m_ordered_attribute_names;
 

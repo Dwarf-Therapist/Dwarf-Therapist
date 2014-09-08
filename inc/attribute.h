@@ -29,10 +29,9 @@ THE SOFTWARE.
 #include "qcolor.h"
 
 class Attribute {
-
 public:    
     Attribute();
-    Attribute(int id, int value, int display_value, int max, int cost_to_improve = 500, int desc_index = 0, QString desc = "");
+    Attribute(ATTRIBUTES_TYPE id, int value, int display_value, int max, int cost_to_improve = 500, int desc_index = 0, QString desc = "");
 
     int id(){return m_id;}
     ATTRIBUTES_TYPE att_type(){return static_cast<ATTRIBUTES_TYPE>(m_id);}
@@ -61,7 +60,7 @@ public:
     static const QColor color_affected_by_syns() {return QColor(0, 60, 128, 135);}
 
 private:
-    int m_id;
+    ATTRIBUTES_TYPE m_id;
     int m_value; //raw value including permanent syndrome effects
     float m_value_potential;
     float m_value_balanced;

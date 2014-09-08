@@ -16,6 +16,7 @@ typedef enum {
 } DWARF_HAPPINESS;
 
 typedef enum {
+    AT_NONE = -1,
     AT_STRENGTH = 0,
     AT_AGILITY=1,
     AT_TOUGHNESS=2,

@@ -1868,19 +1868,18 @@ void Dwarf::read_attributes() {
     //read the physical attributes
     VIRTADDR addr = m_address + m_mem->dwarf_offset("physical_attrs");
     for(int i=0; i<6; i++){
-        load_attribute(addr,i);
+        load_attribute(addr, static_cast<ATTRIBUTES_TYPE>(i));
     }
     //read the mental attributes, but append to our array (augment the key by the number of physical attribs)
     int phys_size = m_attributes.size();
     addr = m_first_soul + m_mem->soul_detail("mental_attrs");
     for(int i=0; i<13; i++){
-        load_attribute(addr,i+phys_size);
+        load_attribute(addr, static_cast<ATTRIBUTES_TYPE>(i+phys_size));
     }
 }
 
-void Dwarf::load_attribute(VIRTADDR &addr, int id){
+void Dwarf::load_attribute(VIRTADDR &addr, ATTRIBUTES_TYPE id){
     int cti = 500;
-    ATTRIBUTES_TYPE att_id = static_cast<ATTRIBUTES_TYPE>(id);
     QPair<int,QString> desc; //index, description of descriptor
 
     int value = (int)m_df->read_int(addr);
@@ -1890,19 +1889,19 @@ void Dwarf::load_attribute(VIRTADDR &addr, int id){
     //apply any permanent syndrome changes to the raw/base value
     int perm_add = 0;
     int perm_perc = 1;
-    if(m_attribute_mods_perm.contains(att_id)){
-        perm_perc = m_attribute_mods_perm.value(att_id).first;
+    if(m_attribute_mods_perm.contains(id)){
+        perm_perc = m_attribute_mods_perm.value(id).first;
         value *= perm_perc;
-        perm_add = m_attribute_mods_perm.value(att_id).second;
+        perm_add = m_attribute_mods_perm.value(id).second;
         value += perm_add;
     }
     //apply temp syndrome changes to the display value
-    if(m_attribute_mods_temp.contains(att_id)){
+    if(m_attribute_mods_temp.contains(id)){
         display_value *= perm_perc;
-        display_value *= m_attribute_mods_temp.value(att_id).first;
+        display_value *= m_attribute_mods_temp.value(id).first;
 
         display_value += perm_add;
-        display_value += m_attribute_mods_temp.value(att_id).second;
+        display_value += m_attribute_mods_temp.value(id).second;
     }else{
         display_value *= perm_perc;
         display_value += perm_add;
@@ -1910,7 +1909,7 @@ void Dwarf::load_attribute(VIRTADDR &addr, int id){
 
     if(m_caste){
         cti = m_caste->get_attribute_cost_to_improve(id);
-        desc = m_caste->get_attribute_descriptor_info(att_id, display_value);
+        desc = m_caste->get_attribute_descriptor_info(id, display_value);
     }
     Attribute a = Attribute(id, value, display_value, limit, cti, desc.first, desc.second);
 
@@ -1918,14 +1917,14 @@ void Dwarf::load_attribute(VIRTADDR &addr, int id){
     if(!m_is_baby && !m_is_animal)
         a.calculate_balanced_value();
 
-    if(m_attribute_syndromes.contains(att_id))
-        a.set_syn_names(m_attribute_syndromes.value(att_id));
+    if(m_attribute_syndromes.contains(id))
+        a.set_syn_names(m_attribute_syndromes.value(id));
 
     m_attributes.append(a);
     addr+=0x1c;
 }
 
-Attribute Dwarf::get_attribute(int id){
+Attribute Dwarf::get_attribute(ATTRIBUTES_TYPE id){
     if(id < m_attributes.count())
         return m_attributes.at(id);
     else
@@ -2724,13 +2723,11 @@ double Dwarf::calc_role_rating(Role *m_role){
 
     //ATTRIBUTES
     if(m_role->attributes.count()>0){
-        int attrib_id = 0;
-        aspect_value = 0;
         foreach(QString name, m_role->attributes.uniqueKeys()){
             a = m_role->attributes.value(name);
             weight = a->weight;
 
-            attrib_id = GameDataReader::ptr()->get_attribute_type(name.toUpper());
+            ATTRIBUTES_TYPE attrib_id = GameDataReader::ptr()->get_attribute_type(name.toUpper());
             aspect_value = get_attribute(attrib_id).rating(true);
 
             if(a->is_neg)

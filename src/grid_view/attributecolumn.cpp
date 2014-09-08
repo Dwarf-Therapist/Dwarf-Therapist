@@ -38,7 +38,7 @@ AttributeColumn::AttributeColumn(const QString &title, ATTRIBUTES_TYPE type, Vie
     , m_attribute_type(type)
 {
     if (title.isEmpty()) // Determine title based on type if no title was passed in
-        m_title = GameDataReader::ptr()->get_attribute_name((int)type);
+        m_title = GameDataReader::ptr()->get_attribute_name(type);
 }
 
 AttributeColumn::AttributeColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
@@ -55,7 +55,7 @@ AttributeColumn::AttributeColumn(const AttributeColumn &to_copy)
 
 QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
-    Attribute a = d->get_attribute((int)m_attribute_type);
+    Attribute a = d->get_attribute(m_attribute_type);
     short rawVal = a.get_value();
     QString descriptor = a.get_descriptor();
     float rating = a.rating() * 100.0f;    

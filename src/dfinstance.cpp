@@ -624,7 +624,7 @@ void DFInstance::load_role_ratings(){
     QVector<double> pref_values;
 
     foreach(Dwarf *d, m_labor_capable_dwarves){
-        foreach(int id, GameDataReader::ptr()->get_attributes().keys()){
+        foreach(ATTRIBUTES_TYPE id, GameDataReader::ptr()->get_attributes().keys()){
             attribute_values.append(d->get_attribute(id).get_balanced_value());
             attribute_raw_values.append(d->get_attribute(id).get_value());
         }

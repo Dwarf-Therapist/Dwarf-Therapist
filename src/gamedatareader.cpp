@@ -100,19 +100,19 @@ GameDataReader::GameDataReader(QObject *parent)
     QStringList attribute_names;
     for(int i = 0; i < attributes; ++i) {
         m_data_settings->setArrayIndex(i);        
-        int id = m_data_settings->value("id",0).toInt();
+        ATTRIBUTES_TYPE id = static_cast<ATTRIBUTES_TYPE>(m_data_settings->value("id",0).toInt());
         QString name = m_data_settings->value("name","unknown").toString();
         m_attribute_names.insert(id,name);
-        m_attributes_by_name.insert(name.toUpper(),static_cast<ATTRIBUTES_TYPE>(id));
+        m_attributes_by_name.insert(name.toUpper(),id);
         attribute_names << name;
     }
     m_data_settings->endArray();  
 
     qSort(attribute_names);
     foreach(QString sorted_name, attribute_names) {
-        foreach(int id, m_attribute_names.uniqueKeys()) {
+        foreach(ATTRIBUTES_TYPE id, m_attribute_names.uniqueKeys()) {
             if (m_attribute_names.value(id) == sorted_name) {
-                m_ordered_attribute_names << QPair<int, QString>(id, m_attribute_names.value(id));
+                m_ordered_attribute_names << QPair<ATTRIBUTES_TYPE, QString>(id, m_attribute_names.value(id));
                 break;
             }
         }

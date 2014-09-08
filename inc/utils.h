@@ -68,19 +68,19 @@ static inline int decode_int(const QByteArray &arr) {
 static inline QByteArray encode_skillpattern(short skill, short exp, short rating) {
     QByteArray bytes;
     bytes.reserve(6);
-    bytes[0] = (uchar)skill;
-    bytes[1] = (uchar)(skill >> 8);
-    bytes[2] = (uchar)exp;
-    bytes[3] = (uchar)(exp >> 8);
-    bytes[4] = (uchar)rating;
-    bytes[5] = (uchar)(rating >> 8);
+    bytes[0] = static_cast<uchar>(skill);
+    bytes[1] = static_cast<uchar>(skill >> 8);
+    bytes[2] = static_cast<uchar>(exp);
+    bytes[3] = static_cast<uchar>(exp >> 8);
+    bytes[4] = static_cast<uchar>(rating);
+    bytes[5] = static_cast<uchar>(rating >> 8);
     return bytes;
 }
 
 static inline QString by_char(QByteArray arr) {
     QString out;
     for(int i=0; i < arr.size(); i++) {
-        out += QString::number((uchar)arr.at(i), 16);
+        out += QString::number(arr.at(i), 16);
         out += " ";
     }
     return out;
@@ -164,10 +164,10 @@ template <class T> class vPtr
 {
 public:
     static T* asPtr(QVariant v){
-        return (T*)v.value<void *>();
+        return static_cast<T*>(v.value<void *>());
     }
     static QVariant asQVariant(T* ptr){
-        return qVariantFromValue((void*) ptr);
+        return qVariantFromValue(static_cast<void*>(ptr));
     }
 };
 

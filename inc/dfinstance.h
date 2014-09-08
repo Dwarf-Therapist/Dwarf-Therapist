@@ -57,7 +57,7 @@ public:
     WORD dwarf_race_id() {return m_dwarf_race_id;}
     QList<MemoryLayout*> get_layouts() { return m_memory_layouts.values(); }
     QDir get_df_dir() { return m_df_dir; }
-    short current_year() {return (short)m_current_year;}
+    WORD current_year() {return m_current_year;}
     WORD dwarf_civ_id() {return m_dwarf_civ_id;}
 
     // brute force memory scanning methods
