@@ -2802,25 +2802,8 @@ double Dwarf::calc_role_rating(Role *m_role){
     //PREFERENCES
     if(m_role->prefs.count()>0){
         total_weight = 0;
-        aspect_value = 0;
-        foreach(Preference *role_pref,m_role->prefs){
-            aspect_value = get_role_pref_match_counts(role_pref);
-            //preferences are slightly different due to their binary nature. large numbers of preferences result in a very low weighted average
-            //so if there isn't a match, don't include it in the weighted average to try to keep roles relatively equal regardless of how many preferences they have
-            if(aspect_value > 0){
-                aspect_value = DwarfStats::get_preference_rating(aspect_value);
-                weight = role_pref->pref_aspect->weight;
-                if(role_pref->pref_aspect->is_neg)
-                    aspect_value = 1-aspect_value;
-
-                rating_prefs += (aspect_value*weight);
-                total_weight += weight;
-            }
-        }
-        if(total_weight > 0)
-            rating_prefs = (rating_prefs / total_weight) * 100.0f;//weighted average percentile
-        else
-            rating_prefs = DwarfStats::get_preference_rating(0.0f) * 100.0f;
+        aspect_value = get_role_pref_match_counts(m_role);
+        rating_prefs = DwarfStats::get_preference_rating(aspect_value) * 100.0f;
     }else{
         rating_prefs = 50.0f;
     }
@@ -2873,12 +2856,19 @@ void Dwarf::refresh_role_display_ratings(){
     }
 }
 
-QList<double> Dwarf::get_role_pref_match_counts(Role *r){
-    QList<double> ratings;
+double Dwarf::get_role_pref_match_counts(Role *r){
+    double total_rating = 0.0;
     foreach(Preference *role_pref,r->prefs){
-        ratings.append(get_role_pref_match_counts(role_pref));
+        double matches = get_role_pref_match_counts(role_pref);
+        if(matches > 0){
+            double rating = matches * role_pref->pref_aspect->weight;
+            if(role_pref->pref_aspect->is_neg)
+                rating = 1.0f-rating;
+            total_rating += rating;
+        }
     }
-    return ratings;
+
+    return total_rating;
 }
 
 double Dwarf::get_role_pref_match_counts(Preference *role_pref){

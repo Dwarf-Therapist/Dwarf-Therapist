@@ -639,9 +639,7 @@ void DFInstance::load_role_ratings(){
 
         foreach(Role *r, GameDataReader::ptr()->get_roles().values()){
             if(r->prefs.count() > 0){
-                foreach(double rating, d->get_role_pref_match_counts(r)){
-                    pref_values.append(rating);
-                }
+                pref_values.append(d->get_role_pref_match_counts(r));
             }
         }
     }
