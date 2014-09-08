@@ -7,7 +7,8 @@ class RoleAspect : QObject {
     Q_OBJECT
 public:
 
-    RoleAspect()
+    RoleAspect(QObject *parent = 0)
+        :QObject(parent)
     {
         weight = 0;
         is_neg = false;

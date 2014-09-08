@@ -30,7 +30,7 @@ THE SOFTWARE.
 
 Preference::Preference(QObject *parent)
     :QObject(parent)
-    ,pref_aspect(new RoleAspect())
+    ,pref_aspect(new RoleAspect(parent))
     ,m_name("")
     ,m_pType(LIKES_NONE)
     ,m_iType(NONE)
@@ -41,7 +41,7 @@ Preference::Preference(QObject *parent)
 
 Preference::Preference(PREF_TYPES category, ITEM_TYPE iType, QObject *parent)
     :QObject(parent)
-    ,pref_aspect(new RoleAspect())
+    ,pref_aspect(new RoleAspect(parent))
     ,m_name("")
     ,m_pType(category)
     ,m_iType(iType)
@@ -52,7 +52,7 @@ Preference::Preference(PREF_TYPES category, ITEM_TYPE iType, QObject *parent)
 
 Preference::Preference(PREF_TYPES category, QString name, QObject *parent)
     :QObject(parent)
-    ,pref_aspect(new RoleAspect())
+    ,pref_aspect(new RoleAspect(parent))
     ,m_name(name)
     ,m_pType(category)
     ,m_iType(NONE)
@@ -75,8 +75,6 @@ Preference::Preference(const Preference &p)
 }
 
 Preference::~Preference(){
-    delete(pref_aspect);
-    pref_aspect = 0;
 }
 
 void Preference::add_flag(int flag){

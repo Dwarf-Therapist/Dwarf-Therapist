@@ -75,7 +75,7 @@ public:
     QList<QPair<int, QString> > get_ordered_skills() {return m_ordered_skills;}
     QHash<int, Trait*> get_traits() {return m_traits;}
     QList<QPair<int, Trait*> > get_ordered_traits() {return m_ordered_traits;}
-    QList<QPair<int, QString> > get_ordered_attribute_names() {return m_ordered_attribute_names;}    
+    QList<QPair<ATTRIBUTES_TYPE, QString> > get_ordered_attribute_names() {return m_ordered_attribute_names;}
     QHash<short, Profession*> get_professions() {return m_professions;}    
     QHash<QString, Role*>& get_roles(){return m_dwarf_roles;}
     QList<QPair<QString, Role*> > get_ordered_roles() {return m_ordered_roles;}
@@ -177,7 +177,7 @@ private:
     QHash<int, int> m_attribute_levels;
     QHash<ATTRIBUTES_TYPE, QString> m_attribute_names;
     QHash<QString, ATTRIBUTES_TYPE> m_attributes_by_name;
-    QList<QPair<int,QString> > m_ordered_attribute_names;
+    QList<QPair<ATTRIBUTES_TYPE,QString> > m_ordered_attribute_names;
 
     QHash<short, DwarfJob*> m_dwarf_jobs;
     QList<QPair<int, QString> > m_ordered_jobs;

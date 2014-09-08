@@ -88,7 +88,7 @@ double DwarfStats::get_trait_rating(int val){
 
 void DwarfStats::init_prefs(QVector<double> pref_values){
     if(m_preferences == 0)
-        m_preferences = QSharedPointer<RoleStats>(new RoleStats(pref_values));
+        m_preferences = QSharedPointer<RoleStats>(new RoleStats(pref_values,RoleStats::TT_ECDF_RANK_TRY));
     else
         m_preferences->set_list(pref_values);
 }

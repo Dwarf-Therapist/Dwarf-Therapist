@@ -359,8 +359,8 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
 
     //ATTRIBUTE
     QMenu *m_attr = m_cmh->create_title_menu(m, tr("Attribute"),"");
-    QList<QPair<int, QString> > atts = gdr->get_ordered_attribute_names();
-    QPair<int, QString> att_pair;
+    QList<QPair<ATTRIBUTES_TYPE, QString> > atts = gdr->get_ordered_attribute_names();
+    QPair<ATTRIBUTES_TYPE, QString> att_pair;
     foreach(att_pair, atts){
         a = m_attr->addAction(tr(att_pair.second.toLatin1()), this, SLOT(add_attribute_column()));
         a->setData(att_pair.first);

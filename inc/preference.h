@@ -61,8 +61,7 @@ public:
     void add_flag(int);
     void set_name(QString value) {m_name = value;}
     void set_category(PREF_TYPES cat) {m_pType = cat;}
-    void set_item_type(ITEM_TYPE iType) {m_iType = iType;}
-    //void set_material(Material* m) {m_mat = m;}
+    void set_item_type(ITEM_TYPE iType) {m_iType = iType;}    
     void set_material_flags(FlagArray f) {m_material_flags = f;}
     void set_exact(bool m) {m_exact_match = m;}
 
@@ -77,8 +76,7 @@ public:
 protected:
     QString m_name; //actual value to search for when doing string comparisons
     PREF_TYPES m_pType; //preference category
-    ITEM_TYPE m_iType; //type of item for an dwarf's item preference
-    //Material *m_mat; //references a dwarf's preference material
+    ITEM_TYPE m_iType; //type of item for an dwarf's item preference    
     FlagArray m_material_flags;
 
     //these flags are used when writing to the ini. they're specifically chosen to find matches of particular materials

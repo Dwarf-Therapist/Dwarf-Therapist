@@ -105,7 +105,7 @@ void Role::parseAspect(QSettings &s, QString node, global_weight &g_weight, QHas
     int count = s.beginReadArray(node);
 
     for (int i = 0; i < count; ++i) {
-        a = new RoleAspect();
+        a = new RoleAspect(this);
         s.setArrayIndex(i);
         a->weight = s.value("weight",1.0).toFloat();
         if(a->weight < 0)

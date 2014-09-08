@@ -320,7 +320,7 @@ void roleDialog::insert_pref_row(Preference *p){
 }
 
 void roleDialog::add_aspect(QString id, QTableWidget &table, QHash<QString, RoleAspect *> &list){
-    RoleAspect *a = new RoleAspect();
+    RoleAspect *a = new RoleAspect(this);
     a->is_neg = false;
     a->weight = 1.0;
     list.insert(id.toLower(), a);
@@ -373,7 +373,7 @@ void roleDialog::save_role(Role *r){
 
 void roleDialog::save_aspects(QTableWidget &table, QHash<QString, RoleAspect*> &list){
     for(int i= 0; i<table.rowCount(); i++){
-        RoleAspect *a = new RoleAspect();
+        RoleAspect *a = new RoleAspect(this);
         QString key = table.item(i,0)->data(Qt::UserRole).toString();
         float weight = static_cast<QDoubleSpinBox*>(table.cellWidget(i,1))->value();
         a->weight = fabs(weight);
@@ -420,8 +420,8 @@ void roleDialog::draw_attribute_context_menu(const QPoint &p) {
     QAction *a;
     GameDataReader *gdr = GameDataReader::ptr();
 
-    QList<QPair<int, QString> > atts = gdr->get_ordered_attribute_names();
-    QPair<int, QString> att_pair;
+    QList<QPair<ATTRIBUTES_TYPE, QString> > atts = gdr->get_ordered_attribute_names();
+    QPair<ATTRIBUTES_TYPE, QString> att_pair;
     foreach(att_pair, atts){
         if(!m_role->attributes.contains(att_pair.second.toLatin1().toLower())){
             a = m->addAction(tr(att_pair.second.toLatin1()), this, SLOT(add_attribute()));
