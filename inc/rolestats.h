@@ -40,7 +40,8 @@ public:
         TT_ECDF_RANK_ALL, //ecdf rank on everything
         TT_MULTI_UPPER, //multiple tranformations on upper, factor on lower
         TT_MULTI_ALL, //multiple transformations on all
-        TT_MIN_MAX_UPPER //min-max on upper, factor on lower
+        TT_MIN_MAX_UPPER, //min-max on upper, factor on lower
+        TT_MIN_MAX_ALL //scale from 0-50 and 50-100
     } TRANSFORM_TYPE;
 
     RoleStats(const QVector<double> &unsorted);

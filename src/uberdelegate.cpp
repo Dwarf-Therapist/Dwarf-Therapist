@@ -279,7 +279,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         }
 
         if(type == CT_ROLE){
-            paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 5.0f, 95.0f, 40.0f, 60.0f);
+            paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 5.0f, 95.0f, 43.0f, 57.0f);
         }else if(rating >= 0){
             limit = 15.0f;
             paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 0, 0, limit, 0, 0);

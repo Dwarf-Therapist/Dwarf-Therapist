@@ -108,7 +108,7 @@ double DwarfStats::get_skill_rating(double val){
 
 void DwarfStats::init_roles(QVector<double> role_ratings){
     if(m_roles == 0)
-        m_roles = QSharedPointer<RoleStats>(new RoleStats(role_ratings));
+        m_roles = QSharedPointer<RoleStats>(new RoleStats(role_ratings,RoleStats::TT_MIN_MAX_ALL));
     else
         m_roles->set_list(role_ratings);
 }

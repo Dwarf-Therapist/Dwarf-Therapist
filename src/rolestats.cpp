@@ -68,21 +68,25 @@ void RoleStats::init_list(){
     //indicates the data is badly skewed on the top end, and requires additional work
     //special case for the ecdf_rank_try, which if q1=median should use ecdf_rank on the upper
     //and otherwise use ecdf_rank on everything
-    if(m_raws->sorted_data().at((int)m_raws->sorted_data().size()/4.0) == m_raw_median){
-        if(m_transform_type == TT_ECDF_RANK_TRY){
-            m_transform_type = TT_ECDF_RANK_UPPER;
-        }
-        configure_transformations();
+    if(m_transform_type == TT_MIN_MAX_ALL){
+        load_list_stats(m_raws->sorted_data(),true);
     }else{
-        if(m_transform_type == TT_ECDF_RANK_TRY){
-            m_transform_type = TT_ECDF_RANK_ALL; //set the type and that's it
+        if(m_raws->sorted_data().at((int)m_raws->sorted_data().size()/4.0) == m_raw_median){
+            if(m_transform_type == TT_ECDF_RANK_TRY){
+                m_transform_type = TT_ECDF_RANK_UPPER;
+            }
+            configure_transformations();
         }else{
-            m_transform_type = TT_MULTI_ALL;
-            //use multiple transformations for all values
-            if(!load_transformations(m_raws->sorted_data())){
-                m_transformations.clear();
-                m_transform_type = TT_UNKNOWN;
-                configure_transformations();
+            if(m_transform_type == TT_ECDF_RANK_TRY){
+                m_transform_type = TT_ECDF_RANK_ALL; //set the type and that's it
+            }else{
+                m_transform_type = TT_MULTI_ALL;
+                //use multiple transformations for all values
+                if(!load_transformations(m_raws->sorted_data())){
+                    m_transformations.clear();
+                    m_transform_type = TT_UNKNOWN;
+                    configure_transformations();
+                }
             }
         }
     }
@@ -170,6 +174,8 @@ double RoleStats::get_rating(double val){
         rating = get_transformations_rating(val);
     }else if(m_transform_type == TT_ECDF_RANK_ALL){
         rating = m_raws->favg(val);
+    }else if(m_transform_type == TT_MIN_MAX_ALL){
+        rating = range_transform(val,m_transformations[0].min,m_transformations[0].median,m_transformations[0].max);
     }else{
         double base_rating = m_raws->favg(val); //start with ecdf/rank average
         if(val <= m_raw_median){
