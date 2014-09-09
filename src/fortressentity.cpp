@@ -215,11 +215,9 @@ QString FortressEntity::get_noble_positions(int hist_id, bool is_male){
 
 QColor FortressEntity::get_noble_color(int hist_id){
     QList<position> p = m_nobles.values(hist_id);
-    if(p.size() > 1)
-        return m_noble_colors.value(MULTIPLE);
-    else
+    if(p.size() == 1){
         return p[0].highlight;
-
+    }
     return m_noble_colors.value(MULTIPLE); //unknown
 }
 
