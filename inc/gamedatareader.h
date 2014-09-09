@@ -26,7 +26,6 @@ THE SOFTWARE.
 #include <string>
 #include <stdexcept>
 #include <QtCore>
-#include "raws/rawobjectlist.h"
 #include "global_enums.h"
 #include "utils.h"
 
@@ -66,10 +65,6 @@ public:
     }
 
     int get_int_for_key(QString key, short base = 16);
-    int get_address(QString key) {return get_int_for_key("addresses/" + key);}
-    int get_offset(QString key) {return get_int_for_key("offsets/" + key);}
-    int get_dwarf_offset(QString key) {return get_int_for_key("dwarf_offsets/" + key);}
-    int get_xp_for_next_attribute_level(int current_number_of_attributes);
 
     QList<Labor*> get_ordered_labors() {return m_ordered_labors;}
     QList<QPair<int, QString> > get_ordered_skills() {return m_ordered_skills;}
@@ -120,28 +115,6 @@ public:
     int get_total_skill_count() {return m_skills.count();}
     int get_total_belief_count() {return m_beliefs.count();}
 
-    QColor get_color(QString key);
-
-    QStringList get_child_groups(QString section);
-    QStringList get_keys(QString section);
-    int get_level_from_xp(int xp);
-
-    RawObjectPtr get_reaction(QString reactionClass, QString id) {
-        if(m_reaction_classes.contains(reactionClass)) {
-            return m_reaction_classes.value(reactionClass)
-                    .getRawObject("REACTION", id);
-        }
-        return RawObjectPtr();
-    }
-
-    RawObjectPtr get_creature(QString creatureClass, QString id) {
-        if(m_creatures_classes.contains(creatureClass)) {
-            return m_creatures_classes.value(creatureClass)
-                    .getRawObject("CREATURE", id);
-        }
-        return RawObjectPtr();
-    }
-
     const QVector<int> moodable_skills() {return m_moodable_skills;}
     int get_pref_from_skill(int skill_id) const {return m_mood_skills_profession_map.value(skill_id,-1);}
 
@@ -174,7 +147,6 @@ private:
     QList<QPair<int, QString> > m_ordered_skills;    
     QHash<int, QString> m_skill_levels;
 
-    QHash<int, int> m_attribute_levels;
     QHash<ATTRIBUTES_TYPE, QString> m_attribute_names;
     QHash<QString, ATTRIBUTES_TYPE> m_attributes_by_name;
     QList<QPair<ATTRIBUTES_TYPE,QString> > m_ordered_attribute_names;
@@ -193,19 +165,11 @@ private:
     QHash<QString, laborOptimizerPlan*> m_opt_plans;
     QList<QPair<QString, laborOptimizerPlan*> > m_ordered_opts;
 
-    QHash<QString, QRawObjectList> m_reaction_classes;
-    QHash<QString, QRawObjectList> m_creatures_classes;    
-
-    QHash<QString, QString> m_race_names;
-    QHash<QString, QStringList> m_caste_names;
-
     QVector<int> m_moodable_skills;
     QMap<int, int> m_mood_skills_profession_map;
 
     QMap<short, Thought*> m_unit_thoughts;
 
-    void load_race_names();
-    void load_caste_names();
     void build_calendar();
 };
 #endif

@@ -191,10 +191,6 @@ HEADERS += inc/viewmanager.h \
     inc/narrowingvectorsearchjob.h \
     inc/squadvectorsearchjob.h \
     inc/word.h \
-    inc/raws/rawnode.h \
-    inc/raws/rawobject.h \
-    inc/raws/rawreader.h \
-    inc/raws/rawobjectlist.h \
     inc/attribute.h \
     inc/grid_view/flagcolumn.h \
     inc/grid_view/rolecolumn.h \
@@ -304,7 +300,6 @@ SOURCES += src/viewmanager.cpp \
     src/selectparentlayoutdialog.cpp \
     src/layoutcreator.cpp \
     src/word.cpp \
-    src/raws/rawreader.cpp \
     src/grid_view/flagcolumn.cpp \
     src/grid_view/rolecolumn.cpp \
     src/dwarfstats.cpp \

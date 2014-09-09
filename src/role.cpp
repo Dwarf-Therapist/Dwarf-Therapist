@@ -151,6 +151,10 @@ void Role::parsePreferences(QSettings &s, QString node, global_weight &g_weight,
             p->pref_aspect->weight = 1.0;
 
         id = s.value("name",tr("Unknown")).toString();
+        if(id == "Unknown"){
+            LOGW << "Role" << name << "has an invalid preference, index:" << i;
+        }
+
         if(!id.isEmpty() && id.indexOf("-") >= 0){
             id.replace("-","");
             p->pref_aspect->is_neg = true;

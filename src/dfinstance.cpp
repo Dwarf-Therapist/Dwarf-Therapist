@@ -407,7 +407,7 @@ void DFInstance::load_game_data()
              << "DF version or your config files are corrupted.";
         m_dwarf_race_id = -1;
     }else{
-        LOGD << "dwarf race index" << hexify(dwarf_race_index_addr) << hexify(dwarf_race_index_addr) << "(UNCORRECTED)";
+        LOGD << "dwarf race index" << hexify(dwarf_race_index_addr);
         // which race id is dwarven?
         m_dwarf_race_id = read_short(dwarf_race_index_addr);
         LOGD << "dwarf race:" << hexify(m_dwarf_race_id);

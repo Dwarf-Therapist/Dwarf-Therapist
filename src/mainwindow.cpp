@@ -85,7 +85,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_proxy(new DwarfModelProxy(this))
     , m_about_dialog(new AboutDialog(this))
     , m_scanner(0)
-    , m_script_dialog(new ScriptDialog(this))
+    , m_script_dialog(0)
     , m_role_editor(0)
     , m_optimize_plan_editor(0)
     , m_reading_settings(false)
@@ -514,6 +514,9 @@ void MainWindow::read_dwarves() {
     if(!m_optimize_plan_editor){
         m_optimize_plan_editor = new optimizereditor(this);
         connect(m_optimize_plan_editor, SIGNAL(finished(int)), this, SLOT(done_editing_opt_plan(int)), Qt::UniqueConnection);
+    }\
+    if(!m_script_dialog){
+        m_script_dialog = new ScriptDialog(this);
     }
 
     if(DT->multiple_castes && ui->cb_group_by->findData(DwarfModel::GB_CASTE_TAG) < 0){        

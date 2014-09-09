@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include <QtDebug>
+#include <QMessageBox>
 #include "gamedatareader.h"
 #include "labor.h"
 #include "trait.h"
@@ -28,7 +29,6 @@ THE SOFTWARE.
 #include "dwarfjob.h"
 #include "profession.h"
 #include "defines.h"
-#include "raws/rawreader.h"
 #include "math.h"
 #include "laboroptimizerplan.h"
 #include "skill.h"
@@ -51,9 +51,22 @@ GameDataReader::GameDataReader(QObject *parent)
         }
     }
 
+    QString err;
     if (!m_data_settings) {
-        FATAL << "Could not find game_data.ini.";
-        qApp->exit(1);
+        err = tr("Dwarf Therapist cannot run because game_data.ini could not be found!");
+        QMessageBox::critical(0,tr("Missing File"),err);
+        FATAL << err;
+    }
+
+    QStringList required_sections;
+    required_sections << "labors" << "attributes" << "dwarf_jobs" << "goals" << "beliefs" << "unit_thoughts" << "facets" << "skill_names" << "skill_levels";
+    foreach(QString key, required_sections){
+        if(!m_data_settings->childGroups().contains(key)){
+            QString err = tr("Dwarf Therapist cannot run because game_data.ini is missing [%1], a critical section!").arg(key);
+            QMessageBox::critical(0,tr("Missing Section"),err);
+            FATAL << err;
+            break;
+        }
     }
 
     build_calendar();
@@ -117,13 +130,6 @@ GameDataReader::GameDataReader(QObject *parent)
             }
         }
     }
-
-    m_data_settings->beginGroup("attribute_levels");
-    foreach(QString k, m_data_settings->childKeys()) {
-        int num_attributes = k.toInt();
-        m_attribute_levels.insert(num_attributes, m_data_settings->value(k).toInt());
-    }
-    m_data_settings->endGroup();
 
     m_data_settings->beginGroup("skill_names");
     QStringList skill_names;
@@ -310,15 +316,6 @@ QString GameDataReader::get_string_for_key(QString key) {
     return m_data_settings->value(key, QVariant("UNKNOWN")).toString();
 }
 
-QColor GameDataReader::get_color(QString key) {
-    QString hex_code = get_string_for_key(key);
-    bool ok;
-    QColor c(hex_code.toInt(&ok, 16));
-    if (!ok || !c.isValid())
-        c = Qt::white;
-    return c;
-}
-
 QString GameDataReader::get_skill_level_name(short level) {
     return m_skill_levels.value(level, "UNKNOWN");
     //return get_string_for_key(QString("skill_levels/%1").arg(level));
@@ -345,20 +342,6 @@ QString GameDataReader::get_goal_desc(int id, bool realized){
     if(realized)
         desc.append(tr(", and this dream was realized"));
     return desc;
-}
-
-QStringList GameDataReader::get_child_groups(QString section) {
-    m_data_settings->beginGroup(section);
-    QStringList groups = m_data_settings->childGroups();
-    m_data_settings->endGroup();
-    return groups;
-}
-
-QStringList GameDataReader::get_keys(QString section) {
-    m_data_settings->beginGroup(section);
-    QStringList keys = m_data_settings->childKeys();
-    m_data_settings->endGroup();
-    return keys;
 }
 
 Labor *GameDataReader::get_labor(const int &labor_id) {
@@ -394,24 +377,6 @@ laborOptimizerPlan* GameDataReader::get_opt_plan(const QString &name){
 
 DwarfJob *GameDataReader::get_job(const short &job_id) {
     return m_dwarf_jobs.value(job_id, 0);
-}
-
-int GameDataReader::get_xp_for_next_attribute_level(int current_number_of_attributes) {
-    return m_attribute_levels.value(current_number_of_attributes + 1, 0); // return 0 if we don't know
-}
-
-int GameDataReader::get_level_from_xp(int xp) {
-    int last_xp = 0;
-    int ret_val = 0;
-    QList<int> levels = m_attribute_levels.uniqueKeys();
-    qStableSort(levels);
-    foreach(int lvl, levels) {
-        if (last_xp <= xp && xp <= m_attribute_levels.value(lvl, 0)) {
-            ret_val = lvl - 1;
-            break;
-        }
-    }
-    return ret_val;
 }
 
 void GameDataReader::load_roles(){
