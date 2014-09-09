@@ -2,9 +2,11 @@ TEMPLATE = app
 TARGET = DwarfTherapist
 QT += concurrent widgets
 lessThan(QT_MAJOR_VERSION, 5) {
+    message(Setting up for Qt 4)
     QT += script
 }
 else {
+    message(Setting up for Qt 5)
     QT += qml
 }
 CONFIG += debug_and_release \
