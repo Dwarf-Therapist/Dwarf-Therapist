@@ -43,7 +43,7 @@ class LogManager;
 
 class DwarfTherapist : public QApplication {
     Q_OBJECT
-public:   
+public:
     DwarfTherapist(int &argc, char **argv);
     virtual ~DwarfTherapist();
 
@@ -78,9 +78,9 @@ public:
     void emit_roles_changed();
     void emit_customizations_changed();
     void emit_labor_counts_updated();
-    void update_specific_header(int id, COLUMN_TYPE type);    
+    void update_specific_header(int id, COLUMN_TYPE type);
 
-public slots:    
+public slots:
     int add_custom_profession(Dwarf *d = 0);
     void add_custom_professions(QList<CustomProfession*> cps);
     void add_custom_profession(CustomProfession *cp);
@@ -118,6 +118,7 @@ private:
     bool m_hide_non_adults;
     LogManager *m_log_mgr;
 
+    void setup_search_paths();
     void setup_logging();
     void load_translator();
     void edit_customization(QList<QVariant> data);
@@ -132,7 +133,7 @@ private:
 signals:
     void settings_changed();
     void roles_changed();
-    void labor_counts_updated();    
+    void labor_counts_updated();
     void customizations_changed();
     void units_refreshed(); //raised by the model object after a read is completed
     void connected();

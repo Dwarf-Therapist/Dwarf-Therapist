@@ -162,21 +162,4 @@ static inline QString nice_list(QStringList values){
     return ret_val;
 }
 
-static inline QStringList find_files_list(const QString &file){
-    QStringList out;
-    QString working_dir = QDir::current().path();
-    QString appdir = QCoreApplication::applicationDirPath();
-    // Dwarf Therapist xx.x/share/game_data.ini
-    out << QString("%1/share/%2").arg(appdir, file);
-    // Dwarf-Therapist/release/../share/game_data.ini
-    out << QString("%1/../share/%2").arg(appdir, file);
-    // /usr/bin/../share/dwarftherapist/game_data.ini
-    out << QString("%1/../share/dwarftherapist/%2").arg(appdir, file);
-    // cwd/game_data.ini
-    out << QString("%1/%2").arg(working_dir, file);
-    // cwd/share/game_data.ini
-    out << QString("%1/share/%2").arg(working_dir, file);
-    return out;
-}
-
 #endif // UTILS_H

@@ -91,27 +91,24 @@ DFInstance::DFInstance(QObject* parent)
     // checking before we're connected
     connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
 
-    TRACE << "Searching for MemoryLayout ini files in the following directories";
-    foreach(QString path, find_files_list(QString("memory_layouts/%1").arg(LAYOUT_SUBDIR))) {
-        TRACE<< path;
-        QDir d(path);
-        d.setNameFilters(QStringList() << "*.ini");
-        d.setFilter(QDir::NoDotAndDotDot | QDir::Readable | QDir::Files);
-        d.setSorting(QDir::Name | QDir::Reversed);
-        QFileInfoList files = d.entryInfoList();
-        foreach(QFileInfo info, files) {
-            MemoryLayout *temp = new MemoryLayout(info.absoluteFilePath());
-            if (temp && temp->is_valid()) {
-                LOGI << "adding valid layout" << temp->game_version()
-                     << temp->checksum();
-                m_memory_layouts.insert(temp->checksum().toLower(), temp);
-            }
+    QDir d(QString("share:memory_layouts/%1").arg(LAYOUT_SUBDIR));
+    d.setNameFilters(QStringList() << "*.ini");
+    d.setFilter(QDir::NoDotAndDotDot | QDir::Readable | QDir::Files);
+    d.setSorting(QDir::Name | QDir::Reversed);
+    QFileInfoList files = d.entryInfoList();
+    foreach(QFileInfo info, files) {
+        MemoryLayout *temp = new MemoryLayout(info.absoluteFilePath());
+        if (temp && temp->is_valid()) {
+            LOGI << "adding valid layout" << temp->game_version()
+                 << temp->checksum();
+            m_memory_layouts.insert(temp->checksum().toLower(), temp);
         }
     }
+
     // if no memory layouts were found that's a critical error
     if (m_memory_layouts.size() < 1) {
         LOGE << "No valid memory layouts found in the following directories..."
-             << QDir::searchPaths("memory_layouts");
+             << QDir::searchPaths("share");
         qApp->exit(ERROR_NO_VALID_LAYOUTS);
     }
 }

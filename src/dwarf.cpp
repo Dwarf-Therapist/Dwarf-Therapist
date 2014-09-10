@@ -2745,7 +2745,6 @@ double Dwarf::calc_role_rating(Role *m_role){
     //TRAITS
     if(m_role->traits.count()>0){
         total_weight = 0;
-        aspect_value = 0;
         foreach(QString trait_id, m_role->traits.uniqueKeys()){
             a = m_role->traits.value(trait_id);
             weight = a->weight;
@@ -2767,7 +2766,6 @@ double Dwarf::calc_role_rating(Role *m_role){
     float total_skill_rates = 0.0;
     if(m_role->skills.count()>0){
         total_weight = 0;
-        aspect_value = 0;
         Skill s;
         foreach(QString skill_id, m_role->skills.uniqueKeys()){
             a = m_role->skills.value(skill_id);
