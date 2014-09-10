@@ -47,7 +47,6 @@ Caste::Caste(DFInstance *df, VIRTADDR address, Race *r, QObject *parent)
     , m_df(df)
     , m_mem(df->memory_layout())
     , m_flags()
-    , m_has_extracts(false)
     , m_can_butcher(false)
     , m_body_addr(0x0)
 {
@@ -102,14 +101,20 @@ void Caste::read_caste() {
     if(m_baby_age < 0)
         m_baby_age = 0;
 
-    QVector<uint> extracts = m_df->enumerate_vector(m_address + m_mem->caste_offset("extracts"));
-    if(extracts.count() > 0)
-        m_has_extracts = true;
-
     m_can_butcher = !m_flags.has_flag(NOT_BUTCHERABLE);
 
     m_body_addr = m_address + m_mem->caste_offset("body_info");
     m_body_parts_addr = m_df->enumerate_vector(m_body_addr - DFInstance::VECTOR_POINTER_OFFSET);
+
+    if(m_df->enumerate_vector(m_address + m_mem->caste_offset("extracts")).count() > 0){
+        m_flags.set_flag(HAS_EXTRACTS,true);
+    }
+    int offset = m_mem->caste_offset("shearable_tissues_vector");
+    if(offset != -1){
+        if(m_df->enumerate_vector(m_address + offset).count() > 0){
+            m_flags.set_flag(SHEARABLE,true);
+        }
+    }
 }
 
 bool Caste::is_trainable(){
@@ -119,10 +124,6 @@ bool Caste::is_trainable(){
     }else{
         return false;
     }
-}
-
-bool Caste::is_milkable(){
-    return m_flags.has_flag(MILKABLE);
 }
 
 void Caste::load_skill_rates(){

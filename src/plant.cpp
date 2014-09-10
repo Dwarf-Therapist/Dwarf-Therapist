@@ -33,6 +33,7 @@ Plant::Plant(QObject *parent)
     , m_df(0x0)
     , m_mem(0x0)
     , m_flags()
+    , m_is_crop(false)
 {
 }
 
@@ -43,6 +44,7 @@ Plant::Plant(DFInstance *df, VIRTADDR address, int index, QObject *parent)
     , m_df(df)
     , m_mem(df->memory_layout())
     , m_flags()
+    , m_is_crop(false)
 {
     load_data();
 }
@@ -75,6 +77,12 @@ void Plant::read_plant() {
     m_seed_name_plural = m_df->read_string(m_address + m_mem->plant_offset("name_seed_plural"));
 
     m_flags = FlagArray(m_df,m_address+m_mem->plant_offset("flags"));
+    if(m_flags.has_flag(P_SPRING) || m_flags.has_flag(P_SUMMER) || m_flags.has_flag(P_AUTUMN) || m_flags.has_flag(P_WINTER)){
+        m_flags.set_flag(P_CROP,true);
+    }
+    if(m_flags.has_flag(P_EXTRACT_BARREL) || m_flags.has_flag(P_EXTRACT_STILL_VIAL) || m_flags.has_flag(P_EXTRACT_VIAL) || m_flags.has_flag(P_THREAD)){
+        m_flags.set_flag(P_HAS_EXTRACTS,true);
+    }
 }
 
 void Plant::load_materials(){

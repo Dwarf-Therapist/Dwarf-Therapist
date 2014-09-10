@@ -210,31 +210,20 @@ Material * Race::get_creature_material(int index){
     }
 }
 
-bool Race::is_trainable(){
-    bool result = false;
-    if(m_castes.count() > 0)
-        if(m_castes.value(0,0)->is_trainable())
-            result = true;
-
-    return result;
+bool Race::is_trainable(){    
+    if(m_castes.count()<=0){
+        return false;
+    }else{
+        return m_castes.value(0)->is_trainable();
+    }
 }
 
-bool Race::is_milkable(){
-    bool result = false;
-    if(m_castes.count() > 0)
-        if(m_castes.value(0)->is_milkable())
-            result = true;
-
-    return result;
-}
-
-bool Race::is_vermin_extractable(){
-    bool result = false;
-    if(m_castes.count() > 0)
-        if(m_castes.value(0)->has_extracts())
-            result = true;
-
-    return result;
+bool Race::caste_flag(CASTE_FLAGS cf){
+    if(m_castes.count()<=0){
+        return false;
+    }else{
+        return m_castes.value(0)->flags().has_flag(cf);
+    }
 }
 
 VIRTADDR Race::get_tissue_address(int index){

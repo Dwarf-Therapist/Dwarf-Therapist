@@ -33,7 +33,8 @@ Material::Material(QObject *parent)
     , m_df(0x0)
     , m_mem(0x0)    
     , m_flags()
-    , m_inorganic(false)    
+    , m_inorganic(false)
+    , m_is_generated(false)
 {
 }
 
@@ -44,7 +45,8 @@ Material::Material(DFInstance *df, VIRTADDR address, int index, bool inorganic, 
     , m_df(df)
     , m_mem(df->memory_layout())
     , m_flags()
-    , m_inorganic(inorganic)    
+    , m_inorganic(inorganic)
+    , m_is_generated(false)
 {
     load_data();
 }
@@ -66,8 +68,16 @@ void Material::load_data() {
     m_mem = m_df->memory_layout();
 
     //if passed in an inorganic material, we have to offset to the material.common first
-    if(m_inorganic)
+    if(m_inorganic){
+        //additionally, check the inorganic flags, specifically for the 1st bit (GENERATED) so they can be ignored in roles
+        int offset = m_mem->material_offset("inorganic_flags");
+        if(offset != -1){
+            FlagArray inorganic_flags;
+            inorganic_flags = FlagArray(m_df,m_address + offset);
+            m_is_generated = inorganic_flags.has_flag(1);
+        }
         m_address += m_mem->material_offset("inorganic_materials_vector");
+    }
 
     m_flag_address = m_address + m_mem->material_offset("flags");
 

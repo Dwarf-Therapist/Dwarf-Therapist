@@ -73,6 +73,10 @@ public:
 
     RoleAspect *pref_aspect;
 
+    void set_pref_flags(Race *r);
+    void set_pref_flags(Plant *p);
+    void set_pref_flags(ItemWeaponSubtype *w);
+
 protected:
     QString m_name; //actual value to search for when doing string comparisons
     PREF_TYPES m_pType; //preference category

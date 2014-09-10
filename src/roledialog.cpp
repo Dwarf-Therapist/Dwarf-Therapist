@@ -178,6 +178,7 @@ void roleDialog::load_role(QString role_name){
                                             .arg(DT->user_settings()->value("options/default_prefs_weight",1.0).toString()));
 
     //refresh example
+    m_dwarf = 0;
     selection_changed();
     //refresh name background color
     name_changed(ui->le_role_name->text());
@@ -622,15 +623,17 @@ void roleDialog::name_changed(QString text){
     }
 }
 
-void roleDialog::load_material_prefs(QVector<Material*> mats, QString prefix_name){
+void roleDialog::load_material_prefs(QVector<Material*> mats, QString prefix_name, MATERIAL_STATES state_name){
     QTreeWidgetItem *parent;
     //Preference *p;
     QString name = "";
     PREF_TYPES pType;
     foreach(Material *m, mats){
+        if(m->is_generated())
+            continue;
         //set defaults
         if(!prefix_name.isEmpty()) //prefix indicates plant/animal mats
-            name = prefix_name + " " + m->get_material_name(GENERIC);
+            name = QString("%1 %2").arg(prefix_name).arg(m->get_material_name(state_name));
         else
             name = m->get_material_name(SOLID).trimmed();
 
@@ -643,7 +646,7 @@ void roleDialog::load_material_prefs(QVector<Material*> mats, QString prefix_nam
         }else if(check_flag(m,p,IS_GLASS) || check_flag(m,p,CRYSTAL_GLASSABLE)){
             parent = m_glass;
         }else if(check_flag(m,p,IS_METAL)){
-            parent = m_metals;            
+            parent = m_metals;
         }else if(check_flag(m,p,IS_WOOD)){
             parent = m_wood;
         }else if(check_flag(m,p,IS_STONE)){
@@ -654,34 +657,11 @@ void roleDialog::load_material_prefs(QVector<Material*> mats, QString prefix_nam
             }
         }else if(check_flag(m,p,THREAD_PLANT)){
             parent = m_fabrics;
-        }else if(check_flag(m,p,EDIBLE_RAW) || check_flag(m,p,EDIBLE_COOKED)){
-            if(check_flag(m,p,ALCOHOL_PLANT) || check_flag(m,p,LIQUID_MISC_PLANT)){
-                parent = m_drinks;
-                name = m->get_material_name(LIQUID);
-                pType = LIKE_FOOD;
-            }
-            if(check_flag(m,p,POWDER_MISC_PLANT) || check_flag(m,p,CHEESE_PLANT)){
-                parent = m_food;
-                name = m->get_material_name(POWDER);
-                pType = LIKE_FOOD;
-            }
         }else if(check_flag(m,p,IS_DYE)){
             parent = m_fabrics;
             name = m->get_material_name(POWDER);
-        }else{
-            if(m->is_inorganic()){
-                parent = m_inorganic_other;
-                //LOGW << "INORGANIC OTHER: " << m->get_material_name(SOLID) << " " << m->flags()->output_flag_string();
-            }else{
-                //check for coral and amber
-                if(check_flag(m,p,ITEMS_DELICATE)){
-                    parent = m_general_material;
-                }
-//                else
-//                    LOGW << "skipping material " << m->get_material_name(SOLID) << " " << m->flags()->output_flag_string();
-                //parent = m_plant_other;
-                //name = m->get_material_name(SOLID);
-            }
+        }else if(check_flag(m,p,ITEMS_DELICATE)){
+            parent = m_general_material; //check for coral and amber
         }
 
         //check the include mats flags
@@ -699,20 +679,12 @@ void roleDialog::load_material_prefs(QVector<Material*> mats, QString prefix_nam
                 }
             }
         }
-
-        if(parent && !m->flags().no_flags() && !m->flags().has_flag(BLOOD_MAP_DESCRIPTOR) && !m->flags().has_flag(ICHOR_MAP_DESCRIPTOR) &&
-                !m->flags().has_flag(GOO_MAP_DESCRIPTOR) && !m->flags().has_flag(SLIME_MAP_DESCRIPTOR) &&
-                !m->flags().has_flag(PUS_MAP_DESCRIPTOR) && !m->flags().has_flag(ENTERS_BLOOD)){
-
+        if(parent){
             p->set_category(pType);
-            p->set_name(capitalize(name));            
+            p->set_name(capitalize(name));
             p->set_exact(true);
             add_pref_to_tree(parent,p);
         }
-//        else{
-//            if(!m->flags()->no_flags())
-//                LOGW << "ignoring " << m->get_material_name(SOLID) << " due to invalid flags";
-//        }
 
         parent = 0;
     }
@@ -722,32 +694,29 @@ void roleDialog::load_plant_prefs(QVector<Plant*> plants){
     QString name;
     foreach(Plant *p, plants){
         name = capitalize(p->name_plural());
+        Preference *plant_pref = new Preference(LIKE_PLANT,name,this);
+        plant_pref->set_pref_flags(p);
 
-        if(p->flags().has_flag(7)){
-            Preference *alcohol_pref = new Preference(LIKE_PLANT,name,this);
-            alcohol_pref->add_flag(7);
-            alcohol_pref->set_exact(true);
-            add_pref_to_tree(m_plants_alcohol,alcohol_pref);
+        if(p->flags().has_flag(P_SAPLING) || p->flags().has_flag(P_TREE)){
+            add_pref_to_tree(m_trees,plant_pref);
+        }else{            
+            add_pref_to_tree(m_plants,plant_pref);
+
+            if(p->flags().has_flag(P_DRINK)){
+                add_pref_to_tree(m_plants_alcohol,plant_pref);
+            }
+            if(p->flags().has_flag(P_CROP)){
+                add_pref_to_tree(m_plants_crops,plant_pref);
+            }
+
         }
-        else if(p->flags().has_flag(77) || p->flags().has_flag(78)){
-            Preference *tree_pref = new Preference(LIKE_TREE,name,this);
-            tree_pref->set_exact(true);
-            add_pref_to_tree(m_trees,tree_pref);
-        }else{
-            Preference *shrub_pref = new Preference(LIKE_PLANT,name,this);
-            shrub_pref->set_exact(true);
-            add_pref_to_tree(m_plants,shrub_pref);
+
+        if(p->flags().has_flag(P_MILL)){
+            add_pref_to_tree(m_plants_mill,plant_pref);
         }
-
-        name = capitalize(p->leaf_plural());
-        Preference *leaf_pref = new Preference(LIKE_FOOD,name,this);
-        leaf_pref->set_exact(true);
-        add_pref_to_tree(m_plants,leaf_pref);
-
-        name = capitalize(p->seed_plural());
-        Preference *seed_pref = new Preference(LIKE_FOOD,name,this);
-        seed_pref->set_exact(true);
-        add_pref_to_tree(m_seeds,seed_pref);
+        if(p->flags().has_flag(P_HAS_EXTRACTS)){
+            add_pref_to_tree(m_plants_extract,plant_pref);
+        }
 
         load_material_prefs(p->get_plant_materials(),p->name());
     }
@@ -760,10 +729,9 @@ void roleDialog::load_items(){
               << FISH_RAW << VERMIN << IS_PET << SKIN_TANNED << THREAD << CLOTH << BALLISTAARROWHEAD
               << TRAPPARTS << FOOD << GLOB << ROCK << PIPE_SECTION << ORTHOPEDIC_CAST << EGG << BOOK << WEAPON;
 
-    //some items should be mapped to food preference category
-    item_food << MEAT << FISH << SEEDS << PLANT << POWDER_MISC << CHEESE << LEAVES_FRUIT;
-    //and some to drink preference category (same as food in df for now)
-    item_drink << DRINK << LIQUID_MISC;
+    //additionally ignore food types, since they can only be a preference as a consumable
+    item_ignore << MEAT << FISH << CHEESE << PLANT << DRINK << POWDER_MISC << LEAVES_FRUIT << LIQUID_MISC << SEEDS;
+
     //add craft items to separate category to change the menu
     item_crafts << BRACELET << RING << SCEPTER << INSTRUMENT << CROWN << FIGURINE << AMULET << EARRING << TOY << GOBLET << TOTEM;
 
@@ -779,18 +747,13 @@ void roleDialog::load_items(){
             count = item_list.value(itype).count();
             QString name = Item::get_item_name_plural(itype);
 
-            if(item_food.contains(itype) || item_drink.contains(itype))
-                pType = LIKE_FOOD;
-            else
-                pType = LIKE_ITEM;
+            pType = LIKE_ITEM;
 
             //add all item types as a group to the general categories
             Preference *p = new Preference(pType, itype,this);
             p->set_name(name);            
             if(item_crafts.contains(itype))
                 add_pref_to_tree(m_general_craft,p);
-            else if(item_food.contains(itype) || item_drink.contains(itype))
-                add_pref_to_tree(m_general_food,p);
             else
                 add_pref_to_tree(m_general_item,p);
 
@@ -812,11 +775,9 @@ void roleDialog::load_creatures(){
     //special category for vermin creatures
     m_hateable = init_parent_node("Creatures (Hateable)");
     Preference *p = new Preference(LIKE_CREATURE, NONE,this);
-    p->add_flag(HATEABLE);
-    p->set_name("Creatures (Hateable)");
-    add_pref_to_tree(m_general_creature, p);
 
     //category for vermin fish (fish dissector extracts)
+    m_extracts_fish = init_parent_node(tr("Creatures (Fish Extracts)"));
     p = new Preference(LIKE_CREATURE, NONE,this);
     p->add_flag(VERMIN_FISH);
     p->set_name("Creatures (Fish Extracts)");
@@ -837,39 +798,56 @@ void roleDialog::load_creatures(){
     p->set_name("Creatures (Milkable)");
     add_pref_to_tree(m_general_creature, p);
 
+    //special category for fish
+    m_fishable = init_parent_node("Creatures (Fish)");
+    p = new Preference(LIKE_CREATURE, NONE,this);
+    p->add_flag(FISHABLE);
+    p->set_name("Creatures (Fish)");
+    add_pref_to_tree(m_general_creature, p);
+
+    //special category for shearable
+    m_shearable = init_parent_node("Creatures (Shearable)");
+    p = new Preference(LIKE_CREATURE, NONE,this);
+    p->add_flag(SHEARABLE);
+    p->set_name("Creatures (Shearable)");
+    add_pref_to_tree(m_general_creature, p);
+
     //special category for extracts (honey, venom, etc)
-    m_extracts = init_parent_node("Creatures (Extractable)");
+    m_extracts = init_parent_node("Creatures (Extracts)");
     p = new Preference(LIKE_CREATURE, NONE,this);
     p->add_flag(HAS_EXTRACTS);
     p->set_name("Creatures (Extractable)");
     add_pref_to_tree(m_general_creature, p);
 
     foreach(Race *r, m_df->get_races()){
-        p = new Preference(LIKE_CREATURE, capitalize(r->name()),this);
-        p->set_exact(true);
+        p = new Preference(LIKE_CREATURE, capitalize(r->name()),this);        
+        p->set_pref_flags(r);
 
         bool hated = false;
-
         if(r->flags().has_flag(HATEABLE)){
-            p->add_flag(HATEABLE);
             add_pref_to_tree(m_hateable,p);
             hated = true;
         }
-        if(r->flags().has_flag(VERMIN_FISH)){
-            p->add_flag(VERMIN_FISH);
+        //either of these flags seem to indicate that the creature can be fished
+        //however for our purposes a single flag is enough, so we'll use only FISHABLE
+        if(r->flags().has_flag(VERMIN_FISH) || r->caste_flag(FISHABLE)){
+            add_pref_to_tree(m_fishable,p);
         }
         if(r->is_trainable()){            
-            p->add_flag(TRAINABLE_HUNTING);
-            p->add_flag(TRAINABLE_WAR);
             add_pref_to_tree(m_trainable,p);
         }
-        if(r->is_milkable()){            
-            p->add_flag(MILKABLE);
+        if(r->caste_flag(MILKABLE)){
             add_pref_to_tree(m_milkable,p);
         }
-        if(r->is_vermin_extractable()){            
-            p->add_flag(HAS_EXTRACTS);
-            add_pref_to_tree(m_extracts,p);
+        if(r->caste_flag(SHEARABLE)){
+            add_pref_to_tree(m_shearable,p);
+        }
+        if(r->caste_flag(HAS_EXTRACTS)){
+            if(r->caste_flag(FISHABLE)){
+                add_pref_to_tree(m_extracts_fish,p);
+            }else{
+                add_pref_to_tree(m_extracts,p);
+            }
         }                  
          if(!hated)
              add_pref_to_tree(m_creatures,p);
@@ -894,14 +872,10 @@ void roleDialog::load_weapons(){
 
     foreach(ItemWeaponSubtype *w, m_df->get_weapon_defs()){
         p = new Preference(LIKE_ITEM,w->name_plural(),this);
+        p->set_pref_flags(w);
         if(w->is_ranged()){
-            p->add_flag(ITEMS_WEAPON_RANGED);
-            p->set_exact(true);
             add_pref_to_tree(ranged,p);
-        }
-        else{
-            p->add_flag(ITEMS_WEAPON);
-            p->set_exact(true);
+        }else{            
             add_pref_to_tree(melee,p);
         }
     }
@@ -913,28 +887,25 @@ void roleDialog::build_pref_tree(){
     m_general_item = init_parent_node("~General Items");
     m_general_material = init_parent_node("~General Materials");
     m_general_creature = init_parent_node("~General Creatures");
-    m_general_craft = init_parent_node("~General Crafts");
-    m_general_food = init_parent_node("~General Food");
+    m_general_craft = init_parent_node("~General Crafts");    
     m_general_other = init_parent_node("~General Other");
+    m_general_plant = init_parent_node("~General Plants");
 
-    //setup other groups
-    m_inorganic_other = init_parent_node("Inorganic Other");
+    //setup other groups    
     m_gems = init_parent_node("Gems");
     m_glass = init_parent_node("Glass & Crystals");
     m_metals = init_parent_node("Metals");
     m_stone = init_parent_node("Stone & Ores");
     m_wood = init_parent_node("Wood");
     m_glazes_wares = init_parent_node("Glazes & Stoneware");
-    m_seeds = init_parent_node("Seeds");
-    m_plant_other = init_parent_node("Plants (Misc)");
     m_plants = init_parent_node("Plants");
     m_plants_alcohol = init_parent_node("Plants (Alcohol)");
-    m_trees = init_parent_node("Trees");    
-    m_food = init_parent_node("Food");
-    m_drinks = init_parent_node("Drink");
+    m_plants_crops = init_parent_node("Plants (Crops)");
+    m_plants_mill = init_parent_node("Plants (Mill)");
+    m_plants_extract = init_parent_node("Plants (Extracts)");
+    m_trees = init_parent_node("Trees");
     m_fabrics = init_parent_node("Fabrics & Dyes");
     m_creatures = init_parent_node("Creatures (Other)");
-    //m_creature_mats = init_parent_node(LIKE_MATERIAL,NONE,"Creature Materials");
 
     //also add trees to general category. don't need a flag as trees is a pref category
     Preference *p_trees = new Preference(LIKE_TREE,NONE,this);
@@ -943,8 +914,8 @@ void roleDialog::build_pref_tree(){
     add_pref_to_tree(m_general_item, p_trees);
 
     //any material types that we want to add to the general category section go here
-    mats_include << BONE << TOOTH << HORN << PEARL << SHELL << LEATHER << SILK << IS_GEM << IS_GLASS
-                    << IS_WOOD << IS_STONE << IS_METAL << THREAD_PLANT << YARN;
+    mats_include << BONE << TOOTH << HORN << PEARL << SHELL << LEATHER << SILK << IS_GLASS
+                    << IS_WOOD << THREAD_PLANT << YARN;
 
     foreach(MATERIAL_FLAGS f, mats_include){
         Preference *p = new Preference(LIKE_MATERIAL,NONE,this);
@@ -953,11 +924,29 @@ void roleDialog::build_pref_tree(){
         add_pref_to_tree(m_general_material,p);
     }
 
-    //special category for plants used for alcohol
+    //general category for plants used for alcohol
     Preference *p_alc_plant = new Preference(LIKE_PLANT, NONE,this);
     p_alc_plant->set_name("Plants (Alcohol)");
-    p_alc_plant->add_flag(7);
-    add_pref_to_tree(m_general_food, p_alc_plant);
+    p_alc_plant->add_flag(P_DRINK);
+    add_pref_to_tree(m_general_plant, p_alc_plant);
+
+    //general category for crops
+    Preference *p_crop = new Preference(LIKE_PLANT, NONE,this);
+    p_crop->set_name("Plants (Crops)");
+    p_crop->add_flag(P_CROP);
+    add_pref_to_tree(m_general_plant, p_crop);
+
+    //general category for millable plants
+    Preference *p_mill = new Preference(LIKE_PLANT, NONE,this);
+    p_mill->set_name("Plants (Millable)");
+    p_mill->add_flag(P_MILL);
+    add_pref_to_tree(m_general_plant, p_mill);
+
+    //general category for plants used for processing/threshing
+    Preference *p_extract = new Preference(LIKE_PLANT, NONE,this);
+    p_extract->set_name("Plants (Extracts)");
+    p_extract->add_flag(P_HAS_EXTRACTS);
+    add_pref_to_tree(m_general_plant, p_extract);
 
     //special custom preference for outdoors
     Preference *p_outdoors = new Preference(LIKE_OUTDOORS,NONE,this);

@@ -50,21 +50,19 @@ private:
     //preference main holder
     QHash<QTreeWidgetItem*,QVector<Preference*>* > m_pref_list;
 
-    //specific categories
-    QTreeWidgetItem *m_inorganic_other;
+    //specific categories    
     QTreeWidgetItem *m_gems;
     QTreeWidgetItem *m_glass;
     QTreeWidgetItem *m_metals;
     QTreeWidgetItem *m_stone;
     QTreeWidgetItem *m_wood;
-    QTreeWidgetItem *m_glazes_wares;
-    QTreeWidgetItem *m_seeds;
-    QTreeWidgetItem *m_plant_other;
+    QTreeWidgetItem *m_glazes_wares;        
     QTreeWidgetItem *m_plants;
     QTreeWidgetItem *m_plants_alcohol;
+    QTreeWidgetItem *m_plants_crops;
+    QTreeWidgetItem *m_plants_mill;
+    QTreeWidgetItem *m_plants_extract;
     QTreeWidgetItem *m_trees;
-    QTreeWidgetItem *m_drinks;
-    QTreeWidgetItem *m_food;
     QTreeWidgetItem *m_fabrics;
 
     //creature categories
@@ -73,6 +71,9 @@ private:
     QTreeWidgetItem *m_trainable;
     QTreeWidgetItem *m_milkable;
     QTreeWidgetItem *m_extracts;
+    QTreeWidgetItem *m_extracts_fish;
+    QTreeWidgetItem *m_fishable;
+    QTreeWidgetItem *m_shearable;
 
     QTreeWidgetItem *m_creature_mats;
 
@@ -81,13 +82,11 @@ private:
     QTreeWidgetItem *m_general_material;
     QTreeWidgetItem *m_general_creature;
     QTreeWidgetItem *m_general_craft;
-    QTreeWidgetItem *m_general_food;
+    QTreeWidgetItem *m_general_plant;
     QTreeWidgetItem *m_general_other;
 
     //preference include/exclude lists
     QVector<ITEM_TYPE> item_ignore;
-    QVector<ITEM_TYPE> item_food;
-    QVector<ITEM_TYPE> item_drink;
     QVector<ITEM_TYPE> item_crafts;
     QVector<MATERIAL_FLAGS> mats_include;
 
@@ -106,7 +105,7 @@ private:
 
     //preferences
     void build_pref_tree();
-    void load_material_prefs(QVector<Material*> mats, QString prefix_name = "");
+    void load_material_prefs(QVector<Material*> mats, QString prefix_name = "", MATERIAL_STATES state_name = GENERIC);
     void load_plant_prefs(QVector<Plant *> plants);
     void load_items();
     void load_creatures();

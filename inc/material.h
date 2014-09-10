@@ -48,6 +48,7 @@ public:
 
     void load_data();        
     bool is_inorganic() {return m_inorganic;}
+    bool is_generated() {return m_is_generated;}
 
     FlagArray flags() {return m_flags;}    
 
@@ -67,7 +68,7 @@ public:
         m[IS_METAL]=tr("Metal");
         m[ALCOHOL_PLANT]=tr("Plants (Alcohol)");
         m[THREAD_PLANT]=tr("Cloth");
-        m[YARN]=tr("Yarn");
+        m[YARN]=tr("Yarn/Wool/Fur");
         return m.value(flag, "Missing Description");
     }
 
@@ -88,7 +89,7 @@ public:
         m[MC_HORN]=tr("Horn");
         m[MC_PLANT_FIBER]=tr("Plant Fiber");
         m[MC_SILK]=tr("Silk");
-        m[MC_YARN]=tr("Yarn");
+        m[MC_YARN]=tr("Yarn/Wool/Fur");
         return m.value(mat_class, "???");
     }
 
@@ -100,6 +101,7 @@ private:
     MemoryLayout * m_mem;    
     FlagArray m_flags;
     bool m_inorganic;
+    bool m_is_generated;
     QHash<MATERIAL_STATES, QString> m_state_names;    
 
     void read_material();

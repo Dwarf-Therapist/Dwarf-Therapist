@@ -62,8 +62,7 @@ public:
     FlagArray flags() {return m_flags;}
 
     bool is_trainable();
-    bool is_milkable();
-    bool is_vermin_extractable();
+    bool caste_flag(CASTE_FLAGS cf);
 
     void load_caste_ratios();
 
@@ -97,7 +96,7 @@ private:
     bool loaded_stats;
 
     void read_race();
-    void load_materials(int idx = -1);
+    void load_materials(int idx = -1);    
 };
 
 #endif // RACES_H

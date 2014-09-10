@@ -297,12 +297,13 @@ typedef enum{
 } CREATURE_FLAGS;
 
 typedef enum{
-    AMPHIBIOUS=0,
+    AMPHIBIOUS=0,    
     NO_EAT=13,
     NO_DRINK=14,
     NO_SLEEP=15,
     FLIER=19,
     WEB_IMMUNE=25,
+    FISHABLE=26,
     IMMOBILE_LAND=27,
     MILKABLE=29,
     NO_DIZZINESS=39,
@@ -324,8 +325,26 @@ typedef enum{
     CHILD=98,
     CRAZED=161, //werebeasts
     BLOODSUCKER=162, //vampires
-    HAS_EXTRACTS=200 //custom
+    HAS_EXTRACTS=200, //custom
+    SHEARABLE=201 //custom
 } CASTE_FLAGS;
+
+typedef enum {
+    P_SPRING = 0,
+    P_SUMMER = 1,
+    P_AUTUMN = 2,
+    P_WINTER = 3,
+    P_DRINK = 7,
+    P_EXTRACT_BARREL = 8,
+    P_EXTRACT_VIAL = 9,
+    P_EXTRACT_STILL_VIAL = 10,
+    P_THREAD = 12,
+    P_MILL = 13,
+    P_SAPLING = 77,
+    P_TREE =78,
+    P_CROP = 200, //custom, indicates it has some season to plant
+    P_HAS_EXTRACTS = 201
+} PLANT_FLAGS;
 
 namespace eCurse{
 typedef enum {

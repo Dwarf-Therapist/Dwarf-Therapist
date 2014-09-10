@@ -27,6 +27,8 @@ THE SOFTWARE.
 #include "roleaspect.h"
 #include "dwarf.h"
 #include "itemweapon.h"
+#include "races.h"
+#include "plant.h"
 
 Preference::Preference(QObject *parent)
     :QObject(parent)
@@ -92,40 +94,41 @@ int Preference::matches(Preference *role_pref, Dwarf *d){
             result = 0;
         }
 
-        //compare any other flags ie. weapon melee/ranged flags
-        if(role_pref->special_flags().count() > 0){
-            if(result==1)
-                result = 0; //reset to 0, only match on these flags
-            if(m_special_flags.count() > 0){
-                foreach(int f, role_pref->special_flags()){
-                    if(m_special_flags.contains(f)){
-                        result = 1;
+        //check for an exact match on the string, if this is required, reset our result again and check
+        if(role_pref->exact_match()){
+            result = (QString::compare(role_pref->get_name(),m_name,Qt::CaseInsensitive) == 0);
+        }else{
+
+            //compare any other flags ie. weapon melee/ranged flags
+            if(role_pref->special_flags().count() > 0){
+                if(result==1)
+                    result = 0; //reset to 0, only match on these flags
+                if(m_special_flags.count() > 0){
+                    foreach(int f, role_pref->special_flags()){
+                        if(m_special_flags.contains(f)){
+                            result = 1;
+                        }
                     }
                 }
             }
-        }
 
-        //compare material flags
-        if(!m_material_flags.no_flags()){
-            if(result == 0) //no match yet, so assume we'll get a match here unless a flag fails
-                result = 1;
-            foreach(int f, role_pref->special_flags()){
-                if(!m_material_flags.has_flag(f)){
-                    result = 0;
-                    break;
+            //compare material flags
+            if(!m_material_flags.no_flags()){
+                if(result == 0) //no match yet, so assume we'll get a match here unless a flag fails
+                    result = 1;
+                foreach(int f, role_pref->special_flags()){
+                    if(!m_material_flags.has_flag(f)){
+                        result = 0;
+                        break;
+                    }
                 }
             }
+
+            if(result <= 0){ //only check for an exact match if we don't already have a match
+                result = (QString::compare(role_pref->get_name(),m_name,Qt::CaseInsensitive) == 0);
+            }
+
         }
-
-        //check for an exact match on the string, if this is required, reset our result again and check        
-        if(role_pref->exact_match())
-            result = 0;                    
-
-        if(result <= 0){ //only check for an exact match if we don't already have a match
-            result = (QString::compare(role_pref->get_name(),m_name,Qt::CaseInsensitive) == 0);
-        }
-
-
         if(d){
             //if it's a weapon, and a match, ensure the dwarf can actually wield it as well
             if(result > 0 && (role_pref->get_item_type() == WEAPON ||
@@ -140,4 +143,63 @@ int Preference::matches(Preference *role_pref, Dwarf *d){
     }
 
     return result;
+}
+
+void Preference::set_pref_flags(Race *r){
+    if(r->flags().has_flag(HATEABLE)){
+        add_flag(HATEABLE);
+    }
+    //set trainable flags as well for like creatures
+    if(r->is_trainable()){ //really only need to add one flag for a match..
+        add_flag(TRAINABLE_HUNTING);
+        add_flag(TRAINABLE_WAR); //seems this may only exist in mods?
+        add_flag(PET);
+        add_flag(PET_EXOTIC);
+    }
+    if(r->caste_flag(SHEARABLE)){
+        add_flag(SHEARABLE);
+    }
+    //fishing
+    if(r->flags().has_flag(VERMIN_FISH) || r->caste_flag(FISHABLE))
+        add_flag(FISHABLE);
+    //milker
+    if(r->caste_flag(MILKABLE)){
+        add_flag(MILKABLE);
+    }
+    //animal dissection / beekeeper / fish dissection
+    if(r->caste_flag(HAS_EXTRACTS)){
+        if(r->caste_flag(FISHABLE)){
+            add_flag(VERMIN_FISH);
+        }else{
+            add_flag(HAS_EXTRACTS);
+        }
+    }
+    m_exact_match = true;
+}
+
+void Preference::set_pref_flags(Plant *p){
+    if(!p->flags().has_flag(P_SAPLING) && !p->flags().has_flag(P_TREE)){
+        if(p->flags().has_flag(P_DRINK)){
+            add_flag(P_DRINK);
+        }
+        if(p->flags().has_flag(P_CROP)){
+            add_flag(P_CROP);
+        }
+        if(p->flags().has_flag(P_MILL)){
+            add_flag(P_MILL);
+        }
+        if(p->flags().has_flag(P_HAS_EXTRACTS)){
+            add_flag(P_HAS_EXTRACTS);
+        }
+    }
+    m_exact_match = true;
+}
+
+void Preference::set_pref_flags(ItemWeaponSubtype *w){
+    if(w->is_ranged()){
+        add_flag(ITEMS_WEAPON_RANGED);
+    }else{
+        add_flag(ITEMS_WEAPON);
+    }
+    m_exact_match = true;
 }

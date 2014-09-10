@@ -176,16 +176,17 @@ sub generate_dt_ini($$$$) {
     emit_addr 'caste_descr',%all,'caste_raw','description';
     emit_addr 'caste_trait_ranges',%all,'caste_raw','personality.a';
     emit_addr 'caste_phys_att_ranges',%all,'caste_raw','attributes.phys_att_range';
-    emit_addr 'caste_att_rates',%all,'caste_raw','attributes.phys_att_rates';
-    emit_addr 'caste_att_caps',%all,'caste_raw','attributes.phys_att_cap_perc';
     emit_addr 'baby_age',%all,'caste_raw','misc.baby_age';
     emit_addr 'child_age',%all,'caste_raw','misc.child_age';
     emit_addr 'adult_size',%all,'caste_raw','misc.adult_size';
     emit_addr 'flags',%all,'caste_raw','flags';
-    emit_addr 'extracts',%all,'caste_raw','extracts.extract_matidx';
-    emit_addr 'skill_rates',%all,'caste_raw','skill_rates';
     emit_addr 'body_info',%all,'caste_raw','body_info';
-
+    emit_addr 'skill_rates',%all,'caste_raw','skill_rates';
+    emit_addr 'caste_att_rates',%all,'caste_raw','attributes.phys_att_rates';
+    emit_addr 'caste_att_caps',%all,'caste_raw','attributes.phys_att_cap_perc';
+    emit_addr 'shearable_tissues_vector',%all,'caste_raw','shearable_tissue_layer'
+    emit_addr 'extracts',%all,'caste_raw','extracts.extract_matidx';
+    
     emit_header 'hist_entity_offsets';
     emit_addr 'beliefs',%all,'historical_entity','resources.values';
     emit_addr 'squads',%all,'historical_entity','squads';
@@ -252,8 +253,9 @@ sub generate_dt_ini($$$$) {
     emit_addr 'powder_name',%all,'material_common','state_name[Powder]';
     emit_addr 'paste_name',%all,'material_common','state_name[Paste]';
     emit_addr 'pressed_name',%all,'material_common','state_name[Pressed]';
-    emit_addr 'inorganic_materials_vector',%all,'inorganic_raw','material';
     emit_addr 'flags',%all,'material_common','flags';
+    emit_addr 'inorganic_materials_vector',%all,'inorganic_raw','material';
+    emit_addr 'inorganic_flags',%all,'inorganic_raw','flags';
 
     emit_header 'plant_offsets';
     emit_addr 'name',%all,'plant_raw','name';

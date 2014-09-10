@@ -909,25 +909,9 @@ void Dwarf::read_preferences(){
         case 1: //like creature
         {
             Race* r = m_df->get_race(pref_id);
-            if(r){
-                pref_name = r->plural_name().toLower();
-                p = new Preference(ptype,pref_name,this);
-                //set trainable flags as well for like creatures
-                if(r->is_trainable()){ //really only need to add one flag for a match..
-                    p->add_flag(TRAINABLE_HUNTING);
-                    p->add_flag(TRAINABLE_WAR); //seems this may only exist in mods?
-                }
-                //for fish dissection
-                if(r->flags().has_flag(VERMIN_FISH))
-                    p->add_flag(VERMIN_FISH);
-                //for milker
-                if(r->is_milkable()){
-                    p->add_flag(MILKABLE);
-                }
-                //animal dissection / beekeeper
-                if(r->is_vermin_extractable()){
-                    p->add_flag(HAS_EXTRACTS);
-                }
+            if(r){                
+                pref_name = r->plural_name().toLower();                
+                p->set_pref_flags(r);
             }
         }
             break;
@@ -961,10 +945,7 @@ void Dwarf::read_preferences(){
             //special case for weapon items. find the weapon and set ranged/melee flag for comparison
             if(itype == WEAPON){
                 ItemWeaponSubtype *w = m_df->get_weapon_def(capitalizeEach(pref_name));
-                if(w && w->is_ranged())
-                    p->add_flag(ITEMS_WEAPON_RANGED);
-                else
-                    p->add_flag(ITEMS_WEAPON);
+                p->set_pref_flags(w);
             }
         }
             break;
@@ -973,9 +954,7 @@ void Dwarf::read_preferences(){
             Plant *plnt = m_df->get_plant(pref_id);
             if(plnt){
                 pref_name = plnt->name_plural().toLower();
-                if(plnt->flags().has_flag(7)){
-                    p->add_flag(7);
-                }
+                p->set_pref_flags(plnt);
             }
         }
             break;

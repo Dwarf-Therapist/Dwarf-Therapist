@@ -82,6 +82,13 @@ public:
         }
     }
 
+    void set_flag(int f,bool state){
+        if(m_flags.size() <= f){
+            m_flags.resize(f+1);
+        }
+        m_flags.setBit(f,state);
+    }
+
     QString output_flag_string(){
         QString val;
         for(int i =0; i < m_flags.size(); i++){
