@@ -26,11 +26,11 @@ THE SOFTWARE.
 #include "mainwindow.h"
 
 AboutDialog::AboutDialog(MainWindow *parent)
-	: QDialog(parent)
-	, ui(new Ui::AboutDialog)
+    : QDialog(parent)
+    , ui(new Ui::AboutDialog)
 {
-	ui->setupUi(this);
-    QLabel *ov = ui->lbl_our_version;
+    ui->setupUi(this);
+    QLabel *ov = ui->label_title;
     ov->setText(ov->text().arg(m_version.to_string()));
     QLabel *qv = ui->lbl_qt_version;
     qv->setText(qv->text().arg(QT_VERSION_STR, qVersion()));
@@ -46,7 +46,7 @@ void AboutDialog::set_latest_version(const Version &v) {
 }
 
 void AboutDialog::version_check_failed() {
-	ui->lbl_up_to_date->setText(tr("Version check failed"));
+    ui->lbl_up_to_date->setText(tr("Version check failed"));
 }
 
 void AboutDialog::check_version() {

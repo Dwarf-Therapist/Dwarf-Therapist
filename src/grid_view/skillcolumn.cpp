@@ -136,11 +136,10 @@ void SkillColumn::build_tooltip(Dwarf *d, bool include_roles){
     QString role_str="";
     //if(!option_name.isEmpty() && DT->user_settings()->value(QString("options/%1").arg(option_name), true).toBool()) {
     if(include_roles){
-        float role_rating=0;
         if(m_skill_id != -1){
             QVector<Role*> found_roles = gdr->get_skill_roles().value(m_skill_id);
             if(found_roles.count() > 0){
-                role_rating = 0;
+                float role_rating=0;
                 //just list roles and %
                 role_str = tr("<h4>Related Roles:</h4><ul style=\"margin-left:-20px; padding-left:0px;\">");
                 foreach(Role *r, found_roles){

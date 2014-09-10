@@ -56,32 +56,13 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
 {
     setup_logging();
     load_translator();
+    setup_search_paths();
 
     TRACE << "Creating settings object";
     m_user_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
-//    QString local_path = QApplication::applicationDirPath() + "/Dwarf Therapist.ini";
-//    if(!QFile::exists(local_path)){
-//        LOGI << "Local settings file not found, attempting to copy from user directory...";
-//        m_user_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
-//        if(QFile::copy(m_user_settings->fileName(), local_path)){
-//            m_user_settings = new QSettings(local_path, QSettings::IniFormat, this);
-//        }
-//    }else{
-//        //backup
-//        LOGI << "Using and backing up local Dwarf Therapist.ini";
-//        QFile::copy(local_path, QApplication::applicationDirPath() + "/Dwarf Therapist.ini.bak");
-//        m_user_settings = new QSettings(local_path, QSettings::IniFormat, this);
-//    }
-
-//    if(!m_user_settings){
-//        LOGI << "Failed to copy and/or open local Dwarf Therapist.ini, falling back to user ini.";
-//        m_user_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
-//    }
-
-
 
     TRACE << "Creating options menu";
-    m_options_menu = new OptionsMenu;   
+    m_options_menu = new OptionsMenu;
 
     TRACE << "Creating main window";
     m_main_window = new MainWindow;
@@ -95,7 +76,7 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     connect(m_main_window->ui->tree_custom_professions, SIGNAL(itemActivated(QTreeWidgetItem*,int)), this, SLOT(edit_customization(QTreeWidgetItem*)));
     connect(m_main_window->ui->act_add_custom_profession, SIGNAL(triggered()), this, SLOT(add_custom_profession()));
     connect(m_main_window->ui->act_add_super_labor, SIGNAL(triggered()), this, SLOT(add_super_labor()));
-    connect(m_main_window->ui->le_filter_text, SIGNAL(textChanged(const QString&)), m_main_window->get_proxy(), SLOT(setFilterFixedString(const QString&)));    
+    connect(m_main_window->ui->le_filter_text, SIGNAL(textChanged(const QString&)), m_main_window->get_proxy(), SLOT(setFilterFixedString(const QString&)));
 
     read_settings();
     load_customizations();
@@ -123,6 +104,24 @@ DwarfTherapist::~DwarfTherapist(){
     delete m_log_mgr;
 }
 
+void DwarfTherapist::setup_search_paths() {
+    QStringList paths;
+    QString appdir = QCoreApplication::applicationDirPath();
+    QString working_dir = QDir::current().path();
+
+    // Dwarf Therapist xx.x/share/game_data.ini
+    paths << QString("%1/share").arg(appdir);
+    // Dwarf-Therapist/release/../share/game_data.ini
+    paths << QString("%1/../share").arg(appdir);
+    // /usr/bin/../share/dwarftherapist/game_data.ini
+    paths << QString("%1/../share/dwarftherapist").arg(appdir);
+    // cwd/game_data.ini
+    paths << QString("%1").arg(working_dir);
+    // cwd/share/game_data.ini
+    paths << QString("%1/share").arg(working_dir);
+
+    QDir::setSearchPaths("share", paths);
+}
 void DwarfTherapist::setup_logging() {
     QStringList args = arguments();
     bool debug_logging = args.indexOf("-debug") != -1;
@@ -183,7 +182,7 @@ void DwarfTherapist::read_settings() {
         m_options_menu->write_settings(); //write it out so that we can get default colors loaded
         emit settings_changed(); // this will cause delegates to get the right default colors
         m_user_settings->setValue("it_feels_like_the_first_time", false);
-    }    
+    }
 
     if (m_user_settings->value("options/show_toolbutton_text", true).toBool()) {
         m_main_window->get_toolbar()->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
@@ -194,9 +193,9 @@ void DwarfTherapist::read_settings() {
     m_allow_labor_cheats = m_user_settings->value("options/allow_labor_cheats", false).toBool();
     m_hide_non_adults = m_user_settings->value("options/hide_children_and_babies",false).toBool();
 
-    QApplication::setFont(DT->user_settings()->value("options/main_font", QFont(DefaultFonts::getMainFontName(), DefaultFonts::getMainFontSize())).value<QFont>());    
+    QApplication::setFont(DT->user_settings()->value("options/main_font", QFont(DefaultFonts::getMainFontName(), DefaultFonts::getMainFontSize())).value<QFont>());
     //set the application's tooltips
-    QToolTip::setFont(DT->user_settings()->value("options/tooltip_font", QFont(DefaultFonts::getTooltipFontName(), DefaultFonts::getTooltipFontSize())).value<QFont>());    
+    QToolTip::setFont(DT->user_settings()->value("options/tooltip_font", QFont(DefaultFonts::getTooltipFontName(), DefaultFonts::getTooltipFontSize())).value<QFont>());
 
     //set a variable we'll use in the dwarfstats for role calcs
     DwarfStats::set_att_potential_weight(DT->user_settings()->value("options/default_attribute_potential_weight",0.5f).toFloat());
@@ -299,7 +298,7 @@ void DwarfTherapist::import_existing_professions() {
     foreach(Dwarf *d, get_dwarves()) {
         QString prof = d->custom_profession_name();
         if (prof.isEmpty())
-            continue;        
+            continue;
         if (!m_custom_professions.contains(prof)) { // import it
             CustomProfession *cp = new CustomProfession(d, this);
             if(cp->prof_id() > -1)
@@ -376,7 +375,7 @@ void DwarfTherapist::edit_customization(QTreeWidgetItem *i) {
 void DwarfTherapist::edit_customization(QList<QVariant> data){
     DwarfTherapist::customization_data c_data = build_c_data(data);
     if(c_data.type != CUSTOM_SUPER){
-        CustomProfession *cp;        
+        CustomProfession *cp;
         if(c_data.type == CUSTOM_ICON){
             //custom icons are slightly different. if one doesn't already exist with the profession id specified, create it
             cp = m_custom_prof_icns.value(c_data.id.toInt());
@@ -474,7 +473,7 @@ void DwarfTherapist::del_custom_profession(CustomProfession *cp){
         m_custom_professions.take(cp->get_name());
     }else{
         m_custom_prof_icns.take(cp->prof_id());
-    }    
+    }
     delete cp;
     m_main_window->load_customizations();
     write_custom_professions();

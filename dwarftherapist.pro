@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = DwarfTherapist
-QT += concurrent widgets
+QT += widgets
 lessThan(QT_MAJOR_VERSION, 5) {
     message(Setting up for Qt 4)
     QT += script
@@ -32,101 +32,109 @@ Debug:OBJECTS_DIR = debug/.obj
 Debug:MOC_DIR = debug/.moc
 Debug:UI_DIR = debug/.ui
 
-win32 {
-    message(Setting up for Windows)
-    RC_FILE = DwarfTherapist.rc
-    LIBS += -luser32
-    LIBS += -lpsapi
-    HEADERS += inc/dfinstancewindows.h
-    SOURCES += src/dfinstancewindows.cpp
+build_pass {
+    win32 {
+        message(Setting up for Windows)
+        RC_FILE = DwarfTherapist.rc
+        LIBS += -luser32
+        LIBS += -lpsapi
+        HEADERS += inc/dfinstancewindows.h
+        SOURCES += src/dfinstancewindows.cpp
 
-    DEFINES += NOMINMAX
+        DEFINES += NOMINMAX
 
-    PRO_FILE_PWD = $$replace(_PRO_FILE_PWD_, /, \\)
+        PWD = $$replace(PWD, /, \\)
 
-    check_dirs.path = $$DESTDIR
-    check_dirs.extra = if not exist $$DESTDIR\\share\\memory_layouts\\windows mkdir "$$DESTDIR\\share\\memory_layouts\\windows";
+        check_dirs.path = $$DESTDIR
+        check_dirs.extra = if not exist \"$$DESTDIR\\share\\memory_layouts\\windows\" mkdir \"$$DESTDIR\\share\\memory_layouts\\windows\";
 
-    copy_game_data.path = $$DESTDIR
-    copy_game_data.extra = copy /Y "$$PRO_FILE_PWD\\share\\game_data.ini" ".\\$$DESTDIR\\share";
+        copy_game_data.path = $$DESTDIR
+        copy_game_data.extra = copy /Y \"$$PWD\\share\\game_data.ini\" \".\\$$DESTDIR\\share\";
 
-    copy_mem_layouts.path = $$DESTDIR
-    copy_mem_layouts.extra = copy /Y "$$PRO_FILE_PWD\\share\\memory_layouts\\windows\\*" ".\\$$DESTDIR\\share\\memory_layouts\\windows";
+        copy_mem_layouts.path = $$DESTDIR
+        copy_mem_layouts.extra = copy /Y \"$$PWD\\share\\memory_layouts\\windows\\*\" \".\\$$DESTDIR\\share\\memory_layouts\\windows\";
 
-    INSTALLS += check_dirs
-    INSTALLS += copy_game_data
-    INSTALLS += copy_mem_layouts
-}
-else:macx {
-    message(Setting up for OSX)
-    HEADERS += ./inc/dfinstanceosx.h
-    OBJECTIVE_SOURCES += ./src/dfinstanceosx.mm
-    ICON = hammer.icns
-    LIBS += -framework Cocoa
-    LIBS += -framework Carbon
-    LIBS += -framework Security
-    LIBS += -framework SecurityFoundation
-    LIBS += -framework Foundation
-    LIBS += -framework ApplicationServices
-    LIBS += -framework Accelerate
+        INSTALLS += check_dirs
+        INSTALLS += copy_game_data
+        INSTALLS += copy_mem_layouts
+    }
+    else:macx {
+        message(Setting up for OSX)
+        HEADERS += ./inc/dfinstanceosx.h
+        OBJECTIVE_SOURCES += ./src/dfinstanceosx.mm
+        ICON = hammer.icns
+        LIBS += -framework Cocoa
+        LIBS += -framework Carbon
+        LIBS += -framework Security
+        LIBS += -framework SecurityFoundation
+        LIBS += -framework Foundation
+        LIBS += -framework ApplicationServices
+        LIBS += -framework Accelerate
 
-    log.path = Contents/MacOS/log
-    QMAKE_BUNDLE_DATA += log
+        log.path = Contents/MacOS/log
+        QMAKE_BUNDLE_DATA += log
 
-    share.path = Contents/MacOS/share
-    share.files += share/game_data.ini
-    QMAKE_BUNDLE_DATA += share
+        share.path = Contents/MacOS/share
+        share.files += share/game_data.ini
+        QMAKE_BUNDLE_DATA += share
 
-    layouts.path = Contents/MacOS/etc/memory_layouts/osx
-    layouts.path = Contents/MacOS/share/memory_layouts/osx
-    layouts.files += share/memory_layouts/osx/v0.40.04_osx.ini
-    layouts.files += share/memory_layouts/osx/v0.40.05_osx.ini
-    layouts.files += share/memory_layouts/osx/v0.40.06_osx.ini
-    layouts.files += share/memory_layouts/osx/v0.40.07_osx.ini
-    layouts.files += share/memory_layouts/osx/v0.40.08_osx.ini
-    layouts.files += share/memory_layouts/osx/v0.40.09_osx.ini
-    layouts.files += share/memory_layouts/osx/v0.40.10_osx.ini
-    layouts.files += share/memory_layouts/osx/v0.40.11_osx.ini
-    QMAKE_BUNDLE_DATA += layouts
-}
-else:unix {
-    message(Setting up for Linux)
-    HEADERS += inc/dfinstancelinux.h
-    SOURCES += src/dfinstancelinux.cpp
+        layouts.path = Contents/MacOS/etc/memory_layouts/osx
+        layouts.path = Contents/MacOS/share/memory_layouts/osx
+        layouts.files += share/memory_layouts/osx/v0.40.04_osx.ini
+        layouts.files += share/memory_layouts/osx/v0.40.05_osx.ini
+        layouts.files += share/memory_layouts/osx/v0.40.06_osx.ini
+        layouts.files += share/memory_layouts/osx/v0.40.07_osx.ini
+        layouts.files += share/memory_layouts/osx/v0.40.08_osx.ini
+        layouts.files += share/memory_layouts/osx/v0.40.09_osx.ini
+        layouts.files += share/memory_layouts/osx/v0.40.10_osx.ini
+        layouts.files += share/memory_layouts/osx/v0.40.11_osx.ini
+        QMAKE_BUNDLE_DATA += layouts
+    }
+    else:unix {
+        message(Setting up for Linux)
+        HEADERS += inc/dfinstancelinux.h
+        SOURCES += src/dfinstancelinux.cpp
 
-    target.path = /usr/bin
-    INSTALLS += target
+        target.path = /usr/bin
+        INSTALLS += target
 
-    bin.path = /usr/bin
-    bin.files += dist/dwarftherapist
-    INSTALLS += bin
+        bin.path = /usr/bin
+        bin.files += dist/dwarftherapist
+        INSTALLS += bin
 
-    bin_mod.path = /usr/bin
-    bin_mod.extra = chmod +x $(INSTALL_ROOT)/usr/bin/dwarftherapist
-    bin_mod.depends = install_bin
-    INSTALLS += bin_mod
+        bin_mod.path = /usr/bin
+        bin_mod.extra = chmod +x $(INSTALL_ROOT)/usr/bin/dwarftherapist
+        bin_mod.depends = install_bin
+        INSTALLS += bin_mod
 
-    application.path = /usr/share/applications
-    application.files += dist/dwarftherapist.desktop
-    INSTALLS += application
+        application.path = /usr/share/applications
+        application.files += dist/dwarftherapist.desktop
+        INSTALLS += application
 
-    doc.path = /usr/share/doc/dwarftherapist
-    doc.files += LICENSE.txt
-    doc.files += README.md
-    INSTALLS += doc
+        doc.path = /usr/share/doc/dwarftherapist
+        doc.files += LICENSE.txt
+        doc.files += README.md
+        INSTALLS += doc
 
-    icon.path = /usr/share/pixmaps
-    icon.files += img/dwarftherapist.png
-    icon.files += img/dwarftherapist.xpm
-    INSTALLS += icon
+        icon.path = /usr/share/pixmaps
+        icon.files += img/dwarftherapist.png
+        icon.files += img/dwarftherapist.xpm
+        INSTALLS += icon
 
-    memory_layouts.path = /usr/share/dwarftherapist/memory_layouts/linux
-    memory_layouts.files += share/memory_layouts/linux/*
-    INSTALLS += memory_layouts
+        memory_layouts.path = /usr/share/dwarftherapist/memory_layouts/linux
+        memory_layouts.files += share/memory_layouts/linux/*
+        INSTALLS += memory_layouts
 
-    game_data.path = /usr/share/dwarftherapist
-    game_data.files += share/game_data.ini
-    INSTALLS += game_data
+        game_data.path = /usr/share/dwarftherapist
+        game_data.files += share/game_data.ini
+        INSTALLS += game_data
+
+        system("printf 'Checking for pdflatex... '; if ! command -v pdflatex; then r=$?; echo 'not found'; exit $?; fi") {
+            QMAKE_EXTRA_TARGETS += manual
+            manual.commands = pdflatex -output-directory=\"$$OUT_PWD\" \"$$PWD/doc/Dwarf Therapist.tex\"
+            doc.files += "doc/Dwarf Therapist.pdf"
+        }
+    }
 }
 
 # Translation files

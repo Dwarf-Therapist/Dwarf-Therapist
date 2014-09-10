@@ -649,7 +649,7 @@ QString DwarfDetailsWidget::build_gradient(QColor c1, QColor c2){
             .arg(c1.blue()).arg(c1.alpha())
             .arg(c2.red()).arg(c2.green())
             .arg(c2.blue()).arg(c2.alpha())
-            .arg(compliment(c1).name());
+            .arg(complement(c1).name());
 }
 
 

@@ -98,7 +98,7 @@ public:
 
     // Methods for when we know how the data is layed out
     MemoryLayout *memory_layout() {return m_layout;}
-    void read_raws();    
+    void read_raws();
     QVector<Dwarf*> load_dwarves();
     void load_reactions();
     void load_races_castes();
@@ -224,7 +224,7 @@ public:
         void cancel_scan() {m_stop_scan = true;}
 protected:
     VIRTADDR m_lowest_address;
-    VIRTADDR m_highest_address;    
+    VIRTADDR m_highest_address;
     bool m_stop_scan; // flag that gets set to stop scan loops
     bool m_is_ok;
     int m_bytes_scanned;
@@ -240,11 +240,11 @@ protected:
     QDir m_df_dir;
     QVector<Dwarf*> m_actual_dwarves;
     QVector<Dwarf*> m_labor_capable_dwarves;
-    quint32 m_cur_year_tick;    
+    quint32 m_cur_year_tick;
     quint32 m_cur_time;
     QHash<int,int> m_enabled_labor_count;
 
-    void load_population_data();    
+    void load_population_data();
     void load_role_ratings();
     bool check_vector(const VIRTADDR start, const VIRTADDR end, const VIRTADDR addr);
 
@@ -252,7 +252,7 @@ protected:
     /*! this hash will hold a map of all loaded and valid memory layouts found
         on disk, the key is a QString of the checksum since other OSs will use
         an MD5 of the binary instead of a PE timestamp */
-    QHash<QString, MemoryLayout*> m_memory_layouts; // checksum->layout    
+    QHash<QString, MemoryLayout*> m_memory_layouts; // checksum->layout
 
     private slots:
         void heartbeat();
@@ -270,7 +270,7 @@ signals:
     void progress_range(int min, int max);
     void progress_value(int value);
 
-private:    
+private:
     Languages* m_languages;
     FortressEntity* m_fortress;
     QHash<QString, Reaction *> m_reactions;

@@ -385,7 +385,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
                 p->setPen(model_idx.data(Qt::TextColorRole).value<QColor>());
             }else{
                 if(auto_contrast){
-                    p->setPen(compliment(bg));
+                    p->setPen(complement(bg));
                 }else{
                     p->setPen(Qt::black);
                 }
@@ -492,7 +492,7 @@ QColor UberDelegate::paint_bg(const QRect &adjusted, QPainter *p, const QStyleOp
 QColor UberDelegate::get_pen_color(const QColor bg) const{
     QColor c = Qt::black;
     if (auto_contrast){
-        c = compliment(bg);
+        c = complement(bg);
         if(c.toHsv().value() > 50){
             return QColor(Qt::gray);
         }else{
@@ -512,7 +512,7 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
     pn.setWidth(0);
 
     if (auto_contrast)
-        color_fill = compliment(bg);
+        color_fill = complement(bg);
 
     QModelIndex model_idx = idx;
     if (m_proxy)
@@ -836,7 +836,7 @@ void UberDelegate::paint_labor_aggregate(const QRect &adjusted, QPainter *p, con
         //        rating = (float)enabled_count / (float)m_proxy->rowCount(first_col) * 100.0f;
 
         if(auto_contrast){
-            p->setPen(compliment(color_partial_group));
+            p->setPen(complement(color_partial_group));
         }else{
             p->setPen(Qt::black);
         }

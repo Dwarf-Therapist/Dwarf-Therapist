@@ -73,6 +73,9 @@ DFInstanceOSX::DFInstanceOSX(QObject* parent)
       m_alloc_start(0),
       m_alloc_end(0)
 {
+    if(!authorize()) {
+        exit(1);
+    }
 }
 
 DFInstanceOSX::~DFInstanceOSX() {
@@ -332,7 +335,7 @@ uintptr_t DFInstanceOSX::get_string(const QString &str) {
     return m_string_cache[str] = addr;
 }
 
-bool DFInstance::authorize() {
+bool DFInstanceOSX::authorize() {
     // Create authorization reference
     OSStatus status;
     AuthorizationRef authorizationRef;

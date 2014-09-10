@@ -523,7 +523,7 @@ void DwarfModel::build_row(const QString &key) {
             if(d->noble_position() != ""){
                 QColor col = m_df->fortress()->get_noble_color(d->historical_id());
                 i_name->setData(build_gradient_brush(col,col.alpha(),0,QPoint(0,0),QPoint(1,0)),Qt::BackgroundRole);
-                i_name->setData(compliment(col,false,0.25),Qt::ForegroundRole);
+                i_name->setData(complement(col,0.25),Qt::ForegroundRole);
             }
         }
 
@@ -535,7 +535,7 @@ void DwarfModel::build_row(const QString &key) {
             {
                 name_italic = true;
                 i_name->setData(m_cursed_bg,Qt::BackgroundRole);
-                i_name->setData(compliment(m_curse_col,false,0.25),Qt::ForegroundRole);
+                i_name->setData(complement(m_curse_col,0.25),Qt::ForegroundRole);
             }
                 break;
             case eCurse::OTHER:

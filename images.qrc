@@ -97,9 +97,6 @@
         <file>img/female-asexual.png</file>
         <file>img/male-asexual.png</file>
     </qresource>
-    <qresource prefix="/config">
-        <file alias="default_gridviews">share/default_gridviews.dtg</file>
-    </qresource>
     <qresource prefix="/status">
         <file>img/cheese.png</file>
         <file>img/gear.png</file>

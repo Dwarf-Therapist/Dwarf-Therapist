@@ -37,8 +37,8 @@ for d in "" debug release; do
         if [[ ! -x $depends ]]; then
             printf "Downloading Dependency Walker... "
             pushd "$source"
-            if [[ $PROCESSOR_ARCHITECTURE == AMD64 ]] || [[ $PROCESSOR_ARCHITEW6432 == AMD64 ]]; then b="x64";
-            elif [[ $PROCESSOR_ARCHITECTURE == IA64 ]] || [[ $PROCESSOR_ARCHITEW6432 == IA64 ]]; then b="ia64";
+            if [[ $PROCESSOR_ARCHITECTURE == AMD64 || $PROCESSOR_ARCHITEW6432 == AMD64 ]]; then b="x64";
+            elif [[ $PROCESSOR_ARCHITECTURE == IA64 || $PROCESSOR_ARCHITEW6432 == IA64 ]]; then b="ia64";
             else b="x86"; fi
             f=depends22_"$b".zip
             curl -L -o "$f" http://dependencywalker.com/"$f"
@@ -48,23 +48,28 @@ for d in "" debug release; do
             printf "done.\n"
         fi
 
-        printf "Tracing dependencies... "
-        "$depends" -c -oc:"$d"/depends.csv "$dt" || [[ $? == 10 ]]
-        printf "done.\n"
-        while read dep; do
-            if [[ $dep == ,* ]] || [[ $dep == 6,* ]]; then
+        depc=$d/depends.csv
+        if [[ "$dt" -nt "$depc" ]]; then
+            printf "Tracing dependencies... "
+            "$depends" -c -oc:"$depc" "$dt" || [[ $? == 10 ]]
+            printf "done.\n"
+            while read dep; do
+                if [[ $dep == ,* ]] || [[ $dep == 6,* ]]; then
                 rdep=${dep#?,\"}
                 deps+="${rdep%%\"*} "
-            fi
-        done < "$d"/depends.csv
+                fi
+            done < "$depc"
 
-	if [[ -n $deps ]]; then
-		printf "Copying dependencies... "
-		robocopy -sl -np -njh -njs "$QTDIR\\bin" "$d"/ $deps || [[ $? == 2 || $? == 3 ]]
-		printf "done.\n"
-	else
-		printf "No dependencies to copy.\n"
-	fi
+            if [[ -n $deps ]]; then
+                printf "Copying dependencies... "
+                robocopy -sl -np -njh -njs "$QTDIR\\bin" "$d"/ $deps || [[ $? == 2 || $? == 3 ]]
+                printf "done.\n"
+            else
+                printf "No dependencies to copy.\n"
+            fi
+        else
+            printf "Skipping dependency tracing, DT is not newer than depends.csv.\n"
+        fi
     fi
 done
 

@@ -371,21 +371,21 @@ void optimizereditor::draw_labor_context_menu(const QPoint &p){
         }
     }
 
-    QString msg = tr("A-I (%1 jobs)").arg(QString::number(labor_a_l->children().count()));
+    QString msg = tr("A-I (%1 jobs)").arg(labor_a_l->children().count());
     labor_a_l->setWindowTitle(msg);
     labor_a_l->setTitle(msg);
 
-    msg = tr("J-R (%1 jobs)").arg(QString::number(labor_j_r->children().count()));
+    msg = tr("J-R (%1 jobs)").arg(labor_j_r->children().count());
     labor_j_r->setWindowTitle(msg);
     labor_j_r->setTitle(msg);
 
-    msg = tr("S-Z (%1 jobs)").arg(QString::number(labor_s_z->children().count()));
+    msg = tr("S-Z (%1 jobs)").arg(labor_s_z->children().count());
     labor_s_z->setWindowTitle(msg);
     labor_s_z->setTitle(msg);
 
     m->addSeparator();
-    a = m->addAction(icn,tr("Assign remaining %1 jobs.")
-                     .arg(QString::number(m_remaining_labors.count())),this, SLOT(add_remaining_jobs()));
+    m->addAction(icn, tr("Assign remaining %1 jobs.").arg(m_remaining_labors.count())
+                 , this, SLOT(add_remaining_jobs()));
 
     m->exec(ui->tw_labors->viewport()->mapToGlobal(p));
 }
@@ -622,9 +622,11 @@ void optimizereditor::import_details(){
                  QString msg = "";
                  if(!role_name.isEmpty())
                      msg = "Role [" + role_name + "] was used instead.";
-                 display_message("The role for " + GameDataReader::ptr()->get_labor(d->labor_id)->name +
-                                 " [" + d->role_name + "] could not be found. " +
-                                         msg + " (line " + QString::number(linenum) + ")",true);
+                 display_message(tr("The role for %1 [%2] could not be found at line %3.")
+                                 .arg(GameDataReader::ptr()->get_labor(d->labor_id)->name)
+                                 .arg(d->role_name)
+                                 .arg(msg)
+                                 .arg(linenum), true);
                  d->role_name = role_name;
              }
 
@@ -658,10 +660,10 @@ void optimizereditor::import_details(){
              save(m_plan);
          }else{
              display_message(tr("CSV has an invalid number of columns (%1) at line %2.")
-                             .arg(QString::number(fields.count())).arg(QString::number(linenum)),true);
+                             .arg(fields.count()).arg(linenum),true);
          }
 
-     }     
+     }
      loading = false;
      file.close();
      ui->tw_labors->hide();
@@ -687,14 +689,14 @@ void optimizereditor::export_details(){
      QTextStream s(&file);
 
      s << ui->le_name->text() + ",";
-     s << QString::number(ui->sb_max_jobs->value()) + ",";
-     s << QString::number(ui->sb_pop_percent->value()) + ",";
-     s << QString::number(ui->sb_hauler_percent->value()) + ",";
-     s << QString::number((int)ui->chk_military->isChecked()) + ",";
-     s << QString::number((int)ui->chk_nobles->isChecked()) + ",";
-     s << QString::number((int)ui->chk_injured->isChecked()) + ",";
-     s << QString::number((int)ui->chk_auto->isChecked()) + ",";
-     s << QString::number((int)ui->chk_squads->isChecked()) + "\n";
+     s << ui->sb_max_jobs->value() + ",";
+     s << ui->sb_pop_percent->value() + ",";
+     s << ui->sb_hauler_percent->value() + ",";
+     s << (int)ui->chk_military->isChecked() + ",";
+     s << (int)ui->chk_nobles->isChecked() + ",";
+     s << (int)ui->chk_injured->isChecked() + ",";
+     s << (int)ui->chk_auto->isChecked() + ",";
+     s << (int)ui->chk_squads->isChecked() + "\n";
 
      for(int i = 0; i < ui->tw_labors->rowCount(); i++){
          QComboBox *c = static_cast<QComboBox*>(ui->tw_labors->cellWidget(i,1));

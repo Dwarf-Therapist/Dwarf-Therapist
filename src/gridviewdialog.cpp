@@ -151,7 +151,7 @@ void GridViewDialog::draw_sets() {
     foreach(ViewColumnSet *set, m_pending_view->sets()) {
         QStandardItem *set_item = new QStandardItem(set->name());
         set_item->setBackground(set->bg_color());
-        set_item->setForeground(compliment(set->bg_color()));
+        set_item->setForeground(complement(set->bg_color()));
         set_item->setDropEnabled(false);
         set_item->setData(set->name(), GPDT_TITLE);
         set_item->setData(set->bg_color(), GPDT_BG_COLOR);
@@ -180,7 +180,7 @@ void GridViewDialog::draw_columns_for_set(ViewColumnSet *set) {
         item->setData(vc->title(), GPDT_TITLE);
         item->setData(vc->type(), GPDT_COLUMN_TYPE);
         item->setBackground(vc->override_color() ? vc->bg_color() : set->bg_color());
-        item->setForeground(compliment(vc->override_color() ? vc->bg_color() : set->bg_color()));
+        item->setForeground(complement(vc->override_color() ? vc->bg_color() : set->bg_color()));
         item->setDropEnabled(false);
         m_col_model->appendRow(item);
     }

@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 Languages::Languages(DFInstance *df, QObject *parent)
     : QObject(parent)
+    , m_address(0)
     , m_df(df)
     , m_mem(df->memory_layout())
 {

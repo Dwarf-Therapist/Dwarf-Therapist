@@ -23,7 +23,6 @@ THE SOFTWARE.
 #include <QtDebug>
 #include <QMessageBox>
 
-#ifdef Q_OS_WIN
 #include <windows.h>
 #include <psapi.h>
 
@@ -53,13 +52,12 @@ DFInstanceWindows::~DFInstanceWindows() {
 QString DFInstanceWindows::get_last_error() {
     LPWSTR bufPtr = NULL;
     DWORD err = GetLastError();
-    FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                   FORMAT_MESSAGE_FROM_SYSTEM |
-                   FORMAT_MESSAGE_IGNORE_INSERTS,
-                   NULL, err, 0, (LPWSTR)&bufPtr, 0, NULL);
-    const QString result =
-        (bufPtr) ? QString::fromUtf16((const ushort*)bufPtr).trimmed() :
-                   QString("Unknown Error %1").arg(err);
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                  FORMAT_MESSAGE_FROM_SYSTEM |
+                  FORMAT_MESSAGE_IGNORE_INSERTS,
+                  NULL, err, 0, (LPWSTR)&bufPtr, 0, NULL);
+    const QString result = bufPtr ? QString::fromWCharArray(bufPtr).trimmed()
+                                  : QString("Unknown Error %1").arg(err);
     LocalFree(bufPtr);
     return result;
 }
@@ -221,21 +219,21 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
         m_heartbeat_timer->start(1000); // check every second for disconnection
     }
 
-    char * modName = new char[MAX_PATH];
-    DWORD lenModName = 0;
-    if ((lenModName = GetModuleFileNameExA(m_proc, NULL, modName, MAX_PATH)) != 0) {
-        QString exe_path = QString::fromLocal8Bit(modName, lenModName);
+    WCHAR modName[MAX_PATH];
+    DWORD lenModName = GetModuleFileNameExW(m_proc, NULL, modName, MAX_PATH);
+    if (lenModName) {
+        QString exe_path = QString::fromWCharArray(modName, lenModName);
         LOGI << "GetModuleFileNameEx returned: " << exe_path;
         QFileInfo exe(exe_path);
         m_df_dir = exe.absoluteDir();
-        LOGI << "Dwarf fortress path:" << m_df_dir.absolutePath();
+        LOGI << "Dwarf Fortress path:" << m_df_dir.absolutePath();
     }
 
     m_is_ok = true;
     return m_is_ok;
 }
 
-/*! OS specific way of asking the kernel for valid virtual memory pages from
+/* OS specific way of asking the kernel for valid virtual memory pages from
   the DF process. These pages are used to speed up scanning, and validate
   reads from DF's memory. If addresses are not within ranges found by this
   method, they will fail the is_valid_address() method */
@@ -259,8 +257,8 @@ void DFInstanceWindows::map_virtual_memory() {
             info.wProcessorRevision;
     TRACE << "PAGE SIZE" << info.dwPageSize;
 
-    VIRTADDR start = (intptr_t)info.lpMinimumApplicationAddress;
-    VIRTADDR max_address = (intptr_t)info.lpMaximumApplicationAddress;
+    long start = (intptr_t)info.lpMinimumApplicationAddress;
+    long max_address = (intptr_t)info.lpMaximumApplicationAddress;
     TRACE << "MIN ADDRESS:" << hexify(start);
     TRACE << "MAX ADDRESS:" << hexify(max_address);
 
@@ -322,9 +320,3 @@ void DFInstanceWindows::map_virtual_memory() {
     LOGD << "MEMORY SEGMENT SUMMARY: accepted" << accepted << "rejected" <<
             rejected << "total" << accepted + rejected;
 }
-
-bool DFInstance::authorize(){
-    return true;
-}
-
-#endif

@@ -53,6 +53,7 @@ public:
     bool attach();
     bool detach();
 
+    static bool authorize();
     static bool isAuthorized();
     static bool checkPermissions();
 

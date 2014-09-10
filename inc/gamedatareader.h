@@ -71,11 +71,11 @@ public:
     QHash<int, Trait*> get_traits() {return m_traits;}
     QList<QPair<int, Trait*> > get_ordered_traits() {return m_ordered_traits;}
     QList<QPair<ATTRIBUTES_TYPE, QString> > get_ordered_attribute_names() {return m_ordered_attribute_names;}
-    QHash<short, Profession*> get_professions() {return m_professions;}    
+    QHash<short, Profession*> get_professions() {return m_professions;}
     QHash<QString, Role*>& get_roles(){return m_dwarf_roles;}
     QList<QPair<QString, Role*> > get_ordered_roles() {return m_ordered_roles;}
     QVector<QString> get_default_roles() {return m_default_roles;}
-    QHash<int,QVector<Role*> > get_skill_roles() {return m_skill_roles;}    
+    QHash<int,QVector<Role*> > get_skill_roles() {return m_skill_roles;}
     QHash<int,QString> get_skills(){return m_skills;}
     QList<QPair<int,QString> > get_ordered_beliefs(){return m_ordered_beliefs;}
     QList<QPair<int,QString> > get_ordered_goals(){return m_ordered_goals;}
@@ -129,7 +129,7 @@ protected:
     virtual ~GameDataReader();
 private:
     static GameDataReader *m_instance;
-    QSettings *m_data_settings;
+    QSettings m_data_settings;
 
     QHash<int, Labor*> m_labors;
     QList<Labor*> m_ordered_labors;
@@ -144,7 +144,7 @@ private:
     QList<QPair<int,QString> > m_ordered_goals;
 
     QHash<int, QString> m_skills;
-    QList<QPair<int, QString> > m_ordered_skills;    
+    QList<QPair<int, QString> > m_ordered_skills;
     QHash<int, QString> m_skill_levels;
 
     QHash<ATTRIBUTES_TYPE, QString> m_attribute_names;

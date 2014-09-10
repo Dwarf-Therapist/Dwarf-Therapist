@@ -9,10 +9,9 @@ QImage scale(const QString &imageFileName)
     return image.scaled(QSize(imageSize, imageSize), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 }
 
-IconChooser::IconChooser(QWidget *parent)//QStringList imageNamesList, QWidget *parent) :
+IconChooser::IconChooser(QWidget *parent)
     : QDialog(parent)
     , selected_id(-1)
-  //, m_imageNamesList(imageNamesList)
 {
 
     QGridLayout* m_gridLayout = new QGridLayout(this);
@@ -31,12 +30,6 @@ IconChooser::IconChooser(QWidget *parent)//QStringList imageNamesList, QWidget *
 
     m_standardModel = new QStandardItemModel(this);
     m_imageListView->setModel(m_standardModel);
-
-//    m_imageScaler = new QFutureWatcher<QImage>(this);
-//    connect(m_imageScaler, SIGNAL(resultReadyAt(int)), SLOT(showImage(int)));
-//    connect(m_imageScaler, SIGNAL(finished()), SLOT(finished()));
-
-//    m_imageScaler->setFuture(QtConcurrent::mapped(m_imageNamesList, scale));
 
 
     for(int i = 1; i < 107; i++){

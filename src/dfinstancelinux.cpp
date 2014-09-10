@@ -20,47 +20,38 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+#include "dfinstance.h"
+#include "dfinstancelinux.h"
+#include "defines.h"
+#include "dwarf.h"
+#include "gamedatareader.h"
+#include "memorylayout.h"
+#include "memorysegment.h"
+#include "truncatingfilelogger.h"
+#include "cp437codec.h"
+#include "utils.h"
+
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QtDebug>
+
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <sys/ptrace.h>
-#include <sys/uio.h>
 #include <sys/user.h>
 #include <sys/mman.h>
 #include <errno.h>
 #include <wait.h>
 
-#include "dfinstance.h"
-#include "dfinstancelinux.h"
-#include "defines.h"
-#include "dwarf.h"
-#include "utils.h"
-#include "gamedatareader.h"
-#include "memorylayout.h"
-#include "memorysegment.h"
-#include "truncatingfilelogger.h"
-
-#include "cp437codec.h"
-
-extern ssize_t process_vm_readv(pid_t pid,
-                                const struct iovec *local_iov,
-                                unsigned long liovcnt,
-                                const struct iovec *remote_iov,
-                                unsigned long riovcnt,
-                                unsigned long flags) __attribute__ ((weak));
-extern ssize_t process_vm_writev(pid_t pid,
-                                 const struct iovec *local_iov,
-                                 unsigned long liovcnt,
-                                 const struct iovec *remote_iov,
-                                 unsigned long riovcnt,
-                                 unsigned long flags) __attribute__ ((weak));
-
 struct STLStringHeader {
     quint32 length;
     quint32 capacity;
     qint32 refcnt;
+};
+
+struct iovec {
+    void *iov_base;
+    size_t iov_len;
 };
 
 DFInstanceLinux::DFInstanceLinux(QObject* parent)
@@ -70,7 +61,7 @@ DFInstanceLinux::DFInstanceLinux(QObject* parent)
     , m_inject_addr(-1)
     , m_alloc_start(0)
     , m_alloc_end(0)
-    , m_warned_glibc(0)
+    , m_warned_pvm(false)
 {
 }
 
@@ -148,8 +139,7 @@ bool DFInstanceLinux::attach() {
     }
 
     if (ptrace(PTRACE_ATTACH, m_pid, 0, 0) == -1) { // unable to attach
-        perror("ptrace attach");
-        LOGE << "Could not attach to PID" << m_pid;
+        LOGE << "attach:" << strerror(errno) << "attaching to PID" << m_pid;
         return false;
     }
 
@@ -175,6 +165,26 @@ bool DFInstanceLinux::detach() {
     return m_attach_count > 0;
 }
 
+SSIZE DFInstanceLinux::process_vm(long number, const VIRTADDR &addr
+                                  , const USIZE &bytes, void *buffer) {
+    struct iovec local_iov[1];
+    struct iovec remote_iov[1];
+    local_iov[0].iov_base = buffer;
+    remote_iov[0].iov_base = reinterpret_cast<void *>(addr);
+    local_iov[0].iov_len = remote_iov[0].iov_len = bytes;
+
+    SSIZE r = syscall(number, m_pid, local_iov, 1UL, remote_iov, 1UL, 0UL);
+
+    if (r == -1 && errno == ENOSYS && !m_warned_pvm) {
+        m_warned_pvm = true;
+        LOGI << "Kernel does not support process_vm API, falling back to ptrace.";
+        // reset errno, logger may have modified it
+        errno = ENOSYS;
+    }
+
+    return r;
+}
+
 USIZE DFInstanceLinux::read_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes, void *buffer) {
     int bytes_read = 0;
 
@@ -197,39 +207,23 @@ USIZE DFInstanceLinux::read_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes,
 }
 
 USIZE DFInstanceLinux::read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer) {
-    if (!process_vm_readv) {
-        if (!m_warned_glibc) {
-            LOGI << "glibc does not support process_vm_* API, falling back to ptrace";
-            m_warned_glibc = true;
+    memset(buffer, 0, bytes);
+
+    SSIZE bytes_read = process_vm(SYS_process_vm_readv, addr, bytes, buffer);
+    if (bytes_read == -1) {
+        if (errno != ENOSYS) {
+            LOGE << "READ_RAW:" << QString(strerror(errno)) << "READING" << bytes << "BYTES FROM" << hexify(addr) << "TO" << buffer;
         }
         return read_raw_ptrace(addr, bytes, buffer);
     }
 
-    SSIZE bytes_read;
-    memset(buffer, 0, bytes);
-
-    struct iovec local_iov[1];
-    struct iovec remote_iov[1];
-    local_iov[0].iov_base = buffer;
-    remote_iov[0].iov_base = reinterpret_cast<void *>(addr);
-    local_iov[0].iov_len = remote_iov[0].iov_len = bytes;
-
-    bytes_read = process_vm_readv(m_pid, local_iov, 1, remote_iov, 1, 0);
-    if (bytes_read == -1) {
-        if (errno) {
-            LOGE << "READ_RAW:" << QString(strerror(errno)) << "READING" << bytes << "BYTES FROM" << hexify(addr) << "TO" << buffer;
-            return read_raw_ptrace(addr, bytes, buffer);
-        }
-    }
+    TRACE << "Read" << bytes_read << "bytes of" << bytes << "bytes from" << hexify(addr) << "to" << buffer;
 
     return bytes_read;
 }
 
 USIZE DFInstanceLinux::write_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes,
                                         const void *buffer) {
-    // try to attach, will be ignored if we're already attached
-    attach();
-
     /* Since most kernels won't let us write to /proc/<pid>/mem, we have to poke
      * out data in n bytes at a time. Good thing we read way more than we write.
      *
@@ -237,73 +231,55 @@ USIZE DFInstanceLinux::write_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes
      * 4, so we need to use the sizeof( long ) as our step size.
      */
 
-    // TODO: Should probably have a global define of word size for the
-    // architecture being compiled on. For now, sizeof(long) is consistent
-    // on most (all?) linux systems so we'll keep this.
-    uint stepsize = sizeof( long );
-    uint bytes_written = 0; // keep track of how much we've written
-    uint steps = bytes / stepsize;
-    if (bytes % stepsize)
-        steps++;
-    LOGD << "WRITE_RAW_PTRACE: WILL WRITE" << bytes << "BYTES FROM" << buffer << "TO" << hexify(addr) << "OVER" << steps << "STEPS, WITH STEPSIZE " << stepsize;
+    attach();
 
-    // we want to make sure that given the case where (bytes % stepsize != 0) we don't
-    // clobber data past where we meant to write. So we're first going to read
-    // the existing data as it is, and then write the changes over the existing
-    // data in the buffer first, then write the buffer with stepsize bytes at a time 
-    // to the process. This should ensure no clobbering of data.
-    QByteArray existing_data(steps * stepsize, 0);
-    read_raw(addr, (steps * stepsize), existing_data);
-    LOGD << "WRITE_RAW: EXISTING OLD DATA     " << existing_data.toHex();
+    const USIZE stepsize = sizeof(unsigned long);
+    USIZE bytes_written = 0; // keep track of how much we've written
+    USIZE steps = bytes / stepsize;
+    LOGD << "WRITE_RAW_PTRACE: WILL WRITE" << bytes << "BYTES FROM" << buffer
+         << "TO" << hexify(addr) << "OVER" << steps + !!bytes % stepsize
+         << "STEPS, WITH STEPSIZE " << stepsize;
 
-    // ok we have our insurance in place, now write our new junk to the buffer
-    memcpy(existing_data.data(), buffer, bytes);
-    QByteArray tmp2(existing_data);
-    LOGD << "WRITE_RAW: EXISTING WITH NEW DATA" << tmp2.toHex();
+    USIZE offset = 0;
 
-    // ok, now our to be written data is in part or all of the exiting data buffer
-    long tmp_data;
-    for (uint i = 0; i < steps; ++i) {
-        int offset = i * stepsize;
-        // for each step write a single word to the child
-        memcpy(&tmp_data, existing_data.mid(offset, stepsize).data(), stepsize);
-        QByteArray tmp_data_str((char*)&tmp_data, stepsize);
-        LOGD << "WRITE_RAW:" << hex << addr + offset << "HEX" << tmp_data_str.toHex();
-        if (ptrace(PTRACE_POKEDATA, m_pid, addr + offset, tmp_data) != 0) {
-            LOGE << "WRITE_RAW_PTRACE:" << QString(strerror(errno)) << "WRITING" << bytes << "BYTES FROM" << buffer << "TO" << hexify(addr);
+    // for each step write a single word to the child
+    for (USIZE i = 0; i < steps; ++i) {
+        const unsigned long data = static_cast<const unsigned long *>(buffer)[i];
+        LOGD << "WRITE_RAW_PTRACE: WRITING" << hexify(data) << "TO" << addr + offset;
+        if (ptrace(PTRACE_POKEDATA, m_pid, addr + offset, data)) {
+            LOGE << "WRITE_RAW_PTRACE:" << QString(strerror(errno)) << "WRITING"
+                 << bytes << "BYTES FROM" << buffer << "TO" << hexify(addr);
             break;
         } else {
             bytes_written += stepsize;
         }
-        long written = ptrace(PTRACE_PEEKDATA, m_pid, addr + offset, 0);
-        QByteArray foo((char*)&written, stepsize);
-        LOGD << "WRITE_RAW: WE APPEAR TO HAVE WRITTEN" << foo.toHex();
+        offset += stepsize;
     }
-    // attempt to detach, will be ignored if we're several layers into an attach chain
+
+    // write any last stragglers
+    if (bytes % stepsize) {
+        unsigned long buf;
+        if (read_raw(addr + offset, stepsize, &buf) == stepsize) {
+            memcpy(&buf, static_cast<const char *>(buffer) + offset, bytes % stepsize);
+            if (ptrace(PTRACE_POKEDATA, m_pid, addr + offset, buf)) {
+                LOGE << "WRITE_RAW_PTRACE:" << QString(strerror(errno))
+                     << "WRITING LAST" << stepsize << "BYTES OF" << bytes
+                     << "BYTES FROM" << buffer << "TO" << hexify(addr);
+            } else {
+                bytes_written += stepsize;
+            }
+        }
+    }
+
     detach();
-    // tell the caller how many bytes we wrote
     return bytes_written;
 }
 
 USIZE DFInstanceLinux::write_raw(const VIRTADDR &addr, const USIZE &bytes,
                                  const void *buffer) {
-    if (!process_vm_writev) {
-        if (!m_warned_glibc) {
-            LOGI << "glibc does not support process_vm_* API, falling back to ptrace";
-            m_warned_glibc = true;
-        }
-        return write_raw_ptrace(addr, bytes, buffer);
-    }
-
-    SSIZE bytes_written;
-
-    struct iovec local_iov[1];
-    struct iovec remote_iov[1];
-    local_iov[0].iov_base = const_cast<void *>(buffer);
-    remote_iov[0].iov_base = (void *)(intptr_t)addr;
-    local_iov[0].iov_len = remote_iov[0].iov_len = bytes;
-
-    bytes_written = process_vm_writev(m_pid, local_iov, 1, remote_iov, 1, 0);
+    // const_cast is safe because process_vm passes the params as is
+    SSIZE bytes_written = process_vm(SYS_process_vm_writev, addr, bytes
+                                     , const_cast<void *>(buffer));
     if (bytes_written == -1) {
         if (errno == ENOSYS) {
             return write_raw_ptrace(addr, bytes, buffer);
@@ -722,8 +698,4 @@ VIRTADDR DFInstanceLinux::get_string(const QString &str) {
     }
 
     return m_string_cache[str] = addr;
-}
-
-bool DFInstance::authorize(){
-    return true;
 }
