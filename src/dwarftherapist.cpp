@@ -121,6 +121,7 @@ void DwarfTherapist::setup_search_paths() {
     paths << QString("%1/share").arg(working_dir);
 
     QDir::setSearchPaths("share", paths);
+    QDir::setSearchPaths("doc", paths.replaceInStrings("/share","/doc"));
 }
 void DwarfTherapist::setup_logging() {
     QStringList args = arguments();

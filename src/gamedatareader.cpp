@@ -43,6 +43,8 @@ GameDataReader::GameDataReader(QObject *parent)
     : QObject(parent)
     , m_data_settings("share:game_data.ini", QSettings::IniFormat)
 {
+
+    QString err;
     if (QFile::exists("share:game_data.ini")) {
         LOGI << "Found game_data.ini:" << m_data_settings.fileName();
     } else {
@@ -55,12 +57,13 @@ GameDataReader::GameDataReader(QObject *parent)
     QStringList required_sections;
     required_sections << "labors" << "attributes" << "dwarf_jobs" << "goals" << "beliefs" << "unit_thoughts" << "facets" << "skill_names" << "skill_levels";
     foreach(QString key, required_sections){
-        if(!m_data_settings->childGroups().contains(key)){
-            QString err = tr("Dwarf Therapist cannot run because game_data.ini is missing [%1], a critical section!").arg(key);
+        if(!m_data_settings.childGroups().contains(key)){
+            err = tr("Dwarf Therapist cannot run because game_data.ini is missing [%1], a critical section!").arg(key);
             QMessageBox::critical(0,tr("Missing Section"),err);
             FATAL << err;
-            break;
+            exit(1);
         }
+    }
 
     build_calendar();
 

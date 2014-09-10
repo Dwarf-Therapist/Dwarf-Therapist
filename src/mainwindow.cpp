@@ -85,7 +85,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_proxy(new DwarfModelProxy(this))
     , m_about_dialog(new AboutDialog(this))
     , m_scanner(0)
-    , m_script_dialog(0)
+    , m_script_dialog( new ScriptDialog(this))
     , m_role_editor(0)
     , m_optimize_plan_editor(0)
     , m_reading_settings(false)
@@ -870,12 +870,9 @@ void MainWindow::go_to_new_issue() {
 }
 
 void MainWindow::open_help(){
-    QUrl url("http://dffd.wimbli.com/file.php?id=7889");
-    foreach(QString path, find_files_list("doc/Therapist Manual.pdf")) {
-        if (QFile::exists(path)) {
-            url = QUrl::fromLocalFile(path);
-            break;
-        }
+    QUrl url("http://dffd.wimbli.com/file.php?id=7889");    
+    if(QFile::exists("doc:Therapist Manual.pdf")) {
+        url = QUrl::fromLocalFile(QFile("doc:Therapist Manual.pdf").fileName());
     }
     QDesktopServices::openUrl(url);
 }

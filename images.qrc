@@ -315,4 +315,7 @@
         <file>img/profession icons/prof_9.png</file>
         <file>img/profession icons/prof_105.png</file>
     </qresource>
+    <qresource prefix="/config">
+        <file alias="default_gridviews">default_gridviews.dtg</file>
+    </qresource>
 </RCC>
