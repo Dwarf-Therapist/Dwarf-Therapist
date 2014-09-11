@@ -46,9 +46,22 @@ Or, you can create a script that will run Dwarf Therapist as a child of Dwarf Fo
     cd ../dwarftherapist
     exec ./bin/release/DwarfTherapist
 
-Alternatively, you can use ``dist/dwarftherapist`` to automatically grant DT permissions to attach to a running DF process.
+Alternatively, you can use the ``dist/dwarftherapist`` wrapper to automatically grant DT permissions to attach to a running DF process.
+
+Support
+=======
+Primary support is available at the `Dwarf Therapist thread`_ at the Bay 12 Forums; if you are sure you have found a bug, file an issue at the `GitHub issue tracker`_.
+Provide as much information as possible to help reproduce the issue.
+Most runtime bugs will require you to send a save, preferably uploaded at `DFFD`_.
+You may also be requested to provide a log, which is saved in ``log/log.txt`` on Windows and OSX and output to stderr on Linux systems (use ``2> log.txt`` to collect).
+
+You can also join us in `#dwarftherapist on Freenode`_.
 
 .. _Dwarf Therapist: http://code.google.com/p/dwarftherapist/
 .. _available at GitHub: https://github.com/splintermind/Dwarf-Therapist/wiki/Change-Log
 .. _in BUILDING.rst: https://github.com/splintermind/Dwarf-Therapist/blob/DF2014/BUILDING.rst
 .. _Yama ptrace LSM: https://www.kernel.org/doc/Documentation/security/Yama.txt
+.. _Dwarf Therapist thread: http://www.bay12forums.com/smf/index.php?topic=122968
+.. _GitHub issue tracker: https://github.com/splintermind/Dwarf-Therapist/issues
+.. _DFFD: http://dffd.wimbli.com/category.php?id=20
+.. _#dwarftherapist on Freenode: http://webchat.freenode.net/?channels=%23dwarftherapist
