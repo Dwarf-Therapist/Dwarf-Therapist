@@ -56,7 +56,7 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
         return item;
     }
     if(d->body_size() < 0){
-        item->setToolTip("Missing body_size offset!");
+        item->setToolTip(tr("Missing body_size offset!"));
         return item;
     }
 

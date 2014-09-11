@@ -74,6 +74,8 @@ private:
     QTreeWidgetItem *m_extracts_fish;
     QTreeWidgetItem *m_fishable;
     QTreeWidgetItem *m_shearable;
+    QTreeWidgetItem *m_butcher;
+    QTreeWidgetItem *m_domestic;
 
     QTreeWidgetItem *m_creature_mats;
 
@@ -109,6 +111,7 @@ private:
     void load_plant_prefs(QVector<Plant *> plants);
     void load_items();
     void load_creatures();
+    void add_general_creature_node(const QString suffix, QList<int> &flags, QTreeWidgetItem **parent_node);
     void load_weapons();
     QTreeWidgetItem* init_parent_node(QString title);
     void add_pref_to_tree(QTreeWidgetItem *parent, Preference *p);

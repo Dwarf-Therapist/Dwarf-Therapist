@@ -305,7 +305,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'pet_owner_id',%all,'unit','relations.pet_owner_id';
     emit_addr 'current_job',%all,'unit','job.current_job';
     emit_addr 'physical_attrs',%all,'unit','body.physical_attrs';
-    emit_addr 'body_size',%all,'unit','appearance.body_modifiers';
+    emit_addr 'body_size',%all,'unit','body_size_info';
     emit_addr 'curse',%all,'unit','curse.name';
     emit_addr 'curse_add_flags1',%all,'unit','curse.add_tags1';
     emit_addr 'turn_count',%all,'unit','curse.time_on_site';

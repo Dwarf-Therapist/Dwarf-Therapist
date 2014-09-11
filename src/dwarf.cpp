@@ -223,7 +223,7 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
             //if it's a caged, trainable beast, keep it in our list, but only if it's alive
             Race *r = df->get_race(race_id);
             if(r){
-                trainable = r->is_trainable();
+                trainable = r->caste_flag(TRAINABLE);
                 r = 0;
             }
             if(!trainable){
@@ -452,17 +452,17 @@ void Dwarf::set_age_and_migration(VIRTADDR birth_year_offset, VIRTADDR birth_tim
     quint32 arrival_season = (arrival_time % ticks_per_year) / ticks_per_season;
     quint32 arrival_month = (arrival_time % ticks_per_year) / ticks_per_month;
     quint32 arrival_day = ((arrival_time % ticks_per_year) % ticks_per_month) / ticks_per_day;
-    quint32 time_since_birth = m_age * ticks_per_year + current_year_time - m_birth_time;
+    m_ticks_since_birth = m_age * ticks_per_year + current_year_time - m_birth_time;
     //this way we have the right sort order and all the data needed for the group by migration wave
     m_migration_wave = 100000 * arrival_year + 10000 * arrival_season + 100 * arrival_month + arrival_day;
-    m_born_in_fortress = (time_since_birth == m_turn_count);
+    m_born_in_fortress = (m_ticks_since_birth == m_turn_count);
 
-    m_age_in_months = time_since_birth / ticks_per_month;
+    m_age_in_months = m_ticks_since_birth / ticks_per_month;
 
     if(m_caste){
-        if(m_age == 0 || time_since_birth < m_caste->baby_age() * ticks_per_year)
+        if(m_age == 0 || m_ticks_since_birth < m_caste->baby_age() * ticks_per_year)
             m_is_baby = true;
-        else if(time_since_birth < m_caste->child_age() * ticks_per_year)
+        else if(m_ticks_since_birth < m_caste->child_age() * ticks_per_year)
             m_is_child = true;
     }
 }
@@ -581,36 +581,21 @@ void Dwarf::read_mood(){
 }
 
 void Dwarf::read_body_size(){
-    //default caste size
-    m_body_size = body_size(true);
-
     //actual size of the creature
-    if(m_mem->dwarf_offset("body_size")){
-        QVector<VIRTADDR> entries = m_df->enumerate_vector(m_address + m_mem->dwarf_offset("body_size"));
-        foreach(VIRTADDR entry, entries) {
-            m_body_size = m_body_size * ((float)entry / 100);
-        }
+    int offset = m_mem->dwarf_offset("body_size");
+    if(offset){
+        m_body_size = m_df->read_int(m_address + offset);
     }
 }
 
 int Dwarf::body_size(bool use_default){
     //we include returning the default size because for the weapon columns, the size actually doesn't matter to DF (bug?)
     if(use_default){
-        int def_size = 6000; //default adult size
+        int def_size = 6000; //default adult size for a dwarf
         if(m_is_baby)
             def_size = 300;
         else if(m_is_child)
             def_size = 1500;
-
-        //now check the actual caste's size
-        if(m_caste){
-            if(m_is_child)
-                def_size = m_caste->child_size();
-            else if(m_is_baby)
-                def_size = m_caste->baby_size();
-            else
-                def_size = m_caste->adult_size();
-        }
         return def_size;
     }else{
         return m_body_size;
@@ -2084,7 +2069,7 @@ bool Dwarf::toggle_flag_bit(int bit) {
         mask<<=1;
     if (bit>31){
         //don't butcher if it's a pet, user will be notified via tooltip on column, same for non-butcherable
-        if(!m_is_pet && m_caste->can_butcher())
+        if(!m_is_pet && m_caste->flags().has_flag(BUTCHERABLE))
             m_butcher^=mask;
     }else
         m_caged^=mask;
@@ -2448,7 +2433,7 @@ QString Dwarf::tooltip_text() {
         tt.append(tr("<b>Age:</b> %1").arg(get_age_formatted()));
 
     if(m_is_animal || s->value("options/tooltip_show_size",true).toBool())
-        tt.append(tr("<b>Size:</b> %1cm<sup>3</sup>").arg(m_body_size * 10));
+        tt.append(tr("<b>Size:</b> %1cm<sup>3</sup>").arg(QLocale(QLocale::system()).toString(m_body_size * 10)));
 
     if(!m_is_animal && s->value("options/tooltip_show_noble",true).toBool())
         tt.append(tr("<b>Profession:</b> %1").arg(profession()));

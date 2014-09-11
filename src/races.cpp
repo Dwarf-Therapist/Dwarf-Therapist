@@ -210,14 +210,6 @@ Material * Race::get_creature_material(int index){
     }
 }
 
-bool Race::is_trainable(){    
-    if(m_castes.count()<=0){
-        return false;
-    }else{
-        return m_castes.value(0)->is_trainable();
-    }
-}
-
 bool Race::caste_flag(CASTE_FLAGS cf){
     if(m_castes.count()<=0){
         return false;

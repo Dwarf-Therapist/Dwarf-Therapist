@@ -61,7 +61,6 @@ public:
     void load_data();
     FlagArray flags() {return m_flags;}
 
-    bool is_trainable();
     bool caste_flag(CASTE_FLAGS cf);
 
     void load_caste_ratios();

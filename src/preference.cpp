@@ -134,7 +134,7 @@ int Preference::matches(Preference *role_pref, Dwarf *d){
             if(result > 0 && (role_pref->get_item_type() == WEAPON ||
                               (role_pref->special_flags().count() > 0 && (special_flags().contains((int)ITEMS_WEAPON) || special_flags().contains((int)ITEMS_WEAPON_RANGED))))){
                 ItemWeaponSubtype *w = d->get_df_instance()->get_weapon_def(capitalizeEach(m_name));
-                if(!w || d->body_size() < w->multi_grasp())
+                if(!w || d->body_size(true) < w->multi_grasp())
                     result = 0;
                 w = 0;
             }
@@ -150,18 +150,20 @@ void Preference::set_pref_flags(Race *r){
         add_flag(HATEABLE);
     }
     //set trainable flags as well for like creatures
-    if(r->is_trainable()){ //really only need to add one flag for a match..
-        add_flag(TRAINABLE_HUNTING);
-        add_flag(TRAINABLE_WAR); //seems this may only exist in mods?
-        add_flag(PET);
-        add_flag(PET_EXOTIC);
+    if(r->caste_flag(TRAINABLE)){ //really only need to add one flag for a match..
+        add_flag(TRAINABLE);
     }
     if(r->caste_flag(SHEARABLE)){
         add_flag(SHEARABLE);
     }
     //fishing
-    if(r->flags().has_flag(VERMIN_FISH) || r->caste_flag(FISHABLE))
+    if(r->caste_flag(FISHABLE)){
         add_flag(FISHABLE);
+    }
+    //butcher
+    if(r->caste_flag(BUTCHERABLE)){
+        add_flag(BUTCHERABLE);
+    }
     //milker
     if(r->caste_flag(MILKABLE)){
         add_flag(MILKABLE);

@@ -59,10 +59,6 @@ public:
 
     int get_skill_rate(int skill_id);
 
-    int adult_size() {return get_body_size(0);}
-    int child_size() {return get_body_size(0) / 2;} //get_body_size(1);}
-    int baby_size() {return get_body_size(0) / 4;} //get_body_size(2);}
-
     int child_age() {return m_child_age;}
     int baby_age() {return m_baby_age;}
 
@@ -70,9 +66,6 @@ public:
     void load_skill_rates();
 
     FlagArray flags() {return m_flags;}
-
-    bool is_trainable();
-    bool can_butcher() {return m_can_butcher;}    
 
     QList<int> get_attribute_raws(int attrib_id) {return m_attrib_ranges.value(attrib_id).raw_bins;}
     Caste::att_range get_attribute_range(int attrib_id) {return m_attrib_ranges.value(attrib_id);}
@@ -87,8 +80,7 @@ private:
     QString m_tag;
     QString m_name;
     QString m_name_plural;
-    QString m_description;
-    QVector<int> m_body_sizes;
+    QString m_description;    
     int m_baby_age;
     int m_child_age;
 
@@ -99,7 +91,6 @@ private:
 
     FlagArray m_flags;
 
-    bool m_can_butcher;
     QHash<int,float> m_skill_rates;
     QStringList m_bonuses;
 
@@ -109,8 +100,7 @@ private:
     //attribute id, cost to improve (from attribute rates)
     QHash<int,int> m_attrib_costs;
 
-    void read_caste();
-    int get_body_size(int index);
+    void read_caste();    
 
     VIRTADDR m_body_addr;
     QVector<VIRTADDR> m_body_parts_addr;

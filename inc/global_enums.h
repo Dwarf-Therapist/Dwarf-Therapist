@@ -301,11 +301,13 @@ typedef enum{
     NO_EAT=13,
     NO_DRINK=14,
     NO_SLEEP=15,
+    DOMESTIC=16,
     FLIER=19,
     WEB_IMMUNE=25,
     FISHABLE=26,
     IMMOBILE_LAND=27,
     MILKABLE=29,
+    NO_FISH=37,
     NO_DIZZINESS=39,
     NO_FEVERS=40,
     NOT_BUTCHERABLE=46,
@@ -325,8 +327,10 @@ typedef enum{
     CHILD=98,
     CRAZED=161, //werebeasts
     BLOODSUCKER=162, //vampires
-    HAS_EXTRACTS=200, //custom
-    SHEARABLE=201 //custom
+    HAS_EXTRACTS=200, //custom past this
+    SHEARABLE=201,
+    BUTCHERABLE=202, //indicates non-butcherable for convenience
+    TRAINABLE=203 //indicates pet, pet exotic, war/hunt trainable
 } CASTE_FLAGS;
 
 typedef enum {
@@ -343,7 +347,7 @@ typedef enum {
     P_SAPLING = 77,
     P_TREE =78,
     P_CROP = 200, //custom, indicates it has some season to plant
-    P_HAS_EXTRACTS = 201
+    P_HAS_EXTRACTS = 201 //indicates thread or extracts all used by processing
 } PLANT_FLAGS;
 
 namespace eCurse{

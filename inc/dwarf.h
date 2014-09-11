@@ -587,6 +587,7 @@ private:
     bool m_born_in_fortress;
     quint32 m_birth_year;
     quint32 m_birth_time;
+    quint32 m_ticks_since_birth;
     VIRTADDR m_hist_nickname;
     VIRTADDR m_fake_nickname;
     QString m_noble_position;

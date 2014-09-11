@@ -46,8 +46,7 @@ Caste::Caste(DFInstance *df, VIRTADDR address, Race *r, QObject *parent)
     , m_child_age(0)
     , m_df(df)
     , m_mem(df->memory_layout())
-    , m_flags()
-    , m_can_butcher(false)
+    , m_flags()    
     , m_body_addr(0x0)
 {
     load_data();
@@ -55,7 +54,6 @@ Caste::Caste(DFInstance *df, VIRTADDR address, Race *r, QObject *parent)
 
 Caste::~Caste() {
     qDeleteAll(m_body_parts);
-    m_body_sizes.clear();
     m_attrib_ranges.clear();
     m_skill_rates.clear();    
     m_race = 0;
@@ -83,12 +81,6 @@ void Caste::read_caste() {
     m_name_plural = capitalizeEach(m_df->read_string(m_address + m_mem->word_offset("noun_plural")));
     m_description = m_df->read_string(m_address + m_mem->caste_offset("caste_descr"));
 
-//    could update this to read the child/baby sizes instead of just the adult size
-//    QVector<VIRTADDR> body_sizes = m_df->enumerate_vector(m_address + m_mem->caste_offset("body_sizes_vector"));
-//    foreach(VIRTADDR size, body_sizes){
-//        m_body_sizes.prepend((int)size);
-//    }
-    m_body_sizes.append(m_df->read_int(m_address + m_mem->caste_offset("adult_size")));
     m_flags = FlagArray(m_df, m_address + m_mem->caste_offset("flags"));
 
     if(m_flags.has_flag(BABY))
@@ -101,10 +93,17 @@ void Caste::read_caste() {
     if(m_baby_age < 0)
         m_baby_age = 0;
 
-    m_can_butcher = !m_flags.has_flag(NOT_BUTCHERABLE);
+    if(!m_flags.has_flag(NOT_BUTCHERABLE)){
+        m_flags.set_flag(BUTCHERABLE,true);
+    }
 
     m_body_addr = m_address + m_mem->caste_offset("body_info");
     m_body_parts_addr = m_df->enumerate_vector(m_body_addr - DFInstance::VECTOR_POINTER_OFFSET);
+
+    if(m_flags.has_flag(TRAINABLE_HUNTING) || m_flags.has_flag(TRAINABLE_WAR) ||
+            m_flags.has_flag(PET) || m_flags.has_flag(PET_EXOTIC)){
+        m_flags.set_flag(TRAINABLE,true);
+    }
 
     if(m_df->enumerate_vector(m_address + m_mem->caste_offset("extracts")).count() > 0){
         m_flags.set_flag(HAS_EXTRACTS,true);
@@ -115,14 +114,10 @@ void Caste::read_caste() {
             m_flags.set_flag(SHEARABLE,true);
         }
     }
-}
-
-bool Caste::is_trainable(){
-    if(m_flags.has_flag(TRAINABLE_HUNTING) || m_flags.has_flag(TRAINABLE_WAR) ||
-            m_flags.has_flag(PET) || m_flags.has_flag(PET_EXOTIC)){
-        return true;
-    }else{
-        return false;
+    //raws can have both fishable and non-fishable, but for our purposes we only care that it can be fished
+    //so ensure that both flags are false if the caste is not fishable
+    if(m_flags.has_flag(NO_FISH)){
+        m_flags.set_flag(FISHABLE,false);
     }
 }
 
@@ -237,13 +232,6 @@ BodyPart* Caste::get_body_part(int body_part_id){
     }else{
         return new BodyPart();
     }
-}
-
-int Caste::get_body_size(int index){
-    if(m_body_sizes.size()>index)
-        return m_body_sizes.at(index);
-    else
-        return 0;
 }
 
 QString Caste::description(){

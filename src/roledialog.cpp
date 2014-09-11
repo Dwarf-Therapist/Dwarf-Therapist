@@ -771,69 +771,67 @@ void roleDialog::load_items(){
     }
 }
 
-void roleDialog::load_creatures(){    
-    //special category for vermin creatures
-    m_hateable = init_parent_node("Creatures (Hateable)");
+void roleDialog::add_general_creature_node(const QString suffix, QList<int> &flags, QTreeWidgetItem **parent_node){
+    QString title = tr("Creatures (%1)").arg(suffix);
+    *parent_node = init_parent_node(title);
+
     Preference *p = new Preference(LIKE_CREATURE, NONE,this);
-
-    //category for vermin fish (fish dissector extracts)
-    m_extracts_fish = init_parent_node(tr("Creatures (Fish Extracts)"));
     p = new Preference(LIKE_CREATURE, NONE,this);
-    p->add_flag(VERMIN_FISH);
-    p->set_name("Creatures (Fish Extracts)");
+    foreach(int f, flags){
+        p->add_flag(f);
+    }
+    p->set_name(title);
     add_pref_to_tree(m_general_creature, p);
+    flags.clear();
+}
 
-    //special category for trainable creatures
-    m_trainable = init_parent_node("Creatures (Trainable)");
-    p = new Preference(LIKE_CREATURE, NONE,this);
-    p->add_flag(TRAINABLE_HUNTING);
-    p->add_flag(TRAINABLE_WAR);
-    p->set_name("Creatures (Trainable)");
-    add_pref_to_tree(m_general_creature, p);
+void roleDialog::load_creatures(){
+    //add general categories for groups of creatures
+    QList<int> flags;
+    flags << HATEABLE;
+    add_general_creature_node(tr("Hateable"),flags,&m_hateable);
 
-    //special category for milkable creatures
-    m_milkable = init_parent_node("Creatures (Milkable)");
-    p = new Preference(LIKE_CREATURE, NONE,this);
-    p->add_flag(MILKABLE);
-    p->set_name("Creatures (Milkable)");
-    add_pref_to_tree(m_general_creature, p);
+    flags << VERMIN_FISH;
+    add_general_creature_node(tr("Fish Extracts"),flags,&m_extracts_fish);
 
-    //special category for fish
-    m_fishable = init_parent_node("Creatures (Fish)");
-    p = new Preference(LIKE_CREATURE, NONE,this);
-    p->add_flag(FISHABLE);
-    p->set_name("Creatures (Fish)");
-    add_pref_to_tree(m_general_creature, p);
+    flags << TRAINABLE_HUNTING << TRAINABLE_WAR;
+    add_general_creature_node(tr("Trainable"),flags,&m_trainable);
 
-    //special category for shearable
-    m_shearable = init_parent_node("Creatures (Shearable)");
-    p = new Preference(LIKE_CREATURE, NONE,this);
-    p->add_flag(SHEARABLE);
-    p->set_name("Creatures (Shearable)");
-    add_pref_to_tree(m_general_creature, p);
+    flags << MILKABLE;
+    add_general_creature_node(tr("Milkable"),flags,&m_milkable);
 
-    //special category for extracts (honey, venom, etc)
-    m_extracts = init_parent_node("Creatures (Extracts)");
-    p = new Preference(LIKE_CREATURE, NONE,this);
-    p->add_flag(HAS_EXTRACTS);
-    p->set_name("Creatures (Extractable)");
-    add_pref_to_tree(m_general_creature, p);
+    flags << FISHABLE;
+    add_general_creature_node(tr("Fishable"),flags,&m_fishable);
+
+    flags << SHEARABLE;
+    add_general_creature_node(tr("Shearable"),flags,&m_shearable);
+
+    flags << HAS_EXTRACTS;
+    add_general_creature_node(tr("Extracts"),flags,&m_extracts);
+
+    flags << BUTCHERABLE;
+    add_general_creature_node(tr("Butcherable"),flags,&m_butcher);
+
+    flags << 16;
+    add_general_creature_node(tr("Domestic"),flags,&m_domestic);
 
     foreach(Race *r, m_df->get_races()){
-        p = new Preference(LIKE_CREATURE, capitalize(r->name()),this);        
+        Preference *p = new Preference(LIKE_CREATURE, capitalize(r->name()),this);
         p->set_pref_flags(r);
 
-        bool hated = false;
+        if(r->caste_flag(DOMESTIC)){
+            add_pref_to_tree(m_domestic,p);
+        }
+
         if(r->flags().has_flag(HATEABLE)){
             add_pref_to_tree(m_hateable,p);
-            hated = true;
+        }else{
+            add_pref_to_tree(m_creatures,p);
         }
-        //either of these flags seem to indicate that the creature can be fished
-        //however for our purposes a single flag is enough, so we'll use only FISHABLE
-        if(r->flags().has_flag(VERMIN_FISH) || r->caste_flag(FISHABLE)){
+        if(r->caste_flag(FISHABLE)){
             add_pref_to_tree(m_fishable,p);
         }
-        if(r->is_trainable()){            
+        if(r->caste_flag(TRAINABLE)){
             add_pref_to_tree(m_trainable,p);
         }
         if(r->caste_flag(MILKABLE)){
@@ -842,15 +840,16 @@ void roleDialog::load_creatures(){
         if(r->caste_flag(SHEARABLE)){
             add_pref_to_tree(m_shearable,p);
         }
+        if(r->caste_flag(BUTCHERABLE)){
+            add_pref_to_tree(m_butcher,p);
+        }
         if(r->caste_flag(HAS_EXTRACTS)){
             if(r->caste_flag(FISHABLE)){
                 add_pref_to_tree(m_extracts_fish,p);
             }else{
                 add_pref_to_tree(m_extracts,p);
             }
-        }                  
-         if(!hated)
-             add_pref_to_tree(m_creatures,p);
+        }
     }
 }
 
