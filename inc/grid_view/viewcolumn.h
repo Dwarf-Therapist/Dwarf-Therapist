@@ -52,7 +52,8 @@ public:
         CST_DEFAULT,
         CST_SKILL_RATE,
         CST_ROLE_RATING,
-        CST_LEVEL
+        CST_LEVEL,
+        CST_MAXIMUM_VALUE
     } COLUMN_SORT_TYPE;
 
     static inline QString get_sort_type(const COLUMN_SORT_TYPE &type) {
@@ -60,8 +61,9 @@ public:
         case CST_SKILL_RATE: return "SKILL_RATE";
         case CST_ROLE_RATING: return "ROLE_RATING";
         case CST_LEVEL: return "LEVEL";
+        case CST_MAXIMUM_VALUE: return "MAXIMUM_VALUE";
         default:
-            return "???";
+            return "DEFAULT";
         }
         return "???";
     }
@@ -73,6 +75,8 @@ public:
             return CST_ROLE_RATING;
         } else if (name.toUpper() == "LEVEL") {
             return CST_LEVEL;
+        } else if (name.toUpper() == "MAXIMUM_VALUE") {
+            return CST_MAXIMUM_VALUE;
         }
         return CST_DEFAULT;
     }

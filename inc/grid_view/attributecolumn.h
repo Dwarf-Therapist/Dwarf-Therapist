@@ -47,8 +47,12 @@ public:
     //override
     void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("attribute", m_attribute_type);}
 
+public slots:
+        void refresh_sort(COLUMN_SORT_TYPE sType);
+
 private:
     ATTRIBUTES_TYPE m_attribute_type;
+    void refresh_sort(Dwarf *d, COLUMN_SORT_TYPE sType = CST_LEVEL);
 };
 
 #endif

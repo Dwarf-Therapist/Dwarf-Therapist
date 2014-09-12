@@ -32,31 +32,37 @@ THE SOFTWARE.
 #include "attribute.h"
 #include "dwarftherapist.h"
 #include "dwarf.h"
+#include "viewmanager.h"
 
 AttributeColumn::AttributeColumn(const QString &title, ATTRIBUTES_TYPE type, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title, CT_ATTRIBUTE, set, parent)
     , m_attribute_type(type)
 {
-    if (title.isEmpty()) // Determine title based on type if no title was passed in
+    if (title.isEmpty()){ // Determine title based on type if no title was passed in
         m_title = GameDataReader::ptr()->get_attribute_name(type);
+    }
+    m_sortable_types << CST_DEFAULT << CST_MAXIMUM_VALUE;
+    m_current_sort = ViewManager::get_default_col_sort(CT_ATTRIBUTE);
 }
 
 AttributeColumn::AttributeColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     : ViewColumn(s, set, parent)
     , m_attribute_type(static_cast<ATTRIBUTES_TYPE>(s.value("attribute", -1).toInt()))
-{    
+{
+    m_sortable_types << CST_DEFAULT << CST_MAXIMUM_VALUE;
+    m_current_sort = ViewManager::get_default_col_sort(CT_ATTRIBUTE);
 }
 
 AttributeColumn::AttributeColumn(const AttributeColumn &to_copy)
     : ViewColumn(to_copy)
     , m_attribute_type(to_copy.m_attribute_type)
-{    
+{
+    m_sortable_types = to_copy.m_sortable_types;
 }
 
 QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
     Attribute a = d->get_attribute(m_attribute_type);
-    short rawVal = a.get_value();
     QString descriptor = a.get_descriptor();
     float rating = a.rating() * 100.0f;    
 
@@ -76,9 +82,9 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
         descriptor != "" ? descriptor = "(" + descriptor + ")" : "";
     }
 
-    //sort on the raw value
-    item->setData(rawVal, DwarfModel::DR_SORT_VALUE);
     item->setData(CT_ATTRIBUTE, DwarfModel::DR_COL_TYPE);
+
+    refresh_sort(d,m_current_sort);
 
     if(!descriptor.isEmpty()){
         descriptor = QString("%1%2").arg("<br/>").arg(descriptor);
@@ -98,6 +104,28 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     item->setToolTip(tooltip);
 
     return item;
+}
+
+void AttributeColumn::refresh_sort(Dwarf *d, COLUMN_SORT_TYPE sType){
+    if(get_sortable_types().count() > 0){
+        if(!m_sortable_types.contains(sType))
+            sType = m_sortable_types.at(0);
+
+        Attribute a = d->get_attribute(m_attribute_type);
+        float sort_val = a.get_value();
+
+        if(sType == CST_MAXIMUM_VALUE){
+            sort_val = a.max();
+        }
+        m_cells.value(d)->setData(sort_val, DwarfModel::DR_SORT_VALUE);
+    }
+}
+
+void AttributeColumn::refresh_sort(COLUMN_SORT_TYPE sType){
+    foreach(Dwarf *d, m_cells.uniqueKeys()){
+        refresh_sort(d,sType);
+    }
+    m_current_sort = sType;
 }
 
 QStandardItem *AttributeColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves){
