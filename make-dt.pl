@@ -184,7 +184,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'skill_rates',%all,'caste_raw','skill_rates';
     emit_addr 'caste_att_rates',%all,'caste_raw','attributes.phys_att_rates';
     emit_addr 'caste_att_caps',%all,'caste_raw','attributes.phys_att_cap_perc';
-    emit_addr 'shearable_tissues_vector',%all,'caste_raw','shearable_tissue_layer'
+    emit_addr 'shearable_tissues_vector',%all,'caste_raw','shearable_tissue_layer';
     emit_addr 'extracts',%all,'caste_raw','extracts.extract_matidx';
     
     emit_header 'hist_entity_offsets';
@@ -306,7 +306,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'current_job',%all,'unit','job.current_job';
     emit_addr 'physical_attrs',%all,'unit','body.physical_attrs';
     emit_addr 'body_size',%all,'unit','appearance.body_modifiers';
-    emit_addr 'size_info',%all,'unit','body_size_info';
+    emit_addr 'size_info',%all,'unit','body.size_info';
     emit_addr 'curse',%all,'unit','curse.name';
     emit_addr 'curse_add_flags1',%all,'unit','curse.add_tags1';
     emit_addr 'turn_count',%all,'unit','curse.time_on_site';
@@ -359,7 +359,7 @@ sub generate_dt_ini($$$$) {
 
     emit_header 'soul_details';
     emit_addr 'name',%all,'unit_soul','name';
-    emit_addr 'orientation',%all,'unit_soul','orientation_flags'
+    emit_addr 'orientation',%all,'unit_soul','orientation_flags';
     emit_addr 'mental_attrs',%all,'unit_soul','mental_attrs';
     emit_addr 'skills',%all,'unit_soul','skills';
     emit_addr 'preferences',%all,'unit_soul','preferences';
