@@ -582,9 +582,12 @@ void Dwarf::read_mood(){
 
 void Dwarf::read_body_size(){
     //actual size of the creature
-    int offset = m_mem->dwarf_offset("body_size");
+    int offset = m_mem->dwarf_offset("size_info");
     if(offset){
         m_body_size = m_df->read_int(m_address + offset);
+    }else{
+        LOGW << "Missing size_info offset!";
+        m_body_size = body_size(true);
     }
 }
 
