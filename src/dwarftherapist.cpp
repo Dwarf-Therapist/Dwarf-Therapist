@@ -373,6 +373,23 @@ void DwarfTherapist::edit_customization(QTreeWidgetItem *i) {
     edit_customization(data);
 }
 
+void DwarfTherapist::update_multilabor(Dwarf *d, QString name, CUSTOMIZATION_TYPE cType){
+    MultiLabor *ml;
+    if(cType == CUSTOM_PROF){
+        ml = m_custom_professions.take(name);
+    }else{
+        ml = m_super_labors.take(name);
+    }
+    if(ml){
+        ml->set_labors(d);
+        if(cType == CUSTOM_PROF)
+            m_custom_professions.insert(name,qobject_cast<CustomProfession*>(ml));
+        else
+            m_super_labors.insert(name,qobject_cast<SuperLabor*>(ml));
+        write_custom_professions();
+    }
+}
+
 void DwarfTherapist::edit_customization(QList<QVariant> data){
     DwarfTherapist::customization_data c_data = build_c_data(data);
     if(c_data.type != CUSTOM_SUPER){

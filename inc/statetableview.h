@@ -127,6 +127,7 @@ private:
 
     QAction *m_prof_name;
     QAction *m_professions;
+    QAction *m_update_profession;
     QAction *m_super_labors;
 
     QAction *m_assign_labors;
@@ -146,6 +147,8 @@ private:
         void apply_custom_profession();        
         void reset_custom_profession();
         void custom_profession_from_dwarf();
+        void update_custom_profession_from_dwarf();
+        void refresh_update_c_prof_menu(Dwarf *d);
 
         void super_labor_from_dwarf();
 

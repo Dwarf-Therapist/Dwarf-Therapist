@@ -86,6 +86,8 @@ public slots:
     void add_custom_profession(CustomProfession *cp);
     void add_super_labor(Dwarf *d = 0);
 
+    void update_multilabor(Dwarf *d, QString name, CUSTOMIZATION_TYPE cType);
+
     void read_settings();
     void load_customizations();
 
@@ -110,7 +112,7 @@ private:
     QVector<Word *> m_language;
     QMap<QString,CustomProfession*> m_custom_professions;
     QMap<int, CustomProfession*> m_custom_prof_icns;
-    QHash<QString,SuperLabor*> m_super_labors;
+    QMap<QString,SuperLabor*> m_super_labors;
     QSettings *m_user_settings;
     MainWindow *m_main_window;
     OptionsMenu *m_options_menu;

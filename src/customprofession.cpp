@@ -78,11 +78,7 @@ CustomProfession::CustomProfession(Dwarf *d, QObject *parent)
     m_dwarf = d;
     if(m_dwarf){
         m_name = d->profession();
-        QList<Labor*> labors = gdr->get_ordered_labors();
-        foreach(Labor *l, labors) {
-            if (m_dwarf->labor_enabled(l->labor_id))
-                add_labor(l->labor_id);
-        }
+        set_labors();
     }
 }
 

@@ -121,6 +121,18 @@ void MultiLabor::set_labor(int labor_id, bool active) {
         m_active_labors.insert(labor_id, true);
 }
 
+void MultiLabor::set_labors(Dwarf *d){
+    if(!d){
+        d = m_dwarf;
+    }
+    m_active_labors.clear();
+    QList<Labor*> labors = gdr->get_ordered_labors();
+    foreach(Labor *l, labors) {
+        if(d->labor_enabled(l->labor_id))
+            add_labor(l->labor_id);
+    }
+}
+
 void MultiLabor::refresh(){
     m_qvariant_labors.clear();
     m_ratings.clear();

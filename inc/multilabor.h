@@ -50,6 +50,8 @@ public:
 
     QColor active_labor_color(){return m_active_labor_col;}
 
+    void set_labors(Dwarf *d = 0);
+
 public slots:
     void add_labor(int labor_id) {set_labor(labor_id, true);}
     void remove_labor(int labor_id) {set_labor(labor_id, false);}
