@@ -43,7 +43,7 @@ public:
     VIRTADDR address() {return m_address;}
 
     int race_id() {return m_id;}
-    QString name() {return m_name;}
+    QString name(int count = 1) {return (count > 1 ? m_name_plural : m_name);}
     QString plural_name() {return m_name_plural;}
     QString adjective() {return m_adjective;}
     QString description() {return m_description;}

@@ -78,16 +78,8 @@ build_pass {
         share.files += share/game_data.ini
         QMAKE_BUNDLE_DATA += share
 
-        layouts.path = Contents/MacOS/etc/memory_layouts/osx
         layouts.path = Contents/MacOS/share/memory_layouts/osx
-        layouts.files += share/memory_layouts/osx/v0.40.04_osx.ini
-        layouts.files += share/memory_layouts/osx/v0.40.05_osx.ini
-        layouts.files += share/memory_layouts/osx/v0.40.06_osx.ini
-        layouts.files += share/memory_layouts/osx/v0.40.07_osx.ini
-        layouts.files += share/memory_layouts/osx/v0.40.08_osx.ini
-        layouts.files += share/memory_layouts/osx/v0.40.09_osx.ini
-        layouts.files += share/memory_layouts/osx/v0.40.10_osx.ini
-        layouts.files += share/memory_layouts/osx/v0.40.11_osx.ini
+        layouts.files += share/memory_layouts/osx/*
         QMAKE_BUNDLE_DATA += layouts
     }
     else:unix {
@@ -266,7 +258,8 @@ HEADERS += inc/viewmanager.h \
     inc/grid_view/customprofessioncolumn.h \
     inc/multilabor.h \
     inc/eventfilterlineedit.h \
-    inc/grid_view/beliefcolumn.h
+    inc/grid_view/beliefcolumn.h \
+    inc/histfigure.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -355,7 +348,8 @@ SOURCES += src/viewmanager.cpp \
     src/grid_view/customprofessioncolumn.cpp \
     src/syndrome.cpp \
     src/grid_view/beliefcolumn.cpp \
-    src/unitbelief.cpp
+    src/unitbelief.cpp \
+    src/histfigure.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

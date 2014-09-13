@@ -191,14 +191,33 @@ DFInstance::~DFInstance() {
 }
 
 QVector<VIRTADDR> DFInstance::enumerate_vector(const VIRTADDR &addr) {
-    QVector<VIRTADDR> out;
+    return enum_vec<VIRTADDR>(addr);
+//    QVector<VIRTADDR> out;
+//    VIRTADDR start = read_addr(addr);
+//    VIRTADDR end = read_addr(addr + 4);
+//    USIZE bytes = end - start;
+//    if (check_vector(start, end, addr)){
+//        out.resize(bytes / sizeof(VIRTADDR));
+//        USIZE bytes_read = read_raw(start, bytes, out.data());
+//        TRACE << "FOUND" << bytes_read / sizeof(VIRTADDR) << "addresses in vector at" << hexify(addr);
+//    }
+//    return out;
+}
+
+QVector<qint16> DFInstance::enumerate_vector_short(const VIRTADDR &addr){
+    return enum_vec<qint16>(addr);
+}
+
+template<typename T>
+QVector<T> DFInstance::enum_vec(const VIRTADDR &addr){
+    QVector<T> out;
     VIRTADDR start = read_addr(addr);
     VIRTADDR end = read_addr(addr + 4);
     USIZE bytes = end - start;
-    if (check_vector(start, end, addr)){
-        out.resize(bytes / sizeof(VIRTADDR));
+    if (check_vector(start,end,addr)){
+        out.resize(bytes / sizeof(T));
         USIZE bytes_read = read_raw(start, bytes, out.data());
-        TRACE << "FOUND" << bytes_read / sizeof(VIRTADDR) << "addresses in vector at" << hexify(addr);
+        TRACE << "FOUND" << bytes_read / sizeof(VIRTADDR) << "addresses in qint16 vector at" << hexify(addr);
     }
     return out;
 }
@@ -1584,24 +1603,26 @@ void DFInstance::load_hist_figures(){
     }
 }
 
-VIRTADDR DFInstance::find_fake_identity(int hist_id){
-    VIRTADDR fig = find_historical_figure(hist_id);
-    if(fig){
-        VIRTADDR fig_info = read_addr(fig + m_layout->hist_figure_offset("hist_fig_info"));
-        VIRTADDR rep_info = read_addr(fig_info + m_layout->hist_figure_offset("reputation"));
-        if(rep_info != 0){
-            int cur_ident = read_int(rep_info + m_layout->hist_figure_offset("current_ident"));
-            if(m_fake_identities.count() == 0) //lazy load fake identities
-                m_fake_identities = enumerate_vector(m_layout->address("fake_identities_vector"));
-            foreach(VIRTADDR ident, m_fake_identities){
-                int fake_id = read_int(ident);
-                if(fake_id==cur_ident){
-                    return ident;
-                }
-            }
+VIRTADDR DFInstance::find_identity(int id){
+    if(m_fake_identities.count() == 0) //lazy load fake identities
+        m_fake_identities = enumerate_vector(m_layout->address("fake_identities_vector"));
+    foreach(VIRTADDR ident, m_fake_identities){
+        int fake_id = read_int(ident);
+        if(fake_id==id){
+            return ident;
         }
     }
     return 0;
+}
+
+VIRTADDR DFInstance::find_event(int id){
+    if(m_events.count() == 0){
+        QVector<VIRTADDR> all_events_addrs = enumerate_vector(m_layout->get_base_addr() + 0x1ac1bf8);
+        foreach(VIRTADDR evt_addr, all_events_addrs){
+            m_events.insert(read_int(evt_addr+0x14),evt_addr);
+        }
+    }
+    return m_events.value(id,0);
 }
 
 QVector<VIRTADDR> DFInstance::get_item_vector(ITEM_TYPE i){
@@ -1770,7 +1791,7 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
     {
         VIRTADDR hist_figure = find_historical_figure(mat_index);
         if(hist_figure){
-            Race *r = get_race(read_int(hist_figure + m_layout->hist_figure_offset("hist_race")));
+            Race *r = get_race(read_short(hist_figure + m_layout->hist_figure_offset("hist_race")));
             QString fig_name = read_string(hist_figure + m_layout->hist_figure_offset("hist_name"));
             if(r){
                 name = fig_name.append("'s ");
@@ -1838,7 +1859,7 @@ Material *DFInstance::find_material(int mat_index, short mat_type){
     {
         VIRTADDR hist_figure = find_historical_figure(mat_index);
         if(hist_figure){
-            Race *r = get_race(read_int(hist_figure + m_layout->hist_figure_offset("hist_race")));
+            Race *r = get_race(read_short(hist_figure + m_layout->hist_figure_offset("hist_race")));
             if(r){
                 m = r->get_creature_material(mat_type-219);
                 r = 0;

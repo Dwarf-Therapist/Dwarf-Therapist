@@ -75,6 +75,8 @@ public:
 
     // memory reading
     QVector<VIRTADDR> enumerate_vector(const VIRTADDR &addr);
+    QVector<qint16> enumerate_vector_short(const VIRTADDR &addr);
+
     virtual QString read_string(const VIRTADDR &addr) = 0;
 
     QVector<VIRTADDR> scan_mem(const QByteArray &needle, const uint start_addr=0, const uint end_addr=0xffffffff);
@@ -172,7 +174,9 @@ public:
     QVector<Race *> get_races() {return m_races;}
 
     VIRTADDR find_historical_figure(int hist_id);
-    VIRTADDR find_fake_identity(int hist_id);
+    VIRTADDR find_identity(int id);
+    VIRTADDR find_event(int id);    
+
     FortressEntity * fortress() {return m_fortress;}
 
     void index_item_vector(ITEM_TYPE itype);
@@ -248,6 +252,8 @@ protected:
     void load_role_ratings();
     bool check_vector(const VIRTADDR start, const VIRTADDR end, const VIRTADDR addr);
 
+    template<typename T>
+    QVector<T> enum_vec(const VIRTADDR &addr);
 
     /*! this hash will hold a map of all loaded and valid memory layouts found
         on disk, the key is a QString of the checksum since other OSs will use
@@ -286,6 +292,7 @@ private:
 
     QHash<int,VIRTADDR> m_hist_figures;
     QVector<VIRTADDR> m_fake_identities;
+    QHash<int,VIRTADDR> m_events;    
 
     QHash<ITEM_TYPE, QVector<VIRTADDR> > m_itemdef_vectors;
     QHash<ITEM_TYPE, QVector<VIRTADDR> > m_items_vectors;

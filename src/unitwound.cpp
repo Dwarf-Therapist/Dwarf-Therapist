@@ -137,11 +137,11 @@ void UnitWound::read_wound(){
         wpd.wound_flags2 = m_df->read_addr(wounded_part + mem->wound_offset("flags2"));
 
         VIRTADDR addr_effect = wounded_part + mem->wound_offset("effects_vector");
-//        wpd.effect_perc_1 = enumerate_short_vector(addr_effect);
+//        wpd.effect_perc_1 = m_df->enumerate_vector_short(addr_effect);
 //        addr_effect += 0x10;
-//        wpd.effect_perc_2 = enumerate_short_vector(addr_effect);
+//        wpd.effect_perc_2 = m_df->enumerate_vector_short(addr_effect);
 //        addr_effect += 0x10;
-        wpd.effect_types = enumerate_short_vector(addr_effect);
+        wpd.effect_types = m_df->enumerate_vector_short(addr_effect);
 
         wpd.cur_pen = m_df->read_short(wounded_part + mem->wound_offset("cur_pen"));
         wpd.pen_max = m_df->read_short(wounded_part + mem->wound_offset("max_pen"));
@@ -365,20 +365,6 @@ void UnitWound::add_detail(wounded_part_details &wpd, eHealth::H_INFO id, bool i
             wpd.wnd_info.insert(id,desc_index);
         }
     }
-}
-
-
-QVector<short> UnitWound::enumerate_short_vector(VIRTADDR &addr){
-    QVector<short> result;
-
-    VIRTADDR addr_start = m_df->read_addr(addr);
-    VIRTADDR addr_end = m_df->read_addr(addr + 4);
-
-    for(VIRTADDR ptr = addr_start; ptr < addr_end; ptr += sizeof(short)){
-        result.append(m_df->read_short(ptr));
-    }
-
-    return result;
 }
 
 QHash<QString,QList<HealthInfo*> > UnitWound::get_wound_details()

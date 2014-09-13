@@ -50,7 +50,7 @@ public:
         QList<int> display_bins;
     };
 
-    QString name() {return m_name;}
+    QString name(int count = 1) {return (count > 1 ? m_name_plural : m_name);}
     QString name_plural() {return m_name_plural;}
     QString tag() {return m_tag;}
     QString description();
