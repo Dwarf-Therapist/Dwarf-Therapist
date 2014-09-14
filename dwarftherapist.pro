@@ -102,18 +102,13 @@ build_pass {
         bin.files += dist/dwarftherapist
         INSTALLS += bin
 
-        bin_mod.path = /usr/bin
-        bin_mod.extra = chmod +x $(INSTALL_ROOT)/usr/bin/dwarftherapist
-        bin_mod.depends = install_bin
-        INSTALLS += bin_mod
-
         application.path = /usr/share/applications
         application.files += dist/dwarftherapist.desktop
         INSTALLS += application
 
         doc.path = /usr/share/doc/dwarftherapist
         doc.files += LICENSE.txt
-        doc.files += README.md
+        doc.files += README.rst
         INSTALLS += doc
 
         icon.path = /usr/share/pixmaps
@@ -130,9 +125,13 @@ build_pass {
         INSTALLS += game_data
 
         system("printf 'Checking for pdflatex... '; if ! command -v pdflatex; then r=$?; echo 'not found'; exit $?; fi") {
+            manual.depends = "$$PWD/doc/Dwarf Therapist.tex" $$PWD/doc/images/*
+            manual.commands = [ -d doc ] || mkdir doc;
+            manual.commands += TEXINPUTS=".:$$PWD/doc/images:" pdflatex -output-directory=doc \"$<\"
+            manual.target = "doc/Dwarf Therapist.pdf"
             QMAKE_EXTRA_TARGETS += manual
-            manual.commands = pdflatex -output-directory=\"$$OUT_PWD\" \"$$PWD/doc/Dwarf Therapist.tex\"
-            doc.files += "doc/Dwarf Therapist.pdf"
+            POST_TARGETDEPS += "$$manual.target"
+            doc.files += "$$manual.target"
         }
     }
 }
@@ -374,3 +373,4 @@ FORMS += ui/scriptdialog.ui \
     ui/optimizereditor.ui \
     ui/superlabor.ui
 RESOURCES += images.qrc
+QMAKE_RESOURCE_FLAGS += -no-compress
