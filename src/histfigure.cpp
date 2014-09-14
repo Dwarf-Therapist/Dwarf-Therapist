@@ -56,13 +56,13 @@ HistFigure::~HistFigure(){
 }
 
 void HistFigure::read_kills(){
-    VIRTADDR kills_addr = m_df->read_addr(m_fig_info_addr + 0x0018);    
+    VIRTADDR kills_addr = m_df->read_addr(m_fig_info_addr + 0x0018); //historical_figure_info.T_kills
     if(kills_addr==0)
         return;
     QVector<VIRTADDR> kill_events = m_df->enumerate_vector(kills_addr);
-    QVector<qint16> race_ids = m_df->enumerate_vector_short(kills_addr+0x0010);
-    QVector<qint16> undead_kills = m_df->enumerate_vector_short(kills_addr+0x0060);
-    QVector<VIRTADDR> cur_site_kills = m_df->enumerate_vector(kills_addr+0x0070);
+    QVector<qint16> race_ids = m_df->enumerate_vector_short(kills_addr+0x0010); //historical_kills.killed_race
+    QVector<qint16> undead_kills = m_df->enumerate_vector_short(kills_addr+0x0060); //historical_kills.killed_undead
+    QVector<VIRTADDR> cur_site_kills = m_df->enumerate_vector(kills_addr+0x0070); //historical_kills.killed_count
     if(cur_site_kills.count() > 0){
         QHash<int,int> kills; //group by race
         for(int idx=0;idx < race_ids.size();idx++){
@@ -99,8 +99,8 @@ void HistFigure::read_kills(){
                 VIRTADDR vtable_addr = m_df->read_addr(evt_addr);
                 int evt_type = static_cast<ITEM_TYPE>(m_df->read_int(m_df->read_addr(vtable_addr) + 0x1));
                 if(evt_type == 3){
-                    int id = m_df->read_int(evt_addr + 0x0018);
-                    VIRTADDR h_fig_addr =  m_df->find_historical_figure(id);
+                    int hist_id = m_df->read_int(evt_addr + 0x0018); //history_event_hist_figure_diedst.victim_hf
+                    VIRTADDR h_fig_addr =  m_df->find_historical_figure(hist_id);
                     if(h_fig_addr){
                         VIRTADDR name_addr = h_fig_addr + m_mem->hist_figure_offset("hist_name");
                         kill_info ki;
@@ -155,6 +155,31 @@ QStringList HistFigure::other_kills(){
         }
     }
     return m_other_kill_list;
+}
+
+QString HistFigure::formatted_summary(bool show_no_kills, bool space_notable){
+    QString kill_summary = "<p style=\"margin:0px;\">";
+    if(total_kills() > 0){
+        QStringList kill_lists;
+        int count = kill_count(true);
+        if(count > 0){
+            QString sep = (space_notable ? "<br/>" : ", ");
+            kill_lists.append(tr("<b>%1Notable Kill%2:</b> %3")
+                              .arg(count > 1 ? QString::number(count)+" " : "").arg(count > 1 ? "s" : "")
+                              .arg(notable_kills().join(sep)));
+        }
+        count = kill_count();
+        if(count > 0){
+            kill_lists.append(tr("<b>%1Kill%2:</b> %3")
+                              .arg(count > 1 ? QString::number(count)+" " : "").arg(count > 1 ? "s" : "")
+                              .arg(other_kills().join(", ")));
+        }
+        kill_summary.append(kill_lists.join("<br/><br/>"));
+    }else if (show_no_kills){
+        kill_summary = tr("No Kills");
+    }
+    kill_summary.append("</p>");
+    return kill_summary;
 }
 
 bool HistFigure::has_fake_identity(){

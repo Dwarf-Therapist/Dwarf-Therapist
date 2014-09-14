@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 float DwarfStats::m_att_pot_weight;
 float DwarfStats::m_skill_rate_weight;
+int DwarfStats::m_max_unit_kills;
 
 QSharedPointer<RoleStats> DwarfStats::m_skills;
 QSharedPointer<RoleStats> DwarfStats::m_attributes;

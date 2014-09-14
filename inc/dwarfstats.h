@@ -40,9 +40,11 @@ public:
 
     static void set_att_potential_weight(float val){m_att_pot_weight = val;}
     static void set_skill_rate_weight(float val){m_skill_rate_weight = val;}
+    static void set_max_unit_kills(int val){m_max_unit_kills = val;}
 
     static float get_att_potential_weight(){return m_att_pot_weight;}
     static float get_skill_rate_weight(){return m_skill_rate_weight;}
+    static int get_max_unit_kills(){return m_max_unit_kills;}
     static float calc_att_potential_value(int value, float max, float cti);
 
     static void init_attributes(QVector<double> attribute_values, QVector<double> attribute_raw_values);
@@ -63,6 +65,7 @@ public:
 private:
     static float m_att_pot_weight;
     static float m_skill_rate_weight;
+    static int m_max_unit_kills;
 
     static QSharedPointer<RoleStats> m_attributes;
     static QSharedPointer<RoleStats> m_attributes_raw;

@@ -54,6 +54,7 @@ public:
     int kill_count(bool notable = false);
     QStringList notable_kills();
     QStringList other_kills();
+    QString formatted_summary(bool show_no_kills = false, bool space_notable = false);
 
 private:
     DFInstance *m_df;

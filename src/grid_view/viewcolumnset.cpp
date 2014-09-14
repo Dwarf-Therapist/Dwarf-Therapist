@@ -52,6 +52,7 @@ THE SOFTWARE.
 #include "superlaborcolumn.h"
 #include "customprofessioncolumn.h"
 #include "beliefcolumn.h"
+#include "unitkillscolumn.h"
 
 ViewColumnSet::ViewColumnSet(QString name, QObject *parent)
     : QObject(parent)
@@ -305,6 +306,9 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent, int s
             break;
         case CT_BELIEF:
             new BeliefColumn(s,ret_val,parent);
+            break;
+        case CT_KILLS:
+            new UnitKillsColumn(s, ret_val, parent);
             break;
         case CT_DEFAULT:
         default:

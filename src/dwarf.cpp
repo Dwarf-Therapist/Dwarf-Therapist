@@ -680,6 +680,10 @@ int Dwarf::historical_id(){
     return m_hist_figure->id();
 }
 
+HistFigure* Dwarf::hist_figure(){
+    return m_hist_figure;
+}
+
 void Dwarf::read_caste() {
     m_caste_id = m_df->read_short(m_address + m_mem->dwarf_offset("caste"));
     m_caste = m_race->get_caste_by_id(m_caste_id);
@@ -2536,24 +2540,7 @@ QString Dwarf::tooltip_text() {
     }
 
     if(m_hist_figure && m_hist_figure->total_kills() > 0){
-        QString kill_summary = "<p style=\"margin:0px;\">";
-        QStringList kill_lists;
-        int count = m_hist_figure->kill_count(true);
-        if(count > 0){
-            kill_lists.append(tr("<b>%1Notable Kill%2:</b> %3")
-                              .arg(count > 1 ? QString::number(count)+" " : "").arg(count > 1 ? "s" : "")
-                              .arg(m_hist_figure->notable_kills().join(", ")));
-        }
-        count = m_hist_figure->kill_count();
-        if(count > 0){
-            kill_lists.append(tr("<b>%1Kill%2:</b> %3")
-                              .arg(count > 1 ? QString::number(count)+" " : "").arg(count > 1 ? "s" : "")
-                              .arg(m_hist_figure->other_kills().join(", ")));
-        }
-        kill_summary.append(kill_lists.join("<br/><br/>"));
-        kill_summary.append("</p>");
-
-        tt.append(kill_summary);
+        tt.append(m_hist_figure->formatted_summary());
     }
 
     return tt.join("<br/>");

@@ -259,7 +259,8 @@ HEADERS += inc/viewmanager.h \
     inc/multilabor.h \
     inc/eventfilterlineedit.h \
     inc/grid_view/beliefcolumn.h \
-    inc/histfigure.h
+    inc/histfigure.h \
+    inc/grid_view/unitkillscolumn.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -349,7 +350,8 @@ SOURCES += src/viewmanager.cpp \
     src/syndrome.cpp \
     src/grid_view/beliefcolumn.cpp \
     src/unitbelief.cpp \
-    src/histfigure.cpp
+    src/histfigure.cpp \
+    src/grid_view/unitkillscolumn.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

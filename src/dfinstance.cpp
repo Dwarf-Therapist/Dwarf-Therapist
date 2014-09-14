@@ -49,6 +49,7 @@ THE SOFTWARE.
 #include "itemweapon.h"
 #include "itemarmor.h"
 #include "preference.h"
+#include "histfigure.h"
 
 #ifdef Q_OS_WIN
 #define LAYOUT_SUBDIR "windows"
@@ -557,6 +558,8 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
 void DFInstance::load_population_data(){
     int labor_count = 0;
+    int unit_kills = 0;
+    int max_kills = 0;
     foreach(Dwarf *d, m_actual_dwarves){
         //load labor counts
         foreach(int key, d->get_labors().uniqueKeys()){
@@ -568,6 +571,11 @@ void DFInstance::load_population_data(){
                 m_enabled_labor_count.insert(key,labor_count);
             }
         }
+
+        //save highest kill count
+        unit_kills = d->hist_figure()->total_kills();
+        if(unit_kills > max_kills)
+            max_kills = unit_kills;
 
         //load preference/thought totals, excluding babies/children according to settings
         if(d->is_adult() || (!d->is_adult() && !DT->hide_non_adults())){
@@ -619,6 +627,7 @@ void DFInstance::load_population_data(){
             }
         }
     }
+    DwarfStats::set_max_unit_kills(max_kills);
 }
 
 void DFInstance::load_role_ratings(){

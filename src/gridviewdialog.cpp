@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include "superlaborcolumn.h"
 #include "customprofessioncolumn.h"
 #include "beliefcolumn.h"
+#include "unitkillscolumn.h"
 
 #include "defines.h"
 #include "statetableview.h"
@@ -433,6 +434,10 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
         a->setToolTip(tr("Add a column for %1").arg(name));
     }
 
+    //KILLS
+    a = m->addAction(tr("Kills"), this, SLOT(add_kills_column()));
+    a->setToolTip(tr("Adds a single column that shows a unit's kills."));
+
     //LABOUR
     QMenu *m_labor = m_cmh->create_title_menu(m,tr("Labor"),tr("Labor columns function as toggle switches for individual labors on a dwarf."));
     m_cmh->add_sub_menus(m_labor,5);
@@ -541,6 +546,14 @@ void GridViewDialog::add_trained_column(){
         return;
 
     new TrainedColumn(tr("Training"),m_active_set, m_active_set);
+    draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_kills_column(){
+    if (!m_active_set)
+        return;
+
+    new UnitKillsColumn(tr("Kills"),m_active_set, m_active_set);
     draw_columns_for_set(m_active_set);
 }
 

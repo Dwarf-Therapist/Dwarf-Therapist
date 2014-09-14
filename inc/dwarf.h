@@ -194,6 +194,7 @@ public:
     Q_INVOKABLE int squad_id(bool original = false) { return (original ? m_squad_id : m_pending_squad_id);}
     Q_INVOKABLE int squad_position(bool original = false) { return (original ? m_squad_position : m_pending_squad_position);}
     Q_INVOKABLE int historical_id();
+    HistFigure *hist_figure();
 
     void update_squad_info(int squad_id, int position, QString name);
 
