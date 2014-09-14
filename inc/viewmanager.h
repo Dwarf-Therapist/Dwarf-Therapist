@@ -54,6 +54,7 @@ public:
 	QList<GridView*> views() {return m_views;}
 	void add_view(GridView *view);
     void add_weapons_view(QList<GridView*> &built_in_views);
+    void load_views(QSettings &s, QStringList &view_names, QList<GridView *> &built_in_views);
 
     static void save_column_sort(COLUMN_TYPE cType, ViewColumn::COLUMN_SORT_TYPE sType);
     static ViewColumn::COLUMN_SORT_TYPE get_default_col_sort(COLUMN_TYPE cType){

@@ -120,6 +120,7 @@ void ViewManager::reload_views() {
     QStringList view_names;
     QList<GridView*> built_in_views;
 
+    //custom views
     QDir d("share:gridviews");
     d.setNameFilters(QStringList() << "*.dtg");
     d.setFilter(QDir::NoDotAndDotDot | QDir::Readable | QDir::Files);
@@ -127,19 +128,11 @@ void ViewManager::reload_views() {
     QFileInfoList files = d.entryInfoList();
     foreach(QFileInfo info, files) {
         QSettings s(info.absoluteFilePath());
-        int total_views = s.beginReadArray("gridviews");
-        for (int i = 0; i < total_views; ++i) {
-            s.setArrayIndex(i);
-            GridView *gv = GridView::read_from_ini(s, this);
-            gv->set_is_custom(false); // this is a default view
-            if (!view_names.contains(gv->name())) {
-                m_views << gv;
-                built_in_views << gv;
-                view_names.append(gv->name());
-            }
-        }
-        s.endArray();
+        load_views(s,view_names,built_in_views);
     }
+    //packaged default views, if we've already loaded an override for a view, don't include these views
+    QSettings s(":config/default_gridviews", QSettings::IniFormat);
+    load_views(s,view_names,built_in_views);
 
     //special default weapon view
     add_weapons_view(built_in_views);
@@ -179,6 +172,23 @@ void ViewManager::reload_views() {
 
     LOGI << "Loaded" << m_views.size() << "views from disk";
     draw_add_tab_button();
+}
+
+void ViewManager::load_views(QSettings &s, QStringList &view_names, QList<GridView*> &built_in_views){
+    int total_views = s.beginReadArray("gridviews");
+    for (int i = 0; i < total_views; ++i) {
+        s.setArrayIndex(i);
+        GridView *gv = GridView::read_from_ini(s, this);
+        gv->set_is_custom(false); // this is a default view
+        if (!view_names.contains(gv->name())) {
+            m_views << gv;
+            built_in_views << gv;
+            view_names.append(gv->name());
+        }else{
+            LOGW << "gridview" << gv->name() << "was not loaded because a view with this name already exists";
+        }
+    }
+    s.endArray();
 }
 
 void ViewManager::add_weapons_view(QList<GridView*> &built_in_views){
