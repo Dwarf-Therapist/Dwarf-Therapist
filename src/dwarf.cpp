@@ -2539,7 +2539,7 @@ QString Dwarf::tooltip_text() {
         tt.append(curse_text);
     }
 
-    if(m_hist_figure && m_hist_figure->total_kills() > 0){
+    if(s->value("options/tooltip_show_kills",false).toBool() && m_hist_figure && m_hist_figure->total_kills() > 0){
         tt.append(m_hist_figure->formatted_summary());
     }
 
