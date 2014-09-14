@@ -91,6 +91,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'dwarf_civ_index',%globals,'ui','ui.civ_id';
     emit_addr 'races_vector',%globals,'world','world.raws.creatures.all';
     emit_addr 'reactions_vector',%globals,'world','world.raws.reactions';
+    emit_addr 'events_vector',%globals,'world','world.history.events';
     emit_addr 'historical_figures_vector',%globals,'world','world.history.figures';
     emit_addr 'fake_identities_vector',%globals,'world','world.identities.all';
     emit_addr 'fortress_entity',%globals,'ui','ui.main.fortress_entity';
@@ -209,6 +210,15 @@ sub generate_dt_ini($$$$) {
     emit_addr 'fake_name',%all,'identity','name';
     emit_addr 'fake_birth_year',%all,'identity','birth_year';
     emit_addr 'fake_birth_time',%all,'identity','birth_second';
+    emit_addr 'kills',%all,'historical_figure_info','kills';
+    emit_addr 'killed_race_vector',%all,'historical_kills','killed_race';
+    emit_addr 'killed_undead_vector',%all,'historical_kills','killed_undead';
+    emit_addr 'killed_counts_vector',%all,'historical_kills','killed_count';
+
+    emit_header 'hist_event_offsets';
+    emit_addr 'event_year',%all,'history_event','year';
+    emit_addr 'id',%all,'history_event','id';
+    emit_addr 'killed_hist_id',%all,'history_event_hist_figure_diedst','victim_hf';
 
     emit_header 'item_offsets'; 
     emit_addr 'item_def',%all,'item_ammost','subtype'; #currently same for all

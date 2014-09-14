@@ -52,11 +52,11 @@ QStandardItem *UnitKillsColumn::build_cell(Dwarf *d){
     HistFigure *h = d->hist_figure();
     if(h){
         kills = h->total_kills();
+        kill_summary = h->formatted_summary(true,true);
     }
     if(kills > 0){
         int max_kills = DwarfStats::get_max_unit_kills();
-        rating = ((float)kills / (float)max_kills * 100.0f / 2.0f) + 51.0f; //scale from 50+1 to 100
-        kill_summary = h->formatted_summary(true,true);
+        rating = ((float)kills / (float)max_kills * 100.0f / 2.0f) + 51.0f; //scale from 50+1 to 100        
     }
 
     item->setData(CT_KILLS, DwarfModel::DR_COL_TYPE);

@@ -56,13 +56,13 @@ HistFigure::~HistFigure(){
 }
 
 void HistFigure::read_kills(){
-    VIRTADDR kills_addr = m_df->read_addr(m_fig_info_addr + 0x0018); //historical_figure_info.T_kills
+    VIRTADDR kills_addr = m_df->read_addr(m_fig_info_addr + m_mem->hist_figure_offset("kills"));
     if(kills_addr==0)
         return;
     QVector<VIRTADDR> kill_events = m_df->enumerate_vector(kills_addr);
-    QVector<qint16> race_ids = m_df->enumerate_vector_short(kills_addr+0x0010); //historical_kills.killed_race
-    QVector<qint16> undead_kills = m_df->enumerate_vector_short(kills_addr+0x0060); //historical_kills.killed_undead
-    QVector<VIRTADDR> cur_site_kills = m_df->enumerate_vector(kills_addr+0x0070); //historical_kills.killed_count
+    QVector<qint16> race_ids = m_df->enumerate_vector_short(kills_addr+m_mem->hist_figure_offset("killed_race_vector"));
+    QVector<qint16> undead_kills = m_df->enumerate_vector_short(kills_addr+m_mem->hist_figure_offset("killed_undead_vector"));
+    QVector<VIRTADDR> cur_site_kills = m_df->enumerate_vector(kills_addr+m_mem->hist_figure_offset("killed_counts_vector"));
     if(cur_site_kills.count() > 0){
         QHash<int,int> kills; //group by race
         for(int idx=0;idx < race_ids.size();idx++){
@@ -97,9 +97,9 @@ void HistFigure::read_kills(){
             evt_addr = m_df->find_event(evt_id);
             if(evt_addr){
                 VIRTADDR vtable_addr = m_df->read_addr(evt_addr);
-                int evt_type = static_cast<ITEM_TYPE>(m_df->read_int(m_df->read_addr(vtable_addr) + 0x1));
-                if(evt_type == 3){
-                    int hist_id = m_df->read_int(evt_addr + 0x0018); //history_event_hist_figure_diedst.victim_hf
+                int evt_type = m_df->read_int(m_df->read_addr(vtable_addr) + 0x1);
+                if(evt_type == 3){ //hist figure died event
+                    int hist_id = m_df->read_int(evt_addr + m_mem->hist_event_offset("killed_hist_id"));
                     VIRTADDR h_fig_addr =  m_df->find_historical_figure(hist_id);
                     if(h_fig_addr){
                         VIRTADDR name_addr = h_fig_addr + m_mem->hist_figure_offset("hist_name");
@@ -110,7 +110,7 @@ void HistFigure::read_kills(){
                         if(r){
                             ki.creature = r->name(ki.count).toLower();
                         }
-                        ki.year = m_df->read_int(evt_addr + 0x0004); //history_event.year
+                        ki.year = m_df->read_int(evt_addr + m_mem->hist_event_offset("event_year"));
                         m_notable_kills.append(ki);
                     }
                 }
@@ -176,7 +176,7 @@ QString HistFigure::formatted_summary(bool show_no_kills, bool space_notable){
         }
         kill_summary.append(kill_lists.join("<br/><br/>"));
     }else if (show_no_kills){
-        kill_summary = tr("No Kills");
+        kill_summary.append(tr("No Kills"));
     }
     kill_summary.append("</p>");
     return kill_summary;

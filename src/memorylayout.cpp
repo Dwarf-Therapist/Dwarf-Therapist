@@ -61,6 +61,7 @@ void MemoryLayout::load_data() {
     read_group("caste_offsets", m_caste_offsets);
 
     read_group("hist_figure_offsets", m_hist_fig_offsets);
+    read_group("hist_event_offsets", m_hist_event_offsets);
     read_group("hist_entity_offsets", m_hist_entity_offsets);
 
     read_group("plant_offsets", m_plant_offsets);

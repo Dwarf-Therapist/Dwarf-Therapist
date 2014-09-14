@@ -138,8 +138,8 @@ bool DFInstance::check_vector(const VIRTADDR start, const VIRTADDR end, const VI
 
     bool is_acceptable_size = true;
 
-    if (entries > 500000) {
-        LOGW << "vector at" << hexify(addr) << "has over 500.000 entries! (" << entries << ")";
+    if (entries > 1000000) {
+        LOGW << "vector at" << hexify(addr) << "has over 1.000.000 entries! (" << entries << ")";
         is_acceptable_size = false;
     }else if (entries > 250000){
         LOGW << "vector at" << hexify(addr) << "has over 250.000 entries! (" << entries << ")";
@@ -1626,9 +1626,9 @@ VIRTADDR DFInstance::find_identity(int id){
 
 VIRTADDR DFInstance::find_event(int id){
     if(m_events.count() == 0){
-        QVector<VIRTADDR> all_events_addrs = enumerate_vector(m_layout->get_base_addr() + 0x1ac1bf8);
+        QVector<VIRTADDR> all_events_addrs = enumerate_vector(m_layout->address("events_vector"));
         foreach(VIRTADDR evt_addr, all_events_addrs){
-            m_events.insert(read_int(evt_addr+0x14),evt_addr);
+            m_events.insert(read_int(evt_addr+m_layout->hist_event_offset("id")),evt_addr);
         }
     }
     return m_events.value(id,0);
