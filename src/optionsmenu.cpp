@@ -295,6 +295,7 @@ void OptionsMenu::read_settings() {
     ui->chk_show_age->setChecked(s->value("tooltip_show_age", true).toBool());
     ui->chk_show_unit_size->setChecked(s->value("tooltip_show_size",true).toBool());
     ui->chk_show_buffs->setChecked(s->value("tooltip_show_buffs",false).toBool());
+    ui->chk_show_kills->setChecked(s->value("tooltip_show_kills",false).toBool());
     short syn_option = s->value("syndrome_display_type",0).toInt();
     if(syn_option == 0)
         ui->rad_syn_names->setChecked(true);
@@ -423,6 +424,7 @@ void OptionsMenu::write_settings() {
         s->setValue("tooltip_health_colors", ui->chk_health_colors->isChecked());
         s->setValue("tooltip_health_symbols", ui->chk_health_symbols->isChecked());
         s->setValue("tooltip_show_buffs", ui->chk_show_buffs->isChecked());
+        s->setValue("tooltip_show_kills", ui->chk_show_kills->isChecked());
         short val = 0;
         if(ui->rad_syn_classes->isChecked())
             val = 1;
@@ -516,7 +518,8 @@ void OptionsMenu::restore_defaults() {
     ui->chk_show_unit_size->setChecked(true);
     ui->chk_show_age->setChecked(true);
     ui->chk_show_buffs->setChecked(false);
-    ui->rad_syn_names->setChecked(true);
+    ui->chk_show_kills->setChecked(false);
+    ui->rad_syn_names->setChecked(true);    
 
     ui->dsb_attribute_weight->setValue(0.25);
     ui->dsb_pref_weight->setValue(0.15);

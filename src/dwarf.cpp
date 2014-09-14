@@ -74,6 +74,7 @@ THE SOFTWARE.
 #include "uniform.h"
 
 #include "squad.h"
+#include "histfigure.h"
 
 quint32 Dwarf::ticks_per_day = 1200;
 quint32 Dwarf::ticks_per_month = 28 * Dwarf::ticks_per_day;
@@ -103,13 +104,11 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_raw_profession(-1)
     , m_can_set_labors(false)
     , m_current_job_id(-1)
-    , m_hist_id(-1)
+    , m_hist_figure(0x0)
     , m_squad_id(-1)
     , m_squad_position(-1)    
     , m_pending_squad_name(QString::null)
     , m_age(0)
-    , m_hist_nickname(0)
-    , m_fake_nickname(0)
     , m_noble_position("")
     , m_is_pet(false)
     , m_highest_moodable_skill(-1)
@@ -178,9 +177,10 @@ Dwarf::~Dwarf() {
     m_syndromes.clear();
     m_inventory_grouped.clear();
 
+    m_hist_figure = 0;
     m_uniform = 0;
     m_race = 0;
-    m_caste = 0;
+    m_caste = 0;    
     m_mem = 0;
     m_df = 0;
 
@@ -293,6 +293,7 @@ void Dwarf::refresh_data() {
     if(!m_validated)
         this->is_valid();
     if(m_is_valid){
+        read_hist_fig(); //read before noble positions, curse
         read_caste(); //read before age        
         read_labors();
         read_happiness();
@@ -308,7 +309,7 @@ void Dwarf::refresh_data() {
         read_curse(); //read curse before attributes
         read_soul_aspects(); //assumes soul already read, and requires caste to be read first
         read_gender_orientation();
-        read_animal_type(); //need skills loaded to check for hostiles
+        read_animal_type(); //need skills loaded to check for hostiles        
         read_noble_position();
         read_preferences();
 
@@ -503,9 +504,13 @@ QString Dwarf::get_migration_desc(){
 *******************************************************************************/
 
 void Dwarf::read_id() {
-    m_id = m_df->read_int(m_address + m_mem->dwarf_offset("id"));        
-    m_hist_id = m_df->read_int(m_address + m_mem->dwarf_offset("hist_id"));
-    TRACE << "UNIT ID:" << m_id << "HIST_FIG_ID:" << m_hist_id;
+    m_id = m_df->read_int(m_address + m_mem->dwarf_offset("id"));            
+    TRACE << "UNIT ID:" << m_id;
+}
+
+void Dwarf::read_hist_fig(){
+    m_hist_figure = new HistFigure(m_df->read_int(m_address + m_mem->dwarf_offset("hist_id")),m_df,this);
+    TRACE << "HIST_FIG_ID:" << m_hist_figure->id();
 }
 
 void Dwarf::read_gender_orientation() {
@@ -657,20 +662,26 @@ void Dwarf::read_curse(){
 }
 
 void Dwarf::find_true_ident(){
-    VIRTADDR fake_id = m_df->find_fake_identity(m_hist_id);
-    if(fake_id){
+    if(m_hist_figure->has_fake_identity()){
         //save the true name for display
         m_true_name = m_nice_name;
         m_true_birth_year = m_birth_year;
         //overwrite the default name, birth year with the assumed identity
-        m_first_name = capitalize(m_df->read_string(fake_id + m_mem->hist_figure_offset("fake_name") + m_mem->dwarf_offset("first_name")));
-        m_fake_nickname = fake_id + m_mem->hist_figure_offset("fake_name") + m_mem->dwarf_offset("nick_name");
-        m_nick_name = m_df->read_string(m_fake_nickname);
-        read_last_name(fake_id + m_mem->hist_figure_offset("fake_name"));
+        m_first_name = m_hist_figure->fake_name();
+        m_nick_name = m_hist_figure->fake_nick_name();
+        read_last_name(m_hist_figure->fake_name_offset());
         build_names();
         //vamps also use a fake age
-        set_age_and_migration(fake_id + m_mem->hist_figure_offset("fake_birth_year"),fake_id + m_mem->hist_figure_offset("fake_birth_time"));
+        set_age_and_migration(m_hist_figure->fake_birth_year_offset(),m_hist_figure->fake_birth_time_offset());
     }
+}
+
+int Dwarf::historical_id(){
+    return m_hist_figure->id();
+}
+
+HistFigure* Dwarf::hist_figure(){
+    return m_hist_figure;
 }
 
 void Dwarf::read_caste() {
@@ -724,11 +735,6 @@ void Dwarf::read_nick_name() {
     m_nick_name = m_df->read_string(m_address + m_mem->dwarf_offset("nick_name"));
     TRACE << "\tNICKNAME:" << m_nick_name;
     m_pending_nick_name = m_nick_name;
-
-    //save the historical figure's nickname address as we need to update it when nicknames are changed
-    VIRTADDR hist_addr = m_df->find_historical_figure(m_hist_id);
-    if(hist_addr)
-        m_hist_nickname = hist_addr + m_mem->hist_figure_offset("hist_name") + m_mem->dwarf_offset("nick_name");
 }
 
 void Dwarf::build_names() {
@@ -851,7 +857,7 @@ void Dwarf::read_profession() {
 }
 
 void Dwarf::read_noble_position(){
-    m_noble_position = m_df->fortress()->get_noble_positions(m_hist_id,is_male());
+    m_noble_position = m_df->fortress()->get_noble_positions(m_hist_figure->id(),is_male());
 }
 void Dwarf::read_preferences(){
     if(m_is_animal)
@@ -2151,10 +2157,9 @@ void Dwarf::commit_pending(bool single) {
     if (m_pending_nick_name != m_nick_name){
         m_df->write_string(m_address + m_mem->dwarf_offset("nick_name"), m_pending_nick_name);
         m_df->write_string(m_first_soul + m_mem->soul_detail("name") + m_mem->dwarf_offset("nick_name"), m_pending_nick_name);
-        if(m_hist_nickname != 0)
-            m_df->write_string(m_hist_nickname, m_pending_nick_name);
-        if(m_fake_nickname != 0)
-            m_df->write_string(m_fake_nickname, m_pending_nick_name);
+        if(m_hist_figure){
+            m_hist_figure->write_nick_name(m_pending_nick_name);
+        }
     }
     if (m_pending_custom_profession != m_custom_profession)
         m_df->write_string(m_address + m_mem->dwarf_offset("custom_profession"), m_pending_custom_profession);
@@ -2532,6 +2537,10 @@ QString Dwarf::tooltip_text() {
             }
         }
         tt.append(curse_text);
+    }
+
+    if(s->value("options/tooltip_show_kills",false).toBool() && m_hist_figure && m_hist_figure->total_kills() > 0){
+        tt.append(m_hist_figure->formatted_summary());
     }
 
     return tt.join("<br/>");

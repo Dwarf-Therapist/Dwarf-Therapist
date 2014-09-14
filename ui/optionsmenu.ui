@@ -1194,6 +1194,22 @@
            </property>
           </widget>
          </item>
+         <item row="6" column="2">
+          <widget class="QCheckBox" name="chk_show_kills">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>When checked, shows the notable and other kills in the toolip.</string>
+           </property>
+           <property name="whatsThis">
+            <string/>
+           </property>
+           <property name="text">
+            <string>Show kills in the tooltip.</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>

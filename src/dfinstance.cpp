@@ -49,6 +49,7 @@ THE SOFTWARE.
 #include "itemweapon.h"
 #include "itemarmor.h"
 #include "preference.h"
+#include "histfigure.h"
 
 #ifdef Q_OS_WIN
 #define LAYOUT_SUBDIR "windows"
@@ -137,8 +138,8 @@ bool DFInstance::check_vector(const VIRTADDR start, const VIRTADDR end, const VI
 
     bool is_acceptable_size = true;
 
-    if (entries > 500000) {
-        LOGW << "vector at" << hexify(addr) << "has over 500.000 entries! (" << entries << ")";
+    if (entries > 1000000) {
+        LOGW << "vector at" << hexify(addr) << "has over 1.000.000 entries! (" << entries << ")";
         is_acceptable_size = false;
     }else if (entries > 250000){
         LOGW << "vector at" << hexify(addr) << "has over 250.000 entries! (" << entries << ")";
@@ -191,14 +192,33 @@ DFInstance::~DFInstance() {
 }
 
 QVector<VIRTADDR> DFInstance::enumerate_vector(const VIRTADDR &addr) {
-    QVector<VIRTADDR> out;
+    return enum_vec<VIRTADDR>(addr);
+//    QVector<VIRTADDR> out;
+//    VIRTADDR start = read_addr(addr);
+//    VIRTADDR end = read_addr(addr + 4);
+//    USIZE bytes = end - start;
+//    if (check_vector(start, end, addr)){
+//        out.resize(bytes / sizeof(VIRTADDR));
+//        USIZE bytes_read = read_raw(start, bytes, out.data());
+//        TRACE << "FOUND" << bytes_read / sizeof(VIRTADDR) << "addresses in vector at" << hexify(addr);
+//    }
+//    return out;
+}
+
+QVector<qint16> DFInstance::enumerate_vector_short(const VIRTADDR &addr){
+    return enum_vec<qint16>(addr);
+}
+
+template<typename T>
+QVector<T> DFInstance::enum_vec(const VIRTADDR &addr){
+    QVector<T> out;
     VIRTADDR start = read_addr(addr);
     VIRTADDR end = read_addr(addr + 4);
     USIZE bytes = end - start;
-    if (check_vector(start, end, addr)){
-        out.resize(bytes / sizeof(VIRTADDR));
+    if (check_vector(start,end,addr)){
+        out.resize(bytes / sizeof(T));
         USIZE bytes_read = read_raw(start, bytes, out.data());
-        TRACE << "FOUND" << bytes_read / sizeof(VIRTADDR) << "addresses in vector at" << hexify(addr);
+        TRACE << "FOUND" << bytes_read / sizeof(VIRTADDR) << "addresses in qint16 vector at" << hexify(addr);
     }
     return out;
 }
@@ -538,6 +558,8 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
 void DFInstance::load_population_data(){
     int labor_count = 0;
+    int unit_kills = 0;
+    int max_kills = 0;
     foreach(Dwarf *d, m_actual_dwarves){
         //load labor counts
         foreach(int key, d->get_labors().uniqueKeys()){
@@ -549,6 +571,11 @@ void DFInstance::load_population_data(){
                 m_enabled_labor_count.insert(key,labor_count);
             }
         }
+
+        //save highest kill count
+        unit_kills = d->hist_figure()->total_kills();
+        if(unit_kills > max_kills)
+            max_kills = unit_kills;
 
         //load preference/thought totals, excluding babies/children according to settings
         if(d->is_adult() || (!d->is_adult() && !DT->hide_non_adults())){
@@ -600,6 +627,7 @@ void DFInstance::load_population_data(){
             }
         }
     }
+    DwarfStats::set_max_unit_kills(max_kills);
 }
 
 void DFInstance::load_role_ratings(){
@@ -1584,24 +1612,26 @@ void DFInstance::load_hist_figures(){
     }
 }
 
-VIRTADDR DFInstance::find_fake_identity(int hist_id){
-    VIRTADDR fig = find_historical_figure(hist_id);
-    if(fig){
-        VIRTADDR fig_info = read_addr(fig + m_layout->hist_figure_offset("hist_fig_info"));
-        VIRTADDR rep_info = read_addr(fig_info + m_layout->hist_figure_offset("reputation"));
-        if(rep_info != 0){
-            int cur_ident = read_int(rep_info + m_layout->hist_figure_offset("current_ident"));
-            if(m_fake_identities.count() == 0) //lazy load fake identities
-                m_fake_identities = enumerate_vector(m_layout->address("fake_identities_vector"));
-            foreach(VIRTADDR ident, m_fake_identities){
-                int fake_id = read_int(ident);
-                if(fake_id==cur_ident){
-                    return ident;
-                }
-            }
+VIRTADDR DFInstance::find_identity(int id){
+    if(m_fake_identities.count() == 0) //lazy load fake identities
+        m_fake_identities = enumerate_vector(m_layout->address("fake_identities_vector"));
+    foreach(VIRTADDR ident, m_fake_identities){
+        int fake_id = read_int(ident);
+        if(fake_id==id){
+            return ident;
         }
     }
     return 0;
+}
+
+VIRTADDR DFInstance::find_event(int id){
+    if(m_events.count() == 0){
+        QVector<VIRTADDR> all_events_addrs = enumerate_vector(m_layout->address("events_vector"));
+        foreach(VIRTADDR evt_addr, all_events_addrs){
+            m_events.insert(read_int(evt_addr+m_layout->hist_event_offset("id")),evt_addr);
+        }
+    }
+    return m_events.value(id,0);
 }
 
 QVector<VIRTADDR> DFInstance::get_item_vector(ITEM_TYPE i){
@@ -1770,7 +1800,7 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
     {
         VIRTADDR hist_figure = find_historical_figure(mat_index);
         if(hist_figure){
-            Race *r = get_race(read_int(hist_figure + m_layout->hist_figure_offset("hist_race")));
+            Race *r = get_race(read_short(hist_figure + m_layout->hist_figure_offset("hist_race")));
             QString fig_name = read_string(hist_figure + m_layout->hist_figure_offset("hist_name"));
             if(r){
                 name = fig_name.append("'s ");
@@ -1838,7 +1868,7 @@ Material *DFInstance::find_material(int mat_index, short mat_type){
     {
         VIRTADDR hist_figure = find_historical_figure(mat_index);
         if(hist_figure){
-            Race *r = get_race(read_int(hist_figure + m_layout->hist_figure_offset("hist_race")));
+            Race *r = get_race(read_short(hist_figure + m_layout->hist_figure_offset("hist_race")));
             if(r){
                 m = r->get_creature_material(mat_type-219);
                 r = 0;

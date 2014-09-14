@@ -44,6 +44,7 @@ class Thought;
 class Syndrome;
 class ItemArmor;
 class Uniform;
+class HistFigure;
 
 class Dwarf : public QObject
 {
@@ -192,7 +193,8 @@ public:
     //! return this dwarf's squad reference id
     Q_INVOKABLE int squad_id(bool original = false) { return (original ? m_squad_id : m_pending_squad_id);}
     Q_INVOKABLE int squad_position(bool original = false) { return (original ? m_squad_position : m_pending_squad_position);}
-    Q_INVOKABLE int historical_id() { return m_hist_id;}
+    Q_INVOKABLE int historical_id();
+    HistFigure *hist_figure();
 
     void update_squad_info(int squad_id, int position, QString name);
 
@@ -565,8 +567,8 @@ private:
     QVector<Attribute> m_attributes;
     QMap<int, ushort> m_labors;
     QMap<int, ushort> m_pending_labors;
-    QList<QAction*> m_actions_memory; // actions suitable for context menus    
-    int m_hist_id;
+    QList<QAction*> m_actions_memory; // actions suitable for context menus
+    HistFigure *m_hist_figure;
     int m_squad_id;
     int m_squad_position;
     int m_pending_squad_id;
@@ -588,8 +590,6 @@ private:
     quint32 m_birth_year;
     quint32 m_birth_time;
     quint32 m_ticks_since_birth;
-    VIRTADDR m_hist_nickname;
-    VIRTADDR m_fake_nickname;
     QString m_noble_position;
     bool m_is_pet;
     int m_highest_moodable_skill;
@@ -638,6 +638,7 @@ private:
     void read_gender_orientation();
     void read_mood();
     void read_curse();
+    void read_hist_fig();
     void read_caste();
     void read_race();
     void read_body_size();

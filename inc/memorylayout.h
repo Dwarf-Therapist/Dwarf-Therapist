@@ -43,6 +43,9 @@ public:
     int hist_figure_offset(const QString & key){
         return m_hist_fig_offsets.value(key, -1);
     }
+    int hist_event_offset(const QString & key){
+        return m_hist_event_offsets.value(key, -1);
+    }
     int hist_entity_offset(const QString & key){
         return m_hist_entity_offsets.value(key, -1);
     }
@@ -122,6 +125,7 @@ private:
     AddressHash m_race_offsets;
     AddressHash m_caste_offsets;
     AddressHash m_hist_fig_offsets;
+    AddressHash m_hist_event_offsets;
     AddressHash m_hist_entity_offsets;
     AddressHash m_weapon_subtype_offsets;
     AddressHash m_plant_offsets;

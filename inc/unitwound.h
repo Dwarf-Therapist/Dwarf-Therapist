@@ -96,7 +96,6 @@ protected:
     //list of health info by body part
     QHash<QString,QList<HealthInfo*> > m_bp_info;
 
-    QVector<short> enumerate_short_vector(VIRTADDR &addr);
     void read_wound();    
     void add_detail(wounded_part_details &wpd, eHealth::H_INFO id, bool idx0, bool idx1 = false, bool idx2 = false);
     bool m_is_critical;
