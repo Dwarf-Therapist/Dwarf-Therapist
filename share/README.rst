@@ -1,11 +1,9 @@
-ROLES
-=====
-any roles you wish to be loaded into DT as default roles should be put into the game_data.ini file under the [dwarf_roles] section.
-
 VIEWS
 =====
-Add a new file in gridviews with a .dtg extension. Files with larger numbers will be loaded later.
+Add a new file in gridviews with a .dtg extension. Files are loaded in order by name.
 
-OTHER
+GAME DATA
 =====
-the game_data.ini also contains descriptions for things like labors, jobs, thoughts, attributes, etc. which can be changed as you like.
+The game_data.ini also contains titles and definitions for labors, jobs, thoughts, attributes, default roles etc.
+
+To override the default game_data.ini, a modified version should be placed here with the desired changes. The original game_data.ini can be found in the repository in the resources directory.

@@ -129,7 +129,7 @@ protected:
     virtual ~GameDataReader();
 private:
     static GameDataReader *m_instance;
-    QSettings m_data_settings;
+    QPointer<QSettings> m_data_settings;
 
     QHash<int, Labor*> m_labors;
     QList<Labor*> m_ordered_labors;
