@@ -43,13 +43,18 @@ GameDataReader::GameDataReader(QObject *parent)
     : QObject(parent)
     , m_data_settings("share:game_data.ini", QSettings::IniFormat)
 {
+    //load override game_data
     if (QFile::exists("share:game_data.ini")) {
         LOGI << "Found game_data.ini:" << m_data_settings.fileName();
     } else {
-        QString err = tr("Dwarf Therapist cannot run because game_data.ini could not be found!");
-        QMessageBox::critical(0,tr("Missing File"),err);
-        FATAL << err;
-        exit(1);
+        //load default game_data
+        QSettings m_data_settings(":config/game_data", QSettings::IniFormat);
+        if(m_data_settings.childGroups().count() <= 0){
+            QString err = tr("Dwarf Therapist cannot run because game_data.ini could not be found!");
+            QMessageBox::critical(0,tr("Missing File"),err);
+            FATAL << err;
+            exit(1);
+        }
     }
 
     QStringList required_sections;

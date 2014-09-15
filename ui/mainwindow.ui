@@ -20,7 +20,7 @@
    <string>Dwarf Therapist</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../images.qrc">
+   <iconset resource="../resources.qrc">
     <normaloff>:/img/hammer.png</normaloff>:/img/hammer.png</iconset>
   </property>
   <property name="tabShape">
@@ -163,7 +163,7 @@
          <string>Active Filters</string>
         </property>
         <property name="icon">
-         <iconset resource="../images.qrc">
+         <iconset resource="../resources.qrc">
           <normaloff>:/img/cross.png</normaloff>:/img/cross.png</iconset>
         </property>
         <property name="popupMode">
@@ -309,7 +309,7 @@
       <string>Docks</string>
      </property>
      <property name="icon">
-      <iconset resource="../images.qrc">
+      <iconset resource="../resources.qrc">
        <normaloff>:/img/ui-layered-pane.png</normaloff>:/img/ui-layered-pane.png</iconset>
      </property>
     </widget>
@@ -324,7 +324,7 @@
       <string>Edit Filter Script</string>
      </property>
      <property name="icon">
-      <iconset resource="../images.qrc">
+      <iconset resource="../resources.qrc">
        <normaloff>:/img/script_pencil.png</normaloff>:/img/script_pencil.png</iconset>
      </property>
     </widget>
@@ -333,7 +333,7 @@
       <string>Remove Filter Script</string>
      </property>
      <property name="icon">
-      <iconset resource="../images.qrc">
+      <iconset resource="../resources.qrc">
        <normaloff>:/img/script_minus.png</normaloff>:/img/script_minus.png</iconset>
      </property>
     </widget>
@@ -351,7 +351,7 @@
       <string>Edit Custom Role</string>
      </property>
      <property name="icon">
-      <iconset resource="../images.qrc">
+      <iconset resource="../resources.qrc">
        <normaloff>:/img/script_pencil.png</normaloff>:/img/script_pencil.png</iconset>
      </property>
     </widget>
@@ -360,7 +360,7 @@
       <string>Remove Custom Role</string>
      </property>
      <property name="icon">
-      <iconset resource="../images.qrc">
+      <iconset resource="../resources.qrc">
        <normaloff>:/img/script_minus.png</normaloff>:/img/script_minus.png</iconset>
      </property>
     </widget>
@@ -384,7 +384,7 @@
       <string>Edit Optimization Plan</string>
      </property>
      <property name="icon">
-      <iconset resource="../images.qrc">
+      <iconset resource="../resources.qrc">
        <normaloff>:/img/script_pencil.png</normaloff>:/img/script_pencil.png</iconset>
      </property>
     </widget>
@@ -393,7 +393,7 @@
       <string>Remove Optimization Plan</string>
      </property>
      <property name="icon">
-      <iconset resource="../images.qrc">
+      <iconset resource="../resources.qrc">
        <normaloff>:/img/script_minus.png</normaloff>:/img/script_minus.png</iconset>
      </property>
     </widget>
@@ -489,7 +489,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../images.qrc">
+          <iconset resource="../resources.qrc">
            <normaloff>:/img/table--arrow.png</normaloff>:/img/table--arrow.png</iconset>
          </property>
         </widget>
@@ -506,7 +506,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../images.qrc">
+          <iconset resource="../resources.qrc">
            <normaloff>:/img/table--minus.png</normaloff>:/img/table--minus.png</iconset>
          </property>
         </widget>
@@ -520,7 +520,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../images.qrc">
+          <iconset resource="../resources.qrc">
            <normaloff>:/img/arrow-out.png</normaloff>:/img/arrow-out.png</iconset>
          </property>
         </widget>
@@ -534,7 +534,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../images.qrc">
+          <iconset resource="../resources.qrc">
            <normaloff>:/img/arrow-in.png</normaloff>:/img/arrow-in.png</iconset>
          </property>
         </widget>
@@ -606,7 +606,7 @@
           <string>Custom Profession</string>
          </property>
          <property name="icon">
-          <iconset resource="../images.qrc">
+          <iconset resource="../resources.qrc">
            <normaloff>:/img/document--plus.png</normaloff>:/img/document--plus.png</iconset>
          </property>
         </widget>
@@ -629,7 +629,7 @@
           <string>Super Labor</string>
          </property>
          <property name="icon">
-          <iconset resource="../images.qrc">
+          <iconset resource="../resources.qrc">
            <normaloff>:/img/table-insert-column.png</normaloff>:/img/table-insert-column.png</iconset>
          </property>
         </widget>
@@ -641,7 +641,7 @@
   </widget>
   <action name="act_connect_to_DF">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/connect.png</normaloff>:/img/connect.png</iconset>
    </property>
    <property name="text">
@@ -659,7 +659,7 @@
   </action>
   <action name="act_exit">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/cross.png</normaloff>:/img/cross.png</iconset>
    </property>
    <property name="text">
@@ -674,7 +674,7 @@
   </action>
   <action name="act_about">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/question-frame.png</normaloff>:/img/question-frame.png</iconset>
    </property>
    <property name="text">
@@ -686,7 +686,7 @@
   </action>
   <action name="act_read_dwarves">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/refresh.png</normaloff>:/img/refresh.png</iconset>
    </property>
    <property name="text">
@@ -710,7 +710,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/arrow-out.png</normaloff>:/img/arrow-out.png</iconset>
    </property>
    <property name="text">
@@ -731,7 +731,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/arrow-in.png</normaloff>:/img/arrow-in.png</iconset>
    </property>
    <property name="text">
@@ -748,10 +748,6 @@
    </property>
   </action>
   <action name="act_add_custom_profession">
-   <property name="icon">
-    <iconset resource="../images.qrc">
-     <normaloff>:/img/page_white_add.png</normaloff>:/img/page_white_add.png</iconset>
-   </property>
    <property name="text">
     <string>Add Custom Profession</string>
    </property>
@@ -761,7 +757,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/table--minus.png</normaloff>:/img/table--minus.png</iconset>
    </property>
    <property name="text">
@@ -788,7 +784,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/table--arrow.png</normaloff>:/img/table--arrow.png</iconset>
    </property>
    <property name="text">
@@ -812,7 +808,7 @@
   </action>
   <action name="act_options">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/wrench-screwdriver.png</normaloff>:/img/wrench-screwdriver.png</iconset>
    </property>
    <property name="text">
@@ -833,7 +829,7 @@
   </action>
   <action name="act_import_existing_professions">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/application-import.png</normaloff>:/img/application-import.png</iconset>
    </property>
    <property name="text">
@@ -845,7 +841,7 @@
   </action>
   <action name="act_go_forums">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/globe--arrow.png</normaloff>:/img/globe--arrow.png</iconset>
    </property>
    <property name="text">
@@ -857,7 +853,7 @@
   </action>
   <action name="act_go_project_home">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/globe--arrow.png</normaloff>:/img/globe--arrow.png</iconset>
    </property>
    <property name="text">
@@ -869,7 +865,7 @@
   </action>
   <action name="act_go_new_issue">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/globe--arrow.png</normaloff>:/img/globe--arrow.png</iconset>
    </property>
    <property name="text">
@@ -881,7 +877,7 @@
   </action>
   <action name="act_go_donate">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/heart.png</normaloff>:/img/heart.png</iconset>
    </property>
    <property name="text">
@@ -891,36 +887,12 @@
     <string>Your donations make the world a better place!</string>
    </property>
   </action>
-  <action name="act_add_new_column_set">
-   <property name="icon">
-    <iconset resource="../images.qrc">
-     <normaloff>:/img/image_add.png</normaloff>:/img/image_add.png</iconset>
-   </property>
-   <property name="text">
-    <string>Add New Column Set</string>
-   </property>
-   <property name="toolTip">
-    <string>Add a new set of columns to be used in grid views</string>
-   </property>
-  </action>
-  <action name="act_add_new_gridview">
-   <property name="icon">
-    <iconset resource="../images.qrc">
-     <normaloff>:/img/table_add.png</normaloff>:/img/table_add.png</iconset>
-   </property>
-   <property name="text">
-    <string>Add New GridView</string>
-   </property>
-   <property name="toolTip">
-    <string>Create a new gridview with custom sets</string>
-   </property>
-  </action>
   <action name="act_export_custom_professions">
    <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/document-export.png</normaloff>:/img/document-export.png</iconset>
    </property>
    <property name="text">
@@ -932,7 +904,7 @@
   </action>
   <action name="act_import_saved_custom_professions">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/document-import.png</normaloff>:/img/document-import.png</iconset>
    </property>
    <property name="text">
@@ -944,7 +916,7 @@
   </action>
   <action name="act_import_saved_gridviews">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/table-import.png</normaloff>:/img/table-import.png</iconset>
    </property>
    <property name="text">
@@ -956,7 +928,7 @@
   </action>
   <action name="act_export_gridviews">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/table-export.png</normaloff>:/img/table-export.png</iconset>
    </property>
    <property name="text">
@@ -966,27 +938,9 @@
     <string>Export Grid Views to file</string>
    </property>
   </action>
-  <action name="act_open_help_contents">
-   <property name="icon">
-    <iconset resource="../images.qrc">
-     <normaloff>:/img/help.png</normaloff>:/img/help.png</iconset>
-   </property>
-   <property name="text">
-    <string>Contents</string>
-   </property>
-   <property name="toolTip">
-    <string>Open help dialog to the contents page.</string>
-   </property>
-   <property name="statusTip">
-    <string>Open help dialog to the contents page.</string>
-   </property>
-   <property name="whatsThis">
-    <string>Open help dialog to the contents page.</string>
-   </property>
-  </action>
   <action name="act_add_new_filter_script">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/script_plus.png</normaloff>:/img/script_plus.png</iconset>
    </property>
    <property name="text">
@@ -995,7 +949,7 @@
   </action>
   <action name="act_print">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/camera.png</normaloff>:/img/camera.png</iconset>
    </property>
    <property name="text">
@@ -1010,7 +964,7 @@
   </action>
   <action name="act_clear_user_settings">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/status/img/broom.png</normaloff>:/status/img/broom.png</iconset>
    </property>
    <property name="text">
@@ -1022,7 +976,7 @@
   </action>
   <action name="act_add_new_custom_role">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/script_plus.png</normaloff>:/img/script_plus.png</iconset>
    </property>
    <property name="text">
@@ -1031,7 +985,7 @@
   </action>
   <action name="act_add_new_opt">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/script_plus.png</normaloff>:/img/script_plus.png</iconset>
    </property>
    <property name="text">
@@ -1043,7 +997,7 @@
   </action>
   <action name="act_export_csv">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/document-excel-csv.png</normaloff>:/img/document-excel-csv.png</iconset>
    </property>
    <property name="text">
@@ -1052,7 +1006,7 @@
   </action>
   <action name="act_import_roles">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/document-import.png</normaloff>:/img/document-import.png</iconset>
    </property>
    <property name="text">
@@ -1061,7 +1015,7 @@
   </action>
   <action name="act_export_roles">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/document-export.png</normaloff>:/img/document-export.png</iconset>
    </property>
    <property name="text">
@@ -1070,7 +1024,7 @@
   </action>
   <action name="act_scan_memory">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/memory-scan.png</normaloff>:/img/memory-scan.png</iconset>
    </property>
    <property name="text">
@@ -1086,23 +1040,14 @@
     <string>Map out the RAM of Dwarf Fortress looking for known values</string>
    </property>
   </action>
-  <action name="act_new_grid_view">
-   <property name="text">
-    <string>Add New View</string>
-   </property>
-  </action>
   <action name="act_add_super_labor">
-   <property name="icon">
-    <iconset resource="../images.qrc">
-     <normaloff>:/img/page_white_add.png</normaloff>:/img/page_white_add.png</iconset>
-   </property>
    <property name="text">
     <string>Add Super Labor</string>
    </property>
   </action>
   <action name="act_help">
    <property name="icon">
-    <iconset resource="../images.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/book-question.png</normaloff>:/img/book-question.png</iconset>
    </property>
    <property name="text">
@@ -1130,7 +1075,7 @@
   <tabstop>btn_collapse_all_pending</tabstop>
  </tabstops>
  <resources>
-  <include location="../images.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections>
   <connection>

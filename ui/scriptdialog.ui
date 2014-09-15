@@ -14,8 +14,8 @@
    <string>Script Editor</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../images.qrc">
-    <normaloff>:/img/application_edit.png</normaloff>:/img/application_edit.png</iconset>
+   <iconset resource="../resources.qrc">
+    <normaloff>:/img/script_pencil.png</normaloff>:/img/script_pencil.png</iconset>
   </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>
@@ -528,7 +528,7 @@ p, li { white-space: pre-wrap; }
   </layout>
  </widget>
  <resources>
-  <include location="../images.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections>
   <connection>

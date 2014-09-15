@@ -17,8 +17,8 @@
    <string>Edit Column</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../images.qrc">
-    <normaloff>:/img/color_swatch.png</normaloff>:/img/color_swatch.png</iconset>
+   <iconset resource="../resources.qrc">
+    <normaloff>:/img/color_wheel.png</normaloff>:/img/color_wheel.png</iconset>
   </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>
@@ -109,7 +109,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../images.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections>
   <connection>

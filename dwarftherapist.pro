@@ -48,14 +48,10 @@ build_pass {
         check_dirs.path = $$DESTDIR
         check_dirs.extra = if not exist \"$$DESTDIR\\share\\memory_layouts\\windows\" mkdir \"$$DESTDIR\\share\\memory_layouts\\windows\";
 
-        copy_game_data.path = $$DESTDIR
-        copy_game_data.extra = copy /Y \"$$PWD\\share\\game_data.ini\" \".\\$$DESTDIR\\share\";
-
         copy_mem_layouts.path = $$DESTDIR
         copy_mem_layouts.extra = copy /Y \"$$PWD\\share\\memory_layouts\\windows\\*\" \".\\$$DESTDIR\\share\\memory_layouts\\windows\";
 
-        INSTALLS += check_dirs
-        INSTALLS += copy_game_data
+        INSTALLS += check_dirs        
         INSTALLS += copy_mem_layouts
     }
     else:macx {
@@ -74,8 +70,7 @@ build_pass {
         log.path = Contents/MacOS/log
         QMAKE_BUNDLE_DATA += log
 
-        share.path = Contents/MacOS/share
-        share.files += share/game_data.ini
+        share.path = Contents/MacOS/share        
         QMAKE_BUNDLE_DATA += share
 
         layouts.path = Contents/MacOS/share/memory_layouts/osx
@@ -111,10 +106,6 @@ build_pass {
         memory_layouts.path = /usr/share/dwarftherapist/memory_layouts/linux
         memory_layouts.files += share/memory_layouts/linux/*
         INSTALLS += memory_layouts
-
-        game_data.path = /usr/share/dwarftherapist
-        game_data.files += share/game_data.ini
-        INSTALLS += game_data
 
         system("printf 'Checking for pdflatex... '; if ! command -v pdflatex; then r=$?; echo 'not found'; exit $?; fi") {
             manual.depends = "$$PWD/doc/Dwarf Therapist.tex" $$PWD/doc/images/*

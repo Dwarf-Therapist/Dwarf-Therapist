@@ -158,8 +158,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
     connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
     connect(ui->act_expand_all, SIGNAL(triggered()), m_view_manager, SLOT(expand_all()));
-    connect(ui->act_collapse_all, SIGNAL(triggered()), m_view_manager, SLOT(collapse_all()));
-    connect(ui->act_add_new_gridview, SIGNAL(triggered()), grid_view_dock, SLOT(add_new_view()));
+    connect(ui->act_collapse_all, SIGNAL(triggered()), m_view_manager, SLOT(collapse_all()));    
 
     connect(ui->tree_pending, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
             m_view_manager, SLOT(jump_to_dwarf(QTreeWidgetItem *, QTreeWidgetItem *)));

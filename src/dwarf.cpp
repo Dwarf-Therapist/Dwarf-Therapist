@@ -841,7 +841,7 @@ void Dwarf::read_profession() {
         img_idx = m_raw_profession + 1; //images start at 1, professions at 0, offest to match image
 
     //set the default path for the profession icon
-    m_icn_prof = QPixmap(":/profession/img/profession icons/prof_" + QString::number(img_idx) + ".png");
+    m_icn_prof = QPixmap(":/profession/prof_" + QString::number(img_idx) + ".png");
     //see if we have a custom profession or icon override
     CustomProfession *cp;
     if(!m_custom_profession.isEmpty()){
@@ -2266,14 +2266,14 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
     if (m_caged != m_unit_flags.at(0)) {
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
         i->setText(0, tr("Caged changed to %1").arg(hexify(m_caged)));
-        i->setIcon(0, QIcon(":img/book_edit.png"));
+        i->setIcon(0, QIcon(":img/book--pencil.png"));
         i->setToolTip(0, i->text(0));
         i->setData(0, Qt::UserRole, id());
     }
     if (m_butcher != m_unit_flags.at(1)) {
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
         i->setText(0, tr("Butcher changed to %1").arg(hexify(m_butcher)));
-        i->setIcon(0, QIcon(":img/book_edit.png"));
+        i->setIcon(0, QIcon(":img/book--pencil.png"));
         i->setToolTip(0, i->text(0));
         i->setData(0, Qt::UserRole, id());
     }
@@ -2283,7 +2283,7 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
         if (nick.isEmpty())
             nick = tr("DEFAULT");
         i->setText(0, tr("Nickname changed to %1").arg(nick));
-        i->setIcon(0, QIcon(":img/book_edit.png"));
+        i->setIcon(0, QIcon(":img/book--pencil.png"));
         i->setToolTip(0, i->text(0));
         i->setData(0, Qt::UserRole, id());
     }
@@ -2293,7 +2293,7 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
         if (prof.isEmpty())
             prof = tr("DEFAULT");
         i->setText(0, tr("Profession changed to %1").arg(prof));
-        i->setIcon(0, QIcon(":img/book_edit.png"));
+        i->setIcon(0, QIcon(":img/book--pencil.png"));
         i->setToolTip(0, i->text(0));
         i->setData(0, Qt::UserRole, id());
     }

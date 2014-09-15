@@ -52,7 +52,7 @@ HappinessColumn::HappinessColumn(const HappinessColumn &to_copy)
 QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
 	QStandardItem *item = init_cell(d);
 	
-    QString pixmap_name = QString(":status/img/%1.png").arg(Dwarf::happiness_name(d->get_happiness()));
+    QString pixmap_name = QString(":happiness/%1.png").arg(Dwarf::happiness_name(d->get_happiness()));
     if(pixmap_name=="")
         pixmap_name = ":img/question-frame.png";
 

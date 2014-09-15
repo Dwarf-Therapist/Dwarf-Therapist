@@ -64,7 +64,7 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
         }
 
         if(pref_id != -1){
-            pixmap_name = ":/profession/img/profession icons/prof_" + QString::number(pref_id+1) + ".png";  //offset for the image name
+            pixmap_name = ":/profession/prof_" + QString::number(pref_id+1) + ".png";  //offset for the image name
             item->setData(QColor(50,50,50), DwarfModel::DR_DEFAULT_BG_COLOR); //shade the background
         }else{
             DwarfJob::DWARF_JOB_TYPE job_type = job->type;

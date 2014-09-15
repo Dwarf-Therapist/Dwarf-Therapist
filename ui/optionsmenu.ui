@@ -17,7 +17,7 @@
    <string>Options</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../images.qrc">
+   <iconset resource="../resources.qrc">
     <normaloff>:/img/color_wheel.png</normaloff>:/img/color_wheel.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="vbox" stretch="0,1,0">
@@ -46,7 +46,7 @@
      </property>
      <widget class="QWidget" name="tab_main_settings">
       <attribute name="icon">
-       <iconset resource="../images.qrc">
+       <iconset resource="../resources.qrc">
         <normaloff>:/img/hammer.png</normaloff>:/img/hammer.png</iconset>
       </attribute>
       <attribute name="title">
@@ -367,7 +367,7 @@
      </widget>
      <widget class="QWidget" name="tab_grid_options">
       <attribute name="icon">
-       <iconset resource="../images.qrc">
+       <iconset resource="../resources.qrc">
         <normaloff>:/img/color_swatch.png</normaloff>:/img/color_swatch.png</iconset>
       </attribute>
       <attribute name="title">
@@ -903,7 +903,7 @@
      </widget>
      <widget class="QWidget" name="tabTooltip">
       <attribute name="icon">
-       <iconset resource="../images.qrc">
+       <iconset resource="../resources.qrc">
         <normaloff>:/img/balloon-box.png</normaloff>:/img/balloon-box.png</iconset>
       </attribute>
       <attribute name="title">
@@ -1608,7 +1608,7 @@
      </widget>
      <widget class="QWidget" name="tab_grid_colors">
       <attribute name="icon">
-       <iconset resource="../images.qrc">
+       <iconset resource="../resources.qrc">
         <normaloff>:/img/color_wheel.png</normaloff>:/img/color_wheel.png</iconset>
       </attribute>
       <attribute name="title">
@@ -1639,7 +1639,7 @@
      </widget>
      <widget class="QWidget" name="tab_happiness_colors">
       <attribute name="icon">
-       <iconset resource="../images.qrc">
+       <iconset resource="../resources.qrc">
         <normaloff>:/img/emoticon_grin.png</normaloff>:/img/emoticon_grin.png</iconset>
       </attribute>
       <attribute name="title">
@@ -1676,7 +1676,7 @@
      </widget>
      <widget class="QWidget" name="tab_noble_colors">
       <attribute name="icon">
-       <iconset resource="../images.qrc">
+       <iconset resource="../resources.qrc">
         <normaloff>:/status/img/crown.png</normaloff>:/status/img/crown.png</iconset>
       </attribute>
       <attribute name="title">
@@ -1710,7 +1710,7 @@
      </widget>
      <widget class="QWidget" name="tab_roles">
       <attribute name="icon">
-       <iconset resource="../images.qrc">
+       <iconset resource="../resources.qrc">
         <normaloff>:/img/table.png</normaloff>:/img/table.png</iconset>
       </attribute>
       <attribute name="title">
@@ -2459,7 +2459,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../images.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections>
   <connection>

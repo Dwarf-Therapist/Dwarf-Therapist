@@ -50,7 +50,7 @@ void IconChooser::showImage(int num)
 {
     QStandardItem* imageitem = new QStandardItem();
     //imageitem->setIcon(QIcon(QPixmap::fromImage(m_imageScaler->resultAt(num))));
-    QString icn_path = ":/profession/img/profession icons/prof_" + QString::number(num) + ".png";
+    QString icn_path = ":/profession/prof_" + QString::number(num) + ".png";
     imageitem->setIcon(QIcon(icn_path));
     imageitem->setData(num,Qt::UserRole);
     m_standardModel->appendRow(imageitem);

@@ -274,7 +274,7 @@ void CustomProfession::mask_changed(bool value){
 void CustomProfession::build_icon_path(int id){
     m_icon_id = id;
     if(m_icon_id > -1 && m_icon_id < 105){
-        m_icon_path = QString(":/profession/img/profession icons/prof_%1.png").arg(QString::number(m_icon_id));
+        m_icon_path = QString(":/profession/prof_%1.png").arg(QString::number(m_icon_id));
     }else{
         m_icon_path = "";
     }

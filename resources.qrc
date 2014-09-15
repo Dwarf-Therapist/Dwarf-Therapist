@@ -1,321 +1,278 @@
 <RCC>
     <qresource prefix="/">
-        <file>img/tag_blue.png</file>
-        <file>img/page_copy.png</file>
-        <file>img/image_add.png</file>
-        <file>img/table_add.png</file>
-        <file>img/cross.png</file>
-        <file>img/tab_add.png</file>
-        <file>img/hammer.png</file>
-        <file>img/color_swatch.png</file>
-        <file>img/color_wheel.png</file>
-        <file>img/world_go.png</file>
-        <file>img/textfield_add.png</file>
-        <file>img/page_white_edit.png</file>
-        <file>img/page_white_add.png</file>
-        <file>img/application_edit.png</file>
-        <file>img/application_get.png</file>
-        <file>img/layout_content.png</file>
-        <file>img/add.png</file>
-        <file>img/delete.png</file>
-        <file>img/dwarf.jpg</file>
-        <file>img/table.png</file>
-        <file>img/table_delete.png</file>
-        <file>img/table_go.png</file>
-        <file>img/disk.png</file>
-        <file>img/folder_page.png</file>
-        <file>img/arrow_in.png</file>
-        <file>img/arrow_out.png</file>
-        <file>img/drive_magnify.png</file>
-        <file>img/application_view_icons.png</file>
-        <file>img/connect.png</file>
-        <file>img/door_out.png</file>
-        <file>img/drive_go.png</file>
-        <file>img/find.png</file>
-        <file>img/help.png</file>
-        <file>img/book_edit.png</file>
-        <file>img/female.png</file>
-        <file>img/male.png</file>
-        <file>img/emoticon_grin.png</file>
-        <file>img/emoticon_happy.png</file>
-        <file>img/emoticon_smile.png</file>
-        <file>img/emoticon_unhappy.png</file>
-        <file>img/exclamation.png</file>
-        <file>img/bullet_red.png</file>
-        <file>img/tick.png</file>
-        <file>img/printer_error.png</file>
-        <file>img/printer.png</file>
-        <file>img/script_minus.png</file>
-        <file>img/script_pencil.png</file>
-        <file>img/script_plus.png</file>
-        <file>img/camera.png</file>
-        <file>img/control.png</file>
-        <file>img/refresh.png</file>
-        <file>img/balloon-box.png</file>
-        <file>img/ui-tab--plus.png</file>
-        <file>img/ui-button-navigation.png</file>
-        <file>img/minus-circle.png</file>
-        <file>img/plus-circle.png</file>
-        <file>img/wrench-screwdriver.png</file>
-        <file>img/arrow-in.png</file>
-        <file>img/arrow-out.png</file>
-        <file>img/table--arrow.png</file>
-        <file>img/table-export.png</file>
-        <file>img/table-import.png</file>
-        <file>img/table--minus.png</file>
-        <file>img/table--pencil.png</file>
-        <file>img/table--plus.png</file>
-        <file>img/memory-scan.png</file>
-        <file>img/application-import.png</file>
-        <file>img/document-export.png</file>
-        <file>img/document-import.png</file>
-        <file>img/document-excel-csv.png</file>
-        <file>img/document--plus.png</file>
-        <file>img/globe--arrow.png</file>
-        <file>img/question-frame.png</file>
-        <file>img/heart.png</file>
-        <file>img/ui-layered-pane.png</file>
-        <file>img/arrow-switch.png</file>
-        <file>img/exclamation-red-frame.png</file>
-        <file>img/pencil.png</file>
-        <file>img/sort-alphabet.png</file>
-        <file>img/sort-alphabet-descending.png</file>
-        <file>img/sort-number.png</file>
-        <file>img/sort-number-descending.png</file>
-        <file>img/plus-white.png</file>
-        <file>img/new.png</file>
-        <file>img/ui-text-field-select.png</file>
-        <file>img/ui-text-field-clear-button.png</file>
-        <file>img/tables.png</file>
-        <file>img/question-white.png</file>
-        <file>img/table-insert-column.png</file>
-        <file>img/book-question.png</file>
-        <file>img/male-male.png</file>
-        <file>img/female-bi.png</file>
-        <file>img/female-female.png</file>
-        <file>img/male-bi.png</file>
-        <file>img/female-asexual.png</file>
-        <file>img/male-asexual.png</file>
+        <file alias="img/cross.png">resources/img/cross.png</file>
+        <file alias="img/hammer.png">resources/img/hammer.png</file>
+        <file alias="img/color_swatch.png">resources/img/color_swatch.png</file>
+        <file alias="img/color_wheel.png">resources/img/color_wheel.png</file>
+        <file alias="img/dwarf.jpg">resources/img/dwarf.jpg</file>
+        <file alias="img/table.png">resources/img/table.png</file>
+        <file alias="img/connect.png">resources/img/connect.png</file>
+        <file alias="img/book--pencil.png">resources/img/book--pencil.png</file>
+        <file alias="img/female.png">resources/img/female.png</file>
+        <file alias="img/male.png">resources/img/male.png</file>
+        <file alias="img/emoticon_grin.png">resources/img/emoticon_grin.png</file>
+        <file alias="img/script_minus.png">resources/img/script_minus.png</file>
+        <file alias="img/script_pencil.png">resources/img/script_pencil.png</file>
+        <file alias="img/script_plus.png">resources/img/script_plus.png</file>
+        <file alias="img/camera.png">resources/img/camera.png</file>
+        <file alias="img/control.png">resources/img/control.png</file>
+        <file alias="img/refresh.png">resources/img/refresh.png</file>
+        <file alias="img/balloon-box.png">resources/img/balloon-box.png</file>
+        <file alias="img/ui-tab--plus.png">resources/img/ui-tab--plus.png</file>
+        <file alias="img/ui-button-navigation.png">resources/img/ui-button-navigation.png</file>
+        <file alias="img/minus-circle.png">resources/img/minus-circle.png</file>
+        <file alias="img/plus-circle.png">resources/img/plus-circle.png</file>
+        <file alias="img/wrench-screwdriver.png">resources/img/wrench-screwdriver.png</file>
+        <file alias="img/arrow-in.png">resources/img/arrow-in.png</file>
+        <file alias="img/arrow-out.png">resources/img/arrow-out.png</file>
+        <file alias="img/table--arrow.png">resources/img/table--arrow.png</file>
+        <file alias="img/table-export.png">resources/img/table-export.png</file>
+        <file alias="img/table-import.png">resources/img/table-import.png</file>
+        <file alias="img/table--minus.png">resources/img/table--minus.png</file>
+        <file alias="img/table--pencil.png">resources/img/table--pencil.png</file>
+        <file alias="img/table--plus.png">resources/img/table--plus.png</file>
+        <file alias="img/memory-scan.png">resources/img/memory-scan.png</file>
+        <file alias="img/application-import.png">resources/img/application-import.png</file>
+        <file alias="img/document-export.png">resources/img/document-export.png</file>
+        <file alias="img/document-import.png">resources/img/document-import.png</file>
+        <file alias="img/document-excel-csv.png">resources/img/document-excel-csv.png</file>
+        <file alias="img/document--plus.png">resources/img/document--plus.png</file>
+        <file alias="img/globe--arrow.png">resources/img/globe--arrow.png</file>
+        <file alias="img/question-frame.png">resources/img/question-frame.png</file>
+        <file alias="img/heart.png">resources/img/heart.png</file>
+        <file alias="img/ui-layered-pane.png">resources/img/ui-layered-pane.png</file>
+        <file alias="img/arrow-switch.png">resources/img/arrow-switch.png</file>
+        <file alias="img/exclamation-red-frame.png">resources/img/exclamation-red-frame.png</file>
+        <file alias="img/pencil.png">resources/img/pencil.png</file>
+        <file alias="img/sort-alphabet.png">resources/img/sort-alphabet.png</file>
+        <file alias="img/sort-alphabet-descending.png">resources/img/sort-alphabet-descending.png</file>
+        <file alias="img/sort-number.png">resources/img/sort-number.png</file>
+        <file alias="img/sort-number-descending.png">resources/img/sort-number-descending.png</file>
+        <file alias="img/plus-white.png">resources/img/plus-white.png</file>
+        <file alias="img/new.png">resources/img/new.png</file>
+        <file alias="img/ui-text-field-select.png">resources/img/ui-text-field-select.png</file>
+        <file alias="img/ui-text-field-clear-button.png">resources/img/ui-text-field-clear-button.png</file>
+        <file alias="img/tables.png">resources/img/tables.png</file>
+        <file alias="img/question-white.png">resources/img/question-white.png</file>
+        <file alias="img/table-insert-column.png">resources/img/table-insert-column.png</file>
+        <file alias="img/book-question.png">resources/img/book-question.png</file>
+        <file alias="img/male-male.png">resources/img/male-male.png</file>
+        <file alias="img/female-bi.png">resources/img/female-bi.png</file>
+        <file alias="img/female-female.png">resources/img/female-female.png</file>
+        <file alias="img/male-bi.png">resources/img/male-bi.png</file>
+        <file alias="img/female-asexual.png">resources/img/female-asexual.png</file>
+        <file alias="img/male-asexual.png">resources/img/male-asexual.png</file>
     </qresource>
     <qresource prefix="/status">
-        <file>img/cheese.png</file>
-        <file>img/gear.png</file>
-        <file>img/hammer.png</file>
-        <file>img/hatchet.png</file>
-        <file>img/bullet_red.png</file>
-        <file>img/control_play_blue.png</file>
-        <file>img/cart.png</file>
-        <file>img/status_drink.png</file>
-        <file>img/status_sleep.png</file>
-        <file>img/pickaxe.png</file>
-        <file>img/axe.png</file>
-        <file>img/haul.png</file>
-        <file>img/status_fight2.png</file>
-        <file>img/status_forge.png</file>
-        <file>img/status_haul.png</file>
-        <file>img/syringe.png</file>
-        <file>img/band_aid.png</file>
-        <file>img/first_aid_kit.png</file>
-        <file>img/cup2.png</file>
-        <file>img/bee_i_guess.png</file>
-        <file>img/pot.png</file>
-        <file>img/lump.png</file>
-        <file>img/spinning.png</file>
-        <file>img/bullet_blue.png</file>
-        <file>img/stairs.png</file>
-        <file>img/wall-brick.png</file>
-        <file>img/leaf.png</file>
-        <file>img/shovel.png</file>
-        <file>img/hammer--minus.png</file>
-        <file>img/hammer--plain.png</file>
-        <file>img/cart-box.png</file>
-        <file>img/arrow-return.png</file>
-        <file>img/paper-bag--plus.png</file>
-        <file>img/party-hat.png</file>
-        <file>img/soap.png</file>
-        <file>img/eye--arrow.png</file>
-        <file>img/beans.png</file>
-        <file>img/diamond.png</file>
-        <file>img/ruby.png</file>
-        <file>img/leaf--arrow.png</file>
-        <file>img/water--arrow.png</file>
-        <file>img/animal.png</file>
-        <file>img/beer.png</file>
-        <file>img/book-open-list.png</file>
-        <file>img/headstone-rip.png</file>
-        <file>img/money-coin.png</file>
-        <file>img/hammer-screwdriver.png</file>
-        <file>img/hand-shake.png</file>
-        <file>img/abacus.png</file>
-        <file>img/cutlery.png</file>
-        <file>img/paint-brush.png</file>
-        <file>img/fire.png</file>
-        <file>img/balance.png</file>
-        <file>img/shield.png</file>
-        <file>img/wooden-box--arrow.png</file>
-        <file>img/broom.png</file>
-        <file>img/switch.png</file>
-        <file>img/chain.png</file>
-        <file>img/chain-unchain.png</file>
-        <file>img/glass--plus.png</file>
-        <file>img/store-market-stall.png</file>
-        <file>img/knife_bloody.png</file>
-        <file>img/bow.png</file>
-        <file>img/milk.png</file>
-        <file>img/armor.png</file>
-        <file>img/boot.png</file>
-        <file>img/fish.png</file>
-        <file>img/helm.png</file>
-        <file>img/glove.png</file>
-        <file>img/hourglass.png</file>
-        <file>img/meat.png</file>
-        <file>img/water--plus.png</file>
-        <file>img/paint-can--arrow.png</file>
-        <file>img/heart--arrow.png</file>
-        <file>img/color--plus.png</file>
-        <file>img/weapon.png</file>
-        <file>img/switch-network.png</file>
-        <file>img/zone--plus.png</file>
-        <file>img/hand-finger.png</file>
-        <file>img/crown.png</file>
-        <file>img/gear-small.png</file>
-        <file>img/balloon-prohibition.png</file>
-        <file>img/cross-small.png</file>
-        <file>img/weather-moon-half.png</file>
-        <file>img/clock-moon-phase.png</file>
-        <file>img/box--plus.png</file>
-        <file>img/ale.png</file>
-        <file>img/moon.png</file>
-        <file>img/rubber-balloons.png</file>
-        <file>img/bandaid--exclamation.png</file>
-        <file>img/ale--plus.png</file>
-        <file>img/crossed-swords.png</file>
-        <file>img/tree--minus.png</file>
-        <file>img/carp.png</file>
-        <file>img/drawer-open.png</file>
-        <file>img/drawer--plus.png</file>
-        <file>img/money--arrow.png</file>
-        <file>img/door--plus.png</file>
-        <file>img/chair--plus.png</file>
-        <file>img/safe--plus.png</file>
-        <file>img/exclamation-shield-frame.png</file>
-        <file>img/Ecstatic.png</file>
-        <file>img/Fine.png</file>
-        <file>img/Happy.png</file>
-        <file>img/Miserable.png</file>
-        <file>img/Quite Content.png</file>
-        <file>img/Unhappy.png</file>
-        <file>img/Very Unhappy.png</file>
+        <file alias="img/hammer.png">resources/img/hammer.png</file>
+        <file alias="img/hatchet.png">resources/img/hatchet.png</file>
+        <file alias="img/control_play_blue.png">resources/img/control_play_blue.png</file>
+        <file alias="img/status_forge.png">resources/img/status_forge.png</file>
+        <file alias="img/band_aid.png">resources/img/band_aid.png</file>
+        <file alias="img/first_aid_kit.png">resources/img/first_aid_kit.png</file>
+        <file alias="img/cup2.png">resources/img/cup2.png</file>
+        <file alias="img/bee_i_guess.png">resources/img/bee_i_guess.png</file>
+        <file alias="img/pot.png">resources/img/pot.png</file>
+        <file alias="img/lump.png">resources/img/lump.png</file>
+        <file alias="img/spinning.png">resources/img/spinning.png</file>
+        <file alias="img/bullet_blue.png">resources/img/bullet_blue.png</file>
+        <file alias="img/stairs.png">resources/img/stairs.png</file>
+        <file alias="img/wall-brick.png">resources/img/wall-brick.png</file>
+        <file alias="img/leaf.png">resources/img/leaf.png</file>
+        <file alias="img/shovel.png">resources/img/shovel.png</file>
+        <file alias="img/hammer--minus.png">resources/img/hammer--minus.png</file>
+        <file alias="img/hammer--plain.png">resources/img/hammer--plain.png</file>
+        <file alias="img/cart-box.png">resources/img/cart-box.png</file>
+        <file alias="img/arrow-return.png">resources/img/arrow-return.png</file>
+        <file alias="img/paper-bag--plus.png">resources/img/paper-bag--plus.png</file>
+        <file alias="img/party-hat.png">resources/img/party-hat.png</file>
+        <file alias="img/soap.png">resources/img/soap.png</file>
+        <file alias="img/eye--arrow.png">resources/img/eye--arrow.png</file>
+        <file alias="img/beans.png">resources/img/beans.png</file>
+        <file alias="img/diamond.png">resources/img/diamond.png</file>
+        <file alias="img/ruby.png">resources/img/ruby.png</file>
+        <file alias="img/leaf--arrow.png">resources/img/leaf--arrow.png</file>
+        <file alias="img/water--arrow.png">resources/img/water--arrow.png</file>
+        <file alias="img/animal.png">resources/img/animal.png</file>
+        <file alias="img/beer.png">resources/img/beer.png</file>
+        <file alias="img/book-open-list.png">resources/img/book-open-list.png</file>
+        <file alias="img/headstone-rip.png">resources/img/headstone-rip.png</file>
+        <file alias="img/money-coin.png">resources/img/money-coin.png</file>
+        <file alias="img/hammer-screwdriver.png">resources/img/hammer-screwdriver.png</file>
+        <file alias="img/hand-shake.png">resources/img/hand-shake.png</file>
+        <file alias="img/abacus.png">resources/img/abacus.png</file>
+        <file alias="img/cutlery.png">resources/img/cutlery.png</file>
+        <file alias="img/paint-brush.png">resources/img/paint-brush.png</file>
+        <file alias="img/fire.png">resources/img/fire.png</file>
+        <file alias="img/balance.png">resources/img/balance.png</file>
+        <file alias="img/shield.png">resources/img/shield.png</file>
+        <file alias="img/wooden-box--arrow.png">resources/img/wooden-box--arrow.png</file>
+        <file alias="img/broom.png">resources/img/broom.png</file>
+        <file alias="img/switch.png">resources/img/switch.png</file>
+        <file alias="img/chain.png">resources/img/chain.png</file>
+        <file alias="img/chain-unchain.png">resources/img/chain-unchain.png</file>
+        <file alias="img/glass--plus.png">resources/img/glass--plus.png</file>
+        <file alias="img/store-market-stall.png">resources/img/store-market-stall.png</file>
+        <file alias="img/knife_bloody.png">resources/img/knife_bloody.png</file>
+        <file alias="img/bow.png">resources/img/bow.png</file>
+        <file alias="img/milk.png">resources/img/milk.png</file>
+        <file alias="img/armor.png">resources/img/armor.png</file>
+        <file alias="img/boot.png">resources/img/boot.png</file>
+        <file alias="img/fish.png">resources/img/fish.png</file>
+        <file alias="img/helm.png">resources/img/helm.png</file>
+        <file alias="img/glove.png">resources/img/glove.png</file>
+        <file alias="img/hourglass.png">resources/img/hourglass.png</file>
+        <file alias="img/meat.png">resources/img/meat.png</file>
+        <file alias="img/water--plus.png">resources/img/water--plus.png</file>
+        <file alias="img/paint-can--arrow.png">resources/img/paint-can--arrow.png</file>
+        <file alias="img/heart--arrow.png">resources/img/heart--arrow.png</file>
+        <file alias="img/color--plus.png">resources/img/color--plus.png</file>
+        <file alias="img/weapon.png">resources/img/weapon.png</file>
+        <file alias="img/switch-network.png">resources/img/switch-network.png</file>
+        <file alias="img/zone--plus.png">resources/img/zone--plus.png</file>
+        <file alias="img/hand-finger.png">resources/img/hand-finger.png</file>
+        <file alias="img/crown.png">resources/img/crown.png</file>
+        <file alias="img/gear-small.png">resources/img/gear-small.png</file>
+        <file alias="img/balloon-prohibition.png">resources/img/balloon-prohibition.png</file>
+        <file alias="img/cross-small.png">resources/img/cross-small.png</file>
+        <file alias="img/weather-moon-half.png">resources/img/weather-moon-half.png</file>
+        <file alias="img/clock-moon-phase.png">resources/img/clock-moon-phase.png</file>
+        <file alias="img/box--plus.png">resources/img/box--plus.png</file>
+        <file alias="img/ale.png">resources/img/ale.png</file>
+        <file alias="img/moon.png">resources/img/moon.png</file>
+        <file alias="img/rubber-balloons.png">resources/img/rubber-balloons.png</file>
+        <file alias="img/bandaid--exclamation.png">resources/img/bandaid--exclamation.png</file>
+        <file alias="img/ale--plus.png">resources/img/ale--plus.png</file>
+        <file alias="img/crossed-swords.png">resources/img/crossed-swords.png</file>
+        <file alias="img/tree--minus.png">resources/img/tree--minus.png</file>
+        <file alias="img/carp.png">resources/img/carp.png</file>
+        <file alias="img/drawer-open.png">resources/img/drawer-open.png</file>
+        <file alias="img/drawer--plus.png">resources/img/drawer--plus.png</file>
+        <file alias="img/money--arrow.png">resources/img/money--arrow.png</file>
+        <file alias="img/door--plus.png">resources/img/door--plus.png</file>
+        <file alias="img/chair--plus.png">resources/img/chair--plus.png</file>
+        <file alias="img/safe--plus.png">resources/img/safe--plus.png</file>
+        <file alias="img/exclamation-shield-frame.png">resources/img/exclamation-shield-frame.png</file>
+    </qresource>
+    <qresource prefix="/happiness">
+        <file alias="Ecstatic.png">resources/img/Ecstatic.png</file>
+        <file alias="Fine.png">resources/img/Fine.png</file>
+        <file alias="Happy.png">resources/img/Happy.png</file>
+        <file alias="Miserable.png">resources/img/Miserable.png</file>
+        <file alias="Quite Content.png">resources/img/Quite Content.png</file>
+        <file alias="Unhappy.png">resources/img/Unhappy.png</file>
+        <file alias="Very Unhappy.png">resources/img/Very Unhappy.png</file>
     </qresource>
     <qresource prefix="/profession">
-        <file>img/profession icons/prof_10.png</file>
-        <file>img/profession icons/prof_11.png</file>
-        <file>img/profession icons/prof_12.png</file>
-        <file>img/profession icons/prof_13.png</file>
-        <file>img/profession icons/prof_14.png</file>
-        <file>img/profession icons/prof_15.png</file>
-        <file>img/profession icons/prof_16.png</file>
-        <file>img/profession icons/prof_17.png</file>
-        <file>img/profession icons/prof_18.png</file>
-        <file>img/profession icons/prof_19.png</file>
-        <file>img/profession icons/prof_20.png</file>
-        <file>img/profession icons/prof_21.png</file>
-        <file>img/profession icons/prof_22.png</file>
-        <file>img/profession icons/prof_23.png</file>
-        <file>img/profession icons/prof_24.png</file>
-        <file>img/profession icons/prof_25.png</file>
-        <file>img/profession icons/prof_26.png</file>
-        <file>img/profession icons/prof_27.png</file>
-        <file>img/profession icons/prof_28.png</file>
-        <file>img/profession icons/prof_29.png</file>
-        <file>img/profession icons/prof_30.png</file>
-        <file>img/profession icons/prof_31.png</file>
-        <file>img/profession icons/prof_32.png</file>
-        <file>img/profession icons/prof_33.png</file>
-        <file>img/profession icons/prof_34.png</file>
-        <file>img/profession icons/prof_35.png</file>
-        <file>img/profession icons/prof_36.png</file>
-        <file>img/profession icons/prof_37.png</file>
-        <file>img/profession icons/prof_38.png</file>
-        <file>img/profession icons/prof_39.png</file>
-        <file>img/profession icons/prof_40.png</file>
-        <file>img/profession icons/prof_41.png</file>
-        <file>img/profession icons/prof_42.png</file>
-        <file>img/profession icons/prof_43.png</file>
-        <file>img/profession icons/prof_44.png</file>
-        <file>img/profession icons/prof_45.png</file>
-        <file>img/profession icons/prof_46.png</file>
-        <file>img/profession icons/prof_47.png</file>
-        <file>img/profession icons/prof_48.png</file>
-        <file>img/profession icons/prof_49.png</file>
-        <file>img/profession icons/prof_50.png</file>
-        <file>img/profession icons/prof_51.png</file>
-        <file>img/profession icons/prof_52.png</file>
-        <file>img/profession icons/prof_53.png</file>
-        <file>img/profession icons/prof_54.png</file>
-        <file>img/profession icons/prof_55.png</file>
-        <file>img/profession icons/prof_56.png</file>
-        <file>img/profession icons/prof_57.png</file>
-        <file>img/profession icons/prof_58.png</file>
-        <file>img/profession icons/prof_59.png</file>
-        <file>img/profession icons/prof_60.png</file>
-        <file>img/profession icons/prof_61.png</file>
-        <file>img/profession icons/prof_62.png</file>
-        <file>img/profession icons/prof_63.png</file>
-        <file>img/profession icons/prof_64.png</file>
-        <file>img/profession icons/prof_65.png</file>
-        <file>img/profession icons/prof_66.png</file>
-        <file>img/profession icons/prof_67.png</file>
-        <file>img/profession icons/prof_68.png</file>
-        <file>img/profession icons/prof_69.png</file>
-        <file>img/profession icons/prof_70.png</file>
-        <file>img/profession icons/prof_71.png</file>
-        <file>img/profession icons/prof_72.png</file>
-        <file>img/profession icons/prof_73.png</file>
-        <file>img/profession icons/prof_74.png</file>
-        <file>img/profession icons/prof_75.png</file>
-        <file>img/profession icons/prof_76.png</file>
-        <file>img/profession icons/prof_77.png</file>
-        <file>img/profession icons/prof_78.png</file>
-        <file>img/profession icons/prof_79.png</file>
-        <file>img/profession icons/prof_80.png</file>
-        <file>img/profession icons/prof_81.png</file>
-        <file>img/profession icons/prof_82.png</file>
-        <file>img/profession icons/prof_83.png</file>
-        <file>img/profession icons/prof_84.png</file>
-        <file>img/profession icons/prof_85.png</file>
-        <file>img/profession icons/prof_86.png</file>
-        <file>img/profession icons/prof_87.png</file>
-        <file>img/profession icons/prof_88.png</file>
-        <file>img/profession icons/prof_89.png</file>
-        <file>img/profession icons/prof_90.png</file>
-        <file>img/profession icons/prof_91.png</file>
-        <file>img/profession icons/prof_92.png</file>
-        <file>img/profession icons/prof_93.png</file>
-        <file>img/profession icons/prof_94.png</file>
-        <file>img/profession icons/prof_95.png</file>
-        <file>img/profession icons/prof_96.png</file>
-        <file>img/profession icons/prof_97.png</file>
-        <file>img/profession icons/prof_98.png</file>
-        <file>img/profession icons/prof_99.png</file>
-        <file>img/profession icons/prof_100.png</file>
-        <file>img/profession icons/prof_101.png</file>
-        <file>img/profession icons/prof_102.png</file>
-        <file>img/profession icons/prof_103.png</file>
-        <file>img/profession icons/prof_104.png</file>
-        <file>img/profession icons/prof_106.png</file>
-        <file>img/profession icons/prof_1.png</file>
-        <file>img/profession icons/prof_2.png</file>
-        <file>img/profession icons/prof_3.png</file>
-        <file>img/profession icons/prof_4.png</file>
-        <file>img/profession icons/prof_5.png</file>
-        <file>img/profession icons/prof_6.png</file>
-        <file>img/profession icons/prof_7.png</file>
-        <file>img/profession icons/prof_8.png</file>
-        <file>img/profession icons/prof_9.png</file>
-        <file>img/profession icons/prof_105.png</file>
+        <file alias="prof_10.png">resources/img/profession icons/prof_10.png</file>
+        <file alias="prof_11.png">resources/img/profession icons/prof_11.png</file>
+        <file alias="prof_12.png">resources/img/profession icons/prof_12.png</file>
+        <file alias="prof_13.png">resources/img/profession icons/prof_13.png</file>
+        <file alias="prof_14.png">resources/img/profession icons/prof_14.png</file>
+        <file alias="prof_15.png">resources/img/profession icons/prof_15.png</file>
+        <file alias="prof_16.png">resources/img/profession icons/prof_16.png</file>
+        <file alias="prof_17.png">resources/img/profession icons/prof_17.png</file>
+        <file alias="prof_18.png">resources/img/profession icons/prof_18.png</file>
+        <file alias="prof_19.png">resources/img/profession icons/prof_19.png</file>
+        <file alias="prof_20.png">resources/img/profession icons/prof_20.png</file>
+        <file alias="prof_21.png">resources/img/profession icons/prof_21.png</file>
+        <file alias="prof_22.png">resources/img/profession icons/prof_22.png</file>
+        <file alias="prof_23.png">resources/img/profession icons/prof_23.png</file>
+        <file alias="prof_24.png">resources/img/profession icons/prof_24.png</file>
+        <file alias="prof_25.png">resources/img/profession icons/prof_25.png</file>
+        <file alias="prof_26.png">resources/img/profession icons/prof_26.png</file>
+        <file alias="prof_27.png">resources/img/profession icons/prof_27.png</file>
+        <file alias="prof_28.png">resources/img/profession icons/prof_28.png</file>
+        <file alias="prof_29.png">resources/img/profession icons/prof_29.png</file>
+        <file alias="prof_30.png">resources/img/profession icons/prof_30.png</file>
+        <file alias="prof_31.png">resources/img/profession icons/prof_31.png</file>
+        <file alias="prof_32.png">resources/img/profession icons/prof_32.png</file>
+        <file alias="prof_33.png">resources/img/profession icons/prof_33.png</file>
+        <file alias="prof_34.png">resources/img/profession icons/prof_34.png</file>
+        <file alias="prof_35.png">resources/img/profession icons/prof_35.png</file>
+        <file alias="prof_36.png">resources/img/profession icons/prof_36.png</file>
+        <file alias="prof_37.png">resources/img/profession icons/prof_37.png</file>
+        <file alias="prof_38.png">resources/img/profession icons/prof_38.png</file>
+        <file alias="prof_39.png">resources/img/profession icons/prof_39.png</file>
+        <file alias="prof_40.png">resources/img/profession icons/prof_40.png</file>
+        <file alias="prof_41.png">resources/img/profession icons/prof_41.png</file>
+        <file alias="prof_42.png">resources/img/profession icons/prof_42.png</file>
+        <file alias="prof_43.png">resources/img/profession icons/prof_43.png</file>
+        <file alias="prof_44.png">resources/img/profession icons/prof_44.png</file>
+        <file alias="prof_45.png">resources/img/profession icons/prof_45.png</file>
+        <file alias="prof_46.png">resources/img/profession icons/prof_46.png</file>
+        <file alias="prof_47.png">resources/img/profession icons/prof_47.png</file>
+        <file alias="prof_48.png">resources/img/profession icons/prof_48.png</file>
+        <file alias="prof_49.png">resources/img/profession icons/prof_49.png</file>
+        <file alias="prof_50.png">resources/img/profession icons/prof_50.png</file>
+        <file alias="prof_51.png">resources/img/profession icons/prof_51.png</file>
+        <file alias="prof_52.png">resources/img/profession icons/prof_52.png</file>
+        <file alias="prof_53.png">resources/img/profession icons/prof_53.png</file>
+        <file alias="prof_54.png">resources/img/profession icons/prof_54.png</file>
+        <file alias="prof_55.png">resources/img/profession icons/prof_55.png</file>
+        <file alias="prof_56.png">resources/img/profession icons/prof_56.png</file>
+        <file alias="prof_57.png">resources/img/profession icons/prof_57.png</file>
+        <file alias="prof_58.png">resources/img/profession icons/prof_58.png</file>
+        <file alias="prof_59.png">resources/img/profession icons/prof_59.png</file>
+        <file alias="prof_60.png">resources/img/profession icons/prof_60.png</file>
+        <file alias="prof_61.png">resources/img/profession icons/prof_61.png</file>
+        <file alias="prof_62.png">resources/img/profession icons/prof_62.png</file>
+        <file alias="prof_63.png">resources/img/profession icons/prof_63.png</file>
+        <file alias="prof_64.png">resources/img/profession icons/prof_64.png</file>
+        <file alias="prof_65.png">resources/img/profession icons/prof_65.png</file>
+        <file alias="prof_66.png">resources/img/profession icons/prof_66.png</file>
+        <file alias="prof_67.png">resources/img/profession icons/prof_67.png</file>
+        <file alias="prof_68.png">resources/img/profession icons/prof_68.png</file>
+        <file alias="prof_69.png">resources/img/profession icons/prof_69.png</file>
+        <file alias="prof_70.png">resources/img/profession icons/prof_70.png</file>
+        <file alias="prof_71.png">resources/img/profession icons/prof_71.png</file>
+        <file alias="prof_72.png">resources/img/profession icons/prof_72.png</file>
+        <file alias="prof_73.png">resources/img/profession icons/prof_73.png</file>
+        <file alias="prof_74.png">resources/img/profession icons/prof_74.png</file>
+        <file alias="prof_75.png">resources/img/profession icons/prof_75.png</file>
+        <file alias="prof_76.png">resources/img/profession icons/prof_76.png</file>
+        <file alias="prof_77.png">resources/img/profession icons/prof_77.png</file>
+        <file alias="prof_78.png">resources/img/profession icons/prof_78.png</file>
+        <file alias="prof_79.png">resources/img/profession icons/prof_79.png</file>
+        <file alias="prof_80.png">resources/img/profession icons/prof_80.png</file>
+        <file alias="prof_81.png">resources/img/profession icons/prof_81.png</file>
+        <file alias="prof_82.png">resources/img/profession icons/prof_82.png</file>
+        <file alias="prof_83.png">resources/img/profession icons/prof_83.png</file>
+        <file alias="prof_84.png">resources/img/profession icons/prof_84.png</file>
+        <file alias="prof_85.png">resources/img/profession icons/prof_85.png</file>
+        <file alias="prof_86.png">resources/img/profession icons/prof_86.png</file>
+        <file alias="prof_87.png">resources/img/profession icons/prof_87.png</file>
+        <file alias="prof_88.png">resources/img/profession icons/prof_88.png</file>
+        <file alias="prof_89.png">resources/img/profession icons/prof_89.png</file>
+        <file alias="prof_90.png">resources/img/profession icons/prof_90.png</file>
+        <file alias="prof_91.png">resources/img/profession icons/prof_91.png</file>
+        <file alias="prof_92.png">resources/img/profession icons/prof_92.png</file>
+        <file alias="prof_93.png">resources/img/profession icons/prof_93.png</file>
+        <file alias="prof_94.png">resources/img/profession icons/prof_94.png</file>
+        <file alias="prof_95.png">resources/img/profession icons/prof_95.png</file>
+        <file alias="prof_96.png">resources/img/profession icons/prof_96.png</file>
+        <file alias="prof_97.png">resources/img/profession icons/prof_97.png</file>
+        <file alias="prof_98.png">resources/img/profession icons/prof_98.png</file>
+        <file alias="prof_99.png">resources/img/profession icons/prof_99.png</file>
+        <file alias="prof_100.png">resources/img/profession icons/prof_100.png</file>
+        <file alias="prof_101.png">resources/img/profession icons/prof_101.png</file>
+        <file alias="prof_102.png">resources/img/profession icons/prof_102.png</file>
+        <file alias="prof_103.png">resources/img/profession icons/prof_103.png</file>
+        <file alias="prof_104.png">resources/img/profession icons/prof_104.png</file>
+        <file alias="prof_106.png">resources/img/profession icons/prof_106.png</file>
+        <file alias="prof_1.png">resources/img/profession icons/prof_1.png</file>
+        <file alias="prof_2.png">resources/img/profession icons/prof_2.png</file>
+        <file alias="prof_3.png">resources/img/profession icons/prof_3.png</file>
+        <file alias="prof_4.png">resources/img/profession icons/prof_4.png</file>
+        <file alias="prof_5.png">resources/img/profession icons/prof_5.png</file>
+        <file alias="prof_6.png">resources/img/profession icons/prof_6.png</file>
+        <file alias="prof_7.png">resources/img/profession icons/prof_7.png</file>
+        <file alias="prof_8.png">resources/img/profession icons/prof_8.png</file>
+        <file alias="prof_9.png">resources/img/profession icons/prof_9.png</file>
+        <file alias="prof_105.png">resources/img/profession icons/prof_105.png</file>
     </qresource>
     <qresource prefix="/config">
-        <file alias="default_gridviews">default_gridviews.dtg</file>
+        <file alias="default_gridviews">resources/default_gridviews.dtg</file>
+        <file alias="game_data">resources/game_data.ini</file>
     </qresource>
 </RCC>
