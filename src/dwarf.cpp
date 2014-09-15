@@ -299,11 +299,11 @@ void Dwarf::refresh_data() {
         read_happiness();
         read_squad_info(); //read squad before job
         read_uniform();
+        read_profession(); //read profession before building the names, and before job
         read_current_job();
         read_syndromes(); //read syndromes before attributes
         read_turn_count(); //load time/date stuff for births/migrations - read before age
-        set_age_and_migration(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time")); //set age before profession
-        read_profession(); //read profession before building the names
+        set_age_and_migration(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time")); //set age before profession        
         read_body_size(); //body size after caste and age
         //curse check will change the name and age
         read_curse(); //read curse before attributes
