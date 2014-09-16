@@ -1,13 +1,12 @@
 TEMPLATE = app
 TARGET = DwarfTherapist
-QT += widgets
 lessThan(QT_MAJOR_VERSION, 5) {
     message(Setting up for Qt 4)
     QT += script
 }
 else {
     message(Setting up for Qt 5)
-    QT += qml
+    QT += qml widgets
 }
 CONFIG += debug_and_release \
     warn_on
@@ -96,6 +95,15 @@ build_pass {
         doc.path = /usr/share/doc/dwarftherapist
         doc.files += LICENSE.txt
         doc.files += README.rst
+        system("printf 'Checking for pdflatex... '; if ! command -v pdflatex; then echo 'not found'; exit 1; fi") {
+            manual.depends = "$$PWD/doc/Dwarf Therapist.tex" $$PWD/doc/images/*
+            manual.commands = [ -d doc ] || mkdir doc;
+            manual.commands += TEXINPUTS=".:$$PWD/doc/images:" pdflatex -output-directory=doc \"$<\"
+            manual.target = "doc/Dwarf Therapist.pdf"
+            QMAKE_EXTRA_TARGETS += manual
+            POST_TARGETDEPS += "$$manual.target"
+            doc.files += "$$manual.target"
+        }
         INSTALLS += doc
 
         icon.path = /usr/share/pixmaps
@@ -106,16 +114,6 @@ build_pass {
         memory_layouts.path = /usr/share/dwarftherapist/memory_layouts/linux
         memory_layouts.files += share/memory_layouts/linux/*
         INSTALLS += memory_layouts
-
-        system("printf 'Checking for pdflatex... '; if ! command -v pdflatex; then r=$?; echo 'not found'; exit $?; fi") {
-            manual.depends = "$$PWD/doc/Dwarf Therapist.tex" $$PWD/doc/images/*
-            manual.commands = [ -d doc ] || mkdir doc;
-            manual.commands += TEXINPUTS=".:$$PWD/doc/images:" pdflatex -output-directory=doc \"$<\"
-            manual.target = "doc/Dwarf Therapist.pdf"
-            QMAKE_EXTRA_TARGETS += manual
-            POST_TARGETDEPS += "$$manual.target"
-            doc.files += "$$manual.target"
-        }
     }
 }
 
