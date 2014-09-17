@@ -870,8 +870,8 @@ void MainWindow::go_to_new_issue() {
 
 void MainWindow::open_help(){
     const QString local_manual = "share:doc/Therapist Manual.pdf";
-    QUrl url = QFile::exists(local_manual) ? QUrl("http://dffd.wimbli.com/file.php?id=7889")
-                                           : QUrl::fromLocalFile(local_manual);
+    QUrl url = QFile::exists(local_manual) ? QUrl::fromLocalFile(local_manual)
+                                           : QUrl("http://dffd.wimbli.com/file.php?id=7889");
     QDesktopServices::openUrl(url);
 }
 
