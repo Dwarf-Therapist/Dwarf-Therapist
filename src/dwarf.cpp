@@ -657,7 +657,7 @@ void Dwarf::read_curse(){
             m_curse_type = eCurse::VAMPIRE;
         }        
 
-        m_curse_name == curse_name;
+        m_curse_name = curse_name;
     }
 }
 

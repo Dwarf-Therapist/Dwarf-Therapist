@@ -165,7 +165,7 @@ ScriptDialog::ScriptDialog(QWidget *parent)
 
 void ScriptDialog::reposition_horiz_splitters(){
     foreach(QSplitter *s, ui->tabInfo->findChildren<QSplitter*>()){
-        if(!s->orientation() == Qt::Horizontal)
+        if(s->orientation() != Qt::Horizontal)
             continue;
         s->setStretchFactor(0,1);
         s->setStretchFactor(1,3);

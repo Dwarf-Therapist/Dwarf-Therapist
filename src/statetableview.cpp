@@ -747,7 +747,7 @@ void StateTableView::mouseMoveEvent(QMouseEvent *event) {
         //if we're dragging while holding down the left button, and not over the names
         //then start painting labor cells
         //if we're dragging over the names, allow it to select the rows
-        if(m_last_button == Qt::LeftButton && !idx.column() == 0){
+        if(m_last_button == Qt::LeftButton && idx.column() != 0){
             m_dragging = true;
             activate_cells(idx);
         }else{

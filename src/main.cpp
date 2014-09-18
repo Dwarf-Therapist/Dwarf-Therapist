@@ -34,6 +34,9 @@ THE SOFTWARE.
 #include "dfinstance.h"
 
 int main(int argc, char *argv[]) {
+    if(!DFInstance::authorize()){
+        return 0;
+    }
     DwarfTherapist d(argc, argv);
     return d.exec();
 }
