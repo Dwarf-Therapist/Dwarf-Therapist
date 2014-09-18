@@ -1,3 +1,31 @@
+### Version 26.0 Patch Notes
+
+***
+
+- 40.11/12/13 memory layouts
+- units affected by a werebeast syndrome are properly detected as cursed and will show the type of werebeast
+- added belief column type
+- added unit kills column type and information in tooltip (optional)
+- added a sort method for attribute columns to sort by the maximum potential
+- added a right click menu item to update a dwarf's custom profession with their current labors
+- gender icons have been updated to also show sexual orientation
+- added default noble colors and changed some default settings
+- added an option to decorate noble names (italicized with symbol)
+- removed general metal/stone/gem/alcohol preferences from all roles
+- added new preference groups for shearable, fishable creatures, millable, extract, crop plants
+- changed role ratings to display consistently and with a larger spread
+- changed the way body sizes are read to hopefully be more accurate
+- added retooled default roles (feelotraveller)
+- general cleanup, fixes and many back-end optimizations (Hello71)
+
+- fixed an issue with trait/belief conflicts not displaying properly
+- fixed custom profession sorting (although it's still case sensitive)
+- fixed optimization plans loading/displaying incorrectly in certain cases
+- fixed role preference ratings for multiple matches
+- fixed active military showing up as 'no job'
+- fixed noble color crash (stoutheart)
+- fixes for manual and file paths (Hello71)
+
 ### Version 25.0 Patch Notes
 
 ***
