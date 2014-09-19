@@ -72,9 +72,9 @@ build_pass {
         share.path = Contents/MacOS/share        
         QMAKE_BUNDLE_DATA += share
 
-        layouts.path = Contents/MacOS/share/memory_layouts/osx
-        layouts.files += share/memory_layouts/osx/*
-        QMAKE_BUNDLE_DATA += layouts
+        memory_layouts.path = Contents/MacOS/share/memory_layouts/osx
+        memory_layouts.files += $$files(share/memory_layouts/osx/*)
+        QMAKE_BUNDLE_DATA += memory_layouts
     }
     else:unix {
         message(Setting up for Linux)
@@ -112,7 +112,7 @@ build_pass {
         INSTALLS += icon
 
         memory_layouts.path = /usr/share/dwarftherapist/memory_layouts/linux
-        memory_layouts.files += share/memory_layouts/linux/*
+        memory_layouts.files += $$files(share/memory_layouts/linux/*)
         INSTALLS += memory_layouts
     }
 }
