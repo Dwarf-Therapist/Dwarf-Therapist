@@ -29,9 +29,11 @@ THE SOFTWARE.
 ItemWeaponSubtype::ItemWeaponSubtype(DFInstance *df, VIRTADDR address, QObject *parent)
     : QObject(parent)
     , m_address(address)
-    , m_name_plural(QString::null)    
+    , m_name_plural(QString::null)
+    , m_adjective(QString::null)
+    , m_group_name(QString::null)
     , m_single_grasp_size(0)
-    , m_multi_grasp_size(0)    
+    , m_multi_grasp_size(0)
     , m_df(df)
     , m_mem(df->memory_layout())
 {
@@ -59,9 +61,12 @@ void ItemWeaponSubtype::load_data() {
 
 void ItemWeaponSubtype::read_weapon() {
     m_subType = m_df->read_short(m_address + m_df->memory_layout()->item_subtype_offset("sub_type"));
-    m_name = capitalizeEach(m_df->read_string(m_address + m_df->memory_layout()->item_subtype_offset("name")));
-    m_name_plural = capitalizeEach(m_df->read_string(m_address + m_df->memory_layout()->item_subtype_offset("name_plural"))); //plural
-    group_name = m_name_plural; //set to plural for default
+    m_adjective = capitalizeEach(m_df->read_string(m_address + m_df->memory_layout()->item_subtype_offset("adjective")));
+    QString name = capitalizeEach(m_df->read_string(m_address + m_df->memory_layout()->item_subtype_offset("name")));
+    QString plural = capitalizeEach(m_df->read_string(m_address + m_df->memory_layout()->item_subtype_offset("name_plural")));
+    m_name = QString("%1 %2").arg(m_adjective).arg(name).trimmed();
+    m_name_plural = QString("%1 %2").arg(m_adjective).arg(plural).trimmed();
+    m_group_name = plural;
     m_single_grasp_size = m_df->read_int(m_address + m_df->memory_layout()->weapon_subtype_offset("single_size")); //two_hand size
     m_multi_grasp_size = m_df->read_int(m_address + m_df->memory_layout()->weapon_subtype_offset("multi_size")); //minimum size
     m_ammo = m_df->read_string(m_address + m_df->memory_layout()->weapon_subtype_offset("ammo"));

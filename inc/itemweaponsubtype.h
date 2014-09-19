@@ -42,7 +42,7 @@ public:
 
     QString name() const {return m_name;}
     QString name_plural() const {return m_name_plural;}
-    void name_plural(const QString& new_name) {m_name_plural = new_name;}
+    QString group_name() const {return m_group_name;}
 
     bool is_ranged() {return m_ammo.isEmpty() ? false : true;}
 
@@ -53,15 +53,15 @@ public:
 
     short subType() const {return m_subType;}
 
-    void load_data();
-
-    QString group_name;
+    void load_data();    
 
 private:
     VIRTADDR m_address;
 
     QString m_name;
     QString m_name_plural;
+    QString m_adjective;
+    QString m_group_name;
     int m_single_grasp_size;
     int m_multi_grasp_size;
     QString m_ammo;

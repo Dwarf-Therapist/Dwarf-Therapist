@@ -133,7 +133,7 @@ int Preference::matches(Preference *role_pref, Dwarf *d){
             //if it's a weapon, and a match, ensure the dwarf can actually wield it as well
             if(result > 0 && (role_pref->get_item_type() == WEAPON ||
                               (role_pref->special_flags().count() > 0 && (special_flags().contains((int)ITEMS_WEAPON) || special_flags().contains((int)ITEMS_WEAPON_RANGED))))){
-                ItemWeaponSubtype *w = d->get_df_instance()->get_weapon_def(capitalizeEach(m_name));
+                ItemWeaponSubtype *w = d->get_df_instance()->find_weapon_def(m_name);
                 if(!w || d->body_size(true) < w->multi_grasp())
                     result = 0;
                 w = 0;
@@ -146,62 +146,68 @@ int Preference::matches(Preference *role_pref, Dwarf *d){
 }
 
 void Preference::set_pref_flags(Race *r){
-    if(r->flags().has_flag(HATEABLE)){
-        add_flag(HATEABLE);
-    }
-    //set trainable flags as well for like creatures
-    if(r->caste_flag(TRAINABLE)){ //really only need to add one flag for a match..
-        add_flag(TRAINABLE);
-    }
-    if(r->caste_flag(SHEARABLE)){
-        add_flag(SHEARABLE);
-    }
-    //fishing
-    if(r->caste_flag(FISHABLE)){
-        add_flag(FISHABLE);
-    }
-    //butcher
-    if(r->caste_flag(BUTCHERABLE)){
-        add_flag(BUTCHERABLE);
-    }
-    //milker
-    if(r->caste_flag(MILKABLE)){
-        add_flag(MILKABLE);
-    }
-    //animal dissection / beekeeper / fish dissection
-    if(r->caste_flag(HAS_EXTRACTS)){
+    if(r){
+        if(r->flags().has_flag(HATEABLE)){
+            add_flag(HATEABLE);
+        }
+        //set trainable flags as well for like creatures
+        if(r->caste_flag(TRAINABLE)){ //really only need to add one flag for a match..
+            add_flag(TRAINABLE);
+        }
+        if(r->caste_flag(SHEARABLE)){
+            add_flag(SHEARABLE);
+        }
+        //fishing
         if(r->caste_flag(FISHABLE)){
-            add_flag(VERMIN_FISH);
-        }else{
-            add_flag(HAS_EXTRACTS);
+            add_flag(FISHABLE);
+        }
+        //butcher
+        if(r->caste_flag(BUTCHERABLE)){
+            add_flag(BUTCHERABLE);
+        }
+        //milker
+        if(r->caste_flag(MILKABLE)){
+            add_flag(MILKABLE);
+        }
+        //animal dissection / beekeeper / fish dissection
+        if(r->caste_flag(HAS_EXTRACTS)){
+            if(r->caste_flag(FISHABLE)){
+                add_flag(VERMIN_FISH);
+            }else{
+                add_flag(HAS_EXTRACTS);
+            }
         }
     }
     m_exact_match = true;
 }
 
 void Preference::set_pref_flags(Plant *p){
-    if(!p->flags().has_flag(P_SAPLING) && !p->flags().has_flag(P_TREE)){
-        if(p->flags().has_flag(P_DRINK)){
-            add_flag(P_DRINK);
-        }
-        if(p->flags().has_flag(P_CROP)){
-            add_flag(P_CROP);
-        }
-        if(p->flags().has_flag(P_MILL)){
-            add_flag(P_MILL);
-        }
-        if(p->flags().has_flag(P_HAS_EXTRACTS)){
-            add_flag(P_HAS_EXTRACTS);
+    if(p){
+        if(!p->flags().has_flag(P_SAPLING) && !p->flags().has_flag(P_TREE)){
+            if(p->flags().has_flag(P_DRINK)){
+                add_flag(P_DRINK);
+            }
+            if(p->flags().has_flag(P_CROP)){
+                add_flag(P_CROP);
+            }
+            if(p->flags().has_flag(P_MILL)){
+                add_flag(P_MILL);
+            }
+            if(p->flags().has_flag(P_HAS_EXTRACTS)){
+                add_flag(P_HAS_EXTRACTS);
+            }
         }
     }
     m_exact_match = true;
 }
 
 void Preference::set_pref_flags(ItemWeaponSubtype *w){
-    if(w->is_ranged()){
-        add_flag(ITEMS_WEAPON_RANGED);
-    }else{
-        add_flag(ITEMS_WEAPON);
+    if(w){
+        if(w->is_ranged()){
+            add_flag(ITEMS_WEAPON_RANGED);
+        }else{
+            add_flag(ITEMS_WEAPON);
+        }
     }
     m_exact_match = true;
 }

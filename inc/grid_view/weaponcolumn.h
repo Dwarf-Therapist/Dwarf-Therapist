@@ -31,17 +31,20 @@ class WeaponColumn : public ViewColumn {
     Q_OBJECT
 public:
 
-    WeaponColumn(QSettings &s, ItemWeaponSubtype *w, ViewColumnSet *set = 0, QObject *parent = 0);
-    WeaponColumn(const QString &title, ItemWeaponSubtype *w, ViewColumnSet *set = 0, QObject *parent = 0);
+    WeaponColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
+    WeaponColumn(const QString &title, const int sub_type, ViewColumnSet *set = 0, QObject *parent = 0);
+    void init();
     WeaponColumn* clone() {return new WeaponColumn(*this);}
     QStandardItem *build_cell(Dwarf *d);
     QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 
     //override
-    void write_to_ini(QSettings &s){ViewColumn::write_to_ini(s);}
+    void write_to_ini(QSettings &s);
 
 private:
     ItemWeaponSubtype *m_weapon;
+    int m_sub_type_id;
+    QString m_weapon_name; //name saved
 };
 
 #endif // WEAPONCOLUMN_H

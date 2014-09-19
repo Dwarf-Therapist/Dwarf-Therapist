@@ -513,13 +513,13 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     //WEAPONS
     QMenu *m_weapon = m_cmh->create_title_menu(m, tr("Weapon"),
                                         tr("Weapon columns will show an indicator of whether the dwarf can wield the weapon with one hand, two hands or not at all."));
-    m_cmh->add_sub_menus(m_weapon,DT->get_DFInstance()->get_ordered_weapon_defs().count() / 15);
-    QPair<QString, ItemWeaponSubtype*> weapon_pair;
-    foreach(weapon_pair, DT->get_DFInstance()->get_ordered_weapon_defs()) {
-        QMenu *menu_to_use = m_cmh->find_menu(m_weapon,weapon_pair.first);
-        QAction *a = menu_to_use->addAction(weapon_pair.first, this, SLOT(add_weapon_column()));
-        a->setData(weapon_pair.first);
-        a->setToolTip(tr("Add a column for weapon %1").arg(weapon_pair.first));
+    m_cmh->add_sub_menus(m_weapon,DT->get_DFInstance()->get_ordered_weapon_defs().count() / 15);    
+    foreach(ItemWeaponSubtype *w, DT->get_DFInstance()->get_ordered_weapon_defs().values()) {
+        QString title = w->name_plural(); //allow adding every type
+        QMenu *menu_to_use = m_cmh->find_menu(m_weapon,title);
+        QAction *a = menu_to_use->addAction(title, this, SLOT(add_weapon_column()));
+        a->setData(w->subType());
+        a->setToolTip(tr("Add a column for weapon %1").arg(title));
     }
 
 
@@ -677,9 +677,12 @@ void GridViewDialog::add_weapon_column(){
     if(!m_active_set)
         return;
     QAction *a = qobject_cast<QAction*>(QObject::sender());
-    QString key = a->data().toString();
-    new WeaponColumn(key,DT->get_DFInstance()->get_weapon_defs().value(key),m_active_set,m_active_set);
-    draw_columns_for_set(m_active_set);
+    int sub_type = a->data().toInt();
+    ItemWeaponSubtype *w = DT->get_DFInstance()->get_weapon_def(sub_type);
+    if(w){
+        new WeaponColumn(w->name_plural(),sub_type,m_active_set,m_active_set);
+        draw_columns_for_set(m_active_set);
+    }
 }
 
 void GridViewDialog::add_health_column(){

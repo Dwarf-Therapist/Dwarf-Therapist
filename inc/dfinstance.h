@@ -196,9 +196,10 @@ public:
     QVector<Plant *> get_plants() {return m_plants_vector;}
     QVector<Material *> get_base_materials() {return m_base_materials;}
 
-    ItemWeaponSubtype* get_weapon_def(QString name) {return m_weapon_defs.value(name);}
-    QHash<QString, ItemWeaponSubtype *> get_weapon_defs() {return m_weapon_defs;}
-    QList<QPair<QString, ItemWeaponSubtype *> > get_ordered_weapon_defs() {return m_ordered_weapon_defs;}
+    ItemWeaponSubtype* get_weapon_def(int sub_type);
+    ItemWeaponSubtype* find_weapon_def(QString name);
+    QList<ItemWeaponSubtype *> get_weapon_defs() {return m_weapon_defs;}
+    QMap<QString, ItemWeaponSubtype *> get_ordered_weapon_defs() {return m_ordered_weapon_defs;}
 
     Material * find_material(int mat_index, short mat_type);
 
@@ -282,8 +283,8 @@ private:
     QHash<QString, Reaction *> m_reactions;
     QVector<Race *> m_races;
 
-    QHash<QString,ItemWeaponSubtype *> m_weapon_defs;
-    QList<QPair<QString, ItemWeaponSubtype *> > m_ordered_weapon_defs;
+    QList<ItemWeaponSubtype *> m_weapon_defs;
+    QMap<QString, ItemWeaponSubtype *> m_ordered_weapon_defs;
     QVector<Plant *> m_plants_vector;
     QVector<Material *> m_inorganics_vector;
     QVector<Material *> m_base_materials;

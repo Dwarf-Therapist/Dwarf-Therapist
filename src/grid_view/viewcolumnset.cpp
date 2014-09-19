@@ -276,9 +276,8 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent, int s
         case CT_ROLE:
             new RoleColumn(s, ret_val, parent);
             break;
-        case CT_WEAPON:
-            if(DT->get_main_window())
-                new WeaponColumn(s,DT->get_main_window()->get_DFInstance()->get_weapon_defs().value(s.value("name").toString()),ret_val,parent);
+        case CT_WEAPON:            
+            new WeaponColumn(s,ret_val,parent);
             break;
         case CT_PROFESSION:
             new ProfessionColumn(s, ret_val, parent);

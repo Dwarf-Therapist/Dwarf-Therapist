@@ -870,7 +870,7 @@ void roleDialog::load_weapons(){
     add_pref_to_tree(m_general_item, p);
 
     foreach(ItemWeaponSubtype *w, m_df->get_weapon_defs()){
-        p = new Preference(LIKE_ITEM,w->name_plural(),this);
+        p = new Preference(LIKE_ITEM,w->name_plural(),this); //unfortunately a crescent halberd != halberd
         p->set_pref_flags(w);
         if(w->is_ranged()){
             add_pref_to_tree(ranged,p);

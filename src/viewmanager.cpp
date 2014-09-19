@@ -196,7 +196,7 @@ void ViewManager::add_weapons_view(QList<GridView*> &built_in_views){
         return;
 
     DFInstance *m_df = DT->get_DFInstance();
-    if(m_df->get_ordered_weapon_defs().length() > 0){
+    if(m_df->get_ordered_weapon_defs().size() > 0){
         //add a special weapons view, this will dynamically change depending on the raws read
 
         //    //group by skill type for display
@@ -244,24 +244,20 @@ void ViewManager::add_weapons_view(QList<GridView*> &built_in_views){
         else
             gv->clear();
 
-//        ViewColumnSet *vcs = new ViewColumnSet("All Weapons", this);
-//        int count = grouped_by_size.count();
-//        QPair<long,long> wkeys;
-//        foreach(wkeys, grouped_by_size.uniqueKeys()){
-//            new WeaponColumn(grouped_by_size.value(wkeys)->group_name, grouped_by_size.value(wkeys),vcs,this);
-//        }
-
-        ViewColumnSet *vcs = new ViewColumnSet("All Weapons", this);
-        int count = m_df->get_ordered_weapon_defs().length();
-        QPair<QString,ItemWeaponSubtype*> wp;
-        foreach(wp, m_df->get_ordered_weapon_defs()){
-            new WeaponColumn(wp.first,wp.second,vcs,this);
+        //by default add as few types as possible (ie. wavy pikes are the same as pikes) to keep the count down
+        QStringList added;
+        ViewColumnSet *vcs = new ViewColumnSet("All Weapons", this);        
+        foreach(ItemWeaponSubtype *w, m_df->get_ordered_weapon_defs().values()){
+            if(!added.contains(w->group_name())){
+                new WeaponColumn(w->group_name(),w->subType(),vcs,this);
+                added.append(w->group_name());
+            }
         }
 
         gv->add_set(vcs);
         gv->set_is_custom(false);
         //if the weapon columns count <= the vanilla df weapon count, append the columns onto the military tab as well
-        if(count<=24){
+        if(vcs->columns().size()<=24){
             GridView *mv = this->get_view("Military");
             if(mv){
                 mv->remove_set("All Weapons");
@@ -338,7 +334,6 @@ void ViewManager::write_tab_settings() {
 
 void ViewManager::write_views() {
     QSettings *s = DT->user_settings();
-    s->remove("gridviews"); // look at us, taking chances like this!
 
     // find all custom gridviews...
     QList<GridView*> custom_views;
@@ -347,13 +342,16 @@ void ViewManager::write_views() {
             custom_views << gv;
     }
 
-    s->beginWriteArray("gridviews", custom_views.size());
-    int i = 0;
-    foreach(GridView *gv, custom_views) {
-        s->setArrayIndex(i++);
-        gv->write_to_ini(*s);
+    if(custom_views.count() > 0){
+        s->remove("gridviews"); //only wipe the custom views if we've loaded some
+        s->beginWriteArray("gridviews", custom_views.size());
+        int i = 0;
+        foreach(GridView *gv, custom_views) {
+            s->setArrayIndex(i++);
+            gv->write_to_ini(*s);
+        }
+        s->endArray();
     }
-    s->endArray();
     write_tab_settings();
 
     //write the default sorting

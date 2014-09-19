@@ -860,25 +860,34 @@ void DFInstance::load_weapons(){
     qDeleteAll(m_weapon_defs);
     m_weapon_defs.clear();
     if (!weapons.empty()) {
+        int idx = 0;
         foreach(VIRTADDR weapon_addr, weapons) {
             ItemWeaponSubtype* w = ItemWeaponSubtype::get_weapon(this, weapon_addr, this);
-            m_weapon_defs.insert(w->name_plural(), w);
+            m_weapon_defs.insert(idx, w);
+            m_ordered_weapon_defs.insert(w->name_plural(),w);
+            idx++;
         }
     }
-
-    m_ordered_weapon_defs.clear();
-
-    QStringList weapon_names;
-    foreach(QString key, m_weapon_defs.uniqueKeys()) {
-        weapon_names << key;
-    }
-
-    qSort(weapon_names);
-    foreach(QString name, weapon_names) {
-        m_ordered_weapon_defs << QPair<QString, ItemWeaponSubtype *>(name, m_weapon_defs.value(name));
-    }
-
     detach();
+}
+
+ItemWeaponSubtype *DFInstance::get_weapon_def(int sub_type){
+    if(sub_type >= 0 && sub_type < m_weapon_defs.size()){
+        return m_weapon_defs.at(sub_type);
+    }else{
+        return 0;
+    }
+}
+
+ItemWeaponSubtype *DFInstance::find_weapon_def(QString name){
+    foreach(ItemWeaponSubtype *w, m_weapon_defs){
+        if(QString::compare(w->name_plural(),name,Qt::CaseInsensitive) == 0 ||
+                QString::compare(w->group_name(),name,Qt::CaseInsensitive) == 0 ||
+                w->group_name().contains(name,Qt::CaseInsensitive)){
+            return w;
+        }
+    }
+    return 0;
 }
 
 void DFInstance::load_races_castes(){

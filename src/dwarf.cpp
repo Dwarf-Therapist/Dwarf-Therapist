@@ -938,7 +938,7 @@ void Dwarf::read_preferences(){
 
             //special case for weapon items. find the weapon and set ranged/melee flag for comparison
             if(itype == WEAPON){
-                ItemWeaponSubtype *w = m_df->get_weapon_def(capitalizeEach(pref_name));
+                ItemWeaponSubtype *w = m_df->get_weapon_def(item_sub_type);
                 p->set_pref_flags(w);
             }
         }
