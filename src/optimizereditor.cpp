@@ -688,20 +688,20 @@ void optimizereditor::export_details(){
 
      QTextStream s(&file);
 
-     s << ui->le_name->text() + ",";
-     s << ui->sb_max_jobs->value() + ",";
-     s << ui->sb_pop_percent->value() + ",";
-     s << ui->sb_hauler_percent->value() + ",";
-     s << (int)ui->chk_military->isChecked() + ",";
-     s << (int)ui->chk_nobles->isChecked() + ",";
-     s << (int)ui->chk_injured->isChecked() + ",";
-     s << (int)ui->chk_auto->isChecked() + ",";
-     s << (int)ui->chk_squads->isChecked() + "\n";
+     s << ui->le_name->text() << ",";
+     s << ui->sb_max_jobs->value() << ",";
+     s << ui->sb_pop_percent->value() << ",";
+     s << ui->sb_hauler_percent->value() << ",";
+     s << (int)ui->chk_military->isChecked() << ",";
+     s << (int)ui->chk_nobles->isChecked() << ",";
+     s << (int)ui->chk_injured->isChecked() << ",";
+     s << (int)ui->chk_auto->isChecked() << ",";
+     s << (int)ui->chk_squads->isChecked() << "\n";
 
      for(int i = 0; i < ui->tw_labors->rowCount(); i++){
          QComboBox *c = static_cast<QComboBox*>(ui->tw_labors->cellWidget(i,1));
-         s << c->itemData(c->currentIndex(), Qt::UserRole).toString() + ",";
-         s << ui->tw_labors->item(i,0)->data(Qt::UserRole).toString() + ",";
+         s << c->itemData(c->currentIndex(), Qt::UserRole).toString() << ",";
+         s << ui->tw_labors->item(i,0)->data(Qt::UserRole).toString() << ",";
          s << (float)static_cast<QDoubleSpinBox*>(ui->tw_labors->cellWidget(i,2))->value();
          s << ",";
          s << static_cast<QDoubleSpinBox*>(ui->tw_labors->cellWidget(i,3))->value();

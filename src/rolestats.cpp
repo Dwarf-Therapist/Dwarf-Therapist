@@ -146,7 +146,7 @@ void RoleStats::configure_transformations(){
 
         LOGD << "     - checking q4/q3 = " << q4_q3_check;
 
-        if(q4_q3_check > Q4_Q3_LIMIT){
+        if(q4_q3_check > 2.0f){
             //use the default ecdf/rank for the lower values, and a minmax conversion for upper values
             m_transform_type = TT_MIN_MAX_UPPER;
             calculate_factor_value(upper_start_idx);

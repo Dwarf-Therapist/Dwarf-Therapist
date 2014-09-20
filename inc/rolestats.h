@@ -86,9 +86,7 @@ private:
     double get_transformations_rating(double val);
     bool transform_valid(transform_stats ts, bool mid_is_avg);
 
-    void configure_transformations();
-
-    static const float Q4_Q3_LIMIT = 2.0f;
+    void configure_transformations();    
 };
 
 #endif // ROLESTATS_H
