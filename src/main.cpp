@@ -34,10 +34,10 @@ THE SOFTWARE.
 #include "dfinstance.h"
 
 int main(int argc, char *argv[]) {
+#ifdef Q_OS_MAC
     QCoreApplication::setSetuidAllowed(true);
-    if(!DFInstance::authorize()){
-        return 0;
-    }
+#endif
+
     DwarfTherapist d(argc, argv);
     return d.exec();
 }
