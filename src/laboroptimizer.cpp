@@ -43,10 +43,10 @@ After everything is optimized, any haulers are assigned with less than the speci
 #include "skill.h"
 #include "rolestats.h"
 
-LaborOptimizer::LaborOptimizer(laborOptimizerPlan *plan, QObject *parent)    
+LaborOptimizer::LaborOptimizer(laborOptimizerPlan *plan, QObject *parent)
     :QObject(parent)
     , plan(plan)
-{    
+{
     check_conflicts = DT->user_settings()->value("options/labor_exclusions",true).toBool();
     gdr = GameDataReader::ptr();
 }
@@ -116,7 +116,7 @@ void LaborOptimizer::calc_population(bool load_labor_map){
                         dwarf_labor_map dlm;
                         dlm.d = d;
                         dlm.det = det;
-                        if(!det->role_name.isEmpty()){                            
+                        if(!det->role_name.isEmpty()){
                             //dlm.rating = d->get_adjusted_role_rating(det->role_name) * det->priority;
                             dlm.rating = d->get_raw_role_rating(det->role_name) * det->priority;
                         }
