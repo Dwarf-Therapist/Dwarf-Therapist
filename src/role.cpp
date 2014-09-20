@@ -58,21 +58,20 @@ Role::Role(QSettings &s, QObject *parent)
 }
 
 Role::Role(const Role &r)
-    :QObject(r.parent())
-{
-    attributes = r.attributes;
-    skills = r.skills;
-    traits = r.traits;
-    prefs = r.prefs;
-    attributes_weight = r.attributes_weight;
-    skills_weight = r.skills_weight;
-    traits_weight = r.traits_weight;
-    prefs_weight = r.prefs_weight;
-    name = r.name;
-    script = r.script;
-    is_custom = r.is_custom;
-    role_details = r.role_details;
-}
+    : QObject(r.parent())
+    , name(r.name)
+    , script(r.script)
+    , is_custom(r.is_custom)
+    , attributes(r.attributes)
+    , skills(r.skills)
+    , traits(r.traits)
+    , prefs(r.prefs)
+    , attributes_weight(r.attributes_weight)
+    , skills_weight(r.skills_weight)
+    , traits_weight(r.traits_weight)
+    , prefs_weight(r.prefs_weight)
+    , role_details(r.role_details)
+{}
 
 Role::~Role(){
     qDeleteAll(attributes);
@@ -125,7 +124,7 @@ void Role::parseAspect(QSettings &s, QString node, global_weight &g_weight, QHas
 void Role::parsePreferences(QSettings &s, QString node, global_weight &g_weight, float default_weight)
 {
     qDeleteAll(prefs);
-    prefs.clear();    
+    prefs.clear();
     g_weight.weight = s.value(QString("%1_weight").arg(node),-1).toFloat();
 
     //keep track of whether or not we're using the global default when we redraw if options are changed

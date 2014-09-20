@@ -36,9 +36,6 @@ public:
         delete ui;
     }
 
-    void set_latest_version(const Version &v);
-    void version_check_failed();
-
 private:
     Ui::AboutDialog *ui;
     Version m_version;

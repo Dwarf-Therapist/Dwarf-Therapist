@@ -47,7 +47,7 @@ Syndrome::Syndrome(DFInstance *df, VIRTADDR addr){
     m_is_sickness = m_df->read_byte(m_addr + m_mem->dwarf_offset("syn_sick_flag"));
 
     VIRTADDR syn_addr = m_df->get_syndrome(m_id);
-    if(syn_addr > 0){
+    if(syn_addr){
         m_name = capitalizeEach(m_df->read_string(syn_addr));
         //SYN_CLASS tokens
         QRegExp rx = QRegExp("[-_\\*~@#\\^]");

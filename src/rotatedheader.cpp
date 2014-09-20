@@ -143,7 +143,7 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
     QString data = this->model()->headerData(idx, Qt::Horizontal).toString();
     p->save();
     p->setPen(Qt::black);
-    p->setRenderHint(QPainter::TextAntialiasing);    
+    p->setRenderHint(QPainter::TextAntialiasing);
     p->setFont(m_font);
     QFontMetrics fm = p->fontMetrics();
 
@@ -157,7 +157,7 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
     else
     {
         p->translate(rect.x(), rect.y());
-        p->rotate(90);        
+        p->rotate(90);
         p->drawText(9, -((rect.width()-fm.height()) / 2) - (fm.height()/4), data); //wtf.. i have no idea but it's centered so i'll take it
     }
     p->restore();
@@ -195,7 +195,7 @@ void RotatedHeader::mousePressEvent(QMouseEvent *e) {
     m_p = e->pos();
     int idx = logicalIndexAt(e->pos());
     if (idx > 0 && idx < count() && e->button() == Qt::RightButton) {
-        emit section_right_clicked(idx);    
+        emit section_right_clicked(idx);
     }
     QHeaderView::mousePressEvent(e);
 }
@@ -210,30 +210,21 @@ void RotatedHeader::contextMenuEvent(QContextMenuEvent *evt) {
     QMenu *m = new QMenu(this);
 
     if (idx == 0) { //name header
-        QAction *a = m->addAction("Sort by..");
+        m->addAction("Sort by..");
         m->addSeparator();
-        a = m->addAction(QIcon(":img/sort-number.png"), tr("Age Ascending"), this, SLOT(sort_action()));
-        a->setData(DwarfModelProxy::DSR_AGE_ASC);
-        a = m->addAction(QIcon(":img/sort-number-descending.png"),tr("Age Descending"), this, SLOT(sort_action()));
-        a->setData(DwarfModelProxy::DSR_AGE_DESC);
+        m->addAction(QIcon(":img/sort-number.png"), tr("Age Ascending"), this, SLOT(sort_action()))->setData(DwarfModelProxy::DSR_AGE_ASC);
+        m->addAction(QIcon(":img/sort-number-descending.png"),tr("Age Descending"), this, SLOT(sort_action()))->setData(DwarfModelProxy::DSR_AGE_DESC);
         m->addSeparator();
-        a = m->addAction(QIcon(":img/sort-number.png"), tr("Body Size Ascending"), this, SLOT(sort_action()));
-        a->setData(DwarfModelProxy::DSR_SIZE_ASC);
-        a = m->addAction(QIcon(":img/sort-number-descending.png"),tr("Body Size Descending"), this, SLOT(sort_action()));
-        a->setData(DwarfModelProxy::DSR_SIZE_DESC);
+        m->addAction(QIcon(":img/sort-number.png"), tr("Body Size Ascending"), this, SLOT(sort_action()))->setData(DwarfModelProxy::DSR_SIZE_ASC);
+        m->addAction(QIcon(":img/sort-number-descending.png"),tr("Body Size Descending"), this, SLOT(sort_action()))->setData(DwarfModelProxy::DSR_SIZE_DESC);
         m->addSeparator();
-        a = m->addAction(QIcon(":img/sort-number.png"),tr("ID Ascending"), this, SLOT(sort_action()));
-        a->setData(DwarfModelProxy::DSR_ID_ASC);
-        a = m->addAction(QIcon(":img/sort-number-descending.png"),tr("ID Descending"), this, SLOT(sort_action()));
-        a->setData(DwarfModelProxy::DSR_ID_DESC);
+        m->addAction(QIcon(":img/sort-number.png"),tr("ID Ascending"), this, SLOT(sort_action()))->setData(DwarfModelProxy::DSR_ID_ASC);
+        m->addAction(QIcon(":img/sort-number-descending.png"),tr("ID Descending"), this, SLOT(sort_action()))->setData(DwarfModelProxy::DSR_ID_DESC);
         m->addSeparator();
-        a = m->addAction(QIcon(":img/sort-alphabet.png"),tr("Name Ascending"), this, SLOT(sort_action()));
-        a->setData(DwarfModelProxy::DSR_NAME_ASC);
-        a = m->addAction(QIcon(":img/sort-alphabet-descending.png"),tr("Name Descending"), this, SLOT(sort_action()));
-        a->setData(DwarfModelProxy::DSR_NAME_DESC);        
+        m->addAction(QIcon(":img/sort-alphabet.png"),tr("Name Ascending"), this, SLOT(sort_action()))->setData(DwarfModelProxy::DSR_NAME_ASC);
+        m->addAction(QIcon(":img/sort-alphabet-descending.png"),tr("Name Descending"), this, SLOT(sort_action()))->setData(DwarfModelProxy::DSR_NAME_DESC);
     }
-    if(m)
-        m->exec(viewport()->mapToGlobal(evt->pos()));
+    m->exec(viewport()->mapToGlobal(evt->pos()));
 }
 
 void RotatedHeader::sort_action() {

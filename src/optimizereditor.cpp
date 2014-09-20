@@ -39,7 +39,7 @@ optimizereditor::optimizereditor(QWidget *parent) :
 
     //job/labor table
     ui->tw_labors->setEditTriggers(QTableWidget::AllEditTriggers);
-    ui->tw_labors->verticalHeader()->hide();    
+    ui->tw_labors->verticalHeader()->hide();
     ui->tw_labors->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     ui->tw_labors->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     ui->tw_labors->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);
@@ -71,7 +71,7 @@ optimizereditor::optimizereditor(QWidget *parent) :
     connect(ui->btnImport, SIGNAL(clicked()), this, SLOT(import_details()));
     connect(ui->btnExport, SIGNAL(clicked()), this, SLOT(export_details()));
 
-    connect(ui->tw_labors, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(draw_labor_context_menu(QPoint)));    
+    connect(ui->tw_labors, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(draw_labor_context_menu(QPoint)));
 //    connect(ui->tw_labors->horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)), ui->tw_labors, SLOT(resizeColumnsToContents()));
 //    connect(ui->tw_labors->horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)), ui->tw_labors, SLOT(resizeRowsToContents()));
 
@@ -161,7 +161,7 @@ void optimizereditor::auto_haul_changed(int val){
     m_plan->auto_haulers = val;
 }
 
-void optimizereditor::pop_percent_changed(int val){    
+void optimizereditor::pop_percent_changed(int val){
     m_plan->pop_percent = val;
     populationChanged();
 }
@@ -173,7 +173,7 @@ void optimizereditor::insert_row(PlanDetail *d){
     ui->tw_labors->setSortingEnabled(false);
     QString title;
     int row = ui->tw_labors->rowCount();
-    ui->tw_labors->insertRow(row);    
+    ui->tw_labors->insertRow(row);
     ui->tw_labors->setRowHeight(row,18);
 
     title = capitalize(l->name);
@@ -253,7 +253,7 @@ void optimizereditor::ratio_changed(double val){
         QModelIndex idx = ui->tw_labors->indexAt(w->pos());
         PlanDetail *det = m_plan->job_exists(ui->tw_labors->item(idx.row(),0)->data(Qt::UserRole).toInt());
         if(det)
-            det->ratio = val;        
+            det->ratio = val;
     }
 
     refresh_job_counts();
@@ -455,7 +455,7 @@ void optimizereditor::save(laborOptimizerPlan *p){
     p->max_jobs_per_dwarf = ui->sb_max_jobs->value();
     p->hauler_percent = ui->sb_hauler_percent->value();
     p->pop_percent = ui->sb_pop_percent->value();
-    p->auto_haulers = ui->chk_auto->isChecked();    
+    p->auto_haulers = ui->chk_auto->isChecked();
     p->name = ui->le_name->text();
     //save_details(p);
 }
@@ -584,8 +584,8 @@ void optimizereditor::import_details(){
      QTextStream s(&file);
      int linenum = 0;
      QString line;
-     QStringList fields;     
-     bool check;     
+     QStringList fields;
+     bool check;
      loading = true;
      while (!s.atEnd()) {
          linenum++;

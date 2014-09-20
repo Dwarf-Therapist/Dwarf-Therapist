@@ -25,45 +25,44 @@ THE SOFTWARE.
 
 #include <QString>
 #include "defines.h"
-
-#ifdef Q_OS_LINUX
+#ifdef major
 #undef major
 #undef minor
 #endif
 
 struct Version {
-	int major;
-	int minor;
-	int patch;
+    int major;
+    int minor;
+    int patch;
 
-	Version()
-		: major(DT_VERSION_MAJOR)
-		, minor(DT_VERSION_MINOR)
-		, patch(DT_VERSION_PATCH)
-	{}
-	Version(int major, int minor, int patch) 
-		: major(major)
-		, minor(minor)
-		, patch(patch)
-	{}
+    Version()
+        : major(DT_VERSION_MAJOR)
+        , minor(DT_VERSION_MINOR)
+        , patch(DT_VERSION_PATCH)
+    {}
+    Version(int major, int minor, int patch)
+        : major(major)
+        , minor(minor)
+        , patch(patch)
+    {}
 
-	QString to_string() const {return QString("%1.%2.%3").arg(major).arg(minor).arg(patch);}
+    QString to_string() const {return QString("%1.%2.%3").arg(major).arg(minor).arg(patch);}
 
-	bool operator==(const Version &other) const {
-		return major == other.major && minor == other.minor && patch == other.patch;
-	}
-	
-	bool operator<(const Version &other) const {
-		if (major == other.major) {
-			if (minor == other.minor) {
-				return patch < other.patch;
-			} else {
-				return minor < other.minor;
-			}
-		} else {
-			return major < other.major;
-		}
-	}
+    bool operator==(const Version &other) const {
+        return major == other.major && minor == other.minor && patch == other.patch;
+    }
+
+    bool operator<(const Version &other) const {
+        if (major == other.major) {
+            if (minor == other.minor) {
+                return patch < other.patch;
+            } else {
+                return minor < other.minor;
+            }
+        } else {
+            return major < other.major;
+        }
+    }
 };
 
 #endif

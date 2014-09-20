@@ -116,14 +116,14 @@ void FortressEntity::read_entity(){
             //to get profiles of the different nobility types
             foreach(VIRTADDR assign, addr_assignments){
                 assign_pos_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_position_id")); //position for the assignment
-                hist_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_hist_id")); //dwarf assigned                
-                if(hist_id > 0){                    
+                hist_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_hist_id")); //dwarf assigned
+                if(hist_id > 0){
                     position p = positions.value(assign_pos_id, pos_unk);
                     m_nobles.insert(hist_id,p);
                 }
             }
         }
-    }    
+    }
 
     VIRTADDR beliefs_addr = m_address + m_mem->hist_entity_offset("beliefs");
     for(int i = 0; i < GameDataReader::ptr()->get_total_belief_count();i++){
@@ -199,8 +199,9 @@ QString FortressEntity::get_noble_positions(int hist_id, bool is_male){
     //return a string of all the positions this dwarf holds in the fortress
     QStringList names;
     position p;
-    QMultiHash<int, position>::iterator i = m_nobles.find(hist_id);
-    while(i != m_nobles.end() && i.key()==hist_id){
+    for (QMultiHash<int, position>::iterator i = m_nobles.find(hist_id)
+         ; i != m_nobles.end() && i.key() == hist_id
+         ; ++i) {
         p = i.value();
         if(is_male && p.name_male != "")
             names.append(p.name_male);
@@ -208,7 +209,6 @@ QString FortressEntity::get_noble_positions(int hist_id, bool is_male){
             names.append(p.name_female);
         else
             names.append(p.name);
-        i++;
     }
     return capitalizeEach(names.join(", "));
 }
