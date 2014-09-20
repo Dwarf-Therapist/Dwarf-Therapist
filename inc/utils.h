@@ -24,7 +24,6 @@ THE SOFTWARE.
 #define UTILS_H
 
 #include <QCoreApplication>
-#include <QDir>
 #include <QByteArray>
 #include <QColor>
 #include <QtGlobal>

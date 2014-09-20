@@ -21,8 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <QtDebug>
-#include <QMessageBox>
 #include "defines.h"
 #include "dfinstance.h"
 #include "dwarf.h"
@@ -36,7 +34,6 @@ THE SOFTWARE.
 #include "mainwindow.h"
 #include "limits"
 #include "dwarfstats.h"
-#include "QThreadPool"
 #include "viewmanager.h"
 #include "languages.h"
 #include "reaction.h"
@@ -50,20 +47,18 @@ THE SOFTWARE.
 #include "itemarmor.h"
 #include "preference.h"
 #include "histfigure.h"
+#include <QMessageBox>
+#include <typeinfo>
 
 #ifdef Q_OS_WIN
 #define LAYOUT_SUBDIR "windows"
 #include "dfinstancewindows.h"
-#else
-#ifdef Q_OS_LINUX
+#elif defined(Q_OS_LINUX)
 #define LAYOUT_SUBDIR "linux"
 #include "dfinstancelinux.h"
-#else
-#ifdef Q_OS_MAC
+#elif defined(Q_OS_MAC)
 #define LAYOUT_SUBDIR "osx"
 #include "dfinstanceosx.h"
-#endif
-#endif
 #endif
 
 DFInstance::DFInstance(QObject* parent)
@@ -117,14 +112,10 @@ DFInstance::DFInstance(QObject* parent)
 DFInstance * DFInstance::newInstance(){
 #ifdef Q_OS_WIN
     return new DFInstanceWindows();
-#else
-#ifdef Q_OS_MAC
+#elif defined(Q_OS_MAC)
     return new DFInstanceOSX();
-#else
-#ifdef Q_OS_LINUX
+#elif defined(Q_OS_LINUX)
     return new DFInstanceLinux();
-#endif
-#endif
 #endif
 }
 
@@ -1675,7 +1666,6 @@ QString DFInstance::get_item_name(ITEM_TYPE itype, int item_id){
     if(itype == ARTIFACTS){
         VIRTADDR addr = m_mapped_items.value(itype).value(item_id);
         QString name = read_dwarf_name(addr+0x4);
-        //name = read_dwarf_word(addr+0x4);
         name = get_language_word(addr+0x4);
         return name;
     }else{
@@ -1742,41 +1732,14 @@ QString DFInstance::get_shape(int index){
         return "unknown shape";
 }
 
-Material *DFInstance::get_inorganic_material(int index){
-    if(index < m_inorganics_vector.count())
-        return m_inorganics_vector.at(index);
-    else
-        return new Material(this);
-}
-
-Plant *DFInstance::get_plant(int index){
-    if(index < m_plants_vector.count())
-        return m_plants_vector.at(index);
-    else
-        return new Plant(this);
-}
-
-Material *DFInstance::get_raw_material(int index){
-    if(index >= 0 && index < m_base_materials.size())
-        return m_base_materials.at(index);
-    else
-        return new Material(this);
-}
-
 QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE itype){
     Material *m = find_material(mat_index, mat_type);
     QString name = "";
 
-    if(!m)
+    if (!m)
         return name;
 
-    if(mat_index < 0){
-        name = m->get_material_name(SOLID);
-    }
-    else if(mat_type == 0){
-        name = m->get_material_name(SOLID);
-    }
-    else if(mat_type < 19){
+    if (mat_index < 19) {
         name = m->get_material_name(SOLID);
     }
     else if(mat_type < 219){
@@ -1837,63 +1800,33 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
             }
         }
     }
-    m = 0;
     return name.toLower().trimmed();
 }
 
 Material *DFInstance::find_material(int mat_index, short mat_type){
-    int index = 0;
-    Material *m = new Material(this);
-
-    if(mat_index < 0){
-        m = get_raw_material(mat_type);
+    if (mat_type == 0) {
+        return get_inorganic_material(mat_index);
+    } else if (mat_type < 19) {
+        return get_raw_material(mat_type);
     }
-    else if(mat_type == 0){
-        m = get_inorganic_material(mat_index);
-    }
-    else if(mat_type < 19){
-        m = get_raw_material(mat_type);
-    }
-    else if(mat_type < 219){
+    else if (mat_type < 219) {
         Race* r = get_race(mat_index);
-        if(r)
-        {
-            index = mat_type - 19; //base material types
-            m = r->get_creature_material(index);
-            r = 0;
-        }
-    }
-    else if(mat_type < 419)
-    {
+        if (r)
+            return r->get_creature_material(mat_type - 19);
+    } else if (mat_type < 419) {
         VIRTADDR hist_figure = find_historical_figure(mat_index);
-        if(hist_figure){
+        if (hist_figure) {
             Race *r = get_race(read_short(hist_figure + m_layout->hist_figure_offset("hist_race")));
-            if(r){
-                m = r->get_creature_material(mat_type-219);
-                r = 0;
-            }
+            if (r)
+                return r->get_creature_material(mat_type-219);
         }
-    }
-    else if(mat_type < 619){
+    } else if (mat_type < 619) {
         Plant *p = get_plant(mat_index);
-        index = mat_type -419;
-        if(p)
-            if(index < p->material_count()){
-                m = p->get_plant_material(index);
-            }
-        p = 0;
+        int index = mat_type - 419;
+        if (p && index < p->material_count())
+            return p->get_plant_material(index);
     }
-
-    return m;
-}
-
-
-VIRTADDR DFInstance::get_syndrome(int idx){
-    if(idx >= 0 && idx < m_all_syndromes.size()){
-        {return m_all_syndromes.at(idx);}
-    }else{
-        return -1;
-    }
+    return NULL;
 }
 
 bool DFInstance::authorize() {

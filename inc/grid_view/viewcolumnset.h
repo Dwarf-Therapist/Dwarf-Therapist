@@ -38,45 +38,44 @@ class Dwarf;
 ViewColumnSet
 */
 class ViewColumnSet : public QObject {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	ViewColumnSet(QString name, QObject *parent = 0);
-	ViewColumnSet(const ViewColumnSet &copy); //copy ctor
+    ViewColumnSet(QString name, QObject *parent = 0);
+    ViewColumnSet(const ViewColumnSet &copy); //copy ctor
     virtual ~ViewColumnSet();
 
     void re_parent(QObject *parent);
 
-	QString name() {return m_name;}
+    QString name() {return m_name;}
     void add_column(ViewColumn *col, int idx=-1);
-	void clear_columns();
-	void set_bg_color(const QColor &color) {m_bg_color = color;}
-	QColor bg_color() {return m_bg_color;}
-	QList<ViewColumn*> columns() {return m_columns;}
-	GridView *view() {return m_view;}
-	void remove_column(int offset) {m_columns.removeAt(offset);}
-	void remove_column(ViewColumn *vc) {m_columns.removeAll(vc);}
+    void set_bg_color(const QColor &color) {m_bg_color = color;}
+    QColor bg_color() {return m_bg_color;}
+    QList<ViewColumn*> columns() {return m_columns;}
+    GridView *view() {return m_view;}
+    void remove_column(int offset) {m_columns.removeAt(offset);}
+    void remove_column(ViewColumn *vc) {m_columns.removeAll(vc);}
     ViewColumn *column_at(int offset){return m_columns.at(offset);}
 
-	//! order of columns was changed by a view, so reflect those changes internally
-	void reorder_columns(const QStandardItemModel &model);
+    //! order of columns was changed by a view, so reflect those changes internally
+    void reorder_columns(const QStandardItemModel &model);
 
-	//! persist this structure to disk
+    //! persist this structure to disk
     void write_to_ini(QSettings &s, int start_idx=0);
-	//! factory method for creating a set based on a QSettings that has been pointed at a set entry
+    //! factory method for creating a set based on a QSettings that has been pointed at a set entry
     static ViewColumnSet *read_from_ini(QSettings &s, QObject *parent = 0, int set_num = -1);
 
-	public slots:
-		void set_name(const QString &name);
-		void toggle_for_dwarf(Dwarf *d);
-		void toggle_for_dwarf(); // from context menu of single labor
-		void toggle_for_dwarf_group(); // from context menu of aggregate
+    public slots:
+        void set_name(const QString &name);
+        void toggle_for_dwarf(Dwarf *d);
+        void toggle_for_dwarf(); // from context menu of single labor
+        void toggle_for_dwarf_group(); // from context menu of aggregate
 
 private:
-	QString m_name;
-	GridView *m_view;
-	QList<ViewColumn*> m_columns;
-	QBrush m_bg_brush; // possibly allow textured backgrounds in the long long ago, err future.
-	QColor m_bg_color;
+    QString m_name;
+    GridView *m_view;
+    QList<ViewColumn*> m_columns;
+    QBrush m_bg_brush; // possibly allow textured backgrounds in the long long ago, err future.
+    QColor m_bg_color;
 };
 
 #endif

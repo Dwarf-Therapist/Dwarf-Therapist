@@ -97,7 +97,7 @@ roleDialog::roleDialog(DFInstance *dfi, QWidget *parent) :
 
     connect(ui->tw_attributes, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_attribute_context_menu(const QPoint &)));
     connect(ui->tw_traits, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_trait_context_menu(const QPoint &)));
-    connect(ui->tw_skills, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_skill_context_menu(const QPoint &)));    
+    connect(ui->tw_skills, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_skill_context_menu(const QPoint &)));
     connect(ui->tw_prefs, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_prefs_context_menu(const QPoint &)));
 
     connect(ui->le_role_name, SIGNAL(textChanged(QString)), SLOT(name_changed(QString)));
@@ -270,7 +270,7 @@ void roleDialog::insert_row(QTableWidget &table, RoleAspect *a, QString key){
     title[0]=title[0].toUpper();
     QTableWidgetItem *name = new QTableWidgetItem();
     name->setData(0,title);
-    name->setData(Qt::UserRole,key);    
+    name->setData(Qt::UserRole,key);
     name->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     table.setItem(row,0,name);
 
@@ -383,7 +383,7 @@ void roleDialog::save_aspects(QTableWidget &table, QHash<QString, RoleAspect*> &
     }
 }
 
-void roleDialog::save_prefs(Role *r){    
+void roleDialog::save_prefs(Role *r){
     for(int i= 0; i<ui->tw_prefs->rowCount(); i++){
         float weight = static_cast<QDoubleSpinBox*>(ui->tw_prefs->cellWidget(i,1))->value();
         Preference *p = vPtr<Preference>::asPtr(ui->tw_prefs->item(i,0)->data(Qt::UserRole));
@@ -407,7 +407,7 @@ void roleDialog::close_pressed(){
     //if we were editing and cancelled, put the role back!
     if(m_role && !m_role->name.trimmed().isEmpty())
         GameDataReader::ptr()->get_roles().insert(m_role->name,m_role);
-    this->reject();    
+    this->reject();
 }
 
 //ATTRIBUTE CONTEXT MENUS
@@ -486,7 +486,7 @@ void roleDialog::remove_skill(){
             m_role->skills.remove(ui->tw_skills->item(i,0)->data(Qt::UserRole).toString().toLower());
             ui->tw_skills->removeRow(i);
         }
-    }    
+    }
 }
 
 
@@ -505,7 +505,7 @@ void roleDialog::draw_trait_context_menu(const QPoint &p) {
     QList<QPair<int, Trait*> > traits = gdr->get_ordered_traits();
     QPair<int, Trait*> trait_pair;
     foreach(trait_pair, traits) {
-        if(!m_role->traits.contains((QString)trait_pair.first)){            
+        if(!m_role->traits.contains((QString)trait_pair.first)){
             Trait *t = trait_pair.second;
             QMenu *menu_to_use = cmh.find_menu(m,t->name);
             a = menu_to_use->addAction(t->name, this, SLOT(add_trait()));
@@ -528,7 +528,7 @@ void roleDialog::remove_trait(){
             m_role->traits.remove(ui->tw_traits->item(i,0)->data(Qt::UserRole).toString().toLower());
             ui->tw_traits->removeRow(i);
         }
-    }    
+    }
 }
 
 //PREFERENCE CONTEXT MENU
@@ -609,7 +609,7 @@ void roleDialog::name_changed(QString text){
     if(ui->le_role_name){
         QPalette pal = ui->le_role_name->palette();
         if(GameDataReader::ptr()->get_default_roles().contains(text.trimmed())){
-            ui->le_role_name->setStatusTip("This role has the same name as a default role and will override it.");            
+            ui->le_role_name->setStatusTip("This role has the same name as a default role and will override it.");
             pal.setColor(QPalette::Base,color_override);
             m_override = true;
         }else{
@@ -699,7 +699,7 @@ void roleDialog::load_plant_prefs(QVector<Plant*> plants){
 
         if(p->flags().has_flag(P_SAPLING) || p->flags().has_flag(P_TREE)){
             add_pref_to_tree(m_trees,plant_pref);
-        }else{            
+        }else{
             add_pref_to_tree(m_plants,plant_pref);
 
             if(p->flags().has_flag(P_DRINK)){
@@ -751,7 +751,7 @@ void roleDialog::load_items(){
 
             //add all item types as a group to the general categories
             Preference *p = new Preference(pType, itype,this);
-            p->set_name(name);            
+            p->set_name(name);
             if(item_crafts.contains(itype))
                 add_pref_to_tree(m_general_craft,p);
             else
@@ -776,7 +776,6 @@ void roleDialog::add_general_creature_node(const QString suffix, QList<int> &fla
     *parent_node = init_parent_node(title);
 
     Preference *p = new Preference(LIKE_CREATURE, NONE,this);
-    p = new Preference(LIKE_CREATURE, NONE,this);
     foreach(int f, flags){
         p->add_flag(f);
     }
@@ -874,7 +873,7 @@ void roleDialog::load_weapons(){
         p->set_pref_flags(w);
         if(w->is_ranged()){
             add_pref_to_tree(ranged,p);
-        }else{            
+        }else{
             add_pref_to_tree(melee,p);
         }
     }
@@ -886,11 +885,11 @@ void roleDialog::build_pref_tree(){
     m_general_item = init_parent_node("~General Items");
     m_general_material = init_parent_node("~General Materials");
     m_general_creature = init_parent_node("~General Creatures");
-    m_general_craft = init_parent_node("~General Crafts");    
+    m_general_craft = init_parent_node("~General Crafts");
     m_general_other = init_parent_node("~General Other");
     m_general_plant = init_parent_node("~General Plants");
 
-    //setup other groups    
+    //setup other groups
     m_gems = init_parent_node("Gems");
     m_glass = init_parent_node("Glass & Crystals");
     m_metals = init_parent_node("Metals");

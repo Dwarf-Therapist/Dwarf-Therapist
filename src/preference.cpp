@@ -63,21 +63,16 @@ Preference::Preference(PREF_TYPES category, QString name, QObject *parent)
     ,m_exact_match(false)
 {}
 
-
 Preference::Preference(const Preference &p)
-    :QObject(p.parent())
-{
-    pref_aspect = p.pref_aspect;
-    m_name = p.m_name;
-    m_pType = p.m_pType;
-    m_iType = p.m_iType;
-    m_material_flags = p.m_material_flags;
-    m_special_flags = p.m_special_flags;
-    m_exact_match = p.m_exact_match;
-}
-
-Preference::~Preference(){
-}
+    : QObject(p.parent())
+    , pref_aspect(p.pref_aspect)
+    , m_name(p.m_name)
+    , m_pType(p.m_pType)
+    , m_iType(p.m_iType)
+    , m_material_flags(p.m_material_flags)
+    , m_special_flags(p.m_special_flags)
+    , m_exact_match(p.m_exact_match)
+{}
 
 void Preference::add_flag(int flag){
     if(!m_special_flags.contains(flag))
