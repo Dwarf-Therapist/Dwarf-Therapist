@@ -119,7 +119,7 @@ Squad* DwarfModel::get_squad(int id){
 }
 
 void DwarfModel::update_header_info(int id, COLUMN_TYPE type){
-    int index = 0;    
+    int index = 0;
     foreach(ViewColumnSet *set, m_gridview->sets()) {
         foreach(ViewColumn *col, set->columns()) {
             index ++;
@@ -150,7 +150,7 @@ void DwarfModel::draw_headers(){
     QStandardItem *name_col = new QStandardItem();
     name_col->setToolTip(tr("Right click to sort."));
     setHorizontalHeaderItem(0, name_col);
-    emit clear_spacers();    
+    emit clear_spacers();
 
     QString max_title = "";
     foreach(ViewColumnSet *set, m_gridview->sets()) {
@@ -176,7 +176,7 @@ void DwarfModel::draw_headers(){
             header->setToolTip(build_col_tooltip(col));
             header->setData(col->bg_color(), Qt::BackgroundColorRole);
             header->setData(set->name(), Qt::UserRole);
-            setHorizontalHeaderItem(start_col++, header);            
+            setHorizontalHeaderItem(start_col++, header);
             switch (col->type()) {
             case CT_SPACER:
             {
@@ -188,7 +188,7 @@ void DwarfModel::draw_headers(){
             default:
                 emit preferred_header_size(start_col - 1, m_cell_width);
             }
-        }        
+        }
     }
     emit preferred_header_height(max_title);
 }
@@ -258,10 +258,10 @@ void DwarfModel::build_rows() {
                 m_grouped_dwarves[0].append(d);
             }else if(m_group_by == GB_PROFESSION){
                 m_grouped_dwarves[d->profession()].append(d);
-            }else if(m_group_by == GB_SEX){                
+            }else if(m_group_by == GB_SEX){
                 m_grouped_dwarves[d->get_gender_orient_desc()].append(d);
             }else if(m_group_by == GB_MIGRATION_WAVE){
-                m_grouped_dwarves[d->get_migration_desc()].append(d);                
+                m_grouped_dwarves[d->get_migration_desc()].append(d);
             }else if(m_group_by == GB_AGE){
                 if(d->is_baby()){
                     m_grouped_dwarves[d->profession()].append(d);
@@ -550,7 +550,8 @@ void DwarfModel::build_row(const QString &key) {
         }
 
         i_name->setData(get_font(d->active_military(),name_italic),Qt::FontRole);
-        i_name->setToolTip(d->tooltip_text());
+        //i_name->setToolTip(d->tooltip_text());
+        i_name->setData(d->tooltip_text(),Qt::UserRole+100);
         i_name->setStatusTip(d->nice_name());
         i_name->setData(false, DR_IS_AGGREGATE);
         i_name->setData(0, DR_RATING);
@@ -606,7 +607,7 @@ void DwarfModel::build_row(const QString &key) {
                     item->setData(d->get_global_sort_key(m_group_by),DwarfModel::DR_GLOBAL);
                 items << item;
             }
-        }        
+        }
 
         if (agg_first_col) {
             agg_first_col->appendRow(items);
@@ -776,7 +777,7 @@ void DwarfModel::clear_pending() {
             d->clear_pending();
         }
     }
-    //reset();    
+    //reset();
     DT->emit_labor_counts_updated();
     emit new_pending_changes(0);
     emit need_redraw();

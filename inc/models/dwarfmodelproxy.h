@@ -58,7 +58,7 @@ public:
 
     DwarfModelProxy(QObject *parent = 0);
     DwarfModel* get_dwarf_model() const;
-    void sort(int column, Qt::SortOrder order);    
+    void sort(int column, Qt::SortOrder order);
     Qt::SortOrder m_last_sort_order;
     DWARF_SORT_ROLE m_last_sort_role;
 
@@ -69,10 +69,11 @@ public:
     void clear_script(const FILTER_SCRIPT_TYPE sType, const bool refresh);
 
     void refresh_script();
-    QList<Dwarf*> get_filtered_dwarves();       
+    QList<Dwarf*> get_filtered_dwarves();
 
 public slots:
-    void cell_activated(const QModelIndex &idx);    
+    void show_info(const QModelIndex &idx);
+    void cell_activated(const QModelIndex &idx);
     void setFilterFixedString(const QString &pattern);
     void sort(int, DwarfModelProxy::DWARF_SORT_ROLE, Qt::SortOrder order);
     void apply_script(const QString &script_name, const QString &script_body, const FILTER_SCRIPT_TYPE &sType = SCR_DEFAULT);
@@ -81,13 +82,14 @@ public slots:
 
 signals:
     void filter_changed();
+    void show_tooltip(QString);
 
 protected:
     bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
-	bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const;
+    bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const;
 
 private:
-	QString m_filter_text;
+    QString m_filter_text;
     QString m_test_script;
 #if QT_VERSION < 0x050000
     QScriptEngine

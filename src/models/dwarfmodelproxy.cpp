@@ -39,7 +39,7 @@ DwarfModelProxy::DwarfModelProxy(QObject *parent)
     :QSortFilterProxyModel(parent)
     , m_last_sort_order(Qt::AscendingOrder)
     , m_last_sort_role(DSR_NAME_ASC)
-    , m_engine(new QJSEngine(this))    
+    , m_engine(new QJSEngine(this))
 {
     this->setDynamicSortFilter(false);
 }
@@ -48,9 +48,19 @@ DwarfModel* DwarfModelProxy::get_dwarf_model() const {
     return static_cast<DwarfModel*>(sourceModel());
 }
 
-void DwarfModelProxy::cell_activated(const QModelIndex &idx) {    
+void DwarfModelProxy::cell_activated(const QModelIndex &idx) {
     QModelIndex new_idx = mapToSource(idx);
     return get_dwarf_model()->cell_activated(new_idx);
+}
+
+void DwarfModelProxy::show_info(const QModelIndex &idx) {
+    QModelIndex new_idx = mapToSource(idx);
+    if(new_idx.isValid()){
+        QStandardItem *item = get_dwarf_model()->itemFromIndex(new_idx);
+        if(item){
+            emit show_tooltip(item->data(Qt::UserRole+100).toString());
+        }
+    }
 }
 
 //this is called when the text of the filter box changes, pattern being the text typed in
