@@ -148,14 +148,12 @@ public:
     static const int STRING_LENGTH_OFFSET = 16; // Relative to STRING_BUFFER_OFFSET
     static const int STRING_CAP_OFFSET = 20;    // Relative to STRING_BUFFER_OFFSET
     static const int VECTOR_POINTER_OFFSET = 0;
-#endif
-#ifdef Q_OS_LINUX
+#elif defined(Q_OS_LINUX)
     static const int STRING_BUFFER_OFFSET = 0;
     static const int STRING_LENGTH_OFFSET = 0; // Dummy value
     static const int STRING_CAP_OFFSET = 0;    // Dummy value
     static const int VECTOR_POINTER_OFFSET = 0;
-#endif
-#ifdef Q_OS_MAC
+#elif defined(Q_OS_MAC)
     static const int STRING_BUFFER_OFFSET = 0;
     static const int STRING_LENGTH_OFFSET = 0; // Dummy value
     static const int STRING_CAP_OFFSET = 0;    // Dummy value
@@ -175,7 +173,7 @@ public:
 
     VIRTADDR find_historical_figure(int hist_id);
     VIRTADDR find_identity(int id);
-    VIRTADDR find_event(int id);    
+    VIRTADDR find_event(int id);
 
     FortressEntity * fortress() {return m_fortress;}
 
@@ -187,7 +185,9 @@ public:
         QString pref_category;
     };
 
-    VIRTADDR get_syndrome(int idx);
+    VIRTADDR get_syndrome(int idx) {
+        return m_all_syndromes.value(idx);
+    }
     VIRTADDR get_material_template(QString temp_id) {return m_material_templates.value(temp_id);}
     QVector<Material *> get_inorganic_materials() {return m_inorganics_vector;}
     QHash<ITEM_TYPE, QVector<VIRTADDR> > get_item_def() {return m_itemdef_vectors;}
@@ -213,9 +213,15 @@ public:
 
     QString get_color(int index);
     QString get_shape(int index);
-    Material * get_inorganic_material(int index);
-    Material * get_raw_material(int index);
-    Plant * get_plant(int index);
+    inline Material * get_inorganic_material(int index) {
+        return m_inorganics_vector.value(index);
+    }
+    inline Material * get_raw_material(int index) {
+        return m_base_materials.value(index);
+    }
+    inline Plant * get_plant(int index) {
+        return m_plants_vector.value(index);
+    }
     QString find_material_name(int mat_index, short mat_type, ITEM_TYPE itype);
     const QHash<QPair<QString,QString>,pref_stat*> get_preference_stats() {return m_pref_counts;}
     const QHash<short, QPair<int, int> > get_thought_stats() {return m_thought_counts;}
@@ -293,7 +299,7 @@ private:
 
     QHash<int,VIRTADDR> m_hist_figures;
     QVector<VIRTADDR> m_fake_identities;
-    QHash<int,VIRTADDR> m_events;    
+    QHash<int,VIRTADDR> m_events;
 
     QHash<ITEM_TYPE, QVector<VIRTADDR> > m_itemdef_vectors;
     QHash<ITEM_TYPE, QVector<VIRTADDR> > m_items_vectors;

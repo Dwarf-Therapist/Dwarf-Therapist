@@ -70,7 +70,7 @@ UnitWound::UnitWound(DFInstance *df, int body_part_id, UnitHealth *uh)
     ,m_sutured(false)
     ,m_infection(false)
     ,m_is_critical(false)
-{    
+{
     BodyPartDamage bp = m_unitHealth->get_body_part(body_part_id);
     BodyPartDamage parent;
     if(bp.body_part()->parent() > 0){
@@ -111,7 +111,7 @@ void UnitWound::read_wound(){
     quint32 general_flags = m_df->read_addr(m_addr + mem->wound_offset("general_flags"));
 
     if(has_flag(0x00000001,general_flags))
-        m_severed = true;    
+        m_severed = true;
     if(has_flag(0x00000002,general_flags))
         m_mortal = true;
     if(has_flag(0x00000004,general_flags))
@@ -137,10 +137,6 @@ void UnitWound::read_wound(){
         wpd.wound_flags2 = m_df->read_addr(wounded_part + mem->wound_offset("flags2"));
 
         VIRTADDR addr_effect = wounded_part + mem->wound_offset("effects_vector");
-//        wpd.effect_perc_1 = m_df->enumerate_vector_short(addr_effect);
-//        addr_effect += 0x10;
-//        wpd.effect_perc_2 = m_df->enumerate_vector_short(addr_effect);
-//        addr_effect += 0x10;
         wpd.effect_types = m_df->enumerate_vector_short(addr_effect);
 
         wpd.cur_pen = m_df->read_short(wounded_part + mem->wound_offset("cur_pen"));
@@ -321,7 +317,7 @@ void UnitWound::read_wound(){
             */
 
             //            int jammed_fracture_layer = m_df->read_int(wounded_part + 0x74);
-            //            if(jammed_fracture_layer > 0)            
+            //            if(jammed_fracture_layer > 0)
 
         }
 

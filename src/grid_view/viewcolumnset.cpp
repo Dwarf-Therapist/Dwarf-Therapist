@@ -120,15 +120,6 @@ void ViewColumnSet::add_column(ViewColumn *col,int idx) {
         m_columns.insert(idx,col);
 }
 
-void ViewColumnSet::clear_columns() {
-//    foreach(ViewColumn *col, m_columns) {
-//        col->deleteLater();
-//    }
-//    m_columns.clear();
-    qDeleteAll(m_columns);
-    m_columns.clear();
-}
-
 void ViewColumnSet::toggle_for_dwarf_group() {
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     QString group_name = a->data().toString();

@@ -101,11 +101,9 @@ void SuperLaborColumn::refresh(Dwarf *d, QStandardItem *item, QString title){
             modified_desc.append(labors.value(id));
     }
 
-    QString labors_desc = "";
-    labors_desc = tr("<br/><b>Labors:</b> %1").arg(labors.count() <= 0 ? tr("None") : modified_desc.join(", "));
+    QString labors_desc = tr("<br/><b>Labors:</b> %1").arg(labors.count() <= 0 ? tr("None") : modified_desc.join(", "));
 
-    QString skill_msg = "";
-    skill_msg = tr("<b>Average Skill Level:</b> %1<br/>").arg(QString::number((skill_rating < 0 ? 0 : skill_rating),'f',2));
+    QString skill_msg = tr("<b>Average Skill Level:</b> %1<br/>").arg(QString::number((skill_rating < 0 ? 0 : skill_rating),'f',2));
 
     float role_rating = ml->get_role_rating(d->id());
     QString role_msg = ml->get_role_name();

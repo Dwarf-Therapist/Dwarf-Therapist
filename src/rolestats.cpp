@@ -52,14 +52,14 @@ void RoleStats::init_list(){
     m_sum_upper = 0;
     m_factor = -1;
     m_upper_minmax_diff = -1;
-    m_upper_raw_min = -1;    
+    m_upper_raw_min = -1;
     m_transformations.clear();
 
     if(m_upper == 0)
         m_upper = QSharedPointer<ECDF>(new ECDF());
     else
     {
-	QSharedPointer<ECDF> new_ptr(new ECDF());
+    QSharedPointer<ECDF> new_ptr(new ECDF());
         m_upper.swap(new_ptr);
     }
 
@@ -195,7 +195,7 @@ double RoleStats::get_rating(double val){
 
 double RoleStats::get_transformations_rating(double val){
     Q_ASSERT(m_transformations.count() >= 3);
-    double rating = val;    
+    double rating = val;
     rating = range_transform(rating,m_transformations[0].min,m_transformations[0].average,m_transformations[0].max); //mean
     rating = range_transform(rating,m_transformations[1].min,m_transformations[1].median,m_transformations[1].max); //median
     rating += (0.5f-m_transformations[2].average); //median adj

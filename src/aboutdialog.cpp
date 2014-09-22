@@ -37,18 +37,6 @@ AboutDialog::AboutDialog(MainWindow *parent)
     connect(ui->pb_check_version, SIGNAL(clicked()), SLOT(check_version()));
 }
 
-void AboutDialog::set_latest_version(const Version &v) {
-    if (m_version < v) {
-//		ui->lbl_up_to_date->setText("Update Available: <a href=\"http://code.google.com/p/dwarftherapist/downloads/list\">v" + v.to_string() + "</a>");
-    } else {
-//		ui->lbl_up_to_date->setText(QString("This version is up to date (v%1)").arg(m_version.to_string()));
-    }
-}
-
-void AboutDialog::version_check_failed() {
-    ui->lbl_up_to_date->setText(tr("Version check failed"));
-}
-
 void AboutDialog::check_version() {
     DT->get_main_window()->check_latest_version(true);
 }

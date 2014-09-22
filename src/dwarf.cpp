@@ -90,7 +90,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_first_soul(0)
     , m_race_id(-1)
     , m_happiness(DH_MISERABLE)
-    , m_raw_happiness(0)    
+    , m_raw_happiness(0)
     , m_mood_id(-1)
     , m_had_mood(false)
     , m_artifact_name("")
@@ -106,7 +106,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_current_job_id(-1)
     , m_hist_figure(0x0)
     , m_squad_id(-1)
-    , m_squad_position(-1)    
+    , m_squad_position(-1)
     , m_pending_squad_name(QString::null)
     , m_age(0)
     , m_noble_position("")
@@ -180,7 +180,7 @@ Dwarf::~Dwarf() {
     m_hist_figure = 0;
     m_uniform = 0;
     m_race = 0;
-    m_caste = 0;    
+    m_caste = 0;
     m_mem = 0;
     m_df = 0;
 
@@ -294,7 +294,7 @@ void Dwarf::refresh_data() {
         this->is_valid();
     if(m_is_valid){
         read_hist_fig(); //read before noble positions, curse
-        read_caste(); //read before age        
+        read_caste(); //read before age
         read_labors();
         read_happiness();
         read_squad_info(); //read squad before job
@@ -303,13 +303,13 @@ void Dwarf::refresh_data() {
         read_current_job();
         read_syndromes(); //read syndromes before attributes
         read_turn_count(); //load time/date stuff for births/migrations - read before age
-        set_age_and_migration(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time")); //set age before profession        
+        set_age_and_migration(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time")); //set age before profession
         read_body_size(); //body size after caste and age
         //curse check will change the name and age
         read_curse(); //read curse before attributes
         read_soul_aspects(); //assumes soul already read, and requires caste to be read first
         read_gender_orientation();
-        read_animal_type(); //need skills loaded to check for hostiles        
+        read_animal_type(); //need skills loaded to check for hostiles
         read_noble_position();
         read_preferences();
 
@@ -504,7 +504,7 @@ QString Dwarf::get_migration_desc(){
 *******************************************************************************/
 
 void Dwarf::read_id() {
-    m_id = m_df->read_int(m_address + m_mem->dwarf_offset("id"));            
+    m_id = m_df->read_int(m_address + m_mem->dwarf_offset("id"));
     TRACE << "UNIT ID:" << m_id;
 }
 
@@ -641,7 +641,7 @@ void Dwarf::read_states(){
     }
 }
 
-void Dwarf::read_curse(){    
+void Dwarf::read_curse(){
     QString curse_name = capitalizeEach(m_df->read_string(m_address + m_mem->dwarf_offset("curse")));
 
     if(!curse_name.isEmpty()){
@@ -655,7 +655,7 @@ void Dwarf::read_curse(){
             //if it's a vampire then find the vampire's fake identity and use that name/age instead to match DF
             find_true_ident();
             m_curse_type = eCurse::VAMPIRE;
-        }        
+        }
 
         m_curse_name = curse_name;
     }
@@ -872,7 +872,7 @@ void Dwarf::read_preferences(){
     QString pref_name = "Unknown";
     ITEM_TYPE itype;
     PREF_TYPES ptype;
-    Preference *p;    
+    Preference *p;
     foreach(VIRTADDR pref, preferences){
         pref_type = m_df->read_short(pref);
         pref_id = m_df->read_short(pref + 0x2);
@@ -894,17 +894,16 @@ void Dwarf::read_preferences(){
         {
             pref_name = m_df->find_material_name(mat_index,mat_type,NONE);
             Material *m = m_df->find_material(mat_index,mat_type);
-            if(m->id() >= 0){
+            if(m && m->id() >= 0){
                 p->set_material_flags(m->flags());
             }
-            m = 0;
         }
             break;
         case 1: //like creature
         {
             Race* r = m_df->get_race(pref_id);
-            if(r){                
-                pref_name = r->plural_name().toLower();                
+            if(r){
+                pref_name = r->plural_name().toLower();
                 p->set_pref_flags(r);
             }
         }
@@ -954,7 +953,9 @@ void Dwarf::read_preferences(){
             break;
         case 6: //like tree
         {
-            pref_name = m_df->get_plant(pref_id)->name_plural().toLower();
+            Plant *plnt = m_df->get_plant(pref_id);
+            if (plnt)
+                pref_name = plnt->name_plural().toLower();
         }
             break;
         case 7: //like color
@@ -1565,7 +1566,7 @@ void Dwarf::read_inventory(){
         }else{
             LOGD << "  - skipping inventory item due to invalid type (" + QString::number(inv_type) + ")";
         }
-    }    
+    }
     LOGD << "  total inventory items found:" << inv_count;
 
     //missing uniform items
@@ -1744,13 +1745,13 @@ void Dwarf::read_skills() {
     }
 }
 
-void Dwarf::read_personality() {        
+void Dwarf::read_personality() {
     if(!m_is_animal){
         VIRTADDR personality_addr = m_first_soul + m_mem->soul_detail("personality");
 
         //read personal beliefs before traits, as a dwarf will have a conflict with either personal beliefs or cultural beliefs
         m_beliefs.clear();
-        QVector<VIRTADDR> m_beliefs_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("beliefs"));        
+        QVector<VIRTADDR> m_beliefs_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("beliefs"));
         foreach(VIRTADDR addr, m_beliefs_addrs){
             int belief_id = m_df->read_int(addr);
             if(belief_id >= 0){
@@ -1772,12 +1773,12 @@ void Dwarf::read_personality() {
                 val = 100;
             m_traits.insert(trait_id, val);
 
-            QList<int> possible_conflicts = GameDataReader::ptr()->get_trait(trait_id)->get_conflicting_beliefs();            
+            QList<int> possible_conflicts = GameDataReader::ptr()->get_trait(trait_id)->get_conflicting_beliefs();
             foreach(int belief_id, possible_conflicts){
                 UnitBelief ub = get_unit_belief(belief_id);
                 if((ub.belief_value() > 10 && val < 40)  || (ub.belief_value() < -10 && val > 60)){
                     m_beliefs[belief_id].add_trait_conflict(trait_id);
-                    m_conflicting_beliefs.insertMulti(trait_id, ub);                    
+                    m_conflicting_beliefs.insertMulti(trait_id, ub);
                 }
             }
         }
@@ -2129,7 +2130,7 @@ void Dwarf::clear_pending() {
             if(s)
                 s->assign_to_squad(this); //updates uniform/inventory/squad
         }
-    }        
+    }
 
     //refresh any other data that may have been pending commit
     refresh_minimal_data();
@@ -2166,11 +2167,11 @@ void Dwarf::commit_pending(bool single) {
     if (m_caged != m_unit_flags.at(0))
         m_df->write_raw(m_address + m_mem->dwarf_offset("flags1"), 4, &m_caged);
     if (m_butcher != m_unit_flags.at(1))
-        m_df->write_raw(m_address + m_mem->dwarf_offset("flags2"), 4, &m_butcher);    
+        m_df->write_raw(m_address + m_mem->dwarf_offset("flags2"), 4, &m_butcher);
 
     int pen_sq_id = -1;
     int pen_sq_pos = -1;
-    QString pen_sq_name = "";    
+    QString pen_sq_name = "";
     if(m_pending_squad_id != m_squad_id){
         if(!single){    //currently we can't apply squad changes individually
             Squad *s;
@@ -2390,7 +2391,7 @@ QString Dwarf::tooltip_text() {
                     continue;
                 Belief *b = gdr->get_belief(belief_id);
                 if (!b)
-                    continue;                
+                    continue;
                 beliefs_list.append(capitalize(b->level_message(m_beliefs.value(belief_id).belief_value())));
             }
             if(beliefs_list.size() > 0)
@@ -2653,14 +2654,14 @@ QList<double> Dwarf::calc_role_ratings(){
     m_role_ratings.clear();
     m_raw_role_ratings.clear();
     m_sorted_role_ratings.clear();
-    m_sorted_custom_role_ratings.clear();    
+    m_sorted_custom_role_ratings.clear();
     double rating = 0.0;
     foreach(Role *m_role, GameDataReader::ptr()->get_roles()){
         if(m_role){
             rating = calc_role_rating(m_role);
             m_raw_role_ratings.insert(m_role->name, rating);
         }
-    }    
+    }
     return m_raw_role_ratings.values();
 }
 
@@ -2821,7 +2822,7 @@ void Dwarf::refresh_role_display_ratings(){
         m_role_ratings.insert(name,display_rating);
         sr.rating = display_rating;
         sr.name = name;
-        m_sorted_role_ratings.append(sr);        
+        m_sorted_role_ratings.append(sr);
     }
     if(DT->user_settings()->value("options/show_custom_roles",false).toBool()){
         qSort(m_sorted_role_ratings.begin(),m_sorted_role_ratings.end(),&Dwarf::sort_ratings_custom);
