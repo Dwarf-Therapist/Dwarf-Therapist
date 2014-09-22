@@ -24,7 +24,6 @@ THE SOFTWARE.
 #define SKILL_COLUMN_H
 
 #include "viewcolumn.h"
-class Role;
 
 class SkillColumn : public ViewColumn {
 public:
@@ -32,19 +31,19 @@ public:
     SkillColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
     SkillColumn(const SkillColumn &to_copy); // copy ctor
     SkillColumn* clone() {return new SkillColumn(*this);}
-	QStandardItem *build_cell(Dwarf *d);
-	QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
-	int skill_id() {return m_skill_id;}
-	void set_skill_id(int skill_id) {m_skill_id = skill_id;}
+    QStandardItem *build_cell(Dwarf *d);
+    QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
+    int skill_id() {return m_skill_id;}
+    void set_skill_id(int skill_id) {m_skill_id = skill_id;}
 
-	//override    
+    //override
     void write_to_ini(QSettings &s);
 
-public slots:    
+public slots:
     void refresh_sort(COLUMN_SORT_TYPE sType);
 
 protected:
-	int m_skill_id;
+    int m_skill_id;
     float m_sort_val;
     void build_tooltip(Dwarf *d, bool include_roles);
     void refresh_sort(Dwarf *d, COLUMN_SORT_TYPE sType = CST_LEVEL);

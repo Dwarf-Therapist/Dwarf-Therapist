@@ -21,8 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <QMessageBox>
-#include <QToolTip>
 #include "dwarftherapist.h"
 #include "mainwindow.h"
 #include "optionsmenu.h"
@@ -41,6 +39,10 @@ THE SOFTWARE.
 #include "dwarfstats.h"
 #include "defaultfonts.h"
 
+#include <QMessageBox>
+#include <QToolTip>
+#include <QTranslator>
+#include <QTimer>
 
 DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     : QApplication(argc, argv)

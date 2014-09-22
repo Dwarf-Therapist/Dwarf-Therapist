@@ -24,7 +24,6 @@ THE SOFTWARE.
 #define DFINSTANCE_H
 
 #include <QDir>
-#include <QFile>
 #include "utils.h"
 #include "word.h"
 #include "global_enums.h"
@@ -40,7 +39,7 @@ class FortressEntity;
 class ItemWeaponSubtype;
 class Material;
 class Plant;
-
+class QFile;
 
 class DFInstance : public QObject {
     Q_OBJECT

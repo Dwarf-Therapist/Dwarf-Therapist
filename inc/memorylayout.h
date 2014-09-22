@@ -2,12 +2,12 @@
 #define MEMORY_LAYOUT_H
 
 #include "utils.h"
-#include <QtCore>
+#include <QSettings>
 
 class MemoryLayout {
 public:
     explicit MemoryLayout(const QString &filename);
-    MemoryLayout(const QString & filename, QSettings * data);
+    MemoryLayout(const QString & filename, const QSettings &data);
 
     QString filename() {return m_filename;}
     bool is_valid();
@@ -87,7 +87,7 @@ public:
     }
 
 
-    QSettings * data() { return m_data; }
+    QSettings &data() { return m_data; }
     uint job_detail(const QString &key) {return m_job_details.value(key, -1);}
     uint soul_detail(const QString &key) {return m_soul_details.value(key, -1);}
     QHash<uint, QString> valid_flags_1() {return m_valid_flags_1;}
@@ -145,7 +145,7 @@ private:
     QHash<uint, QString> m_invalid_flags_1;
     QHash<uint, QString> m_invalid_flags_2;
     QHash<uint, QString> m_invalid_flags_3;
-    QSettings *m_data;
+    QSettings m_data;
     bool m_complete;
     VIRTADDR m_base_addr;
 

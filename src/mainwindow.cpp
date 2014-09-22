@@ -20,16 +20,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QDesktopServices>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QtDebug>
-#include <QShortcut>
-
 #include "mainwindow.h"
-#include "ui_about.h"
 #include "ui_mainwindow.h"
-#include "ui_pendingchanges.h"
 #include "aboutdialog.h"
 #include "dwarf.h"
 #include "dwarfmodel.h"
@@ -37,10 +29,8 @@ THE SOFTWARE.
 #include "memorylayout.h"
 #include "viewmanager.h"
 #include "viewcolumnset.h"
-#include "uberdelegate.h"
 #include "customprofession.h"
 #include "superlabor.h"
-#include "labor.h"
 #include "defines.h"
 #include "version.h"
 #include "dwarftherapist.h"
@@ -63,14 +53,19 @@ THE SOFTWARE.
 #include "optimizereditor.h"
 #include "gamedatareader.h"
 #include "thoughtsdock.h"
-#include "fortressentity.h"
 #include "preference.h"
 #include "healthlegenddock.h"
 #include "dfinstance.h"
 #include "squad.h"
-
 #include "eventfilterlineedit.h"
+#include "gridview.h"
 
+#include <QDesktopServices>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QShortcut>
+#include <QTime>
+#include <QPainter>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -491,7 +486,7 @@ void MainWindow::read_dwarves() {
     //apply a filter when an item is clicked with the mouse in the popup list
     connect(m_dwarf_name_completer->popup(),SIGNAL(clicked(QModelIndex)),this,SLOT(apply_filter(QModelIndex)));
     //we need a custom event filter to intercept the enter key and emit our own signal to filter when enter is hit
-    EventFilterLineEdit *filter = new EventFilterLineEdit(ui->le_filter_text);
+    EventFilterLineEdit *filter = new EventFilterLineEdit(ui->le_filter_text, this);
     m_dwarf_name_completer->popup()->installEventFilter(filter);
     connect(filter,SIGNAL(enterPressed(QModelIndex)),this,SLOT(apply_filter(QModelIndex)));
 

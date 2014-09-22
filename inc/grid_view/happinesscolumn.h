@@ -24,21 +24,20 @@ THE SOFTWARE.
 #define HAPPINESS_COLUMN_H
 
 #include "viewcolumn.h"
-#include "dwarf.h"
 #include "global_enums.h"
 
 class HappinessColumn : public ViewColumn {
 public:
     HappinessColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
-	HappinessColumn(QString title, ViewColumnSet *set = 0, QObject *parent = 0);
+    HappinessColumn(QString title, ViewColumnSet *set = 0, QObject *parent = 0);
     HappinessColumn(const HappinessColumn &to_copy); // copy ctor
     HappinessColumn* clone() {return new HappinessColumn(*this);}
-	QStandardItem *build_cell(Dwarf *d);
-	QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
+    QStandardItem *build_cell(Dwarf *d);
+    QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 
-	public slots:
+    public slots:
         void read_settings();
-		void redraw_cells();
+        void redraw_cells();
 private:
     QMap<DWARF_HAPPINESS, QColor> m_colors;
 };

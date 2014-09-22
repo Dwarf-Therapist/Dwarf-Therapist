@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "dwarfstats.h"
 #include "dwarftherapist.h"
 #include "gamedatareader.h"
+#include <QSettings>
 
 QHash<int, QVector<QString> > Attribute::m_display_descriptions;
 
@@ -35,7 +36,7 @@ Attribute::Attribute()
     , m_value_balanced(-1)
     , m_display_value(0)
     , m_max(0)
-    , m_rating_potential(-1)    
+    , m_rating_potential(-1)
     , m_rating(-1)
     , m_cti(0)
     , m_descriptor("")

@@ -24,16 +24,15 @@ THE SOFTWARE.
 #define SQUAD_H
 
 #include <QObject>
-#include <QTreeWidgetItem>
 #include "utils.h"
 #include "global_enums.h"
 //#include "itemdefuniform.h"
 
 class Dwarf;
-class Word;
 class DFInstance;
 class MemoryLayout;
 class Uniform;
+class QTreeWidgetItem;
 
 class Squad : public QObject {
     Q_OBJECT
@@ -41,13 +40,11 @@ public:
     Squad(int id, DFInstance *df, VIRTADDR address, QObject *parent = 0);
     virtual ~Squad();
 
-    static Squad* get_squad(int id, DFInstance *df, const VIRTADDR &address);
-
     //! Return the memory address (in hex) of this creature in the remote DF process
     VIRTADDR address() {return m_address;}
     int id() {return m_id;}
-    QString name() {return m_name;}    
-    int assigned_count();    
+    QString name() {return m_name;}
+    int assigned_count();
 
     void rename_squad(QString alias);
     void assign_to_squad(Dwarf *d, bool committing = false);
@@ -64,7 +61,7 @@ private:
     int m_id;
     QString m_name;
     DFInstance * m_df;
-    MemoryLayout * m_mem;    
+    MemoryLayout * m_mem;
     //! position, dwarf hist_id
     QMap<int,int> m_members;
     QVector<VIRTADDR> m_members_addr;

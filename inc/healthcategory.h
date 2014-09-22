@@ -3,6 +3,7 @@
 
 #include "truncatingfilelogger.h"
 #include "healthinfo.h"
+#include <QSettings>
 
 class MemoryLayout;
 class DFInstance;

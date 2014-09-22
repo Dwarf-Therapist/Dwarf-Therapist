@@ -24,14 +24,13 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "memorylayout.h"
 #include "truncatingfilelogger.h"
-#include <QtDebug>
 
 Material::Material(QObject *parent)
     : QObject(parent)
     , m_index(-1)
     , m_address(0x0)
     , m_df(0x0)
-    , m_mem(0x0)    
+    , m_mem(0x0)
     , m_flags()
     , m_inorganic(false)
     , m_is_generated(false)
@@ -51,7 +50,7 @@ Material::Material(DFInstance *df, VIRTADDR address, int index, bool inorganic, 
     load_data();
 }
 
-Material::~Material() {    
+Material::~Material() {
     m_state_names.clear();
 }
 
@@ -90,7 +89,7 @@ void Material::read_material() {
     if(!m_df)
         return;
 
-    //read material names    
+    //read material names
     m_state_names.insert(SOLID,m_df->read_string(m_address + m_mem->material_offset("solid_name")));
     m_state_names.insert(LIQUID,m_df->read_string(m_address + m_mem->material_offset("liquid_name")));
     m_state_names.insert(GAS,m_df->read_string(m_address + m_mem->material_offset("gas_name")));
@@ -111,11 +110,11 @@ void Material::read_material() {
     m_flags = FlagArray(m_df,m_flag_address);
     if(m_flags.has_flag(24)){
         generic_state_name = m_state_names[SOLID] + tr(" fabric");
-    }    
+    }
 
     //int material_value = m_df->read_int(m_address + 0x244);
 
-    m_state_names.insert(GENERIC, generic_state_name);    
+    m_state_names.insert(GENERIC, generic_state_name);
 }
 
 QString Material::get_material_name(MATERIAL_STATES state){

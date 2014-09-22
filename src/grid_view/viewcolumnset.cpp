@@ -23,7 +23,6 @@ THE SOFTWARE.
 
 #include "viewcolumnset.h"
 #include "columntypes.h"
-#include "viewmanager.h"
 #include "laborcolumn.h"
 #include "happinesscolumn.h"
 #include "spacercolumn.h"
@@ -33,9 +32,7 @@ THE SOFTWARE.
 #include "traitcolumn.h"
 #include "attributecolumn.h"
 #include "rolecolumn.h"
-#include "gamedatareader.h"
 #include "truncatingfilelogger.h"
-#include "labor.h"
 #include "utils.h"
 #include "dwarftherapist.h"
 #include "dwarf.h"
@@ -267,7 +264,7 @@ ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent, int s
         case CT_ROLE:
             new RoleColumn(s, ret_val, parent);
             break;
-        case CT_WEAPON:            
+        case CT_WEAPON:
             new WeaponColumn(s,ret_val,parent);
             break;
         case CT_PROFESSION:

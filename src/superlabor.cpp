@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "labor.h"
 #include "dwarf.h"
+#include "defines.h"
 
 //new blank superlabor
 SuperLabor::SuperLabor(QObject *parent)

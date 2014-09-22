@@ -24,10 +24,11 @@ THE SOFTWARE.
 #define OPTIONS_MENU_H
 
 #include <QDialog>
-#include "ui_optionsmenu.h"
 #include "uberdelegate.h"
 
+namespace Ui { class OptionsMenu; }
 class CustomColor;
+class QLabel;
 
 class OptionsMenu : public QDialog {
     Q_OBJECT

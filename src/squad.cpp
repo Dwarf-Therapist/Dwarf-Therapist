@@ -22,19 +22,16 @@ THE SOFTWARE.
 */
 #include "squad.h"
 #include "dwarf.h"
-#include "word.h"
-#include "dwarfmodel.h"
 #include "dfinstance.h"
 #include "memorylayout.h"
 #include "dwarftherapist.h"
-#include "mainwindow.h"
 #include "truncatingfilelogger.h"
 #include "fortressentity.h"
 #include "uniform.h"
-#include "math.h"
+#include <QTreeWidgetItem>
 
 Squad::Squad(int id, DFInstance *df, VIRTADDR address, QObject *parent)
-    : QObject(parent)    
+    : QObject(parent)
     , m_address(address)
     , m_id(id)
     , m_df(df)
@@ -46,10 +43,6 @@ Squad::Squad(int id, DFInstance *df, VIRTADDR address, QObject *parent)
 Squad::~Squad() {
     m_df = 0;
     m_uniforms.clear();
-}
-
-Squad* Squad::get_squad(int id, DFInstance *df, const VIRTADDR & address) {
-    return new Squad(id, df, address);
 }
 
 void Squad::read_data() {
@@ -106,7 +99,7 @@ void Squad::read_members() {
 
     //read the uniforms
     int position = 0;
-    Uniform *u;    
+    Uniform *u;
     foreach(addr, m_members_addr){
         u = new Uniform(m_df,this);
 

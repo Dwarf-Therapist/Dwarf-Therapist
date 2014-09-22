@@ -29,7 +29,9 @@ http://www.opensource.org/licenses/mit-license.php
 #include "defines.h"
 #include "truncatingfilelogger.h"
 #include "gamedatareader.h"
+#include "dfinstance.h"
 #include "utils.h"
+#include <QThread>
 
 #ifdef Q_OS_WIN
 #define RACE_INDEX_MAGIC_REFERENCE ((const ushort)0x3966)

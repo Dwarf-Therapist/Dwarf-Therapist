@@ -20,34 +20,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QVector>
-
-#if QT_VERSION < 0x050000
-# include <QScriptEngine>
-# define QJSEngine QScriptEngine
-# define QJSValue QScriptValue
-#else
-# include <QJSEngine>
-#endif
-
-#include <QDebug>
-#include <QAction>
-#include <QDialog>
-#include <QTextEdit>
-#include <QMessageBox>
-#include <QClipboard>
 #include "dwarf.h"
 #include "dfinstance.h"
 #include "skill.h"
 #include "trait.h"
 #include "belief.h"
 #include "dwarfjob.h"
-#include "defines.h"
 #include "gamedatareader.h"
 #include "customprofession.h"
 #include "memorylayout.h"
 #include "dwarftherapist.h"
-#include "dwarfdetailswidget.h"
 #include "mainwindow.h"
 #include "profession.h"
 #include "dwarfstats.h"
@@ -64,7 +46,6 @@ THE SOFTWARE.
 #include "material.h"
 #include "caste.h"
 #include "attribute.h"
-#include "itemweaponsubtype.h"
 #include "roleaspect.h"
 #include "thought.h"
 
@@ -75,6 +56,23 @@ THE SOFTWARE.
 
 #include "squad.h"
 #include "histfigure.h"
+
+#include <QVector>
+#include <QAction>
+#include <QDialog>
+#include <QTextEdit>
+#include <QMessageBox>
+#include <QClipboard>
+#include <QDateTime>
+#include <QTreeWidgetItem>
+#include <QVBoxLayout>
+#if QT_VERSION < 0x050000
+# include <QScriptEngine>
+# define QJSEngine QScriptEngine
+# define QJSValue QScriptValue
+#else
+# include <QJSEngine>
+#endif
 
 quint32 Dwarf::ticks_per_day = 1200;
 quint32 Dwarf::ticks_per_month = 28 * Dwarf::ticks_per_day;

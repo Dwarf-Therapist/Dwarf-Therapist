@@ -20,27 +20,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QMenu>
-#include <QMessageBox>
-#include <QInputDialog>
-#include <QHeaderView>
 #include "viewmanager.h"
 #include "statetableview.h"
 #include "dwarfmodel.h"
 #include "dwarfmodelproxy.h"
 #include "gridview.h"
-#include "defines.h"
 #include "truncatingfilelogger.h"
 #include "dwarftherapist.h"
 #include "viewcolumnset.h"
 #include "viewcolumn.h"
-#include "utils.h"
-#include "gamedatareader.h"
 #include "weaponcolumn.h"
-#include "spacercolumn.h"
 #include "dfinstance.h"
 #include "itemweaponsubtype.h"
 #include "dwarf.h"
+#include <QMenu>
+#include <QMessageBox>
+#include <QInputDialog>
+#include <QHeaderView>
+#include <QTime>
+#include <QErrorMessage>
 
 #if QT_VERSION < 0x050000
 # define setSectionResizeMode setResizeMode
@@ -246,7 +244,7 @@ void ViewManager::add_weapons_view(QList<GridView*> &built_in_views){
 
         //by default add as few types as possible (ie. wavy pikes are the same as pikes) to keep the count down
         QStringList added;
-        ViewColumnSet *vcs = new ViewColumnSet("All Weapons", this);        
+        ViewColumnSet *vcs = new ViewColumnSet("All Weapons", this);
         foreach(ItemWeaponSubtype *w, m_df->get_ordered_weapon_defs().values()){
             if(!added.contains(w->group_name())){
                 new WeaponColumn(w->group_name(),w->subType(),vcs,this);

@@ -22,10 +22,6 @@ THE SOFTWARE.
 */
 #include "dfinstance.h"
 #include "dfinstancelinux.h"
-#include "defines.h"
-#include "dwarf.h"
-#include "gamedatareader.h"
-#include "memorylayout.h"
 #include "memorysegment.h"
 #include "truncatingfilelogger.h"
 #include "cp437codec.h"
@@ -33,15 +29,21 @@ THE SOFTWARE.
 
 #include <QInputDialog>
 #include <QMessageBox>
-#include <QtDebug>
+#include <QCryptographicHash>
+#include <QDirIterator>
+#if QT_VERSION >= 0x050000
+# include <QRegularExpression>
+#else
+# include <QRegExp>
+#endif
 
-#include <unistd.h>
-#include <sys/syscall.h>
-#include <sys/ptrace.h>
-#include <sys/user.h>
-#include <sys/mman.h>
 #include <errno.h>
-#include <wait.h>
+#include <sys/mman.h>
+#include <sys/ptrace.h>
+#include <sys/syscall.h>
+#include <sys/user.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 struct STLStringHeader {
     quint32 length;

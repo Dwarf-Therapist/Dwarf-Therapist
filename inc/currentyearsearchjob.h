@@ -28,7 +28,9 @@ THE SOFTWARE.
 #include "truncatingfilelogger.h"
 #include "gamedatareader.h"
 #include "memorylayout.h"
+#include "dfinstance.h"
 #include "utils.h"
+#include <QThread>
 
 class CurrentYearSearchJob : public ScannerJob {
     Q_OBJECT

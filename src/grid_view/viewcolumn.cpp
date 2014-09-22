@@ -25,7 +25,6 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "utils.h"
 #include "dwarftherapist.h"
-#include "truncatingfilelogger.h"
 
 ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,
                        QObject *parent, int col_idx)
@@ -99,7 +98,7 @@ QStandardItem *ViewColumn::init_cell(Dwarf *d) {
     item->setData(false, DwarfModel::DR_IS_AGGREGATE);
     item->setData(d->id(), DwarfModel::DR_ID);
     item->setData(0,DwarfModel::DR_BASE_SORT);
-    m_cells[d] = item;    
+    m_cells[d] = item;
 
     return item;
 }
@@ -117,7 +116,7 @@ QStandardItem *ViewColumn::init_aggregate(QString group_name){
     item->setData(bg, Qt::BackgroundColorRole);
     item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
 
-    item->setData(group_name, DwarfModel::DR_GROUP_NAME);    
+    item->setData(group_name, DwarfModel::DR_GROUP_NAME);
     item->setData(-1, DwarfModel::DR_RATING);
     item->setData(-1, DwarfModel::DR_DISPLAY_RATING);
     item->setData(m_set->name(), DwarfModel::DR_SET_NAME);

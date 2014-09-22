@@ -24,13 +24,14 @@ THE SOFTWARE.
 #define FLAGARRAY_H
 
 #include <QBitArray>
+#include "dfinstance.h"
 #include "truncatingfilelogger.h"
 
 class MemoryLayout;
 class DFInstance;
 
 class FlagArray
-{    
+{
 private:
     QBitArray m_flags;
     DFInstance *m_df;

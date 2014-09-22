@@ -26,15 +26,14 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "dwarf.h"
 #include "defines.h"
-#include "gridview.h"
 #include "columntypes.h"
 #include "utils.h"
 #include "dwarftherapist.h"
 #include "skill.h"
 #include "labor.h"
-#include "customprofession.h"
 #include "defaultfonts.h"
-#include "dwarfstats.h"
+#include "item.h"
+#include <QPainter>
 
 UberDelegate::UberDelegate(QObject *parent)
     : QStyledItemDelegate(parent)
@@ -228,7 +227,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
 
         int dirty_alpha = 255;
         int active_alpha = 255;
-        int min_alpha = 75;        
+        int min_alpha = 75;
 
         if(d){
             if(idx.data(DwarfModel::DR_LABORS).canConvert<QVariantList>()){
@@ -483,10 +482,10 @@ QColor UberDelegate::paint_bg(const QRect &adjusted, QPainter *p, const QStyleOp
         bg = col_override;
 
     if(use_gradient && gradient_cell_bg){
-        QLinearGradient grad(adjusted.topLeft(),adjusted.bottomRight());        
+        QLinearGradient grad(adjusted.topLeft(),adjusted.bottomRight());
         grad.setColorAt(0,bg);
         bg.setAlpha(75);
-        grad.setColorAt(1,bg);        
+        grad.setColorAt(1,bg);
         p->fillRect(adjusted, grad);
     }else{
         p->fillRect(adjusted, QBrush(bg));
@@ -583,7 +582,7 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
         } else if (rating > -1 && rating < max_limit) {
             //0.05625 is the smallest dot we can draw here, so scale to ensure the smallest exp value (1/500 or .002) can always be drawn
             //relative to our maximum limit for this range. this could still be improved to take into account the cell size, as having even
-            //smaller cells than the default (16) may not draw very low dabbling skill xp levels            
+            //smaller cells than the default (16) may not draw very low dabbling skill xp levels
             float perc_of_cell = 0.76f; //max amount of the cell to fill
             double size = (((adj_rating-min_limit) * (perc_of_cell - 0.05625)) / (max_limit - min_limit)) + 0.05625;
             //double size = (((adj_rating-0) * (perc_of_cell - 0.05625)) / (100.0f-0)) + 0.05625;

@@ -20,17 +20,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QtCore>
-#include <QtDebug>
-
 #include "dfinstance.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
 #include "skill.h"
-#include "labor.h"
-#include "profession.h"
 #include "squad.h"
-#include "statetableview.h"
 #include "truncatingfilelogger.h"
 #include "dwarftherapist.h"
 #include "defaultfonts.h"
@@ -40,7 +34,6 @@ THE SOFTWARE.
 #include "viewcolumnset.h"
 #include "viewcolumn.h"
 #include "laborcolumn.h"
-#include "skillcolumn.h"
 #include "spacercolumn.h"
 #include "races.h"
 #include "fortressentity.h"
@@ -48,8 +41,9 @@ THE SOFTWARE.
 #include "dwarfjob.h"
 #include "unithealth.h"
 #include "customprofession.h"
+#include "defines.h"
 
-#include "superlaborcolumn.h"
+#include <QTime>
 
 DwarfModel::DwarfModel(QObject *parent)
     : QStandardItemModel(parent)

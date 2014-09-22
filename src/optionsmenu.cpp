@@ -21,22 +21,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <QFontDialog>
-#include <QMessageBox>
 #include "optionsmenu.h"
 #include "customcolor.h"
-#include "dwarf.h"
 #include "dwarftherapist.h"
-#include "utils.h"
 #include "defines.h"
 #include "truncatingfilelogger.h"
 #include "uberdelegate.h"
 #include "mainwindow.h"
 #include "fortressentity.h"
-#include "dfinstance.h"
-#include "gamedatareader.h"
 #include "defaultfonts.h"
-#include "global_enums.h"
+#include "ui_optionsmenu.h"
+#include "gamedatareader.h"
+#include <QMessageBox>
+#include <QSettings>
+#include <QFontDialog>
 
 OptionsMenu::OptionsMenu(QWidget *parent)
     : QDialog(parent)
@@ -251,7 +249,7 @@ void OptionsMenu::read_settings() {
         m_general_colors.at(8)->setDisabled(true);
         m_general_colors.at(9)->setDisabled(true);
     }
-    s->endGroup();        
+    s->endGroup();
 
     temp = s->value("tooltip_font", QFont(DefaultFonts::getTooltipFontName(), DefaultFonts::getTooltipFontSize())).value<QFont>();
     m_tooltip_font = qMakePair(temp,temp);
@@ -268,7 +266,7 @@ void OptionsMenu::read_settings() {
     ui->cb_single_click_labor_changes->setChecked(s->value("single_click_labor_changes", true).toBool());
     ui->cb_show_toolbar_text->setChecked(s->value("show_toolbutton_text", true).toBool());
     ui->cb_auto_expand->setChecked(s->value("auto_expand_groups", true).toBool());
-    ui->cb_show_full_dwarf_names->setChecked(s->value("show_full_dwarf_names", false).toBool());        
+    ui->cb_show_full_dwarf_names->setChecked(s->value("show_full_dwarf_names", false).toBool());
     ui->cb_check_for_updates_on_startup->setChecked(s->value("check_for_updates_on_startup", true).toBool());
     ui->cb_alert_on_lost_connection->setChecked(s->value("alert_on_lost_connection", true).toBool());
     ui->cb_labor_cheats->setChecked(s->value("allow_labor_cheats", false).toBool());
@@ -276,7 +274,7 @@ void OptionsMenu::read_settings() {
     ui->cb_generic_names->setChecked(s->value("use_generic_names", false).toBool());
     ui->cb_curse_highlight->setChecked(s->value("highlight_cursed", false).toBool());
     ui->cb_noble_highlight->setChecked(s->value("highlight_nobles", true).toBool());
-    ui->cb_labor_exclusions->setChecked(s->value("labor_exclusions", true).toBool());    
+    ui->cb_labor_exclusions->setChecked(s->value("labor_exclusions", true).toBool());
     ui->cb_no_diagnosis->setChecked(s->value("diagnosis_not_required",false).toBool());
     ui->cb_animal_health->setChecked(s->value("animal_health",false).toBool());
 
@@ -433,7 +431,7 @@ void OptionsMenu::write_settings() {
         s->setValue("syndrome_display_type", val);
 
 
-        s->endGroup();       
+        s->endGroup();
     }
 }
 
@@ -450,7 +448,7 @@ void OptionsMenu::accept() {
             tr("Would you like to apply the new options now (Read Data)?"),
             QMessageBox::Yes | QMessageBox::No);
     if (answer == QMessageBox::Yes)
-        DT->get_main_window()->read_dwarves();    
+        DT->get_main_window()->read_dwarves();
 }
 
 void OptionsMenu::reject() {
@@ -479,7 +477,7 @@ void OptionsMenu::restore_defaults() {
     ui->cb_single_click_labor_changes->setChecked(false);
     ui->cb_show_toolbar_text->setChecked(true);
     ui->cb_auto_expand->setChecked(false);
-    ui->cb_show_full_dwarf_names->setChecked(false);    
+    ui->cb_show_full_dwarf_names->setChecked(false);
     ui->sb_min_skill_level->setValue(1);
     ui->cb_check_for_updates_on_startup->setChecked(true);
     ui->cb_alert_on_lost_connection->setChecked(true);
@@ -519,7 +517,7 @@ void OptionsMenu::restore_defaults() {
     ui->chk_show_age->setChecked(true);
     ui->chk_show_buffs->setChecked(false);
     ui->chk_show_kills->setChecked(false);
-    ui->rad_syn_names->setChecked(true);    
+    ui->rad_syn_names->setChecked(true);
 
     ui->dsb_attribute_weight->setValue(0.25);
     ui->dsb_pref_weight->setValue(0.15);
@@ -529,7 +527,7 @@ void OptionsMenu::restore_defaults() {
     ui->dsb_att_potential_weight->setValue(0.50);
 
     ui->chk_show_roles->setChecked(true);
-    ui->chk_show_skills->setChecked(true);    
+    ui->chk_show_skills->setChecked(true);
     ui->chk_show_health->setChecked(false);
     ui->chk_health_colors->setChecked(true);
     ui->chk_health_symbols->setChecked(false);

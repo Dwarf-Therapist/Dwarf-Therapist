@@ -33,7 +33,7 @@ typedef enum {
     CT_HAPPINESS,
     CT_IDLE,
     CT_TRAIT,
-    CT_ATTRIBUTE,    
+    CT_ATTRIBUTE,
     CT_FLAGS,
     CT_ROLE,
     CT_WEAPON,
@@ -64,7 +64,7 @@ static inline COLUMN_TYPE get_column_type(const QString &name) {
     } else if (name.toLower() == "trait") {
         return CT_TRAIT;
     } else if (name.toLower() == "attribute") {
-        return CT_ATTRIBUTE;    
+        return CT_ATTRIBUTE;
     } else if (name.toLower() == "flags") {
         return CT_FLAGS;
     } else if (name.toLower() == "role"){
@@ -103,7 +103,7 @@ static inline QString get_column_type(const COLUMN_TYPE &type) {
     case CT_HAPPINESS:              return "HAPPINESS";
     case CT_IDLE:                   return "IDLE";
     case CT_TRAIT:                  return "TRAIT";
-    case CT_ATTRIBUTE:              return "ATTRIBUTE";    
+    case CT_ATTRIBUTE:              return "ATTRIBUTE";
     case CT_FLAGS:                  return "FLAGS";
     case CT_ROLE:                   return "ROLE";
     case CT_WEAPON:                 return "WEAPON";

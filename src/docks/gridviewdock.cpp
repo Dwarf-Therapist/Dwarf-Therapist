@@ -53,6 +53,10 @@ GridViewDock::GridViewDock(ViewManager *mgr, QWidget *parent,
     connect(ui->btn_copy,SIGNAL(clicked()),this,SLOT(copy_view()));
 }
 
+GridViewDock::~GridViewDock() {
+    delete ui;
+}
+
 void GridViewDock::draw_views() {
     ui->list_views->clear();
     QStringList view_names;

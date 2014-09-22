@@ -29,7 +29,9 @@ http://www.opensource.org/licenses/mit-license.php
 #include "scannerjob.h"
 #include "defines.h"
 #include "truncatingfilelogger.h"
+#include "dfinstance.h"
 #include "utils.h"
+#include <QThread>
 
 class NarrowingVectorSearchJob : public ScannerJob {
     Q_OBJECT

@@ -26,7 +26,9 @@ THE SOFTWARE.
 #include "scannerjob.h"
 #include "truncatingfilelogger.h"
 #include "gamedatareader.h"
+#include "dfinstance.h"
 #include "utils.h"
+#include <QThread>
 
 class StoneVectorSearchJob : public ScannerJob {
     Q_OBJECT

@@ -23,14 +23,16 @@ THE SOFTWARE.
 #ifndef ITEM_H
 #define ITEM_H
 
-#include <QtCore>
-#include <QObject>
 #include "truncatingfilelogger.h"
 #include "global_enums.h"
 #include "material.h"
 #include "itemdefuniform.h"
+#include <QObject>
+#include <QColor>
 
-class Item : public QObject  {
+class QString;
+
+class Item : public QObject {
     Q_OBJECT
 public:
     Item(const Item &i);
@@ -135,7 +137,7 @@ public:
         m[SLAB]=QObject::tr("Slabs");
         m[EGG]=QObject::tr("Eggs");
         m[BOOK]=QObject::tr("Books");
-        m[SUPPLIES]=QObject::tr("Supplies");        
+        m[SUPPLIES]=QObject::tr("Supplies");
         m[MELEE_EQUIPMENT]=QObject::tr("Weapon & Shield");
         m[RANGED_EQUIPMENT]=QObject::tr("Quiver & Ammo");
         return m.value(type, "N/A");
@@ -293,7 +295,7 @@ public:
     void item_type(ITEM_TYPE newType){m_iType = newType;}
 
     int mat_index(){return m_mat_idx;}
-    short mat_type(){return m_mat_type;}    
+    short mat_type(){return m_mat_type;}
 
     virtual short item_subtype(){return -1;}
     virtual short melee_skill(){return -1;}
@@ -316,7 +318,7 @@ protected:
     ITEM_TYPE m_iType;
     short m_wear;
     short m_mat_type;
-    int m_mat_idx;    
+    int m_mat_idx;
     short m_quality;
     QString m_material_name;
     QString m_item_name;

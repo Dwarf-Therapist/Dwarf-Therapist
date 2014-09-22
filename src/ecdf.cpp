@@ -18,10 +18,7 @@
 
 #include "ecdf.h"
 #include <algorithm>
-#include <QObject>
-#include <QtCore>
-#include <QStringList>
-#include "truncatingfilelogger.h"
+#include <QVector>
 
 typedef QVector<double> VEC;
 typedef VEC::iterator IT;

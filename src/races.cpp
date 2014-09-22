@@ -26,7 +26,6 @@ THE SOFTWARE.
 #include "truncatingfilelogger.h"
 #include "material.h"
 #include "dwarfstats.h"
-#include <QtDebug>
 
 Race::Race(DFInstance *df, VIRTADDR address, int id, QObject *parent)
     : QObject(parent)

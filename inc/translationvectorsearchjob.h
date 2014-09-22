@@ -29,6 +29,8 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "memorylayout.h"
 #include "utils.h"
+#include "dfinstance.h"
+#include <QThread>
 
 class TranslationVectorSearchJob : public ScannerJob {
     Q_OBJECT

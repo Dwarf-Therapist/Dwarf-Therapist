@@ -20,13 +20,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QThread>
 #include "scanner.h"
 #include "dfinstance.h"
 #include "gamedatareader.h"
 #include "dwarftherapist.h"
 #include "scannerthread.h"
-#include "defines.h"
 #include "selectparentlayoutdialog.h"
 #include "layoutcreator.h"
 #include "word.h"

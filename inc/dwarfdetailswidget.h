@@ -37,6 +37,7 @@ class DwarfDetailsWidget: public QWidget {
     Q_OBJECT
 public:
     DwarfDetailsWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    ~DwarfDetailsWidget();
 
 public slots:
     void clear();
@@ -53,7 +54,7 @@ private:
 
     int m_current_id;
 
-    void clear_table(QTableWidget &t);    
+    void clear_table(QTableWidget &t);
     QString build_gradient(QColor c1, QColor c2);
 
     void add_personality_row(QString title, int raw_value, QString info, QString tooltip, QColor override = Qt::black);

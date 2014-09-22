@@ -28,16 +28,21 @@ THE SOFTWARE.
 #include "rotatedheader.h"
 #include "dwarftherapist.h"
 #include "optionsmenu.h"
+#include "defines.h"
+#include <QSettings>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QComboBox>
 
-SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags) 
+SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags)
     : BaseDock(parent, flags)
-{    
-	setObjectName("dock_skill_legend");
-	setWindowTitle(tr("Skill Legend"));
-	QWidget *main_widget = new QWidget(this);
+{
+    setObjectName("dock_skill_legend");
+    setWindowTitle(tr("Skill Legend"));
+    QWidget *main_widget = new QWidget(this);
         QVBoxLayout *layout = new QVBoxLayout(main_widget);
-	main_widget->setLayout(layout);
-	
+    main_widget->setLayout(layout);
+
     QHBoxLayout *l_type = new QHBoxLayout();
     QLabel *lbl_type = new QLabel(this);
     lbl_type->setText(tr("Drawing Method:"));
@@ -50,36 +55,36 @@ SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags)
     l_type->addWidget(cmb_type);
     layout->addLayout(l_type);
 
-	StateTableView *stv = new StateTableView(this);
-	stv->setContextMenuPolicy(Qt::ActionsContextMenu);
-	
-	layout->addWidget(stv);
-	setWidget(main_widget);
+    StateTableView *stv = new StateTableView(this);
+    stv->setContextMenuPolicy(Qt::ActionsContextMenu);
 
-	QStandardItemModel *m = new QStandardItemModel(this);
-	stv->setModel(m);
-	for(int i = 20; i >= 0; --i) {
-		QList<QStandardItem*> sub_items;
-		QStandardItem *name = new QStandardItem;
-		name->setText(GameDataReader::ptr()->get_skill_level_name(i));
-		QStandardItem *item = new QStandardItem;
+    layout->addWidget(stv);
+    setWidget(main_widget);
+
+    QStandardItemModel *m = new QStandardItemModel(this);
+    stv->setModel(m);
+    for(int i = 20; i >= 0; --i) {
+        QList<QStandardItem*> sub_items;
+        QStandardItem *name = new QStandardItem;
+        name->setText(GameDataReader::ptr()->get_skill_level_name(i));
+        QStandardItem *item = new QStandardItem;
         float rating = (float)i + 0.002;
         item->setData(rating, DwarfModel::DR_RATING);
         item->setData(floor(rating), DwarfModel::DR_DISPLAY_RATING);
-		item->setData(CT_SKILL, DwarfModel::DR_COL_TYPE);
+        item->setData(CT_SKILL, DwarfModel::DR_COL_TYPE);
         item->setData(QColor(Qt::white), DwarfModel::DR_DEFAULT_BG_COLOR);
-		sub_items << name << item;
-		m->appendRow(sub_items);
-	}
-	stv->setHeaderHidden(true);
+        sub_items << name << item;
+        m->appendRow(sub_items);
+    }
+    stv->setHeaderHidden(true);
 
     int pad = DT->user_settings()->value("options/grid/cell_padding", 0).toInt();
     int cell_size = DT->user_settings()->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
     cell_size += (2 + 2*pad);
 
-	for(int i = 1; i < 16; ++i) {
+    for(int i = 1; i < 16; ++i) {
         stv->get_header()->resizeSection(i, cell_size);
-	}
+    }
 
     m_current_method = static_cast<UberDelegate::SKILL_DRAWING_METHOD>(
                 DT->user_settings()->value("options/grid/skill_drawing_method",
@@ -87,8 +92,8 @@ SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags)
     cmb_type->setCurrentIndex(m_current_method);
 
     connect(cmb_type, SIGNAL(currentIndexChanged(int)), this, SLOT(set_SDM(int)));
-	connect(this, SIGNAL(change_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&)),
-		DT->get_options_menu(), SLOT(set_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&)));
+    connect(this, SIGNAL(change_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&)),
+        DT->get_options_menu(), SLOT(set_skill_drawing_method(const UberDelegate::SKILL_DRAWING_METHOD&)));
 }
 
 void SkillLegendDock::set_SDM(int idx){

@@ -25,8 +25,7 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "dwarfmodel.h"
 #include "viewcolumnset.h"
-
-class Item;
+#include "item.h"
 
 ItemTypeColumn::ItemTypeColumn(const QString &title, const ITEM_TYPE &itype, ViewColumnSet *set, QObject *parent, COLUMN_TYPE cType)
     : ViewColumn(title, cType, set, parent)
@@ -37,7 +36,7 @@ ItemTypeColumn::ItemTypeColumn(const QString &title, const ITEM_TYPE &itype, Vie
 }
 
 ItemTypeColumn::ItemTypeColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
-    : ViewColumn(s, set, parent)    
+    : ViewColumn(s, set, parent)
 {
     m_iType = static_cast<ITEM_TYPE>(s.value("item_type",NONE).toInt());
 }
@@ -133,7 +132,7 @@ QString ItemTypeColumn::build_tooltip_desc(Dwarf *d){
 }
 
 QString ItemTypeColumn::split_list(QList<Item*> list, QString title, QString list_header, QString list_footer, QColor title_color){
-    QString desc;    
+    QString desc;
     if(list.count() > 0){
         int count = 0;
         QStringList items;

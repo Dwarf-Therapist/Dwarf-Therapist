@@ -24,7 +24,6 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "memorylayout.h"
 #include "truncatingfilelogger.h"
-#include <QtDebug>
 
 Languages::Languages(DFInstance *df, QObject *parent)
     : QObject(parent)
@@ -199,7 +198,7 @@ QString Languages::word_chunk_declined(uint word, short pos) {
 
 QString Languages::word_chunk(uint word, int language_id)
 {
-    QString out = "";    
+    QString out = "";
     //if the language doesn't exist, use the last language (DF behaviour)
     if (!m_words.contains(language_id))
         language_id = m_words.count()-1;

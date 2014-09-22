@@ -22,6 +22,8 @@ THE SOFTWARE.
 */
 #include "belief.h"
 #include "gamedatareader.h"
+#include "dfinstance.h"
+#include <QSettings>
 
 //personality facets
 Belief::Belief(int id, QSettings &s, QObject *parent)

@@ -27,7 +27,6 @@ THE SOFTWARE.
 #include "ui_customprofession.h"
 #include "dwarf.h"
 #include "defines.h"
-#include "labor.h"
 #include "profession.h"
 #include "dwarftherapist.h"
 #include "iconchooser.h"
@@ -41,7 +40,7 @@ Default ctor. Creates a blank skill template with no name
 */
 CustomProfession::CustomProfession(QObject *parent)
     : MultiLabor(parent)
-    , ui(new Ui::CustomProfessionEditor)    
+    , ui(new Ui::CustomProfessionEditor)
     , m_icon_id(-1)
     , m_is_mask(false)
     , m_bg_custom_color(0x0)
@@ -65,7 +64,7 @@ This is used by the "Create custom profession from this dwarf..." action.
 */
 CustomProfession::CustomProfession(Dwarf *d, QObject *parent)
     : MultiLabor(parent)
-    , ui(new Ui::CustomProfessionEditor)    
+    , ui(new Ui::CustomProfessionEditor)
     , m_icon_id(-1)
     , m_is_mask(false)
     , m_bg_custom_color(0x0)
@@ -74,7 +73,7 @@ CustomProfession::CustomProfession(Dwarf *d, QObject *parent)
     , m_txt("")
     , m_prof_id(-1)
     , m_fnt(0x0)
-{    
+{
     m_dwarf = d;
     if(m_dwarf){
         m_name = d->profession();
@@ -103,11 +102,11 @@ CustomProfession::CustomProfession(QString name, QSettings &s, QObject *parent)
     :MultiLabor(parent)
     , ui(new Ui::CustomProfessionEditor)
     , m_fnt(0x0)
-{    
+{
     set_name(name);
     s.beginGroup(name);
     init(s);
-    s.endGroup();    
+    s.endGroup();
 }
 
 //import from file
@@ -162,7 +161,7 @@ int CustomProfession::show_builder_dialog(QWidget *parent) {
     m_font_custom_color = new CustomColor("",tr("The color of the text drawn over the icon."),"text_color", Qt::black, 0);
     m_font_custom_color->set_color(m_font_color);
     m_font_custom_color->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-    ui->hLayoutText->insertWidget(3,m_font_custom_color);    
+    ui->hLayoutText->insertWidget(3,m_font_custom_color);
     connect(m_font_custom_color, SIGNAL(color_changed(QString,QColor)), this, SLOT(color_selected(QString,QColor)));
 
     //setup the mask
@@ -393,7 +392,7 @@ void CustomProfession::save(QSettings &s){
     s.setValue("icon_id",m_icon_id);
     s.setValue("text", m_txt);
     s.setValue("text_color", m_font_color);
-    s.setValue("bg_color", m_bg_color);    
+    s.setValue("bg_color", m_bg_color);
 
     //save non-icon override custom profession stuff
     if(m_prof_id < 0){

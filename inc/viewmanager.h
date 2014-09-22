@@ -24,20 +24,27 @@ THE SOFTWARE.
 #ifndef VIEW_MANAGER_H
 #define VIEW_MANAGER_H
 
-#include <QTabWidget>
-#include <QTreeWidgetItem>
-#include <QToolButton>
-#include <QErrorMessage>
-#include <QItemSelection>
 #include "columntypes.h"
 #include "viewcolumn.h"
+#include <QList>
+#include <QMap>
+#include <QString>
+#include <QTabWidget>
 
 class Dwarf;
 class GridView;
-class ViewColumnSet;
 class StateTableView;
 class DwarfModel;
 class DwarfModelProxy;
+class QErrorMessage;
+class QItemSelection;
+class QSettings;
+class QStringList;
+class QToolButton;
+class QTreeWidgetItem;
+class QWidget;
+template <class T> class QVector;
+
 
 /*!
  * This class is an un-enforced singleton that holds a collection of all configured GridViews
@@ -45,14 +52,14 @@ class DwarfModelProxy;
  * of gridviews to visible tabs. Each visible tab is an instance of StateTableView
  */
 class ViewManager : public QTabWidget {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent = 0);
+    ViewManager(DwarfModel *dm, DwarfModelProxy *proxy, QWidget *parent = 0);
     virtual ~ViewManager();
     QList<Dwarf*> get_selected_dwarfs() {return m_selected_dwarfs;}
-    
-	QList<GridView*> views() {return m_views;}
-	void add_view(GridView *view);
+
+    QList<GridView*> views() {return m_views;}
+    void add_view(GridView *view);
     void add_weapons_view(QList<GridView*> &built_in_views);
     void load_views(QSettings &s, QStringList &view_names, QList<GridView *> &built_in_views);
 
@@ -61,26 +68,26 @@ public:
         return m_default_column_sort.value(cType,ViewColumn::CST_DEFAULT);
     }
 
-	public slots:
+    public slots:
         void setCurrentIndex(int idx);
-		void reload_views();
-		void write_views();
-		void draw_views();
+        void reload_views();
+        void write_views();
+        void draw_views();
         void write_tab_settings();
-		void set_group_by(int group_by);
-		void redraw_current_tab();
+        void set_group_by(int group_by);
+        void redraw_current_tab();
         void redraw_current_tab_headers();
         void redraw_specific_header(int id, COLUMN_TYPE type);
 
-		GridView *get_view(const QString &name);
-		GridView *get_active_view();
-		void remove_view(GridView *view);
-		void replace_view(GridView *old_view, GridView *new_view);
+        GridView *get_view(const QString &name);
+        GridView *get_active_view();
+        void remove_view(GridView *view);
+        void replace_view(GridView *old_view, GridView *new_view);
 
-		// passthru
-		void expand_all();
-		void collapse_all();
-		void jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* previous);
+        // passthru
+        void expand_all();
+        void collapse_all();
+        void jump_to_dwarf(QTreeWidgetItem* current, QTreeWidgetItem* previous);
         void jump_to_profession(QTreeWidgetItem* current, QTreeWidgetItem* previous);
 
         void select_all();
@@ -92,34 +99,34 @@ public:
         void rebuild_global_sort_keys();
 
 private:
-	QList<GridView*> m_views;
-	DwarfModel *m_model;
-	DwarfModelProxy *m_proxy;
-	QToolButton *m_add_tab_button;
-    QList<Dwarf*> m_selected_dwarfs;    
+    QList<GridView*> m_views;
+    DwarfModel *m_model;
+    DwarfModelProxy *m_proxy;
+    QToolButton *m_add_tab_button;
+    QList<Dwarf*> m_selected_dwarfs;
     int m_last_index;
     QErrorMessage *m_squad_warning;
     bool m_reset_sorting;
 
-    StateTableView *get_stv(int idx = -1);    
+    StateTableView *get_stv(int idx = -1);
 
     static QMap<COLUMN_TYPE, ViewColumn::COLUMN_SORT_TYPE> m_default_column_sort;
 
-	private slots:
-		//! used when adding tabs via the tool button
-		int add_tab_from_action();
-		//! used from everywhere else
-		int add_tab_for_gridview(GridView *v);
-		void remove_tab_for_gridview(int index);
-		void draw_add_tab_button();
+    private slots:
+        //! used when adding tabs via the tool button
+        int add_tab_from_action();
+        //! used from everywhere else
+        int add_tab_for_gridview(GridView *v);
+        void remove_tab_for_gridview(int index);
+        void draw_add_tab_button();
         void dwarf_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
         void show_squad_warning();
 
 signals:
-	void dwarf_focus_changed(Dwarf *d);    
+    void dwarf_focus_changed(Dwarf *d);
     void group_changed(const int);
     void selection_changed();
-		
+
 };
 
 #endif

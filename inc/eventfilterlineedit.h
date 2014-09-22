@@ -3,6 +3,7 @@
 
 #include <QKeyEvent>
 #include <QLineEdit>
+#include <QAbstractItemView>
 #include "truncatingfilelogger.h"
 
 class EventFilterLineEdit : public QObject

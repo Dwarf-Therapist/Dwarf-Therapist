@@ -26,7 +26,7 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "gamedatareader.h"
 #include "preference.h"
-
+#include "defines.h"
 
 Role::Role()
     :name("UNKNOWN")

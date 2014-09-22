@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "mainwindow.h"
 #include "ui_scannerdialog.h"
 #include "scannerjob.h"
+#include "utils.h"
 
 class DFInstance;
 class ScannerThread;

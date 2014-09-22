@@ -24,33 +24,24 @@ THE SOFTWARE.
 #include "uniform.h"
 #include "item.h"
 
-Uniform::Uniform(DFInstance *df,QObject *parent)
-    :QObject(parent)
-    ,m_df(df)
-    ,m_first_check(true)
+Uniform::Uniform(DFInstance *df, QObject *parent)
+    : QObject(parent)
+    , m_df(df)
+    , m_first_check(true)
 {
 }
 
 Uniform::~Uniform()
 {
-    m_df = 0;
-
-    QHashIterator<ITEM_TYPE,QList<ItemDefUniform*> > iter_items(m_uniform_items);
-    iter_items.toBack();
-    while (iter_items.hasPrevious()) {
-        iter_items.previous();
-        QList<ItemDefUniform*> list = m_uniform_items.take(iter_items.key());
-        qDeleteAll(list);
-        list.clear();
+    foreach (const QList<ItemDefUniform*> &list, m_uniform_items) {
+        foreach (ItemDefUniform* def, list) {
+            delete def;
+        }
     }
-    m_uniform_items.clear();
-    m_missing_items.clear();
-
-    m_equip_counts.clear();
 }
 
 void Uniform::add_uniform_item(ITEM_TYPE itype, short sub_type, short job_skill, int count){
-    ItemDefUniform *uItem = new ItemDefUniform(itype,sub_type,job_skill,this);    
+    ItemDefUniform *uItem = new ItemDefUniform(itype,sub_type,job_skill,this);
     add_uniform_item(itype,uItem,count);
 }
 
@@ -72,15 +63,11 @@ void Uniform::add_uniform_item(ITEM_TYPE itype, ItemDefUniform *uItem, int count
 
     uItem->add_to_stack(count-1); //uniform item stack size start at 1
 
-    QList<ItemDefUniform*> items = m_uniform_items.take(itype);
+    QList<ItemDefUniform*> items = m_uniform_items[itype];
     items.append(uItem);
-    if(itype == SHOES || itype == GLOVES){
+    if (itype == SHOES || itype == GLOVES)
         items.append(new ItemDefUniform(*uItem));
-    }
-    if(items.length() > 0){
-        m_uniform_items.insert(itype,items);
-    }
-    if(count > 0)
+    if (count > 0)
         add_equip_count(itype,count);
 
 }
@@ -119,7 +106,7 @@ int Uniform::get_remaining_required(ITEM_TYPE itype){
     return count;
 }
 
-int Uniform::get_missing_equip_count(ITEM_TYPE itype){    
+int Uniform::get_missing_equip_count(ITEM_TYPE itype){
     int count = 0;
     if(m_missing_items.count() == 0)
         return count;

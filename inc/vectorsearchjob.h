@@ -31,6 +31,8 @@ http://www.opensource.org/licenses/mit-license.php
 #include "truncatingfilelogger.h"
 #include "utils.h"
 #include "memorylayout.h"
+#include "dfinstance.h"
+#include <QThread>
 
 struct VectorSearchParams {
     char op;
