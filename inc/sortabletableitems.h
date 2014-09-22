@@ -35,7 +35,7 @@ public:
     }
 };
 
-class sortableFloatTableWidgetItem : public QTableWidgetItem{
+class sortableNumericTableWidgetItem : public QTableWidgetItem{
 public :
     bool operator<(const QTableWidgetItem &other) const{
         return data(Qt::UserRole).toFloat() < other.data(Qt::UserRole).toFloat();

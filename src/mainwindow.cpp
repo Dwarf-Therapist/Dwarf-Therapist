@@ -45,10 +45,6 @@ THE SOFTWARE.
 #include "version.h"
 #include "dwarftherapist.h"
 #include "importexportdialog.h"
-#include "gridviewdock.h"
-#include "skilllegenddock.h"
-#include "dwarfdetailsdock.h"
-#include "informationdock.h"
 #include "columntypes.h"
 #include "rotatedheader.h"
 #include "scanner.h"
@@ -58,20 +54,25 @@ THE SOFTWARE.
 #include "viewcolumn.h"
 #include "rolecolumn.h"
 #include "statetableview.h"
-#include "preferencesdock.h"
 #include "laboroptimizer.h"
 #include "laboroptimizerplan.h"
 #include "optimizereditor.h"
 #include "gamedatareader.h"
-#include "thoughtsdock.h"
 #include "fortressentity.h"
 #include "preference.h"
-#include "healthlegenddock.h"
 #include "dfinstance.h"
 #include "squad.h"
 
-#include "eventfilterlineedit.h"
+#include "gridviewdock.h"
+#include "skilllegenddock.h"
+#include "dwarfdetailsdock.h"
+#include "informationdock.h"
+#include "preferencesdock.h"
+#include "thoughtsdock.h"
+#include "healthlegenddock.h"
+#include "equipmentoverviewdock.h"
 
+#include "eventfilterlineedit.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -145,6 +146,11 @@ MainWindow::MainWindow(QWidget *parent)
     health_dock->setFloating(false);
     addDockWidget(Qt::RightDockWidgetArea, health_dock);
 
+    EquipmentOverviewDock *equipoverview_dock = new EquipmentOverviewDock(this);
+    equipoverview_dock->setHidden(true);
+    equipoverview_dock->setFloating(false);
+    addDockWidget(Qt::RightDockWidgetArea, equipoverview_dock);
+
     ui->menu_docks->addAction(ui->dock_pending_jobs_list->toggleViewAction());
     ui->menu_docks->addAction(ui->dock_custom_professions->toggleViewAction());
     ui->menu_docks->addAction(grid_view_dock->toggleViewAction());
@@ -154,6 +160,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menu_docks->addAction(pref_dock->toggleViewAction());
     ui->menu_docks->addAction(thought_dock->toggleViewAction());
     ui->menu_docks->addAction(health_dock->toggleViewAction());
+    ui->menu_docks->addAction(equipoverview_dock->toggleViewAction());
 
     ui->menuWindows->addAction(ui->main_toolbar->toggleViewAction());
 
@@ -191,6 +198,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(pref_dock,SIGNAL(item_selected(QList<QPair<QString,QString> >)),this,SLOT(preference_selected(QList<QPair<QString,QString> >)));
     connect(thought_dock, SIGNAL(item_selected(QList<short>)), this, SLOT(thought_selected(QList<short>)));
     connect(health_dock, SIGNAL(item_selected(QList<QPair<int,int> >)), this, SLOT(health_legend_selected(QList<QPair<int,int> >)));
+    connect(equipoverview_dock, SIGNAL(item_selected(QList<QPair<QString,int> >)), this, SLOT(equipoverview_selected(QList<QPair<QString,int> >)));
+
+    connect(this,SIGNAL(lostConnection()),equipoverview_dock,SLOT(clear()));
+    connect(this,SIGNAL(lostConnection()),pref_dock,SLOT(clear()));
+    connect(this,SIGNAL(lostConnection()),thought_dock,SLOT(clear()));
 
     connect(ui->btn_clear_filters, SIGNAL(clicked()),this,SLOT(clear_all_filters()));
 
@@ -393,6 +405,7 @@ void MainWindow::set_status_message(QString msg, QString tooltip_msg){
 
 void MainWindow::lost_df_connection() {
     LOGW << "lost connection to DF";
+    emit lostConnection();
     if (m_df) {
         m_model->clear_all(true);
         m_df->disconnect();
@@ -503,17 +516,6 @@ void MainWindow::read_dwarves() {
     EventFilterLineEdit *filter = new EventFilterLineEdit(ui->le_filter_text);
     m_dwarf_name_completer->popup()->installEventFilter(filter);
     connect(filter,SIGNAL(enterPressed(QModelIndex)),this,SLOT(apply_filter(QModelIndex)));
-
-    //refresh preference dock
-    PreferencesDock *d_prefs = qobject_cast<PreferencesDock*>(QObject::findChild<PreferencesDock*>("dock_preferences"));
-    if(d_prefs){
-        d_prefs->refresh();
-    }
-    //refresh thoughts dock
-    ThoughtsDock *d_thoughts = qobject_cast<ThoughtsDock*>(QObject::findChild<ThoughtsDock*>("dock_thoughts"));
-    if(d_thoughts){
-        d_thoughts->refresh();
-    }
 
     if(!m_role_editor){
         m_role_editor = new roleDialog(m_df, this);
@@ -1356,6 +1358,21 @@ void MainWindow::thought_selected(QList<short> ids){
     m_proxy->refresh_script();
 }
 
+void MainWindow::equipoverview_selected(QList<QPair<QString,int> > item_wear){
+    QString filter = "";
+    if(item_wear.size() > 0){
+        QPair<QString,int> key;
+        foreach(key,item_wear){
+            filter.append(QString("d.has_wear(\"%1\",%2) && ").arg(key.first).arg(key.second));
+        }
+        filter.chop(4);
+        m_proxy->apply_script("item wear",filter);
+    }else{
+        m_proxy->clear_script("item wear");
+    }
+    m_proxy->refresh_script();
+}
+
 void MainWindow::health_legend_selected(QList<QPair<int, int> > vals){
     QStringList filters;
     if(!vals.isEmpty()){
@@ -1581,16 +1598,6 @@ void MainWindow::reset(){
     //clear selected dwarfs
     if(m_view_manager)
         m_view_manager->clear_selected();
-
-    //clear dock lists
-    PreferencesDock *d_prefs = qobject_cast<PreferencesDock*>(QObject::findChild<PreferencesDock*>("dock_preferences"));
-    if(d_prefs){
-        d_prefs->clear();
-    }
-    ThoughtsDock *d_thoughts = qobject_cast<ThoughtsDock*>(QObject::findChild<ThoughtsDock*>("dock_thoughts"));
-    if(d_thoughts){
-        d_thoughts->clear();
-    }
 
     new_creatures_count(0,0,0,tr("Dwarfs"));
 }

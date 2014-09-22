@@ -53,7 +53,7 @@ class Dwarf : public QObject
     Dwarf(DFInstance *df, const uint &addr, QObject *parent=0); //private, use the static get_dwarf() method
 
 public:
-    static Dwarf* get_dwarf(DFInstance *df, const VIRTADDR &address);   
+    static Dwarf* get_dwarf(DFInstance *df, const VIRTADDR &address);
     virtual ~Dwarf();
 
     static quint32 ticks_per_day;
@@ -258,9 +258,9 @@ public:
     //! return a hash of skill_id,Skill objects that this dwarf has experience in
     QHash<int, Skill> *get_skills() {return &m_skills;}
     QVector<Attribute> *get_attributes() {return &m_attributes;}
-    QHash<int, short> *get_traits(){return &m_traits;}    
+    QHash<int, short> *get_traits(){return &m_traits;}
     void load_trait_values(QVector<double> &list);
-    QMultiMap<int,Preference*> *get_preferences(){return &m_preferences;}    
+    QMultiMap<int,Preference*> *get_preferences(){return &m_preferences;}
 
     double get_role_pref_match_counts(Role *r);
     double get_role_pref_match_counts(Preference *role_pref);
@@ -291,10 +291,10 @@ public:
     }
 
     bool trait_is_active(int trait_id);
-    bool trait_is_conflicted(const int &trait_id);    
-    QList<UnitBelief> trait_conflicts(const int &trait_id){return m_conflicting_beliefs.values(trait_id);}    
+    bool trait_is_conflicted(const int &trait_id);
+    QList<UnitBelief> trait_conflicts(const int &trait_id){return m_conflicting_beliefs.values(trait_id);}
 
-    //! returns the numeric rating for the this dwarf in the skill specified by skill_id    
+    //! returns the numeric rating for the this dwarf in the skill specified by skill_id
     float get_skill_level(int skill_id, bool raw = false, bool precise = false);
     //! convenience functions for skill level
     float skill_level(int skill_id);
@@ -321,7 +321,7 @@ public:
     const QList<Role::simple_rating> &sorted_role_ratings();
 
     //! return the text string describing what this dwarf is currently doing ("Idle", "Construct Rock Door" etc...)
-    const QString &current_job() {return m_current_job;}    
+    const QString &current_job() {return m_current_job;}
 
     //! return the id of the job this dwarf is currently doing
     Q_INVOKABLE short current_job_id() {return m_current_job_id;}
@@ -486,7 +486,10 @@ public:
     //! returns a percentage of the inventory items / uniform items
     Q_INVOKABLE float get_uniform_rating(ITEM_TYPE itype = NONE);
     //! returns a percentage of how worn out items a dwarf is wearing
-    Q_INVOKABLE int get_inventory_wear(ITEM_TYPE itype = NONE);
+    Q_INVOKABLE int get_max_wear_level(ITEM_TYPE itype = NONE);
+    QHash<QPair<QString,int>, int> get_equip_warnings(){return m_equip_warnings;}
+    Q_INVOKABLE bool has_wear(QString item_name, int wear_level) {return m_equip_warnings.contains(qMakePair(item_name,wear_level));}
+
     int optimized_labors;
 
     void set_global_sort_key(int group_id, QVariant val){m_global_sort_keys.insert(group_id,val);}
@@ -557,13 +560,13 @@ private:
     bool m_can_set_labors; // used to prevent cheating
     short m_current_job_id;
     QString m_current_job;
-    QString m_current_sub_job_id;    
+    QString m_current_sub_job_id;
     QHash<int,Skill> m_skills;
     QMultiMap<float, int> m_sorted_skills; //level, skill_id
     QHash<int, short> m_traits;
     QHash<int, short> m_goals;
     QHash<int, UnitBelief> m_beliefs;
-    QMultiHash<int, UnitBelief> m_conflicting_beliefs; //trait_id, conflicting belief_id(s)    
+    QMultiHash<int, UnitBelief> m_conflicting_beliefs; //trait_id, conflicting belief_id(s)
     QVector<Attribute> m_attributes;
     QMap<int, ushort> m_labors;
     QMap<int, ushort> m_pending_labors;
@@ -580,7 +583,7 @@ private:
     short m_age;
     short m_age_in_months;
     uint m_turn_count; // Dwarf turn count from start of fortress (as best we know)
-    bool m_is_on_break;    
+    bool m_is_on_break;
     QHash<QString, float> m_role_ratings;
     QHash<QString, double> m_raw_role_ratings;
     QList<Role::simple_rating> m_sorted_role_ratings;
@@ -610,7 +613,7 @@ private:
     bool m_validated;
     bool m_is_valid;
     QList<Syndrome> m_syndromes;
-    quint32 m_curse_flags;    
+    quint32 m_curse_flags;
     Uniform* m_uniform;
     int m_goals_realized;
     int m_worst_rust_level;
@@ -620,8 +623,11 @@ private:
     QHash<QString,QList<Item*> > m_inventory_grouped;
     //! inventory coverage ratings
     QHash<ITEM_TYPE,int> m_coverage_ratings;
-    //! inventory wear levels
-    QHash<ITEM_TYPE,int> m_inventory_wear;
+    //! worst inventory wear level by item type
+    QHash<ITEM_TYPE,int> m_max_inventory_wear;
+    //! counts of missing/worn items by key (itemname, wear_level)
+    QHash<QPair<QString,int>,int> m_equip_warnings;
+    //! counts of missing uniform items
     QHash<ITEM_TYPE,int> m_missing_counts;
 
     //quint32 m_curse_flags2;
@@ -655,11 +661,11 @@ private:
     void read_skills();
     void read_attributes();
     void load_attribute(VIRTADDR &addr, ATTRIBUTES_TYPE id);
-    void read_personality();    
+    void read_personality();
     void read_turn_count();
     void read_animal_type();
     void read_noble_position();
-    void read_preferences();    
+    void read_preferences();
     void read_syndromes();
     void read_squad_info();
     void read_inventory();

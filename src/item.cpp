@@ -34,9 +34,10 @@ Item::Item(const Item &i)
     m_iType = i.m_iType;
     m_wear = i.m_wear;
     m_mat_type = i.m_mat_type;
-    m_mat_idx = i.m_mat_idx;    
+    m_mat_idx = i.m_mat_idx;
     m_quality = i.m_quality;
     m_material_name = i.m_material_name;
+    m_material_name_base = i.m_material_name_base;
     m_item_name = i.m_item_name;
     m_layer_name = i.m_layer_name;
     m_display_name = i.m_display_name;
@@ -51,13 +52,13 @@ Item::Item(DFInstance *df, ItemDefUniform *u, QObject *parent)
     :QObject(parent)
     ,m_df(df)
     ,m_addr(0x0)
-    ,m_iType(u->item_type())    
+    ,m_iType(u->item_type())
     ,m_wear(0)
     ,m_mat_type(u->mat_type())
-    ,m_mat_idx(u->mat_index())    
-    ,m_quality(-1)    
+    ,m_mat_idx(u->mat_index())
+    ,m_quality(-1)
     ,m_id(u->id())
-    ,m_affection(0)    
+    ,m_affection(0)
     ,m_stack_size(u->get_stack_size())
 {
     if(m_id > 0){
@@ -98,7 +99,7 @@ Item::Item(DFInstance *df, VIRTADDR item_addr, QObject *parent)
     ,m_addr(item_addr)
     ,m_wear(0)
     ,m_mat_type(-1)
-    ,m_mat_idx(-1)    
+    ,m_mat_idx(-1)
     ,m_quality(-1)
     ,m_id(-1)
     ,m_affection(0)
@@ -114,7 +115,7 @@ Item::Item(ITEM_TYPE itype, QString name, QObject *parent)
     ,m_iType(itype)
     ,m_wear(0)
     ,m_mat_type(-1)
-    ,m_mat_idx(-1)    
+    ,m_mat_idx(-1)
     ,m_quality(-1)
     ,m_id(-1)
     ,m_affection(0)
@@ -143,9 +144,18 @@ void Item::read_data(){
         m_quality = m_df->read_short(m_addr+m_df->memory_layout()->item_offset("quality"));
 
         Material *m = m_df->find_material(m_mat_idx,m_mat_type);
-        m_material_name = capitalizeEach(m_df->find_material_name(m_mat_idx,m_mat_type,m_iType));        
+        m_material_name = capitalizeEach(m_df->find_material_name(m_mat_idx,m_mat_type,m_iType));
 
         set_default_name(m);
+
+        QList<MATERIAL_FLAGS> simple_types;
+        simple_types << LEATHER << SILK << BONE << SHELL << YARN << THREAD_PLANT;
+        foreach(MATERIAL_FLAGS mf, simple_types){
+            if(m->flags().has_flag(mf)){
+                m_material_name_base = Material::get_material_flag_desc(mf);
+                break;
+            }
+        }
 
         QVector<VIRTADDR> gen_refs = m_df->enumerate_vector(m_addr+m_df->memory_layout()->item_offset("general_refs"));
         foreach(VIRTADDR ref, gen_refs){

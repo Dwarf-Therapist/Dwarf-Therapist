@@ -45,195 +45,205 @@ public:
 
     static const QString get_item_name_plural(const ITEM_TYPE &type) {
         QMap<ITEM_TYPE, QString> m;
-        m[NONE]=QObject::tr("N/A");
-        m[BAR]=QObject::tr("Metals/Fuels/Soaps");
-        m[SMALLGEM]=QObject::tr("Cut gemstones");
-        m[BLOCKS]=QObject::tr("Blocks");
-        m[ROUGH]=QObject::tr("Rough Gemstones");
-        m[BOULDER]=QObject::tr("Boulders");
-        m[WOOD]=QObject::tr("Woods");
-        m[DOOR]=QObject::tr("Doors");
-        m[FLOODGATE]=QObject::tr("Floodgates");
-        m[BED]=QObject::tr("Beds");
-        m[CHAIR]=QObject::tr("Chairs/Thrones");
-        m[CHAIN]=QObject::tr("Chains");
-        m[FLASK]=QObject::tr("Flasks");
-        m[GOBLET]=QObject::tr("Goblets");
-        m[INSTRUMENT]=QObject::tr("Instruments");
-        m[TOY]=QObject::tr("Toys");
-        m[WINDOW]=QObject::tr("Windows");
-        m[CAGE]=QObject::tr("Cages");
-        m[BARREL]=QObject::tr("Barrels");
-        m[BUCKET]=QObject::tr("Buckets");
-        m[ANIMALTRAP]=QObject::tr("Animal Traps");
-        m[TABLE]=QObject::tr("Tables");
-        m[COFFIN]=QObject::tr("Coffins");
-        m[STATUE]=QObject::tr("Statues");
-        m[CORPSE]=QObject::tr("Corpses");
-        m[WEAPON]=QObject::tr("Weapons");
-        m[ARMOR]=QObject::tr("Armors (Chest)");
-        m[SHOES]=QObject::tr("Armors (Feet)");
-        m[SHIELD]=QObject::tr("Armors (Shields)");
-        m[HELM]=QObject::tr("Armors (Head)");
-        m[GLOVES]=QObject::tr("Armors (Hands)");
-        m[BOX]=QObject::tr("Boxes/Bags");
-        m[BIN]=QObject::tr("Bins");
-        m[ARMORSTAND]=QObject::tr("Armor Stands");
-        m[WEAPONRACK]=QObject::tr("Weapon Racks");
-        m[CABINET]=QObject::tr("Cabinets");
-        m[FIGURINE]=QObject::tr("Figurines");
-        m[AMULET]=QObject::tr("Amulets");
-        m[SCEPTER]=QObject::tr("Scepters");
-        m[AMMO]=QObject::tr("Ammunitions");
-        m[CROWN]=QObject::tr("Crowns");
-        m[RING]=QObject::tr("Rings");
-        m[EARRING]=QObject::tr("Earrings");
-        m[BRACELET]=QObject::tr("Bracelets");
-        m[GEM]=QObject::tr("Large Gems");
-        m[ANVIL]=QObject::tr("Anvils");
-        m[CORPSEPIECE]=QObject::tr("Corpse Bodyparts");
-        m[REMAINS]=QObject::tr("Remains");
-        m[MEAT]=QObject::tr("Meats");
-        m[FISH]=QObject::tr("Fishes");
-        m[FISH_RAW]=QObject::tr("Raw Fishes");
-        m[VERMIN]=QObject::tr("Vermins");
-        m[IS_PET]=QObject::tr("Pets");
-        m[SEEDS]=QObject::tr("Seeds");
-        m[PLANT]=QObject::tr("Plants");
-        m[SKIN_TANNED]=QObject::tr("Tanned Hides");
-        m[LEAVES_FRUIT]=QObject::tr("Leaves");
-        m[THREAD]=QObject::tr("Threads");
-        m[CLOTH]=QObject::tr("Cloths");
-        m[TOTEM]=QObject::tr("Totems");
-        m[PANTS]=QObject::tr("Armors (Legs)");
-        m[BACKPACK]=QObject::tr("Backpacks");
-        m[QUIVER]=QObject::tr("Quivers");
-        m[CATAPULTPARTS]=QObject::tr("Catapult Parts");
-        m[BALLISTAPARTS]=QObject::tr("Ballista Parts");
-        m[SIEGEAMMO]=QObject::tr("Siege Ammunitions");
-        m[BALLISTAARROWHEAD]=QObject::tr("Ballista Ammunitions");
-        m[TRAPPARTS]=QObject::tr("Mechanisms");
-        m[TRAPCOMP]=QObject::tr("Trap Components");
-        m[DRINK]=QObject::tr("Alcohols");
-        m[POWDER_MISC]=QObject::tr("Flours/Sugars/Powders");
-        m[CHEESE]=QObject::tr("Cheeses");
-        m[FOOD]=QObject::tr("Prepared Foods");
-        m[LIQUID_MISC]=QObject::tr("Honeys/Syrups/Milks/Oils");
-        m[COIN]=QObject::tr("Coins");
-        m[GLOB]=QObject::tr("Fats");
-        m[ROCK]=QObject::tr("Rocks");
-        m[PIPE_SECTION]=QObject::tr("Pipes");
-        m[HATCH_COVER]=QObject::tr("Hatch Covers");
-        m[GRATE]=QObject::tr("Grates");
-        m[QUERN]=QObject::tr("Querns");
-        m[MILLSTONE]=QObject::tr("Millstones");
-        m[SPLINT]=QObject::tr("Splints");
-        m[CRUTCH]=QObject::tr("Crutches");
-        m[TRACTION_BENCH]=QObject::tr("Traction Benches");
-        m[ORTHOPEDIC_CAST]=QObject::tr("Casts");
-        m[TOOL]=QObject::tr("Tools");
-        m[SLAB]=QObject::tr("Slabs");
-        m[EGG]=QObject::tr("Eggs");
-        m[BOOK]=QObject::tr("Books");
-        m[SUPPLIES]=QObject::tr("Supplies");        
-        m[MELEE_EQUIPMENT]=QObject::tr("Weapon & Shield");
-        m[RANGED_EQUIPMENT]=QObject::tr("Quiver & Ammo");
+        m[NONE]=tr("N/A");
+        m[BAR]=tr("Metals/Fuels/Soaps");
+        m[SMALLGEM]=tr("Cut gemstones");
+        m[BLOCKS]=tr("Blocks");
+        m[ROUGH]=tr("Rough Gemstones");
+        m[BOULDER]=tr("Boulders");
+        m[WOOD]=tr("Woods");
+        m[DOOR]=tr("Doors");
+        m[FLOODGATE]=tr("Floodgates");
+        m[BED]=tr("Beds");
+        m[CHAIR]=tr("Chairs/Thrones");
+        m[CHAIN]=tr("Chains");
+        m[FLASK]=tr("Flasks");
+        m[GOBLET]=tr("Goblets");
+        m[INSTRUMENT]=tr("Instruments");
+        m[TOY]=tr("Toys");
+        m[WINDOW]=tr("Windows");
+        m[CAGE]=tr("Cages");
+        m[BARREL]=tr("Barrels");
+        m[BUCKET]=tr("Buckets");
+        m[ANIMALTRAP]=tr("Animal Traps");
+        m[TABLE]=tr("Tables");
+        m[COFFIN]=tr("Coffins");
+        m[STATUE]=tr("Statues");
+        m[CORPSE]=tr("Corpses");
+        m[WEAPON]=tr("Weapons");
+        m[ARMOR]=tr("Armors (Chest)");
+        m[SHOES]=tr("Armors (Feet)");
+        m[SHIELD]=tr("Armors (Shields)");
+        m[HELM]=tr("Armors (Head)");
+        m[GLOVES]=tr("Armors (Hands)");
+        m[BOX]=tr("Boxes/Bags");
+        m[BIN]=tr("Bins");
+        m[ARMORSTAND]=tr("Armor Stands");
+        m[WEAPONRACK]=tr("Weapon Racks");
+        m[CABINET]=tr("Cabinets");
+        m[FIGURINE]=tr("Figurines");
+        m[AMULET]=tr("Amulets");
+        m[SCEPTER]=tr("Scepters");
+        m[AMMO]=tr("Ammunitions");
+        m[CROWN]=tr("Crowns");
+        m[RING]=tr("Rings");
+        m[EARRING]=tr("Earrings");
+        m[BRACELET]=tr("Bracelets");
+        m[GEM]=tr("Large Gems");
+        m[ANVIL]=tr("Anvils");
+        m[CORPSEPIECE]=tr("Corpse Bodyparts");
+        m[REMAINS]=tr("Remains");
+        m[MEAT]=tr("Meats");
+        m[FISH]=tr("Fishes");
+        m[FISH_RAW]=tr("Raw Fishes");
+        m[VERMIN]=tr("Vermins");
+        m[IS_PET]=tr("Pets");
+        m[SEEDS]=tr("Seeds");
+        m[PLANT]=tr("Plants");
+        m[SKIN_TANNED]=tr("Tanned Hides");
+        m[LEAVES_FRUIT]=tr("Leaves");
+        m[THREAD]=tr("Threads");
+        m[CLOTH]=tr("Cloths");
+        m[TOTEM]=tr("Totems");
+        m[PANTS]=tr("Armors (Legs)");
+        m[BACKPACK]=tr("Backpacks");
+        m[QUIVER]=tr("Quivers");
+        m[CATAPULTPARTS]=tr("Catapult Parts");
+        m[BALLISTAPARTS]=tr("Ballista Parts");
+        m[SIEGEAMMO]=tr("Siege Ammunitions");
+        m[BALLISTAARROWHEAD]=tr("Ballista Ammunitions");
+        m[TRAPPARTS]=tr("Mechanisms");
+        m[TRAPCOMP]=tr("Trap Components");
+        m[DRINK]=tr("Alcohols");
+        m[POWDER_MISC]=tr("Flours/Sugars/Powders");
+        m[CHEESE]=tr("Cheeses");
+        m[FOOD]=tr("Prepared Foods");
+        m[LIQUID_MISC]=tr("Honeys/Syrups/Milks/Oils");
+        m[COIN]=tr("Coins");
+        m[GLOB]=tr("Fats");
+        m[ROCK]=tr("Rocks");
+        m[PIPE_SECTION]=tr("Pipes");
+        m[HATCH_COVER]=tr("Hatch Covers");
+        m[GRATE]=tr("Grates");
+        m[QUERN]=tr("Querns");
+        m[MILLSTONE]=tr("Millstones");
+        m[SPLINT]=tr("Splints");
+        m[CRUTCH]=tr("Crutches");
+        m[TRACTION_BENCH]=tr("Traction Benches");
+        m[ORTHOPEDIC_CAST]=tr("Casts");
+        m[TOOL]=tr("Tools");
+        m[SLAB]=tr("Slabs");
+        m[EGG]=tr("Eggs");
+        m[BOOK]=tr("Books");
+        m[SUPPLIES]=tr("Supplies");
+        m[MELEE_EQUIPMENT]=tr("Weapon & Shield");
+        m[RANGED_EQUIPMENT]=tr("Quiver & Ammo");
         return m.value(type, "N/A");
+    }
+
+    static const QString get_item_clothing_names(const ITEM_TYPE &type){
+        QMap<ITEM_TYPE,QString> m;
+        m[ARMOR]=tr("Coats/Cloaks/Tunics..");
+        m[SHOES]=tr("Boots/Shoes/Socks..");
+        m[HELM]=tr("Caps/Helms/Hoods..");
+        m[GLOVES]=tr("Gloves/Mittens..");
+        m[PANTS]=tr("Skirts/Trousers..");
+        return m.value(type,"N/A");
     }
 
     static const QString get_item_name(const ITEM_TYPE &type) {
         QMap<ITEM_TYPE, QString> m;
-        m[NONE]=QObject::tr("N/A");
-        m[BAR]=QObject::tr("Bar");
-        m[SMALLGEM]=QObject::tr("Cut Gemstone");
-        m[BLOCKS]=QObject::tr("Block");
-        m[ROUGH]=QObject::tr("Rough Gemstone");
-        m[BOULDER]=QObject::tr("Boulder");
-        m[WOOD]=QObject::tr("Wood");
-        m[DOOR]=QObject::tr("Door");
-        m[FLOODGATE]=QObject::tr("Floodgate");
-        m[BED]=QObject::tr("Bed");
-        m[CHAIR]=QObject::tr("Chair");
-        m[CHAIN]=QObject::tr("Chain");
-        m[FLASK]=QObject::tr("Flask");
-        m[GOBLET]=QObject::tr("Goblet");
-        m[INSTRUMENT]=QObject::tr("Instrument");
-        m[TOY]=QObject::tr("Toy");
-        m[WINDOW]=QObject::tr("Window");
-        m[CAGE]=QObject::tr("Cage");
-        m[BARREL]=QObject::tr("Barrel");
-        m[BUCKET]=QObject::tr("Bucket");
-        m[ANIMALTRAP]=QObject::tr("Animal Trap");
-        m[TABLE]=QObject::tr("Table");
-        m[COFFIN]=QObject::tr("Coffin");
-        m[STATUE]=QObject::tr("Statue");
-        m[CORPSE]=QObject::tr("Corpse");
-        m[WEAPON]=QObject::tr("Weapon");
-        m[ARMOR]=QObject::tr("Armor");
-        m[SHOES]=QObject::tr("Boot");
-        m[SHIELD]=QObject::tr("Shield");
-        m[HELM]=QObject::tr("Helm");
-        m[GLOVES]=QObject::tr("Gauntlet");
-        m[BOX]=QObject::tr("Box");
-        m[BIN]=QObject::tr("Bin");
-        m[ARMORSTAND]=QObject::tr("Armor Stand");
-        m[WEAPONRACK]=QObject::tr("Weapon Rack");
-        m[CABINET]=QObject::tr("Cabinet");
-        m[FIGURINE]=QObject::tr("Figurine");
-        m[AMULET]=QObject::tr("Amulet");
-        m[SCEPTER]=QObject::tr("Scepter");
-        m[AMMO]=QObject::tr("Ammunition");
-        m[CROWN]=QObject::tr("Crown");
-        m[RING]=QObject::tr("Ring");
-        m[EARRING]=QObject::tr("Earring");
-        m[BRACELET]=QObject::tr("Bracelet");
-        m[GEM]=QObject::tr("Large Gem");
-        m[ANVIL]=QObject::tr("Anvil");
-        m[CORPSEPIECE]=QObject::tr("Corpse Bodypart");
-        m[REMAINS]=QObject::tr("Remain");
-        m[MEAT]=QObject::tr("Meat");
-        m[FISH]=QObject::tr("Fish");
-        m[FISH_RAW]=QObject::tr("Raw Fish");
-        m[VERMIN]=QObject::tr("Vermin");
-        m[IS_PET]=QObject::tr("Pet");
-        m[SEEDS]=QObject::tr("Seed");
-        m[PLANT]=QObject::tr("Plant");
-        m[SKIN_TANNED]=QObject::tr("Tanned Hide");
-        m[LEAVES_FRUIT]=QObject::tr("Leaf");
-        m[THREAD]=QObject::tr("Thread");
-        m[CLOTH]=QObject::tr("Cloth");
-        m[TOTEM]=QObject::tr("Totem");
-        m[PANTS]=QObject::tr("Greave");
-        m[BACKPACK]=QObject::tr("Backpack");
-        m[QUIVER]=QObject::tr("Quiver");
-        m[CATAPULTPARTS]=QObject::tr("Catapult Part");
-        m[BALLISTAPARTS]=QObject::tr("Ballista Part");
-        m[SIEGEAMMO]=QObject::tr("Siege Ammunition");
-        m[BALLISTAARROWHEAD]=QObject::tr("Ballista Ammunition");
-        m[TRAPPARTS]=QObject::tr("Mechanism");
-        m[TRAPCOMP]=QObject::tr("Trap Component");
-        m[DRINK]=QObject::tr("Alcohol");
-        m[POWDER_MISC]=QObject::tr("Powder");
-        m[CHEESE]=QObject::tr("Cheese");
-        m[FOOD]=QObject::tr("Prepared Food");
-        m[LIQUID_MISC]=QObject::tr("Syrup/Milk/Oil");
-        m[COIN]=QObject::tr("Coin");
-        m[GLOB]=QObject::tr("Fat");
-        m[ROCK]=QObject::tr("Rock");
-        m[PIPE_SECTION]=QObject::tr("Pipe");
-        m[HATCH_COVER]=QObject::tr("Hatch Cover");
-        m[GRATE]=QObject::tr("Grate");
-        m[QUERN]=QObject::tr("Quern");
-        m[MILLSTONE]=QObject::tr("Millstone");
-        m[SPLINT]=QObject::tr("Splint");
-        m[CRUTCH]=QObject::tr("Crutch");
-        m[TRACTION_BENCH]=QObject::tr("Traction Bench");
-        m[ORTHOPEDIC_CAST]=QObject::tr("Cast");
-        m[TOOL]=QObject::tr("Tool");
-        m[SLAB]=QObject::tr("Slab");
-        m[EGG]=QObject::tr("Egg");
-        m[BOOK]=QObject::tr("Book");
-        m[SUPPLIES]=QObject::tr("Other Equipment");
+        m[NONE]=tr("N/A");
+        m[BAR]=tr("Bar");
+        m[SMALLGEM]=tr("Cut Gemstone");
+        m[BLOCKS]=tr("Block");
+        m[ROUGH]=tr("Rough Gemstone");
+        m[BOULDER]=tr("Boulder");
+        m[WOOD]=tr("Wood");
+        m[DOOR]=tr("Door");
+        m[FLOODGATE]=tr("Floodgate");
+        m[BED]=tr("Bed");
+        m[CHAIR]=tr("Chair");
+        m[CHAIN]=tr("Chain");
+        m[FLASK]=tr("Flask");
+        m[GOBLET]=tr("Goblet");
+        m[INSTRUMENT]=tr("Instrument");
+        m[TOY]=tr("Toy");
+        m[WINDOW]=tr("Window");
+        m[CAGE]=tr("Cage");
+        m[BARREL]=tr("Barrel");
+        m[BUCKET]=tr("Bucket");
+        m[ANIMALTRAP]=tr("Animal Trap");
+        m[TABLE]=tr("Table");
+        m[COFFIN]=tr("Coffin");
+        m[STATUE]=tr("Statue");
+        m[CORPSE]=tr("Corpse");
+        m[WEAPON]=tr("Weapon");
+        m[ARMOR]=tr("Armor");
+        m[SHOES]=tr("Boot");
+        m[SHIELD]=tr("Shield");
+        m[HELM]=tr("Helm");
+        m[GLOVES]=tr("Gauntlet");
+        m[BOX]=tr("Box");
+        m[BIN]=tr("Bin");
+        m[ARMORSTAND]=tr("Armor Stand");
+        m[WEAPONRACK]=tr("Weapon Rack");
+        m[CABINET]=tr("Cabinet");
+        m[FIGURINE]=tr("Figurine");
+        m[AMULET]=tr("Amulet");
+        m[SCEPTER]=tr("Scepter");
+        m[AMMO]=tr("Ammunition");
+        m[CROWN]=tr("Crown");
+        m[RING]=tr("Ring");
+        m[EARRING]=tr("Earring");
+        m[BRACELET]=tr("Bracelet");
+        m[GEM]=tr("Large Gem");
+        m[ANVIL]=tr("Anvil");
+        m[CORPSEPIECE]=tr("Corpse Bodypart");
+        m[REMAINS]=tr("Remain");
+        m[MEAT]=tr("Meat");
+        m[FISH]=tr("Fish");
+        m[FISH_RAW]=tr("Raw Fish");
+        m[VERMIN]=tr("Vermin");
+        m[IS_PET]=tr("Pet");
+        m[SEEDS]=tr("Seed");
+        m[PLANT]=tr("Plant");
+        m[SKIN_TANNED]=tr("Tanned Hide");
+        m[LEAVES_FRUIT]=tr("Leaf");
+        m[THREAD]=tr("Thread");
+        m[CLOTH]=tr("Cloth");
+        m[TOTEM]=tr("Totem");
+        m[PANTS]=tr("Greave");
+        m[BACKPACK]=tr("Backpack");
+        m[QUIVER]=tr("Quiver");
+        m[CATAPULTPARTS]=tr("Catapult Part");
+        m[BALLISTAPARTS]=tr("Ballista Part");
+        m[SIEGEAMMO]=tr("Siege Ammunition");
+        m[BALLISTAARROWHEAD]=tr("Ballista Ammunition");
+        m[TRAPPARTS]=tr("Mechanism");
+        m[TRAPCOMP]=tr("Trap Component");
+        m[DRINK]=tr("Alcohol");
+        m[POWDER_MISC]=tr("Powder");
+        m[CHEESE]=tr("Cheese");
+        m[FOOD]=tr("Prepared Food");
+        m[LIQUID_MISC]=tr("Syrup/Milk/Oil");
+        m[COIN]=tr("Coin");
+        m[GLOB]=tr("Fat");
+        m[ROCK]=tr("Rock");
+        m[PIPE_SECTION]=tr("Pipe");
+        m[HATCH_COVER]=tr("Hatch Cover");
+        m[GRATE]=tr("Grate");
+        m[QUERN]=tr("Quern");
+        m[MILLSTONE]=tr("Millstone");
+        m[SPLINT]=tr("Splint");
+        m[CRUTCH]=tr("Crutch");
+        m[TRACTION_BENCH]=tr("Traction Bench");
+        m[ORTHOPEDIC_CAST]=tr("Cast");
+        m[TOOL]=tr("Tool");
+        m[SLAB]=tr("Slab");
+        m[EGG]=tr("Egg");
+        m[BOOK]=tr("Book");
+        m[SUPPLIES]=tr("Other Equipment");
         return m.value(type, "N/A");
     }
 
@@ -274,12 +284,25 @@ public:
     }
 
     //the category name for body parts not covered by clothing
-    static const QString uncovered_group_name(){return QObject::tr("Uncovered");}
+    static const QString uncovered_group_name(){return tr("Uncovered");}
     //the category for missing uniform items
-    static const QString missing_group_name() {return QObject::tr("Missing");}
+    static const QString missing_group_name() {return tr("Missing");}
 
     static const QColor color_missing() {return QColor(57,130,227);}
     static const QColor color_wear() {return QColor(240,116,0,255);}
+    static const QColor color_wear(int level){
+            int alpha = 255;
+            if(level == 2)
+                alpha = 190;
+            if(level == 1)
+                alpha = 135;
+            if(level <= 0)
+                alpha = 0;
+            QColor wear_color = color_wear();
+            wear_color.setAlpha(alpha);
+            return wear_color;
+    }
+
     static const QColor color_uncovered() {return QColor(227,22,18);}
 
     VIRTADDR address() {return m_addr;}
@@ -293,7 +316,7 @@ public:
     void item_type(ITEM_TYPE newType){m_iType = newType;}
 
     int mat_index(){return m_mat_idx;}
-    short mat_type(){return m_mat_type;}    
+    short mat_type(){return m_mat_type;}
 
     virtual short item_subtype(){return -1;}
     virtual short melee_skill(){return -1;}
@@ -308,7 +331,9 @@ public:
     int get_stack_size(){return m_stack_size;}
     void add_to_stack(int num){m_stack_size+=num;}
     QString get_material_name(){return m_material_name;}
+    QString get_material_name_base(){return m_material_name_base;}
     short get_quality(){return m_quality;}
+    QString get_item_name(){return m_item_name;}
 
 protected:
     DFInstance *m_df;
@@ -316,9 +341,10 @@ protected:
     ITEM_TYPE m_iType;
     short m_wear;
     short m_mat_type;
-    int m_mat_idx;    
+    int m_mat_idx;
     short m_quality;
     QString m_material_name;
+    QString m_material_name_base;
     QString m_item_name;
     QString m_layer_name;
     QString m_display_name;

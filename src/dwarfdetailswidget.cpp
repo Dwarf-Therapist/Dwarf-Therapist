@@ -188,7 +188,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     ui->lbl_profession->setText(QString("%2 %1").arg(embedPixmap(d->profession_icon())).arg(d->profession()));
     ui->lbl_profession->setToolTip(tr("Profession: %1").arg(ui->lbl_profession->text()));
 
-    if(d->noble_position().isEmpty()){        
+    if(d->noble_position().isEmpty()){
         ui->lbl_noble_position->hide();
         ui->lbl_noble->hide();
     }
@@ -197,20 +197,20 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         ui->lbl_noble_position->setText(d->noble_position());
         ui->lbl_noble_position->show();
         ui->lbl_noble->show();
-    }    
+    }
     ui->lbl_noble_position->setToolTip(ui->lbl_noble_position->text());
 
     if(d->artifact_name().isEmpty()){
         ui->lbl_artifact->hide();
-    }else{        
+    }else{
         ui->lbl_artifact->setText(tr("Creator of '%1'").arg(d->artifact_name()));
         ui->lbl_artifact->show();
     }
 
-    if(d->squad_name().isEmpty()){        
+    if(d->squad_name().isEmpty()){
         ui->lbl_squad_name->hide();
     }
-    else{                
+    else{
         ui->lbl_squad_name->setText(tr("<b>Member of Squad <i>'%1'</i></b>").arg(d->squad_name()));
         ui->lbl_squad_name->show();
     }
@@ -235,7 +235,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     ui->lbl_happiness->setToolTip(d->get_thought_desc());
 
     QPalette p;
-    QColor color = DT->user_settings()->value(QString("options/colors/happiness/%1").arg(static_cast<int>(happiness))).value<QColor>();        
+    QColor color = DT->user_settings()->value(QString("options/colors/happiness/%1").arg(static_cast<int>(happiness))).value<QColor>();
     QColor color2 = p.window().color();
     ui->lbl_happiness->setStyleSheet(build_gradient(color,color2));
 
@@ -262,7 +262,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     int real_count = 0;
     int raw_bonus_xp = 100;
     int bonus_xp = 0;
-    QString tooltip = "";    
+    QString tooltip = "";
     bool no_bonuses = true;
     foreach(Skill s, skills->values()){
         if(s.capped_level() > -1)
@@ -287,7 +287,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             }
             item_skill->setToolTip(tooltip);
 
-            sortableFloatTableWidgetItem *item_level = new sortableFloatTableWidgetItem();
+            sortableNumericTableWidgetItem *item_level = new sortableNumericTableWidgetItem();
             item_level->setText(QString::number(d->get_skill_level(s.id())));
             item_level->setData(Qt::UserRole, (float)d->get_skill_level(s.id(),true,true));
             item_level->setTextAlignment(Qt::AlignHCenter);
@@ -304,7 +304,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             bonus_xp = raw_bonus_xp - 100;
             if(no_bonuses && bonus_xp != 0)
                 no_bonuses = false;
-            sortableFloatTableWidgetItem *item_bonus = new sortableFloatTableWidgetItem();
+            sortableNumericTableWidgetItem *item_bonus = new sortableNumericTableWidgetItem();
             if(bonus_xp != 0)
                 item_bonus->setText(QString::number(bonus_xp,'f',0)+"%");
             else
@@ -334,7 +334,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             ui->tw_skills->setItem(real_count, 2, item_bonus);
             ui->tw_skills->setCellWidget(real_count, 3, pb);
         }
-    }        
+    }
     ui->tw_skills->setSortingEnabled(true);
     if(!DT->show_skill_learn_rates || no_bonuses)
         ui->tw_skills->hideColumn(2);
@@ -352,7 +352,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
         QTableWidgetItem *attribute_name = new QTableWidgetItem(a.get_name());
 
-        sortableFloatTableWidgetItem *attribute_rating = new sortableFloatTableWidgetItem;
+        sortableNumericTableWidgetItem *attribute_rating = new sortableNumericTableWidgetItem;
         attribute_rating->setTextAlignment(Qt::AlignHCenter);
         attribute_rating->setText(QString::number(a.display_value()));
         attribute_rating->setData(Qt::UserRole, a.display_value());
@@ -366,10 +366,10 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         }
         attribute_name->setToolTip(tooltip);
 
-        sortableFloatTableWidgetItem *attribute_max = new sortableFloatTableWidgetItem;
+        sortableNumericTableWidgetItem *attribute_max = new sortableNumericTableWidgetItem;
         attribute_max->setTextAlignment(Qt::AlignHCenter);
         attribute_max->setText(QString::number(a.max()));
-        attribute_max->setData(Qt::UserRole, a.max());        
+        attribute_max->setData(Qt::UserRole, a.max());
         attribute_max->setToolTip(QString("%1 (%2)").arg((int)a.max()).arg(tr("This is the maximum attainable value.")));
 
         //don't show the 'average for a <caste>' in the details pane
@@ -402,7 +402,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     ui->tw_traits->setSortingEnabled(false);
     QColor trait_color;
     QList<int> conflicted_beliefs;
-    for (int trait_id = 0; trait_id < traits.size(); ++trait_id) {       
+    for (int trait_id = 0; trait_id < traits.size(); ++trait_id) {
         if (d->trait_is_active(trait_id))
         {
             trait_color = QColor(Qt::black);
@@ -456,7 +456,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
         QTableWidgetItem *role_name = new QTableWidgetItem(name);
         role_name->setToolTip(tr("<center><h4>%1</h4></center>").arg(name));
-        sortableFloatTableWidgetItem *role_rating = new sortableFloatTableWidgetItem();
+        sortableNumericTableWidgetItem *role_rating = new sortableNumericTableWidgetItem();
         role_rating->setText(QString::number(val,'f',2)+"%");
         role_rating->setData(Qt::UserRole,max - i);
         role_rating->setTextAlignment(Qt::AlignHCenter);

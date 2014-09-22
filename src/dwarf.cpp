@@ -1494,7 +1494,8 @@ void Dwarf::read_uniform(){
 void Dwarf::read_inventory(){
     LOGD << "reading inventory for" << m_nice_name;
     m_coverage_ratings.clear();
-    m_inventory_wear.clear();
+    m_max_inventory_wear.clear();
+    m_equip_warnings.clear();
     m_inventory_grouped.clear();
 
     bool has_shirt = false;
@@ -1511,6 +1512,7 @@ void Dwarf::read_inventory(){
     short bp_id = -1;
     QString category_name = "";
     int inv_count = 0;
+    bool include_mat_name = DT->user_settings()->value("options/docks/equipoverview_include_mats",false).toBool();
     foreach(VIRTADDR inventory_item_addr, m_df->enumerate_vector(m_address + m_mem->dwarf_offset("inventory"))){
         inv_type = m_df->read_short(inventory_item_addr + m_mem->dwarf_offset("inventory_item_mode"));
         bp_id = m_df->read_short(inventory_item_addr + m_mem->dwarf_offset("inventory_item_bodypart"));
@@ -1544,8 +1546,19 @@ void Dwarf::read_inventory(){
                 else if(i_type == SHOES)
                     shoes_count++;
 
-                if(ir->wear() > m_inventory_wear.value(i_type))
-                    m_inventory_wear.insert(i_type,ir->wear());
+                int wear_level = ir->wear();
+                if(wear_level > m_max_inventory_wear.value(i_type)){
+                    m_max_inventory_wear.insert(i_type,wear_level);
+                }
+                if(wear_level > 0 && Item::is_armor_type(i_type) && i_type != SHIELD){
+                    QString item_name = QString("%1 %2").arg((include_mat_name ? ir->get_material_name_base() : "")).arg(ir->get_item_name()).trimmed();
+                    QPair<QString,int> key = qMakePair(item_name,wear_level);
+                    if(m_equip_warnings.contains(key)){
+                        m_equip_warnings[key] += ir->get_stack_size();
+                    }else{
+                        m_equip_warnings.insert(key,ir->get_stack_size());
+                    }
+                }
 
                 LOGD << "  + found armor/clothing:" << ir->display_name(false);
             }else if(Item::is_supplies(i_type) || Item::is_ranged_equipment(i_type)){
@@ -1599,19 +1612,24 @@ void Dwarf::read_inventory(){
     }
 
     //set our coverage ratings. currently this is only important for the 3 clothing types that, if missing, give bad thoughts
+    QString title = "";
     if(has_pants){
         m_coverage_ratings.insert(PANTS,100.0f);
     }else{
         m_coverage_ratings.insert(PANTS,0.0f);
         m_missing_counts.insert(PANTS,1);
-        process_inv_item(Item::uncovered_group_name(),new Item(PANTS,tr("Legs Uncovered!"),this));
+        title = tr("Legs Uncovered!");
+        process_inv_item(Item::uncovered_group_name(),new Item(PANTS,title,this));
+        m_equip_warnings.insert(qMakePair(title,-1),1);
     }
     if(has_shirt){
         m_coverage_ratings.insert(ARMOR,100.0f);
     }else{
         m_coverage_ratings.insert(ARMOR,0);
         m_missing_counts.insert(ARMOR,1);
-        process_inv_item(Item::uncovered_group_name(),new Item(ARMOR,tr("Chest Uncovered!"),this));
+        title = tr("Torso Uncovered!");
+        process_inv_item(Item::uncovered_group_name(),new Item(ARMOR,title,this));
+        m_equip_warnings.insert(qMakePair(title,-1),1);
     }
     //for shoes, compare how many they're wearing compared to how many legs they've still got
     float limb_count =  m_unit_health.limb_count();
@@ -1619,8 +1637,11 @@ void Dwarf::read_inventory(){
     if(limb_count > 0)
         foot_coverage = shoes_count / limb_count * 100.0f;
     if(foot_coverage < 100.0f){
-        process_inv_item(Item::uncovered_group_name(),new Item(SHOES,tr("Feet Uncovered!"),this));
-        m_missing_counts.insert(SHOES,limb_count - shoes_count);
+        title = tr("Feet Uncovered!");
+        process_inv_item(Item::uncovered_group_name(),new Item(SHOES,title,this));
+        int count = limb_count - shoes_count;
+        m_missing_counts.insert(SHOES,count);
+        m_equip_warnings.insert(qMakePair(title,-1),count);
     }
     m_coverage_ratings.insert(SHOES,foot_coverage);
 }
@@ -1644,16 +1665,19 @@ void Dwarf::process_inv_item(QString category, Item *item, bool is_contained_ite
 }
 
 //returns 1-3, higher being more worn out items
-int Dwarf::get_inventory_wear(ITEM_TYPE itype){
+int Dwarf::get_max_wear_level(ITEM_TYPE itype){
     if(itype == NONE){
         int worst_wear=0;
-        foreach(int rating, m_inventory_wear.values()){
-            if(rating > worst_wear)
+        foreach(int rating, m_max_inventory_wear.values()){
+            if(rating > worst_wear){
                 worst_wear = rating;
+                if(worst_wear >= 3)
+                    break;
+            }
         }
         return worst_wear;
     }else{
-        return m_inventory_wear.value(itype);
+        return m_max_inventory_wear.value(itype);
     }
     return 0;
 }
@@ -2256,7 +2280,7 @@ void Dwarf::reset_custom_profession(bool reset_labors){
             set_labor(labor_id,false,false);
         }
     }
-     m_pending_custom_profession = "";
+    m_pending_custom_profession = "";
 }
 
 QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
@@ -2847,18 +2871,18 @@ double Dwarf::get_role_pref_match_counts(Role *r){
 }
 
 double Dwarf::get_role_pref_match_counts(Preference *role_pref){
-        double matches = 0;
-        int key = role_pref->get_pref_category();
-        QMultiMap<int, Preference *>::iterator i = m_preferences.find(key);
-        while(i != m_preferences.end() && i.key() == key){
-            matches += (double)static_cast<Preference*>(i.value())->matches(role_pref,this);
-            i++;
-        }
-        //give a 0.1 bonus for each match after the first, this only applies when getting matches for groups
-        if(matches > 1.0)
-            matches = 1.0f + ((matches-1.0f) / 10.0f);
+    double matches = 0;
+    int key = role_pref->get_pref_category();
+    QMultiMap<int, Preference *>::iterator i = m_preferences.find(key);
+    while(i != m_preferences.end() && i.key() == key){
+        matches += (double)static_cast<Preference*>(i.value())->matches(role_pref,this);
+        i++;
+    }
+    //give a 0.1 bonus for each match after the first, this only applies when getting matches for groups
+    if(matches > 1.0)
+        matches = 1.0f + ((matches-1.0f) / 10.0f);
 
-        return matches;
+    return matches;
 }
 
 Reaction *Dwarf::get_reaction()

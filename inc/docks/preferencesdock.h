@@ -32,8 +32,6 @@ class PreferencesDock : public BaseDock {
 public:
     PreferencesDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
-    void clear();
-    void refresh();
     void filter();
 
 protected:
@@ -46,6 +44,8 @@ public slots:
     void clear_search();
     void search_changed(QString);
     void selection_changed();
+    void clear();
+    void refresh();
 
 signals:
     void item_selected(QList<QPair<QString,QString> >);

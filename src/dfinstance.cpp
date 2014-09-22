@@ -180,6 +180,7 @@ DFInstance::~DFInstance() {
     m_pref_counts.clear();
 
     m_thought_counts.clear();
+    m_equip_warning_counts.clear();
 }
 
 QVector<VIRTADDR> DFInstance::enumerate_vector(const VIRTADDR &addr) {
@@ -511,6 +512,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         qDeleteAll(m_pref_counts);
         m_pref_counts.clear();
         m_thought_counts.clear();
+        m_equip_warning_counts.clear();
 
         t.restart();
         load_population_data();
@@ -542,11 +544,6 @@ void DFInstance::load_population_data(){
     int unit_kills = 0;
     int max_kills = 0;
 
-    m_worn_item_counts.insert(SHOES,0);
-    m_worn_item_counts.insert(PANTS,0);
-    m_worn_item_counts.insert(ARMOR,0);
-    m_worn_item_counts.insert(HELM,0);
-
     foreach(Dwarf *d, m_actual_dwarves){
         //load labor counts
         foreach(int key, d->get_labors().uniqueKeys()){
@@ -564,12 +561,7 @@ void DFInstance::load_population_data(){
         if(unit_kills > max_kills)
             max_kills = unit_kills;
 
-        //inventory wear
-        foreach(ITEM_TYPE key, m_worn_item_counts.keys()){
-            m_worn_item_counts[key] += d->get_inventory_wear(key);
-        }
-
-        //load preference/thought totals, excluding babies/children according to settings
+        //load preference/thoughts/item wear totals, excluding babies/children according to settings
         if(d->is_adult() || (!d->is_adult() && !DT->hide_non_adults())){
             foreach(QString category_name, d->get_grouped_preferences().uniqueKeys()){
                 for(int i = 0; i < d->get_grouped_preferences().value(category_name)->count(); i++){
@@ -605,6 +597,7 @@ void DFInstance::load_population_data(){
                 }
             }
 
+            //thoughts
             QHash<short,int> d_thoughts = d->get_thoughts();
             foreach(short id, d_thoughts.uniqueKeys()){
                 int total_count = 0;
@@ -616,6 +609,18 @@ void DFInstance::load_population_data(){
                 total_count += d_thoughts.value(id);
                 dwarf_count++;
                 m_thought_counts.insert(id,qMakePair(total_count,dwarf_count));
+            }
+
+            //inventory wear
+            QPair<QString,int> wear_key;
+            QHash<QPair<QString,int>,int> wear_counts = d->get_equip_warnings();
+            foreach(wear_key, wear_counts.uniqueKeys()){
+                int worn_count = wear_counts.value(wear_key);
+                if(m_equip_warning_counts.contains(wear_key)){
+                    m_equip_warning_counts[wear_key] += worn_count;
+                }else{
+                    m_equip_warning_counts.insert(wear_key,worn_count);
+                }
             }
         }
     }

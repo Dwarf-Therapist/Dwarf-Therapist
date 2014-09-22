@@ -59,8 +59,8 @@ QStandardItem *EquipmentColumn::build_cell(Dwarf *d){
             rating_color = Item::color_missing();
     }
 
-    float sort_val = rating - d->get_inventory_wear();
-    item->setData(d->get_inventory_wear(),DwarfModel::DR_SPECIAL_FLAG);
+    float sort_val = rating - d->get_max_wear_level();
+    item->setData(d->get_max_wear_level(),DwarfModel::DR_SPECIAL_FLAG);
 //    item->setBackground(QBrush(rating_color));
     item->setData(rating_color,Qt::BackgroundColorRole);
     item->setData(CT_EQUIPMENT, DwarfModel::DR_COL_TYPE);

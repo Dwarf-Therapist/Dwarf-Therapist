@@ -50,7 +50,7 @@ build_pass {
         copy_mem_layouts.path = $$DESTDIR
         copy_mem_layouts.extra = copy /Y \"$$PWD\\share\\memory_layouts\\windows\\*\" \".\\$$DESTDIR\\share\\memory_layouts\\windows\";
 
-        INSTALLS += check_dirs        
+        INSTALLS += check_dirs
         INSTALLS += copy_mem_layouts
     }
     else:macx {
@@ -69,7 +69,7 @@ build_pass {
         log.path = Contents/MacOS/log
         QMAKE_BUNDLE_DATA += log
 
-        share.path = Contents/MacOS/share        
+        share.path = Contents/MacOS/share
         QMAKE_BUNDLE_DATA += share
 
         memory_layouts.path = Contents/MacOS/share/memory_layouts/osx
@@ -191,8 +191,8 @@ HEADERS += inc/viewmanager.h \
     inc/roledialog.h \
     inc/reaction.h \
     inc/races.h \
-    inc/languages.h \    
-    inc/caste.h \    
+    inc/languages.h \
+    inc/caste.h \
     inc/fortressentity.h \
     inc/material.h \
     inc/plant.h \
@@ -250,7 +250,8 @@ HEADERS += inc/viewmanager.h \
     inc/histfigure.h \
     inc/grid_view/unitkillscolumn.h \
     inc/dtstandarditem.h \
-    inc/docks/informationdock.h
+    inc/docks/informationdock.h \
+    inc/docks/equipmentoverviewdock.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -302,7 +303,7 @@ SOURCES += src/viewmanager.cpp \
     src/grid_view/weaponcolumn.cpp \
     src/roledialog.cpp \
     src/races.cpp \
-    src/languages.cpp \    
+    src/languages.cpp \
     src/caste.cpp \
     src/reaction.cpp \
     src/fortressentity.cpp \
@@ -343,7 +344,8 @@ SOURCES += src/viewmanager.cpp \
     src/histfigure.cpp \
     src/grid_view/unitkillscolumn.cpp \
     src/dtstandarditem.cpp \
-    src/docks/informationdock.cpp
+    src/docks/informationdock.cpp \
+    src/docks/equipmentoverviewdock.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

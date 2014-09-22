@@ -85,9 +85,9 @@ PreferencesDock::PreferencesDock(QWidget *parent, Qt::WindowFlags flags)
     connect(tw_prefs,SIGNAL(itemSelectionChanged()),this,SLOT(selection_changed()));
     connect(btn, SIGNAL(clicked()),this,SLOT(clear_filter()));
     connect(le_search, SIGNAL(textChanged(QString)),this, SLOT(search_changed(QString)));
-    connect(btn_clear_search, SIGNAL(clicked()),this,SLOT(clear_search()));    
+    connect(btn_clear_search, SIGNAL(clicked()),this,SLOT(clear_search()));
 
-//    this->installEventFilter(this);
+    connect(DT,SIGNAL(units_refreshed()),this,SLOT(refresh()));
 }
 
 void PreferencesDock::clear(){
@@ -141,7 +141,7 @@ void PreferencesDock::refresh(){
     }
 }
 
-void PreferencesDock::selection_changed(){    
+void PreferencesDock::selection_changed(){
     //pairs of category and preference
     QList<QPair<QString,QString> > values;
     QModelIndexList indexList = tw_prefs->selectionModel()->selectedIndexes();
@@ -177,7 +177,7 @@ void PreferencesDock::filter(){
 }
 
 void PreferencesDock::clear_filter(){
-    tw_prefs->clearSelection();    
+    tw_prefs->clearSelection();
 }
 
 void PreferencesDock::clear_search(){

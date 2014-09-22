@@ -209,6 +209,7 @@ private:
         void apply_filter(QModelIndex);
         void preference_selected(QList<QPair<QString,QString> > vals, QString filter_name = "", FILTER_SCRIPT_TYPE pType = SCR_PREF);
         void thought_selected(QList<short> ids);
+        void equipoverview_selected(QList<QPair<QString, int> >);
         void health_legend_selected(QList<QPair<int,int> > vals);
         //optimization stuff
         void toggle_opts_menu();
@@ -218,6 +219,10 @@ private:
         void done_editing_role(int result);
         void main_toolbar_style_changed(Qt::ToolButtonStyle button_style);
         void clear_all_filters();
+
+signals:
+        void lostConnection();
+
 };
 
 #endif // MAINWINDOW_H
