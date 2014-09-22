@@ -245,7 +245,7 @@
             <item>
              <widget class="QSpinBox" name="sb_vector_entries">
               <property name="suffix">
-               <string> entries</string>
+               <string>entries</string>
               </property>
               <property name="prefix">
                <string/>

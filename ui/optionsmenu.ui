@@ -386,10 +386,10 @@
           <string/>
          </property>
          <property name="statusTip">
-          <string>When checked, skill blocks on grid cells will choose the highest contrast color available. </string>
+          <string>When checked, skill blocks on grid cells will choose the highest contrast color available.</string>
          </property>
          <property name="whatsThis">
-          <string>When checked, skill blocks on grid cells will choose the highest contrast color available. </string>
+          <string>When checked, skill blocks on grid cells will choose the highest contrast color available.</string>
          </property>
          <property name="text">
           <string>Auto Contrast Skill Display</string>
@@ -1347,7 +1347,7 @@
             <string>Only show skills of this level or higher in the tooltip.</string>
            </property>
            <property name="text">
-            <string>Only show skills at or above level </string>
+            <string>Only show skills at or above level</string>
            </property>
           </widget>
          </item>

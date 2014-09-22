@@ -864,9 +864,9 @@ void MainWindow::go_to_new_issue() {
 }
 
 void MainWindow::open_help(){
-    QFileInfo local_manual("share:doc/Therapist Manual.pdf");
+    QFileInfo local_manual("share:doc/Dwarf Therapist.pdf");
     QUrl url = local_manual.exists() ? QUrl::fromLocalFile(local_manual.filePath())
-                                           : QUrl("http://dffd.wimbli.com/file.php?id=7889");
+                                     : QUrl("http://dffd.wimbli.com/file.php?id=7889");
     QDesktopServices::openUrl(url);
 }
 

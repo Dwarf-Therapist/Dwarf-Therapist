@@ -34,16 +34,7 @@
     <property name="spacing">
      <number>9</number>
     </property>
-    <property name="leftMargin">
-     <number>9</number>
-    </property>
-    <property name="topMargin">
-     <number>9</number>
-    </property>
-    <property name="rightMargin">
-     <number>9</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>9</number>
     </property>
     <item>
@@ -244,7 +235,7 @@
      <x>0</x>
      <y>0</y>
      <width>1129</width>
-     <height>19</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="font">
@@ -280,8 +271,8 @@
     <addaction name="separator"/>
     <addaction name="act_options"/>
     <addaction name="separator"/>
-    <addaction name="act_scan_memory"/>
     <addaction name="separator"/>
+    <addaction name="act_scan_memory"/>
     <addaction name="act_exit"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
@@ -761,10 +752,10 @@
      <normaloff>:/img/table--minus.png</normaloff>:/img/table--minus.png</iconset>
    </property>
    <property name="text">
-    <string> C&amp;lear Pending Changes</string>
+    <string>C&amp;lear Pending Changes</string>
    </property>
    <property name="iconText">
-    <string> C&amp;lear </string>
+    <string>C&amp;lear</string>
    </property>
    <property name="toolTip">
     <string>Abort all uncomitted changes (CTRL+E)</string>
@@ -791,7 +782,7 @@
     <string>&amp;Commit Pending Changes</string>
    </property>
    <property name="iconText">
-    <string> &amp;Commit </string>
+    <string>&amp;Commit</string>
    </property>
    <property name="toolTip">
     <string>Write all uncomitted changes to DF (CTRL+T)</string>
