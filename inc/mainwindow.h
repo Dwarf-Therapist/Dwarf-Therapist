@@ -195,7 +195,7 @@ private:
     void refresh_role_menus();
 
     void refresh_opts_menus();
-    void reset();       
+    void reset();
 
     void refresh_pop_counts();
 

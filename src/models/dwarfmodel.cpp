@@ -48,7 +48,6 @@ THE SOFTWARE.
 #include "dwarfjob.h"
 #include "unithealth.h"
 #include "customprofession.h"
-
 #include "superlaborcolumn.h"
 
 DwarfModel::DwarfModel(QObject *parent)
@@ -550,7 +549,12 @@ void DwarfModel::build_row(const QString &key) {
         }
 
         i_name->setData(get_font(d->active_military(),name_italic),Qt::FontRole);
-        i_name->setToolTip(d->tooltip_text());
+        if(m_show_tooltips){
+            i_name->setToolTip(d->tooltip_text());
+        }else{
+            i_name->setData(d->tooltip_text(),DwarfModel::DR_TOOLTIP);
+        }
+
         i_name->setStatusTip(d->nice_name());
         i_name->setData(false, DR_IS_AGGREGATE);
         i_name->setData(0, DR_RATING);
@@ -908,6 +912,8 @@ void DwarfModel::read_settings(){
     m_cursed_bg = build_gradient_brush(m_curse_col,m_curse_col.alpha(),0,QPoint(0,0),QPoint(1,0));
     m_cursed_bg_light = build_gradient_brush(m_curse_col, 50,0,QPoint(0,0),QPoint(1,0)); //keep a weakly highlighted version
     m_show_labor_counts = s->value("options/grid/show_labor_counts",false).toBool();
+    m_show_tooltips = s->value("options/grid/show_tooltips",true).toBool();
+
     m_cell_width = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
     m_cell_padding = s->value("options/grid/cell_padding", 0).toInt();
     m_cell_width += (m_cell_padding*2)+2;

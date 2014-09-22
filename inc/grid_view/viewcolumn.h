@@ -23,10 +23,11 @@ THE SOFTWARE.
 #ifndef VIEW_COLUMN_H
 #define VIEW_COLUMN_H
 
-#include <QStandardItem>
 #include <QSettings>
 #include "columntypes.h"
 #include "dwarfmodel.h"
+#include "dtstandarditem.h"
+#include <QStandardItem>
 
 class ViewColumnSet;
 class Dwarf;
@@ -40,10 +41,10 @@ I can think of a need for:
 * simple counters (num kills, num kids, total gold, total items)
 */
 class ViewColumn : public QObject {
-	Q_OBJECT
+    Q_OBJECT
 public:
     ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set = 0, QObject *parent = 0, int col_idx = -1);
-	ViewColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
+    ViewColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
     ViewColumn(const ViewColumn &to_copy); // copy ctor
     virtual ViewColumn* clone() = 0;
     virtual ~ViewColumn();
@@ -82,46 +83,46 @@ public:
     }
 
 
-	QString title() {return m_title;}
-	void set_title(QString title) {m_title = title;}
-	bool override_color() {return m_override_set_colors;}
-	void set_override_color(bool yesno) {m_override_set_colors = yesno;}
-	QColor bg_color() {return m_bg_color;}
-	void set_bg_color(QColor c) {m_bg_color = c;}
-	ViewColumnSet *set() {return m_set;}
+    QString title() {return m_title;}
+    void set_title(QString title) {m_title = title;}
+    bool override_color() {return m_override_set_colors;}
+    void set_override_color(bool yesno) {m_override_set_colors = yesno;}
+    QColor bg_color() {return m_bg_color;}
+    void set_bg_color(QColor c) {m_bg_color = c;}
+    ViewColumnSet *set() {return m_set;}
     void set_viewcolumnset(ViewColumnSet *set) {m_set = set;}
-	virtual COLUMN_TYPE type() {return m_type;}
+    virtual COLUMN_TYPE type() {return m_type;}
     int count() {return m_count;}
-    QHash<Dwarf*,QStandardItem*> cells() {return m_cells;}    
-	QStandardItem *init_cell(Dwarf *d);
+    QHash<Dwarf*,DTStandardItem*> cells() {return m_cells;}
+    QStandardItem *init_cell(Dwarf *d);
 
     //TODO: decouple tooltip creation from the item creation. that way tooltips could be instantly updated
-	virtual QStandardItem *build_cell(Dwarf *d) = 0; // create a suitable item based on a dwarf    
+    virtual QStandardItem *build_cell(Dwarf *d) = 0; // create a suitable item based on a dwarf
 
     QStandardItem *init_aggregate(QString group_name);
     virtual QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) = 0; // create an aggregate cell based on several dwarves
 
     QString get_cell_value(Dwarf *d);
-	virtual void write_to_ini(QSettings &s);
+    virtual void write_to_ini(QSettings &s);
 
     QList<COLUMN_SORT_TYPE> get_sortable_types(){return m_sortable_types;}
     COLUMN_SORT_TYPE get_current_sort() {return m_current_sort;}
 
     void set_export_role(DwarfModel::DATA_ROLES new_role){m_export_data_role = new_role;}
 
-	public slots:
-		virtual void read_settings() {}
+    public slots:
+        virtual void read_settings() {}
         void clear_cells();// {m_cells.clear();}
-		virtual void redraw_cells() {}
+        virtual void redraw_cells() {}
         virtual void refresh_sort(COLUMN_SORT_TYPE) {}
 
 protected:
-	QString m_title;
-	QColor m_bg_color;
-	bool m_override_set_colors;
-	ViewColumnSet *m_set;
-	COLUMN_TYPE m_type;
-	QHash<Dwarf*, QStandardItem*> m_cells;
+    QString m_title;
+    QColor m_bg_color;
+    bool m_override_set_colors;
+    ViewColumnSet *m_set;
+    COLUMN_TYPE m_type;
+    QHash<Dwarf*, DTStandardItem*> m_cells;
     int m_count;
     DwarfModel::DATA_ROLES m_export_data_role;
     QList<COLUMN_SORT_TYPE> m_sortable_types;

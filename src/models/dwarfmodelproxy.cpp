@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "mainwindow.h"
 #include "gamedatareader.h"
+#include "dtstandarditem.h"
 
 #if QT_VERSION < 0x050000
 # define QJSEngine QScriptEngine
@@ -39,18 +40,35 @@ DwarfModelProxy::DwarfModelProxy(QObject *parent)
     :QSortFilterProxyModel(parent)
     , m_last_sort_order(Qt::AscendingOrder)
     , m_last_sort_role(DSR_NAME_ASC)
-    , m_engine(new QJSEngine(this))    
+    , m_engine(new QJSEngine(this))
 {
     this->setDynamicSortFilter(false);
+    connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
+    read_settings();
+}
+
+void DwarfModelProxy::read_settings(){
+    m_show_tooltips = DT->user_settings()->value("options/grid/show_tooltips",true).toBool();
 }
 
 DwarfModel* DwarfModelProxy::get_dwarf_model() const {
     return static_cast<DwarfModel*>(sourceModel());
 }
 
-void DwarfModelProxy::cell_activated(const QModelIndex &idx) {    
+void DwarfModelProxy::cell_activated(const QModelIndex &idx) {
     QModelIndex new_idx = mapToSource(idx);
     return get_dwarf_model()->cell_activated(new_idx);
+}
+
+void DwarfModelProxy::redirect_tooltip(const QModelIndex &idx) {
+    QModelIndex new_idx = mapToSource(idx);
+    if(new_idx.isValid()){
+        QStandardItem *item = get_dwarf_model()->itemFromIndex(new_idx);
+        if(item){
+            int role = (m_show_tooltips ? Qt::ToolTipRole : static_cast<int>(DwarfModel::DR_TOOLTIP));
+            emit show_tooltip(item->data(role).toString());
+        }
+    }
 }
 
 //this is called when the text of the filter box changes, pattern being the text typed in

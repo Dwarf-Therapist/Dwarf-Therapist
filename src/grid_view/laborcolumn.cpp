@@ -31,26 +31,27 @@ THE SOFTWARE.
 #include "viewmanager.h"
 #include "skill.h"
 #include "labor.h"
+#include "dtstandarditem.h"
 
-LaborColumn::LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSet *set, QObject *parent) 
+LaborColumn::LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSet *set, QObject *parent)
     : SkillColumn(title, -1, set, parent, CT_LABOR)
-	, m_labor_id(labor_id)
-	, m_skill_id(skill_id)
+    , m_labor_id(labor_id)
+    , m_skill_id(skill_id)
 {
     connect(DT,SIGNAL(labor_counts_updated()), this, SLOT(update_count()));
     m_current_sort = ViewManager::get_default_col_sort(CT_LABOR);
 }
 
-LaborColumn::LaborColumn(QSettings &s, ViewColumnSet *set, QObject *parent) 
+LaborColumn::LaborColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     : SkillColumn(s, set, parent)
-	, m_labor_id(s.value("labor_id", -1).toInt())
-	, m_skill_id(s.value("skill_id", -1).toInt())
+    , m_labor_id(s.value("labor_id", -1).toInt())
+    , m_skill_id(s.value("skill_id", -1).toInt())
 {
     connect(DT,SIGNAL(labor_counts_updated()), this, SLOT(update_count()));
     m_current_sort = ViewManager::get_default_col_sort(CT_LABOR);
 }
 
-LaborColumn::LaborColumn(const LaborColumn &to_copy) 
+LaborColumn::LaborColumn(const LaborColumn &to_copy)
     : SkillColumn(to_copy)
     , m_labor_id(to_copy.m_labor_id)
     , m_skill_id(to_copy.m_skill_id)
@@ -60,8 +61,8 @@ LaborColumn::LaborColumn(const LaborColumn &to_copy)
 }
 
 QStandardItem *LaborColumn::build_cell(Dwarf *d) {
-	QStandardItem *item = init_cell(d);    
-    m_sort_val = 0;    
+    QStandardItem *item = init_cell(d);
+    m_sort_val = 0;
 
     if(d->labor_enabled(m_labor_id))
         item->setData(1000, DwarfModel::DR_BASE_SORT);
@@ -69,30 +70,30 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
     item->setData(CT_LABOR, DwarfModel::DR_COL_TYPE);
     item->setData(d->get_skill_level(m_skill_id,false,true), DwarfModel::DR_RATING); //interpolated level
     item->setData(d->get_skill_level(m_skill_id), DwarfModel::DR_DISPLAY_RATING); //level rounded down
-	item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);
-	item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
+    item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);
+    item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
     set_export_role(DwarfModel::DR_RATING);
 
     refresh_sort(d, m_current_sort);
     build_tooltip(d, DT->user_settings()->value(QString("options/show_roles_in_labor"), true).toBool());
 
-	return item;
+    return item;
 }
 
 QStandardItem *LaborColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
     Q_UNUSED(dwarves);
     QStandardItem *item = init_aggregate(group_name);
     item->setData(CT_LABOR, DwarfModel::DR_COL_TYPE);
-	item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);	
-	return item;
+    item->setData(m_labor_id, DwarfModel::DR_LABOR_ID);
+    return item;
 }
 
 void LaborColumn::write_to_ini(QSettings &s) {
-	ViewColumn::write_to_ini(s); 
-	s.setValue("skill_id", m_skill_id); 
-	s.setValue("labor_id", m_labor_id);
+    ViewColumn::write_to_ini(s);
+    s.setValue("skill_id", m_skill_id);
+    s.setValue("labor_id", m_labor_id);
 }
 
-void LaborColumn::update_count(){    
+void LaborColumn::update_count(){
     m_count = DT->get_DFInstance()->get_labor_count(m_labor_id);
 }

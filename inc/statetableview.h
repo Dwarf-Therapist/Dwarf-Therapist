@@ -118,7 +118,7 @@ private:
     bool m_dragging;
     bool m_toggling_multiple;
     QString m_view_name;
-    void keyPressEvent(QKeyEvent *event);    
+    void keyPressEvent(QKeyEvent *event);
 
     QMenu *m;
     QMenu *customization_menu;
@@ -144,7 +144,7 @@ private:
 
         void set_custom_profession_text(bool prompt = true);
         void clear_custom_profession_text();
-        void apply_custom_profession();        
+        void apply_custom_profession();
         void reset_custom_profession();
         void custom_profession_from_dwarf();
         void update_custom_profession_from_dwarf();
@@ -161,7 +161,7 @@ private:
         void column_right_clicked(int);
 
         void change_column_sort_method();
-        void sort_named_column(int column, DwarfModelProxy::DWARF_SORT_ROLE role, Qt::SortOrder order);     
+        void sort_named_column(int column, DwarfModelProxy::DWARF_SORT_ROLE role, Qt::SortOrder order);
 
         void commit_pending();
         void clear_pending();
@@ -178,7 +178,7 @@ private:
         void assign_to_squad();
         void remove_squad();
 
-signals:    
+signals:
     void dwarf_focus_changed(Dwarf *d);
     void squad_leader_changed();
 

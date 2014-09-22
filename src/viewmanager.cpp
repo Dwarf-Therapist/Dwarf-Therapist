@@ -246,7 +246,7 @@ void ViewManager::add_weapons_view(QList<GridView*> &built_in_views){
 
         //by default add as few types as possible (ie. wavy pikes are the same as pikes) to keep the count down
         QStringList added;
-        ViewColumnSet *vcs = new ViewColumnSet("All Weapons", this);        
+        ViewColumnSet *vcs = new ViewColumnSet("All Weapons", this);
         foreach(ItemWeaponSubtype *w, m_df->get_ordered_weapon_defs().values()){
             if(!added.contains(w->group_name())){
                 new WeaponColumn(w->group_name(),w->subType(),vcs,this);

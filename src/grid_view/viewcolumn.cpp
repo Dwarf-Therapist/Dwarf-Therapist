@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "utils.h"
 #include "dwarftherapist.h"
 #include "truncatingfilelogger.h"
+#include "dtstandarditem.h"
 
 ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,
                        QObject *parent, int col_idx)
@@ -86,7 +87,7 @@ ViewColumn::~ViewColumn(){
 }
 
 QStandardItem *ViewColumn::init_cell(Dwarf *d) {
-    QStandardItem *item = new QStandardItem;
+    DTStandardItem *item = new DTStandardItem;
     item->setStatusTip(QString("%1 :: %2").arg(m_title).arg(d->nice_name()));
     QColor bg;
     if (m_override_set_colors) {
@@ -99,13 +100,13 @@ QStandardItem *ViewColumn::init_cell(Dwarf *d) {
     item->setData(false, DwarfModel::DR_IS_AGGREGATE);
     item->setData(d->id(), DwarfModel::DR_ID);
     item->setData(0,DwarfModel::DR_BASE_SORT);
-    m_cells[d] = item;    
+    m_cells[d] = item;
 
     return item;
 }
 
 QStandardItem *ViewColumn::init_aggregate(QString group_name){
-    QStandardItem *item = new QStandardItem;
+    DTStandardItem *item = new DTStandardItem;
 
     item->setStatusTip(m_title + " :: " + group_name);
 
@@ -117,7 +118,7 @@ QStandardItem *ViewColumn::init_aggregate(QString group_name){
     item->setData(bg, Qt::BackgroundColorRole);
     item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
 
-    item->setData(group_name, DwarfModel::DR_GROUP_NAME);    
+    item->setData(group_name, DwarfModel::DR_GROUP_NAME);
     item->setData(-1, DwarfModel::DR_RATING);
     item->setData(-1, DwarfModel::DR_DISPLAY_RATING);
     item->setData(m_set->name(), DwarfModel::DR_SET_NAME);

@@ -244,6 +244,7 @@ void OptionsMenu::read_settings() {
     ui->cb_moodable->setChecked(s->value("color_mood_cells",false).toBool());
     ui->cb_attribute_syns->setChecked(s->value("color_attribute_syns",true).toBool());
     ui->cb_gender_icons->setChecked(s->value("show_gender_icons",true).toBool());
+    ui->cb_show_tooltips->setChecked(s->value("show_tooltips",true).toBool());
     ui->cb_grid_health_colors->setChecked(s->value("color_health_cells",true).toBool());
     ui->cb_decorate_nobles->setChecked(s->value("decorate_noble_names",false).toBool());
     //the signal to disable the color pickers doesn't fire on the initial read. this is a work around for the inital setting
@@ -251,7 +252,7 @@ void OptionsMenu::read_settings() {
         m_general_colors.at(8)->setDisabled(true);
         m_general_colors.at(9)->setDisabled(true);
     }
-    s->endGroup();        
+    s->endGroup();
 
     temp = s->value("tooltip_font", QFont(DefaultFonts::getTooltipFontName(), DefaultFonts::getTooltipFontSize())).value<QFont>();
     m_tooltip_font = qMakePair(temp,temp);
@@ -268,7 +269,7 @@ void OptionsMenu::read_settings() {
     ui->cb_single_click_labor_changes->setChecked(s->value("single_click_labor_changes", true).toBool());
     ui->cb_show_toolbar_text->setChecked(s->value("show_toolbutton_text", true).toBool());
     ui->cb_auto_expand->setChecked(s->value("auto_expand_groups", true).toBool());
-    ui->cb_show_full_dwarf_names->setChecked(s->value("show_full_dwarf_names", false).toBool());        
+    ui->cb_show_full_dwarf_names->setChecked(s->value("show_full_dwarf_names", false).toBool());
     ui->cb_check_for_updates_on_startup->setChecked(s->value("check_for_updates_on_startup", true).toBool());
     ui->cb_alert_on_lost_connection->setChecked(s->value("alert_on_lost_connection", true).toBool());
     ui->cb_labor_cheats->setChecked(s->value("allow_labor_cheats", false).toBool());
@@ -276,7 +277,7 @@ void OptionsMenu::read_settings() {
     ui->cb_generic_names->setChecked(s->value("use_generic_names", false).toBool());
     ui->cb_curse_highlight->setChecked(s->value("highlight_cursed", false).toBool());
     ui->cb_noble_highlight->setChecked(s->value("highlight_nobles", true).toBool());
-    ui->cb_labor_exclusions->setChecked(s->value("labor_exclusions", true).toBool());    
+    ui->cb_labor_exclusions->setChecked(s->value("labor_exclusions", true).toBool());
     ui->cb_no_diagnosis->setChecked(s->value("diagnosis_not_required",false).toBool());
     ui->cb_animal_health->setChecked(s->value("animal_health",false).toBool());
 
@@ -362,6 +363,7 @@ void OptionsMenu::write_settings() {
         s->setValue("color_mood_cells", ui->cb_moodable->isChecked());
         s->setValue("color_attribute_syns", ui->cb_attribute_syns->isChecked());
         s->setValue("show_gender_icons", ui->cb_gender_icons->isChecked());
+        s->setValue("show_tooltips",ui->cb_show_tooltips->isChecked());
         s->setValue("color_health_cells", ui->cb_grid_health_colors->isChecked());
         s->setValue("show_labor_counts",ui->cb_labor_counts->isChecked());
         s->setValue("group_all_views",ui->cb_sync_grouping->isChecked());
@@ -433,7 +435,7 @@ void OptionsMenu::write_settings() {
         s->setValue("syndrome_display_type", val);
 
 
-        s->endGroup();       
+        s->endGroup();
     }
 }
 
@@ -450,7 +452,7 @@ void OptionsMenu::accept() {
             tr("Would you like to apply the new options now (Read Data)?"),
             QMessageBox::Yes | QMessageBox::No);
     if (answer == QMessageBox::Yes)
-        DT->get_main_window()->read_dwarves();    
+        DT->get_main_window()->read_dwarves();
 }
 
 void OptionsMenu::reject() {
@@ -479,7 +481,7 @@ void OptionsMenu::restore_defaults() {
     ui->cb_single_click_labor_changes->setChecked(false);
     ui->cb_show_toolbar_text->setChecked(true);
     ui->cb_auto_expand->setChecked(false);
-    ui->cb_show_full_dwarf_names->setChecked(false);    
+    ui->cb_show_full_dwarf_names->setChecked(false);
     ui->sb_min_skill_level->setValue(1);
     ui->cb_check_for_updates_on_startup->setChecked(true);
     ui->cb_alert_on_lost_connection->setChecked(true);
@@ -497,6 +499,7 @@ void OptionsMenu::restore_defaults() {
     ui->cb_sync_scrolling->setChecked(true);
     ui->cb_moodable->setChecked(false);
     ui->cb_gender_icons->setChecked(true);
+    ui->cb_show_tooltips->setChecked(true);
     ui->cb_grid_health_colors->setChecked(true);
     ui->cb_no_diagnosis->setChecked(false);
     ui->cb_animal_health->setChecked(false);
@@ -519,7 +522,7 @@ void OptionsMenu::restore_defaults() {
     ui->chk_show_age->setChecked(true);
     ui->chk_show_buffs->setChecked(false);
     ui->chk_show_kills->setChecked(false);
-    ui->rad_syn_names->setChecked(true);    
+    ui->rad_syn_names->setChecked(true);
 
     ui->dsb_attribute_weight->setValue(0.25);
     ui->dsb_pref_weight->setValue(0.15);
@@ -529,7 +532,7 @@ void OptionsMenu::restore_defaults() {
     ui->dsb_att_potential_weight->setValue(0.50);
 
     ui->chk_show_roles->setChecked(true);
-    ui->chk_show_skills->setChecked(true);    
+    ui->chk_show_skills->setChecked(true);
     ui->chk_show_health->setChecked(false);
     ui->chk_health_colors->setChecked(true);
     ui->chk_health_symbols->setChecked(false);

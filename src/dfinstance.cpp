@@ -541,6 +541,12 @@ void DFInstance::load_population_data(){
     int labor_count = 0;
     int unit_kills = 0;
     int max_kills = 0;
+
+    m_worn_item_counts.insert(SHOES,0);
+    m_worn_item_counts.insert(PANTS,0);
+    m_worn_item_counts.insert(ARMOR,0);
+    m_worn_item_counts.insert(HELM,0);
+
     foreach(Dwarf *d, m_actual_dwarves){
         //load labor counts
         foreach(int key, d->get_labors().uniqueKeys()){
@@ -557,6 +563,11 @@ void DFInstance::load_population_data(){
         unit_kills = d->hist_figure()->total_kills();
         if(unit_kills > max_kills)
             max_kills = unit_kills;
+
+        //inventory wear
+        foreach(ITEM_TYPE key, m_worn_item_counts.keys()){
+            m_worn_item_counts[key] += d->get_inventory_wear(key);
+        }
 
         //load preference/thought totals, excluding babies/children according to settings
         if(d->is_adult() || (!d->is_adult() && !DT->hide_non_adults())){

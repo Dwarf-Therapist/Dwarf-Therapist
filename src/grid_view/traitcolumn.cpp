@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include "dwarfstats.h"
 #include "dwarftherapist.h"
 
-TraitColumn::TraitColumn(const QString &title, const short &trait_id, ViewColumnSet *set, QObject *parent) 
+TraitColumn::TraitColumn(const QString &title, const short &trait_id, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title, CT_TRAIT, set, parent)
     , m_trait_id(trait_id)
     , m_trait(0)
@@ -39,7 +39,7 @@ TraitColumn::TraitColumn(const QString &title, const short &trait_id, ViewColumn
     m_trait = GameDataReader::ptr()->get_trait(trait_id);
 }
 
-TraitColumn::TraitColumn(QSettings &s, ViewColumnSet *set, QObject *parent) 
+TraitColumn::TraitColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     : ViewColumn(s, set, parent)
     , m_trait_id(s.value("trait_id", -1).toInt())
     , m_trait(0)
@@ -87,7 +87,7 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     item->setData(raw_value, DwarfModel::DR_RATING);
     item->setData(raw_value, DwarfModel::DR_DISPLAY_RATING);
     set_export_role(DwarfModel::DR_RATING);
-    
+
     QString tooltip = QString("<center><h3>%1</h3><b>Value: %2</b></center><br/>%3<br/>%4")
             .arg(m_title)
             .arg(raw_value)
@@ -98,7 +98,7 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     return item;
 }
 
-QStandardItem *TraitColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {    
+QStandardItem *TraitColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
     Q_UNUSED(dwarves);
     QStandardItem *item = init_aggregate(group_name);
     return item;

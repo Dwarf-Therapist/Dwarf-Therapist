@@ -373,222 +373,249 @@
       <attribute name="title">
        <string>Grid Options</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0,0,0,0">
        <item>
-        <widget class="QCheckBox" name="cb_auto_contrast">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="toolTip">
-          <string/>
-         </property>
-         <property name="statusTip">
-          <string>When checked, skill blocks on grid cells will choose the highest contrast color available. </string>
-         </property>
-         <property name="whatsThis">
-          <string>When checked, skill blocks on grid cells will choose the highest contrast color available. </string>
-         </property>
-         <property name="text">
-          <string>Auto Contrast Skill Display</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cb_show_aggregates">
-         <property name="toolTip">
-          <string/>
-         </property>
-         <property name="statusTip">
-          <string>When checked, and sorting by some criteria, labors will show an aggregate cell above a group. This cell can be toggled to enable/disable a labor for an entire group at once.</string>
-         </property>
-         <property name="whatsThis">
-          <string>When checked, and sorting by some criteria, labors will show an aggregate cell above a group. This cell can be toggled to enable/disable a labor for an entire group at once.</string>
-         </property>
-         <property name="text">
-          <string>Display Labor Group Cells</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cb_shade_column_headers">
-         <property name="toolTip">
-          <string/>
-         </property>
-         <property name="statusTip">
-          <string>When checked, this will shade column headers with the column's background color</string>
-         </property>
-         <property name="whatsThis">
-          <string>When checked, this will shade column headers with the column's background color</string>
-         </property>
-         <property name="text">
-          <string>Gradient Shade Column Headers</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cb_shade_cells">
-         <property name="toolTip">
-          <string/>
-         </property>
-         <property name="statusTip">
-          <string>When checked, this will apply a gradient to active labor, current job, and happiness grid cells.</string>
-         </property>
-         <property name="whatsThis">
-          <string>When checked, this will apply a gradient to active labor, current job, and happiness grid cells.</string>
-         </property>
-         <property name="text">
-          <string>Gradient Shade Cells</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cb_header_text_direction">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="toolTip">
-          <string/>
-         </property>
-         <property name="statusTip">
-          <string>When checked, header text is written from bottom to top.</string>
-         </property>
-         <property name="whatsThis">
-          <string>When checked, header text is written from bottom to top.</string>
-         </property>
-         <property name="text">
-          <string>Column Header Text Bottom to Top</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cb_labor_counts">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="toolTip">
-          <string/>
-         </property>
-         <property name="statusTip">
-          <string>When checked, header text will be prefixed by the number of dwarfs with the labor enabled. This includes pending labors.</string>
-         </property>
-         <property name="whatsThis">
-          <string>When checked, header text will be prefixed by the number of dwarfs with the labor enabled. This includes pending labors.</string>
-         </property>
-         <property name="text">
-          <string>Show Count in Labor Column Headers</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cb_sync_grouping">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="toolTip">
-          <string/>
-         </property>
-         <property name="statusTip">
-          <string>When checked, the selected grouping will be applied to all views. When unchecked grouping is saved for each view.</string>
-         </property>
-         <property name="whatsThis">
-          <string>When checked, the selected grouping will be applied to all views. When unchecked grouping is saved for each view.</string>
-         </property>
-         <property name="text">
-          <string>Synchronize View Grouping</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cb_sync_scrolling">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="toolTip">
-          <string/>
-         </property>
-         <property name="statusTip">
-          <string>When checked, the current scroll positions will be applied to all views. This works best with synchronized grouping.</string>
-         </property>
-         <property name="whatsThis">
-          <string>When checked, the current scroll positions will be applied to all views. This works best with synchronized grouping.</string>
-         </property>
-         <property name="text">
-          <string>Synchronize View Scroll Positions</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cb_moodable">
-         <property name="statusTip">
-          <string>When checked, this will use the colors defined in the grid colors tab to change the border color of highest moodable skills, or skills which have already had a mood.</string>
-         </property>
-         <property name="text">
-          <string>Highlight moodable cells in labor/skill columns</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cb_attribute_syns">
-         <property name="toolTip">
-          <string>When checked, any attributes which are affected by syndromes will be highlighted with a blue border.</string>
-         </property>
-         <property name="statusTip">
-          <string>When checked, any attributes which are affected by syndromes will be highlighted with a blue border.</string>
-         </property>
-         <property name="whatsThis">
-          <string>When checked, any attributes which are affected by syndromes will be highlighted with a blue border.</string>
-         </property>
-         <property name="text">
-          <string>Highlight attribute cells affected by syndromes</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cb_gender_icons">
-         <property name="toolTip">
-          <string>When checked, shows the gender icons to the left of the name in the grid views.</string>
-         </property>
-         <property name="statusTip">
-          <string>When checked, shows the gender icons to the left of the name in the grid views.</string>
-         </property>
-         <property name="whatsThis">
-          <string>When checked, shows the gender icons to the left of the name in the grid views.</string>
-         </property>
-         <property name="text">
-          <string>Show Gender Icons</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cb_decorate_nobles">
-         <property name="toolTip">
-          <string>When checked, italicizes and adds the masterwork symbol around noble names.</string>
-         </property>
-         <property name="statusTip">
-          <string>When checked, italicizes and adds the masterwork symbol around noble names.</string>
-         </property>
-         <property name="whatsThis">
-          <string>When checked, italicizes and adds the masterwork symbol around noble names.</string>
-         </property>
-         <property name="text">
-          <string>Decorate Noble Names</string>
-         </property>
-        </widget>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="7" column="0">
+          <widget class="QCheckBox" name="cb_sync_scrolling">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>When checked, the current scroll positions will be applied to all views. This works best with synchronized grouping.</string>
+           </property>
+           <property name="whatsThis">
+            <string>When checked, the current scroll positions will be applied to all views. This works best with synchronized grouping.</string>
+           </property>
+           <property name="text">
+            <string>Synchronize View Scroll Positions</string>
+           </property>
+          </widget>
+         </item>
+         <item row="11" column="0">
+          <widget class="QCheckBox" name="cb_decorate_nobles">
+           <property name="toolTip">
+            <string>When checked, italicizes and adds the masterwork symbol around noble names.</string>
+           </property>
+           <property name="statusTip">
+            <string>When checked, italicizes and adds the masterwork symbol around noble names.</string>
+           </property>
+           <property name="whatsThis">
+            <string>When checked, italicizes and adds the masterwork symbol around noble names.</string>
+           </property>
+           <property name="text">
+            <string>Decorate Noble Names</string>
+           </property>
+          </widget>
+         </item>
+         <item row="10" column="0">
+          <widget class="QCheckBox" name="cb_gender_icons">
+           <property name="toolTip">
+            <string>When checked, shows the gender icons to the left of the name in the grid views.</string>
+           </property>
+           <property name="statusTip">
+            <string>When checked, shows the gender icons to the left of the name in the grid views.</string>
+           </property>
+           <property name="whatsThis">
+            <string>When checked, shows the gender icons to the left of the name in the grid views.</string>
+           </property>
+           <property name="text">
+            <string>Show Gender Icons</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0">
+          <widget class="QCheckBox" name="cb_moodable">
+           <property name="statusTip">
+            <string>When checked, this will use the colors defined in the grid colors tab to change the border color of highest moodable skills, or skills which have already had a mood.</string>
+           </property>
+           <property name="text">
+            <string>Highlight moodable cells in labor/skill columns</string>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="0">
+          <widget class="QCheckBox" name="cb_attribute_syns">
+           <property name="toolTip">
+            <string>When checked, any attributes which are affected by syndromes will be highlighted with a blue border.</string>
+           </property>
+           <property name="statusTip">
+            <string>When checked, any attributes which are affected by syndromes will be highlighted with a blue border.</string>
+           </property>
+           <property name="whatsThis">
+            <string>When checked, any attributes which are affected by syndromes will be highlighted with a blue border.</string>
+           </property>
+           <property name="text">
+            <string>Highlight attribute cells affected by syndromes</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <spacer name="horizontalSpacer_24">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="cb_shade_column_headers">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>When checked, this will shade column headers with the column's background color</string>
+           </property>
+           <property name="whatsThis">
+            <string>When checked, this will shade column headers with the column's background color</string>
+           </property>
+           <property name="text">
+            <string>Gradient Shade Column Headers</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QCheckBox" name="cb_shade_cells">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>When checked, this will apply a gradient to active labor, current job, and happiness grid cells.</string>
+           </property>
+           <property name="whatsThis">
+            <string>When checked, this will apply a gradient to active labor, current job, and happiness grid cells.</string>
+           </property>
+           <property name="text">
+            <string>Gradient Shade Cells</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QCheckBox" name="cb_sync_grouping">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>When checked, the selected grouping will be applied to all views. When unchecked grouping is saved for each view.</string>
+           </property>
+           <property name="whatsThis">
+            <string>When checked, the selected grouping will be applied to all views. When unchecked grouping is saved for each view.</string>
+           </property>
+           <property name="text">
+            <string>Synchronize View Grouping</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QCheckBox" name="cb_header_text_direction">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>When checked, header text is written from bottom to top.</string>
+           </property>
+           <property name="whatsThis">
+            <string>When checked, header text is written from bottom to top.</string>
+           </property>
+           <property name="text">
+            <string>Column Header Text Bottom to Top</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QCheckBox" name="cb_labor_counts">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>When checked, header text will be prefixed by the number of dwarfs with the labor enabled. This includes pending labors.</string>
+           </property>
+           <property name="whatsThis">
+            <string>When checked, header text will be prefixed by the number of dwarfs with the labor enabled. This includes pending labors.</string>
+           </property>
+           <property name="text">
+            <string>Show Count in Labor Column Headers</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="cb_auto_contrast">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>When checked, skill blocks on grid cells will choose the highest contrast color available. </string>
+           </property>
+           <property name="whatsThis">
+            <string>When checked, skill blocks on grid cells will choose the highest contrast color available. </string>
+           </property>
+           <property name="text">
+            <string>Auto Contrast Skill Display</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="cb_show_aggregates">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>When checked, and sorting by some criteria, labors will show an aggregate cell above a group. This cell can be toggled to enable/disable a labor for an entire group at once.</string>
+           </property>
+           <property name="whatsThis">
+            <string>When checked, and sorting by some criteria, labors will show an aggregate cell above a group. This cell can be toggled to enable/disable a labor for an entire group at once.</string>
+           </property>
+           <property name="text">
+            <string>Display Labor Group Cells</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QCheckBox" name="cb_show_tooltips">
+           <property name="statusTip">
+            <string>When unchecked tooltips will not be shown in the grid. The tooltip information is still viewable in the tooltip dock.</string>
+           </property>
+           <property name="text">
+            <string>Display Grid Cell Tooltips</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_7">

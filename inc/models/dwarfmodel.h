@@ -58,11 +58,11 @@ public:
         GB_AGE,
         GB_CASTE,
         GB_CASTE_TAG,
-        GB_CURRENT_JOB,        
+        GB_CURRENT_JOB,
         GB_HAPPINESS,
         GB_HAS_NICKNAME,
         GB_HIGHEST_MOODABLE,
-        GB_HIGHEST_SKILL,        
+        GB_HIGHEST_SKILL,
         GB_LEGENDARY,
         GB_MIGRATION_WAVE,
         GB_MILITARY_STATUS,
@@ -98,7 +98,8 @@ public:
         DR_SIZE, //right click sort on first column
         DR_GLOBAL,
         DR_CUSTOM_PROF, //custom profession name
-        DR_LABORS //qvariant list of labor id
+        DR_LABORS, //qvariant list of labor id
+        DR_TOOLTIP //used to redirect the tooltip instead of the default Qt::TooltipRole
     } DATA_ROLES;
 
     DwarfModel(QObject *parent = 0);
@@ -117,7 +118,7 @@ public:
 
     GROUP_BY current_grouping() const {return m_group_by;}
     const QMap<QString, QVector<Dwarf*> > *get_dwarf_groups() const {return &m_grouped_dwarves;}
-    Dwarf *get_dwarf_by_id(int id) const {return m_dwarves.value(id, 0);}    
+    Dwarf *get_dwarf_by_id(int id) const {return m_dwarves.value(id, 0);}
 
     QVector<Dwarf*> get_dirty_dwarves();
     QList<Dwarf*> get_dwarves() {return m_dwarves.values();}
@@ -135,13 +136,13 @@ public:
     bool clearing_data;
 
 public slots:
-    void draw_headers();    
+    void draw_headers();
     void update_header_info(int id, COLUMN_TYPE type);
 
     void build_row(const QString &key);
     void build_rows();
     void set_group_by(int group_by);
-    void load_dwarves();   
+    void load_dwarves();
     void cell_activated(const QModelIndex &idx); // a grid cell was clicked/doubleclicked or enter was pressed on it
     void clear_pending();
     void commit_pending();
@@ -173,11 +174,12 @@ private:
     bool m_show_labor_counts;
     int m_cell_width;
     int m_cell_padding;
+    bool m_show_tooltips;
 
     QHash<int,QPair<QString,int> > m_global_sort_info; //keeps a pair of gridview name, column idx for each group by type used
     QHash<int,QPair<int,Qt::SortOrder> > m_global_group_sort_info;
 
-    QBrush build_gradient_brush(QColor base_col, int alpha_start, int alpha_finish, QPoint start, QPoint end);    
+    QBrush build_gradient_brush(QColor base_col, int alpha_start, int alpha_finish, QPoint start, QPoint end);
     QString build_col_tooltip(ViewColumn *col);
     QFont get_font(bool bold = false, bool italic = false, bool underline = false);
 

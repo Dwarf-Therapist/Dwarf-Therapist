@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include "gridviewdock.h"
 #include "skilllegenddock.h"
 #include "dwarfdetailsdock.h"
+#include "informationdock.h"
 #include "columntypes.h"
 #include "rotatedheader.h"
 #include "scanner.h"
@@ -124,6 +125,11 @@ MainWindow::MainWindow(QWidget *parent)
     dwarf_details_dock->setFloating(false);
     addDockWidget(Qt::RightDockWidgetArea, dwarf_details_dock);
 
+    InformationDock *info_dock = new InformationDock(this);
+    info_dock->setHidden(true);
+    info_dock->setFloating(false);
+    addDockWidget(Qt::RightDockWidgetArea, info_dock);
+
     PreferencesDock *pref_dock = new PreferencesDock(this);
     pref_dock->setHidden(true);
     pref_dock->setFloating(false);
@@ -143,6 +149,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menu_docks->addAction(ui->dock_custom_professions->toggleViewAction());
     ui->menu_docks->addAction(grid_view_dock->toggleViewAction());
     ui->menu_docks->addAction(skill_legend_dock->toggleViewAction());
+    ui->menu_docks->addAction(info_dock->toggleViewAction());
     ui->menu_docks->addAction(dwarf_details_dock->toggleViewAction());
     ui->menu_docks->addAction(pref_dock->toggleViewAction());
     ui->menu_docks->addAction(thought_dock->toggleViewAction());
@@ -168,6 +175,9 @@ MainWindow::MainWindow(QWidget *parent)
             m_view_manager, SLOT(jump_to_profession(QTreeWidgetItem*,QTreeWidgetItem*)));
 
     connect(m_view_manager, SIGNAL(dwarf_focus_changed(Dwarf*)), dwarf_details_dock, SLOT(show_dwarf(Dwarf*)));
+
+    connect(m_proxy, SIGNAL(show_tooltip(QString)),info_dock,SLOT(show_info(QString)));
+
     connect(m_view_manager, SIGNAL(selection_changed()), this, SLOT(toggle_opts_menu()));
     connect(ui->cb_filter_script, SIGNAL(currentIndexChanged(const QString &)), SLOT(new_filter_script_chosen(const QString &)));
 
@@ -256,7 +266,6 @@ MainWindow::~MainWindow() {
     delete m_settings;
     delete ui;
 }
-
 
 void MainWindow::read_settings() {
     m_reading_settings = true;

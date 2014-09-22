@@ -39,12 +39,12 @@ CurrentJobColumn::CurrentJobColumn(QSettings &s, ViewColumnSet *set, QObject *pa
 
 CurrentJobColumn::CurrentJobColumn(const QString &title, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title, CT_IDLE, set, parent)
-{    
+{
 }
 
 CurrentJobColumn::CurrentJobColumn(const CurrentJobColumn &to_copy)
     : ViewColumn(to_copy)
-{    
+{
 }
 
 QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
@@ -339,7 +339,7 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
     return item;
 }
 
-QStandardItem *CurrentJobColumn::build_aggregate(const QString &group_name,const QVector<Dwarf*> &dwarves) {    
+QStandardItem *CurrentJobColumn::build_aggregate(const QString &group_name,const QVector<Dwarf*> &dwarves) {
     Q_UNUSED(dwarves);
     QStandardItem *item = init_aggregate(group_name);
     return item;

@@ -56,7 +56,7 @@ StateTableView::~StateTableView()
 StateTableView::StateTableView(QWidget *parent)
     : QTreeView(parent)
     , m_last_sorted_col(0)
-    , m_last_sort_order(Qt::AscendingOrder)    
+    , m_last_sort_order(Qt::AscendingOrder)
     , m_default_group_by(-1)
     , m_model(0)
     , m_proxy(0)
@@ -80,7 +80,7 @@ StateTableView::StateTableView(QWidget *parent)
     setFocusPolicy(Qt::ClickFocus);
 
     setItemDelegate(m_delegate);
-    setHeader(m_header);    
+    setHeader(m_header);
 
     verticalScrollBar()->setFocusPolicy(Qt::StrongFocus);
     horizontalScrollBar()->setFocusPolicy(Qt::StrongFocus);
@@ -94,7 +94,7 @@ StateTableView::StateTableView(QWidget *parent)
     connect(this, SIGNAL(collapsed(const QModelIndex &)),SLOT(index_collapsed(const QModelIndex &)));
 
     connect(m_header, SIGNAL(sectionPressed(int)), SLOT(header_pressed(int)));
-    connect(m_header, SIGNAL(sectionClicked(int)), SLOT(header_clicked(int)));    
+    connect(m_header, SIGNAL(sectionClicked(int)), SLOT(header_clicked(int)));
 
     connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(hscroll_value_changed(int)));
     connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(vscroll_value_changed(int)));
@@ -167,7 +167,7 @@ void StateTableView::read_settings() {
 }
 
 void StateTableView::set_single_click_labor_changes(bool enabled){
-    m_single_click_labor_changes = enabled;    
+    m_single_click_labor_changes = enabled;
 
     //if using double click, then wait until the cell is activated to change cell states
     //if using single click, we can process the cell states immediately upon a click
@@ -255,9 +255,9 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
         m->removeAction(debug_menu->menuAction());
         m->removeAction(m_unassign_squad);
 
-        if(!d->is_animal()){                        
+        if(!d->is_animal()){
 
-            customization_menu->setEnabled(true);                        
+            customization_menu->setEnabled(true);
             m_assign_labors->setEnabled(true);
             m_assign_skilled_labors->setEnabled(true);
             m_remove_labors->setEnabled(true);
@@ -517,7 +517,7 @@ void StateTableView::assign_to_squad(){
         }
     }
     disconnect(new_squad,SIGNAL(squad_leader_changed()),this,SLOT(emit_squad_leader_changed()));
-    m_model->calculate_pending();    
+    m_model->calculate_pending();
     DT->get_main_window()->get_view_manager()->redraw_current_tab();
 }
 void StateTableView::remove_squad(){
@@ -688,7 +688,7 @@ void StateTableView::select_dwarf(Dwarf *d) {
     select_dwarf(d->id());
 }
 
-void StateTableView::select_dwarf(int id) {    
+void StateTableView::select_dwarf(int id) {
     for(int top = 0; top < m_proxy->rowCount(); ++top) {
         QModelIndex idx = m_proxy->index(top, 0);
         if (idx.data(DwarfModel::DR_ID).toInt() == id) {
@@ -758,6 +758,7 @@ void StateTableView::mouseMoveEvent(QMouseEvent *event) {
             else
                 m_dragging = false;
         }
+        m_proxy->redirect_tooltip(idx);
     }
     QTreeView::mouseMoveEvent(event);
 }
@@ -821,7 +822,7 @@ void StateTableView::activate_cells(const QModelIndex &idx){
     m_last_cell = idx;
 }
 
-void StateTableView::header_clicked(int index) {    
+void StateTableView::header_clicked(int index) {
     if (!m_column_already_sorted && index > 0) {
         m_header->setSortIndicator(index, Qt::DescendingOrder);
     }

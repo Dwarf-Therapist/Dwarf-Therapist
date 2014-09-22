@@ -314,6 +314,7 @@ private:
 
     void load_hist_figures();
 
+    QHash<ITEM_TYPE,int> m_worn_item_counts;
     QHash<QPair<QString,QString>, pref_stat*> m_pref_counts;
     //thought id, dwarf names
     QHash<short, QPair<int,int> > m_thought_counts;
