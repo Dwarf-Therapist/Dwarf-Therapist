@@ -175,7 +175,7 @@ public:
 
     VIRTADDR find_historical_figure(int hist_id);
     VIRTADDR find_identity(int id);
-    VIRTADDR find_event(int id);    
+    VIRTADDR find_event(int id);
 
     FortressEntity * fortress() {return m_fortress;}
 
@@ -293,7 +293,7 @@ private:
 
     QHash<int,VIRTADDR> m_hist_figures;
     QVector<VIRTADDR> m_fake_identities;
-    QHash<int,VIRTADDR> m_events;    
+    QHash<int,VIRTADDR> m_events;
 
     QHash<ITEM_TYPE, QVector<VIRTADDR> > m_itemdef_vectors;
     QHash<ITEM_TYPE, QVector<VIRTADDR> > m_items_vectors;
@@ -308,6 +308,7 @@ private:
 
     void load_hist_figures();
 
+    QHash<ITEM_TYPE,int> m_worn_item_counts;
     QHash<QPair<QString,QString>, pref_stat*> m_pref_counts;
     //thought id, dwarf names
     QHash<short, QPair<int,int> > m_thought_counts;

@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "mainwindow.h"
 #include "gamedatareader.h"
+#include "dtstandarditem.h"
 
 #if QT_VERSION < 0x050000
 # define QJSEngine QScriptEngine
@@ -42,6 +43,12 @@ DwarfModelProxy::DwarfModelProxy(QObject *parent)
     , m_engine(new QJSEngine(this))
 {
     this->setDynamicSortFilter(false);
+    connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
+    read_settings();
+}
+
+void DwarfModelProxy::read_settings(){
+    m_show_tooltips = DT->user_settings()->value("options/grid/show_tooltips",true).toBool();
 }
 
 DwarfModel* DwarfModelProxy::get_dwarf_model() const {
@@ -53,12 +60,13 @@ void DwarfModelProxy::cell_activated(const QModelIndex &idx) {
     return get_dwarf_model()->cell_activated(new_idx);
 }
 
-void DwarfModelProxy::show_info(const QModelIndex &idx) {
+void DwarfModelProxy::redirect_tooltip(const QModelIndex &idx) {
     QModelIndex new_idx = mapToSource(idx);
     if(new_idx.isValid()){
         QStandardItem *item = get_dwarf_model()->itemFromIndex(new_idx);
         if(item){
-            emit show_tooltip(item->data(Qt::UserRole+100).toString());
+            int role = (m_show_tooltips ? Qt::ToolTipRole : static_cast<int>(DwarfModel::DR_TOOLTIP));
+            emit show_tooltip(item->data(role).toString());
         }
     }
 }

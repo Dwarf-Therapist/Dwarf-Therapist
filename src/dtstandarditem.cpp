@@ -21,47 +21,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "unitsummarydock.h"
+#include "dtstandarditem.h"
+#include "dwarfmodel.h"
 
-UnitSummaryDock::UnitSummaryDock(QWidget *parent, Qt::WindowFlags flags)
-    : BaseDock(parent, flags)
-{
-    setObjectName("dock_unit_summary");
-    setWindowTitle(tr("Unit Summary"));
-    QWidget *main_widget = new QWidget(this);
-    QVBoxLayout *layout = new QVBoxLayout(main_widget);
-    main_widget->setLayout(layout);
+bool DTStandardItem::m_show_tooltips;
 
-    QHBoxLayout *l_type = new QHBoxLayout();
-    te_info = new QTextEdit(this);
-    te_info->setReadOnly(true);
-    l_type->addWidget(te_info);
-    layout->addLayout(l_type);
+DTStandardItem::DTStandardItem()
+{}
 
-    setWidget(main_widget);
-
-    connect(DT,SIGNAL(settings_changed()),this,SLOT(refresh()));
-}
-
-void UnitSummaryDock::show_dwarf_info(Dwarf *d) {
-    if(d){
-        m_dwarf = QPointer<Dwarf>(d);
+QVariant DTStandardItem::data(int role) const{
+    if(!m_show_tooltips && role == Qt::ToolTipRole){
+        return "";
     }
-    refresh();
+    return QStandardItem::data(role);
 }
 
-void UnitSummaryDock::show_info(QString info){
-    te_info->setText(info);
+void DTStandardItem::setData(const QVariant &value, int role){
+    if(!m_show_tooltips && role == Qt::ToolTipRole){
+        QStandardItem::setData(value,DwarfModel::DR_TOOLTIP);
+    }else{
+        QStandardItem::setData(value,role);
+    }
 }
 
-void UnitSummaryDock::refresh(){
-//    if(!m_dwarf.isNull()){
-//        te_info->setText(m_dwarf->tooltip_text());
-//        te_info->moveCursor(QTextCursor::Start);
-//        te_info->ensureCursorVisible();
-//    }
-}
-
-void UnitSummaryDock::clear(){
-    te_info->clear();
+void DTStandardItem::set_show_tooltips(bool val){
+    m_show_tooltips = val;
 }

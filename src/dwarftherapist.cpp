@@ -40,7 +40,7 @@ THE SOFTWARE.
 #include "viewmanager.h"
 #include "dwarfstats.h"
 #include "defaultfonts.h"
-
+#include "dtstandarditem.h"
 
 DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     : QApplication(argc, argv)
@@ -200,6 +200,7 @@ void DwarfTherapist::read_settings() {
     //set a variable we'll use in the dwarfstats for role calcs
     DwarfStats::set_att_potential_weight(DT->user_settings()->value("options/default_attribute_potential_weight",0.5f).toFloat());
     DwarfStats::set_skill_rate_weight(DT->user_settings()->value("options/default_skill_rate_weight",0.25f).toFloat());
+    DTStandardItem::set_show_tooltips(DT->user_settings()->value("options/grid/show_tooltips",true).toBool());
 
     LOGI << "finished reading settings";
 }

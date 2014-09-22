@@ -64,7 +64,7 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
     Attribute a = d->get_attribute(m_attribute_type);
     QString descriptor = a.get_descriptor();
-    float rating = a.rating() * 100.0f;    
+    float rating = a.rating() * 100.0f;
 
     //if this is an animal, we won't have any caste balanced ratings, so just take a rating out of an arbitrary absolute of 2250
     //that means any rating over 2250 will essentially be 100%, which is pretty reasonable, since
@@ -95,7 +95,7 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     }
 
     QString tooltip = QString("<center><h3>%1</h3><b>%2</b>%3%4%5</center>")
-            .arg(m_title)            
+            .arg(m_title)
             .arg(a.get_value_display())
             .arg(descriptor)
             .arg(syn_desc)

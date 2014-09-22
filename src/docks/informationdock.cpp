@@ -20,27 +20,33 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef UNITSUMMARYDOCK_H
-#define UNITSUMMARYDOCK_H
 
-#include "basedock.h"
-#include "QtWidgets"
-#include "dwarf.h"
+#include "informationdock.h"
 
-class UnitSummaryDock : public BaseDock {
-    Q_OBJECT
-public:
-    UnitSummaryDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
+InformationDock::InformationDock(QWidget *parent, Qt::WindowFlags flags)
+    : BaseDock(parent, flags)
+{
+    setObjectName("dock_information");
+    setWindowTitle(tr("Information"));
+    QWidget *main_widget = new QWidget(this);
+    QVBoxLayout *layout = new QVBoxLayout(main_widget);
+    main_widget->setLayout(layout);
 
-public slots:
-    void show_dwarf_info(Dwarf *d);
-    void show_info(QString info);
-    void refresh();
-    void clear();
+    QHBoxLayout *l_type = new QHBoxLayout();
+    te_info = new QTextEdit(this);
+    te_info->setReadOnly(true);
+    l_type->addWidget(te_info);
+    layout->addLayout(l_type);
 
-private:
-    QTextEdit *te_info;
-    QPointer<Dwarf> m_dwarf;
+    setWidget(main_widget);
+}
 
-};
-#endif // UNITSUMMARYDOCK_H
+void InformationDock::show_info(QString info){
+    te_info->setText(info);
+    te_info->moveCursor(QTextCursor::Start);
+    te_info->ensureCursorVisible();
+}
+
+void InformationDock::clear(){
+    te_info->clear();
+}

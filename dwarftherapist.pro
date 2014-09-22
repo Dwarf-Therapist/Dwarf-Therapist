@@ -249,7 +249,8 @@ HEADERS += inc/viewmanager.h \
     inc/grid_view/beliefcolumn.h \
     inc/histfigure.h \
     inc/grid_view/unitkillscolumn.h \
-    inc/docks/unitsummarydock.h
+    inc/dtstandarditem.h \
+    inc/docks/informationdock.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -341,7 +342,8 @@ SOURCES += src/viewmanager.cpp \
     src/unitbelief.cpp \
     src/histfigure.cpp \
     src/grid_view/unitkillscolumn.cpp \
-    src/docks/unitsummarydock.cpp
+    src/dtstandarditem.cpp \
+    src/docks/informationdock.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

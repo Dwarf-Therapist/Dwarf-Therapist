@@ -98,7 +98,8 @@ public:
         DR_SIZE, //right click sort on first column
         DR_GLOBAL,
         DR_CUSTOM_PROF, //custom profession name
-        DR_LABORS //qvariant list of labor id
+        DR_LABORS, //qvariant list of labor id
+        DR_TOOLTIP //used to redirect the tooltip instead of the default Qt::TooltipRole
     } DATA_ROLES;
 
     DwarfModel(QObject *parent = 0);
@@ -173,6 +174,7 @@ private:
     bool m_show_labor_counts;
     int m_cell_width;
     int m_cell_padding;
+    bool m_show_tooltips;
 
     QHash<int,QPair<QString,int> > m_global_sort_info; //keeps a pair of gridview name, column idx for each group by type used
     QHash<int,QPair<int,Qt::SortOrder> > m_global_group_sort_info;

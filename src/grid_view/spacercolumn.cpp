@@ -33,14 +33,14 @@ SpacerColumn::SpacerColumn(int col_width, int col_idx, ViewColumnSet *set, QObje
     , m_width(col_width)
 {}
 
-SpacerColumn::SpacerColumn(QString title, ViewColumnSet *set, QObject *parent) 
-	: ViewColumn(title, CT_SPACER, set, parent)
-	, m_width(DEFAULT_SPACER_WIDTH)
+SpacerColumn::SpacerColumn(QString title, ViewColumnSet *set, QObject *parent)
+    : ViewColumn(title, CT_SPACER, set, parent)
+    , m_width(DEFAULT_SPACER_WIDTH)
 {}
 
-SpacerColumn::SpacerColumn(QSettings &s, ViewColumnSet *set, QObject *parent) 
+SpacerColumn::SpacerColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     : ViewColumn("",CT_SPACER, set, parent)
-	, m_width(s.value("width", DEFAULT_SPACER_WIDTH).toInt())
+    , m_width(s.value("width", DEFAULT_SPACER_WIDTH).toInt())
 {}
 
 SpacerColumn::SpacerColumn(const SpacerColumn &to_copy)
@@ -49,19 +49,19 @@ SpacerColumn::SpacerColumn(const SpacerColumn &to_copy)
 {}
 
 QStandardItem *SpacerColumn::build_cell(Dwarf *d) {
-	QStandardItem *item = init_cell(d);
+    QStandardItem *item = init_cell(d);
     item->setData(d->nice_name(),DwarfModel::DR_GLOBAL); //default
         if(m_width <= 0){
             item->setData(QColor(Qt::transparent), DwarfModel::DR_DEFAULT_BG_COLOR);
             item->setData(QColor(Qt::transparent),Qt::BackgroundColorRole);
         }
-	return item;
+    return item;
 }
 
 QStandardItem *SpacerColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
     Q_UNUSED(dwarves);
     QStandardItem *item = init_aggregate(group_name);
-	return item;
+    return item;
 }
 
 void SpacerColumn::write_to_ini(QSettings &s) {

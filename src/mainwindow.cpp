@@ -48,7 +48,7 @@ THE SOFTWARE.
 #include "gridviewdock.h"
 #include "skilllegenddock.h"
 #include "dwarfdetailsdock.h"
-#include "unitsummarydock.h"
+#include "informationdock.h"
 #include "columntypes.h"
 #include "rotatedheader.h"
 #include "scanner.h"
@@ -125,10 +125,10 @@ MainWindow::MainWindow(QWidget *parent)
     dwarf_details_dock->setFloating(false);
     addDockWidget(Qt::RightDockWidgetArea, dwarf_details_dock);
 
-    UnitSummaryDock *unit_summary_dock = new UnitSummaryDock(this);
-    unit_summary_dock->setHidden(true);
-    unit_summary_dock->setFloating(false);
-    addDockWidget(Qt::RightDockWidgetArea, unit_summary_dock);
+    InformationDock *info_dock = new InformationDock(this);
+    info_dock->setHidden(true);
+    info_dock->setFloating(false);
+    addDockWidget(Qt::RightDockWidgetArea, info_dock);
 
     PreferencesDock *pref_dock = new PreferencesDock(this);
     pref_dock->setHidden(true);
@@ -149,7 +149,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menu_docks->addAction(ui->dock_custom_professions->toggleViewAction());
     ui->menu_docks->addAction(grid_view_dock->toggleViewAction());
     ui->menu_docks->addAction(skill_legend_dock->toggleViewAction());
-    ui->menu_docks->addAction(unit_summary_dock->toggleViewAction());
+    ui->menu_docks->addAction(info_dock->toggleViewAction());
     ui->menu_docks->addAction(dwarf_details_dock->toggleViewAction());
     ui->menu_docks->addAction(pref_dock->toggleViewAction());
     ui->menu_docks->addAction(thought_dock->toggleViewAction());
@@ -175,8 +175,8 @@ MainWindow::MainWindow(QWidget *parent)
             m_view_manager, SLOT(jump_to_profession(QTreeWidgetItem*,QTreeWidgetItem*)));
 
     connect(m_view_manager, SIGNAL(dwarf_focus_changed(Dwarf*)), dwarf_details_dock, SLOT(show_dwarf(Dwarf*)));
-    connect(m_view_manager, SIGNAL(dwarf_focus_changed(Dwarf*)), unit_summary_dock, SLOT(show_dwarf_info(Dwarf*)));
-    connect(m_proxy, SIGNAL(show_tooltip(QString)),unit_summary_dock,SLOT(show_info(QString)));
+
+    connect(m_proxy, SIGNAL(show_tooltip(QString)),info_dock,SLOT(show_info(QString)));
 
     connect(m_view_manager, SIGNAL(selection_changed()), this, SLOT(toggle_opts_menu()));
     connect(ui->cb_filter_script, SIGNAL(currentIndexChanged(const QString &)), SLOT(new_filter_script_chosen(const QString &)));
@@ -421,10 +421,6 @@ void MainWindow::read_dwarves() {
         dock_id = dock->current_id();
         dock->clear(false);
     }
-    UnitSummaryDock *summary_dock = qobject_cast<UnitSummaryDock*>(QObject::findChild<UnitSummaryDock*>("dock_unit_summary"));
-    if(summary_dock){
-        summary_dock->clear();
-    }
     //save the ids of the currently selected dwarfs
     QVector<int> ids;
     foreach(Dwarf *d, m_view_manager->get_selected_dwarfs()){
@@ -473,7 +469,6 @@ void MainWindow::read_dwarves() {
         filters->appendRow(i);
         if(dock_id > 0 && !dwarf_found && d->id() == dock_id){
             dock->show_dwarf(d);
-            summary_dock->show_dwarf_info(d);
             dwarf_found = true;
         }
     }

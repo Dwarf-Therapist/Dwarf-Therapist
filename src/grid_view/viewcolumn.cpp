@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "utils.h"
 #include "dwarftherapist.h"
 #include "truncatingfilelogger.h"
+#include "dtstandarditem.h"
 
 ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,
                        QObject *parent, int col_idx)
@@ -86,7 +87,7 @@ ViewColumn::~ViewColumn(){
 }
 
 QStandardItem *ViewColumn::init_cell(Dwarf *d) {
-    QStandardItem *item = new QStandardItem;
+    DTStandardItem *item = new DTStandardItem;
     item->setStatusTip(QString("%1 :: %2").arg(m_title).arg(d->nice_name()));
     QColor bg;
     if (m_override_set_colors) {
@@ -105,7 +106,7 @@ QStandardItem *ViewColumn::init_cell(Dwarf *d) {
 }
 
 QStandardItem *ViewColumn::init_aggregate(QString group_name){
-    QStandardItem *item = new QStandardItem;
+    DTStandardItem *item = new DTStandardItem;
 
     item->setStatusTip(m_title + " :: " + group_name);
 

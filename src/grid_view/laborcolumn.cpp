@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "viewmanager.h"
 #include "skill.h"
 #include "labor.h"
+#include "dtstandarditem.h"
 
 LaborColumn::LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSet *set, QObject *parent)
     : SkillColumn(title, -1, set, parent, CT_LABOR)

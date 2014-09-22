@@ -72,13 +72,14 @@ public:
     QList<Dwarf*> get_filtered_dwarves();
 
 public slots:
-    void show_info(const QModelIndex &idx);
+    void redirect_tooltip(const QModelIndex &idx);
     void cell_activated(const QModelIndex &idx);
     void setFilterFixedString(const QString &pattern);
     void sort(int, DwarfModelProxy::DWARF_SORT_ROLE, Qt::SortOrder order);
     void apply_script(const QString &script_name, const QString &script_body, const FILTER_SCRIPT_TYPE &sType = SCR_DEFAULT);
     void test_script(const QString &script_body);
     void clear_test();
+    void read_settings();
 
 signals:
     void filter_changed();
@@ -99,6 +100,7 @@ private:
               *m_engine;
     QHash<QString,script_info> m_scripts;
     QMultiHash<FILTER_SCRIPT_TYPE,QString> m_scripts_by_type;
+    bool m_show_tooltips;
 };
 
 #endif
