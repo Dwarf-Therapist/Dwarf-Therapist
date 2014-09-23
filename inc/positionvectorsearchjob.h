@@ -29,8 +29,10 @@ http://www.opensource.org/licenses/mit-license.php
 #include "defines.h"
 #include "truncatingfilelogger.h"
 #include "gamedatareader.h"
-#include "utils.h"
 #include "memorylayout.h"
+#include "dfinstance.h"
+#include "utils.h"
+#include <QThread>
 
 class PositionVectorSearchJob : public ScannerJob {
     Q_OBJECT

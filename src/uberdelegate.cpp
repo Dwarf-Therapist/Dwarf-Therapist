@@ -26,15 +26,14 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "dwarf.h"
 #include "defines.h"
-#include "gridview.h"
 #include "columntypes.h"
 #include "utils.h"
 #include "dwarftherapist.h"
 #include "skill.h"
 #include "labor.h"
-#include "customprofession.h"
 #include "defaultfonts.h"
-#include "dwarfstats.h"
+#include "item.h"
+#include <QPainter>
 
 UberDelegate::UberDelegate(QObject *parent)
     : QStyledItemDelegate(parent)

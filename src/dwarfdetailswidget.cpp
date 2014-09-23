@@ -27,11 +27,9 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "dwarf.h"
 #include "trait.h"
-#include "dwarfstats.h"
 #include "utils.h"
 #include "dfinstance.h"
 #include "fortressentity.h"
-#include "caste.h"
 #include "skill.h"
 #include "attribute.h"
 #include "sortabletableitems.h"
@@ -155,6 +153,10 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     m_sorting << qMakePair(0,Qt::AscendingOrder);
     ui->tw_health->sortItems(0, Qt::AscendingOrder);
 
+}
+
+DwarfDetailsWidget::~DwarfDetailsWidget() {
+    delete ui;
 }
 
 void DwarfDetailsWidget::clear(){

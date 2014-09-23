@@ -23,11 +23,9 @@ THE SOFTWARE.
 
 #include "currentjobcolumn.h"
 #include "columntypes.h"
-#include "viewcolumnset.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
 #include "dwarftherapist.h"
-#include "defines.h"
 #include "dwarfjob.h"
 #include "gamedatareader.h"
 #include "reaction.h"

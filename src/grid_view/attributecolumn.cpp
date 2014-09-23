@@ -23,12 +23,8 @@ THE SOFTWARE.
 
 #include "attributecolumn.h"
 #include "columntypes.h"
-#include "viewcolumnset.h"
 #include "gamedatareader.h"
 #include "dwarfmodel.h"
-#include "truncatingfilelogger.h"
-#include "dwarfstats.h"
-#include "caste.h"
 #include "attribute.h"
 #include "dwarftherapist.h"
 #include "dwarf.h"

@@ -31,7 +31,6 @@ THE SOFTWARE.
 */
 
 #include "dwarftherapist.h"
-#include "dfinstance.h"
 
 int main(int argc, char *argv[]) {
 #ifdef Q_OS_MAC

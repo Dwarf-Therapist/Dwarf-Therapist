@@ -21,18 +21,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <QAction>
-#include <QMenu>
-#include <QMouseEvent>
 #include "rotatedheader.h"
-#include "dwarfmodel.h"
 #include "dwarfmodelproxy.h"
 #include "dwarftherapist.h"
 #include "defines.h"
-#include "gridview.h"
-#include "viewcolumn.h"
-#include "viewcolumnset.h"
 #include "defaultfonts.h"
+#include <QAction>
+#include <QMenu>
+#include <QMouseEvent>
+#include <QSettings>
+#include <QPainter>
 
 RotatedHeader::RotatedHeader(Qt::Orientation orientation, QWidget *parent)
     : QHeaderView(orientation, parent)

@@ -23,15 +23,14 @@ THE SOFTWARE.
 
 #include "skillcolumn.h"
 #include "gamedatareader.h"
-#include "viewcolumnset.h"
 #include "columntypes.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
-#include "dwarfstats.h"
 #include "dwarftherapist.h"
 #include "skill.h"
 #include "trait.h"
 #include "viewmanager.h"
+#include "viewcolumnset.h"
 
 SkillColumn::SkillColumn(const QString &title, const int &skill_id, ViewColumnSet *set, QObject *parent, COLUMN_TYPE cType)
     : ViewColumn(title, cType, set, parent)

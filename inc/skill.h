@@ -23,21 +23,15 @@ THE SOFTWARE.
 #ifndef SKILL_H
 #define SKILL_H
 
-#include "qstring.h"
-#include "qstringlist.h"
-#include "defines.h"
-#include "qcolor.h"
-#include "dwarftherapist.h"
-#include "dwarfstats.h"
-
-class GameDataReader;
+#include <QString>
+#include <QColor>
 
 class Skill
 {
 
 public:
     Skill();
-    Skill(short id, uint exp, short rating, int rust, int skill_rate = 100);    
+    Skill(short id, uint exp, short rating, int rust, int skill_rate = 100);
 
     short id() const {return m_id;}
     short capped_level() const {return m_capped_level;}
@@ -55,7 +49,7 @@ public:
     int rust_level() const {return m_rust_level;}
     //QString rust_color() const {return m_rust_color;}
     QColor rust_color() const {return m_rust_color;}
-    int skill_rate() const {return m_skill_rate;}    
+    int skill_rate() const {return m_skill_rate;}
 
     QString to_string(bool include_level = true, bool include_exp_summary = true, bool use_color = true) const;
     QString name() {return m_name;}
@@ -102,7 +96,7 @@ private:
 
     static QHash<int,int> load_base_xp_levels();
     static int xp_for_level(int level);
-    static float level_from_xp(int xp);    
+    static float level_from_xp(int xp);
 
     static int MAX_CAPPED_XP;
 };

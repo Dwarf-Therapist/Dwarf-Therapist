@@ -25,7 +25,6 @@ THE SOFTWARE.
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QLineEdit>
-#include "qmath.h"
 
 #include "mainwindow.h"
 #include "statetableview.h"
@@ -39,7 +38,6 @@ THE SOFTWARE.
 #include "gridview.h"
 #include "viewcolumnset.h"
 #include "laborcolumn.h"
-#include "happinesscolumn.h"
 #include "dwarftherapist.h"
 #include "customprofession.h"
 #include "viewmanager.h"
@@ -47,7 +45,6 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "profession.h"
 #include "labor.h"
-#include "truncatingfilelogger.h"
 #include "defaultfonts.h"
 
 StateTableView::~StateTableView()
@@ -63,6 +60,7 @@ StateTableView::StateTableView(QWidget *parent)
     , m_delegate(new UberDelegate(this))
     , m_header(new RotatedHeader(Qt::Horizontal, this))
     , m_expanded_rows(QList<int>())
+    , m_last_button(Qt::NoButton)
     , m_last_group_by(-1)
     , m_vscroll(0)
     , m_hscroll(0)
@@ -1023,16 +1021,10 @@ void StateTableView::keyPressEvent(QKeyEvent *event ){
 }
 
 void StateTableView::restore_scroll_positions(){
-    if(m_vscroll > verticalScrollBar()->maximum())
-        m_vscroll = verticalScrollBar()->maximum();
-    else if(m_vscroll < verticalScrollBar()->minimum())
-        m_vscroll = verticalScrollBar()->minimum();
+    m_vscroll = qBound(verticalScrollBar()->minimum(), m_vscroll, verticalScrollBar()->maximum());
     verticalScrollBar()->setValue(m_vscroll);
 
-    if(m_hscroll > horizontalScrollBar()->maximum())
-        m_hscroll = horizontalScrollBar()->maximum();
-    else if(m_hscroll < verticalScrollBar()->minimum())
-        m_hscroll = horizontalScrollBar()->minimum();
+    m_hscroll = qBound(horizontalScrollBar()->minimum(), m_hscroll, horizontalScrollBar()->maximum());
     horizontalScrollBar()->setValue(m_hscroll);
 }
 

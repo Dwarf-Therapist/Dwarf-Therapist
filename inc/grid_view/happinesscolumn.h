@@ -24,7 +24,6 @@ THE SOFTWARE.
 #define HAPPINESS_COLUMN_H
 
 #include "viewcolumn.h"
-#include "dwarf.h"
 #include "global_enums.h"
 
 class HappinessColumn : public ViewColumn {

@@ -24,7 +24,6 @@ THE SOFTWARE.
 #define UBER_DELEGATE_H
 
 #include <QStyledItemDelegate>
-#include "gridview.h"
 
 class DwarfModel;
 class DwarfModelProxy;
@@ -104,7 +103,7 @@ private:
                     float min_limit=5.0f, float max_limit=95.0f, float min_ignore=40.0f, float max_ignore=60.0f, bool bold_text = false) const;
 
     void paint_mood_cell(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, int skill_id, bool dirty) const;
-    void paint_wear_cell(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const int wear_level) const;    
+    void paint_wear_cell(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const int wear_level) const;
     void paint_flags(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
     void paint_labor_aggregate(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;
     void paint_icon(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const;

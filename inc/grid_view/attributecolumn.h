@@ -26,9 +26,7 @@ THE SOFTWARE.
 #include "viewcolumn.h"
 #include "global_enums.h"
 
-class ViewColumn;
 class Dwarf;
-class Attribute;
 
 class AttributeColumn : public ViewColumn {
     Q_OBJECT

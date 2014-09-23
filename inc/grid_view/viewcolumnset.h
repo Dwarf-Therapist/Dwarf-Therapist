@@ -25,12 +25,11 @@ THE SOFTWARE.
 
 #include <QObject>
 #include <QColor>
-#include <QStandardItemModel>
-#include <QSettings>
+#include <QBrush>
 
-class ViewManager;
+class QStandardItemModel;
+class QSettings;
 class ViewColumn;
-class ViewColumnSetDialog;
 class GridView;
 class Dwarf;
 

@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "labor.h"
 #include "dwarf.h"
+#include "defines.h"
 
 //new blank superlabor
 SuperLabor::SuperLabor(QObject *parent)
@@ -62,6 +63,10 @@ SuperLabor::SuperLabor(Dwarf *d, QObject *parent)
         m_name = m_dwarf->profession();
         set_labors();
     }
+}
+
+SuperLabor::~SuperLabor() {
+    delete ui;
 }
 
 void SuperLabor::load_cp_labors(CustomProfession *cp){

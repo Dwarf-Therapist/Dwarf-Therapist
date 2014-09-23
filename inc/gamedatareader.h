@@ -23,11 +23,11 @@ THE SOFTWARE.
 #ifndef GAME_DATA_READER_H
 #define GAME_DATA_READER_H
 
-#include <string>
-#include <stdexcept>
-#include <QtCore>
 #include "global_enums.h"
 #include "utils.h"
+#include <QPointer>
+#include <string>
+#include <stdexcept>
 
 // forward declaration
 class QSettings;

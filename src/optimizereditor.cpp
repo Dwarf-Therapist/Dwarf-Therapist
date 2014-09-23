@@ -1,23 +1,22 @@
-#include <QComboBox>
-#include <QMessageBox>
-#include <QMenu>
-#include <QFileDialog>
 #include "optimizereditor.h"
 #include "ui_optimizereditor.h"
 #include "gamedatareader.h"
-
 #include "dwarftherapist.h"
 #include "viewmanager.h"
 #include "dwarfmodel.h"
 #include "dwarfmodelproxy.h"
-
 #include "laboroptimizer.h"
 #include "laboroptimizerplan.h"
 #include "plandetail.h"
-
 #include "sortabletableitems.h"
-
 #include "labor.h"
+
+#include <QComboBox>
+#include <QMessageBox>
+#include <QMenu>
+#include <QFileDialog>
+#include <QTextStream>
+
 #include "math.h"
 
 #if QT_VERSION < 0x050000

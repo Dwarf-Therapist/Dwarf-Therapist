@@ -77,9 +77,9 @@ private:
     QString m_baby_name;
     QString m_baby_name_plural;
     QString m_child_name;
-    QString m_child_name_plural;    
+    QString m_child_name_plural;
     QMap<int, Caste*> m_castes;
-    QHash<int,Material*> m_creature_mats;
+    QHash<int, Material*> m_creature_mats;
 
     VIRTADDR m_pref_string_vector;
     VIRTADDR m_pop_ratio_vector;
@@ -89,13 +89,13 @@ private:
     QVector<VIRTADDR> m_tissues_addr;
 
     DFInstance * m_df;
-    MemoryLayout * m_mem;    
+    MemoryLayout * m_mem;
     FlagArray m_flags;
 
     bool loaded_stats;
 
     void read_race();
-    void load_materials(int idx = -1);    
+    void load_materials(int idx = -1);
 };
 
 #endif // RACES_H

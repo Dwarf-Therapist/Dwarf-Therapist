@@ -26,9 +26,9 @@ THE SOFTWARE.
 #include <QSortFilterProxyModel>
 
 #if QT_VERSION < 0x050000
-# include <QScriptEngine>
+class QScriptEngine;
 #else
-# include <QJSEngine>
+class QJSEngine;
 #endif
 #include "global_enums.h"
 

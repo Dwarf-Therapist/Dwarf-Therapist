@@ -21,11 +21,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#include "healthlegenddock.h"
+#include "healthcategory.h"
+#include <QTreeWidgetItem>
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QCloseEvent>
-#include "healthlegenddock.h"
-#include "healthcategory.h"
 
 HealthLegendDock::HealthLegendDock(QWidget *parent, Qt::WindowFlags flags)
     : BaseDock(parent, flags)
@@ -71,7 +72,7 @@ HealthLegendDock::HealthLegendDock(QWidget *parent, Qt::WindowFlags flags)
 
             node->setData(1, Qt::UserRole, hi->description(false));
             node->setToolTip(1, hi->description(false));
-            node->setText(1,hi->description(false));            
+            node->setText(1,hi->description(false));
         }
         legend->addTopLevelItem(parent_node);
         parent_node->setFirstColumnSpanned(true);
@@ -110,7 +111,7 @@ HealthLegendDock::HealthLegendDock(QWidget *parent, Qt::WindowFlags flags)
     connect(le_search, SIGNAL(textChanged(QString)), this, SLOT(search_changed(QString)));
     connect(btn_clear_search, SIGNAL(clicked()),this,SLOT(clear_search()));
     connect(btn_toggle_tree, SIGNAL(clicked()), this, SLOT(toggle_tree()));
-    connect(legend, SIGNAL(itemSelectionChanged()), this, SLOT(selection_changed()));    
+    connect(legend, SIGNAL(itemSelectionChanged()), this, SLOT(selection_changed()));
 }
 
 void HealthLegendDock::toggle_tree(){
@@ -171,7 +172,7 @@ void HealthLegendDock::selection_changed(){
             id = item->data(0,Qt::UserRole).toInt();
         }
         values.append(qMakePair(id,idx));
-    }     
+    }
         emit item_selected(values);
 }
 

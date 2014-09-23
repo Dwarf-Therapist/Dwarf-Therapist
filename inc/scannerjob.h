@@ -24,7 +24,8 @@ THE SOFTWARE.
 #define SCANNER_JOB_H
 
 #include <QObject>
-#include "dfinstance.h"
+
+class DFInstance;
 
 typedef enum {
     FIND_TRANSLATIONS_VECTOR,

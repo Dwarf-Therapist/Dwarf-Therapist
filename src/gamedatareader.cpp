@@ -20,7 +20,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QtDebug>
 #include <QMessageBox>
 #include "gamedatareader.h"
 #include "labor.h"
@@ -28,10 +27,7 @@ THE SOFTWARE.
 #include "attribute.h"
 #include "dwarfjob.h"
 #include "profession.h"
-#include "defines.h"
-#include "math.h"
 #include "laboroptimizerplan.h"
-#include "skill.h"
 #include "thought.h"
 #include "unithealth.h"
 #include "belief.h"
@@ -40,7 +36,7 @@ QStringList GameDataReader::m_seasons;
 QStringList GameDataReader::m_months;
 
 GameDataReader::GameDataReader(QObject *parent)
-    : QObject(parent)    
+    : QObject(parent)
 {
     //load override game_data
     if (QFile::exists("share:game_data.ini")) {

@@ -24,14 +24,13 @@ THE SOFTWARE.
 #include "dwarfmodelproxy.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
-#include "profession.h"
 #include "defines.h"
 #include "dwarftherapist.h"
-#include "mainwindow.h"
-#include "gamedatareader.h"
-#include "dtstandarditem.h"
 
-#if QT_VERSION < 0x050000
+#if QT_VERSION >= 0x050000
+#include <QJSEngine>
+#else
+#include <QScriptEngine>
 # define QJSEngine QScriptEngine
 # define QJSValue QScriptValue
 #endif

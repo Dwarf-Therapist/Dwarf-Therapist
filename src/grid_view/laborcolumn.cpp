@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include "laborcolumn.h"
-#include "gamedatareader.h"
 #include "columntypes.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
@@ -29,8 +28,6 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "dfinstance.h"
 #include "viewmanager.h"
-#include "skill.h"
-#include "labor.h"
 #include "dtstandarditem.h"
 
 LaborColumn::LaborColumn(QString title, int labor_id, int skill_id, ViewColumnSet *set, QObject *parent)

@@ -24,7 +24,6 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "memorylayout.h"
 #include "truncatingfilelogger.h"
-#include <QtDebug>
 
 Plant::Plant(QObject *parent)
     : QObject(parent)
@@ -51,7 +50,7 @@ Plant::Plant(DFInstance *df, VIRTADDR address, int index, QObject *parent)
 
 Plant::~Plant() {
     qDeleteAll(m_plant_mats);
-    m_plant_mats.clear();    
+    m_plant_mats.clear();
 }
 
 Plant* Plant::get_plant(DFInstance *df, const VIRTADDR & address, int index) {

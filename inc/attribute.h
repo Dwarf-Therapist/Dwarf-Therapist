@@ -24,12 +24,15 @@ THE SOFTWARE.
 #ifndef ATTRIBUTE_H
 #define ATTRIBUTE_H
 
-#include <QtCore>
 #include "global_enums.h"
-#include "qcolor.h"
+#include <QColor>
+
+class QString;
+class QStringList;
+class QSettings;
 
 class Attribute {
-public:    
+public:
     Attribute();
     Attribute(ATTRIBUTES_TYPE id, int value, int display_value, int max, int cost_to_improve = 500, int desc_index = 0, QString desc = "");
 
@@ -71,7 +74,7 @@ private:
     int m_cti; //cost to improve (caste specific)
     QString m_descriptor; //caste specific depending on the bins
     int m_descriptor_index;
-    QStringList m_syn_names;    
+    QStringList m_syn_names;
 
     static QHash<int, QVector<QString> > m_display_descriptions;
 

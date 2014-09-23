@@ -465,7 +465,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Noble Position </string>
+          <string>Noble Position</string>
          </property>
          <property name="margin">
           <number>0</number>
@@ -599,7 +599,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Happiness </string>
+          <string>Happiness</string>
          </property>
         </widget>
        </item>

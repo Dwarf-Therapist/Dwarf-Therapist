@@ -32,9 +32,7 @@ THE SOFTWARE.
 #include "memorysegment.h"
 #include "truncatingfilelogger.h"
 #include "mainwindow.h"
-#include "limits"
 #include "dwarfstats.h"
-#include "viewmanager.h"
 #include "languages.h"
 #include "reaction.h"
 #include "races.h"
@@ -48,7 +46,9 @@ THE SOFTWARE.
 #include "preference.h"
 #include "histfigure.h"
 #include <QMessageBox>
-#include <typeinfo>
+#include <QTimer>
+#include <QTime>
+#include <QByteArrayMatcher>
 
 #ifdef Q_OS_WIN
 #define LAYOUT_SUBDIR "windows"
@@ -990,13 +990,12 @@ QList<Squad *> DFInstance::load_squads(bool refreshing) {
         foreach(VIRTADDR squad_addr, squads_addr) {
             int id = read_int(squad_addr + m_layout->squad_offset("id")); //check the id before loading the squad
             if(m_fortress->squad_is_active(id)){
-                Squad *s = NULL;
-                s = Squad::get_squad(id, this, squad_addr);
-                if(s) {
-                    LOGI << "FOUND ACTIVE SQUAD" << hexify(squad_addr) << s->name() << " member count: " << s->assigned_count() << " id: " << s->id();
-                    if(m_fortress->squad_is_active(s->id())){
-                        m_squads.push_front(s);
-                    }
+                Squad *s = new Squad(id, this, squad_addr);
+                LOGI << "FOUND ACTIVE SQUAD" << hexify(squad_addr) << s->name() << " member count: " << s->assigned_count() << " id: " << s->id();
+                if (m_fortress->squad_is_active(s->id())) {
+                    m_squads.push_front(s);
+                } else {
+                    delete s;
                 }
             }
 
@@ -1695,7 +1694,6 @@ QString DFInstance::get_item_name(ITEM_TYPE itype, int item_id){
             Item i = Item(this,m_mapped_items.value(itype).value(item_id));
             return i.display_name(true);
         }
-        return tr("Specific ") + capitalizeEach(get_item_name(itype,-1,-1,-1));
     }
 }
 
@@ -1824,8 +1822,7 @@ Material *DFInstance::find_material(int mat_index, short mat_type){
         return get_inorganic_material(mat_index);
     } else if (mat_type < 19) {
         return get_raw_material(mat_type);
-    }
-    else if (mat_type < 219) {
+    } else if (mat_type < 219) {
         Race* r = get_race(mat_index);
         if (r)
             return r->get_creature_material(mat_type - 19);

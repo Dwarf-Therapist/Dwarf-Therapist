@@ -29,31 +29,32 @@ THE SOFTWARE.
 class ViewManager;
 
 namespace Ui {
-	class GridViewDock;
+    class GridViewDock;
 }
 
 class GridViewDock : public BaseDock {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	GridViewDock(ViewManager *mgr, QWidget *parent = 0, Qt::WindowFlags flags = 0);
-	void draw_views();
+    GridViewDock(ViewManager *mgr, QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    ~GridViewDock();
+    void draw_views();
 
-	public slots:
-		void add_new_view();
-		void draw_list_context_menu(const QPoint &pos);
+    public slots:
+        void add_new_view();
+        void draw_list_context_menu(const QPoint &pos);
 
 private:
-	ViewManager *m_manager;
-	Ui::GridViewDock *ui;
-	QListWidgetItem *m_tmp_item;
+    ViewManager *m_manager;
+    Ui::GridViewDock *ui;
+    QListWidgetItem *m_tmp_item;
 
     short current_view_is_custom();
 
-	private slots:
-		void edit_view();
-		void edit_view(QListWidgetItem*);
-		void copy_view();
-		void delete_view();
+    private slots:
+        void edit_view();
+        void edit_view(QListWidgetItem*);
+        void copy_view();
+        void delete_view();
         void item_clicked(QListWidgetItem*);
 };
 

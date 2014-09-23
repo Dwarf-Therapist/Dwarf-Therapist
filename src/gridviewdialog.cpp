@@ -49,7 +49,6 @@ THE SOFTWARE.
 #include "unitkillscolumn.h"
 
 #include "defines.h"
-#include "statetableview.h"
 #include "gamedatareader.h"
 #include "labor.h"
 #include "utils.h"
@@ -57,11 +56,11 @@ THE SOFTWARE.
 #include "ui_columneditdialog.h"
 #include "dfinstance.h"
 #include "itemweaponsubtype.h"
-#include "attribute.h"
 #include "unithealth.h"
 #include "healthcategory.h"
 #include "superlabor.h"
 #include "customprofession.h"
+#include "item.h"
 
 GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent)
     : QDialog(parent)
@@ -513,7 +512,7 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     //WEAPONS
     QMenu *m_weapon = m_cmh->create_title_menu(m, tr("Weapon"),
                                         tr("Weapon columns will show an indicator of whether the dwarf can wield the weapon with one hand, two hands or not at all."));
-    m_cmh->add_sub_menus(m_weapon,DT->get_DFInstance()->get_ordered_weapon_defs().count() / 15);    
+    m_cmh->add_sub_menus(m_weapon,DT->get_DFInstance()->get_ordered_weapon_defs().count() / 15);
     foreach(ItemWeaponSubtype *w, DT->get_DFInstance()->get_ordered_weapon_defs().values()) {
         QString title = w->name_plural(); //allow adding every type
         QMenu *menu_to_use = m_cmh->find_menu(m_weapon,title);

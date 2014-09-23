@@ -26,8 +26,6 @@ THE SOFTWARE.
 #include <QHeaderView>
 #include "dwarfmodelproxy.h"
 
-class DwarfModel;
-
 class RotatedHeader : public QHeaderView {
     Q_OBJECT
 public:
@@ -49,7 +47,7 @@ public:
 protected:
     void leaveEvent(QEvent *e);
     void mouseMoveEvent(QMouseEvent *e);
-    void mousePressEvent(QMouseEvent *e);    
+    void mousePressEvent(QMouseEvent *e);
 
 signals:
     void section_right_clicked(int idx);
@@ -67,7 +65,7 @@ private:
 
     private slots:
         //! called by a sorting context menu action
-        void sort_action();        
+        void sort_action();
         //! called by context menu on sections
         void toggle_set_action();
 };

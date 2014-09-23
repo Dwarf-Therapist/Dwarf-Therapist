@@ -23,23 +23,20 @@ THE SOFTWARE.
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtCore>
 #include <QMainWindow>
 #include <QLabel>
 #include <QProgressBar>
 #include <QCompleter>
 #include <QToolButton>
 
-#include "thoughtsdock.h"
 #include "global_enums.h"
 
-class StateTableView;
+class QSettings;
 class DFInstance;
 class DwarfModel;
 class DwarfModelProxy;
 class Dwarf;
 class AboutDialog;
-class CustomProfession;
 class ViewManager;
 class Scanner;
 class ScriptDialog;

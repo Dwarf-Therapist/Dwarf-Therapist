@@ -23,11 +23,13 @@ THE SOFTWARE.
 #ifndef HEALTHLEGENDDOCK_H
 #define HEALTHLEGENDDOCK_H
 
-#include <QPushButton>
-#include <QLineEdit>
 #include "basedock.h"
 #include "healthinfo.h"
 #include "unithealth.h"
+#include <QPushButton>
+#include <QLineEdit>
+
+class QTreeWidget;
 
 class HealthLegendDock : public BaseDock {
     Q_OBJECT

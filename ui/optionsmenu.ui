@@ -1374,7 +1374,7 @@
             <string>Only show skills of this level or higher in the tooltip.</string>
            </property>
            <property name="text">
-            <string>Only show skills at or above level </string>
+            <string>Only show skills at or above level</string>
            </property>
           </widget>
          </item>

@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "columntypes.h"
 #include "dwarftherapist.h"
 #include "defaultfonts.h"
+#include "item.h"
 
 EquipmentColumn::EquipmentColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     :ItemTypeColumn(s,set,parent)

@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include "trait.h"
 #include "gamedatareader.h"
 #include "belief.h"
+#include <QSettings>
 
 QColor Trait::goal_color = QColor(255,153,0,255);
 QColor Trait::belief_color = QColor(32,156,158,255);
@@ -99,7 +100,7 @@ QString Trait::level_message(const short &val){
             ret_val = i.value();
             break;
         }
-    }            
+    }
     return capitalize(ret_val);
 }
 
@@ -130,7 +131,7 @@ QString Trait::skill_conflict_msg(const short &skill_id, const short &val){
     return "";
 }
 
-QString Trait::belief_conflicts_names(){    
+QString Trait::belief_conflicts_names(){
     QStringList items;
     foreach(int belief_id, m_belief_conflicts){
         items.append(GameDataReader::ptr()->get_belief_name(belief_id));

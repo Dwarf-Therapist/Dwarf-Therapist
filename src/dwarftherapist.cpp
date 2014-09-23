@@ -21,8 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <QMessageBox>
-#include <QToolTip>
 #include "dwarftherapist.h"
 #include "mainwindow.h"
 #include "optionsmenu.h"
@@ -40,7 +38,10 @@ THE SOFTWARE.
 #include "viewmanager.h"
 #include "dwarfstats.h"
 #include "defaultfonts.h"
-#include "dtstandarditem.h"
+#include <QMessageBox>
+#include <QToolTip>
+#include <QTranslator>
+#include <QTimer>
 
 DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     : QApplication(argc, argv)
@@ -115,6 +116,8 @@ void DwarfTherapist::setup_search_paths() {
     paths << QString("%1/../share").arg(appdir);
     // /usr/bin/../share/dwarftherapist/game_data.ini
     paths << QString("%1/../share/dwarftherapist").arg(appdir);
+    // Dwarf-Therapist/release/../doc/Dwarf Therapist.pdf
+    paths << QString("%1/..").arg(appdir);
     // cwd/game_data.ini
     paths << QString("%1").arg(working_dir);
     // cwd/share/game_data.ini

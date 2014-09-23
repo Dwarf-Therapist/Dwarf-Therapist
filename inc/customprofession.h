@@ -23,10 +23,10 @@ THE SOFTWARE.
 #ifndef CUSTOM_PROFESSION_H
 #define CUSTOM_PROFESSION_H
 
-#include <QObject>
 #include "customcolor.h"
 #include "multilabor.h"
 class Dwarf;
+class QObject;
 
 namespace Ui
 {
@@ -40,9 +40,9 @@ dwarf. A dwarf can either have a default-profession (determined by the game
 based on the dwarf's highest skill) or a custom-profession. In DF, custom
 professions don't actually have any real meaning other than semantic.
 
-Using Dwarf Therapist, you can associate any number of labors with a custom 
+Using Dwarf Therapist, you can associate any number of labors with a custom
 profession and save this association outside of the game. You can then
-apply a custom profession to a dwarf with this tool, and it will set the 
+apply a custom profession to a dwarf with this tool, and it will set the
 appropriate labors on that dwarf.
 
 Example:
@@ -61,6 +61,8 @@ public:
     //! custom icon
     CustomProfession(int profession_id, QObject *parent = 0);
 
+    ~CustomProfession();
+
     //! Get the name:: for this custom profession if it's an icon override
     QString get_save_name();
     QPixmap get_pixmap();
@@ -76,13 +78,13 @@ public:
     void delete_from_disk();
     void export_to_file(QSettings &s);
 
-public slots:    
+public slots:
     void set_name(QString name);
     void update_dwarf();
     void mask_changed(bool value);
     void build_icon_path(int id);
     void choose_icon();
-    void refresh_icon();    
+    void refresh_icon();
     void color_selected(QString key,QColor col);
     void prefix_changed(QString val);
     void role_changed(int);

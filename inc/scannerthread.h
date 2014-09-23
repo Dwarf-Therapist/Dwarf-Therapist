@@ -23,7 +23,6 @@ THE SOFTWARE.
 #ifndef SCANNER_THREAD_H
 #define SCANNER_THREAD_H
 
-#include <QThread>
 #include "dfinstance.h"
 #include "scannerjob.h"
 #include "translationvectorsearchjob.h"
@@ -37,6 +36,8 @@ THE SOFTWARE.
 #include "narrowingvectorsearchjob.h"
 #include "squadvectorsearchjob.h"
 #include "currentyearsearchjob.h"
+#include <QThread>
+#include <QTimer>
 
 class ScannerThread : public QThread {
     Q_OBJECT

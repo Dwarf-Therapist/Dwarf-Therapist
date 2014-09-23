@@ -26,7 +26,6 @@ THE SOFTWARE.
 #include "truncatingfilelogger.h"
 #include "material.h"
 #include "dwarfstats.h"
-#include <QtDebug>
 
 Race::Race(DFInstance *df, VIRTADDR address, int id, QObject *parent)
     : QObject(parent)
@@ -123,15 +122,11 @@ void Race::read_race() {
     //LOGD << "RACE " << m_name << " (index:" << m_id << ") with " << castes.size() << "castes";
 
     if (!castes.empty()) {
-        Caste *c = 0;
         int i = 0;
-        foreach(VIRTADDR caste_addr, castes) {
-            c = Caste::get_caste(m_df, caste_addr, this);
-            if (c != 0) {
-                m_castes[i] = c;
-//                if(m_id == m_df->dwarf_race_id())
-//                    LOGD << "FOUND CASTE " << hexify(caste_addr) << " IDX " << i << " NAME " << c->name();
-            }
+        foreach (VIRTADDR caste_addr, castes) {
+            Caste *c = Caste::get_caste(m_df, caste_addr, this);
+            if (c != 0)
+                m_castes.insert(i, c);
             i++;
         }
     }
@@ -211,7 +206,7 @@ Material * Race::get_creature_material(int index){
 }
 
 bool Race::caste_flag(CASTE_FLAGS cf){
-    if(m_castes.count()<=0){
+    if(m_castes.empty()){
         return false;
     }else{
         return m_castes.value(0)->flags().has_flag(cf);

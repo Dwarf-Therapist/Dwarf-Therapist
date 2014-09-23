@@ -21,22 +21,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <QFontDialog>
-#include <QMessageBox>
 #include "optionsmenu.h"
 #include "customcolor.h"
-#include "dwarf.h"
 #include "dwarftherapist.h"
-#include "utils.h"
 #include "defines.h"
 #include "truncatingfilelogger.h"
 #include "uberdelegate.h"
 #include "mainwindow.h"
 #include "fortressentity.h"
-#include "dfinstance.h"
-#include "gamedatareader.h"
 #include "defaultfonts.h"
-#include "global_enums.h"
+#include "ui_optionsmenu.h"
+#include "gamedatareader.h"
+#include <QMessageBox>
+#include <QSettings>
+#include <QFontDialog>
 
 OptionsMenu::OptionsMenu(QWidget *parent)
     : QDialog(parent)

@@ -26,11 +26,10 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "dwarf.h"
 
-#include <QHash>
-
 #define STRING_SIZE 256
 
 class MemoryLayout;
+template<class K, class V> class QHash;
 
 class DFInstanceLinux : public DFInstance {
     Q_OBJECT

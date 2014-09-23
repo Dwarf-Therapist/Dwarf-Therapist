@@ -20,16 +20,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QDesktopServices>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QtDebug>
-#include <QShortcut>
-
 #include "mainwindow.h"
-#include "ui_about.h"
 #include "ui_mainwindow.h"
-#include "ui_pendingchanges.h"
 #include "aboutdialog.h"
 #include "dwarf.h"
 #include "dwarfmodel.h"
@@ -37,10 +29,8 @@ THE SOFTWARE.
 #include "memorylayout.h"
 #include "viewmanager.h"
 #include "viewcolumnset.h"
-#include "uberdelegate.h"
 #include "customprofession.h"
 #include "superlabor.h"
-#include "labor.h"
 #include "defines.h"
 #include "version.h"
 #include "dwarftherapist.h"
@@ -58,11 +48,10 @@ THE SOFTWARE.
 #include "laboroptimizerplan.h"
 #include "optimizereditor.h"
 #include "gamedatareader.h"
-#include "fortressentity.h"
+#include "thoughtsdock.h"
 #include "preference.h"
 #include "dfinstance.h"
 #include "squad.h"
-
 #include "gridviewdock.h"
 #include "skilllegenddock.h"
 #include "dwarfdetailsdock.h"
@@ -71,8 +60,16 @@ THE SOFTWARE.
 #include "thoughtsdock.h"
 #include "healthlegenddock.h"
 #include "equipmentoverviewdock.h"
-
 #include "eventfilterlineedit.h"
+#include "eventfilterlineedit.h"
+#include "gridview.h"
+
+#include <QDesktopServices>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QShortcut>
+#include <QTime>
+#include <QPainter>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -513,7 +510,7 @@ void MainWindow::read_dwarves() {
     //apply a filter when an item is clicked with the mouse in the popup list
     connect(m_dwarf_name_completer->popup(),SIGNAL(clicked(QModelIndex)),this,SLOT(apply_filter(QModelIndex)));
     //we need a custom event filter to intercept the enter key and emit our own signal to filter when enter is hit
-    EventFilterLineEdit *filter = new EventFilterLineEdit(ui->le_filter_text);
+    EventFilterLineEdit *filter = new EventFilterLineEdit(ui->le_filter_text, this);
     m_dwarf_name_completer->popup()->installEventFilter(filter);
     connect(filter,SIGNAL(enterPressed(QModelIndex)),this,SLOT(apply_filter(QModelIndex)));
 
@@ -880,9 +877,9 @@ void MainWindow::go_to_new_issue() {
 }
 
 void MainWindow::open_help(){
-    QFileInfo local_manual("share:doc/Therapist Manual.pdf");
+    QFileInfo local_manual("share:doc/Dwarf Therapist.pdf");
     QUrl url = local_manual.exists() ? QUrl::fromLocalFile(local_manual.filePath())
-                                           : QUrl("http://dffd.wimbli.com/file.php?id=7889");
+                                     : QUrl("http://dffd.wimbli.com/file.php?id=7889");
     QDesktopServices::openUrl(url);
 }
 

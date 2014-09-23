@@ -29,8 +29,8 @@ THE SOFTWARE.
 #include "trait.h"
 #include "dwarftherapist.h"
 #include "truncatingfilelogger.h"
-
 #include "labor.h"
+#include "defines.h"
 
 RoleColumn::RoleColumn(const QString &title, Role *r, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title,CT_ROLE,set,parent)
@@ -48,14 +48,14 @@ RoleColumn::RoleColumn(const RoleColumn &to_copy)
     : ViewColumn(to_copy)
     , m_role(to_copy.m_role)
     , m_role_name(to_copy.m_role_name)
-{    
+{
     connect(DT, SIGNAL(roles_changed()), this, SLOT(roles_changed()), Qt::UniqueConnection);
 }
 
 RoleColumn::RoleColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     : ViewColumn(s, set, parent)
     , m_role_name("")
-{    
+{
     //older versions required the column title to match the role name, so fall back to that if 'role_id' doesn't exist
     m_role = GameDataReader::ptr()->get_role(s.value("role_id",s.value("name").toString()).toString());
     if(m_role)
@@ -82,7 +82,7 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
         item->setToolTip(("<b>Babies aren't included in role calculations.</b>"));
         return item;
     }else if(d->is_child() && !DT->labor_cheats_allowed()){
-        item->setData(-1, DwarfModel::DR_SORT_VALUE);        
+        item->setData(-1, DwarfModel::DR_SORT_VALUE);
         item->setToolTip(("<b>Children are only included in role calculations if labor cheats are enabled.</b>"));
         return item;
     }
@@ -122,7 +122,7 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
                         .arg(m_role->name)
                         .arg(match_str)
                         .arg(QString::number(drawn_rating,'f',2))
-                        .arg(d->nice_name())                        
+                        .arg(d->nice_name())
                         .arg(labors_desc);
 
                 item->setToolTip(tooltip);
@@ -154,7 +154,7 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
     return item;
 }
 
-QStandardItem *RoleColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {    
+QStandardItem *RoleColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
     Q_UNUSED(dwarves);
     QStandardItem *item = init_aggregate(group_name);
     return item;

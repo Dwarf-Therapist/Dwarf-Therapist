@@ -25,14 +25,12 @@ THE SOFTWARE.
 
 #define DT (static_cast<DwarfTherapist *>(QCoreApplication::instance()))
 
-#include <QApplication>
-#include <QTreeWidgetItem>
-#include <QVector>
-#include "defines.h"
 #include "columntypes.h"
 #include "mainwindow.h"
-#include "dfinstance.h"
-class QListWidgetItem;
+#include <QApplication>
+#include <QVector>
+
+class QTreeWidgetItem;
 class OptionsMenu;
 class QSettings;
 class CustomProfession;

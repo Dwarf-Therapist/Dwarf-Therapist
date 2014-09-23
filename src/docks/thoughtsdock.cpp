@@ -20,15 +20,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+#include "thoughtsdock.h"
+#include "dwarftherapist.h"
+#include "thought.h"
+#include "gamedatareader.h"
+#include "dfinstance.h"
 #include <QVBoxLayout>
 #include <QLineEdit>
 #include <QHeaderView>
 #include <QPushButton>
 #include <QCloseEvent>
-#include "thoughtsdock.h"
-#include "dwarftherapist.h"
-#include "thought.h"
-#include "gamedatareader.h"
 
 #if QT_VERSION < 0x050000
 # define setSectionResizeMode setResizeMode

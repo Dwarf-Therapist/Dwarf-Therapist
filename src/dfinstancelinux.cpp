@@ -22,10 +22,6 @@ THE SOFTWARE.
 */
 #include "dfinstance.h"
 #include "dfinstancelinux.h"
-#include "defines.h"
-#include "dwarf.h"
-#include "gamedatareader.h"
-#include "memorylayout.h"
 #include "memorysegment.h"
 #include "truncatingfilelogger.h"
 #include "cp437codec.h"
@@ -33,15 +29,21 @@ THE SOFTWARE.
 
 #include <QInputDialog>
 #include <QMessageBox>
-#include <QtDebug>
+#include <QCryptographicHash>
+#include <QDirIterator>
+#if QT_VERSION >= 0x050000
+# include <QRegularExpression>
+#else
+# include <QRegExp>
+#endif
 
-#include <unistd.h>
-#include <sys/syscall.h>
-#include <sys/ptrace.h>
-#include <sys/user.h>
-#include <sys/mman.h>
 #include <errno.h>
-#include <wait.h>
+#include <sys/mman.h>
+#include <sys/ptrace.h>
+#include <sys/syscall.h>
+#include <sys/user.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 struct STLStringHeader {
     quint32 length;
@@ -398,7 +400,7 @@ void DFInstanceLinux::map_virtual_memory() {
 #else
     QRegExp
 #endif
-        rx("^([a-f\\d]+)-([a-f\\d]+)\\s([rwxsp-]{4})\\s+[\\d\\w]{8}\\s+[\\d\\w]{2}:[\\d\\w]{2}\\s+(\\d+)\\s*(.+)\\s*$");
+        rx("^([0-9a-f]+)-([0-9a-f]+) ([rwxsp-]{4}) [\\d\\w]{8} [\\d\\w]{2}:[\\d\\w]{2} (\\d+) *(.*)$");
     QString mf = QFile::symLinkTarget(QString("/proc/%1/exe").arg(m_pid));
     do {
         line = f.readLine();
@@ -429,7 +431,6 @@ void DFInstanceLinux::map_virtual_memory() {
             } else {
                 keep_it = path.isEmpty();
             }
-            keep_it = true;
 
             if (keep_it && end_addr > start_addr) {
                 MemorySegment *segment = new MemorySegment(path, start_addr, end_addr);
@@ -446,8 +447,6 @@ void DFInstanceLinux::map_virtual_memory() {
             }
         }
     } while (!line.isEmpty());
-    f.close();
-
 }
 
 /* Support for executing system calls in the context of the game process. */

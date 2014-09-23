@@ -32,6 +32,8 @@ http://www.opensource.org/licenses/mit-license.php
 #include "gamedatareader.h"
 #include "utils.h"
 #include "memorylayout.h"
+#include "dfinstance.h"
+#include <QThread>
 
 class CreatureVectorSearchJob : public ScannerJob {
     Q_OBJECT

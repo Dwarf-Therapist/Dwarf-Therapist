@@ -23,6 +23,10 @@ THE SOFTWARE.
 http://www.opensource.org/licenses/mit-license.php
 */
 #include "truncatingfilelogger.h"
+#include <QDateTime>
+#include <QFile>
+#include <QFileInfo>
+#include <QDir>
 
 LogManager::LogManager(QObject *parent)
     : QObject(parent)

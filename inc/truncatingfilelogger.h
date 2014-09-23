@@ -25,9 +25,11 @@ http://www.opensource.org/licenses/mit-license.php
 #ifndef TRUNCATINGFILELOGGER_H
 #define TRUNCATINGFILELOGGER_H
 
-#include <QtCore>
-#include <QtDebug>
 #include "dwarftherapist.h"
+#include <QDebug>
+#include <QHash>
+
+class QFile;
 
 /*! The different log levels. Their value should go up as severity increases to
   aid in filtering.
@@ -41,9 +43,7 @@ typedef enum {
     LL_FATAL    = 50
 } LOG_LEVEL;
 
-class TruncatingFileLogger;
 class LogAppender;
-class LogManager;
 
 /*! simple class that macros create on the stack. It works with an internal
   QDebug to format most types nicely into an internal string buffer. Its dtor

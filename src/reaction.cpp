@@ -24,7 +24,6 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "memorylayout.h"
 #include "truncatingfilelogger.h"
-#include <QtDebug>
 
 Reaction::Reaction(DFInstance *df, VIRTADDR address, QObject *parent)
     : QObject(parent)

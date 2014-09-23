@@ -1,6 +1,11 @@
-======================
-Dwarf Therapist README
-======================
+===============
+Dwarf Therapist
+===============
+
+.. image:: https://travis-ci.org/Hello71/Dwarf-Therapist.svg?branch=DF2014
+   :target: https://travis-ci.org/Hello71/Dwarf-Therapist
+.. image:: https://scan.coverity.com/projects/3038/badge.svg
+   :target: https://scan.coverity.com/projects/3038
 
 This is a heavily modified version of the original `Dwarf Therapist`_.
 

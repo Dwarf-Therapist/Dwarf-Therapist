@@ -23,10 +23,8 @@ THE SOFTWARE.
 
 #include "happinesscolumn.h"
 #include "columntypes.h"
-#include "viewcolumnset.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
-#include "dwarftherapist.h"
 #include "defines.h"
 
 HappinessColumn::HappinessColumn(QSettings &s, ViewColumnSet *set, QObject *parent)

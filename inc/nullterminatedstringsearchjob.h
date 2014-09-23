@@ -27,6 +27,8 @@ THE SOFTWARE.
 #include "defines.h"
 #include "truncatingfilelogger.h"
 #include "utils.h"
+#include "dfinstance.h"
+#include <QThread>
 
 struct NullTerminatedStringSearchParams {
     uint start_addr;

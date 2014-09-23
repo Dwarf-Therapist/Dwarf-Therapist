@@ -68,7 +68,6 @@ static inline QString get_animal_trained_descriptor(const TRAINED_LEVEL &type) {
     default:
         return QObject::tr("Unknown");
     }
-    return QObject::tr("Unknown");
 }
 
 typedef enum {
@@ -297,7 +296,7 @@ typedef enum{
 } CREATURE_FLAGS;
 
 typedef enum{
-    AMPHIBIOUS=0,    
+    AMPHIBIOUS=0,
     NO_EAT=13,
     NO_DRINK=14,
     NO_SLEEP=15,

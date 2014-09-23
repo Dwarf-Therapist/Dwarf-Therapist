@@ -23,14 +23,16 @@ THE SOFTWARE.
 #ifndef ITEM_H
 #define ITEM_H
 
-#include <QtCore>
-#include <QObject>
 #include "truncatingfilelogger.h"
 #include "global_enums.h"
 #include "material.h"
 #include "itemdefuniform.h"
+#include <QObject>
+#include <QColor>
 
-class Item : public QObject  {
+class QString;
+
+class Item : public QObject {
     Q_OBJECT
 public:
     Item(const Item &i);

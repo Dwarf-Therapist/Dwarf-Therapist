@@ -28,10 +28,9 @@ THE SOFTWARE.
 #include "skill.h"
 #include "attribute.h"
 #include "unithealth.h"
-#include "item.h"
-#include "itemdefuniform.h"
 #include "unitbelief.h"
 #include "role.h"
+#include "syndrome.h"
 
 class DFInstance;
 class MemoryLayout;
@@ -40,11 +39,9 @@ class Reaction;
 class Preference;
 class Race;
 class Caste;
-class Thought;
-class Syndrome;
-class ItemArmor;
 class Uniform;
 class HistFigure;
+class Item;
 
 class Dwarf : public QObject
 {
@@ -94,7 +91,6 @@ public:
         default:
             return QObject::tr("Unknown");
         }
-        return QObject::tr("Unknown");
     }
 
     static QString get_orientation_desc(const SEX_ORIENT_TYPE &type) {

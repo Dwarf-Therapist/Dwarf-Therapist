@@ -21,14 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <QFileDialog>
-#include <QMessageBox>
-#if QT_VERSION >= 0x050000
-# include <QStandardPaths>
-#else
-# include <QDesktopServices>
-# define QStandardPaths QDesktopServices
-#endif
 #include "importexportdialog.h"
 #include "ui_importexportdialog.h"
 #include "dwarftherapist.h"
@@ -42,7 +34,15 @@ THE SOFTWARE.
 #include "viewcolumnset.h"
 #include "truncatingfilelogger.h"
 #include "role.h"
-#include "roleaspect.h"
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QDateTime>
+#if QT_VERSION >= 0x050000
+# include <QStandardPaths>
+#else
+# include <QDesktopServices>
+# define QStandardPaths QDesktopServices
+#endif
 
 static QString _get_dir(QStandardPaths::StandardLocation locationId)
 {
@@ -116,7 +116,7 @@ bool ImportExportDialog::setup_for_profession_import() {
     int cnt = s.beginReadArray("custom_professions");
 
     for(int i = 0; i < cnt; i++) {
-        s.setArrayIndex(i);        
+        s.setArrayIndex(i);
         m_profs.append(new CustomProfession(s,DT));
     }
     s.endArray();
@@ -482,7 +482,7 @@ void ImportExportDialog::export_selected_professions() {
     s.beginWriteArray("custom_professions");
     foreach(CustomProfession *cp, get_profs()) {
         s.setArrayIndex(i++);
-        cp->export_to_file(s);       
+        cp->export_to_file(s);
         exported++;
     }
     s.endArray();

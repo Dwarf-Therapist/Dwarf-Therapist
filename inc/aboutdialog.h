@@ -24,9 +24,10 @@ THE SOFTWARE.
 #define ABOUT_DIALOG_H
 
 #include <QDialog>
-#include "mainwindow.h"
 #include "ui_about.h"
 #include "version.h"
+
+class MainWindow;
 
 class AboutDialog : public QDialog {
     Q_OBJECT

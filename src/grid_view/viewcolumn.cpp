@@ -25,7 +25,6 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "utils.h"
 #include "dwarftherapist.h"
-#include "truncatingfilelogger.h"
 #include "dtstandarditem.h"
 
 ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,

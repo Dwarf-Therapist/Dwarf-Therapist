@@ -32,7 +32,9 @@
 #include "dwarf.h"
 #include "sortabletableitems.h"
 
-#if QT_VERSION < 0x050000
+#if QT_VERSION >= 0x050000
+# include <QRegularExpression>
+#else
 # define setSectionResizeMode setResizeMode
 #endif
 
@@ -624,7 +626,7 @@ void roleDialog::name_changed(QString text){
 }
 
 void roleDialog::load_material_prefs(QVector<Material*> mats, QString prefix_name, MATERIAL_STATES state_name){
-    QTreeWidgetItem *parent;
+    QTreeWidgetItem *parent = 0;
     //Preference *p;
     QString name = "";
     PREF_TYPES pType;

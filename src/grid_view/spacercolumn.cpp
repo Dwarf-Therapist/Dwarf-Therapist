@@ -23,7 +23,6 @@ THE SOFTWARE.
 
 #include "spacercolumn.h"
 #include "columntypes.h"
-#include "viewcolumnset.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
 #include "defines.h"
