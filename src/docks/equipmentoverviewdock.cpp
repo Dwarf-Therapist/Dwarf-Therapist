@@ -117,60 +117,63 @@ void EquipmentOverviewDock::refresh(){
     lbl_read->hide();
 
     if(DT && DT->get_DFInstance()){
-        m_option_state = DT->user_settings()->value(m_option_name,false).toBool();
-        QHash<QPair<QString,int>,int> worn_items = DT->get_DFInstance()->get_equip_warnings();
-
-        QStringList wear_level_desc;
-        wear_level_desc << tr("No Wear") << tr("Some Wear") << tr("Heavily Worn") << tr("Tattered");
-
-        tw_wear->setSortingEnabled(false);
         QString tooltip;
         QPair<QString,int> key;
+
+        m_option_state = DT->user_settings()->value(m_option_name,false).toBool();
+        QHash<QPair<QString,int>,int> worn_items = DT->get_DFInstance()->get_equip_warnings();
+        if(worn_items.count()<=0){ //add a placeholder item
+            key = qMakePair(tr("N/A"),0);
+            worn_items.insert(key,0);
+        }
+
+        QStringList wear_level_desc;
+        wear_level_desc << tr("No Worn/Missing Equipment") << tr("Some Wear") << tr("Heavily Worn") << tr("Tattered");
+
+        tw_wear->setSortingEnabled(false);
         foreach(key, worn_items.uniqueKeys()){
-                QString item_desc = key.first;
-                int wear_level = key.second;
-                int total_count = worn_items.value(key);
+            QString item_desc = key.first;
+            int wear_level = key.second;
+            int total_count = worn_items.value(key);
 
-                if(total_count > 0){
-                    tw_wear->insertRow(0);
-                    tw_wear->setRowHeight(0, 18);
+            tw_wear->insertRow(0);
+            tw_wear->setRowHeight(0, 18);
 
-                    QString wear_desc;
-                    QColor col;
-                    if(wear_level >= 0){
-                        wear_desc = wear_level_desc.at(wear_level);
-                        col = Item::color_wear(wear_level);
-                    }else{
-                        wear_desc = Item::uncovered_group_name();
-                        col = Item::color_uncovered();
-                    }
-
-                    tooltip = QString("<center><h4>%1</h4></center>%2 %3")
-                            .arg(capitalizeEach(item_desc))
-                            .arg(total_count).arg(wear_desc);
-
-                    QTableWidgetItem *item_name = new QTableWidgetItem();
-                    item_name->setData(Qt::UserRole, item_desc);
-                    item_name->setText(item_desc);
-                    item_name->setToolTip(tooltip);
-
-                    QTableWidgetItem *item_wear_count = new QTableWidgetItem();
-                    item_wear_count->setData(Qt::DisplayRole, total_count);
-                    item_wear_count->setTextAlignment(Qt::AlignCenter);
-                    item_wear_count->setToolTip(tooltip);
-
-                    sortableNumericTableWidgetItem *item_wear_desc = new sortableNumericTableWidgetItem;
-                    item_wear_desc->setData(Qt::UserRole, wear_level);
-                    item_wear_desc->setText(wear_desc);
-                    item_wear_desc->setBackgroundColor(col);
-                    item_wear_desc->setToolTip(tooltip);
-
-
-                    tw_wear->setItem(0, 0, item_name);
-                    tw_wear->setItem(0, 1, item_wear_count);
-                    tw_wear->setItem(0, 2, item_wear_desc);
-                }
+            QString wear_desc;
+            QColor col;
+            if(wear_level >= 0){
+                wear_desc = wear_level_desc.at(wear_level);
+                col = Item::color_wear(wear_level);
+            }else{
+                wear_desc = Item::uncovered_group_name();
+                col = Item::color_uncovered();
             }
+
+            tooltip = QString("<center><h4>%1</h4></center>%2 %3")
+                    .arg(capitalizeEach(item_desc))
+                    .arg(total_count).arg(wear_desc);
+
+            QTableWidgetItem *item_name = new QTableWidgetItem();
+            item_name->setData(Qt::UserRole, item_desc);
+            item_name->setText(item_desc);
+            item_name->setToolTip(tooltip);
+
+            QTableWidgetItem *item_wear_count = new QTableWidgetItem();
+            item_wear_count->setData(Qt::DisplayRole, total_count);
+            item_wear_count->setTextAlignment(Qt::AlignCenter);
+            item_wear_count->setToolTip(tooltip);
+
+            sortableNumericTableWidgetItem *item_wear_desc = new sortableNumericTableWidgetItem;
+            item_wear_desc->setData(Qt::UserRole, wear_level);
+            item_wear_desc->setText(wear_desc);
+            item_wear_desc->setBackgroundColor(col);
+            item_wear_desc->setToolTip(tooltip);
+
+
+            tw_wear->setItem(0, 0, item_name);
+            tw_wear->setItem(0, 1, item_wear_count);
+            tw_wear->setItem(0, 2, item_wear_desc);
+        }
         tw_wear->setSortingEnabled(true);
         tw_wear->sortItems(1, Qt::DescendingOrder);
         filter();

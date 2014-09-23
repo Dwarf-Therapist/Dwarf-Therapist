@@ -1551,7 +1551,7 @@ void Dwarf::read_inventory(){
                     m_max_inventory_wear.insert(i_type,wear_level);
                 }
                 if(wear_level > 0 && Item::is_armor_type(i_type) && i_type != SHIELD){
-                    QString item_name = QString("%1 %2").arg((include_mat_name ? ir->get_material_name_base() : "")).arg(ir->get_item_name()).trimmed();
+                    QString item_name = QString("%1 %2").arg((include_mat_name ? ir->get_material_name_base() : "")).arg(ir->get_details()->name_plural()).trimmed();
                     QPair<QString,int> key = qMakePair(item_name,wear_level);
                     if(m_equip_warnings.contains(key)){
                         m_equip_warnings[key] += ir->get_stack_size();
