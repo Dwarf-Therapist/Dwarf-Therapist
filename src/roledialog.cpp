@@ -32,7 +32,9 @@
 #include "dwarf.h"
 #include "sortabletableitems.h"
 
-#if QT_VERSION < 0x050000
+#if QT_VERSION >= 0x050000
+# include <QRegularExpression>
+#else
 # define setSectionResizeMode setResizeMode
 #endif
 
