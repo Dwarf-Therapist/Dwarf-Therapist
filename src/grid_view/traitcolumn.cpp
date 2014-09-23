@@ -65,7 +65,7 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
         infos << tr("Not an active trait for this dwarf.");
 
     infos << m_trait->skill_conflicts_msgs(raw_value);
-    infos <<m_trait->special_messages(raw_value);
+    infos << m_trait->special_messages(raw_value);
 
     int conflicting_belief_count = m_trait->get_conflicting_beliefs().count();
     if(conflicting_belief_count > 0){

@@ -61,6 +61,8 @@ public:
     //! custom icon
     CustomProfession(int profession_id, QObject *parent = 0);
 
+    ~CustomProfession();
+
     //! Get the name:: for this custom profession if it's an icon override
     QString get_save_name();
     QPixmap get_pixmap();

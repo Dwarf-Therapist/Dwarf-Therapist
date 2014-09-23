@@ -40,6 +40,8 @@ public:
     SuperLabor(QSettings &s, QObject *parent = 0);
     SuperLabor(Dwarf *d, QObject *parent = 0);
 
+    ~SuperLabor();
+
     QString get_name(){return m_name;}
 
     int show_builder_dialog(QWidget *parent);

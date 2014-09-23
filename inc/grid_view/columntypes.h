@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define COLUMN_TYPES_H
 
 #include <QString>
+#include <QHash>
 
 typedef enum {
     CT_DEFAULT,
@@ -50,78 +51,45 @@ typedef enum {
     CT_TOTAL_TYPES
 } COLUMN_TYPE;
 
-static inline COLUMN_TYPE get_column_type(const QString &name) {
-    if (name.toLower() == "spacer" || name.toLower() == "space") {
-        return CT_SPACER;
-    } else if (name.toLower() == "labor") {
-        return CT_LABOR;
-    } else if (name.toLower() == "skill") {
-        return CT_SKILL;
-    } else if (name.toLower() == "happiness") {
-        return CT_HAPPINESS;
-    } else if (name.toLower() == "idle") {
-        return CT_IDLE;
-    } else if (name.toLower() == "trait") {
-        return CT_TRAIT;
-    } else if (name.toLower() == "attribute") {
-        return CT_ATTRIBUTE;
-    } else if (name.toLower() == "flags") {
-        return CT_FLAGS;
-    } else if (name.toLower() == "role"){
-        return CT_ROLE;
-    } else if (name.toLower() == "weapon"){
-        return CT_WEAPON;
-    } else if (name.toLower() == "profession"){
-        return CT_PROFESSION;
-    } else if (name.toLower() == "mood_skill"){
-        return CT_HIGHEST_MOOD;
-    } else if (name.toLower() == "trained"){
-        return CT_TRAINED;
-    } else if (name.toLower() == "health"){
-        return CT_HEALTH;
-    }else if (name.toLower() == "equipment"){
-        return CT_EQUIPMENT;
-    }else if (name.toLower() == "itemtype"){
-        return CT_ITEMTYPE;
-    }else if (name.toLower() == "super_labor"){
-        return CT_SUPER_LABOR;
-    }else if (name.toLower() == "custom_profession"){
-        return CT_CUSTOM_PROFESSION;
-    }else if (name.toLower() == "belief"){
-        return CT_BELIEF;
-    }else if (name.toLower() == "kills")
-        return CT_KILLS;
+static QHash<QString, COLUMN_TYPE> column_types;
 
-    return CT_DEFAULT;
+static inline void init_column_types() {
+    column_types.insert("SPACER",            CT_SPACER);
+    column_types.insert("SKILL",             CT_SKILL);
+    column_types.insert("LABOR",             CT_LABOR);
+    column_types.insert("HAPPINESS",         CT_HAPPINESS);
+    column_types.insert("IDLE",              CT_IDLE);
+    column_types.insert("TRAIT",             CT_TRAIT);
+    column_types.insert("ATTRIBUTE",         CT_ATTRIBUTE);
+    column_types.insert("FLAGS",             CT_FLAGS);
+    column_types.insert("ROLE",              CT_ROLE);
+    column_types.insert("WEAPON",            CT_WEAPON);
+    column_types.insert("PROFESSION",        CT_PROFESSION);
+    column_types.insert("MOOD_SKILL",        CT_HIGHEST_MOOD);
+    column_types.insert("TRAINED",           CT_TRAINED);
+    column_types.insert("HEALTH",            CT_HEALTH);
+    column_types.insert("EQUIPMENT",         CT_EQUIPMENT);
+    column_types.insert("ITEMTYPE",          CT_ITEMTYPE);
+    column_types.insert("SUPER_LABOR",       CT_SUPER_LABOR);
+    column_types.insert("CUSTOM_PROFESSION", CT_CUSTOM_PROFESSION);
+    column_types.insert("BELIEF",            CT_BELIEF);
+    column_types.insert("KILLS",             CT_KILLS);
+}
+
+static inline COLUMN_TYPE get_column_type(const QString &name) {
+    if (column_types.empty()) {
+        init_column_types();
+    }
+
+    return column_types.value(name, CT_DEFAULT);
 }
 
 static inline QString get_column_type(const COLUMN_TYPE &type) {
-    switch (type) {
-    case CT_SPACER:                 return "SPACER";
-    case CT_SKILL:                  return "SKILL";
-    case CT_LABOR:                  return "LABOR";
-    case CT_HAPPINESS:              return "HAPPINESS";
-    case CT_IDLE:                   return "IDLE";
-    case CT_TRAIT:                  return "TRAIT";
-    case CT_ATTRIBUTE:              return "ATTRIBUTE";
-    case CT_FLAGS:                  return "FLAGS";
-    case CT_ROLE:                   return "ROLE";
-    case CT_WEAPON:                 return "WEAPON";
-    case CT_PROFESSION:             return "PROFESSION";
-    case CT_HIGHEST_MOOD:           return "MOOD_SKILL";
-    case CT_TRAINED:                return "TRAINED";
-    case CT_HEALTH:                 return "HEALTH";
-    case CT_EQUIPMENT:           return "EQUIPMENT";
-    case CT_ITEMTYPE:               return "ITEMTYPE";
-    case CT_SUPER_LABOR:        return "SUPER_LABOR";
-    case CT_CUSTOM_PROFESSION:        return "CUSTOM_PROFESSION";
-    case CT_BELIEF:                 return "BELIEF";
-    case CT_KILLS:                  return "KILLS";
-    default:
-        return "UNKNOWN";
+    if (column_types.empty()) {
+        init_column_types();
     }
-    return "UNKNOWN";
+
+    return column_types.key(type, "UNKNOWN");
 }
 
 #endif
-

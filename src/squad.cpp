@@ -148,11 +148,14 @@ int Squad::assigned_count(){
 void Squad::assign_to_squad(Dwarf *d, bool committing){
     int assigned = assigned_count();
 
+    //users could potentially select more than 10 and assign to squad
+    if(!d || assigned==10 || !d->is_adult())
+        return;
+
     //if committing, then the current squad is from the original id, otherwise use the pending id
     int current_squad_id = d->squad_id((committing ? true : false));
 
-    //users could potentially select more than 10 and assign to squad
-    if(d == 0 || assigned==10 || !d->is_adult() || current_squad_id == m_id)
+    if (current_squad_id == m_id)
         return;
 
     //if they already belong to a squad, remove them from the original squad

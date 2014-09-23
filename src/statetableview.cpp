@@ -1020,16 +1020,10 @@ void StateTableView::keyPressEvent(QKeyEvent *event ){
 }
 
 void StateTableView::restore_scroll_positions(){
-    if(m_vscroll > verticalScrollBar()->maximum())
-        m_vscroll = verticalScrollBar()->maximum();
-    else if(m_vscroll < verticalScrollBar()->minimum())
-        m_vscroll = verticalScrollBar()->minimum();
+    m_vscroll = qBound(verticalScrollBar()->minimum(), m_vscroll, verticalScrollBar()->maximum());
     verticalScrollBar()->setValue(m_vscroll);
 
-    if(m_hscroll > horizontalScrollBar()->maximum())
-        m_hscroll = horizontalScrollBar()->maximum();
-    else if(m_hscroll < verticalScrollBar()->minimum())
-        m_hscroll = horizontalScrollBar()->minimum();
+    m_hscroll = qBound(horizontalScrollBar()->minimum(), m_hscroll, horizontalScrollBar()->maximum());
     horizontalScrollBar()->setValue(m_hscroll);
 }
 

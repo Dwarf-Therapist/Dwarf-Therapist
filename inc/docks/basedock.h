@@ -37,10 +37,9 @@ public:
 public slots:
     void floating_changed(bool floating){
     //it's currently pretty buggy to do this on linux. no idea why... yet..
-    #ifdef Q_OS_LINUX
-        return;
-    #endif
-
+#ifdef Q_OS_LINUX
+        Q_UNUSED(floating);
+#else
         bool vis = this->isVisible();
         if(floating){
             this->setWindowFlags(Qt::Window);
@@ -54,6 +53,7 @@ public slots:
             if(vis)
                 this->show();
         }
+#endif
     }
 
 };

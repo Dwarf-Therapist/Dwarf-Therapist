@@ -1678,7 +1678,6 @@ QString DFInstance::get_item_name(ITEM_TYPE itype, int item_id){
             Item i = Item(this,m_mapped_items.value(itype).value(item_id));
             return i.display_name(true);
         }
-        return tr("Specific ") + capitalizeEach(get_item_name(itype,-1,-1,-1));
     }
 }
 
@@ -1807,8 +1806,7 @@ Material *DFInstance::find_material(int mat_index, short mat_type){
         return get_inorganic_material(mat_index);
     } else if (mat_type < 19) {
         return get_raw_material(mat_type);
-    }
-    else if (mat_type < 219) {
+    } else if (mat_type < 219) {
         Race* r = get_race(mat_index);
         if (r)
             return r->get_creature_material(mat_type - 19);
