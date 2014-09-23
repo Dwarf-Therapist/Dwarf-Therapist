@@ -119,6 +119,10 @@ CustomProfession::CustomProfession(QSettings &s, QObject *parent)
     init(s);
 }
 
+CustomProfession::~CustomProfession() {
+    delete ui;
+}
+
 void CustomProfession::init(QSettings &s){
     build_icon_path(s.value("icon_id",-1).toInt());
     m_font_color = s.value("text_color", QColor(Qt::black)).value<QColor>();

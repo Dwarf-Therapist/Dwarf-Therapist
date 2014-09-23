@@ -65,6 +65,10 @@ SuperLabor::SuperLabor(Dwarf *d, QObject *parent)
     }
 }
 
+SuperLabor::~SuperLabor() {
+    delete ui;
+}
+
 void SuperLabor::load_cp_labors(CustomProfession *cp){
     m_active_labors.clear();
     m_selected_count = 0;
