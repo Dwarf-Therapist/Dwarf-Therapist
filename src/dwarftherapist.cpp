@@ -116,8 +116,6 @@ void DwarfTherapist::setup_search_paths() {
     paths << QString("%1/../share").arg(appdir);
     // /usr/bin/../share/dwarftherapist/game_data.ini
     paths << QString("%1/../share/dwarftherapist").arg(appdir);
-    // Dwarf-Therapist/release/../doc/Dwarf Therapist.pdf
-    paths << QString("%1/..").arg(appdir);
     // cwd/game_data.ini
     paths << QString("%1").arg(working_dir);
     // cwd/share/game_data.ini

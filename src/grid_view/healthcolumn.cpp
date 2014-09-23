@@ -112,7 +112,7 @@ QStandardItem *HealthColumn::build_cell(Dwarf *d) {
 #else
                 QRegExp
 #endif
-                                   re("((?<=, )|(?<=[>])|^)" + h_info->description(false));
+                        re("((?<=, )|(?<=[>])|^)" + h_info->description(false));
                 if(re.isValid())
                     health_summary.replace(re, QString("<b>%2</b>").arg(h_info->description(true)));
             }

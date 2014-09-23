@@ -395,15 +395,18 @@ void DFInstanceLinux::map_virtual_memory() {
     uint end_addr = 0;
     bool ok;
 
+    const QString rxs = "^([0-9a-f]+)-([0-9a-f]+) ([rwxsp-]{4}) [\\d\\w]{8} [\\d\\w]{2}:[\\d\\w]{2} ([0-9]+) +([^ ]*)$";
+
 #if QT_VERSION >= 0x050000
-    QRegularExpression
+    QRegularExpression rx(rxs);
 #else
-    QRegExp
+    // !@#$ing QRegExp thinks that a*(a*) on aaa should capture aaa
+    QRegExp rx(rxs, Qt::CaseSensitive, QRegExp::RegExp2);
 #endif
-        rx("^([0-9a-f]+)-([0-9a-f]+) ([rwxsp-]{4}) [\\d\\w]{8} [\\d\\w]{2}:[\\d\\w]{2} (\\d+) *(.*)$");
     QString mf = QFile::symLinkTarget(QString("/proc/%1/exe").arg(m_pid));
     do {
         line = f.readLine();
+        line.chop(1);
 #if QT_VERSION >= 0x050000
         QRegularExpressionMatch match = rx.match(line);
 #define cap match.captured
