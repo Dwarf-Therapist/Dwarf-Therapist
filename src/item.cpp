@@ -142,18 +142,18 @@ void Item::read_data(){
         m_mat_type = m_df->read_short(m_addr+m_df->memory_layout()->item_offset("mat_type"));
         m_mat_idx = m_df->read_int(m_addr+m_df->memory_layout()->item_offset("mat_index"));
         m_quality = m_df->read_short(m_addr+m_df->memory_layout()->item_offset("quality"));
-
-        Material *m = m_df->find_material(m_mat_idx,m_mat_type);
         m_material_name = capitalizeEach(m_df->find_material_name(m_mat_idx,m_mat_type,m_iType));
 
-        set_default_name(m);
-
-        QList<MATERIAL_FLAGS> simple_types;
-        simple_types << LEATHER << SILK << BONE << SHELL << YARN << THREAD_PLANT;
-        foreach(MATERIAL_FLAGS mf, simple_types){
-            if(m->flags().has_flag(mf)){
-                m_material_name_base = Material::get_material_flag_desc(mf);
-                break;
+        Material *m = m_df->find_material(m_mat_idx,m_mat_type);
+        if(m){
+            set_default_name(m);
+            QList<MATERIAL_FLAGS> simple_types;
+            simple_types << LEATHER << SILK << BONE << SHELL << YARN << THREAD_PLANT;
+            foreach(MATERIAL_FLAGS mf, simple_types){
+                if(m->flags().has_flag(mf)){
+                    m_material_name_base = Material::get_material_flag_desc(mf);
+                    break;
+                }
             }
         }
 

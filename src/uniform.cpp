@@ -63,13 +63,11 @@ void Uniform::add_uniform_item(ITEM_TYPE itype, ItemDefUniform *uItem, int count
 
     uItem->add_to_stack(count-1); //uniform item stack size start at 1
 
-    QList<ItemDefUniform*> items = m_uniform_items[itype];
-    items.append(uItem);
+    m_uniform_items[itype].append(uItem);
     if (itype == SHOES || itype == GLOVES)
-        items.append(new ItemDefUniform(*uItem));
+        m_uniform_items[itype].append(new ItemDefUniform(*uItem));
     if (count > 0)
         add_equip_count(itype,count);
-
 }
 
 void Uniform::add_equip_count(ITEM_TYPE itype, int count){

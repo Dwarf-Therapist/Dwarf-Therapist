@@ -1753,7 +1753,7 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
     if (!m)
         return name;
 
-    if (mat_index < 19) {
+    if (mat_index < 0 || mat_type < 19) {
         name = m->get_material_name(SOLID);
     }
     else if(mat_type < 219){
@@ -1818,7 +1818,9 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
 }
 
 Material *DFInstance::find_material(int mat_index, short mat_type){
-    if (mat_type == 0) {
+    if (mat_index < 0) {
+        return get_raw_material(mat_type);
+    } else if (mat_type == 0) {
         return get_inorganic_material(mat_index);
     } else if (mat_type < 19) {
         return get_raw_material(mat_type);
