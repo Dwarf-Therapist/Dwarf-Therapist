@@ -22,9 +22,12 @@ THE SOFTWARE.
 */
 
 #include "informationdock.h"
+#include <QVBoxLayout>
+#include <QHBoxLayout>
 
 InformationDock::InformationDock(QWidget *parent, Qt::WindowFlags flags)
     : BaseDock(parent, flags)
+    , te_info(new QTextEdit(this))
 {
     setObjectName("dock_information");
     setWindowTitle(tr("Information"));
@@ -33,7 +36,6 @@ InformationDock::InformationDock(QWidget *parent, Qt::WindowFlags flags)
     main_widget->setLayout(layout);
 
     QHBoxLayout *l_type = new QHBoxLayout();
-    te_info = new QTextEdit(this);
     te_info->setReadOnly(true);
     l_type->addWidget(te_info);
     layout->addLayout(l_type);

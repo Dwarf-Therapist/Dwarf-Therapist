@@ -877,9 +877,24 @@ void MainWindow::go_to_new_issue() {
 }
 
 void MainWindow::open_help(){
-    QFileInfo local_manual("share:doc/Dwarf Therapist.pdf");
-    QUrl url = local_manual.exists() ? QUrl::fromLocalFile(local_manual.filePath())
-                                     : QUrl("http://dffd.wimbli.com/file.php?id=7889");
+    QString appdir = QCoreApplication::applicationDirPath();
+    QStringList doc_dirs;
+    // Dwarf Therapist xx.x/doc/Dwarf Therapist.pdf
+    doc_dirs << QString("%1/doc").arg(appdir);
+    // Dwarf-Therapist/release/../doc/Dwarf Therapist.pdf
+    doc_dirs << QString("%1/../doc").arg(appdir);
+    // /usr/bin/../share/doc/dwarftherapist/Dwarf Therapist.pdf
+    doc_dirs << QString("%1/../share/dwarftherapist").arg(appdir);
+
+    QUrl url("http://dffd.wimbli.com/file.php?id=7889");
+    foreach (const QString &dir, doc_dirs) {
+        QString file = dir + "/Dwarf Therapist.pdf";
+        if (QFile::exists(file)) {
+            url = QUrl::fromLocalFile(file);
+            break;
+        }
+    }
+
     QDesktopServices::openUrl(url);
 }
 

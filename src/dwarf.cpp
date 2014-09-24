@@ -66,12 +66,12 @@ THE SOFTWARE.
 #include <QDateTime>
 #include <QTreeWidgetItem>
 #include <QVBoxLayout>
-#if QT_VERSION < 0x050000
+#ifdef QT_QML_LIB
+# include <QJSEngine>
+#else
 # include <QScriptEngine>
 # define QJSEngine QScriptEngine
 # define QJSValue QScriptValue
-#else
-# include <QJSEngine>
 #endif
 
 quint32 Dwarf::ticks_per_day = 1200;

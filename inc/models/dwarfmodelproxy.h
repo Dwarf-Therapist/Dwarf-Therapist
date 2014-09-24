@@ -25,13 +25,13 @@ THE SOFTWARE.
 
 #include <QSortFilterProxyModel>
 
-#if QT_VERSION < 0x050000
-class QScriptEngine;
-#else
-class QJSEngine;
-#endif
 #include "global_enums.h"
 
+#ifdef QT_QML_LIB
+class QJSEngine;
+#elif defined(QT_SCRIPT_LIB)
+class QScriptEngine;
+#endif
 class Dwarf;
 class DwarfModel;
 
@@ -92,12 +92,12 @@ protected:
 private:
     QString m_filter_text;
     QString m_test_script;
-#if QT_VERSION < 0x050000
-    QScriptEngine
-#else
+#ifdef QT_QML_LIB
     QJSEngine
+#elif defined(QT_SCRIPT_LIB)
+    QScriptEngine
 #endif
-              *m_engine;
+        *m_engine;
     QHash<QString,script_info> m_scripts;
     QMultiHash<FILTER_SCRIPT_TYPE,QString> m_scripts_by_type;
     bool m_show_tooltips;

@@ -24,7 +24,7 @@ THE SOFTWARE.
 #define INFORMATIONDOCK_H
 
 #include "basedock.h"
-#include "QtWidgets"
+#include <QTextEdit>
 
 class InformationDock : public BaseDock {
     Q_OBJECT
