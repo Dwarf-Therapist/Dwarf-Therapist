@@ -37,6 +37,7 @@ ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,
     , m_type(type)
     , m_count(-1)
     , m_export_data_role(DwarfModel::DR_SORT_VALUE)
+    , m_current_sort(CST_DEFAULT)
 {
     if (set) {
         set->add_column(this,col_idx);
@@ -54,6 +55,7 @@ ViewColumn::ViewColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     , m_type(get_column_type(s.value("type", "DEFAULT").toString()))
     , m_count(-1)
     , m_export_data_role(DwarfModel::DR_SORT_VALUE)
+    , m_current_sort(CST_DEFAULT)
 {
     if (set) {
         set->add_column(this);
@@ -74,6 +76,7 @@ ViewColumn::ViewColumn(const ViewColumn &to_copy)
     , m_type(to_copy.m_type)
     , m_count(to_copy.m_count)
     , m_export_data_role(to_copy.m_export_data_role)
+    , m_current_sort(to_copy.m_current_sort)
 {
     // cloning should not add it to the copy's set! You must add it manually!
     if (m_set && !m_override_set_colors)

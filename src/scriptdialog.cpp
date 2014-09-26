@@ -122,7 +122,7 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     QString health_list = "<b>Health Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Category ID</th><th>Title</th><th>Descriptors</th></tr>";
 
-    QPair<int,QString> cat_pair;
+    QPair<eHealth::H_INFO,QString> cat_pair;
     foreach(cat_pair, UnitHealth::ordered_category_names()) {
         HealthCategory *hc = UnitHealth::get_display_categories().value(cat_pair.first);
         health_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td>").arg(hc->id()).arg(hc->name()));

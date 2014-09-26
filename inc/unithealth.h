@@ -65,8 +65,8 @@ public:
     //list of all statuses, some of these overlap with wound info
     QHash<eHealth::H_INFO, QList<HealthInfo*> > m_status_info;
 
-    static QList<QPair<int, QString> > ordered_category_names() {return m_ordered_category_names;}
-    static QHash<int, HealthCategory*> get_display_categories() {return m_health_descriptions;}
+    static QList<QPair<eHealth::H_INFO, QString> > ordered_category_names() {return m_ordered_category_names;}
+    static QHash<eHealth::H_INFO, HealthCategory*> get_display_categories() {return m_health_descriptions;}
 
     void add_info( eHealth::H_INFO id, bool idx0, bool idx1 = false, bool idx2 = false, bool idx3 = false);
     void add_info(eHealth::H_INFO h, QList<short> indexes, bool wound_visible = true);
@@ -86,11 +86,11 @@ public:
 
     QVector<VIRTADDR> layer_status_flags;
 
-    short limb_count() {return limb_stand_count;}
+    short limb_count() {return m_limb_stand_count;}
 
 private:
     DFInstance *m_df;
-    VIRTADDR m_dwarf_addr;    
+    VIRTADDR m_dwarf_addr;
 
     Dwarf *m_dwarf;
 
@@ -105,9 +105,9 @@ private:
     QHash<int, QStringList> m_treatment_summary;
     QHash<int, QStringList> m_status_summary;
 
-    static QHash<int, HealthCategory*> m_health_descriptions;
-    static QList<QPair<int, QString> > m_ordered_category_names;
-    static HealthCategory *get_health_description(int id);
+    static QHash<eHealth::H_INFO, HealthCategory*> m_health_descriptions;
+    static QList<QPair<eHealth::H_INFO, QString> > m_ordered_category_names;
+    static HealthCategory *get_health_description(eHealth::H_INFO id);
 
     QVector<UnitWound> m_wounds;
     //keep a list of each body part, and the related health info
@@ -116,7 +116,7 @@ private:
     bool m_critical_wounds;
     bool m_req_diagnosis;
 
-    short limb_stand_count;
+    short m_limb_stand_count;
 protected:
     void read_health_info();
     void read_wounds();

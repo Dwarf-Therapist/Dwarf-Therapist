@@ -122,12 +122,10 @@ void Race::read_race() {
     //LOGD << "RACE " << m_name << " (index:" << m_id << ") with " << castes.size() << "castes";
 
     if (!castes.empty()) {
-        int i = 0;
         foreach (VIRTADDR caste_addr, castes) {
             Caste *c = Caste::get_caste(m_df, caste_addr, this);
             if (c != 0)
-                m_castes.insert(i, c);
-            i++;
+                m_castes.append(c);
         }
     }
 
@@ -138,6 +136,14 @@ void Race::read_race() {
 
     m_flags = FlagArray(m_df, m_address + m_mem->race_offset("flags"));
     m_df->detach();
+}
+
+Caste * Race::get_caste_by_id(int idx){
+    if(idx >= 0 && m_castes.size() > idx){
+        return m_castes.at(idx);
+    }else{
+        return 0;
+    }
 }
 
 void Race::load_caste_ratios(){
@@ -155,6 +161,8 @@ void Race::load_caste_ratios(){
             for(int i=0; i < ratios.count(); i++){
                 sum += ratios.at(i);
             }
+            if(sum<=0)
+                sum = 1;
 
             float commonality = 0.0;
             for(int idx=0; idx < m_castes.count();idx++){
@@ -209,7 +217,12 @@ bool Race::caste_flag(CASTE_FLAGS cf){
     if(m_castes.empty()){
         return false;
     }else{
-        return m_castes.value(0)->flags().has_flag(cf);
+        Caste *c = m_castes.at(0);
+        if(c){
+            return c->flags().has_flag(cf);
+        }else{
+            return false;
+        }
     }
 }
 

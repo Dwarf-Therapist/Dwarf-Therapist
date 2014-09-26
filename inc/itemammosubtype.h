@@ -36,6 +36,8 @@ public:
         , m_address(address)
         , m_df(df)
         , m_mem(df->memory_layout())
+        , m_iType(NONE)
+        , m_subType(-1)
     {
         read_ammo();
     }

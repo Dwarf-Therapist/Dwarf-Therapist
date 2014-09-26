@@ -33,7 +33,7 @@ class HealthColumn : public ViewColumn {
     Q_OBJECT
 public:
 
-    HealthColumn(const QString &title, int categoryID, ViewColumnSet *set = 0, QObject *parent = 0);
+    HealthColumn(const QString &title, eHealth::H_INFO categoryID, ViewColumnSet *set = 0, QObject *parent = 0);
     HealthColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
     HealthColumn(const HealthColumn &to_copy); // copy ctor
     HealthColumn* clone() {return new HealthColumn(*this);}
@@ -44,7 +44,7 @@ public:
     void write_to_ini(QSettings &s) {ViewColumn::write_to_ini(s); s.setValue("id", m_id);}
 
 private:
-    int m_id;
+    eHealth::H_INFO m_id;
 };
 
 #endif // HEALTHCOLUMN_H

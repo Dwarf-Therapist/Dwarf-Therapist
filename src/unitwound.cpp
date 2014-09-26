@@ -33,43 +33,46 @@ THE SOFTWARE.
 #include "memorylayout.h"
 
 UnitWound::UnitWound()
-    :m_df(0x0)
-    ,m_addr(0x0)
-    ,m_severed(false)
-    ,m_mortal(false)
-    ,m_stuck(false)
-    ,m_diagnosed(false)
-    ,m_sutured(false)
-    ,m_infection(false)
+    : m_df(0x0)
+    , m_addr(0x0)
+    , m_unitHealth(0x0)
+    , m_caste_flags()
+    , m_severed(false)
+    , m_mortal(false)
+    , m_stuck(false)
+    , m_diagnosed(false)
+    , m_sutured(false)
+    , m_infection(false)
+    , m_is_critical(false)
 {
 }
-UnitWound::UnitWound(DFInstance *df, VIRTADDR base_addr, Dwarf *d, UnitHealth *uh)
-    :m_df(df)
-    ,m_addr(base_addr)
-    ,m_dwarf(d)
-    ,m_unitHealth(uh)
-    ,m_severed(false)
-    ,m_mortal(false)
-    ,m_stuck(false)
-    ,m_diagnosed(false)
-    ,m_sutured(false)
-    ,m_infection(false)
-    ,m_is_critical(false)
+UnitWound::UnitWound(DFInstance *df, VIRTADDR base_addr, FlagArray caste_flags, UnitHealth *uh)
+    : m_df(df)
+    , m_addr(base_addr)
+    , m_unitHealth(uh)
+    , m_caste_flags(caste_flags)
+    , m_severed(false)
+    , m_mortal(false)
+    , m_stuck(false)
+    , m_diagnosed(false)
+    , m_sutured(false)
+    , m_infection(false)
+    , m_is_critical(false)
 {
     read_wound();
 }
 UnitWound::UnitWound(DFInstance *df, int body_part_id, UnitHealth *uh)
-    :m_df(df)
-    ,m_addr(0x0)
-    ,m_dwarf(0x0)
-    ,m_unitHealth(uh)
-    ,m_severed(false)
-    ,m_mortal(false)
-    ,m_stuck(false)
-    ,m_diagnosed(false)
-    ,m_sutured(false)
-    ,m_infection(false)
-    ,m_is_critical(false)
+    : m_df(df)
+    , m_addr(0x0)
+    , m_unitHealth(uh)
+    , m_caste_flags()
+    , m_severed(false)
+    , m_mortal(false)
+    , m_stuck(false)
+    , m_diagnosed(false)
+    , m_sutured(false)
+    , m_infection(false)
+    , m_is_critical(false)
 {
     BodyPartDamage bp = m_unitHealth->get_body_part(body_part_id);
     BodyPartDamage parent;
@@ -100,7 +103,6 @@ UnitWound::UnitWound(DFInstance *df, int body_part_id, UnitHealth *uh)
 UnitWound::~UnitWound(){
     m_bp_info.clear();
     m_df = 0;
-    m_dwarf = 0;
     m_unitHealth = 0;
 }
 
@@ -120,7 +122,7 @@ void UnitWound::read_wound(){
         m_diagnosed = true;
     if(has_flag(0x00000010,general_flags))
         m_sutured = true;
-    if(m_dwarf->get_caste()->flags().has_flag(GETS_WOUND_INFECTIONS) && has_flag(0x00000020,general_flags))
+    if(m_caste_flags.has_flag(GETS_WOUND_INFECTIONS) && has_flag(0x00000020,general_flags))
         m_infection = true;
 
     m_is_critical = (m_severed || m_mortal);
@@ -261,7 +263,7 @@ void UnitWound::read_wound(){
 
             add_detail(wpd,eHealth::HI_SETTING, has_flag(0x00000001,wpd.wound_flags2));
 
-            if(!m_dwarf->get_caste()->flags().has_flag(NO_PAIN)){
+            if(!m_caste_flags.has_flag(NO_PAIN)){
                 wpd.pain = m_df->read_int(wounded_part + mem->wound_offset("pain"));
                 add_detail(wpd,eHealth::HI_PAIN, (wpd.pain > 50),(wpd.pain > 25),(wpd.pain > 0));
             }
@@ -340,8 +342,7 @@ void UnitWound::add_detail(wounded_part_details &wpd, eHealth::H_INFO id, bool i
 
     if(((m_unitHealth->required_diagnosis() && wpd.diagnosed)|| !m_unitHealth->required_diagnosis()) || id == eHealth::HI_SEVERED) {
         QList<short> desc_index;
-        bool multiple = m_unitHealth->get_display_categories().value(id)->allows_multiple();
-        if(multiple){
+        if(m_unitHealth->get_display_categories().value(id)->allows_multiple()){
             if(idx0)
                 desc_index.append(0);
             if(idx1)

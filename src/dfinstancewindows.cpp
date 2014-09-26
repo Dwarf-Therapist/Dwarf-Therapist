@@ -41,7 +41,10 @@ THE SOFTWARE.
 
 DFInstanceWindows::DFInstanceWindows(QObject* parent)
     : DFInstance(parent)
+    , m_hwnd(0)
     , m_proc(0)
+    , m_dos_header()
+    , m_pe_header()
 {}
 
 DFInstanceWindows::~DFInstanceWindows() {

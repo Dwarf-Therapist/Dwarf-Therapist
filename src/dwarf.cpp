@@ -486,15 +486,11 @@ QString Dwarf::get_migration_desc(){
     else if ((day == 3) || (day == 23))
         suffix = "rd";
 
-    if(m_born_in_fortress)
-    {
+    if(m_born_in_fortress){
         return QString("Born on the %1%4 of %2 in the year %3").arg(day).arg(GameDataReader::ptr()->m_months.at(month)).arg(year).arg(suffix);
-    }
-    else
-    {
+    }else{
         return QString("Arrived in the %2 of the year %1").arg(year).arg(GameDataReader::ptr()->m_seasons.at(season));
     }
-    return "Unknown Arrival";
 }
 
 /*******************************************************************************
@@ -1929,7 +1925,11 @@ Attribute Dwarf::get_attribute(ATTRIBUTES_TYPE id){
 
 Skill Dwarf::get_skill(int skill_id) {
     if(!m_skills.contains(skill_id)){
-        Skill s = Skill(skill_id, 0, -1, 0, m_caste->get_skill_rate(skill_id));
+        int skill_rate = 100;
+        if(m_caste){
+            skill_rate = m_caste->get_skill_rate(skill_id);
+        }
+        Skill s = Skill(skill_id, 0, -1, 0, skill_rate);
         s.get_balanced_level();
         m_skills.insert(skill_id,s);
         m_sorted_skills.insertMulti(s.capped_level_precise(), skill_id);
@@ -2103,8 +2103,8 @@ bool Dwarf::toggle_flag_bit(int bit) {
         //don't butcher if it's a pet, user will be notified via tooltip on column, same for non-butcherable
         if(!m_is_pet && m_caste->flags().has_flag(BUTCHERABLE))
             m_butcher^=mask;
-    }else
-        m_caged^=mask;
+    }
+
     return true;
 }
 

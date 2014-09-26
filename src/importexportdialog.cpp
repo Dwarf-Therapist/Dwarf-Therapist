@@ -56,6 +56,7 @@ static QString _get_dir(QStandardPaths::StandardLocation locationId)
 ImportExportDialog::ImportExportDialog(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::ImportExportDialog)
+    , m_mode(MODE_UNSET)
 {
     ui->setupUi(this);
     connect(ui->btn_select_none, SIGNAL(clicked()), SLOT(clear_selection()));

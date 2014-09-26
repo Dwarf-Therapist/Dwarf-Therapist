@@ -41,7 +41,7 @@ QSharedPointer<RoleStats> DwarfStats::m_roles;
 float DwarfStats::calc_att_potential_value(int value, float max, float cti){
     float potential_value = 0.0;
     float diff = max - value;
-    if(cti < 0)
+    if(cti <= 0)
         cti = 1.0;
     float gap = diff * 500 / cti;
 

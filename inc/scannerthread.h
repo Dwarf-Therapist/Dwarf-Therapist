@@ -44,8 +44,10 @@ class ScannerThread : public QThread {
 public:
     ScannerThread(QObject *parent = 0)
         : QThread(parent)
+        , m_type(FIND_NOTHING)
+        , m_job(0)
         , m_meta(QByteArray())
-        , m_result(NULL)
+        , m_result(0)
     {}
 
     void set_job(SCANNER_JOB_TYPE type) {

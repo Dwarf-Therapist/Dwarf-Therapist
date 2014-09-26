@@ -26,17 +26,17 @@ THE SOFTWARE.
 #include <QDialog>
 
 namespace Ui {
-	class ImportExportDialog;
+    class ImportExportDialog;
 }
 class CustomProfession;
 class GridView;
 class Role;
 
 class ImportExportDialog : public QDialog {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	ImportExportDialog(QWidget *parent = 0);
+    ImportExportDialog(QWidget *parent = 0);
     bool setup_for_profession_export();
     bool setup_for_profession_import();
 
@@ -46,40 +46,41 @@ public:
     bool setup_for_role_export();
     bool setup_for_role_import();
 
-	public slots:
-		void accept();
+    public slots:
+        void accept();
 
 private:
-	Ui::ImportExportDialog *ui;
+    Ui::ImportExportDialog *ui;
     QList<CustomProfession*> m_profs;
     QList<GridView*> m_views;
     QList<Role*> m_roles;
-	QString m_path;
+    QString m_path;
 
-	typedef enum {
-		MODE_IMPORT_PROFESSIONS,
-		MODE_EXPORT_PROFESSIONS,
-		MODE_IMPORT_GRIDVIEWS,
+    typedef enum {
+        MODE_UNSET,
+        MODE_IMPORT_PROFESSIONS,
+        MODE_EXPORT_PROFESSIONS,
+        MODE_IMPORT_GRIDVIEWS,
         MODE_EXPORT_GRIDVIEWS,
         MODE_IMPORT_ROLES,
         MODE_EXPORT_ROLES
-	} DIALOG_MODE;
+    } DIALOG_MODE;
 
-	DIALOG_MODE m_mode;
+    DIALOG_MODE m_mode;
 
     QList<CustomProfession*> get_profs();
     QList<GridView*> get_views();
     QList<Role*> get_roles();
-	
-	private slots:
-		void select_all();
-		void clear_selection();
+
+    private slots:
+        void select_all();
+        void clear_selection();
 
         void export_selected_professions();
-		void import_selected_professions();
+        void import_selected_professions();
 
-		void export_selected_gridviews();
-		void import_selected_gridviews();
+        void export_selected_gridviews();
+        void import_selected_gridviews();
 
         void export_selected_roles();
         void import_selected_roles();

@@ -56,7 +56,7 @@ public:
     VIRTADDR castes_vector() {return m_castes_vector;}
     Material *get_creature_material(int index);
     QHash<int, Material *> get_creature_materials();
-    Caste *get_caste_by_id(int id) const {return m_castes.value(id, 0);}
+    Caste *get_caste_by_id(int idx);
 
     void load_data();
     FlagArray flags() {return m_flags;}
@@ -78,7 +78,7 @@ private:
     QString m_baby_name_plural;
     QString m_child_name;
     QString m_child_name_plural;
-    QMap<int, Caste*> m_castes;
+    QList<Caste*> m_castes;
     QHash<int, Material*> m_creature_mats;
 
     VIRTADDR m_pref_string_vector;

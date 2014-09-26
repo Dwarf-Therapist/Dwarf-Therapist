@@ -30,6 +30,7 @@ THE SOFTWARE.
 ItemTypeColumn::ItemTypeColumn(const QString &title, const ITEM_TYPE &itype, ViewColumnSet *set, QObject *parent, COLUMN_TYPE cType)
     : ViewColumn(title, cType, set, parent)
     , m_iType(itype)
+    , m_sort_val(CST_DEFAULT)
 {
     if(title.isEmpty())
         m_title = Item::get_item_name_plural(m_iType);
@@ -37,13 +38,15 @@ ItemTypeColumn::ItemTypeColumn(const QString &title, const ITEM_TYPE &itype, Vie
 
 ItemTypeColumn::ItemTypeColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     : ViewColumn(s, set, parent)
+    , m_iType(static_cast<ITEM_TYPE>(s.value("item_type",NONE).toInt()))
+    , m_sort_val(CST_DEFAULT)
 {
-    m_iType = static_cast<ITEM_TYPE>(s.value("item_type",NONE).toInt());
 }
 
 ItemTypeColumn::ItemTypeColumn(const ItemTypeColumn &to_copy)
     : ViewColumn(to_copy)
     , m_iType(to_copy.m_iType)
+    , m_sort_val(to_copy.m_sort_val)
 {
 }
 

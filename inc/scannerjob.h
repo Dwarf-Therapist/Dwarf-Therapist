@@ -28,6 +28,7 @@ THE SOFTWARE.
 class DFInstance;
 
 typedef enum {
+    FIND_NOTHING,
     FIND_TRANSLATIONS_VECTOR,
     FIND_STONE_VECTOR,
     FIND_METAL_VECTOR,

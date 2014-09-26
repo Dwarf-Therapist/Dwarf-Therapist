@@ -24,11 +24,14 @@
 #endif
 
 //optimizereditor::optimizereditor(QString name, QWidget *parent) :
-optimizereditor::optimizereditor(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::optimizereditor),
-    m_optimizer(0),
-    is_editing(true)
+optimizereditor::optimizereditor(QWidget *parent)
+    : QDialog(parent)
+    , ui(new Ui::optimizereditor)
+    , m_optimizer(0)
+    , m_original_plan(0)
+    , m_plan(0)
+    , m_editing(true)
+    , m_loading(false)
 {
     ui->setupUi(this);
 
@@ -101,13 +104,13 @@ optimizereditor::optimizereditor(QWidget *parent) :
 }
 
 void optimizereditor::load_plan(QString name){
-    is_editing = true;
+    m_editing = true;
 
     m_original_plan = GameDataReader::ptr()->get_opt_plans().take(name);
     if(!m_original_plan){
         m_plan = new laborOptimizerPlan();
         m_plan->name = "New Plan";
-        is_editing = false;
+        m_editing = false;
     }else{
         m_plan = new laborOptimizerPlan(*m_original_plan);
     }
@@ -126,7 +129,7 @@ void optimizereditor::load_plan(QString name){
 
     find_target_population();
 
-    loading = true;
+    m_loading = true;
     foreach(PlanDetail *d, m_plan->plan_details){
         insert_row(d);
     }
@@ -134,7 +137,7 @@ void optimizereditor::load_plan(QString name){
     ui->tw_labors->resizeColumnsToContents();
     ui->tw_labors->resizeRowsToContents();
     ui->tw_labors->show();
-    loading = false;
+    m_loading = false;
 
     refresh_job_counts();
 
@@ -229,7 +232,7 @@ void optimizereditor::insert_row(PlanDetail *d){
     ui->tw_labors->setSortingEnabled(true);
 
     //refresh_all_counts();
-    if(!loading){
+    if(!m_loading){
         refresh_job_counts();
     }
 }
@@ -543,7 +546,7 @@ void optimizereditor::save_pressed(){
 
 void optimizereditor::cancel_pressed(){
     //if we were editing and cancelled, put the original back!
-    if(is_editing)
+    if(m_editing)
         GameDataReader::ptr()->get_opt_plans().insert(m_original_plan->name, m_original_plan);
     this->reject();
     delete m_plan;
@@ -585,7 +588,7 @@ void optimizereditor::import_details(){
      QString line;
      QStringList fields;
      bool check;
-     loading = true;
+     m_loading = true;
      while (!s.atEnd()) {
          linenum++;
          line = s.readLine();
@@ -663,7 +666,7 @@ void optimizereditor::import_details(){
          }
 
      }
-     loading = false;
+     m_loading = false;
      file.close();
      ui->tw_labors->hide();
      ui->tw_labors->resizeColumnsToContents();

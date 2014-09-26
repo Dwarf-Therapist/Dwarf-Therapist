@@ -45,9 +45,16 @@ After everything is optimized, any haulers are assigned with less than the speci
 
 LaborOptimizer::LaborOptimizer(laborOptimizerPlan *plan, QObject *parent)
     :QObject(parent)
-    , plan(plan)
+    , m_plan(plan)
+    , m_ratio_sum(0)
+    , m_total_jobs(0)
+    , m_raw_total_jobs(0)
+    , m_estimated_assigned_jobs(0)
+    , m_total_population(0)
+    , m_target_population(0)
+    , m_labors_exceed_pop(false)
 {
-    check_conflicts = DT->user_settings()->value("options/labor_exclusions",true).toBool();
+    m_check_conflicts = DT->user_settings()->value("options/labor_exclusions",true).toBool();
     gdr = GameDataReader::ptr();
 }
 
@@ -75,11 +82,11 @@ void LaborOptimizer::calc_population(bool load_labor_map){
             continue;
 
         //exclude nobles, hospitalized dwarfs, children, babies and militia
-        if(d->noble_position() != "" && plan->exclude_nobles){
+        if(d->noble_position() != "" && m_plan->exclude_nobles){
             m_current_message.append(QPair<int, QString> (d->id(), tr("(Noble) %1").arg(d->nice_name())));
             m_dwarfs.removeAt(i);
         }
-        else if(d->current_job_id() == 52 && plan->exclude_injured){
+        else if(d->current_job_id() == 52 && m_plan->exclude_injured){
             m_current_message.append(QPair<int, QString> (d->id(), tr("(Hospitalized) %1").arg(d->nice_name())));
             if(load_labor_map)
                 m_dwarfs.at(i)->clear_labors();
@@ -88,13 +95,13 @@ void LaborOptimizer::calc_population(bool load_labor_map){
         else if(d->is_baby()){
             m_dwarfs.removeAt(i);
         }
-        else if(d->active_military() && plan->exclude_military){
+        else if(d->active_military() && m_plan->exclude_military){
             m_current_message.append(QPair<int, QString> (d->id(), tr("(Active Duty) %1").arg(d->nice_name())));
             if(load_labor_map)
                 m_dwarfs.at(i)->clear_labors();
             m_dwarfs.removeAt(i);
         }
-        else if(d->squad_id() > -1 && plan->exclude_squads){
+        else if(d->squad_id() > -1 && m_plan->exclude_squads){
             m_current_message.append(QPair<int, QString> (d->id(), tr("(Squad) %1, %2").arg(d->nice_name()).arg(d->squad_name())));
             if(load_labor_map)
                 m_dwarfs.at(i)->clear_labors();
@@ -110,7 +117,7 @@ void LaborOptimizer::calc_population(bool load_labor_map){
                 //clear dwarf's existing labors
                 d->clear_labors();
                 d->optimized_labors = 0;
-                foreach(PlanDetail *det, plan->plan_details){
+                foreach(PlanDetail *det, m_plan->plan_details){
                     //skip labor with <= 0 priority/max workers
                     if(det->priority > 0 && det->ratio > 0){
                         dwarf_labor_map dlm;
@@ -131,7 +138,7 @@ void LaborOptimizer::calc_population(bool load_labor_map){
         }
     }
 
-    m_target_population = (plan->pop_percent/(float)100) * (float)m_total_population;
+    m_target_population = (m_plan->pop_percent/(float)100) * (float)m_total_population;
 
     if(m_current_message.count() > 0){
         m_current_message.push_front(QPair<int,QString>(0,tr("%1 worker%2 excluded from optimization.")
@@ -183,7 +190,7 @@ void LaborOptimizer::optimize(){
     foreach(dwarf_labor_map dlm, m_labor_map){
         l = gdr->get_labor(dlm.det->labor_id);
         //check conflicting labors
-        if (check_conflicts) {
+        if (m_check_conflicts) {
             has_conficting_labor = false;
             foreach(int excluded, l->get_excluded_labors()) {
                 if(dlm.d->labor_enabled(excluded)){
@@ -198,7 +205,7 @@ void LaborOptimizer::optimize(){
                 m_missing_roles.append(dlm.det->labor_id);
         }
         //dwarf has available labor slots? target laborers reached?
-        if(!has_conficting_labor && dlm.d->optimized_labors < plan->max_jobs_per_dwarf && dlm.det->assigned_laborers < dlm.det->max_count){
+        if(!has_conficting_labor && dlm.d->optimized_labors < m_plan->max_jobs_per_dwarf && dlm.det->assigned_laborers < dlm.det->max_count){
 
             LOGD << "Job:" << GameDataReader::ptr()->get_labor(dlm.det->labor_id)->name << " Role:" << dlm.det->role_name << " Dwarf:" << dlm.d->nice_name()
                  << " Rating:" << dlm.rating << " Raw Rating:" << dlm.d->get_raw_role_rating(dlm.det->role_name);
@@ -208,8 +215,8 @@ void LaborOptimizer::optimize(){
             dlm.d->optimized_labors++;
         }
 
-        if(plan->auto_haulers){
-            if(dlm.d->optimized_labors >= roundf((float)plan->max_jobs_per_dwarf * (plan->hauler_percent/(float)100)))
+        if(m_plan->auto_haulers){
+            if(dlm.d->optimized_labors >= roundf((float)m_plan->max_jobs_per_dwarf * (m_plan->hauler_percent/(float)100)))
                 haulers.remove(dlm.d->id());
         }
     }
@@ -245,7 +252,7 @@ void LaborOptimizer::optimize(){
             skill_less_jobs.removeAt(i);
     }
 
-    if(plan->auto_haulers){
+    if(m_plan->auto_haulers){
         foreach(int id, haulers.uniqueKeys()){
             Dwarf *d = haulers.value(id);
             foreach(l, skill_less_jobs){
@@ -261,12 +268,12 @@ void LaborOptimizer::optimize(){
 void LaborOptimizer::update_ratios(){
     m_ratio_sum = 0;
     m_estimated_assigned_jobs = 0;
-    m_total_jobs = m_target_population * plan->max_jobs_per_dwarf;
+    m_total_jobs = m_target_population * m_plan->max_jobs_per_dwarf;
     m_raw_total_jobs = m_total_jobs;
 
     //get ratio sum
     int count = 0;
-    foreach(PlanDetail *det, plan->plan_details){
+    foreach(PlanDetail *det, m_plan->plan_details){
         det->max_count = 0;
         det->group_ratio = 0;
         det->assigned_laborers = 0;
@@ -276,44 +283,44 @@ void LaborOptimizer::update_ratios(){
         count++;
     }
 
-    labors_exceed_pop = false;
-    if(check_conflicts){
+    m_labors_exceed_pop = false;
+    if(m_check_conflicts){
         PlanDetail *temp;
-        foreach(PlanDetail *det, plan->plan_details){
+        foreach(PlanDetail *det, m_plan->plan_details){
             if(det->priority > 0 && det->ratio > 0 && det->group_ratio <= 0){
 
                 if(gdr->get_labor(det->labor_id)->get_excluded_labors().count() > 0){
                     //increase this labor's group ratio
                     det->group_ratio += det->ratio;
                     foreach(int id, gdr->get_labor(det->labor_id)->get_excluded_labors()){
-                        temp =  plan->job_exists(gdr->get_labor(id)->labor_id);
+                        temp =  m_plan->job_exists(gdr->get_labor(id)->labor_id);
                         if(temp)
                             det->group_ratio += temp->ratio;
                     }
                     //set all related labors to the ratio total we just calculated
                     foreach(int id, gdr->get_labor(det->labor_id)->get_excluded_labors()){
-                        temp =  plan->job_exists(gdr->get_labor(id)->labor_id);
+                        temp =  m_plan->job_exists(gdr->get_labor(id)->labor_id);
                         if(temp)
                             temp->group_ratio = det->group_ratio;
                     }
                     if(det->group_ratio / m_ratio_sum * m_total_jobs > m_total_population){
                         m_ratio_sum -= det->group_ratio;
-                        labors_exceed_pop = true;
+                        m_labors_exceed_pop = true;
                     }
                 }
             }
         }
-        if(labors_exceed_pop)
+        if(m_labors_exceed_pop)
             m_total_jobs -= m_total_population;
     }
 
 
     //if sum of job's coverage + conflicting job's coverage / total coverage > target population
     //job's max count = job's coverage / sum(job's coverage + conflicting coverages) * target population
-    foreach(PlanDetail *det, plan->plan_details){
+    foreach(PlanDetail *det, m_plan->plan_details){
         if(det->priority > 0 && det->ratio > 0){
             //det->max_count = roundf(m_pop_count * (plan->pop_percent/(float)100) * (det->max_laborers/(float)100));
-            if(det->group_ratio > 0 && labors_exceed_pop){
+            if(det->group_ratio > 0 && m_labors_exceed_pop){
                 det->max_count = roundf(det->ratio / det->group_ratio * m_total_population);
             }else{
                 det->max_count = roundf(det->ratio / m_ratio_sum * m_total_jobs);

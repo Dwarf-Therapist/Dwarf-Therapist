@@ -49,6 +49,7 @@ QColor DwarfDetailsWidget::color_mood_high = QColor(60, 148, 19, 255);
 DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
     , ui(new Ui::DwarfDetailsWidget)
+    , m_current_id(-1)
 {
     ui->setupUi(this);
 

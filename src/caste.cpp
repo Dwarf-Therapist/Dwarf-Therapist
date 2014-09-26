@@ -227,9 +227,10 @@ BodyPart* Caste::get_body_part(int body_part_id){
             BodyPart *bp = new BodyPart(m_df,m_race,m_body_parts_addr.at(body_part_id),body_part_id);
             m_body_parts.insert(body_part_id,bp);
         }
+        m_body_parts.insert(-1,new BodyPart());
         return m_body_parts.value(body_part_id);
     }else{
-        return new BodyPart();
+        return m_body_parts.value(-1);
     }
 }
 

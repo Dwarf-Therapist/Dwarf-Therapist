@@ -51,6 +51,8 @@ DwarfModel::DwarfModel(QObject *parent)
     , m_group_by(GB_NOTHING)
     , m_selected_col(-1)
     , m_gridview(0x0)
+    , m_total_row_count(0)
+    , m_clearing_data(false)
 {
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
     read_settings();
@@ -61,7 +63,7 @@ DwarfModel::~DwarfModel() {
 }
 
 void DwarfModel::clear_all(bool clr_pend) {
-    clearing_data = true;
+    m_clearing_data = true;
     if(clr_pend)
         clear_pending();
 
@@ -77,10 +79,10 @@ void DwarfModel::clear_all(bool clr_pend) {
         }
     }
 
-    total_row_count = 0;
+    m_total_row_count = 0;
     clear();
 
-    clearing_data = false;
+    m_clearing_data = false;
 }
 
 void DwarfModel::section_right_clicked(int col) {
@@ -221,7 +223,7 @@ void DwarfModel::build_rows() {
         }
     }
     clear();
-    total_row_count = 0;
+    m_total_row_count = 0;
 
     draw_headers();
 
@@ -492,7 +494,7 @@ void DwarfModel::build_row(const QString &key) {
     }
 
     if (agg_first_col) { // we have a parent, so we should draw an aggregate row
-        total_row_count += 1;
+        m_total_row_count += 1;
         foreach(ViewColumnSet *set, m_gridview->sets()) {
             foreach(ViewColumn *col, set->columns()) {
                 QStandardItem *item = col->build_aggregate(key, m_grouped_dwarves[key]);
@@ -613,7 +615,7 @@ void DwarfModel::build_row(const QString &key) {
             appendRow(items);
         }
         d->m_name_idx = indexFromItem(i_name);
-        total_row_count += 1;
+        m_total_row_count += 1;
     }
     if (agg_first_col) {
         appendRow(agg_items);

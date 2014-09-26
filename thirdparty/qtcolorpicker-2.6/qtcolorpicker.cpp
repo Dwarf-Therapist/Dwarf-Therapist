@@ -439,18 +439,19 @@ void QtColorPicker::setCurrentColor(const QColor &color)
     if (!item) {
         insertColor(color, tr("Custom HEX #%1").arg(to_hex(color)));
         item = popup->find(color);
+        if (item) {
+            col = color;
+            setText(item->text());
+
+            dirty = true;
+
+            popup->hide();
+            repaint();
+
+            item->setSelected(true);
+            emit colorChanged(color);
+        }
     }
-
-    col = color;
-    setText(item->text());
-
-    dirty = true;
-
-    popup->hide();
-    repaint();
-
-    item->setSelected(true);
-    emit colorChanged(color);
 }
 
 /*!

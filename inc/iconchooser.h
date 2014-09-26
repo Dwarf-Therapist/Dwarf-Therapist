@@ -3,7 +3,6 @@
 
 #include <QDialog>
 #include <QStandardItemModel>
-#include <QFutureWatcher>
 #include <QListView>
 
 class IconChooser : public QDialog
@@ -11,7 +10,7 @@ class IconChooser : public QDialog
     Q_OBJECT
 
 public:
-    explicit IconChooser(QWidget *parent = 0);//QStringList imageNamesList, QWidget *parent = 0);
+    explicit IconChooser(QWidget *parent = 0);
     ~IconChooser();
 
     int selected_id;
@@ -23,9 +22,8 @@ public Q_SLOTS:
 
 private:
     QStringList m_imageNamesList;
-    QFutureWatcher<QImage>*     m_imageScaler;
-    QListView*                  m_imageListView;
-    QStandardItemModel*         m_standardModel;
+    QListView* m_imageListView;
+    QStandardItemModel* m_standardModel;
 };
 
 #endif // ICONCHOOSER_H

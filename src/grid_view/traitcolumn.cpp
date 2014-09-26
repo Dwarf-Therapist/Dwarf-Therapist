@@ -58,23 +58,29 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
 
     short raw_value = d->trait(m_trait_id);
     QStringList infos;
-    if (m_trait)
+    if (m_trait){
         infos << m_trait->level_message(raw_value).append(m_trait->belief_conficts_msgs(raw_value,d->trait_conflicts(m_trait_id)));
+    }else{
+        infos << tr("Unknown trait");
+    }
 
     if (d->trait_is_active(m_trait_id)==false)
         infos << tr("Not an active trait for this dwarf.");
 
-    infos << m_trait->skill_conflicts_msgs(raw_value);
-    infos << m_trait->special_messages(raw_value);
+    int conflicting_belief_count = 0;
+    if (m_trait){
+        infos << m_trait->skill_conflicts_msgs(raw_value);
+        infos << m_trait->special_messages(raw_value);
 
-    int conflicting_belief_count = m_trait->get_conflicting_beliefs().count();
-    if(conflicting_belief_count > 0){
-        infos << tr("<br/>This trait can conflict with %1").arg(m_trait->belief_conflicts_names());
+        conflicting_belief_count = m_trait->get_conflicting_beliefs().count();
+        if(conflicting_belief_count > 0){
+            infos << tr("<br/>This trait can conflict with %1").arg(m_trait->belief_conflicts_names());
+        }
     }
 
     infos.removeAll("");
 
-    if(d->trait_is_conflicted(m_trait_id)){
+    if(d->trait_is_conflicted(m_trait_id) && conflicting_belief_count > 0){
         int alpha = 255 * ((float)d->trait_conflicts(m_trait_id).count() / (float)conflicting_belief_count);
         item->setData(alpha, DwarfModel::DR_SPECIAL_FLAG);
     }

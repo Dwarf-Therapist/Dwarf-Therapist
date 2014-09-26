@@ -2,6 +2,7 @@
 #define HEALTHINFO_H
 
 #include "utils.h"
+#include "global_enums.h"
 #include <QObject>
 #include <QString>
 #include <QColor>
@@ -17,13 +18,14 @@ public:
          m_symbol = "???";
          m_color_name = "#FF0000";
          m_severity = 99;
+         m_cat_id = eHealth::HI_UNK;
     }
 
     void set_description(QString desc) {m_description = desc;}
-    void set_symbol(QString sym) {m_symbol = sym;}    
+    void set_symbol(QString sym) {m_symbol = sym;}
     void set_color(QString c) {m_color_name = c;}
     void set_severity(int s) {m_severity = s;}
-    void set_category(int id) {m_cat_id = id;}
+    void set_category(eHealth::H_INFO id) {m_cat_id = id;}
     void set_type(quint32 val) {m_type_flags = val;}
 
     QString formatted_value(bool colored, bool symbol){
@@ -55,7 +57,7 @@ public:
         return m_severity;
     }
 
-    int h_category(){
+    eHealth::H_INFO h_category(){
         return m_cat_id;
     }
 
@@ -87,7 +89,7 @@ private:
     QString m_color_name;
     int m_severity; //lower is more severe
     quint32 m_type_flags;
-    int m_cat_id; //eHealth::H_INFO enum
+    eHealth::H_INFO m_cat_id;
 };
 
 #endif // HEALTHINFO_H

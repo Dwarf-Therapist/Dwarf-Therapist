@@ -54,7 +54,7 @@ HealthLegendDock::HealthLegendDock(QWidget *parent, Qt::WindowFlags flags)
 
 
     legend->setSortingEnabled(false);
-    foreach(HealthCategory *hc, UnitHealth::get_display_categories()){
+    foreach(HealthCategory *hc, UnitHealth::get_display_categories().values()){
         QString name = hc->name();
 
         QTreeWidgetItem* parent_node = new QTreeWidgetItem();

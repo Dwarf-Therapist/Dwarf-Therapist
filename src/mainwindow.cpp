@@ -1260,7 +1260,7 @@ void MainWindow::print_gridview() {
     w += 2;
 
     //calculate the height
-    h = (s->get_model()->total_row_count * actual_cell_size) + s->get_header()->height();
+    h = (s->get_model()->total_row_count() * actual_cell_size) + s->get_header()->height();
     h += (this->height() - s->height());
     h += 2; //small buffer for the edge
 

@@ -132,8 +132,8 @@ public:
     QList<Squad *> active_squads();
     Squad* get_squad(int id);
 
-    int total_row_count;
-    bool clearing_data;
+    int total_row_count(){return m_total_row_count;}
+    bool clearing_data(){return m_clearing_data;}
 
 public slots:
     void draw_headers();
@@ -159,6 +159,8 @@ private:
     GROUP_BY m_group_by;
     int m_selected_col;
     GridView *m_gridview;
+    int m_total_row_count;
+    bool m_clearing_data;
 
     //options
     QFont m_font;

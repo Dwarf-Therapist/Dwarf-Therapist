@@ -71,7 +71,10 @@ GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent
     , m_is_editing(false)
     , m_set_model(new QStandardItemModel)
     , m_col_model(new QStandardItemModel)
-    , m_active_set(NULL)
+    , m_temp_set(-1)
+    , m_temp_col(-1)
+    , m_active_set(0)
+    , m_cmh(0)
 {
     ui->setupUi(this);
     ui->list_sets->setModel(m_set_model);
@@ -403,8 +406,8 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     //HEALTH
     QMenu *m_health = m_cmh->create_title_menu(m,tr("Health Column"),tr("Health columns will show various information about status, treatment and wounds."));
     m_cmh->add_sub_menus(m_health,4);
-    QList<QPair<int,QString> > cat_names = UnitHealth::ordered_category_names();
-    QPair<int,QString> health_pair;
+    QList<QPair<eHealth::H_INFO,QString> > cat_names = UnitHealth::ordered_category_names();
+    QPair<eHealth::H_INFO,QString> health_pair;
     foreach(health_pair, cat_names){
         QString name = health_pair.second;
         QMenu *menu_to_use = m_cmh->find_menu(m_health,name);
@@ -688,7 +691,7 @@ void GridViewDialog::add_health_column(){
     if(!m_active_set)
         return;
     QAction *a = qobject_cast<QAction*>(QObject::sender());
-    int key = a->data().toInt();
+    eHealth::H_INFO key = static_cast<eHealth::H_INFO>(a->data().toInt());
     new HealthColumn(UnitHealth::get_display_categories().value(key)->name(),key,m_active_set,m_active_set);
     draw_columns_for_set(m_active_set);
 }

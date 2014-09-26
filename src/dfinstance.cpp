@@ -259,9 +259,11 @@ QVector<VIRTADDR> DFInstance::scan_mem(const QByteArray &needle, const uint star
         total_bytes += seg->size;
     }
     int report_every_n_bytes = total_bytes / 1000;
+    if(report_every_n_bytes <= 0)
+        report_every_n_bytes = 1;
+
     emit scan_total_steps(1000);
     emit scan_progress(0);
-
 
     m_stop_scan = false;
     QVector<VIRTADDR> addresses; //! return value
@@ -1249,6 +1251,9 @@ QVector<VIRTADDR> DFInstance::find_vectors(int num_entries, int fuzz/* =0 */,
         total_bytes += seg->size;
     }
     int report_every_n_bytes = total_bytes / 1000;
+    if(report_every_n_bytes <= 0)
+        report_every_n_bytes = 1;
+
     emit scan_total_steps(1000);
     emit scan_progress(0);
 
@@ -1344,6 +1349,9 @@ QVector<VIRTADDR> DFInstance::find_vectors_ext(int num_entries, const char op,
         total_bytes += seg->size;
     }
     int report_every_n_bytes = total_bytes / 1000;
+    if(report_every_n_bytes <= 0)
+        report_every_n_bytes = 1;
+
     emit scan_total_steps(1000);
     emit scan_progress(0);
 

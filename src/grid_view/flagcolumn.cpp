@@ -67,7 +67,7 @@ QStandardItem *FlagColumn::build_cell(Dwarf *d) {
             if(d->is_pet()){
                 item->setToolTip(tr("<b>Pets cannot be butchered!</b>"));
                 disabled = true;
-            }else if(!d->get_caste()->flags().has_flag(BUTCHERABLE)){
+            }else if(!d->get_caste() || !d->get_caste()->flags().has_flag(BUTCHERABLE)){
                 item->setToolTip(tr("<b>This creature cannot be butchered!</b>"));
                 disabled = true;
             }

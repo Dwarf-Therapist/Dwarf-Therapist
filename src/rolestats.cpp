@@ -55,11 +55,10 @@ void RoleStats::init_list(){
     m_upper_raw_min = -1;
     m_transformations.clear();
 
-    if(m_upper == 0)
+    if(m_upper == 0){
         m_upper = QSharedPointer<ECDF>(new ECDF());
-    else
-    {
-    QSharedPointer<ECDF> new_ptr(new ECDF());
+    }else{
+        QSharedPointer<ECDF> new_ptr(new ECDF());
         m_upper.swap(new_ptr);
     }
 

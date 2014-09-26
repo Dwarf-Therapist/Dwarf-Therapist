@@ -1035,11 +1035,11 @@ void StateTableView::restore_scroll_positions(){
 //additionally when the model clears data after a read, it will reset the scroll positions
 
 void StateTableView::vscroll_value_changed(int value){
-    if(!is_loading_rows && is_active && m_model != 0 && !m_model->clearing_data)
+    if(!is_loading_rows && is_active && m_model != 0 && !m_model->clearing_data())
         m_vscroll = value;
 }
 void StateTableView::hscroll_value_changed(int value){
-    if(!is_loading_rows && is_active && m_model != 0 && !m_model->clearing_data)
+    if(!is_loading_rows && is_active && m_model != 0 && !m_model->clearing_data())
         m_hscroll = value;
 }
 

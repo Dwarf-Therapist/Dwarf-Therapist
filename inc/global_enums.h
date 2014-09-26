@@ -373,6 +373,7 @@ typedef enum {
 namespace eHealth
 {
 typedef enum  {
+    HI_UNK = -1,
     HI_DIAGNOSIS = 0, //diagnosis and recovery
     HI_BLEEDING = 1,
     HI_BLOOD_LOSS = 2,

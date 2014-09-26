@@ -45,13 +45,10 @@ public slots:
 
 private:
     Ui::DwarfDetailsWidget *ui;
-    QGridLayout *m_skills_layout;
-//    QVector<QObject*> m_cleanup_list;
     QVector<QTableWidget*> m_tables;
     QByteArray m_splitter_sizes;
 
     QList<QPair<int,Qt::SortOrder> > m_sorting;
-
     int m_current_id;
 
     void clear_table(QTableWidget &t);
@@ -64,7 +61,6 @@ private:
     static QColor color_high;
     static QColor color_mood_high;
     static QColor color_mood_had;
-
 };
 
 #endif

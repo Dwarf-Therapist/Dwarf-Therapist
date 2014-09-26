@@ -31,17 +31,19 @@ THE SOFTWARE.
 class ItemArmorSubtype : public QObject {
     Q_OBJECT
 public:
-    ItemArmorSubtype(DFInstance *df, VIRTADDR address, QObject *parent = 0)
+    ItemArmorSubtype(ITEM_TYPE itype, DFInstance *df, VIRTADDR address, QObject *parent = 0)
         : QObject(parent)
         , m_address(address)
         , m_df(df)
         , m_mem(df->memory_layout())
+        , m_iType(itype)
     {
         read_names();
+        read_properties();
     }
 
-    static ItemArmorSubtype* get_armor(DFInstance *df, const VIRTADDR &address, QObject *parent = 0){
-        return new ItemArmorSubtype(df,address,parent);
+    static ItemArmorSubtype* get_armor(ITEM_TYPE itype, DFInstance *df, const VIRTADDR &address, QObject *parent = 0){
+        return new ItemArmorSubtype(itype,df,address,parent);
     }
 
     virtual ~ItemArmorSubtype(){
@@ -77,11 +79,6 @@ public:
         default:
             return "";
         }
-    }
-
-    void set_item_type(ITEM_TYPE i_type){
-        m_iType=i_type;
-        read_properties();
     }
 
 private:

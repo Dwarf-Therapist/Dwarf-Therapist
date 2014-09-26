@@ -25,8 +25,8 @@ THE SOFTWARE.
 
 #include "truncatingfilelogger.h"
 #include "utils.h"
-
 #include "healthinfo.h"
+#include "flagarray.h"
 
 class MemoryLayout;
 class DFInstance;
@@ -36,7 +36,7 @@ class UnitWound
 {
 public:
     UnitWound();
-    UnitWound(DFInstance *df, VIRTADDR base_addr, Dwarf *d, UnitHealth *uh);
+    UnitWound(DFInstance *df, VIRTADDR base_addr, FlagArray caste_flags, UnitHealth *uh);
     UnitWound(DFInstance *df, int body_part_id, UnitHealth *uh);
     virtual ~UnitWound();
 
@@ -85,8 +85,8 @@ public:
 private:
     DFInstance *m_df;
     VIRTADDR m_addr;
-    Dwarf *m_dwarf;
     UnitHealth *m_unitHealth;
+    FlagArray m_caste_flags;
 
 protected:
     bool m_severed, m_mortal, m_stuck, m_diagnosed, m_sutured, m_infection;
@@ -96,7 +96,7 @@ protected:
     //list of health info by body part
     QHash<QString,QList<HealthInfo*> > m_bp_info;
 
-    void read_wound();    
+    void read_wound();
     void add_detail(wounded_part_details &wpd, eHealth::H_INFO id, bool idx0, bool idx1 = false, bool idx2 = false);
     bool m_is_critical;
 };

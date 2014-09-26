@@ -42,14 +42,11 @@ IconChooser::IconChooser(QWidget *parent)
 
 IconChooser::~IconChooser()
 {
-    m_imageScaler->cancel();
-    m_imageScaler->waitForFinished();
 }
 
 void IconChooser::showImage(int num)
 {
     QStandardItem* imageitem = new QStandardItem();
-    //imageitem->setIcon(QIcon(QPixmap::fromImage(m_imageScaler->resultAt(num))));
     QString icn_path = ":/profession/prof_" + QString::number(num) + ".png";
     imageitem->setIcon(QIcon(icn_path));
     imageitem->setData(num,Qt::UserRole);
@@ -62,11 +59,6 @@ void IconChooser::finished()
 
 void IconChooser::imageClicked(QModelIndex index)
 {
-//    if(index.row() < m_imageNamesList.count()) {
-//        qDebug() << "image selected " << m_imageNamesList.at(index.row());
-
-//        close();
-//    }
     if(index.row() < m_standardModel->rowCount()){
         QStandardItem *i = m_standardModel->itemFromIndex(index);
         selected_id = i->data(Qt::UserRole).toInt();

@@ -36,12 +36,12 @@ class laborOptimizerPlan;
 class LaborOptimizer : public QObject {
     Q_OBJECT
 public:
-    LaborOptimizer(laborOptimizerPlan *plan, QObject *parent=0);
+    LaborOptimizer(laborOptimizerPlan *m_plan, QObject *parent=0);
     virtual ~LaborOptimizer();
 
     void optimize_labors(QList<Dwarf*> dwarfs);
 
-    void update_population(QList<Dwarf*>);    
+    void update_population(QList<Dwarf*>);
     void update_ratios();
 
     //getters
@@ -58,22 +58,22 @@ signals:
 
 protected:
     GameDataReader *gdr;
-    laborOptimizerPlan *plan;
+    laborOptimizerPlan *m_plan;
     QList<Dwarf*> m_dwarfs;
     float m_ratio_sum;
 
     float m_total_jobs;
     int m_raw_total_jobs;
-    int m_estimated_assigned_jobs;    
+    int m_estimated_assigned_jobs;
     int m_total_population; //total selected dwarves - excluded dwarves
     float m_target_population; //m_total_population * % population to use
 
-    bool labors_exceed_pop;
-    bool check_conflicts;
+    bool m_labors_exceed_pop;
+    bool m_check_conflicts;
 
     struct dwarf_labor_map{
         float rating;
-        Dwarf * d;        
+        Dwarf * d;
         PlanDetail *det;
     };
 
@@ -101,7 +101,7 @@ protected:
     QVector<dwarf_labor_map> m_labor_map;
     QVector<QPair<int, QString> > m_current_message;
 
-    void optimize();    
+    void optimize();
 };
 
 #endif // LABOROPTIMIZER_H
