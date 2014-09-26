@@ -31,7 +31,6 @@ class Dwarf;
 class Labor;
 class GameDataReader;
 class laborOptimizerPlan;
-//class PlanDetail;
 
 class LaborOptimizer : public QObject {
     Q_OBJECT
