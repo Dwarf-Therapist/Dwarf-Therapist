@@ -147,35 +147,34 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
     LOGI << "attempting to find running copy of DF by window handle";
     m_is_ok = false;
 
-    HWND hwnd = FindWindow(L"OpenGL", L"Dwarf Fortress");
-    if (!hwnd)
-        hwnd = FindWindow(L"SDL_app", L"Dwarf Fortress");
-    if (!hwnd)
-        hwnd = FindWindow(NULL, L"Dwarf Fortress");
+    m_hwnd = FindWindow(L"OpenGL", L"Dwarf Fortress");
+    if (!m_hwnd)
+        m_hwnd = FindWindow(L"SDL_app", L"Dwarf Fortress");
+    if (!m_hwnd)
+        m_hwnd = FindWindow(NULL, L"Dwarf Fortress");
 
-    if (!hwnd) {
+    if (!m_hwnd) {
         QMessageBox::warning(0, tr("Warning"),
             tr("Unable to locate a running copy of Dwarf "
             "Fortress, are you sure it's running?"));
         LOGW << "can't find running copy";
         return m_is_ok;
     }
-    LOGI << "found copy with HWND: " << hwnd;
+    LOGI << "found copy with HWND: " << m_hwnd;
 
     DWORD pid = 0;
-    GetWindowThreadProcessId(hwnd, &pid);
+    GetWindowThreadProcessId(m_hwnd, &pid);
     if (pid == 0) {
         return m_is_ok;
     }
     LOGI << "PID of process is: " << pid;
-    m_hwnd = hwnd;
 
     m_proc = OpenProcess(PROCESS_QUERY_INFORMATION
-                         | PROCESS_VM_READ
                          | PROCESS_VM_OPERATION
+                         | PROCESS_VM_READ
                          | PROCESS_VM_WRITE, false, pid);
     LOGI << "PROC HANDLE:" << m_proc;
-    if (m_proc == NULL) {
+    if (!m_proc) {
         LOGE << "Error opening process!" << get_last_error();
     }
 
@@ -199,17 +198,14 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
             if(m_pe_header.Signature != IMAGE_NT_SIGNATURE){
                 qWarning() << "unsupported PE header type";
             }
-            m_is_ok = true;
+            m_layout = get_memory_layout(calculate_checksum(), !connect_anyway);
+            LOGI << "RAW BASE ADDRESS:" << base_addr;
+            m_layout->set_base_address(base_addr - 0x00400000);
         }
         CloseHandle(snapshot);     // Must clean up the snapshot object!
     }
 
-    if (m_is_ok){
-        m_layout = get_memory_layout(calculate_checksum(), !connect_anyway);
-        //pass the imagebase address - the default windows linker address to the memory layout
-        //for use with global addresses (anyting in the [addresses] section of the layout file
-        m_layout->set_base_address(m_pe_header.OptionalHeader.ImageBase - 0x00400000);
-    } else {
+    if (!m_is_ok) {
         if(connect_anyway)
             m_is_ok = true;
         else // time to bail
@@ -251,67 +247,37 @@ void DFInstanceWindows::map_virtual_memory() {
     if (!m_is_ok)
         return;
 
-    // start by figuring out what kernel we're talking to
     TRACE << "Mapping out virtual memory";
-    SYSTEM_INFO info;
-    GetSystemInfo(&info);
-    TRACE << "PROCESSORS:" << info.dwNumberOfProcessors;
-    TRACE << "PROC TYPE:" << info.wProcessorArchitecture <<
-            info.wProcessorLevel <<
-            info.wProcessorRevision;
-    TRACE << "PAGE SIZE" << info.dwPageSize;
 
-    long start = (intptr_t)info.lpMinimumApplicationAddress;
-    long max_address = (intptr_t)info.lpMaximumApplicationAddress;
-    TRACE << "MIN ADDRESS:" << hexify(start);
-    TRACE << "MAX ADDRESS:" << hexify(max_address);
-
-    int page_size = info.dwPageSize;
     int accepted = 0;
     int rejected = 0;
-    VIRTADDR segment_start = start;
-    USIZE segment_size = page_size;
-    while (start < max_address) {
-        MEMORY_BASIC_INFORMATION mbi;
-        int sz = VirtualQueryEx(m_proc, reinterpret_cast<LPCVOID>(start), &mbi,
-                                sizeof(MEMORY_BASIC_INFORMATION));
-        if (sz != sizeof(MEMORY_BASIC_INFORMATION)) {
-            // incomplete data returned. increment start and move on...
-            start += page_size;
-            continue;
-        }
-
-        segment_start = (intptr_t)mbi.BaseAddress;
-        segment_size = (USIZE)mbi.RegionSize;
-        if (mbi.State == MEM_COMMIT
-            //&& !(mbi.Protect & PAGE_GUARD)
-            && (mbi.Protect & PAGE_EXECUTE_READ ||
-                mbi.Protect & PAGE_EXECUTE_READWRITE ||
-                mbi.Protect & PAGE_READONLY ||
-                mbi.Protect & PAGE_READWRITE ||
-                mbi.Protect & PAGE_WRITECOPY)
-            ) {
+    MEMORY_BASIC_INFORMATION info;
+    for (VIRTADDR p = 0
+         ; VirtualQueryEx(m_proc, reinterpret_cast<LPCVOID>(p)
+                          , &info, sizeof(info)) == sizeof(info)
+         ; p += info.RegionSize) {
+        VIRTADDR segment_start = (intptr_t)info.BaseAddress;
+        USIZE segment_size = (USIZE)info.RegionSize;
+        if (info.State == MEM_COMMIT
+            && info.Protect & (PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE
+                               | PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY)) {
             TRACE << "FOUND READABLE COMMITED MEMORY SEGMENT FROM" <<
                     hexify(segment_start) << "-" <<
                     hexify(segment_start + segment_size) <<
                     "SIZE:" << (segment_size / 1024.0f) << "KB" <<
-                    "FLAGS:" << mbi.Protect;
+                    "FLAGS:" << info.Protect;
             MemorySegment *segment = new MemorySegment("", segment_start,
                                                        segment_start
                                                        + segment_size);
-            segment->is_guarded = mbi.Protect & PAGE_GUARD;
+            segment->is_guarded = info.Protect & PAGE_GUARD;
             m_regions << segment;
             accepted++;
         } else {
             TRACE << "REJECTING MEMORY SEGMENT AT" << hexify(segment_start) <<
                      "SIZE:" << (segment_size / 1024.0f) << "KB FLAGS:" <<
-                     mbi.Protect;
+                     info.Protect;
             rejected++;
         }
-        if (mbi.RegionSize)
-            start += mbi.RegionSize;
-        else
-            start += page_size;
     }
     m_lowest_address = 0xFFFFFFFF;
     m_highest_address = 0;

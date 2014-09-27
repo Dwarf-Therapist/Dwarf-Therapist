@@ -75,13 +75,10 @@ public:
         return (this->m_description == other.m_description && this->m_type_flags == other.m_type_flags);
     }
 
-    struct less_than_severity
+    static bool less_than_severity(const HealthInfo *h1, const HealthInfo *h2)
     {
-        bool operator() (const HealthInfo* h1, const HealthInfo* h2) const
-        {
-            return (h1->m_severity < h2->m_severity);
-        }
-    };
+        return h1->m_severity < h2->m_severity;
+    }
 
 private:
     QString m_description;

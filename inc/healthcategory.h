@@ -62,7 +62,7 @@ public:
         }
 
         if(requireSort)
-            std::sort(m_descriptors.begin(), m_descriptors.end(), HealthInfo::less_than_severity());
+            qSort(m_descriptors.begin(), m_descriptors.end(), HealthInfo::less_than_severity);
 
         m_color = QColor(m_color_name);
     }

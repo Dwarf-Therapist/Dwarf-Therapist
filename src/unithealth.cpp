@@ -50,22 +50,13 @@ UnitHealth::UnitHealth(DFInstance *df, Dwarf *d, bool req_diagnosis)
         read_health_info();
         read_wounds();
 
+        read_health_info();
+        read_wounds();
+
         //sort everything by severity
-        foreach(eHealth::H_INFO key, m_status_info.uniqueKeys()){
-            QList<HealthInfo*> list = m_status_info.take(key);
-            std::sort(list.begin(),list.end(),HealthInfo::less_than_severity());
-            m_status_info.insert(key,list);
-        }
-        foreach(eHealth::H_INFO key, m_treatment_info.uniqueKeys()){
-            QList<HealthInfo*> list = m_treatment_info.take(key);
-            std::sort(list.begin(),list.end(),HealthInfo::less_than_severity());
-            m_treatment_info.insert(key,list);
-        }
-        foreach(eHealth::H_INFO key, m_wounds_info.uniqueKeys()){
-            QList<HealthInfo*> list = m_wounds_info.take(key);
-            std::sort(list.begin(),list.end(),HealthInfo::less_than_severity());
-            m_wounds_info.insert(key,list);
-        }
+        sort_severity(m_status_info);
+        sort_severity(m_treatment_info);
+        sort_severity(m_wounds_info);
     }else{
         LOGW << "skipping health read due to invalid unit";
     }
@@ -84,6 +75,13 @@ UnitHealth::~UnitHealth(){
 
     m_df = 0;
     m_dwarf = 0;
+}
+
+void UnitHealth::sort_severity(QHash<eHealth::H_INFO, QList<HealthInfo*> > &hash) {
+    foreach(const eHealth::H_INFO &info, hash.keys()){
+        QList<HealthInfo*> &list = hash[info];
+        qSort(list.begin(), list.end(), HealthInfo::less_than_severity);
+    }
 }
 
 void UnitHealth::add_info(eHealth::H_INFO id, bool idx0, bool idx1, bool idx2, bool idx3){

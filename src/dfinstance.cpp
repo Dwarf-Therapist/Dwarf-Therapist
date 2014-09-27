@@ -1060,6 +1060,7 @@ QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
 }
 
 bool DFInstance::is_valid_address(const VIRTADDR &addr) {
+    return true;
     bool valid = false;
     foreach(MemorySegment *seg, m_regions) {
         if (seg->contains(addr)) {

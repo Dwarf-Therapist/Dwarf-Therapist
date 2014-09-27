@@ -42,9 +42,10 @@ class UnitHealth
 public:
     UnitHealth();
     UnitHealth(DFInstance *df, Dwarf *d, bool req_diagnosis);
-    virtual ~UnitHealth();
+    ~UnitHealth();
     static void cleanup();
 
+    void sort_severity(QHash<eHealth::H_INFO, QList<HealthInfo*> > &hash);
     static QStringList get_all_category_desc(eHealth::H_INFO hs, bool symbol_only = false, bool colored = true);
 
     HealthInfo *get_health_info(eHealth::H_INFO hs, short idx = 0);
