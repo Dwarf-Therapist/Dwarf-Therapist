@@ -208,8 +208,8 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     TRACE << "FLAGS3 :" << hexify(flags3);
     TRACE << "RACE   :" << hexify(race_id);
 
-    bool is_caged = has_flag(0x2000000,flags1);
-    bool is_tame = has_flag(0x4000000,flags1);
+    bool is_caged = flags1 & 0x2000000;
+    bool is_tame = flags1 & 0x4000000;
 
     if(!is_caged){
         if(civ_id != df->dwarf_civ_id()){ //non-animal, but wrong civ
@@ -242,7 +242,7 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
 bool Dwarf::has_invalid_flags(const QString creature_name, QHash<uint, QString> invalid_flags, quint32 dwarf_flags){
     foreach(uint invalid_flag, invalid_flags.uniqueKeys()) {
         QString reason = invalid_flags[invalid_flag];
-        if(has_flag(invalid_flag,dwarf_flags)) {
+        if(dwarf_flags & invalid_flag) {
             LOGI << "Ignoring" << creature_name << "who appears to be" << reason;
             return true;
         }
@@ -372,9 +372,9 @@ bool Dwarf::is_valid(){
 
             //check for migrants (which aren't dead/killed/ghosts)
             if(this->state_value(7) > 0
-                    && !has_flag(0x2,m_unit_flags.at(0))
-                    && !has_flag(0x80,m_unit_flags.at(1))
-                    && !has_flag(0x1000,m_unit_flags.at(2))){
+                    && !(m_unit_flags.at(0) & 0x2)
+                    && !(m_unit_flags.at(1) & 0x80)
+                    && !(m_unit_flags.at(2) & 0x1000)){
                 LOGI << "Found migrant " << this->nice_name();
                 m_validated = true;
                 m_is_valid = true;
@@ -391,7 +391,7 @@ bool Dwarf::is_valid(){
             }
 
             //check opposed to life
-            if(has_flag(eCurse::OPPOSED_TO_LIFE,m_curse_flags)){
+            if(m_curse_flags & eCurse::OPPOSED_TO_LIFE){
                 LOGI << "Ignoring " << this->nice_name() << " who appears to be a hostile undead!";
                 m_validated = true;
                 m_is_valid = false;
@@ -399,9 +399,7 @@ bool Dwarf::is_valid(){
             }
 
         }else{ //tame or caged animals
-            bool is_caged = has_flag(0x2000000,m_unit_flags.at(0));
-            bool is_tame = has_flag(0x4000000,m_unit_flags.at(0));
-            if(is_caged || is_tame){
+            if (m_unit_flags.at(0) & 0x6000000) {
                 //exclude cursed animals, this may be unnecessary with the civ check
                 //the full curse information hasn't been loaded yet, so just read the curse name
                 QString curse_name = m_df->read_string(m_address + m_mem->dwarf_offset("curse"));
@@ -526,10 +524,10 @@ void Dwarf::read_gender_orientation() {
     int orient_offset = m_mem->soul_detail("orientation");
     if(m_gender_info.gender != SEX_UNK && m_first_soul && orient_offset != -1){
         quint32 orientation = m_df->read_addr(m_first_soul + orient_offset);
-        m_gender_info.male_interest = has_flag(0x0002,orientation);
-        m_gender_info.male_commit = has_flag(0x0004,orientation);
-        m_gender_info.female_interest = has_flag(0x0008, orientation);
-        m_gender_info.female_commit = has_flag(0x0010, orientation);
+        m_gender_info.male_interest = orientation & (1 << 1);
+        m_gender_info.male_commit = orientation & (1 << 2);
+        m_gender_info.female_interest = orientation & (1 << 3);
+        m_gender_info.female_commit = orientation & (1 << 4);
 
         //check the commitment/breed bits first. this determines animal breeding, and will override the interest bit, seemingly
         //for example, a male dwarf, with interest in males and commitment to females will marry a female
@@ -571,7 +569,7 @@ void Dwarf::read_mood(){
 
     if(m_mood_id < 0){
         //also mark if they've had a mood, if they're not IN a mood
-        if(has_flag(0x00000008,m_unit_flags.at(0))){
+        if(m_unit_flags.at(0) & 0x8){
             m_had_mood = true;
             m_artifact_name = m_df->get_translated_word(m_address + m_mem->dwarf_offset("artifact_name"));
             m_highest_moodable_skill = m_df->read_short(m_address +m_mem->dwarf_offset("mood_skill"));
@@ -645,7 +643,7 @@ void Dwarf::read_curse(){
         //want to be aware of for the purpose of highlighting them
 
         //TODO: check for removed flags as well
-        if(has_flag(eCurse::BLOODSUCKER, m_curse_flags)){ //if(!has_flag(eCurse::BLOODSUCKER, m_curse_rem_flags) && has_flag(eCurse::BLOODSUCKER,m_curse_flags)){
+        if(m_curse_flags & eCurse::BLOODSUCKER){ //if(!has_flag(eCurse::BLOODSUCKER, m_curse_rem_flags) && has_flag(eCurse::BLOODSUCKER,m_curse_flags)){
             //if it's a vampire then find the vampire's fake identity and use that name/age instead to match DF
             find_true_ident();
             m_curse_type = eCurse::VAMPIRE;

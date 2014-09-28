@@ -342,22 +342,6 @@ bool DFInstanceLinux::find_running_copy(bool connect_anyway) {
     m_alloc_start = 0;
     m_alloc_end = 0;
 
-    map_virtual_memory();
-
-    //qDebug() << "LOWEST ADDR:" << hex << lowest_addr;
-
-
-    //DUMP LIST OF MEMORY RANGES
-    /*
-    QPair<uint, uint> tmp_pair;
-    foreach(tmp_pair, m_regions) {
-        LOGD << "RANGE start:" << hex << tmp_pair.first << "end:" << tmp_pair.second;
-    }*/
-
-    VIRTADDR m_base_addr = read_addr(m_lowest_address + 0x18);
-    LOGD << "base_addr:" << m_base_addr << "HEX" << hex << m_base_addr;
-    m_is_ok = m_base_addr > 0;
-
     QString checksum = calculate_checksum();
     if (m_is_ok) {
         m_layout = get_memory_layout(checksum.toLower(), !connect_anyway);
@@ -368,88 +352,6 @@ bool DFInstanceLinux::find_running_copy(bool connect_anyway) {
     LOGI << "Dwarf fortress path:" << m_df_dir.absolutePath();
 
     return m_is_ok || connect_anyway;
-}
-
-void DFInstanceLinux::map_virtual_memory() {
-    // destroy existing segments
-    foreach(MemorySegment *seg, m_regions) {
-        delete(seg);
-    }
-    m_regions.clear();
-    m_executable = NULL;
-
-    if (!m_is_ok)
-        return;
-
-    // scan the maps to populate known regions of memory
-    QFile f(QString("/proc/%1/maps").arg(m_pid));
-    if (!f.open(QIODevice::ReadOnly)) {
-        LOGE << "Unable to open" << f.fileName();
-        return;
-    }
-    TRACE << "opened" << f.fileName();
-    QByteArray line;
-    m_lowest_address = 0xFFFFFFFF;
-    m_highest_address = 0;
-    uint start_addr = 0;
-    uint end_addr = 0;
-    bool ok;
-
-    const QString rxs = "^([0-9a-f]+)-([0-9a-f]+) ([rwxsp-]{4}) [\\d\\w]{8} [\\d\\w]{2}:[\\d\\w]{2} ([0-9]+) +([^ ]*)$";
-
-#if QT_VERSION >= 0x050000
-    QRegularExpression rx(rxs);
-#else
-    // !@#$ing QRegExp thinks that a*(a*) on aaa should capture aaa
-    QRegExp rx(rxs, Qt::CaseSensitive, QRegExp::RegExp2);
-#endif
-    QString mf = QFile::symLinkTarget(QString("/proc/%1/exe").arg(m_pid));
-    do {
-        line = f.readLine();
-        line.chop(1);
-#if QT_VERSION >= 0x050000
-        QRegularExpressionMatch match = rx.match(line);
-#define cap match.captured
-        if (match.hasMatch()) {
-#else
-#define cap rx.cap
-        if (rx.exactMatch(line)) {
-#endif
-            start_addr = cap(1).toUInt(&ok, 16);
-            end_addr = cap(2).toUInt(&ok, 16);
-            QString perms = cap(3);
-            int inode = cap(4).toInt();
-            QString path = cap(5);
-#if QT_VERSION < 0x050000
-#undef cap
-#endif
-
-            bool keep_it = false;
-            bool main_file = false;
-            if (path.contains("[heap]") || path.contains("[stack]") || path.contains("[vdso]"))  {
-                keep_it = true;
-            } else if (perms.contains("r") && inode && path == mf) {
-                keep_it = true;
-                main_file = true;
-            } else {
-                keep_it = path.isEmpty();
-            }
-
-            if (keep_it && end_addr > start_addr) {
-                MemorySegment *segment = new MemorySegment(path, start_addr, end_addr);
-                TRACE << "keeping" << segment->to_string();
-                m_regions << segment;
-                if (start_addr < m_lowest_address)
-                    m_lowest_address = start_addr;
-                else if (end_addr > m_highest_address)
-                    m_highest_address = end_addr;
-                if (main_file && !m_executable && perms.contains("x")) {
-                    m_executable = segment;
-                    LOGD << "executable" << segment->to_string();
-                }
-            }
-        }
-    } while (!line.isEmpty());
 }
 
 /* Support for executing system calls in the context of the game process. */

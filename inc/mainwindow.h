@@ -38,7 +38,6 @@ class DwarfModelProxy;
 class Dwarf;
 class AboutDialog;
 class ViewManager;
-class Scanner;
 class ScriptDialog;
 class roleDialog;
 class optimizereditor;
@@ -77,7 +76,6 @@ public:
         // DF related
         void connect_to_df();
         void read_dwarves();
-        void scan_memory();
         void new_pending_changes(int);
         void new_creatures_count(int, int, int, QString);
         void lost_df_connection();
@@ -165,7 +163,6 @@ private:
     DwarfModel *m_model;
     DwarfModelProxy *m_proxy;
     AboutDialog *m_about_dialog;
-    Scanner *m_scanner;
     ScriptDialog *m_script_dialog;
     roleDialog *m_role_editor;
     optimizereditor *m_optimize_plan_editor;

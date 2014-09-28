@@ -231,48 +231,6 @@ bool DFInstanceOSX::find_running_copy(bool connect_anyway) {
     return true;
 }
 
-void DFInstanceOSX::map_virtual_memory() {
-    foreach(MemorySegment *seg, m_regions) {
-        delete(seg);
-    }
-    m_regions.clear();
-    if (!m_is_ok)
-        return;
-
-    kern_return_t result;
-
-    mach_vm_address_t address = 0x0;
-    mach_vm_size_t size = 0;
-    vm_region_basic_info_data_64_t info;
-    mach_msg_type_number_t infoCnt = VM_REGION_BASIC_INFO_COUNT_64;
-    mach_port_t object_name = 0;
-
-    m_lowest_address = 0;
-    do
-    {
-        // get the next region
-        result = mach_vm_region( m_task, &address, &size, VM_REGION_BASIC_INFO_64, (vm_region_info_t)(&info), &infoCnt, &object_name );
-
-        if ( result == KERN_SUCCESS ) {
-            if ((info.protection & VM_PROT_READ) == VM_PROT_READ  && (info.protection & VM_PROT_WRITE) == VM_PROT_WRITE) {
-                MemorySegment *segment = new MemorySegment("", address, address+size);
-                TRACE << "Adding segment: " << address << ":" << address+size << " prot: " << info.protection;
-                m_regions << segment;
-
-                if(m_lowest_address == 0)
-                    m_lowest_address = address;
-                if(address < m_lowest_address)
-                    m_lowest_address = address;
-                if((address + size) > m_highest_address)
-                    m_highest_address = (address + size);
-            }
-        }
-
-        address = address + size;
-    } while (result != KERN_INVALID_ADDRESS);
-    LOGD << "Mapped " << m_regions.size() << " memory regions.";
-}
-
 VIRTADDR DFInstanceOSX::alloc_chunk(mach_vm_size_t size) {
     if (size > 1048576 || size <= 0) {
         return 0;

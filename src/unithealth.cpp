@@ -208,15 +208,15 @@ void UnitHealth::read_health_info(){
     short sh_counter = 0;
     QList<short> vals;
 
-    bool needs_diagnosis = (has_flag(1,health_flags));
+    bool needs_diagnosis = health_flags;
     add_info(eHealth::HI_DIAGNOSIS,false,needs_diagnosis);
-    add_info(eHealth::HI_IMMOBILIZATION,(has_flag(8,health_flags)));
-    add_info(eHealth::HI_DRESSING,(has_flag(16,health_flags)));
-    add_info(eHealth::HI_CLEANING,(has_flag(32,health_flags)));
-    add_info(eHealth::HI_SURGERY,(has_flag(64,health_flags)));
-    add_info(eHealth::HI_SUTURES,(has_flag(128,health_flags)));
-    add_info(eHealth::HI_SETTING,(has_flag(256,health_flags)));
-    add_info(eHealth::HI_TRACTION,(has_flag(512,health_flags)));
+    add_info(eHealth::HI_IMMOBILIZATION, health_flags & (1 << 3));
+    add_info(eHealth::HI_DRESSING, health_flags & (1 << 4));
+    add_info(eHealth::HI_CLEANING, health_flags & (1 << 5));
+    add_info(eHealth::HI_SURGERY, health_flags & (1 << 6));
+    add_info(eHealth::HI_SUTURES, health_flags & (1 << 7));
+    add_info(eHealth::HI_SETTING, health_flags & (1 << 8));
+    add_info(eHealth::HI_TRACTION, health_flags & (1 << 9));
 
     //stunned, webbed, dizziness
     bool unconscious = false;
@@ -273,16 +273,16 @@ void UnitHealth::read_health_info(){
 
             //it appears that amphibious creatures don't need breathing parts, and so can't have problems breathing?
             if(!m_dwarf->get_caste()->flags().has_flag(AMPHIBIOUS)){
-                if(has_flag(0x00000020,m_dwarf->get_flag1())){
+                if(m_dwarf->get_flag1() & 0x20){
                     vals.push_front(1); //drowning
                     m_critical_wounds = true;
                     //        drowning = true;
                 }
-                if(!has_flag(0x10000000,m_dwarf->get_flag2())){
+                if(!(m_dwarf->get_flag2() & 0x10000000)){
                     vals.push_front(0); //missing breathing part (can't breathe)
                     m_critical_wounds = true;
                 }
-                else if(has_flag(0x20000000,m_dwarf->get_flag2()))
+                else if(m_dwarf->get_flag2() & 0x20000000)
                     vals.push_front(2); //trouble breathing
             }
 
@@ -296,20 +296,19 @@ void UnitHealth::read_health_info(){
             m_limb_stand_count = m_df->read_short(m_dwarf_addr + base_limbs_addr + 0x2);
 
             if(limb_stand_max > 0){
-                bool fallen_down = (has_flag(0x8000,m_dwarf->get_flag1()) && !sleeping);
+                bool fallen_down = m_dwarf->get_flag1() & 0x8000 && !sleeping;
 
                 //having a crutch doesn't seem to count as a limb to stand on??
-                bool has_crutch = has_flag(0x00000040,m_dwarf->get_flag3());
-                if(has_crutch)
-                    m_limb_stand_count++;
-                add_info(eHealth::HI_CRUTCH,(has_flag(1024,health_flags)),has_crutch);
+                bool has_crutch = m_dwarf->get_flag3() & 0x40;
+                m_limb_stand_count += has_crutch;
+                add_info(eHealth::HI_CRUTCH, health_flags & (1 << 10), has_crutch);
 
                 vals.clear();
                 //seems if a dwarf only has a single good limb to stand on (including crutches) but has fallen, then they cannot stand
                 if(m_limb_stand_count <= 0 || (m_limb_stand_count < limb_stand_max && fallen_down) || unconscious){ //if(unconscious || stunned || drowning || limb_stand_count <= 0)
                     vals.append(0);
                     if(needs_diagnosis && m_dwarf->current_job_id() != 52) //if already resting, then they've been recovered
-                        add_info(eHealth::HI_DIAGNOSIS,(has_flag(4,health_flags))); //not diagnosed yet, but can't walk, and isn't resting yet. needs recovery
+                        add_info(eHealth::HI_DIAGNOSIS, health_flags & (1 << 2)); //not diagnosed yet, but can't walk, and isn't resting yet. needs recovery
                 }else if(m_limb_stand_count < limb_stand_max){
                     if(!has_crutch)
                         vals.append(1); //stand impaired
@@ -420,12 +419,12 @@ void UnitHealth::read_health_info(){
 
         //vision
         if(!m_dwarf->get_caste()->flags().has_flag(EXTRAVISION)){
-            add_info(eHealth::HI_VISION,(!has_flag(0x02000000,m_dwarf->get_flag2())),
-                     (has_flag(0x04000000,m_dwarf->get_flag2())), (has_flag(0x08000000,m_dwarf->get_flag2())));
+            add_info(eHealth::HI_VISION,!(m_dwarf->get_flag2() & 0x02000000),
+                     m_dwarf->get_flag2() & 0x04000000, m_dwarf->get_flag2() & 0x08000000);
         }
 
         //gutted
-        bool gutted = has_flag(0x00004000, m_dwarf->get_flag2());
+        bool gutted = m_dwarf->get_flag2() & 0x00004000;
         add_info(eHealth::HI_GUTTED, gutted);
         if(gutted)
             m_critical_wounds = true;
@@ -454,7 +453,7 @@ void UnitHealth::read_wounds(){
     int idx = 0;
     foreach(int bps, body_part_status_flags){
         //filter this down to checking exact bits, since we're currently only check for motor/sensory nerve or missing part
-        if(bps > 0 && (has_flag(0x2,bps) || has_flag(0x200,bps) || has_flag(0x400,bps))){
+        if(bps & 0x602){
             UnitWound uw = UnitWound(m_df,idx,this);
             if(uw.get_wounded_parts().size() > 0){
                 m_wounds.append(uw);

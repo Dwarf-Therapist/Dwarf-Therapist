@@ -124,20 +124,14 @@ HEADERS += inc/viewmanager.h \
     inc/utils.h \
     inc/uberdelegate.h \
     inc/truncatingfilelogger.h \
-    inc/translationvectorsearchjob.h \
     inc/trait.h \
-    inc/stonevectorsearchjob.h \
     inc/statetableview.h \
     inc/squad.h \
     inc/skill.h \
     inc/scriptdialog.h \
-    inc/scannerthread.h \
-    inc/scannerjob.h \
-    inc/scanner.h \
     inc/rotatedheader.h \
     inc/profession.h \
     inc/optionsmenu.h \
-    inc/nullterminatedstringsearchjob.h \
     inc/memorysegment.h \
     inc/memorylayout.h \
     inc/mainwindow.h \
@@ -171,15 +165,7 @@ HEADERS += inc/viewmanager.h \
     inc/docks/gridviewdock.h \
     inc/docks/dwarfdetailsdock.h \
     thirdparty/qtcolorpicker-2.6/qtcolorpicker.h \
-    inc/vectorsearchjob.h \
-    inc/dwarfraceindexsearchjob.h \
-    inc/creaturevectorsearchjob.h \
-    inc/positionvectorsearchjob.h \
-    inc/stdstringsearchjob.h \
     inc/selectparentlayoutdialog.h \
-    inc/layoutcreator.h \
-    inc/narrowingvectorsearchjob.h \
-    inc/squadvectorsearchjob.h \
     inc/word.h \
     inc/attribute.h \
     inc/grid_view/flagcolumn.h \
@@ -221,7 +207,6 @@ HEADERS += inc/viewmanager.h \
     inc/bodypartlayer.h \
     inc/healthcategory.h \
     inc/bodypartdamage.h \
-    inc/currentyearsearchjob.h \
     inc/defaultfonts.h \
     inc/docks/basedock.h \
     inc/syndrome.h \
@@ -259,8 +244,6 @@ SOURCES += src/viewmanager.cpp \
     src/squad.cpp \
     src/skill.cpp \
     src/scriptdialog.cpp \
-    src/scannerjob.cpp \
-    src/scanner.cpp \
     src/rotatedheader.cpp \
     src/optionsmenu.cpp \
     src/memorylayout.cpp \
@@ -293,7 +276,6 @@ SOURCES += src/viewmanager.cpp \
     src/docks/dwarfdetailsdock.cpp \
     thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp \
     src/selectparentlayoutdialog.cpp \
-    src/layoutcreator.cpp \
     src/word.cpp \
     src/grid_view/flagcolumn.cpp \
     src/grid_view/rolecolumn.cpp \
@@ -347,7 +329,6 @@ SOURCES += src/viewmanager.cpp \
     src/docks/informationdock.cpp \
     src/docks/equipmentoverviewdock.cpp
 FORMS += ui/scriptdialog.ui \
-    ui/scannerdialog.ui \
     ui/pendingchanges.ui \
     ui/optionsmenu.ui \
     ui/mainwindow.ui \
@@ -365,4 +346,3 @@ FORMS += ui/scriptdialog.ui \
     ui/superlabor.ui
 RESOURCES += \
     resources.qrc
-QMAKE_RESOURCE_FLAGS += -no-compress

@@ -40,39 +40,11 @@ typedef qint32 SSIZE;
 typedef quint8 BYTE;
 typedef quint16 WORD;
 
-static inline QByteArray encode(const int &num) {
-    QByteArray arr(reinterpret_cast<const char *>(&num), sizeof(int));
-    return arr;
-}
-
-static inline QByteArray encode(const VIRTADDR &num) {
-    QByteArray arr(reinterpret_cast<const char *>(&num), sizeof(VIRTADDR));
-    return arr;
-}
-
-static inline QByteArray encode(const ushort &num) {
-    QByteArray arr(reinterpret_cast<const char *>(&num), sizeof(ushort));
-    return arr;
-}
-
-static inline int decode_int(const QByteArray &arr) {
-    return *arr.constData();
-}
-
 static inline QColor complement(const QColor &in_color, float brightness_threshold = 0.50) {
     qreal brightness = sqrt(pow(in_color.redF(),2.0) * 0.241 +
                             pow(in_color.greenF(),2.0) * 0.691 +
                             pow(in_color.blueF(),2.0) * 0.068);
-    QColor tmp = in_color.toHsv();
-    int h = tmp.hue();
-    int s = 25;
-    int v;
-    if(brightness >= brightness_threshold || in_color.alpha() < 130) {
-        v = 0;
-    } else {
-        v = 255;
-    }
-    return QColor::fromHsv(h, s, v);
+    return QColor::fromHsv(in_color.toHsv().hue(), 25, brightness >= brightness_threshold || in_color.alpha() < 130 ? 0 : 255);
 }
 
 static inline QColor from_hex(const QString &h) {
@@ -117,22 +89,20 @@ static inline QString capitalize(const QString & word) {
 }
 
 static inline QString capitalizeEach(const QString & word){
-    QString result = word;
-    QStringList list = result.split(" ");
-    for(int i=0; i<list.length(); i++){
+    QStringList list = word.split(" ");
+    for(int i = 0; i < list.length(); i++){
         list[i] = capitalize(list[i]);
     }
-    result = list.join(" ");
-    return result;
+    return list.join(" ");
 }
 
 template <class T> class vPtr
 {
 public:
-    static T* asPtr(QVariant v){
+    static inline T* asPtr(QVariant v){
         return static_cast<T*>(v.value<void *>());
     }
-    static QVariant asQVariant(T* ptr){
+    static inline QVariant asQVariant(T* ptr){
         return qVariantFromValue(static_cast<void*>(ptr));
     }
 };
@@ -143,10 +113,6 @@ static inline QString embedPixmap(const QPixmap &img){
     buffer.open(QIODevice::WriteOnly);
     img.save(&buffer, "PNG");
     return QString("<img src=\"data:image/png;base64,%1\"/>").arg(QString(buffer.data().toBase64()));
-}
-
-static inline bool has_flag(int flag, int flags){
-    return ((flag & flags) == flag);
 }
 
 static inline QString nice_list(QStringList values){

@@ -37,7 +37,6 @@ THE SOFTWARE.
 #include "importexportdialog.h"
 #include "columntypes.h"
 #include "rotatedheader.h"
-#include "scanner.h"
 #include "scriptdialog.h"
 #include "truncatingfilelogger.h"
 #include "roledialog.h"
@@ -70,6 +69,7 @@ THE SOFTWARE.
 #include <QShortcut>
 #include <QTime>
 #include <QPainter>
+#include <QUrl>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -83,7 +83,6 @@ MainWindow::MainWindow(QWidget *parent)
     , m_model(new DwarfModel(this))
     , m_proxy(new DwarfModelProxy(this))
     , m_about_dialog(new AboutDialog(this))
-    , m_scanner(0)
     , m_script_dialog(new ScriptDialog(this))
     , m_role_editor(0)
     , m_optimize_plan_editor(0)
@@ -262,7 +261,6 @@ MainWindow::~MainWindow() {
     delete m_progress;
 
     delete m_about_dialog;
-    delete m_scanner;
     delete m_script_dialog;
     delete m_role_editor;
     delete m_optimize_plan_editor;
@@ -351,8 +349,6 @@ void MainWindow::connect_to_df() {
     // find_running_copy can fail for several reasons, and will take care of
     // logging and notifying the user.
     if (m_force_connect && m_df && m_df->find_running_copy(true)) {
-        m_scanner = new Scanner(m_df, this);
-
         if(m_df->memory_layout()){
             LOGI << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
             set_status_message(tr("Connected to DF %1").arg(m_df->memory_layout()->game_version()),tr("Currently using layout file: %1").arg(m_df->memory_layout()->filename()));
@@ -362,7 +358,6 @@ void MainWindow::connect_to_df() {
         }
         m_force_connect = false;
     } else if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
-        m_scanner = new Scanner(m_df, this);
         LOGI << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
         set_status_message(tr("Connected to DF %1").arg(m_df->memory_layout()->game_version()),tr("Currently using layout file: %1").arg(m_df->memory_layout()->filename()));
         m_force_connect = false;
@@ -560,7 +555,6 @@ void MainWindow::apply_filter(QModelIndex idx){
 void MainWindow::set_interface_enabled(bool enabled) {
     ui->act_connect_to_DF->setEnabled(!enabled);
     ui->act_read_dwarves->setEnabled(enabled);
-    //ui->act_scan_memory->setEnabled(enabled);
     ui->act_expand_all->setEnabled(enabled);
     ui->act_collapse_all->setEnabled(enabled);
     ui->cb_group_by->setEnabled(enabled);
@@ -697,12 +691,6 @@ void MainWindow::layout_check_finished(bool error) {
 
     if(error) {
         m_df->layout_not_found(m_tmp_checksum);
-    }
-}
-
-void MainWindow::scan_memory() {
-    if (m_scanner) {
-        m_scanner->show();
     }
 }
 

@@ -29,6 +29,7 @@ THE SOFTWARE.
 #define STRING_SIZE 256
 
 class MemoryLayout;
+struct MemorySegment;
 template<class K, class V> class QHash;
 
 class DFInstanceLinux : public DFInstance {
@@ -48,8 +49,6 @@ public:
     USIZE write_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes, const void *buffer);
     USIZE write_raw(const VIRTADDR &addr, const USIZE &bytes, const void *buffer);
     USIZE write_string(const VIRTADDR &addr, const QString &str);
-
-    void map_virtual_memory();
 
     bool attach();
     bool detach();
