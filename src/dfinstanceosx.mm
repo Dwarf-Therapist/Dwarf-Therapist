@@ -84,19 +84,11 @@ DFInstanceOSX::~DFInstanceOSX() {
 }
 
 QString DFInstanceOSX::read_string(const VIRTADDR &addr) {
-    VIRTADDR buffer_addr = read_addr(addr);
-    int upper_size = 256;
-    QByteArray buf(upper_size, 0);
-    read_raw(buffer_addr, upper_size, buf);
-    //int bytes_read = read_raw(buffer_addr, upper_size, buf);
-    //if (bytes_read == -1) {
-        //LOGW << "Failed to read from" << hexify(addr);
-        //throw -1;
-    //}
+    char buf[default_string_size];
+    read_raw(read_addr(addr), default_string_size, (void *)buf);
 
-    buf.truncate(buf.indexOf(QChar('\0')));
-    CP437Codec *c = new CP437Codec();
-    return c->toUnicode(buf);
+    // not a memory leak, Qt frees all text codecs
+    return (new CP437Codec())->toUnicode(buf, default_string_size);
 }
 
 USIZE DFInstanceOSX::write_string(const VIRTADDR &addr, const QString &str) {

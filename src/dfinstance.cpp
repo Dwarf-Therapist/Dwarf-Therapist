@@ -894,21 +894,7 @@ QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
     return entries;
 }
 
-QByteArray DFInstance::get_data(const VIRTADDR &addr, int size) {
-    QByteArray ret_val(size, 0); // 0 filled to proper length
-    int bytes_read = read_raw(addr, size, ret_val);
-    if (bytes_read != size) {
-        ret_val.clear();
-    }
-    return ret_val;
-}
-
-//! ahhh convenience
-QString DFInstance::pprint(const VIRTADDR &addr, int size) {
-    return pprint(get_data(addr, size), addr);
-}
-
-QString DFInstance::pprint(const QByteArray &ba, const VIRTADDR &start_addr) {
+QString DFInstance::pprint(const QByteArray &ba) {
     QString out = "    ADDR   | 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F | TEXT\n";
     out.append("------------------------------------------------------------------------\n");
     int lines = ba.size() / 16;
@@ -918,7 +904,7 @@ QString DFInstance::pprint(const QByteArray &ba, const VIRTADDR &start_addr) {
         lines = 0;
 
     for(int i = 0; i < lines; ++i) {
-        VIRTADDR offset = start_addr + i * 16;
+        VIRTADDR offset = i * 16;
         out.append(hexify(offset));
         out.append(" | ");
         for (int c = 0; c < 16; ++c) {

@@ -94,11 +94,11 @@ QString DFInstanceLinux::calculate_checksum() {
 }
 
 QString DFInstanceLinux::read_string(const VIRTADDR &addr) {
-    char buf[STRING_SIZE];
-    read_raw(read_addr(addr), STRING_SIZE, (void *)buf);
+    char buf[default_string_size];
+    read_raw(read_addr(addr), default_string_size, (void *)buf);
 
-    CP437Codec *c = new CP437Codec();
-    return c->toUnicode(buf);
+    // not a memory leak, Qt frees all text codecs
+    return (new CP437Codec())->toUnicode(buf, default_string_size);
 }
 
 USIZE DFInstanceLinux::write_string(const VIRTADDR &addr, const QString &str) {
@@ -584,8 +584,8 @@ VIRTADDR DFInstanceLinux::get_string(const QString &str) {
     if (m_string_cache.contains(str))
         return m_string_cache[str];
 
-    CP437Codec *c = new CP437Codec();
-    QByteArray data = c->fromUnicode(str);
+    CP437Codec c;
+    QByteArray data = c.fromUnicode(str);
 
     STLStringHeader header;
     header.capacity = header.length = data.length();

@@ -26,8 +26,6 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "dwarf.h"
 
-#define STRING_SIZE 256
-
 class MemoryLayout;
 struct MemorySegment;
 template<class K, class V> class QHash;

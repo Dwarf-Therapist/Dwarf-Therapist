@@ -58,10 +58,6 @@ Caste::~Caste() {
     m_race = 0;
 }
 
-Caste* Caste::get_caste(DFInstance *df, const VIRTADDR & address, Race *r) {
-    return new Caste(df, address, r);
-}
-
 void Caste::load_data() {
     if (!m_df || !m_df->memory_layout() || !m_df->memory_layout()->is_valid()) {
         LOGW << "load of Castes called but we're not connected";

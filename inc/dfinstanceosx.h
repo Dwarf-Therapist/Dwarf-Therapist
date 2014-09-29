@@ -41,14 +41,11 @@ public:
     // factory ctor
     bool find_running_copy(bool connect_anyway = false);
     USIZE read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer);
-    using DFInstance::read_raw;
     QString read_string(const VIRTADDR &addr);
 
     // Writing
     USIZE write_raw(const VIRTADDR &addr, const USIZE &bytes, const void *buffer);
     USIZE write_string(const VIRTADDR &addr, const QString &str);
-
-    void map_virtual_memory();
 
     bool attach();
     bool detach();

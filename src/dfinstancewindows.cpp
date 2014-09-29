@@ -43,14 +43,11 @@ DFInstanceWindows::DFInstanceWindows(QObject* parent)
     : DFInstance(parent)
     , m_hwnd(0)
     , m_proc(0)
-    , m_dos_header()
-    , m_pe_header()
 {}
 
 DFInstanceWindows::~DFInstanceWindows() {
-    if (m_proc) {
-        CloseHandle(m_proc);
-    }
+    // CloseHandle(0) is a no-op
+    CloseHandle(m_proc);
 }
 
 QString DFInstanceWindows::get_last_error() {
@@ -66,10 +63,10 @@ QString DFInstanceWindows::get_last_error() {
     return result;
 }
 
-QString DFInstanceWindows::calculate_checksum() {
-    QDateTime compile_timestamp = QDateTime::fromTime_t(m_pe_header.FileHeader.TimeDateStamp);
-    LOGI << "Target EXE was compiled at " << compile_timestamp.toString(Qt::ISODate);
-    return hexify(m_pe_header.FileHeader.TimeDateStamp).toLower();
+QString DFInstanceWindows::calculate_checksum(const IMAGE_NT_HEADERS &pe_header) {
+    time_t compile_timestamp = pe_header.FileHeader.TimeDateStamp;
+    LOGI << "Target EXE was compiled at " << QDateTime::fromTime_t(compile_timestamp).toString(Qt::ISODate);
+    return hexify(compile_timestamp).toLower();
 }
 
 QString DFInstanceWindows::read_string(const uint &addr) {
@@ -93,9 +90,10 @@ QString DFInstanceWindows::read_string(const uint &addr) {
     Q_ASSERT_X(len < (1 << 16), "read_string",
                "String must be of sane length!");
 
-    QByteArray buf = get_data(buffer_addr, len);
-    CP437Codec *c = new CP437Codec();
-    return c->toUnicode(buf);
+    char buf[len];
+    read_raw(buffer_addr, len, buf);
+    // not a memory leak, Qt frees all text codecs
+    return (new CP437Codec())->toUnicode(buf, len);
 
     //the line below would be nice, but apparently a ~20mb *.icu library is required for that single call to qtextcodec...wtf. really.
     //it's also been pretty bad performance-wise on linux, so it may be best to forget about it entirely
@@ -188,17 +186,19 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
             LOGE << "Error enumerating modules!" << get_last_error();
         } else {
             VIRTADDR base_addr = (intptr_t)me32.modBaseAddr;
-            read_raw(base_addr, sizeof(m_dos_header), &m_dos_header);
-            if(m_dos_header.e_magic != IMAGE_DOS_SIGNATURE){
+            IMAGE_DOS_HEADER dos_header;
+            read_raw(base_addr, sizeof(dos_header), &dos_header);
+            if(dos_header.e_magic != IMAGE_DOS_SIGNATURE){
                 qWarning() << "invalid executable";
             }
 
             //the dos stub contains a relative address to the pe header, which is used to get the pe header information
-            read_raw(base_addr + m_dos_header.e_lfanew, sizeof(m_pe_header), &m_pe_header);
-            if(m_pe_header.Signature != IMAGE_NT_SIGNATURE){
+            IMAGE_NT_HEADERS pe_header;
+            read_raw(base_addr + dos_header.e_lfanew, sizeof(pe_header), &pe_header);
+            if(pe_header.Signature != IMAGE_NT_SIGNATURE){
                 qWarning() << "unsupported PE header type";
             }
-            m_layout = get_memory_layout(calculate_checksum(), !connect_anyway);
+            m_layout = get_memory_layout(calculate_checksum(pe_header), !connect_anyway);
             LOGI << "RAW BASE ADDRESS:" << base_addr;
             m_layout->set_base_address(base_addr - 0x00400000);
         }
@@ -211,8 +211,6 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
         else // time to bail
             return m_is_ok;
     }
-
-    map_virtual_memory();
 
     if (DT->user_settings()->value("options/alert_on_lost_connection", true)
         .toBool() && m_layout && m_layout->is_complete()) {

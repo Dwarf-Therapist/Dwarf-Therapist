@@ -123,9 +123,7 @@ void Race::read_race() {
 
     if (!castes.empty()) {
         foreach (VIRTADDR caste_addr, castes) {
-            Caste *c = Caste::get_caste(m_df, caste_addr, this);
-            if (c != 0)
-                m_castes.append(c);
+            m_castes.append(new Caste(m_df, caste_addr, this));
         }
     }
 

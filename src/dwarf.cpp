@@ -2581,7 +2581,8 @@ void Dwarf::dump_memory() {
     te->setReadOnly(true);
     te->setFontFamily("Courier");
     te->setFontPointSize(8);
-    QByteArray data = m_df->get_data(m_address, 0xb90);
+    QByteArray data;
+    m_df->read_raw(m_address, 0xb90, data);
     te->setText(m_df->pprint(data));
     v->addWidget(te);
     d->setLayout(v);
@@ -2598,7 +2599,8 @@ void Dwarf::dump_memory_to_file() {
     if (f->open(QFile::ReadWrite)) {
         f->write(QString("NAME: %1\n").arg(nice_name()).toLatin1());
         f->write(QString("ADDRESS: %1\n").arg(hexify(m_address)).toLatin1());
-        QByteArray data = m_df->get_data(m_address, 0xb90);
+        QByteArray data;
+        m_df->read_raw(m_address, 0xb90, data);
         f->write(m_df->pprint(data).toLatin1());
         f->close();
         QMessageBox::information(DT->get_main_window(), tr("Dumped"),

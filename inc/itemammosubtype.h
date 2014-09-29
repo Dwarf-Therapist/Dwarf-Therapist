@@ -42,15 +42,6 @@ public:
         read_ammo();
     }
 
-    virtual ~ItemAmmoSubtype(){
-        m_df = 0;
-        m_mem = 0;
-    }
-
-    static ItemAmmoSubtype* get_ammo(DFInstance *df, const VIRTADDR &address, QObject *parent = 0){
-        return new ItemAmmoSubtype(df,address,parent);
-    }
-
     VIRTADDR address() {return m_address;}
     QString name() const {return m_name;}
     QString name_plural() const {return m_name_plural;}

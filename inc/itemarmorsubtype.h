@@ -42,15 +42,6 @@ public:
         read_properties();
     }
 
-    static ItemArmorSubtype* get_armor(ITEM_TYPE itype, DFInstance *df, const VIRTADDR &address, QObject *parent = 0){
-        return new ItemArmorSubtype(itype,df,address,parent);
-    }
-
-    virtual ~ItemArmorSubtype(){
-        m_df = 0;
-        m_mem = 0;
-    }
-
     VIRTADDR address() {return m_address;}
     QString name() const {return m_name;}
     QString name_plural() const {return m_name_plural;}

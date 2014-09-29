@@ -73,9 +73,7 @@ public:
 
     virtual QString read_string(const VIRTADDR &addr) = 0;
 
-    QByteArray get_data(const VIRTADDR &addr, int size);
-    QString pprint(const VIRTADDR &addr, int size);
-    QString pprint(const QByteArray &ba, const VIRTADDR &start_addr=0);
+    QString pprint(const QByteArray &ba);
 
     Word * read_dwarf_word(const VIRTADDR &addr);
     QString read_dwarf_name(const VIRTADDR &addr);
@@ -142,8 +140,6 @@ public:
     static const int VECTOR_POINTER_OFFSET = 0;
 #endif
 
-    // handy util methods
-    virtual QString calculate_checksum() = 0;
     MemoryLayout *get_memory_layout(QString checksum, bool warn = true);
 
     void load_game_data();
@@ -243,6 +239,8 @@ protected:
         on disk, the key is a QString of the checksum since other OSs will use
         an MD5 of the binary instead of a PE timestamp */
     QHash<QString, MemoryLayout*> m_memory_layouts; // checksum->layout
+
+    static const int default_string_size = 256;
 
     private slots:
         void heartbeat();
