@@ -69,7 +69,6 @@ private:
     VIRTADDR get_string(const QString &str);
 
     QFile m_memory_file;
-    MemorySegment *m_executable;
     VIRTADDR m_inject_addr;
     VIRTADDR m_alloc_start, m_alloc_end;
     QHash<QString, VIRTADDR> m_string_cache;

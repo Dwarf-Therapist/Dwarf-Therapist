@@ -25,20 +25,20 @@ THE SOFTWARE.
 
 #include <QDir>
 #include "utils.h"
-#include "word.h"
 #include "global_enums.h"
 
 class Dwarf;
-class Squad;
-class MemoryLayout;
-class Languages;
-class Reaction;
-class Race;
 class FortressEntity;
 class ItemWeaponSubtype;
+class Languages;
 class Material;
+class MemoryLayout;
 class Plant;
 class QFile;
+class Race;
+class Reaction;
+class Squad;
+class Word;
 
 class DFInstance : public QObject {
     Q_OBJECT

@@ -21,8 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "defines.h"
 #include "dfinstance.h"
+#include "cp437codec.h"
+#include "defines.h"
 #include "dwarf.h"
 #include "squad.h"
 #include "word.h"
@@ -87,10 +88,13 @@ DFInstance::DFInstance(QObject* parent)
     QFileInfoList files = d.entryInfoList();
     foreach(QFileInfo info, files) {
         MemoryLayout *temp = new MemoryLayout(info.absoluteFilePath());
-        if (temp && temp->is_valid()) {
+        if (temp->is_valid()) {
             LOGI << "adding valid layout" << temp->game_version()
                  << temp->checksum();
             m_memory_layouts.insert(temp->checksum().toLower(), temp);
+        } else {
+            LOGI << "ignoring invalid layout" << info.absoluteFilePath();
+            delete temp;
         }
     }
 
@@ -100,6 +104,10 @@ DFInstance::DFInstance(QObject* parent)
              << QDir::searchPaths("share");
         qApp->exit(ERROR_NO_VALID_LAYOUTS);
     }
+
+    if (!QTextCodec::codecForName("IBM437"))
+        // register CP437Codec so it can be accessed by name
+        new CP437Codec();
 }
 
 DFInstance * DFInstance::newInstance(){
@@ -141,7 +149,6 @@ bool DFInstance::check_vector(const VIRTADDR start, const VIRTADDR end, const VI
 }
 
 DFInstance::~DFInstance() {
-    //    LOGD << "DFInstance baseclass virtual dtor!";
     foreach(MemoryLayout *l, m_memory_layouts) {
         delete(l);
     }

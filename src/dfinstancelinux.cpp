@@ -59,7 +59,6 @@ struct iovec {
 DFInstanceLinux::DFInstanceLinux(QObject* parent)
     : DFInstance(parent)
     , m_pid(0)
-    , m_executable(NULL)
     , m_inject_addr(-1)
     , m_alloc_start(0)
     , m_alloc_end(0)
@@ -97,8 +96,7 @@ QString DFInstanceLinux::read_string(const VIRTADDR &addr) {
     char buf[default_string_size];
     read_raw(read_addr(addr), default_string_size, (void *)buf);
 
-    // not a memory leak, Qt frees all text codecs
-    return (new CP437Codec())->toUnicode(buf, default_string_size);
+    return QTextCodec::codecForName("IBM437")->toUnicode(buf);
 }
 
 USIZE DFInstanceLinux::write_string(const VIRTADDR &addr, const QString &str) {
@@ -356,9 +354,7 @@ bool DFInstanceLinux::find_running_copy(bool connect_anyway) {
 
 /* Support for executing system calls in the context of the game process. */
 
-static const USIZE injection_size = 4;
-
-static const char nop_code_bytes[injection_size] = {
+static const char nop_code[] = {
     /* This is the byte pattern used to pad function
        addresses to multiples of 16 bytes. It consists
        of RET and a sequence of NOPs. The NOPs are not
@@ -366,9 +362,7 @@ static const char nop_code_bytes[injection_size] = {
     static_cast<char>(0xC3), static_cast<char>(0x90), static_cast<char>(0x90), static_cast<char>(0x90)
 };
 
-static QByteArray nop_code(nop_code_bytes, injection_size);
-
-static const char injection_code_bytes[injection_size] = {
+static const char injection_code[] = {
     /* This is the injected pattern. It keeps the
        original RET, but adds:
            INT 80h
@@ -376,38 +370,32 @@ static const char injection_code_bytes[injection_size] = {
     static_cast<char>(0xC3), static_cast<char>(0xCD), static_cast<char>(0x80), static_cast<char>(0xCC)
 };
 
-static QByteArray injection_code(injection_code_bytes, injection_size);
-
 VIRTADDR DFInstanceLinux::find_injection_address()
 {
     if (m_inject_addr != unsigned(-1))
         return m_inject_addr;
 
-    if (!m_executable)
-        return m_inject_addr = 0;
+    const int step = 0x8000; // 32K steps
 
-    int step = 0x8000; // 32K steps
-    VIRTADDR pos = m_executable->start_addr + step; // skip first
+    char buf[step];
 
     // This loop is expected to succeed on the first try:
-    for (; pos < m_executable->end_addr; pos += step)
+    // Assume that DF doesn't get -fPIE any time soon.
+    for (VIRTADDR pos = 0x08048000; read_raw(pos, step, buf) == step; pos += step)
     {
-        int size = m_executable->end_addr - pos;
-        if (step < size) size = step;
-        QByteArray buf;
-        read_raw(pos, size, buf);
-
         // Try searching for existing injection code
-        int offset = buf.indexOf(injection_code);
+        char *ptr = static_cast<char *>(memmem(buf, step, injection_code, sizeof(injection_code)));
         // Try searching for empty space
-        if (offset < 0)
-            offset = buf.indexOf(nop_code);
+        if (!ptr)
+            ptr = static_cast<char *>(memmem(buf, step, nop_code, sizeof(nop_code)));
 
-        if (offset >= 0) {
-            m_inject_addr = pos + offset;
+        if (ptr) {
+            m_inject_addr = pos + ptr - buf;
             LOGD << "injection point found at" << hex << m_inject_addr;
             return m_inject_addr;
         }
+
+        LOGI << "couldn't find injection point in" << step << "bytes after 0x08048000, trying again...";
     }
 
     return m_inject_addr = 0;
@@ -456,9 +444,10 @@ qint32 DFInstanceLinux::remote_syscall(int syscall_id,
     }
 
     /* Prepare the injected code */
-    QByteArray inj_area_save;
-    if (read_raw(inj_addr, injection_size, inj_area_save) < injection_size ||
-        write_raw_ptrace(inj_addr, injection_size, (void*)injection_code_bytes) < injection_size) {
+    char inj_area_save[sizeof(injection_code)];
+    const USIZE inj_size = sizeof(injection_code);
+    if (read_raw(inj_addr, inj_size, inj_area_save) != inj_size ||
+        write_raw_ptrace(inj_addr, inj_size, injection_code) < inj_size) {
         LOGE << "Could not prepare the injection area";
         return -1;
     }
@@ -530,7 +519,7 @@ qint32 DFInstanceLinux::remote_syscall(int syscall_id,
 
     /* Restore the modified injection area (not really necessary,
        since it is supposed to be inside unused padding, but...) */
-    if (write_raw_ptrace(inj_addr, injection_size, inj_area_save.data()) < injection_size) {
+    if (write_raw_ptrace(inj_addr, inj_size, inj_area_save) != inj_size) {
         LOGE << "Could not restore the injection area";
     }
 
@@ -584,8 +573,7 @@ VIRTADDR DFInstanceLinux::get_string(const QString &str) {
     if (m_string_cache.contains(str))
         return m_string_cache[str];
 
-    CP437Codec c;
-    QByteArray data = c.fromUnicode(str);
+    QByteArray data = QTextCodec::codecForName("IBM437")->fromUnicode(str);
 
     STLStringHeader header;
     header.capacity = header.length = data.length();

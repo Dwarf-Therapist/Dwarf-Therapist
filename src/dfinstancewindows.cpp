@@ -37,7 +37,6 @@ THE SOFTWARE.
 #include "memorylayout.h"
 #include "memorysegment.h"
 #include "dwarftherapist.h"
-#include "cp437codec.h"
 
 DFInstanceWindows::DFInstanceWindows(QObject* parent)
     : DFInstance(parent)
@@ -92,12 +91,7 @@ QString DFInstanceWindows::read_string(const uint &addr) {
 
     char buf[len];
     read_raw(buffer_addr, len, buf);
-    // not a memory leak, Qt frees all text codecs
-    return (new CP437Codec())->toUnicode(buf, len);
-
-    //the line below would be nice, but apparently a ~20mb *.icu library is required for that single call to qtextcodec...wtf. really.
-    //it's also been pretty bad performance-wise on linux, so it may be best to forget about it entirely
-    //return QTextCodec::codecForName("IBM 437")->toUnicode(buf);
+    return QTextCodec::codecForName("IBM437")->toUnicode(buf, len);
 }
 
 USIZE DFInstanceWindows::write_string(const VIRTADDR &addr, const QString &str) {

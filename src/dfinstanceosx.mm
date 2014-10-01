@@ -28,7 +28,6 @@ THE SOFTWARE.
 #include "Foundation/NSBundle.h"
 #include "AppKit/NSWorkspace.h"
 
-#include "cp437codec.h"
 #include "dfinstance.h"
 #include "dfinstanceosx.h"
 #include "defines.h"
@@ -87,8 +86,7 @@ QString DFInstanceOSX::read_string(const VIRTADDR &addr) {
     char buf[default_string_size];
     read_raw(read_addr(addr), default_string_size, (void *)buf);
 
-    // not a memory leak, Qt frees all text codecs
-    return (new CP437Codec())->toUnicode(buf, default_string_size);
+    return QTextCodec::codecForName("IBM437")->toUnicode(buf);
 }
 
 USIZE DFInstanceOSX::write_string(const VIRTADDR &addr, const QString &str) {
@@ -263,8 +261,7 @@ uintptr_t DFInstanceOSX::get_string(const QString &str) {
     if (m_string_cache.contains(str))
         return m_string_cache[str];
 
-    CP437Codec *c = new CP437Codec();
-    QByteArray data = c->fromUnicode(str);
+    QByteArray data = QTextCodec::codecForName("IBM437")->fromUnicode(str);
 
     STLStringHeader header;
     header.capacity = header.length = data.length();
