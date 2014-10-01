@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include <QDateTime>
 #include <QTimer>
 #include <QMessageBox>
+#include <QTextCodec>
 
 #include <windows.h>
 #include <psapi.h>

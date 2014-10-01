@@ -2301,9 +2301,8 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
     if (m_pending_nick_name != m_nick_name) {
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
         QString nick = m_pending_nick_name;
-        if (nick.isEmpty())
-            nick = tr("DEFAULT");
-        i->setText(0, tr("Nickname changed to %1").arg(nick));
+        i->setText(0, nick.isEmpty() ? tr("Nickname reset to default")
+                                     : tr("Nickname changed to %1").arg(nick));
         i->setIcon(0, QIcon(":img/book--pencil.png"));
         i->setToolTip(0, i->text(0));
         i->setData(0, Qt::UserRole, id());
@@ -2311,9 +2310,8 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
     if (m_pending_custom_profession != m_custom_profession) {
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
         QString prof = m_pending_custom_profession;
-        if (prof.isEmpty())
-            prof = tr("DEFAULT");
-        i->setText(0, tr("Profession changed to %1").arg(prof));
+        i->setText(0, prof.isEmpty() ? tr("Profession reset to default")
+                                     : tr("Profession changed to %1").arg(prof));
         i->setIcon(0, QIcon(":img/book--pencil.png"));
         i->setToolTip(0, i->text(0));
         i->setData(0, Qt::UserRole, id());

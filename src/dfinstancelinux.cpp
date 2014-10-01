@@ -375,7 +375,7 @@ VIRTADDR DFInstanceLinux::find_injection_address()
     if (m_inject_addr != unsigned(-1))
         return m_inject_addr;
 
-    const int step = 0x8000; // 32K steps
+    const USIZE step = 0x8000; // 32K steps
 
     char buf[step];
 
