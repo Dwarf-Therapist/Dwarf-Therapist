@@ -240,8 +240,6 @@ protected:
         an MD5 of the binary instead of a PE timestamp */
     QHash<QString, MemoryLayout*> m_memory_layouts; // checksum->layout
 
-    static const int default_string_size = 256;
-
     private slots:
         void heartbeat();
 

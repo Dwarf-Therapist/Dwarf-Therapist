@@ -45,19 +45,13 @@ THE SOFTWARE.
 #include <sys/wait.h>
 #include <unistd.h>
 
-struct STLStringHeader {
-    quint32 length;
-    quint32 capacity;
-    qint32 refcnt;
-};
-
 struct iovec {
     void *iov_base;
     size_t iov_len;
 };
 
 DFInstanceLinux::DFInstanceLinux(QObject* parent)
-    : DFInstance(parent)
+    : DFInstanceNix(parent)
     , m_pid(0)
     , m_inject_addr(-1)
     , m_alloc_start(0)
@@ -70,45 +64,6 @@ DFInstanceLinux::~DFInstanceLinux() {
     if (m_attach_count > 0) {
         detach();
     }
-}
-
-QString DFInstanceLinux::calculate_checksum() {
-    // ELF binaries don't seem to store a linker timestamp, so just MD5 the file.
-    QFile proc(QString("/proc/%1/exe").arg(m_pid));
-    QCryptographicHash hash(QCryptographicHash::Md5);
-    if (!proc.open(QIODevice::ReadOnly)
-#if QT_VERSION >= 0x050000
-        || !hash.addData(&proc)
-#endif
-        ) {
-        LOGE << "FAILED TO READ DF EXECUTABLE";
-        return QString("UNKNOWN");
-    }
-#if QT_VERSION < 0x050000
-    hash.addData(proc.readAll());
-#endif
-    QString md5 = hexify(hash.result().mid(0, 4)).toLower();
-    TRACE << "GOT MD5:" << md5;
-    return md5;
-}
-
-QString DFInstanceLinux::read_string(const VIRTADDR &addr) {
-    char buf[default_string_size];
-    read_raw(read_addr(addr), default_string_size, (void *)buf);
-
-    return QTextCodec::codecForName("IBM437")->toUnicode(buf);
-}
-
-USIZE DFInstanceLinux::write_string(const VIRTADDR &addr, const QString &str) {
-    // Ensure this operation is done as one transaction
-    attach();
-    VIRTADDR buffer_addr = get_string(str);
-    if (buffer_addr)
-        // This unavoidably leaks the old buffer; our own
-        // cannot be deallocated anyway.
-        write_raw(addr, sizeof(VIRTADDR), &buffer_addr);
-    detach();
-    return buffer_addr ? str.length() : 0;
 }
 
 int DFInstanceLinux::wait_for_stopped() {
@@ -167,13 +122,10 @@ bool DFInstanceLinux::detach() {
 
 SSIZE DFInstanceLinux::process_vm(long number, const VIRTADDR &addr
                                   , const USIZE &bytes, void *buffer) {
-    struct iovec local_iov[1];
-    struct iovec remote_iov[1];
-    local_iov[0].iov_base = buffer;
-    remote_iov[0].iov_base = reinterpret_cast<void *>(addr);
-    local_iov[0].iov_len = remote_iov[0].iov_len = bytes;
+    struct iovec local_iov = {buffer, bytes};
+    struct iovec remote_iov = {reinterpret_cast<void *>(addr), bytes};
 
-    SSIZE r = syscall(number, m_pid, local_iov, 1UL, remote_iov, 1UL, 0UL);
+    SSIZE r = syscall(number, m_pid, &local_iov, 1UL, &remote_iov, 1UL, 0UL);
 
     if (r == -1 && errno == ENOSYS && !m_warned_pvm) {
         m_warned_pvm = true;
@@ -340,12 +292,12 @@ bool DFInstanceLinux::find_running_copy(bool connect_anyway) {
     m_alloc_start = 0;
     m_alloc_end = 0;
 
-    QString checksum = calculate_checksum();
-    if (m_is_ok) {
-        m_layout = get_memory_layout(checksum.toLower(), !connect_anyway);
-    }
+    m_loc_of_dfexe = QString("/proc/%1/exe").arg(m_pid);
 
-    //Get dwarf fortress directory
+    QString checksum = calculate_checksum();
+
+    m_layout = get_memory_layout(checksum.toLower(), !connect_anyway);
+
     m_df_dir = QDir(QFileInfo(QString("/proc/%1/cwd").arg(m_pid)).symLinkTarget());
     LOGI << "Dwarf fortress path:" << m_df_dir.absolutePath();
 
@@ -379,7 +331,7 @@ VIRTADDR DFInstanceLinux::find_injection_address()
 
     char buf[step];
 
-    // This loop is expected to succeed on the first try:
+    // This loop is expected to succeed on the first try
     // Assume that DF doesn't get -fPIE any time soon.
     for (VIRTADDR pos = 0x08048000; read_raw(pos, step, buf) == step; pos += step)
     {
@@ -567,27 +519,4 @@ VIRTADDR DFInstanceLinux::alloc_chunk(USIZE size) {
     VIRTADDR rv = m_alloc_start;
     m_alloc_start += size;
     return rv;
-}
-
-VIRTADDR DFInstanceLinux::get_string(const QString &str) {
-    if (m_string_cache.contains(str))
-        return m_string_cache[str];
-
-    QByteArray data = QTextCodec::codecForName("IBM437")->fromUnicode(str);
-
-    STLStringHeader header;
-    header.capacity = header.length = data.length();
-    header.refcnt = 1000000; // huge refcnt to avoid dealloc
-
-    QByteArray buf((char*)&header, sizeof(header));
-    buf.append(data);
-    buf.append(char(0));
-
-    VIRTADDR addr = alloc_chunk(buf.length());
-    if (addr) {
-        write_raw(addr, buf.length(), buf.data());
-        addr += sizeof(header);
-    }
-
-    return m_string_cache[str] = addr;
 }

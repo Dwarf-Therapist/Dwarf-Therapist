@@ -26,13 +26,9 @@ THE SOFTWARE.
 #include <mach/vm_map.h>
 
 #include "dfinstance.h"
-#include "dwarf.h"
+#include "dfinstancenix.h"
 
-#include <QHash>
-
-class MemoryLayout;
-
-class DFInstanceOSX : public DFInstance {
+class DFInstanceOSX : public DFInstanceNix {
     Q_OBJECT
 public:
     DFInstanceOSX(QObject *parent=0);
@@ -40,12 +36,9 @@ public:
 
     // factory ctor
     bool find_running_copy(bool connect_anyway = false);
-    USIZE read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer);
-    QString read_string(const VIRTADDR &addr);
 
-    // Writing
+    USIZE read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer);
     USIZE write_raw(const VIRTADDR &addr, const USIZE &bytes, const void *buffer);
-    USIZE write_string(const VIRTADDR &addr, const QString &str);
 
     bool attach();
     bool detach();
@@ -55,14 +48,9 @@ public:
     static bool checkPermissions();
 
 protected:
-    QString calculate_checksum();
     vm_map_t m_task;
-    QString m_loc_of_dfexe;
 
 private:
-    uintptr_t get_string(const QString &str);
-    QHash<QString, uintptr_t> m_string_cache;
-
     VIRTADDR alloc_chunk(mach_vm_size_t size);
     VIRTADDR m_alloc_start, m_alloc_end;
     int m_alloc_remaining, m_size_allocated;

@@ -60,16 +60,8 @@ THE SOFTWARE.
 #define VM_REGION_BASIC_INFO_64 VM_REGION_BASIC_INFO
 #endif /* MACH64 */
 
-struct STLStringHeader {
-    quint32 length;
-    quint32 capacity;
-    qint32 refcnt;
-};
-
 DFInstanceOSX::DFInstanceOSX(QObject* parent)
-    : DFInstance(parent),
-      m_alloc_start(0),
-      m_alloc_end(0)
+    : DFInstance(parent)
 {
     if(!authorize()) {
         exit(1);
@@ -80,48 +72,6 @@ DFInstanceOSX::~DFInstanceOSX() {
     if(m_attach_count > 0) {
         detach();
     }
-}
-
-QString DFInstanceOSX::read_string(const VIRTADDR &addr) {
-    char buf[default_string_size];
-    read_raw(read_addr(addr), default_string_size, (void *)buf);
-
-    return QTextCodec::codecForName("IBM437")->toUnicode(buf);
-}
-
-USIZE DFInstanceOSX::write_string(const VIRTADDR &addr, const QString &str) {
-    // Ensure this operation is done as one transaction
-    attach();
-    uintptr_t buffer_addr = get_string(str);
-    if (buffer_addr) {
-        // 1: This unavoidably leaks the old buffer; our own
-        //    cannot be deallocated anyway.
-        // 2: The string is truncated to sizeof(VIRTADDR),
-        //    but come on, no-one will use strings that long :)
-        write_raw(addr, sizeof(VIRTADDR), &buffer_addr);
-    }
-    detach();
-    return buffer_addr ? str.length() : 0;
-}
-
-QString DFInstanceOSX::calculate_checksum() {
-    // ELF binaries don't seem to store a linker timestamp, so just MD5 the file.
-    QFile proc(m_loc_of_dfexe);
-    QCryptographicHash hash(QCryptographicHash::Md5);
-    if (!proc.open(QIODevice::ReadOnly)
-#if QT_VERSION >= 0x050000
-        || !hash.addData(&proc)
-#endif
-        ) {
-        LOGE << "FAILED TO READ DF EXECUTABLE";
-        return QString("UNKNOWN");
-    }
-#if QT_VERSION < 0x050000
-    hash.addData(proc.readAll());
-#endif
-    QString md5 = hexify(hash.result().mid(0, 4).toLower());
-    TRACE << "GOT MD5:" << md5;
-    return md5;
 }
 
 bool DFInstanceOSX::attach() {
@@ -255,30 +205,6 @@ VIRTADDR DFInstanceOSX::alloc_chunk(mach_vm_size_t size) {
     m_alloc_start += size;
 
     return rv;
-}
-
-uintptr_t DFInstanceOSX::get_string(const QString &str) {
-    if (m_string_cache.contains(str))
-        return m_string_cache[str];
-
-    QByteArray data = QTextCodec::codecForName("IBM437")->fromUnicode(str);
-
-    STLStringHeader header;
-    header.capacity = header.length = data.length();
-    header.refcnt = -1; // huge refcnt to avoid dealloc
-
-    QByteArray buf((char*)&header, sizeof(header));
-    buf.append(data);
-    buf.append(char(0));
-
-    VIRTADDR addr = alloc_chunk(buf.length());
-
-    if (addr) {
-        write_raw(addr, buf.length(), buf.data());
-        addr += sizeof(header);
-    }
-
-    return m_string_cache[str] = addr;
 }
 
 bool DFInstanceOSX::authorize() {

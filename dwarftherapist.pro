@@ -115,6 +115,11 @@ build_pass {
         memory_layouts.files += $$files(share/memory_layouts/linux/*)
         INSTALLS += memory_layouts
     }
+
+    unix {
+        HEADERS += inc/dfinstancenix.h
+        SOURCES += src/dfinstancenix.cpp
+    }
 }
 
 # Translation files
