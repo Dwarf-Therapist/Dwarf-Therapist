@@ -258,8 +258,8 @@ public:
     void load_trait_values(QVector<double> &list);
     QMultiMap<int,Preference*> *get_preferences(){return &m_preferences;}
 
-    double get_role_pref_match_counts(Role *r);
-    double get_role_pref_match_counts(Preference *role_pref);
+    double get_role_pref_match_counts(Role *r, bool load_map = false);
+    double get_role_pref_match_counts(Preference *role_pref, Role *r = 0);
 
     //! return a skill object by skill_id
     Skill get_skill(int skill_id);
@@ -373,6 +373,7 @@ public:
     double calc_role_rating(Role *);
     Q_INVOKABLE float get_role_rating(QString role_name);
     Q_INVOKABLE float get_raw_role_rating(QString role_name);
+    QList<QPair<QString,QString> > get_role_pref_matches(QString role_name){return m_role_pref_map.value(role_name);}
     void refresh_role_display_ratings();
 
     void calc_attribute_ratings();
@@ -584,6 +585,7 @@ private:
     QHash<QString, double> m_raw_role_ratings;
     QList<Role::simple_rating> m_sorted_role_ratings;
     QList<QPair<QString,float> > m_sorted_custom_role_ratings;
+    QHash<QString,QList<QPair<QString,QString> > > m_role_pref_map;
     QHash<short, int> m_states;
     bool m_born_in_fortress;
     quint32 m_birth_year;

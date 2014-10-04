@@ -85,20 +85,20 @@ QString Attribute::get_syndrome_desc(){
         return "";
 }
 
-float Attribute::get_potential_value(){
+double Attribute::get_potential_value(){
     if(m_value_potential < 0){
         m_value_potential = DwarfStats::calc_att_potential_value(m_value,m_max,m_cti);
     }
     return m_value_potential;
 }
 
-void Attribute::set_rating(float rating, bool potential){
+void Attribute::set_rating(double rating, bool potential){
     if(potential)
         m_rating_potential = rating;
     else
         m_rating = rating;
 }
-float Attribute::rating(bool potential){
+double Attribute::rating(bool potential){
     if(potential){
         if(m_rating_potential < 0){
             m_rating_potential = DwarfStats::get_attribute_rating(get_balanced_value());
@@ -108,7 +108,7 @@ float Attribute::rating(bool potential){
         return m_rating;
     }
 }
-float Attribute::get_balanced_value(){
+double Attribute::get_balanced_value(){
     calculate_balanced_value();
     return m_value_balanced;
 }

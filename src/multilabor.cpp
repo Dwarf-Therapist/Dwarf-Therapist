@@ -143,7 +143,7 @@ void MultiLabor::refresh(){
         m_role = gdr->get_role(m_role_name); //default overridden or new role
     }else{
         //check for a name change and update
-        QString curr_id = m_role->name;
+        QString curr_id = m_role->name();
         if(curr_id != m_role_name)
             m_role_name = curr_id;
     }
@@ -185,7 +185,7 @@ void MultiLabor::refresh(){
                     if(skill_id >= 0){
                         QVector<Role*> roles = gdr->get_skill_roles().value(l->skill_id);
                         if(roles.size() > 0){
-                            ratings[ML_ROLE] += d->get_role_rating(roles.first()->name);
+                            ratings[ML_ROLE] += d->get_role_rating(roles.first()->name());
                         }
                     }
                 }else if(!m_ratings.contains(d->id())){

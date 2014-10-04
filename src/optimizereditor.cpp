@@ -443,7 +443,7 @@ QString optimizereditor::find_role(int id){
     //find first related role
     QVector<Role*> roles = GameDataReader::ptr()->get_skill_roles().value(l->skill_id);
     if(roles.count() > 0){
-        return roles.at(0)->name;
+        return roles.at(0)->name();
     }else{
         return "";
     }

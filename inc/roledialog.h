@@ -28,7 +28,7 @@ class roleDialog;
 class roleDialog : public QDialog
 {
     Q_OBJECT
-    
+
 public:
     explicit roleDialog(DFInstance *dfi, QWidget *parent = 0);
     ~roleDialog();
@@ -38,10 +38,10 @@ public:
 
 public slots:
     void selection_changed();
-    
+
 private:
     Ui::roleDialog *ui;
-    Role *m_role;    
+    Role *m_role;
     QColor color_override;
     QColor color_default;
     DFInstance *m_df;
@@ -50,16 +50,17 @@ private:
     //preference main holder
     QHash<QTreeWidgetItem*,QVector<Preference*>* > m_pref_list;
 
-    //specific categories    
+    //specific categories
     QTreeWidgetItem *m_gems;
     QTreeWidgetItem *m_glass;
     QTreeWidgetItem *m_metals;
     QTreeWidgetItem *m_stone;
     QTreeWidgetItem *m_wood;
-    QTreeWidgetItem *m_glazes_wares;        
+    QTreeWidgetItem *m_glazes_wares;
     QTreeWidgetItem *m_plants;
     QTreeWidgetItem *m_plants_alcohol;
     QTreeWidgetItem *m_plants_crops;
+    QTreeWidgetItem *m_plants_crops_plantable;
     QTreeWidgetItem *m_plants_mill;
     QTreeWidgetItem *m_plants_extract;
     QTreeWidgetItem *m_trees;
@@ -106,6 +107,7 @@ private:
     bool m_override;
 
     //preferences
+    void add_general_node(const QString title, PREF_TYPES ptype, QList<int> &flags, QTreeWidgetItem *parent, ITEM_TYPE itype = NONE);
     void build_pref_tree();
     void load_material_prefs(QVector<Material*> mats, QString prefix_name = "", MATERIAL_STATES state_name = GENERIC);
     void load_plant_prefs(QVector<Plant *> plants);
@@ -129,7 +131,7 @@ private slots:
     void save_pressed();
     void save_role(Role *);
     void copy_pressed();
-    void name_changed(QString text);    
+    void name_changed(QString text);
 
     //attributes
     void draw_attribute_context_menu(const QPoint &);

@@ -237,7 +237,6 @@ HEADERS += inc/viewmanager.h \
     inc/itemweaponsubtype.h \
     inc/cp437codec.h \
     inc/rolestats.h \
-    inc/ecdf.h \
     inc/contextmenuhelper.h \
     inc/belief.h \
     inc/unitbelief.h \
@@ -251,7 +250,10 @@ HEADERS += inc/viewmanager.h \
     inc/grid_view/unitkillscolumn.h \
     inc/dtstandarditem.h \
     inc/docks/informationdock.h \
-    inc/docks/equipmentoverviewdock.h
+    inc/docks/equipmentoverviewdock.h \
+    inc/rolecalcminmax.h \
+    inc/rolecalcrecenter.h \
+    inc/rolecalcbase.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -331,7 +333,6 @@ SOURCES += src/viewmanager.cpp \
     src/item.cpp \
     src/uniform.cpp \
     src/itemweaponsubtype.cpp \
-    src/ecdf.cpp \
     src/rolestats.cpp \
     src/belief.cpp \
     src/grid_view/superlaborcolumn.cpp \
@@ -345,7 +346,8 @@ SOURCES += src/viewmanager.cpp \
     src/grid_view/unitkillscolumn.cpp \
     src/dtstandarditem.cpp \
     src/docks/informationdock.cpp \
-    src/docks/equipmentoverviewdock.cpp
+    src/docks/equipmentoverviewdock.cpp \
+    src/rolecalcbase.cpp
 FORMS += ui/scriptdialog.ui \
     ui/scannerdialog.ui \
     ui/pendingchanges.ui \

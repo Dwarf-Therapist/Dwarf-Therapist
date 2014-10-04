@@ -465,10 +465,10 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     QPair<QString, Role*> role_pair;
     foreach(role_pair, roles){
         Role *r = role_pair.second;
-        QMenu *menu_to_use = m_cmh->find_menu(m_roles,r->name);
-        QAction *a = menu_to_use->addAction(r->name, this, SLOT(add_role_column()));
+        QMenu *menu_to_use = m_cmh->find_menu(m_roles,r->name());
+        QAction *a = menu_to_use->addAction(r->name(), this, SLOT(add_role_column()));
         a->setData(role_pair.first);
-        a->setToolTip(tr("Add a column for role %1 (ID%2)").arg(r->name).arg(role_pair.first));
+        a->setToolTip(tr("Add a column for role %1 (ID%2)").arg(r->name()).arg(role_pair.first));
     }
 
     //SKILL

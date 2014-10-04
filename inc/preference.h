@@ -69,6 +69,7 @@ public:
     ITEM_TYPE get_item_type() {return m_iType;}
     QVector<int> special_flags() {return m_special_flags;}
     bool exact_match() {return m_exact_match;}
+    FlagArray material_flags() {return m_material_flags;}
 
     RoleAspect *pref_aspect;
 

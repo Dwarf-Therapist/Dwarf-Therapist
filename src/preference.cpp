@@ -184,6 +184,9 @@ void Preference::set_pref_flags(Plant *p){
             }
             if(p->flags().has_flag(P_CROP)){
                 add_flag(P_CROP);
+                if(p->flags().has_flag(P_SEED)){
+                    add_flag(P_SEED);
+                }
             }
             if(p->flags().has_flag(P_MILL)){
                 add_flag(P_MILL);

@@ -473,7 +473,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
         Role *r = gdr->get_role(name);
         if(r)
-            role_rating->setToolTip(r->get_role_details());
+            role_rating->setToolTip(r->get_role_details(d));
     }
     ui->tw_roles->setSortingEnabled(true);
 

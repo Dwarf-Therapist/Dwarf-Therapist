@@ -46,17 +46,17 @@ public:
     QString get_material_name(MATERIAL_STATES state);
     int id() {return m_index;}
 
-    void load_data();        
+    void load_data();
     bool is_inorganic() {return m_inorganic;}
     bool is_generated() {return m_is_generated;}
 
-    FlagArray flags() {return m_flags;}    
+    FlagArray flags() {return m_flags;}
 
     static const QString get_material_flag_desc(const MATERIAL_FLAGS &flag) {
         QMap<MATERIAL_FLAGS, QString> m;
         m[BONE]=tr("Bone");
         m[TOOTH]=tr("Tooth");
-        m[HORN]=tr("Horn");
+        m[HORN]=tr("Horn/Hoof");
         m[PEARL]=tr("Pearl");
         m[SHELL]=tr("Shell");
         m[LEATHER]=tr("Leather");
@@ -66,7 +66,6 @@ public:
         m[IS_WOOD]=tr("Wood");
         m[IS_STONE]=tr("Stone");
         m[IS_METAL]=tr("Metal");
-        m[ALCOHOL_PLANT]=tr("Plants (Alcohol)");
         m[THREAD_PLANT]=tr("Cloth");
         m[YARN]=tr("Yarn/Wool/Fur");
         return m.value(flag, "Missing Description");
@@ -86,7 +85,7 @@ public:
         m[MC_SHELL]=tr("Shell");
         m[MC_PEARL]=tr("Pearl");
         m[MC_TOOTH]=tr("Tooth");
-        m[MC_HORN]=tr("Horn");
+        m[MC_HORN]=tr("Horn/Hoof");
         m[MC_PLANT_FIBER]=tr("Plant Fiber");
         m[MC_SILK]=tr("Silk");
         m[MC_YARN]=tr("Yarn/Wool/Fur");
@@ -98,11 +97,11 @@ private:
     VIRTADDR m_address;
     VIRTADDR m_flag_address;
     DFInstance * m_df;
-    MemoryLayout * m_mem;    
+    MemoryLayout * m_mem;
     FlagArray m_flags;
     bool m_inorganic;
     bool m_is_generated;
-    QHash<MATERIAL_STATES, QString> m_state_names;    
+    QHash<MATERIAL_STATES, QString> m_state_names;
 
     void read_material();
 };

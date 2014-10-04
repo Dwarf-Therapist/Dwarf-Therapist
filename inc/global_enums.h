@@ -288,6 +288,7 @@ typedef enum{
 } MATERIAL_CLASS;
 
 typedef enum{
+    WAGON=1,
     VERMIN_FISH=9,
     CAN_LEARN=71,
     HATEABLE=72,
@@ -337,6 +338,7 @@ typedef enum {
     P_SUMMER = 1,
     P_AUTUMN = 2,
     P_WINTER = 3,
+    P_SEED = 5,
     P_DRINK = 7,
     P_EXTRACT_BARREL = 8,
     P_EXTRACT_VIAL = 9,

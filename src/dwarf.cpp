@@ -2662,7 +2662,7 @@ int Dwarf::total_assigned_labors(bool include_skill_less) {
 //load all the attribute display ratings
 void Dwarf::calc_attribute_ratings(){
     for(int i = 0; i < m_attributes.count(); i++){
-        float val = DwarfStats::get_attribute_rating(m_attributes[i].get_value(), true);
+        double val = DwarfStats::get_attribute_rating(m_attributes[i].get_value(), true);
         m_attributes[i].set_rating(val);
     }
 }
@@ -2681,7 +2681,7 @@ QList<double> Dwarf::calc_role_ratings(){
     foreach(Role *m_role, GameDataReader::ptr()->get_roles()){
         if(m_role){
             rating = calc_role_rating(m_role);
-            m_raw_role_ratings.insert(m_role->name, rating);
+            m_raw_role_ratings.insert(m_role->name(), rating);
         }
     }
     return m_raw_role_ratings.values();
@@ -2689,14 +2689,14 @@ QList<double> Dwarf::calc_role_ratings(){
 
 double Dwarf::calc_role_rating(Role *m_role){
     //if there's a script, use this in place of any aspects
-    if(!m_role->script.trimmed().isEmpty()){
+    if(!m_role->script().trimmed().isEmpty()){
         QJSEngine m_engine;
         QJSValue d_obj = m_engine.newQObject(this);
         m_engine.globalObject().setProperty("d", d_obj);
-        return  m_engine.evaluate(m_role->script).toNumber(); //just show the raw value the script generates
+        return  m_engine.evaluate(m_role->script()).toNumber(); //just show the raw value the script generates
     }
 
-    LOGD << "  +" << m_role->name << "-" << m_nice_name;
+    LOGD << "  +" << m_role->name() << "-" << m_nice_name;
 
     //no script, calculate rating based on specified aspects
     double rating_att = 0.0;
@@ -2722,6 +2722,7 @@ double Dwarf::calc_role_rating(Role *m_role){
 
     //ATTRIBUTES
     if(m_role->attributes.count()>0){
+
         foreach(QString name, m_role->attributes.uniqueKeys()){
             a = m_role->attributes.value(name);
             weight = a->weight;
@@ -2736,7 +2737,11 @@ double Dwarf::calc_role_rating(Role *m_role){
             total_weight += weight;
 
         }
-        rating_att = (rating_att / total_weight) * 100.0f; //weighted average percentile
+        if(total_weight > 0){
+            rating_att = (rating_att / total_weight) * 100.0f; //weighted average percentile
+        }else{
+            return 50.0f;
+        }
     }else{
         rating_att = 50.0f;
     }
@@ -2756,7 +2761,11 @@ double Dwarf::calc_role_rating(Role *m_role){
 
             total_weight += weight;
         }
-        rating_trait = (rating_trait / total_weight) * 100.0f;//weighted average percentile
+        if(total_weight > 0){
+            rating_trait = (rating_trait / total_weight) * 100.0f;//weighted average percentile
+        }else{
+            return 50.0f;
+        }
     }else{
         rating_trait = 50.0f;
     }
@@ -2782,15 +2791,19 @@ double Dwarf::calc_role_rating(Role *m_role){
 
             if(a->is_neg)
                 aspect_value = 1-aspect_value;
-
             rating_skill += (aspect_value*weight);
+
             total_weight += weight;
         }
         if(total_skill_rates <= 0){
             //this unit cannot improve the skills associated with this role so cancel any rating
             return 0.0001;
         }else{
-            rating_skill = (rating_skill / total_weight) * 100.0f;//weighted average percentile
+            if(total_weight > 0){
+                rating_skill = (rating_skill / total_weight) * 100.0f;//weighted average percentile
+            }else{
+                rating_skill = 50.0f;
+            }
         }
     }else{
         rating_skill = 50.0f;
@@ -2798,7 +2811,6 @@ double Dwarf::calc_role_rating(Role *m_role){
 
     //PREFERENCES
     if(m_role->prefs.count()>0){
-        total_weight = 0;
         aspect_value = get_role_pref_match_counts(m_role);
         rating_prefs = DwarfStats::get_preference_rating(aspect_value) * 100.0f;
     }else{
@@ -2839,7 +2851,7 @@ void Dwarf::refresh_role_display_ratings(){
     //keep a sorted list of the display ratings for tooltips, detail pane, etc.
     foreach(QString name, m_raw_role_ratings.uniqueKeys()){
         Role::simple_rating sr;
-        sr.is_custom = gdr->get_role(name)->is_custom;
+        sr.is_custom = gdr->get_role(name)->is_custom();
         float display_rating = DwarfStats::get_role_rating(m_raw_role_ratings.value(name)) * 100.0f;
         m_role_ratings.insert(name,display_rating);
         sr.rating = display_rating;
@@ -2853,10 +2865,10 @@ void Dwarf::refresh_role_display_ratings(){
     }
 }
 
-double Dwarf::get_role_pref_match_counts(Role *r){
+double Dwarf::get_role_pref_match_counts(Role *r, bool load_map){
     double total_rating = 0.0;
     foreach(Preference *role_pref,r->prefs){
-        double matches = get_role_pref_match_counts(role_pref);
+        double matches = get_role_pref_match_counts(role_pref,(load_map ? r : 0));
         if(matches > 0){
             double rating = matches * role_pref->pref_aspect->weight;
             if(role_pref->pref_aspect->is_neg)
@@ -2864,16 +2876,23 @@ double Dwarf::get_role_pref_match_counts(Role *r){
             total_rating += rating;
         }
     }
-
     return total_rating;
 }
 
-double Dwarf::get_role_pref_match_counts(Preference *role_pref){
+double Dwarf::get_role_pref_match_counts(Preference *role_pref, Role *r){
     double matches = 0;
     int key = role_pref->get_pref_category();
     QMultiMap<int, Preference *>::iterator i = m_preferences.find(key);
+    Preference *p;
     while(i != m_preferences.end() && i.key() == key){
-        matches += (double)static_cast<Preference*>(i.value())->matches(role_pref,this);
+        p = static_cast<Preference*>(i.value());
+        double match = (double)p->matches(role_pref,this);
+        if(match > 0){
+            if(r){
+                m_role_pref_map[r->name()].append(qMakePair(role_pref->get_name(), p->get_name()));
+            }
+        }
+        matches += match;
         i++;
     }
     //give a 0.1 bonus for each match after the first, this only applies when getting matches for groups

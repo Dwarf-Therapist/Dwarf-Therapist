@@ -143,8 +143,8 @@ void roleDialog::load_role(QString role_name){
     m_role = GameDataReader::ptr()->get_roles().take(role_name);
     if(!m_role){
         m_role = new Role();
-        m_role->is_custom = true;
-        m_role->name = "";
+        m_role->is_custom(true);
+        m_role->name("");
     }
 
     //refresh copy combo
@@ -152,7 +152,7 @@ void roleDialog::load_role(QString role_name){
     QList<QPair<QString, Role*> > roles = GameDataReader::ptr()->get_ordered_roles();
     QPair<QString, Role*> role_pair;
     foreach(role_pair, roles){
-        if(role_pair.first != m_role->name)
+        if(role_pair.first != m_role->name())
             ui->cmb_copy->addItem(role_pair.first);
     }
 
@@ -187,7 +187,7 @@ void roleDialog::load_role(QString role_name){
 
     //if there's a script, enlarge the window
     QList<int> sizes;
-    if(!m_role->script.isEmpty()){
+    if(!m_role->script().isEmpty()){
         sizes.append(50);
         sizes.append(this->height() - 50);
     }else{
@@ -226,8 +226,8 @@ void roleDialog::decorate_splitter(QSplitter *s){
 
 
 void roleDialog::load_role_data(){
-    ui->le_role_name->setText(m_role->name);
-    ui->te_script->setPlainText(m_role->script);
+    ui->le_role_name->setText(m_role->name());
+    ui->te_script->setPlainText(m_role->script());
     //global weights
     ui->dsb_attributes_weight->setValue(m_role->attributes_weight.weight);
     ui->dsb_traits_weight->setValue(m_role->traits_weight.weight);
@@ -337,15 +337,15 @@ void roleDialog::save_pressed(){
         return;
     }
     //update the role
-    m_role->is_custom = true;
+    m_role->is_custom(true);
 
     save_role(m_role);
 
     //if we're updating/adding a role to replace a default remove the default role first
     if(m_override)
-        GameDataReader::ptr()->get_roles().remove(m_role->name);
+        GameDataReader::ptr()->get_roles().remove(m_role->name());
 
-    m_role->name = new_name;
+    m_role->name(new_name);
     m_role->create_role_details(*DT->user_settings());
     GameDataReader::ptr()->get_roles().insert(new_name,m_role);
 
@@ -355,7 +355,7 @@ void roleDialog::save_pressed(){
 
 void roleDialog::save_role(Role *r){
     //save any script
-    r->script = ui->te_script->toPlainText();
+    r->script() = ui->te_script->toPlainText();
 
     //attributes
     r->attributes_weight.weight = ui->dsb_attributes_weight->value();
@@ -407,8 +407,8 @@ void roleDialog::save_prefs(Role *r){
 void roleDialog::close_pressed(){
     m_dwarf = 0;
     //if we were editing and cancelled, put the role back!
-    if(m_role && !m_role->name.trimmed().isEmpty())
-        GameDataReader::ptr()->get_roles().insert(m_role->name,m_role);
+    if(m_role && !m_role->name().trimmed().isEmpty())
+        GameDataReader::ptr()->get_roles().insert(m_role->name(),m_role);
     this->reject();
 }
 
@@ -579,8 +579,8 @@ void roleDialog::copy_pressed(){
         Role *copy = GameDataReader::ptr()->get_role(ui->cmb_copy->currentText());
         m_role = new Role(*copy);
         if(name=="")
-            name = m_role->name;
-        m_role->name = name;
+            name = m_role->name();
+        m_role->name(name);
 
         //clear tables
         clear_table(*ui->tw_attributes);
@@ -709,8 +709,10 @@ void roleDialog::load_plant_prefs(QVector<Plant*> plants){
             }
             if(p->flags().has_flag(P_CROP)){
                 add_pref_to_tree(m_plants_crops,plant_pref);
+                if(p->flags().has_flag(P_SEED)){
+                    add_pref_to_tree(m_plants_crops_plantable,plant_pref);
+                }
             }
-
         }
 
         if(p->flags().has_flag(P_MILL)){
@@ -817,6 +819,9 @@ void roleDialog::load_creatures(){
     add_general_creature_node(tr("Domestic"),flags,&m_domestic);
 
     foreach(Race *r, m_df->get_races()){
+        if(r->flags().has_flag(WAGON))
+            continue;
+
         Preference *p = new Preference(LIKE_CREATURE, capitalize(r->name()),this);
         p->set_pref_flags(r);
 
@@ -859,16 +864,13 @@ void roleDialog::load_weapons(){
     //add parent categories
     QTreeWidgetItem *melee = init_parent_node("Weapons (Melee)");
     QTreeWidgetItem *ranged = init_parent_node("Weapons (Ranged)");
-    //add category to general items
-    p = new Preference(LIKE_ITEM,WEAPON,this);
-    p->set_name("Weapons (Ranged)");
-    p->add_flag(ITEMS_WEAPON_RANGED);
-    add_pref_to_tree(m_general_item, p);
 
-    p = new Preference(LIKE_ITEM,WEAPON,this);
-    p->add_flag(ITEMS_WEAPON);
-    p->set_name("Weapons (Melee)");
-    add_pref_to_tree(m_general_item, p);
+    //add category to general items
+    QList<int> flags;
+    flags << ITEMS_WEAPON_RANGED;
+    add_general_node(tr("Weapons (Ranged)"),LIKE_ITEM,flags,m_general_item,WEAPON);
+    flags << ITEMS_WEAPON;
+    add_general_node(tr("Weapons (Melee)"),LIKE_ITEM,flags,m_general_item,WEAPON);
 
     foreach(ItemWeaponSubtype *w, m_df->get_weapon_defs()){
         p = new Preference(LIKE_ITEM,w->name_plural(),this); //unfortunately a crescent halberd != halberd
@@ -901,6 +903,7 @@ void roleDialog::build_pref_tree(){
     m_plants = init_parent_node("Plants");
     m_plants_alcohol = init_parent_node("Plants (Alcohol)");
     m_plants_crops = init_parent_node("Plants (Crops)");
+    m_plants_crops_plantable = init_parent_node("Plants (Crops Plantable)");
     m_plants_mill = init_parent_node("Plants (Mill)");
     m_plants_extract = init_parent_node("Plants (Extracts)");
     m_trees = init_parent_node("Trees");
@@ -917,42 +920,35 @@ void roleDialog::build_pref_tree(){
     mats_include << BONE << TOOTH << HORN << PEARL << SHELL << LEATHER << SILK << IS_GLASS
                     << IS_WOOD << THREAD_PLANT << YARN;
 
+    QList<int> flags;
     foreach(MATERIAL_FLAGS f, mats_include){
-        Preference *p = new Preference(LIKE_MATERIAL,NONE,this);
-        p->set_name(Material::get_material_flag_desc(f));
-        p->add_flag(f);
-        add_pref_to_tree(m_general_material,p);
+        flags << f;
+        add_general_node(Material::get_material_flag_desc(f),LIKE_MATERIAL,flags,m_general_material);
     }
 
     //general category for plants used for alcohol
-    Preference *p_alc_plant = new Preference(LIKE_PLANT, NONE,this);
-    p_alc_plant->set_name("Plants (Alcohol)");
-    p_alc_plant->add_flag(P_DRINK);
-    add_pref_to_tree(m_general_plant, p_alc_plant);
+    flags << P_DRINK;
+    add_general_node(tr("Plants (Alcohol)"),LIKE_PLANT,flags,m_general_plant);
 
-    //general category for crops
-    Preference *p_crop = new Preference(LIKE_PLANT, NONE,this);
-    p_crop->set_name("Plants (Crops)");
-    p_crop->add_flag(P_CROP);
-    add_pref_to_tree(m_general_plant, p_crop);
+    //general category for crops plant or gather
+    flags << P_CROP;
+    add_general_node(tr("Plants (Crops)"),LIKE_PLANT,flags,m_general_plant);
+
+    //general category for plantable crops
+    flags << P_CROP << P_SEED;
+    add_general_node(tr("Plants (Crops Plantable)"),LIKE_PLANT,flags,m_general_plant);
 
     //general category for millable plants
-    Preference *p_mill = new Preference(LIKE_PLANT, NONE,this);
-    p_mill->set_name("Plants (Millable)");
-    p_mill->add_flag(P_MILL);
-    add_pref_to_tree(m_general_plant, p_mill);
+    flags << P_MILL;
+    add_general_node(tr("Plants (Millable)"),LIKE_PLANT,flags,m_general_plant);
 
     //general category for plants used for processing/threshing
-    Preference *p_extract = new Preference(LIKE_PLANT, NONE,this);
-    p_extract->set_name("Plants (Extracts)");
-    p_extract->add_flag(P_HAS_EXTRACTS);
-    add_pref_to_tree(m_general_plant, p_extract);
+    flags << P_HAS_EXTRACTS;
+    add_general_node(tr("Plants (Extracts)"),LIKE_PLANT,flags,m_general_plant);
 
     //special custom preference for outdoors
-    Preference *p_outdoors = new Preference(LIKE_OUTDOORS,NONE,this);
-    p_outdoors->set_name("Outdoors");
-    p_outdoors->add_flag(999);
-    add_pref_to_tree(m_general_other, p_outdoors);
+    flags << 999;
+    add_general_node(tr("Outdoors"),LIKE_OUTDOORS,flags,m_general_other);
 
     load_material_prefs(m_df->get_inorganic_materials());
     load_material_prefs(m_df->get_base_materials());
@@ -988,6 +984,16 @@ void roleDialog::build_pref_tree(){
     connect(ui->treePrefs, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(item_double_clicked(QTreeWidgetItem*,int)));
 }
 
+void roleDialog::add_general_node(const QString title, PREF_TYPES ptype, QList<int> &flags, QTreeWidgetItem *parent, ITEM_TYPE itype){
+    Preference *p = new Preference(ptype, itype,this);
+    p->set_name(title);
+    foreach(int flag, flags){
+        p->add_flag(flag);
+    }
+    add_pref_to_tree(parent, p);
+    flags.clear();
+}
+
 QTreeWidgetItem* roleDialog::init_parent_node(QString title){
     QTreeWidgetItem *node = new QTreeWidgetItem;
     node->setData(0, Qt::UserRole, title);
@@ -998,10 +1004,6 @@ QTreeWidgetItem* roleDialog::init_parent_node(QString title){
 
 void roleDialog::add_pref_to_tree(QTreeWidgetItem *parent, Preference *p){
     if(!p->get_name().isEmpty()){
-        //general items are never exact matches
-//        if(parent != m_general_item)
-//            p->set_exact(true);
-
         //set a default weight
         p->pref_aspect->weight = 0.5f;
 
@@ -1077,7 +1079,7 @@ void roleDialog::calc_new_role(){
         QJSEngine m_engine;
         QJSValue d_obj = m_engine.newQObject(m_dwarf);
         m_engine.globalObject().setProperty("d", d_obj);
-        QJSValue ret = m_engine.evaluate(m_role->script);
+        QJSValue ret = m_engine.evaluate(m_role->script());
         if(!ret.isNumber()){
             QString err_msg;
             if(ret.isError()) {
@@ -1117,7 +1119,7 @@ void roleDialog::selection_changed(){
             m_dwarf = dwarfs.at(0);
         if(m_dwarf){
             ui->lbl_name->setText(m_dwarf->nice_name());
-            float rating = m_dwarf->get_raw_role_rating(m_role->name);
+            float rating = m_dwarf->get_raw_role_rating(m_role->name());
             ui->lbl_current->setText("Current Raw Rating: " + QString::number(rating,'g',4) + "%");
             //ui->lbl_new->setText("New Raw Rating: " + QString::number(rating,'g',2) + "%");
             calc_new_role();

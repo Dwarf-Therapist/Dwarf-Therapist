@@ -115,7 +115,7 @@ float SkillColumn::get_role_rating(Dwarf *d){
         QVector<Role*> related_roles = GameDataReader::ptr()->get_skill_roles().value(m_skill_id);
         if(related_roles.count() > 0){
             foreach(Role *r, related_roles){
-                m_role_sort_val += d->get_role_rating(r->name);
+                m_role_sort_val += d->get_role_rating(r->name());
             }
             m_role_sort_val /= related_roles.count();
         }
@@ -145,8 +145,8 @@ void SkillColumn::build_tooltip(Dwarf *d, bool include_roles){
                 //just list roles and %
                 role_str = tr("<h4>Related Roles:</h4><ul style=\"margin-left:-20px; padding-left:0px;\">");
                 foreach(Role *r, found_roles){
-                    role_rating = d->get_role_rating(r->name);
-                    role_str += tr("<li>%1 (%2%)</li>").arg(r->name).arg(QString::number(role_rating,'f',2));
+                    role_rating = d->get_role_rating(r->name());
+                    role_str += tr("<li>%1 (%2%)</li>").arg(r->name()).arg(QString::number(role_rating,'f',2));
                 }
                 role_str += "</ul>";
             }

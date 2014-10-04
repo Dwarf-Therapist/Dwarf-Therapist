@@ -639,13 +639,15 @@ void DFInstance::load_role_ratings(){
     QVector<double> trait_values;
     QVector<double> pref_values;
 
+    GameDataReader *gdr = GameDataReader::ptr();
+
     foreach(Dwarf *d, m_labor_capable_dwarves){
-        foreach(ATTRIBUTES_TYPE id, GameDataReader::ptr()->get_attributes().keys()){
+        foreach(ATTRIBUTES_TYPE id, gdr->get_attributes().keys()){
             attribute_values.append(d->get_attribute(id).get_balanced_value());
             attribute_raw_values.append(d->get_attribute(id).get_value());
         }
 
-        foreach(int id, GameDataReader::ptr()->get_skills().keys()){
+        foreach(int id, gdr->get_skills().keys()){
             skill_values.append(d->get_skill(id).get_balanced_level());
         }
 
@@ -653,9 +655,9 @@ void DFInstance::load_role_ratings(){
             trait_values.append((double)val);
         }
 
-        foreach(Role *r, GameDataReader::ptr()->get_roles().values()){
+        foreach(Role *r, gdr->get_roles().values()){
             if(r->prefs.count() > 0){
-                pref_values.append(d->get_role_pref_match_counts(r));
+                pref_values.append(d->get_role_pref_match_counts(r,true));
             }
         }
     }
@@ -701,20 +703,11 @@ void DFInstance::load_role_ratings(){
         float min = 0;
         float median = 0;
         if(all_role_ratings.count() > 0){
+            qSort(all_role_ratings);
             role_rating_avg /= all_role_ratings.count();
-            QVector<double>::Iterator i_min = std::min_element(all_role_ratings.begin(),all_role_ratings.end());
-            QVector<double>::Iterator i_max = std::max_element(all_role_ratings.begin(),all_role_ratings.end());
-            max = *i_max;
-            min = *i_min;
-            median = 0;
-            float n = (float)all_role_ratings.count() / 2.0f;
-            if(all_role_ratings.count() % 2 == 0){
-                std::nth_element(all_role_ratings.begin(),all_role_ratings.begin()+(int)n,all_role_ratings.end());
-                median = 0.5*(all_role_ratings.at((int)n)+all_role_ratings.at((int)n-1));
-            }else{
-                std::nth_element(all_role_ratings.begin(),all_role_ratings.begin()+(int)n,all_role_ratings.end());
-                median =  all_role_ratings.at((int)n);
-            }
+            max = all_role_ratings.last();
+            min = all_role_ratings.first();
+            median = RoleCalcBase::find_median(all_role_ratings);
         }
         LOGD << "Overall Role Rating Stats";
         LOGD << "     - Min: " << min;

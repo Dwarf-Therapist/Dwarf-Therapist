@@ -383,8 +383,8 @@ void GameDataReader::load_roles(){
     for (short i = 0; i < dwarf_roles; ++i) {
         u->setArrayIndex(i);
         Role *r = new Role(*u, this);
-        r->is_custom = true;
-        m_dwarf_roles.insert(r->name,r);
+        r->is_custom(true);
+        m_dwarf_roles.insert(r->name(),r);
     }
     u->endArray();
 
@@ -393,10 +393,10 @@ void GameDataReader::load_roles(){
         m_data_settings->setArrayIndex(i);
         Role *r = new Role(*m_data_settings, this);
         //keep a list of default roles to check custom roles against
-        m_default_roles.append(r->name);
+        m_default_roles.append(r->name());
         //don't overwrite any custom role with the same name
-        if(!m_dwarf_roles.contains(r->name))
-            m_dwarf_roles.insert(r->name, r);
+        if(!m_dwarf_roles.contains(r->name()))
+            m_dwarf_roles.insert(r->name(), r);
     }
     m_data_settings->endArray();
 
@@ -474,13 +474,13 @@ void GameDataReader::load_role_mappings(){
     m_ordered_roles.clear();
     QStringList role_names;
     foreach(Role *r, m_dwarf_roles) {
-        role_names << r->name.toUpper();
+        role_names << r->name().toUpper();
     }
     qSort(role_names);
     foreach(QString name, role_names) {
         foreach(Role *r, m_dwarf_roles) {
-            if (r->name.toUpper() == name.toUpper()) {
-                m_ordered_roles << QPair<QString, Role*>(r->name, r);
+            if (r->name().toUpper() == name.toUpper()) {
+                m_ordered_roles << QPair<QString, Role*>(r->name(), r);
                 break;
             }
         }

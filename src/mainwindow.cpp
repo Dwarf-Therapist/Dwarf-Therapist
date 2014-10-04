@@ -1127,7 +1127,7 @@ void MainWindow::remove_custom_role(){
                         foreach(ViewColumn *vc, vcs->columns()){
                             if(vc->type()==CT_ROLE){
                                 RoleColumn *rc = ((RoleColumn*)vc);
-                                if(rc->get_role() && rc->get_role()->name==name){
+                                if(rc->get_role() && rc->get_role()->name()==name){
                                     vcs->remove_column(vc);
                                 }
                             }
@@ -1169,7 +1169,7 @@ void MainWindow::refresh_role_menus() {
     QList<QPair<QString, Role*> > roles = GameDataReader::ptr()->get_ordered_roles();
     QPair<QString, Role*> role_pair;
     foreach(role_pair, roles){
-        if(role_pair.second->is_custom){
+        if(role_pair.second->is_custom()){
             QAction *edit = ui->menu_edit_roles->addAction(role_pair.first,this,SLOT(edit_custom_role()) );
             edit->setData(role_pair.first);
 
@@ -1193,7 +1193,7 @@ void MainWindow::write_custom_roles(){
     s->beginWriteArray("custom_roles");
     int count = 0;
     foreach(Role *r, GameDataReader::ptr()->get_roles()){
-        if(r->is_custom){
+        if(r->is_custom()){
             s->setArrayIndex(count);
             r->write_to_ini(*s, default_attributes_weight, default_traits_weight, default_skills_weight, default_prefs_weight);
             count++;
