@@ -756,7 +756,9 @@ void StateTableView::mouseMoveEvent(QMouseEvent *event) {
             else
                 m_dragging = false;
         }
-        m_proxy->redirect_tooltip(idx);
+        if(m_proxy){
+          m_proxy->redirect_tooltip(idx);
+        }
     }
     QTreeView::mouseMoveEvent(event);
 }
