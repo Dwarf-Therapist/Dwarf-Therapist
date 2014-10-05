@@ -20,8 +20,6 @@ public:
     uint string_length_offset();
     uint string_cap_offset();
 
-    VIRTADDR get_base_addr(){return m_base_addr;} //only used by the scanner
-
     VIRTADDR address(const QString &key, const bool is_global = true) { //globals
         return m_addresses.value(key, -1) + (is_global ? m_base_addr : 0);
     }

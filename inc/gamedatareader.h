@@ -26,8 +26,6 @@ THE SOFTWARE.
 #include "global_enums.h"
 #include "utils.h"
 #include <QPointer>
-#include <string>
-#include <stdexcept>
 
 // forward declaration
 class QSettings;
@@ -41,17 +39,6 @@ class Profession;
 class DwarfJob;
 class Thought;
 class Belief;
-
-// exceptions
-class MissingValueException : public std::runtime_error {
-public:
-    MissingValueException(const std::string &msg) : runtime_error(msg) {}
-};
-
-class CorruptedValueException : public std::runtime_error {
-public:
-    CorruptedValueException(const std::string &msg) : runtime_error(msg) {}
-};
 
 //singleton reader of game data
 class GameDataReader : public QObject {

@@ -112,20 +112,20 @@ void UnitWound::read_wound(){
     QList<short> desc_index;
     quint32 general_flags = m_df->read_addr(m_addr + mem->wound_offset("general_flags"));
 
-    if(has_flag(0x00000001,general_flags))
+    if(general_flags & 1)
         m_severed = true;
-    if(has_flag(0x00000002,general_flags))
+    if(general_flags & (1 << 1))
         m_mortal = true;
-    if(has_flag(0x00000004,general_flags))
+    if(general_flags & (1 << 2))
         m_stuck = true;
-    if(has_flag(0x00000008,general_flags))
+    if(general_flags & (1 << 3))
         m_diagnosed = true;
-    if(has_flag(0x00000010,general_flags))
+    if(general_flags & (1 << 4))
         m_sutured = true;
-    if(m_caste_flags.has_flag(GETS_WOUND_INFECTIONS) && has_flag(0x00000020,general_flags))
+    if(m_caste_flags.has_flag(GETS_WOUND_INFECTIONS) && general_flags & (1 << 5))
         m_infection = true;
 
-    m_is_critical = (m_severed || m_mortal);
+    m_is_critical = m_severed || m_mortal;
 
     QVector<VIRTADDR> addr_wounded_parts = m_df->enumerate_vector(m_addr+mem->wound_offset("parts"));
 
@@ -149,10 +149,10 @@ void UnitWound::read_wound(){
         wpd.body_part_name = bp.body_part()->name();
         wpd.layer_name = bp.body_part()->get_layer(layer_id).name();
 
-        wpd.diagnosed = (has_flag(0x20000000,wpd.wound_flags1));
+        wpd.diagnosed = wpd.wound_flags1 & 0x20000000;
         wpd.visible = false;
 
-        if(has_flag(0x00000004,wpd.wound_flags1) || has_flag(0x00020000,wpd.wound_flags1) || has_flag(0x00800000,wpd.wound_flags1) || has_flag(0x04000000,wpd.wound_flags1))
+        if(wpd.wound_flags1 & 0x04820004)
             wpd.is_scarred = true;
         else
             wpd.is_scarred = false;
@@ -173,18 +173,12 @@ void UnitWound::read_wound(){
                 //this only applies to mods, and usually fortress animals/creatures at that (masterwork golems). this also still doesn't process all related layers, as they're not mapped.
                 //it's only doing a check on the layers for this bodypart. any layers above/below that may have also been pierced are ignored as it's probably not THAT important
                 foreach(BodyPartLayer bpl, bp.body_part()->get_layers()){
-                    if(has_flag(1,m_unitHealth->layer_status_flags.at(bpl.global_layer_id()))){
+                    if(m_unitHealth->layer_status_flags.at(bpl.global_layer_id()) & 1){
                         //gone
                         wounded_part_details fluid_gone;
                         fluid_gone.body_part_name = QString("%1's %2").arg(bp.body_part()->name(),bpl.tissue_name());
                         add_detail(fluid_gone,eHealth::HI_SEVERED,false,true);
                         m_wounded_parts.append(fluid_gone);
-                    }else if(has_flag(1,m_unitHealth->layer_status_flags.at(bpl.global_layer_id()))){
-                        //leaking
-                        wounded_part_details fluid_leak;
-                        fluid_leak.body_part_name = QString("%1's %2").arg(bp.body_part()->name(),bpl.tissue_name());
-                        add_detail(fluid_leak,eHealth::HI_SEVERED,false,false,true);
-                        m_wounded_parts.append(fluid_leak);
                     }
                 }
 
@@ -192,9 +186,9 @@ void UnitWound::read_wound(){
                     //bone damage/loss is different in that it's usually a smashed type, but reports as broken or fractured
                     desc_index.clear();
                     if(!m_unitHealth->required_diagnosis() || (m_unitHealth->required_diagnosis() && wpd.diagnosed)){
-                        if(has_flag(0x80000000,wpd.wound_flags1))
+                        if(wpd.wound_flags1 & 0x80000000)
                             desc_index.append(0); //compound fracture
-                        if(has_flag(0x10000000,wpd.wound_flags1))
+                        if(wpd.wound_flags1 & 0x10000000)
                             desc_index.append(1); //overlapping fracture
                     }
 
@@ -215,21 +209,21 @@ void UnitWound::read_wound(){
                     //it might be exclusively related to whether or not the wound has completely healed.. (ie. cur_pen)
                     //                if((muscle_dmg || skin_dmg) && wpd.cur_pen > 0
                     //                   && !m_sutured && !wpd.is_scarred
-                    //                   && !has_flag(0x00002000,m_unitHealth->bp_statuses.at(wpd.body_part_id)) //bandaged
-                    //                && !has_flag(0x00004000,m_unitHealth->bp_statuses.at(wpd.body_part_id)) //cast
-                    //                && !has_flag(0x00001000,m_unitHealth->bp_statuses.at(wpd.body_part_id)) //splint
+                    //                   && !m_unitHealth->bp_statuses.at(wpd.body_part_id & 0x00002000) //bandaged
+                    //                && !m_unitHealth->bp_statuses.at(wpd.body_part_id & 0x00004000) //cast
+                    //                && !m_unitHealth->bp_statuses.at(wpd.body_part_id & 0x00001000) //splint
                     //                ){
                     short idx = -1;
                     desc_index.clear();
-                    if(has_flag(0x0002,wpd.wound_flags1)) //smashed
+                    if(wpd.wound_flags1 & 0x2) //smashed
                         idx = 0;
-                    else if(has_flag(0x0004,wpd.wound_flags1)) //torn
+                    else if(wpd.wound_flags1 & 0x4) //torn
                         idx = 2;
-                    else if(has_flag(0x0001,wpd.wound_flags1)) //cut
+                    else if(wpd.wound_flags1 & 0x1) //cut
                         idx = 4;
-                    else if(has_flag(0x80000,wpd.wound_flags1)) //broken
+                    else if(wpd.wound_flags1 & 0x80000) //broken
                         idx = 6;
-                    else if(has_flag(0x200000,wpd.wound_flags1)) //gouged
+                    else if(wpd.wound_flags1 & 0x200000) //gouged
                         idx = 8;
 
                     //cur_pen < max = cut/torn/smashed OPEN, else cut/torn/smashed APART
@@ -247,21 +241,21 @@ void UnitWound::read_wound(){
             //    wnd_desc.append("Huge Dent");
 
             add_detail(wpd,eHealth::HI_TENDON,
-                       has_flag(0x00000040,wpd.wound_flags1),has_flag(0x00000020,wpd.wound_flags1),has_flag(0x00000010,wpd.wound_flags1));
+                       wpd.wound_flags1 & 0x00000040,wpd.wound_flags1 & 0x00000020,wpd.wound_flags1 & 0x00000010);
 
             add_detail(wpd,eHealth::HI_LIGAMENT,
-                       has_flag(0x00000200,wpd.wound_flags1),has_flag(0x00000100,wpd.wound_flags1),has_flag(0x00000080,wpd.wound_flags1));
+                       wpd.wound_flags1 & 0x00000200,wpd.wound_flags1 & 0x00000100,wpd.wound_flags1 & 0x00000080);
 
             add_detail(wpd,eHealth::HI_NERVE,
-                       has_flag(0x00000400,wpd.wound_flags1),has_flag(0x00000800,wpd.wound_flags1));
+                       wpd.wound_flags1 & 0x00000400,wpd.wound_flags1 & 0x00000800);
 
             if(!m_sutured){//(!wpd.is_scarred){
-                add_detail(wpd,eHealth::HI_ARTERY, has_flag(0x00004000,wpd.wound_flags1),has_flag(0x40000000,wpd.wound_flags1));
+                add_detail(wpd,eHealth::HI_ARTERY, wpd.wound_flags1 & 0x00004000,wpd.wound_flags1 & 0x40000000);
              }
 
-            add_detail(wpd,eHealth::HI_GUTTED, has_flag(0x00008000,wpd.wound_flags1));
+            add_detail(wpd,eHealth::HI_GUTTED, wpd.wound_flags1 & 0x00008000);
 
-            add_detail(wpd,eHealth::HI_SETTING, has_flag(0x00000001,wpd.wound_flags2));
+            add_detail(wpd,eHealth::HI_SETTING, wpd.wound_flags2 & 0x00000001);
 
             if(!m_caste_flags.has_flag(NO_PAIN)){
                 wpd.pain = m_df->read_int(wounded_part + mem->wound_offset("pain"));

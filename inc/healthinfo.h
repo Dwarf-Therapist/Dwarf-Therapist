@@ -65,9 +65,9 @@ public:
 //        return m_type_flags;
 //    }
 
-    bool is_treatment() {return (has_flag(1,m_type_flags));}
-    bool is_status() {return (has_flag(2,m_type_flags));}
-    bool is_wound() {return (has_flag(4,m_type_flags));}
+    bool is_treatment() {return m_type_flags & 1;}
+    bool is_status() {return m_type_flags & 2;}
+    bool is_wound() {return m_type_flags & 4;}
 
     bool operator==(const HealthInfo &other) const {
         if(this == &other)
@@ -75,13 +75,10 @@ public:
         return (this->m_description == other.m_description && this->m_type_flags == other.m_type_flags);
     }
 
-    struct less_than_severity
+    static bool less_than_severity(const HealthInfo *h1, const HealthInfo *h2)
     {
-        bool operator() (const HealthInfo* h1, const HealthInfo* h2) const
-        {
-            return (h1->m_severity < h2->m_severity);
-        }
-    };
+        return h1->m_severity < h2->m_severity;
+    }
 
 private:
     QString m_description;

@@ -28,7 +28,6 @@ THE SOFTWARE.
 #include "Foundation/NSBundle.h"
 #include "AppKit/NSWorkspace.h"
 
-#include "cp437codec.h"
 #include "dfinstance.h"
 #include "dfinstanceosx.h"
 #include "defines.h"
@@ -61,16 +60,8 @@ THE SOFTWARE.
 #define VM_REGION_BASIC_INFO_64 VM_REGION_BASIC_INFO
 #endif /* MACH64 */
 
-struct STLStringHeader {
-    quint32 length;
-    quint32 capacity;
-    qint32 refcnt;
-};
-
 DFInstanceOSX::DFInstanceOSX(QObject* parent)
-    : DFInstance(parent),
-      m_alloc_start(0),
-      m_alloc_end(0)
+    : DFInstance(parent)
 {
     if(!authorize()) {
         exit(1);
@@ -81,57 +72,6 @@ DFInstanceOSX::~DFInstanceOSX() {
     if(m_attach_count > 0) {
         detach();
     }
-}
-
-QString DFInstanceOSX::read_string(const VIRTADDR &addr) {
-    VIRTADDR buffer_addr = read_addr(addr);
-    int upper_size = 256;
-    QByteArray buf(upper_size, 0);
-    read_raw(buffer_addr, upper_size, buf);
-    //int bytes_read = read_raw(buffer_addr, upper_size, buf);
-    //if (bytes_read == -1) {
-        //LOGW << "Failed to read from" << hexify(addr);
-        //throw -1;
-    //}
-
-    buf.truncate(buf.indexOf(QChar('\0')));
-    CP437Codec *c = new CP437Codec();
-    return c->toUnicode(buf);
-}
-
-USIZE DFInstanceOSX::write_string(const VIRTADDR &addr, const QString &str) {
-    // Ensure this operation is done as one transaction
-    attach();
-    uintptr_t buffer_addr = get_string(str);
-    if (buffer_addr) {
-        // 1: This unavoidably leaks the old buffer; our own
-        //    cannot be deallocated anyway.
-        // 2: The string is truncated to sizeof(VIRTADDR),
-        //    but come on, no-one will use strings that long :)
-        write_raw(addr, sizeof(VIRTADDR), &buffer_addr);
-    }
-    detach();
-    return buffer_addr ? str.length() : 0;
-}
-
-QString DFInstanceOSX::calculate_checksum() {
-    // ELF binaries don't seem to store a linker timestamp, so just MD5 the file.
-    QFile proc(m_loc_of_dfexe);
-    QCryptographicHash hash(QCryptographicHash::Md5);
-    if (!proc.open(QIODevice::ReadOnly)
-#if QT_VERSION >= 0x050000
-        || !hash.addData(&proc)
-#endif
-        ) {
-        LOGE << "FAILED TO READ DF EXECUTABLE";
-        return QString("UNKNOWN");
-    }
-#if QT_VERSION < 0x050000
-    hash.addData(proc.readAll());
-#endif
-    QString md5 = hexify(hash.result().mid(0, 4).toLower());
-    TRACE << "GOT MD5:" << md5;
-    return md5;
 }
 
 bool DFInstanceOSX::attach() {
@@ -231,48 +171,6 @@ bool DFInstanceOSX::find_running_copy(bool connect_anyway) {
     return true;
 }
 
-void DFInstanceOSX::map_virtual_memory() {
-    foreach(MemorySegment *seg, m_regions) {
-        delete(seg);
-    }
-    m_regions.clear();
-    if (!m_is_ok)
-        return;
-
-    kern_return_t result;
-
-    mach_vm_address_t address = 0x0;
-    mach_vm_size_t size = 0;
-    vm_region_basic_info_data_64_t info;
-    mach_msg_type_number_t infoCnt = VM_REGION_BASIC_INFO_COUNT_64;
-    mach_port_t object_name = 0;
-
-    m_lowest_address = 0;
-    do
-    {
-        // get the next region
-        result = mach_vm_region( m_task, &address, &size, VM_REGION_BASIC_INFO_64, (vm_region_info_t)(&info), &infoCnt, &object_name );
-
-        if ( result == KERN_SUCCESS ) {
-            if ((info.protection & VM_PROT_READ) == VM_PROT_READ  && (info.protection & VM_PROT_WRITE) == VM_PROT_WRITE) {
-                MemorySegment *segment = new MemorySegment("", address, address+size);
-                TRACE << "Adding segment: " << address << ":" << address+size << " prot: " << info.protection;
-                m_regions << segment;
-
-                if(m_lowest_address == 0)
-                    m_lowest_address = address;
-                if(address < m_lowest_address)
-                    m_lowest_address = address;
-                if((address + size) > m_highest_address)
-                    m_highest_address = (address + size);
-            }
-        }
-
-        address = address + size;
-    } while (result != KERN_INVALID_ADDRESS);
-    LOGD << "Mapped " << m_regions.size() << " memory regions.";
-}
-
 VIRTADDR DFInstanceOSX::alloc_chunk(mach_vm_size_t size) {
     if (size > 1048576 || size <= 0) {
         return 0;
@@ -307,31 +205,6 @@ VIRTADDR DFInstanceOSX::alloc_chunk(mach_vm_size_t size) {
     m_alloc_start += size;
 
     return rv;
-}
-
-uintptr_t DFInstanceOSX::get_string(const QString &str) {
-    if (m_string_cache.contains(str))
-        return m_string_cache[str];
-
-    CP437Codec *c = new CP437Codec();
-    QByteArray data = c->fromUnicode(str);
-
-    STLStringHeader header;
-    header.capacity = header.length = data.length();
-    header.refcnt = -1; // huge refcnt to avoid dealloc
-
-    QByteArray buf((char*)&header, sizeof(header));
-    buf.append(data);
-    buf.append(char(0));
-
-    VIRTADDR addr = alloc_chunk(buf.length());
-
-    if (addr) {
-        write_raw(addr, buf.length(), buf.data());
-        addr += sizeof(header);
-    }
-
-    return m_string_cache[str] = addr;
 }
 
 bool DFInstanceOSX::authorize() {

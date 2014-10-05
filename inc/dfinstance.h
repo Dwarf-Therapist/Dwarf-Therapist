@@ -25,21 +25,20 @@ THE SOFTWARE.
 
 #include <QDir>
 #include "utils.h"
-#include "word.h"
 #include "global_enums.h"
 
 class Dwarf;
-class Squad;
-class MemoryLayout;
-struct MemorySegment;
-class Languages;
-class Reaction;
-class Race;
 class FortressEntity;
 class ItemWeaponSubtype;
+class Languages;
 class Material;
+class MemoryLayout;
 class Plant;
 class QFile;
+class Race;
+class Reaction;
+class Squad;
+class Word;
 
 class DFInstance : public QObject {
     Q_OBJECT
@@ -59,10 +58,6 @@ public:
     WORD current_year() {return m_current_year;}
     WORD dwarf_civ_id() {return m_dwarf_civ_id;}
 
-    // brute force memory scanning methods
-    bool is_valid_address(const VIRTADDR &addr);
-    bool looks_like_vector_of_pointers(const VIRTADDR &addr);
-
     // revamped memory reading
     virtual USIZE read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buf) = 0;
     USIZE read_raw(const VIRTADDR &addr, const USIZE &bytes, QByteArray &buffer);
@@ -78,24 +73,10 @@ public:
 
     virtual QString read_string(const VIRTADDR &addr) = 0;
 
-    QVector<VIRTADDR> scan_mem(const QByteArray &needle, const uint start_addr=0, const uint end_addr=0xffffffff);
-    QByteArray get_data(const VIRTADDR &addr, int size);
-    QString pprint(const VIRTADDR &addr, int size);
-    QString pprint(const QByteArray &ba, const VIRTADDR &start_addr=0);
+    QString pprint(const QByteArray &ba);
 
     Word * read_dwarf_word(const VIRTADDR &addr);
     QString read_dwarf_name(const VIRTADDR &addr);
-
-    // Mapping methods
-    QVector<VIRTADDR> find_vectors_in_range(const int &max_entries,
-                                            const VIRTADDR &start_address,
-                                            const int &range_length);
-    QVector<VIRTADDR> find_vectors(int num_entries, int fuzz=0,
-                                   int entry_size=4);
-    QVector<VIRTADDR> find_vectors_ext(int num_entries, const char op,
-                                  const uint start_addr, const uint end_addr, int entry_size=4);
-    QVector<VIRTADDR> find_vectors(int num_entries, const QVector<VIRTADDR> & search_set,
-                                   int fuzz=0, int entry_size=4);
 
     // Methods for when we know how the data is layed out
     MemoryLayout *memory_layout() {return m_layout;}
@@ -159,8 +140,6 @@ public:
     static const int VECTOR_POINTER_OFFSET = 0;
 #endif
 
-    // handy util methods
-    virtual QString calculate_checksum() = 0;
     MemoryLayout *get_memory_layout(QString checksum, bool warn = true);
 
     void load_game_data();
@@ -233,17 +212,12 @@ public:
         // if a menu cancels our scan, we need to know how to stop
         void cancel_scan() {m_stop_scan = true;}
 protected:
-    VIRTADDR m_lowest_address;
-    VIRTADDR m_highest_address;
     bool m_stop_scan; // flag that gets set to stop scan loops
     bool m_is_ok;
     int m_bytes_scanned;
     MemoryLayout *m_layout;
-    QVector<MemorySegment*> m_regions;
     int m_attach_count;
     QTimer *m_heartbeat_timer;
-    QTimer *m_memory_remap_timer;
-    QTimer *m_scan_speed_timer;
     short m_dwarf_race_id;
     int m_dwarf_civ_id;
     WORD m_current_year;
@@ -268,15 +242,9 @@ protected:
 
     private slots:
         void heartbeat();
-        void calculate_scan_rate();
-        virtual void map_virtual_memory() = 0;
-
 
 signals:
     // methods for sending progress information to QWidgets
-    void scan_total_steps(int steps);
-    void scan_progress(int step);
-    void scan_message(const QString &message);
     void connection_interrupted();
     void progress_message(const QString &message);
     void progress_range(int min, int max);

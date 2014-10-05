@@ -23,7 +23,6 @@ THE SOFTWARE.
 #include <QThread>
 #include "layoutcreator.h"
 #include "dfinstance.h"
-#include "scannerthread.h"
 #include "memorylayout.h"
 
 LayoutCreator::LayoutCreator(DFInstance * df, MemoryLayout * parent, QString file_name, QString version_name) :

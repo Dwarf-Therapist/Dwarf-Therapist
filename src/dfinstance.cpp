@@ -21,8 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "defines.h"
 #include "dfinstance.h"
+#include "cp437codec.h"
+#include "defines.h"
 #include "dwarf.h"
 #include "squad.h"
 #include "word.h"
@@ -69,8 +70,6 @@ DFInstance::DFInstance(QObject* parent)
     , m_layout(0)
     , m_attach_count(0)
     , m_heartbeat_timer(new QTimer(this))
-    , m_memory_remap_timer(new QTimer(this))
-    , m_scan_speed_timer(new QTimer(this))
     , m_dwarf_race_id(0)
     , m_dwarf_civ_id(0)
     , m_languages(0x0)
@@ -78,11 +77,6 @@ DFInstance::DFInstance(QObject* parent)
     , m_fortress_name(tr("Embarking"))
     , m_fortress_name_translated("")
 {
-    connect(m_scan_speed_timer, SIGNAL(timeout()),
-            SLOT(calculate_scan_rate()));
-    connect(m_memory_remap_timer, SIGNAL(timeout()),
-            SLOT(map_virtual_memory()));
-    m_memory_remap_timer->start(20000); // 20 seconds
     // let subclasses start the heartbeat timer, since we don't want to be
     // checking before we're connected
     connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
@@ -94,10 +88,13 @@ DFInstance::DFInstance(QObject* parent)
     QFileInfoList files = d.entryInfoList();
     foreach(QFileInfo info, files) {
         MemoryLayout *temp = new MemoryLayout(info.absoluteFilePath());
-        if (temp && temp->is_valid()) {
+        if (temp->is_valid()) {
             LOGI << "adding valid layout" << temp->game_version()
                  << temp->checksum();
             m_memory_layouts.insert(temp->checksum().toLower(), temp);
+        } else {
+            LOGI << "ignoring invalid layout" << info.absoluteFilePath();
+            delete temp;
         }
     }
 
@@ -107,6 +104,10 @@ DFInstance::DFInstance(QObject* parent)
              << QDir::searchPaths("share");
         qApp->exit(ERROR_NO_VALID_LAYOUTS);
     }
+
+    if (!QTextCodec::codecForName("IBM437"))
+        // register CP437Codec so it can be accessed by name
+        new CP437Codec();
 }
 
 DFInstance * DFInstance::newInstance(){
@@ -148,15 +149,11 @@ bool DFInstance::check_vector(const VIRTADDR start, const VIRTADDR end, const VI
 }
 
 DFInstance::~DFInstance() {
-    //    LOGD << "DFInstance baseclass virtual dtor!";
     foreach(MemoryLayout *l, m_memory_layouts) {
         delete(l);
     }
     m_memory_layouts.clear();
     m_layout = 0;
-
-    qDeleteAll(m_regions);
-    m_regions.clear();
 
     delete m_languages;
     delete m_fortress;
@@ -248,130 +245,8 @@ USIZE DFInstance::write_raw(const VIRTADDR &addr, const USIZE &bytes, const QByt
     return write_raw(addr, bytes, buffer.data());
 }
 
-QVector<VIRTADDR> DFInstance::scan_mem(const QByteArray &needle, const uint start_addr, const uint end_addr) {
-    // progress reporting
-    m_scan_speed_timer->start(500);
-    m_memory_remap_timer->stop(); // don't remap segments while scanning
-    int total_bytes = 0;
-    m_bytes_scanned = 0; // for global timings
-    int bytes_scanned = 0; // for progress calcs
-    foreach(MemorySegment *seg, m_regions) {
-        total_bytes += seg->size;
-    }
-    int report_every_n_bytes = total_bytes / 1000;
-    if(report_every_n_bytes <= 0)
-        report_every_n_bytes = 1;
-
-    emit scan_total_steps(1000);
-    emit scan_progress(0);
-
-    m_stop_scan = false;
-    QVector<VIRTADDR> addresses; //! return value
-    QByteArrayMatcher matcher(needle);
-
-    int step_size = 0x1000;
-    QByteArray buffer(step_size, 0);
-    QByteArray back_buffer(step_size * 2, 0);
-
-    QTime timer;
-    timer.start();
-    attach();
-    foreach(MemorySegment *seg, m_regions) {
-        int step = step_size;
-        int steps = seg->size / step;
-        if (seg->size % step)
-            steps++;
-
-        if( seg->end_addr < start_addr ) {
-            continue;
-        }
-
-        if( seg->start_addr > end_addr ) {
-            break;
-        }
-
-        for(VIRTADDR ptr = seg->start_addr; ptr < seg->end_addr; ptr += step) {
-
-            if( ptr < start_addr ) {
-                continue;
-            }
-            if( ptr > end_addr ) {
-                m_stop_scan = true;
-                break;
-            }
-
-            step = step_size;
-            if (ptr + step > seg->end_addr) {
-                step = seg->end_addr - ptr;
-            }
-
-            // move the last thing we read to the front of the back_buffer
-            back_buffer.replace(0, step, buffer);
-
-            // fill the main read buffer
-            int bytes_read = read_raw(ptr, step, buffer);
-            if (bytes_read < step && !seg->is_guarded) {
-                if (m_layout->is_complete()) {
-                    LOGW << "tried to read" << step << "bytes starting at" <<
-                            hexify(ptr) << "but only got" << dec << bytes_read;
-                }
-                continue;
-            }
-            bytes_scanned += bytes_read;
-            m_bytes_scanned += bytes_read;
-
-            // put the main buffer on the end of the back_buffer
-            back_buffer.replace(step, step, buffer);
-
-            int idx = -1;
-            forever {
-                idx = matcher.indexIn(back_buffer, idx+1);
-                if (idx == -1) {
-                    break;
-                } else {
-                    VIRTADDR hit = ptr + idx - step;
-                    if (!addresses.contains(hit)) {
-                        // backbuffer may cause duplicate hits
-                        addresses << hit;
-                    }
-                }
-            }
-
-            if (m_stop_scan)
-                break;
-            emit scan_progress(bytes_scanned / report_every_n_bytes);
-
-        }
-        DT->processEvents();
-        if (m_stop_scan)
-            break;
-    }
-    detach();
-    m_memory_remap_timer->start(20000); // start the remapper again
-    LOGD << QString("Scanned %L1MB in %L2ms").arg(bytes_scanned / 1024 * 1024)
-            .arg(timer.elapsed());
-    return addresses;
-}
-
-bool DFInstance::looks_like_vector_of_pointers(const VIRTADDR &addr) {
-    int start = read_int(addr + 0x4);
-    int end = read_int(addr + 0x8);
-    int entries = (end - start) / sizeof(int);
-    LOGD << "LOOKS LIKE VECTOR? unverified entries:" << entries;
-
-    return start >=0 &&
-            end >=0 &&
-            end >= start &&
-            (end-start) % 4 == 0 &&
-            start % 4 == 0 &&
-            end % 4 == 0 &&
-            entries < 10000;
-
-}
-
 void DFInstance::load_game_data()
 {
-    map_virtual_memory();
     emit progress_message(tr("Loading languages"));
     if(m_languages){
         delete m_languages;
@@ -395,18 +270,10 @@ void DFInstance::load_game_data()
 
     //load the currently played race before races and castes so we can load additional information for the current race being played
     VIRTADDR dwarf_race_index_addr = m_layout->address("dwarf_race_index");
-    if (!is_valid_address(dwarf_race_index_addr)) {
-        LOGW << "Active Memory Layout" << m_layout->filename() << "("
-             << m_layout->game_version() << ")" << "contains an invalid"
-             << "dwarf_race_index address. Either you are scanning a new "
-             << "DF version or your config files are corrupted.";
-        m_dwarf_race_id = -1;
-    }else{
-        LOGD << "dwarf race index" << hexify(dwarf_race_index_addr);
-        // which race id is dwarven?
-        m_dwarf_race_id = read_short(dwarf_race_index_addr);
-        LOGD << "dwarf race:" << hexify(m_dwarf_race_id);
-    }
+    LOGD << "dwarf race index" << hexify(dwarf_race_index_addr);
+    // which race id is dwarven?
+    m_dwarf_race_id = read_short(dwarf_race_index_addr);
+    LOGD << "dwarf race:" << hexify(m_dwarf_race_id);
 
 
     emit progress_message(tr("Loading races and castes"));
@@ -432,7 +299,6 @@ QString DFInstance::get_translated_word(VIRTADDR addr){
 }
 
 QVector<Dwarf*> DFInstance::load_dwarves() {
-    map_virtual_memory();
     QVector<Dwarf*> dwarves;
     if (!m_is_ok) {
         LOGW << "not connected";
@@ -442,18 +308,9 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
     // we're connected, make sure we have good addresses
     VIRTADDR creature_vector = m_layout->address("creature_vector");
-    VIRTADDR active_creature_vector = m_layout->address("active_creature_vector");
     VIRTADDR current_year = m_layout->address("current_year");
     VIRTADDR current_year_tick = m_layout->address("cur_year_tick");
     m_cur_year_tick = read_int(current_year_tick);
-
-    if (!is_valid_address(creature_vector) || !is_valid_address(active_creature_vector)) {
-        LOGW << "Active Memory Layout" << m_layout->filename() << "("
-             << m_layout->game_version() << ")" << "contains an invalid"
-             << "creature_vector address. Either you are scanning a new "
-             << "DF version or your config files are corrupted.";
-        return dwarves;
-    }
 
     //current race's offset was bad
     if (!DT->arena_mode && m_dwarf_race_id < 0){
@@ -903,14 +760,7 @@ void DFInstance::load_fortress(){
         m_fortress = 0;
     }
     VIRTADDR addr_fortress = m_layout->address("fortress_entity");
-    if (!is_valid_address(addr_fortress)) {
-        LOGW << "Active Memory Layout" << m_layout->filename() << "("
-             << m_layout->game_version() << ")" << "contains an invalid"
-             << "fortress identity address. Either you are scanning a new "
-             << "DF version or your config files are corrupted.";
-    }else{
-        m_fortress = FortressEntity::get_entity(this,read_addr(addr_fortress));
-    }
+    m_fortress = FortressEntity::get_entity(this,read_addr(addr_fortress));
     if(m_fortress_name_translated.isEmpty())
         load_fortress_name();
 }
@@ -953,14 +803,6 @@ QList<Squad *> DFInstance::load_squads(bool refreshing) {
         m_squad_vector = m_layout->address("squad_vector");
         if(m_squad_vector == 0xFFFFFFFF) {
             LOGI << "Squads not supported for this version of Dwarf Fortress";
-            return squads;
-        }
-
-        if (!is_valid_address(m_squad_vector)) {
-            LOGW << "Active Memory Layout" << m_layout->filename() << "("
-                 << m_layout->game_version() << ")" << "contains an invalid"
-                 << "squad_vector address. Either you are scanning a new "
-                 << "DF version or your config files are corrupted.";
             return squads;
         }
 
@@ -1052,32 +894,7 @@ QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
     return entries;
 }
 
-bool DFInstance::is_valid_address(const VIRTADDR &addr) {
-    bool valid = false;
-    foreach(MemorySegment *seg, m_regions) {
-        if (seg->contains(addr)) {
-            valid = true;
-            break;
-        }
-    }
-    return valid;
-}
-
-QByteArray DFInstance::get_data(const VIRTADDR &addr, int size) {
-    QByteArray ret_val(size, 0); // 0 filled to proper length
-    int bytes_read = read_raw(addr, size, ret_val);
-    if (bytes_read != size) {
-        ret_val.clear();
-    }
-    return ret_val;
-}
-
-//! ahhh convenience
-QString DFInstance::pprint(const VIRTADDR &addr, int size) {
-    return pprint(get_data(addr, size), addr);
-}
-
-QString DFInstance::pprint(const QByteArray &ba, const VIRTADDR &start_addr) {
+QString DFInstance::pprint(const QByteArray &ba) {
     QString out = "    ADDR   | 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F | TEXT\n";
     out.append("------------------------------------------------------------------------\n");
     int lines = ba.size() / 16;
@@ -1087,7 +904,7 @@ QString DFInstance::pprint(const QByteArray &ba, const VIRTADDR &start_addr) {
         lines = 0;
 
     for(int i = 0; i < lines; ++i) {
-        VIRTADDR offset = start_addr + i * 16;
+        VIRTADDR offset = i * 16;
         out.append(hexify(offset));
         out.append(" | ");
         for (int c = 0; c < 16; ++c) {
@@ -1185,327 +1002,6 @@ QString DFInstance::read_dwarf_name(const VIRTADDR &addr) {
 }
 
 
-QVector<VIRTADDR> DFInstance::find_vectors_in_range(const int &max_entries,
-                                                    const VIRTADDR &start_address,
-                                                    const int &range_length) {
-    QByteArray data = get_data(start_address, range_length);
-    QVector<VIRTADDR> vectors;
-    VIRTADDR int1 = 0; // holds the start val
-    VIRTADDR int2 = 0; // holds the end val
-
-    for (int i = 0; i < range_length; i += 4) {
-        memcpy(&int1, data.data() + i, 4);
-        memcpy(&int2, data.data() + i + 4, 4);
-        if (int2 >= int1 && is_valid_address(int1) && is_valid_address(int2)) {
-            int bytes = int2 - int1;
-            int entries = bytes / 4;
-            if (entries > 0 && entries <= max_entries) {
-                VIRTADDR vector_addr = start_address + i - VECTOR_POINTER_OFFSET;
-                QVector<VIRTADDR> addrs = enumerate_vector(vector_addr);
-                bool all_valid = true;
-                foreach(VIRTADDR vec_entry, addrs) {
-                    if (!is_valid_address(vec_entry)) {
-                        all_valid = false;
-                        break;
-                    }
-                }
-                if (all_valid) {
-                    vectors << vector_addr;
-                }
-            }
-        }
-    }
-    return vectors;
-}
-
-QVector<VIRTADDR> DFInstance::find_vectors(int num_entries, int fuzz/* =0 */,
-                                           int entry_size/* =4 */) {
-    /*
-    glibc++ does vectors like so...
-    |4bytes      | 4bytes    | 4bytes
-    START_ADDRESS|END_ADDRESS|END_ALLOCATOR
-
-    MSVC++ does vectors like so...
-    | 4bytes     | 4bytes      | 4 bytes   | 4bytes
-    ALLOCATOR    |START_ADDRESS|END_ADDRESS|END_ALLOCATOR
-    */
-    m_stop_scan = false; //! if ever set true, bail from the inner loop
-    QVector<VIRTADDR> vectors; //! return value collection of vectors found
-    VIRTADDR int1 = 0; // holds the start val
-    VIRTADDR int2 = 0; // holds the end val
-
-    // progress reporting
-    m_scan_speed_timer->start(500);
-    m_memory_remap_timer->stop(); // don't remap segments while scanning
-    int total_bytes = 0;
-    m_bytes_scanned = 0; // for global timings
-    int bytes_scanned = 0; // for progress calcs
-    foreach(MemorySegment *seg, m_regions) {
-        total_bytes += seg->size;
-    }
-    int report_every_n_bytes = total_bytes / 1000;
-    if(report_every_n_bytes <= 0)
-        report_every_n_bytes = 1;
-
-    emit scan_total_steps(1000);
-    emit scan_progress(0);
-
-    int scan_step_size = 0x10000;
-    QByteArray buffer(scan_step_size, '\0');
-    QTime timer;
-    timer.start();
-    attach();
-    foreach(MemorySegment *seg, m_regions) {
-        //TRACE << "SCANNING REGION" << hex << seg->start_addr << "-"
-        //        << seg->end_addr << "BYTES:" << dec << seg->size;
-        if ((int)seg->size <= scan_step_size) {
-            scan_step_size = seg->size;
-        }
-        int scan_steps = seg->size / scan_step_size;
-        if (seg->size % scan_step_size) {
-            scan_steps++;
-        }
-        VIRTADDR addr = 0; // the ptr we will read from
-        for(int step = 0; step < scan_steps; ++step) {
-            addr = seg->start_addr + (scan_step_size * step);
-            //LOGD << "starting scan for vectors at" << hex << addr << "step"
-            //        << dec << step << "of" << scan_steps;
-            int bytes_read = read_raw(addr, scan_step_size, buffer);
-            if (bytes_read < scan_step_size) {
-                continue;
-            }
-            for(int offset = 0; offset < scan_step_size; offset += entry_size) {
-                int1 = decode_int(buffer.mid(offset, entry_size));
-                int2 = decode_int(buffer.mid(offset + entry_size, entry_size));
-                if (int1 && int2 && int2 >= int1
-                        && int1 % 4 == 0
-                        && int2 % 4 == 0
-                        //&& is_valid_address(int1)
-                        //&& is_valid_address(int2)
-                        ) {
-                    int bytes = int2 - int1;
-                    int entries = bytes / entry_size;
-                    int diff = entries - num_entries;
-                    if (qAbs(diff) <= fuzz) {
-                        VIRTADDR vector_addr = addr + offset -
-                                VECTOR_POINTER_OFFSET;
-                        QVector<VIRTADDR> addrs = enumerate_vector(vector_addr);
-                        diff = addrs.size() - num_entries;
-                        if (qAbs(diff) <= fuzz) {
-                            vectors << vector_addr;
-                        }
-                    }
-                }
-                m_bytes_scanned += entry_size;
-                bytes_scanned += entry_size;
-                if (m_stop_scan)
-                    break;
-            }
-            emit scan_progress(bytes_scanned / report_every_n_bytes);
-            DT->processEvents();
-            if (m_stop_scan)
-                break;
-        }
-    }
-    detach();
-    m_memory_remap_timer->start(20000); // start the remapper again
-    m_scan_speed_timer->stop();
-    LOGD << QString("Scanned %L1MB in %L2ms").arg(bytes_scanned / 1024 * 1024)
-            .arg(timer.elapsed());
-    emit scan_progress(100);
-    return vectors;
-}
-
-QVector<VIRTADDR> DFInstance::find_vectors_ext(int num_entries, const char op,
-                                               const uint start_addr, const uint end_addr, int entry_size/* =4 */) {
-    /*
-    glibc++ does vectors like so...
-    |4bytes      | 4bytes    | 4bytes
-    START_ADDRESS|END_ADDRESS|END_ALLOCATOR
-
-    MSVC++ does vectors like so...
-    | 4bytes     | 4bytes      | 4 bytes   | 4bytes
-    ALLOCATOR    |START_ADDRESS|END_ADDRESS|END_ALLOCATOR
-    */
-    m_stop_scan = false; //! if ever set true, bail from the inner loop
-    QVector<VIRTADDR> vectors; //! return value collection of vectors found
-    VIRTADDR int1 = 0; // holds the start val
-    VIRTADDR int2 = 0; // holds the end val
-
-    // progress reporting
-    m_scan_speed_timer->start(500);
-    m_memory_remap_timer->stop(); // don't remap segments while scanning
-    int total_bytes = 0;
-    m_bytes_scanned = 0; // for global timings
-    int bytes_scanned = 0; // for progress calcs
-    foreach(MemorySegment *seg, m_regions) {
-        total_bytes += seg->size;
-    }
-    int report_every_n_bytes = total_bytes / 1000;
-    if(report_every_n_bytes <= 0)
-        report_every_n_bytes = 1;
-
-    emit scan_total_steps(1000);
-    emit scan_progress(0);
-
-    int scan_step_size = 0x10000;
-    QByteArray buffer(scan_step_size, '\0');
-    QTime timer;
-    timer.start();
-    attach();
-    foreach(MemorySegment *seg, m_regions) {
-        //TRACE << "SCANNING REGION" << hex << seg->start_addr << "-"
-        //        << seg->end_addr << "BYTES:" << dec << seg->size;
-        if ((int)seg->size <= scan_step_size) {
-            scan_step_size = seg->size;
-        }
-        int scan_steps = seg->size / scan_step_size;
-        if (seg->size % scan_step_size) {
-            scan_steps++;
-        }
-
-        if( seg->end_addr < start_addr ) {
-            continue;
-        }
-
-        if( seg->start_addr > end_addr ) {
-            break;
-        }
-
-        VIRTADDR addr = 0; // the ptr we will read from
-        for(int step = 0; step < scan_steps; ++step) {
-            addr = seg->start_addr + (scan_step_size * step);
-            //LOGD << "starting scan for vectors at" << hex << addr << "step"
-            //        << dec << step << "of" << scan_steps;
-            int bytes_read = read_raw(addr, scan_step_size, buffer);
-            if (bytes_read < scan_step_size) {
-                continue;
-            }
-
-            for(int offset = 0; offset < scan_step_size; offset += entry_size) {
-                VIRTADDR vector_addr = addr + offset - VECTOR_POINTER_OFFSET;
-
-                if( vector_addr < start_addr ) {
-                    continue;
-                }
-
-                if( vector_addr > end_addr ) {
-                    m_stop_scan = true;
-                    break;
-                }
-
-                int1 = decode_int(buffer.mid(offset, entry_size));
-                int2 = decode_int(buffer.mid(offset + entry_size, entry_size));
-                if (int1 && int2 && int2 >= int1
-                        && int1 % 4 == 0
-                        && int2 % 4 == 0
-                        //&& is_valid_address(int1)
-                        //&& is_valid_address(int2)
-                        ) {
-                    int bytes = int2 - int1;
-                    int entries = bytes / entry_size;
-                    if (entries > 0 && entries < 1000) {
-                        QVector<VIRTADDR> addrs = enumerate_vector(vector_addr);
-                        if( (op == '=' && addrs.size() == num_entries)
-                                || (op == '<' && addrs.size() < num_entries)
-                                || (op == '>' && addrs.size() > num_entries) ) {
-                            vectors << vector_addr;
-                        }
-                    }
-                }
-                m_bytes_scanned += entry_size;
-                bytes_scanned += entry_size;
-                if (m_stop_scan)
-                    break;
-            }
-            emit scan_progress(bytes_scanned / report_every_n_bytes);
-            DT->processEvents();
-            if (m_stop_scan)
-                break;
-        }
-    }
-    detach();
-    m_memory_remap_timer->start(20000); // start the remapper again
-    m_scan_speed_timer->stop();
-    LOGD << QString("Scanned %L1MB in %L2ms").arg(bytes_scanned / 1024 * 1024)
-            .arg(timer.elapsed());
-    emit scan_progress(100);
-    return vectors;
-}
-
-QVector<VIRTADDR> DFInstance::find_vectors(int num_entries, const QVector<VIRTADDR> & search_set,
-                                           int fuzz/* =0 */, int entry_size/* =4 */) {
-
-    m_stop_scan = false; //! if ever set true, bail from the inner loop
-    QVector<VIRTADDR> vectors; //! return value collection of vectors found
-
-    // progress reporting
-    m_scan_speed_timer->start(500);
-    m_memory_remap_timer->stop(); // don't remap segments while scanning
-
-    int total_vectors = vectors.size();
-    m_bytes_scanned = 0; // for global timings
-    int vectors_scanned = 0; // for progress calcs
-
-    emit scan_total_steps(total_vectors);
-    emit scan_progress(0);
-
-    QTime timer;
-    timer.start();
-    attach();
-
-    int vector_size = 8 + VECTOR_POINTER_OFFSET;
-    QByteArray buffer(vector_size, '\0');
-
-    foreach(VIRTADDR addr, search_set) {
-        int bytes_read = read_raw(addr, vector_size, buffer);
-        if (bytes_read < vector_size) {
-            continue;
-        }
-
-        VIRTADDR int1 = 0; // holds the start val
-        VIRTADDR int2 = 0; // holds the end val
-        int1 = decode_int(buffer.mid(VECTOR_POINTER_OFFSET, sizeof(VIRTADDR)));
-        int2 = decode_int(buffer.mid(VECTOR_POINTER_OFFSET+ sizeof(VIRTADDR), sizeof(VIRTADDR)));
-
-        if (int1 && int2 && int2 >= int1
-                && int1 % 4 == 0
-                && int2 % 4 == 0) {
-
-            int bytes = int2 - int1;
-            int entries = bytes / entry_size;
-            int diff = entries - num_entries;
-            if (qAbs(diff) <= fuzz) {
-                QVector<VIRTADDR> addrs = enumerate_vector(addr);
-                diff = addrs.size() - num_entries;
-                if (qAbs(diff) <= fuzz) {
-                    vectors << addr;
-                }
-            }
-        }
-
-        vectors_scanned++;
-
-        if(vectors_scanned % 100 == 0) {
-            emit scan_progress(vectors_scanned);
-            DT->processEvents();
-        }
-
-        if (m_stop_scan)
-            break;
-    }
-
-
-    detach();
-    m_memory_remap_timer->start(20000); // start the remapper again
-    m_scan_speed_timer->stop();
-    LOGD << QString("Scanned %L1 vectors in %L2ms").arg(vectors_scanned)
-            .arg(timer.elapsed());
-    emit scan_progress(100);
-    return vectors;
-}
-
-
 MemoryLayout *DFInstance::get_memory_layout(QString checksum, bool) {
     checksum = checksum.toLower();
     LOGI << "DF's checksum is:" << checksum;
@@ -1586,14 +1082,6 @@ void DFInstance::layout_not_found(const QString & checksum) {
     */
     mb->exec();
     LOGE << tr("unable to identify version from checksum:") << checksum;
-}
-
-void DFInstance::calculate_scan_rate() {
-    float rate = (m_bytes_scanned / 1024.0f / 1024.0f) /
-            (m_scan_speed_timer->interval() / 1000.0f);
-    QString msg = QString("%L1MB/s").arg(rate);
-    emit scan_message(msg);
-    m_bytes_scanned = 0;
 }
 
 

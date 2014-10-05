@@ -3,6 +3,7 @@
 #include "truncatingfilelogger.h"
 #include "dfinstance.h"
 #include <QFileInfo>
+#include <QSettings>
 
 MemoryLayout::MemoryLayout(const QString &filename)
     : m_filename(filename)

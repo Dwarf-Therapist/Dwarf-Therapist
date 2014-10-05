@@ -90,7 +90,7 @@ ViewManager::~ViewManager(){
 }
 
 void ViewManager::draw_add_tab_button() {
-    std::sort(m_views.begin(), m_views.end(), GridView::name_custom_sort());
+    qSort(m_views.begin(), m_views.end(), GridView::name_custom_sort);
 
     QIcon icn(":img/ui-tab--plus.png");
     QMenu *m = new QMenu(this);

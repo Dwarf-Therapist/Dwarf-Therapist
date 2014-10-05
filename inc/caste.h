@@ -40,8 +40,6 @@ public:
     Caste(DFInstance *df, VIRTADDR address, Race *r, QObject *parent = 0);
     virtual ~Caste();
 
-    static Caste* get_caste(DFInstance *df, const VIRTADDR &address, Race *r);
-
     //! Return the memory address (in hex) of this creature in the remote DF process
     VIRTADDR address() {return m_address;}
 

@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include <QDateTime>
 #include <QTimer>
 #include <QMessageBox>
+#include <QTextCodec>
 
 #include <windows.h>
 #include <psapi.h>
@@ -37,20 +38,16 @@ THE SOFTWARE.
 #include "memorylayout.h"
 #include "memorysegment.h"
 #include "dwarftherapist.h"
-#include "cp437codec.h"
 
 DFInstanceWindows::DFInstanceWindows(QObject* parent)
     : DFInstance(parent)
     , m_hwnd(0)
     , m_proc(0)
-    , m_dos_header()
-    , m_pe_header()
 {}
 
 DFInstanceWindows::~DFInstanceWindows() {
-    if (m_proc) {
-        CloseHandle(m_proc);
-    }
+    // CloseHandle(0) is a no-op
+    CloseHandle(m_proc);
 }
 
 QString DFInstanceWindows::get_last_error() {
@@ -66,10 +63,10 @@ QString DFInstanceWindows::get_last_error() {
     return result;
 }
 
-QString DFInstanceWindows::calculate_checksum() {
-    QDateTime compile_timestamp = QDateTime::fromTime_t(m_pe_header.FileHeader.TimeDateStamp);
-    LOGI << "Target EXE was compiled at " << compile_timestamp.toString(Qt::ISODate);
-    return hexify(m_pe_header.FileHeader.TimeDateStamp).toLower();
+QString DFInstanceWindows::calculate_checksum(const IMAGE_NT_HEADERS &pe_header) {
+    time_t compile_timestamp = pe_header.FileHeader.TimeDateStamp;
+    LOGI << "Target EXE was compiled at " << QDateTime::fromTime_t(compile_timestamp).toString(Qt::ISODate);
+    return hexify(compile_timestamp).toLower();
 }
 
 QString DFInstanceWindows::read_string(const uint &addr) {
@@ -93,13 +90,9 @@ QString DFInstanceWindows::read_string(const uint &addr) {
     Q_ASSERT_X(len < (1 << 16), "read_string",
                "String must be of sane length!");
 
-    QByteArray buf = get_data(buffer_addr, len);
-    CP437Codec *c = new CP437Codec();
-    return c->toUnicode(buf);
-
-    //the line below would be nice, but apparently a ~20mb *.icu library is required for that single call to qtextcodec...wtf. really.
-    //it's also been pretty bad performance-wise on linux, so it may be best to forget about it entirely
-    //return QTextCodec::codecForName("IBM 437")->toUnicode(buf);
+    char buf[len];
+    read_raw(buffer_addr, len, buf);
+    return QTextCodec::codecForName("IBM437")->toUnicode(buf, len);
 }
 
 USIZE DFInstanceWindows::write_string(const VIRTADDR &addr, const QString &str) {
@@ -147,35 +140,34 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
     LOGI << "attempting to find running copy of DF by window handle";
     m_is_ok = false;
 
-    HWND hwnd = FindWindow(L"OpenGL", L"Dwarf Fortress");
-    if (!hwnd)
-        hwnd = FindWindow(L"SDL_app", L"Dwarf Fortress");
-    if (!hwnd)
-        hwnd = FindWindow(NULL, L"Dwarf Fortress");
+    m_hwnd = FindWindow(L"OpenGL", L"Dwarf Fortress");
+    if (!m_hwnd)
+        m_hwnd = FindWindow(L"SDL_app", L"Dwarf Fortress");
+    if (!m_hwnd)
+        m_hwnd = FindWindow(NULL, L"Dwarf Fortress");
 
-    if (!hwnd) {
+    if (!m_hwnd) {
         QMessageBox::warning(0, tr("Warning"),
             tr("Unable to locate a running copy of Dwarf "
             "Fortress, are you sure it's running?"));
         LOGW << "can't find running copy";
         return m_is_ok;
     }
-    LOGI << "found copy with HWND: " << hwnd;
+    LOGI << "found copy with HWND: " << m_hwnd;
 
     DWORD pid = 0;
-    GetWindowThreadProcessId(hwnd, &pid);
+    GetWindowThreadProcessId(m_hwnd, &pid);
     if (pid == 0) {
         return m_is_ok;
     }
     LOGI << "PID of process is: " << pid;
-    m_hwnd = hwnd;
 
     m_proc = OpenProcess(PROCESS_QUERY_INFORMATION
-                         | PROCESS_VM_READ
                          | PROCESS_VM_OPERATION
+                         | PROCESS_VM_READ
                          | PROCESS_VM_WRITE, false, pid);
     LOGI << "PROC HANDLE:" << m_proc;
-    if (m_proc == NULL) {
+    if (!m_proc) {
         LOGE << "Error opening process!" << get_last_error();
     }
 
@@ -189,34 +181,31 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
             LOGE << "Error enumerating modules!" << get_last_error();
         } else {
             VIRTADDR base_addr = (intptr_t)me32.modBaseAddr;
-            read_raw(base_addr, sizeof(m_dos_header), &m_dos_header);
-            if(m_dos_header.e_magic != IMAGE_DOS_SIGNATURE){
+            IMAGE_DOS_HEADER dos_header;
+            read_raw(base_addr, sizeof(dos_header), &dos_header);
+            if(dos_header.e_magic != IMAGE_DOS_SIGNATURE){
                 qWarning() << "invalid executable";
             }
 
             //the dos stub contains a relative address to the pe header, which is used to get the pe header information
-            read_raw(base_addr + m_dos_header.e_lfanew, sizeof(m_pe_header), &m_pe_header);
-            if(m_pe_header.Signature != IMAGE_NT_SIGNATURE){
+            IMAGE_NT_HEADERS pe_header;
+            read_raw(base_addr + dos_header.e_lfanew, sizeof(pe_header), &pe_header);
+            if(pe_header.Signature != IMAGE_NT_SIGNATURE){
                 qWarning() << "unsupported PE header type";
             }
-            m_is_ok = true;
+            m_layout = get_memory_layout(calculate_checksum(pe_header), !connect_anyway);
+            LOGI << "RAW BASE ADDRESS:" << base_addr;
+            m_layout->set_base_address(base_addr - 0x00400000);
         }
         CloseHandle(snapshot);     // Must clean up the snapshot object!
     }
 
-    if (m_is_ok){
-        m_layout = get_memory_layout(calculate_checksum(), !connect_anyway);
-        //pass the imagebase address - the default windows linker address to the memory layout
-        //for use with global addresses (anyting in the [addresses] section of the layout file
-        m_layout->set_base_address(m_pe_header.OptionalHeader.ImageBase - 0x00400000);
-    } else {
+    if (!m_is_ok) {
         if(connect_anyway)
             m_is_ok = true;
         else // time to bail
             return m_is_ok;
     }
-
-    map_virtual_memory();
 
     if (DT->user_settings()->value("options/alert_on_lost_connection", true)
         .toBool() && m_layout && m_layout->is_complete()) {
@@ -235,92 +224,4 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
 
     m_is_ok = true;
     return m_is_ok;
-}
-
-/* OS specific way of asking the kernel for valid virtual memory pages from
-  the DF process. These pages are used to speed up scanning, and validate
-  reads from DF's memory. If addresses are not within ranges found by this
-  method, they will fail the is_valid_address() method */
-void DFInstanceWindows::map_virtual_memory() {
-    // destroy existing segments
-    foreach(MemorySegment *seg, m_regions) {
-        delete(seg);
-    }
-    m_regions.clear();
-
-    if (!m_is_ok)
-        return;
-
-    // start by figuring out what kernel we're talking to
-    TRACE << "Mapping out virtual memory";
-    SYSTEM_INFO info;
-    GetSystemInfo(&info);
-    TRACE << "PROCESSORS:" << info.dwNumberOfProcessors;
-    TRACE << "PROC TYPE:" << info.wProcessorArchitecture <<
-            info.wProcessorLevel <<
-            info.wProcessorRevision;
-    TRACE << "PAGE SIZE" << info.dwPageSize;
-
-    long start = (intptr_t)info.lpMinimumApplicationAddress;
-    long max_address = (intptr_t)info.lpMaximumApplicationAddress;
-    TRACE << "MIN ADDRESS:" << hexify(start);
-    TRACE << "MAX ADDRESS:" << hexify(max_address);
-
-    int page_size = info.dwPageSize;
-    int accepted = 0;
-    int rejected = 0;
-    VIRTADDR segment_start = start;
-    USIZE segment_size = page_size;
-    while (start < max_address) {
-        MEMORY_BASIC_INFORMATION mbi;
-        int sz = VirtualQueryEx(m_proc, reinterpret_cast<LPCVOID>(start), &mbi,
-                                sizeof(MEMORY_BASIC_INFORMATION));
-        if (sz != sizeof(MEMORY_BASIC_INFORMATION)) {
-            // incomplete data returned. increment start and move on...
-            start += page_size;
-            continue;
-        }
-
-        segment_start = (intptr_t)mbi.BaseAddress;
-        segment_size = (USIZE)mbi.RegionSize;
-        if (mbi.State == MEM_COMMIT
-            //&& !(mbi.Protect & PAGE_GUARD)
-            && (mbi.Protect & PAGE_EXECUTE_READ ||
-                mbi.Protect & PAGE_EXECUTE_READWRITE ||
-                mbi.Protect & PAGE_READONLY ||
-                mbi.Protect & PAGE_READWRITE ||
-                mbi.Protect & PAGE_WRITECOPY)
-            ) {
-            TRACE << "FOUND READABLE COMMITED MEMORY SEGMENT FROM" <<
-                    hexify(segment_start) << "-" <<
-                    hexify(segment_start + segment_size) <<
-                    "SIZE:" << (segment_size / 1024.0f) << "KB" <<
-                    "FLAGS:" << mbi.Protect;
-            MemorySegment *segment = new MemorySegment("", segment_start,
-                                                       segment_start
-                                                       + segment_size);
-            segment->is_guarded = mbi.Protect & PAGE_GUARD;
-            m_regions << segment;
-            accepted++;
-        } else {
-            TRACE << "REJECTING MEMORY SEGMENT AT" << hexify(segment_start) <<
-                     "SIZE:" << (segment_size / 1024.0f) << "KB FLAGS:" <<
-                     mbi.Protect;
-            rejected++;
-        }
-        if (mbi.RegionSize)
-            start += mbi.RegionSize;
-        else
-            start += page_size;
-    }
-    m_lowest_address = 0xFFFFFFFF;
-    m_highest_address = 0;
-    foreach(MemorySegment *seg, m_regions) {
-        if (seg->start_addr < m_lowest_address)
-            m_lowest_address = seg->start_addr;
-        if (seg->end_addr > m_highest_address)
-            m_highest_address = seg->end_addr;
-    }
-    LOGD << "MEMORY SEGMENT SUMMARY: accepted" << accepted << "rejected" <<
-            rejected << "total" << accepted + rejected;
 }

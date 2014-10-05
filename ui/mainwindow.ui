@@ -272,7 +272,6 @@
     <addaction name="act_options"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
-    <addaction name="act_scan_memory"/>
     <addaction name="act_exit"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
@@ -1013,24 +1012,6 @@
     <string>Export Custom Roles</string>
    </property>
   </action>
-  <action name="act_scan_memory">
-   <property name="icon">
-    <iconset resource="../resources.qrc">
-     <normaloff>:/img/memory-scan.png</normaloff>:/img/memory-scan.png</iconset>
-   </property>
-   <property name="text">
-    <string>Scan Memory</string>
-   </property>
-   <property name="toolTip">
-    <string>Map out the RAM of Dwarf Fortress looking for known values</string>
-   </property>
-   <property name="statusTip">
-    <string>Map out the RAM of Dwarf Fortress looking for known values</string>
-   </property>
-   <property name="whatsThis">
-    <string>Map out the RAM of Dwarf Fortress looking for known values</string>
-   </property>
-  </action>
   <action name="act_add_super_labor">
    <property name="text">
     <string>Add Super Labor</string>
@@ -1486,22 +1467,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>act_scan_memory</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>scan_memory()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>564</x>
-     <y>403</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>btn_new_super_labor</sender>
    <signal>clicked()</signal>
    <receiver>act_add_super_labor</receiver>
@@ -1537,7 +1502,6 @@
  <slots>
   <slot>connect_to_df()</slot>
   <slot>read_dwarves()</slot>
-  <slot>scan_memory()</slot>
   <slot>filter_dwarves()</slot>
   <slot>show_toolbutton_text(bool)</slot>
   <slot>set_group_by(int)</slot>

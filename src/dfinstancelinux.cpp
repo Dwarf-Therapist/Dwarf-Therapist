@@ -45,21 +45,14 @@ THE SOFTWARE.
 #include <sys/wait.h>
 #include <unistd.h>
 
-struct STLStringHeader {
-    quint32 length;
-    quint32 capacity;
-    qint32 refcnt;
-};
-
 struct iovec {
     void *iov_base;
     size_t iov_len;
 };
 
 DFInstanceLinux::DFInstanceLinux(QObject* parent)
-    : DFInstance(parent)
+    : DFInstanceNix(parent)
     , m_pid(0)
-    , m_executable(NULL)
     , m_inject_addr(-1)
     , m_alloc_start(0)
     , m_alloc_end(0)
@@ -71,46 +64,6 @@ DFInstanceLinux::~DFInstanceLinux() {
     if (m_attach_count > 0) {
         detach();
     }
-}
-
-QString DFInstanceLinux::calculate_checksum() {
-    // ELF binaries don't seem to store a linker timestamp, so just MD5 the file.
-    QFile proc(QString("/proc/%1/exe").arg(m_pid));
-    QCryptographicHash hash(QCryptographicHash::Md5);
-    if (!proc.open(QIODevice::ReadOnly)
-#if QT_VERSION >= 0x050000
-        || !hash.addData(&proc)
-#endif
-        ) {
-        LOGE << "FAILED TO READ DF EXECUTABLE";
-        return QString("UNKNOWN");
-    }
-#if QT_VERSION < 0x050000
-    hash.addData(proc.readAll());
-#endif
-    QString md5 = hexify(hash.result().mid(0, 4)).toLower();
-    TRACE << "GOT MD5:" << md5;
-    return md5;
-}
-
-QString DFInstanceLinux::read_string(const VIRTADDR &addr) {
-    char buf[STRING_SIZE];
-    read_raw(read_addr(addr), STRING_SIZE, (void *)buf);
-
-    CP437Codec *c = new CP437Codec();
-    return c->toUnicode(buf);
-}
-
-USIZE DFInstanceLinux::write_string(const VIRTADDR &addr, const QString &str) {
-    // Ensure this operation is done as one transaction
-    attach();
-    VIRTADDR buffer_addr = get_string(str);
-    if (buffer_addr)
-        // This unavoidably leaks the old buffer; our own
-        // cannot be deallocated anyway.
-        write_raw(addr, sizeof(VIRTADDR), &buffer_addr);
-    detach();
-    return buffer_addr ? str.length() : 0;
 }
 
 int DFInstanceLinux::wait_for_stopped() {
@@ -169,13 +122,10 @@ bool DFInstanceLinux::detach() {
 
 SSIZE DFInstanceLinux::process_vm(long number, const VIRTADDR &addr
                                   , const USIZE &bytes, void *buffer) {
-    struct iovec local_iov[1];
-    struct iovec remote_iov[1];
-    local_iov[0].iov_base = buffer;
-    remote_iov[0].iov_base = reinterpret_cast<void *>(addr);
-    local_iov[0].iov_len = remote_iov[0].iov_len = bytes;
+    struct iovec local_iov = {buffer, bytes};
+    struct iovec remote_iov = {reinterpret_cast<void *>(addr), bytes};
 
-    SSIZE r = syscall(number, m_pid, local_iov, 1UL, remote_iov, 1UL, 0UL);
+    SSIZE r = syscall(number, m_pid, &local_iov, 1UL, &remote_iov, 1UL, 0UL);
 
     if (r == -1 && errno == ENOSYS && !m_warned_pvm) {
         m_warned_pvm = true;
@@ -342,121 +292,21 @@ bool DFInstanceLinux::find_running_copy(bool connect_anyway) {
     m_alloc_start = 0;
     m_alloc_end = 0;
 
-    map_virtual_memory();
-
-    //qDebug() << "LOWEST ADDR:" << hex << lowest_addr;
-
-
-    //DUMP LIST OF MEMORY RANGES
-    /*
-    QPair<uint, uint> tmp_pair;
-    foreach(tmp_pair, m_regions) {
-        LOGD << "RANGE start:" << hex << tmp_pair.first << "end:" << tmp_pair.second;
-    }*/
-
-    VIRTADDR m_base_addr = read_addr(m_lowest_address + 0x18);
-    LOGD << "base_addr:" << m_base_addr << "HEX" << hex << m_base_addr;
-    m_is_ok = m_base_addr > 0;
+    m_loc_of_dfexe = QString("/proc/%1/exe").arg(m_pid);
 
     QString checksum = calculate_checksum();
-    if (m_is_ok) {
-        m_layout = get_memory_layout(checksum.toLower(), !connect_anyway);
-    }
 
-    //Get dwarf fortress directory
+    m_layout = get_memory_layout(checksum.toLower(), !connect_anyway);
+
     m_df_dir = QDir(QFileInfo(QString("/proc/%1/cwd").arg(m_pid)).symLinkTarget());
     LOGI << "Dwarf fortress path:" << m_df_dir.absolutePath();
 
     return m_is_ok || connect_anyway;
 }
 
-void DFInstanceLinux::map_virtual_memory() {
-    // destroy existing segments
-    foreach(MemorySegment *seg, m_regions) {
-        delete(seg);
-    }
-    m_regions.clear();
-    m_executable = NULL;
-
-    if (!m_is_ok)
-        return;
-
-    // scan the maps to populate known regions of memory
-    QFile f(QString("/proc/%1/maps").arg(m_pid));
-    if (!f.open(QIODevice::ReadOnly)) {
-        LOGE << "Unable to open" << f.fileName();
-        return;
-    }
-    TRACE << "opened" << f.fileName();
-    QByteArray line;
-    m_lowest_address = 0xFFFFFFFF;
-    m_highest_address = 0;
-    uint start_addr = 0;
-    uint end_addr = 0;
-    bool ok;
-
-    const QString rxs = "^([0-9a-f]+)-([0-9a-f]+) ([rwxsp-]{4}) [\\d\\w]{8} [\\d\\w]{2}:[\\d\\w]{2} ([0-9]+) +([^ ]*)$";
-
-#if QT_VERSION >= 0x050000
-    QRegularExpression rx(rxs);
-#else
-    // !@#$ing QRegExp thinks that a*(a*) on aaa should capture aaa
-    QRegExp rx(rxs, Qt::CaseSensitive, QRegExp::RegExp2);
-#endif
-    QString mf = QFile::symLinkTarget(QString("/proc/%1/exe").arg(m_pid));
-    do {
-        line = f.readLine();
-        line.chop(1);
-#if QT_VERSION >= 0x050000
-        QRegularExpressionMatch match = rx.match(line);
-#define cap match.captured
-        if (match.hasMatch()) {
-#else
-#define cap rx.cap
-        if (rx.exactMatch(line)) {
-#endif
-            start_addr = cap(1).toUInt(&ok, 16);
-            end_addr = cap(2).toUInt(&ok, 16);
-            QString perms = cap(3);
-            int inode = cap(4).toInt();
-            QString path = cap(5);
-#if QT_VERSION < 0x050000
-#undef cap
-#endif
-
-            bool keep_it = false;
-            bool main_file = false;
-            if (path.contains("[heap]") || path.contains("[stack]") || path.contains("[vdso]"))  {
-                keep_it = true;
-            } else if (perms.contains("r") && inode && path == mf) {
-                keep_it = true;
-                main_file = true;
-            } else {
-                keep_it = path.isEmpty();
-            }
-
-            if (keep_it && end_addr > start_addr) {
-                MemorySegment *segment = new MemorySegment(path, start_addr, end_addr);
-                TRACE << "keeping" << segment->to_string();
-                m_regions << segment;
-                if (start_addr < m_lowest_address)
-                    m_lowest_address = start_addr;
-                else if (end_addr > m_highest_address)
-                    m_highest_address = end_addr;
-                if (main_file && !m_executable && perms.contains("x")) {
-                    m_executable = segment;
-                    LOGD << "executable" << segment->to_string();
-                }
-            }
-        }
-    } while (!line.isEmpty());
-}
-
 /* Support for executing system calls in the context of the game process. */
 
-static const USIZE injection_size = 4;
-
-static const char nop_code_bytes[injection_size] = {
+static const char nop_code[] = {
     /* This is the byte pattern used to pad function
        addresses to multiples of 16 bytes. It consists
        of RET and a sequence of NOPs. The NOPs are not
@@ -464,9 +314,7 @@ static const char nop_code_bytes[injection_size] = {
     static_cast<char>(0xC3), static_cast<char>(0x90), static_cast<char>(0x90), static_cast<char>(0x90)
 };
 
-static QByteArray nop_code(nop_code_bytes, injection_size);
-
-static const char injection_code_bytes[injection_size] = {
+static const char injection_code[] = {
     /* This is the injected pattern. It keeps the
        original RET, but adds:
            INT 80h
@@ -474,38 +322,32 @@ static const char injection_code_bytes[injection_size] = {
     static_cast<char>(0xC3), static_cast<char>(0xCD), static_cast<char>(0x80), static_cast<char>(0xCC)
 };
 
-static QByteArray injection_code(injection_code_bytes, injection_size);
-
 VIRTADDR DFInstanceLinux::find_injection_address()
 {
     if (m_inject_addr != unsigned(-1))
         return m_inject_addr;
 
-    if (!m_executable)
-        return m_inject_addr = 0;
+    const USIZE step = 0x8000; // 32K steps
 
-    int step = 0x8000; // 32K steps
-    VIRTADDR pos = m_executable->start_addr + step; // skip first
+    char buf[step];
 
-    // This loop is expected to succeed on the first try:
-    for (; pos < m_executable->end_addr; pos += step)
+    // This loop is expected to succeed on the first try
+    // Assume that DF doesn't get -fPIE any time soon.
+    for (VIRTADDR pos = 0x08048000; read_raw(pos, step, buf) == step; pos += step)
     {
-        int size = m_executable->end_addr - pos;
-        if (step < size) size = step;
-        QByteArray buf;
-        read_raw(pos, size, buf);
-
         // Try searching for existing injection code
-        int offset = buf.indexOf(injection_code);
+        char *ptr = static_cast<char *>(memmem(buf, step, injection_code, sizeof(injection_code)));
         // Try searching for empty space
-        if (offset < 0)
-            offset = buf.indexOf(nop_code);
+        if (!ptr)
+            ptr = static_cast<char *>(memmem(buf, step, nop_code, sizeof(nop_code)));
 
-        if (offset >= 0) {
-            m_inject_addr = pos + offset;
+        if (ptr) {
+            m_inject_addr = pos + ptr - buf;
             LOGD << "injection point found at" << hex << m_inject_addr;
             return m_inject_addr;
         }
+
+        LOGI << "couldn't find injection point in" << step << "bytes after 0x08048000, trying again...";
     }
 
     return m_inject_addr = 0;
@@ -554,9 +396,10 @@ qint32 DFInstanceLinux::remote_syscall(int syscall_id,
     }
 
     /* Prepare the injected code */
-    QByteArray inj_area_save;
-    if (read_raw(inj_addr, injection_size, inj_area_save) < injection_size ||
-        write_raw_ptrace(inj_addr, injection_size, (void*)injection_code_bytes) < injection_size) {
+    char inj_area_save[sizeof(injection_code)];
+    const USIZE inj_size = sizeof(injection_code);
+    if (read_raw(inj_addr, inj_size, inj_area_save) != inj_size ||
+        write_raw_ptrace(inj_addr, inj_size, injection_code) < inj_size) {
         LOGE << "Could not prepare the injection area";
         return -1;
     }
@@ -628,7 +471,7 @@ qint32 DFInstanceLinux::remote_syscall(int syscall_id,
 
     /* Restore the modified injection area (not really necessary,
        since it is supposed to be inside unused padding, but...) */
-    if (write_raw_ptrace(inj_addr, injection_size, inj_area_save.data()) < injection_size) {
+    if (write_raw_ptrace(inj_addr, inj_size, inj_area_save) != inj_size) {
         LOGE << "Could not restore the injection area";
     }
 
@@ -676,28 +519,4 @@ VIRTADDR DFInstanceLinux::alloc_chunk(USIZE size) {
     VIRTADDR rv = m_alloc_start;
     m_alloc_start += size;
     return rv;
-}
-
-VIRTADDR DFInstanceLinux::get_string(const QString &str) {
-    if (m_string_cache.contains(str))
-        return m_string_cache[str];
-
-    CP437Codec *c = new CP437Codec();
-    QByteArray data = c->fromUnicode(str);
-
-    STLStringHeader header;
-    header.capacity = header.length = data.length();
-    header.refcnt = 1000000; // huge refcnt to avoid dealloc
-
-    QByteArray buf((char*)&header, sizeof(header));
-    buf.append(data);
-    buf.append(char(0));
-
-    VIRTADDR addr = alloc_chunk(buf.length());
-    if (addr) {
-        write_raw(addr, buf.length(), buf.data());
-        addr += sizeof(header);
-    }
-
-    return m_string_cache[str] = addr;
 }

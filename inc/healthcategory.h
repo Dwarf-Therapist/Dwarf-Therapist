@@ -62,7 +62,7 @@ public:
         }
 
         if(requireSort)
-            std::sort(m_descriptors.begin(), m_descriptors.end(), HealthInfo::less_than_severity());
+            qSort(m_descriptors.begin(), m_descriptors.end(), HealthInfo::less_than_severity);
 
         m_color = QColor(m_color_name);
     }
@@ -101,9 +101,9 @@ public:
         return descriptions;
     }
 
-    bool is_treatment() {return (has_flag(1,m_type_flags));}
-    bool is_status() {return (has_flag(2,m_type_flags));}
-    bool is_wound() {return (has_flag(4,m_type_flags));}
+    bool is_treatment() {return m_type_flags & 1;}
+    bool is_status() {return m_type_flags & 2;}
+    bool is_wound() {return m_type_flags & 4;}
 
 private:
     eHealth::H_INFO m_id;

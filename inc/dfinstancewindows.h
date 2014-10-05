@@ -48,9 +48,6 @@ public:
     USIZE write_raw(const VIRTADDR &addr, const USIZE &bytes, const void *buffer);
     USIZE write_string(const VIRTADDR &addr, const QString &str);
 
-    // pure virtual methods
-    void map_virtual_memory();
-
     // windows doesn't really have a concept of
     // attaching/detaching from the process like Linux does, so just
     // make them no-ops
@@ -59,14 +56,10 @@ public:
 
 
 protected:
-    // handy util methods
-    QString calculate_checksum();
+    QString calculate_checksum(const IMAGE_NT_HEADERS &pe_header);
 
     HWND m_hwnd;
     HANDLE m_proc;
-
-    IMAGE_DOS_HEADER m_dos_header;
-    IMAGE_NT_HEADERS m_pe_header;
 };
 
 #endif // DFINSTANCE_H

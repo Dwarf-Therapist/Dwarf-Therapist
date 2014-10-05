@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "memorylayout.h"
 #include "truncatingfilelogger.h"
+#include "word.h"
 
 Languages::Languages(DFInstance *df, QObject *parent)
     : QObject(parent)
