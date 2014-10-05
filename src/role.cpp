@@ -94,7 +94,7 @@ Role::~Role(){
     prefs.clear();
 }
 
-void Role::parseAspect(QSettings &s, QString node, global_weight &g_weight, QHash<QString,RoleAspect*> &list, float default_weight)
+void Role::parseAspect(QSettings &s, QString node, weight_info &g_weight, QHash<QString,RoleAspect*> &list, float default_weight)
 {
     qDeleteAll(list);
     list.clear();
@@ -130,7 +130,7 @@ void Role::parseAspect(QSettings &s, QString node, global_weight &g_weight, QHas
     s.endArray();
 }
 
-void Role::parsePreferences(QSettings &s, QString node, global_weight &g_weight, float default_weight)
+void Role::parsePreferences(QSettings &s, QString node, weight_info &g_weight, float default_weight)
 {
     qDeleteAll(prefs);
     prefs.clear();
@@ -227,61 +227,63 @@ QString Role::get_role_details(Dwarf *d){
     return role_details;
 }
 
-QString Role::get_aspect_details(QString title, global_weight aspect_group_weight,
+QString Role::get_aspect_details(QString title, weight_info aspect_group_weight,
                                  float aspect_default_weight, QHash<QString,RoleAspect*> &list){
 
-    QMap<QString, global_weight> weight_info;
+    QHash<QString, weight_info> weight_infos;
     foreach(QString aspect_name, list.uniqueKeys()){
-        global_weight wi = {list.value(aspect_name)->is_neg,list.value(aspect_name)->weight};
-        weight_info.insert(aspect_name, wi);
+        weight_info wi = {false,list.value(aspect_name)->is_neg,list.value(aspect_name)->weight};
+        weight_infos.insert(aspect_name, wi);
     }
-    return generate_details(title,aspect_group_weight, aspect_default_weight, weight_info);
+    return generate_details(title,aspect_group_weight, aspect_default_weight, weight_infos);
 }
 
-//this uses the global weight struct but is_default is used as is_neg
-QString Role::generate_details(QString title, global_weight aspect_group_weight,
-                               float aspect_default_weight, QMap<QString,global_weight> list){
+QString Role::generate_details(QString title, weight_info aspect_group_weight,
+                               float aspect_default_weight, QHash<QString,weight_info> weight_infos){
 
     float weight = 1.0;
     QString detail="";
     QString summary = "";
     QString title_formatted = title;
-    global_weight weight_info;
-    QString neg_string = "-";
+    weight_info w_info;
 
-    if(list.count()>0){
+    if(weight_infos.count()>0){
         //sort the list by weight. if there are more than 3 values, group them by weights
         QMultiMap<float,QStringList> details;
         bool group_lines = false;
-        if(list.count() > 3)
+        if(weight_infos.count() > 3)
             group_lines = true;
 
         if(aspect_group_weight.weight != aspect_default_weight)
             title_formatted.append(tr("<i> (w %1)</i>").arg(aspect_group_weight.weight));
 
         summary = tr("<p style =\"margin:0; margin-left:10px; padding:0px;\"><b>%1:</b></p>").arg(title_formatted);
-
-        foreach(QString id, list.uniqueKeys()){
-            weight_info = list.value(id);
-            weight = weight_info.weight;
+        QString w_str;
+        foreach(QString id, weight_infos.uniqueKeys()){
+            w_info = weight_infos.value(id);
+            weight = w_info.weight;
 
             if(title.toLower()==tr("skills"))
                 id = GameDataReader::ptr()->get_skill_name(id.toInt());
             if(title.toLower()==tr("traits"))
                 id = GameDataReader::ptr()->get_trait_name(id.toInt());
 
-            detail = tr("%1%2")
-                    .arg((weight_info.is_default ? QString("%1 ").arg(neg_string) : "")) //again is_default is used as is_neg here
-                    .arg(capitalizeEach(id));
+            detail = capitalizeEach(id);
+
+            if(w_info.is_neg){
+                w_str = tr("<i> <font color=red>(w-%1)</font></i>").arg(weight,0,'f',2);
+            }else{
+                w_str = tr("<i> (w%1)</i>").arg(weight,0,'f',2);
+            }
 
             if(group_lines){
                 QStringList vals = details.take(weight);
                 if(vals.count() <= 0) //add the weight only to the first item
-                    vals.append(tr("<i>(w%1)</i>").arg(weight,0,'f',2));
+                    vals.append(w_str);
                 vals.append(detail);
                 details.insert(weight,vals);
             }else{
-                detail.append(tr("<i> (w%1)</i>").arg(weight,0,'f',2));
+                detail.append(w_str);
                 details.insertMulti(weight,QStringList(detail));
             }
         }
@@ -310,12 +312,12 @@ QString Role::generate_details(QString title, global_weight aspect_group_weight,
 }
 
 QString Role::get_preference_details(float aspect_default_weight, Dwarf *d){
-    QMap<QString, global_weight> weight_info;
+    QHash<QString, weight_info> weight_infos;
     for(int i = 0; i < prefs.count(); i++){
-        global_weight wi = {prefs.at(i)->pref_aspect->is_neg, prefs.at(i)->pref_aspect->weight};
-        weight_info.insert(prefs.at(i)->get_name(),wi);
+        weight_info wi = {false, prefs.at(i)->pref_aspect->is_neg, prefs.at(i)->pref_aspect->weight};
+        weight_infos.insert(prefs.at(i)->get_name(),wi);
     }
-    m_pref_desc = generate_details(tr("Preferences"), prefs_weight, aspect_default_weight, weight_info);
+    m_pref_desc = generate_details(tr("Preferences"), prefs_weight, aspect_default_weight, weight_infos);
     QString pref_desc = m_pref_desc;
 
     highlight_pref_matches(d,pref_desc);
@@ -370,7 +372,7 @@ void Role::write_to_ini(QSettings &s, float default_attributes_weight, float def
     write_pref_group(s,default_prefs_weight);
 }
 
-void Role::write_aspect_group(QSettings &s, QString group_name, global_weight group_weight, float group_default_weight, QHash<QString, RoleAspect*> &list){
+void Role::write_aspect_group(QSettings &s, QString group_name, weight_info group_weight, float group_default_weight, QHash<QString, RoleAspect*> &list){
     if(list.count()>0){
         RoleAspect *a;
         if(group_weight.weight > 0 && group_weight.weight != group_default_weight)

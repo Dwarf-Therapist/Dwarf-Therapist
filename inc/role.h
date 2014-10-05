@@ -41,8 +41,9 @@ public:
     Role(const Role &r);
     virtual ~Role();
 
-    struct global_weight{
+    struct weight_info{
         bool is_default;
+        bool is_neg;
         float weight;
     };
 
@@ -67,10 +68,10 @@ public:
     QVector<Preference*> prefs;
 
     //global weights
-    global_weight attributes_weight;
-    global_weight skills_weight;
-    global_weight traits_weight;
-    global_weight prefs_weight;
+    weight_info attributes_weight;
+    weight_info skills_weight;
+    weight_info traits_weight;
+    weight_info prefs_weight;
 
     QString get_role_details(Dwarf *d = 0);
 
@@ -83,16 +84,16 @@ public:
 
     Preference* has_preference(QString name);
 protected:
-    void parseAspect(QSettings &s, QString node, global_weight &g_weight, QHash<QString, RoleAspect *> &list, float default_weight);
-    void parsePreferences(QSettings &s, QString node, global_weight &g_weight, float default_weight);
-    void write_aspect_group(QSettings &s, QString group_name, global_weight group_weight, float group_default_weight, QHash<QString, RoleAspect *> &list);
+    void parseAspect(QSettings &s, QString node, weight_info &g_weight, QHash<QString, RoleAspect *> &list, float default_weight);
+    void parsePreferences(QSettings &s, QString node, weight_info &g_weight, float default_weight);
+    void write_aspect_group(QSettings &s, QString group_name, weight_info group_weight, float group_default_weight, QHash<QString, RoleAspect *> &list);
     void write_pref_group(QSettings &s, float default_prefs_weight);
 
-    QString get_aspect_details(QString title, global_weight aspect_group_weight, float aspect_default_weight, QHash<QString, RoleAspect *> &list);
+    QString get_aspect_details(QString title, weight_info aspect_group_weight, float aspect_default_weight, QHash<QString, RoleAspect *> &list);
     QString get_preference_details(float aspect_default_weight, Dwarf *d=0);
     void refresh_preferences(Dwarf *d);
     void highlight_pref_matches(Dwarf *d, QString &pref_desc);
-    QString generate_details(QString title, global_weight aspect_group_weight,float aspect_default_weight, QMap<QString,global_weight> list);
+    QString generate_details(QString title, weight_info aspect_group_weight, float aspect_default_weight, QHash<QString, weight_info> weight_infos);
 
     QString m_name;
     QString m_script;
