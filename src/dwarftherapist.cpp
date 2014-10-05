@@ -90,6 +90,8 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
 }
 
 DwarfTherapist::~DwarfTherapist(){
+    UnitHealth::cleanup();
+
     qDeleteAll(m_language);
     m_language.clear();
     qDeleteAll(m_custom_prof_icns);

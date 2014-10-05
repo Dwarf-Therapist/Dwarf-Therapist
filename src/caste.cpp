@@ -219,11 +219,12 @@ int Caste::get_attribute_cost_to_improve(int id){
 
 BodyPart* Caste::get_body_part(int body_part_id){
     if(body_part_id >= 0 && body_part_id < m_body_parts_addr.size()){
+        if(m_body_parts.size() <= 0)
+            m_body_parts.insert(-1,new BodyPart(m_race));
+
         if(!m_body_parts.keys().contains(body_part_id)){
-            BodyPart *bp = new BodyPart(m_df,m_race,m_body_parts_addr.at(body_part_id),body_part_id);
-            m_body_parts.insert(body_part_id,bp);
+            m_body_parts.insert(body_part_id,new BodyPart(m_df,m_race,m_body_parts_addr.at(body_part_id),body_part_id));
         }
-        m_body_parts.insert(-1,new BodyPart());
         return m_body_parts.value(body_part_id);
     }else{
         return m_body_parts.value(-1);
