@@ -297,6 +297,7 @@ void Dwarf::refresh_data() {
         read_happiness();
         read_squad_info(); //read squad before job
         read_uniform();
+        read_gender_orientation(); //read before profession
         read_profession(); //read profession before building the names, and before job
         read_current_job();
         read_syndromes(); //read syndromes before attributes
@@ -306,7 +307,6 @@ void Dwarf::refresh_data() {
         //curse check will change the name and age
         read_curse(); //read curse before attributes
         read_soul_aspects(); //assumes soul already read, and requires caste to be read first
-        read_gender_orientation();
         read_animal_type(); //need skills loaded to check for hostiles
         read_noble_position();
         read_preferences();

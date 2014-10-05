@@ -90,6 +90,8 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
     if(m_role){
         float raw_rating = d->get_raw_role_rating(m_role->name());
         float drawn_rating = d->get_role_rating(m_role->name());
+        if(drawn_rating < 0.0001)
+            drawn_rating = 0.0001; //just to ensure very low values are drawn
         item->setData(drawn_rating, DwarfModel::DR_RATING);
         item->setData(roundf(drawn_rating), DwarfModel::DR_DISPLAY_RATING);
         item->setData(raw_rating, DwarfModel::DR_SORT_VALUE);
