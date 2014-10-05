@@ -14,11 +14,11 @@ class BodyPart
 public:
 
     BodyPart()
-        :m_df(0x0)
-        ,m_race(0x0)
-        ,bp_addr(0x0)
-        ,m_body_part_id(-1)
-        ,m_parent_id(0)
+        : m_df(0x0)
+        , m_race(0x0)
+        , bp_addr(0x0)
+        , m_body_part_id(-1)
+        , m_parent_id(0)
     {
         m_token = "UNK";
         m_bp_name = "Unknown";
@@ -26,11 +26,11 @@ public:
     }
 
     BodyPart(DFInstance *df, Race *r, VIRTADDR bp_addr, int bp_id)
-        :m_df(df)
-        ,m_race(r)
-        ,bp_addr(bp_addr)
-        ,m_body_part_id(bp_id)
-        ,m_parent_id(0)
+        : m_df(df)
+        , m_race(r)
+        , bp_addr(bp_addr)
+        , m_body_part_id(bp_id)
+        , m_parent_id(0)
     {
         m_token = m_df->read_string(bp_addr);
         build_bp_name();
