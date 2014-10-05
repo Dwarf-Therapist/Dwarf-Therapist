@@ -45,6 +45,7 @@ UnitHealth::UnitHealth(DFInstance *df, Dwarf *d, bool req_diagnosis)
     , m_dwarf(d)
     , m_critical_wounds(false)
     , m_req_diagnosis(req_diagnosis)
+    , m_limb_stand_count(0)
 {
     if(m_dwarf){
         read_health_info();

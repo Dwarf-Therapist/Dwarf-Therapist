@@ -41,16 +41,21 @@ Role::Role()
     : m_name("UNKNOWN")
     , m_script("")
     , m_is_custom(false)
+    , m_cur_pref_len(0)
 {
     QSettings *u = DT->user_settings();
     attributes_weight.weight = u->value("options/default_attributes_weight",1.0).toFloat();
     attributes_weight.is_default = true;
+    attributes_weight.is_neg = false;
     skills_weight.weight = u->value("options/default_skills_weight",1.0).toFloat();
     skills_weight.is_default = true;
+    skills_weight.is_neg = false;
     traits_weight.weight = u->value("options/default_traits_weight",1.0).toFloat();
     traits_weight.is_default = true;
+    traits_weight.is_neg = false;
     prefs_weight.weight = u->value("options/default_prefs_weight",1.0).toFloat();
     prefs_weight.is_default = true;
+    prefs_weight.is_neg = false;
 }
 
 Role::Role(QSettings &s, QObject *parent)
@@ -58,6 +63,7 @@ Role::Role(QSettings &s, QObject *parent)
     , m_name(s.value("name", "UNKNOWN ROLE").toString())
     , m_script(s.value("script","").toString())
     , m_is_custom(false)
+    , m_cur_pref_len(0)
 {
     QSettings *u = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
     parseAspect(s, "attributes", attributes_weight, attributes, u->value("options/default_attributes_weight",1.0).toFloat());
@@ -80,6 +86,7 @@ Role::Role(const Role &r)
     , m_script(r.m_script)
     , m_is_custom(r.m_is_custom)
     , role_details(r.role_details)
+    , m_cur_pref_len(0)
 {}
 
 Role::~Role(){
