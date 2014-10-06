@@ -104,6 +104,7 @@ public:
 
     const QVector<int> moodable_skills() {return m_moodable_skills;}
     int get_pref_from_skill(int skill_id) const {return m_mood_skills_profession_map.value(skill_id,-1);}
+    const QList<int> social_skills() {return m_social_skills;}
 
     QString get_goal_desc(int id, bool realized);
     QString get_goal_name(int id){return capitalize(m_goals.value(id).first);}
@@ -154,6 +155,7 @@ private:
 
     QVector<int> m_moodable_skills;
     QMap<int, int> m_mood_skills_profession_map;
+    QList<int> m_social_skills;
 
     QMap<short, Thought*> m_unit_thoughts;
 

@@ -113,20 +113,24 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     m_curse_color = new CustomColor(tr("Cursed"),tr("Cursed creatures will be highlighted with this color."),
                                     "cursed",FortressEntity::get_default_color(FortressEntity::CURSED),this);
 
-    QVBoxLayout *grid_layout = new QVBoxLayout;
-    grid_layout->addWidget(ui->cb_grid_health_colors);
+    int spacing = 4;
+
+    QVBoxLayout *health_layout = new QVBoxLayout;
+    health_layout->addWidget(ui->cb_grid_health_colors);
     foreach(CustomColor *cc, m_general_colors) {
-        grid_layout->addWidget(cc);
+        health_layout->addWidget(cc);
     }
-    grid_layout->setSpacing(0);
-    ui->tab_grid_colors->setLayout(grid_layout);
+    health_layout->setSpacing(spacing);
+    health_layout->addSpacerItem(new QSpacerItem(20,40,QSizePolicy::Minimum,QSizePolicy::Expanding));
+    ui->tab_grid_colors->setLayout(health_layout);
 
     QVBoxLayout *happiness_layout = new QVBoxLayout;
     happiness_layout->addWidget(ui->cb_happiness_icons);
     foreach(CustomColor *cc, m_happiness_colors) {
         happiness_layout->addWidget(cc);
     }
-    happiness_layout->setSpacing(0);
+    happiness_layout->setSpacing(spacing);
+    happiness_layout->addSpacerItem(new QSpacerItem(20,40,QSizePolicy::Minimum,QSizePolicy::Expanding));
     ui->tab_happiness_colors->setLayout(happiness_layout);
 
     QVBoxLayout *nobles_layout = new QVBoxLayout;
@@ -134,7 +138,8 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     foreach(CustomColor *cc, m_noble_colors) {
         nobles_layout->addWidget(cc);
     }
-    nobles_layout->setSpacing(2);
+    nobles_layout->setSpacing(spacing);
+    nobles_layout->addSpacerItem(new QSpacerItem(20,40,QSizePolicy::Minimum,QSizePolicy::Expanding));
     ui->tab_noble_colors->setLayout(nobles_layout);
 
     ui->horizontal_curse_layout->addWidget(m_curse_color);
@@ -156,6 +161,18 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     connect(ui->cb_moodable, SIGNAL(toggled(bool)), m_general_colors.at(9), SLOT(setEnabled(bool)));
 
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tab_index_changed(int)));
+
+    QStringList social_skills;
+    foreach(int skill_id, GameDataReader::ptr()->social_skills()){
+        social_skills.append(GameDataReader::ptr()->get_skill_name(skill_id));
+    }
+    social_skills.sort();
+    ui->chk_show_social_skills->setStatusTip(ui->chk_show_social_skills->statusTip().replace(" ?? ",social_skills.join(", ")));
+
+    connect(ui->chk_show_health,SIGNAL(toggled(bool)),this,SLOT(tooltip_health_toggled(bool)));
+    connect(ui->chk_show_skills,SIGNAL(toggled(bool)),this,SLOT(tooltip_skills_toggled(bool)));
+    connect(ui->chk_show_roles,SIGNAL(toggled(bool)),this,SLOT(tooltip_roles_toggled(bool)));
+    connect(ui->chk_show_buffs,SIGNAL(toggled(bool)),this,SLOT(tooltip_syndromes_toggled(bool)));
 
     read_settings();
 }
@@ -186,6 +203,31 @@ void OptionsMenu::showEvent(QShowEvent *evt){
         ui->lbl_def_skill_rate_weight->setVisible(false);
     }
     QDialog::showEvent(evt);
+}
+
+void OptionsMenu::tooltip_skills_toggled(bool checked){
+    ui->lbl_max_tooltip_skills->setEnabled(checked);
+    ui->lbl_max_tooltip_skills2->setEnabled(checked);
+    ui->sb_min_skill_level->setEnabled(checked);
+    ui->chk_show_social_skills->setEnabled(checked);
+}
+
+void OptionsMenu::tooltip_roles_toggled(bool checked){
+    ui->lbl_tooltip_top_roles->setEnabled(checked);
+    ui->lbl_tooltip_roles->setEnabled(checked);
+    ui->sb_roles_tooltip->setEnabled(checked);
+}
+
+void OptionsMenu::tooltip_health_toggled(bool checked){
+    ui->chk_health_colors->setEnabled(checked);
+    ui->chk_health_symbols->setEnabled(checked);
+}
+
+void OptionsMenu::tooltip_syndromes_toggled(bool checked){
+    ui->rad_syn_names->setEnabled(checked);
+    ui->rad_syn_classes->setEnabled(checked);
+    ui->rad_syn_both->setEnabled(checked);
+
 }
 
 void OptionsMenu::read_settings() {
@@ -293,8 +335,9 @@ void OptionsMenu::read_settings() {
     ui->chk_show_squad->setChecked(s->value("tooltip_show_squad", true).toBool());
     ui->chk_show_age->setChecked(s->value("tooltip_show_age", true).toBool());
     ui->chk_show_unit_size->setChecked(s->value("tooltip_show_size",true).toBool());
-    ui->chk_show_buffs->setChecked(s->value("tooltip_show_buffs",false).toBool());
     ui->chk_show_kills->setChecked(s->value("tooltip_show_kills",false).toBool());
+
+    ui->chk_show_buffs->setChecked(s->value("tooltip_show_buffs",false).toBool());
     short syn_option = s->value("syndrome_display_type",0).toInt();
     if(syn_option == 0)
         ui->rad_syn_names->setChecked(true);
@@ -302,16 +345,21 @@ void OptionsMenu::read_settings() {
         ui->rad_syn_classes->setChecked(true);
     else
         ui->rad_syn_both->setChecked(true);
+    tooltip_syndromes_toggled(ui->chk_show_buffs->isChecked());
+
     ui->chk_show_health->setChecked(s->value("tooltip_show_health",false).toBool());
     ui->chk_health_colors->setChecked(s->value("tooltip_health_colors",true).toBool());
     ui->chk_health_symbols->setChecked(s->value("tooltip_health_symbols",false).toBool());
+    tooltip_health_toggled(ui->chk_show_health->isChecked());
 
     ui->chk_show_roles->setChecked(s->value("tooltip_show_roles", true).toBool());
     ui->sb_roles_tooltip->setValue(s->value("role_count_tooltip",3).toInt());
+    tooltip_roles_toggled(ui->chk_show_roles->isChecked());
 
     ui->chk_show_skills->setChecked(s->value("tooltip_show_skills", true).toBool());
     ui->sb_min_skill_level->setValue(s->value("min_tooltip_skill_level",1).toInt());
-
+    ui->chk_show_social_skills->setChecked(s->value("tooltip_show_social_skills",true).toBool());
+    tooltip_skills_toggled(ui->chk_show_skills->isChecked());
 
     ui->dsb_attribute_weight->setValue(s->value("default_attributes_weight",0.25).toDouble());
     ui->dsb_skill_weight->setValue(s->value("default_skills_weight",1.0).toDouble());
@@ -414,6 +462,7 @@ void OptionsMenu::write_settings() {
         s->setValue("tooltip_show_profession", ui->chk_show_prof->isChecked());
         s->setValue("tooltip_show_roles", ui->chk_show_roles->isChecked());
         s->setValue("tooltip_show_skills", ui->chk_show_skills->isChecked());
+        s->setValue("tooltip_show_social_skills", ui->chk_show_social_skills->isChecked());
         s->setValue("tooltip_show_artifact", ui->chk_show_artifact->isChecked());
         s->setValue("tooltip_show_mood", ui->chk_show_highest_mood->isChecked());
         s->setValue("tooltip_show_thoughts", ui->chk_show_thoughts->isChecked());
@@ -531,6 +580,7 @@ void OptionsMenu::restore_defaults() {
 
     ui->chk_show_roles->setChecked(true);
     ui->chk_show_skills->setChecked(true);
+    ui->chk_show_social_skills->setChecked(true);
     ui->chk_show_health->setChecked(false);
     ui->chk_health_colors->setChecked(true);
     ui->chk_health_symbols->setChecked(false);

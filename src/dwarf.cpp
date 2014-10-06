@@ -2360,11 +2360,12 @@ QString Dwarf::tooltip_text() {
     //in some mods animals may have skills
     if(!m_skills.isEmpty() && s->value("options/tooltip_show_skills",true).toBool()){
         int max_level = s->value("options/min_tooltip_skill_level", true).toInt();
+        bool check_social = !s->value("options/tooltip_show_social_skills",true).toBool();
         QMapIterator<float,int> i(m_sorted_skills);
         i.toBack();
         while(i.hasPrevious()){
             i.previous();
-            if(m_skills.value(i.value()).capped_level() < max_level) {
+            if(m_skills.value(i.value()).capped_level() < max_level || (check_social && gdr->social_skills().contains(i.value()))) {
                 continue;
             }
             skill_summary.append(QString("<li>%1</li>").arg(m_skills.value(i.value()).to_string()));

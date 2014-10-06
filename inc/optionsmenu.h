@@ -72,6 +72,11 @@ private:
     QPair<QFont,QFont> m_tooltip_font;
     QPair<QFont,QFont> m_main_font;
 
+private slots:
+    void tooltip_skills_toggled(bool);
+    void tooltip_roles_toggled(bool);
+    void tooltip_health_toggled(bool);
+    void tooltip_syndromes_toggled(bool);
 
 signals:
     void color_changed(const QString &, const QColor &);

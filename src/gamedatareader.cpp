@@ -178,6 +178,9 @@ GameDataReader::GameDataReader(QObject *parent)
     m_mood_skills_profession_map.insert(49,3);
     m_mood_skills_profession_map.insert(55,60);
 
+    //load a list of social conversational skills
+    m_social_skills << 72 << 78 << 79 << 80 << 81 << 82 << 83 << 84;
+
     //goals
     int goal_count = m_data_settings->beginReadArray("goals");
     QStringList goal_names;
