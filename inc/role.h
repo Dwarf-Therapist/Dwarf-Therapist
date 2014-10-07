@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include <QObject>
 #include <QSettings>
 #include <QVector>
+#include <QColor>
 #include "math.h"
 
 class Preference;
@@ -83,6 +84,8 @@ public:
     void write_to_ini(QSettings &s, float default_attributes_weight, float default_traits_weight, float default_skills_weight, float default_prefs_weight);
 
     Preference* has_preference(QString name);
+    static const QColor color_has_prefs() {return QColor(0, 60, 128, 135);}
+
 protected:
     void parseAspect(QSettings &s, QString node, weight_info &g_weight, QHash<QString, RoleAspect *> &list, float default_weight);
     void parsePreferences(QSettings &s, QString node, weight_info &g_weight, float default_weight);

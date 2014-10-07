@@ -89,6 +89,7 @@ void UberDelegate::read_settings() {
     color_mood_cells = s->value("options/grid/color_mood_cells",false).toBool();
     color_health_cells = s->value("options/grid/color_health_cells",true).toBool();
     color_attribute_syns = s->value("options/grid/color_attribute_syns",true).toBool();
+    color_pref_matches = s->value("options/grid/color_pref_matches",false).toBool();
     m_fnt = s->value("options/grid/font", QFont(DefaultFonts::getRowFontName(), DefaultFonts::getRowFontSize())).value<QFont>();
     gradient_cell_bg = s->value("options/grid/shade_cells",true).toBool();
 }
@@ -284,16 +285,28 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
             paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 0, 0, limit, 0, 0);
         }
 
-        if(is_dirty){
+        if(is_dirty){ //dirty border always has priority
             QColor color_dirty_adjusted = color_dirty_border;
             color_dirty_adjusted.setAlpha(dirty_alpha);
             paint_border(adjusted,p,color_dirty_adjusted);
             paint_grid(adjusted,false,p,opt,idx,false);
-        }else if(cp_border){
+        }else if(cp_border){ //border for matching custom prof
             paint_border(adjusted,p,color_active_labor);
             paint_grid(adjusted, false, p, opt, idx,false);
-        }else{
-            paint_grid(adjusted, false, p, opt, idx);
+        }else{ //normal border, or role pref border
+            int pref_alpha = idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt();
+            if(color_pref_matches && type == CT_ROLE && pref_alpha > 0){
+                if(pref_alpha < min_alpha)
+                    pref_alpha = min_alpha;
+                else if(pref_alpha > 255)
+                    pref_alpha = 255;
+                QColor color_prefs = Role::color_has_prefs();
+                color_prefs.setAlpha(pref_alpha);
+                paint_border(adjusted,p,color_prefs);
+                paint_grid(adjusted, false, p, opt, idx, false);
+            }else{
+                paint_grid(adjusted, false, p, opt, idx);
+            }
         }
 
     }

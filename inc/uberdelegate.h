@@ -83,6 +83,7 @@ private:
     bool color_mood_cells;
     bool color_health_cells;
     bool color_attribute_syns;
+    bool color_pref_matches;
     bool gradient_cell_bg;
     QFont m_fnt;
 

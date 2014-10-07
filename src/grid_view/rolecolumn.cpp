@@ -76,13 +76,14 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
     item->setData(-1, DwarfModel::DR_DISPLAY_RATING);
     item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
     item->setData(-1,DwarfModel::DR_LABORS);
+    item->setData(0, DwarfModel::DR_SPECIAL_FLAG);
+    item->setData(-1, DwarfModel::DR_SORT_VALUE);
 
     if(d->is_baby()){
         item->setData(-2, DwarfModel::DR_SORT_VALUE);
         item->setToolTip(("<b>Babies aren't included in role calculations.</b>"));
         return item;
     }else if(d->is_child() && !DT->labor_cheats_allowed()){
-        item->setData(-1, DwarfModel::DR_SORT_VALUE);
         item->setToolTip(("<b>Children are only included in role calculations if labor cheats are enabled.</b>"));
         return item;
     }
@@ -91,11 +92,10 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
         float raw_rating = d->get_raw_role_rating(m_role->name());
         float drawn_rating = d->get_role_rating(m_role->name());
         if(drawn_rating < 0.0001)
-            drawn_rating = 0.0001; //just to ensure very low values are drawn
+            drawn_rating = 0.0001; //just to ensure very low ratings are drawn
         item->setData(drawn_rating, DwarfModel::DR_RATING);
         item->setData(roundf(drawn_rating), DwarfModel::DR_DISPLAY_RATING);
         item->setData(raw_rating, DwarfModel::DR_SORT_VALUE);
-        item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
         set_export_role(DwarfModel::DR_SORT_VALUE);
 
         QList<QVariant> related_labors;
@@ -110,6 +110,12 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
         QString labors_desc = "";
         labors_desc = QString("<br/><br/><b>Associated Labors:</b> %1").arg(labor_names.count() <= 0 ? "None" : labor_names.join(", "));
         item->setData(related_labors,DwarfModel::DR_LABORS);
+
+        float alpha = 0;
+        if(m_role->prefs.count() > 0){
+            alpha = d->get_role_pref_matches(m_role->name()).count() / static_cast<float>(m_role->prefs.count()) * 150;
+        }
+        item->setData(alpha,DwarfModel::DR_SPECIAL_FLAG);
 
         QString match_str;
         QString aspects_str;
@@ -146,10 +152,7 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
             item->setToolTip(tooltip);
         }
     }else{
-        item->setData(-1, DwarfModel::DR_RATING); //drawing value
-        item->setData(-1, DwarfModel::DR_SORT_VALUE);
-        item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
-        //role wasn't initialized, give the user a useful error message in the tooltip
+        item->setData(-1, DwarfModel::DR_RATING);
         item->setToolTip("Role could not be found.");
     }
 

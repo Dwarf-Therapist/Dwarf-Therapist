@@ -283,6 +283,7 @@ void OptionsMenu::read_settings() {
 
     ui->cb_moodable->setChecked(s->value("color_mood_cells",false).toBool());
     ui->cb_attribute_syns->setChecked(s->value("color_attribute_syns",true).toBool());
+    ui->cb_pref_matches->setChecked(s->value("color_pref_matches",false).toBool());
     ui->cb_gender_icons->setChecked(s->value("show_gender_icons",true).toBool());
     ui->cb_show_tooltips->setChecked(s->value("show_tooltips",true).toBool());
     ui->cb_grid_health_colors->setChecked(s->value("color_health_cells",true).toBool());
@@ -408,6 +409,7 @@ void OptionsMenu::write_settings() {
         s->setValue("happiness_icons",ui->cb_happiness_icons->isChecked());
         s->setValue("color_mood_cells", ui->cb_moodable->isChecked());
         s->setValue("color_attribute_syns", ui->cb_attribute_syns->isChecked());
+        s->setValue("color_pref_matches", ui->cb_pref_matches->isChecked());
         s->setValue("show_gender_icons", ui->cb_gender_icons->isChecked());
         s->setValue("show_tooltips",ui->cb_show_tooltips->isChecked());
         s->setValue("color_health_cells", ui->cb_grid_health_colors->isChecked());
@@ -551,6 +553,7 @@ void OptionsMenu::restore_defaults() {
     ui->cb_no_diagnosis->setChecked(false);
     ui->cb_animal_health->setChecked(false);
     ui->cb_attribute_syns->setChecked(true);
+    ui->cb_pref_matches->setChecked(false);
     ui->cb_decorate_nobles->setChecked(false);
 
     ui->chk_show_caste->setChecked(true);
