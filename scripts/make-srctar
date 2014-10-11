@@ -1,27 +1,31 @@
 #!/bin/sh
 DT_VERSION=`cat inc/defines.h | awk 'BEGIN {i = 1} /#define DT_VERSION/ {ver[i++] = $3} END {printf("%d.%d.%d\n", ver[1], ver[2], ver[3])}'`
 
-SRC_DIR=dwarftherapist-$DT_VERSION
-TAR_FILE=../dwarftherapist-$DT_VERSION.tar.gz
-TAR_FILE_ORIG=../dwarftherapist_$DT_VERSION.orig.tar.gz
+SRC_DIR=dwarf-therapist-$DT_VERSION
+TAR_FILE=../dwarf-therapist-$DT_VERSION.tar.gz
+TAR_FILE_ORIG=../dwarf-therapist_$DT_VERSION.orig.tar.gz
 
 rm -f $TAR_FILE
 
 mkdir $SRC_DIR
-cp default_gridviews.dtg $SRC_DIR
-cp build_packages $SRC_DIR
+mkdir $SRC_DIR/resources
+mkdir $SRC_DIR/scripts
+
+cp resources.qrc $SRC_DIR
+cp -R resources/img $SRC_DIR/resources
+cp resources/default_gridviews.dtg $SRC_DIR/resources
+cp hammer.ico $SRC_DIR
+cp hammer.icns $SRC_DIR
+cp scripts/build_packages $SRC_DIR/scripts
 cp -R debian $SRC_DIR
 cp -R dist $SRC_DIR
 cp -R doc $SRC_DIR
 cp dwarftherapist.pro $SRC_DIR
 cp DwarfTherapist.rc $SRC_DIR
-cp -R etc $SRC_DIR
-cp hammer.ico $SRC_DIR
-cp images.qrc $SRC_DIR
-cp -R img $SRC_DIR
+#cp -R etc $SRC_DIR
 cp -R inc $SRC_DIR
 cp LICENSE.txt $SRC_DIR/COPYRIGHT
-cp README.txt $SRC_DIR/README
+cp README.rst $SRC_DIR/README
 cp resource.h $SRC_DIR
 cp -r src $SRC_DIR
 cp -r thirdparty $SRC_DIR

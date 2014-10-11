@@ -1,10 +1,16 @@
+dwarf-therapist (27.0.0) trusty; urgency=medium
+
+  * 27.0 Fixing the build
+
+ -- Serhiy Zahoriya <serhiy.int@gmail.com>  Sat, 11 Oct 2014 18:48:03 +0300
+
 dwarf-therapist (21.8-1~getdeb1) trusty; urgency=medium
 
   * New upstream version (LP: #1332894)
 
  -- Christoph Korn <christoph.korn@getdeb.net>  Sun, 22 Jun 2014 03:20:51 +0200
 
-dwarftherapist (0.6.10-1) maverick; urgency=low
+dwarf-therapist (0.6.10-1) maverick; urgency=low
 
   * Support for 0.31.20 & 0.31.21
   * Closes issue 318 - Support for 0.31.21
@@ -13,14 +19,14 @@ dwarftherapist (0.6.10-1) maverick; urgency=low
 
  -- Justin <ehlertjd@gmail.com>  Tue, 15 Mar 2011 18:35:03 -0500
 
-dwarftherapist (0.6.9-2) lucid; urgency=low
+dwarf-therapist (0.6.9-2) lucid; urgency=low
 
   * Support for automatic downloading of layout files. (Can be disabled by disabling the version check in preferences)
   * This is the first version of Dwarf Therapist that reads RAW files, so please post any issues found
 
  -- Justin <ehlertjd@gmail.com>  Fri, 18 Feb 2011 16:41:39 -0600
 
-dwarftherapist (0.6.9-1) lucid; urgency=low
+dwarf-therapist (0.6.9-1) lucid; urgency=low
 
   * Support for 0.31.19 (graphics + legacy versions)
   * Added Skills, Labors, and Professions for Shearing, Spinning, Pottery, Glazing, Pressing, Bee Keeping and Wax Working
@@ -28,7 +34,7 @@ dwarftherapist (0.6.9-1) lucid; urgency=low
 
  -- Justin <ehlertjd@gmail.com>  Thu, 17 Feb 2011 17:07:30 -0600
 
-dwarftherapist (0.6.6-1) lucid; urgency=low
+dwarf-therapist (0.6.6-1) lucid; urgency=low
 
   * Support for 0.31.18 (graphics + legacy versions)
   * Started generating debian packages for Dwarf Therapist.  See wiki for repositories
@@ -46,7 +52,7 @@ dwarftherapist (0.6.6-1) lucid; urgency=low
 
  -- Justin Ehlert <ehlertjd@gmail.com>  Tue, 16 Nov 2010 11:57:20 -0600
 
-dwarftherapist (0.6.5) unstable; urgency=low
+dwarf-therapist (0.6.5) unstable; urgency=low
 
   * Initial packaged release (Closes: #297)
 
