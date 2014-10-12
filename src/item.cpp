@@ -49,17 +49,17 @@ Item::Item(const Item &i)
 }
 
 Item::Item(DFInstance *df, ItemDefUniform *u, QObject *parent)
-    :QObject(parent)
-    ,m_df(df)
-    ,m_addr(0x0)
-    ,m_iType(u->item_type())
-    ,m_wear(0)
-    ,m_mat_type(u->mat_type())
-    ,m_mat_idx(u->mat_index())
-    ,m_quality(-1)
-    ,m_id(u->id())
-    ,m_affection(0)
-    ,m_stack_size(u->get_stack_size())
+    : QObject(parent)
+    , m_df(df)
+    , m_addr(0x0)
+    , m_iType(u->item_type())
+    , m_wear(0)
+    , m_mat_type(u->mat_type())
+    , m_mat_idx(u->mat_index())
+    , m_quality(-1)
+    , m_id(u->id())
+    , m_affection(0)
+    , m_stack_size(u->get_stack_size())
 {
     if(m_id > 0){
         //find the actual item's address
@@ -86,7 +86,6 @@ Item::Item(DFInstance *df, ItemDefUniform *u, QObject *parent)
             //check skill type
             if(!u->indv_choice() && u->job_skill() >= 0)
                 m_item_name.append(QObject::tr(" of %1 skill type").arg(GameDataReader::ptr()->get_skill_name(u->job_skill())));
-
         }
     }
     //set the color to the missing uniform color, since we passed in a uniform itemdef
@@ -95,31 +94,31 @@ Item::Item(DFInstance *df, ItemDefUniform *u, QObject *parent)
 
 Item::Item(DFInstance *df, VIRTADDR item_addr, QObject *parent)
     :QObject(parent)
-    ,m_df(df)
-    ,m_addr(item_addr)
-    ,m_wear(0)
-    ,m_mat_type(-1)
-    ,m_mat_idx(-1)
-    ,m_quality(-1)
-    ,m_id(-1)
-    ,m_affection(0)
-    ,m_stack_size(0)
+    , m_df(df)
+    , m_addr(item_addr)
+    , m_wear(0)
+    , m_mat_type(-1)
+    , m_mat_idx(-1)
+    , m_quality(-1)
+    , m_id(-1)
+    , m_affection(0)
+    , m_stack_size(0)
 {
     read_data();
 }
 
 Item::Item(ITEM_TYPE itype, QString name, QObject *parent)
-    :QObject(parent)
-    ,m_df(0x0)
-    ,m_addr(0x0)
-    ,m_iType(itype)
-    ,m_wear(0)
-    ,m_mat_type(-1)
-    ,m_mat_idx(-1)
-    ,m_quality(-1)
-    ,m_id(-1)
-    ,m_affection(0)
-    ,m_stack_size(0)
+    : QObject(parent)
+    , m_df(0x0)
+    , m_addr(0x0)
+    , m_iType(itype)
+    , m_wear(0)
+    , m_mat_type(-1)
+    , m_mat_idx(-1)
+    , m_quality(-1)
+    , m_id(-1)
+    , m_affection(0)
+    , m_stack_size(0)
 {
     m_item_name = (!name.trimmed().isEmpty() ? name : QObject::tr("Unknown"));
     m_display_name = m_item_name;
@@ -148,7 +147,7 @@ void Item::read_data(){
         if(m){
             set_default_name(m);
             QList<MATERIAL_FLAGS> simple_types;
-            simple_types << LEATHER << SILK << BONE << SHELL << YARN << THREAD_PLANT;
+            simple_types << LEATHER << SILK << YARN << THREAD_PLANT << BONE << SHELL;
             foreach(MATERIAL_FLAGS mf, simple_types){
                 if(m->flags().has_flag(mf)){
                     m_material_name_base = Material::get_material_flag_desc(mf);

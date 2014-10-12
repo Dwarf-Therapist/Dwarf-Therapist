@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include "dwarf.h"
 #include "defines.h"
+#include "dtstandarditem.h"
 
 HappinessColumn::HappinessColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     : ViewColumn(s, set, parent)

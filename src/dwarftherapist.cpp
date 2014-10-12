@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include "viewmanager.h"
 #include "dwarfstats.h"
 #include "defaultfonts.h"
+#include "dtstandarditem.h"
 #include <QMessageBox>
 #include <QToolTip>
 #include <QTranslator>

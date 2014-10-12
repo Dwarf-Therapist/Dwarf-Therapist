@@ -47,28 +47,26 @@ ItemWeaponSubtype* ItemWeaponSubtype::get_weapon(DFInstance *df, const VIRTADDR 
 }
 
 void ItemWeaponSubtype::load_data() {
-    if (!m_df || !m_df->memory_layout() || !m_df->memory_layout()->is_valid()) {
+    if (!m_df || !m_mem || !m_mem->is_valid()) {
         LOGW << "load of weapons called but we're not connected";
         return;
     }
     // make sure our reference is up to date to the active memory layout
-    m_mem = m_df->memory_layout();
     TRACE << "Starting refresh of weapon data at" << hexify(m_address);
-
     read_weapon();
 }
 
 void ItemWeaponSubtype::read_weapon() {
-    m_subType = m_df->read_short(m_address + m_df->memory_layout()->item_subtype_offset("sub_type"));
-    m_adjective = capitalizeEach(m_df->read_string(m_address + m_df->memory_layout()->item_subtype_offset("adjective")));
-    QString name = capitalizeEach(m_df->read_string(m_address + m_df->memory_layout()->item_subtype_offset("name")));
-    QString plural = capitalizeEach(m_df->read_string(m_address + m_df->memory_layout()->item_subtype_offset("name_plural")));
+    m_subType = m_df->read_short(m_address + m_mem->item_subtype_offset("sub_type"));
+    m_adjective = capitalizeEach(m_df->read_string(m_address + m_mem->item_subtype_offset("adjective")));
+    QString name = capitalizeEach(m_df->read_string(m_address + m_mem->item_subtype_offset("name")));
+    QString plural = capitalizeEach(m_df->read_string(m_address + m_mem->item_subtype_offset("name_plural")));
     m_name = QString("%1 %2").arg(m_adjective).arg(name).trimmed();
     m_name_plural = QString("%1 %2").arg(m_adjective).arg(plural).trimmed();
     m_group_name = plural;
-    m_single_grasp_size = m_df->read_int(m_address + m_df->memory_layout()->weapon_subtype_offset("single_size")); //two_hand size
-    m_multi_grasp_size = m_df->read_int(m_address + m_df->memory_layout()->weapon_subtype_offset("multi_size")); //minimum size
-    m_ammo = m_df->read_string(m_address + m_df->memory_layout()->weapon_subtype_offset("ammo"));
-    m_melee_skill_id = m_df->read_short(m_address + m_df->memory_layout()->weapon_subtype_offset("melee_skill"));
-    m_ranged_skill_id = m_df->read_short(m_address + m_df->memory_layout()->weapon_subtype_offset("ranged_skill"));
+    m_single_grasp_size = m_df->read_int(m_address + m_mem->weapon_subtype_offset("single_size")); //two_hand size
+    m_multi_grasp_size = m_df->read_int(m_address + m_mem->weapon_subtype_offset("multi_size")); //minimum size
+    m_ammo = m_df->read_string(m_address + m_mem->weapon_subtype_offset("ammo"));
+    m_melee_skill_id = m_df->read_short(m_address + m_mem->weapon_subtype_offset("melee_skill"));
+    m_ranged_skill_id = m_df->read_short(m_address + m_mem->weapon_subtype_offset("ranged_skill"));
 }

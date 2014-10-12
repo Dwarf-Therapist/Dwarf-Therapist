@@ -25,16 +25,17 @@ THE SOFTWARE.
 
 #include <QObject>
 #include "global_enums.h"
-#include "itemdefuniform.h"
-#include "item.h"
+#include "utils.h"
 
 class DFInstance;
+class ItemDefUniform;
+class Item;
 
 class Uniform : public QObject {
     Q_OBJECT
 public:
     Uniform(DFInstance *df, QObject *parent = 0);
-    virtual ~Uniform();    
+    virtual ~Uniform();
 
     int get_missing_equip_count(ITEM_TYPE itype);
 

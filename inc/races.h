@@ -30,6 +30,7 @@ THE SOFTWARE.
 class DFInstance;
 class MemoryLayout;
 class Caste;
+class Material;
 
 class Race : public QObject {
     Q_OBJECT

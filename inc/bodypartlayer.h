@@ -6,8 +6,7 @@
 #include "races.h"
 #include "global_enums.h"
 #include "memorylayout.h"
-
-class DFInstance;
+#include "dfinstance.h"
 
 class BodyPartLayer{
 

@@ -37,7 +37,6 @@ THE SOFTWARE.
 #include "languages.h"
 #include "reaction.h"
 #include "races.h"
-#include "itemweaponsubtype.h"
 #include "fortressentity.h"
 #include "material.h"
 #include "plant.h"
@@ -170,6 +169,13 @@ DFInstance::~DFInstance() {
     qDeleteAll(m_weapon_defs);
     m_weapon_defs.clear();
     m_ordered_weapon_defs.clear();
+
+    foreach (const QList<ItemArmorSubtype*> &list, m_armor_defs) {
+        foreach (ItemArmorSubtype* def, list) {
+            delete def;
+        }
+    }
+
     qDeleteAll(m_plants_vector);
     m_plants_vector.clear();
 
@@ -281,11 +287,12 @@ void DFInstance::load_game_data()
     m_races.clear();
     load_races_castes();
 
-    emit progress_message(tr("Loading weapons"));
+    emit progress_message(tr("Loading weapons and armor"));
     qDeleteAll(m_weapon_defs);
     m_weapon_defs.clear();
     m_ordered_weapon_defs.clear();
     load_weapons();
+    load_armors();
 
     load_fortress_name();
 }
@@ -739,6 +746,36 @@ ItemWeaponSubtype *DFInstance::find_weapon_def(QString name){
     return 0;
 }
 
+void DFInstance::load_armors(){
+    foreach (const QList<ItemArmorSubtype*> &list, m_armor_defs) {
+        foreach (ItemArmorSubtype* def, list) {
+            delete def;
+        }
+    }
+    m_armor_defs.clear();
+
+    QList<ITEM_TYPE> armor_types;
+    armor_types << SHOES << PANTS << ARMOR << GLOVES << HELM;
+    foreach(ITEM_TYPE ia, armor_types){
+        QVector<VIRTADDR> armors = m_itemdef_vectors.value(ia);
+        if (!armors.empty()) {
+            foreach(VIRTADDR armor_addr, armors) {
+                m_armor_defs[ia].append(new ItemArmorSubtype(ia,this,armor_addr,this));
+            }
+        }
+    }
+}
+
+ItemArmorSubtype *DFInstance::get_armor_def(ITEM_TYPE itype, int sub_type){
+    if(m_armor_defs.contains(itype)){
+        QList<ItemArmorSubtype*> list = m_armor_defs.value(itype);
+        if(list.size() > 0 && sub_type >= 0 && sub_type < list.size()){
+            return list.at(sub_type);
+        }
+    }
+    return 0;
+}
+
 void DFInstance::load_races_castes(){
     attach();
     VIRTADDR races_vector_addr = m_layout->address("races_vector");
@@ -1135,16 +1172,34 @@ QVector<VIRTADDR> DFInstance::get_item_vector(ITEM_TYPE i){
         return m_itemdef_vectors.value(NONE);
 }
 
+QHash<int,VIRTADDR> DFInstance::get_mapped_item_addrs(ITEM_TYPE itype){
+    if(m_mapped_items.value(itype).count() <= 0)
+        index_item_vector(itype);
+    return m_mapped_items.value(itype);
+}
+
 QString DFInstance::get_preference_item_name(int index, int subtype){
     ITEM_TYPE itype = static_cast<ITEM_TYPE>(index);
 
     QVector<VIRTADDR> items = get_item_vector(itype);
     if(!items.empty() && (subtype >=0 && subtype < items.count())){
         QString name = read_string(items.at(subtype) + m_layout->item_subtype_offset("name_plural"));
-        if(itype==TRAPCOMP || itype==WEAPON){
+        if(itype==TRAPCOMP){
             name.prepend(" ").prepend(read_string(items.at(subtype) + m_layout->item_subtype_offset("adjective")));
-        }else if(itype==ARMOR || itype==PANTS){
-            name.prepend(" ").prepend(read_string(items.at(subtype) + m_layout->armor_subtype_offset("mat_name")));
+        }else if(itype == WEAPON){
+            ItemWeaponSubtype *w = get_weapon_def(subtype);
+            if(w){
+                return w->name_plural();
+            }else{
+                return tr("unknown weapon");
+            }
+        }else if(Item::is_armor_type(itype,false)){
+            ItemArmorSubtype *ias = get_armor_def(itype,subtype);
+            if(ias){
+                return ias->name_plural();
+            }else{
+                return tr("unknown armor");
+            }
         }
         return name.trimmed();
     }
@@ -1188,7 +1243,7 @@ QString DFInstance::get_item_name(ITEM_TYPE itype, int item_id){
 
 void DFInstance::index_item_vector(ITEM_TYPE itype){
     QHash<int,VIRTADDR> items;
-    int offset = 0x18;
+    int offset = 0x18; //TODO: should be set from item.id (df-structures)
     if(itype == ARTIFACTS)
         offset = 0x0;
     foreach(VIRTADDR addr, m_items_vectors.value(itype)){

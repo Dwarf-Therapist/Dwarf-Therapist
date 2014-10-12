@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "defines.h"
 #include "dwarf.h"
 #include "material.h"
+#include "item.h"
 
 #if QT_VERSION >= 0x050000
 # include <QRegularExpression>
@@ -187,15 +188,27 @@ void Role::parsePreferences(QSettings &s, QString node, weight_info &g_weight, f
             if(j==0)
                 first_flag = f;
         }
+        s.endArray();
 
-        //update any general preference material names (eg. Horn -> Horn/Hoof)
-        if(p->get_item_type() == NONE && !p->exact_match() && p->get_pref_category() == LIKE_MATERIAL && first_flag >= 0){
-            if(first_flag < NUM_OF_MATERIAL_FLAGS){
-                p->set_name(Material::get_material_flag_desc(static_cast<MATERIAL_FLAGS>(first_flag)));
-            }
+        //check and update any missing armor/clothing flags
+        if(Item::is_armor_type(p->get_item_type()) && !p->flags().has_flag(IS_ARMOR) && !p->flags().has_flag(IS_CLOTHING)){
+            p->add_flag(IS_ARMOR);
         }
 
-        s.endArray();
+        //add missing trainable, remove old flags
+        if(p->get_pref_category() == LIKE_CREATURE &&
+                p->flags().has_flag(TRAINABLE_HUNTING) && p->flags().has_flag(TRAINABLE_WAR) && !p->flags().has_flag(TRAINABLE)){
+            p->add_flag(TRAINABLE);
+            p->flags().set_flag(TRAINABLE_HUNTING,false);
+            p->flags().set_flag(TRAINABLE_WAR,false);
+        }
+
+        //update any general preference material names (eg. Horn -> Horn/Hoof)
+        if(p->get_item_type() == NONE && !p->exact_match() && p->get_pref_category() == LIKE_MATERIAL &&
+                first_flag >= 0 && first_flag < NUM_OF_MATERIAL_FLAGS){
+                p->set_name(Material::get_material_flag_desc(static_cast<MATERIAL_FLAGS>(first_flag)));
+        }
+
         prefs.append(p);
     }
     s.endArray();
@@ -355,7 +368,7 @@ void Role::highlight_pref_matches(Dwarf *d, QString &pref_desc){
                 re.setCaseSensitivity(Qt::CaseInsensitive);
 #endif
             foreach(p_match, pref_matches){
-                re.setPattern(QString("\\b%1(?=[$,\\n]|\\s*[<])").arg(re.escape(p_match.first)));
+                re.setPattern(QString("((?<=, )|(?<=>)|^)%1(?=[$,\\n]|\\s*[<])").arg(re.escape(p_match.first)));
                 pref_desc.replace(re, QString("<b>%2</b>").arg(p_match.first));
                 pref_names.append(p_match.second);
             }
@@ -407,12 +420,17 @@ void Role::write_pref_group(QSettings &s, float default_prefs_weight){
         if(prefs_weight.weight > 0 && prefs_weight.weight != default_prefs_weight)
             s.setValue("prefs_weight", QString::number(prefs_weight.weight,'g',0));
 
+        int i_type = -1;
+        QList<int> active_flags;
         s.beginWriteArray("preferences", prefs.count());
         for(int i = 0; i < prefs.count(); i++){
             s.setArrayIndex(i);
             p = prefs.at(i);
             s.setValue("pref_category",QString::number((int)p->get_pref_category()));
-            s.setValue("item_type", QString::number((int)p->get_item_type()));
+            i_type = (int)p->get_item_type();
+            if(i_type != -1){
+                s.setValue("item_type", QString::number(i_type));
+            }
             s.setValue("exact", p->exact_match());
 
             QString id = tr("%1%2").arg(p->pref_aspect->is_neg ? "-" : "").arg(p->get_name());
@@ -421,12 +439,15 @@ void Role::write_pref_group(QSettings &s, float default_prefs_weight){
                 s.setValue("weight",QString::number(p->pref_aspect->weight,'g',2));
             }
 
-            s.beginWriteArray("flags",p->special_flags().count());
-            for(int j = 0; j < p->special_flags().count(); j++){
-                s.setArrayIndex(j);
-                s.setValue("flag",p->special_flags().at(j));
+            active_flags = p->flags().active_flags();
+            if(active_flags.count() > 0){
+                s.beginWriteArray("flags",active_flags.count());
+                for(int idx = 0; idx < active_flags.count(); idx++){
+                    s.setArrayIndex(idx);
+                    s.setValue("flag",active_flags.at(idx));
+                }
+                s.endArray();
             }
-            s.endArray();
         }
         s.endArray();
     }

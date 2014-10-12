@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "trait.h"
 #include "viewmanager.h"
 #include "viewcolumnset.h"
+#include "dtstandarditem.h"
 
 SkillColumn::SkillColumn(const QString &title, const int &skill_id, ViewColumnSet *set, QObject *parent, COLUMN_TYPE cType)
     : ViewColumn(title, cType, set, parent)

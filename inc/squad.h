@@ -26,7 +26,6 @@ THE SOFTWARE.
 #include <QObject>
 #include "utils.h"
 #include "global_enums.h"
-//#include "itemdefuniform.h"
 
 class Dwarf;
 class DFInstance;

@@ -21,8 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include "unithealth.h"
+
 #include "dfinstance.h"
-#include "unitwound.h"
+#include "memorylayout.h"
 #include "healthcategory.h"
 #include "dwarf.h"
 #include "caste.h"

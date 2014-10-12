@@ -23,6 +23,7 @@
 #include "gridview.h"
 #include "rolecolumn.h"
 #include "itemweaponsubtype.h"
+#include "itemarmorsubtype.h"
 #include "roleaspect.h"
 #include "preference.h"
 #include "item.h"
@@ -173,11 +174,11 @@ void roleDialog::load_role(QString role_name){
     ui->dsb_attributes_weight->setStatusTip(stat.arg("attributes").arg("traits").arg("skills").arg("preferences")
                                             .arg(DT->user_settings()->value("options/default_attributes_weight",1.0).toString()));
     ui->dsb_skills_weight->setStatusTip(stat.arg("skills").arg("attributes").arg("traits").arg("preferences")
-                                            .arg(DT->user_settings()->value("options/default_skills_weight",1.0).toString()));
+                                        .arg(DT->user_settings()->value("options/default_skills_weight",1.0).toString()));
     ui->dsb_traits_weight->setStatusTip(stat.arg("traits").arg("attributes").arg("skills").arg("preferences")
-                                            .arg(DT->user_settings()->value("options/default_traits_weight",1.0).toString()));
+                                        .arg(DT->user_settings()->value("options/default_traits_weight",1.0).toString()));
     ui->dsb_prefs_weight->setStatusTip(stat.arg("preferences").arg("attributes").arg("skills").arg("traits")
-                                            .arg(DT->user_settings()->value("options/default_prefs_weight",1.0).toString()));
+                                       .arg(DT->user_settings()->value("options/default_prefs_weight",1.0).toString()));
 
     //refresh example
     m_dwarf = 0;
@@ -727,11 +728,17 @@ void roleDialog::load_plant_prefs(QVector<Plant*> plants){
 }
 
 void roleDialog::load_items(){
+    QList<int> flags;
+    flags << IS_CLOTHING;
+    add_general_node(tr("~Any Clothing"),LIKE_ITEM,flags,m_general_item);
+    flags << IS_ARMOR;
+    add_general_node(tr("~Any Armor"),LIKE_ITEM,flags,m_general_item);
+
     //setup a list of item exclusions. these are item types that are not found in item preferences
     //weapons are also ignored because we'll handle them manually to split them into ranged and melee categories
     item_ignore << BAR << SMALLGEM << BLOCKS << ROUGH << BOULDER << WOOD << CORPSE << CORPSEPIECE << REMAINS
-              << FISH_RAW << VERMIN << IS_PET << SKIN_TANNED << THREAD << CLOTH << BALLISTAARROWHEAD
-              << TRAPPARTS << FOOD << GLOB << ROCK << PIPE_SECTION << ORTHOPEDIC_CAST << EGG << BOOK << WEAPON;
+                << FISH_RAW << VERMIN << IS_PET << SKIN_TANNED << THREAD << CLOTH << BALLISTAARROWHEAD
+                << TRAPPARTS << FOOD << GLOB << ROCK << PIPE_SECTION << ORTHOPEDIC_CAST << EGG << BOOK << WEAPON;
 
     //additionally ignore food types, since they can only be a preference as a consumable
     item_ignore << MEAT << FISH << CHEESE << PLANT << DRINK << POWDER_MISC << LEAVES_FRUIT << LIQUID_MISC << SEEDS;
@@ -739,13 +746,17 @@ void roleDialog::load_items(){
     //add craft items to separate category to change the menu
     item_crafts << BRACELET << RING << SCEPTER << INSTRUMENT << CROWN << FIGURINE << AMULET << EARRING << TOY << GOBLET << TOTEM;
 
-    QTreeWidgetItem *parent;
-    QHash<ITEM_TYPE, QVector<VIRTADDR> > item_list = m_df->get_item_def();
+    QTreeWidgetItem *item_parent;
+    QTreeWidgetItem *clothing_parent;
+
+    QHash<ITEM_TYPE, QVector<VIRTADDR> > item_list = m_df->get_all_item_defs();
     int count;
 
+    QStringList added_subtypes;
+
     PREF_TYPES pType = LIKE_ITEM;
-    for(int i=0; i < NUM_OF_ITEM_TYPES; i++){
-        ITEM_TYPE itype = static_cast<ITEM_TYPE>(i);
+    for(int idx=0; idx < NUM_OF_ITEM_TYPES; idx++){
+        ITEM_TYPE itype = static_cast<ITEM_TYPE>(idx);
 
         if(!item_ignore.contains(itype)){
             count = item_list.value(itype).count();
@@ -761,14 +772,45 @@ void roleDialog::load_items(){
             else
                 add_pref_to_tree(m_general_item,p);
 
+            bool is_armor_type = Item::is_armor_type(itype,false);
+            if(is_armor_type){
+                Preference *pc = new Preference(pType,Item::get_item_clothing_names(itype),this);
+                pc->set_item_type(itype);
+                pc->add_flag(IS_CLOTHING);
+                add_pref_to_tree(m_general_item, pc);
+            }
+
             //specific items
             if(count > 1){
-                parent = init_parent_node(name);
-                for(int j = 0; j < count; j++){
-                    Preference *p = new Preference(pType,itype,this);
-                    p->set_name(capitalize(m_df->get_preference_item_name(itype,j)));
-                    p->set_exact(true);
-                    add_pref_to_tree(parent,p);
+                added_subtypes.clear();
+                //create a node for the specific item type
+                item_parent = init_parent_node(name);
+                QString item_name;
+                if(is_armor_type){
+                    clothing_parent = init_parent_node(Item::get_item_clothing_names(itype));
+                }
+                for(int sub_id = 0; sub_id < count; sub_id++){
+                    Preference *pi = new Preference(pType,itype,this);
+                    pi->set_exact(true);
+                    //check for clothing
+                    if(is_armor_type){
+                        ItemArmorSubtype *ias = m_df->get_armor_def(itype,sub_id);
+                        item_name = ias->name_plural();
+                        if(added_subtypes.contains(item_name))
+                            continue;
+                        pi->set_name(item_name);
+                        pi->set_pref_flags(ias);
+                        if(ias->armor_use()){
+                            add_pref_to_tree(item_parent,pi);
+                        }
+                        if(ias->clothing_use()){
+                            add_pref_to_tree(clothing_parent,pi);
+                        }
+                        added_subtypes.append(item_name);
+                    }else{
+                        pi->set_name(capitalize(m_df->get_preference_item_name(itype,sub_id)));
+                        add_pref_to_tree(item_parent,pi);
+                    }
                 }
             }
         }
@@ -822,7 +864,7 @@ void roleDialog::load_creatures(){
         if(r->flags().has_flag(WAGON))
             continue;
 
-        Preference *p = new Preference(LIKE_CREATURE, capitalize(r->name()),this);
+        Preference *p = new Preference(LIKE_CREATURE, capitalize(r->plural_name()),this);
         p->set_pref_flags(r);
 
         if(r->caste_flag(DOMESTIC)){
@@ -910,6 +952,7 @@ void roleDialog::build_pref_tree(){
     m_fabrics = init_parent_node("Fabrics & Dyes");
     m_creatures = init_parent_node("Creatures (Other)");
 
+
     //also add trees to general category. don't need a flag as trees is a pref category
     Preference *p_trees = new Preference(LIKE_TREE,NONE,this);
     //p_trees->add_flag(77); //is tree flag
@@ -918,7 +961,7 @@ void roleDialog::build_pref_tree(){
 
     //any material types that we want to add to the general category section go here
     mats_include << BONE << TOOTH << HORN << PEARL << SHELL << LEATHER << SILK << IS_GLASS
-                    << IS_WOOD << THREAD_PLANT << YARN;
+                 << IS_WOOD << THREAD_PLANT << YARN;
 
     QList<int> flags;
     foreach(MATERIAL_FLAGS f, mats_include){
@@ -1084,13 +1127,13 @@ void roleDialog::calc_new_role(){
             QString err_msg;
             if(ret.isError()) {
                 err_msg = tr("<font color=red>%1: %2<br/>%3</font>")
-                                 .arg(ret.property("name").toString())
-                                 .arg(ret.property("message").toString())
-                                 .arg(ret.property("stack").toString().replace("\n", "<br/>"));
+                        .arg(ret.property("name").toString())
+                        .arg(ret.property("message").toString())
+                        .arg(ret.property("stack").toString().replace("\n", "<br/>"));
             }else{
                 m_engine.globalObject().setProperty("__internal_role_return_value_check", ret);
                 err_msg = tr("<font color=red>Script returned %1 instead of number</font>")
-                                 .arg(m_engine.evaluate(QString("typeof __internal_role_return_value_check")).toString());
+                        .arg(m_engine.evaluate(QString("typeof __internal_role_return_value_check")).toString());
 #if QT_VERSION < 0x050000
                 m_engine.globalObject().setProperty("__internal_role_return_value_check", QScriptValue());
 #else

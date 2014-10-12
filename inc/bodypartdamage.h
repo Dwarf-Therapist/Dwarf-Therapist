@@ -1,33 +1,33 @@
 #ifndef BODYPARTDAMAGE_H
 #define BODYPARTDAMAGE_H
 
-
 #include "truncatingfilelogger.h"
-#include "bodypart.h"
+
+class BodyPart;
 
 class BodyPartDamage
 {
 public:
 
     BodyPartDamage()
-        :m_bp(0x0)
-        ,m_bp_status(0)
-        ,m_bp_req(0)
-        ,m_bone_dmg(false)
-        ,m_muscle_dmg(false)
-        ,m_skin_dmg(false)
+        : m_bp(0x0)
+        , m_bp_status(0)
+        , m_bp_req(0)
+        , m_bone_dmg(false)
+        , m_muscle_dmg(false)
+        , m_skin_dmg(false)
     {
         m_has_rot = false;
         m_is_missing = false;
     }
 
     BodyPartDamage(BodyPart *bp, quint32 bp_status, quint32 bp_req)
-        :m_bp(bp)
-        ,m_bp_status(bp_status)
-        ,m_bp_req(bp_req)
-        ,m_bone_dmg(false)
-        ,m_muscle_dmg(false)
-        ,m_skin_dmg(false)
+        : m_bp(bp)
+        , m_bp_status(bp_status)
+        , m_bp_req(bp_req)
+        , m_bone_dmg(false)
+        , m_muscle_dmg(false)
+        , m_skin_dmg(false)
     {
         m_muscle_dmg = bp_status & 0x30;
         m_bone_dmg = bp_status & 0xc0;

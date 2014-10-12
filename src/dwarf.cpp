@@ -22,7 +22,6 @@ THE SOFTWARE.
 */
 #include "dwarf.h"
 #include "dfinstance.h"
-#include "skill.h"
 #include "trait.h"
 #include "belief.h"
 #include "dwarfjob.h"
@@ -35,27 +34,24 @@ THE SOFTWARE.
 #include "dwarfstats.h"
 #include "races.h"
 #include "reaction.h"
+#include "histfigure.h"
 #include "fortressentity.h"
 #include "columntypes.h"
 #include "plant.h"
-#include "syndrome.h"
+#include "bodypart.h"
 
-#include "utils.h"
 #include "labor.h"
 #include "preference.h"
 #include "material.h"
 #include "caste.h"
-#include "attribute.h"
 #include "roleaspect.h"
 #include "thought.h"
 
+#include "squad.h"
+#include "uniform.h"
 #include "itemweapon.h"
 #include "itemarmor.h"
 #include "itemammo.h"
-#include "uniform.h"
-
-#include "squad.h"
-#include "histfigure.h"
 
 #include <QVector>
 #include <QAction>
@@ -887,7 +883,7 @@ void Dwarf::read_preferences(){
             pref_name = m_df->find_material_name(mat_index,mat_type,NONE);
             Material *m = m_df->find_material(mat_index,mat_type);
             if(m && m->id() >= 0){
-                p->set_material_flags(m->flags());
+                p->set_pref_flags(m->flags());
             }
         }
             break;
@@ -895,7 +891,7 @@ void Dwarf::read_preferences(){
         {
             Race* r = m_df->get_race(pref_id);
             if(r){
-                pref_name = r->plural_name().toLower();
+                pref_name = r->plural_name();
                 p->set_pref_flags(r);
             }
         }
@@ -919,18 +915,21 @@ void Dwarf::read_preferences(){
         {
             Race* r = m_df->get_race(pref_id);
             if(r)
-                pref_name = r->plural_name().toLower();
+                pref_name = r->plural_name();
         }
             break;
         case 4: //like item
         {
-            pref_name = m_df->get_preference_item_name(pref_id,item_sub_type).toLower();
             p->set_item_type(itype);
+            pref_name = m_df->get_preference_item_name(pref_id,item_sub_type);
 
             //special case for weapon items. find the weapon and set ranged/melee flag for comparison
             if(itype == WEAPON){
                 ItemWeaponSubtype *w = m_df->get_weapon_def(item_sub_type);
                 p->set_pref_flags(w);
+            }else if(Item::is_armor_type(itype,false)){
+                ItemArmorSubtype *ias = m_df->get_armor_def(itype,item_sub_type);
+                p->set_pref_flags(ias);
             }
         }
             break;
@@ -938,8 +937,8 @@ void Dwarf::read_preferences(){
         {
             Plant *plnt = m_df->get_plant(pref_id);
             if(plnt){
-                pref_name = plnt->name_plural().toLower();
-                p->set_pref_flags(plnt);
+                pref_name = plnt->name_plural();
+                p->set_pref_flags(plnt->flags());
             }
         }
             break;
@@ -947,17 +946,17 @@ void Dwarf::read_preferences(){
         {
             Plant *plnt = m_df->get_plant(pref_id);
             if (plnt)
-                pref_name = plnt->name_plural().toLower();
+                pref_name = plnt->name_plural();
         }
             break;
         case 7: //like color
         {
-            pref_name = m_df->get_color(pref_id).toLower();
+            pref_name = m_df->get_color(pref_id);
         }
             break;
         case 8: //like shape
         {
-            pref_name = m_df->get_shape(pref_id).toLower();
+            pref_name = m_df->get_shape(pref_id);
         }
             break;
 
@@ -974,7 +973,7 @@ void Dwarf::read_preferences(){
     //add a special preference (actually a misc trait) for like outdoors
     if(has_state(14)){
         int val = state_value(14);
-        QString pref = tr("Does not mind being outdoors");
+        QString pref = tr("Doesn't mind being outdoors");
         if(val == 2)
             pref = tr("Likes working outdoors");
 
@@ -1542,7 +1541,7 @@ void Dwarf::read_inventory(){
                 if(wear_level > m_max_inventory_wear.value(i_type)){
                     m_max_inventory_wear.insert(i_type,wear_level);
                 }
-                if(wear_level > 0 && Item::is_armor_type(i_type) && i_type != SHIELD){
+                if(wear_level > 0 && Item::is_armor_type(i_type,false)){
                     QString item_name = QString("%1 %2").arg((include_mat_name ? ir->get_material_name_base() : "")).arg(ir->get_details()->name_plural()).trimmed();
                     QPair<QString,int> key = qMakePair(item_name,wear_level);
                     if(m_equip_warnings.contains(key)){

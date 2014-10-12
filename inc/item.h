@@ -145,11 +145,11 @@ public:
 
     static const QString get_item_clothing_names(const ITEM_TYPE &type){
         QMap<ITEM_TYPE,QString> m;
-        m[ARMOR]=tr("Coats/Cloaks/Tunics..");
-        m[SHOES]=tr("Boots/Shoes/Socks..");
-        m[HELM]=tr("Caps/Helms/Hoods..");
-        m[GLOVES]=tr("Gloves/Mittens..");
-        m[PANTS]=tr("Skirts/Trousers..");
+        m[ARMOR]=tr("Clothing (Chest)");
+        m[SHOES]=tr("Clothing (Feet)");
+        m[HELM]=tr("Clothing (Head)");
+        m[GLOVES]=tr("Clothing (Hands)");
+        m[PANTS]=tr("Clothing (Legs)");
         return m.value(type,"N/A");
     }
 
@@ -249,11 +249,13 @@ public:
         return m.value(type, "N/A");
     }
 
-    static bool is_armor_type(const ITEM_TYPE &i_type){
-        if(i_type == ARMOR || i_type == GLOVES || i_type == HELM || i_type == PANTS || i_type == SHOES || i_type == SHIELD)
+    static bool is_armor_type(const ITEM_TYPE &i_type, const bool &include_shield = false){
+        if(i_type == ARMOR || i_type == GLOVES || i_type == HELM || i_type == PANTS || i_type == SHOES ||
+                (include_shield && i_type == SHIELD)){
             return true;
-        else
+        }else{
             return false;
+        }
     }
     static bool is_supplies(const ITEM_TYPE &i_type){
         if(i_type == BACKPACK || i_type == CRUTCH || i_type == FLASK)

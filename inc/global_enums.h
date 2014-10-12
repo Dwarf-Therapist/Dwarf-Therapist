@@ -1,8 +1,8 @@
 #ifndef GLOBAL_ENUMS_H
 #define GLOBAL_ENUMS_H
 
-#include "qstring.h"
 #include "qobject.h"
+#include "qstring.h"
 
 typedef enum {
     DH_MISERABLE = 0,
@@ -162,10 +162,13 @@ typedef enum {
     EGG=87,
     BOOK=88,
     NUM_OF_ITEM_TYPES=89,
+    //custom flags
     SUPPLIES=999,
     ARTIFACTS=1000,
     MELEE_EQUIPMENT=1001,
-    RANGED_EQUIPMENT=1002
+    RANGED_EQUIPMENT=1002,
+    IS_CLOTHING=1003,
+    IS_ARMOR=1004
 } ITEM_TYPE;
 
 typedef enum {

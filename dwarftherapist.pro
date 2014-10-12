@@ -334,7 +334,9 @@ SOURCES += src/viewmanager.cpp \
     src/dtstandarditem.cpp \
     src/docks/informationdock.cpp \
     src/docks/equipmentoverviewdock.cpp \
-    src/rolecalcbase.cpp
+    src/rolecalcbase.cpp \
+    src/itemarmorsubtype.cpp \
+    src/flagarray.cpp
 FORMS += ui/scriptdialog.ui \
     ui/pendingchanges.ui \
     ui/optionsmenu.ui \

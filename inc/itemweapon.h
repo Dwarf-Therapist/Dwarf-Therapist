@@ -26,9 +26,11 @@ THE SOFTWARE.
 #include "item.h"
 #include "itemweaponsubtype.h"
 
+class ItemWeaponSubtype;
+
 class ItemWeapon : public Item {
 
-public:    
+public:
     ItemWeapon(const Item &baseItem)
         :Item(baseItem)
     {

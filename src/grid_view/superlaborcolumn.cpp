@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "labor.h"
 #include "viewmanager.h"
+#include "dtstandarditem.h"
 
 SuperLaborColumn::SuperLaborColumn(const QString &title, QString id, ViewColumnSet *set, QObject *parent)
     : SkillColumn(title,-1, set, parent,CT_SUPER_LABOR)

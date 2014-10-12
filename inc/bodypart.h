@@ -6,6 +6,7 @@
 #include "bodypartlayer.h"
 #include "races.h"
 #include "memorylayout.h"
+#include "dfinstance.h"
 
 class DFInstance;
 

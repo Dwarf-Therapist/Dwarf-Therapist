@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include "attributecolumn.h"
 #include "rolecolumn.h"
 #include "truncatingfilelogger.h"
-#include "utils.h"
 #include "dwarftherapist.h"
 #include "dwarf.h"
 #include "mainwindow.h"
@@ -70,6 +69,88 @@ ViewColumnSet::ViewColumnSet(const ViewColumnSet &copy)
         new_c->set_viewcolumnset(this);
         add_column(new_c); // manually add a cloned copy
     }
+}
+
+ViewColumnSet::ViewColumnSet(QSettings &s, QObject *parent, int set_num)
+    : QObject(parent)
+{
+    m_name = s.value("name","unknown").toString();
+    set_bg_color(read_color(s.value("bg_color", "0xFFFFFF").toString()));
+    if(set_num == 0)
+        new SpacerColumn(0,0, this, parent);
+
+    int total_columns = s.beginReadArray("columns");
+    for (int i = 0; i < total_columns; ++i) {
+        s.setArrayIndex(i);
+        COLUMN_TYPE cType = (get_column_type(s.value("type", "DEFAULT").toString()));
+        switch(cType) {
+        case CT_SPACER:
+            new SpacerColumn(s, this, parent);
+            break;
+        case CT_HAPPINESS:
+            new HappinessColumn(s, this, parent);
+            break;
+        case CT_LABOR:
+            new LaborColumn(s, this, parent);
+            break;
+        case CT_SKILL:
+            new SkillColumn(s, this, parent);
+            break;
+        case CT_IDLE:
+            new CurrentJobColumn(s, this, parent);
+            break;
+        case CT_TRAIT:
+            new TraitColumn(s, this, parent);
+            break;
+        case CT_ATTRIBUTE:
+            new AttributeColumn(s, this, parent);
+            break;
+        case CT_FLAGS:
+            new FlagColumn(s, this, parent);
+            break;
+        case CT_ROLE:
+            new RoleColumn(s, this, parent);
+            break;
+        case CT_WEAPON:
+            new WeaponColumn(s,this,parent);
+            break;
+        case CT_PROFESSION:
+            new ProfessionColumn(s, this, parent);
+            break;
+        case CT_HIGHEST_MOOD:
+            new HighestMoodColumn(s, this, parent);
+            break;
+        case CT_TRAINED:
+            new TrainedColumn(s, this, parent);
+            break;
+        case CT_HEALTH:
+            new HealthColumn(s,this,parent);
+            break;
+        case CT_EQUIPMENT:
+            new EquipmentColumn(s,this,parent);
+            break;
+        case CT_ITEMTYPE:
+            new ItemTypeColumn(s,this,parent);
+            break;
+        case CT_SUPER_LABOR:
+            new SuperLaborColumn(s,this,parent);
+            break;
+        case CT_CUSTOM_PROFESSION:
+            new CustomProfessionColumn(s,this,parent);
+            break;
+        case CT_BELIEF:
+            new BeliefColumn(s,this,parent);
+            break;
+        case CT_KILLS:
+            new UnitKillsColumn(s, this, parent);
+            break;
+        case CT_DEFAULT:
+        default:
+            LOGW << "unidentified column type in set" << this->name() << "!";
+            break;
+        }
+    }
+    s.endArray();
 }
 
 ViewColumnSet::~ViewColumnSet(){
@@ -216,7 +297,7 @@ void ViewColumnSet::reorder_columns(const QStandardItemModel &model) {
 
 void ViewColumnSet::write_to_ini(QSettings &s, int start_idx) {
     s.setValue("name", m_name);
-    s.setValue("bg_color", to_hex(m_bg_color));
+    s.setValue("bg_color", m_bg_color);
     s.beginWriteArray("columns", m_columns.size());
     int i = 0;
     for(int idx=start_idx;idx < m_columns.count(); idx++){
@@ -226,86 +307,21 @@ void ViewColumnSet::write_to_ini(QSettings &s, int start_idx) {
     s.endArray();
 }
 
-ViewColumnSet *ViewColumnSet::read_from_ini(QSettings &s, QObject *parent, int set_num) {
-    ViewColumnSet *ret_val = new ViewColumnSet(s.value("name", "UNKNOWN").toString(), parent);
-    QString color_in_hex = s.value("bg_color", "0xFFFFFF").toString();
-    QColor bg_color = from_hex(color_in_hex);
-    ret_val->set_bg_color(bg_color);
-    if(set_num == 0)
-        new SpacerColumn(0,0, ret_val, parent);
-
-    int total_columns = s.beginReadArray("columns");
-    for (int i = 0; i < total_columns; ++i) {
-        s.setArrayIndex(i);
-        COLUMN_TYPE cType = (get_column_type(s.value("type", "DEFAULT").toString()));
-        switch(cType) {
-        case CT_SPACER:
-            new SpacerColumn(s, ret_val, parent);
-            break;
-        case CT_HAPPINESS:
-            new HappinessColumn(s, ret_val, parent);
-            break;
-        case CT_LABOR:
-            new LaborColumn(s, ret_val, parent);
-            break;
-        case CT_SKILL:
-            new SkillColumn(s, ret_val, parent);
-            break;
-        case CT_IDLE:
-            new CurrentJobColumn(s, ret_val, parent);
-            break;
-        case CT_TRAIT:
-            new TraitColumn(s, ret_val, parent);
-            break;
-        case CT_ATTRIBUTE:
-            new AttributeColumn(s, ret_val, parent);
-            break;
-        case CT_FLAGS:
-            new FlagColumn(s, ret_val, parent);
-            break;
-        case CT_ROLE:
-            new RoleColumn(s, ret_val, parent);
-            break;
-        case CT_WEAPON:
-            new WeaponColumn(s,ret_val,parent);
-            break;
-        case CT_PROFESSION:
-            new ProfessionColumn(s, ret_val, parent);
-            break;
-        case CT_HIGHEST_MOOD:
-            new HighestMoodColumn(s, ret_val, parent);
-            break;
-        case CT_TRAINED:
-            new TrainedColumn(s, ret_val, parent);
-            break;
-        case CT_HEALTH:
-            new HealthColumn(s,ret_val,parent);
-            break;
-        case CT_EQUIPMENT:
-            new EquipmentColumn(s,ret_val,parent);
-            break;
-        case CT_ITEMTYPE:
-            new ItemTypeColumn(s,ret_val,parent);
-            break;
-        case CT_SUPER_LABOR:
-            new SuperLaborColumn(s,ret_val,parent);
-            break;
-        case CT_CUSTOM_PROFESSION:
-            new CustomProfessionColumn(s,ret_val,parent);
-            break;
-        case CT_BELIEF:
-            new BeliefColumn(s,ret_val,parent);
-            break;
-        case CT_KILLS:
-            new UnitKillsColumn(s, ret_val, parent);
-            break;
-        case CT_DEFAULT:
-        default:
-            LOGW << "unidentified column type in set" << ret_val->name() << "!";
-            break;
+QColor ViewColumnSet::read_color(QString const &col){
+    QColor c(Qt::gray);
+    bool ok;
+    if(col.startsWith("0x")){
+        int a = 255;
+        if(col.length() >= 8){
+            if(col.length() >= 10)
+                a = col.mid(8, 2).toInt(&ok, 16);
+            c = QColor(col.mid(2,6).toInt(&ok, 16));
+            c.setAlpha(a);
         }
+    }else{
+        c = QVariant(col).value<QColor>();
     }
-    s.endArray();
-
-    return ret_val;
+    return c;
 }
+
+

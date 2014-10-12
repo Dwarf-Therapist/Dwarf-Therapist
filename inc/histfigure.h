@@ -23,7 +23,10 @@ THE SOFTWARE.
 #ifndef HISTFIGURE_H
 #define HISTFIGURE_H
 
-#include "dfinstance.h"
+#include "utils.h"
+
+class DFInstance;
+class MemoryLayout;
 
 class HistFigure : public QObject {
     Q_OBJECT
@@ -33,7 +36,7 @@ public:
     virtual ~HistFigure();
 
     struct kill_info{
-        QString name;        
+        QString name;
         int year;
         int site;
         int count;

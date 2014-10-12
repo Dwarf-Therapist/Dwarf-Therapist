@@ -25,14 +25,15 @@ THE SOFTWARE.
 
 #include <QObject>
 #include <QString>
-#include <utils.h>
-#include <dfinstance.h>
-#include <memorylayout.h>
-#include <gamedatareader.h>
+#include "utils.h"
+#include "global_enums.h"
+
+class DFInstance;
+class MemoryLayout;
 
 class Syndrome{
 
-public:    
+public:
     struct syn_att_change{
         int percent;
         int added;
@@ -46,7 +47,7 @@ public:
     QStringList class_names() {return m_class_names;}
     QString name() {return m_name;}
     int id() {return m_id;}
-    bool is_sickness() {return m_is_sickness;}    
+    bool is_sickness() {return m_is_sickness;}
 
     QString display_name(bool show_name = true,bool show_class = true);
     QString syn_effects();
@@ -59,7 +60,7 @@ public:
         if(this == &other)
             return true;
         return (this->m_id == other.m_id);
-    } 
+    }
 
 private:
     DFInstance *m_df;

@@ -46,7 +46,7 @@ GridView::GridView(const GridView &to_be_copied)
     }
 }
 
-GridView::~GridView() {    
+GridView::~GridView() {
     m_sets.clear();
 }
 
@@ -121,10 +121,10 @@ GridView *GridView::read_from_ini(QSettings &s, QObject *parent) {
     if(!ret_val->show_animals() && ret_val->name().contains(tr("animal"),Qt::CaseInsensitive))
         ret_val->set_show_animals(true);
 
-    int total_sets = s.beginReadArray("sets");    
+    int total_sets = s.beginReadArray("sets");
     for (int i = 0; i < total_sets; ++i) {
         s.setArrayIndex(i);
-        ViewColumnSet *set = ViewColumnSet::read_from_ini(s, parent, i);
+        ViewColumnSet *set = new ViewColumnSet(s, parent, i);
         if (set)
             ret_val->add_set(set);
     }

@@ -22,6 +22,7 @@ THE SOFTWARE.
 */
 
 #include "histfigure.h"
+#include "dfinstance.h"
 #include "memorylayout.h"
 #include "races.h"
 #include "caste.h"

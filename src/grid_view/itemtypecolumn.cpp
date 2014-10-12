@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include "viewcolumnset.h"
 #include "item.h"
+#include "dtstandarditem.h"
 
 ItemTypeColumn::ItemTypeColumn(const QString &title, const ITEM_TYPE &itype, ViewColumnSet *set, QObject *parent, COLUMN_TYPE cType)
     : ViewColumn(title, cType, set, parent)

@@ -23,14 +23,14 @@ THE SOFTWARE.
 #ifndef VIEW_COLUMN_H
 #define VIEW_COLUMN_H
 
-#include <QSettings>
 #include "columntypes.h"
 #include "dwarfmodel.h"
-#include "dtstandarditem.h"
+#include <QSettings>
 #include <QStandardItem>
 
 class ViewColumnSet;
 class Dwarf;
+class DTStandardItem;
 
 /*!
 ViewColumn

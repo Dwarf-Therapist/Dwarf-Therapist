@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "dwarf.h"
 #include "viewmanager.h"
+#include "dtstandarditem.h"
 
 AttributeColumn::AttributeColumn(const QString &title, ATTRIBUTES_TYPE type, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title, CT_ATTRIBUTE, set, parent)

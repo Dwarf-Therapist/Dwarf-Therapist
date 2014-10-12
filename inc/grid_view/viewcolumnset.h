@@ -39,6 +39,7 @@ ViewColumnSet
 class ViewColumnSet : public QObject {
     Q_OBJECT
 public:
+    ViewColumnSet(QSettings &s, QObject *parent = 0, int set_num = -1);
     ViewColumnSet(QString name, QObject *parent = 0);
     ViewColumnSet(const ViewColumnSet &copy); //copy ctor
     virtual ~ViewColumnSet();
@@ -60,8 +61,8 @@ public:
 
     //! persist this structure to disk
     void write_to_ini(QSettings &s, int start_idx=0);
-    //! factory method for creating a set based on a QSettings that has been pointed at a set entry
-    static ViewColumnSet *read_from_ini(QSettings &s, QObject *parent = 0, int set_num = -1);
+
+    QColor read_color(QString const &col);
 
     public slots:
         void set_name(const QString &name);

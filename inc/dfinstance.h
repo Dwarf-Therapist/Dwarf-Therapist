@@ -30,6 +30,7 @@ THE SOFTWARE.
 class Dwarf;
 class FortressEntity;
 class ItemWeaponSubtype;
+class ItemArmorSubtype;
 class Languages;
 class Material;
 class MemoryLayout;
@@ -86,6 +87,7 @@ public:
     void load_races_castes();
     void load_main_vectors();
     void load_weapons();
+    void load_armors();
 
     void load_fortress();
     void load_fortress_name();
@@ -168,7 +170,7 @@ public:
     }
     VIRTADDR get_material_template(QString temp_id) {return m_material_templates.value(temp_id);}
     QVector<Material *> get_inorganic_materials() {return m_inorganics_vector;}
-    QHash<ITEM_TYPE, QVector<VIRTADDR> > get_item_def() {return m_itemdef_vectors;}
+    QHash<ITEM_TYPE, QVector<VIRTADDR> > get_all_item_defs() {return m_itemdef_vectors;}
     QVector<VIRTADDR>  get_colors() {return m_color_vector;}
     QVector<VIRTADDR> get_shapes() {return m_shape_vector;}
     QVector<Plant *> get_plants() {return m_plants_vector;}
@@ -179,8 +181,11 @@ public:
     QList<ItemWeaponSubtype *> get_weapon_defs() {return m_weapon_defs;}
     QMap<QString, ItemWeaponSubtype *> get_ordered_weapon_defs() {return m_ordered_weapon_defs;}
 
+    ItemArmorSubtype* get_armor_def(ITEM_TYPE itype, int sub_type);
+
     Material * find_material(int mat_index, short mat_type);
 
+    QHash<int,VIRTADDR> get_mapped_item_addrs(ITEM_TYPE itype);
     QVector<VIRTADDR> get_item_vector(ITEM_TYPE i);
     QString get_preference_item_name(int index, int subtype);
 
@@ -258,6 +263,7 @@ private:
 
     QList<ItemWeaponSubtype *> m_weapon_defs;
     QMap<QString, ItemWeaponSubtype *> m_ordered_weapon_defs;
+    QHash<ITEM_TYPE,QList<ItemArmorSubtype *> > m_armor_defs;
     QVector<Plant *> m_plants_vector;
     QVector<Material *> m_inorganics_vector;
     QVector<Material *> m_base_materials;

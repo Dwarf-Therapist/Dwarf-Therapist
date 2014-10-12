@@ -22,6 +22,9 @@ THE SOFTWARE.
 */
 
 #include "syndrome.h"
+#include "dfinstance.h"
+#include "memorylayout.h"
+#include "gamedatareader.h"
 
 Syndrome::Syndrome()
     : m_df(0x0)

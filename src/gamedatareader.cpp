@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include <QMessageBox>
+#include <QFile>
 #include "gamedatareader.h"
 #include "labor.h"
 #include "trait.h"

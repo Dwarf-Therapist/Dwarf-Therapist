@@ -23,10 +23,7 @@ THE SOFTWARE.
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <QCoreApplication>
-#include <QByteArray>
 #include <QColor>
-#include <QtGlobal>
 #include <QVariant>
 #include <QPixmap>
 #include <QBuffer>
@@ -47,28 +44,6 @@ static inline QColor complement(const QColor &in_color, float brightness_thresho
     return QColor::fromHsv(in_color.toHsv().hue(), 25, brightness >= brightness_threshold || in_color.alpha() < 130 ? 0 : 255);
 }
 
-static inline QColor from_hex(const QString &h) {
-    bool ok;
-    QColor retval = Qt::gray;
-    if (h.length() == 8) { // "0x99AABB" (no alpha)
-        retval = QColor(h.toInt(&ok, 16));
-    } else if (h.length() == 10) { // "0x99AABBFF" (last two for alpha channel)
-        int r = h.mid(2, 2).toInt(&ok, 16);
-        int g = h.mid(4, 2).toInt(&ok, 16);
-        int b = h.mid(6, 2).toInt(&ok, 16);
-        int a = h.mid(8, 2).toInt(&ok, 16);
-        retval = QColor(r, g, b, a);
-    }
-    return retval;
-}
-
-static inline QString to_hex(const QColor &c) {
-    return QString("0x%1%2%3%4")
-        .arg(c.red(), 2, 16, QChar('0'))
-        .arg(c.green(), 2, 16, QChar('0'))
-        .arg(c.blue(), 2, 16, QChar('0'))
-        .arg(c.alpha(), 2, 16, QChar('0'));
-}
 static inline QString hexify(const quint64 &num) {
     int width = 8;
     if (num >> 32)
@@ -82,8 +57,14 @@ static inline QString hexify(const QByteArray &bytes) {
 static inline QString capitalize(const QString & word) {
     QString result = word;
     if(!result.isEmpty()) {
-        result = result.toLower();
-        result[0] = result[0].toUpper();
+        int idx = 0;
+        for(idx=0;idx < word.size();idx++){
+            if(word.at(idx).isLetter())
+                break;
+        }
+        if(idx == word.size()-1)
+            idx = 0;
+        result[idx] = result[idx].toUpper();
     }
     return result;
 }

@@ -23,7 +23,6 @@ THE SOFTWARE.
 #include "viewcolumnset.h"
 #include "viewcolumn.h"
 #include "dwarf.h"
-#include "utils.h"
 #include "dwarftherapist.h"
 #include "dtstandarditem.h"
 
@@ -61,8 +60,9 @@ ViewColumn::ViewColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
         set->add_column(this);
         m_bg_color = set->bg_color();
     }
-    if (m_override_set_colors)
-        m_bg_color = from_hex(s.value("bg_color").toString());
+    if (m_override_set_colors){
+        m_bg_color = set->read_color(s.value("bg_color").toString());
+    }
 
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 }
@@ -142,7 +142,7 @@ void ViewColumn::write_to_ini(QSettings &s) {
     s.setValue("type", get_column_type(m_type));
     if (m_override_set_colors) {
         s.setValue("override_color", true);
-        s.setValue("bg_color", to_hex(m_bg_color));
+        s.setValue("bg_color", m_bg_color);
     }
 }
 

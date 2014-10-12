@@ -53,7 +53,7 @@ public:
 
     short subType() const {return m_subType;}
 
-    void load_data();    
+    void load_data();
 
 private:
     VIRTADDR m_address;

@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include "races.h"
+
+#include "dfinstance.h"
 #include "caste.h"
 #include "memorylayout.h"
 #include "truncatingfilelogger.h"

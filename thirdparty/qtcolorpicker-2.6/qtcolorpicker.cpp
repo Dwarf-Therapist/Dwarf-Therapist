@@ -63,7 +63,6 @@
 #include <QShowEvent>
 #include <QMouseEvent>
 #include <math.h>
-#include "utils.h"
 
 #include "qtcolorpicker.h"
 
@@ -437,7 +436,7 @@ void QtColorPicker::setCurrentColor(const QColor &color)
 
     ColorPickerItem *item = popup->find(color);
     if (!item) {
-        insertColor(color, tr("Custom HEX #%1").arg(to_hex(color)));
+        insertColor(color, tr("Custom HEX #%1").arg(col.name()));
         item = popup->find(color);
     }
     if (item) {
@@ -894,7 +893,7 @@ void ColorPickerPopup::getColorFromDialog()
     if(!col.isValid())
         return;
 
-    insertColor(col, tr("Custom (#%1)").arg(to_hex(col)), -1);
+    insertColor(col, tr("Custom (#%1)").arg(col.name()), -1);
     lastSel = col;
     emit selected(col);
 }

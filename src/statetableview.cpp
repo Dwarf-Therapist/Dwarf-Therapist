@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include "profession.h"
 #include "labor.h"
 #include "defaultfonts.h"
+#include "dtstandarditem.h"
 
 StateTableView::~StateTableView()
 {}
