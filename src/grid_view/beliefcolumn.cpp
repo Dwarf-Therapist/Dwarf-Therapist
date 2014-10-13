@@ -94,7 +94,7 @@ QStandardItem *BeliefColumn::build_cell(Dwarf *d) {
     }
 
     item->setText(QString::number(raw_value));
-    item->setData(raw_value, DwarfModel::DR_SORT_VALUE);
+    item->setData(display_value, DwarfModel::DR_SORT_VALUE);
     item->setData(display_value, DwarfModel::DR_RATING);
     item->setData(raw_value, DwarfModel::DR_DISPLAY_RATING);
     set_export_role(DwarfModel::DR_RATING);

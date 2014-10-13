@@ -86,7 +86,7 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
         wep = tr("these weapons");
     else
         wep = capitalizeEach(wep);
-    float rating = 40; //values for 49-51 aren't shown for this column, this is the smallest red square we can get
+    float rating = 40; //small red square by default
     QString numeric_rating = "/";
     short sort_val = 1;
 
@@ -106,13 +106,13 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     //setup drawing ratings
     if(!onehand && !twohand){
         desc = tr("<b>Cannot wield</b> %1.").arg(wep);
-        rating = 25; //this will give us a medium red square as the further from the median the larger the square gets
+        rating = 15; //this will give us a medium-large red square as the further from the median the larger the square gets
         numeric_rating = "X";
         sort_val = 0;
     }
     else if (twohand && onehand){
         desc = tr("<b>Can wield</b> %1 with one or two hands.").arg(wep);
-        rating = 50; //again 49-51 are not drawn, so any value in there to draw nothing
+        rating = 50; //49-51 are not drawn, so any value in there to draw nothing
         numeric_rating = "";
         sort_val = 2;
     }

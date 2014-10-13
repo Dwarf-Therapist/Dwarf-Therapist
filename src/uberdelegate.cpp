@@ -279,7 +279,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         }
 
         if(type == CT_ROLE){
-            paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 5.0f, 95.0f, 42.5f, 57.5f);
+            paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 1.5f, 98.5f, 20.0f, 80.0f);
         }else if(rating >= 0){
             limit = 15.0f;
             paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 0, 0, limit, 0, 0);
@@ -355,7 +355,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     case CT_ATTRIBUTE:
     {
         QColor bg = paint_bg(adjusted, p, opt, idx);
-        paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 2.0f, 98.0f);
+        paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 2.0f, 98.0f,30.0f,70.0f);
 
         if(color_attribute_syns && idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt() > 0){
             paint_border(adjusted,p,Attribute::color_affected_by_syns());
@@ -568,23 +568,21 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
                 adj_rating = adj_rating / median * 50.0f;
             }else{
                 adj_rating = ((adj_rating - median) / (100.0f-median) * 50.0f) + 50.0f;
-                //adj_rating = (((adj_rating - min_limit) * (100.0f - 0)) / (max_limit - min_limit)) + 0;
             }
         }
-        //also invert the value if it was below the median, and rescale our drawing values from 0-50 and 50-100
-        if(adj_rating > 50.0f){
-            //adj_rating = (((adj_rating - 0) * (100.0f - 50.0f)) / (max_limit - min_limit)) + 50.0f;
-            adj_rating = (adj_rating - 50.0f) * 2.0f;
-        }else{
-            adj_rating = 100 - (adj_rating * 2.0f);
-        }
+//        //also invert the value if it was below the median, and rescale our drawing values from 0-50 and 50-100
+//        if(adj_rating > 50.0f){
+//            adj_rating = (adj_rating - 50.0f) * 2.0f;
+//        }else{
+//            adj_rating = 100 - (adj_rating * 2.0f);
+//        }
     }
 
     p->save();
     switch(m_skill_drawing_method) {
     default:
     case SDM_GROWING_CENTRAL_BOX:
-        if (rating != 0 && (rating >= max_limit || rating <= min_limit)) {
+        if (adj_rating >= max_limit || adj_rating <= min_limit) {
             // draw diamond
             p->setRenderHint(QPainter::Antialiasing);
             p->setPen(pn);
@@ -592,12 +590,19 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
             p->translate(opt.rect.x() + 2, opt.rect.y() + 2);
             p->scale(opt.rect.width() - 4, opt.rect.height() - 4);
             p->drawPolygon(m_diamond_shape);
-        } else if (rating > -1 && rating < max_limit) {
+        } else if (adj_rating > -1) {
             //0.05625 is the smallest dot we can draw here, so scale to ensure the smallest exp value (1/500 or .002) can always be drawn
             //relative to our maximum limit for this range. this could still be improved to take into account the cell size, as having even
             //smaller cells than the default (16) may not draw very low dabbling skill xp levels
             float perc_of_cell = 0.76f; //max amount of the cell to fill
-            double size = (((adj_rating-min_limit) * (perc_of_cell - 0.05625)) / (max_limit - min_limit)) + 0.05625;
+
+            double size = perc_of_cell;
+            if((median > 0 && adj_rating > 50.0f) || median == 0){
+                size = ((adj_rating-max_ignore) * (perc_of_cell - 0.05625)) / (max_limit - max_ignore) + 0.05625;
+            }else{
+                size = ((adj_rating-min_limit) * (perc_of_cell - 0.05625)) / (min_ignore - min_limit) + 0.05625;
+                size = perc_of_cell - size;
+            }
             //double size = (((adj_rating-0) * (perc_of_cell - 0.05625)) / (100.0f-0)) + 0.05625;
             //size = roundf(size * 100) / 100; //this is to aid in the problem of an odd number of pixel in an even size cell, or vice versa
             double inset = (1.0f - size) / 2.0f;

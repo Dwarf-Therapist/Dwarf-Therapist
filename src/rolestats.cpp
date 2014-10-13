@@ -85,7 +85,8 @@ void RoleStats::set_mode(const QVector<double> &unsorted){
             m_calc = QSharedPointer<RoleCalcBase>(new RoleCalcRecenter(m_valid));
         }
     }else{
-        LOGD << "     - using basic range transform";
+        LOGD << "     - using only ecdfrank";
+        m_calc = QSharedPointer<RoleCalcBase>(new RoleCalcBase(m_valid));
     }
 
     bool print_debug_info = (DT->get_log_manager()->get_appender("core")->minimum_level() <= LL_DEBUG);
@@ -134,13 +135,12 @@ double RoleStats::get_rating(double val){
         if(val <= m_invalid && m_null_rating != -1){
             return m_null_rating;
         }else{
-            return m_calc->rating(val);
+            if(!m_override)
+                return m_calc->rating(val);
+            else
+                return m_calc->base_rating(val);
         }
     }else{
-        if(m_override){
-            return RoleCalcBase::range_transform(val,m_valid.first(),m_median,m_valid.last());
-        }else{
-            return 0.0;
-        }
+        return 0.0;
     }
 }
