@@ -555,12 +555,12 @@ void DFInstance::load_role_ratings(){
                 role_rating_avg+=rating;
         }
     }
-    LOGD << "First Phase Role Ratings Info:";
+    LOGD << "Role Display Info:";
     DwarfStats::init_roles(all_role_ratings);
     foreach(Dwarf *d, m_labor_capable_dwarves){
         d->refresh_role_display_ratings();
     }
-    LOGD << "     - loaded role data in" << tr.elapsed() << "ms";
+    LOGD << "     - loaded role display data in" << tr.elapsed() << "ms";
 
     if(DT->get_log_manager()->get_appender("core")->minimum_level() <= LL_DEBUG){
         float max = 0;
@@ -573,7 +573,7 @@ void DFInstance::load_role_ratings(){
             min = all_role_ratings.first();
             median = RoleCalcBase::find_median(all_role_ratings);
         }
-        LOGD << "Final Role Rating Stats";
+        LOGD << "Overall Role Rating Stats";
         LOGD << "     - Min: " << min;
         LOGD << "     - Max: " << max;
         LOGD << "     - Median: " << median;

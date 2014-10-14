@@ -190,28 +190,38 @@ void Role::parsePreferences(QSettings &s, QString node, weight_info &g_weight, f
         }
         s.endArray();
 
-        //check and update any missing armor/clothing flags
-        if(Item::is_armor_type(p->get_item_type()) && !p->flags().has_flag(IS_ARMOR) && !p->flags().has_flag(IS_CLOTHING)){
-            p->add_flag(IS_ARMOR);
-        }
-
-        //add missing trainable, remove old flags
-        if(p->get_pref_category() == LIKE_CREATURE &&
-                p->flags().has_flag(TRAINABLE_HUNTING) && p->flags().has_flag(TRAINABLE_WAR) && !p->flags().has_flag(TRAINABLE)){
-            p->add_flag(TRAINABLE);
-            p->flags().set_flag(TRAINABLE_HUNTING,false);
-            p->flags().set_flag(TRAINABLE_WAR,false);
-        }
-
-        //update any general preference material names (eg. Horn -> Horn/Hoof)
-        if(p->get_item_type() == NONE && !p->exact_match() && p->get_pref_category() == LIKE_MATERIAL &&
-                first_flag >= 0 && first_flag < NUM_OF_MATERIAL_FLAGS){
-                p->set_name(Material::get_material_flag_desc(static_cast<MATERIAL_FLAGS>(first_flag)));
-        }
+        //update any old flags with new ones
+        check_pref_flags(p,first_flag);
 
         prefs.append(p);
     }
     s.endArray();
+}
+
+void Role::check_pref_flags(Preference *p, int first_flag){
+    //check and update any missing armor/clothing flags
+    if(Item::is_armor_type(p->get_item_type()) && !p->flags().has_flag(IS_ARMOR) && !p->flags().has_flag(IS_CLOTHING)){
+        p->add_flag(IS_ARMOR);
+    }
+
+    //add missing trade goods flags
+    if(Item::is_trade_good(p->get_item_type()) && !p->flags().has_flag(IS_TRADE_GOOD)){
+        p->add_flag(IS_TRADE_GOOD);
+    }
+
+    //add missing trainable, remove old flags
+    if(p->get_pref_category() == LIKE_CREATURE &&
+            p->flags().has_flag(TRAINABLE_HUNTING) && p->flags().has_flag(TRAINABLE_WAR) && !p->flags().has_flag(TRAINABLE)){
+        p->add_flag(TRAINABLE);
+        p->flags().set_flag(TRAINABLE_HUNTING,false);
+        p->flags().set_flag(TRAINABLE_WAR,false);
+    }
+
+    //update any general preference material names (eg. Horn -> Horn/Hoof)
+    if(p->get_item_type() == NONE && !p->exact_match() && p->get_pref_category() == LIKE_MATERIAL &&
+            first_flag >= 0 && first_flag < NUM_OF_MATERIAL_FLAGS){
+            p->set_name(Material::get_material_flag_desc(static_cast<MATERIAL_FLAGS>(first_flag)));
+    }
 }
 
 void Role::create_role_details(QSettings &s, Dwarf *d){

@@ -922,14 +922,15 @@ void Dwarf::read_preferences(){
         {
             p->set_item_type(itype);
             pref_name = m_df->get_preference_item_name(pref_id,item_sub_type);
-
-            //special case for weapon items. find the weapon and set ranged/melee flag for comparison
+            //add any special item flags for matching
             if(itype == WEAPON){
                 ItemWeaponSubtype *w = m_df->get_weapon_def(item_sub_type);
                 p->set_pref_flags(w);
             }else if(Item::is_armor_type(itype,false)){
                 ItemArmorSubtype *ias = m_df->get_armor_def(itype,item_sub_type);
                 p->set_pref_flags(ias);
+            }else if(Item::is_trade_good(itype)){
+                p->add_flag(IS_TRADE_GOOD);
             }
         }
             break;
@@ -1026,13 +1027,13 @@ void Dwarf::read_preferences(){
     if(build_tooltip){
         m_pref_tooltip = tr("<b>Preferences: </b>");
         if(likes.count()>0)
-            m_pref_tooltip.append(tr("Likes ")).append(nice_list(likes)).append(". ");
+            m_pref_tooltip.append(tr("Likes ")).append(formatList(likes)).append(". ");
         if(consume.count()>0)
-            m_pref_tooltip.append(tr("Prefers to consume ")).append(nice_list(consume)).append(". ");
+            m_pref_tooltip.append(tr("Prefers to consume ")).append(formatList(consume)).append(". ");
         if(hates.count()>0)
-            m_pref_tooltip.append(tr("Hates ")).append(nice_list(hates)).append(". ");
+            m_pref_tooltip.append(tr("Hates ")).append(formatList(hates)).append(". ");
         if(other.count()>0)
-            m_pref_tooltip.append(nice_list(other)).append(". ");
+            m_pref_tooltip.append(formatList(other)).append(". ");
         m_pref_tooltip = m_pref_tooltip.trimmed();
     }
 }

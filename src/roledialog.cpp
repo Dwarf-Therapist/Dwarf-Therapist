@@ -730,9 +730,12 @@ void roleDialog::load_plant_prefs(QVector<Plant*> plants){
 void roleDialog::load_items(){
     QList<int> flags;
     flags << IS_CLOTHING;
-    add_general_node(tr("~Any Clothing"),LIKE_ITEM,flags,m_general_item);
+    add_general_node(tr("Clothing (Any)"),LIKE_ITEM,flags,m_general_equip);
     flags << IS_ARMOR;
-    add_general_node(tr("~Any Armor"),LIKE_ITEM,flags,m_general_item);
+    add_general_node(tr("Armor (Any)"),LIKE_ITEM,flags,m_general_equip);
+
+    flags << IS_TRADE_GOOD;
+    add_general_node(tr("Trade Goods"),LIKE_ITEM,flags,m_general_item);
 
     //setup a list of item exclusions. these are item types that are not found in item preferences
     //weapons are also ignored because we'll handle them manually to split them into ranged and melee categories
@@ -742,9 +745,6 @@ void roleDialog::load_items(){
 
     //additionally ignore food types, since they can only be a preference as a consumable
     item_ignore << MEAT << FISH << CHEESE << PLANT << DRINK << POWDER_MISC << LEAVES_FRUIT << LIQUID_MISC << SEEDS;
-
-    //add craft items to separate category to change the menu
-    item_crafts << BRACELET << RING << SCEPTER << INSTRUMENT << CROWN << FIGURINE << AMULET << EARRING << TOY << GOBLET << TOTEM;
 
     QTreeWidgetItem *item_parent;
     QTreeWidgetItem *clothing_parent;
@@ -763,21 +763,26 @@ void roleDialog::load_items(){
             QString name = Item::get_item_name_plural(itype);
 
             pType = LIKE_ITEM;
+            bool is_armor_type = Item::is_armor_type(itype,false);
 
             //add all item types as a group to the general categories
             Preference *p = new Preference(pType, itype,this);
             p->set_name(name);
-            if(item_crafts.contains(itype))
-                add_pref_to_tree(m_general_craft,p);
-            else
+            if(Item::is_trade_good(itype)){
+                p->add_flag(IS_TRADE_GOOD);
+                add_pref_to_tree(m_general_trade_good,p);
+            }else if(is_armor_type || Item::is_supplies(itype) ||
+                     Item::is_melee_equipment(itype) || Item::is_ranged_equipment(itype)){
+                add_pref_to_tree(m_general_equip,p);
+            }else{
                 add_pref_to_tree(m_general_item,p);
+            }
 
-            bool is_armor_type = Item::is_armor_type(itype,false);
             if(is_armor_type){
                 Preference *pc = new Preference(pType,Item::get_item_clothing_names(itype),this);
                 pc->set_item_type(itype);
                 pc->add_flag(IS_CLOTHING);
-                add_pref_to_tree(m_general_item, pc);
+                add_pref_to_tree(m_general_equip, pc);
             }
 
             //specific items
@@ -904,15 +909,15 @@ void roleDialog::load_creatures(){
 void roleDialog::load_weapons(){
     Preference *p;
     //add parent categories
-    QTreeWidgetItem *melee = init_parent_node("Weapons (Melee)");
-    QTreeWidgetItem *ranged = init_parent_node("Weapons (Ranged)");
+    QTreeWidgetItem *melee = init_parent_node(tr("Weapons (Melee)"));
+    QTreeWidgetItem *ranged = init_parent_node(tr("Weapons (Ranged)"));
 
     //add category to general items
     QList<int> flags;
     flags << ITEMS_WEAPON_RANGED;
-    add_general_node(tr("Weapons (Ranged)"),LIKE_ITEM,flags,m_general_item,WEAPON);
+    add_general_node(ranged->text(0),LIKE_ITEM,flags,m_general_equip,WEAPON);
     flags << ITEMS_WEAPON;
-    add_general_node(tr("Weapons (Melee)"),LIKE_ITEM,flags,m_general_item,WEAPON);
+    add_general_node(melee->text(0),LIKE_ITEM,flags,m_general_equip,WEAPON);
 
     foreach(ItemWeaponSubtype *w, m_df->get_weapon_defs()){
         p = new Preference(LIKE_ITEM,w->name_plural(),this); //unfortunately a crescent halberd != halberd
@@ -928,36 +933,37 @@ void roleDialog::load_weapons(){
 void roleDialog::build_pref_tree(){
     ui->treePrefs->setSortingEnabled(false);
     //setup general categories
-    m_general_item = init_parent_node("~General Items");
-    m_general_material = init_parent_node("~General Materials");
-    m_general_creature = init_parent_node("~General Creatures");
-    m_general_craft = init_parent_node("~General Crafts");
-    m_general_other = init_parent_node("~General Other");
-    m_general_plant = init_parent_node("~General Plants");
+    m_general_item = init_parent_node(tr("~General Items"));
+    m_general_equip = init_parent_node(tr("~General Equipment"));
+    m_general_material = init_parent_node(tr("~General Materials"));
+    m_general_creature = init_parent_node(tr("~General Creatures"));
+    m_general_trade_good = init_parent_node(tr("~General Trade Goods"));
+    m_general_other = init_parent_node(tr("~General Other"));
+    m_general_plant_tree = init_parent_node(tr("~General Plants & Trees"));
 
     //setup other groups
-    m_gems = init_parent_node("Gems");
-    m_glass = init_parent_node("Glass & Crystals");
-    m_metals = init_parent_node("Metals");
-    m_stone = init_parent_node("Stone & Ores");
-    m_wood = init_parent_node("Wood");
-    m_glazes_wares = init_parent_node("Glazes & Stoneware");
-    m_plants = init_parent_node("Plants");
-    m_plants_alcohol = init_parent_node("Plants (Alcohol)");
-    m_plants_crops = init_parent_node("Plants (Crops)");
-    m_plants_crops_plantable = init_parent_node("Plants (Crops Plantable)");
-    m_plants_mill = init_parent_node("Plants (Mill)");
-    m_plants_extract = init_parent_node("Plants (Extracts)");
-    m_trees = init_parent_node("Trees");
-    m_fabrics = init_parent_node("Fabrics & Dyes");
-    m_creatures = init_parent_node("Creatures (Other)");
+    m_gems = init_parent_node(tr("Gems"));
+    m_glass = init_parent_node(tr("Glass & Crystals"));
+    m_metals = init_parent_node(tr("Metals"));
+    m_stone = init_parent_node(tr("Stone & Ores"));
+    m_wood = init_parent_node(tr("Wood"));
+    m_glazes_wares = init_parent_node(tr("Glazes & Stoneware"));
+    m_plants = init_parent_node(tr("Plants"));
+    m_plants_alcohol = init_parent_node(tr("Plants (Alcohol)"));
+    m_plants_crops = init_parent_node(tr("Plants (Crops)"));
+    m_plants_crops_plantable = init_parent_node(tr("Plants (Crops Plantable)"));
+    m_plants_mill = init_parent_node(tr("Plants (Mill)"));
+    m_plants_extract = init_parent_node(tr("Plants (Extracts)"));
+    m_trees = init_parent_node(tr("Trees"));
+    m_fabrics = init_parent_node(tr("Fabrics & Dyes"));
+    m_creatures = init_parent_node(tr("Creatures (Other)"));
 
 
     //also add trees to general category. don't need a flag as trees is a pref category
     Preference *p_trees = new Preference(LIKE_TREE,NONE,this);
     //p_trees->add_flag(77); //is tree flag
-    p_trees->set_name("Trees");
-    add_pref_to_tree(m_general_item, p_trees);
+    p_trees->set_name(tr("Trees"));
+    add_pref_to_tree(m_general_plant_tree, p_trees);
 
     //any material types that we want to add to the general category section go here
     mats_include << BONE << TOOTH << HORN << PEARL << SHELL << LEATHER << SILK << IS_GLASS
@@ -971,23 +977,23 @@ void roleDialog::build_pref_tree(){
 
     //general category for plants used for alcohol
     flags << P_DRINK;
-    add_general_node(tr("Plants (Alcohol)"),LIKE_PLANT,flags,m_general_plant);
+    add_general_node(tr("Plants (Alcohol)"),LIKE_PLANT,flags,m_general_plant_tree);
 
     //general category for crops plant or gather
     flags << P_CROP;
-    add_general_node(tr("Plants (Crops)"),LIKE_PLANT,flags,m_general_plant);
+    add_general_node(tr("Plants (Crops)"),LIKE_PLANT,flags,m_general_plant_tree);
 
     //general category for plantable crops
     flags << P_CROP << P_SEED;
-    add_general_node(tr("Plants (Crops Plantable)"),LIKE_PLANT,flags,m_general_plant);
+    add_general_node(tr("Plants (Crops Plantable)"),LIKE_PLANT,flags,m_general_plant_tree);
 
     //general category for millable plants
     flags << P_MILL;
-    add_general_node(tr("Plants (Millable)"),LIKE_PLANT,flags,m_general_plant);
+    add_general_node(tr("Plants (Millable)"),LIKE_PLANT,flags,m_general_plant_tree);
 
     //general category for plants used for processing/threshing
     flags << P_HAS_EXTRACTS;
-    add_general_node(tr("Plants (Extracts)"),LIKE_PLANT,flags,m_general_plant);
+    add_general_node(tr("Plants (Extracts)"),LIKE_PLANT,flags,m_general_plant_tree);
 
     //special custom preference for outdoors
     flags << 999;

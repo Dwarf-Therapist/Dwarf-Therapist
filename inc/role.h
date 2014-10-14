@@ -89,6 +89,7 @@ public:
 protected:
     void parseAspect(QSettings &s, QString node, weight_info &g_weight, QHash<QString, RoleAspect *> &list, float default_weight);
     void parsePreferences(QSettings &s, QString node, weight_info &g_weight, float default_weight);
+    void check_pref_flags(Preference *p, int first_flag);
     void write_aspect_group(QSettings &s, QString group_name, weight_info group_weight, float group_default_weight, QHash<QString, RoleAspect *> &list);
     void write_pref_group(QSettings &s, float default_prefs_weight);
 

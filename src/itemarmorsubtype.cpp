@@ -34,10 +34,10 @@ ItemArmorSubtype::ItemArmorSubtype(ITEM_TYPE itype, DFInstance *df, VIRTADDR add
     , m_iType(itype)
     , m_clothing(false)
     , m_armor(false)
-    , m_offset_props(0x0)
-    , m_offset_adj(0x0)
-    , m_offset_level(0x0)
-    , m_offset_mat(0x0)
+    , m_offset_props(-1)
+    , m_offset_adj(-1)
+    , m_offset_level(-1)
+    , m_offset_mat(-1)
 {
     m_subType = m_df->read_short(m_address + m_mem->item_subtype_offset("sub_type"));
     set_offsets();
@@ -76,11 +76,12 @@ QString ItemArmorSubtype::get_layer_name(){
 void ItemArmorSubtype::read_names(){
     QString mat_name;
 
-    if(m_offset_mat != 0x0)
+    if(m_offset_mat != -1)
         mat_name = m_df->read_string(m_address + m_offset_mat);
 
     QStringList name_parts;
-    name_parts.append(m_df->read_string(m_address + m_offset_adj));
+    if(m_offset_adj != -1)
+        name_parts.append(m_df->read_string(m_address + m_offset_adj));
     name_parts.append(mat_name);
     name_parts.append(m_df->read_string(m_address + m_mem->item_subtype_offset("name")));
     m_name = capitalizeEach(name_parts.join(" ")).simplified().trimmed();
@@ -91,10 +92,10 @@ void ItemArmorSubtype::read_names(){
 }
 
 void ItemArmorSubtype::read_properties(){
-    if(m_offset_props != 0x0){
+    if(m_offset_props != -1){
         m_layer = m_df->read_int(m_address + m_offset_props + m_mem->armor_subtype_offset("layer"));
 
-        if(m_offset_level != 0x0){
+        if(m_offset_level != -1){
             m_armor_level = m_df->read_byte(m_address + m_offset_level);
         }else{
             m_armor_level = 0;
@@ -106,15 +107,14 @@ void ItemArmorSubtype::read_properties(){
         m_armor = (m_armor_level > 0 ||
                    (m_flags.has_flag(ARMOR_METAL) || m_flags.has_flag(ARMOR_BONE) || m_flags.has_flag(ARMOR_SHELL)));
 
-        if(!m_clothing && !m_armor)
-            qDebug() << m_name_plural << "is neither armor nor clothing!";
-
-        qDebug() << m_name_plural << m_flags.output_flag_string() << "armor level" << m_armor_level << "is clothing:" << m_clothing << "is armor:" << m_armor;
+        if(!m_clothing && !m_armor){
+            LOGW << m_name_plural << "is neither armor nor clothing!";
+        }
     }else{
         m_layer = -1;
         m_flags = FlagArray();
         m_clothing = true;
-        qDebug() << "FAILED TO READ ARMOR PROPERTIES" << m_name;
+        LOGE << "Failed to read armor properties" << m_name;
     }
 }
 
@@ -130,19 +130,18 @@ void ItemArmorSubtype::set_offsets(){
         }else{
             m_offset_props = m_mem->armor_subtype_offset("pants_armor_properties");
         }
-        m_offset_level = 0x00d0;
-        m_offset_adj = 0x00b0;
+        m_offset_level = m_mem->armor_subtype_offset("armor_level");
+        m_offset_adj = m_mem->armor_subtype_offset("armor_adjective");
         m_offset_mat = m_mem->armor_subtype_offset("mat_name");
     }
         break;
     case HELM: case GLOVES: case SHOES:
     {
         m_offset_props = m_mem->armor_subtype_offset("other_armor_properties");
-        m_offset_level = 0x0098;
+        m_offset_level = m_mem->armor_subtype_offset("other_armor_level");
     }
         break;
     default:
-        qDebug() << "skipping offsets for" << m_iType;
         break;
     }
 }

@@ -77,14 +77,6 @@ void Preference::add_flag(int flag){
 int Preference::matches(Preference *role_pref, Dwarf *d){
     int result = 0;
 
-    if((role_pref->get_name().toLower() == "creatures (trainable)" && m_name.toLower() == "donkeys") ||
-            (role_pref->get_name().toLower() == "~any armor" && m_name.toLower() == "buckets") ||
-            (role_pref->get_name().toLower().contains("zz") && m_name.toLower().contains("zz"))
-            ){
-        qDebug() << "role pref flags" << role_pref->flags().output_flag_string();
-        qDebug() << "unit pref flags" << m_flags.output_flag_string();
-    }
-
     if(m_pType == role_pref->get_pref_category()){
         result = 1; //so far so good..
 

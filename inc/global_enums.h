@@ -168,7 +168,8 @@ typedef enum {
     MELEE_EQUIPMENT=1001,
     RANGED_EQUIPMENT=1002,
     IS_CLOTHING=1003,
-    IS_ARMOR=1004
+    IS_ARMOR=1004,
+    IS_TRADE_GOOD=1005
 } ITEM_TYPE;
 
 typedef enum {

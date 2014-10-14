@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <QPixmap>
 #include <QBuffer>
 #include <QIODevice>
+#include <QString>
 #include <math.h>
 
 // valid for as long as DF stays 32bit
@@ -96,7 +97,7 @@ static inline QString embedPixmap(const QPixmap &img){
     return QString("<img src=\"data:image/png;base64,%1\"/>").arg(QString(buffer.data().toBase64()));
 }
 
-static inline QString nice_list(QStringList values){
+static inline QString formatList(QStringList values){
     QString ret_val = "";
     QString last_msg;
     if(values.count() > 1)
@@ -106,6 +107,16 @@ static inline QString nice_list(QStringList values){
         ret_val.append(QObject::tr(" and ") + last_msg);
     }
     return ret_val;
+}
+
+static inline QString formatNumber(double value) {
+    QString suffixes(QObject::tr("kMGT"));
+    for(int idx = suffixes.length(); idx > 0; idx--){
+        double unit = pow(1000,idx);
+        if(value >= unit)
+            return QString("%L1%2").arg(value/unit,0,'f',1).arg(suffixes.at(idx-1));
+    }
+    return QString("%L1").arg(value);
 }
 
 #endif // UTILS_H

@@ -85,5 +85,5 @@ QString Belief::trait_conflict_names(){
     foreach(int trait_id, m_trait_conflicts){
         items.append(GameDataReader::ptr()->get_trait_name(trait_id));
     }
-    return nice_list(items);
+    return formatList(items);
 }

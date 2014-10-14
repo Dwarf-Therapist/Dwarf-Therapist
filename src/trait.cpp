@@ -157,10 +157,10 @@ QString Trait::belief_conficts_msgs(short raw_value, QList<UnitBelief> conflicti
     }
     QStringList combined;
     if(cultural_conflicts.size() > 0)
-        combined << (raw_value > 50 ? tr(", but") : tr(", and")) + tr(" is conflicted because their culture %1").arg(nice_list(cultural_conflicts));
+        combined << (raw_value > 50 ? tr(", but") : tr(", and")) + tr(" is conflicted because their culture %1").arg(formatList(cultural_conflicts));
     if(personal_conflicts.size() > 0)
-        combined << tr(" although %1").arg(nice_list(personal_conflicts));
-    QString msgs = nice_list(combined);
+        combined << tr(" although %1").arg(formatList(personal_conflicts));
+    QString msgs = formatList(combined);
     return msgs;
 }
 

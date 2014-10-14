@@ -84,13 +84,13 @@ private:
     QTreeWidgetItem *m_general_item;
     QTreeWidgetItem *m_general_material;
     QTreeWidgetItem *m_general_creature;
-    QTreeWidgetItem *m_general_craft;
-    QTreeWidgetItem *m_general_plant;
+    QTreeWidgetItem *m_general_trade_good;
+    QTreeWidgetItem *m_general_plant_tree;
     QTreeWidgetItem *m_general_other;
+    QTreeWidgetItem *m_general_equip;
 
     //preference include/exclude lists
     QVector<ITEM_TYPE> item_ignore;
-    QVector<ITEM_TYPE> item_crafts;
     QVector<MATERIAL_FLAGS> mats_include;
 
     void load_role_data();

@@ -249,6 +249,15 @@ public:
         return m.value(type, "N/A");
     }
 
+    static bool is_trade_good(const ITEM_TYPE &i_type){
+        if(i_type == BRACELET || i_type == RING || i_type == SCEPTER|| i_type == CROWN ||
+                i_type == FIGURINE || i_type == AMULET || i_type == EARRING){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     static bool is_armor_type(const ITEM_TYPE &i_type, const bool &include_shield = false){
         if(i_type == ARMOR || i_type == GLOVES || i_type == HELM || i_type == PANTS || i_type == SHOES ||
                 (include_shield && i_type == SHIELD)){

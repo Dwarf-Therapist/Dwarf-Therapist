@@ -151,7 +151,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'words',%all,'language_name','words';
     emit_addr 'word_type',%all,'language_name','parts_of_speech';
     emit_addr 'language_id',%all,'language_name','language';
-    
+
     emit_header 'general_ref_offsets';
     emit_addr 'ref_type',%all,'general_ref::vtable','getType';
     emit_addr 'artifact_id',%all,'general_ref_artifact','artifact_id';
@@ -187,7 +187,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'caste_att_caps',%all,'caste_raw','attributes.phys_att_cap_perc';
     emit_addr 'shearable_tissues_vector',%all,'caste_raw','shearable_tissue_layer';
     emit_addr 'extracts',%all,'caste_raw','extracts.extract_matidx';
-    
+
     emit_header 'hist_entity_offsets';
     emit_addr 'beliefs',%all,'historical_entity','resources.values';
     emit_addr 'squads',%all,'historical_entity','squads';
@@ -220,7 +220,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'id',%all,'history_event','id';
     emit_addr 'killed_hist_id',%all,'history_event_hist_figure_diedst','victim_hf';
 
-    emit_header 'item_offsets'; 
+    emit_header 'item_offsets';
     emit_addr 'item_def',%all,'item_ammost','subtype'; #currently same for all
     emit_addr 'id',%all,'item','id';
     emit_addr 'general_refs',%all,'item','general_refs';
@@ -250,11 +250,14 @@ sub generate_dt_ini($$$$) {
     emit_addr 'ranged_skill',%all,'itemdef_weaponst','skill_ranged';
 
     emit_header 'armor_subtype_offsets';
+    emit_addr 'layer',%all,'armor_properties','layer';
+    emit_addr 'mat_name',%all,'itemdef_armorst','material_placeholder';
+    emit_addr 'other_armor_level',%all,'itemdef_helmst','armorlevel';
+    emit_addr 'armor_adjective',%all,'itemdef_armorst','adjective';
+    emit_addr 'armor_level',%all,'itemdef_armorst','armorlevel';
     emit_addr 'chest_armor_properties',%all,'itemdef_armorst','props';
     emit_addr 'pants_armor_properties',%all,'itemdef_pantsst','props';
     emit_addr 'other_armor_properties',%all,'itemdef_helmst','props';
-    emit_addr 'layer',%all,'armor_properties','layer';
-    emit_addr 'mat_name',%all,'itemdef_armorst','material_placeholder';
 
     emit_header 'material_offsets';
     emit_addr 'solid_name',%all,'material_common','state_name[Solid]';
@@ -338,13 +341,13 @@ sub generate_dt_ini($$$$) {
     emit_addr 'body_component_info',%all,'unit','body.components';
     emit_addr 'layer_status_vector',%all,'body_component_info','layer_status';
     emit_addr 'wounds_vector',%all,'unit','body.wounds';
-    emit_addr 'mood_skill',%all,'unit','job.mood_skill';    
+    emit_addr 'mood_skill',%all,'unit','job.mood_skill';
     emit_addr 'used_items_vector',%all,'unit','used_items';
     emit_addr 'affection_level',%all,'unit_item_use','affection_level';
     emit_addr 'inventory',%all,'unit','inventory';
     emit_addr 'inventory_item_mode',%all,'unit_inventory_item','mode';
     emit_addr 'inventory_item_bodypart',%all,'unit_inventory_item','body_part_id';
-    
+
     emit_header 'syndrome_offsets';
     emit_addr 'cie_effects',%all,'syndrome','ce';
     emit_addr 'cie_end',%all,'creature_interaction_effect','end';
