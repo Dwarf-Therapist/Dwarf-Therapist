@@ -37,7 +37,7 @@ public:
 
 private:
     void set_base_offsets(){
-        m_offset_adj = 0x0098;
+        m_offset_adj = m_mem->item_subtype_offset("tool_adjective");
     }
 
 };

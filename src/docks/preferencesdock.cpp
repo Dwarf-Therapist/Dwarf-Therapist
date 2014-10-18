@@ -169,7 +169,7 @@ void PreferencesDock::search_changed(QString val){
 
 void PreferencesDock::filter(){
     for(int i = 0; i < tw_prefs->rowCount(); i++){
-        if(m_filter.isEmpty() || tw_prefs->item(i,0)->text().contains(m_filter)){
+        if(m_filter.isEmpty() || tw_prefs->item(i,0)->text().contains(m_filter) || tw_prefs->item(i,3)->text().contains(m_filter)){
             tw_prefs->setRowHidden(i,false);
         }else{
             tw_prefs->setRowHidden(i,true);
