@@ -922,13 +922,11 @@ void Dwarf::read_preferences(){
         {
             p->set_item_type(itype);
             pref_name = m_df->get_preference_item_name(pref_id,item_sub_type);
-            //add any special item flags for matching
-            if(itype == WEAPON){
-                ItemWeaponSubtype *w = m_df->get_weapon_def(item_sub_type);
-                p->set_pref_flags(w);
-            }else if(Item::is_armor_type(itype,false)){
-                ItemArmorSubtype *ias = m_df->get_armor_def(itype,item_sub_type);
-                p->set_pref_flags(ias);
+            if(item_sub_type >= 0 && Item::has_subtypes(itype)){
+                ItemSubtype *s = m_df->get_item_subtype(itype,item_sub_type);
+                if(s){
+                    p->set_pref_flags(s->flags());
+                }
             }else if(Item::is_trade_good(itype)){
                 p->add_flag(IS_TRADE_GOOD);
             }

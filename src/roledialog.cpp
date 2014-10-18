@@ -799,16 +799,17 @@ void roleDialog::load_items(){
                     pi->set_exact(true);
                     //check for clothing
                     if(is_armor_type){
-                        ItemArmorSubtype *ias = m_df->get_armor_def(itype,sub_id);
-                        item_name = ias->name_plural();
+                        ItemSubtype *stype = m_df->get_item_subtype(itype,sub_id);
+                        item_name = stype->name_plural();
                         if(added_subtypes.contains(item_name))
                             continue;
                         pi->set_name(item_name);
-                        pi->set_pref_flags(ias);
-                        if(ias->armor_use()){
+                        pi->set_pref_flags(stype);
+
+                        if(stype->flags().has_flag(IS_ARMOR)){
                             add_pref_to_tree(item_parent,pi);
                         }
-                        if(ias->clothing_use()){
+                        if(stype->flags().has_flag(IS_CLOTHING)){
                             add_pref_to_tree(clothing_parent,pi);
                         }
                         added_subtypes.append(item_name);
@@ -919,10 +920,11 @@ void roleDialog::load_weapons(){
     flags << ITEMS_WEAPON;
     add_general_node(melee->text(0),LIKE_ITEM,flags,m_general_equip,WEAPON);
 
-    foreach(ItemWeaponSubtype *w, m_df->get_weapon_defs()){
+    foreach(ItemSubtype *i, m_df->get_item_subtypes(WEAPON)){
+        ItemWeaponSubtype *w = qobject_cast<ItemWeaponSubtype*>(i);
         p = new Preference(LIKE_ITEM,w->name_plural(),this); //unfortunately a crescent halberd != halberd
         p->set_pref_flags(w);
-        if(w->is_ranged()){
+        if(w->flags().has_flag(ITEMS_WEAPON_RANGED)){
             add_pref_to_tree(ranged,p);
         }else{
             add_pref_to_tree(melee,p);

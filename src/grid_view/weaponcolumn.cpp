@@ -54,10 +54,10 @@ void WeaponColumn::init(){
         m_weapon_name = m_title;
 
     if(m_sub_type_id >= 0){
-        m_weapon = DT->get_DFInstance()->get_weapon_def(m_sub_type_id);
+        m_weapon = qobject_cast<ItemWeaponSubtype*>(DT->get_DFInstance()->get_item_subtype(WEAPON,m_sub_type_id));
     }
     if(m_weapon == 0 || QString::compare(m_weapon_name, m_weapon->name_plural(),Qt::CaseInsensitive) != 0){
-        m_weapon = DT->get_DFInstance()->find_weapon_def(m_weapon_name);
+        m_weapon = DT->get_DFInstance()->find_weapon_subtype(m_weapon_name);
         if(m_weapon)
             m_sub_type_id = m_weapon->subType();
     }

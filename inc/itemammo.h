@@ -24,7 +24,7 @@ THE SOFTWARE.
 #define ITEMAMMO_H
 
 #include "item.h"
-#include "itemammosubtype.h"
+#include "itemgenericsubtype.h"
 
 class ItemAmmo : public Item {
 public:
@@ -51,12 +51,11 @@ public:
     short item_subtype(){return m_ammo_def->subType();}
 
 private:
-    ItemAmmoSubtype *m_ammo_def;
+    ItemGenericSubtype *m_ammo_def;
 
     void read_def(){
         if(m_addr){
-            m_ammo_def = new ItemAmmoSubtype(m_df, m_df->read_addr(m_addr + m_df->memory_layout()->item_offset("item_def")), this);
-            m_ammo_def->set_item_type(m_iType);
+            m_ammo_def = new ItemGenericSubtype(m_iType,m_df, m_df->read_addr(m_addr + m_df->memory_layout()->item_offset("item_def")), this);
             if(m_stack_size <= 1)
                 m_item_name = m_ammo_def->name();
             else

@@ -680,7 +680,7 @@ void GridViewDialog::add_weapon_column(){
         return;
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     int sub_type = a->data().toInt();
-    ItemWeaponSubtype *w = DT->get_DFInstance()->get_weapon_def(sub_type);
+    ItemWeaponSubtype *w = qobject_cast<ItemWeaponSubtype*>(DT->get_DFInstance()->get_item_subtype(WEAPON,sub_type));
     if(w){
         new WeaponColumn(w->name_plural(),sub_type,m_active_set,m_active_set);
         draw_columns_for_set(m_active_set);

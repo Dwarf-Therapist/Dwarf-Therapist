@@ -24,55 +24,30 @@ THE SOFTWARE.
 #define ITEMWEAPONSUBTYPE_H
 
 #include <QObject>
-#include "utils.h"
+#include "itemsubtype.h"
 
-class DFInstance;
-class MemoryLayout;
-
-class ItemWeaponSubtype : public QObject {
+class ItemWeaponSubtype : public ItemSubtype {
     Q_OBJECT
 public:
     ItemWeaponSubtype(DFInstance *df, VIRTADDR address, QObject *parent = 0);
     virtual ~ItemWeaponSubtype();
 
-    static ItemWeaponSubtype* get_weapon(DFInstance *df, const VIRTADDR &address, QObject *parent = 0);
-
-    //! Return the memory address (in hex) of this weapon in the remote DF process
-    VIRTADDR address() {return m_address;}
-
-    QString name() const {return m_name;}
-    QString name_plural() const {return m_name_plural;}
     QString group_name() const {return m_group_name;}
-
-    bool is_ranged() {return m_ammo.isEmpty() ? false : true;}
 
     int single_grasp() {return m_single_grasp_size;}
     int multi_grasp() {return  m_multi_grasp_size;}
     int melee_skill() {return m_melee_skill_id;}
     int ranged_skill() {return m_ranged_skill_id;}
 
-    short subType() const {return m_subType;}
-
-    void load_data();
-
 private:
-    VIRTADDR m_address;
-
-    QString m_name;
-    QString m_name_plural;
-    QString m_adjective;
     QString m_group_name;
     int m_single_grasp_size;
     int m_multi_grasp_size;
     QString m_ammo;
-    short m_subType;
     int m_melee_skill_id;
     int m_ranged_skill_id;
 
-    DFInstance * m_df;
-    MemoryLayout * m_mem;
-
-    void read_weapon();
+    void read_data();
 };
 
 #endif // ITEMWEAPONSUBTYPE_H

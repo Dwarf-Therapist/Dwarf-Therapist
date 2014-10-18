@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "itemweaponsubtype.h"
 #include "itemarmorsubtype.h"
 #include "races.h"
+#include "caste.h"
 #include "plant.h"
 
 Preference::Preference(QObject *parent)
@@ -115,7 +116,7 @@ int Preference::matches(Preference *role_pref, Dwarf *d){
                               (m_pType == LIKE_ITEM &&
                                role_pref->flags().count() > 0 &&
                                (m_flags.has_flag(ITEMS_WEAPON) || m_flags.has_flag(ITEMS_WEAPON_RANGED))))){
-                ItemWeaponSubtype *w = d->get_df_instance()->find_weapon_def(m_name);
+                ItemWeaponSubtype *w = d->get_df_instance()->find_weapon_subtype(m_name);
                 if(w){
                     result = (d->body_size(true) >= w->multi_grasp());
                 }
@@ -128,34 +129,20 @@ int Preference::matches(Preference *role_pref, Dwarf *d){
 
 void Preference::set_pref_flags(Race *r){
     if(r){
-        if(r->flags().has_flag(HATEABLE)){
-            add_flag(HATEABLE);
-        }
-        //set trainable flags as well for like creatures
-        if(r->caste_flag(TRAINABLE)){ //really only need to add one flag for a match..
-            add_flag(TRAINABLE);
-        }
-        if(r->caste_flag(SHEARABLE)){
-            add_flag(SHEARABLE);
-        }
-        //fishing
-        if(r->caste_flag(FISHABLE)){
-            add_flag(FISHABLE);
-        }
-        //butcher
-        if(r->caste_flag(BUTCHERABLE)){
-            add_flag(BUTCHERABLE);
-        }
-        //milker
-        if(r->caste_flag(MILKABLE)){
-            add_flag(MILKABLE);
-        }
-        //animal dissection / beekeeper / fish dissection
-        if(r->caste_flag(HAS_EXTRACTS)){
-            if(r->caste_flag(FISHABLE)){
-                add_flag(VERMIN_FISH);
-            }else{
-                add_flag(HAS_EXTRACTS);
+        set_flag(r->flags(),HATEABLE);
+
+        Caste *c = r->get_caste_by_id(0);
+        if(c){
+            QList<int> flags;
+            flags << TRAINABLE << SHEARABLE << FISHABLE << BUTCHERABLE << MILKABLE;
+            set_flags(c->flags(),flags);
+
+            if(set_flag(c->flags(),HAS_EXTRACTS)){
+                if(r->caste_flag(FISHABLE)){
+                    add_flag(VERMIN_FISH);
+                }else{
+                    add_flag(HAS_EXTRACTS);
+                }
             }
         }
     }
@@ -165,20 +152,10 @@ void Preference::set_pref_flags(Race *r){
 void Preference::set_pref_flags(Plant *p){
     if(p){
         if(!p->flags().has_flag(P_SAPLING) && !p->flags().has_flag(P_TREE)){
-            if(p->flags().has_flag(P_DRINK)){
-                add_flag(P_DRINK);
-            }
-            if(p->flags().has_flag(P_CROP)){
-                add_flag(P_CROP);
-                if(p->flags().has_flag(P_SEED)){
-                    add_flag(P_SEED);
-                }
-            }
-            if(p->flags().has_flag(P_MILL)){
-                add_flag(P_MILL);
-            }
-            if(p->flags().has_flag(P_HAS_EXTRACTS)){
-                add_flag(P_HAS_EXTRACTS);
+            QList<int> flags = QList<int>() << P_DRINK << P_MILL << P_HAS_EXTRACTS;
+            set_flags(p->flags(),flags);
+            if(set_flag(p->flags(),P_CROP)){
+                set_flag(p->flags(),P_SEED);
             }
         }
     }
@@ -189,26 +166,38 @@ void Preference::set_pref_flags(const FlagArray &flags){
     m_flags = FlagArray(flags);
 }
 
-void Preference::set_pref_flags(ItemWeaponSubtype *w){
+void Preference::set_pref_flags(ItemSubtype *i){
+    m_exact_match = true;
+    if(i->flags().count() <= 0)
+        return;
+
+    QList<int> flags;
+    FlagArray originals;
+    ItemWeaponSubtype *w = qobject_cast<ItemWeaponSubtype*>(i);
     if(w){
-        if(w->is_ranged()){
-            add_flag(ITEMS_WEAPON_RANGED);
-        }else{
-            add_flag(ITEMS_WEAPON);
-        }
+        originals = w->flags();
+        flags << ITEMS_WEAPON << ITEMS_WEAPON_RANGED;
     }
-    m_exact_match = true;
+    ItemArmorSubtype *a = qobject_cast<ItemArmorSubtype*>(i);
+    if(a){
+        originals = a->flags();
+        flags << IS_ARMOR << IS_CLOTHING;
+    }
+    if(originals.count() > 0 && flags.size() > 0)
+        set_flags(originals,flags);
 }
 
-void Preference::set_pref_flags(ItemArmorSubtype *ias){
-    if(ias){
-        if(ias->armor_use()){
-            add_flag(IS_ARMOR);
-        }
-        if(ias->clothing_use()){
-            add_flag(IS_CLOTHING);
-        }
+void Preference::set_flags(FlagArray origin, const QList<int> flags){
+    foreach(int f, flags){
+        set_flag(origin,f);
     }
-    m_exact_match = true;
 }
 
+bool Preference::set_flag(FlagArray origin, const int flag){
+    if(origin.has_flag(flag)){
+        add_flag(flag);
+        return true;
+    }else{
+        return false;
+    }
+}

@@ -43,7 +43,7 @@ FlagArray::~FlagArray(){
     m_df = 0;
 }
 
-bool FlagArray::has_flag(int f){
+bool FlagArray::has_flag(const int f){
     if(f < m_flags.count()){
         return m_flags.at(f);
     }else if(m_flags_custom.contains(f)){

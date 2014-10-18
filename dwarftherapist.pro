@@ -223,7 +223,6 @@ HEADERS += inc/viewmanager.h \
     inc/uniform.h \
     inc/itemammo.h \
     inc/itemarmorsubtype.h \
-    inc/itemammosubtype.h \
     inc/itemweaponsubtype.h \
     inc/cp437codec.h \
     inc/rolestats.h \
@@ -243,7 +242,10 @@ HEADERS += inc/viewmanager.h \
     inc/docks/equipmentoverviewdock.h \
     inc/rolecalcminmax.h \
     inc/rolecalcrecenter.h \
-    inc/rolecalcbase.h
+    inc/rolecalcbase.h \
+    inc/itemsubtype.h \
+    inc/itemtoolsubtype.h \
+    inc/itemgenericsubtype.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \

@@ -41,8 +41,10 @@ THE SOFTWARE.
 #include "material.h"
 #include "plant.h"
 #include "item.h"
-#include "itemweapon.h"
-#include "itemarmor.h"
+#include "itemweaponsubtype.h"
+#include "itemarmorsubtype.h"
+#include "itemgenericsubtype.h"
+#include "itemtoolsubtype.h"
 #include "preference.h"
 #include "histfigure.h"
 #include <QMessageBox>
@@ -166,12 +168,10 @@ DFInstance::~DFInstance() {
     m_reactions.clear();
     qDeleteAll(m_races);
     m_races.clear();
-    qDeleteAll(m_weapon_defs);
-    m_weapon_defs.clear();
-    m_ordered_weapon_defs.clear();
 
-    foreach (const QList<ItemArmorSubtype*> &list, m_armor_defs) {
-        foreach (ItemArmorSubtype* def, list) {
+    m_ordered_weapon_defs.clear();
+    foreach (const QList<ItemSubtype*> &list, m_item_subtypes) {
+        foreach (ItemSubtype* def, list) {
             delete def;
         }
     }
@@ -287,12 +287,8 @@ void DFInstance::load_game_data()
     m_races.clear();
     load_races_castes();
 
-    emit progress_message(tr("Loading weapons and armor"));
-    qDeleteAll(m_weapon_defs);
-    m_weapon_defs.clear();
-    m_ordered_weapon_defs.clear();
-    load_weapons();
-    load_armors();
+    emit progress_message(tr("Loading item subtypes"));
+    load_item_defs();
 
     load_fortress_name();
 }
@@ -613,67 +609,39 @@ void DFInstance::load_main_vectors(){
     m_all_syndromes = enumerate_vector(m_layout->address("all_syndromes_vector"));
 
     //world.raws.itemdefs.
-    QVector<VIRTADDR> weapons = enumerate_vector(m_layout->address("itemdef_weapons_vector"));
-    m_itemdef_vectors.insert(WEAPON,weapons);
-    QVector<VIRTADDR> traps = enumerate_vector(m_layout->address("itemdef_trap_vector"));
-    m_itemdef_vectors.insert(TRAPCOMP,traps);
-    QVector<VIRTADDR> toys = enumerate_vector(m_layout->address("itemdef_toy_vector"));
-    m_itemdef_vectors.insert(TOY,toys);
-    QVector<VIRTADDR> tools = enumerate_vector(m_layout->address("itemdef_tool_vector"));
-    m_itemdef_vectors.insert(TOOL,tools);
-    QVector<VIRTADDR> instruments = enumerate_vector(m_layout->address("itemdef_instrument_vector"));
-    m_itemdef_vectors.insert(INSTRUMENT,instruments);
-    QVector<VIRTADDR> armor = enumerate_vector(m_layout->address("itemdef_armor_vector"));
-    m_itemdef_vectors.insert(ARMOR,armor);
-    QVector<VIRTADDR> ammo = enumerate_vector(m_layout->address("itemdef_ammo_vector"));
-    m_itemdef_vectors.insert(AMMO,ammo);
-    QVector<VIRTADDR> siege_ammo = enumerate_vector(m_layout->address("itemdef_siegeammo_vector"));
-    m_itemdef_vectors.insert(SIEGEAMMO,siege_ammo);
-    QVector<VIRTADDR> gloves = enumerate_vector(m_layout->address("itemdef_glove_vector"));
-    m_itemdef_vectors.insert(GLOVES,gloves);
-    QVector<VIRTADDR> shoes = enumerate_vector(m_layout->address("itemdef_shoe_vector"));
-    m_itemdef_vectors.insert(SHOES,shoes);
-    QVector<VIRTADDR> shields = enumerate_vector(m_layout->address("itemdef_shield_vector"));
-    m_itemdef_vectors.insert(SHIELD,shields);
-    QVector<VIRTADDR> helms = enumerate_vector(m_layout->address("itemdef_helm_vector"));
-    m_itemdef_vectors.insert(HELM,helms);
-    QVector<VIRTADDR> pants = enumerate_vector(m_layout->address("itemdef_pant_vector"));
-    m_itemdef_vectors.insert(PANTS,pants);
-    QVector<VIRTADDR> food = enumerate_vector(m_layout->address("itemdef_food_vector"));
-    m_itemdef_vectors.insert(FOOD,food);
+    m_itemdef_vectors.insert(WEAPON,enumerate_vector(m_layout->address("itemdef_weapons_vector")));
+    m_itemdef_vectors.insert(TRAPCOMP,enumerate_vector(m_layout->address("itemdef_trap_vector")));
+    m_itemdef_vectors.insert(TOY,enumerate_vector(m_layout->address("itemdef_toy_vector")));
+    m_itemdef_vectors.insert(TOOL,enumerate_vector(m_layout->address("itemdef_tool_vector")));
+    m_itemdef_vectors.insert(INSTRUMENT,enumerate_vector(m_layout->address("itemdef_instrument_vector")));
+    m_itemdef_vectors.insert(ARMOR,enumerate_vector(m_layout->address("itemdef_armor_vector")));
+    m_itemdef_vectors.insert(AMMO,enumerate_vector(m_layout->address("itemdef_ammo_vector")));
+    m_itemdef_vectors.insert(SIEGEAMMO,enumerate_vector(m_layout->address("itemdef_siegeammo_vector")));
+    m_itemdef_vectors.insert(GLOVES,enumerate_vector(m_layout->address("itemdef_glove_vector")));
+    m_itemdef_vectors.insert(SHOES,enumerate_vector(m_layout->address("itemdef_shoe_vector")));
+    m_itemdef_vectors.insert(SHIELD,enumerate_vector(m_layout->address("itemdef_shield_vector")));
+    m_itemdef_vectors.insert(HELM,enumerate_vector(m_layout->address("itemdef_helm_vector")));
+    m_itemdef_vectors.insert(PANTS,enumerate_vector(m_layout->address("itemdef_pant_vector")));
+    m_itemdef_vectors.insert(FOOD,enumerate_vector(m_layout->address("itemdef_food_vector")));
 
     //load actual weapons and armor
-    weapons = enumerate_vector(m_layout->address("weapons_vector"));
-    m_items_vectors.insert(WEAPON,weapons);
-    shields = enumerate_vector(m_layout->address("shields_vector"));
-    m_items_vectors.insert(SHIELD,shields);
-
-    pants = enumerate_vector(m_layout->address("pants_vector"));
-    m_items_vectors.insert(PANTS,pants);
-    armor = enumerate_vector(m_layout->address("armor_vector"));
-    m_items_vectors.insert(ARMOR,armor);
-    shoes = enumerate_vector(m_layout->address("shoes_vector"));
-    m_items_vectors.insert(SHOES,shoes);
-    helms = enumerate_vector(m_layout->address("helms_vector"));
-    m_items_vectors.insert(HELM,helms);
-    gloves = enumerate_vector(m_layout->address("gloves_vector"));
-    m_items_vectors.insert(GLOVES,gloves);
+    m_items_vectors.insert(WEAPON,enumerate_vector(m_layout->address("weapons_vector")));
+    m_items_vectors.insert(SHIELD,enumerate_vector(m_layout->address("shields_vector")));
+    m_items_vectors.insert(PANTS,enumerate_vector(m_layout->address("pants_vector")));
+    m_items_vectors.insert(ARMOR,enumerate_vector(m_layout->address("armor_vector")));
+    m_items_vectors.insert(SHOES,enumerate_vector(m_layout->address("shoes_vector")));
+    m_items_vectors.insert(HELM,enumerate_vector(m_layout->address("helms_vector")));
+    m_items_vectors.insert(GLOVES,enumerate_vector(m_layout->address("gloves_vector")));
 
     //load other equipment
-    QVector<VIRTADDR> quivers = enumerate_vector(m_layout->address("quivers_vector"));
-    m_items_vectors.insert(QUIVER,quivers);
-    QVector<VIRTADDR> backpacks = enumerate_vector(m_layout->address("backpacks_vector"));
-    m_items_vectors.insert(BACKPACK,backpacks);
-    QVector<VIRTADDR> crutches = enumerate_vector(m_layout->address("crutches_vector"));
-    m_items_vectors.insert(CRUTCH,crutches);
-    QVector<VIRTADDR> flasks = enumerate_vector(m_layout->address("flasks_vector"));
-    m_items_vectors.insert(FLASK,flasks);
-    ammo = enumerate_vector(m_layout->address("ammo_vector"));
-    m_items_vectors.insert(AMMO,ammo);
+    m_items_vectors.insert(QUIVER,enumerate_vector(m_layout->address("quivers_vector")));
+    m_items_vectors.insert(BACKPACK,enumerate_vector(m_layout->address("backpacks_vector")));
+    m_items_vectors.insert(CRUTCH,enumerate_vector(m_layout->address("crutches_vector")));
+    m_items_vectors.insert(FLASK,enumerate_vector(m_layout->address("flasks_vector")));
+    m_items_vectors.insert(AMMO,enumerate_vector(m_layout->address("ammo_vector")));
 
     //load artifacts
-    QVector<VIRTADDR> artifacts = enumerate_vector(m_layout->address("artifacts_vector"));
-    m_items_vectors.insert(ARTIFACTS,artifacts);
+    m_items_vectors.insert(ARTIFACTS,enumerate_vector(m_layout->address("artifacts_vector")));
 
     m_color_vector = enumerate_vector(m_layout->address("colors_vector"));
     m_shape_vector = enumerate_vector(m_layout->address("shapes_vector"));
@@ -710,33 +678,9 @@ void DFInstance::load_main_vectors(){
     }
 }
 
-void DFInstance::load_weapons(){
-    attach();
-    QVector<VIRTADDR> weapons = m_itemdef_vectors.value(WEAPON);
-    qDeleteAll(m_weapon_defs);
-    m_weapon_defs.clear();
-    if (!weapons.empty()) {
-        int idx = 0;
-        foreach(VIRTADDR weapon_addr, weapons) {
-            ItemWeaponSubtype* w = ItemWeaponSubtype::get_weapon(this, weapon_addr, this);
-            m_weapon_defs.insert(idx, w);
-            m_ordered_weapon_defs.insert(w->name_plural(),w);
-            idx++;
-        }
-    }
-    detach();
-}
-
-ItemWeaponSubtype *DFInstance::get_weapon_def(int sub_type){
-    if(sub_type >= 0 && sub_type < m_weapon_defs.size()){
-        return m_weapon_defs.at(sub_type);
-    }else{
-        return 0;
-    }
-}
-
-ItemWeaponSubtype *DFInstance::find_weapon_def(QString name){
-    foreach(ItemWeaponSubtype *w, m_weapon_defs){
+ItemWeaponSubtype *DFInstance::find_weapon_subtype(QString name){
+    foreach(ItemSubtype *i, m_item_subtypes.value(WEAPON)){
+        ItemWeaponSubtype *w = qobject_cast<ItemWeaponSubtype*>(i);
         if(QString::compare(w->name_plural(),name,Qt::CaseInsensitive) == 0 ||
                 QString::compare(w->group_name(),name,Qt::CaseInsensitive) == 0 ||
                 w->group_name().contains(name,Qt::CaseInsensitive)){
@@ -746,35 +690,45 @@ ItemWeaponSubtype *DFInstance::find_weapon_def(QString name){
     return 0;
 }
 
-void DFInstance::load_armors(){
-    foreach (const QList<ItemArmorSubtype*> &list, m_armor_defs) {
-        foreach (ItemArmorSubtype* def, list) {
+void DFInstance::load_item_defs(){
+    foreach (const QList<ItemSubtype*> &list, m_item_subtypes) {
+        foreach (ItemSubtype* def, list) {
             delete def;
         }
     }
-    m_armor_defs.clear();
+    m_item_subtypes.clear();
+    m_ordered_weapon_defs.clear();
 
-    QList<ITEM_TYPE> armor_types;
-    armor_types << SHOES << PANTS << ARMOR << GLOVES << HELM;
-    foreach(ITEM_TYPE ia, armor_types){
-        QVector<VIRTADDR> armors = m_itemdef_vectors.value(ia);
-        if (!armors.empty()) {
-            foreach(VIRTADDR armor_addr, armors) {
-                m_armor_defs[ia].append(new ItemArmorSubtype(ia,this,armor_addr,this));
+    foreach(ITEM_TYPE itype, Item::items_with_subtypes()){
+        QVector<VIRTADDR> addresses = m_itemdef_vectors.value(itype);
+        if (!addresses.empty()) {
+            foreach(VIRTADDR addr, addresses) {
+                if(Item::is_armor_type(itype)){
+                    m_item_subtypes[itype].append(new ItemArmorSubtype(itype,this,addr,this));
+                }else if(itype == WEAPON){
+                    ItemWeaponSubtype *w = new ItemWeaponSubtype(this,addr,this);
+                    m_item_subtypes[itype].append(w);
+                    m_ordered_weapon_defs.insert(w->name_plural(),w);
+                }else if(itype == TOOL){
+                    m_item_subtypes[itype].append(new ItemToolSubtype(this,addr,this));
+                }else{
+                    m_item_subtypes[itype].append(new ItemGenericSubtype(itype,this,addr,this));
+                }
             }
         }
     }
 }
 
-ItemArmorSubtype *DFInstance::get_armor_def(ITEM_TYPE itype, int sub_type){
-    if(m_armor_defs.contains(itype)){
-        QList<ItemArmorSubtype*> list = m_armor_defs.value(itype);
+ItemSubtype *DFInstance::get_item_subtype(ITEM_TYPE itype, int sub_type){
+    if(m_item_subtypes.contains(itype)){
+        QList<ItemSubtype*> list = m_item_subtypes.value(itype);
         if(list.size() > 0 && sub_type >= 0 && sub_type < list.size()){
             return list.at(sub_type);
         }
     }
     return 0;
 }
+
 
 void DFInstance::load_races_castes(){
     attach();
@@ -1172,40 +1126,20 @@ QVector<VIRTADDR> DFInstance::get_item_vector(ITEM_TYPE i){
         return m_itemdef_vectors.value(NONE);
 }
 
-QHash<int,VIRTADDR> DFInstance::get_mapped_item_addrs(ITEM_TYPE itype){
-    if(m_mapped_items.value(itype).count() <= 0)
-        index_item_vector(itype);
-    return m_mapped_items.value(itype);
-}
-
 QString DFInstance::get_preference_item_name(int index, int subtype){
     ITEM_TYPE itype = static_cast<ITEM_TYPE>(index);
 
-    QVector<VIRTADDR> items = get_item_vector(itype);
-    if(!items.empty() && (subtype >=0 && subtype < items.count())){
-        QString name = read_string(items.at(subtype) + m_layout->item_subtype_offset("name_plural"));
-        if(itype==TRAPCOMP){
-            name.prepend(" ").prepend(read_string(items.at(subtype) + m_layout->item_subtype_offset("adjective")));
-        }else if(itype == WEAPON){
-            ItemWeaponSubtype *w = get_weapon_def(subtype);
-            if(w){
-                return w->name_plural();
-            }else{
-                return tr("unknown weapon");
-            }
-        }else if(Item::is_armor_type(itype,false)){
-            ItemArmorSubtype *ias = get_armor_def(itype,subtype);
-            if(ias){
-                return ias->name_plural();
-            }else{
-                return tr("unknown armor");
-            }
-        }
-        return name.trimmed();
+    if(Item::has_subtypes(itype)){
+        QList<ItemSubtype*> list = m_item_subtypes.value(itype);
+        if(!list.isEmpty() && (subtype >=0 && subtype < list.count()))
+            return list.at(subtype)->name_plural();
+    }else{
+        QVector<VIRTADDR> addrs = get_item_vector(itype);
+        if(!addrs.empty() && (subtype >=0 && subtype < addrs.count()))
+            return read_string(addrs.at(subtype) + m_layout->item_subtype_offset("name_plural"));
     }
-    else{
-        return Item::get_item_name_plural(itype);
-    }
+
+    return Item::get_item_name_plural(itype);
 }
 
 VIRTADDR DFInstance::get_item_address(ITEM_TYPE itype, int item_id){
@@ -1218,7 +1152,7 @@ VIRTADDR DFInstance::get_item_address(ITEM_TYPE itype, int item_id){
     return 0;
 }
 
-QString DFInstance::get_item_name(ITEM_TYPE itype, int item_id){
+QString DFInstance::get_artifact_name(ITEM_TYPE itype, int item_id){
     if(m_mapped_items.value(itype).count() <= 0)
         index_item_vector(itype);
 
@@ -1228,16 +1162,7 @@ QString DFInstance::get_item_name(ITEM_TYPE itype, int item_id){
         name = get_language_word(addr+0x4);
         return name;
     }else{
-        if(itype == WEAPON){
-            ItemWeapon w = ItemWeapon(this,m_mapped_items.value(itype).value(item_id));
-            return w.display_name(true);
-        }else if(Item::is_armor_type(itype)){
-            ItemArmor a = ItemArmor(this,m_mapped_items.value(itype).value(item_id));
-            return a.display_name(true);
-        }else{
-            Item i = Item(this,m_mapped_items.value(itype).value(item_id));
-            return i.display_name(true);
-        }
+        return "";
     }
 }
 
@@ -1250,30 +1175,6 @@ void DFInstance::index_item_vector(ITEM_TYPE itype){
         items.insert(read_int(addr+offset),addr);
     }
     m_mapped_items.insert(itype,items);
-}
-
-QString DFInstance::get_item_name(ITEM_TYPE itype, int subtype, short mat_type, int mat_index, MATERIAL_CLASS mat_class){
-    QVector<VIRTADDR> items = get_item_vector(itype);
-    QStringList name_parts;
-    QString mat_name = "";
-
-    if(mat_class >= 0){
-        mat_name = Material::get_mat_class_desc(mat_class);
-    }else{
-        if(mat_index >= 0 || mat_type >= 0)
-            mat_name = find_material_name(mat_index,mat_type,itype);
-    }
-    name_parts.append(mat_name);
-
-    if(!items.empty() && (subtype >=0 && subtype < items.count())){
-        name_parts.append(read_string(items.at(subtype) + 0x3c));
-        if(itype==TRAPCOMP || itype==WEAPON)//{
-            name_parts.append(read_string(items.at(subtype) + m_layout->armor_subtype_offset("adjective")));
-    }
-    else{
-        name_parts.append(Item::get_item_name(itype));
-    }
-    return name_parts.join(" ").trimmed();
 }
 
 QString DFInstance::get_color(int index){

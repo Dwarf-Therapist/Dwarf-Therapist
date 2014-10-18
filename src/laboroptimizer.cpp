@@ -166,7 +166,7 @@ void LaborOptimizer::optimize(){
     calc_population(true);
 
     //sort list by the weighted rating
-    std::sort(m_labor_map.begin(),m_labor_map.end(),LaborOptimizer::compare_priority_then_rating());
+    //std::sort(m_labor_map.begin(),m_labor_map.end(),LaborOptimizer::compare_priority_then_rating());
     std::sort(m_labor_map.begin(),m_labor_map.end(),LaborOptimizer::compare_rating());
 
     //    foreach(dwarf_labor_map dlm, m_labor_map){

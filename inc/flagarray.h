@@ -45,7 +45,7 @@ public:
     virtual ~FlagArray();
 
     int count();
-    bool has_flag(int f);
+    bool has_flag(const int f);
     void set_flag(int f,bool state);
     QList<int> active_flags();
 

@@ -29,8 +29,7 @@ THE SOFTWARE.
 #include "flagarray.h"
 
 class RoleAspect;
-class ItemArmorSubtype;
-class ItemWeaponSubtype;
+class ItemSubtype;
 class Plant;
 class Race;
 
@@ -80,8 +79,7 @@ public:
     //these setters to load specific flags for the role
     void set_pref_flags(Race *r);
     void set_pref_flags(Plant *p);
-    void set_pref_flags(ItemWeaponSubtype *w);
-    void set_pref_flags(ItemArmorSubtype *ias);
+    void set_pref_flags(ItemSubtype *i);
 
 protected:
     QString m_name; //actual value to search for when doing string comparisons
@@ -93,6 +91,9 @@ protected:
 
     //if it's not a general category preference (ie. 'wood') an exact match of the string is required
     bool m_exact_match;
+
+    bool set_flag(FlagArray origin, const int flag);
+    void set_flags(FlagArray origin, const QList<int> flags);
 };
 
 #endif // PREFERENCE_H

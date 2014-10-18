@@ -20,14 +20,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-
-
 #include "item.h"
 #include "gamedatareader.h"
 #include "itemammo.h"
 
+const QList<ITEM_TYPE> Item::m_items_subtypes=Item::init_subtypes();
+
 Item::Item(const Item &i)
-    :QObject(i.parent())
+    : QObject(i.parent())
 {
     m_df = i.m_df;
     m_addr = i.m_addr;
@@ -93,7 +93,7 @@ Item::Item(DFInstance *df, ItemDefUniform *u, QObject *parent)
 }
 
 Item::Item(DFInstance *df, VIRTADDR item_addr, QObject *parent)
-    :QObject(parent)
+    : QObject(parent)
     , m_df(df)
     , m_addr(item_addr)
     , m_wear(0)
@@ -130,6 +130,12 @@ Item::~Item(){
     qDeleteAll(m_contained_items);
 }
 
+const QList<ITEM_TYPE> Item::init_subtypes(){
+    QList<ITEM_TYPE> tmp;
+    tmp << SHOES << PANTS << ARMOR << GLOVES << HELM << WEAPON << AMMO << TRAPCOMP << SHIELD << TOOL;
+    return tmp;
+}
+
 void Item::read_data(){
     if(m_addr){
         VIRTADDR item_vtable = m_df->read_addr(m_addr);
@@ -163,7 +169,7 @@ void Item::read_data(){
             if(ref_type == 0 || ref_type == 1){
                 int artifact_id = m_df->read_int(ref+m_df->memory_layout()->general_ref_offset("artifact_id"));
                 if(artifact_id > 0){
-                    m_artifact_name = m_df->get_item_name(ARTIFACTS,artifact_id);
+                    m_artifact_name = m_df->get_artifact_name(ARTIFACTS,artifact_id);
                     break;
                 }
             }else if(ref_type == 10 && m_iType == QUIVER){ //type of container item, could be expanded to show food and drink

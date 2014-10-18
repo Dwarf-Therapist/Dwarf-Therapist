@@ -23,18 +23,13 @@ THE SOFTWARE.
 #ifndef ITEMARMORSUBTYPE_H
 #define ITEMARMORSUBTYPE_H
 
-#include <QObject>
+#include "itemsubtype.h"
 #include "global_enums.h"
-#include "utils.h"
-#include "flagarray.h"
 
-class DFInstance;
-class MemoryLayout;
-
-class ItemArmorSubtype : public QObject {
+class ItemArmorSubtype : public ItemSubtype {
     Q_OBJECT
 public:
-    ItemArmorSubtype(ITEM_TYPE itype, DFInstance *df, VIRTADDR address, QObject *parent = 0);
+    ItemArmorSubtype(const ITEM_TYPE itype, DFInstance *df, const VIRTADDR address, QObject *parent = 0);
     virtual ~ItemArmorSubtype();
 
     typedef enum {
@@ -43,39 +38,18 @@ public:
         ARMOR_SHELL=4
     } ARMOR_FLAGS;
 
-    VIRTADDR address() {return m_address;}
-    QString name() const {return m_name;}
-    QString name_plural() const {return m_name_plural;}
     int layer() const {return m_layer;}
-    bool clothing_use() const {return m_clothing;}
-    bool armor_use() const {return m_armor;}
-    short subType() const {return m_subType;}
-
-    FlagArray flags() const {return m_flags;}
     QString get_layer_name();
 
 private:
-    VIRTADDR m_address;
-    QString m_name;
-    QString m_name_plural;
-    DFInstance * m_df;
-    MemoryLayout * m_mem;
-    ITEM_TYPE m_iType;
     int m_layer;
-    short m_subType;
-    FlagArray m_flags;
-    bool m_clothing;
-    bool m_armor;
+    FlagArray m_armor_flags;
     quint8 m_armor_level;
 
     int m_offset_props;
-    int m_offset_adj;
-    int m_offset_preplural;
     int m_offset_level;
-    int m_offset_mat;
 
-    void read_names();
-    void read_properties();
-    void set_offsets();
+    void set_base_offsets();
+    void read_data();
 };
 #endif // ITEMARMORSUBTYPE_H

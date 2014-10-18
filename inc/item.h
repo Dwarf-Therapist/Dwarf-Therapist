@@ -249,6 +249,12 @@ public:
         return m.value(type, "N/A");
     }
 
+    static const QList<ITEM_TYPE> items_with_subtypes(){return m_items_subtypes;}
+
+    static bool has_subtypes(const ITEM_TYPE &i_type){
+        return m_items_subtypes.contains(i_type);
+    }
+
     static bool is_trade_good(const ITEM_TYPE &i_type){
         if(i_type == BRACELET || i_type == RING || i_type == SCEPTER|| i_type == CROWN ||
                 i_type == FIGURINE || i_type == AMULET || i_type == EARRING){
@@ -373,5 +379,8 @@ protected:
     void build_display_name();
     QString get_quality_symbol();
 
+private:
+    static const QList<ITEM_TYPE> m_items_subtypes;
+    static const QList<ITEM_TYPE> init_subtypes();
 };
 #endif // ITEM_H

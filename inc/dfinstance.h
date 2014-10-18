@@ -29,8 +29,8 @@ THE SOFTWARE.
 
 class Dwarf;
 class FortressEntity;
+class ItemSubtype;
 class ItemWeaponSubtype;
-class ItemArmorSubtype;
 class Languages;
 class Material;
 class MemoryLayout;
@@ -86,8 +86,8 @@ public:
     void load_reactions();
     void load_races_castes();
     void load_main_vectors();
-    void load_weapons();
-    void load_armors();
+
+    void load_item_defs();
 
     void load_fortress();
     void load_fortress_name();
@@ -176,23 +176,19 @@ public:
     QVector<Plant *> get_plants() {return m_plants_vector;}
     QVector<Material *> get_base_materials() {return m_base_materials;}
 
-    ItemWeaponSubtype* get_weapon_def(int sub_type);
-    ItemWeaponSubtype* find_weapon_def(QString name);
-    QList<ItemWeaponSubtype *> get_weapon_defs() {return m_weapon_defs;}
+    ItemWeaponSubtype* find_weapon_subtype(QString name);
     QMap<QString, ItemWeaponSubtype *> get_ordered_weapon_defs() {return m_ordered_weapon_defs;}
 
-    ItemArmorSubtype* get_armor_def(ITEM_TYPE itype, int sub_type);
+    QList<ItemSubtype*> get_item_subtypes(ITEM_TYPE itype){return m_item_subtypes.value(itype);}
+    ItemSubtype* get_item_subtype(ITEM_TYPE itype, int sub_type);
 
     Material * find_material(int mat_index, short mat_type);
 
-    QHash<int,VIRTADDR> get_mapped_item_addrs(ITEM_TYPE itype);
     QVector<VIRTADDR> get_item_vector(ITEM_TYPE i);
-    QString get_preference_item_name(int index, int subtype);
-
     VIRTADDR get_item_address(ITEM_TYPE itype, int item_id);
 
-    QString get_item_name(ITEM_TYPE itype, int subtype, short mat_type, int mat_index, MATERIAL_CLASS mat_class = MC_NONE);
-    QString get_item_name(ITEM_TYPE itype,int item_id);
+    QString get_preference_item_name(int index, int subtype);
+    QString get_artifact_name(ITEM_TYPE itype,int item_id);
 
     QString get_color(int index);
     QString get_shape(int index);
@@ -261,9 +257,8 @@ private:
     QHash<QString, Reaction *> m_reactions;
     QVector<Race *> m_races;
 
-    QList<ItemWeaponSubtype *> m_weapon_defs;
     QMap<QString, ItemWeaponSubtype *> m_ordered_weapon_defs;
-    QHash<ITEM_TYPE,QList<ItemArmorSubtype *> > m_armor_defs;
+    QHash<ITEM_TYPE,QList<ItemSubtype *> > m_item_subtypes;
     QVector<Plant *> m_plants_vector;
     QVector<Material *> m_inorganics_vector;
     QVector<Material *> m_base_materials;
