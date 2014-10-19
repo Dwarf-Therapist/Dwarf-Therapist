@@ -810,7 +810,11 @@ void roleDialog::load_items(){
                             add_pref_to_tree(item_parent,pi);
                         }
                         if(stype->flags().has_flag(IS_CLOTHING)){
-                            add_pref_to_tree(clothing_parent,pi);
+                            if(clothing_parent){
+                                add_pref_to_tree(clothing_parent,pi);
+                            }else{
+                                LOGE << "Missing parent node for clothing item type" << itype << "subtype" << sub_id;
+                            }
                         }
                         added_subtypes.append(item_name);
                     }else{

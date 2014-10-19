@@ -73,7 +73,6 @@ protected:
 
     int m_offset_adj;
     int m_offset_preplural;
-    int m_offset_level;
     int m_offset_mat;
 
     virtual void read_data(){

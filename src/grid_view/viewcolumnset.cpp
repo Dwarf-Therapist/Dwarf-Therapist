@@ -53,14 +53,12 @@ THE SOFTWARE.
 ViewColumnSet::ViewColumnSet(QString name, QObject *parent)
     : QObject(parent)
     , m_name(name)
-    , m_view(0)
     , m_bg_color(Qt::white)
 {}
 
 ViewColumnSet::ViewColumnSet(const ViewColumnSet &copy)
     : QObject(copy.parent())
     , m_name(copy.m_name)
-    , m_view(0)
     , m_bg_color(copy.m_bg_color)
 {
     foreach(ViewColumn *vc, copy.m_columns) {
@@ -158,7 +156,6 @@ ViewColumnSet::~ViewColumnSet(){
         c->deleteLater();
     }
     m_columns.clear();
-    m_view = 0;
 }
 
 void ViewColumnSet::re_parent(QObject *parent) {

@@ -30,7 +30,6 @@ THE SOFTWARE.
 class QStandardItemModel;
 class QSettings;
 class ViewColumn;
-class GridView;
 class Dwarf;
 
 /*!
@@ -51,7 +50,6 @@ public:
     void set_bg_color(const QColor &color) {m_bg_color = color;}
     QColor bg_color() {return m_bg_color;}
     QList<ViewColumn*> columns() {return m_columns;}
-    GridView *view() {return m_view;}
     void remove_column(int offset) {m_columns.removeAt(offset);}
     void remove_column(ViewColumn *vc) {m_columns.removeAll(vc);}
     ViewColumn *column_at(int offset){return m_columns.at(offset);}
@@ -72,7 +70,6 @@ public:
 
 private:
     QString m_name;
-    GridView *m_view;
     QList<ViewColumn*> m_columns;
     QBrush m_bg_brush; // possibly allow textured backgrounds in the long long ago, err future.
     QColor m_bg_color;
