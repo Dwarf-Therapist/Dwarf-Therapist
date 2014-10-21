@@ -2,8 +2,8 @@
 DT_VERSION=`cat inc/defines.h | awk 'BEGIN {i = 1} /#define DT_VERSION/ {ver[i++] = $3} END {printf("%d.%d.%d\n", ver[1], ver[2], ver[3])}'`
 
 SRC_DIR=dwarf-therapist-$DT_VERSION
-TAR_FILE=../dwarf-therapist-$DT_VERSION.tar.gz
-TAR_FILE_ORIG=../dwarf-therapist_$DT_VERSION.orig.tar.gz
+TAR_FILE=../dwarf-therapist_$DT_VERSION.orig.tar.gz
+#TAR_FILE_ORIG=../dwarf-therapist_$DT_VERSION.orig.tar.gz
 
 rm -f $TAR_FILE
 
@@ -15,7 +15,7 @@ cp resources.qrc $SRC_DIR
 cp -R resources/img $SRC_DIR/resources
 cp resources/default_gridviews.dtg $SRC_DIR/resources
 cp hammer.ico $SRC_DIR
-cp hammer.icns $SRC_DIR
+#cp hammer.icns $SRC_DIR
 cp scripts/build_packages $SRC_DIR/scripts
 cp -R debian $SRC_DIR
 cp -R dist $SRC_DIR
@@ -35,7 +35,7 @@ mkdir -p $SRC_DIR/bin
 mkdir -p $SRC_DIR/bin/release
 
 tar -czf $TAR_FILE $SRC_DIR
-cp $TAR_FILE $TAR_FILE_ORIG
+#cp $TAR_FILE $TAR_FILE_ORIG
 rm -rf $SRC_DIR
 
 

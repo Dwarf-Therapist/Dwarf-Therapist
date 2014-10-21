@@ -1,6 +1,6 @@
 dwarf-therapist (27.0.0) trusty; urgency=medium
 
-  * 27.0 Fixing the build
+  * 27.0, Fixing the deb build
 
  -- Serhiy Zahoriya <serhiy.int@gmail.com>  Sat, 11 Oct 2014 18:48:03 +0300
 

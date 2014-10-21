@@ -1,0 +1,11 @@
+#!/bin/bash
+packages_dir="../packages/"
+arch="i386"
+release=`lsb_release -cs`
+
+bash scripts/make-srctar || exit 1
+
+debuild -us -uc -S
+pbuilder-dist $release $arch build ../*.dsc
+mkdir -p $packages_dir
+mv ~/pbuilder/*_result/*.deb $packages_dir

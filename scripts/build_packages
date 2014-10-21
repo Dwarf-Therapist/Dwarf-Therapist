@@ -3,29 +3,29 @@
 debuild -us -uc -S
 
 #Other dists in pbuilder
-for dist in "lucid" "maverick" "sid" "lenny"
+for dist in trusty precise sid lenny
 do
 	#32-bit
-	sudo rm -rf ~/pbuilder/${dist}-i386_result/*
-	sudo pbuilder-dist $dist i386 build ../*.dsc
+	rm -rf ~/pbuilder/${dist}-i386_result/*
+	pbuilder-dist $dist i386 build ../*.dsc
 
 	mkdir -p ../packages/dists
 	mkdir -p ../packages/dists/$dist
 	mkdir -p ../packages/dists/$dist/universe
 	mkdir -p ../packages/dists/$dist/universe/binary-i386
-	sudo rm -f ../packages/dists/$dist/universe/binary-i386/*
+	rm -f ../packages/dists/$dist/universe/binary-i386/*
 
 	cp ~/pbuilder/${dist}-i386_result/dwarftherapist*.deb ../packages/dists/$dist/universe/binary-i386
 
 	#64-bit
-	sudo rm -rf ~/pbuilder/${dist}_result/*
-	sudo pbuilder-dist $dist build ../*.dsc
+	rm -rf ~/pbuilder/${dist}_result/*
+	pbuilder-dist $dist build ../*.dsc
 
 	mkdir -p ../packages/dists
 	mkdir -p ../packages/dists/$dist
 	mkdir -p ../packages/dists/$dist/universe
 	mkdir -p ../packages/dists/$dist/universe/binary-amd64
-	sudo rm -f ../packages/dists/$dist/universe/binary-amd64/*
+	rm -f ../packages/dists/$dist/universe/binary-amd64/*
 
 	cp ~/pbuilder/${dist}_result/dwarftherapist*.deb ../packages/dists/$dist/universe/binary-amd64
 done
