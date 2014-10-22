@@ -124,12 +124,9 @@ void LaborOptimizer::calc_population(bool load_labor_map){
                         dlm.d = d;
                         dlm.det = det;
                         if(!det->role_name.isEmpty()){
-                            //dlm.rating = d->get_adjusted_role_rating(det->role_name) * det->priority;
-                            dlm.rating = d->get_raw_role_rating(det->role_name) * det->priority;
-                        }
-                        else{
+                            dlm.rating = d->get_role_rating(det->role_name) * det->priority;
+                        }else{
                             dlm.rating = d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).get_rating(true) * 100.0f * det->priority;
-                            //dlm.rating = d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).capped_exp() / (float)MAX_CAPPED_XP * 100 * det->priority;
                         }
                         m_labor_map.append(dlm);
                     }
@@ -164,14 +161,7 @@ void LaborOptimizer::optimize_labors(QList<Dwarf*> dwarfs){
 void LaborOptimizer::optimize(){
     //create the labor mapping
     calc_population(true);
-
-    //sort list by the weighted rating
-    //std::sort(m_labor_map.begin(),m_labor_map.end(),LaborOptimizer::compare_priority_then_rating());
     std::sort(m_labor_map.begin(),m_labor_map.end(),LaborOptimizer::compare_rating());
-
-    //    foreach(dwarf_labor_map dlm, m_labor_map){
-    //        LOGD << "Rating:" << dlm.rating << " Priority:" << dlm.det->priority;
-    //    }
 
     update_ratios();
 
@@ -183,8 +173,6 @@ void LaborOptimizer::optimize(){
     //optimize
     bool has_conficting_labor = false;
     Labor *l;
-    //QHash<int, QList<Dwarf*> > conflicts;
-    //QList<Dwarf*> conflicting_dwarves;
 
     QList<int> m_missing_roles;
     foreach(dwarf_labor_map dlm, m_labor_map){
@@ -195,9 +183,6 @@ void LaborOptimizer::optimize(){
             foreach(int excluded, l->get_excluded_labors()) {
                 if(dlm.d->labor_enabled(excluded)){
                     has_conficting_labor = true;
-                    //                    conflicting_dwarves = conflicts.value(dlm.det->labor_id);
-                    //                    conflicting_dwarves.append(dlm.d);
-                    //                    conflicts.insert(dlm.det->labor_id, conflicting_dwarves);
                     break;
                 }
             }
@@ -205,7 +190,7 @@ void LaborOptimizer::optimize(){
                 m_missing_roles.append(dlm.det->labor_id);
         }
         //dwarf has available labor slots? target laborers reached?
-        if(!has_conficting_labor && dlm.d->optimized_labors < m_plan->max_jobs_per_dwarf && dlm.det->assigned_laborers < dlm.det->max_count){
+        if(!has_conficting_labor && dlm.d->optimized_labors < plan->max_jobs_per_dwarf && dlm.det->assigned_laborers < dlm.det->get_max_count()){
 
             LOGD << "Job:" << GameDataReader::ptr()->get_labor(dlm.det->labor_id)->name << " Role:" << dlm.det->role_name << " Dwarf:" << dlm.d->nice_name()
                  << " Rating:" << dlm.rating << " Raw Rating:" << dlm.d->get_raw_role_rating(dlm.det->role_name);
@@ -230,22 +215,7 @@ void LaborOptimizer::optimize(){
         emit optimize_message(m_current_message,true);
     }
 
-    //emit optimize_message(QString::number(conflicting_count) + " conflicting labors could not be assigned.");
-    //    if(conflicts.count() > 0){
-    //        foreach(int id, conflicts.uniqueKeys()){
-    //            m_current_message.clear();
-    //            m_current_message.append(QPair<int,QString>(0,tr("%1 %2 labors not assigned due to conflicts.")
-    //                                                        .arg(QString::number(conflicts.value(id).count())).arg(gdr->get_labor(id)->name)));
-    //            foreach(Dwarf *d, conflicts.value(id)){
-    //                m_current_message.append(QPair<int,QString>(d->id(),d->nice_name()));
-    //            }
-    //            emit optimize_message(m_current_message);
-    //            //        emit optimize_message(tr("%1 %2 not assigned due to conflicting labors.")
-    //            //                              .arg(QString::number(conflicts.value(id))).arg(gdr->get_labor(id)->name));
-    //        }
-    //    }
-
-    //get a list of hauling labors (for now this includes burial, cleaning, recovering wounded)
+    //get a list of skill-less labors
     QList<Labor*> skill_less_jobs = gdr->get_ordered_labors();
     for(int i = skill_less_jobs.count()-1; i >= 0; i--){
         if(!skill_less_jobs.at(i)->is_hauling)
@@ -273,8 +243,9 @@ void LaborOptimizer::update_ratios(){
 
     //get ratio sum
     int count = 0;
-    foreach(PlanDetail *det, m_plan->plan_details){
-        det->max_count = 0;
+    foreach(PlanDetail *det, plan->plan_details){
+        if(!det->is_overridden()) //don't clear overridden counts
+            det->set_max_count(0,false);
         det->group_ratio = 0;
         det->assigned_laborers = 0;
         if(det->priority > 0 && det->ratio > 0)
@@ -319,16 +290,29 @@ void LaborOptimizer::update_ratios(){
     //job's max count = job's coverage / sum(job's coverage + conflicting coverages) * target population
     foreach(PlanDetail *det, m_plan->plan_details){
         if(det->priority > 0 && det->ratio > 0){
-            //det->max_count = roundf(m_pop_count * (plan->pop_percent/(float)100) * (det->max_laborers/(float)100));
-            if(det->group_ratio > 0 && m_labors_exceed_pop){
-                det->max_count = roundf(det->ratio / det->group_ratio * m_total_population);
+            if(!det->is_overridden()){
+                if(det->group_ratio > 0 && labors_exceed_pop){
+                    det->set_max_count(roundf(det->ratio / det->group_ratio * m_total_population),false);
+                }else{
+                    det->set_max_count(roundf(det->ratio / m_ratio_sum * m_total_jobs),false);
+                }
+                if(det->get_max_count() > m_total_population)
+                    det->set_max_count(m_total_population,false);
             }else{
-                det->max_count = roundf(det->ratio / m_ratio_sum * m_total_jobs);
+                float new_ratio = 0.0;
+                if(det->group_ratio > 0 && labors_exceed_pop){
+                    new_ratio = det->get_max_count() * det->group_ratio / m_total_population;
+                }else{
+                    new_ratio = det->get_max_count()  * m_ratio_sum / m_total_jobs;
+                }
+                if(new_ratio > 100.0)
+                    new_ratio = 100.0;
+                if(new_ratio <= 0)
+                    new_ratio = 0.01;
+                det->ratio = new_ratio;
             }
-            if(det->max_count > m_total_population)
-                det->max_count = m_total_population;
-            m_estimated_assigned_jobs += det->max_count;
         }
+        m_estimated_assigned_jobs += det->get_max_count();
     }
 }
 

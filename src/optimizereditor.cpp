@@ -74,8 +74,6 @@ optimizereditor::optimizereditor(QWidget *parent)
     connect(ui->btnExport, SIGNAL(clicked()), this, SLOT(export_details()));
 
     connect(ui->tw_labors, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(draw_labor_context_menu(QPoint)));
-//    connect(ui->tw_labors->horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)), ui->tw_labors, SLOT(resizeColumnsToContents()));
-//    connect(ui->tw_labors->horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)), ui->tw_labors, SLOT(resizeRowsToContents()));
 
     connect(ui->treeMessages, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
         DT->get_main_window()->get_view_manager(), SLOT(jump_to_dwarf(QTreeWidgetItem *, QTreeWidgetItem *)));
@@ -148,6 +146,9 @@ void optimizereditor::load_plan(QString name){
     //setup the splitter options, and decorate the handle
     ui->splitter->setStretchFactor(0,200);
     ui->splitter->setStretchFactor(1,1);
+
+    //after the plan is loaded connect cell changed events
+    connect(ui->tw_labors,SIGNAL(cellChanged(int,int)),this,SLOT(labor_cell_changed(int,int)));
 }
 
 void optimizereditor::max_jobs_changed(int val){
@@ -224,10 +225,17 @@ void optimizereditor::insert_row(PlanDetail *d){
     item = new sortableTableWidgetItem;
     ui->tw_labors->setItem(row, 3, item);
 
-    QTableWidgetItem *count = new QTableWidgetItem();
-    count->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    count->setTextAlignment(Qt::AlignHCenter);
-    ui->tw_labors->setItem(row,4,count);
+    QSpinBox *sb_count = new QSpinBox();
+    sb_count->setMinimum(0);
+    sb_count->setMaximum(1000);
+    sb_count->setSingleStep(1);
+    sb_count->setWrapping(true);
+    sb_count->setValue(d->get_max_count());
+    connect(sb_count, SIGNAL(valueChanged(int)), this, SLOT(count_changed(int)));
+    connect(sb_count,SIGNAL(editingFinished()),this,SLOT(count_edited()));
+    ui->tw_labors->setCellWidget(row,4,sb_count);
+    item = new sortableTableWidgetItem;
+    ui->tw_labors->setItem(row, 4, item);
 
     ui->tw_labors->setSortingEnabled(true);
 
@@ -237,13 +245,79 @@ void optimizereditor::insert_row(PlanDetail *d){
     }
 }
 
+void optimizereditor::count_edited(){
+    qDebug("count edited");
+//    QWidget *w = QApplication::focusWidget();
+//    if(w){
+//        QModelIndex idx = ui->tw_labors->indexAt(w->pos());
+//        PlanDetail *det = m_plan->job_exists(ui->tw_labors->item(idx.row(),0)->data(Qt::UserRole).toInt());
+//        if(det){
+//            QSpinBox* sb_count = qobject_cast<QSpinBox*>(ui->tw_labors->cellWidget(idx.row(),4));
+//            det->is_overridden(true);
+//            if(sb_count){
+//                QPalette p = sb_count->palette();
+//                QColor c = QColor(57,113,249,180);
+//                p.setColor(sb_count->backgroundRole(),c);
+//                sb_count->setPalette(p);
+//            }
+//        }
+//    }
+//        refresh_job_counts();
+}
+
+void optimizereditor::labor_cell_changed(int row, int col){
+    qDebug("cell data changed");
+    if(row >= 0 && row < ui->tw_labors->rowCount()){
+        PlanDetail *det = m_plan->job_exists(ui->tw_labors->item(row,0)->data(Qt::UserRole).toInt());
+        if(det){
+            if(col == 3){
+                QDoubleSpinBox *sb_ratio = qobject_cast<QDoubleSpinBox*>(ui->tw_labors->cellWidget(row,col));
+                if(sb_ratio){
+                    sb_ratio->blockSignals(true);
+                    sb_ratio->setValue(det->ratio);
+                    sb_ratio->blockSignals(false);
+                }
+            }else if(col == 4){
+                QSpinBox* sb_count = qobject_cast<QSpinBox*>(ui->tw_labors->cellWidget(row,col));
+                if(sb_count){
+                    sb_count->blockSignals(true);
+                    sb_count->setValue(det->get_max_count());
+                    sb_count->blockSignals(false);
+                }
+            }
+        }
+    }
+}
+
+void optimizereditor::count_changed(int val){
+    qDebug("count spinbox changed");
+    QWidget *w = QApplication::focusWidget();
+    if(w){
+        QModelIndex idx = ui->tw_labors->indexAt(w->pos());
+        PlanDetail *det = m_plan->job_exists(ui->tw_labors->item(idx.row(),0)->data(Qt::UserRole).toInt());
+        if(det){
+            det->set_max_count(val,true);
+            QSpinBox* sb_count = qobject_cast<QSpinBox*>(ui->tw_labors->cellWidget(idx.row(),4));
+            if(sb_count){
+                QPalette p = sb_count->palette();
+                QColor c = QColor(57,113,249,180);
+                p.setColor(sb_count->backgroundRole(),c);
+                sb_count->setPalette(p);
+                sb_count->update();
+            }
+            refresh_job_counts();
+        }
+    }
+}
+
 void optimizereditor::priority_changed(double val){
     QWidget *w = QApplication::focusWidget();
     if(w){
         QModelIndex idx = ui->tw_labors->indexAt(w->pos());
         PlanDetail *det = m_plan->job_exists(ui->tw_labors->item(idx.row(),0)->data(Qt::UserRole).toInt());
-        if(det)
+        if(det){
             det->priority = val;
+        }
     }
 
     refresh_job_counts();
@@ -254,10 +328,17 @@ void optimizereditor::ratio_changed(double val){
     if(w){
         QModelIndex idx = ui->tw_labors->indexAt(w->pos());
         PlanDetail *det = m_plan->job_exists(ui->tw_labors->item(idx.row(),0)->data(Qt::UserRole).toInt());
-        if(det)
+        if(det){
             det->ratio = val;
+            //no longer a manual count, ratio has been changed/set
+            det->is_overridden(false);
+            //remove the highlight from the count as it's automatically set based on the ratio again
+            QSpinBox* sb_count = qobject_cast<QSpinBox*>(ui->tw_labors->cellWidget(idx.row(),4));
+            if(sb_count){
+                sb_count->setPalette(QApplication::palette());
+            }
+        }
     }
-
     refresh_job_counts();
 }
 
@@ -312,8 +393,15 @@ void optimizereditor::refresh_actual_counts(){
 
     for(int i = 0; i < ui->tw_labors->rowCount(); i++){
         PlanDetail *det = m_plan->job_exists(ui->tw_labors->item(i,0)->data(Qt::UserRole).toInt());
-        if(det)
-            ui->tw_labors->item(i,4)->setData(0, det->max_count);
+        if(det){
+            if(det->is_overridden()){
+                ui->tw_labors->item(i,3)->setData(0, det->ratio);
+            }else{
+                ui->tw_labors->item(i,4)->setData(0, det->get_max_count());
+            }
+
+            //qobject_cast<QSpinBox*>(ui->tw_labors->cellWidget(i,4))->setValue(det->get_max_count());
+        }
     }
 }
 

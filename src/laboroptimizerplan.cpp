@@ -93,7 +93,14 @@ void laborOptimizerPlan::read_details(QSettings &s){
         else
             d->use_skill = false;
         d->priority = s.value("priority").toFloat();
-        d->ratio = s.value("max_laborers").toFloat();
+        if(s.contains("ratio")){
+            d->ratio = s.value("ratio").toFloat();
+            if(s.contains("max_laborers"))
+                d->set_max_count(s.value("max_laborers").toFloat(),true);
+        }else{
+            d->ratio = s.value("max_laborers").toFloat(); //old version, ratio is max laborers
+            d->set_max_count(-1,false);
+        }
         d->group_ratio = 0.0;
         plan_details.append(d);
     }
@@ -123,7 +130,9 @@ void laborOptimizerPlan::write_to_ini(QSettings &s){
             s.setValue("labor_id", d->labor_id);
             s.setValue("role_name", d->role_name);
             s.setValue("priority", QString::number(d->priority,'g',6));
-            s.setValue("max_laborers", QString::number(d->ratio, 'g', 4));
+            s.setValue("ratio", QString::number(d->ratio, 'g', 4));
+            if(d->is_overridden())
+                s.setValue("max_laborers", QString::number(d->get_max_count(), 'g', 4));
             count ++;
         }
         s.endArray();

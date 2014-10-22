@@ -74,6 +74,9 @@ private slots:
     void role_changed(QString val);
     void ratio_changed(double);
     void priority_changed(double);
+    void count_changed(int);
+    void count_edited();
+    void labor_cell_changed(int,int);
 
     void refresh_actual_counts();
     void max_jobs_changed(int);
