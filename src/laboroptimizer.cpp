@@ -53,9 +53,8 @@ LaborOptimizer::LaborOptimizer(laborOptimizerPlan *plan, QObject *parent)
     , m_total_population(0)
     , m_target_population(0)
     , m_labors_exceed_pop(false)
-    , plan(plan)
 {
-    check_conflicts = DT->user_settings()->value("options/labor_exclusions",true).toBool();
+    m_check_conflicts = DT->user_settings()->value("options/labor_exclusions",true).toBool();
     gdr = GameDataReader::ptr();
 }
 
@@ -230,7 +229,7 @@ void LaborOptimizer::update_ratios(){
     int static_job_count = 0;
     m_ratio_sum = 0;
     //get ratio sum
-    foreach(PlanDetail *det, plan->plan_details){
+    foreach(PlanDetail *det, m_plan->plan_details){
         if(!det->is_overridden()){ //don't clear overridden counts
             det->set_max_count(0,false);
         }else{
@@ -247,8 +246,8 @@ void LaborOptimizer::update_ratios(){
     m_raw_total_jobs = m_target_population * m_plan->max_jobs_per_dwarf;
     m_total_jobs = m_raw_total_jobs - static_job_count;
 
-    labors_exceed_pop = false;
-    if(check_conflicts){
+    m_labors_exceed_pop = false;
+    if(m_check_conflicts){
         PlanDetail *temp;
         foreach(PlanDetail *det, m_plan->plan_details){
             if(det->priority > 0 && det->ratio > 0 && det->group_ratio <= 0){
@@ -284,7 +283,7 @@ void LaborOptimizer::update_ratios(){
     foreach(PlanDetail *det, m_plan->plan_details){
         if(det->priority > 0 && det->ratio > 0){
             if(!det->is_overridden()){
-                if(det->group_ratio > 0 && labors_exceed_pop){
+                if(det->group_ratio > 0 && m_labors_exceed_pop){
                     det->set_max_count(roundf(det->ratio / det->group_ratio * m_total_population),false);
                 }else{
                     det->set_max_count(roundf(det->ratio / m_ratio_sum * m_total_jobs),false);
@@ -293,7 +292,7 @@ void LaborOptimizer::update_ratios(){
                     det->set_max_count(m_total_population,false);
             }else{
                 float new_ratio = 0.0;
-                if(det->group_ratio > 0 && labors_exceed_pop){
+                if(det->group_ratio > 0 && m_labors_exceed_pop){
                     new_ratio = det->get_max_count() * det->group_ratio / m_total_population;
                 }else{
                     new_ratio = det->get_max_count()  * m_ratio_sum / m_total_jobs;

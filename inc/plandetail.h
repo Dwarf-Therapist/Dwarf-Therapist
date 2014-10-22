@@ -13,7 +13,7 @@ public:
         role_name = "";
         priority = 0.0;
         ratio = 0.0;
-        use_skill = false;        
+        use_skill = false;
         assigned_laborers = 0;
         group_ratio = 0;
         m_max_count = 0;
@@ -32,24 +32,12 @@ public:
         , m_manual_count(pd.m_manual_count)
     {
     }
-    PlanDetail(const PlanDetail &pd)
-        :QObject(pd.parent())
-        , labor_id(pd.labor_id)
-        , role_name(pd.role_name)
-        , priority(pd.priority)
-        , ratio(pd.ratio)
-        , use_skill(pd.use_skill)
-        , max_count(0)
-        , assigned_laborers(pd.assigned_laborers)
-        , group_ratio(pd.group_ratio)
-    {
-    }
 
     int labor_id;
     QString role_name;
     float priority;
     float ratio; //ratio compared to other jobs
-    bool use_skill; //set if a role isn't specified    
+    bool use_skill; //set if a role isn't specified
     int assigned_laborers; //used when applying optimization
     float group_ratio;
 
