@@ -56,6 +56,7 @@ private:
     QList<Dwarf*> get_dwarfs();
     void find_target_population();
 
+    static QColor m_color_override;
 private slots:
     void draw_labor_context_menu(const QPoint &p);
     void add_job();
@@ -77,6 +78,8 @@ private slots:
     void count_changed(int);
     void count_edited();
     void labor_cell_changed(int,int);
+    void set_override_formatting(QWidget *w);
+    void clear_override_formatting(QWidget *w);
 
     void refresh_actual_counts();
     void max_jobs_changed(int);

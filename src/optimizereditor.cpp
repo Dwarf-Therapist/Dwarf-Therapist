@@ -23,7 +23,8 @@
 # define setSectionResizeMode setResizeMode
 #endif
 
-//optimizereditor::optimizereditor(QString name, QWidget *parent) :
+QColor optimizereditor::m_color_override =  QColor(57,113,249,180);
+
 optimizereditor::optimizereditor(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::optimizereditor)
@@ -144,8 +145,13 @@ void optimizereditor::load_plan(QString name){
     max_jobs_changed(m_plan->max_jobs_per_dwarf);
 
     //setup the splitter options, and decorate the handle
-    ui->splitter->setStretchFactor(0,200);
-    ui->splitter->setStretchFactor(1,1);
+    if(ui->treeMessages->topLevelItemCount() <= 0){
+        ui->splitter->setStretchFactor(0,200);
+        ui->splitter->setStretchFactor(1,1);
+    }else{
+        ui->splitter->setStretchFactor(0,4);
+        ui->splitter->setStretchFactor(1,1);
+    }
 
     //after the plan is loaded connect cell changed events
     connect(ui->tw_labors,SIGNAL(cellChanged(int,int)),this,SLOT(labor_cell_changed(int,int)));
@@ -192,10 +198,17 @@ void optimizereditor::insert_row(PlanDetail *d){
         cmb_roles->addItem(role_pair.first, role_pair.first);
     }
     int index = cmb_roles->findText(d->role_name);
-    if(index != -1)
+    if(index != -1){
         cmb_roles->setCurrentIndex(index);
-    else
+    }else{
         cmb_roles->setCurrentIndex(0);
+        if(!d->use_skill){
+            display_message(tr("The role for %1 (%2) could not be found! Skill level will be used instead.")
+                            .arg(l->name)
+                            .arg(d->role_name),true);
+            d->use_skill = true;
+        }
+    }
     connect(cmb_roles, SIGNAL(currentIndexChanged(QString)), this, SLOT(role_changed(QString)));
     ui->tw_labors->setCellWidget(row, 1, cmb_roles);
     sortableComboItem* cmbitem = new sortableComboItem;
@@ -234,6 +247,8 @@ void optimizereditor::insert_row(PlanDetail *d){
     connect(sb_count, SIGNAL(valueChanged(int)), this, SLOT(count_changed(int)));
     connect(sb_count,SIGNAL(editingFinished()),this,SLOT(count_edited()));
     ui->tw_labors->setCellWidget(row,4,sb_count);
+    if(d->is_overridden())
+        set_override_formatting(sb_count);
     item = new sortableTableWidgetItem;
     ui->tw_labors->setItem(row, 4, item);
 
@@ -299,14 +314,28 @@ void optimizereditor::count_changed(int val){
             det->set_max_count(val,true);
             QSpinBox* sb_count = qobject_cast<QSpinBox*>(ui->tw_labors->cellWidget(idx.row(),4));
             if(sb_count){
-                QPalette p = sb_count->palette();
-                QColor c = QColor(57,113,249,180);
-                p.setColor(sb_count->backgroundRole(),c);
-                sb_count->setPalette(p);
-                sb_count->update();
+                set_override_formatting(sb_count);
+                ui->tw_labors->item(idx.row(),4)->setData(0,sb_count->value());
             }
             refresh_job_counts();
         }
+    }
+}
+
+void optimizereditor::set_override_formatting(QWidget *w){
+    if(w){
+        QPalette p = w->palette();
+        p.setColor(w->backgroundRole(),m_color_override);
+        w->setPalette(p);
+        w->update();
+        w->setStatusTip(tr("This count has been overridden; it will not update dynamically on population changes."));
+    }
+}
+
+void optimizereditor::clear_override_formatting(QWidget *w){
+    if(w){
+        w->setPalette(QApplication::palette());
+        w->setStatusTip("");
     }
 }
 
@@ -333,10 +362,7 @@ void optimizereditor::ratio_changed(double val){
             //no longer a manual count, ratio has been changed/set
             det->is_overridden(false);
             //remove the highlight from the count as it's automatically set based on the ratio again
-            QSpinBox* sb_count = qobject_cast<QSpinBox*>(ui->tw_labors->cellWidget(idx.row(),4));
-            if(sb_count){
-                sb_count->setPalette(QApplication::palette());
-            }
+            clear_override_formatting(qobject_cast<QSpinBox*>(ui->tw_labors->cellWidget(idx.row(),4)));
         }
     }
     refresh_job_counts();
@@ -348,10 +374,13 @@ void optimizereditor::role_changed(QString val){
         QModelIndex idx = ui->tw_labors->indexAt(w->pos());
         PlanDetail *det = m_plan->job_exists(ui->tw_labors->item(idx.row(),0)->data(Qt::UserRole).toInt());
         if(det){
-            if(GameDataReader::ptr()->get_roles().contains(val))
+            if(GameDataReader::ptr()->get_roles().contains(val)){
                 det->role_name = val;
-            else
+                det->use_skill = false;
+            }else{
                 det->role_name = "";
+                det->use_skill = true;
+            }
         }
     }
 }

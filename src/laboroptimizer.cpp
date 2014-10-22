@@ -177,7 +177,6 @@ void LaborOptimizer::optimize(){
     bool has_conficting_labor = false;
     Labor *l;
 
-    QList<int> m_missing_roles;
     foreach(dwarf_labor_map dlm, m_labor_map){
         l = gdr->get_labor(dlm.det->labor_id);
         //check conflicting labors
@@ -189,14 +188,12 @@ void LaborOptimizer::optimize(){
                     break;
                 }
             }
-            if(dlm.det->use_skill && !m_missing_roles.contains(dlm.det->labor_id))
-                m_missing_roles.append(dlm.det->labor_id);
         }
-        //dwarf has available labor slots? target laborers reached?
-        if(!has_conficting_labor && dlm.d->optimized_labors < plan->max_jobs_per_dwarf && dlm.det->assigned_laborers < dlm.det->get_max_count()){
 
-            LOGD << "Job:" << GameDataReader::ptr()->get_labor(dlm.det->labor_id)->name << " Role:" << dlm.det->role_name << " Dwarf:" << dlm.d->nice_name()
-                 << " Rating:" << dlm.rating << " Raw Rating:" << dlm.d->get_raw_role_rating(dlm.det->role_name);
+        //dwarf has available labor slots? target laborers reached?
+        if(!has_conficting_labor && dlm.d->optimized_labors < m_plan->max_jobs_per_dwarf && dlm.det->assigned_laborers < dlm.det->get_max_count()){
+            LOGD << "Job:" << GameDataReader::ptr()->get_labor(dlm.det->labor_id)->name << "Role:" << dlm.det->role_name << "Dwarf:" << dlm.d->nice_name()
+                 << "Rating:" << dlm.rating << "Raw Rating:" << dlm.d->get_raw_role_rating(dlm.det->role_name);
 
             dlm.d->set_labor(dlm.det->labor_id, true, false);
             dlm.det->assigned_laborers++;
@@ -207,15 +204,6 @@ void LaborOptimizer::optimize(){
             if(dlm.d->optimized_labors >= roundf((float)m_plan->max_jobs_per_dwarf * (m_plan->hauler_percent/(float)100)))
                 haulers.remove(dlm.d->id());
         }
-    }
-
-    if(m_missing_roles.count() > 0){
-        m_current_message.clear();
-        m_current_message.append(QPair<int,QString>(0,tr("%1 labors are missing roles and may not have accurate ratings!").arg(QString::number(m_missing_roles.count()))));
-        foreach(int id, m_missing_roles){
-            m_current_message.append(qMakePair(id,gdr->ptr()->get_labor(id)->name));
-        }
-        emit optimize_message(m_current_message,true);
     }
 
     //get a list of skill-less labors
@@ -256,8 +244,8 @@ void LaborOptimizer::update_ratios(){
     }
 
     m_estimated_assigned_jobs = 0;
-    m_total_jobs = m_target_population * plan->max_jobs_per_dwarf - static_job_count;
-    m_raw_total_jobs = m_total_jobs;
+    m_raw_total_jobs = m_target_population * m_plan->max_jobs_per_dwarf;
+    m_total_jobs = m_raw_total_jobs - static_job_count;
 
     labors_exceed_pop = false;
     if(check_conflicts){
@@ -270,13 +258,13 @@ void LaborOptimizer::update_ratios(){
                     det->group_ratio += det->ratio;
                     foreach(int id, gdr->get_labor(det->labor_id)->get_excluded_labors()){
                         temp =  m_plan->job_exists(gdr->get_labor(id)->labor_id);
-                        if(temp)
+                        if(temp && !temp->is_overridden())
                             det->group_ratio += temp->ratio;
                     }
                     //set all related labors to the ratio total we just calculated
                     foreach(int id, gdr->get_labor(det->labor_id)->get_excluded_labors()){
                         temp =  m_plan->job_exists(gdr->get_labor(id)->labor_id);
-                        if(temp)
+                        if(temp && !temp->is_overridden())
                             temp->group_ratio = det->group_ratio;
                     }
                     if(det->group_ratio / m_ratio_sum * m_total_jobs > m_total_population){
