@@ -223,7 +223,7 @@ public:
         case 128:
             return tr("soap");
         case 256:
-            return tr("tooth");
+            return tr("ivory/tooth");
         case 512:
             return tr("horn/hoof");
         case 1024:

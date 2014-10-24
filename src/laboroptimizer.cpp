@@ -123,7 +123,7 @@ void LaborOptimizer::calc_population(bool load_labor_map){
                         dwarf_labor_map dlm;
                         dlm.d = d;
                         dlm.det = det;
-                        if(!det->role_name.isEmpty()){
+                        if(!det->use_skill){
                             dlm.rating = d->get_role_rating(det->role_name) * det->priority;
                         }else{
                             dlm.rating = d->get_skill(GameDataReader::ptr()->get_labor(dlm.det->labor_id)->skill_id).get_rating(true) * 100.0f * det->priority;
@@ -266,9 +266,13 @@ void LaborOptimizer::update_ratios(){
                         if(temp && !temp->is_overridden())
                             temp->group_ratio = det->group_ratio;
                     }
-                    if(det->group_ratio / m_ratio_sum * m_total_jobs > m_total_population){
+                    if(!det->is_overridden() && (det->group_ratio / m_ratio_sum * m_total_jobs > m_total_population)){
                         m_ratio_sum -= det->group_ratio;
                         m_labors_exceed_pop = true;
+                        if(m_ratio_sum <= 0){
+                            m_ratio_sum = 0;
+                            break;
+                        }
                     }
                 }
             }
@@ -277,9 +281,9 @@ void LaborOptimizer::update_ratios(){
             m_total_jobs -= m_total_population;
     }
 
-
     //if sum of job's coverage + conflicting job's coverage / total coverage > target population
     //job's max count = job's coverage / sum(job's coverage + conflicting coverages) * target population
+    float last_valid = 1.0;
     foreach(PlanDetail *det, m_plan->plan_details){
         if(det->priority > 0 && det->ratio > 0){
             if(!det->is_overridden()){
@@ -297,10 +301,11 @@ void LaborOptimizer::update_ratios(){
                 }else{
                     new_ratio = det->get_max_count()  * m_ratio_sum / m_total_jobs;
                 }
-                if(new_ratio > 100.0)
-                    new_ratio = 100.0;
-                if(new_ratio <= 0)
-                    new_ratio = 0.01;
+                if(new_ratio <= 0){
+                    new_ratio = last_valid;
+                }else{
+                    last_valid = new_ratio;
+                }
                 det->ratio = new_ratio;
             }
         }

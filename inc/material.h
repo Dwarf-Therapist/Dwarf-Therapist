@@ -55,7 +55,7 @@ public:
     static const QString get_material_flag_desc(const MATERIAL_FLAGS &flag) {
         QMap<MATERIAL_FLAGS, QString> m;
         m[BONE]=tr("Bone");
-        m[TOOTH]=tr("Tooth");
+        m[TOOTH]=tr("Ivory/Tooth");
         m[HORN]=tr("Horn/Hoof");
         m[PEARL]=tr("Pearl");
         m[SHELL]=tr("Shell");
@@ -84,7 +84,7 @@ public:
         m[MC_BONE]=tr("Bone");
         m[MC_SHELL]=tr("Shell");
         m[MC_PEARL]=tr("Pearl");
-        m[MC_TOOTH]=tr("Tooth");
+        m[MC_TOOTH]=tr("Ivory/Tooth");
         m[MC_HORN]=tr("Horn/Hoof");
         m[MC_PLANT_FIBER]=tr("Plant Fiber");
         m[MC_SILK]=tr("Silk");

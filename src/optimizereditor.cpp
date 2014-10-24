@@ -260,28 +260,7 @@ void optimizereditor::insert_row(PlanDetail *d){
     }
 }
 
-void optimizereditor::count_edited(){
-    qDebug("count edited");
-//    QWidget *w = QApplication::focusWidget();
-//    if(w){
-//        QModelIndex idx = ui->tw_labors->indexAt(w->pos());
-//        PlanDetail *det = m_plan->job_exists(ui->tw_labors->item(idx.row(),0)->data(Qt::UserRole).toInt());
-//        if(det){
-//            QSpinBox* sb_count = qobject_cast<QSpinBox*>(ui->tw_labors->cellWidget(idx.row(),4));
-//            det->is_overridden(true);
-//            if(sb_count){
-//                QPalette p = sb_count->palette();
-//                QColor c = QColor(57,113,249,180);
-//                p.setColor(sb_count->backgroundRole(),c);
-//                sb_count->setPalette(p);
-//            }
-//        }
-//    }
-//        refresh_job_counts();
-}
-
 void optimizereditor::labor_cell_changed(int row, int col){
-    qDebug("cell data changed");
     if(row >= 0 && row < ui->tw_labors->rowCount()){
         PlanDetail *det = m_plan->job_exists(ui->tw_labors->item(row,0)->data(Qt::UserRole).toInt());
         if(det){
@@ -305,7 +284,6 @@ void optimizereditor::labor_cell_changed(int row, int col){
 }
 
 void optimizereditor::count_changed(int val){
-    qDebug("count spinbox changed");
     QWidget *w = QApplication::focusWidget();
     if(w){
         QModelIndex idx = ui->tw_labors->indexAt(w->pos());

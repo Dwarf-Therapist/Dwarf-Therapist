@@ -76,7 +76,6 @@ private slots:
     void ratio_changed(double);
     void priority_changed(double);
     void count_changed(int);
-    void count_edited();
     void labor_cell_changed(int,int);
     void set_override_formatting(QWidget *w);
     void clear_override_formatting(QWidget *w);
