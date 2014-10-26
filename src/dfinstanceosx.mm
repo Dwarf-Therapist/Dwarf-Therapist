@@ -170,8 +170,8 @@ bool DFInstanceOSX::find_running_copy(bool connect_anyway) {
     return true;
 }
 
-VIRTADDR DFInstanceOSX::alloc_chunk(mach_vm_size_t size) {
-    if (size > 1048576 || size <= 0) {
+VIRTADDR DFInstanceOSX::alloc_chunk(USIZE size) {
+    if (size > 1048576) {
         return 0;
     }
 
