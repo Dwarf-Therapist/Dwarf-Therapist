@@ -61,7 +61,7 @@ THE SOFTWARE.
 #endif /* MACH64 */
 
 DFInstanceOSX::DFInstanceOSX(QObject* parent)
-    : DFInstance(parent)
+    : DFInstanceNix(parent)
 {
     if(!authorize()) {
         exit(1);
@@ -163,7 +163,6 @@ bool DFInstanceOSX::find_running_copy(bool connect_anyway) {
     }
 
     m_is_ok = true;
-    map_virtual_memory();
     m_layout = get_memory_layout(calculate_checksum(), !connect_anyway);
 
     [authPool release];
@@ -226,8 +225,9 @@ bool DFInstanceOSX::authorize() {
         fflush(stdout);
 
         // Authorization for remote memory access on OS X trips Qt's setuid detection
+        #if defined(Q_OS_MAC) && QT_VERSION >= QT_VERSION_CHECK(5,3,0)
         QCoreApplication::setSetuidAllowed(true);
-
+        #endif
         return true;
     }
 
