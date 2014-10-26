@@ -51,7 +51,7 @@ protected:
     vm_map_t m_task;
 
 private:
-    VIRTADDR alloc_chunk(mach_vm_size_t size);
+    VIRTADDR alloc_chunk(USIZE size);
     VIRTADDR m_alloc_start, m_alloc_end;
     int m_alloc_remaining, m_size_allocated;
 };
