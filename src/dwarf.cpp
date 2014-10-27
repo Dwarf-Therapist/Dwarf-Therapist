@@ -1169,54 +1169,63 @@ void Dwarf::read_labors() {
 }
 
 void Dwarf::read_happiness() {
-    VIRTADDR addr = m_address + m_mem->dwarf_offset("happiness");
-    m_raw_happiness = m_df->read_int(addr);
+    int offset = m_mem->dwarf_offset("happiness");
+
+    if(offset){
+        VIRTADDR addr = m_address + offset;
+        m_raw_happiness = m_df->read_int(addr);
+    }else{
+        m_raw_happiness = 0;
+    }
+
     m_happiness = happiness_from_score(m_raw_happiness);
     TRACE << "\tRAW HAPPINESS:" << m_raw_happiness;
     TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
 
     if(!is_animal()){
-
-        QVector<VIRTADDR> thoughts = m_df->enumerate_vector(m_address + m_mem->dwarf_offset("thoughts"));
-        //time, id
-        QMap<int,short> t;
-        foreach(VIRTADDR addr, thoughts){
-            short id = m_df->read_int(addr);
-            int time = m_df->read_int(addr + 0x4);
-            //the age of a thought increases by 1 per frame
-            //to find how many days ago a thought was use: 10 frames per tick, 1200 ticks per day
-            t.insertMulti(time,id);
-        }
-
-        int t_count = 0;
-        foreach(int key, t.uniqueKeys()){
-            QList<short> vals = t.values(key);
-            for(int i = 0; i < vals.count(); i++) {
-                if(!m_thoughts.contains(vals.at(i)))
-                    t_count = 1;
-                else
-                    t_count = m_thoughts.take(vals.at(i)) + 1;
-
-                m_thoughts.insert(vals.at(i),t_count);
+        offset = m_mem->dwarf_offset("thoughts");
+        if(offset){
+            QVector<VIRTADDR> thoughts = m_df->enumerate_vector(m_address + offset);
+            //time, id
+            QMap<int,short> t;
+            foreach(VIRTADDR addr, thoughts){
+                short id = m_df->read_int(addr);
+                int time = m_df->read_int(addr + 0x4);
+                //the age of a thought increases by 1 per frame
+                //to find how many days ago a thought was use: 10 frames per tick, 1200 ticks per day
+                t.insertMulti(time,id);
             }
-        }
 
-        QStringList display_desc;
-        foreach(int id, m_thoughts.uniqueKeys()){
-            Thought *t = GameDataReader::ptr()->get_thought(id);
-            if(t){
-                t_count = m_thoughts.value(id);
-                display_desc.append(QString("<font color=%1>%2%3</font>")
-                                    .arg(t->color().name())
-                                    .arg(t->desc().toLower())
-                                    .arg(t_count > 1 ? QString(" (x%1)").arg(t_count) : ""));
+            int t_count = 0;
+            foreach(int key, t.uniqueKeys()){
+                QList<short> vals = t.values(key);
+                for(int i = 0; i < vals.count(); i++) {
+                    if(!m_thoughts.contains(vals.at(i)))
+                        t_count = 1;
+                    else
+                        t_count = m_thoughts.take(vals.at(i)) + 1;
+
+                    m_thoughts.insert(vals.at(i),t_count);
+                }
             }
-        }
 
-        m_thought_desc = display_desc.join(", ");
-        if(m_thoughts.count() > 0){
-            int index = m_thought_desc.indexOf(">") + 1;
-            m_thought_desc[index] = m_thought_desc[index].toUpper();
+            QStringList display_desc;
+            foreach(int id, m_thoughts.uniqueKeys()){
+                Thought *t = GameDataReader::ptr()->get_thought(id);
+                if(t){
+                    t_count = m_thoughts.value(id);
+                    display_desc.append(QString("<font color=%1>%2%3</font>")
+                                        .arg(t->color().name())
+                                        .arg(t->desc().toLower())
+                                        .arg(t_count > 1 ? QString(" (x%1)").arg(t_count) : ""));
+                }
+            }
+
+            m_thought_desc = display_desc.join(", ");
+            if(m_thoughts.count() > 0){
+                int index = m_thought_desc.indexOf(">") + 1;
+                m_thought_desc[index] = m_thought_desc[index].toUpper();
+            }
         }
     }
 }
