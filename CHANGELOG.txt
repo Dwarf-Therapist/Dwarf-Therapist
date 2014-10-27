@@ -1,3 +1,30 @@
+### Version 28.0 Patch Notes
+
+***
+
+- added a new option to hide social skills from the tooltip
+- updated the labor optimizer to allow setting a hard worker count or a ratio
+- updated ~20 roles to feelotravellers civ/military roles
+- updated role ratings to use new checks and transformations based on thistleknot's latest work
+- added highlighting of which preferences are matched in roles, and additionally listed the exact matches
+- added an option to highlight role cell borders based on the number of matching preferences. the more matches, the darker the border
+- negative role weights are highlighted in red rather than the 'dislikes' or 'not' prefixes
+- added a general trade goods role preference group
+- split the crop role preference category into crops (gather/grow) and crops (grow)
+- split item preferences into armor and clothing groups and added general 'armor' and 'clothing' categories
+- moved clothing, armor and weapon role preferences to a new equipment category
+- added foreign/specific armor types for preferences/roles
+- updated the search in the preference dock to also filter on the category column
+- changed displayed skill xp to truncate and use suffixes
+- removed the 'wagon' creature from roles
+- removed obsolete memory scanners
+- continued back-end improvements and fixes (Hello71)
+
+- fixed belief column sorting
+- fixed a bug with role attributes rounding due to passing int instead of double
+- fixed a bug with roles where having invalid/bad weights resulted in invalid ratings which caused drawing anomalies
+- fixed a crash with the skill legend (stoutheart)
+
 ### Version 27.0 Patch Notes
 
 ***
