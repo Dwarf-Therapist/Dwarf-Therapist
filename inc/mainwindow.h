@@ -202,7 +202,7 @@ private:
         void apply_filter();
         void apply_filter(QModelIndex);
         void preference_selected(QList<QPair<QString,QString> > vals, QString filter_name = "", FILTER_SCRIPT_TYPE pType = SCR_PREF);
-        void thought_selected(QList<short> ids);
+        void thought_selected(QVariantList ids);
         void equipoverview_selected(QList<QPair<QString, int> >);
         void health_legend_selected(QList<QPair<int,int> > vals);
         //optimization stuff

@@ -32,6 +32,8 @@ THE SOFTWARE.
 #include "thought.h"
 #include "unithealth.h"
 #include "belief.h"
+#include "subthought.h"
+#include "emotion.h"
 
 QStringList GameDataReader::m_seasons;
 QStringList GameDataReader::m_months;
@@ -265,23 +267,40 @@ GameDataReader::GameDataReader(QObject *parent)
     load_roles();
     load_optimization_plans();
 
-    int professions = m_data_settings->beginReadArray("professions");
+    int count = m_data_settings->beginReadArray("professions");
     qDeleteAll(m_professions);
     m_professions.clear();
-    for(short i = 0; i < professions; ++i) {
+    for(short i = 0; i < count; ++i) {
         m_data_settings->setArrayIndex(i);
         Profession *p = new Profession(*m_data_settings);
         m_professions.insert(p->id(), p);
     }
     m_data_settings->endArray();
 
-    //thoughts
-    int t_count = m_data_settings->beginReadArray("unit_thoughts");
-    m_unit_thoughts.clear();
-    for(short i = 0; i < t_count; ++i) {
+    //sub-thoughts
+    count = m_data_settings->beginReadArray("unit_subthoughts");
+    m_unit_subthoughts.clear();
+    for(short i = 0; i < count; ++i) {
         m_data_settings->setArrayIndex(i);
-        Thought *t = new Thought(i, *m_data_settings, this);
-        m_unit_thoughts.insert(i,t);
+        m_unit_subthoughts.insert(i,new SubThought(i, *m_data_settings, this));
+    }
+    m_data_settings->endArray();
+
+    //thoughts
+    count = m_data_settings->beginReadArray("unit_thoughts");
+    m_unit_thoughts.clear();
+    for(short i = 0; i < count; ++i) {
+        m_data_settings->setArrayIndex(i);
+        m_unit_thoughts.insert(i,new Thought(i, *m_data_settings, this));
+    }
+    m_data_settings->endArray();
+
+    //emotions
+    count = m_data_settings->beginReadArray("unit_emotions");
+    m_unit_emotions.clear();
+    for(short i = 0; i < count; ++i) {
+        m_data_settings->setArrayIndex(i);
+        m_unit_emotions.insert(i-1, new Emotion(i-1, *m_data_settings, this)); //start at -1
     }
     m_data_settings->endArray();
 
@@ -367,6 +386,17 @@ Thought *GameDataReader::get_thought(short id){
         m_unit_thoughts.insert(id, new Thought(id, this));
     }
     return m_unit_thoughts.value(id);
+}
+
+Emotion *GameDataReader::get_emotion(EMOTION_TYPE eType){
+    if(!m_unit_emotions.contains(eType)){
+        return m_unit_emotions.value(EM_NONE);
+    }
+    return m_unit_emotions.value(eType);
+}
+
+SubThought *GameDataReader::get_subthought(short id){
+    return m_unit_subthoughts.value(id);
 }
 
 laborOptimizerPlan* GameDataReader::get_opt_plan(const QString &name){

@@ -24,23 +24,18 @@ THE SOFTWARE.
 #define THOUGHT_H
 
 #include <QObject>
-#include "qstring.h"
-#include "qstringlist.h"
-#include "defines.h"
-#include "qsettings.h"
-#include "qcolor.h"
-
-class GameDataReader;
+#include <QSettings>
+#include <QColor>
 
 class Thought : public QObject
 {
     Q_OBJECT
 
-
 private:
     QString m_title;
     QString m_description;
     int m_effect;
+    int m_subtype;
     short m_id;
     QColor m_color;
 
@@ -65,6 +60,7 @@ public:
     QString title() {return m_title;}
     QString desc() {return m_description;}
     int effect() const {return m_effect;}
+    int subtype() const {return m_subtype;}
     short id() const {return m_id;}
     QColor color() const {return m_color;}
 

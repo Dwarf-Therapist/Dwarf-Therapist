@@ -47,6 +47,7 @@ public:
     bool has_fake_identity();
 
     int id(){return m_id;}
+    VIRTADDR address() {return m_address;}
     QString fake_name(){return m_fake_name;}
     QString fake_nick_name(){return m_fake_nick;}
     VIRTADDR fake_birth_year_offset(){return m_fake_birth_year;}

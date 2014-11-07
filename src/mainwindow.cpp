@@ -192,7 +192,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_view_manager,SIGNAL(group_changed(int)), this, SLOT(display_group(int)));
 
     connect(pref_dock,SIGNAL(item_selected(QList<QPair<QString,QString> >)),this,SLOT(preference_selected(QList<QPair<QString,QString> >)));
-    connect(thought_dock, SIGNAL(item_selected(QList<short>)), this, SLOT(thought_selected(QList<short>)));
+    connect(thought_dock, SIGNAL(item_selected(QVariantList)), this, SLOT(thought_selected(QVariantList)));
     connect(health_dock, SIGNAL(item_selected(QList<QPair<int,int> >)), this, SLOT(health_legend_selected(QList<QPair<int,int> >)));
     connect(equipoverview_dock, SIGNAL(item_selected(QList<QPair<QString,int> >)), this, SLOT(equipoverview_selected(QList<QPair<QString,int> >)));
 
@@ -1344,16 +1344,16 @@ void MainWindow::preference_selected(QList<QPair<QString,QString> > vals, QStrin
     m_proxy->refresh_script();
 }
 
-void MainWindow::thought_selected(QList<short> ids){
-    QString filter = "";
+void MainWindow::thought_selected(QVariantList ids){
+    QStringList filter;
     if(!ids.empty()){
-        foreach(short id, ids){
-            filter.append(QString("d.has_thought(%1) && ").arg(QString::number(id)));
+        foreach(QVariant id, ids){
+            filter.append(QString("d.id()==%1").arg(id.toInt()));
         }
-        filter.chop(4);
-        m_proxy->apply_script("thoughts",filter);
+        filter.removeDuplicates();
+        m_proxy->apply_script("emotions",filter.join(" || "));
     }else{
-        m_proxy->clear_script("thoughts");
+        m_proxy->clear_script("emotions");
     }
     m_proxy->refresh_script();
 }

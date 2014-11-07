@@ -245,7 +245,11 @@ HEADERS += inc/viewmanager.h \
     inc/rolecalcbase.h \
     inc/itemsubtype.h \
     inc/itemtoolsubtype.h \
-    inc/itemgenericsubtype.h
+    inc/itemgenericsubtype.h \
+    inc/subthought.h \
+    inc/unitemotion.h \
+    inc/emotion.h \
+    inc/emotiongroup.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -338,7 +342,9 @@ SOURCES += src/viewmanager.cpp \
     src/docks/equipmentoverviewdock.cpp \
     src/rolecalcbase.cpp \
     src/itemarmorsubtype.cpp \
-    src/flagarray.cpp
+    src/flagarray.cpp \
+    src/unitemotion.cpp \
+    src/emotion.cpp
 FORMS += ui/scriptdialog.ui \
     ui/pendingchanges.ui \
     ui/optionsmenu.ui \

@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "attribute.h"
 #include "unithealth.h"
 #include "unitbelief.h"
+#include "unitemotion.h"
 #include "role.h"
 #include "syndrome.h"
 
@@ -65,7 +66,7 @@ public:
     VIRTADDR address() {return m_address;}
 
     //! return the the unique id for this creature
-    int id() const {return m_id;}
+    Q_INVOKABLE int id() const {return m_id;}
 
     //! return whether or not the dwarf is on break
     bool is_on_break() {return m_is_on_break;}
@@ -219,7 +220,7 @@ public:
     //! return this creature's Nth bit from flags
     Q_INVOKABLE bool get_flag_value(int bit);
 
-    static bool has_invalid_flags(const QString creature_name, QHash<uint, QString> invalid_flags, quint32 dwarf_flags);
+    static bool has_invalid_flags(const int id, const QString creature_name, QHash<uint, QString> invalid_flags, quint32 dwarf_flags);
 
     //! return this dwarf's highest skill
     Skill highest_skill();
@@ -450,6 +451,7 @@ public:
     QHash<QString, QStringList*> get_grouped_preferences() {return m_grouped_preferences;}
 
     QHash<short, int> get_thoughts() {return m_thoughts;}
+    QList<UnitEmotion*> get_emotions() {return m_emotions.values();}
 
     Q_INVOKABLE bool has_preference(QString pref_name, QString category = "");
     Q_INVOKABLE bool find_preference(QString pref_name, QString category_name);
@@ -465,7 +467,7 @@ public:
 
     QString get_syndrome_names(bool include_buffs, bool include_sick);
 
-    QString get_thought_desc() {return m_thought_desc;}
+    QString get_thought_desc() {return m_emotions_desc;}
 
     UnitHealth get_unit_health() {return m_unit_health;}
 
@@ -601,7 +603,8 @@ private:
     QStringList m_pref_names;
     QString m_pref_tooltip;
     QHash<short, int> m_thoughts;
-    QString m_thought_desc;
+    QHash<QPair<int,EMOTION_TYPE>,UnitEmotion*> m_emotions;
+    QString m_emotions_desc;
     bool m_is_child;
     bool m_is_baby;
     bool m_is_animal;
@@ -652,7 +655,7 @@ private:
     void read_states();
     void read_profession();
     void read_labors();
-    void read_happiness();
+    void read_happiness(VIRTADDR personality_base);
     void read_current_job();
     void read_soul();
     void read_soul_aspects();
@@ -660,6 +663,7 @@ private:
     void read_attributes();
     void load_attribute(VIRTADDR &addr, ATTRIBUTES_TYPE id);
     void read_personality();
+    void read_emotions(VIRTADDR personality_base);
     void read_turn_count();
     void read_animal_type();
     void read_noble_position();

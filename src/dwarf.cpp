@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include "columntypes.h"
 #include "plant.h"
 #include "bodypart.h"
+#include "unitemotion.h"
 
 #include "labor.h"
 #include "preference.h"
@@ -109,7 +110,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_race(0)
     , m_caste(0)
     , m_pref_tooltip(QString::null)
-    , m_thought_desc(QString::null)
+    , m_emotions_desc(QString::null)
     , m_is_child(false)
     , m_is_baby(false)
     , m_is_animal(false)
@@ -235,11 +236,11 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     }
 }
 
-bool Dwarf::has_invalid_flags(const QString creature_name, QHash<uint, QString> invalid_flags, quint32 dwarf_flags){
+bool Dwarf::has_invalid_flags(const int id, const QString creature_name, QHash<uint, QString> invalid_flags, quint32 dwarf_flags){
     foreach(uint invalid_flag, invalid_flags.uniqueKeys()) {
         QString reason = invalid_flags[invalid_flag];
         if(dwarf_flags & invalid_flag) {
-            LOGI << "Ignoring" << creature_name << "who appears to be" << reason;
+            LOGI << "Ignoring id:" << id << "name:" << creature_name << "who appears to be" << reason;
             return true;
         }
     }
@@ -290,7 +291,6 @@ void Dwarf::refresh_data() {
         read_hist_fig(); //read before noble positions, curse
         read_caste(); //read before age
         read_labors();
-        read_happiness();
         read_squad_info(); //read squad before job
         read_uniform();
         read_gender_orientation(); //read before profession
@@ -409,9 +409,9 @@ bool Dwarf::is_valid(){
         }
 
         //check other invalid flags (invaders, ghosts, dead, merchants, etc.)
-        if(has_invalid_flags(this->nice_name(), m_mem->invalid_flags_1(),m_unit_flags.at(0)) ||
-                has_invalid_flags(this->nice_name(), m_mem->invalid_flags_2(),m_unit_flags.at(1)) ||
-                has_invalid_flags(this->nice_name(), m_mem->invalid_flags_3(),m_unit_flags.at(2))){
+        if(has_invalid_flags(this->id(), this->nice_name(), m_mem->invalid_flags_1(),m_unit_flags.at(0)) ||
+                has_invalid_flags(this->id(),this->nice_name(), m_mem->invalid_flags_2(),m_unit_flags.at(1)) ||
+                has_invalid_flags(this->id(),this->nice_name(), m_mem->invalid_flags_3(),m_unit_flags.at(2))){
             m_validated = true;
             m_is_valid = false;
             return false;
@@ -1168,12 +1168,11 @@ void Dwarf::read_labors() {
     }
 }
 
-void Dwarf::read_happiness() {
-    int offset = m_mem->dwarf_offset("happiness");
+void Dwarf::read_happiness(VIRTADDR personality_base) {
+    int offset = personality_base + 0x00e0;//m_mem->dwarf_offset("happiness");
 
     if(offset){
-        VIRTADDR addr = m_address + offset;
-        m_raw_happiness = m_df->read_int(addr);
+        m_raw_happiness = m_df->read_int(offset);
     }else{
         m_raw_happiness = 0;
     }
@@ -1221,10 +1220,10 @@ void Dwarf::read_happiness() {
                 }
             }
 
-            m_thought_desc = display_desc.join(", ");
+            m_emotions_desc = display_desc.join(", ");
             if(m_thoughts.count() > 0){
-                int index = m_thought_desc.indexOf(">") + 1;
-                m_thought_desc[index] = m_thought_desc[index].toUpper();
+                int index = m_emotions_desc.indexOf(">") + 1;
+                m_emotions_desc[index] = m_emotions_desc[index].toUpper();
             }
         }
     }
@@ -1338,17 +1337,17 @@ bool Dwarf::active_military() {
 }
 
 DWARF_HAPPINESS Dwarf::happiness_from_score(int score) {
-    if (score < 1)
+    if (score >= 500000)
         return DH_MISERABLE;
-    else if (score <= 25)
+    else if (score >= 250000)
         return DH_VERY_UNHAPPY;
-    else if (score <= 50)
+    else if (score >= 100000)
         return DH_UNHAPPY;
-    else if (score <= 75)
+    else if (score > -100000)
         return DH_FINE;
-    else if (score <= 125)
+    else if (score > -250000)
         return DH_CONTENT;
-    else if (score <= 150)
+    else if (score >  -500000)
         return DH_HAPPY;
     else
         return DH_ECSTATIC;
@@ -1768,14 +1767,99 @@ void Dwarf::read_skills() {
     }
 }
 
+void Dwarf::read_emotions(VIRTADDR personality_base){
+        int offset = 0x0020; //m_mem->dwarf_offset("thoughts");
+        if(offset){
+            QVector<VIRTADDR> emotions_addrs = m_df->enumerate_vector(personality_base + offset);
+            //load emotions by date
+            QMap<int,UnitEmotion*> emotions;
+            qDebug() << "** reading emotions for" << m_nice_name;
+            foreach(VIRTADDR addr, emotions_addrs){
+                UnitEmotion *ue = new UnitEmotion(addr,m_df,this);
+
+                if(ue->get_desc(false).contains("UNKNOWN",Qt::CaseInsensitive) && ue->get_emotion_type() != EM_NONE)
+                    qDebug() << "found unknown emotion:" << ue->get_emotion_type();
+
+                if(ue->get_emotion_type() == EM_NONE && ue->get_thought_id() < 0 && ue->get_subthought_id() > 0){
+                    qDebug() << "unknown subtype" << ue->get_subthought_id();
+                }
+
+                if(ue->get_thought_id() < 0){
+                    delete ue;
+                }else{
+                    emotions.insertMulti(ue->get_date(),ue);
+                }
+            }
+            qDebug() << "";
+
+            //keep the most recent emotion, and discard other duplicate emotions/thoughts, but maintain a count of occurrances
+            QPair<int,EMOTION_TYPE> key;
+            for(int idx = emotions.values().count()-1; idx >= 0; idx--){
+                UnitEmotion *ue = emotions.values().at(idx);
+                key = qMakePair(ue->get_thought_id(),ue->get_emotion_type());
+                if(!m_emotions.contains(key)){
+                    m_emotions.insert(key,ue);
+                }else{
+                    m_emotions[key]->increment_count();
+                    delete ue;
+                }
+                //keep a list of all thoughts as well, for filtering?
+            }
+            emotions.clear();
+
+            QStringList weekly_emotions;
+            QStringList seasonal_emotions;
+            int stress_vuln = m_traits.value(8); //vulnerability to stress
+
+            int curr_year = m_df->current_year();
+            int last_week_tick = m_df->current_year_time() - (ticks_per_day*7);
+            double last_week = curr_year;
+            if(last_week_tick < 0){
+                last_week -= 1;
+                last_week_tick += ticks_per_year;
+            }
+            last_week += (last_week_tick / (float)ticks_per_year);
+
+            foreach(UnitEmotion *ue, m_emotions){
+                int effect_val = ue->set_effect(stress_vuln);
+                QChar sign;
+                if(effect_val > 0)
+                    sign = '+';
+                else if(effect_val < 0)
+                    sign = '-';
+                QString desc = QString("%1%2%3")
+                        .arg(ue->get_desc().toLower())
+                        .arg(!sign.isNull() ? QString("(%1%2)").arg(sign).arg(abs(effect_val)) : "")
+                        .arg(ue->get_count() > 1 ? QString(" (x%1)").arg(ue->get_count()) : "");
+
+                double emotion_date = ue->get_year() + (ue->get_year_ticks() / (float)ticks_per_year);
+                if(emotion_date >= last_week){
+                    weekly_emotions.append(desc);
+                }else{
+                    seasonal_emotions.append(desc);
+                }
+
+            }
+            QStringList dated_emotions;
+            QString pronoun = (m_gender_info.gender == SEX_M ? tr("he") : tr("she"));
+            if(weekly_emotions.size() > 0)
+                dated_emotions.append(tr("Within the last week %1 felt ").arg(pronoun).append(capitalize(formatList(weekly_emotions))));
+            if(seasonal_emotions.size() > 0)
+                dated_emotions.append(tr("Within the last season %1 felt ").arg(pronoun).append(capitalize(formatList(seasonal_emotions))));
+            m_emotions_desc =  dated_emotions.join(".<br/><br/>");
+        }
+}
+
 void Dwarf::read_personality() {
     if(!m_is_animal){
         VIRTADDR personality_addr = m_first_soul + m_mem->soul_detail("personality");
 
+        read_happiness(personality_addr);
+
         //read personal beliefs before traits, as a dwarf will have a conflict with either personal beliefs or cultural beliefs
         m_beliefs.clear();
-        QVector<VIRTADDR> m_beliefs_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("beliefs"));
-        foreach(VIRTADDR addr, m_beliefs_addrs){
+        QVector<VIRTADDR> beliefs_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("beliefs"));
+        foreach(VIRTADDR addr, beliefs_addrs){
             int belief_id = m_df->read_int(addr);
             if(belief_id >= 0){
                 short val = m_df->read_short(addr + 0x0004);
@@ -1828,6 +1912,9 @@ void Dwarf::read_personality() {
         //        int val = state_value(15);
         //        m_traits.insert(41,val);
         //    }
+
+        //read after traits
+        read_emotions(personality_addr);
     }
 }
 
@@ -2482,8 +2569,8 @@ QString Dwarf::tooltip_text() {
     if(!m_is_animal && s->value("options/tooltip_show_happiness",true).toBool())
         tt.append(tr("<b>Happiness:</b> %1 (%2)").arg(happiness_name(m_happiness)).arg(m_raw_happiness));
 
-    if(!m_is_animal && !m_thought_desc.isEmpty() && s->value("options/tooltip_show_thoughts",true).toBool())
-        tt.append(tr("<p style=\"margin:0px;\"><b>Thoughts: </b>%1</p>").arg(m_thought_desc));
+    if(!m_is_animal && !m_emotions_desc.isEmpty() && s->value("options/tooltip_show_thoughts",true).toBool())
+        tt.append(tr("<p style=\"margin:0px;\">%1</p>").arg(m_emotions_desc));
 
     if(!skill_summary.isEmpty())
         tt.append(tr("<h4 style=\"margin:0px;\"><b>Skills:</b></h4><ul style=\"margin:0px;\">%1</ul>").arg(skill_summary));

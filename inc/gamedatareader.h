@@ -38,7 +38,9 @@ class MilitaryPreference;
 class Profession;
 class DwarfJob;
 class Thought;
+class SubThought;
 class Belief;
+class Emotion;
 
 //singleton reader of game data
 class GameDataReader : public QObject {
@@ -79,6 +81,8 @@ public:
 
     QMap<short, Thought*> get_thoughts(){return m_unit_thoughts;}
     Thought *get_thought(short id);
+    SubThought *get_subthought(short id);
+    Emotion *get_emotion(EMOTION_TYPE eType);
 
     DwarfJob *get_job(const short &job_id);
     QList<QPair<int, QString> > get_ordered_jobs() {return m_ordered_jobs;}
@@ -158,6 +162,8 @@ private:
     QList<int> m_social_skills;
 
     QMap<short, Thought*> m_unit_thoughts;
+    QHash<int, SubThought*> m_unit_subthoughts;
+    QHash<int, Emotion*> m_unit_emotions;
 
     void build_calendar();
 };

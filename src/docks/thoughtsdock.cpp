@@ -25,15 +25,13 @@ THE SOFTWARE.
 #include "thought.h"
 #include "gamedatareader.h"
 #include "dfinstance.h"
+#include "emotiongroup.h"
+#include "emotion.h"
 #include <QVBoxLayout>
 #include <QLineEdit>
 #include <QHeaderView>
 #include <QPushButton>
 #include <QCloseEvent>
-
-#if QT_VERSION < 0x050000
-# define setSectionResizeMode setResizeMode
-#endif
 
 ThoughtsDock::ThoughtsDock(QWidget *parent, Qt::WindowFlags flags)
     : BaseDock(parent, flags)
@@ -43,39 +41,40 @@ ThoughtsDock::ThoughtsDock(QWidget *parent, Qt::WindowFlags flags)
     setFeatures(QDockWidget::AllDockWidgetFeatures);
     setAllowedAreas(Qt::AllDockWidgetAreas);
 
+    arr_in = QIcon(":img/arrow-in.png");
+    arr_out = QIcon(":img/arrow-out.png");
+
     QWidget *w = new QWidget();
     QVBoxLayout *l = new QVBoxLayout();
     w->setLayout(l);
 
-    // THOUGHTS TABLE
-    tw_thoughts = new QTableWidget(this);
-    tw_thoughts->setColumnCount(3);
-    tw_thoughts->setEditTriggers(QTableWidget::NoEditTriggers);
-    tw_thoughts->setWordWrap(true);
-    tw_thoughts->setShowGrid(false);
-    tw_thoughts->setGridStyle(Qt::NoPen);
-    tw_thoughts->setAlternatingRowColors(true);
+    tw_thoughts = new QTreeWidget(this);
+    tw_thoughts->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    tw_thoughts->setDropIndicatorShown(false);
+    tw_thoughts->header()->setVisible(true);
+    tw_thoughts->setProperty("showSortIndicator",QVariant(true));
+    tw_thoughts->setColumnCount(2);
+    tw_thoughts->setColumnWidth(200,30);
+    tw_thoughts->setHeaderLabels(QStringList() << "Description" << "Count");
     tw_thoughts->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    tw_thoughts->setSelectionBehavior(QAbstractItemView::SelectRows);
-    tw_thoughts->setHorizontalHeaderLabels(QStringList() << "Thought" << "Count" << "Description");
-    tw_thoughts->verticalHeader()->hide();
-    tw_thoughts->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
-    tw_thoughts->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
-    tw_thoughts->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);
-    tw_thoughts->setColumnWidth(0,100);
-    tw_thoughts->setColumnWidth(1,50);
-    tw_thoughts->horizontalHeader()->setStretchLastSection(true);
+    tw_thoughts->setItemDelegate(new ThoughtsItemDelegate());
 
     QHBoxLayout *s = new QHBoxLayout();
     QLabel *lbl_search = new QLabel("Search",this);
     s->addWidget(lbl_search);
-    QLineEdit *le_search = new QLineEdit(this);
+    le_search = new QLineEdit(this);
     le_search->setObjectName("le_search");
     s->addWidget(le_search);
+
+    btn_toggle_tree = new QPushButton(this);
+    btn_toggle_tree->setIcon(arr_in);
+    s->addWidget(btn_toggle_tree);
+
     QPushButton *btn_clear_search = new QPushButton(this);
-    QIcon icn(":img/cross.png");
-    btn_clear_search->setIcon(icn);
+    QIcon icn_cross(":img/cross.png");
+    btn_clear_search->setIcon(icn_cross);
     s->addWidget(btn_clear_search);
+
     l->addLayout(s);
 
     QPushButton *btn = new QPushButton("Clear Filter",this);
@@ -84,110 +83,164 @@ ThoughtsDock::ThoughtsDock(QWidget *parent, Qt::WindowFlags flags)
 
     setWidget(w);
 
-    connect(tw_thoughts,SIGNAL(itemSelectionChanged()),this,SLOT(selection_changed()));
     connect(btn, SIGNAL(clicked()),this,SLOT(clear_filter()));
-    connect(le_search, SIGNAL(textChanged(QString)),this, SLOT(search_changed(QString)));
+    connect(le_search, SIGNAL(textChanged(QString)), this, SLOT(search_changed(QString)));
     connect(btn_clear_search, SIGNAL(clicked()),this,SLOT(clear_search()));
+    connect(btn_toggle_tree, SIGNAL(clicked()), this, SLOT(toggle_tree()));
+    connect(tw_thoughts, SIGNAL(itemSelectionChanged()), this, SLOT(selection_changed()));
 
-    connect(DT,SIGNAL(units_refreshed()),this,SLOT(refresh()));
-}
-
-void ThoughtsDock::clear(){
-    for(int r = tw_thoughts->rowCount(); r >=0; r--){
-        tw_thoughts->removeRow(r);
-    }
-    tw_thoughts->clearContents();
+    if(DT)
+        connect(DT,SIGNAL(units_refreshed()),this,SLOT(refresh()));
 }
 
 void ThoughtsDock::refresh(){
-    clear();
+    tw_thoughts->clear();
 
     if(DT && DT->get_DFInstance()){
-        QHash<short, QPair<int,int> > thoughts = DT->get_DFInstance()->get_thought_stats();
+        QHash<int, EmotionGroup*> emotions = DT->get_DFInstance()->get_emotion_stats();
 
         tw_thoughts->setSortingEnabled(false);
         QString tooltip;
-        foreach(short id, thoughts.uniqueKeys()){
-                tw_thoughts->insertRow(0);
-                tw_thoughts->setRowHeight(0, 18);
+        foreach(int id, emotions.uniqueKeys()){
+            Thought *t = GameDataReader::ptr()->get_thought(id);
+            EmotionGroup *eg = emotions.value(id);
+            QString count_desc = eg->get_count_desc();
 
-                Thought *t = GameDataReader::ptr()->get_thought(id);
-                int total_count = thoughts.value(id).first;
-                int dwarf_count = thoughts.value(id).second;
-                tooltip = QString("<center><h4>%1</h4></center>%2 (%3)")
-                        .arg(capitalize(t->title()))
-                        .arg(capitalize(t->desc()))
-                        .arg(QString::number(t->effect()));
+            int stress_count = eg->get_stress_count();
+            int unaffected_count = eg->get_unaffected_count();
+            int eustress_count = eg->get_eustress_count();
+            QStringList stress_desc;
+            if(stress_count > 0)
+                stress_desc.append(tr("%1 felt negative emotions which added to their stress.").arg(stress_count));
+            if(unaffected_count > 0)
+                stress_desc.append(tr("%1 were unaffected.").arg(unaffected_count));
+            if(eustress_count > 0)
+                stress_desc.append(tr("%1 felt positive emotions which reduced stress.").arg(eustress_count));
 
-                if(t->effect()==0)
-                    tooltip += tr("<p><b>Can be beneficial or detrimental depending on the individual</b></p>");
+            tooltip = QString("<center><h4>%1</h4></center>%2<br/><br/>%3")
+                    .arg(capitalize(t->title()))
+                    .arg(tr("Felt ... ") + t->desc())
+                    .arg(stress_desc.join("<br/><br/>"));
 
-                QTableWidgetItem *item_title = new QTableWidgetItem();
-                item_title->setData(Qt::UserRole, id);
-                item_title->setText(capitalize(t->title()));
-                item_title->setToolTip(tooltip);
+            SortableTreeItem* parent_node = new SortableTreeItem();
+            parent_node->setData(0, Qt::UserRole, id);
+            parent_node->setText(0, capitalize(t->title()));
+            parent_node->setToolTip(0,tooltip);
 
-                QTableWidgetItem *item_count = new QTableWidgetItem();
-                item_count->setData(Qt::DisplayRole, dwarf_count);
-                item_count->setTextAlignment(Qt::AlignCenter);
-                item_count->setToolTip(tr("This thought has occurred a total of %1 times among %2 civilians.<br/><br/>Click to show these individuals.")
-                                       .arg(total_count).arg(dwarf_count));
-                item_count->setBackgroundColor(t->color());
+            QVariantList counts;
+            counts << stress_count << unaffected_count << eustress_count;
+            parent_node->setData(0,Qt::UserRole+1, counts);
 
-                QTableWidgetItem *item_desc = new QTableWidgetItem();
-                item_desc->setText(capitalize(t->desc()));
-                item_desc->setToolTip(tooltip);
+            parent_node->setData(0,Qt::UserRole+50,t->title().toLower());//custom sorting
+            parent_node->setData(1,Qt::UserRole+51,eg->get_total_count());//custom sorting
 
-                tw_thoughts->setItem(0, 0, item_title);
-                tw_thoughts->setItem(0, 1, item_count);
-                tw_thoughts->setItem(0, 2, item_desc);
+            //add parent node
+            foreach(EMOTION_TYPE e_type, eg->get_details().uniqueKeys()){
+                Emotion *e = GameDataReader::ptr()->get_emotion(e_type);
+                EmotionGroup::emotion_count ec = eg->get_details().value(e_type);
+
+                QString emotion_desc;
+                if(e){
+                    emotion_desc = e->get_name();
+                }
+                SortableTreeItem *node = new SortableTreeItem(parent_node);
+
+                tooltip = QString("<center><h4><font color=%1>%2</font></h4></center>%3")
+                        .arg(e->get_color().name())
+                        .arg(e->get_name())
+                        .arg(ec.unit_names.join("<br/>"));
+
+                node->setData(0, Qt::UserRole, e_type);
+                node->setData(0,Qt::TextColorRole, e->get_color());
+                node->setToolTip(0, tooltip);
+                node->setText(0, emotion_desc);
+
+                node->setData(0,Qt::UserRole+50,e->get_name().toLower());//custom sorting
+                node->setData(1,Qt::UserRole+51,ec.count);//custom sorting
+
+                node->setData(1, Qt::UserRole, ec.unit_ids);
+                node->setToolTip(1, tooltip);
+                node->setText(1,QString("%1").arg(ec.count,2,10,QChar('0')));
+                node->setTextAlignment(1,Qt::AlignRight);
             }
+            tw_thoughts->addTopLevelItem(parent_node);
+            parent_node->setFirstColumnSpanned(true);
+        }
         tw_thoughts->setSortingEnabled(true);
-        tw_thoughts->sortItems(1, Qt::DescendingOrder);
-        filter();
+        tw_thoughts->sortByColumn(1,Qt::DescendingOrder); //count
+        tw_thoughts->expandAll(); //expand before resize to contents; hidden items aren't resized
+        tw_thoughts->resizeColumnToContents(0);
+        tw_thoughts->collapseAll();
+        m_collapsed = true;
+    }
+}
+
+void ThoughtsDock::toggle_tree(){
+    if(m_collapsed){
+        tw_thoughts->expandAll();
+        m_collapsed = false;
+        btn_toggle_tree->setIcon(arr_in);
+    }else{
+        tw_thoughts->collapseAll();
+        m_collapsed = true;
+        btn_toggle_tree->setIcon(arr_out);
+    }
+}
+
+void ThoughtsDock::clear(){
+    tw_thoughts->clear();
+}
+
+void ThoughtsDock::search_changed(QString val){
+    search_tree(val);
+}
+
+void ThoughtsDock::clear_search(){
+    le_search->setText("");
+    search_tree("");
+}
+
+void ThoughtsDock::search_tree(QString val){
+    val = "(" + val.replace(" ", "|") + ")";
+    QRegExp filter = QRegExp(val,Qt::CaseInsensitive, QRegExp::RegExp);
+    int hidden;
+    bool parent_matches;
+    for(int i = 0; i < tw_thoughts->topLevelItemCount(); i++){
+        hidden = 0;
+        parent_matches = tw_thoughts->topLevelItem(i)->text(0).contains(filter);
+        int count;
+        for(count = 0; count < tw_thoughts->topLevelItem(i)->childCount(); count++){
+            if(!parent_matches && !tw_thoughts->topLevelItem(i)->child(count)->text(0).contains(filter)){
+                tw_thoughts->topLevelItem(i)->child(count)->setHidden(true);
+                hidden++;
+            }else{
+                tw_thoughts->topLevelItem(i)->child(count)->setHidden(false);
+            }
+        }
+        if(hidden == count){
+            tw_thoughts->topLevelItem(i)->setHidden(true);
+        }else{
+            tw_thoughts->topLevelItem(i)->setHidden(false);
+        }
     }
 }
 
 void ThoughtsDock::selection_changed(){
-    QModelIndexList indexList = tw_thoughts->selectionModel()->selectedIndexes();
-    QList<short> selected;
-    if(indexList.count() > 0){
-        int row = 0;
-        int prev_row=-1;
-        foreach (QModelIndex index, indexList) {
-            row = index.row();
-            if(row != prev_row)
-                selected.append(tw_thoughts->item(row,0)->data(Qt::UserRole).toInt());
-            prev_row = row;
-        }
-    }
-    emit item_selected(selected);
-}
-
-void ThoughtsDock::search_changed(QString val){
-    val = "(" + val.replace(" ", "|") + ")";
-    m_filter = QRegExp(val,Qt::CaseInsensitive, QRegExp::RegExp);
-    filter();
-}
-
-void ThoughtsDock::filter(){
-    for(int i = 0; i < tw_thoughts->rowCount(); i++){
-        if(m_filter.isEmpty() || tw_thoughts->item(i,0)->text().contains(m_filter) || tw_thoughts->item(i,2)->text().contains(m_filter)){
-            tw_thoughts->setRowHidden(i,false);
+    QVariantList ids; //dwarf ids
+    foreach(QTreeWidgetItem *item, tw_thoughts->selectedItems()){
+        if(item->childCount() <= 0){
+            ids.append(item->data(1,Qt::UserRole).toList());
         }else{
-            tw_thoughts->setRowHidden(i,true);
+            for(int idx=0;idx < item->childCount();idx++){
+                ids.append(item->child(idx)->data(1,Qt::UserRole).toList());
+            }
         }
     }
+        emit item_selected(ids);
 }
 
 void ThoughtsDock::clear_filter(){
     tw_thoughts->clearSelection();
-}
-
-void ThoughtsDock::clear_search(){
-    QLineEdit *s = qobject_cast<QLineEdit*>(QObject::findChild<QLineEdit*>("le_search"));
-    if(s)
-        s->setText("");
 }
 
 void ThoughtsDock::closeEvent(QCloseEvent *event){
