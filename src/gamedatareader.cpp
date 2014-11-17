@@ -304,6 +304,59 @@ GameDataReader::GameDataReader(QObject *parent)
     }
     m_data_settings->endArray();
 
+    m_building_names.insert(-1,"None");
+    m_building_names.insert(0,"Chair");
+    m_building_names.insert(1,"Bed");
+    m_building_names.insert(2,"Table");
+    m_building_names.insert(3,"Coffin");
+    m_building_names.insert(4,"Farm Plot");
+    m_building_names.insert(5,"Furnace");
+    m_building_names.insert(6,"Trade Depot");
+    m_building_names.insert(7,"Shop");
+    m_building_names.insert(8,"Door");
+    m_building_names.insert(9,"Floodgate");
+    m_building_names.insert(10,"Box");
+    m_building_names.insert(11,"Weaponrack");
+    m_building_names.insert(12,"Armorstand");
+    m_building_names.insert(13,"Workshop");
+    m_building_names.insert(14,"Cabinet");
+    m_building_names.insert(15,"Statue");
+    m_building_names.insert(16,"Glass Window");
+    m_building_names.insert(17,"Gem Window");
+    m_building_names.insert(18,"Well");
+    m_building_names.insert(19,"Bridge");
+    m_building_names.insert(20,"Dirt Road");
+    m_building_names.insert(21,"Paved Road");
+    m_building_names.insert(22,"Siege Engine");
+    m_building_names.insert(23,"Trap");
+    m_building_names.insert(24,"Animal Trap");
+    m_building_names.insert(25,"Support");
+    m_building_names.insert(26,"Archery Target");
+    m_building_names.insert(27,"Chain");
+    m_building_names.insert(28,"Cage");
+    m_building_names.insert(29,"Stockpile");
+    m_building_names.insert(30,"Civzone");
+    m_building_names.insert(31,"Weapon");
+    m_building_names.insert(32,"Wagon");
+    m_building_names.insert(33,"Screw Pump");
+    m_building_names.insert(34,"Construction");
+    m_building_names.insert(35,"Hatch");
+    m_building_names.insert(36,"Wall Grate");
+    m_building_names.insert(37,"Floor Grate");
+    m_building_names.insert(38,"Vertical Bars");
+    m_building_names.insert(39,"Floor Bars");
+    m_building_names.insert(40,"Gear Assembly");
+    m_building_names.insert(41,"Horizontal Axle");
+    m_building_names.insert(42,"Vertical Axle");
+    m_building_names.insert(43,"Water Wheel");
+    m_building_names.insert(44,"Windmill");
+    m_building_names.insert(45,"Traction Bench");
+    m_building_names.insert(46,"Slab");
+    m_building_names.insert(47,"Nest");
+    m_building_names.insert(48,"NestBox");
+    m_building_names.insert(49,"Hive");
+    m_building_names.insert(50,"Rollers");
+
 }
 
 GameDataReader::~GameDataReader(){

@@ -55,7 +55,13 @@ public:
         s.endArray();
     }
 
-    QString get_subthought(int id) {return m_subthoughts.value(id);}
+    QString get_subthought(int id) {
+        if(m_subthoughts.contains(id)){
+            return m_subthoughts.value(id);
+        }else{
+            return m_subthoughts.value(-1);
+        }
+    }
     QString get_placeholder(){return m_placeholder;}
 
 };

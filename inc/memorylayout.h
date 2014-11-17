@@ -15,6 +15,7 @@ public:
     QString checksum() {return m_checksum;}
     bool is_valid_address(VIRTADDR address);
     void set_base_address(VIRTADDR addr){m_base_addr = addr;}
+    VIRTADDR get_base_address(){return m_base_addr;}
     uint offset(const QString &key) {return m_offsets.value(key, -1);}
     uint string_buffer_offset();
     uint string_length_offset();

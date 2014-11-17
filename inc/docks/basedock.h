@@ -29,10 +29,11 @@ class BaseDock : public QDockWidget {
     Q_OBJECT
 public:
     BaseDock(QWidget *parent = 0, Qt::WindowFlags flags = 0)
-        :QDockWidget(parent,flags)
+        : QDockWidget(parent,flags)
     {
         connect(this,SIGNAL(topLevelChanged(bool)),this,SLOT(floating_changed(bool)));
     }
+    virtual ~BaseDock(){}
 
 public slots:
     void floating_changed(bool floating){

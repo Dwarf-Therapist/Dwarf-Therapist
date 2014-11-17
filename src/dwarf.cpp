@@ -168,6 +168,9 @@ Dwarf::~Dwarf() {
     qDeleteAll(m_grouped_preferences);
     m_grouped_preferences.clear();
 
+    qDeleteAll(m_emotions);
+    m_emotions.clear();
+
     m_thoughts.clear();
     m_syndromes.clear();
     m_inventory_grouped.clear();
@@ -1177,56 +1180,9 @@ void Dwarf::read_happiness(VIRTADDR personality_base) {
         m_raw_happiness = 0;
     }
 
-    m_happiness = happiness_from_score(m_raw_happiness);
+    m_happiness = happiness_from_stress(m_raw_happiness);
     TRACE << "\tRAW HAPPINESS:" << m_raw_happiness;
     TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
-
-    if(!is_animal()){
-        offset = m_mem->dwarf_offset("thoughts");
-        if(offset){
-            QVector<VIRTADDR> thoughts = m_df->enumerate_vector(m_address + offset);
-            //time, id
-            QMap<int,short> t;
-            foreach(VIRTADDR addr, thoughts){
-                short id = m_df->read_int(addr);
-                int time = m_df->read_int(addr + 0x4);
-                //the age of a thought increases by 1 per frame
-                //to find how many days ago a thought was use: 10 frames per tick, 1200 ticks per day
-                t.insertMulti(time,id);
-            }
-
-            int t_count = 0;
-            foreach(int key, t.uniqueKeys()){
-                QList<short> vals = t.values(key);
-                for(int i = 0; i < vals.count(); i++) {
-                    if(!m_thoughts.contains(vals.at(i)))
-                        t_count = 1;
-                    else
-                        t_count = m_thoughts.take(vals.at(i)) + 1;
-
-                    m_thoughts.insert(vals.at(i),t_count);
-                }
-            }
-
-            QStringList display_desc;
-            foreach(int id, m_thoughts.uniqueKeys()){
-                Thought *t = GameDataReader::ptr()->get_thought(id);
-                if(t){
-                    t_count = m_thoughts.value(id);
-                    display_desc.append(QString("<font color=%1>%2%3</font>")
-                                        .arg(t->color().name())
-                                        .arg(t->desc().toLower())
-                                        .arg(t_count > 1 ? QString(" (x%1)").arg(t_count) : ""));
-                }
-            }
-
-            m_emotions_desc = display_desc.join(", ");
-            if(m_thoughts.count() > 0){
-                int index = m_emotions_desc.indexOf(">") + 1;
-                m_emotions_desc[index] = m_emotions_desc[index].toUpper();
-            }
-        }
-    }
 }
 
 void Dwarf::read_current_job() {
@@ -1336,7 +1292,7 @@ bool Dwarf::active_military() {
     return p && p->is_military();
 }
 
-DWARF_HAPPINESS Dwarf::happiness_from_score(int score) {
+DWARF_HAPPINESS Dwarf::happiness_from_stress(int score) {
     if (score >= 500000)
         return DH_MISERABLE;
     else if (score >= 250000)
@@ -1774,36 +1730,50 @@ void Dwarf::read_emotions(VIRTADDR personality_base){
             //load emotions by date
             QMap<int,UnitEmotion*> emotions;
             qDebug() << "** reading emotions for" << m_nice_name;
+            int em_date = 0;
+            QPair<int,int> oldest_date;
             foreach(VIRTADDR addr, emotions_addrs){
                 UnitEmotion *ue = new UnitEmotion(addr,m_df,this);
-
+                if(ue->get_date() < em_date || em_date == 0){
+                    oldest_date = qMakePair(ue->get_year(),ue->get_year_ticks());
+                }
                 if(ue->get_desc(false).contains("UNKNOWN",Qt::CaseInsensitive) && ue->get_emotion_type() != EM_NONE)
                     qDebug() << "found unknown emotion:" << ue->get_emotion_type();
 
-                if(ue->get_emotion_type() == EM_NONE && ue->get_thought_id() < 0 && ue->get_subthought_id() > 0){
-                    qDebug() << "unknown subtype" << ue->get_subthought_id();
+//                if(ue->get_emotion_type() == EM_NONE && ue->get_thought_id() < 0 && ue->get_subthought_id() > 0){
+//                    qDebug() << "unknown subtype" << ue->get_subthought_id();
+//                }
+
+                if(ue->get_thought_id() == 2 && ue->get_sub_id() == 33){
+
                 }
 
                 if(ue->get_thought_id() < 0){
                     delete ue;
                 }else{
                     emotions.insertMulti(ue->get_date(),ue);
+                    //qDebug() << "emotion" << ue->get_desc(false) << "thought" << ue->get_thought_id() << "subthought" << ue->get_subthought_id();
                 }
             }
+            qDebug() << "oldest emotion year:" << oldest_date.first << "month:" << oldest_date.second / (float)ticks_per_month;
             qDebug() << "";
 
-            //keep the most recent emotion, and discard other duplicate emotions/thoughts, but maintain a count of occurrances
+            //keep the most recent emotion, and discard duplicates, but maintain a count of occurrances
             QPair<int,EMOTION_TYPE> key;
+            int thought_id;
             for(int idx = emotions.values().count()-1; idx >= 0; idx--){
                 UnitEmotion *ue = emotions.values().at(idx);
-                key = qMakePair(ue->get_thought_id(),ue->get_emotion_type());
+                thought_id = ue->get_thought_id();
+                //keep a list of all thoughts as well for filtering
+                if(!m_thoughts.contains(thought_id))
+                    m_thoughts.append(thought_id);
+                key = qMakePair(thought_id,ue->get_emotion_type());
                 if(!m_emotions.contains(key)){
                     m_emotions.insert(key,ue);
                 }else{
                     m_emotions[key]->increment_count();
                     delete ue;
                 }
-                //keep a list of all thoughts as well, for filtering?
             }
             emotions.clear();
 

@@ -46,8 +46,10 @@ public:
     void write_nick_name(const QString new_nick);
     bool has_fake_identity();
 
+    VIRTADDR address() const {return m_address;}
+    VIRTADDR info_address() const {return m_fig_info_addr;}
+
     int id(){return m_id;}
-    VIRTADDR address() {return m_address;}
     QString fake_name(){return m_fake_name;}
     QString fake_nick_name(){return m_fake_nick;}
     VIRTADDR fake_birth_year_offset(){return m_fake_birth_year;}

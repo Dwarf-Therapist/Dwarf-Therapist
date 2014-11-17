@@ -68,6 +68,7 @@ public:
     QHash<int,QString> get_skills(){return m_skills;}
     QList<QPair<int,QString> > get_ordered_beliefs(){return m_ordered_beliefs;}
     QList<QPair<int,QString> > get_ordered_goals(){return m_ordered_goals;}
+    QString get_building_name(BUILDING_TYPE b_type){return m_building_names.value(b_type);}
 
     QList<QPair<QString, laborOptimizerPlan*> > get_ordered_opt_plans() {return m_ordered_opts;}
     QHash<QString, laborOptimizerPlan*>& get_opt_plans(){return m_opt_plans;}
@@ -164,6 +165,8 @@ private:
     QMap<short, Thought*> m_unit_thoughts;
     QHash<int, SubThought*> m_unit_subthoughts;
     QHash<int, Emotion*> m_unit_emotions;
+
+    QMap<int,QString> m_building_names;
 
     void build_calendar();
 };

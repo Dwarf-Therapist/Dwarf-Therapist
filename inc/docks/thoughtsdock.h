@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef THOUGHTSDOCK_H
 #define THOUGHTSDOCK_H
 
-#include "basedock.h"
+#include "basetreedock.h"
 #include "global_enums.h"
 #include <QTreeWidget>
 #include <QPushButton>
@@ -32,57 +32,21 @@ THE SOFTWARE.
 #include <QFontMetrics>
 #include <QDebug>
 
-class ThoughtsDock : public BaseDock {
+class ThoughtsDock : public BaseTreeDock {
     Q_OBJECT
 public:
     ThoughtsDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
-    void filter();
 
 protected:
-    QTreeWidget *tw_thoughts;
-    QLineEdit* le_search;
-    QPushButton *btn_toggle_tree;
-
-    QIcon arr_in;
-    QIcon arr_out;
-
     void search_tree(QString val);
-    bool m_collapsed;
-
-    void closeEvent(QCloseEvent *event);
-
-public slots:
-    void refresh();
-    void clear();
+    void build_tree();
 
 protected slots:
-    void search_changed(QString val);
-    void clear_search();
-    void toggle_tree();
     void selection_changed();
-    void clear_filter();
 
 signals:
     void item_selected(QVariantList);
 
-};
-
-class SortableTreeItem : public QTreeWidgetItem {
-public:
-    SortableTreeItem(QTreeWidgetItem* parent = 0)
-        : QTreeWidgetItem(parent)
-    {}
-private:
-    bool operator<(const QTreeWidgetItem &other)const {
-        int col = treeWidget()->sortColumn();
-        Qt::ItemDataRole idr = (Qt::ItemDataRole)((int)Qt::UserRole + 50 + col);
-        //qDebug() << "sorting on column" << col << "values" << data(col,idr).toString() << " | " << other.data(col,idr).toString();
-        if(col == 1){
-            return data(col,idr).toInt() < other.data(col,idr).toInt();
-        }else{
-            return data(col,idr).toString() < other.data(col,idr).toString();
-        }
-    }
 };
 
 class ThoughtsItemDelegate : public QStyledItemDelegate {
@@ -101,15 +65,20 @@ public:
             //QString curr_text = index.data().toString();
             QString curr_text = "";
             //draw the eustress count
-            curr_text = prependText(painter,option,QColor(Qt::darkGreen),curr_text,QString("%1 ").arg(counts.at(2).toInt(),2,10,QChar('0')));
+            int count = counts.at(2).toInt();
+            curr_text = prependText(painter,option,QColor(Qt::darkGreen),curr_text,QString("%1 ").arg(count==0 ? "-- " : QString("%1").arg(count,2,10,QChar('0'))));
             //spacer
             curr_text = prependText(painter,option,default_pen,curr_text,QString(" / "));
             //draw the neutral count
-            curr_text = prependText(painter,option,QColor(Qt::darkGray),curr_text,QString(" %1").arg(counts.at(1).toInt(),2,10,QChar('0')));
-            //spacer
+            count = counts.at(1).toInt();
+            curr_text = prependText(painter,option,QColor(Qt::darkGray),curr_text,QString("%1").arg(count==0 ? " --" : QString("%1").arg(count,2,10,QChar('0'))));
             curr_text = prependText(painter,option,default_pen,curr_text,QString(" / "));
             //draw the stress count
-            curr_text = prependText(painter,option,QColor(Qt::darkRed),curr_text,QString("  %1").arg(counts.at(0).toInt(),2,10,QChar('0')));
+            count = counts.at(0).toInt();
+//            QString text = "--";
+//            if(count != 0)
+//                text = QString("  %1").arg(count,2,10,QChar('0'));
+            curr_text = prependText(painter,option,QColor(Qt::darkRed),curr_text,QString(" %1").arg(count==0 ? " --" : QString("%1").arg(count,2,10,QChar('0'))));
 
 //            //draw the stress count
 //            curr_text = appendText(painter,option,QColor(Qt::darkRed),curr_text,QString("  %1").arg(counts.at(0).toString()));

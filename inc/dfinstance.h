@@ -178,6 +178,8 @@ public:
     QVector<Plant *> get_plants() {return m_plants_vector;}
     QVector<Material *> get_base_materials() {return m_base_materials;}
 
+    QString get_building_name(int id);
+
     ItemWeaponSubtype* find_weapon_subtype(QString name);
     QMap<QString, ItemWeaponSubtype *> get_ordered_weapon_defs() {return m_ordered_weapon_defs;}
 

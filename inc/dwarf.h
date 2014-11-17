@@ -380,7 +380,7 @@ public:
     void calc_attribute_ratings();
 
     //! static method for mapping a numeric happiness score into a value of the enum DWARF_HAPPINESS
-    static DWARF_HAPPINESS happiness_from_score(int score);
+    static DWARF_HAPPINESS happiness_from_stress(int score);
 
     //! static method for mapping a value in the enum DWARF_HAPPINESS to a meaningful text string
     static QString happiness_name(DWARF_HAPPINESS happiness);
@@ -450,7 +450,6 @@ public:
 
     QHash<QString, QStringList*> get_grouped_preferences() {return m_grouped_preferences;}
 
-    QHash<short, int> get_thoughts() {return m_thoughts;}
     QList<UnitEmotion*> get_emotions() {return m_emotions.values();}
 
     Q_INVOKABLE bool has_preference(QString pref_name, QString category = "");
@@ -602,7 +601,7 @@ private:
     QHash<QString, QStringList*> m_grouped_preferences;
     QStringList m_pref_names;
     QString m_pref_tooltip;
-    QHash<short, int> m_thoughts;
+    QList<short> m_thoughts;
     QHash<QPair<int,EMOTION_TYPE>,UnitEmotion*> m_emotions;
     QString m_emotions_desc;
     bool m_is_child;

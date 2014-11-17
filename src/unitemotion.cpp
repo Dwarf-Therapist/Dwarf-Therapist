@@ -35,7 +35,7 @@ UnitEmotion::UnitEmotion(QObject *parent)
     , m_address(0x0)
     , m_eType(EM_NONE)
     , m_thought_id(-1)
-    , m_subthought_id(-1)
+    , m_sub_id(-1)
     , m_year(-1)
     , m_year_tick(-1)
     , m_desc("??")
@@ -45,6 +45,7 @@ UnitEmotion::UnitEmotion(QObject *parent)
     , m_effect(1)
     , m_total_effect(0)
     , m_intensifier(0)
+    , m_optional_level(-1)
 {
 }
 
@@ -57,28 +58,13 @@ UnitEmotion::UnitEmotion(VIRTADDR addr, DFInstance *df, QObject *parent)
     , m_effect(0)
     , m_total_effect(0)
     , m_intensifier(0)
+    , m_optional_level(-1)
 {
-    //emotions
-    /*
-    "unit_personality::anon4","1","0x0","0x4","emotion_type","type","",""
-    "unit_personality::anon4","1","0x4","0x4","int32_t","unk2","",""
-    "unit_personality::anon4","1","0x8","0x4","int32_t","strength","",""
-    "unit_personality::anon4","1","0xc","0x4","unit_thought_type","thought","",""
-    "unit_personality::anon4","1","0x10","0x4","int32_t","subthought","","for certain thoughts"
-    "unit_personality::anon4","1","0x14","0x4","int32_t","severity","",""
-    "unit_personality::anon4","1","0x18","0x4","int32_t","flags","",""
-    "unit_personality::anon4","1","0x1c","0x4","int32_t","unk7","",""
-    "unit_personality::anon4","1","0x20","0x4","int32_t","year","",""
-    "unit_personality::anon4","1","0x24","0x4","int32_t","year_tick","",""
-     */
-    int unk2 = df->read_int(addr+0x0004);
-    int unk7 = df->read_int(addr+0x001c);
-    int sev = df->read_int(addr+0x0014);
-
     m_eType = static_cast<EMOTION_TYPE>(df->read_int(addr));
     m_strength = df->read_int(addr+0x0008);
     m_thought_id = df->read_int(addr+0x000c);
-    m_subthought_id = df->read_int(addr+0x0010);
+    m_sub_id = df->read_int(addr+0x0010);
+    m_optional_level = df->read_int(addr+0x0014);
     m_year = df->read_int(addr+0x0020);
     m_year_tick = df->read_int(addr+0x0024);
 
@@ -86,19 +72,30 @@ UnitEmotion::UnitEmotion(VIRTADDR addr, DFInstance *df, QObject *parent)
     Thought *t = gdr->get_thought(m_thought_id);
     if(t){
         m_desc = t->desc();
-        if(m_desc.contains("[quality"))
-            qDebug() << "quality" << sev << "thought" << m_desc;
+
         if(m_desc.contains("unknown",Qt::CaseInsensitive) && t->id() >= 0)
             qDebug() << "unknown thought" << t->id();
-        if(m_subthought_id != -1){
+
+        //for some thoughts (witnessed death) the sub id should be referencing a historical figure
+        //but it's unknown what the sub id is referencing. it appears to be an index, but to an unknown vector
+
+        if(m_sub_id != -1 || m_optional_level != -1){
             SubThought *s = gdr->get_subthought(t->subtype());
             if(s){
-                QString s_thought = s->get_subthought(m_subthought_id);
+                int id = m_sub_id;
+                if(m_sub_id == -1)
+                    id = m_optional_level;
+                QString s_thought = s->get_subthought(id);
                 if(m_desc.contains("[")){
                     m_desc.replace(s->get_placeholder(),s_thought);
                 }else{
                     m_desc.append(s_thought);
                 }
+            }else{
+                if(m_desc.contains("[skill]"))
+                    m_desc.replace("[skill]",GameDataReader::ptr()->get_skill_name(m_sub_id));
+                else if(m_desc.contains("[building]"))
+                    m_desc.replace("[building]",GameDataReader::ptr()->get_building_name(static_cast<BUILDING_TYPE>(m_sub_id)));
             }
         }
     }
@@ -113,8 +110,8 @@ UnitEmotion::UnitEmotion(VIRTADDR addr, DFInstance *df, QObject *parent)
         }
     }
 
-    if(unk2 != 0 || unk7 != 0 || sev != 0)
-        int z = 0;
+//    if(unk2 != 0 || unk7 != 0 || sev != 0)
+//        int z = 0;
 }
 
 QString UnitEmotion::get_desc(bool colored){

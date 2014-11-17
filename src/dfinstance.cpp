@@ -53,6 +53,8 @@ THE SOFTWARE.
 #include <QTime>
 #include <QByteArrayMatcher>
 
+#include "caste.h"
+
 #ifdef Q_OS_WIN
 #define LAYOUT_SUBDIR "windows"
 #include "dfinstancewindows.h"
@@ -349,11 +351,12 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         int progress_count = 0;
 
         foreach(VIRTADDR creature_addr, creatures_addrs) {
+            LOGI << "loading creature at idx" << progress_count;
             d = Dwarf::get_dwarf(this, creature_addr);
             if(d){
                 dwarves.append(d); //add animals as well so we can show them
                 if(!d->is_animal()){
-                    LOGI << "FOUND UNIT" << hexify(creature_addr) << d->nice_name() << d->id();
+                    LOGI << "FOUND UNIT" << hexify(creature_addr) << d->nice_name() << d->id() << d->historical_id();
                     m_actual_dwarves.append(d);
 
                     //never calculate roles for babies
@@ -873,6 +876,38 @@ void DFInstance::heartbeat() {
 QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
     VIRTADDR active_units = m_layout->address("active_creature_vector");
     VIRTADDR all_units = m_layout->address("creature_vector");
+
+    if(report_progress){
+        qDebug() << "active unit races";
+        int idx = 0;
+        foreach(VIRTADDR addr,  enumerate_vector(active_units)){
+            int race_id = read_int(addr + m_layout->dwarf_offset("race"));
+            Race *r = get_race(race_id);
+            if(r){
+                int caste_id = read_short(addr + m_layout->dwarf_offset("caste"));
+                qDebug() << idx << ": " << r->get_caste_by_id(caste_id)->name() << "hist id:" << read_int(addr+m_layout->dwarf_offset("hist_id"))
+                         << "unit id:" << read_int(addr+m_layout->dwarf_offset("id"));
+            }else{
+                qDebug() << idx << ": " << "unknown";
+            }
+            idx++;
+        }
+        qDebug() << "";
+        qDebug() << "all unit races";
+        idx = 0;
+        foreach(VIRTADDR addr, enumerate_vector(all_units)){
+            int race_id = read_int(addr + m_layout->dwarf_offset("race"));
+            Race *r = get_race(race_id);
+            if(r){
+                int caste_id = read_short(addr + m_layout->dwarf_offset("caste"));
+                qDebug() << idx << ": " << r->get_caste_by_id(caste_id)->name() << "hist id:" << read_int(addr+m_layout->dwarf_offset("hist_id"))
+                         << "unit id:" << read_int(addr+m_layout->dwarf_offset("id"));
+            }else{
+                qDebug() << idx << ": " << "unknown";
+            }
+            idx++;
+        }
+    }
 
     //first try the active unit list
     QVector<VIRTADDR> entries = enumerate_vector(active_units);

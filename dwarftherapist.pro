@@ -249,7 +249,8 @@ HEADERS += inc/viewmanager.h \
     inc/subthought.h \
     inc/unitemotion.h \
     inc/emotion.h \
-    inc/emotiongroup.h
+    inc/emotiongroup.h \
+    inc/docks/basetreedock.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -344,7 +345,8 @@ SOURCES += src/viewmanager.cpp \
     src/itemarmorsubtype.cpp \
     src/flagarray.cpp \
     src/unitemotion.cpp \
-    src/emotion.cpp
+    src/emotion.cpp \
+    src/docks/basetreedock.cpp
 FORMS += ui/scriptdialog.ui \
     ui/pendingchanges.ui \
     ui/optionsmenu.ui \

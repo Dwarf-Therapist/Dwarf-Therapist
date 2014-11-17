@@ -38,7 +38,7 @@ private:
     VIRTADDR m_address;
     EMOTION_TYPE m_eType;
     int m_thought_id;
-    int m_subthought_id;
+    int m_sub_id;
     int m_year;
     int m_year_tick;
     QString m_desc;
@@ -48,6 +48,7 @@ private:
     float m_effect;
     int m_total_effect;
     short m_intensifier;
+    int m_optional_level; //used for quality, possibly other things
 
 public:
     UnitEmotion(QObject *parent = 0);
@@ -55,7 +56,8 @@ public:
 
     EMOTION_TYPE get_emotion_type() const {return m_eType;}
     int get_thought_id() const {return m_thought_id;}
-    int get_subthought_id() const {return m_subthought_id;}
+    int get_sub_id() const {return m_sub_id;}
+    int get_optional_level() const {return m_optional_level;}
     QString get_desc(bool colored = true);
     int get_date() const {return (m_year + m_year_tick);}
     int get_year() const {return m_year;}
