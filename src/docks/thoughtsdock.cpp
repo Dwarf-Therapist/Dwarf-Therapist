@@ -44,10 +44,11 @@ void ThoughtsDock::build_tree(){
             Thought *t = GameDataReader::ptr()->get_thought(id);
             EmotionGroup *eg = emotions.value(id);
 
-            int stress_count = eg->get_stress_count();
-            int unaffected_count = eg->get_unaffected_count();
-            int eustress_count = eg->get_eustress_count();
+            int stress_count = eg->get_stress_unit_count();
+            int unaffected_count = eg->get_unaffected_unit_count();
+            int eustress_count = eg->get_eustress_unit_count();
             QStringList stress_desc;
+
             if(stress_count > 0)
                 stress_desc.append(tr("%1 felt negative emotions which added to their stress.").arg(stress_count));
             if(unaffected_count > 0)
@@ -65,13 +66,13 @@ void ThoughtsDock::build_tree(){
             thought_node->setText(0, capitalize(t->title()));
             thought_node->setToolTip(0,tooltip);
 
-            QVariantList counts;
-            counts << stress_count << unaffected_count << eustress_count;
-            thought_node->setData(0,Qt::UserRole+1, counts);
+            QVariantList total_counts;
+            total_counts << eg->get_stress_count() << eg->get_unaffected_count() << eg->get_eustress_count();
+            thought_node->setData(0,Qt::UserRole+1, total_counts);
 
             //custom sorting
             thought_node->setData(0,SortableTreeItem::TREE_SORT_COL,t->title().toLower());
-            thought_node->setData(2,SortableTreeItem::TREE_SORT_COL+2,eg->get_total_count());
+            thought_node->setData(2,SortableTreeItem::TREE_SORT_COL+2,eg->get_total_occurrances());
 
             //add parent node
             foreach(EMOTION_TYPE e_type, eg->get_details().uniqueKeys()){
@@ -83,13 +84,14 @@ void ThoughtsDock::build_tree(){
                     emotion_desc = e->get_name();
                 }
                 SortableTreeItem *emotion_node = new SortableTreeItem(thought_node);
-                qSort(ec.unit_names);
+                //qSort(ec.unit_names);
 
+                QStringList unit_names = ec.unit_ids.keys();
                 tooltip = QString("<center><h4><font color=%1>%2</font></h4></center>%3%4")
                         .arg(e->get_color().name())
                         .arg(e->get_name())
                         .arg(ec.count != ec.unit_ids.count() ? tr("This circumstance occurred %1 times among %2 units.<br/><br/>").arg(ec.count).arg(ec.unit_ids.count()) : "")
-                        .arg(ec.unit_names.join("<br/>"));
+                        .arg(unit_names.join(unit_names.size() < 20 ? "<br/>" : ", "));
 
                 emotion_node->setData(0, Qt::UserRole, e_type);
                 emotion_node->setData(0,Qt::TextColorRole, e->get_color());
@@ -105,7 +107,7 @@ void ThoughtsDock::build_tree(){
                 emotion_node->setText(1,QString("%1").arg(strength));
                 emotion_node->setTextAlignment(1,Qt::AlignCenter);
 
-                emotion_node->setData(2, Qt::UserRole, ec.unit_ids);
+                emotion_node->setData(2, Qt::UserRole, ec.unit_ids.values());
                 emotion_node->setToolTip(2, tooltip);
                 emotion_node->setText(2,QString("%1").arg(ec.count,2,10,QChar('0')));
                 emotion_node->setTextAlignment(2,Qt::AlignRight);

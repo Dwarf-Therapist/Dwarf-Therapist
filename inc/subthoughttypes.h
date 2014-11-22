@@ -20,13 +20,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef SUBTHOUGHT_H
-#define SUBTHOUGHT_H
+#ifndef SUBTHOUGHTTYPES_H
+#define SUBTHOUGHTTYPES_H
 
 #include <QObject>
 #include <QSettings>
 
-class SubThought : public QObject
+class SubThoughtTypes : public QObject
 {
     Q_OBJECT
 
@@ -36,13 +36,13 @@ private:
     QHash<int,QString> m_subthoughts;
 
 public:
-    SubThought(QObject *parent = 0)
+    SubThoughtTypes(QObject *parent = 0)
         : QObject(parent)
         , m_id(-1)
     {
     }
 
-    SubThought(int id, QSettings &s, QObject *parent = 0)
+    SubThoughtTypes(int id, QSettings &s, QObject *parent = 0)
         : QObject(parent)
         , m_id(id)
     {
@@ -63,7 +63,8 @@ public:
         }
     }
     QString get_placeholder(){return m_placeholder;}
+    bool has_placeholder(){return (!m_placeholder.isEmpty());}
 
 };
 
-#endif // SUBTHOUGHT_H
+#endif // SUBTHOUGHTTYPES_H

@@ -54,11 +54,6 @@ public:
     static Dwarf* get_dwarf(DFInstance *df, const VIRTADDR &address);
     virtual ~Dwarf();
 
-    static quint32 ticks_per_day;
-    static quint32 ticks_per_month;
-    static quint32 ticks_per_season;
-    static quint32 ticks_per_year;
-
     DFInstance * get_df_instance(){return m_df;}
 
     // getters
@@ -450,7 +445,7 @@ public:
 
     QHash<QString, QStringList*> get_grouped_preferences() {return m_grouped_preferences;}
 
-    QList<UnitEmotion*> get_emotions() {return m_emotions.values();}
+    QList<UnitEmotion*> get_emotions() {return m_emotions;}
 
     Q_INVOKABLE bool has_preference(QString pref_name, QString category = "");
     Q_INVOKABLE bool find_preference(QString pref_name, QString category_name);
@@ -602,7 +597,7 @@ private:
     QStringList m_pref_names;
     QString m_pref_tooltip;
     QList<short> m_thoughts;
-    QHash<QPair<int,EMOTION_TYPE>,UnitEmotion*> m_emotions;
+    QList<UnitEmotion*> m_emotions;
     QString m_emotions_desc;
     bool m_is_child;
     bool m_is_baby;

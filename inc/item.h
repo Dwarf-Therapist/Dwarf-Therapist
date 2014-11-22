@@ -337,18 +337,21 @@ public:
     int mat_index(){return m_mat_idx;}
     short mat_type(){return m_mat_type;}
 
-    virtual short item_subtype(){return -1;}
+    virtual short item_subtype() const {return -1;}
     virtual short melee_skill(){return -1;}
     virtual short ranged_skill(){return -1;}
 
     QString display_name(bool colored = false);
-    bool equals(const Item &);
+    bool equals(const Item &) const;
 
     void set_affection(int level);
 
     QList<Item*> contained_items() {return m_contained_items;}
     int get_stack_size(){return m_stack_size;}
-    void add_to_stack(int num){m_stack_size+=num;}
+    void add_to_stack(int num){
+        m_stack_size+=num;
+        stack_size_changed();
+    }
     QString get_material_name(){return m_material_name;}
     QString get_material_name_base(){return m_material_name_base;}
     short get_quality(){return m_quality;}
@@ -379,8 +382,11 @@ protected:
     void build_display_name();
     QString get_quality_symbol();
 
+    virtual void stack_size_changed(){}
+
 private:
     static const QList<ITEM_TYPE> m_items_subtypes;
     static const QList<ITEM_TYPE> init_subtypes();
+
 };
 #endif // ITEM_H

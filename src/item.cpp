@@ -207,8 +207,9 @@ QString Item::display_name(bool colored){
     }
 }
 
-bool Item::equals(const Item &i){
-    return (i.m_quality == m_quality && i.m_material_name == m_material_name && i.m_item_name == m_item_name);
+bool Item::equals(const Item &i) const{
+    return (i.m_quality == m_quality && i.m_material_name == m_material_name &&
+            i.m_iType == m_iType && i.item_subtype() == item_subtype());//i.m_item_name == m_item_name);
 }
 
 

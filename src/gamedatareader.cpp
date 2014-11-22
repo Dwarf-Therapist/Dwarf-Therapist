@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include "thought.h"
 #include "unithealth.h"
 #include "belief.h"
-#include "subthought.h"
+#include "subthoughttypes.h"
 #include "emotion.h"
 
 QStringList GameDataReader::m_seasons;
@@ -279,10 +279,10 @@ GameDataReader::GameDataReader(QObject *parent)
 
     //sub-thoughts
     count = m_data_settings->beginReadArray("unit_subthoughts");
-    m_unit_subthoughts.clear();
+    m_unit_subthought_types.clear();
     for(short i = 0; i < count; ++i) {
         m_data_settings->setArrayIndex(i);
-        m_unit_subthoughts.insert(i,new SubThought(i, *m_data_settings, this));
+        m_unit_subthought_types.insert(i,new SubThoughtTypes(i, *m_data_settings, this));
     }
     m_data_settings->endArray();
 
@@ -305,7 +305,7 @@ GameDataReader::GameDataReader(QObject *parent)
     m_data_settings->endArray();
 
     m_building_names.insert(-1,"None");
-    m_building_names.insert(0,"Chair");
+    m_building_names.insert(0,"Seat");
     m_building_names.insert(1,"Bed");
     m_building_names.insert(2,"Table");
     m_building_names.insert(3,"Coffin");
@@ -315,9 +315,9 @@ GameDataReader::GameDataReader(QObject *parent)
     m_building_names.insert(7,"Shop");
     m_building_names.insert(8,"Door");
     m_building_names.insert(9,"Floodgate");
-    m_building_names.insert(10,"Box");
-    m_building_names.insert(11,"Weaponrack");
-    m_building_names.insert(12,"Armorstand");
+    m_building_names.insert(10,"Chest");
+    m_building_names.insert(11,"Weapon Rack");
+    m_building_names.insert(12,"Armor Stand");
     m_building_names.insert(13,"Workshop");
     m_building_names.insert(14,"Cabinet");
     m_building_names.insert(15,"Statue");
@@ -357,6 +357,21 @@ GameDataReader::GameDataReader(QObject *parent)
     m_building_names.insert(49,"Hive");
     m_building_names.insert(50,"Rollers");
 
+    m_building_quality.insert(0,tr("fine"));
+    m_building_quality.insert(1,tr("very fine"));
+    m_building_quality.insert(2,tr("superior"));
+    m_building_quality.insert(3,tr("wonderful"));
+    m_building_quality.insert(4,tr("completely sublime"));
+}
+
+//value here is the base value of the item/building
+QString GameDataReader::get_building_name(BUILDING_TYPE b_type, int value){
+    QString name = m_building_names.value(b_type,tr("building"));
+    int key = value / 128;
+    if(key > 4)
+        key = 4;
+    QString quality = m_building_quality.value(key,"");
+    return QString(quality + " " + name).trimmed();
 }
 
 GameDataReader::~GameDataReader(){
@@ -448,8 +463,8 @@ Emotion *GameDataReader::get_emotion(EMOTION_TYPE eType){
     return m_unit_emotions.value(eType);
 }
 
-SubThought *GameDataReader::get_subthought(short id){
-    return m_unit_subthoughts.value(id);
+SubThoughtTypes *GameDataReader::get_subthought_types(short id){
+    return m_unit_subthought_types.value(id);
 }
 
 laborOptimizerPlan* GameDataReader::get_opt_plan(const QString &name){
@@ -594,23 +609,23 @@ void GameDataReader::load_role_mappings(){
 
 void GameDataReader::build_calendar(){
     if(m_seasons.length()<=0 || m_months.length()<=0){
-        m_seasons.append("Spring");
-        m_seasons.append("Summer");
-        m_seasons.append("Autumn");
-        m_seasons.append("Winter");
+        m_seasons.append(tr("Spring"));
+        m_seasons.append(tr("Summer"));
+        m_seasons.append(tr("Autumn"));
+        m_seasons.append(tr("Winter"));
 
-        m_months.append("Granite");
-        m_months.append("Slate");
-        m_months.append("Felsite");
-        m_months.append("Hematite");
-        m_months.append("Malachite");
-        m_months.append("Galena");
-        m_months.append("Limestone");
-        m_months.append("Sandstone");
-        m_months.append("Timber");
-        m_months.append("Moonstone");
-        m_months.append("Opal");
-        m_months.append("Obsidian");
+        m_months.append(tr("Granite"));
+        m_months.append(tr("Slate"));
+        m_months.append(tr("Felsite"));
+        m_months.append(tr("Hematite"));
+        m_months.append(tr("Malachite"));
+        m_months.append(tr("Galena"));
+        m_months.append(tr("Limestone"));
+        m_months.append(tr("Sandstone"));
+        m_months.append(tr("Timber"));
+        m_months.append(tr("Moonstone"));
+        m_months.append(tr("Opal"));
+        m_months.append(tr("Obsidian"));
     }
 }
 

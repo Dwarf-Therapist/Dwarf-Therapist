@@ -246,11 +246,11 @@ HEADERS += inc/viewmanager.h \
     inc/itemsubtype.h \
     inc/itemtoolsubtype.h \
     inc/itemgenericsubtype.h \
-    inc/subthought.h \
     inc/unitemotion.h \
     inc/emotion.h \
     inc/emotiongroup.h \
-    inc/docks/basetreedock.h
+    inc/docks/basetreedock.h \
+    inc/subthoughttypes.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \

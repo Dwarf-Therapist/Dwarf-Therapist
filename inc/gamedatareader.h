@@ -38,7 +38,7 @@ class MilitaryPreference;
 class Profession;
 class DwarfJob;
 class Thought;
-class SubThought;
+class SubThoughtTypes;
 class Belief;
 class Emotion;
 
@@ -68,7 +68,7 @@ public:
     QHash<int,QString> get_skills(){return m_skills;}
     QList<QPair<int,QString> > get_ordered_beliefs(){return m_ordered_beliefs;}
     QList<QPair<int,QString> > get_ordered_goals(){return m_ordered_goals;}
-    QString get_building_name(BUILDING_TYPE b_type){return m_building_names.value(b_type);}
+    QString get_building_name(BUILDING_TYPE b_type, int value = -1);
 
     QList<QPair<QString, laborOptimizerPlan*> > get_ordered_opt_plans() {return m_ordered_opts;}
     QHash<QString, laborOptimizerPlan*>& get_opt_plans(){return m_opt_plans;}
@@ -82,7 +82,7 @@ public:
 
     QMap<short, Thought*> get_thoughts(){return m_unit_thoughts;}
     Thought *get_thought(short id);
-    SubThought *get_subthought(short id);
+    SubThoughtTypes *get_subthought_types(short id);
     Emotion *get_emotion(EMOTION_TYPE eType);
 
     DwarfJob *get_job(const short &job_id);
@@ -163,10 +163,11 @@ private:
     QList<int> m_social_skills;
 
     QMap<short, Thought*> m_unit_thoughts;
-    QHash<int, SubThought*> m_unit_subthoughts;
+    QHash<int, SubThoughtTypes*> m_unit_subthought_types;
     QHash<int, Emotion*> m_unit_emotions;
 
     QMap<int,QString> m_building_names;
+    QMap<int,QString> m_building_quality;
 
     void build_calendar();
 };

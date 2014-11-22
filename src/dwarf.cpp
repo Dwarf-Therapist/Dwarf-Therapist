@@ -71,11 +71,6 @@ THE SOFTWARE.
 # define QJSValue QScriptValue
 #endif
 
-quint32 Dwarf::ticks_per_day = 1200;
-quint32 Dwarf::ticks_per_month = 28 * Dwarf::ticks_per_day;
-quint32 Dwarf::ticks_per_season = 3 * Dwarf::ticks_per_month;
-quint32 Dwarf::ticks_per_year = 12 * Dwarf::ticks_per_month;
-
 Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     : QObject(parent)
     , m_id(-1)
@@ -444,21 +439,21 @@ void Dwarf::set_age_and_migration(VIRTADDR birth_year_offset, VIRTADDR birth_tim
     quint32 current_year_time = m_df->current_year_time();
     quint32 current_time = m_df->current_time();
     quint32 arrival_time = current_time - m_turn_count;
-    quint32 arrival_year = arrival_time / ticks_per_year;
-    quint32 arrival_season = (arrival_time % ticks_per_year) / ticks_per_season;
-    quint32 arrival_month = (arrival_time % ticks_per_year) / ticks_per_month;
-    quint32 arrival_day = ((arrival_time % ticks_per_year) % ticks_per_month) / ticks_per_day;
-    m_ticks_since_birth = m_age * ticks_per_year + current_year_time - m_birth_time;
+    quint32 arrival_year = arrival_time / m_df->ticks_per_year;
+    quint32 arrival_season = (arrival_time %  m_df->ticks_per_year) /  m_df->ticks_per_season;
+    quint32 arrival_month = (arrival_time %  m_df->ticks_per_year) /  m_df->ticks_per_month;
+    quint32 arrival_day = ((arrival_time %  m_df->ticks_per_year) %  m_df->ticks_per_month) /  m_df->ticks_per_day;
+    m_ticks_since_birth = m_age *  m_df->ticks_per_year + current_year_time - m_birth_time;
     //this way we have the right sort order and all the data needed for the group by migration wave
     m_migration_wave = 100000 * arrival_year + 10000 * arrival_season + 100 * arrival_month + arrival_day;
     m_born_in_fortress = (m_ticks_since_birth == m_turn_count);
 
-    m_age_in_months = m_ticks_since_birth / ticks_per_month;
+    m_age_in_months = m_ticks_since_birth /  m_df->ticks_per_month;
 
     if(m_caste){
-        if(m_age == 0 || m_ticks_since_birth < m_caste->baby_age() * ticks_per_year)
+        if(m_age == 0 || m_ticks_since_birth < m_caste->baby_age() *  m_df->ticks_per_year)
             m_is_baby = true;
-        else if(m_ticks_since_birth < m_caste->child_age() * ticks_per_year)
+        else if(m_ticks_since_birth < m_caste->child_age() *  m_df->ticks_per_year)
             m_is_child = true;
     }
 }
@@ -1489,7 +1484,7 @@ void Dwarf::read_inventory(){
                 ItemWeapon *iw = new ItemWeapon(*i);
                 process_inv_item(category_name,iw);
                 LOGD << "  + found weapon:" << iw->display_name(false);
-            }else if(Item::is_armor_type(i_type)){
+            }else if(Item::is_armor_type(i_type,true)){
                 ItemArmor *ir = new ItemArmor(*i);
                 process_inv_item(category_name,ir);
 
@@ -1504,7 +1499,7 @@ void Dwarf::read_inventory(){
                 if(wear_level > m_max_inventory_wear.value(i_type)){
                     m_max_inventory_wear.insert(i_type,wear_level);
                 }
-                if(wear_level > 0 && Item::is_armor_type(i_type,false)){
+                if(wear_level > 0 && Item::is_armor_type(i_type)){
                     QString item_name = QString("%1 %2").arg((include_mat_name ? ir->get_material_name_base() : "")).arg(ir->get_details()->name_plural()).trimmed();
                     QPair<QString,int> key = qMakePair(item_name,wear_level);
                     if(m_equip_warnings.contains(key)){
@@ -1548,7 +1543,7 @@ void Dwarf::read_inventory(){
                 }else if(itype == AMMO){ //check before ranged equipment to cast it properly
                     ItemAmmo *ia = new ItemAmmo(*i);
                     process_inv_item(cat_name,ia);
-                }else if(Item::is_armor_type(itype)){
+                }else if(Item::is_armor_type(itype,true)){
                     ItemArmor *ir = new ItemArmor(*i);
                     process_inv_item(cat_name,ir);
                 }else if(Item::is_supplies(itype) || Item::is_ranged_equipment(itype)){
@@ -1728,7 +1723,7 @@ void Dwarf::read_emotions(VIRTADDR personality_base){
         if(offset){
             QVector<VIRTADDR> emotions_addrs = m_df->enumerate_vector(personality_base + offset);
             //load emotions by date
-            QMap<int,UnitEmotion*> emotions;
+            QMap<int,UnitEmotion*> all_emotions;
             qDebug() << "** reading emotions for" << m_nice_name;
             int em_date = 0;
             QPair<int,int> oldest_date;
@@ -1751,58 +1746,65 @@ void Dwarf::read_emotions(VIRTADDR personality_base){
                 if(ue->get_thought_id() < 0){
                     delete ue;
                 }else{
-                    emotions.insertMulti(ue->get_date(),ue);
+                    all_emotions.insertMulti(ue->get_date(),ue);
                     //qDebug() << "emotion" << ue->get_desc(false) << "thought" << ue->get_thought_id() << "subthought" << ue->get_subthought_id();
                 }
             }
-            qDebug() << "oldest emotion year:" << oldest_date.first << "month:" << oldest_date.second / (float)ticks_per_month;
+            qDebug() << "oldest emotion year:" << oldest_date.first << "month:" << oldest_date.second / (float)m_df->ticks_per_month;
             qDebug() << "";
 
             //keep the most recent emotion, and discard duplicates, but maintain a count of occurrances
-            QPair<int,EMOTION_TYPE> key;
             int thought_id;
-            for(int idx = emotions.values().count()-1; idx >= 0; idx--){
-                UnitEmotion *ue = emotions.values().at(idx);
+            bool duplicate;
+            for(int idx = all_emotions.values().count()-1; idx >= 0; idx--){
+                UnitEmotion *ue = all_emotions.values().at(idx);
                 thought_id = ue->get_thought_id();
                 //keep a list of all thoughts as well for filtering
                 if(!m_thoughts.contains(thought_id))
                     m_thoughts.append(thought_id);
-                key = qMakePair(thought_id,ue->get_emotion_type());
-                if(!m_emotions.contains(key)){
-                    m_emotions.insert(key,ue);
-                }else{
-                    m_emotions[key]->increment_count();
-                    delete ue;
+
+                //remove any duplicate emotional circumstances
+                duplicate = false;
+                foreach(UnitEmotion *valid, m_emotions){
+                    if(valid->equals(*ue)){
+                        valid->increment_count();
+                        delete ue;
+                        duplicate = true;
+                        break;
+                    }
+                }
+                if(!duplicate){
+                    m_emotions.append(ue);
                 }
             }
-            emotions.clear();
+            all_emotions.clear();
 
             QStringList weekly_emotions;
             QStringList seasonal_emotions;
             int stress_vuln = m_traits.value(8); //vulnerability to stress
 
             int curr_year = m_df->current_year();
-            int last_week_tick = m_df->current_year_time() - (ticks_per_day*7);
+            int last_week_tick = m_df->current_year_time() - (m_df->ticks_per_day*7);
             double last_week = curr_year;
             if(last_week_tick < 0){
                 last_week -= 1;
-                last_week_tick += ticks_per_year;
+                last_week_tick += m_df->ticks_per_year;
             }
-            last_week += (last_week_tick / (float)ticks_per_year);
+            last_week += (last_week_tick / (float)m_df->ticks_per_year);
 
             foreach(UnitEmotion *ue, m_emotions){
                 int effect_val = ue->set_effect(stress_vuln);
                 QChar sign;
-                if(effect_val > 0)
+                if(effect_val < 0)
                     sign = '+';
-                else if(effect_val < 0)
+                else if(effect_val > 0)
                     sign = '-';
                 QString desc = QString("%1%2%3")
                         .arg(ue->get_desc().toLower())
                         .arg(!sign.isNull() ? QString("(%1%2)").arg(sign).arg(abs(effect_val)) : "")
                         .arg(ue->get_count() > 1 ? QString(" (x%1)").arg(ue->get_count()) : "");
 
-                double emotion_date = ue->get_year() + (ue->get_year_ticks() / (float)ticks_per_year);
+                double emotion_date = ue->get_year() + (ue->get_year_ticks() / (float)m_df->ticks_per_year);
                 if(emotion_date >= last_week){
                     weekly_emotions.append(desc);
                 }else{

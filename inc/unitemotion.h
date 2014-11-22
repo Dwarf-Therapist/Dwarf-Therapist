@@ -48,7 +48,9 @@ private:
     float m_effect;
     int m_total_effect;
     short m_intensifier;
-    int m_optional_level; //used for quality, possibly other things
+    int m_optional_level; //used for quality, building base wealth, maybe other things
+    int m_compare_id; //id used to compare in addition to thought/emotion
+    int m_date_in_ticks;
 
 public:
     UnitEmotion(QObject *parent = 0);
@@ -59,13 +61,26 @@ public:
     int get_sub_id() const {return m_sub_id;}
     int get_optional_level() const {return m_optional_level;}
     QString get_desc(bool colored = true);
-    int get_date() const {return (m_year + m_year_tick);}
+    int get_date() const {return m_date_in_ticks;}
     int get_year() const {return m_year;}
     int get_year_ticks() const {return m_year_tick;}
     int get_count() const {return m_count;}
     void increment_count() {m_count++;}
     int set_effect(int stress_vuln);
     short get_stress_effect() const;
+
+    bool operator==(const UnitEmotion &other) const {
+        if(this == &other)
+            return true;
+        if(this->m_thought_id == other.m_thought_id && this->m_eType == other.m_eType &&
+                (this->m_optional_level != -1 && other.m_optional_level != -1 && this->m_optional_level == other.m_optional_level))
+            return true;
+
+        return false;
+    }
+
+    bool equals(const UnitEmotion &);
+
 };
 
 #endif // UNITEMOTION_H

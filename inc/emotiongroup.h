@@ -42,55 +42,60 @@ public:
 
     struct emotion_count{
         int count;
-        QStringList unit_names;
-        QVariantList unit_ids;
+        QMap<QString,QVariant> unit_ids;
     };
 
     int get_stress_count() {return m_stress_count;}
     int get_unaffected_count() {return m_unaffected_count;}
     int get_eustress_count() {return m_eustress_count;}
 
+    int get_stress_unit_count() {return m_stress_ids.count();}
+    int get_unaffected_unit_count() {return m_unaffected_ids.count();}
+    int get_eustress_unit_count() {return m_eustress_ids.count();}
+
     QHash<EMOTION_TYPE, emotion_count> get_details() {return m_details;}
     void add_detail(Dwarf *d, UnitEmotion *ue){
         EMOTION_TYPE e_type = ue->get_emotion_type();
+        int total_count = ue->get_count();
         if(m_details.contains(e_type)){
-            m_details[e_type].count += ue->get_count();
-            if(!m_details[e_type].unit_ids.contains(d->id())){
-                m_details[e_type].unit_ids.append(d->id());
-                m_details[e_type].unit_names.append(d->nice_name());
-            }
+            m_details[e_type].count += total_count;
+            m_details[e_type].unit_ids.insert(d->nice_name(),d->id());
         }else{
             emotion_count ec;
-            ec.count = ue->get_count();
-            ec.unit_ids.append(d->id());
-            ec.unit_names.append(d->nice_name());
+            ec.count = total_count;
+            ec.unit_ids.insert(d->nice_name(),d->id());
             m_details.insert(e_type,ec);
         }
-        if(ue->get_stress_effect() > 0)
-            m_stress_count++;
-        else if(ue->get_stress_effect() < 0)
-            m_eustress_count++;
-        else
-            m_unaffected_count++;
+
+        if(ue->get_stress_effect() > 0){
+            if(!m_stress_ids.contains(d->id()))
+                m_stress_ids.append(d->id());
+            m_stress_count += total_count;
+        }else if(ue->get_stress_effect() < 0){
+            if(!m_eustress_ids.contains(d->id()))
+                m_eustress_ids.append(d->id());
+            m_eustress_count += total_count;
+        }else{
+            if(!m_unaffected_ids.contains(d->id()))
+                m_unaffected_ids.append(d->id());
+            m_unaffected_count += total_count;
+        }
     }
 
-    QString get_count_desc(){
-        QStringList counts;
-        counts.append(QString("%1%2").arg('+').arg(m_stress_count));
-        counts.append(QString::number(m_unaffected_count));
-        counts.append(QString("%1%2").arg('-').arg(abs(m_eustress_count)));
-        return counts.join(" | ");
-    }
-    int get_total_count(){
-        return m_stress_count + m_unaffected_count + abs(m_eustress_count);
+    int get_total_occurrances(){
+        return m_stress_count + m_eustress_count + m_unaffected_count;
     }
 
 private:
     QHash<EMOTION_TYPE, emotion_count> m_details;
-    QList<Dwarf*> m_units;
+
     int m_stress_count;
     int m_unaffected_count;
     int m_eustress_count;
+
+    QList<int> m_stress_ids;
+    QList<int> m_eustress_ids;
+    QList<int> m_unaffected_ids;
 };
 
 #endif // EMOTIONGROUP_H

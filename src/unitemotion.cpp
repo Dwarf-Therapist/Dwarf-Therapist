@@ -25,7 +25,7 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "gamedatareader.h"
 #include "thought.h"
-#include "subthought.h"
+#include "subthoughttypes.h"
 #include "emotion.h"
 
 #include "QDebug"
@@ -67,6 +67,7 @@ UnitEmotion::UnitEmotion(VIRTADDR addr, DFInstance *df, QObject *parent)
     m_optional_level = df->read_int(addr+0x0014);
     m_year = df->read_int(addr+0x0020);
     m_year_tick = df->read_int(addr+0x0024);
+    m_date_in_ticks = m_year * df->ticks_per_year + m_year_tick;
 
     GameDataReader *gdr = GameDataReader::ptr();
     Thought *t = gdr->get_thought(m_thought_id);
@@ -80,22 +81,25 @@ UnitEmotion::UnitEmotion(VIRTADDR addr, DFInstance *df, QObject *parent)
         //but it's unknown what the sub id is referencing. it appears to be an index, but to an unknown vector
 
         if(m_sub_id != -1 || m_optional_level != -1){
-            SubThought *s = gdr->get_subthought(t->subtype());
-            if(s){
+            SubThoughtTypes *s_types = gdr->get_subthought_types(t->subtype());
+            if(s_types){
                 int id = m_sub_id;
                 if(m_sub_id == -1)
                     id = m_optional_level;
-                QString s_thought = s->get_subthought(id);
-                if(m_desc.contains("[")){
-                    m_desc.replace(s->get_placeholder(),s_thought);
+                QString s_thought = s_types->get_subthought(id);
+                if(s_types->has_placeholder()){
+                    m_desc.replace(s_types->get_placeholder(),s_thought);
+                    m_compare_id = id;
                 }else{
                     m_desc.append(s_thought);
                 }
             }else{
-                if(m_desc.contains("[skill]"))
-                    m_desc.replace("[skill]",GameDataReader::ptr()->get_skill_name(m_sub_id));
-                else if(m_desc.contains("[building]"))
-                    m_desc.replace("[building]",GameDataReader::ptr()->get_building_name(static_cast<BUILDING_TYPE>(m_sub_id)));
+                if(m_desc.contains("[skill]")){
+                    m_desc.replace("[skill]",gdr->get_skill_name(m_sub_id));
+                }else if(m_desc.contains("[building]")){
+                    m_desc.replace("[building]",gdr->get_building_name(static_cast<BUILDING_TYPE>(m_sub_id),m_optional_level));
+                    m_compare_id = m_sub_id; //group by building type as well
+                }
             }
         }
     }
@@ -150,4 +154,9 @@ short UnitEmotion::get_stress_effect() const{
         return -1;
     else
         return 0;
+}
+
+bool UnitEmotion::equals(const UnitEmotion &other){
+    return (this->m_thought_id == other.m_thought_id && this->m_eType == other.m_eType &&
+           this->m_compare_id == other.m_compare_id);
 }

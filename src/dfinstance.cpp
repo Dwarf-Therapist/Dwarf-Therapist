@@ -66,6 +66,11 @@ THE SOFTWARE.
 #include "dfinstanceosx.h"
 #endif
 
+quint32 DFInstance::ticks_per_day = 1200;
+quint32 DFInstance::ticks_per_month = 28 * DFInstance::ticks_per_day;
+quint32 DFInstance::ticks_per_season = 3 * DFInstance::ticks_per_month;
+quint32 DFInstance::ticks_per_year = 12 * DFInstance::ticks_per_month;
+
 DFInstance::DFInstance(QObject* parent)
     : QObject(parent)
     , m_stop_scan(false)
@@ -476,20 +481,6 @@ void DFInstance::load_population_data(){
                 EmotionGroup *em = m_emotion_counts.value(thought_id);
                 em->add_detail(d,ue);
             }
-
-//            //thoughts
-//            QHash<short,int> d_thoughts = d->get_thoughts();
-//            foreach(short id, d_thoughts.uniqueKeys()){
-//                int total_count = 0;
-//                int dwarf_count = 0;
-//                if(m_thought_counts.contains(id)){
-//                    total_count = m_thought_counts.value(id).first;
-//                    dwarf_count = m_thought_counts.value(id).second;
-//                }
-//                total_count += d_thoughts.value(id);
-//                dwarf_count++;
-//                m_thought_counts.insert(id,qMakePair(total_count,dwarf_count));
-//            }
 
             //inventory wear
             QPair<QString,int> wear_key;

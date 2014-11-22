@@ -53,6 +53,11 @@ public:
     // factory ctor
     virtual bool find_running_copy(bool connectUnknown = false) = 0;
 
+    static quint32 ticks_per_day;
+    static quint32 ticks_per_month;
+    static quint32 ticks_per_season;
+    static quint32 ticks_per_year;
+
     // accessors
     bool is_ok() {return m_is_ok;}
     WORD dwarf_race_id() {return m_dwarf_race_id;}
