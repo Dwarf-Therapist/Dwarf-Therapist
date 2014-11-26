@@ -59,10 +59,10 @@ QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
     item->setData(CT_HAPPINESS, DwarfModel::DR_COL_TYPE);
     item->setData(d->get_raw_happiness(), DwarfModel::DR_SORT_VALUE);
 
-    QString tooltip = QString("<center><h3>%1</h3><h4>%2 (%3)</h4></center><p>%4</p>%5")
+    QString tooltip = QString("<center><h3>%1</h3><h4>%2<br/>%3</h4></center><p>%4</p>%5")
             .arg(m_title)
             .arg(Dwarf::happiness_name(d->get_happiness()))
-            .arg(d->get_raw_happiness())
+            .arg(tr("Stress Level: ") + formatNumber(d->get_raw_happiness()))
             .arg(d->get_thought_desc())
             .arg(tooltip_name_footer(d));
 

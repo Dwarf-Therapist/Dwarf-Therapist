@@ -868,38 +868,6 @@ QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
     VIRTADDR active_units = m_layout->address("active_creature_vector");
     VIRTADDR all_units = m_layout->address("creature_vector");
 
-    if(report_progress){
-        qDebug() << "active unit races";
-        int idx = 0;
-        foreach(VIRTADDR addr,  enumerate_vector(active_units)){
-            int race_id = read_int(addr + m_layout->dwarf_offset("race"));
-            Race *r = get_race(race_id);
-            if(r){
-                int caste_id = read_short(addr + m_layout->dwarf_offset("caste"));
-                qDebug() << idx << ": " << r->get_caste_by_id(caste_id)->name() << "hist id:" << read_int(addr+m_layout->dwarf_offset("hist_id"))
-                         << "unit id:" << read_int(addr+m_layout->dwarf_offset("id"));
-            }else{
-                qDebug() << idx << ": " << "unknown";
-            }
-            idx++;
-        }
-        qDebug() << "";
-        qDebug() << "all unit races";
-        idx = 0;
-        foreach(VIRTADDR addr, enumerate_vector(all_units)){
-            int race_id = read_int(addr + m_layout->dwarf_offset("race"));
-            Race *r = get_race(race_id);
-            if(r){
-                int caste_id = read_short(addr + m_layout->dwarf_offset("caste"));
-                qDebug() << idx << ": " << r->get_caste_by_id(caste_id)->name() << "hist id:" << read_int(addr+m_layout->dwarf_offset("hist_id"))
-                         << "unit id:" << read_int(addr+m_layout->dwarf_offset("id"));
-            }else{
-                qDebug() << idx << ": " << "unknown";
-            }
-            idx++;
-        }
-    }
-
     //first try the active unit list
     QVector<VIRTADDR> entries = enumerate_vector(active_units);
     if(entries.isEmpty()){

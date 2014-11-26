@@ -38,59 +38,58 @@ ThoughtsDock::ThoughtsDock(QWidget *parent, Qt::WindowFlags flags)
 }
 
 void ThoughtsDock::build_tree(){
-        QHash<int, EmotionGroup*> emotions = DT->get_DFInstance()->get_emotion_stats();
-        QString tooltip;
-        foreach(int id, emotions.uniqueKeys()){
-            Thought *t = GameDataReader::ptr()->get_thought(id);
-            EmotionGroup *eg = emotions.value(id);
+    QHash<int, EmotionGroup*> emotions = DT->get_DFInstance()->get_emotion_stats();
+    QString tooltip;
+    foreach(int id, emotions.uniqueKeys()){
+        Thought *t = GameDataReader::ptr()->get_thought(id);
+        EmotionGroup *eg = emotions.value(id);
 
-            int stress_count = eg->get_stress_unit_count();
-            int unaffected_count = eg->get_unaffected_unit_count();
-            int eustress_count = eg->get_eustress_unit_count();
-            QStringList stress_desc;
+        int stress_count = eg->get_stress_unit_count();
+        int unaffected_count = eg->get_unaffected_unit_count();
+        int eustress_count = eg->get_eustress_unit_count();
+        QStringList stress_desc;
 
-            if(stress_count > 0)
-                stress_desc.append(tr("%1 felt negative emotions which added to their stress.").arg(stress_count));
-            if(unaffected_count > 0)
-                stress_desc.append(tr("%1 were unaffected.").arg(unaffected_count));
-            if(eustress_count > 0)
-                stress_desc.append(tr("%1 felt positive emotions which reduced stress.").arg(eustress_count));
+        if(stress_count > 0)
+            stress_desc.append(tr("%1 felt negative emotions which added to their stress.").arg(stress_count));
+        if(unaffected_count > 0)
+            stress_desc.append(tr("%1 were unaffected.").arg(unaffected_count));
+        if(eustress_count > 0)
+            stress_desc.append(tr("%1 felt positive emotions which reduced stress.").arg(eustress_count));
 
-            tooltip = QString("<center><h4>%1</h4></center>%2<br/><br/>%3")
-                    .arg(capitalize(t->title()))
-                    .arg(tr("Felt ... ") + t->desc())
-                    .arg(stress_desc.join("<br/><br/>"));
+        tooltip = QString("<center><h4>%1</h4></center>%2<br/><br/>%3")
+                .arg(capitalize(t->title()))
+                .arg(tr("Felt ... ") + t->desc())
+                .arg(stress_desc.join("<br/><br/>"));
 
-            SortableTreeItem* thought_node = new SortableTreeItem();
-            thought_node->setData(0, Qt::UserRole, id);
-            thought_node->setText(0, capitalize(t->title()));
-            thought_node->setToolTip(0,tooltip);
+        SortableTreeItem* thought_node = new SortableTreeItem();
+        thought_node->setData(0, Qt::UserRole, id);
+        thought_node->setText(0, capitalize(t->title()));
+        thought_node->setToolTip(0,tooltip);
 
-            QVariantList total_counts;
-            total_counts << eg->get_stress_count() << eg->get_unaffected_count() << eg->get_eustress_count();
-            thought_node->setData(0,Qt::UserRole+1, total_counts);
+        QVariantList total_counts;
+        total_counts << eg->get_stress_count() << eg->get_unaffected_count() << eg->get_eustress_count();
+        thought_node->setData(0,Qt::UserRole+1, total_counts);
 
-            //custom sorting
-            thought_node->setData(0,SortableTreeItem::TREE_SORT_COL,t->title().toLower());
-            thought_node->setData(2,SortableTreeItem::TREE_SORT_COL+2,eg->get_total_occurrances());
+        //custom sorting
+        thought_node->setData(0,SortableTreeItem::TREE_SORT_COL,t->title().toLower());
+        thought_node->setData(2,SortableTreeItem::TREE_SORT_COL+2,eg->get_total_occurrances());
 
-            //add parent node
-            foreach(EMOTION_TYPE e_type, eg->get_details().uniqueKeys()){
-                Emotion *e = GameDataReader::ptr()->get_emotion(e_type);
+        //add parent node
+        foreach(EMOTION_TYPE e_type, eg->get_details().uniqueKeys()){
+            Emotion *e = GameDataReader::ptr()->get_emotion(e_type);
+            if(e){
                 EmotionGroup::emotion_count ec = eg->get_details().value(e_type);
 
                 QString emotion_desc;
-                if(e){
-                    emotion_desc = e->get_name();
-                }
-                SortableTreeItem *emotion_node = new SortableTreeItem(thought_node);
-                //qSort(ec.unit_names);
 
+                emotion_desc = e->get_name();
+
+                SortableTreeItem *emotion_node = new SortableTreeItem(thought_node);
                 QStringList unit_names = ec.unit_ids.keys();
                 tooltip = QString("<center><h4><font color=%1>%2</font></h4></center>%3%4")
                         .arg(e->get_color().name())
                         .arg(e->get_name())
-                        .arg(ec.count != ec.unit_ids.count() ? tr("This circumstance occurred %1 times among %2 units.<br/><br/>").arg(ec.count).arg(ec.unit_ids.count()) : "")
+                        .arg(ec.count != ec.unit_ids.count() ? tr("This circumstance occurred %1 times among %2 citizens.<br/><br/>").arg(ec.count).arg(ec.unit_ids.count()) : "")
                         .arg(unit_names.join(unit_names.size() < 20 ? "<br/>" : ", "));
 
                 emotion_node->setData(0, Qt::UserRole, e_type);
@@ -121,7 +120,8 @@ void ThoughtsDock::build_tree(){
             m_tree_view->addTopLevelItem(thought_node);
             thought_node->setFirstColumnSpanned(true);
         }
-        m_tree_view->sortByColumn(2,Qt::DescendingOrder); //count
+    }
+    m_tree_view->sortByColumn(2,Qt::DescendingOrder); //count
 }
 
 void ThoughtsDock::search_tree(QString val){
@@ -160,5 +160,5 @@ void ThoughtsDock::selection_changed(){
             }
         }
     }
-        emit item_selected(ids);
+    emit item_selected(ids);
 }

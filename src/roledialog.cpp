@@ -356,7 +356,7 @@ void roleDialog::save_pressed(){
 
 void roleDialog::save_role(Role *r){
     //save any script
-    r->script() = ui->te_script->toPlainText();
+    r->script(ui->te_script->toPlainText());
 
     //attributes
     r->attributes_weight.weight = ui->dsb_attributes_weight->value();
@@ -1134,7 +1134,7 @@ void roleDialog::calc_new_role(){
         QJSEngine m_engine;
         QJSValue d_obj = m_engine.newQObject(m_dwarf);
         m_engine.globalObject().setProperty("d", d_obj);
-        QJSValue ret = m_engine.evaluate(m_role->script());
+        QJSValue ret = m_engine.evaluate(script);
         if(!ret.isNumber()){
             QString err_msg;
             if(ret.isError()) {

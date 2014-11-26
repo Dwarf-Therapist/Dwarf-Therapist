@@ -23,6 +23,7 @@ THE SOFTWARE.
 
 #include "unitemotion.h"
 #include "dfinstance.h"
+#include "memorylayout.h"
 #include "gamedatareader.h"
 #include "thought.h"
 #include "subthoughttypes.h"
@@ -60,22 +61,20 @@ UnitEmotion::UnitEmotion(VIRTADDR addr, DFInstance *df, QObject *parent)
     , m_intensifier(0)
     , m_optional_level(-1)
 {
-    m_eType = static_cast<EMOTION_TYPE>(df->read_int(addr));
-    m_strength = df->read_int(addr+0x0008);
-    m_thought_id = df->read_int(addr+0x000c);
-    m_sub_id = df->read_int(addr+0x0010);
-    m_optional_level = df->read_int(addr+0x0014);
-    m_year = df->read_int(addr+0x0020);
-    m_year_tick = df->read_int(addr+0x0024);
+    MemoryLayout *m_mem = df->memory_layout();
+    m_eType = static_cast<EMOTION_TYPE>(df->read_int(m_mem->emotion_offset("emotion_type")));
+    m_strength = df->read_int(addr+m_mem->emotion_offset("strength"));
+    m_thought_id = df->read_int(addr+m_mem->emotion_offset("thought_id"));
+    m_sub_id = df->read_int(addr+m_mem->emotion_offset("sub_id"));
+    m_optional_level = df->read_int(addr+m_mem->emotion_offset("level"));
+    m_year = df->read_int(addr+m_mem->emotion_offset("year"));
+    m_year_tick = df->read_int(addr+m_mem->emotion_offset("year_tick"));
     m_date_in_ticks = m_year * df->ticks_per_year + m_year_tick;
 
     GameDataReader *gdr = GameDataReader::ptr();
     Thought *t = gdr->get_thought(m_thought_id);
     if(t){
         m_desc = t->desc();
-
-        if(m_desc.contains("unknown",Qt::CaseInsensitive) && t->id() >= 0)
-            qDebug() << "unknown thought" << t->id();
 
         //for some thoughts (witnessed death) the sub id should be referencing a historical figure
         //but it's unknown what the sub id is referencing. it appears to be an index, but to an unknown vector

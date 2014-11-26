@@ -1167,7 +1167,7 @@ void Dwarf::read_labors() {
 }
 
 void Dwarf::read_happiness(VIRTADDR personality_base) {
-    int offset = personality_base + 0x00e0;//m_mem->dwarf_offset("happiness");
+    int offset = personality_base + m_mem->soul_detail("stress_level");
 
     if(offset){
         m_raw_happiness = m_df->read_int(offset);
@@ -1719,40 +1719,20 @@ void Dwarf::read_skills() {
 }
 
 void Dwarf::read_emotions(VIRTADDR personality_base){
-        int offset = 0x0020; //m_mem->dwarf_offset("thoughts");
+        int offset = m_mem->soul_detail("emotions");
         if(offset){
             QVector<VIRTADDR> emotions_addrs = m_df->enumerate_vector(personality_base + offset);
             //load emotions by date
             QMap<int,UnitEmotion*> all_emotions;
-            qDebug() << "** reading emotions for" << m_nice_name;
-            int em_date = 0;
-            QPair<int,int> oldest_date;
+            //qDebug() << "** reading emotions for" << m_nice_name;
             foreach(VIRTADDR addr, emotions_addrs){
                 UnitEmotion *ue = new UnitEmotion(addr,m_df,this);
-                if(ue->get_date() < em_date || em_date == 0){
-                    oldest_date = qMakePair(ue->get_year(),ue->get_year_ticks());
-                }
-                if(ue->get_desc(false).contains("UNKNOWN",Qt::CaseInsensitive) && ue->get_emotion_type() != EM_NONE)
-                    qDebug() << "found unknown emotion:" << ue->get_emotion_type();
-
-//                if(ue->get_emotion_type() == EM_NONE && ue->get_thought_id() < 0 && ue->get_subthought_id() > 0){
-//                    qDebug() << "unknown subtype" << ue->get_subthought_id();
-//                }
-
-                if(ue->get_thought_id() == 2 && ue->get_sub_id() == 33){
-
-                }
-
                 if(ue->get_thought_id() < 0){
                     delete ue;
                 }else{
                     all_emotions.insertMulti(ue->get_date(),ue);
-                    //qDebug() << "emotion" << ue->get_desc(false) << "thought" << ue->get_thought_id() << "subthought" << ue->get_subthought_id();
                 }
             }
-            qDebug() << "oldest emotion year:" << oldest_date.first << "month:" << oldest_date.second / (float)m_df->ticks_per_month;
-            qDebug() << "";
-
             //keep the most recent emotion, and discard duplicates, but maintain a count of occurrances
             int thought_id;
             bool duplicate;
@@ -1783,9 +1763,8 @@ void Dwarf::read_emotions(VIRTADDR personality_base){
             QStringList seasonal_emotions;
             int stress_vuln = m_traits.value(8); //vulnerability to stress
 
-            int curr_year = m_df->current_year();
             int last_week_tick = m_df->current_year_time() - (m_df->ticks_per_day*7);
-            double last_week = curr_year;
+            double last_week = m_df->current_year();
             if(last_week_tick < 0){
                 last_week -= 1;
                 last_week_tick += m_df->ticks_per_year;
@@ -1793,15 +1772,16 @@ void Dwarf::read_emotions(VIRTADDR personality_base){
             last_week += (last_week_tick / (float)m_df->ticks_per_year);
 
             foreach(UnitEmotion *ue, m_emotions){
-                int effect_val = ue->set_effect(stress_vuln);
+                int stress_effect = ue->set_effect(stress_vuln);
                 QChar sign;
-                if(effect_val < 0)
-                    sign = '+';
-                else if(effect_val > 0)
-                    sign = '-';
+                if(stress_effect < 0){
+                    sign = QLocale().positiveSign(); //stress down, happiness up
+                }else if(stress_effect > 0){
+                    sign = QLocale().negativeSign();
+                }
                 QString desc = QString("%1%2%3")
                         .arg(ue->get_desc().toLower())
-                        .arg(!sign.isNull() ? QString("(%1%2)").arg(sign).arg(abs(effect_val)) : "")
+                        .arg(!sign.isNull() ? QString("(%1%2)").arg(sign).arg(abs(stress_effect)) : "")
                         .arg(ue->get_count() > 1 ? QString(" (x%1)").arg(ue->get_count()) : "");
 
                 double emotion_date = ue->get_year() + (ue->get_year_ticks() / (float)m_df->ticks_per_year);
@@ -2539,7 +2519,7 @@ QString Dwarf::tooltip_text() {
         tt.append(tr("<b>Noble Position%1:</b> %2").arg(m_noble_position.indexOf(",") > 0 ? "s" : "").arg(m_noble_position));
 
     if(!m_is_animal && s->value("options/tooltip_show_happiness",true).toBool())
-        tt.append(tr("<b>Happiness:</b> %1 (%2)").arg(happiness_name(m_happiness)).arg(m_raw_happiness));
+        tt.append(tr("<b>Happiness:</b> %1 (Stress: %2)").arg(happiness_name(m_happiness)).arg(formatNumber(m_raw_happiness)));
 
     if(!m_is_animal && !m_emotions_desc.isEmpty() && s->value("options/tooltip_show_thoughts",true).toBool())
         tt.append(tr("<p style=\"margin:0px;\">%1</p>").arg(m_emotions_desc));

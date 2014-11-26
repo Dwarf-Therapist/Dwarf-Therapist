@@ -52,6 +52,7 @@ void MemoryLayout::load_data() {
     read_group("dwarf_offsets", m_dwarf_offsets);
     read_group("job_details", m_job_details);
     read_group("soul_details", m_soul_details);
+    read_group("emotion_offsets", m_emotion_offsets);
     read_group("squad_offsets", m_squad_offsets);
     read_group("word_offsets", m_word_offsets);
 

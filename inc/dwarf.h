@@ -413,7 +413,6 @@ public:
     Q_INVOKABLE void set_born_in_fortress(bool val) { m_born_in_fortress = val; }
 
     QString first_name() const {
-        //qDebug() << "first_name called (from script?)";
         return m_first_name;
     }
 

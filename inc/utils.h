@@ -113,7 +113,7 @@ static inline QString formatNumber(double value) {
     QString suffixes(QObject::tr("kMGT"));
     for(int idx = suffixes.length(); idx > 0; idx--){
         double unit = pow(1000,idx);
-        if(value >= unit)
+        if(abs(value) >= unit)
             return QString("%L1%2").arg(value/unit,0,'f',1).arg(suffixes.at(idx-1));
     }
     return QString("%L1").arg(value);
