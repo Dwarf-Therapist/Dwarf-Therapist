@@ -42,8 +42,7 @@ Thought::Thought(int id, QSettings &s, QObject *parent)
     , m_subtype(s.value("subthoughts_type",-1).toInt())
     , m_id(id)
 {
-    if(m_title == "Unknown")
-        int z = 0;
+
     if(m_effect == 0){
         m_color = c_neu();
     }

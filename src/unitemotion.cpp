@@ -112,9 +112,6 @@ UnitEmotion::UnitEmotion(VIRTADDR addr, DFInstance *df, QObject *parent)
             m_effect = m_strength / m_intensifier;
         }
     }
-
-//    if(unk2 != 0 || unk7 != 0 || sev != 0)
-//        int z = 0;
 }
 
 QString UnitEmotion::get_desc(bool colored){
