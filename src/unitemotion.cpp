@@ -62,7 +62,7 @@ UnitEmotion::UnitEmotion(VIRTADDR addr, DFInstance *df, QObject *parent)
     , m_optional_level(-1)
 {
     MemoryLayout *m_mem = df->memory_layout();
-    m_eType = static_cast<EMOTION_TYPE>(df->read_int(m_mem->emotion_offset("emotion_type")));
+    m_eType = static_cast<EMOTION_TYPE>(df->read_int(addr+m_mem->emotion_offset("emotion_type")));
     m_strength = df->read_int(addr+m_mem->emotion_offset("strength"));
     m_thought_id = df->read_int(addr+m_mem->emotion_offset("thought_id"));
     m_sub_id = df->read_int(addr+m_mem->emotion_offset("sub_id"));
