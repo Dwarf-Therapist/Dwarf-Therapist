@@ -793,6 +793,8 @@ void roleDialog::load_items(){
                 QString item_name;
                 if(is_armor_type){
                     clothing_parent = init_parent_node(Item::get_item_clothing_names(itype));
+                }else{
+                    clothing_parent = 0;
                 }
                 for(int sub_id = 0; sub_id < count; sub_id++){
                     Preference *pi = new Preference(pType,itype,this);

@@ -80,7 +80,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_first_soul(0)
     , m_race_id(-1)
     , m_happiness(DH_MISERABLE)
-    , m_raw_happiness(0)
+    , m_stress_level(0)
     , m_mood_id(-1)
     , m_had_mood(false)
     , m_artifact_name("")
@@ -1170,13 +1170,13 @@ void Dwarf::read_happiness(VIRTADDR personality_base) {
     int offset = personality_base + m_mem->soul_detail("stress_level");
 
     if(offset){
-        m_raw_happiness = m_df->read_int(offset);
+        m_stress_level = m_df->read_int(offset);
     }else{
-        m_raw_happiness = 0;
+        m_stress_level = 0;
     }
 
-    m_happiness = happiness_from_stress(m_raw_happiness);
-    TRACE << "\tRAW HAPPINESS:" << m_raw_happiness;
+    m_happiness = happiness_from_stress(m_stress_level);
+    TRACE << "\tRAW STRESS LEVEL:" << m_stress_level;
     TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
 }
 
@@ -2519,7 +2519,7 @@ QString Dwarf::tooltip_text() {
         tt.append(tr("<b>Noble Position%1:</b> %2").arg(m_noble_position.indexOf(",") > 0 ? "s" : "").arg(m_noble_position));
 
     if(!m_is_animal && s->value("options/tooltip_show_happiness",true).toBool())
-        tt.append(tr("<b>Happiness:</b> %1 (Stress: %2)").arg(happiness_name(m_happiness)).arg(formatNumber(m_raw_happiness)));
+        tt.append(tr("<b>Happiness:</b> %1 (Stress: %2)").arg(happiness_name(m_happiness)).arg(formatNumber(m_stress_level)));
 
     if(!m_is_animal && !m_emotions_desc.isEmpty() && s->value("options/tooltip_show_thoughts",true).toBool())
         tt.append(tr("<p style=\"margin:0px;\">%1</p>").arg(m_emotions_desc));

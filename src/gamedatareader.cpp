@@ -282,7 +282,7 @@ GameDataReader::GameDataReader(QObject *parent)
     m_unit_subthought_types.clear();
     for(short i = 0; i < count; ++i) {
         m_data_settings->setArrayIndex(i);
-        m_unit_subthought_types.insert(i,new SubThoughtTypes(i, *m_data_settings, this));
+        m_unit_subthought_types.insert(i,new SubThoughtTypes(*m_data_settings, this));
     }
     m_data_settings->endArray();
 

@@ -157,7 +157,7 @@ public:
     DWARF_HAPPINESS get_happiness() {return m_happiness;}
 
     //! return the raw happiness score for this dwarf
-    Q_INVOKABLE int get_raw_happiness() {return m_raw_happiness;}
+    Q_INVOKABLE int get_raw_happiness() {return m_stress_level;}
     //! return specific attribute values
     Q_INVOKABLE int strength() {return attribute(AT_STRENGTH);}
     Q_INVOKABLE int agility() {return attribute(AT_AGILITY);}
@@ -523,7 +523,7 @@ private:
     VIRTADDR m_first_soul; // start of 1st soul for this creature
     int m_race_id; // each creature has racial ID
     DWARF_HAPPINESS m_happiness; // enum value of happiness
-    int m_raw_happiness; // raw score before being turned into an enum
+    int m_stress_level; // raw score before being turned into an enum
     int m_mood_id;
     bool m_had_mood;
     QString m_artifact_name;

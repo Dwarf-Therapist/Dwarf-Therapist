@@ -31,20 +31,17 @@ class SubThoughtTypes : public QObject
     Q_OBJECT
 
 private:
-    int m_id;
     QString m_placeholder;
     QHash<int,QString> m_subthoughts;
 
 public:
     SubThoughtTypes(QObject *parent = 0)
         : QObject(parent)
-        , m_id(-1)
     {
     }
 
-    SubThoughtTypes(int id, QSettings &s, QObject *parent = 0)
+    SubThoughtTypes(QSettings &s, QObject *parent = 0)
         : QObject(parent)
-        , m_id(id)
     {
         m_placeholder = s.value("placeholder","").toString();
         int count = s.beginReadArray("subthoughts");
