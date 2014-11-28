@@ -1098,10 +1098,10 @@
          <item row="3" column="2">
           <widget class="QCheckBox" name="chk_show_thoughts">
            <property name="toolTip">
-            <string>When checked shows the recent thoughts which affect overall happiness.</string>
+            <string>When checked, shows stress, emotions and their circumstances.</string>
            </property>
            <property name="statusTip">
-            <string>When checked shows the recent thoughts which affect overall happiness.</string>
+            <string>When checked, shows stress, emotions and their circumstances.</string>
            </property>
            <property name="text">
             <string>Show happiness thoughts in the tooltip.</string>

@@ -204,7 +204,7 @@ void SkillColumn::build_tooltip(Dwarf *d, bool include_roles){
     QHashIterator<int, Trait*> i(gdr->get_traits());
     while(i.hasNext()){
         i.next();
-        QString con = i.value()->skill_conflict_msg(m_skill_id, d->trait(i.value()->trait_id));
+        QString con = i.value()->skill_conflict_msg(m_skill_id, d->trait(i.value()->id()));
         if(!con.isEmpty())
             conflicting_traits.append(con);
     }

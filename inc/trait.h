@@ -33,6 +33,9 @@ class Trait : public QObject {
     Q_OBJECT
 
 private:
+    QString m_name;
+    bool m_inverted;
+    int m_trait_id;
     struct skill_conflict{
         int skill_id;
         int limit;
@@ -53,9 +56,9 @@ private:
 public:
     Trait(int trait_id, QSettings &s, QObject *parent = 0);
 
-    QString name;
-    int trait_id;
-    bool inverted; //specifically when setting the drawn rating
+    QString get_name() const {return m_name;}
+    int id() const {return m_trait_id;}
+    bool valued_inversely() const {return m_inverted;} //specifically when setting the drawn rating
 
     QString level_message(const short &val);
     QString skill_conflicts_msgs(const short &val);
@@ -69,6 +72,8 @@ public:
 
     static QColor goal_color;
     static QColor belief_color;
+
+    static QString inverted_message;
 };
 
 #endif

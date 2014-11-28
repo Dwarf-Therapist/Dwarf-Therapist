@@ -442,7 +442,7 @@ Belief *GameDataReader::get_belief(const int &belief_id) {
 }
 
 QString GameDataReader::get_trait_name(const short &trait_id) {
-    return get_trait(trait_id)->name;
+    return get_trait(trait_id)->get_name();
 }
 
 QString GameDataReader::get_belief_name(const int &belief_id) {
@@ -539,15 +539,15 @@ void GameDataReader::refresh_facets(){
                 m_beliefs[belief_id]->add_conflict(trait_id);
         }
 
-        trait_names << t->name;
+        trait_names << t->get_name();
     }
     m_data_settings->endArray();
 
     qSort(trait_names);
     foreach(QString name, trait_names) {
         foreach(Trait *t, m_traits) {
-            if (t->name == name) {
-                m_ordered_traits << QPair<int, Trait*>(t->trait_id, t);
+            if (t->get_name() == name) {
+                m_ordered_traits << QPair<int, Trait*>(t->id(), t);
                 break;
             }
         }

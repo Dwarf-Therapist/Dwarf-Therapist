@@ -420,12 +420,18 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             if(d->trait_is_conflicted(trait_id)){
                 trait_color = color_low;
                 foreach(UnitBelief ub, d->trait_conflicts(trait_id)){
-                    add_belief_row(ub.belief_id(),d,true); //add the conflicting entity belief to compare
+                    add_belief_row(ub.belief_id(),d,true); //add the conflicting cultural belief to compare
                     conflicted_beliefs.append(ub.belief_id());
                 }
             }
             QString msg = msg_items.join(". ");
-            add_personality_row(t->name,val,msg,msg,trait_color);
+            QString tooltip = msg;
+            QString name = t->get_name();
+            if(t->valued_inversely()){
+                tooltip.append(Trait::inverted_message);
+                name.append('*').append(Trait::inverted_message);
+            }
+            add_personality_row(name,val,msg,tooltip,trait_color);
         }
     }
     //also append goals
@@ -609,7 +615,7 @@ void DwarfDetailsWidget::add_belief_row(int belief_id, Dwarf *d, bool is_cultura
     QColor col = Trait::belief_color;
     if(is_cultural){
         col = color_low;
-        name.append(QString("<h5 style=\"margin:0px;\">%1</h5>").arg(tr("*This is a cultural belief.")));
+        name.append(QString("*<h5 style=\"margin:0px;\">%1</h5>").arg(tr("This is a conflicting cultural belief.")));
     }
     add_personality_row(name,val,desc,tooltip,col);
 }

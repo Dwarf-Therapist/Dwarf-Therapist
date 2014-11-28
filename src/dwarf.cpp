@@ -1166,20 +1166,6 @@ void Dwarf::read_labors() {
     }
 }
 
-void Dwarf::read_happiness(VIRTADDR personality_base) {
-    int offset = personality_base + m_mem->soul_detail("stress_level");
-
-    if(offset){
-        m_stress_level = m_df->read_int(offset);
-    }else{
-        m_stress_level = 0;
-    }
-
-    m_happiness = happiness_from_stress(m_stress_level);
-    TRACE << "\tRAW STRESS LEVEL:" << m_stress_level;
-    TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
-}
-
 void Dwarf::read_current_job() {
     // TODO: jobs contain info about materials being used, if we ever get the
     // material list we could show that in here
@@ -1287,23 +1273,6 @@ bool Dwarf::active_military() {
     return p && p->is_military();
 }
 
-DWARF_HAPPINESS Dwarf::happiness_from_stress(int score) {
-    if (score >= 500000)
-        return DH_MISERABLE;
-    else if (score >= 250000)
-        return DH_VERY_UNHAPPY;
-    else if (score >= 100000)
-        return DH_UNHAPPY;
-    else if (score > -100000)
-        return DH_FINE;
-    else if (score > -250000)
-        return DH_CONTENT;
-    else if (score >  -500000)
-        return DH_HAPPY;
-    else
-        return DH_ECSTATIC;
-}
-
 QString Dwarf::caste_name(bool plural_name) {
     QString tmp_name = "Unknown";
     if(m_caste){
@@ -1373,8 +1342,6 @@ QString Dwarf::happiness_name(DWARF_HAPPINESS happiness) {
     default: return "UNKNOWN";
     }
 }
-
-
 
 bool Dwarf::get_flag_value(int bit)
 {
@@ -1719,94 +1686,127 @@ void Dwarf::read_skills() {
 }
 
 void Dwarf::read_emotions(VIRTADDR personality_base){
-        int offset = m_mem->soul_detail("emotions");
-        if(offset){
-            QVector<VIRTADDR> emotions_addrs = m_df->enumerate_vector(personality_base + offset);
-            //load emotions by date
-            QMap<int,UnitEmotion*> all_emotions;
-            //qDebug() << "** reading emotions for" << m_nice_name;
-            foreach(VIRTADDR addr, emotions_addrs){
-                UnitEmotion *ue = new UnitEmotion(addr,m_df,this);
-                if(ue->get_thought_id() < 0){
-                    delete ue;
-                }else{
-                    all_emotions.insertMulti(ue->get_date(),ue);
-                }
+    QString pronoun = (m_gender_info.gender == SEX_M ? tr("he") : tr("she"));
+    //read list of circumstances and emotions, group and build desc
+    int offset = m_mem->soul_detail("emotions");
+    if(offset){
+        QVector<VIRTADDR> emotions_addrs = m_df->enumerate_vector(personality_base + offset);
+        //load emotions by date
+        QMap<int,UnitEmotion*> all_emotions;
+        //qDebug() << "** reading emotions for" << m_nice_name;
+        foreach(VIRTADDR addr, emotions_addrs){
+            UnitEmotion *ue = new UnitEmotion(addr,m_df,this);
+            if(ue->get_thought_id() < 0){
+                delete ue;
+            }else{
+                all_emotions.insertMulti(ue->get_date(),ue);
             }
-            //keep the most recent emotion, and discard duplicates, but maintain a count of occurrances
-            int thought_id;
-            bool duplicate;
-            for(int idx = all_emotions.values().count()-1; idx >= 0; idx--){
-                UnitEmotion *ue = all_emotions.values().at(idx);
-                thought_id = ue->get_thought_id();
-                //keep a list of all thoughts as well for filtering
-                if(!m_thoughts.contains(thought_id))
-                    m_thoughts.append(thought_id);
-
-                //remove any duplicate emotional circumstances
-                duplicate = false;
-                foreach(UnitEmotion *valid, m_emotions){
-                    if(valid->equals(*ue)){
-                        valid->increment_count();
-                        delete ue;
-                        duplicate = true;
-                        break;
-                    }
-                }
-                if(!duplicate){
-                    m_emotions.append(ue);
-                }
-            }
-            all_emotions.clear();
-
-            QStringList weekly_emotions;
-            QStringList seasonal_emotions;
-            int stress_vuln = m_traits.value(8); //vulnerability to stress
-
-            int last_week_tick = m_df->current_year_time() - (m_df->ticks_per_day*7);
-            double last_week = m_df->current_year();
-            if(last_week_tick < 0){
-                last_week -= 1;
-                last_week_tick += m_df->ticks_per_year;
-            }
-            last_week += (last_week_tick / (float)m_df->ticks_per_year);
-
-            foreach(UnitEmotion *ue, m_emotions){
-                int stress_effect = ue->set_effect(stress_vuln);
-                QChar sign;
-                if(stress_effect < 0){
-                    sign = QLocale().positiveSign(); //stress down, happiness up
-                }else if(stress_effect > 0){
-                    sign = QLocale().negativeSign();
-                }
-                QString desc = QString("%1%2%3")
-                        .arg(ue->get_desc().toLower())
-                        .arg(!sign.isNull() ? QString("(%1%2)").arg(sign).arg(abs(stress_effect)) : "")
-                        .arg(ue->get_count() > 1 ? QString(" (x%1)").arg(ue->get_count()) : "");
-
-                double emotion_date = ue->get_year() + (ue->get_year_ticks() / (float)m_df->ticks_per_year);
-                if(emotion_date >= last_week){
-                    weekly_emotions.append(desc);
-                }else{
-                    seasonal_emotions.append(desc);
-                }
-
-            }
-            QStringList dated_emotions;
-            QString pronoun = (m_gender_info.gender == SEX_M ? tr("he") : tr("she"));
-            if(weekly_emotions.size() > 0)
-                dated_emotions.append(tr("Within the last week %1 felt ").arg(pronoun).append(capitalize(formatList(weekly_emotions))));
-            if(seasonal_emotions.size() > 0)
-                dated_emotions.append(tr("Within the last season %1 felt ").arg(pronoun).append(capitalize(formatList(seasonal_emotions))));
-            m_emotions_desc =  dated_emotions.join(".<br/><br/>");
         }
+        //keep the most recent emotion, and discard duplicates, but maintain a count of occurrances
+        int thought_id;
+        bool duplicate;
+        for(int idx = all_emotions.values().count()-1; idx >= 0; idx--){
+            UnitEmotion *ue = all_emotions.values().at(idx);
+            thought_id = ue->get_thought_id();
+            //keep a list of all thoughts as well for filtering
+            if(!m_thoughts.contains(thought_id))
+                m_thoughts.append(thought_id);
+
+            //remove any duplicate emotional circumstances
+            duplicate = false;
+            foreach(UnitEmotion *valid, m_emotions){
+                if(valid->equals(*ue)){
+                    valid->increment_count();
+                    delete ue;
+                    duplicate = true;
+                    break;
+                }
+            }
+            if(!duplicate){
+                m_emotions.append(ue);
+            }
+        }
+        all_emotions.clear();
+
+        QStringList weekly_emotions;
+        QStringList seasonal_emotions;
+        int stress_vuln = m_traits.value(8); //vulnerability to stress
+
+        int last_week_tick = m_df->current_year_time() - (m_df->ticks_per_day*7);
+        double last_week = m_df->current_year();
+        if(last_week_tick < 0){
+            last_week -= 1;
+            last_week_tick += m_df->ticks_per_year;
+        }
+        last_week += (last_week_tick / (float)m_df->ticks_per_year);
+
+        foreach(UnitEmotion *ue, m_emotions){
+            int stress_effect = ue->set_effect(stress_vuln);
+            QChar sign;
+            if(stress_effect < 0){
+                sign = QLocale().positiveSign(); //stress down, happiness up
+            }else if(stress_effect > 0){
+                sign = QLocale().negativeSign();
+            }
+            QString desc = QString("%1%2%3")
+                    .arg(ue->get_desc().toLower())
+                    .arg(!sign.isNull() ? QString("(%1%2)").arg(sign).arg(abs(stress_effect)) : "")
+                    .arg(ue->get_count() > 1 ? QString(" (x%1)").arg(ue->get_count()) : "");
+
+            double emotion_date = ue->get_year() + (ue->get_year_ticks() / (float)m_df->ticks_per_year);
+            if(emotion_date >= last_week){
+                weekly_emotions.append(desc);
+            }else{
+                seasonal_emotions.append(desc);
+            }
+
+        }
+        QStringList dated_emotions;
+        if(weekly_emotions.size() > 0)
+            dated_emotions.append(tr("Within the last week %1 felt ").arg(pronoun).append(capitalize(formatList(weekly_emotions))));
+        if(seasonal_emotions.size() > 0)
+            dated_emotions.append(tr("Within the last season %1 felt ").arg(pronoun).append(capitalize(formatList(seasonal_emotions))));
+        m_emotions_desc =  dated_emotions.join(".<br/><br/>");
+    }
+
+    //read stress and convert to happiness level
+    offset = personality_base + m_mem->soul_detail("stress_level");
+    if(offset){
+        m_stress_level = m_df->read_int(offset);
+    }else{
+        m_stress_level = 0;
+    }
+
+    QString stress_desc = "";
+    if (m_stress_level >= 500000){
+        m_happiness = DH_MISERABLE;
+        stress_desc = tr(" is utterly harrowed by the nightmare that is their tragic life. ");
+    }else if (m_stress_level >= 250000){
+        m_happiness = DH_VERY_UNHAPPY;
+        stress_desc = tr(" is haggard and drawn due to the tremendous stresses placed on them. ");
+    }else if (m_stress_level >= 100000){
+        m_happiness = DH_UNHAPPY;
+        stress_desc = tr(" is under a great deal of stress. ");
+    }else if (m_stress_level > -100000){
+        m_happiness = DH_FINE;
+    }else if (m_stress_level > -250000){
+        m_happiness = DH_CONTENT;
+    }else if (m_stress_level >  -500000){
+        m_happiness = DH_HAPPY;
+    }else{
+        m_happiness = DH_ECSTATIC;
+    }
+    if(!stress_desc.trimmed().isEmpty()){
+        m_emotions_desc.prepend("<b>" + capitalize(pronoun + stress_desc) + "</b>");
+    }
+
+    TRACE << "\tRAW STRESS LEVEL:" << m_stress_level;
+    TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
 }
 
 void Dwarf::read_personality() {
     if(!m_is_animal){
         VIRTADDR personality_addr = m_first_soul + m_mem->soul_detail("personality");
-
-        read_happiness(personality_addr);
 
         //read personal beliefs before traits, as a dwarf will have a conflict with either personal beliefs or cultural beliefs
         m_beliefs.clear();

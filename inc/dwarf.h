@@ -374,9 +374,6 @@ public:
 
     void calc_attribute_ratings();
 
-    //! static method for mapping a numeric happiness score into a value of the enum DWARF_HAPPINESS
-    static DWARF_HAPPINESS happiness_from_stress(int score);
-
     //! static method for mapping a value in the enum DWARF_HAPPINESS to a meaningful text string
     static QString happiness_name(DWARF_HAPPINESS happiness);
 

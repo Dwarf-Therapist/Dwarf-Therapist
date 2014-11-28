@@ -510,10 +510,10 @@ void roleDialog::draw_trait_context_menu(const QPoint &p) {
     foreach(trait_pair, traits) {
         if(!m_role->traits.contains((QString)trait_pair.first)){
             Trait *t = trait_pair.second;
-            QMenu *menu_to_use = cmh.find_menu(m,t->name);
-            a = menu_to_use->addAction(t->name, this, SLOT(add_trait()));
+            QMenu *menu_to_use = cmh.find_menu(m,t->get_name());
+            a = menu_to_use->addAction(t->get_name(), this, SLOT(add_trait()));
             a->setData(trait_pair.first);
-            a->setToolTip(tr("Include %1 (ID %2) as an aspect for this role.").arg(t->name).arg(trait_pair.first));
+            a->setToolTip(tr("Include %1 (ID %2) as an aspect for this role.").arg(t->get_name()).arg(trait_pair.first));
         }
     }
 
