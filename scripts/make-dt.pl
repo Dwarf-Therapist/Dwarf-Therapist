@@ -331,6 +331,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'active_syndrome_vector',%all,'unit','syndromes.active';
     emit_addr 'syn_sick_flag',%all,'unit_syndrome','flags.is_sick';
     emit_addr 'unit_health_info',%all,'unit','health';
+    emit_addr 'temp_mood',%all,'unit','counters.soldier_mood'
     emit_addr 'counters1',%all,'unit','counters.winded';
     emit_addr 'counters2',%all,'unit','counters.pain';
     emit_addr 'counters3',%all,'unit','counters2.paralysis';
@@ -451,8 +452,8 @@ size=10
 5\\value=0x00020000
 6\\name=an invader or hostile
 6\\value=0x00080000
-7\\name=an invader or hostile
-7\\value=0x000C0000
+7\\name=resident, invader or ambusher
+7\\value=0x00600000
 8\\name=part of a merchant caravan
 8\\value=0x00000080
 9\\name="Dead, Jim."
@@ -468,7 +469,7 @@ size=5
 2\\value=0x00040000
 3\\name=resident
 3\\value=0x00080000
-4\\name=visitor_uninvited
+4\\name=uninvited visitor
 4\\value=0x00400000
 5\\name=visitor
 5\\value=0x00800000

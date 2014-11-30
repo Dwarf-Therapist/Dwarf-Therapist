@@ -309,6 +309,7 @@ address('artifact_name',df.unit,'status','artifact_name')
 address('active_syndrome_vector',df.unit,'syndromes','active')
 address('syn_sick_flag',df.unit_syndrome,'flags')
 address('unit_health_info',df.unit,'health')
+address('temp_mood',df.unit,'counters','soldier_mood')
 address('counters1',df.unit,'counters','winded')
 address('counters2',df.unit, 'counters','pain')
 address('counters3',df.unit, 'counters2','paralysis')
@@ -433,8 +434,8 @@ size=10
 5\value=0x00020000
 6\name=an invader or hostile
 6\value=0x00080000
-7\name=an invader or hostile
-7\value=0x000C0000
+7\name=resident, invader or ambusher
+7\value=0x00600000
 8\name=part of a merchant caravan
 8\value=0x00000080
 9\name="Dead, Jim."
@@ -450,7 +451,7 @@ size=5
 2\value=0x00040000
 3\name=resident
 3\value=0x00080000
-4\name=visitor_uninvited
+4\name=uninvited visitor
 4\value=0x00400000
 5\name=visitor
 5\value=0x00800000
