@@ -16,6 +16,25 @@ typedef enum {
 } DWARF_HAPPINESS;
 
 typedef enum {
+    MT_NONE= -1,
+    MT_FEY=0,
+    MT_SECRET=1,
+    MT_POSSESSED=2,
+    MT_MACABRE=3,
+    MT_FELL=4,
+    MT_MELANCHOLY=5,
+    MT_INSANE=6,
+    MT_BERSERK=7,
+    MT_BABY=8,
+    MT_TRAUMA=9,
+    MT_MARTIAL=10, //appended temporary moods, martial = 0
+    MT_ENRAGED=11,
+    MT_TANTRUM=12,
+    MT_DEPRESSED=13,
+    MT_OBLIVIOUS=14
+} MOOD_TYPE;
+
+typedef enum {
     AT_NONE = -1,
     AT_STRENGTH = 0,
     AT_AGILITY=1,

@@ -250,7 +250,8 @@ HEADERS += inc/viewmanager.h \
     inc/emotion.h \
     inc/emotiongroup.h \
     inc/docks/basetreedock.h \
-    inc/subthoughttypes.h
+    inc/subthoughttypes.h \
+    inc/mood.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \

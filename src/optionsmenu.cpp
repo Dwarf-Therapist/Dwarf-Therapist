@@ -149,6 +149,12 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     ui->cb_skill_drawing_method->addItem("Growing Fill", UberDelegate::SDM_GROWING_FILL);
     ui->cb_skill_drawing_method->addItem("Text", UberDelegate::SDM_NUMERIC);
 
+    ui->cb_thought_weeks->addItem(tr("only the last week"),1);
+    ui->cb_thought_weeks->addItem(tr("the last 2 weeks"),2);
+    ui->cb_thought_weeks->addItem(tr("the last 3 weeks"),3);
+    ui->cb_thought_weeks->addItem(tr("the last month"),4);
+    ui->cb_thought_weeks->addItem(tr("all"),-1);
+
     connect(ui->btn_restore_defaults, SIGNAL(pressed()), this, SLOT(restore_defaults()));
 
     connect(ui->btn_change_font, SIGNAL(pressed()), this, SLOT(show_row_font_chooser()));
@@ -173,6 +179,7 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     connect(ui->chk_show_skills,SIGNAL(toggled(bool)),this,SLOT(tooltip_skills_toggled(bool)));
     connect(ui->chk_show_roles,SIGNAL(toggled(bool)),this,SLOT(tooltip_roles_toggled(bool)));
     connect(ui->chk_show_buffs,SIGNAL(toggled(bool)),this,SLOT(tooltip_syndromes_toggled(bool)));
+    connect(ui->chk_show_thoughts,SIGNAL(toggled(bool)),this,SLOT(tooltip_thoughts_toggled(bool)));
 
     read_settings();
 }
@@ -230,6 +237,10 @@ void OptionsMenu::tooltip_syndromes_toggled(bool checked){
 
 }
 
+void OptionsMenu::tooltip_thoughts_toggled(bool checked){
+    ui->cb_thought_weeks->setEnabled(checked);
+}
+
 void OptionsMenu::read_settings() {
     m_reading_settings = true;
     QSettings *s = DT->user_settings();
@@ -253,13 +264,19 @@ void OptionsMenu::read_settings() {
 
     s->endGroup();
     s->beginGroup("grid");
-    UberDelegate::SKILL_DRAWING_METHOD m = static_cast<UberDelegate::SKILL_DRAWING_METHOD>(s->value("skill_drawing_method", UberDelegate::SDM_GROWING_CENTRAL_BOX).toInt());
-    for(int i=0; i < ui->cb_skill_drawing_method->count(); ++i) {
-        if (ui->cb_skill_drawing_method->itemData(i) == m) {
-            ui->cb_skill_drawing_method->setCurrentIndex(i);
-            break;
-        }
-    }
+    //    UberDelegate::SKILL_DRAWING_METHOD m = static_cast<UberDelegate::SKILL_DRAWING_METHOD>(s->value("skill_drawing_method", UberDelegate::SDM_GROWING_CENTRAL_BOX).toInt());
+    //    for(int i=0; i < ui->cb_skill_drawing_method->count(); ++i) {
+    //        if (ui->cb_skill_drawing_method->itemData(i) == m) {
+    //            ui->cb_skill_drawing_method->setCurrentIndex(i);
+    //            break;
+    //        }
+    //    }
+    int idx = ui->cb_skill_drawing_method->findData(
+                static_cast<UberDelegate::SKILL_DRAWING_METHOD>(
+                    s->value("skill_drawing_method", UberDelegate::SDM_NUMERIC).toInt()));
+    if(idx != -1)
+        ui->cb_skill_drawing_method->setCurrentIndex(idx);
+
     ui->sb_cell_size->setValue(s->value("cell_size", DEFAULT_CELL_SIZE).toInt());
     ui->sb_cell_padding->setValue(s->value("cell_padding", 0).toInt());
     ui->cb_shade_column_headers->setChecked(s->value("shade_column_headers", true).toBool());
@@ -273,7 +290,6 @@ void OptionsMenu::read_settings() {
     temp = s->value("header_font", QFont(DefaultFonts::getHeaderFontName(), DefaultFonts::getHeaderFontSize())).value<QFont>();
     m_col_header_font = qMakePair(temp,temp);
     show_current_font(temp, ui->lbl_header_font);
-
 
     ui->cb_happiness_icons->setChecked(s->value("happiness_icons",false).toBool());
     ui->cb_labor_counts->setChecked(s->value("show_labor_counts",false).toBool());
@@ -303,7 +319,6 @@ void OptionsMenu::read_settings() {
     m_main_font = qMakePair(temp,temp);
     show_current_font(temp,ui->lbl_current_main_font);
 
-
     ui->cb_read_dwarves_on_startup->setChecked(s->value("read_on_startup", true).toBool());
     ui->cb_auto_contrast->setChecked(s->value("auto_contrast", true).toBool());
     ui->cb_show_aggregates->setChecked(s->value("show_aggregates", true).toBool());
@@ -332,11 +347,16 @@ void OptionsMenu::read_settings() {
     ui->chk_show_prof->setChecked(s->value("tooltip_show_profession", true).toBool());
     ui->chk_show_artifact->setChecked(s->value("tooltip_show_artifact",true).toBool());
     ui->chk_show_highest_mood->setChecked(s->value("tooltip_show_mood", true).toBool());
-    ui->chk_show_thoughts->setChecked(s->value("tooltip_show_thoughts", true).toBool());
     ui->chk_show_squad->setChecked(s->value("tooltip_show_squad", true).toBool());
     ui->chk_show_age->setChecked(s->value("tooltip_show_age", true).toBool());
     ui->chk_show_unit_size->setChecked(s->value("tooltip_show_size",true).toBool());
     ui->chk_show_kills->setChecked(s->value("tooltip_show_kills",false).toBool());
+
+    idx = ui->cb_thought_weeks->findData(s->value("tooltip_thought_weeks",-1).toInt());
+    if(idx != -1)
+        ui->cb_thought_weeks->setCurrentIndex(idx);
+    ui->chk_show_thoughts->setChecked(s->value("tooltip_show_thoughts", true).toBool());
+    tooltip_thoughts_toggled(ui->chk_show_thoughts->isChecked());
 
     ui->chk_show_buffs->setChecked(s->value("tooltip_show_buffs",false).toBool());
     short syn_option = s->value("syndrome_display_type",0).toInt();
@@ -476,6 +496,7 @@ void OptionsMenu::write_settings() {
         s->setValue("tooltip_health_symbols", ui->chk_health_symbols->isChecked());
         s->setValue("tooltip_show_buffs", ui->chk_show_buffs->isChecked());
         s->setValue("tooltip_show_kills", ui->chk_show_kills->isChecked());
+        s->setValue("tooltip_thought_weeks", ui->cb_thought_weeks->itemData(ui->cb_thought_weeks->currentIndex()).toInt());
         short val = 0;
         if(ui->rad_syn_classes->isChecked())
             val = 1;
@@ -497,9 +518,9 @@ void OptionsMenu::accept() {
     emit settings_changed();
     QDialog::accept();
     int answer = QMessageBox::question(
-            0, tr("Apply Options"),
-            tr("Would you like to apply the new options now (Read Data)?"),
-            QMessageBox::Yes | QMessageBox::No);
+                0, tr("Apply Options"),
+                tr("Would you like to apply the new options now (Read Data)?"),
+                QMessageBox::Yes | QMessageBox::No);
     if (answer == QMessageBox::Yes)
         DT->get_main_window()->read_dwarves();
 }
@@ -573,6 +594,9 @@ void OptionsMenu::restore_defaults() {
     ui->chk_show_buffs->setChecked(false);
     ui->chk_show_kills->setChecked(false);
     ui->rad_syn_names->setChecked(true);
+    int idx = ui->cb_thought_weeks->findData(-1);
+    if(idx != -1)
+        ui->cb_thought_weeks->setCurrentIndex(idx);
 
     ui->dsb_attribute_weight->setValue(0.25);
     ui->dsb_pref_weight->setValue(0.15);

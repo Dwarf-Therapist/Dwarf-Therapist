@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include "belief.h"
 #include "subthoughttypes.h"
 #include "emotion.h"
+#include "mood.h"
 
 QStringList GameDataReader::m_seasons;
 QStringList GameDataReader::m_months;
@@ -264,6 +265,15 @@ GameDataReader::GameDataReader(QObject *parent)
         }
     }
 
+    //moods
+    int moods = m_data_settings->beginReadArray("unit_moods");
+    m_unit_moods.insert(MT_NONE,new Mood(this));
+    for(int i = 0; i < moods; ++i) {
+        m_data_settings->setArrayIndex(i);
+        m_unit_moods.insert(static_cast<MOOD_TYPE>(i),new Mood(*m_data_settings, this));
+    }
+    m_data_settings->endArray();
+
     load_roles();
     load_optimization_plans();
 
@@ -427,6 +437,19 @@ QString GameDataReader::get_goal_desc(int id, bool realized){
     if(realized)
         desc.append(tr(", and this dream was realized"));
     return desc;
+}
+
+Mood *GameDataReader::get_mood(MOOD_TYPE m_type){
+    if(!m_unit_moods.contains(m_type)){
+        m_type = MT_NONE;
+    }
+    return m_unit_moods.value(m_type);
+}
+QString GameDataReader::get_mood_name(MOOD_TYPE m_type, bool colored){
+    return get_mood(m_type)->get_mood_name(colored);
+}
+QString GameDataReader::get_mood_desc(MOOD_TYPE m_type, bool colored){
+    return get_mood(m_type)->get_mood_desc(colored);
 }
 
 Labor *GameDataReader::get_labor(const int &labor_id) {

@@ -58,9 +58,14 @@ static inline QString hexify(const QByteArray &bytes) {
 static inline QString capitalize(const QString & word) {
     QString result = word;
     if(!result.isEmpty()) {
+        bool in_tag;
         int idx = 0;
         for(idx=0;idx < word.size();idx++){
-            if(word.at(idx).isLetter())
+            if(!in_tag && word.at(idx) == '<')
+                in_tag = true;
+            else if(in_tag && word.at(idx) == '>')
+                in_tag = false;
+            if(!in_tag && word.at(idx).isLetter())
                 break;
         }
         if(idx == word.size()-1)

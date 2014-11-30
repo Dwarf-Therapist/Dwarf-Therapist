@@ -144,6 +144,8 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     QString text_rating = model_idx.data(DwarfModel::DR_DISPLAY_RATING).toString();
     float limit = 100.0;
 
+    Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
+
     switch (type) {
     case CT_SKILL:
     {
@@ -158,7 +160,6 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     case CT_LABOR:
     {
         if (!drawing_aggregate) {
-            Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
             if (!d) {
                 return QStyledItemDelegate::paint(p, opt, idx);
             }
@@ -180,7 +181,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     case CT_HAPPINESS:
     {
         paint_bg(adjusted, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
-        if(draw_happiness_icons){
+        if(draw_happiness_icons || d->in_stressed_mood()){
             paint_icon(adjusted,p,opt,idx);
         }else{
             p->save();
@@ -210,8 +211,6 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_ROLE: case CT_SUPER_LABOR: case CT_CUSTOM_PROFESSION:
     {
-        Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
-
         bool check_active = true;
         bool is_dirty = false;
         bool is_active = false;

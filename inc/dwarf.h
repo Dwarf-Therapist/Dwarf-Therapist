@@ -154,7 +154,8 @@ public:
     Q_INVOKABLE QString nickname() {return m_pending_nick_name;}
 
     //! return the happiness level of this dwarf
-    DWARF_HAPPINESS get_happiness() {return m_happiness;}
+    DWARF_HAPPINESS get_happiness() const {return m_happiness;}
+    QString get_happiness_desc() const {return m_happiness_desc;}
 
     //! return the raw happiness score for this dwarf
     Q_INVOKABLE int get_raw_happiness() {return m_stress_level;}
@@ -377,9 +378,6 @@ public:
     //! static method for mapping a value in the enum DWARF_HAPPINESS to a meaningful text string
     static QString happiness_name(DWARF_HAPPINESS happiness);
 
-    //! static method for mapping a value in the enum ATTRIBUTES_TYPE to a meaningful text string
-    static QString attribute_level_name(ATTRIBUTES_TYPE attribute, short value);
-
     Caste *get_caste() {return m_caste;}
 
     //! method for mapping a caste id to a meaningful text name string
@@ -437,6 +435,9 @@ public:
 
     Skill highest_moodable();
     bool had_mood() {return m_had_mood;}
+    MOOD_TYPE current_mood() {return m_mood_id;}
+    Q_INVOKABLE bool locked_in_mood() {return m_locked_mood;}
+    Q_INVOKABLE bool in_stressed_mood() {return m_stressed_mood;}
     QString artifact_name() {return m_artifact_name;}
 
     QHash<QString, QStringList*> get_grouped_preferences() {return m_grouped_preferences;}
@@ -457,7 +458,7 @@ public:
 
     QString get_syndrome_names(bool include_buffs, bool include_sick);
 
-    QString get_thought_desc() {return m_emotions_desc;}
+    QString get_emotions_desc() {return m_emotions_desc;}
 
     UnitHealth get_unit_health() {return m_unit_health;}
 
@@ -520,8 +521,9 @@ private:
     VIRTADDR m_first_soul; // start of 1st soul for this creature
     int m_race_id; // each creature has racial ID
     DWARF_HAPPINESS m_happiness; // enum value of happiness
+    QString m_happiness_desc; //happiness name + stress level
     int m_stress_level; // raw score before being turned into an enum
-    int m_mood_id;
+    MOOD_TYPE m_mood_id;
     bool m_had_mood;
     QString m_artifact_name;
     QString m_curse_name;
@@ -547,6 +549,8 @@ private:
     QString m_icn_gender;
     int m_raw_profession; // id of profession set by game
     bool m_can_set_labors; // used to prevent cheating
+    bool m_locked_mood;
+    bool m_stressed_mood;
     short m_current_job_id;
     QString m_current_job;
     QString m_current_sub_job_id;

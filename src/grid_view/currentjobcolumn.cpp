@@ -102,7 +102,7 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
                 pixmap_name = ":status/img/crossed-swords.png";
                 break;
             case DwarfJob::DJT_MOOD:
-                pixmap_name = ":img/exclamation-red-frame.png";
+                pixmap_name = ":status/img/exclamation-white.png";
                 break;
             case DwarfJob::DJT_FORGE:
                 pixmap_name = ":status/img/status_forge.png";

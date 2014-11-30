@@ -41,6 +41,7 @@ class Thought;
 class SubThoughtTypes;
 class Belief;
 class Emotion;
+class Mood;
 
 //singleton reader of game data
 class GameDataReader : public QObject {
@@ -114,6 +115,10 @@ public:
     QString get_goal_desc(int id, bool realized);
     QString get_goal_name(int id){return capitalize(m_goals.value(id).first);}
 
+    Mood *get_mood(MOOD_TYPE);
+    QString get_mood_name(MOOD_TYPE m_type,bool colored = false);
+    QString get_mood_desc(MOOD_TYPE m_type,bool colored = false);
+
     static QStringList m_seasons;
     static QStringList m_months;
 
@@ -165,6 +170,8 @@ private:
     QMap<short, Thought*> m_unit_thoughts;
     QHash<int, SubThoughtTypes*> m_unit_subthought_types;
     QHash<int, Emotion*> m_unit_emotions;
+
+    QHash<MOOD_TYPE,Mood*> m_unit_moods;
 
     QMap<int,QString> m_building_names;
     QMap<int,QString> m_building_quality;

@@ -47,6 +47,7 @@ UnitEmotion::UnitEmotion(QObject *parent)
     , m_total_effect(0)
     , m_intensifier(0)
     , m_optional_level(-1)
+    , m_compare_id(-1)
 {
 }
 
@@ -60,6 +61,7 @@ UnitEmotion::UnitEmotion(VIRTADDR addr, DFInstance *df, QObject *parent)
     , m_total_effect(0)
     , m_intensifier(0)
     , m_optional_level(-1)
+    , m_compare_id(-1)
 {
     MemoryLayout *m_mem = df->memory_layout();
     m_eType = static_cast<EMOTION_TYPE>(df->read_int(addr+m_mem->emotion_offset("emotion_type")));

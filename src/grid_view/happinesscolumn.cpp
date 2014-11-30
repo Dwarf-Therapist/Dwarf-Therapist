@@ -51,19 +51,25 @@ HappinessColumn::HappinessColumn(const HappinessColumn &to_copy)
 QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
 
-    QString pixmap_name = QString(":happiness/%1.png").arg(Dwarf::happiness_name(d->get_happiness()));
-    if(pixmap_name=="")
-        pixmap_name = ":img/question-frame.png";
+    QString pixmap_name = ":img/question-frame.png";
+    QString stressed_mood_desc = "";
+    if(d->in_stressed_mood()){
+        stressed_mood_desc = tr("<br/>Mood: %1").arg(GameDataReader::ptr()->get_mood_desc(d->current_mood(),true));
+        pixmap_name = QString(":img/exclamation-red-frame.png");
+    }else{
+        pixmap_name = QString(":happiness/%1.png").arg(Dwarf::happiness_name(d->get_happiness()));
+    }
 
     item->setData(QIcon(pixmap_name), Qt::DecorationRole);
     item->setData(CT_HAPPINESS, DwarfModel::DR_COL_TYPE);
     item->setData(d->get_raw_happiness(), DwarfModel::DR_SORT_VALUE);
 
-    QString tooltip = QString("<center><h3>%1</h3><h4>%2<br/>%3</h4></center><p>%4</p>%5")
+    QString tooltip = QString("<center><h3>%1</h3><h4>%2<br/>%3%4</h4></center><p>%5</p>%6")
             .arg(m_title)
             .arg(Dwarf::happiness_name(d->get_happiness()))
             .arg(tr("Stress Level: ") + formatNumber(d->get_raw_happiness()))
-            .arg(d->get_thought_desc())
+            .arg(stressed_mood_desc)
+            .arg(d->get_emotions_desc())
             .arg(tooltip_name_footer(d));
 
     item->setToolTip(tooltip);
