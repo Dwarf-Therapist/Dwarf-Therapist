@@ -48,6 +48,7 @@ UnitEmotion::UnitEmotion(QObject *parent)
     , m_intensifier(0)
     , m_optional_level(-1)
     , m_compare_id(-1)
+    , m_date_in_ticks(-1)
 {
 }
 
@@ -133,13 +134,13 @@ int UnitEmotion::set_effect(int stress_vuln){
         multiplier = 3.0;
     }else if(stress_vuln >= 61){
         multiplier = 2.0;
-    }else if(stress_vuln <= 39){
-        multiplier = 0.5;
-    }else if(stress_vuln <= 24){
-        multiplier = 0.25;
     }else if(stress_vuln <= 9){
         multiplier = 0;
         m_intensifier = 0;
+    }else if(stress_vuln <= 24){
+        multiplier = 0.25;
+    }else if(stress_vuln <= 39){
+        multiplier = 0.5;
     }
     m_total_effect = m_effect * multiplier;
     return m_total_effect;

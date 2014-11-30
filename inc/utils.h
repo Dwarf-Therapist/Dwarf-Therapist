@@ -58,7 +58,7 @@ static inline QString hexify(const QByteArray &bytes) {
 static inline QString capitalize(const QString & word) {
     QString result = word;
     if(!result.isEmpty()) {
-        bool in_tag;
+        bool in_tag = false;
         int idx = 0;
         for(idx=0;idx < word.size();idx++){
             if(!in_tag && word.at(idx) == '<')

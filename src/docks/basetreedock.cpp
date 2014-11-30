@@ -31,6 +31,7 @@ THE SOFTWARE.
 
 BaseTreeDock::BaseTreeDock(QString window_title, QString object_name, bool requires_refresh, QWidget *parent, Qt::WindowFlags flags)
     : BaseDock(parent, flags)
+    , m_collapsed(true)
 {
     setWindowTitle(window_title);
     setObjectName(object_name);

@@ -30,6 +30,7 @@ Thought::Thought(int id, QObject *parent)
     , m_title(QString("%1 - Unknown").arg(QString::number(id)))
     , m_description("This is an unknown thought, please report it!")
     , m_effect(0)
+    , m_subtype(-1)
     , m_id(id)
 {
 }
