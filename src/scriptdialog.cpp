@@ -85,7 +85,7 @@ ScriptDialog::ScriptDialog(QWidget *parent)
         "<tr><th width=24%>Trait ID</th><th>Trait</th></tr>";
     QPair<int, Trait*> trait_pair;
     foreach(trait_pair, gdr->get_ordered_traits()) {
-        trait_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(trait_pair.second->trait_id).arg(trait_pair.second->name));
+        trait_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(trait_pair.second->id()).arg(trait_pair.second->get_name()));
     }
     trait_list.append("</table>");
     ui->text_personality->append(trait_list);

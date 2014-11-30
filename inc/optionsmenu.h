@@ -77,6 +77,7 @@ private slots:
     void tooltip_roles_toggled(bool);
     void tooltip_health_toggled(bool);
     void tooltip_syndromes_toggled(bool);
+    void tooltip_thoughts_toggled(bool);
 
 signals:
     void color_changed(const QString &, const QColor &);

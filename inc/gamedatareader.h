@@ -38,7 +38,10 @@ class MilitaryPreference;
 class Profession;
 class DwarfJob;
 class Thought;
+class SubThoughtTypes;
 class Belief;
+class Emotion;
+class Mood;
 
 //singleton reader of game data
 class GameDataReader : public QObject {
@@ -66,6 +69,7 @@ public:
     QHash<int,QString> get_skills(){return m_skills;}
     QList<QPair<int,QString> > get_ordered_beliefs(){return m_ordered_beliefs;}
     QList<QPair<int,QString> > get_ordered_goals(){return m_ordered_goals;}
+    QString get_building_name(BUILDING_TYPE b_type, int value = -1);
 
     QList<QPair<QString, laborOptimizerPlan*> > get_ordered_opt_plans() {return m_ordered_opts;}
     QHash<QString, laborOptimizerPlan*>& get_opt_plans(){return m_opt_plans;}
@@ -79,6 +83,8 @@ public:
 
     QMap<short, Thought*> get_thoughts(){return m_unit_thoughts;}
     Thought *get_thought(short id);
+    SubThoughtTypes *get_subthought_types(short id);
+    Emotion *get_emotion(EMOTION_TYPE eType);
 
     DwarfJob *get_job(const short &job_id);
     QList<QPair<int, QString> > get_ordered_jobs() {return m_ordered_jobs;}
@@ -108,6 +114,10 @@ public:
 
     QString get_goal_desc(int id, bool realized);
     QString get_goal_name(int id){return capitalize(m_goals.value(id).first);}
+
+    Mood *get_mood(MOOD_TYPE);
+    QString get_mood_name(MOOD_TYPE m_type,bool colored = false);
+    QString get_mood_desc(MOOD_TYPE m_type,bool colored = false);
 
     static QStringList m_seasons;
     static QStringList m_months;
@@ -158,6 +168,13 @@ private:
     QList<int> m_social_skills;
 
     QMap<short, Thought*> m_unit_thoughts;
+    QHash<int, SubThoughtTypes*> m_unit_subthought_types;
+    QHash<int, Emotion*> m_unit_emotions;
+
+    QHash<MOOD_TYPE,Mood*> m_unit_moods;
+
+    QMap<int,QString> m_building_names;
+    QMap<int,QString> m_building_quality;
 
     void build_calendar();
 };

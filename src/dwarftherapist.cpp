@@ -197,8 +197,8 @@ void DwarfTherapist::read_settings() {
     m_allow_labor_cheats = m_user_settings->value("options/allow_labor_cheats", false).toBool();
     m_hide_non_adults = m_user_settings->value("options/hide_children_and_babies",false).toBool();
 
+    //set the application fonts
     QApplication::setFont(DT->user_settings()->value("options/main_font", QFont(DefaultFonts::getMainFontName(), DefaultFonts::getMainFontSize())).value<QFont>());
-    //set the application's tooltips
     QToolTip::setFont(DT->user_settings()->value("options/tooltip_font", QFont(DefaultFonts::getTooltipFontName(), DefaultFonts::getTooltipFontSize())).value<QFont>());
 
     //set a variable we'll use in the dwarfstats for role calcs

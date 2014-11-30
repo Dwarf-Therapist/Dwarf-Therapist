@@ -47,10 +47,13 @@ THE SOFTWARE.
 #include "itemtoolsubtype.h"
 #include "preference.h"
 #include "histfigure.h"
+#include "emotiongroup.h"
 #include <QMessageBox>
 #include <QTimer>
 #include <QTime>
 #include <QByteArrayMatcher>
+
+#include "caste.h"
 
 #ifdef Q_OS_WIN
 #define LAYOUT_SUBDIR "windows"
@@ -62,6 +65,11 @@ THE SOFTWARE.
 #define LAYOUT_SUBDIR "osx"
 #include "dfinstanceosx.h"
 #endif
+
+quint32 DFInstance::ticks_per_day = 1200;
+quint32 DFInstance::ticks_per_month = 28 * DFInstance::ticks_per_day;
+quint32 DFInstance::ticks_per_season = 3 * DFInstance::ticks_per_month;
+quint32 DFInstance::ticks_per_year = 12 * DFInstance::ticks_per_month;
 
 DFInstance::DFInstance(QObject* parent)
     : QObject(parent)
@@ -182,7 +190,9 @@ DFInstance::~DFInstance() {
     qDeleteAll(m_pref_counts);
     m_pref_counts.clear();
 
-    m_thought_counts.clear();
+    qDeleteAll(m_emotion_counts);
+    m_emotion_counts.clear();
+
     m_equip_warning_counts.clear();
 }
 
@@ -346,11 +356,12 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         int progress_count = 0;
 
         foreach(VIRTADDR creature_addr, creatures_addrs) {
+            LOGI << "loading creature at idx" << progress_count;
             d = Dwarf::get_dwarf(this, creature_addr);
             if(d){
                 dwarves.append(d); //add animals as well so we can show them
                 if(!d->is_animal()){
-                    LOGI << "FOUND UNIT" << hexify(creature_addr) << d->nice_name();
+                    LOGI << "FOUND UNIT" << hexify(creature_addr) << d->nice_name() << d->id() << d->historical_id();
                     m_actual_dwarves.append(d);
 
                     //never calculate roles for babies
@@ -363,7 +374,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
                     }
 
                 } else {
-                    LOGI << "FOUND BEAST" << hexify(creature_addr) << d->nice_name();
+                    LOGI << "FOUND BEAST" << hexify(creature_addr) << d->nice_name() << d->id();
                 }
             }
             emit progress_value(progress_count++);
@@ -373,7 +384,8 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         m_enabled_labor_count.clear();
         qDeleteAll(m_pref_counts);
         m_pref_counts.clear();
-        m_thought_counts.clear();
+        qDeleteAll(m_emotion_counts);
+        m_emotion_counts.clear();
         m_equip_warning_counts.clear();
 
         t.restart();
@@ -459,18 +471,15 @@ void DFInstance::load_population_data(){
                 }
             }
 
-            //thoughts
-            QHash<short,int> d_thoughts = d->get_thoughts();
-            foreach(short id, d_thoughts.uniqueKeys()){
-                int total_count = 0;
-                int dwarf_count = 0;
-                if(m_thought_counts.contains(id)){
-                    total_count = m_thought_counts.value(id).first;
-                    dwarf_count = m_thought_counts.value(id).second;
+            //emotions
+            QList<UnitEmotion*> d_emotions = d->get_emotions();
+            foreach(UnitEmotion *ue, d_emotions){
+                int thought_id = ue->get_thought_id();
+                if(!m_emotion_counts.contains(thought_id)){
+                    m_emotion_counts.insert(thought_id, new EmotionGroup(this));
                 }
-                total_count += d_thoughts.value(id);
-                dwarf_count++;
-                m_thought_counts.insert(id,qMakePair(total_count,dwarf_count));
+                EmotionGroup *em = m_emotion_counts.value(thought_id);
+                em->add_detail(d,ue);
             }
 
             //inventory wear
@@ -1085,15 +1094,8 @@ VIRTADDR DFInstance::find_historical_figure(int hist_id){
 
 void DFInstance::load_hist_figures(){
     QVector<VIRTADDR> hist_figs = enumerate_vector(m_layout->address("historical_figures_vector"));
-    int hist_id = 0;
-    //it may be possible to filter this list by only the current race.
-    //need to test whether or not vampires will steal names from other races
-    //this may also break nicknames on kings/queens if they belong to a different race...
     foreach(VIRTADDR fig, hist_figs){
-        //if(read_int(fig + 0x0002) == dwarf_race_id() || read_int(fig + 0x00a0) == dwarf_civ_id()){
-        hist_id = read_int(fig + m_layout->hist_figure_offset("id"));
-        m_hist_figures.insert(hist_id,fig);
-        //}
+        m_hist_figures.insert(read_int(fig + m_layout->hist_figure_offset("id")),fig);
     }
 }
 

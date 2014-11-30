@@ -356,7 +356,7 @@ void roleDialog::save_pressed(){
 
 void roleDialog::save_role(Role *r){
     //save any script
-    r->script() = ui->te_script->toPlainText();
+    r->script(ui->te_script->toPlainText());
 
     //attributes
     r->attributes_weight.weight = ui->dsb_attributes_weight->value();
@@ -510,10 +510,10 @@ void roleDialog::draw_trait_context_menu(const QPoint &p) {
     foreach(trait_pair, traits) {
         if(!m_role->traits.contains((QString)trait_pair.first)){
             Trait *t = trait_pair.second;
-            QMenu *menu_to_use = cmh.find_menu(m,t->name);
-            a = menu_to_use->addAction(t->name, this, SLOT(add_trait()));
+            QMenu *menu_to_use = cmh.find_menu(m,t->get_name());
+            a = menu_to_use->addAction(t->get_name(), this, SLOT(add_trait()));
             a->setData(trait_pair.first);
-            a->setToolTip(tr("Include %1 (ID %2) as an aspect for this role.").arg(t->name).arg(trait_pair.first));
+            a->setToolTip(tr("Include %1 (ID %2) as an aspect for this role.").arg(t->get_name()).arg(trait_pair.first));
         }
     }
 
@@ -793,6 +793,8 @@ void roleDialog::load_items(){
                 QString item_name;
                 if(is_armor_type){
                     clothing_parent = init_parent_node(Item::get_item_clothing_names(itype));
+                }else{
+                    clothing_parent = 0;
                 }
                 for(int sub_id = 0; sub_id < count; sub_id++){
                     Preference *pi = new Preference(pType,itype,this);
@@ -1134,7 +1136,7 @@ void roleDialog::calc_new_role(){
         QJSEngine m_engine;
         QJSValue d_obj = m_engine.newQObject(m_dwarf);
         m_engine.globalObject().setProperty("d", d_obj);
-        QJSValue ret = m_engine.evaluate(m_role->script());
+        QJSValue ret = m_engine.evaluate(script);
         if(!ret.isNumber()){
             QString err_msg;
             if(ret.isError()) {

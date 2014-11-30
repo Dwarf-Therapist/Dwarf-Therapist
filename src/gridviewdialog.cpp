@@ -506,10 +506,10 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     QPair<int, Trait*> trait_pair;
     foreach(trait_pair, traits) {
         Trait *t = trait_pair.second;
-        QMenu *menu_to_use = m_cmh->find_menu(m_trait,t->name);
-        QAction *a = menu_to_use->addAction(t->name, this, SLOT(add_trait_column()));
+        QMenu *menu_to_use = m_cmh->find_menu(m_trait,t->get_name());
+        QAction *a = menu_to_use->addAction(t->get_name(), this, SLOT(add_trait_column()));
         a->setData(trait_pair.first);
-        a->setToolTip(tr("Add a column for trait %1 (ID%2)").arg(t->name).arg(trait_pair.first));
+        a->setToolTip(tr("Add a column for trait %1 (ID%2)").arg(t->get_name()).arg(trait_pair.first));
     }
 
     //WEAPONS
@@ -644,7 +644,7 @@ void GridViewDialog::add_trait_column() {
         return;
     QAction *a = qobject_cast<QAction*>(QObject::sender());
     int trait_id = a->data().toInt();
-    new TraitColumn(GameDataReader::ptr()->get_trait(trait_id)->name, trait_id, m_active_set, m_active_set);
+    new TraitColumn(GameDataReader::ptr()->get_trait(trait_id)->get_name(), trait_id, m_active_set, m_active_set);
     draw_columns_for_set(m_active_set);
 }
 

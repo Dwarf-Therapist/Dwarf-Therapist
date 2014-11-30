@@ -27,14 +27,15 @@ THE SOFTWARE.
 
 QColor Trait::goal_color = QColor(255,153,0,255);
 QColor Trait::belief_color = QColor(32,156,158,255);
+QString Trait::inverted_message = QObject::tr("<h5 style=\"margin:0;\"><font color=red>*This trait's score should be valued inversely!</font></h5>");
 
 //personality facets
 Trait::Trait(int trait_id, QSettings &s, QObject *parent)
     : QObject(parent)
 {
-    this->trait_id = trait_id;
-    name = s.value("name", "UNKNOWN").toString();
-    inverted = s.value("inverted",false).toBool();
+    m_trait_id = trait_id;
+    m_name = s.value("name", "UNKNOWN").toString();
+    m_inverted = s.value("inverted",false).toBool();
 
     //read in conflicting skills
     int count = s.beginReadArray("conflicts");

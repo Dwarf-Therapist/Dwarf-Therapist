@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "attribute.h"
 #include "unithealth.h"
 #include "unitbelief.h"
+#include "unitemotion.h"
 #include "role.h"
 #include "syndrome.h"
 
@@ -53,11 +54,6 @@ public:
     static Dwarf* get_dwarf(DFInstance *df, const VIRTADDR &address);
     virtual ~Dwarf();
 
-    static quint32 ticks_per_day;
-    static quint32 ticks_per_month;
-    static quint32 ticks_per_season;
-    static quint32 ticks_per_year;
-
     DFInstance * get_df_instance(){return m_df;}
 
     // getters
@@ -65,7 +61,7 @@ public:
     VIRTADDR address() {return m_address;}
 
     //! return the the unique id for this creature
-    int id() const {return m_id;}
+    Q_INVOKABLE int id() const {return m_id;}
 
     //! return whether or not the dwarf is on break
     bool is_on_break() {return m_is_on_break;}
@@ -158,10 +154,11 @@ public:
     Q_INVOKABLE QString nickname() {return m_pending_nick_name;}
 
     //! return the happiness level of this dwarf
-    DWARF_HAPPINESS get_happiness() {return m_happiness;}
+    DWARF_HAPPINESS get_happiness() const {return m_happiness;}
+    QString get_happiness_desc() const {return m_happiness_desc;}
 
     //! return the raw happiness score for this dwarf
-    Q_INVOKABLE int get_raw_happiness() {return m_raw_happiness;}
+    Q_INVOKABLE int get_raw_happiness() {return m_stress_level;}
     //! return specific attribute values
     Q_INVOKABLE int strength() {return attribute(AT_STRENGTH);}
     Q_INVOKABLE int agility() {return attribute(AT_AGILITY);}
@@ -219,7 +216,7 @@ public:
     //! return this creature's Nth bit from flags
     Q_INVOKABLE bool get_flag_value(int bit);
 
-    static bool has_invalid_flags(const QString creature_name, QHash<uint, QString> invalid_flags, quint32 dwarf_flags);
+    static bool has_invalid_flags(const int id, const QString creature_name, QHash<uint, QString> invalid_flags, quint32 dwarf_flags);
 
     //! return this dwarf's highest skill
     Skill highest_skill();
@@ -378,14 +375,8 @@ public:
 
     void calc_attribute_ratings();
 
-    //! static method for mapping a numeric happiness score into a value of the enum DWARF_HAPPINESS
-    static DWARF_HAPPINESS happiness_from_score(int score);
-
     //! static method for mapping a value in the enum DWARF_HAPPINESS to a meaningful text string
     static QString happiness_name(DWARF_HAPPINESS happiness);
-
-    //! static method for mapping a value in the enum ATTRIBUTES_TYPE to a meaningful text string
-    static QString attribute_level_name(ATTRIBUTES_TYPE attribute, short value);
 
     Caste *get_caste() {return m_caste;}
 
@@ -417,7 +408,6 @@ public:
     Q_INVOKABLE void set_born_in_fortress(bool val) { m_born_in_fortress = val; }
 
     QString first_name() const {
-        //qDebug() << "first_name called (from script?)";
         return m_first_name;
     }
 
@@ -445,11 +435,14 @@ public:
 
     Skill highest_moodable();
     bool had_mood() {return m_had_mood;}
+    MOOD_TYPE current_mood() {return m_mood_id;}
+    Q_INVOKABLE bool locked_in_mood() {return m_locked_mood;}
+    Q_INVOKABLE bool in_stressed_mood() {return m_stressed_mood;}
     QString artifact_name() {return m_artifact_name;}
 
     QHash<QString, QStringList*> get_grouped_preferences() {return m_grouped_preferences;}
 
-    QHash<short, int> get_thoughts() {return m_thoughts;}
+    QList<UnitEmotion*> get_emotions() {return m_emotions;}
 
     Q_INVOKABLE bool has_preference(QString pref_name, QString category = "");
     Q_INVOKABLE bool find_preference(QString pref_name, QString category_name);
@@ -465,7 +458,7 @@ public:
 
     QString get_syndrome_names(bool include_buffs, bool include_sick);
 
-    QString get_thought_desc() {return m_thought_desc;}
+    QString get_emotions_desc() {return m_emotions_desc;}
 
     UnitHealth get_unit_health() {return m_unit_health;}
 
@@ -528,8 +521,9 @@ private:
     VIRTADDR m_first_soul; // start of 1st soul for this creature
     int m_race_id; // each creature has racial ID
     DWARF_HAPPINESS m_happiness; // enum value of happiness
-    int m_raw_happiness; // raw score before being turned into an enum
-    int m_mood_id;
+    QString m_happiness_desc; //happiness name + stress level
+    int m_stress_level; // raw score before being turned into an enum
+    MOOD_TYPE m_mood_id;
     bool m_had_mood;
     QString m_artifact_name;
     QString m_curse_name;
@@ -555,6 +549,8 @@ private:
     QString m_icn_gender;
     int m_raw_profession; // id of profession set by game
     bool m_can_set_labors; // used to prevent cheating
+    bool m_locked_mood;
+    bool m_stressed_mood;
     short m_current_job_id;
     QString m_current_job;
     QString m_current_sub_job_id;
@@ -600,8 +596,9 @@ private:
     QHash<QString, QStringList*> m_grouped_preferences;
     QStringList m_pref_names;
     QString m_pref_tooltip;
-    QHash<short, int> m_thoughts;
-    QString m_thought_desc;
+    QList<short> m_thoughts;
+    QList<UnitEmotion*> m_emotions;
+    QString m_emotions_desc;
     bool m_is_child;
     bool m_is_baby;
     bool m_is_animal;
@@ -652,7 +649,7 @@ private:
     void read_states();
     void read_profession();
     void read_labors();
-    void read_happiness();
+    void read_happiness(VIRTADDR personality_base);
     void read_current_job();
     void read_soul();
     void read_soul_aspects();
@@ -660,6 +657,7 @@ private:
     void read_attributes();
     void load_attribute(VIRTADDR &addr, ATTRIBUTES_TYPE id);
     void read_personality();
+    void read_emotions(VIRTADDR personality_base);
     void read_turn_count();
     void read_animal_type();
     void read_noble_position();

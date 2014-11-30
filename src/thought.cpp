@@ -20,8 +20,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 #include "thought.h"
-#include "gamedatareader.h"
 
 const QList<QColor> Thought::m_base_colors = Thought::set_base_colors();
 
@@ -30,6 +30,7 @@ Thought::Thought(int id, QObject *parent)
     , m_title(QString("%1 - Unknown").arg(QString::number(id)))
     , m_description("This is an unknown thought, please report it!")
     , m_effect(0)
+    , m_subtype(-1)
     , m_id(id)
 {
 }
@@ -39,8 +40,10 @@ Thought::Thought(int id, QSettings &s, QObject *parent)
     , m_title(s.value("title", "Unknown").toString())
     , m_description(s.value("thought", m_title).toString())
     , m_effect(s.value("value", 0).toInt())
+    , m_subtype(s.value("subthoughts_type",-1).toInt())
     , m_id(id)
 {
+
     if(m_effect == 0){
         m_color = c_neu();
     }

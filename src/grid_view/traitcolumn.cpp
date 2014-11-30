@@ -57,6 +57,7 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     item->setData(0, DwarfModel::DR_SPECIAL_FLAG); //default, special flag stores the alpha for the border
 
     short raw_value = d->trait(m_trait_id);
+    short rating = raw_value;
     QStringList infos;
     if (m_trait){
         infos << m_trait->level_message(raw_value).append(m_trait->belief_conficts_msgs(raw_value,d->trait_conflicts(m_trait_id)));
@@ -76,6 +77,10 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
         if(conflicting_belief_count > 0){
             infos << tr("<br/>This trait can conflict with %1").arg(m_trait->belief_conflicts_names());
         }
+        if(m_trait->valued_inversely()){
+            infos << Trait::inverted_message;
+            rating = 100 - raw_value;
+        }
     }
 
     infos.removeAll("");
@@ -86,14 +91,15 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
     }
 
     item->setText(QString::number(raw_value));
-    item->setData(raw_value, DwarfModel::DR_SORT_VALUE);
-    item->setData(raw_value, DwarfModel::DR_RATING);
-    item->setData(raw_value, DwarfModel::DR_DISPLAY_RATING);
-    set_export_role(DwarfModel::DR_RATING);
+    item->setData(rating, DwarfModel::DR_SORT_VALUE);
+    item->setData(rating, DwarfModel::DR_RATING);
+    item->setData(rating, DwarfModel::DR_DISPLAY_RATING);
+    item->setData(raw_value, DwarfModel::DR_EXPORT);
+    set_export_role(DwarfModel::DR_EXPORT);
 
-    QString tooltip = QString("<center><h3>%1</h3><b>Value: %2</b></center><br/>%3<br/>%4")
+    QString tooltip = QString("<center><h3>%1</h3> %2</center><br/>%3<br/>%4")
             .arg(m_title)
-            .arg(raw_value)
+            .arg(tr("<b>Raw Value: %1</b>").arg(raw_value))
             .arg(infos.join("<br/>"))
             .arg(tooltip_name_footer(d));
     item->setToolTip(tooltip);

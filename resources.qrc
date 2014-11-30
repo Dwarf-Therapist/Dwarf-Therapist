@@ -153,6 +153,8 @@
         <file alias="img/chair--plus.png">resources/img/chair--plus.png</file>
         <file alias="img/safe--plus.png">resources/img/safe--plus.png</file>
         <file alias="img/exclamation-shield-frame.png">resources/img/exclamation-shield-frame.png</file>
+        <file alias="img/prohibition-button.png">resources/img/prohibition-button.png</file>
+        <file alias="img/exclamation-white.png">resources/img/exclamation-white.png</file>
     </qresource>
     <qresource prefix="/happiness">
         <file alias="Ecstatic.png">resources/img/Ecstatic.png</file>

@@ -58,9 +58,14 @@ static inline QString hexify(const QByteArray &bytes) {
 static inline QString capitalize(const QString & word) {
     QString result = word;
     if(!result.isEmpty()) {
+        bool in_tag = false;
         int idx = 0;
         for(idx=0;idx < word.size();idx++){
-            if(word.at(idx).isLetter())
+            if(!in_tag && word.at(idx) == '<')
+                in_tag = true;
+            else if(in_tag && word.at(idx) == '>')
+                in_tag = false;
+            if(!in_tag && word.at(idx).isLetter())
                 break;
         }
         if(idx == word.size()-1)
@@ -113,7 +118,7 @@ static inline QString formatNumber(double value) {
     QString suffixes(QObject::tr("kMGT"));
     for(int idx = suffixes.length(); idx > 0; idx--){
         double unit = pow(1000,idx);
-        if(value >= unit)
+        if(abs(value) >= unit)
             return QString("%L1%2").arg(value/unit,0,'f',1).arg(suffixes.at(idx-1));
     }
     return QString("%L1").arg(value);

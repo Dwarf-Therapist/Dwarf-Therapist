@@ -233,18 +233,28 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
     GameDataReader *gdr = GameDataReader::ptr();
 
-    DWARF_HAPPINESS happiness = d->get_happiness();
-    ui->lbl_happiness->setText(QString("<b>%1</b> (%2)").arg(d->happiness_name(happiness)).arg(d->get_raw_happiness()));
-    ui->lbl_happiness->setToolTip(d->get_thought_desc());
+    ui->lbl_happiness->setText(QString("%1").arg(d->get_happiness_desc()));
+    if(d->in_stressed_mood()){
+        ui->lbl_happiness_title->setText(tr("Happiness:%1").arg(embedPixmap(QPixmap(":img/exclamation-red-frame.png"))));
+        QString desc = QString("<center><b>%1</b><br/>%2</center>")
+                .arg(gdr->get_mood_name(d->current_mood(),true))
+                .arg(gdr->get_mood_desc(d->current_mood(),true));
+        ui->lbl_happiness_title->setToolTip(desc);
+        ui->lbl_happiness->setToolTip(QString("%1<br/>%2").arg(desc).arg(d->get_emotions_desc()));
+    }else{
+        ui->lbl_happiness_title->setText(tr("Happiness: "));
+        ui->lbl_happiness_title->setToolTip("");
+        ui->lbl_happiness->setToolTip(d->get_emotions_desc());
+    }
 
     QPalette p;
-    QColor color = DT->user_settings()->value(QString("options/colors/happiness/%1").arg(static_cast<int>(happiness))).value<QColor>();
+    QColor color = DT->user_settings()->value(QString("options/colors/happiness/%1").arg(static_cast<int>(d->get_happiness()))).value<QColor>();
     QColor color2 = p.window().color();
-    ui->lbl_happiness->setStyleSheet(build_gradient(color,color2));
+    ui->lbl_happiness->setStyleSheet(label_gradient(color,color2));
 
     if(DT->user_settings()->value("options/highlight_nobles",true).toBool() && d->noble_position() != ""){
         color = DT->get_DFInstance()->fortress()->get_noble_color(d->historical_id());
-        ui->lbl_noble_position->setStyleSheet(build_gradient(color,color2));
+        ui->lbl_noble_position->setStyleSheet(label_gradient(color,color2));
     }
 
 
@@ -420,12 +430,18 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             if(d->trait_is_conflicted(trait_id)){
                 trait_color = color_low;
                 foreach(UnitBelief ub, d->trait_conflicts(trait_id)){
-                    add_belief_row(ub.belief_id(),d,true); //add the conflicting entity belief to compare
+                    add_belief_row(ub.belief_id(),d,true); //add the conflicting cultural belief to compare
                     conflicted_beliefs.append(ub.belief_id());
                 }
             }
             QString msg = msg_items.join(". ");
-            add_personality_row(t->name,val,msg,msg,trait_color);
+            QString tooltip = msg;
+            QString name = t->get_name();
+            if(t->valued_inversely()){
+                tooltip.append(Trait::inverted_message);
+                name.append('*').append(Trait::inverted_message);
+            }
+            add_personality_row(name,val,msg,tooltip,trait_color);
         }
     }
     //also append goals
@@ -609,7 +625,7 @@ void DwarfDetailsWidget::add_belief_row(int belief_id, Dwarf *d, bool is_cultura
     QColor col = Trait::belief_color;
     if(is_cultural){
         col = color_low;
-        name.append(QString("<h5 style=\"margin:0px;\">%1</h5>").arg(tr("*This is a cultural belief.")));
+        name.append(QString("*<h5 style=\"margin:0px;\">%1</h5>").arg(tr("This is a conflicting cultural belief.")));
     }
     add_personality_row(name,val,desc,tooltip,col);
 }
@@ -646,13 +662,12 @@ void DwarfDetailsWidget::clear_table(QTableWidget &t){
     }
 }
 
-QString DwarfDetailsWidget::build_gradient(QColor c1, QColor c2){
-    return QString("background: QLinearGradient(x1:0,y1:0,x2:0.9,y2:0,stop:0 rgba(%1,%2,%3,%4), stop:1 rgba(%5,%6,%7,%8)); color: %9")
-            .arg(c1.red()).arg(c1.green())
-            .arg(c1.blue()).arg(c1.alpha())
-            .arg(c2.red()).arg(c2.green())
-            .arg(c2.blue()).arg(c2.alpha())
-            .arg(complement(c1).name());
+QString DwarfDetailsWidget::label_gradient(QColor c1, QColor c2){
+    return QString("QLabel {background: QLinearGradient(x1:0,y1:0,x2:0.9,y2:0,stop:0 rgba(%1,%2,%3,%4), stop:1 rgba(%5,%6,%7,%8)); color: %9;} QLabel QTooltip {color: %10;}")
+            .arg(c1.red()).arg(c1.green()).arg(c1.blue()).arg(c1.alpha())
+            .arg(c2.red()).arg(c2.green()).arg(c2.blue()).arg(c2.alpha())
+            .arg(complement(c1).name())
+            .arg(QApplication::palette().toolTipText().color().name());
 }
 
 

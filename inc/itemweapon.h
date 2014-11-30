@@ -49,7 +49,7 @@ public:
     }
 
     ItemWeaponSubtype * get_details(){return m_weapon;}
-    short item_subtype(){
+    short item_subtype() const {
         if(m_weapon)
             return m_weapon->subType();
         else

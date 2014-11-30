@@ -32,6 +32,9 @@ THE SOFTWARE.
 #include "thought.h"
 #include "unithealth.h"
 #include "belief.h"
+#include "subthoughttypes.h"
+#include "emotion.h"
+#include "mood.h"
 
 QStringList GameDataReader::m_seasons;
 QStringList GameDataReader::m_months;
@@ -262,29 +265,123 @@ GameDataReader::GameDataReader(QObject *parent)
         }
     }
 
+    //moods
+    int moods = m_data_settings->beginReadArray("unit_moods");
+    m_unit_moods.insert(MT_NONE,new Mood(this));
+    for(int i = 0; i < moods; ++i) {
+        m_data_settings->setArrayIndex(i);
+        m_unit_moods.insert(static_cast<MOOD_TYPE>(i),new Mood(*m_data_settings, this));
+    }
+    m_data_settings->endArray();
+
     load_roles();
     load_optimization_plans();
 
-    int professions = m_data_settings->beginReadArray("professions");
+    int count = m_data_settings->beginReadArray("professions");
     qDeleteAll(m_professions);
     m_professions.clear();
-    for(short i = 0; i < professions; ++i) {
+    for(short i = 0; i < count; ++i) {
         m_data_settings->setArrayIndex(i);
         Profession *p = new Profession(*m_data_settings);
         m_professions.insert(p->id(), p);
     }
     m_data_settings->endArray();
 
-    //thoughts
-    int t_count = m_data_settings->beginReadArray("unit_thoughts");
-    m_unit_thoughts.clear();
-    for(short i = 0; i < t_count; ++i) {
+    //sub-thoughts
+    count = m_data_settings->beginReadArray("unit_subthoughts");
+    m_unit_subthought_types.clear();
+    for(short i = 0; i < count; ++i) {
         m_data_settings->setArrayIndex(i);
-        Thought *t = new Thought(i, *m_data_settings, this);
-        m_unit_thoughts.insert(i,t);
+        m_unit_subthought_types.insert(i,new SubThoughtTypes(*m_data_settings, this));
     }
     m_data_settings->endArray();
 
+    //thoughts
+    count = m_data_settings->beginReadArray("unit_thoughts");
+    m_unit_thoughts.clear();
+    for(short i = 0; i < count; ++i) {
+        m_data_settings->setArrayIndex(i);
+        m_unit_thoughts.insert(i,new Thought(i, *m_data_settings, this));
+    }
+    m_data_settings->endArray();
+
+    //emotions
+    count = m_data_settings->beginReadArray("unit_emotions");
+    m_unit_emotions.clear();
+    for(short i = 0; i < count; ++i) {
+        m_data_settings->setArrayIndex(i);
+        m_unit_emotions.insert(i-1, new Emotion(i-1, *m_data_settings, this)); //start at -1
+    }
+    m_data_settings->endArray();
+
+    m_building_names.insert(-1,"None");
+    m_building_names.insert(0,"Seat");
+    m_building_names.insert(1,"Bed");
+    m_building_names.insert(2,"Table");
+    m_building_names.insert(3,"Coffin");
+    m_building_names.insert(4,"Farm Plot");
+    m_building_names.insert(5,"Furnace");
+    m_building_names.insert(6,"Trade Depot");
+    m_building_names.insert(7,"Shop");
+    m_building_names.insert(8,"Door");
+    m_building_names.insert(9,"Floodgate");
+    m_building_names.insert(10,"Chest");
+    m_building_names.insert(11,"Weapon Rack");
+    m_building_names.insert(12,"Armor Stand");
+    m_building_names.insert(13,"Workshop");
+    m_building_names.insert(14,"Cabinet");
+    m_building_names.insert(15,"Statue");
+    m_building_names.insert(16,"Glass Window");
+    m_building_names.insert(17,"Gem Window");
+    m_building_names.insert(18,"Well");
+    m_building_names.insert(19,"Bridge");
+    m_building_names.insert(20,"Dirt Road");
+    m_building_names.insert(21,"Paved Road");
+    m_building_names.insert(22,"Siege Engine");
+    m_building_names.insert(23,"Trap");
+    m_building_names.insert(24,"Animal Trap");
+    m_building_names.insert(25,"Support");
+    m_building_names.insert(26,"Archery Target");
+    m_building_names.insert(27,"Chain");
+    m_building_names.insert(28,"Cage");
+    m_building_names.insert(29,"Stockpile");
+    m_building_names.insert(30,"Civzone");
+    m_building_names.insert(31,"Weapon");
+    m_building_names.insert(32,"Wagon");
+    m_building_names.insert(33,"Screw Pump");
+    m_building_names.insert(34,"Construction");
+    m_building_names.insert(35,"Hatch");
+    m_building_names.insert(36,"Wall Grate");
+    m_building_names.insert(37,"Floor Grate");
+    m_building_names.insert(38,"Vertical Bars");
+    m_building_names.insert(39,"Floor Bars");
+    m_building_names.insert(40,"Gear Assembly");
+    m_building_names.insert(41,"Horizontal Axle");
+    m_building_names.insert(42,"Vertical Axle");
+    m_building_names.insert(43,"Water Wheel");
+    m_building_names.insert(44,"Windmill");
+    m_building_names.insert(45,"Traction Bench");
+    m_building_names.insert(46,"Slab");
+    m_building_names.insert(47,"Nest");
+    m_building_names.insert(48,"NestBox");
+    m_building_names.insert(49,"Hive");
+    m_building_names.insert(50,"Rollers");
+
+    m_building_quality.insert(0,tr("fine"));
+    m_building_quality.insert(1,tr("very fine"));
+    m_building_quality.insert(2,tr("superior"));
+    m_building_quality.insert(3,tr("wonderful"));
+    m_building_quality.insert(4,tr("completely sublime"));
+}
+
+//value here is the base value of the item/building
+QString GameDataReader::get_building_name(BUILDING_TYPE b_type, int value){
+    QString name = m_building_names.value(b_type,tr("building"));
+    int key = value / 128;
+    if(key > 4)
+        key = 4;
+    QString quality = m_building_quality.value(key,"");
+    return QString(quality + " " + name).trimmed();
 }
 
 GameDataReader::~GameDataReader(){
@@ -342,6 +439,19 @@ QString GameDataReader::get_goal_desc(int id, bool realized){
     return desc;
 }
 
+Mood *GameDataReader::get_mood(MOOD_TYPE m_type){
+    if(!m_unit_moods.contains(m_type)){
+        m_type = MT_NONE;
+    }
+    return m_unit_moods.value(m_type);
+}
+QString GameDataReader::get_mood_name(MOOD_TYPE m_type, bool colored){
+    return get_mood(m_type)->get_mood_name(colored);
+}
+QString GameDataReader::get_mood_desc(MOOD_TYPE m_type, bool colored){
+    return get_mood(m_type)->get_mood_desc(colored);
+}
+
 Labor *GameDataReader::get_labor(const int &labor_id) {
     return m_labors.value(labor_id, 0);
 }
@@ -355,7 +465,7 @@ Belief *GameDataReader::get_belief(const int &belief_id) {
 }
 
 QString GameDataReader::get_trait_name(const short &trait_id) {
-    return get_trait(trait_id)->name;
+    return get_trait(trait_id)->get_name();
 }
 
 QString GameDataReader::get_belief_name(const int &belief_id) {
@@ -367,6 +477,17 @@ Thought *GameDataReader::get_thought(short id){
         m_unit_thoughts.insert(id, new Thought(id, this));
     }
     return m_unit_thoughts.value(id);
+}
+
+Emotion *GameDataReader::get_emotion(EMOTION_TYPE eType){
+    if(!m_unit_emotions.contains(eType)){
+        return m_unit_emotions.value(EM_NONE);
+    }
+    return m_unit_emotions.value(eType);
+}
+
+SubThoughtTypes *GameDataReader::get_subthought_types(short id){
+    return m_unit_subthought_types.value(id);
 }
 
 laborOptimizerPlan* GameDataReader::get_opt_plan(const QString &name){
@@ -441,15 +562,15 @@ void GameDataReader::refresh_facets(){
                 m_beliefs[belief_id]->add_conflict(trait_id);
         }
 
-        trait_names << t->name;
+        trait_names << t->get_name();
     }
     m_data_settings->endArray();
 
     qSort(trait_names);
     foreach(QString name, trait_names) {
         foreach(Trait *t, m_traits) {
-            if (t->name == name) {
-                m_ordered_traits << QPair<int, Trait*>(t->trait_id, t);
+            if (t->get_name() == name) {
+                m_ordered_traits << QPair<int, Trait*>(t->id(), t);
                 break;
             }
         }
@@ -511,23 +632,23 @@ void GameDataReader::load_role_mappings(){
 
 void GameDataReader::build_calendar(){
     if(m_seasons.length()<=0 || m_months.length()<=0){
-        m_seasons.append("Spring");
-        m_seasons.append("Summer");
-        m_seasons.append("Autumn");
-        m_seasons.append("Winter");
+        m_seasons.append(tr("Spring"));
+        m_seasons.append(tr("Summer"));
+        m_seasons.append(tr("Autumn"));
+        m_seasons.append(tr("Winter"));
 
-        m_months.append("Granite");
-        m_months.append("Slate");
-        m_months.append("Felsite");
-        m_months.append("Hematite");
-        m_months.append("Malachite");
-        m_months.append("Galena");
-        m_months.append("Limestone");
-        m_months.append("Sandstone");
-        m_months.append("Timber");
-        m_months.append("Moonstone");
-        m_months.append("Opal");
-        m_months.append("Obsidian");
+        m_months.append(tr("Granite"));
+        m_months.append(tr("Slate"));
+        m_months.append(tr("Felsite"));
+        m_months.append(tr("Hematite"));
+        m_months.append(tr("Malachite"));
+        m_months.append(tr("Galena"));
+        m_months.append(tr("Limestone"));
+        m_months.append(tr("Sandstone"));
+        m_months.append(tr("Timber"));
+        m_months.append(tr("Moonstone"));
+        m_months.append(tr("Opal"));
+        m_months.append(tr("Obsidian"));
     }
 }
 

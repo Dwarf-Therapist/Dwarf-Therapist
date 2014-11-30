@@ -42,7 +42,7 @@ public:
     }
 
     ItemArmorSubtype * get_details(){return m_armor_def;}
-    short item_subtype(){return m_armor_def->subType();}
+    short item_subtype() const {return m_armor_def->subType();}
 
 private:
     ItemArmorSubtype *m_armor_def;

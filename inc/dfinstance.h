@@ -41,6 +41,8 @@ class Reaction;
 class Squad;
 class Word;
 
+class EmotionGroup;
+
 class DFInstance : public QObject {
     Q_OBJECT
 public:
@@ -50,6 +52,11 @@ public:
 
     // factory ctor
     virtual bool find_running_copy(bool connectUnknown = false) = 0;
+
+    static quint32 ticks_per_day;
+    static quint32 ticks_per_month;
+    static quint32 ticks_per_season;
+    static quint32 ticks_per_year;
 
     // accessors
     bool is_ok() {return m_is_ok;}
@@ -176,6 +183,8 @@ public:
     QVector<Plant *> get_plants() {return m_plants_vector;}
     QVector<Material *> get_base_materials() {return m_base_materials;}
 
+    QString get_building_name(int id);
+
     ItemWeaponSubtype* find_weapon_subtype(QString name);
     QMap<QString, ItemWeaponSubtype *> get_ordered_weapon_defs() {return m_ordered_weapon_defs;}
 
@@ -203,7 +212,7 @@ public:
     }
     QString find_material_name(int mat_index, short mat_type, ITEM_TYPE itype);
     const QHash<QPair<QString,QString>,pref_stat*> get_preference_stats() {return m_pref_counts;}
-    const QHash<short, QPair<int, int> > get_thought_stats() {return m_thought_counts;}
+    const QHash<int, EmotionGroup*> get_emotion_stats() {return m_emotion_counts;}
     const QHash<QPair<QString,int>,int> get_equip_warnings(){return m_equip_warning_counts;}
 
     const QString fortress_name();
@@ -284,8 +293,8 @@ private:
 
     QHash<QPair<QString,int>, int> m_equip_warning_counts;
     QHash<QPair<QString,QString>, pref_stat*> m_pref_counts;
-    //thought id, dwarf names
-    QHash<short, QPair<int,int> > m_thought_counts;
+    QHash<int, EmotionGroup*> m_emotion_counts;
+
     QString m_fortress_name;
     QString m_fortress_name_translated;
 

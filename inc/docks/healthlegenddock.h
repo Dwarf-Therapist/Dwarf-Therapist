@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef HEALTHLEGENDDOCK_H
 #define HEALTHLEGENDDOCK_H
 
-#include "basedock.h"
+#include "basetreedock.h"
 #include "healthinfo.h"
 #include "unithealth.h"
 #include <QPushButton>
@@ -31,29 +31,16 @@ THE SOFTWARE.
 
 class QTreeWidget;
 
-class HealthLegendDock : public BaseDock {
+class HealthLegendDock : public BaseTreeDock {
     Q_OBJECT
 public:
     HealthLegendDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
-private:
-    QTreeWidget *legend;
-    QLineEdit* le_search;
-    QPushButton *btn_toggle_tree;
-
-    QIcon arr_in;
-    QIcon arr_out;
-
-    void search_legend(QString val);
-    bool m_collapsed;
-
-    void closeEvent(QCloseEvent *event);
+protected:
+    void search_tree(QString val);
+    void build_tree();
 
 protected slots:
-    void search_changed(QString val);
-    void clear_search();
-    void toggle_tree();
     void selection_changed();
-    void clear_filter();
 
 signals:
     void item_selected(QList<QPair<int, int> >);
