@@ -134,7 +134,7 @@ void Preference::set_pref_flags(Race *r){
         Caste *c = r->get_caste_by_id(0);
         if(c){
             QList<int> flags;
-            flags << TRAINABLE << SHEARABLE << FISHABLE << BUTCHERABLE << MILKABLE;
+            flags << TRAINABLE << SHEARABLE << FISHABLE << BUTCHERABLE << MILKABLE << DOMESTIC;
             set_flags(c->flags(),flags);
 
             if(set_flag(c->flags(),HAS_EXTRACTS)){

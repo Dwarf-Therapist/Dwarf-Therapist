@@ -1,3 +1,12 @@
+### Version 30.0 Patch Notes
+
+***
+
+- 40.19 memory layouts
+- added new columns for gelding to default labor views
+- added new gelding role (based on shearer)
+- fixed domestic creature role preference
+
 ### Version 29.0 Patch Notes
 
 ***

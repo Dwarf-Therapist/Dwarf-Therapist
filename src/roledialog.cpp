@@ -869,7 +869,7 @@ void roleDialog::load_creatures(){
     flags << BUTCHERABLE;
     add_general_creature_node(tr("Butcherable"),flags,&m_butcher);
 
-    flags << 16;
+    flags << DOMESTIC;
     add_general_creature_node(tr("Domestic"),flags,&m_domestic);
 
     foreach(Race *r, m_df->get_races()){
