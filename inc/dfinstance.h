@@ -95,11 +95,14 @@ public:
     void load_main_vectors();
 
     void load_item_defs();
+    void load_items();
 
     void load_fortress();
     void load_fortress_name();
 
-    QList<Squad*> load_squads(bool refreshing = false);
+    void refresh_data();
+
+    QList<Squad*> load_squads(bool show_progress);
     Squad * get_squad(int id);
 
     int get_labor_count(int id) const {return m_enabled_labor_count.value(id,0);}

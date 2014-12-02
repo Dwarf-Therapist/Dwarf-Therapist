@@ -297,7 +297,7 @@ void DFInstance::load_game_data()
     m_races.clear();
     load_races_castes();
 
-    emit progress_message(tr("Loading item subtypes"));
+    emit progress_message(tr("Loading item types"));
     load_item_defs();
 
     load_fortress_name();
@@ -617,7 +617,7 @@ void DFInstance::load_main_vectors(){
     //syndromes
     m_all_syndromes = enumerate_vector(m_layout->address("all_syndromes_vector"));
 
-    //world.raws.itemdefs.
+    //load item types/subtypes
     m_itemdef_vectors.insert(WEAPON,enumerate_vector(m_layout->address("itemdef_weapons_vector")));
     m_itemdef_vectors.insert(TRAPCOMP,enumerate_vector(m_layout->address("itemdef_trap_vector")));
     m_itemdef_vectors.insert(TOY,enumerate_vector(m_layout->address("itemdef_toy_vector")));
@@ -632,25 +632,6 @@ void DFInstance::load_main_vectors(){
     m_itemdef_vectors.insert(HELM,enumerate_vector(m_layout->address("itemdef_helm_vector")));
     m_itemdef_vectors.insert(PANTS,enumerate_vector(m_layout->address("itemdef_pant_vector")));
     m_itemdef_vectors.insert(FOOD,enumerate_vector(m_layout->address("itemdef_food_vector")));
-
-    //load actual weapons and armor
-    m_items_vectors.insert(WEAPON,enumerate_vector(m_layout->address("weapons_vector")));
-    m_items_vectors.insert(SHIELD,enumerate_vector(m_layout->address("shields_vector")));
-    m_items_vectors.insert(PANTS,enumerate_vector(m_layout->address("pants_vector")));
-    m_items_vectors.insert(ARMOR,enumerate_vector(m_layout->address("armor_vector")));
-    m_items_vectors.insert(SHOES,enumerate_vector(m_layout->address("shoes_vector")));
-    m_items_vectors.insert(HELM,enumerate_vector(m_layout->address("helms_vector")));
-    m_items_vectors.insert(GLOVES,enumerate_vector(m_layout->address("gloves_vector")));
-
-    //load other equipment
-    m_items_vectors.insert(QUIVER,enumerate_vector(m_layout->address("quivers_vector")));
-    m_items_vectors.insert(BACKPACK,enumerate_vector(m_layout->address("backpacks_vector")));
-    m_items_vectors.insert(CRUTCH,enumerate_vector(m_layout->address("crutches_vector")));
-    m_items_vectors.insert(FLASK,enumerate_vector(m_layout->address("flasks_vector")));
-    m_items_vectors.insert(AMMO,enumerate_vector(m_layout->address("ammo_vector")));
-
-    //load artifacts
-    m_items_vectors.insert(ARTIFACTS,enumerate_vector(m_layout->address("artifacts_vector")));
 
     m_color_vector = enumerate_vector(m_layout->address("colors_vector"));
     m_shape_vector = enumerate_vector(m_layout->address("shapes_vector"));
@@ -753,6 +734,42 @@ void DFInstance::load_races_castes(){
     detach();
 }
 
+const QString DFInstance::fortress_name(){
+    QString name = m_fortress_name;
+    if(!m_fortress_name_translated.isEmpty())
+        name.append(QString(", \"%1\"").arg(m_fortress_name_translated));
+    return name;
+}
+
+void DFInstance::refresh_data(){
+    load_fortress();
+    load_squads(true);
+    load_items();
+}
+
+void DFInstance::load_items(){
+    m_mapped_items.clear();
+    m_items_vectors.clear();
+    //load actual weapons and armor
+    m_items_vectors.insert(WEAPON,enumerate_vector(m_layout->address("weapons_vector")));
+    m_items_vectors.insert(SHIELD,enumerate_vector(m_layout->address("shields_vector")));
+    m_items_vectors.insert(PANTS,enumerate_vector(m_layout->address("pants_vector")));
+    m_items_vectors.insert(ARMOR,enumerate_vector(m_layout->address("armor_vector")));
+    m_items_vectors.insert(SHOES,enumerate_vector(m_layout->address("shoes_vector")));
+    m_items_vectors.insert(HELM,enumerate_vector(m_layout->address("helms_vector")));
+    m_items_vectors.insert(GLOVES,enumerate_vector(m_layout->address("gloves_vector")));
+
+    //load other equipment
+    m_items_vectors.insert(QUIVER,enumerate_vector(m_layout->address("quivers_vector")));
+    m_items_vectors.insert(BACKPACK,enumerate_vector(m_layout->address("backpacks_vector")));
+    m_items_vectors.insert(CRUTCH,enumerate_vector(m_layout->address("crutches_vector")));
+    m_items_vectors.insert(FLASK,enumerate_vector(m_layout->address("flasks_vector")));
+    m_items_vectors.insert(AMMO,enumerate_vector(m_layout->address("ammo_vector")));
+
+    //load artifacts
+    m_items_vectors.insert(ARTIFACTS,enumerate_vector(m_layout->address("artifacts_vector")));
+}
+
 void DFInstance::load_fortress(){
     //load the fortress historical entity
     if(m_fortress){
@@ -781,16 +798,7 @@ void DFInstance::load_fortress_name(){
     }
 }
 
-const QString DFInstance::fortress_name(){
-    QString name = m_fortress_name;
-    if(!m_fortress_name_translated.isEmpty())
-        name.append(QString(", \"%1\"").arg(m_fortress_name_translated));
-    return name;
-}
-
-
-QList<Squad *> DFInstance::load_squads(bool refreshing) {
-
+QList<Squad *> DFInstance::load_squads(bool show_progress) {
     QList<Squad*> squads;
     if (!m_is_ok) {
         LOGW << "not connected";
@@ -798,16 +806,14 @@ QList<Squad *> DFInstance::load_squads(bool refreshing) {
         return squads;
     }
 
-    if(!refreshing){
+    if(show_progress){
         // we're connected, make sure we have good addresses
         m_squad_vector = m_layout->address("squad_vector");
         if(m_squad_vector == 0xFFFFFFFF) {
             LOGI << "Squads not supported for this version of Dwarf Fortress";
             return squads;
         }
-
         LOGD << "loading squads from " << hexify(m_squad_vector);
-
         emit progress_message(tr("Loading Squads"));
     }
 
@@ -820,7 +826,7 @@ QList<Squad *> DFInstance::load_squads(bool refreshing) {
     m_squads.clear();
 
     if (!squads_addr.empty()) {
-        if(!refreshing)
+        if(show_progress)
             emit progress_range(0, squads_addr.size()-1);
 
         int squad_count = 0;
@@ -836,7 +842,7 @@ QList<Squad *> DFInstance::load_squads(bool refreshing) {
                 }
             }
 
-            if(!refreshing)
+            if(show_progress)
                 emit progress_value(squad_count++);
         }
     }

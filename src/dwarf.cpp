@@ -1192,8 +1192,6 @@ void Dwarf::read_labors() {
 }
 
 void Dwarf::read_current_job() {
-    // TODO: jobs contain info about materials being used, if we ever get the
-    // material list we could show that in here
     VIRTADDR addr = m_address + m_mem->dwarf_offset("current_job");
     VIRTADDR current_job_addr = m_df->read_addr(addr);
 

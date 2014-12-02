@@ -446,8 +446,7 @@ void MainWindow::read_dwarves() {
     m_model->clear_all(false);
 
     m_model->set_instance(m_df);
-    m_df->load_fortress();
-    m_df->load_squads(false);
+    m_df->refresh_data();
     m_model->load_dwarves();
 
     set_progress_message("Setting up interface...");

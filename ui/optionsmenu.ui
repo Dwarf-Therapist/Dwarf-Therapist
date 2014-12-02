@@ -1638,9 +1638,9 @@
             </widget>
            </item>
            <item>
-            <widget class="QComboBox" name="cb_thought_weeks">
+            <widget class="QComboBox" name="cb_thought_time">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -1652,8 +1652,14 @@
            </item>
            <item>
             <widget class="QLabel" name="lbl_thoughts_weeks">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="text">
-              <string>of thoughts/emotions in the tooltip.</string>
+              <string>thoughts/emotions in the tooltip.</string>
              </property>
             </widget>
            </item>

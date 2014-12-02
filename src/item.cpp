@@ -175,17 +175,21 @@ void Item::read_data(){
             }else if(ref_type == 10 && m_iType == QUIVER){ //type of container item, could be expanded to show food and drink
                 int item_id = m_df->read_int(ref+m_df->memory_layout()->general_ref_offset("item_id"));
                 VIRTADDR ammo_addr = m_df->get_item_address(AMMO,item_id);
-                ItemAmmo *ia = new ItemAmmo(m_df,ammo_addr);
-                bool appended = false;
-                foreach(Item *i, m_contained_items){
-                    if(i->equals(*ia)){
-                        i->add_to_stack(ia->get_stack_size());
-                        appended = true;
-                        break;
+                if(ammo_addr > 0){
+                    ItemAmmo *ia = new ItemAmmo(m_df,ammo_addr);
+                    bool appended = false;
+                    foreach(Item *i, m_contained_items){
+                        if(i->equals(*ia)){
+                            i->add_to_stack(ia->get_stack_size());
+                            appended = true;
+                            break;
+                        }
                     }
+                    if(!appended)
+                        m_contained_items.append(ia);
+                }else{
+                    LOGE << "found unknown ammo!";
                 }
-                if(!appended)
-                    m_contained_items.append(ia);
             }
         }
     }

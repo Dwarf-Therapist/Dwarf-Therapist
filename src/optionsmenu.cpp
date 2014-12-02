@@ -149,11 +149,11 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     ui->cb_skill_drawing_method->addItem("Growing Fill", UberDelegate::SDM_GROWING_FILL);
     ui->cb_skill_drawing_method->addItem("Text", UberDelegate::SDM_NUMERIC);
 
-    ui->cb_thought_weeks->addItem(tr("only the last week"),1);
-    ui->cb_thought_weeks->addItem(tr("the last 2 weeks"),2);
-    ui->cb_thought_weeks->addItem(tr("the last 3 weeks"),3);
-    ui->cb_thought_weeks->addItem(tr("the last month"),4);
-    ui->cb_thought_weeks->addItem(tr("all"),-1);
+    ui->cb_thought_time->addItem(tr("only the last week's"),1);
+    ui->cb_thought_time->addItem(tr("the last 2 weeks'"),2);
+    ui->cb_thought_time->addItem(tr("the last 3 weeks'"),3);
+    ui->cb_thought_time->addItem(tr("the last month's"),4);
+    ui->cb_thought_time->addItem(tr("all"),-1);
 
     connect(ui->btn_restore_defaults, SIGNAL(pressed()), this, SLOT(restore_defaults()));
 
@@ -238,7 +238,7 @@ void OptionsMenu::tooltip_syndromes_toggled(bool checked){
 }
 
 void OptionsMenu::tooltip_thoughts_toggled(bool checked){
-    ui->cb_thought_weeks->setEnabled(checked);
+    ui->cb_thought_time->setEnabled(checked);
 }
 
 void OptionsMenu::read_settings() {
@@ -352,9 +352,9 @@ void OptionsMenu::read_settings() {
     ui->chk_show_unit_size->setChecked(s->value("tooltip_show_size",true).toBool());
     ui->chk_show_kills->setChecked(s->value("tooltip_show_kills",false).toBool());
 
-    idx = ui->cb_thought_weeks->findData(s->value("tooltip_thought_weeks",-1).toInt());
+    idx = ui->cb_thought_time->findData(s->value("tooltip_thought_weeks",-1).toInt());
     if(idx != -1)
-        ui->cb_thought_weeks->setCurrentIndex(idx);
+        ui->cb_thought_time->setCurrentIndex(idx);
     ui->chk_show_thoughts->setChecked(s->value("tooltip_show_thoughts", true).toBool());
     tooltip_thoughts_toggled(ui->chk_show_thoughts->isChecked());
 
@@ -496,7 +496,7 @@ void OptionsMenu::write_settings() {
         s->setValue("tooltip_health_symbols", ui->chk_health_symbols->isChecked());
         s->setValue("tooltip_show_buffs", ui->chk_show_buffs->isChecked());
         s->setValue("tooltip_show_kills", ui->chk_show_kills->isChecked());
-        s->setValue("tooltip_thought_weeks", ui->cb_thought_weeks->itemData(ui->cb_thought_weeks->currentIndex()).toInt());
+        s->setValue("tooltip_thought_weeks", ui->cb_thought_time->itemData(ui->cb_thought_time->currentIndex()).toInt());
         short val = 0;
         if(ui->rad_syn_classes->isChecked())
             val = 1;
@@ -594,9 +594,9 @@ void OptionsMenu::restore_defaults() {
     ui->chk_show_buffs->setChecked(false);
     ui->chk_show_kills->setChecked(false);
     ui->rad_syn_names->setChecked(true);
-    int idx = ui->cb_thought_weeks->findData(-1);
+    int idx = ui->cb_thought_time->findData(-1);
     if(idx != -1)
-        ui->cb_thought_weeks->setCurrentIndex(idx);
+        ui->cb_thought_time->setCurrentIndex(idx);
 
     ui->dsb_attribute_weight->setValue(0.25);
     ui->dsb_pref_weight->setValue(0.15);

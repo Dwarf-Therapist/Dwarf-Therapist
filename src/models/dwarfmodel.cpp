@@ -789,7 +789,7 @@ void DwarfModel::commit_pending() {
     foreach(Squad *s, m_df->squads()){
         s->commit_pending();
     }
-    m_df->load_squads(true);
+    m_df->load_squads(false);
 
     foreach(Dwarf *d, m_dwarves) {
         if (d->pending_changes()) {
