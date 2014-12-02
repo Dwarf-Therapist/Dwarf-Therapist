@@ -331,7 +331,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'active_syndrome_vector',%all,'unit','syndromes.active';
     emit_addr 'syn_sick_flag',%all,'unit_syndrome','flags.is_sick';
     emit_addr 'unit_health_info',%all,'unit','health';
-    emit_addr 'temp_mood',%all,'unit','counters.soldier_mood'
+    emit_addr 'temp_mood',%all,'unit','counters.soldier_mood';
     emit_addr 'counters1',%all,'unit','counters.winded';
     emit_addr 'counters2',%all,'unit','counters.pain';
     emit_addr 'counters3',%all,'unit','counters2.paralysis';
