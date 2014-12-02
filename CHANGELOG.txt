@@ -1,3 +1,23 @@
+### Version 29.0 Patch Notes
+
+***
+
+- added support for new emotions
+- added stress information with happiness (tooltips, columns, etc)
+- added stress descriptions to the tooltip emotions (haggard and drawn, utterly harrowed, etc.)
+- restored the additional information on traits that should be valued inversely or potential to fall into certain moods
+- added asterisks to the dwarf details pane to better indicate cultural conflicts and inversely valued traits
+- a new option has been added to select how many weeks/months of emotions/thoughts to show
+- units that go insane are now still displayed, but their labors cannot be set
+- added the type/description of moods to tooltips
+- units in moods have their labors locked from being changed
+- 40.14-40.18 memory layouts
+
+- fixed ambushing hunters not being shown
+- fixed a grouping issue with ammunition of the same types
+- fixed role scripts not saving/loading properly
+- fixed gradients on label tooltips in the dwarf details pane
+
 ### Version 28.0 Patch Notes
 
 ***

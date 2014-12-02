@@ -1,2 +1,2 @@
-share/game_data.ini		usr/share/dwarftherapist
+resources/game_data.ini		usr/share/dwarftherapist
 share/memory_layouts/linux/*	usr/share/dwarftherapist/memory_layouts/linux
