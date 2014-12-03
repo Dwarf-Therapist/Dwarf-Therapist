@@ -1,3 +1,9 @@
+dwarf-therapist (30.0.0) utopic; urgency=medium
+
+  * 30.0
+
+ -- Serhiy Zahoriya <serhiy.int@gmail.com>  Wed, 03 Dec 2014 01:32:46 +0200
+
 dwarf-therapist (27.0.0) trusty; urgency=medium
 
   * 27.0, Fixing the deb build
