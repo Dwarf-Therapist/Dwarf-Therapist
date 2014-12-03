@@ -4,7 +4,6 @@ Priority: optional
 Maintainer: Justin Ehlert <ehlertjd@gmail.com>
 Build-Depends: debhelper (>= 9),
                qtbase5-dev,
-               qt5-default,
                qtscript5-dev,
                qtdeclarative5-dev
 Standards-Version: 3.9.5

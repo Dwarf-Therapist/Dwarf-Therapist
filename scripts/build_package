@@ -3,9 +3,12 @@ packages_dir="../packages/"
 arch="i386"
 release=`lsb_release -cs`
 
-bash scripts/make-srctar || exit 1
+pbuilder-dist $release $arch create
+dch
+
+# bash scripts/make-srctar || exit 1
 
 debuild -us -uc -S
-pbuilder-dist $release $arch build ../*.dsc
+pbuilder-dist $release $arch build `ls -t1 ../*.dsc | head -n1`
 mkdir -p $packages_dir
 mv ~/pbuilder/*_result/*.deb $packages_dir
