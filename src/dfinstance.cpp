@@ -356,7 +356,6 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         int progress_count = 0;
 
         foreach(VIRTADDR creature_addr, creatures_addrs) {
-            LOGI << "loading creature at idx" << progress_count;
             d = Dwarf::get_dwarf(this, creature_addr);
             if(d){
                 dwarves.append(d); //add animals as well so we can show them
@@ -372,7 +371,6 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
                             m_labor_capable_dwarves.append(d);
                         }
                     }
-
                 } else {
                     LOGI << "FOUND BEAST" << hexify(creature_addr) << d->nice_name() << d->id();
                 }
