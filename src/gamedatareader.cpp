@@ -369,7 +369,7 @@ GameDataReader::GameDataReader(QObject *parent)
 
     m_building_quality.insert(0,tr("fine"));
     m_building_quality.insert(1,tr("very fine"));
-    m_building_quality.insert(2,tr("superior"));
+    m_building_quality.insert(2,tr("splendid"));
     m_building_quality.insert(3,tr("wonderful"));
     m_building_quality.insert(4,tr("completely sublime"));
 }

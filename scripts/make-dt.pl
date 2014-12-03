@@ -221,6 +221,11 @@ sub generate_dt_ini($$$$) {
     emit_addr 'killed_hist_id',%all,'history_event_hist_figure_diedst','victim_hf';
 
     emit_header 'item_offsets';
+    if ($subdir eq 'osx') {
+        push @lines, 'item_type=0x0004';
+    } else {
+        push @lines, 'item_type=0x0001';
+    }
     emit_addr 'item_def',%all,'item_ammost','subtype'; #currently same for all
     emit_addr 'id',%all,'item','id';
     emit_addr 'general_refs',%all,'item','general_refs';
@@ -484,3 +489,4 @@ __END__
 
 generate_dt_ini 'linux', $version, substr($hash,0,8), 4;
 generate_dt_ini 'windows', $version.' (graphics)', $timestamp, 0x1C;
+generate_dt_ini 'osx', $version, substr($hash,0,8), 4;

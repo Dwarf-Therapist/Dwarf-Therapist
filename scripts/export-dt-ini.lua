@@ -1,3 +1,5 @@
+-- Exports an ini file for Dwarf Therapist.
+
 local utils = require 'utils'
 local ms = require 'memscan'
 
@@ -199,6 +201,11 @@ address('id',df.history_event,'id')
 address('killed_hist_id',df.history_event_hist_figure_diedst,'victim_hf')
 
 header('item_offsets')
+if os_type == 'darwin' then
+    value('item_type',0x4)
+else
+    value('item_type',0x1)
+end
 address('item_def',df.item_ammost,'subtype') --currently same for all
 address('id',df.item,'id')
 address('general_refs',df.item,'general_refs')

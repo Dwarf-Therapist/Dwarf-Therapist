@@ -139,7 +139,17 @@ const QList<ITEM_TYPE> Item::init_subtypes(){
 void Item::read_data(){
     if(m_addr){
         VIRTADDR item_vtable = m_df->read_addr(m_addr);
-        m_iType = static_cast<ITEM_TYPE>(m_df->read_int(m_df->read_addr(item_vtable) + 0x1));
+
+        //this offset is the return value of DFs item object's getType function
+        int offset = m_df->memory_layout()->item_offset("item_type");
+        if(offset == -1){
+#if defined(Q_OS_MAC)
+            offset = 0x4;
+#else
+            offset = 0x1;
+#endif
+        }
+        m_iType = static_cast<ITEM_TYPE>(m_df->read_int(m_df->read_addr(item_vtable) + offset));
 
         m_id = m_df->read_int(m_addr+m_df->memory_layout()->item_offset("id"));
         m_stack_size = m_df->read_int(m_addr+m_df->memory_layout()->item_offset("stack_size"));
