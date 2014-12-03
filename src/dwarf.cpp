@@ -707,10 +707,7 @@ void Dwarf::read_flags(){
     quint32 flags2 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags2"));
     quint32 flags3 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags3"));
     m_unit_flags << flags1 << flags2 << flags3;
-
-    //currently only flags used are for cage and butcher animal
-    m_caged = flags1;
-    m_butcher = flags2;
+    m_pending_flags = m_unit_flags;
 
     m_curse_flags = m_df->read_addr(m_address + m_mem->dwarf_offset("curse_add_flags1"));
     //    m_curse_flags2 = m_df->read_addr(m_address + m_mem->dwarf_offset("curse_add_flags2"));
@@ -1369,20 +1366,40 @@ QString Dwarf::happiness_name(DWARF_HAPPINESS happiness) {
     }
 }
 
-bool Dwarf::get_flag_value(int bit)
+bool Dwarf::get_flag_value(int bit_pos)
 {
-    //m_caged is the flags1
-    quint32 flg = m_caged;
-    if(bit>31)
-    {
-        //the slaughter flag is in flags2
-        bit-=32;
-        flg=m_butcher;
-    }
-    quint32 mask = 1;
-    for (int i=0;i<bit;i++)
-        mask<<=1;
+    int idx = bit_pos / 32;
+    quint32 flg = m_pending_flags[idx];
+    quint32 mask = build_flag_mask(bit_pos);
     return ((flg & mask)==mask);
+}
+
+bool Dwarf::toggle_flag_bit(int bit) {
+    if (bit==FLAG_CAGED) //ignore caged
+        return false;
+
+    if(m_animal_type==hostile || m_animal_type==wild_untamed || m_animal_type==unknown_trained)
+        return false;
+
+    quint32 mask = build_flag_mask(bit);
+    if(bit==FLAG_BUTCHER){
+        //don't butcher if it's a pet, user will be notified via tooltip on column, same for non-butcherable
+        if(!m_is_pet && m_caste->flags().has_flag(BUTCHERABLE))
+            m_pending_flags[1]^=mask;
+    }else if(bit==FLAG_GELD){
+        if(m_gender_info.gender == SEX_M)
+            m_pending_flags[2]^=mask;
+    }
+    return true;
+}
+
+quint32 Dwarf::build_flag_mask(int bit){
+    bit %= 32;
+    quint32 mask = 1;
+    for(int i=0; i < bit; i++){
+        mask<<=1;
+    }
+    return mask;
 }
 
 void Dwarf::read_squad_info() {
@@ -1865,11 +1882,6 @@ void Dwarf::read_personality() {
         m_conflicting_beliefs.clear();
         int trait_count = GameDataReader::ptr()->get_traits().count();
         for (int trait_id = 0; trait_id < trait_count; ++trait_id) {
-//            if(trait_id == 4 || trait_id == 5 || trait_id == 6)
-//                m_df->write_int(traits_addr + trait_id * 2,5);
-//            else if(trait_id == 8)
-//                m_df->write_int(traits_addr + trait_id * 2,99);
-
             short val = m_df->read_short(traits_addr + trait_id * 2);
             if(val < 0)
                 val = 0;
@@ -2175,34 +2187,10 @@ void Dwarf::set_labor(int labor_id, bool enabled, bool update_cols_realtime) {
     m_pending_labors[labor_id] = enabled;
 }
 
-bool Dwarf::toggle_flag_bit(int bit) {
-    if (bit!=49) //only flag currently available to be toggled is butcher
-        return false;
-    if(m_animal_type==hostile || m_animal_type==wild_untamed || m_animal_type==unknown_trained)
-        return false;
-    int n=bit;
-    if(bit>31)
-    {
-        n=bit-32;
-    }
-    quint32 mask = 1;
-    for (int i=0;i<n;i++)
-        mask<<=1;
-    if (bit>31){
-        //don't butcher if it's a pet, user will be notified via tooltip on column, same for non-butcherable
-        if(!m_is_pet && m_caste->flags().has_flag(BUTCHERABLE))
-            m_butcher^=mask;
-    }
-
-    return true;
-}
 
 bool Dwarf::is_flag_dirty(int bit_pos){
-    if (bit_pos!=49){
-        return false;
-    }else{ //compare butcher flag
-        return m_butcher != m_unit_flags.at(1);
-    }
+    int idx = bit_pos / 32;
+    return m_unit_flags.at(idx) != m_pending_flags.at(idx);
 }
 
 int Dwarf::pending_changes() {
@@ -2213,10 +2201,11 @@ int Dwarf::pending_changes() {
         cnt++;
     if (m_custom_profession != m_pending_custom_profession)
         cnt++;
-    if (m_unit_flags.at(0) != m_caged)
-        cnt++;
-    if (m_unit_flags.at(1) != m_butcher)
-        cnt++;
+    for(int i = 0; i < m_unit_flags.count();i++){
+        if (m_unit_flags.at(i) != m_pending_flags.at(i)){
+            cnt++;
+        }
+    }
     return cnt;
 }
 
@@ -2275,10 +2264,12 @@ void Dwarf::commit_pending(bool single) {
     }
     if (m_pending_custom_profession != m_custom_profession)
         m_df->write_string(m_address + m_mem->dwarf_offset("custom_profession"), m_pending_custom_profession);
-    if (m_caged != m_unit_flags.at(0))
-        m_df->write_raw(m_address + m_mem->dwarf_offset("flags1"), 4, &m_caged);
-    if (m_butcher != m_unit_flags.at(1))
-        m_df->write_raw(m_address + m_mem->dwarf_offset("flags2"), 4, &m_butcher);
+
+    for(int i=0; i < m_unit_flags.count(); i++){
+        if (m_pending_flags.at(i) != m_unit_flags.at(i)){
+            m_df->write_raw(m_address + m_mem->dwarf_offset(QString("flags%1").arg(i+1)), 4, &m_pending_flags[i]);
+        }
+    }
 
     int pen_sq_id = -1;
     int pen_sq_pos = -1;
@@ -2375,20 +2366,11 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
     QTreeWidgetItem *d_item = new QTreeWidgetItem;
     d_item->setText(0, QString("%1 (%2)").arg(nice_name()).arg(pending_changes()));
     d_item->setData(0, Qt::UserRole, id());
-    if (m_caged != m_unit_flags.at(0)) {
-        QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
-        i->setText(0, tr("Caged changed to %1").arg(hexify(m_caged)));
-        i->setIcon(0, QIcon(":img/book--pencil.png"));
-        i->setToolTip(0, i->text(0));
-        i->setData(0, Qt::UserRole, id());
-    }
-    if (m_butcher != m_unit_flags.at(1)) {
-        QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
-        i->setText(0, tr("Butcher changed to %1").arg(hexify(m_butcher)));
-        i->setIcon(0, QIcon(":img/book--pencil.png"));
-        i->setToolTip(0, i->text(0));
-        i->setData(0, Qt::UserRole, id());
-    }
+
+    build_pending_flag_node(0,tr("Caged"),d_item);
+    build_pending_flag_node(1,tr("Butcher"),d_item);
+    build_pending_flag_node(2,tr("Geld"),d_item);
+
     if (m_pending_nick_name != m_nick_name) {
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
         QString nick = m_pending_nick_name;
@@ -2438,6 +2420,16 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
         i->setData(0, Qt::UserRole, id());
     }
     return d_item;
+}
+
+void Dwarf::build_pending_flag_node(int index,QString title, QTreeWidgetItem *parent){
+    if (m_pending_flags.at(index) != m_unit_flags.at(index)) {
+        QTreeWidgetItem *i = new QTreeWidgetItem(parent);
+        i->setText(0, tr("%1 changed to %2").arg(title).arg(hexify(m_pending_flags.at(index))));
+        i->setIcon(0, QIcon(":img/book--pencil.png"));
+        i->setToolTip(0, i->text(0));
+        i->setData(0, Qt::UserRole, id());
+    }
 }
 
 QString Dwarf::tooltip_text() {

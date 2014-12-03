@@ -213,8 +213,8 @@ public:
     //! return this creature's flag2
     Q_INVOKABLE quint32 get_flag3() { return m_unit_flags.at(2); }
 
-    //! return this creature's Nth bit from flags
-    Q_INVOKABLE bool get_flag_value(int bit);
+    //! return this creature's Nth bit from the start of flags1
+    Q_INVOKABLE bool get_flag_value(int bit_pos);
 
     static bool has_invalid_flags(const int id, const QString creature_name, QHash<uint, QString> invalid_flags, quint32 dwarf_flags);
 
@@ -391,6 +391,7 @@ public:
 
     //! used for building a datamodel that shows all pending changes this dwarf has queued up
     QTreeWidgetItem *get_pending_changes_tree();
+    void build_pending_flag_node(int index,QString title, QTreeWidgetItem *parent);
 
     //! convenience hack allowing Dwarf objects to know where they live in the gridview model
     QModelIndex m_name_idx;
@@ -571,8 +572,7 @@ private:
     int m_pending_squad_position;
     QString m_pending_squad_name; //The name of the squad that the dwarf belongs to (if any)
     QList<quint32> m_unit_flags;
-    quint32 m_caged;
-    quint32 m_butcher;
+    QList<quint32> m_pending_flags;
     short m_age;
     short m_age_in_months;
     uint m_turn_count; // Dwarf turn count from start of fortress (as best we know)
@@ -675,6 +675,7 @@ private:
 
     // assembles component names into a nicely formatted single string
     void build_names();
+    quint32 build_flag_mask(int bit);
 
 signals:
     void name_changed();

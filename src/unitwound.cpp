@@ -257,6 +257,7 @@ void UnitWound::read_wound(){
             add_detail(wpd,eHealth::HI_GUTTED, wpd.wound_flags1 & 0x00008000);
 
             add_detail(wpd,eHealth::HI_SETTING, wpd.wound_flags2 & 0x00000001);
+            add_detail(wpd,eHealth::HI_GELDED, wpd.wound_flags2 & 0x00000004);
 
             if(!m_caste_flags.has_flag(NO_PAIN)){
                 wpd.pain = m_df->read_int(wounded_part + mem->wound_offset("pain"));

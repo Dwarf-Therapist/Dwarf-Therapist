@@ -440,7 +440,8 @@ typedef enum  {
     HI_SUTURES = 38,
     HI_TRACTION = 39,
     HI_CRUTCH = 40,
-    HI_OTHER = 41
+    HI_OTHER = 41,
+    HI_GELDED
 } H_INFO;
 
 typedef enum {
@@ -694,5 +695,12 @@ typedef enum{
     BT_HIVE,
     BT_ROLLERS
 } BUILDING_TYPE;
+
+typedef enum {
+    FLAG_UNKNOWN = -1,
+    FLAG_CAGED = 25,
+    FLAG_BUTCHER = 49,
+    FLAG_GELD = 93
+} UNIT_FLAGS;
 
 #endif // GLOBAL_ENUMS_H

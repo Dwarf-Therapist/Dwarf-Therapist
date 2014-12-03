@@ -62,8 +62,8 @@ QStandardItem *FlagColumn::build_cell(Dwarf *d) {
             rating = 1;
         //check to fix butchering pets. currently this will cause the butchered parts to still be recognized as a pet
         //and they'll put them into a burial recepticle, but won't use them as a food source
-        if(m_bit_pos == 49){
-            bool disabled = false;
+        bool disabled = false;
+        if(m_bit_pos == FLAG_BUTCHER){
             if(d->is_pet()){
                 item->setToolTip(tr("<b>Pets cannot be butchered!</b>"));
                 disabled = true;
@@ -71,11 +71,20 @@ QStandardItem *FlagColumn::build_cell(Dwarf *d) {
                 item->setToolTip(tr("<b>This creature cannot be butchered!</b>"));
                 disabled = true;
             }
-            if(disabled){
-                item->setData(QBrush(QColor(187,34,34,200)),Qt::BackgroundColorRole);
-                item->setData(true,DwarfModel::DR_SPECIAL_FLAG); //indicates that the cell is disabled
-                rating = -1;
+        }else if(m_bit_pos == FLAG_GELD){
+            if(d->get_gender() != Dwarf::SEX_M){
+                item->setToolTip(tr("<b>Only male creatures can be gelded!</b>"));
+                disabled = true;
+            }else if(d->has_health_issue(42,0)){
+                item->setToolTip(tr("<b>This creature has already been gelded!</b>"));
+                disabled = true;
             }
+        }
+
+        if(disabled){
+            item->setData(QBrush(QColor(187,34,34,200)),Qt::BackgroundColorRole);
+            item->setData(true,DwarfModel::DR_SPECIAL_FLAG); //indicates that the cell is disabled
+            rating = -1;
         }
 
         item->setData(rating, DwarfModel::DR_SORT_VALUE);
