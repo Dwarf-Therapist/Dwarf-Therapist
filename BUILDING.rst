@@ -39,6 +39,13 @@ Gentoo-based
 * As Gentoo only supports Qt 4, qmake doesn't have a -qt parameter.
   Otherwise, follow the instructions as below.
 
+Fedora 20+
+**********
+
+::
+
+    sudo yum install qt5-qtbase-devel qt5-qtdeclarative-devel
+
 Building
 --------
 
@@ -46,6 +53,7 @@ Building
 
     qmake -qt=4 # Qt 4 on Debian-based
     qmake -qt=5 # Qt 5 on Debian-based
+    qmake-qt5   # Qt 5 on Fedora
     qmake # Qt 4 on most other distros
     make -j$(nproc) # Run as many jobs as processing units
 
