@@ -245,7 +245,6 @@ void optimizereditor::insert_row(PlanDetail *d){
     sb_count->setWrapping(true);
     sb_count->setValue(d->get_max_count());
     connect(sb_count, SIGNAL(valueChanged(int)), this, SLOT(count_changed(int)));
-    connect(sb_count,SIGNAL(editingFinished()),this,SLOT(count_edited()));
     ui->tw_labors->setCellWidget(row,4,sb_count);
     if(d->is_overridden())
         set_override_formatting(sb_count);

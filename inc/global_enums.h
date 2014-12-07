@@ -698,8 +698,14 @@ typedef enum{
 
 typedef enum {
     FLAG_UNKNOWN = -1,
+    FLAG_DEAD = 1,
+    FLAG_IN_MOOD = 2,
+    FLAG_HAD_MOOD = 3,
     FLAG_CAGED = 25,
+    FLAG_TAME = 26,
+    FLAG_KILLED = 39,
     FLAG_BUTCHER = 49,
+    FLAG_GHOST = 76,
     FLAG_GELD = 93
 } UNIT_FLAGS;
 

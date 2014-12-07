@@ -52,9 +52,6 @@ UnitHealth::UnitHealth(DFInstance *df, Dwarf *d, bool req_diagnosis)
         read_health_info();
         read_wounds();
 
-        read_health_info();
-        read_wounds();
-
         //sort everything by severity
         sort_severity(m_status_info);
         sort_severity(m_treatment_info);

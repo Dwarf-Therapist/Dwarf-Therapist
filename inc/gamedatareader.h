@@ -107,6 +107,7 @@ public:
     QString get_skill_name(short skill_id, bool moodable = false);
     int get_total_skill_count() {return m_skills.count();}
     int get_total_belief_count() {return m_beliefs.count();}
+    int get_total_trait_count() {return m_trait_count;}
 
     const QVector<int> moodable_skills() {return m_moodable_skills;}
     int get_pref_from_skill(int skill_id) const {return m_mood_skills_profession_map.value(skill_id,-1);}
@@ -134,6 +135,7 @@ private:
 
     QHash<int, Trait*> m_traits;
     QList<QPair<int, Trait*> > m_ordered_traits;
+    int m_trait_count; //excluding custom traits
 
     QHash<int, Belief*> m_beliefs;
     QList<QPair<int,QString> > m_ordered_beliefs;

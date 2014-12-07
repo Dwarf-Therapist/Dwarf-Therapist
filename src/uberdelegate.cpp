@@ -341,6 +341,8 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     case CT_TRAIT: case CT_BELIEF:
     {
         QColor bg = paint_bg(adjusted, p, opt, idx);
+        if(type==CT_TRAIT && rating == -1)
+            rating = 50; //don't draw if the unit doesn't have the trait at all
         paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50, 10, 90);
         int alpha = idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt();
         if(alpha > 0){

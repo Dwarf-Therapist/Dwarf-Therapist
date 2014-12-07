@@ -33,7 +33,12 @@ QString Trait::inverted_message = QObject::tr("<h5 style=\"margin:0;\"><font col
 Trait::Trait(int trait_id, QSettings &s, QObject *parent)
     : QObject(parent)
 {
-    m_trait_id = trait_id;
+    //if we have an explicitly set id, use that (used for special traits like detachment, cave adapt)
+    if(s.contains("id")){
+        m_trait_id = s.value("id",-1).toInt();
+    }else{
+        m_trait_id = trait_id;
+    }
     m_name = s.value("name", "UNKNOWN").toString();
     m_inverted = s.value("inverted",false).toBool();
 
@@ -65,7 +70,7 @@ Trait::Trait(int trait_id, QSettings &s, QObject *parent)
     count = s.beginReadArray("special");
     for(int i = 0; i < count; i++) {
         s.setArrayIndex(i);
-        m_special.insert(s.value("msg").toString(), s.value("limit").toInt());
+        m_special.insert(s.value("limit").toInt(),s.value("msg").toString());
     }
     s.endArray();
 
@@ -85,6 +90,7 @@ Trait::Trait(int trait_id, QSettings &s, QObject *parent)
         m_level_string[76] = s.value("level_4", "").toString();
         m_level_string[91] = s.value("level_5", "").toString();
     }else{
+        qSort(m_limits);
         for(int i = 0; i < m_limits.length(); i++){
             m_level_string[m_limits.at(i)] = s.value(QString("level_%1").arg(QString::number(i))).toString();
         }
@@ -168,19 +174,15 @@ QString Trait::belief_conficts_msgs(short raw_value, QList<UnitBelief> conflicti
 QString Trait::special_messages(const short &val){
     if(m_special.size() <=0 )
         return "";
-    QStringList items;
-    int limit;
-    bool include;
-    foreach(QString msg, m_special.uniqueKeys()){
-        include = false;
-        limit = m_special.value(msg);
-
-        if((limit < 0 && abs(val) < abs(limit)) || (limit > 0 && abs(val) > abs(limit)))
-            include = true;
-
-        if(include){
-            items.append(msg);
+    QStringList msgs;
+    QMapIterator<short,QString> i(m_special);
+    i.toBack();
+   while(i.hasPrevious()){
+        i.previous();
+        if(val >= i.key()){
+            msgs.append(i.value());
+            break;
         }
     }
-    return items.join(tr(" and "));
+    return formatList(msgs);
 }

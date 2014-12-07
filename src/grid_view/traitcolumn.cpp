@@ -65,6 +65,10 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
         infos << tr("Unknown trait");
     }
 
+    if(raw_value < 0){
+        infos << tr("This unit doesn't have this trait!");
+    }
+
     if (d->trait_is_active(m_trait_id)==false)
         infos << tr("Not an active trait for this dwarf.");
 
@@ -79,7 +83,8 @@ QStandardItem *TraitColumn::build_cell(Dwarf *d) {
         }
         if(m_trait->valued_inversely()){
             infos << Trait::inverted_message;
-            rating = 100 - raw_value;
+            if(raw_value != -1)
+                rating = 100 - raw_value;
         }
     }
 

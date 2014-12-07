@@ -299,22 +299,23 @@ QString Role::generate_details(QString title, weight_info aspect_group_weight,
                 id = GameDataReader::ptr()->get_trait_name(id.toInt());
 
             detail = capitalizeEach(id);
-
+            float key = weight;
             if(w_info.is_neg){
                 w_str = tr("<i> <font color=red>(w-%1)</font></i>").arg(weight,0,'f',2);
+                key *= -1;
             }else{
                 w_str = tr("<i> (w%1)</i>").arg(weight,0,'f',2);
             }
 
             if(group_lines){
-                QStringList vals = details.take(weight);
+                QStringList vals = details.take(key);
                 if(vals.count() <= 0) //add the weight only to the first item
                     vals.append(w_str);
                 vals.append(detail);
-                details.insert(weight,vals);
+                details.insert(key,vals);
             }else{
                 detail.append(w_str);
-                details.insertMulti(weight,QStringList(detail));
+                details.insertMulti(key,QStringList(detail));
             }
         }
 

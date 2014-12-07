@@ -36,6 +36,7 @@ private:
     QString m_name;
     bool m_inverted;
     int m_trait_id;
+
     struct skill_conflict{
         int skill_id;
         int limit;
@@ -48,8 +49,8 @@ private:
     QList<int> m_belief_conflicts;
     //skill_id, limit
     QHash<int,skill_conflict> m_skill_conflicts;
-    //message, limit
-    QHash<QString, int> m_special;
+    //limit, message
+    QMap<short,QString> m_special;
     //limits
     QList<int> m_limits;
 

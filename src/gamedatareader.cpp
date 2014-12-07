@@ -549,13 +549,14 @@ void GameDataReader::refresh_facets(){
     qDeleteAll(m_traits);
     m_traits.clear();
     m_ordered_traits.clear();
+    m_trait_count = 0;
 
     int traits = m_data_settings->beginReadArray("facets");
     QStringList trait_names;
     for(int trait_id = 0; trait_id < traits; trait_id++) {
         m_data_settings->setArrayIndex(trait_id);
         Trait *t = new Trait(trait_id,*m_data_settings, this);
-        m_traits.insert(trait_id, t);
+        m_traits.insert(t->id(), t);
 
         foreach(int belief_id, t->get_conflicting_beliefs()){
             if(m_beliefs.contains(belief_id))
@@ -563,6 +564,9 @@ void GameDataReader::refresh_facets(){
         }
 
         trait_names << t->get_name();
+        if(t->id() >= 0){
+            m_trait_count++;
+        }
     }
     m_data_settings->endArray();
 

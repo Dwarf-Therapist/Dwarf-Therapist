@@ -73,10 +73,13 @@ QStandardItem *FlagColumn::build_cell(Dwarf *d) {
             }
         }else if(m_bit_pos == FLAG_GELD){
             if(d->get_gender() != Dwarf::SEX_M){
-                item->setToolTip(tr("<b>Only male creatures can be gelded!</b>"));
+                item->setToolTip(tr("<b>Only males can be gelded!</b>"));
                 disabled = true;
             }else if(d->has_health_issue(42,0)){
                 item->setToolTip(tr("<b>This creature has already been gelded!</b>"));
+                disabled = true;
+            }else if(!d->get_caste()->is_geldable()){
+                item->setToolTip(tr("<b>This caste is not geldable!</b>"));
                 disabled = true;
             }
         }

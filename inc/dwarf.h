@@ -79,6 +79,14 @@ public:
         ORIENT_HETERO
     } SEX_ORIENT_TYPE;
 
+    typedef enum{
+        STATE_MIGRANT = 7,
+        STATE_OUTDOORS = 14,
+        STATE_HARDENED = 15,
+        STATE_ON_BREAK = 17,
+        STATE_CAVE_ADAPT = 19
+    } MISC_STATES;
+
     static QString get_gender_desc(const GENDER_TYPE &type) {
         switch (type) {
         case SEX_UNK: return QObject::tr("Other");
@@ -351,7 +359,7 @@ public:
     bool toggle_labor(int labor_id);
 
     //! toggle the n_bit bit of the flag
-    bool toggle_flag_bit(int n_bit);
+    bool toggle_flag_bit(int bit_pos);
 
     //! set's the pending custom profession text for this dwarf
     void set_custom_profession_text(const QString &prof_text);
@@ -391,7 +399,7 @@ public:
 
     //! used for building a datamodel that shows all pending changes this dwarf has queued up
     QTreeWidgetItem *get_pending_changes_tree();
-    void build_pending_flag_node(int index,QString title, QTreeWidgetItem *parent);
+    void build_pending_flag_node(int index, QString title, UNIT_FLAGS flag, QTreeWidgetItem *parent);
 
     //! convenience hack allowing Dwarf objects to know where they live in the gridview model
     QModelIndex m_name_idx;

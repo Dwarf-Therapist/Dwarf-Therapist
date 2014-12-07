@@ -276,7 +276,7 @@ void Dwarf::refresh_data() {
     read_id();
     read_flags();
     //LOGD << "checking unit id:" << m_id;
-    read_race();
+    read_race(); //also sets m_is_animal
     read_first_name();
     read_last_name(m_address + m_mem->dwarf_offset("first_name"));
     read_nick_name();
@@ -369,22 +369,14 @@ bool Dwarf::is_valid(){
 
             //check for migrants (which aren't dead/killed/ghosts)
             if(this->state_value(7) > 0
-                    && !(m_unit_flags.at(0) & 0x2)
-                    && !(m_unit_flags.at(1) & 0x80)
-                    && !(m_unit_flags.at(2) & 0x1000)){
+                    && !get_flag_value(FLAG_DEAD)
+                    && !get_flag_value(FLAG_KILLED)
+                    && !get_flag_value(FLAG_GHOST)){
                 LOGI << "Found migrant " << this->nice_name();
                 m_validated = true;
                 m_is_valid = true;
                 return true;
             }
-
-//            //if a dwarf has gone crazy (berserk=7,raving=6,melancholy=5)
-//            if(m_mood_id == MT_INSANE || m_mood_id == MT_BERSERK || m_mood_id == MT_MELANCHOLY){
-//                LOGI << "Ignoring " << this->nice_name() << "who appears to have lost their mind.";
-//                m_validated = true;
-//                m_is_valid = false;
-//                return false;
-//            }
 
             //check opposed to life
             if(m_curse_flags & eCurse::OPPOSED_TO_LIFE){
@@ -395,7 +387,7 @@ bool Dwarf::is_valid(){
             }
 
         }else{ //tame or caged animals
-            if (m_unit_flags.at(0) & 0x6000000) {
+            if (get_flag_value(FLAG_TAME) || get_flag_value(FLAG_CAGED)) {
                 //exclude cursed animals, this may be unnecessary with the civ check
                 //the full curse information hasn't been loaded yet, so just read the curse name
                 QString curse_name = m_df->read_string(m_address + m_mem->dwarf_offset("curse"));
@@ -575,7 +567,7 @@ void Dwarf::read_mood(){
 
     //check if they've had a mood/artifact if they're not currently in a craft-type mood
     if(m_mood_id == MT_NONE || (int)m_mood_id > 4){
-        if(m_unit_flags.at(0) & 0x8){
+        if(get_flag_value(FLAG_HAD_MOOD)){
             m_had_mood = true;
             m_artifact_name = m_df->get_translated_word(m_address + m_mem->dwarf_offset("artifact_name"));
             m_highest_moodable_skill = m_df->read_short(m_address +m_mem->dwarf_offset("mood_skill"));
@@ -647,7 +639,7 @@ void Dwarf::read_states(){
         VIRTADDR states_addr = m_address + states_offset;
         QVector<uint> entries = m_df->enumerate_vector(states_addr);
         foreach(uint entry, entries) {
-            m_states.insert(m_df->read_short(entry), m_df->read_short(entry+0x4));
+            m_states.insert(m_df->read_short(entry), m_df->read_int(entry+0x4));
         }
     }
 }
@@ -990,8 +982,8 @@ void Dwarf::read_preferences(){
     }
 
     //add a special preference (actually a misc trait) for like outdoors
-    if(has_state(14)){
-        int val = state_value(14);
+    if(has_state(STATE_OUTDOORS)){
+        int val = state_value(STATE_OUTDOORS);
         QString pref = tr("Doesn't mind being outdoors");
         if(val == 2)
             pref = tr("Likes working outdoors");
@@ -1245,8 +1237,7 @@ void Dwarf::read_current_job() {
             m_current_job = tr("Soldier");
             m_current_job_id = -1;
         }else{
-            short on_break_value = m_mem->job_detail("on_break_flag");
-            m_is_on_break = has_state(on_break_value);
+            m_is_on_break = has_state(STATE_ON_BREAK);
             m_current_job = m_is_on_break ? tr("On Break") : tr("No Job");
             if(m_is_on_break)
                 m_current_job_id = -2;
@@ -1374,32 +1365,36 @@ bool Dwarf::get_flag_value(int bit_pos)
     return ((flg & mask)==mask);
 }
 
-bool Dwarf::toggle_flag_bit(int bit) {
-    if (bit==FLAG_CAGED) //ignore caged
+bool Dwarf::toggle_flag_bit(int bit_pos) {
+    if (bit_pos==FLAG_CAGED) //ignore caged
         return false;
 
-    if(m_animal_type==hostile || m_animal_type==wild_untamed || m_animal_type==unknown_trained)
+    //currently flags are only for animals
+    if(m_animal_type==hostile || m_animal_type==wild_untamed || m_animal_type==unknown_trained){
         return false;
-
-    quint32 mask = build_flag_mask(bit);
-    if(bit==FLAG_BUTCHER){
-        //don't butcher if it's a pet, user will be notified via tooltip on column, same for non-butcherable
-        if(!m_is_pet && m_caste->flags().has_flag(BUTCHERABLE))
-            m_pending_flags[1]^=mask;
-    }else if(bit==FLAG_GELD){
-        if(m_gender_info.gender == SEX_M)
-            m_pending_flags[2]^=mask;
     }
-    return true;
+
+    bool set_flag = true;
+    if(bit_pos==FLAG_BUTCHER){
+        //don't butcher if it's a pet, user will be notified via tooltip on column, same for non-butcherable
+        set_flag = (!m_is_pet && m_caste->flags().has_flag(BUTCHERABLE));
+    }else if(bit_pos==FLAG_GELD){
+        set_flag = (m_gender_info.gender == SEX_M && m_caste->is_geldable());
+    }
+
+    if(set_flag){
+        int idx = bit_pos / 32;
+        quint32 mask = build_flag_mask(bit_pos);
+        m_pending_flags[idx] ^= mask;
+        return true;
+    }else{
+        return false;
+    }
 }
 
 quint32 Dwarf::build_flag_mask(int bit){
     bit %= 32;
-    quint32 mask = 1;
-    for(int i=0; i < bit; i++){
-        mask<<=1;
-    }
-    return mask;
+    return (1 << bit);
 }
 
 void Dwarf::read_squad_info() {
@@ -1880,7 +1875,7 @@ void Dwarf::read_personality() {
         VIRTADDR traits_addr = personality_addr + m_mem->soul_detail("traits");
         m_traits.clear();
         m_conflicting_beliefs.clear();
-        int trait_count = GameDataReader::ptr()->get_traits().count();
+        int trait_count = GameDataReader::ptr()->get_total_trait_count();
         for (int trait_id = 0; trait_id < trait_count; ++trait_id) {
             short val = m_df->read_short(traits_addr + trait_id * 2);
             if(val < 0)
@@ -1895,6 +1890,29 @@ void Dwarf::read_personality() {
                 if((ub.belief_value() > 10 && val < 40)  || (ub.belief_value() < -10 && val > 60)){
                     m_beliefs[belief_id].add_trait_conflict(trait_id);
                     m_conflicting_beliefs.insertMulti(trait_id, ub);
+                }
+            }
+        }
+        //add special traits for cave adaptation and detachment, scale them to normal trait ranges
+        if(!m_is_animal){
+            if(has_state(STATE_HARDENED)){
+                int val = state_value(STATE_HARDENED);
+                //scale from 40-90. this sets the values (33,75,100) at 56,78,90 respectively
+                 //since anything below 65 doesn't really have an effect
+                val = ((val*(90-40)) / 100) + 40;
+                m_traits.insert(-1,val);
+            }
+            if(has_state(STATE_CAVE_ADAPT)){
+                //cave adapt is in ticks, 1 year and 1.5 years. only include it if there's a value > 0
+                int val = state_value(STATE_CAVE_ADAPT);
+                if(val > 0){
+                    //scale from 40-90. this will set 1 year at 73, and 1.5 years at 90
+                    //anything below that we don't want to draw as it won't have an effect, and
+                    //the drawing will only start at > 60 (~7.5 months)
+                    val = ((val*(90-40)) / 604800) + 40;
+                    if(val > 100)
+                        val = 100;
+                    m_traits.insert(-2,val);
                 }
             }
         }
@@ -1914,13 +1932,6 @@ void Dwarf::read_personality() {
                 m_goals.insert(goal_type,val);
             }
         }
-
-        //TODO: see if this is still affecting things in DF2014
-        //    //check the misc. traits for the level of detachment and add a special trait for it
-        //    if(!m_is_animal && has_state(15)){
-        //        int val = state_value(15);
-        //        m_traits.insert(41,val);
-        //    }
 
         //read after traits
         read_emotions(personality_addr);
@@ -2367,9 +2378,9 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
     d_item->setText(0, QString("%1 (%2)").arg(nice_name()).arg(pending_changes()));
     d_item->setData(0, Qt::UserRole, id());
 
-    build_pending_flag_node(0,tr("Caged"),d_item);
-    build_pending_flag_node(1,tr("Butcher"),d_item);
-    build_pending_flag_node(2,tr("Geld"),d_item);
+    build_pending_flag_node(0,tr("Cage"),FLAG_CAGED,d_item);
+    build_pending_flag_node(1,tr("Butcher"),FLAG_BUTCHER,d_item);
+    build_pending_flag_node(2,tr("Geld"),FLAG_GELD,d_item);
 
     if (m_pending_nick_name != m_nick_name) {
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
@@ -2422,11 +2433,17 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
     return d_item;
 }
 
-void Dwarf::build_pending_flag_node(int index,QString title, QTreeWidgetItem *parent){
+void Dwarf::build_pending_flag_node(int index, QString title, UNIT_FLAGS flag, QTreeWidgetItem *parent){
     if (m_pending_flags.at(index) != m_unit_flags.at(index)) {
         QTreeWidgetItem *i = new QTreeWidgetItem(parent);
-        i->setText(0, tr("%1 changed to %2").arg(title).arg(hexify(m_pending_flags.at(index))));
-        i->setIcon(0, QIcon(":img/book--pencil.png"));
+        QString icon_path = ":img/plus-circle.png";
+        QString msg = title;
+        if(!get_flag_value(flag)){
+            icon_path = ":img/minus-circle.png";
+            msg = tr("Cancel %1").arg(title);
+        }
+        i->setIcon(0, QIcon(icon_path));
+        i->setText(0, msg);
         i->setToolTip(0, i->text(0));
         i->setData(0, Qt::UserRole, id());
     }

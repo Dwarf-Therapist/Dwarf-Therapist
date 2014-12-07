@@ -23,7 +23,6 @@ public:
     {
         m_token = "UNK";
         m_bp_name = "Unknown";
-//        m_has_rot = false;
     }
 
     BodyPart(DFInstance *df, Race *r, VIRTADDR bp_addr, int bp_id)
@@ -38,12 +37,13 @@ public:
 
         m_layers_addr = m_df->enumerate_vector(bp_addr + m_df->memory_layout()->health_offset("layers_vector"));
         m_parent_id = m_df->read_short(bp_addr + m_df->memory_layout()->health_offset("parent_id"));
+        m_flags = FlagArray(m_df,bp_addr + m_df->memory_layout()->health_offset("body_part_flags"));
     }
 
     virtual ~BodyPart(){
-       m_df = 0;
-       m_race = 0;
-       m_layers.clear();
+        m_df = 0;
+        m_race = 0;
+        m_layers.clear();
     }
 
     BodyPartLayer get_layer(short id){
@@ -51,7 +51,7 @@ public:
             if(!m_layers.contains(id))
                 m_layers.insert(id, BodyPartLayer(m_layers_addr.at(id),id,m_df,m_race));
 
-                return m_layers.value(id);
+            return m_layers.value(id);
         }else{
             return BodyPartLayer(0,-1,m_df,m_race);
         }
@@ -72,6 +72,7 @@ public:
     int id() {return m_body_part_id;}
     QString token() {return m_token;}
     int parent() {return m_parent_id;}
+    FlagArray flags() {return m_flags;}
 
 private:
     DFInstance *m_df;
@@ -84,6 +85,7 @@ private:
     QString m_token;
     QHash<int, BodyPartLayer> m_layers;
     QVector<VIRTADDR> m_layers_addr;
+    FlagArray m_flags;
 
     void build_bp_name(){
         int bp_count = m_df->read_int(bp_addr + m_df->memory_layout()->health_offset("number"));

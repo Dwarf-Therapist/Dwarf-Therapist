@@ -415,12 +415,12 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     ui->tw_traits->setSortingEnabled(false);
     QColor trait_color;
     QList<int> conflicted_beliefs;
-    for (int trait_id = 0; trait_id < traits.size(); ++trait_id) {
+    foreach(int trait_id, traits.uniqueKeys()) {
         if (d->trait_is_active(trait_id))
         {
             trait_color = QColor(Qt::black);
             Trait *t = gdr->get_trait(trait_id);
-            short val = traits[trait_id];
+            short val = traits.value(trait_id);
             //build the info message
             QStringList msg_items;
             msg_items << QString("%1%2").arg(t->level_message(val)).arg(t->belief_conficts_msgs(val,d->trait_conflicts(trait_id))) << t->skill_conflicts_msgs(val) << t->special_messages(val);

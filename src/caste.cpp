@@ -43,6 +43,7 @@ Caste::Caste(DFInstance *df, VIRTADDR address, Race *r, QObject *parent)
     , m_description(QString::null)
     , m_baby_age(0)
     , m_child_age(0)
+    , m_can_geld(-1)
     , m_df(df)
     , m_mem(df->memory_layout())
     , m_flags()
@@ -114,6 +115,22 @@ void Caste::read_caste() {
     if(m_flags.has_flag(NO_FISH)){
         m_flags.set_flag(FISHABLE,false);
     }
+}
+
+bool Caste::is_geldable(){
+    if(m_can_geld == -1){
+        //qDebug() << "CHECKING BODY PARTS FOR CASTE:" << m_name << "gender" << m_df->read_byte(m_address + 0x127c);
+        for(int id=0; id < m_body_parts_addr.size(); id++){
+            BodyPart *bp = new BodyPart(m_df,m_race,m_body_parts_addr.at(id),id);
+            m_body_parts.insert(id,bp);
+            qDebug() << "  name" << bp->name() << "token" << bp->token();
+            if(bp->token() == "LB"){
+                m_can_geld = (bool)bp->flags().has_flag(38);
+                break;
+            }
+        }
+    }
+    return m_can_geld;
 }
 
 void Caste::load_skill_rates(){

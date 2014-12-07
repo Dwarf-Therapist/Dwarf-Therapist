@@ -72,15 +72,18 @@ public:
 
     BodyPart *get_body_part(int body_part_id);
 
+    bool is_geldable();
+
 private:
     VIRTADDR m_address;
     Race *m_race;
     QString m_tag;
     QString m_name;
     QString m_name_plural;
-    QString m_description;    
+    QString m_description;
     int m_baby_age;
     int m_child_age;
+    int m_can_geld;
 
     QHash<int,att_range> m_attrib_ranges;
 
@@ -98,7 +101,7 @@ private:
     //attribute id, cost to improve (from attribute rates)
     QHash<int,int> m_attrib_costs;
 
-    void read_caste();    
+    void read_caste();
 
     VIRTADDR m_body_addr;
     QVector<VIRTADDR> m_body_parts_addr;
