@@ -113,7 +113,8 @@ public:
         DJT_DOOR_MAKE,
         DJT_CHAIR_MAKE,
         DJT_SOLDIER,
-        DJT_ON_BREAK
+        DJT_ON_BREAK,
+        DJT_CAGED
     } DWARF_JOB_TYPE;
 
     static DWARF_JOB_TYPE get_type(const QString &type) {
@@ -201,6 +202,7 @@ public:
         m["chair_make"] = DJT_CHAIR_MAKE;
         m["soldier"] = DJT_SOLDIER;
         m["on_break"] = DJT_ON_BREAK;
+        m["caged"] = DJT_CAGED;
         return m.value(type.toLower(), DJT_DEFAULT);
     }
 

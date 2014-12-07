@@ -243,6 +243,9 @@ GameDataReader::GameDataReader(QObject *parent)
     job_names << m_dwarf_jobs[-2]->description;
     m_dwarf_jobs[-3] = new DwarfJob(-3,tr("No Job"), DwarfJob::DJT_IDLE, "", this);
     job_names << m_dwarf_jobs[-3]->description;
+    m_dwarf_jobs[-4] = new DwarfJob(-4,tr("Caged"), DwarfJob::DJT_CAGED, "", this);
+    job_names << m_dwarf_jobs[-4]->description;
+
     for (short i = 0; i < job_count; ++i) {
         m_data_settings->setArrayIndex(i);
 

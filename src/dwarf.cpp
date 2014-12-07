@@ -206,8 +206,8 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     TRACE << "FLAGS3 :" << hexify(flags3);
     TRACE << "RACE   :" << hexify(race_id);
 
-    bool is_caged = flags1 & 0x2000000;
-    bool is_tame = flags1 & 0x4000000;
+    bool is_caged = flags1 & (1 << FLAG_CAGED);
+    bool is_tame = flags1 & (1 << FLAG_TAME);
 
     if(!is_caged){
         if(civ_id != df->dwarf_civ_id()){ //non-animal, but wrong civ
@@ -215,14 +215,19 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
         }
     }else{
         if(!is_tame){
-            bool trainable = false;
+            bool is_ok = false;
             //if it's a caged, trainable beast, keep it in our list, but only if it's alive
             Race *r = df->get_race(race_id);
             if(r){
-                trainable = r->caste_flag(TRAINABLE);
-                r = 0;
+                //check if it's one of our civilians
+                if(r->race_id()==df->dwarf_race_id() && civ_id == df->dwarf_civ_id()){
+                    is_ok = true;
+                }else{
+                    is_ok = r->caste_flag(TRAINABLE);
+                    r = 0;
+                }
             }
-            if(!trainable){
+            if(!is_ok){
                 return 0;
             }
         }
@@ -1239,10 +1244,16 @@ void Dwarf::read_current_job() {
         }else{
             m_is_on_break = has_state(STATE_ON_BREAK);
             m_current_job = m_is_on_break ? tr("On Break") : tr("No Job");
-            if(m_is_on_break)
+            if(m_is_on_break){
                 m_current_job_id = -2;
-            else
-                m_current_job_id = -3;
+            }else{
+                if(get_flag_value(FLAG_CAGED)){
+                    m_current_job = tr("Caged");
+                    m_current_job_id = -4;
+                }else{
+                    m_current_job_id = -3;
+                }
+            }
         }
     }
 

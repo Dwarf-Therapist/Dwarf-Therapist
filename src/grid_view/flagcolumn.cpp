@@ -31,16 +31,16 @@ THE SOFTWARE.
 #include "caste.h"
 
 FlagColumn::FlagColumn(QString title, int bit_pos, bool bit_value, ViewColumnSet *set, QObject *parent)
-        : ViewColumn(title, CT_FLAGS, set, parent)
-        , m_bit_pos(bit_pos)
-        , m_bit_value(bit_value)
+    : ViewColumn(title, CT_FLAGS, set, parent)
+    , m_bit_pos(bit_pos)
+    , m_bit_value(bit_value)
 {
 }
 
 FlagColumn::FlagColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
-        : ViewColumn(s, set, parent)
-        , m_bit_pos(s.value("bit_pos", -1).toInt())
-        , m_bit_value(s.value("bit_value", 0).toBool())
+    : ViewColumn(s, set, parent)
+    , m_bit_pos(s.value("bit_pos", -1).toInt())
+    , m_bit_value(s.value("bit_value", 0).toBool())
 {
 }
 
@@ -52,48 +52,56 @@ FlagColumn::FlagColumn(const FlagColumn &to_copy)
 }
 
 QStandardItem *FlagColumn::build_cell(Dwarf *d) {
-        QStandardItem *item = init_cell(d);
+    QStandardItem *item = init_cell(d);
 
-        item->setData(CT_FLAGS, DwarfModel::DR_COL_TYPE);
-        item->setData(false,DwarfModel::DR_SPECIAL_FLAG); //default
+    item->setData(CT_FLAGS, DwarfModel::DR_COL_TYPE);
+    item->setData(false,DwarfModel::DR_SPECIAL_FLAG); //default
 
-        short rating = 0;
-        if(d->get_flag_value(m_bit_pos))
-            rating = 1;
-        //check to fix butchering pets. currently this will cause the butchered parts to still be recognized as a pet
-        //and they'll put them into a burial recepticle, but won't use them as a food source
-        bool disabled = false;
-        if(m_bit_pos == FLAG_BUTCHER){
-            if(d->is_pet()){
-                item->setToolTip(tr("<b>Pets cannot be butchered!</b>"));
-                disabled = true;
-            }else if(!d->get_caste() || !d->get_caste()->flags().has_flag(BUTCHERABLE)){
-                item->setToolTip(tr("<b>This creature cannot be butchered!</b>"));
-                disabled = true;
-            }
-        }else if(m_bit_pos == FLAG_GELD){
-            if(d->get_gender() != Dwarf::SEX_M){
-                item->setToolTip(tr("<b>Only males can be gelded!</b>"));
-                disabled = true;
-            }else if(d->has_health_issue(42,0)){
-                item->setToolTip(tr("<b>This creature has already been gelded!</b>"));
-                disabled = true;
-            }else if(!d->get_caste()->is_geldable()){
-                item->setToolTip(tr("<b>This caste is not geldable!</b>"));
-                disabled = true;
-            }
+    short rating = 0;
+    QString disabled_msg = "";
+    if(d->get_flag_value(m_bit_pos))
+        rating = 1;
+    //check to fix butchering pets. currently this will cause the butchered parts to still be recognized as a pet
+    //and they'll put them into a burial recepticle, but won't use them as a food source
+    bool disabled = false;
+    if(m_bit_pos == FLAG_BUTCHER){
+        if(d->is_pet()){
+            disabled_msg = tr("<b>Pets cannot be butchered!</b>");
+            disabled = true;
+        }else if(!d->get_caste() || !d->get_caste()->flags().has_flag(BUTCHERABLE)){
+            disabled_msg = tr("<b>This creature cannot be butchered!</b>");
+            disabled = true;
         }
-
-        if(disabled){
-            item->setData(QBrush(QColor(187,34,34,200)),Qt::BackgroundColorRole);
-            item->setData(true,DwarfModel::DR_SPECIAL_FLAG); //indicates that the cell is disabled
-            rating = -1;
+    }else if(m_bit_pos == FLAG_GELD){
+        if(d->get_gender() != Dwarf::SEX_M){
+            disabled_msg = tr("<b>Only males can be gelded!</b>");
+            disabled = true;
+        }else if(d->has_health_issue(42,0)){
+            disabled_msg = tr("<b>This creature has already been gelded!</b>");
+            disabled = true;
+        }else if(!d->get_caste()->is_geldable()){
+            disabled_msg = tr("<b>This caste is not geldable!</b>");
+            disabled = true;
         }
+    }
 
-        item->setData(rating, DwarfModel::DR_SORT_VALUE);
-        item->setData(m_bit_pos, DwarfModel::DR_LABOR_ID);
-        item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
-        return item;
+    if(disabled){
+        item->setData(QBrush(QColor(187,34,34,200)),Qt::BackgroundColorRole);
+        item->setData(true,DwarfModel::DR_SPECIAL_FLAG); //indicates that the cell is disabled
+        rating = -1;
+    }
+
+    item->setData(rating, DwarfModel::DR_SORT_VALUE);
+    item->setData(m_bit_pos, DwarfModel::DR_LABOR_ID);
+    item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
+
+    QString tooltip = QString("<center><h3>%1</h3>%2</center>%3")
+            .arg(m_title)
+            .arg(QString("<font color=red>%1</font>").arg(disabled_msg))
+            .arg(tooltip_name_footer(d));
+    item->setToolTip(tooltip);
+
+    return item;
 }
 
 QStandardItem *FlagColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
@@ -105,7 +113,7 @@ QStandardItem *FlagColumn::build_aggregate(const QString &group_name, const QVec
 }
 
 void FlagColumn::write_to_ini(QSettings &s) {
-        ViewColumn::write_to_ini(s);
-        s.setValue("bit_value", m_bit_value);
-        s.setValue("bit_pos", m_bit_pos);
+    ViewColumn::write_to_ini(s);
+    s.setValue("bit_value", m_bit_value);
+    s.setValue("bit_pos", m_bit_pos);
 }

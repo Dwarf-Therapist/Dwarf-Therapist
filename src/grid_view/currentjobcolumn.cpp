@@ -311,6 +311,9 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
             case DwarfJob::DJT_BREW:
                 pixmap_name = ":status/img/ale--plus.png";
                 break;
+            case DwarfJob::DJT_CAGED:
+                pixmap_name = ":status/img/lock--exclamation.png";
+                break;
             default:
             case DwarfJob::DJT_DEFAULT:
                 pixmap_name = ":status/img/control_play_blue.png";
