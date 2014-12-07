@@ -289,6 +289,7 @@ sub generate_dt_ini($$$$) {
 
     emit_header 'health_offsets';
     emit_addr 'parent_id',%all,'body_part_raw','con_part_id';
+    emit_addr 'body_part_flags',%all,'body_part_raw','flags';
     emit_addr 'layers_vector',%all,'body_part_raw','layers';
     emit_addr 'number',%all,'body_part_raw','number';
     emit_addr 'names_vector',%all,'body_part_raw','name_singular';
