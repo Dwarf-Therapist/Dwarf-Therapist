@@ -62,7 +62,8 @@ QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
 
     item->setData(QIcon(pixmap_name), Qt::DecorationRole);
     item->setData(CT_HAPPINESS, DwarfModel::DR_COL_TYPE);
-    item->setData(d->get_raw_happiness(), DwarfModel::DR_SORT_VALUE);
+    item->setData(d->get_raw_happiness()*-1, DwarfModel::DR_SORT_VALUE); //invert sorting since low raw happiness (low stress) is better
+    item->setData(m_colors[d->get_happiness()],Qt::BackgroundColorRole);
 
     QString tooltip = QString("<center><h3>%1</h3><h4>%2<br/>%3%4</h4></center><p>%5</p>%6")
             .arg(m_title)
@@ -71,35 +72,35 @@ QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
             .arg(stressed_mood_desc)
             .arg(d->get_emotions_desc())
             .arg(tooltip_name_footer(d));
-
     item->setToolTip(tooltip);
-    QColor bg = m_colors[d->get_happiness()];
-//    item->setBackground(QBrush(bg));
-    item->setData(bg,Qt::BackgroundColorRole);
 
     return item;
 }
 
 QStandardItem *HappinessColumn::build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) {
     QStandardItem *item = init_aggregate(group_name);
-    // find lowest happiness of all dwarfs this set represents, and show that color (so low happiness still pops out in a big group)
-    DWARF_HAPPINESS lowest = DH_ECSTATIC;
-    QString lowest_dwarf = "Nobody";
+    // find lowest happiness (highest stress) of all dwarfs this set represents, and show that color (so low happiness still pops out in a big group)
+    Dwarf *d_stressed = 0;
+    int stress = -1000000;
     foreach(Dwarf *d, dwarves) {
-        DWARF_HAPPINESS tmp = d->get_happiness();
-        if (tmp <= lowest) {
-            lowest = tmp;
-            lowest_dwarf = d->nice_name();
-            if(lowest == DH_VERY_UNHAPPY)
-                break;
+        int tmp = d->get_raw_happiness();
+        if (tmp >= stress) {
+            stress = tmp;
+            d_stressed = d;
         }
     }
-    item->setToolTip(tr("<center><h3>%1</h3></center>Lowest Happiness in group: <b>%2: %3</b>")
-        .arg(m_title)
-        .arg(lowest_dwarf)
-        .arg(Dwarf::happiness_name(lowest)));
-    item->setData(m_colors[lowest], Qt::BackgroundColorRole);
-//    item->setData(m_colors[lowest], DwarfModel::DR_DEFAULT_BG_COLOR);
+    QString name = tr("Nobody");
+    DWARF_HAPPINESS highest = DH_FINE;
+    if(d_stressed){
+        name = d_stressed->nice_name();
+        highest = d_stressed->get_happiness();
+    }
+    item->setToolTip(tr("<center><h3>%1</h3>Lowest Happiness in group:<br/><b>%2 (%3)</b><br/>%4</center>")
+                     .arg(m_title)
+                     .arg(name)
+                     .arg(Dwarf::happiness_name(highest))
+                     .arg(tr("Stress Level: ") + formatNumber(stress)));
+            item->setData(m_colors[highest], Qt::BackgroundColorRole);
     return item;
 }
 

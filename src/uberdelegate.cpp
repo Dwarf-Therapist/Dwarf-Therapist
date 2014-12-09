@@ -144,7 +144,10 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     QString text_rating = model_idx.data(DwarfModel::DR_DISPLAY_RATING).toString();
     float limit = 100.0;
 
-    Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
+    Dwarf *d = 0;
+    if(m_model){
+        d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
+    }
 
     switch (type) {
     case CT_SKILL:

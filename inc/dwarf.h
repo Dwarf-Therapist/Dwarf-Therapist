@@ -166,7 +166,7 @@ public:
     QString get_happiness_desc() const {return m_happiness_desc;}
 
     //! return the raw happiness score for this dwarf
-    Q_INVOKABLE int get_raw_happiness() {return m_stress_level;}
+    Q_INVOKABLE int get_raw_happiness() const {return m_stress_level;}
     //! return specific attribute values
     Q_INVOKABLE int strength() {return attribute(AT_STRENGTH);}
     Q_INVOKABLE int agility() {return attribute(AT_AGILITY);}
