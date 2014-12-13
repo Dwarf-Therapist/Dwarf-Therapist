@@ -273,6 +273,7 @@
         <file alias="prof_8.png">resources/img/profession icons/prof_8.png</file>
         <file alias="prof_9.png">resources/img/profession icons/prof_9.png</file>
         <file alias="prof_105.png">resources/img/profession icons/prof_105.png</file>
+        <file alias="prof_112.png">resources/img/profession icons/prof_112.png</file>
     </qresource>
     <qresource prefix="/config">
         <file alias="default_gridviews">resources/default_gridviews.dtg</file>

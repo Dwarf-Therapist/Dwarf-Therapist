@@ -119,14 +119,14 @@ void Caste::read_caste() {
 
 bool Caste::is_geldable(){
     if(m_can_geld == -1){
-        //qDebug() << "CHECKING BODY PARTS FOR CASTE:" << m_name << "gender" << m_df->read_byte(m_address + 0x127c);
         for(int id=0; id < m_body_parts_addr.size(); id++){
             BodyPart *bp = new BodyPart(m_df,m_race,m_body_parts_addr.at(id),id);
-            m_body_parts.insert(id,bp);
-            qDebug() << "  name" << bp->name() << "token" << bp->token();
-            if(bp->token() == "LB"){
-                m_can_geld = (bool)bp->flags().has_flag(38);
-                break;
+            if(bp){
+                m_body_parts.insert(id,bp);
+                if(bp->token() == "LB"){
+                    m_can_geld = (bool)bp->flags().has_flag(38);
+                    break;
+                }
             }
         }
     }
@@ -231,7 +231,7 @@ QPair<int, QString> Caste::get_attribute_descriptor_info(ATTRIBUTES_TYPE id, int
 int Caste::get_attribute_cost_to_improve(int id){
     if(m_attrib_ranges.count()<=0)
         load_attribute_info();
-     return m_attrib_costs.value(id);
+    return m_attrib_costs.value(id);
 }
 
 BodyPart* Caste::get_body_part(int body_part_id){

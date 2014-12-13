@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QStandardItemModel>
 #include <QListView>
+#include <QLabel>
 
 class IconChooser : public QDialog
 {
@@ -13,17 +14,21 @@ public:
     explicit IconChooser(QWidget *parent = 0);
     ~IconChooser();
 
-    int selected_id;
+    int selected_id() const {return m_selected_id;}
+
 public Q_SLOTS:
     void showImage(int num);
-    void finished();
-
     void imageClicked(QModelIndex);
+
+    void accept();
+    void reject();
 
 private:
     QStringList m_imageNamesList;
-    QListView* m_imageListView;
+    QListView *m_imageListView;
+    QLabel *m_lbl_info;
     QStandardItemModel* m_standardModel;
+    int m_selected_id;
 };
 
 #endif // ICONCHOOSER_H

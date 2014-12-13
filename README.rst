@@ -2,8 +2,8 @@
 Dwarf Therapist
 ===============
 
-.. image:: https://travis-ci.org/Hello71/Dwarf-Therapist.svg?branch=DF2014
-   :target: https://travis-ci.org/Hello71/Dwarf-Therapist
+.. image:: https://travis-ci.org/splintermind/Dwarf-Therapist.svg?branch=DF2014
+   :target: https://travis-ci.org/splintermind/Dwarf-Therapist
 .. image:: https://scan.coverity.com/projects/3038/badge.svg
    :target: https://scan.coverity.com/projects/3038
 

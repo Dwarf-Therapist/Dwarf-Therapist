@@ -283,8 +283,9 @@ void CustomProfession::mask_changed(bool value){
 
 void CustomProfession::build_icon_path(int id){
     m_icon_id = id;
-    if(m_icon_id > -1 && m_icon_id < 105){
-        m_icon_path = QString(":/profession/prof_%1.png").arg(QString::number(m_icon_id));
+    QString icn_path = QString(":/profession/prof_%1.png").arg(QString::number(m_icon_id));
+    if(QFile::exists(icn_path)){
+        m_icon_path = icn_path;
     }else{
         m_icon_path = "";
     }
@@ -293,7 +294,7 @@ void CustomProfession::build_icon_path(int id){
 void CustomProfession::choose_icon(){
     IconChooser *ic = new IconChooser();
     ic->exec();
-    build_icon_path(ic->selected_id);
+    build_icon_path(ic->selected_id());
     refresh_icon();
 }
 
@@ -308,7 +309,10 @@ void CustomProfession::color_selected(QString key, QColor col){
 
 void CustomProfession::refresh_icon(){
     create_image();
-    m_dialog->setWindowIcon(QIcon(m_pixmap));
+    if(has_icon())
+        m_dialog->setWindowIcon(QIcon(m_pixmap));
+    else
+        m_dialog->setWindowIcon(QIcon(":img/hammer.png"));
     if(m_icon_path == "" || m_icon_id <= -1)
         ui->lbl_icon->setText(tr("None"));
     else{
