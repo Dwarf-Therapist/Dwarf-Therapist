@@ -1,3 +1,23 @@
+### Version 30.1 Patch Notes
+
+***
+
+- added a geld column to the animal view
+- added new gelder profession icon
+- added new health issue for gelded
+- added misc. trait for 'detatched' to existing traits
+- added cave adaption to traits
+- added new job icon for caged units
+- updated the aggregate tooltip for happiness to include stress
+
+- fixed an issue with items not showing properly on OSX (Fricy)
+- fixed the display of role groups with negative weights
+- fixed the display of traits' special notes
+- fixed duplicate health reading
+- fixed caged civilians from not showing
+- fixed the sorting of the happiness column
+- fixed an issue where the last few icons couldn't be used when overriding profession icons
+
 ### Version 30.0 Patch Notes
 
 ***
