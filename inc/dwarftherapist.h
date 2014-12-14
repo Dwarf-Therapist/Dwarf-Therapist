@@ -68,6 +68,8 @@ public:
     LogManager *get_log_manager() {return m_log_mgr;}
     DFInstance *get_DFInstance() {return m_main_window->get_DFInstance();}
 
+    QColor get_global_color(GLOBAL_COLOR_TYPES gc_type) {return m_colors.value(gc_type,QColor(Qt::black));}
+
     bool multiple_castes;
     bool show_skill_learn_rates;
     bool arena_mode;
@@ -117,6 +119,7 @@ private:
     bool m_allow_labor_cheats;
     bool m_hide_non_adults;
     LogManager *m_log_mgr;
+    QHash<GLOBAL_COLOR_TYPES,QColor> m_colors;
 
     void setup_search_paths();
     void setup_logging();

@@ -31,6 +31,7 @@ class QStandardItemModel;
 class QSettings;
 class ViewColumn;
 class Dwarf;
+class CellColors;
 
 /*!
 ViewColumnSet
@@ -47,8 +48,12 @@ public:
 
     QString name() {return m_name;}
     void add_column(ViewColumn *col, int idx=-1);
+
     void set_bg_color(const QColor &color) {m_bg_color = color;}
     QColor bg_color() {return m_bg_color;}
+
+    CellColors *get_colors() {return m_cell_colors;}
+
     QList<ViewColumn*> columns() {return m_columns;}
     void remove_column(int offset) {m_columns.removeAt(offset);}
     void remove_column(ViewColumn *vc) {m_columns.removeAll(vc);}
@@ -59,8 +64,6 @@ public:
 
     //! persist this structure to disk
     void write_to_ini(QSettings &s, int start_idx=0);
-
-    QColor read_color(QString const &col);
 
     public slots:
         void set_name(const QString &name);
@@ -73,6 +76,7 @@ private:
     QList<ViewColumn*> m_columns;
     QBrush m_bg_brush; // possibly allow textured backgrounds in the long long ago, err future.
     QColor m_bg_color;
+    CellColors *m_cell_colors;
 };
 
 #endif

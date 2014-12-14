@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include "labor.h"
 #include "defaultfonts.h"
 #include "item.h"
+#include "cellcolors.h"
 #include <QPainter>
 
 UberDelegate::UberDelegate(QObject *parent)
@@ -750,15 +751,17 @@ void UberDelegate::paint_flags(const QRect &adjusted, QPainter *p, const QStyleO
         return QStyledItemDelegate::paint(p, opt, idx);
     }
 
-    bool cell_disabled = idx.data(DwarfModel::DR_SPECIAL_FLAG).toBool();
+    int state = idx.data(DwarfModel::DR_STATE).toInt();
     int bit_pos = idx.data(DwarfModel::DR_LABOR_ID).toInt();
     bool active = d->get_flag_value(bit_pos);
     bool dirty = d->is_flag_dirty(bit_pos);
 
-    if(!cell_disabled)
-        paint_bg_active(adjusted, active, p, opt, proxy_idx); //draw normally
-    else
-        paint_bg_active(adjusted, true, p, opt, proxy_idx, proxy_idx.data(Qt::BackgroundColorRole).value<QColor>()); //draw red as set in the column
+    if(state == ViewColumn::STATE_NONE || state == ViewColumn::STATE_PENDING){ //none, or pending, check the value
+        active = d->get_flag_value(bit_pos);
+    }else{
+        active = true; //disabled or active and disabled
+    }
+    paint_bg_active(adjusted, active, p, opt, proxy_idx, proxy_idx.data(Qt::BackgroundColorRole).value<QColor>());
 
     paint_grid(adjusted,dirty,p,opt,proxy_idx);
 }

@@ -40,12 +40,22 @@ public:
         bool bit_value() {return m_bit_value;}
         void set_bit_value(bool bit_value) {m_bit_value = bit_value;}
 
+        QColor active_color() const {return m_col_active;}
+        QColor disabled_color() const {return m_col_disabled;}
+
         // override
         void write_to_ini(QSettings &s);
+
+public slots:
+        void read_settings();
 
 protected:
         int m_bit_pos;
         bool m_bit_value;
+        QColor m_col_active;
+        static QColor m_col_pend_geld;
+        static QColor m_col_pend_butcher;
+        static QColor m_col_disabled;
 };
 
 #endif // FLAGCOLUMN_H

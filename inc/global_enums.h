@@ -709,4 +709,10 @@ typedef enum {
     FLAG_GELD = 93
 } UNIT_FLAGS;
 
+typedef enum {
+    GCOL_ACTIVE,
+    GCOL_DISABLED,
+    GCOL_PENDING
+} GLOBAL_COLOR_TYPES;
+
 #endif // GLOBAL_ENUMS_H

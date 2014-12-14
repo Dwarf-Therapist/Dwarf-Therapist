@@ -124,4 +124,21 @@ static inline QString formatNumber(double value) {
     return QString("%L1").arg(value);
 }
 
+static inline QColor read_color(QString const &col){
+    QColor c(Qt::gray);
+    bool ok;
+    if(col.startsWith("0x")){
+        int a = 255;
+        if(col.length() >= 8){
+            if(col.length() >= 10)
+                a = col.mid(8, 2).toInt(&ok, 16);
+            c = QColor(col.mid(2,6).toInt(&ok, 16));
+            c.setAlpha(a);
+        }
+    }else{
+        c = QVariant(col).value<QColor>();
+    }
+    return c;
+}
+
 #endif // UTILS_H

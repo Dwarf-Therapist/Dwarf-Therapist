@@ -251,7 +251,9 @@ HEADERS += inc/viewmanager.h \
     inc/emotiongroup.h \
     inc/docks/basetreedock.h \
     inc/subthoughttypes.h \
-    inc/mood.h
+    inc/mood.h \
+    inc/grid_view/cellcolors.h \
+    inc/grid_view/vieweditordialog.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -347,7 +349,8 @@ SOURCES += src/viewmanager.cpp \
     src/flagarray.cpp \
     src/unitemotion.cpp \
     src/emotion.cpp \
-    src/docks/basetreedock.cpp
+    src/docks/basetreedock.cpp \
+    src/grid_view/vieweditordialog.cpp
 FORMS += ui/scriptdialog.ui \
     ui/pendingchanges.ui \
     ui/optionsmenu.ui \
@@ -358,11 +361,11 @@ FORMS += ui/scriptdialog.ui \
     ui/dwarfdetailswidget.ui \
     ui/dwarfdetailsdock.ui \
     ui/customprofession.ui \
-    ui/columneditdialog.ui \
     ui/about.ui \
     ui/selectparentlayoutdialog.ui \
     ui/roledialog.ui \
     ui/optimizereditor.ui \
-    ui/superlabor.ui
+    ui/superlabor.ui \
+    ui/vieweditor.ui
 RESOURCES += \
     resources.qrc

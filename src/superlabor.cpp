@@ -32,13 +32,13 @@ THE SOFTWARE.
 
 //new blank superlabor
 SuperLabor::SuperLabor(QObject *parent)
-    :MultiLabor(parent)
+    : MultiLabor(parent)
     , ui(new Ui::SuperLaborEditor)
 {
 }
 
 SuperLabor::SuperLabor(QSettings &s, QObject *parent)
-    :MultiLabor(parent)
+    : MultiLabor(parent)
     , ui(new Ui::SuperLaborEditor)
 {
     m_name = s.value("id","").toString();

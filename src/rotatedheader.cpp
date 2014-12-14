@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "defines.h"
 #include "defaultfonts.h"
+#include "utils.h"
 #include <QAction>
 #include <QMenu>
 #include <QMouseEvent>
@@ -140,7 +141,7 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 
     QString data = this->model()->headerData(idx, Qt::Horizontal).toString();
     p->save();
-    p->setPen(Qt::black);
+    p->setPen(complement(bg)); //Qt::black);
     p->setRenderHint(QPainter::TextAntialiasing);
     p->setFont(m_font);
     QFontMetrics fm = p->fontMetrics();

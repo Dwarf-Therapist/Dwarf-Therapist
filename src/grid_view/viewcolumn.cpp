@@ -25,9 +25,9 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "dwarftherapist.h"
 #include "dtstandarditem.h"
+#include "cellcolors.h"
 
-ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,
-                       QObject *parent, int col_idx)
+ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,QObject *parent, int col_idx)
     : QObject(parent)
     , m_title(title)
     , m_bg_color(Qt::red) //! should stand out if it doesn't get set
@@ -41,6 +41,7 @@ ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,
     if (set) {
         set->add_column(this,col_idx);
         m_bg_color = set->bg_color();
+        m_cell_colors = new CellColors(set->get_colors());
     }
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 }
@@ -56,12 +57,15 @@ ViewColumn::ViewColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     , m_export_data_role(DwarfModel::DR_SORT_VALUE)
     , m_current_sort(CST_DEFAULT)
 {
-    if (set) {
+    if(set){
         set->add_column(this);
-        m_bg_color = set->bg_color();
     }
-    if (m_override_set_colors){
-        m_bg_color = set->read_color(s.value("bg_color").toString());
+    if(m_override_set_colors){
+        m_bg_color = read_color(s.value("bg_color").toString());
+        m_cell_colors = new CellColors(s,this);
+    }else{
+        m_bg_color = set->bg_color();
+        m_cell_colors = new CellColors(set->get_colors());
     }
 
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
@@ -77,6 +81,7 @@ ViewColumn::ViewColumn(const ViewColumn &to_copy)
     , m_count(to_copy.m_count)
     , m_export_data_role(to_copy.m_export_data_role)
     , m_current_sort(to_copy.m_current_sort)
+    , m_cell_colors(to_copy.m_cell_colors)
 {
     // cloning should not add it to the copy's set! You must add it manually!
     if (m_set && !m_override_set_colors)
@@ -97,7 +102,9 @@ QStandardItem *ViewColumn::init_cell(Dwarf *d) {
     } else {
         bg = set()->bg_color();
     }
+    item->setData(complement(bg),Qt::TextColorRole);
     item->setData(bg, Qt::BackgroundColorRole);
+
     item->setData(bg, DwarfModel::DR_DEFAULT_BG_COLOR);
     item->setData(false, DwarfModel::DR_IS_AGGREGATE);
     item->setData(d->id(), DwarfModel::DR_ID);
@@ -134,15 +141,21 @@ void ViewColumn::clear_cells(){
 }
 
 void ViewColumn::write_to_ini(QSettings &s) {
-    if (!m_title.isEmpty())
+    if (!m_title.isEmpty()){
         s.setValue("name", m_title);
-    else
+    }else{
         s.setValue("name", "UNKNOWN");
-
+    }
     s.setValue("type", get_column_type(m_type));
     if (m_override_set_colors) {
         s.setValue("override_color", true);
         s.setValue("bg_color", m_bg_color);
+    }
+    if(m_cell_colors->overrides_cell_colors()){
+        s.setValue("overrides_cell_colors",true);
+        s.setValue("active_color",m_cell_colors->active_color());
+        s.setValue("disabled_color",m_cell_colors->disabled_color());
+        s.setValue("pending_color",m_cell_colors->pending_color());
     }
 }
 

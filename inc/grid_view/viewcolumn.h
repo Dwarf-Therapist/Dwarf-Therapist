@@ -31,6 +31,7 @@ THE SOFTWARE.
 class ViewColumnSet;
 class Dwarf;
 class DTStandardItem;
+class CellColors;
 
 /*!
 ViewColumn
@@ -56,6 +57,14 @@ public:
         CST_LEVEL,
         CST_MAXIMUM_VALUE
     } COLUMN_SORT_TYPE;
+
+    typedef enum {
+        STATE_NONE=-1,
+        STATE_ACTIVE,
+        STATE_PENDING,
+        STATE_DISABLED,
+        STATE_CHECK
+    } CELL_STATE;
 
     static inline QString get_sort_type(const COLUMN_SORT_TYPE &type) {
         switch (type) {
@@ -85,10 +94,15 @@ public:
 
     QString title() {return m_title;}
     void set_title(QString title) {m_title = title;}
+
     bool override_color() {return m_override_set_colors;}
     void set_override_color(bool yesno) {m_override_set_colors = yesno;}
+
     QColor bg_color() {return m_bg_color;}
     void set_bg_color(QColor c) {m_bg_color = c;}
+
+    CellColors *get_colors() {return m_cell_colors;}
+
     ViewColumnSet *set() {return m_set;}
     void set_viewcolumnset(ViewColumnSet *set) {m_set = set;}
     virtual COLUMN_TYPE type() {return m_type;}
@@ -112,13 +126,15 @@ public:
 
     public slots:
         virtual void read_settings() {}
-        void clear_cells();// {m_cells.clear();}
+        void clear_cells();
         virtual void redraw_cells() {}
         virtual void refresh_sort(COLUMN_SORT_TYPE) {}
 
 protected:
     QString m_title;
     QColor m_bg_color;
+    QColor m_active_color;
+    QColor m_disabled_color;
     bool m_override_set_colors;
     ViewColumnSet *m_set;
     COLUMN_TYPE m_type;
@@ -127,6 +143,7 @@ protected:
     DwarfModel::DATA_ROLES m_export_data_role;
     QList<COLUMN_SORT_TYPE> m_sortable_types;
     COLUMN_SORT_TYPE m_current_sort;
+    CellColors *m_cell_colors;
 
     QString tooltip_name_footer(Dwarf *d);
 };

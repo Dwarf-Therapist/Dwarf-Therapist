@@ -49,17 +49,21 @@ THE SOFTWARE.
 #include "customprofessioncolumn.h"
 #include "beliefcolumn.h"
 #include "unitkillscolumn.h"
+#include "cellcolors.h"
 
 ViewColumnSet::ViewColumnSet(QString name, QObject *parent)
     : QObject(parent)
     , m_name(name)
     , m_bg_color(Qt::white)
-{}
+{
+    m_cell_colors = new CellColors(this);
+}
 
 ViewColumnSet::ViewColumnSet(const ViewColumnSet &copy)
     : QObject(copy.parent())
     , m_name(copy.m_name)
     , m_bg_color(copy.m_bg_color)
+    , m_cell_colors(copy.m_cell_colors)
 {
     foreach(ViewColumn *vc, copy.m_columns) {
         ViewColumn *new_c = vc->clone();
@@ -74,6 +78,7 @@ ViewColumnSet::ViewColumnSet(QSettings &s, QObject *parent, int set_num)
 {
     m_name = s.value("name","unknown").toString();
     set_bg_color(read_color(s.value("bg_color", "0xFFFFFF").toString()));
+    m_cell_colors = new CellColors(s,this);
     if(set_num == 0)
         new SpacerColumn(0,0, this, parent);
 
@@ -295,6 +300,12 @@ void ViewColumnSet::reorder_columns(const QStandardItemModel &model) {
 void ViewColumnSet::write_to_ini(QSettings &s, int start_idx) {
     s.setValue("name", m_name);
     s.setValue("bg_color", m_bg_color);
+    if(m_cell_colors->overrides_cell_colors()){
+        s.setValue("overrides_cell_colors",true);
+        s.setValue("active_color",m_cell_colors->active_color());
+        s.setValue("disabled_color",m_cell_colors->disabled_color());
+        s.setValue("pending_color",m_cell_colors->pending_color());
+    }
     s.beginWriteArray("columns", m_columns.size());
     int i = 0;
     for(int idx=start_idx;idx < m_columns.count(); idx++){
@@ -304,21 +315,6 @@ void ViewColumnSet::write_to_ini(QSettings &s, int start_idx) {
     s.endArray();
 }
 
-QColor ViewColumnSet::read_color(QString const &col){
-    QColor c(Qt::gray);
-    bool ok;
-    if(col.startsWith("0x")){
-        int a = 255;
-        if(col.length() >= 8){
-            if(col.length() >= 10)
-                a = col.mid(8, 2).toInt(&ok, 16);
-            c = QColor(col.mid(2,6).toInt(&ok, 16));
-            c.setAlpha(a);
-        }
-    }else{
-        c = QVariant(col).value<QColor>();
-    }
-    return c;
-}
+
 
 

@@ -1390,7 +1390,7 @@ bool Dwarf::toggle_flag_bit(int bit_pos) {
         //don't butcher if it's a pet, user will be notified via tooltip on column, same for non-butcherable
         set_flag = (!m_is_pet && m_caste->flags().has_flag(BUTCHERABLE));
     }else if(bit_pos==FLAG_GELD){
-        set_flag = (m_gender_info.gender == SEX_M && m_caste->is_geldable());
+        set_flag = (m_gender_info.gender == SEX_M && m_caste->is_geldable() && !has_health_issue(42,0));
     }
 
     if(set_flag){
@@ -2462,16 +2462,17 @@ void Dwarf::build_pending_flag_node(int index, QString title, UNIT_FLAGS flag, Q
 
 QString Dwarf::tooltip_text() {
     QSettings *s = DT->user_settings();
+    s->beginGroup("options");
     GameDataReader *gdr = GameDataReader::ptr();
     QString skill_summary, personality_summary, roles_summary;
-    int max_roles = s->value("options/role_count_tooltip",3).toInt();
+    int max_roles = s->value("role_count_tooltip",3).toInt();
     if(max_roles > sorted_role_ratings().count())
         max_roles = sorted_role_ratings().count();
 
     //in some mods animals may have skills
-    if(!m_skills.isEmpty() && s->value("options/tooltip_show_skills",true).toBool()){
-        int max_level = s->value("options/min_tooltip_skill_level", true).toInt();
-        bool check_social = !s->value("options/tooltip_show_social_skills",true).toBool();
+    if(!m_skills.isEmpty() && s->value("tooltip_show_skills",true).toBool()){
+        int max_level = s->value("min_tooltip_skill_level", true).toInt();
+        bool check_social = !s->value("tooltip_show_social_skills",true).toBool();
         QMapIterator<float,int> i(m_sorted_skills);
         i.toBack();
         while(i.hasPrevious()){
@@ -2484,7 +2485,7 @@ QString Dwarf::tooltip_text() {
     }
 
     if(!m_is_animal){
-        if(s->value("options/tooltip_show_traits",true).toBool()){
+        if(s->value("tooltip_show_traits",true).toBool()){
             QString conflict_color = QColor(176,23,31).name();
             if(!m_traits.isEmpty()){
                 QStringList notes;
@@ -2538,7 +2539,7 @@ QString Dwarf::tooltip_text() {
         }
 
         QList<Role::simple_rating> sorted_roles = sorted_role_ratings();
-        if(!sorted_roles.isEmpty() && max_roles > 0 && s->value("options/tooltip_show_roles",true).toBool()){
+        if(!sorted_roles.isEmpty() && max_roles > 0 && s->value("tooltip_show_roles",true).toBool()){
             roles_summary.append("<ol style=\"margin-top:0px; margin-bottom:0px;\">");
             for(int i = 0; i < max_roles; i++){
                 roles_summary += tr("<li>%1  (%2%)</li>").arg(sorted_roles.at(i).name)
@@ -2551,7 +2552,7 @@ QString Dwarf::tooltip_text() {
 
     QStringList tt;
     QString title;
-    if(s->value("options/tooltip_show_icons",true).toBool()){
+    if(s->value("tooltip_show_icons",true).toBool()){
         title += tr("<center><b><h3 style=\"margin:0;\"><img src='%1'> %2 %3</h3><h4 style=\"margin:0;\">%4</h4></b></center>")
                 .arg(m_icn_gender).arg(m_nice_name).arg(embedPixmap(m_icn_prof))
                 .arg(m_translated_name.isEmpty() ? "" : "(" + m_translated_name + ")");
@@ -2560,42 +2561,45 @@ QString Dwarf::tooltip_text() {
                 .arg(m_nice_name).arg(m_translated_name.isEmpty() ? "" : "(" + m_translated_name + ")");
     }
 
-    if(!m_is_animal && s->value("options/tooltip_show_artifact",true).toBool() && !m_artifact_name.isEmpty())
+    if(!m_is_animal && s->value("tooltip_show_artifact",true).toBool() && !m_artifact_name.isEmpty())
         title.append(tr("<center><i><h5 style=\"margin:0;\">Creator of '%2'</h5></i></center>").arg(m_artifact_name));
 
     tt.append(title);
 
-    if(s->value("options/tooltip_show_caste",true).toBool())
+    if(s->value("tooltip_show_caste",true).toBool())
         tt.append(tr("<b>Caste:</b> %1").arg(caste_name()));
 
-    if(m_is_animal || s->value("options/tooltip_show_age",true).toBool())
+    if(m_is_animal || s->value("tooltip_show_age",true).toBool())
         tt.append(tr("<b>Age:</b> %1").arg(get_age_formatted()));
 
-    if(m_is_animal || s->value("options/tooltip_show_size",true).toBool())
+    if(m_is_animal || s->value("tooltip_show_size",true).toBool())
         tt.append(tr("<b>Size:</b> %1cm<sup>3</sup>").arg(QLocale(QLocale::system()).toString(m_body_size * 10)));
 
-    if(!m_is_animal && s->value("options/tooltip_show_noble",true).toBool())
+    if(!m_is_animal && s->value("tooltip_show_noble",true).toBool())
         tt.append(tr("<b>Profession:</b> %1").arg(profession()));
 
-    if(!m_is_animal && m_pending_squad_id > -1 && s->value("options/tooltip_show_squad",true).toBool())
+    if(!m_is_animal && m_pending_squad_id > -1 && s->value("tooltip_show_squad",true).toBool())
         tt.append(tr("<b>Squad:</b> %1").arg(m_pending_squad_name));
 
-    if(!m_is_animal && m_noble_position != "" && s->value("options/tooltip_show_noble",true).toBool())
+    if(!m_is_animal && m_noble_position != "" && s->value("tooltip_show_noble",true).toBool())
         tt.append(tr("<b>Noble Position%1:</b> %2").arg(m_noble_position.indexOf(",") > 0 ? "s" : "").arg(m_noble_position));
 
-    if(!m_is_animal && s->value("options/tooltip_show_happiness",true).toBool()){
+    if(!m_is_animal && s->value("tooltip_show_happiness",true).toBool()){
         tt.append(tr("<b>Happiness:</b> %1").arg(m_happiness_desc));
         if(m_stressed_mood)
             tt.append(tr("<b>Mood: </b>%1").arg(gdr->get_mood_desc(m_mood_id,true)));
     }
 
-    if(!m_is_animal && !m_emotions_desc.isEmpty() && s->value("options/tooltip_show_thoughts",true).toBool())
+    if(s->value("tooltip_show_orientation",false).toBool())
+        tt.append(tr("<b>Gender/Orientation</b> %1").arg(m_gender_info.full_desc));
+
+    if(!m_is_animal && !m_emotions_desc.isEmpty() && s->value("tooltip_show_thoughts",true).toBool())
         tt.append(tr("<p style=\"margin:0px;\">%1</p>").arg(m_emotions_desc));
 
     if(!skill_summary.isEmpty())
         tt.append(tr("<h4 style=\"margin:0px;\"><b>Skills:</b></h4><ul style=\"margin:0px;\">%1</ul>").arg(skill_summary));
 
-    if(!m_is_animal && s->value("options/tooltip_show_mood",false).toBool())
+    if(!m_is_animal && s->value("tooltip_show_mood",false).toBool())
         tt.append(tr("<b>Highest Moodable Skill:</b> %1")
                   .arg(gdr->get_skill_name(m_highest_moodable_skill, true)));
 
@@ -2611,10 +2615,10 @@ QString Dwarf::tooltip_text() {
     if(m_is_animal)
         tt.append(tr("<p style=\"margin:0px;\"><b>Trained Level:</b> %1</p>").arg(get_animal_trained_descriptor(m_animal_type)));
 
-    if(s->value("options/tooltip_show_health",false).toBool() && (!m_is_animal || (m_is_animal && s->value("options/animal_health",false).toBool()))){
+    if(s->value("tooltip_show_health",false).toBool() && (!m_is_animal || (m_is_animal && s->value("animal_health",false).toBool()))){
 
-        bool symbols = s->value("options/tooltip_health_symbols",false).toBool();
-        bool colors = s->value("options/tooltip_health_colors",true).toBool();
+        bool symbols = s->value("tooltip_health_symbols",false).toBool();
+        bool colors = s->value("tooltip_health_colors",true).toBool();
 
         //health info is in 3 sections: treatment, statuses and wounds
         QString health_info = "";
@@ -2643,7 +2647,7 @@ QString Dwarf::tooltip_text() {
             tt.append(health_info);
     }
 
-    if(m_syndromes.count() > 0 && s->value("options/tooltip_show_buffs",false).toBool()){
+    if(m_syndromes.count() > 0 && s->value("tooltip_show_buffs",false).toBool()){
         QString buffs = get_syndrome_names(true,false);
         QString ailments = get_syndrome_names(false,true);
 
@@ -2654,10 +2658,10 @@ QString Dwarf::tooltip_text() {
     }
 
 
-    if(s->value("options/tooltip_show_caste_desc",true).toBool() && caste_desc() != "")
+    if(s->value("tooltip_show_caste_desc",true).toBool() && caste_desc() != "")
         tt.append(tr("%1").arg(caste_desc()));
 
-    if(s->value("options/highlight_cursed", false).toBool() && m_curse_name != ""){
+    if(s->value("highlight_cursed", false).toBool() && m_curse_name != ""){
         QString curse_text = "";
         curse_text = tr("<br/><b>Curse: </b>A <b><i>%1</i></b>")
                 .arg(capitalizeEach(m_curse_name));
@@ -2673,10 +2677,11 @@ QString Dwarf::tooltip_text() {
         tt.append(curse_text);
     }
 
-    if(s->value("options/tooltip_show_kills",false).toBool() && m_hist_figure && m_hist_figure->total_kills() > 0){
+    if(s->value("tooltip_show_kills",false).toBool() && m_hist_figure && m_hist_figure->total_kills() > 0){
         tt.append(m_hist_figure->formatted_summary());
     }
 
+    s->endGroup();
     return tt.join("<br/>");
 }
 

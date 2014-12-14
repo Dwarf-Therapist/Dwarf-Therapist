@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ViewEditor</class>
+ <widget class="QDialog" name="ViewEditor">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>347</width>
+    <height>263</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Edit Column</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../resources.qrc">
+    <normaloff>:/img/color_wheel.png</normaloff>:/img/color_wheel.png</iconset>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_3">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="lbl_title">
+       <property name="text">
+        <string>Title</string>
+       </property>
+       <property name="buddy">
+        <cstring>le_title</cstring>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="le_title"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="cb_override">
+     <property name="text">
+      <string>Override Set's Background Color</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="background_widget" native="true">
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLabel" name="lbl_bg_color">
+          <property name="text">
+           <string>Custom Background Color</string>
+          </property>
+          <property name="buddy">
+           <cstring>cp_bg_color</cstring>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QtColorPicker" name="cp_bg_color">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="cb_override_cell_colors">
+     <property name="text">
+      <string>Override Set's Cell Highlight Colors</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="colors_widget" native="true">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <layout class="QGridLayout" name="grdLayoutColors">
+        <item row="1" column="0">
+         <widget class="QLabel" name="lbl_disabled_color">
+          <property name="text">
+           <string>Disabled Color</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QtColorPicker" name="cp_disabled_color">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QtColorPicker" name="cp_pending_color">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="lbl_active_color">
+          <property name="text">
+           <string>Active Color</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QtColorPicker" name="cp_active_color">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="lbl_pending_color">
+          <property name="text">
+           <string>Pending Color</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="hbox_width">
+     <item>
+      <widget class="QLabel" name="lbl_col_width">
+       <property name="text">
+        <string>Column Width</string>
+       </property>
+       <property name="buddy">
+        <cstring>sb_width</cstring>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="sb_width"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QtColorPicker</class>
+   <extends>QPushButton</extends>
+   <header>qtcolorpicker.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>ViewEditor</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>310</x>
+     <y>200</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>236</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>ViewEditor</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>310</x>
+     <y>200</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>236</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

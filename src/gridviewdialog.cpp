@@ -47,13 +47,14 @@ THE SOFTWARE.
 #include "customprofessioncolumn.h"
 #include "beliefcolumn.h"
 #include "unitkillscolumn.h"
+#include "flagcolumn.h"
 
 #include "defines.h"
 #include "gamedatareader.h"
 #include "labor.h"
 #include "utils.h"
 #include "trait.h"
-#include "ui_columneditdialog.h"
+#include "vieweditordialog.h"
 #include "dfinstance.h"
 #include "itemweaponsubtype.h"
 #include "unithealth.h"
@@ -61,6 +62,7 @@ THE SOFTWARE.
 #include "superlabor.h"
 #include "customprofession.h"
 #include "item.h"
+#include "cellcolors.h"
 
 GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent)
     : QDialog(parent)
@@ -179,11 +181,18 @@ void GridViewDialog::set_selection_changed(const QItemSelection &selected, const
 void GridViewDialog::draw_columns_for_set(ViewColumnSet *set) {
     m_col_model->clear();
     foreach(ViewColumn *vc, set->columns()) {
+        QColor new_bg = vc->override_color() ? vc->bg_color() : set->bg_color();
+
         QStandardItem *item = new QStandardItem(vc->title());
         item->setData(vc->title(), GPDT_TITLE);
         item->setData(vc->type(), GPDT_COLUMN_TYPE);
-        item->setBackground(vc->override_color() ? vc->bg_color() : set->bg_color());
-        item->setForeground(complement(vc->override_color() ? vc->bg_color() : set->bg_color()));
+
+        item->setBackground(new_bg);
+        item->setData(new_bg,Qt::BackgroundColorRole);
+
+        item->setForeground(complement(new_bg));
+        item->setData(complement(new_bg),Qt::TextColorRole);
+
         item->setDropEnabled(false);
         m_col_model->appendRow(item);
     }
@@ -217,34 +226,52 @@ void GridViewDialog::edit_set() {
 void GridViewDialog::edit_set(const QModelIndex &idx) {
     QStandardItem *item = m_set_model->itemFromIndex(idx);
 
-    QDialog *d = new QDialog(this);
-    QVBoxLayout *vbox = new QVBoxLayout(d);
-    d->setLayout(vbox);
+    ViewEditorDialog *d = new ViewEditorDialog(m_active_set,this);
+//    QDialog *d = new QDialog(this);
+//    Ui::ColumnEditDialog *editor = new Ui::ColumnEditDialog;
+//    editor->setupUi(d);
+//    d->setModal(true);
+//    editor->cp_bg_color->setEnabled(true);
 
-    QFormLayout *form = new QFormLayout(d);
-    QLineEdit *le_name = new QLineEdit(item->text(), d);
-    QtColorPicker *cp = new QtColorPicker(d);
-    cp->setCurrentColor(item->background().color());
-    cp->setStandardColors();
+//    editor->lbl_col_width->hide();
+//    editor->sb_width->hide();
+//    editor->cb_override->hide();
 
-    form->addRow(tr("Name of set"), le_name);
-    form->addRow(tr("Background color"), cp);
+//    editor->cp_bg_color->setStandardColors();
+//    editor->cp_bg_color->setCurrentColor(item->background().color());
 
-    QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, d);
-    vbox->addLayout(form, 10);
-    vbox->addWidget(buttons);
+//    connect(editor->cb_override_cell_colors,SIGNAL(toggled(bool)),editor->colors_widget,SLOT(setEnabled(bool)));
+//    editor->cb_override_cell_colors->setChecked(m_active_set->get_colors()->overrides_cell_colors());
 
-    connect(buttons, SIGNAL(accepted()), d, SLOT(accept()));
-    connect(buttons, SIGNAL(rejected()), d, SLOT(reject()));
+//    editor->cp_bg_color->setStandardColors();
+//    editor->cp_active_color->setStandardColors();
+//    editor->cp_disabled_color->setStandardColors();
+//    editor->cp_active_color->setCurrentColor(m_active_set->get_colors()->active_color());
+//    editor->cp_disabled_color->setCurrentColor(m_active_set->get_colors()->disabled_color());
+//    editor->cp_pending_color->setCurrentColor(m_active_set->get_colors()->pending_color());
 
-    if (d->exec()) {
+//    editor->lbl_title->setText(tr("Set Name"));
+//    editor->le_title->setText(m_active_set->name());
+//    editor->lbl_bg_color->setText(tr("Background Color"));
+//    editor->cb_override_cell_colors->setText(tr("Override default cell colors"));
+//    d->adjustSize();
+
+    if(d->exec()) {
         ViewColumnSet *set = m_pending_view->get_set(item->data(GPDT_TITLE).toString());
-        set->set_name(le_name->text());
-        set->set_bg_color(cp->currentColor());
+        set->set_name(d->ui->le_title->text());
+        set->set_bg_color(d->ui->cp_bg_color->currentColor());
+        set->get_colors()->set_overrides_cell_colors(d->ui->cb_override_cell_colors->isChecked());
+        if(d->ui->cb_override_cell_colors->isChecked()){
+            set->get_colors()->set_active_color(d->ui->cp_active_color->currentColor());
+            set->get_colors()->set_pending_color(d->ui->cp_pending_color->currentColor());
+            set->get_colors()->set_disabled_color(d->ui->cp_disabled_color->currentColor());
+        }else{
+            set->get_colors()->load_defaults();
+        }
         draw_sets();
         draw_columns_for_set(set);
     }
-    d->deleteLater();
+    delete d;
 }
 
 void GridViewDialog::remove_set() {
@@ -281,47 +308,71 @@ void GridViewDialog::edit_column() {
 
 void GridViewDialog::edit_column(const QModelIndex &idx) {
     ViewColumn *vc = m_active_set->column_at(idx.row());
+    ViewEditorDialog *d = new ViewEditorDialog(vc,this);
+//    // build the column dialog
+//    QDialog *d = new QDialog(this);
+//    Ui::ColumnEditDialog *col_editor = new Ui::ColumnEditDialog;
+//    col_editor->setupUi(d);
+//    d->setModal(true);
 
-    // build the column dialog
-    QDialog *d = new QDialog(this);
-    Ui::ColumnEditDialog *dui = new Ui::ColumnEditDialog;
-    dui->setupUi(d);
-    d->setModal(true);
+//    if (vc->override_color()){
+//        col_editor->cp_bg_color->setCurrentColor(vc->bg_color());
+//    }else{
+//        col_editor->cp_bg_color->setCurrentColor(m_active_set->bg_color());
+//    }
+//    col_editor->cp_bg_color->setStandardColors();
+//    col_editor->cp_active_color->setStandardColors();
+//    col_editor->cp_disabled_color->setStandardColors();
 
-    connect(dui->cb_override, SIGNAL(toggled(bool)), dui->cp_bg_color, SLOT(setEnabled(bool)));
+//    col_editor->le_title->setText(vc->title());
 
-    if (vc->override_color())
-        dui->cp_bg_color->setCurrentColor(vc->bg_color());
-    else
-        dui->cp_bg_color->setCurrentColor(m_active_set->bg_color());
-    dui->cp_bg_color->setStandardColors();
-    dui->le_title->setText(vc->title());
-    dui->cb_override->setChecked(vc->override_color());
-    if (vc->type() == CT_SPACER) {
-        SpacerColumn *c = static_cast<SpacerColumn*>(vc);
-        dui->sb_width->setValue(c->width());
-    } else { // don't show the width form for non-spacer columns
-        dui->lbl_col_width->hide();
-        dui->sb_width->hide();
-        dui->verticalLayout->removeItem(dui->hbox_width);
-    }
+//    connect(col_editor->cb_override, SIGNAL(toggled(bool)), col_editor->cp_bg_color, SLOT(setEnabled(bool)));
+//    connect(col_editor->cb_override_cell_colors,SIGNAL(toggled(bool)),col_editor->colors_widget,SLOT(setEnabled(bool)));
+
+//    col_editor->cb_override->setChecked(vc->override_color());
+//    col_editor->cb_override_cell_colors->setChecked(vc->get_colors()->overrides_cell_colors());
+
+//    if (vc->type() == CT_SPACER) {
+//        SpacerColumn *c = static_cast<SpacerColumn*>(vc);
+//        col_editor->sb_width->setValue(c->width());
+//    } else { // don't show the width form for non-spacer columns
+//        col_editor->lbl_col_width->hide();
+//        col_editor->sb_width->hide();
+//        col_editor->verticalLayout->removeItem(col_editor->hbox_width);
+
+//        col_editor->cp_active_color->setCurrentColor(vc->get_colors()->active_color());
+//        col_editor->cp_disabled_color->setCurrentColor(vc->get_colors()->disabled_color());
+//        col_editor->cp_pending_color->setCurrentColor(vc->get_colors()->pending_color());
+//    }
+//    d->adjustSize();
 
     if (d->exec()) { //accepted
-        vc->set_title(dui->le_title->text());
-        vc->set_override_color(dui->cb_override->isChecked());
-        if (dui->cb_override->isChecked()) {
-            vc->set_bg_color(dui->cp_bg_color->currentColor());
+        vc->set_title(d->ui->le_title->text());
+        if (d->ui->cb_override->isChecked()) {
+            vc->set_bg_color(d->ui->cp_bg_color->currentColor());
+        }else{
+            vc->set_bg_color(m_active_set->bg_color());
         }
+
+        vc->set_override_color(d->ui->cb_override->isChecked());
+        if(d->ui->cb_override_cell_colors->isChecked()){
+            vc->get_colors()->set_active_color(d->ui->cp_active_color->currentColor());
+            vc->get_colors()->set_pending_color(d->ui->cp_pending_color->currentColor());
+            vc->get_colors()->set_disabled_color(d->ui->cp_disabled_color->currentColor());
+        }else{
+            vc->get_colors()->copy_colors(m_active_set->get_colors());
+        }
+
         if (vc->type() == CT_SPACER) {
             SpacerColumn *c = static_cast<SpacerColumn*>(vc);
-            int w = dui->sb_width->value();
+            int w = d->ui->sb_width->value();
             if (w < 1)
                 w = DEFAULT_SPACER_WIDTH;
             c->set_width(w);
         }
         draw_columns_for_set(m_active_set);
     }
-    delete dui;
+    delete d;
 }
 
 void GridViewDialog::remove_column() {

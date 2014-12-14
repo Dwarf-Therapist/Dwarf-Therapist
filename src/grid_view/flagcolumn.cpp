@@ -22,6 +22,7 @@ THE SOFTWARE.
 */
 
 #include "flagcolumn.h"
+#include "defines.h"
 #include "gamedatareader.h"
 #include "columntypes.h"
 #include "dwarfmodel.h"
@@ -29,12 +30,18 @@ THE SOFTWARE.
 #include "viewcolumnset.h"
 #include "dwarftherapist.h"
 #include "caste.h"
+#include "cellcolors.h"
+
+QColor FlagColumn::m_col_pend_geld = QColor(203,174,40);
+QColor FlagColumn::m_col_pend_butcher = QColor(205,62,212);
+QColor FlagColumn::m_col_disabled = QColor(187,34,34,125);
 
 FlagColumn::FlagColumn(QString title, int bit_pos, bool bit_value, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title, CT_FLAGS, set, parent)
     , m_bit_pos(bit_pos)
     , m_bit_value(bit_value)
 {
+    read_settings();
 }
 
 FlagColumn::FlagColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
@@ -42,6 +49,7 @@ FlagColumn::FlagColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     , m_bit_pos(s.value("bit_pos", -1).toInt())
     , m_bit_value(s.value("bit_value", 0).toBool())
 {
+    read_settings();
 }
 
 FlagColumn::FlagColumn(const FlagColumn &to_copy)
@@ -49,47 +57,79 @@ FlagColumn::FlagColumn(const FlagColumn &to_copy)
     , m_bit_pos(to_copy.m_bit_pos)
     , m_bit_value(to_copy.m_bit_value)
 {
+    read_settings();
 }
 
 QStandardItem *FlagColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
 
     item->setData(CT_FLAGS, DwarfModel::DR_COL_TYPE);
-    item->setData(false,DwarfModel::DR_SPECIAL_FLAG); //default
+    item->setData(0,DwarfModel::DR_STATE); //default
+    item->setData(m_cell_colors->active_color(),Qt::BackgroundColorRole);
+
+    QString info_msg = "";
+    QString info_col_name = "";
 
     short rating = 0;
-    QString disabled_msg = "";
     if(d->get_flag_value(m_bit_pos))
         rating = 1;
     //check to fix butchering pets. currently this will cause the butchered parts to still be recognized as a pet
     //and they'll put them into a burial recepticle, but won't use them as a food source
-    bool disabled = false;
+    ViewColumn::CELL_STATE state  = STATE_NONE; //0
     if(m_bit_pos == FLAG_BUTCHER){
         if(d->is_pet()){
-            disabled_msg = tr("<b>Pets cannot be butchered!</b>");
-            disabled = true;
+            info_msg = tr("<b>Pets cannot be slaughtered!</b>");
+            //state = -1;
+            state = STATE_DISABLED;
         }else if(!d->get_caste() || !d->get_caste()->flags().has_flag(BUTCHERABLE)){
-            disabled_msg = tr("<b>This creature cannot be butchered!</b>");
-            disabled = true;
+            info_msg = tr("<b>This caste cannot be slaughtered!</b>");
+            //state = -1;
+            state = STATE_DISABLED;
+        }else if(rating == 1){
+            info_msg = tr("<b>This creature has been marked for slaughter.</b>");
+            item->setData(m_cell_colors->pending_color(),Qt::BackgroundColorRole);
+            //state = 1;
+            state = STATE_PENDING;
+        }else{
+            state = STATE_NONE;
+            item->setData(m_cell_colors->pending_color(),Qt::BackgroundColorRole);//toggle
         }
     }else if(m_bit_pos == FLAG_GELD){
         if(d->get_gender() != Dwarf::SEX_M){
-            disabled_msg = tr("<b>Only males can be gelded!</b>");
-            disabled = true;
+            info_msg = tr("<b>Only males can be gelded!</b>");
+            //state = -1;
+            state = STATE_DISABLED;
         }else if(d->has_health_issue(42,0)){
-            disabled_msg = tr("<b>This creature has already been gelded!</b>");
-            disabled = true;
-        }else if(!d->get_caste()->is_geldable()){
-            disabled_msg = tr("<b>This caste is not geldable!</b>");
-            disabled = true;
+            info_msg = tr("<b>This creature has already been gelded!</b>");
+            //state = -2;
+            state = STATE_ACTIVE;
+        }else if(rating == 1){
+            info_msg = tr("<b>This creature has been marked for gelding.</b>");
+            item->setData(m_cell_colors->pending_color(),Qt::BackgroundColorRole);
+            //state = 1;
+            state = STATE_PENDING;
+        }else if(!d->get_caste()->is_geldable()){ //check last as it's the most expensive
+            info_msg = tr("<b>This caste is not geldable!</b>");
+            //state = -1;
+            state = STATE_DISABLED;
+        }else{
+            item->setData(m_cell_colors->pending_color(),Qt::BackgroundColorRole);//toggle
+            state = STATE_NONE;
         }
     }
 
-    if(disabled){
-        item->setData(QBrush(QColor(187,34,34,200)),Qt::BackgroundColorRole);
-        item->setData(true,DwarfModel::DR_SPECIAL_FLAG); //indicates that the cell is disabled
+    item->setData(state,DwarfModel::DR_STATE);
+
+    if(state == STATE_DISABLED){//-1){ //disabled (eg. non-geldable caste)
+        item->setData(m_cell_colors->disabled_color(),Qt::BackgroundColorRole);
         rating = -1;
+    }else if(state == STATE_PENDING){//1){ //pending (eg. set to geld, but not done yet)
+        rating = 1;
+    }else if(state == STATE_ACTIVE){//-2){ //active and disabled (eg. can geld, but has already been gelded)
+        item->setData(m_cell_colors->active_color(),Qt::BackgroundColorRole);
+        rating = 2;
     }
+    info_col_name = item->data(Qt::BackgroundColorRole).value<QColor>().name();
 
     item->setData(rating, DwarfModel::DR_SORT_VALUE);
     item->setData(m_bit_pos, DwarfModel::DR_LABOR_ID);
@@ -97,7 +137,7 @@ QStandardItem *FlagColumn::build_cell(Dwarf *d) {
 
     QString tooltip = QString("<center><h3>%1</h3>%2</center>%3")
             .arg(m_title)
-            .arg(QString("<font color=red>%1</font>").arg(disabled_msg))
+            .arg(QString("<font color=%1>%2</font>").arg(info_col_name).arg(info_msg))
             .arg(tooltip_name_footer(d));
     item->setToolTip(tooltip);
 
@@ -110,6 +150,13 @@ QStandardItem *FlagColumn::build_aggregate(const QString &group_name, const QVec
     item->setData(CT_FLAGS, DwarfModel::DR_COL_TYPE);
     item->setData(m_bit_pos, DwarfModel::DR_LABOR_ID);
     return item;
+}
+
+void FlagColumn::read_settings() {
+    QSettings *s = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
+    if(s){
+        m_col_active = s->value("options/colors/active_labor").value<QColor>();
+    }
 }
 
 void FlagColumn::write_to_ini(QSettings &s) {

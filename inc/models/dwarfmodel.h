@@ -100,7 +100,8 @@ public:
         DR_CUSTOM_PROF, //custom profession name
         DR_LABORS, //qvariant list of labor id
         DR_TOOLTIP, //used to redirect the tooltip instead of the default Qt::TooltipRole
-        DR_EXPORT //custom data when exporting to CSV
+        DR_EXPORT, //custom data when exporting to CSV
+        DR_STATE
     } DATA_ROLES;
 
     DwarfModel(QObject *parent = 0);

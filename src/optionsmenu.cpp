@@ -44,8 +44,9 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     ui->setupUi(this);
 
     m_general_colors
-            << new CustomColor(tr("Skill"), tr("The color of the growing skill indicator box "
-                                               "inside a cell. Is not used when auto-contrast is enabled."), "skill", QColor(170,170,170,170), this)
+            << new CustomColor(tr("Skill"),
+                               tr("The color of the growing skill indicator box inside a cell. Is not used when auto-contrast is enabled."),
+                               "skill", QColor(170,170,170,170), this)
             << new CustomColor(tr("Active Labor Cell"),
                                tr("Color shown for a cell when the labor is active for a dwarf."),
                                "active_labor", QColor(0x7878B3), this)
@@ -264,18 +265,12 @@ void OptionsMenu::read_settings() {
 
     s->endGroup();
     s->beginGroup("grid");
-    //    UberDelegate::SKILL_DRAWING_METHOD m = static_cast<UberDelegate::SKILL_DRAWING_METHOD>(s->value("skill_drawing_method", UberDelegate::SDM_GROWING_CENTRAL_BOX).toInt());
-    //    for(int i=0; i < ui->cb_skill_drawing_method->count(); ++i) {
-    //        if (ui->cb_skill_drawing_method->itemData(i) == m) {
-    //            ui->cb_skill_drawing_method->setCurrentIndex(i);
-    //            break;
-    //        }
-    //    }
     int idx = ui->cb_skill_drawing_method->findData(
                 static_cast<UberDelegate::SKILL_DRAWING_METHOD>(
                     s->value("skill_drawing_method", UberDelegate::SDM_NUMERIC).toInt()));
-    if(idx != -1)
+    if(idx != -1){
         ui->cb_skill_drawing_method->setCurrentIndex(idx);
+    }
 
     ui->sb_cell_size->setValue(s->value("cell_size", DEFAULT_CELL_SIZE).toInt());
     ui->sb_cell_padding->setValue(s->value("cell_padding", 0).toInt());
@@ -337,6 +332,7 @@ void OptionsMenu::read_settings() {
     ui->cb_no_diagnosis->setChecked(s->value("diagnosis_not_required",false).toBool());
     ui->cb_animal_health->setChecked(s->value("animal_health",false).toBool());
 
+    ui->chk_show_orientation->setChecked(s->value("tooltip_show_orientation",false).toBool());
     ui->chk_show_caste->setChecked(s->value("tooltip_show_caste", true).toBool());
     ui->chk_show_caste_desc->setChecked(s->value("tooltip_show_caste_desc", true).toBool());
     ui->chk_show_happiness->setChecked(s->value("tooltip_show_happiness", true).toBool());
@@ -474,6 +470,7 @@ void OptionsMenu::write_settings() {
         s->setValue("show_roles_in_labor",ui->chk_roles_in_labor->isChecked());
         s->setValue("show_roles_in_skills",ui->chk_roles_in_skills->isChecked());
 
+        s->setValue("tooltip_show_orientation", ui->chk_show_orientation->isChecked());
         s->setValue("tooltip_show_caste", ui->chk_show_caste->isChecked());
         s->setValue("tooltip_show_caste_desc", ui->chk_show_caste_desc->isChecked());
         s->setValue("tooltip_show_happiness", ui->chk_show_happiness->isChecked());
@@ -577,6 +574,7 @@ void OptionsMenu::restore_defaults() {
     ui->cb_pref_matches->setChecked(false);
     ui->cb_decorate_nobles->setChecked(false);
 
+    ui->chk_show_orientation->setChecked(false);
     ui->chk_show_caste->setChecked(true);
     ui->chk_show_caste_desc->setChecked(true);
     ui->chk_show_happiness->setChecked(true);
