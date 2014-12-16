@@ -57,12 +57,22 @@ Building
     qmake # Qt 4 on most other distros
     make -j$(nproc) # Run as many jobs as processing units
 
+To configure where DT is installed, pass the PREFIX variable, for example:
+
+::
+    qmake PREFIX=~/.local
+
 For instructions on exactly where to find qmake and how to invoke it on other distros, consult your distribution's documentation.
 
 This will take 2–10 minutes, depending on CPU.
 Get a cup of coffee.
-Once your build is complete, run::
 
+Once your build is complete, run make install. Use sudo if installing into the
+default /usr/local directory (i.e, if you didn't pass the PREFIX variable to
+qmake)
+
+    make install
+    OR
     sudo make install
 
 If you want, you can now remove the folder you cloned from github.
