@@ -28,34 +28,18 @@ THE SOFTWARE.
 
 class FlagColumn : public ViewColumn {
 public:
-        FlagColumn(QString title, int bit_pos, bool bit_value, ViewColumnSet *set = 0, QObject *parent = 0);
+        FlagColumn(QString title, int bit_pos, ViewColumnSet *set = 0, QObject *parent = 0);
         FlagColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
         FlagColumn(const FlagColumn &to_copy); // copy ctor
         FlagColumn* clone() {return new FlagColumn(*this);}
         QStandardItem *build_cell(Dwarf *d);
         QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves);
 
-        int bit_pos() {return m_bit_pos;}
-        void set_bit_pos(int bit_pos) {m_bit_pos = bit_pos;}
-        bool bit_value() {return m_bit_value;}
-        void set_bit_value(bool bit_value) {m_bit_value = bit_value;}
-
-        QColor active_color() const {return m_col_active;}
-        QColor disabled_color() const {return m_col_disabled;}
-
         // override
         void write_to_ini(QSettings &s);
 
-public slots:
-        void read_settings();
-
 protected:
         int m_bit_pos;
-        bool m_bit_value;
-        QColor m_col_active;
-        static QColor m_col_pend_geld;
-        static QColor m_col_pend_butcher;
-        static QColor m_col_disabled;
 };
 
 #endif // FLAGCOLUMN_H

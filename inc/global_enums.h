@@ -710,9 +710,9 @@ typedef enum {
 } UNIT_FLAGS;
 
 typedef enum {
-    GCOL_ACTIVE,
-    GCOL_DISABLED,
-    GCOL_PENDING
+    GCOL_ACTIVE = 0,
+    GCOL_PENDING = 1,
+    GCOL_DISABLED = 2
 } GLOBAL_COLOR_TYPES;
 
 #endif // GLOBAL_ENUMS_H

@@ -73,8 +73,7 @@ void RotatedHeader::read_settings() {
 
 
 void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const {
-    QColor bg = model()->headerData(idx, Qt::Horizontal,
-                                    Qt::BackgroundColorRole).value<QColor>();
+    QColor bg = model()->headerData(idx, Qt::Horizontal,Qt::BackgroundColorRole).value<QColor>();
 
     QBrush grad_brush = QBrush(bg);
     if (m_shade_column_headers) {

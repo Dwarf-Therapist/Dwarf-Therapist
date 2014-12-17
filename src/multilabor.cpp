@@ -5,7 +5,7 @@
 #include "dwarftherapist.h"
 
 MultiLabor::MultiLabor(QObject *parent)
-    :QObject(parent)
+    : QObject(parent)
     , m_dwarf(0)
     , m_role(0)
     , gdr(GameDataReader::ptr())

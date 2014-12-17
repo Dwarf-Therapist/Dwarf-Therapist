@@ -55,6 +55,11 @@ public:
         set_base_offsets();
     }
 
+    virtual ~ItemSubtype(){
+        m_df = 0;
+        m_mem = 0;
+    }
+
     VIRTADDR address() {return m_address;}
     QString name() const {return m_name;}
     QString name_plural() const {return m_name_plural;}

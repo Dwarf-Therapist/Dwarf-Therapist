@@ -30,7 +30,7 @@ class ItemWeaponSubtype : public ItemSubtype {
     Q_OBJECT
 public:
     ItemWeaponSubtype(DFInstance *df, VIRTADDR address, QObject *parent = 0);
-    virtual ~ItemWeaponSubtype();
+    ~ItemWeaponSubtype();
 
     QString group_name() const {return m_group_name;}
 

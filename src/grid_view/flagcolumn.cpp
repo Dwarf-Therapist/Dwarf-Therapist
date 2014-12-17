@@ -30,34 +30,26 @@ THE SOFTWARE.
 #include "viewcolumnset.h"
 #include "dwarftherapist.h"
 #include "caste.h"
-#include "cellcolors.h"
+#include "viewcolumncolors.h"
 
-QColor FlagColumn::m_col_pend_geld = QColor(203,174,40);
-QColor FlagColumn::m_col_pend_butcher = QColor(205,62,212);
-QColor FlagColumn::m_col_disabled = QColor(187,34,34,125);
-
-FlagColumn::FlagColumn(QString title, int bit_pos, bool bit_value, ViewColumnSet *set, QObject *parent)
+FlagColumn::FlagColumn(QString title, int bit_pos, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title, CT_FLAGS, set, parent)
     , m_bit_pos(bit_pos)
-    , m_bit_value(bit_value)
 {
-    read_settings();
+    m_available_states << STATE_PENDING;
 }
 
 FlagColumn::FlagColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     : ViewColumn(s, set, parent)
     , m_bit_pos(s.value("bit_pos", -1).toInt())
-    , m_bit_value(s.value("bit_value", 0).toBool())
 {
-    read_settings();
+    m_available_states << STATE_PENDING;
 }
 
 FlagColumn::FlagColumn(const FlagColumn &to_copy)
     : ViewColumn(to_copy)
     , m_bit_pos(to_copy.m_bit_pos)
-    , m_bit_value(to_copy.m_bit_value)
 {
-    read_settings();
 }
 
 QStandardItem *FlagColumn::build_cell(Dwarf *d) {
@@ -75,59 +67,56 @@ QStandardItem *FlagColumn::build_cell(Dwarf *d) {
         rating = 1;
     //check to fix butchering pets. currently this will cause the butchered parts to still be recognized as a pet
     //and they'll put them into a burial recepticle, but won't use them as a food source
-    ViewColumn::CELL_STATE state  = STATE_NONE; //0
+    ViewColumn::CELL_STATE state  = STATE_TOGGLE;
     if(m_bit_pos == FLAG_BUTCHER){
         if(d->is_pet()){
             info_msg = tr("<b>Pets cannot be slaughtered!</b>");
-            //state = -1;
             state = STATE_DISABLED;
         }else if(!d->get_caste() || !d->get_caste()->flags().has_flag(BUTCHERABLE)){
             info_msg = tr("<b>This caste cannot be slaughtered!</b>");
-            //state = -1;
             state = STATE_DISABLED;
         }else if(rating == 1){
             info_msg = tr("<b>This creature has been marked for slaughter.</b>");
-            item->setData(m_cell_colors->pending_color(),Qt::BackgroundColorRole);
-            //state = 1;
             state = STATE_PENDING;
         }else{
-            state = STATE_NONE;
-            item->setData(m_cell_colors->pending_color(),Qt::BackgroundColorRole);//toggle
+            state = STATE_TOGGLE;
         }
     }else if(m_bit_pos == FLAG_GELD){
         if(d->get_gender() != Dwarf::SEX_M){
             info_msg = tr("<b>Only males can be gelded!</b>");
-            //state = -1;
             state = STATE_DISABLED;
         }else if(d->has_health_issue(42,0)){
             info_msg = tr("<b>This creature has already been gelded!</b>");
-            //state = -2;
             state = STATE_ACTIVE;
         }else if(rating == 1){
             info_msg = tr("<b>This creature has been marked for gelding.</b>");
-            item->setData(m_cell_colors->pending_color(),Qt::BackgroundColorRole);
-            //state = 1;
             state = STATE_PENDING;
         }else if(!d->get_caste()->is_geldable()){ //check last as it's the most expensive
             info_msg = tr("<b>This caste is not geldable!</b>");
-            //state = -1;
             state = STATE_DISABLED;
         }else{
-            item->setData(m_cell_colors->pending_color(),Qt::BackgroundColorRole);//toggle
-            state = STATE_NONE;
+
+            state = STATE_TOGGLE;
         }
     }
 
     item->setData(state,DwarfModel::DR_STATE);
 
-    if(state == STATE_DISABLED){//-1){ //disabled (eg. non-geldable caste)
+    if(state == STATE_DISABLED){//disabled (eg. non-geldable caste)
         item->setData(m_cell_colors->disabled_color(),Qt::BackgroundColorRole);
         rating = -1;
-    }else if(state == STATE_PENDING){//1){ //pending (eg. set to geld, but not done yet)
+    }else if(state == STATE_PENDING){//pending (eg. set to geld, but not done yet)
+        item->setData(m_cell_colors->pending_color(),Qt::BackgroundColorRole);//toggle
         rating = 1;
-    }else if(state == STATE_ACTIVE){//-2){ //active and disabled (eg. can geld, but has already been gelded)
+    }else if(state == STATE_ACTIVE){//active and disabled (eg. can geld, but has already been gelded)
         item->setData(m_cell_colors->active_color(),Qt::BackgroundColorRole);
         rating = 2;
+    }else{
+        if(m_available_states.contains(STATE_PENDING)){
+            item->setData(m_cell_colors->pending_color(),Qt::BackgroundColorRole);
+        }else{
+            item->setData(m_cell_colors->active_color(),Qt::BackgroundColorRole);
+        }
     }
     info_col_name = item->data(Qt::BackgroundColorRole).value<QColor>().name();
 
@@ -152,15 +141,7 @@ QStandardItem *FlagColumn::build_aggregate(const QString &group_name, const QVec
     return item;
 }
 
-void FlagColumn::read_settings() {
-    QSettings *s = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
-    if(s){
-        m_col_active = s->value("options/colors/active_labor").value<QColor>();
-    }
-}
-
 void FlagColumn::write_to_ini(QSettings &s) {
     ViewColumn::write_to_ini(s);
-    s.setValue("bit_value", m_bit_value);
     s.setValue("bit_pos", m_bit_pos);
 }

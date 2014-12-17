@@ -27,11 +27,12 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include <QSettings>
 #include <QStandardItem>
+#include "viewcolumncolors.h"
 
 class ViewColumnSet;
 class Dwarf;
 class DTStandardItem;
-class CellColors;
+//class ViewColumnColors;
 
 /*!
 ViewColumn
@@ -59,11 +60,10 @@ public:
     } COLUMN_SORT_TYPE;
 
     typedef enum {
-        STATE_NONE=-1,
+        STATE_TOGGLE=-1,
         STATE_ACTIVE,
         STATE_PENDING,
-        STATE_DISABLED,
-        STATE_CHECK
+        STATE_DISABLED
     } CELL_STATE;
 
     static inline QString get_sort_type(const COLUMN_SORT_TYPE &type) {
@@ -101,7 +101,7 @@ public:
     QColor bg_color() {return m_bg_color;}
     void set_bg_color(QColor c) {m_bg_color = c;}
 
-    CellColors *get_colors() {return m_cell_colors;}
+    ViewColumnColors *get_colors() {return m_cell_colors;}
 
     ViewColumnSet *set() {return m_set;}
     void set_viewcolumnset(ViewColumnSet *set) {m_set = set;}
@@ -124,6 +124,8 @@ public:
 
     void set_export_role(DwarfModel::DATA_ROLES new_role){m_export_data_role = new_role;}
 
+    QColor get_state_color(CELL_STATE state);
+
     public slots:
         virtual void read_settings() {}
         void clear_cells();
@@ -143,7 +145,8 @@ protected:
     DwarfModel::DATA_ROLES m_export_data_role;
     QList<COLUMN_SORT_TYPE> m_sortable_types;
     COLUMN_SORT_TYPE m_current_sort;
-    CellColors *m_cell_colors;
+    ViewColumnColors *m_cell_colors;
+    QList<CELL_STATE> m_available_states;
 
     QString tooltip_name_footer(Dwarf *d);
 };

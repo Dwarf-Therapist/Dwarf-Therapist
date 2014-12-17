@@ -25,7 +25,7 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "dwarftherapist.h"
 #include "dtstandarditem.h"
-#include "cellcolors.h"
+#include "viewcolumncolors.h"
 
 ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,QObject *parent, int col_idx)
     : QObject(parent)
@@ -38,11 +38,12 @@ ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,QObje
     , m_export_data_role(DwarfModel::DR_SORT_VALUE)
     , m_current_sort(CST_DEFAULT)
 {
-    if (set) {
+    if(set) {
         set->add_column(this,col_idx);
         m_bg_color = set->bg_color();
-        m_cell_colors = new CellColors(set->get_colors());
+        m_cell_colors = new ViewColumnColors(set,this);
     }
+    m_available_states << STATE_TOGGLE << STATE_ACTIVE << STATE_DISABLED;
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 }
 
@@ -62,12 +63,16 @@ ViewColumn::ViewColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     }
     if(m_override_set_colors){
         m_bg_color = read_color(s.value("bg_color").toString());
-        m_cell_colors = new CellColors(s,this);
     }else{
         m_bg_color = set->bg_color();
-        m_cell_colors = new CellColors(set->get_colors());
+    }
+    if(s.value("overrides_cell_colors",false).toBool()){
+        m_cell_colors = new ViewColumnColors(s,set,this);
+    }else{
+        m_cell_colors = new ViewColumnColors(set,this);
     }
 
+    m_available_states << STATE_TOGGLE << STATE_ACTIVE << STATE_DISABLED;
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 }
 
@@ -80,15 +85,19 @@ ViewColumn::ViewColumn(const ViewColumn &to_copy)
     , m_type(to_copy.m_type)
     , m_count(to_copy.m_count)
     , m_export_data_role(to_copy.m_export_data_role)
+    , m_sortable_types(to_copy.m_sortable_types)
     , m_current_sort(to_copy.m_current_sort)
     , m_cell_colors(to_copy.m_cell_colors)
+    , m_available_states(to_copy.m_available_states)
 {
     // cloning should not add it to the copy's set! You must add it manually!
-    if (m_set && !m_override_set_colors)
+    if (m_set && !m_override_set_colors){
         m_bg_color = m_set->bg_color();
+    }
 }
 
 ViewColumn::~ViewColumn(){
+    m_cell_colors = 0;
     clear_cells();
     m_set = 0;
 }
@@ -151,12 +160,7 @@ void ViewColumn::write_to_ini(QSettings &s) {
         s.setValue("override_color", true);
         s.setValue("bg_color", m_bg_color);
     }
-    if(m_cell_colors->overrides_cell_colors()){
-        s.setValue("overrides_cell_colors",true);
-        s.setValue("active_color",m_cell_colors->active_color());
-        s.setValue("disabled_color",m_cell_colors->disabled_color());
-        s.setValue("pending_color",m_cell_colors->pending_color());
-    }
+    m_cell_colors->write_to_ini(s);
 }
 
 QString ViewColumn::get_cell_value(Dwarf *d)
@@ -166,4 +170,20 @@ QString ViewColumn::get_cell_value(Dwarf *d)
 
 QString ViewColumn::tooltip_name_footer(Dwarf *d){
     return QString("<center><h4>%1</h4></center>").arg(d->nice_name());
+}
+
+QColor ViewColumn::get_state_color(CELL_STATE state){
+    if(state == STATE_DISABLED){//disabled (eg. non-geldable caste)
+        return m_cell_colors->disabled_color();
+    }else if(state == STATE_PENDING){//pending (eg. set to geld, but not done yet)
+        return m_cell_colors->pending_color();
+    }else if(state == STATE_ACTIVE){//active and disabled (eg. can geld, but has already been gelded)
+        return m_cell_colors->active_color();
+    }else{
+        if(m_available_states.contains(STATE_PENDING)){
+            return m_cell_colors->pending_color();
+        }else{
+            return m_cell_colors->active_color();
+        }
+    }
 }

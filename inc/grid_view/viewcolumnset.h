@@ -26,12 +26,13 @@ THE SOFTWARE.
 #include <QObject>
 #include <QColor>
 #include <QBrush>
+#include "viewcolumnsetcolors.h"
 
 class QStandardItemModel;
 class QSettings;
 class ViewColumn;
 class Dwarf;
-class CellColors;
+//class ViewColumnSetColors;
 
 /*!
 ViewColumnSet
@@ -52,7 +53,7 @@ public:
     void set_bg_color(const QColor &color) {m_bg_color = color;}
     QColor bg_color() {return m_bg_color;}
 
-    CellColors *get_colors() {return m_cell_colors;}
+    ViewColumnSetColors *get_colors() {return m_cell_colors;}
 
     QList<ViewColumn*> columns() {return m_columns;}
     void remove_column(int offset) {m_columns.removeAt(offset);}
@@ -76,7 +77,7 @@ private:
     QList<ViewColumn*> m_columns;
     QBrush m_bg_brush; // possibly allow textured backgrounds in the long long ago, err future.
     QColor m_bg_color;
-    CellColors *m_cell_colors;
+    ViewColumnSetColors *m_cell_colors;
 };
 
 #endif

@@ -49,14 +49,14 @@ THE SOFTWARE.
 #include "customprofessioncolumn.h"
 #include "beliefcolumn.h"
 #include "unitkillscolumn.h"
-#include "cellcolors.h"
+//#include "viewcolumnsetcolors.h"
 
 ViewColumnSet::ViewColumnSet(QString name, QObject *parent)
     : QObject(parent)
     , m_name(name)
     , m_bg_color(Qt::white)
 {
-    m_cell_colors = new CellColors(this);
+    m_cell_colors = new ViewColumnSetColors(this);
 }
 
 ViewColumnSet::ViewColumnSet(const ViewColumnSet &copy)
@@ -78,7 +78,7 @@ ViewColumnSet::ViewColumnSet(QSettings &s, QObject *parent, int set_num)
 {
     m_name = s.value("name","unknown").toString();
     set_bg_color(read_color(s.value("bg_color", "0xFFFFFF").toString()));
-    m_cell_colors = new CellColors(s,this);
+    m_cell_colors = new ViewColumnSetColors(s,this);
     if(set_num == 0)
         new SpacerColumn(0,0, this, parent);
 
@@ -157,6 +157,7 @@ ViewColumnSet::ViewColumnSet(QSettings &s, QObject *parent, int set_num)
 }
 
 ViewColumnSet::~ViewColumnSet(){
+    m_cell_colors = 0;
     foreach(ViewColumn *c, m_columns){
         c->deleteLater();
     }
@@ -300,12 +301,7 @@ void ViewColumnSet::reorder_columns(const QStandardItemModel &model) {
 void ViewColumnSet::write_to_ini(QSettings &s, int start_idx) {
     s.setValue("name", m_name);
     s.setValue("bg_color", m_bg_color);
-    if(m_cell_colors->overrides_cell_colors()){
-        s.setValue("overrides_cell_colors",true);
-        s.setValue("active_color",m_cell_colors->active_color());
-        s.setValue("disabled_color",m_cell_colors->disabled_color());
-        s.setValue("pending_color",m_cell_colors->pending_color());
-    }
+    m_cell_colors->write_to_ini(s);
     s.beginWriteArray("columns", m_columns.size());
     int i = 0;
     for(int idx=start_idx;idx < m_columns.count(); idx++){
@@ -314,7 +310,3 @@ void ViewColumnSet::write_to_ini(QSettings &s, int start_idx) {
     }
     s.endArray();
 }
-
-
-
-

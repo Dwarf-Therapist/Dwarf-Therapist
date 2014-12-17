@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include "vieweditordialog.h"
 #include "cellcolors.h"
 #include "spacercolumn.h"
+#include "dwarftherapist.h"
 
 ViewEditorDialog::ViewEditorDialog(ViewColumn *vc, QDialog *parent)
     : QDialog(parent)
@@ -42,111 +43,102 @@ ViewEditorDialog::ViewEditorDialog(ViewColumnSet *set, QDialog *parent)
 }
 
 void ViewEditorDialog::configure_ui(QObject *setter){
-    CellColors *cc = 0;
     QColor bg_color = QColor(Qt::white);
     QString name = "";
     QString title = "";
+    QString window_title = "";
     int width = -1;
     bool allow_cell_overrides = true;
+    bool overrides_cells = false;
 
     ViewColumn *vc = qobject_cast<ViewColumn*>(setter);
     if(vc){
-        cc = vc->get_colors();
-        bg_color = vc->bg_color();
+        ViewColumnSet *set = static_cast<ViewColumnSet*>(vc->parent());
+        overrides_cells = vc->get_colors()->overrides_cell_colors();
+        //use the set's cell colors if we're not overriding
+        if (vc->override_color()){
+            bg_color = vc->bg_color();
+        }else{
+            bg_color = set->bg_color();
+        }
+        init_cell_colors(vc->get_colors(),set->get_colors(),bg_color);
+
         title = tr("Column Title");
+        window_title = tr("Edit Column");
         name = vc->title();
 
-        if (vc->override_color()){
-            ui->cp_bg_color->setCurrentColor(vc->bg_color());
-        }else{
-            ui->cp_bg_color->setCurrentColor(static_cast<ViewColumnSet*>(vc->parent())->bg_color());
-        }
-
-        connect(ui->cb_override, SIGNAL(toggled(bool)), ui->cp_bg_color, SLOT(setEnabled(bool)));
+        connect(ui->cb_override, SIGNAL(toggled(bool)), ui->background_widget, SLOT(setEnabled(bool)));
         ui->cb_override->setChecked(vc->override_color());
 
+        //only show the column width for spacers
         if(vc->type() == CT_SPACER) {
             SpacerColumn *c = static_cast<SpacerColumn*>(vc);
             width = c->width();
             allow_cell_overrides = false;
         }
-
     }else{
         ViewColumnSet *vcs = qobject_cast<ViewColumnSet*>(setter);
         if(vcs){
-            cc = vcs->get_colors();
+            overrides_cells = vcs->get_colors()->overrides_cell_colors();
             bg_color = vcs->bg_color();
+            init_cell_colors(vcs->get_colors(),vcs->get_colors()->get_default_colors(),bg_color);
 
-            ui->cp_bg_color->setEnabled(true);
-            ui->cb_override->hide();
             title = tr("Set Name");
+            window_title = tr("Edit Set");
             name = vcs->name();
+
+            //always allow setting the sets bg color
+            ui->cb_override->hide();
+            ui->background_widget->setEnabled(true);
         }
     }
 
-    ui->cp_bg_color->setStandardColors();
-    ui->cp_bg_color->setCurrentColor(bg_color);
-
     connect(ui->cb_override_cell_colors,SIGNAL(toggled(bool)),ui->colors_widget,SLOT(setEnabled(bool)));
-    ui->cb_override_cell_colors->setChecked(cc->overrides_cell_colors());
+    ui->cb_override_cell_colors->setChecked(overrides_cells);
 
-    if(allow_cell_overrides){
-        ui->cp_bg_color->setStandardColors();
-        ui->cp_active_color->setStandardColors();
-        ui->cp_disabled_color->setStandardColors();
-        ui->cp_active_color->setCurrentColor(cc->active_color());
-        ui->cp_disabled_color->setCurrentColor(cc->disabled_color());
-        ui->cp_pending_color->setCurrentColor(cc->pending_color());
-    }else{
+    if(!allow_cell_overrides){
         ui->colors_widget->hide();
+        ui->cb_override_cell_colors->hide();
     }
 
     ui->lbl_title->setText(title);
     ui->le_title->setText(name);
-    ui->lbl_bg_color->setText(tr("Background Color"));
     ui->cb_override_cell_colors->setText(tr("Override default cell colors"));
 
     if(width >= 0){
         ui->sb_width->setValue(width);
     }else{// don't show the width form for non-spacer columns
-        ui->lbl_col_width->hide();
-        ui->sb_width->hide();
-        ui->verticalLayout->removeItem(ui->hbox_width);
+        ui->size_widget->hide();
     }
 
+    this->setWindowTitle(window_title);
     this->adjustSize();
 }
 
+void ViewEditorDialog::init_cell_colors(CellColors *cc, CellColors *defaults, QColor bg_color){
+    int minWidth = 150;
+    m_col_bg = new CustomColor(tr("Background"),tr("Background color of the column."),"background", bg_color, this);
+    m_col_bg->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
+    m_col_bg->setMinimumWidth(minWidth);
+    ui->v_layout_bg->addWidget(m_col_bg);
+    //disabled by default
+    ui->background_widget->setEnabled(false);
 
-/*
-if (vc->override_color()){
-    col_editor->cp_bg_color->setCurrentColor(vc->bg_color());
-}else{
-    col_editor->cp_bg_color->setCurrentColor(m_active_set->bg_color());
+    m_col_active = new CustomColor(tr("Active"),tr("Color when the related action is enabled and active."), "active", defaults->active_color(), this);
+    m_col_active->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
+    m_col_active->setMinimumWidth(minWidth);
+    ui->v_layout_cells->addWidget(m_col_active);
+    m_col_active->set_color(cc->active_color());
+
+    m_col_pending = new CustomColor(tr("Pending"),tr("Color when an action has been flagged to be enabled, but hasn't been yet."),"pending", defaults->pending_color(), this);
+    m_col_pending->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
+    m_col_pending->setMinimumWidth(minWidth);
+    ui->v_layout_cells->addWidget(m_col_pending);
+    m_col_pending->set_color(cc->pending_color());
+
+    m_col_disabled = new CustomColor(tr("Disabled"),tr("Color of the cell when the action cannot be toggled."), "disabled", defaults->disabled_color(), this);
+    m_col_disabled->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
+    m_col_disabled->setMinimumWidth(minWidth);
+    ui->v_layout_cells->addWidget(m_col_disabled);
+    m_col_disabled->set_color(cc->disabled_color());
 }
-col_editor->cp_bg_color->setStandardColors();
-col_editor->cp_active_color->setStandardColors();
-col_editor->cp_disabled_color->setStandardColors();
-
-col_editor->le_title->setText(vc->title());
-
-connect(col_editor->cb_override, SIGNAL(toggled(bool)), col_editor->cp_bg_color, SLOT(setEnabled(bool)));
-connect(col_editor->cb_override_cell_colors,SIGNAL(toggled(bool)),col_editor->colors_widget,SLOT(setEnabled(bool)));
-
-col_editor->cb_override->setChecked(vc->override_color());
-col_editor->cb_override_cell_colors->setChecked(vc->get_colors()->overrides_cell_colors());
-
-if (vc->type() == CT_SPACER) {
-    SpacerColumn *c = static_cast<SpacerColumn*>(vc);
-    col_editor->sb_width->setValue(c->width());
-} else { // don't show the width form for non-spacer columns
-    col_editor->lbl_col_width->hide();
-    col_editor->sb_width->hide();
-    col_editor->verticalLayout->removeItem(col_editor->hbox_width);
-
-    col_editor->cp_active_color->setCurrentColor(vc->get_colors()->active_color());
-    col_editor->cp_disabled_color->setCurrentColor(vc->get_colors()->disabled_color());
-    col_editor->cp_pending_color->setCurrentColor(vc->get_colors()->pending_color());
-}
-d->adjustSize();
-*/

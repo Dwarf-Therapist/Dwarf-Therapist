@@ -61,7 +61,7 @@ public:
 public slots:
     void accept();
     void set_selection_changed(const QItemSelection&, const QItemSelection&);
-    void draw_columns_for_set(ViewColumnSet *set);
+    void draw_columns_for_set(ViewColumnSet *set, bool update = false);
 
 private:
     Ui::GridViewDialog *ui;

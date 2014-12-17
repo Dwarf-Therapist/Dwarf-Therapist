@@ -125,7 +125,7 @@ void DwarfModel::update_header_info(int id, COLUMN_TYPE type){
                     if(l->labor_id()==id){
                         l->update_count(); //tell this column to update it's count
                         QStandardItem* header = this->horizontalHeaderItem(index);
-                        header->setData(col->bg_color(), Qt::BackgroundColorRole);
+                        //header->setData(col->bg_color(), Qt::BackgroundColorRole);
                         header->setData(set->name(), Qt::UserRole);
                         if(m_show_labor_counts){
                             header->setText(QString("%1 %2")
@@ -170,7 +170,7 @@ void DwarfModel::draw_headers(){
 
             QStandardItem *header = new QStandardItem(h_name);
             header->setToolTip(build_col_tooltip(col));
-            header->setData(col->bg_color(), Qt::BackgroundColorRole);
+            //header->setData(col->bg_color(), Qt::BackgroundColorRole);
             header->setData(set->name(), Qt::UserRole);
             setHorizontalHeaderItem(start_col++, header);
             switch (col->type()) {

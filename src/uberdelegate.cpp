@@ -33,7 +33,10 @@ THE SOFTWARE.
 #include "labor.h"
 #include "defaultfonts.h"
 #include "item.h"
-#include "cellcolors.h"
+
+#include "viewcolumn.h"
+#include "gridview.h"
+
 #include <QPainter>
 
 UberDelegate::UberDelegate(QObject *parent)
@@ -751,18 +754,17 @@ void UberDelegate::paint_flags(const QRect &adjusted, QPainter *p, const QStyleO
         return QStyledItemDelegate::paint(p, opt, idx);
     }
 
-    int state = idx.data(DwarfModel::DR_STATE).toInt();
+    ViewColumn *vc = m_model->current_grid_view()->get_column(idx.column());
+
+    ViewColumn::CELL_STATE state = static_cast<ViewColumn::CELL_STATE>(idx.data(DwarfModel::DR_STATE).toInt());
     int bit_pos = idx.data(DwarfModel::DR_LABOR_ID).toInt();
     bool active = d->get_flag_value(bit_pos);
     bool dirty = d->is_flag_dirty(bit_pos);
 
-    if(state == ViewColumn::STATE_NONE || state == ViewColumn::STATE_PENDING){ //none, or pending, check the value
-        active = d->get_flag_value(bit_pos);
-    }else{
-        active = true; //disabled or active and disabled
+    if(state == ViewColumn::STATE_DISABLED || state == ViewColumn::STATE_ACTIVE){
+        active = true; //always draw disabled or active
     }
-    paint_bg_active(adjusted, active, p, opt, proxy_idx, proxy_idx.data(Qt::BackgroundColorRole).value<QColor>());
-
+    paint_bg_active(adjusted, active, p, opt, proxy_idx, vc->get_state_color(state)); //proxy_idx.data(Qt::BackgroundColorRole).value<QColor>());
     paint_grid(adjusted,dirty,p,opt,proxy_idx);
 }
 

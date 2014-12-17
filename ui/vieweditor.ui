@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>347</width>
-    <height>263</height>
+    <width>292</width>
+    <height>226</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -53,9 +53,12 @@
    </item>
    <item>
     <widget class="QWidget" name="background_widget" native="true">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <property name="spacing">
-       <number>0</number>
+       <number>2</number>
       </property>
       <property name="leftMargin">
        <number>0</number>
@@ -70,25 +73,7 @@
        <number>0</number>
       </property>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QLabel" name="lbl_bg_color">
-          <property name="text">
-           <string>Custom Background Color</string>
-          </property>
-          <property name="buddy">
-           <cstring>cp_bg_color</cstring>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QtColorPicker" name="cp_bg_color">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <layout class="QVBoxLayout" name="v_layout_bg"/>
       </item>
      </layout>
     </widget>
@@ -119,7 +104,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <property name="spacing">
-       <number>0</number>
+       <number>2</number>
       </property>
       <property name="leftMargin">
        <number>0</number>
@@ -134,70 +119,50 @@
        <number>0</number>
       </property>
       <item>
-       <layout class="QGridLayout" name="grdLayoutColors">
-        <item row="1" column="0">
-         <widget class="QLabel" name="lbl_disabled_color">
-          <property name="text">
-           <string>Disabled Color</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QtColorPicker" name="cp_disabled_color">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QtColorPicker" name="cp_pending_color">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="lbl_active_color">
-          <property name="text">
-           <string>Active Color</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QtColorPicker" name="cp_active_color">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="lbl_pending_color">
-          <property name="text">
-           <string>Pending Color</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <layout class="QVBoxLayout" name="v_layout_cells"/>
       </item>
      </layout>
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="hbox_width">
-     <item>
-      <widget class="QLabel" name="lbl_col_width">
-       <property name="text">
-        <string>Column Width</string>
-       </property>
-       <property name="buddy">
-        <cstring>sb_width</cstring>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QSpinBox" name="sb_width"/>
-     </item>
-    </layout>
+    <widget class="QWidget" name="size_widget" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <property name="spacing">
+       <number>2</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="lbl_col_width">
+        <property name="text">
+         <string>Column Width</string>
+        </property>
+        <property name="buddy">
+         <cstring>sb_width</cstring>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="sb_width"/>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
@@ -211,13 +176,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QtColorPicker</class>
-   <extends>QPushButton</extends>
-   <header>qtcolorpicker.h</header>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="../resources.qrc"/>
  </resources>

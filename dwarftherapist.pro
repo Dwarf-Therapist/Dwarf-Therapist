@@ -253,7 +253,9 @@ HEADERS += inc/viewmanager.h \
     inc/subthoughttypes.h \
     inc/mood.h \
     inc/grid_view/cellcolors.h \
-    inc/grid_view/vieweditordialog.h
+    inc/grid_view/vieweditordialog.h \
+    inc/grid_view/viewcolumncolors.h \
+    inc/grid_view/viewcolumnsetcolors.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -350,7 +352,8 @@ SOURCES += src/viewmanager.cpp \
     src/unitemotion.cpp \
     src/emotion.cpp \
     src/docks/basetreedock.cpp \
-    src/grid_view/vieweditordialog.cpp
+    src/grid_view/vieweditordialog.cpp \
+    src/grid_view/cellcolors.cpp
 FORMS += ui/scriptdialog.ui \
     ui/pendingchanges.ui \
     ui/optionsmenu.ui \
