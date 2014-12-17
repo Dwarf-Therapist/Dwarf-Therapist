@@ -26,17 +26,13 @@ THE SOFTWARE.
 #include <QObject>
 #include <QColor>
 #include <QBrush>
-#include "viewcolumnsetcolors.h"
 
 class QStandardItemModel;
 class QSettings;
 class ViewColumn;
 class Dwarf;
-//class ViewColumnSetColors;
+class ViewColumnSetColors;
 
-/*!
-ViewColumnSet
-*/
 class ViewColumnSet : public QObject {
     Q_OBJECT
 public:
@@ -71,6 +67,7 @@ public:
         void toggle_for_dwarf(Dwarf *d);
         void toggle_for_dwarf(); // from context menu of single labor
         void toggle_for_dwarf_group(); // from context menu of aggregate
+        void read_settings();
 
 private:
     QString m_name;
@@ -78,6 +75,8 @@ private:
     QBrush m_bg_brush; // possibly allow textured backgrounds in the long long ago, err future.
     QColor m_bg_color;
     ViewColumnSetColors *m_cell_colors;
+
+    void init();
 };
 
 #endif

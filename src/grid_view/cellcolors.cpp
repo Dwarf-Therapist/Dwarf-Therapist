@@ -31,7 +31,7 @@ CellColors::CellColors(QObject *parent)
     : QObject(parent)
     , m_override_cell_colors(false)
 {
-    connect(DT,SIGNAL(settings_changed()),SLOT(read_settings()));
+    //connect(DT,SIGNAL(settings_changed()),SLOT(read_settings()));
 }
 
 CellColors::CellColors(const CellColors &cc)
@@ -59,6 +59,13 @@ void CellColors::inherit_colors(const CellColors &cc){
         }
         idx++;
     }
+}
+
+void CellColors::use_defaults(){
+    m_colors.clear();
+    m_colors.append(qMakePair(false,DT->get_global_color(GCOL_ACTIVE)));
+    m_colors.append(qMakePair(false,DT->get_global_color(GCOL_PENDING)));
+    m_colors.append(qMakePair(false,DT->get_global_color(GCOL_DISABLED)));
 }
 
 QColor CellColors::get_default_color(int idx) const{

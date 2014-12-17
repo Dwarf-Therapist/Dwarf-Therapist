@@ -36,20 +36,27 @@ FlagColumn::FlagColumn(QString title, int bit_pos, ViewColumnSet *set, QObject *
     : ViewColumn(title, CT_FLAGS, set, parent)
     , m_bit_pos(bit_pos)
 {
-    m_available_states << STATE_PENDING;
+    init_states();
+    refresh_color_map();
 }
 
 FlagColumn::FlagColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     : ViewColumn(s, set, parent)
     , m_bit_pos(s.value("bit_pos", -1).toInt())
 {
-    m_available_states << STATE_PENDING;
+    init_states();
+    refresh_color_map();
 }
 
 FlagColumn::FlagColumn(const FlagColumn &to_copy)
     : ViewColumn(to_copy)
     , m_bit_pos(to_copy.m_bit_pos)
 {
+}
+
+void FlagColumn::init_states(){
+    ViewColumn::init_states();
+    m_available_states << STATE_PENDING;
 }
 
 QStandardItem *FlagColumn::build_cell(Dwarf *d) {

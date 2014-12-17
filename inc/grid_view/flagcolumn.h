@@ -40,6 +40,7 @@ public:
 
 protected:
         int m_bit_pos;
+        void init_states();
 };
 
 #endif // FLAGCOLUMN_H

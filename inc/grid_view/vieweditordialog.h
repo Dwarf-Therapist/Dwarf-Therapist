@@ -3,34 +3,26 @@
 
 #include <QDialog>
 #include "ui_vieweditor.h"
-#include "viewcolumn.h"
-#include "viewcolumnset.h"
-#include "customcolor.h"
+
+class ViewColumn;
+class ViewColumnSet;
+class CustomColor;
+class CellColors;
 
 class ViewEditorDialog : public QDialog {
     Q_OBJECT
 public:
     ViewEditorDialog(ViewColumn *vc, QDialog *parent = 0);
     ViewEditorDialog(ViewColumnSet *set, QDialog *parent = 0);
-
-    ~ViewEditorDialog(){
-        delete m_col_bg;
-        delete m_col_active;
-        delete m_col_pending;
-        delete m_col_disabled;
-        delete ui;
-    }
+    ~ViewEditorDialog();
 
     Ui::ViewEditor *ui;
     void configure_ui(QObject *setter);
 
-    QColor background_color() {return m_col_bg->get_color();}
-    QColor active_color() {return m_col_active->get_color();}
-    QColor pending_color() {return m_col_pending->get_color();}
-    QColor disabled_color() {return m_col_disabled->get_color();}
-
-public slots:
-    //void color_selected(QString,QColor);
+    QColor background_color() const;
+    QColor active_color() const;
+    QColor pending_color() const;
+    QColor disabled_color() const;
 
 protected:
     CustomColor *m_col_bg;

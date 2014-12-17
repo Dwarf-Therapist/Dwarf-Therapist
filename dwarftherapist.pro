@@ -353,7 +353,9 @@ SOURCES += src/viewmanager.cpp \
     src/emotion.cpp \
     src/docks/basetreedock.cpp \
     src/grid_view/vieweditordialog.cpp \
-    src/grid_view/cellcolors.cpp
+    src/grid_view/cellcolors.cpp \
+    src/grid_view/viewcolumncolors.cpp \
+    src/grid_view/viewcolumnsetcolors.cpp
 FORMS += ui/scriptdialog.ui \
     ui/pendingchanges.ui \
     ui/optionsmenu.ui \

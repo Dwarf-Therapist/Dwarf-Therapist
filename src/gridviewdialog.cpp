@@ -179,25 +179,25 @@ void GridViewDialog::set_selection_changed(const QItemSelection &selected, const
     }
 }
 
-void GridViewDialog::draw_columns_for_set(ViewColumnSet *set, bool update) {
+void GridViewDialog::draw_columns_for_set(ViewColumnSet *set, bool set_changed) {
     m_col_model->clear();
     foreach(ViewColumn *vc, set->columns()) {
         QStandardItem *item = new QStandardItem(vc->title());
         item->setData(vc->title(), GPDT_TITLE);
         item->setData(vc->type(), GPDT_COLUMN_TYPE);
 
-        if(update){
-            QColor new_bg = vc->override_color() ? vc->bg_color() : set->bg_color();
+        QColor new_bg = vc->override_color() ? vc->bg_color() : set->bg_color();
+        item->setBackground(new_bg);
+        item->setData(new_bg,Qt::BackgroundColorRole);
+
+        item->setForeground(complement(new_bg));
+        item->setData(complement(new_bg),Qt::TextColorRole);
+
+        if(set_changed){
             vc->get_colors()->inherit_colors(*set->get_colors());
-
-            item->setBackground(new_bg);
-            item->setData(new_bg,Qt::BackgroundColorRole);
-
-            item->setForeground(complement(new_bg));
-            item->setData(complement(new_bg),Qt::TextColorRole);
-        }else{
-            item->setBackground(set->bg_color());
+            vc->refresh_color_map();
         }
+
         item->setDropEnabled(false);
         m_col_model->appendRow(item);
     }
@@ -305,6 +305,7 @@ void GridViewDialog::edit_column(const QModelIndex &idx) {
         }else{
             vc->get_colors()->inherit_colors(*m_active_set->get_colors());
         }
+        vc->refresh_color_map();
 
         if (vc->type() == CT_SPACER) {
             SpacerColumn *c = static_cast<SpacerColumn*>(vc);
@@ -313,7 +314,7 @@ void GridViewDialog::edit_column(const QModelIndex &idx) {
                 w = DEFAULT_SPACER_WIDTH;
             c->set_width(w);
         }
-        draw_columns_for_set(m_active_set,true);
+        draw_columns_for_set(m_active_set);
     }
     delete d;
 }

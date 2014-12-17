@@ -27,12 +27,11 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include <QSettings>
 #include <QStandardItem>
-#include "viewcolumncolors.h"
 
 class ViewColumnSet;
 class Dwarf;
 class DTStandardItem;
-//class ViewColumnColors;
+class ViewColumnColors;
 
 /*!
 ViewColumn
@@ -95,8 +94,8 @@ public:
     QString title() {return m_title;}
     void set_title(QString title) {m_title = title;}
 
-    bool override_color() {return m_override_set_colors;}
-    void set_override_color(bool yesno) {m_override_set_colors = yesno;}
+    bool override_color() {return m_override_bg_color;}
+    void set_override_color(bool yesno) {m_override_bg_color = yesno;}
 
     QColor bg_color() {return m_bg_color;}
     void set_bg_color(QColor c) {m_bg_color = c;}
@@ -124,20 +123,21 @@ public:
 
     void set_export_role(DwarfModel::DATA_ROLES new_role){m_export_data_role = new_role;}
 
-    QColor get_state_color(CELL_STATE state);
+    virtual QColor get_state_color(int state) const;
 
-    public slots:
-        virtual void read_settings() {}
-        void clear_cells();
-        virtual void redraw_cells() {}
-        virtual void refresh_sort(COLUMN_SORT_TYPE) {}
+public slots:
+    virtual void read_settings();
+    virtual void refresh_color_map();
+    void clear_cells();
+    virtual void redraw_cells() {}
+    virtual void refresh_sort(COLUMN_SORT_TYPE) {}
 
 protected:
     QString m_title;
     QColor m_bg_color;
     QColor m_active_color;
     QColor m_disabled_color;
-    bool m_override_set_colors;
+    bool m_override_bg_color;
     ViewColumnSet *m_set;
     COLUMN_TYPE m_type;
     QHash<Dwarf*, DTStandardItem*> m_cells;
@@ -146,11 +146,11 @@ protected:
     QList<COLUMN_SORT_TYPE> m_sortable_types;
     COLUMN_SORT_TYPE m_current_sort;
     ViewColumnColors *m_cell_colors;
-    QList<CELL_STATE> m_available_states;
+    QList<int> m_available_states;
+    QHash<int,QColor> m_cell_color_map;
 
+    virtual void init_states();
     QString tooltip_name_footer(Dwarf *d);
 };
-
-//Q_DECLARE_METATYPE(ViewColumn::COLUMN_SORT_TYPE)
 
 #endif

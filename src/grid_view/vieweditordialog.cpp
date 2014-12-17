@@ -23,8 +23,11 @@ THE SOFTWARE.
 
 #include "vieweditordialog.h"
 #include "cellcolors.h"
+#include "customcolor.h"
+#include "viewcolumncolors.h"
+#include "viewcolumnsetcolors.h"
+#include "viewcolumnset.h"
 #include "spacercolumn.h"
-#include "dwarftherapist.h"
 
 ViewEditorDialog::ViewEditorDialog(ViewColumn *vc, QDialog *parent)
     : QDialog(parent)
@@ -41,6 +44,15 @@ ViewEditorDialog::ViewEditorDialog(ViewColumnSet *set, QDialog *parent)
     ui->setupUi(this);
     configure_ui(set);
 }
+
+ViewEditorDialog::~ViewEditorDialog(){
+    delete m_col_bg;
+    delete m_col_active;
+    delete m_col_pending;
+    delete m_col_disabled;
+    delete ui;
+}
+
 
 void ViewEditorDialog::configure_ui(QObject *setter){
     QColor bg_color = QColor(Qt::white);
@@ -142,3 +154,8 @@ void ViewEditorDialog::init_cell_colors(CellColors *cc, CellColors *defaults, QC
     ui->v_layout_cells->addWidget(m_col_disabled);
     m_col_disabled->set_color(cc->disabled_color());
 }
+
+QColor ViewEditorDialog::background_color() const {return m_col_bg->get_color();}
+QColor ViewEditorDialog::active_color() const {return m_col_active->get_color();}
+QColor ViewEditorDialog::pending_color() const {return m_col_pending->get_color();}
+QColor ViewEditorDialog::disabled_color() const {return m_col_disabled->get_color();}

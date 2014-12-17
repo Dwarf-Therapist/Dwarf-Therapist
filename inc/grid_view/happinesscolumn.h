@@ -42,6 +42,11 @@ public:
 
 private:
     QMap<DWARF_HAPPINESS, QColor> m_colors;
+
+protected:
+    void init_states();
+    QColor get_state_color(int state) const;
+    void refresh_color_map();
 };
 
 #endif

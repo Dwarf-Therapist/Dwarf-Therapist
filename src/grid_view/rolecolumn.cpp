@@ -166,6 +166,7 @@ QStandardItem *RoleColumn::build_aggregate(const QString &group_name, const QVec
 }
 
 void RoleColumn::read_settings() {
+    ViewColumn::read_settings();
     if(m_role){
         //reset role's global weights to the new default weights, but only if they were using them in the first place
         QSettings *s = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
@@ -180,8 +181,6 @@ void RoleColumn::read_settings() {
 
         m_role->create_role_details(*s); //rebuild the description
         m_role_name = m_role->name();
-        delete(s);
-        s = 0;
     }
 }
 

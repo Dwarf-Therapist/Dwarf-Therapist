@@ -54,7 +54,7 @@ public:
 public slots:
     virtual void read_settings(){}
     virtual void write_to_ini(QSettings &s);
-    virtual void use_defaults(){}
+    virtual void use_defaults();
 
 protected:
     bool m_override_cell_colors;

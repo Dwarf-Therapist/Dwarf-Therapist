@@ -105,6 +105,7 @@ QStandardItem *HappinessColumn::build_aggregate(const QString &group_name, const
 }
 
 void HappinessColumn::read_settings() {
+    ViewColumn::read_settings();
     QSettings *s = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
     s->beginGroup("options/colors/happiness");
     foreach(QString k, s->childKeys()) {
@@ -119,4 +120,14 @@ void HappinessColumn::redraw_cells() {
         if (d && m_cells[d] && m_cells[d]->model())
             m_cells[d]->setBackground(m_colors[d->get_happiness()]);
     }
+}
+
+void HappinessColumn::init_states(){
+
+}
+void HappinessColumn::refresh_color_map(){
+
+}
+QColor HappinessColumn::get_state_color(int state) const{
+    Q_UNUSED(state);
 }

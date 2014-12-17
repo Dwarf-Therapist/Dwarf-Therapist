@@ -49,7 +49,7 @@ THE SOFTWARE.
 #include "customprofessioncolumn.h"
 #include "beliefcolumn.h"
 #include "unitkillscolumn.h"
-//#include "viewcolumnsetcolors.h"
+#include "viewcolumnsetcolors.h"
 
 ViewColumnSet::ViewColumnSet(QString name, QObject *parent)
     : QObject(parent)
@@ -57,6 +57,7 @@ ViewColumnSet::ViewColumnSet(QString name, QObject *parent)
     , m_bg_color(Qt::white)
 {
     m_cell_colors = new ViewColumnSetColors(this);
+    init();
 }
 
 ViewColumnSet::ViewColumnSet(const ViewColumnSet &copy)
@@ -71,6 +72,7 @@ ViewColumnSet::ViewColumnSet(const ViewColumnSet &copy)
         new_c->set_viewcolumnset(this);
         add_column(new_c); // manually add a cloned copy
     }
+    init();
 }
 
 ViewColumnSet::ViewColumnSet(QSettings &s, QObject *parent, int set_num)
@@ -154,6 +156,11 @@ ViewColumnSet::ViewColumnSet(QSettings &s, QObject *parent, int set_num)
         }
     }
     s.endArray();
+    init();
+}
+
+void ViewColumnSet::init(){
+    connect(DT,SIGNAL(settings_changed()),SLOT(read_settings()));
 }
 
 ViewColumnSet::~ViewColumnSet(){
@@ -296,6 +303,10 @@ void ViewColumnSet::reorder_columns(const QStandardItemModel &model) {
     foreach(ViewColumn *vc, new_cols) {
         m_columns << vc;
     }
+}
+
+void ViewColumnSet::read_settings(){
+    m_cell_colors->read_settings();
 }
 
 void ViewColumnSet::write_to_ini(QSettings &s, int start_idx) {

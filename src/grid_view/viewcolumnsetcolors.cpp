@@ -20,30 +20,48 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef VIEWCOLUMNCOLORS_H
-#define VIEWCOLUMNCOLORS_H
+#include "viewcolumnsetcolors.h"
 
-#include "cellcolors.h"
+ViewColumnSetColors::ViewColumnSetColors(QObject *parent)
+    : CellColors(parent)
+    , m_defaults(0)
+{
+    use_defaults();
+}
 
-class ViewColumnSet;
+ViewColumnSetColors::ViewColumnSetColors(QSettings &s, QObject *parent)
+    : CellColors(parent)
+    , m_defaults(0)
+{
+    use_defaults();
+    load_settings(s);
+}
 
-class ViewColumnColors : public CellColors {
-    Q_OBJECT
-public:
-    ViewColumnColors(QObject *parent=0);
-    ViewColumnColors(ViewColumnSet *set, QObject *parent=0);
-    ViewColumnColors(QSettings &s, ViewColumnSet *set, QObject *parent=0);
-    ~ViewColumnColors();
+ViewColumnSetColors::~ViewColumnSetColors(){
+    m_defaults = 0;
+}
 
-    void use_defaults();
+void ViewColumnSetColors::use_defaults(){
+    CellColors::use_defaults();
 
-    QColor get_default_color(int idx) const;
+    if(m_defaults == 0){
+        m_defaults = new CellColors(*this);
+    }
+}
 
-    void read_settings();
+void ViewColumnSetColors::read_settings(){
+    QPair<bool,QColor> c_pair;
+    int idx = 0;
+    foreach(c_pair, m_colors){
+        QColor def =DT->get_global_color(static_cast<GLOBAL_COLOR_TYPES>(idx));
+        if(!c_pair.first){ //!overridden
+            set_color(idx,def);
+        }
+        m_defaults->set_color(idx, def);
+        idx++;
+    }
+}
 
-private:
-    ViewColumnSet *m_set;
-
-};
-
-#endif // VIEWCOLUMNCOLORS_H
+CellColors *ViewColumnSetColors::get_default_colors(){
+    return m_defaults;
+}

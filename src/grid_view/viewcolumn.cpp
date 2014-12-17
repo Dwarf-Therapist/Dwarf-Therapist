@@ -31,7 +31,7 @@ ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,QObje
     : QObject(parent)
     , m_title(title)
     , m_bg_color(Qt::red) //! should stand out if it doesn't get set
-    , m_override_set_colors(false)
+    , m_override_bg_color(false)
     , m_set(set)
     , m_type(type)
     , m_count(-1)
@@ -42,8 +42,9 @@ ViewColumn::ViewColumn(QString title, COLUMN_TYPE type, ViewColumnSet *set,QObje
         set->add_column(this,col_idx);
         m_bg_color = set->bg_color();
         m_cell_colors = new ViewColumnColors(set,this);
+    }else{
+        m_cell_colors = new ViewColumnColors(this);
     }
-    m_available_states << STATE_TOGGLE << STATE_ACTIVE << STATE_DISABLED;
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 }
 
@@ -51,7 +52,7 @@ ViewColumn::ViewColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     : QObject(parent)
     , m_title(s.value("name", "UNKNOWN").toString())
     , m_bg_color(Qt::red) //! should stand out if it doesn't get set
-    , m_override_set_colors(s.value("override_color", false).toBool())
+    , m_override_bg_color(s.value("override_color", false).toBool())
     , m_set(set)
     , m_type(get_column_type(s.value("type", "DEFAULT").toString()))
     , m_count(-1)
@@ -60,19 +61,15 @@ ViewColumn::ViewColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
 {
     if(set){
         set->add_column(this);
+        m_cell_colors = new ViewColumnColors(s,set,this);
+    }else{
+        m_cell_colors = new ViewColumnColors(this);
     }
-    if(m_override_set_colors){
+    if(m_override_bg_color){
         m_bg_color = read_color(s.value("bg_color").toString());
     }else{
         m_bg_color = set->bg_color();
     }
-    if(s.value("overrides_cell_colors",false).toBool()){
-        m_cell_colors = new ViewColumnColors(s,set,this);
-    }else{
-        m_cell_colors = new ViewColumnColors(set,this);
-    }
-
-    m_available_states << STATE_TOGGLE << STATE_ACTIVE << STATE_DISABLED;
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 }
 
@@ -80,7 +77,7 @@ ViewColumn::ViewColumn(const ViewColumn &to_copy)
     : QObject(to_copy.parent())
     , m_title(to_copy.m_title)
     , m_bg_color(to_copy.m_bg_color)
-    , m_override_set_colors(to_copy.m_override_set_colors)
+    , m_override_bg_color(to_copy.m_override_bg_color)
     , m_set(to_copy.m_set)
     , m_type(to_copy.m_type)
     , m_count(to_copy.m_count)
@@ -89,9 +86,10 @@ ViewColumn::ViewColumn(const ViewColumn &to_copy)
     , m_current_sort(to_copy.m_current_sort)
     , m_cell_colors(to_copy.m_cell_colors)
     , m_available_states(to_copy.m_available_states)
+    , m_cell_color_map(to_copy.m_cell_color_map)
 {
     // cloning should not add it to the copy's set! You must add it manually!
-    if (m_set && !m_override_set_colors){
+    if (m_set && !m_override_bg_color){
         m_bg_color = m_set->bg_color();
     }
 }
@@ -106,7 +104,7 @@ QStandardItem *ViewColumn::init_cell(Dwarf *d) {
     DTStandardItem *item = new DTStandardItem;
     item->setStatusTip(QString("%1 :: %2").arg(m_title).arg(d->nice_name()));
     QColor bg;
-    if (m_override_set_colors) {
+    if (m_override_bg_color) {
         bg = m_bg_color;
     } else {
         bg = set()->bg_color();
@@ -129,7 +127,7 @@ QStandardItem *ViewColumn::init_aggregate(QString group_name){
     item->setStatusTip(m_title + " :: " + group_name);
 
     QColor bg;
-    if (m_override_set_colors)
+    if (m_override_bg_color)
         bg = m_bg_color;
     else
         bg = m_set->bg_color();
@@ -156,7 +154,7 @@ void ViewColumn::write_to_ini(QSettings &s) {
         s.setValue("name", "UNKNOWN");
     }
     s.setValue("type", get_column_type(m_type));
-    if (m_override_set_colors) {
+    if (m_override_bg_color) {
         s.setValue("override_color", true);
         s.setValue("bg_color", m_bg_color);
     }
@@ -172,18 +170,27 @@ QString ViewColumn::tooltip_name_footer(Dwarf *d){
     return QString("<center><h4>%1</h4></center>").arg(d->nice_name());
 }
 
-QColor ViewColumn::get_state_color(CELL_STATE state){
-    if(state == STATE_DISABLED){//disabled (eg. non-geldable caste)
-        return m_cell_colors->disabled_color();
-    }else if(state == STATE_PENDING){//pending (eg. set to geld, but not done yet)
-        return m_cell_colors->pending_color();
-    }else if(state == STATE_ACTIVE){//active and disabled (eg. can geld, but has already been gelded)
-        return m_cell_colors->active_color();
+void ViewColumn::read_settings(){
+    m_cell_colors->read_settings();
+    refresh_color_map();
+}
+
+void ViewColumn::init_states(){
+    m_available_states << STATE_TOGGLE << STATE_ACTIVE << STATE_DISABLED;
+}
+
+void ViewColumn::refresh_color_map(){
+    m_cell_color_map.insert(STATE_DISABLED,m_cell_colors->disabled_color());
+    m_cell_color_map.insert(STATE_PENDING,m_cell_colors->pending_color());
+    m_cell_color_map.insert(STATE_ACTIVE,m_cell_colors->active_color());
+    //in the case that a column has a pending state, use that when toggling the cell
+    if(m_available_states.contains(STATE_PENDING)){
+        m_cell_color_map.insert(STATE_TOGGLE,m_cell_colors->pending_color());
     }else{
-        if(m_available_states.contains(STATE_PENDING)){
-            return m_cell_colors->pending_color();
-        }else{
-            return m_cell_colors->active_color();
-        }
+        m_cell_color_map.insert(STATE_TOGGLE,m_cell_colors->active_color());
     }
+}
+
+QColor ViewColumn::get_state_color(int state) const{
+    return m_cell_color_map.value(static_cast<CELL_STATE>(state),m_cell_colors->active_color());
 }

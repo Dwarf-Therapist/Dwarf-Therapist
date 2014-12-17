@@ -37,7 +37,6 @@ WeaponColumn::WeaponColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     , m_sub_type_id(s.value("sub_type_id",-1).toInt())
     , m_weapon_name(s.value("weapon_name","").toString())
 {
-    connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 }
 
 WeaponColumn::WeaponColumn(const QString &title, const int sub_type, ViewColumnSet *set, QObject *parent)
@@ -46,7 +45,6 @@ WeaponColumn::WeaponColumn(const QString &title, const int sub_type, ViewColumnS
     , m_sub_type_id(sub_type)
     , m_weapon_name(title)
 {
-    connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 }
 
 void WeaponColumn::init(){
