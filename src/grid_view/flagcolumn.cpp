@@ -56,7 +56,9 @@ FlagColumn::FlagColumn(const FlagColumn &to_copy)
 
 void FlagColumn::init_states(){
     ViewColumn::init_states();
-    m_available_states << STATE_PENDING;
+    if(m_bit_pos != FLAG_CAGED){
+        m_available_states << STATE_PENDING;
+    }
 }
 
 QStandardItem *FlagColumn::build_cell(Dwarf *d) {
@@ -64,7 +66,6 @@ QStandardItem *FlagColumn::build_cell(Dwarf *d) {
 
     item->setData(CT_FLAGS, DwarfModel::DR_COL_TYPE);
     item->setData(0,DwarfModel::DR_STATE); //default
-    item->setData(m_cell_colors->active_color(),Qt::BackgroundColorRole);
 
     QString info_msg = "";
     QString info_col_name = "";
@@ -102,30 +103,12 @@ QStandardItem *FlagColumn::build_cell(Dwarf *d) {
             info_msg = tr("<b>This caste is not geldable!</b>");
             state = STATE_DISABLED;
         }else{
-
             state = STATE_TOGGLE;
         }
     }
 
     item->setData(state,DwarfModel::DR_STATE);
-
-    if(state == STATE_DISABLED){//disabled (eg. non-geldable caste)
-        item->setData(m_cell_colors->disabled_color(),Qt::BackgroundColorRole);
-        rating = -1;
-    }else if(state == STATE_PENDING){//pending (eg. set to geld, but not done yet)
-        item->setData(m_cell_colors->pending_color(),Qt::BackgroundColorRole);//toggle
-        rating = 1;
-    }else if(state == STATE_ACTIVE){//active and disabled (eg. can geld, but has already been gelded)
-        item->setData(m_cell_colors->active_color(),Qt::BackgroundColorRole);
-        rating = 2;
-    }else{
-        if(m_available_states.contains(STATE_PENDING)){
-            item->setData(m_cell_colors->pending_color(),Qt::BackgroundColorRole);
-        }else{
-            item->setData(m_cell_colors->active_color(),Qt::BackgroundColorRole);
-        }
-    }
-    info_col_name = item->data(Qt::BackgroundColorRole).value<QColor>().name();
+    info_col_name = get_state_color(state).name();//item->data(Qt::BackgroundColorRole).value<QColor>().name();
 
     item->setData(rating, DwarfModel::DR_SORT_VALUE);
     item->setData(m_bit_pos, DwarfModel::DR_LABOR_ID);

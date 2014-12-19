@@ -197,17 +197,17 @@ void DwarfTherapist::read_settings() {
     m_allow_labor_cheats = m_user_settings->value("options/allow_labor_cheats", false).toBool();
     m_hide_non_adults = m_user_settings->value("options/hide_children_and_babies",false).toBool();
 
-    //update global colors
+    //refresh global colors
     m_colors.clear();
     m_user_settings->beginGroup("options/colors");
     m_colors.insert(GCOL_ACTIVE,QColor(m_user_settings->value("active_labor").value<QColor>()));
 
-    QColor tmp = QColor(m_user_settings->value("disabled_action").value<QColor>());
+    QColor tmp = QColor(m_user_settings->value("cell_disabled").value<QColor>());
     if(!tmp.isValid())
         tmp = QColor(187,34,34,125);
     m_colors.insert(GCOL_DISABLED,tmp);
 
-    tmp = QColor(m_user_settings->value("pending_action").value<QColor>());
+    tmp = QColor(m_user_settings->value("cell_pending").value<QColor>());
     if(!tmp.isValid())
         tmp = QColor(203,174,40);
     m_colors.insert(GCOL_PENDING,tmp);

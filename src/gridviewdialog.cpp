@@ -240,9 +240,9 @@ void GridViewDialog::edit_set(const QModelIndex &idx) {
         set->set_bg_color(d->background_color());
         set->get_colors()->set_overrides_cell_colors(d->ui->cb_override_cell_colors->isChecked());
         if(d->ui->cb_override_cell_colors->isChecked()){
-            set->get_colors()->set_active_color(d->active_color());
-            set->get_colors()->set_pending_color(d->pending_color());
-            set->get_colors()->set_disabled_color(d->disabled_color());
+            for(int idx=0;idx < set->get_colors()->colors().count();idx++){
+                set->get_colors()->set_color(idx,d->color(idx));
+            }
         }else{
             set->get_colors()->use_defaults();
         }
@@ -299,9 +299,9 @@ void GridViewDialog::edit_column(const QModelIndex &idx) {
         vc->set_override_color(d->ui->cb_override->isChecked());
         vc->get_colors()->set_overrides_cell_colors(d->ui->cb_override_cell_colors->isChecked());
         if(d->ui->cb_override_cell_colors->isChecked()){
-            vc->get_colors()->set_active_color(d->active_color());
-            vc->get_colors()->set_pending_color(d->pending_color());
-            vc->get_colors()->set_disabled_color(d->disabled_color());
+            for(int idx=0;idx < vc->get_colors()->colors().count();idx++){
+                vc->get_colors()->set_color(idx,d->color(idx));
+            }
         }else{
             vc->get_colors()->inherit_colors(*m_active_set->get_colors());
         }

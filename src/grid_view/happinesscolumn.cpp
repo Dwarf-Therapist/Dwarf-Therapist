@@ -32,14 +32,16 @@ HappinessColumn::HappinessColumn(QSettings &s, ViewColumnSet *set, QObject *pare
     : ViewColumn(s, set, parent)
     , m_colors(QMap<DWARF_HAPPINESS, QColor>())
 {
-    read_settings();
+    init_states();
+    refresh_color_map();
 }
 
 HappinessColumn::HappinessColumn(QString title, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title, CT_HAPPINESS, set, parent)
     , m_colors(QMap<DWARF_HAPPINESS, QColor>())
 {
-    read_settings();
+    init_states();
+    refresh_color_map();
 }
 
 HappinessColumn::HappinessColumn(const HappinessColumn &to_copy)
@@ -63,7 +65,7 @@ QStandardItem *HappinessColumn::build_cell(Dwarf *d) {
     item->setData(QIcon(pixmap_name), Qt::DecorationRole);
     item->setData(CT_HAPPINESS, DwarfModel::DR_COL_TYPE);
     item->setData(d->get_raw_happiness()*-1, DwarfModel::DR_SORT_VALUE); //invert sorting since low raw happiness (low stress) is better
-    item->setData(m_colors[d->get_happiness()],Qt::BackgroundColorRole);
+    item->setData(d->get_happiness(),DwarfModel::DR_STATE);
 
     QString tooltip = QString("<center><h3>%1</h3><h4>%2<br/>%3%4</h4></center><p>%5</p>%6")
             .arg(m_title)
@@ -100,19 +102,8 @@ QStandardItem *HappinessColumn::build_aggregate(const QString &group_name, const
                      .arg(name)
                      .arg(Dwarf::happiness_name(highest))
                      .arg(tr("Stress Level: ") + formatNumber(stress)));
-            item->setData(m_colors[highest], Qt::BackgroundColorRole);
+    item->setData(highest,DwarfModel::DR_STATE);
     return item;
-}
-
-void HappinessColumn::read_settings() {
-    ViewColumn::read_settings();
-    QSettings *s = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
-    s->beginGroup("options/colors/happiness");
-    foreach(QString k, s->childKeys()) {
-        DWARF_HAPPINESS h = static_cast<DWARF_HAPPINESS>(k.toInt());
-        m_colors[h] = s->value(k).value<QColor>();
-    }
-    s->endGroup();
 }
 
 void HappinessColumn::redraw_cells() {
@@ -123,11 +114,20 @@ void HappinessColumn::redraw_cells() {
 }
 
 void HappinessColumn::init_states(){
-
+    m_available_states.clear();
+    for(int i = 0; i < DH_TOTAL_LEVELS; i++){
+        m_available_states << static_cast<DWARF_HAPPINESS>(i);
+    }
 }
 void HappinessColumn::refresh_color_map(){
-
+    QSettings *s = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
+    s->beginGroup("options/colors/happiness");
+    foreach(QString k, s->childKeys()) {
+        DWARF_HAPPINESS h = static_cast<DWARF_HAPPINESS>(k.toInt());
+        m_colors[h] = s->value(k).value<QColor>();
+    }
+    s->endGroup();
 }
 QColor HappinessColumn::get_state_color(int state) const{
-    Q_UNUSED(state);
+    return m_colors.value(static_cast<DWARF_HAPPINESS>(state),m_colors.value(DH_FINE));
 }

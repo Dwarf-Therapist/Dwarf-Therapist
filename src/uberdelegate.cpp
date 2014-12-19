@@ -70,6 +70,8 @@ UberDelegate::UberDelegate(QObject *parent)
 void UberDelegate::read_settings() {
     QSettings *s = DT->user_settings();
     s->beginGroup("options");
+    auto_contrast = s->value("auto_contrast", true).toBool();
+    show_aggregates = s->value("show_aggregates", true).toBool();
     s->beginGroup("colors");
     color_skill = s->value("skill").value<QColor>();
     color_dirty_border = s->value("dirty_border").value<QColor>();
@@ -81,21 +83,21 @@ void UberDelegate::read_settings() {
     color_partial_group = s->value("partial_group").value<QColor>();
     color_guides = s->value("guides").value<QColor>();
     color_border = s->value("border").value<QColor>();
-    s->endGroup();
-    s->endGroup();
-    cell_size = s->value("options/grid/cell_size", DEFAULT_CELL_SIZE).toInt();
-    cell_padding = s->value("options/grid/cell_padding", 0).toInt();
+    s->endGroup(); //colors
+    s->beginGroup("grid");
+    cell_size = s->value("cell_size", DEFAULT_CELL_SIZE).toInt();
+    cell_padding = s->value("cell_padding", 0).toInt();
     cell_size += (cell_padding*2)+2; //increase the cell size by padding
-    auto_contrast = s->value("options/auto_contrast", true).toBool();
-    show_aggregates = s->value("options/show_aggregates", true).toBool();
-    m_skill_drawing_method = static_cast<SKILL_DRAWING_METHOD>(s->value("options/grid/skill_drawing_method", SDM_NUMERIC).toInt());
-    draw_happiness_icons = s->value("options/grid/happiness_icons",false).toBool();
-    color_mood_cells = s->value("options/grid/color_mood_cells",false).toBool();
-    color_health_cells = s->value("options/grid/color_health_cells",true).toBool();
-    color_attribute_syns = s->value("options/grid/color_attribute_syns",true).toBool();
-    color_pref_matches = s->value("options/grid/color_pref_matches",false).toBool();
-    m_fnt = s->value("options/grid/font", QFont(DefaultFonts::getRowFontName(), DefaultFonts::getRowFontSize())).value<QFont>();
-    gradient_cell_bg = s->value("options/grid/shade_cells",true).toBool();
+    m_skill_drawing_method = static_cast<SKILL_DRAWING_METHOD>(s->value("skill_drawing_method", SDM_NUMERIC).toInt());
+    draw_happiness_icons = s->value("happiness_icons",false).toBool();
+    color_mood_cells = s->value("color_mood_cells",false).toBool();
+    color_health_cells = s->value("color_health_cells",true).toBool();
+    color_attribute_syns = s->value("color_attribute_syns",true).toBool();
+    color_pref_matches = s->value("color_pref_matches",false).toBool();
+    m_fnt = s->value("font", QFont(DefaultFonts::getRowFontName(), DefaultFonts::getRowFontSize())).value<QFont>();
+    gradient_cell_bg = s->value("shade_cells",true).toBool();
+    s->endGroup(); //grid
+    s->endGroup(); //options
 }
 
 void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
@@ -171,10 +173,18 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
                 return QStyledItemDelegate::paint(p, opt, idx);
             }
             int labor_id = idx.data(DwarfModel::DR_LABOR_ID).toInt();
-            bool enabled = d->labor_enabled(labor_id);
+            bool active = d->labor_enabled(labor_id);
             bool dirty = d->is_labor_state_dirty(labor_id);
+            //QColor bg = paint_bg_active(adjusted, enabled, p, opt, idx);
+            ViewColumn *vc = m_model->current_grid_view()->get_column(idx.column());
+            int state = idx.data(DwarfModel::DR_STATE).toInt();
 
-            QColor bg = paint_bg_active(adjusted, enabled, p, opt, idx);
+            if(state == ViewColumn::STATE_DISABLED || state == ViewColumn::STATE_ACTIVE){
+                active = true; //always draw disabled or active
+            }
+
+            QColor bg = paint_bg_active(adjusted,active,p,opt,idx,vc->get_state_color(state));
+
             limit = 15.0;
             if(rating >= 0)
                 paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 0, 0, limit, 0, 0);
@@ -187,7 +197,10 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_HAPPINESS:
     {
-        paint_bg(adjusted, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
+        ViewColumn *vc = m_model->current_grid_view()->get_column(idx.column());
+        int state = idx.data(DwarfModel::DR_STATE).toInt();
+
+        paint_bg(adjusted, p, opt, idx, true, vc->get_state_color(state));// model_idx.data(Qt::BackgroundColorRole).value<QColor>());
         if(draw_happiness_icons || d->in_stressed_mood()){
             paint_icon(adjusted,p,opt,idx);
         }else{
@@ -199,8 +212,10 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_EQUIPMENT:
     {
+        ViewColumn *vc = m_model->current_grid_view()->get_column(idx.column());
+        int state = idx.data(DwarfModel::DR_STATE).toInt();
         int wear_level = idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt();
-        paint_bg(adjusted, p, opt, idx, true, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
+        paint_bg(adjusted, p, opt, idx, true, vc->get_state_color(state)); //model_idx.data(Qt::BackgroundColorRole).value<QColor>());
         paint_wear_cell(adjusted,p,opt,idx,wear_level);
     }
         break;

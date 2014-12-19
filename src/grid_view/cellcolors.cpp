@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include "cellcolors.h"
-
 #include "defines.h"
 #include "utils.h"
 #include "viewcolumn.h"
@@ -52,9 +51,8 @@ void CellColors::load_settings(QSettings &s){
 
 void CellColors::inherit_colors(const CellColors &cc){
     int idx = 0;
-    QPair<bool,QColor> c;
-    foreach(c, cc.m_colors){
-        if(!m_override_cell_colors || !m_colors.at(idx).first){
+    foreach(CellColorDef *c, cc.m_colors){
+        if(!m_override_cell_colors || !c->is_overridden()){
             set_color(idx,cc.get_color(idx));
         }
         idx++;
@@ -62,10 +60,11 @@ void CellColors::inherit_colors(const CellColors &cc){
 }
 
 void CellColors::use_defaults(){
+    qDeleteAll(m_colors);
     m_colors.clear();
-    m_colors.append(qMakePair(false,DT->get_global_color(GCOL_ACTIVE)));
-    m_colors.append(qMakePair(false,DT->get_global_color(GCOL_PENDING)));
-    m_colors.append(qMakePair(false,DT->get_global_color(GCOL_DISABLED)));
+    m_colors.append(new CellColorDef(DT->get_global_color(GCOL_ACTIVE),"active_color",tr("Active"),tr("Color when the related action is enabled and active."),this));
+    m_colors.append(new CellColorDef(DT->get_global_color(GCOL_PENDING),"pending_color",tr("Pending"),tr("Color when an action has been flagged to be enabled, but hasn't been yet."),this));
+    m_colors.append(new CellColorDef(DT->get_global_color(GCOL_DISABLED),"disabled_color",tr("Disabled"),tr("Color of the cell when the action cannot be toggled."),this));
 }
 
 QColor CellColors::get_default_color(int idx) const{
@@ -76,28 +75,27 @@ void CellColors::write_to_ini(QSettings &s){
     //only write values if they've overridden the defaults
     if(m_override_cell_colors){
         s.setValue("overrides_cell_colors",m_override_cell_colors);
-        if(m_colors.at(0).first)
-            s.setValue("active_color",m_colors.at(0).second);
-        if(m_colors.at(1).first)
-            s.setValue("pending_color",m_colors.at(1).second);
-        if(m_colors.at(2).first)
-            s.setValue("disabled_color",m_colors.at(2).second);
+        foreach(CellColorDef *c, m_colors){
+            s.setValue(c->key(),c->color());
+        }
     }
 }
 
 QColor CellColors::get_color(int idx) const {
-    return m_colors.at(idx).second;
+    return m_colors.at(idx)->color();
 }
 
-void CellColors::set_color(int idx, QColor c){
-    QColor def = get_default_color(idx);
-    QPair<bool,QColor> c_pair = m_colors.takeAt(idx);
-    if(c.isValid()){
-        c_pair.first = (c != def);
-        c_pair.second = c;
+void CellColors::set_color(int idx, QColor c, bool req_check){
+    if(req_check){
+        QColor def = get_default_color(idx);
+        if(c.isValid()){
+            m_colors[idx]->set_overridden((c != def));
+            m_colors[idx]->set_color(c);
+        }else{
+            m_colors[idx]->set_overridden(false);
+            m_colors[idx]->set_color(def);
+        }
     }else{
-        c_pair.first = false;
-        c_pair.second = def;
+        m_colors[idx]->set_color(c);
     }
-    m_colors.insert(idx,c_pair);
 }

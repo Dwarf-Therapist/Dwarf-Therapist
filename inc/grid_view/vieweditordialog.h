@@ -20,15 +20,11 @@ public:
     void configure_ui(QObject *setter);
 
     QColor background_color() const;
-    QColor active_color() const;
-    QColor pending_color() const;
-    QColor disabled_color() const;
+    QColor color(int idx) const;
 
 protected:
     CustomColor *m_col_bg;
-    CustomColor *m_col_active;
-    CustomColor *m_col_pending;
-    CustomColor *m_col_disabled;
+    QList<CustomColor*> m_custom_colors;
 
     void init_cell_colors(CellColors *cc, CellColors *defaults, QColor bg_color);
 

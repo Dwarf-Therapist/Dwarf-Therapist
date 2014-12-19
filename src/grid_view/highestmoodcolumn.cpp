@@ -78,13 +78,7 @@ QStandardItem *HighestMoodColumn::build_cell(Dwarf *d) {
     m_sort_val += s.raw_level();
     item->setData(m_sort_val, DwarfModel::DR_SORT_VALUE);
 
-//    QColor bg = QColor(175,175,175);
-//    if(DT->user_settings()->value("options/grid/shade_cells",true)==false)
-//        bg = QColor(255,255,255);
-//    item->setData(bg,Qt::BackgroundColorRole);
-
     build_tooltip(d,false);
-    //s = 0;
 
     return item;
 }

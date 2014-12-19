@@ -40,6 +40,10 @@ public:
     QStandardItem *build_cell(Dwarf *d);
     QStandardItem *build_aggregate(const QString &, const QVector<Dwarf*> &);
 
+protected:
+    void refresh_color_map();
+    void init_states();
+
 };
 
 #endif // EQUIPMENTCOLUMN_H

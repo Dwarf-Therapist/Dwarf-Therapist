@@ -255,7 +255,8 @@ HEADERS += inc/viewmanager.h \
     inc/grid_view/cellcolors.h \
     inc/grid_view/vieweditordialog.h \
     inc/grid_view/viewcolumncolors.h \
-    inc/grid_view/viewcolumnsetcolors.h
+    inc/grid_view/viewcolumnsetcolors.h \
+    inc/grid_view/cellcolordef.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \

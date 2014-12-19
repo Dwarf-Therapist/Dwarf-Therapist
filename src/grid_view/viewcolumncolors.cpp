@@ -50,10 +50,11 @@ ViewColumnColors::~ViewColumnColors(){
 void ViewColumnColors::use_defaults(){
     if(m_set){
         CellColors *cc = m_set->get_colors();
+        qDeleteAll(m_colors);
         m_colors.clear();
-        m_colors.append(qMakePair(false,cc->active_color()));
-        m_colors.append(qMakePair(false,cc->pending_color()));
-        m_colors.append(qMakePair(false,cc->disabled_color()));
+        foreach(CellColorDef *ccd, cc->colors()){
+            m_colors.append(new CellColorDef(*ccd,this));
+        }
     }else{
         CellColors::use_defaults();
     }

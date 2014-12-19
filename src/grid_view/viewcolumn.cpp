@@ -171,6 +171,9 @@ QString ViewColumn::tooltip_name_footer(Dwarf *d){
 }
 
 void ViewColumn::read_settings(){
+
+}
+void ViewColumn::refresh_colors(){
     m_cell_colors->read_settings();
     refresh_color_map();
 }
@@ -180,17 +183,17 @@ void ViewColumn::init_states(){
 }
 
 void ViewColumn::refresh_color_map(){
-    m_cell_color_map.insert(STATE_DISABLED,m_cell_colors->disabled_color());
-    m_cell_color_map.insert(STATE_PENDING,m_cell_colors->pending_color());
-    m_cell_color_map.insert(STATE_ACTIVE,m_cell_colors->active_color());
+    m_cell_color_map.insert(STATE_ACTIVE,m_cell_colors->get_color(STATE_ACTIVE));
+    m_cell_color_map.insert(STATE_PENDING,m_cell_colors->get_color(STATE_PENDING));
+    m_cell_color_map.insert(STATE_DISABLED,m_cell_colors->get_color(STATE_DISABLED));
     //in the case that a column has a pending state, use that when toggling the cell
     if(m_available_states.contains(STATE_PENDING)){
-        m_cell_color_map.insert(STATE_TOGGLE,m_cell_colors->pending_color());
+        m_cell_color_map.insert(STATE_TOGGLE,m_cell_colors->get_color(STATE_PENDING));
     }else{
-        m_cell_color_map.insert(STATE_TOGGLE,m_cell_colors->active_color());
+        m_cell_color_map.insert(STATE_TOGGLE,m_cell_colors->get_color(STATE_ACTIVE));
     }
 }
 
 QColor ViewColumn::get_state_color(int state) const{
-    return m_cell_color_map.value(static_cast<CELL_STATE>(state),m_cell_colors->active_color());
+    return m_cell_color_map.value(static_cast<CELL_STATE>(state),m_cell_colors->get_color(STATE_ACTIVE));
 }

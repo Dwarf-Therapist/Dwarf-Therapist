@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <QObject>
 #include <QSettings>
 #include <QColor>
+#include "cellcolordef.h"
 
 class CellColors : public QObject {
     Q_OBJECT
@@ -39,17 +40,10 @@ public:
 
     virtual void inherit_colors(const CellColors &cc);
 
-    QColor active_color() const {return get_color(0);}
-    void set_active_color(QColor c){set_color(0,c);}
-
-    QColor pending_color() const {return get_color(1);}
-    void set_pending_color(QColor c){set_color(1,c);}
-
-    QColor disabled_color() const {return get_color(2);}
-    void set_disabled_color(QColor c){set_color(2,c);}
-
     QColor get_color(int idx) const;
-    void set_color(int idx, QColor c);
+    void set_color(int idx, QColor c, bool req_check = true);
+
+    QList<CellColorDef*> colors() {return m_colors;}
 
 public slots:
     virtual void read_settings(){}
@@ -58,8 +52,7 @@ public slots:
 
 protected:
     bool m_override_cell_colors;
-    //pairs of colors, and if they're overrides
-    QList<QPair<bool,QColor> > m_colors;
+    QList<CellColorDef*> m_colors;
 
     virtual void load_settings(QSettings &s);
     virtual QColor get_default_color(int idx) const;

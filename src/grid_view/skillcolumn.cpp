@@ -40,6 +40,8 @@ SkillColumn::SkillColumn(const QString &title, const int &skill_id, ViewColumnSe
 {
     m_sortable_types << CST_LEVEL << CST_ROLE_RATING << CST_SKILL_RATE;
     m_current_sort = ViewManager::get_default_col_sort(cType);
+    init_states();
+    refresh_color_map();
 }
 
 SkillColumn::SkillColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
@@ -49,6 +51,8 @@ SkillColumn::SkillColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
 {
     m_sortable_types << CST_LEVEL << CST_ROLE_RATING << CST_SKILL_RATE;
     m_current_sort = ViewManager::get_default_col_sort(CT_SKILL);
+    init_states();
+    refresh_color_map();
 }
 
 SkillColumn::SkillColumn(const SkillColumn &to_copy)

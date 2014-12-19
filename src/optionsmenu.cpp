@@ -47,9 +47,17 @@ OptionsMenu::OptionsMenu(QWidget *parent)
             << new CustomColor(tr("Skill"),
                                tr("The color of the growing skill indicator box inside a cell. Is not used when auto-contrast is enabled."),
                                "skill", QColor(170,170,170,170), this)
-            << new CustomColor(tr("Active Labor Cell"),
-                               tr("Color shown for a cell when the labor is active for a dwarf."),
+
+            << new CustomColor(tr("Active Cell"),
+                               tr("Color shown for a cell when the action (labor, geld,etc) is active."),
                                "active_labor", QColor(0x7878B3), this)
+            << new CustomColor(tr("Pending Cell"),
+                               tr("Color shown for a cell when the action has been flagged to be set to active, but it hasn't happened yet."),
+                               "cell_pending", QColor(203,174,40), this)
+            << new CustomColor(tr("Disabled Cell"),
+                               tr("Color shown for a cell where the action (butcher, geld, labors, etc.) cannot be toggled."),
+                               "cell_disabled", QColor(187,34,34,125), this)
+
             << new CustomColor(tr("Active Group Cell"),
                                tr("Color shown on an aggregate cell if <b>all</b> dwarves have this labor enabled."),
                                "active_group", QColor(0x33FF33), this)

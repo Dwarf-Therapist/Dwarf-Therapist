@@ -33,37 +33,49 @@ THE SOFTWARE.
 EquipmentColumn::EquipmentColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     :ItemTypeColumn(s,set,parent)
 {
+    init_states();
+    refresh_color_map();
 }
 
 EquipmentColumn::EquipmentColumn(const QString &title, ViewColumnSet *set, QObject *parent)
     :ItemTypeColumn(title,NONE,set,parent,CT_EQUIPMENT)
 {
+    init_states();
+    refresh_color_map();
 }
 
 EquipmentColumn::EquipmentColumn(const EquipmentColumn &to_copy)
     :ItemTypeColumn(to_copy)
 {
+    init_states();
+    refresh_color_map();
+}
+
+void EquipmentColumn::init_states(){
+    ViewColumn::init_states();
+    m_available_states << STATE_PENDING;
 }
 
 QStandardItem *EquipmentColumn::build_cell(Dwarf *d){
     QStandardItem *item = init_cell(d);
 
-    QColor rating_color = QColor(69,148,21);
+    //QColor rating_color = QColor(69,148,21);
+    item->setData(STATE_ACTIVE,DwarfModel::DR_STATE);
     float rating =  d->get_uniform_rating();
     float coverage = d->get_coverage_rating();
 
     if(coverage < 100){ //prioritize coverage
         rating = coverage;
-        rating_color = Item::color_uncovered();
-    }else{
-        if(rating < 100) //missing uniform items
-            rating_color = Item::color_missing();
+        item->setData(STATE_DISABLED,DwarfModel::DR_STATE);
+        //rating_color = Item::color_uncovered();
+    }else if(rating < 100){ //missing uniform items
+        //rating_color = Item::color_missing();
+        item->setData(STATE_PENDING,DwarfModel::DR_STATE);
     }
 
     float sort_val = rating - d->get_max_wear_level();
     item->setData(d->get_max_wear_level(),DwarfModel::DR_SPECIAL_FLAG);
-//    item->setBackground(QBrush(rating_color));
-    item->setData(rating_color,Qt::BackgroundColorRole);
+    //item->setData(rating_color,Qt::BackgroundColorRole);
     item->setData(CT_EQUIPMENT, DwarfModel::DR_COL_TYPE);
     item->setData(rating, DwarfModel::DR_RATING); //other drawing 0-100
     item->setData(sort_val, DwarfModel::DR_SORT_VALUE);
@@ -82,4 +94,12 @@ QStandardItem *EquipmentColumn::build_aggregate(const QString &group_name, const
     Q_UNUSED(dwarves);
     QStandardItem *item = init_aggregate(group_name);
     return item;
+}
+
+void EquipmentColumn::refresh_color_map(){
+    if(m_cell_color_map.size() <= 0){
+        m_cell_color_map.insert(STATE_ACTIVE,Item::color_clothed());
+        m_cell_color_map.insert(STATE_DISABLED,Item::color_uncovered());
+        m_cell_color_map.insert(STATE_PENDING,Item::color_missing());
+    }
 }

@@ -50,15 +50,13 @@ void ViewColumnSetColors::use_defaults(){
 }
 
 void ViewColumnSetColors::read_settings(){
-    QPair<bool,QColor> c_pair;
-    int idx = 0;
-    foreach(c_pair, m_colors){
-        QColor def =DT->get_global_color(static_cast<GLOBAL_COLOR_TYPES>(idx));
-        if(!c_pair.first){ //!overridden
-            set_color(idx,def);
+    for(int idx=0;idx<m_colors.size();idx++){
+        QColor def = DT->get_global_color(static_cast<GLOBAL_COLOR_TYPES>(idx));
+        if(!m_colors.at(idx)->is_overridden()){
+            m_colors[idx]->set_color(def);
         }
-        m_defaults->set_color(idx, def);
-        idx++;
+        m_defaults->colors().at(idx)->set_color(def);
+        //m_defaults->set_color(idx,def,false);
     }
 }
 

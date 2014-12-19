@@ -307,6 +307,7 @@ public:
     //the category for missing uniform items
     static const QString missing_group_name() {return tr("Missing");}
 
+    static const QColor color_clothed() {return QColor(69,148,21);}
     static const QColor color_missing() {return QColor(57,130,227);}
     static const QColor color_wear() {return QColor(240,116,0,255);}
     static const QColor color_wear(int level){
