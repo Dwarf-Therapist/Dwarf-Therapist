@@ -78,21 +78,24 @@ build_pass {
     }
     else:unix {
         message(Setting up for Linux)
+        isEmpty(PREFIX) {
+            PREFIX = /usr/local
+        }
         HEADERS += inc/dfinstancelinux.h
         SOURCES += src/dfinstancelinux.cpp
 
-        target.path = /usr/bin
+        target.path = $$PREFIX/bin
         INSTALLS += target
 
-        bin.path = /usr/bin
+        bin.path = $$PREFIX/bin
         bin.files += dist/dwarftherapist
         INSTALLS += bin
 
-        application.path = /usr/share/applications
+        application.path = $$PREFIX/share/applications
         application.files += dist/dwarftherapist.desktop
         INSTALLS += application
 
-        doc.path = /usr/share/doc/dwarftherapist
+        doc.path = $$PREFIX/share/doc/dwarftherapist
         doc.files += LICENSE.txt
         doc.files += README.rst
         system("printf 'Checking for pdflatex... '; if ! command -v pdflatex; then echo 'not found'; exit 1; fi") {
@@ -106,12 +109,12 @@ build_pass {
         }
         INSTALLS += doc
 
-        icon.path = /usr/share/pixmaps
+        icon.path = $$PREFIX/share/pixmaps
         icon.files += img/dwarftherapist.png
         icon.files += img/dwarftherapist.xpm
         INSTALLS += icon
 
-        memory_layouts.path = /usr/share/dwarftherapist/memory_layouts/linux
+        memory_layouts.path = $$PREFIX/share/dwarftherapist/memory_layouts/linux
         memory_layouts.files += $$files(share/memory_layouts/linux/*)
         INSTALLS += memory_layouts
     }
