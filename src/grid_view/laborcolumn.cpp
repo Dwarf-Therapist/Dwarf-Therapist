@@ -77,7 +77,7 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
     set_export_role(DwarfModel::DR_RATING);
 
     refresh_sort(d, m_current_sort);
-    build_tooltip(d, DT->user_settings()->value(QString("options/show_roles_in_labor"), true).toBool());
+    build_tooltip(d, DT->user_settings()->value(QString("options/show_roles_in_labor"), true).toBool(),true);
 
     return item;
 }

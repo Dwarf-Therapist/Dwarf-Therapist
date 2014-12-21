@@ -30,7 +30,6 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "truncatingfilelogger.h"
 #include "labor.h"
-#include "defines.h"
 
 RoleColumn::RoleColumn(const QString &title, Role *r, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title,CT_ROLE,set,parent)
@@ -42,6 +41,8 @@ RoleColumn::RoleColumn(const QString &title, Role *r, ViewColumnSet *set, QObjec
     else
         m_role_name = m_title;
     connect(DT, SIGNAL(roles_changed()), this, SLOT(roles_changed()), Qt::UniqueConnection);
+    init_states();
+    refresh_color_map();
 }
 
 RoleColumn::RoleColumn(const RoleColumn &to_copy)
@@ -63,6 +64,8 @@ RoleColumn::RoleColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     else
         m_role_name = m_title;
     connect(DT, SIGNAL(roles_changed()), this, SLOT(roles_changed()), Qt::UniqueConnection);
+    init_states();
+    refresh_color_map();
 }
 
 RoleColumn::~RoleColumn(){
@@ -72,20 +75,29 @@ RoleColumn::~RoleColumn(){
 QStandardItem *RoleColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
     //defaults
-    item->setData(-1, DwarfModel::DR_RATING);
+    item->setData(50, DwarfModel::DR_RATING);
     item->setData(-1, DwarfModel::DR_DISPLAY_RATING);
     item->setData(CT_ROLE, DwarfModel::DR_COL_TYPE);
     item->setData(-1,DwarfModel::DR_LABORS);
     item->setData(0, DwarfModel::DR_SPECIAL_FLAG);
     item->setData(-1, DwarfModel::DR_SORT_VALUE);
+    item->setData(STATE_TOGGLE,DwarfModel::DR_STATE);
 
     if(d->is_baby()){
         item->setData(-2, DwarfModel::DR_SORT_VALUE);
-        item->setToolTip(("<b>Babies aren't included in role calculations.</b>"));
+        item->setToolTip(tr("<center><b>Babies aren't included in role calculations.</b></center>"));
+        item->setData(STATE_DISABLED,DwarfModel::DR_STATE);
         return item;
-    }else if(d->is_child() && !DT->labor_cheats_allowed()){
-        item->setToolTip(("<b>Children are only included in role calculations if labor cheats are enabled.</b>"));
-        return item;
+    }else if(!d->can_set_labors()){
+        if(d->is_child()){
+            item->setToolTip(tr("<center><b>Children are only included in role calculations if labor cheats are enabled.</b></center>"));
+            item->setData(STATE_DISABLED,DwarfModel::DR_STATE);
+            return item;
+        }else if(d->locked_in_mood()){
+            item->setToolTip(tr("<center><b>Labor can't be toggled due to mood.</b></center>"));
+            item->setData(STATE_DISABLED,DwarfModel::DR_STATE);
+            return item;
+        }
     }
 
     if(m_role){
@@ -144,10 +156,10 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
                     .arg(m_role->get_role_details())
                     .arg(raw_rating, 0, 'f', 2);
             tooltip = QString("<center><h3>%1 - %3</h3></center>%2%4")
-                             .arg(m_role->name())
-                             .arg(match_str)
-                             .arg(roundf(raw_rating), 0, 'f', 0)
-                             .arg(tooltip_name_footer(d));
+                    .arg(m_role->name())
+                    .arg(match_str)
+                    .arg(roundf(raw_rating), 0, 'f', 0)
+                    .arg(tooltip_name_footer(d));
 
             item->setToolTip(tooltip);
         }
@@ -169,16 +181,17 @@ void RoleColumn::read_settings() {
     ViewColumn::read_settings();
     if(m_role){
         //reset role's global weights to the new default weights, but only if they were using them in the first place
-        QSettings *s = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
+        QSettings *s = DT->user_settings();
+        s->beginGroup("options");
         if(m_role->attributes_weight.is_default)
-            m_role->attributes_weight.weight = s->value(QString("options/default_attributes_weight")).toFloat();
+            m_role->attributes_weight.weight = s->value(QString("default_attributes_weight")).toFloat();
         if(m_role->traits_weight.is_default)
-            m_role->traits_weight.weight = s->value(QString("options/default_traits_weight")).toFloat();
+            m_role->traits_weight.weight = s->value(QString("default_traits_weight")).toFloat();
         if(m_role->skills_weight.is_default)
-            m_role->skills_weight.weight = s->value(QString("options/default_skills_weight")).toFloat();
+            m_role->skills_weight.weight = s->value(QString("default_skills_weight")).toFloat();
         if(m_role->prefs_weight.is_default)
-            m_role->prefs_weight.weight = s->value(QString("options/default_prefs_weight")).toFloat();
-
+            m_role->prefs_weight.weight = s->value(QString("default_prefs_weight")).toFloat();
+        s->endGroup();
         m_role->create_role_details(*s); //rebuild the description
         m_role_name = m_role->name();
     }

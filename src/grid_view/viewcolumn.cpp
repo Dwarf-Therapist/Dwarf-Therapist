@@ -171,7 +171,8 @@ QString ViewColumn::tooltip_name_footer(Dwarf *d){
 }
 
 void ViewColumn::read_settings(){
-
+    m_cell_colors->read_settings();
+    refresh_color_map();
 }
 void ViewColumn::refresh_colors(){
     m_cell_colors->read_settings();

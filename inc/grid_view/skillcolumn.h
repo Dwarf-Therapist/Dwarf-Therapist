@@ -45,7 +45,7 @@ public slots:
 protected:
     int m_skill_id;
     float m_sort_val;
-    void build_tooltip(Dwarf *d, bool include_roles);
+    void build_tooltip(Dwarf *d, bool include_roles, bool check_labor);
     void refresh_sort(Dwarf *d, COLUMN_SORT_TYPE sType = CST_LEVEL);
 
     virtual float get_base_sort(Dwarf *d);

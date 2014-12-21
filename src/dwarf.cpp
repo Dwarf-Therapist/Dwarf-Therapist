@@ -299,12 +299,12 @@ void Dwarf::refresh_data() {
         read_squad_info(); //read squad before job
         read_uniform();
         read_gender_orientation(); //read before profession
+        read_turn_count(); //load time/date stuff for births/migrations - read before age
+        set_age_and_migration(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time")); //set age before profession
         read_profession(); //read profession before building the names, and before job
         read_mood(); //read after profession and before job, emotions/skills (soul aspect)
         read_current_job();
         read_syndromes(); //read syndromes before attributes
-        read_turn_count(); //load time/date stuff for births/migrations - read before age
-        set_age_and_migration(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time")); //set age before profession
         read_body_size(); //body size after caste and age
         //curse check will change the name and age
         read_curse(); //read curse before attributes
@@ -817,10 +817,12 @@ void Dwarf::read_profession() {
     QString prof_name = tr("Unknown Profession %1").arg(m_raw_profession);
     if (p) {
         m_can_set_labors = p->can_assign_labors();
+        if(!m_is_baby && DT->labor_cheats_allowed()){
+            m_can_set_labors = true;
+        }
         prof_name = p->name(is_male());
     } else {
-        LOGE << tr("Read unknown profession with id '%1' for dwarf '%2'")
-                .arg(m_raw_profession).arg(m_nice_name);
+        LOGE << tr("Read unknown profession with id '%1' for dwarf '%2'").arg(m_raw_profession).arg(m_nice_name);
         m_can_set_labors = false;
     }
     if (!m_custom_profession.isEmpty()) {
@@ -2176,7 +2178,7 @@ void Dwarf::set_labor(int labor_id, bool enabled, bool update_cols_realtime) {
         return;
     }
 
-    if (!m_can_set_labors && !DT->labor_cheats_allowed()) {
+    if(!m_can_set_labors) {
         LOGD << "IGNORING SET LABOR OF ID:" << labor_id << "TO:" << enabled << "FOR:" << m_nice_name << "PROF_ID" << m_raw_profession
              << "PROF_NAME:" << profession() << "CUSTOM:" << m_pending_custom_profession;
         return;

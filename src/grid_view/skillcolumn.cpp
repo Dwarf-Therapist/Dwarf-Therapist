@@ -74,10 +74,9 @@ QStandardItem *SkillColumn::build_cell(Dwarf *d) {
     set_export_role(DwarfModel::DR_RATING);
 
     refresh_sort(d, m_current_sort);
-    build_tooltip(d,DT->user_settings()->value(QString("options/show_roles_in_skills"),true).toBool());
+    build_tooltip(d,DT->user_settings()->value(QString("options/show_roles_in_skills"),true).toBool(),false);
 
     return item;
-
 }
 
 void SkillColumn::refresh_sort(COLUMN_SORT_TYPE sType){
@@ -136,7 +135,7 @@ float SkillColumn::get_skill_rate_rating(int id, Dwarf *d){
     return d->get_skill(id).skill_rate();
 }
 
-void SkillColumn::build_tooltip(Dwarf *d, bool include_roles){
+void SkillColumn::build_tooltip(Dwarf *d, bool include_roles, bool check_labor){
     GameDataReader *gdr = GameDataReader::ptr();
 
     //build the role section and adjust the sort value if necessary
@@ -180,9 +179,21 @@ void SkillColumn::build_tooltip(Dwarf *d, bool include_roles){
     }
 
     QString labors_disabled = "";
-    if(d->locked_in_mood()){
-        labors_disabled = tr("<br/><h4 style=\"margin:0;\"><u>Labor cannot be changed due to mood (%1)</u></font></h4>")
-                .arg(gdr->get_mood_name(d->current_mood(),true));
+    if(check_labor){
+        QString reason = "";
+        if(d->locked_in_mood()){
+            reason = tr("due to mood (%1)").arg(gdr->get_mood_name(d->current_mood(),true));
+        }else if(!d->can_set_labors()){
+            if(!d->is_adult()){
+                reason = tr("for children and babies.");
+            }else{
+                reason = tr("for this profession.");
+            }
+        }
+
+        if(!reason.isEmpty()){
+            labors_disabled = tr("<br/><h4 style=\"margin:0;\"><u>Labor cannot be changed %1</u></font></h4>").arg(reason);
+        }
     }
 
     //skill xp, level, name, mood

@@ -25,7 +25,6 @@ THE SOFTWARE.
 #include "columntypes.h"
 #include "dwarfmodel.h"
 #include "dwarf.h"
-#include "defines.h"
 #include "dtstandarditem.h"
 
 HappinessColumn::HappinessColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
@@ -120,7 +119,7 @@ void HappinessColumn::init_states(){
     }
 }
 void HappinessColumn::refresh_color_map(){
-    QSettings *s = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
+    QSettings *s = DT->user_settings();//new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
     s->beginGroup("options/colors/happiness");
     foreach(QString k, s->childKeys()) {
         DWARF_HAPPINESS h = static_cast<DWARF_HAPPINESS>(k.toInt());

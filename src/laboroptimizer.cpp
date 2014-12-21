@@ -107,6 +107,10 @@ void LaborOptimizer::calc_population(bool load_labor_map){
                 m_dwarfs.at(i)->clear_labors();
             m_dwarfs.removeAt(i);
         }
+        else if(d->locked_in_mood()){
+            m_current_message.append(QPair<int, QString> (d->id(), tr("(Mood) %1").arg(d->nice_name())));
+            m_dwarfs.removeAt(i);
+        }
         else if(d->is_child() && !DT->labor_cheats_allowed()){
             m_current_message.append(QPair<int, QString> (d->id(), tr("(Child) %1").arg(d->nice_name())));
             m_dwarfs.removeAt(i);

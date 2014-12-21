@@ -675,7 +675,7 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
         QString group_name = idx.data(DwarfModel::DR_GROUP_NAME).toString();
 
         foreach(Dwarf *d, m_grouped_dwarves.value(group_name)) {
-            if (d->can_set_labors() || DT->labor_cheats_allowed()) {
+            if (d->can_set_labors()) {
                 settable_dwarves++;
                 if (d->labor_enabled(labor_id))
                     enabled_count++;

@@ -27,7 +27,6 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include "dwarf.h"
 #include "dwarftherapist.h"
-#include "defines.h"
 #include "gamedatareader.h"
 
 ProfessionColumn::ProfessionColumn(QSettings &s, ViewColumnSet *set, QObject *parent)

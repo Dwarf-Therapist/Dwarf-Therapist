@@ -57,7 +57,7 @@ ViewColumnSet::ViewColumnSet(QString name, QObject *parent)
     , m_bg_color(Qt::white)
 {
     m_cell_colors = new ViewColumnSetColors(this);
-    init();
+    connect_settings();
 }
 
 ViewColumnSet::ViewColumnSet(const ViewColumnSet &copy)
@@ -66,13 +66,13 @@ ViewColumnSet::ViewColumnSet(const ViewColumnSet &copy)
     , m_bg_color(copy.m_bg_color)
     , m_cell_colors(copy.m_cell_colors)
 {
+    connect_settings();
     foreach(ViewColumn *vc, copy.m_columns) {
         ViewColumn *new_c = vc->clone();
         new_c->setParent(this);
         new_c->set_viewcolumnset(this);
         add_column(new_c); // manually add a cloned copy
     }
-    init();
 }
 
 ViewColumnSet::ViewColumnSet(QSettings &s, QObject *parent, int set_num)
@@ -81,6 +81,7 @@ ViewColumnSet::ViewColumnSet(QSettings &s, QObject *parent, int set_num)
     m_name = s.value("name","unknown").toString();
     set_bg_color(read_color(s.value("bg_color", "0xFFFFFF").toString()));
     m_cell_colors = new ViewColumnSetColors(s,this);
+    connect_settings();
     if(set_num == 0)
         new SpacerColumn(0,0, this, parent);
 
@@ -156,10 +157,9 @@ ViewColumnSet::ViewColumnSet(QSettings &s, QObject *parent, int set_num)
         }
     }
     s.endArray();
-    init();
 }
 
-void ViewColumnSet::init(){
+void ViewColumnSet::connect_settings(){
     connect(DT,SIGNAL(settings_changed()),SLOT(read_settings()));
 }
 
@@ -307,9 +307,9 @@ void ViewColumnSet::reorder_columns(const QStandardItemModel &model) {
 
 void ViewColumnSet::read_settings(){
     m_cell_colors->read_settings();
-    foreach(ViewColumn *vc, m_columns){
-        vc->refresh_colors();
-    }
+//    foreach(ViewColumn *vc, m_columns){
+//        vc->refresh_colors();
+//    }
 }
 
 void ViewColumnSet::write_to_ini(QSettings &s, int start_idx) {

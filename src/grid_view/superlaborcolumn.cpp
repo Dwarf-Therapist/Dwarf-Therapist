@@ -90,6 +90,11 @@ void SuperLaborColumn::refresh(Dwarf *d, QStandardItem *item, QString title){
     item->setData(skill_rating, DwarfModel::DR_RATING);
     item->setData(skill_rating, DwarfModel::DR_DISPLAY_RATING);
     item->setData(ml->get_converted_labors(),DwarfModel::DR_LABORS);
+    if(!d->can_set_labors()){
+        item->setData(STATE_DISABLED, DwarfModel::DR_STATE);
+    }else{
+        item->setData(STATE_TOGGLE, DwarfModel::DR_STATE);
+    }
 
     refresh_sort(d, m_current_sort);
 

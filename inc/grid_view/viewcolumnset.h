@@ -76,7 +76,7 @@ private:
     QColor m_bg_color;
     ViewColumnSetColors *m_cell_colors;
 
-    void init();
+    void connect_settings();
 };
 
 #endif

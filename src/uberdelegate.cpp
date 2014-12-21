@@ -155,6 +155,9 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
     }
 
+    ViewColumn *vc = m_model->current_grid_view()->get_column(idx.column());
+    int state = idx.data(DwarfModel::DR_STATE).toInt();
+
     switch (type) {
     case CT_SKILL:
     {
@@ -169,27 +172,16 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     case CT_LABOR:
     {
         if (!drawing_aggregate) {
-            if (!d) {
+            if(!d){
                 return QStyledItemDelegate::paint(p, opt, idx);
             }
             int labor_id = idx.data(DwarfModel::DR_LABOR_ID).toInt();
-            bool active = d->labor_enabled(labor_id);
-            bool dirty = d->is_labor_state_dirty(labor_id);
-            //QColor bg = paint_bg_active(adjusted, enabled, p, opt, idx);
-            ViewColumn *vc = m_model->current_grid_view()->get_column(idx.column());
-            int state = idx.data(DwarfModel::DR_STATE).toInt();
-
-            if(state == ViewColumn::STATE_DISABLED || state == ViewColumn::STATE_ACTIVE){
-                active = true; //always draw disabled or active
-            }
-
-            QColor bg = paint_bg_active(adjusted,active,p,opt,idx,vc->get_state_color(state));
-
+            QColor bg = paint_bg_active(adjusted,d->labor_enabled(labor_id),p,opt,idx,state,vc->get_state_color(state));
             limit = 15.0;
-            if(rating >= 0)
+            if(rating >= 0){
                 paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 0, 0, limit, 0, 0);
-
-            paint_mood_cell(adjusted,p,opt,idx,GameDataReader::ptr()->get_labor(labor_id)->skill_id, dirty);
+            }
+            paint_mood_cell(adjusted,p,opt,idx,GameDataReader::ptr()->get_labor(labor_id)->skill_id, d->is_labor_state_dirty(labor_id));
         }else {
             paint_labor_aggregate(adjusted, p, opt, idx);
         }
@@ -197,9 +189,6 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_HAPPINESS:
     {
-        ViewColumn *vc = m_model->current_grid_view()->get_column(idx.column());
-        int state = idx.data(DwarfModel::DR_STATE).toInt();
-
         paint_bg(adjusted, p, opt, idx, true, vc->get_state_color(state));// model_idx.data(Qt::BackgroundColorRole).value<QColor>());
         if(draw_happiness_icons || d->in_stressed_mood()){
             paint_icon(adjusted,p,opt,idx);
@@ -212,8 +201,6 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_EQUIPMENT:
     {
-        ViewColumn *vc = m_model->current_grid_view()->get_column(idx.column());
-        int state = idx.data(DwarfModel::DR_STATE).toInt();
         int wear_level = idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt();
         paint_bg(adjusted, p, opt, idx, true, vc->get_state_color(state)); //model_idx.data(Qt::BackgroundColorRole).value<QColor>());
         paint_wear_cell(adjusted,p,opt,idx,wear_level);
@@ -251,7 +238,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         int active_alpha = 255;
         int min_alpha = 75;
 
-        if(d){
+        if(d && d->can_set_labors()){
             if(idx.data(DwarfModel::DR_LABORS).canConvert<QVariantList>()){
                 QVariantList labors = idx.data(DwarfModel::DR_LABORS).toList();
                 int active_count = 0;
@@ -291,13 +278,11 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         }
 
         QColor bg;
-        QColor color_active_adjusted = color_active_labor;
+        QColor bg_color = vc->get_state_color(state); //color_active_labor;
         if(is_active){
-            color_active_adjusted.setAlpha(active_alpha);
-            bg = paint_bg_active(adjusted, is_active, p, opt, idx, color_active_adjusted);
-        }else{
-            bg = paint_bg(adjusted, p, opt, idx);
+            bg_color.setAlpha(active_alpha);
         }
+        bg = paint_bg_active(adjusted, is_active, p, opt, idx, state, bg_color);
 
         if(type == CT_ROLE){
             paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 50.0f, 5.0f, 95.0f, 42.5f, 57.5f);
@@ -398,7 +383,9 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_FLAGS:
     {
-        paint_flags(adjusted, p, opt, idx);
+        int bit_pos = idx.data(DwarfModel::DR_LABOR_ID).toInt();
+        paint_bg_active(adjusted, d->get_flag_value(bit_pos), p, opt, idx, state, vc->get_state_color(state));
+        paint_grid(adjusted,d->is_flag_dirty(bit_pos),p,opt,idx);
     }
         break;
     case CT_TRAINED:
@@ -475,7 +462,7 @@ void UberDelegate::paint_icon(const QRect &adjusted, QPainter *p, const QStyleOp
     paint_grid(adjusted, false, p, opt, idx);
 }
 
-QColor UberDelegate::paint_bg_active(const QRect &adjusted, bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const QColor &active_col_override) const{
+QColor UberDelegate::paint_bg_active(const QRect &adjusted, bool active, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const int &state, const QColor &active_col_override) const{
     QModelIndex idx = proxy_idx;
     if (m_proxy)
         idx = m_proxy->mapToSource(proxy_idx);
@@ -484,7 +471,8 @@ QColor UberDelegate::paint_bg_active(const QRect &adjusted, bool active, QPainte
     p->save();
     p->fillRect(opt.rect, bg);
 
-    if(active){
+
+    if(active || state == ViewColumn::STATE_DISABLED || state == ViewColumn::STATE_ACTIVE){ //always draw disabled or active
         if(active_col_override != QColor(Qt::black))
             bg = active_col_override;
         else
@@ -760,27 +748,6 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
         break;
     }
     p->restore();
-}
-
-void UberDelegate::paint_flags(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx) const {
-    QModelIndex idx = m_proxy->mapToSource(proxy_idx);
-    Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
-    if (!d) {
-        return QStyledItemDelegate::paint(p, opt, idx);
-    }
-
-    ViewColumn *vc = m_model->current_grid_view()->get_column(idx.column());
-
-    ViewColumn::CELL_STATE state = static_cast<ViewColumn::CELL_STATE>(idx.data(DwarfModel::DR_STATE).toInt());
-    int bit_pos = idx.data(DwarfModel::DR_LABOR_ID).toInt();
-    bool active = d->get_flag_value(bit_pos);
-    bool dirty = d->is_flag_dirty(bit_pos);
-
-    if(state == ViewColumn::STATE_DISABLED || state == ViewColumn::STATE_ACTIVE){
-        active = true; //always draw disabled or active
-    }
-    paint_bg_active(adjusted, active, p, opt, proxy_idx, vc->get_state_color(state)); //proxy_idx.data(Qt::BackgroundColorRole).value<QColor>());
-    paint_grid(adjusted,dirty,p,opt,proxy_idx);
 }
 
 void UberDelegate::paint_wear_cell(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const int wear_level) const {

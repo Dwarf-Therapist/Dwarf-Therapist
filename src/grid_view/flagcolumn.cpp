@@ -22,7 +22,6 @@ THE SOFTWARE.
 */
 
 #include "flagcolumn.h"
-#include "defines.h"
 #include "gamedatareader.h"
 #include "columntypes.h"
 #include "dwarfmodel.h"

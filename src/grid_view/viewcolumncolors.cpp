@@ -70,6 +70,6 @@ QColor ViewColumnColors::get_default_color(int idx) const{
 
 void ViewColumnColors::read_settings(){
     if(m_set){
-        inherit_colors(m_set->get_colors());
+        inherit_colors(*m_set->get_colors());
     }
 }

@@ -27,7 +27,6 @@ THE SOFTWARE.
 #include "dwarfmodel.h"
 #include "dwarf.h"
 #include "dwarftherapist.h"
-#include "defines.h"
 #include "gamedatareader.h"
 #include "skill.h"
 
@@ -78,7 +77,7 @@ QStandardItem *HighestMoodColumn::build_cell(Dwarf *d) {
     m_sort_val += s.raw_level();
     item->setData(m_sort_val, DwarfModel::DR_SORT_VALUE);
 
-    build_tooltip(d,false);
+    build_tooltip(d,false,false);
 
     return item;
 }

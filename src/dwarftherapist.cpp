@@ -71,7 +71,7 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     m_options_menu->setParent(m_main_window, Qt::Dialog);
 
     TRACE << "connecting signals";
-    connect(m_options_menu, SIGNAL(settings_changed()), SIGNAL(settings_changed())); // the telephone game...
+    //connect(m_options_menu, SIGNAL(settings_changed()), SIGNAL(settings_changed())); // the telephone game...
     connect(m_options_menu, SIGNAL(settings_changed()), this, SLOT(read_settings()));
     connect(m_main_window->ui->act_options, SIGNAL(triggered()), m_options_menu, SLOT(exec()));
     connect(m_main_window->ui->act_import_existing_professions, SIGNAL(triggered()), this, SLOT(import_existing_professions()));
@@ -224,6 +224,8 @@ void DwarfTherapist::read_settings() {
     DTStandardItem::set_show_tooltips(DT->user_settings()->value("options/grid/show_tooltips",true).toBool());
 
     LOGI << "finished reading settings";
+    //emit the settings_changed to everything else after we've refreshed our global settings
+    emit settings_changed();
 }
 
 void DwarfTherapist::load_customizations(){
