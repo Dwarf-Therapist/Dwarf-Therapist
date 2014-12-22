@@ -38,6 +38,7 @@ public:
     void use_defaults();
 
     QColor get_default_color(int idx) const;
+    QSharedPointer<CellColorDef> get_default_color_def(int idx);
 
     void read_settings();
 

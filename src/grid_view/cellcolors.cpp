@@ -21,10 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include "cellcolors.h"
-#include "defines.h"
-#include "utils.h"
 #include "viewcolumn.h"
 #include "dwarftherapist.h"
+#include "cellcolordef.h"
 
 CellColors::CellColors(QObject *parent)
     : QObject(parent)
@@ -36,14 +35,18 @@ CellColors::CellColors(QObject *parent)
 CellColors::CellColors(const CellColors &cc)
     : QObject(cc.parent())
 {
-    m_colors = cc.m_colors;
+    m_color_defs = cc.m_color_defs;
     m_override_cell_colors = cc.m_override_cell_colors;
+}
+
+CellColors::~CellColors(){
+
 }
 
 void CellColors::load_settings(QSettings &s){
     m_override_cell_colors = s.value("overrides_cell_colors",false).toBool();
     if(m_override_cell_colors){
-        set_color(0,s.value("active_color").value<QColor>());
+        set_color(0,s.value("active_labor").value<QColor>());
         set_color(1,s.value("pending_color").value<QColor>());
         set_color(2,s.value("disabled_color").value<QColor>());
     }
@@ -51,23 +54,28 @@ void CellColors::load_settings(QSettings &s){
 
 void CellColors::inherit_colors(const CellColors &cc){
     int idx = 0;
-    foreach(CellColorDef *c, cc.m_colors){
+    foreach(QSharedPointer<CellColorDef> c, cc.m_color_defs){
+        //if we're not overridding or this specific color isn't overridden, then inherit
         if(!m_override_cell_colors || !c->is_overridden()){
-            set_color(idx,cc.get_color(idx));
+            m_color_defs[idx].swap(c);
         }
         idx++;
     }
 }
 
 void CellColors::use_defaults(){
-    qDeleteAll(m_colors);
-    m_colors.clear();
-    m_colors.append(new CellColorDef(DT->get_global_color(GCOL_ACTIVE),"active_color",tr("Active"),tr("Color when the related action is enabled and active."),this));
-    m_colors.append(new CellColorDef(DT->get_global_color(GCOL_PENDING),"pending_color",tr("Pending"),tr("Color when an action has been flagged to be enabled, but hasn't been yet."),this));
-    m_colors.append(new CellColorDef(DT->get_global_color(GCOL_DISABLED),"disabled_color",tr("Disabled"),tr("Color of the cell when the action cannot be toggled."),this));
+    //by default use the global color scheme
+    m_color_defs.clear();
+    m_color_defs.append(DT->get_global_color(GCOL_ACTIVE));
+    m_color_defs.append(DT->get_global_color(GCOL_PENDING));
+    m_color_defs.append(DT->get_global_color(GCOL_DISABLED));
 }
 
 QColor CellColors::get_default_color(int idx) const{
+    return DT->get_global_color(static_cast<GLOBAL_COLOR_TYPES>(idx))->color();
+}
+
+QSharedPointer<CellColorDef> CellColors::get_default_color_def(int idx){
     return DT->get_global_color(static_cast<GLOBAL_COLOR_TYPES>(idx));
 }
 
@@ -75,27 +83,60 @@ void CellColors::write_to_ini(QSettings &s){
     //only write values if they've overridden the defaults
     if(m_override_cell_colors){
         s.setValue("overrides_cell_colors",m_override_cell_colors);
-        foreach(CellColorDef *c, m_colors){
+        foreach(QSharedPointer<CellColorDef> c, m_color_defs){
             s.setValue(c->key(),c->color());
         }
     }
 }
 
 QColor CellColors::get_color(int idx) const {
-    return m_colors.at(idx)->color();
+    return m_color_defs.at(idx)->color();
 }
 
-void CellColors::set_color(int idx, QColor c, bool req_check){
-    if(req_check){
-        QColor def = get_default_color(idx);
-        if(c.isValid()){
-            m_colors[idx]->set_overridden((c != def));
-            m_colors[idx]->set_color(c);
+QVector<QSharedPointer<CellColorDef> > CellColors::get_color_defs(){
+    return m_color_defs;
+}
+
+void CellColors::set_color(int idx, QColor c){
+    if(c.isValid()){
+        if(c != get_default_color(idx)){
+            //new color is valid and not the default color
+            if(m_color_defs.at(idx)->is_overridden()){
+                //current color def is already custom, update the color def's color
+                m_color_defs.at(idx)->set_color(c);
+            }else{
+                //current color def is not custom, so it's the default. copy the current color and update it
+                QSharedPointer<CellColorDef> cpy = QSharedPointer<CellColorDef>(new CellColorDef(*m_color_defs.at(idx)));
+                cpy->set_color(c);
+                cpy->set_overridden(true);
+                //m_colors[idx]  = QSharedPointer<CellColorDef>(new CellColorDef(*cur));
+                m_color_defs[idx].swap(cpy);
+            }
         }else{
-            m_colors[idx]->set_overridden(false);
-            m_colors[idx]->set_color(def);
+            //new color is the default color
+            if(m_color_defs.at(idx)->is_overridden()){
+                //current color def is custom, replace it with the default color def
+                QSharedPointer<CellColorDef> def = get_default_color_def(idx);
+                m_color_defs[idx].swap(def);
+                //m_colors[idx] = get_default_color_def(idx);
+            }else{
+                //current color is already default, do nothing
+            }
         }
     }else{
-        m_colors[idx]->set_color(c);
+        //invalid color, do nothing
     }
+
+//    if(req_check){
+//        QColor def = get_default_color(idx);
+//        if(c.isValid()){
+//            m_colors[idx]->set_overridden((c != def));
+//            m_colors[idx]->set_color(c);
+//        }else{
+//            m_colors[idx]->set_overridden(false);
+//            m_colors[idx]->set_color(def);
+//        }
+//    }else{
+//        m_colors[idx]->set_color(c);
+//    }
 }

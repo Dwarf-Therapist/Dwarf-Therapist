@@ -48,13 +48,19 @@ ViewColumnColors::~ViewColumnColors(){
 }
 
 void ViewColumnColors::use_defaults(){
+    //use the set's colors
     if(m_set){
-        CellColors *cc = m_set->get_colors();
-        qDeleteAll(m_colors);
-        m_colors.clear();
-        foreach(CellColorDef *ccd, cc->colors()){
-            m_colors.append(new CellColorDef(*ccd,this));
+        m_color_defs.clear();
+        foreach(QSharedPointer<CellColorDef> c, m_set->get_colors()->get_color_defs()){
+            m_color_defs.append(c);
         }
+
+//        CellColors *cc = m_set->get_colors();
+//        qDeleteAll(m_colors);
+//        m_colors.clear();
+//        foreach(CellColorDef *ccd, cc->get_colors()){
+//            m_colors.append(new CellColorDef(*ccd,this));
+//        }
     }else{
         CellColors::use_defaults();
     }
@@ -65,6 +71,14 @@ QColor ViewColumnColors::get_default_color(int idx) const{
         return m_set->get_colors()->get_color(idx);
     }else{
         return CellColors::get_default_color(idx);
+    }
+}
+
+QSharedPointer<CellColorDef> ViewColumnColors::get_default_color_def(int idx){
+    if(m_set){
+        return m_set->get_colors()->get_color_defs().at(idx);
+    }else{
+        return CellColors::get_default_color_def(idx);
     }
 }
 

@@ -47,7 +47,6 @@ ViewEditorDialog::ViewEditorDialog(ViewColumnSet *set, QDialog *parent)
 
 ViewEditorDialog::~ViewEditorDialog(){
     delete m_col_bg;
-    qDeleteAll(m_custom_colors);
     m_custom_colors.clear();
     delete ui;
 }
@@ -136,32 +135,15 @@ void ViewEditorDialog::init_cell_colors(CellColors *cc, CellColors *defaults, QC
     ui->background_widget->setEnabled(false);
 
     int idx = 0;
-    foreach(CellColorDef *ccd, cc->colors()){
+    foreach(QSharedPointer<CellColorDef> ccd, cc->get_color_defs()){
         CustomColor *c = new CustomColor(ccd->title(),ccd->description(),ccd->key(),defaults->get_color(idx),this);
         c->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
         c->setMinimumWidth(minWidth);
         ui->v_layout_cells->addWidget(c);
         c->set_color(cc->get_color(idx));
+        m_custom_colors << c;
         idx++;
     }
-
-//    m_col_active = new CustomColor(tr("Active"),tr("Color when the related action is enabled and active."), "active", defaults->active_color(), this);
-//    m_col_active->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-//    m_col_active->setMinimumWidth(minWidth);
-//    ui->v_layout_cells->addWidget(m_col_active);
-//    m_col_active->set_color(cc->active_color());
-
-//    m_col_pending = new CustomColor(tr("Pending"),tr("Color when an action has been flagged to be enabled, but hasn't been yet."),"pending", defaults->pending_color(), this);
-//    m_col_pending->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-//    m_col_pending->setMinimumWidth(minWidth);
-//    ui->v_layout_cells->addWidget(m_col_pending);
-//    m_col_pending->set_color(cc->pending_color());
-
-//    m_col_disabled = new CustomColor(tr("Disabled"),tr("Color of the cell when the action cannot be toggled."), "disabled", defaults->disabled_color(), this);
-//    m_col_disabled->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-//    m_col_disabled->setMinimumWidth(minWidth);
-//    ui->v_layout_cells->addWidget(m_col_disabled);
-//    m_col_disabled->set_color(cc->disabled_color());
 }
 
 QColor ViewEditorDialog::background_color() const {return m_col_bg->get_color();}

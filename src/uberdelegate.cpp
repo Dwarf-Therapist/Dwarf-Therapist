@@ -113,14 +113,6 @@ void UberDelegate::paint(QPainter *p, const QStyleOptionViewItem &opt, const QMo
     //name column's cells are drawn differently
     if (proxy_idx.column() == 0) {
         QStyledItemDelegate::paint(p, opt, proxy_idx);
-        //draw a line under the name's cell if it's an aggregate row
-        //        if(drawing_aggregate){
-        //            p->save();
-        //            p->setPen(QPen(QColor(Qt::black)));
-        //            p->drawLine(opt.rect.bottomLeft(), opt.rect.bottomRight());
-        //            p->restore();
-        //        }
-        //                return;
     }else{
 
         //all other cells
@@ -154,6 +146,9 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     if(m_model){
         d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
     }
+    if(!d){
+        return QStyledItemDelegate::paint(p, opt, idx);
+    }
 
     ViewColumn *vc = m_model->current_grid_view()->get_column(idx.column());
     int state = idx.data(DwarfModel::DR_STATE).toInt();
@@ -163,25 +158,22 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     {
         QColor bg = paint_bg(adjusted, p, opt, idx);
         limit = 15.0;
-        if(rating >= 0)
+        if(rating >= 0){
             paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 0, 0, limit, 0, 0);
-
-        paint_mood_cell(adjusted,p,opt,idx,model_idx.data(DwarfModel::DR_SKILL_ID).toInt(),false);
+        }
+        paint_mood_cell(adjusted,p,opt,idx,model_idx.data(DwarfModel::DR_SKILL_ID).toInt(),false,d);
     }
         break;
     case CT_LABOR:
     {
         if (!drawing_aggregate) {
-            if(!d){
-                return QStyledItemDelegate::paint(p, opt, idx);
-            }
             int labor_id = idx.data(DwarfModel::DR_LABOR_ID).toInt();
             QColor bg = paint_bg_active(adjusted,d->labor_enabled(labor_id),p,opt,idx,state,vc->get_state_color(state));
             limit = 15.0;
             if(rating >= 0){
                 paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 0, 0, limit, 0, 0);
             }
-            paint_mood_cell(adjusted,p,opt,idx,GameDataReader::ptr()->get_labor(labor_id)->skill_id, d->is_labor_state_dirty(labor_id));
+            paint_mood_cell(adjusted,p,opt,idx,GameDataReader::ptr()->get_labor(labor_id)->skill_id, d->is_labor_state_dirty(labor_id),d);
         }else {
             paint_labor_aggregate(adjusted, p, opt, idx);
         }
@@ -581,12 +573,12 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
                 adj_rating = ((adj_rating - median) / (100.0f-median) * 50.0f) + 50.0f;
             }
         }
-//        //also invert the value if it was below the median, and rescale our drawing values from 0-50 and 50-100
-//        if(adj_rating > 50.0f){
-//            adj_rating = (adj_rating - 50.0f) * 2.0f;
-//        }else{
-//            adj_rating = 100 - (adj_rating * 2.0f);
-//        }
+        //        //also invert the value if it was below the median, and rescale our drawing values from 0-50 and 50-100
+        //        if(adj_rating > 50.0f){
+        //            adj_rating = (adj_rating - 50.0f) * 2.0f;
+        //        }else{
+        //            adj_rating = 100 - (adj_rating * 2.0f);
+        //        }
     }
 
     p->save();
@@ -763,15 +755,10 @@ void UberDelegate::paint_wear_cell(const QRect &adjusted, QPainter *p, const QSt
     }
 }
 
-void UberDelegate::paint_mood_cell(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, int skill_id, bool dirty) const {
+void UberDelegate::paint_mood_cell(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, int skill_id, bool dirty, Dwarf *d) const {
     if(!m_proxy){ //skill legend won't have a proxy
         paint_grid(adjusted, false, p, opt, proxy_idx);
         return;
-    }
-    QModelIndex idx = m_proxy->mapToSource(proxy_idx);
-    Dwarf *d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
-    if (!d) {
-        return QStyledItemDelegate::paint(p, opt, idx);
     }
 
     if(color_mood_cells && !dirty){ //dirty is always drawn over mood

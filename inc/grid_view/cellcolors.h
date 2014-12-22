@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <QObject>
 #include <QSettings>
 #include <QColor>
+#include <QVector>
 #include "cellcolordef.h"
 
 class CellColors : public QObject {
@@ -33,7 +34,7 @@ class CellColors : public QObject {
 public:
     CellColors(QObject *parent=0);
     CellColors(const CellColors &cc);
-    virtual ~CellColors(){}
+    virtual ~CellColors();
 
     bool overrides_cell_colors() {return m_override_cell_colors;}
     void set_overrides_cell_colors(bool val) {m_override_cell_colors = val;}
@@ -41,9 +42,10 @@ public:
     virtual void inherit_colors(const CellColors &cc);
 
     QColor get_color(int idx) const;
-    void set_color(int idx, QColor c, bool req_check = true);
+    void set_color(int idx, QColor c);
 
-    QList<CellColorDef*> colors() {return m_colors;}
+    QVector<QSharedPointer<CellColorDef> > get_color_defs();
+    //QSharedPointer<CellColorDef> get_color_def(int idx) {return m_colors.at(idx);}
 
 public slots:
     virtual void read_settings(){}
@@ -52,10 +54,11 @@ public slots:
 
 protected:
     bool m_override_cell_colors;
-    QList<CellColorDef*> m_colors;
+    QVector<QSharedPointer<CellColorDef> > m_color_defs;
 
     virtual void load_settings(QSettings &s);
     virtual QColor get_default_color(int idx) const;
+    virtual QSharedPointer<CellColorDef> get_default_color_def(int idx);
 
 };
 #endif // CELLCOLORS_H

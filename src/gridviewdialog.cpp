@@ -189,6 +189,7 @@ void GridViewDialog::draw_columns_for_set(ViewColumnSet *set, bool set_changed) 
         QColor new_bg = vc->override_color() ? vc->bg_color() : set->bg_color();
         item->setBackground(new_bg);
         item->setData(new_bg,Qt::BackgroundColorRole);
+        vc->set_bg_color(new_bg);
 
         item->setForeground(complement(new_bg));
         item->setData(complement(new_bg),Qt::TextColorRole);
@@ -237,10 +238,14 @@ void GridViewDialog::edit_set(const QModelIndex &idx) {
     if(d->exec()) {
         ViewColumnSet *set = m_pending_view->get_set(item->data(GPDT_TITLE).toString());
         set->set_name(d->ui->le_title->text());
+
         set->set_bg_color(d->background_color());
+        item->setBackground(set->bg_color());
+        item->setData(set->bg_color(),Qt::BackgroundColorRole);
+
         set->get_colors()->set_overrides_cell_colors(d->ui->cb_override_cell_colors->isChecked());
         if(d->ui->cb_override_cell_colors->isChecked()){
-            for(int idx=0;idx < set->get_colors()->colors().count();idx++){
+            for(int idx=0;idx < set->get_colors()->get_color_defs().count();idx++){
                 set->get_colors()->set_color(idx,d->color(idx));
             }
         }else{
@@ -282,6 +287,7 @@ void GridViewDialog::edit_column() {
     if (m_temp_col < 0)
         return;
     edit_column(m_col_model->index(m_temp_col, 0));
+    ui->list_columns->selectionModel()->select(m_col_model->index(m_temp_col,0), QItemSelectionModel::SelectCurrent);
 }
 
 void GridViewDialog::edit_column(const QModelIndex &idx) {
@@ -299,7 +305,7 @@ void GridViewDialog::edit_column(const QModelIndex &idx) {
         vc->set_override_color(d->ui->cb_override->isChecked());
         vc->get_colors()->set_overrides_cell_colors(d->ui->cb_override_cell_colors->isChecked());
         if(d->ui->cb_override_cell_colors->isChecked()){
-            for(int idx=0;idx < vc->get_colors()->colors().count();idx++){
+            for(int idx=0;idx < vc->get_colors()->get_color_defs().count();idx++){
                 vc->get_colors()->set_color(idx,d->color(idx));
             }
         }else{

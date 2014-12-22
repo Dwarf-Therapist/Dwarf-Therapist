@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include "dwarfstats.h"
 #include "defaultfonts.h"
 #include "dtstandarditem.h"
+#include "cellcolordef.h"
 #include <QMessageBox>
 #include <QToolTip>
 #include <QTranslator>
@@ -198,20 +199,10 @@ void DwarfTherapist::read_settings() {
     m_hide_non_adults = m_user_settings->value("options/hide_children_and_babies",false).toBool();
 
     //refresh global colors
-    m_colors.clear();
-    m_user_settings->beginGroup("options/colors");
-    m_colors.insert(GCOL_ACTIVE,QColor(m_user_settings->value("active_labor").value<QColor>()));
-
-    QColor tmp = QColor(m_user_settings->value("cell_disabled").value<QColor>());
-    if(!tmp.isValid())
-        tmp = QColor(187,34,34,125);
-    m_colors.insert(GCOL_DISABLED,tmp);
-
-    tmp = QColor(m_user_settings->value("cell_pending").value<QColor>());
-    if(!tmp.isValid())
-        tmp = QColor(203,174,40);
-    m_colors.insert(GCOL_PENDING,tmp);
-
+        m_user_settings->beginGroup("options/colors");
+    check_global_color(GCOL_ACTIVE,"active_labor",tr("Active"),tr("Color when the related action is enabled and active."),QColor(78,78,179));
+    check_global_color(GCOL_PENDING,"pending_color",tr("Pending"),tr("Color when an action has been flagged to be enabled, but hasn't been yet."),QColor(203,174,40));
+    check_global_color(GCOL_DISABLED,"disabled_color",tr("Disabled"),tr("Color of the cell when the action cannot be toggled."),QColor(187,34,34,125));
     m_user_settings->endGroup();
 
     //set the application fonts
@@ -226,6 +217,18 @@ void DwarfTherapist::read_settings() {
     LOGI << "finished reading settings";
     //emit the settings_changed to everything else after we've refreshed our global settings
     emit settings_changed();
+}
+
+void DwarfTherapist::check_global_color(GLOBAL_COLOR_TYPES key, QString setting_key, QString title, QString desc, QColor col_default){
+    QColor tmp = m_user_settings->value(setting_key,col_default).value<QColor>();
+    if(!tmp.isValid()){
+        tmp = col_default;
+    }
+    if(!m_colors.contains(key)){
+        m_colors.insert(key,QSharedPointer<CellColorDef>(new CellColorDef(tmp,setting_key,title,desc)));
+    }else{
+        m_colors.value(key)->set_color(tmp);
+    }
 }
 
 void DwarfTherapist::load_customizations(){

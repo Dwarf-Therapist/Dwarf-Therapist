@@ -38,6 +38,7 @@ class SuperLabor;
 class Dwarf;
 class Word;
 class LogManager;
+class CellColorDef;
 
 class DwarfTherapist : public QApplication {
     Q_OBJECT
@@ -68,7 +69,7 @@ public:
     LogManager *get_log_manager() {return m_log_mgr;}
     DFInstance *get_DFInstance() {return m_main_window->get_DFInstance();}
 
-    QColor get_global_color(GLOBAL_COLOR_TYPES gc_type) {return m_colors.value(gc_type,QColor(Qt::black));}
+    QSharedPointer<CellColorDef> get_global_color(GLOBAL_COLOR_TYPES gc_type) {return m_colors.value(gc_type);}
 
     bool multiple_castes;
     bool show_skill_learn_rates;
@@ -119,12 +120,13 @@ private:
     bool m_allow_labor_cheats;
     bool m_hide_non_adults;
     LogManager *m_log_mgr;
-    QHash<GLOBAL_COLOR_TYPES,QColor> m_colors;
+    QHash<GLOBAL_COLOR_TYPES,QSharedPointer<CellColorDef> > m_colors;
 
     void setup_search_paths();
     void setup_logging();
     void load_translator();
     void edit_customization(QList<QVariant> data);
+    void check_global_color(GLOBAL_COLOR_TYPES key, QString setting_key, QString title, QString desc, QColor col_default);
 
     customization_data build_c_data(QVariant);
 

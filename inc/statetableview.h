@@ -30,7 +30,6 @@ class UberDelegate;
 class RotatedHeader;
 class Dwarf;
 class DwarfModel;
-//class DwarfModelProxy;
 
 class StateTableView : public QTreeView
 {

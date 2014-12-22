@@ -50,14 +50,13 @@ void ViewColumnSetColors::use_defaults(){
 }
 
 void ViewColumnSetColors::read_settings(){
-    for(int idx=0;idx<m_colors.size();idx++){
-        QColor def = DT->get_global_color(static_cast<GLOBAL_COLOR_TYPES>(idx));
-        if(!m_colors.at(idx)->is_overridden()){
-            m_colors[idx]->set_color(def);
-        }
-        m_defaults->colors().at(idx)->set_color(def);
-        //m_defaults->set_color(idx,def,false);
-    }
+//    for(int idx=0;idx<m_colors.size();idx++){
+//        QColor def = DT->get_global_color(static_cast<GLOBAL_COLOR_TYPES>(idx));
+//        if(!m_colors.at(idx)->is_overridden()){
+//            m_colors[idx]->set_color(def);
+//        }
+//        m_defaults->get_color_defs().at(idx)->set_color(def);
+//    }
 }
 
 CellColors *ViewColumnSetColors::get_default_colors(){

@@ -53,10 +53,10 @@ OptionsMenu::OptionsMenu(QWidget *parent)
                                "active_labor", QColor(0x7878B3), this)
             << new CustomColor(tr("Pending Cell"),
                                tr("Color shown for a cell when the action has been flagged to be set to active, but it hasn't happened yet."),
-                               "cell_pending", QColor(203,174,40), this)
+                               "pending_color", QColor(203,174,40), this)
             << new CustomColor(tr("Disabled Cell"),
                                tr("Color shown for a cell where the action (butcher, geld, labors, etc.) cannot be toggled."),
-                               "cell_disabled", QColor(187,34,34,125), this)
+                               "disabled_color", QColor(187,34,34,125), this)
 
             << new CustomColor(tr("Active Group Cell"),
                                tr("Color shown on an aggregate cell if <b>all</b> dwarves have this labor enabled."),
