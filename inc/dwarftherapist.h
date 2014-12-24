@@ -64,12 +64,17 @@ public:
     QString get_generic_word(const uint &offset) {return m_generic_words.value(offset, "UNKNOWN");}
     QString get_dwarf_word(const uint &offset) {return m_dwarf_words.value(offset, get_generic_word(offset));}
     Word * get_word(const uint & offset) { return m_language.value(offset, NULL); }
-    bool labor_cheats_allowed() {return m_allow_labor_cheats;}
-    bool hide_non_adults() {return m_hide_non_adults;}
+
+    bool labor_cheats_allowed() const {return m_allow_labor_cheats;}
+    bool hide_non_adults() const {return m_hide_non_adults;}
+    bool show_labor_roles() const {return m_show_labor_roles;}
+    bool show_skill_roles() const {return m_show_skill_roles;}
+
     LogManager *get_log_manager() {return m_log_mgr;}
     DFInstance *get_DFInstance() {return m_main_window->get_DFInstance();}
 
     QSharedPointer<CellColorDef> get_global_color(GLOBAL_COLOR_TYPES gc_type) {return m_colors.value(gc_type);}
+    QColor get_happiness_color(DWARF_HAPPINESS h) {return m_happiness_colors.value(h,QColor(Qt::transparent));}
 
     bool multiple_castes;
     bool show_skill_learn_rates;
@@ -117,10 +122,15 @@ private:
     QSettings *m_user_settings;
     MainWindow *m_main_window;
     OptionsMenu *m_options_menu;
+
     bool m_allow_labor_cheats;
     bool m_hide_non_adults;
+    bool m_show_labor_roles;
+    bool m_show_skill_roles;
+
     LogManager *m_log_mgr;
     QHash<GLOBAL_COLOR_TYPES,QSharedPointer<CellColorDef> > m_colors;
+    QHash<DWARF_HAPPINESS,QColor> m_happiness_colors;
 
     void setup_search_paths();
     void setup_logging();

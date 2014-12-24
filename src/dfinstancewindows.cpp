@@ -195,7 +195,8 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
             }
             m_layout = get_memory_layout(calculate_checksum(pe_header), !connect_anyway);
             LOGI << "RAW BASE ADDRESS:" << base_addr;
-            m_layout->set_base_address(base_addr - 0x00400000);
+            if(m_layout)
+                m_layout->set_base_address(base_addr - 0x00400000);
         }
         CloseHandle(snapshot);     // Must clean up the snapshot object!
     }

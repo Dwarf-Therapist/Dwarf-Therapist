@@ -131,7 +131,6 @@ public slots:
     void clear_cells();
     virtual void redraw_cells() {}
     virtual void refresh_sort(COLUMN_SORT_TYPE) {}
-    virtual void refresh_colors();
 
 protected:
     QString m_title;

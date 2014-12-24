@@ -697,7 +697,7 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
         if (type == CT_LABOR)
             m_dwarves[dwarf_id]->toggle_labor(labor_id);
         else if (type == CT_FLAGS)
-            m_dwarves[dwarf_id]->toggle_flag_bit(labor_id);
+            m_dwarves[dwarf_id]->toggle_flag_bit(item->data(DR_OTHER_ID).toInt());
         else if (type == CT_ROLE || type == CT_SUPER_LABOR || type == CT_CUSTOM_PROFESSION){
             Dwarf *d  = m_dwarves[dwarf_id];
             bool cp_applied = false;

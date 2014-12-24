@@ -110,7 +110,7 @@ QStandardItem *FlagColumn::build_cell(Dwarf *d) {
     info_col_name = get_state_color(state).name();//item->data(Qt::BackgroundColorRole).value<QColor>().name();
 
     item->setData(rating, DwarfModel::DR_SORT_VALUE);
-    item->setData(m_bit_pos, DwarfModel::DR_LABOR_ID);
+    item->setData(m_bit_pos, DwarfModel::DR_OTHER_ID);
     item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
 
     QString tooltip = QString("<center><h3>%1</h3>%2</center>%3")
@@ -126,7 +126,7 @@ QStandardItem *FlagColumn::build_aggregate(const QString &group_name, const QVec
     Q_UNUSED(dwarves);
     QStandardItem *item = init_aggregate(group_name);
     item->setData(CT_FLAGS, DwarfModel::DR_COL_TYPE);
-    item->setData(m_bit_pos, DwarfModel::DR_LABOR_ID);
+    item->setData(m_bit_pos, DwarfModel::DR_OTHER_ID);
     return item;
 }
 

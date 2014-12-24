@@ -223,14 +223,16 @@ public:
         case 64:
             return tr("shell");
         case 128:
-            return tr("soap");
+            return tr("wood mat");
         case 256:
-            return tr("ivory/tooth");
+            return tr("soap");
         case 512:
-            return tr("horn/hoof");
+            return tr("ivory/tooth");
         case 1024:
-            return tr("pearl");
+            return tr("horn/hoof");
         case 2048:
+            return tr("pearl");
+        case 4096:
             return tr("yarn/wool/fur");
         }
 

@@ -336,8 +336,11 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
         //dwarf actions (debug/memory stuff)
         m->addSeparator();
         debug_menu->clear();
+
+#ifdef QT_DEBUG
         debug_menu->addActions(d->get_mem_actions());
         m->addMenu(debug_menu);
+#endif
 
         m->exec(viewport()->mapToGlobal(event->pos()));
     } else if (idx.data(DwarfModel::DR_COL_TYPE).toInt() == CT_LABOR) {

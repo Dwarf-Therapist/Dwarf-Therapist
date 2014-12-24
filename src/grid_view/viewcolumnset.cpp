@@ -307,9 +307,6 @@ void ViewColumnSet::reorder_columns(const QStandardItemModel &model) {
 
 void ViewColumnSet::read_settings(){
     m_cell_colors->read_settings();
-//    foreach(ViewColumn *vc, m_columns){
-//        vc->refresh_colors();
-//    }
 }
 
 void ViewColumnSet::write_to_ini(QSettings &s, int start_idx) {

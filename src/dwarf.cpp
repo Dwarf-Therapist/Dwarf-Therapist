@@ -126,6 +126,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 
     // setup context actions
+#ifdef QT_DEBUG
     m_actions_memory.clear();
     QAction *dump_mem = new QAction(tr("Dump Memory..."), this);
     connect(dump_mem, SIGNAL(triggered()), SLOT(dump_memory()));
@@ -133,11 +134,10 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     QAction *dump_mem_to_file = new QAction(tr("Dump Memory To File"), this);
     connect(dump_mem_to_file, SIGNAL(triggered()), SLOT(dump_memory_to_file()));
     m_actions_memory << dump_mem_to_file;
-    QAction *copy_address_to_clipboard = new QAction(
-                tr("Copy Address to Clipboard"), this);
-    connect(copy_address_to_clipboard, SIGNAL(triggered()),
-            SLOT(copy_address_to_clipboard()));
+    QAction *copy_address_to_clipboard = new QAction(tr("Copy Address to Clipboard"), this);
+    connect(copy_address_to_clipboard, SIGNAL(triggered()),SLOT(copy_address_to_clipboard()));
     m_actions_memory << copy_address_to_clipboard;
+#endif
 }
 
 
@@ -246,7 +246,7 @@ bool Dwarf::has_invalid_flags(const int id, const QString creature_name, QHash<u
     foreach(uint invalid_flag, invalid_flags.uniqueKeys()) {
         QString reason = invalid_flags[invalid_flag];
         if(dwarf_flags & invalid_flag) {
-            LOGI << "Ignoring id:" << id << "name:" << creature_name << "who appears to be" << reason;
+            LOGI << "Ignoring id:" << id << "name:" << creature_name << "who appears to be" << reason << "flags:" << dwarf_flags;
             return true;
         }
     }
@@ -1190,7 +1190,6 @@ void Dwarf::read_labors() {
 void Dwarf::read_current_job() {
     VIRTADDR addr = m_address + m_mem->dwarf_offset("current_job");
     VIRTADDR current_job_addr = m_df->read_addr(addr);
-
     m_current_sub_job_id.clear();
 
     TRACE << "Current job addr: " << hex << current_job_addr;

@@ -79,7 +79,7 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
     if (m_shade_column_headers) {
         QLinearGradient g(rect.topLeft(), rect.bottomLeft());
         g.setColorAt(0.05, QColor(255, 255, 255, 10));
-        g.setColorAt(1.0, bg);
+        g.setColorAt(0.65, bg);
         grad_brush = QBrush(g);
     }
 
@@ -140,7 +140,7 @@ void RotatedHeader::paintSection(QPainter *p, const QRect &rect, int idx) const 
 
     QString data = this->model()->headerData(idx, Qt::Horizontal).toString();
     p->save();
-    p->setPen(complement(bg)); //Qt::black);
+    p->setPen(complement(bg,0.25)); //Qt::black);
     p->setRenderHint(QPainter::TextAntialiasing);
     p->setFont(m_font);
     QFontMetrics fm = p->fontMetrics();

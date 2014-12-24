@@ -45,7 +45,6 @@ public:
     void set_color(int idx, QColor c);
 
     QVector<QSharedPointer<CellColorDef> > get_color_defs();
-    //QSharedPointer<CellColorDef> get_color_def(int idx) {return m_colors.at(idx);}
 
 public slots:
     virtual void read_settings(){}

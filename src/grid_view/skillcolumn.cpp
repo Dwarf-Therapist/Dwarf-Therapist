@@ -69,12 +69,12 @@ QStandardItem *SkillColumn::build_cell(Dwarf *d) {
     item->setData(CT_SKILL, DwarfModel::DR_COL_TYPE);
     item->setData(d->get_skill_level(m_skill_id), DwarfModel::DR_DISPLAY_RATING); //level rounded down
     item->setData(d->get_skill_level(m_skill_id,false,true), DwarfModel::DR_RATING); //interpolated level
-    item->setData(m_skill_id, DwarfModel::DR_SKILL_ID);
+    item->setData(m_skill_id, DwarfModel::DR_OTHER_ID);
     item->setData(m_set->name(), DwarfModel::DR_SET_NAME);
     set_export_role(DwarfModel::DR_RATING);
 
     refresh_sort(d, m_current_sort);
-    build_tooltip(d,DT->user_settings()->value(QString("options/show_roles_in_skills"),true).toBool(),false);
+    build_tooltip(d, DT->show_skill_roles(),false);
 
     return item;
 }

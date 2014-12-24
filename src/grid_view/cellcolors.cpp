@@ -29,7 +29,6 @@ CellColors::CellColors(QObject *parent)
     : QObject(parent)
     , m_override_cell_colors(false)
 {
-    //connect(DT,SIGNAL(settings_changed()),SLOT(read_settings()));
 }
 
 CellColors::CellColors(const CellColors &cc)
@@ -40,7 +39,7 @@ CellColors::CellColors(const CellColors &cc)
 }
 
 CellColors::~CellColors(){
-
+    m_color_defs.clear();
 }
 
 void CellColors::load_settings(QSettings &s){
@@ -105,11 +104,10 @@ void CellColors::set_color(int idx, QColor c){
                 //current color def is already custom, update the color def's color
                 m_color_defs.at(idx)->set_color(c);
             }else{
-                //current color def is not custom, so it's the default. copy the current color and update it
+                //current color def is not custom, so it's the default. create a new def by copying the existing one
                 QSharedPointer<CellColorDef> cpy = QSharedPointer<CellColorDef>(new CellColorDef(*m_color_defs.at(idx)));
                 cpy->set_color(c);
                 cpy->set_overridden(true);
-                //m_colors[idx]  = QSharedPointer<CellColorDef>(new CellColorDef(*cur));
                 m_color_defs[idx].swap(cpy);
             }
         }else{
@@ -118,7 +116,6 @@ void CellColors::set_color(int idx, QColor c){
                 //current color def is custom, replace it with the default color def
                 QSharedPointer<CellColorDef> def = get_default_color_def(idx);
                 m_color_defs[idx].swap(def);
-                //m_colors[idx] = get_default_color_def(idx);
             }else{
                 //current color is already default, do nothing
             }
@@ -126,17 +123,4 @@ void CellColors::set_color(int idx, QColor c){
     }else{
         //invalid color, do nothing
     }
-
-//    if(req_check){
-//        QColor def = get_default_color(idx);
-//        if(c.isValid()){
-//            m_colors[idx]->set_overridden((c != def));
-//            m_colors[idx]->set_color(c);
-//        }else{
-//            m_colors[idx]->set_overridden(false);
-//            m_colors[idx]->set_color(def);
-//        }
-//    }else{
-//        m_colors[idx]->set_color(c);
-//    }
 }

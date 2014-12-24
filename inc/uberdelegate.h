@@ -92,7 +92,7 @@ private:
 
     void paint_grid(const QRect &adjusted, bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, bool draw_border = true) const;
 
-    void paint_guide_borders(const QStyleOptionViewItem &opt, QPainter *p, const bool drawing_aggregate) const;
+    void paint_guide_borders(const QStyleOptionViewItem &opt, QPainter *p) const;
 
     //! return the bg color that was painted
     //! drawing labor bg cells (shaded for active possibly)

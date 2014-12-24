@@ -174,10 +174,6 @@ void ViewColumn::read_settings(){
     m_cell_colors->read_settings();
     refresh_color_map();
 }
-void ViewColumn::refresh_colors(){
-    m_cell_colors->read_settings();
-    refresh_color_map();
-}
 
 void ViewColumn::init_states(){
     m_available_states << STATE_TOGGLE << STATE_ACTIVE << STATE_DISABLED;

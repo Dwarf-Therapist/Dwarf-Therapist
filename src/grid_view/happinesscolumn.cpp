@@ -29,7 +29,6 @@ THE SOFTWARE.
 
 HappinessColumn::HappinessColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     : ViewColumn(s, set, parent)
-    , m_colors(QMap<DWARF_HAPPINESS, QColor>())
 {
     init_states();
     refresh_color_map();
@@ -37,7 +36,6 @@ HappinessColumn::HappinessColumn(QSettings &s, ViewColumnSet *set, QObject *pare
 
 HappinessColumn::HappinessColumn(QString title, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title, CT_HAPPINESS, set, parent)
-    , m_colors(QMap<DWARF_HAPPINESS, QColor>())
 {
     init_states();
     refresh_color_map();
@@ -45,7 +43,6 @@ HappinessColumn::HappinessColumn(QString title, ViewColumnSet *set, QObject *par
 
 HappinessColumn::HappinessColumn(const HappinessColumn &to_copy)
     : ViewColumn(to_copy)
-    , m_colors(to_copy.m_colors)
 {
 }
 
@@ -108,7 +105,7 @@ QStandardItem *HappinessColumn::build_aggregate(const QString &group_name, const
 void HappinessColumn::redraw_cells() {
     foreach(Dwarf *d, m_cells.uniqueKeys()) {
         if (d && m_cells[d] && m_cells[d]->model())
-            m_cells[d]->setBackground(m_colors[d->get_happiness()]);
+            m_cells[d]->setBackground(DT->get_happiness_color(d->get_happiness()));
     }
 }
 
@@ -119,14 +116,8 @@ void HappinessColumn::init_states(){
     }
 }
 void HappinessColumn::refresh_color_map(){
-    QSettings *s = DT->user_settings();//new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
-    s->beginGroup("options/colors/happiness");
-    foreach(QString k, s->childKeys()) {
-        DWARF_HAPPINESS h = static_cast<DWARF_HAPPINESS>(k.toInt());
-        m_colors[h] = s->value(k).value<QColor>();
-    }
-    s->endGroup();
 }
+
 QColor HappinessColumn::get_state_color(int state) const{
-    return m_colors.value(static_cast<DWARF_HAPPINESS>(state),m_colors.value(DH_FINE));
+    return DT->get_happiness_color(static_cast<DWARF_HAPPINESS>(state));
 }

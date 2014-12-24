@@ -83,7 +83,7 @@ public:
         DR_SORT_VALUE,
         DR_IS_AGGREGATE,
         DR_LABOR_ID,
-        DR_SKILL_ID,
+        DR_OTHER_ID,
         DR_GROUP_NAME,
         DR_ID,
         DR_DEFAULT_BG_COLOR,

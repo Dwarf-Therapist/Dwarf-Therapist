@@ -70,7 +70,7 @@ QStandardItem *ItemTypeColumn::build_cell(Dwarf *d) {
     item->setData(CT_ITEMTYPE, DwarfModel::DR_COL_TYPE);
     item->setData(missing_count, DwarfModel::DR_DISPLAY_RATING); //numeric drawing
     item->setData(rating, DwarfModel::DR_RATING); //glyph drawing (0-100)
-    item->setData(m_iType, DwarfModel::DR_ID);
+    item->setData(m_iType, DwarfModel::DR_OTHER_ID);
     set_export_role(DwarfModel::DR_RATING);
 
     item->setData(sort_val,DwarfModel::DR_SORT_VALUE);

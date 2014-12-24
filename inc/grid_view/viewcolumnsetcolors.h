@@ -33,11 +33,10 @@ public:
     ViewColumnSetColors(QSettings &s, QObject *parent=0);
     ~ViewColumnSetColors();
 
+    CellColors *get_default_colors();
+
 public slots:
     void use_defaults();
-    void read_settings();
-
-    CellColors *get_default_colors();
 
 private:
     CellColors *m_defaults;

@@ -55,6 +55,8 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     , m_options_menu(0)
     , m_allow_labor_cheats(false)
     , m_hide_non_adults(false)
+    , m_show_labor_roles(true)
+    , m_show_skill_roles(true)
     , m_log_mgr(0)
 {
     setup_logging();
@@ -142,12 +144,12 @@ void DwarfTherapist::setup_logging() {
     //setup logging
     m_log_mgr = new LogManager(this);
     TruncatingFileLogger *log = m_log_mgr->add_logger(
-#ifdef Q_OS_LINUX
-    ""
-#else
-    "log/run.log"
-#endif
-    );
+            #ifdef Q_OS_LINUX
+                ""
+            #else
+                "log/run.log"
+            #endif
+                );
     if (log) {
         LogAppender *app = m_log_mgr->add_appender("core", log, LL_TRACE);
         if (app) {
@@ -189,31 +191,44 @@ void DwarfTherapist::read_settings() {
         m_user_settings->setValue("it_feels_like_the_first_time", false);
     }
 
-    if (m_user_settings->value("options/show_toolbutton_text", true).toBool()) {
+    m_user_settings->beginGroup("options");
+    if (m_user_settings->value("show_toolbutton_text", true).toBool()) {
         m_main_window->get_toolbar()->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     } else {
         m_main_window->get_toolbar()->setToolButtonStyle(Qt::ToolButtonIconOnly);
     }
 
-    m_allow_labor_cheats = m_user_settings->value("options/allow_labor_cheats", false).toBool();
-    m_hide_non_adults = m_user_settings->value("options/hide_children_and_babies",false).toBool();
+    m_allow_labor_cheats = m_user_settings->value("allow_labor_cheats", false).toBool();
+    m_hide_non_adults = m_user_settings->value("hide_children_and_babies",false).toBool();
+    m_show_labor_roles = m_user_settings->value("show_roles_in_labor",true).toBool();
+    m_show_skill_roles = m_user_settings->value("show_roles_in_skills",true).toBool();
 
     //refresh global colors
-        m_user_settings->beginGroup("options/colors");
+    m_user_settings->beginGroup("colors");
     check_global_color(GCOL_ACTIVE,"active_labor",tr("Active"),tr("Color when the related action is enabled and active."),QColor(78,78,179));
     check_global_color(GCOL_PENDING,"pending_color",tr("Pending"),tr("Color when an action has been flagged to be enabled, but hasn't been yet."),QColor(203,174,40));
     check_global_color(GCOL_DISABLED,"disabled_color",tr("Disabled"),tr("Color of the cell when the action cannot be toggled."),QColor(187,34,34,125));
-    m_user_settings->endGroup();
+
+    m_user_settings->beginGroup("happiness");
+    foreach(QString k, m_user_settings->childKeys()) {
+        DWARF_HAPPINESS h = static_cast<DWARF_HAPPINESS>(k.toInt());
+        m_happiness_colors[h] = m_user_settings->value(k).value<QColor>();
+    }
+    m_user_settings->endGroup();//happiness
+    m_user_settings->endGroup();//colors
 
     //set the application fonts
-    QApplication::setFont(DT->user_settings()->value("options/main_font", QFont(DefaultFonts::getMainFontName(), DefaultFonts::getMainFontSize())).value<QFont>());
-    QToolTip::setFont(DT->user_settings()->value("options/tooltip_font", QFont(DefaultFonts::getTooltipFontName(), DefaultFonts::getTooltipFontSize())).value<QFont>());
+    QApplication::setFont(DT->user_settings()->value("main_font", QFont(DefaultFonts::getMainFontName(), DefaultFonts::getMainFontSize())).value<QFont>());
+    QToolTip::setFont(DT->user_settings()->value("tooltip_font", QFont(DefaultFonts::getTooltipFontName(), DefaultFonts::getTooltipFontSize())).value<QFont>());
 
     //set a variable we'll use in the dwarfstats for role calcs
-    DwarfStats::set_att_potential_weight(DT->user_settings()->value("options/default_attribute_potential_weight",0.5f).toFloat());
-    DwarfStats::set_skill_rate_weight(DT->user_settings()->value("options/default_skill_rate_weight",0.25f).toFloat());
-    DTStandardItem::set_show_tooltips(DT->user_settings()->value("options/grid/show_tooltips",true).toBool());
+    DwarfStats::set_att_potential_weight(DT->user_settings()->value("default_attribute_potential_weight",0.5f).toFloat());
+    DwarfStats::set_skill_rate_weight(DT->user_settings()->value("default_skill_rate_weight",0.25f).toFloat());
 
+    //notify items if they should show tooltips
+    DTStandardItem::set_show_tooltips(DT->user_settings()->value("grid/show_tooltips",true).toBool());
+
+    m_user_settings->endGroup();
     LOGI << "finished reading settings";
     //emit the settings_changed to everything else after we've refreshed our global settings
     emit settings_changed();
@@ -290,7 +305,7 @@ void DwarfTherapist::write_custom_professions(){
         }
         m_user_settings->endGroup();
     }
-        emit emit_customizations_changed();
+    emit emit_customizations_changed();
 }
 void DwarfTherapist::write_super_labors(){
     if (m_super_labors.size() > 0) {
@@ -337,7 +352,7 @@ void DwarfTherapist::import_existing_professions() {
     }
     m_main_window->load_customizations();
     QMessageBox::information(m_main_window, tr("Import Successful"),
-        tr("Imported %n custom profession(s)", "", imported));
+                             tr("Imported %n custom profession(s)", "", imported));
 }
 
 CustomProfession *DwarfTherapist::get_custom_profession(QString name) {
