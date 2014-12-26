@@ -64,7 +64,6 @@ QStandardItem *LaborColumn::build_cell(Dwarf *d) {
     item->setData(STATE_TOGGLE,DwarfModel::DR_STATE);
     if(d->labor_enabled(m_labor_id)){
         item->setData(1000, DwarfModel::DR_BASE_SORT);
-        item->setData(STATE_ACTIVE,DwarfModel::DR_STATE);
     }else if(!d->can_set_labors()){
         item->setData(STATE_DISABLED,DwarfModel::DR_STATE);
     }
