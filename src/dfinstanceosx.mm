@@ -63,6 +63,9 @@ THE SOFTWARE.
 DFInstanceOSX::DFInstanceOSX(QObject* parent)
     : DFInstanceNix(parent)
 {
+    // This makes the unauthorized DT instance quit at the proper time.
+    // No, fflush(stdout) does not work.
+    puts("");
     if(!authorize()) {
         exit(1);
     }
