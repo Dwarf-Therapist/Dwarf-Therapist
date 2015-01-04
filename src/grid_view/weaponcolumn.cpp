@@ -47,6 +47,10 @@ WeaponColumn::WeaponColumn(const QString &title, const int sub_type, ViewColumnS
 {
 }
 
+WeaponColumn::~WeaponColumn(){
+    m_weapon = 0;
+}
+
 void WeaponColumn::init(){
     if(m_weapon_name.trimmed().isEmpty())
         m_weapon_name = m_title;

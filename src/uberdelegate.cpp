@@ -146,12 +146,18 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     if(m_model){
         d = m_model->get_dwarf_by_id(idx.data(DwarfModel::DR_ID).toInt());
     }
-    if(!d && !drawing_aggregate){
-        return QStyledItemDelegate::paint(p, opt, idx);
-    }
+//    if(!d && !drawing_aggregate){
+//        return QStyledItemDelegate::paint(p, opt, idx);
+//    }
 
-    ViewColumn *vc = m_model->current_grid_view()->get_column(idx.column());
     int state = idx.data(DwarfModel::DR_STATE).toInt();
+    QColor state_color = QColor(Qt::transparent);
+    if(m_model){
+        ViewColumn *vc = m_model->current_grid_view()->get_column(idx.column());
+        if(vc){
+            state_color = vc->get_state_color(state);
+        }
+    }
 
     switch (type) {
     case CT_SKILL:
@@ -161,14 +167,16 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         if(rating >= 0){
             paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 0, 0, limit, 0, 0);
         }
-        paint_mood_cell(adjusted,p,opt,idx,model_idx.data(DwarfModel::DR_OTHER_ID).toInt(),false,d);
+        if(d){
+            paint_mood_cell(adjusted,p,opt,idx,model_idx.data(DwarfModel::DR_OTHER_ID).toInt(),false,d);
+        }
     }
         break;
     case CT_LABOR:
     {
-        if (!drawing_aggregate) {
+        if (!drawing_aggregate && d) {
             int labor_id = idx.data(DwarfModel::DR_LABOR_ID).toInt();
-            QColor bg = paint_bg_active(adjusted,d->labor_enabled(labor_id),p,opt,idx,state,vc->get_state_color(state));
+            QColor bg = paint_bg_active(adjusted,d->labor_enabled(labor_id),p,opt,idx,state,state_color);
             limit = 15.0;
             if(rating >= 0){
                 paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 0, 0, limit, 0, 0);
@@ -181,7 +189,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_HAPPINESS:
     {
-        paint_bg(adjusted, p, opt, idx, true, vc->get_state_color(state));
+        paint_bg(adjusted, p, opt, idx, true, state_color);
         if(draw_happiness_icons || (d && d->in_stressed_mood())){
             paint_icon(adjusted,p,opt,idx);
         }else{
@@ -192,7 +200,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     case CT_EQUIPMENT:
     {
         int wear_level = idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt();
-        paint_bg(adjusted, p, opt, idx, true, vc->get_state_color(state));
+        paint_bg(adjusted, p, opt, idx, true, state_color);
         paint_wear_cell(adjusted,p,opt,idx,wear_level);
     }
         break;
@@ -268,7 +276,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         }
 
         QColor bg;
-        QColor bg_color = vc->get_state_color(state); //color_active_labor;
+        QColor bg_color = state_color; //color_active_labor;
         if(is_active){
             bg_color.setAlpha(active_alpha);
         }
@@ -375,7 +383,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     {
         if(d){
             int bit_pos = idx.data(DwarfModel::DR_OTHER_ID).toInt();
-            paint_bg_active(adjusted, d->get_flag_value(bit_pos), p, opt, idx, state, vc->get_state_color(state));
+            paint_bg_active(adjusted, d->get_flag_value(bit_pos), p, opt, idx, state, state_color);
             paint_grid(adjusted,d->is_flag_dirty(bit_pos),p,opt,idx);
         }else{
             QStyledItemDelegate::paint(p, opt, idx);

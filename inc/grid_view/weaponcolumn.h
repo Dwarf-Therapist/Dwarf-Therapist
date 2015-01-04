@@ -29,10 +29,11 @@ class ItemWeaponSubtype;
 
 class WeaponColumn : public ViewColumn {
     Q_OBJECT
-public:
 
+public:
     WeaponColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
     WeaponColumn(const QString &title, const int sub_type, ViewColumnSet *set = 0, QObject *parent = 0);
+    ~WeaponColumn();
     void init();
     WeaponColumn* clone() {return new WeaponColumn(*this);}
     QStandardItem *build_cell(Dwarf *d);

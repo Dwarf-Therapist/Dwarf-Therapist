@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "optionsmenu.h"
 #include "defines.h"
+#include "viewcolumn.h"
 #include <QSettings>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -73,6 +74,7 @@ SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags)
         item->setData(floor(rating), DwarfModel::DR_DISPLAY_RATING);
         item->setData(CT_SKILL, DwarfModel::DR_COL_TYPE);
         item->setData(QColor(Qt::white), DwarfModel::DR_DEFAULT_BG_COLOR);
+        item->setData(ViewColumn::STATE_TOGGLE, DwarfModel::DR_STATE);
         sub_items << name << item;
         m->appendRow(sub_items);
     }
