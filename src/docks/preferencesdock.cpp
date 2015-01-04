@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <QLineEdit>
 #include <QPushButton>
 #include <QCloseEvent>
+#include <QLabel>
 
 #if QT_VERSION < 0x050000
 # define setSectionResizeMode setResizeMode

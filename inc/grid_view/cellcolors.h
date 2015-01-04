@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include <QSettings>
 #include <QColor>
 #include <QVector>
+#include <QSharedPointer>
 #include "cellcolordef.h"
 
 class CellColors : public QObject {

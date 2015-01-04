@@ -10,6 +10,7 @@
 #include "plandetail.h"
 #include "sortabletableitems.h"
 #include "labor.h"
+#include "mainwindow.h"
 
 #include <QComboBox>
 #include <QMessageBox>

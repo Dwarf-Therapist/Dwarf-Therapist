@@ -40,7 +40,6 @@ class Race;
 class Reaction;
 class Squad;
 class Word;
-
 class EmotionGroup;
 
 class DFInstance : public QObject {

@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "itemweaponsubtype.h"
 #include "gamedatareader.h"
 #include "dfinstance.h"
+#include <QPalette>
 
 WeaponColumn::WeaponColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     : ViewColumn(s, set, parent)

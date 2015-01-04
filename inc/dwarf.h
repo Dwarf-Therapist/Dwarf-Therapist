@@ -32,7 +32,9 @@ THE SOFTWARE.
 #include "unitemotion.h"
 #include "role.h"
 #include "syndrome.h"
+#include <QModelIndex>
 
+class QAction;
 class DFInstance;
 class MemoryLayout;
 class CustomProfession;

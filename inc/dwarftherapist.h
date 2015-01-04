@@ -26,9 +26,13 @@ THE SOFTWARE.
 #define DT (static_cast<DwarfTherapist *>(QCoreApplication::instance()))
 
 #include "columntypes.h"
-#include "mainwindow.h"
+
 #include <QApplication>
 #include <QVector>
+#include <QSharedPointer>
+#include <QVariant>
+#include <QColor>
+#include "global_enums.h"
 
 class QTreeWidgetItem;
 class OptionsMenu;
@@ -39,6 +43,8 @@ class Dwarf;
 class Word;
 class LogManager;
 class CellColorDef;
+class MainWindow;
+class DFInstance;
 
 class DwarfTherapist : public QApplication {
     Q_OBJECT
@@ -55,7 +61,7 @@ public:
     SuperLabor *get_super_labor(QString name){return m_super_labors.value(name);}
     QList<SuperLabor*> get_super_labors();
 
-    MainWindow *get_main_window() {return m_main_window;}
+    MainWindow *get_main_window();
     QSettings *user_settings() {return m_user_settings;}
     OptionsMenu *get_options_menu() {return m_options_menu;}
     Dwarf *get_dwarf_by_id(int dwarf_id);
@@ -71,9 +77,9 @@ public:
     bool show_skill_roles() const {return m_show_skill_roles;}
 
     LogManager *get_log_manager() {return m_log_mgr;}
-    DFInstance *get_DFInstance() {return m_main_window->get_DFInstance();}
+    DFInstance *get_DFInstance();
 
-    QSharedPointer<CellColorDef> get_global_color(GLOBAL_COLOR_TYPES gc_type) {return m_colors.value(gc_type);}
+    QSharedPointer<CellColorDef> get_global_color(GLOBAL_COLOR_TYPES gc_type);
     QColor get_happiness_color(DWARF_HAPPINESS h) {return m_happiness_colors.value(h,QColor(Qt::transparent));}
 
     bool multiple_castes;

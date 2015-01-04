@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QComboBox>
+#include <QLabel>
 
 SkillLegendDock::SkillLegendDock(QWidget *parent, Qt::WindowFlags flags)
     : BaseDock(parent, flags)

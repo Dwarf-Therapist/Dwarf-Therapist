@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include "item.h"
 #include "gamedatareader.h"
 #include "itemammo.h"
+#include <QPalette>
 
 const QList<ITEM_TYPE> Item::m_items_subtypes=Item::init_subtypes();
 

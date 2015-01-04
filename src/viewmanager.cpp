@@ -33,12 +33,15 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "itemweaponsubtype.h"
 #include "dwarf.h"
+#include "mainwindow.h"
 #include <QMenu>
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QHeaderView>
 #include <QTime>
 #include <QErrorMessage>
+#include <QToolBar>
+#include <QToolButton>
 
 #if QT_VERSION < 0x050000
 # define setSectionResizeMode setResizeMode

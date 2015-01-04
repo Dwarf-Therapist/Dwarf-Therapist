@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "viewcolumnset.h"
 #include "dwarftherapist.h"
 #include "defaultfonts.h"
+#include <QFontMetrics>
 
 TrainedColumn::TrainedColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
 : ViewColumn(s, set, parent)

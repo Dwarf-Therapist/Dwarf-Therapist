@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include "unithealth.h"
 #include "healthinfo.h"
 #include "belief.h"
+#include <QProgressBar>
 
 #if QT_VERSION < 0x050000
 # define setSectionResizeMode setResizeMode

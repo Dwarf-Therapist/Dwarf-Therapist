@@ -22,6 +22,7 @@ THE SOFTWARE.
 */
 
 #include "dwarftherapist.h"
+#include "dfinstance.h"
 #include "mainwindow.h"
 #include "optionsmenu.h"
 #include "version.h"
@@ -129,6 +130,15 @@ void DwarfTherapist::setup_search_paths() {
 
     QDir::setSearchPaths("share", paths);
 }
+
+MainWindow* DwarfTherapist::get_main_window(){
+    return m_main_window;
+}
+
+DFInstance* DwarfTherapist::get_DFInstance(){
+    return m_main_window->get_DFInstance();
+}
+
 void DwarfTherapist::setup_logging() {
     QStringList args = arguments();
     bool debug_logging = args.indexOf("-debug") != -1;
@@ -244,6 +254,10 @@ void DwarfTherapist::check_global_color(GLOBAL_COLOR_TYPES key, QString setting_
     }else{
         m_colors.value(key)->set_color(tmp);
     }
+}
+
+QSharedPointer<CellColorDef> DwarfTherapist::get_global_color(GLOBAL_COLOR_TYPES gc_type){
+    return m_colors.value(gc_type);
 }
 
 void DwarfTherapist::load_customizations(){
@@ -614,5 +628,3 @@ void DwarfTherapist::update_specific_header(int id, COLUMN_TYPE type){
     if(m_main_window->get_DFInstance() && get_main_window()->get_view_manager())
         get_main_window()->get_view_manager()->redraw_specific_header(id,type);
 }
-
-
