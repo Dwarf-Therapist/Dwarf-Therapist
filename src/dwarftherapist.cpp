@@ -151,6 +151,10 @@ void DwarfTherapist::setup_logging() {
         min_level = LL_DEBUG;
     }
 
+#ifdef QT_DEBUG
+    min_level = LL_DEBUG;
+#endif
+
     //setup logging
     m_log_mgr = new LogManager(this);
     TruncatingFileLogger *log = m_log_mgr->add_logger(

@@ -27,6 +27,7 @@ http://www.opensource.org/licenses/mit-license.php
 #include <QFile>
 #include <QFileInfo>
 #include <QDir>
+#include <QDebug>
 
 LogManager::LogManager(QObject *parent)
     : QObject(parent)
@@ -101,9 +102,9 @@ void LogAppender::write(const QString &message, LOG_LEVEL lvl,
                         const QString &file, int lineno,
                         const QString &function) {
     QString out = QString("%1\t%2\t%3")
-                  .arg(DT->get_log_manager()->level_name(lvl))
-                  .arg(module_name())
-                  .arg(message);
+            .arg(DT->get_log_manager()->level_name(lvl))
+            .arg(module_name())
+            .arg(message);
     if (m_logger) {
         m_logger->write(out, file, lineno, function);
     }
@@ -151,26 +152,31 @@ TruncatingFileLogger::~TruncatingFileLogger() {
 void TruncatingFileLogger::write(const QString &message,
                                  const QString &file, int lineno,
                                  const QString &func) {
-    if (m_file && m_file->isWritable()) {
-        QString stripped = message.trimmed();
-        // make a string for this log level
-        QDateTime now = QDateTime::currentDateTime();
-        QString msg("%1 %2%3%4\n");
-        msg = msg.arg(now.toString("yyyy-MMM-dd hh:mm:ss.zzz")).arg(stripped).toLatin1();
+    QString stripped = message.trimmed();
+    // make a string for this log level
+    QDateTime now = QDateTime::currentDateTime();
+    QString msg("%1 %2%3%4\n");
+    msg = msg.arg(now.toString("yyyy-MMM-dd hh:mm:ss.zzz")).arg(stripped).toLatin1();
 
-        QString location;
-        QString function;
-        if (!file.isEmpty()) {
-            location = QString(" [%1:%2]").arg(file).arg(lineno);
-        }
-        if (!func.isEmpty()) {
-            function = QString(" (%1)").arg(func);
-        }
-        msg = msg.arg(location);
-        msg = msg.arg(function);
+    QString location;
+    QString function;
+    if(!file.isEmpty()){
+        location = QString(" [%1:%2]").arg(file).arg(lineno);
+    }
+    if(!func.isEmpty()){
+        function = QString(" (%1)").arg(func);
+    }
+    msg = msg.arg(location);
+    msg = msg.arg(function);
+
+    if(m_file && m_file->isWritable()){
         m_file->write(msg.toLatin1());
         m_file->flush();
     }
+
+#if !defined(Q_OS_LINUX) && defined(QT_DEBUG)
+    qDebug() << msg.toLatin1().trimmed();
+#endif
 }
 
 Streamer::Streamer(LogAppender *appender, LOG_LEVEL lvl, const QString &file,
@@ -191,7 +197,7 @@ void Streamer::write() {
         // this should be fatal to prevent us from making lots of bogus
         // appender names
         qCritical() << "LOG ENTRY FROM" << m_file << m_lineno << m_function <<
-                "Has no valid log appender!";
+                       "Has no valid log appender!";
         qFatal("FATAL ERROR: invalid log appender");
     }
 }

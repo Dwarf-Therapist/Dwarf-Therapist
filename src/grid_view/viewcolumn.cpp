@@ -67,7 +67,7 @@ ViewColumn::ViewColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     }
     if(m_override_bg_color){
         m_bg_color = read_color(s.value("bg_color").toString());
-    }else{
+    }else if(set){
         m_bg_color = set->bg_color();
     }
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
