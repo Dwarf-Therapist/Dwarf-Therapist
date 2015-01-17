@@ -14,7 +14,7 @@
    <string>Custom Profession</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../images.qrc">
+   <iconset resource="../resources.qrc">
     <normaloff>:/img/hammer.png</normaloff>:/img/hammer.png</iconset>
   </property>
   <property name="sizeGripEnabled">
@@ -407,7 +407,7 @@
   <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources>
-  <include location="../images.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections>
   <connection>

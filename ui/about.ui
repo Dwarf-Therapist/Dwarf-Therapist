@@ -26,7 +26,7 @@
    <string>About Dwarf Therapist</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../images.qrc">
+   <iconset resource="../resources.qrc">
     <normaloff>:/img/hammer.png</normaloff>:/img/hammer.png</iconset>
   </property>
   <property name="styleSheet">
@@ -94,7 +94,7 @@
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap resource="../images.qrc">:/img/dwarf.jpg</pixmap>
+       <pixmap resource="../resources.qrc">:/img/dwarf.jpg</pixmap>
       </property>
       <property name="scaledContents">
        <bool>true</bool>
@@ -206,7 +206,7 @@ p, li { white-space: pre-wrap; }
   </layout>
  </widget>
  <resources>
-  <include location="../images.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections>
   <connection>

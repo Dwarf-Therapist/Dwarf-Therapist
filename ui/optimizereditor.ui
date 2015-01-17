@@ -14,7 +14,7 @@
    <string>Optimization Plan</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../images.qrc">
+   <iconset resource="../resources.qrc">
     <normaloff>:/img/hammer.png</normaloff>:/img/hammer.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -586,7 +586,7 @@
         <string>Import</string>
        </property>
        <property name="icon">
-        <iconset resource="../images.qrc">
+        <iconset resource="../resources.qrc">
          <normaloff>:/img/document-import.png</normaloff>:/img/document-import.png</iconset>
        </property>
       </widget>
@@ -603,7 +603,7 @@
         <string>Export</string>
        </property>
        <property name="icon">
-        <iconset resource="../images.qrc">
+        <iconset resource="../resources.qrc">
          <normaloff>:/img/document-export.png</normaloff>:/img/document-export.png</iconset>
        </property>
       </widget>
@@ -678,7 +678,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../images.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>
