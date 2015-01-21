@@ -20,7 +20,7 @@
    <string>Custom Role</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../images.qrc">
+   <iconset resource="../resources.qrc">
     <normaloff>:/img/hammer.png</normaloff>:/img/hammer.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
@@ -173,7 +173,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../images.qrc">
+        <iconset resource="../resources.qrc">
          <normaloff>:/img/refresh.png</normaloff>:/img/refresh.png</iconset>
        </property>
       </widget>
@@ -796,7 +796,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="../images.qrc">
+              <iconset resource="../resources.qrc">
                <normaloff>:/img/cross.png</normaloff>:/img/cross.png</iconset>
              </property>
             </widget>
@@ -898,7 +898,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../images.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>

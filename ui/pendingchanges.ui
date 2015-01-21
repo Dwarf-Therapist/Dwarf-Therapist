@@ -14,7 +14,7 @@
    <string>Pending Changes</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../images.qrc">
+   <iconset resource="../resources.qrc">
     <normaloff>:/img/hammer.png</normaloff>:/img/hammer.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -46,7 +46,7 @@
         <string>Refresh</string>
        </property>
        <property name="icon">
-        <iconset resource="../images.qrc">
+        <iconset resource="../resources.qrc">
          <normaloff>:/img/refresh.png</normaloff>:/img/refresh.png</iconset>
        </property>
       </widget>
@@ -80,7 +80,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../images.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>
