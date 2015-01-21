@@ -258,8 +258,8 @@ bool DFInstanceLinux::find_running_copy(bool connect_anyway) {
         QString fn = iter.next();
         QFile file(QString("%1/comm").arg(fn));
         if (file.open(QIODevice::ReadOnly)) {
-            QByteArray comm = file.readAll().trimmed();
-            if (comm == "dwarfort.exe" || comm == "Dwarf_Fortress") {
+            QByteArray comm = file.readAll();
+            if (comm == "dwarfort.exe\n" || comm == "Dwarf_Fortress\n") {
                 str_pids << iter.fileName();
             }
         }
