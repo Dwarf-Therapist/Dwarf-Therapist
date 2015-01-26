@@ -253,16 +253,14 @@ bool DFInstanceLinux::find_running_copy(bool connect_anyway) {
     TRACE << "attempting to find running copy of DF by executable name";
 
     QStringList str_pids;
-    QDirIterator iter("/proc");
+    QDirIterator iter("/proc", QDir::AllDirs | QDir::NoDotAndDotDot | QDir::Readable | QDir::Executable);
     while (iter.hasNext()) {
         QString fn = iter.next();
-        if (iter.fileInfo().isDir()) {
-            QFile file(QString("%1/comm").arg(fn));
-            if (file.open(QIODevice::ReadOnly)) {
-                QByteArray comm = file.readAll();
-                if (comm == "dwarfort.exe\n" || comm == "Dwarf_Fortress\n") {
-                    str_pids << iter.fileName();
-                }
+        QFile file(QString("%1/comm").arg(fn));
+        if (file.open(QIODevice::ReadOnly)) {
+            QByteArray comm = file.readAll();
+            if (comm == "dwarfort.exe\n" || comm == "Dwarf_Fortress\n") {
+                str_pids << iter.fileName();
             }
         }
     }
