@@ -38,6 +38,8 @@ WeaponColumn::WeaponColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
     , m_sub_type_id(s.value("sub_type_id",-1).toInt())
     , m_weapon_name(s.value("weapon_name","").toString())
 {
+    init();
+    connect(DT,SIGNAL(units_refreshed()),this,SLOT(check_weapon()));
 }
 
 WeaponColumn::WeaponColumn(const QString &title, const int sub_type, ViewColumnSet *set, QObject *parent)
@@ -46,6 +48,8 @@ WeaponColumn::WeaponColumn(const QString &title, const int sub_type, ViewColumnS
     , m_sub_type_id(sub_type)
     , m_weapon_name(title)
 {
+    init();
+    connect(DT,SIGNAL(units_refreshed()),this,SLOT(check_weapon()));
 }
 
 WeaponColumn::~WeaponColumn(){
@@ -59,7 +63,7 @@ void WeaponColumn::init(){
     if(m_sub_type_id >= 0){
         m_weapon = qobject_cast<ItemWeaponSubtype*>(DT->get_DFInstance()->get_item_subtype(WEAPON,m_sub_type_id));
     }
-    if(m_weapon == 0 || QString::compare(m_weapon_name, m_weapon->name_plural(),Qt::CaseInsensitive) != 0){
+    if(m_weapon.isNull() || QString::compare(m_weapon_name, m_weapon->name_plural(),Qt::CaseInsensitive) != 0){
         m_weapon = DT->get_DFInstance()->find_weapon_subtype(m_weapon_name);
         if(m_weapon)
             m_sub_type_id = m_weapon->subType();
@@ -69,7 +73,7 @@ void WeaponColumn::init(){
 QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     QStandardItem *item = init_cell(d);
 
-    init();
+    check_weapon();
 
     item->setData(CT_WEAPON, DwarfModel::DR_COL_TYPE);
     item->setData(0, DwarfModel::DR_RATING);
@@ -172,10 +176,20 @@ QStandardItem *WeaponColumn::build_aggregate(const QString &group_name, const QV
     return item;
 }
 
+void WeaponColumn::check_weapon(){
+    if(m_weapon.isNull()){
+        init();
+    }
+}
+
 void WeaponColumn::write_to_ini(QSettings &s){
     ViewColumn::write_to_ini(s);
     s.setValue("sub_type_id", m_sub_type_id);
-    if(m_weapon){
-            s.setValue("weapon_name", m_weapon->name_plural());
+    if(!m_weapon.isNull()){
+        s.setValue("weapon_name", m_weapon->name_plural());
+    }else if(!m_weapon_name.isEmpty()){
+        s.setValue("weapon_name", m_weapon_name);
+    }else{
+        LOGW << "weapon name could not be found for weapon column:" << m_title;
     }
 }

@@ -207,7 +207,7 @@ void UnitHealth::read_health_info(){
     short sh_counter = 0;
     QList<short> vals;
 
-    bool needs_diagnosis = health_flags;
+    bool needs_diagnosis = (health_flags & 1);
     add_info(eHealth::HI_DIAGNOSIS,false,needs_diagnosis);
     add_info(eHealth::HI_IMMOBILIZATION, health_flags & (1 << 3));
     add_info(eHealth::HI_DRESSING, health_flags & (1 << 4));

@@ -116,11 +116,7 @@ void CellColors::set_color(int idx, QColor c){
                 //current color def is custom, replace it with the default color def
                 QSharedPointer<CellColorDef> def = get_default_color_def(idx);
                 m_color_defs[idx].swap(def);
-            }else{
-                //current color is already default, do nothing
             }
         }
-    }else{
-        //invalid color, do nothing
     }
 }

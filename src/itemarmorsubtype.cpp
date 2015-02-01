@@ -91,7 +91,7 @@ void ItemArmorSubtype::read_data(){
     }else{
         m_layer = -1;
         m_armor_flags = FlagArray();
-        LOGE << "Failed to read armor properties" << m_name;
+        LOGW << "Failed to read armor properties" << m_name;
     }
 }
 

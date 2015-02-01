@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define WEAPONCOLUMN_H
 
 #include "viewcolumn.h"
+#include <QPointer>
 
 class ItemWeaponSubtype;
 
@@ -42,8 +43,11 @@ public:
     //override
     void write_to_ini(QSettings &s);
 
+public slots:
+    void check_weapon();
+
 private:
-    ItemWeaponSubtype *m_weapon;
+    QPointer<ItemWeaponSubtype> m_weapon;
     int m_sub_type_id;
     QString m_weapon_name; //name saved
 };
