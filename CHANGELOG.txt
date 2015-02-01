@@ -1,3 +1,27 @@
+### Version 31.0 Patch Notes
+
+***
+
+- added new labors (road building, construction) to the game_data.ini and the default full labor view
+- added global options for showing the roles in skill/labors and hiding non-adults
+- added a new feature to override cell background colors for active, pending and disabled cells in the views on a set or column level
+- the row highlight border will show now even when hovering over the row
+- grid cells that cannot have the labor toggled (roles, labors) will hightlight the cells in red (eg. children, moods)
+- updated the skill columns to give a description of why the labor toggling is disabled
+- also fixes the gelding columns allow to geld when already gelded
+- memory tools will only show up in debug mode
+- memory layouts for 40.20-24
+
+- fixed an issue where updating a column's color didn't immediately update the column header's color
+- fixed some wording and cleaned up obsolete game_data entries
+- fixed some material description in reactions
+- fixed the drawing on the skill legend
+- fixed a crash on exit when moving between different world saves due to different weapons existing
+- fixed reading the game_data.ini with translations
+- fixed an issue where re-connecting could cause DT to crash on exit
+- fixed diagnosis required from showing in the health grid when it wasn't required
+- fixed unauthorized DT instances quit correctly (Lethosor)
+
 ### Version 30.1 Patch Notes
 
 ***

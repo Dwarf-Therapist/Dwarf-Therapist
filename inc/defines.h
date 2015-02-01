@@ -27,11 +27,11 @@ THE SOFTWARE.
 #define PRODUCT "Dwarf Therapist"
 
 #ifndef DT_VERSION_MAJOR
-    #define DT_VERSION_MAJOR 30
+    #define DT_VERSION_MAJOR 31
 #endif
 
 #ifndef DT_VERSION_MINOR
-    #define DT_VERSION_MINOR 1
+    #define DT_VERSION_MINOR 0
 #endif
 
 #ifndef DT_VERSION_PATCH
