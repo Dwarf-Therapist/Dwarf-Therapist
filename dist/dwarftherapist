@@ -36,17 +36,18 @@ fi
 
 ## $_DT_BINARY
 ## Set path to 'DwarfTherapist' binary
-_DT_BINARY="/usr/bin/DwarfTherapist"
+_DT_BINARY="`which DwarfTherapist`"
+PREFIX="${_DT_BINARY%%/bin/DwarfTherapist}"
 
 ## $_ETC_BASE_FOLDER
 ## Set folder containing 'etc/memory_layouts/linux/*'
 ## DwarfTherapist needs to be run from within this folder, because relative path 'etc/memory_layouts/OS/' is hardcoded in binary
 ##
-_ETC_BASE_FOLDER="/usr/share/dwarftherapist/"
+_ETC_BASE_FOLDER="${PREFIX}/share/dwarftherapist/"
 
 ##_NOTIFY_ICON
 ## Set path to icon used for notify-send
-_NOTIFY_ICON="/usr/share/pixmaps/dwarftherapist.png"
+_NOTIFY_ICON="${PREFIX}/share/pixmaps/dwarftherapist.png"
 
 ##########################################
 ##
