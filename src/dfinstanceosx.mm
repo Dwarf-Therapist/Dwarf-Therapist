@@ -62,6 +62,8 @@ THE SOFTWARE.
 
 DFInstanceOSX::DFInstanceOSX(QObject* parent)
     : DFInstanceNix(parent)
+    , m_alloc_start(0)
+    , m_alloc_end(0)
 {
     // This makes the unauthorized DT instance quit at the proper time.
     // No, fflush(stdout) does not work.
@@ -167,6 +169,8 @@ bool DFInstanceOSX::find_running_copy(bool connect_anyway) {
 
     m_is_ok = true;
     m_layout = get_memory_layout(calculate_checksum(), !connect_anyway);
+    m_alloc_start = 0;
+    m_alloc_end = 0;
 
     [authPool release];
 
