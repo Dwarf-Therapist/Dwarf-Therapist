@@ -22,7 +22,7 @@ The changelog is `available at GitHub`_.
 Download
 ========
 
-The following downloads are compatible with Dwarf Fortress versions 0.40.04 through 0.40.10.
+The following downloads are compatible with Dwarf Fortress versions 0.40.04 through 0.40.24.
 The Windows version is additionally compatible with versions 0.40.01 and 0.40.03.
 
 `Windows 32-bit <http://dffd.wimbli.com/file.php?id=9040>`_
