@@ -300,10 +300,10 @@ public:
     //! returns the numeric rating for the this dwarf in the skill specified by skill_id
     float get_skill_level(int skill_id, bool raw = false, bool precise = false);
     //! convenience functions for skill level
-    float skill_level(int skill_id);
-    float skill_level_raw(int skill_id);
-    float skill_level_precise(int skill_id);
-    float skill_level_raw_precise(int skill_id);
+    Q_INVOKABLE float skill_level(int skill_id);
+    Q_INVOKABLE float skill_level_raw(int skill_id);
+    Q_INVOKABLE float skill_level_precise(int skill_id);
+    Q_INVOKABLE float skill_level_raw_precise(int skill_id);
 
     //! returns the numeric rating for the this dwarf in the skill associated with the labor specified by labor_id
     Q_INVOKABLE short labor_rating(int labor_id);
