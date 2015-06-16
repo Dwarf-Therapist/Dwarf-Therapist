@@ -6,7 +6,7 @@
 - added global options for showing the roles in skill/labors and hiding non-adults
 - added a new feature to override cell background colors for active, pending and disabled cells in the views on a set or column level
 - the row highlight border will show now even when hovering over the row
-- grid cells that cannot have the labor toggled (roles, labors) will hightlight the cells in red (eg. children, moods)
+- grid cells that cannot have the labor toggled (roles, labors) will highlight the cells in red (eg. children, moods)
 - updated the skill columns to give a description of why the labor toggling is disabled
 - also fixes the gelding columns allow to geld when already gelded
 - memory tools will only show up in debug mode

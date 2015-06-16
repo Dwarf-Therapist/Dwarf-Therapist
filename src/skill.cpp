@@ -71,6 +71,15 @@ Skill::Skill(short id, uint exp, short rating, int rust, int skill_rate)
 
     //current xp
     m_actual_exp = m_exp + get_xp_for_level(m_raw_level);
+
+    //edge case where they had a skill, but it dropped to 0.
+    //DF doesn't show it as rusted, but still shows it as a dabbling skill, even though there's 0xp
+    //in this case add 1 xp to draw it as dabbling
+    if(m_exp == 0 && m_raw_level == 0 && m_rust > 0){
+        m_exp = 1;
+        m_actual_exp = 1;
+    }
+
     //xp capped at 29000 (used in role ratings, as more than +5 legendary doesn't impact jobs)
     if(m_capped_level==20){
         m_capped_exp = MAX_CAPPED_XP;
