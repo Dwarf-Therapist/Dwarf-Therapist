@@ -25,6 +25,7 @@ THE SOFTWARE.
 
 #include <QString>
 #include <QColor>
+#include <QHash>
 
 class Skill
 {
