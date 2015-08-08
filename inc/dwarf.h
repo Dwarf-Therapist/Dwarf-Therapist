@@ -73,6 +73,7 @@ public:
         SEX_F = 0,
         SEX_M = 1
     } GENDER_TYPE;
+    Q_ENUMS(GENDER_TYPE)
 
     typedef enum {
         ORIENT_ASEXUAL,
@@ -80,6 +81,7 @@ public:
         ORIENT_HOMO,
         ORIENT_HETERO
     } SEX_ORIENT_TYPE;
+    Q_ENUMS(SEX_ORIENT_TYPE)
 
     typedef enum{
         STATE_MIGRANT = 7,
@@ -88,6 +90,40 @@ public:
         STATE_ON_BREAK = 17,
         STATE_CAVE_ADAPT = 19
     } MISC_STATES;
+
+    typedef enum{
+        none=-1, //custom
+        semi_wild=0,
+        trained=1,
+        well_trained=2,
+        skillfully_trained=3,
+        expertly_trained=4,
+        exceptionally_trained=5,
+        masterfully_trained=6,
+        domesticated=7,
+        unknown_trained=8,
+        wild_untamed=9,
+        hostile=10 //custom
+    } TRAINED_LEVEL;
+    Q_ENUMS(TRAINED_LEVEL)
+
+    static inline QString get_animal_trained_descriptor(const TRAINED_LEVEL &type) {
+        switch (type) {
+        case semi_wild: return QObject::tr("Semi-wild");
+        case trained: return QObject::tr("Trained");
+        case well_trained: return QObject::tr("Well-trained");
+        case skillfully_trained: return QObject::tr("Skillfully Trained");
+        case expertly_trained: return QObject::tr("Expertly Trained");
+        case exceptionally_trained: return QObject::tr("Exceptionally Trained");
+        case masterfully_trained: return QObject::tr("Masterfully Trained");
+        case domesticated: return QObject::tr("Tame");
+        case wild_untamed: return QObject::tr("Wild");
+        case hostile: return QObject::tr("Hostile");
+        default:
+            return QObject::tr("Unknown");
+        }
+    }
+
 
     static QString get_gender_desc(const GENDER_TYPE &type) {
         switch (type) {
@@ -125,6 +161,7 @@ public:
     Q_INVOKABLE SEX_ORIENT_TYPE get_orientation() {return m_gender_info.orientation;}
     QString get_gender_orient_desc() {return m_gender_info.full_desc;}
     Q_INVOKABLE bool is_male() {return (m_gender_info.gender == SEX_M);}
+    Q_INVOKABLE bool is_female() {return (m_gender_info.gender == SEX_F);}
 
     Q_INVOKABLE bool is_animal() {return m_is_animal;}
     Q_INVOKABLE bool is_pet() {return m_is_pet;}

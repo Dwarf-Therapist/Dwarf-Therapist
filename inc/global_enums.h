@@ -57,38 +57,6 @@ typedef enum {
     AT_SOCIAL_AWARENESS=18
 } ATTRIBUTES_TYPE;
 
-typedef enum{
-    none=-1, //custom
-    semi_wild=0,
-    trained=1,
-    well_trained=2,
-    skillfully_trained=3,
-    expertly_trained=4,
-    exceptionally_trained=5,
-    masterfully_trained=6,
-    domesticated=7,
-    unknown_trained=8,
-    wild_untamed=9,
-    hostile=10 //custom
-} TRAINED_LEVEL;
-
-static inline QString get_animal_trained_descriptor(const TRAINED_LEVEL &type) {
-    switch (type) {
-    case semi_wild: return QObject::tr("Semi-wild");
-    case trained: return QObject::tr("Trained");
-    case well_trained: return QObject::tr("Well-trained");
-    case skillfully_trained: return QObject::tr("Skillfully Trained");
-    case expertly_trained: return QObject::tr("Expertly Trained");
-    case exceptionally_trained: return QObject::tr("Exceptionally Trained");
-    case masterfully_trained: return QObject::tr("Masterfully Trained");
-    case domesticated: return QObject::tr("Tame");
-    case wild_untamed: return QObject::tr("Wild");
-    case hostile: return QObject::tr("Hostile");
-    default:
-        return QObject::tr("Unknown");
-    }
-}
-
 typedef enum {
     NONE=-1,
     BAR=0,

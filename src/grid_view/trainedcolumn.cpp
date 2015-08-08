@@ -48,7 +48,7 @@ TrainedColumn::TrainedColumn(const TrainedColumn &to_copy)
 QStandardItem *TrainedColumn::build_cell(Dwarf *d){
     QStandardItem *item = init_cell(d);
 
-    QString desc = get_animal_trained_descriptor(d->trained_level());
+    QString desc = d->get_animal_trained_descriptor(d->trained_level());
     float rating = (float)d->trained_level();
     float sort_val = rating;
     QString draw_rating = QString::number(rating);
