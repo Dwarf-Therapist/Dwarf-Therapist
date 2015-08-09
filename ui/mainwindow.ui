@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1129</width>
-    <height>807</height>
+    <width>918</width>
+    <height>377</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -243,7 +243,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1129</width>
+     <width>918</width>
      <height>19</height>
     </rect>
    </property>
@@ -439,8 +439,8 @@
   <widget class="BaseDock" name="dock_pending_jobs_list">
    <property name="minimumSize">
     <size>
-     <width>0</width>
-     <height>0</height>
+     <width>150</width>
+     <height>143</height>
     </size>
    </property>
    <property name="windowTitle">
@@ -552,8 +552,8 @@
   <widget class="BaseDock" name="dock_custom_professions">
    <property name="minimumSize">
     <size>
-     <width>0</width>
-     <height>0</height>
+     <width>223</width>
+     <height>143</height>
     </size>
    </property>
    <property name="windowTitle">
