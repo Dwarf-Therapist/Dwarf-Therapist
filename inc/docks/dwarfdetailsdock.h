@@ -38,7 +38,7 @@ public:
 public slots:
     void show_dwarf(Dwarf *d);
     void clear(bool reinit = true);
-    QByteArray splitter_sizes();
+    QByteArray get_ui_state();
 
 private:
     DwarfDetailsWidget *m_widget;

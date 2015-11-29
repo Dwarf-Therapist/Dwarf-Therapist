@@ -25,6 +25,7 @@ THE SOFTWARE.
 
 #include <QWidget>
 #include <QTableWidget>
+#include <QMainWindow>
 
 class Dwarf;
 
@@ -45,7 +46,7 @@ public slots:
 private:
     Ui::DwarfDetailsWidget *ui;
     QVector<QTableWidget*> m_tables;
-    QByteArray m_splitter_sizes;
+    QByteArray m_ui_state;
 
     QList<QPair<int,Qt::SortOrder> > m_sorting;
     int m_current_id;

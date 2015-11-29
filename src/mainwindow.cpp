@@ -347,9 +347,9 @@ void MainWindow::write_settings() {
 
         DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));
         if(dock){
-            QByteArray sizes = dock->splitter_sizes();
+            QByteArray sizes = dock->get_ui_state();
             if(!sizes.isNull())
-                m_settings->setValue("detailPanesSizes", sizes);
+                m_settings->setValue("unit_detail_state", sizes);
         }
         m_settings->endGroup();
 

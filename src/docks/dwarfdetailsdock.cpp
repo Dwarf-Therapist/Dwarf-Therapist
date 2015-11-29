@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include <QSplitter>
+#include <QMainWindow>
 #include "basedock.h"
 #include "dwarfdetailsdock.h"
 #include "dwarfdetailswidget.h"
@@ -48,14 +49,14 @@ void DwarfDetailsDock::show_dwarf(Dwarf *d) {
         m_initialized = true;
         setWidget(m_widget);
         m_widget->show();
-    }  
+    }
     m_current_id = d->id();
 }
 
-QByteArray DwarfDetailsDock::splitter_sizes(){
-    QSplitter* split = m_widget->findChild<QSplitter *>("details_splitter");
-    if(split)
-        return split->saveState();
+QByteArray DwarfDetailsDock::get_ui_state(){
+    QMainWindow* dock_area = m_widget->findChild<QMainWindow *>("unit_details_dock_area");
+    if(dock_area)
+        return dock_area->saveState();
     else
         return NULL;
 }

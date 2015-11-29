@@ -54,8 +54,8 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
 {
     ui->setupUi(this);
 
-    ui->splitter->setOpaqueResize(true);
-    ui->splitter->setObjectName("details_splitter"); //important!! this name is used to find the splitter and save it's state!!
+    //ui->splitter->setOpaqueResize(true);
+    //ui->splitter->setObjectName("details_splitter"); //important!! this name is used to find the splitter and save it's state!!
 
     int default_size = 60;
 
@@ -133,8 +133,8 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     ui->tw_health->setColumnCount(2);
 
     //splitter
-    m_splitter_sizes = DT->user_settings()->value("gui_options/detailPanesSizes").toByteArray();
-    ui->splitter->restoreState(m_splitter_sizes);
+    m_ui_state = DT->user_settings()->value("gui_options/unit_detail_state").toByteArray();
+    //ui->splitter->restoreState(m_ui_state);
 
     //skill sorts
     m_sorting << qMakePair(1,Qt::DescendingOrder);
@@ -154,6 +154,30 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     //health sorts
     m_sorting << qMakePair(0,Qt::AscendingOrder);
     ui->tw_health->sortItems(0, Qt::AscendingOrder);
+
+    QMainWindow *dock_area = new QMainWindow(this);
+    dock_area->setObjectName("unit_details_dock_area");
+    dock_area->setWindowFlags(Qt::Widget);
+    dock_area->setCentralWidget(0);
+    ui->verticalLayout->addWidget(dock_area);
+
+    foreach(QDockWidget *dw, this->findChildren<QDockWidget*>()){
+        dock_area->addDockWidget(Qt::TopDockWidgetArea,dw,Qt::Vertical);
+    }
+
+    if(m_ui_state.count() > 0){
+        dock_area ->restoreState(m_ui_state);
+    }else{
+        QDockWidget *first_dock = 0;
+        foreach(QDockWidget *dw, dock_area->findChildren<QDockWidget*>()){
+            if(first_dock == 0){
+                first_dock = dw;
+            }else{
+                dock_area->tabifyDockWidget(first_dock,dw);
+            }
+        }
+        ui->dock_unit_skills->raise();
+    }
 
 }
 
