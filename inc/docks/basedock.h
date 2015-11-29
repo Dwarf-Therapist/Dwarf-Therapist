@@ -32,6 +32,7 @@ public:
         : QDockWidget(parent,flags)
     {
         connect(this,SIGNAL(topLevelChanged(bool)),this,SLOT(floating_changed(bool)));
+        //this->minimumSize() = new QSize(0,0);
     }
     virtual ~BaseDock(){}
 

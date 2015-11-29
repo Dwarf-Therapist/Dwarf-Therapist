@@ -10,6 +10,12 @@
     <height>390</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
   <property name="font">
    <font>
     <family>Segoe UI</family>
@@ -25,8 +31,6 @@
    <layout class="QVBoxLayout" name="vbox_main"/>
   </widget>
  </widget>
- <resources>
-  <include location="../resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

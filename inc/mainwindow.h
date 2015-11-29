@@ -175,12 +175,14 @@ private:
     QString m_tmp_checksum;
     bool m_deleting_settings;
     pop_info m_pop_info;
+    bool m_toolbar_configured;
 
     //optimize button and separator widgets and their corresponding toolbar actions
     QAction *m_act_sep_optimize;
     QAction *m_act_btn_optimize; //this is required in addition to the button to allow easy visibility toggling
     QToolButton *m_btn_optimize;
 
+    void showEvent(QShowEvent *evt);
     void closeEvent(QCloseEvent *evt); // override;
 
     void read_settings();

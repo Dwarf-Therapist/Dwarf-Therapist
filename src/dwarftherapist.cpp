@@ -169,6 +169,7 @@ void DwarfTherapist::setup_logging() {
         if (app) {
             Version v; // current version
             LOGI << "Dwarf Therapist" << v.to_string() << "starting normally.";
+            LOGI << "Runtime QT Version" << qVersion();
             //app->set_minimum_level(min_level);
             app->set_minimum_level(min_level);
         } else {
