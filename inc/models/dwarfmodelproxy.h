@@ -67,8 +67,6 @@ public:
     QString get_script(const QString script_name) {return m_scripts.value(script_name).script_body;}
     void clear_script(const QString script_name = "");
     void clear_script(const FILTER_SCRIPT_TYPE sType, const bool refresh);
-
-    void refresh_script();
     QList<Dwarf*> get_filtered_dwarves();
 
 public slots:

@@ -18,6 +18,7 @@ public:
          m_symbol = "???";
          m_color_name = "#FF0000";
          m_severity = 99;
+         m_type_flags = 0;
          m_cat_id = eHealth::HI_UNK;
     }
 

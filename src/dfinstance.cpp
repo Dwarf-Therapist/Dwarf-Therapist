@@ -81,10 +81,14 @@ DFInstance::DFInstance(QObject* parent)
     , m_heartbeat_timer(new QTimer(this))
     , m_dwarf_race_id(0)
     , m_dwarf_civ_id(0)
+    , m_current_year(0)
+    , m_cur_year_tick(0)
+    , m_cur_time(0)
     , m_languages(0x0)
     , m_fortress(0x0)
     , m_fortress_name(tr("Embarking"))
     , m_fortress_name_translated("")
+    , m_squad_vector(0)
 {
     // let subclasses start the heartbeat timer, since we don't want to be
     // checking before we're connected
@@ -1048,9 +1052,12 @@ bool DFInstance::add_new_layout(const QString & version, QFile & file) {
     }
 
     MemoryLayout *temp = new MemoryLayout(newFileName);
-    if (temp && temp->is_valid()) {
+    if(temp && temp->is_valid()) {
         LOGI << "adding valid layout" << temp->game_version() << temp->checksum();
         m_memory_layouts.insert(temp->checksum().toLower(), temp);
+    }else{
+        LOGI << "ignoring invalid layout from file:" << newFileName;
+        delete temp;
     }
     return true;
 }

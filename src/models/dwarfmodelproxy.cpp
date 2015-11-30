@@ -133,10 +133,6 @@ void DwarfModelProxy::clear_script(const FILTER_SCRIPT_TYPE sType, const bool re
     }
 }
 
-void DwarfModelProxy::refresh_script(){
-    invalidateFilter();
-}
-
 bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
     bool matches = true;
 

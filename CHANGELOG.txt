@@ -1,3 +1,18 @@
+### Version 32.0 Patch Notes
+
+***
+- moved the gridview controls (grouping, searching, population counts) to their own toolbar, which can be moved, hidden, etc.
+- changed the unit details dock to display skills, attributes, preferences, etc. in individual dock windows instead of using tables/trees in a splitter.
+- updated some thought descriptions
+- updated/fixed skill_level functions for scripts and updated the documentation
+- added is_female() script function
+- removed alchemy from the hauling labours in the default view
+
+- fixed script functions for get_gender, get_orientation, trained_level
+- fixes an issue with rusted dabbling skills showing as legendary
+- fixed typos
+- fixes setting nicknames/professions (felliott)
+
 ### Version 31.0 Patch Notes
 
 ***

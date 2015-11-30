@@ -74,7 +74,6 @@ public:
         default:
             return "DEFAULT";
         }
-        return "???";
     }
 
     static inline COLUMN_SORT_TYPE get_sort_type(const QString &name) {

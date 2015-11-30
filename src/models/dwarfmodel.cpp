@@ -504,6 +504,9 @@ void DwarfModel::build_row(const QString &key) {
     }
 
     foreach(Dwarf *d, m_grouped_dwarves.value(key)) {
+        if(!d)
+            continue;
+
         QStandardItem *i_name = new QStandardItem(d->nice_name());
         bool name_italic = false;
 
@@ -515,7 +518,7 @@ void DwarfModel::build_row(const QString &key) {
         }
 
         //background gradients for nobles
-        if(d && m_highlight_nobles){
+        if(m_highlight_nobles){
             if(d->noble_position() != ""){
                 QColor col = m_df->fortress()->get_noble_color(d->historical_id());
                 i_name->setData(build_gradient_brush(col,col.alpha(),0,QPoint(0,0),QPoint(1,0)),Qt::BackgroundRole);
@@ -524,7 +527,7 @@ void DwarfModel::build_row(const QString &key) {
         }
 
         //set cursed colors
-        if(d && m_highlight_cursed){
+        if(m_highlight_cursed){
             switch(d->get_curse_type()){
             case eCurse::VAMPIRE:
             case eCurse::WEREBEAST:

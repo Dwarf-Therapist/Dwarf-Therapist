@@ -159,6 +159,7 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     dock_area->setObjectName("unit_details_dock_area");
     dock_area->setWindowFlags(Qt::Widget);
     dock_area->setCentralWidget(0);
+    dock_area->setTabPosition(Qt::AllDockWidgetAreas,QTabWidget::North);
     ui->verticalLayout->addWidget(dock_area);
 
     foreach(QDockWidget *dw, this->findChildren<QDockWidget*>()){

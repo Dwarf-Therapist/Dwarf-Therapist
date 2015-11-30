@@ -1069,11 +1069,13 @@ void Dwarf::read_syndromes(){
             int race_id = s.get_transform_race();
             if(race_id >= 0){
                 Race *r_trans = m_df->get_race(race_id);
-                Caste *c_trans = r_trans->get_caste_by_id(0);
-                if(r_trans && r_trans->flags().has_flag(NIGHT_CREATURE) && c_trans && c_trans->flags().has_flag(CRAZED)){
-                    is_curse = true;
-                    m_curse_type = eCurse::WEREBEAST;
-                    m_curse_name = r_trans->name();
+                if(r_trans){
+                    Caste *c_trans = r_trans->get_caste_by_id(0);
+                    if(r_trans && r_trans->flags().has_flag(NIGHT_CREATURE) && c_trans && c_trans->flags().has_flag(CRAZED)){
+                        is_curse = true;
+                        m_curse_type = eCurse::WEREBEAST;
+                        m_curse_name = r_trans->name();
+                    }
                 }
             }else if(s.display_name().contains("werecurse",Qt::CaseInsensitive)){
                 //older version without the necessary offset, use a generic name if it seems like a werecurse

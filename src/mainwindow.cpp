@@ -92,6 +92,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_force_connect(false)
     , m_try_download(true)
     , m_deleting_settings(false)
+    , m_toolbar_configured(false)
     , m_act_sep_optimize(0)
     , m_btn_optimize(0)
 {
@@ -462,12 +463,15 @@ void MainWindow::read_dwarves() {
     }
     //save the ids of the currently selected dwarfs
     QVector<int> ids;
-    foreach(Dwarf *d, m_view_manager->get_selected_dwarfs()){
-        ids << d->id();
-    }
-    //clear selected dwarfs in the view
-    if(m_view_manager)
+    if(m_view_manager){
+        foreach(Dwarf *d, m_view_manager->get_selected_dwarfs()){
+            if(d){
+                ids << d->id();
+            }
+        }
+        //clear selected dwarfs in the view
         m_view_manager->clear_selected();
+    }
 
     //clear data in each column for each view
     foreach(GridView *gv, m_view_manager->views()){
@@ -522,8 +526,9 @@ void MainWindow::read_dwarves() {
         i->setData(data,Qt::UserRole+1);
         filters->appendRow(i);
     }
-    if(!dwarf_found)
+    if(!dwarf_found && dock){
         dock->clear(false);
+    }
 
     filters->sort(0,Qt::AscendingOrder);
 
@@ -963,35 +968,37 @@ void MainWindow::save_gridview_csv()
     QFile f( fileName );
     if (f.exists())
         f.remove();
-    f.open(QIODevice::WriteOnly | QIODevice::Text);
-    QTextStream out(&f);
 
-    QStringList row;
-    row.append(tr("Name"));
-    foreach(ViewColumnSet *set, gv->sets()) {
-        foreach(ViewColumn *col, set->columns()) {
-            if (col->type() != CT_SPACER)
-                row.append(col->title());
-        }
-    }
-    out << row.join(",") << endl;
-    row.clear();
+    if(f.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QTextStream out(&f);
 
-    QList<Dwarf*> dwarves = m_proxy->get_filtered_dwarves();
-    foreach(Dwarf *d, dwarves){
-        if(d->is_animal() || d->is_adult() || (!DT->hide_non_adults() && !d->is_adult())){
-            row.append(d->nice_name());
-            foreach(ViewColumnSet *set, gv->sets()) {
-                foreach(ViewColumn *col, set->columns()) {
-                    if (col->type() != CT_SPACER)
-                        row.append(col->get_cell_value(d));
-                }
+        QStringList row;
+        row.append(tr("Name"));
+        foreach(ViewColumnSet *set, gv->sets()) {
+            foreach(ViewColumn *col, set->columns()) {
+                if (col->type() != CT_SPACER)
+                    row.append(col->title());
             }
-            out << row.join(",") << endl;
-            row.clear();
         }
+        out << row.join(",") << endl;
+        row.clear();
+
+        QList<Dwarf*> dwarves = m_proxy->get_filtered_dwarves();
+        foreach(Dwarf *d, dwarves){
+            if(d->is_animal() || d->is_adult() || (!DT->hide_non_adults() && !d->is_adult())){
+                row.append(d->nice_name());
+                foreach(ViewColumnSet *set, gv->sets()) {
+                    foreach(ViewColumn *col, set->columns()) {
+                        if (col->type() != CT_SPACER)
+                            row.append(col->get_cell_value(d));
+                    }
+                }
+                out << row.join(",") << endl;
+                row.clear();
+            }
+        }
+        f.close();
     }
-    f.close();
 }
 
 void MainWindow::export_gridviews() {
