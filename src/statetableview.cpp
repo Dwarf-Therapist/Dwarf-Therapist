@@ -549,17 +549,37 @@ void StateTableView::set_nickname() {
     if(sel.count() <= 0)
         return;
     bool ok;
+
+    int numRowsSelected = 0;
+    foreach(QModelIndex i, sel.indexes()) {
+        if (i.column() == 0 && !i.data(DwarfModel::DR_IS_AGGREGATE).toBool()) {
+            ++numRowsSelected;
+        }
+    }
+    
+    int dwarfId = sel.indexes().at(0).data(DwarfModel::DR_ID).toInt();
+    
+    QString defaultText = "";
+
+    if (numRowsSelected == 1) {
+        Dwarf* d = m_model->get_dwarf_by_id(dwarfId);
+        defaultText = d->nickname();
+
+        if (d->nickname().isEmpty()) {
+            defaultText = d->nice_name();
+        }
+    }
+    
     QString new_nick = QInputDialog::getText(this, tr("New Nickname"),
-                                             tr("Enter a new nickname for the selected dwarves. Or leave blank to reset "
-                                                "to their default name."), QLineEdit::Normal,
-                                             m_model->get_dwarf_by_id(sel.indexes().at(0).data(DwarfModel::DR_ID).toInt())->nickname(), &ok);
+                                                   tr((numRowsSelected > 1) ? "Enter a new nickname for the selected dwarves. Or leave blank to reset to their default name." : "Enter a new nickname for the selected dwarf. Or leave blank to reset to their default name."), QLineEdit::Normal,
+                                                   tr(qPrintable(defaultText)), &ok);
     if(ok) {
         int limit = 16;
         if (new_nick.length() > limit) {
             QMessageBox::warning(this, tr("Max Length Exceeded"),
                                  tr("Due to technical limitations, nicknames must be under %1 characters "
                                     "long. If you require a longer nickname, you'll have to set it within Dwarf Fortress!").arg(limit));
-            return;
+            new_nick.resize(limit);
         }
 
         foreach(QModelIndex i, sel.indexes()) {
