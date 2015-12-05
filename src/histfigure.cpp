@@ -41,12 +41,17 @@ HistFigure::HistFigure(int id, DFInstance *df, QObject *parent)
     m_fake_birth_year=0;
     m_fake_birth_time=0;
     m_total_kills_other=0;
+    m_has_fake_identity=false;
 
     m_address = m_df->find_historical_figure(id);
     m_mem = m_df->memory_layout();
     if(m_address){
         m_nick_addrs.append(m_address + m_mem->hist_figure_offset("hist_name") + m_mem->dwarf_offset("nick_name"));
         m_fig_info_addr = m_df->read_addr(m_address + m_mem->hist_figure_offset("hist_fig_info"));
+        m_has_fake_identity = read_fake_identity();
+        if(!DT->user_settings()->value("options/highlight_cursed", false).toBool() && m_has_fake_identity){
+            return;
+        }
         read_kills();
     }
 }
@@ -183,7 +188,7 @@ QString HistFigure::formatted_summary(bool show_no_kills, bool space_notable){
     return kill_summary;
 }
 
-bool HistFigure::has_fake_identity(){
+bool HistFigure::read_fake_identity(){
     VIRTADDR rep_info = m_df->read_addr(m_fig_info_addr + m_mem->hist_figure_offset("reputation"));
     if(rep_info != 0){
         int cur_ident = m_df->read_int(rep_info + m_mem->hist_figure_offset("current_ident"));
@@ -197,4 +202,8 @@ bool HistFigure::has_fake_identity(){
         m_fake_birth_time = m_fake_ident_addr + m_mem->hist_figure_offset("fake_birth_time");
     }
     return (m_fake_ident_addr != 0);
+}
+
+bool HistFigure::has_fake_identity(){
+    return m_has_fake_identity;
 }

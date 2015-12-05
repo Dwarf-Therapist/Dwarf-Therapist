@@ -559,8 +559,9 @@ QString Dwarf::get_gender_icon_suffix(bool male_flag, bool female_flag, bool che
 
 void Dwarf::read_mood(){
     m_mood_id = static_cast<MOOD_TYPE>(m_df->read_short(m_address + m_mem->dwarf_offset("mood")));
-    if(m_mood_id == MT_NONE){
-        short temp_mood = m_df->read_short(m_address + m_mem->dwarf_offset("temp_mood")); //check temporary moods
+    int temp_offset = m_mem->dwarf_offset("temp_mood");
+    if(m_mood_id == MT_NONE && temp_offset != -1){
+        short temp_mood = m_df->read_short(m_address + temp_offset); //check temporary moods
         if(temp_mood > -1)
             m_mood_id = static_cast<MOOD_TYPE>(10 + temp_mood); //appended to craft/stress moods enum
     }

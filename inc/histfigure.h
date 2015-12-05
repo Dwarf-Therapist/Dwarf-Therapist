@@ -83,8 +83,10 @@ private:
     QStringList m_other_kill_list;
 
     int m_total_kills_other;
+    bool m_has_fake_identity;
 
     void read_kills();
+    bool read_fake_identity();
 
     static bool sort_kill_count(const kill_info &k1, const kill_info &k2){
         return k1.count > k2.count;
