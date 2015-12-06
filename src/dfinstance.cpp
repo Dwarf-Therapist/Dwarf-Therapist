@@ -611,15 +611,18 @@ void DFInstance::load_reactions(){
 
 void DFInstance::load_main_vectors(){
     //material templates
+    LOGD << "reading material templates";
     QVector<VIRTADDR> temps = enumerate_vector(m_layout->address("material_templates_vector"));
     foreach(VIRTADDR addr, temps){
         m_material_templates.insert(read_string(addr),addr);
     }
 
     //syndromes
+    LOGD << "reading syndromes";
     m_all_syndromes = enumerate_vector(m_layout->address("all_syndromes_vector"));
 
     //load item types/subtypes
+    LOGD << "reading item and subitem types";
     m_itemdef_vectors.insert(WEAPON,enumerate_vector(m_layout->address("itemdef_weapons_vector")));
     m_itemdef_vectors.insert(TRAPCOMP,enumerate_vector(m_layout->address("itemdef_trap_vector")));
     m_itemdef_vectors.insert(TOY,enumerate_vector(m_layout->address("itemdef_toy_vector")));
@@ -635,9 +638,11 @@ void DFInstance::load_main_vectors(){
     m_itemdef_vectors.insert(PANTS,enumerate_vector(m_layout->address("itemdef_pant_vector")));
     m_itemdef_vectors.insert(FOOD,enumerate_vector(m_layout->address("itemdef_food_vector")));
 
+    LOGD << "reading colors, shapes, poems, music and dances";
     m_color_vector = enumerate_vector(m_layout->address("colors_vector"));
     m_shape_vector = enumerate_vector(m_layout->address("shapes_vector"));
 
+    LOGD << "reading base materials";
     VIRTADDR addr = m_layout->address("base_materials");
     int i = 0;
     for(i = 0; i < 256; i++){
@@ -650,6 +655,7 @@ void DFInstance::load_main_vectors(){
     }
 
     //inorganics
+    LOGD << "reading inorganics";
     addr = m_layout->address("inorganics_vector");
     i = 0;
     foreach(VIRTADDR mat, enumerate_vector(addr)){
@@ -660,6 +666,7 @@ void DFInstance::load_main_vectors(){
     }
 
     //plants
+    LOGD << "reading plants";
     addr = m_layout->address("plants_vector");
     i = 0;
     QVector<VIRTADDR> vec = enumerate_vector(addr);

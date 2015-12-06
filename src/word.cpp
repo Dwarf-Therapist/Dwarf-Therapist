@@ -66,6 +66,7 @@ void Word::refresh_data() {
 
 void Word::read_members() {
     m_base = m_df->read_string(m_address + m_mem->word_offset("base"));
+    TRACE << "read word " << m_base;
     m_noun = m_df->read_string(m_address + m_mem->word_offset("noun_singular"));
     m_plural_noun = m_df->read_string(m_address + m_mem->word_offset("noun_plural"));
     m_adjective = m_df->read_string(m_address + m_mem->word_offset("adjective"));

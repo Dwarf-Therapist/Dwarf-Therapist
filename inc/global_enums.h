@@ -180,7 +180,10 @@ typedef enum {
     LIKE_TREE=6,
     LIKE_COLOR=7,
     LIKE_SHAPE=8,
-    LIKE_OUTDOORS=9
+    LIKE_POETRY=9,
+    LIKE_MUSIC=10,
+    LIKE_DANCE=11,
+    LIKE_OUTDOORS=99
 } PREF_TYPES;
 
 //df-structures material_flags

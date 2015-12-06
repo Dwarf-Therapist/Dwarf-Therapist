@@ -881,13 +881,15 @@ void Dwarf::read_preferences(){
     ITEM_TYPE itype;
     PREF_TYPES ptype;
     Preference *p;
+
     foreach(VIRTADDR pref, preferences){
         pref_type = m_df->read_short(pref);
-        pref_id = m_df->read_short(pref + 0x2);
-        item_sub_type = m_df->read_short(pref + 0x4);
-        mat_type = m_df->read_short(pref + 0x6);
-        mat_index = m_df->read_int(pref + 0x8);
-        //short pref_string = m_df->read_short(pref + 0x10);
+        //0x2 unk short
+        pref_id = m_df->read_short(pref + 0x4);
+        item_sub_type = m_df->read_short(pref + 0x6);
+        //0x8 unk 0x4 size
+        mat_type = m_df->read_short(pref + 0xc);
+        mat_index = m_df->read_int(pref + 0x10);
 
         itype = static_cast<ITEM_TYPE>(pref_id);
         ptype = static_cast<PREF_TYPES>(pref_type);
@@ -896,7 +898,6 @@ void Dwarf::read_preferences(){
 
         //for each preference type, we have some flags we need to check and add so we get matches to the role's preferences
         //materials are the exception as all flags are passed in, moving forward it may be better to pass in flagarrays instead
-
         switch(pref_type){
         case 0: //like material
         {
@@ -978,7 +979,21 @@ void Dwarf::read_preferences(){
             pref_name = m_df->get_shape(pref_id);
         }
             break;
-
+        case 9: //like poetry
+        {
+            pref_name = "unknown poem";
+        }
+            break;
+        case 10: //like music
+        {
+            pref_name = "unknown music";
+        }
+            break;
+        case 11: //like dance
+        {
+            pref_name = "unknown dance";
+        }
+            break;
         }
         p->set_name(capitalize(pref_name));
         if(!pref_name.isEmpty())
@@ -1032,6 +1047,12 @@ void Dwarf::read_preferences(){
                         likes.append(tr("the color ").append(pref_name));
                     }else if(pType == LIKE_SHAPE){
                         likes.append(tr("the shape of ").append(pref_name));
+                    }else if(pType == LIKE_POETRY){
+                        likes.append(tr("the words of ").append(pref_name));
+                    }else if(pType == LIKE_MUSIC){
+                        likes.append(tr("the sound of ").append(pref_name));
+                    }else if(pType == LIKE_DANCE){
+                        likes.append(tr("the sight of ").append(pref_name));
                     }else if(pType == HATE_CREATURE){
                         hates.append(pref_name);
                     }else{

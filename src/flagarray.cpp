@@ -15,7 +15,10 @@ FlagArray::FlagArray(DFInstance *df, VIRTADDR base_addr)
     quint32 size_in_bytes = m_df->read_addr(base_addr + 0x4);
 
     m_flags = QBitArray(size_in_bytes * 8);
-
+    if(size_in_bytes > 1000){
+        LOGW << "aborting reading flags, size too large" << size_in_bytes;
+        return;
+    }
     BYTE b;
     int position;
     for(uint i = 0; i < size_in_bytes; i++){

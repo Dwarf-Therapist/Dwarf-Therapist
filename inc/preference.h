@@ -48,6 +48,9 @@ public:
         desc[LIKE_TREE] = tr("Trees");
         desc[LIKE_COLOR] = tr("Colors");
         desc[LIKE_SHAPE] = tr("Shapes");
+        desc[LIKE_POETRY] = tr("Poems");
+        desc[LIKE_MUSIC] = tr("Music");
+        desc[LIKE_DANCE] = tr("Dances");
         desc[LIKE_OUTDOORS] = tr("Outdoors");
         return desc.value(type, tr("N/A"));
     }
