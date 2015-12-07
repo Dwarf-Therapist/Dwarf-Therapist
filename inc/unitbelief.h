@@ -30,14 +30,14 @@ THE SOFTWARE.
 class UnitBelief{
 public:
     UnitBelief();
-    UnitBelief(short id, int value, bool is_personal);
+    UnitBelief(int id, int value, bool is_personal);
 
-    void check_active(short id, int val);
+    void check_active(int id, int val);
 
     short belief_id() const {return m_belief_id;}
     int belief_value() const {return m_belief_value;}
     bool is_personal() const {return m_is_personal;}
-    bool is_active() const{return (m_is_personal && m_is_active);} 
+    bool is_active() const{return (m_is_personal && m_is_active);}
 
     QList<int> trait_conflicts(){return m_trait_conflicts;}
     void add_trait_conflict(int trait_id){m_trait_conflicts.append(trait_id);}

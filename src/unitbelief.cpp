@@ -32,7 +32,7 @@ UnitBelief::UnitBelief()
 {
 }
 
-UnitBelief::UnitBelief(short id, int value, bool is_personal)
+UnitBelief::UnitBelief(int id, int value, bool is_personal)
     : m_belief_id(id)
     , m_belief_value(value)
     , m_is_personal(is_personal)
@@ -40,7 +40,7 @@ UnitBelief::UnitBelief(short id, int value, bool is_personal)
     check_active(id,value);
 }
 
-void UnitBelief::check_active(short id, int val){
+void UnitBelief::check_active(int id, int val){
     Belief *b = GameDataReader::ptr()->get_belief(id);
     if(b){
         m_is_active = b->is_active(val);

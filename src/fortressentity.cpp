@@ -127,7 +127,7 @@ void FortressEntity::read_entity(){
 
     VIRTADDR beliefs_addr = m_address + m_mem->hist_entity_offset("beliefs");
     for(int i = 0; i < GameDataReader::ptr()->get_total_belief_count();i++){
-        short val = m_df->read_short(beliefs_addr + i * 4);
+        int val = m_df->read_int(beliefs_addr + i * 4);
         if(val > 100)
             val = 100;
         m_beliefs.insert(i, val);

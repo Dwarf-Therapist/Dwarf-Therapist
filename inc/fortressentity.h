@@ -31,7 +31,7 @@ class MemoryLayout;
 
 class FortressEntity : public QObject {
     Q_OBJECT
-public:    
+public:
     FortressEntity(DFInstance *df, VIRTADDR address, QObject *parent = 0);
     virtual ~FortressEntity();
     static FortressEntity* get_entity(DFInstance *df, const VIRTADDR &address);
@@ -64,7 +64,7 @@ public:
 
     bool squad_is_active(int id) {return m_squads.contains(id);}
     void refresh_squads();
-    short get_belief_value(int id){return m_beliefs.value(id);}
+    int get_belief_value(int id){return m_beliefs.value(id);}
 
     static QMap<QString,NOBLE_COLORS> m_raw_color_map;
     static QMap<QString,NOBLE_COLORS> build_color_map();
@@ -91,7 +91,7 @@ private:
     //squads this fortress has
     QVector<VIRTADDR> m_squads;
     //values/beliefs (id,value)
-    QHash<int,short> m_beliefs;
+    QHash<int,int> m_beliefs;
 
     void read_entity();
 
