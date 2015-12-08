@@ -60,6 +60,7 @@ public:
     void script(QString script){m_script = script;}
     bool is_custom(){return m_is_custom;}
     void is_custom(bool val){m_is_custom = val;}
+    bool updated(){return m_updated;}
 
     //unfortunately we need to keep all the keys as a string and cast them so we can use the same functions
     //ie can't pass in a hash with <string, aspect> and <int, aspect>
@@ -89,7 +90,7 @@ public:
 protected:
     void parseAspect(QSettings &s, QString node, weight_info &g_weight, QHash<QString, RoleAspect *> &list, float default_weight);
     void parsePreferences(QSettings &s, QString node, weight_info &g_weight, float default_weight);
-    void check_pref_flags(Preference *p, int first_flag);
+    void validate_pref(Preference *p, int first_flag);
     void write_aspect_group(QSettings &s, QString group_name, weight_info group_weight, float group_default_weight, QHash<QString, RoleAspect *> &list);
     void write_pref_group(QSettings &s, float default_prefs_weight);
 
@@ -107,5 +108,6 @@ protected:
     QList<int> m_labors; //labors associated via the skills in the role
     QString m_pref_desc;
     int m_cur_pref_len;
+    bool m_updated;
 };
 #endif // ROLE_H

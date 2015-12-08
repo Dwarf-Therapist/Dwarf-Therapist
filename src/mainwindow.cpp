@@ -250,7 +250,17 @@ MainWindow::MainWindow(QWidget *parent)
     if (m_settings->value("options/check_for_updates_on_startup", true).toBool())
         check_latest_version();
 
-
+    //if any custom roles were altered due to an update, save them
+    if(GameDataReader::ptr()->custom_roles_updated()){
+        write_roles();
+        GameDataReader::ptr()->custom_roles_updated(false);
+    }
+#ifdef QT_DEBUG
+    if(GameDataReader::ptr()->default_roles_updated()){
+        write_roles(false);
+        GameDataReader::ptr()->default_roles_updated(false);
+    }
+#endif
     //add CTRL+A to select all currently filtered/visible dwarves
     new QShortcut(Qt::CTRL + Qt::Key_A, m_view_manager, SLOT(select_all()));
     raise();
@@ -1135,7 +1145,7 @@ void MainWindow::edit_custom_role() {
 
 void MainWindow::done_editing_role(int result){
     if(result == QDialog::Accepted){
-        write_custom_roles();
+        write_roles();
         refresh_roles_data();
     }
     disconnect(m_view_manager, SIGNAL(selection_changed()), m_role_editor, SLOT(selection_changed()));
@@ -1168,7 +1178,7 @@ void MainWindow::remove_custom_role(){
             }
         }
         //first write our custom roles
-        write_custom_roles();
+        write_roles();
         //re-read roles from the ini to replace any default roles that may have been replaced by a custom role which was just removed
         //this will also rebuild our sorted role list
         GameDataReader::ptr()->load_roles();
@@ -1210,10 +1220,24 @@ void MainWindow::refresh_role_menus() {
     }
 }
 
-void MainWindow::write_custom_roles(){
+void MainWindow::write_roles(bool custom){
     //re-write custom roles, ugly but doesn't seem that replacing only one works properly
+    QString key = "custom_roles";
     QSettings *s = DT->user_settings();
-    s->remove("custom_roles");
+
+    //only update the default roles when debugging. this is a check only when updating roles for new releases
+#ifdef QT_DEBUG
+    if(!custom){
+        key = "dwarf_roles";
+        s = new QSettings("updated_roles.ini",QSettings::IniFormat,this);
+    }
+#endif
+
+    if(!s){
+        LOGE << "could not save roles, invalid QSettings!";
+        return;
+    }
+    s->remove(key);
 
     //read defaults before we start writing
     float default_attributes_weight = s->value("options/default_attributes_weight",1.0).toFloat();
@@ -1221,10 +1245,12 @@ void MainWindow::write_custom_roles(){
     float default_traits_weight = s->value("options/default_traits_weight",1.0).toFloat();
     float default_prefs_weight = s->value("options/default_prefs_weight",1.0).toFloat();
 
-    s->beginWriteArray("custom_roles");
+    s->beginWriteArray(key);
     int count = 0;
     foreach(Role *r, GameDataReader::ptr()->get_roles()){
-        if(r->is_custom()){
+        if(r->is_custom() == custom){
+            if(!custom && !r->updated()) //when writing default roles, only write updated roles. this should be merged into game_data.ini
+                continue;
             s->setArrayIndex(count);
             r->write_to_ini(*s, default_attributes_weight, default_traits_weight, default_skills_weight, default_prefs_weight);
             count++;

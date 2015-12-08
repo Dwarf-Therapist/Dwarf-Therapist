@@ -43,6 +43,7 @@ Role::Role()
     , m_script("")
     , m_is_custom(false)
     , m_cur_pref_len(0)
+    , m_updated(false)
 {
     QSettings *u = DT->user_settings();
     attributes_weight.weight = u->value("options/default_attributes_weight",1.0).toFloat();
@@ -65,6 +66,7 @@ Role::Role(QSettings &s, QObject *parent)
     , m_script(s.value("script","").toString())
     , m_is_custom(false)
     , m_cur_pref_len(0)
+    , m_updated(false)
 {
     QSettings *u = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
     parseAspect(s, "attributes", attributes_weight, attributes, u->value("options/default_attributes_weight",1.0).toFloat());
@@ -88,6 +90,7 @@ Role::Role(const Role &r)
     , m_is_custom(r.m_is_custom)
     , role_details(r.role_details)
     , m_cur_pref_len(0)
+    , m_updated(false)
 {}
 
 Role::~Role(){
@@ -191,22 +194,24 @@ void Role::parsePreferences(QSettings &s, QString node, weight_info &g_weight, f
         s.endArray();
 
         //update any old flags with new ones
-        check_pref_flags(p,first_flag);
+        validate_pref(p,first_flag);
 
         prefs.append(p);
     }
     s.endArray();
 }
 
-void Role::check_pref_flags(Preference *p, int first_flag){
+void Role::validate_pref(Preference *p, int first_flag){
     //check and update any missing armor/clothing flags
     if(Item::is_armor_type(p->get_item_type()) && !p->flags().has_flag(IS_ARMOR) && !p->flags().has_flag(IS_CLOTHING)){
         p->add_flag(IS_ARMOR);
+        m_updated = true;
     }
 
     //add missing trade goods flags
     if(Item::is_trade_good(p->get_item_type()) && !p->flags().has_flag(IS_TRADE_GOOD)){
         p->add_flag(IS_TRADE_GOOD);
+        m_updated = true;
     }
 
     //add missing trainable, remove old flags
@@ -215,12 +220,23 @@ void Role::check_pref_flags(Preference *p, int first_flag){
         p->add_flag(TRAINABLE);
         p->flags().set_flag(TRAINABLE_HUNTING,false);
         p->flags().set_flag(TRAINABLE_WAR,false);
+        m_updated = true;
     }
 
     //update any general preference material names (eg. Horn -> Horn/Hoof)
     if(p->get_item_type() == NONE && !p->exact_match() && p->get_pref_category() == LIKE_MATERIAL &&
             first_flag >= 0 && first_flag < NUM_OF_MATERIAL_FLAGS){
-            p->set_name(Material::get_material_flag_desc(static_cast<MATERIAL_FLAGS>(first_flag)));
+            QString new_name = (Material::get_material_flag_desc(static_cast<MATERIAL_FLAGS>(first_flag)));
+            if(new_name != p->get_name()){
+                p->set_name(new_name);
+                m_updated = true;
+            }
+    }
+
+    //update old outdoor preference category (9) to new (99)
+    if(p->get_pref_category() == 9 && p->get_item_type() == -1 && p->flags().has_flag(999)){
+        p->set_category(LIKE_OUTDOORS);
+        m_updated = true;
     }
 }
 

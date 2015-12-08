@@ -504,6 +504,9 @@ DwarfJob *GameDataReader::get_job(const short &job_id) {
 }
 
 void GameDataReader::load_roles(){
+    m_cust_roles_updated = false;
+    m_def_roles_updated = false;
+
     qDeleteAll(m_dwarf_roles);
     m_dwarf_roles.clear();
     m_default_roles.clear();
@@ -514,6 +517,10 @@ void GameDataReader::load_roles(){
         u->setArrayIndex(i);
         Role *r = new Role(*u, this);
         r->is_custom(true);
+        if(r->updated()){
+            LOGI << "custom role" << r->name() << "has been updated!";
+            m_cust_roles_updated = true;
+        }
         m_dwarf_roles.insert(r->name(),r);
     }
     u->endArray();
@@ -522,6 +529,10 @@ void GameDataReader::load_roles(){
     for (short i = 0; i < dwarf_roles; ++i) {
         m_data_settings->setArrayIndex(i);
         Role *r = new Role(*m_data_settings, this);
+        if(r->updated()){
+            LOGI << "default role" << r->name() << "requires updating!";
+            m_def_roles_updated = true;
+        }
         //keep a list of default roles to check custom roles against
         m_default_roles.append(r->name());
         //don't overwrite any custom role with the same name

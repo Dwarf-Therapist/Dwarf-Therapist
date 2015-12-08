@@ -152,7 +152,7 @@ void DwarfTherapist::setup_logging() {
     }
 
 #ifdef QT_DEBUG
-    min_level = LL_DEBUG;
+    min_level = LL_INFO;
 #endif
 
     //setup logging

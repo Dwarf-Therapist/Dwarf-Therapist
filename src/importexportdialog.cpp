@@ -502,7 +502,7 @@ void ImportExportDialog::import_selected_roles(){
         GameDataReader::ptr()->get_roles().insert(r->name(), r);
         imported++;
     }
-    DT->get_main_window()->write_custom_roles();
+    DT->get_main_window()->write_roles();
     DT->get_main_window()->refresh_roles_data();
     if(imported)
         QMessageBox::information(this, tr("Import Successful"),

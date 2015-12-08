@@ -140,7 +140,7 @@ public:
         //roles
         void add_new_custom_role();
         void add_new_opt();
-        void write_custom_roles();
+        void write_roles(bool custom = true);
         void refresh_roles_data();
 
         //optimizer

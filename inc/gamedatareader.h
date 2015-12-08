@@ -120,6 +120,11 @@ public:
     QString get_mood_name(MOOD_TYPE m_type,bool colored = false);
     QString get_mood_desc(MOOD_TYPE m_type,bool colored = false);
 
+    bool custom_roles_updated() {return m_cust_roles_updated;}
+    void custom_roles_updated(bool val) {m_cust_roles_updated=val;}
+    bool default_roles_updated() {return m_def_roles_updated;}
+    void default_roles_updated(bool val) {m_def_roles_updated=val;}
+
     static QStringList m_seasons;
     static QStringList m_months;
 
@@ -177,6 +182,9 @@ private:
 
     QMap<int,QString> m_building_names;
     QMap<int,QString> m_building_quality;
+
+    bool m_cust_roles_updated;
+    bool m_def_roles_updated;
 
     void build_calendar();
 };
