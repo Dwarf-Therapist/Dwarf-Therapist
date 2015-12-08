@@ -137,6 +137,7 @@ public:
         m[SLAB]=tr("Slabs");
         m[EGG]=tr("Eggs");
         m[BOOK]=tr("Books");
+        m[SHEET]=tr("Sheets");
         m[SUPPLIES]=tr("Supplies");
         m[MELEE_EQUIPMENT]=tr("Weapon & Shield");
         m[RANGED_EQUIPMENT]=tr("Quiver & Ammo");
@@ -245,6 +246,7 @@ public:
         m[SLAB]=tr("Slab");
         m[EGG]=tr("Egg");
         m[BOOK]=tr("Book");
+        m[SHEET]=tr("Sheet");
         m[SUPPLIES]=tr("Other Equipment");
         return m.value(type, "N/A");
     }

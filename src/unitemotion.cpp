@@ -98,6 +98,7 @@ UnitEmotion::UnitEmotion(VIRTADDR addr, DFInstance *df, QObject *parent)
             }else{
                 if(m_desc.contains("[skill]")){
                     m_desc.replace("[skill]",gdr->get_skill_name(m_sub_id));
+                    m_compare_id = m_sub_id; //keep improved skills separate
                 }else if(m_desc.contains("[building]")){
                     m_desc.replace("[building]",gdr->get_building_name(static_cast<BUILDING_TYPE>(m_sub_id),m_optional_level));
                     m_compare_id = m_sub_id; //group by building type as well

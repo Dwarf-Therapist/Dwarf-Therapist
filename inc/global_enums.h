@@ -148,7 +148,8 @@ typedef enum {
     SLAB=86,
     EGG=87,
     BOOK=88,
-    NUM_OF_ITEM_TYPES=89,
+    SHEET=90,
+    NUM_OF_ITEM_TYPES=90,
     //custom flags
     SUPPLIES=999,
     ARTIFACTS=1000,

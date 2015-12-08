@@ -741,7 +741,7 @@ void roleDialog::load_items(){
     //weapons are also ignored because we'll handle them manually to split them into ranged and melee categories
     item_ignore << BAR << SMALLGEM << BLOCKS << ROUGH << BOULDER << WOOD << CORPSE << CORPSEPIECE << REMAINS
                 << FISH_RAW << VERMIN << IS_PET << SKIN_TANNED << THREAD << CLOTH << BALLISTAARROWHEAD
-                << TRAPPARTS << FOOD << GLOB << ROCK << PIPE_SECTION << ORTHOPEDIC_CAST << EGG << BOOK << WEAPON;
+                << TRAPPARTS << FOOD << GLOB << ROCK << PIPE_SECTION << ORTHOPEDIC_CAST << EGG << BOOK << SHEET << WEAPON;
 
     //additionally ignore food types, since they can only be a preference as a consumable
     item_ignore << MEAT << FISH << CHEESE << PLANT << DRINK << POWDER_MISC << LEAVES_FRUIT << LIQUID_MISC << SEEDS;
