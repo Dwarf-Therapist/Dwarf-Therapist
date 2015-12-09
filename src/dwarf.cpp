@@ -201,10 +201,11 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     int race_id = df->read_int(addr + mem->dwarf_offset("race"));
 
     TRACE << "examining creature at" << hex << addr;
-    TRACE << "FLAGS1 :" << hexify(flags1);
-    TRACE << "FLAGS2 :" << hexify(flags2);
-    TRACE << "FLAGS3 :" << hexify(flags3);
-    TRACE << "RACE   :" << hexify(race_id);
+    TRACE << "FLAGS1:" << hexify(flags1);
+    TRACE << "FLAGS2:" << hexify(flags2);
+    TRACE << "FLAGS3:" << hexify(flags3);
+    TRACE << "RACE:" << race_id;
+    TRACE << "CIV:" << civ_id;
 
     bool is_caged = flags1 & (1 << FLAG_CAGED);
     bool is_tame = flags1 & (1 << FLAG_TAME);
@@ -886,7 +887,7 @@ void Dwarf::read_preferences(){
         pref_type = m_df->read_short(pref);
         //0x2 unk short
         pref_id = m_df->read_short(pref + 0x4);
-        item_sub_type = m_df->read_short(pref + 0x6);
+        item_sub_type = m_df->read_short(pref + 0x8);
         //0x8 unk 0x4 size
         mat_type = m_df->read_short(pref + 0xc);
         mat_index = m_df->read_int(pref + 0x10);
