@@ -63,9 +63,9 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     //SKILLS
     QString skill_list = "<b>Skills Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
         "<tr><th width=24%>Skill ID</th><th>Skill</th></tr>";
-    QPair<int, QString> skill_pair;
+    QPair<int, QPair<QString,QString> > skill_pair;
     foreach(skill_pair, gdr->get_ordered_skills()) {
-        skill_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(skill_pair.first).arg(skill_pair.second));
+        skill_list.append(QString("<tr><td><font color=blue>%1</font></td><td><b>%2</b></td></tr>").arg(skill_pair.first).arg(skill_pair.second.first));
     }
     skill_list.append("</table>");
     ui->text_skills->append(skill_list);

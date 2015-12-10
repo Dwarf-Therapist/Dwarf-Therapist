@@ -52,17 +52,17 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
     DwarfJob *job = GameDataReader::ptr()->get_job(job_id);
     if (job) {
 
-        int pref_id = -1;
+        int prof_id = -1;
         if(!job->reactionClass.isEmpty() && !d->current_sub_job_id().isEmpty()) {
             Reaction* reaction = d->get_reaction();
             if(reaction!=0) {
                 //job_type = DwarfJob::get_type(reaction->skill());
-                pref_id = GameDataReader::ptr()->get_pref_from_skill(reaction->skill_id());
+                prof_id = GameDataReader::ptr()->get_mood_skill_prof(reaction->skill_id());
             }
         }
 
-        if(pref_id != -1){
-            pixmap_name = ":/profession/prof_" + QString::number(pref_id+1) + ".png";  //offset for the image name
+        if(prof_id != -1){
+            pixmap_name = ":/profession/prof_" + QString::number(prof_id+1) + ".png";  //offset for the image name
             item->setData(QColor(50,50,50), DwarfModel::DR_DEFAULT_BG_COLOR); //shade the background
         }else{
             DwarfJob::DWARF_JOB_TYPE job_type = job->type;

@@ -57,7 +57,7 @@ public:
     int get_int_for_key(QString key, short base = 16);
 
     QList<Labor*> get_ordered_labors() {return m_ordered_labors;}
-    QList<QPair<int, QString> > get_ordered_skills() {return m_ordered_skills;}
+    QList<QPair<int, QPair<QString,QString> > > get_ordered_skills() {return m_ordered_skills;}
     QHash<int, Trait*> get_traits() {return m_traits;}
     QList<QPair<int, Trait*> > get_ordered_traits() {return m_ordered_traits;}
     QList<QPair<ATTRIBUTES_TYPE, QString> > get_ordered_attribute_names() {return m_ordered_attribute_names;}
@@ -66,7 +66,7 @@ public:
     QList<QPair<QString, Role*> > get_ordered_roles() {return m_ordered_roles;}
     QVector<QString> get_default_roles() {return m_default_roles;}
     QHash<int,QVector<Role*> > get_skill_roles() {return m_skill_roles;}
-    QHash<int,QString> get_skills(){return m_skills;}
+    QHash<int,QPair<QString,QString> > get_skills(){return m_skills;}
     QList<QPair<int,QString> > get_ordered_beliefs(){return m_ordered_beliefs;}
     QList<QPair<int,QString> > get_ordered_goals(){return m_ordered_goals;}
     QString get_building_name(BUILDING_TYPE b_type, int value = -1);
@@ -104,13 +104,13 @@ public:
     QString get_string_for_key(QString key);
     Profession* get_profession(const short &profession_id);
     QString get_skill_level_name(short level);
-    QString get_skill_name(short skill_id, bool moodable = false);
+    QString get_skill_name(short skill_id, bool moodable = false, bool noun = false);
     int get_total_skill_count() {return m_skills.count();}
     int get_total_belief_count() {return m_beliefs.count();}
     int get_total_trait_count() {return m_trait_count;}
 
     const QVector<int> moodable_skills() {return m_moodable_skills;}
-    int get_pref_from_skill(int skill_id) const {return m_mood_skills_profession_map.value(skill_id,-1);}
+    int get_mood_skill_prof(int skill_id) const {return m_mood_skills_profession_map.value(skill_id,-1);}
     const QList<int> social_skills() {return m_social_skills;}
 
     QString get_goal_desc(int id, bool realized);
@@ -148,8 +148,8 @@ private:
     QHash<int,QPair<QString,QString> > m_goals; //id key with pair name and desc
     QList<QPair<int,QString> > m_ordered_goals;
 
-    QHash<int, QString> m_skills;
-    QList<QPair<int, QString> > m_ordered_skills;
+    QHash<int, QPair<QString,QString> > m_skills; //id key with name and noun
+    QList<QPair<int, QPair<QString, QString> > > m_ordered_skills;
     QHash<int, QString> m_skill_levels;
 
     QHash<ATTRIBUTES_TYPE, QString> m_attribute_names;

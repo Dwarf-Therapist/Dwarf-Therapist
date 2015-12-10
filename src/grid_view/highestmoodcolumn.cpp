@@ -60,7 +60,7 @@ QStandardItem *HighestMoodColumn::build_cell(Dwarf *d) {
 
     int img_id = 24;
     if(s.capped_level() != -1)
-        img_id = gdr->get_pref_from_skill(s.id()) + 1; //prof images start at 1, id start at 0
+        img_id = gdr->get_mood_skill_prof(s.id()) + 1; //prof images start at 1, id start at 0
 
     QString pixmap_name = ":/profession/prof_" + QString::number(img_id) + ".png";
     item->setData(QIcon(pixmap_name), Qt::DecorationRole);

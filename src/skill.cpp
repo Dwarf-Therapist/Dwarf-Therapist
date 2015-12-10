@@ -64,7 +64,7 @@ Skill::Skill(short id, uint exp, short rating, int rust, int skill_rate)
     , m_balanced_level(-1)
     , m_rust_level(0)
 {
-    m_name = GameDataReader::ptr()->get_skill_name(m_id);
+    m_name = GameDataReader::ptr()->get_skill_name(m_id,false,true);
     //defaults
     m_rust_rating = "";
     m_capped_level = m_raw_level > 20 ? 20 : m_raw_level;
@@ -135,11 +135,10 @@ QString Skill::to_string(bool include_level, bool include_exp_summary, bool use_
 
     //df still shows the skill names based on the capped rating, not including rust?
     QString skill_level = gdr->get_skill_level_name(m_capped_level);
-    QString skill_name = gdr->get_skill_name(m_id);
     if (skill_level.isEmpty())
-        out.append(QString("<b>%1</b>").arg(skill_name));
+        out.append(QString("<b>%1</b>").arg(m_name));
     else
-        out.append(QString("<b>%1 %2</b>").arg(skill_level, skill_name));
+        out.append(QString("<b>%1 %2</b>").arg(skill_level, m_name));
     if (include_exp_summary)
         out.append(QString(" %1").arg(exp_summary()));
 

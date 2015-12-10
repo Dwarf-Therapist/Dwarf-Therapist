@@ -2645,7 +2645,7 @@ QString Dwarf::tooltip_text() {
 
     if(!m_is_animal && s->value("tooltip_show_mood",false).toBool())
         tt.append(tr("<b>Highest Moodable Skill:</b> %1")
-                  .arg(gdr->get_skill_name(m_highest_moodable_skill, true)));
+                  .arg(gdr->get_skill_name(m_highest_moodable_skill, true, true)));
 
     if(!personality_summary.isEmpty())
         tt.append(tr("<p style=\"margin:0px;\"><b>Personality:</b> %1</p>").arg(personality_summary));

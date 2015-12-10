@@ -475,12 +475,12 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     //SKILL
     QMenu *m_skill = m_cmh->create_title_menu(m,tr("Skill"), tr("Skill columns function as a read-only display of a dwarf's skill in a particular area."));
     m_cmh->add_sub_menus(m_skill,gdr->get_ordered_skills().count() / 15);
-    QPair<int, QString> skill_pair;
+    QPair<int, QPair<QString,QString> > skill_pair;
     foreach(skill_pair, gdr->get_ordered_skills()) {
-        QMenu *menu_to_use = m_cmh->find_menu(m_skill,skill_pair.second);
-        QAction *a = menu_to_use->addAction(skill_pair.second, this, SLOT(add_skill_column()));
+        QMenu *menu_to_use = m_cmh->find_menu(m_skill,skill_pair.second.first);
+        QAction *a = menu_to_use->addAction(skill_pair.second.first, this, SLOT(add_skill_column()));
         a->setData(skill_pair.first);
-        a->setToolTip(tr("Add a column for skill %1 (ID%2)").arg(skill_pair.second).arg(skill_pair.first));
+        a->setToolTip(tr("Add a column for skill %1 (ID%2)").arg(skill_pair.second.first).arg(skill_pair.first));
     }
 
     //SPACER

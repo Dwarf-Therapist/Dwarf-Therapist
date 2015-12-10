@@ -60,7 +60,7 @@ GameDataReader::GameDataReader(QObject *parent)
     }
 
     QStringList required_sections;
-    required_sections << "labors" << "attributes" << "dwarf_jobs" << "goals" << "beliefs" << "unit_thoughts" << "facets" << "skill_names" << "skill_levels";
+    required_sections << "labors" << "attributes" << "dwarf_jobs" << "goals" << "beliefs" << "unit_thoughts" << "facets" << "skills" << "skill_levels";
     foreach(QString key, required_sections){
         if(!m_data_settings->childGroups().contains(key)){
             QString err = tr("Dwarf Therapist cannot run because game_data.ini is missing [%1], a critical section!").arg(key);
@@ -132,21 +132,36 @@ GameDataReader::GameDataReader(QObject *parent)
         }
     }
 
-    m_data_settings->beginGroup("skill_names");
-    QStringList skill_names;
-    foreach(QString k, m_data_settings->childKeys()) {
-        int skill_id = k.toInt();
-        QString name = m_data_settings->value(k, "UNKNOWN").toString();
-        m_skills.insert(skill_id, name);
-        skill_names << name;
-    }
-    m_data_settings->endGroup();
+    int skill_count = m_data_settings->beginReadArray("skills");
+    QStringList skills;
+    for(int idx = 0; idx < skill_count; ++idx) {
+        m_data_settings->setArrayIndex(idx);
+        QString name = m_data_settings->value("name","unknown").toString();
+        QString noun = m_data_settings->value("noun",name).toString();
+        skills << name;
+        m_skills.insert(idx,qMakePair(name,noun));
 
-    qSort(skill_names);
-    foreach(QString name, skill_names) {
+        //load moodable skills http://dwarffortresswiki.org/index.php/Mood#Skills_and_workshops
+        bool mood = m_data_settings->value("mood",false).toBool();
+        if(mood){
+            m_moodable_skills << mood;
+            int prof_id = m_data_settings->value("profession_id",-1).toInt();
+            if(prof_id >= 0){
+                m_mood_skills_profession_map.insert(idx,prof_id);
+            }
+        }
+        //keep track of 'social' skills for UI options
+        if(m_data_settings->value("social",false).toBool()){
+            m_social_skills << idx;
+        }
+    }
+    m_data_settings->endArray();
+
+    qSort(skills);
+    foreach(QString name, skills) {
         foreach(int skill_id, m_skills.uniqueKeys()) {
-            if (name == m_skills.value(skill_id)) {
-                m_ordered_skills << QPair<int, QString>(skill_id, name);
+            if (name == m_skills.value(skill_id).first) {
+                m_ordered_skills << QPair<int, QPair<QString,QString> >(skill_id, m_skills.value(skill_id));
                 break;
             }
         }
@@ -158,34 +173,6 @@ GameDataReader::GameDataReader(QObject *parent)
         m_skill_levels.insert(rating, m_data_settings->value(k, "UNKNOWN").toString());
     }
     m_data_settings->endGroup();
-
-    //load moodable skills http://dwarffortresswiki.org/index.php/Mood#Skills_and_workshops
-    m_moodable_skills << 0 << 2 << 3 << 4 << 12 << 13 << 16 << 27 << 28 << 29 << 30 << 31 <<
-                         32 << 33 << 34 << 35 << 36 << 37 << 49 << 55;
-    //load a map of skills to the above moodable professions key = skill_id, value = prof_id
-    m_mood_skills_profession_map.insert(0,0);
-    m_mood_skills_profession_map.insert(2,2);
-    m_mood_skills_profession_map.insert(3,6);
-    m_mood_skills_profession_map.insert(4,7);
-    m_mood_skills_profession_map.insert(12,46);
-    m_mood_skills_profession_map.insert(13,28);
-    m_mood_skills_profession_map.insert(16,29);
-    m_mood_skills_profession_map.insert(27,16);
-    m_mood_skills_profession_map.insert(28,17);
-    m_mood_skills_profession_map.insert(29,14);
-    m_mood_skills_profession_map.insert(30,21);
-    m_mood_skills_profession_map.insert(31,22);
-    m_mood_skills_profession_map.insert(32,24);
-    m_mood_skills_profession_map.insert(33,25);
-    m_mood_skills_profession_map.insert(34,19);
-    m_mood_skills_profession_map.insert(35,30);
-    m_mood_skills_profession_map.insert(36,26);
-    m_mood_skills_profession_map.insert(37,27);
-    m_mood_skills_profession_map.insert(49,3);
-    m_mood_skills_profession_map.insert(55,60);
-
-    //load a list of social conversational skills
-    m_social_skills << 72 << 78 << 79 << 80 << 81 << 82 << 83 << 84;
 
     //goals
     int goal_count = m_data_settings->beginReadArray("goals");
@@ -421,10 +408,12 @@ QString GameDataReader::get_skill_level_name(short level) {
     //return get_string_for_key(QString("skill_levels/%1").arg(level));
 }
 
-QString GameDataReader::get_skill_name(short skill_id, bool moodable) {
-    QString name = m_skills.value(skill_id, "UNKNOWN");
-    if(moodable && name == "UNKNOWN")
+QString GameDataReader::get_skill_name(short skill_id, bool moodable, bool noun) {
+    QPair<QString,QString> vals = m_skills.value(skill_id);
+    QString name = (noun ? vals.second : vals.first);
+    if(moodable && name == "UNKNOWN"){
         name = "Craftsdwarf";
+    }
 
     return name;
 }
