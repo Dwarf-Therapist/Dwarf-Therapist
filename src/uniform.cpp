@@ -197,16 +197,19 @@ void Uniform::check_uniform(QString category_name, Item *item_inv){
                 bool match;
 
                 //check for a specific item id
-                if(item_miss->id() > -1 && item_miss->id() == item_inv->id()){
-                    match = true;
+                if(item_miss->id() > -1){
+                    if(item_miss->id() == item_inv->id()){
+                        match = true;
+                    }else{
+                        continue;
+                    }
                 }else if(item_uni_miss->indv_choice() ||
                                          (
-                                             (item_miss->item_subtype() < 0 || item_miss->item_subtype() == item_inv->item_subtype()) &&
-                                             (item_miss->mat_type() < 0 || item_miss->mat_type()==item_inv->mat_type()) &&
+                                             (item_uni_miss->item_subtype() < 0 || item_uni_miss->item_subtype() == item_inv->item_subtype()) &&
+                                             //(item_miss->mat_type() < 0 || item_miss->mat_type()==item_inv->mat_type()) &&
                                              //(item_miss->mat_index() < 0 || item_miss->mat_index()==item_inv->mat_index()) &&
-                                             (item_miss->get_material_name() == item_inv->get_material_name()) &&
-                                             (item_miss->melee_skill() == item_inv->melee_skill() && item_miss->ranged_skill() == item_inv->ranged_skill())
-                                            // (item_miss->job_skill() < 0 || (item_miss->job_skill() == item_inv->melee_skill() || item_miss->job_skill() == item_inv->ranged_skill()))
+                                             (item_miss->get_material_name() == "" || item_miss->get_material_name() == item_inv->get_material_name()) &&
+                                             (item_uni_miss->job_skill() < 0 || (item_uni_miss->job_skill() == item_inv->melee_skill() || item_uni_miss->job_skill() == item_inv->ranged_skill()))
                                              )
                                          )
                                  {
