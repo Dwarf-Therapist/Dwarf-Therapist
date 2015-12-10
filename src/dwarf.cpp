@@ -53,6 +53,7 @@ THE SOFTWARE.
 #include "itemweapon.h"
 #include "itemarmor.h"
 #include "itemammo.h"
+#include "iteminstrument.h"
 
 #include <QVector>
 #include <QAction>
@@ -185,7 +186,7 @@ Dwarf::~Dwarf() {
 
 Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     MemoryLayout *mem = df->memory_layout();
-    TRACE << "attempting to load dwarf at" << addr << "using memory layout" << mem->game_version();
+    TRACE << "attempting to load unit at" << addr << "using memory layout" << mem->game_version();
 
     //only for test
     if(DT->arena_mode){
@@ -196,36 +197,49 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     quint32 flags1 = df->read_addr(addr + mem->dwarf_offset("flags1"));
     quint32 flags2 = df->read_addr(addr + mem->dwarf_offset("flags2"));
     quint32 flags3 = df->read_addr(addr + mem->dwarf_offset("flags3"));
+    //quint32 flags4 = df->read_addr(addr + mem->dwarf_offset("flags3")+0x4);
 
     int civ_id = df->read_int(addr + mem->dwarf_offset("civ"));
     int race_id = df->read_int(addr + mem->dwarf_offset("race"));
 
-    TRACE << "examining creature at" << hex << addr;
-    TRACE << "FLAGS1:" << hexify(flags1);
-    TRACE << "FLAGS2:" << hexify(flags2);
-    TRACE << "FLAGS3:" << hexify(flags3);
-    TRACE << "RACE:" << race_id;
-    TRACE << "CIV:" << civ_id;
+    TRACE << "examining unit at" << hex << addr;
+    TRACE << "  FLAGS1:" << hexify(flags1);
+    TRACE << "  FLAGS2:" << hexify(flags2);
+    TRACE << "  FLAGS3:" << hexify(flags3);
+    //LOGI << "  FLAGS4:" << hexify(flags4);
+    TRACE << "  RACE:" << race_id;
+    TRACE << "  CIV:" << civ_id;
 
     bool is_caged = flags1 & (1 << FLAG_CAGED);
     bool is_tame = flags1 & (1 << FLAG_TAME);
 
+    Race *r = df->get_race(race_id);
+    QString r_name = r->name();
+    TRACE << "   RACE NAME:" << r_name;
+    FlagArray r_flags;
+    FlagArray c_flags;
+    if(r){
+        r_flags = r->flags();
+        c_flags = r->get_caste_by_id(0)->flags();
+        r = 0;
+    }
+
     if(!is_caged){
-        if(civ_id != df->dwarf_civ_id()){ //non-animal, but wrong civ
+        //if not caged, not part of our civ, not another sentient civ and not livestock, then ignore it
+        if(civ_id != df->dwarf_civ_id() || (civ_id > 0 && !r_flags.has_flag(CAN_SPEAK) && !c_flags.has_flag(TRAINABLE))){
+            LOGI << "ignoring unit of race" << r_name << "as it doesn't seem to be part of the fortress";
             return 0;
         }
     }else{
         if(!is_tame){
             bool is_ok = false;
             //if it's a caged, trainable beast, keep it in our list, but only if it's alive
-            Race *r = df->get_race(race_id);
-            if(r){
+            if(r_flags.count() > 0){
                 //check if it's one of our civilians
-                if(r->race_id()==df->dwarf_race_id() && civ_id == df->dwarf_civ_id()){
+                if(race_id==df->dwarf_race_id() && civ_id == df->dwarf_civ_id()){
                     is_ok = true;
                 }else{
-                    is_ok = r->caste_flag(TRAINABLE);
-                    r = 0;
+                    is_ok = c_flags.has_flag(TRAINABLE);
                 }
             }
             if(!is_ok){
@@ -281,7 +295,6 @@ void Dwarf::refresh_data() {
     //read only the base information we need to validate if we should continue loading this dwarf
     read_id();
     read_flags();
-    //LOGD << "checking unit id:" << m_id;
     read_race(); //also sets m_is_animal
     read_first_name();
     read_last_name(m_address + m_mem->dwarf_offset("first_name"));
@@ -416,8 +429,7 @@ bool Dwarf::is_valid(){
         }
 
         if(!this->m_first_soul){
-            LOGI << "Ignoring" << this->nice_name() <<
-                    "who appears to be soulless.";
+            LOGI << "Ignoring" << this->nice_name() << "who appears to be soulless.";
             m_validated = true;
             m_is_valid = false;
             return false;
@@ -716,7 +728,9 @@ void Dwarf::read_race() {
     m_race_id = m_df->read_int(m_address + m_mem->dwarf_offset("race"));
     m_race = m_df->get_race(m_race_id);
     TRACE << "RACE ID:" << m_race_id;
-    m_is_animal = m_df->dwarf_race_id()!=m_race_id;
+    if(m_race){
+        m_is_animal = (m_race->caste_flag(TRAINABLE));
+    }
 }
 
 void Dwarf::read_first_name() {
@@ -1526,6 +1540,10 @@ void Dwarf::read_inventory(){
                 ItemWeapon *iw = new ItemWeapon(*i);
                 process_inv_item(category_name,iw);
                 LOGD << "  + found weapon:" << iw->display_name(false);
+            }else if(i_type == INSTRUMENT){
+                ItemInstrument *ii = new ItemInstrument(*i);
+                process_inv_item(category_name,ii);
+                LOGD << "  + found instrument:" << ii->display_name(false);
             }else if(Item::is_armor_type(i_type,true)){
                 ItemArmor *ir = new ItemArmor(*i);
                 process_inv_item(category_name,ir);

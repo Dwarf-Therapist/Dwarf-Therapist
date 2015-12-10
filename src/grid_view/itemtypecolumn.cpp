@@ -92,6 +92,7 @@ QString ItemTypeColumn::build_tooltip_desc(Dwarf *d){
     QString list_footer = "</ul>";
 
     QString desc;
+    QMap<int,QString> ordered_desc;
     QHash<QString,QList<Item*> > grouped_equipment = d->get_inventory_grouped();
     QList<Item*> missing = grouped_equipment.take(Item::missing_group_name());
     QList<Item*> uncovered = grouped_equipment.take(Item::uncovered_group_name());
@@ -121,12 +122,33 @@ QString ItemTypeColumn::build_tooltip_desc(Dwarf *d){
                     bp_group.append(items);
             }
             if(!bp_group.isEmpty()){
-                desc.append("<b>").append(capitalizeEach(bp_name)).append("</b>");
-                desc.append(list_header);
-                desc.append(bp_group);
-                desc.append(list_footer);
+                QString group_desc;
+                group_desc.append("<b>").append(capitalizeEach(bp_name)).append("</b>");
+                group_desc.append(list_header);
+                group_desc.append(bp_group);
+                group_desc.append(list_footer);
+                int ord_idx = 0;
+                if(bp_name.contains(tr("body"),Qt::CaseInsensitive))
+                    ord_idx +=1;
+                if(bp_name.contains(tr("upper"),Qt::CaseInsensitive))
+                    ord_idx += 2;
+                if(bp_name.contains(tr("lower"),Qt::CaseInsensitive))
+                    ord_idx += 3;
+                if(bp_name.contains(tr("left"),Qt::CaseInsensitive))
+                    ord_idx += 4;
+                if(bp_name.contains(tr("right"),Qt::CaseInsensitive))
+                    ord_idx += 5;
+                if(bp_name.contains(tr("hand"),Qt::CaseInsensitive) || bp_name.contains(tr("arm"),Qt::CaseInsensitive))
+                    ord_idx += 6;
+                if(bp_name.contains(tr("foot"),Qt::CaseInsensitive) || bp_name.contains(tr("leg"),Qt::CaseInsensitive))
+                    ord_idx += 7;
+                ordered_desc.insertMulti(ord_idx,group_desc);
             }
         }
+    }
+
+    foreach(QString group_desc, ordered_desc.values()){
+        desc.append(group_desc);
     }
 
     desc.append(split_list(uncovered,Item::uncovered_group_name(),list_header,list_footer,Item::color_uncovered()));

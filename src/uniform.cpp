@@ -64,7 +64,8 @@ void Uniform::add_uniform_item(ITEM_TYPE itype, ItemDefUniform *uItem, int count
     uItem->add_to_stack(count-1); //uniform item stack size start at 1
 
     m_uniform_items[itype].append(uItem);
-    if (itype == SHOES || itype == GLOVES)
+    //assigning boots to a uniform only lists one item, but
+    if (uItem->id() <= 0 && (itype == SHOES || itype == GLOVES))
         m_uniform_items[itype].append(new ItemDefUniform(*uItem));
     if (count > 0)
         add_equip_count(itype,count);
@@ -189,22 +190,29 @@ void Uniform::check_uniform(QString category_name, Item *item_inv){
                 //if the inventory quantity has been used up, or the required item count for the uniform met, quit
                 if(inv_qty <= 0 || req_count <= 0)
                     break;
-                ItemDefUniform *item_miss = m_missing_items.value(itype).at(idx); //get a missing item of the same type
+
+                ItemDefUniform *item_uni_miss = m_missing_items.value(itype).at(idx); //get a missing item of the same type
+                Item *item_miss = new Item(m_df,item_uni_miss,this);
+
+                bool match;
 
                 //check for a specific item id
-                if(item_miss->id() > -1 && item_miss->id() != item_inv->id())
-                    continue;
-
-                //check for a match based on more criteria
-                if(item_miss->indv_choice() ||
-                        (
-                            (item_miss->item_subtype() < 0 || item_miss->item_subtype() == item_inv->item_subtype()) &&
-                            (item_miss->mat_type() < 0 || item_miss->mat_type()==item_inv->mat_type()) &&
-                            (item_miss->mat_index() < 0 || item_miss->mat_index()==item_inv->mat_index()) &&
-                            (item_miss->job_skill() < 0 || (item_miss->job_skill() == item_inv->melee_skill() || item_miss->job_skill() == item_inv->ranged_skill()))
-                            )
-                        )
-                {
+                if(item_miss->id() > -1 && item_miss->id() == item_inv->id()){
+                    match = true;
+                }else if(item_uni_miss->indv_choice() ||
+                                         (
+                                             (item_miss->item_subtype() < 0 || item_miss->item_subtype() == item_inv->item_subtype()) &&
+                                             (item_miss->mat_type() < 0 || item_miss->mat_type()==item_inv->mat_type()) &&
+                                             //(item_miss->mat_index() < 0 || item_miss->mat_index()==item_inv->mat_index()) &&
+                                             (item_miss->get_material_name() == item_inv->get_material_name()) &&
+                                             (item_miss->melee_skill() == item_inv->melee_skill() && item_miss->ranged_skill() == item_inv->ranged_skill())
+                                            // (item_miss->job_skill() < 0 || (item_miss->job_skill() == item_inv->melee_skill() || item_miss->job_skill() == item_inv->ranged_skill()))
+                                             )
+                                         )
+                                 {
+                    match = true;
+                }
+                if(match){
                     QList<ItemDefUniform*> missing_items = m_missing_items.take(itype);
 
                     req_count -= inv_qty; //reduce the required count

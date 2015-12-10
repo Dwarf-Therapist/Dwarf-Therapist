@@ -259,7 +259,8 @@ HEADERS += inc/viewmanager.h \
     inc/grid_view/vieweditordialog.h \
     inc/grid_view/viewcolumncolors.h \
     inc/grid_view/viewcolumnsetcolors.h \
-    inc/grid_view/cellcolordef.h
+    inc/grid_view/cellcolordef.h \
+    inc/iteminstrument.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -359,7 +360,8 @@ SOURCES += src/viewmanager.cpp \
     src/grid_view/vieweditordialog.cpp \
     src/grid_view/cellcolors.cpp \
     src/grid_view/viewcolumncolors.cpp \
-    src/grid_view/viewcolumnsetcolors.cpp
+    src/grid_view/viewcolumnsetcolors.cpp \
+    src/iteminstrument.cpp
 FORMS += ui/scriptdialog.ui \
     ui/pendingchanges.ui \
     ui/optionsmenu.ui \

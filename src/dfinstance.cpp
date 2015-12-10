@@ -759,6 +759,8 @@ void DFInstance::refresh_data(){
 void DFInstance::load_items(){
     m_mapped_items.clear();
     m_items_vectors.clear();
+
+    //these item vectors appear to contain unclaimed items!
     //load actual weapons and armor
     m_items_vectors.insert(WEAPON,enumerate_vector(m_layout->address("weapons_vector")));
     m_items_vectors.insert(SHIELD,enumerate_vector(m_layout->address("shields_vector")));
@@ -1188,9 +1190,10 @@ QString DFInstance::get_artifact_name(ITEM_TYPE itype, int item_id){
 
 void DFInstance::index_item_vector(ITEM_TYPE itype){
     QHash<int,VIRTADDR> items;
-    int offset = 0x18; //TODO: should be set from item.id (df-structures)
-    if(itype == ARTIFACTS)
+    int offset = m_layout->item_offset("id");
+    if(itype == ARTIFACTS){
         offset = 0x0;
+    }
     foreach(VIRTADDR addr, m_items_vectors.value(itype)){
         items.insert(read_int(addr+offset),addr);
     }
@@ -1269,11 +1272,16 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
                     name = m->get_material_name(POWDER);
                 else if(Item::is_armor_type(itype)){
                     //don't include the 'fabric' part if it's a armor (item?) ie. pig tail fiber coat, not pig tail fiber fabric coat
-                    name = p->name().append(" ").append(m->get_material_name(SOLID));
+                    //this appears to have changed now (42.x) and the solid name is used simply: pig tail coat
+                    name = m->get_material_name(SOLID);
                 }else if(m->flags().has_flag(LEAF_MAT) && m->flags().has_flag(STRUCTURAL_PLANT_MAT)){
                     name = p->name().append(" ").append(m->get_material_name(GENERIC));//fruit
                 }else if(itype == NONE || m->flags().has_flag(IS_WOOD)){
-                    name.append(" ").append(m->get_material_name(GENERIC));
+                    if(p->flags().has_flag(P_TREE)){
+                        name.append(" ").append(m->get_material_name(GENERIC));
+                    }else{
+                        name = m->get_material_name(SOLID) + " " + m->get_material_name(GENERIC);
+                    }
                 }
 
             }

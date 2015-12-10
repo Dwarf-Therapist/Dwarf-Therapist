@@ -110,8 +110,9 @@ void Material::read_material() {
     }
 
     m_flags = FlagArray(m_df,m_flag_address);
-    if(m_flags.has_flag(24)){
-        generic_state_name = m_state_names[SOLID] + tr(" fabric");
+
+    if(m_flags.has_flag(THREAD_PLANT)){
+        generic_state_name = tr("fabric");
     }
 
     //int material_value = m_df->read_int(m_address + 0x244);

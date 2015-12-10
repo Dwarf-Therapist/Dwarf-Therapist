@@ -65,28 +65,35 @@ Item::Item(DFInstance *df, ItemDefUniform *u, QObject *parent)
     if(m_id > 0){
         //find the actual item's address
         m_addr = m_df->get_item_address(m_iType,m_id);
-        read_data();
-    }else{
-        QVector<VIRTADDR> item_defs = m_df->get_item_vector(m_iType);
-
-        MATERIAL_CLASS mat_class = u->mat_class();
-        if(mat_class != MC_NONE){
-            m_material_name = Material::get_mat_class_desc(mat_class);
-        }else{
-            if(m_mat_idx >= 0 || m_mat_type >= 0)
-                m_material_name = m_df->find_material_name(m_mat_idx,m_mat_type,m_iType);
+        if(m_addr){
+            read_data();
+            return;
         }
+    }
+    QVector<VIRTADDR> item_defs = m_df->get_item_vector(m_iType);
 
-        short subtype = u->item_subtype();
-        if(!item_defs.empty() && (subtype >=0 && subtype < item_defs.count())){
-            //get sub-type name
-            m_item_name = m_df->read_string(item_defs.at(subtype) + m_df->memory_layout()->item_subtype_offset("name"));
-        }else{
-            //get base item name
-            m_item_name = Item::get_item_name(m_iType);
-            //check skill type
-            if(!u->indv_choice() && u->job_skill() >= 0)
-                m_item_name.append(QObject::tr(" of %1 skill type").arg(GameDataReader::ptr()->get_skill_name(u->job_skill())));
+    MATERIAL_CLASS mat_class = u->mat_class();
+    if(mat_class != MC_NONE){
+        m_material_name = Material::get_mat_class_desc(mat_class);
+    }else{
+        if(m_mat_idx >= 0 || m_mat_type >= 0)
+            m_material_name = m_df->find_material_name(m_mat_idx,m_mat_type,m_iType);
+    }
+
+    short subtype = u->item_subtype();
+    if(!item_defs.empty() && (subtype >=0 && subtype < item_defs.count())){
+        //get sub-type name
+        m_item_name = m_df->read_string(item_defs.at(subtype) + m_df->memory_layout()->item_subtype_offset("name"));
+    }else{
+        //get base item name
+        m_item_name = Item::get_item_name(m_iType);
+        //check skill type
+        if(!u->indv_choice() && u->job_skill() >= 0){
+            m_item_name.append(QObject::tr(" of %1 skill type").arg(GameDataReader::ptr()->get_skill_name(u->job_skill())));
+        }
+        if(m_id > 0){
+            //couldn't find the item, it's been claimed by another unit or couldn't be equipped
+            m_item_name.prepend(tr("Specific "));
         }
     }
     //set the color to the missing uniform color, since we passed in a uniform itemdef
@@ -133,7 +140,7 @@ Item::~Item(){
 
 const QList<ITEM_TYPE> Item::init_subtypes(){
     QList<ITEM_TYPE> tmp;
-    tmp << SHOES << PANTS << ARMOR << GLOVES << HELM << WEAPON << AMMO << TRAPCOMP << SHIELD << TOOL;
+    tmp << SHOES << PANTS << ARMOR << GLOVES << HELM << WEAPON << AMMO << TRAPCOMP << SHIELD << TOOL << INSTRUMENT;
     return tmp;
 }
 
