@@ -181,14 +181,8 @@ void SkillColumn::build_tooltip(Dwarf *d, bool include_roles, bool check_labor){
     QString labors_disabled = "";
     if(check_labor){
         QString reason = "";
-        if(d->locked_in_mood()){
-            reason = tr("due to mood (%1)").arg(gdr->get_mood_name(d->current_mood(),true));
-        }else if(!d->can_set_labors()){
-            if(!d->is_adult()){
-                reason = tr("for children and babies.");
-            }else{
-                reason = tr("for this profession.");
-            }
+        if(!d->can_set_labors()){
+            reason = d->disabled_labor_reason();
         }
 
         if(!reason.isEmpty()){

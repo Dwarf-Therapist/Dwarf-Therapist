@@ -94,7 +94,7 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
             item->setData(STATE_DISABLED,DwarfModel::DR_STATE);
             return item;
         }else if(d->locked_in_mood()){
-            item->setToolTip(tr("<center><b>Labor can't be toggled due to mood.</b></center>"));
+            item->setToolTip(tr("<center><b>Labor can't be toggled %1</b></center>").arg(d->disabled_labor_reason()));
             item->setData(STATE_DISABLED,DwarfModel::DR_STATE);
             return item;
         }

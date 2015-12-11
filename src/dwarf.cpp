@@ -120,6 +120,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_uniform(0x0)
     , m_goals_realized(0)
     , m_worst_rust_level(0)
+    , m_labor_reason("")
     , m_curse_type(eCurse::NONE)
 {
     read_settings();
@@ -285,12 +286,12 @@ void Dwarf::read_settings() {
 
 void Dwarf::refresh_data() {
     if (!m_df || !m_df->memory_layout() || !m_df->memory_layout()->is_valid()) {
-        LOGW << "refresh of dwarf called but we're not connected";
+        LOGW << "refresh unit called but we're not connected";
         return;
     }
     // make sure our reference is up to date to the active memory layout
     m_mem = m_df->memory_layout();
-    TRACE << "Starting refresh of dwarf data at" << hexify(m_address);
+    TRACE << "Starting refresh of unit data at" << hexify(m_address);
 
     //read only the base information we need to validate if we should continue loading this dwarf
     read_id();
@@ -309,7 +310,6 @@ void Dwarf::refresh_data() {
     if(m_is_valid){
         read_hist_fig(); //read before noble positions, curse
         read_caste(); //read before age
-        read_labors();
         read_squad_info(); //read squad before job
         read_uniform();
         read_gender_orientation(); //read before profession
@@ -317,6 +317,7 @@ void Dwarf::refresh_data() {
         set_age_and_migration(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time")); //set age before profession
         read_profession(); //read profession before building the names, and before job
         read_mood(); //read after profession and before job, emotions/skills (soul aspect)
+        read_labors(); //read after profession and mood
         read_current_job();
         read_syndromes(); //read syndromes before attributes
         read_body_size(); //body size after caste and age
@@ -388,7 +389,7 @@ bool Dwarf::is_valid(){
 
             //check for migrants (which aren't dead/killed/ghosts)
             if(this->state_value(7) > 0
-                    && !get_flag_value(FLAG_DEAD)
+                    && (!get_flag_value(FLAG_DEAD) || get_flag_value(FLAG_INCOMING))
                     && !get_flag_value(FLAG_KILLED)
                     && !get_flag_value(FLAG_GHOST)){
                 LOGI << "Found migrant " << this->nice_name();
@@ -602,7 +603,6 @@ void Dwarf::read_mood(){
                 (m_mood_id == MT_BERSERK || m_mood_id == MT_INSANE || m_mood_id == MT_MELANCHOLY || m_mood_id == MT_TRAUMA) ||
                 (int)m_mood_id <= 4)
             ){
-        m_can_set_labors = false;
         m_locked_mood = true;
     }
 }
@@ -831,15 +831,8 @@ void Dwarf::read_profession() {
     m_raw_profession = m_df->read_byte(addr);
     Profession *p = GameDataReader::ptr()->get_profession(m_raw_profession);
     QString prof_name = tr("Unknown Profession %1").arg(m_raw_profession);
-    if (p) {
-        m_can_set_labors = p->can_assign_labors();
-        if(!m_is_baby && DT->labor_cheats_allowed()){
-            m_can_set_labors = true;
-        }
+    if(p){
         prof_name = p->name(is_male());
-    } else {
-        LOGE << tr("Read unknown profession with id '%1' for dwarf '%2'").arg(m_raw_profession).arg(m_nice_name);
-        m_can_set_labors = false;
     }
     if (!m_custom_profession.isEmpty()) {
         m_profession =  m_custom_profession;
@@ -1223,6 +1216,34 @@ void Dwarf::read_labors() {
         bool enabled = buf.at(l->labor_id) > 0;
         m_labors[l->labor_id] = enabled;
         m_pending_labors[l->labor_id] = enabled;
+    }
+
+    //check that labors can be toggled
+    if(m_locked_mood){
+        m_can_set_labors = false;
+        m_labor_reason = tr("due to mood (%1)").arg(gdr->get_mood_name(m_mood_id,true));
+    }else if(m_race_id != m_df->dwarf_race_id()){
+        m_can_set_labors = false; //other races that have joined the fortress can't have labors set?
+        m_labor_reason = tr("for non-citizens.");
+    }else{
+        Profession *p = GameDataReader::ptr()->get_profession(m_raw_profession);
+        if(p){
+            m_can_set_labors = p->can_assign_labors();
+            if(!m_is_baby && DT->labor_cheats_allowed()){
+                m_can_set_labors = true;
+            }
+            if(!m_can_set_labors){
+                if(!is_adult()){
+                    m_labor_reason = tr("for children and babies.");
+                }else{
+                    m_labor_reason = tr("for this profession.");
+                }
+            }
+        }else{
+            LOGE << tr("Read unknown profession with id '%1' for dwarf '%2'").arg(m_raw_profession).arg(m_nice_name);
+            m_can_set_labors = false;
+            m_labor_reason = tr("due to unknown profession");
+        }
     }
 }
 

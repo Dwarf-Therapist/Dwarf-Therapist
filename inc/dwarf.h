@@ -486,6 +486,7 @@ public:
     MOOD_TYPE current_mood() {return m_mood_id;}
     Q_INVOKABLE bool locked_in_mood() {return m_locked_mood;}
     Q_INVOKABLE bool in_stressed_mood() {return m_stressed_mood;}
+    QString disabled_labor_reason() {return m_labor_reason;}
     QString artifact_name() {return m_artifact_name;}
 
     QHash<QString, QStringList*> get_grouped_preferences() {return m_grouped_preferences;}
@@ -659,6 +660,7 @@ private:
     Uniform* m_uniform;
     int m_goals_realized;
     int m_worst_rust_level;
+    QString m_labor_reason;
     unit_gender m_gender_info;
 
     //! inventory grouped by body part /category
