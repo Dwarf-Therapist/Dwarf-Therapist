@@ -85,6 +85,9 @@ QStandardItem *FlagColumn::build_cell(Dwarf *d) {
         }else if(rating == 1){
             info_msg = tr("<b>This creature has been marked for slaughter.</b>");
             state = STATE_PENDING;
+        }else if(d->trained_level() >= Dwarf::unknown_trained){
+            info_msg = tr("<b>Captured wild animals cannot be butchered!</b>");
+            state = STATE_DISABLED;
         }else{
             state = STATE_TOGGLE;
         }
@@ -92,7 +95,7 @@ QStandardItem *FlagColumn::build_cell(Dwarf *d) {
         if(d->get_gender() != Dwarf::SEX_M){
             info_msg = tr("<b>Only males can be gelded!</b>");
             state = STATE_DISABLED;
-        }else if(d->has_health_issue(42,0)){
+        }else if(d->has_health_issue(eHealth::HI_GELDED,0)){
             info_msg = tr("<b>This creature has already been gelded!</b>");
             state = STATE_ACTIVE;
         }else if(rating == 1){

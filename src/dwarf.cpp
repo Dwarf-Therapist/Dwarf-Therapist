@@ -875,6 +875,7 @@ void Dwarf::read_profession() {
 void Dwarf::read_noble_position(){
     m_noble_position = m_df->fortress()->get_noble_positions(m_hist_figure->id(),is_male());
 }
+
 void Dwarf::read_preferences(){
     if(m_is_animal)
         return;
@@ -1442,7 +1443,7 @@ bool Dwarf::toggle_flag_bit(int bit_pos) {
         return false;
 
     //currently flags are only for animals
-    if(m_animal_type==hostile || m_animal_type==wild_untamed || m_animal_type==unknown_trained){
+    if(m_animal_type >= unknown_trained){
         return false;
     }
 
