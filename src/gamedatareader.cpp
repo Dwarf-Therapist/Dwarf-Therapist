@@ -144,7 +144,7 @@ GameDataReader::GameDataReader(QObject *parent)
         //load moodable skills http://dwarffortresswiki.org/index.php/Mood#Skills_and_workshops
         bool mood = m_data_settings->value("mood",false).toBool();
         if(mood){
-            m_moodable_skills << mood;
+            m_moodable_skills << idx;
             int prof_id = m_data_settings->value("profession_id",-1).toInt();
             if(prof_id >= 0){
                 m_mood_skills_profession_map.insert(idx,prof_id);
