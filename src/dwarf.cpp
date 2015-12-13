@@ -330,10 +330,7 @@ void Dwarf::refresh_data() {
 
         if(!m_is_animal || DT->user_settings()->value("options/animal_health", false).toBool()){
             bool req_diagnosis = !DT->user_settings()->value("options/diagnosis_not_required", false).toBool();
-
-            //        LOGD << "Loading health for " << m_nice_name;
             m_unit_health = UnitHealth(m_df,this,req_diagnosis);
-            //        LOGD << "Finished!";
         }
         read_inventory();
 
@@ -884,40 +881,42 @@ void Dwarf::read_preferences(){
     int pref_id;
     int item_sub_type;
     short mat_type;
+    MATERIAL_STATES mat_state;
     int mat_index;
 
     QString pref_name = "Unknown";
-    ITEM_TYPE itype;
-    PREF_TYPES ptype;
+    ITEM_TYPE i_type;
+    PREF_TYPES p_type;
     Preference *p;
 
     foreach(VIRTADDR pref, preferences){
         pref_type = m_df->read_short(pref);
-        //0x2 unk short
+        //0x2 unk
         pref_id = m_df->read_short(pref + 0x4);
+        //0x6 unk
         item_sub_type = m_df->read_short(pref + 0x8);
-        //0x8 unk 0x4 size
-        mat_type = m_df->read_short(pref + 0xc);
+        mat_type = m_df->read_int(pref + 0xc);
         mat_index = m_df->read_int(pref + 0x10);
+        mat_state = static_cast<MATERIAL_STATES>(m_df->read_short(pref + 0x14));
 
-        itype = static_cast<ITEM_TYPE>(pref_id);
-        ptype = static_cast<PREF_TYPES>(pref_type);
+        i_type = static_cast<ITEM_TYPE>(pref_id);
+        p_type = static_cast<PREF_TYPES>(pref_type);
 
-        p = new Preference(ptype, pref_name, this);
+        p = new Preference(p_type, pref_name, this);
 
         //for each preference type, we have some flags we need to check and add so we get matches to the role's preferences
         //materials are the exception as all flags are passed in, moving forward it may be better to pass in flagarrays instead
         switch(pref_type){
-        case 0: //like material
+        case LIKE_MATERIAL:
         {
-            pref_name = m_df->find_material_name(mat_index,mat_type,NONE);
+            pref_name = m_df->find_material_name(mat_index,mat_type,i_type,mat_state);
             Material *m = m_df->find_material(mat_index,mat_type);
             if(m && m->id() >= 0){
                 p->set_pref_flags(m->flags());
             }
         }
             break;
-        case 1: //like creature
+        case LIKE_CREATURE:
         {
             Race* r = m_df->get_race(pref_id);
             if(r){
@@ -926,43 +925,43 @@ void Dwarf::read_preferences(){
             }
         }
             break;
-        case 2: //like food/drink
+        case LIKE_FOOD:
         {
-            if(mat_index < 0 || itype==MEAT){
-                if(itype==FISH)
+            if(mat_index < 0 || i_type==MEAT){
+                if(i_type==FISH)
                     mat_index = mat_type;
                 Race* r = m_df->get_race(mat_index);
                 if(r){
                     pref_name = r->name().toLower();
                 }
             }else{
-                pref_name = m_df->find_material_name(mat_index,mat_type,itype);
+                pref_name = m_df->find_material_name(mat_index,mat_type,i_type,mat_state);
             }
-            p->set_item_type(itype);
+            p->set_item_type(i_type);
         }
             break;
-        case 3: //hate creature
+        case HATE_CREATURE:
         {
             Race* r = m_df->get_race(pref_id);
             if(r)
                 pref_name = r->plural_name();
         }
             break;
-        case 4: //like item
+        case LIKE_ITEM:
         {
-            p->set_item_type(itype);
+            p->set_item_type(i_type);
             pref_name = m_df->get_preference_item_name(pref_id,item_sub_type);
-            if(item_sub_type >= 0 && Item::has_subtypes(itype)){
-                ItemSubtype *s = m_df->get_item_subtype(itype,item_sub_type);
+            if(item_sub_type >= 0 && Item::has_subtypes(i_type)){
+                ItemSubtype *s = m_df->get_item_subtype(i_type,item_sub_type);
                 if(s){
                     p->set_pref_flags(s->flags());
                 }
-            }else if(Item::is_trade_good(itype)){
+            }else if(Item::is_trade_good(i_type)){
                 p->add_flag(IS_TRADE_GOOD);
             }
         }
             break;
-        case 5: //like plant
+        case LIKE_PLANT:
         {
             Plant *plnt = m_df->get_plant(pref_id);
             if(plnt){
@@ -971,36 +970,16 @@ void Dwarf::read_preferences(){
             }
         }
             break;
-        case 6: //like tree
+        case LIKE_TREE:
         {
             Plant *plnt = m_df->get_plant(pref_id);
             if (plnt)
                 pref_name = plnt->name_plural();
         }
             break;
-        case 7: //like color
+        default:
         {
-            pref_name = m_df->get_color(pref_id);
-        }
-            break;
-        case 8: //like shape
-        {
-            pref_name = m_df->get_shape(pref_id);
-        }
-            break;
-        case 9: //like poetry
-        {
-            pref_name = "unknown poem";
-        }
-            break;
-        case 10: //like music
-        {
-            pref_name = "unknown music";
-        }
-            break;
-        case 11: //like dance
-        {
-            pref_name = "unknown dance";
+            pref_name = m_df->get_preference_other_name(pref_id, p_type);
         }
             break;
         }
@@ -1282,8 +1261,8 @@ void Dwarf::read_current_job() {
 
             if(m_current_sub_job_id.isEmpty()){
                 QString material_name;
-                int mat_index = m_df->read_int(current_job_addr + m_mem->job_detail("mat_index"));
                 short mat_type = m_df->read_short(current_job_addr + m_mem->job_detail("mat_type"));
+                int mat_index = m_df->read_int(current_job_addr + m_mem->job_detail("mat_index"));
                 if(mat_index >= 0 || mat_type >= 0){
                     material_name = m_df->find_material_name(mat_index ,mat_type, NONE);
                 }

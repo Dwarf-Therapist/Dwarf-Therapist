@@ -201,8 +201,8 @@ public:
     QString get_preference_item_name(int index, int subtype);
     QString get_artifact_name(ITEM_TYPE itype,int item_id);
 
-    QString get_color(int index);
-    QString get_shape(int index);
+    QString get_preference_other_name(int index, PREF_TYPES p_type);
+
     inline Material * get_inorganic_material(int index) {
         return m_inorganics_vector.value(index);
     }
@@ -212,7 +212,7 @@ public:
     inline Plant * get_plant(int index) {
         return m_plants_vector.value(index);
     }
-    QString find_material_name(int mat_index, short mat_type, ITEM_TYPE itype);
+    QString find_material_name(int mat_index, short mat_type, ITEM_TYPE itype, MATERIAL_STATES mat_state = SOLID);
     const QHash<QPair<QString,QString>,pref_stat*> get_preference_stats() {return m_pref_counts;}
     const QHash<int, EmotionGroup*> get_emotion_stats() {return m_emotion_counts;}
     const QHash<QPair<QString,int>,int> get_equip_warnings(){return m_equip_warning_counts;}
@@ -286,6 +286,9 @@ private:
 
     QVector<VIRTADDR> m_color_vector;
     QVector<VIRTADDR> m_shape_vector;
+    QVector<VIRTADDR> m_poetic_vector;
+    QVector<VIRTADDR> m_music_vector;
+    QVector<VIRTADDR> m_dance_vector;
 
     QHash<QString, VIRTADDR> m_material_templates;
 

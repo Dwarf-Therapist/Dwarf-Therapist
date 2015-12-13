@@ -94,6 +94,9 @@ sub generate_dt_ini($$$$) {
     emit_addr 'events_vector',%globals,'world','world.history.events';
     emit_addr 'historical_figures_vector',%globals,'world','world.history.figures';
     emit_addr 'fake_identities_vector',%globals,'world','world.identities.all';
+    emit_addr 'poetic_forms_vector',%globals,'world','world.poetic_forms.all';
+    emit_addr 'musical_forms_vector',%globals,'world','world.musical_forms.all';
+    emit_addr 'dance_forms_vector',%globals,'world','world.dance_forms.all';
     emit_addr 'fortress_entity',%globals,'ui','ui.main.fortress_entity';
     emit_addr 'historical_entities_vector',%globals,'world','world.entities.all';
     emit_addr 'itemdef_weapons_vector',%globals,'world','world.raws.itemdefs.weapons';
