@@ -94,7 +94,7 @@ void Caste::read_caste() {
     }
 
     m_body_addr = m_address + m_mem->caste_offset("body_info");
-    m_body_parts_addr = m_df->enumerate_vector(m_body_addr - DFInstance::VECTOR_POINTER_OFFSET);
+    m_body_parts_addr = m_df->enumerate_vector(m_body_addr);
 
     if(m_flags.has_flag(TRAINABLE_HUNTING) || m_flags.has_flag(TRAINABLE_WAR) ||
             m_flags.has_flag(PET) || m_flags.has_flag(PET_EXOTIC)){

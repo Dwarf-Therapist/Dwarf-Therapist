@@ -131,17 +131,18 @@ QString ItemTypeColumn::build_tooltip_desc(Dwarf *d){
                 if(bp_name.contains(tr("body"),Qt::CaseInsensitive))
                     ord_idx +=1;
                 if(bp_name.contains(tr("upper"),Qt::CaseInsensitive))
-                    ord_idx += 2;
-                if(bp_name.contains(tr("lower"),Qt::CaseInsensitive))
                     ord_idx += 3;
-                if(bp_name.contains(tr("left"),Qt::CaseInsensitive))
-                    ord_idx += 4;
-                if(bp_name.contains(tr("right"),Qt::CaseInsensitive))
+                if(bp_name.contains(tr("lower"),Qt::CaseInsensitive))
                     ord_idx += 5;
                 if(bp_name.contains(tr("hand"),Qt::CaseInsensitive) || bp_name.contains(tr("arm"),Qt::CaseInsensitive))
-                    ord_idx += 6;
-                if(bp_name.contains(tr("foot"),Qt::CaseInsensitive) || bp_name.contains(tr("leg"),Qt::CaseInsensitive))
                     ord_idx += 7;
+                if(bp_name.contains(tr("foot"),Qt::CaseInsensitive) || bp_name.contains(tr("leg"),Qt::CaseInsensitive))
+                    ord_idx += 9;
+                if(bp_name.contains(tr("right"),Qt::CaseInsensitive))
+                    ord_idx += 11;
+                if(bp_name.contains(tr("left"),Qt::CaseInsensitive))
+                    ord_idx += 13;
+
                 ordered_desc.insertMulti(ord_idx,group_desc);
             }
         }

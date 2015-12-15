@@ -263,7 +263,7 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
 
             refresh_update_c_prof_menu(d);
 
-            if(d->is_adult()){
+            if(d->can_assign_military()){
                 if(m_model->active_squads().count() <= 0){
                     squads_menu->setTitle(tr("No squads found."));
                     squads_menu->setEnabled(false);
@@ -556,9 +556,9 @@ void StateTableView::set_nickname() {
             ++numRowsSelected;
         }
     }
-    
+
     int dwarfId = sel.indexes().at(0).data(DwarfModel::DR_ID).toInt();
-    
+
     QString defaultText = "";
 
     if (numRowsSelected == 1) {
@@ -569,7 +569,7 @@ void StateTableView::set_nickname() {
             defaultText = d->nice_name();
         }
     }
-    
+
     QString new_nick = QInputDialog::getText(this, tr("New Nickname"),
                                                    tr((numRowsSelected > 1) ? "Enter a new nickname for the selected dwarves. Or leave blank to reset to their default name." : "Enter a new nickname for the selected dwarf. Or leave blank to reset to their default name."), QLineEdit::Normal,
                                                    tr(qPrintable(defaultText)), &ok);

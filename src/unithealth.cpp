@@ -434,7 +434,7 @@ void UnitHealth::read_health_info(){
 
 void UnitHealth::read_wounds(){
     VIRTADDR addr = m_df->memory_layout()->dwarf_offset("body_component_info");
-    body_part_status_flags = m_df->enumerate_vector(m_dwarf_addr +  addr - DFInstance::VECTOR_POINTER_OFFSET);
+    body_part_status_flags = m_df->enumerate_vector(m_dwarf_addr +  addr);
     layer_status_flags = m_df->enumerate_vector(m_dwarf_addr + addr + m_df->memory_layout()->dwarf_offset("layer_status_vector"));
 
     //add the wounds based on the wounded parts

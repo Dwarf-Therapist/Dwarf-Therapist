@@ -1122,6 +1122,24 @@ void DFInstance::load_hist_figures(){
     }
 }
 
+bool DFInstance::unit_occupation_fixed(int hist_id){
+    if(m_occupations.count() <= 0)
+        load_occupations();
+
+    if(m_occupations.count() > 0 && m_occupations.contains(hist_id)){
+        return (read_int(m_occupations.value(hist_id)+0x18) == m_fortress->id());
+    }else{
+        return false;
+    }
+}
+
+void DFInstance::load_occupations(){
+    QVector<VIRTADDR> oc_addrs = enumerate_vector(m_layout->address("occupations_vector"));
+    foreach(VIRTADDR addr, oc_addrs){
+        m_occupations.insert(read_int(addr + 0x8),addr);
+    }
+}
+
 VIRTADDR DFInstance::find_identity(int id){
     if(m_fake_identities.count() == 0) //lazy load fake identities
         m_fake_identities = enumerate_vector(m_layout->address("fake_identities_vector"));
@@ -1210,7 +1228,7 @@ QString DFInstance::get_preference_other_name(int index, PREF_TYPES p_type){
 
     if(p_type == LIKE_SHAPE || p_type == LIKE_COLOR){
         translate = false;
-        if(LIKE_COLOR){
+        if(p_type == LIKE_COLOR){
             target_vec = m_color_vector;
             offset = m_layout->descriptor_offset("color_name");
         }else{

@@ -596,7 +596,7 @@ void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
             if (race_name == "DWARF")
                 dwarf_entry = lang;
         }
-        uint dwarf_lang_table = dwarf_entry + word_table_offset - df->VECTOR_POINTER_OFFSET;
+        uint dwarf_lang_table = dwarf_entry + word_table_offset;
         LOGI << "Loading dwarf strings from" << hex << dwarf_lang_table;
         QVector<uint> dwarf_words = df->enumerate_vector(dwarf_lang_table);
         LOGI << "dwarf words" << dwarf_words.size();

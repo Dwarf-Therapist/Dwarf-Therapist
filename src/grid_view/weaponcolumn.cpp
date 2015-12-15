@@ -150,20 +150,29 @@ QStandardItem *WeaponColumn::build_cell(Dwarf *d) {
     item->setData((sort_val * 100) + d->body_size(), DwarfModel::DR_SORT_VALUE);
     set_export_role(DwarfModel::DR_DISPLAY_RATING);
 
-    QColor norm_text = QApplication::palette().toolTipText().color();
+    QString units = " cm<sup>3</sup>";
+    QString single_text = QString("%1%2").arg(m_weapon->single_grasp() * 10).arg(units);
+    QString multi_text = QString("%1%2").arg(m_weapon->multi_grasp() * 10).arg(units);
+
+    if(onehand){
+        single_text = tr("1h: %1").arg(single_text);
+    }else{
+        single_text = tr("1h: <font color=%1>%2</font>").arg(QColor(Qt::red).name()).arg(single_text);
+    }
+    if(twohand){
+        multi_text = tr("2h: %1").arg(multi_text);
+    }else{
+        multi_text = tr("2h: <font color=%1>%2</font>").arg(QColor(Qt::red).name()).arg(multi_text);
+    }
 
     QString tooltip = QString("<center><h3>%1</h3></center>%2%3%4%5<center><h4>%6 - %7</h4></center>")
             .arg(tt_title)
             .arg(desc)
             .arg(weapon_skills.join("<br>").append("<br/><br/>"))
-            .arg(tr("1h: <font color=%1>%2</font> cm<sup>3</sup><br>")
-                 .arg(onehand ? norm_text.name() : QColor(Qt::red).name())
-                 .arg(m_weapon->single_grasp()*10))
-            .arg(tr("2h: <font color=%1>%2</font> cm<sup>3</sup>")
-                 .arg(twohand ? norm_text.name() : QColor(Qt::red).name())
-                 .arg(m_weapon->multi_grasp()*10))
+            .arg(single_text.append("<br/>"))
+            .arg(multi_text)
             .arg(d->nice_name())
-            .arg(tr("%1 cm<sup>3</sup>").arg(d->body_size() * 10)); //however in the tooltip, show the actual size
+            .arg(tr("%1%2").arg(d->body_size() * 10).arg(units)); //however in the tooltip, show the actual size
 
     item->setToolTip(tooltip);
 

@@ -529,6 +529,8 @@ public:
     QHash<QPair<QString,int>, int> get_equip_warnings(){return m_equip_warnings;}
     Q_INVOKABLE bool has_wear(QString item_name, int wear_level) {return m_equip_warnings.contains(qMakePair(item_name,wear_level));}
 
+    bool can_assign_military() {return m_can_assign_military;}
+
     int optimized_labors;
 
     void set_global_sort_key(int group_id, QVariant val){m_global_sort_keys.insert(group_id,val);}
@@ -661,6 +663,7 @@ private:
     int m_goals_realized;
     int m_worst_rust_level;
     QString m_labor_reason;
+    bool m_can_assign_military;
     unit_gender m_gender_info;
 
     //! inventory grouped by body part /category
@@ -715,6 +718,7 @@ private:
     void read_squad_info();
     void read_inventory();
     void read_uniform();
+    void check_availability();
 
     QString get_gender_icon_suffix(bool male_flag, bool female_flag, bool checking_interest = false);
 

@@ -71,27 +71,6 @@ public:
         return m.value(flag, "Missing Description");
     }
 
-    static const QString get_mat_class_desc(const int mat_class){
-        QMap<int, QString> m;
-        m[MC_LEATHER]=tr("Leather");
-        m[MC_CLOTH]=tr("Cloth");
-        m[MC_WOOD]=tr("Wooden");
-        m[MC_STONE]=tr("Stone");
-        m[MC_METAL_AMMO]=tr("Metal");
-        m[MC_METAL_AMMO2]=tr("Metal");
-        m[MC_METAL_ARMOR]=tr("Metal");
-        m[MC_GEM]=tr("Gem");
-        m[MC_BONE]=tr("Bone");
-        m[MC_SHELL]=tr("Shell");
-        m[MC_PEARL]=tr("Pearl");
-        m[MC_TOOTH]=tr("Ivory/Tooth");
-        m[MC_HORN]=tr("Horn/Hoof");
-        m[MC_PLANT_FIBER]=tr("Plant Fiber");
-        m[MC_SILK]=tr("Silk");
-        m[MC_YARN]=tr("Yarn/Wool/Fur");
-        return m.value(mat_class, "???");
-    }
-
 private:
     int m_index;
     VIRTADDR m_address;

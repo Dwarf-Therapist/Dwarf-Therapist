@@ -359,6 +359,7 @@ public:
     QString get_material_name_base(){return m_material_name_base;}
     short get_quality(){return m_quality;}
     QString get_item_name(){return m_item_name;}
+    FlagArray mat_flags(){return m_material_flags;}
 
 protected:
     DFInstance *m_df;
@@ -370,6 +371,7 @@ protected:
     short m_quality;
     QString m_material_name;
     QString m_material_name_base;
+    FlagArray m_material_flags;
     QString m_item_name;
     QString m_layer_name;
     QString m_display_name;
@@ -381,6 +383,7 @@ protected:
     QList<Item*> m_contained_items;
 
     void read_data();
+    void read_material();
     void set_default_name(Material *m);
     void build_display_name();
     QString get_quality_symbol();
@@ -390,6 +393,8 @@ protected:
 private:
     static const QList<ITEM_TYPE> m_items_subtypes;
     static const QList<ITEM_TYPE> init_subtypes();
+    static const QList<MATERIAL_FLAGS> m_mat_cats;
+    static const QList<MATERIAL_FLAGS> init_mat_cats();
 
 };
 #endif // ITEM_H

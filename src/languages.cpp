@@ -83,7 +83,7 @@ void Languages::load_data() {
         foreach(VIRTADDR lang, languages) {
             QString race_name = m_df->read_string(lang);
             TRACE << "FOUND LANG ENTRY" << hex << lang << race_name;
-            VIRTADDR lang_table = lang + word_table_offset - m_df->VECTOR_POINTER_OFFSET;
+            VIRTADDR lang_table = lang + word_table_offset;
             TRACE << "Loading " << race_name << " strings from" << hex << lang_table;
             QVector<VIRTADDR> lang_words = m_df->enumerate_vector(lang_table);
             TRACE << race_name << " words" << lang_words.size();

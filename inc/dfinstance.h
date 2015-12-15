@@ -138,17 +138,14 @@ public:
     static const int STRING_BUFFER_OFFSET = 4;  // Default value for older windows releases
     static const int STRING_LENGTH_OFFSET = 16; // Relative to STRING_BUFFER_OFFSET
     static const int STRING_CAP_OFFSET = 20;    // Relative to STRING_BUFFER_OFFSET
-    static const int VECTOR_POINTER_OFFSET = 0;
 #elif defined(Q_OS_LINUX)
     static const int STRING_BUFFER_OFFSET = 0;
     static const int STRING_LENGTH_OFFSET = 0; // Dummy value
     static const int STRING_CAP_OFFSET = 0;    // Dummy value
-    static const int VECTOR_POINTER_OFFSET = 0;
 #elif defined(Q_OS_MAC)
     static const int STRING_BUFFER_OFFSET = 0;
     static const int STRING_LENGTH_OFFSET = 0; // Dummy value
     static const int STRING_CAP_OFFSET = 0;    // Dummy value
-    static const int VECTOR_POINTER_OFFSET = 0;
 #endif
 
     MemoryLayout *get_memory_layout(QString checksum, bool warn = true);
@@ -163,6 +160,7 @@ public:
     VIRTADDR find_historical_figure(int hist_id);
     VIRTADDR find_identity(int id);
     VIRTADDR find_event(int id);
+    bool unit_occupation_fixed(int histfig_id);
 
     FortressEntity * fortress() {return m_fortress;}
 
@@ -278,6 +276,7 @@ private:
 
     QHash<int,VIRTADDR> m_hist_figures;
     QVector<VIRTADDR> m_fake_identities;
+    QHash<int,VIRTADDR> m_occupations;
     QHash<int,VIRTADDR> m_events;
 
     QHash<ITEM_TYPE, QVector<VIRTADDR> > m_itemdef_vectors;
@@ -295,6 +294,7 @@ private:
     QVector<VIRTADDR> m_all_syndromes;
 
     void load_hist_figures();
+    void load_occupations();
 
     QHash<QPair<QString,int>, int> m_equip_warning_counts;
     QHash<QPair<QString,QString>, pref_stat*> m_pref_counts;

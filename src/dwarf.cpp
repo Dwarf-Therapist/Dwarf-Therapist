@@ -121,6 +121,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_goals_realized(0)
     , m_worst_rust_level(0)
     , m_labor_reason("")
+    , m_can_assign_military(true)
     , m_curse_type(eCurse::NONE)
 {
     read_settings();
@@ -198,7 +199,6 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     quint32 flags1 = df->read_addr(addr + mem->dwarf_offset("flags1"));
     quint32 flags2 = df->read_addr(addr + mem->dwarf_offset("flags2"));
     quint32 flags3 = df->read_addr(addr + mem->dwarf_offset("flags3"));
-    //quint32 flags4 = df->read_addr(addr + mem->dwarf_offset("flags3")+0x4);
 
     int civ_id = df->read_int(addr + mem->dwarf_offset("civ"));
     int race_id = df->read_int(addr + mem->dwarf_offset("race"));
@@ -207,7 +207,6 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     TRACE << "  FLAGS1:" << hexify(flags1);
     TRACE << "  FLAGS2:" << hexify(flags2);
     TRACE << "  FLAGS3:" << hexify(flags3);
-    //LOGI << "  FLAGS4:" << hexify(flags4);
     TRACE << "  RACE:" << race_id;
     TRACE << "  CIV:" << civ_id;
 
@@ -228,7 +227,7 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     if(!is_caged){
         //if not caged, not part of our civ, not another sentient civ and not livestock, then ignore it
         if(civ_id != df->dwarf_civ_id() || (civ_id > 0 && !r_flags.has_flag(CAN_SPEAK) && !c_flags.has_flag(TRAINABLE))){
-            LOGI << "ignoring unit of race" << r_name << "as it doesn't seem to be part of the fortress";
+            LOGD << "ignoring unit of race" << r_name << "as it doesn't seem to be part of the fortress";
             return 0;
         }
     }else{
@@ -318,6 +317,7 @@ void Dwarf::refresh_data() {
         read_profession(); //read profession before building the names, and before job
         read_mood(); //read after profession and before job, emotions/skills (soul aspect)
         read_labors(); //read after profession and mood
+        check_availability(); //after labors/profession/age
         read_current_job();
         read_syndromes(); //read syndromes before attributes
         read_body_size(); //body size after caste and age
@@ -1197,16 +1197,22 @@ void Dwarf::read_labors() {
         m_labors[l->labor_id] = enabled;
         m_pending_labors[l->labor_id] = enabled;
     }
+}
 
+void Dwarf::check_availability(){
+    GameDataReader *gdr = GameDataReader::ptr();
     //check that labors can be toggled
+    //int civ_id = m_df->read_int(m_address + m_mem->dwarf_offset("civ"));
+    bool foreigner = false;
+    Profession *p = GameDataReader::ptr()->get_profession(m_raw_profession);
     if(m_locked_mood){
         m_can_set_labors = false;
         m_labor_reason = tr("due to mood (%1)").arg(gdr->get_mood_name(m_mood_id,true));
-    }else if(m_race_id != m_df->dwarf_race_id()){
-        m_can_set_labors = false; //other races that have joined the fortress can't have labors set?
+    }else if(m_df->unit_occupation_fixed(m_hist_figure->id())){
+        foreigner = true;
+        m_can_set_labors = false;
         m_labor_reason = tr("for non-citizens.");
     }else{
-        Profession *p = GameDataReader::ptr()->get_profession(m_raw_profession);
         if(p){
             m_can_set_labors = p->can_assign_labors();
             if(!m_is_baby && DT->labor_cheats_allowed()){
@@ -1224,6 +1230,13 @@ void Dwarf::read_labors() {
             m_can_set_labors = false;
             m_labor_reason = tr("due to unknown profession");
         }
+    }
+
+    //check squad assignment
+    if(is_adult()){
+        m_can_assign_military = (!foreigner || (foreigner && p->is_military()));
+    }else{
+        m_can_assign_military = false;
     }
 }
 
@@ -1905,8 +1918,8 @@ void Dwarf::read_emotions(VIRTADDR personality_base){
     }
 
     m_happiness_desc = QString("<b>%1</b> (Stress: %2)")
-    .arg(happiness_name(m_happiness))
-    .arg(formatNumber(m_stress_level));
+            .arg(happiness_name(m_happiness))
+            .arg(formatNumber(m_stress_level));
 
     TRACE << "\tRAW STRESS LEVEL:" << m_stress_level;
     TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);
@@ -1954,7 +1967,7 @@ void Dwarf::read_personality() {
             if(has_state(STATE_HARDENED)){
                 int val = state_value(STATE_HARDENED);
                 //scale from 40-90. this sets the values (33,75,100) at 56,78,90 respectively
-                 //since anything below 65 doesn't really have an effect
+                //since anything below 65 doesn't really have an effect
                 val = ((val*(90-40)) / 100) + 40;
                 m_traits.insert(-1,val);
             }

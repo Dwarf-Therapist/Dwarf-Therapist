@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <QPalette>
 
 const QList<ITEM_TYPE> Item::m_items_subtypes=Item::init_subtypes();
+const QList<MATERIAL_FLAGS> Item::m_mat_cats=Item::init_mat_cats();
 
 Item::Item(const Item &i)
     : QObject(i.parent())
@@ -39,6 +40,7 @@ Item::Item(const Item &i)
     m_quality = i.m_quality;
     m_material_name = i.m_material_name;
     m_material_name_base = i.m_material_name_base;
+    m_material_flags = i.m_material_flags;
     m_item_name = i.m_item_name;
     m_layer_name = i.m_layer_name;
     m_display_name = i.m_display_name;
@@ -62,6 +64,9 @@ Item::Item(DFInstance *df, ItemDefUniform *u, QObject *parent)
     , m_affection(0)
     , m_stack_size(u->get_stack_size())
 {
+    //set the color to the missing uniform color, since we passed in a uniform itemdef
+    m_color_display = Item::color_missing();
+
     if(m_id > 0){
         //find the actual item's address
         m_addr = m_df->get_item_address(m_iType,m_id);
@@ -70,17 +75,19 @@ Item::Item(DFInstance *df, ItemDefUniform *u, QObject *parent)
             return;
         }
     }
-    QVector<VIRTADDR> item_defs = m_df->get_item_vector(m_iType);
 
-    MATERIAL_CLASS mat_class = u->mat_class();
-    if(mat_class != MC_NONE){
-        m_material_name = Material::get_mat_class_desc(mat_class);
-    }else{
-        if(m_mat_idx >= 0 || m_mat_type >= 0)
-            m_material_name = m_df->find_material_name(m_mat_idx,m_mat_type,m_iType);
+    if(u->mat_flag() != MAT_NONE){
+        mat_flags().set_flag(u->mat_flag(),true);
+    }
+
+    read_material();
+
+    if(u->mat_flag() != MAT_NONE){
+        m_material_name = u->generic_mat_name();
     }
 
     short subtype = u->item_subtype();
+    QVector<VIRTADDR> item_defs = m_df->get_item_vector(m_iType);
     if(!item_defs.empty() && (subtype >=0 && subtype < item_defs.count())){
         //get sub-type name
         m_item_name = m_df->read_string(item_defs.at(subtype) + m_df->memory_layout()->item_subtype_offset("name"));
@@ -96,8 +103,6 @@ Item::Item(DFInstance *df, ItemDefUniform *u, QObject *parent)
             m_item_name.prepend(tr("Specific "));
         }
     }
-    //set the color to the missing uniform color, since we passed in a uniform itemdef
-    m_color_display = Item::color_missing();
 }
 
 Item::Item(DFInstance *df, VIRTADDR item_addr, QObject *parent)
@@ -143,6 +148,11 @@ const QList<ITEM_TYPE> Item::init_subtypes(){
     tmp << SHOES << PANTS << ARMOR << GLOVES << HELM << WEAPON << AMMO << TRAPCOMP << SHIELD << TOOL << INSTRUMENT;
     return tmp;
 }
+const QList<MATERIAL_FLAGS> Item::init_mat_cats(){
+    QList<MATERIAL_FLAGS> tmp;
+    tmp << IS_METAL << LEATHER << SILK << YARN << THREAD_PLANT << BONE << SHELL;
+    return tmp;
+}
 
 void Item::read_data(){
     if(m_addr){
@@ -165,20 +175,8 @@ void Item::read_data(){
         m_mat_type = m_df->read_short(m_addr+m_df->memory_layout()->item_offset("mat_type"));
         m_mat_idx = m_df->read_int(m_addr+m_df->memory_layout()->item_offset("mat_index"));
         m_quality = m_df->read_short(m_addr+m_df->memory_layout()->item_offset("quality"));
-        m_material_name = capitalizeEach(m_df->find_material_name(m_mat_idx,m_mat_type,m_iType));
 
-        Material *m = m_df->find_material(m_mat_idx,m_mat_type);
-        if(m){
-            set_default_name(m);
-            QList<MATERIAL_FLAGS> simple_types;
-            simple_types << LEATHER << SILK << YARN << THREAD_PLANT << BONE << SHELL;
-            foreach(MATERIAL_FLAGS mf, simple_types){
-                if(m->flags().has_flag(mf)){
-                    m_material_name_base = Material::get_material_flag_desc(mf);
-                    break;
-                }
-            }
-        }
+        read_material();
 
         QVector<VIRTADDR> gen_refs = m_df->enumerate_vector(m_addr+m_df->memory_layout()->item_offset("general_refs"));
         foreach(VIRTADDR ref, gen_refs){
@@ -213,15 +211,27 @@ void Item::read_data(){
     }
 }
 
+void Item::read_material(){
+    m_material_name = capitalizeEach(m_df->find_material_name(m_mat_idx,m_mat_type,m_iType));
+    Material *m = m_df->find_material(m_mat_idx,m_mat_type);
+    if(m){
+        set_default_name(m);
+        m_material_flags = FlagArray(m->flags());
+        foreach(MATERIAL_FLAGS mf, m_mat_cats){
+            if(m->flags().has_flag(mf)){
+                m_material_name_base = Material::get_material_flag_desc(mf);
+                break;
+            }
+        }
+    }
+}
+
 QString Item::display_name(bool colored){
     {
         if(m_display_name == ""){
             build_display_name();
         }
-        if(colored){
-            if(!m_color_display.isValid()){;
-                m_color_display = QApplication::palette().toolTipText().color();
-            }
+        if(colored && m_color_display.isValid()){
             return QString("<font color=%1>%2</font>").arg(m_color_display.name()).arg(m_display_name);
         }else{
             return m_display_name;

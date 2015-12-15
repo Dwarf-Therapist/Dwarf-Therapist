@@ -194,7 +194,7 @@ void Uniform::check_uniform(QString category_name, Item *item_inv){
                 ItemDefUniform *item_uni_miss = m_missing_items.value(itype).at(idx); //get a missing item of the same type
                 Item *item_miss = new Item(m_df,item_uni_miss,this);
 
-                bool match;
+                bool match = false;
 
                 //check for a specific item id
                 if(item_miss->id() > -1){
@@ -203,17 +203,20 @@ void Uniform::check_uniform(QString category_name, Item *item_inv){
                     }else{
                         continue;
                     }
-                }else if(item_uni_miss->indv_choice() ||
-                                         (
-                                             (item_uni_miss->item_subtype() < 0 || item_uni_miss->item_subtype() == item_inv->item_subtype()) &&
-                                             //(item_miss->mat_type() < 0 || item_miss->mat_type()==item_inv->mat_type()) &&
-                                             //(item_miss->mat_index() < 0 || item_miss->mat_index()==item_inv->mat_index()) &&
-                                             (item_miss->get_material_name() == "" || item_miss->get_material_name() == item_inv->get_material_name()) &&
-                                             (item_uni_miss->job_skill() < 0 || (item_uni_miss->job_skill() == item_inv->melee_skill() || item_uni_miss->job_skill() == item_inv->ranged_skill()))
-                                             )
-                                         )
-                                 {
-                    match = true;
+                }else{
+                    match = (item_uni_miss->indv_choice() ||
+                             (
+                                 (item_uni_miss->item_subtype() < 0 || item_uni_miss->item_subtype() == item_inv->item_subtype()) &&
+                                 (
+                                     (item_uni_miss->mat_flag() == MAT_NONE && item_miss->mat_type() < 0 && item_miss->mat_index() < 0) ||
+                                     (item_miss->mat_type() < 0 && item_miss->mat_index() < 0 && item_inv->mat_flags().has_flag(item_uni_miss->mat_flag())) ||
+                                      //QString::compare(item_miss->get_material_name(),item_inv->get_material_name_base(),Qt::CaseInsensitive)==0) ||
+                                     ((item_miss->mat_type() >= 0 || item_miss->mat_index() >= 0) &&
+                                      item_miss->mat_type() == item_inv->mat_type() && item_miss->mat_index() == item_inv->mat_index())
+                                     ) &&
+                                 (item_uni_miss->job_skill() < 0 || (item_uni_miss->job_skill() == item_inv->melee_skill() || item_uni_miss->job_skill() == item_inv->ranged_skill()))
+                                 )
+                             );
                 }
                 if(match){
                     QList<ItemDefUniform*> missing_items = m_missing_items.take(itype);

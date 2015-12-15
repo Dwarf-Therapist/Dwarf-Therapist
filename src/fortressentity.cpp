@@ -39,6 +39,7 @@ FortressEntity::FortressEntity(DFInstance *df, VIRTADDR address, QObject *parent
     , m_address(address)
     , m_df(df)
     , m_mem(df->memory_layout())
+    , m_id(0)
 {
     load_data();
 
@@ -75,6 +76,8 @@ void FortressEntity::read_entity(){
     //civ name
 //    m_name = m_df->get_language_word(m_address + 0x14);
 //    m_translated_name = m_df->get_translated_word(m_address + 0x14);
+
+    m_id = m_df->read_int(m_address + 0x4);
 
     //load squads
     m_squads = m_df->enumerate_vector(m_address + m_mem->hist_entity_offset("squads"));

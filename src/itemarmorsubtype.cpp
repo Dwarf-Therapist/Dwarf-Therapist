@@ -84,10 +84,16 @@ void ItemArmorSubtype::read_data(){
             m_flags.set_flag(IS_ARMOR,true);
         }
 
+        if(m_armor_flags.has_flag(ARMOR_CHAIN)){
+            m_name.prepend(tr("Chain "));
+            m_name_plural.prepend(tr("Chain "));
+        }
+
         if(!m_flags.has_flag(IS_ARMOR) && !m_flags.has_flag(IS_CLOTHING)){
             LOGW << m_name_plural << "are neither armor nor clothing. setting to clothing by default...";
             m_flags.set_flag(IS_CLOTHING,true);
         }
+
     }else{
         m_layer = -1;
         m_armor_flags = FlagArray();

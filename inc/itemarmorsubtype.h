@@ -35,7 +35,8 @@ public:
     typedef enum {
         ARMOR_METAL=2,
         ARMOR_BONE=3,
-        ARMOR_SHELL=4
+        ARMOR_SHELL=4,
+        ARMOR_CHAIN=7
     } ARMOR_FLAGS;
 
     int layer() const {return m_layer;}

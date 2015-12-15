@@ -189,6 +189,7 @@ typedef enum {
 
 //df-structures material_flags
 typedef enum {
+    MAT_NONE=-1,
     BONE=0,
     IS_MEAT=1,
     EDIBLE_VERMIN=2,
@@ -260,27 +261,6 @@ typedef enum {
     STOCKPILE_THREAD_METAL=68,
     NUM_OF_MATERIAL_FLAGS=69
 } MATERIAL_FLAGS;
-
-typedef enum{
-    MC_UNKNOWN=-2,
-    MC_NONE=-1,
-    MC_LEATHER=1,
-    MC_CLOTH=2,
-    MC_WOOD=3,
-    MC_STONE=5,
-    MC_METAL_AMMO=13,
-    MC_METAL_AMMO2=14,
-    MC_METAL_ARMOR=16,
-    MC_GEM=17,
-    MC_BONE=18,
-    MC_SHELL=19,
-    MC_PEARL=20,
-    MC_TOOTH=21,
-    MC_HORN=22,
-    MC_PLANT_FIBER=27,
-    MC_SILK=28,
-    MC_YARN=29
-} MATERIAL_CLASS;
 
 typedef enum{
     WAGON=1,

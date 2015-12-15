@@ -65,6 +65,7 @@ public:
     bool squad_is_active(int id) {return m_squads.contains(id);}
     void refresh_squads();
     int get_belief_value(int id){return m_beliefs.value(id);}
+    int id() {return m_id;}
 
     static QMap<QString,NOBLE_COLORS> m_raw_color_map;
     static QMap<QString,NOBLE_COLORS> build_color_map();
@@ -84,6 +85,7 @@ private:
     VIRTADDR m_address;
     DFInstance * m_df;
     MemoryLayout * m_mem;
+    int m_id;
 
     //key is the historical figure id, and x positions as value(s)
     QMultiHash<int,position> m_nobles;

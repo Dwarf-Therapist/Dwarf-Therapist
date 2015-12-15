@@ -152,7 +152,9 @@ ViewColumnSet::ViewColumnSet(QSettings &s, QObject *parent, int set_num)
             break;
         case CT_DEFAULT:
         default:
-            LOGW << "unidentified column type in set" << this->name() << "!";
+            if(set_num != 0 || total_columns-1 != i){
+                LOGW << "unidentified column type in set" << this->name() << "!";
+            }
             break;
         }
     }
