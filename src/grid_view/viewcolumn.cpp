@@ -92,6 +92,7 @@ ViewColumn::ViewColumn(const ViewColumn &to_copy)
     if (m_set && !m_override_bg_color){
         m_bg_color = m_set->bg_color();
     }
+    connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 }
 
 ViewColumn::~ViewColumn(){
