@@ -177,6 +177,8 @@ private:
     pop_info m_pop_info;
     bool m_toolbar_configured;
 
+    QVector<int> m_selected_units;
+
     //optimize button and separator widgets and their corresponding toolbar actions
     QAction *m_act_sep_optimize;
     QAction *m_act_btn_optimize; //this is required in addition to the button to allow easy visibility toggling
@@ -197,24 +199,31 @@ private:
 
     private slots:
         void set_interface_enabled(bool);
-        //role stuff
+
         void edit_custom_role();
         void remove_custom_role();
+
         void display_group(const int);
         void apply_filter();
         void apply_filter(QModelIndex);
+
         void preference_selected(QList<QPair<QString,QString> > vals, QString filter_name = "", FILTER_SCRIPT_TYPE pType = SCR_PREF);
         void thought_selected(QVariantList ids);
         void equipoverview_selected(QList<QPair<QString, int> >);
         void health_legend_selected(QList<QPair<int,int> > vals);
-        //optimization stuff
+
         void toggle_opts_menu();
         void edit_opt();
         void remove_opt();
         void done_editing_opt_plan(int result);
         void done_editing_role(int result);
+
         void main_toolbar_style_changed(Qt::ToolButtonStyle button_style);
         void clear_all_filters();
+
+        void commit_changes();
+        void save_ui_selections();
+        void restore_ui_selections();
 
 signals:
         void lostConnection();

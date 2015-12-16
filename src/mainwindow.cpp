@@ -167,7 +167,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_model, SIGNAL(new_creatures_count(int,int,int, QString)), this, SLOT(new_creatures_count(int,int,int, QString)));
     connect(m_model, SIGNAL(new_pending_changes(int)), this, SLOT(new_pending_changes(int)));
     connect(ui->act_clear_pending_changes, SIGNAL(triggered()), m_model, SLOT(clear_pending()));
-    connect(ui->act_commit_pending_changes, SIGNAL(triggered()), m_model, SLOT(commit_pending()));
+    connect(ui->act_commit_pending_changes, SIGNAL(triggered()), this, SLOT(commit_changes()));
     connect(ui->act_expand_all, SIGNAL(triggered()), m_view_manager, SLOT(expand_all()));
     connect(ui->act_collapse_all, SIGNAL(triggered()), m_view_manager, SLOT(collapse_all()));
 
@@ -464,24 +464,8 @@ void MainWindow::read_dwarves() {
 
     QTime t;
     t.start();
-    //clear the selected dwarf's details, save the id of the one we're showing
-    int dock_id = -1;
-    DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));
-    if(dock){
-        dock_id = dock->current_id();
-        dock->clear(false);
-    }
-    //save the ids of the currently selected dwarfs
-    QVector<int> ids;
-    if(m_view_manager){
-        foreach(Dwarf *d, m_view_manager->get_selected_dwarfs()){
-            if(d){
-                ids << d->id();
-            }
-        }
-        //clear selected dwarfs in the view
-        m_view_manager->clear_selected();
-    }
+
+    save_ui_selections();
 
     //clear data in each column for each view
     foreach(GridView *gv, m_view_manager->views()){
@@ -509,21 +493,15 @@ void MainWindow::read_dwarves() {
 
     m_view_manager->redraw_current_tab();
 
-    //reselect the ids we saved above
-    m_view_manager->reselect(ids);
-
     // setup the filter auto-completer and reselect our dwarf for the details dock
-    bool dwarf_found = false;
     QStandardItemModel *filters = new QStandardItemModel(this);
     foreach(Dwarf *d, m_model->get_dwarves()){
         QStandardItem *i = new QStandardItem(d->nice_name());
         i->setData(d->nice_name(),DwarfModel::DR_SPECIAL_FLAG);
         filters->appendRow(i);
-        if(dock_id > 0 && !dwarf_found && d->id() == dock_id){
-            dock->show_dwarf(d);
-            dwarf_found = true;
-        }
     }
+
+    restore_ui_selections();
 
     QHash<QPair<QString,QString>,DFInstance::pref_stat* > prefs = DT->get_DFInstance()->get_preference_stats();
     QPair<QString,QString> key_pair;
@@ -536,9 +514,7 @@ void MainWindow::read_dwarves() {
         i->setData(data,Qt::UserRole+1);
         filters->appendRow(i);
     }
-    if(!dwarf_found && dock){
-        dock->clear(false);
-    }
+
 
     filters->sort(0,Qt::AscendingOrder);
 
@@ -583,6 +559,50 @@ void MainWindow::read_dwarves() {
 
     LOGI << "completed read in" << t.elapsed() << "ms";
     set_progress_message("");
+}
+
+void MainWindow::save_ui_selections(){
+    //clear the selected dwarf's details, save the id of the one we're showing
+    DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));
+    if(dock){
+        dock->clear(false);
+    }
+    //save the ids of the currently selected dwarfs
+    if(m_view_manager){
+        foreach(Dwarf *d, m_view_manager->get_selected_dwarfs()){
+            if(d){
+                m_selected_units << d->id();
+            }
+        }
+        //clear selected dwarfs in the view
+        m_view_manager->clear_selected();
+    }
+}
+
+void MainWindow::restore_ui_selections(){
+    //reselect the ids we saved above
+    m_view_manager->reselect(m_selected_units);
+
+    //refresh the unit dock details
+    DwarfDetailsDock *dock = qobject_cast<DwarfDetailsDock*>(QObject::findChild<DwarfDetailsDock*>("dock_dwarf_details"));
+    bool unit_found = false;
+    if(dock != 0 && dock->last_id() >= 0){
+        Dwarf *d = m_model->get_dwarf_by_id(dock->last_id());
+        if(d){
+            dock->show_dwarf(d);
+            unit_found = true;
+        }
+    }
+    if(!unit_found && dock){
+        dock->clear(false);
+    }
+    m_selected_units.clear();
+}
+
+void MainWindow::commit_changes(){
+    save_ui_selections();
+    m_model->commit_pending();
+    restore_ui_selections();
 }
 
 void MainWindow::apply_filter(){

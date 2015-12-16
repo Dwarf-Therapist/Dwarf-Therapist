@@ -63,6 +63,7 @@ QByteArray DwarfDetailsDock::get_ui_state(){
 
 void DwarfDetailsDock::clear(bool reinit){
     m_widget->clear();
+    m_last_id = m_current_id;
     m_current_id = -1;
     if(reinit){
         m_initialized = false;

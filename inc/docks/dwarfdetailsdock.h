@@ -34,6 +34,7 @@ class DwarfDetailsDock : public BaseDock {
 public:
     DwarfDetailsDock(QWidget *parent = 0, Qt::WindowFlags flags = 0);
     int current_id() {return m_current_id;}
+    int last_id() {return m_last_id;}
 
 public slots:
     void show_dwarf(Dwarf *d);
@@ -45,6 +46,7 @@ private:
     bool m_initialized;
     QLabel *lbl_info;
     int m_current_id;
+    int m_last_id;
 };
 
 #endif
