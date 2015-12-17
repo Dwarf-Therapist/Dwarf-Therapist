@@ -168,7 +168,11 @@ QString ViewColumn::get_cell_value(Dwarf *d)
 }
 
 QString ViewColumn::tooltip_name_footer(Dwarf *d){
-    return QString("<center><h4>%1</h4></center>").arg(d->nice_name());
+    QString footer = QString("<center><h4>%1</h4></center>").arg(d->nice_name());
+#ifdef QT_DEBUG
+        footer.append(QString("<center><h4>Rating: %1</h4></center>").arg(m_cells.value(d)->data(DwarfModel::DR_RATING).toString()));
+#endif
+        return footer;
 }
 
 void ViewColumn::read_settings(){

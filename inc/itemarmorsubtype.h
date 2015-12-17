@@ -36,11 +36,13 @@ public:
         ARMOR_METAL=2,
         ARMOR_BONE=3,
         ARMOR_SHELL=4,
+        ARMOR_SHAPED=6,
         ARMOR_CHAIN=7
     } ARMOR_FLAGS;
 
     int layer() const {return m_layer;}
     QString get_layer_name();
+    FlagArray armor_flags(){return m_armor_flags;}
 
 private:
     int m_layer;

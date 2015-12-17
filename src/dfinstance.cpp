@@ -371,7 +371,6 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
                     //only calculate roles for children if they're shown and labor cheats are enabled
                     if(!d->is_baby()){
                         if(!d->is_child() || (DT->labor_cheats_allowed() && !DT->hide_non_adults())){
-                            //dwarves_with_roles.append(d->id());
                             m_labor_capable_dwarves.append(d);
                         }
                     }
@@ -391,12 +390,13 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         m_equip_warning_counts.clear();
 
         t.restart();
-        load_population_data();
-        LOGI << "loaded population data in" << t.elapsed() << "ms";
-
-        t.restart();
         load_role_ratings();
         LOGI << "calculated roles in" << t.elapsed() << "ms";
+
+
+        t.restart();
+        load_population_data();
+        LOGI << "loaded population data in" << t.elapsed() << "ms";
 
         //calc_done();
         m_actual_dwarves.clear();
@@ -436,6 +436,10 @@ void DFInstance::load_population_data(){
         unit_kills = d->hist_figure()->total_kills();
         if(unit_kills > max_kills)
             max_kills = unit_kills;
+
+        if(!m_labor_capable_dwarves.contains(d)){
+            d->calc_attribute_ratings();
+        }
 
         //load preference/thoughts/item wear totals, excluding babies/children according to settings
         if(d->is_adult() || (!d->is_adult() && !DT->hide_non_adults())){

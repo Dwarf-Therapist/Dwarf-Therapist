@@ -88,6 +88,9 @@ private:
     bool gradient_cell_bg;
     QFont m_fnt;
 
+    static const float MIN_DRAW_SIZE = 0.05625f; //minimum visible drawn square
+    static const float MAX_CELL_FILL = 0.76f; //max percentage of the cell to fill
+
     void paint_cell(QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const bool drawing_aggregate) const;
 
     void paint_grid(const QRect &adjusted, bool dirty, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, bool draw_border = true) const;

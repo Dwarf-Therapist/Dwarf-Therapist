@@ -24,6 +24,8 @@ THE SOFTWARE.
 #include "informationdock.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QLabel>
+#include <QApplication>
 
 InformationDock::InformationDock(QWidget *parent, Qt::WindowFlags flags)
     : BaseDock(parent, flags)
@@ -40,13 +42,20 @@ InformationDock::InformationDock(QWidget *parent, Qt::WindowFlags flags)
     l_type->addWidget(te_info);
     layout->addLayout(l_type);
 
+    QLabel *l_info = new QLabel();
+    l_info->setText(tr("Hold CTRL to lock the current information."));
+    l_info->setAlignment(Qt::AlignCenter);
+    layout->addWidget(l_info);
+
     setWidget(main_widget);
 }
 
 void InformationDock::show_info(QString info){
-    te_info->setText(info);
-    te_info->moveCursor(QTextCursor::Start);
-    te_info->ensureCursorVisible();
+    if(!(QApplication::queryKeyboardModifiers() & Qt::ControlModifier)){
+        te_info->setText(info);
+        te_info->moveCursor(QTextCursor::Start);
+        te_info->ensureCursorVisible();
+    }
 }
 
 void InformationDock::clear(){

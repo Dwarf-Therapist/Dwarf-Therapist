@@ -211,7 +211,11 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         //this is a special case because we're drawing different information if it's text mode
         if(m_skill_drawing_method == SDM_NUMERIC && rating == 100)
             rating = -1;
-        paint_values(adjusted, rating, text_rating, bg, p, opt, idx,90.0f,5.0f,95.0f,99.99f,102.0f,false);
+
+        if(rating != 100){
+            //only show red squares for missing items (0-50 rating)
+            paint_values(adjusted, rating/2.0f, text_rating, bg, p, opt, idx, 50.0f,5.0f,95.0f,0,0,false);
+        }
         int wear_level = idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt();
         paint_wear_cell(adjusted,p,opt,idx,wear_level);
     }
@@ -605,18 +609,26 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
             p->scale(opt.rect.width() - 4, opt.rect.height() - 4);
             p->drawPolygon(m_diamond_shape);
         } else if (adj_rating > -1) {
-            //0.05625 is the smallest dot we can draw here, so scale to ensure the smallest exp value (1/500 or .002) can always be drawn
+            //0.05625 (MIN_DRAW_SIZE) is the smallest dot we can draw here, so scale to ensure the smallest exp value (1/500 or .002) can always be drawn
             //relative to our maximum limit for this range. this could still be improved to take into account the cell size, as having even
             //smaller cells than the default (16) may not draw very low dabbling skill xp levels
-            float perc_of_cell = 0.76f; //max amount of the cell to fill
 
-            double size = perc_of_cell;
+            double size = MAX_CELL_FILL;
             if((median > 0 && adj_rating > 50.0f) || median == 0){
-                size = ((adj_rating-max_ignore) * (perc_of_cell - 0.05625)) / (max_limit - max_ignore) + 0.05625;
+                if(max_ignore > max_limit){
+                    size = ((adj_rating-median) * (MAX_CELL_FILL - MIN_DRAW_SIZE)) / (max_limit - median) + MIN_DRAW_SIZE;
+                }else{
+                    size = ((adj_rating-max_ignore) * (MAX_CELL_FILL - MIN_DRAW_SIZE)) / (max_limit - max_ignore) + MIN_DRAW_SIZE;
+                }
             }else{
-                size = ((adj_rating-min_limit) * (perc_of_cell - 0.05625)) / (min_ignore - min_limit) + 0.05625;
-                size = perc_of_cell - size;
+                if(min_ignore < min_limit){
+                    size = ((adj_rating-min_limit) * (MAX_CELL_FILL - MIN_DRAW_SIZE)) / (median - min_limit);
+                }else{
+                    size = ((adj_rating-min_limit) * (MAX_CELL_FILL - MIN_DRAW_SIZE)) / (min_ignore - min_limit);
+                }
+                size = MAX_CELL_FILL - size + MIN_DRAW_SIZE;
             }
+
             //double size = (((adj_rating-0) * (perc_of_cell - 0.05625)) / (100.0f-0)) + 0.05625;
             //size = roundf(size * 100) / 100; //this is to aid in the problem of an odd number of pixel in an even size cell, or vice versa
             double inset = (1.0f - size) / 2.0f;
