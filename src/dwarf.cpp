@@ -920,7 +920,7 @@ void Dwarf::read_preferences(){
         {
             Race* r = m_df->get_race(pref_id);
             if(r){
-                pref_name = r->plural_name();
+                pref_name = r->plural_name().toLower();
                 p->set_pref_flags(r);
             }
         }
@@ -944,13 +944,13 @@ void Dwarf::read_preferences(){
         {
             Race* r = m_df->get_race(pref_id);
             if(r)
-                pref_name = r->plural_name();
+                pref_name = r->plural_name().toLower();
         }
             break;
         case LIKE_ITEM:
         {
             p->set_item_type(i_type);
-            pref_name = m_df->get_preference_item_name(pref_id,item_sub_type);
+            pref_name = m_df->get_preference_item_name(pref_id,item_sub_type).toLower();
             if(item_sub_type >= 0 && Item::has_subtypes(i_type)){
                 ItemSubtype *s = m_df->get_item_subtype(i_type,item_sub_type);
                 if(s){
@@ -965,7 +965,7 @@ void Dwarf::read_preferences(){
         {
             Plant *plnt = m_df->get_plant(pref_id);
             if(plnt){
-                pref_name = plnt->name_plural();
+                pref_name = plnt->name_plural().toLower();
                 p->set_pref_flags(plnt->flags());
             }
         }
@@ -974,7 +974,7 @@ void Dwarf::read_preferences(){
         {
             Plant *plnt = m_df->get_plant(pref_id);
             if (plnt)
-                pref_name = plnt->name_plural();
+                pref_name = plnt->name_plural().toLower();
         }
             break;
         default:
@@ -983,7 +983,7 @@ void Dwarf::read_preferences(){
         }
             break;
         }
-        p->set_name(capitalize(pref_name));
+        p->set_name(pref_name);
         if(!pref_name.isEmpty())
             m_preferences.insert(pref_type, p);
         //        if(itype < NUM_OF_TYPES && itype != NONE)
@@ -1026,7 +1026,6 @@ void Dwarf::read_preferences(){
                 m_grouped_preferences.value(desc_key)->append(pref_name);
                 //build the tooltip at the same time, organizing by likes, dislikes
                 if(build_tooltip){
-                    pref_name = pref_name.toLower();
                     if(pType == LIKE_ITEM || pType == LIKE_MATERIAL || pType == LIKE_PLANT || pType == LIKE_TREE || pType == LIKE_CREATURE){
                         likes.append(pref_name);
                     }else if(pType == LIKE_FOOD){

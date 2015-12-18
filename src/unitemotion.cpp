@@ -29,7 +29,7 @@ THE SOFTWARE.
 #include "subthoughttypes.h"
 #include "emotion.h"
 
-#include "QDebug"
+#include <QRegExp>
 
 UnitEmotion::UnitEmotion(QObject *parent)
     : QObject(parent)
@@ -96,16 +96,35 @@ UnitEmotion::UnitEmotion(VIRTADDR addr, DFInstance *df, QObject *parent)
                     m_desc.append(s_thought);
                 }
             }else{
-                if(m_desc.contains("[skill]")){
-                    m_desc.replace("[skill]",gdr->get_skill_name(m_sub_id));
-                    m_compare_id = m_sub_id; //keep improved skills separate
-                }else if(m_desc.contains("[building]")){
-                    m_desc.replace("[building]",gdr->get_building_name(static_cast<BUILDING_TYPE>(m_sub_id),m_optional_level));
-                    m_compare_id = m_sub_id; //group by building type as well
+                QRegExp re(".*(\\[.*\\]).*");
+                int idx = re.indexIn(m_desc);
+                if(idx > -1){
+                    m_compare_id = m_sub_id; //don't consider thoughts with skills, syndromes, poems, etc. the same
+                    QString key = re.cap(1);
+                    QString replace = "";
+                    if(key=="[skill]"){
+                        replace = gdr->get_skill_name(m_sub_id,false,(m_thought_id == 11));
+                    }else if(key=="[building]"){
+                        replace = gdr->get_building_name(static_cast<BUILDING_TYPE>(m_sub_id),m_optional_level);
+                    }else if(key=="[syndrome]"){
+                        VIRTADDR syn_addr = df->get_syndrome(m_sub_id);
+                        if(syn_addr){
+                            replace = df->read_string(syn_addr);
+                        }
+                    }else if(key=="[poetry]"){
+                        replace = df->get_preference_other_name(m_sub_id,LIKE_POETRY);
+                    }else if(key=="[music]"){
+                        replace = df->get_preference_other_name(m_sub_id,LIKE_MUSIC);
+                    }else if(key=="[dance]"){
+                        replace = df->get_preference_other_name(m_sub_id,LIKE_DANCE);
+                    }
+                    if(replace != "")
+                        m_desc.replace(key,replace);
                 }
             }
         }
     }
+
     Emotion *e = gdr->get_emotion(m_eType);
     if(e){
         m_desc_colored = QString("<font color=%1>%2</font> ").arg(e->get_color().name()).arg(e->get_name()) + m_desc;
@@ -158,5 +177,5 @@ short UnitEmotion::get_stress_effect() const{
 
 bool UnitEmotion::equals(const UnitEmotion &other){
     return (this->m_thought_id == other.m_thought_id && this->m_eType == other.m_eType &&
-           this->m_compare_id == other.m_compare_id);
+            this->m_compare_id == other.m_compare_id);
 }
