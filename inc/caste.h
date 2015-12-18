@@ -73,6 +73,7 @@ public:
     BodyPart *get_body_part(int body_part_id);
 
     bool is_geldable();
+    int adult_size(){return m_adult_size;}
 
 private:
     VIRTADDR m_address;
@@ -84,6 +85,7 @@ private:
     int m_baby_age;
     int m_child_age;
     int m_can_geld;
+    int m_adult_size;
 
     QHash<int,att_range> m_attrib_ranges;
 

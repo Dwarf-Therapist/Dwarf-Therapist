@@ -380,6 +380,8 @@ protected:
     int m_affection;
     int m_stack_size;
     QString m_artifact_name;
+    QString m_size_prefix;
+    int m_maker_race;
     QList<Item*> m_contained_items;
 
     void read_data();

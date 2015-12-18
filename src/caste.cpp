@@ -44,6 +44,7 @@ Caste::Caste(DFInstance *df, VIRTADDR address, Race *r, QObject *parent)
     , m_baby_age(0)
     , m_child_age(0)
     , m_can_geld(-1)
+    , m_adult_size(-1)
     , m_df(df)
     , m_mem(df->memory_layout())
     , m_flags()
@@ -92,6 +93,8 @@ void Caste::read_caste() {
     if(!m_flags.has_flag(NOT_BUTCHERABLE)){
         m_flags.set_flag(BUTCHERABLE,true);
     }
+
+    m_adult_size = m_df->read_int(m_address + m_mem->caste_offset("adult_size"));
 
     m_body_addr = m_address + m_mem->caste_offset("body_info");
     m_body_parts_addr = m_df->enumerate_vector(m_body_addr);

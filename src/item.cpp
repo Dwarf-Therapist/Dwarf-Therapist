@@ -49,6 +49,8 @@ Item::Item(const Item &i)
     m_affection = i.m_affection;
     m_stack_size = i.m_stack_size;
     m_artifact_name = i.m_artifact_name;
+    m_size_prefix = i.m_size_prefix;
+    m_maker_race = i.m_maker_race;
 }
 
 Item::Item(DFInstance *df, ItemDefUniform *u, QObject *parent)
@@ -63,6 +65,8 @@ Item::Item(DFInstance *df, ItemDefUniform *u, QObject *parent)
     , m_id(u->id())
     , m_affection(0)
     , m_stack_size(u->get_stack_size())
+    , m_size_prefix("")
+    , m_maker_race(-1)
 {
     //set the color to the missing uniform color, since we passed in a uniform itemdef
     m_color_display = Item::color_missing();
@@ -116,6 +120,8 @@ Item::Item(DFInstance *df, VIRTADDR item_addr, QObject *parent)
     , m_id(-1)
     , m_affection(0)
     , m_stack_size(0)
+    , m_size_prefix("")
+    , m_maker_race(-1)
 {
     read_data();
 }
@@ -132,6 +138,7 @@ Item::Item(ITEM_TYPE itype, QString name, QObject *parent)
     , m_id(-1)
     , m_affection(0)
     , m_stack_size(0)
+    , m_size_prefix("")
 {
     m_item_name = (!name.trimmed().isEmpty() ? name : QObject::tr("Unknown"));
     m_display_name = m_item_name;
@@ -174,6 +181,7 @@ void Item::read_data(){
         m_wear = m_df->read_short(m_addr+m_df->memory_layout()->item_offset("wear"));
         m_mat_type = m_df->read_short(m_addr+m_df->memory_layout()->item_offset("mat_type"));
         m_mat_idx = m_df->read_int(m_addr+m_df->memory_layout()->item_offset("mat_index"));
+        m_maker_race = m_df->read_short(m_addr+m_df->memory_layout()->item_offset("mat_index")+0x4); //TODO: use absolute offset
         m_quality = m_df->read_short(m_addr+m_df->memory_layout()->item_offset("quality"));
 
         read_material();
@@ -284,7 +292,8 @@ void Item::build_display_name(){
     }
 
     //build the base display name
-    m_display_name = QString("%4%3%1 %2%3%4")
+    m_display_name = QString("%5%4%1%2 %3%4%5")
+            .arg(m_size_prefix)
             .arg(capitalizeEach(m_material_name))
             .arg(capitalizeEach(m_item_name))
             .arg(symbol_q)

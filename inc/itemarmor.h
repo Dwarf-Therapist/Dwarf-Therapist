@@ -25,6 +25,7 @@ THE SOFTWARE.
 
 #include "item.h"
 #include "itemarmorsubtype.h"
+#include "races.h"
 
 class ItemArmor : public Item {
 public:
@@ -58,6 +59,18 @@ private:
             if(m_armor_def){
                 if(m_armor_def->armor_flags().has_flag(ItemArmorSubtype::ARMOR_SHAPED)){
                     m_layer_name.append(tr("[S]"));
+                }
+            }
+            if(m_maker_race >= 0 && m_maker_race != m_df->dwarf_race_id()){
+                Race *r = m_df->get_race(m_maker_race);
+                if(r){
+                    int item_size = r->adult_size();
+                    int our_size = m_df->get_race(m_df->dwarf_race_id())->adult_size();
+                    if(item_size > our_size){
+                        m_size_prefix = tr("Large ");
+                    }else if(item_size < our_size){
+                        m_size_prefix = tr("Small ");
+                    }
                 }
             }
         }

@@ -58,6 +58,7 @@ public:
     Material *get_creature_material(int index);
     QHash<int, Material *> get_creature_materials();
     Caste *get_caste_by_id(int idx);
+    int adult_size();
 
     void load_data();
     FlagArray flags() {return m_flags;}

@@ -226,6 +226,19 @@ bool Race::caste_flag(CASTE_FLAGS cf){
     }
 }
 
+int Race::adult_size(){
+    if(m_castes.empty()){
+        return -1;
+    }else{
+        Caste *c = m_castes.at(0);
+        if(c){
+            return c->adult_size();
+        }else{
+            return -1;
+        }
+    }
+}
+
 VIRTADDR Race::get_tissue_address(int index){
     if(index > -1 && index < m_tissues_addr.size())
         return m_tissues_addr.at(index);
