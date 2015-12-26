@@ -13,7 +13,7 @@ You must perform one of the following steps to have DT run properly in Qt Creato
 - Disable shadow build.
 - Manually copy the ``share`` directory from the clone to the build location, i.e. ``%{buildDir}`` or ``%{buildDir}/<build type>``.
 
-In order to allow DT to run properly *outside* of Qt Creator, add a custom build step: ``<location of Git Bash>`` with argument ``%{sourceDir}/windeployqt.sh`` running in ``%{buildDir}``.
+In order to allow DT to run properly *outside* of Qt Creator, add a custom build step: ``<location of Git Bash>`` with argument ``%{sourceDir}\scripts\windeployqt.sh`` running in ``%{buildDir}``.
 
 Linux
 =====
