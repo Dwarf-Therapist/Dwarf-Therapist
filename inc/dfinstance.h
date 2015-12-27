@@ -41,6 +41,7 @@ class Reaction;
 class Squad;
 class Word;
 class EmotionGroup;
+class Activity;
 
 class DFInstance : public QObject {
     Q_OBJECT
@@ -99,6 +100,8 @@ public:
     void load_fortress();
     void load_fortress_name();
 
+    void load_activities();
+
     void refresh_data();
 
     QList<Squad*> load_squads(bool show_progress);
@@ -151,8 +154,11 @@ public:
     MemoryLayout *get_memory_layout(QString checksum, bool warn = true);
 
     void load_game_data();
+
     QString get_language_word(VIRTADDR addr);
     QString get_translated_word(VIRTADDR addr);
+    QString get_name(VIRTADDR addr, bool translate);
+
     Reaction * get_reaction(QString tag) { return m_reactions.value(tag, 0); }
     Race * get_race(const uint & offset) { return m_races.value(offset, NULL); }
     QVector<Race *> get_races() {return m_races;}
@@ -160,7 +166,8 @@ public:
     VIRTADDR find_historical_figure(int hist_id);
     VIRTADDR find_identity(int id);
     VIRTADDR find_event(int id);
-    bool unit_occupation_fixed(int histfig_id);
+    QPair<int, QString> find_activity(int histfig_id);
+    VIRTADDR find_occupation(int histfig_id);
 
     FortressEntity * fortress() {return m_fortress;}
 
@@ -193,13 +200,12 @@ public:
 
     Material * find_material(int mat_index, short mat_type);
 
-    QVector<VIRTADDR> get_item_vector(ITEM_TYPE i);
+    QVector<VIRTADDR> get_itemdef_vector(ITEM_TYPE i);
     VIRTADDR get_item_address(ITEM_TYPE itype, int item_id);
 
     QString get_preference_item_name(int index, int subtype);
-    QString get_artifact_name(ITEM_TYPE itype,int item_id);
-
     QString get_preference_other_name(int index, PREF_TYPES p_type);
+    QString get_artifact_name(ITEM_TYPE itype,int item_id);
 
     inline Material * get_inorganic_material(int index) {
         return m_inorganics_vector.value(index);
@@ -278,6 +284,7 @@ private:
     QVector<VIRTADDR> m_fake_identities;
     QHash<int,VIRTADDR> m_occupations;
     QHash<int,VIRTADDR> m_events;
+    QHash<int,QPointer<Activity> > m_activities;
 
     QHash<ITEM_TYPE, QVector<VIRTADDR> > m_itemdef_vectors;
     QHash<ITEM_TYPE, QVector<VIRTADDR> > m_items_vectors;

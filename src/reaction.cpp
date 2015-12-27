@@ -30,7 +30,6 @@ Reaction::Reaction(DFInstance *df, VIRTADDR address, QObject *parent)
     , m_address(address)
     , m_tag(QString::null)
     , m_name(QString::null)
-    , m_skill(QString::null)
     , m_skill_id(0)
     , m_df(df)
     , m_mem(df->memory_layout())
@@ -62,9 +61,6 @@ void Reaction::read_reaction() {
     m_tag = m_df->read_string(m_address);
     m_name = capitalize(m_df->read_string(m_address + m_df->memory_layout()->job_detail("reaction")));
     m_skill_id = m_df->read_short(m_address + m_df->memory_layout()->job_detail("reaction_skill"));
-    m_skill = get_skill_name(m_skill_id);
-    //QString material_name = m_df->find_material_name()
-    //LOGD << "Reaction " << m_name << " at " << hexify(m_address) << " tag " << m_tag;
     m_df->detach();
 }
 

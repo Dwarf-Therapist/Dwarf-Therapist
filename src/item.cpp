@@ -91,7 +91,7 @@ Item::Item(DFInstance *df, ItemDefUniform *u, QObject *parent)
     }
 
     short subtype = u->item_subtype();
-    QVector<VIRTADDR> item_defs = m_df->get_item_vector(m_iType);
+    QVector<VIRTADDR> item_defs = m_df->get_itemdef_vector(m_iType);
     if(!item_defs.empty() && (subtype >=0 && subtype < item_defs.count())){
         //get sub-type name
         m_item_name = m_df->read_string(item_defs.at(subtype) + m_df->memory_layout()->item_subtype_offset("name"));
@@ -181,7 +181,7 @@ void Item::read_data(){
         m_wear = m_df->read_short(m_addr+m_df->memory_layout()->item_offset("wear"));
         m_mat_type = m_df->read_short(m_addr+m_df->memory_layout()->item_offset("mat_type"));
         m_mat_idx = m_df->read_int(m_addr+m_df->memory_layout()->item_offset("mat_index"));
-        m_maker_race = m_df->read_short(m_addr+m_df->memory_layout()->item_offset("mat_index")+0x4); //TODO: use absolute offset
+        m_maker_race = m_df->read_short(m_addr+m_df->memory_layout()->item_offset("maker_race"));
         m_quality = m_df->read_short(m_addr+m_df->memory_layout()->item_offset("quality"));
 
         read_material();

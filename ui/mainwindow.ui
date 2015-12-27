@@ -298,16 +298,8 @@
         </widget>
        </item>
       </layout>
-      <zorder>lbl_pending_changes_lbl</zorder>
-      <zorder>le_filter_text</zorder>
-      <zorder>cb_filter_script</zorder>
       <zorder>lbl_group_by</zorder>
-      <zorder>lbl_run_filter</zorder>
-      <zorder>btn_clear_filters</zorder>
-      <zorder>lbl_dwarfs</zorder>
       <zorder>cb_group_by</zorder>
-      <zorder>lbl_filter</zorder>
-      <zorder>lbl_dwarf_total</zorder>
       <zorder>lbl_pending_changes_lbl</zorder>
       <zorder>lbl_pending_changes</zorder>
       <zorder>lbl_dwarf_total</zorder>
@@ -922,7 +914,7 @@
   </action>
   <action name="act_options">
    <property name="icon">
-    <iconset resource="../resources.qrc">
+    <iconset>
      <normaloff>:/img/wrench-screwdriver.png</normaloff>:/img/wrench-screwdriver.png</iconset>
    </property>
    <property name="text">
@@ -991,7 +983,7 @@
   </action>
   <action name="act_go_donate">
    <property name="icon">
-    <iconset resource="../resources.qrc">
+    <iconset>
      <normaloff>:/img/heart.png</normaloff>:/img/heart.png</iconset>
    </property>
    <property name="text">
@@ -1079,7 +1071,7 @@
   <action name="act_clear_user_settings">
    <property name="icon">
     <iconset resource="../resources.qrc">
-     <normaloff>:/status/img/broom.png</normaloff>:/status/img/broom.png</iconset>
+     <normaloff>:/activities/broom.png</normaloff>:/activities/broom.png</iconset>
    </property>
    <property name="text">
     <string>Clear User Settings...</string>

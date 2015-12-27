@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>714</width>
-    <height>670</height>
+    <height>693</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1766,7 +1766,7 @@
      <widget class="QWidget" name="tab_noble_colors">
       <attribute name="icon">
        <iconset resource="../resources.qrc">
-        <normaloff>:/status/img/crown.png</normaloff>:/status/img/crown.png</iconset>
+        <normaloff>:/activities/crown.png</normaloff>:/activities/crown.png</iconset>
       </attribute>
       <attribute name="title">
        <string>Nobles</string>

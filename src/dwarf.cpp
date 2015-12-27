@@ -47,6 +47,7 @@ THE SOFTWARE.
 #include "caste.h"
 #include "roleaspect.h"
 #include "thought.h"
+#include "activity.h"
 
 #include "squad.h"
 #include "uniform.h"
@@ -121,6 +122,8 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_goals_realized(0)
     , m_worst_rust_level(0)
     , m_labor_reason("")
+    , m_histfig_id(0)
+    , m_occ_type(OCC_CITIZEN)
     , m_can_assign_military(true)
     , m_curse_type(eCurse::NONE)
 {
@@ -214,15 +217,16 @@ Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
     bool is_tame = flags1 & (1 << FLAG_TAME);
 
     Race *r = df->get_race(race_id);
-    QString r_name = r->name();
-    TRACE << "   RACE NAME:" << r_name;
+    QString r_name = "";
     FlagArray r_flags;
     FlagArray c_flags;
     if(r){
+         r_name = r->name();
         r_flags = r->flags();
         c_flags = r->get_caste_by_id(0)->flags();
         r = 0;
     }
+    TRACE << "RACE NAME:" << r_name;
 
     if(!is_caged){
         //if not caged, not part of our civ, not another sentient civ and not livestock, then ignore it
@@ -336,29 +340,6 @@ void Dwarf::refresh_data() {
 
         if(m_is_animal)
             build_names(); //calculate names again as we need to check tameness for animals
-
-        //test reading owned buildings
-        /*
-        QVector<VIRTADDR> building_addrs = m_df->enumerate_vector(m_address + 0x2e8-0x4);
-        foreach(VIRTADDR addr, building_addrs){
-            bool is_room = m_df->read_byte(addr+0x7c);
-            QString room_name = m_df->read_string(addr+0xc);
-            short mat_type = m_df->read_short(addr+0x24);
-            short mat_index = m_df->read_short(addr+0x28);
-            VIRTADDR vtable = m_df->read_addr(addr);
-            int building_type = m_df->read_int(m_df->read_addr(vtable+0x68) + 0x1);
-            VIRTADDR val_addr = m_df->read_addr(vtable+0xa8);
-            int room_value = m_df->read_int(val_addr + 0x1);
-            //            LOGD << "owns building " << building->display_name();
-            //        }
-            QVector<VIRTADDR> stored_items_addrs = m_df->enumerate_vector(addr + 0xec -0x4);
-            foreach(VIRTADDR item_addr, stored_items_addrs){
-                Item *stored = new Item(m_df, m_df->read_addr(item_addr), this);
-                LOGD << "    - " << stored->display_name();
-            }
-        }
-         */
-
     }
 
     TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
@@ -505,8 +486,9 @@ void Dwarf::read_id() {
 }
 
 void Dwarf::read_hist_fig(){
-    m_hist_figure = new HistFigure(m_df->read_int(m_address + m_mem->dwarf_offset("hist_id")),m_df,this);
-    TRACE << "HIST_FIG_ID:" << m_hist_figure->id();
+    m_histfig_id = m_df->read_int(m_address + m_mem->dwarf_offset("hist_id"));
+    m_hist_figure = new HistFigure(m_histfig_id,m_df,this);
+    TRACE << "HIST_FIG_ID:" << m_histfig_id;
 }
 
 void Dwarf::read_gender_orientation() {
@@ -696,7 +678,7 @@ void Dwarf::find_true_ident(){
 }
 
 int Dwarf::historical_id(){
-    return m_hist_figure->id();
+    return m_histfig_id;
 }
 
 HistFigure* Dwarf::hist_figure(){
@@ -870,7 +852,7 @@ void Dwarf::read_profession() {
 }
 
 void Dwarf::read_noble_position(){
-    m_noble_position = m_df->fortress()->get_noble_positions(m_hist_figure->id(),is_male());
+    m_noble_position = m_df->fortress()->get_noble_positions(m_histfig_id,is_male());
 }
 
 void Dwarf::read_preferences(){
@@ -1200,14 +1182,23 @@ void Dwarf::read_labors() {
 
 void Dwarf::check_availability(){
     GameDataReader *gdr = GameDataReader::ptr();
-    //check that labors can be toggled
-    //int civ_id = m_df->read_int(m_address + m_mem->dwarf_offset("civ"));
-    bool foreigner = false;
+
+    VIRTADDR occ_addr = m_df->find_occupation(m_histfig_id);
+
+    bool fixed_occupation = false;
+    if(occ_addr != 0){
+        fixed_occupation = (m_df->read_int(occ_addr+0x18) == m_df->fortress()->id()); //TODO: offset
+        m_occ_type = static_cast<UNIT_OCCUPATION>(m_df->read_int(occ_addr + 0x4));
+    }
+
     Profession *p = GameDataReader::ptr()->get_profession(m_raw_profession);
+    bool foreigner = false;
+
+    //check that labors can be toggled
     if(m_locked_mood){
         m_can_set_labors = false;
         m_labor_reason = tr("due to mood (%1)").arg(gdr->get_mood_name(m_mood_id,true));
-    }else if(m_df->unit_occupation_fixed(m_hist_figure->id())){
+    }else if(fixed_occupation){
         foreigner = true;
         m_can_set_labors = false;
         m_labor_reason = tr("for non-citizens.");
@@ -1239,30 +1230,31 @@ void Dwarf::check_availability(){
     }
 }
 
-void Dwarf::read_current_job() {
+void Dwarf::read_current_job(){
     VIRTADDR addr = m_address + m_mem->dwarf_offset("current_job");
     VIRTADDR current_job_addr = m_df->read_addr(addr);
     m_current_sub_job_id.clear();
 
     TRACE << "Current job addr: " << hex << current_job_addr;
-    if (current_job_addr != 0) {
+    if(current_job_addr != 0){
         m_current_job_id = m_df->read_short(current_job_addr + m_mem->job_detail("id"));
 
         //if drinking blood and we're not showing vamps, change job to drink
-        if (m_current_job_id == 223 && DT->user_settings()->value("options/highlight_cursed", false).toBool()==false)
-            m_current_job_id = 17;
+        if(m_current_job_id == (int)DwarfJob::JOB_DRINK_BLOOD && DT->user_settings()->value("options/highlight_cursed", false).toBool()==false){
+            m_current_job_id = 17; //DRINK
+        }
 
         DwarfJob *job = GameDataReader::ptr()->get_job(m_current_job_id);
-        if (job) {
-            m_current_job = job->description;
-            if(job->type == DwarfJob::DJT_MOOD){ //strange mood
-                m_current_job.replace("??",(GameDataReader::ptr()->get_mood_name(m_mood_id)));
+        if(job){
+            m_current_job = job->name();
+            if(job->id() >= 55 && job->id() <= 67){ //strange moods
+                m_current_job = job->name(GameDataReader::ptr()->get_mood_name(m_mood_id));
             }
 
             int sub_job_offset = m_mem->job_detail("sub_job_id");
-            if(sub_job_offset != -1) {
+            if(sub_job_offset != -1){
                 m_current_sub_job_id = m_df->read_string(current_job_addr + sub_job_offset); //reaction name
-                if(!job->reactionClass.isEmpty() && !m_current_sub_job_id.isEmpty()) {
+                if(!job->reactionClass().isEmpty() && !m_current_sub_job_id.isEmpty()) {
                     Reaction* reaction = m_df->get_reaction(m_current_sub_job_id);
                     if(reaction!=0) {
                         m_current_job = capitalize(reaction->name());
@@ -1271,7 +1263,7 @@ void Dwarf::read_current_job() {
                 }
             }
 
-            if(m_current_sub_job_id.isEmpty()){
+            if(m_current_sub_job_id.isEmpty() && job->has_placeholder()){
                 QString material_name;
                 short mat_type = m_df->read_short(current_job_addr + m_mem->job_detail("mat_type"));
                 int mat_index = m_df->read_int(current_job_addr + m_mem->job_detail("mat_index"));
@@ -1282,35 +1274,49 @@ void Dwarf::read_current_job() {
                     quint32 mat_category = m_df->read_addr(current_job_addr + m_mem->job_detail("mat_category"));
                     material_name = DwarfJob::get_job_mat_category_name(mat_category);
                 }
-                if(!material_name.isEmpty())
-                    m_current_job.replace("??",capitalize(material_name));
+                if(!material_name.isEmpty()){
+                    m_current_job = job->name(capitalize(material_name));
+                }
             }
 
-        } else {
+        }else{
             m_current_job = tr("Unknown job");
         }
 
-    } else {
-        if(active_military()){
-            m_current_job = tr("Soldier");
-            m_current_job_id = -1;
+    }else{
+        //default to no job/break
+        if(has_state(STATE_ON_BREAK)){
+            m_current_job_id = DwarfJob::JOB_ON_BREAK;
         }else{
-            m_is_on_break = has_state(STATE_ON_BREAK);
-            m_current_job = m_is_on_break ? tr("On Break") : tr("No Job");
-            if(m_is_on_break){
-                m_current_job_id = -2;
-            }else{
-                if(get_flag_value(FLAG_CAGED)){
-                    m_current_job = tr("Caged");
-                    m_current_job_id = -4;
-                }else{
-                    m_current_job_id = -3;
+            m_current_job_id = DwarfJob::JOB_IDLE;
+        }
+
+        QPair<int,QString> activity_desc = m_df->find_activity(m_histfig_id);
+        if(activity_desc.first != DwarfJob::JOB_DEFAULT){
+            bool military_act = GameDataReader::ptr()->get_job(activity_desc.first)->is_military();
+            if((active_military() && military_act) || (!active_military() && !military_act)){
+                m_current_job_id = activity_desc.first;
+                m_current_job = capitalizeEach(activity_desc.second);
+            }
+        }
+
+        if(m_current_job.isEmpty()){
+            if(active_military() && m_squad_id >= 0){
+                Squad *s = m_df->get_squad(m_squad_id);
+                if(s){
+                    activity_desc = s->get_order(m_histfig_id);
+                    if(activity_desc.first != DwarfJob::JOB_DEFAULT){
+                        m_current_job_id = activity_desc.first;
+                        m_current_job = capitalizeEach(activity_desc.second);
+                    }
                 }
             }
         }
+        if(m_current_job.isEmpty()){
+            m_current_job = capitalizeEach(GameDataReader::ptr()->get_job(m_current_job_id)->name());
+        }
     }
 
-    m_current_job = capitalizeEach(m_current_job);
     TRACE << "CURRENT JOB:" << m_current_job_id << m_current_sub_job_id << m_current_job;
 }
 
@@ -2622,6 +2628,10 @@ QString Dwarf::tooltip_text() {
         title.append(tr("<center><i><h5 style=\"margin:0;\">Creator of '%2'</h5></i></center>").arg(m_artifact_name));
 
     tt.append(title);
+
+#ifdef QT_DEBUG
+    tt.append(QString("<center><h4>ID: %1 HIST_ID: %2</h4></center>").arg(m_id).arg(m_histfig_id));
+#endif
 
     if(s->value("tooltip_show_caste",true).toBool())
         tt.append(tr("<b>Caste:</b> %1").arg(caste_name()));

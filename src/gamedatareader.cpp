@@ -60,7 +60,7 @@ GameDataReader::GameDataReader(QObject *parent)
     }
 
     QStringList required_sections;
-    required_sections << "labors" << "attributes" << "dwarf_jobs" << "goals" << "beliefs" << "unit_thoughts" << "facets" << "skills" << "skill_levels";
+    required_sections << "labors" << "attributes" << "unit_jobs" << "goals" << "beliefs" << "unit_thoughts" << "facets" << "skills" << "skill_levels";
     foreach(QString key, required_sections){
         if(!m_data_settings->childGroups().contains(key)){
             QString err = tr("Dwarf Therapist cannot run because game_data.ini is missing [%1], a critical section!").arg(key);
@@ -221,37 +221,19 @@ GameDataReader::GameDataReader(QObject *parent)
     //facets (after beliefs)
     refresh_facets();
 
-    int job_count = m_data_settings->beginReadArray("dwarf_jobs");
     qDeleteAll(m_dwarf_jobs);
     m_dwarf_jobs.clear();
     QStringList job_names;
-    //add custom jobs
-    m_dwarf_jobs[-1] = new DwarfJob(-1,tr("Soldier"), DwarfJob::DJT_SOLDIER, "", this);
-    job_names << m_dwarf_jobs[-1]->description;
-    m_dwarf_jobs[-2] = new DwarfJob(-2,tr("On Break"), DwarfJob::DJT_ON_BREAK, "", this);
-    job_names << m_dwarf_jobs[-2]->description;
-    m_dwarf_jobs[-3] = new DwarfJob(-3,tr("No Job"), DwarfJob::DJT_IDLE, "", this);
-    job_names << m_dwarf_jobs[-3]->description;
-    m_dwarf_jobs[-4] = new DwarfJob(-4,tr("Caged"), DwarfJob::DJT_CAGED, "", this);
-    job_names << m_dwarf_jobs[-4]->description;
+    read_activity_section("unit_jobs",0,&job_names);
+    read_activity_section("unit_activities",DwarfJob::ACTIVITY_OFFSET,&job_names);
+    read_activity_section("unit_orders",DwarfJob::ORDER_OFFSET,&job_names);
 
-    for (short i = 0; i < job_count; ++i) {
-        m_data_settings->setArrayIndex(i);
-
-        QString name = m_data_settings->value("name", "???").toString();
-        QString job_type = m_data_settings->value("type").toString();
-        QString reactionClass = m_data_settings->value("reaction_class").toString();
-        DwarfJob::DWARF_JOB_TYPE type = DwarfJob::get_type(job_type);
-
-        m_dwarf_jobs[i] =  new DwarfJob(i, name, type, reactionClass, this);
-        job_names << name;
-    }
     m_data_settings->endArray();
     qSort(job_names);
     foreach(QString name, job_names) {
         foreach(DwarfJob *j, m_dwarf_jobs) {
-            if (j->description == name) {
-                m_ordered_jobs << QPair<int, QString>(j->id, name);
+            if (j->name() == name) {
+                m_ordered_jobs << QPair<int, QString>(j->id(), name);
                 break;
             }
         }
@@ -364,6 +346,33 @@ GameDataReader::GameDataReader(QObject *parent)
     m_building_quality.insert(2,tr("splendid"));
     m_building_quality.insert(3,tr("wonderful"));
     m_building_quality.insert(4,tr("completely sublime"));
+
+    m_data_settings->beginGroup("sphere_names");
+    foreach(QString id, m_data_settings->childKeys()) {
+        m_spheres << m_data_settings->value(id, "UNKNOWN").toString();
+    }
+    qSort(m_spheres);
+    m_data_settings->endGroup();
+
+    count = m_data_settings->beginReadArray("knowledge");
+    m_knowledge.clear();
+    for(short i = 0; i < count; ++i) {
+        m_data_settings->setArrayIndex(i);
+        QString field = m_data_settings->value("field").toString();
+        int topic_count = m_data_settings->beginReadArray("topics");
+        QMap<int,QString> topics;
+        for(int j = 0; j < topic_count; j++){
+            m_data_settings->setArrayIndex(j);
+            QString area = capitalizeEach(m_data_settings->value("area","??").toString());
+            QString subject = capitalizeEach(m_data_settings->value("subject","??").toString());
+            topics.insert(j,QString(tr("<h4>%1 - %2</h4>Pondering %3")
+                                  .arg(field).arg(area).arg(subject)));
+        }
+        m_data_settings->endArray();
+
+        m_knowledge.insert(i,topics);
+    }
+    m_data_settings->endArray();
 }
 
 //value here is the base value of the item/building
@@ -374,6 +383,14 @@ QString GameDataReader::get_building_name(BUILDING_TYPE b_type, int value){
         key = 4;
     QString quality = m_building_quality.value(key,"");
     return QString(quality + " " + name).trimmed();
+}
+
+QString GameDataReader::get_sphere_name(int idx){
+    if(idx >= 0 && idx < m_spheres.length()){
+        return m_spheres.at(idx);
+    }else{
+        return tr("Unknown");
+    }
 }
 
 GameDataReader::~GameDataReader(){
@@ -659,6 +676,48 @@ void GameDataReader::build_calendar(){
         m_months.append(tr("Opal"));
         m_months.append(tr("Obsidian"));
     }
+}
+
+void GameDataReader::read_activity_section(QString section, int offset, QStringList *job_names){
+    int job_count = m_data_settings->beginReadArray(section);
+    for(int idx = 0; idx < job_count; ++idx){
+        m_data_settings->setArrayIndex(idx);
+
+        QString group_name = m_data_settings->value("name","").toString();
+        QString img_path = m_data_settings->value("img","control-play-blue").toString();
+        bool is_military = m_data_settings->value("is_military",false).toBool();
+
+        if(m_data_settings->childGroups().contains("sub")){
+            int sub_jobs = m_data_settings->beginReadArray("sub");
+            for(int sub_idx = 0; sub_idx < sub_jobs; ++sub_idx){
+                m_data_settings->setArrayIndex(sub_idx);
+                DwarfJob *j = new DwarfJob(*m_data_settings,offset,group_name,img_path,is_military,this);
+                if(m_dwarf_jobs.contains(j->id())){
+                    qDebug() << "duplicate job!";
+                }else{
+                    m_dwarf_jobs.insert(j->id(),j);
+                }
+                job_names->append(j->name());
+            }
+            m_data_settings->endArray();
+        }else{
+            DwarfJob *j = new DwarfJob(*m_data_settings,offset,"","",is_military,this);
+            if(m_dwarf_jobs.contains(j->id())){
+                qDebug() << "duplicate job!";
+            }else{
+                m_dwarf_jobs.insert(j->id(),j);
+            }
+            job_names->append(j->name());
+        }
+    }
+    m_data_settings->endArray();
+}
+
+QString GameDataReader::get_knowledge_desc(int field, int topic){
+    if(m_knowledge.contains(field)){
+        return m_knowledge.value(field).value(topic,"Unknown");
+    }
+    return "Unknown";
 }
 
 GameDataReader *GameDataReader::m_instance = 0;

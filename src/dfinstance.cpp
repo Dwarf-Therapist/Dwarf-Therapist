@@ -48,12 +48,12 @@ THE SOFTWARE.
 #include "preference.h"
 #include "histfigure.h"
 #include "emotiongroup.h"
+#include "activity.h"
+
 #include <QMessageBox>
 #include <QTimer>
 #include <QTime>
 #include <QByteArrayMatcher>
-
-#include "caste.h"
 
 #ifdef Q_OS_WIN
 #define LAYOUT_SUBDIR "windows"
@@ -315,6 +315,20 @@ QString DFInstance::get_translated_word(VIRTADDR addr){
     return m_languages->english_word(addr);
 }
 
+QString DFInstance::get_name(VIRTADDR addr, bool translate){
+    QString f_name = read_string(addr);
+    QString n_name = read_string(addr + m_layout->dwarf_offset("nick_name"));
+    if(!n_name.isEmpty()){
+        n_name = "'" + n_name + "'";
+    }
+    QString l_name;
+    if (translate)
+        l_name =  get_translated_word(addr);
+    else
+        l_name = get_language_word(addr);
+    return capitalizeEach(QString("%1 %2 %3").arg(f_name).arg(n_name).arg(l_name).simplified());
+}
+
 QVector<Dwarf*> DFInstance::load_dwarves() {
     QVector<Dwarf*> dwarves;
     if (!m_is_ok) {
@@ -325,9 +339,6 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
     // we're connected, make sure we have good addresses
     VIRTADDR creature_vector = m_layout->address("creature_vector");
-    VIRTADDR current_year = m_layout->address("current_year");
-    VIRTADDR current_year_tick = m_layout->address("cur_year_tick");
-    m_cur_year_tick = read_int(current_year_tick);
 
     //current race's offset was bad
     if (!DT->arena_mode && m_dwarf_race_id < 0){
@@ -337,17 +348,12 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     // both necessary addresses are valid, so let's try to read the creatures
     VIRTADDR dwarf_civ_idx_addr = m_layout->address("dwarf_civ_index");
     LOGD << "loading creatures from " << hexify(creature_vector);
-    LOGD << "loading current year from" << hexify(current_year);
 
     emit progress_message(tr("Loading Units"));
 
     attach();
     m_dwarf_civ_id = read_int(dwarf_civ_idx_addr);
     LOGD << "civilization id:" << hexify(m_dwarf_civ_id);
-
-    m_current_year = read_word(current_year);
-    LOGI << "current year:" << m_current_year;
-    m_cur_time = (int)m_current_year * 0x62700 + m_cur_year_tick;
 
     QVector<VIRTADDR> creatures_addrs = get_creatures();
 
@@ -758,6 +764,16 @@ const QString DFInstance::fortress_name(){
 }
 
 void DFInstance::refresh_data(){
+    VIRTADDR current_year = m_layout->address("current_year");
+    LOGD << "loading current year from" << hexify(current_year);
+
+    VIRTADDR current_year_tick = m_layout->address("cur_year_tick");
+    m_cur_year_tick = read_int(current_year_tick);
+    m_current_year = read_word(current_year);
+    LOGI << "current year:" << m_current_year;
+    m_cur_time = (int)m_current_year * ticks_per_year + m_cur_year_tick;
+
+    load_activities();
     load_fortress();
     load_squads(true);
     load_items();
@@ -1126,15 +1142,34 @@ void DFInstance::load_hist_figures(){
     }
 }
 
-bool DFInstance::unit_occupation_fixed(int hist_id){
+QPair<int,QString> DFInstance::find_activity(int histfig_id){
+    if(m_activities.count() <= 0)
+        load_activities();
+
+    foreach(Activity *a, m_activities){
+        QPair<int,QString> ret = a->find_activity(histfig_id);
+        if(ret.first != 0){
+            return ret;
+        }
+    }
+    return qMakePair<int,QString>(0,"");
+}
+
+void DFInstance::load_activities(){
+    QVector<VIRTADDR> all_activities = enumerate_vector(m_layout->address("activities_vector"));
+    foreach(VIRTADDR addr, all_activities){
+        QPointer<Activity> act = new Activity(this,addr,this);
+        if(act->activity_count() > 0){
+            m_activities.insert(read_int(addr), act);
+        }
+    }
+}
+
+VIRTADDR DFInstance::find_occupation(int hist_id){
     if(m_occupations.count() <= 0)
         load_occupations();
 
-    if(m_occupations.count() > 0 && m_occupations.contains(hist_id)){
-        return (read_int(m_occupations.value(hist_id)+0x18) == m_fortress->id());
-    }else{
-        return false;
-    }
+    return m_occupations.value(hist_id,0);
 }
 
 void DFInstance::load_occupations(){
@@ -1166,7 +1201,7 @@ VIRTADDR DFInstance::find_event(int id){
     return m_events.value(id,0);
 }
 
-QVector<VIRTADDR> DFInstance::get_item_vector(ITEM_TYPE i){
+QVector<VIRTADDR> DFInstance::get_itemdef_vector(ITEM_TYPE i){
     if(m_itemdef_vectors.contains(i))
         return m_itemdef_vectors.value(i);
     else
@@ -1181,7 +1216,7 @@ QString DFInstance::get_preference_item_name(int index, int subtype){
         if(!list.isEmpty() && (subtype >=0 && subtype < list.count()))
             return list.at(subtype)->name_plural();
     }else{
-        QVector<VIRTADDR> addrs = get_item_vector(itype);
+        QVector<VIRTADDR> addrs = get_itemdef_vector(itype);
         if(!addrs.empty() && (subtype >=0 && subtype < addrs.count()))
             return read_string(addrs.at(subtype) + m_layout->item_subtype_offset("name_plural"));
     }
@@ -1205,9 +1240,15 @@ QString DFInstance::get_artifact_name(ITEM_TYPE itype, int item_id){
 
     if(itype == ARTIFACTS){
         VIRTADDR addr = m_mapped_items.value(itype).value(item_id);
-        QString name = read_dwarf_name(addr+0x4);
-        name = get_language_word(addr+0x4);
-        return name;
+        if(addr){
+            QString name = get_language_word(addr+0x4); //TODO: offset
+            if(name.isEmpty()){
+                name = read_string(addr+0x4);
+            }
+            return name;
+        }else{
+            return "";
+        }
     }else{
         return "";
     }
@@ -1302,39 +1343,49 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
     else if(mat_type < 619){
         Plant *p = get_plant(mat_index);
         if(p){
-            name = p->name();
+            //name = p->name();
 
-            if(itype==LEAVES_FRUIT)
-                name = p->leaf_plural();
-            else if(itype==SEEDS)
+            if(itype==SEEDS){
                 name = p->seed_plural();
-            else if(itype==PLANT)
+            }else if(itype==PLANT){
                 name = p->name_plural();
-
-            //specific plant material
-            if(m){
-                if(itype == DRINK || itype == LIQUID_MISC){
-                    name = m->get_material_name(LIQUID);
-                }else if(itype == POWDER_MISC || itype == CHEESE){
-                    name = m->get_material_name(POWDER);
-                }else if(Item::is_armor_type(itype)){
-                    //don't include the 'fabric' part if it's a armor (item?) ie. pig tail fiber coat, not pig tail fiber fabric coat
-                    //this appears to have changed now (42.x) and the solid name is used simply: pig tail coat
-                    name = m->get_material_name(SOLID);
-                }else if(mat_state != SOLID){
+            }else if(m){
+                if(mat_state != SOLID){
                     name = m->get_material_name(mat_state);
-                }else if(m->flags().has_flag(LEAF_MAT) && m->flags().has_flag(STRUCTURAL_PLANT_MAT)){
-                    name = p->name().append(" ").append(m->get_material_name(GENERIC));//fruit
-                }else if(itype == NONE || m->flags().has_flag(IS_WOOD)){
-                    if(p->flags().has_flag(P_TREE)){
-                        name.append(" ").append(m->get_material_name(GENERIC));
+                }else if(itype != NONE){
+                    if(itype == DRINK || itype == LIQUID_MISC){
+                        name = m->get_material_name(LIQUID);
+                    }else if(itype == POWDER_MISC || itype == CHEESE){
+                        name = m->get_material_name(POWDER);
+                    }else if(Item::is_armor_type(itype)){
+                        //don't include the 'fabric' part if it's a armor (item?) ie. pig tail fiber coat, not pig tail fiber fabric coat
+                        //this appears to have changed now (42.x) and the solid name is used simply: pig tail coat
+                        name = m->get_material_name(SOLID);
+                    }else if(itype == LEAVES_FRUIT){
+                        name = name = p->name().append(" ").append(m->get_material_name(GENERIC));
+                    }
+                }
+                if(name.isEmpty()){
+                    if(m->flags().has_flag(LEAF_MAT) && m->flags().has_flag(EDIBLE_RAW)){
+                        name = p->name().append(" ").append(m->get_material_name(GENERIC)); //fruit
+                    }else if(m->flags().has_flag(IS_WOOD) && p->flags().has_flag(P_TREE)){
+                        name  = p->name().append(" ").append(m->get_material_name(GENERIC)); //wood
+                    }else if(m->flags().has_flag(SEED_MAT)){
+                        name = p->seed_plural();
+                    }else if(m->flags().has_flag(ALCOHOL) || m->flags().has_flag(ALCOHOL_PLANT)
+                             || m->flags().has_flag(LIQUID_MISC) || m->flags().has_flag(LIQUID_MISC_PLANT)){
+                        name = m->get_material_name(LIQUID);
+                    }else if(m->flags().has_flag(POWDER_MISC_PLANT) || m->flags().has_flag(POWDER_MISC)){
+                        name = m->get_material_name(POWDER);
                     }else{
                         name = m->get_material_name(SOLID) + " " + m->get_material_name(GENERIC);
                     }
                 }
-
             }
         }
+    }
+    if(name.isEmpty()){
+        LOGW << "material name not found!";
     }
     return name.toLower().trimmed();
 }

@@ -230,9 +230,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cb_group_by->addItem(tr("Health"),DwarfModel::GB_HEALTH);
     ui->cb_group_by->addItem(tr("Highest Moodable Skill"), DwarfModel::GB_HIGHEST_MOODABLE);
     ui->cb_group_by->addItem(tr("Highest Skill"), DwarfModel::GB_HIGHEST_SKILL);
+    ui->cb_group_by->addItem(tr("Job Type"), DwarfModel::GB_JOB_TYPE);
     ui->cb_group_by->addItem(tr("Legendary Status"), DwarfModel::GB_LEGENDARY);
     ui->cb_group_by->addItem(tr("Migration Wave"),DwarfModel::GB_MIGRATION_WAVE);
     ui->cb_group_by->addItem(tr("Military Status"),DwarfModel::GB_MILITARY_STATUS);
+    ui->cb_group_by->addItem(tr("Occupation"),DwarfModel::GB_OCCUPATION);
     ui->cb_group_by->addItem(tr("Profession"), DwarfModel::GB_PROFESSION);
     ui->cb_group_by->addItem(tr("Race"), DwarfModel::GB_RACE);
     ui->cb_group_by->addItem(tr("Skill Rust"), DwarfModel::GB_SKILL_RUST);

@@ -65,9 +65,6 @@ public:
     //! return the the unique id for this creature
     Q_INVOKABLE int id() const {return m_id;}
 
-    //! return whether or not the dwarf is on break
-    bool is_on_break() {return m_is_on_break;}
-
     typedef enum {
         SEX_UNK = -1,
         SEX_F = 0,
@@ -106,6 +103,16 @@ public:
         hostile=10 //custom
     } TRAINED_LEVEL;
     Q_ENUMS(TRAINED_LEVEL)
+
+    typedef enum{
+        OCC_CITIZEN = -1,
+        OCC_TAVERN,
+        OCC_PERFORMER,
+        OCC_SCHOLAR,
+        OCC_MERC,
+        OCC_MONSTER,
+        OCC_SCRIBE
+    } UNIT_OCCUPATION;
 
     static inline QString get_animal_trained_descriptor(const TRAINED_LEVEL &type) {
         switch (type) {
@@ -147,6 +154,20 @@ public:
         return "";
     }
 
+    static QString get_occupation_desc(const UNIT_OCCUPATION &type) {
+        switch (type) {
+        case OCC_CITIZEN: return QObject::tr("Citizen");
+        case OCC_TAVERN: return QObject::tr("Tavern Keeper");
+        case OCC_PERFORMER: return QObject::tr("Performer");
+        case OCC_SCHOLAR: return QObject::tr("Scholar");
+        case OCC_MERC: return QObject::tr("Mercenary");
+        case OCC_MONSTER: return QObject::tr("Monster Slayer");
+        case OCC_SCRIBE: return QObject::tr("Scribe");
+        default:
+            return QObject::tr("Unknown");
+        }
+    }
+
     struct unit_gender{
         GENDER_TYPE gender;
         SEX_ORIENT_TYPE orientation;
@@ -170,6 +191,8 @@ public:
     Q_INVOKABLE bool is_adult() {return (!m_is_child && !m_is_baby) ? true : false;}
     Q_INVOKABLE bool is_child() {return m_is_child;}
     Q_INVOKABLE bool is_baby() {return m_is_baby;}
+
+    Q_INVOKABLE QString occupation() {return get_occupation_desc(m_occ_type);}
 
     //! return a text version of this dwarf's profession (will use custom profession if set)
     Q_INVOKABLE QString profession();
@@ -626,7 +649,6 @@ private:
     short m_age;
     short m_age_in_months;
     uint m_turn_count; // Dwarf turn count from start of fortress (as best we know)
-    bool m_is_on_break;
     QHash<QString, float> m_role_ratings;
     QHash<QString, double> m_raw_role_ratings;
     QList<Role::simple_rating> m_sorted_role_ratings;
@@ -663,6 +685,8 @@ private:
     int m_goals_realized;
     int m_worst_rust_level;
     QString m_labor_reason;
+    int m_histfig_id;
+    UNIT_OCCUPATION m_occ_type;
     bool m_can_assign_military;
     unit_gender m_gender_info;
 

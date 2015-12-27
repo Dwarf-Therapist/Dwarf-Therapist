@@ -54,6 +54,7 @@ void MemoryLayout::load_data() {
     read_group("soul_details", m_soul_details);
     read_group("emotion_offsets", m_emotion_offsets);
     read_group("squad_offsets", m_squad_offsets);
+    read_group("activity_offsets", m_activity_offsets);
     read_group("word_offsets", m_word_offsets);
 
     read_group("race_offsets", m_race_offsets);

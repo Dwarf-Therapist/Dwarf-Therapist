@@ -89,6 +89,9 @@ public:
     int emotion_offset(const QString & key){
         return m_emotion_offsets.value(key,-1);
     }
+    int activity_offset(const QString & key){
+        return m_activity_offsets.value(key,-1);
+    }
 
     QSettings &data() { return m_data; }
     uint job_detail(const QString &key) {return m_job_details.value(key, -1);}
@@ -143,6 +146,7 @@ private:
     AddressHash m_general_ref_offsets;
     AddressHash m_syndrome_offsets;
     AddressHash m_emotion_offsets;
+    AddressHash m_activity_offsets;
 
     QHash<uint, QString> m_valid_flags_1;
     QHash<uint, QString> m_valid_flags_2;

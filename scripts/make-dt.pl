@@ -86,6 +86,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'active_creature_vector',%globals,'world','world.units.active';
     emit_addr 'dwarf_race_index',%globals,'ui','ui.race_id';
     emit_addr 'squad_vector',%globals,'world','world.squads.all';
+    emit_addr 'activities_vector',%globals,'world','world.activities.all';
     emit_addr 'current_year',%globals,'cur_year','cur_year';
     emit_addr 'cur_year_tick',%globals,'cur_year_tick','cur_year_tick';
     emit_addr 'dwarf_civ_index',%globals,'ui','ui.civ_id';
@@ -97,6 +98,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'poetic_forms_vector',%globals,'world','world.poetic_forms.all';
     emit_addr 'musical_forms_vector',%globals,'world','world.musical_forms.all';
     emit_addr 'dance_forms_vector',%globals,'world','world.dance_forms.all';
+    emit_addr 'occupations_vector',%globals,'world','world.occupations.all';
     emit_addr 'fortress_entity',%globals,'ui','ui.main.fortress_entity';
     emit_addr 'historical_entities_vector',%globals,'world','world.entities.all';
     emit_addr 'itemdef_weapons_vector',%globals,'world','world.raws.itemdefs.weapons';
@@ -236,6 +238,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'wear',%all,'item_actual','wear';
     emit_addr 'mat_type',%all,'item_crafted','mat_type';
     emit_addr 'mat_index',%all,'item_crafted','mat_index';
+    emit_addr 'maker_race',%all,'item_crafted','maker_race';
     emit_addr 'quality',%all,'item_crafted','quality';
 
     emit_header 'item_subtype_offsets';
@@ -416,9 +419,15 @@ sub generate_dt_ini($$$$) {
     emit_addr 'name',%all,'squad','name';
     emit_addr 'alias',%all,'squad','alias';
     emit_addr 'members',%all,'squad','positions';
+    emit_addr 'orders',%all,'squad','orders';
+    emit_addr 'schedules',%all,'squad','schedule';
+    emit_addr 'sched_orders',%all,'squad_schedule_entry','orders';
+    emit_addr 'sched_assign',%all,'squad_schedule_entry','order_assignments';
+    emit_addr 'alert',%all,'squad','cur_alert_idx';
     emit_addr 'carry_food',%all,'squad','carry_food';
     emit_addr 'carry_water',%all,'squad','carry_water';
     emit_addr 'ammunition',%all,'squad','ammunition';
+    emit_addr 'ammunition_qty',%all,'squad_ammo_spec','amount';
     emit_addr 'quiver',%all,'squad_position','quiver';
     emit_addr 'backpack',%all,'squad_position','backpack';
     emit_addr 'flask',%all,'squad_position','flask';
@@ -431,6 +440,21 @@ sub generate_dt_ini($$$$) {
     emit_addr 'weapon_vector',%all,'squad_position','uniform[weapon]';
     emit_addr 'uniform_item_filter',%all,'squad_uniform_spec','item_filter';
     emit_addr 'uniform_indiv_choice',%all,'squad_uniform_spec','indiv_choice';
+
+    emit_header 'activity_offsets';
+    emit_addr 'activity_type',%all,'activity_entry','id';
+    emit_addr 'events',%all,'activity_entry','events';
+    emit_addr 'participants',%all,'activity_event_combat_trainingst','activity_event_participants';
+    emit_addr 'sq_lead',%all,'activity_event_skill_demonstrationst','hist_figure_id';
+    emit_addr 'sq_skill',%all,'activity_event_skill_demonstrationst','skill';
+    emit_addr 'sq_train_rounds',%all,'activity_event_skill_demonstrationst','train_rounds';
+    emit_addr 'pray_deity',%all,'activity_event_prayerst','histfig_id';
+    emit_addr 'pray_sphere',%all,'activity_event_prayerst','topic';
+    emit_addr 'knowledge_category',%all,'activity_event_ponder_topicst','knowledge_category';
+    emit_addr 'knowledge_flag',%all,'activity_event_ponder_topicst','knowledge_flag';
+    emit_addr 'perf_type',%all,'activity_event_performancest','type';
+    emit_addr 'perf_participants',%all,'activity_event_performancest','activity_event_performancest::anon2';
+    emit_addr 'perf_histfig',%all,'activity_event_performancest::anon2','histfig_id';
 
     my $body_str = join("\n",@lines);
     my $complete_str = ($complete ? 'true' : 'false');

@@ -70,6 +70,7 @@ public:
     QList<QPair<int,QString> > get_ordered_beliefs(){return m_ordered_beliefs;}
     QList<QPair<int,QString> > get_ordered_goals(){return m_ordered_goals;}
     QString get_building_name(BUILDING_TYPE b_type, int value = -1);
+    QString get_sphere_name(int idx);
 
     QList<QPair<QString, laborOptimizerPlan*> > get_ordered_opt_plans() {return m_ordered_opts;}
     QHash<QString, laborOptimizerPlan*>& get_opt_plans(){return m_opt_plans;}
@@ -119,6 +120,8 @@ public:
     Mood *get_mood(MOOD_TYPE);
     QString get_mood_name(MOOD_TYPE m_type,bool colored = false);
     QString get_mood_desc(MOOD_TYPE m_type,bool colored = false);
+
+    QString get_knowledge_desc(int field, int topic);
 
     bool custom_roles_updated() {return m_cust_roles_updated;}
     void custom_roles_updated(bool val) {m_cust_roles_updated=val;}
@@ -183,9 +186,13 @@ private:
     QMap<int,QString> m_building_names;
     QMap<int,QString> m_building_quality;
 
+    QList<QString> m_spheres;
+    QHash<int,QMap<int,QString> > m_knowledge;
+
     bool m_cust_roles_updated;
     bool m_def_roles_updated;
 
     void build_calendar();
+    void read_activity_section(QString section, int offset, QStringList *job_names);
 };
 #endif

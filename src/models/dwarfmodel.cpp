@@ -338,15 +338,15 @@ void DwarfModel::build_rows() {
                     m_grouped_dwarves[d->happiness_name(d->get_happiness())].append(d);
                 }else if(m_group_by == GB_GOALS){
                     m_grouped_dwarves[tr("%1 Goals Realized").arg(d->goals_realized())].append(d);
+                }else if(m_group_by == GB_OCCUPATION){
+                    m_grouped_dwarves[d->occupation()].append(d);
                 }else if(m_group_by == GB_SKILL_RUST){
                     m_grouped_dwarves[Skill::get_rust_level_desc(d->rust_level())].append(d);
                 }else if(m_group_by == GB_CURRENT_JOB){
-                    QString job_desc = GameDataReader::ptr()->get_job(d->current_job_id())->description;
-                    //if the job is some kind of reaction that doesn't use a material, use the reaction's name
-                    //otherwise, use the base job name, prior to replacing ?? with a material so they're grouped
-                    if(d->current_job_id() != 212 && !job_desc.contains("??"))
-                        job_desc = d->current_job();
-                    m_grouped_dwarves[job_desc.replace(" ??","")].append(d);
+                    m_grouped_dwarves[d->current_job()].append(d);
+                }else if(m_group_by == GB_JOB_TYPE){
+                    DwarfJob *job = GameDataReader::ptr()->get_job(d->current_job_id());
+                    m_grouped_dwarves[job->group_name()].append(d);
                 }else if(m_group_by == GB_MILITARY_STATUS){
                     if (d->is_baby() || d->is_child()) {
                         m_grouped_dwarves[tr("Juveniles")].append(d);
@@ -445,6 +445,8 @@ void DwarfModel::build_row(const QString &key) {
             agg_first_col->setData(first_dwarf->total_skill_levels(), DR_SORT_VALUE);
         } else if (m_group_by == GB_GOALS) {
             agg_first_col->setData(first_dwarf->goals_realized(), DR_SORT_VALUE);
+        } else if (m_group_by == GB_OCCUPATION) {
+            agg_first_col->setData(first_dwarf->occupation(), DR_SORT_VALUE);
         } else if (m_group_by == GB_SKILL_RUST) {
             agg_first_col->setData(first_dwarf->rust_level(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HAPPINESS) {
@@ -484,10 +486,11 @@ void DwarfModel::build_row(const QString &key) {
                 //put non squads at the bottom of the groups when grouping by squad
                 agg_first_col->setData(QChar(128), DR_SORT_VALUE);
             }
-        } else if (m_group_by == GB_CURRENT_JOB){
+        } else if (m_group_by == GB_CURRENT_JOB || m_group_by == GB_JOB_TYPE){
             //put idle, on break and soldiers at the top/bottom
-            if(first_dwarf->current_job_id() < 0)
+            if(first_dwarf->current_job_id() < 0){
                 agg_first_col->setData(QString::number(first_dwarf->current_job_id()), DR_SORT_VALUE);
+            }
         }
         agg_first_col->setData(agg_first_col->data(DR_SORT_VALUE),DR_GLOBAL);
         agg_items << agg_first_col;

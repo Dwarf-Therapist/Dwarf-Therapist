@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include "truncatingfilelogger.h"
 #include "fortressentity.h"
 #include "uniform.h"
+#include "dwarfjob.h"
+
 #include <QTreeWidgetItem>
 
 Squad::Squad(int id, DFInstance *df, VIRTADDR address, QObject *parent)
@@ -57,10 +59,12 @@ void Squad::read_data() {
     //qDeleteAll(m_members);
     m_members.clear();
 
-    if(m_id < 0)
+    if(m_id < 0){
         read_id();
+    }
     read_name();
     read_members();
+    read_orders();
 }
 
 void Squad::read_id() {
@@ -91,7 +95,7 @@ void Squad::read_members() {
     short carry_water = m_df->read_short(m_address+m_mem->squad_offset("carry_water"));
     int ammo_count = 0;
     foreach(addr, m_df->enumerate_vector(m_address+m_mem->squad_offset("ammunition"))){
-        ammo_count += m_df->read_int(addr+0xc);//TODO: add proper offset
+        ammo_count += m_df->read_int(addr+m_mem->squad_offset("ammunition_qty"));
     }
     int ammo_each = 0;
     if(member_count > 0  && ammo_count > 0)
@@ -103,7 +107,8 @@ void Squad::read_members() {
     foreach(addr, m_members_addr){
         u = new Uniform(m_df,this);
 
-        m_members.insert(position,m_df->read_int(addr));
+        int histfig_id = m_df->read_int(addr);
+        m_members.insert(position,histfig_id);
         read_equip_category(addr+m_mem->squad_offset("armor_vector"),ARMOR,u);
         read_equip_category(addr+m_mem->squad_offset("helm_vector"),HELM,u);
         read_equip_category(addr+m_mem->squad_offset("pants_vector"),PANTS,u);
@@ -123,10 +128,57 @@ void Squad::read_members() {
             u->add_uniform_item(addr+m_mem->squad_offset("flask"),FLASK);
 
         m_uniforms.insert(position,u);
+        foreach(VIRTADDR ord_addr, m_df->enumerate_vector(addr+0x4)){ //TODO: offset
+            read_order(ord_addr, histfig_id);
+        }
         position++;
     }
 }
 
+void Squad::read_orders(){
+    //read the squad order
+    m_squad_order = 0;
+    foreach(VIRTADDR addr, m_df->enumerate_vector(m_address + m_mem->squad_offset("orders"))){
+        read_order(addr,-1,false);
+    }
+
+    if(m_squad_order <= 0){
+        //read the scheduled orders
+        QVector<VIRTADDR> schedules = m_df->enumerate_vector(m_address + m_mem->squad_offset("schedules"));
+        int idx = m_df->read_addr(m_address + m_mem->squad_offset("alert"));
+        int sched_size = 0x40;
+        int month = m_df->current_year_time() / m_df->ticks_per_month;
+        VIRTADDR base_addr = schedules.at(idx) + (sched_size * month);
+        QVector<VIRTADDR> orders = m_df->enumerate_vector(base_addr + m_mem->squad_offset("sched_orders"));
+        QVector<VIRTADDR> assigned = m_df->enumerate_vector(base_addr + m_mem->squad_offset("sched_assign"));
+        for(int pos = 0; pos < assigned.count(); pos ++){
+            int order_idx = m_df->read_int(assigned.at(pos));
+            if(order_idx >= 0 && order_idx < orders.count()){
+                read_order(orders.at(order_idx),m_members.value(pos),false);
+            }
+        }
+    }
+}
+
+void Squad::read_order(VIRTADDR addr, int histfig_id, bool unit){
+    VIRTADDR vtable_addr = m_df->read_addr(addr);
+    int ord_type = ORD_TRAIN;
+    if(!unit){ //TODO: offset
+        ord_type = m_df->read_int(m_df->read_addr(m_df->read_addr(vtable_addr)+0xc)+0x1);
+    }else{
+        ord_type = m_df->read_int(m_df->read_addr(vtable_addr+0xc)+0x1);
+    }
+    if(ord_type != ORD_TRAIN){ //ignore training, handled by activites
+        ord_type += DwarfJob::ORDER_OFFSET;
+        if(histfig_id >= 0){
+            if(!m_orders.contains(histfig_id)){
+                m_orders.insert(histfig_id,ord_type);
+            }
+        }else{
+            m_squad_order = ord_type;
+        }
+    }
+}
 
 void Squad::read_equip_category(VIRTADDR vec_addr, ITEM_TYPE itype, Uniform *u){
     QVector<VIRTADDR> uniform_items = m_df->enumerate_vector(vec_addr);
@@ -272,4 +324,18 @@ QTreeWidgetItem *Squad::get_pending_changes_tree() {
         i->setData(0, Qt::UserRole, -1);
     }
     return s_item;
+}
+
+QPair<int, QString> Squad::get_order(int histfig_id){
+    int job_id = m_squad_order;
+    if(m_orders.contains(histfig_id)){
+         job_id = m_orders.value(histfig_id);
+    }else if(m_squad_order != DwarfJob::JOB_DEFAULT){
+        job_id = m_squad_order;
+    }
+    QString desc = "";
+    if(job_id != DwarfJob::JOB_DEFAULT){
+        desc = GameDataReader::ptr()->get_job(short(job_id))->name();
+    }
+    return qMakePair<int,QString>(job_id,desc);
 }

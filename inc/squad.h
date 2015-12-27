@@ -55,6 +55,16 @@ public:
     void clear_pending();
     int pending_changes();
 
+    QPair<int,QString> get_order(int histfig_id);
+
+    typedef enum{
+        ORD_MOVE,
+        ORD_KILL,
+        ORD_DEFEND,
+        ORD_PATROL,
+        ORD_TRAIN
+    } SQ_ORDER_TYPE;
+
 private:
     VIRTADDR m_address;
     int m_id;
@@ -68,12 +78,18 @@ private:
     bool m_inactive;
     QString m_pending_name;
 
+    int m_squad_order;
+    QHash<int,int> m_orders; //histfig_id, job_id
+
     void read_data();
     void read_id();
     void read_name();
     void read_members();
+    void read_orders();
     void read_equip_category(VIRTADDR vec_addr, ITEM_TYPE itype, Uniform *u);
     int find_position(int hist_id);
+
+    void read_order(VIRTADDR addr, int histfig_id, bool unit = true);
 
 signals:
     void squad_leader_changed();
