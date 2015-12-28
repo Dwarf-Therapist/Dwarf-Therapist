@@ -30,7 +30,6 @@ THE SOFTWARE.
 #include <QStyledItemDelegate>
 #include <QPainter>
 #include <QFontMetrics>
-#include <QDebug>
 
 class ThoughtsDock : public BaseTreeDock {
     Q_OBJECT

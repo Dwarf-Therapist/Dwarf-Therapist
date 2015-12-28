@@ -365,8 +365,8 @@ GameDataReader::GameDataReader(QObject *parent)
             m_data_settings->setArrayIndex(j);
             QString area = capitalizeEach(m_data_settings->value("area","??").toString());
             QString subject = capitalizeEach(m_data_settings->value("subject","??").toString());
-            topics.insert(j,QString(tr("<h4>%1 - %2</h4>Pondering %3")
-                                  .arg(field).arg(area).arg(subject)));
+            topics.insert(j,tr("<h4>%1 - %2</h4>Pondering %3")
+                                  .arg(field).arg(area).arg(subject));
         }
         m_data_settings->endArray();
 
@@ -693,7 +693,7 @@ void GameDataReader::read_activity_section(QString section, int offset, QStringL
                 m_data_settings->setArrayIndex(sub_idx);
                 DwarfJob *j = new DwarfJob(*m_data_settings,offset,group_name,img_path,is_military,this);
                 if(m_dwarf_jobs.contains(j->id())){
-                    qDebug() << "duplicate job!";
+                    LOGW << "duplicate job!" << j->name() << j->id();
                 }else{
                     m_dwarf_jobs.insert(j->id(),j);
                 }
@@ -703,7 +703,7 @@ void GameDataReader::read_activity_section(QString section, int offset, QStringL
         }else{
             DwarfJob *j = new DwarfJob(*m_data_settings,offset,"","",is_military,this);
             if(m_dwarf_jobs.contains(j->id())){
-                qDebug() << "duplicate job!";
+                LOGW << "duplicate job!" << j->name() << j->id();
             }else{
                 m_dwarf_jobs.insert(j->id(),j);
             }

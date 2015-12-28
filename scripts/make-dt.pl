@@ -330,6 +330,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'flags1',%all,'unit','flags1';
     emit_addr 'flags2',%all,'unit','flags2';
     emit_addr 'flags3',%all,'unit','flags3';
+    emit_addr 'meeting',%all,'unit','meeting';
     emit_addr 'caste',%all,'unit','caste';
     emit_addr 'sex',%all,'unit','sex';
     emit_addr 'id',%all,'unit','id';

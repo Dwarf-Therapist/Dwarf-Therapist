@@ -347,5 +347,9 @@
         <file alias="inbox--in.png">resources/img/activity icons/inbox--in.png</file>
         <file alias="drawer--in.png">resources/img/activity icons/drawer--in.png</file>
         <file alias="money-bag--in.png">resources/img/activity icons/money-bag--in.png</file>
+        <file alias="bell-red.png">resources/img/activity icons/bell-red.png</file>
+        <file alias="bell-green.png">resources/img/activity icons/bell-green.png</file>
+        <file alias="hand-shake--arrow.png">resources/img/activity icons/hand-shake--arrow.png</file>
+        <file alias="bell.png">resources/img/activity icons/bell.png</file>
     </qresource>
 </RCC>

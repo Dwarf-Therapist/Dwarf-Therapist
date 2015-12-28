@@ -56,11 +56,15 @@ public:
     static const int ACTIVITY_OFFSET = 5000;
     static const int ORDER_OFFSET = 7000;
 
+    //negative jobs are custom
     typedef enum {
+        JOB_MEETING = -5,
+        JOB_CAGED = -4,
         JOB_IDLE = -3,
         JOB_ON_BREAK = -2,
         JOB_SOLDIER = -1,
         JOB_DEFAULT = 0,
+        JOB_SLEEP = 21,
         JOB_DRINK_BLOOD = 223
     } UNIT_JOB_TYPE;
 

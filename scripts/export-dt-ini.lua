@@ -300,6 +300,7 @@ address('race',df.unit,'race')
 address('flags1',df.unit,'flags1')
 address('flags2',df.unit,'flags2')
 address('flags3',df.unit,'flags3')
+address('meeting',df.unit,'meeting')
 address('caste',df.unit,'caste')
 address('sex',df.unit,'sex')
 address('id',df.unit,'id')
@@ -443,16 +444,21 @@ address('pray_sphere',df.activity_event_prayerst,'topic')
 address('knowledge_category',df.activity_event_ponder_topicst,'knowledge_category')
 address('knowledge_flag',df.activity_event_ponder_topicst,'knowledge_flag')
 address('perf_type',df.activity_event_performancest,'type')
-address('perf_participants',df.activity_event_performancest,'activity_event_performancest::anon2')
-address('perf_histfig',df.activity_event_performancest::anon2,'histfig_id')
+address('perf_participants',df.activity_event_performancest,'participants')
+address('perf_histfig',df.activity_event_performancest,'anon_2')
 
 -- Final creation of the file
 
 local out = io.open('therapist.ini', 'w')
 
 out:write('[info]\n')
--- TODO: add an api function to retrieve the checksum
-out:write('checksum=<<fillme>>\n')
+f dfhack.getOSType() == 'windows' and dfhack.internal.getPE then
+    out:write(('checksum=0x%x\n'):format(dfhack.internal.getPE()))
+elseif dfhack.getOSType() ~= 'windows' and dfhack.internal.getMD5 then
+    out:write(('checksum=0x%s\n'):format(dfhack.internal.getMD5():sub(1, 8)))
+else
+    out:write('checksum=<<fillme>>\n')
+end
 out:write('version_name='..dfhack.getDFVersion()..'\n')
 out:write('complete='..(complete and 'true' or 'false')..'\n')
 

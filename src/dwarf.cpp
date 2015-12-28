@@ -1291,27 +1291,38 @@ void Dwarf::read_current_job(){
             m_current_job_id = DwarfJob::JOB_IDLE;
         }
 
-        QPair<int,QString> activity_desc = m_df->find_activity(m_histfig_id);
-        if(activity_desc.first != DwarfJob::JOB_DEFAULT){
-            bool military_act = GameDataReader::ptr()->get_job(activity_desc.first)->is_military();
-            if((active_military() && military_act) || (!active_military() && !military_act)){
-                m_current_job_id = activity_desc.first;
-                m_current_job = capitalizeEach(activity_desc.second);
-            }
+        BYTE meeting = 0;
+        int offset = m_mem->dwarf_offset("meeting");
+        if(offset != -1){
+            meeting = m_df->read_byte(m_address + offset);
         }
+        if(meeting == 2){ //different for conduct meeting vs attend but probably not worth having 2 jobs
+            m_current_job_id = DwarfJob::JOB_MEETING;
+        }else{
+            QPair<int,QString> activity_desc = m_df->find_activity(m_histfig_id);
+            if(activity_desc.first != DwarfJob::JOB_DEFAULT){
+                bool military_act = GameDataReader::ptr()->get_job(activity_desc.first)->is_military();
+                if((active_military() && military_act) || (!active_military() && !military_act)){
+                    m_current_job_id = activity_desc.first;
+                    m_current_job = capitalizeEach(activity_desc.second);
+                }
+            }
 
-        if(m_current_job.isEmpty()){
-            if(active_military() && m_squad_id >= 0){
-                Squad *s = m_df->get_squad(m_squad_id);
-                if(s){
-                    activity_desc = s->get_order(m_histfig_id);
-                    if(activity_desc.first != DwarfJob::JOB_DEFAULT){
-                        m_current_job_id = activity_desc.first;
-                        m_current_job = capitalizeEach(activity_desc.second);
+            if(m_current_job.isEmpty()){
+                if(active_military() && m_squad_id >= 0){
+                    Squad *s = m_df->get_squad(m_squad_id);
+                    if(s){
+                        activity_desc = s->get_order(m_histfig_id);
+                        if(activity_desc.first != DwarfJob::JOB_DEFAULT){
+                            m_current_job_id = activity_desc.first;
+                            m_current_job = capitalizeEach(activity_desc.second);
+                        }
                     }
                 }
             }
         }
+
+
         if(m_current_job.isEmpty()){
             m_current_job = capitalizeEach(GameDataReader::ptr()->get_job(m_current_job_id)->name());
         }

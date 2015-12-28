@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "healthcategory.h"
 #include "dwarf.h"
 #include "caste.h"
+#include "dwarfjob.h"
 
 QHash<eHealth::H_INFO, HealthCategory*> UnitHealth::m_health_descriptions;
 QList<QPair<eHealth::H_INFO,QString> > UnitHealth::m_ordered_category_names;
@@ -231,7 +232,7 @@ void UnitHealth::read_health_info(){
         //the unconscious state seems to depend on whether or not the dwarf is sleeping
         //normally the unconscious counter doesn't seem to exceed 2 for a sleeping dwarf, but this is safer
         if(!m_dwarf->get_caste()->flags().has_flag(NO_SLEEP))
-            sleeping = (m_dwarf->current_job_id() == 21); //direct reference to ini job id, probably a bad idea
+            sleeping = (m_dwarf->current_job_id() == DwarfJob::JOB_SLEEP);
 
         vals.clear();
         sh_counter = m_df->read_short(m_dwarf_addr + base_counter_addr+0x4); //unconscious
@@ -243,7 +244,6 @@ void UnitHealth::read_health_info(){
             sh_counter = m_df->read_short(m_dwarf_addr + base_counter_addr+0x2); //stunned
             if(sh_counter > 0){
                 vals.append(1);
-                //        stunned = true;
             }
         }
         if(!m_dwarf->get_caste()->flags().has_flag(WEB_IMMUNE)){

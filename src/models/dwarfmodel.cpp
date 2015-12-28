@@ -488,7 +488,7 @@ void DwarfModel::build_row(const QString &key) {
             }
         } else if (m_group_by == GB_CURRENT_JOB || m_group_by == GB_JOB_TYPE){
             //put idle, on break and soldiers at the top/bottom
-            if(first_dwarf->current_job_id() < 0){
+            if(first_dwarf->current_job_id() == DwarfJob::JOB_IDLE || first_dwarf->current_job_id() == DwarfJob::JOB_ON_BREAK){
                 agg_first_col->setData(QString::number(first_dwarf->current_job_id()), DR_SORT_VALUE);
             }
         }

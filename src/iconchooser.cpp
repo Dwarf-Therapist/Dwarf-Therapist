@@ -5,8 +5,6 @@
 #include "gamedatareader.h"
 #include "iconchooser.h"
 
-#include <QDebug>
-
 const int imageSize = 16;
 
 QImage scale(const QString &imageFileName)

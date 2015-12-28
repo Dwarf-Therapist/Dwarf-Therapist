@@ -70,7 +70,8 @@ static inline QString capitalize(const QString & word) {
         }
         if(idx == word.size()-1)
             idx = 0;
-        result[idx] = result[idx].toUpper();
+        if(result[idx].isLetter())
+            result[idx] = result[idx].toUpper();
     }
     return result;
 }
