@@ -123,7 +123,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_worst_rust_level(0)
     , m_labor_reason("")
     , m_histfig_id(0)
-    , m_occ_type(OCC_CITIZEN)
+    , m_occ_type(OCC_NONE)
     , m_can_assign_military(true)
     , m_curse_type(eCurse::NONE)
 {

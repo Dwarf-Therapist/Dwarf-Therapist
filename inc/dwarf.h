@@ -105,7 +105,7 @@ public:
     Q_ENUMS(TRAINED_LEVEL)
 
     typedef enum{
-        OCC_CITIZEN = -1,
+        OCC_NONE = -1,
         OCC_TAVERN,
         OCC_PERFORMER,
         OCC_SCHOLAR,
@@ -156,7 +156,7 @@ public:
 
     static QString get_occupation_desc(const UNIT_OCCUPATION &type) {
         switch (type) {
-        case OCC_CITIZEN: return QObject::tr("Citizen");
+        case OCC_NONE: return QObject::tr("None");
         case OCC_TAVERN: return QObject::tr("Tavern Keeper");
         case OCC_PERFORMER: return QObject::tr("Performer");
         case OCC_SCHOLAR: return QObject::tr("Scholar");

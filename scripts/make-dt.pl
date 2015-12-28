@@ -22,10 +22,10 @@ sub load_csv(\%$) {
 
     open FH, $fname or die "Cannot open $fname";
     while (<FH>) {
-        next unless /^\"([^\"]*)\",\"(\d+)\",\"(?:0x([0-9a-fA-F]+))?\",\"[^\"]*\",\"([^\"]*)\",\"([^\"]*)\",\"([^\"]*)\"/;
-        my ($top, $level, $addr, $type, $name, $target) = ($1,$2,$3,$4,$5,$6);
+        next unless /^\"([^\"]*)\",\"(\d+)\",\"(?:0x([0-9a-fA-F]+))?\",\"(?:0x([0-9a-fA-F.]+))?\",\"([^\"]*)\",\"([^\"]*)\",\"([^\"]*)\"/;
+        my ($top, $level, $addr, $size, $type, $name, $target) = ($1,$2,$3,$4,$5,$6,$7);
         next if defined $rhash->{$top}{$name};
-        $rhash->{$top}{$name} = ($type eq 'enum-item' ? $target : hex $addr);
+        $rhash->{$top}{$name} = [($type eq 'enum-item' ? $target : hex $addr), $size,$type,$name];
     }
     close FH;
 }
@@ -35,12 +35,13 @@ our $complete;
 sub lookup_addr(\%$$;$) {
     my ($rhash, $top, $name, $bias) = @_;
 
-    my $val = $rhash->{$top}{$name};
-    unless (defined $val) {
+    my $addr = $rhash->{$top}{$name}[0];
+    unless (defined $addr) {
         $complete = 0;
+    print("lookup_addr failed: $name\n");
         return 0;
     }
-    return $val + ($bias||0);
+    return $addr + ($bias||0);
 }
 
 our @lines;
@@ -54,16 +55,30 @@ sub emit_header($) {
 sub emit_addr($\%$$;$) {
     my ($name, $rhash, $top, $var, $bias) = @_;
 
-    my $val = $rhash->{$top}{$var};
-    if (defined $val) {
-        $val += ($bias||0);
-        if ($val < 0x10000) {
-            push @lines, sprintf('%s=0x%04x', $name, $val);
+    my $addr = $rhash->{$top}{$var}[0];
+    if (defined $addr) {
+        $addr += ($bias||0);
+        if ($addr < 0x10000) {
+            push @lines, sprintf('%s=0x%04x', $name, $addr);
         } else {
-            push @lines, sprintf('%s=0x%08x', $name, $val);
+            push @lines, sprintf('%s=0x%08x', $name, $addr);
         }
     } else {
         $complete = 0;
+    print("emit_addr failed: $name\n");
+        push @lines, "$name=0x0";
+    }
+}
+
+sub emit_size($\%$$) {
+    my ($name, $rhash, $top, $var) = @_;
+
+    my $size = $rhash->{$top}{$var}[1];
+    if (defined $size) {
+        push @lines, sprintf('%s=0x%04x', $name, hex $size);
+    } else {
+        $complete = 0;
+    print("emit_size failed: $name\n");
         push @lines, "$name=0x0";
     }
 }
@@ -80,27 +95,39 @@ sub generate_dt_ini($$$$) {
     local @lines;
 
     emit_header 'addresses';
-    emit_addr 'translation_vector',%globals,'world','world.raws.language.translations';
-    emit_addr 'language_vector',%globals,'world','world.raws.language.words';
+    emit_addr 'cur_year_tick',%globals,'cur_year_tick','cur_year_tick';
+    emit_addr 'current_year',%globals,'cur_year','cur_year';
+    emit_addr 'dwarf_civ_index',%globals,'ui','ui.civ_id';
+    emit_addr 'dwarf_race_index',%globals,'ui','ui.race_id';
+    emit_addr 'fortress_entity',%globals,'ui','ui.main.fortress_entity';
+    emit_addr 'historical_entities_vector',%globals,'world','world.entities.all';
     emit_addr 'creature_vector',%globals,'world','world.units.all';
     emit_addr 'active_creature_vector',%globals,'world','world.units.active';
-    emit_addr 'dwarf_race_index',%globals,'ui','ui.race_id';
+    emit_addr 'weapons_vector',%globals,'world','world.items.other[WEAPON]';
+    emit_addr 'shields_vector',%globals,'world','world.items.other[SHIELD]';
+    emit_addr 'quivers_vector',%globals,'world','world.items.other[QUIVER]';
+    emit_addr 'crutches_vector',%globals,'world','world.items.other[CRUTCH]';
+    emit_addr 'backpacks_vector',%globals,'world','world.items.other[BACKPACK]';
+    emit_addr 'ammo_vector',%globals,'world','world.items.other[AMMO]';
+    emit_addr 'flasks_vector',%globals,'world','world.items.other[FLASK]';
+    emit_addr 'pants_vector',%globals,'world','world.items.other[PANTS]';
+    emit_addr 'armor_vector',%globals,'world','world.items.other[ARMOR]';
+    emit_addr 'shoes_vector',%globals,'world','world.items.other[SHOES]';
+    emit_addr 'helms_vector',%globals,'world','world.items.other[HELM]';
+    emit_addr 'gloves_vector',%globals,'world','world.items.other[GLOVES]';
+    emit_addr 'artifacts_vector',%globals,'world','world.artifacts.all';
     emit_addr 'squad_vector',%globals,'world','world.squads.all';
     emit_addr 'activities_vector',%globals,'world','world.activities.all';
-    emit_addr 'current_year',%globals,'cur_year','cur_year';
-    emit_addr 'cur_year_tick',%globals,'cur_year_tick','cur_year_tick';
-    emit_addr 'dwarf_civ_index',%globals,'ui','ui.civ_id';
-    emit_addr 'races_vector',%globals,'world','world.raws.creatures.all';
-    emit_addr 'reactions_vector',%globals,'world','world.raws.reactions';
-    emit_addr 'events_vector',%globals,'world','world.history.events';
-    emit_addr 'historical_figures_vector',%globals,'world','world.history.figures';
     emit_addr 'fake_identities_vector',%globals,'world','world.identities.all';
     emit_addr 'poetic_forms_vector',%globals,'world','world.poetic_forms.all';
     emit_addr 'musical_forms_vector',%globals,'world','world.musical_forms.all';
     emit_addr 'dance_forms_vector',%globals,'world','world.dance_forms.all';
     emit_addr 'occupations_vector',%globals,'world','world.occupations.all';
-    emit_addr 'fortress_entity',%globals,'ui','ui.main.fortress_entity';
-    emit_addr 'historical_entities_vector',%globals,'world','world.entities.all';
+    emit_addr 'world_data',%globals,'world','world.world_data';
+    emit_addr 'material_templates_vector',%globals,'world','world.raws.material_templates';
+    emit_addr 'inorganics_vector',%globals,'world','world.raws.inorganics';
+    emit_addr 'plants_vector',%globals,'world','world.raws.plants.all';
+    emit_addr 'races_vector',%globals,'world','world.raws.creatures.all';
     emit_addr 'itemdef_weapons_vector',%globals,'world','world.raws.itemdefs.weapons';
     emit_addr 'itemdef_trap_vector',%globals,'world','world.raws.itemdefs.trapcomps';
     emit_addr 'itemdef_toy_vector',%globals,'world','world.raws.itemdefs.toys';
@@ -115,29 +142,17 @@ sub generate_dt_ini($$$$) {
     emit_addr 'itemdef_helm_vector',%globals,'world','world.raws.itemdefs.helms';
     emit_addr 'itemdef_pant_vector',%globals,'world','world.raws.itemdefs.pants';
     emit_addr 'itemdef_food_vector',%globals,'world','world.raws.itemdefs.food';
+    emit_addr 'language_vector',%globals,'world','world.raws.language.words';
+    emit_addr 'translation_vector',%globals,'world','world.raws.language.translations';
     emit_addr 'colors_vector',%globals,'world','world.raws.language.colors';
     emit_addr 'shapes_vector',%globals,'world','world.raws.language.shapes';
+    emit_addr 'reactions_vector',%globals,'world','world.raws.reactions';
     emit_addr 'base_materials',%globals,'world','world.raws.mat_table.builtin';
-    emit_addr 'inorganics_vector',%globals,'world','world.raws.inorganics';
-    emit_addr 'plants_vector',%globals,'world','world.raws.plants.all';
-    emit_addr 'material_templates_vector',%globals,'world','world.raws.material_templates';
     emit_addr 'all_syndromes_vector',%globals,'world','world.raws.syndromes.all';
-    emit_addr 'world_data',%globals,'world','world.world_data';
-    emit_addr 'active_sites_vector',%all,'world_data','active_site';
+    emit_addr 'events_vector',%globals,'world','world.history.events';
+    emit_addr 'historical_figures_vector',%globals,'world','world.history.figures';
     emit_addr 'world_site_type',%all,'world_site','type';
-    emit_addr 'weapons_vector',%globals,'world','world.items.other[WEAPON]';
-    emit_addr 'shields_vector',%globals,'world','world.items.other[SHIELD]';
-    emit_addr 'quivers_vector',%globals,'world','world.items.other[QUIVER]';
-    emit_addr 'crutches_vector',%globals,'world','world.items.other[CRUTCH]';
-    emit_addr 'backpacks_vector',%globals,'world','world.items.other[BACKPACK]';
-    emit_addr 'ammo_vector',%globals,'world','world.items.other[AMMO]';
-    emit_addr 'flasks_vector',%globals,'world','world.items.other[FLASK]';
-    emit_addr 'pants_vector',%globals,'world','world.items.other[PANTS]';
-    emit_addr 'armor_vector',%globals,'world','world.items.other[ARMOR]';
-    emit_addr 'shoes_vector',%globals,'world','world.items.other[SHOES]';
-    emit_addr 'helms_vector',%globals,'world','world.items.other[HELM]';
-    emit_addr 'gloves_vector',%globals,'world','world.items.other[GLOVES]';
-    emit_addr 'artifacts_vector',%globals,'world','world.artifacts.all';
+    emit_addr 'active_sites_vector',%all,'world_data','active_site';
 
     emit_header 'offsets';
     emit_addr 'word_table',%all,'language_translation','words';
@@ -421,6 +436,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'members',%all,'squad','positions';
     emit_addr 'orders',%all,'squad','orders';
     emit_addr 'schedules',%all,'squad','schedule';
+    emit_size 'sched_size',%all,'squad_schedule_entry','squad_schedule_entry';
     emit_addr 'sched_orders',%all,'squad_schedule_entry','orders';
     emit_addr 'sched_assign',%all,'squad_schedule_entry','order_assignments';
     emit_addr 'alert',%all,'squad','cur_alert_idx';
@@ -442,9 +458,9 @@ sub generate_dt_ini($$$$) {
     emit_addr 'uniform_indiv_choice',%all,'squad_uniform_spec','indiv_choice';
 
     emit_header 'activity_offsets';
-    emit_addr 'activity_type',%all,'activity_entry','id';
+    emit_addr 'activity_type',%all,'activity_entry','type';
     emit_addr 'events',%all,'activity_entry','events';
-    emit_addr 'participants',%all,'activity_event_combat_trainingst','activity_event_participants';
+    emit_addr 'participants',%all,'activity_event_combat_trainingst','participants';
     emit_addr 'sq_lead',%all,'activity_event_skill_demonstrationst','hist_figure_id';
     emit_addr 'sq_skill',%all,'activity_event_skill_demonstrationst','skill';
     emit_addr 'sq_train_rounds',%all,'activity_event_skill_demonstrationst','train_rounds';
@@ -453,7 +469,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'knowledge_category',%all,'activity_event_ponder_topicst','knowledge_category';
     emit_addr 'knowledge_flag',%all,'activity_event_ponder_topicst','knowledge_flag';
     emit_addr 'perf_type',%all,'activity_event_performancest','type';
-    emit_addr 'perf_participants',%all,'activity_event_performancest','activity_event_performancest::anon2';
+    emit_addr 'perf_participants',%all,'activity_event_performancest','participant_detail';
     emit_addr 'perf_histfig',%all,'activity_event_performancest::anon2','histfig_id';
 
     my $body_str = join("\n",@lines);
