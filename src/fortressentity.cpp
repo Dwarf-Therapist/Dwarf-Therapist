@@ -78,7 +78,7 @@ void FortressEntity::read_entity(){
 //    m_translated_name = m_df->get_translated_word(m_address + 0x14);
 
     m_id = m_df->read_int(m_address + 0x4);
-
+    m_histfigs = m_df->enumerate_vector(m_address + m_mem->hist_entity_offset("histfigs"));
     //load squads
     m_squads = m_df->enumerate_vector(m_address + m_mem->hist_entity_offset("squads"));
 

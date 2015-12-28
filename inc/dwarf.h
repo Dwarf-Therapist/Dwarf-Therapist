@@ -193,6 +193,7 @@ public:
     Q_INVOKABLE bool is_baby() {return m_is_baby;}
 
     Q_INVOKABLE QString occupation() {return get_occupation_desc(m_occ_type);}
+    UNIT_OCCUPATION get_occupation() {return m_occ_type;}
 
     //! return a text version of this dwarf's profession (will use custom profession if set)
     Q_INVOKABLE QString profession();

@@ -446,7 +446,12 @@ void DwarfModel::build_row(const QString &key) {
         } else if (m_group_by == GB_GOALS) {
             agg_first_col->setData(first_dwarf->goals_realized(), DR_SORT_VALUE);
         } else if (m_group_by == GB_OCCUPATION) {
-            agg_first_col->setData(first_dwarf->occupation(), DR_SORT_VALUE);
+            //keep no occupation at the top/bottom
+            if(first_dwarf->get_occupation() == Dwarf::OCC_NONE){
+                agg_first_col->setData(QString::number(first_dwarf->get_occupation()), DR_SORT_VALUE);
+            }else{
+                agg_first_col->setData(first_dwarf->occupation(), DR_SORT_VALUE);
+            }
         } else if (m_group_by == GB_SKILL_RUST) {
             agg_first_col->setData(first_dwarf->rust_level(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HAPPINESS) {

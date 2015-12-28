@@ -1183,11 +1183,9 @@ void Dwarf::read_labors() {
 void Dwarf::check_availability(){
     GameDataReader *gdr = GameDataReader::ptr();
 
+    //set occupation
     VIRTADDR occ_addr = m_df->find_occupation(m_histfig_id);
-
-    bool fixed_occupation = false;
     if(occ_addr != 0){
-        fixed_occupation = (m_df->read_int(occ_addr+0x18) == m_df->fortress()->id()); //TODO: offset
         m_occ_type = static_cast<UNIT_OCCUPATION>(m_df->read_int(occ_addr + 0x4));
     }
 
@@ -1198,7 +1196,7 @@ void Dwarf::check_availability(){
     if(m_locked_mood){
         m_can_set_labors = false;
         m_labor_reason = tr("due to mood (%1)").arg(gdr->get_mood_name(m_mood_id,true));
-    }else if(fixed_occupation){
+    }else if(!m_is_animal && !m_df->fortress()->hist_figures().contains(m_histfig_id)){
         foreigner = true;
         m_can_set_labors = false;
         m_labor_reason = tr("for non-citizens.");

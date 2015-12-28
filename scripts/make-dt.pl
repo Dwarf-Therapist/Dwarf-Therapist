@@ -209,6 +209,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'extracts',%all,'caste_raw','extracts.extract_matidx';
 
     emit_header 'hist_entity_offsets';
+    emit_addr 'histfigs',%all,'historical_entity','histfig_ids';
     emit_addr 'beliefs',%all,'historical_entity','resources.values';
     emit_addr 'squads',%all,'historical_entity','squads';
     emit_addr 'positions',%all,'historical_entity','positions.own';

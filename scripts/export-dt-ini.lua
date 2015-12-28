@@ -179,6 +179,7 @@ address('shearable_tissues_vector',df.caste_raw,'shearable_tissue_layer')
 address('extracts',df.caste_raw,'extracts','extract_matidx')
 
 header('hist_entity_offsets')
+address('histfigs',df.historical_entity,'histfig_ids')
 address('beliefs',df.historical_entity,'resources','values')
 address('squads',df.historical_entity,'squads')
 address('positions',df.historical_entity,'positions','own')

@@ -257,9 +257,9 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
         if(!d->is_animal()){
 
             customization_menu->setEnabled(true);
-            m_assign_labors->setEnabled(true);
-            m_assign_skilled_labors->setEnabled(true);
-            m_remove_labors->setEnabled(true);
+            m_assign_labors->setEnabled(d->can_set_labors());
+            m_assign_skilled_labors->setEnabled(d->can_set_labors());
+            m_remove_labors->setEnabled(d->can_set_labors());
 
             refresh_update_c_prof_menu(d);
 
