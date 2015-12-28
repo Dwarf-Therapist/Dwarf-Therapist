@@ -1,3 +1,34 @@
+### Version 34.0 Patch Notes
+
+***
+- update memory layouts for DF 42.04
+- fortress citizens/residents from other races should be visible and can have labors/squads assigned where applicable (ie. mercenaries can join squads and citizens can have labor toggled)
+- added musical/poetic/dance preferences
+- added new emotions
+- added new thoughts
+- added new jobs for activities, meeting and squad orders/training
+- added many new job icons and activity icons
+- added grouping by job type, and occupation
+- incoming migrants should show up, even if they're not on the map yet
+- added basic body part sorting for the equipment column
+- added message regarding caged animals to the butcher column
+- specific items and general item types should compare correctly for equipment
+- added 'chain' to armor names when applicable
+- added 'large' and 'small' prefixes to armor when applicable
+- added [S] to armor when applicable to indicate shaped
+- holding CTRL when using the information dock will prevent the text for updating
+
+- fixed an issue where some fortress positions weren't always loaded
+- fixed some unit preferences
+- fixed equipment columns sometimes showing multiple gloves/boots for specified items
+- fixed the useless warning about unknown column views
+- fixed the tooltip text color for weapon and equipment columns
+- fixed units not being reselected after committing
+- fixed cell colors not immediately updating after copying views
+- fixed attribute columns not showing values for children
+- fixed some edge case drawing issues with cells
+- fixed some material names/descriptions
+
 ### Version 33.0 Patch Notes
 
 ***
