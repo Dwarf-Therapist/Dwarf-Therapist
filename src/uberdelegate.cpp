@@ -39,6 +39,9 @@ THE SOFTWARE.
 
 #include <QPainter>
 
+const float UberDelegate::MIN_DRAW_SIZE = 0.05625f;
+const float UberDelegate::MAX_CELL_FILL = 0.76f;
+
 UberDelegate::UberDelegate(QObject *parent)
     : QStyledItemDelegate(parent)
     , m_model(0)

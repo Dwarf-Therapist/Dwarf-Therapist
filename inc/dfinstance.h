@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define DFINSTANCE_H
 
 #include <QDir>
+#include <QPointer>
 #include "utils.h"
 #include "global_enums.h"
 
