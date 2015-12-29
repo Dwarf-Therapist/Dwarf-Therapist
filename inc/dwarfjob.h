@@ -34,6 +34,18 @@ class DwarfJob : public QObject {
     Q_OBJECT
 public:
 
+    DwarfJob(QObject *parent = 0)
+        : QObject(parent)
+        , m_id(JOB_UNKNOWN)
+        , m_name("Unknown")
+        , m_group_name("Unknown")
+        , m_reaction_class("")
+        , m_img("")
+        , m_military(false)
+        , m_has_placeholder(false)
+    {
+    }
+
     DwarfJob(QSettings &s, int offset, QString group_name, QString img_path, bool military = false, QObject *parent = 0)
         : QObject(parent)
     {
@@ -58,12 +70,12 @@ public:
 
     //negative jobs are custom
     typedef enum {
+        JOB_UNKNOWN = -999,
         JOB_MEETING = -5,
         JOB_CAGED = -4,
         JOB_IDLE = -3,
         JOB_ON_BREAK = -2,
         JOB_SOLDIER = -1,
-        JOB_DEFAULT = 0,
         JOB_SLEEP = 21,
         JOB_DRINK_BLOOD = 223
     } UNIT_JOB_TYPE;

@@ -49,6 +49,7 @@ THE SOFTWARE.
 #include "histfigure.h"
 #include "emotiongroup.h"
 #include "activity.h"
+#include "dwarfjob.h"
 
 #include <QMessageBox>
 #include <QTimer>
@@ -780,6 +781,7 @@ void DFInstance::refresh_data(){
 }
 
 void DFInstance::load_items(){
+    LOGD << "loading items";
     m_mapped_items.clear();
     m_items_vectors.clear();
 
@@ -805,6 +807,7 @@ void DFInstance::load_items(){
 }
 
 void DFInstance::load_fortress(){
+    LOGD << "loading fortress entity";
     //load the fortress historical entity
     if(m_fortress){
         delete(m_fortress);
@@ -833,6 +836,7 @@ void DFInstance::load_fortress_name(){
 }
 
 QList<Squad *> DFInstance::load_squads(bool show_progress) {
+    LOGD << "loading squads";
     QList<Squad*> squads;
     if (!m_is_ok) {
         LOGW << "not connected";
@@ -1152,10 +1156,11 @@ QPair<int,QString> DFInstance::find_activity(int histfig_id){
             return ret;
         }
     }
-    return qMakePair<int,QString>(0,"");
+    return qMakePair<int,QString>(DwarfJob::JOB_UNKNOWN,"");
 }
 
 void DFInstance::load_activities(){
+    LOGD << "loading activities";
     QVector<VIRTADDR> all_activities = enumerate_vector(m_layout->address("activities_vector"));
     foreach(VIRTADDR addr, all_activities){
         QPointer<Activity> act = new Activity(this,addr,this);

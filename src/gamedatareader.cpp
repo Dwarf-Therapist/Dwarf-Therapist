@@ -238,6 +238,7 @@ GameDataReader::GameDataReader(QObject *parent)
             }
         }
     }
+    m_dwarf_jobs.insert(DwarfJob::JOB_UNKNOWN,new DwarfJob());
 
     //moods
     int moods = m_data_settings->beginReadArray("unit_moods");
@@ -506,7 +507,12 @@ laborOptimizerPlan* GameDataReader::get_opt_plan(const QString &name){
 }
 
 DwarfJob *GameDataReader::get_job(const short &job_id) {
-    return m_dwarf_jobs.value(job_id, 0);
+    if(m_dwarf_jobs.contains(job_id)){
+        return m_dwarf_jobs.value(job_id);
+    }else{
+        LOGE << "Unknown jobID" << job_id;
+        return m_dwarf_jobs.value((short)DwarfJob::JOB_UNKNOWN);
+    }
 }
 
 void GameDataReader::load_roles(){

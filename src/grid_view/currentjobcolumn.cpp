@@ -53,7 +53,6 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
     QString pixmap_name(":img/question-frame.png");
     DwarfJob *job = GameDataReader::ptr()->get_job(job_id);
     if (job) {
-
         int prof_id = -1;
         if(!job->reactionClass().isEmpty() && !d->current_sub_job_id().isEmpty()) {
             Reaction* reaction = d->get_reaction();
@@ -65,10 +64,10 @@ QStandardItem *CurrentJobColumn::build_cell(Dwarf *d) {
         if(prof_id != -1){
             pixmap_name = ":/profession/prof_" + QString::number(prof_id+1) + ".png";  //offset for the image name
             item->setData(QColor(50,50,50), DwarfModel::DR_DEFAULT_BG_COLOR); //shade the background
-        }else{
+        }else if(!job->img_path().isEmpty()){
             pixmap_name = QString(":/activities/%1.png").arg(job->img_path());
-            TRACE << "Unit:" << d->nice_name() << " jobID:" << job_id << "(" << job->name() << ")";
         }
+        TRACE << "Unit:" << d->nice_name() << " jobID:" << job_id << "(" << job->name() << ")";
     }
 
     if(!QFile::exists(pixmap_name)){

@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "gamedatareader.h"
 #include "activityevent.h"
 #include "truncatingfilelogger.h"
+#include "dwarfjob.h"
 
 Activity::Activity(DFInstance *df, VIRTADDR addr, QObject *parent)
     :QObject(parent)
@@ -48,9 +49,10 @@ void Activity::read_data(){
         MemoryLayout *mem = m_df->memory_layout();
         m_id = m_df->read_int(m_address);
         m_type = static_cast<ACT_CATEGORY>(m_df->read_short(m_address + mem->activity_offset("activity_type")));
+        LOGD << "reading activity of type" << m_type;
 
         if(m_type == ACT_UNK_3 || m_type == ACT_UNK_4 || m_type == ACT_UNK_6){
-            LOGD << "uknown action category" << m_type;
+            LOGD << "uknown activity category" << m_type;
         }else if(m_type == ACT_CONFLICT || m_type == ACT_CONVERSE){
             return; //ignore these activity types as they don't impact current jobs/actions
         }
@@ -68,5 +70,5 @@ void Activity::read_data(){
 }
 
 QPair<int, QString> Activity::find_activity(int histfig_id){
-    return m_histfig_actions.value(histfig_id,qMakePair<int,QString>(0,"unknown"));
+    return m_histfig_actions.value(histfig_id,qMakePair<int,QString>(DwarfJob::JOB_UNKNOWN,"unknown"));
 }

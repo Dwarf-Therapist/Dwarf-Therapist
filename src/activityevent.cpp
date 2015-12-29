@@ -50,8 +50,11 @@ void ActivityEvent::read_data(){
         QList<ACT_EVT_TYPE> ignore;
         ignore << HARASS << TALK << CONFLICT << REUNION;
         if(ignore.contains(m_type)){
+            LOGD << "   ignoring activity event due to type";
             return;
         }
+
+        LOGD << "   activity event type:" << raw_type << " id:" << m_id;
 
         ACT_EVT_TYPE event_type = m_type;
 

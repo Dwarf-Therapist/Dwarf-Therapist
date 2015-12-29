@@ -128,6 +128,7 @@ void Squad::read_members() {
             u->add_uniform_item(addr+m_mem->squad_offset("flask"),FLASK);
 
         m_uniforms.insert(position,u);
+        LOGD << "checking orders for position" << position;
         foreach(VIRTADDR ord_addr, m_df->enumerate_vector(addr+0x4)){ //TODO: offset
             read_order(ord_addr, histfig_id);
         }
@@ -137,11 +138,13 @@ void Squad::read_members() {
 
 void Squad::read_orders(){
     //read the squad order
+    LOGD << "checking squad order";
     m_squad_order = 0;
     foreach(VIRTADDR addr, m_df->enumerate_vector(m_address + m_mem->squad_offset("orders"))){
         read_order(addr,-1,false);
     }
 
+    LOGD << "checking squad schedules";
     if(m_squad_order <= 0){
         //read the scheduled orders
         QVector<VIRTADDR> schedules = m_df->enumerate_vector(m_address + m_mem->squad_offset("schedules"));
@@ -168,6 +171,7 @@ void Squad::read_order(VIRTADDR addr, int histfig_id, bool unit){
     }else{
         ord_type = m_df->read_int(m_df->read_addr(vtable_addr+0xc)+0x1);
     }
+    LOGD << "   reading order for" << histfig_id << "order type:" << ord_type;
     if(ord_type != ORD_TRAIN){ //ignore training, handled by activites
         ord_type += DwarfJob::ORDER_OFFSET;
         if(histfig_id >= 0){
@@ -330,11 +334,11 @@ QPair<int, QString> Squad::get_order(int histfig_id){
     int job_id = m_squad_order;
     if(m_orders.contains(histfig_id)){
          job_id = m_orders.value(histfig_id);
-    }else if(m_squad_order != DwarfJob::JOB_DEFAULT){
+    }else if(m_squad_order != DwarfJob::JOB_UNKNOWN){
         job_id = m_squad_order;
     }
     QString desc = "";
-    if(job_id != DwarfJob::JOB_DEFAULT){
+    if(job_id != DwarfJob::JOB_UNKNOWN){
         desc = GameDataReader::ptr()->get_job(short(job_id))->name();
     }
     return qMakePair<int,QString>(job_id,desc);
