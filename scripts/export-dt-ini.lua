@@ -453,7 +453,7 @@ address('perf_histfig',df.activity_event_performancest.T_participant_actions,'hi
 local out = io.open('therapist.ini', 'w')
 
 out:write('[info]\n')
-f dfhack.getOSType() == 'windows' and dfhack.internal.getPE then
+if dfhack.getOSType() == 'windows' and dfhack.internal.getPE then
     out:write(('checksum=0x%x\n'):format(dfhack.internal.getPE()))
 elseif dfhack.getOSType() ~= 'windows' and dfhack.internal.getMD5 then
     out:write(('checksum=0x%s\n'):format(dfhack.internal.getMD5():sub(1, 8)))
