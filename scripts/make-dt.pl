@@ -471,7 +471,7 @@ sub generate_dt_ini($$$$) {
     emit_addr 'knowledge_category',%all,'activity_event_ponder_topicst','knowledge_category';
     emit_addr 'knowledge_flag',%all,'activity_event_ponder_topicst','knowledge_flag';
     emit_addr 'perf_type',%all,'activity_event_performancest','type';
-    emit_addr 'perf_participants',%all,'activity_event_performancest','participant_detail';
+    emit_addr 'perf_participants',%all,'activity_event_performancest','participant_actions';
     emit_addr 'perf_histfig',%all,'activity_event_performancest::anon2','histfig_id';
 
     my $body_str = join("\n",@lines);
