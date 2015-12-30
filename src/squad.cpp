@@ -139,13 +139,13 @@ void Squad::read_members() {
 void Squad::read_orders(){
     //read the squad order
     LOGD << "checking squad order";
-    m_squad_order = 0;
+    m_squad_order = DwarfJob::JOB_UNKNOWN;
     foreach(VIRTADDR addr, m_df->enumerate_vector(m_address + m_mem->squad_offset("orders"))){
         read_order(addr,-1,false);
     }
 
     LOGD << "checking squad schedules";
-    if(m_squad_order <= 0){
+    if(m_squad_order == DwarfJob::JOB_UNKNOWN){
         //read the scheduled orders
         QVector<VIRTADDR> schedules = m_df->enumerate_vector(m_address + m_mem->squad_offset("schedules"));
         int idx = m_df->read_addr(m_address + m_mem->squad_offset("alert"));

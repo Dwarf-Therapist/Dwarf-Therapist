@@ -1567,11 +1567,11 @@ void Dwarf::read_inventory(){
             if(i_type == WEAPON){
                 ItemWeapon *iw = new ItemWeapon(*i);
                 process_inv_item(category_name,iw);
-                LOGD << "  + found weapon:" << iw->display_name(false);
+                LOGV << "  + found weapon:" << iw->display_name(false);
             }else if(i_type == INSTRUMENT){
                 ItemInstrument *ii = new ItemInstrument(*i);
                 process_inv_item(category_name,ii);
-                LOGD << "  + found instrument:" << ii->display_name(false);
+                LOGV << "  + found instrument:" << ii->display_name(false);
             }else if(Item::is_armor_type(i_type,true)){
                 ItemArmor *ir = new ItemArmor(*i);
                 process_inv_item(category_name,ir);
@@ -1597,24 +1597,24 @@ void Dwarf::read_inventory(){
                     }
                 }
 
-                LOGD << "  + found armor/clothing:" << ir->display_name(false);
+                LOGV << "  + found armor/clothing:" << ir->display_name(false);
             }else if(Item::is_supplies(i_type) || Item::is_ranged_equipment(i_type)){
                 process_inv_item(category_name,i);
-                LOGD << "  + found supplies/ammo/quiver:" << i->display_name(false);
+                LOGV << "  + found supplies/ammo/quiver:" << i->display_name(false);
             }else{
-                LOGD << "  + found other item:" << i->display_name(false);
+                LOGV << "  + found other item:" << i->display_name(false);
             }
 
             //process any items inside this item (ammo, food?, drink?)
             if(i->contained_items().count() > 0){
                 foreach(Item *contained_item, i->contained_items()){
                     process_inv_item(category_name,contained_item,true);
-                    LOGD << "    + contained item(s):" << contained_item->display_name(false);
+                    LOGV << "    + contained item(s):" << contained_item->display_name(false);
                 }
             }
             inv_count++;
         }else{
-            LOGD << "  - skipping inventory item due to invalid type (" + QString::number(inv_type) + ")";
+            LOGV << "  - skipping inventory item due to invalid type (" + QString::number(inv_type) + ")";
         }
     }
     LOGD << "  total inventory items found:" << inv_count;
@@ -2864,8 +2864,8 @@ void Dwarf::calc_attribute_ratings(){
 QList<double> Dwarf::calc_role_ratings(){
     calc_attribute_ratings();
 
-    LOGD << ":::::::::::::::::::::::::::::::::::::::::::::::::::";
-    LOGD << m_nice_name;
+    LOGV << ":::::::::::::::::::::::::::::::::::::::::::::::::::";
+    LOGV << m_nice_name;
 
     m_role_ratings.clear();
     m_raw_role_ratings.clear();
@@ -2890,7 +2890,7 @@ double Dwarf::calc_role_rating(Role *m_role){
         return  m_engine.evaluate(m_role->script()).toNumber(); //just show the raw value the script generates
     }
 
-    LOGD << "  +" << m_role->name() << "-" << m_nice_name;
+    LOGV << "  +" << m_role->name() << "-" << m_nice_name;
 
     //no script, calculate rating based on specified aspects
     double rating_att = 0.0;
@@ -2977,7 +2977,7 @@ double Dwarf::calc_role_rating(Role *m_role){
             total_skill_rates += s.skill_rate();
             aspect_value = s.get_rating();
 
-            LOGD << "      * skill:" << s.name() << "lvl:" << s.capped_level_precise() << "sim. lvl:" << s.get_simulated_level() << "balanced lvl:" << s.get_balanced_level()
+            LOGV << "      * skill:" << s.name() << "lvl:" << s.capped_level_precise() << "sim. lvl:" << s.get_simulated_level() << "balanced lvl:" << s.get_balanced_level()
                  << "rating:" << s.get_rating();
 
             if(aspect_value > 1.0)
@@ -3019,12 +3019,12 @@ double Dwarf::calc_role_rating(Role *m_role){
     if(rating_total == 0)
         rating_total = 0.0001;
 
-    LOGD << "      -attributes:" << rating_att;
-    LOGD << "      -skills:" << rating_skill;
-    LOGD << "      -traits:" << rating_trait;
-    LOGD << "      -preferences:" << rating_prefs;
-    LOGD << "      -total:" << rating_total;
-    LOGD << "  ------------------------------------------------------";
+    LOGV << "      -attributes:" << rating_att;
+    LOGV << "      -skills:" << rating_skill;
+    LOGV << "      -traits:" << rating_trait;
+    LOGV << "      -preferences:" << rating_prefs;
+    LOGV << "      -total:" << rating_total;
+    LOGV << "  ------------------------------------------------------";
 
     return rating_total;
 }

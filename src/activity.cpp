@@ -52,7 +52,7 @@ void Activity::read_data(){
         LOGD << "reading activity of type" << m_type;
 
         if(m_type == ACT_UNK_3 || m_type == ACT_UNK_4 || m_type == ACT_UNK_6){
-            LOGD << "uknown activity category" << m_type;
+            LOGD << "uknown activity type" << m_type;
         }else if(m_type == ACT_CONFLICT || m_type == ACT_CONVERSE){
             return; //ignore these activity types as they don't impact current jobs/actions
         }

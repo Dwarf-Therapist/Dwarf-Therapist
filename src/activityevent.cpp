@@ -76,10 +76,12 @@ void ActivityEvent::read_data(){
                 }
                 //squad lead participants, check and change type or cancel if necessary
                 if(event_type == SQ_COMBAT_TRAIN){
+                    QString job_name = "";
                     if(m_df->read_int(m_address + mem->activity_offset("sq_lead")) == histfig_id){ //some squad activities have leaders, check that first
                         event_type = SQ_LEAD_DEMO;
+                         job_name = gdr->get_job((int)DwarfJob::ACTIVITY_OFFSET + (int)event_type)->name(tr("Combat"));
                     }
-                    add_action(histfig_id,event_type);
+                    add_action(histfig_id,event_type,job_name);
                     continue;
                 }
                 //squad lead participants, check and change type or cancel if necessary
@@ -172,13 +174,13 @@ void ActivityEvent::read_data(){
 }
 
 void ActivityEvent::add_action(int histfig_id, ACT_EVT_TYPE evt_type, QString desc){
+    int job_id = (int)evt_type + DwarfJob::ACTIVITY_OFFSET;
     if(desc.isEmpty()){
-        desc = GameDataReader::ptr()->get_job((int)evt_type + DwarfJob::ACTIVITY_OFFSET)->name();
+        desc = GameDataReader::ptr()->get_job(job_id)->name();
     }
     if(desc.toLower() == "unknown" || desc.toLower().trimmed().isEmpty()){
         LOGW << "unknown activity event:" << evt_type;
     }
-    int job_id = (int)evt_type + DwarfJob::ACTIVITY_OFFSET;
     m_histfig_actions->insert(histfig_id,qMakePair(job_id,desc));
 }
 

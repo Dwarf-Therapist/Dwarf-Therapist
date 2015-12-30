@@ -34,6 +34,7 @@ LogManager::LogManager(QObject *parent)
 {
     // setup names for the logging levels
     m_level_names[LL_TRACE] = tr("TRACE");
+    m_level_names[LL_VERBOSE] = tr("VERBOSE");
     m_level_names[LL_DEBUG] = tr("DEBUG");
     m_level_names[LL_INFO] = tr("INFO");
     m_level_names[LL_WARN] = tr("WARNING");

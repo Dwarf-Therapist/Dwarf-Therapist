@@ -294,8 +294,7 @@ void DFInstance::load_game_data()
     LOGD << "dwarf race index" << hexify(dwarf_race_index_addr);
     // which race id is dwarven?
     m_dwarf_race_id = read_short(dwarf_race_index_addr);
-    LOGD << "dwarf race:" << hexify(m_dwarf_race_id);
-
+    LOGD << "dwarf race:" << m_dwarf_race_id;
 
     emit progress_message(tr("Loading races and castes"));
     qDeleteAll(m_races);
@@ -354,7 +353,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
     attach();
     m_dwarf_civ_id = read_int(dwarf_civ_idx_addr);
-    LOGD << "civilization id:" << hexify(m_dwarf_civ_id);
+    LOGD << "civilization id:" << m_dwarf_civ_id;
 
     QVector<VIRTADDR> creatures_addrs = get_creatures();
 
@@ -546,24 +545,24 @@ void DFInstance::load_role_ratings(){
 
     QTime tr;
     tr.start();
-    LOGD << "Role Trait Info:";
+    LOGV << "Role Trait Info:";
     DwarfStats::init_traits(trait_values);
-    LOGD << "     - loaded trait role data in" << tr.elapsed() << "ms";
+    LOGV << "     - loaded trait role data in" << tr.elapsed() << "ms";
 
-    LOGD << "Role Skills Info:";
+    LOGV << "Role Skills Info:";
     DwarfStats::init_skills(skill_values);
-    LOGD << "     - loaded skill role data in" << tr.elapsed() << "ms";
+    LOGV << "     - loaded skill role data in" << tr.elapsed() << "ms";
 
-    LOGD << "Role Attributes Info:";
+    LOGV << "Role Attributes Info:";
     DwarfStats::init_attributes(attribute_values,attribute_raw_values);
-    LOGD << "     - loaded attribute role data in" << tr.elapsed() << "ms";
+    LOGV << "     - loaded attribute role data in" << tr.elapsed() << "ms";
 
-    LOGD << "Role Preferences Info:";
+    LOGV << "Role Preferences Info:";
     DwarfStats::init_prefs(pref_values);
-    LOGD << "     - loaded preference role data in" << tr.elapsed() << "ms";
+    LOGV << "     - loaded preference role data in" << tr.elapsed() << "ms";
 
     float role_rating_avg = 0;
-    bool calc_role_avg = (DT->get_log_manager()->get_appender("core")->minimum_level() <= LL_DEBUG);
+    bool calc_role_avg = (DT->get_log_manager()->get_appender("core")->minimum_level() <= LL_VERBOSE);
 
     QVector<double> all_role_ratings;
     foreach(Dwarf *d, m_labor_capable_dwarves){
@@ -573,14 +572,14 @@ void DFInstance::load_role_ratings(){
                 role_rating_avg+=rating;
         }
     }
-    LOGD << "Role Display Info:";
+    LOGV << "Role Display Info:";
     DwarfStats::init_roles(all_role_ratings);
     foreach(Dwarf *d, m_labor_capable_dwarves){
         d->refresh_role_display_ratings();
     }
-    LOGD << "     - loaded role display data in" << tr.elapsed() << "ms";
+    LOGV << "     - loaded role display data in" << tr.elapsed() << "ms";
 
-    if(DT->get_log_manager()->get_appender("core")->minimum_level() <= LL_DEBUG){
+    if(DT->get_log_manager()->get_appender("core")->minimum_level() <= LL_VERBOSE){
         float max = 0;
         float min = 0;
         float median = 0;
@@ -591,11 +590,11 @@ void DFInstance::load_role_ratings(){
             min = all_role_ratings.first();
             median = RoleCalcBase::find_median(all_role_ratings);
         }
-        LOGD << "Overall Role Rating Stats";
-        LOGD << "     - Min: " << min;
-        LOGD << "     - Max: " << max;
-        LOGD << "     - Median: " << median;
-        LOGD << "     - Average: " << role_rating_avg;
+        LOGV << "Overall Role Rating Stats";
+        LOGV << "     - Min: " << min;
+        LOGV << "     - Max: " << max;
+        LOGV << "     - Median: " << median;
+        LOGV << "     - Average: " << role_rating_avg;
     }
 
 }
@@ -704,6 +703,7 @@ ItemWeaponSubtype *DFInstance::find_weapon_subtype(QString name){
 }
 
 void DFInstance::load_item_defs(){
+    LOGD << "reading item types";
     foreach (const QList<ItemSubtype*> &list, m_item_subtypes) {
         foreach (ItemSubtype* def, list) {
             delete def;
@@ -713,6 +713,7 @@ void DFInstance::load_item_defs(){
     m_ordered_weapon_defs.clear();
 
     foreach(ITEM_TYPE itype, Item::items_with_subtypes()){
+        LOGD << "   reading item types for type" << itype;
         QVector<VIRTADDR> addresses = m_itemdef_vectors.value(itype);
         if (!addresses.empty()) {
             foreach(VIRTADDR addr, addresses) {
@@ -744,7 +745,7 @@ ItemSubtype *DFInstance::get_item_subtype(ITEM_TYPE itype, int sub_type){
 
 
 void DFInstance::load_races_castes(){
-    attach();
+    LOGD << "reading races and castes";
     VIRTADDR races_vector_addr = m_layout->address("races_vector");
     QVector<VIRTADDR> races = enumerate_vector(races_vector_addr);
     int idx = 0;
@@ -754,7 +755,6 @@ void DFInstance::load_races_castes(){
             idx++;
         }
     }
-    detach();
 }
 
 const QString DFInstance::fortress_name(){
@@ -820,16 +820,19 @@ void DFInstance::load_fortress(){
 }
 
 void DFInstance::load_fortress_name(){
+    LOGD << "reading fortress name";
     //load the fortress name
     //fortress name is actually in the world data's site list
     //we can access a list of the currently active sites and read the name from there
     VIRTADDR world_data_addr = read_addr(m_layout->address("world_data"));
+    LOGD << "   reading sites...";
     QVector<VIRTADDR> sites = enumerate_vector(world_data_addr + m_layout->address("active_sites_vector",false));
     foreach(VIRTADDR site, sites){
         short t = read_short(site + m_layout->address("world_site_type",false));
         if(t==0){ //player fortress type
             m_fortress_name = get_language_word(site);
             m_fortress_name_translated = get_translated_word(site);
+            LOGD << "   found player fortress with name" << m_fortress;
             break;
         }
     }
@@ -1152,7 +1155,7 @@ QPair<int,QString> DFInstance::find_activity(int histfig_id){
 
     foreach(Activity *a, m_activities){
         QPair<int,QString> ret = a->find_activity(histfig_id);
-        if(ret.first != 0){
+        if(ret.first != DwarfJob::JOB_UNKNOWN){
             return ret;
         }
     }

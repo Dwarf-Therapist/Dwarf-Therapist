@@ -73,22 +73,22 @@ void RoleStats::set_mode(const QVector<double> &unsorted){
             if(perc_unique < 0.25){
                 //rankecdf
                 m_calc = QSharedPointer<RoleCalcBase>(new RoleCalcBase(m_valid));
-                LOGD << "     - using only ecdfrank";
+                LOGV << "     - using only ecdfrank";
             }else{
                 //rankecdf and min/max
                 m_calc = QSharedPointer<RoleCalcBase>(new RoleCalcMinMax(m_valid));
-                LOGD << "     - using a combination of ecdfrank and minmax";
+                LOGV << "     - using a combination of ecdfrank and minmax";
             }
         }else{
             //rankecdf and recenter
-            LOGD << "     - using a combination of ecdfrank and recenter";
+            LOGV << "     - using a combination of ecdfrank and recenter";
             m_calc = QSharedPointer<RoleCalcBase>(new RoleCalcRecenter(m_valid));
         }
     }else{
-        LOGD << "     - using basic range transform";
+        LOGV << "     - using basic range transform";
     }
 
-    bool print_debug_info = (DT->get_log_manager()->get_appender("core")->minimum_level() <= LL_DEBUG);
+    bool print_debug_info = (DT->get_log_manager()->get_appender("core")->minimum_level() <= LL_VERBOSE);
 
     if(print_debug_info){
         RoleCalcBase tmp(m_valid);
@@ -97,7 +97,7 @@ void RoleStats::set_mode(const QVector<double> &unsorted){
             tmp_total += tmp.base_rating(val);
         }
         double tmp_avg = tmp_total / m_valid.size();
-        LOGD << "     - base avg:" << tmp_avg;
+        LOGV << "     - base avg:" << tmp_avg;
     }
 
     double total = 0.0;
@@ -108,7 +108,7 @@ void RoleStats::set_mode(const QVector<double> &unsorted){
             total += m_calc->rating(*it);
         }
         m_null_rating = ((m_total_count * 0.5f) - total) / (m_total_count - valid_size);
-        LOGD << "     - null rating:" << m_null_rating;
+        LOGV << "     - null rating:" << m_null_rating;
     }
 
     if(print_debug_info){
@@ -119,13 +119,13 @@ void RoleStats::set_mode(const QVector<double> &unsorted){
         }
         if(m_null_rating != -1)
             total += ((m_total_count - valid_size) * m_null_rating);
-        LOGD << "     - total raw values:" << m_total_count;
-        LOGD << "     - median raw values:" << m_median;
-        LOGD << "     - average of valid raw values:" << accumulate(m_valid.begin(),m_valid.end(),0.0) /  valid_size;
-        LOGD << "     - min raw valid value:" << m_valid.first() << "max raw valid value:" << m_valid.last();
-        LOGD << "     - min rating:" << (m_null_rating > 0 ? m_null_rating : get_rating(m_valid.first())) << "max rating:" << get_rating(m_valid.last());
-        LOGD << "     - average of final ratings:" << (total / m_total_count);
-        LOGD << "     ------------------------------";
+        LOGV << "     - total raw values:" << m_total_count;
+        LOGV << "     - median raw values:" << m_median;
+        LOGV << "     - average of valid raw values:" << accumulate(m_valid.begin(),m_valid.end(),0.0) /  valid_size;
+        LOGV << "     - min raw valid value:" << m_valid.first() << "max raw valid value:" << m_valid.last();
+        LOGV << "     - min rating:" << (m_null_rating > 0 ? m_null_rating : get_rating(m_valid.first())) << "max rating:" << get_rating(m_valid.last());
+        LOGV << "     - average of final ratings:" << (total / m_total_count);
+        LOGV << "     ------------------------------";
     }
 }
 

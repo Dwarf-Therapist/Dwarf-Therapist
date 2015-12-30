@@ -36,6 +36,7 @@ class QFile;
   */
 typedef enum {
     LL_TRACE    = 0,
+    LL_VERBOSE = 5,
     LL_DEBUG    = 10,
     LL_INFO     = 20,
     LL_WARN     = 30,
@@ -147,6 +148,7 @@ if (GET_APPENDER(module) && GET_APPENDER(module)->minimum_level() > level); \
 else Streamer(GET_APPENDER(module), level, __FILE__, __LINE__, __FUNCTION__).stream()
 
 #define TRACE GET_LOG_BY_LEVEL_AND_MODULE(LL_TRACE, "core")
+#define LOGV GET_LOG_BY_LEVEL_AND_MODULE(LL_VERBOSE, "core")
 #define LOGD GET_LOG_BY_LEVEL_AND_MODULE(LL_DEBUG, "core")
 #define LOGI GET_LOG_BY_LEVEL_AND_MODULE(LL_INFO, "core")
 #define LOGW GET_LOG_BY_LEVEL_AND_MODULE(LL_WARN, "core")
