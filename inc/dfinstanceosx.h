@@ -42,6 +42,7 @@ public:
 
     bool attach();
     bool detach();
+    int VM_TYPE_OFFSET();
 
     static bool authorize();
     static bool isAuthorized();

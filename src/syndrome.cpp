@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "memorylayout.h"
 #include "gamedatareader.h"
+#include "truncatingfilelogger.h"
 
 Syndrome::Syndrome()
     : m_df(0x0)
@@ -65,8 +66,9 @@ Syndrome::Syndrome(DFInstance *df, VIRTADDR addr)
         foreach(VIRTADDR ce_addr, effects){
             VIRTADDR vtable = m_df->read_addr(ce_addr);
             int type = m_df->read_int(m_df->read_addr(vtable)+0x1);
+            LOGD << "reading syndrome type" << type;
             int end = m_df->read_int(ce_addr + m_mem->syndrome_offset("cie_end"));
-            if(type ==25){
+            if(type==25){
                 //physical attribute changes
                 load_attribute_changes(ce_addr,(int)AT_STRENGTH,5,m_mem->syndrome_offset("cie_phys"),end);
             }else if(type==26){

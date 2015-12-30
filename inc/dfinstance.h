@@ -131,6 +131,7 @@ public:
     bool is_attached() {return m_attach_count > 0;}
     virtual bool attach() = 0;
     virtual bool detach() = 0;
+    virtual int VM_TYPE_OFFSET() {return 0x1;}
 
     static bool authorize();
     quint32 current_year_time() {return m_cur_year_tick;}

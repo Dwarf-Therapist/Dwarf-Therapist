@@ -309,3 +309,7 @@ bool DFInstanceOSX::checkPermissions() {
     return ([applicationAttributes filePosixPermissions] == 1517 && [[applicationAttributes fileGroupOwnerAccountName] isEqualToString: @"procmod"]);
     [authPool release];
 }
+
+int DFInstanceOSX::VM_TYPE_OFFSET(){
+    return 0x4;
+}

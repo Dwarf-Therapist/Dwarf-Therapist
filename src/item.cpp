@@ -165,16 +165,7 @@ void Item::read_data(){
     if(m_addr){
         VIRTADDR item_vtable = m_df->read_addr(m_addr);
 
-        //this offset is the return value of DFs item object's getType function
-        int offset = m_df->memory_layout()->item_offset("item_type");
-        if(offset == -1){
-#if defined(Q_OS_MAC)
-            offset = 0x4;
-#else
-            offset = 0x1;
-#endif
-        }
-        m_iType = static_cast<ITEM_TYPE>(m_df->read_int(m_df->read_addr(item_vtable) + offset));
+        m_iType = static_cast<ITEM_TYPE>(m_df->read_int(m_df->read_addr(item_vtable) + m_df->VM_TYPE_OFFSET()));
 
         m_id = m_df->read_int(m_addr+m_df->memory_layout()->item_offset("id"));
         m_stack_size = m_df->read_int(m_addr+m_df->memory_layout()->item_offset("stack_size"));
@@ -190,6 +181,7 @@ void Item::read_data(){
         foreach(VIRTADDR ref, gen_refs){
             VIRTADDR gen_ref_vtable = m_df->read_addr(ref);
             int ref_type = m_df->read_int(m_df->read_addr(gen_ref_vtable+m_df->memory_layout()->general_ref_offset("ref_type")) + 0x1);
+            LOGD << "reading general ref of type" << ref_type;
             if(ref_type == 0 || ref_type == 1){
                 int artifact_id = m_df->read_int(ref+m_df->memory_layout()->general_ref_offset("artifact_id"));
                 if(artifact_id > 0){

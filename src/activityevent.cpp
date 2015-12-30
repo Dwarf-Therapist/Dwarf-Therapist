@@ -40,7 +40,8 @@ ActivityEvent::ActivityEvent(DFInstance *df, VIRTADDR addr, QHash<int, QPair<int
 void ActivityEvent::read_data(){
     if(m_address && m_df){
         MemoryLayout *mem = m_df->memory_layout();
-        short raw_type = m_df->read_short(m_df->read_addr(m_df->read_addr(m_address))+0x1);
+
+        short raw_type = m_df->read_short(m_df->read_addr(m_df->read_addr(m_address))+m_df->VM_TYPE_OFFSET());
         if(raw_type < 0){
             raw_type = 0;
         }
