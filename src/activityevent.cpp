@@ -67,7 +67,16 @@ void ActivityEvent::read_data(){
             //vectors after the participants has id numbers that correspond to either the artifact being copied, or the drink/food being served
         }else{
             GameDataReader *gdr = GameDataReader::ptr();
-            QVector<quint32> participants = m_df->enumerate_vector(m_address + mem->activity_offset("participants"));
+            int participant_offset = mem->activity_offset("participants");
+            VIRTADDR participant_addr = m_address + participant_offset;
+            QVector<quint32> participants = m_df->enumerate_vector(participant_addr);
+
+            QVector<quint32> other_participants = m_df->enumerate_vector(participant_addr + participant_offset - 0x14); //TODO: offset
+            foreach(quint32 h_id,other_participants){
+                if(!participants.contains(h_id)){
+                    participants << h_id;
+                }
+            }
 
             foreach(int histfig_id,participants){
                 event_type = m_type;
@@ -136,8 +145,8 @@ void ActivityEvent::read_data(){
                             continue; //they're either not listening, or ignoring
                         }
 
-                        int p_sub_type = m_df->read_int(p_addr + 0x4);
-                        QString desc = "UNK";
+                        QString desc = "";
+                        event_type = ACT_UNKNOWN;
                         if(par_type == PERF_AUDIENCE){
                             desc = get_audience_desc(p_type);
                             if(par_type == PERF_DANCE){
@@ -149,6 +158,7 @@ void ActivityEvent::read_data(){
                             desc = get_perf_desc(p_type);
                             event_type = static_cast<ACT_EVT_TYPE>((int)PF_STORY + (int)p_type);
                         }else if(par_type == PERF_MUSIC){
+                            int p_sub_type = m_df->read_int(p_addr + 0x4);
                             if(p_sub_type == 0){
                                 event_type = PF_SING;
                             }else if(p_sub_type > 0){
@@ -161,7 +171,7 @@ void ActivityEvent::read_data(){
                             event_type = PF_DANCE;
                         }
 
-                        if(desc != "UNK"){
+                        if(event_type != ACT_UNKNOWN){
                             add_action(id,event_type,desc);
                         }
                     }

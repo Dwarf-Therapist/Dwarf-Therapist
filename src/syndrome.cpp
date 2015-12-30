@@ -65,17 +65,19 @@ Syndrome::Syndrome(DFInstance *df, VIRTADDR addr)
         QVector<VIRTADDR> effects = m_df->enumerate_vector(syn_addr + m_mem->syndrome_offset("cie_effects"));
         foreach(VIRTADDR ce_addr, effects){
             VIRTADDR vtable = m_df->read_addr(ce_addr);
-            int type = m_df->read_int(m_df->read_addr(vtable)+0x1);
-            LOGD << "reading syndrome type" << type;
+            int type = m_df->read_int(m_df->read_addr(vtable)+m_df->VM_TYPE_OFFSET());
             int end = m_df->read_int(ce_addr + m_mem->syndrome_offset("cie_end"));
             if(type==25){
                 //physical attribute changes
+                LOGD << "reading syndrome type" << type << "(phys_att_change)";
                 load_attribute_changes(ce_addr,(int)AT_STRENGTH,5,m_mem->syndrome_offset("cie_phys"),end);
             }else if(type==26){
                 //mental attribute changes
+                LOGD << "reading syndrome type" << type << "(ment_att_change)";
                 load_attribute_changes(ce_addr,(int)AT_ANALYTICAL_ABILITY,12,m_mem->syndrome_offset("cie_ment"),end);
             }else if(type==24){
                 //transformation
+                LOGD << "reading syndrome type" << type << "(transformation)";
                 m_has_transform = true;
                 if(m_mem->is_valid_address(m_mem->syndrome_offset("trans_race_id")))
                     m_transform_race = m_df->read_int(ce_addr + m_mem->syndrome_offset("trans_race_id"));

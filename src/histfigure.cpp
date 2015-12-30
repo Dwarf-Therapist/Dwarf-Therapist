@@ -103,7 +103,7 @@ void HistFigure::read_kills(){
             evt_addr = m_df->find_event(evt_id);
             if(evt_addr){
                 VIRTADDR vtable_addr = m_df->read_addr(evt_addr);
-                int evt_type = m_df->read_int(m_df->read_addr(vtable_addr) + 0x1);
+                int evt_type = m_df->read_int(m_df->read_addr(vtable_addr) + m_df->VM_TYPE_OFFSET());
                 LOGD << "found historical event type" << evt_type;
                 if(evt_type == 3){ //hist figure died event
                     int hist_id = m_df->read_int(evt_addr + m_mem->hist_event_offset("killed_hist_id"));

@@ -58,6 +58,7 @@ public:
     QPair<int,QString> get_order(int histfig_id);
 
     typedef enum{
+        ORD_UNKNOWN = 1,
         ORD_MOVE,
         ORD_KILL,
         ORD_DEFEND,

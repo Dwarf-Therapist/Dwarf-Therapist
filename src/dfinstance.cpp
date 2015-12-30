@@ -832,7 +832,7 @@ void DFInstance::load_fortress_name(){
         if(t==0){ //player fortress type
             m_fortress_name = get_language_word(site);
             m_fortress_name_translated = get_translated_word(site);
-            LOGD << "   found player fortress with name" << m_fortress;
+            LOGD << "   found player fortress with name" << m_fortress_name;
             break;
         }
     }
@@ -1150,9 +1150,6 @@ void DFInstance::load_hist_figures(){
 }
 
 QPair<int,QString> DFInstance::find_activity(int histfig_id){
-    if(m_activities.count() <= 0)
-        load_activities();
-
     foreach(Activity *a, m_activities){
         QPair<int,QString> ret = a->find_activity(histfig_id);
         if(ret.first != DwarfJob::JOB_UNKNOWN){
@@ -1163,6 +1160,8 @@ QPair<int,QString> DFInstance::find_activity(int histfig_id){
 }
 
 void DFInstance::load_activities(){
+    qDeleteAll(m_activities);
+    m_activities.clear();
     LOGD << "loading activities";
     QVector<VIRTADDR> all_activities = enumerate_vector(m_layout->address("activities_vector"));
     foreach(VIRTADDR addr, all_activities){

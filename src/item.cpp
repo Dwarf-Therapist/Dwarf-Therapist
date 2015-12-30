@@ -180,15 +180,16 @@ void Item::read_data(){
         QVector<VIRTADDR> gen_refs = m_df->enumerate_vector(m_addr+m_df->memory_layout()->item_offset("general_refs"));
         foreach(VIRTADDR ref, gen_refs){
             VIRTADDR gen_ref_vtable = m_df->read_addr(ref);
-            int ref_type = m_df->read_int(m_df->read_addr(gen_ref_vtable+m_df->memory_layout()->general_ref_offset("ref_type")) + 0x1);
-            LOGD << "reading general ref of type" << ref_type;
+            int ref_type = m_df->read_int(m_df->read_addr(gen_ref_vtable+m_df->memory_layout()->general_ref_offset("ref_type")) + m_df->VM_TYPE_OFFSET());
             if(ref_type == 0 || ref_type == 1){
+                LOGD << "reading type:" << ref_type << "(artifact name)";
                 int artifact_id = m_df->read_int(ref+m_df->memory_layout()->general_ref_offset("artifact_id"));
                 if(artifact_id > 0){
                     m_artifact_name = m_df->get_artifact_name(ARTIFACTS,artifact_id);
                     break;
                 }
             }else if(ref_type == 10 && m_iType == QUIVER){ //type of container item, could be expanded to show food and drink
+                LOGD << "reading type:" << ref_type << "(container)";
                 int item_id = m_df->read_int(ref+m_df->memory_layout()->general_ref_offset("item_id"));
                 VIRTADDR ammo_addr = m_df->get_item_address(AMMO,item_id);
                 if(ammo_addr > 0){

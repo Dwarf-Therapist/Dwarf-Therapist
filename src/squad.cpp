@@ -165,14 +165,14 @@ void Squad::read_orders(){
 
 void Squad::read_order(VIRTADDR addr, int histfig_id, bool unit){
     VIRTADDR vtable_addr = m_df->read_addr(addr);
-    int ord_type = ORD_TRAIN;
+    int ord_type = ORD_UNKNOWN;
     if(!unit){ //TODO: offset
         ord_type = m_df->read_int(m_df->read_addr(m_df->read_addr(vtable_addr)+0xc)+m_df->VM_TYPE_OFFSET());
     }else{
         ord_type = m_df->read_int(m_df->read_addr(vtable_addr+0xc)+m_df->VM_TYPE_OFFSET());
     }
     LOGD << "   reading order for" << histfig_id << "order type:" << ord_type;
-    if(ord_type != ORD_TRAIN){ //ignore training, handled by activites
+    if(ord_type >= ORD_MOVE && ord_type <= ORD_PATROL){ //ignore training, handled by activites
         ord_type += DwarfJob::ORDER_OFFSET;
         if(histfig_id >= 0){
             if(!m_orders.contains(histfig_id)){
