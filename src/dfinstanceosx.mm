@@ -224,12 +224,14 @@ bool DFInstanceOSX::authorize() {
     //NSLog(@"Therapist path: %s\n", therapistExe);
 
     if( DFInstanceOSX::isAuthorized() ) {
+        // Ignore SIGPIPE.
+        signal(SIGPIPE, SIG_IGN);
         // Ensure we're in the correct path
         QDir dir(therapistExe);
         dir.makeAbsolute();
         dir.cdUp();
         chdir(dir.absolutePath().toLocal8Bit());
-        fflush(stdout);
+        fflush(stdout); // Often causes SIGPIPE.
 
         // Authorization for remote memory access on OS X trips Qt's setuid detection
         #if defined(Q_OS_MAC) && QT_VERSION >= QT_VERSION_CHECK(5,3,0)
