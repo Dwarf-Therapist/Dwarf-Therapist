@@ -320,6 +320,7 @@ public:
 
     //! return a hash of skill_id,Skill objects that this dwarf has experience in
     QHash<int, Skill> *get_skills() {return &m_skills;}
+    QHash<int, Skill> get_moodable_skills() {return m_moodable_skills;}
     QVector<Attribute> *get_attributes() {return &m_attributes;}
     QHash<int, short> *get_traits(){return &m_traits;}
     void load_trait_values(QVector<double> &list);
@@ -504,7 +505,6 @@ public:
 
     void find_true_ident();
 
-    Skill highest_moodable();
     bool had_mood() {return m_had_mood;}
     MOOD_TYPE current_mood() {return m_mood_id;}
     Q_INVOKABLE bool locked_in_mood() {return m_locked_mood;}
@@ -630,6 +630,7 @@ private:
     QString m_current_sub_job_id;
     QHash<int,Skill> m_skills;
     QMultiMap<float, int> m_sorted_skills; //level, skill_id
+    QHash<int,Skill> m_moodable_skills;
     QHash<int, short> m_traits;
     QHash<int, short> m_goals;
     QHash<int, UnitBelief> m_beliefs;
@@ -661,7 +662,7 @@ private:
     quint32 m_ticks_since_birth;
     QString m_noble_position;
     bool m_is_pet;
-    int m_highest_moodable_skill;
+    short m_mood_skill;
     Race* m_race;
     Caste* m_caste;
     QMultiMap<int, Preference*> m_preferences;

@@ -55,29 +55,53 @@ QStandardItem *HighestMoodColumn::build_cell(Dwarf *d) {
     GameDataReader *gdr = GameDataReader::ptr();
     QStandardItem *item = init_cell(d);
 
-    Skill s = d->highest_moodable();
-    m_skill_id = s.id();
+    QString pixmap_name(":img/question-frame.png");
 
-    int img_id = 24;
-    if(s.capped_level() != -1)
-        img_id = gdr->get_mood_skill_prof(s.id()) + 1; //prof images start at 1, id start at 0
+    QHash<int,Skill> skills = d->get_moodable_skills();
+    if(skills.count() > 1){
+        m_sort_val = 1000 + skills.count();
+        m_skill_id = -1;
+    }else if(skills.count() <= 1){
+        Skill s = skills.values().at(0);
+        m_skill_id = s.id();
+        int img_id = 24;
+        if(s.capped_level() != -1){
+            img_id = gdr->get_mood_skill_prof(s.id()) + 1; //prof images start at 1, id start at 0
+        }
+        pixmap_name = ":/profession/prof_" + QString::number(img_id) + ".png";
 
-    QString pixmap_name = ":/profession/prof_" + QString::number(img_id) + ".png";
+        int id = s.id() < 0 ? 0 : s.id();
+        m_sort_val = 50 + (id * 100);
+        if(d->had_mood())
+            m_sort_val = 0 - m_sort_val;
+
+        m_sort_val += s.raw_level();
+    }
+
     item->setData(QIcon(pixmap_name), Qt::DecorationRole);
-
     item->setData(CT_HIGHEST_MOOD, DwarfModel::DR_COL_TYPE);
     item->setData(d->had_mood(),DwarfModel::DR_SPECIAL_FLAG);
     set_export_role(DwarfModel::DR_SPECIAL_FLAG);
-
-    int id = s.id() < 0 ? 0 : s.id();
-    m_sort_val = 50 + (id * 100);
-    if(d->had_mood())
-        m_sort_val = 0 - m_sort_val;
-
-    m_sort_val += s.raw_level();
     item->setData(m_sort_val, DwarfModel::DR_SORT_VALUE);
 
-    build_tooltip(d,false,false);
+    if(skills.count() <= 1){
+        build_tooltip(d,false,false);
+    }else{
+        QStringList skill_desc;
+        foreach(Skill s, skills.values()){
+            skill_desc.append(build_skill_desc(d,s.id()).replace("<br/>"," "));
+        }
+
+        QString str_mood = tr("<br/><br/>One of these skills will be chosen at random when a mood occurs.");
+
+        QString tooltip = QString("<center><h3 style=\"margin:0;\">%1</h3>%2%3%4</center>")
+                .arg(m_title)
+                .arg(skill_desc.join("<br/>"))
+                .arg(str_mood)
+                .arg(tooltip_name_footer(d));
+
+        item->setToolTip(tooltip);
+    }
 
     return item;
 }
