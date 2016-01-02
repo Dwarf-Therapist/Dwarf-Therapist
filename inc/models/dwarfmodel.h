@@ -29,6 +29,7 @@ THE SOFTWARE.
 class Dwarf;
 class DFInstance;
 class DwarfModel;
+class DwarfModelProxy;
 class GridView;
 class Squad;
 class ViewColumn;
@@ -147,18 +148,19 @@ public slots:
     void build_rows();
     void set_group_by(int group_by);
     void load_dwarves();
-    void cell_activated(const QModelIndex &idx); // a grid cell was clicked/doubleclicked or enter was pressed on it
+    void cell_activated(const QModelIndex &idx, DwarfModelProxy *proxy = 0); // a grid cell was clicked/doubleclicked or enter was pressed on it
     void clear_pending();
     void commit_pending();
     void section_right_clicked(int idx);
-    void dwarf_group_toggled(const QString &group_name);
-    void dwarf_set_toggled(Dwarf *d);
+
+    void labor_group_toggled(const QString &group_name, const int idx_left, const int idx_right, DwarfModelProxy *proxy);
+    void labor_group_toggled(Dwarf *d, const int idx_left, const int idx_right, DwarfModelProxy *proxy);
 
     void read_settings();
 
 private:
     DFInstance *m_df;
-    QMap<int, Dwarf*> m_dwarves;
+    QHash<int, Dwarf*> m_dwarves;
     QMap<QString, QVector<Dwarf*> > m_grouped_dwarves;
     GROUP_BY m_group_by;
     int m_selected_col;

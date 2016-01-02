@@ -56,7 +56,7 @@ DwarfModel* DwarfModelProxy::get_dwarf_model() const {
 
 void DwarfModelProxy::cell_activated(const QModelIndex &idx) {
     QModelIndex new_idx = mapToSource(idx);
-    return get_dwarf_model()->cell_activated(new_idx);
+    return get_dwarf_model()->cell_activated(new_idx,this);
 }
 
 void DwarfModelProxy::redirect_tooltip(const QModelIndex &idx) {
@@ -271,20 +271,27 @@ void DwarfModelProxy::sort(int column, DWARF_SORT_ROLE role, Qt::SortOrder order
 
 QList<Dwarf*> DwarfModelProxy::get_filtered_dwarves(){
     DwarfModel *m = get_dwarf_model();
-    QList<Dwarf*> dwarfs;
-
-    for(int i = 0; i < m->rowCount(); i++){
-        if(mapFromSource(m->index(i,0)).isValid()){
-            if (m->data(m->index(i, 0), DwarfModel::DR_IS_AGGREGATE).toBool()) {
-                for(int j = 0; j < m->item(i,0)->rowCount(); j++){
-                    if(mapFromSource(m->index(i,0).child(j,0)).isValid()){
-                        dwarfs.append(m->get_dwarf_by_id(m->item(i,0)->child(j,0)->data(DwarfModel::DR_ID).toInt()));
+    if(has_filters()){
+        QList<Dwarf*> dwarfs;
+        for(int i = 0; i < m->rowCount(); i++){
+            if(mapFromSource(m->index(i,0)).isValid()){
+                if (m->data(m->index(i, 0), DwarfModel::DR_IS_AGGREGATE).toBool()) {
+                    for(int j = 0; j < m->item(i,0)->rowCount(); j++){
+                        if(mapFromSource(m->index(i,0).child(j,0)).isValid()){
+                            dwarfs.append(m->get_dwarf_by_id(m->item(i,0)->child(j,0)->data(DwarfModel::DR_ID).toInt()));
+                        }
                     }
+                }else{
+                    dwarfs.append(m->get_dwarf_by_id(m->item(i,0)->data(DwarfModel::DR_ID).toInt()));
                 }
-            }else{
-                dwarfs.append(m->get_dwarf_by_id(m->item(i,0)->data(DwarfModel::DR_ID).toInt()));
             }
         }
+        return dwarfs;
+    }else{
+        return m->get_dwarves();
     }
-    return dwarfs;
+}
+
+bool DwarfModelProxy::has_filters(){
+    return (!m_filter_text.isEmpty() || active_scripts());
 }

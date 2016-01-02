@@ -64,9 +64,6 @@ public:
 
     public slots:
         void set_name(const QString &name);
-        void toggle_for_dwarf(Dwarf *d);
-        void toggle_for_dwarf(); // from context menu of single labor
-        void toggle_for_dwarf_group(); // from context menu of aggregate
         void read_settings();
 
 private:

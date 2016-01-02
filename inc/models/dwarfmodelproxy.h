@@ -68,6 +68,7 @@ public:
     void clear_script(const QString script_name = "");
     void clear_script(const FILTER_SCRIPT_TYPE sType, const bool refresh);
     QList<Dwarf*> get_filtered_dwarves();
+    bool has_filters();
 
 public slots:
     void redirect_tooltip(const QModelIndex &idx);

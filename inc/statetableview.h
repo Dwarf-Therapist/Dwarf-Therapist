@@ -87,7 +87,6 @@ public:
         void activate_cells(const QModelIndex &index);
         void header_pressed(int index);
         void header_clicked(int index);
-//        void named_column_sort(int,DwarfModelProxy::DWARF_SORT_ROLE, Qt::SortOrder);
 
         void build_custom_profession_menu();
 
@@ -138,6 +137,10 @@ private:
     QAction *m_clear;
     QAction *m_commit;
 
+    static const int MAX_STR_LEN = 16;
+    QString ask_name(const QString &msg, const QString &str_name, const QString &str_default);
+    QModelIndexList selected_units();
+
     private slots:
         void set_nickname();
 
@@ -156,6 +159,7 @@ private:
         void toggle_all_row_labors();
 
         void toggle_skilled_row_labors();
+        void toggle_labor_group();
         void toggle_column_labors();
         void column_right_clicked(int);
 

@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "truncatingfilelogger.h"
 #include "dwarftherapist.h"
 #include "defaultfonts.h"
+#include "dwarfmodelproxy.h"
 
 #include "columntypes.h"
 #include "gridview.h"
@@ -649,7 +650,7 @@ void DwarfModel::update_global_sort_col(int group_id){
         m_global_sort_info.insert(group_id,qMakePair(this->m_gridview->name(),0));
 }
 
-void DwarfModel::cell_activated(const QModelIndex &idx) {
+void DwarfModel::cell_activated(const QModelIndex &idx, DwarfModelProxy *proxy) {
     QStandardItem *item = itemFromIndex(idx);
     if(!item)
         return;
@@ -688,10 +689,19 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
         int settable_dwarves = 0;
         QString group_name = idx.data(DwarfModel::DR_GROUP_NAME).toString();
 
+        QList<Dwarf*> filtered;
+        bool filter = false;
+        int row_count = rowCount(first_col)-1;
+        if(proxy && proxy->has_filters()){
+            filter = true;
+            filtered = proxy->get_filtered_dwarves();
+            row_count = filtered.count()-1;
+        }
+
         foreach(Dwarf *d, m_grouped_dwarves.value(group_name)) {
-            if (d->can_set_labors()) {
+            if(d->can_set_labors() && (!filter || filtered.contains(d))) {
                 settable_dwarves++;
-                if (d->labor_enabled(labor_id))
+                if(d->labor_enabled(labor_id))
                     enabled_count++;
             }
         }
@@ -699,13 +709,19 @@ void DwarfModel::cell_activated(const QModelIndex &idx) {
         // if none or some are enabled, enable all of them
         bool enabled = (enabled_count < settable_dwarves);
         foreach(Dwarf *d, m_grouped_dwarves.value(group_name)) {
-            d->set_labor(labor_id, enabled, false);
+            if(!filter || filtered.contains(d)){
+                if(type == CT_LABOR){
+                    d->set_labor(labor_id, enabled, false);
+                }else if(type == CT_FLAGS){
+                    d->toggle_flag_bit(item->data(DR_OTHER_ID).toInt());
+                }
+            }
         }
 
         // tell the view what we touched...
         emit dataChanged(idx, idx);
         QModelIndex left = index(0, 0, first_col);
-        QModelIndex right = index(rowCount(first_col) - 1, columnCount(first_col) - 1, first_col);
+        QModelIndex right = index(row_count, columnCount(first_col) - 1, first_col);
         emit dataChanged(left, right); // tell the view we changed every dwarf under this agg to pick up implicit exclusive changes
     } else {
         if (type == CT_LABOR)
@@ -855,37 +871,22 @@ QList<QPersistentModelIndex> DwarfModel::findAll(const QVariant &needle, int rol
     return ret_val;
 }
 
-void DwarfModel::dwarf_group_toggled(const QString &group_name) {
+void DwarfModel::labor_group_toggled(const QString &group_name, const int idx_left, const int idx_right, DwarfModelProxy *proxy){
     QModelIndex agg_cell = findOne(group_name, DR_GROUP_NAME);
-    QModelIndex left;
-    QModelIndex right;
     if (agg_cell.isValid()) {
-        left = agg_cell;
-        right = index(agg_cell.row(), columnCount(agg_cell.parent()) -1, agg_cell.parent());
-        emit dataChanged(left, right);
-    }
-    foreach (Dwarf *d, m_grouped_dwarves[group_name]) {
-        foreach(QModelIndex idx, findAll(d->id(), DR_ID, 0, agg_cell)) {
-            left = idx;
-            right = index(idx.row(), columnCount(idx.parent()) - 1, idx.parent());
-            emit dataChanged(left, right);
+        for(int col_idx = idx_left; col_idx <= idx_right;col_idx++){
+            cell_activated(index(agg_cell.row(),col_idx,agg_cell.parent()),proxy);
         }
     }
 }
 
-void DwarfModel::dwarf_set_toggled(Dwarf *d) {
-    // just update all cells we can find with this dwarf's id
+void DwarfModel::labor_group_toggled(Dwarf *d, const int idx_left, const int idx_right, DwarfModelProxy *proxy){
     QList<QPersistentModelIndex> cells = findAll(d->id(), DR_ID, 0);
-    foreach(QPersistentModelIndex idx, cells) {
-        QModelIndex left = idx;
-        QModelIndex right = index(idx.row(), columnCount(idx.parent()) - 1, idx.parent());
-        emit dataChanged(left, right);
-    }
-    if (cells.size()) {
-        QPersistentModelIndex first_idx = cells.at(0);
-        QModelIndex left = first_idx.parent();
-        QModelIndex right = index(left.row(), columnCount(left) - 1, left.parent());
-        emit dataChanged(left, right);
+    if(cells.size()){
+        QPersistentModelIndex first_idx = cells.first();
+        for(int col_idx = idx_left; col_idx <= idx_right;col_idx++){
+            cell_activated(index(first_idx.row(),col_idx,first_idx.parent()),proxy);
+        }
     }
 }
 
