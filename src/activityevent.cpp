@@ -85,16 +85,6 @@ void ActivityEvent::read_data(){
                     continue;
                 }
                 //squad lead participants, check and change type or cancel if necessary
-                if(event_type == SQ_COMBAT_TRAIN){
-                    QString job_name = "";
-                    if(m_df->read_int(m_address + mem->activity_offset("sq_lead")) == histfig_id){ //some squad activities have leaders, check that first
-                        event_type = SQ_LEAD_DEMO;
-                         job_name = gdr->get_job((int)DwarfJob::ACTIVITY_OFFSET + (int)event_type)->name(tr("Combat"));
-                    }
-                    add_action(histfig_id,event_type,job_name);
-                    continue;
-                }
-                //squad lead participants, check and change type or cancel if necessary
                 if(event_type == SQ_SKILL_DEMO){
                     if(m_df->read_int(m_address + mem->activity_offset("sq_train_rounds")) <= 0){
                         continue;

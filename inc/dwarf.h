@@ -316,8 +316,7 @@ public:
     //! returns a description of birth or migration
     QString get_migration_desc();
 
-    //! return true if the dwarf's raw_profession is a military professions
-    Q_INVOKABLE bool active_military();
+    Q_INVOKABLE bool active_military() {return m_active_military;}
 
     //! return a hash of skill_id,Skill objects that this dwarf has experience in
     QHash<int, Skill> *get_skills() {return &m_skills;}
@@ -689,6 +688,7 @@ private:
     int m_histfig_id;
     UNIT_OCCUPATION m_occ_type;
     bool m_can_assign_military;
+    bool m_active_military;
     unit_gender m_gender_info;
 
     //! inventory grouped by body part /category

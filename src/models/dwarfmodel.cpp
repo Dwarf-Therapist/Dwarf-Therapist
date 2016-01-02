@@ -343,7 +343,10 @@ void DwarfModel::build_rows() {
                 }else if(m_group_by == GB_SKILL_RUST){
                     m_grouped_dwarves[Skill::get_rust_level_desc(d->rust_level())].append(d);
                 }else if(m_group_by == GB_CURRENT_JOB){
-                    m_grouped_dwarves[d->current_job()].append(d);
+                    QString title = d->current_job();
+                    if(title.length() > 50 || title.contains("<"))
+                        title = gdr->get_job(d->current_job_id())->group_name();
+                    m_grouped_dwarves[title].append(d);
                 }else if(m_group_by == GB_JOB_TYPE){
                     DwarfJob *job = GameDataReader::ptr()->get_job(d->current_job_id());
                     m_grouped_dwarves[job->group_name()].append(d);

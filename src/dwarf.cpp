@@ -125,6 +125,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_histfig_id(0)
     , m_occ_type(OCC_NONE)
     , m_can_assign_military(true)
+    , m_active_military(false)
     , m_curse_type(eCurse::NONE)
 {
     read_settings();
@@ -311,7 +312,7 @@ void Dwarf::refresh_data() {
     if(!m_validated)
         this->is_valid();
     if(m_is_valid){
-        read_hist_fig(); //read before noble positions, curse
+        read_hist_fig(); //read first
         read_caste(); //read before age
         read_squad_info(); //read squad before job
         read_uniform();
@@ -1294,20 +1295,20 @@ void Dwarf::read_current_job(){
         if(offset != -1){
             meeting = m_df->read_byte(m_address + offset);
         }
-        if(meeting == 2){ //different for conduct meeting vs attend but probably not worth having 2 jobs
+        if(meeting == 2){ //needs more work; !=2 for conduct meeting
             m_current_job_id = DwarfJob::JOB_MEETING;
         }else{
             QPair<int,QString> activity_desc = m_df->find_activity(m_histfig_id);
             if(activity_desc.first != DwarfJob::JOB_UNKNOWN){
                 bool military_act = GameDataReader::ptr()->get_job(activity_desc.first)->is_military();
-                if((active_military() && military_act) || (!active_military() && !military_act)){
+                if(m_active_military == military_act){
                     m_current_job_id = activity_desc.first;
                     m_current_job = capitalizeEach(activity_desc.second);
                 }
             }
 
             if(m_current_job.isEmpty()){
-                if(active_military() && m_squad_id >= 0){
+                if(m_active_military && m_squad_id >= 0){
                     Squad *s = m_df->get_squad(m_squad_id);
                     if(s){
                         activity_desc = s->get_order(m_histfig_id);
@@ -1359,11 +1360,6 @@ QString Dwarf::profession() {
     if (!m_custom_profession.isEmpty())
         return m_custom_profession;
     return m_profession;
-}
-
-bool Dwarf::active_military() {
-    Profession *p = GameDataReader::ptr()->get_profession(m_raw_profession);
-    return p && p->is_military();
 }
 
 QString Dwarf::caste_name(bool plural_name) {
@@ -1483,8 +1479,10 @@ void Dwarf::read_squad_info() {
     m_pending_squad_position = m_squad_position;
     if(m_pending_squad_id >= 0 && !m_is_animal && is_adult()){
         Squad *s = m_df->get_squad(m_pending_squad_id);
-        if(s)
+        if(s){
             m_pending_squad_name = s->name();
+            m_active_military = s->on_duty(m_histfig_id);
+        }
     }
 }
 

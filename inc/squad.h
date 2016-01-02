@@ -49,6 +49,7 @@ public:
     void assign_to_squad(Dwarf *d, bool committing = false);
     bool remove_from_squad(Dwarf *d, bool committing = false);
     Uniform* get_uniform(int position){return m_uniforms.value(position);}
+    bool on_duty(int histfig_id);
 
     QTreeWidgetItem* get_pending_changes_tree();
     void commit_pending();
@@ -72,15 +73,16 @@ private:
     QString m_name;
     DFInstance * m_df;
     MemoryLayout * m_mem;
-    //! position, dwarf hist_id
+    //! position, histfig_id
     QMap<int,int> m_members;
+    QHash<int,int> m_orders; //histfig_id, order_id
     QVector<VIRTADDR> m_members_addr;
     QHash<int,Uniform*> m_uniforms;
     bool m_inactive;
     QString m_pending_name;
 
     int m_squad_order;
-    QHash<int,int> m_orders; //histfig_id, job_id
+    QHash<int,int> m_job_orders; //histfig_id, job_id
 
     void read_data();
     void read_id();

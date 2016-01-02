@@ -286,7 +286,7 @@ private:
     QVector<VIRTADDR> m_fake_identities;
     QHash<int,VIRTADDR> m_occupations;
     QHash<int,VIRTADDR> m_events;
-    QHash<int,QPointer<Activity> > m_activities;
+    QMap<int,QPointer<Activity> > m_activities;
 
     QHash<ITEM_TYPE, QVector<VIRTADDR> > m_itemdef_vectors;
     QHash<ITEM_TYPE, QVector<VIRTADDR> > m_items_vectors;

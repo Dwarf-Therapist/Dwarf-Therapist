@@ -145,19 +145,22 @@ void Squad::read_orders(){
     }
 
     LOGD << "checking squad schedules";
-    if(m_squad_order == DwarfJob::JOB_UNKNOWN){
-        //read the scheduled orders
-        QVector<VIRTADDR> schedules = m_df->enumerate_vector(m_address + m_mem->squad_offset("schedules"));
-        int idx = m_df->read_addr(m_address + m_mem->squad_offset("alert"));
-        int sched_size = m_mem->squad_offset("sched_size");
-        int month = m_df->current_year_time() / m_df->ticks_per_month;
-        VIRTADDR base_addr = schedules.at(idx) + (sched_size * month);
-        QVector<VIRTADDR> orders = m_df->enumerate_vector(base_addr + m_mem->squad_offset("sched_orders"));
-        QVector<VIRTADDR> assigned = m_df->enumerate_vector(base_addr + m_mem->squad_offset("sched_assign"));
-        for(int pos = 0; pos < assigned.count(); pos ++){
-            int order_idx = m_df->read_int(assigned.at(pos));
-            if(order_idx >= 0 && order_idx < orders.count()){
-                read_order(orders.at(order_idx),m_members.value(pos),false);
+
+    //read the scheduled orders
+    QVector<VIRTADDR> schedules = m_df->enumerate_vector(m_address + m_mem->squad_offset("schedules"));
+    int idx = m_df->read_addr(m_address + m_mem->squad_offset("alert"));
+    int sched_size = m_mem->squad_offset("sched_size");
+    int month = m_df->current_year_time() / m_df->ticks_per_month;
+    VIRTADDR base_addr = schedules.at(idx) + (sched_size * month);
+    QVector<VIRTADDR> orders = m_df->enumerate_vector(base_addr + m_mem->squad_offset("sched_orders"));
+    QVector<VIRTADDR> assigned = m_df->enumerate_vector(base_addr + m_mem->squad_offset("sched_assign"));
+    for(int pos = 0; pos < assigned.count(); pos ++){
+        int order_id = m_df->read_int(assigned.at(pos));
+        int histfig_id = m_members.value(pos);
+        m_orders.insert(histfig_id,order_id);
+        if(m_squad_order == DwarfJob::JOB_UNKNOWN){
+            if(order_id >= 0 && order_id < orders.count()){
+                read_order(orders.at(order_id),histfig_id,false);
             }
         }
     }
@@ -175,8 +178,8 @@ void Squad::read_order(VIRTADDR addr, int histfig_id, bool unit){
     if(ord_type >= ORD_MOVE && ord_type <= ORD_PATROL){ //ignore training, handled by activites
         ord_type += DwarfJob::ORDER_OFFSET;
         if(histfig_id >= 0){
-            if(!m_orders.contains(histfig_id)){
-                m_orders.insert(histfig_id,ord_type);
+            if(!m_job_orders.contains(histfig_id)){
+                m_job_orders.insert(histfig_id,ord_type);
             }
         }else{
             m_squad_order = ord_type;
@@ -332,8 +335,8 @@ QTreeWidgetItem *Squad::get_pending_changes_tree() {
 
 QPair<int, QString> Squad::get_order(int histfig_id){
     int job_id = m_squad_order;
-    if(m_orders.contains(histfig_id)){
-         job_id = m_orders.value(histfig_id);
+    if(m_job_orders.contains(histfig_id)){
+         job_id = m_job_orders.value(histfig_id);
     }else if(m_squad_order != DwarfJob::JOB_UNKNOWN){
         job_id = m_squad_order;
     }
@@ -342,4 +345,8 @@ QPair<int, QString> Squad::get_order(int histfig_id){
         desc = GameDataReader::ptr()->get_job(short(job_id))->name();
     }
     return qMakePair<int,QString>(job_id,desc);
+}
+
+bool Squad::on_duty(int histfig_id){
+    return (m_orders.value(histfig_id,-1) != -1);
 }

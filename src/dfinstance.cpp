@@ -774,6 +774,7 @@ void DFInstance::refresh_data(){
     LOGI << "current year:" << m_current_year;
     m_cur_time = (int)m_current_year * ticks_per_year + m_cur_year_tick;
 
+    load_occupations();
     load_activities();
     load_fortress();
     load_squads(true);
@@ -1150,8 +1151,11 @@ void DFInstance::load_hist_figures(){
 }
 
 QPair<int,QString> DFInstance::find_activity(int histfig_id){
-    foreach(Activity *a, m_activities){
-        QPair<int,QString> ret = a->find_activity(histfig_id);
+    QMapIterator<int,QPointer<Activity> > it(m_activities);
+    it.toBack();
+    while(it.hasPrevious()){
+        it.previous();
+        QPair<int,QString> ret = it.value()->find_activity(histfig_id);
         if(ret.first != DwarfJob::JOB_UNKNOWN){
             return ret;
         }
@@ -1163,19 +1167,24 @@ void DFInstance::load_activities(){
     qDeleteAll(m_activities);
     m_activities.clear();
     LOGD << "loading activities";
-    QVector<VIRTADDR> all_activities = enumerate_vector(m_layout->address("activities_vector"));
-    foreach(VIRTADDR addr, all_activities){
-        QPointer<Activity> act = new Activity(this,addr,this);
+    QVector<VIRTADDR> activity_addrs = enumerate_vector(m_layout->address("activities_vector"));
+    QMap<int,VIRTADDR> sorted_activities;
+    foreach(VIRTADDR addr, activity_addrs){
+        sorted_activities.insert(read_int(addr),addr);
+    }
+
+    QMapIterator<int,VIRTADDR> it(sorted_activities);
+    it.toBack();
+    while(it.hasPrevious()){
+        it.previous();
+        QPointer<Activity> act = new Activity(this,it.value(),this);
         if(act->activity_count() > 0){
-            m_activities.insert(read_int(addr), act);
+            m_activities.insert(it.key(), act);
         }
     }
 }
 
 VIRTADDR DFInstance::find_occupation(int hist_id){
-    if(m_occupations.count() <= 0)
-        load_occupations();
-
     return m_occupations.value(hist_id,0);
 }
 

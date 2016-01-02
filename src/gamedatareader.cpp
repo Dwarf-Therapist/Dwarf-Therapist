@@ -228,7 +228,6 @@ GameDataReader::GameDataReader(QObject *parent)
     read_activity_section("unit_activities",DwarfJob::ACTIVITY_OFFSET,&job_names);
     read_activity_section("unit_orders",DwarfJob::ORDER_OFFSET,&job_names);
 
-    m_data_settings->endArray();
     qSort(job_names);
     foreach(QString name, job_names) {
         foreach(DwarfJob *j, m_dwarf_jobs) {
