@@ -1297,16 +1297,12 @@ void Dwarf::read_current_job(){
         if(meeting == 2){ //needs more work; !=2 for conduct meeting
             m_current_job_id = DwarfJob::JOB_MEETING;
         }else{
+            //it appears that other activities have priority over squad orders, so process them first
             QPair<int,QString> activity_desc = m_df->find_activity(m_histfig_id);
             if(activity_desc.first != DwarfJob::JOB_UNKNOWN){
-                bool military_act = GameDataReader::ptr()->get_job(activity_desc.first)->is_military();
-                if(m_active_military == military_act){
-                    m_current_job_id = activity_desc.first;
-                    m_current_job = capitalizeEach(activity_desc.second);
-                }
-            }
-
-            if(m_current_job.isEmpty()){
+                m_current_job_id = activity_desc.first;
+                m_current_job = capitalizeEach(activity_desc.second);
+            }else{
                 if(m_active_military && m_squad_id >= 0){
                     Squad *s = m_df->get_squad(m_squad_id);
                     if(s){
@@ -1314,13 +1310,14 @@ void Dwarf::read_current_job(){
                         if(activity_desc.first != DwarfJob::JOB_UNKNOWN){
                             m_current_job_id = activity_desc.first;
                             m_current_job = capitalizeEach(activity_desc.second);
+                        }else{
+                            //there's no order, but the unit has a squad and is on duty
+                            m_current_job_id = DwarfJob::JOB_SOLDIER;
                         }
                     }
                 }
             }
         }
-
-
         if(m_current_job.isEmpty()){
             m_current_job = capitalizeEach(GameDataReader::ptr()->get_job(m_current_job_id)->name());
         }

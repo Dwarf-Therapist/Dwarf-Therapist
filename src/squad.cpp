@@ -139,9 +139,9 @@ void Squad::read_members() {
 void Squad::read_orders(){
     //read the squad order
     LOGD << "checking squad order";
-    m_squad_order = DwarfJob::JOB_UNKNOWN;
+    m_squad_order = ORD_UNKNOWN;
     foreach(VIRTADDR addr, m_df->enumerate_vector(m_address + m_mem->squad_offset("orders"))){
-        read_order(addr,-1,false);
+        read_order(addr,-1);
     }
 
     LOGD << "checking squad schedules";
@@ -157,30 +157,33 @@ void Squad::read_orders(){
     for(int pos = 0; pos < assigned.count(); pos ++){
         int order_id = m_df->read_int(assigned.at(pos));
         int histfig_id = m_members.value(pos);
-        m_orders.insert(histfig_id,order_id);
-        if(m_squad_order == DwarfJob::JOB_UNKNOWN){
+        if(m_squad_order == ORD_UNKNOWN){ //squad orders override scheduled orders
             if(order_id >= 0 && order_id < orders.count()){
-                read_order(orders.at(order_id),histfig_id,false);
+                read_order(m_df->read_addr(orders.at(order_id)),histfig_id);
             }
+        }else{
+            order_id = m_squad_order;
         }
+        //save either the squad or position order to determine active duty
+        m_orders.insert(histfig_id,order_id);
     }
 }
 
-void Squad::read_order(VIRTADDR addr, int histfig_id, bool unit){
+void Squad::read_order(VIRTADDR addr, int histfig_id){
     VIRTADDR vtable_addr = m_df->read_addr(addr);
-    int ord_type = ORD_UNKNOWN;
-    if(!unit){ //TODO: offset
-        ord_type = m_df->read_int(m_df->read_addr(m_df->read_addr(vtable_addr)+0xc)+m_df->VM_TYPE_OFFSET());
-    }else{
-        ord_type = m_df->read_int(m_df->read_addr(vtable_addr+0xc)+m_df->VM_TYPE_OFFSET());
+    int raw_type = m_df->read_int(m_df->read_addr(vtable_addr+0xc)+m_df->VM_TYPE_OFFSET());
+    SQ_ORDER_TYPE ord_type = ORD_MOVE;
+    if(raw_type > 0){
+        ord_type = static_cast<SQ_ORDER_TYPE>(raw_type);
     }
-    LOGD << "   reading order for" << histfig_id << "order type:" << ord_type;
-    if(ord_type >= ORD_MOVE && ord_type <= ORD_PATROL){ //ignore training, handled by activites
-        ord_type += DwarfJob::ORDER_OFFSET;
+    LOGD << "   reading order for" << histfig_id << "order type:" << raw_type;
+    if(ord_type != ORD_TRAIN){ //ignore training, handled by activites
+        int job_id = ord_type + DwarfJob::ORDER_OFFSET;
         if(histfig_id >= 0){
             if(!m_job_orders.contains(histfig_id)){
-                m_job_orders.insert(histfig_id,ord_type);
+                m_job_orders.insert(histfig_id,job_id);
             }
+            m_orders.insert(histfig_id,ord_type); //override squad/schedule order
         }else{
             m_squad_order = ord_type;
         }
@@ -334,11 +337,11 @@ QTreeWidgetItem *Squad::get_pending_changes_tree() {
 }
 
 QPair<int, QString> Squad::get_order(int histfig_id){
-    int job_id = m_squad_order;
+    int job_id = DwarfJob::JOB_UNKNOWN;
     if(m_job_orders.contains(histfig_id)){
          job_id = m_job_orders.value(histfig_id);
-    }else if(m_squad_order != DwarfJob::JOB_UNKNOWN){
-        job_id = m_squad_order;
+    }else if(m_squad_order != ORD_UNKNOWN){
+        job_id = m_squad_order + DwarfJob::ORDER_OFFSET;
     }
     QString desc = "";
     if(job_id != DwarfJob::JOB_UNKNOWN){

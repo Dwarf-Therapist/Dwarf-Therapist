@@ -59,7 +59,7 @@ public:
     QPair<int,QString> get_order(int histfig_id);
 
     typedef enum{
-        ORD_UNKNOWN = 1,
+        ORD_UNKNOWN = -1,
         ORD_MOVE,
         ORD_KILL,
         ORD_DEFEND,
@@ -92,7 +92,7 @@ private:
     void read_equip_category(VIRTADDR vec_addr, ITEM_TYPE itype, Uniform *u);
     int find_position(int hist_id);
 
-    void read_order(VIRTADDR addr, int histfig_id, bool unit = true);
+    void read_order(VIRTADDR addr, int histfig_id);
 
 signals:
     void squad_leader_changed();
