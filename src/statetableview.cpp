@@ -374,7 +374,7 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
     } else if (idx.data(DwarfModel::DR_IS_AGGREGATE).toBool() && m_model->current_grouping()==DwarfModel::GB_SQUAD){
         QMenu squad_name(this);
         QAction *a = squad_name.addAction(QIcon(":/img/ui-text-field-select.png"),tr("Change Squad Name"),this,SLOT(set_squad_name()));
-        if(idx.data(DwarfModel::DR_ID) >= 0){
+        if(idx.data(DwarfModel::DR_ID).toInt() >= 0){
             a->setData(idx.data(DwarfModel::DR_ID));
             squad_name.exec(viewport()->mapToGlobal(event->pos()));
         }

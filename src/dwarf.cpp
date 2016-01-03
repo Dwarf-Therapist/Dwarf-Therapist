@@ -1802,7 +1802,7 @@ void Dwarf::read_skills() {
 
     if(!m_had_mood){
         if(skills_by_level.count() > 0){
-            foreach(Skill s, skills_by_level.values(skills_by_level.lastKey())){
+            foreach(Skill s, skills_by_level.values(skills_by_level.keys().last())){
                 m_moodable_skills.insert(s.id(),s);
             }
         }else{
