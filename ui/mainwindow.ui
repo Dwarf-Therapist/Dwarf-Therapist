@@ -69,8 +69,20 @@
            <height>20</height>
           </size>
          </property>
+         <property name="toolTip">
+          <string>Select a group from the dropdown to the right to group the displayed units.</string>
+         </property>
+         <property name="statusTip">
+          <string>Select a group from the dropdown to the right to group the displayed units.</string>
+         </property>
          <property name="text">
-          <string>Group By</string>
+          <string/>
+         </property>
+         <property name="pixmap">
+          <pixmap resource="../resources.qrc">:/img/category-group.png</pixmap>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
          <property name="margin">
           <number>0</number>
@@ -98,10 +110,10 @@
           </size>
          </property>
          <property name="toolTip">
-          <string>Change how dwarves are grouped in the table</string>
+          <string>Change how units are grouped in the view</string>
          </property>
          <property name="statusTip">
-          <string>Change how dwarves are grouped in the table</string>
+          <string>Change how units are grouped in the view</string>
          </property>
          <property name="maxVisibleItems">
           <number>30</number>
@@ -133,8 +145,20 @@
            <height>20</height>
           </size>
          </property>
+         <property name="toolTip">
+          <string>Type the name of a unit or a preference to to the right to search and filter.</string>
+         </property>
+         <property name="statusTip">
+          <string>Type the name of a unit or a preference to to the right to search and filter.</string>
+         </property>
          <property name="text">
-          <string>Search</string>
+          <string/>
+         </property>
+         <property name="pixmap">
+          <pixmap resource="../resources.qrc">:/resources/img/magnifier.png</pixmap>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -152,55 +176,38 @@
            <height>16777215</height>
           </size>
          </property>
+         <property name="toolTip">
+          <string>Type a name or part of a preference to search and filter.</string>
+         </property>
+         <property name="statusTip">
+          <string>Type a name or part of a preference to search and filter.</string>
+         </property>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="lbl_run_filter">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+        <widget class="QToolButton" name="cb_filter_scripts">
+         <property name="toolTip">
+          <string>Select a filter to apply.</string>
          </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>20</height>
-          </size>
+         <property name="statusTip">
+          <string>Select a filter to apply.</string>
          </property>
          <property name="text">
-          <string>Add Filter</string>
+          <string>Filter</string>
          </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="cb_filter_script">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+         <property name="icon">
+          <iconset resource="../resources.qrc">
+           <normaloff>:/img/funnel--plus.png</normaloff>:/img/funnel--plus.png</iconset>
          </property>
-         <property name="minimumSize">
-          <size>
-           <width>50</width>
-           <height>0</height>
-          </size>
+         <property name="popupMode">
+          <enum>QToolButton::MenuButtonPopup</enum>
          </property>
-         <property name="maximumSize">
-          <size>
-           <width>100</width>
-           <height>16777215</height>
-          </size>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextBesideIcon</enum>
          </property>
-         <property name="sizeAdjustPolicy">
-          <enum>QComboBox::AdjustToContents</enum>
+         <property name="arrowType">
+          <enum>Qt::NoArrow</enum>
          </property>
-         <item>
-          <property name="text">
-           <string>None</string>
-          </property>
-         </item>
         </widget>
        </item>
        <item>
@@ -304,11 +311,10 @@
       <zorder>lbl_pending_changes</zorder>
       <zorder>lbl_dwarf_total</zorder>
       <zorder>le_filter_text</zorder>
-      <zorder>cb_filter_script</zorder>
-      <zorder>lbl_run_filter</zorder>
       <zorder>btn_clear_filters</zorder>
       <zorder>lbl_dwarfs</zorder>
       <zorder>lbl_filter</zorder>
+      <zorder>cb_filter_scripts</zorder>
      </widget>
     </item>
    </layout>
@@ -914,7 +920,7 @@
   </action>
   <action name="act_options">
    <property name="icon">
-    <iconset>
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/wrench-screwdriver.png</normaloff>:/img/wrench-screwdriver.png</iconset>
    </property>
    <property name="text">
@@ -983,7 +989,7 @@
   </action>
   <action name="act_go_donate">
    <property name="icon">
-    <iconset>
+    <iconset resource="../resources.qrc">
      <normaloff>:/img/heart.png</normaloff>:/img/heart.png</iconset>
    </property>
    <property name="text">

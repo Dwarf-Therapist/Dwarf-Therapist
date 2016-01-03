@@ -183,7 +183,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_proxy, SIGNAL(show_tooltip(QString)),info_dock,SLOT(show_info(QString)));
 
     connect(m_view_manager, SIGNAL(selection_changed()), this, SLOT(toggle_opts_menu()));
-    connect(ui->cb_filter_script, SIGNAL(currentIndexChanged(const QString &)), SLOT(new_filter_script_chosen(const QString &)));
 
     connect(m_script_dialog, SIGNAL(test_script(QString)),m_proxy,SLOT(test_script(QString)));
     connect(m_script_dialog, SIGNAL(scripts_changed()), SLOT(reload_filter_scripts()));
@@ -630,7 +629,7 @@ void MainWindow::set_interface_enabled(bool enabled) {
     ui->act_expand_all->setEnabled(enabled);
     ui->act_collapse_all->setEnabled(enabled);
     ui->cb_group_by->setEnabled(enabled);
-    ui->cb_filter_script->setEnabled(enabled);
+    ui->cb_filter_scripts->setEnabled(enabled);
     ui->le_filter_text->setEnabled(enabled);
     ui->btn_clear_filters->setEnabled(enabled);
     ui->act_import_existing_professions->setEnabled(enabled);
@@ -835,7 +834,6 @@ void MainWindow::refresh_pop_counts(){
                                     .arg(m_pop_info.adults+m_pop_info.children+m_pop_info.infants)
                                     .arg((m_pop_info.filtered >= 0 ? tr("<h4>Showing %1 due to filters.</h4>").arg(m_pop_info.filtered) : "")));
     ui->lbl_dwarfs->setText(m_pop_info.race_name);
-    ui->lbl_filter->setText(tr("Filter %1").arg(m_pop_info.race_name));
     ui->act_read_dwarves->setText(tr("Read %1").arg(m_pop_info.race_name));
     //TODO: update other interface stuff for the race name when using a custom race
 }
@@ -1119,34 +1117,36 @@ void MainWindow::remove_filter_script(){
     reload_filter_scripts();
 }
 
-void MainWindow::reload_filter_scripts() {
-    ui->cb_filter_script->clear();
-    ui->cb_filter_script->addItem("");
+void MainWindow::reload_filter_scripts(){
+    if(ui->cb_filter_scripts->menu()){
+        ui->cb_filter_scripts->menu()->clear();
+    }
+    ui->cb_filter_scripts->setMenu(NULL);
+    QMenu *scripts_menu = new QMenu(ui->cb_filter_scripts);
 
     ui->menu_edit_filters->clear();
     ui->menu_remove_script->clear();
     QSettings *s = DT->user_settings();
 
-    QMap<QString,QString> m_scripts;
+    QMap<QString,QString> scripts;
     s->beginGroup("filter_scripts");
     foreach(QString script_name, s->childKeys()){
-        m_scripts.insert(script_name,s->value(script_name).toString());
+        scripts.insert(script_name,s->value(script_name).toString());
     }
     s->endGroup();
 
-    for (QMap<QString, QString>::const_iterator i = m_scripts.constBegin()
-         ; i != m_scripts.constEnd()
-         ; ++i){
+    foreach(QString name, scripts.uniqueKeys()){
         QStringList data;
-        data.append(i.key());
-        data.append(i.value());
-        QAction *a = ui->menu_edit_filters->addAction(i.key(),this,SLOT(edit_filter_script()) );
+        data.append(name);
+        data.append(scripts.value(name));
+        QAction *a = ui->menu_edit_filters->addAction(name,this,SLOT(edit_filter_script()) );
         a->setData(data);
-
-        QAction *r = ui->menu_remove_script->addAction(i.key(),this,SLOT(remove_filter_script()) );
-        r->setData(i.key());
+        QAction *r = ui->menu_remove_script->addAction(name,this,SLOT(remove_filter_script()) );
+        r->setData(name);
+        QAction *apply = scripts_menu->addAction(name,this,SLOT(new_filter_script_chosen()));
+        apply->setData(name);
     }
-    ui->cb_filter_script->addItems(m_scripts.uniqueKeys());
+    ui->cb_filter_scripts->setMenu(scripts_menu);
 }
 
 void MainWindow::add_new_custom_role() {
@@ -1286,12 +1286,14 @@ void MainWindow::write_roles(bool custom){
 
 
 
-void MainWindow::new_filter_script_chosen(const QString &script_name) {
+void MainWindow::new_filter_script_chosen() {
+    QAction *a = qobject_cast<QAction*>(QObject::sender());
+    QString script_name = a->data().toString();
     if(!script_name.trimmed().isEmpty()){
         m_proxy->apply_script(script_name,DT->user_settings()->value(QString("filter_scripts/%1").arg(script_name), QString()).toString());
-        ui->cb_filter_script->blockSignals(true);
-        ui->cb_filter_script->setCurrentIndex(0);
-        ui->cb_filter_script->blockSignals(false);
+//        ui->cb_filter_scripts->blockSignals(true);
+//        ui->cb_filter_scripts->setCurrentIndex(0);
+//        ui->cb_filter_scripts->blockSignals(false);
     }
 }
 

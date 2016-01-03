@@ -351,7 +351,7 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
         data << set_name << group_name << 0;
 
         if (idx.data(DwarfModel::DR_IS_AGGREGATE).toBool()) { //aggregate labor
-            QAction *a = labor.addAction(tr("Toggle %1 for all units in Group: %2").arg(set_name).arg(group_name));
+            QAction *a = labor.addAction(QIcon(":/img/ui-button-toggle.png"),tr("Toggle %1 for all units in Group: %2").arg(set_name).arg(group_name));
             a->setData(data);
             connect(a, SIGNAL(triggered()), this, SLOT(toggle_labor_group()));
         } else { // single dwarf labor
@@ -365,7 +365,7 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
                     title = d->nice_name();
                 }
             }
-            QAction *a = labor.addAction(tr("Toggle %1 for %2").arg(set_name).arg(title));
+            QAction *a = labor.addAction(QIcon(":/img/ui-button-toggle.png"),tr("Toggle %1 for %2").arg(set_name).arg(title));
             data.replace(data.length()-1,1);
             a->setData(data);
             connect(a, SIGNAL(triggered()), this, SLOT(toggle_labor_group()));
@@ -373,7 +373,7 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
         labor.exec(viewport()->mapToGlobal(event->pos()));
     } else if (idx.data(DwarfModel::DR_IS_AGGREGATE).toBool() && m_model->current_grouping()==DwarfModel::GB_SQUAD){
         QMenu squad_name(this);
-        QAction *a = squad_name.addAction(tr("Change Squad Name"),this,SLOT(set_squad_name()));
+        QAction *a = squad_name.addAction(QIcon(":/img/ui-text-field-select.png"),tr("Change Squad Name"),this,SLOT(set_squad_name()));
         if(idx.data(DwarfModel::DR_ID) >= 0){
             a->setData(idx.data(DwarfModel::DR_ID));
             squad_name.exec(viewport()->mapToGlobal(event->pos()));
@@ -381,7 +381,7 @@ void StateTableView::contextMenuEvent(QContextMenuEvent *event) {
     } else if (idx.data(DwarfModel::DR_COL_TYPE).toInt() == CT_PROFESSION) {
         QMenu prof_icon(this);
         int id = idx.data(DwarfModel::DR_SORT_VALUE).toInt(); //sort value is the profession id
-        QAction *a = prof_icon.addAction(tr("Customize %1 Icon")
+        QAction *a = prof_icon.addAction(QIcon(":/img/image--pencil.png"),tr("Customize %1 Icon")
                                          .arg(GameDataReader::ptr()->get_profession(id)->name()),DT,SLOT(edit_customization()));
         //build the data list
         QVariantList data;

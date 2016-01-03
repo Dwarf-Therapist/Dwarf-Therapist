@@ -20,8 +20,6 @@
         <file alias="img/balloon-box.png">resources/img/balloon-box.png</file>
         <file alias="img/ui-tab--plus.png">resources/img/ui-tab--plus.png</file>
         <file alias="img/ui-button-navigation.png">resources/img/ui-button-navigation.png</file>
-        <file alias="img/minus-circle.png">resources/img/minus-circle.png</file>
-        <file alias="img/plus-circle.png">resources/img/plus-circle.png</file>
         <file alias="img/arrow-in.png">resources/img/arrow-in.png</file>
         <file alias="img/arrow-out.png">resources/img/arrow-out.png</file>
         <file alias="img/table--arrow.png">resources/img/table--arrow.png</file>
@@ -45,7 +43,6 @@
         <file alias="img/sort-alphabet-descending.png">resources/img/sort-alphabet-descending.png</file>
         <file alias="img/sort-number.png">resources/img/sort-number.png</file>
         <file alias="img/sort-number-descending.png">resources/img/sort-number-descending.png</file>
-        <file alias="img/plus-white.png">resources/img/plus-white.png</file>
         <file alias="img/new.png">resources/img/new.png</file>
         <file alias="img/ui-text-field-select.png">resources/img/ui-text-field-select.png</file>
         <file alias="img/ui-text-field-clear-button.png">resources/img/ui-text-field-clear-button.png</file>
@@ -62,6 +59,16 @@
         <file alias="img/wrench-screwdriver.png">resources/img/wrench-screwdriver.png</file>
         <file alias="img/question-white.png">resources/img/question-white.png</file>
         <file alias="img/arrow-switch.png">resources/img/arrow-switch.png</file>
+        <file alias="img/funnel.png">resources/img/funnel.png</file>
+        <file alias="img/funnel--plus.png">resources/img/funnel--plus.png</file>
+        <file alias="img/ui-button-toggle.png">resources/img/ui-button-toggle.png</file>
+        <file alias="img/category-group.png">resources/img/category-group.png</file>
+        <file alias="img/magnifier.png">resources/img/ui-search-field.png</file>
+        <file>resources/img/magnifier.png</file>
+        <file alias="img/image--pencil.png">resources/img/image--pencil.png</file>
+        <file alias="img/minus-circle.png">resources/img/minus-circle.png</file>
+        <file alias="img/plus-circle.png">resources/img/plus-circle.png</file>
+        <file alias="img/plus-white.png">resources/img/plus-white.png</file>
     </qresource>
     <qresource prefix="/happiness">
         <file alias="Ecstatic.png">resources/img/Ecstatic.png</file>

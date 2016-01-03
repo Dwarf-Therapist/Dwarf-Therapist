@@ -123,6 +123,7 @@ OptionsMenu::OptionsMenu(QWidget *parent)
                                     "cursed",FortressEntity::get_default_color(FortressEntity::CURSED),this);
 
     int spacing = 4;
+    QMargins def_margins = QMargins(1,1,1,1);
 
     QVBoxLayout *health_layout = new QVBoxLayout;
     health_layout->addWidget(ui->cb_grid_health_colors);
@@ -130,6 +131,7 @@ OptionsMenu::OptionsMenu(QWidget *parent)
         health_layout->addWidget(cc);
     }
     health_layout->setSpacing(spacing);
+    health_layout->setContentsMargins(def_margins);
     health_layout->addSpacerItem(new QSpacerItem(20,40,QSizePolicy::Minimum,QSizePolicy::Expanding));
     ui->tab_grid_colors->setLayout(health_layout);
 
@@ -139,6 +141,7 @@ OptionsMenu::OptionsMenu(QWidget *parent)
         happiness_layout->addWidget(cc);
     }
     happiness_layout->setSpacing(spacing);
+    happiness_layout->setContentsMargins(def_margins);
     happiness_layout->addSpacerItem(new QSpacerItem(20,40,QSizePolicy::Minimum,QSizePolicy::Expanding));
     ui->tab_happiness_colors->setLayout(happiness_layout);
 
@@ -148,6 +151,7 @@ OptionsMenu::OptionsMenu(QWidget *parent)
         nobles_layout->addWidget(cc);
     }
     nobles_layout->setSpacing(spacing);
+    nobles_layout->setContentsMargins(def_margins);
     nobles_layout->addSpacerItem(new QSpacerItem(20,40,QSizePolicy::Minimum,QSizePolicy::Expanding));
     ui->tab_noble_colors->setLayout(nobles_layout);
 

@@ -134,7 +134,7 @@ public:
 
         // misc
         void show_dwarf_details_dock(Dwarf *d = 0);
-        void new_filter_script_chosen(const QString &script_name);
+        void new_filter_script_chosen();
         void reload_filter_scripts();
 
         //roles
