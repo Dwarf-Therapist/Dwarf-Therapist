@@ -208,8 +208,7 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
             return m_is_ok;
     }
 
-    if (DT->user_settings()->value("options/alert_on_lost_connection", true)
-        .toBool() && m_layout && m_layout->is_complete()) {
+    if(m_layout && m_layout->is_complete()) {
         m_heartbeat_timer->start(1000); // check every second for disconnection
     }
 

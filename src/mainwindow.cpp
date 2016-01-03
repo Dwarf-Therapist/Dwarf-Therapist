@@ -454,7 +454,9 @@ void MainWindow::lost_df_connection() {
         set_interface_enabled(false);
         QString details = tr("Dwarf Fortress has either stopped running, or you unloaded your game. Please re-connect when a fort is loaded.");
         set_status_message(tr("Disconnected"), details);
-        QMessageBox::information(this, tr("Unable to talk to Dwarf Fortress"), details);
+        if(DT->user_settings()->value("options/alert_on_lost_connection", true).toBool()){
+            QMessageBox::information(this, tr("Unable to talk to Dwarf Fortress"), details);
+        }
     }
 }
 
