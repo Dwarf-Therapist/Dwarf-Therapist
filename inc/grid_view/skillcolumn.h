@@ -45,6 +45,7 @@ public slots:
 protected:
     int m_skill_id;
     float m_sort_val;
+    QString build_skill_desc(Dwarf *d, int skill_id);
     void build_tooltip(Dwarf *d, bool include_roles, bool check_labor);
     void refresh_sort(Dwarf *d, COLUMN_SORT_TYPE sType = CST_LEVEL);
 

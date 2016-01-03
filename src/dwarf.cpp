@@ -106,7 +106,6 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_age(0)
     , m_noble_position("")
     , m_is_pet(false)
-    , m_highest_moodable_skill(-1)
     , m_race(0)
     , m_caste(0)
     , m_pref_tooltip(QString::null)
@@ -158,6 +157,7 @@ Dwarf::~Dwarf() {
 
     m_skills.clear();
     m_sorted_skills.clear();
+    m_moodable_skills.clear();
     m_attributes.clear();
 
     m_labors.clear();
@@ -570,7 +570,6 @@ void Dwarf::read_mood(){
         if(get_flag_value(FLAG_HAD_MOOD)){
             m_had_mood = true;
             m_artifact_name = m_df->get_translated_word(m_address + m_mem->dwarf_offset("artifact_name"));
-            m_highest_moodable_skill = m_df->read_short(m_address +m_mem->dwarf_offset("mood_skill"));
         }
         //filter out any other temporary combat moods, and set stressed mood flag
         if(m_mood_id != MT_NONE && m_mood_id != MT_MARTIAL && m_mood_id != MT_ENRAGED){
@@ -1761,9 +1760,11 @@ void Dwarf::read_skills() {
     m_total_xp = 0;
     m_skills.clear();
     m_sorted_skills.clear();
+    m_moodable_skills.clear();
+
     QVector<VIRTADDR> entries = m_df->enumerate_vector(addr);
     TRACE << "Reading skills for" << nice_name() << "found:" << entries.size();
-    short type = 0;
+    short skill_id = 0;
     short rating = 0;
     int xp = 0;
     int rust = 0;
@@ -1772,18 +1773,20 @@ void Dwarf::read_skills() {
     if(m_caste)
         m_caste->load_skill_rates();
 
+    QMultiMap<int,Skill> skills_by_level;
+
     foreach(VIRTADDR entry, entries) {
-        type = m_df->read_short(entry);
+        skill_id = m_df->read_short(entry);
         rating = m_df->read_short(entry + 0x04);
         xp = m_df->read_int(entry + 0x08);
         rust = m_df->read_int(entry + 0x10);
 
         //find the caste's skill rate
         if(m_caste){
-            skill_rate = m_caste->get_skill_rate(type);
+            skill_rate = m_caste->get_skill_rate(skill_id);
         }
 
-        Skill s = Skill(type, xp, rating, rust, skill_rate);
+        Skill s = Skill(skill_id, xp, rating, rust, skill_rate);
         //calculate the values we'll need for roles immediately
         if(!m_is_animal && !m_is_baby){
             s.calculate_balanced_level();
@@ -1792,15 +1795,25 @@ void Dwarf::read_skills() {
         m_total_xp += s.actual_exp();
         m_skills.insert(s.id(),s);
         m_sorted_skills.insertMulti(s.capped_level_precise(), s.id());
-
-        if(!m_had_mood){
-            if(GameDataReader::ptr()->moodable_skills().contains(type) &&
-                    (m_highest_moodable_skill == -1 || s.actual_exp() > get_skill(m_highest_moodable_skill).actual_exp()))
-                m_highest_moodable_skill = type;
+        if(!m_had_mood && GameDataReader::ptr()->moodable_skills().contains(skill_id)){
+            skills_by_level.insertMulti(s.raw_level(),s);
         }
 
         if(s.rust_level() > m_worst_rust_level)
             m_worst_rust_level = s.rust_level();
+    }
+
+    if(!m_had_mood){
+        if(skills_by_level.count() > 0){
+            foreach(Skill s, skills_by_level.values(skills_by_level.lastKey())){
+                m_moodable_skills.insert(s.id(),s);
+            }
+        }else{
+            m_moodable_skills.insert(-1,Skill());
+        }
+    }else{
+        int mood_skill = m_df->read_short(m_address +m_mem->dwarf_offset("mood_skill"));
+        m_moodable_skills.insert(mood_skill, get_skill(mood_skill));
     }
 }
 
@@ -2673,9 +2686,17 @@ QString Dwarf::tooltip_text() {
     if(!skill_summary.isEmpty())
         tt.append(tr("<h4 style=\"margin:0px;\"><b>Skills:</b></h4><ul style=\"margin:0px;\">%1</ul>").arg(skill_summary));
 
-    if(!m_is_animal && s->value("tooltip_show_mood",false).toBool())
-        tt.append(tr("<b>Highest Moodable Skill:</b> %1")
-                  .arg(gdr->get_skill_name(m_highest_moodable_skill, true, true)));
+    if(!m_is_animal && s->value("tooltip_show_mood",false).toBool()){
+        QStringList skill_names;
+        foreach(int skill_id, m_moodable_skills.keys()){
+            skill_names << gdr->get_skill_name(skill_id, true, true);
+        }
+        skill_names.removeDuplicates();
+        if(skill_names.count() > 0){
+            tt.append(tr("<b>Highest Moodable Skill:</b> %1")
+                      .arg(skill_names.join(",")));
+        }
+    }
 
     if(!personality_summary.isEmpty())
         tt.append(tr("<p style=\"margin:0px;\"><b>Personality:</b> %1</p>").arg(personality_summary));
@@ -2823,11 +2844,6 @@ Skill Dwarf::highest_skill() {
         }
     }
     return highest;
-}
-
-Skill Dwarf::highest_moodable(){
-    Skill hm = get_skill(m_highest_moodable_skill);
-    return hm;
 }
 
 int Dwarf::total_skill_levels() {

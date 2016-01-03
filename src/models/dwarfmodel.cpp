@@ -366,14 +366,19 @@ void DwarfModel::build_rows() {
                         m_grouped_dwarves[tr("Can Activate")].append(d);
                     }
                 }else if(m_group_by == GB_HIGHEST_MOODABLE){
-                    Skill highest = d->highest_moodable();
-                    if(highest.capped_level() != -1 && !d->had_mood()){
-                        m_grouped_dwarves[highest.name()].append(d);
+                    QList<Skill> skills = d->get_moodable_skills().values();
+                    if(skills.count() > 1){
+                        m_grouped_dwarves["~Random~"].append(d);
                     }else{
-                        if(d->had_mood())
+                        if(d->had_mood()){
                             m_grouped_dwarves["~Had Mood~"].append(d);
-                        else
-                            m_grouped_dwarves["~Craft (Bone/Stone/Wood)~"].append(d);
+                        }else{
+                            if(skills.at(0).capped_level() == -1){
+                                m_grouped_dwarves["~Craft (Bone/Stone/Wood)~"].append(d);
+                            }else{
+                                m_grouped_dwarves[skills[0].name()].append(d);
+                            }
+                        }
                     }
                 }else if(m_group_by == GB_HIGHEST_SKILL){
                     Skill highest = d->highest_skill();
@@ -440,11 +445,13 @@ void DwarfModel::build_row(const QString &key) {
         } else if (m_group_by == GB_HIGHEST_SKILL) {
             agg_first_col->setData(first_dwarf->highest_skill().actual_exp(), DR_SORT_VALUE);
         } else if (m_group_by == GB_HIGHEST_MOODABLE) {
-            //make sure to show the had mood and generic craft moods at the bottom of the list
-            if(first_dwarf->had_mood() || first_dwarf->highest_moodable().capped_level() < 0)
+            //show generic mood, random and had mood at the top/bottom
+            QList<Skill> skills = first_dwarf->get_moodable_skills().values();
+            if(first_dwarf->had_mood() || skills.at(0).capped_level() < 0 || skills.count() > 1){
                 agg_first_col->setData(QChar(128), DR_SORT_VALUE);
-            else
-                agg_first_col->setData(first_dwarf->highest_moodable().name(), DR_SORT_VALUE);
+            }else{
+                agg_first_col->setData(skills[0].name(), DR_SORT_VALUE);
+            }
         } else if (m_group_by == GB_TOTAL_SKILL_LEVELS) {
             agg_first_col->setData(first_dwarf->total_skill_levels(), DR_SORT_VALUE);
         } else if (m_group_by == GB_GOALS) {

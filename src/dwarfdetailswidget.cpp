@@ -312,7 +312,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
             QTableWidgetItem *item_skill = new QTableWidgetItem(s.name());
             tooltip = tr("<center><h4>%1</h4></center>").arg(s.name());
-            if(s.id()==d->highest_moodable().id()){
+            if(d->get_moodable_skills().contains(s.id())){
                 if(d->had_mood()){
                     item_skill->setForeground(color_mood_had);
                     item_skill->setFont(bold_item_font);
@@ -321,7 +321,11 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
                 else{
                     item_skill->setForeground(color_mood_high);
                     item_skill->setFont(bold_item_font);
-                    tooltip.append(tr("<p>This is the highest moodable skill.</p>"));
+                    if(d->get_moodable_skills().count() > 1){
+                        tooltip.append(tr("<p>This is one of multiple possible moodable skills.</p>"));
+                    }else{
+                        tooltip.append(tr("<p>This is the highest moodable skill.</p>"));
+                    }
                 }
             }
             item_skill->setToolTip(tooltip);
