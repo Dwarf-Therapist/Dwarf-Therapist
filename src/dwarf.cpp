@@ -106,7 +106,6 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_age(0)
     , m_noble_position("")
     , m_is_pet(false)
-    , m_mood_skill(-1)
     , m_race(0)
     , m_caste(0)
     , m_pref_tooltip(QString::null)
@@ -571,7 +570,6 @@ void Dwarf::read_mood(){
         if(get_flag_value(FLAG_HAD_MOOD)){
             m_had_mood = true;
             m_artifact_name = m_df->get_translated_word(m_address + m_mem->dwarf_offset("artifact_name"));
-            m_mood_skill = m_df->read_short(m_address +m_mem->dwarf_offset("mood_skill"));
         }
         //filter out any other temporary combat moods, and set stressed mood flag
         if(m_mood_id != MT_NONE && m_mood_id != MT_MARTIAL && m_mood_id != MT_ENRAGED){
@@ -1814,7 +1812,8 @@ void Dwarf::read_skills() {
             m_moodable_skills.insert(-1,Skill());
         }
     }else{
-        m_moodable_skills.insert(m_mood_skill, get_skill(m_mood_skill));
+        int mood_skill = m_df->read_short(m_address +m_mem->dwarf_offset("mood_skill"));
+        m_moodable_skills.insert(mood_skill, get_skill(mood_skill));
     }
 }
 

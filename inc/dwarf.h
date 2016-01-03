@@ -662,7 +662,6 @@ private:
     quint32 m_ticks_since_birth;
     QString m_noble_position;
     bool m_is_pet;
-    short m_mood_skill;
     Race* m_race;
     Caste* m_caste;
     QMultiMap<int, Preference*> m_preferences;
