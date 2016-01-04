@@ -1,3 +1,23 @@
+### Version 35.0 Patch Notes
+
+***
+- toggling labors at a group/set level works properly with filters
+- right clicking and toggling a set of labors, all selected units are affected
+- added support for multiple moodable skills
+- replaced the text for group by and filter with icons and tooltips
+- added icons to more of the right-click context menus
+- changed the filter label and dropdown to a single widget
+- added a scroll area to the option's tooltip tab to reduce the overall height of the options window
+- moved all the 'cheating' options to their own section in the general options tab
+
+- fixed many issues with jobs, activities and squad orders not displaying correctly
+- fixed labor/flag toggling when selecting all with CTRL-A when both a group and filter are active
+- fixed flag columns incorrectly toggling labors when clicking the group row's cells
+- fixed the right click squad menu on non-squads groups
+- fixed how moodable skills are determined (raw base level, not inc. xp to next level)
+- fixed some knowledge descriptions
+- OSX fix for crashing on first read (Numerius)
+
 ### Version 34.0 Patch Notes
 
 ***
