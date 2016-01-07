@@ -50,20 +50,20 @@ class Dwarf : public QObject
 {
     Q_OBJECT
     friend class Squad;
-    Dwarf(DFInstance *df, const uint &addr, QObject *parent=0); //private, use the static get_dwarf() method
 
 public:
-    static Dwarf* get_dwarf(DFInstance *df, const VIRTADDR &address);
+    Dwarf(DFInstance *df, const uint &addr, QObject *parent=0);
     virtual ~Dwarf();
 
     DFInstance * get_df_instance(){return m_df;}
 
-    // getters
     //! Return the memory address (in hex) of this creature in the remote DF process
     VIRTADDR address() {return m_address;}
 
     //! return the the unique id for this creature
     Q_INVOKABLE int id() const {return m_id;}
+
+    bool is_valid() {return m_is_valid;}
 
     typedef enum {
         SEX_UNK = -1,
@@ -287,7 +287,7 @@ public:
     //! return this creature's Nth bit from the start of flags1
     Q_INVOKABLE bool get_flag_value(int bit_pos);
 
-    static bool has_invalid_flags(const int id, const QString creature_name, QHash<uint, QString> invalid_flags, quint32 dwarf_flags);
+    bool has_invalid_flags(const int id, const QString creature_name, QHash<uint, QString> invalid_flags, quint32 dwarf_flags);
 
     //! return this dwarf's highest skill
     Skill highest_skill();
@@ -399,10 +399,9 @@ public:
     //! return a formatted string suitable for showing in tooltips for this dwarf
     QString tooltip_text();
 
-    bool is_valid();
     // setters
     //! this will cause all data for this dwarf to be reset to game values (clears all pending uncomitted changes)
-    void refresh_data();
+    void read_data();
     //! refresh only the data affected by committing or clearing pending changes
     void refresh_minimal_data();
 
@@ -454,10 +453,7 @@ public:
     //! method for mapping a caste id to a meaningful text name string
     Q_INVOKABLE QString caste_name(bool plural_name = false);
     Q_INVOKABLE QString caste_tag();
-    //! static method for mapping a caste id to a meaningful text description string
     Q_INVOKABLE QString caste_desc();
-
-    //! static method for mapping a race id to a meaningful text string
     QString race_name(bool base = false, bool plural_name = false);
 
     //! used for building a datamodel that shows all pending changes this dwarf has queued up
@@ -677,7 +673,6 @@ private:
     QString m_true_name; //used for vampires
     int m_true_birth_year; //used for vampires
     UnitHealth m_unit_health;
-    bool m_validated;
     bool m_is_valid;
     QList<Syndrome> m_syndromes;
     quint32 m_curse_flags;
@@ -709,6 +704,8 @@ private:
     QHash<ATTRIBUTES_TYPE,QStringList> m_attribute_syndromes;
 
     QHash<int,QVariant> m_global_sort_keys;
+
+    bool validate();
 
     // these methods read data from raw memory
     void read_id();

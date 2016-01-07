@@ -653,6 +653,7 @@ typedef enum {
     FLAG_DEAD = 1,
     FLAG_IN_MOOD = 2,
     FLAG_HAD_MOOD = 3,
+    FLAG_MIGRANT = 7,
     FLAG_INCOMING = 10,
     FLAG_CAGED = 25,
     FLAG_TAME = 26,

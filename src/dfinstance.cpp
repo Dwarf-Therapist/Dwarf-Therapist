@@ -366,8 +366,8 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         int progress_count = 0;
 
         foreach(VIRTADDR creature_addr, creatures_addrs) {
-            d = Dwarf::get_dwarf(this, creature_addr);
-            if(d){
+            d = new Dwarf(this, creature_addr,this);
+            if(d && d->is_valid()){
                 dwarves.append(d); //add animals as well so we can show them
                 if(!d->is_animal()){
                     LOGI << "FOUND UNIT" << hexify(creature_addr) << d->nice_name() << d->id() << d->historical_id();

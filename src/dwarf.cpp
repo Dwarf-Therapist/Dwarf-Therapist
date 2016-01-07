@@ -115,7 +115,6 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_is_animal(false)
     , m_true_name("")
     , m_true_birth_year(0)
-    , m_validated(false)
     , m_is_valid(false)
     , m_uniform(0x0)
     , m_goals_realized(0)
@@ -128,7 +127,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_curse_type(eCurse::NONE)
 {
     read_settings();
-    refresh_data();
+    read_data();
     connect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 
     // setup context actions
@@ -190,78 +189,6 @@ Dwarf::~Dwarf() {
     disconnect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 }
 
-Dwarf *Dwarf::get_dwarf(DFInstance *df, const VIRTADDR &addr) {
-    MemoryLayout *mem = df->memory_layout();
-    TRACE << "attempting to load unit at" << addr << "using memory layout" << mem->game_version();
-
-    //only for test
-    if(DT->arena_mode){
-        Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
-        return unverified_dwarf;
-    }
-
-    quint32 flags1 = df->read_addr(addr + mem->dwarf_offset("flags1"));
-    quint32 flags2 = df->read_addr(addr + mem->dwarf_offset("flags2"));
-    quint32 flags3 = df->read_addr(addr + mem->dwarf_offset("flags3"));
-
-    int civ_id = df->read_int(addr + mem->dwarf_offset("civ"));
-    int race_id = df->read_int(addr + mem->dwarf_offset("race"));
-
-    TRACE << "examining unit at" << hex << addr;
-    TRACE << "  FLAGS1:" << hexify(flags1);
-    TRACE << "  FLAGS2:" << hexify(flags2);
-    TRACE << "  FLAGS3:" << hexify(flags3);
-    TRACE << "  RACE:" << race_id;
-    TRACE << "  CIV:" << civ_id;
-
-    bool is_caged = flags1 & (1 << FLAG_CAGED);
-    bool is_tame = flags1 & (1 << FLAG_TAME);
-
-    Race *r = df->get_race(race_id);
-    QString r_name = "";
-    FlagArray r_flags;
-    FlagArray c_flags;
-    if(r){
-         r_name = r->name();
-        r_flags = r->flags();
-        c_flags = r->get_caste_by_id(0)->flags();
-        r = 0;
-    }
-    TRACE << "RACE NAME:" << r_name;
-
-    if(!is_caged){
-        //if not caged, not part of our civ, not another sentient civ and not livestock, then ignore it
-        if(civ_id != df->dwarf_civ_id() || (civ_id > 0 && !r_flags.has_flag(CAN_SPEAK) && !c_flags.has_flag(TRAINABLE))){
-            LOGD << "ignoring unit of race" << r_name << "as it doesn't seem to be part of the fortress";
-            return 0;
-        }
-    }else{
-        if(!is_tame){
-            bool is_ok = false;
-            //if it's a caged, trainable beast, keep it in our list, but only if it's alive
-            if(r_flags.count() > 0){
-                //check if it's one of our civilians
-                if(race_id==df->dwarf_race_id() && civ_id == df->dwarf_civ_id()){
-                    is_ok = true;
-                }else{
-                    is_ok = c_flags.has_flag(TRAINABLE);
-                }
-            }
-            if(!is_ok){
-                return 0;
-            }
-        }
-    }
-
-    Dwarf *unverified_dwarf = new Dwarf(df, addr, df);
-    if(!unverified_dwarf->is_valid()){
-        delete unverified_dwarf;
-        return 0;
-    }else{
-        return unverified_dwarf;
-    }
-}
-
 bool Dwarf::has_invalid_flags(const int id, const QString creature_name, QHash<uint, QString> invalid_flags, quint32 dwarf_flags){
     foreach(uint invalid_flag, invalid_flags.uniqueKeys()) {
         QString reason = invalid_flags[invalid_flag];
@@ -288,7 +215,7 @@ void Dwarf::read_settings() {
     m_show_full_name = new_show_full_name;
 }
 
-void Dwarf::refresh_data() {
+void Dwarf::read_data() {
     if (!m_df || !m_df->memory_layout() || !m_df->memory_layout()->is_valid()) {
         LOGW << "refresh unit called but we're not connected";
         return;
@@ -296,6 +223,9 @@ void Dwarf::refresh_data() {
     // make sure our reference is up to date to the active memory layout
     m_mem = m_df->memory_layout();
     TRACE << "Starting refresh of unit data at" << hexify(m_address);
+
+    int civ_id = m_df->read_int(m_address +m_mem->dwarf_offset("civ"));
+    TRACE << "  CIV:" << civ_id;
 
     //read only the base information we need to validate if we should continue loading this dwarf
     read_id();
@@ -305,12 +235,41 @@ void Dwarf::refresh_data() {
     read_last_name(m_address + m_mem->dwarf_offset("first_name"));
     read_nick_name();
     build_names(); //creates nice name.. which is used for debug messages so we need to do it first..
+
+    bool validated = true;
+
+    if(!get_flag_value(FLAG_CAGED)){
+        //if not caged, not part of our civ, not another sentient civ and not livestock, then ignore it
+        if(civ_id != m_df->dwarf_civ_id() || (civ_id > 0 && !m_race->flags().has_flag(CAN_SPEAK) && !m_race->caste_flag(TRAINABLE))){
+            LOGD << "ignoring unit" << m_nice_name << QString("(%1)").arg(m_id) << "as they don't seem to be part of the fortress";
+            validated = false;
+        }
+    }else{
+        if(!get_flag_value(FLAG_TAME)){
+            bool is_ok = false;
+            //if it's a caged, trainable beast, keep it in our list, but only if it's alive
+            if(m_race){
+                //check if it's one of our civilians
+                if(civ_id == m_df->dwarf_civ_id()){
+                    is_ok = true;
+                }else{
+                    is_ok = m_race->caste_flag(TRAINABLE);
+                }
+            }
+            if(!is_ok){
+                validated = false;
+            }
+        }
+    }
+
     read_states();  //read states before job
     read_soul();
 
-    // read everything we need, order is important
-    if(!m_validated)
-        this->is_valid();
+    // so far so good, check other flags
+    if(validated){
+        this->validate();
+    }
+
     if(m_is_valid){
         read_hist_fig(); //read first
         read_caste(); //read before age
@@ -347,7 +306,7 @@ void Dwarf::refresh_data() {
 }
 
 void Dwarf::refresh_minimal_data(){
-    if(m_validated){
+    if(m_is_valid){
         read_flags(); //butcher/caged
 
         read_nick_name();
@@ -359,20 +318,16 @@ void Dwarf::refresh_minimal_data(){
     }
 }
 
-bool Dwarf::is_valid(){
-    if(m_validated)
-        return m_is_valid;
-
+bool Dwarf::validate(){
     if (m_mem->is_complete()) {
         if(!m_is_animal){ //fortress civilian
 
             //check for migrants (which aren't dead/killed/ghosts)
-            if(this->state_value(7) > 0
+            if(this->state_value(FLAG_MIGRANT) > 0
                     && (!get_flag_value(FLAG_DEAD) || get_flag_value(FLAG_INCOMING))
                     && !get_flag_value(FLAG_KILLED)
                     && !get_flag_value(FLAG_GHOST)){
                 LOGI << "Found migrant " << this->nice_name();
-                m_validated = true;
                 m_is_valid = true;
                 return true;
             }
@@ -380,7 +335,6 @@ bool Dwarf::is_valid(){
             //check opposed to life
             if(m_curse_flags & eCurse::OPPOSED_TO_LIFE){
                 LOGI << "Ignoring " << this->nice_name() << " who appears to be a hostile undead!";
-                m_validated = true;
                 m_is_valid = false;
                 return false;
             }
@@ -392,7 +346,6 @@ bool Dwarf::is_valid(){
                 QString curse_name = m_df->read_string(m_address + m_mem->dwarf_offset("curse"));
                 if(!curse_name.isEmpty()){
                     LOGI << "Ignoring animal " << this->nice_name() << "who appears to be cursed or undead";
-                    m_validated = true;
                     m_is_valid = false;
                     return false;
                 }
@@ -403,22 +356,18 @@ bool Dwarf::is_valid(){
         if(has_invalid_flags(this->id(), this->nice_name(), m_mem->invalid_flags_1(),m_unit_flags.at(0)) ||
                 has_invalid_flags(this->id(),this->nice_name(), m_mem->invalid_flags_2(),m_unit_flags.at(1)) ||
                 has_invalid_flags(this->id(),this->nice_name(), m_mem->invalid_flags_3(),m_unit_flags.at(2))){
-            m_validated = true;
             m_is_valid = false;
             return false;
         }
 
         if(!this->m_first_soul){
             LOGI << "Ignoring" << this->nice_name() << "who appears to be soulless.";
-            m_validated = true;
             m_is_valid = false;
             return false;
         }
-        m_validated = true;
         m_is_valid = true;
         return true;
     }else{
-        m_validated = true;
         m_is_valid = false;
         return false;
     }
@@ -694,8 +643,11 @@ void Dwarf::read_caste() {
 void Dwarf::read_flags(){
     m_unit_flags.clear();
     quint32 flags1 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags1"));
+    TRACE << "  FLAGS1:" << hexify(flags1);
     quint32 flags2 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags2"));
+    TRACE << "  FLAGS2:" << hexify(flags2);
     quint32 flags3 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags3"));
+    TRACE << "  FLAGS3:" << hexify(flags3);
     m_unit_flags << flags1 << flags2 << flags3;
     m_pending_flags = m_unit_flags;
 
