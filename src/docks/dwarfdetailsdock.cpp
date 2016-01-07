@@ -32,6 +32,7 @@ DwarfDetailsDock::DwarfDetailsDock(QWidget *parent, Qt::WindowFlags flags)
     , m_widget(new DwarfDetailsWidget(this))
     , m_initialized(false)
     , m_current_id(-1)
+    , m_last_id(-1)
 {
     m_widget->hide();
     setWindowTitle(tr("Dwarf Details"));

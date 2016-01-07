@@ -139,6 +139,7 @@ Item::Item(ITEM_TYPE itype, QString name, QObject *parent)
     , m_affection(0)
     , m_stack_size(0)
     , m_size_prefix("")
+    , m_maker_race(-1)
 {
     m_item_name = (!name.trimmed().isEmpty() ? name : QObject::tr("Unknown"));
     m_display_name = m_item_name;

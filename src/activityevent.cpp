@@ -139,7 +139,7 @@ void ActivityEvent::read_data(){
                         event_type = ACT_UNKNOWN;
                         if(par_type == PERF_AUDIENCE){
                             desc = get_audience_desc(p_type);
-                            if(par_type == PERF_DANCE){
+                            if(p_type == PERF_DANCE){
                                 event_type = PF_AUDIENCE;
                             }else{
                                 event_type = PF_LISTEN;
