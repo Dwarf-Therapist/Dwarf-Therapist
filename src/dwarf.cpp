@@ -189,11 +189,11 @@ Dwarf::~Dwarf() {
     disconnect(DT, SIGNAL(settings_changed()), this, SLOT(read_settings()));
 }
 
-bool Dwarf::has_invalid_flags(const int id, const QString creature_name, QHash<uint, QString> invalid_flags, quint32 dwarf_flags){
+bool Dwarf::has_invalid_flags(QHash<uint, QString> invalid_flags, quint32 dwarf_flags){
     foreach(uint invalid_flag, invalid_flags.uniqueKeys()) {
         QString reason = invalid_flags[invalid_flag];
         if(dwarf_flags & invalid_flag) {
-            LOGI << "Ignoring id:" << id << "name:" << creature_name << "who appears to be" << reason << "flags:" << dwarf_flags;
+            set_validation(QString("%1 flags:%2").arg(reason).arg(dwarf_flags));
             return true;
         }
     }
@@ -227,50 +227,33 @@ void Dwarf::read_data() {
     int civ_id = m_df->read_int(m_address +m_mem->dwarf_offset("civ"));
     TRACE << "  CIV:" << civ_id;
 
-    //read only the base information we need to validate if we should continue loading this dwarf
+    //read the core information we need to validate if we should continue loading this unit
     read_id();
     read_flags();
     read_race(); //also sets m_is_animal
     read_first_name();
     read_last_name(m_address + m_mem->dwarf_offset("first_name"));
     read_nick_name();
-    build_names(); //creates nice name.. which is used for debug messages so we need to do it first..
+    build_names(); //build names now for logging
+    read_states();  //read states before job and validation
 
     bool validated = true;
-
-    if(!get_flag_value(FLAG_CAGED)){
-        //if not caged, not part of our civ, not another sentient civ and not livestock, then ignore it
-        if(civ_id != m_df->dwarf_civ_id() || (civ_id > 0 && !m_race->flags().has_flag(CAN_SPEAK) && !m_race->caste_flag(TRAINABLE))){
-            QString r_name = "";
-            if(m_race)
-                r_name = m_race->name();
-            LOGD << QString("IGNORING %1 name:%2 id:%3 as they don't seem to be part of the fortress")
-                    .arg(r_name).arg(m_nice_name).arg(m_id);
-            validated = false;
-        }
-    }else{
+    //attempt to do some initial filtering
+    if(civ_id != m_df->dwarf_civ_id()){
+        set_validation("doesn't belong to our civilization",&validated,false,LL_DEBUG);
+    }
+    if(get_flag_value(FLAG_CAGED)){
         if(!get_flag_value(FLAG_TAME)){
-            bool is_ok = false;
             //if it's a caged, trainable beast, keep it in our list, but only if it's alive
             if(m_race){
-                //check if it's one of our civilians
-                if(civ_id == m_df->dwarf_civ_id()){
-                    is_ok = true;
-                }else{
-                    is_ok = m_race->caste_flag(TRAINABLE);
-                }
-            }
-            if(!is_ok){
-                validated = false;
+                LOGI << QString("FOUND caged creature!");
+                validated = m_race->caste_flag(TRAINABLE);
             }
         }
     }
 
-    read_states();  //read states before job
-    read_soul();
-
-    // so far so good, check other flags
-    if(validated){
+    //if the initial validation has passed and the soul is valid, perform a more in depth check with the flags
+    if(validated && read_soul()){
         this->validate();
     }
 
@@ -302,11 +285,15 @@ void Dwarf::read_data() {
         }
         read_inventory();
 
-        if(m_is_animal)
+        if(m_is_animal || m_nice_name == "")
             build_names(); //calculate names again as we need to check tameness for animals
     }
 
-    TRACE << "finished refresh of dwarf data for dwarf:" << m_nice_name << "(" << m_translated_name << ")";
+    if(m_is_valid){
+        LOGI << QString("FOUND %1 (%2) name:%3 id:%4 histfig_id:%5")
+                .arg(race_name(true)).arg(hexify(m_address))
+                .arg(m_nice_name).arg(m_id).arg(m_histfig_id);
+    }
 }
 
 void Dwarf::refresh_minimal_data(){
@@ -331,15 +318,13 @@ bool Dwarf::validate(){
                     && (!get_flag_value(FLAG_DEAD) || get_flag_value(FLAG_INCOMING))
                     && !get_flag_value(FLAG_KILLED)
                     && !get_flag_value(FLAG_GHOST)){
-                LOGI << "Found migrant " << this->nice_name();
-                m_is_valid = true;
+                set_validation("migrant",&m_is_valid,true);
                 return true;
             }
 
             //check opposed to life
             if(m_curse_flags & eCurse::OPPOSED_TO_LIFE){
-                LOGI << "Ignoring " << this->nice_name() << " who appears to be a hostile undead!";
-                m_is_valid = false;
+                set_validation("appears to be a hostile undead!",&m_is_valid);
                 return false;
             }
 
@@ -349,24 +334,22 @@ bool Dwarf::validate(){
                 //the full curse information hasn't been loaded yet, so just read the curse name
                 QString curse_name = m_df->read_string(m_address + m_mem->dwarf_offset("curse"));
                 if(!curse_name.isEmpty()){
-                    LOGI << "Ignoring animal " << this->nice_name() << "who appears to be cursed or undead";
-                    m_is_valid = false;
+                    set_validation("appears to be cursed or undead",&m_is_valid);
                     return false;
                 }
             }
         }
 
         //check other invalid flags (invaders, ghosts, dead, merchants, etc.)
-        if(has_invalid_flags(this->id(), this->nice_name(), m_mem->invalid_flags_1(),m_unit_flags.at(0)) ||
-                has_invalid_flags(this->id(),this->nice_name(), m_mem->invalid_flags_2(),m_unit_flags.at(1)) ||
-                has_invalid_flags(this->id(),this->nice_name(), m_mem->invalid_flags_3(),m_unit_flags.at(2))){
+        if(has_invalid_flags(m_mem->invalid_flags_1(),m_unit_flags.at(0)) ||
+                has_invalid_flags(m_mem->invalid_flags_2(),m_unit_flags.at(1)) ||
+                has_invalid_flags(m_mem->invalid_flags_3(),m_unit_flags.at(2))){
             m_is_valid = false;
             return false;
         }
 
-        if(!this->m_first_soul){
-            LOGI << "Ignoring" << this->nice_name() << "who appears to be soulless.";
-            m_is_valid = false;
+        if(!m_first_soul){
+            set_validation("appears to be soulless",&m_is_valid);
             return false;
         }
         m_is_valid = true;
@@ -375,6 +358,20 @@ bool Dwarf::validate(){
         m_is_valid = false;
         return false;
     }
+}
+
+void Dwarf::set_validation(QString reason, bool *valid_var, bool valid, LOG_LEVEL l){
+    QString msg = QString("%1 %2 name:%3 id:%4 reason:%5")
+            .arg(valid ? tr("FOUND") : tr("IGNORING"))
+            .arg(race_name()).arg(m_nice_name).arg(m_id).arg(reason);
+
+    if(l == LL_DEBUG){
+        LOGD << msg;
+    }else{
+        LOGI << msg;
+    }
+    if(valid_var)
+        *valid_var = valid;
 }
 
 void Dwarf::set_age_and_migration(VIRTADDR birth_year_offset, VIRTADDR birth_time_offset){
@@ -664,7 +661,7 @@ void Dwarf::read_race() {
     m_race = m_df->get_race(m_race_id);
     TRACE << "RACE ID:" << m_race_id;
     if(m_race){
-        m_is_animal = (m_race->caste_flag(TRAINABLE));
+        m_is_animal = (!m_race->flags().has_flag(CAN_LEARN) && m_race->caste_flag(TRAINABLE));
     }
 }
 
@@ -709,47 +706,31 @@ void Dwarf::build_names() {
     m_nice_name = m_nice_name.trimmed();
     m_translated_name = m_translated_name.trimmed();
 
+    QString creature_name = "";
+    if(is_adult()){
+        creature_name = caste_name();
+    }else{
+        creature_name = race_name();
+    }
     if(m_is_animal){
-        QString creature_name = "";
         if(is_adult()){
-            creature_name = caste_name();
             //for adult animals, check their profession for training and adjust the name accordingly
             if (m_raw_profession == 99) //trained war
                 creature_name = tr("War ") + m_race->name();
             else if (m_raw_profession == 98) //trained hunt
                 creature_name = tr("Hunting ") + m_race->name();
-        }else{
-            creature_name = race_name();
         }
-
-        //check for a pet name
-        if(m_nice_name==""){
-            m_nice_name = creature_name;
-            m_translated_name = "";
-        }else{
+        //append pet name if necessary
+        if(!m_nice_name.isEmpty()){
             m_nice_name = tr("%1 (%2)").arg(creature_name).arg(m_nice_name);
         }
     }
-    // uncomment to put address at front of name
-    //m_nice_name = QString("0x%1 %2").arg(m_address, 8, 16, QChar('0')).arg(m_nice_name);
-    // uncomment to put internal ID at front of name
-    //m_nice_name = QString("%1 %2").arg(m_id).arg(m_nice_name);
 
-    /*
-    bool debugging_labors = true;
-    if (debugging_labors) {
-        // find first labor that is on for a dwarf...
-        uchar buf[150];
-        memset(buf, 0, 150);
-        m_df->read_raw(m_address + m_df->memory_layout()->dwarf_offset("labors"), 150, &buf);
-        for(int i = 0; i < 150; ++i) {
-            if (buf[i] > 0) {
-                m_nice_name = QString("%1 - %2").arg(m_nice_name).arg(i);
-                break;
-            }
-        }
+    //if there's still no name, use the creature name
+    if(m_nice_name==""){
+        m_nice_name = capitalizeEach(creature_name);
+        m_translated_name = "";
     }
-    */
 }
 
 void Dwarf::read_profession() {
@@ -1282,19 +1263,23 @@ void Dwarf::read_current_job(){
     TRACE << "CURRENT JOB:" << m_current_job_id << m_current_sub_job_id << m_current_job;
 }
 
-void Dwarf::read_soul(){
+bool Dwarf::read_soul(){
     VIRTADDR soul_vector = m_address + m_mem->dwarf_offset("souls");
     QVector<VIRTADDR> souls = m_df->enumerate_vector(soul_vector);
     if (souls.size() != 1) {
         LOGI << nice_name() << "has" << souls.size() << "souls!";
-        return;
+        return false;
     }
     m_first_soul = souls.at(0);
+    return true;
 }
 
 void Dwarf::read_soul_aspects() {
-    if(!m_first_soul)
-        read_soul();
+    if(!m_first_soul){
+        if(!read_soul()){
+            return;
+        }
+    }
 
     read_skills();
     read_attributes();
@@ -1321,6 +1306,8 @@ QString Dwarf::caste_name(bool plural_name) {
             tmp_name = m_caste->name_plural();
         else
             tmp_name = m_caste->name();
+    }else if(m_race){
+        tmp_name = m_race->name();
     }
     return tmp_name;
 }

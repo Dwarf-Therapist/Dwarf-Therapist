@@ -287,7 +287,7 @@ public:
     //! return this creature's Nth bit from the start of flags1
     Q_INVOKABLE bool get_flag_value(int bit_pos);
 
-    bool has_invalid_flags(const int id, const QString creature_name, QHash<uint, QString> invalid_flags, quint32 dwarf_flags);
+    bool has_invalid_flags(QHash<uint, QString> invalid_flags, quint32 dwarf_flags);
 
     //! return this dwarf's highest skill
     Skill highest_skill();
@@ -725,7 +725,7 @@ private:
     void read_labors();
     void read_happiness(VIRTADDR personality_base);
     void read_current_job();
-    void read_soul();
+    bool read_soul();
     void read_soul_aspects();
     void read_skills();
     void read_attributes();
@@ -741,6 +741,7 @@ private:
     void read_inventory();
     void read_uniform();
     void check_availability();
+    void set_validation(QString reason, bool *valid_var = 0, bool valid = false, LOG_LEVEL l = LL_INFO);
 
     QString get_gender_icon_suffix(bool male_flag, bool female_flag, bool checking_interest = false);
 

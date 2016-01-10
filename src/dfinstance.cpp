@@ -378,9 +378,6 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
                         m_labor_capable_dwarves.append(d);
                     }
                 }
-                LOGI << QString("FOUND %1 (%2) name:%3 id:%4 histfig_id:%5")
-                        .arg(d->race_name(true)).arg(hexify(creature_addr))
-                        .arg(d->nice_name()).arg(d->id()).arg(d->historical_id());
             }else{
                 //delete d;
             }
