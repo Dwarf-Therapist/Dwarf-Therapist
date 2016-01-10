@@ -68,6 +68,7 @@ public:
     }
 
     ~HealthCategory(){
+        qDeleteAll(m_descriptors);
         m_descriptors.clear();
     }
 

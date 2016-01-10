@@ -34,7 +34,7 @@ ThoughtsDock::ThoughtsDock(QWidget *parent, Qt::WindowFlags flags)
 {
     m_tree_view->setColumnCount(3);
     m_tree_view->setHeaderLabels(QStringList() << tr("Thought/Emotion") << tr("Strength") << tr("Count"));
-    m_tree_view->setItemDelegate(new ThoughtsItemDelegate());
+    m_tree_view->setItemDelegate(new ThoughtsItemDelegate(m_tree_view));
 }
 
 void ThoughtsDock::build_tree(){

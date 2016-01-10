@@ -241,7 +241,11 @@ void Dwarf::read_data() {
     if(!get_flag_value(FLAG_CAGED)){
         //if not caged, not part of our civ, not another sentient civ and not livestock, then ignore it
         if(civ_id != m_df->dwarf_civ_id() || (civ_id > 0 && !m_race->flags().has_flag(CAN_SPEAK) && !m_race->caste_flag(TRAINABLE))){
-            LOGD << "ignoring unit" << m_nice_name << QString("(%1)").arg(m_id) << "as they don't seem to be part of the fortress";
+            QString r_name = "";
+            if(m_race)
+                r_name = m_race->name();
+            LOGD << QString("IGNORING %1 name:%2 id:%3 as they don't seem to be part of the fortress")
+                    .arg(r_name).arg(m_nice_name).arg(m_id);
             validated = false;
         }
     }else{

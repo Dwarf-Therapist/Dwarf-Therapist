@@ -51,6 +51,12 @@ signals:
 class ThoughtsItemDelegate : public QStyledItemDelegate {
     Q_OBJECT
 public:
+
+    ThoughtsItemDelegate(QObject *parent = 0)
+        : QStyledItemDelegate(parent)
+    {
+    }
+
     void paint(QPainter *painter, const QStyleOptionViewItem &option,const QModelIndex &index) const {
         QStyledItemDelegate::paint(painter, option, index);
 

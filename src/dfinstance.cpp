@@ -362,27 +362,27 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     QTime t;
     t.start();
     if (!creatures_addrs.empty()) {
-        Dwarf *d = 0;
+        QPointer<Dwarf> d;
         int progress_count = 0;
-
         foreach(VIRTADDR creature_addr, creatures_addrs) {
-            d = new Dwarf(this, creature_addr,this);
-            if(d && d->is_valid()){
-                dwarves.append(d); //add animals as well so we can show them
+            d = QPointer<Dwarf>(new Dwarf(this, creature_addr,this));
+            if(!d.isNull() && d->is_valid()){
+                dwarves.append(d);
                 if(!d->is_animal()){
-                    LOGI << "FOUND UNIT" << hexify(creature_addr) << d->nice_name() << d->id() << d->historical_id();
                     m_actual_dwarves.append(d);
-
                     //never calculate roles for babies
                     //only calculate roles for children if they're shown and labor cheats are enabled
-                    if(!d->is_baby()){
-                        if(!d->is_child() || (DT->labor_cheats_allowed() && !DT->hide_non_adults())){
-                            m_labor_capable_dwarves.append(d);
-                        }
+                    if(!d->is_baby() &&
+                            (!d->is_child() ||
+                             (DT->labor_cheats_allowed() && !DT->hide_non_adults()))){
+                        m_labor_capable_dwarves.append(d);
                     }
-                } else {
-                    LOGI << "FOUND BEAST" << hexify(creature_addr) << d->nice_name() << d->id();
                 }
+                LOGI << QString("FOUND %1 (%2) name:%3 id:%4 histfig_id:%5")
+                        .arg(d->race_name(true)).arg(hexify(creature_addr))
+                        .arg(d->nice_name()).arg(d->id()).arg(d->historical_id());
+            }else{
+                //delete d;
             }
             emit progress_value(progress_count++);
         }
@@ -410,13 +410,13 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
 
         DT->emit_labor_counts_updated();
 
-    } else {
+    }else{
         // we lost the fort!
         m_is_ok = false;
     }
     detach();
 
-    LOGI << "found" << dwarves.size() << "dwarves out of" << creatures_addrs.size() << "creatures";
+    LOGI << "found" << dwarves.size() << "units out of" << creatures_addrs.size() << "creatures";
 
     return dwarves;
 }

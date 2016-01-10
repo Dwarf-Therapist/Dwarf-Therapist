@@ -218,6 +218,7 @@ void Uniform::check_uniform(QString category_name, Item *item_inv){
                                  )
                              );
                 }
+                delete item_miss;
                 if(match){
                     QList<ItemDefUniform*> missing_items = m_missing_items.take(itype);
 

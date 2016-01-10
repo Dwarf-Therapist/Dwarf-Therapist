@@ -616,16 +616,24 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             }
         }
 
-        if(statuses->childCount() > 0)
+        if(statuses->childCount() > 0){
             ui->tw_health->addTopLevelItem(statuses);
-        if(treatments->childCount() > 0)
+        }else{
+            delete statuses;
+        }
+        if(treatments->childCount() > 0){
             ui->tw_health->addTopLevelItem(treatments);
+        }else{
+            delete treatments;
+        }
         if(wounds->childCount() > 0){
             ui->tw_health->addTopLevelItem(wounds);
             foreach(QTreeWidgetItem *i, wound_nodes){
                 i->setFirstColumnSpanned(true);
             }
             wound_nodes.clear();
+        }else{
+            delete wounds;
         }
     }
     if(ui->tw_health->topLevelItemCount() <= 0){

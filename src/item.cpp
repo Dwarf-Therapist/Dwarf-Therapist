@@ -203,8 +203,11 @@ void Item::read_data(){
                             break;
                         }
                     }
-                    if(!appended)
+                    if(!appended){
                         m_contained_items.append(ia);
+                    }else{
+                        delete ia;
+                    }
                 }else{
                     LOGE << "found unknown ammo!";
                 }

@@ -180,7 +180,7 @@ private:
     bool m_indv_choice;
     short m_job_skill;
     int m_stack_size;
-    QHash<MATERIAL_CLASS,MATERIAL_FLAGS> m_class_mats;
+    //static const QHash<MATERIAL_CLASS,MATERIAL_FLAGS> m_class_mats;
 
     void read_data(){
         if(m_address > 0){
@@ -204,33 +204,32 @@ private:
          * but a more comprehensive solution would be to add all the required resources.x vector offsets, and search within them for a material match
         */
         MATERIAL_CLASS mat_class = static_cast<MATERIAL_CLASS>(m_df->read_short(uniform_addr + m_df->memory_layout()->item_filter_offset("mat_class")));
-        if(m_class_mats.count() <= 0){
-            map_mat_flags();
-        }
-        if(m_class_mats.contains(mat_class)){
-            m_mat_flag = m_class_mats.value(mat_class);
+        if(class_mats().contains(mat_class)){
+            m_mat_flag = class_mats().value(mat_class);
         }
         if(mat_class != MC_NONE && mat_class != MC_UNKNOWN){
             m_mat_generic_name = ItemDefUniform::get_mat_class_desc(mat_class);
         }
     }
-    void map_mat_flags(){
-        m_class_mats.insert(MC_LEATHER,LEATHER);
-        m_class_mats.insert(MC_CLOTH,THREAD_PLANT);
-        m_class_mats.insert(MC_WOOD,IS_WOOD);
-        m_class_mats.insert(MC_STONE,IS_STONE);
-        m_class_mats.insert(MC_METAL_AMMO,IS_METAL);
-        m_class_mats.insert(MC_METAL_AMMO2,IS_METAL);
-        m_class_mats.insert(MC_METAL_ARMOR,IS_METAL);
-        m_class_mats.insert(MC_GEM,IS_GEM);
-        m_class_mats.insert(MC_BONE,BONE);
-        m_class_mats.insert(MC_SHELL,SHELL);
-        m_class_mats.insert(MC_PEARL,PEARL);
-        m_class_mats.insert(MC_TOOTH,TOOTH);
-        m_class_mats.insert(MC_HORN,HORN);
-        m_class_mats.insert(MC_PLANT_FIBER,THREAD_PLANT);
-        m_class_mats.insert(MC_SILK,SILK);
-        m_class_mats.insert(MC_YARN,YARN);
+    static const QHash<MATERIAL_CLASS,MATERIAL_FLAGS> &class_mats(){
+        static QHash<MATERIAL_CLASS,MATERIAL_FLAGS> ret;
+        ret.insert(MC_LEATHER,LEATHER);
+        ret.insert(MC_CLOTH,THREAD_PLANT);
+        ret.insert(MC_WOOD,IS_WOOD);
+        ret.insert(MC_STONE,IS_STONE);
+        ret.insert(MC_METAL_AMMO,IS_METAL);
+        ret.insert(MC_METAL_AMMO2,IS_METAL);
+        ret.insert(MC_METAL_ARMOR,IS_METAL);
+        ret.insert(MC_GEM,IS_GEM);
+        ret.insert(MC_BONE,BONE);
+        ret.insert(MC_SHELL,SHELL);
+        ret.insert(MC_PEARL,PEARL);
+        ret.insert(MC_TOOTH,TOOTH);
+        ret.insert(MC_HORN,HORN);
+        ret.insert(MC_PLANT_FIBER,THREAD_PLANT);
+        ret.insert(MC_SILK,SILK);
+        ret.insert(MC_YARN,YARN);
+        return ret;
     }
 };
 
