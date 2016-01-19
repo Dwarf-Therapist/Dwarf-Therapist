@@ -311,32 +311,29 @@ void Dwarf::refresh_minimal_data(){
 
 bool Dwarf::validate(){
     if (m_mem->is_complete()) {
-        if(!m_is_animal){ //fortress civilian
 
-            //check for migrants (which aren't dead/killed/ghosts)
-            if(this->state_value(FLAG_MIGRANT) > 0
-                    && (!get_flag_value(FLAG_DEAD) || get_flag_value(FLAG_INCOMING))
-                    && !get_flag_value(FLAG_KILLED)
-                    && !get_flag_value(FLAG_GHOST)){
-                set_validation("migrant",&m_is_valid,true);
-                return true;
-            }
+        //check for migrants (which aren't dead/killed/ghosts)
+        if(this->state_value(FLAG_MIGRANT) > 0
+                && (!get_flag_value(FLAG_DEAD) || get_flag_value(FLAG_INCOMING))
+                && !get_flag_value(FLAG_KILLED)
+                && !get_flag_value(FLAG_GHOST)){
+            set_validation("migrant",&m_is_valid,true);
+            return true;
+        }
 
-            //check opposed to life
-            if(m_curse_flags & eCurse::OPPOSED_TO_LIFE){
-                set_validation("appears to be a hostile undead!",&m_is_valid);
+        //check opposed to life
+        if(m_curse_flags & eCurse::OPPOSED_TO_LIFE){
+            set_validation("appears to be a hostile undead!",&m_is_valid);
+            return false;
+        }
+
+        if(m_is_animal && (get_flag_value(FLAG_TAME) || get_flag_value(FLAG_CAGED))){ //tame or caged animals
+            //exclude cursed animals, this may be unnecessary with the civ check
+            //the full curse information hasn't been loaded yet, so just read the curse name
+            QString curse_name = m_df->read_string(m_address + m_mem->dwarf_offset("curse"));
+            if(!curse_name.isEmpty()){
+                set_validation("appears to be cursed or undead",&m_is_valid);
                 return false;
-            }
-
-        }else{ //tame or caged animals
-            if (get_flag_value(FLAG_TAME) || get_flag_value(FLAG_CAGED)) {
-                //exclude cursed animals, this may be unnecessary with the civ check
-                //the full curse information hasn't been loaded yet, so just read the curse name
-                QString curse_name = m_df->read_string(m_address + m_mem->dwarf_offset("curse"));
-                if(!curse_name.isEmpty()){
-                    set_validation("appears to be cursed or undead",&m_is_valid);
-                    return false;
-                }
             }
         }
 
