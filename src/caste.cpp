@@ -122,12 +122,13 @@ void Caste::read_caste() {
 
 bool Caste::is_geldable(){
     if(m_can_geld == -1){
+        m_can_geld = 0;
         for(int id=0; id < m_body_parts_addr.size(); id++){
             BodyPart *bp = new BodyPart(m_df,m_race,m_body_parts_addr.at(id),id);
             if(bp){
                 m_body_parts.insert(id,bp);
                 if(bp->token() == "LB"){
-                    m_can_geld = (bool)bp->flags().has_flag(38);
+                    m_can_geld = bp->flags().has_flag(38); //GELDABLE
                     break;
                 }
             }

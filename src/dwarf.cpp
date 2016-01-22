@@ -1390,7 +1390,7 @@ bool Dwarf::toggle_flag_bit(int bit_pos) {
         //don't butcher if it's a pet, user will be notified via tooltip on column, same for non-butcherable
         set_flag = (!m_is_pet && m_caste->flags().has_flag(BUTCHERABLE));
     }else if(bit_pos==FLAG_GELD){
-        set_flag = (m_gender_info.gender == SEX_M && m_caste->is_geldable() && !has_health_issue(42,0));
+        set_flag = (m_gender_info.gender == SEX_M && m_caste->is_geldable() && !has_health_issue(eHealth::HI_GELDED,0));
     }
 
     if(set_flag){
