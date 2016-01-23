@@ -1,3 +1,11 @@
+### Version 36.0 Patch Notes
+
+***
+- livestock is determined by CAN_LEARN tag, which should allow for setting labor on modded intelligent creatures
+- livestock incoming with a migration wave should appear now
+- fixed audience job not showing for dances
+- fixed gelding for creatures without LOWERBODY
+
 ### Version 35.0 Patch Notes
 
 ***
