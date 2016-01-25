@@ -27,7 +27,7 @@ Alternate Download (DFFD)
 -------------------------
 If the latest published releases do not contain a package, they may be found on DFFD.
 
-`Windows 32-bit <http://dffd.wimbli.com/file.php?id=9040>`_
+`Windows 32-bit <http://dffd.bay12games.com/file.php?id=11420>`_
 
 `OSX <http://dffd.bay12games.com/file.php?id=11579>`_
 
