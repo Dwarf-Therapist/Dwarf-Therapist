@@ -434,7 +434,7 @@ address('uniform_item_filter',df.squad_uniform_spec,'item_filter')
 address('uniform_indiv_choice',df.squad_uniform_spec,'indiv_choice')
 
 header('activity_offsets')
-address('activity_type',df.activity_entry,'id')
+address('activity_type',df.activity_entry,'type')
 address('events',df.activity_entry,'events')
 address('participants',df.activity_event_combat_trainingst,'participants')
 address('sq_lead',df.activity_event_skill_demonstrationst,'hist_figure_id')
