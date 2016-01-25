@@ -21,7 +21,7 @@ The changelog is `available at GitHub`_.
 
 Latest Release
 ========
-Latest `releases`_ are always published in the project's `releases`_ page. These releases normally contain packages for Windows and OSX.
+The `latest release`_ is always published in the project's `releases`_ page. These releases normally contain packages for Windows and OSX.
 
 Alternate Download (DFFD)
 -------------------------
@@ -73,3 +73,4 @@ You can also join us in `#dwarftherapist on Freenode`_.
 .. _DFFD: http://dffd.wimbli.com/category.php?id=20
 .. _#dwarftherapist on Freenode: http://webchat.freenode.net/?channels=%23dwarftherapist
 .. _releases: https://github.com/splintermind/Dwarf-Therapist/releases
+.. _latest release: https://github.com/splintermind/Dwarf-Therapist/releases/latest
