@@ -19,15 +19,17 @@ If you'd like to help support this project:
 
 The changelog is `available at GitHub`_.
 
-Download
+Latest Release
 ========
+Latest `releases`_ are always published in the project's `releases`_ page. These releases normally contain packages for Windows and OSX.
 
-The following downloads are compatible with Dwarf Fortress versions 0.40.04 through 0.40.24.
-The Windows version is additionally compatible with versions 0.40.01 and 0.40.03.
+Alternate Download (DFFD)
+-------------------------
+If the latest published releases do not contain a package, they may be found on DFFD.
 
 `Windows 32-bit <http://dffd.wimbli.com/file.php?id=9040>`_
 
-`OSX <http://dffd.wimbli.com/file.php?id=9127>`_
+`OSX <http://dffd.bay12games.com/file.php?id=11579>`_
 
 Linux
 =====
@@ -70,3 +72,4 @@ You can also join us in `#dwarftherapist on Freenode`_.
 .. _GitHub issue tracker: https://github.com/splintermind/Dwarf-Therapist/issues
 .. _DFFD: http://dffd.wimbli.com/category.php?id=20
 .. _#dwarftherapist on Freenode: http://webchat.freenode.net/?channels=%23dwarftherapist
+.. _releases: https://github.com/splintermind/Dwarf-Therapist/releases
