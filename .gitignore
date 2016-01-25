@@ -12,6 +12,8 @@ object_script.*
 *.exe
 debug/
 release/
+dist/*.dmg
+dist/*.sparseimage
 ui/*.h
 log/
 ui_*.h
