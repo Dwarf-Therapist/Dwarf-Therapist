@@ -1,3 +1,14 @@
+### Version 37.0 Patch Notes
+
+***
+- DF 42.06 memory layouts for windows and linux (sv-esk)
+- added new jobs for crafting (sv-esk)
+- added a global option to abbreviate experience and stress numbers
+- added a rust description on the skill column information/tooltips
+
+- fixed uniforms not displaying correctly for miners, woodcutters and hunters (sv-esk)
+- fixed experience formatting
+
 ### Version 36.0 Patch Notes
 
 ***
