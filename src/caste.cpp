@@ -148,8 +148,8 @@ void Caste::load_skill_rates(){
             if((val-100) >= 25)
                 m_bonuses.append(GameDataReader::ptr()->get_skill_name(skill_id));
             addr += 0x4;
-            if(!DT->show_skill_learn_rates && val != 100)
-                DT->show_skill_learn_rates = true;
+            if(!DT->show_skill_learn_rates() && val != 100)
+                DT->show_skill_learn_rates(true);
         }
     }
 }
@@ -224,7 +224,7 @@ QPair<int, QString> Caste::get_attribute_descriptor_info(ATTRIBUTES_TYPE id, int
     }
 
     //only append the caste's name to our playable race (don't do this for tame animals in the fort)
-    if(DT->multiple_castes && m_race->race_id() == m_df->dwarf_race_id()){
+    if(DT->multiple_castes() && m_race->race_id() == m_df->dwarf_race_id()){
         ret.second == "" ? ret.second = QObject::tr("Average") : ret.second;
         ret.second = QObject::tr("%1 for a %2.").arg(ret.second).arg(m_name);
     }

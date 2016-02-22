@@ -75,6 +75,7 @@ public:
     bool hide_non_adults() const {return m_hide_non_adults;}
     bool show_labor_roles() const {return m_show_labor_roles;}
     bool show_skill_roles() const {return m_show_skill_roles;}
+    bool format_SI() const {return m_use_SI;}
 
     LogManager *get_log_manager() {return m_log_mgr;}
     DFInstance *get_DFInstance();
@@ -82,9 +83,11 @@ public:
     QSharedPointer<CellColorDef> get_global_color(GLOBAL_COLOR_TYPES gc_type);
     QColor get_happiness_color(DWARF_HAPPINESS h) {return m_happiness_colors.value(h,QColor(Qt::transparent));}
 
-    bool multiple_castes;
-    bool show_skill_learn_rates;
-    bool arena_mode;
+    bool multiple_castes() const {return m_multiple_castes;}
+    void multiple_castes(bool val) {m_multiple_castes = val;}
+    bool show_skill_learn_rates() const {return m_show_skill_learn_rates;}
+    void show_skill_learn_rates(const bool val) {m_show_skill_learn_rates = val;}
+    bool arena_mode() const {return m_arena_mode;}
 
     void emit_settings_changed();
     void emit_roles_changed();
@@ -133,6 +136,11 @@ private:
     bool m_hide_non_adults;
     bool m_show_labor_roles;
     bool m_show_skill_roles;
+    bool m_use_SI;
+
+    bool m_multiple_castes;
+    bool m_show_skill_learn_rates;
+    bool m_arena_mode;
 
     LogManager *m_log_mgr;
     QHash<GLOBAL_COLOR_TYPES,QSharedPointer<CellColorDef> > m_colors;

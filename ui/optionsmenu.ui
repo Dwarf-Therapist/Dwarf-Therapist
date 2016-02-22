@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>714</width>
-    <height>542</height>
+    <height>563</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -74,22 +74,6 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="0">
-          <widget class="QCheckBox" name="cb_show_toolbar_text">
-           <property name="toolTip">
-            <string/>
-           </property>
-           <property name="statusTip">
-            <string>When checked, shows various information on the toolbar</string>
-           </property>
-           <property name="whatsThis">
-            <string>When checked, shows various information on the toolbar</string>
-           </property>
-           <property name="text">
-            <string>Show Toolbar Text</string>
-           </property>
-          </widget>
-         </item>
          <item row="4" column="0">
           <widget class="QCheckBox" name="cb_auto_expand">
            <property name="toolTip">
@@ -142,19 +126,19 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QCheckBox" name="cb_read_dwarves_on_startup">
+         <item row="3" column="0">
+          <widget class="QCheckBox" name="cb_show_toolbar_text">
            <property name="toolTip">
             <string/>
            </property>
            <property name="statusTip">
-            <string>When checked, DwarfTherapist will attempt to connect and load all dwarves from a running copy of Dwarf Fortress at startup.</string>
+            <string>When checked, shows various information on the toolbar</string>
            </property>
            <property name="whatsThis">
-            <string>When checked, DwarfTherapist will attempt to connect and load all dwarves from a running copy of Dwarf Fortress at startup.</string>
+            <string>When checked, shows various information on the toolbar</string>
            </property>
            <property name="text">
-            <string>Load Dwarves on Startup</string>
+            <string>Show Toolbar Text</string>
            </property>
           </widget>
          </item>
@@ -190,6 +174,58 @@
            </property>
            <property name="text">
             <string>Show Full Dwarf Names</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="cb_read_dwarves_on_startup">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>When checked, DwarfTherapist will attempt to connect and load all dwarves from a running copy of Dwarf Fortress at startup.</string>
+           </property>
+           <property name="whatsThis">
+            <string>When checked, DwarfTherapist will attempt to connect and load all dwarves from a running copy of Dwarf Fortress at startup.</string>
+           </property>
+           <property name="text">
+            <string>Load Dwarves on Startup</string>
+           </property>
+          </widget>
+         </item>
+         <item row="10" column="0">
+          <widget class="QCheckBox" name="cb_labor_exclusions">
+           <property name="statusTip">
+            <string>When unchecked labor exclusions are ignored (wood cutting, mining and hunting primarily). &lt;b&gt;&lt;font color=&quot;red&quot;&gt;WARNING: Disabling this can cause equipment problems!&lt;/font&gt;&lt;/b&gt;</string>
+           </property>
+           <property name="whatsThis">
+            <string>When unchecked labor exclusions are ignored (wood cutting, mining and hunting primarily). &lt;b&gt;&lt;font color=&quot;red&quot;&gt;WARNING: Disabling this can cause equipment problems!&lt;/font&gt;&lt;/b&gt;</string>
+           </property>
+           <property name="text">
+            <string>Enforce Labor Exclusions</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <spacer name="horizontalSpacer_16">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="11" column="0">
+          <widget class="QCheckBox" name="cb_animal_health">
+           <property name="statusTip">
+            <string>When checked, loads and shows health for animals. This requires health columns to be added to a view set to show animals!</string>
+           </property>
+           <property name="text">
+            <string>Read Animal Health Information</string>
            </property>
           </widget>
          </item>
@@ -269,39 +305,16 @@
            </item>
           </layout>
          </item>
-         <item row="2" column="1">
-          <spacer name="horizontalSpacer_16">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+         <item row="12" column="0">
+          <widget class="QCheckBox" name="chk_format_numbers">
+           <property name="toolTip">
+            <string>Abbreviate large numbers, such as experience and stress. For example this option would replace 100,000 stress with 100k.</string>
            </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item row="11" column="0">
-          <widget class="QCheckBox" name="cb_animal_health">
            <property name="statusTip">
-            <string>When checked, loads and shows health for animals. This requires health columns to be added to a view set to show animals!</string>
+            <string>Abbreviate large numbers, such as experience and stress. For example this option would replace 100,000 stress with 100k.</string>
            </property>
            <property name="text">
-            <string>Read Animal Health Information</string>
-           </property>
-          </widget>
-         </item>
-         <item row="10" column="0">
-          <widget class="QCheckBox" name="cb_labor_exclusions">
-           <property name="statusTip">
-            <string>When unchecked labor exclusions are ignored (wood cutting, mining and hunting primarily). &lt;b&gt;&lt;font color=&quot;red&quot;&gt;WARNING: Disabling this can cause equipment problems!&lt;/font&gt;&lt;/b&gt;</string>
-           </property>
-           <property name="whatsThis">
-            <string>When unchecked labor exclusions are ignored (wood cutting, mining and hunting primarily). &lt;b&gt;&lt;font color=&quot;red&quot;&gt;WARNING: Disabling this can cause equipment problems!&lt;/font&gt;&lt;/b&gt;</string>
-           </property>
-           <property name="text">
-            <string>Enforce Labor Exclusions</string>
+            <string>Abbreviate large numbers (xp, stress, etc.)</string>
            </property>
           </widget>
          </item>
@@ -309,6 +322,9 @@
        </item>
        <item>
         <widget class="QGroupBox" name="groupBox">
+         <property name="styleSheet">
+          <string notr="true">QGroupBox{color: rgb(255, 0, 0);}</string>
+         </property>
          <property name="title">
           <string>I'm a Dirty Cheater</string>
          </property>
@@ -1095,7 +1111,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>671</width>
+            <width>463</width>
             <height>459</height>
            </rect>
           </property>

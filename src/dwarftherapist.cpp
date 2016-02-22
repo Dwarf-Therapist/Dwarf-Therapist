@@ -48,9 +48,6 @@ THE SOFTWARE.
 
 DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     : QApplication(argc, argv)
-    , multiple_castes(false)
-    , show_skill_learn_rates(false)
-    , arena_mode(false) //manually set this to true to do arena testing (very hackish, all units will be animals)
     , m_user_settings(0)
     , m_main_window(0)
     , m_options_menu(0)
@@ -58,6 +55,10 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     , m_hide_non_adults(false)
     , m_show_labor_roles(true)
     , m_show_skill_roles(true)
+    , m_use_SI(true)
+    , m_multiple_castes(false)
+    , m_show_skill_learn_rates(false)
+    , m_arena_mode(false) //manually set this to true to do arena testing (very hackish, all units will be animals)
     , m_log_mgr(0)
 {
     setup_logging();
@@ -217,6 +218,7 @@ void DwarfTherapist::read_settings() {
     m_hide_non_adults = m_user_settings->value("hide_children_and_babies",false).toBool();
     m_show_labor_roles = m_user_settings->value("show_roles_in_labor",true).toBool();
     m_show_skill_roles = m_user_settings->value("show_roles_in_skills",true).toBool();
+    m_use_SI = m_user_settings->value("SI_formatting",true).toBool();
 
     //refresh global colors
     m_user_settings->beginGroup("colors");

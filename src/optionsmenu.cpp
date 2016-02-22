@@ -218,7 +218,7 @@ bool OptionsMenu::event(QEvent *evt) {
 
 void OptionsMenu::showEvent(QShowEvent *evt){
     //if we haven't detected multiple castes (mods) skill rate isn't used, so hide the weight setting
-    if(!DT->show_skill_learn_rates){
+    if(!DT->show_skill_learn_rates()){
         ui->dsb_skill_rate_weight->setVisible(false);
         ui->lbl_def_skill_rate_weight->setVisible(false);
     }
@@ -401,6 +401,7 @@ void OptionsMenu::read_settings() {
     ui->chk_custom_roles->setChecked(s->value("show_custom_roles",false).toBool());
     ui->chk_roles_in_labor->setChecked(s->value("show_roles_in_labor",true).toBool());
     ui->chk_roles_in_skills->setChecked(s->value("show_roles_in_skills",true).toBool());
+    ui->chk_format_numbers->setChecked(s->value("SI_formatting",true).toBool());
 
     s->endGroup();
 
@@ -481,6 +482,7 @@ void OptionsMenu::write_settings() {
         s->setValue("show_custom_roles",ui->chk_custom_roles->isChecked());
         s->setValue("show_roles_in_labor",ui->chk_roles_in_labor->isChecked());
         s->setValue("show_roles_in_skills",ui->chk_roles_in_skills->isChecked());
+        s->setValue("SI_formatting",ui->chk_format_numbers->isChecked());
 
         s->setValue("tooltip_show_orientation", ui->chk_show_orientation->isChecked());
         s->setValue("tooltip_show_caste", ui->chk_show_caste->isChecked());

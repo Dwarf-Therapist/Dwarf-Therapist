@@ -548,7 +548,7 @@ void MainWindow::read_dwarves() {
         m_script_dialog = new ScriptDialog(this);
     }
 
-    if(DT->multiple_castes && ui->cb_group_by->findData(DwarfModel::GB_CASTE_TAG) < 0){
+    if(DT->multiple_castes() && ui->cb_group_by->findData(DwarfModel::GB_CASTE_TAG) < 0){
         //special grouping when using multiple castes, insert it after the caste group
         ui->cb_group_by->blockSignals(true);
         int grp_by = ui->cb_group_by->itemData(ui->cb_group_by->currentIndex()).toInt();
@@ -1668,8 +1668,8 @@ void MainWindow::main_toolbar_style_changed(Qt::ToolButtonStyle button_style){
 }
 
 void MainWindow::reset(){
-    if(DT->multiple_castes){
-        DT->multiple_castes = false;
+    if(DT->multiple_castes()){
+        DT->multiple_castes(false);
         int grp_by = ui->cb_group_by->itemData(ui->cb_group_by->currentIndex()).toInt();
         if(grp_by == 3) //caste tag
             grp_by = 2; //set to caste in case

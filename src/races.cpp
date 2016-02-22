@@ -175,7 +175,7 @@ void Race::load_caste_ratios(){
             //if we have more castes then that, assume it's a mod with castes, with different skill rates, attribute and trait bins
             //this could be split into a more granular check for different skill rates and different attributes
             if(valid_castes > 2)
-                DT->multiple_castes = true;
+                DT->multiple_castes(true);
         }
         loaded_stats = true;
     }

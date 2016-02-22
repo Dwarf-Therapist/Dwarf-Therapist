@@ -341,7 +341,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     VIRTADDR creature_vector = m_layout->address("creature_vector");
 
     //current race's offset was bad
-    if (!DT->arena_mode && m_dwarf_race_id < 0){
+    if (!DT->arena_mode() && m_dwarf_race_id < 0){
         return dwarves;
     }
 

@@ -1881,7 +1881,7 @@ void Dwarf::read_emotions(VIRTADDR personality_base){
 
     m_happiness_desc = QString("<b>%1</b> (Stress: %2)")
             .arg(happiness_name(m_happiness))
-            .arg(formatNumber(m_stress_level));
+            .arg(formatNumber(m_stress_level,DT->format_SI()));
 
     TRACE << "\tRAW STRESS LEVEL:" << m_stress_level;
     TRACE << "\tHAPPINESS:" << happiness_name(m_happiness);

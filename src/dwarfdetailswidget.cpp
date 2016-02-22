@@ -244,7 +244,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         ui->lbl_squad_name->show();
     }
 
-    if(!DT->multiple_castes){
+    if(!DT->multiple_castes()){
         ui->lbl_caste->hide();
     }else{
         ui->lbl_caste->setText(tr("<b>Caste: %1</b>").arg(d->caste_name()));
@@ -379,7 +379,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         }
     }
     ui->tw_skills->setSortingEnabled(true);
-    if(!DT->show_skill_learn_rates || no_bonuses)
+    if(!DT->show_skill_learn_rates() || no_bonuses)
         ui->tw_skills->hideColumn(2);
     else
         ui->tw_skills->showColumn(2);

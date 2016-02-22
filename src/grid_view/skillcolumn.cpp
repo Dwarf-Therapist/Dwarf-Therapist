@@ -159,7 +159,7 @@ void SkillColumn::build_tooltip(Dwarf *d, bool include_roles, bool check_labor){
 
     //skill bonus
     QString str_skill_rate = "";
-    if(DT->show_skill_learn_rates){
+    if(DT->show_skill_learn_rates()){
         int raw_bonus = d->get_skill(m_skill_id).skill_rate();
         int bonus = raw_bonus - 100;
         if(bonus != 0){
@@ -252,15 +252,22 @@ QString SkillColumn::build_skill_desc(Dwarf *d, int skill_id){
         if(skill_id == -1){
             skill_str = tr("%1").arg(gdr->get_skill_name(skill_id,true));
         }else{
-            skill_str = tr("<h4 style=\"margin:0;\">%1 %2</h4><br/><b>[RAW LEVEL:</b> %3]<br/><b>Experience: </b>%4%")
+            skill_str = tr("<h4 style=\"margin:0;\">%1 %2</h4><br/><b>[Raw Level:</b> %3]<br/><b>Experience: </b>%4")
                     .arg(gdr->get_skill_level_name(rating))
                     .arg(gdr->get_skill_name(skill_id,true))
                     .arg(QString::number((int)raw_rating))
                     .arg(d->get_skill(skill_id).exp_summary());
+
+            Skill s = d->get_skill(skill_id);
+            if(s.rust_level() > 0){
+                skill_str.append(QString("<br/><font color=%1><b>%2</b></font>")
+                                 .arg(s.rust_color().name())
+                                 .arg(Skill::get_rust_level_desc(s.rust_level())));
+            }
         }
     } else {
         // either the skill isn't a valid id, or they have 0 experience in it
-        skill_str = tr("<b>%1</b>").arg(tr("0 Experience"));
+        skill_str = tr("<b>%1</b>").arg(tr("No Experience"));
     }
     return skill_str;
 }

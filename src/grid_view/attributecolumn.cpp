@@ -75,7 +75,7 @@ QStandardItem *AttributeColumn::build_cell(Dwarf *d) {
     //flag so we know if we need to draw a border or not
     item->setData(a.syndrome_names().count(),DwarfModel::DR_SPECIAL_FLAG);
 
-    if(DT->multiple_castes){
+    if(DT->multiple_castes()){
         descriptor != "" ? descriptor = "(" + descriptor + ")" : "";
     }
 

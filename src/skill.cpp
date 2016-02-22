@@ -156,12 +156,12 @@ bool Skill::operator<(const Skill *s2) const {
 }
 
 QString Skill::exp_summary() const {
-    QString xp_str = formatNumber(m_actual_exp);//format_exp(m_actual_exp);
+    QString xp_str = formatNumber(m_actual_exp,DT->format_SI());
 
     if (m_capped_level >= 20) {
         return xp_str.append(" xp");
     }
-    QString xp_next = formatNumber(m_exp_for_next_level);//format_exp(m_exp_for_next_level);
+    QString xp_next = formatNumber(m_exp_for_next_level,DT->format_SI());
 
     return QString("%1/%2 xp (%L3%)")
             .arg(xp_str)
@@ -285,7 +285,7 @@ void Skill::calculate_balanced_level(){
         if(curr_level < 0)
             curr_level = 0;
         double skill_rate_weight = DwarfStats::get_skill_rate_weight();
-        if(!DT->show_skill_learn_rates){
+        if(!DT->show_skill_learn_rates()){
             skill_rate_weight = 0;
         }
         double simulated_level = get_simulated_level();
