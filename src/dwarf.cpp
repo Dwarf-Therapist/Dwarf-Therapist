@@ -261,13 +261,13 @@ void Dwarf::read_data() {
         read_hist_fig(); //read first
         read_caste(); //read before age
         read_squad_info(); //read squad before job
-        read_uniform();
         read_gender_orientation(); //read before profession
         read_turn_count(); //load time/date stuff for births/migrations - read before age
         set_age_and_migration(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time")); //set age before profession
         read_profession(); //read profession before building the names, and before job
         read_mood(); //read after profession and before job, emotions/skills (soul aspect)
         read_labors(); //read after profession and mood
+        read_uniform(); //read after labors (hunters, miners, wood cutters)
         check_availability(); //after labors/profession/age
         read_current_job();
         read_syndromes(); //read syndromes before attributes
