@@ -8,7 +8,6 @@ if [ "$1" = "configure" ]; then
 
 	mkdir /var/log/DwarfTherapist
 	chmod 777 /var/log/DwarfTherapist
-	ln -s /var/log/DwarfTherapist /usr/share/games/dwarf-therapist/log
+	ln -s /var/log/DwarfTherapist /usr/share/dwarftherapist/log
 
 fi
-

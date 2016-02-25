@@ -1,2 +1,2 @@
 ?package(dwarf-therapist):needs="X11" section="Applications/Data Management"\
-  title="DwarfTherapist" command="/usr/games/dwarftherapist" icon="/usr/share/pixmaps/dwarftherapist.xpm"
+  title="Dwarf Therapist" command="/usr/bin/dwarftherapist" icon="/usr/share/pixmaps/dwarftherapist.xpm"

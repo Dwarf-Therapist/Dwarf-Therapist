@@ -8,4 +8,4 @@ override_dh_auto_clean:
 	-dh_auto_clean
 
 override_dh_auto_configure:
-	qmake dwarftherapist.pro
+	qmake dwarftherapist.pro PREFIX=/usr
