@@ -3,9 +3,8 @@ Section: games
 Priority: optional
 Maintainer: Justin Ehlert <ehlertjd@gmail.com>
 Build-Depends: debhelper (>= 9),
-               qtbase5-dev,
-               qtscript5-dev,
-               qtdeclarative5-dev
+               qt4-qmake,
+               libqt4-dev
 Standards-Version: 3.9.5
 Homepage: https://github.com/splintermind/Dwarf-Therapist
 
