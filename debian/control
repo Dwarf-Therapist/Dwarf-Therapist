@@ -10,7 +10,8 @@ Homepage: https://github.com/splintermind/Dwarf-Therapist
 
 Package: dwarf-therapist
 Architecture: any
-Depends: ${shlibs:Depends},
+Depends: libcap2-bin,
+         ${shlibs:Depends},
          ${misc:Depends}
 Suggests: gksu (>= 1.0),
           kdesudo(>= 1.0)
