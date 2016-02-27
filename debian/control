@@ -3,15 +3,15 @@ Section: games
 Priority: optional
 Maintainer: Justin Ehlert <ehlertjd@gmail.com>
 Build-Depends: debhelper (>= 9),
-               qtbase5-dev,
-               qtscript5-dev,
-               qtdeclarative5-dev
+               qt4-qmake,
+               libqt4-dev
 Standards-Version: 3.9.5
 Homepage: https://github.com/splintermind/Dwarf-Therapist
 
 Package: dwarf-therapist
 Architecture: any
-Depends: ${shlibs:Depends},
+Depends: libcap2-bin,
+         ${shlibs:Depends},
          ${misc:Depends}
 Suggests: gksu (>= 1.0),
           kdesudo(>= 1.0)

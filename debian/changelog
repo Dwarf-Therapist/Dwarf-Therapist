@@ -1,3 +1,19 @@
+dwarf-therapist (37.0.0~wily2) wily; urgency=low
+
+  * Add dependency on libcap2-bin to debian/control
+  * Update debian/postinst - set cap_sys_ptrace=eip on DwarfTherapist executable after install
+
+ -- Marian Kadanka <marian.kadanka@openmailbox.org>  Fri, 26 Feb 2016 23:51:40 +0100
+
+dwarf-therapist (37.0.0~wily1) wily; urgency=low
+
+  * New upstream release.
+  * Switch to Qt4 for wider support.
+  * Install into /usr instead of /usr/local.
+  * Updated debian/menu, debian/install, debian/postinst and debian/prerm.
+
+ -- Marian Kadanka <marian.kadanka@openmailbox.org>  Thu, 25 Feb 2016 01:55:57 +0100
+
 dwarf-therapist (30.0.0) utopic; urgency=medium
 
   * 30.0

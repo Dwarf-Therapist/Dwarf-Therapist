@@ -1,5 +1,5 @@
 #!/usr/bin/make -f
-export QT_SELECT=qt5
+export QT_SELECT=qt4
 
 %:
 	dh $@
@@ -8,4 +8,4 @@ override_dh_auto_clean:
 	-dh_auto_clean
 
 override_dh_auto_configure:
-	qmake dwarftherapist.pro
+	qmake dwarftherapist.pro PREFIX=/usr
