@@ -14,7 +14,7 @@ env:
 before_install:
   - sudo add-apt-repository --yes ppa:ubuntu-sdk-team/ppa
   - sudo apt-get update -q
-  - sudo apt-get install -q qt4-qmake libqt4-dev qt5-qmake qtbase5-dev qtbase5-dev-tools qtdeclarative5-dev
+  - sudo apt-get install -q qt4-qmake libqt4-dev qt5-default qtbase5-dev-tools qtdeclarative5-dev
 script:
   - qmake -qt=$QTVER -v
   - qmake -qt=$QTVER
