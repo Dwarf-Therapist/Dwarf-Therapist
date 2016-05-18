@@ -25,7 +25,7 @@ Debian-based
 ************
 
 ::
-
+    sudo apt-get install build-essential texlive-latex-recommended texlive-latex-extra # needed always
     sudo apt-get install qt4-qmake libqt4-dev # Qt 4
     sudo apt-get install qt5-qmake qtbase5-dev qtbase5-dev-tools qtdeclarative5-dev # Qt 5
 
