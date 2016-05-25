@@ -8,8 +8,8 @@ Below are links to the most recent layouts.
 
 Latest Layout (43.03)
 --------------------------
-Windows: `Right click here and 'Save link as..' <windows/v0.43.03_graphics.ini>`_ to your **Dwarf-Therapist/share/memory_layouts/windows** directory
+Windows: `Right click here and 'Save link as..' <https://raw.githubusercontent.com/splintermind/Dwarf-Therapist/DF2016/share/memory_layouts/windows/v0.43.03_graphics.ini>`_ to your **Dwarf-Therapist/share/memory_layouts/windows** directory
 
-Linux: `Right click here and 'Save link as..' <linux/v0.43.03.ini>`_ to your **Dwarf-Therapist/share/memory_layouts/linux** directory
+Linux: `Right click here and 'Save link as..' <https://raw.githubusercontent.com/splintermind/Dwarf-Therapist/DF2016/share/memory_layouts/linux/v0.43.03.ini>`_ to your **Dwarf-Therapist/share/memory_layouts/linux** directory
 
-OSX: `Right click here and 'Save link as..' <osx/v0.43.03_osx.ini>`_ to your **Dwarf-Therapist/share/memory_layouts/osx** directory
+OSX: `Right click here and 'Save link as..' <https://raw.githubusercontent.com/splintermind/Dwarf-Therapist/DF2016/share/memory_layouts/osx/v0.43.03_osx.ini>`_ to your **DwarfTherapist.app/Contents/MacOS/share/memory_layouts/osx** directory
