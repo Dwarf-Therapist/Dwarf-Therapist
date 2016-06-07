@@ -23,6 +23,7 @@ THE SOFTWARE.
 
 #include "uniform.h"
 #include "item.h"
+#include "itemuniform.h"
 
 Uniform::Uniform(DFInstance *df, QObject *parent)
     : QObject(parent)
@@ -42,6 +43,11 @@ Uniform::~Uniform()
 
 void Uniform::add_uniform_item(ITEM_TYPE itype, short sub_type, short job_skill, int count){
     ItemDefUniform *uItem = new ItemDefUniform(itype,sub_type,job_skill,this);
+    add_uniform_item(itype,uItem,count);
+}
+
+void Uniform::add_uniform_item(ITEM_TYPE itype, short sub_type, QList<int> job_skills, int count){
+    ItemDefUniform *uItem = new ItemDefUniform(itype,sub_type,job_skills,this);
     add_uniform_item(itype,uItem,count);
 }
 
@@ -192,7 +198,7 @@ void Uniform::check_uniform(QString category_name, Item *item_inv){
                     break;
 
                 ItemDefUniform *item_uni_miss = m_missing_items.value(itype).at(idx); //get a missing item of the same type
-                Item *item_miss = new Item(m_df,item_uni_miss,this);
+                Item *item_miss = new ItemUniform(m_df,item_uni_miss,this);
 
                 bool match = false;
 
@@ -214,7 +220,7 @@ void Uniform::check_uniform(QString category_name, Item *item_inv){
                                      ((item_miss->mat_type() >= 0 || item_miss->mat_index() >= 0) &&
                                       item_miss->mat_type() == item_inv->mat_type() && item_miss->mat_index() == item_inv->mat_index())
                                      ) &&
-                                 (item_uni_miss->job_skill() < 0 || (item_uni_miss->job_skill() == item_inv->melee_skill() || item_uni_miss->job_skill() == item_inv->ranged_skill()))
+                                 (item_uni_miss->job_skills().count() == 0 || (item_uni_miss->job_skills().contains(item_inv->melee_skill()) || item_uni_miss->job_skills().contains(item_inv->ranged_skill())))
                                  )
                              );
                 }

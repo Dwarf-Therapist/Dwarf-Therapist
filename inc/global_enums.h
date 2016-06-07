@@ -157,7 +157,9 @@ typedef enum {
     RANGED_EQUIPMENT=1002,
     IS_CLOTHING=1003,
     IS_ARMOR=1004,
-    IS_TRADE_GOOD=1005
+    IS_TRADE_GOOD=1005,
+    VIAL=1006,
+    WATERSKIN=1007
 } ITEM_TYPE;
 
 typedef enum {
@@ -393,7 +395,7 @@ typedef enum  {
     HI_TRACTION = 39,
     HI_CRUTCH = 40,
     HI_OTHER = 41,
-    HI_GELDED
+    HI_GELDED = 42
 } H_INFO;
 
 typedef enum {

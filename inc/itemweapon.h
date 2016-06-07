@@ -33,12 +33,14 @@ class ItemWeapon : public Item {
 public:
     ItemWeapon(const Item &baseItem)
         :Item(baseItem)
+        , m_weapon(0)
     {
         read_def();
     }
 
     ItemWeapon(DFInstance *df, VIRTADDR item_addr)
         :Item(df,item_addr)
+        , m_weapon(0)
     {
         read_def();
     }
@@ -48,7 +50,10 @@ public:
         m_weapon = 0;
     }
 
-    ItemWeaponSubtype * get_details(){return m_weapon;}
+    ItemSubtype *get_subType(){
+        return m_weapon;
+    }
+
     short item_subtype() const {
         if(m_weapon)
             return m_weapon->subType();
@@ -74,7 +79,6 @@ private:
     void read_def(){
         if(m_addr > 0){
             m_weapon = new ItemWeaponSubtype(m_df,m_df->read_addr(m_addr+m_df->memory_layout()->item_offset("item_def")),this);
-            m_item_name = m_weapon->name();
         }
     }
 };

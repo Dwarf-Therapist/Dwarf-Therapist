@@ -779,7 +779,7 @@ void roleDialog::load_items(){
             }
 
             if(is_armor_type){
-                Preference *pc = new Preference(pType,Item::get_item_clothing_names(itype),this);
+                Preference *pc = new Preference(pType,Item::get_item_clothing_name(itype),this);
                 pc->set_item_type(itype);
                 pc->add_flag(IS_CLOTHING);
                 add_pref_to_tree(m_general_equip, pc);
@@ -792,7 +792,7 @@ void roleDialog::load_items(){
                 item_parent = init_parent_node(name);
                 QString item_name;
                 if(is_armor_type){
-                    clothing_parent = init_parent_node(Item::get_item_clothing_names(itype));
+                    clothing_parent = init_parent_node(Item::get_item_clothing_name(itype));
                 }else{
                     clothing_parent = 0;
                 }

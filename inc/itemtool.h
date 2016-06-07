@@ -36,6 +36,7 @@ public:
     virtual ~ItemTool();
 
     short item_subtype() const;
+    ItemSubtype * get_subType();
 
 private:
     ItemToolSubtype *m_tool_def;

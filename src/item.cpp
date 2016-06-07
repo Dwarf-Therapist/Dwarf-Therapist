@@ -42,6 +42,7 @@ Item::Item(const Item &i)
     m_material_name_base = i.m_material_name_base;
     m_material_flags = i.m_material_flags;
     m_item_name = i.m_item_name;
+    m_item_name_plural = i.m_item_name_plural;
     m_layer_name = i.m_layer_name;
     m_display_name = i.m_display_name;
     m_color_display = i.m_color_display;
@@ -51,62 +52,6 @@ Item::Item(const Item &i)
     m_artifact_name = i.m_artifact_name;
     m_size_prefix = i.m_size_prefix;
     m_maker_race = i.m_maker_race;
-}
-
-Item::Item(DFInstance *df, ItemDefUniform *u, QObject *parent)
-    : QObject(parent)
-    , m_df(df)
-    , m_addr(0x0)
-    , m_iType(u->item_type())
-    , m_wear(0)
-    , m_mat_type(u->mat_type())
-    , m_mat_idx(u->mat_index())
-    , m_quality(-1)
-    , m_id(u->id())
-    , m_affection(0)
-    , m_stack_size(u->get_stack_size())
-    , m_size_prefix("")
-    , m_maker_race(-1)
-{
-    //set the color to the missing uniform color, since we passed in a uniform itemdef
-    m_color_display = Item::color_missing();
-
-    if(m_id > 0){
-        //find the actual item's address
-        m_addr = m_df->get_item_address(m_iType,m_id);
-        if(m_addr){
-            read_data();
-            return;
-        }
-    }
-
-    if(u->mat_flag() != MAT_NONE){
-        mat_flags().set_flag(u->mat_flag(),true);
-    }
-
-    read_material();
-
-    if(u->mat_flag() != MAT_NONE){
-        m_material_name = u->generic_mat_name();
-    }
-
-    short subtype = u->item_subtype();
-    QVector<VIRTADDR> item_defs = m_df->get_itemdef_vector(m_iType);
-    if(!item_defs.empty() && (subtype >=0 && subtype < item_defs.count())){
-        //get sub-type name
-        m_item_name = m_df->read_string(item_defs.at(subtype) + m_df->memory_layout()->item_subtype_offset("name"));
-    }else{
-        //get base item name
-        m_item_name = Item::get_item_name(m_iType);
-        //check skill type
-        if(!u->indv_choice() && u->job_skill() >= 0){
-            m_item_name.append(QObject::tr(" of %1 skill type").arg(GameDataReader::ptr()->get_skill_name(u->job_skill())));
-        }
-        if(m_id > 0){
-            //couldn't find the item, it's been claimed by another unit or couldn't be equipped
-            m_item_name.prepend(tr("Specific "));
-        }
-    }
 }
 
 Item::Item(DFInstance *df, VIRTADDR item_addr, QObject *parent)
@@ -141,7 +86,8 @@ Item::Item(ITEM_TYPE itype, QString name, QObject *parent)
     , m_size_prefix("")
     , m_maker_race(-1)
 {
-    m_item_name = (!name.trimmed().isEmpty() ? name : QObject::tr("Unknown"));
+    m_item_name = (!name.trimmed().isEmpty() ? name : tr("Unknown"));
+    m_item_name_plural = m_item_name;
     m_display_name = m_item_name;
     m_color_display = Item::color_uncovered();
 }
@@ -176,7 +122,7 @@ void Item::read_data(){
         m_maker_race = m_df->read_short(m_addr+m_df->memory_layout()->item_offset("maker_race"));
         m_quality = m_df->read_short(m_addr+m_df->memory_layout()->item_offset("quality"));
 
-        read_material();
+        init_defaults();
 
         QVector<VIRTADDR> gen_refs = m_df->enumerate_vector(m_addr+m_df->memory_layout()->item_offset("general_refs"));
         foreach(VIRTADDR ref, gen_refs){
@@ -216,11 +162,11 @@ void Item::read_data(){
     }
 }
 
-void Item::read_material(){
+void Item::init_defaults(){
     m_material_name = capitalizeEach(m_df->find_material_name(m_mat_idx,m_mat_type,m_iType));
     Material *m = m_df->find_material(m_mat_idx,m_mat_type);
+    set_default_name(m);
     if(m){
-        set_default_name(m);
         m_material_flags = FlagArray(m->flags());
         foreach(MATERIAL_FLAGS mf, m_mat_cats){
             if(m->flags().has_flag(mf)){
@@ -252,16 +198,18 @@ bool Item::equals(const Item &i) const{
 
 void Item::set_default_name(Material *m){
     //only handling equipment for now
-    if(m_iType == FLASK){
-        if(m->flags().has_flag(47))
-            m_item_name = QObject::tr("Flask");
-        else if(m->flags().has_flag(49))
-            m_item_name = QObject::tr("Vial");
-        else
-            m_item_name = QObject::tr("Waterskin");
-    }else{
-        m_item_name = get_item_name(m_iType);
+    ITEM_TYPE name_type = m_iType;
+    if(m && m_iType == FLASK){
+        if(!m->flags().has_flag(47)){
+            if(m->flags().has_flag(49)){
+                name_type = VIAL;
+            }else{
+                name_type = WATERSKIN;
+            }
+        }
     }
+    m_item_name = get_item_name(name_type);
+    m_item_name_plural = get_item_name_plural(name_type);
 }
 
 void Item::set_affection(int level)
@@ -292,7 +240,7 @@ void Item::build_display_name(){
     m_display_name = QString("%5%4%1%2 %3%4%5")
             .arg(m_size_prefix)
             .arg(capitalizeEach(m_material_name))
-            .arg(capitalizeEach(m_item_name))
+            .arg(item_name((m_stack_size > 1 ? true : false),false,false))
             .arg(symbol_q)
             .arg(symbol_w);
 
@@ -305,7 +253,7 @@ void Item::build_display_name(){
 
     //weapons/shields that aren't artifacts (named) yet, seems around 300 (3%) they become attached?
     if(m_affection >= 300 && m_affection < MAX_AFFECTION){
-        m_display_name.append(QObject::tr(" (%1% Named)").arg(QString::number((float)m_affection / MAX_AFFECTION * 100.0f,'f',0)));
+        m_display_name.append(tr(" (%1% Named)").arg(QString::number((float)m_affection / MAX_AFFECTION * 100.0f,'f',0)));
     }
 
     //weapons/shields that have become artifacts (named)
@@ -345,4 +293,33 @@ QString Item::get_quality_symbol(){
         symbol_q = "";
     }
     return symbol_q;
+}
+
+QString Item::item_name(bool plural, bool mat, bool generic_mat){
+    //if there's a subtype, use that name instead
+    QString i_name;
+    if(get_subType()){
+        if(plural){
+            i_name = get_subType()->name_plural();
+        }else{
+            i_name = get_subType()->name();
+        }
+    }
+    if(i_name.isEmpty()){
+        if(plural){
+            i_name = m_item_name_plural;
+        }else{
+            i_name = m_item_name;
+        }
+    }
+
+    QString mat_name = m_material_name_base;
+    if(!m_material_name.isEmpty() && (!generic_mat || mat_name.isEmpty())){
+        mat_name = m_material_name;
+    }
+
+    return capitalizeEach(QString("%1 %2")
+                          .arg(mat && !mat_name.isEmpty() ? mat_name : "")
+                          .arg(i_name)
+                          .trimmed());
 }

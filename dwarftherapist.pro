@@ -123,10 +123,15 @@ build_pass {
         HEADERS += inc/dfinstancenix.h
         SOURCES += src/dfinstancenix.cpp
     }
+
+    #qtPrepareTool(LUPDATE,lupdate)
+    #command = $$LUPDATE -noobsolete ./dwarftherapist.pro -ts ./dwarftherapist_en.ts
+    #system($$command)|error("Failed to run lupdate")
 }
 
 # Translation files
 TRANSLATIONS += ./dwarftherapist_en.ts
+
 HEADERS += inc/viewmanager.h \
     inc/version.h \
     inc/utils.h \
@@ -263,7 +268,8 @@ HEADERS += inc/viewmanager.h \
     inc/iteminstrument.h \
     inc/itemtool.h \
     inc/activity.h \
-    inc/activityevent.h
+    inc/activityevent.h \
+    inc/itemuniform.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -367,7 +373,9 @@ SOURCES += src/viewmanager.cpp \
     src/iteminstrument.cpp \
     src/itemtool.cpp \
     src/activity.cpp \
-    src/activityevent.cpp
+    src/activityevent.cpp \
+    src/itemammo.cpp \
+    src/itemuniform.cpp
 FORMS += ui/scriptdialog.ui \
     ui/pendingchanges.ui \
     ui/optionsmenu.ui \

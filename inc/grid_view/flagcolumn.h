@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "viewcolumn.h"
 
 class FlagColumn : public ViewColumn {
+    Q_OBJECT
 public:
         FlagColumn(QString title, int bit_pos, ViewColumnSet *set = 0, QObject *parent = 0);
         FlagColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);

@@ -51,6 +51,7 @@ THE SOFTWARE.
 
 #include "squad.h"
 #include "uniform.h"
+#include "itemuniform.h"
 #include "itemweapon.h"
 #include "itemarmor.h"
 #include "itemammo.h"
@@ -279,9 +280,10 @@ void Dwarf::read_data() {
         read_noble_position();
         read_preferences();
 
-        if(!m_is_animal || DT->user_settings()->value("options/animal_health", false).toBool()){
-            bool req_diagnosis = !DT->user_settings()->value("options/diagnosis_not_required", false).toBool();
-            m_unit_health = UnitHealth(m_df,this,req_diagnosis);
+        if(!m_is_animal){
+            m_unit_health = UnitHealth(m_df,this,!DT->user_settings()->value("options/diagnosis_not_required", false).toBool());
+        }else if(DT->user_settings()->value("options/animal_health", false).toBool()){
+            m_unit_health = UnitHealth(m_df,this,false);
         }
         read_inventory();
 
@@ -1115,7 +1117,12 @@ void Dwarf::read_labors() {
 }
 
 void Dwarf::check_availability(){
-    GameDataReader *gdr = GameDataReader::ptr();
+    if(m_is_animal){
+        m_can_set_labors = false;
+        m_can_assign_military = false;
+        m_labor_reason = tr("for livestock.");
+        return;
+    }
 
     //set occupation
     VIRTADDR occ_addr = m_df->find_occupation(m_histfig_id);
@@ -1123,18 +1130,20 @@ void Dwarf::check_availability(){
         m_occ_type = static_cast<UNIT_OCCUPATION>(m_df->read_int(occ_addr + 0x4));
     }
 
-    Profession *p = GameDataReader::ptr()->get_profession(m_raw_profession);
+    GameDataReader *gdr = GameDataReader::ptr();
+    Profession *p = gdr->get_profession(m_raw_profession);
     bool foreigner = false;
 
     //check that labors can be toggled
     if(m_locked_mood){
         m_can_set_labors = false;
         m_labor_reason = tr("due to mood (%1)").arg(gdr->get_mood_name(m_mood_id,true));
-    }else if(!m_is_animal && !m_df->fortress()->hist_figures().contains(m_histfig_id)){
+    }else if(!m_df->fortress()->hist_figures().contains(m_histfig_id)){
         foreigner = true;
         m_can_set_labors = false;
         m_labor_reason = tr("for non-citizens.");
     }else{
+        //TODO: rather than checking the profession, check the fortress entity's permitted jobs, however this would also disable other labours like alchemy not used in DF
         if(p){
             m_can_set_labors = p->can_assign_labors();
             if(!m_is_baby && DT->labor_cheats_allowed()){
@@ -1432,23 +1441,19 @@ void Dwarf::read_uniform(){
             }
         }else{
             //build a work uniform
-            short sub_type = -1;
-            short job_skill = -1;
             m_uniform = new Uniform(m_df,this);
             if(labor_enabled(0)){//mining
-                job_skill = 0; //mining skill
-                m_uniform->add_uniform_item(WEAPON,sub_type,job_skill);
+                m_uniform->add_uniform_item(WEAPON,-1,0); //mining skill
             }else if(labor_enabled(10)){//woodcutting
-                job_skill = 38; //axe skill
-                m_uniform->add_uniform_item(WEAPON,sub_type,job_skill);
+                m_uniform->add_uniform_item(WEAPON,-1,38); //axe skill
             }else if(labor_enabled(44)){//hunter
-                //add a weapon
-                job_skill = 44; //crossbow skill
-                m_uniform->add_uniform_item(WEAPON,sub_type,job_skill);
+                //add a weapon of crossbow/bow/blowgun skills
+                QList<int> skills = QList<int>() << 44 << 52 << 53;
+                m_uniform->add_uniform_item(WEAPON,-1,skills);
                 //add quiver
-                m_uniform->add_uniform_item(QUIVER,sub_type,-1);
+                m_uniform->add_uniform_item(QUIVER,-1,-1);
                 //add ammo
-                m_uniform->add_uniform_item(AMMO,sub_type,-1);
+                m_uniform->add_uniform_item(AMMO,-1,-1);
             }
             if(!m_uniform->has_items()){
                 delete m_uniform;
@@ -1522,13 +1527,7 @@ void Dwarf::read_inventory(){
                     m_max_inventory_wear.insert(i_type,wear_level);
                 }
                 if(wear_level > 0 && Item::is_armor_type(i_type)){
-                    QString item_name = QString("%1 %2").arg((include_mat_name ? ir->get_material_name_base() : "")).arg(ir->get_details()->name_plural()).trimmed();
-                    QPair<QString,int> key = qMakePair(item_name,wear_level);
-                    if(m_equip_warnings.contains(key)){
-                        m_equip_warnings[key] += ir->get_stack_size();
-                    }else{
-                        m_equip_warnings.insert(key,ir->get_stack_size());
-                    }
+                    add_inv_warn(ir,include_mat_name,wear_level);
                 }
 
                 LOGV << "  + found armor/clothing:" << ir->display_name(false);
@@ -1558,7 +1557,7 @@ void Dwarf::read_inventory(){
         QString cat_name = Item::missing_group_name();
         foreach(ITEM_TYPE itype, m_uniform->get_missing_items().uniqueKeys()){
             foreach(ItemDefUniform *u, m_uniform->get_missing_items().value(itype)){
-                Item *i = new Item(m_df,u,this);
+                Item *i = new ItemUniform(m_df,u,this);
                 if(itype == WEAPON){
                     ItemWeapon *iw = new ItemWeapon(*i);
                     process_inv_item(cat_name,iw);
@@ -1571,6 +1570,7 @@ void Dwarf::read_inventory(){
                 }else if(Item::is_supplies(itype) || Item::is_ranged_equipment(itype)){
                     process_inv_item(cat_name,i);
                 }
+                add_inv_warn(i,include_mat_name,-2);
             }
         }
     }
@@ -1583,38 +1583,34 @@ void Dwarf::read_inventory(){
     }
 
     //set our coverage ratings. currently this is only important for the 3 clothing types that, if missing, give bad thoughts
-    QString title = "";
-    if(has_pants){
-        m_coverage_ratings.insert(PANTS,100.0f);
-    }else{
-        m_coverage_ratings.insert(PANTS,0.0f);
-        m_missing_counts.insert(PANTS,1);
-        title = tr("Legs Uncovered!");
-        process_inv_item(Item::uncovered_group_name(),new Item(PANTS,title,this));
-        m_equip_warnings.insert(qMakePair(title,-1),1);
-    }
-    if(has_shirt){
-        m_coverage_ratings.insert(ARMOR,100.0f);
-    }else{
-        m_coverage_ratings.insert(ARMOR,0);
-        m_missing_counts.insert(ARMOR,1);
-        title = tr("Torso Uncovered!");
-        process_inv_item(Item::uncovered_group_name(),new Item(ARMOR,title,this));
-        m_equip_warnings.insert(qMakePair(title,-1),1);
-    }
+    process_uncovered(PANTS,tr("Legs Uncovered!"),(has_shirt ? 1 : 0),1);
+    process_uncovered(ARMOR,tr("Torso Uncovered!"),(has_pants ? 1 : 0),1);
     //for shoes, compare how many they're wearing compared to how many legs they've still got
-    float limb_count =  m_unit_health.limb_count();
-    float foot_coverage = 100.0f;
-    if(limb_count > 0)
-        foot_coverage = shoes_count / limb_count * 100.0f;
-    if(foot_coverage < 100.0f){
-        title = tr("Feet Uncovered!");
-        process_inv_item(Item::uncovered_group_name(),new Item(SHOES,title,this));
-        int count = limb_count - shoes_count;
-        m_missing_counts.insert(SHOES,count);
-        m_equip_warnings.insert(qMakePair(title,-1),count);
+    process_uncovered(SHOES,tr("Feet Uncovered!"),shoes_count,m_unit_health.limb_count());
+}
+
+void Dwarf::process_uncovered(ITEM_TYPE i_type, QString desc, int count, int req_count){
+    if(req_count == 0 || count >= req_count){
+        m_coverage_ratings.insert(i_type,100.0f);
+    }else{
+        m_coverage_ratings.insert(i_type,count / req_count * 100.0f);
+        m_missing_counts.insert(i_type,1);
+        Item *i = new Item(i_type,desc,this);
+        i->add_to_stack(req_count - count);
+        process_inv_item(Item::uncovered_group_name(),i);
+        add_inv_warn(i,false,-1);
     }
-    m_coverage_ratings.insert(SHOES,foot_coverage);
+}
+
+void Dwarf::add_inv_warn(Item *i, bool include_mat_name, short level){
+    //show generic material names for specific items (backpacks, flasks, assigned) or missing uniform items
+    QString item_name = i->item_name(true,include_mat_name,(level>=-1 || i->id() > 0 ? true : false));
+    QPair<QString,int> key = qMakePair(item_name, level);
+    if(m_equip_warnings.contains(key)){
+        m_equip_warnings[key] += i->get_stack_size();
+    }else{
+        m_equip_warnings.insert(key,i->get_stack_size());
+    }
 }
 
 void Dwarf::process_inv_item(QString category, Item *item, bool is_contained_item){

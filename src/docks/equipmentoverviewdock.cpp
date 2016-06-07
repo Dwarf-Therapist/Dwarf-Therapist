@@ -128,7 +128,7 @@ void EquipmentOverviewDock::refresh(){
         }
 
         QStringList wear_level_desc;
-        wear_level_desc << tr("No Worn/Missing Equipment") << tr("Some Wear") << tr("Heavily Worn") << tr("Tattered");
+        wear_level_desc << tr("No Worn/Missing Equipment") << tr("Some Wear") << tr("Threadbare") << tr("Tattered");
 
         tw_wear->setSortingEnabled(false);
         foreach(key, worn_items.uniqueKeys()){
@@ -144,9 +144,12 @@ void EquipmentOverviewDock::refresh(){
             if(wear_level >= 0){
                 wear_desc = wear_level_desc.at(wear_level);
                 col = Item::color_wear(wear_level);
-            }else{
+            }else if(wear_level == -1){
                 wear_desc = Item::uncovered_group_name();
                 col = Item::color_uncovered();
+            }else if(wear_level == -2){
+                wear_desc = Item::missing_group_name();
+                col = Item::color_missing();
             }
 
             tooltip = QString("<center><h4>%1</h4></center>%2 %3")

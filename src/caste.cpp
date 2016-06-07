@@ -128,13 +128,13 @@ bool Caste::is_geldable(){
             if(bp){
                 m_body_parts.insert(id,bp);
                 if(bp->token() == "LB"){
-                    m_can_geld = bp->flags().has_flag(38); //GELDABLE
+                    m_can_geld = (int)bp->flags().has_flag(38); //GELDABLE
                     break;
                 }
             }
         }
     }
-    return m_can_geld;
+    return (bool)m_can_geld;
 }
 
 void Caste::load_skill_rates(){
@@ -225,8 +225,8 @@ QPair<int, QString> Caste::get_attribute_descriptor_info(ATTRIBUTES_TYPE id, int
 
     //only append the caste's name to our playable race (don't do this for tame animals in the fort)
     if(DT->multiple_castes() && m_race->race_id() == m_df->dwarf_race_id()){
-        ret.second == "" ? ret.second = QObject::tr("Average") : ret.second;
-        ret.second = QObject::tr("%1 for a %2.").arg(ret.second).arg(m_name);
+        ret.second == "" ? ret.second = tr("Average") : ret.second;
+        ret.second = tr("%1 for a %2.").arg(ret.second).arg(m_name);
     }
 
     return ret;

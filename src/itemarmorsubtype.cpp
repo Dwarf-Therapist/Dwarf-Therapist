@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include "itemarmorsubtype.h"
 #include "dfinstance.h"
 #include "memorylayout.h"
+#include "item.h"
 
 ItemArmorSubtype::ItemArmorSubtype(const ITEM_TYPE itype, DFInstance *df, const VIRTADDR address, QObject *parent)
     : ItemSubtype(itype,df,address,parent)

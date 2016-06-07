@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "global_enums.h"
 #include "material.h"
 #include "itemdefuniform.h"
+#include "itemsubtype.h"
 #include <QObject>
 #include <QColor>
 
@@ -37,9 +38,6 @@ class Item : public QObject {
 public:
     Item(const Item &i);
     Item(DFInstance *df, VIRTADDR item_addr, QObject *parent = 0);
-    //uniform item ctor
-    Item(DFInstance *df, ItemDefUniform *u, QObject *parent = 0);
-    //placeholder item ctor
     Item(ITEM_TYPE itype,QString name, QObject *parent = 0);
     virtual ~Item();
 
@@ -60,6 +58,8 @@ public:
         m[CHAIR]=tr("Chairs/Thrones");
         m[CHAIN]=tr("Chains");
         m[FLASK]=tr("Flasks");
+        m[VIAL]=tr("Vials");
+        m[WATERSKIN]=tr("Waterskins");
         m[GOBLET]=tr("Goblets");
         m[INSTRUMENT]=tr("Instruments");
         m[TOY]=tr("Toys");
@@ -144,7 +144,7 @@ public:
         return m.value(type, "N/A");
     }
 
-    static const QString get_item_clothing_names(const ITEM_TYPE &type){
+    static const QString get_item_clothing_name(const ITEM_TYPE &type){
         QMap<ITEM_TYPE,QString> m;
         m[ARMOR]=tr("Clothing (Chest)");
         m[SHOES]=tr("Clothing (Feet)");
@@ -169,6 +169,8 @@ public:
         m[CHAIR]=tr("Chair");
         m[CHAIN]=tr("Chain");
         m[FLASK]=tr("Flask");
+        m[VIAL]=tr("Vial");
+        m[WATERSKIN]=tr("Waterskin");
         m[GOBLET]=tr("Goblet");
         m[INSTRUMENT]=tr("Instrument");
         m[TOY]=tr("Toy");
@@ -344,6 +346,8 @@ public:
     virtual short melee_skill(){return -1;}
     virtual short ranged_skill(){return -1;}
 
+    virtual ItemSubtype * get_subType() {return 0;}
+
     QString display_name(bool colored = false);
     bool equals(const Item &) const;
 
@@ -353,13 +357,12 @@ public:
     int get_stack_size(){return m_stack_size;}
     void add_to_stack(int num){
         m_stack_size+=num;
-        stack_size_changed();
     }
     QString get_material_name(){return m_material_name;}
     QString get_material_name_base(){return m_material_name_base;}
     short get_quality(){return m_quality;}
-    QString get_item_name(){return m_item_name;}
     FlagArray mat_flags(){return m_material_flags;}
+    QString item_name(bool plural, bool mat, bool generic_mat);
 
 protected:
     DFInstance *m_df;
@@ -373,6 +376,7 @@ protected:
     QString m_material_name_base;
     FlagArray m_material_flags;
     QString m_item_name;
+    QString m_item_name_plural;
     QString m_layer_name;
     QString m_display_name;
     QColor m_color_display;
@@ -385,12 +389,11 @@ protected:
     QList<Item*> m_contained_items;
 
     void read_data();
-    void read_material();
+    void init_defaults();
+    void set_name(ItemSubtype *sub);
     void set_default_name(Material *m);
     void build_display_name();
     QString get_quality_symbol();
-
-    virtual void stack_size_changed(){}
 
 private:
     static const QList<ITEM_TYPE> m_items_subtypes;

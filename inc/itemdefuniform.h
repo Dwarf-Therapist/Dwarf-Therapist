@@ -45,7 +45,6 @@ public:
         , m_mat_generic_name("")
         , m_id(-1)
         , m_indv_choice(false)
-        , m_job_skill(-1)
         , m_stack_size(1)
     {
         read_data();
@@ -64,7 +63,6 @@ public:
         , m_mat_generic_name("")
         , m_id(item_id)
         , m_indv_choice(false)
-        , m_job_skill(-1)
         , m_stack_size(1)
     {
     }
@@ -81,7 +79,24 @@ public:
         , m_mat_flag(MAT_NONE)
         , m_id(-1)
         , m_indv_choice(false)
-        , m_job_skill(job_skill)
+        , m_stack_size(1)
+    {
+        add_job_skill(job_skill);
+    }
+
+    ItemDefUniform(ITEM_TYPE itype, short sub_type, QList<int> job_skills, QObject *parent = 0)
+        : QObject(parent)
+        , m_address(0x0)
+        , m_df(0x0)
+        , m_mem(0x0)
+        , m_iType(itype)
+        , m_subType(sub_type)
+        , m_matType(-1)
+        , m_mat_index(-1)
+        , m_mat_flag(MAT_NONE)
+        , m_id(-1)
+        , m_indv_choice(false)
+        , m_job_skills(job_skills)
         , m_stack_size(1)
     {
     }
@@ -99,7 +114,7 @@ public:
         , m_mat_generic_name(uItem.m_mat_generic_name)
         , m_id(uItem.m_id)
         , m_indv_choice(uItem.m_indv_choice)
-        , m_job_skill(uItem.m_job_skill)
+        , m_job_skills(uItem.m_job_skills)
         , m_stack_size(uItem.m_stack_size)
     {
     }
@@ -161,7 +176,7 @@ public:
     MATERIAL_FLAGS mat_flag() {return m_mat_flag;}
     int id(){return m_id;}
     bool indv_choice(){return m_indv_choice;}
-    short job_skill(){return m_job_skill;}
+    QList<int> job_skills(){return m_job_skills;}
 
     int get_stack_size(){return m_stack_size;}
     void add_to_stack(int num){m_stack_size+=num;}
@@ -178,7 +193,7 @@ private:
     QString m_mat_generic_name;
     int m_id;
     bool m_indv_choice;
-    short m_job_skill;
+    QList<int> m_job_skills;
     int m_stack_size;
     //static const QHash<MATERIAL_CLASS,MATERIAL_FLAGS> m_class_mats;
 
@@ -230,6 +245,12 @@ private:
         ret.insert(MC_SILK,SILK);
         ret.insert(MC_YARN,YARN);
         return ret;
+    }
+
+    void add_job_skill(int skill_id){
+        if(skill_id >= 0 && !m_job_skills.contains(skill_id)){
+            m_job_skills.append(skill_id);
+        }
     }
 };
 

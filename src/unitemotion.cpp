@@ -47,7 +47,7 @@ UnitEmotion::UnitEmotion(QObject *parent)
     , m_total_effect(0)
     , m_intensifier(0)
     , m_optional_level(-1)
-    , m_compare_id(-1)
+    , m_compare_id("")
     , m_date_in_ticks(-1)
 {
 }
@@ -62,7 +62,7 @@ UnitEmotion::UnitEmotion(VIRTADDR addr, DFInstance *df, QObject *parent)
     , m_total_effect(0)
     , m_intensifier(0)
     , m_optional_level(-1)
-    , m_compare_id(-1)
+    , m_compare_id("")
 {
     MemoryLayout *m_mem = df->memory_layout();
     m_eType = static_cast<EMOTION_TYPE>(df->read_int(addr+m_mem->emotion_offset("emotion_type")));
@@ -110,6 +110,7 @@ UnitEmotion::UnitEmotion(VIRTADDR addr, DFInstance *df, QObject *parent)
                         VIRTADDR syn_addr = df->get_syndrome(m_sub_id);
                         if(syn_addr){
                             replace = df->read_string(syn_addr);
+                            m_compare_id = replace;
                         }
                     }else if(key=="[poetry]"){
                         replace = df->get_preference_other_name(m_sub_id,LIKE_POETRY);

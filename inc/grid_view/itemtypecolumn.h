@@ -7,6 +7,7 @@
 class Item;
 
 class ItemTypeColumn : public ViewColumn {
+    Q_OBJECT
 public:
     ItemTypeColumn(const QString &title, const ITEM_TYPE &itype, ViewColumnSet *set = 0, QObject *parent = 0, COLUMN_TYPE cType = CT_ITEMTYPE);
     ItemTypeColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);

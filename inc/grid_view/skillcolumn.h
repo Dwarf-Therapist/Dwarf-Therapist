@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "viewcolumn.h"
 
 class SkillColumn : public ViewColumn {
+    Q_OBJECT
 public:
     SkillColumn(const QString &title, const int &skill_id, ViewColumnSet *set = 0, QObject *parent = 0, COLUMN_TYPE cType = CT_SKILL);
     SkillColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);

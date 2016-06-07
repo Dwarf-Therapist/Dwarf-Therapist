@@ -7,8 +7,6 @@
 #include <QString>
 #include <QColor>
 
-//class HealthInfo : QObject  {
-//    Q_OBJECT
 class HealthInfo{
 
 public:

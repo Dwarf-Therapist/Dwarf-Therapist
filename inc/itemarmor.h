@@ -28,21 +28,24 @@ THE SOFTWARE.
 #include "races.h"
 
 class ItemArmor : public Item {
+    Q_OBJECT
 public:
 
     ItemArmor(const Item &baseItem)
         :Item(baseItem)
+        , m_armor_def(0)
     {
         read_def();
     }
 
     ItemArmor(DFInstance *df, VIRTADDR item_addr)
         :Item(df,item_addr)
+        , m_armor_def(0)
     {
         read_def();
     }
 
-    ItemArmorSubtype * get_details(){return m_armor_def;}
+    ItemSubtype * get_subType(){return m_armor_def;}
     short item_subtype() const {return m_armor_def->subType();}
 
 private:
@@ -52,7 +55,7 @@ private:
         if(m_addr > 0){
             m_armor_def = new ItemArmorSubtype(m_iType,m_df,m_df->read_addr(m_addr+m_df->memory_layout()->item_offset("item_def")),this);
             if(m_armor_def){
-                m_item_name = m_armor_def->name();
+
                 QString layer_name = m_armor_def->get_layer_name();
                 if(layer_name != ""){
                     m_layer_name = layer_name;

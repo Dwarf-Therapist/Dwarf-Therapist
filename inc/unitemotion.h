@@ -49,7 +49,7 @@ private:
     int m_total_effect;
     short m_intensifier;
     int m_optional_level; //used for quality, building base wealth, maybe other things
-    int m_compare_id; //id used to compare in addition to thought/emotion
+    QString m_compare_id; //id/name used to compare in addition to thought/emotion
     int m_date_in_ticks;
 
 public:

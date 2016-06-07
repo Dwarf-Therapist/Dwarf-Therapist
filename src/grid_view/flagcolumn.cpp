@@ -95,7 +95,7 @@ QStandardItem *FlagColumn::build_cell(Dwarf *d) {
         if(d->get_gender() != Dwarf::SEX_M){
             info_msg = tr("<b>Only males can be gelded!</b>");
             state = STATE_DISABLED;
-        }else if(d->has_health_issue(eHealth::HI_GELDED,0)){
+        }else if(d->has_health_issue((int)eHealth::HI_GELDED,0)){
             info_msg = tr("<b>This creature has already been gelded!</b>");
             state = STATE_ACTIVE;
         }else if(rating == 1){

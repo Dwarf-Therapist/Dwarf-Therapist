@@ -1,6 +1,6 @@
 /*
 Dwarf Therapist
-Copyright (c) 2009 Trey Stout (chmod)
+Copyright (c) 2010 Justin Ehlert
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +20,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef ITEMINSTRUMENT_H
-#define ITEMINSTRUMENT_H
 
-#include "item.h"
+#include "itemammo.h"
+#include "itemgenericsubtype.h"
 
-class ItemGenericSubtype;
+ItemAmmo::ItemAmmo(const Item &baseItem)
+    : Item(baseItem)
+    , m_ammo_def(0)
+{
+    read_def();
+}
 
-class ItemInstrument : public Item {
-public:
+ItemAmmo::ItemAmmo(DFInstance *df, VIRTADDR item_addr)
+    : Item(df,item_addr)
+    , m_ammo_def(0)
+{
+    read_def();
+}
 
-    ItemInstrument(const Item &baseItem);
-    ItemInstrument(DFInstance *df, VIRTADDR item_addr);
+ItemAmmo::~ItemAmmo()
+{
+    delete m_ammo_def;
+}
 
-    virtual ~ItemInstrument();
+short ItemAmmo::item_subtype() const {return m_ammo_def->subType();}
+ItemSubtype * ItemAmmo::get_subType(){return m_ammo_def;}
 
-    short item_subtype() const;
-    ItemSubtype * get_subType();
-
-private:
-    ItemGenericSubtype *m_Instrument_def;
-    void read_def();
-};
-
-#endif // ITEMINSTRUMENT_H
+void ItemAmmo::read_def(){
+    if(m_addr){
+        m_ammo_def = new ItemGenericSubtype(m_iType,m_df, m_df->read_addr(m_addr + m_df->memory_layout()->item_offset("item_def")), this);
+    }
+}

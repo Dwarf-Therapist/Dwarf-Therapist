@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "dwarf.h"
 
 class HappinessColumn : public ViewColumn {
+    Q_OBJECT
 public:
     HappinessColumn(QSettings &s, ViewColumnSet *set = 0, QObject *parent = 0);
     HappinessColumn(QString title, ViewColumnSet *set = 0, QObject *parent = 0);

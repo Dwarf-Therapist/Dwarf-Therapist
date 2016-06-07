@@ -20,27 +20,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef ITEMINSTRUMENT_H
-#define ITEMINSTRUMENT_H
+#ifndef ITEMUNIFORM
+#define ITEMUNIFORM
 
 #include "item.h"
 
+class ItemUniform;
 class ItemGenericSubtype;
 
-class ItemInstrument : public Item {
+class ItemUniform : public Item {
+        Q_OBJECT
 public:
 
-    ItemInstrument(const Item &baseItem);
-    ItemInstrument(DFInstance *df, VIRTADDR item_addr);
+    ItemUniform(const Item &baseItem);
 
-    virtual ~ItemInstrument();
+    ItemUniform(DFInstance *df, VIRTADDR item_addr);
+
+    ItemUniform(DFInstance *df, ItemDefUniform *u, QObject *parent);
+
+    virtual ~ItemUniform();
 
     short item_subtype() const;
     ItemSubtype * get_subType();
 
 private:
-    ItemGenericSubtype *m_Instrument_def;
+    ItemGenericSubtype *m_item_def;
+    ItemDefUniform *m_uniform_def;
+
     void read_def();
 };
+#endif // ITEMUNIFORM
 
-#endif // ITEMINSTRUMENT_H
