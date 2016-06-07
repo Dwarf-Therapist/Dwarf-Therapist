@@ -45,6 +45,8 @@ protected:
     QLineEdit *m_le_search;
     QPushButton *m_btn_toggle_tree;
 
+    QWidget *m_base_widget;
+
     QIcon m_arr_in;
     QIcon m_arr_out;
     bool m_collapsed;

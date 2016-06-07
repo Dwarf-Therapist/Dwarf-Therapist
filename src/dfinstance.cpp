@@ -50,6 +50,7 @@ THE SOFTWARE.
 #include "emotiongroup.h"
 #include "activity.h"
 #include "dwarfjob.h"
+#include "equipwarn.h"
 
 #include <QMessageBox>
 #include <QTimer>
@@ -198,6 +199,7 @@ DFInstance::~DFInstance() {
     qDeleteAll(m_emotion_counts);
     m_emotion_counts.clear();
 
+    qDeleteAll(m_equip_warning_counts);
     m_equip_warning_counts.clear();
 }
 
@@ -390,6 +392,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         m_pref_counts.clear();
         qDeleteAll(m_emotion_counts);
         m_emotion_counts.clear();
+        qDeleteAll(m_equip_warning_counts);
         m_equip_warning_counts.clear();
 
         t.restart();
@@ -491,16 +494,15 @@ void DFInstance::load_population_data(){
                 em->add_detail(d,ue);
             }
 
-            //inventory wear
-            QPair<QString,int> wear_key;
-            QHash<QPair<QString,int>,int> wear_counts = d->get_equip_warnings();
-            foreach(wear_key, wear_counts.uniqueKeys()){
-                int worn_count = wear_counts.value(wear_key);
-                if(m_equip_warning_counts.contains(wear_key)){
-                    m_equip_warning_counts[wear_key] += worn_count;
-                }else{
-                    m_equip_warning_counts.insert(wear_key,worn_count);
+            //inventory wear/missing/uncovered
+            QList<EquipWarn::warn_info> eq_warnings = d->get_equip_warnings();
+            foreach(EquipWarn::warn_info wi, eq_warnings){
+                ITEM_TYPE i_type = wi.iType;
+                if(!m_equip_warning_counts.contains(i_type)){
+                    m_equip_warning_counts.insert(i_type, new EquipWarn(this));
                 }
+                EquipWarn *eq_warn = m_equip_warning_counts.value(i_type);
+                eq_warn->add_detail(d,wi);
             }
         }
     }

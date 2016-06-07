@@ -1527,7 +1527,7 @@ void Dwarf::read_inventory(){
                     m_max_inventory_wear.insert(i_type,wear_level);
                 }
                 if(wear_level > 0 && Item::is_armor_type(i_type)){
-                    add_inv_warn(ir,include_mat_name,wear_level);
+                    add_inv_warn(ir,include_mat_name,static_cast<Item::ITEM_STATE>(wear_level));
                 }
 
                 LOGV << "  + found armor/clothing:" << ir->display_name(false);
@@ -1570,7 +1570,7 @@ void Dwarf::read_inventory(){
                 }else if(Item::is_supplies(itype) || Item::is_ranged_equipment(itype)){
                     process_inv_item(cat_name,i);
                 }
-                add_inv_warn(i,include_mat_name,-2);
+                add_inv_warn(i,include_mat_name,Item::IS_MISSING);
             }
         }
     }
@@ -1598,19 +1598,18 @@ void Dwarf::process_uncovered(ITEM_TYPE i_type, QString desc, int count, int req
         Item *i = new Item(i_type,desc,this);
         i->add_to_stack(req_count - count);
         process_inv_item(Item::uncovered_group_name(),i);
-        add_inv_warn(i,false,-1);
+        add_inv_warn(i,false,Item::IS_UNCOVERED);
     }
 }
 
-void Dwarf::add_inv_warn(Item *i, bool include_mat_name, short level){
+void Dwarf::add_inv_warn(Item *i, bool include_mat_name, Item::ITEM_STATE i_status){
     //show generic material names for specific items (backpacks, flasks, assigned) or missing uniform items
-    QString item_name = i->item_name(true,include_mat_name,(level>=-1 || i->id() > 0 ? true : false));
-    QPair<QString,int> key = qMakePair(item_name, level);
-    if(m_equip_warnings.contains(key)){
-        m_equip_warnings[key] += i->get_stack_size();
-    }else{
-        m_equip_warnings.insert(key,i->get_stack_size());
-    }
+    QString item_name = i->item_name(true,include_mat_name,(i_status != Item::IS_MISSING || i->id() > 0 ? true : false));
+    EquipWarn::warn_info wi;
+    wi.key = qMakePair(item_name,i_status);
+    wi.count = i->get_stack_size();
+    wi.iType = i->item_type();
+    m_equip_warnings.append(wi);
 }
 
 void Dwarf::process_inv_item(QString category, Item *item, bool is_contained_item){

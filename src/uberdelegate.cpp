@@ -202,9 +202,9 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         break;
     case CT_EQUIPMENT:
     {
-        int wear_level = idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt();
+        Item::ITEM_STATE i_status = static_cast<Item::ITEM_STATE>(idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt());
         paint_bg(adjusted, p, opt, idx, true, state_color);
-        paint_wear_cell(adjusted,p,opt,idx,wear_level);
+        paint_wear_cell(adjusted,p,opt,idx,i_status);
     }
         break;
     case CT_ITEMTYPE:
@@ -219,8 +219,8 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
             //only show red squares for missing items (0-50 rating)
             paint_values(adjusted, rating/2.0f, text_rating, bg, p, opt, idx, 50.0f,5.0f,95.0f,0,0,false);
         }
-        int wear_level = idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt();
-        paint_wear_cell(adjusted,p,opt,idx,wear_level);
+        Item::ITEM_STATE i_status = static_cast<Item::ITEM_STATE>(idx.data(DwarfModel::DR_SPECIAL_FLAG).toInt());
+        paint_wear_cell(adjusted,p,opt,idx,i_status);
     }
         break;
     case CT_ROLE: case CT_SUPER_LABOR: case CT_CUSTOM_PROFESSION:
@@ -768,13 +768,13 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
     p->restore();
 }
 
-void UberDelegate::paint_wear_cell(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const int wear_level) const {
+void UberDelegate::paint_wear_cell(const QRect &adjusted, QPainter *p, const QStyleOptionViewItem &opt, const QModelIndex &proxy_idx, const Item::ITEM_STATE i_status) const {
     if(!m_proxy){
         paint_grid(adjusted, false, p, opt, proxy_idx);
         return;
     }
-    if(wear_level > 0){
-        paint_border(adjusted,p,Item::color_wear(wear_level));
+    if(i_status > 0){
+        paint_border(adjusted,p,Item::get_color(i_status));
         paint_grid(adjusted, false, p, opt, proxy_idx, false); //draw dirty border and guides
     }else{
         paint_grid(adjusted, false, p, opt, proxy_idx);

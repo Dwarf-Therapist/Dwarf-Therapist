@@ -27,6 +27,7 @@ THE SOFTWARE.
 
 const QList<ITEM_TYPE> Item::m_items_subtypes=Item::init_subtypes();
 const QList<MATERIAL_FLAGS> Item::m_mat_cats=Item::init_mat_cats();
+const QMap<Item::ITEM_STATE,QColor> Item::m_state_colors = Item::set_state_colors();
 
 Item::Item(const Item &i)
     : QObject(i.parent())
@@ -322,4 +323,19 @@ QString Item::item_name(bool plural, bool mat, bool generic_mat){
                           .arg(mat && !mat_name.isEmpty() ? mat_name : "")
                           .arg(i_name)
                           .trimmed());
+}
+
+QMap<Item::ITEM_STATE,QColor> Item::set_state_colors(){
+    QMap<ITEM_STATE,QColor> m;
+    m.insert(IS_TATTERED,color_wear());
+    QColor tmp = color_wear();
+    tmp.setAlpha(190);
+    m.insert(IS_THREADBARE,tmp);
+    tmp.setAlpha(135);
+    m.insert(IS_WORN,tmp);
+    tmp.setAlpha(0);
+    m.insert(IS_CLOTHED,tmp);
+    m.insert(IS_UNCOVERED,color_uncovered());
+    m.insert(IS_MISSING,color_missing());
+    return m;
 }

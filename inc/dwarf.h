@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "unitemotion.h"
 #include "role.h"
 #include "syndrome.h"
+#include "equipwarn.h"
 #include <QModelIndex>
 
 class QAction;
@@ -546,8 +547,7 @@ public:
     Q_INVOKABLE float get_uniform_rating(ITEM_TYPE itype = NONE);
     //! returns a percentage of how worn out items a dwarf is wearing
     Q_INVOKABLE int get_max_wear_level(ITEM_TYPE itype = NONE);
-    QHash<QPair<QString,int>, int> get_equip_warnings(){return m_equip_warnings;}
-    Q_INVOKABLE bool has_wear(QString item_name, int wear_level) {return m_equip_warnings.contains(qMakePair(item_name,wear_level));}
+    QList<EquipWarn::warn_info> get_equip_warnings(){return m_equip_warnings;}
 
     bool can_assign_military() {return m_can_assign_military;}
 
@@ -694,7 +694,7 @@ private:
     //! worst inventory wear level by item type
     QHash<ITEM_TYPE,int> m_max_inventory_wear;
     //! counts of missing/worn items by key (itemname, wear_level)
-    QHash<QPair<QString,int>,int> m_equip_warnings;
+    QList<EquipWarn::warn_info> m_equip_warnings;
     //! counts of missing uniform items
     QHash<ITEM_TYPE,int> m_missing_counts;
 
@@ -746,7 +746,7 @@ private:
 
     QString get_gender_icon_suffix(bool male_flag, bool female_flag, bool checking_interest = false);
 
-    void add_inv_warn(Item *i, bool include_mat_name, short level);
+    void add_inv_warn(Item *i, bool include_mat_name, Item::ITEM_STATE i_status);
     void process_uncovered(ITEM_TYPE i_type, QString desc, int count, int req_count);
     void process_inv_item(QString category, Item *item, bool is_contained_item=false);
 

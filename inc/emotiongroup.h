@@ -25,7 +25,6 @@ THE SOFTWARE.
 
 #include "dwarf.h"
 #include <QObject>
-#include "math.h"
 
 class EmotionGroup : public QObject
 {

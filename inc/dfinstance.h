@@ -43,6 +43,7 @@ class Squad;
 class Word;
 class EmotionGroup;
 class Activity;
+class EquipWarn;
 
 class DFInstance : public QObject {
     Q_OBJECT
@@ -221,7 +222,7 @@ public:
     QString find_material_name(int mat_index, short mat_type, ITEM_TYPE itype, MATERIAL_STATES mat_state = SOLID);
     const QHash<QPair<QString,QString>,pref_stat*> get_preference_stats() {return m_pref_counts;}
     const QHash<int, EmotionGroup*> get_emotion_stats() {return m_emotion_counts;}
-    const QHash<QPair<QString,int>,int> get_equip_warnings(){return m_equip_warning_counts;}
+    const QHash<ITEM_TYPE,EquipWarn*> get_equip_warnings(){return m_equip_warning_counts;}
 
     const QString fortress_name();
     QList<Squad*> squads() {return m_squads;}
@@ -305,7 +306,7 @@ private:
     void load_hist_figures();
     void load_occupations();
 
-    QHash<QPair<QString,int>, int> m_equip_warning_counts;
+    QHash<ITEM_TYPE,EquipWarn*> m_equip_warning_counts;
     QHash<QPair<QString,QString>, pref_stat*> m_pref_counts;
     QHash<int, EmotionGroup*> m_emotion_counts;
 

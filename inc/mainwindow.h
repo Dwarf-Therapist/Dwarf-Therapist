@@ -209,7 +209,7 @@ private:
 
         void preference_selected(QList<QPair<QString,QString> > vals, QString filter_name = "", FILTER_SCRIPT_TYPE pType = SCR_PREF);
         void thought_selected(QVariantList ids);
-        void equipoverview_selected(QList<QPair<QString, int> >);
+        void equipoverview_selected(QVariantList ids);
         void health_legend_selected(QList<QPair<int,int> > vals);
 
         void toggle_opts_menu();

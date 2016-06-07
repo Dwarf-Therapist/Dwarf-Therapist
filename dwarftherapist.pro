@@ -269,7 +269,8 @@ HEADERS += inc/viewmanager.h \
     inc/itemtool.h \
     inc/activity.h \
     inc/activityevent.h \
-    inc/itemuniform.h
+    inc/itemuniform.h \
+    inc/equipwarn.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -375,7 +376,8 @@ SOURCES += src/viewmanager.cpp \
     src/activity.cpp \
     src/activityevent.cpp \
     src/itemammo.cpp \
-    src/itemuniform.cpp
+    src/itemuniform.cpp \
+    src/equipwarn.cpp
 FORMS += ui/scriptdialog.ui \
     ui/pendingchanges.ui \
     ui/optionsmenu.ui \

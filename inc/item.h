@@ -43,6 +43,15 @@ public:
 
     static const int MAX_AFFECTION = 10000;
 
+    typedef enum {
+        IS_MISSING = -2,
+        IS_UNCOVERED = -1,
+        IS_CLOTHED = 0,
+        IS_WORN = 1,
+        IS_THREADBARE = 2,
+        IS_TATTERED = 3
+    } ITEM_STATE;
+
     static const QString get_item_name_plural(const ITEM_TYPE &type) {
         QMap<ITEM_TYPE, QString> m;
         m[NONE]=tr("N/A");
@@ -151,7 +160,17 @@ public:
         m[HELM]=tr("Clothing (Head)");
         m[GLOVES]=tr("Clothing (Hands)");
         m[PANTS]=tr("Clothing (Legs)");
-        return m.value(type,"N/A");
+        return m.value(type,get_item_name_plural(type));
+    }
+
+    static const QString get_item_generic_name(const ITEM_TYPE &type){
+        QMap<ITEM_TYPE,QString> m;
+        m[ARMOR]=tr("Armor/Clothing");
+        m[SHOES]=tr("Footwear");
+        m[HELM]=tr("Headwear");
+        m[GLOVES]=tr("Handwear");
+        m[PANTS]=tr("Legwear");
+        return m.value(type, get_item_name_plural(type));
     }
 
     static const QString get_item_name(const ITEM_TYPE &type) {
@@ -313,21 +332,9 @@ public:
 
     static const QColor color_clothed() {return QColor(69,148,21);}
     static const QColor color_missing() {return QColor(57,130,227);}
-    static const QColor color_wear() {return QColor(240,116,0,255);}
-    static const QColor color_wear(int level){
-            int alpha = 255;
-            if(level == 2)
-                alpha = 190;
-            if(level == 1)
-                alpha = 135;
-            if(level <= 0)
-                alpha = 0;
-            QColor wear_color = color_wear();
-            wear_color.setAlpha(alpha);
-            return wear_color;
-    }
-
     static const QColor color_uncovered() {return QColor(227,22,18);}
+    static const QColor color_wear() {return QColor(240,116,0,255);}
+    static const QColor get_color(ITEM_STATE i_status){return m_state_colors.value(i_status,color_clothed());}
 
     VIRTADDR address() {return m_addr;}
 
@@ -394,12 +401,14 @@ protected:
     void set_default_name(Material *m);
     void build_display_name();
     QString get_quality_symbol();
+    static QMap<Item::ITEM_STATE,QColor> set_state_colors();
 
 private:
     static const QList<ITEM_TYPE> m_items_subtypes;
     static const QList<ITEM_TYPE> init_subtypes();
     static const QList<MATERIAL_FLAGS> m_mat_cats;
     static const QList<MATERIAL_FLAGS> init_mat_cats();
+    static const QMap<ITEM_STATE,QColor> m_state_colors;
 
 };
 #endif // ITEM_H

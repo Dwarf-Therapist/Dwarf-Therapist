@@ -30,56 +30,17 @@ THE SOFTWARE.
 #include "dwarftherapist.h"
 #include "sortabletableitems.h"
 #include "item.h"
-
-#if QT_VERSION < 0x050000
-# define setSectionResizeMode setResizeMode
-#endif
+#include "equipwarn.h"
 
 QString EquipmentOverviewDock::m_option_name = "options/docks/equipoverview_include_mats";
 
 EquipmentOverviewDock::EquipmentOverviewDock(QWidget *parent, Qt::WindowFlags flags)
-    : BaseDock(parent, flags)
+    : BaseTreeDock(tr("Equipment Overview"),"dock_equipmentoverview",true, parent, flags)
 {
-    setWindowTitle(tr("Equipment Overview"));
-    setObjectName("dock_equipmentoverview");
-    setFeatures(QDockWidget::AllDockWidgetFeatures);
-    setAllowedAreas(Qt::AllDockWidgetAreas);
+    m_tree_view->setColumnCount(3);
+    m_tree_view->setHeaderLabels(QStringList() << tr("Item") << tr("Status") << tr("Count"));
+    m_tree_view->setItemDelegate(new EquipWarnItemDelegate(m_tree_view));
 
-    QWidget *w = new QWidget();
-    QVBoxLayout *l = new QVBoxLayout();
-    w->setLayout(l);
-
-    tw_wear = new QTableWidget(this);
-    tw_wear->setColumnCount(3);
-    tw_wear->setEditTriggers(QTableWidget::NoEditTriggers);
-    tw_wear->setWordWrap(true);
-    tw_wear->setShowGrid(false);
-    tw_wear->setGridStyle(Qt::NoPen);
-    tw_wear->setAlternatingRowColors(true);
-    tw_wear->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    tw_wear->setSelectionBehavior(QAbstractItemView::SelectRows);
-    tw_wear->setHorizontalHeaderLabels(QStringList() << tr("Item") << tr("Count") << tr("Status"));
-    tw_wear->verticalHeader()->hide();
-    tw_wear->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
-    tw_wear->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
-    tw_wear->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);
-    tw_wear->setColumnWidth(0,100);
-    tw_wear->setColumnWidth(1,50);
-    tw_wear->horizontalHeader()->setStretchLastSection(true);
-
-    QHBoxLayout *s = new QHBoxLayout();
-    QLabel *lbl_search = new QLabel("Search",this);
-    s->addWidget(lbl_search);
-    QLineEdit *le_search = new QLineEdit(this);
-    le_search->setObjectName("le_search");
-    s->addWidget(le_search);
-    QPushButton *btn_clear_search = new QPushButton(this);
-    QIcon icn(":img/cross.png");
-    btn_clear_search->setIcon(icn);
-    s->addWidget(btn_clear_search);
-    l->addLayout(s);
-
-    QPushButton *btn = new QPushButton("Clear Filter",this);
     QCheckBox *chk_mats = new QCheckBox(tr("Include item materials"),this);
     chk_mats->setChecked(DT->user_settings()->value(m_option_name,false).toBool());
     chk_mats->setToolTip(tr("When checked, prefixes the item name with the general material type."));
@@ -87,136 +48,144 @@ EquipmentOverviewDock::EquipmentOverviewDock(QWidget *parent, Qt::WindowFlags fl
     lbl_read->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Minimum);
     lbl_read->hide();
 
-    w->layout()->addWidget(tw_wear);
-    w->layout()->addWidget(chk_mats);
-    w->layout()->addWidget(lbl_read);
-    w->layout()->addWidget(btn);
+    m_base_widget->layout()->addWidget(chk_mats);
+    m_base_widget->layout()->addWidget(lbl_read);
 
-    setWidget(w);
-
-    connect(tw_wear,SIGNAL(itemSelectionChanged()),this,SLOT(selection_changed()));
-    connect(btn, SIGNAL(clicked()),this,SLOT(clear_filter()));
-    connect(le_search, SIGNAL(textChanged(QString)),this, SLOT(search_changed(QString)));
-    connect(btn_clear_search, SIGNAL(clicked()),this,SLOT(clear_search()));
     connect(chk_mats, SIGNAL(clicked(bool)),this,SLOT(check_changed(bool)));
 
-    connect(DT,SIGNAL(units_refreshed()),this,SLOT(refresh()));
-
     m_option_state = chk_mats->isChecked();
+
+    m_wear_level_desc.insert(Item::IS_MISSING,Item::missing_group_name());
+    m_wear_level_desc.insert(Item::IS_UNCOVERED,Item::uncovered_group_name());
+    m_wear_level_desc.insert(Item::IS_CLOTHED,tr("No Worn/Missing Equipment"));
+    m_wear_level_desc.insert(Item::IS_WORN,tr("Some Wear"));
+    m_wear_level_desc.insert(Item::IS_THREADBARE,tr("Threadbare"));
+    m_wear_level_desc.insert(Item::IS_TATTERED,tr("Tattered"));
 }
 
-void EquipmentOverviewDock::clear(){
-    for(int r = tw_wear->rowCount(); r >=0; r--){
-        tw_wear->removeRow(r);
-    }
-    tw_wear->clearContents();
-}
-
-void EquipmentOverviewDock::refresh(){
-    clear();
+void EquipmentOverviewDock::build_tree(){
     lbl_read->hide();
 
     if(DT && DT->get_DFInstance()){
         QString tooltip;
-        QPair<QString,int> key;
 
         m_option_state = DT->user_settings()->value(m_option_name,false).toBool();
-        QHash<QPair<QString,int>,int> worn_items = DT->get_DFInstance()->get_equip_warnings();
-        if(worn_items.count()<=0){ //add a placeholder item
-            key = qMakePair(tr("N/A"),0);
-            worn_items.insert(key,0);
-        }
+        QHash<ITEM_TYPE,EquipWarn*> eq_warnings = DT->get_DFInstance()->get_equip_warnings();
 
-        QStringList wear_level_desc;
-        wear_level_desc << tr("No Worn/Missing Equipment") << tr("Some Wear") << tr("Threadbare") << tr("Tattered");
-
-        tw_wear->setSortingEnabled(false);
-        foreach(key, worn_items.uniqueKeys()){
-            QString item_desc = key.first;
-            int wear_level = key.second;
-            int total_count = worn_items.value(key);
-
-            tw_wear->insertRow(0);
-            tw_wear->setRowHeight(0, 18);
-
-            QString wear_desc;
-            QColor col;
-            if(wear_level >= 0){
-                wear_desc = wear_level_desc.at(wear_level);
-                col = Item::color_wear(wear_level);
-            }else if(wear_level == -1){
-                wear_desc = Item::uncovered_group_name();
-                col = Item::color_uncovered();
-            }else if(wear_level == -2){
-                wear_desc = Item::missing_group_name();
-                col = Item::color_missing();
+        foreach(ITEM_TYPE i_type, eq_warnings.uniqueKeys()){
+            EquipWarn *ew = eq_warnings.value(i_type);
+            QString item_name = Item::get_item_generic_name(i_type);
+            QStringList warn_desc;
+            QVariantMap warn_counts;
+            foreach(Item::ITEM_STATE i_status, ew->get_wear_counts().uniqueKeys()){
+                int count = ew->get_wear_counts().value(i_status);
+                warn_desc.append(tr("<font color=%1>%2 %3</font>")
+                                 .arg(Item::get_color(i_status).name())
+                                 .arg(count)
+                                 .arg(m_wear_level_desc.value(i_status)));
+                warn_counts.insert(QString::number((int)i_status),QVariant(count));
             }
+            tooltip = QString("<center><h4>%1 %2</h4></center>%3")
+                    .arg(QString::number(ew->get_total_count()))
+                    .arg(capitalize(item_name))
+                    .arg(warn_desc.join("<br/><br/>"));
 
-            tooltip = QString("<center><h4>%1</h4></center>%2 %3")
-                    .arg(capitalizeEach(item_desc))
-                    .arg(total_count).arg(wear_desc);
+            SortableTreeItem* item_type_node = new SortableTreeItem();
+            item_type_node->setData(0, Qt::UserRole, i_type);
+            item_type_node->setText(0, capitalize(item_name));
+            item_type_node->setToolTip(0,tooltip);
+            item_type_node->setData(0,Qt::UserRole+1, warn_counts);
 
-            QTableWidgetItem *item_name = new QTableWidgetItem();
-            item_name->setData(Qt::UserRole, item_desc);
-            item_name->setText(item_desc);
-            item_name->setToolTip(tooltip);
+            //custom sorting
+            item_type_node->setData(0,SortableTreeItem::TREE_SORT_COL,item_name.toLower());
+            item_type_node->setData(2,SortableTreeItem::TREE_SORT_COL+2,ew->get_total_count());
 
-            QTableWidgetItem *item_wear_count = new QTableWidgetItem();
-            item_wear_count->setData(Qt::DisplayRole, total_count);
-            item_wear_count->setTextAlignment(Qt::AlignCenter);
-            item_wear_count->setToolTip(tooltip);
+            QPair<QString,Item::ITEM_STATE> warn_key;
+            foreach(warn_key, ew->get_details().uniqueKeys()){
+                EquipWarn::warn_count wc = ew->get_details().value(warn_key);
 
-            sortableNumericTableWidgetItem *item_wear_desc = new sortableNumericTableWidgetItem;
-            item_wear_desc->setData(Qt::UserRole, wear_level);
-            item_wear_desc->setText(wear_desc);
-            item_wear_desc->setBackgroundColor(col);
-            item_wear_desc->setToolTip(tooltip);
+                QString detail_name = warn_key.first;
+                Item::ITEM_STATE i_status = warn_key.second;
+                QString wear_desc = m_wear_level_desc.value(i_status);
 
+                QColor col = Item::get_color(i_status);
+                SortableTreeItem *item_node = new SortableTreeItem(item_type_node);
+                QStringList unit_names = wc.unit_ids.keys();
+                tooltip = QString("<center><h4><font color=%1>%2 %3 (%4)</font></h4></center>%5%6")
+                        .arg(col.name())
+                        .arg(wc.count)
+                        .arg(detail_name)
+                        .arg(wear_desc)
+                        .arg(wc.count != wc.unit_ids.count() ? tr("%1 items (<font color=%2>%3</font>) among %4 citizens.<br/><br/>")
+                                                               .arg(wc.count)
+                                                               .arg(col.name())
+                                                               .arg(wear_desc)
+                                                               .arg(wc.unit_ids.count()) : "")
+                        .arg(unit_names.join(unit_names.size() < 20 ? "<br/>" : ", "));
 
-            tw_wear->setItem(0, 0, item_name);
-            tw_wear->setItem(0, 1, item_wear_count);
-            tw_wear->setItem(0, 2, item_wear_desc);
+                item_node->setData(0, Qt::UserRole, detail_name);
+                item_node->setToolTip(0, tooltip);
+                item_node->setText(0, detail_name);
+
+                item_node->setToolTip(1, tooltip);
+                item_node->setData(1,Qt::TextColorRole, col);
+                item_node->setText(1,wear_desc);
+
+                item_node->setData(2, Qt::UserRole, wc.unit_ids.values());
+                item_node->setToolTip(2, tooltip);
+                item_node->setText(2,QString("%1").arg(wc.count,2,10,QChar('0')));
+                item_node->setTextAlignment(2,Qt::AlignRight);
+
+                //custom sorting
+                item_node->setData(0,SortableTreeItem::TREE_SORT_COL,detail_name.toLower());
+                item_node->setData(1,SortableTreeItem::TREE_SORT_COL+1,wear_desc);
+                item_node->setData(2,SortableTreeItem::TREE_SORT_COL+2,wc.count);
+
+            }
+            m_tree_view->addTopLevelItem(item_type_node);
+            item_type_node->setFirstColumnSpanned(true);
         }
-        tw_wear->setSortingEnabled(true);
-        tw_wear->sortItems(1, Qt::DescendingOrder);
-        filter();
+    }
+        m_tree_view->sortByColumn(2,Qt::DescendingOrder); //count
+}
+
+void EquipmentOverviewDock::search_tree(QString val){
+    val = "(" + val.replace(" ", "|") + ")";
+    QRegExp filter = QRegExp(val,Qt::CaseInsensitive, QRegExp::RegExp);
+    int hidden;
+    bool parent_matches;
+    for(int i = 0; i < m_tree_view->topLevelItemCount(); i++){
+        hidden = 0;
+        parent_matches = m_tree_view->topLevelItem(i)->text(0).contains(filter);
+        int count;
+        for(count = 0; count < m_tree_view->topLevelItem(i)->childCount(); count++){
+            if(!parent_matches && !m_tree_view->topLevelItem(i)->child(count)->text(0).contains(filter)){
+                m_tree_view->topLevelItem(i)->child(count)->setHidden(true);
+                hidden++;
+            }else{
+                m_tree_view->topLevelItem(i)->child(count)->setHidden(false);
+            }
+        }
+        if(hidden == count){
+            m_tree_view->topLevelItem(i)->setHidden(true);
+        }else{
+            m_tree_view->topLevelItem(i)->setHidden(false);
+        }
     }
 }
 
 void EquipmentOverviewDock::selection_changed(){
-    QModelIndexList indexList = tw_wear->selectionModel()->selectedIndexes();
-    QList<QPair<QString,int> > selected;
-    if(indexList.count() > 0){
-        int row = 0;
-        int prev_row=-1;
-        foreach (QModelIndex index, indexList) {
-            row = index.row();
-            if(row != prev_row)
-                selected.append(qMakePair(tw_wear->item(row,0)->data(Qt::UserRole).toString(),tw_wear->item(row,2)->data(Qt::UserRole).toInt()));
-            prev_row = row;
-        }
-    }
-    emit item_selected(selected);
-}
-
-void EquipmentOverviewDock::search_changed(QString val){
-    val = "(" + val.replace(" ", "|") + ")";
-    m_filter = QRegExp(val,Qt::CaseInsensitive, QRegExp::RegExp);
-    filter();
-}
-
-void EquipmentOverviewDock::filter(){
-    for(int i = 0; i < tw_wear->rowCount(); i++){
-        if(m_filter.isEmpty() || tw_wear->item(i,0)->text().contains(m_filter) || tw_wear->item(i,2)->text().contains(m_filter)){
-            tw_wear->setRowHidden(i,false);
+    QVariantList ids; //dwarf ids
+    foreach(QTreeWidgetItem *item, m_tree_view->selectedItems()){
+        if(item->childCount() <= 0){
+            ids.append(item->data(2,Qt::UserRole).toList());
         }else{
-            tw_wear->setRowHidden(i,true);
+            for(int idx=0;idx < item->childCount();idx++){
+                ids.append(item->child(idx)->data(2,Qt::UserRole).toList());
+            }
         }
     }
-}
-
-void EquipmentOverviewDock::clear_filter(){
-    tw_wear->clearSelection();
+    emit item_selected(ids);
 }
 
 void EquipmentOverviewDock::check_changed(bool val){
@@ -227,16 +196,3 @@ void EquipmentOverviewDock::check_changed(bool val){
         lbl_read->hide();
     }
 }
-
-void EquipmentOverviewDock::clear_search(){
-    QLineEdit *s = qobject_cast<QLineEdit*>(QObject::findChild<QLineEdit*>("le_search"));
-    if(s)
-        s->setText("");
-}
-
-void EquipmentOverviewDock::closeEvent(QCloseEvent *event){
-    clear_search();
-    clear_filter();
-    event->accept();
-}
-

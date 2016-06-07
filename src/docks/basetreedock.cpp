@@ -41,9 +41,9 @@ BaseTreeDock::BaseTreeDock(QString window_title, QString object_name, bool requi
     m_arr_in = QIcon(":img/arrow-in.png");
     m_arr_out = QIcon(":img/arrow-out.png");
 
-    QWidget *w = new QWidget();
+    m_base_widget = new QWidget();
     QVBoxLayout *l = new QVBoxLayout();
-    w->setLayout(l);
+    m_base_widget->setLayout(l);
 
     m_tree_view = new QTreeWidget(this);
     m_tree_view->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -70,10 +70,10 @@ BaseTreeDock::BaseTreeDock(QString window_title, QString object_name, bool requi
     l->addLayout(s);
 
     QPushButton *btn = new QPushButton(tr("Clear Filter"),this);
-    w->layout()->addWidget(m_tree_view);
-    w->layout()->addWidget(btn);
+    m_base_widget->layout()->addWidget(m_tree_view);
+    m_base_widget->layout()->addWidget(btn);
 
-    setWidget(w);
+    setWidget(m_base_widget);
 
     connect(btn, SIGNAL(clicked()),this,SLOT(clear_filter()));
     connect(m_le_search, SIGNAL(textChanged(QString)), this, SLOT(search_changed(QString)));

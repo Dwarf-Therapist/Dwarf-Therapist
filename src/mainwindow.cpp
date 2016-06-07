@@ -194,7 +194,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(pref_dock,SIGNAL(item_selected(QList<QPair<QString,QString> >)),this,SLOT(preference_selected(QList<QPair<QString,QString> >)));
     connect(thought_dock, SIGNAL(item_selected(QVariantList)), this, SLOT(thought_selected(QVariantList)));
     connect(health_dock, SIGNAL(item_selected(QList<QPair<int,int> >)), this, SLOT(health_legend_selected(QList<QPair<int,int> >)));
-    connect(equipoverview_dock, SIGNAL(item_selected(QList<QPair<QString,int> >)), this, SLOT(equipoverview_selected(QList<QPair<QString,int> >)));
+    connect(equipoverview_dock, SIGNAL(item_selected(QVariantList)), this, SLOT(equipoverview_selected(QVariantList)));
 
     connect(this,SIGNAL(lostConnection()),equipoverview_dock,SLOT(clear()));
     connect(this,SIGNAL(lostConnection()),pref_dock,SLOT(clear()));
@@ -1444,23 +1444,22 @@ void MainWindow::thought_selected(QVariantList ids){
             filter.append(QString("d.id()==%1").arg(id.toInt()));
         }
         filter.removeDuplicates();
-        m_proxy->apply_script("emotions",filter.join(" || "));
+        m_proxy->apply_script(tr("Emotions"),filter.join(" || "));
     }else{
-        m_proxy->clear_script("emotions");
+        m_proxy->clear_script(tr("Emotions"));
     }
 }
 
-void MainWindow::equipoverview_selected(QList<QPair<QString,int> > item_wear){
-    QString filter = "";
-    if(item_wear.size() > 0){
-        QPair<QString,int> key;
-        foreach(key,item_wear){
-            filter.append(QString("d.has_wear(\"%1\",%2) && ").arg(key.first).arg(key.second));
+void MainWindow::equipoverview_selected(QVariantList ids){
+    QStringList filter;
+    if(!ids.empty()){
+        foreach(QVariant id, ids){
+            filter.append(QString("d.id()==%1").arg(id.toInt()));
         }
-        filter.chop(4);
-        m_proxy->apply_script("item wear",filter);
+        filter.removeDuplicates();
+        m_proxy->apply_script(tr("Equipment Warning"),filter.join(" || "));
     }else{
-        m_proxy->clear_script("item wear");
+        m_proxy->clear_script(tr("Equipment Warning"));
     }
 }
 
@@ -1471,9 +1470,9 @@ void MainWindow::health_legend_selected(QList<QPair<int, int> > vals){
         foreach(key_pair, vals){
             filters.append(QString("d.has_health_issue(%1,%2)").arg(QString::number(key_pair.first)).arg(QString::number(key_pair.second)));
         }
-        m_proxy->apply_script("health",filters.join(" && "));
+        m_proxy->apply_script(tr("Health"),filters.join(" && "));
     }else{
-        m_proxy->clear_script("health");
+        m_proxy->clear_script(tr("Health"));
     }
 }
 
