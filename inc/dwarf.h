@@ -252,6 +252,7 @@ public:
     Q_INVOKABLE int kinesthetic_sense() {return attribute(AT_KINESTHETIC_SENSE);}
     //! attribute value from id
     Q_INVOKABLE int attribute(ATTRIBUTES_TYPE attrib_id) {return get_attribute(attrib_id).get_value();}
+    Q_INVOKABLE int attribute_maximum(ATTRIBUTES_TYPE attrib_id) {return (int)get_attribute(attrib_id).max();}
     Attribute get_attribute(ATTRIBUTES_TYPE id);
 
     //! return this dwarf's squad reference id
