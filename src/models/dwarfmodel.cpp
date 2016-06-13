@@ -322,81 +322,77 @@ void DwarfModel::build_rows() {
         //groups specific to the actual race we're playing (ie. dwarfs)
         if(!d->is_animal() && !only_animals)
         {
-            //if hiding children/babies, don't group them, otherwise the aggregate row total in the heading will be off
-            if(!DT->hide_non_adults() || (!d->is_child() && !d->is_baby())){
-
-                if(m_group_by == GB_LEGENDARY){
-                    int legendary_skills = 0;
-                    foreach(Skill s, d->get_skills()->values()) {
-                        if (s.capped_level() >= 15)
-                            legendary_skills++;
-                    }
-                    if (legendary_skills)
-                        m_grouped_dwarves[tr("Legends")].append(d);
-                    else
-                        m_grouped_dwarves[tr("Losers")].append(d);
-                }else if(m_group_by == GB_HAPPINESS){
-                    m_grouped_dwarves[d->happiness_name(d->get_happiness())].append(d);
-                }else if(m_group_by == GB_GOALS){
-                    m_grouped_dwarves[tr("%1 Goals Realized").arg(d->goals_realized())].append(d);
-                }else if(m_group_by == GB_OCCUPATION){
-                    m_grouped_dwarves[d->occupation()].append(d);
-                }else if(m_group_by == GB_SKILL_RUST){
-                    m_grouped_dwarves[Skill::get_rust_level_desc(d->rust_level())].append(d);
-                }else if(m_group_by == GB_CURRENT_JOB){
-                    QString title = d->current_job();
-                    if(title.length() > 50 || title.contains("<"))
-                        title = gdr->get_job(d->current_job_id())->group_name();
-                    m_grouped_dwarves[title].append(d);
-                }else if(m_group_by == GB_JOB_TYPE){
-                    DwarfJob *job = GameDataReader::ptr()->get_job(d->current_job_id());
-                    m_grouped_dwarves[job->group_name()].append(d);
-                }else if(m_group_by == GB_MILITARY_STATUS){
-                    if (d->is_baby() || d->is_child()) {
-                        m_grouped_dwarves[tr("Juveniles")].append(d);
-                    } else if (d->active_military() && !d->can_set_labors()) { //master level military elites
-                        m_grouped_dwarves[tr("Champions")].append(d);
-                    } else if (!d->noble_position().isEmpty()) {
-                        m_grouped_dwarves[tr("Nobles")].append(d);
-                    } else if (d->active_military()) {
-                        m_grouped_dwarves[tr("Military (On Duty)")].append(d);
-                    } else if (d->squad_id() > -1){
-                        m_grouped_dwarves[tr("Military (Off Duty)")].append(d);
-                    }else {
-                        m_grouped_dwarves[tr("Can Activate")].append(d);
-                    }
-                }else if(m_group_by == GB_HIGHEST_MOODABLE){
-                    QList<Skill> skills = d->get_moodable_skills().values();
-                    if(skills.count() > 1){
-                        m_grouped_dwarves["~Random~"].append(d);
+            if(m_group_by == GB_LEGENDARY){
+                int legendary_skills = 0;
+                foreach(Skill s, d->get_skills()->values()) {
+                    if (s.capped_level() >= 15)
+                        legendary_skills++;
+                }
+                if (legendary_skills)
+                    m_grouped_dwarves[tr("Legends")].append(d);
+                else
+                    m_grouped_dwarves[tr("Losers")].append(d);
+            }else if(m_group_by == GB_HAPPINESS){
+                m_grouped_dwarves[d->happiness_name(d->get_happiness())].append(d);
+            }else if(m_group_by == GB_GOALS){
+                m_grouped_dwarves[tr("%1 Goals Realized").arg(d->goals_realized())].append(d);
+            }else if(m_group_by == GB_OCCUPATION){
+                m_grouped_dwarves[d->occupation()].append(d);
+            }else if(m_group_by == GB_SKILL_RUST){
+                m_grouped_dwarves[Skill::get_rust_level_desc(d->rust_level())].append(d);
+            }else if(m_group_by == GB_CURRENT_JOB){
+                QString title = d->current_job();
+                if(title.length() > 50 || title.contains("<"))
+                    title = gdr->get_job(d->current_job_id())->group_name();
+                m_grouped_dwarves[title].append(d);
+            }else if(m_group_by == GB_JOB_TYPE){
+                DwarfJob *job = GameDataReader::ptr()->get_job(d->current_job_id());
+                m_grouped_dwarves[job->group_name()].append(d);
+            }else if(m_group_by == GB_MILITARY_STATUS){
+                if (d->is_baby() || d->is_child()) {
+                    m_grouped_dwarves[tr("Juveniles")].append(d);
+                } else if (d->active_military() && !d->can_set_labors()) { //master level military elites
+                    m_grouped_dwarves[tr("Champions")].append(d);
+                } else if (!d->noble_position().isEmpty()) {
+                    m_grouped_dwarves[tr("Nobles")].append(d);
+                } else if (d->active_military()) {
+                    m_grouped_dwarves[tr("Military (On Duty)")].append(d);
+                } else if (d->squad_id() > -1){
+                    m_grouped_dwarves[tr("Military (Off Duty)")].append(d);
+                }else {
+                    m_grouped_dwarves[tr("Can Activate")].append(d);
+                }
+            }else if(m_group_by == GB_HIGHEST_MOODABLE){
+                QList<Skill> skills = d->get_moodable_skills().values();
+                if(skills.count() > 1){
+                    m_grouped_dwarves["~Random~"].append(d);
+                }else{
+                    if(d->had_mood()){
+                        m_grouped_dwarves["~Had Mood~"].append(d);
                     }else{
-                        if(d->had_mood()){
-                            m_grouped_dwarves["~Had Mood~"].append(d);
+                        if(skills.at(0).capped_level() == -1){
+                            m_grouped_dwarves["~Craft (Bone/Stone/Wood)~"].append(d);
                         }else{
-                            if(skills.at(0).capped_level() == -1){
-                                m_grouped_dwarves["~Craft (Bone/Stone/Wood)~"].append(d);
-                            }else{
-                                m_grouped_dwarves[skills[0].name()].append(d);
-                            }
+                            m_grouped_dwarves[skills[0].name()].append(d);
                         }
                     }
-                }else if(m_group_by == GB_HIGHEST_SKILL){
-                    Skill highest = d->highest_skill();
-                    QString level = gdr->get_skill_level_name(highest.capped_level());
-                    m_grouped_dwarves[level].append(d);
-                }else if(m_group_by == GB_TOTAL_SKILL_LEVELS){
-                    m_grouped_dwarves[tr("Levels: %1").arg(d->total_skill_levels())]
-                            .append(d);
-                }else if(m_group_by == GB_ASSIGNED_LABORS || m_group_by == GB_ASSIGNED_SKILLED_LABORS){
-                    bool include_hauling = (m_group_by == GB_ASSIGNED_LABORS);
-                    m_grouped_dwarves[tr("%1 Assigned Labors")
-                            .arg(d->total_assigned_labors(include_hauling))].append(d);
-                }else if(m_group_by == GB_SQUAD){
-                    if(d->squad_name().isEmpty()) {
-                        m_grouped_dwarves[tr("No Squad")].append(d);
-                    } else {
-                        m_grouped_dwarves[d->squad_name()].append(d);
-                    }
+                }
+            }else if(m_group_by == GB_HIGHEST_SKILL){
+                Skill highest = d->highest_skill();
+                QString level = gdr->get_skill_level_name(highest.capped_level());
+                m_grouped_dwarves[level].append(d);
+            }else if(m_group_by == GB_TOTAL_SKILL_LEVELS){
+                m_grouped_dwarves[tr("Levels: %1").arg(d->total_skill_levels())]
+                        .append(d);
+            }else if(m_group_by == GB_ASSIGNED_LABORS || m_group_by == GB_ASSIGNED_SKILLED_LABORS){
+                bool include_hauling = (m_group_by == GB_ASSIGNED_LABORS);
+                m_grouped_dwarves[tr("%1 Assigned Labors")
+                        .arg(d->total_assigned_labors(include_hauling))].append(d);
+            }else if(m_group_by == GB_SQUAD){
+                if(d->squad_name().isEmpty()) {
+                    m_grouped_dwarves[tr("No Squad")].append(d);
+                } else {
+                    m_grouped_dwarves[d->squad_name()].append(d);
                 }
             }
         }
@@ -611,7 +607,7 @@ void DwarfModel::build_row(const QString &key) {
             break;
         }
         i_name->setData(sort_val, DR_SORT_VALUE);
-//        i_name->setData(sort_val, DR_GLOBAL);
+        //        i_name->setData(sort_val, DR_GLOBAL);
 
         //set gender icons
         if(m_show_gender){

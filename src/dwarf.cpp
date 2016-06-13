@@ -95,7 +95,8 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_migration_wave(0)
     , m_body_size(60000)
     , m_animal_type(none)
-    , m_raw_profession(-1)
+    , m_raw_prof_id(-1)
+    , m_raw_profession(0)
     , m_can_set_labors(false)
     , m_locked_mood(false)
     , m_stressed_mood(false)
@@ -125,6 +126,7 @@ Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
     , m_occ_type(OCC_NONE)
     , m_can_assign_military(true)
     , m_active_military(false)
+    , m_is_citizen(true)
     , m_curse_type(eCurse::NONE)
 {
     read_settings();
@@ -184,6 +186,7 @@ Dwarf::~Dwarf() {
     m_uniform = 0;
     m_race = 0;
     m_caste = 0;
+    m_raw_profession = 0;
     m_mem = 0;
     m_df = 0;
 
@@ -237,15 +240,35 @@ void Dwarf::read_data() {
     read_nick_name();
     build_names(); //build names now for logging
     read_states();  //read states before job and validation
+    read_caste(); //read before age
+    read_turn_count(); //load time/date stuff for births/migrations - read before age
+    set_age_and_migration(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time")); //set age before profession, after caste
+
+    m_raw_prof_id = m_df->read_byte(m_address + m_mem->dwarf_offset("profession"));
+    m_raw_profession = GameDataReader::ptr()->get_profession(m_raw_prof_id);
+    m_histfig_id = m_df->read_int(m_address + m_mem->dwarf_offset("hist_id"));
 
     bool validated = true;
-    //attempt to do some initial filtering
+    //attempt to do some initial filtering on the civilization
     if(civ_id != m_df->dwarf_civ_id()){
         set_validation("doesn't belong to our civilization",&validated,false,LL_DEBUG);
+    }else if(!m_is_animal){
+        //filter out babies/children based on settings
+        if(DT->hide_non_adults() && !is_adult()){
+            set_validation("IGNORING child/baby",&validated,false,LL_DEBUG);
+        }
+        //filter out any non-mercenary visitors if necessary
+        m_is_citizen = (m_df->fortress()->hist_figures().contains(m_histfig_id));
+        TRACE << "HIST_FIG_ID:" << m_histfig_id;
+        if(DT->hide_non_citizens() && !m_is_citizen && !m_raw_profession->is_military()){
+            set_validation("IGNORING visitor/guest",&validated,false,LL_DEBUG);
+        }
     }
+
+    //check caged untame but trainable beasts
     if(get_flag_value(FLAG_CAGED)){
         if(!get_flag_value(FLAG_TAME)){
-            //if it's a caged, trainable beast, keep it in our list, but only if it's alive
+            //if it's a caged, trainable beast, keep it in our list
             if(m_race){
                 LOGI << QString("FOUND caged creature!");
                 validated = m_race->caste_flag(TRAINABLE);
@@ -259,12 +282,9 @@ void Dwarf::read_data() {
     }
 
     if(m_is_valid){
-        read_hist_fig(); //read first
-        read_caste(); //read before age
+        m_hist_figure = new HistFigure(m_histfig_id,m_df,this);
         read_squad_info(); //read squad before job
         read_gender_orientation(); //read before profession
-        read_turn_count(); //load time/date stuff for births/migrations - read before age
-        set_age_and_migration(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time")); //set age before profession
         read_profession(); //read profession before building the names, and before job
         read_mood(); //read after profession and before job, emotions/skills (soul aspect)
         read_labors(); //read after profession and mood
@@ -377,14 +397,12 @@ void Dwarf::set_age_and_migration(VIRTADDR birth_year_offset, VIRTADDR birth_tim
     m_birth_year = m_df->read_int(birth_year_offset);
     m_age = m_df->current_year() - m_birth_year;
     m_birth_time = m_df->read_int(birth_time_offset);
-    quint32 current_year_time = m_df->current_year_time();
-    quint32 current_time = m_df->current_time();
-    quint32 arrival_time = current_time - m_turn_count;
+    quint32 arrival_time = m_df->current_time() - m_turn_count;
     quint32 arrival_year = arrival_time / m_df->ticks_per_year;
     quint32 arrival_season = (arrival_time %  m_df->ticks_per_year) /  m_df->ticks_per_season;
     quint32 arrival_month = (arrival_time %  m_df->ticks_per_year) /  m_df->ticks_per_month;
     quint32 arrival_day = ((arrival_time %  m_df->ticks_per_year) %  m_df->ticks_per_month) /  m_df->ticks_per_day;
-    m_ticks_since_birth = m_age *  m_df->ticks_per_year + current_year_time - m_birth_time;
+    m_ticks_since_birth = m_age *  m_df->ticks_per_year + m_df->current_year_time() - m_birth_time;
     //this way we have the right sort order and all the data needed for the group by migration wave
     m_migration_wave = 100000 * arrival_year + 10000 * arrival_season + 100 * arrival_month + arrival_day;
     m_born_in_fortress = (m_ticks_since_birth == m_turn_count);
@@ -433,12 +451,6 @@ QString Dwarf::get_migration_desc(){
 void Dwarf::read_id() {
     m_id = m_df->read_int(m_address + m_mem->dwarf_offset("id"));
     TRACE << "UNIT ID:" << m_id;
-}
-
-void Dwarf::read_hist_fig(){
-    m_histfig_id = m_df->read_int(m_address + m_mem->dwarf_offset("hist_id"));
-    m_hist_figure = new HistFigure(m_histfig_id,m_df,this);
-    TRACE << "HIST_FIG_ID:" << m_histfig_id;
 }
 
 void Dwarf::read_gender_orientation() {
@@ -714,9 +726,9 @@ void Dwarf::build_names() {
     if(m_is_animal){
         if(is_adult()){
             //for adult animals, check their profession for training and adjust the name accordingly
-            if (m_raw_profession == 99) //trained war
+            if (m_raw_prof_id == 99) //trained war
                 creature_name = tr("War ") + m_race->name();
-            else if (m_raw_profession == 98) //trained hunt
+            else if (m_raw_prof_id == 98) //trained hunt
                 creature_name = tr("Hunting ") + m_race->name();
         }
         //append pet name if necessary
@@ -735,56 +747,52 @@ void Dwarf::build_names() {
 void Dwarf::read_profession() {
     // first see if there is a custom prof set...
     VIRTADDR custom_addr = m_address + m_mem->dwarf_offset("custom_profession");
-    m_custom_profession = m_df->read_string(custom_addr);
-    TRACE << "\tCUSTOM PROF:" << m_custom_profession;
+    m_custom_prof_name = m_df->read_string(custom_addr);
+    TRACE << "\tCUSTOM PROF:" << m_custom_prof_name;
 
     // we set both to the same to know it hasn't been edited yet
-    m_pending_custom_profession = m_custom_profession;
+    m_pending_custom_profession = m_custom_prof_name;
 
-    // now read the actual profession by id
-    VIRTADDR addr = m_address + m_mem->dwarf_offset("profession");
-    m_raw_profession = m_df->read_byte(addr);
-    Profession *p = GameDataReader::ptr()->get_profession(m_raw_profession);
-    QString prof_name = tr("Unknown Profession %1").arg(m_raw_profession);
-    if(p){
-        prof_name = p->name(is_male());
+    QString prof_name = tr("Unknown Profession %1").arg(m_raw_prof_id);
+    if(m_raw_profession){
+        prof_name = m_raw_profession->name(is_male());
     }
-    if (!m_custom_profession.isEmpty()) {
-        m_profession =  m_custom_profession;
+    if (!m_custom_prof_name.isEmpty()) {
+        m_prof_name =  m_custom_prof_name;
     } else {
-        m_profession = prof_name;
+        m_prof_name = prof_name;
     }
 
     if(is_animal()){
-        if(m_raw_profession == 102 && is_adult())
-            m_profession = tr("Adult"); //adult animals have a profession of peasant by default, just use adult
+        if(m_raw_prof_id == 102 && is_adult())
+            m_prof_name = tr("Adult"); //adult animals have a profession of peasant by default, just use adult
         else if(m_is_child){
-            m_profession = tr("Child");
-            m_raw_profession = 103;
+            m_prof_name = tr("Child");
+            m_raw_prof_id = 103;
         }else if(m_is_baby){
-            m_profession = tr("Baby");
-            m_raw_profession = 104;
+            m_prof_name = tr("Baby");
+            m_raw_prof_id = 104;
         }
     }
 
     int img_idx = 102; //default to peasant
-    if(m_raw_profession > -1 && m_raw_profession < GameDataReader::ptr()->get_professions().count())
-        img_idx = m_raw_profession + 1; //images start at 1, professions at 0, offest to match image
+    if(m_raw_prof_id > -1 && m_raw_prof_id < GameDataReader::ptr()->get_professions().count())
+        img_idx = m_raw_prof_id + 1; //images start at 1, professions at 0, offest to match image
 
     //set the default path for the profession icon
     m_icn_prof = QPixmap(":/profession/prof_" + QString::number(img_idx) + ".png");
     //see if we have a custom profession or icon override
     CustomProfession *cp;
-    if(!m_custom_profession.isEmpty()){
-        cp = DT->get_custom_profession(m_custom_profession);
+    if(!m_custom_prof_name.isEmpty()){
+        cp = DT->get_custom_profession(m_custom_prof_name);
     }else{
-        cp = DT->get_custom_prof_icon(m_raw_profession);
+        cp = DT->get_custom_prof_icon(m_raw_prof_id);
     }
     if(cp && cp->has_icon())
         m_icn_prof = cp->get_pixmap();
 
-    LOGD << "reading profession for" << nice_name() << m_raw_profession << prof_name;
-    TRACE << "EFFECTIVE PROFESSION:" << m_profession;
+    LOGD << "reading profession for" << nice_name() << m_raw_prof_id << prof_name;
+    TRACE << "EFFECTIVE PROFESSION:" << m_prof_name;
 }
 
 void Dwarf::read_noble_position(){
@@ -1130,22 +1138,18 @@ void Dwarf::check_availability(){
         m_occ_type = static_cast<UNIT_OCCUPATION>(m_df->read_int(occ_addr + 0x4));
     }
 
-    GameDataReader *gdr = GameDataReader::ptr();
-    Profession *p = gdr->get_profession(m_raw_profession);
-    bool foreigner = false;
-
     //check that labors can be toggled
     if(m_locked_mood){
         m_can_set_labors = false;
-        m_labor_reason = tr("due to mood (%1)").arg(gdr->get_mood_name(m_mood_id,true));
-    }else if(!m_df->fortress()->hist_figures().contains(m_histfig_id)){
-        foreigner = true;
+        m_labor_reason = tr("due to mood (%1)").arg(GameDataReader::ptr()->get_mood_name(m_mood_id,true));
+    }else if(!m_is_citizen){
         m_can_set_labors = false;
         m_labor_reason = tr("for non-citizens.");
     }else{
-        //TODO: rather than checking the profession, check the fortress entity's permitted jobs, however this would also disable other labours like alchemy not used in DF
-        if(p){
-            m_can_set_labors = p->can_assign_labors();
+        //TODO: rather than checking the profession, check the fortress entity's permitted jobs
+        //however this would also disable other labours like alchemy not used in DF
+        if(m_raw_profession){
+            m_can_set_labors = m_raw_profession->can_assign_labors();
             if(!m_is_baby && DT->labor_cheats_allowed()){
                 m_can_set_labors = true;
             }
@@ -1157,7 +1161,7 @@ void Dwarf::check_availability(){
                 }
             }
         }else{
-            LOGE << tr("Read unknown profession with id '%1' for dwarf '%2'").arg(m_raw_profession).arg(m_nice_name);
+            LOGE << tr("Read unknown profession with id '%1' for dwarf '%2'").arg(m_raw_prof_id).arg(m_nice_name);
             m_can_set_labors = false;
             m_labor_reason = tr("due to unknown profession");
         }
@@ -1165,7 +1169,7 @@ void Dwarf::check_availability(){
 
     //check squad assignment
     if(is_adult()){
-        m_can_assign_military = (!foreigner || (foreigner && p->is_military()));
+        m_can_assign_military = (m_is_citizen || (!m_is_citizen && m_raw_profession->is_military()));
     }else{
         m_can_assign_military = false;
     }
@@ -1300,9 +1304,9 @@ void Dwarf::read_soul_aspects() {
 QString Dwarf::profession() {
     if (!m_pending_custom_profession.isEmpty())
         return m_pending_custom_profession;
-    if (!m_custom_profession.isEmpty())
-        return m_custom_profession;
-    return m_profession;
+    if (!m_custom_prof_name.isEmpty())
+        return m_custom_prof_name;
+    return m_prof_name;
 }
 
 QString Dwarf::caste_name(bool plural_name) {
@@ -2140,8 +2144,8 @@ bool Dwarf::is_labor_state_dirty(int labor_id) {
 }
 
 bool Dwarf::is_custom_profession_dirty(QString name){
-    return ((name == m_pending_custom_profession || name == m_custom_profession) &&
-            m_pending_custom_profession != m_custom_profession);
+    return ((name == m_pending_custom_profession || name == m_custom_prof_name) &&
+            m_pending_custom_profession != m_custom_prof_name);
 }
 
 QVector<int> Dwarf::get_dirty_labors() {
@@ -2192,7 +2196,7 @@ void Dwarf::set_labor(int labor_id, bool enabled, bool update_cols_realtime) {
     }
 
     if(!m_can_set_labors) {
-        LOGD << "IGNORING SET LABOR OF ID:" << labor_id << "TO:" << enabled << "FOR:" << m_nice_name << "PROF_ID" << m_raw_profession
+        LOGD << "IGNORING SET LABOR OF ID:" << labor_id << "TO:" << enabled << "FOR:" << m_nice_name << "PROF_ID" << m_raw_prof_id
              << "PROF_NAME:" << profession() << "CUSTOM:" << m_pending_custom_profession;
         return;
     }
@@ -2236,7 +2240,7 @@ int Dwarf::pending_changes() {
         cnt++;
     if(m_squad_id != m_pending_squad_id)
         cnt++;
-    if (m_custom_profession != m_pending_custom_profession)
+    if (m_custom_prof_name != m_pending_custom_profession)
         cnt++;
     for(int i = 0; i < m_unit_flags.count();i++){
         if (m_unit_flags.at(i) != m_pending_flags.at(i)){
@@ -2299,7 +2303,7 @@ void Dwarf::commit_pending(bool single) {
             m_hist_figure->write_nick_name(m_pending_nick_name);
         }
     }
-    if (m_pending_custom_profession != m_custom_profession)
+    if (m_pending_custom_profession != m_custom_prof_name)
         m_df->write_string(m_address + m_mem->dwarf_offset("custom_profession"), m_pending_custom_profession);
 
     for(int i=0; i < m_unit_flags.count(); i++){
@@ -2417,7 +2421,7 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
         i->setToolTip(0, i->text(0));
         i->setData(0, Qt::UserRole, id());
     }
-    if (m_pending_custom_profession != m_custom_profession) {
+    if (m_pending_custom_profession != m_custom_prof_name) {
         QTreeWidgetItem *i = new QTreeWidgetItem(d_item);
         QString prof = m_pending_custom_profession;
         i->setText(0, prof.isEmpty() ? tr("Profession reset to default")

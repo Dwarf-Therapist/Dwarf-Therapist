@@ -1017,17 +1017,15 @@ void MainWindow::save_gridview_csv()
 
         QList<Dwarf*> dwarves = m_proxy->get_filtered_dwarves();
         foreach(Dwarf *d, dwarves){
-            if(d->is_animal() || d->is_adult() || (!DT->hide_non_adults() && !d->is_adult())){
-                row.append(d->nice_name());
-                foreach(ViewColumnSet *set, gv->sets()) {
-                    foreach(ViewColumn *col, set->columns()) {
-                        if (col->type() != CT_SPACER)
-                            row.append(col->get_cell_value(d));
-                    }
+            row.append(d->nice_name());
+            foreach(ViewColumnSet *set, gv->sets()) {
+                foreach(ViewColumn *col, set->columns()) {
+                    if (col->type() != CT_SPACER)
+                        row.append(col->get_cell_value(d));
                 }
-                out << row.join(",") << endl;
-                row.clear();
             }
+            out << row.join(",") << endl;
+            row.clear();
         }
         f.close();
     }

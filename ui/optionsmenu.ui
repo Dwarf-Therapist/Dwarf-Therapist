@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>714</width>
-    <height>563</height>
+    <height>584</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -58,6 +58,19 @@
          <property name="verticalSpacing">
           <number>4</number>
          </property>
+         <item row="13" column="0">
+          <widget class="QCheckBox" name="chk_format_numbers">
+           <property name="toolTip">
+            <string>Abbreviate large numbers, such as experience and stress. For example this option would replace 100,000 stress with 100k.</string>
+           </property>
+           <property name="statusTip">
+            <string>Abbreviate large numbers, such as experience and stress. For example this option would replace 100,000 stress with 100k.</string>
+           </property>
+           <property name="text">
+            <string>Abbreviate large numbers (xp, stress, etc.)</string>
+           </property>
+          </widget>
+         </item>
          <item row="2" column="0">
           <widget class="QCheckBox" name="cb_single_click_labor_changes">
            <property name="toolTip">
@@ -90,16 +103,13 @@
            </property>
           </widget>
          </item>
-         <item row="8" column="0">
-          <widget class="QCheckBox" name="cb_alert_on_lost_connection">
+         <item row="9" column="0">
+          <widget class="QCheckBox" name="cb_hide_children">
            <property name="statusTip">
-            <string>When checked, Dwarf Therapist will alert you if it ever loses connectivity to your Dwarf Fortress game. This helps avoid writing bad data to your fort.  &lt;font color=red&gt;&lt;b&gt;Note: this change requires a restart of Dwarf Therapist!&lt;/font&gt;&lt;/b&gt;</string>
-           </property>
-           <property name="whatsThis">
-            <string>When checked, Dwarf Therapist will alert you if it ever loses connectivity to your Dwarf Fortress game. This helps avoid writing bad data to your fort.</string>
+            <string>When checked, Children and Babies will not be displayed in the grid at all. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read!&lt;/font&gt;&lt;/b&gt;</string>
            </property>
            <property name="text">
-            <string>Alert on Lost Connection</string>
+            <string>Don't Display Children or Babies</string>
            </property>
           </widget>
          </item>
@@ -113,16 +123,6 @@
            </property>
            <property name="text">
             <string>Show Generic Dwarf Names</string>
-           </property>
-          </widget>
-         </item>
-         <item row="9" column="0">
-          <widget class="QCheckBox" name="cb_hide_children">
-           <property name="statusTip">
-            <string>When checked, Children and Babies will not be displayed in the grid at all. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read of dwarves occurrs!&lt;/font&gt;&lt;/b&gt;</string>
-           </property>
-           <property name="text">
-            <string>Don't Display Children or Babies</string>
            </property>
           </widget>
          </item>
@@ -161,6 +161,19 @@
            </property>
           </widget>
          </item>
+         <item row="8" column="0">
+          <widget class="QCheckBox" name="cb_alert_on_lost_connection">
+           <property name="statusTip">
+            <string>When checked, Dwarf Therapist will alert you if it ever loses connectivity to your Dwarf Fortress game. This helps avoid writing bad data to your fort.  &lt;font color=red&gt;&lt;b&gt;Note: this change requires a restart of Dwarf Therapist!&lt;/font&gt;&lt;/b&gt;</string>
+           </property>
+           <property name="whatsThis">
+            <string>When checked, Dwarf Therapist will alert you if it ever loses connectivity to your Dwarf Fortress game. This helps avoid writing bad data to your fort.</string>
+           </property>
+           <property name="text">
+            <string>Alert on Lost Connection</string>
+           </property>
+          </widget>
+         </item>
          <item row="5" column="0">
           <widget class="QCheckBox" name="cb_show_full_dwarf_names">
            <property name="toolTip">
@@ -193,7 +206,7 @@
            </property>
           </widget>
          </item>
-         <item row="10" column="0">
+         <item row="11" column="0">
           <widget class="QCheckBox" name="cb_labor_exclusions">
            <property name="statusTip">
             <string>When unchecked labor exclusions are ignored (wood cutting, mining and hunting primarily). &lt;b&gt;&lt;font color=&quot;red&quot;&gt;WARNING: Disabling this can cause equipment problems!&lt;/font&gt;&lt;/b&gt;</string>
@@ -219,7 +232,7 @@
            </property>
           </spacer>
          </item>
-         <item row="11" column="0">
+         <item row="12" column="0">
           <widget class="QCheckBox" name="cb_animal_health">
            <property name="statusTip">
             <string>When checked, loads and shows health for animals. This requires health columns to be added to a view set to show animals!</string>
@@ -305,16 +318,13 @@
            </item>
           </layout>
          </item>
-         <item row="12" column="0">
-          <widget class="QCheckBox" name="chk_format_numbers">
-           <property name="toolTip">
-            <string>Abbreviate large numbers, such as experience and stress. For example this option would replace 100,000 stress with 100k.</string>
-           </property>
+         <item row="10" column="0">
+          <widget class="QCheckBox" name="cb_hide_visitors">
            <property name="statusTip">
-            <string>Abbreviate large numbers, such as experience and stress. For example this option would replace 100,000 stress with 100k.</string>
+            <string>When checked, Visitors and Guests will not be displayed in the grid at all. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read!&lt;/font&gt;&lt;/b&gt;</string>
            </property>
            <property name="text">
-            <string>Abbreviate large numbers (xp, stress, etc.)</string>
+            <string>Don't Display Visitors/Guests</string>
            </property>
           </widget>
          </item>
@@ -1111,7 +1121,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>463</width>
+            <width>671</width>
             <height>459</height>
            </rect>
           </property>

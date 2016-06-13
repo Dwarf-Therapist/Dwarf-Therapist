@@ -53,6 +53,7 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     , m_options_menu(0)
     , m_allow_labor_cheats(false)
     , m_hide_non_adults(false)
+    , m_hide_non_citizens(false)
     , m_show_labor_roles(true)
     , m_show_skill_roles(true)
     , m_use_SI(true)
@@ -216,6 +217,7 @@ void DwarfTherapist::read_settings() {
 
     m_allow_labor_cheats = m_user_settings->value("allow_labor_cheats", false).toBool();
     m_hide_non_adults = m_user_settings->value("hide_children_and_babies",false).toBool();
+    m_hide_non_citizens = m_user_settings->value("hide_non_citizens",false).toBool();
     m_show_labor_roles = m_user_settings->value("show_roles_in_labor",true).toBool();
     m_show_skill_roles = m_user_settings->value("show_roles_in_skills",true).toBool();
     m_use_SI = m_user_settings->value("SI_formatting",true).toBool();

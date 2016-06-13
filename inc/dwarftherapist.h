@@ -73,6 +73,7 @@ public:
 
     bool labor_cheats_allowed() const {return m_allow_labor_cheats;}
     bool hide_non_adults() const {return m_hide_non_adults;}
+    bool hide_non_citizens() const {return m_hide_non_citizens;}
     bool show_labor_roles() const {return m_show_labor_roles;}
     bool show_skill_roles() const {return m_show_skill_roles;}
     bool format_SI() const {return m_use_SI;}
@@ -134,6 +135,7 @@ private:
 
     bool m_allow_labor_cheats;
     bool m_hide_non_adults;
+    bool m_hide_non_citizens;
     bool m_show_labor_roles;
     bool m_show_skill_roles;
     bool m_use_SI;

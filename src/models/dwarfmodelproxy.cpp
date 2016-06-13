@@ -199,17 +199,6 @@ bool DwarfModelProxy::filterAcceptsRow(int source_row, const QModelIndex &source
         }
     }
 
-    //filter children and babies if necessary, but only check this if we've already got a match with a filter
-    //DOESNT apply to animals!!
-    if(matches){
-        if(dwarf_id && DT->hide_non_adults()) {
-            Dwarf *d = m->get_dwarf_by_id(dwarf_id);
-            if(!d->is_animal()){
-                matches = (!d->is_baby() && !d->is_child());
-            }
-        }
-    }
-
     return matches;
 }
 

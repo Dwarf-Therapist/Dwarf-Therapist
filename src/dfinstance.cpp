@@ -373,10 +373,8 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
                 if(!d->is_animal()){
                     m_actual_dwarves.append(d);
                     //never calculate roles for babies
-                    //only calculate roles for children if they're shown and labor cheats are enabled
-                    if(!d->is_baby() &&
-                            (!d->is_child() ||
-                             (DT->labor_cheats_allowed() && !DT->hide_non_adults()))){
+                    //only calculate roles for children if labor cheats are enabled
+                    if(!d->is_baby() && (!d->is_child() || DT->labor_cheats_allowed())){
                         m_labor_capable_dwarves.append(d);
                     }
                 }

@@ -193,6 +193,8 @@ public:
     Q_INVOKABLE bool is_child() {return m_is_child;}
     Q_INVOKABLE bool is_baby() {return m_is_baby;}
 
+    Q_INVOKABLE bool is_citizen() {return m_is_citizen;}
+
     Q_INVOKABLE QString occupation() {return get_occupation_desc(m_occ_type);}
     UNIT_OCCUPATION get_occupation() {return m_occ_type;}
 
@@ -200,7 +202,7 @@ public:
     Q_INVOKABLE QString profession();
 
     //! return the raw game-set profession for a dwarf
-    Q_INVOKABLE int raw_profession() {return m_raw_profession;}
+    Q_INVOKABLE int raw_profession() {return m_raw_prof_id;}
 
     //! custom profession string (if set)
     Q_INVOKABLE QString custom_profession_name() {return m_pending_custom_profession;}
@@ -613,12 +615,13 @@ private:
     QString m_translated_last_name; // last name in human english
     QString m_nice_name; // full name (depends on settings)
     QString m_translated_name; // full name using human english last name
-    QString m_custom_profession; // set by user
+    QString m_custom_prof_name; // set by user
     QString m_pending_custom_profession; // uncommitted
-    QString m_profession; // name of profession set by game
+    QString m_prof_name; // name of profession set by game
     QPixmap m_icn_prof;
     QString m_icn_gender;
-    int m_raw_profession; // id of profession set by game
+    int m_raw_prof_id; // id of profession set by game
+    Profession *m_raw_profession;
     bool m_can_set_labors; // used to prevent cheating
     bool m_locked_mood;
     bool m_stressed_mood;
@@ -686,6 +689,7 @@ private:
     bool m_can_assign_military;
     bool m_active_military;
     unit_gender m_gender_info;
+    bool m_is_citizen;
 
     //! inventory grouped by body part /category
     QHash<QString,QList<Item*> > m_inventory_grouped;
@@ -714,7 +718,6 @@ private:
     void read_gender_orientation();
     void read_mood();
     void read_curse();
-    void read_hist_fig();
     void read_caste();
     void read_race();
     void read_body_size();
