@@ -515,6 +515,9 @@
    <addaction name="act_help"/>
    <addaction name="separator"/>
    <addaction name="act_exit"/>
+   <addaction name="separator"/>
+   <addaction name="act_update"/>
+   <addaction name="act_warning"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="BaseDock" name="dock_pending_jobs_list">
@@ -757,7 +760,7 @@
      <normaloff>:/img/connect.png</normaloff>:/img/connect.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Connect To DF</string>
+    <string>&amp;Connect</string>
    </property>
    <property name="toolTip">
     <string>Attempt connecting to a running copy of Dwarf Fortress (CTRL+SHIFT+C)</string>
@@ -802,10 +805,10 @@
      <normaloff>:/img/refresh.png</normaloff>:/img/refresh.png</iconset>
    </property>
    <property name="text">
-    <string>Read Dwarves</string>
+    <string>Read</string>
    </property>
    <property name="iconText">
-    <string>Read Dwarves</string>
+    <string>Read</string>
    </property>
    <property name="toolTip">
     <string>Attempt to load all Dwarves from DF (CTRL+R)</string>
@@ -1149,6 +1152,30 @@
    </property>
    <property name="toolTip">
     <string>Open the Dwarf Therapist manual.</string>
+   </property>
+  </action>
+  <action name="act_update">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/img/information.png</normaloff>:/img/information.png</iconset>
+   </property>
+   <property name="text">
+    <string>Info</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="act_warning">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/img/exclamation-circle.png</normaloff>:/img/exclamation-circle.png</iconset>
+   </property>
+   <property name="text">
+    <string>Alert</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
  </widget>
@@ -1618,6 +1645,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_update</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>act_url_btn_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>629</x>
+     <y>257</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_warning</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>act_url_btn_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>629</x>
+     <y>257</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -1648,5 +1707,6 @@
   <slot>export_custom_roles()</slot>
   <slot>import_custom_roles()</slot>
   <slot>open_help()</slot>
+  <slot>act_url_btn_clicked()</slot>
  </slots>
 </ui>

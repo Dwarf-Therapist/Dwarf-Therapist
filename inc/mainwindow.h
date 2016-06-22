@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <QProgressBar>
 #include <QCompleter>
 #include <QToolButton>
+#include <QNetworkAccessManager>
 
 #include "global_enums.h"
 
@@ -110,18 +111,21 @@ public:
         void save_gridview_csv();
 
         // version check
-        void check_latest_version(bool show_result_on_equal=false);
-        void version_check_finished(bool error);
+        void check_latest_version();
+        void version_check_finished();
 
         // layout check
-        void check_for_layout(const QString & checksum);
-        void layout_check_finished(bool error);
+        void check_layouts(const QString & df_checksum);
+        void layout_downloaded();
 
         // links
         void go_to_forums();
         void go_to_donate();
         void go_to_project_home();
         void go_to_new_issue();
+
+        // new update / warning button clicks
+        void act_url_btn_clicked();
 
         //help
         void open_help();
@@ -153,6 +157,8 @@ public:
         void refresh_active_scripts();
         void clear_filter();
 
+        void show_connection_err(QStringList msg);
+
 private:
     DFInstance *m_df;
     QLabel *m_lbl_status;
@@ -170,19 +176,19 @@ private:
     bool m_show_result_on_equal; //! used during version checks
     QCompleter *m_dwarf_name_completer;
     QStringList m_dwarf_names_list;
-    bool m_force_connect;
     bool m_try_download;
-    QString m_tmp_checksum;
     bool m_deleting_settings;
     pop_info m_pop_info;
     bool m_toolbar_configured;
-
     QVector<int> m_selected_units;
+    QString m_last_updated_checksum;
 
     //optimize button and separator widgets and their corresponding toolbar actions
     QAction *m_act_sep_optimize;
     QAction *m_act_btn_optimize; //this is required in addition to the button to allow easy visibility toggling
     QToolButton *m_btn_optimize;
+
+    QNetworkAccessManager *m_network;
 
     void showEvent(QShowEvent *evt);
     void closeEvent(QCloseEvent *evt); // override;
@@ -196,6 +202,8 @@ private:
     void reset();
 
     void refresh_pop_counts();
+
+    void update_url_button(QAction *act, QStringList msgs, const QString &url);
 
     private slots:
         void set_interface_enabled(bool);

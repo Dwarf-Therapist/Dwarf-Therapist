@@ -40,8 +40,5 @@ public:
 private:
     Ui::AboutDialog *ui;
     Version m_version;
-
-    private slots:
-        void check_version();
 };
 #endif

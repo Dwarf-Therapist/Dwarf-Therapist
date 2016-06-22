@@ -52,7 +52,6 @@ struct iovec {
 
 DFInstanceLinux::DFInstanceLinux(QObject* parent)
     : DFInstanceNix(parent)
-    , m_pid(0)
     , m_inject_addr(-1)
     , m_alloc_start(0)
     , m_alloc_end(0)
@@ -248,10 +247,7 @@ USIZE DFInstanceLinux::write_raw(const VIRTADDR &addr, const USIZE &bytes,
     return bytes_written;
 }
 
-bool DFInstanceLinux::find_running_copy(bool connect_anyway) {
-    // find PID of DF
-    TRACE << "attempting to find running copy of DF by executable name";
-
+bool DFInstanceLinux::set_pid(){
     QStringList str_pids;
     QDirIterator iter("/proc", QDir::AllDirs | QDir::NoDotAndDotDot | QDir::Readable | QDir::Executable);
     while (iter.hasNext()) {
@@ -273,17 +269,23 @@ bool DFInstanceLinux::find_running_copy(bool connect_anyway) {
         } else {
             m_pid = str_pids.at(0).toInt();
         }
-
-        m_memory_file.setFileName(QString("/proc/%1/mem").arg(m_pid));
-
-        TRACE << "USING PID:" << m_pid;
     } else {
-        QMessageBox::warning(0, tr("Warning"),
-                             tr("Unable to locate a running copy of Dwarf "
-                                "Fortress, are you sure it's running?"));
-        LOGW << "can't find running copy";
-        m_is_ok = false;
-        return m_is_ok;
+        LOGE << "can't find running copy";
+        return false;
+    }
+    return true;
+}
+
+void DFInstanceLinux::find_running_copy() {
+    m_status = DFS_DISCONNECTED;
+    // find PID of DF
+    TRACE << "attempting to find running copy of DF by executable name";
+
+    if(set_pid()){
+        m_memory_file.setFileName(QString("/proc/%1/mem").arg(m_pid));
+        TRACE << "USING PID:" << m_pid;
+    }else{
+        return;
     }
 
     m_inject_addr = unsigned(-1);
@@ -291,15 +293,11 @@ bool DFInstanceLinux::find_running_copy(bool connect_anyway) {
     m_alloc_end = 0;
 
     m_loc_of_dfexe = QString("/proc/%1/exe").arg(m_pid);
-
-    QString checksum = calculate_checksum();
-
-    m_layout = get_memory_layout(checksum.toLower(), !connect_anyway);
-
     m_df_dir = QDir(QFileInfo(QString("/proc/%1/cwd").arg(m_pid)).symLinkTarget());
     LOGI << "Dwarf fortress path:" << m_df_dir.absolutePath();
 
-    return m_is_ok || connect_anyway;
+    m_status = DFS_CONNECTED;
+    set_memory_layout(calculate_checksum());
 }
 
 /* Support for executing system calls in the context of the game process. */

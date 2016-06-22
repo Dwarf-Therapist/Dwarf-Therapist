@@ -123,7 +123,7 @@ OptionsMenu::OptionsMenu(QWidget *parent)
                                     "cursed",FortressEntity::get_default_color(FortressEntity::CURSED),this);
 
     int spacing = 4;
-    QMargins def_margins = QMargins(1,1,1,1);
+    QMargins def_margins = QMargins(4,1,1,1);
 
     QVBoxLayout *health_layout = new QVBoxLayout;
     health_layout->addWidget(ui->cb_grid_health_colors);
@@ -193,6 +193,8 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     connect(ui->chk_show_roles,SIGNAL(toggled(bool)),this,SLOT(tooltip_roles_toggled(bool)));
     connect(ui->chk_show_buffs,SIGNAL(toggled(bool)),this,SLOT(tooltip_syndromes_toggled(bool)));
     connect(ui->chk_show_thoughts,SIGNAL(toggled(bool)),this,SLOT(tooltip_thoughts_toggled(bool)));
+
+    connect(ui->btn_reset_updates,SIGNAL(pressed()),this,SLOT(restore_update_defaults()));
 
     read_settings();
 }
@@ -404,6 +406,9 @@ void OptionsMenu::read_settings() {
     ui->chk_roles_in_skills->setChecked(s->value("show_roles_in_skills",true).toBool());
     ui->chk_format_numbers->setChecked(s->value("SI_formatting",true).toBool());
 
+    ui->le_repo_owner->setText(s->value("update_repo_owner",REPO_OWNER).toString());
+    ui->le_repo_name->setText(s->value("update_repo_name",REPO_NAME).toString());
+
     s->endGroup();
 
     m_reading_settings = false;
@@ -510,6 +515,10 @@ void OptionsMenu::write_settings() {
         s->setValue("tooltip_show_buffs", ui->chk_show_buffs->isChecked());
         s->setValue("tooltip_show_kills", ui->chk_show_kills->isChecked());
         s->setValue("tooltip_thought_weeks", ui->cb_thought_time->itemData(ui->cb_thought_time->currentIndex()).toInt());
+
+        s->setValue("update_repo_owner", ui->le_repo_owner->text());
+        s->setValue("update_repo_name", ui->le_repo_name->text());
+
         short val = 0;
         if(ui->rad_syn_classes->isChecked())
             val = 1;
@@ -545,6 +554,11 @@ void OptionsMenu::reject() {
     m_main_font.second = m_main_font.first;
     read_settings();
     QDialog::reject();
+}
+
+void OptionsMenu::restore_update_defaults(){
+    ui->le_repo_owner->setText(REPO_OWNER);
+    ui->le_repo_name->setText(REPO_NAME);
 }
 
 void OptionsMenu::restore_defaults() {
@@ -646,6 +660,8 @@ void OptionsMenu::restore_defaults() {
     ui->sb_cell_padding->setValue(0);
 
     set_skill_drawing_method(UberDelegate::SDM_NUMERIC);
+
+    restore_update_defaults();
 }
 
 void OptionsMenu::show_font_chooser(QPair<QFont,QFont> &font_pair, QString msg, QLabel *l) {

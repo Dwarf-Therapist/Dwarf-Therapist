@@ -799,6 +799,9 @@ void DwarfModel::calculate_pending() {
 }
 
 void DwarfModel::clear_pending() {
+    if(!m_df){
+        return;
+    }
     //clear squads before we refresh dwarf data
     foreach(Squad *s, m_df->squads()){
         if(s->pending_changes())

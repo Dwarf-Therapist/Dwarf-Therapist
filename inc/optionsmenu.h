@@ -45,7 +45,9 @@ public:
     public slots:
         void accept();
         void reject();
+
         void restore_defaults();
+        void restore_update_defaults();
 
         void show_row_font_chooser();
         void show_header_font_chooser();

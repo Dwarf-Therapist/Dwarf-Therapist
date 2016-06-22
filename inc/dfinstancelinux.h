@@ -31,9 +31,7 @@ class DFInstanceLinux : public DFInstanceNix {
 public:
     DFInstanceLinux(QObject *parent=0);
     virtual ~DFInstanceLinux();
-
-    // factory ctor
-    bool find_running_copy(bool connect_anyway = false);
+    void find_running_copy();
 
     USIZE read_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes, void *buffer);
     USIZE read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer);
@@ -46,7 +44,7 @@ public:
     bool detach();
 
 protected:
-    pid_t m_pid;
+    bool set_pid();
 
 private:
     SSIZE process_vm(long number, const VIRTADDR &addr

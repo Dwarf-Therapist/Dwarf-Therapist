@@ -2,29 +2,31 @@
 #include "utils.h"
 #include "truncatingfilelogger.h"
 #include "dfinstance.h"
-#include <QFileInfo>
 #include <QSettings>
+#include <QCryptographicHash>
 
-MemoryLayout::MemoryLayout(const QString &filename)
-    : m_filename(filename)
+MemoryLayout::MemoryLayout(const QFileInfo &fileinfo)
+    : m_fileinfo(fileinfo)
     , m_checksum(QString::null)
-    , m_data(m_filename, QSettings::IniFormat)
+    , m_git_sha(QString::null)
+    , m_data(m_fileinfo.absoluteFilePath(), QSettings::IniFormat)
     , m_complete(true)
     , m_base_addr(0)
 {
-    TRACE << "Attempting to contruct MemoryLayout from file " << filename;
-    QFileInfo info(m_filename);
-    if (info.exists() && info.isReadable()) {
+    TRACE << "Attempting to contruct MemoryLayout from file " << fileinfo.absoluteFilePath();
+
+    if (m_fileinfo.exists() && m_fileinfo.isReadable()) {
         load_data();
     } else {
-        LOGE << m_filename << "could either not be found or not be opened!";
+        LOGE << m_fileinfo.absoluteFilePath() << "could either not be found or not be opened!";
     }
 }
 
-MemoryLayout::MemoryLayout(const QString &filename, const QSettings &data)
-    : m_filename(filename)
+MemoryLayout::MemoryLayout(const QFileInfo &fileinfo, const QSettings &data)
+    : m_fileinfo(fileinfo)
     , m_checksum(QString::null)
-    , m_data(m_filename, QSettings::IniFormat)
+    , m_git_sha(QString::null)
+    , m_data(m_fileinfo.absoluteFilePath(), QSettings::IniFormat)
     , m_complete(true)
     , m_base_addr(0)
 {
@@ -36,9 +38,26 @@ MemoryLayout::MemoryLayout(const QString &filename, const QSettings &data)
 
 void MemoryLayout::load_data() {
     if (!is_valid()) {
-        LOGE << "Skipping read of invalid memory layout in" << m_filename;
+        LOGE << "Skipping read of invalid memory layout in" << m_fileinfo.absoluteFilePath();
         return;
     }
+
+    if(!m_offsets.isEmpty()){
+        m_data.sync();
+        m_offsets.clear();
+        m_flags.clear();
+    }
+
+    //read the file data, and generate the git sha; the format is blob <contentSize>\0<content>
+    QFile file(m_fileinfo.absoluteFilePath());
+    if(file.open(QIODevice::ReadOnly)){
+        QString file_data = QString(file.readAll()).replace("\r\n","\n"); //line endings need to match the git config
+        file_data.prepend(QString("blob %1%2")
+                          .arg(QString::number(file_data.size()))
+                          .arg(QChar('\0')));
+        m_git_sha = QCryptographicHash::hash(file_data.toLocal8Bit(),QCryptographicHash::Sha1).toHex();
+    }
+    file.close();
 
     // basics (if these are missing, don't read anything else)
     m_data.beginGroup("info");
@@ -47,82 +66,14 @@ void MemoryLayout::load_data() {
     m_complete = m_data.value("complete", true).toBool();
     m_data.endGroup();
 
-    read_group("addresses", m_addresses);
-    read_group("offsets", m_offsets);
-    read_group("dwarf_offsets", m_dwarf_offsets);
-    read_group("job_details", m_job_details);
-    read_group("soul_details", m_soul_details);
-    read_group("emotion_offsets", m_emotion_offsets);
-    read_group("squad_offsets", m_squad_offsets);
-    read_group("activity_offsets", m_activity_offsets);
-    read_group("word_offsets", m_word_offsets);
-
-    read_group("race_offsets", m_race_offsets);
-    read_group("caste_offsets", m_caste_offsets);
-
-    read_group("hist_figure_offsets", m_hist_fig_offsets);
-    read_group("hist_event_offsets", m_hist_event_offsets);
-    read_group("hist_entity_offsets", m_hist_entity_offsets);
-
-    read_group("plant_offsets", m_plant_offsets);
-    read_group("material_offsets", m_material_offsets);
-
-    read_group("weapon_subtype_offsets", m_weapon_subtype_offsets);
-    read_group("armor_subtype_offsets", m_armor_subtype_offsets);
-    read_group("item_subtype_offsets", m_item_subtype_offsets);
-    read_group("item_offsets", m_item_offsets);
-    read_group("item_filter_offsets", m_item_filter_offsets);
-
-    read_group("descriptor_offsets", m_descriptor_offsets);
-    read_group("general_ref_offsets", m_general_ref_offsets);
-
-    read_group("health_offsets", m_health_offsets);
-    read_group("unit_wound_offsets", m_unit_wound_offsets);
-
-    read_group("syndrome_offsets", m_syndrome_offsets);
-
-    // flags
-    int flag_count = m_data.beginReadArray("valid_flags_1");
-    for (int i = 0; i < flag_count; ++i) {
-        m_data.setArrayIndex(i);
-        m_valid_flags_1.insert(read_hex("value"),
-            m_data.value("name", "UNKNOWN VALID FLAG 1").toString());
+    //load offsets by section
+    for(int idx = 0; idx < MEM_COUNT; idx++){
+        read_group(static_cast<MEM_SECTION>(idx));
     }
-    m_data.endArray();
-
-    flag_count = m_data.beginReadArray("invalid_flags_1");
-    for (int i = 0; i < flag_count; ++i) {
-        m_data.setArrayIndex(i);
-        m_invalid_flags_1.insert(read_hex("value"),
-            m_data.value("name", "UNKNOWN INVALID FLAG 1").toString());
+    //load flags
+    for(int idx = 0; idx < FLAG_TYPE_COUNT; idx++){
+        read_flags(static_cast<UNIT_FLAG_TYPE>(idx));
     }
-    m_data.endArray();
-
-    flag_count = m_data.beginReadArray("valid_flags_2");
-    //LOGD << "valid_flags_2 count: " << flag_count;
-    for (int i = 0; i < flag_count; ++i) {
-        m_data.setArrayIndex(i);
-        m_valid_flags_2.insert(read_hex("value"),
-            m_data.value("name", "UNKNOWN VALID FLAG 2").toString());
-    }
-    m_data.endArray();
-
-    flag_count = m_data.beginReadArray("invalid_flags_2");
-    for (int i = 0; i < flag_count; ++i) {
-        m_data.setArrayIndex(i);
-        m_invalid_flags_2.insert(read_hex("value"),
-            m_data.value("name", "UNKNOWN INVALID FLAG 2").toString());
-    }
-    m_data.endArray();
-
-    flag_count = m_data.beginReadArray("invalid_flags_3");
-    for (int i = 0; i < flag_count; ++i) {
-        m_data.setArrayIndex(i);
-        m_invalid_flags_3.insert(read_hex("value"),
-            m_data.value("name", "UNKNOWN INVALID FLAG 3").toString());
-    }
-    m_data.endArray();
-
 }
 
 uint MemoryLayout::read_hex(QString key) {
@@ -137,26 +88,42 @@ bool MemoryLayout::is_valid() {
            && m_data.contains("info/version_name");
 }
 
-void MemoryLayout::read_group(const QString &group, AddressHash &map) {
-    m_data.beginGroup(group);
+void MemoryLayout::read_group(const MEM_SECTION &section) {
+    QString ini_name = section_name(section);
+    AddressHash map = m_offsets[section];
+    m_data.beginGroup(ini_name);
     foreach(QString k, m_data.childKeys()) {
         map.insert(k, read_hex(k));
     }
     m_data.endGroup();
+    m_offsets.insert(section,map);
+}
+
+void MemoryLayout::read_flags(const UNIT_FLAG_TYPE &flag_type){
+    QString ini_name = flag_type_name(flag_type);
+    QHash<uint,QString> map = m_flags[flag_type];
+    int flag_count = m_data.beginReadArray(ini_name);
+    for (int idx = 0; idx < flag_count; ++idx) {
+        m_data.setArrayIndex(idx);
+        map.insert(read_hex("value"),
+            m_data.value("name", QString("unk_%1.%2").arg(ini_name).arg(idx)).toString());
+    }
+    m_data.endArray();
+    m_flags.insert(flag_type,map);
 }
 
 uint MemoryLayout::string_buffer_offset() {
-    return m_offsets.value("string_buffer_offset", DFInstance::STRING_BUFFER_OFFSET);
+    return m_offsets.value(MEM_LANGUAGE).value("string_buffer_offset", DFInstance::STRING_BUFFER_OFFSET);
 }
 
 uint MemoryLayout::string_length_offset() {
     return string_buffer_offset() +
-            m_offsets.value("string_length_offset", DFInstance::STRING_LENGTH_OFFSET);
+            m_offsets.value(MEM_LANGUAGE).value("string_length_offset", DFInstance::STRING_LENGTH_OFFSET);
 }
 
 uint MemoryLayout::string_cap_offset() {
     return string_buffer_offset() +
-            m_offsets.value("string_cap_offset", DFInstance::STRING_CAP_OFFSET);
+            m_offsets.value(MEM_LANGUAGE).value("string_cap_offset", DFInstance::STRING_CAP_OFFSET);
 }
 
 void MemoryLayout::set_address(const QString & key, uint value) {
@@ -182,7 +149,7 @@ void MemoryLayout::set_complete() {
     m_data.setValue("info/complete", "true");
 }
 
-bool MemoryLayout::is_valid_address(uint address){
-    return (address != 0x000);
+bool MemoryLayout::is_valid_address(VIRTADDR addr){
+    return (addr != 0x000);
 }
 

@@ -52,82 +52,60 @@ public:
     DFInstance(QObject *parent=0);
     virtual ~DFInstance();
 
-    // factory ctor
-    virtual bool find_running_copy(bool connectUnknown = false) = 0;
+    virtual void find_running_copy() = 0;
+    virtual bool df_running() = 0;
 
     static quint32 ticks_per_day;
     static quint32 ticks_per_month;
     static quint32 ticks_per_season;
     static quint32 ticks_per_year;
 
+    typedef enum{
+        DFS_DISCONNECTED = -1,
+        DFS_CONNECTED,
+        DFS_LAYOUT_OK,
+        DFS_GAME_LOADED
+    } DFI_STATUS;
+
     // accessors
-    bool is_ok() {return m_is_ok;}
+    const QString df_checksum() {return m_df_checksum;}
+    const QString layout_subdir();
+    DFI_STATUS status() const {return m_status;}
     WORD dwarf_race_id() {return m_dwarf_race_id;}
     QList<MemoryLayout*> get_layouts() { return m_memory_layouts.values(); }
     QDir get_df_dir() { return m_df_dir; }
     WORD current_year() {return m_current_year;}
     WORD dwarf_civ_id() {return m_dwarf_civ_id;}
+    const QStringList status_err_msg();
 
-    // revamped memory reading
+    // memory reading
     virtual USIZE read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buf) = 0;
+    virtual QString read_string(const VIRTADDR &addr) = 0;
     USIZE read_raw(const VIRTADDR &addr, const USIZE &bytes, QByteArray &buffer);
     BYTE read_byte(const VIRTADDR &addr);
     WORD read_word(const VIRTADDR &addr);
     VIRTADDR read_addr(const VIRTADDR &addr);
     qint16 read_short(const VIRTADDR &addr);
     qint32 read_int(const VIRTADDR &addr);
-
-    // memory reading
     QVector<VIRTADDR> enumerate_vector(const VIRTADDR &addr);
     QVector<qint16> enumerate_vector_short(const VIRTADDR &addr);
-
-    virtual QString read_string(const VIRTADDR &addr) = 0;
-
-    QString pprint(const QByteArray &ba);
-
     Word * read_dwarf_word(const VIRTADDR &addr);
     QString read_dwarf_name(const VIRTADDR &addr);
 
-    // Methods for when we know how the data is layed out
+    QString pprint(const QByteArray &ba);
+
+    // Memory layouts
     MemoryLayout *memory_layout() {return m_layout;}
-    void read_raws();
-    QVector<Dwarf*> load_dwarves();
-    void load_reactions();
-    void load_races_castes();
-    void load_main_vectors();
-
-    void load_item_defs();
-    void load_items();
-
-    void load_fortress();
-    void load_fortress_name();
-
-    void load_activities();
-
-    void refresh_data();
-
-    QList<Squad*> load_squads(bool show_progress);
-    Squad * get_squad(int id);
-
-    int get_labor_count(int id) const {return m_enabled_labor_count.value(id,0);}
-    void update_labor_count(int id, int change)
-    {
-        m_enabled_labor_count[id] += change;
-    }
-
-
-
-    // Set layout
-    void set_memory_layout(MemoryLayout * layout) { m_layout = layout; }
+    void set_memory_layout(QString checksum = QString());
+    MemoryLayout *get_memory_layout(QString checksum);
+    MemoryLayout *find_memory_layout(QString git_sha);
+    bool add_new_layout(const QString & filename, const QString data, QString &result_msg);
 
     // Writing
     virtual USIZE write_raw(const VIRTADDR &addr, const USIZE &bytes, const void *buffer) = 0;
     USIZE write_raw(const VIRTADDR &addr, const USIZE &bytes, const QByteArray &buffer);
     virtual USIZE write_string(const VIRTADDR &addr, const QString &str) = 0;
     USIZE write_int(const VIRTADDR &addr, const int &val);
-
-    bool add_new_layout(const QString & version, QFile & file);
-    void layout_not_found(const QString & checksum);
 
     bool is_attached() {return m_attach_count > 0;}
     virtual bool attach() = 0;
@@ -154,9 +132,33 @@ public:
     static const int STRING_CAP_OFFSET = 0;    // Dummy value
 #endif
 
-    MemoryLayout *get_memory_layout(QString checksum, bool warn = true);
-
+    // Methods for when we know how the data is layed out
     void load_game_data();
+    void read_raws();
+
+    QVector<Dwarf*> load_dwarves();
+    void load_reactions();
+    void load_races_castes();
+    void load_main_vectors();
+
+    void load_item_defs();
+    void load_items();
+
+    void load_fortress();
+    void load_fortress_name();
+
+    void load_activities();
+
+    void refresh_data();
+
+    QList<Squad*> load_squads(bool show_progress);
+    Squad * get_squad(int id);
+
+    int get_labor_count(int id) const {return m_enabled_labor_count.value(id,0);}
+    void update_labor_count(int id, int change)
+    {
+        m_enabled_labor_count[id] += change;
+    }
 
     QString get_language_word(VIRTADDR addr);
     QString get_translated_word(VIRTADDR addr);
@@ -173,8 +175,6 @@ public:
     VIRTADDR find_occupation(int histfig_id);
 
     FortressEntity * fortress() {return m_fortress;}
-
-    void index_item_vector(ITEM_TYPE itype);
 
     struct pref_stat{
         QStringList names_likes;
@@ -227,13 +227,8 @@ public:
     const QString fortress_name();
     QList<Squad*> squads() {return m_squads;}
 
-    public slots:
-        // if a menu cancels our scan, we need to know how to stop
-        void cancel_scan() {m_stop_scan = true;}
 protected:
-    bool m_stop_scan; // flag that gets set to stop scan loops
-    bool m_is_ok;
-    int m_bytes_scanned;
+    QString m_df_checksum;
     MemoryLayout *m_layout;
     int m_attach_count;
     QTimer *m_heartbeat_timer;
@@ -246,6 +241,9 @@ protected:
     quint32 m_cur_year_tick;
     quint32 m_cur_time;
     QHash<int,int> m_enabled_labor_count;
+    DFI_STATUS m_status;
+
+    virtual bool set_pid() = 0;
 
     void load_population_data();
     void load_role_ratings();
@@ -259,8 +257,8 @@ protected:
         an MD5 of the binary instead of a PE timestamp */
     QHash<QString, MemoryLayout*> m_memory_layouts; // checksum->layout
 
-    private slots:
-        void heartbeat();
+private slots:
+    void heartbeat();
 
 signals:
     // methods for sending progress information to QWidgets
@@ -303,9 +301,6 @@ private:
 
     QVector<VIRTADDR> m_all_syndromes;
 
-    void load_hist_figures();
-    void load_occupations();
-
     QHash<ITEM_TYPE,EquipWarn*> m_equip_warning_counts;
     QHash<QPair<QString,QString>, pref_stat*> m_pref_counts;
     QHash<int, EmotionGroup*> m_emotion_counts;
@@ -314,8 +309,12 @@ private:
     QString m_fortress_name_translated;
 
     VIRTADDR m_squad_vector;
-
     QList<Squad*> m_squads;
+
+    void load_hist_figures();
+    void load_occupations();
+    void index_item_vector(ITEM_TYPE itype);
+    void send_connection_interrupted();
 };
 
 #endif // DFINSTANCE_H

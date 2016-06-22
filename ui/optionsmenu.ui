@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>714</width>
-    <height>584</height>
+    <width>717</width>
+    <height>526</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,7 @@
    <iconset resource="../resources.qrc">
     <normaloff>:/img/color_wheel.png</normaloff>:/img/color_wheel.png</iconset>
   </property>
-  <layout class="QVBoxLayout" name="vbox" stretch="0,1,0">
+  <layout class="QVBoxLayout" name="vbox" stretch="0,0">
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="enabled">
@@ -52,26 +52,13 @@
       <attribute name="title">
        <string>General</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout">
+      <layout class="QVBoxLayout" name="verticalLayout_7">
        <item>
         <layout class="QGridLayout" name="gridLayout_5">
          <property name="verticalSpacing">
           <number>4</number>
          </property>
-         <item row="13" column="0">
-          <widget class="QCheckBox" name="chk_format_numbers">
-           <property name="toolTip">
-            <string>Abbreviate large numbers, such as experience and stress. For example this option would replace 100,000 stress with 100k.</string>
-           </property>
-           <property name="statusTip">
-            <string>Abbreviate large numbers, such as experience and stress. For example this option would replace 100,000 stress with 100k.</string>
-           </property>
-           <property name="text">
-            <string>Abbreviate large numbers (xp, stress, etc.)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
+         <item row="4" column="0">
           <widget class="QCheckBox" name="cb_single_click_labor_changes">
            <property name="toolTip">
             <string/>
@@ -84,45 +71,6 @@
            </property>
            <property name="text">
             <string>Single Click Labor Changes</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QCheckBox" name="cb_auto_expand">
-           <property name="toolTip">
-            <string/>
-           </property>
-           <property name="statusTip">
-            <string>When checked, if dwarfs are grouped by something, this will auto-expand all groups each view change</string>
-           </property>
-           <property name="whatsThis">
-            <string>When checked, if dwarfs are grouped by something, this will auto-expand all groups each view change</string>
-           </property>
-           <property name="text">
-            <string>Expand Groups On Load</string>
-           </property>
-          </widget>
-         </item>
-         <item row="9" column="0">
-          <widget class="QCheckBox" name="cb_hide_children">
-           <property name="statusTip">
-            <string>When checked, Children and Babies will not be displayed in the grid at all. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read!&lt;/font&gt;&lt;/b&gt;</string>
-           </property>
-           <property name="text">
-            <string>Don't Display Children or Babies</string>
-           </property>
-          </widget>
-         </item>
-         <item row="6" column="0">
-          <widget class="QCheckBox" name="cb_generic_names">
-           <property name="statusTip">
-            <string>When checked, show generic (English) last names for dwarves. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read of dwarves occurrs!&lt;/font&gt;&lt;/b&gt;</string>
-           </property>
-           <property name="whatsThis">
-            <string>When checked, show generic (English) last names for dwarves. Note: this change will not take effect until the next full read of dwarves occurrs!</string>
-           </property>
-           <property name="text">
-            <string>Show Generic Dwarf Names</string>
            </property>
           </widget>
          </item>
@@ -142,26 +90,7 @@
            </property>
           </widget>
          </item>
-         <item row="7" column="0">
-          <widget class="QCheckBox" name="cb_check_for_updates_on_startup">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="statusTip">
-            <string>When checked, Dwarf Therapist will go online at the time of launch and notify you if there is an update available.</string>
-           </property>
-           <property name="whatsThis">
-            <string>When checked, Dwarf Therapist will go online at the time of launch and notify you if there is an update available.</string>
-           </property>
-           <property name="text">
-            <string>Check For Updates On Startup</string>
-           </property>
-           <property name="checked">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="8" column="0">
+         <item row="2" column="0">
           <widget class="QCheckBox" name="cb_alert_on_lost_connection">
            <property name="statusTip">
             <string>When checked, Dwarf Therapist will alert you if it ever loses connectivity to your Dwarf Fortress game. This helps avoid writing bad data to your fort.  &lt;font color=red&gt;&lt;b&gt;Note: this change requires a restart of Dwarf Therapist!&lt;/font&gt;&lt;/b&gt;</string>
@@ -171,22 +100,6 @@
            </property>
            <property name="text">
             <string>Alert on Lost Connection</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="0">
-          <widget class="QCheckBox" name="cb_show_full_dwarf_names">
-           <property name="toolTip">
-            <string/>
-           </property>
-           <property name="statusTip">
-            <string>When checked, show first names for dwarfs even if they have custom nicknames. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read of dwarves occurrs!&lt;/font&gt;&lt;/b&gt;</string>
-           </property>
-           <property name="whatsThis">
-            <string>When checked, show first names for dwarfs even if they have custom nicknames. Note: this change will not take effect until the next full read of dwarves occurrs!</string>
-           </property>
-           <property name="text">
-            <string>Show Full Dwarf Names</string>
            </property>
           </widget>
          </item>
@@ -206,8 +119,30 @@
            </property>
           </widget>
          </item>
-         <item row="11" column="0">
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="cb_hide_children">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="statusTip">
+            <string>When checked, Children and Babies will not be displayed in the grid at all. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read!&lt;/font&gt;&lt;/b&gt;</string>
+           </property>
+           <property name="text">
+            <string>Don't Display Children or Babies</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
           <widget class="QCheckBox" name="cb_labor_exclusions">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="statusTip">
             <string>When unchecked labor exclusions are ignored (wood cutting, mining and hunting primarily). &lt;b&gt;&lt;font color=&quot;red&quot;&gt;WARNING: Disabling this can cause equipment problems!&lt;/font&gt;&lt;/b&gt;</string>
            </property>
@@ -220,25 +155,98 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <spacer name="horizontalSpacer_16">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+          <widget class="QCheckBox" name="cb_hide_visitors">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
+           <property name="statusTip">
+            <string>When checked, Visitors and Guests will not be displayed in the grid at all. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read!&lt;/font&gt;&lt;/b&gt;</string>
            </property>
-          </spacer>
+           <property name="text">
+            <string>Don't Display Visitors/Guests</string>
+           </property>
+          </widget>
          </item>
-         <item row="12" column="0">
+         <item row="4" column="1">
           <widget class="QCheckBox" name="cb_animal_health">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="statusTip">
             <string>When checked, loads and shows health for animals. This requires health columns to be added to a view set to show animals!</string>
            </property>
            <property name="text">
             <string>Read Animal Health Information</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QCheckBox" name="chk_format_numbers">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip">
+            <string>Abbreviate large numbers, such as experience and stress. For example this option would replace 100,000 stress with 100k.</string>
+           </property>
+           <property name="statusTip">
+            <string>Abbreviate large numbers, such as experience and stress. For example this option would replace 100,000 stress with 100k.</string>
+           </property>
+           <property name="text">
+            <string>Abbreviate large numbers (xp, stress, etc.)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QCheckBox" name="cb_auto_expand">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>When checked, if dwarfs are grouped by something, this will auto-expand all groups each view change</string>
+           </property>
+           <property name="whatsThis">
+            <string>When checked, if dwarfs are grouped by something, this will auto-expand all groups each view change</string>
+           </property>
+           <property name="text">
+            <string>Expand Groups On Load</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0">
+          <widget class="QCheckBox" name="cb_generic_names">
+           <property name="statusTip">
+            <string>When checked, show generic (English) last names for dwarves. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read of dwarves occurrs!&lt;/font&gt;&lt;/b&gt;</string>
+           </property>
+           <property name="whatsThis">
+            <string>When checked, show generic (English) last names for dwarves. Note: this change will not take effect until the next full read of dwarves occurrs!</string>
+           </property>
+           <property name="text">
+            <string>Show Generic Dwarf Names</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QCheckBox" name="cb_show_full_dwarf_names">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>When checked, show first names for dwarfs even if they have custom nicknames. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read of dwarves occurrs!&lt;/font&gt;&lt;/b&gt;</string>
+           </property>
+           <property name="whatsThis">
+            <string>When checked, show first names for dwarfs even if they have custom nicknames. Note: this change will not take effect until the next full read of dwarves occurrs!</string>
+           </property>
+           <property name="text">
+            <string>Show Full Dwarf Names</string>
            </property>
           </widget>
          </item>
@@ -318,20 +326,16 @@
            </item>
           </layout>
          </item>
-         <item row="10" column="0">
-          <widget class="QCheckBox" name="cb_hide_visitors">
-           <property name="statusTip">
-            <string>When checked, Visitors and Guests will not be displayed in the grid at all. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read!&lt;/font&gt;&lt;/b&gt;</string>
-           </property>
-           <property name="text">
-            <string>Don't Display Visitors/Guests</string>
-           </property>
-          </widget>
-         </item>
         </layout>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox">
+        <widget class="QGroupBox" name="groupBox_cheats">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="styleSheet">
           <string notr="true">QGroupBox{color: rgb(255, 0, 0);}</string>
          </property>
@@ -421,6 +425,129 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="groupBox_updates">
+         <property name="title">
+          <string>Update Settings</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <property name="spacing">
+           <number>2</number>
+          </property>
+          <property name="leftMargin">
+           <number>1</number>
+          </property>
+          <property name="topMargin">
+           <number>1</number>
+          </property>
+          <property name="rightMargin">
+           <number>1</number>
+          </property>
+          <property name="bottomMargin">
+           <number>1</number>
+          </property>
+          <item>
+           <layout class="QGridLayout" name="gridLayout_9">
+            <item row="1" column="4">
+             <widget class="QLineEdit" name="le_repo_name"/>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLabel" name="lbl_owner">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="whatsThis">
+               <string/>
+              </property>
+              <property name="text">
+               <string>Owner</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="lbl_update_location">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="toolTip">
+               <string/>
+              </property>
+              <property name="statusTip">
+               <string>The following options determine the GitHub repository to check for new releases and memory layouts.</string>
+              </property>
+              <property name="whatsThis">
+               <string>The following options determine the GitHub repository to check for new releases and memory layouts.</string>
+              </property>
+              <property name="text">
+               <string>Check for updates from...</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="3">
+             <widget class="QLabel" name="lbl_repo">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Repository</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0" colspan="5">
+             <widget class="QCheckBox" name="cb_check_for_updates_on_startup">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="statusTip">
+               <string>When checked, Dwarf Therapist will go online at the time of launch and notify you if there is an update available.</string>
+              </property>
+              <property name="whatsThis">
+               <string>When checked, Dwarf Therapist will go online at the time of launch and notify you if there is an update available.</string>
+              </property>
+              <property name="text">
+               <string>Automatically Check for Updates</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="5">
+             <widget class="QPushButton" name="btn_reset_updates">
+              <property name="text">
+               <string>Restore Default</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QLineEdit" name="le_repo_owner"/>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer_7">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -433,7 +560,26 @@
          </property>
         </spacer>
        </item>
+       <item>
+        <widget class="QTextEdit" name="text_status_tip">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="undoRedoEnabled">
+          <bool>false</bool>
+         </property>
+         <property name="textInteractionFlags">
+          <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+         </property>
+        </widget>
+       </item>
       </layout>
+      <zorder>groupBox_updates</zorder>
+      <zorder>text_status_tip</zorder>
+      <zorder>groupBox_cheats</zorder>
      </widget>
      <widget class="QWidget" name="tab_grid_options">
       <attribute name="icon">
@@ -1121,7 +1267,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>671</width>
+            <width>674</width>
             <height>459</height>
            </rect>
           </property>
@@ -2374,22 +2520,6 @@
        </item>
       </layout>
      </widget>
-    </widget>
-   </item>
-   <item>
-    <widget class="QTextEdit" name="text_status_tip">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="undoRedoEnabled">
-      <bool>false</bool>
-     </property>
-     <property name="textInteractionFlags">
-      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-     </property>
     </widget>
    </item>
    <item>

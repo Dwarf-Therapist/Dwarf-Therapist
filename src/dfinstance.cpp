@@ -75,9 +75,7 @@ quint32 DFInstance::ticks_per_year = 12 * DFInstance::ticks_per_month;
 
 DFInstance::DFInstance(QObject* parent)
     : QObject(parent)
-    , m_stop_scan(false)
-    , m_is_ok(true)
-    , m_bytes_scanned(0)
+    , m_df_checksum("")
     , m_layout(0)
     , m_attach_count(0)
     , m_heartbeat_timer(new QTimer(this))
@@ -86,6 +84,7 @@ DFInstance::DFInstance(QObject* parent)
     , m_current_year(0)
     , m_cur_year_tick(0)
     , m_cur_time(0)
+    , m_status(DFS_DISCONNECTED)
     , m_languages(0x0)
     , m_fortress(0x0)
     , m_fortress_name(tr("Embarking"))
@@ -102,10 +101,9 @@ DFInstance::DFInstance(QObject* parent)
     d.setSorting(QDir::Name | QDir::Reversed);
     QFileInfoList files = d.entryInfoList();
     foreach(QFileInfo info, files) {
-        MemoryLayout *temp = new MemoryLayout(info.absoluteFilePath());
+        MemoryLayout *temp = new MemoryLayout(info);
         if (temp->is_valid()) {
-            LOGI << "adding valid layout" << temp->game_version()
-                 << temp->checksum();
+            LOGI << "adding valid layout" << temp->game_version() << "checksum:" << temp->checksum() << "SHA:" << temp->git_sha();
             m_memory_layouts.insert(temp->checksum().toLower(), temp);
         } else {
             LOGI << "ignoring invalid layout" << info.absoluteFilePath();
@@ -201,6 +199,9 @@ DFInstance::~DFInstance() {
 
     qDeleteAll(m_equip_warning_counts);
     m_equip_warning_counts.clear();
+
+    m_heartbeat_timer->stop();
+    delete m_heartbeat_timer;
 }
 
 QVector<VIRTADDR> DFInstance::enumerate_vector(const VIRTADDR &addr) {
@@ -333,8 +334,8 @@ QString DFInstance::get_name(VIRTADDR addr, bool translate){
 
 QVector<Dwarf*> DFInstance::load_dwarves() {
     QVector<Dwarf*> dwarves;
-    if (!m_is_ok) {
-        LOGW << "not connected";
+    if (m_status < DFS_LAYOUT_OK) {
+        LOGE << "Could not load units: disconnected or invalid memory layout";
         detach();
         return dwarves;
     }
@@ -409,8 +410,8 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         DT->emit_labor_counts_updated();
 
     }else{
-        // we lost the fort!
-        m_is_ok = false;
+        // we lost the fort! reset to disconnected as DF version could potentially change
+        send_connection_interrupted();
     }
     detach();
 
@@ -839,7 +840,7 @@ void DFInstance::load_fortress_name(){
 QList<Squad *> DFInstance::load_squads(bool show_progress) {
     LOGD << "loading squads";
     QList<Squad*> squads;
-    if (!m_is_ok) {
+    if (m_status != DFS_GAME_LOADED) {
         LOGW << "not connected";
         detach();
         return squads;
@@ -903,10 +904,20 @@ Squad* DFInstance::get_squad(int id){
 void DFInstance::heartbeat() {
     // simple read attempt that will fail if the DF game isn't running a fort, or isn't running at all
     // it would be nice to find a less cumbersome read, but for now at least we know this works
-    if(get_creatures(false).size() < 1){
-        // no game loaded, or process is gone
-        emit connection_interrupted();
+    if(m_status != DFS_DISCONNECTED && get_creatures(false).size() < 1){
+        send_connection_interrupted();
     }
+}
+
+void DFInstance::send_connection_interrupted(){
+    //at this point we don't know if the process has been killed, or the fort saved
+    //assume disconnected to be safe
+    if(df_running()){
+        m_status = DFS_LAYOUT_OK;
+    }else{
+        m_status = DFS_DISCONNECTED;
+    }
+    emit connection_interrupted();
 }
 
 QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
@@ -928,13 +939,16 @@ QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
                 if(report_progress){
                     LOGI << "using active units";
                 }
-                return entries;
+                break;
             }
         }
         if(report_progress){
             LOGI << "no active units with our civ (reclaim), using full unit list";
         }
         entries = enumerate_vector(all_units);
+    }
+    if(entries.count() > 0 && m_status == DFS_LAYOUT_OK){
+        m_status = DFS_GAME_LOADED;
     }
     return entries;
 }
@@ -1046,92 +1060,141 @@ QString DFInstance::read_dwarf_name(const VIRTADDR &addr) {
     return result.trimmed();
 }
 
+void DFInstance::set_memory_layout(QString checksum){
+    if(!checksum.isEmpty()){
+        m_df_checksum = checksum.toLower();
+    }else{
+        checksum = m_df_checksum;
+    }
 
-MemoryLayout *DFInstance::get_memory_layout(QString checksum, bool) {
-    checksum = checksum.toLower();
-    LOGI << "DF's checksum is:" << checksum;
+    LOGI << "Setting memory layout for DF checksum" << checksum;
+    m_layout = get_memory_layout(checksum);
 
+    if(m_layout && m_layout->is_valid() && m_layout->is_complete()){
+        m_status = DFS_LAYOUT_OK;
+        LOGI << "Detected Dwarf Fortress version"
+             << m_layout->game_version() << "using MemoryLayout from"
+             << m_layout->filepath();
+
+        if(!m_heartbeat_timer->isActive()) {
+            m_heartbeat_timer->start(1000); // check every second for disconnection
+        }else{
+            heartbeat();
+        }
+    }
+}
+
+MemoryLayout *DFInstance::get_memory_layout(QString checksum) {
     MemoryLayout *ret_val = NULL;
     ret_val = m_memory_layouts.value(checksum, NULL);
-    m_is_ok = ret_val != NULL && ret_val->is_valid();
 
-    if(!m_is_ok) {
+    if(ret_val == NULL){
         LOGI << "Could not find layout for checksum" << checksum;
-        DT->get_main_window()->check_for_layout(checksum);
+    }else if(!ret_val->is_valid()){
+        LOGI << "Invalid layout for checksum" << checksum;
     }
-
-    if (m_is_ok) {
-        LOGI << "Detected Dwarf Fortress version"
-             << ret_val->game_version() << "using MemoryLayout from"
-             << ret_val->filename();
-    }
-
     return ret_val;
 }
 
-bool DFInstance::add_new_layout(const QString & version, QFile & file) {
-    QString newFileName = version;
-    newFileName.replace("(", "").replace(")", "").replace(" ", "_");
-    newFileName +=  ".ini";
-
-    QFileInfo newFile(QDir(QString("share/memory_layouts/%1").arg(LAYOUT_SUBDIR)), newFileName);
-    newFileName = newFile.absoluteFilePath();
-
-    if(!file.exists()) {
-        LOGW << "Layout file" << file.fileName() << "does not exist!";
-        return false;
+MemoryLayout *DFInstance::find_memory_layout(QString git_sha){
+    foreach(MemoryLayout *ml, m_memory_layouts){
+        if(ml->git_sha() == git_sha){
+            return ml;
+        }
     }
+    return 0;
+}
 
-    LOGI << "Copying: " << file.fileName() << " to " << newFileName;
-    if(!file.copy(newFileName)) {
-        LOGW << "Error renaming layout file!";
-        return false;
-    }
+bool DFInstance::add_new_layout(const QString & filename, const QString data, QString &result_msg) {
+    QFileInfo file_info(QDir(QString("share/memory_layouts/%1").arg(LAYOUT_SUBDIR)), filename);
+    QString file_path = file_info.absoluteFilePath();
+    bool ok = false;
 
-    MemoryLayout *temp = new MemoryLayout(newFileName);
-    if(temp && temp->is_valid()) {
-        LOGI << "adding valid layout" << temp->game_version() << temp->checksum();
-        m_memory_layouts.insert(temp->checksum().toLower(), temp);
+    QFile file(file_path);
+    if(file.exists()){
+        result_msg = tr("Layout file %1 already exist!").arg(file_path);
     }else{
-        LOGI << "ignoring invalid layout from file:" << newFileName;
-        delete temp;
-    }
-    return true;
-}
-
-void DFInstance::layout_not_found(const QString & checksum) {
-    QString supported_vers;
-
-    // TODO: Replace this with a rich dialog at some point that
-    // is also accessible from the help menu. For now, remove the
-    // extra path information as the dialog is getting way too big.
-    // And make a half-ass attempt at sorting
-    QList<MemoryLayout *> layouts = m_memory_layouts.values();
-    qSort(layouts);
-
-    foreach(MemoryLayout * l, layouts) {
-        supported_vers.append(
-                    QString("<li><b>%1</b>(<font color=\"#444444\">%2"
-                            "</font>)</li>")
-                    .arg(l->game_version())
-                    .arg(l->checksum()));
+        LOGI << "Creating new layout file:" << file_path;
+        if(!file.open(QIODevice::WriteOnly)) {
+            result_msg = tr("Failed to create layout file %1").arg(file_path);
+        }else{
+            QTextStream layout(&file);
+            layout << data;
+            file.close();
+            ok = true;
+        }
     }
 
-    QMessageBox *mb = new QMessageBox(qApp->activeWindow());
-    mb->setIcon(QMessageBox::Critical);
-    mb->setWindowTitle(tr("Unidentified Game Version"));
-    mb->setText(tr("I'm sorry but I don't know how to talk to this "
-                   "version of Dwarf Fortress! (checksum:%1)<br><br> <b>Supported "
-                   "Versions:</b><ul>%2</ul>").arg(checksum).arg(supported_vers));
+    if(ok){
+        file_info.refresh();
+        MemoryLayout *temp = new MemoryLayout(file_info);
+        if(temp && temp->is_valid()) {
+            LOGI << "adding valid layout" << temp->game_version() << temp->checksum();
+            m_memory_layouts.insert(temp->checksum().toLower(), temp);
+        }else{
+            LOGI << "ignoring invalid layout from file:" << filename;
+            delete temp;
+        }
+    }
 
-    /*
-    mb->setDetailedText(tr("Failed to locate a memory layout file for "
-        "Dwarf Fortress exectutable with checksum '%1'").arg(checksum));
-    */
-    mb->exec();
-    LOGE << tr("unable to identify version from checksum:") << checksum;
+    return ok;
 }
 
+const QStringList DFInstance::status_err_msg(){
+    // return a list of message information for a QMessageBox
+    // title, text, informativeText, detailedText
+    QStringList ret;
+    switch(m_status){
+    case DFS_DISCONNECTED:
+    {
+        ret << tr("Not Running");
+        ret << tr("Unable to locate a running copy of Dwarf Fortress, are you sure it's running?");
+        ret << "";
+        ret << "";
+    }
+        break;
+    case DFS_CONNECTED:
+    {
+        QString supported_vers;
+        QList<MemoryLayout *> layouts = m_memory_layouts.values();
+        qSort(layouts);
+
+        foreach(MemoryLayout * l, layouts) {
+            supported_vers.append(
+                        QString("%1 (%2)\n")
+                        .arg(l->game_version()).arg(l->checksum()));
+        }
+
+        ret << tr("Unidentified Game Version");
+        ret << tr("I'm sorry but I don't know how to talk to this version of Dwarf Fortress!");
+        ret << tr("Checksum: %1").arg(m_df_checksum);
+        ret << tr("Supported Versions:\n%1").arg(supported_vers);
+    }
+        break;
+    case DFS_LAYOUT_OK:
+    {
+        ret << tr("No Game Loaded");
+        ret << tr("A fort has not been loaded.");
+        ret << "";
+        ret << "";
+    }
+        break;
+    case DFS_GAME_LOADED:
+    {
+        //leave empty
+    }
+        break;
+    default:
+    {
+        ret << tr("Unknown Error");
+        ret << tr("An unspecified error has occurred connecting to Dwarf Fortress");
+        ret << "";
+        ret << "";
+    }
+        break;
+    }
+    return ret;
+}
 
 VIRTADDR DFInstance::find_historical_figure(int hist_id){
     if(m_hist_figures.count() <= 0)
@@ -1433,3 +1496,9 @@ Material *DFInstance::find_material(int mat_index, short mat_type){
 bool DFInstance::authorize() {
     return true;
 }
+
+const QString DFInstance::layout_subdir(){
+    return LAYOUT_SUBDIR;
+}
+
+

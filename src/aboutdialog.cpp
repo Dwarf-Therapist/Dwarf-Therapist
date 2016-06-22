@@ -34,9 +34,4 @@ AboutDialog::AboutDialog(MainWindow *parent)
     ov->setText(ov->text().arg(m_version.to_string()));
     QLabel *qv = ui->lbl_qt_version;
     qv->setText(qv->text().arg(QT_VERSION_STR, qVersion()));
-    connect(ui->pb_check_version, SIGNAL(clicked()), SLOT(check_version()));
-}
-
-void AboutDialog::check_version() {
-    DT->get_main_window()->check_latest_version(true);
 }

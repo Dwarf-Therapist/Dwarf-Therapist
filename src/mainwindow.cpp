@@ -70,6 +70,10 @@ THE SOFTWARE.
 #include <QTime>
 #include <QPainter>
 #include <QUrl>
+#include <QNetworkReply>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -89,10 +93,10 @@ MainWindow::MainWindow(QWidget *parent)
     , m_reading_settings(false)
     , m_show_result_on_equal(false)
     , m_dwarf_name_completer(0)
-    , m_force_connect(false)
     , m_try_download(true)
     , m_deleting_settings(false)
     , m_toolbar_configured(false)
+    , m_last_updated_checksum("")
     , m_act_sep_optimize(0)
     , m_btn_optimize(0)
 {
@@ -160,6 +164,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menu_docks->addAction(equipoverview_dock->toggleViewAction());
 
     ui->menuWindows->addAction(ui->main_toolbar->toggleViewAction());
+
+    m_network = new QNetworkAccessManager(this);
 
     LOGD << "setting up connections for MainWindow";
     connect(ui->main_toolbar, SIGNAL(toolButtonStyleChanged(Qt::ToolButtonStyle)),this, SLOT(main_toolbar_style_changed(Qt::ToolButtonStyle)));
@@ -390,34 +396,30 @@ void MainWindow::connect_to_df() {
     }
 
     m_df = DFInstance::newInstance();
-    GameDataReader::ptr()->refresh_facets();
+    QStringList err_msg;
+    if(m_df){
+        //attempt to connect to the process first
+        m_df->find_running_copy();
 
-    // find_running_copy can fail for several reasons, and will take care of
-    // logging and notifying the user.
-    if (m_force_connect && m_df && m_df->find_running_copy(true)) {
-        if(m_df->memory_layout()){
-            LOGI << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
-            set_status_message(tr("Connected to DF %1").arg(m_df->memory_layout()->game_version()),tr("Currently using layout file: %1").arg(m_df->memory_layout()->filename()));
-        }else{
-            LOGI << "Connection to unknown DF Version established.";
-            set_status_message("Connected to unknown version!","");
+        //once connected, update any memory layouts as required
+        if(m_df->status() == DFInstance::DFS_CONNECTED || (
+                                                      m_last_updated_checksum != m_df->df_checksum() &&
+                                                      m_settings->value("options/check_for_updates_on_startup", true).toBool())){
+            //add/update layouts as required
+            check_layouts(m_df->df_checksum());
+            m_df->set_memory_layout();
         }
-        m_force_connect = false;
-    } else if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
-        LOGI << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
-        set_status_message(tr("Connected to DF %1").arg(m_df->memory_layout()->game_version()),tr("Currently using layout file: %1").arg(m_df->memory_layout()->filename()));
-        m_force_connect = false;
-    } else {
-        m_force_connect = true;
-    }
 
-    if(m_df && m_df->is_ok()){
-        set_interface_enabled(true);
-        connect(m_df, SIGNAL(progress_message(QString)), SLOT(set_progress_message(QString)), Qt::UniqueConnection);
-        connect(m_df, SIGNAL(progress_range(int,int)), SLOT(set_progress_range(int,int)), Qt::UniqueConnection);
-        connect(m_df, SIGNAL(progress_value(int)), SLOT(set_progress_value(int)), Qt::UniqueConnection);
+        if(m_df->status() == DFInstance::DFS_GAME_LOADED){
+            LOGI << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
+            set_status_message(tr("Connected to DF %1").arg(m_df->memory_layout()->game_version()),tr("Currently using layout file: %1").arg(m_df->memory_layout()->filepath()));
 
-        if (m_df->memory_layout() && m_df->memory_layout()->is_complete()) {
+            GameDataReader::ptr()->refresh_facets();
+
+            set_interface_enabled(true);
+            connect(m_df, SIGNAL(progress_message(QString)), SLOT(set_progress_message(QString)), Qt::UniqueConnection);
+            connect(m_df, SIGNAL(progress_range(int,int)), SLOT(set_progress_range(int,int)), Qt::UniqueConnection);
+            connect(m_df, SIGNAL(progress_value(int)), SLOT(set_progress_value(int)), Qt::UniqueConnection);
             connect(m_df, SIGNAL(connection_interrupted()), SLOT(lost_df_connection()));
 
             m_df->load_game_data();
@@ -429,11 +431,14 @@ void MainWindow::connect_to_df() {
                 if(dock)
                     dock->draw_views();
             }
-            if (DT->user_settings()->value("options/read_on_startup", true).toBool()) {
+            if(DT->user_settings()->value("options/read_on_startup", true).toBool()) {
                 read_dwarves();
             }
+        }else{
+            err_msg = m_df->status_err_msg();
         }
     }
+    show_connection_err(err_msg);
 }
 
 void MainWindow::set_status_message(QString msg, QString tooltip_msg){
@@ -441,26 +446,48 @@ void MainWindow::set_status_message(QString msg, QString tooltip_msg){
     m_lbl_status->setToolTip(tr("<span>%1</span>").arg(tooltip_msg));
 }
 
+void MainWindow::show_connection_err(QStringList msg){
+    if(!msg.isEmpty()){
+        LOGE << msg;
+        set_status_message(msg.value(0),"");
+        if(DT->user_settings()->value("options/alert_on_lost_connection", true).toBool()){
+            QMessageBox mb(this);
+            mb.setIcon(QMessageBox::Warning);
+            mb.setWindowTitle(msg.at(0));
+            if(!msg.value(1).isEmpty())
+                mb.setText(msg.at(1));
+            QString desc = msg.value(2);
+            if(!desc.isEmpty())
+                desc.append("<br><br>");
+            mb.setInformativeText(desc.append(tr("Please re-connect when Dwarf Fortress has been started and a fort has been loaded.")));
+            if(!msg.value(3).isEmpty())
+                mb.setDetailedText(msg.at(3));
+            mb.exec();
+        }
+    }
+}
+
 void MainWindow::lost_df_connection() {
     LOGW << "lost connection to DF";
     emit lostConnection();
+    QStringList err_msg;
     if (m_df) {
+        err_msg = m_df->status_err_msg();
         m_model->clear_all(true);
         m_df->disconnect();
         delete m_df;
         m_df = 0;
         reset();
         set_interface_enabled(false);
-        QString details = tr("Dwarf Fortress has either stopped running, or you unloaded your game. Please re-connect when a fort is loaded.");
-        set_status_message(tr("Disconnected"), details);
-        if(DT->user_settings()->value("options/alert_on_lost_connection", true).toBool()){
-            QMessageBox::information(this, tr("Unable to talk to Dwarf Fortress"), details);
-        }
+    }else{
+        err_msg << tr("Startup Failed");
+        err_msg << tr("Dwarf Therapist failed to startup!");
     }
+    show_connection_err(err_msg);
 }
 
 void MainWindow::read_dwarves() {
-    if (!m_df || !m_df->is_ok()) {
+    if(!m_df || m_df->status() != DFInstance::DFS_GAME_LOADED) {
         lost_df_connection();
         return;
     }
@@ -638,134 +665,238 @@ void MainWindow::set_interface_enabled(bool enabled) {
         m_view_manager->setEnabled(enabled);
 }
 
-void MainWindow::check_latest_version(bool show_result_on_equal) {
-    Q_UNUSED(show_result_on_equal);
-    return;
-    //TODO: check for updates
+void MainWindow::check_latest_version() {
+    QNetworkReply *reply = m_network->get(QNetworkRequest(QUrl(
+                                                              QString("https://api.github.com/repos/%1/%2/releases/latest")
+                                                              .arg(DT->user_settings()->value("update_repo_owner",REPO_OWNER).toString())
+                                                              .arg(DT->user_settings()->value("update_repo_name",REPO_NAME).toString()))));
+
+    connect(reply, SIGNAL(finished()),this,SLOT(version_check_finished()));
 }
 
-void MainWindow::version_check_finished(bool error) {
-    Q_UNUSED(error);
-    //    if (error) {
-    //        qWarning() <<  m_http->errorString();
-    //    }
-    //    QString data = QString(m_http->readAll());
-    //    QRegExp rx("(\\d+)\\.(\\d+)\\.(\\d+)");
-    //    int pos = rx.indexIn(data);
+void MainWindow::version_check_finished() {
+    QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
 
-    //    if (pos != -1) {
-    //        Version our_v(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
-    //        QString major = rx.cap(1);
-    //        QString minor = rx.cap(2);
-    //        QString patch = rx.cap(3);
-    //        Version newest_v(major.toInt(), minor.toInt(), patch.toInt());
-    //        LOGI << "RUNNING VERSION         :" << our_v.to_string();
-    //        LOGI << "LATEST AVAILABLE VERSION:" << newest_v.to_string();
-    //        if (our_v < newest_v) {
-    //            LOGI << "LATEST VERSION IS NEWER!";
-    //            QMessageBox *mb = new QMessageBox(this);
-    //            mb->setIcon(QMessageBox::Information);
-    //            mb->setWindowTitle(tr("Update Available"));
-    //            mb->setText(tr("A newer version of this application is available."));
-    //            QString link = tr("<br><a href=\"%1\">Click Here to Download v%2"
-    //                              "</a>")
-    //                           .arg(URL_DOWNLOAD_LIST)
-    //                           .arg(newest_v.to_string());
-    //            mb->setInformativeText(tr("You are currently running v%1. %2")
-    //                                   .arg(our_v.to_string()).arg(link));
-    //            mb->exec();
-    //        } else if (m_show_result_on_equal) {
-    //            QMessageBox *mb = new QMessageBox(this);
-    //            mb->setWindowTitle(tr("Up to Date"));
-    //            mb->setText(tr("You are running the most recent version of Dwarf "
-    //                           "Therapist."));
-    //            mb->exec();
-    //        }
-    //        m_about_dialog->set_latest_version(newest_v);
-    //    } else {
-    //        m_about_dialog->version_check_failed();
-    //    }
+    QStringList msgs;
+    QString release_url = QString("http://github.com/%1/%2/releases/latest").arg(REPO_OWNER).arg(REPO_NAME);
+    QString url_msg = tr("Click here to go to the latest release page.");
+    bool is_warn = false;
+
+    if(reply->error() == QNetworkReply::NoError){
+        QJsonParseError *err = new QJsonParseError();
+        QJsonDocument releases_doc = QJsonDocument::fromJson(reply->readAll(),err);
+        if(err && err->error != QJsonParseError::NoError){
+            msgs <<tr("Failed to read the latest release page!") << QString("Details: %1").arg(err->errorString());
+            is_warn = true;
+            LOGI << err->errorString();
+            return;
+        }
+
+        QJsonObject release_info = releases_doc.object();
+        if(!release_info.isEmpty()){
+            Version v_current(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
+            Version v_latest;
+            QString release_tag = release_info.value("tag_name").toString();
+            QRegExp rx("(\\d+)\\.(\\d+)\\.(\\d+)");
+            if(rx.indexIn(release_tag) != -1){
+                v_latest.major = rx.cap(1).toInt();
+                v_latest.minor = rx.cap(2).toInt();
+                v_latest.patch = rx.cap(3).toInt();
+
+                if(v_current < v_latest){
+                    LOGI << "New version found" << v_latest.to_string();
+                    msgs << tr("A new version is available!");
+                    url_msg = tr("Click here to download version %1").arg(v_latest.to_string());
+                    release_url = release_info.value("html_url").toString();
+                }
+            }
+        }
+
+    }else{
+        LOGI << "Error: " << reply->errorString();
+        msgs <<tr("Failed to access the latest release page!") << QString("Details: %1").arg(reply->errorString());
+        is_warn = true;
+    }
+
+    //since in some cases the memory layout may have already set the info/update button
+    //only set it for a new version if it's not already in use
+    if(!msgs.value(0).isEmpty()){
+        msgs << url_msg;
+        update_url_button((is_warn ? ui->act_warning : ui->act_update),msgs,release_url);
+    }
+
+    reply->deleteLater();
 }
 
-void MainWindow::check_for_layout(const QString & checksum) {
-    m_try_download = false;
+void MainWindow::update_url_button(QAction *act, QStringList msgs, const QString &url){
+    if(!msgs.value(0).trimmed().isEmpty()){
+        QString tooltip_text = act->toolTip();
+        if(tooltip_text == act->text()){
+            tooltip_text = ""; //by default the tooltip = text
+        }
+        msgs.removeAll("");
 
-    if(m_try_download &&
-            (m_settings->value("options/check_for_updates_on_startup", true).toBool())) {
-        //        m_try_download = false;
+        QString title = msgs.takeFirst();
+        tooltip_text.append(QString("<p style='white-space:pre'><b>%1</b></p>").arg(title));
+        if(msgs.count() > 0){
+            foreach(QString msg, msgs){
+                msg.prepend("&bull; ");
+                if(msg.length() <= 150){
+                    msg.prepend("<p style='white-space:pre'>").append("</p>"); //ensure small messages aren't broken
+                }
+                tooltip_text.append(QString("<blockquote>%1</blockquote>").arg(msg));
+            }
+        }
 
-        //        LOGI << "Checking for layout for checksum: " << checksum;
-        //        m_tmp_checksum = checksum;
+        act->setToolTip(tooltip_text);
+        LOGI << tooltip_text;
 
-        //        Version our_v(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
+        if(!url.isEmpty()){
+            QStringList urls;
+            if(act->property("urls").isValid()){
+                urls = act->property("urls").toStringList();
+            }
+            urls << url;
+            urls.removeDuplicates();
+            act->setProperty("urls",urls);
+        }
+    }
+    act->setVisible(!act->toolTip().trimmed().isEmpty());
+}
 
-        //        QString request = QString("/memory_layouts/checksum/%1").arg(checksum);
-        //        QHttpRequestHeader header("GET", request);
-        //        header.setValue("Host", "www.dwarftherapist.com");
-        //        header.setValue("User-Agent", QString("DwarfTherapist %1").arg(our_v.to_string()));
-        //        if (m_http) {
-        //            m_http->deleteLater();
-        //        }
-        //        m_http = new QHttp(this);
-        //        m_http->setHost("www.dwarftherapist.com");
-
-        //        disconnect(m_http, SIGNAL(done(bool)));
-        //        connect(m_http, SIGNAL(done(bool)), this, SLOT(layout_check_finished(bool)));
-        //        m_http->request(header);
-    } else if (!m_force_connect) {
-        m_df->layout_not_found(checksum);
+void MainWindow::act_url_btn_clicked(){
+    QAction* act_info = qobject_cast<QAction*>(sender());
+    if(act_info){
+        QStringList urls;
+        if(act_info->property("urls").isValid()){
+            urls = act_info->property("urls").toStringList();
+            foreach(QString url, urls){
+                QDesktopServices::openUrl(QUrl(url));
+            }
+        }
     }
 }
 
-void MainWindow::layout_check_finished(bool error) {
-    //int status = m_http->lastResponse().statusCode();
-    //LOGD << "Status: " << status;
+void MainWindow::check_layouts(const QString & df_checksum) {
+        LOGI << "Checking for layout for checksum: " << df_checksum;
+        QStringList err_msgs;
+        //load a list of all layout files from the repo
+        QNetworkReply *reply = m_network->get(QNetworkRequest(QUrl(
+                                                                  QString("https://api.github.com/repos/%1/%2/contents/share/memory_layouts/%3")
+                                                                  .arg(DT->user_settings()->value("update_repo_owner",REPO_OWNER).toString())
+                                                                  .arg(DT->user_settings()->value("update_repo_name",REPO_NAME).toString())
+                                                                  .arg(m_df->layout_subdir()))));
+        QEventLoop manifest_loop;
+        connect(reply, SIGNAL(finished()),&manifest_loop,SLOT(quit()));
+        manifest_loop.exec();
 
-    //    error = error || (status != 200);
-    //    if(!error) {
-    //        QTemporaryFile outFile("layout.ini");
-    //        if (!outFile.open())
-    //         return;
+        if(reply->error() == QNetworkReply::NoError){
+            QJsonParseError *err = new QJsonParseError();
+            QJsonDocument layout_doc = QJsonDocument::fromJson(reply->readAll(),err);
+            if(err && err->error != QJsonParseError::NoError){
+                err_msgs << tr("Failed to read the memory layout manifest!") << err->errorString();
+                LOGW << err->errorString();
+            }else{
+                QStringList layout_urls;
+                QJsonArray file_infos =  layout_doc.array();
+                for(int idx = 0; idx < file_infos.size(); idx++){
+                    QJsonObject file_info = file_infos.at(idx).toObject();
+                    if(!file_info.isEmpty()){
+                        //only download layouts that either we don't have, or have a different SHA
+                        //we'll still have to read them and compare their checksum with the current df checksum
+                        QString git_sha = file_info.value("sha").toString();
+                        QString filename = file_info.value("name").toString();
+                        if(!m_df->find_memory_layout(git_sha)){
+                            layout_urls.prepend(file_info.value("download_url").toString());
+                            LOGD << "downloading layout" << filename << "SHA:" << git_sha;
+                        }
+                    }
+                }
+                if(layout_urls.count() > 0){
+                    set_progress_message(tr("Downloading memory layouts..."));
+                    set_progress_range(0,layout_urls.size()-1);
+                    set_progress_value(0);
 
-    //    if( !outFile.setPermissions((QFile::Permission)0x666) ) {
-    //        LOGD << "WARNING: Unable to set permissions for new layout.";
-    //    }
+                    QEventLoop layout_dl;
+                    foreach(QString layout_url, layout_urls){
+                        QNetworkReply *dl_reply = m_network->get(QNetworkRequest(QUrl(layout_url)));
+                        connect(dl_reply,SIGNAL(finished()),this,SLOT(layout_downloaded()));
+                        connect(dl_reply,SIGNAL(finished()),&layout_dl,SLOT(quit()));
+                    }
+                    layout_dl.exec();
 
-    //        QString fileName = outFile.fileName();
-    //        QTextStream out(&outFile);
-    //        out << m_http->readAll();
-    //        outFile.close();
+                    while(m_progress->value() < m_progress->maximum()){
+                        QCoreApplication::processEvents(QEventLoop::AllEvents,100);
+                    }
+                }
+            }
+        }else{
+            LOGW << reply->errorString();
+            err_msgs << tr("Failed to download the memory layout manifest!") << reply->errorString();
+        }
+        reply->deleteLater();
 
-    //        QString version;
+        if(!err_msgs.value(0).trimmed().isEmpty()){
+            err_msgs << tr("Click here to go to the project home page. Navigate to <i>share/memory_layouts</i> to manually update.");
+            update_url_button(ui->act_warning,err_msgs,QString("https://github.com/%1/%2").arg(REPO_OWNER).arg(REPO_NAME));
+        }
+}
 
-    //        {
-    //            QSettings layout(fileName, QSettings::IniFormat);
-    //            version = layout.value("info/version_name", "").toString();
-    //        }
+void MainWindow::layout_downloaded() {
+    QNetworkReply *reply = qobject_cast<QNetworkReply*>(QObject::sender());
+    QStringList msgs;
+    QString layout_url = "";
+    bool is_warn = true;
 
-    //        LOGD << "Found version" << version;
-
-    //        if(m_df->add_new_layout(version, outFile)) {
-    //            QMessageBox *mb = new QMessageBox(this);
-    //            mb->setIcon(QMessageBox::Information);
-    //            mb->setWindowTitle(tr("New Memory Layout Added"));
-    //            mb->setText(tr("A new memory layout has been downloaded for this version of dwarf fortress!"));
-    //            mb->setInformativeText(tr("New layout for version %1 of Dwarf Fortress.").arg(version));
-    //            mb->exec();
-
-    //            LOGD << "Reconnecting to Dwarf Fortress!";
-    //            m_force_connect = false;
-    //            connect_to_df();
-    //        } else {
-    //            error = true;
-    //        }
-    //    }
-
-    LOGI << "Error: " << error << " Force Connect: " << m_force_connect;
-
-    if(error) {
-        m_df->layout_not_found(m_tmp_checksum);
+    if(reply->error() == QNetworkReply::NoError){
+        QString layout_data = QString(reply->readAll());
+        QRegExp rx("checksum\\s*=\\s*(0[xX][0-9a-fA-F]+)");
+        QString checksum = "";
+        if(rx.indexIn(layout_data) > -1){
+            checksum = rx.cap(1);
+        }
+        //only update/add layouts for the current version
+        if(checksum == m_df->df_checksum()){
+            //see if we have an existing layout to update
+            MemoryLayout *m = m_df->get_memory_layout(checksum);
+            if(m){
+                //if we already have a layout with this checksum, update the layout
+                QFile file(m->filepath());
+                if(file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)){
+                    QTextStream layout(&file);
+                    layout << layout_data;
+                    file.close();
+                    m->load_data();
+                    msgs << tr("Memory layout %1 has been updated!").arg(m->filename());
+                    is_warn = false;
+                }else{
+                    msgs << tr("Could not open %1 to update the layout!").arg(m->filepath());
+                }
+            }else{
+                QString dl_filename = reply->url().fileName();
+                QString add_result;
+                if(m_df->add_new_layout(dl_filename,layout_data,add_result)){
+                    msgs << tr("A new memory layout (%1) has been downloaded!").arg(dl_filename);
+                    is_warn = false;
+                }else{
+                    msgs << tr("Failed to create a new memory layout for %1!").arg(dl_filename);
+                    msgs << add_result;
+                }
+            }
+            m_last_updated_checksum = checksum;
+        }
+    }else{
+        msgs << tr("Failed to download memory layout!");
+        msgs << reply->errorString();
+        msgs << tr("Click here to go to the project home page. Navigate to <i>share/memory_layouts</i> to manually update.");
+        layout_url = QString("https://github.com/%1/%2").arg(REPO_OWNER).arg(REPO_NAME);
     }
+
+    update_url_button((is_warn ? ui->act_warning : ui->act_update),msgs,layout_url);
+
+    reply->deleteLater();
+    int val = m_progress->value()+1;
+    set_progress_value(val);
 }
 
 void MainWindow::set_group_by(int group_by) {
@@ -931,10 +1062,10 @@ void MainWindow::go_to_donate() {
     QDesktopServices::openUrl(QUrl("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=GM5Z6DYJEVW56&item_name=Donation"));
 }
 void MainWindow::go_to_project_home() {
-    QDesktopServices::openUrl(QUrl("https://github.com/splintermind/Dwarf-Therapist"));
+    QDesktopServices::openUrl(QUrl(QString("https://github.com/%1/%2").arg(REPO_OWNER).arg(REPO_NAME)));
 }
 void MainWindow::go_to_new_issue() {
-    QDesktopServices::openUrl(QUrl("https://github.com/splintermind/Dwarf-Therapist/issues?state=open"));
+    QDesktopServices::openUrl(QUrl(QString("https://github.com/%1/%2/issues?state=open").arg(REPO_OWNER).arg(REPO_NAME)));
 }
 
 void MainWindow::open_help(){

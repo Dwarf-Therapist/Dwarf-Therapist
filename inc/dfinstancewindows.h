@@ -36,8 +36,9 @@ public:
     DFInstanceWindows(QObject *parent=0);
     virtual ~DFInstanceWindows();
 
-    // factory ctor
-    bool find_running_copy(bool connect_anyway = false);
+    void find_running_copy();
+    bool df_running();
+    bool set_pid();
 
     QString get_last_error();
 
@@ -54,12 +55,10 @@ public:
     bool attach(){return true;}
     bool detach(){return true;}
 
-
 protected:
-    QString calculate_checksum(const IMAGE_NT_HEADERS &pe_header);
-
-    HWND m_hwnd;
+    DWORD m_pid;
     HANDLE m_proc;
+    QString calculate_checksum(const IMAGE_NT_HEADERS &pe_header);
 };
 
 #endif // DFINSTANCE_H
