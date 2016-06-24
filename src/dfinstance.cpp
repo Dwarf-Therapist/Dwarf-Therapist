@@ -75,6 +75,7 @@ quint32 DFInstance::ticks_per_year = 12 * DFInstance::ticks_per_month;
 
 DFInstance::DFInstance(QObject* parent)
     : QObject(parent)
+    , m_base_addr(0)
     , m_df_checksum("")
     , m_layout(0)
     , m_attach_count(0)
@@ -101,7 +102,7 @@ DFInstance::DFInstance(QObject* parent)
     d.setSorting(QDir::Name | QDir::Reversed);
     QFileInfoList files = d.entryInfoList();
     foreach(QFileInfo info, files) {
-        MemoryLayout *temp = new MemoryLayout(info);
+        MemoryLayout *temp = new MemoryLayout(this,info);
         if (temp->is_valid()) {
             LOGI << "adding valid layout" << temp->game_version() << "checksum:" << temp->checksum() << "SHA:" << temp->git_sha();
             m_memory_layouts.insert(temp->checksum().toLower(), temp);
@@ -1076,10 +1077,11 @@ void DFInstance::set_memory_layout(QString checksum){
              << m_layout->game_version() << "using MemoryLayout from"
              << m_layout->filepath();
 
+        //call the heartbeat immediately to check for a loaded game
+        heartbeat();
+
         if(!m_heartbeat_timer->isActive()) {
             m_heartbeat_timer->start(1000); // check every second for disconnection
-        }else{
-            heartbeat();
         }
     }
 }
@@ -1127,7 +1129,7 @@ bool DFInstance::add_new_layout(const QString & filename, const QString data, QS
 
     if(ok){
         file_info.refresh();
-        MemoryLayout *temp = new MemoryLayout(file_info);
+        MemoryLayout *temp = new MemoryLayout(this,file_info);
         if(temp && temp->is_valid()) {
             LOGI << "adding valid layout" << temp->game_version() << temp->checksum();
             m_memory_layouts.insert(temp->checksum().toLower(), temp);

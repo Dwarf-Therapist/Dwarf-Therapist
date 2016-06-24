@@ -5,10 +5,13 @@
 #include <QSettings>
 #include <QFileInfo>
 
+class DFInstance;
+
 class MemoryLayout {
 public:
-    explicit MemoryLayout(const QFileInfo &fileinfo);
-    MemoryLayout(const QFileInfo &fileinfo, const QSettings &data);
+    explicit MemoryLayout(DFInstance *df, const QFileInfo &fileinfo);
+    MemoryLayout(DFInstance *df, const QFileInfo &fileinfo, const QSettings &data);
+    ~MemoryLayout();
 
     typedef enum{
         MEM_UNK = -1,
@@ -97,8 +100,6 @@ public:
     QString checksum() {return m_checksum;}
     QString git_sha() {return m_git_sha;}
     bool is_valid_address(VIRTADDR addr);
-    void set_base_address(VIRTADDR addr){m_base_addr = addr;}
-    VIRTADDR get_base_address(){return m_base_addr;}
     uint string_buffer_offset();
     uint string_length_offset();
     uint string_cap_offset();
@@ -115,9 +116,7 @@ public:
 
     QHash<QString, VIRTADDR> globals() {return get_section_offsets(MEM_GLOBALS);}
 
-    VIRTADDR address(const QString &key, const bool is_global = true) { //globals
-        return m_offsets.value(MEM_GLOBALS).value(key, -1) + (is_global ? m_base_addr : 0);
-    }
+    VIRTADDR address(const QString &key, const bool is_global = true);
 
     qint16 language_offset(const QString &key) const {return offset(MEM_LANGUAGE,key);}
     qint16 dwarf_offset(const QString &key) const {return offset(MEM_UNIT,key);}
@@ -163,6 +162,7 @@ public:
     void load_data();
 
 private:
+    DFInstance *m_df;
     typedef QHash<QString, VIRTADDR> AddressHash;
 
     QHash<MEM_SECTION,AddressHash> m_offsets;

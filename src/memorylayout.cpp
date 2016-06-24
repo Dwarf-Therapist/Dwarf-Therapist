@@ -5,8 +5,9 @@
 #include <QSettings>
 #include <QCryptographicHash>
 
-MemoryLayout::MemoryLayout(const QFileInfo &fileinfo)
-    : m_fileinfo(fileinfo)
+MemoryLayout::MemoryLayout(DFInstance *df, const QFileInfo &fileinfo)
+    : m_df(df)
+    , m_fileinfo(fileinfo)
     , m_checksum(QString::null)
     , m_git_sha(QString::null)
     , m_data(m_fileinfo.absoluteFilePath(), QSettings::IniFormat)
@@ -22,19 +23,22 @@ MemoryLayout::MemoryLayout(const QFileInfo &fileinfo)
     }
 }
 
-MemoryLayout::MemoryLayout(const QFileInfo &fileinfo, const QSettings &data)
-    : m_fileinfo(fileinfo)
+MemoryLayout::MemoryLayout(DFInstance *df, const QFileInfo &fileinfo, const QSettings &data)
+    : m_df(df)
+    , m_fileinfo(fileinfo)
     , m_checksum(QString::null)
     , m_git_sha(QString::null)
     , m_data(m_fileinfo.absoluteFilePath(), QSettings::IniFormat)
     , m_complete(true)
-    , m_base_addr(0)
 {
     foreach(QString key, data.allKeys()) {
         m_data.setValue(key, data.value(key));
     }
 }
 
+MemoryLayout::~MemoryLayout(){
+    m_df = 0;
+}
 
 void MemoryLayout::load_data() {
     if (!is_valid()) {
@@ -153,3 +157,6 @@ bool MemoryLayout::is_valid_address(VIRTADDR addr){
     return (addr != 0x000);
 }
 
+VIRTADDR MemoryLayout::address(const QString &key, const bool is_global) { //globals
+    return m_offsets.value(MEM_GLOBALS).value(key, -1) + (is_global ? m_df->df_base_addr() : 0);
+}

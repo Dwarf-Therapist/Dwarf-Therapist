@@ -68,6 +68,7 @@ public:
     } DFI_STATUS;
 
     // accessors
+    VIRTADDR df_base_addr() const {return m_base_addr;}
     const QString df_checksum() {return m_df_checksum;}
     const QString layout_subdir();
     DFI_STATUS status() const {return m_status;}
@@ -228,6 +229,7 @@ public:
     QList<Squad*> squads() {return m_squads;}
 
 protected:
+    VIRTADDR m_base_addr;
     QString m_df_checksum;
     MemoryLayout *m_layout;
     int m_attach_count;

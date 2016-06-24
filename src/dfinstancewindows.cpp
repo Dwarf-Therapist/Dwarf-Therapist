@@ -213,8 +213,7 @@ void DFInstanceWindows::find_running_copy() {
             m_status = DFS_CONNECTED;
             set_memory_layout(calculate_checksum(pe_header));
             LOGI << "RAW BASE ADDRESS:" << base_addr;
-            if(m_layout)
-                m_layout->set_base_address(base_addr - 0x00400000);
+            m_base_addr = base_addr - 0x00400000;
         }
         CloseHandle(snapshot);     // Must clean up the snapshot object!
     }

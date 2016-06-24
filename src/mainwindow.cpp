@@ -775,6 +775,8 @@ void MainWindow::act_url_btn_clicked(){
             }
         }
     }
+    act_info->setToolTip("");
+    act_info->setVisible(false);
 }
 
 void MainWindow::check_layouts(const QString & df_checksum) {
