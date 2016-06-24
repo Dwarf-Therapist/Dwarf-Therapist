@@ -62,6 +62,8 @@ THE SOFTWARE.
 #include "eventfilterlineedit.h"
 #include "eventfilterlineedit.h"
 #include "gridview.h"
+#include "notificationwidget.h"
+#include "notifierwidget.h"
 
 #include <QDesktopServices>
 #include <QFileDialog>
@@ -105,6 +107,7 @@ MainWindow::MainWindow(QWidget *parent)
     //connect to df first, we need to read raws for some ui elements first!!!
     //connect_to_df();
 
+    m_notifier = new NotifierWidget(this);
     m_view_manager = new ViewManager(m_model, m_proxy, this);
     ui->v_box->addWidget(m_view_manager);
     setCentralWidget(ui->main_widget);
@@ -318,6 +321,7 @@ MainWindow::~MainWindow() {
     delete m_optimize_plan_editor;
     delete m_dwarf_name_completer;
 
+    delete m_notifier;
     delete m_model;
     delete m_view_manager;
     delete m_proxy;
@@ -677,17 +681,19 @@ void MainWindow::check_latest_version() {
 void MainWindow::version_check_finished() {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
 
-    QStringList msgs;
-    QString release_url = QString("http://github.com/%1/%2/releases/latest").arg(REPO_OWNER).arg(REPO_NAME);
-    QString url_msg = tr("Click here to go to the latest release page.");
-    bool is_warn = false;
+    NotifierWidget::notify_info ni;
+    ni.title = "";
+    ni.url = QString("http://github.com/%1/%2/releases/latest").arg(REPO_OWNER).arg(REPO_NAME);
+    ni.url_msg = tr("Click here to go to the latest release page.");
+    ni.is_warning = false;
 
     if(reply->error() == QNetworkReply::NoError){
         QJsonParseError *err = new QJsonParseError();
         QJsonDocument releases_doc = QJsonDocument::fromJson(reply->readAll(),err);
         if(err && err->error != QJsonParseError::NoError){
-            msgs <<tr("Failed to read the latest release page!") << QString("Details: %1").arg(err->errorString());
-            is_warn = true;
+            ni.title = tr("Missing Release Manifest");
+            ni.details = tr("Failed to read the latest release page!<br><br>Details: %1").arg(err->errorString());
+            ni.is_warning = true;
             LOGI << err->errorString();
             return;
         }
@@ -703,85 +709,36 @@ void MainWindow::version_check_finished() {
                 v_latest.minor = rx.cap(2).toInt();
                 v_latest.patch = rx.cap(3).toInt();
 
-                if(v_current < v_latest){
+                if(true){//v_current < v_latest){
                     LOGI << "New version found" << v_latest.to_string();
-                    msgs << tr("A new version is available!");
-                    url_msg = tr("Click here to download version %1").arg(v_latest.to_string());
-                    release_url = release_info.value("html_url").toString();
+                    ni.title = tr("New Version Available");
+                    ni.url_msg = tr("Click here to download version %1").arg(v_latest.to_string());
+                    ni.url = release_info.value("html_url").toString();
                 }
             }
         }
 
     }else{
         LOGI << "Error: " << reply->errorString();
-        msgs <<tr("Failed to access the latest release page!") << QString("Details: %1").arg(reply->errorString());
-        is_warn = true;
+        ni.title = tr("Manifest Download Failed");
+        ni.details = tr("Failed to access the latest release page!<br><br>%1").arg(reply->errorString());
+        ni.is_warning = true;
     }
 
-    //since in some cases the memory layout may have already set the info/update button
-    //only set it for a new version if it's not already in use
-    if(!msgs.value(0).isEmpty()){
-        msgs << url_msg;
-        update_url_button((is_warn ? ui->act_warning : ui->act_update),msgs,release_url);
+    if(!ni.title.trimmed().isEmpty()){
+        m_notifier->add_notification(ni);
     }
 
     reply->deleteLater();
 }
 
-void MainWindow::update_url_button(QAction *act, QStringList msgs, const QString &url){
-    if(!msgs.value(0).trimmed().isEmpty()){
-        QString tooltip_text = act->toolTip();
-        if(tooltip_text == act->text()){
-            tooltip_text = ""; //by default the tooltip = text
-        }
-        msgs.removeAll("");
-
-        QString title = msgs.takeFirst();
-        tooltip_text.append(QString("<p style='white-space:pre'><b>%1</b></p>").arg(title));
-        if(msgs.count() > 0){
-            foreach(QString msg, msgs){
-                msg.prepend("&bull; ");
-                if(msg.length() <= 150){
-                    msg.prepend("<p style='white-space:pre'>").append("</p>"); //ensure small messages aren't broken
-                }
-                tooltip_text.append(QString("<blockquote>%1</blockquote>").arg(msg));
-            }
-        }
-
-        act->setToolTip(tooltip_text);
-        LOGI << tooltip_text;
-
-        if(!url.isEmpty()){
-            QStringList urls;
-            if(act->property("urls").isValid()){
-                urls = act->property("urls").toStringList();
-            }
-            urls << url;
-            urls.removeDuplicates();
-            act->setProperty("urls",urls);
-        }
-    }
-    act->setVisible(!act->toolTip().trimmed().isEmpty());
-}
-
-void MainWindow::act_url_btn_clicked(){
-    QAction* act_info = qobject_cast<QAction*>(sender());
-    if(act_info){
-        QStringList urls;
-        if(act_info->property("urls").isValid()){
-            urls = act_info->property("urls").toStringList();
-            foreach(QString url, urls){
-                QDesktopServices::openUrl(QUrl(url));
-            }
-        }
-    }
-    act_info->setToolTip("");
-    act_info->setVisible(false);
-}
-
 void MainWindow::check_layouts(const QString & df_checksum) {
         LOGI << "Checking for layout for checksum: " << df_checksum;
-        QStringList err_msgs;
+        NotifierWidget::notify_info ni;
+        ni.title = tr("Layout Manifest Error");
+        ni.url_msg = tr("Click here to go to the project home page. Navigate to <i>share/memory_layouts</i> to manually update.");
+        ni.url = QString("https://github.com/%1/%2").arg(REPO_OWNER).arg(REPO_NAME);
+        ni.is_warning = true;
         //load a list of all layout files from the repo
         QNetworkReply *reply = m_network->get(QNetworkRequest(QUrl(
                                                                   QString("https://api.github.com/repos/%1/%2/contents/share/memory_layouts/%3")
@@ -796,7 +753,7 @@ void MainWindow::check_layouts(const QString & df_checksum) {
             QJsonParseError *err = new QJsonParseError();
             QJsonDocument layout_doc = QJsonDocument::fromJson(reply->readAll(),err);
             if(err && err->error != QJsonParseError::NoError){
-                err_msgs << tr("Failed to read the memory layout manifest!") << err->errorString();
+                ni.details = tr("Failed to read the memory layout manifest!<br><br>%1").arg(err->errorString());
                 LOGW << err->errorString();
             }else{
                 QStringList layout_urls;
@@ -834,21 +791,23 @@ void MainWindow::check_layouts(const QString & df_checksum) {
             }
         }else{
             LOGW << reply->errorString();
-            err_msgs << tr("Failed to download the memory layout manifest!") << reply->errorString();
+            ni.title = tr("Manifest Download Failed");
+            ni.details = tr("Failed to download the memory layout manifest!<br><br>%1").arg(reply->errorString());
         }
         reply->deleteLater();
 
-        if(!err_msgs.value(0).trimmed().isEmpty()){
-            err_msgs << tr("Click here to go to the project home page. Navigate to <i>share/memory_layouts</i> to manually update.");
-            update_url_button(ui->act_warning,err_msgs,QString("https://github.com/%1/%2").arg(REPO_OWNER).arg(REPO_NAME));
+        if(!ni.details.trimmed().isEmpty()){
+            m_notifier->add_notification(ni);
         }
 }
 
 void MainWindow::layout_downloaded() {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(QObject::sender());
-    QStringList msgs;
-    QString layout_url = "";
-    bool is_warn = true;
+    NotifierWidget::notify_info ni;
+    ni.title = tr("Memory Layout Failed");
+    ni.url_msg = tr("Click here to go to the project home page. Navigate to <i>share/memory_layouts</i> to manually update.");
+    ni.url = QString("https://github.com/%1/%2").arg(REPO_OWNER).arg(REPO_NAME);
+    ni.is_warning = true;
 
     if(reply->error() == QNetworkReply::NoError){
         QString layout_data = QString(reply->readAll());
@@ -869,32 +828,37 @@ void MainWindow::layout_downloaded() {
                     layout << layout_data;
                     file.close();
                     m->load_data();
-                    msgs << tr("Memory layout %1 has been updated!").arg(m->filename());
-                    is_warn = false;
+                    ni.title = tr("Memory Layout Updated");
+                    ni.details = tr("Memory layout %1 has been updated!").arg(m->filename());
+                    ni.is_warning = false;
                 }else{
-                    msgs << tr("Could not open %1 to update the layout!").arg(m->filepath());
+                    ni.title = tr("Access Denied");
+                    ni.details = tr("Could not open %1 to update the layout!").arg(m->filepath());
                 }
             }else{
                 QString dl_filename = reply->url().fileName();
                 QString add_result;
                 if(m_df->add_new_layout(dl_filename,layout_data,add_result)){
-                    msgs << tr("A new memory layout (%1) has been downloaded!").arg(dl_filename);
-                    is_warn = false;
+                    ni.title = tr("Memory Layout Added");
+                    ni.details = tr("A new memory layout (%1) has been downloaded!").arg(dl_filename);
+                    ni.is_warning = false;
                 }else{
-                    msgs << tr("Failed to create a new memory layout for %1!").arg(dl_filename);
-                    msgs << add_result;
+                    ni.details = tr("Failed to create a new memory layout for %1!<br><br>%2").arg(dl_filename).arg(add_result);
                 }
             }
             m_last_updated_checksum = checksum;
         }
     }else{
-        msgs << tr("Failed to download memory layout!");
-        msgs << reply->errorString();
-        msgs << tr("Click here to go to the project home page. Navigate to <i>share/memory_layouts</i> to manually update.");
-        layout_url = QString("https://github.com/%1/%2").arg(REPO_OWNER).arg(REPO_NAME);
+        ni.title = tr("Download Failed");
+        ni.details = reply->errorString();
     }
 
-    update_url_button((is_warn ? ui->act_warning : ui->act_update),msgs,layout_url);
+    if(!ni.details.trimmed().isEmpty()){
+        if(!ni.is_warning){
+            ni.url = "";
+        }
+        m_notifier->add_notification(ni);
+    }
 
     reply->deleteLater();
     int val = m_progress->value()+1;
@@ -1860,4 +1824,17 @@ void MainWindow::refresh_active_scripts(){
     ui->btn_clear_filters->updateGeometry();
     m_view_manager->expand_all();
     refresh_pop_counts();
+}
+
+void MainWindow::resizeEvent(QResizeEvent *evt){
+    QMainWindow::resizeEvent(evt);
+    if(m_notifier){
+        m_notifier->notifications_changed();
+    }
+}
+void MainWindow::moveEvent(QMoveEvent *evt){
+    QMainWindow::moveEvent(evt);
+    if(m_notifier){
+        m_notifier->notifications_changed();
+    }
 }

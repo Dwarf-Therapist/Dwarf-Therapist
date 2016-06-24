@@ -42,6 +42,7 @@ class ViewManager;
 class ScriptDialog;
 class roleDialog;
 class optimizereditor;
+class NotifierWidget;
 
 namespace Ui
 {
@@ -124,9 +125,6 @@ public:
         void go_to_project_home();
         void go_to_new_issue();
 
-        // new update / warning button clicks
-        void act_url_btn_clicked();
-
         //help
         void open_help();
 
@@ -189,9 +187,12 @@ private:
     QToolButton *m_btn_optimize;
 
     QNetworkAccessManager *m_network;
+    NotifierWidget *m_notifier;
 
     void showEvent(QShowEvent *evt);
     void closeEvent(QCloseEvent *evt); // override;
+    void resizeEvent(QResizeEvent*);
+    void moveEvent(QMoveEvent*);
 
     void read_settings();
     void write_settings();
@@ -202,8 +203,6 @@ private:
     void reset();
 
     void refresh_pop_counts();
-
-    void update_url_button(QAction *act, QStringList msgs, const QString &url);
 
     private slots:
         void set_interface_enabled(bool);

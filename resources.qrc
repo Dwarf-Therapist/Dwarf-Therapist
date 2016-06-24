@@ -72,7 +72,7 @@
         <file alias="img/exclamation-red.png">resources/img/exclamation-red.png</file>
         <file alias="img/information.png">resources/img/information.png</file>
         <file alias="img/exclamation-circle.png">resources/img/exclamation-circle.png</file>
-        <file alias="img/exclamation-frame.png">resources/img/exclamation--frame.png</file>
+        <file alias="img/exclamation--frame.png">resources/img/exclamation--frame.png</file>
     </qresource>
     <qresource prefix="/happiness">
         <file alias="Ecstatic.png">resources/img/Ecstatic.png</file>
