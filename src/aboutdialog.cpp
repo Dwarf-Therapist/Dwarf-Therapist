@@ -34,4 +34,6 @@ AboutDialog::AboutDialog(MainWindow *parent)
     ov->setText(ov->text().arg(m_version.to_string()));
     QLabel *qv = ui->lbl_qt_version;
     qv->setText(qv->text().arg(QT_VERSION_STR, qVersion()));
+
+    connect(ui->pb_ok_button,SIGNAL(clicked(bool)),this,SLOT(close()));
 }

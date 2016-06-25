@@ -25,6 +25,8 @@ THE SOFTWARE.
 
 #include <QDialog>
 #include <QDesktopWidget>
+#include <QPropertyAnimation>
+
 #include "ui_notification.h"
 #include "notifierwidget.h"
 
@@ -38,10 +40,17 @@ public:
 
 private:
     Ui::NotificationWidget *ui;
+    QPropertyAnimation *m_fader;
+    bool m_mouse_hover;
+
+    void enterEvent(QEvent *);
+    void leaveEvent(QEvent *);
 
 private slots:
     void close_notification();
     void url_clicked(const QString &url);
+    void fade_out_start();
+    void opacity_changed(qreal);
 
 signals:
     void closed();

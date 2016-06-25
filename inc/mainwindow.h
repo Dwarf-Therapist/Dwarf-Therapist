@@ -29,7 +29,9 @@ THE SOFTWARE.
 #include <QCompleter>
 #include <QToolButton>
 #include <QNetworkAccessManager>
+#include <QNetworkReply>
 
+#include "defines.h"
 #include "global_enums.h"
 
 class QSettings;
@@ -111,19 +113,20 @@ public:
         void print_gridview();
         void save_gridview_csv();
 
-        // version check
-        void check_latest_version();
+        // network version/memory layout checks
+        bool network_accessible(const QString &name);
+        void check_latest_version(bool notify_on_ok = true);
         void version_check_finished();
-
-        // layout check
         void check_layouts(const QString & df_checksum);
         void layout_downloaded();
+        void update_error(QNetworkReply::NetworkError);
 
         // links
         void go_to_forums();
         void go_to_donate();
         void go_to_project_home();
         void go_to_new_issue();
+        void go_to_latest_release();
 
         //help
         void open_help();
@@ -180,6 +183,9 @@ private:
     bool m_toolbar_configured;
     QVector<int> m_selected_units;
     QString m_last_updated_checksum;
+    QHash<QString,int> m_layout_queue;
+
+    static const QString m_url_homepage;
 
     //optimize button and separator widgets and their corresponding toolbar actions
     QAction *m_act_sep_optimize;
@@ -190,9 +196,9 @@ private:
     NotifierWidget *m_notifier;
 
     void showEvent(QShowEvent *evt);
-    void closeEvent(QCloseEvent *evt); // override;
-    void resizeEvent(QResizeEvent*);
-    void moveEvent(QMoveEvent*);
+    void closeEvent(QCloseEvent *evt);
+    void resizeEvent(QResizeEvent *evt);
+    void moveEvent(QMoveEvent *evt);
 
     void read_settings();
     void write_settings();

@@ -77,6 +77,8 @@ THE SOFTWARE.
 #include <QJsonArray>
 #include <QJsonObject>
 
+const QString MainWindow::m_url_homepage = QString("https://github.com/%1/%2").arg(REPO_OWNER).arg(REPO_NAME);
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -257,8 +259,9 @@ MainWindow::MainWindow(QWidget *parent)
     refresh_role_menus();
     refresh_opts_menus();
 
-    if (m_settings->value("options/check_for_updates_on_startup", true).toBool())
-        check_latest_version();
+    if(m_settings->value("options/check_for_updates_on_startup", true).toBool()){
+        check_latest_version(false);
+    }
 
     //if any custom roles were altered due to an update, save them
     if(GameDataReader::ptr()->custom_roles_updated()){
@@ -656,6 +659,11 @@ void MainWindow::apply_filter(QModelIndex idx){
 
 void MainWindow::set_interface_enabled(bool enabled) {
     ui->act_connect_to_DF->setEnabled(!enabled);
+    if(enabled){
+        ui->act_connect_to_DF->setIcon(QIcon(":/img/plug-connect.png"));
+    }else{
+        ui->act_connect_to_DF->setIcon(QIcon(":/img/plug--arrow.png"));
+    }
     ui->act_read_dwarves->setEnabled(enabled);
     ui->act_expand_all->setEnabled(enabled);
     ui->act_collapse_all->setEnabled(enabled);
@@ -669,13 +677,63 @@ void MainWindow::set_interface_enabled(bool enabled) {
         m_view_manager->setEnabled(enabled);
 }
 
-void MainWindow::check_latest_version() {
-    QNetworkReply *reply = m_network->get(QNetworkRequest(QUrl(
-                                                              QString("https://api.github.com/repos/%1/%2/releases/latest")
-                                                              .arg(DT->user_settings()->value("update_repo_owner",REPO_OWNER).toString())
-                                                              .arg(DT->user_settings()->value("update_repo_name",REPO_NAME).toString()))));
+bool MainWindow::network_accessible(const QString &name){
+    if(m_network->networkAccessible() == QNetworkAccessManager::Accessible){
+        return true;
+    }else{
+        NotifierWidget::notify_info ni;
+        ni.title = tr("Network Inaccessible");
+        ni.is_warning = true;
+        ni.details = tr("Could not check for %1 due to network inaccessibility").arg(name);
+        m_notifier->add_notification(ni);
+        return false;
+    }
+}
 
-    connect(reply, SIGNAL(finished()),this,SLOT(version_check_finished()));
+void MainWindow::check_latest_version(bool notify_on_ok) {
+    if(network_accessible(tr("new releases"))){
+        QNetworkReply *reply = m_network->get(QNetworkRequest(QUrl(
+                                                                  QString("https://api.github.com/repos/%1/%2/releases/latest")
+                                                                  .arg(DT->user_settings()->value("update_repo_owner",REPO_OWNER).toString())
+                                                                  .arg(DT->user_settings()->value("update_repo_name",REPO_NAME).toString()))));
+        reply->setProperty("release_check",true);
+        if(notify_on_ok){
+            reply->setProperty("notify_on_ok",true);
+        }
+        connect(reply,SIGNAL(finished()),this,SLOT(version_check_finished()));
+        connect(reply,SIGNAL(error(QNetworkReply::NetworkError)),this,SLOT(update_error(QNetworkReply::NetworkError)));
+    }
+}
+
+void MainWindow::update_error(QNetworkReply::NetworkError err){
+    if(err == QNetworkReply::NoError)
+        return;
+    QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+    QString err_msg = reply->errorString();
+    //use our custom error message if it's been set
+    if(reply->property("err_msg").isValid()){
+        err_msg = reply->property("err_msg").toString();
+    }
+    NotifierWidget::notify_info ni;
+    bool release_check = false;
+    if(reply->property("release_check").isValid()){
+        release_check = reply->property("release_check").toBool();
+    }
+    if(release_check){
+        ni.title = tr("Version Check Error");
+        ni.url = m_url_homepage;
+        ni.url_msg = tr("Click here to go to the latest release page.");
+    }else{
+        ni.title = tr("Memory Layout Error");
+        ni.url = QString("%1/releases/latest").arg(m_url_homepage);
+        ni.url_msg = tr("Click here to go to the project home page. Navigate to <i>share/memory_layouts</i> to manually update.");
+        m_layout_queue.remove(reply->url().toString());
+    }
+    ni.is_warning = true;
+    ni.details = capitalize(err_msg);
+    m_notifier->add_notification(ni);
+
+    reply->deleteLater();
 }
 
 void MainWindow::version_check_finished() {
@@ -683,46 +741,49 @@ void MainWindow::version_check_finished() {
 
     NotifierWidget::notify_info ni;
     ni.title = "";
-    ni.url = QString("http://github.com/%1/%2/releases/latest").arg(REPO_OWNER).arg(REPO_NAME);
+    ni.url = QString("%1/releases/latest").arg(m_url_homepage);
     ni.url_msg = tr("Click here to go to the latest release page.");
     ni.is_warning = false;
+
+    bool notify_on_ok = false;
+    notify_on_ok = reply->property("notify_on_ok").isValid();
 
     if(reply->error() == QNetworkReply::NoError){
         QJsonParseError *err = new QJsonParseError();
         QJsonDocument releases_doc = QJsonDocument::fromJson(reply->readAll(),err);
         if(err && err->error != QJsonParseError::NoError){
-            ni.title = tr("Missing Release Manifest");
-            ni.details = tr("Failed to read the latest release page!<br><br>Details: %1").arg(err->errorString());
-            ni.is_warning = true;
-            LOGI << err->errorString();
-            return;
-        }
+            LOGW << err->errorString();
+            reply->setProperty("err_msg",err->errorString());
+            reply->error(QNetworkReply::UnknownContentError);
+        }else{
+            QJsonObject release_info = releases_doc.object();
+            if(!release_info.isEmpty()){
+                Version v_current(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
+                Version v_latest;
+                QString release_tag = release_info.value("tag_name").toString();
+                QRegExp rx("(\\d+)\\.(\\d+)\\.(\\d+)");
+                if(rx.indexIn(release_tag) != -1){
+                    v_latest.major = rx.cap(1).toInt();
+                    v_latest.minor = rx.cap(2).toInt();
+                    v_latest.patch = rx.cap(3).toInt();
 
-        QJsonObject release_info = releases_doc.object();
-        if(!release_info.isEmpty()){
-            Version v_current(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
-            Version v_latest;
-            QString release_tag = release_info.value("tag_name").toString();
-            QRegExp rx("(\\d+)\\.(\\d+)\\.(\\d+)");
-            if(rx.indexIn(release_tag) != -1){
-                v_latest.major = rx.cap(1).toInt();
-                v_latest.minor = rx.cap(2).toInt();
-                v_latest.patch = rx.cap(3).toInt();
-
-                if(true){//v_current < v_latest){
-                    LOGI << "New version found" << v_latest.to_string();
-                    ni.title = tr("New Version Available");
-                    ni.url_msg = tr("Click here to download version %1").arg(v_latest.to_string());
-                    ni.url = release_info.value("html_url").toString();
+                    if(v_current < v_latest){
+                        LOGI << "New version found" << v_latest.to_string();
+                        ni.title = tr("New Version Available");
+                        ni.url_msg = tr("Click here to download version %1").arg(v_latest.to_string());
+                        ni.url = release_info.value("html_url").toString();
+                    }else if(notify_on_ok){
+                        ni.title = tr("Latest Version");
+                        ni.details = tr("This version is the latest release.");
+                        ni.url = "";
+                        ni.url_msg = "";
+                    }
                 }
+            }else{
+                reply->setProperty("err_msg",tr("No release information found."));
+                reply->error(QNetworkReply::UnknownContentError);
             }
         }
-
-    }else{
-        LOGI << "Error: " << reply->errorString();
-        ni.title = tr("Manifest Download Failed");
-        ni.details = tr("Failed to access the latest release page!<br><br>%1").arg(reply->errorString());
-        ni.is_warning = true;
     }
 
     if(!ni.title.trimmed().isEmpty()){
@@ -734,11 +795,10 @@ void MainWindow::version_check_finished() {
 
 void MainWindow::check_layouts(const QString & df_checksum) {
         LOGI << "Checking for layout for checksum: " << df_checksum;
-        NotifierWidget::notify_info ni;
-        ni.title = tr("Layout Manifest Error");
-        ni.url_msg = tr("Click here to go to the project home page. Navigate to <i>share/memory_layouts</i> to manually update.");
-        ni.url = QString("https://github.com/%1/%2").arg(REPO_OWNER).arg(REPO_NAME);
-        ni.is_warning = true;
+        if(!network_accessible(tr("memory layouts"))){
+            return;
+        }
+
         //load a list of all layout files from the repo
         QNetworkReply *reply = m_network->get(QNetworkRequest(QUrl(
                                                                   QString("https://api.github.com/repos/%1/%2/contents/share/memory_layouts/%3")
@@ -747,22 +807,25 @@ void MainWindow::check_layouts(const QString & df_checksum) {
                                                                   .arg(m_df->layout_subdir()))));
         QEventLoop manifest_loop;
         connect(reply, SIGNAL(finished()),&manifest_loop,SLOT(quit()));
+        connect(reply,SIGNAL(error(QNetworkReply::NetworkError)),this,SLOT(update_error(QNetworkReply::NetworkError)));
         manifest_loop.exec();
 
         if(reply->error() == QNetworkReply::NoError){
             QJsonParseError *err = new QJsonParseError();
             QJsonDocument layout_doc = QJsonDocument::fromJson(reply->readAll(),err);
             if(err && err->error != QJsonParseError::NoError){
-                ni.details = tr("Failed to read the memory layout manifest!<br><br>%1").arg(err->errorString());
                 LOGW << err->errorString();
+                reply->setProperty("err_msg",err->errorString());
+                reply->error(QNetworkReply::UnknownContentError);
             }else{
                 QStringList layout_urls;
                 QJsonArray file_infos =  layout_doc.array();
                 for(int idx = 0; idx < file_infos.size(); idx++){
                     QJsonObject file_info = file_infos.at(idx).toObject();
                     if(!file_info.isEmpty()){
-                        //only download layouts that either we don't have, or have a different SHA
+                        //download layouts that either we don't have, or have a different SHA
                         //we'll still have to read them and compare their checksum with the current df checksum
+                        //but this will reduce the number of layouts we need to check
                         QString git_sha = file_info.value("sha").toString();
                         QString filename = file_info.value("name").toString();
                         if(!m_df->find_memory_layout(git_sha)){
@@ -773,40 +836,35 @@ void MainWindow::check_layouts(const QString & df_checksum) {
                 }
                 if(layout_urls.count() > 0){
                     set_progress_message(tr("Downloading memory layouts..."));
-                    set_progress_range(0,layout_urls.size()-1);
+                    set_progress_range(0,layout_urls.size());
                     set_progress_value(0);
 
                     QEventLoop layout_dl;
                     foreach(QString layout_url, layout_urls){
                         QNetworkReply *dl_reply = m_network->get(QNetworkRequest(QUrl(layout_url)));
+                        m_layout_queue.insert(dl_reply->url().toString(),0);
                         connect(dl_reply,SIGNAL(finished()),this,SLOT(layout_downloaded()));
                         connect(dl_reply,SIGNAL(finished()),&layout_dl,SLOT(quit()));
+                        connect(dl_reply,SIGNAL(error(QNetworkReply::NetworkError)),this,SLOT(update_error(QNetworkReply::NetworkError)));
                     }
                     layout_dl.exec();
 
-                    while(m_progress->value() < m_progress->maximum()){
+                    while(!m_layout_queue.isEmpty()){
                         QCoreApplication::processEvents(QEventLoop::AllEvents,100);
+                        set_progress_value(layout_urls.size()-m_layout_queue.size());
                     }
                 }
             }
-        }else{
-            LOGW << reply->errorString();
-            ni.title = tr("Manifest Download Failed");
-            ni.details = tr("Failed to download the memory layout manifest!<br><br>%1").arg(reply->errorString());
         }
         reply->deleteLater();
-
-        if(!ni.details.trimmed().isEmpty()){
-            m_notifier->add_notification(ni);
-        }
 }
 
 void MainWindow::layout_downloaded() {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(QObject::sender());
     NotifierWidget::notify_info ni;
     ni.title = tr("Memory Layout Failed");
-    ni.url_msg = tr("Click here to go to the project home page. Navigate to <i>share/memory_layouts</i> to manually update.");
-    ni.url = QString("https://github.com/%1/%2").arg(REPO_OWNER).arg(REPO_NAME);
+    ni.url_msg = "";
+    ni.url = "";
     ni.is_warning = true;
 
     if(reply->error() == QNetworkReply::NoError){
@@ -848,21 +906,14 @@ void MainWindow::layout_downloaded() {
             }
             m_last_updated_checksum = checksum;
         }
-    }else{
-        ni.title = tr("Download Failed");
-        ni.details = reply->errorString();
     }
 
     if(!ni.details.trimmed().isEmpty()){
-        if(!ni.is_warning){
-            ni.url = "";
-        }
         m_notifier->add_notification(ni);
     }
 
     reply->deleteLater();
-    int val = m_progress->value()+1;
-    set_progress_value(val);
+    m_layout_queue.remove(reply->url().toString());
 }
 
 void MainWindow::set_group_by(int group_by) {
@@ -1028,10 +1079,13 @@ void MainWindow::go_to_donate() {
     QDesktopServices::openUrl(QUrl("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=GM5Z6DYJEVW56&item_name=Donation"));
 }
 void MainWindow::go_to_project_home() {
-    QDesktopServices::openUrl(QUrl(QString("https://github.com/%1/%2").arg(REPO_OWNER).arg(REPO_NAME)));
+    QDesktopServices::openUrl(QUrl(m_url_homepage));
 }
 void MainWindow::go_to_new_issue() {
-    QDesktopServices::openUrl(QUrl(QString("https://github.com/%1/%2/issues?state=open").arg(REPO_OWNER).arg(REPO_NAME)));
+    QDesktopServices::openUrl(QUrl(QString("%1/issues?state=open").arg(m_url_homepage)));
+}
+void MainWindow::go_to_latest_release() {
+    QDesktopServices::openUrl(QUrl(QString("%1/releases/latest").arg(m_url_homepage)));
 }
 
 void MainWindow::open_help(){

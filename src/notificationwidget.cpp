@@ -27,16 +27,22 @@ THE SOFTWARE.
 
 #include <QDesktopServices>
 #include <QUrl>
+#include <QGraphicsOpacityEffect>
+#include <QPropertyAnimation>
+#include <QTimer>
 
 class NotifierWidget;
 
 NotificationWidget::NotificationWidget(NotifierWidget::notify_info ni,NotifierWidget *parent)
     : QFrame(parent)
     , ui(new Ui::NotificationWidget)
+    , m_fader(0)
+    , m_mouse_hover(false)
 {
     ui->setupUi(this);
 
     setFrameShape(QFrame::StyledPanel);
+    setAttribute(Qt::WA_Hover);
     setStyleSheet(QString("QFrame{background: %1}").arg(QFrame::palette().color(QPalette::Window).name()));
 
     connect(ui->btn_close,SIGNAL(clicked(bool)),this,SLOT(close_notification()));
@@ -67,7 +73,7 @@ void NotificationWidget::display(NotifierWidget::notify_info ni){
         if(url_msg.isEmpty()){
             url_msg = tr("Click here for more details.");
         }
-        msg.append(QString("<nobr><p><a href=\"%1\" style=\"color: %2\">%3</p></nobr>")
+        msg.append(QString("<p><a href=\"%1\" style=\"color: %2\">%3</p>")
                    .arg(ni.url)
                    .arg(QFrame::palette().color(QPalette::Text).name())
                    .arg(url_msg));
@@ -76,6 +82,53 @@ void NotificationWidget::display(NotifierWidget::notify_info ni){
     ui->lbl_msg->setText(msg);
     ui->lbl_msg->setToolTip(msg);
 
+    //start fading after 10s
+    QTimer::singleShot(10000, this, SLOT(fade_out_start()));
+}
+
+void NotificationWidget::fade_out_start(){
+    if(!m_fader){
+        QGraphicsOpacityEffect *eff = new QGraphicsOpacityEffect(this);
+        this->setGraphicsEffect(eff);
+        m_fader = new QPropertyAnimation(eff,"opacity");
+        m_fader->setStartValue(1);
+        m_fader->setEndValue(0);
+        m_fader->setDuration(20000);
+        m_fader->setEasingCurve(QEasingCurve::OutBack);
+        m_fader->start(QPropertyAnimation::DeleteWhenStopped);
+        //close the notification as soon as opacity hits 0; this is often before the animation finishes
+        connect(eff,SIGNAL(opacityChanged(qreal)),this,SLOT(opacity_changed(qreal)));
+    }
+    //if the mouse is already on the notification, pause the fade as it's currently active
+    if(m_mouse_hover){
+        m_fader->pause();
+    }
+}
+
+void NotificationWidget::opacity_changed(qreal opacity){
+    if(opacity <= 0){
+        if(m_fader){
+            m_fader->stop();
+        }
+        close_notification();
+    }
+}
+
+void NotificationWidget::enterEvent(QEvent *evt){
+    QFrame::enterEvent(evt);
+    m_mouse_hover = true;
+    if(m_fader){
+        m_fader->setCurrentTime(0);
+        m_fader->pause();
+    }
+}
+
+void NotificationWidget::leaveEvent(QEvent *evt){
+    QFrame::leaveEvent(evt);
+    m_mouse_hover = false;
+    if(m_fader && m_fader->state() == QAbstractAnimation::Paused){
+        m_fader->resume();
+    }
 }
 
 void NotificationWidget::url_clicked(const QString &url){

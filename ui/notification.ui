@@ -49,6 +49,9 @@
      <property name="rightMargin">
       <number>4</number>
      </property>
+     <property name="bottomMargin">
+      <number>2</number>
+     </property>
      <property name="spacing">
       <number>1</number>
      </property>
