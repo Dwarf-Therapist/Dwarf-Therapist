@@ -36,10 +36,9 @@ NotifierWidget::NotifierWidget(MainWindow *parent)
     ui->setupUi(this);
 
     setAttribute(Qt::WA_ShowWithoutActivating);
+    setAttribute(Qt::WA_X11DoNotAcceptFocus);
     setWindowFlags(Qt::Window | // Add if popup doesn't show up
-                   Qt::FramelessWindowHint | // No window border
-                   Qt::WindowDoesNotAcceptFocus); //| // No focus
-                   //Qt::WindowStaysOnTopHint); // Always on top
+                   Qt::FramelessWindowHint); // No window border
 
     setAttribute(Qt::WA_TranslucentBackground);
 

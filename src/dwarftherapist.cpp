@@ -46,6 +46,8 @@ THE SOFTWARE.
 #include <QTranslator>
 #include <QTimer>
 
+const QString DwarfTherapist::m_url_homepage = QString("https://github.com/%1/%2").arg(REPO_OWNER).arg(REPO_NAME);
+
 DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     : QApplication(argc, argv)
     , m_user_settings(0)

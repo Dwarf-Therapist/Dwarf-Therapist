@@ -12,7 +12,6 @@ MemoryLayout::MemoryLayout(DFInstance *df, const QFileInfo &fileinfo)
     , m_git_sha(QString::null)
     , m_data(m_fileinfo.absoluteFilePath(), QSettings::IniFormat)
     , m_complete(true)
-    , m_base_addr(0)
 {
     TRACE << "Attempting to contruct MemoryLayout from file " << fileinfo.absoluteFilePath();
 

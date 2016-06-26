@@ -20,42 +20,46 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef NOTIFIERWIDGET_H
-#define NOTIFIERWIDGET_H
 
-#include <QDialog>
-#include <QDesktopWidget>
-#include "ui_notifier.h"
+#ifndef UPDATER_H
+#define UPDATER_H
 
-class NotificationWidget;
-class MainWindow;
+#include <QObject>
+#include <QNetworkReply>
+#include "notifierwidget.h"
 
-class NotifierWidget : public QDialog {
+class DFInstance;
+class Version;
+
+class Updater : public QObject {
     Q_OBJECT
 public:
-    NotifierWidget(MainWindow *parent = 0);
-    ~NotifierWidget();
+    Updater(QObject *parent = 0);
+    ~Updater();
 
-    struct notify_info{
-        QString title;
-        QString details;
-        QString url;
-        QString url_msg;
-        bool is_warning;
-    };
+    QString last_updated_checksum(){return m_last_updated_checksum;}
 
 public slots:
-     void notifications_changed();
-     void add_notification(NotifierWidget::notify_info ni);
+    bool network_accessible(const QString &name);
+    void check_latest_version(bool notify_on_ok = true);
+    void version_check_finished();
+    void check_layouts(DFInstance *df);
+    void layout_downloaded();
+    void update_error(QNetworkReply::NetworkError);
 
-private:
-    Ui::NotifierWidget *ui;
-    void resizeEvent(QResizeEvent*);
+signals:
+    void notify(NotifierWidget::notify_info);
 
-private slots:
-    void notification_closed();
+protected:
+    DFInstance *m_df;
+    QNetworkAccessManager *m_network;
+    QHash<QString,int> m_layout_queue;
+    QString m_last_updated_checksum;
+
+    bool load_manifest(QNetworkReply *reply, QVariant &manifest_object);
+    QStringList find_layout_urls(QNetworkReply *reply);
+    void load_latest_version(QNetworkReply *reply, Version &latest_version, QString &url);
+    void load_layout_data(QString data, QStringList &list, QRegExp rx);
 
 };
-
-#endif // NOTIFIERWIDGET_H
-
+#endif // UPDATER_H

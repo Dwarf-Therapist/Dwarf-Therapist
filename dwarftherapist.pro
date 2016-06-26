@@ -272,7 +272,8 @@ HEADERS += inc/viewmanager.h \
     inc/itemuniform.h \
     inc/equipwarn.h \
     inc/notificationwidget.h \
-    inc/notifierwidget.h
+    inc/notifierwidget.h \
+    inc/updater.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -381,7 +382,8 @@ SOURCES += src/viewmanager.cpp \
     src/itemuniform.cpp \
     src/equipwarn.cpp \
     src/notificationwidget.cpp \
-    src/notifierwidget.cpp
+    src/notifierwidget.cpp \
+    src/updater.cpp
 FORMS += ui/scriptdialog.ui \
     ui/pendingchanges.ui \
     ui/optionsmenu.ui \

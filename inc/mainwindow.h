@@ -28,8 +28,6 @@ THE SOFTWARE.
 #include <QProgressBar>
 #include <QCompleter>
 #include <QToolButton>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
 
 #include "defines.h"
 #include "global_enums.h"
@@ -45,10 +43,11 @@ class ScriptDialog;
 class roleDialog;
 class optimizereditor;
 class NotifierWidget;
+class Updater;
 
 namespace Ui
 {
-    class MainWindow;
+class MainWindow;
 }
 
 class MainWindow : public QMainWindow
@@ -76,89 +75,82 @@ public:
         int filtered;
     };
 
-    public slots:
-        // DF related
-        void connect_to_df();
-        void read_dwarves();
-        void new_pending_changes(int);
-        void new_creatures_count(int, int, int, QString);
-        void lost_df_connection();
+public slots:
+    // DF related
+    void connect_to_df();
+    void read_dwarves();
+    void new_pending_changes(int);
+    void new_creatures_count(int, int, int, QString);
+    void lost_df_connection();
 
-        //settings
-        void set_group_by(int);
-        void export_custom_professions();
-        void import_custom_professions();
-        void export_gridviews();
-        void import_gridviews();
-        void import_custom_roles();
-        void export_custom_roles();
-        void clear_user_settings();
+    //settings
+    void set_group_by(int);
+    void export_custom_professions();
+    void import_custom_professions();
+    void export_gridviews();
+    void import_gridviews();
+    void import_custom_roles();
+    void export_custom_roles();
+    void clear_user_settings();
 
-        // about
-        void show_about();
+    // about
+    void show_about();
 
-        //pending changes
-        void list_pending();
+    //pending changes
+    void list_pending();
 
-        //custom profession
-        void load_customizations();
-        void draw_custom_profession_context_menu(const QPoint &);
+    //custom profession
+    void load_customizations();
+    void draw_custom_profession_context_menu(const QPoint &);
 
-        //filter scripts
-        void add_new_filter_script();
-        void edit_filter_script();
-        void remove_filter_script();
+    //filter scripts
+    void add_new_filter_script();
+    void edit_filter_script();
+    void remove_filter_script();
 
-        //gridview exporting
-        void print_gridview();
-        void save_gridview_csv();
+    //gridview exporting
+    void print_gridview();
+    void save_gridview_csv();
 
-        // network version/memory layout checks
-        bool network_accessible(const QString &name);
-        void check_latest_version(bool notify_on_ok = true);
-        void version_check_finished();
-        void check_layouts(const QString & df_checksum);
-        void layout_downloaded();
-        void update_error(QNetworkReply::NetworkError);
+    // links
+    void go_to_forums();
+    void go_to_donate();
+    void go_to_project_home();
+    void go_to_new_issue();
+    void go_to_latest_release();
+    void check_latest_version();
 
-        // links
-        void go_to_forums();
-        void go_to_donate();
-        void go_to_project_home();
-        void go_to_new_issue();
-        void go_to_latest_release();
+    //help
+    void open_help();
 
-        //help
-        void open_help();
+    // progress/status
+    void set_progress_message(const QString &msg);
+    void set_progress_range(int min, int max);
+    void set_progress_value(int value);
+    void set_status_message(QString msg, QString tooltip_msg);
 
-        // progress/status
-        void set_progress_message(const QString &msg);
-        void set_progress_range(int min, int max);
-        void set_progress_value(int value);
-        void set_status_message(QString msg, QString tooltip_msg);
+    // misc
+    void show_dwarf_details_dock(Dwarf *d = 0);
+    void new_filter_script_chosen();
+    void reload_filter_scripts();
 
-        // misc
-        void show_dwarf_details_dock(Dwarf *d = 0);
-        void new_filter_script_chosen();
-        void reload_filter_scripts();
+    //roles
+    void add_new_custom_role();
+    void add_new_opt();
+    void write_roles(bool custom = true);
+    void refresh_roles_data();
 
-        //roles
-        void add_new_custom_role();
-        void add_new_opt();
-        void write_roles(bool custom = true);
-        void refresh_roles_data();
+    //optimizer
+    void refresh_opts_data();
+    void write_labor_optimizations();
+    void init_optimize();
+    void optimize(QString plan_name);
 
-        //optimizer
-        void refresh_opts_data();
-        void write_labor_optimizations();
-        void init_optimize();
-        void optimize(QString plan_name);
+    //filter scripts
+    void refresh_active_scripts();
+    void clear_filter();
 
-        //filter scripts
-        void refresh_active_scripts();
-        void clear_filter();
-
-        void show_connection_err(QStringList msg);
+    void show_connection_err(QStringList msg);
 
 private:
     DFInstance *m_df;
@@ -182,17 +174,13 @@ private:
     pop_info m_pop_info;
     bool m_toolbar_configured;
     QVector<int> m_selected_units;
-    QString m_last_updated_checksum;
-    QHash<QString,int> m_layout_queue;
-
-    static const QString m_url_homepage;
 
     //optimize button and separator widgets and their corresponding toolbar actions
     QAction *m_act_sep_optimize;
     QAction *m_act_btn_optimize; //this is required in addition to the button to allow easy visibility toggling
     QToolButton *m_btn_optimize;
 
-    QNetworkAccessManager *m_network;
+    Updater *m_updater;
     NotifierWidget *m_notifier;
 
     void showEvent(QShowEvent *evt);
@@ -210,36 +198,36 @@ private:
 
     void refresh_pop_counts();
 
-    private slots:
-        void set_interface_enabled(bool);
+private slots:
+    void set_interface_enabled(bool);
 
-        void edit_custom_role();
-        void remove_custom_role();
+    void edit_custom_role();
+    void remove_custom_role();
 
-        void display_group(const int);
-        void apply_filter();
-        void apply_filter(QModelIndex);
+    void display_group(const int);
+    void apply_filter();
+    void apply_filter(QModelIndex);
 
-        void preference_selected(QList<QPair<QString,QString> > vals, QString filter_name = "", FILTER_SCRIPT_TYPE pType = SCR_PREF);
-        void thought_selected(QVariantList ids);
-        void equipoverview_selected(QVariantList ids);
-        void health_legend_selected(QList<QPair<int,int> > vals);
+    void preference_selected(QList<QPair<QString,QString> > vals, QString filter_name = "", FILTER_SCRIPT_TYPE pType = SCR_PREF);
+    void thought_selected(QVariantList ids);
+    void equipoverview_selected(QVariantList ids);
+    void health_legend_selected(QList<QPair<int,int> > vals);
 
-        void toggle_opts_menu();
-        void edit_opt();
-        void remove_opt();
-        void done_editing_opt_plan(int result);
-        void done_editing_role(int result);
+    void toggle_opts_menu();
+    void edit_opt();
+    void remove_opt();
+    void done_editing_opt_plan(int result);
+    void done_editing_role(int result);
 
-        void main_toolbar_style_changed(Qt::ToolButtonStyle button_style);
-        void clear_all_filters();
+    void main_toolbar_style_changed(Qt::ToolButtonStyle button_style);
+    void clear_all_filters();
 
-        void commit_changes();
-        void save_ui_selections();
-        void restore_ui_selections();
+    void commit_changes();
+    void save_ui_selections();
+    void restore_ui_selections();
 
 signals:
-        void lostConnection();
+    void lostConnection();
 
 };
 
