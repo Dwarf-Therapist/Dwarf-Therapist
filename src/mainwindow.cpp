@@ -460,6 +460,7 @@ void MainWindow::show_connection_err(QStringList msg){
         if(DT->user_settings()->value("options/alert_on_lost_connection", true).toBool()){
             QMessageBox mb(this);
             mb.setIcon(QMessageBox::Warning);
+            mb.setStandardButtons(QMessageBox::Ok);
             mb.setWindowTitle(msg.at(0));
             if(!msg.value(1).isEmpty())
                 mb.setText(msg.at(1));

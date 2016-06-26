@@ -20,7 +20,7 @@
    <iconset resource="../resources.qrc">
     <normaloff>:/img/color_wheel.png</normaloff>:/img/color_wheel.png</iconset>
   </property>
-  <layout class="QVBoxLayout" name="vbox" stretch="0,0">
+  <layout class="QVBoxLayout" name="vbox" stretch="0,0,0">
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="enabled">
@@ -560,25 +560,8 @@
          </property>
         </spacer>
        </item>
-       <item>
-        <widget class="QTextEdit" name="text_status_tip">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="undoRedoEnabled">
-          <bool>false</bool>
-         </property>
-         <property name="textInteractionFlags">
-          <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-         </property>
-        </widget>
-       </item>
       </layout>
       <zorder>groupBox_updates</zorder>
-      <zorder>text_status_tip</zorder>
       <zorder>groupBox_cheats</zorder>
      </widget>
      <widget class="QWidget" name="tab_grid_options">
@@ -2520,6 +2503,22 @@
        </item>
       </layout>
      </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTextEdit" name="text_status_tip">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="undoRedoEnabled">
+      <bool>false</bool>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+     </property>
     </widget>
    </item>
    <item>

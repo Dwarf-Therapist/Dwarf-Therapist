@@ -132,7 +132,7 @@ USIZE DFInstanceOSX::write_raw(const VIRTADDR &addr, const USIZE &bytes, const v
     return result == KERN_SUCCESS ? bytes : 0;
 }
 
-bool DFInstanceOSX::df_running(){
+bool DFInstanceOSX::set_pid(){
     NSAutoreleasePool *authPool = [[NSAutoreleasePool alloc] init];
 
     NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
@@ -156,6 +156,8 @@ bool DFInstanceOSX::df_running(){
     }
 
     kern_return_t kret = task_for_pid( current_task(), m_pid, &m_task );
+    [authPool release];
+
     if (m_pid == 0 || ! (kret == KERN_SUCCESS)) {
         LOGE << "can't find running copy";
         return false;
@@ -175,8 +177,6 @@ void DFInstanceOSX::find_running_copy() {
     set_memory_layout(calculate_checksum());
     m_alloc_start = 0;
     m_alloc_end = 0;
-
-    [authPool release];
 }
 
 VIRTADDR DFInstanceOSX::alloc_chunk(USIZE size) {

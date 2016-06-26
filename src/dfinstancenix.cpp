@@ -42,7 +42,7 @@ QString DFInstanceNix::read_string(const VIRTADDR &addr) {
     return QTextCodec::codecForName("IBM437")->toUnicode(buf);
 }
 
-void DFInstanceNix::df_running(){
+bool DFInstanceNix::df_running(){
     pid_t cur_pid = m_pid;
     return (set_pid() && cur_pid == m_pid);
 }

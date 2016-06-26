@@ -38,7 +38,6 @@ public:
 
     void find_running_copy();
     bool df_running();
-    bool set_pid();
 
     QString get_last_error();
 
@@ -59,6 +58,7 @@ protected:
     DWORD m_pid;
     HANDLE m_proc;
     QString calculate_checksum(const IMAGE_NT_HEADERS &pe_header);
+    bool set_pid();
 };
 
 #endif // DFINSTANCE_H

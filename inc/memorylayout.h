@@ -174,7 +174,6 @@ private:
     QString m_game_version;
     QSettings m_data;
     bool m_complete;
-    VIRTADDR m_base_addr;
 
     uint read_hex(QString key);
     void read_group(const MEM_SECTION &section);
