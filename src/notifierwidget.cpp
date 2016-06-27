@@ -36,12 +36,14 @@ NotifierWidget::NotifierWidget(MainWindow *parent)
     ui->setupUi(this);
 
     setAttribute(Qt::WA_ShowWithoutActivating);
-    setAttribute(Qt::WA_X11DoNotAcceptFocus);
-    setWindowFlags(Qt::Window | // Add if popup doesn't show up
-                   Qt::FramelessWindowHint); // No window border
-
     setAttribute(Qt::WA_TranslucentBackground);
-
+#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+    setAttribute(Qt::WA_X11DoNotAcceptFocus);
+#else
+    setWindowFlags(Qt::Window | //necessary to show window?
+                   Qt::WindowDoesNotAcceptFocus | //no focus
+                   Qt::FramelessWindowHint); //no border
+#endif
     this->setVisible(false);
 }
 
@@ -57,29 +59,40 @@ void NotifierWidget::add_notification(NotifierWidget::notify_info ni){
 
     if(this->isHidden()){
         show();
+        if(testAttribute(Qt::WA_X11DoNotAcceptFocus)){
+            activateWindow();
+        }
     }
 }
 
 void NotifierWidget::resizeEvent(QResizeEvent *evt){
     QDialog::resizeEvent(evt);
-    notifications_changed();
+    reposition();
 }
 
 void NotifierWidget::notification_closed(){
     adjustSize();
 }
 
-void NotifierWidget::notifications_changed(){
+void NotifierWidget::reposition(){
     if(this->findChildren<NotificationWidget*>().count() > 0){
         //reposition the notification to the bottom right corner of the application
-        QPoint app_br = this->parentWidget()->frameGeometry().bottomRight();
-        app_br.setY(app_br.y()-DT->get_main_window()->statusBar()->height()-6);
-        app_br.setX(app_br.x()-10);
+        QPoint mainwindow_br = this->parentWidget()->frameGeometry().bottomRight();
+        //padding to set it above the status bar
+        QSize pad(12,32);
+        if(DT->get_main_window()->statusBar()){
+            pad.setHeight(DT->get_main_window()->statusBar()->height()+10);
+        }
+        mainwindow_br.setY(mainwindow_br.y()-pad.height());
+        mainwindow_br.setX(mainwindow_br.x()-pad.width());
         QRect this_geo = this->frameGeometry();
-        this_geo.moveBottomRight(app_br);
+        this_geo.moveBottomRight(mainwindow_br);
         this->move(this_geo.topLeft());
         //ensure it's on top
         raise();
+        if(testAttribute(Qt::WA_X11DoNotAcceptFocus)){
+            activateWindow();
+        }
     }else{
         this->setHidden(true);
     }

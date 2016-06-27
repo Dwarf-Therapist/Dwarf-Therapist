@@ -2,7 +2,7 @@ TEMPLATE = app
 TARGET = DwarfTherapist
 lessThan(QT_MAJOR_VERSION, 5) {
     message(Setting up for Qt 4)
-    QT += script
+    QT += script network
 }
 else {
     message(Setting up for Qt 5)

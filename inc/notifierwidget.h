@@ -45,7 +45,7 @@ public:
     };
 
 public slots:
-     void notifications_changed();
+     void reposition();
      void add_notification(NotifierWidget::notify_info ni);
 
 private:

@@ -27,9 +27,9 @@ THE SOFTWARE.
 #include <QObject>
 #include <QNetworkReply>
 #include "notifierwidget.h"
+#include "version.h"
 
 class DFInstance;
-class Version;
 
 class Updater : public QObject {
     Q_OBJECT
@@ -60,6 +60,7 @@ protected:
     QStringList find_layout_urls(QNetworkReply *reply);
     void load_latest_version(QNetworkReply *reply, Version &latest_version, QString &url);
     void load_layout_data(QString data, QStringList &list, QRegExp rx);
+    void show_notification(QNetworkReply *reply);
 
 };
 #endif // UPDATER_H

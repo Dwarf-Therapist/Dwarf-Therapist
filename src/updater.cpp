@@ -2,7 +2,6 @@
 #include "notifierwidget.h"
 #include "dwarftherapist.h"
 #include "defines.h"
-#include "version.h"
 #include "utils.h"
 #include "truncatingfilelogger.h"
 #include "mainwindow.h"
@@ -64,17 +63,22 @@ void Updater::check_latest_version(bool notify_on_ok) {
 void Updater::update_error(QNetworkReply::NetworkError err){
     if(err == QNetworkReply::NoError)
         return;
-    QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+    show_notification(qobject_cast<QNetworkReply*>(sender()));
+}
+
+void Updater::show_notification(QNetworkReply *reply){
+    NotifierWidget::notify_info ni;
+    bool release_check = false;
     QString err_msg = reply->errorString();
     //use our custom error message if it's been set
     if(reply->property("ERROR").isValid()){
         err_msg = reply->property("ERROR").toString();
     }
-    NotifierWidget::notify_info ni;
-    bool release_check = false;
+
     if(reply->property("release_check").isValid()){
         release_check = reply->property("release_check").toBool();
     }
+
     if(release_check){
         ni.title = tr("Version Check Error");
         ni.url = DT->project_homepage();
@@ -182,6 +186,7 @@ bool Updater::load_manifest(QNetworkReply *reply, QVariant &manifest_object){
     QJsonDocument doc = QJsonDocument::fromJson(reply->readAll(),json_err);
     if(json_err && json_err->error != QJsonParseError::NoError){
         LOGW << json_err->errorString();
+        //emit a reply error to be handled by update_error
         reply->setProperty("ERROR",json_err->errorString());
         reply->error(QNetworkReply::UnknownContentError);
         return false;
@@ -193,7 +198,8 @@ bool Updater::load_manifest(QNetworkReply *reply, QVariant &manifest_object){
     if(manifest_data.isEmpty()){
         LOGW << "Empty manifest";
         reply->setProperty("ERROR",tr("Empty or missing download manifest!"));
-        reply->error();
+        //can't emit the error signal (protected in QT4) so emit a notification manually
+        show_notification(reply);
         return false;
     }else{
         manifest_object = manifest_data;
@@ -317,7 +323,12 @@ void Updater::layout_downloaded() {
                     ni.details = tr("Could not open %1 to update the layout!").arg(m->filepath());
                 }
             }else{
-                QString dl_filename = reply->url().fileName();
+                QString dl_filename =
+                #if QT_VERSION < QT_VERSION_CHECK(5,0,0)
+                        reply->url().toString().split("/").last();
+                #else
+                        reply->url().fileName();
+                #endif
                 QString add_result;
                 if(m_df->add_new_layout(dl_filename,layout_data,add_result)){
                     ni.title = tr("Memory Layout Added");

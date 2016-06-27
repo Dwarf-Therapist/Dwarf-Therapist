@@ -1644,12 +1644,12 @@ void MainWindow::refresh_active_scripts(){
 void MainWindow::resizeEvent(QResizeEvent *evt){
     QMainWindow::resizeEvent(evt);
     if(m_notifier){
-        m_notifier->notifications_changed();
+        m_notifier->reposition();
     }
 }
 void MainWindow::moveEvent(QMoveEvent *evt){
     QMainWindow::moveEvent(evt);
     if(m_notifier){
-        m_notifier->notifications_changed();
+        m_notifier->reposition();
     }
 }
