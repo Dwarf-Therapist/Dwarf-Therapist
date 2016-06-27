@@ -1137,6 +1137,7 @@ bool DFInstance::add_new_layout(const QString & filename, const QString data, QS
             LOGI << "ignoring invalid layout from file:" << filename;
             delete temp;
         }
+        temp = 0;
     }
 
     return ok;

@@ -251,7 +251,7 @@ QStringList Updater::find_layout_urls(QNetworkReply *reply){
 }
 
 void Updater::load_latest_version(QNetworkReply *reply, Version &latest_version, QString &url){
-    QRegExp rx;
+    QRegExp rx_version;
     QString data;
     QVariant manifest_object;
     if(load_manifest(reply,manifest_object)){
@@ -260,21 +260,22 @@ void Updater::load_latest_version(QNetworkReply *reply, Version &latest_version,
         QJsonObject release_info = manifest.object();
         if(!release_info.isEmpty()){
             data = release_info.value("tag_name").toString();
-            rx.setPattern("(\\d+)\\.(\\d+)\\.(\\d+)");
+            rx_version.setPattern("(\\d+)\\.(\\d+)\\.(\\d+)");
             url = release_info.value("html_url").toString();
         }
 #else
-        QString manifest = manifest_object.toString();
-        rx.setPattern(".*tag_name.*:\\s*\"[a-zA-Z]*(\\d+)\\.(\\d+)\\.(\\d+)\"");
-        rx.setPattern(".*html_url\":\\s*\"(.*)\"");
-        if(rx.indexIn(manifest) != -1){
-            url = rx.cap(1);
+        data = manifest_object.toString();
+        rx_version.setPattern("\"tag_name\":\\s*\"[a-zA-Z]*(\\d+)\\.(\\d+)\\.(\\d+)\"");
+        QRegExp rx_url("\"html_url\":\\s*\"([a-zA-Z0-9:/._-]*)\"");
+        if(rx_url.indexIn(data) != -1){
+            url = rx_url.cap(1);
         }
 #endif
-        if(!rx.pattern().isEmpty() && rx.indexIn(data) != -1){
-            latest_version.major = rx.cap(1).toInt();
-            latest_version.minor = rx.cap(2).toInt();
-            latest_version.patch = rx.cap(3).toInt();
+        int idx = rx_version.indexIn(data);
+        if(idx != -1){
+            latest_version.major = rx_version.cap(1).toInt();
+            latest_version.minor = rx_version.cap(2).toInt();
+            latest_version.patch = rx_version.cap(3).toInt();
         }
     }
 

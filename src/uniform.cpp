@@ -75,6 +75,8 @@ void Uniform::add_uniform_item(ITEM_TYPE itype, ItemDefUniform *uItem, int count
         m_uniform_items[itype].append(new ItemDefUniform(*uItem));
     if (count > 0)
         add_equip_count(itype,count);
+
+    uItem = 0;
 }
 
 void Uniform::add_equip_count(ITEM_TYPE itype, int count){

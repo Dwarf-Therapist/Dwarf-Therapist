@@ -37,6 +37,7 @@ MemoryLayout::MemoryLayout(DFInstance *df, const QFileInfo &fileinfo, const QSet
 
 MemoryLayout::~MemoryLayout(){
     m_df = 0;
+    m_offsets.clear();
 }
 
 void MemoryLayout::load_data() {
@@ -93,7 +94,10 @@ bool MemoryLayout::is_valid() {
 
 void MemoryLayout::read_group(const MEM_SECTION &section) {
     QString ini_name = section_name(section);
-    AddressHash map = m_offsets[section];
+    AddressHash map;
+    if(m_offsets.contains(section)){
+        map = m_offsets.take(section);
+    }
     m_data.beginGroup(ini_name);
     foreach(QString k, m_data.childKeys()) {
         map.insert(k, read_hex(k));
