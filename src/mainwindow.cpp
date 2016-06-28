@@ -654,10 +654,10 @@ void MainWindow::set_interface_enabled(bool enabled) {
     ui->act_connect_to_DF->setEnabled(!enabled);
     if(enabled){
         ui->act_connect_to_DF->setIcon(QIcon(":/img/plug-connect.png"));
-        ui->act_connect_to_DF->setToolTip(tr("Attempt connecting to a running copy of Dwarf Fortress (CTRL+SHIFT+C)"));
+        ui->act_connect_to_DF->setToolTip(tr("A connection to Dwarf Fortress has been established!"));
     }else{
         ui->act_connect_to_DF->setIcon(QIcon(":/img/plug--arrow.png"));
-        ui->act_connect_to_DF->setToolTip(tr("A connection to Dwarf Fortress has been established!"));
+        ui->act_connect_to_DF->setToolTip(tr("Attempt connecting to a running copy of Dwarf Fortress (CTRL+SHIFT+C)"));
     }
     ui->act_read_dwarves->setEnabled(enabled);
     ui->act_expand_all->setEnabled(enabled);
