@@ -539,12 +539,16 @@ void OptionsMenu::accept() {
     write_settings();
     emit settings_changed();
     QDialog::accept();
-    int answer = QMessageBox::question(
-                0, tr("Apply Options"),
-                tr("Would you like to apply the new options now (Read Data)?"),
-                QMessageBox::Yes | QMessageBox::No);
-    if (answer == QMessageBox::Yes)
-        DT->get_main_window()->read_dwarves();
+
+    if(DT->get_DFInstance() && DT->get_DFInstance()->status() != DFInstance::DFS_GAME_LOADED){
+        int answer = QMessageBox::question(
+                    0, tr("Apply Options"),
+                    tr("Would you like to apply the new options now (Read Data)?"),
+                    QMessageBox::Yes | QMessageBox::No);
+        if (answer == QMessageBox::Yes){
+            DT->get_main_window()->read_dwarves();
+        }
+    }
 }
 
 void OptionsMenu::reject() {

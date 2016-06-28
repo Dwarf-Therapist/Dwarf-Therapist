@@ -242,7 +242,7 @@ void DwarfModel::build_rows() {
 
     if(only_animals)
         race_name = tr("Animals");
-    else if(m_df){
+    else if(!m_df.isNull()){
         Race* r = m_df->get_race(m_df->dwarf_race_id());
         if(r)
             race_name = r->plural_name();
@@ -778,7 +778,7 @@ void DwarfModel::cell_activated(const QModelIndex &idx, DwarfModelProxy *proxy) 
 void DwarfModel::set_group_by(int group_by) {
     LOGI << "group_by now set to" << group_by << " for view " << current_grid_view()->name();
     m_group_by = static_cast<GROUP_BY>(group_by);
-    if(m_df){
+    if(!m_df.isNull()){
         QTime t;
         t.start();
         build_rows();
@@ -799,7 +799,7 @@ void DwarfModel::calculate_pending() {
 }
 
 void DwarfModel::clear_pending() {
-    if(!m_df){
+    if(m_df.isNull()){
         return;
     }
     //clear squads before we refresh dwarf data

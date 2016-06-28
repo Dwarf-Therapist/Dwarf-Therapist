@@ -75,6 +75,7 @@
         <file alias="img/exclamation--frame.png">resources/img/exclamation--frame.png</file>
         <file alias="img/plug--arrow.png">resources/img/plug--arrow.png</file>
         <file alias="img/plug-connect.png">resources/img/plug-connect.png</file>
+        <file alias="img/arrow-circle.png">resources/img/arrow-circle.png</file>
     </qresource>
     <qresource prefix="/happiness">
         <file alias="Ecstatic.png">resources/img/Ecstatic.png</file>

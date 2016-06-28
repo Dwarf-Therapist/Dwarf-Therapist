@@ -73,6 +73,7 @@ THE SOFTWARE.
 #include <QTime>
 #include <QPainter>
 #include <QUrl>
+#include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -97,6 +98,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_toolbar_configured(false)
     , m_act_sep_optimize(0)
     , m_btn_optimize(0)
+    , m_retry_connection(0)
 {
     ui->setupUi(this);
 
@@ -385,6 +387,15 @@ void MainWindow::closeEvent(QCloseEvent *evt) {
 }
 
 void MainWindow::connect_to_df() {
+    bool show_dc_dialog = true;
+    if(m_retry_connection){
+        if(m_retry_connection->isActive()){
+            m_retry_connection->stop();
+        }
+        show_dc_dialog = (sender() != m_retry_connection);
+    }
+
+
     LOGI << "attempting connection to running DF game";
     if (m_df) {
         LOGI << "already connected, disconnecting";
@@ -433,10 +444,10 @@ void MainWindow::connect_to_df() {
                 read_dwarves();
             }
         }else{
-            lost_df_connection();
+            lost_df_connection(show_dc_dialog);
         }
     }else{
-        lost_df_connection();
+        lost_df_connection(show_dc_dialog);
     }
 }
 
@@ -445,30 +456,12 @@ void MainWindow::set_status_message(QString msg, QString tooltip_msg){
     m_lbl_status->setToolTip(tr("<span>%1</span>").arg(tooltip_msg));
 }
 
-void MainWindow::show_connection_err(QStringList msg){
-    if(!msg.isEmpty()){
-        LOGE << msg;
-        set_status_message(msg.value(0),"");
-        if(DT->user_settings()->value("options/alert_on_lost_connection", true).toBool()){
-            QMessageBox mb(this);
-            mb.setIcon(QMessageBox::Warning);
-            mb.setStandardButtons(QMessageBox::Ok);
-            mb.setWindowTitle(msg.at(0));
-            if(!msg.value(1).isEmpty())
-                mb.setText(msg.at(1));
-            QString desc = msg.value(2);
-            if(!desc.isEmpty())
-                desc.append("<br><br>");
-            mb.setInformativeText(desc.append(tr("Please re-connect when Dwarf Fortress has been started and a fort has been loaded.")));
-            if(!msg.value(3).isEmpty())
-                mb.setDetailedText(msg.at(3));
-            mb.exec();
-        }
-    }
-}
-
-void MainWindow::lost_df_connection() {
+void MainWindow::lost_df_connection(bool show_dialog) {
     LOGW << "lost connection to DF";
+    if(m_retry_connection && m_retry_connection->isActive()){
+        //stop the timer if it's running in case this slot was called directly
+        m_retry_connection->stop();
+    }
     emit lostConnection();
     QStringList err_msg;
     if (m_df) {
@@ -483,7 +476,45 @@ void MainWindow::lost_df_connection() {
         err_msg << tr("Startup Failed");
         err_msg << tr("Dwarf Therapist failed to startup!");
     }
-    show_connection_err(err_msg);
+
+    //display the error details to the user
+    if(!err_msg.isEmpty()){
+        LOGE << err_msg;
+        set_status_message(err_msg.value(0),"");
+        if(show_dialog && DT->user_settings()->value("options/alert_on_lost_connection", true).toBool()){
+            show_dc_dialog(err_msg);
+        }
+    }
+
+    //start the retry connection timer
+    if(!m_df || m_df->status() == DFInstance::DFS_DISCONNECTED){
+        if(!m_retry_connection){
+            m_retry_connection = new QTimer(this);
+            m_retry_connection->setInterval(5000);
+            connect(m_retry_connection,SIGNAL(timeout()),this,SLOT(connect_to_df()),Qt::UniqueConnection);
+        }
+        set_progress_message(tr("Attempting to automatically reconnect to Dwarf Fortress..."));
+        m_retry_connection->start();
+        ui->act_connect_to_DF->setIcon(QIcon(":/img/arrow-circle.png"));
+        ui->act_connect_to_DF->setToolTip(tr("Automatically retrying connection every 5s.<br><br>Click to retry immediately."));
+        ui->act_connect_to_DF->setText(tr("Auto.."));
+    }
+}
+
+void MainWindow::show_dc_dialog(QStringList msg){
+    QMessageBox mb(this);
+    mb.setIcon(QMessageBox::Warning);
+    mb.setStandardButtons(QMessageBox::Ok);
+    mb.setWindowTitle(msg.at(0));
+    if(!msg.value(1).isEmpty())
+        mb.setText(msg.at(1));
+    QString desc = msg.value(2);
+    if(!desc.isEmpty())
+        desc.append("<br><br>");
+    mb.setInformativeText(desc.append(tr("Please re-connect when Dwarf Fortress has been started and a fort has been loaded.")));
+    if(!msg.value(3).isEmpty())
+        mb.setDetailedText(msg.at(3));
+    mb.exec();
 }
 
 void MainWindow::read_dwarves() {
@@ -653,12 +684,15 @@ void MainWindow::apply_filter(QModelIndex idx){
 void MainWindow::set_interface_enabled(bool enabled) {
     ui->act_connect_to_DF->setEnabled(!enabled);
     if(enabled){
+        ui->act_connect_to_DF->setText(tr("Connected"));
         ui->act_connect_to_DF->setIcon(QIcon(":/img/plug-connect.png"));
         ui->act_connect_to_DF->setToolTip(tr("A connection to Dwarf Fortress has been established!"));
     }else{
+        ui->act_connect_to_DF->setText(tr("Connect"));
         ui->act_connect_to_DF->setIcon(QIcon(":/img/plug--arrow.png"));
         ui->act_connect_to_DF->setToolTip(tr("Attempt connecting to a running copy of Dwarf Fortress (CTRL+SHIFT+C)"));
     }
+    ui->act_connect_to_DF->setStatusTip(ui->act_connect_to_DF->toolTip());
     ui->act_read_dwarves->setEnabled(enabled);
     ui->act_expand_all->setEnabled(enabled);
     ui->act_collapse_all->setEnabled(enabled);
