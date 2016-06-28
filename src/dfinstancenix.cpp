@@ -13,6 +13,7 @@ struct STLStringHeader {
 
 DFInstanceNix::DFInstanceNix(QObject *parent)
     : DFInstance(parent)
+    , m_pid(0)
 {}
 
 QString DFInstanceNix::calculate_checksum() {
@@ -39,6 +40,11 @@ QString DFInstanceNix::read_string(const VIRTADDR &addr) {
     read_raw(read_addr(addr), sizeof(buf), (void *)buf);
 
     return QTextCodec::codecForName("IBM437")->toUnicode(buf);
+}
+
+bool DFInstanceNix::df_running(){
+    pid_t cur_pid = m_pid;
+    return (set_pid() && cur_pid == m_pid);
 }
 
 USIZE DFInstanceNix::write_string(const VIRTADDR &addr, const QString &str) {

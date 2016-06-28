@@ -13,7 +13,10 @@ public:
     QString read_string(const VIRTADDR &addr);
     USIZE write_string(const VIRTADDR &addr, const QString &str);
 
+    bool df_running();
+
 protected:
+    pid_t m_pid;
     QString calculate_checksum();
 
     VIRTADDR get_string(const QString &str);

@@ -132,7 +132,7 @@ USIZE DFInstanceOSX::write_raw(const VIRTADDR &addr, const USIZE &bytes, const v
     return result == KERN_SUCCESS ? bytes : 0;
 }
 
-bool DFInstanceOSX::find_running_copy(bool connect_anyway) {
+bool DFInstanceOSX::set_pid(){
     NSAutoreleasePool *authPool = [[NSAutoreleasePool alloc] init];
 
     NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
@@ -141,7 +141,6 @@ bool DFInstanceOSX::find_running_copy(bool connect_anyway) {
     unsigned i, len = [launchedApps count];
 
     // compile process array
-    pid_t pid;
     for ( i = 0; i < len; i++ ) {
         NSDictionary *application = [launchedApps objectAtIndex:i];
         if ( [[application objectForKey:@"NSApplicationName"]
@@ -149,32 +148,35 @@ bool DFInstanceOSX::find_running_copy(bool connect_anyway) {
 
             m_loc_of_dfexe = QString( [[application objectForKey:
                                      @"NSApplicationPath"] UTF8String]);
-            pid = [[application objectForKey:
+            m_pid = [[application objectForKey:
                                             @"NSApplicationProcessIdentifier"]
                                             intValue];
-            LOGI << "Found running copy, pid:" << pid << "path:" << m_loc_of_dfexe;
+            LOGI << "Found running copy, pid:" << m_pid << "path:" << m_loc_of_dfexe;
         }
     }
 
-    kern_return_t kret = task_for_pid( current_task(), pid, &m_task );
-    if (pid == 0 || ! (kret == KERN_SUCCESS)) {
-        QMessageBox::warning(0, tr("Warning"),
-                             tr("Unable to locate a running copy of Dwarf "
-                                "Fortress, are you sure it's running?"));
-        LOGW << "can't find running copy";
-        m_is_ok = false;
-        return m_is_ok;
-
-    }
-
-    m_is_ok = true;
-    m_layout = get_memory_layout(calculate_checksum(), !connect_anyway);
-    m_alloc_start = 0;
-    m_alloc_end = 0;
-
+    kern_return_t kret = task_for_pid( current_task(), m_pid, &m_task );
     [authPool release];
 
+    if (m_pid == 0 || ! (kret == KERN_SUCCESS)) {
+        LOGE << "can't find running copy";
+        return false;
+    }
+
     return true;
+}
+
+void DFInstanceOSX::find_running_copy() {
+    m_status = DFS_DISCONNECTED;
+
+    if(!set_pid()){
+        return;
+    }
+
+    m_status = DFS_CONNECTED;
+    set_memory_layout(calculate_checksum());
+    m_alloc_start = 0;
+    m_alloc_end = 0;
 }
 
 VIRTADDR DFInstanceOSX::alloc_chunk(USIZE size) {

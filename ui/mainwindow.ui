@@ -56,6 +56,9 @@
      <widget class="QWidget" name="toolbar_placeholder" native="true">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
+        <widget class="QLineEdit" name="lineEdit"/>
+       </item>
+       <item>
         <widget class="QLabel" name="lbl_group_by">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
@@ -315,6 +318,7 @@
       <zorder>lbl_dwarfs</zorder>
       <zorder>lbl_filter</zorder>
       <zorder>cb_filter_scripts</zorder>
+      <zorder>lineEdit</zorder>
      </widget>
     </item>
    </layout>
@@ -374,11 +378,13 @@
     <addaction name="act_help"/>
     <addaction name="separator"/>
     <addaction name="act_go_project_home"/>
+    <addaction name="act_go_latest_release"/>
     <addaction name="act_go_forums"/>
     <addaction name="act_go_new_issue"/>
     <addaction name="act_go_donate"/>
     <addaction name="separator"/>
     <addaction name="act_about"/>
+    <addaction name="act_check_update"/>
    </widget>
    <widget class="QMenu" name="menuWindows">
     <property name="title">
@@ -754,10 +760,10 @@
   <action name="act_connect_to_DF">
    <property name="icon">
     <iconset resource="../resources.qrc">
-     <normaloff>:/img/connect.png</normaloff>:/img/connect.png</iconset>
+     <normaloff>:/img/plug--arrow.png</normaloff>:/img/plug--arrow.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Connect To DF</string>
+    <string>&amp;Connect</string>
    </property>
    <property name="toolTip">
     <string>Attempt connecting to a running copy of Dwarf Fortress (CTRL+SHIFT+C)</string>
@@ -802,10 +808,10 @@
      <normaloff>:/img/refresh.png</normaloff>:/img/refresh.png</iconset>
    </property>
    <property name="text">
-    <string>Read Dwarves</string>
+    <string>Read</string>
    </property>
    <property name="iconText">
-    <string>Read Dwarves</string>
+    <string>Read</string>
    </property>
    <property name="toolTip">
     <string>Attempt to load all Dwarves from DF (CTRL+R)</string>
@@ -1149,6 +1155,27 @@
    </property>
    <property name="toolTip">
     <string>Open the Dwarf Therapist manual.</string>
+   </property>
+  </action>
+  <action name="act_go_latest_release">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/img/globe--arrow.png</normaloff>:/img/globe--arrow.png</iconset>
+   </property>
+   <property name="text">
+    <string>Latest Release</string>
+   </property>
+   <property name="toolTip">
+    <string>Launch a browser to Dwarf Therapist's latest release page.</string>
+   </property>
+  </action>
+  <action name="act_check_update">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/img/hammer.png</normaloff>:/img/hammer.png</iconset>
+   </property>
+   <property name="text">
+    <string>Check for Update</string>
    </property>
   </action>
  </widget>
@@ -1618,6 +1645,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>act_go_latest_release</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>go_to_latest_release()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>629</x>
+     <y>257</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_check_update</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>check_latest_version()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>629</x>
+     <y>257</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect_to_df()</slot>
@@ -1648,5 +1707,7 @@
   <slot>export_custom_roles()</slot>
   <slot>import_custom_roles()</slot>
   <slot>open_help()</slot>
+  <slot>go_to_latest_release()</slot>
+  <slot>check_latest_version()</slot>
  </slots>
 </ui>

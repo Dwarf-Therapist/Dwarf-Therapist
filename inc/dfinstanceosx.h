@@ -33,9 +33,7 @@ class DFInstanceOSX : public DFInstanceNix {
 public:
     DFInstanceOSX(QObject *parent=0);
     virtual ~DFInstanceOSX();
-
-    // factory ctor
-    bool find_running_copy(bool connect_anyway = false);
+    void find_running_copy();
 
     USIZE read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer);
     USIZE write_raw(const VIRTADDR &addr, const USIZE &bytes, const void *buffer);
@@ -50,6 +48,7 @@ public:
 
 protected:
     vm_map_t m_task;
+    bool set_pid();
 
 private:
     VIRTADDR alloc_chunk(USIZE size);

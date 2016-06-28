@@ -3,106 +3,150 @@
 
 #include "utils.h"
 #include <QSettings>
+#include <QFileInfo>
+
+class DFInstance;
 
 class MemoryLayout {
 public:
-    explicit MemoryLayout(const QString &filename);
-    MemoryLayout(const QString & filename, const QSettings &data);
+    explicit MemoryLayout(DFInstance *df, const QFileInfo &fileinfo);
+    MemoryLayout(DFInstance *df, const QFileInfo &fileinfo, const QSettings &data);
+    ~MemoryLayout();
 
-    QString filename() {return m_filename;}
+    typedef enum{
+        MEM_UNK = -1,
+        MEM_GLOBALS,
+        MEM_LANGUAGE,
+        MEM_UNIT,
+        MEM_SQUAD,
+        MEM_WORD,
+        MEM_RACE,
+        MEM_CASTE,
+        MEM_HIST_FIG,
+        MEM_HIST_EVT,
+        MEM_HIST_ENT,
+        MEM_WEP_SUB,
+        MEM_MAT,
+        MEM_PLANT,
+        MEM_ITEM_SUB,
+        MEM_DESC,
+        MEM_HEALTH,
+        MEM_WOUND,
+        MEM_ITEM,
+        MEM_ITEM_FILTER,
+        MEM_ARMOR_SUB,
+        MEM_GEN_REF,
+        MEM_SYN,
+        MEM_EMOTION,
+        MEM_ACTIVITY,
+        MEM_JOB,
+        MEM_SOUL,
+        MEM_COUNT
+    } MEM_SECTION;
+
+    typedef enum{
+        INVALID_FLAGS_1,
+        INVALID_FLAGS_2,
+        INVALID_FLAGS_3,
+        FLAG_TYPE_COUNT
+    } UNIT_FLAG_TYPE;
+
+    static const QString section_name(const MEM_SECTION &section){
+        QMap<MEM_SECTION,QString> m;
+        m[MEM_UNK] = "UNK";
+        m[MEM_GLOBALS] = "addresses";
+        m[MEM_LANGUAGE] = "offsets";
+        m[MEM_UNIT] = "dwarf_offsets";
+        m[MEM_SQUAD] = "squad_offsets";
+        m[MEM_WORD] = "word_offsets";
+        m[MEM_RACE] = "race_offsets";
+        m[MEM_CASTE] = "caste_offsets";
+        m[MEM_HIST_FIG] = "hist_figure_offsets";
+        m[MEM_HIST_EVT] = "hist_event_offsets";
+        m[MEM_HIST_ENT] = "hist_entity_offsets";
+        m[MEM_WEP_SUB] = "weapon_subtype_offsets";
+        m[MEM_MAT] = "material_offsets";
+        m[MEM_PLANT] = "plant_offsets";
+        m[MEM_ITEM_SUB] = "item_subtype_offsets";
+        m[MEM_DESC] = "descriptor_offsets";
+        m[MEM_HEALTH] = "health_offsets";
+        m[MEM_WOUND] = "unit_wound_offsets";
+        m[MEM_ITEM] = "item_offsets";
+        m[MEM_ITEM_FILTER] = "item_filter_offsets";
+        m[MEM_ARMOR_SUB] = "armor_subtype_offsets";
+        m[MEM_GEN_REF] = "general_ref_offsets";
+        m[MEM_SYN] = "syndrome_offsets";
+        m[MEM_EMOTION] = "emotion_offsets";
+        m[MEM_ACTIVITY] = "activity_offsets";
+        m[MEM_JOB] = "job_details";
+        m[MEM_SOUL] = "soul_details";
+        return m.value(section,m.value(MEM_UNK));
+    }
+
+    static const QString flag_type_name(const UNIT_FLAG_TYPE &flag_type){
+        QMap<UNIT_FLAG_TYPE,QString> m;
+        m[INVALID_FLAGS_1] = "invalid_flags_1";
+        m[INVALID_FLAGS_2] = "invalid_flags_2";
+        m[INVALID_FLAGS_3] = "invalid_flags_3";
+        return m.value(flag_type);
+    }
+
+    QSettings &data() { return m_data; }
+    QString filename() {return m_fileinfo.fileName();}
+    QString filepath() {return m_fileinfo.absoluteFilePath();}
     bool is_valid();
+    bool is_complete() {return m_complete;}
     QString game_version() {return m_game_version;}
     QString checksum() {return m_checksum;}
-    bool is_valid_address(VIRTADDR address);
-    void set_base_address(VIRTADDR addr){m_base_addr = addr;}
-    VIRTADDR get_base_address(){return m_base_addr;}
-    uint offset(const QString &key) {return m_offsets.value(key, -1);}
+    QString git_sha() {return m_git_sha;}
+    bool is_valid_address(VIRTADDR addr);
     uint string_buffer_offset();
     uint string_length_offset();
     uint string_cap_offset();
 
-    QHash<QString, VIRTADDR> globals() {return m_addresses;}
-
-    VIRTADDR address(const QString &key, const bool is_global = true) { //globals
-        return m_addresses.value(key, -1) + (is_global ? m_base_addr : 0);
+    QHash<QString,VIRTADDR> get_section_offsets(const MEM_SECTION &section) {
+        return m_offsets.value(section);
     }
-    int dwarf_offset(const QString &key) {
-        return m_dwarf_offsets.value(key, -1);
+    VIRTADDR offset(const MEM_SECTION &section, const QString &name) const{
+        return m_offsets.value(section).value(name,-1);
     }
-    int squad_offset(const QString & key) {
-        return m_squad_offsets.value(key, -1);
-    }
-    int word_offset(const QString & key) {
-        return m_word_offsets.value(key, -1);
-    }
-    int race_offset(const QString & key) {
-        return m_race_offsets.value(key, -1);
-    }
-    int caste_offset(const QString & key) {
-        return m_caste_offsets.value(key, -1);
-    }
-    int hist_figure_offset(const QString & key){
-        return m_hist_fig_offsets.value(key, -1);
-    }
-    int hist_event_offset(const QString & key){
-        return m_hist_event_offsets.value(key, -1);
-    }
-    int hist_entity_offset(const QString & key){
-        return m_hist_entity_offsets.value(key, -1);
-    }
-    int weapon_subtype_offset(const QString & key){
-        return m_weapon_subtype_offsets.value(key, -1);
-    }
-    int material_offset(const QString & key){
-        return m_material_offsets.value(key, -1);
-    }
-    int plant_offset(const QString & key){
-        return m_plant_offsets.value(key, -1);
-    }
-    int item_subtype_offset(const QString & key){
-        return m_item_subtype_offsets.value(key, -1);
-    }
-    int descriptor_offset(const QString & key){
-        return m_descriptor_offsets.value(key, -1);
-    }
-    int health_offset(const QString & key){
-        return m_health_offsets.value(key, -1);
-    }
-    int wound_offset(const QString & key){
-        return m_unit_wound_offsets.value(key,-1);
-    }
-    int item_offset(const QString & key){
-        return m_item_offsets.value(key,-1);
-    }
-    int item_filter_offset(const QString & key){
-        return m_item_filter_offsets.value(key,-1);
-    }
-    int armor_subtype_offset(const QString & key){
-        return m_armor_subtype_offsets.value(key,-1);
-    }
-    int general_ref_offset(const QString & key){
-        return m_general_ref_offsets.value(key,-1);
-    }
-    int syndrome_offset(const QString & key){
-        return m_syndrome_offsets.value(key,-1);
-    }
-    int emotion_offset(const QString & key){
-        return m_emotion_offsets.value(key,-1);
-    }
-    int activity_offset(const QString & key){
-        return m_activity_offsets.value(key,-1);
+    QHash<uint,QString> get_flags(const UNIT_FLAG_TYPE &flag_type){
+        return m_flags.value(flag_type);
     }
 
-    QSettings &data() { return m_data; }
-    uint job_detail(const QString &key) {return m_job_details.value(key, -1);}
-    uint soul_detail(const QString &key) {return m_soul_details.value(key, -1);}
-    QHash<uint, QString> valid_flags_1() {return m_valid_flags_1;}
-    QHash<uint, QString> valid_flags_2() {return m_valid_flags_2;}
-    QHash<uint, QString> invalid_flags_1() {return m_invalid_flags_1;}
-    QHash<uint, QString> invalid_flags_2() {return m_invalid_flags_2;}
-    QHash<uint, QString> invalid_flags_3() {return m_invalid_flags_3;}
+    QHash<QString, VIRTADDR> globals() {return get_section_offsets(MEM_GLOBALS);}
 
-    bool is_complete() {return m_complete;}
+    VIRTADDR address(const QString &key, const bool is_global = true);
+
+    qint16 language_offset(const QString &key) const {return offset(MEM_LANGUAGE,key);}
+    qint16 dwarf_offset(const QString &key) const {return offset(MEM_UNIT,key);}
+    qint16 squad_offset(const QString & key) const {return offset(MEM_SQUAD,key);}
+    qint16 word_offset(const QString & key) const {return offset(MEM_WORD,key);}
+    qint16 race_offset(const QString & key) const {return offset(MEM_RACE,key);}
+    qint16 caste_offset(const QString & key) const {return offset(MEM_CASTE,key);}
+    qint16 hist_figure_offset(const QString & key) const {return offset(MEM_HIST_FIG,key);}
+    qint16 hist_event_offset(const QString & key) const {return offset(MEM_HIST_EVT,key);}
+    qint16 hist_entity_offset(const QString & key) const {return offset(MEM_HIST_ENT,key);}
+    qint16 weapon_subtype_offset(const QString & key) const {return offset(MEM_WEP_SUB,key);}
+    qint16 material_offset(const QString & key) const {return offset(MEM_MAT,key);}
+    qint16 plant_offset(const QString & key) const {return offset(MEM_PLANT,key);}
+    qint16 item_subtype_offset(const QString & key) const {return offset(MEM_ITEM_SUB,key);}
+    qint16 descriptor_offset(const QString & key) const {return offset(MEM_DESC,key);}
+    qint16 health_offset(const QString & key) const {return offset(MEM_HEALTH,key);}
+    qint16 wound_offset(const QString & key) const {return offset(MEM_WOUND,key);}
+    qint16 item_offset(const QString & key) const {return offset(MEM_ITEM,key);}
+    qint16 item_filter_offset(const QString & key) const {return offset(MEM_ITEM_FILTER,key);}
+    qint16 armor_subtype_offset(const QString & key) const {return offset(MEM_ARMOR_SUB,key);}
+    qint16 general_ref_offset(const QString & key) const {return offset(MEM_GEN_REF,key);}
+    qint16 syndrome_offset(const QString & key) const {return offset(MEM_SYN,key);}
+    qint16 emotion_offset(const QString & key) const {return offset(MEM_EMOTION,key);}
+    qint16 activity_offset(const QString & key) const {return offset(MEM_ACTIVITY,key);}
+    qint16 job_detail(const QString &key) const {return offset(MEM_JOB,key);}
+    qint16 soul_detail(const QString &key) const {return offset(MEM_SOUL,key);}
+
+    QHash<uint, QString> invalid_flags_1() {return get_flags(INVALID_FLAGS_1) ;}
+    QHash<uint, QString> invalid_flags_2() {return get_flags(INVALID_FLAGS_2);}
+    QHash<uint, QString> invalid_flags_3() {return get_flags(INVALID_FLAGS_3);}
 
     //Setters
     void set_address(const QString & key, uint value);
@@ -115,51 +159,25 @@ public:
         return m_game_version < rhs.m_game_version;
     }
 
+    void load_data();
+
 private:
+    DFInstance *m_df;
     typedef QHash<QString, VIRTADDR> AddressHash;
 
-    QString m_filename;
-    QString m_checksum;
-    QString m_game_version;
-    AddressHash m_addresses;
-    AddressHash m_offsets;
-    AddressHash m_dwarf_offsets;
-    AddressHash m_job_details;
-    AddressHash m_soul_details;
-    AddressHash m_squad_offsets;
-    AddressHash m_word_offsets;
-    AddressHash m_race_offsets;
-    AddressHash m_caste_offsets;
-    AddressHash m_hist_fig_offsets;
-    AddressHash m_hist_event_offsets;
-    AddressHash m_hist_entity_offsets;
-    AddressHash m_weapon_subtype_offsets;
-    AddressHash m_plant_offsets;
-    AddressHash m_item_subtype_offsets;
-    AddressHash m_material_offsets;
-    AddressHash m_descriptor_offsets;
-    AddressHash m_health_offsets;
-    AddressHash m_unit_wound_offsets;
-    AddressHash m_armor_subtype_offsets;
-    AddressHash m_item_offsets;
-    AddressHash m_item_filter_offsets;
-    AddressHash m_general_ref_offsets;
-    AddressHash m_syndrome_offsets;
-    AddressHash m_emotion_offsets;
-    AddressHash m_activity_offsets;
+    QHash<MEM_SECTION,AddressHash> m_offsets;
+    QHash<UNIT_FLAG_TYPE, QHash<uint,QString> > m_flags;
 
-    QHash<uint, QString> m_valid_flags_1;
-    QHash<uint, QString> m_valid_flags_2;
-    QHash<uint, QString> m_invalid_flags_1;
-    QHash<uint, QString> m_invalid_flags_2;
-    QHash<uint, QString> m_invalid_flags_3;
+    QFileInfo m_fileinfo;
+    QString m_checksum;
+    QString m_git_sha;
+    QString m_game_version;
     QSettings m_data;
     bool m_complete;
-    VIRTADDR m_base_addr;
 
-    void load_data();
     uint read_hex(QString key);
-    void read_group(const QString &group, AddressHash &map);
+    void read_group(const MEM_SECTION &section);
+    void read_flags(const UNIT_FLAG_TYPE &flag_type);
 };
 Q_DECLARE_METATYPE(MemoryLayout *)
 #endif

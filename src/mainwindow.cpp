@@ -62,6 +62,9 @@ THE SOFTWARE.
 #include "eventfilterlineedit.h"
 #include "eventfilterlineedit.h"
 #include "gridview.h"
+#include "notificationwidget.h"
+#include "notifierwidget.h"
+#include "updater.h"
 
 #include <QDesktopServices>
 #include <QFileDialog>
@@ -89,7 +92,6 @@ MainWindow::MainWindow(QWidget *parent)
     , m_reading_settings(false)
     , m_show_result_on_equal(false)
     , m_dwarf_name_completer(0)
-    , m_force_connect(false)
     , m_try_download(true)
     , m_deleting_settings(false)
     , m_toolbar_configured(false)
@@ -98,9 +100,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    //connect to df first, we need to read raws for some ui elements first!!!
-    //connect_to_df();
-
+    m_updater = new Updater(this);
+    m_notifier = new NotifierWidget(this);
     m_view_manager = new ViewManager(m_model, m_proxy, this);
     ui->v_box->addWidget(m_view_manager);
     setCentralWidget(ui->main_widget);
@@ -210,6 +211,7 @@ MainWindow::MainWindow(QWidget *parent)
     //DT then emits a second signal, ensuring that any updates to data is done before signalling other objects
     //the view manager is signalled this way, to ensure that the order of signals is preserved
     connect(DT,SIGNAL(connected()),m_view_manager,SLOT(rebuild_global_sort_keys()));
+    connect(m_updater,SIGNAL(notify(NotifierWidget::notify_info)),m_notifier,SLOT(add_notification(NotifierWidget::notify_info)));
 
     m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
@@ -248,8 +250,9 @@ MainWindow::MainWindow(QWidget *parent)
     refresh_role_menus();
     refresh_opts_menus();
 
-    if (m_settings->value("options/check_for_updates_on_startup", true).toBool())
-        check_latest_version();
+    if(m_settings->value("options/check_for_updates_on_startup", true).toBool()){
+        m_updater->check_latest_version(false);
+    }
 
     //if any custom roles were altered due to an update, save them
     if(GameDataReader::ptr()->custom_roles_updated()){
@@ -312,6 +315,8 @@ MainWindow::~MainWindow() {
     delete m_optimize_plan_editor;
     delete m_dwarf_name_completer;
 
+    delete m_updater;
+    delete m_notifier;
     delete m_model;
     delete m_view_manager;
     delete m_proxy;
@@ -390,34 +395,29 @@ void MainWindow::connect_to_df() {
     }
 
     m_df = DFInstance::newInstance();
-    GameDataReader::ptr()->refresh_facets();
+    if(m_df){
+        //attempt to connect to the process first
+        m_df->find_running_copy();
 
-    // find_running_copy can fail for several reasons, and will take care of
-    // logging and notifying the user.
-    if (m_force_connect && m_df && m_df->find_running_copy(true)) {
-        if(m_df->memory_layout()){
-            LOGI << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
-            set_status_message(tr("Connected to DF %1").arg(m_df->memory_layout()->game_version()),tr("Currently using layout file: %1").arg(m_df->memory_layout()->filename()));
-        }else{
-            LOGI << "Connection to unknown DF Version established.";
-            set_status_message("Connected to unknown version!","");
+        //once connected, update any memory layouts as required
+        if(m_df->status() == DFInstance::DFS_CONNECTED || (
+                                                      m_updater->last_updated_checksum() != m_df->df_checksum() &&
+                                                      m_settings->value("options/check_for_updates_on_startup", true).toBool())){
+            //add/update layouts as required
+            m_updater->check_layouts(m_df);
+            m_df->set_memory_layout();
         }
-        m_force_connect = false;
-    } else if (m_df && m_df->find_running_copy() && m_df->is_ok()) {
-        LOGI << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
-        set_status_message(tr("Connected to DF %1").arg(m_df->memory_layout()->game_version()),tr("Currently using layout file: %1").arg(m_df->memory_layout()->filename()));
-        m_force_connect = false;
-    } else {
-        m_force_connect = true;
-    }
 
-    if(m_df && m_df->is_ok()){
-        set_interface_enabled(true);
-        connect(m_df, SIGNAL(progress_message(QString)), SLOT(set_progress_message(QString)), Qt::UniqueConnection);
-        connect(m_df, SIGNAL(progress_range(int,int)), SLOT(set_progress_range(int,int)), Qt::UniqueConnection);
-        connect(m_df, SIGNAL(progress_value(int)), SLOT(set_progress_value(int)), Qt::UniqueConnection);
+        if(m_df->status() == DFInstance::DFS_GAME_LOADED){
+            LOGI << "Connection to DF version" << m_df->memory_layout()->game_version() << "established.";
+            set_status_message(tr("Connected to DF %1").arg(m_df->memory_layout()->game_version()),tr("Currently using layout file: %1").arg(m_df->memory_layout()->filepath()));
 
-        if (m_df->memory_layout() && m_df->memory_layout()->is_complete()) {
+            GameDataReader::ptr()->refresh_facets();
+
+            set_interface_enabled(true);
+            connect(m_df, SIGNAL(progress_message(QString)), SLOT(set_progress_message(QString)), Qt::UniqueConnection);
+            connect(m_df, SIGNAL(progress_range(int,int)), SLOT(set_progress_range(int,int)), Qt::UniqueConnection);
+            connect(m_df, SIGNAL(progress_value(int)), SLOT(set_progress_value(int)), Qt::UniqueConnection);
             connect(m_df, SIGNAL(connection_interrupted()), SLOT(lost_df_connection()));
 
             m_df->load_game_data();
@@ -429,10 +429,14 @@ void MainWindow::connect_to_df() {
                 if(dock)
                     dock->draw_views();
             }
-            if (DT->user_settings()->value("options/read_on_startup", true).toBool()) {
+            if(DT->user_settings()->value("options/read_on_startup", true).toBool()) {
                 read_dwarves();
             }
+        }else{
+            lost_df_connection();
         }
+    }else{
+        lost_df_connection();
     }
 }
 
@@ -441,26 +445,49 @@ void MainWindow::set_status_message(QString msg, QString tooltip_msg){
     m_lbl_status->setToolTip(tr("<span>%1</span>").arg(tooltip_msg));
 }
 
+void MainWindow::show_connection_err(QStringList msg){
+    if(!msg.isEmpty()){
+        LOGE << msg;
+        set_status_message(msg.value(0),"");
+        if(DT->user_settings()->value("options/alert_on_lost_connection", true).toBool()){
+            QMessageBox mb(this);
+            mb.setIcon(QMessageBox::Warning);
+            mb.setStandardButtons(QMessageBox::Ok);
+            mb.setWindowTitle(msg.at(0));
+            if(!msg.value(1).isEmpty())
+                mb.setText(msg.at(1));
+            QString desc = msg.value(2);
+            if(!desc.isEmpty())
+                desc.append("<br><br>");
+            mb.setInformativeText(desc.append(tr("Please re-connect when Dwarf Fortress has been started and a fort has been loaded.")));
+            if(!msg.value(3).isEmpty())
+                mb.setDetailedText(msg.at(3));
+            mb.exec();
+        }
+    }
+}
+
 void MainWindow::lost_df_connection() {
     LOGW << "lost connection to DF";
     emit lostConnection();
+    QStringList err_msg;
     if (m_df) {
+        err_msg = m_df->status_err_msg();
         m_model->clear_all(true);
         m_df->disconnect();
         delete m_df;
         m_df = 0;
         reset();
         set_interface_enabled(false);
-        QString details = tr("Dwarf Fortress has either stopped running, or you unloaded your game. Please re-connect when a fort is loaded.");
-        set_status_message(tr("Disconnected"), details);
-        if(DT->user_settings()->value("options/alert_on_lost_connection", true).toBool()){
-            QMessageBox::information(this, tr("Unable to talk to Dwarf Fortress"), details);
-        }
+    }else{
+        err_msg << tr("Startup Failed");
+        err_msg << tr("Dwarf Therapist failed to startup!");
     }
+    show_connection_err(err_msg);
 }
 
 void MainWindow::read_dwarves() {
-    if (!m_df || !m_df->is_ok()) {
+    if(!m_df || m_df->status() != DFInstance::DFS_GAME_LOADED) {
         lost_df_connection();
         return;
     }
@@ -625,6 +652,13 @@ void MainWindow::apply_filter(QModelIndex idx){
 
 void MainWindow::set_interface_enabled(bool enabled) {
     ui->act_connect_to_DF->setEnabled(!enabled);
+    if(enabled){
+        ui->act_connect_to_DF->setIcon(QIcon(":/img/plug-connect.png"));
+        ui->act_connect_to_DF->setToolTip(tr("A connection to Dwarf Fortress has been established!"));
+    }else{
+        ui->act_connect_to_DF->setIcon(QIcon(":/img/plug--arrow.png"));
+        ui->act_connect_to_DF->setToolTip(tr("Attempt connecting to a running copy of Dwarf Fortress (CTRL+SHIFT+C)"));
+    }
     ui->act_read_dwarves->setEnabled(enabled);
     ui->act_expand_all->setEnabled(enabled);
     ui->act_collapse_all->setEnabled(enabled);
@@ -638,135 +672,7 @@ void MainWindow::set_interface_enabled(bool enabled) {
         m_view_manager->setEnabled(enabled);
 }
 
-void MainWindow::check_latest_version(bool show_result_on_equal) {
-    Q_UNUSED(show_result_on_equal);
-    return;
-    //TODO: check for updates
-}
 
-void MainWindow::version_check_finished(bool error) {
-    Q_UNUSED(error);
-    //    if (error) {
-    //        qWarning() <<  m_http->errorString();
-    //    }
-    //    QString data = QString(m_http->readAll());
-    //    QRegExp rx("(\\d+)\\.(\\d+)\\.(\\d+)");
-    //    int pos = rx.indexIn(data);
-
-    //    if (pos != -1) {
-    //        Version our_v(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
-    //        QString major = rx.cap(1);
-    //        QString minor = rx.cap(2);
-    //        QString patch = rx.cap(3);
-    //        Version newest_v(major.toInt(), minor.toInt(), patch.toInt());
-    //        LOGI << "RUNNING VERSION         :" << our_v.to_string();
-    //        LOGI << "LATEST AVAILABLE VERSION:" << newest_v.to_string();
-    //        if (our_v < newest_v) {
-    //            LOGI << "LATEST VERSION IS NEWER!";
-    //            QMessageBox *mb = new QMessageBox(this);
-    //            mb->setIcon(QMessageBox::Information);
-    //            mb->setWindowTitle(tr("Update Available"));
-    //            mb->setText(tr("A newer version of this application is available."));
-    //            QString link = tr("<br><a href=\"%1\">Click Here to Download v%2"
-    //                              "</a>")
-    //                           .arg(URL_DOWNLOAD_LIST)
-    //                           .arg(newest_v.to_string());
-    //            mb->setInformativeText(tr("You are currently running v%1. %2")
-    //                                   .arg(our_v.to_string()).arg(link));
-    //            mb->exec();
-    //        } else if (m_show_result_on_equal) {
-    //            QMessageBox *mb = new QMessageBox(this);
-    //            mb->setWindowTitle(tr("Up to Date"));
-    //            mb->setText(tr("You are running the most recent version of Dwarf "
-    //                           "Therapist."));
-    //            mb->exec();
-    //        }
-    //        m_about_dialog->set_latest_version(newest_v);
-    //    } else {
-    //        m_about_dialog->version_check_failed();
-    //    }
-}
-
-void MainWindow::check_for_layout(const QString & checksum) {
-    m_try_download = false;
-
-    if(m_try_download &&
-            (m_settings->value("options/check_for_updates_on_startup", true).toBool())) {
-        //        m_try_download = false;
-
-        //        LOGI << "Checking for layout for checksum: " << checksum;
-        //        m_tmp_checksum = checksum;
-
-        //        Version our_v(DT_VERSION_MAJOR, DT_VERSION_MINOR, DT_VERSION_PATCH);
-
-        //        QString request = QString("/memory_layouts/checksum/%1").arg(checksum);
-        //        QHttpRequestHeader header("GET", request);
-        //        header.setValue("Host", "www.dwarftherapist.com");
-        //        header.setValue("User-Agent", QString("DwarfTherapist %1").arg(our_v.to_string()));
-        //        if (m_http) {
-        //            m_http->deleteLater();
-        //        }
-        //        m_http = new QHttp(this);
-        //        m_http->setHost("www.dwarftherapist.com");
-
-        //        disconnect(m_http, SIGNAL(done(bool)));
-        //        connect(m_http, SIGNAL(done(bool)), this, SLOT(layout_check_finished(bool)));
-        //        m_http->request(header);
-    } else if (!m_force_connect) {
-        m_df->layout_not_found(checksum);
-    }
-}
-
-void MainWindow::layout_check_finished(bool error) {
-    //int status = m_http->lastResponse().statusCode();
-    //LOGD << "Status: " << status;
-
-    //    error = error || (status != 200);
-    //    if(!error) {
-    //        QTemporaryFile outFile("layout.ini");
-    //        if (!outFile.open())
-    //         return;
-
-    //    if( !outFile.setPermissions((QFile::Permission)0x666) ) {
-    //        LOGD << "WARNING: Unable to set permissions for new layout.";
-    //    }
-
-    //        QString fileName = outFile.fileName();
-    //        QTextStream out(&outFile);
-    //        out << m_http->readAll();
-    //        outFile.close();
-
-    //        QString version;
-
-    //        {
-    //            QSettings layout(fileName, QSettings::IniFormat);
-    //            version = layout.value("info/version_name", "").toString();
-    //        }
-
-    //        LOGD << "Found version" << version;
-
-    //        if(m_df->add_new_layout(version, outFile)) {
-    //            QMessageBox *mb = new QMessageBox(this);
-    //            mb->setIcon(QMessageBox::Information);
-    //            mb->setWindowTitle(tr("New Memory Layout Added"));
-    //            mb->setText(tr("A new memory layout has been downloaded for this version of dwarf fortress!"));
-    //            mb->setInformativeText(tr("New layout for version %1 of Dwarf Fortress.").arg(version));
-    //            mb->exec();
-
-    //            LOGD << "Reconnecting to Dwarf Fortress!";
-    //            m_force_connect = false;
-    //            connect_to_df();
-    //        } else {
-    //            error = true;
-    //        }
-    //    }
-
-    LOGI << "Error: " << error << " Force Connect: " << m_force_connect;
-
-    if(error) {
-        m_df->layout_not_found(m_tmp_checksum);
-    }
-}
 
 void MainWindow::set_group_by(int group_by) {
     //if disconnected, don't try to update the view grouping
@@ -931,10 +837,18 @@ void MainWindow::go_to_donate() {
     QDesktopServices::openUrl(QUrl("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=GM5Z6DYJEVW56&item_name=Donation"));
 }
 void MainWindow::go_to_project_home() {
-    QDesktopServices::openUrl(QUrl("https://github.com/splintermind/Dwarf-Therapist"));
+    QDesktopServices::openUrl(QUrl(DT->project_homepage()));
 }
 void MainWindow::go_to_new_issue() {
-    QDesktopServices::openUrl(QUrl("https://github.com/splintermind/Dwarf-Therapist/issues?state=open"));
+    QDesktopServices::openUrl(QUrl(QString("%1/issues?state=open").arg(DT->project_homepage())));
+}
+void MainWindow::go_to_latest_release() {
+    QDesktopServices::openUrl(QUrl(QString("%1/releases/latest").arg(DT->project_homepage())));
+}
+void MainWindow::check_latest_version(){
+    if(m_updater){
+        m_updater->check_latest_version();
+    }
 }
 
 void MainWindow::open_help(){
@@ -1727,4 +1641,17 @@ void MainWindow::refresh_active_scripts(){
     ui->btn_clear_filters->updateGeometry();
     m_view_manager->expand_all();
     refresh_pop_counts();
+}
+
+void MainWindow::resizeEvent(QResizeEvent *evt){
+    QMainWindow::resizeEvent(evt);
+    if(m_notifier){
+        m_notifier->reposition();
+    }
+}
+void MainWindow::moveEvent(QMoveEvent *evt){
+    QMainWindow::moveEvent(evt);
+    if(m_notifier){
+        m_notifier->reposition();
+    }
 }

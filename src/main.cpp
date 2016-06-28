@@ -31,12 +31,14 @@ THE SOFTWARE.
 */
 
 #include "dwarftherapist.h"
+//#include <QLoggingCategory>
 
 int main(int argc, char *argv[]) {
 #if defined(Q_OS_MAC) && QT_VERSION >= QT_VERSION_CHECK(5,3,0)
     QCoreApplication::setSetuidAllowed(true);
 #endif
 
+    //QLoggingCategory::setFilterRules("qt.network.ssl.warning=false");
     DwarfTherapist d(argc, argv);
     return d.exec();
 }

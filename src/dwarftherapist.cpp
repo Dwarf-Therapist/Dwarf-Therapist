@@ -46,6 +46,8 @@ THE SOFTWARE.
 #include <QTranslator>
 #include <QTimer>
 
+const QString DwarfTherapist::m_url_homepage = QString("https://github.com/%1/%2").arg(REPO_OWNER).arg(REPO_NAME);
+
 DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     : QApplication(argc, argv)
     , m_user_settings(0)
@@ -575,7 +577,7 @@ void DwarfTherapist::load_game_translation_tables(DFInstance *df) {
 
     VIRTADDR generic_lang_table = df->memory_layout()->address("language_vector");
     VIRTADDR translation_vector = df->memory_layout()->address("translation_vector");
-    VIRTADDR word_table_offset = df->memory_layout()->offset("word_table");
+    VIRTADDR word_table_offset = df->memory_layout()->language_offset("word_table");
     TRACE << "LANGUAGES VECTOR" << hexify(translation_vector);
     TRACE << "GENERIC LANGUAGE VECTOR" << hexify(generic_lang_table);
     TRACE << "WORD TABLE OFFSET" << hexify(word_table_offset);

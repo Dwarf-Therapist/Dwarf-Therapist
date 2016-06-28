@@ -41,7 +41,6 @@ THE SOFTWARE.
 
 DFInstanceWindows::DFInstanceWindows(QObject* parent)
     : DFInstance(parent)
-    , m_hwnd(0)
     , m_proc(0)
 {}
 
@@ -136,55 +135,71 @@ USIZE DFInstanceWindows::write_raw(const VIRTADDR &addr, const USIZE &bytes, con
     return bytes_written;
 }
 
-bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
-    LOGI << "attempting to find running copy of DF by window handle";
-    m_is_ok = false;
+bool DFInstanceWindows::set_pid(){
+    HWND h_wnd = 0;
+    h_wnd = FindWindow(L"OpenGL", L"Dwarf Fortress");
+    if (!h_wnd)
+        h_wnd = FindWindow(L"SDL_app", L"Dwarf Fortress");
+    if (!h_wnd)
+        h_wnd = FindWindow(NULL, L"Dwarf Fortress");
 
-    m_hwnd = FindWindow(L"OpenGL", L"Dwarf Fortress");
-    if (!m_hwnd)
-        m_hwnd = FindWindow(L"SDL_app", L"Dwarf Fortress");
-    if (!m_hwnd)
-        m_hwnd = FindWindow(NULL, L"Dwarf Fortress");
-
-    if (!m_hwnd) {
-        QMessageBox::warning(0, tr("Warning"),
-            tr("Unable to locate a running copy of Dwarf "
-            "Fortress, are you sure it's running?"));
-        LOGW << "can't find running copy";
-        return m_is_ok;
+    if (!h_wnd) {
+        LOGE << "can't find running copy";
+        return false;
     }
-    LOGI << "found copy with HWND: " << m_hwnd;
+    LOGI << "found copy with HWND: " << h_wnd;
 
     DWORD pid = 0;
-    GetWindowThreadProcessId(m_hwnd, &pid);
+    GetWindowThreadProcessId(h_wnd, &pid);
     if (pid == 0) {
-        return m_is_ok;
+        return false;
     }
-    LOGI << "PID of process is: " << pid;
+
+    m_pid = pid;
+    return true;
+}
+
+bool DFInstanceWindows::df_running(){
+    DWORD cur_pid = m_pid;
+    return (set_pid() && cur_pid == m_pid);
+}
+
+void DFInstanceWindows::find_running_copy() {
+    m_status = DFS_DISCONNECTED;
+    LOGI << "attempting to find running copy of DF by window handle";
+
+    if(!set_pid()){
+        return;
+    }
+
+    LOGI << "PID of process is: " << m_pid;
 
     m_proc = OpenProcess(PROCESS_QUERY_INFORMATION
                          | PROCESS_VM_OPERATION
                          | PROCESS_VM_READ
-                         | PROCESS_VM_WRITE, false, pid);
+                         | PROCESS_VM_WRITE, false, m_pid);
     LOGI << "PROC HANDLE:" << m_proc;
     if (!m_proc) {
         LOGE << "Error opening process!" << get_last_error();
     }
 
-    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, pid);
+    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, m_pid);
     if (snapshot == INVALID_HANDLE_VALUE) {
         LOGE << "Error creating toolhelp32 snapshot!" << get_last_error();
+        return;
     } else {
         MODULEENTRY32 me32;
         me32.dwSize = sizeof(MODULEENTRY32);
         if (!Module32First(snapshot, &me32)) {
             LOGE << "Error enumerating modules!" << get_last_error();
+            return;
         } else {
             VIRTADDR base_addr = (intptr_t)me32.modBaseAddr;
             IMAGE_DOS_HEADER dos_header;
             read_raw(base_addr, sizeof(dos_header), &dos_header);
             if(dos_header.e_magic != IMAGE_DOS_SIGNATURE){
                 qWarning() << "invalid executable";
+                return;
             }
 
             //the dos stub contains a relative address to the pe header, which is used to get the pe header information
@@ -192,24 +207,17 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
             read_raw(base_addr + dos_header.e_lfanew, sizeof(pe_header), &pe_header);
             if(pe_header.Signature != IMAGE_NT_SIGNATURE){
                 qWarning() << "unsupported PE header type";
+                return;
             }
-            m_layout = get_memory_layout(calculate_checksum(pe_header), !connect_anyway);
+
             LOGI << "RAW BASE ADDRESS:" << base_addr;
-            if(m_layout)
-                m_layout->set_base_address(base_addr - 0x00400000);
+            m_base_addr = base_addr - 0x00400000;
+
+            m_status = DFS_CONNECTED;
+            set_memory_layout(calculate_checksum(pe_header));
+
         }
         CloseHandle(snapshot);     // Must clean up the snapshot object!
-    }
-
-    if (!m_is_ok) {
-        if(connect_anyway)
-            m_is_ok = true;
-        else // time to bail
-            return m_is_ok;
-    }
-
-    if(m_layout && m_layout->is_complete()) {
-        m_heartbeat_timer->start(1000); // check every second for disconnection
     }
 
     WCHAR modName[MAX_PATH];
@@ -222,6 +230,5 @@ bool DFInstanceWindows::find_running_copy(bool connect_anyway) {
         LOGI << "Dwarf Fortress path:" << m_df_dir.absolutePath();
     }
 
-    m_is_ok = true;
-    return m_is_ok;
+    return;
 }

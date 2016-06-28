@@ -96,6 +96,8 @@ public:
     void emit_labor_counts_updated();
     void update_specific_header(int id, COLUMN_TYPE type);
 
+    QString project_homepage() {return m_url_homepage;}
+
 public slots:
     int add_custom_profession(Dwarf *d = 0);
     void add_custom_professions(QList<CustomProfession*> cps);
@@ -147,6 +149,8 @@ private:
     LogManager *m_log_mgr;
     QHash<GLOBAL_COLOR_TYPES,QSharedPointer<CellColorDef> > m_colors;
     QHash<DWARF_HAPPINESS,QColor> m_happiness_colors;
+
+    static const QString m_url_homepage;
 
     void setup_search_paths();
     void setup_logging();

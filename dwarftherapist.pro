@@ -2,7 +2,7 @@ TEMPLATE = app
 TARGET = DwarfTherapist
 lessThan(QT_MAJOR_VERSION, 5) {
     message(Setting up for Qt 4)
-    QT += script
+    QT += script network
 }
 else {
     message(Setting up for Qt 5)
@@ -270,7 +270,10 @@ HEADERS += inc/viewmanager.h \
     inc/activity.h \
     inc/activityevent.h \
     inc/itemuniform.h \
-    inc/equipwarn.h
+    inc/equipwarn.h \
+    inc/notificationwidget.h \
+    inc/notifierwidget.h \
+    inc/updater.h
 SOURCES += src/viewmanager.cpp \
     src/uberdelegate.cpp \
     src/truncatingfilelogger.cpp \
@@ -377,7 +380,10 @@ SOURCES += src/viewmanager.cpp \
     src/activityevent.cpp \
     src/itemammo.cpp \
     src/itemuniform.cpp \
-    src/equipwarn.cpp
+    src/equipwarn.cpp \
+    src/notificationwidget.cpp \
+    src/notifierwidget.cpp \
+    src/updater.cpp
 FORMS += ui/scriptdialog.ui \
     ui/pendingchanges.ui \
     ui/optionsmenu.ui \
@@ -393,6 +399,8 @@ FORMS += ui/scriptdialog.ui \
     ui/roledialog.ui \
     ui/optimizereditor.ui \
     ui/superlabor.ui \
-    ui/vieweditor.ui
+    ui/vieweditor.ui \
+    ui/notification.ui \
+    ui/notifier.ui
 RESOURCES += \
     resources.qrc
