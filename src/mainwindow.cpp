@@ -395,7 +395,6 @@ void MainWindow::connect_to_df() {
     }
 
     m_df = DFInstance::newInstance();
-    QStringList err_msg;
     if(m_df){
         //attempt to connect to the process first
         m_df->find_running_copy();
@@ -434,10 +433,11 @@ void MainWindow::connect_to_df() {
                 read_dwarves();
             }
         }else{
-            err_msg = m_df->status_err_msg();
+            lost_df_connection();
         }
+    }else{
+        lost_df_connection();
     }
-    show_connection_err(err_msg);
 }
 
 void MainWindow::set_status_message(QString msg, QString tooltip_msg){
@@ -654,8 +654,10 @@ void MainWindow::set_interface_enabled(bool enabled) {
     ui->act_connect_to_DF->setEnabled(!enabled);
     if(enabled){
         ui->act_connect_to_DF->setIcon(QIcon(":/img/plug-connect.png"));
+        ui->act_connect_to_DF->setToolTip(tr("Attempt connecting to a running copy of Dwarf Fortress (CTRL+SHIFT+C)"));
     }else{
         ui->act_connect_to_DF->setIcon(QIcon(":/img/plug--arrow.png"));
+        ui->act_connect_to_DF->setToolTip(tr("A connection to Dwarf Fortress has been established!"));
     }
     ui->act_read_dwarves->setEnabled(enabled);
     ui->act_expand_all->setEnabled(enabled);

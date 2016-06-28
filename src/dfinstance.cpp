@@ -911,8 +911,7 @@ void DFInstance::heartbeat() {
 }
 
 void DFInstance::send_connection_interrupted(){
-    //at this point we don't know if the process has been killed, or the fort saved
-    //assume disconnected to be safe
+    //determine if the disconnect was due to the process exiting or a DF save
     if(df_running()){
         m_status = DFS_LAYOUT_OK;
     }else{
