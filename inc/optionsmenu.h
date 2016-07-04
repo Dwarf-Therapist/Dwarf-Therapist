@@ -26,6 +26,9 @@ THE SOFTWARE.
 #include <QDialog>
 #include "uberdelegate.h"
 
+#define MSG_WARN_READ "$WARN_READ"
+#define MSG_LIVESTOCK "$LIVESTOCK"
+
 namespace Ui { class OptionsMenu; }
 class CustomColor;
 class QLabel;
@@ -74,6 +77,15 @@ private:
     QPair<QFont,QFont> m_tooltip_font;
     QPair<QFont,QFont> m_main_font;
 
+    static const QStringList m_msg_vars;
+
+    static const QString get_message(const QString &key) {
+        QMap<QString,QString> m;
+        m[MSG_WARN_READ] = tr("<font color=red><b>This change will not take effect until the next full read!</b></font>");
+        m[MSG_LIVESTOCK] = tr("<b>This is always enabled for livestock.</b>");
+        return m.value(key,"");
+    }
+
 private slots:
     void tooltip_skills_toggled(bool);
     void tooltip_roles_toggled(bool);
@@ -85,5 +97,6 @@ signals:
     void color_changed(const QString &, const QColor &);
     //! emitted when the options menu "ok" button is hit
     void settings_changed();
+
 };
 #endif

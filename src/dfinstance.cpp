@@ -114,8 +114,9 @@ DFInstance::DFInstance(QObject* parent)
 
     // if no memory layouts were found that's a critical error
     if (m_memory_layouts.size() < 1) {
-        LOGE << "No valid memory layouts found in the following directories..."
-             << QDir::searchPaths("share");
+        QString err = tr("No valid memory layouts found in the following directories...<br/><br/>%1").arg(QDir::searchPaths("share").join("<br/>"));
+        LOGE << err;
+        QMessageBox::critical(0,tr("No Layouts"),err);
         qApp->exit(ERROR_NO_VALID_LAYOUTS);
     }
 

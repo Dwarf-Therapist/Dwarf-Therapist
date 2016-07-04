@@ -36,6 +36,8 @@ THE SOFTWARE.
 #include <QSettings>
 #include <QFontDialog>
 
+const QStringList OptionsMenu::m_msg_vars = QStringList() << MSG_WARN_READ << MSG_LIVESTOCK;
+
 OptionsMenu::OptionsMenu(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::OptionsMenu)
@@ -212,7 +214,12 @@ OptionsMenu::~OptionsMenu() {
 
 bool OptionsMenu::event(QEvent *evt) {
     if (evt->type() == QEvent::StatusTip) {
-        ui->text_status_tip->setHtml(static_cast<QStatusTipEvent*>(evt)->tip());
+        QString tip = static_cast<QStatusTipEvent*>(evt)->tip();
+        //replace warning/info placeholders
+        foreach(QString key, m_msg_vars){
+            tip.replace(key,get_message(key)).simplified();
+        }
+        ui->text_status_tip->setHtml(tip);
         return true; // we've handled it, don't pass it
     }
     return QWidget::event(evt); // pass the event along the chain
@@ -329,6 +336,7 @@ void OptionsMenu::read_settings() {
     show_current_font(temp,ui->lbl_current_main_font);
 
     ui->cb_read_dwarves_on_startup->setChecked(s->value("read_on_startup", true).toBool());
+    ui->cb_auto_connect->setChecked(s->value("auto_connect",false).toBool());
     ui->cb_auto_contrast->setChecked(s->value("auto_contrast", true).toBool());
     ui->cb_show_aggregates->setChecked(s->value("show_aggregates", true).toBool());
     ui->cb_single_click_labor_changes->setChecked(s->value("single_click_labor_changes", true).toBool());
@@ -455,6 +463,7 @@ void OptionsMenu::write_settings() {
         s->endGroup();
 
         s->setValue("read_on_startup", ui->cb_read_dwarves_on_startup->isChecked());
+        s->setValue("auto_connect",ui->cb_auto_connect->isChecked());
         s->setValue("auto_contrast", ui->cb_auto_contrast->isChecked());
         s->setValue("show_aggregates", ui->cb_show_aggregates->isChecked());
         s->setValue("single_click_labor_changes", ui->cb_single_click_labor_changes->isChecked());
@@ -577,6 +586,7 @@ void OptionsMenu::restore_defaults() {
     }
 
     ui->cb_read_dwarves_on_startup->setChecked(true);
+    ui->cb_auto_connect->setChecked(false);
     ui->cb_auto_contrast->setChecked(true);
     ui->cb_show_aggregates->setChecked(true);
     ui->cb_single_click_labor_changes->setChecked(false);

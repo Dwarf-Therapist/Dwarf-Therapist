@@ -487,17 +487,19 @@ void MainWindow::lost_df_connection(bool show_dialog) {
     }
 
     //start the retry connection timer
-    if(!m_df || m_df->status() == DFInstance::DFS_DISCONNECTED){
-        if(!m_retry_connection){
-            m_retry_connection = new QTimer(this);
-            m_retry_connection->setInterval(5000);
-            connect(m_retry_connection,SIGNAL(timeout()),this,SLOT(connect_to_df()),Qt::UniqueConnection);
+    if(DT->user_settings()->value("options/auto_connect", false).toBool()){
+        if(!m_df || m_df->status() == DFInstance::DFS_DISCONNECTED){
+            if(!m_retry_connection){
+                m_retry_connection = new QTimer(this);
+                m_retry_connection->setInterval(5000);
+                connect(m_retry_connection,SIGNAL(timeout()),this,SLOT(connect_to_df()),Qt::UniqueConnection);
+            }
+            set_progress_message(tr("Attempting to automatically reconnect to Dwarf Fortress..."));
+            m_retry_connection->start();
+            ui->act_connect_to_DF->setIcon(QIcon(":/img/arrow-circle.png"));
+            ui->act_connect_to_DF->setToolTip(tr("Automatically retrying connection every 5s.<br><br>Click to retry immediately."));
+            ui->act_connect_to_DF->setText(tr("Auto.."));
         }
-        set_progress_message(tr("Attempting to automatically reconnect to Dwarf Fortress..."));
-        m_retry_connection->start();
-        ui->act_connect_to_DF->setIcon(QIcon(":/img/arrow-circle.png"));
-        ui->act_connect_to_DF->setToolTip(tr("Automatically retrying connection every 5s.<br><br>Click to retry immediately."));
-        ui->act_connect_to_DF->setText(tr("Auto.."));
     }
 }
 
