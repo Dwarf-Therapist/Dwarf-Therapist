@@ -213,7 +213,6 @@ MainWindow::MainWindow(QWidget *parent)
     //DT then emits a second signal, ensuring that any updates to data is done before signalling other objects
     //the view manager is signalled this way, to ensure that the order of signals is preserved
     connect(DT,SIGNAL(connected()),m_view_manager,SLOT(rebuild_global_sort_keys()));
-    connect(m_updater,SIGNAL(notify(NotifierWidget::notify_info)),m_notifier,SLOT(add_notification(NotifierWidget::notify_info)));
 
     m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
 
@@ -395,6 +394,12 @@ void MainWindow::connect_to_df() {
         show_dc_dialog = (sender() != m_retry_connection);
     }
 
+    //don't spam notifications on auto-retry connections
+    if(!show_dc_dialog){
+        disconnect(m_updater,SIGNAL(notify(NotifierWidget::notify_info)),m_notifier,SLOT(add_notification(NotifierWidget::notify_info)));
+    }else{
+        connect(m_updater,SIGNAL(notify(NotifierWidget::notify_info)),m_notifier,SLOT(add_notification(NotifierWidget::notify_info)),Qt::UniqueConnection);
+    }
 
     LOGI << "attempting connection to running DF game";
     if (m_df) {
@@ -494,10 +499,11 @@ void MainWindow::lost_df_connection(bool show_dialog) {
                 m_retry_connection->setInterval(5000);
                 connect(m_retry_connection,SIGNAL(timeout()),this,SLOT(connect_to_df()),Qt::UniqueConnection);
             }
-            set_progress_message(tr("Attempting to automatically reconnect to Dwarf Fortress..."));
+            set_progress_message(tr("Attempting to connect to Dwarf Fortress..."));
             m_retry_connection->start();
             ui->act_connect_to_DF->setIcon(QIcon(":/img/arrow-circle.png"));
-            ui->act_connect_to_DF->setToolTip(tr("Automatically retrying connection every 5s.<br><br>Click to retry immediately."));
+            ui->act_connect_to_DF->setToolTip(tr("Automatically retrying connection every %1s.<br><br>Click to retry immediately.")
+                                              .arg(QString::number(m_retry_connection->interval()/1000)));
             ui->act_connect_to_DF->setText(tr("Auto.."));
         }
     }
