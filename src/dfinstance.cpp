@@ -113,10 +113,10 @@ DFInstance::DFInstance(QObject* parent)
     }
 
     // if no memory layouts were found that's a critical error
+    // continue though, as a layout may be automatically downloaded
     if (m_memory_layouts.size() < 1) {
-        LOGE << "No valid memory layouts found in the following directories..."
-             << QDir::searchPaths("share");
-        qApp->exit(ERROR_NO_VALID_LAYOUTS);
+        LOGW << "No valid layouts found in the following directories:" << QDir::searchPaths("share");
+        //qApp->exit(ERROR_NO_VALID_LAYOUTS);
     }
 
     if (!QTextCodec::codecForName("IBM437"))
@@ -1107,22 +1107,29 @@ MemoryLayout *DFInstance::find_memory_layout(QString git_sha){
 }
 
 bool DFInstance::add_new_layout(const QString & filename, const QString data, QString &result_msg) {
-    QFileInfo file_info(QDir(QString("share/memory_layouts/%1").arg(LAYOUT_SUBDIR)), filename);
-    QString file_path = file_info.absoluteFilePath();
     bool ok = false;
 
-    QFile file(file_path);
-    if(file.exists()){
-        result_msg = tr("Layout file %1 already exist!").arg(file_path);
+    QFileInfo file_info;
+    QDir layouts_dir = QDir(QString("share/memory_layouts/%1").arg(LAYOUT_SUBDIR));
+    if(!layouts_dir.exists() && !layouts_dir.mkpath(layouts_dir.absolutePath())){
+        LOGE << "Failed to create directory path:" << layouts_dir.absolutePath();
+        result_msg = tr("Failed to create directory %1").arg(layouts_dir.absolutePath());
     }else{
-        LOGI << "Creating new layout file:" << file_path;
-        if(!file.open(QIODevice::WriteOnly)) {
-            result_msg = tr("Failed to create layout file %1").arg(file_path);
+        file_info = QFileInfo(layouts_dir, filename);
+        QString file_path = file_info.absoluteFilePath();
+        QFile file(file_path);
+        if(file.exists()){
+            result_msg = tr("Layout file %1 already exist!").arg(file_path);
         }else{
-            QTextStream layout(&file);
-            layout << data;
-            file.close();
-            ok = true;
+            LOGI << "Creating new layout file:" << file_path;
+            if(!file.open(QIODevice::WriteOnly)) {
+                result_msg = tr("Failed to create layout file %1").arg(file_path);
+            }else{
+                QTextStream layout(&file);
+                layout << data;
+                file.close();
+                ok = true;
+            }
         }
     }
 
@@ -1157,20 +1164,26 @@ const QStringList DFInstance::status_err_msg(){
         break;
     case DFS_CONNECTED:
     {
-        QString supported_vers;
-        QList<MemoryLayout *> layouts = m_memory_layouts.values();
-        qSort(layouts);
+        if(m_memory_layouts.count() < 1){
+            ret << tr("No Layouts Found");
+            ret << tr("No valid memory layouts could be found to attempt connection to Dwarf Fortress.");
+            ret << tr("View the details below for the directories checked.");
+            ret <<  QDir::searchPaths("share").join("\n");
+        }else{
+            QStringList supported_vers;
+            QList<MemoryLayout *> layouts = m_memory_layouts.values();
+            qSort(layouts);
 
-        foreach(MemoryLayout * l, layouts) {
-            supported_vers.append(
-                        QString("%1 (%2)\n")
-                        .arg(l->game_version()).arg(l->checksum()));
+            foreach(MemoryLayout * l, layouts) {
+                supported_vers.append(
+                            QString("%1 (%2)").arg(l->game_version()).arg(l->checksum()));
+            }
+
+            ret << tr("Unidentified Game Version");
+            ret << tr("I'm sorry but I don't know how to talk to this version of Dwarf Fortress!");
+            ret << tr("Checksum: %1").arg(m_df_checksum);
+            ret << tr("Supported Versions:\n%1").arg(supported_vers.join("\n"));
         }
-
-        ret << tr("Unidentified Game Version");
-        ret << tr("I'm sorry but I don't know how to talk to this version of Dwarf Fortress!");
-        ret << tr("Checksum: %1").arg(m_df_checksum);
-        ret << tr("Supported Versions:\n%1").arg(supported_vers);
     }
         break;
     case DFS_LAYOUT_OK:

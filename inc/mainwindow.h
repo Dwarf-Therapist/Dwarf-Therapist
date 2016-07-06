@@ -81,7 +81,7 @@ public slots:
     void read_dwarves();
     void new_pending_changes(int);
     void new_creatures_count(int, int, int, QString);
-    void lost_df_connection();
+    void lost_df_connection(bool show_dialog = true);
 
     //settings
     void set_group_by(int);
@@ -150,7 +150,7 @@ public slots:
     void refresh_active_scripts();
     void clear_filter();
 
-    void show_connection_err(QStringList msg);
+    void show_dc_dialog(QStringList msg);
 
 private:
     DFInstance *m_df;
@@ -179,6 +179,7 @@ private:
     QAction *m_act_sep_optimize;
     QAction *m_act_btn_optimize; //this is required in addition to the button to allow easy visibility toggling
     QToolButton *m_btn_optimize;
+    QTimer *m_retry_connection;
 
     Updater *m_updater;
     NotifierWidget *m_notifier;

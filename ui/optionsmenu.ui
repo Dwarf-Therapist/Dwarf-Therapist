@@ -60,13 +60,7 @@
          </property>
          <item row="4" column="0">
           <widget class="QCheckBox" name="cb_single_click_labor_changes">
-           <property name="toolTip">
-            <string/>
-           </property>
            <property name="statusTip">
-            <string>When checked, labors can be toggled with a single left-click of the mouse. Otherwise they must be double-clicked</string>
-           </property>
-           <property name="whatsThis">
             <string>When checked, labors can be toggled with a single left-click of the mouse. Otherwise they must be double-clicked</string>
            </property>
            <property name="text">
@@ -74,48 +68,13 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="0">
-          <widget class="QCheckBox" name="cb_show_toolbar_text">
-           <property name="toolTip">
-            <string/>
-           </property>
-           <property name="statusTip">
-            <string>When checked, shows various information on the toolbar</string>
-           </property>
-           <property name="whatsThis">
-            <string>When checked, shows various information on the toolbar</string>
-           </property>
-           <property name="text">
-            <string>Show Toolbar Text</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QCheckBox" name="cb_alert_on_lost_connection">
-           <property name="statusTip">
-            <string>When checked, Dwarf Therapist will alert you if it ever loses connectivity to your Dwarf Fortress game. This helps avoid writing bad data to your fort.  &lt;font color=red&gt;&lt;b&gt;Note: this change requires a restart of Dwarf Therapist!&lt;/font&gt;&lt;/b&gt;</string>
-           </property>
-           <property name="whatsThis">
-            <string>When checked, Dwarf Therapist will alert you if it ever loses connectivity to your Dwarf Fortress game. This helps avoid writing bad data to your fort.</string>
-           </property>
-           <property name="text">
-            <string>Alert on Lost Connection</string>
-           </property>
-          </widget>
-         </item>
          <item row="1" column="0">
           <widget class="QCheckBox" name="cb_read_dwarves_on_startup">
-           <property name="toolTip">
-            <string/>
-           </property>
            <property name="statusTip">
-            <string>When checked, DwarfTherapist will attempt to connect and load all dwarves from a running copy of Dwarf Fortress at startup.</string>
-           </property>
-           <property name="whatsThis">
-            <string>When checked, DwarfTherapist will attempt to connect and load all dwarves from a running copy of Dwarf Fortress at startup.</string>
+            <string>When checked, DwarfTherapist will attempt to connect and load all units from a running copy of Dwarf Fortress at startup.</string>
            </property>
            <property name="text">
-            <string>Load Dwarves on Startup</string>
+            <string>Read on Startup</string>
            </property>
           </widget>
          </item>
@@ -128,7 +87,7 @@
             </sizepolicy>
            </property>
            <property name="statusTip">
-            <string>When checked, Children and Babies will not be displayed in the grid at all. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read!&lt;/font&gt;&lt;/b&gt;</string>
+            <string>When checked, Children and Babies will not be displayed in the grid at all. $WARN_READ</string>
            </property>
            <property name="text">
             <string>Don't Display Children or Babies</string>
@@ -144,10 +103,7 @@
             </sizepolicy>
            </property>
            <property name="statusTip">
-            <string>When unchecked labor exclusions are ignored (wood cutting, mining and hunting primarily). &lt;b&gt;&lt;font color=&quot;red&quot;&gt;WARNING: Disabling this can cause equipment problems!&lt;/font&gt;&lt;/b&gt;</string>
-           </property>
-           <property name="whatsThis">
-            <string>When unchecked labor exclusions are ignored (wood cutting, mining and hunting primarily). &lt;b&gt;&lt;font color=&quot;red&quot;&gt;WARNING: Disabling this can cause equipment problems!&lt;/font&gt;&lt;/b&gt;</string>
+            <string>When unchecked labor exclusions are ignored (wood cutting, mining and hunting primarily). &lt;b&gt;&lt;font color=&quot;red&quot;&gt;Disabling this can cause equipment problems!&lt;/font&gt;&lt;/b&gt;</string>
            </property>
            <property name="text">
             <string>Enforce Labor Exclusions</string>
@@ -163,7 +119,7 @@
             </sizepolicy>
            </property>
            <property name="statusTip">
-            <string>When checked, Visitors and Guests will not be displayed in the grid at all. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read!&lt;/font&gt;&lt;/b&gt;</string>
+            <string>When checked, Visitors and Guests will not be displayed in the grid at all. $WARN_READ</string>
            </property>
            <property name="text">
             <string>Don't Display Visitors/Guests</string>
@@ -179,10 +135,10 @@
             </sizepolicy>
            </property>
            <property name="statusTip">
-            <string>When checked, loads and shows health for animals. This requires health columns to be added to a view set to show animals!</string>
+            <string>When checked, loads and shows health for livestock. This requires health columns to be added to a view set to show livestock!</string>
            </property>
            <property name="text">
-            <string>Read Animal Health Information</string>
+            <string>Read Livestock Health Information</string>
            </property>
           </widget>
          </item>
@@ -194,9 +150,6 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <property name="toolTip">
-            <string>Abbreviate large numbers, such as experience and stress. For example this option would replace 100,000 stress with 100k.</string>
-           </property>
            <property name="statusTip">
             <string>Abbreviate large numbers, such as experience and stress. For example this option would replace 100,000 stress with 100k.</string>
            </property>
@@ -207,14 +160,8 @@
          </item>
          <item row="5" column="0">
           <widget class="QCheckBox" name="cb_auto_expand">
-           <property name="toolTip">
-            <string/>
-           </property>
            <property name="statusTip">
-            <string>When checked, if dwarfs are grouped by something, this will auto-expand all groups each view change</string>
-           </property>
-           <property name="whatsThis">
-            <string>When checked, if dwarfs are grouped by something, this will auto-expand all groups each view change</string>
+            <string>When checked, if units are grouped by something, this will auto-expand all groups each view change</string>
            </property>
            <property name="text">
             <string>Expand Groups On Load</string>
@@ -224,29 +171,26 @@
          <item row="7" column="0">
           <widget class="QCheckBox" name="cb_generic_names">
            <property name="statusTip">
-            <string>When checked, show generic (English) last names for dwarves. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read of dwarves occurrs!&lt;/font&gt;&lt;/b&gt;</string>
+            <string>When checked, show generic (English) last names for units. $WARN_READ</string>
            </property>
            <property name="whatsThis">
-            <string>When checked, show generic (English) last names for dwarves. Note: this change will not take effect until the next full read of dwarves occurrs!</string>
+            <string/>
            </property>
            <property name="text">
-            <string>Show Generic Dwarf Names</string>
+            <string>Show Generic Unit Names</string>
            </property>
           </widget>
          </item>
          <item row="6" column="0">
           <widget class="QCheckBox" name="cb_show_full_dwarf_names">
-           <property name="toolTip">
-            <string/>
-           </property>
            <property name="statusTip">
-            <string>When checked, show first names for dwarfs even if they have custom nicknames. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read of dwarves occurrs!&lt;/font&gt;&lt;/b&gt;</string>
+            <string>When checked, show first names for units even if they have custom nicknames. $WARN_READ</string>
            </property>
            <property name="whatsThis">
-            <string>When checked, show first names for dwarfs even if they have custom nicknames. Note: this change will not take effect until the next full read of dwarves occurrs!</string>
+            <string/>
            </property>
            <property name="text">
-            <string>Show Full Dwarf Names</string>
+            <string>Show Full Unit Names</string>
            </property>
           </widget>
          </item>
@@ -326,6 +270,36 @@
            </item>
           </layout>
          </item>
+         <item row="3" column="0">
+          <widget class="QCheckBox" name="cb_alert_on_lost_connection">
+           <property name="statusTip">
+            <string>When checked, Dwarf Therapist will alert you if it ever loses connectivity to your Dwarf Fortress game. This helps avoid writing bad data to your fort.</string>
+           </property>
+           <property name="text">
+            <string>Alert on Lost Connection</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="cb_auto_connect">
+           <property name="statusTip">
+            <string>When checked, automatically attempts to reconnect to Dwarf Fortress when disconnected.</string>
+           </property>
+           <property name="text">
+            <string>Automatically Connect (BETA)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="QCheckBox" name="cb_show_toolbar_text">
+           <property name="statusTip">
+            <string>When checked, shows various information on the toolbar</string>
+           </property>
+           <property name="text">
+            <string>Show Toolbar Button Text</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -360,13 +334,16 @@
           </property>
           <item>
            <layout class="QGridLayout" name="gridLayout_8">
+            <property name="verticalSpacing">
+             <number>4</number>
+            </property>
             <item row="0" column="0">
              <widget class="QCheckBox" name="cb_labor_cheats">
               <property name="statusTip">
-               <string>When checked, you can apply labors to dwarfs that the game does not allow such as children and nobles. &lt;b&gt;&lt;font color=&quot;red&quot;&gt;This is cheating!&lt;/font&gt;&lt;/b&gt;</string>
+               <string>When checked, you can apply labors to units that the game does not allow such as children and nobles.</string>
               </property>
               <property name="whatsThis">
-               <string>When checked, you can apply labors to dwarfs that the game does not allow such as children and nobles. &lt;b&gt;&lt;font color=&quot;red&quot;&gt;This is cheating!&lt;/font&gt;&lt;/b&gt;</string>
+               <string/>
               </property>
               <property name="text">
                <string>Allow Labor Setting on Anyone</string>
@@ -384,13 +361,13 @@
               <item>
                <widget class="QCheckBox" name="cb_curse_highlight">
                 <property name="statusTip">
-                 <string>When checked, highlights cursed dwarves, such as vampires and werebeasts and adds a description in the tooltip. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read of dwarves occurrs!&lt;/font&gt;&lt;/b&gt;</string>
+                 <string>When checked, highlights cursed units, such as vampires and werebeasts and adds a description in the tooltip. $WARN_READ</string>
                 </property>
                 <property name="autoFillBackground">
                  <bool>false</bool>
                 </property>
                 <property name="text">
-                 <string>Highlight Cursed Dwarves</string>
+                 <string>Highlight Cursed Units</string>
                 </property>
                </widget>
               </item>
@@ -427,7 +404,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox_updates">
          <property name="title">
-          <string>Update Settings</string>
+          <string>Updates</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout">
           <property name="spacing">
@@ -447,6 +424,9 @@
           </property>
           <item>
            <layout class="QGridLayout" name="gridLayout_9">
+            <property name="verticalSpacing">
+             <number>4</number>
+            </property>
             <item row="1" column="4">
              <widget class="QLineEdit" name="le_repo_name"/>
             </item>
@@ -484,7 +464,7 @@
                <string>The following options determine the GitHub repository to check for new releases and memory layouts.</string>
               </property>
               <property name="whatsThis">
-               <string>The following options determine the GitHub repository to check for new releases and memory layouts.</string>
+               <string/>
               </property>
               <property name="text">
                <string>Check for updates from...</string>
@@ -519,10 +499,10 @@
                </sizepolicy>
               </property>
               <property name="statusTip">
-               <string>When checked, Dwarf Therapist will go online at the time of launch and notify you if there is an update available.</string>
+               <string>When checked, Dwarf Therapist will go online at the time of launch and notify you if there is an update available. If there are new memory layouts they will be automatically downloaded.</string>
               </property>
               <property name="whatsThis">
-               <string>When checked, Dwarf Therapist will go online at the time of launch and notify you if there is an update available.</string>
+               <string/>
               </property>
               <property name="text">
                <string>Automatically Check for Updates</string>
@@ -743,10 +723,10 @@
             <string/>
            </property>
            <property name="statusTip">
-            <string>When checked, header text will be prefixed by the number of dwarfs with the labor enabled. This includes pending labors.</string>
+            <string>When checked, header text will be prefixed by the number of units with the labor enabled. This includes pending labors.</string>
            </property>
            <property name="whatsThis">
-            <string>When checked, header text will be prefixed by the number of dwarfs with the labor enabled. This includes pending labors.</string>
+            <string>When checked, header text will be prefixed by the number of units with the labor enabled. This includes pending labors.</string>
            </property>
            <property name="text">
             <string>Show Count in Labor Column Headers</string>
@@ -1250,7 +1230,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>674</width>
+            <width>463</width>
             <height>459</height>
            </rect>
           </property>
@@ -1493,10 +1473,10 @@
              <item row="4" column="2">
               <widget class="QCheckBox" name="chk_show_prof">
                <property name="statusTip">
-                <string>When checked, shows a description of the dwarf's profession.</string>
+                <string>When checked, shows a description of the unit's profession.</string>
                </property>
                <property name="whatsThis">
-                <string>When checked, shows a description of the dwarf's profession.</string>
+                <string>When checked, shows a description of the unit's profession.</string>
                </property>
                <property name="text">
                 <string>Show profession description.</string>
@@ -1506,7 +1486,7 @@
              <item row="3" column="2">
               <widget class="QCheckBox" name="chk_show_unit_size">
                <property name="statusTip">
-                <string>When checked, shows the unit's size (in cm3) in the tooltip. This is particularly useful for military. &lt;b&gt;This is always enabled for animals.&lt;/b&gt;</string>
+                <string>When checked, shows the unit's size (in cm3) in the tooltip. This is particularly useful for military. $LIVESTOCK</string>
                </property>
                <property name="text">
                 <string>Show unit's size (cm3).</string>
@@ -1516,7 +1496,7 @@
              <item row="2" column="2">
               <widget class="QCheckBox" name="chk_show_age">
                <property name="statusTip">
-                <string>When checked, shows the unit's age in the tooltip. &lt;b&gt;This is always enabled for animals.&lt;/b&gt;</string>
+                <string>When checked, shows the unit's age in the tooltip. $LIVESTOCK</string>
                </property>
                <property name="text">
                 <string>Show age.</string>
@@ -2031,7 +2011,7 @@
         </size>
        </property>
        <property name="statusTip">
-        <string>When checked, highlights dwarves assigned to noble positions based on the colors specified below. &lt;font color=red&gt;&lt;b&gt;Note: this change will not take effect until the next full read of dwarves occurrs!&lt;/font&gt;&lt;/b&gt;</string>
+        <string>When checked, highlights units assigned to noble positions based on the colors specified below. $WARN_READ</string>
        </property>
        <property name="autoFillBackground">
         <bool>false</bool>
@@ -2177,9 +2157,6 @@
            <property name="statusTip">
             <string>When determining an attribute's rating for a role, a rating on the current value, and on the maximum potential value are calculated. A higher weight here gives more importance on the potential rating, and less on the rating of the current value. For example, 0.25 will weigh the potential rating at 25%, and the current value rating at 75%. &lt;b&gt;A weight of zero will ignore the potential rating entirely.&lt;/b&gt;</string>
            </property>
-           <property name="whatsThis">
-            <string>When determining an attribute's rating for a role, a rating on the current value, and on the maximum potential value are calculated. A higher weight here gives more importance on the potential rating, and less on the rating of the current value. For example, 0.25 will weigh the potential rating at 25%, and the current value rating at 75%. &lt;b&gt;A weight of zero will ignore the potential rating entirely.&lt;/b&gt;</string>
-           </property>
            <property name="maximum">
             <double>1.000000000000000</double>
            </property>
@@ -2214,9 +2191,6 @@
              <width>16777215</width>
              <height>16777215</height>
             </size>
-           </property>
-           <property name="toolTip">
-            <string>This is the weight to apply to skill learning rates, relative to the skill level. A higher weight means greater importance. For example at 0.25, the skill level has a corresponding weight of 0.75. At 0.5 skill rate weight, the level and skill rate are valued equally at 0.5 each. &lt;b&gt;Set to zero to exclude skill learning rates from role ratings.&lt;/b&gt;</string>
            </property>
            <property name="statusTip">
             <string>This is the weight to apply to skill learning rates, relative to the skill level. A higher weight means greater importance. For example at 0.25, the skill level has a corresponding weight of 0.75. At 0.5 skill rate weight, the level and skill rate are valued equally at 0.5 each. &lt;b&gt;Set to zero to exclude skill learning rates from role ratings.&lt;/b&gt;</string>
@@ -2373,7 +2347,7 @@
               </size>
              </property>
              <property name="text">
-              <string>roles in the dwarf details pane.</string>
+              <string>roles in the unit details pane.</string>
              </property>
             </widget>
            </item>

@@ -99,10 +99,6 @@ void NotificationWidget::fade_out_start(){
         //close the notification as soon as opacity hits 0; this is often before the animation finishes
         connect(eff,SIGNAL(opacityChanged(qreal)),this,SLOT(opacity_changed(qreal)));
     }
-    //if the mouse is already on the notification, pause the fade as it's currently active
-    if(m_mouse_hover){
-        m_fader->pause();
-    }
 }
 
 void NotificationWidget::opacity_changed(qreal opacity){
@@ -111,6 +107,11 @@ void NotificationWidget::opacity_changed(qreal opacity){
             m_fader->stop();
         }
         close_notification();
+    }else{
+        //if the mouse is on the notification, or there is a dialog open, reset the fade animation
+        if((m_mouse_hover || QApplication::activeModalWidget()) && opacity < 1){
+            m_fader->setCurrentTime(0);
+        }
     }
 }
 
@@ -118,8 +119,8 @@ void NotificationWidget::enterEvent(QEvent *evt){
     QFrame::enterEvent(evt);
     m_mouse_hover = true;
     if(m_fader){
-        m_fader->setCurrentTime(0);
         m_fader->pause();
+        m_fader->setCurrentTime(0);
     }
 }
 

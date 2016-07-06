@@ -25,9 +25,9 @@ THE SOFTWARE.
 
 #include <QStandardItemModel>
 #include "columntypes.h"
+#include "dfinstance.h"
 
 class Dwarf;
-class DFInstance;
 class DwarfModel;
 class DwarfModelProxy;
 class GridView;
@@ -109,7 +109,7 @@ public:
 
     DwarfModel(QObject *parent = 0);
     virtual ~DwarfModel();
-    void set_instance(DFInstance *df) {m_df = df;}
+    void set_instance(DFInstance *df) {m_df = QPointer<DFInstance>(df);}
     void set_grid_view(GridView *v) {m_gridview = v;}
     GridView * current_grid_view() {return m_gridview;}
     void clear_all(bool clr_pend); // reset everything to normal
@@ -159,7 +159,7 @@ public slots:
     void read_settings();
 
 private:
-    DFInstance *m_df;
+    QPointer<DFInstance> m_df;
     QHash<int, Dwarf*> m_dwarves;
     QMap<QString, QVector<Dwarf*> > m_grouped_dwarves;
     GROUP_BY m_group_by;
