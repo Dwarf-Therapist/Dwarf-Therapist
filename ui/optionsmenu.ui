@@ -286,7 +286,7 @@
             <string>When checked, automatically attempts to reconnect to Dwarf Fortress when disconnected.</string>
            </property>
            <property name="text">
-            <string>Automatically Connect</string>
+            <string>Automatically Connect (BETA)</string>
            </property>
           </widget>
          </item>

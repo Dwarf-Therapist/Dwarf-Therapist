@@ -215,9 +215,11 @@ OptionsMenu::~OptionsMenu() {
 bool OptionsMenu::event(QEvent *evt) {
     if (evt->type() == QEvent::StatusTip) {
         QString tip = static_cast<QStatusTipEvent*>(evt)->tip();
-        //replace warning/info placeholders
-        foreach(QString key, m_msg_vars){
-            tip.replace(key,get_message(key)).simplified();
+        if(!tip.trimmed().isEmpty()){
+            //replace warning/info placeholders
+            foreach(QString key, m_msg_vars){
+                tip = tip.replace(key,get_message(key)).simplified();
+            }
         }
         ui->text_status_tip->setHtml(tip);
         return true; // we've handled it, don't pass it
