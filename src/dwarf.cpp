@@ -596,7 +596,7 @@ void Dwarf::read_states(){
     uint states_offset = m_mem->dwarf_offset("states");
     if(states_offset) {
         VIRTADDR states_addr = m_address + states_offset;
-        QVector<uint> entries = m_df->enumerate_vector(states_addr);
+        QVector<VIRTADDR> entries = m_df->enumerate_vector(states_addr);
         foreach(uint entry, entries) {
             m_states.insert(m_df->read_short(entry), m_df->read_int(entry+0x4));
         }
