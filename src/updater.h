@@ -29,7 +29,7 @@ THE SOFTWARE.
 #include "notifierwidget.h"
 
 class DFInstance;
-class Version;
+struct Version;
 
 class Updater : public QObject {
     Q_OBJECT
