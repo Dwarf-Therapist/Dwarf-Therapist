@@ -27,7 +27,6 @@ THE SOFTWARE.
 #include "memorylayout.h"
 #include "truncatingfilelogger.h"
 #include "material.h"
-#include "dwarfstats.h"
 
 Race::Race(DFInstance *df, VIRTADDR address, int id, QObject *parent)
     : QObject(parent)

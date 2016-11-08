@@ -22,16 +22,14 @@ THE SOFTWARE.
 */
 
 #include "notificationwidget.h"
-#include "dwarftherapist.h"
-#include "utils.h"
+#include "ui_notification.h"
 
 #include <QDesktopServices>
 #include <QUrl>
 #include <QGraphicsOpacityEffect>
 #include <QPropertyAnimation>
 #include <QTimer>
-
-class NotifierWidget;
+#include <QFrame>
 
 NotificationWidget::NotificationWidget(NotifierWidget::notify_info ni,NotifierWidget *parent)
     : QFrame(parent)

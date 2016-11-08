@@ -27,7 +27,6 @@ THE SOFTWARE.
 #include "utils.h"
 
 class DFInstance;
-class MemoryLayout;
 
 class ActivityEvent : public QObject {
     Q_OBJECT

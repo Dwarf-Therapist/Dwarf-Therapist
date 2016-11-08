@@ -25,7 +25,6 @@ THE SOFTWARE.
 
 #include "item.h"
 #include "itemarmorsubtype.h"
-#include "races.h"
 
 class ItemArmor : public Item {
     Q_OBJECT

@@ -23,13 +23,12 @@ THE SOFTWARE.
 #ifndef UNITWOUND_H
 #define UNITWOUND_H
 
-#include "truncatingfilelogger.h"
-#include "utils.h"
-#include "healthinfo.h"
 #include "flagarray.h"
+#include "global_enums.h"
+#include "utils.h"
 
-class MemoryLayout;
 class DFInstance;
+class HealthInfo;
 class UnitHealth;
 
 class UnitWound

@@ -20,11 +20,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QScrollBar>
-#include <QMenu>
-#include <QInputDialog>
-#include <QMessageBox>
-#include <QLineEdit>
 
 #include "mainwindow.h"
 #include "statetableview.h"
@@ -47,6 +42,17 @@ THE SOFTWARE.
 #include "labor.h"
 #include "defaultfonts.h"
 #include "dtstandarditem.h"
+
+#include <QContextMenuEvent>
+#include <QInputDialog>
+#include <QKeyEvent>
+#include <QLineEdit>
+#include <QMenu>
+#include <QMessageBox>
+#include <QMouseEvent>
+#include <QScrollBar>
+#include <QTreeWidgetItem>
+#include <QWheelEvent>
 
 StateTableView::~StateTableView()
 {}

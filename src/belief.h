@@ -23,10 +23,11 @@ THE SOFTWARE.
 #ifndef BELIEF_H
 #define BELIEF_H
 
-#include "global_enums.h"
-#include "dwarfstats.h"
-#include "gamedatareader.h"
-#include "fortressentity.h"
+#include <QMap>
+#include <QList>
+#include <QObject>
+
+class QSettings;
 
 class Belief : public QObject {
     Q_OBJECT

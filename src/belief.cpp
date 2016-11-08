@@ -23,6 +23,8 @@ THE SOFTWARE.
 #include "belief.h"
 #include "gamedatareader.h"
 #include "dfinstance.h"
+#include "dwarftherapist.h"
+#include "fortressentity.h"
 #include <QSettings>
 
 //personality facets

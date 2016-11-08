@@ -23,10 +23,10 @@ THE SOFTWARE.
 #ifndef MOOD_H
 #define MOOD_H
 
-#include "utils.h"
 #include <QObject>
-#include <QSettings>
 #include <QColor>
+
+class QSettings;
 
 class Mood : public QObject
 {

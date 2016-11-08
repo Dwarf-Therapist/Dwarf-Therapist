@@ -26,9 +26,9 @@ THE SOFTWARE.
 
 #include "global_enums.h"
 #include <QColor>
+#include <QString>
+#include <QStringList>
 
-class QString;
-class QStringList;
 class QSettings;
 
 class Attribute {

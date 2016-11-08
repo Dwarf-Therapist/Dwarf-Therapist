@@ -22,7 +22,7 @@ THE SOFTWARE.
 */
 #include "unitbelief.h"
 #include "gamedatareader.h"
-#include "trait.h"
+#include "belief.h"
 
 UnitBelief::UnitBelief()
     : m_belief_id(-1)

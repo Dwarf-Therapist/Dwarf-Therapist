@@ -23,10 +23,14 @@ THE SOFTWARE.
 #ifndef SUPERLABOR_H
 #define SUPERLABOR_H
 
-#include <QObject>
-#include "customprofession.h"
-#include "dwarftherapist.h"
+#include <QString>
 #include "multilabor.h"
+
+class CustomProfession;
+class Dwarf;
+class QObject;
+class QSettings;
+class QWidget;
 
 namespace Ui
 {

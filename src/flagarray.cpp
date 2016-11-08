@@ -1,5 +1,6 @@
 #include "flagarray.h"
 #include "dfinstance.h"
+#include "truncatingfilelogger.h"
 
 FlagArray::FlagArray(){
     m_df = 0;

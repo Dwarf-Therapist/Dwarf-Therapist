@@ -22,7 +22,6 @@ THE SOFTWARE.
 */
 
 #include "aboutdialog.h"
-#include "dwarftherapist.h"
 #include "mainwindow.h"
 
 AboutDialog::AboutDialog(MainWindow *parent)

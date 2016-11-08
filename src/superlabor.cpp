@@ -21,14 +21,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <QWidget>
-#include <QMessageBox>
 #include "superlabor.h"
 #include "ui_superlabor.h"
+#include "customprofession.h"
+#include "defines.h"
+#include "dwarf.h"
 #include "gamedatareader.h"
 #include "labor.h"
-#include "dwarf.h"
-#include "defines.h"
+
+#include <QMessageBox>
+#include <QSettings>
+
+class QWidget;
 
 //new blank superlabor
 SuperLabor::SuperLabor(QObject *parent)

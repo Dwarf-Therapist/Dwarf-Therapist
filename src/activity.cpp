@@ -23,7 +23,6 @@ THE SOFTWARE.
 #include "activity.h"
 #include "dfinstance.h"
 #include "memorylayout.h"
-#include "gamedatareader.h"
 #include "activityevent.h"
 #include "truncatingfilelogger.h"
 #include "dwarfjob.h"

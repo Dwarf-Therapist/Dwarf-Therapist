@@ -27,9 +27,9 @@ THE SOFTWARE.
 #include <QObject>
 #include <QNetworkReply>
 #include "notifierwidget.h"
-#include "version.h"
 
 class DFInstance;
+class Version;
 
 class Updater : public QObject {
     Q_OBJECT

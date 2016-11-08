@@ -2,9 +2,10 @@
 #define ICONCHOOSER_H
 
 #include <QDialog>
-#include <QStandardItemModel>
-#include <QListView>
-#include <QLabel>
+
+class QLabel;
+class QListView;
+class QStandardItemModel;
 
 class IconChooser : public QDialog
 {

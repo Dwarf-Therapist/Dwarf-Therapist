@@ -23,7 +23,6 @@ THE SOFTWARE.
 
 #include "attribute.h"
 #include "dwarfstats.h"
-#include "dwarftherapist.h"
 #include "gamedatareader.h"
 #include <QSettings>
 

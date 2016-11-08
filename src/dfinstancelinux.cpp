@@ -22,20 +22,11 @@ THE SOFTWARE.
 */
 #include "dfinstance.h"
 #include "dfinstancelinux.h"
-#include "memorysegment.h"
 #include "truncatingfilelogger.h"
-#include "cp437codec.h"
 #include "utils.h"
 
 #include <QInputDialog>
-#include <QMessageBox>
-#include <QCryptographicHash>
 #include <QDirIterator>
-#if QT_VERSION >= 0x050000
-# include <QRegularExpression>
-#else
-# include <QRegExp>
-#endif
 
 #include <errno.h>
 #include <sys/mman.h>

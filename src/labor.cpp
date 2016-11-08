@@ -1,5 +1,7 @@
 #include "labor.h"
 
+#include <QSettings>
+
 Labor::Labor(QSettings &s, QObject *parent)
     : QObject(parent)
     , name(s.value("name", "UNKNOWN LABOR").toString())

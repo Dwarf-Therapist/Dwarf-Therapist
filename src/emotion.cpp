@@ -22,6 +22,7 @@ THE SOFTWARE.
 */
 
 #include "emotion.h"
+#include <QSettings>
 
 const QMap<int,QColor> Emotion::m_base_colors = Emotion::set_base_colors();
 

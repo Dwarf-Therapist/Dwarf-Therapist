@@ -34,9 +34,11 @@ THE SOFTWARE.
 #include "viewcolumnset.h"
 #include "truncatingfilelogger.h"
 #include "role.h"
+
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDateTime>
+#include <QSettings>
 #if QT_VERSION >= 0x050000
 # include <QStandardPaths>
 #else

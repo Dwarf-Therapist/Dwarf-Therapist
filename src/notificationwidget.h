@@ -23,12 +23,14 @@ THE SOFTWARE.
 #ifndef NOTIFICATION_H
 #define NOTIFICATION_H
 
-#include <QDialog>
-#include <QDesktopWidget>
-#include <QPropertyAnimation>
-
-#include "ui_notification.h"
 #include "notifierwidget.h"
+
+#include <QFrame>
+
+class QEvent;
+class QObject;
+class QPropertyAnimation;
+namespace Ui { class NotificationWidget; }
 
 class NotificationWidget : public QFrame {
     Q_OBJECT

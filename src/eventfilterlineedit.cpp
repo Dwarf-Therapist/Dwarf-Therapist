@@ -1,5 +1,9 @@
 #include "eventfilterlineedit.h"
 
+#include <QLineEdit>
+#include <QAbstractItemView>
+#include <QKeyEvent>
+
 bool EventFilterLineEdit::eventFilter(QObject* watched, QEvent* event) {
     QAbstractItemView* view = qobject_cast<QAbstractItemView*>(watched);
     if (event->type() == QEvent::KeyPress){

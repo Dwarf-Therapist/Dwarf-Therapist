@@ -23,15 +23,16 @@ THE SOFTWARE.
 #ifndef ITEM_H
 #define ITEM_H
 
-#include "truncatingfilelogger.h"
+#include "flagarray.h"
 #include "global_enums.h"
-#include "material.h"
-#include "itemdefuniform.h"
-#include "itemsubtype.h"
+#include "utils.h"
+
 #include <QObject>
 #include <QColor>
 
-class QString;
+class DFInstance;
+class ItemSubtype;
+class Material;
 
 class Item : public QObject {
     Q_OBJECT

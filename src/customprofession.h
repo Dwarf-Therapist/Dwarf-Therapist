@@ -23,10 +23,15 @@ THE SOFTWARE.
 #ifndef CUSTOM_PROFESSION_H
 #define CUSTOM_PROFESSION_H
 
-#include "customcolor.h"
 #include "multilabor.h"
+
+#include <QString>
+#include <QPixmap>
+
 class Dwarf;
 class QObject;
+class QFont;
+class CustomColor;
 
 namespace Ui
 {

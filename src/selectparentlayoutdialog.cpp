@@ -1,5 +1,4 @@
 #include "dfinstance.h"
-#include "truncatingfilelogger.h"
 #include "memorylayout.h"
 #include "selectparentlayoutdialog.h"
 #include "ui_selectparentlayoutdialog.h"

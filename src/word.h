@@ -23,10 +23,11 @@ THE SOFTWARE.
 #ifndef WORD_H
 #define WORD_H
 
-#include <QObject>
 #include "utils.h"
 
-class Dwarf;
+#include <QObject>
+#include <QString>
+
 class DFInstance;
 class MemoryLayout;
 

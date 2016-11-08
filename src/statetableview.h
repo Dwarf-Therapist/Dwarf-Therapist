@@ -23,16 +23,19 @@ THE SOFTWARE.
 #ifndef STATE_TABLE_VIEW_H
 #define STATE_TABLE_VIEW_H
 
-#include <QTreeWidgetItem>
 #include "dwarfmodelproxy.h"
 
-class UberDelegate;
-class RotatedHeader;
+#include <QItemSelection>
+#include <QTreeView>
+
 class Dwarf;
 class DwarfModel;
+class QMenu;
+class QTreeWidgetItem;
+class RotatedHeader;
+class UberDelegate;
 
-class StateTableView : public QTreeView
-{
+class StateTableView : public QTreeView {
     Q_OBJECT
 public:
     StateTableView(QWidget *parent = 0);

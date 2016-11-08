@@ -1,9 +1,12 @@
-#include <QVBoxLayout>
-#include <QLabel>
-#include <QDialogButtonBox>
-#include <QFile>
 #include "gamedatareader.h"
 #include "iconchooser.h"
+
+#include <QDialogButtonBox>
+#include <QFile>
+#include <QLabel>
+#include <QListView>
+#include <QStandardItemModel>
+#include <QVBoxLayout>
 
 const int imageSize = 16;
 

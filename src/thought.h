@@ -24,8 +24,9 @@ THE SOFTWARE.
 #define THOUGHT_H
 
 #include <QObject>
-#include <QSettings>
 #include <QColor>
+
+class QSettings;
 
 class Thought : public QObject
 {

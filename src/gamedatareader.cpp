@@ -20,21 +20,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+#include "gamedatareader.h"
+#include "attribute.h"
+#include "belief.h"
+#include "dwarfjob.h"
+#include "emotion.h"
+#include "labor.h"
+#include "laboroptimizerplan.h"
+#include "mood.h"
+#include "profession.h"
+#include "role.h"
+#include "subthoughttypes.h"
+#include "thought.h"
+#include "trait.h"
+#include "unithealth.h"
+
 #include <QMessageBox>
 #include <QFile>
-#include "gamedatareader.h"
-#include "labor.h"
-#include "trait.h"
-#include "attribute.h"
-#include "dwarfjob.h"
-#include "profession.h"
-#include "laboroptimizerplan.h"
-#include "thought.h"
-#include "unithealth.h"
-#include "belief.h"
-#include "subthoughttypes.h"
-#include "emotion.h"
-#include "mood.h"
 
 QStringList GameDataReader::m_seasons;
 QStringList GameDataReader::m_months;

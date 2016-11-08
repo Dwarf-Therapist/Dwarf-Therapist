@@ -36,7 +36,6 @@ class Languages;
 class Material;
 class MemoryLayout;
 class Plant;
-class QFile;
 class Race;
 class Reaction;
 class Squad;

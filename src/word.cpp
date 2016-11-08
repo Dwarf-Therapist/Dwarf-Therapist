@@ -24,7 +24,6 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "memorylayout.h"
 #include "dwarftherapist.h"
-#include "mainwindow.h"
 #include "truncatingfilelogger.h"
 
 Word::Word(DFInstance *df, VIRTADDR address, QObject *parent)

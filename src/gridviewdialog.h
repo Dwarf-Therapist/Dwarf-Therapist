@@ -25,16 +25,13 @@ THE SOFTWARE.
 #define GRID_VIEW_DIALOG_H
 
 #include <QDialog>
-#include <QItemSelection>
-#include <QStandardItemModel>
-#include "defines.h"
-#include "customcolor.h"
-#include "contextmenuhelper.h"
 
-class ViewManager;
+class ContextMenuHelper;
 class GridView;
+class QItemSelection;
+class QStandardItemModel;
 class ViewColumnSet;
-class ViewColumn;
+class ViewManager;
 
 namespace Ui {
 class GridViewDialog;

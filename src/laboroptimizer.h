@@ -23,12 +23,13 @@ THE SOFTWARE.
 #ifndef LABOROPTIMIZER_H
 #define LABOROPTIMIZER_H
 
-#include <QObject>
-#include "utils.h"
 #include "plandetail.h"
 
+#include <cmath>
+#include <QObject>
+#include <QVector>
+
 class Dwarf;
-class Labor;
 class GameDataReader;
 class laborOptimizerPlan;
 

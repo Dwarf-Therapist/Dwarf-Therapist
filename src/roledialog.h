@@ -1,29 +1,21 @@
 #ifndef ROLEDIALOG_H
 #define ROLEDIALOG_H
 
-#include <QSplitter>
 #include <QDialog>
-#include <QTreeWidgetItem>
-#include <QTableWidget>
 #include <QKeyEvent>
-#include "utils.h"
 #include "global_enums.h"
-#include "defines.h"
-#include "contextmenuhelper.h"
 
 class DFInstance;
-class Preference;
-class Role;
+class Dwarf;
 class Material;
 class Plant;
-class Item;
-class Races;
+class Preference;
+class QSplitter;
+class QTableWidget;
+class QTreeWidgetItem;
+class Role;
 class RoleAspect;
-class Dwarf;
-
-namespace Ui {
-class roleDialog;
-}
+namespace Ui { class roleDialog; }
 
 class roleDialog : public QDialog
 {

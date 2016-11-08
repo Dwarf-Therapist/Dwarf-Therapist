@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include "gridview.h"
 
 #include <QPainter>
+#include <QSettings>
 
 const float UberDelegate::MIN_DRAW_SIZE = 0.05625f;
 const float UberDelegate::MAX_CELL_FILL = 0.76f;

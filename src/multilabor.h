@@ -1,12 +1,20 @@
-#ifndef  MULTILABOR_H
+#ifndef MULTILABOR_H
 #define MULTILABOR_H
 
-#include "gamedatareader.h"
-#include "labor.h"
-#include <QComboBox>
-#include <QListWidget>
+#include <QObject>
+#include <QVector>
+#include <QHash>
+#include <QColor>
 
 class Dwarf;
+class GameDataReader;
+class QComboBox;
+class QDialog;
+class QListWidget;
+class QListWidgetItem;
+class QSettings;
+class QWidget;
+class Role;
 
 class MultiLabor : public QObject {
     Q_OBJECT

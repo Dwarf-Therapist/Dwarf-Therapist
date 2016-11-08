@@ -23,10 +23,10 @@ THE SOFTWARE.
 #ifndef SYNDROME_H
 #define SYNDROME_H
 
-#include <QObject>
-#include <QString>
 #include "utils.h"
 #include "global_enums.h"
+
+#include <QString>
 
 class DFInstance;
 class MemoryLayout;

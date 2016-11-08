@@ -24,10 +24,10 @@ THE SOFTWARE.
 #define LABOROPTIMIZERPLAN_H
 
 #include <QObject>
-#include <QSettings>
 #include <QVector>
 
 class PlanDetail;
+class QSettings;
 
 class laborOptimizerPlan : public QObject {
     Q_OBJECT

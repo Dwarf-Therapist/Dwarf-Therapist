@@ -56,24 +56,23 @@ THE SOFTWARE.
 #include "dwarfdetailsdock.h"
 #include "informationdock.h"
 #include "preferencesdock.h"
-#include "thoughtsdock.h"
 #include "healthlegenddock.h"
 #include "equipmentoverviewdock.h"
 #include "eventfilterlineedit.h"
-#include "eventfilterlineedit.h"
 #include "gridview.h"
-#include "notificationwidget.h"
 #include "notifierwidget.h"
 #include "updater.h"
 
+#include <QCompleter>
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QPainter>
+#include <QProgressBar>
 #include <QShortcut>
 #include <QTime>
-#include <QPainter>
-#include <QUrl>
 #include <QTimer>
+#include <QUrl>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)

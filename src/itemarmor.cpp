@@ -1,4 +1,5 @@
 #include "itemarmor.h"
+#include "races.h"
 
 void ItemArmor::read_def() {
     if(m_addr > 0){

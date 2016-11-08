@@ -25,7 +25,8 @@ THE SOFTWARE.
 #include "dfinstance.h"
 #include "memorylayout.h"
 #include "races.h"
-#include "caste.h"
+#include "dwarftherapist.h"
+#include "truncatingfilelogger.h"
 
 HistFigure::HistFigure(int id, DFInstance *df, QObject *parent)
     : QObject(parent)

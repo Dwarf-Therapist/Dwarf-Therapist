@@ -25,8 +25,8 @@ THE SOFTWARE.
 
 #include "item.h"
 
-class ItemUniform;
 class ItemGenericSubtype;
+class ItemDefUniform;
 
 class ItemUniform : public Item {
         Q_OBJECT

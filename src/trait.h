@@ -23,11 +23,14 @@ THE SOFTWARE.
 #ifndef TRAIT_H
 #define TRAIT_H
 
-#include <QObject>
-#include "global_enums.h"
-#include "dwarfstats.h"
-#include "gamedatareader.h"
 #include "unitbelief.h"
+
+#include <QHash>
+#include <QMap>
+#include <QObject>
+#include <QString>
+
+class QSettings;
 
 class Trait : public QObject {
     Q_OBJECT

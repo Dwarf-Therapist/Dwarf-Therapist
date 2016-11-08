@@ -22,6 +22,7 @@ THE SOFTWARE.
 */
 #include "plant.h"
 #include "dfinstance.h"
+#include "material.h"
 #include "memorylayout.h"
 #include "truncatingfilelogger.h"
 

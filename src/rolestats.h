@@ -24,13 +24,12 @@ THE SOFTWARE.
 #define ROLESTATS_H
 
 #include <QObject>
+#include <QSharedPointer>
 #include <QVector>
-#include <math.h>
-#include "rolecalcbase.h"
-#include "gamedatareader.h"
-#include "truncatingfilelogger.h"
 
-class RoleStats{
+class RoleCalcBase;
+
+class RoleStats {
 
 public:
     RoleStats(const QVector<double> &unsorted, const double invalid_value = -1, const bool override = false);

@@ -26,9 +26,6 @@ THE SOFTWARE.
 
 #include <QDialog>
 #include <QKeyEvent>
-#include "defines.h"
-
-#include <QTextEdit>
 
 namespace Ui {
 class ScriptDialog;

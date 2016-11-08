@@ -25,8 +25,10 @@ THE SOFTWARE.
 
 #include "global_enums.h"
 #include <QObject>
-#include <QSettings>
 #include <QColor>
+#include <QMap>
+
+class QSettings;
 
 class Emotion : public QObject
 {

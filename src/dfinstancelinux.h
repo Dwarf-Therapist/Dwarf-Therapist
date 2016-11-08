@@ -23,7 +23,6 @@ THE SOFTWARE.
 
 #ifndef DFINSTANCE_LINUX_H
 #define DFINSTANCE_LINUX_H
-#include "dfinstance.h"
 #include "dfinstancenix.h"
 
 class DFInstanceLinux : public DFInstanceNix {

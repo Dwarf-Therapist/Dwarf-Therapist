@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include "rolestats.h"
 #include "rolecalcminmax.h"
 #include "rolecalcrecenter.h"
+#include "truncatingfilelogger.h"
 
 using std::unique_copy;
 using std::distance;

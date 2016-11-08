@@ -1,16 +1,18 @@
 #ifndef EVENTFILTERLINEEDIT_H
 #define EVENTFILTERLINEEDIT_H
 
-#include <QKeyEvent>
-#include <QLineEdit>
-#include <QAbstractItemView>
-#include "truncatingfilelogger.h"
+#include <QObject>
+#include <QString>
+
+class QEvent;
+class QLineEdit;
+class QModelIndex;
 
 class EventFilterLineEdit : public QObject
 {
     Q_OBJECT
 public:
-    EventFilterLineEdit(QLineEdit* lineEdit, QObject* parent = NULL)
+    EventFilterLineEdit(QLineEdit* lineEdit, QObject* parent = nullptr)
         :QObject(parent)
         ,mLineEdit(lineEdit)
     { }

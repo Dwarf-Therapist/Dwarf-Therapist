@@ -1,4 +1,8 @@
 #include "mood.h"
+#include "utils.h"
+
+#include <QSettings>
+#include <QString>
 
 Mood::Mood(QSettings &s, QObject *parent)
     : QObject(parent)

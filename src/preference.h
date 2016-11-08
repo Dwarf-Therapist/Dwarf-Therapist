@@ -24,14 +24,14 @@ THE SOFTWARE.
 #define PREFERENCE_H
 
 #include <QObject>
-#include "utils.h"
 #include "global_enums.h"
 #include "flagarray.h"
 
-class RoleAspect;
+class Dwarf;
 class ItemSubtype;
 class Plant;
 class Race;
+class RoleAspect;
 
 class Preference : public QObject {
     Q_OBJECT

@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include "uniform.h"
 #include "item.h"
 #include "itemuniform.h"
+#include "itemdefuniform.h"
 
 Uniform::Uniform(DFInstance *df, QObject *parent)
     : QObject(parent)

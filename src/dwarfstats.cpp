@@ -24,8 +24,9 @@ THE SOFTWARE.
 */
 
 #include "dwarfstats.h"
-#include "dwarf.h"
-#include "truncatingfilelogger.h"
+#include "rolestats.h"
+
+#include <QSharedPointer>
 
 float DwarfStats::m_att_pot_weight;
 float DwarfStats::m_skill_rate_weight;

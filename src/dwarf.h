@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include "attribute.h"
 #include "unithealth.h"
 #include "unitbelief.h"
-#include "unitemotion.h"
 #include "role.h"
 #include "syndrome.h"
 #include "equipwarn.h"
@@ -39,13 +38,14 @@ class QAction;
 class DFInstance;
 class MemoryLayout;
 class CustomProfession;
+class Profession;
 class Reaction;
 class Preference;
 class Race;
 class Caste;
 class Uniform;
 class HistFigure;
-class Item;
+class UnitEmotion;
 
 class Dwarf : public QObject
 {

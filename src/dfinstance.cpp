@@ -23,16 +23,13 @@ THE SOFTWARE.
 
 #include "dfinstance.h"
 #include "cp437codec.h"
-#include "defines.h"
 #include "dwarf.h"
 #include "squad.h"
 #include "word.h"
 #include "gamedatareader.h"
 #include "memorylayout.h"
 #include "dwarftherapist.h"
-#include "memorysegment.h"
 #include "truncatingfilelogger.h"
-#include "mainwindow.h"
 #include "dwarfstats.h"
 #include "languages.h"
 #include "reaction.h"
@@ -51,11 +48,11 @@ THE SOFTWARE.
 #include "activity.h"
 #include "dwarfjob.h"
 #include "equipwarn.h"
+#include "unitemotion.h"
+#include "rolecalcbase.h"
 
-#include <QMessageBox>
 #include <QTimer>
 #include <QTime>
-#include <QByteArrayMatcher>
 
 #ifdef Q_OS_WIN
 #define LAYOUT_SUBDIR "windows"

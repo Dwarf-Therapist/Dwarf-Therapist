@@ -23,8 +23,8 @@ THE SOFTWARE.
 
 #include "laboroptimizerplan.h"
 #include "plandetail.h"
-#include "dwarftherapist.h"
-#include "gamedatareader.h"
+
+#include <QSettings>
 
 laborOptimizerPlan::laborOptimizerPlan()
     :name("UNKNOWN")

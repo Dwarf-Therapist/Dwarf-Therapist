@@ -35,13 +35,15 @@ After everything is optimized, any haulers are assigned with less than the speci
 #include "laboroptimizer.h"
 #include "laboroptimizerplan.h"
 #include "plandetail.h"
-#include <algorithm>
 #include "gamedatareader.h"
 #include "dwarftherapist.h"
 #include "dwarf.h"
 #include "labor.h"
 #include "skill.h"
-#include "rolestats.h"
+
+#include <QSettings>
+
+#include <algorithm>
 
 LaborOptimizer::LaborOptimizer(laborOptimizerPlan *plan, QObject *parent)
     : QObject(parent)

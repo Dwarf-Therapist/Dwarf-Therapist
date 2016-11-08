@@ -24,8 +24,8 @@ THE SOFTWARE.
 #include "notifierwidget.h"
 #include "dwarftherapist.h"
 #include "mainwindow.h"
-#include "utils.h"
 #include "notificationwidget.h"
+#include "ui_notifier.h"
 
 #include <QStatusBar>
 

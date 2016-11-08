@@ -24,7 +24,9 @@ THE SOFTWARE.
 #define SUBTHOUGHTTYPES_H
 
 #include <QObject>
-#include <QSettings>
+#include <QHash>
+
+class QSettings;
 
 class SubThoughtTypes : public QObject
 {

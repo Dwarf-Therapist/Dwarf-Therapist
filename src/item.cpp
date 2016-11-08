@@ -21,9 +21,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include "item.h"
-#include "gamedatareader.h"
+#include "dfinstance.h"
 #include "itemammo.h"
-#include <QPalette>
+#include "itemsubtype.h"
+#include "material.h"
+#include "memorylayout.h"
+#include "truncatingfilelogger.h"
 
 const QList<ITEM_TYPE> Item::m_items_subtypes=Item::init_subtypes();
 const QList<MATERIAL_FLAGS> Item::m_mat_cats=Item::init_mat_cats();

@@ -2,7 +2,6 @@
 #include "utils.h"
 #include "truncatingfilelogger.h"
 #include "dfinstance.h"
-#include <QSettings>
 #include <QCryptographicHash>
 
 MemoryLayout::MemoryLayout(DFInstance *df, const QFileInfo &fileinfo)

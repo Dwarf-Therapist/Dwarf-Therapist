@@ -7,6 +7,7 @@
 #include "mainwindow.h"
 #include "memorylayout.h"
 #include "dfinstance.h"
+#include "version.h"
 
 #include <QSettings>
 #include <QNetworkAccessManager>

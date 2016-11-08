@@ -23,9 +23,11 @@ THE SOFTWARE.
 #ifndef RACES_H
 #define RACES_H
 
-#include <QObject>
-#include "utils.h"
 #include "flagarray.h"
+#include "global_enums.h"
+#include "utils.h"
+
+#include <QObject>
 
 class DFInstance;
 class MemoryLayout;

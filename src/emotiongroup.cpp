@@ -1,4 +1,6 @@
 #include "emotiongroup.h"
+#include "dwarf.h"
+#include "unitemotion.h"
 
 void EmotionGroup::add_detail(Dwarf *d, UnitEmotion *ue) {
     EMOTION_TYPE e_type = ue->get_emotion_type();

@@ -23,8 +23,10 @@ THE SOFTWARE.
 #ifndef LABOR_H
 #define LABOR_H
 
+#include <QList>
 #include <QObject>
-#include "role.h"
+
+class QSettings;
 
 class Labor : public QObject {
     Q_OBJECT

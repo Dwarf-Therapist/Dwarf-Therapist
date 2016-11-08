@@ -23,14 +23,10 @@ THE SOFTWARE.
 #ifndef DWARFSTATS_H
 #define DWARFSTATS_H
 
-#include "qhash.h"
-#include "qmap.h"
-#include "attribute.h"
+#include <QVector>
 
-#include "truncatingfilelogger.h"
-#include "rolestats.h"
-
-class Dwarf;
+class RoleStats;
+template <class T> class QSharedPointer;
 
 class DwarfStats
 {

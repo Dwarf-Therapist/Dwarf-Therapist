@@ -27,12 +27,11 @@ THE SOFTWARE.
 #include "utils.h"
 #include "global_enums.h"
 #include "flagarray.h"
-#include "races.h"
 
 class DFInstance;
 class MemoryLayout;
-class Attribute;
 class BodyPart;
+class Race;
 
 class Caste : public QObject {
     Q_OBJECT

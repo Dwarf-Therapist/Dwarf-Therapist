@@ -24,26 +24,25 @@ THE SOFTWARE.
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QLabel>
-#include <QProgressBar>
-#include <QCompleter>
-#include <QToolButton>
 
-#include "defines.h"
 #include "global_enums.h"
 
-class QSettings;
+class AboutDialog;
 class DFInstance;
+class Dwarf;
 class DwarfModel;
 class DwarfModelProxy;
-class Dwarf;
-class AboutDialog;
-class ViewManager;
-class ScriptDialog;
-class roleDialog;
-class optimizereditor;
 class NotifierWidget;
+class QCompleter;
+class QLabel;
+class QProgressBar;
+class QSettings;
+class QToolButton;
+class ScriptDialog;
 class Updater;
+class ViewManager;
+class optimizereditor;
+class roleDialog;
 
 namespace Ui
 {

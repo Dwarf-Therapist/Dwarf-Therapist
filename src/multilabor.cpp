@@ -1,8 +1,15 @@
-#include <QDialog>
 #include "multilabor.h"
-#include "labor.h"
 #include "dwarf.h"
 #include "dwarftherapist.h"
+#include "gamedatareader.h"
+#include "labor.h"
+
+#include <QColor>
+#include <QComboBox>
+#include <QDialog>
+#include <QFontMetrics>
+#include <QListWidgetItem>
+#include <QSettings>
 
 MultiLabor::MultiLabor(QObject *parent)
     : QObject(parent)

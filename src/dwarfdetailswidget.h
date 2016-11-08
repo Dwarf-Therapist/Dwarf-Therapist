@@ -23,11 +23,15 @@ THE SOFTWARE.
 #ifndef DWARF_DETAILS_WIDGET_H
 #define DWARF_DETAILS_WIDGET_H
 
+#include <QByteArray>
+#include <QColor>
+#include <QList>
+#include <QString>
+#include <QVector>
 #include <QWidget>
-#include <QTableWidget>
-#include <QMainWindow>
 
 class Dwarf;
+class QTableWidget;
 
 namespace Ui {
     class DwarfDetailsWidget;

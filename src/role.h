@@ -25,12 +25,12 @@ THE SOFTWARE.
 #define ROLE_H
 
 #include <QObject>
-#include <QSettings>
 #include <QVector>
 #include <QColor>
-#include "math.h"
+#include <QHash>
 
 class Preference;
+class QSettings;
 class RoleAspect;
 class Dwarf;
 

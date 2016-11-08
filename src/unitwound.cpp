@@ -23,15 +23,16 @@ THE SOFTWARE.
 */
 #include "unitwound.h"
 
-#include "flagarray.h"
-#include "healthcategory.h"
 #include "bodypart.h"
 #include "bodypartdamage.h"
 #include "bodypartlayer.h"
-#include "unithealth.h"
-#include "dwarf.h"
-#include "caste.h"
+#include "dfinstance.h"
+#include "flagarray.h"
+#include "healthcategory.h"
 #include "memorylayout.h"
+#include "unithealth.h"
+
+class HealthInfo;
 
 UnitWound::UnitWound()
     : m_df(0x0)

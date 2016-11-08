@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "material.h"
 #include "item.h"
 
+#include <QSettings>
 #if QT_VERSION >= 0x050000
 # include <QRegularExpression>
 #else

@@ -24,7 +24,6 @@ THE SOFTWARE.
 #define HIST_ENTITY_H
 #include <QObject>
 #include "utils.h"
-#include "global_enums.h"
 
 class DFInstance;
 class MemoryLayout;

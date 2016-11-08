@@ -24,7 +24,6 @@ THE SOFTWARE.
 #define UNITEMOTION_H
 
 #include <QObject>
-#include <QHash>
 #include "global_enums.h"
 #include "utils.h"
 

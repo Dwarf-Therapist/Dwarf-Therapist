@@ -3,7 +3,6 @@
 #include <QCryptographicHash>
 #include <QFile>
 #include <QTextCodec>
-#include <string>
 
 struct STLStringHeader {
     quint32 length;

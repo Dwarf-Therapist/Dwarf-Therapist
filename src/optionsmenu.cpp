@@ -23,15 +23,17 @@ THE SOFTWARE.
 
 #include "optionsmenu.h"
 #include "customcolor.h"
-#include "dwarftherapist.h"
+#include "defaultfonts.h"
 #include "defines.h"
+#include "dfinstance.h"
+#include "dwarftherapist.h"
+#include "fortressentity.h"
+#include "gamedatareader.h"
+#include "mainwindow.h"
 #include "truncatingfilelogger.h"
 #include "uberdelegate.h"
-#include "mainwindow.h"
-#include "fortressentity.h"
-#include "defaultfonts.h"
 #include "ui_optionsmenu.h"
-#include "gamedatareader.h"
+
 #include <QMessageBox>
 #include <QSettings>
 #include <QFontDialog>

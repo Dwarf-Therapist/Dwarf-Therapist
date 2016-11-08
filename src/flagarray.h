@@ -25,7 +25,6 @@ THE SOFTWARE.
 
 #include <QBitArray>
 #include "utils.h"
-#include "truncatingfilelogger.h"
 
 class DFInstance;
 

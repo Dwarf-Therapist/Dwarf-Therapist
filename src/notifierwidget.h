@@ -24,11 +24,9 @@ THE SOFTWARE.
 #define NOTIFIERWIDGET_H
 
 #include <QDialog>
-#include <QDesktopWidget>
-#include "ui_notifier.h"
 
-class NotificationWidget;
 class MainWindow;
+namespace Ui { class NotifierWidget; }
 
 class NotifierWidget : public QDialog {
     Q_OBJECT

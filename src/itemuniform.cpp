@@ -21,9 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include "itemuniform.h"
-#include "itemgenericsubtype.h"
-
 #include "gamedatareader.h"
+#include "itemdefuniform.h"
+#include "itemgenericsubtype.h"
 
 ItemUniform::ItemUniform(const Item &baseItem)
     :Item(baseItem)

@@ -30,11 +30,9 @@ THE SOFTWARE.
 // forward declaration
 class QSettings;
 class Labor;
-class Attribute;
 class Role;
 class laborOptimizerPlan;
 class Trait;
-class MilitaryPreference;
 class Profession;
 class DwarfJob;
 class Thought;

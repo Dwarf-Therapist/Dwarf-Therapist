@@ -23,6 +23,10 @@ THE SOFTWARE.
 
 #include "thought.h"
 
+#include <QSettings>
+#include <QList>
+#include <QColor>
+
 const QList<QColor> Thought::m_base_colors = Thought::set_base_colors();
 
 Thought::Thought(int id, QObject *parent)

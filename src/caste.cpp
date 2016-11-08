@@ -29,9 +29,6 @@ THE SOFTWARE.
 #include "flagarray.h"
 #include "races.h"
 #include "bodypart.h"
-#include "trait.h"
-
-#include "dwarfstats.h"
 
 Caste::Caste(DFInstance *df, VIRTADDR address, Race *r, QObject *parent)
     : QObject(parent)

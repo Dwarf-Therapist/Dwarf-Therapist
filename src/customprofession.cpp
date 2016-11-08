@@ -20,8 +20,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <QMessageBox>
-#include <QPainter>
 #include "customprofession.h"
 #include "gamedatareader.h"
 #include "ui_customprofession.h"
@@ -34,6 +32,11 @@ THE SOFTWARE.
 #include "defaultfonts.h"
 #include "multilabor.h"
 #include "superlabor.h"
+#include "customcolor.h"
+
+#include <QMessageBox>
+#include <QPainter>
+#include <QSettings>
 
 /*!
 Default ctor. Creates a blank skill template with no name

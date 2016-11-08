@@ -23,11 +23,9 @@ THE SOFTWARE.
 #ifndef UNITBELIEF_H
 #define UNITBELIEF_H
 
-#include <QObject>
-#include <QString>
-#include "belief.h"
+#include <QList>
 
-class UnitBelief{
+class UnitBelief {
 public:
     UnitBelief();
     UnitBelief(int id, int value, bool is_personal);

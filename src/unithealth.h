@@ -24,13 +24,11 @@ THE SOFTWARE.
 #define UNITHEALTH_H
 
 #include "utils.h"
-#include "truncatingfilelogger.h"
 #include "global_enums.h"
 
 #include "bodypartdamage.h"
 #include "unitwound.h"
 
-class MemoryLayout;
 class DFInstance;
 
 class HealthCategory;

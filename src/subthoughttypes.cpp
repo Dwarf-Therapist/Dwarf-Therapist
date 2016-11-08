@@ -1,5 +1,7 @@
 #include "subthoughttypes.h"
 
+#include <QSettings>
+
 SubThoughtTypes::SubThoughtTypes(QSettings &s, QObject *parent)
     : QObject(parent)
 {

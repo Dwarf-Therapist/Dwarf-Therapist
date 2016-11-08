@@ -23,8 +23,15 @@ THE SOFTWARE.
 #ifndef EMOTIONGROUP_H
 #define EMOTIONGROUP_H
 
-#include "dwarf.h"
+#include "global_enums.h"
+
 #include <QObject>
+#include <QMap>
+#include <QString>
+#include <QVariant>
+
+class UnitEmotion;
+class Dwarf;
 
 class EmotionGroup : public QObject
 {

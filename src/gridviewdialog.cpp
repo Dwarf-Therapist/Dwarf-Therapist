@@ -21,10 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <QFormLayout>
-#include <QMessageBox>
-#include <QMenu>
-
 #include "gridviewdialog.h"
 #include "ui_gridviewdialog.h"
 #include "viewmanager.h"
@@ -49,23 +45,28 @@ THE SOFTWARE.
 #include "customprofessioncolumn.h"
 #include "beliefcolumn.h"
 #include "unitkillscolumn.h"
-#include "flagcolumn.h"
 
-#include "defines.h"
-#include "gamedatareader.h"
-#include "labor.h"
-#include "utils.h"
-#include "trait.h"
-#include "vieweditordialog.h"
-#include "dfinstance.h"
-#include "itemweaponsubtype.h"
-#include "unithealth.h"
-#include "healthcategory.h"
-#include "superlabor.h"
+#include "contextmenuhelper.h"
 #include "customprofession.h"
+#include "defines.h"
+#include "dfinstance.h"
+#include "gamedatareader.h"
+#include "healthcategory.h"
 #include "item.h"
+#include "itemweaponsubtype.h"
+#include "labor.h"
+#include "role.h"
+#include "superlabor.h"
+#include "trait.h"
+#include "ui_vieweditor.h"
+#include "unithealth.h"
+#include "utils.h"
 #include "viewcolumncolors.h"
 #include "viewcolumnsetcolors.h"
+#include "vieweditordialog.h"
+
+#include <QMessageBox>
+#include <QMenu>
 
 GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent)
     : QDialog(parent)

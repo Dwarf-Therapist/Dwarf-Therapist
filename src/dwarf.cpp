@@ -46,8 +46,6 @@ THE SOFTWARE.
 #include "material.h"
 #include "caste.h"
 #include "roleaspect.h"
-#include "thought.h"
-#include "activity.h"
 
 #include "squad.h"
 #include "uniform.h"
@@ -57,15 +55,15 @@ THE SOFTWARE.
 #include "itemammo.h"
 #include "iteminstrument.h"
 
-#include <QVector>
 #include <QAction>
-#include <QDialog>
-#include <QTextEdit>
-#include <QMessageBox>
 #include <QClipboard>
 #include <QDateTime>
+#include <QDialog>
+#include <QMessageBox>
+#include <QTextEdit>
 #include <QTreeWidgetItem>
 #include <QVBoxLayout>
+#include <QVector>
 #ifdef QT_QML_LIB
 # include <QJSEngine>
 #else

@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "word.h"
 #include "ui_mainwindow.h"
-#include "dfinstance.h"
 #include "memorylayout.h"
 #include "truncatingfilelogger.h"
 #include "viewmanager.h"
