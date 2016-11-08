@@ -20,48 +20,35 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef SUBTHOUGHTTYPES_H
-#define SUBTHOUGHTTYPES_H
+#ifndef CONTEXTMENUHELPER_H
+#define CONTEXTMENUHELPER_H
 
 #include <QObject>
-#include <QSettings>
 
-class SubThoughtTypes : public QObject
+class QMenu;
+
+class ContextMenuHelper : public QObject
 {
     Q_OBJECT
+public :
 
-private:
-    QString m_placeholder;
-    QHash<int,QString> m_subthoughts;
+    ContextMenuHelper(QObject *parent=0)
+        :QObject(parent)
+    {}
 
-public:
-    SubThoughtTypes(QObject *parent = 0)
-        : QObject(parent)
-    {
-    }
+    QMenu *create_title_menu(QMenu *root, QString title, QString tooltip, bool add_all_action = true);
 
-    SubThoughtTypes(QSettings &s, QObject *parent = 0)
-        : QObject(parent)
-    {
-        m_placeholder = s.value("placeholder","").toString();
-        int count = s.beginReadArray("subthoughts");
-        for (int idx = 0; idx < count; ++idx) {
-            s.setArrayIndex(idx);
-            m_subthoughts.insert(s.value("id",-1).toInt(),s.value("thought","??").toString());
-        }
-        s.endArray();
-    }
+    void add_sub_menus(QMenu *m, int groups, bool add_all=true);
 
-    QString get_subthought(int id) {
-        if(m_subthoughts.contains(id)){
-            return m_subthoughts.value(id);
-        }else{
-            return m_subthoughts.value(-1);
-        }
-    }
-    QString get_placeholder(){return m_placeholder;}
-    bool has_placeholder(){return (!m_placeholder.isEmpty());}
+    QMenu* find_menu(QMenu *root, QString name);
+
+    void add_all_menu(QMenu *m);
+
+public slots:
+    void add_all();
+
+signals:
+    void all_clicked();
 
 };
-
-#endif // SUBTHOUGHTTYPES_H
+#endif // CONTEXTMENUHELPER_H

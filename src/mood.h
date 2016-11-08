@@ -41,20 +41,9 @@ public:
         , m_desc("")
         , m_desc_colored("")
         , m_color(QColor(Qt::black))
-    {
+    {}
 
-    }
-
-    Mood(QSettings &s, QObject *parent = 0)
-        : QObject(parent)
-    {
-        m_name = s.value("name","").toString();
-        m_desc = capitalize(s.value("description","").toString());
-        m_color = QColor(s.value("color","#000000").toString());
-
-        m_name_colored = QString("<font color=%1>%2</font>").arg(m_color.name()).arg(m_name);
-        m_desc_colored = QString("<font color=%1>%2</font>").arg(m_color.name()).arg(m_desc);
-    }
+    Mood(QSettings &s, QObject *parent = 0);
 
     QString get_mood_name(bool colored = false){
         if(colored){

@@ -20,44 +20,38 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef BASEDOCK_H
-#define BASEDOCK_H
+#ifndef ITEMARMOR_H
+#define ITEMARMOR_H
 
-#include <QDockWidget>
+#include "item.h"
+#include "itemarmorsubtype.h"
+#include "races.h"
 
-class BaseDock : public QDockWidget {
+class ItemArmor : public Item {
     Q_OBJECT
 public:
-    BaseDock(QWidget *parent = 0, Qt::WindowFlags flags = 0)
-        : QDockWidget(parent,flags)
+
+    ItemArmor(const Item &baseItem)
+        :Item(baseItem)
+        , m_armor_def(0)
     {
-        connect(this,SIGNAL(topLevelChanged(bool)),this,SLOT(floating_changed(bool)));
-        //this->minimumSize() = new QSize(0,0);
-    }
-    virtual ~BaseDock(){}
-
-public slots:
-    void floating_changed(bool floating){
-    //it's currently pretty buggy to do this on linux. no idea why... yet..
-#ifdef Q_OS_LINUX
-        Q_UNUSED(floating);
-#else
-        bool vis = this->isVisible();
-        if(floating){
-            this->setWindowFlags(Qt::Window);
-            QPoint pos = this->pos();
-            if(pos.x() < 0)
-                pos.setX(0);
-            if(pos.y() < 0)
-                pos.setY(0);
-            this->move(pos);
-
-            if(vis)
-                this->show();
-        }
-#endif
+        read_def();
     }
 
+    ItemArmor(DFInstance *df, VIRTADDR item_addr)
+        :Item(df,item_addr)
+        , m_armor_def(0)
+    {
+        read_def();
+    }
+
+    ItemSubtype * get_subType(){return m_armor_def;}
+    short item_subtype() const {return m_armor_def->subType();}
+
+private:
+    ItemArmorSubtype *m_armor_def;
+
+    void read_def();
 };
 
-#endif // BASEDOCK_H
+#endif // ITEMARMOR_H

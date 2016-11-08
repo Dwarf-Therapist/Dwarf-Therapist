@@ -383,7 +383,9 @@ SOURCES += src/viewmanager.cpp \
     src/equipwarn.cpp \
     src/notificationwidget.cpp \
     src/notifierwidget.cpp \
-    src/updater.cpp
+    src/updater.cpp \
+    src/docks/basedock.cpp \
+    src/emotiongroup.cpp
 FORMS += ui/scriptdialog.ui \
     ui/pendingchanges.ui \
     ui/optionsmenu.ui \

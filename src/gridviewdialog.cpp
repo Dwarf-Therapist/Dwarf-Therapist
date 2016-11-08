@@ -23,6 +23,8 @@ THE SOFTWARE.
 
 #include <QFormLayout>
 #include <QMessageBox>
+#include <QMenu>
+
 #include "gridviewdialog.h"
 #include "ui_gridviewdialog.h"
 #include "viewmanager.h"
