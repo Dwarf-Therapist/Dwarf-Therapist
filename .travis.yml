@@ -1,20 +1,20 @@
 sudo: required
 dist: trusty
 language: cpp
+compiler:
+    - clang
+    - gcc
 env:
-  global:
-    - CXXFLAGS="-Werror"
-  matrix:
-    - ""
-    - CXX="clang++"
+    global:
+        - CXXFLAGS="-Wall -Wextra -Werror"
 before_install:
-  - sudo apt-get update -q
-  - sudo apt-get install -qy qtbase5-dev qtbase5-dev-tools qtdeclarative5-dev
+    - sudo apt-get update -q
+    - sudo apt-get install -qy qtbase5-dev qtbase5-dev-tools qtdeclarative5-dev
 script:
-  - cmake .
-  - make -j3 $TARGET
+    - cmake .
+    - make -j3 $TARGET
 notifications:
-  irc:
-    channels:
-      - "chat.freenode.net#dwarftherapist"
-    use_notice: true
+    irc:
+        channels:
+            - "chat.freenode.net#dwarftherapist"
+        use_notice: true
