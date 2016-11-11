@@ -148,15 +148,16 @@ void DwarfTherapist::setup_logging() {
     bool trace_logging = args.indexOf("-trace") != -1;
 
     LOG_LEVEL min_level = LL_INFO;
+
+#ifdef QT_DEBUG
+    min_level = LL_DEBUG;
+#endif
+
     if (trace_logging) {
         min_level = LL_TRACE;
     } else if (debug_logging) {
         min_level = LL_DEBUG;
     }
-
-#ifdef QT_DEBUG
-    min_level = LL_DEBUG;
-#endif
 
     //setup logging
     m_log_mgr = new LogManager(this);
