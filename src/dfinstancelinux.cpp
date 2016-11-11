@@ -150,7 +150,7 @@ USIZE DFInstanceLinux::read_raw_ptrace(const VIRTADDR addr, const USIZE bytes, v
 
 USIZE DFInstanceLinux::read_raw(const VIRTADDR addr, const USIZE bytes, void *buffer) {
     SSIZE bytes_read = process_vm(SYS_process_vm_readv, addr, bytes, buffer);
-    if (bytes_read == -1) {
+    if (bytes_read < 0) {
         memset(buffer, 0, bytes);
 
         if (errno != ENOSYS) {
@@ -161,7 +161,7 @@ USIZE DFInstanceLinux::read_raw(const VIRTADDR addr, const USIZE bytes, void *bu
 
     TRACE << "Read" << bytes_read << "bytes of" << bytes << "bytes from" << hexify(addr) << "to" << buffer;
 
-    if (bytes_read < bytes)
+    if ((size_t)bytes_read < bytes)
         memset((char *)buffer + bytes_read, 0, bytes - bytes_read);
 
     return bytes_read;
