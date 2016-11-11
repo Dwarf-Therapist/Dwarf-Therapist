@@ -65,7 +65,7 @@ public:
     void refresh_squads();
     int get_belief_value(int id){return m_beliefs.value(id);}
     int id() {return m_id;}
-    QVector<VIRTADDR> hist_figures() {return m_histfigs;}
+    QVector<int32_t> hist_figures() {return m_histfigs;}
 
     static QMap<QString,NOBLE_COLORS> m_raw_color_map;
     static QMap<QString,NOBLE_COLORS> build_color_map();
@@ -94,7 +94,7 @@ private:
     QVector<VIRTADDR> m_squads;
     //values/beliefs (id,value)
     QHash<int,int> m_beliefs;
-    QVector<VIRTADDR> m_histfigs;
+    QVector<int32_t> m_histfigs;
 
     void read_entity();
 

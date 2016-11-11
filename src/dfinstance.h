@@ -23,10 +23,12 @@ THE SOFTWARE.
 #ifndef DFINSTANCE_H
 #define DFINSTANCE_H
 
-#include <QDir>
-#include <QPointer>
 #include "utils.h"
 #include "global_enums.h"
+#include "truncatingfilelogger.h"
+
+#include <QDir>
+#include <QPointer>
 
 class Dwarf;
 class FortressEntity;
@@ -85,18 +87,31 @@ public:
         read_raw(addr, sizeof(T), &buf);
         return buf;
     }
-    virtual USIZE read_raw(const VIRTADDR addr, const USIZE bytes, void *buf) = 0;
-    virtual QString read_string(const VIRTADDR addr) = 0;
-    USIZE read_raw(const VIRTADDR addr, const USIZE bytes, QByteArray &buffer);
-    BYTE read_byte(const VIRTADDR addr);
-    WORD read_word(const VIRTADDR addr);
-    VIRTADDR read_addr(const VIRTADDR addr);
-    qint16 read_short(const VIRTADDR addr);
-    qint32 read_int(const VIRTADDR addr);
-    QVector<VIRTADDR> enumerate_vector(const VIRTADDR addr);
-    QVector<qint16> enumerate_vector_short(const VIRTADDR addr);
-    Word * read_dwarf_word(const VIRTADDR addr);
-    QString read_dwarf_name(const VIRTADDR addr);
+    virtual USIZE read_raw(VIRTADDR addr, USIZE bytes, void *buf) = 0;
+    virtual QString read_string(VIRTADDR addr) = 0;
+    USIZE read_raw(VIRTADDR addr, USIZE bytes, QByteArray &buffer);
+    BYTE read_byte(VIRTADDR addr);
+    WORD read_word(VIRTADDR addr);
+    VIRTADDR read_addr(VIRTADDR addr);
+    qint16 read_short(VIRTADDR addr);
+    qint32 read_int(VIRTADDR addr);
+    QVector<VIRTADDR> enumerate_vector(VIRTADDR addr);
+    QVector<qint16> enumerate_vector_short(VIRTADDR addr);
+    template<typename T>
+    QVector<T> enum_vec(VIRTADDR addr) {
+        QVector<T> out;
+        VIRTADDR start = read_addr(addr);
+        VIRTADDR end = read_addr(addr + sizeof(VIRTADDR));
+        USIZE bytes = end - start;
+        if (check_vector(start,end,addr)){
+            out.resize(bytes/sizeof(T));
+            USIZE bytes_read = read_raw(start, bytes, out.data());
+            TRACE << "FOUND" << bytes_read / sizeof(VIRTADDR) << "addresses in vector at" << hexify(addr);
+        }
+        return out;
+    }
+    Word * read_dwarf_word(VIRTADDR addr);
+    QString read_dwarf_name(VIRTADDR addr);
 
     QString pprint(const QByteArray &ba);
 
@@ -108,10 +123,10 @@ public:
     bool add_new_layout(const QString & filename, const QString data, QString &result_msg);
 
     // Writing
-    virtual USIZE write_raw(const VIRTADDR addr, const USIZE bytes, const void *buffer) = 0;
-    USIZE write_raw(const VIRTADDR addr, const USIZE bytes, const QByteArray &buffer);
-    virtual USIZE write_string(const VIRTADDR addr, const QString &str) = 0;
-    USIZE write_int(const VIRTADDR addr, const int val);
+    virtual USIZE write_raw(VIRTADDR addr, USIZE bytes, const void *buffer) = 0;
+    USIZE write_raw(VIRTADDR addr, USIZE bytes, const QByteArray &buffer);
+    virtual USIZE write_string(VIRTADDR addr, const QString &str) = 0;
+    USIZE write_int(VIRTADDR addr, int val);
 
     bool is_attached() {return m_attach_count > 0;}
     virtual bool attach() = 0;
@@ -254,10 +269,7 @@ protected:
 
     void load_population_data();
     void load_role_ratings();
-    bool check_vector(const VIRTADDR start, const VIRTADDR end, const VIRTADDR addr);
-
-    template<typename T>
-    QVector<T> enum_vec(const VIRTADDR addr);
+    bool check_vector(VIRTADDR start, VIRTADDR end, VIRTADDR addr);
 
     /*! this hash will hold a map of all loaded and valid memory layouts found
         on disk, the key is a QString of the checksum since other OSs will use

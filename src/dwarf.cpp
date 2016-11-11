@@ -256,7 +256,7 @@ void Dwarf::read_data() {
             set_validation("IGNORING child/baby",&validated,false,LL_DEBUG);
         }
         //filter out any non-mercenary visitors if necessary
-        m_is_citizen = (m_df->fortress()->hist_figures().contains(m_histfig_id));
+        m_is_citizen = m_df->fortress()->hist_figures().contains(m_histfig_id);
         TRACE << "HIST_FIG_ID:" << m_histfig_id;
         if(DT->hide_non_citizens() && !m_is_citizen && !m_raw_profession->is_military()){
             set_validation("IGNORING visitor/guest",&validated,false,LL_DEBUG);
@@ -2276,7 +2276,7 @@ void Dwarf::clear_pending() {
 }
 
 void Dwarf::commit_pending(bool single) {
-    int addr = m_address + m_mem->dwarf_offset("labors");
+    VIRTADDR addr = m_address + m_mem->dwarf_offset("labors");
 
     QByteArray buf(94, 0);
     m_df->read_raw(addr, 94, buf); // set the buffer as it is in-game

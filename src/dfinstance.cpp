@@ -210,20 +210,6 @@ QVector<qint16> DFInstance::enumerate_vector_short(const VIRTADDR addr){
     return enum_vec<qint16>(addr);
 }
 
-template<typename T>
-QVector<T> DFInstance::enum_vec(VIRTADDR addr){
-    QVector<T> out;
-    VIRTADDR start = read_addr(addr);
-    VIRTADDR end = read_addr(addr + sizeof(VIRTADDR));
-    USIZE bytes = end - start;
-    if (check_vector(start,end,addr)){
-        out = QVector<T>(bytes/sizeof(T), 0);
-        USIZE bytes_read = read_raw(start, bytes, out.data());
-        TRACE << "FOUND" << bytes_read / sizeof(VIRTADDR) << "addresses in vector at" << hexify(addr);
-    }
-    return out;
-}
-
 USIZE DFInstance::read_raw(VIRTADDR addr, USIZE bytes, QByteArray &buffer) {
     buffer.resize(bytes);
     return read_raw(addr, bytes, buffer.data());
