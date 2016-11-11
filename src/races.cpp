@@ -146,6 +146,7 @@ Caste * Race::get_caste_by_id(int idx){
 }
 
 void Race::load_caste_ratios(){
+    /* fuck it
     if(!loaded_stats){
         QVector<int> ratios;
         QVector<VIRTADDR> addrs = m_df->enumerate_vector(m_pop_ratio_vector);
@@ -178,6 +179,7 @@ void Race::load_caste_ratios(){
         }
         loaded_stats = true;
     }
+    */
 }
 
 void Race::load_materials(int idx){

@@ -47,8 +47,10 @@ static inline QColor complement(const QColor &in_color, float brightness_thresho
 
 static inline QString hexify(const quint64 &num) {
     int width = 8;
-    if (num >> 32)
+    if (num >> 16)
         width = 16;
+    if (num >> 32)
+        width = 32;
     return QString("0x%1").arg(num, width, 16, QChar('0'));
 }
 static inline QString hexify(const QByteArray &bytes) {
