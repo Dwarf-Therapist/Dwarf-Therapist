@@ -110,8 +110,8 @@ bool DFInstanceLinux::detach() {
     return m_attach_count > 0;
 }
 
-SSIZE DFInstanceLinux::process_vm(long number, const VIRTADDR &addr
-                                  , const USIZE &bytes, void *buffer) {
+SSIZE DFInstanceLinux::process_vm(long number, const VIRTADDR addr
+                                  , const USIZE bytes, void *buffer) {
     struct iovec local_iov = {buffer, bytes};
     struct iovec remote_iov = {reinterpret_cast<void *>(addr), bytes};
 
@@ -127,7 +127,7 @@ SSIZE DFInstanceLinux::process_vm(long number, const VIRTADDR &addr
     return r;
 }
 
-USIZE DFInstanceLinux::read_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes, void *buffer) {
+USIZE DFInstanceLinux::read_raw_ptrace(const VIRTADDR addr, const USIZE bytes, void *buffer) {
     int bytes_read = 0;
 
     // try to attach, will be ignored if we're already attached
@@ -148,11 +148,11 @@ USIZE DFInstanceLinux::read_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes,
     return bytes_read;
 }
 
-USIZE DFInstanceLinux::read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer) {
-    memset(buffer, 0, bytes);
-
+USIZE DFInstanceLinux::read_raw(const VIRTADDR addr, const USIZE bytes, void *buffer) {
     SSIZE bytes_read = process_vm(SYS_process_vm_readv, addr, bytes, buffer);
     if (bytes_read == -1) {
+        memset(buffer, 0, bytes);
+
         if (errno != ENOSYS) {
             LOGE << "READ_RAW:" << QString(strerror(errno)) << "READING" << bytes << "BYTES FROM" << hexify(addr) << "TO" << buffer;
         }
@@ -161,10 +161,13 @@ USIZE DFInstanceLinux::read_raw(const VIRTADDR &addr, const USIZE &bytes, void *
 
     TRACE << "Read" << bytes_read << "bytes of" << bytes << "bytes from" << hexify(addr) << "to" << buffer;
 
+    if (bytes_read < bytes)
+        memset((char *)buffer + bytes_read, 0, bytes - bytes_read);
+
     return bytes_read;
 }
 
-USIZE DFInstanceLinux::write_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes,
+USIZE DFInstanceLinux::write_raw_ptrace(const VIRTADDR addr, const USIZE bytes,
                                         const void *buffer) {
     /* Since most kernels won't let us write to /proc/<pid>/mem, we have to poke
      * out data in n bytes at a time. Good thing we read way more than we write.
@@ -217,7 +220,7 @@ USIZE DFInstanceLinux::write_raw_ptrace(const VIRTADDR &addr, const USIZE &bytes
     return bytes_written;
 }
 
-USIZE DFInstanceLinux::write_raw(const VIRTADDR &addr, const USIZE &bytes,
+USIZE DFInstanceLinux::write_raw(const VIRTADDR addr, const USIZE bytes,
                                  const void *buffer) {
     // const_cast is safe because process_vm passes the params as is
     SSIZE bytes_written = process_vm(SYS_process_vm_writev, addr, bytes

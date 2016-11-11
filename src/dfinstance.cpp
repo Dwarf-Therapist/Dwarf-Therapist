@@ -202,68 +202,58 @@ DFInstance::~DFInstance() {
     delete m_heartbeat_timer;
 }
 
-QVector<VIRTADDR> DFInstance::enumerate_vector(const VIRTADDR &addr) {
+QVector<VIRTADDR> DFInstance::enumerate_vector(const VIRTADDR addr) {
     return enum_vec<VIRTADDR>(addr);
 }
 
-QVector<qint16> DFInstance::enumerate_vector_short(const VIRTADDR &addr){
+QVector<qint16> DFInstance::enumerate_vector_short(const VIRTADDR addr){
     return enum_vec<qint16>(addr);
 }
 
 template<typename T>
-QVector<T> DFInstance::enum_vec(const VIRTADDR &addr){
+QVector<T> DFInstance::enum_vec(VIRTADDR addr){
     QVector<T> out;
     VIRTADDR start = read_addr(addr);
-    VIRTADDR end = read_addr(addr + 4);
+    VIRTADDR end = read_addr(addr + sizeof(VIRTADDR));
     USIZE bytes = end - start;
     if (check_vector(start,end,addr)){
-        out.resize(bytes / sizeof(T));
+        out = QVector<T>(bytes, 0);
         USIZE bytes_read = read_raw(start, bytes, out.data());
         TRACE << "FOUND" << bytes_read / sizeof(VIRTADDR) << "addresses in vector at" << hexify(addr);
     }
     return out;
 }
 
-USIZE DFInstance::read_raw(const VIRTADDR &addr, const USIZE &bytes, QByteArray &buffer) {
+USIZE DFInstance::read_raw(VIRTADDR addr, USIZE bytes, QByteArray &buffer) {
     buffer.resize(bytes);
     return read_raw(addr, bytes, buffer.data());
 }
 
-BYTE DFInstance::read_byte(const VIRTADDR &addr) {
-    BYTE out;
-    read_raw(addr, sizeof(BYTE), &out);
-    return out;
+BYTE DFInstance::read_byte(VIRTADDR addr) {
+    return read_mem<BYTE>(addr);
 }
 
-WORD DFInstance::read_word(const VIRTADDR &addr) {
-    WORD out;
-    read_raw(addr, sizeof(WORD), &out);
-    return out;
+WORD DFInstance::read_word(VIRTADDR addr) {
+    return read_mem<WORD>(addr);
 }
 
-VIRTADDR DFInstance::read_addr(const VIRTADDR &addr) {
-    VIRTADDR out;
-    read_raw(addr, sizeof(VIRTADDR), &out);
-    return out;
+VIRTADDR DFInstance::read_addr(VIRTADDR addr) {
+    return read_mem<VIRTADDR>(addr);
 }
 
-qint16 DFInstance::read_short(const VIRTADDR &addr) {
-    qint16 out;
-    read_raw(addr, sizeof(qint16), &out);
-    return out;
+qint16 DFInstance::read_short(VIRTADDR addr) {
+    return read_mem<qint16>(addr);
 }
 
-qint32 DFInstance::read_int(const VIRTADDR &addr) {
-    qint32 out;
-    read_raw(addr, sizeof(qint32), &out);
-    return out;
+qint32 DFInstance::read_int(VIRTADDR addr) {
+    return read_mem<qint32>(addr);
 }
 
-USIZE DFInstance::write_int(const VIRTADDR &addr, const int &val) {
+USIZE DFInstance::write_int(VIRTADDR addr, const int val) {
     return write_raw(addr, sizeof(int), &val);
 }
 
-USIZE DFInstance::write_raw(const VIRTADDR &addr, const USIZE &bytes, const QByteArray &buffer) {
+USIZE DFInstance::write_raw(const VIRTADDR addr, const USIZE bytes, const QByteArray &buffer) {
     return write_raw(addr, bytes, buffer.data());
 }
 
@@ -983,7 +973,7 @@ QString DFInstance::pprint(const QByteArray &ba) {
     return out;
 }
 
-Word * DFInstance::read_dwarf_word(const VIRTADDR &addr) {
+Word * DFInstance::read_dwarf_word(const VIRTADDR addr) {
     Word * result = NULL;
     uint word_id = read_int(addr);
     if(word_id != 0xFFFFFFFF) {
@@ -992,7 +982,7 @@ Word * DFInstance::read_dwarf_word(const VIRTADDR &addr) {
     return result;
 }
 
-QString DFInstance::read_dwarf_name(const VIRTADDR &addr) {
+QString DFInstance::read_dwarf_name(const VIRTADDR addr) {
     QString result = "The";
 
     //7 parts e.g.  ffffffff ffffffff 000006d4

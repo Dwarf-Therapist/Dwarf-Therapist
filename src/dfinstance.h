@@ -79,18 +79,24 @@ public:
     const QStringList status_err_msg();
 
     // memory reading
-    virtual USIZE read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buf) = 0;
-    virtual QString read_string(const VIRTADDR &addr) = 0;
-    USIZE read_raw(const VIRTADDR &addr, const USIZE &bytes, QByteArray &buffer);
-    BYTE read_byte(const VIRTADDR &addr);
-    WORD read_word(const VIRTADDR &addr);
-    VIRTADDR read_addr(const VIRTADDR &addr);
-    qint16 read_short(const VIRTADDR &addr);
-    qint32 read_int(const VIRTADDR &addr);
-    QVector<VIRTADDR> enumerate_vector(const VIRTADDR &addr);
-    QVector<qint16> enumerate_vector_short(const VIRTADDR &addr);
-    Word * read_dwarf_word(const VIRTADDR &addr);
-    QString read_dwarf_name(const VIRTADDR &addr);
+    template<typename T> T read_mem(VIRTADDR addr) {
+        T buf;
+        // TODO: error checking?
+        read_raw(addr, sizeof(T), &buf);
+        return buf;
+    }
+    virtual USIZE read_raw(const VIRTADDR addr, const USIZE bytes, void *buf) = 0;
+    virtual QString read_string(const VIRTADDR addr) = 0;
+    USIZE read_raw(const VIRTADDR addr, const USIZE bytes, QByteArray &buffer);
+    BYTE read_byte(const VIRTADDR addr);
+    WORD read_word(const VIRTADDR addr);
+    VIRTADDR read_addr(const VIRTADDR addr);
+    qint16 read_short(const VIRTADDR addr);
+    qint32 read_int(const VIRTADDR addr);
+    QVector<VIRTADDR> enumerate_vector(const VIRTADDR addr);
+    QVector<qint16> enumerate_vector_short(const VIRTADDR addr);
+    Word * read_dwarf_word(const VIRTADDR addr);
+    QString read_dwarf_name(const VIRTADDR addr);
 
     QString pprint(const QByteArray &ba);
 
@@ -102,10 +108,10 @@ public:
     bool add_new_layout(const QString & filename, const QString data, QString &result_msg);
 
     // Writing
-    virtual USIZE write_raw(const VIRTADDR &addr, const USIZE &bytes, const void *buffer) = 0;
-    USIZE write_raw(const VIRTADDR &addr, const USIZE &bytes, const QByteArray &buffer);
-    virtual USIZE write_string(const VIRTADDR &addr, const QString &str) = 0;
-    USIZE write_int(const VIRTADDR &addr, const int &val);
+    virtual USIZE write_raw(const VIRTADDR addr, const USIZE bytes, const void *buffer) = 0;
+    USIZE write_raw(const VIRTADDR addr, const USIZE bytes, const QByteArray &buffer);
+    virtual USIZE write_string(const VIRTADDR addr, const QString &str) = 0;
+    USIZE write_int(const VIRTADDR addr, const int val);
 
     bool is_attached() {return m_attach_count > 0;}
     virtual bool attach() = 0;
@@ -251,7 +257,7 @@ protected:
     bool check_vector(const VIRTADDR start, const VIRTADDR end, const VIRTADDR addr);
 
     template<typename T>
-    QVector<T> enum_vec(const VIRTADDR &addr);
+    QVector<T> enum_vec(const VIRTADDR addr);
 
     /*! this hash will hold a map of all loaded and valid memory layouts found
         on disk, the key is a QString of the checksum since other OSs will use

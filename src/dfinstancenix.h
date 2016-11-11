@@ -10,8 +10,8 @@ class DFInstanceNix : public DFInstance
 public:
     DFInstanceNix(QObject *parent);
 
-    QString read_string(const VIRTADDR &addr);
-    USIZE write_string(const VIRTADDR &addr, const QString &str);
+    QString read_string(const VIRTADDR addr);
+    USIZE write_string(const VIRTADDR addr, const QString &str);
 
     bool df_running();
 
