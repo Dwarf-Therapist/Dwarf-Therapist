@@ -35,7 +35,7 @@ QString DFInstanceNix::calculate_checksum() {
 }
 
 QString DFInstanceNix::read_string(const VIRTADDR addr) {
-    char buf[256];
+    char buf[1024];
     read_raw(read_addr(addr), sizeof(buf), (void *)buf);
 
     return QTextCodec::codecForName("IBM437")->toUnicode(buf);

@@ -72,7 +72,7 @@ THE SOFTWARE.
 # define QJSValue QScriptValue
 #endif
 
-Dwarf::Dwarf(DFInstance *df, const uint &addr, QObject *parent)
+Dwarf::Dwarf(DFInstance *df, VIRTADDR addr, QObject *parent)
     : QObject(parent)
     , m_id(-1)
     , m_df(df)

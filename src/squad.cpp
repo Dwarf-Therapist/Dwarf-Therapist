@@ -129,7 +129,7 @@ void Squad::read_members() {
 
         m_uniforms.insert(position,u);
         LOGD << "checking orders for position" << position;
-        foreach(VIRTADDR ord_addr, m_df->enumerate_vector(addr+0x4)){ //TODO: offset
+        foreach(VIRTADDR ord_addr, m_df->enumerate_vector(addr+m_mem->squad_offset("orders"))){
             read_order(ord_addr, histfig_id);
         }
         position++;

@@ -53,7 +53,7 @@ class Dwarf : public QObject
     friend class Squad;
 
 public:
-    Dwarf(DFInstance *df, const uint &addr, QObject *parent=0);
+    Dwarf(DFInstance *df, VIRTADDR addr, QObject *parent=0);
     virtual ~Dwarf();
 
     DFInstance * get_df_instance(){return m_df;}

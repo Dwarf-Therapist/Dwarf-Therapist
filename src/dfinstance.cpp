@@ -217,7 +217,7 @@ QVector<T> DFInstance::enum_vec(VIRTADDR addr){
     VIRTADDR end = read_addr(addr + sizeof(VIRTADDR));
     USIZE bytes = end - start;
     if (check_vector(start,end,addr)){
-        out = QVector<T>(bytes, 0);
+        out = QVector<T>(bytes/sizeof(T), 0);
         USIZE bytes_read = read_raw(start, bytes, out.data());
         TRACE << "FOUND" << bytes_read / sizeof(VIRTADDR) << "addresses in vector at" << hexify(addr);
     }
@@ -650,7 +650,7 @@ void DFInstance::load_main_vectors(){
             Material* m = Material::get_material(this, mat_addr, i, false, this);
             m_base_materials.append(m);
         }
-        addr += 0x4;
+        addr += sizeof(VIRTADDR);
     }
 
     //inorganics
