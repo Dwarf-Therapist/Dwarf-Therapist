@@ -69,16 +69,16 @@ void ActivityEvent::read_data(){
             GameDataReader *gdr = GameDataReader::ptr();
             USIZE participant_offset = mem->activity_offset("participants");
             VIRTADDR participant_addr = m_address + participant_offset;
-            auto participants = m_df->enum_vec<quint32>(participant_addr);
+            auto participants = m_df->enum_vec<qint32>(participant_addr);
 
-            auto other_participants = m_df->enum_vec<quint32>(participant_addr + participant_offset - 0x14); //TODO: offset
-            foreach(quint32 h_id,other_participants){
+            auto other_participants = m_df->enum_vec<qint32>(participant_addr + participant_offset - 0x14); //TODO: offset
+            foreach(qint32 h_id,other_participants){
                 if(!participants.contains(h_id)){
                     participants << h_id;
                 }
             }
 
-            foreach(quint32 histfig_id,participants){
+            foreach(qint32 histfig_id,participants){
                 event_type = m_type;
                 //single participants
                 if(m_histfig_actions->contains(histfig_id)){
