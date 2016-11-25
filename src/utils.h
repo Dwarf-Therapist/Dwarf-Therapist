@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include <QString>
 #include <math.h>
 
-// shit
+// meh
 typedef quint64 VIRTADDR;
 typedef quint64 USIZE;
 typedef qint64 SSIZE;
