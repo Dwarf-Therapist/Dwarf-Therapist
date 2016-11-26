@@ -296,85 +296,36 @@ void DFInstanceLinux::find_running_copy() {
 
 /* Support for executing system calls in the context of the game process. */
 
-static const char nop_code[] = {
-    /* This is the byte pattern used to pad function
-       addresses to multiples of 16 bytes. It consists
-       of RET and a sequence of NOPs. The NOPs are not
-       supposed to be used, so they can be overwritten. */
-    static_cast<char>(0xC3), static_cast<char>(0x90), static_cast<char>(0x90), static_cast<char>(0x90)
+static const char syscall_code[] = {
+    // SYSCALL
+    static_cast<char>(0x0f), static_cast<char>(0x05)
 };
 
-static const char injection_code[] = {
-    /* This is the injected pattern. It keeps the
-       original RET, but adds:
-           INT 80h
-           INT 3h (breakpoint) */
-    static_cast<char>(0xC3), static_cast<char>(0xCD), static_cast<char>(0x80), static_cast<char>(0xCC)
-};
+static const VIRTADDR df_exe_base = 0x00400000;
 
-VIRTADDR DFInstanceLinux::find_injection_address()
+long DFInstanceLinux::remote_syscall(int syscall_id,
+     long arg0, long arg1, long arg2,
+     long arg3, long arg4, long arg5)
 {
-    if (m_inject_addr != unsigned(-1))
-        return m_inject_addr;
+    LOGE << "REMOTE SYSCALL NOT IMPLEMENTED FOR 64-BIT";
+    return -ENOTSUP;
+    attach();
 
-    const USIZE step = 0x8000; // 32K steps
-
-    char buf[step];
-
-    // This loop is expected to succeed on the first try
-    // Assume that DF doesn't get -fPIE any time soon.
-    for (VIRTADDR pos = 0x08048000; read_raw(pos, step, buf) == step; pos += step)
-    {
-        // Try searching for existing injection code
-        char *ptr = static_cast<char *>(memmem(buf, step, injection_code, sizeof(injection_code)));
-        // Try searching for empty space
-        if (!ptr)
-            ptr = static_cast<char *>(memmem(buf, step, nop_code, sizeof(nop_code)));
-
-        if (ptr) {
-            m_inject_addr = pos + ptr - buf;
-            LOGD << "injection point found at" << hex << m_inject_addr;
-            return m_inject_addr;
-        }
-
-        LOGI << "couldn't find injection point in" << step << "bytes after 0x08048000, trying again...";
+    // get the old value of some RAM
+    long old_code_word = ptrace(PTRACE_PEEKTEXT, m_pid, df_exe_base, 0);
+    errno = 0;
+    if (old_code_word == -1 && errno != 0) {
+        LOGE << "could not retrieve old RAM for syscall";
+        return -1;
     }
 
-    return m_inject_addr = 0;
-}
-
-#if __WORDSIZE == 64
-#define R_ESP  rsp
-#define R_EIP  rip
-#define R_ORIG_EAX orig_rax
-#define R_SCID rax
-#define R_ARG0 rbx
-#define R_ARG1 rcx
-#define R_ARG2 rdx
-#define R_ARG3 rsi
-#define R_ARG4 rdi
-#define R_ARG5 rbp
-#else
-#define R_ESP  esp
-#define R_EIP  eip
-#define R_ORIG_EAX orig_eax
-#define R_SCID eax
-#define R_ARG0 ebx
-#define R_ARG1 ecx
-#define R_ARG2 edx
-#define R_ARG3 esi
-#define R_ARG4 edi
-#define R_ARG5 ebp
-#endif
-
-qint32 DFInstanceLinux::remote_syscall(int syscall_id,
-     qint32 arg0, qint32 arg1, qint32 arg2,
-     qint32 arg3, qint32 arg4, qint32 arg5)
-{
-    /* Find the injection place; on failure bail out */
-    VIRTADDR inj_addr = find_injection_address();
-    if (!inj_addr)
+    // insert new text
+    long syscall_code_word;
+    memcpy(&syscall_code_word, syscall_code, sizeof(syscall_code));
+    if (ptrace(PTRACE_POKETEXT, m_pid, df_exe_base, syscall_code_word) == -1) {
+        LOGE << "could not insert syscall .text";
         return -1;
+    }
 
     /* Save the current value of the main thread registers */
     struct user_regs_struct saved_regs, work_regs;
@@ -385,28 +336,16 @@ qint32 DFInstanceLinux::remote_syscall(int syscall_id,
         return -1;
     }
 
-    /* Prepare the injected code */
-    char inj_area_save[sizeof(injection_code)];
-    const USIZE inj_size = sizeof(injection_code);
-    if (read_raw(inj_addr, inj_size, inj_area_save) != inj_size ||
-        write_raw_ptrace(inj_addr, inj_size, injection_code) < inj_size) {
-        LOGE << "Could not prepare the injection area";
-        return -1;
-    }
-
     /* Prepare the registers */
-    VIRTADDR jump_eip = inj_addr+1; // skip the first RET
-
     work_regs = saved_regs;
-    work_regs.R_EIP = jump_eip;
-    work_regs.R_ORIG_EAX = -1; // clear the interrupted syscall state
-    work_regs.R_SCID = syscall_id;
-    work_regs.R_ARG0 = arg0;
-    work_regs.R_ARG1 = arg1;
-    work_regs.R_ARG2 = arg2;
-    work_regs.R_ARG3 = arg3;
-    work_regs.R_ARG4 = arg4;
-    work_regs.R_ARG5 = arg5;
+    work_regs.rip = df_exe_base;
+    work_regs.rax = syscall_id;
+    work_regs.rdi = arg0;
+    work_regs.rsi = arg1;
+    work_regs.rdx = arg2;
+    work_regs.r10 = arg3;
+    work_regs.r8 = arg4;
+    work_regs.r9 = arg5;
 
     /* Upload the registers. Note that after this point,
        if this process crashes before the context is
@@ -417,66 +356,41 @@ qint32 DFInstanceLinux::remote_syscall(int syscall_id,
         return -1;
     }
 
-    /* Run the thread until the breakpoint is reached */
-    int status;
-    if (ptrace(PTRACE_CONT, m_pid, 0, SIGCONT) != -1) {
-        status = wait_for_stopped();
-        // If the process is stopped for some reason, restart it
-        while (WSTOPSIG(status) == SIGSTOP &&
-               ptrace(PTRACE_CONT, m_pid, 0, SIGCONT) != -1)
-            status = wait_for_stopped();
-        if (WSTOPSIG(status) != SIGTRAP) {
-            LOGE << "Stopped on" << WSTOPSIG(status) << "instead of SIGTRAP";
-        }
-    } else {
-        LOGE << "Failed to run the call.";
+    if (ptrace(PTRACE_SYSCALL, m_pid, 0, 0) == -1) {
+        LOGE << "Failed to step onto syscall.";
+        return -1;
+    }
+
+    if (ptrace(PTRACE_SYSCALL, m_pid, 0, 0) == -1) {
+        LOGE << "Failed to step into syscall.";
+        return -1;
     }
 
     /* Retrieve registers with the syscall result. */
     if (ptrace(PTRACE_GETREGS, m_pid, 0, &work_regs) == -1) {
-        perror("ptrace getregs");
         LOGE << "Could not retrieve register information after stepping";
+        return -1;
     }
 
     /* Restore the registers. */
     if (ptrace(PTRACE_SETREGS, m_pid, 0, &saved_regs) == -1) {
-        perror("ptrace setregs");
         LOGE << "Could not restore register information";
     }
 
-    /* Defuse the pending signal state:
-       If this process crashes before it officially detaches
-       from the game, the last signal will be delivered to it.
-       If the signal is SIGSTOP, nothing irreversible happens.
-       SIGTRAP on the other hand will crash it, losing all data.
-       To avoid it, send SIGSTOP to the thread, and resume it
-       to immediately be stopped again.
-    */
-    syscall(SYS_tkill, m_pid, SIGSTOP);
-
-    if (ptrace(PTRACE_CONT, m_pid, 0, 0) == -1 ||
-        (status = wait_for_stopped(), WSTOPSIG(status)) != SIGSTOP) {
-        LOGE << "Failed to restore thread and stop.";
+    // restore the text
+    if (ptrace(PTRACE_POKETEXT, m_pid, df_exe_base, old_code_word) == -1) {
+        LOGE << "Could not restore the injection area.";
     }
 
-    /* Restore the modified injection area (not really necessary,
-       since it is supposed to be inside unused padding, but...) */
-    if (write_raw_ptrace(inj_addr, inj_size, inj_area_save) != inj_size) {
-        LOGE << "Could not restore the injection area";
-    }
+    detach();
 
-    if (VIRTADDR(work_regs.R_EIP) == jump_eip+3)
-        return work_regs.R_SCID;
-    else {
-        LOGE << "Single step failed: EIP" << hex << work_regs.R_EIP << "; expected" << jump_eip+3;
-        return -4095;
-    }
+    return work_regs.rax;
 }
 
 /* Memory allocation for strings using remote mmap. */
 
-VIRTADDR DFInstanceLinux::mmap_area(VIRTADDR start, int size) {
-    VIRTADDR return_value = remote_syscall(192/*mmap2*/, start, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+VIRTADDR DFInstanceLinux::mmap_area(VIRTADDR start, USIZE size) {
+    VIRTADDR return_value = remote_syscall(SYS_mmap, start, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 
     // Raw syscalls can't use errno, so the error is in the result.
     // No valid return value can be in the -4095..-1 range.
@@ -498,7 +412,7 @@ VIRTADDR DFInstanceLinux::alloc_chunk(USIZE size) {
 
         // Try to request contiguous allocation as a hint
         VIRTADDR new_block = mmap_area(m_alloc_end, asize);
-        if (new_block == VIRTADDR(-1))
+        if (int(new_block) == -1)
             return 0;
 
         if (new_block != m_alloc_end)
