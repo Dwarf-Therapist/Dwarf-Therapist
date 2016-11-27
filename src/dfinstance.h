@@ -103,10 +103,12 @@ public:
         VIRTADDR start = read_addr(addr);
         VIRTADDR end = read_addr(addr + sizeof(VIRTADDR));
         USIZE bytes = end - start;
-        if (check_vector(start,end,addr)){
-            out.resize(bytes/sizeof(T));
+        if (bytes % sizeof(T)) {
+            LOGE << "VECTOR SIZE IS NOT A MULTIPLE OF TYPE";
+        } else {
+            out.resize(bytes / sizeof(T));
             USIZE bytes_read = read_raw(start, bytes, out.data());
-            TRACE << "FOUND" << bytes_read / sizeof(VIRTADDR) << "addresses in vector at" << hexify(addr);
+            TRACE << "Found" << bytes_read / sizeof(T) << "things in vector at" << hexify(addr);
         }
         return out;
     }
