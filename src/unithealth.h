@@ -82,7 +82,7 @@ public:
     bool isEmpty() {return (m_df == 0x0);}
     bool required_diagnosis() {return m_req_diagnosis;}
 
-    QVector<VIRTADDR> layer_status_flags;
+    QVector<qint32> layer_status_flags;
 
     short limb_count() {return m_limb_stand_count;}
 
@@ -92,8 +92,8 @@ private:
 
     Dwarf *m_dwarf;
 
-    QVector<VIRTADDR> health_req_flags;
-    QVector<VIRTADDR> body_part_status_flags;
+    QVector<qint32> health_req_flags;
+    QVector<qint32> body_part_status_flags;
 
     QHash<int, BodyPartDamage> m_body_parts;
 

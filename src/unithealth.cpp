@@ -198,7 +198,7 @@ void UnitHealth::read_health_info(){
         //health flags contain the requests for treatment info
         health_flags = m_df->read_int(unit_health_addr + 0x4);
         //read bp flags for inoperable rot
-        health_req_flags = m_df->enumerate_vector(unit_health_addr + 0x8);
+        health_req_flags = m_df->enum_vec<qint32>(unit_health_addr + 0x8);
     }
     //1 << 2 << 4 << 8 << 16 << 32 << 64 << 128 << 256 << 512 << 1024 match with..
     //diagnosis, recovery, unk, immobilization, dressing, cleaning, surgery, suture, setting, traction, crutch
@@ -434,8 +434,8 @@ void UnitHealth::read_health_info(){
 
 void UnitHealth::read_wounds(){
     VIRTADDR addr = m_df->memory_layout()->dwarf_offset("body_component_info");
-    body_part_status_flags = m_df->enumerate_vector(m_dwarf_addr +  addr);
-    layer_status_flags = m_df->enumerate_vector(m_dwarf_addr + addr + m_df->memory_layout()->dwarf_offset("layer_status_vector"));
+    body_part_status_flags = m_df->enum_vec<qint32>(m_dwarf_addr +  addr);
+    layer_status_flags = m_df->enum_vec<qint32>(m_dwarf_addr + addr + m_df->memory_layout()->dwarf_offset("layer_status_vector"));
 
     //add the wounds based on the wounded parts
     QVector<VIRTADDR> wounds = m_df->enumerate_vector(m_dwarf_addr + m_df->memory_layout()->dwarf_offset("wounds_vector"));
