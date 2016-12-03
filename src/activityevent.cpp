@@ -69,14 +69,7 @@ void ActivityEvent::read_data(){
             GameDataReader *gdr = GameDataReader::ptr();
             USIZE participant_offset = mem->activity_offset("participants");
             VIRTADDR participant_addr = m_address + participant_offset;
-            auto participants = m_df->enum_vec<qint32>(participant_addr);
-
-            auto other_participants = m_df->enum_vec<qint32>(participant_addr + participant_offset - 0x14); //TODO: offset
-            foreach(qint32 h_id,other_participants){
-                if(!participants.contains(h_id)){
-                    participants << h_id;
-                }
-            }
+            QSet<qint32> participants = m_df->enum_vec<qint32>(participant_addr).toList().toSet();
 
             foreach(qint32 histfig_id,participants){
                 event_type = m_type;
