@@ -78,9 +78,9 @@ void FortressEntity::read_entity(){
 //    m_translated_name = m_df->get_translated_word(m_address + 0x14);
 
     m_id = m_df->read_int(m_address + sizeof(VIRTADDR));
-    m_histfigs = m_df->enum_vec<int32_t>(m_address + m_mem->hist_entity_offset("histfigs"));
+    m_histfigs = m_df->enum_vec<qint32>(m_address + m_mem->hist_entity_offset("histfigs"));
     //load squads
-    m_squads = m_df->enumerate_vector(m_address + m_mem->hist_entity_offset("squads"));
+    m_squads = m_df->enum_vec<qint32>(m_address + m_mem->hist_entity_offset("squads"));
 
     QVector<VIRTADDR> entities = m_df->enumerate_vector(m_mem->address("historical_entities_vector"));
     QHash<int, position> positions;
@@ -140,7 +140,7 @@ void FortressEntity::read_entity(){
 }
 
 void FortressEntity::refresh_squads(){
-    m_squads = m_df->enumerate_vector(m_address + m_mem->hist_entity_offset("squads"));
+    m_squads = m_df->enum_vec<qint32>(m_address + m_mem->hist_entity_offset("squads"));
 }
 
 void FortressEntity::load_noble_colors(){

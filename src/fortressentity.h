@@ -91,7 +91,7 @@ private:
     QMultiHash<int,position> m_nobles;
 
     //squads this fortress has
-    QVector<VIRTADDR> m_squads;
+    QVector<qint32> m_squads;
     //values/beliefs (id,value)
     QHash<int,int> m_beliefs;
     QVector<int32_t> m_histfigs;
