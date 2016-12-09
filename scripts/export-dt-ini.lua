@@ -408,11 +408,7 @@ address('alias',df.squad,'alias')
 address('members',df.squad,'positions')
 address('orders',df.squad,'orders')
 address('schedules',df.squad,'schedule')
-if os_type ~= 'windows' then --squad_schedule_entry size
-    value('sched_size',0x20)
-else
-    value('sched_size',0x40)
-end
+value('sched_size',df.squad_schedule_entry:sizeof())
 address('sched_orders',df.squad_schedule_entry,'orders')
 address('sched_assign',df.squad_schedule_entry,'order_assignments')
 address('alert',df.squad,'cur_alert_idx')
