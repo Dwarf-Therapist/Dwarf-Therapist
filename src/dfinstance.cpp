@@ -53,6 +53,7 @@ THE SOFTWARE.
 
 #include <QTimer>
 #include <QTime>
+#include <QInputDialog>
 
 #ifdef Q_OS_WIN
 #define LAYOUT_SUBDIR "windows"
@@ -1489,4 +1490,32 @@ const QString DFInstance::layout_subdir(){
     return LAYOUT_SUBDIR;
 }
 
+PID DFInstance::select_pid(QSet<PID> pids) {
+    bool ok;
+    QString selected;
+    switch (pids.size()) {
+        case 0:
+            selected = QInputDialog::getText(0, tr("Enter DF PID"), tr("No Dwarf Fortress processes found, please enter the PID of the process to attach to."));
+            break;
 
+        case 1:
+            return *pids.begin();
+
+        default:
+            QStringList pid_strs;
+            foreach (qint64 pid, pids) {
+                pid_strs << QString::number(pid);
+            }
+
+            selected = QInputDialog::getItem(0, tr("Select DF instance"), tr("Multiple Dwarf Fortress processes found, please choose the process to use."), pid_strs, 0, true, &ok);
+
+            if (!ok)
+                return 0;
+    }
+
+    qint64 rv = selected.toLong(&ok);
+    if (!ok)
+        return 0;
+
+    return rv;
+}

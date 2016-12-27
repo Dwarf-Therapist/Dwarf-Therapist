@@ -30,6 +30,13 @@ THE SOFTWARE.
 #include <QDir>
 #include <QPointer>
 
+#ifdef Q_OS_WIN
+typedef int PID;
+#else
+#include <unistd.h>
+typedef pid_t PID;
+#endif
+
 class Dwarf;
 class FortressEntity;
 class ItemSubtype;
@@ -277,6 +284,8 @@ protected:
         on disk, the key is a QString of the checksum since other OSs will use
         an MD5 of the binary instead of a PE timestamp */
     QHash<QString, MemoryLayout*> m_memory_layouts; // checksum->layout
+
+    static PID select_pid(QSet<PID> pids);
 
 private slots:
     void heartbeat();

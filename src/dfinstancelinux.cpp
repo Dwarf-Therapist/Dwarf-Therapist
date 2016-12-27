@@ -25,7 +25,6 @@ THE SOFTWARE.
 #include "truncatingfilelogger.h"
 #include "utils.h"
 
-#include <QInputDialog>
 #include <QDirIterator>
 
 #include <errno.h>
@@ -242,31 +241,24 @@ USIZE DFInstanceLinux::write_raw(const VIRTADDR addr, const USIZE bytes,
 }
 
 bool DFInstanceLinux::set_pid(){
-    QStringList str_pids;
-    QDirIterator iter("/proc", QDir::AllDirs | QDir::NoDotAndDotDot | QDir::Readable | QDir::Executable);
+    QSet<PID> pids;
+    QDirIterator iter("/proc", QDir::Dirs | QDir::NoDotAndDotDot | QDir::Readable | QDir::Executable);
     while (iter.hasNext()) {
         QString fn = iter.next();
         QFile file(QString("%1/comm").arg(fn));
         if (file.open(QIODevice::ReadOnly)) {
             QByteArray comm = file.readAll();
             if (comm == "dwarfort.exe\n" || comm == "Dwarf_Fortress\n") {
-                str_pids << iter.fileName();
+                pids << iter.fileName().toLong();
             }
         }
     }
 
-    int count = str_pids.count();
-    if (count) { //found it
-        if (count > 1) {
-            str_pids.sort();
-            m_pid = QInputDialog::getItem(0, tr("Warning"),tr("Multiple Dwarf Fortress processes found, please choose the process to use."),str_pids,str_pids.count()-1,false).toInt();
-        } else {
-            m_pid = str_pids.at(0).toInt();
-        }
-    } else {
-        LOGE << "can't find running copy";
+    m_pid = select_pid(pids);
+
+    if (!m_pid)
         return false;
-    }
+
     return true;
 }
 
@@ -301,14 +293,14 @@ static const char syscall_code[] = {
     static_cast<char>(0x0f), static_cast<char>(0x05)
 };
 
+static_assert(sizeof(syscall_code) <= sizeof(long), "syscall code must fit in long");
+
 static const VIRTADDR df_exe_base = 0x00400000;
 
 long DFInstanceLinux::remote_syscall(int syscall_id,
      long arg0, long arg1, long arg2,
      long arg3, long arg4, long arg5)
 {
-    LOGE << "REMOTE SYSCALL NOT IMPLEMENTED FOR 64-BIT";
-    return -ENOTSUP;
     attach();
 
     // get the old value of some RAM
@@ -331,8 +323,7 @@ long DFInstanceLinux::remote_syscall(int syscall_id,
     struct user_regs_struct saved_regs, work_regs;
 
     if (ptrace(PTRACE_GETREGS, m_pid, 0, &saved_regs) == -1) {
-        perror("ptrace getregs");
-        LOGE << "Could not retrieve register information";
+        LOGE << "Could not retrieve original register information:" << strerror(errno);
         return -1;
     }
 
@@ -351,35 +342,31 @@ long DFInstanceLinux::remote_syscall(int syscall_id,
        if this process crashes before the context is
        restored, the game will immediately crash too. */
     if (ptrace(PTRACE_SETREGS, m_pid, 0, &work_regs) == -1) {
-        perror("ptrace setregs");
-        LOGE << "Could not set register information";
+        LOGE << "Could not set register information:" << strerror(errno);
         return -1;
     }
 
-    if (ptrace(PTRACE_SYSCALL, m_pid, 0, 0) == -1) {
-        LOGE << "Failed to step onto syscall.";
+    if (ptrace(PTRACE_SINGLESTEP, m_pid, 0, 0) == -1) {
+        LOGE << "Failed to single step:" << strerror(errno);
         return -1;
     }
 
-    if (ptrace(PTRACE_SYSCALL, m_pid, 0, 0) == -1) {
-        LOGE << "Failed to step into syscall.";
-        return -1;
-    }
+    wait_for_stopped();
 
     /* Retrieve registers with the syscall result. */
     if (ptrace(PTRACE_GETREGS, m_pid, 0, &work_regs) == -1) {
-        LOGE << "Could not retrieve register information after stepping";
+        LOGE << "Could not retrieve register information after stepping:" << strerror(errno);
         return -1;
     }
 
     /* Restore the registers. */
     if (ptrace(PTRACE_SETREGS, m_pid, 0, &saved_regs) == -1) {
-        LOGE << "Could not restore register information";
+        LOGE << "Could not restore register information:" << strerror(errno);
     }
 
     // restore the text
     if (ptrace(PTRACE_POKETEXT, m_pid, df_exe_base, old_code_word) == -1) {
-        LOGE << "Could not restore the injection area.";
+        LOGE << "Could not restore the injection area:" << strerror(errno);
     }
 
     detach();

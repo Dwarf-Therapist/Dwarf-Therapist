@@ -135,28 +135,68 @@ USIZE DFInstanceWindows::write_raw(const VIRTADDR &addr, const USIZE &bytes, con
     return bytes_written;
 }
 
-bool DFInstanceWindows::set_pid(){
-    HWND h_wnd = 0;
-    h_wnd = FindWindow(L"OpenGL", L"Dwarf Fortress");
-    if (!h_wnd)
-        h_wnd = FindWindow(L"SDL_app", L"Dwarf Fortress");
-    if (!h_wnd)
-        h_wnd = FindWindow(NULL, L"Dwarf Fortress");
+static const QSet<QString> df_window_classes{"OpenGL", "SDL_app"};
 
-    if (!h_wnd) {
-        LOGE << "can't find running copy";
-        return false;
-    }
-    LOGI << "found copy with HWND: " << h_wnd;
-
-    DWORD pid = 0;
-    GetWindowThreadProcessId(h_wnd, &pid);
-    if (pid == 0) {
+BOOL CALLBACK static enumWindowsProc(HWND hWnd, LPARAM lParam) {
+    auto pids = reinterpret_cast<QSet<PID> *>(lParam);
+    WCHAR classNameW[8];
+    if (!GetClassName(hWnd, classNameW, sizeof(classNameW))) {
+        LOGE << "GetClassName failed:" << get_last_error();
         return false;
     }
 
-    m_pid = pid;
+    if (!className && wcscmp(className, L"OpenGL") && wcscmp(className, L"SDL_app"))
+        return true;
+
+    WCHAR windowName[16];
+    if (!GetWindowName(hWnd, windowName, sizeof(windowName))) {
+        LOGE << "GetWindowName failed:" << get_last_error();
+        return false;
+    }
+
+    Q_ASSERT(windowName);
+
+    if (wcscmp(windowName, L"Dwarf Fortress"))
+        return true;
+
+    GetWindowThreadProcessId(hWnd, &pid);
+    if (!pid) {
+        LOGE << "could not get PID for hwnd";
+        return false;
+    }
+
+    pids << pid;
+
     return true;
+}
+
+bool DFInstanceWindows::set_pid(){
+    QSet<PID> pids;
+    if (!EnumWindows(enumWindowsProc, &pids)) {
+        LOGE << "error enumerating windows";
+        return false;
+    }
+
+    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snapshot == INVALID_HANDLE_VALUE) {
+        LOGE << "error creating toolhelp32 process snapshot:" << get_last_error();
+        return false;
+    }
+    
+    PROCESSENTRY32 pe32;
+    pe32.dwSize = sizeof(pe32);
+
+    if (!Process32First(snapshot, &pe32))
+        return false;
+
+    do {
+        if (!_tcscmp(&pe32.szExeFile, _T("Dwarf Fortress.exe")))
+            pids << pe32.th32ProcessID;
+    } while (Process32Next(snapshot, &pe32));
+
+    m_pid = select_pid(pids);
+
+    return m_pid != 0;
 }
 
 bool DFInstanceWindows::df_running(){
@@ -166,7 +206,7 @@ bool DFInstanceWindows::df_running(){
 
 void DFInstanceWindows::find_running_copy() {
     m_status = DFS_DISCONNECTED;
-    LOGI << "attempting to find running copy of DF by window handle";
+    LOGI << "attempting to find running copy of DF";
 
     if(!set_pid()){
         return;
@@ -194,7 +234,7 @@ void DFInstanceWindows::find_running_copy() {
             LOGE << "Error enumerating modules!" << get_last_error();
             return;
         } else {
-            VIRTADDR base_addr = (intptr_t)me32.modBaseAddr;
+            VIRTADDR base_addr = me32.modBaseAddr;
             IMAGE_DOS_HEADER dos_header;
             read_raw(base_addr, sizeof(dos_header), &dos_header);
             if(dos_header.e_magic != IMAGE_DOS_SIGNATURE){
