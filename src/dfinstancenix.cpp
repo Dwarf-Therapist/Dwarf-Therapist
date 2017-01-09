@@ -5,9 +5,9 @@
 #include <QTextCodec>
 
 struct STLStringHeader {
-    quint32 length;
-    quint32 capacity;
-    qint32 refcnt;
+    USIZE length;
+    USIZE capacity;
+    int refcnt;
 };
 
 DFInstanceNix::DFInstanceNix(QObject *parent)
