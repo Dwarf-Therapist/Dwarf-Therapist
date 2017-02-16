@@ -69,32 +69,33 @@ QString DFInstanceWindows::calculate_checksum(const IMAGE_NT_HEADERS &pe_header)
 }
 
 QString DFInstanceWindows::read_string(const uint &addr) {
-    int len = read_int(addr + memory_layout()->string_length_offset());
-    int cap = read_int(addr + memory_layout()->string_cap_offset());
+    USIZE len = read_int(addr + memory_layout()->string_length_offset());
+    USIZE cap = read_int(addr + memory_layout()->string_cap_offset());
     VIRTADDR buffer_addr = addr + memory_layout()->string_buffer_offset();
     if (cap >= 16)
         buffer_addr = read_addr(buffer_addr);
 
-    if (len > cap || len < 0 || len > 1024) {
-#ifdef _DEBUG
-        // probably not really a string
-        LOGW << "Tried to read a string at" << hex << addr
-            << "but it was totally not a string...";
-#endif
-        return QString();
-    }
-    Q_ASSERT_X(len <= cap, "read_string",
-               "Length must be less than or equal to capacity!");
-    Q_ASSERT_X(len >= 0, "read_string", "Length must be >=0!");
-    Q_ASSERT_X(len < (1 << 16), "read_string",
-               "String must be of sane length!");
+    char buf[1024];
 
-    char buf[len];
+    if (len == 0 || cap == 0) {
+        LOGW << "string at" << addr << "is zero-length or zero-cap";
+        return "";
+    }
+    if (len > cap) {
+        // probably not really a string
+        LOGW << "string at" << addr << "is length" << len << "which is larger than cap" << cap;
+        return "";
+    }
+    if (cap > sizeof(buf)) {
+        LOGW << "string at" << addr << "is cap" << cap << "which is suspiciously large, ignoring";
+        return "";
+    }
+
     read_raw(buffer_addr, len, buf);
     return QTextCodec::codecForName("IBM437")->toUnicode(buf, len);
 }
 
-USIZE DFInstanceWindows::write_string(const VIRTADDR &addr, const QString &str) {
+USIZE DFInstanceWindows::write_string(VIRTADDR addr, const QString &str) {
     /*
 
       THIS IS TOTALLY DANGEROUS
@@ -117,7 +118,7 @@ USIZE DFInstanceWindows::write_string(const VIRTADDR &addr, const QString &str) 
     return bytes_written;
 }
 
-USIZE DFInstanceWindows::read_raw(const VIRTADDR &addr, const USIZE &bytes,
+USIZE DFInstanceWindows::read_raw(VIRTADDR addr, USIZE bytes,
                                 void *buffer) {
     ZeroMemory(buffer, bytes);
     USIZE bytes_read = 0;
@@ -126,7 +127,7 @@ USIZE DFInstanceWindows::read_raw(const VIRTADDR &addr, const USIZE &bytes,
     return bytes_read;
 }
 
-USIZE DFInstanceWindows::write_raw(const VIRTADDR &addr, const USIZE &bytes, const void *buffer) {
+USIZE DFInstanceWindows::write_raw(VIRTADDR addr, USIZE bytes, const void *buffer) {
     USIZE bytes_written = 0;
     WriteProcessMemory(m_proc, reinterpret_cast<LPVOID>(addr), buffer,
                        bytes, reinterpret_cast<SIZE_T*>(&bytes_written));

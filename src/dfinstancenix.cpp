@@ -34,7 +34,7 @@ QString DFInstanceNix::calculate_checksum() {
     return md5;
 }
 
-QString DFInstanceNix::read_string(const VIRTADDR addr) {
+QString DFInstanceNix::read_string(VIRTADDR addr) {
     char buf[1024];
     read_raw(read_addr(addr), sizeof(buf), (void *)buf);
 
@@ -46,7 +46,7 @@ bool DFInstanceNix::df_running(){
     return (set_pid() && cur_pid == m_pid);
 }
 
-USIZE DFInstanceNix::write_string(const VIRTADDR addr, const QString &str) {
+USIZE DFInstanceNix::write_string(VIRTADDR addr, const QString &str) {
     // Ensure this operation is done as one transaction
     attach();
     VIRTADDR buffer_addr = get_string(str);

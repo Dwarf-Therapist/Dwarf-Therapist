@@ -35,7 +35,6 @@ THE SOFTWARE.
 #include "utils.h"
 #include "gamedatareader.h"
 #include "memorylayout.h"
-#include "memorysegment.h"
 #include "truncatingfilelogger.h"
 #include <stdio.h>
 #include <mach/vm_map.h>
@@ -114,7 +113,7 @@ bool DFInstanceOSX::detach() {
     return true;
 }
 
-USIZE DFInstanceOSX::read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer) {
+USIZE DFInstanceOSX::read_raw(VIRTADDR addr, USIZE bytes, void *buffer) {
     vm_size_t bytes_read = 0;
     memset(buffer, 0, bytes);
 
@@ -125,7 +124,7 @@ USIZE DFInstanceOSX::read_raw(const VIRTADDR &addr, const USIZE &bytes, void *bu
     return bytes_read;
 }
 
-USIZE DFInstanceOSX::write_raw(const VIRTADDR &addr, const USIZE &bytes, const void *buffer) {
+USIZE DFInstanceOSX::write_raw(VIRTADDR addr, USIZE bytes, const void *buffer) {
     attach();
     kern_return_t result = vm_write(m_task, (vm_address_t)addr, (pointer_t)buffer, bytes);
     detach();
