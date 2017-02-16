@@ -18,6 +18,11 @@ elseif(UNIX)
     set(SOURCES ${SOURCES} src/dfinstancenix.cpp)
     if(APPLE)
         set(SOURCES ${SOURCES} DwarfTherapist.rc src/dfinstanceosx.mm)
+        find_library(FOUNDATION_LIB Foundation)
+        find_library(SECURITY_LIB Security)
+        find_library(APPKIT_LIB AppKit)
+        set(LIBS ${FOUNDATION_LIB} ${SECURITY_LIB} ${APPKIT_LIB})
+
     else()
         set(SOURCES ${SOURCES} src/dfinstancelinux.cpp)
 
@@ -79,4 +84,4 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp resources.qrc
     ${SOURCES})
 target_compile_features(DwarfTherapist PRIVATE cxx_generalized_initializers)
-target_link_libraries(DwarfTherapist Qt5::Widgets Qt5::Qml)
+target_link_libraries(DwarfTherapist Qt5::Widgets Qt5::Qml ${LIBS})
