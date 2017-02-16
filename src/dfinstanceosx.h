@@ -35,8 +35,8 @@ public:
     virtual ~DFInstanceOSX();
     void find_running_copy();
 
-    USIZE read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer);
-    USIZE write_raw(const VIRTADDR &addr, const USIZE &bytes, const void *buffer);
+    USIZE read_raw(VIRTADDR addr, USIZE bytes, void *buffer);
+    USIZE write_raw(VIRTADDR addr, USIZE bytes, const void *buffer);
 
     bool attach();
     bool detach();

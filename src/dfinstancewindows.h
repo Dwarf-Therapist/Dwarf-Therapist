@@ -41,12 +41,12 @@ public:
 
     QString get_last_error();
 
-    USIZE read_raw(const VIRTADDR &addr, const USIZE &bytes, void *buffer);
-    QString read_string(const VIRTADDR &addr);
+    USIZE read_raw(VIRTADDR addr, USIZE bytes, void *buffer);
+    QString read_string(VIRTADDR addr);
 
     // Writing
-    USIZE write_raw(const VIRTADDR &addr, const USIZE &bytes, const void *buffer);
-    USIZE write_string(const VIRTADDR &addr, const QString &str);
+    USIZE write_raw(VIRTADDR addr, USIZE bytes, const void *buffer);
+    USIZE write_string(VIRTADDR addr, QString str);
 
     // windows doesn't really have a concept of
     // attaching/detaching from the process like Linux does, so just
