@@ -46,7 +46,7 @@ public:
 
     // Writing
     USIZE write_raw(VIRTADDR addr, USIZE bytes, const void *buffer);
-    USIZE write_string(VIRTADDR addr, QString str);
+    USIZE write_string(VIRTADDR addr, const QString &str);
 
     // windows doesn't really have a concept of
     // attaching/detaching from the process like Linux does, so just
