@@ -39,8 +39,6 @@ public:
     void find_running_copy();
     bool df_running();
 
-    QString get_last_error();
-
     USIZE read_raw(VIRTADDR addr, USIZE bytes, void *buffer);
     QString read_string(VIRTADDR addr);
 

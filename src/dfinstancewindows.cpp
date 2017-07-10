@@ -27,6 +27,7 @@ THE SOFTWARE.
 
 #include <windows.h>
 #include <psapi.h>
+#include <tchar.h>
 
 #include "dfinstance.h"
 #include "dfinstancewindows.h"
@@ -36,7 +37,6 @@ THE SOFTWARE.
 #include "utils.h"
 #include "gamedatareader.h"
 #include "memorylayout.h"
-#include "memorysegment.h"
 #include "dwarftherapist.h"
 
 DFInstanceWindows::DFInstanceWindows(QObject* parent)
@@ -49,7 +49,7 @@ DFInstanceWindows::~DFInstanceWindows() {
     CloseHandle(m_proc);
 }
 
-QString DFInstanceWindows::get_last_error() {
+static QString get_last_error() {
     LPWSTR bufPtr = NULL;
     DWORD err = GetLastError();
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
@@ -68,7 +68,7 @@ QString DFInstanceWindows::calculate_checksum(const IMAGE_NT_HEADERS &pe_header)
     return hexify(compile_timestamp).toLower();
 }
 
-QString DFInstanceWindows::read_string(const uint &addr) {
+QString DFInstanceWindows::read_string(VIRTADDR addr) {
     USIZE len = read_int(addr + memory_layout()->string_length_offset());
     USIZE cap = read_int(addr + memory_layout()->string_cap_offset());
     VIRTADDR buffer_addr = addr + memory_layout()->string_buffer_offset();
@@ -140,19 +140,19 @@ static const QSet<QString> df_window_classes{"OpenGL", "SDL_app"};
 
 BOOL CALLBACK static enumWindowsProc(HWND hWnd, LPARAM lParam) {
     auto pids = reinterpret_cast<QSet<PID> *>(lParam);
-    WCHAR classNameW[8];
-    if (!GetClassName(hWnd, classNameW, sizeof(classNameW))) {
+    WCHAR className[8];
+    if (!GetClassName(hWnd, className, sizeof(className))) {
         LOGE << "GetClassName failed:" << get_last_error();
-        return false;
+        return true;
     }
 
     if (!className && wcscmp(className, L"OpenGL") && wcscmp(className, L"SDL_app"))
         return true;
 
     WCHAR windowName[16];
-    if (!GetWindowName(hWnd, windowName, sizeof(windowName))) {
-        LOGE << "GetWindowName failed:" << get_last_error();
-        return false;
+    if (!GetWindowText(hWnd, windowName, sizeof(windowName))) {
+        LOGE << "GetWindowText failed:" << get_last_error();
+        return true;
     }
 
     Q_ASSERT(windowName);
@@ -160,20 +160,21 @@ BOOL CALLBACK static enumWindowsProc(HWND hWnd, LPARAM lParam) {
     if (wcscmp(windowName, L"Dwarf Fortress"))
         return true;
 
+    DWORD pid = 0;
     GetWindowThreadProcessId(hWnd, &pid);
     if (!pid) {
         LOGE << "could not get PID for hwnd";
-        return false;
+        return true;
     }
 
-    pids << pid;
+    *pids << pid;
 
     return true;
 }
 
 bool DFInstanceWindows::set_pid(){
     QSet<PID> pids;
-    if (!EnumWindows(enumWindowsProc, &pids)) {
+    if (!EnumWindows(enumWindowsProc, reinterpret_cast<LPARAM>(&pids))) {
         LOGE << "error enumerating windows";
         return false;
     }
@@ -191,7 +192,7 @@ bool DFInstanceWindows::set_pid(){
         return false;
 
     do {
-        if (!_tcscmp(&pe32.szExeFile, _T("Dwarf Fortress.exe")))
+        if (!_tcscmp(pe32.szExeFile, _T("Dwarf Fortress.exe")))
             pids << pe32.th32ProcessID;
     } while (Process32Next(snapshot, &pe32));
 
@@ -235,7 +236,7 @@ void DFInstanceWindows::find_running_copy() {
             LOGE << "Error enumerating modules!" << get_last_error();
             return;
         } else {
-            VIRTADDR base_addr = me32.modBaseAddr;
+            VIRTADDR base_addr = reinterpret_cast<VIRTADDR>(me32.modBaseAddr);
             IMAGE_DOS_HEADER dos_header;
             read_raw(base_addr, sizeof(dos_header), &dos_header);
             if(dos_header.e_magic != IMAGE_DOS_SIGNATURE){
