@@ -175,7 +175,7 @@ private:
     QSettings m_data;
     bool m_complete;
 
-    uint read_hex(QString key);
+    unsigned long long read_hex(QString key);
     void read_group(const MEM_SECTION &section);
     void read_flags(const UNIT_FLAG_TYPE &flag_type);
 };

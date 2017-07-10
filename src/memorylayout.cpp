@@ -79,10 +79,13 @@ void MemoryLayout::load_data() {
     }
 }
 
-uint MemoryLayout::read_hex(QString key) {
+unsigned long long MemoryLayout::read_hex(QString key) {
     bool ok;
     QString data = m_data.value(key, -1).toString();
-    uint val = data.toUInt(&ok, 16);
+    unsigned long long val = data.toULongLong(&ok, 16);
+    if (!ok) {
+        LOGE << "Failed to parse hex value for key" << key;
+    }
     return val;
 }
 
