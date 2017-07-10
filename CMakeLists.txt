@@ -12,6 +12,7 @@ include(InstallRequiredSystemLibraries)
 include_directories(src thirdparty/qtcolorpicker-2.6)
 
 if(WIN32)
+    add_definitions(-DUNICODE -D_UNICODE)
     set(SOURCES ${SOURCES} DwarfTherapist.rc src/dfinstancewindows.cpp)
     set(LIBS user32 psapi)
 elseif(UNIX)
