@@ -39,6 +39,14 @@ THE SOFTWARE.
 #include "memorylayout.h"
 #include "dwarftherapist.h"
 
+#if defined Q_PROCESSOR_X86_32
+#   define DEFAULT_BASE_ADDR 0x400000ul
+#elif defined Q_PROCESSOR_X86_64
+#   define DEFAULT_BASE_ADDR 0x140000000ull
+#else
+#   error Unsupported architecture
+#endif
+
 DFInstanceWindows::DFInstanceWindows(QObject* parent)
     : DFInstance(parent)
     , m_proc(0)
@@ -265,7 +273,7 @@ void DFInstanceWindows::find_running_copy() {
             }
 
             LOGI << "RAW BASE ADDRESS:" << base_addr;
-            m_base_addr = base_addr - 0x00400000;
+            m_base_addr = base_addr - DEFAULT_BASE_ADDR;
 
             m_status = DFS_CONNECTED;
             set_memory_layout(calculate_checksum(pe_header));
