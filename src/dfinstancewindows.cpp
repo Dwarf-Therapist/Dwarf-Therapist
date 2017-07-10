@@ -49,15 +49,14 @@ DFInstanceWindows::~DFInstanceWindows() {
     CloseHandle(m_proc);
 }
 
-static QString get_last_error() {
+static QString get_error_string(DWORD error) {
     LPWSTR bufPtr = NULL;
-    DWORD err = GetLastError();
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
                   FORMAT_MESSAGE_FROM_SYSTEM |
                   FORMAT_MESSAGE_IGNORE_INSERTS,
-                  NULL, err, 0, (LPWSTR)&bufPtr, 0, NULL);
+                  NULL, error, 0, (LPWSTR)&bufPtr, 0, NULL);
     const QString result = bufPtr ? QString::fromWCharArray(bufPtr).trimmed()
-                                  : QString("Unknown Error %1").arg(err);
+                                  : QString("Unknown Error %1").arg(error);
     LocalFree(bufPtr);
     return result;
 }
@@ -122,16 +121,21 @@ USIZE DFInstanceWindows::read_raw(VIRTADDR addr, USIZE bytes,
                                 void *buffer) {
     ZeroMemory(buffer, bytes);
     USIZE bytes_read = 0;
-    ReadProcessMemory(m_proc, reinterpret_cast<LPCVOID>(addr), buffer,
-                      bytes, reinterpret_cast<SIZE_T*>(&bytes_read));
+    if (!ReadProcessMemory(m_proc, reinterpret_cast<LPCVOID>(addr), buffer,
+                           bytes, reinterpret_cast<SIZE_T*>(&bytes_read))) {
+        DWORD error = GetLastError();
+        LOGE << "ReadProcessMemory failed:" << get_error_string(error);
+    }
     return bytes_read;
 }
 
 USIZE DFInstanceWindows::write_raw(VIRTADDR addr, USIZE bytes, const void *buffer) {
     USIZE bytes_written = 0;
-    WriteProcessMemory(m_proc, reinterpret_cast<LPVOID>(addr), buffer,
-                       bytes, reinterpret_cast<SIZE_T*>(&bytes_written));
-
+    if (!WriteProcessMemory(m_proc, reinterpret_cast<LPVOID>(addr), buffer,
+                       bytes, reinterpret_cast<SIZE_T*>(&bytes_written))) {
+        DWORD error = GetLastError();
+        LOGE << "ReadProcessMemory failed:" << get_error_string(error);
+    }
     Q_ASSERT(bytes_written == bytes);
     return bytes_written;
 }
@@ -142,7 +146,8 @@ BOOL CALLBACK static enumWindowsProc(HWND hWnd, LPARAM lParam) {
     auto pids = reinterpret_cast<QSet<PID> *>(lParam);
     WCHAR className[8];
     if (!GetClassName(hWnd, className, sizeof(className))) {
-        LOGE << "GetClassName failed:" << get_last_error();
+        DWORD error = GetLastError();
+        LOGE << "GetClassName failed:" << get_error_string(error);
         return true;
     }
 
@@ -151,7 +156,10 @@ BOOL CALLBACK static enumWindowsProc(HWND hWnd, LPARAM lParam) {
 
     WCHAR windowName[16];
     if (!GetWindowText(hWnd, windowName, sizeof(windowName))) {
-        LOGE << "GetWindowText failed:" << get_last_error();
+        DWORD error = GetLastError();
+        if (error != ERROR_SUCCESS) { // Windows 7 enumerate some special windows without title, ignore them.
+            LOGE << "GetWindowText failed:" << get_error_string(error);
+        }
         return true;
     }
 
@@ -181,7 +189,8 @@ bool DFInstanceWindows::set_pid(){
 
     HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (snapshot == INVALID_HANDLE_VALUE) {
-        LOGE << "error creating toolhelp32 process snapshot:" << get_last_error();
+        DWORD error = GetLastError();
+        LOGE << "error creating toolhelp32 process snapshot:" << get_error_string(error);
         return false;
     }
     
@@ -222,18 +231,21 @@ void DFInstanceWindows::find_running_copy() {
                          | PROCESS_VM_WRITE, false, m_pid);
     LOGI << "PROC HANDLE:" << m_proc;
     if (!m_proc) {
-        LOGE << "Error opening process!" << get_last_error();
+        DWORD error = GetLastError();
+        LOGE << "Error opening process!" << get_error_string(error);
     }
 
     HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, m_pid);
     if (snapshot == INVALID_HANDLE_VALUE) {
-        LOGE << "Error creating toolhelp32 snapshot!" << get_last_error();
+        DWORD error = GetLastError();
+        LOGE << "Error creating toolhelp32 snapshot!" << get_error_string(error);
         return;
     } else {
         MODULEENTRY32 me32;
         me32.dwSize = sizeof(MODULEENTRY32);
         if (!Module32First(snapshot, &me32)) {
-            LOGE << "Error enumerating modules!" << get_last_error();
+            DWORD error = GetLastError();
+            LOGE << "Error enumerating modules!" << get_error_string(error);
             return;
         } else {
             VIRTADDR base_addr = reinterpret_cast<VIRTADDR>(me32.modBaseAddr);
