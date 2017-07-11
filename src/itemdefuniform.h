@@ -198,7 +198,7 @@ private:
     //static const QHash<MATERIAL_CLASS,MATERIAL_FLAGS> m_class_mats;
 
     void read_data(){
-        if(m_address > 0){
+        if(m_address){
             m_id = m_df->read_int(m_address);
 
             VIRTADDR uniform_addr = m_address + m_df->memory_layout()->squad_offset("uniform_item_filter"); //filter offset start

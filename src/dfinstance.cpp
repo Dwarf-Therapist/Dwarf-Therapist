@@ -633,7 +633,7 @@ void DFInstance::load_main_vectors(){
     int i = 0;
     for(i = 0; i < 256; i++){
         VIRTADDR mat_addr = read_addr(addr);
-        if(mat_addr > 0){
+        if(mat_addr){
             Material* m = Material::get_material(this, mat_addr, i, false, this);
             m_base_materials.append(m);
         }

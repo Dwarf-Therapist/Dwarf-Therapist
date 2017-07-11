@@ -135,7 +135,7 @@ void Item::read_data(){
             if(ref_type == 0 || ref_type == 1){
                 LOGD << "reading type:" << ref_type << "(artifact name)";
                 int artifact_id = m_df->read_int(ref+m_df->memory_layout()->general_ref_offset("artifact_id"));
-                if(artifact_id > 0){
+                if(artifact_id){
                     m_artifact_name = m_df->get_artifact_name(ARTIFACTS,artifact_id);
                     break;
                 }
