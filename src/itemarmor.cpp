@@ -2,7 +2,7 @@
 #include "races.h"
 
 void ItemArmor::read_def() {
-    if(m_addr > 0){
+    if(m_addr){
         m_armor_def = new ItemArmorSubtype(m_iType,m_df,m_df->read_addr(m_addr+m_df->memory_layout()->item_offset("item_def")),this);
         if(m_armor_def){
 

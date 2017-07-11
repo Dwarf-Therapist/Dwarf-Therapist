@@ -143,7 +143,7 @@ void Item::read_data(){
                 LOGD << "reading type:" << ref_type << "(container)";
                 int item_id = m_df->read_int(ref+m_df->memory_layout()->general_ref_offset("item_id"));
                 VIRTADDR ammo_addr = m_df->get_item_address(AMMO,item_id);
-                if(ammo_addr > 0){
+                if(ammo_addr){
                     ItemAmmo *ia = new ItemAmmo(m_df,ammo_addr);
                     bool appended = false;
                     foreach(Item *i, m_contained_items){

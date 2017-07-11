@@ -194,7 +194,7 @@ void UnitHealth::read_health_info(){
     VIRTADDR unit_health_addr = m_df->read_addr(m_dwarf_addr + mem->dwarf_offset("unit_health_info"));
 
     quint32 health_flags = 0;
-    if(unit_health_addr > 0){
+    if(unit_health_addr){
         //health flags contain the requests for treatment info
         health_flags = m_df->read_int(unit_health_addr + 0x4);
         //read bp flags for inoperable rot

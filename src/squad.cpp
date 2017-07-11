@@ -245,7 +245,7 @@ void Squad::assign_to_squad(Dwarf *d, bool committing){
         if(position >= 0){
             addr = m_members_addr.at(position);
         }
-        if(addr > 0){
+        if(addr){
             m_df->write_int(addr,d->historical_id());
             m_df->write_int(d->address() + m_df->memory_layout()->dwarf_offset("squad_id"), m_id);
             m_df->write_int(d->address() + m_df->memory_layout()->dwarf_offset("squad_position"), position);
@@ -271,7 +271,7 @@ bool Squad::remove_from_squad(Dwarf *d, bool committing){
     if(position >= 0){
         if(committing){
             VIRTADDR addr = m_members_addr.at(position);
-            if(addr <= 0)
+            if(!addr)
                 return false;
 
             m_df->write_int(addr, -1);
