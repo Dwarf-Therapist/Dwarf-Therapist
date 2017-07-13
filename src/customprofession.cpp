@@ -399,7 +399,7 @@ QString CustomProfession::get_save_name(){
 
 
 void CustomProfession::delete_from_disk() {
-    QSettings s(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
+    QSettings s(this);
     s.beginGroup("custom_professions");
     s.remove(get_save_name());
     s.endGroup();

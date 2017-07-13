@@ -41,9 +41,11 @@ THE SOFTWARE.
 #include "dtstandarditem.h"
 #include "cellcolordef.h"
 #include <QMessageBox>
+#include <QSettings>
 #include <QToolTip>
 #include <QTranslator>
 #include <QTimer>
+#include <QStandardPaths>
 
 const QString DwarfTherapist::m_url_homepage = QString("https://github.com/%1/%2").arg(REPO_OWNER).arg(REPO_NAME);
 
@@ -63,12 +65,16 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     , m_arena_mode(false) //manually set this to true to do arena testing (very hackish, all units will be animals)
     , m_log_mgr(0)
 {
+    setApplicationName("Dwarf Therapist");
+    setOrganizationName("UDP Software");
+    QSettings::setDefaultFormat(QSettings::IniFormat);
+
     setup_logging();
     load_translator();
     setup_search_paths();
 
     TRACE << "Creating settings object";
-    m_user_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
+    m_user_settings = new QSettings(this);
 
     TRACE << "Creating options menu";
     m_options_menu = new OptionsMenu;
@@ -125,7 +131,12 @@ void DwarfTherapist::setup_search_paths() {
     // Dwarf-Therapist/release/../share/game_data.ini
     paths << QString("%1/../share").arg(appdir);
     // /usr/bin/../share/dwarftherapist/game_data.ini
-    paths << QString("%1/../share/dwarftherapist").arg(appdir);
+#ifdef Q_OS_LINUX
+    for (auto loc : QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation))
+        paths << loc + "/dwarf-therapist";
+#else
+    paths << QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
+#endif
     // cwd/game_data.ini
     paths << QString("%1").arg(working_dir);
     // cwd/share/game_data.ini

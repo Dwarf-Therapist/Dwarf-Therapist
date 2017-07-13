@@ -213,7 +213,7 @@ MainWindow::MainWindow(QWidget *parent)
     //the view manager is signalled this way, to ensure that the order of signals is preserved
     connect(DT,SIGNAL(connected()),m_view_manager,SLOT(rebuild_global_sort_keys()));
 
-    m_settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
+    m_settings = new QSettings(this);
 
     m_progress->setVisible(false);
     statusBar()->addPermanentWidget(m_lbl_message, 0);

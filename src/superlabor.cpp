@@ -136,7 +136,7 @@ bool SuperLabor::is_valid() {
 }
 
 void SuperLabor::delete_from_disk() {
-    QSettings s(QSettings::IniFormat, QSettings::UserScope, COMPANY, PRODUCT, this);
+    QSettings s(this);
     int size = s.beginReadArray("super_labors");
     for(int idx=0;idx<size;idx++){
         s.setArrayIndex(idx);
