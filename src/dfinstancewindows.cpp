@@ -159,7 +159,7 @@ BOOL CALLBACK static enumWindowsProc(HWND hWnd, LPARAM lParam) {
         return true;
     }
 
-    if (!className && wcscmp(className, L"OpenGL") && wcscmp(className, L"SDL_app"))
+    if (!className || (wcscmp(className, L"OpenGL") && wcscmp(className, L"SDL_app")))
         return true;
 
     WCHAR windowName[16];
