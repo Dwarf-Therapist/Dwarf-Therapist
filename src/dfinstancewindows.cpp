@@ -150,10 +150,12 @@ USIZE DFInstanceWindows::write_raw(VIRTADDR addr, USIZE bytes, const void *buffe
 
 static const QSet<QString> df_window_classes{"OpenGL", "SDL_app"};
 
+#define ARRAY_SIZE(a) (sizeof(a)/sizeof((a)[0]))
+
 static BOOL CALLBACK enumWindowsProc(HWND hWnd, LPARAM lParam) {
     auto pids = reinterpret_cast<QSet<PID> *>(lParam);
     WCHAR className[8];
-    if (!GetClassName(hWnd, className, sizeof(className))) {
+    if (!GetClassName(hWnd, className, ARRAY_SIZE(className))) {
         DWORD error = GetLastError();
         LOGE << "GetClassName failed:" << get_error_string(error);
         return true;
@@ -163,7 +165,7 @@ static BOOL CALLBACK enumWindowsProc(HWND hWnd, LPARAM lParam) {
         return true;
 
     WCHAR windowName[16];
-    if (!GetWindowText(hWnd, windowName, sizeof(windowName))) {
+    if (!GetWindowText(hWnd, windowName, ARRAY_SIZE(windowName))) {
         DWORD error = GetLastError();
         if (error != ERROR_SUCCESS) { // Windows 7 enumerate some special windows without title, ignore them.
             LOGE << "GetWindowText failed:" << get_error_string(error);
