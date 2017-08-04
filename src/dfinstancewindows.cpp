@@ -150,7 +150,7 @@ USIZE DFInstanceWindows::write_raw(VIRTADDR addr, USIZE bytes, const void *buffe
 
 static const QSet<QString> df_window_classes{"OpenGL", "SDL_app"};
 
-BOOL CALLBACK static enumWindowsProc(HWND hWnd, LPARAM lParam) {
+static BOOL CALLBACK enumWindowsProc(HWND hWnd, LPARAM lParam) {
     auto pids = reinterpret_cast<QSet<PID> *>(lParam);
     WCHAR className[8];
     if (!GetClassName(hWnd, className, sizeof(className))) {
