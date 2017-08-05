@@ -224,6 +224,10 @@ void DwarfModel::build_rows() {
             col->clear_cells();
         }
     }
+    foreach(Dwarf *d, m_dwarves) {
+	d->m_name_idx = QModelIndex();
+    }
+
     clear();
     m_total_row_count = 0;
 
