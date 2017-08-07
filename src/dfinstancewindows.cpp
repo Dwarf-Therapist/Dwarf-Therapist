@@ -84,8 +84,11 @@ QString DFInstanceWindows::read_string(VIRTADDR addr) {
 
     char buf[1024];
 
-    if (len == 0 || cap == 0) {
-        LOGW << "string at" << addr << "is zero-length or zero-cap";
+    if (cap == 0) {
+        LOGW << "string at" << addr << "is zero-cap";
+        return "";
+    }
+    if (len == 0) {
         return "";
     }
     if (len > cap) {
