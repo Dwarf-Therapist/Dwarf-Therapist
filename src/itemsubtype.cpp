@@ -21,3 +21,30 @@ void ItemSubtype::read_data() {
         m_name_plural = capitalizeEach(name_parts.join(" ")).simplified().trimmed();
     }
 }
+
+static bool has_adjective(ITEM_TYPE itype) {
+    switch (itype) {
+    case GLOVES:
+    case ARMOR:
+    case AMMO:
+    case WEAPON:
+    case TRAPCOMP:
+    case TOOL:
+    case SHOES:
+    case SHIELD:
+    case PANTS:
+    case HELM:
+        return true;
+    default:
+        return false;
+    }
+}
+
+void ItemSubtype::set_base_offsets() {
+    if (has_adjective(m_iType))
+        m_offset_adj = m_mem->item_subtype_offset("adjective");
+    else
+        m_offset_adj = -1;
+    m_offset_mat = -1;
+    m_offset_preplural = -1;
+}

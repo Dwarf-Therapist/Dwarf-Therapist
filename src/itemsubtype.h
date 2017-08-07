@@ -84,12 +84,7 @@ protected:
     int m_offset_mat;
 
     virtual void read_data();
-
-    virtual void set_base_offsets(){
-        m_offset_adj = m_mem->item_subtype_offset("adjective");
-        m_offset_mat = -1;
-        m_offset_preplural = -1;
-    }
+    virtual void set_base_offsets();
 };
 
 #endif // ITEMSUBTYPE_H

@@ -74,8 +74,30 @@ ItemUniform::~ItemUniform(){
 short ItemUniform::item_subtype() const {return m_item_def->subType();}
 ItemSubtype * ItemUniform::get_subType() {return m_item_def;}
 
+static bool has_subtype(ITEM_TYPE itype) {
+    switch (itype) {
+    case AMMO:
+    case ARMOR:
+    case FOOD:
+    case GLOVES:
+    case HELM:
+    case INSTRUMENT:
+    case PANTS:
+    case SHIELD:
+    case SHOES:
+    case SIEGEAMMO:
+    case TOOL:
+    case TOY:
+    case TRAPCOMP:
+    case WEAPON:
+        return true;
+    default:
+        return false;
+    }
+}
+
 void ItemUniform::read_def(){
-    if(m_addr > 0){
+    if(m_addr > 0 && has_subtype(m_iType)){
         m_item_def = new ItemGenericSubtype(m_iType,m_df,m_df->read_addr(m_addr+m_df->memory_layout()->item_offset("item_def")),this);
     }else{
         if(m_uniform_def->mat_flag() != MAT_NONE){
