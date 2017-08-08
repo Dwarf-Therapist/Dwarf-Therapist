@@ -256,7 +256,8 @@ void Dwarf::read_data() {
             set_validation("IGNORING child/baby",&validated,false,LL_DEBUG);
         }
         //filter out any non-mercenary visitors if necessary
-        m_is_citizen = m_df->fortress()->hist_figures().contains(m_histfig_id);
+        if (m_df->fortress()->address())
+            m_is_citizen = m_df->fortress()->hist_figures().contains(m_histfig_id);
         TRACE << "HIST_FIG_ID:" << m_histfig_id;
         if(DT->hide_non_citizens() && !m_is_citizen && !m_raw_profession->is_military()){
             set_validation("IGNORING visitor/guest",&validated,false,LL_DEBUG);
