@@ -64,7 +64,8 @@ void FortressEntity::load_data() {
     //refresh mem layout
     m_mem = m_df->memory_layout();
 
-    read_entity();
+    if (m_address)
+        read_entity();
 }
 
 void FortressEntity::read_entity(){
@@ -140,6 +141,8 @@ void FortressEntity::read_entity(){
 }
 
 void FortressEntity::refresh_squads(){
+    if (!m_address)
+        return;
     m_squads = m_df->enum_vec<qint32>(m_address + m_mem->hist_entity_offset("squads"));
 }
 
