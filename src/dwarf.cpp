@@ -1586,8 +1586,8 @@ void Dwarf::read_inventory(){
     }
 
     //set our coverage ratings. currently this is only important for the 3 clothing types that, if missing, give bad thoughts
-    process_uncovered(PANTS,tr("Legs Uncovered!"),(has_shirt ? 1 : 0),1);
-    process_uncovered(ARMOR,tr("Torso Uncovered!"),(has_pants ? 1 : 0),1);
+    process_uncovered(PANTS,tr("Legs Uncovered!"),(has_pants ? 1 : 0),1);
+    process_uncovered(ARMOR,tr("Torso Uncovered!"),(has_shirt ? 1 : 0),1);
     //for shoes, compare how many they're wearing compared to how many legs they've still got
     process_uncovered(SHOES,tr("Feet Uncovered!"),shoes_count,m_unit_health.limb_count());
 }
