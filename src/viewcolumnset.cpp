@@ -76,7 +76,7 @@ ViewColumnSet::ViewColumnSet(QSettings &s, QObject *parent, int set_num)
     : QObject(parent)
 {
     m_name = s.value("name","unknown").toString();
-    set_bg_color(read_color(s.value("bg_color", "0xFFFFFF").toString()));
+    set_bg_color(s.value("bg_color", QColor(Qt::white)).value<QColor>());
     m_cell_colors = new ViewColumnSetColors(s,this);
     connect_settings();
     if(set_num == 0)

@@ -68,7 +68,7 @@ ViewColumn::ViewColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
         m_cell_colors = new ViewColumnColors(this);
     }
     if(m_override_bg_color){
-        m_bg_color = read_color(s.value("bg_color").toString());
+        m_bg_color = s.value("bg_color", QColor(Qt::gray)).value<QColor>();
     }else if(set){
         m_bg_color = set->bg_color();
     }
