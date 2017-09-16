@@ -52,7 +52,7 @@ signals:
 
 protected:
     DFInstance *m_df;
-    QNetworkAccessManager *m_network;
+    QNetworkAccessManager m_network;
     QHash<QString,int> m_layout_queue;
     QString m_last_updated_checksum;
 

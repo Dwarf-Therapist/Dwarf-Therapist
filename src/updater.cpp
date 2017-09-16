@@ -22,19 +22,16 @@
 Updater::Updater(QObject *parent)
     : QObject(parent)
     , m_df(0)
-    , m_network(0)
     , m_last_updated_checksum("")
 {
-    m_network = new QNetworkAccessManager(parent);
 }
 
 Updater::~Updater(){
     m_df = 0;
-    delete m_network;
 }
 
 bool Updater::network_accessible(const QString &name){
-    if(m_network->networkAccessible() != QNetworkAccessManager::NotAccessible){
+    if(m_network.networkAccessible() != QNetworkAccessManager::NotAccessible){
         return true;
     }else{
         NotifierWidget::notify_info ni;
@@ -48,8 +45,7 @@ bool Updater::network_accessible(const QString &name){
 
 void Updater::check_latest_version(bool notify_on_ok) {
     if(network_accessible(tr("new releases"))){
-        QNetworkReply *reply = m_network->get(QNetworkRequest(QUrl(
-                                                                  QString("https://api.github.com/repos/%1/%2/releases/latest")
+        QNetworkReply *reply = m_network.get(QNetworkRequest(QUrl(QString("https://api.github.com/repos/%1/%2/releases/latest")
                                                                   .arg(DT->user_settings()->value("update_repo_owner",REPO_OWNER).toString())
                                                                   .arg(DT->user_settings()->value("update_repo_name",REPO_NAME).toString()))));
         reply->setProperty("release_check",true);
@@ -143,8 +139,7 @@ void Updater::check_layouts(DFInstance *df) {
     }
 
     //load a list of all layout files from the repo
-    QNetworkReply *reply = m_network->get(QNetworkRequest(QUrl(
-                                                              QString("https://api.github.com/repos/%1/%2/contents/share/memory_layouts/%3")
+    QNetworkReply *reply = m_network.get(QNetworkRequest(QUrl(QString("https://api.github.com/repos/%1/%2/contents/share/memory_layouts/%3")
                                                               .arg(DT->user_settings()->value("update_repo_owner",REPO_OWNER).toString())
                                                               .arg(DT->user_settings()->value("update_repo_name",REPO_NAME).toString())
                                                               .arg(m_df->layout_subdir()))));
@@ -162,7 +157,7 @@ void Updater::check_layouts(DFInstance *df) {
 
             QEventLoop layout_dl;
             foreach(QString layout_url, layout_urls){
-                QNetworkReply *dl_reply = m_network->get(QNetworkRequest(QUrl(layout_url)));
+                QNetworkReply *dl_reply = m_network.get(QNetworkRequest(QUrl(layout_url)));
                 m_layout_queue.insert(dl_reply->url().toString(),0);
                 connect(dl_reply,SIGNAL(finished()),this,SLOT(layout_downloaded()));
                 connect(dl_reply,SIGNAL(finished()),&layout_dl,SLOT(quit()));
