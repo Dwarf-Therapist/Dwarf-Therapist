@@ -1,5 +1,13 @@
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 project(DwarfTherapist)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+if(CMAKE_COMPILER_IS_GNUCC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+endif()
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
@@ -84,5 +92,4 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     src/itemarmor.cpp src/itemdefuniform.h src/dwarfjob.h src/uniform.h src/contextmenuhelper.cpp src/cellcolordef.h src/mood.cpp src/labor.cpp src/subthoughttypes.cpp src/plandetail.h src/eventfilterlineedit.cpp src/roleaspect.h
     thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp resources.qrc
     ${SOURCES})
-target_compile_features(DwarfTherapist PRIVATE cxx_generalized_initializers)
 target_link_libraries(DwarfTherapist Qt5::Widgets Qt5::Qml ${LIBS})
