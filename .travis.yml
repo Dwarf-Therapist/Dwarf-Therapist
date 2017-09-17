@@ -1,18 +1,44 @@
-sudo: required
+git:
+    depth: 1
+
 dist: trusty
+sudo: false
 language: cpp
 compiler:
     - clang
     - gcc
+addons:
+    apt:
+        packages:
+            - libc++-dev
+            - cmake
+            - ninja-build
+            - qtbase5-dev
+            - qtbase5-dev-tools
+            - qtdeclarative5-dev
+matrix:
+    include:
+        - os: osx
+          before_install:
+              - brew update
+              - brew install qt
+              - brew outdated cmake || brew upgrade cmake
+              - brew install ninja
+          env:
+              - CMAKE_PREFIX_PATH=/usr/local/opt/qt
+    allow_failures:
+        - os: osx
+
 env:
     global:
-        - CXXFLAGS="-Wall -Wextra -Werror"
-before_install:
-    - sudo apt-get update -q
-    - sudo apt-get install -qy qtbase5-dev qtbase5-dev-tools qtdeclarative5-dev
+        - CXXFLAGS="-Wall -Wextra -Werror=all"
 script:
-    - cmake .
-    - make -j3 $TARGET
+    - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export NPROC=$(nproc);
+      elif [ "$TRAVIS_OS_NAME" == "osx" ]; then export NPROC=$(sysctl -n hw.ncpu);
+      else export NPROC=1; fi
+    - if [ "$CXX" == "clang++" ]; then export CXXFLAGS="-stdlib=libc++ $CXXFLAGS"; fi
+    - cmake -GNinja . && ninja -j $NPROC -k 0
+
 notifications:
     irc:
         on_success: change
