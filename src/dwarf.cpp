@@ -64,13 +64,7 @@ THE SOFTWARE.
 #include <QTreeWidgetItem>
 #include <QVBoxLayout>
 #include <QVector>
-#ifdef QT_QML_LIB
-# include <QJSEngine>
-#else
-# include <QScriptEngine>
-# define QJSEngine QScriptEngine
-# define QJSValue QScriptValue
-#endif
+#include <QJSEngine>
 
 Dwarf::Dwarf(DFInstance *df, VIRTADDR addr, QObject *parent)
     : QObject(parent)

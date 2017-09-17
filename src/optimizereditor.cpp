@@ -19,10 +19,6 @@
 #include <QFileDialog>
 #include <QTextStream>
 
-#if QT_VERSION < 0x050000
-# define setSectionResizeMode setResizeMode
-#endif
-
 QColor optimizereditor::m_color_override =  QColor(57,113,249,180);
 
 optimizereditor::optimizereditor(QWidget *parent)

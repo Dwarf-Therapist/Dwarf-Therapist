@@ -32,10 +32,6 @@ THE SOFTWARE.
 #include <QTableWidget>
 #include <QVBoxLayout>
 
-#if QT_VERSION < 0x050000
-# define setSectionResizeMode setResizeMode
-#endif
-
 PreferencesDock::PreferencesDock(QWidget *parent, Qt::WindowFlags flags)
     : BaseDock(parent, flags)
 {

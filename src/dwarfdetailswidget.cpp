@@ -41,10 +41,6 @@ THE SOFTWARE.
 #include <QProgressBar>
 #include <QSettings>
 
-#if QT_VERSION < 0x050000
-# define setSectionResizeMode setResizeMode
-#endif
-
 QColor DwarfDetailsWidget::color_low = QColor(168, 10, 44, 255);
 QColor DwarfDetailsWidget::color_high = QColor(0, 60, 128, 255);
 QColor DwarfDetailsWidget::color_mood_had = QColor(125, 125, 125, 255);

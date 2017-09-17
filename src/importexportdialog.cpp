@@ -39,20 +39,11 @@ THE SOFTWARE.
 #include <QMessageBox>
 #include <QDateTime>
 #include <QSettings>
-#if QT_VERSION >= 0x050000
-# include <QStandardPaths>
-#else
-# include <QDesktopServices>
-# define QStandardPaths QDesktopServices
-#endif
+#include <QStandardPaths>
 
 static QString _get_dir(QStandardPaths::StandardLocation locationId)
 {
-#if QT_VERSION >= 0x050000
     return QStandardPaths::writableLocation(locationId);
-#else
-    return QDesktopServices::storageLocation(locationId);
-#endif
 }
 
 ImportExportDialog::ImportExportDialog(QWidget *parent)

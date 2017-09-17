@@ -29,11 +29,7 @@ THE SOFTWARE.
 #include "unithealth.h"
 #include "healthinfo.h"
 
-#if QT_VERSION >= 0x050000
-# include <QRegularExpression>
-#else
-# include <QRegExp>
-#endif
+#include <QRegularExpression>
 
 HealthColumn::HealthColumn(const QString &title, eHealth::H_INFO categoryID, ViewColumnSet *set, QObject *parent)
     : ViewColumn(title, CT_HEALTH, set, parent)
@@ -104,12 +100,7 @@ QStandardItem *HealthColumn::build_cell(Dwarf *d) {
         if(UnitHealth::get_display_categories().count() > 0 && UnitHealth::get_display_categories().contains(m_id)){
             QList<HealthInfo*> cat_infos = UnitHealth::get_display_categories().value(m_id)->descriptions();
             foreach(HealthInfo *h_info, cat_infos){
-#if QT_VERSION >= 0x050000
-                QRegularExpression
-#else
-                QRegExp
-#endif
-                        re("((?<=, )|(?<=[>])|^)" + h_info->description(false));
+                QRegularExpression re("((?<=, )|(?<=[>])|^)" + h_info->description(false));
                 if(re.isValid())
                     health_summary.replace(re, QString("<b>%2</b>").arg(h_info->description(true)));
             }

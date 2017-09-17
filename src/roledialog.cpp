@@ -1,13 +1,8 @@
 #include <QMessageBox>
 #include <QMenu>
 
-#if QT_VERSION < 0x050000
-# include <QScriptEngine>
-# define QJSEngine QScriptEngine
-# define QJSValue QScriptValue
-#else
-# include <QJSEngine>
-#endif
+#include <QJSEngine>
+#include <QRegularExpression>
 
 #include "roledialog.h"
 #include "contextmenuhelper.h"
@@ -27,12 +22,6 @@
 #include "ui_roledialog.h"
 #include "utils.h"
 #include "viewmanager.h"
-
-#if QT_VERSION >= 0x050000
-# include <QRegularExpression>
-#else
-# define setSectionResizeMode setResizeMode
-#endif
 
 roleDialog::~roleDialog()
 {
@@ -1091,11 +1080,7 @@ void roleDialog::item_double_clicked(QTreeWidgetItem *item, int col){
 
 void roleDialog::search_prefs(QString val){
     val = "(" + val.replace(" ", "|") + ")";
-#if QT_VERSION >= 0x050000
     QRegularExpression filter(val, QRegularExpression::CaseInsensitiveOption);
-#else
-    QRegExp filter(val, Qt::CaseInsensitive);
-#endif
     int hidden;
     for(int i = 0; i < ui->treePrefs->topLevelItemCount(); i++){
         hidden = 0;
@@ -1143,11 +1128,7 @@ void roleDialog::calc_new_role(){
                 m_engine.globalObject().setProperty("__internal_role_return_value_check", ret);
                 err_msg = tr("<font color=red>Script returned %1 instead of number</font>")
                         .arg(m_engine.evaluate(QString("typeof __internal_role_return_value_check")).toString());
-#if QT_VERSION < 0x050000
-                m_engine.globalObject().setProperty("__internal_role_return_value_check", QScriptValue());
-#else
                 m_engine.globalObject().deleteProperty("__internal_role_return_value_check");
-#endif
             }
             ui->te_script->setStatusTip(err_msg);
             ui->txt_status_tip->setText(err_msg);

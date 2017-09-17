@@ -34,13 +34,7 @@ THE SOFTWARE.
 #include "item.h"
 #include "dwarf.h"
 
-#if QT_VERSION < 0x050000
-# include <QScriptEngine>
-# define QJSEngine QScriptEngine
-# define QJSValue QScriptValue
-#else
-# include <QJSEngine>
-#endif
+#include <QJSEngine>
 
 ScriptDialog::ScriptDialog(QWidget *parent)
     : QDialog(parent)
@@ -225,11 +219,7 @@ bool ScriptDialog::script_is_valid(){
                 m_engine.globalObject().setProperty("__internal_script_return_value_check", ret);
                 err_msg = tr("<font color=red>Script returned %1 instead of boolean</font>")
                                  .arg(m_engine.evaluate(QString("typeof __internal_scripte_return_value_check")).toString());
-#if QT_VERSION < 0x050000
-                m_engine.globalObject().setProperty("__internal_script_return_value_check", QScriptValue());
-#else
                 m_engine.globalObject().deleteProperty("__internal_script_return_value_check");
-#endif
             }
             ui->script_edit->setStatusTip(err_msg);
             ui->txt_status_tip->setText(err_msg);

@@ -27,13 +27,7 @@ THE SOFTWARE.
 #include "defines.h"
 #include "dwarftherapist.h"
 
-#if QT_VERSION >= 0x050000
 #include <QJSEngine>
-#else
-#include <QScriptEngine>
-# define QJSEngine QScriptEngine
-# define QJSValue QScriptValue
-#endif
 #include <QSettings>
 
 DwarfModelProxy::DwarfModelProxy(QObject *parent)

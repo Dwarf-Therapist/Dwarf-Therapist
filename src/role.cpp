@@ -32,12 +32,7 @@ THE SOFTWARE.
 #include "item.h"
 
 #include <QSettings>
-#if QT_VERSION >= 0x050000
-# include <QRegularExpression>
-#else
-# include <QRegExp>
-#define QRegularExpression QRegExp
-#endif
+#include <QRegularExpression>
 
 Role::Role()
     : m_name("UNKNOWN")
@@ -390,11 +385,7 @@ void Role::highlight_pref_matches(Dwarf *d, QString &pref_desc){
             QList<QPair<QString, QString> > pref_matches = d->get_role_pref_matches(m_name);
             QPair<QString,QString> p_match;
             QRegularExpression re;
-#if QT_VERSION >= 0x050000
-                re.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
-#else
-                re.setCaseSensitivity(Qt::CaseInsensitive);
-#endif
+            re.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
             foreach(p_match, pref_matches){
                 re.setPattern(QString("((?<=, )|(?<=>)|^)%1(?=[$,\\n]|\\s*[<])").arg(re.escape(p_match.first)));
                 pref_desc.replace(re, QString("<b>%2</b>").arg(p_match.first));

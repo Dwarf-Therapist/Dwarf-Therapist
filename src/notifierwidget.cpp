@@ -37,13 +37,9 @@ NotifierWidget::NotifierWidget(MainWindow *parent)
 
     setAttribute(Qt::WA_ShowWithoutActivating);
     setAttribute(Qt::WA_TranslucentBackground);
-#if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-    setAttribute(Qt::WA_X11DoNotAcceptFocus);
-#else
     setWindowFlags(Qt::Window | //necessary to show window?
                    Qt::WindowDoesNotAcceptFocus | //no focus
                    Qt::FramelessWindowHint); //no border
-#endif
     this->setVisible(false);
 }
 

@@ -13,11 +13,9 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
-#endif
 
 Updater::Updater(QObject *parent)
     : QObject(parent)
@@ -177,7 +175,6 @@ void Updater::check_layouts(DFInstance *df) {
 
 bool Updater::load_manifest(QNetworkReply *reply, QVariant &manifest_object){
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
     QJsonParseError *json_err = new QJsonParseError();
     QJsonDocument doc = QJsonDocument::fromJson(reply->readAll(),json_err);
     if(json_err && json_err->error != QJsonParseError::NoError){
@@ -189,18 +186,6 @@ bool Updater::load_manifest(QNetworkReply *reply, QVariant &manifest_object){
     }else{
         manifest_object = doc;
     }
-#else
-    QString manifest_data = QString(reply->readAll());
-    if(manifest_data.isEmpty()){
-        LOGW << "Empty manifest";
-        reply->setProperty("ERROR",tr("Empty or missing download manifest!"));
-        //can't emit the error signal (protected in QT4) so emit a notification manually
-        show_notification(reply);
-        return false;
-    }else{
-        manifest_object = manifest_data;
-    }
-#endif
     return true;
 }
 
@@ -208,8 +193,6 @@ QStringList Updater::find_layout_urls(QNetworkReply *reply){
     QStringList layout_urls;
     QVariant manifest_object;
     if(load_manifest(reply,manifest_object)){
-
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
         QJsonDocument manifest = qvariant_cast<QJsonDocument>(manifest_object);
         QJsonArray file_infos =  manifest.array();
         for(int idx = 0; idx < file_infos.size(); idx++){
@@ -225,23 +208,6 @@ QStringList Updater::find_layout_urls(QNetworkReply *reply){
                 }
             }
         }
-#else
-        QString manifest = manifest_object.toString();
-        QStringList layout_shas;
-        QRegExp rx_sha("\"sha\":\\s*\"([a-zA-Z0-9]*)\"");
-        QRegExp rx_url("\"download_url\":\\s*\"([a-zA-Z0-9:/._-]*)\"");
-        load_layout_data(manifest,layout_shas,rx_sha);
-        load_layout_data(manifest,layout_urls,rx_url);
-
-        for(int idx = layout_shas.count()-1; idx > -1; idx--){
-            QString git_sha = layout_shas.at(idx);
-            if(!m_df->find_memory_layout(git_sha)){
-                LOGD << "downloading layout" << "SHA:" << git_sha;
-            }else{
-                layout_urls.removeAt(idx);
-            }
-        }
-#endif
     }
     return layout_urls;
 }
@@ -251,7 +217,6 @@ void Updater::load_latest_version(QNetworkReply *reply, Version &latest_version,
     QString data;
     QVariant manifest_object;
     if(load_manifest(reply,manifest_object)){
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
         QJsonDocument manifest = qvariant_cast<QJsonDocument>(manifest_object);
         QJsonObject release_info = manifest.object();
         if(!release_info.isEmpty()){
@@ -259,14 +224,6 @@ void Updater::load_latest_version(QNetworkReply *reply, Version &latest_version,
             rx_version.setPattern("(\\d+)\\.(\\d+)\\.(\\d+)");
             url = release_info.value("html_url").toString();
         }
-#else
-        data = manifest_object.toString();
-        rx_version.setPattern("\"tag_name\":\\s*\"[a-zA-Z]*(\\d+)\\.(\\d+)\\.(\\d+)\"");
-        QRegExp rx_url("\"html_url\":\\s*\"([a-zA-Z0-9:/._-]*)\"");
-        if(rx_url.indexIn(data) != -1){
-            url = rx_url.cap(1);
-        }
-#endif
         int idx = rx_version.indexIn(data);
         if(idx != -1){
             latest_version.major = rx_version.cap(1).toInt();
@@ -320,12 +277,7 @@ void Updater::layout_downloaded() {
                     ni.details = tr("Could not open %1 to update the layout!").arg(m->filepath());
                 }
             }else{
-                QString dl_filename =
-                #if QT_VERSION < QT_VERSION_CHECK(5,0,0)
-                        reply->url().toString().split("/").last();
-                #else
-                        reply->url().fileName();
-                #endif
+                QString dl_filename = reply->url().fileName();
                 QString add_result;
                 if(m_df->add_new_layout(dl_filename,layout_data,add_result)){
                     ni.title = tr("Memory Layout Added");
