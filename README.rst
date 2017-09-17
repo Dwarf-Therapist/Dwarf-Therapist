@@ -2,22 +2,12 @@
 Dwarf Therapist
 ===============
 
-.. image:: https://travis-ci.org/splintermind/Dwarf-Therapist.svg?branch=DF2016
-   :target: https://travis-ci.org/splintermind/Dwarf-Therapist
-.. image:: https://scan.coverity.com/projects/3038/badge.svg
-   :target: https://scan.coverity.com/projects/3038
+.. image:: https://travis-ci.org/Dwarf-Therapist/Dwarf-Therapist.svg?branch=master
+   :target: https://travis-ci.org/Dwarf-Therapist/Dwarf-Therapist
+.. image:: https://scan.coverity.com/projects/13797/badge.svg
+   :target: https://scan.coverity.com/projects/dwarf-therapist-dwarf-therapist
 
-This is a heavily modified version of the original `Dwarf Therapist`_.
-
-Many new features (attributes, roles, optimization plans, health views, inventory, etc.) have been added, and many bugs have been resolved.
-
-If you'd like to help support this project:
-
-.. image:: http://dl.dropbox.com/u/185441/happy-thoughts.png
-   :alt: Buy me a Beer! ... and I'll have happy thoughts ...
-   :target: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=GM5Z6DYJEVW56&lc=CA&item_name=Donation&currency_code=CAD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted
-
-The changelog is `available at GitHub`_.
+This is the maintained version of `Splintermind's Dwarf Therapist`_ (itself a heavily modified version of the `original Dwarf Therapist`_).
 
 Latest Release
 ========
@@ -77,12 +67,12 @@ You may also be requested to provide a log, which is saved in ``log/log.txt`` on
 
 You can also join us in `#dwarftherapist on Freenode`_.
 
-.. _Dwarf Therapist: http://code.google.com/p/dwarftherapist/
-.. _available at GitHub: https://github.com/splintermind/Dwarf-Therapist/wiki/Change-Log
+.. _Splintermind's Dwarf Therapist: https://github.com/splintermind/Dwarf-Therapist/
+.. _original Dwarf Therapist: http://code.google.com/p/dwarftherapist/
 .. _Yama ptrace LSM: https://www.kernel.org/doc/Documentation/security/Yama.txt
 .. _Dwarf Therapist thread: http://www.bay12forums.com/smf/index.php?topic=122968
-.. _GitHub issue tracker: https://github.com/splintermind/Dwarf-Therapist/issues
+.. _GitHub issue tracker: https://github.com/Dwarf-Therapist/Dwarf-Therapist/issues
 .. _DFFD: http://dffd.wimbli.com/category.php?id=20
 .. _#dwarftherapist on Freenode: http://webchat.freenode.net/?channels=%23dwarftherapist
-.. _releases: https://github.com/splintermind/Dwarf-Therapist/releases
-.. _latest release: https://github.com/splintermind/Dwarf-Therapist/releases/latest
+.. _releases: https://github.com/Dwarf-Therapist/Dwarf-Therapist/releases
+.. _latest release: https://github.com/Dwarf-Therapist/Dwarf-Therapist/releases/latest
