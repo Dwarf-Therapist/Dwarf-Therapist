@@ -31,10 +31,23 @@ If the latest published releases do not contain a package, they may be found on 
 
 `OSX <http://dffd.bay12games.com/file.php?id=11579>`_
 
+Building
+========
+
+Dwarf-Therapist requires a C++ compiler (with C++14 support), cmake (3.1.0 or newer), and Qt5 (with Widgets and QML modules).
+
+Create a build directory, then, from it, run cmake and make::
+
+    mkdir build
+    cd build
+    cmake ..
+    make
+
+Linux users can install Dwarf Therapist by running ``make install``. The destination directory can be changed by passing the ``-DCMAKE_INSTALL_PREFIX=/path/to/dwarftherapist`` option to cmake (e.g. ``cmake -DCMAKE_INSTALL_PREFIX=~/.local ..`` for a user-local installation).
+
 Linux
 =====
 There is currently no official package for Linux.
-You can find the instructions to build from source `in BUILDING.rst`_.
 
 Running the program
 -------------------
@@ -66,7 +79,6 @@ You can also join us in `#dwarftherapist on Freenode`_.
 
 .. _Dwarf Therapist: http://code.google.com/p/dwarftherapist/
 .. _available at GitHub: https://github.com/splintermind/Dwarf-Therapist/wiki/Change-Log
-.. _in BUILDING.rst: https://github.com/splintermind/Dwarf-Therapist/blob/DF2014/BUILDING.rst
 .. _Yama ptrace LSM: https://www.kernel.org/doc/Documentation/security/Yama.txt
 .. _Dwarf Therapist thread: http://www.bay12forums.com/smf/index.php?topic=122968
 .. _GitHub issue tracker: https://github.com/splintermind/Dwarf-Therapist/issues
