@@ -128,12 +128,11 @@ USIZE DFInstanceWindows::write_string(VIRTADDR addr, const QString &str) {
     return bytes_written;
 }
 
-USIZE DFInstanceWindows::read_raw(VIRTADDR addr, USIZE bytes,
-                                void *buffer) {
+USIZE DFInstanceWindows::read_raw(VIRTADDR addr, USIZE bytes, void *buffer) {
     ZeroMemory(buffer, bytes);
-    USIZE bytes_read = 0;
+    SIZE_T bytes_read = 0;
     if (!ReadProcessMemory(m_proc, reinterpret_cast<LPCVOID>(addr), buffer,
-                           bytes, reinterpret_cast<SIZE_T*>(&bytes_read))) {
+                           bytes, &bytes_read)) {
         DWORD error = GetLastError();
         LOGE << "ReadProcessMemory failed:" << get_error_string(error);
     }
@@ -141,11 +140,11 @@ USIZE DFInstanceWindows::read_raw(VIRTADDR addr, USIZE bytes,
 }
 
 USIZE DFInstanceWindows::write_raw(VIRTADDR addr, USIZE bytes, const void *buffer) {
-    USIZE bytes_written = 0;
+    SIZE_T bytes_written = 0;
     if (!WriteProcessMemory(m_proc, reinterpret_cast<LPVOID>(addr), buffer,
-                       bytes, reinterpret_cast<SIZE_T*>(&bytes_written))) {
+                            bytes, &bytes_written)) {
         DWORD error = GetLastError();
-        LOGE << "ReadProcessMemory failed:" << get_error_string(error);
+        LOGE << "WriteProcessMemory failed:" << get_error_string(error);
     }
     Q_ASSERT(bytes_written == bytes);
     return bytes_written;
