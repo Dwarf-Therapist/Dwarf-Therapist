@@ -32,9 +32,9 @@ THE SOFTWARE.
 #include <math.h>
 
 // meh
-typedef quint64 VIRTADDR;
-typedef quint64 USIZE;
-typedef qint64 SSIZE;
+typedef quintptr VIRTADDR;
+typedef quintptr USIZE;
+typedef qintptr SSIZE;
 typedef quint8 BYTE;
 typedef quint16 WORD;
 
