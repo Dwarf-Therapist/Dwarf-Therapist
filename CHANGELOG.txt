@@ -1,3 +1,15 @@
+### Version 38.0 Patch Notes
+
+***
+ - added support for 64 bits Dwarf Fortress
+ - added memory layouts for DF 43.05 (only for Windows 32 bits and 64 bits, and Linux 64 bits)
+ - dropped Qt4 support, requires Qt5
+ - a C++14 compiler is required
+ - various changes and fixes from Hello71
+ - fixed random crash when switching tabs
+ - fixed uncovered legs and body warnings inversion
+ - fixed reading dwarves during embark when filtering non-citizens
+
 ### Version 37.0 Patch Notes
 
 ***

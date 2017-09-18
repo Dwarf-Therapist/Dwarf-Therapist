@@ -13,14 +13,6 @@ Latest Release
 ========
 The `latest release`_ is always published in the project's `releases`_ page. These releases normally contain packages for Windows and OSX.
 
-Alternate Download (DFFD)
--------------------------
-If the latest published releases do not contain a package, they may be found on DFFD.
-
-`Windows 32-bit <http://dffd.bay12games.com/file.php?id=11420>`_
-
-`OSX <http://dffd.bay12games.com/file.php?id=11579>`_
-
 Building
 ========
 
