@@ -45,7 +45,7 @@ THE SOFTWARE.
 
 #define GLOBAL_SORT_COL_IDX 1
 
-#define REPO_OWNER "splintermind"
+#define REPO_OWNER "Dwarf-Therapist"
 #define REPO_NAME "Dwarf-Therapist"
 
 #endif
