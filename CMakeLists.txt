@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 project(DwarfTherapist)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -34,16 +36,6 @@ elseif(UNIX)
 
     else()
         set(SOURCES ${SOURCES} src/dfinstancelinux.cpp)
-
-        #    system("printf 'Checking for pdflatex... '; if ! command -v pdflatex; then echo 'not found'; exit 1; fi") {
-        #        manual.depends = "$$PWD/doc/Dwarf Therapist.tex" $$PWD/doc/images/*
-        #        manual.commands = [ -d doc ] || mkdir doc;
-        #        manual.commands += TEXINPUTS=".:$$PWD/doc/images:" pdflatex -output-directory=doc "$<"
-        #        manual.target = "doc/Dwarf Therapist.pdf"
-        #        QMAKE_EXTRA_TARGETS += manual
-        #        POST_TARGETDEPS += "$$manual.target"
-        #        doc.files += "$$manual.target"
-        #    }
     endif()
 else()
     message(FATAL_ERROR "unsupported target")
@@ -93,6 +85,8 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp resources.qrc
     ${SOURCES})
 target_link_libraries(DwarfTherapist Qt5::Widgets Qt5::Qml ${LIBS})
+
+add_subdirectory(doc)
 
 if(UNIX AND NOT APPLE)
     # Installation is currently Linux-only
