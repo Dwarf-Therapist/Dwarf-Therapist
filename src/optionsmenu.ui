@@ -1593,6 +1593,19 @@
                  </property>
                 </widget>
                </item>
+               <item>
+                <spacer name="horizontalSpacer_16">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
               </layout>
              </item>
              <item row="2" column="0">
@@ -1685,12 +1698,6 @@
                </item>
                <item>
                 <widget class="QLabel" name="lbl_tooltip_top_roles">
-                 <property name="maximumSize">
-                  <size>
-                   <width>75</width>
-                   <height>20</height>
-                  </size>
-                 </property>
                  <property name="text">
                   <string>Show the top</string>
                  </property>
@@ -1698,12 +1705,6 @@
                </item>
                <item>
                 <widget class="QSpinBox" name="sb_roles_tooltip">
-                 <property name="maximumSize">
-                  <size>
-                   <width>50</width>
-                   <height>20</height>
-                  </size>
-                 </property>
                  <property name="statusTip">
                   <string extracomment="Sets the maximum amount of roles to list in the tooltip, sorted by rating.">Sets the maximum amount of roles to list in the tooltip, sorted by rating.</string>
                  </property>
@@ -1743,6 +1744,19 @@
                   <string/>
                  </property>
                 </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_15">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
                </item>
               </layout>
              </item>
@@ -2060,12 +2074,6 @@
              <height>0</height>
             </size>
            </property>
-           <property name="maximumSize">
-            <size>
-             <width>60</width>
-             <height>16777215</height>
-            </size>
-           </property>
            <property name="statusTip">
             <string>This is the default role trait weight. Trait weights can be overridden in the Dwarf Therapist.ini.</string>
            </property>
@@ -2083,12 +2091,6 @@
             <size>
              <width>60</width>
              <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>60</width>
-             <height>16777215</height>
             </size>
            </property>
            <property name="toolTip">
@@ -2114,12 +2116,6 @@
             <size>
              <width>60</width>
              <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>60</width>
-             <height>16777215</height>
             </size>
            </property>
            <property name="statusTip">
@@ -2211,12 +2207,6 @@
              <height>0</height>
             </size>
            </property>
-           <property name="maximumSize">
-            <size>
-             <width>60</width>
-             <height>16777215</height>
-            </size>
-           </property>
            <property name="statusTip">
             <string>This is the default role skill weight. Skill weights can be overridden in the Dwarf Therapist.ini.</string>
            </property>
@@ -2237,12 +2227,6 @@
             <size>
              <width>60</width>
              <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>60</width>
-             <height>16777215</height>
             </size>
            </property>
            <property name="statusTip">
@@ -2318,12 +2302,6 @@
           <layout class="QHBoxLayout" name="horizontalLayout_7">
            <item>
             <widget class="QSpinBox" name="sb_roles_pane">
-             <property name="maximumSize">
-              <size>
-               <width>60</width>
-               <height>20</height>
-              </size>
-             </property>
              <property name="minimum">
               <number>1</number>
              </property>
