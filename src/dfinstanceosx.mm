@@ -23,10 +23,8 @@ THE SOFTWARE.
 #include <QtGui>
 #include <QMessageBox>
 
-#include "Foundation/NSAutoreleasePool.h"
-#include "Foundation/NSFileManager.h"
-#include "Foundation/NSBundle.h"
-#include "AppKit/NSWorkspace.h"
+#import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
 
 #include "dfinstance.h"
 #include "dfinstanceosx.h"
@@ -135,21 +133,17 @@ bool DFInstanceOSX::set_pid(){
     NSAutoreleasePool *authPool = [[NSAutoreleasePool alloc] init];
 
     NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
-    NSArray *launchedApps = [workspace launchedApplications];
+    NSArray *launchedApps = [workspace runningApplications];
 
     unsigned i, len = [launchedApps count];
 
     // compile process array
     for ( i = 0; i < len; i++ ) {
-        NSDictionary *application = [launchedApps objectAtIndex:i];
-        if ( [[application objectForKey:@"NSApplicationName"]
-                                            isEqualToString:@"dwarfort.exe" ]) {
+        NSRunningApplication *application = [launchedApps objectAtIndex:i];
+        if ( [[application localizedName] isEqualToString:@"dwarfort.exe" ]) {
 
-            m_loc_of_dfexe = QString( [[application objectForKey:
-                                     @"NSApplicationPath"] UTF8String]);
-            m_pid = [[application objectForKey:
-                                            @"NSApplicationProcessIdentifier"]
-                                            intValue];
+            m_loc_of_dfexe = QString( [[[application executableURL] path]UTF8String]);
+            m_pid = [application processIdentifier];
             LOGI << "Found running copy, pid:" << m_pid << "path:" << m_loc_of_dfexe;
         }
     }
@@ -270,9 +264,10 @@ bool DFInstanceOSX::authorize() {
 
     FILE *pipe = NULL;
     char readBuffer[32];
+    char *args[] = {NULL};
 
     status = AuthorizationExecuteWithPrivileges(authorizationRef, therapistExe,
-                                                kAuthorizationFlagDefaults, nil, &pipe);
+                                                kAuthorizationFlagDefaults, args, &pipe);
     if (status != errAuthorizationSuccess) {
         NSLog(@"Error: %d", status);
         return false;
@@ -308,7 +303,7 @@ bool DFInstanceOSX::isAuthorized() {
 
 bool DFInstanceOSX::checkPermissions() {
     NSAutoreleasePool *authPool = [[NSAutoreleasePool alloc] init];
-    NSDictionary *applicationAttributes = [[NSFileManager defaultManager] fileAttributesAtPath:[[NSBundle mainBundle] executablePath] traverseLink: YES];
+    NSDictionary *applicationAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[[[NSBundle mainBundle] executablePath] stringByResolvingSymlinksInPath] error:nil];
     return ([applicationAttributes filePosixPermissions] == 1517 && [[applicationAttributes fileGroupOwnerAccountName] isEqualToString: @"procmod"]);
     [authPool release];
 }
