@@ -208,7 +208,7 @@
               <string>This font will be applied to everything &lt;i&gt;except&lt;/i&gt; grid row headers, grid column headers and tooltips. These fonts can be set under their respective tabs.</string>
              </property>
              <property name="text">
-              <string>General Font</string>
+              <string>General Font: </string>
              </property>
              <property name="alignment">
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1345,7 +1345,7 @@
                   <string>Font for all tooltips.</string>
                  </property>
                  <property name="text">
-                  <string>Tooltip Font</string>
+                  <string>Tooltip Font: </string>
                  </property>
                  <property name="alignment">
                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1566,7 +1566,7 @@
                   <string>Only show skills of this level or higher in the tooltip.</string>
                  </property>
                  <property name="text">
-                  <string>Only show skills at or above level</string>
+                  <string>Only show skills at or above level </string>
                  </property>
                 </widget>
                </item>
@@ -1589,7 +1589,7 @@
                <item>
                 <widget class="QLabel" name="lbl_max_tooltip_skills2">
                  <property name="text">
-                  <string>in the tooltip.</string>
+                  <string> in the tooltip.</string>
                  </property>
                 </widget>
                </item>
@@ -1699,7 +1699,7 @@
                <item>
                 <widget class="QLabel" name="lbl_tooltip_top_roles">
                  <property name="text">
-                  <string>Show the top</string>
+                  <string>Show the top </string>
                  </property>
                 </widget>
                </item>
@@ -1728,7 +1728,7 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>roles in the tooltip.</string>
+                  <string> roles in the tooltip.</string>
                  </property>
                 </widget>
                </item>
@@ -1893,7 +1893,7 @@
                   <string>When checked, shows stress, emotions and their circumstances.</string>
                  </property>
                  <property name="text">
-                  <string>Show</string>
+                  <string>Show </string>
                  </property>
                 </widget>
                </item>
@@ -1919,7 +1919,7 @@
                   </sizepolicy>
                  </property>
                  <property name="text">
-                  <string>thoughts/emotions in the tooltip.</string>
+                  <string> thoughts/emotions in the tooltip.</string>
                  </property>
                 </widget>
                </item>
@@ -2298,8 +2298,63 @@
        </item>
        <item>
         <layout class="QGridLayout" name="gridLayout_7">
-         <item row="0" column="1">
+         <item row="4" column="0">
+          <widget class="QCheckBox" name="chk_roles_in_skills">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>Shows all roles which have the skill in the column tooltips. Examples of skill column: Axedwarf, Liar, Teacher, Fighter...</string>
+           </property>
+           <property name="text">
+            <string>Show role information in skill columns</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QCheckBox" name="chk_roles_in_labor">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="statusTip">
+            <string>Shows all roles which have the same skill as the labor uses in the labor column tooltips.</string>
+           </property>
+           <property name="text">
+            <string>Show role information in labor columns</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <spacer name="horizontalSpacer_12">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="0">
           <layout class="QHBoxLayout" name="horizontalLayout_7">
+           <item>
+            <widget class="QLabel" name="label_7">
+             <property name="text">
+              <string>Show the top</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
            <item>
             <widget class="QSpinBox" name="sb_roles_pane">
              <property name="minimum">
@@ -2344,55 +2399,7 @@
            </item>
           </layout>
          </item>
-         <item row="3" column="0">
-          <widget class="QCheckBox" name="chk_roles_in_skills">
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="toolTip">
-            <string/>
-           </property>
-           <property name="statusTip">
-            <string>Shows all roles which have the skill in the column tooltips. Examples of skill column: Axedwarf, Liar, Teacher, Fighter...</string>
-           </property>
-           <property name="layoutDirection">
-            <enum>Qt::RightToLeft</enum>
-           </property>
-           <property name="text">
-            <string>Show role information in skill columns</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_7">
-           <property name="text">
-            <string>Show the top</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
          <item row="2" column="0">
-          <widget class="QCheckBox" name="chk_roles_in_labor">
-           <property name="toolTip">
-            <string/>
-           </property>
-           <property name="statusTip">
-            <string>Shows all roles which have the same skill as the labor uses in the labor column tooltips.</string>
-           </property>
-           <property name="layoutDirection">
-            <enum>Qt::RightToLeft</enum>
-           </property>
-           <property name="text">
-            <string>Show role information in labor columns</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
           <layout class="QHBoxLayout" name="horizontalLayout_8">
            <item>
             <spacer name="horizontalSpacer_13">
@@ -2424,19 +2431,6 @@
             </widget>
            </item>
           </layout>
-         </item>
-         <item row="1" column="2">
-          <spacer name="horizontalSpacer_12">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
          </item>
         </layout>
        </item>
