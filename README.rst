@@ -21,6 +21,10 @@ If the latest published releases do not contain a package, they may be found on 
 
 `Windows 64-bit <http://dffd.bay12games.com/file.php?id=13095>`_
 
+The manual for Dwarf Therapist can be downloaded separately.
+
+`Stand-alone Manual <http://dffd.bay12games.com/file.php?id=7889>`_
+
 Building
 ========
 
