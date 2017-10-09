@@ -828,6 +828,7 @@ void Dwarf::read_preferences(){
         switch(pref_type){
         case LIKE_MATERIAL:
         {
+            p->set_mat_state (mat_state);
             pref_name = m_df->find_material_name(mat_index,mat_type,i_type,mat_state);
             Material *m = m_df->find_material(mat_index,mat_type);
             if(m && m->id() >= 0){

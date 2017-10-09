@@ -67,12 +67,14 @@ public:
     void set_category(PREF_TYPES cat) {m_pType = cat;}
     void set_item_type(ITEM_TYPE iType) {m_iType = iType;}
     void set_exact(bool m) {m_exact_match = m;}
+    void set_mat_state (MATERIAL_STATES mat_state) {m_mat_state = mat_state;}
 
     QString get_name() {return m_name;}
     PREF_TYPES get_pref_category() {return m_pType;}
     ITEM_TYPE get_item_type() {return m_iType;}
     FlagArray &flags() {return m_flags;}
     bool exact_match() {return m_exact_match;}
+    MATERIAL_STATES mat_state() {return m_mat_state;}
 
     RoleAspect *pref_aspect;
 
@@ -88,6 +90,7 @@ protected:
     QString m_name; //actual value to search for when doing string comparisons
     PREF_TYPES m_pType; //preference category
     ITEM_TYPE m_iType; //type of item for an dwarf's item preference
+    MATERIAL_STATES m_mat_state; // for material preferences, ANY_STATE matches all
 
     //these flags are used when writing to the ini. they're specifically chosen to find matches of particular materials
     FlagArray m_flags;

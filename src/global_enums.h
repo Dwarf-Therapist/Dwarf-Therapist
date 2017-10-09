@@ -163,7 +163,8 @@ typedef enum {
 } ITEM_TYPE;
 
 typedef enum {
-    SOLID,
+    ANY_STATE = -1,
+    SOLID = 0,
     LIQUID,
     GAS,
     POWDER,

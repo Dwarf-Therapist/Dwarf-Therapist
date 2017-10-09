@@ -160,6 +160,7 @@ void Role::parsePreferences(QSettings &s, QString node, weight_info &g_weight, f
         p->set_category(static_cast<PREF_TYPES>(s.value("pref_category",-1).toInt()));
         p->set_item_type(static_cast<ITEM_TYPE>(s.value("item_type",-1).toInt()));
         p->set_exact(s.value("exact",false).toBool());
+        p->set_mat_state(static_cast<MATERIAL_STATES>(s.value("mat_state", -1).toInt ()));
 
         p->pref_aspect->weight = s.value("weight",1.0).toFloat();
         if(p->pref_aspect->weight < 0)
@@ -451,6 +452,9 @@ void Role::write_pref_group(QSettings &s, float default_prefs_weight){
                 s.setValue("item_type", QString::number(i_type));
             }
             s.setValue("exact", p->exact_match());
+            if (p->mat_state() != ANY_STATE){
+                s.setValue("mat_state", QString::number(p->mat_state()));
+            }
 
             QString id = tr("%1%2").arg(p->pref_aspect->is_neg ? "-" : "").arg(p->get_name());
             s.setValue("name",id);
