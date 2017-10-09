@@ -37,6 +37,7 @@ Preference::Preference(QObject *parent)
     , m_name("")
     , m_pType(LIKES_NONE)
     , m_iType(NONE)
+    , m_mat_state (ANY_STATE)
     , m_flags()
     , m_exact_match(false)
 {}
@@ -47,6 +48,7 @@ Preference::Preference(PREF_TYPES category, ITEM_TYPE iType, QObject *parent)
     , m_name("")
     , m_pType(category)
     , m_iType(iType)
+    , m_mat_state (ANY_STATE)
     , m_flags()
     , m_exact_match(false)
 {}
@@ -57,6 +59,7 @@ Preference::Preference(PREF_TYPES category, QString name, QObject *parent)
     , m_name(name)
     , m_pType(category)
     , m_iType(NONE)
+    , m_mat_state (ANY_STATE)
     , m_flags()
     , m_exact_match(false)
 {}
@@ -67,6 +70,7 @@ Preference::Preference(const Preference &p)
     , m_name(p.m_name)
     , m_pType(p.m_pType)
     , m_iType(p.m_iType)
+    , m_mat_state (p.m_mat_state)
     , m_flags(p.m_flags)
     , m_exact_match(p.m_exact_match)
 {}
@@ -76,13 +80,13 @@ void Preference::add_flag(int flag){
 }
 
 int Preference::matches(Preference *role_pref, Dwarf *d){
-    int result = 0;
+    bool result = false;
 
     if(m_pType == role_pref->get_pref_category()){
-        result = 1; //so far so good..
+        result = true; //so far so good..
 
         if(m_iType >= 0 && role_pref->get_item_type() >= 0 && m_iType != role_pref->get_item_type()){
-            result = 0;
+            result = false;
         }
 
         //check for an exact match on the string, if this is required, reset our result again and check
@@ -101,21 +105,25 @@ int Preference::matches(Preference *role_pref, Dwarf *d){
                     }
                     result = (result & (matches == role_pref->flags().count()));
                 }else{
-                    result = 0;
+                    result = false;
                 }
             }
 
-            if(result <= 0){ //only check for an exact match if we don't already have a match
+            if (result){ // compare material state only if the role has one
+                result = (m_pType != LIKE_MATERIAL ||
+                          role_pref->m_mat_state == ANY_STATE ||
+                          m_mat_state == role_pref->m_mat_state);
+            }
+            else{ //only check for an exact match if we don't already have a match
                 result = (QString::compare(role_pref->get_name(),m_name,Qt::CaseInsensitive) == 0);
             }
-
         }
         if(d){
             //if it's a weapon, and a match, ensure the dwarf can actually wield it as well
-            if(result > 0 && (role_pref->get_item_type() == WEAPON ||
-                              (m_pType == LIKE_ITEM &&
-                               role_pref->flags().count() > 0 &&
-                               (m_flags.has_flag(ITEMS_WEAPON) || m_flags.has_flag(ITEMS_WEAPON_RANGED))))){
+            if(result && (role_pref->get_item_type() == WEAPON ||
+                          (m_pType == LIKE_ITEM &&
+                           role_pref->flags().count() > 0 &&
+                           (m_flags.has_flag(ITEMS_WEAPON) || m_flags.has_flag(ITEMS_WEAPON_RANGED))))){
                 ItemWeaponSubtype *w = d->get_df_instance()->find_weapon_subtype(m_name);
                 if(w){
                     result = (d->body_size(true) >= w->multi_grasp());
