@@ -1375,17 +1375,8 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
     else if(mat_type < 219){
         if(itype == DRINK || itype == LIQUID_MISC){
             name = m->get_material_name(LIQUID);
-        }else if(itype == CHEESE)
+        }else
             name = m->get_material_name(mat_state);
-        else
-        {
-            name = "";
-            Race* r = get_race(mat_index);
-            if(r){
-                name = r->name().toLower().append(" ");
-            }
-            name.append(m->get_material_name(mat_state));
-        }
     }
     else if(mat_type < 419)
     {
@@ -1404,42 +1395,26 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
         if(p){
             //name = p->name();
 
-            if(itype==SEEDS){
+            if (itype==SEEDS)
                 name = p->seed_plural();
-            }else if(itype==PLANT){
+            else if (itype==PLANT)
                 name = p->name_plural();
-            }else if(m){
-                if(mat_state != SOLID){
+            else if (m){
+                if (mat_state != SOLID)
                     name = m->get_material_name(mat_state);
-                }else if(itype != NONE){
-                    if(itype == DRINK || itype == LIQUID_MISC){
-                        name = m->get_material_name(LIQUID);
-                    }else if(itype == POWDER_MISC || itype == CHEESE){
-                        name = m->get_material_name(POWDER);
-                    }else if(Item::is_armor_type(itype)){
-                        //don't include the 'fabric' part if it's a armor (item?) ie. pig tail fiber coat, not pig tail fiber fabric coat
-                        //this appears to have changed now (42.x) and the solid name is used simply: pig tail coat
-                        name = m->get_material_name(SOLID);
-                    }else if(itype == LEAVES_FRUIT){
-                        name = name = p->name().append(" ").append(m->get_material_name(GENERIC));
-                    }
-                }
-                if(name.isEmpty()){
-                    if(m->flags().has_flag(LEAF_MAT) && m->flags().has_flag(EDIBLE_RAW)){
-                        name = p->name().append(" ").append(m->get_material_name(GENERIC)); //fruit
-                    }else if(m->flags().has_flag(IS_WOOD) && p->flags().has_flag(P_TREE)){
-                        name  = p->name().append(" ").append(m->get_material_name(GENERIC)); //wood
-                    }else if(m->flags().has_flag(SEED_MAT)){
-                        name = p->seed_plural();
-                    }else if(m->flags().has_flag(ALCOHOL) || m->flags().has_flag(ALCOHOL_PLANT)
-                             || m->flags().has_flag(LIQUID_MISC) || m->flags().has_flag(LIQUID_MISC_PLANT)){
-                        name = m->get_material_name(LIQUID);
-                    }else if(m->flags().has_flag(POWDER_MISC_PLANT) || m->flags().has_flag(POWDER_MISC)){
-                        name = m->get_material_name(POWDER);
-                    }else{
-                        name = m->get_material_name(SOLID) + " " + m->get_material_name(GENERIC);
-                    }
-                }
+                else if (itype == DRINK || itype == LIQUID_MISC)
+                    name = m->get_material_name(LIQUID);
+                else if (itype == POWDER_MISC || itype == CHEESE)
+                    name = m->get_material_name(POWDER);
+                else if (m->flags().has_flag(SEED_MAT))
+                    name = p->seed_plural();
+                else if (m->flags().has_flag(ALCOHOL) || m->flags().has_flag(ALCOHOL_PLANT) ||
+                         m->flags().has_flag(LIQUID_MISC) || m->flags().has_flag(LIQUID_MISC_PLANT))
+                    name = m->get_material_name(LIQUID);
+                else if (m->flags().has_flag(POWDER_MISC_PLANT) || m->flags().has_flag(POWDER_MISC))
+                    name = m->get_material_name(POWDER);
+                else
+                    name = m->get_material_name(SOLID);
             }
         }
     }

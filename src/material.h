@@ -81,6 +81,7 @@ private:
     bool m_inorganic;
     bool m_is_generated;
     QHash<MATERIAL_STATES, QString> m_state_names;
+    QString m_prefix;
 
     void read_material();
 };

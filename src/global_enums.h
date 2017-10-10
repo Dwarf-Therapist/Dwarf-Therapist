@@ -170,7 +170,6 @@ typedef enum {
     POWDER,
     PASTE,
     PRESSED,
-    GENERIC
 } MATERIAL_STATES;
 
 typedef enum {

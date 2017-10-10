@@ -610,7 +610,7 @@ void roleDialog::name_changed(QString text){
     }
 }
 
-void roleDialog::load_material_prefs(QVector<Material*> mats, QString prefix_name, MATERIAL_STATES state_name){
+void roleDialog::load_material_prefs(QVector<Material*> mats, MATERIAL_STATES state_name){
     QTreeWidgetItem *parent = 0;
     //Preference *p;
     QString name = "";
@@ -619,10 +619,7 @@ void roleDialog::load_material_prefs(QVector<Material*> mats, QString prefix_nam
         if(m->is_generated())
             continue;
         //set defaults
-        if(!prefix_name.isEmpty()) //prefix indicates plant/animal mats
-            name = QString("%1 %2").arg(prefix_name).arg(m->get_material_name(state_name));
-        else
-            name = m->get_material_name(SOLID).trimmed();
+        name = m->get_material_name(SOLID).trimmed();
 
         pType = LIKE_MATERIAL;
         Preference *p = new Preference(pType,"",this);
@@ -655,14 +652,8 @@ void roleDialog::load_material_prefs(QVector<Material*> mats, QString prefix_nam
         if(!parent){
             foreach(MATERIAL_FLAGS f, mats_include){
                 if(check_flag(m,p,f)){
-                    if(prefix_name.isEmpty()){
-                        name = m->get_material_name(SOLID);
-                        parent = m_general_material;
-                    }else{
-                        name = prefix_name;
-                        name.append(" ").append(m->get_material_name(SOLID));
-                        parent = m_creature_mats;
-                    }
+                    name = m->get_material_name(SOLID);
+                    parent = m_general_material;
                 }
             }
         }
@@ -707,7 +698,7 @@ void roleDialog::load_plant_prefs(QVector<Plant*> plants){
             add_pref_to_tree(m_plants_extract,plant_pref);
         }
 
-        load_material_prefs(p->get_plant_materials(),p->name());
+        load_material_prefs(p->get_plant_materials());
     }
 }
 
