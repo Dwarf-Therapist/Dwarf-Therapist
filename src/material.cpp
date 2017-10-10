@@ -99,30 +99,21 @@ void Material::read_material() {
     m_state_names.insert(PASTE,m_df->read_string(m_address + m_mem->material_offset("paste_name")));
     m_state_names.insert(PRESSED, m_df->read_string(m_address + m_mem->material_offset("pressed_name")));
 
-    QString generic_state_name = m_df->read_string(m_address);
-    if(!generic_state_name.isEmpty()){
-        VIRTADDR template_addr = m_df->get_material_template(generic_state_name + "_TEMPLATE");
-        if(template_addr){
-            QString template_state = m_df->read_string(template_addr + m_mem->material_offset("solid_name"));
-            if(template_state != generic_state_name)
-                generic_state_name = template_state;
-        }
-    }
+    //QString id = m_df->read_string(m_address);
+    m_prefix = m_df->read_string(m_address + m_mem->material_offset("prefix"));
 
     m_flags = FlagArray(m_df,m_flag_address);
 
-    if(m_flags.has_flag(THREAD_PLANT)){
-        generic_state_name = tr("fabric");
-    }
-
     //int material_value = m_df->read_int(m_address + 0x244);
-
-    m_state_names.insert(GENERIC, generic_state_name);
 }
 
 QString Material::get_material_name(MATERIAL_STATES state){
-    if(m_state_names.contains(state))
-        return m_state_names.value(state);
+    if(m_state_names.contains(state)) {
+        QString state_name = m_state_names.value(state);
+        return m_prefix.isEmpty ()
+               ? state_name
+               : QString("%1 %2").arg(m_prefix).arg(state_name);
+    }
     else
         return "";
 }

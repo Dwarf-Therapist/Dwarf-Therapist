@@ -101,7 +101,7 @@ private:
     //preferences
     void add_general_node(const QString title, PREF_TYPES ptype, QList<int> &flags, QTreeWidgetItem *parent, ITEM_TYPE itype = NONE);
     void build_pref_tree();
-    void load_material_prefs(QVector<Material*> mats, QString prefix_name = "", MATERIAL_STATES state_name = GENERIC);
+    void load_material_prefs(QVector<Material*> mats, MATERIAL_STATES state_name = SOLID);
     void load_plant_prefs(QVector<Plant *> plants);
     void load_items();
     void load_creatures();
