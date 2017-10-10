@@ -610,61 +610,71 @@ void roleDialog::name_changed(QString text){
     }
 }
 
-void roleDialog::load_material_prefs(QVector<Material*> mats, MATERIAL_STATES state_name){
-    QTreeWidgetItem *parent = 0;
-    //Preference *p;
-    QString name = "";
-    PREF_TYPES pType;
+struct mat_flags_t {
+    std::vector<MATERIAL_FLAGS> flags;
+    operator const std::vector<MATERIAL_FLAGS> &() const { return flags; }
+
+    template<typename... Flags>
+    inline bool check (Material *m, MATERIAL_FLAGS flag, Flags... others) {
+        if (m->flags().has_flag((int)flag) && check(m, others...)) {
+            flags.push_back (flag);
+            return true;
+        }
+        return false;
+    }
+
+    inline bool check (Material *) { return true; }
+};
+
+void roleDialog::load_material_prefs(QVector<Material*> mats){
+    auto add_pref = [this] (QTreeWidgetItem *parent,
+                            Material *m,
+                            const std::vector<MATERIAL_FLAGS> &flags,
+                            MATERIAL_STATES mat_state = SOLID) {
+        QString name = m->get_material_name(mat_state).trimmed ();
+        Preference *p = new Preference(LIKE_MATERIAL,name,this);
+        for (auto flag: flags)
+            p->add_flag((int)flag);
+        p->set_exact(true);
+        add_pref_to_tree(parent,p);
+    };
+
     foreach(Material *m, mats){
         if(m->is_generated())
             continue;
-        //set defaults
-        name = m->get_material_name(SOLID).trimmed();
 
-        pType = LIKE_MATERIAL;
-        Preference *p = new Preference(pType,"",this);
+        mat_flags_t flags;
 
         //check specific flags
-        if(check_flag(m,p,IS_GEM)){
-            parent = m_gems;
-        }else if(check_flag(m,p,IS_GLASS) || check_flag(m,p,CRYSTAL_GLASSABLE)){
-            parent = m_glass;
-        }else if(check_flag(m,p,IS_METAL)){
-            parent = m_metals;
-        }else if(check_flag(m,p,IS_WOOD)){
-            parent = m_wood;
-        }else if(check_flag(m,p,IS_STONE)){
-            if(check_flag(m,p,ITEMS_QUERN) && check_flag(m,p,NO_STONE_STOCKPILE)){
-                parent = m_glazes_wares;
-            }else{
-                parent = m_stone;
-            }
-        }else if(check_flag(m,p,THREAD_PLANT)){
-            parent = m_fabrics;
-        }else if(check_flag(m,p,IS_DYE)){
-            parent = m_fabrics;
-            name = m->get_material_name(POWDER);
-        }else if(check_flag(m,p,ITEMS_DELICATE)){
-            parent = m_general_material; //check for coral and amber
+        if (flags.check(m, IS_GEM))
+            add_pref(m_gems, m, flags);
+        else if (flags.check(m, IS_GLASS) || flags.check(m, CRYSTAL_GLASSABLE))
+            add_pref(m_glass, m, flags);
+        else if (flags.check(m, IS_METAL))
+            add_pref(m_metals, m, flags);
+        else if(flags.check(m, IS_WOOD))
+            add_pref(m_wood, m, flags);
+        else if(flags.check(m, IS_STONE)) {
+            if (flags.check(m, ITEMS_QUERN, NO_STONE_STOCKPILE))
+                add_pref(m_glazes_wares, m, flags);
+            else
+                add_pref(m_stone, m, flags);
         }
-
-        //check the include mats flags
-        if(!parent){
-            foreach(MATERIAL_FLAGS f, mats_include){
-                if(check_flag(m,p,f)){
-                    name = m->get_material_name(SOLID);
-                    parent = m_general_material;
+        else if(flags.check(m, THREAD_PLANT)) {
+            add_pref(m_fabrics, m, flags, SOLID);
+            add_pref(m_papers, m, flags, PRESSED);
+        }
+        else if(flags.check(m, IS_DYE))
+            add_pref(m_fabrics, m, flags, POWDER);
+        else if(flags.check(m, ITEMS_DELICATE))
+            add_pref(m_general_material, m, flags); //check for coral and amber
+        else { //check the include mats flags
+            for (auto f: mats_include) {
+                if (m->flags().has_flag((int)f)) {
+                    add_pref(m_general_material, m, {f});
                 }
             }
         }
-        if(parent){
-            p->set_category(pType);
-            p->set_name(capitalize(name));
-            p->set_exact(true);
-            add_pref_to_tree(parent,p);
-        }
-
-        parent = 0;
     }
 }
 
@@ -939,6 +949,7 @@ void roleDialog::build_pref_tree(){
     m_plants_extract = init_parent_node(tr("Plants (Extracts)"));
     m_trees = init_parent_node(tr("Trees"));
     m_fabrics = init_parent_node(tr("Fabrics & Dyes"));
+    m_papers = init_parent_node(tr("Papers"));
     m_creatures = init_parent_node(tr("Creatures (Other)"));
 
 
@@ -1048,15 +1059,6 @@ void roleDialog::add_pref_to_tree(QTreeWidgetItem *parent, Preference *p){
             }
             m_pref_list.value(parent)->append(p);
         }
-    }
-}
-
-bool roleDialog::check_flag(Material *m, Preference *p, MATERIAL_FLAGS flag){
-    if(m->flags().has_flag((int)flag)){
-        p->add_flag((int)flag);
-        return true;
-    }else{
-        return false;
     }
 }
 
