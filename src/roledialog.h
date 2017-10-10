@@ -57,6 +57,7 @@ private:
     QTreeWidgetItem *m_plants_extract;
     QTreeWidgetItem *m_trees;
     QTreeWidgetItem *m_fabrics;
+    QTreeWidgetItem *m_papers;
 
     //creature categories
     QTreeWidgetItem *m_creatures;
@@ -101,7 +102,7 @@ private:
     //preferences
     void add_general_node(const QString title, PREF_TYPES ptype, QList<int> &flags, QTreeWidgetItem *parent, ITEM_TYPE itype = NONE);
     void build_pref_tree();
-    void load_material_prefs(QVector<Material*> mats, MATERIAL_STATES state_name = SOLID);
+    void load_material_prefs(QVector<Material*> mats);
     void load_plant_prefs(QVector<Plant *> plants);
     void load_items();
     void load_creatures();
@@ -109,7 +110,6 @@ private:
     void load_weapons();
     QTreeWidgetItem* init_parent_node(QString title);
     void add_pref_to_tree(QTreeWidgetItem *parent, Preference *p);
-    bool check_flag(Material *m, Preference *p, MATERIAL_FLAGS flag);
 
 protected:
     void closeEvent(QCloseEvent *){close_pressed();}
