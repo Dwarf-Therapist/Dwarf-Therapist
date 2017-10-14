@@ -58,6 +58,7 @@ private:
     QTreeWidgetItem *m_trees;
     QTreeWidgetItem *m_fabrics;
     QTreeWidgetItem *m_papers;
+    QTreeWidgetItem *m_leathers;
 
     //creature categories
     QTreeWidgetItem *m_creatures;
@@ -71,7 +72,6 @@ private:
     QTreeWidgetItem *m_butcher;
     QTreeWidgetItem *m_domestic;
 
-    QTreeWidgetItem *m_creature_mats;
 
     //general categories
     QTreeWidgetItem *m_general_item;
@@ -106,7 +106,6 @@ private:
     void load_plant_prefs(QVector<Plant *> plants);
     void load_items();
     void load_creatures();
-    void add_general_creature_node(const QString suffix, QList<int> &flags, QTreeWidgetItem **parent_node);
     void load_weapons();
     QTreeWidgetItem* init_parent_node(QString title);
     void add_pref_to_tree(QTreeWidgetItem *parent, Preference *p);
