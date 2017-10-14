@@ -814,48 +814,31 @@ void roleDialog::load_items(){
     }
 }
 
-void roleDialog::add_general_creature_node(const QString suffix, QList<int> &flags, QTreeWidgetItem **parent_node){
-    QString title = tr("Creatures (%1)").arg(suffix);
-    *parent_node = init_parent_node(title);
-
-    Preference *p = new Preference(LIKE_CREATURE, NONE,this);
-    foreach(int f, flags){
-        p->add_flag(f);
-    }
-    p->set_name(title);
-    add_pref_to_tree(m_general_creature, p);
-    flags.clear();
-}
-
 void roleDialog::load_creatures(){
+    auto add_general_creature_node = [this] (const QString &suffix,
+                                             const std::vector<int> &flags,
+                                             QTreeWidgetItem *&parent_node) {
+        QString title = tr("Creatures (%1)").arg(suffix);
+        parent_node = init_parent_node(title);
+
+        Preference *p = new Preference(LIKE_CREATURE, NONE, this);
+        for (int f: flags){
+            p->add_flag(f);
+        }
+        p->set_name(title);
+        add_pref_to_tree(m_general_creature, p);
+    };
+
     //add general categories for groups of creatures
-    QList<int> flags;
-    flags << HATEABLE;
-    add_general_creature_node(tr("Hateable"),flags,&m_hateable);
-
-    flags << VERMIN_FISH;
-    add_general_creature_node(tr("Fish Extracts"),flags,&m_extracts_fish);
-
-    flags << TRAINABLE_HUNTING << TRAINABLE_WAR;
-    add_general_creature_node(tr("Trainable"),flags,&m_trainable);
-
-    flags << MILKABLE;
-    add_general_creature_node(tr("Milkable"),flags,&m_milkable);
-
-    flags << FISHABLE;
-    add_general_creature_node(tr("Fishable"),flags,&m_fishable);
-
-    flags << SHEARABLE;
-    add_general_creature_node(tr("Shearable"),flags,&m_shearable);
-
-    flags << HAS_EXTRACTS;
-    add_general_creature_node(tr("Extracts"),flags,&m_extracts);
-
-    flags << BUTCHERABLE;
-    add_general_creature_node(tr("Butcherable"),flags,&m_butcher);
-
-    flags << DOMESTIC;
-    add_general_creature_node(tr("Domestic"),flags,&m_domestic);
+    add_general_creature_node(tr("Hateable"), {HATEABLE}, m_hateable);
+    add_general_creature_node(tr("Fish Extracts"), {VERMIN_FISH}, m_extracts_fish);
+    add_general_creature_node(tr("Trainable"), {TRAINABLE_HUNTING,TRAINABLE_WAR}, m_trainable);
+    add_general_creature_node(tr("Milkable"), {MILKABLE}, m_milkable);
+    add_general_creature_node(tr("Fishable"), {FISHABLE}, m_fishable);
+    add_general_creature_node(tr("Shearable"), {SHEARABLE}, m_shearable);
+    add_general_creature_node(tr("Extracts"), {HAS_EXTRACTS}, m_extracts);
+    add_general_creature_node(tr("Butcherable"), {BUTCHERABLE}, m_butcher);
+    add_general_creature_node(tr("Domestic"), {DOMESTIC}, m_domestic);
 
     foreach(Race *r, m_df->get_races()){
         if(r->flags().has_flag(WAGON))
@@ -893,6 +876,21 @@ void roleDialog::load_creatures(){
                 add_pref_to_tree(m_extracts_fish,p);
             }else{
                 add_pref_to_tree(m_extracts,p);
+            }
+        }
+
+        for (Material *m: r->get_creature_materials().values()) {
+            for (auto t: {std::make_tuple(LEATHER, m_leathers),
+                          std::make_tuple(YARN, m_fabrics),
+                          std::make_tuple(SILK, m_fabrics)}) {
+                auto flag = std::get<0>(t);
+                auto parent = std::get<1>(t);
+                if (m->flags().has_flag(flag)) {
+                    Preference *p = new Preference(LIKE_MATERIAL, m->get_material_name(SOLID), this);
+                    p->add_flag(flag);
+                    p->set_exact(true);
+                    add_pref_to_tree(parent, p);
+                }
             }
         }
     }
@@ -950,6 +948,7 @@ void roleDialog::build_pref_tree(){
     m_trees = init_parent_node(tr("Trees"));
     m_fabrics = init_parent_node(tr("Fabrics & Dyes"));
     m_papers = init_parent_node(tr("Papers"));
+    m_leathers = init_parent_node(tr("Leathers"));
     m_creatures = init_parent_node(tr("Creatures (Other)"));
 
 
