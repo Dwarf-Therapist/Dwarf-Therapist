@@ -52,23 +52,24 @@ public:
 
     FlagArray flags() {return m_flags;}
 
-    static const QString get_material_flag_desc(const MATERIAL_FLAGS &flag) {
-        QMap<MATERIAL_FLAGS, QString> m;
-        m[BONE]=tr("Bone");
-        m[TOOTH]=tr("Ivory/Tooth");
-        m[HORN]=tr("Horn/Hoof");
-        m[PEARL]=tr("Pearl");
-        m[SHELL]=tr("Shell");
-        m[LEATHER]=tr("Leather");
-        m[SILK]=tr("Silk");
-        m[IS_GEM]=tr("Gems");
-        m[IS_GLASS]=tr("Glass");
-        m[IS_WOOD]=tr("Wood");
-        m[IS_STONE]=tr("Stone");
-        m[IS_METAL]=tr("Metal");
-        m[THREAD_PLANT]=tr("Cloth");
-        m[YARN]=tr("Yarn/Wool/Fur");
-        return m.value(flag, "Missing Description");
+    static QString get_material_flag_desc(MATERIAL_FLAGS flag, MATERIAL_STATES state = SOLID) {
+        switch (flag) {
+        case BONE: return tr("Bone");
+        case TOOTH: return tr("Ivory/Tooth");
+        case HORN: return tr("Horn/Hoof");
+        case PEARL: return tr("Pearl");
+        case SHELL: return tr("Shell");
+        case LEATHER: return tr("Leather");
+        case SILK: return tr("Silk");
+        case IS_GEM: return tr("Gems");
+        case IS_GLASS: return tr("Glass");
+        case IS_WOOD: return tr("Wood");
+        case IS_STONE: return tr("Stone");
+        case IS_METAL: return tr("Metal");
+        case THREAD_PLANT: return (state == PRESSED ? tr("Paper") : tr("Cloth"));
+        case YARN: return tr("Yarn/Wool/Fur");
+        default: return tr("Missing Description");
+        }
     }
 
 private:

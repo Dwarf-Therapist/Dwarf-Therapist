@@ -668,13 +668,6 @@ void roleDialog::load_material_prefs(QVector<Material*> mats){
             add_pref(m_fabrics, m, flags, POWDER);
         else if(flags.check(m, ITEMS_DELICATE))
             add_pref(m_general_material, m, flags); //check for coral and amber
-        else { //check the include mats flags
-            for (auto f: mats_include) {
-                if (m->flags().has_flag((int)f)) {
-                    add_pref(m_general_material, m, {f});
-                }
-            }
-        }
     }
 }
 
@@ -713,14 +706,9 @@ void roleDialog::load_plant_prefs(QVector<Plant*> plants){
 }
 
 void roleDialog::load_items(){
-    QList<int> flags;
-    flags << IS_CLOTHING;
-    add_general_node(tr("Clothing (Any)"),LIKE_ITEM,flags,m_general_equip);
-    flags << IS_ARMOR;
-    add_general_node(tr("Armor (Any)"),LIKE_ITEM,flags,m_general_equip);
-
-    flags << IS_TRADE_GOOD;
-    add_general_node(tr("Trade Goods"),LIKE_ITEM,flags,m_general_item);
+    add_general_node(tr("Clothing (Any)"), LIKE_ITEM, {IS_CLOTHING}, m_general_equip);
+    add_general_node(tr("Armor (Any)"), LIKE_ITEM, {IS_ARMOR}, m_general_equip);
+    add_general_node(tr("Trade Goods"), LIKE_ITEM, {IS_TRADE_GOOD}, m_general_item);
 
     //setup a list of item exclusions. these are item types that are not found in item preferences
     //weapons are also ignored because we'll handle them manually to split them into ranged and melee categories
@@ -903,11 +891,10 @@ void roleDialog::load_weapons(){
     QTreeWidgetItem *ranged = init_parent_node(tr("Weapons (Ranged)"));
 
     //add category to general items
-    QList<int> flags;
-    flags << ITEMS_WEAPON_RANGED;
-    add_general_node(ranged->text(0),LIKE_ITEM,flags,m_general_equip,WEAPON);
-    flags << ITEMS_WEAPON;
-    add_general_node(melee->text(0),LIKE_ITEM,flags,m_general_equip,WEAPON);
+    add_general_node(ranged->text(0), LIKE_ITEM, {ITEMS_WEAPON_RANGED},
+                     m_general_equip, WEAPON);
+    add_general_node(melee->text(0), LIKE_ITEM, {ITEMS_WEAPON},
+                     m_general_equip, WEAPON);
 
     foreach(ItemSubtype *i, m_df->get_item_subtypes(WEAPON)){
         ItemWeaponSubtype *w = qobject_cast<ItemWeaponSubtype*>(i);
@@ -959,38 +946,46 @@ void roleDialog::build_pref_tree(){
     add_pref_to_tree(m_general_plant_tree, p_trees);
 
     //any material types that we want to add to the general category section go here
-    mats_include << BONE << TOOTH << HORN << PEARL << SHELL << LEATHER << SILK << IS_GLASS
-                 << IS_WOOD << THREAD_PLANT << YARN;
-
-    QList<int> flags;
-    foreach(MATERIAL_FLAGS f, mats_include){
-        flags << f;
-        add_general_node(Material::get_material_flag_desc(f),LIKE_MATERIAL,flags,m_general_material);
+    for (const auto t: {std::make_tuple(BONE, ANY_STATE),
+                        std::make_tuple(TOOTH, ANY_STATE),
+                        std::make_tuple(HORN, ANY_STATE),
+                        std::make_tuple(PEARL, ANY_STATE),
+                        std::make_tuple(SHELL, ANY_STATE),
+                        std::make_tuple(LEATHER, ANY_STATE),
+                        std::make_tuple(SILK, ANY_STATE),
+                        std::make_tuple(IS_GLASS, ANY_STATE),
+                        std::make_tuple(IS_WOOD, ANY_STATE),
+                        std::make_tuple(THREAD_PLANT, SOLID), // fabric
+                        std::make_tuple(THREAD_PLANT, PRESSED), // paper
+                        std::make_tuple(YARN, ANY_STATE)}){
+        auto flag = std::get<0>(t);
+        auto state = std::get<1>(t);
+        auto p = new Preference(LIKE_MATERIAL,
+                                Material::get_material_flag_desc(flag, state),
+                                this);
+        p->add_flag(flag);
+        p->set_mat_state(state);
+        add_pref_to_tree(m_general_material, p);
     }
 
     //general category for plants used for alcohol
-    flags << P_DRINK;
-    add_general_node(tr("Plants (Alcohol)"),LIKE_PLANT,flags,m_general_plant_tree);
-
+    add_general_node(tr("Plants (Alcohol)"), LIKE_PLANT,
+                     {P_DRINK}, m_general_plant_tree);
     //general category for crops plant or gather
-    flags << P_CROP;
-    add_general_node(tr("Plants (Crops)"),LIKE_PLANT,flags,m_general_plant_tree);
-
+    add_general_node(tr("Plants (Crops)"), LIKE_PLANT,
+                     {P_CROP}, m_general_plant_tree);
     //general category for plantable crops
-    flags << P_CROP << P_SEED;
-    add_general_node(tr("Plants (Crops Plantable)"),LIKE_PLANT,flags,m_general_plant_tree);
-
+    add_general_node(tr("Plants (Crops Plantable)"), LIKE_PLANT,
+                     {P_CROP, P_SEED}, m_general_plant_tree);
     //general category for millable plants
-    flags << P_MILL;
-    add_general_node(tr("Plants (Millable)"),LIKE_PLANT,flags,m_general_plant_tree);
-
+    add_general_node(tr("Plants (Millable)"), LIKE_PLANT,
+                     {P_MILL}, m_general_plant_tree);
     //general category for plants used for processing/threshing
-    flags << P_HAS_EXTRACTS;
-    add_general_node(tr("Plants (Extracts)"),LIKE_PLANT,flags,m_general_plant_tree);
+    add_general_node(tr("Plants (Extracts)"), LIKE_PLANT,
+                     {P_HAS_EXTRACTS}, m_general_plant_tree);
 
     //special custom preference for outdoors
-    flags << 999;
-    add_general_node(tr("Outdoors"),LIKE_OUTDOORS,flags,m_general_other);
+    add_general_node(tr("Outdoors"), LIKE_OUTDOORS, {999}, m_general_other);
 
     load_material_prefs(m_df->get_inorganic_materials());
     load_material_prefs(m_df->get_base_materials());
@@ -1026,14 +1021,13 @@ void roleDialog::build_pref_tree(){
     connect(ui->treePrefs, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(item_double_clicked(QTreeWidgetItem*,int)));
 }
 
-void roleDialog::add_general_node(const QString title, PREF_TYPES ptype, QList<int> &flags, QTreeWidgetItem *parent, ITEM_TYPE itype){
-    Preference *p = new Preference(ptype, itype,this);
+void roleDialog::add_general_node(const QString title, PREF_TYPES ptype, const std::vector<int> &flags, QTreeWidgetItem *parent, ITEM_TYPE itype){
+    Preference *p = new Preference(ptype, itype, this);
     p->set_name(title);
-    foreach(int flag, flags){
+    for (int flag: flags){
         p->add_flag(flag);
     }
     add_pref_to_tree(parent, p);
-    flags.clear();
 }
 
 QTreeWidgetItem* roleDialog::init_parent_node(QString title){
