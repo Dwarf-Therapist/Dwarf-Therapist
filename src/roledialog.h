@@ -84,7 +84,6 @@ private:
 
     //preference include/exclude lists
     QVector<ITEM_TYPE> item_ignore;
-    QVector<MATERIAL_FLAGS> mats_include;
 
     void load_role_data();
     void decorate_splitter(QSplitter *s);
@@ -100,7 +99,7 @@ private:
     bool m_override;
 
     //preferences
-    void add_general_node(const QString title, PREF_TYPES ptype, QList<int> &flags, QTreeWidgetItem *parent, ITEM_TYPE itype = NONE);
+    void add_general_node(const QString title, PREF_TYPES ptype, const std::vector<int> &flags, QTreeWidgetItem *parent, ITEM_TYPE itype = NONE);
     void build_pref_tree();
     void load_material_prefs(QVector<Material*> mats);
     void load_plant_prefs(QVector<Plant *> plants);
