@@ -25,18 +25,6 @@
 
 roleDialog::~roleDialog()
 {
-    m_df = 0;
-    m_dwarf = 0;
-    m_role = 0;
-
-    qDeleteAll(m_pref_list);
-    m_pref_list.clear();
-
-    ui->tw_attributes->clear();
-    ui->tw_prefs->clear();
-    ui->tw_skills->clear();
-    ui->tw_traits->clear();
-    ui->treePrefs->clear();
     delete ui;
 }
 
@@ -224,23 +212,20 @@ void roleDialog::load_role_data(){
     load_aspects_data(*ui->tw_traits, m_role->traits);
     load_aspects_data(*ui->tw_skills, m_role->skills);
 
-    foreach(Preference *p, m_role->prefs){
-        insert_pref_row(p);
-    }
+    for (const auto &p: m_role->prefs)
+        insert_pref_row(p.get());
 }
 
-void roleDialog::load_aspects_data(QTableWidget &table, QHash<QString, RoleAspect*> aspects){
-    RoleAspect *a;
+void roleDialog::load_aspects_data(QTableWidget &table, const std::map<QString, RoleAspect> &aspects){
     table.setSortingEnabled(false);
-    foreach(QString key, aspects.uniqueKeys()){
-        a = aspects.value(key);
-        insert_row(table,a,key);
+    for (const auto &p: aspects){
+        insert_row(table, p.second, p.first);
     }
     table.setSortingEnabled(true);
     table.sortItems(0,Qt::AscendingOrder);
 }
 
-void roleDialog::insert_row(QTableWidget &table, RoleAspect *a, QString key){
+void roleDialog::insert_row(QTableWidget &table, const RoleAspect &a, QString key){
     table.setSortingEnabled(false);
     QString title;
     int row = table.rowCount();
@@ -265,7 +250,7 @@ void roleDialog::insert_row(QTableWidget &table, RoleAspect *a, QString key){
     dbs->setMinimum(-100);
     dbs->setMaximum(100);
     dbs->setSingleStep(0.25);
-    dbs->setValue(a->is_neg ? 0-a->weight : a->weight);
+    dbs->setValue(a.is_neg ? 0-a.weight : a.weight);
     table.setCellWidget(row,1,dbs);
     sortableTableWidgetItem* sItem = new sortableTableWidgetItem;
     table.setItem(row,1,sItem);
@@ -289,7 +274,7 @@ void roleDialog::insert_pref_row(Preference *p){
     dbs->setMinimum(-100);
     dbs->setMaximum(100);
     dbs->setSingleStep(0.25);
-    dbs->setValue(p->pref_aspect->is_neg ? 0-p->pref_aspect->weight : p->pref_aspect->weight);
+    dbs->setValue(p->pref_aspect.is_neg ? 0-p->pref_aspect.weight : p->pref_aspect.weight);
     ui->tw_prefs->setCellWidget(row,1,dbs);
     sortableTableWidgetItem* sItem = new sortableTableWidgetItem;
     ui->tw_prefs->setItem(row,1,sItem);
@@ -307,11 +292,11 @@ void roleDialog::insert_pref_row(Preference *p){
     ui->tw_prefs->setSortingEnabled(true);
 }
 
-void roleDialog::add_aspect(QString id, QTableWidget &table, QHash<QString, RoleAspect *> &list){
-    RoleAspect *a = new RoleAspect(this);
-    a->is_neg = false;
-    a->weight = 1.0;
-    list.insert(id.toLower(), a);
+void roleDialog::add_aspect(QString id, QTableWidget &table, std::map<QString, RoleAspect> &list){
+    RoleAspect a;
+    a.is_neg = false;
+    a.weight = 1.0;
+    list.emplace(id.toLower(), a);
     insert_row(table,a,id.toLower());
 }
 
@@ -359,14 +344,14 @@ void roleDialog::save_role(Role *r){
     save_prefs(r);
 }
 
-void roleDialog::save_aspects(QTableWidget &table, QHash<QString, RoleAspect*> &list){
+void roleDialog::save_aspects(QTableWidget &table, std::map<QString, RoleAspect> &list){
     for(int i= 0; i<table.rowCount(); i++){
-        RoleAspect *a = new RoleAspect(this);
+        RoleAspect a;
         QString key = table.item(i,0)->data(Qt::UserRole).toString();
         float weight = static_cast<QDoubleSpinBox*>(table.cellWidget(i,1))->value();
-        a->weight = fabs(weight);
-        a->is_neg = weight < 0 ? true : false;
-        list.insert(key,a);
+        a.weight = fabs(weight);
+        a.is_neg = weight < 0 ? true : false;
+        list.emplace(key,a);
     }
 }
 
@@ -375,17 +360,17 @@ void roleDialog::save_prefs(Role *r){
         float weight = static_cast<QDoubleSpinBox*>(ui->tw_prefs->cellWidget(i,1))->value();
         Preference *p = vPtr<Preference>::asPtr(ui->tw_prefs->item(i,0)->data(Qt::UserRole));
         //save the weight of the preference for the next use
-        p->pref_aspect->weight = fabs(weight);
-        p->pref_aspect->is_neg = weight < 0 ? true : false;
+        p->pref_aspect.weight = fabs(weight);
+        p->pref_aspect.is_neg = weight < 0 ? true : false;
 
         //update the values of this preference in the role
         Preference *rp = r->has_preference(p->get_name());
         if(!rp){
-            rp = new Preference(*p);
-            r->prefs.append(rp);
+            r->prefs.emplace_back(std::make_unique<Preference>(*p));
+            rp = r->prefs.back().get();
         }
-        rp->pref_aspect->weight = p->pref_aspect->weight;
-        rp->pref_aspect->is_neg = p->pref_aspect->is_neg;
+        rp->pref_aspect.weight = p->pref_aspect.weight;
+        rp->pref_aspect.is_neg = p->pref_aspect.is_neg;
     }
 }
 
@@ -411,7 +396,7 @@ void roleDialog::draw_attribute_context_menu(const QPoint &p) {
     QList<QPair<ATTRIBUTES_TYPE, QString> > atts = gdr->get_ordered_attribute_names();
     QPair<ATTRIBUTES_TYPE, QString> att_pair;
     foreach(att_pair, atts){
-        if(!m_role->attributes.contains(att_pair.second.toLatin1().toLower())){
+        if(!m_role->attributes.count(att_pair.second.toLatin1().toLower())){
             a = m->addAction(tr(att_pair.second.toLatin1()), this, SLOT(add_attribute()));
             a->setData(att_pair.second.toLatin1());
             a->setToolTip(tr("Include %1 as an aspect for this role.").arg(att_pair.second));
@@ -430,7 +415,7 @@ void roleDialog::add_attribute(){
 void roleDialog::remove_attribute(){
     for(int i=ui->tw_attributes->rowCount()-1; i>=0; i--){
         if(ui->tw_attributes->item(i,0)->isSelected()){
-            m_role->attributes.remove(ui->tw_attributes->item(i,0)->data(Qt::UserRole).toString().toLower());
+            m_role->attributes.erase(ui->tw_attributes->item(i,0)->data(Qt::UserRole).toString().toLower());
             ui->tw_attributes->removeRow(i);
         }
     }
@@ -451,7 +436,7 @@ void roleDialog::draw_skill_context_menu(const QPoint &p) {
     cmh.add_sub_menus(m,gdr->get_ordered_skills().count()/15,false);
     QPair<int, QPair<QString,QString> > skill_pair;
     foreach(skill_pair, gdr->get_ordered_skills()) {
-        if(!m_role->skills.contains((QString)skill_pair.first)){
+        if(!m_role->skills.count((QString)skill_pair.first)){
             QMenu *menu_to_use = cmh.find_menu(m,skill_pair.second.first);
             a = menu_to_use->addAction(skill_pair.second.first, this, SLOT(add_skill()));
             a->setData(skill_pair.first);
@@ -470,7 +455,7 @@ void roleDialog::add_skill(){
 void roleDialog::remove_skill(){
     for(int i=ui->tw_skills->rowCount()-1; i>=0; i--){
         if(ui->tw_skills->item(i,0)->isSelected()){
-            m_role->skills.remove(ui->tw_skills->item(i,0)->data(Qt::UserRole).toString().toLower());
+            m_role->skills.erase(ui->tw_skills->item(i,0)->data(Qt::UserRole).toString().toLower());
             ui->tw_skills->removeRow(i);
         }
     }
@@ -492,7 +477,7 @@ void roleDialog::draw_trait_context_menu(const QPoint &p) {
     QList<QPair<int, Trait*> > traits = gdr->get_ordered_traits();
     QPair<int, Trait*> trait_pair;
     foreach(trait_pair, traits) {
-        if(!m_role->traits.contains((QString)trait_pair.first)){
+        if(!m_role->traits.count((QString)trait_pair.first)){
             Trait *t = trait_pair.second;
             QMenu *menu_to_use = cmh.find_menu(m,t->get_name());
             a = menu_to_use->addAction(t->get_name(), this, SLOT(add_trait()));
@@ -512,7 +497,7 @@ void roleDialog::add_trait(){
 void roleDialog::remove_trait(){
     for(int i=ui->tw_traits->rowCount()-1; i>=0; i--){
         if(ui->tw_traits->item(i,0)->isSelected()){
-            m_role->traits.remove(ui->tw_traits->item(i,0)->data(Qt::UserRole).toString().toLower());
+            m_role->traits.erase(ui->tw_traits->item(i,0)->data(Qt::UserRole).toString().toLower());
             ui->tw_traits->removeRow(i);
         }
     }
@@ -532,13 +517,12 @@ void roleDialog::draw_prefs_context_menu(const QPoint &p) {
 void roleDialog::remove_pref(){
     for(int i=ui->tw_prefs->rowCount()-1; i>=0; i--){
         if(ui->tw_prefs->item(i,0)->isSelected()){
-            for(int j = 0; j < m_role->prefs.count(); j++){
-                if(m_role->prefs.at(j)->get_name().toLower() ==
-                        vPtr<Preference>::asPtr(ui->tw_prefs->item(i,0)->data(Qt::UserRole))->get_name().toLower()){
-                    m_role->prefs.remove(j);
-                    break;
-                }
-            }
+            auto it = std::find_if(m_role->prefs.begin(), m_role->prefs.end(), [this, i] (const auto &p) {
+
+                return p->get_name().toLower() == vPtr<Preference>::asPtr(ui->tw_prefs->item(i,0)->data(Qt::UserRole))->get_name().toLower();
+            });
+            if (it != m_role->prefs.end())
+                m_role->prefs.erase(it);
             ui->tw_prefs->removeRow(i);
         }
     }
@@ -632,7 +616,7 @@ void roleDialog::load_material_prefs(QVector<Material*> mats){
                             const std::vector<MATERIAL_FLAGS> &flags,
                             MATERIAL_STATES mat_state = SOLID) {
         QString name = m->get_material_name(mat_state).trimmed ();
-        Preference *p = new Preference(LIKE_MATERIAL,name,this);
+        auto p = std::make_shared<Preference>(LIKE_MATERIAL,name);
         for (auto flag: flags)
             p->add_flag((int)flag);
         p->set_exact(true);
@@ -675,7 +659,7 @@ void roleDialog::load_plant_prefs(QVector<Plant*> plants){
     QString name;
     foreach(Plant *p, plants){
         name = capitalize(p->name_plural());
-        Preference *plant_pref = new Preference(LIKE_PLANT,name,this);
+        auto plant_pref = std::make_shared<Preference>(LIKE_PLANT,name);
         plant_pref->set_pref_flags(p);
 
         if(p->flags().has_flag(P_SAPLING) || p->flags().has_flag(P_TREE)){
@@ -739,7 +723,7 @@ void roleDialog::load_items(){
             bool is_armor_type = Item::is_armor_type(itype,false);
 
             //add all item types as a group to the general categories
-            Preference *p = new Preference(pType, itype,this);
+            auto p = std::make_shared<Preference>(pType, itype);
             p->set_name(name);
             if(Item::is_trade_good(itype)){
                 p->add_flag(IS_TRADE_GOOD);
@@ -752,7 +736,7 @@ void roleDialog::load_items(){
             }
 
             if(is_armor_type){
-                Preference *pc = new Preference(pType,Item::get_item_clothing_name(itype),this);
+                auto pc = std::make_shared<Preference>(pType,Item::get_item_clothing_name(itype));
                 pc->set_item_type(itype);
                 pc->add_flag(IS_CLOTHING);
                 add_pref_to_tree(m_general_equip, pc);
@@ -770,7 +754,7 @@ void roleDialog::load_items(){
                     clothing_parent = 0;
                 }
                 for(int sub_id = 0; sub_id < count; sub_id++){
-                    Preference *pi = new Preference(pType,itype,this);
+                    auto pi = std::make_shared<Preference>(pType,itype);
                     pi->set_exact(true);
                     //check for clothing
                     if(is_armor_type){
@@ -809,7 +793,7 @@ void roleDialog::load_creatures(){
         QString title = tr("Creatures (%1)").arg(suffix);
         parent_node = init_parent_node(title);
 
-        Preference *p = new Preference(LIKE_CREATURE, NONE, this);
+        auto p = std::make_shared<Preference>(LIKE_CREATURE, NONE);
         for (int f: flags){
             p->add_flag(f);
         }
@@ -832,7 +816,7 @@ void roleDialog::load_creatures(){
         if(r->flags().has_flag(WAGON))
             continue;
 
-        Preference *p = new Preference(LIKE_CREATURE, capitalize(r->plural_name()),this);
+        auto p = std::make_shared<Preference>(LIKE_CREATURE, capitalize(r->plural_name()));
         p->set_pref_flags(r);
 
         if(r->caste_flag(DOMESTIC)){
@@ -874,7 +858,7 @@ void roleDialog::load_creatures(){
                 auto flag = std::get<0>(t);
                 auto parent = std::get<1>(t);
                 if (m->flags().has_flag(flag)) {
-                    Preference *p = new Preference(LIKE_MATERIAL, m->get_material_name(SOLID), this);
+                    auto p = std::make_shared<Preference>(LIKE_MATERIAL, m->get_material_name(SOLID));
                     p->add_flag(flag);
                     p->set_exact(true);
                     add_pref_to_tree(parent, p);
@@ -885,7 +869,6 @@ void roleDialog::load_creatures(){
 }
 
 void roleDialog::load_weapons(){
-    Preference *p;
     //add parent categories
     QTreeWidgetItem *melee = init_parent_node(tr("Weapons (Melee)"));
     QTreeWidgetItem *ranged = init_parent_node(tr("Weapons (Ranged)"));
@@ -898,7 +881,7 @@ void roleDialog::load_weapons(){
 
     foreach(ItemSubtype *i, m_df->get_item_subtypes(WEAPON)){
         ItemWeaponSubtype *w = qobject_cast<ItemWeaponSubtype*>(i);
-        p = new Preference(LIKE_ITEM,w->name_plural(),this); //unfortunately a crescent halberd != halberd
+        auto p = std::make_shared<Preference>(LIKE_ITEM,w->name_plural()); //unfortunately a crescent halberd != halberd
         p->set_pref_flags(w);
         if(w->flags().has_flag(ITEMS_WEAPON_RANGED)){
             add_pref_to_tree(ranged,p);
@@ -940,7 +923,7 @@ void roleDialog::build_pref_tree(){
 
 
     //also add trees to general category. don't need a flag as trees is a pref category
-    Preference *p_trees = new Preference(LIKE_TREE,NONE,this);
+    auto p_trees = std::make_shared<Preference>(LIKE_TREE,NONE);
     //p_trees->add_flag(77); //is tree flag
     p_trees->set_name(tr("Trees"));
     add_pref_to_tree(m_general_plant_tree, p_trees);
@@ -960,9 +943,8 @@ void roleDialog::build_pref_tree(){
                         std::make_tuple(YARN, ANY_STATE)}){
         auto flag = std::get<0>(t);
         auto state = std::get<1>(t);
-        auto p = new Preference(LIKE_MATERIAL,
-                                Material::get_material_flag_desc(flag, state),
-                                this);
+        auto p = std::make_shared<Preference>(LIKE_MATERIAL,
+                                              Material::get_material_flag_desc(flag, state));
         p->add_flag(flag);
         p->set_mat_state(state);
         add_pref_to_tree(m_general_material, p);
@@ -995,14 +977,15 @@ void roleDialog::build_pref_tree(){
     load_weapons();
 
     QTreeWidgetItem *child;
-    foreach(QTreeWidgetItem *parent, m_pref_list.uniqueKeys()){
-        QVector<Preference*> *child_nodes = m_pref_list.value(parent);
+    for (const auto &p: m_pref_list) {
+        auto parent = p.first;
+        auto &child_nodes = p.second;
         //LOGW << "loading parent " << parent->text(0) << " child count " << child_nodes->size();
-        for(int j = 0; j < child_nodes->size(); j++){
-            //LOGW << "loading child " << j << " " << child_nodes->at(j);
+        for (const auto &pref: child_nodes) {
+            //LOGW << "loading child " << j << " " << pref.get();
             child = new QTreeWidgetItem(parent);
-            child->setText(0, child_nodes->at(j)->get_name());
-            child->setData(0, Qt::UserRole, vPtr<Preference>::asQVariant(child_nodes->at(j)));
+            child->setText(0, pref->get_name());
+            child->setData(0, Qt::UserRole, vPtr<Preference>::asQVariant(pref.get()));
         }
 
         if(parent->childCount() > 0){
@@ -1022,7 +1005,7 @@ void roleDialog::build_pref_tree(){
 }
 
 void roleDialog::add_general_node(const QString title, PREF_TYPES ptype, const std::vector<int> &flags, QTreeWidgetItem *parent, ITEM_TYPE itype){
-    Preference *p = new Preference(ptype, itype, this);
+    auto p = std::make_shared<Preference>(ptype, itype);
     p->set_name(title);
     for (int flag: flags){
         p->add_flag(flag);
@@ -1034,23 +1017,24 @@ QTreeWidgetItem* roleDialog::init_parent_node(QString title){
     QTreeWidgetItem *node = new QTreeWidgetItem;
     node->setData(0, Qt::UserRole, title);
     node->setText(0, title);
-    m_pref_list.insert(node,new QVector<Preference*>());
+    m_pref_list[node] = {};
     return node;
 }
 
-void roleDialog::add_pref_to_tree(QTreeWidgetItem *parent, Preference *p){
+void roleDialog::add_pref_to_tree(QTreeWidgetItem *parent, std::shared_ptr<Preference> p){
     if(!p->get_name().isEmpty()){
         //set a default weight
-        p->pref_aspect->weight = 0.5f;
+        p->pref_aspect.weight = 0.5f;
 
-        if(parent && m_pref_list.contains(parent)){
-            if(m_pref_list.value(parent)->count() > 0){
-                for(int i=0; i < m_pref_list.value(parent)->count();i++){
-                    if(m_pref_list.value(parent)->at(i)->get_name()==p->get_name())
-                        return;
-                }
-            }
-            m_pref_list.value(parent)->append(p);
+        auto it = m_pref_list.find(parent);
+        if (it != m_pref_list.end()) {
+            auto &prefs = it->second;
+            auto pref = std::find_if(prefs.begin(), prefs.end(), [&p] (const auto &p2) {
+                return p->get_name() == p2->get_name();
+            });
+            if (pref != prefs.end())
+                return;
+            prefs.emplace_back(p);
         }
     }
 }

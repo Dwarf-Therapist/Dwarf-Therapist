@@ -22,7 +22,6 @@ THE SOFTWARE.
 */
 
 #include "role.h"
-#include "roleaspect.h"
 #include "dwarftherapist.h"
 #include "gamedatareader.h"
 #include "preference.h"
@@ -76,7 +75,6 @@ Role::Role(const Role &r)
     , attributes(r.attributes)
     , skills(r.skills)
     , traits(r.traits)
-    , prefs(r.prefs)
     , attributes_weight(r.attributes_weight)
     , skills_weight(r.skills_weight)
     , traits_weight(r.traits_weight)
@@ -87,26 +85,19 @@ Role::Role(const Role &r)
     , role_details(r.role_details)
     , m_cur_pref_len(0)
     , m_updated(false)
-{}
-
-Role::~Role(){
-    qDeleteAll(attributes);
-    qDeleteAll(skills);
-    qDeleteAll(traits);
-    qDeleteAll(prefs);
-
-    attributes.clear();
-    skills.clear();
-    traits.clear();
-    prefs.clear();
+{
+    prefs.reserve(r.prefs.size());
+    for (const auto &pref: r.prefs)
+        prefs.emplace_back(std::make_unique<Preference>(*pref));
 }
 
-void Role::parseAspect(QSettings &s, QString node, weight_info &g_weight, QHash<QString,RoleAspect*> &list, float default_weight)
+Role::~Role(){
+}
+
+void Role::parseAspect(QSettings &s, QString node, weight_info &g_weight, std::map<QString,RoleAspect> &list, float default_weight)
 {
-    qDeleteAll(list);
     list.clear();
     QString id = "";
-    RoleAspect *a;
 
     //keep track of whether or not we're using the global default when we redraw if options are changed
     g_weight.weight = s.value(QString("%1_weight").arg(node),-1).toFloat();
@@ -120,26 +111,25 @@ void Role::parseAspect(QSettings &s, QString node, weight_info &g_weight, QHash<
     int count = s.beginReadArray(node);
 
     for (int i = 0; i < count; ++i) {
-        a = new RoleAspect(this);
+        RoleAspect a;
         s.setArrayIndex(i);
-        a->weight = s.value("weight",1.0).toFloat();
-        if(a->weight < 0)
-            a->weight = 1.0;
+        a.weight = s.value("weight",1.0).toFloat();
+        if(a.weight < 0)
+            a.weight = 1.0;
         id = s.value("id", "0").toString();
         if(id.indexOf("-") >= 0){
             id.replace("-","");
-            a->is_neg = true;
+            a.is_neg = true;
         }else{
-            a->is_neg = false;
+            a.is_neg = false;
         }
-        list.insert(id.trimmed(),a);
+        list.emplace(id.trimmed(),a);
     }
     s.endArray();
 }
 
 void Role::parsePreferences(QSettings &s, QString node, weight_info &g_weight, float default_weight)
 {
-    qDeleteAll(prefs);
     prefs.clear();
     g_weight.weight = s.value(QString("%1_weight").arg(node),-1).toFloat();
 
@@ -156,15 +146,15 @@ void Role::parsePreferences(QSettings &s, QString node, weight_info &g_weight, f
     for (int i = 0; i < count; ++i) {
         s.setArrayIndex(i);
 
-        Preference *p = new Preference(this);
+        auto p = std::make_unique<Preference>();
         p->set_category(static_cast<PREF_TYPES>(s.value("pref_category",-1).toInt()));
         p->set_item_type(static_cast<ITEM_TYPE>(s.value("item_type",-1).toInt()));
         p->set_exact(s.value("exact",false).toBool());
         p->set_mat_state(static_cast<MATERIAL_STATES>(s.value("mat_state", -1).toInt ()));
 
-        p->pref_aspect->weight = s.value("weight",1.0).toFloat();
-        if(p->pref_aspect->weight < 0)
-            p->pref_aspect->weight = 1.0;
+        p->pref_aspect.weight = s.value("weight",1.0).toFloat();
+        if(p->pref_aspect.weight < 0)
+            p->pref_aspect.weight = 1.0;
 
         id = s.value("name",tr("Unknown")).toString();
         if(id == "Unknown"){
@@ -173,9 +163,9 @@ void Role::parsePreferences(QSettings &s, QString node, weight_info &g_weight, f
 
         if(!id.isEmpty() && id.indexOf("-") >= 0){
             id.replace("-","");
-            p->pref_aspect->is_neg = true;
+            p->pref_aspect.is_neg = true;
         }else{
-            p->pref_aspect->is_neg = false;
+            p->pref_aspect.is_neg = false;
         }
         p->set_name(id);
 
@@ -191,9 +181,9 @@ void Role::parsePreferences(QSettings &s, QString node, weight_info &g_weight, f
         s.endArray();
 
         //update any old flags with new ones
-        validate_pref(p,first_flag);
+        validate_pref(p.get(),first_flag);
 
-        prefs.append(p);
+        prefs.emplace_back(std::move(p));
     }
     s.endArray();
 }
@@ -271,12 +261,12 @@ QString Role::get_role_details(Dwarf *d){
 }
 
 QString Role::get_aspect_details(QString title, weight_info aspect_group_weight,
-                                 float aspect_default_weight, QHash<QString,RoleAspect*> &list){
+                                 float aspect_default_weight, std::map<QString,RoleAspect> &list){
 
     QHash<QString, weight_info> weight_infos;
-    foreach(QString aspect_name, list.uniqueKeys()){
-        weight_info wi = {false,list.value(aspect_name)->is_neg,list.value(aspect_name)->weight};
-        weight_infos.insert(aspect_name, wi);
+    for(const auto &p: list){
+        weight_info wi = {false,p.second.is_neg,p.second.weight};
+        weight_infos.insert(p.first, wi);
     }
     return generate_details(title,aspect_group_weight, aspect_default_weight, weight_infos);
 }
@@ -357,9 +347,9 @@ QString Role::generate_details(QString title, weight_info aspect_group_weight,
 
 QString Role::get_preference_details(float aspect_default_weight, Dwarf *d){
     QHash<QString, weight_info> weight_infos;
-    for(int i = 0; i < prefs.count(); i++){
-        weight_info wi = {false, prefs.at(i)->pref_aspect->is_neg, prefs.at(i)->pref_aspect->weight};
-        weight_infos.insert(prefs.at(i)->get_name(),wi);
+    for (const auto &pref: prefs) {
+        weight_info wi = {false, pref->pref_aspect.is_neg, pref->pref_aspect.weight};
+        weight_infos.insert(pref->get_name(),wi);
     }
     m_pref_desc = generate_details(tr("Preferences"), prefs_weight, aspect_default_weight, weight_infos);
     QString pref_desc = m_pref_desc;
@@ -412,21 +402,21 @@ void Role::write_to_ini(QSettings &s, float default_attributes_weight, float def
     write_pref_group(s,default_prefs_weight);
 }
 
-void Role::write_aspect_group(QSettings &s, QString group_name, weight_info group_weight, float group_default_weight, QHash<QString, RoleAspect*> &list){
-    if(list.count()>0){
-        RoleAspect *a;
+void Role::write_aspect_group(QSettings &s, QString group_name, weight_info group_weight, float group_default_weight, std::map<QString, RoleAspect> &list){
+    if(!list.empty()){
         if(group_weight.weight > 0 && group_weight.weight != group_default_weight)
             s.setValue(group_name + "_weight", QString::number(group_weight.weight,'g',0));
 
         int count = 0;
-        s.beginWriteArray(group_name, list.count());
-        foreach(QString key, list.uniqueKeys()){
+        s.beginWriteArray(group_name, list.size());
+        for (const auto &p: list){
+            auto &key = p.first;
+            auto &a = p.second;
             s.setArrayIndex(count);
-            a = list.value(key);
-            QString id = tr("%1%2").arg(a->is_neg ? "-" : "").arg(key);
+            QString id = tr("%1%2").arg(a.is_neg ? "-" : "").arg(key);
             s.setValue("id",id);
-            if(a->weight != 1.0){
-                s.setValue("weight",QString::number(a->weight,'g',2));
+            if(a.weight != 1.0){
+                s.setValue("weight",QString::number(a.weight,'g',2));
             }
             count ++;
         }
@@ -435,17 +425,16 @@ void Role::write_aspect_group(QSettings &s, QString group_name, weight_info grou
 }
 
 void Role::write_pref_group(QSettings &s, float default_prefs_weight){
-    if(prefs.count()>0){
-        Preference *p;
+    if(!prefs.empty()){
         if(prefs_weight.weight > 0 && prefs_weight.weight != default_prefs_weight)
             s.setValue("prefs_weight", QString::number(prefs_weight.weight,'g',0));
 
         int i_type = -1;
         QList<int> active_flags;
-        s.beginWriteArray("preferences", prefs.count());
-        for(int i = 0; i < prefs.count(); i++){
+        s.beginWriteArray("preferences", prefs.size());
+        for(unsigned int i = 0; i < prefs.size(); i++){
             s.setArrayIndex(i);
-            p = prefs.at(i);
+            auto *p = prefs.at(i).get();
             s.setValue("pref_category",QString::number((int)p->get_pref_category()));
             i_type = (int)p->get_item_type();
             if(i_type != -1){
@@ -456,10 +445,10 @@ void Role::write_pref_group(QSettings &s, float default_prefs_weight){
                 s.setValue("mat_state", QString::number(p->mat_state()));
             }
 
-            QString id = tr("%1%2").arg(p->pref_aspect->is_neg ? "-" : "").arg(p->get_name());
+            QString id = tr("%1%2").arg(p->pref_aspect.is_neg ? "-" : "").arg(p->get_name());
             s.setValue("name",id);
-            if(p->pref_aspect->weight != 1.0){
-                s.setValue("weight",QString::number(p->pref_aspect->weight,'g',2));
+            if(p->pref_aspect.weight != 1.0){
+                s.setValue("weight",QString::number(p->pref_aspect.weight,'g',2));
             }
 
             active_flags = p->flags().active_flags();
@@ -477,9 +466,9 @@ void Role::write_pref_group(QSettings &s, float default_prefs_weight){
 }
 
 Preference* Role::has_preference(QString name){
-    foreach(Preference *p, prefs){
+    for (const auto &p: prefs){
         if(QString::compare(p->get_name(), name, Qt::CaseInsensitive)==0)
-            return p;
+            return p.get();
     }
     return 0;
 }

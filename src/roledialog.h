@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QKeyEvent>
+#include <memory>
 #include "global_enums.h"
 
 class DFInstance;
@@ -14,7 +15,7 @@ class QSplitter;
 class QTableWidget;
 class QTreeWidgetItem;
 class Role;
-class RoleAspect;
+struct RoleAspect;
 namespace Ui { class roleDialog; }
 
 class roleDialog : public QDialog
@@ -40,7 +41,7 @@ private:
     Dwarf *m_dwarf;
 
     //preference main holder
-    QHash<QTreeWidgetItem*,QVector<Preference*>* > m_pref_list;
+    std::map<QTreeWidgetItem*,std::vector<std::shared_ptr<Preference>>> m_pref_list;
 
     //specific categories
     QTreeWidgetItem *m_gems;
@@ -87,13 +88,13 @@ private:
 
     void load_role_data();
     void decorate_splitter(QSplitter *s);
-    void load_aspects_data(QTableWidget &table, QHash<QString, RoleAspect *> aspects);
-    void save_aspects(QTableWidget &table, QHash<QString, RoleAspect*> &list);
+    void load_aspects_data(QTableWidget &table, const std::map<QString, RoleAspect> &aspects);
+    void save_aspects(QTableWidget &table, std::map<QString, RoleAspect> &list);
     void save_prefs(Role *r);
-    void insert_row(QTableWidget &table, RoleAspect *a, QString key);
+    void insert_row(QTableWidget &table, const RoleAspect &a, QString key);
     void insert_pref_row(Preference *p);
 
-    void add_aspect(QString id, QTableWidget &table, QHash<QString,RoleAspect*> &list);
+    void add_aspect(QString id, QTableWidget &table, std::map<QString, RoleAspect> &list);
 
     void clear_table(QTableWidget &t);
     bool m_override;
@@ -107,7 +108,7 @@ private:
     void load_creatures();
     void load_weapons();
     QTreeWidgetItem* init_parent_node(QString title);
-    void add_pref_to_tree(QTreeWidgetItem *parent, Preference *p);
+    void add_pref_to_tree(QTreeWidgetItem *parent, std::shared_ptr<Preference> p);
 
 protected:
     void closeEvent(QCloseEvent *){close_pressed();}

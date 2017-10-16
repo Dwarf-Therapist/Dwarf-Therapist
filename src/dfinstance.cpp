@@ -510,7 +510,7 @@ void DFInstance::load_role_ratings(){
         }
 
         foreach(Role *r, gdr->get_roles().values()){
-            if(r->prefs.count() > 0){
+            if(!r->prefs.empty()){
                 pref_values.append(d->get_role_pref_match_counts(r,true));
             }
         }

@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include "syndrome.h"
 #include "equipwarn.h"
 #include <QModelIndex>
+#include <memory>
 
 class QAction;
 class DFInstance;
@@ -328,7 +329,7 @@ public:
     QVector<Attribute> *get_attributes() {return &m_attributes;}
     QHash<int, short> *get_traits(){return &m_traits;}
     void load_trait_values(QVector<double> &list);
-    QMultiMap<int,Preference*> *get_preferences(){return &m_preferences;}
+    std::multimap<int, std::unique_ptr<Preference>> *get_preferences(){return &m_preferences;}
 
     double get_role_pref_match_counts(Role *r, bool load_map = false);
     double get_role_pref_match_counts(Preference *role_pref, Role *r = 0);
@@ -664,7 +665,7 @@ private:
     bool m_is_pet;
     Race* m_race;
     Caste* m_caste;
-    QMultiMap<int, Preference*> m_preferences;
+    std::multimap<int, std::unique_ptr<Preference>> m_preferences;
     QHash<QString, QStringList*> m_grouped_preferences;
     QStringList m_pref_names;
     QString m_pref_tooltip;

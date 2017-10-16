@@ -28,10 +28,12 @@ THE SOFTWARE.
 #include <QVector>
 #include <QColor>
 #include <QHash>
+#include <memory>
+
+#include "roleaspect.h"
 
 class Preference;
 class QSettings;
-class RoleAspect;
 class Dwarf;
 
 class Role : public QObject {
@@ -64,10 +66,10 @@ public:
 
     //unfortunately we need to keep all the keys as a string and cast them so we can use the same functions
     //ie can't pass in a hash with <string, aspect> and <int, aspect>
-    QHash<QString, RoleAspect*> attributes;
-    QHash<QString, RoleAspect*> skills;
-    QHash<QString, RoleAspect*> traits;
-    QVector<Preference*> prefs;
+    std::map<QString, RoleAspect> attributes;
+    std::map<QString, RoleAspect> skills;
+    std::map<QString, RoleAspect> traits;
+    std::vector<std::unique_ptr<Preference>> prefs;
 
     //global weights
     weight_info attributes_weight;
@@ -88,13 +90,13 @@ public:
     static const QColor color_has_prefs() {return QColor(0, 60, 128, 135);}
 
 protected:
-    void parseAspect(QSettings &s, QString node, weight_info &g_weight, QHash<QString, RoleAspect *> &list, float default_weight);
+    void parseAspect(QSettings &s, QString node, weight_info &g_weight, std::map<QString, RoleAspect> &list, float default_weight);
     void parsePreferences(QSettings &s, QString node, weight_info &g_weight, float default_weight);
     void validate_pref(Preference *p, int first_flag);
-    void write_aspect_group(QSettings &s, QString group_name, weight_info group_weight, float group_default_weight, QHash<QString, RoleAspect *> &list);
+    void write_aspect_group(QSettings &s, QString group_name, weight_info group_weight, float group_default_weight, std::map<QString, RoleAspect> &list);
     void write_pref_group(QSettings &s, float default_prefs_weight);
 
-    QString get_aspect_details(QString title, weight_info aspect_group_weight, float aspect_default_weight, QHash<QString, RoleAspect *> &list);
+    QString get_aspect_details(QString title, weight_info aspect_group_weight, float aspect_default_weight, std::map<QString, RoleAspect> &list);
     QString get_preference_details(float aspect_default_weight, Dwarf *d=0);
     void refresh_preferences(Dwarf *d);
     void highlight_pref_matches(Dwarf *d, QString &pref_desc);
