@@ -647,12 +647,11 @@ void GameDataReader::load_role_mappings(){
     //load a mapping of skills to roles as well (used for showing roles in labor cell tooltips)
     //also load roles with which labors they use based on their skills (used to toggle labors in role cells)
     m_skill_roles.clear();
-    int skill_id;
     foreach(Role *r, m_dwarf_roles){
         QVector<Role*> roles;
         QList<int> labors;
-        foreach(QString key, r->skills.uniqueKeys()){
-            skill_id = key.toInt();
+        for (const auto &p: r->skills){
+            int skill_id = p.first.toInt();
             roles = m_skill_roles.value(skill_id);
             roles.append(r);
             m_skill_roles.insert(skill_id,roles);

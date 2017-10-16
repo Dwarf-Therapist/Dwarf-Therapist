@@ -123,8 +123,8 @@ QStandardItem *RoleColumn::build_cell(Dwarf *d) {
         item->setData(related_labors,DwarfModel::DR_LABORS);
 
         float alpha = 0;
-        if(m_role->prefs.count() > 0){
-            alpha = d->get_role_pref_matches(m_role->name()).count() / static_cast<float>(m_role->prefs.count()) * 150;
+        if(!m_role->prefs.empty()){
+            alpha = d->get_role_pref_matches(m_role->name()).count() / static_cast<float>(m_role->prefs.size()) * 150;
         }
         item->setData(alpha,DwarfModel::DR_SPECIAL_FLAG);
 

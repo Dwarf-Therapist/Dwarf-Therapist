@@ -162,8 +162,6 @@ Dwarf::~Dwarf() {
     m_sorted_custom_role_ratings.clear();
     m_states.clear();
 
-    qDeleteAll(m_preferences);
-    m_preferences.clear();
     qDeleteAll(m_grouped_preferences);
     m_grouped_preferences.clear();
 
@@ -806,7 +804,6 @@ void Dwarf::read_preferences(){
     QString pref_name = "Unknown";
     ITEM_TYPE i_type;
     PREF_TYPES p_type;
-    Preference *p;
 
     foreach(VIRTADDR pref, preferences){
         pref_type = m_df->read_short(pref);
@@ -821,7 +818,7 @@ void Dwarf::read_preferences(){
         i_type = static_cast<ITEM_TYPE>(pref_id);
         p_type = static_cast<PREF_TYPES>(pref_type);
 
-        p = new Preference(p_type, pref_name, this);
+        auto p = std::make_unique<Preference>(p_type, pref_name);
 
         //for each preference type, we have some flags we need to check and add so we get matches to the role's preferences
         //materials are the exception as all flags are passed in, moving forward it may be better to pass in flagarrays instead
@@ -905,7 +902,7 @@ void Dwarf::read_preferences(){
         }
         p->set_name(pref_name);
         if(!pref_name.isEmpty())
-            m_preferences.insert(pref_type, p);
+            m_preferences.emplace(pref_type, std::move(p));
         //        if(itype < NUM_OF_TYPES && itype != NONE)
         //            LOGW << pref_name << " " << (int)itype << " " << Item::get_item_desc(itype);
 
@@ -919,12 +916,12 @@ void Dwarf::read_preferences(){
         if(val == 2)
             pref = tr("Likes working outdoors");
 
-        p = new Preference(LIKE_OUTDOORS,pref,this);
+        auto p = std::make_unique<Preference>(LIKE_OUTDOORS,pref);
         p->add_flag(999);
-        m_preferences.insert(LIKE_OUTDOORS,p);
+        m_preferences.emplace(LIKE_OUTDOORS, std::move(p));
     }
 
-    bool build_tooltip = (!m_is_animal && !m_preferences.isEmpty() && DT->user_settings()->value("options/tooltip_show_preferences",true).toBool());
+    bool build_tooltip = (!m_is_animal && !m_preferences.empty() && DT->user_settings()->value("options/tooltip_show_preferences",true).toBool());
     //group preferences into pref desc - values (string list)
     QString desc_key;
     pref_name = "";
@@ -933,41 +930,37 @@ void Dwarf::read_preferences(){
     QStringList consume;
     QStringList hates;
     QStringList other;
-    foreach(int key, m_preferences.uniqueKeys()){
-        QMultiMap<int, Preference *>::iterator i = m_preferences.find(key);
-        while(i != m_preferences.end() && i.key() == key){
-            PREF_TYPES pType = static_cast<PREF_TYPES>(key);
-            desc_key = Preference::get_pref_desc(pType);
-            pref_name = static_cast<Preference*>(i.value())->get_name();
-            if(!pref_name.isEmpty()){
-                //create/append to groups based on the categories description
-                if(!m_grouped_preferences.contains(desc_key))
-                    m_grouped_preferences.insert(desc_key, new QStringList);
-                m_grouped_preferences.value(desc_key)->append(pref_name);
-                //build the tooltip at the same time, organizing by likes, dislikes
-                if(build_tooltip){
-                    if(pType == LIKE_ITEM || pType == LIKE_MATERIAL || pType == LIKE_PLANT || pType == LIKE_TREE || pType == LIKE_CREATURE){
-                        likes.append(pref_name);
-                    }else if(pType == LIKE_FOOD){
-                        consume.append(pref_name);
-                    }else if(pType == LIKE_COLOR){
-                        likes.append(tr("the color ").append(pref_name));
-                    }else if(pType == LIKE_SHAPE){
-                        likes.append(tr("the shape of ").append(pref_name));
-                    }else if(pType == LIKE_POETRY){
-                        likes.append(tr("the words of ").append(pref_name));
-                    }else if(pType == LIKE_MUSIC){
-                        likes.append(tr("the sound of ").append(pref_name));
-                    }else if(pType == LIKE_DANCE){
-                        likes.append(tr("the sight of ").append(pref_name));
-                    }else if(pType == HATE_CREATURE){
-                        hates.append(pref_name);
-                    }else{
-                        other.append(capitalize(pref_name));
-                    }
+    for (const auto &p: m_preferences) {
+        auto pType = static_cast<PREF_TYPES>(p.first);
+        desc_key = Preference::get_pref_desc(pType);
+        pref_name = p.second->get_name();
+        if(!pref_name.isEmpty()){
+            //create/append to groups based on the categories description
+            if(!m_grouped_preferences.contains(desc_key))
+                m_grouped_preferences.insert(desc_key, new QStringList);
+            m_grouped_preferences.value(desc_key)->append(pref_name);
+            //build the tooltip at the same time, organizing by likes, dislikes
+            if(build_tooltip){
+                if(pType == LIKE_ITEM || pType == LIKE_MATERIAL || pType == LIKE_PLANT || pType == LIKE_TREE || pType == LIKE_CREATURE){
+                    likes.append(pref_name);
+                }else if(pType == LIKE_FOOD){
+                    consume.append(pref_name);
+                }else if(pType == LIKE_COLOR){
+                    likes.append(tr("the color ").append(pref_name));
+                }else if(pType == LIKE_SHAPE){
+                    likes.append(tr("the shape of ").append(pref_name));
+                }else if(pType == LIKE_POETRY){
+                    likes.append(tr("the words of ").append(pref_name));
+                }else if(pType == LIKE_MUSIC){
+                    likes.append(tr("the sound of ").append(pref_name));
+                }else if(pType == LIKE_DANCE){
+                    likes.append(tr("the sight of ").append(pref_name));
+                }else if(pType == HATE_CREATURE){
+                    hates.append(pref_name);
+                }else{
+                    other.append(capitalize(pref_name));
                 }
             }
-            i++;
         }
     }
     if(build_tooltip){
@@ -2853,22 +2846,22 @@ double Dwarf::calc_role_rating(Role *m_role){
     if((global_att_weight + global_skill_weight + global_trait_weight + global_pref_weight) == 0)
         return 50.0f;
 
-    RoleAspect *a;
     double aspect_value = 0.0;
     float total_weight = 0.0;
     float weight = 1.0;
 
     //ATTRIBUTES
-    if(m_role->attributes.count()>0){
+    if(!m_role->attributes.empty()){
 
-        foreach(QString name, m_role->attributes.uniqueKeys()){
-            a = m_role->attributes.value(name);
-            weight = a->weight;
+        for (const auto &p: m_role->attributes){
+            auto &name = p.first;
+            auto &a = p.second;
+            weight = a.weight;
 
             ATTRIBUTES_TYPE attrib_id = GameDataReader::ptr()->get_attribute_type(name.toUpper());
             aspect_value = get_attribute(attrib_id).rating(true);
 
-            if(a->is_neg)
+            if(a.is_neg)
                 aspect_value = 1-aspect_value;
             rating_att += (aspect_value*weight);
 
@@ -2885,15 +2878,16 @@ double Dwarf::calc_role_rating(Role *m_role){
     }
 
     //TRAITS
-    if(m_role->traits.count()>0){
+    if(!m_role->traits.empty()){
         total_weight = 0;
-        foreach(QString trait_id, m_role->traits.uniqueKeys()){
-            a = m_role->traits.value(trait_id);
-            weight = a->weight;
+        for (const auto &p: m_role->traits){
+            auto &trait_id = p.first;
+            auto &a = p.second;
+            weight = a.weight;
 
             aspect_value = DwarfStats::get_trait_rating(trait(trait_id.toInt()));
 
-            if(a->is_neg)
+            if(a.is_neg)
                 aspect_value = 1-aspect_value;
             rating_trait += (aspect_value * weight);
 
@@ -2910,12 +2904,13 @@ double Dwarf::calc_role_rating(Role *m_role){
 
     //SKILLS
     float total_skill_rates = 0.0;
-    if(m_role->skills.count()>0){
+    if(!m_role->skills.empty()){
         total_weight = 0;
         Skill s;
-        foreach(QString skill_id, m_role->skills.uniqueKeys()){
-            a = m_role->skills.value(skill_id);
-            weight = a->weight;
+        for (const auto &p: m_role->skills){
+            auto &skill_id = p.first;
+            auto &a = p.second;
+            weight = a.weight;
 
             s = this->get_skill(skill_id.toInt());
             total_skill_rates += s.skill_rate();
@@ -2927,7 +2922,7 @@ double Dwarf::calc_role_rating(Role *m_role){
             if(aspect_value > 1.0)
                 aspect_value = 1.0;
 
-            if(a->is_neg)
+            if(a.is_neg)
                 aspect_value = 1-aspect_value;
             rating_skill += (aspect_value*weight);
 
@@ -2948,7 +2943,7 @@ double Dwarf::calc_role_rating(Role *m_role){
     }
 
     //PREFERENCES
-    if(m_role->prefs.count()>0){
+    if(!m_role->prefs.empty()){
         aspect_value = get_role_pref_match_counts(m_role);
         rating_prefs = DwarfStats::get_preference_rating(aspect_value) * 100.0f;
     }else{
@@ -3005,11 +3000,11 @@ void Dwarf::refresh_role_display_ratings(){
 
 double Dwarf::get_role_pref_match_counts(Role *r, bool load_map){
     double total_rating = 0.0;
-    foreach(Preference *role_pref,r->prefs){
-        double matches = get_role_pref_match_counts(role_pref,(load_map ? r : 0));
+    for (const auto &role_pref: r->prefs) {
+        double matches = get_role_pref_match_counts(role_pref.get(),(load_map ? r : 0));
         if(matches > 0){
-            double rating = matches * role_pref->pref_aspect->weight;
-            if(role_pref->pref_aspect->is_neg)
+            double rating = matches * role_pref->pref_aspect.weight;
+            if(role_pref->pref_aspect.is_neg)
                 rating = 1.0f-rating;
             total_rating += rating;
         }
@@ -3020,10 +3015,9 @@ double Dwarf::get_role_pref_match_counts(Role *r, bool load_map){
 double Dwarf::get_role_pref_match_counts(Preference *role_pref, Role *r){
     double matches = 0;
     int key = role_pref->get_pref_category();
-    QMultiMap<int, Preference *>::iterator i = m_preferences.find(key);
-    Preference *p;
-    while(i != m_preferences.end() && i.key() == key){
-        p = static_cast<Preference*>(i.value());
+    auto range = m_preferences.equal_range(key);
+    for (auto it = range.first; it != range.second; ++it) {
+        auto p = it->second.get();
         double match = (double)p->matches(role_pref,this);
         if(match > 0){
             if(r){
@@ -3031,7 +3025,6 @@ double Dwarf::get_role_pref_match_counts(Preference *role_pref, Role *r){
             }
         }
         matches += match;
-        i++;
     }
     //give a 0.1 bonus for each match after the first, this only applies when getting matches for groups
     if(matches > 1.0)

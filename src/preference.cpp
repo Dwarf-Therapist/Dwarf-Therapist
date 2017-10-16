@@ -23,7 +23,6 @@ THE SOFTWARE.
 #include "preference.h"
 
 #include "dfinstance.h"
-#include "roleaspect.h"
 #include "dwarf.h"
 #include "itemweaponsubtype.h"
 #include "itemarmorsubtype.h"
@@ -31,10 +30,8 @@ THE SOFTWARE.
 #include "caste.h"
 #include "plant.h"
 
-Preference::Preference(QObject *parent)
-    : QObject(parent)
-    , pref_aspect(new RoleAspect(parent))
-    , m_name("")
+Preference::Preference()
+    : m_name("")
     , m_pType(LIKES_NONE)
     , m_iType(NONE)
     , m_mat_state (ANY_STATE)
@@ -42,10 +39,8 @@ Preference::Preference(QObject *parent)
     , m_exact_match(false)
 {}
 
-Preference::Preference(PREF_TYPES category, ITEM_TYPE iType, QObject *parent)
-    : QObject(parent)
-    , pref_aspect(new RoleAspect(parent))
-    , m_name("")
+Preference::Preference(PREF_TYPES category, ITEM_TYPE iType)
+    : m_name("")
     , m_pType(category)
     , m_iType(iType)
     , m_mat_state (ANY_STATE)
@@ -53,10 +48,8 @@ Preference::Preference(PREF_TYPES category, ITEM_TYPE iType, QObject *parent)
     , m_exact_match(false)
 {}
 
-Preference::Preference(PREF_TYPES category, QString name, QObject *parent)
-    : QObject(parent)
-    , pref_aspect(new RoleAspect(parent))
-    , m_name(name)
+Preference::Preference(PREF_TYPES category, QString name)
+    : m_name(name)
     , m_pType(category)
     , m_iType(NONE)
     , m_mat_state (ANY_STATE)
@@ -65,8 +58,7 @@ Preference::Preference(PREF_TYPES category, QString name, QObject *parent)
 {}
 
 Preference::Preference(const Preference &p)
-    : QObject(p.parent())
-    , pref_aspect(p.pref_aspect)
+    : pref_aspect(p.pref_aspect)
     , m_name(p.m_name)
     , m_pType(p.m_pType)
     , m_iType(p.m_iType)

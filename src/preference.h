@@ -23,18 +23,18 @@ THE SOFTWARE.
 #ifndef PREFERENCE_H
 #define PREFERENCE_H
 
-#include <QObject>
+#include <QCoreApplication>
 #include "global_enums.h"
 #include "flagarray.h"
+#include "roleaspect.h"
 
 class Dwarf;
 class ItemSubtype;
 class Plant;
 class Race;
-class RoleAspect;
 
-class Preference : public QObject {
-    Q_OBJECT
+class Preference {
+    Q_DECLARE_TR_FUNCTIONS(Preference)
 public:
 
     static const QString get_pref_desc(const PREF_TYPES &type) {
@@ -55,9 +55,9 @@ public:
         return desc.value(type, tr("N/A"));
     }
 
-    Preference(QObject *parent);
-    Preference(PREF_TYPES category, QString name, QObject *parent = 0);
-    Preference(PREF_TYPES category, ITEM_TYPE iType, QObject *parent = 0);
+    Preference();
+    Preference(PREF_TYPES category, QString name);
+    Preference(PREF_TYPES category, ITEM_TYPE iType);
     Preference(const Preference &p);
 
     int matches(Preference *role_pref, Dwarf *d = 0);
@@ -76,7 +76,7 @@ public:
     bool exact_match() {return m_exact_match;}
     MATERIAL_STATES mat_state() {return m_mat_state;}
 
-    RoleAspect *pref_aspect;
+    RoleAspect pref_aspect;
 
     //this is a general setter for a unit's preference's flags
     void set_pref_flags(const FlagArray &flags);
