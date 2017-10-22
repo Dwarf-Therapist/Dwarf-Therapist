@@ -43,14 +43,14 @@ public:
     //! Return the memory address (in hex) of this Material in the remote DF process
     VIRTADDR address() {return m_address;}
 
-    QString get_material_name(MATERIAL_STATES state);
-    int id() {return m_index;}
+    QString get_material_name(MATERIAL_STATES state) const;
+    int id() const {return m_index;}
 
     void load_data();
-    bool is_inorganic() {return m_inorganic;}
-    bool is_generated() {return m_is_generated;}
+    bool is_inorganic() const {return m_inorganic;}
+    bool is_generated() const {return m_is_generated;}
 
-    FlagArray flags() {return m_flags;}
+    const FlagArray &flags() const {return m_flags;}
 
     static QString get_material_flag_desc(MATERIAL_FLAGS flag, MATERIAL_STATES state = SOLID) {
         switch (flag) {

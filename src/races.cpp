@@ -137,14 +137,6 @@ void Race::read_race() {
     m_df->detach();
 }
 
-Caste * Race::get_caste_by_id(int idx){
-    if(idx >= 0 && m_castes.size() > idx){
-        return m_castes.at(idx);
-    }else{
-        return 0;
-    }
-}
-
 void Race::load_caste_ratios(){
     /* fuck it
     if(!loaded_stats){
@@ -214,16 +206,14 @@ Material * Race::get_creature_material(int index){
     }
 }
 
-bool Race::caste_flag(CASTE_FLAGS cf){
+bool Race::caste_flag(CASTE_FLAGS cf) const {
     if(m_castes.empty()){
         return false;
     }else{
-        Caste *c = m_castes.at(0);
-        if(c){
+        if(auto c = m_castes.value(0))
             return c->flags().has_flag(cf);
-        }else{
+        else
             return false;
-        }
     }
 }
 

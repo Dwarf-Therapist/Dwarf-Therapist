@@ -43,6 +43,7 @@ THE SOFTWARE.
 
 #include "labor.h"
 #include "preference.h"
+#include "rolepreference.h"
 #include "material.h"
 #include "caste.h"
 #include "roleaspect.h"
@@ -549,7 +550,7 @@ void Dwarf::read_body_size(){
     }
 }
 
-int Dwarf::body_size(bool use_default){
+int Dwarf::body_size(bool use_default) const {
     //we include returning the default size because for the weapon columns, the size actually doesn't matter to DF (bug?)
     if(use_default){
         int def_size = 6000; //default adult size for a dwarf
@@ -794,137 +795,117 @@ void Dwarf::read_preferences(){
     if(m_is_animal)
         return;
     QVector<VIRTADDR> preferences = m_df->enumerate_vector(m_first_soul + m_mem->soul_detail("preferences"));
-    int pref_type;
-    int pref_id;
-    int item_sub_type;
-    short mat_type;
-    MATERIAL_STATES mat_state;
-    int mat_index;
-
-    QString pref_name = "Unknown";
-    ITEM_TYPE i_type;
-    PREF_TYPES p_type;
 
     foreach(VIRTADDR pref, preferences){
-        pref_type = m_df->read_short(pref);
+        auto pref_type = static_cast<PREF_TYPES>(m_df->read_short(pref));
         //0x2 unk
-        pref_id = m_df->read_short(pref + 0x4);
+        auto pref_id = m_df->read_short(pref + 0x4);
         //0x6 unk
-        item_sub_type = m_df->read_short(pref + 0x8);
-        mat_type = m_df->read_int(pref + 0xc);
-        mat_index = m_df->read_int(pref + 0x10);
-        mat_state = static_cast<MATERIAL_STATES>(m_df->read_short(pref + 0x14));
+        auto item_sub_type = m_df->read_short(pref + 0x8);
+        auto mat_type = m_df->read_int(pref + 0xc);
+        auto mat_index = m_df->read_int(pref + 0x10);
+        auto mat_state = static_cast<MATERIAL_STATES>(m_df->read_short(pref + 0x14));
 
-        i_type = static_cast<ITEM_TYPE>(pref_id);
-        p_type = static_cast<PREF_TYPES>(pref_type);
+        auto i_type = static_cast<ITEM_TYPE>(pref_id);
 
-        auto p = std::make_unique<Preference>(p_type, pref_name);
+        std::unique_ptr<Preference> p;
 
         //for each preference type, we have some flags we need to check and add so we get matches to the role's preferences
         //materials are the exception as all flags are passed in, moving forward it may be better to pass in flagarrays instead
         switch(pref_type){
         case LIKE_MATERIAL:
-        {
-            p->set_mat_state (mat_state);
-            pref_name = m_df->find_material_name(mat_index,mat_type,i_type,mat_state);
-            Material *m = m_df->find_material(mat_index,mat_type);
-            if(m && m->id() >= 0){
-                p->set_pref_flags(m->flags());
+            if (Material *m = m_df->find_material(mat_index,mat_type))
+                p = std::make_unique<MaterialPreference>(m, mat_state);
+            else {
+                LOGE << "Material for preference not found" << mat_type << mat_index;
             }
-        }
             break;
         case LIKE_CREATURE:
-        {
-            Race* r = m_df->get_race(pref_id);
-            if(r){
-                pref_name = r->plural_name().toLower();
-                p->set_pref_flags(r);
+            if (Race* r = m_df->get_race(pref_id))
+                p = std::make_unique<CreaturePreference>(r);
+            else {
+                LOGE << "Creature for preference not found" << pref_id;
             }
-        }
             break;
         case LIKE_FOOD:
         {
+            QString pref_name = tr("Unknown");
             if(mat_index < 0 || i_type==MEAT){
+                int creature_id = mat_index;
                 if(i_type==FISH)
-                    mat_index = mat_type;
-                Race* r = m_df->get_race(mat_index);
-                if(r){
+                    creature_id = mat_type;
+
+                if (Race* r = m_df->get_race(creature_id))
                     pref_name = r->name().toLower();
+                else {
+                    LOGE << "Creature for food preference not found" << creature_id;
                 }
-            }else{
-                pref_name = m_df->find_material_name(mat_index,mat_type,i_type,mat_state);
             }
-            p->set_item_type(i_type);
-        }
+            else
+                pref_name = m_df->find_material_name(mat_index,mat_type,i_type,mat_state);
+            p = std::make_unique<Preference>(LIKE_FOOD, pref_name);
+            //TODO: add FoodPreference type
+            //p->set_item_type(i_type);
             break;
-        case HATE_CREATURE:
-        {
-            Race* r = m_df->get_race(pref_id);
-            if(r)
-                pref_name = r->plural_name().toLower();
         }
+        case HATE_CREATURE:
+            if (Race* r = m_df->get_race(pref_id))
+                p = std::make_unique<CreatureDislike>(r);
+            else {
+                LOGE << "Creature for hate preference not found" << pref_id;
+            }
             break;
         case LIKE_ITEM:
-        {
-            p->set_item_type(i_type);
-            pref_name = m_df->get_preference_item_name(pref_id,item_sub_type).toLower();
-            if(item_sub_type >= 0 && Item::has_subtypes(i_type)){
-                ItemSubtype *s = m_df->get_item_subtype(i_type,item_sub_type);
-                if(s){
-                    p->set_pref_flags(s->flags());
+            if(item_sub_type >= 0 && Item::has_subtypes(i_type)) {
+                if (ItemSubtype *s = m_df->get_item_subtype(i_type,item_sub_type))
+                    p = std::make_unique<ItemPreference>(s);
+                else {
+                    LOGE << "Item subtype for preference not found" << i_type << item_sub_type;
                 }
-            }else if(Item::is_trade_good(i_type)){
-                p->add_flag(IS_TRADE_GOOD);
             }
-        }
+            else
+                p = std::make_unique<ItemPreference>(i_type, m_df->get_preference_item_name(pref_id,item_sub_type).toLower());
             break;
         case LIKE_PLANT:
-        {
-            Plant *plnt = m_df->get_plant(pref_id);
-            if(plnt){
-                pref_name = plnt->name_plural().toLower();
-                p->set_pref_flags(plnt->flags());
+            if (Plant *plnt = m_df->get_plant(pref_id))
+                p = std::make_unique<PlantPreference>(plnt);
+            else {
+                LOGE << "Plant for preference not found" << pref_id;
             }
-        }
             break;
         case LIKE_TREE:
-        {
-            Plant *plnt = m_df->get_plant(pref_id);
-            if (plnt)
-                pref_name = plnt->name_plural().toLower();
-        }
+            if (Plant *plnt = m_df->get_plant(pref_id))
+                p = std::make_unique<TreePreference>(plnt);
+            else {
+                LOGE << "Tree for preference not found" << pref_id;
+            }
+            break;
+        case LIKE_COLOR:
+        case LIKE_SHAPE:
+        case LIKE_POETRY:
+        case LIKE_MUSIC:
+        case LIKE_DANCE:
+            p = std::make_unique<Preference>(pref_type, m_df->get_preference_other_name(pref_id, pref_type));
             break;
         default:
-        {
-            pref_name = m_df->get_preference_other_name(pref_id, p_type);
+            LOGE << "Unknown preference type" << pref_type;
         }
-            break;
-        }
-        p->set_name(pref_name);
-        if(!pref_name.isEmpty())
-            m_preferences.emplace(pref_type, std::move(p));
-        //        if(itype < NUM_OF_TYPES && itype != NONE)
-        //            LOGW << pref_name << " " << (int)itype << " " << Item::get_item_desc(itype);
-
-        m_pref_names.append(pref_name);
+        if (!p)
+            p = std::make_unique<Preference>(pref_type, tr("Unknown"));
+        m_pref_names.append(p->get_name());
+        m_preferences.emplace(pref_type, std::move(p));
     }
 
     //add a special preference (actually a misc trait) for like outdoors
-    if(has_state(STATE_OUTDOORS)){
-        int val = state_value(STATE_OUTDOORS);
-        QString pref = tr("Doesn't mind being outdoors");
-        if(val == 2)
-            pref = tr("Likes working outdoors");
-
-        auto p = std::make_unique<Preference>(LIKE_OUTDOORS,pref);
-        p->add_flag(999);
-        m_preferences.emplace(LIKE_OUTDOORS, std::move(p));
-    }
+    if (has_state(STATE_OUTDOORS))
+        m_preferences.emplace(
+                LIKE_OUTDOORS,
+                std::make_unique<OutdoorPreference>(state_value(STATE_OUTDOORS))
+        );
 
     bool build_tooltip = (!m_is_animal && !m_preferences.empty() && DT->user_settings()->value("options/tooltip_show_preferences",true).toBool());
     //group preferences into pref desc - values (string list)
     QString desc_key;
-    pref_name = "";
     //lists for the tooltip
     QStringList likes;
     QStringList consume;
@@ -933,7 +914,7 @@ void Dwarf::read_preferences(){
     for (const auto &p: m_preferences) {
         auto pType = static_cast<PREF_TYPES>(p.first);
         desc_key = Preference::get_pref_desc(pType);
-        pref_name = p.second->get_name();
+        auto pref_name = p.second->get_name();
         if(!pref_name.isEmpty()){
             //create/append to groups based on the categories description
             if(!m_grouped_preferences.contains(desc_key))
@@ -3003,8 +2984,8 @@ double Dwarf::get_role_pref_match_counts(Role *r, bool load_map){
     for (const auto &role_pref: r->prefs) {
         double matches = get_role_pref_match_counts(role_pref.get(),(load_map ? r : 0));
         if(matches > 0){
-            double rating = matches * role_pref->pref_aspect.weight;
-            if(role_pref->pref_aspect.is_neg)
+            double rating = matches * role_pref->aspect.weight;
+            if(role_pref->aspect.is_neg)
                 rating = 1.0f-rating;
             total_rating += rating;
         }
@@ -3012,13 +2993,13 @@ double Dwarf::get_role_pref_match_counts(Role *r, bool load_map){
     return total_rating;
 }
 
-double Dwarf::get_role_pref_match_counts(Preference *role_pref, Role *r){
+double Dwarf::get_role_pref_match_counts(RolePreference *role_pref, Role *r){
     double matches = 0;
     int key = role_pref->get_pref_category();
     auto range = m_preferences.equal_range(key);
     for (auto it = range.first; it != range.second; ++it) {
         auto p = it->second.get();
-        double match = (double)p->matches(role_pref,this);
+        double match = (double)role_pref->match(p,this);
         if(match > 0){
             if(r){
                 m_role_pref_map[r->name()].append(qMakePair(role_pref->get_name(), p->get_name()));

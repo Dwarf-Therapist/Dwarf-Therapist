@@ -10,7 +10,7 @@ class DFInstance;
 class Dwarf;
 class Material;
 class Plant;
-class Preference;
+class RolePreference;
 class QSplitter;
 class QTableWidget;
 class QTreeWidgetItem;
@@ -41,7 +41,7 @@ private:
     Dwarf *m_dwarf;
 
     //preference main holder
-    std::map<QTreeWidgetItem*,std::vector<std::shared_ptr<Preference>>> m_pref_list;
+    std::map<QTreeWidgetItem*,std::vector<std::shared_ptr<RolePreference>>> m_pref_list;
 
     //specific categories
     QTreeWidgetItem *m_gems;
@@ -83,16 +83,13 @@ private:
     QTreeWidgetItem *m_general_other;
     QTreeWidgetItem *m_general_equip;
 
-    //preference include/exclude lists
-    QVector<ITEM_TYPE> item_ignore;
-
     void load_role_data();
     void decorate_splitter(QSplitter *s);
     void load_aspects_data(QTableWidget &table, const std::map<QString, RoleAspect> &aspects);
     void save_aspects(QTableWidget &table, std::map<QString, RoleAspect> &list);
     void save_prefs(Role *r);
     void insert_row(QTableWidget &table, const RoleAspect &a, QString key);
-    void insert_pref_row(Preference *p);
+    void insert_pref_row(RolePreference *p);
 
     void add_aspect(QString id, QTableWidget &table, std::map<QString, RoleAspect> &list);
 
@@ -100,7 +97,6 @@ private:
     bool m_override;
 
     //preferences
-    void add_general_node(const QString title, PREF_TYPES ptype, const std::vector<int> &flags, QTreeWidgetItem *parent, ITEM_TYPE itype = NONE);
     void build_pref_tree();
     void load_material_prefs(QVector<Material*> mats);
     void load_plant_prefs(QVector<Plant *> plants);
@@ -108,7 +104,7 @@ private:
     void load_creatures();
     void load_weapons();
     QTreeWidgetItem* init_parent_node(QString title);
-    void add_pref_to_tree(QTreeWidgetItem *parent, std::shared_ptr<Preference> p);
+    void add_pref_to_tree(QTreeWidgetItem *parent, std::shared_ptr<RolePreference> p);
 
 protected:
     void closeEvent(QCloseEvent *){close_pressed();}

@@ -21,18 +21,18 @@ public:
     //! Return the memory address (in hex) of this Plant in the remote DF process
     VIRTADDR address() {return m_address;}
 
-    int id() {return m_index;}
+    int id() const {return m_index;}
     Material *get_plant_material(int index);
     QVector<Material*> get_plant_materials();
     int material_count();
     void load_data();
 
-    QString name() {return m_plant_name;}
-    QString name_plural() {return m_plant_name_plural;}
-    QString leaf_plural() {return m_leaf_name_plural;}
-    QString seed_plural() {return m_seed_name_plural;}
+    const QString &name() const {return m_plant_name;}
+    const QString &name_plural() const {return m_plant_name_plural;}
+    const QString &leaf_plural() const {return m_leaf_name_plural;}
+    const QString &seed_plural() const {return m_seed_name_plural;}
 
-    FlagArray flags() {return m_flags;}
+    const FlagArray &flags() const {return m_flags;}
 
 private:
     int m_index;

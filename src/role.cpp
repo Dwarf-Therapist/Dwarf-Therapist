@@ -24,7 +24,7 @@ THE SOFTWARE.
 #include "role.h"
 #include "dwarftherapist.h"
 #include "gamedatareader.h"
-#include "preference.h"
+#include "rolepreference.h"
 #include "defines.h"
 #include "dwarf.h"
 #include "material.h"
@@ -88,7 +88,7 @@ Role::Role(const Role &r)
 {
     prefs.reserve(r.prefs.size());
     for (const auto &pref: r.prefs)
-        prefs.emplace_back(std::make_unique<Preference>(*pref));
+        prefs.emplace_back(pref->copy());
 }
 
 Role::~Role(){
@@ -145,86 +145,9 @@ void Role::parsePreferences(QSettings &s, QString node, weight_info &g_weight, f
     QString id = "";
     for (int i = 0; i < count; ++i) {
         s.setArrayIndex(i);
-
-        auto p = std::make_unique<Preference>();
-        p->set_category(static_cast<PREF_TYPES>(s.value("pref_category",-1).toInt()));
-        p->set_item_type(static_cast<ITEM_TYPE>(s.value("item_type",-1).toInt()));
-        p->set_exact(s.value("exact",false).toBool());
-        p->set_mat_state(static_cast<MATERIAL_STATES>(s.value("mat_state", -1).toInt ()));
-
-        p->pref_aspect.weight = s.value("weight",1.0).toFloat();
-        if(p->pref_aspect.weight < 0)
-            p->pref_aspect.weight = 1.0;
-
-        id = s.value("name",tr("Unknown")).toString();
-        if(id == "Unknown"){
-            LOGW << "Role" << m_name << "has an invalid preference, index:" << i;
-        }
-
-        if(!id.isEmpty() && id.indexOf("-") >= 0){
-            id.replace("-","");
-            p->pref_aspect.is_neg = true;
-        }else{
-            p->pref_aspect.is_neg = false;
-        }
-        p->set_name(id);
-
-        int flag_count = s.beginReadArray("flags");
-        int first_flag = -1;
-        for(int j = 0; j < flag_count; j++){
-            s.setArrayIndex(j);
-            int f = s.value("flag").toInt();
-            p->add_flag(f);
-            if(j==0)
-                first_flag = f;
-        }
-        s.endArray();
-
-        //update any old flags with new ones
-        validate_pref(p.get(),first_flag);
-
-        prefs.emplace_back(std::move(p));
+        prefs.emplace_back(RolePreference::parse(s, m_updated));
     }
     s.endArray();
-}
-
-void Role::validate_pref(Preference *p, int first_flag){
-    //check and update any missing armor/clothing flags
-    if(Item::is_armor_type(p->get_item_type()) && !p->flags().has_flag(IS_ARMOR) && !p->flags().has_flag(IS_CLOTHING)){
-        p->add_flag(IS_ARMOR);
-        m_updated = true;
-    }
-
-    //add missing trade goods flags
-    if(Item::is_trade_good(p->get_item_type()) && !p->flags().has_flag(IS_TRADE_GOOD)){
-        p->add_flag(IS_TRADE_GOOD);
-        m_updated = true;
-    }
-
-    //add missing trainable, remove old flags
-    if(p->get_pref_category() == LIKE_CREATURE &&
-            p->flags().has_flag(TRAINABLE_HUNTING) && p->flags().has_flag(TRAINABLE_WAR) && !p->flags().has_flag(TRAINABLE)){
-        p->add_flag(TRAINABLE);
-        p->flags().set_flag(TRAINABLE_HUNTING,false);
-        p->flags().set_flag(TRAINABLE_WAR,false);
-        m_updated = true;
-    }
-
-    //update any general preference material names (eg. Horn -> Horn/Hoof)
-    if(p->get_item_type() == NONE && !p->exact_match() && p->get_pref_category() == LIKE_MATERIAL &&
-            first_flag >= 0 && first_flag < NUM_OF_MATERIAL_FLAGS){
-            QString new_name = (Material::get_material_flag_desc(static_cast<MATERIAL_FLAGS>(first_flag)));
-            if(new_name != p->get_name()){
-                p->set_name(new_name);
-                m_updated = true;
-            }
-    }
-
-    //update old outdoor preference category (9) to new (99)
-    if(p->get_pref_category() == 9 && p->get_item_type() == -1 && p->flags().has_flag(999)){
-        p->set_category(LIKE_OUTDOORS);
-        m_updated = true;
-    }
 }
 
 void Role::create_role_details(QSettings &s, Dwarf *d){
@@ -348,7 +271,7 @@ QString Role::generate_details(QString title, weight_info aspect_group_weight,
 QString Role::get_preference_details(float aspect_default_weight, Dwarf *d){
     QHash<QString, weight_info> weight_infos;
     for (const auto &pref: prefs) {
-        weight_info wi = {false, pref->pref_aspect.is_neg, pref->pref_aspect.weight};
+        weight_info wi = {false, pref->aspect.is_neg, pref->aspect.weight};
         weight_infos.insert(pref->get_name(),wi);
     }
     m_pref_desc = generate_details(tr("Preferences"), prefs_weight, aspect_default_weight, weight_infos);
@@ -429,43 +352,16 @@ void Role::write_pref_group(QSettings &s, float default_prefs_weight){
         if(prefs_weight.weight > 0 && prefs_weight.weight != default_prefs_weight)
             s.setValue("prefs_weight", QString::number(prefs_weight.weight,'g',0));
 
-        int i_type = -1;
-        QList<int> active_flags;
         s.beginWriteArray("preferences", prefs.size());
         for(unsigned int i = 0; i < prefs.size(); i++){
             s.setArrayIndex(i);
-            auto *p = prefs.at(i).get();
-            s.setValue("pref_category",QString::number((int)p->get_pref_category()));
-            i_type = (int)p->get_item_type();
-            if(i_type != -1){
-                s.setValue("item_type", QString::number(i_type));
-            }
-            s.setValue("exact", p->exact_match());
-            if (p->mat_state() != ANY_STATE){
-                s.setValue("mat_state", QString::number(p->mat_state()));
-            }
-
-            QString id = tr("%1%2").arg(p->pref_aspect.is_neg ? "-" : "").arg(p->get_name());
-            s.setValue("name",id);
-            if(p->pref_aspect.weight != 1.0){
-                s.setValue("weight",QString::number(p->pref_aspect.weight,'g',2));
-            }
-
-            active_flags = p->flags().active_flags();
-            if(active_flags.count() > 0){
-                s.beginWriteArray("flags",active_flags.count());
-                for(int idx = 0; idx < active_flags.count(); idx++){
-                    s.setArrayIndex(idx);
-                    s.setValue("flag",active_flags.at(idx));
-                }
-                s.endArray();
-            }
+            prefs.at(i)->write(s);
         }
         s.endArray();
     }
 }
 
-Preference* Role::has_preference(QString name){
+RolePreference* Role::has_preference(QString name){
     for (const auto &p: prefs){
         if(QString::compare(p->get_name(), name, Qt::CaseInsensitive)==0)
             return p.get();

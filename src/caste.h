@@ -47,22 +47,22 @@ public:
         QList<int> display_bins;
     };
 
-    QString name(int count = 1) {return (count > 1 ? m_name_plural : m_name);}
-    QString name_plural() {return m_name_plural;}
-    QString tag() {return m_tag;}
-    QString description();
+    const QString &name(int count = 1) const {return (count > 1 ? m_name_plural : m_name);}
+    const QString &name_plural() const {return m_name_plural;}
+    const QString &tag() const {return m_tag;}
+    QString description() const;
     QPair<int,QString> get_attribute_descriptor_info(ATTRIBUTES_TYPE id, int value);
     int get_attribute_cost_to_improve(int id);
 
     int get_skill_rate(int skill_id);
 
-    int child_age() {return m_child_age;}
-    int baby_age() {return m_baby_age;}
+    int child_age() const {return m_child_age;}
+    int baby_age() const {return m_baby_age;}
 
     void load_data();
     void load_skill_rates();
 
-    FlagArray flags() {return m_flags;}
+    const FlagArray &flags() const {return m_flags;}
 
     QList<int> get_attribute_raws(int attrib_id) {return m_attrib_ranges.value(attrib_id).raw_bins;}
     Caste::att_range get_attribute_range(int attrib_id) {return m_attrib_ranges.value(attrib_id);}

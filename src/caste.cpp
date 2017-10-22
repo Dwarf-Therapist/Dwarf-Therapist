@@ -250,7 +250,7 @@ BodyPart* Caste::get_body_part(int body_part_id){
     }
 }
 
-QString Caste::description(){
+QString Caste::description() const {
     if(m_bonuses.count() > 0){
         QString list = m_bonuses.join(", ");
         list = list.replace(list.lastIndexOf(","),2," and ");

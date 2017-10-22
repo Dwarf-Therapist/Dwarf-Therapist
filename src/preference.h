@@ -26,80 +26,102 @@ THE SOFTWARE.
 #include <QCoreApplication>
 #include "global_enums.h"
 #include "flagarray.h"
-#include "roleaspect.h"
 
 class Dwarf;
 class ItemSubtype;
 class Plant;
 class Race;
+class Material;
 
 class Preference {
     Q_DECLARE_TR_FUNCTIONS(Preference)
 public:
 
     static const QString get_pref_desc(const PREF_TYPES &type) {
-        QMap<PREF_TYPES, QString> desc;
-        desc[LIKE_MATERIAL] = tr("Materials");
-        desc[LIKE_CREATURE] = tr("Creatures");
-        desc[LIKE_FOOD] = tr("Food & Drink");
-        desc[HATE_CREATURE] = tr("Dislikes");
-        desc[LIKE_ITEM] = tr("Items");
-        desc[LIKE_PLANT] = tr("Plants");
-        desc[LIKE_TREE] = tr("Trees");
-        desc[LIKE_COLOR] = tr("Colors");
-        desc[LIKE_SHAPE] = tr("Shapes");
-        desc[LIKE_POETRY] = tr("Poems");
-        desc[LIKE_MUSIC] = tr("Music");
-        desc[LIKE_DANCE] = tr("Dances");
-        desc[LIKE_OUTDOORS] = tr("Outdoors");
-        return desc.value(type, tr("N/A"));
+        switch (type) {
+        case LIKE_MATERIAL: return tr("Materials");
+        case LIKE_CREATURE: return tr("Creatures");
+        case LIKE_FOOD: return tr("Food & Drink");
+        case HATE_CREATURE: return tr("Dislikes");
+        case LIKE_ITEM: return tr("Items");
+        case LIKE_PLANT: return tr("Plants");
+        case LIKE_TREE: return tr("Trees");
+        case LIKE_COLOR: return tr("Colors");
+        case LIKE_SHAPE: return tr("Shapes");
+        case LIKE_POETRY: return tr("Poems");
+        case LIKE_MUSIC: return tr("Music");
+        case LIKE_DANCE: return tr("Dances");
+        case LIKE_OUTDOORS: return tr("Outdoors");
+        default: return tr("N/A");
+        }
     }
 
-    Preference();
-    Preference(PREF_TYPES category, QString name);
-    Preference(PREF_TYPES category, ITEM_TYPE iType);
-    Preference(const Preference &p);
+    Preference(PREF_TYPES type, const QString &name); // For food/color/shape/poetry/music/dance
+    virtual ~Preference() noexcept;
 
-    int matches(Preference *role_pref, Dwarf *d = 0);
+    const QString &get_name() const {return m_name;}
+    PREF_TYPES get_pref_category() const {return m_type;}
+    bool has_flag(int f) const { return m_flags.has_flag(f); }
 
-    void add_flag(int);
-    void set_name(QString value) {m_name = value;}
-    void set_category(PREF_TYPES cat) {m_pType = cat;}
-    void set_item_type(ITEM_TYPE iType) {m_iType = iType;}
-    void set_exact(bool m) {m_exact_match = m;}
-    void set_mat_state (MATERIAL_STATES mat_state) {m_mat_state = mat_state;}
-
-    QString get_name() {return m_name;}
-    PREF_TYPES get_pref_category() {return m_pType;}
-    ITEM_TYPE get_item_type() {return m_iType;}
-    FlagArray &flags() {return m_flags;}
-    bool exact_match() {return m_exact_match;}
-    MATERIAL_STATES mat_state() {return m_mat_state;}
-
-    RoleAspect pref_aspect;
-
-    //this is a general setter for a unit's preference's flags
-    void set_pref_flags(const FlagArray &flags);
-
-    //these setters to load specific flags for the role
-    void set_pref_flags(Race *r);
-    void set_pref_flags(Plant *p);
-    void set_pref_flags(ItemSubtype *i);
+private:
+    PREF_TYPES m_type;
+    QString m_name; // compare names when doing exact matching
 
 protected:
-    QString m_name; //actual value to search for when doing string comparisons
-    PREF_TYPES m_pType; //preference category
-    ITEM_TYPE m_iType; //type of item for an dwarf's item preference
-    MATERIAL_STATES m_mat_state; // for material preferences, ANY_STATE matches all
+    Preference(PREF_TYPES type, const FlagArray &flags, const QString &name);
 
-    //these flags are used when writing to the ini. they're specifically chosen to find matches of particular materials
     FlagArray m_flags;
+};
 
-    //if it's not a general category preference (ie. 'wood') an exact match of the string is required
-    bool m_exact_match;
+class MaterialPreference: public Preference {
+public:
+    MaterialPreference(const Material *m, MATERIAL_STATES state);
 
-    bool set_flag(FlagArray origin, const int flag);
-    void set_flags(FlagArray origin, const QList<int> flags);
+    MATERIAL_STATES get_mat_state() const { return m_mat_state; }
+
+private:
+    MATERIAL_STATES m_mat_state;
+};
+
+class CreaturePreference: public Preference {
+public:
+    CreaturePreference(const Race *r);
+
+    static FlagArray select_flags(const Race *r);
+};
+
+class CreatureDislike: public Preference {
+public:
+    CreatureDislike(const Race *r);
+};
+
+class ItemPreference: public Preference {
+public:
+    ItemPreference(ITEM_TYPE type);
+    ItemPreference(ITEM_TYPE type, const QString &name); // item with subtype but only name is loaded
+    ItemPreference(const ItemSubtype *item);
+
+    ITEM_TYPE get_item_type() const { return m_item_type; }
+    bool can_wield(const Dwarf *d) const;
+
+private:
+    ITEM_TYPE m_item_type;
+    const ItemSubtype *m_item_subtype;
+};
+
+class PlantPreference: public Preference {
+public:
+    PlantPreference(const Plant *p);
+};
+
+class TreePreference: public Preference {
+public:
+    TreePreference(const Plant *p);
+};
+
+class OutdoorPreference: public Preference {
+public:
+    OutdoorPreference(int value);
 };
 
 #endif // PREFERENCE_H

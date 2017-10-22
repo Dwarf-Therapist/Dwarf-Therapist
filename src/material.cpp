@@ -107,7 +107,7 @@ void Material::read_material() {
     //int material_value = m_df->read_int(m_address + 0x244);
 }
 
-QString Material::get_material_name(MATERIAL_STATES state){
+QString Material::get_material_name(MATERIAL_STATES state) const {
     if(m_state_names.contains(state)) {
         QString state_name = m_state_names.value(state);
         return m_prefix.isEmpty ()

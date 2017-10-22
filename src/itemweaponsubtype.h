@@ -34,10 +34,10 @@ public:
 
     QString group_name() const {return m_group_name;}
 
-    int single_grasp() {return m_single_grasp_size;}
-    int multi_grasp() {return  m_multi_grasp_size;}
-    int melee_skill() {return m_melee_skill_id;}
-    int ranged_skill() {return m_ranged_skill_id;}
+    int single_grasp() const {return m_single_grasp_size;}
+    int multi_grasp() const {return  m_multi_grasp_size;}
+    int melee_skill() const {return m_melee_skill_id;}
+    int ranged_skill() const {return m_ranged_skill_id;}
 
 private:
     QString m_group_name;
