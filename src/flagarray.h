@@ -43,10 +43,10 @@ public:
     FlagArray(const FlagArray &f);
     virtual ~FlagArray();
 
-    int count();
-    bool has_flag(const int f);
+    int count() const;
+    bool has_flag(const int f) const;
     void set_flag(int f,bool state);
-    QList<int> active_flags();
+    QList<int> active_flags() const;
 
     QString output_flag_string(bool active = true);
 };

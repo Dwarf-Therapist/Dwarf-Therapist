@@ -63,6 +63,7 @@ public:
     VIRTADDR address() {return m_address;}
     QString name() const {return m_name;}
     QString name_plural() const {return m_name_plural;}
+    ITEM_TYPE type() const {return m_iType;}
     short subType() const {return m_subType;}
     FlagArray flags() const {return m_flags;}
 

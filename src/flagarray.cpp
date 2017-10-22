@@ -47,7 +47,7 @@ FlagArray::~FlagArray(){
     m_df = 0;
 }
 
-bool FlagArray::has_flag(const int f){
+bool FlagArray::has_flag(const int f) const {
     if(f < m_flags.count()){
         return m_flags.at(f);
     }else if(m_flags_custom.contains(f)){
@@ -65,7 +65,7 @@ void FlagArray::set_flag(int f,bool state){
     }
 }
 
-int FlagArray::count(){
+int FlagArray::count() const {
     int count = 0;
     foreach(bool val, m_flags_custom.values()){
         if(val)
@@ -98,7 +98,7 @@ QString FlagArray::output_flag(int f, bool val, bool active){
     }
 }
 
-QList<int> FlagArray::active_flags(){
+QList<int> FlagArray::active_flags() const {
     QList<int> active;
     for(int idx=0; idx < m_flags.size(); idx++){
         if(m_flags.at(idx))

@@ -74,7 +74,8 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     src/material.cpp src/memorylayout.cpp src/dwarfmodel.cpp
     src/dwarfmodelproxy.cpp src/multilabor.cpp src/notificationwidget.cpp
     src/notifierwidget.cpp src/optimizereditor.cpp src/optionsmenu.cpp
-    src/plant.cpp src/preference.cpp src/races.cpp src/reaction.cpp src/role.cpp
+    src/plant.cpp src/preference.cpp src/rolepreference.cpp
+    src/races.cpp src/reaction.cpp src/role.cpp
     src/rolecalcbase.cpp src/roledialog.cpp src/rolestats.cpp src/rotatedheader.cpp
     src/scriptdialog.cpp src/selectparentlayoutdialog.cpp src/skill.cpp
     src/squad.cpp src/statetableview.cpp src/superlabor.cpp src/syndrome.cpp

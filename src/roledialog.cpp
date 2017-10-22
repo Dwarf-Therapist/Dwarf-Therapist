@@ -15,6 +15,7 @@
 #include "material.h"
 #include "plant.h"
 #include "preference.h"
+#include "rolepreference.h"
 #include "races.h"
 #include "roleaspect.h"
 #include "sortabletableitems.h"
@@ -258,7 +259,7 @@ void roleDialog::insert_row(QTableWidget &table, const RoleAspect &a, QString ke
     table.setSortingEnabled(true);
 }
 
-void roleDialog::insert_pref_row(Preference *p){
+void roleDialog::insert_pref_row(RolePreference *p){
     ui->tw_prefs->setSortingEnabled(false);
     int row = ui->tw_prefs->rowCount();
     ui->tw_prefs->insertRow(row);
@@ -266,7 +267,7 @@ void roleDialog::insert_pref_row(Preference *p){
 
     QTableWidgetItem *name = new QTableWidgetItem();
     name->setData(0,p->get_name());
-    name->setData(Qt::UserRole, vPtr<Preference>::asQVariant(p));
+    name->setData(Qt::UserRole, vPtr<RolePreference>::asQVariant(p));
     name->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     ui->tw_prefs->setItem(row,0,name);
 
@@ -274,7 +275,7 @@ void roleDialog::insert_pref_row(Preference *p){
     dbs->setMinimum(-100);
     dbs->setMaximum(100);
     dbs->setSingleStep(0.25);
-    dbs->setValue(p->pref_aspect.is_neg ? 0-p->pref_aspect.weight : p->pref_aspect.weight);
+    dbs->setValue(p->aspect.is_neg ? 0-p->aspect.weight : p->aspect.weight);
     ui->tw_prefs->setCellWidget(row,1,dbs);
     sortableTableWidgetItem* sItem = new sortableTableWidgetItem;
     ui->tw_prefs->setItem(row,1,sItem);
@@ -285,7 +286,10 @@ void roleDialog::insert_pref_row(Preference *p){
     ui->tw_prefs->setItem(row,2,ptype);
 
     QTableWidgetItem *itype = new QTableWidgetItem();
-    itype->setData(0, Item::get_item_name_plural(p->get_item_type()));
+    if (auto ip = dynamic_cast<const ItemRolePreference *>(p))
+        itype->setData(0, Item::get_item_name_plural(ip->get_item_type()));
+    else
+        itype->setData(0, tr("N/A"));
     itype->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     ui->tw_prefs->setItem(row,3,itype);
 
@@ -358,19 +362,19 @@ void roleDialog::save_aspects(QTableWidget &table, std::map<QString, RoleAspect>
 void roleDialog::save_prefs(Role *r){
     for(int i= 0; i<ui->tw_prefs->rowCount(); i++){
         float weight = static_cast<QDoubleSpinBox*>(ui->tw_prefs->cellWidget(i,1))->value();
-        Preference *p = vPtr<Preference>::asPtr(ui->tw_prefs->item(i,0)->data(Qt::UserRole));
+        RolePreference *p = vPtr<RolePreference>::asPtr(ui->tw_prefs->item(i,0)->data(Qt::UserRole));
         //save the weight of the preference for the next use
-        p->pref_aspect.weight = fabs(weight);
-        p->pref_aspect.is_neg = weight < 0 ? true : false;
+        p->aspect.weight = fabs(weight);
+        p->aspect.is_neg = weight < 0 ? true : false;
 
         //update the values of this preference in the role
-        Preference *rp = r->has_preference(p->get_name());
+        RolePreference *rp = r->has_preference(p->get_name());
         if(!rp){
-            r->prefs.emplace_back(std::make_unique<Preference>(*p));
+            r->prefs.emplace_back(p->copy());
             rp = r->prefs.back().get();
         }
-        rp->pref_aspect.weight = p->pref_aspect.weight;
-        rp->pref_aspect.is_neg = p->pref_aspect.is_neg;
+        rp->aspect.weight = p->aspect.weight;
+        rp->aspect.is_neg = p->aspect.is_neg;
     }
 }
 
@@ -519,7 +523,7 @@ void roleDialog::remove_pref(){
         if(ui->tw_prefs->item(i,0)->isSelected()){
             auto it = std::find_if(m_role->prefs.begin(), m_role->prefs.end(), [this, i] (const auto &p) {
 
-                return p->get_name().toLower() == vPtr<Preference>::asPtr(ui->tw_prefs->item(i,0)->data(Qt::UserRole))->get_name().toLower();
+                return p->get_name().toLower() == vPtr<RolePreference>::asPtr(ui->tw_prefs->item(i,0)->data(Qt::UserRole))->get_name().toLower();
             });
             if (it != m_role->prefs.end())
                 m_role->prefs.erase(it);
@@ -594,6 +598,9 @@ void roleDialog::name_changed(QString text){
     }
 }
 
+template<typename T>
+static std::initializer_list<T> &&make_li(std::initializer_list<T> &&l = {}) { return std::move(l); }
+
 struct mat_flags_t {
     std::vector<MATERIAL_FLAGS> flags;
     operator const std::vector<MATERIAL_FLAGS> &() const { return flags; }
@@ -611,56 +618,43 @@ struct mat_flags_t {
 };
 
 void roleDialog::load_material_prefs(QVector<Material*> mats){
-    auto add_pref = [this] (QTreeWidgetItem *parent,
-                            Material *m,
-                            const std::vector<MATERIAL_FLAGS> &flags,
-                            MATERIAL_STATES mat_state = SOLID) {
-        QString name = m->get_material_name(mat_state).trimmed ();
-        auto p = std::make_shared<Preference>(LIKE_MATERIAL,name);
-        for (auto flag: flags)
-            p->add_flag((int)flag);
-        p->set_exact(true);
-        add_pref_to_tree(parent,p);
-    };
-
     foreach(Material *m, mats){
         if(m->is_generated())
             continue;
 
-        mat_flags_t flags;
-
         //check specific flags
-        if (flags.check(m, IS_GEM))
-            add_pref(m_gems, m, flags);
-        else if (flags.check(m, IS_GLASS) || flags.check(m, CRYSTAL_GLASSABLE))
-            add_pref(m_glass, m, flags);
-        else if (flags.check(m, IS_METAL))
-            add_pref(m_metals, m, flags);
-        else if(flags.check(m, IS_WOOD))
-            add_pref(m_wood, m, flags);
-        else if(flags.check(m, IS_STONE)) {
-            if (flags.check(m, ITEMS_QUERN, NO_STONE_STOCKPILE))
-                add_pref(m_glazes_wares, m, flags);
-            else
-                add_pref(m_stone, m, flags);
+        if(m->flags().has_flag(THREAD_PLANT)) {
+            add_pref_to_tree(m_fabrics, std::make_shared<ExactMaterialRolePreference>(m, SOLID));
+            add_pref_to_tree(m_papers, std::make_shared<ExactMaterialRolePreference>(m, PRESSED));
         }
-        else if(flags.check(m, THREAD_PLANT)) {
-            add_pref(m_fabrics, m, flags, SOLID);
-            add_pref(m_papers, m, flags, PRESSED);
+        else if(m->flags().has_flag(IS_DYE))
+            add_pref_to_tree(m_fabrics, std::make_shared<ExactMaterialRolePreference>(m, POWDER));
+        else {
+            auto p = std::make_shared<ExactMaterialRolePreference>(m, SOLID);
+            if (m->flags().has_flag(IS_GEM))
+                add_pref_to_tree(m_gems, p);
+            else if (m->flags().has_flag(IS_GLASS) || m->flags().has_flag(CRYSTAL_GLASSABLE))
+                add_pref_to_tree(m_glass, p);
+            else if (m->flags().has_flag(IS_METAL))
+                add_pref_to_tree(m_metals, p);
+            else if(m->flags().has_flag(IS_WOOD))
+                add_pref_to_tree(m_wood, p);
+            else if(m->flags().has_flag(IS_STONE)) {
+                if (m->flags().has_flag(ITEMS_QUERN) && m->flags().has_flag(NO_STONE_STOCKPILE))
+                    add_pref_to_tree(m_glazes_wares, p);
+                else
+                    add_pref_to_tree(m_stone, p);
+            }
+            else if(m->flags().has_flag(ITEMS_DELICATE))
+                add_pref_to_tree(m_general_material, p); //check for coral and amber
         }
-        else if(flags.check(m, IS_DYE))
-            add_pref(m_fabrics, m, flags, POWDER);
-        else if(flags.check(m, ITEMS_DELICATE))
-            add_pref(m_general_material, m, flags); //check for coral and amber
     }
 }
 
 void roleDialog::load_plant_prefs(QVector<Plant*> plants){
     QString name;
     foreach(Plant *p, plants){
-        name = capitalize(p->name_plural());
-        auto plant_pref = std::make_shared<Preference>(LIKE_PLANT,name);
-        plant_pref->set_pref_flags(p);
+        auto plant_pref = std::make_shared<ExactRolePreference>(p);
 
         if(p->flags().has_flag(P_SAPLING) || p->flags().has_flag(P_TREE)){
             add_pref_to_tree(m_trees,plant_pref);
@@ -690,56 +684,53 @@ void roleDialog::load_plant_prefs(QVector<Plant*> plants){
 }
 
 void roleDialog::load_items(){
-    add_general_node(tr("Clothing (Any)"), LIKE_ITEM, {IS_CLOTHING}, m_general_equip);
-    add_general_node(tr("Armor (Any)"), LIKE_ITEM, {IS_ARMOR}, m_general_equip);
-    add_general_node(tr("Trade Goods"), LIKE_ITEM, {IS_TRADE_GOOD}, m_general_item);
+    add_pref_to_tree(m_general_equip, std::make_shared<GenericRolePreference>(LIKE_ITEM, tr("Clothing (Any)"), IS_CLOTHING));
+    add_pref_to_tree(m_general_equip, std::make_shared<GenericRolePreference>(LIKE_ITEM, tr("Armor (Any)"), IS_ARMOR));
+    add_pref_to_tree(m_general_item, std::make_shared<GenericRolePreference>(LIKE_ITEM, tr("Trade Goods"), IS_TRADE_GOOD));
 
     //setup a list of item exclusions. these are item types that are not found in item preferences
     //weapons are also ignored because we'll handle them manually to split them into ranged and melee categories
-    item_ignore << BAR << SMALLGEM << BLOCKS << ROUGH << BOULDER << WOOD << CORPSE << CORPSEPIECE << REMAINS
-                << FISH_RAW << VERMIN << IS_PET << SKIN_TANNED << THREAD << CLOTH << BALLISTAARROWHEAD
-                << TRAPPARTS << FOOD << GLOB << ROCK << PIPE_SECTION << ORTHOPEDIC_CAST << EGG << BOOK << SHEET << WEAPON;
-
+    static const std::set<ITEM_TYPE> item_ignore = {
+        BAR, SMALLGEM, BLOCKS, ROUGH, BOULDER, WOOD, CORPSE, CORPSEPIECE, REMAINS,
+        FISH_RAW, VERMIN, IS_PET, SKIN_TANNED, THREAD, CLOTH, BALLISTAARROWHEAD,
+        TRAPPARTS, FOOD, GLOB, ROCK, PIPE_SECTION, ORTHOPEDIC_CAST, EGG, BOOK,
+        SHEET, WEAPON,
     //additionally ignore food types, since they can only be a preference as a consumable
-    item_ignore << MEAT << FISH << CHEESE << PLANT << DRINK << POWDER_MISC << LEAVES_FRUIT << LIQUID_MISC << SEEDS;
+        MEAT, FISH, CHEESE, PLANT, DRINK, POWDER_MISC, LEAVES_FRUIT, LIQUID_MISC, SEEDS,
+    };
 
     QTreeWidgetItem *item_parent;
-    QTreeWidgetItem *clothing_parent;
 
     QHash<ITEM_TYPE, QVector<VIRTADDR> > item_list = m_df->get_all_item_defs();
     int count;
 
     QStringList added_subtypes;
 
-    PREF_TYPES pType = LIKE_ITEM;
     for(int idx=0; idx < NUM_OF_ITEM_TYPES; idx++){
         ITEM_TYPE itype = static_cast<ITEM_TYPE>(idx);
 
-        if(!item_ignore.contains(itype)){
+        if(item_ignore.find(itype) == item_ignore.end()){
             count = item_list.value(itype).count();
             QString name = Item::get_item_name_plural(itype);
 
-            pType = LIKE_ITEM;
             bool is_armor_type = Item::is_armor_type(itype,false);
 
             //add all item types as a group to the general categories
-            auto p = std::make_shared<Preference>(pType, itype);
-            p->set_name(name);
             if(Item::is_trade_good(itype)){
-                p->add_flag(IS_TRADE_GOOD);
-                add_pref_to_tree(m_general_trade_good,p);
-            }else if(is_armor_type || Item::is_supplies(itype) ||
-                     Item::is_melee_equipment(itype) || Item::is_ranged_equipment(itype)){
-                add_pref_to_tree(m_general_equip,p);
-            }else{
-                add_pref_to_tree(m_general_item,p);
+                auto p = std::make_shared<GenericItemRolePreference>(name, itype, IS_TRADE_GOOD);
+                add_pref_to_tree(m_general_trade_good, p);
             }
-
+            else {
+                auto p = std::make_shared<GenericItemRolePreference>(name, itype);
+                if (is_armor_type || Item::is_supplies(itype) ||
+                        Item::is_melee_equipment(itype) || Item::is_ranged_equipment(itype))
+                    add_pref_to_tree(m_general_equip, p);
+                else
+                    add_pref_to_tree(m_general_item, p);
+            }
             if(is_armor_type){
-                auto pc = std::make_shared<Preference>(pType,Item::get_item_clothing_name(itype));
-                pc->set_item_type(itype);
-                pc->add_flag(IS_CLOTHING);
-                add_pref_to_tree(m_general_equip, pc);
+                auto p = std::make_shared<GenericItemRolePreference>(Item::get_item_clothing_name(itype), itype, IS_CLOTHING);
+                add_pref_to_tree(m_general_equip, p);
             }
 
             //specific items
@@ -747,38 +738,27 @@ void roleDialog::load_items(){
                 added_subtypes.clear();
                 //create a node for the specific item type
                 item_parent = init_parent_node(name);
-                QString item_name;
+                //check for clothing
                 if(is_armor_type){
-                    clothing_parent = init_parent_node(Item::get_item_clothing_name(itype));
-                }else{
-                    clothing_parent = 0;
-                }
-                for(int sub_id = 0; sub_id < count; sub_id++){
-                    auto pi = std::make_shared<Preference>(pType,itype);
-                    pi->set_exact(true);
-                    //check for clothing
-                    if(is_armor_type){
+                    auto parent = init_parent_node(Item::get_item_clothing_name(itype));
+                    for(int sub_id = 0; sub_id < count; sub_id++){
                         ItemSubtype *stype = m_df->get_item_subtype(itype,sub_id);
-                        item_name = stype->name_plural();
-                        if(added_subtypes.contains(item_name))
-                            continue;
-                        pi->set_name(item_name);
-                        pi->set_pref_flags(stype);
+                        auto p = std::make_shared<ExactItemRolePreference>(stype);
 
-                        if(stype->flags().has_flag(IS_ARMOR)){
-                            add_pref_to_tree(item_parent,pi);
-                        }
-                        if(stype->flags().has_flag(IS_CLOTHING)){
-                            if(clothing_parent){
-                                add_pref_to_tree(clothing_parent,pi);
-                            }else{
-                                LOGE << "Missing parent node for clothing item type" << itype << "subtype" << sub_id;
-                            }
-                        }
-                        added_subtypes.append(item_name);
-                    }else{
-                        pi->set_name(capitalize(m_df->get_preference_item_name(itype,sub_id)));
-                        add_pref_to_tree(item_parent,pi);
+                        if(added_subtypes.contains(p->get_name()))
+                            continue;
+                        added_subtypes.append(p->get_name());
+
+                        if(stype->flags().has_flag(IS_ARMOR))
+                            add_pref_to_tree(item_parent,p);
+                        if(stype->flags().has_flag(IS_CLOTHING))
+                            add_pref_to_tree(parent,p);
+                    }
+                }else{
+                    for(int sub_id = 0; sub_id < count; sub_id++){
+                        auto name = capitalize(m_df->get_preference_item_name(itype,sub_id));
+                        auto p = std::make_shared<ExactItemRolePreference>(name, itype);
+                        add_pref_to_tree(item_parent,p);
                     }
                 }
             }
@@ -788,16 +768,12 @@ void roleDialog::load_items(){
 
 void roleDialog::load_creatures(){
     auto add_general_creature_node = [this] (const QString &suffix,
-                                             const std::vector<int> &flags,
+                                             std::initializer_list<int> flags,
                                              QTreeWidgetItem *&parent_node) {
         QString title = tr("Creatures (%1)").arg(suffix);
         parent_node = init_parent_node(title);
 
-        auto p = std::make_shared<Preference>(LIKE_CREATURE, NONE);
-        for (int f: flags){
-            p->add_flag(f);
-        }
-        p->set_name(title);
+        auto p = std::make_shared<GenericRolePreference>(LIKE_CREATURE, title, std::set<int>(flags));
         add_pref_to_tree(m_general_creature, p);
     };
 
@@ -816,8 +792,7 @@ void roleDialog::load_creatures(){
         if(r->flags().has_flag(WAGON))
             continue;
 
-        auto p = std::make_shared<Preference>(LIKE_CREATURE, capitalize(r->plural_name()));
-        p->set_pref_flags(r);
+        auto p = std::make_shared<ExactRolePreference>(r);
 
         if(r->caste_flag(DOMESTIC)){
             add_pref_to_tree(m_domestic,p);
@@ -858,9 +833,7 @@ void roleDialog::load_creatures(){
                 auto flag = std::get<0>(t);
                 auto parent = std::get<1>(t);
                 if (m->flags().has_flag(flag)) {
-                    auto p = std::make_shared<Preference>(LIKE_MATERIAL, m->get_material_name(SOLID));
-                    p->add_flag(flag);
-                    p->set_exact(true);
+                    auto p = std::make_shared<ExactRolePreference>(LIKE_MATERIAL, m->get_material_name(SOLID), flag);
                     add_pref_to_tree(parent, p);
                 }
             }
@@ -874,15 +847,12 @@ void roleDialog::load_weapons(){
     QTreeWidgetItem *ranged = init_parent_node(tr("Weapons (Ranged)"));
 
     //add category to general items
-    add_general_node(ranged->text(0), LIKE_ITEM, {ITEMS_WEAPON_RANGED},
-                     m_general_equip, WEAPON);
-    add_general_node(melee->text(0), LIKE_ITEM, {ITEMS_WEAPON},
-                     m_general_equip, WEAPON);
+    add_pref_to_tree(m_general_equip, std::make_shared<GenericItemRolePreference>(ranged->text(0), WEAPON, ITEMS_WEAPON_RANGED));
+    add_pref_to_tree(m_general_equip, std::make_shared<GenericItemRolePreference>(melee->text(0), WEAPON, ITEMS_WEAPON));
 
     foreach(ItemSubtype *i, m_df->get_item_subtypes(WEAPON)){
         ItemWeaponSubtype *w = qobject_cast<ItemWeaponSubtype*>(i);
-        auto p = std::make_shared<Preference>(LIKE_ITEM,w->name_plural()); //unfortunately a crescent halberd != halberd
-        p->set_pref_flags(w);
+        auto p = std::make_shared<ExactItemRolePreference>(w); //unfortunately a crescent halberd != halberd
         if(w->flags().has_flag(ITEMS_WEAPON_RANGED)){
             add_pref_to_tree(ranged,p);
         }else{
@@ -923,9 +893,8 @@ void roleDialog::build_pref_tree(){
 
 
     //also add trees to general category. don't need a flag as trees is a pref category
-    auto p_trees = std::make_shared<Preference>(LIKE_TREE,NONE);
+    auto p_trees = std::make_shared<RolePreference>(LIKE_TREE, tr("Trees"));
     //p_trees->add_flag(77); //is tree flag
-    p_trees->set_name(tr("Trees"));
     add_pref_to_tree(m_general_plant_tree, p_trees);
 
     //any material types that we want to add to the general category section go here
@@ -943,31 +912,23 @@ void roleDialog::build_pref_tree(){
                         std::make_tuple(YARN, ANY_STATE)}){
         auto flag = std::get<0>(t);
         auto state = std::get<1>(t);
-        auto p = std::make_shared<Preference>(LIKE_MATERIAL,
-                                              Material::get_material_flag_desc(flag, state));
-        p->add_flag(flag);
-        p->set_mat_state(state);
+        auto p = std::make_shared<GenericMaterialRolePreference>(Material::get_material_flag_desc(flag, state), state, flag);
         add_pref_to_tree(m_general_material, p);
     }
 
     //general category for plants used for alcohol
-    add_general_node(tr("Plants (Alcohol)"), LIKE_PLANT,
-                     {P_DRINK}, m_general_plant_tree);
+    add_pref_to_tree(m_general_plant_tree, std::make_shared<GenericRolePreference>(LIKE_PLANT, tr("Plants (Alcohol)"), P_DRINK));
     //general category for crops plant or gather
-    add_general_node(tr("Plants (Crops)"), LIKE_PLANT,
-                     {P_CROP}, m_general_plant_tree);
+    add_pref_to_tree(m_general_plant_tree, std::make_shared<GenericRolePreference>(LIKE_PLANT, tr("Plants (Crops)"), P_CROP));
     //general category for plantable crops
-    add_general_node(tr("Plants (Crops Plantable)"), LIKE_PLANT,
-                     {P_CROP, P_SEED}, m_general_plant_tree);
+    add_pref_to_tree(m_general_plant_tree, std::make_shared<GenericRolePreference>(LIKE_PLANT, tr("Plants (Crops Plantable)"), P_CROP, P_SEED));
     //general category for millable plants
-    add_general_node(tr("Plants (Millable)"), LIKE_PLANT,
-                     {P_MILL}, m_general_plant_tree);
+    add_pref_to_tree(m_general_plant_tree, std::make_shared<GenericRolePreference>(LIKE_PLANT, tr("Plants (Millable)"), P_MILL));
     //general category for plants used for processing/threshing
-    add_general_node(tr("Plants (Extracts)"), LIKE_PLANT,
-                     {P_HAS_EXTRACTS}, m_general_plant_tree);
+    add_pref_to_tree(m_general_plant_tree, std::make_shared<GenericRolePreference>(LIKE_PLANT, tr("Plants (Extracts)"), P_HAS_EXTRACTS));
 
     //special custom preference for outdoors
-    add_general_node(tr("Outdoors"), LIKE_OUTDOORS, {999}, m_general_other);
+    add_pref_to_tree(m_general_other, std::make_shared<GenericRolePreference>(LIKE_OUTDOORS, tr("Outdoors"), 999));
 
     load_material_prefs(m_df->get_inorganic_materials());
     load_material_prefs(m_df->get_base_materials());
@@ -985,7 +946,7 @@ void roleDialog::build_pref_tree(){
             //LOGW << "loading child " << j << " " << pref.get();
             child = new QTreeWidgetItem(parent);
             child->setText(0, pref->get_name());
-            child->setData(0, Qt::UserRole, vPtr<Preference>::asQVariant(pref.get()));
+            child->setData(0, Qt::UserRole, vPtr<RolePreference>::asQVariant(pref.get()));
         }
 
         if(parent->childCount() > 0){
@@ -1004,15 +965,6 @@ void roleDialog::build_pref_tree(){
     connect(ui->treePrefs, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(item_double_clicked(QTreeWidgetItem*,int)));
 }
 
-void roleDialog::add_general_node(const QString title, PREF_TYPES ptype, const std::vector<int> &flags, QTreeWidgetItem *parent, ITEM_TYPE itype){
-    auto p = std::make_shared<Preference>(ptype, itype);
-    p->set_name(title);
-    for (int flag: flags){
-        p->add_flag(flag);
-    }
-    add_pref_to_tree(parent, p);
-}
-
 QTreeWidgetItem* roleDialog::init_parent_node(QString title){
     QTreeWidgetItem *node = new QTreeWidgetItem;
     node->setData(0, Qt::UserRole, title);
@@ -1021,10 +973,10 @@ QTreeWidgetItem* roleDialog::init_parent_node(QString title){
     return node;
 }
 
-void roleDialog::add_pref_to_tree(QTreeWidgetItem *parent, std::shared_ptr<Preference> p){
+void roleDialog::add_pref_to_tree(QTreeWidgetItem *parent, std::shared_ptr<RolePreference> p){
     if(!p->get_name().isEmpty()){
         //set a default weight
-        p->pref_aspect.weight = 0.5f;
+        p->aspect.weight = 0.5f;
 
         auto it = m_pref_list.find(parent);
         if (it != m_pref_list.end()) {
@@ -1041,7 +993,7 @@ void roleDialog::add_pref_to_tree(QTreeWidgetItem *parent, std::shared_ptr<Prefe
 
 void roleDialog::item_double_clicked(QTreeWidgetItem *item, int col){
     if(item->childCount() <= 0){
-        Preference *p = vPtr<Preference>::asPtr(item->data(col,Qt::UserRole));
+        RolePreference *p = vPtr<RolePreference>::asPtr(item->data(col,Qt::UserRole));
         if(p && !m_role->has_preference(p->get_name())){
             insert_pref_row(p);
         }

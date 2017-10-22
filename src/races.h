@@ -46,26 +46,27 @@ public:
     VIRTADDR address() {return m_address;}
 
     int race_id() {return m_id;}
-    QString name(int count = 1) {return (count > 1 ? m_name_plural : m_name);}
-    QString plural_name() {return m_name_plural;}
-    QString adjective() {return m_adjective;}
-    QString description() {return m_description;}
-    QString baby_name() {return m_baby_name;}
-    QString baby_name_plural() {return m_baby_name_plural;}
-    QString child_name() {return m_child_name;}
-    QString child_name_plural() {return m_child_name_plural;}
-    VIRTADDR pref_string_vector() {return m_pref_string_vector;}
-    VIRTADDR pop_ratio_vector() {return m_pop_ratio_vector;}
-    VIRTADDR castes_vector() {return m_castes_vector;}
+    const QString &name(int count = 1) const {return (count > 1 ? m_name_plural : m_name);}
+    const QString &plural_name() const {return m_name_plural;}
+    const QString &adjective() const {return m_adjective;}
+    const QString &description() const {return m_description;}
+    const QString &baby_name() const {return m_baby_name;}
+    const QString &baby_name_plural() const {return m_baby_name_plural;}
+    const QString &child_name() const {return m_child_name;}
+    const QString &child_name_plural() const {return m_child_name_plural;}
+    VIRTADDR pref_string_vector() const {return m_pref_string_vector;}
+    VIRTADDR pop_ratio_vector() const {return m_pop_ratio_vector;}
+    VIRTADDR castes_vector() const {return m_castes_vector;}
     Material *get_creature_material(int index);
     QHash<int, Material *> get_creature_materials();
-    Caste *get_caste_by_id(int idx);
+    Caste *get_caste_by_id(int idx) { return m_castes.value(idx); }
+    const Caste *get_caste_by_id(int idx) const { return m_castes.value(idx); }
     int adult_size();
 
     void load_data();
-    FlagArray flags() {return m_flags;}
+    const FlagArray &flags() const {return m_flags;}
 
-    bool caste_flag(CASTE_FLAGS cf);
+    bool caste_flag(CASTE_FLAGS cf) const;
 
     void load_caste_ratios();
 

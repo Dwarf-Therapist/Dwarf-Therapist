@@ -32,7 +32,7 @@ THE SOFTWARE.
 
 #include "roleaspect.h"
 
-class Preference;
+class RolePreference;
 class QSettings;
 class Dwarf;
 
@@ -69,7 +69,7 @@ public:
     std::map<QString, RoleAspect> attributes;
     std::map<QString, RoleAspect> skills;
     std::map<QString, RoleAspect> traits;
-    std::vector<std::unique_ptr<Preference>> prefs;
+    std::vector<std::unique_ptr<RolePreference>> prefs;
 
     //global weights
     weight_info attributes_weight;
@@ -86,13 +86,13 @@ public:
 
     void write_to_ini(QSettings &s, float default_attributes_weight, float default_traits_weight, float default_skills_weight, float default_prefs_weight);
 
-    Preference* has_preference(QString name);
+    RolePreference* has_preference(QString name);
     static const QColor color_has_prefs() {return QColor(0, 60, 128, 135);}
 
 protected:
     void parseAspect(QSettings &s, QString node, weight_info &g_weight, std::map<QString, RoleAspect> &list, float default_weight);
     void parsePreferences(QSettings &s, QString node, weight_info &g_weight, float default_weight);
-    void validate_pref(Preference *p, int first_flag);
+    void validate_pref(RolePreference *p, int first_flag);
     void write_aspect_group(QSettings &s, QString group_name, weight_info group_weight, float group_default_weight, std::map<QString, RoleAspect> &list);
     void write_pref_group(QSettings &s, float default_prefs_weight);
 

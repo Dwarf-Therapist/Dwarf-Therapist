@@ -42,6 +42,7 @@ class CustomProfession;
 class Profession;
 class Reaction;
 class Preference;
+class RolePreference;
 class Race;
 class Caste;
 class Uniform;
@@ -332,7 +333,7 @@ public:
     std::multimap<int, std::unique_ptr<Preference>> *get_preferences(){return &m_preferences;}
 
     double get_role_pref_match_counts(Role *r, bool load_map = false);
-    double get_role_pref_match_counts(Preference *role_pref, Role *r = 0);
+    double get_role_pref_match_counts(RolePreference *role_pref, Role *r = 0);
 
     //! return a skill object by skill_id
     Skill get_skill(int skill_id);
@@ -495,7 +496,7 @@ public:
     QPixmap profession_icon() {return m_icn_prof;}
     QString gender_icon_path() {return m_icn_gender;}
 
-    Q_INVOKABLE int body_size(bool use_default = false);
+    Q_INVOKABLE int body_size(bool use_default = false) const;
 
     bool has_state(short id){return m_states.contains(id);}
     int state_value(short id){return m_states.value(id,-1);}

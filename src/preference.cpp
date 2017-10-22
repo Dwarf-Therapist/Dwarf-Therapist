@@ -22,182 +22,125 @@ THE SOFTWARE.
 */
 #include "preference.h"
 
-#include "dfinstance.h"
 #include "dwarf.h"
 #include "itemweaponsubtype.h"
 #include "itemarmorsubtype.h"
 #include "races.h"
 #include "caste.h"
 #include "plant.h"
+#include "material.h"
 
-Preference::Preference()
-    : m_name("")
-    , m_pType(LIKES_NONE)
-    , m_iType(NONE)
-    , m_mat_state (ANY_STATE)
-    , m_flags()
-    , m_exact_match(false)
-{}
-
-Preference::Preference(PREF_TYPES category, ITEM_TYPE iType)
-    : m_name("")
-    , m_pType(category)
-    , m_iType(iType)
-    , m_mat_state (ANY_STATE)
-    , m_flags()
-    , m_exact_match(false)
-{}
-
-Preference::Preference(PREF_TYPES category, QString name)
-    : m_name(name)
-    , m_pType(category)
-    , m_iType(NONE)
-    , m_mat_state (ANY_STATE)
-    , m_flags()
-    , m_exact_match(false)
-{}
-
-Preference::Preference(const Preference &p)
-    : pref_aspect(p.pref_aspect)
-    , m_name(p.m_name)
-    , m_pType(p.m_pType)
-    , m_iType(p.m_iType)
-    , m_mat_state (p.m_mat_state)
-    , m_flags(p.m_flags)
-    , m_exact_match(p.m_exact_match)
-{}
-
-void Preference::add_flag(int flag){
-    m_flags.set_flag(flag,true);
+Preference::Preference(PREF_TYPES type, const QString &name)
+    : m_type(type)
+    , m_name(name)
+{
 }
 
-int Preference::matches(Preference *role_pref, Dwarf *d){
-    bool result = false;
+Preference::Preference(PREF_TYPES type, const FlagArray &flags, const QString &name)
+    : m_type(type)
+    , m_name(name)
+    , m_flags(flags)
+{
+}
 
-    if(m_pType == role_pref->get_pref_category()){
-        result = true; //so far so good..
+Preference::~Preference() noexcept
+{
+}
 
-        if(m_iType >= 0 && role_pref->get_item_type() >= 0 && m_iType != role_pref->get_item_type()){
-            result = false;
+MaterialPreference::MaterialPreference(const Material *m, MATERIAL_STATES state)
+    : Preference(LIKE_MATERIAL, m->flags(), m->get_material_name(state))
+    , m_mat_state(state)
+{
+}
+
+CreaturePreference::CreaturePreference(const Race *r)
+    : Preference(LIKE_CREATURE, select_flags(r), r->plural_name().toLower())
+{
+}
+
+FlagArray CreaturePreference::select_flags(const Race *r) {
+    // CreaturePreference use flags from both CREATURE_FLAGS and CASTE_FLAGS.
+    // We need to select flags form non-colliding subsets to avoid any confusion.
+    FlagArray flags;
+
+    if (r->flags().has_flag(HATEABLE))
+        flags.set_flag(HATEABLE, true);
+
+    if (const Caste *c = r->get_caste_by_id(0)) {
+        for (auto f: {TRAINABLE, SHEARABLE, FISHABLE, BUTCHERABLE, MILKABLE, DOMESTIC}) {
+            if (c->flags().has_flag(f))
+                flags.set_flag(f, true);
         }
 
-        //check for an exact match on the string, if this is required, reset our result again and check
-        if(role_pref->exact_match()){
-            result = (QString::compare(role_pref->get_name(),m_name,Qt::CaseInsensitive) == 0);
-        }else{
-
-            //check our unit's pref's flags for all the role's pref's flags
-            if(role_pref->flags().count() > 0){
-                if(m_flags.count() > 0){
-                    int matches = 0;
-                    foreach(int f, role_pref->flags().active_flags()){
-                        if(m_flags.has_flag(f)){
-                            matches++;
-                        }
-                    }
-                    result = (result & (matches == role_pref->flags().count()));
-                }else{
-                    result = false;
-                }
-            }
-
-            if (result){ // compare material state only if the role has one
-                result = (m_pType != LIKE_MATERIAL ||
-                          role_pref->m_mat_state == ANY_STATE ||
-                          m_mat_state == role_pref->m_mat_state);
-            }
-            else{ //only check for an exact match if we don't already have a match
-                result = (QString::compare(role_pref->get_name(),m_name,Qt::CaseInsensitive) == 0);
-            }
-        }
-        if(d){
-            //if it's a weapon, and a match, ensure the dwarf can actually wield it as well
-            if(result && (role_pref->get_item_type() == WEAPON ||
-                          (m_pType == LIKE_ITEM &&
-                           role_pref->flags().count() > 0 &&
-                           (m_flags.has_flag(ITEMS_WEAPON) || m_flags.has_flag(ITEMS_WEAPON_RANGED))))){
-                ItemWeaponSubtype *w = d->get_df_instance()->find_weapon_subtype(m_name);
-                if(w){
-                    result = (d->body_size(true) >= w->multi_grasp());
-                }
-            }
+        if (c->flags().has_flag(HAS_EXTRACTS)) {
+            flags.set_flag(HAS_EXTRACTS, true);
+            if (r->caste_flag(FISHABLE))
+                flags.set_flag(VERMIN_FISH, true);
+            // from previous code, HAS_EXTRACTS was set twice:
+            //else
+            //    flags.set_flag(HAS_EXTRACTS, true);
         }
     }
 
-    return result;
+    return flags;
 }
 
-void Preference::set_pref_flags(Race *r){
-    if(r){
-        set_flag(r->flags(),HATEABLE);
-
-        Caste *c = r->get_caste_by_id(0);
-        if(c){
-            QList<int> flags;
-            flags << TRAINABLE << SHEARABLE << FISHABLE << BUTCHERABLE << MILKABLE << DOMESTIC;
-            set_flags(c->flags(),flags);
-
-            if(set_flag(c->flags(),HAS_EXTRACTS)){
-                if(r->caste_flag(FISHABLE)){
-                    add_flag(VERMIN_FISH);
-                }else{
-                    add_flag(HAS_EXTRACTS);
-                }
-            }
-        }
-    }
-    m_exact_match = true;
+CreatureDislike::CreatureDislike(const Race *r)
+    : Preference(HATE_CREATURE, r->plural_name().toLower())
+{
 }
 
-void Preference::set_pref_flags(Plant *p){
-    if(p){
-        if(!p->flags().has_flag(P_SAPLING) && !p->flags().has_flag(P_TREE)){
-            QList<int> flags = QList<int>() << P_DRINK << P_MILL << P_HAS_EXTRACTS;
-            set_flags(p->flags(),flags);
-            if(set_flag(p->flags(),P_CROP)){
-                set_flag(p->flags(),P_SEED);
-            }
-        }
-    }
-    m_exact_match = true;
+static FlagArray item_flags(ITEM_TYPE type) {
+    FlagArray flags;
+    if (Item::is_trade_good(type))
+        flags.set_flag(IS_TRADE_GOOD, true);
+    return flags;
 }
 
-void Preference::set_pref_flags(const FlagArray &flags){
-    m_flags = FlagArray(flags);
+ItemPreference::ItemPreference(ITEM_TYPE type)
+    : Preference(LIKE_ITEM, item_flags(type), Item::get_item_name_plural(type))
+    , m_item_type(type)
+    , m_item_subtype(nullptr)
+{
 }
 
-void Preference::set_pref_flags(ItemSubtype *i){
-    m_exact_match = true;
-    if(i->flags().count() <= 0)
-        return;
-
-    QList<int> flags;
-    FlagArray originals;
-    ItemWeaponSubtype *w = qobject_cast<ItemWeaponSubtype*>(i);
-    if(w){
-        originals = w->flags();
-        flags << ITEMS_WEAPON << ITEMS_WEAPON_RANGED;
-    }
-    ItemArmorSubtype *a = qobject_cast<ItemArmorSubtype*>(i);
-    if(a){
-        originals = a->flags();
-        flags << IS_ARMOR << IS_CLOTHING;
-    }
-    if(originals.count() > 0 && flags.size() > 0)
-        set_flags(originals,flags);
+ItemPreference::ItemPreference(ITEM_TYPE type, const QString &name)
+    : Preference(LIKE_ITEM, item_flags(type), name)
+    , m_item_type(type)
+    , m_item_subtype(nullptr)
+{
 }
 
-void Preference::set_flags(FlagArray origin, const QList<int> flags){
-    foreach(int f, flags){
-        set_flag(origin,f);
-    }
+ItemPreference::ItemPreference(const ItemSubtype *item)
+    : Preference(LIKE_ITEM, item->flags(), item->name_plural())
+    , m_item_type(item->type())
+    , m_item_subtype(item)
+{
 }
 
-bool Preference::set_flag(FlagArray origin, const int flag){
-    if(origin.has_flag(flag)){
-        add_flag(flag);
-        return true;
-    }else{
-        return false;
+bool ItemPreference::can_wield(const Dwarf *d) const {
+    //if it's a weapon, ensure the dwarf can actually wield
+    if (auto w = dynamic_cast<const ItemWeaponSubtype *>(m_item_subtype)) {
+        return d->body_size(true) >= w->multi_grasp();
     }
+    return true;
+}
+
+PlantPreference::PlantPreference(const Plant *p)
+    : Preference(LIKE_PLANT, p->flags(), p->name_plural().toLower())
+{
+}
+
+TreePreference::TreePreference(const Plant *p)
+    : Preference(LIKE_TREE, p->name_plural().toLower())
+{
+}
+
+OutdoorPreference::OutdoorPreference(int value)
+    : Preference(LIKE_OUTDOORS,
+                 value == 2
+                 ? tr("Likes working outdoors")
+                 : tr("Doesn't mind being outdoors"))
+{
+    m_flags.set_flag(999, true);
 }
