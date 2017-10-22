@@ -1332,38 +1332,32 @@ void DFInstance::index_item_vector(ITEM_TYPE itype){
 }
 
 QString DFInstance::get_preference_other_name(int index, PREF_TYPES p_type){
-    QVector<VIRTADDR> target_vec;
-    int offset = 0x4; //default for poem/music/dance
-    bool translate = true;
-
-    if(p_type == LIKE_SHAPE || p_type == LIKE_COLOR){
-        translate = false;
-        if(p_type == LIKE_COLOR){
-            target_vec = m_color_vector;
-            offset = m_layout->descriptor_offset("color_name");
-        }else{
-            target_vec = m_shape_vector;
-            offset = m_layout->descriptor_offset("shape_name_plural");
+    auto get_name = [this,index] (const QVector<VIRTADDR> &vec, int offset, auto get_string) -> QString {
+        if (index >= 0 && index < vec.count())
+            return (this->*get_string)(vec.at(index) + offset);
+        else {
+            LOGE << "Invalid index for other preference";
+            return "unknown";
         }
-    }
+    };
 
-    if(p_type == LIKE_POETRY || p_type == LIKE_MUSIC || p_type == LIKE_DANCE){
-        if(p_type == LIKE_POETRY)
-            target_vec = m_poetic_vector;
-        if(p_type == LIKE_MUSIC)
-            target_vec = m_music_vector;
-        if(p_type == LIKE_DANCE)
-            target_vec = m_dance_vector;
-    }
-
-    if(index > -1 && index < target_vec.count()){
-        VIRTADDR addr = target_vec.at(index);
-        if(translate){
-            return get_translated_word(addr + offset);
-        }else{
-            return read_string(addr + offset);
-        }
-    }else{
+    switch (p_type) {
+    case LIKE_COLOR:
+        return get_name(m_color_vector, m_layout->descriptor_offset("color_name"),
+                        &DFInstance::read_string);
+    case LIKE_SHAPE:
+        return get_name(m_shape_vector, m_layout->descriptor_offset("shape_name_plural"),
+                        &DFInstance::read_string);
+    case LIKE_POETRY:
+        return get_name(m_poetic_vector, m_layout->art_offset("name"),
+                        &DFInstance::get_translated_word);
+    case LIKE_MUSIC:
+        return get_name(m_music_vector, m_layout->art_offset("name"),
+                        &DFInstance::get_translated_word);
+    case LIKE_DANCE:
+        return get_name(m_dance_vector, m_layout->art_offset("name"),
+                        &DFInstance::get_translated_word);
+    default:
         return "unknown";
     }
 }

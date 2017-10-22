@@ -39,6 +39,7 @@ public:
         MEM_SYN,
         MEM_EMOTION,
         MEM_ACTIVITY,
+        MEM_ART,
         MEM_JOB,
         MEM_SOUL,
         MEM_COUNT
@@ -52,43 +53,47 @@ public:
     } UNIT_FLAG_TYPE;
 
     static const QString section_name(const MEM_SECTION &section){
-        QMap<MEM_SECTION,QString> m;
-        m[MEM_UNK] = "UNK";
-        m[MEM_GLOBALS] = "addresses";
-        m[MEM_LANGUAGE] = "offsets";
-        m[MEM_UNIT] = "dwarf_offsets";
-        m[MEM_SQUAD] = "squad_offsets";
-        m[MEM_WORD] = "word_offsets";
-        m[MEM_RACE] = "race_offsets";
-        m[MEM_CASTE] = "caste_offsets";
-        m[MEM_HIST_FIG] = "hist_figure_offsets";
-        m[MEM_HIST_EVT] = "hist_event_offsets";
-        m[MEM_HIST_ENT] = "hist_entity_offsets";
-        m[MEM_WEP_SUB] = "weapon_subtype_offsets";
-        m[MEM_MAT] = "material_offsets";
-        m[MEM_PLANT] = "plant_offsets";
-        m[MEM_ITEM_SUB] = "item_subtype_offsets";
-        m[MEM_DESC] = "descriptor_offsets";
-        m[MEM_HEALTH] = "health_offsets";
-        m[MEM_WOUND] = "unit_wound_offsets";
-        m[MEM_ITEM] = "item_offsets";
-        m[MEM_ITEM_FILTER] = "item_filter_offsets";
-        m[MEM_ARMOR_SUB] = "armor_subtype_offsets";
-        m[MEM_GEN_REF] = "general_ref_offsets";
-        m[MEM_SYN] = "syndrome_offsets";
-        m[MEM_EMOTION] = "emotion_offsets";
-        m[MEM_ACTIVITY] = "activity_offsets";
-        m[MEM_JOB] = "job_details";
-        m[MEM_SOUL] = "soul_details";
-        return m.value(section,m.value(MEM_UNK));
+        switch (section) {
+        case MEM_GLOBALS: return "addresses";
+        case MEM_LANGUAGE: return "offsets";
+        case MEM_UNIT: return "dwarf_offsets";
+        case MEM_SQUAD: return "squad_offsets";
+        case MEM_WORD: return "word_offsets";
+        case MEM_RACE: return "race_offsets";
+        case MEM_CASTE: return "caste_offsets";
+        case MEM_HIST_FIG: return "hist_figure_offsets";
+        case MEM_HIST_EVT: return "hist_event_offsets";
+        case MEM_HIST_ENT: return "hist_entity_offsets";
+        case MEM_WEP_SUB: return "weapon_subtype_offsets";
+        case MEM_MAT: return "material_offsets";
+        case MEM_PLANT: return "plant_offsets";
+        case MEM_ITEM_SUB: return "item_subtype_offsets";
+        case MEM_DESC: return "descriptor_offsets";
+        case MEM_HEALTH: return "health_offsets";
+        case MEM_WOUND: return "unit_wound_offsets";
+        case MEM_ITEM: return "item_offsets";
+        case MEM_ITEM_FILTER: return "item_filter_offsets";
+        case MEM_ARMOR_SUB: return "armor_subtype_offsets";
+        case MEM_GEN_REF: return "general_ref_offsets";
+        case MEM_SYN: return "syndrome_offsets";
+        case MEM_EMOTION: return "emotion_offsets";
+        case MEM_ACTIVITY: return "activity_offsets";
+        case MEM_ART: return "art_offsets";
+        case MEM_JOB: return "job_details";
+        case MEM_SOUL: return "soul_details";
+        case MEM_UNK:
+        default:
+                       return "UNK";
+        }
     }
 
     static const QString flag_type_name(const UNIT_FLAG_TYPE &flag_type){
-        QMap<UNIT_FLAG_TYPE,QString> m;
-        m[INVALID_FLAGS_1] = "invalid_flags_1";
-        m[INVALID_FLAGS_2] = "invalid_flags_2";
-        m[INVALID_FLAGS_3] = "invalid_flags_3";
-        return m.value(flag_type);
+        switch (flag_type) {
+        case INVALID_FLAGS_1: return "invalid_flags_1";
+        case INVALID_FLAGS_2: return "invalid_flags_2";
+        case INVALID_FLAGS_3: return "invalid_flags_3";
+        default: return QString();
+        }
     }
 
     QSettings &data() { return m_data; }
@@ -141,6 +146,7 @@ public:
     qint16 syndrome_offset(const QString & key) const {return offset(MEM_SYN,key);}
     qint16 emotion_offset(const QString & key) const {return offset(MEM_EMOTION,key);}
     qint16 activity_offset(const QString & key) const {return offset(MEM_ACTIVITY,key);}
+    qint16 art_offset(const QString & key) const {return offset(MEM_ART,key);}
     qint16 job_detail(const QString &key) const {return offset(MEM_JOB,key);}
     qint16 soul_detail(const QString &key) const {return offset(MEM_SOUL,key);}
 
