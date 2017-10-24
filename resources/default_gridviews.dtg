@@ -5,7 +5,7 @@ DT_version\patch=4
 export_date=@Variant(\0\0\0\x10\0%wN\x4\xc2\n\xa5\xff)
 
 [gridviews]
-size=13
+size=11
 1\name=Social && Cultural
 1\active=true
 1\sets\size=5
@@ -57,8 +57,8 @@ size=13
 1\sets\3\name=Other Social
 1\sets\3\bg_color=#bab8a1
 1\sets\3\columns\size=9
-1\sets\2\columns\1\name=SPACER
-1\sets\2\columns\1\type=SPACER
+1\sets\3\columns\1\name=SPACER
+1\sets\3\columns\1\type=SPACER
 1\sets\3\columns\2\name=Concentration
 1\sets\3\columns\2\type=SKILL
 1\sets\3\columns\2\skill_id=87
