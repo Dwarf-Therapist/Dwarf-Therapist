@@ -4,20 +4,35 @@ git:
 dist: trusty
 sudo: false
 language: cpp
-compiler:
-    - clang
-    - gcc
-addons:
-    apt:
-        packages:
-            - libc++-dev
-            - cmake
-            - ninja-build
-            - qtbase5-dev
-            - qtbase5-dev-tools
-            - qtdeclarative5-dev
 matrix:
     include:
+        - os: linux
+          language: generic # prevents overwriting of CXX and CC
+          compiler: gcc
+          addons:
+              apt:
+                  sources:
+                      - ubuntu-toolchain-r-test
+                  packages:
+                      - g++-5
+                      - cmake
+                      - ninja-build
+                      - qtbase5-dev
+                      - qtbase5-dev-tools
+                      - qtdeclarative5-dev
+          env: COMPILER=g++ CXX=g++-5 CC=gcc-5
+        - os: linux
+          compiler: clang
+          addons:
+              apt:
+                  packages:
+                      - libc++-dev
+                      - cmake
+                      - ninja-build
+                      - qtbase5-dev
+                      - qtbase5-dev-tools
+                      - qtdeclarative5-dev
+          env: CXXFLAGS="-stdlib=libc++ $CXXFLAGS"
         - os: osx
           before_install:
               - brew update
@@ -36,7 +51,6 @@ script:
     - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export NPROC=$(nproc);
       elif [ "$TRAVIS_OS_NAME" == "osx" ]; then export NPROC=$(sysctl -n hw.ncpu);
       else export NPROC=1; fi
-    - if [ "$CXX" == "clang++" ]; then export CXXFLAGS="-stdlib=libc++ $CXXFLAGS"; fi
     - cmake -GNinja . && ninja -j $NPROC -k 0
 
 notifications:
