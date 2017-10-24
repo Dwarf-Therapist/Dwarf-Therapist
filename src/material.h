@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define MATERIAL_H
 
 #include <QObject>
+#include <set>
 #include "utils.h"
 #include "global_enums.h"
 #include "flagarray.h"
@@ -45,6 +46,9 @@ public:
 
     QString get_material_name(MATERIAL_STATES state) const;
     int id() const {return m_index;}
+
+    const std::set<QString> &get_reactions() const { return m_reactions; }
+    bool has_reaction(const QString &reaction) const { return m_reactions.count(reaction) != 0; }
 
     void load_data();
     bool is_inorganic() const {return m_inorganic;}
@@ -75,7 +79,6 @@ public:
 private:
     int m_index;
     VIRTADDR m_address;
-    VIRTADDR m_flag_address;
     DFInstance * m_df;
     MemoryLayout * m_mem;
     FlagArray m_flags;
@@ -83,6 +86,7 @@ private:
     bool m_is_generated;
     QHash<MATERIAL_STATES, QString> m_state_names;
     QString m_prefix;
+    std::set<QString> m_reactions;
 
     void read_material();
 };

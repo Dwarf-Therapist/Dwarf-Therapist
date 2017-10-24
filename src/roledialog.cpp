@@ -648,6 +648,12 @@ void roleDialog::load_material_prefs(QVector<Material*> mats){
             else if(m->flags().has_flag(ITEMS_DELICATE))
                 add_pref_to_tree(m_general_material, p); //check for coral and amber
         }
+
+        //check reactions
+        if (m->has_reaction("PAPER_PLANT")) {
+            auto p = std::make_shared<ExactMaterialRolePreference>(m, PRESSED);
+            add_pref_to_tree(m_papers, p);
+        }
     }
 }
 
@@ -833,9 +839,13 @@ void roleDialog::load_creatures(){
                 auto flag = std::get<0>(t);
                 auto parent = std::get<1>(t);
                 if (m->flags().has_flag(flag)) {
-                    auto p = std::make_shared<ExactRolePreference>(LIKE_MATERIAL, m->get_material_name(SOLID), flag);
+                    auto p = std::make_shared<ExactMaterialRolePreference>(m, SOLID);
                     add_pref_to_tree(parent, p);
                 }
+            }
+            if (m->has_reaction("PARCHMENT")) {
+                auto p = std::make_shared<ExactMaterialRolePreference>(m, PRESSED);
+                add_pref_to_tree(m_parchments, p);
             }
         }
     }
@@ -889,6 +899,7 @@ void roleDialog::build_pref_tree(){
     m_fabrics = init_parent_node(tr("Fabrics & Dyes"));
     m_papers = init_parent_node(tr("Papers"));
     m_leathers = init_parent_node(tr("Leathers"));
+    m_parchments = init_parent_node(tr("Parchments"));
     m_creatures = init_parent_node(tr("Creatures (Other)"));
 
 
@@ -913,6 +924,14 @@ void roleDialog::build_pref_tree(){
         auto flag = std::get<0>(t);
         auto state = std::get<1>(t);
         auto p = std::make_shared<GenericMaterialRolePreference>(Material::get_material_flag_desc(flag, state), state, flag);
+        add_pref_to_tree(m_general_material, p);
+    }
+    for (const auto t: {std::make_tuple(tr("Parchments"), PRESSED, "PARCHMENT"),
+                        std::make_tuple(tr("Paper plants"), PRESSED, "PAPER_PLANT")}) {
+        auto title = std::get<0>(t);
+        auto state = std::get<1>(t);
+        auto reaction = std::get<2>(t);
+        auto p = std::make_shared<MaterialReactionRolePreference>(title, state, reaction);
         add_pref_to_tree(m_general_material, p);
     }
 

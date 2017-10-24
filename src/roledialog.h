@@ -60,6 +60,7 @@ private:
     QTreeWidgetItem *m_fabrics;
     QTreeWidgetItem *m_papers;
     QTreeWidgetItem *m_leathers;
+    QTreeWidgetItem *m_parchments;
 
     //creature categories
     QTreeWidgetItem *m_creatures;

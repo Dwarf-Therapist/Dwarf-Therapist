@@ -73,7 +73,7 @@ std::unique_ptr<RolePreference> RolePreference::parse(QSettings &s, bool &update
     auto pref_type = static_cast<PREF_TYPES>(s.value("pref_category",-1).toInt());
     auto item_type = static_cast<ITEM_TYPE>(s.value("item_type",-1).toInt());
     auto exact = s.value("exact",false).toBool();
-    auto mat_state = static_cast<MATERIAL_STATES>(s.value("mat_state", -1).toInt ());
+    auto mat_state = static_cast<MATERIAL_STATES>(s.value("mat_state", ANY_STATE).toInt ());
 
     int flag_count = s.beginReadArray("flags");
     std::set<int> flags;
@@ -132,7 +132,7 @@ std::unique_ptr<RolePreference> RolePreference::parse(QSettings &s, bool &update
     if (exact) {
         if (pref_type == LIKE_ITEM && item_type != -1)
             p = std::make_unique<ExactItemRolePreference>(id, item_type, flags);
-        else if (pref_type == LIKE_MATERIAL && mat_state != -1)
+        else if (pref_type == LIKE_MATERIAL)
             p = std::make_unique<ExactMaterialRolePreference>(id, mat_state, flags);
         else
             p = std::make_unique<ExactRolePreference>(pref_type, id, flags);
@@ -140,8 +140,12 @@ std::unique_ptr<RolePreference> RolePreference::parse(QSettings &s, bool &update
     else {
         if (pref_type == LIKE_ITEM && item_type != -1)
             p = std::make_unique<GenericItemRolePreference>(id, item_type, flags);
-        else if (pref_type == LIKE_MATERIAL && mat_state != -1)
-            p = std::make_unique<GenericMaterialRolePreference>(id, mat_state, flags);
+        else if (pref_type == LIKE_MATERIAL) {
+            if (s.contains("mat_reaction"))
+                p = std::make_unique<MaterialReactionRolePreference>(id, mat_state, s.value("mat_reaction").toString(), flags);
+            else
+                p = std::make_unique<GenericMaterialRolePreference>(id, mat_state, flags);
+        }
         else
             p = std::make_unique<GenericRolePreference>(pref_type, id, flags);
     }
@@ -391,5 +395,27 @@ std::unique_ptr<RolePreference> GenericItemRolePreference::copy() const {
 
 bool GenericItemRolePreference::match(const Preference *p, const Dwarf *d) const {
     return ItemRolePreference::match(p, d) && GenericRolePreference::match(p, d);
+}
+
+MaterialReactionRolePreference::MaterialReactionRolePreference(const QString &name, MATERIAL_STATES state, const QString &reaction, const std::set<int> &flags)
+    : GenericMaterialRolePreference(name, state, flags)
+    , m_reaction(reaction)
+{
+}
+
+bool MaterialReactionRolePreference::match(const Preference *p, const Dwarf *d) const {
+    if (!GenericMaterialRolePreference::match(p, d))
+        return false;
+    auto mp = dynamic_cast<const MaterialPreference *>(p);
+    return mp && mp->get_material()->has_reaction(m_reaction);
+}
+
+void MaterialReactionRolePreference::write(QSettings &s) const {
+    GenericMaterialRolePreference::write(s);
+    s.setValue("mat_reaction", m_reaction);
+}
+
+std::unique_ptr<RolePreference> MaterialReactionRolePreference::copy() const {
+    return std::make_unique<MaterialReactionRolePreference>(*this);
 }
 
