@@ -77,9 +77,11 @@ class MaterialPreference: public Preference {
 public:
     MaterialPreference(const Material *m, MATERIAL_STATES state);
 
+    const Material *get_material() const { return m_mat; }
     MATERIAL_STATES get_mat_state() const { return m_mat_state; }
 
 private:
+    const Material *m_mat;
     MATERIAL_STATES m_mat_state;
 };
 

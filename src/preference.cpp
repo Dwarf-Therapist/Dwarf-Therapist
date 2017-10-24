@@ -49,6 +49,7 @@ Preference::~Preference() noexcept
 
 MaterialPreference::MaterialPreference(const Material *m, MATERIAL_STATES state)
     : Preference(LIKE_MATERIAL, m->flags(), m->get_material_name(state))
+    , m_mat(m)
     , m_mat_state(state)
 {
 }

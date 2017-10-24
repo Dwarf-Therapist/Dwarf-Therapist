@@ -185,4 +185,23 @@ public:
     std::unique_ptr<RolePreference> copy() const override;
 };
 
+class MaterialReactionRolePreference: public GenericMaterialRolePreference {
+public:
+    template<typename... Flags>
+    MaterialReactionRolePreference(const QString &name, MATERIAL_STATES state, const QString &reaction, Flags... flags)
+        : GenericMaterialRolePreference(name, state, flags...)
+        , m_reaction(reaction)
+    {
+    }
+    MaterialReactionRolePreference(const QString &name, MATERIAL_STATES state, const QString &reaction, const std::set<int> &flags);
+
+    bool match(const Preference *p, const Dwarf *d) const override;
+
+    void write(QSettings &s) const override;
+    std::unique_ptr<RolePreference> copy() const override;
+
+private:
+    QString m_reaction;
+};
+
 #endif // ROLE_PREFERENCE_H

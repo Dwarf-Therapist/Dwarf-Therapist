@@ -29,7 +29,6 @@ Material::Material(QObject *parent)
     : QObject(parent)
     , m_index(-1)
     , m_address(0x0)
-    , m_flag_address(0x0)
     , m_df(0x0)
     , m_mem(0x0)
     , m_flags()
@@ -42,7 +41,6 @@ Material::Material(DFInstance *df, VIRTADDR address, int index, bool inorganic, 
     : QObject(parent)
     , m_index(index)
     , m_address(address)
-    , m_flag_address(0x0)
     , m_df(df)
     , m_mem(df->memory_layout())
     , m_flags()
@@ -80,8 +78,6 @@ void Material::load_data() {
         m_address += m_mem->material_offset("inorganic_materials_vector");
     }
 
-    m_flag_address = m_address + m_mem->material_offset("flags");
-
     TRACE << "Starting refresh of material data at" << hexify(m_address);
 
     read_material();
@@ -101,8 +97,13 @@ void Material::read_material() {
 
     //QString id = m_df->read_string(m_address);
     m_prefix = m_df->read_string(m_address + m_mem->material_offset("prefix"));
-
-    m_flags = FlagArray(m_df,m_flag_address);
+    for (auto addr: m_df->enumerate_vector(m_address + m_mem->material_offset("reaction_class"))) {
+        QString reaction = m_df->read_string(addr);
+        if (reaction.isEmpty() || !m_reactions.insert(reaction).second) {
+            LOGW << "Invalid reaction class" << reaction;
+        }
+    }
+    m_flags = FlagArray(m_df,m_address + m_mem->material_offset("flags"));
 
     //int material_value = m_df->read_int(m_address + 0x244);
 }
