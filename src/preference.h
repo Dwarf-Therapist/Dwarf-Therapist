@@ -60,6 +60,7 @@ public:
     virtual ~Preference() noexcept;
 
     const QString &get_name() const {return m_name;}
+    virtual QString get_description() const;
     PREF_TYPES get_pref_category() const {return m_type;}
     bool has_flag(int f) const { return m_flags.has_flag(f); }
 
@@ -76,6 +77,8 @@ protected:
 class MaterialPreference: public Preference {
 public:
     MaterialPreference(const Material *m, MATERIAL_STATES state);
+
+    QString get_description() const override;
 
     const Material *get_material() const { return m_mat; }
     MATERIAL_STATES get_mat_state() const { return m_mat_state; }

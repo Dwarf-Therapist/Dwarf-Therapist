@@ -47,11 +47,37 @@ Preference::~Preference() noexcept
 {
 }
 
+QString Preference::get_description() const {
+    switch (m_type) {
+    case LIKE_COLOR:
+        return tr("the color %1").arg(m_name);
+    case LIKE_SHAPE:
+        return tr("the shape of %1").arg(m_name);
+    case LIKE_POETRY:
+        return tr("the words of %1").arg(m_name);
+    case LIKE_MUSIC:
+        return tr("the sound of %1").arg(m_name);
+    case LIKE_DANCE:
+        return tr("the sight of %1").arg(m_name);
+    default:
+        return m_name;
+    }
+}
+
 MaterialPreference::MaterialPreference(const Material *m, MATERIAL_STATES state)
     : Preference(LIKE_MATERIAL, m->flags(), m->get_material_name(state))
     , m_mat(m)
     , m_mat_state(state)
 {
+}
+
+QString MaterialPreference::get_description() const {
+    if (m_flags.has_flag(THREAD_PLANT) && m_mat_state == SOLID)
+        return tr("%1 fabric").arg(get_name());
+    else if (m_flags.has_flag(IS_WOOD))
+        return tr("%1 wood").arg(get_name());
+    else
+        return get_name();
 }
 
 CreaturePreference::CreaturePreference(const Race *r)
