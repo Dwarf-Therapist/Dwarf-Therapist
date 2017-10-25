@@ -915,6 +915,7 @@ void Dwarf::read_preferences(){
         auto pType = static_cast<PREF_TYPES>(p.first);
         desc_key = Preference::get_pref_desc(pType);
         auto pref_name = p.second->get_name();
+        auto pref_desc = p.second->get_description();
         if(!pref_name.isEmpty()){
             //create/append to groups based on the categories description
             if(!m_grouped_preferences.contains(desc_key))
@@ -922,24 +923,27 @@ void Dwarf::read_preferences(){
             m_grouped_preferences.value(desc_key)->append(pref_name);
             //build the tooltip at the same time, organizing by likes, dislikes
             if(build_tooltip){
-                if(pType == LIKE_ITEM || pType == LIKE_MATERIAL || pType == LIKE_PLANT || pType == LIKE_TREE || pType == LIKE_CREATURE){
-                    likes.append(pref_name);
-                }else if(pType == LIKE_FOOD){
-                    consume.append(pref_name);
-                }else if(pType == LIKE_COLOR){
-                    likes.append(tr("the color ").append(pref_name));
-                }else if(pType == LIKE_SHAPE){
-                    likes.append(tr("the shape of ").append(pref_name));
-                }else if(pType == LIKE_POETRY){
-                    likes.append(tr("the words of ").append(pref_name));
-                }else if(pType == LIKE_MUSIC){
-                    likes.append(tr("the sound of ").append(pref_name));
-                }else if(pType == LIKE_DANCE){
-                    likes.append(tr("the sight of ").append(pref_name));
-                }else if(pType == HATE_CREATURE){
-                    hates.append(pref_name);
-                }else{
-                    other.append(capitalize(pref_name));
+                switch (pType) {
+                case LIKE_ITEM:
+                case LIKE_MATERIAL:
+                case LIKE_PLANT:
+                case LIKE_TREE:
+                case LIKE_CREATURE:
+                case LIKE_COLOR:
+                case LIKE_SHAPE:
+                case LIKE_POETRY:
+                case LIKE_MUSIC:
+                case LIKE_DANCE:
+                    likes.append(pref_desc);
+                    break;
+                case LIKE_FOOD:
+                    consume.append(pref_desc);
+                    break;
+                case HATE_CREATURE:
+                    hates.append(pref_desc);
+                    break;
+                default:
+                    other.append(capitalize(pref_desc));
                 }
             }
         }
