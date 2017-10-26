@@ -519,16 +519,21 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     //WEAPONS
     QMenu *m_weapon = m_cmh->create_title_menu(m, tr("Weapon"),
                                         tr("Weapon columns will show an indicator of whether the dwarf can wield the weapon with one hand, two hands or not at all."));
-    m_cmh->add_sub_menus(m_weapon,DT->get_DFInstance()->get_ordered_weapon_defs().count() / 15);
-    foreach(ItemWeaponSubtype *w, DT->get_DFInstance()->get_ordered_weapon_defs().values()) {
-        QString title = w->name_plural(); //allow adding every type
-        QMenu *menu_to_use = m_cmh->find_menu(m_weapon,title);
-        QAction *a = menu_to_use->addAction(title, this, SLOT(add_weapon_column()));
-        a->setData(w->subType());
-        a->setToolTip(tr("Add a column for weapon %1").arg(title));
+    if (auto df = DT->get_DFInstance()) {
+        m_cmh->add_sub_menus(m_weapon,df->get_ordered_weapon_defs().count() / 15);
+        foreach(ItemWeaponSubtype *w, df->get_ordered_weapon_defs().values()) {
+            QString title = w->name_plural(); //allow adding every type
+            QMenu *menu_to_use = m_cmh->find_menu(m_weapon,title);
+            QAction *a = menu_to_use->addAction(title, this, SLOT(add_weapon_column()));
+            a->setData(w->subType());
+            a->setToolTip(tr("Add a column for weapon %1").arg(title));
+        }
     }
-
-
+    else {
+        QAction *a = m_weapon->addAction(tr("Not available"));
+        a->setEnabled(false);
+        a->setToolTip(tr("A DF instance is required"));
+    }
 
     //    }
     m->exec(ui->list_columns->viewport()->mapToGlobal(p));
