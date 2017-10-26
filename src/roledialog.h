@@ -23,21 +23,22 @@ class roleDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit roleDialog(DFInstance *dfi, QWidget *parent = 0);
+    explicit roleDialog(QWidget *parent = 0);
     ~roleDialog();
     bool event(QEvent *evt);
 
     void load_role(QString role_name);
 
+    void build_pref_tree(DFInstance *df = nullptr);
+
 public slots:
     void selection_changed();
 
 private:
-    Ui::roleDialog *ui;
+    std::unique_ptr<Ui::roleDialog> ui;
     Role *m_role;
     QColor color_override;
     QColor color_default;
-    DFInstance *m_df;
     Dwarf *m_dwarf;
 
     //preference main holder
@@ -74,7 +75,6 @@ private:
     QTreeWidgetItem *m_butcher;
     QTreeWidgetItem *m_domestic;
 
-
     //general categories
     QTreeWidgetItem *m_general_item;
     QTreeWidgetItem *m_general_material;
@@ -98,13 +98,12 @@ private:
     bool m_override;
 
     //preferences
-    void build_pref_tree();
     void load_material_prefs(QVector<Material*> mats);
     void load_plant_prefs(QVector<Plant *> plants);
-    void load_items();
-    void load_creatures();
-    void load_weapons();
-    QTreeWidgetItem* init_parent_node(QString title);
+    void load_items(DFInstance *df);
+    void load_creatures(DFInstance *df);
+    void load_weapons(DFInstance *df);
+    QTreeWidgetItem *init_parent_node(QString title);
     void add_pref_to_tree(QTreeWidgetItem *parent, std::shared_ptr<RolePreference> p);
 
 protected:

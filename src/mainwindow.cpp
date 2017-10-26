@@ -87,7 +87,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_proxy(new DwarfModelProxy(this))
     , m_about_dialog(new AboutDialog(this))
     , m_script_dialog(new ScriptDialog(this))
-    , m_role_editor(0)
+    , m_role_editor(new roleDialog(this))
     , m_optimize_plan_editor(0)
     , m_reading_settings(false)
     , m_show_result_on_equal(false)
@@ -197,6 +197,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(thought_dock, SIGNAL(item_selected(QVariantList)), this, SLOT(thought_selected(QVariantList)));
     connect(health_dock, SIGNAL(item_selected(QList<QPair<int,int> >)), this, SLOT(health_legend_selected(QList<QPair<int,int> >)));
     connect(equipoverview_dock, SIGNAL(item_selected(QVariantList)), this, SLOT(equipoverview_selected(QVariantList)));
+
+    connect(m_role_editor, SIGNAL(finished(int)), this, SLOT(done_editing_role(int)),Qt::UniqueConnection);
 
     connect(this,SIGNAL(lostConnection()),equipoverview_dock,SLOT(clear()));
     connect(this,SIGNAL(lostConnection()),pref_dock,SLOT(clear()));
@@ -601,10 +603,8 @@ void MainWindow::read_dwarves() {
     m_dwarf_name_completer->popup()->installEventFilter(filter);
     connect(filter,SIGNAL(enterPressed(QModelIndex)),this,SLOT(apply_filter(QModelIndex)));
 
-    if(!m_role_editor){
-        m_role_editor = new roleDialog(m_df, this);
-        connect(m_role_editor, SIGNAL(finished(int)), this, SLOT(done_editing_role(int)),Qt::UniqueConnection);
-    }
+    m_role_editor->build_pref_tree (m_df);
+
     if(!m_optimize_plan_editor){
         m_optimize_plan_editor = new optimizereditor(this);
         connect(m_optimize_plan_editor, SIGNAL(finished(int)), this, SLOT(done_editing_opt_plan(int)), Qt::UniqueConnection);

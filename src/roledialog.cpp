@@ -26,16 +26,14 @@
 
 roleDialog::~roleDialog()
 {
-    delete ui;
 }
 
-roleDialog::roleDialog(DFInstance *dfi, QWidget *parent) :
+roleDialog::roleDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::roleDialog)
+    ui(std::make_unique<Ui::roleDialog>())
 {
     ui->setupUi(this);
     //this->setAttribute(Qt::WA_DeleteOnClose,true);
-    m_df = dfi;
     m_role = 0;
     m_dwarf = 0;
 
@@ -66,6 +64,8 @@ roleDialog::roleDialog(DFInstance *dfi, QWidget *parent) :
     ui->tw_prefs->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
     ui->tw_prefs->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
     ui->tw_prefs->setHorizontalHeaderLabels(QStringList() << "Preference" << "Weight" << "Category" << "Item");
+
+    connect(ui->treePrefs, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(item_double_clicked(QTreeWidgetItem*,int)));
 
     connect(ui->btn_cancel, SIGNAL(clicked()), SLOT(close_pressed()));
     connect(ui->btn_save, SIGNAL(clicked()), SLOT(save_pressed()));
@@ -689,7 +689,7 @@ void roleDialog::load_plant_prefs(QVector<Plant*> plants){
     }
 }
 
-void roleDialog::load_items(){
+void roleDialog::load_items(DFInstance *df){
     add_pref_to_tree(m_general_equip, std::make_shared<GenericRolePreference>(LIKE_ITEM, tr("Clothing (Any)"), IS_CLOTHING));
     add_pref_to_tree(m_general_equip, std::make_shared<GenericRolePreference>(LIKE_ITEM, tr("Armor (Any)"), IS_ARMOR));
     add_pref_to_tree(m_general_item, std::make_shared<GenericRolePreference>(LIKE_ITEM, tr("Trade Goods"), IS_TRADE_GOOD));
@@ -705,10 +705,9 @@ void roleDialog::load_items(){
         MEAT, FISH, CHEESE, PLANT, DRINK, POWDER_MISC, LEAVES_FRUIT, LIQUID_MISC, SEEDS,
     };
 
-    QTreeWidgetItem *item_parent;
-
-    QHash<ITEM_TYPE, QVector<VIRTADDR> > item_list = m_df->get_all_item_defs();
-    int count;
+    QHash<ITEM_TYPE, QVector<VIRTADDR>> item_list;
+    if (df)
+        item_list = df->get_all_item_defs();
 
     QStringList added_subtypes;
 
@@ -716,7 +715,6 @@ void roleDialog::load_items(){
         ITEM_TYPE itype = static_cast<ITEM_TYPE>(idx);
 
         if(item_ignore.find(itype) == item_ignore.end()){
-            count = item_list.value(itype).count();
             QString name = Item::get_item_name_plural(itype);
 
             bool is_armor_type = Item::is_armor_type(itype,false);
@@ -739,16 +737,20 @@ void roleDialog::load_items(){
                 add_pref_to_tree(m_general_equip, p);
             }
 
+            if (!df) // a df instance is required for subtypes
+                continue;
+
             //specific items
+            int count = item_list.value(itype).count();
             if(count > 1){
                 added_subtypes.clear();
                 //create a node for the specific item type
-                item_parent = init_parent_node(name);
+                auto item_parent = init_parent_node(name);
                 //check for clothing
                 if(is_armor_type){
                     auto parent = init_parent_node(Item::get_item_clothing_name(itype));
                     for(int sub_id = 0; sub_id < count; sub_id++){
-                        ItemSubtype *stype = m_df->get_item_subtype(itype,sub_id);
+                        ItemSubtype *stype = df->get_item_subtype(itype,sub_id);
                         auto p = std::make_shared<ExactItemRolePreference>(stype);
 
                         if(added_subtypes.contains(p->get_name()))
@@ -762,7 +764,7 @@ void roleDialog::load_items(){
                     }
                 }else{
                     for(int sub_id = 0; sub_id < count; sub_id++){
-                        auto name = capitalize(m_df->get_preference_item_name(itype,sub_id));
+                        auto name = capitalize(df->get_preference_item_name(itype,sub_id));
                         auto p = std::make_shared<ExactItemRolePreference>(name, itype);
                         add_pref_to_tree(item_parent,p);
                     }
@@ -772,7 +774,7 @@ void roleDialog::load_items(){
     }
 }
 
-void roleDialog::load_creatures(){
+void roleDialog::load_creatures(DFInstance *df){
     auto add_general_creature_node = [this] (const QString &suffix,
                                              std::initializer_list<int> flags,
                                              QTreeWidgetItem *&parent_node) {
@@ -794,7 +796,10 @@ void roleDialog::load_creatures(){
     add_general_creature_node(tr("Butcherable"), {BUTCHERABLE}, m_butcher);
     add_general_creature_node(tr("Domestic"), {DOMESTIC}, m_domestic);
 
-    foreach(Race *r, m_df->get_races()){
+    if (!df) // a valid df instance is required for more specific preferences
+        return;
+
+    foreach(Race *r, df->get_races()){
         if(r->flags().has_flag(WAGON))
             continue;
 
@@ -851,7 +856,7 @@ void roleDialog::load_creatures(){
     }
 }
 
-void roleDialog::load_weapons(){
+void roleDialog::load_weapons(DFInstance *df){
     //add parent categories
     QTreeWidgetItem *melee = init_parent_node(tr("Weapons (Melee)"));
     QTreeWidgetItem *ranged = init_parent_node(tr("Weapons (Ranged)"));
@@ -860,7 +865,10 @@ void roleDialog::load_weapons(){
     add_pref_to_tree(m_general_equip, std::make_shared<GenericItemRolePreference>(ranged->text(0), WEAPON, ITEMS_WEAPON_RANGED));
     add_pref_to_tree(m_general_equip, std::make_shared<GenericItemRolePreference>(melee->text(0), WEAPON, ITEMS_WEAPON));
 
-    foreach(ItemSubtype *i, m_df->get_item_subtypes(WEAPON)){
+    if (!df) // a valid df instance is required for more specific preferences
+        return;
+
+    foreach(ItemSubtype *i, df->get_item_subtypes(WEAPON)){
         ItemWeaponSubtype *w = qobject_cast<ItemWeaponSubtype*>(i);
         auto p = std::make_shared<ExactItemRolePreference>(w); //unfortunately a crescent halberd != halberd
         if(w->flags().has_flag(ITEMS_WEAPON_RANGED)){
@@ -871,7 +879,10 @@ void roleDialog::load_weapons(){
     }
 }
 
-void roleDialog::build_pref_tree(){
+void roleDialog::build_pref_tree(DFInstance *df){
+    m_pref_list.clear();
+    ui->treePrefs->clear();
+
     ui->treePrefs->setSortingEnabled(false);
     //setup general categories
     m_general_item = init_parent_node(tr("~General Items"));
@@ -949,12 +960,14 @@ void roleDialog::build_pref_tree(){
     //special custom preference for outdoors
     add_pref_to_tree(m_general_other, std::make_shared<GenericRolePreference>(LIKE_OUTDOORS, tr("Outdoors"), 999));
 
-    load_material_prefs(m_df->get_inorganic_materials());
-    load_material_prefs(m_df->get_base_materials());
-    load_plant_prefs(m_df->get_plants());
-    load_items();
-    load_creatures();
-    load_weapons();
+    if (df) {
+        load_material_prefs(df->get_inorganic_materials());
+        load_material_prefs(df->get_base_materials());
+        load_plant_prefs(df->get_plants());
+    }
+    load_items(df);
+    load_creatures(df);
+    load_weapons(df);
 
     QTreeWidgetItem *child;
     for (const auto &p: m_pref_list) {
@@ -980,11 +993,9 @@ void roleDialog::build_pref_tree(){
     ui->treePrefs->setSortingEnabled(true);
     ui->treePrefs->sortItems(0,Qt::AscendingOrder);
     ui->treePrefs->collapseAll();
-
-    connect(ui->treePrefs, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(item_double_clicked(QTreeWidgetItem*,int)));
 }
 
-QTreeWidgetItem* roleDialog::init_parent_node(QString title){
+QTreeWidgetItem *roleDialog::init_parent_node(QString title){
     QTreeWidgetItem *node = new QTreeWidgetItem;
     node->setData(0, Qt::UserRole, title);
     node->setText(0, title);
