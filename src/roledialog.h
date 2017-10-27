@@ -37,8 +37,6 @@ public slots:
 private:
     std::unique_ptr<Ui::roleDialog> ui;
     Role *m_role;
-    QColor color_override;
-    QColor color_default;
     Dwarf *m_dwarf;
 
     //preference main holder

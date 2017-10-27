@@ -83,9 +83,6 @@ roleDialog::roleDialog(QWidget *parent) :
 
     connect(ui->btnRefreshRatings, SIGNAL(clicked()), this, SLOT(selection_changed()));
 
-    color_override = QColor::fromRgb(153,102,34,255);
-    color_default = QColor::fromRgb(255,255,255,255);
-
     //main splitter between aspects and script
     ui->splitter_main->setStretchFactor(0,50);
     ui->splitter_main->setStretchFactor(1,1);
@@ -582,17 +579,16 @@ bool roleDialog::event(QEvent *evt) {
 
 void roleDialog::name_changed(QString text){
     if(ui->le_role_name){
-        QPalette pal = ui->le_role_name->palette();
+        QPalette pal;
         if(GameDataReader::ptr()->get_default_roles().contains(text.trimmed())){
             ui->le_role_name->setStatusTip("This role has the same name as a default role and will override it.");
-            pal.setColor(QPalette::Base,color_override);
+            pal.setColor(QPalette::Base, QColor::fromRgb(230,161,92,255));
+            pal.setColor(QPalette::Text, Qt::black);
             m_override = true;
         }else{
             ui->le_role_name->setStatusTip("Name of the role.");
-            pal.setColor(QPalette::Base,color_default);
             m_override = false;
         }
-        ui->le_role_name->setAutoFillBackground(true);
         ui->le_role_name->setPalette(pal);
         emit event(new QStatusTipEvent(ui->le_role_name->statusTip()));
     }
