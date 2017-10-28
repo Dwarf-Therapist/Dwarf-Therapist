@@ -111,10 +111,11 @@ std::unique_ptr<RolePreference> RolePreference::parse(QSettings &s, bool &update
     }
 
     //update any general preference material names (eg. Horn -> Horn/Hoof)
-    if(item_type == NONE && !exact && pref_type == LIKE_MATERIAL && !flags.empty()) {
+    if(pref_type == LIKE_MATERIAL && item_type == NONE && !exact &&
+            !flags.empty() && !s.contains("mat_reaction")) {
         auto first_flag = static_cast<MATERIAL_FLAGS>(*flags.begin());
         if (first_flag < NUM_OF_MATERIAL_FLAGS) {
-            QString new_name = Material::get_material_flag_desc(first_flag);
+            QString new_name = Material::get_material_flag_desc(first_flag, mat_state);
             if (new_name != id){
                 id = new_name;
                 updated = true;
