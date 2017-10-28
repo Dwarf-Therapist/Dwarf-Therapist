@@ -1,3 +1,21 @@
+### Version 38.1 Patch Notes
+
+***
+ - added Blacksmith role in default "Roles" grid view
+ - added memory layout for DF 43.05 on OSX 64 bits
+ - re-added pdf manual compilation with Latex
+ - extended "Social" grid view with artistic and scholar skills
+ - added Paper, Parchment and Paper plant generic preferences in custom role dialog
+ - added specific preferences for papers, leathers, wools, silks, parchments and paper plants in custom role dialog
+ - changed some material names to be closer to DF
+ - added the ability to use the custom role dialog when not connected to a fortress (specific preferences are not available until connected to a fortress)
+
+ - fixed win32 0.43.05 memory layout
+ - fixed some widgets not displaying correctly
+ - fixed art preference name on 64 bits platforms
+ - fixed "Cloth" preference matching papers
+ - fixed a crash when using the custom grid view dialog when not connected to a fortress
+
 ### Version 38.0 Patch Notes
 
 ***
