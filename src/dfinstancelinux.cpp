@@ -154,7 +154,9 @@ USIZE DFInstanceLinux::read_raw(const VIRTADDR addr, const USIZE bytes, void *bu
 
         if (errno != ENOSYS) {
             LOGE << "READ_RAW:" << QString(strerror(errno)) << "READING" << bytes << "BYTES FROM" << hexify(addr) << "TO" << buffer;
+            return -1;
         }
+
         return read_raw_ptrace(addr, bytes, buffer);
     }
 
@@ -262,6 +264,8 @@ bool DFInstanceLinux::set_pid(){
     return true;
 }
 
+#define ELF_MAGIC "\x7f" "ELF"
+
 void DFInstanceLinux::find_running_copy() {
     m_status = DFS_DISCONNECTED;
     // find PID of DF
@@ -281,6 +285,29 @@ void DFInstanceLinux::find_running_copy() {
     m_loc_of_dfexe = QString("/proc/%1/exe").arg(m_pid);
     m_df_dir = QDir(QFileInfo(QString("/proc/%1/cwd").arg(m_pid)).symLinkTarget());
     LOGI << "Dwarf fortress path:" << m_df_dir.absolutePath();
+
+    { // check class from ELF header to find the pointer size
+        QFile exe(m_loc_of_dfexe);
+        if (!exe.open(QIODevice::ReadOnly)) {
+            LOGE << "Failed to open DF executable" << m_loc_of_dfexe;
+            return;
+        }
+        auto header = exe.read(5);
+        if (header == ELF_MAGIC "\x01")
+            m_pointer_size = 4;
+        else if (header == ELF_MAGIC "\x02")
+            m_pointer_size = 8;
+        else {
+            LOGE << "invalid ELF header" << header;
+            m_pointer_size = sizeof(VIRTADDR);
+        }
+        exe.close();
+    }
+
+    if (m_pointer_size > sizeof(VIRTADDR)) {
+        LOGE << "pointers too big";
+        return;
+    }
 
     m_status = DFS_CONNECTED;
     set_memory_layout(calculate_checksum());

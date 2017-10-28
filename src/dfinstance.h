@@ -108,7 +108,7 @@ public:
     QVector<T> enum_vec(VIRTADDR addr) {
         QVector<T> out;
         VIRTADDR start = read_addr(addr);
-        VIRTADDR end = read_addr(addr + sizeof(VIRTADDR));
+        VIRTADDR end = read_addr(addr + m_pointer_size);
         USIZE bytes = end - start;
         if (bytes % sizeof(T)) {
             LOGE << "VECTOR SIZE IS NOT A MULTIPLE OF TYPE";
@@ -130,6 +130,8 @@ public:
     MemoryLayout *get_memory_layout(QString checksum);
     MemoryLayout *find_memory_layout(QString git_sha);
     bool add_new_layout(const QString & filename, const QString data, QString &result_msg);
+
+    USIZE pointer_size() const { return m_pointer_size; }
 
     // Writing
     virtual USIZE write_raw(VIRTADDR addr, USIZE bytes, const void *buffer) = 0;
@@ -260,6 +262,7 @@ public:
 protected:
     VIRTADDR m_base_addr;
     QString m_df_checksum;
+    USIZE m_pointer_size;
     MemoryLayout *m_layout;
     int m_attach_count;
     QTimer *m_heartbeat_timer;
@@ -346,5 +349,9 @@ private:
     void index_item_vector(ITEM_TYPE itype);
     void send_connection_interrupted();
 };
+
+// specializations for VIRTADDR using pointer size
+template<> VIRTADDR DFInstance::read_mem<VIRTADDR>(VIRTADDR addr);
+template<> QVector<VIRTADDR> DFInstance::enum_vec<VIRTADDR>(VIRTADDR addr);
 
 #endif // DFINSTANCE_H

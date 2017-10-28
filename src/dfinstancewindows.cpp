@@ -39,10 +39,12 @@ THE SOFTWARE.
 #include "memorylayout.h"
 #include "dwarftherapist.h"
 
+#define DEFAULT_BASE_ADDR_I386  0x400000ul
+#define DEFAULT_BASE_ADDR_AMD64 0x140000000ull
 #if defined Q_PROCESSOR_X86_32
-#   define DEFAULT_BASE_ADDR 0x400000ul
+#   define DEFAULT_BASE_ADDR DEFAULT_BASE_ADDR_I386
 #elif defined Q_PROCESSOR_X86_64
-#   define DEFAULT_BASE_ADDR 0x140000000ull
+#   define DEFAULT_BASE_ADDR DEFAULT_BASE_ADDR_AMD64
 #else
 #   error Unsupported architecture
 #endif
@@ -277,7 +279,26 @@ void DFInstanceWindows::find_running_copy() {
             }
 
             LOGI << "RAW BASE ADDRESS:" << base_addr;
-            m_base_addr = base_addr - DEFAULT_BASE_ADDR;
+
+            switch (pe_header.FileHeader.Machine) {
+            case IMAGE_FILE_MACHINE_I386:
+                m_base_addr = base_addr - DEFAULT_BASE_ADDR_I386;
+                m_pointer_size = 4;
+                break;
+            case IMAGE_FILE_MACHINE_AMD64:
+                m_base_addr = base_addr - DEFAULT_BASE_ADDR_AMD64;
+                m_pointer_size = 8;
+                break;
+            default:
+                LOGE << "unsupported machine architecture";
+                m_base_addr = base_addr - DEFAULT_BASE_ADDR;
+                m_pointer_size = sizeof(VIRTADDR);
+            }
+
+            if (m_pointer_size > sizeof(VIRTADDR)) {
+                LOGE << "pointers too big";
+                return;
+            }
 
             m_status = DFS_CONNECTED;
             set_memory_layout(calculate_checksum(pe_header));
