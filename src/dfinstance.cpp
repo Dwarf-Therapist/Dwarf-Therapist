@@ -75,6 +75,7 @@ DFInstance::DFInstance(QObject* parent)
     : QObject(parent)
     , m_base_addr(0)
     , m_df_checksum("")
+    , m_pointer_size(sizeof(VIRTADDR)) // use build architecture as default
     , m_layout(0)
     , m_attach_count(0)
     , m_heartbeat_timer(new QTimer(this))
@@ -137,7 +138,7 @@ bool DFInstance::check_vector(const VIRTADDR start, const VIRTADDR end, const VI
     TRACE << "start of vector" << hex << start;
     TRACE << "end of vector" << hex << end;
 
-    int entries = (end - start) / sizeof(VIRTADDR);
+    int entries = (end - start) / m_pointer_size;
     TRACE << "there appears to be" << entries << "entries in this vector";
 
     bool is_acceptable_size = true;
@@ -242,6 +243,42 @@ USIZE DFInstance::write_int(VIRTADDR addr, const int val) {
 
 USIZE DFInstance::write_raw(const VIRTADDR addr, const USIZE bytes, const QByteArray &buffer) {
     return write_raw(addr, bytes, buffer.data());
+}
+
+// specializations for VIRTADDR using pointer size
+template<>
+VIRTADDR DFInstance::read_mem<VIRTADDR>(VIRTADDR addr) {
+    VIRTADDR res = 0;
+    read_raw(addr, m_pointer_size, &res);
+    return res;
+}
+template<>
+QVector<VIRTADDR> DFInstance::enum_vec<VIRTADDR>(VIRTADDR addr) {
+    QVector<VIRTADDR> out;
+    VIRTADDR start = read_addr(addr);
+    VIRTADDR end = read_addr(addr + m_pointer_size);
+    USIZE bytes = end - start;
+    USIZE count = bytes/m_pointer_size;
+    if (bytes % m_pointer_size) {
+        LOGE << "POINTER VECTOR SIZE IS NOT A MULTIPLE OF POINTER SIZE";
+    }
+    else if (m_pointer_size == sizeof(VIRTADDR)) {
+        out.resize(count);
+        USIZE bytes_read = read_raw(start, bytes, out.data());
+        TRACE << "Found" << bytes_read / sizeof(VIRTADDR) << "pointers in vector at" << hexify(addr);
+    }
+    else {
+        QByteArray buf;
+        buf.resize(bytes);
+        USIZE bytes_read = read_raw(start, bytes, buf.data());
+        TRACE << "Found" << bytes_read / m_pointer_size << "pointers in vector at" << hexify(addr);
+
+        out.fill(0, count);
+        auto out_it = out.begin();
+        for (auto buf_it = buf.cbegin(); buf_it != buf.cend(); buf_it += m_pointer_size)
+            std::copy_n(buf_it, m_pointer_size, reinterpret_cast<char *>(&*(out_it++)));
+    }
+    return out;
 }
 
 void DFInstance::load_game_data()
@@ -637,7 +674,7 @@ void DFInstance::load_main_vectors(){
             Material* m = Material::get_material(this, mat_addr, i, false, this);
             m_base_materials.append(m);
         }
-        addr += sizeof(VIRTADDR);
+        addr += m_pointer_size;
     }
 
     //inorganics

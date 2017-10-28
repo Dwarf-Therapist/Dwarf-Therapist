@@ -170,6 +170,7 @@ void DFInstanceOSX::find_running_copy() {
     set_memory_layout(calculate_checksum());
     m_alloc_start = 0;
     m_alloc_end = 0;
+    m_pointer_size = sizeof(VIRTADDR); // TODO: set pointer size
 }
 
 VIRTADDR DFInstanceOSX::alloc_chunk(USIZE size) {

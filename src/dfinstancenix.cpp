@@ -53,7 +53,7 @@ USIZE DFInstanceNix::write_string(VIRTADDR addr, const QString &str) {
     if (buffer_addr)
         // This unavoidably leaks the old buffer; our own
         // cannot be deallocated anyway.
-        write_raw(addr, sizeof(VIRTADDR), &buffer_addr);
+        write_raw(addr, m_pointer_size, &buffer_addr);
     detach();
     return buffer_addr ? str.length() : 0;
 }

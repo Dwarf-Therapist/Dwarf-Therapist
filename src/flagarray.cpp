@@ -13,7 +13,7 @@ FlagArray::FlagArray(DFInstance *df, VIRTADDR base_addr)
     //get the array from the pointer
     VIRTADDR flags_addr = m_df->read_addr(base_addr);
     //size of the byte array
-    uint32_t size_in_bytes = m_df->read_mem<uint32_t>(base_addr + sizeof(VIRTADDR));
+    uint32_t size_in_bytes = m_df->read_mem<uint32_t>(base_addr + m_df->pointer_size());
 
     m_flags = QBitArray(size_in_bytes * 8);
     if(size_in_bytes > 1000){

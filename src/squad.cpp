@@ -171,7 +171,7 @@ void Squad::read_orders(){
 
 void Squad::read_order(VIRTADDR addr, int histfig_id){
     VIRTADDR vtable_addr = m_df->read_addr(addr);
-    int raw_type = m_df->read_int(m_df->read_addr(vtable_addr+3*sizeof (VIRTADDR))+m_df->VM_TYPE_OFFSET());
+    int raw_type = m_df->read_int(m_df->read_addr(vtable_addr+3*m_df->pointer_size())+m_df->VM_TYPE_OFFSET());
     SQ_ORDER_TYPE ord_type = ORD_MOVE;
     if(raw_type > 0){
         ord_type = static_cast<SQ_ORDER_TYPE>(raw_type);

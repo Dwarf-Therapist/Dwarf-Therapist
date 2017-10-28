@@ -69,7 +69,7 @@ void Languages::load_data() {
     TRACE << "WORD TABLE OFFSET" << hexify(word_table_offset);
 
     m_df->attach();
-    if (generic_lang_table != 1 << (sizeof(VIRTADDR) - 1) && generic_lang_table != 0) {
+    if (generic_lang_table != static_cast<VIRTADDR>(-1) && generic_lang_table != 0) {
         LOGD << "Loading generic strings from" << hexify(generic_lang_table);
         QVector<VIRTADDR> generic_words = m_df->enumerate_vector(generic_lang_table);
         LOGD << "generic words" << generic_words.size();
@@ -78,7 +78,7 @@ void Languages::load_data() {
                 m_language << Word::get_word(m_df, word_ptr);
         }
     }
-    if (translation_vector != 1 << (sizeof(VIRTADDR) - 1) && translation_vector != 0) {
+    if (translation_vector != static_cast<VIRTADDR>(-1) && translation_vector != 0) {
         QVector<VIRTADDR> languages = m_df->enumerate_vector(translation_vector);
         int id = 0;
         foreach(VIRTADDR lang, languages) {
