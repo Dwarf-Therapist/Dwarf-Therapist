@@ -51,7 +51,7 @@ script:
     - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export NPROC=$(nproc);
       elif [ "$TRAVIS_OS_NAME" == "osx" ]; then export NPROC=$(sysctl -n hw.ncpu);
       else export NPROC=1; fi
-    - cmake -GNinja . && ninja -j $NPROC -k 0
+    - cmake -GNinja ${CMAKE_OPTIONS} . && ninja -j $NPROC -k 0
 
 notifications:
     irc:
