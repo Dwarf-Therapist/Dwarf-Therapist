@@ -34,11 +34,7 @@ THE SOFTWARE.
 #include <sys/user.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
-struct iovec {
-    void *iov_base;
-    size_t iov_len;
-};
+#include <sys/uio.h>
 
 DFInstanceLinux::DFInstanceLinux(QObject* parent)
     : DFInstanceNix(parent)
@@ -109,55 +105,14 @@ bool DFInstanceLinux::detach() {
     return m_attach_count > 0;
 }
 
-SSIZE DFInstanceLinux::process_vm(long number, const VIRTADDR addr
-                                  , const USIZE bytes, void *buffer) {
+USIZE DFInstanceLinux::read_raw(const VIRTADDR addr, const USIZE bytes, void *buffer) {
     struct iovec local_iov = {buffer, bytes};
     struct iovec remote_iov = {reinterpret_cast<void *>(addr), bytes};
-
-    SSIZE r = syscall(number, m_pid, &local_iov, 1UL, &remote_iov, 1UL, 0UL);
-
-    if (r == -1 && errno == ENOSYS && !m_warned_pvm) {
-        m_warned_pvm = true;
-        LOGI << "Kernel does not support process_vm API, falling back to ptrace.";
-        // reset errno, logger may have modified it
-        errno = ENOSYS;
-    }
-
-    return r;
-}
-
-USIZE DFInstanceLinux::read_raw_ptrace(const VIRTADDR addr, const USIZE bytes, void *buffer) {
-    int bytes_read = 0;
-
-    // try to attach, will be ignored if we're already attached
-    attach();
-
-    // open the memory virtual file for this proc (can only read once
-    // attached and child is stopped
-    if (!m_memory_file.isOpen() && !m_memory_file.open(QIODevice::ReadOnly)) {
-        LOGE << "Unable to open" << m_memory_file.fileName();
-        detach();
-        return bytes_read;
-    }
-
-    m_memory_file.seek(addr);
-    bytes_read = m_memory_file.read(static_cast<char *>(buffer), bytes);
-
-    detach();
-    return bytes_read;
-}
-
-USIZE DFInstanceLinux::read_raw(const VIRTADDR addr, const USIZE bytes, void *buffer) {
-    SSIZE bytes_read = process_vm(SYS_process_vm_readv, addr, bytes, buffer);
-    if (bytes_read < 0) {
+    SSIZE bytes_read = process_vm_readv(m_pid, &local_iov, 1, &remote_iov, 1, 0);
+    if (bytes_read == -1) {
+        LOGE << "READ_RAW:" << QString(strerror(errno)) << "READING" << bytes << "BYTES FROM" << hexify(addr) << "TO" << buffer;
         memset(buffer, 0, bytes);
-
-        if (errno != ENOSYS) {
-            LOGE << "READ_RAW:" << QString(strerror(errno)) << "READING" << bytes << "BYTES FROM" << hexify(addr) << "TO" << buffer;
-            return -1;
-        }
-
-        return read_raw_ptrace(addr, bytes, buffer);
+        return bytes;
     }
 
     TRACE << "Read" << bytes_read << "bytes of" << bytes << "bytes from" << hexify(addr) << "to" << buffer;
@@ -168,70 +123,13 @@ USIZE DFInstanceLinux::read_raw(const VIRTADDR addr, const USIZE bytes, void *bu
     return bytes_read;
 }
 
-USIZE DFInstanceLinux::write_raw_ptrace(const VIRTADDR addr, const USIZE bytes,
-                                        const void *buffer) {
-    /* Since most kernels won't let us write to /proc/<pid>/mem, we have to poke
-     * out data in n bytes at a time. Good thing we read way more than we write.
-     *
-     * On x86-64 systems, the size that POKEDATA writes is 8 bytes instead of
-     * 4, so we need to use the sizeof( long ) as our step size.
-     */
-
-    attach();
-
-    const USIZE stepsize = sizeof(unsigned long);
-    USIZE bytes_written = 0; // keep track of how much we've written
-    USIZE steps = bytes / stepsize;
-    LOGD << "WRITE_RAW_PTRACE: WILL WRITE" << bytes << "BYTES FROM" << buffer
-         << "TO" << hexify(addr) << "OVER" << steps + !!bytes % stepsize
-         << "STEPS, WITH STEPSIZE " << stepsize;
-
-    USIZE offset = 0;
-
-    // for each step write a single word to the child
-    for (USIZE i = 0; i < steps; ++i) {
-        const unsigned long data = static_cast<const unsigned long *>(buffer)[i];
-        LOGD << "WRITE_RAW_PTRACE: WRITING" << hexify(data) << "TO" << addr + offset;
-        if (ptrace(PTRACE_POKEDATA, m_pid, addr + offset, data)) {
-            LOGE << "WRITE_RAW_PTRACE:" << QString(strerror(errno)) << "WRITING"
-                 << bytes << "BYTES FROM" << buffer << "TO" << hexify(addr);
-            break;
-        } else {
-            bytes_written += stepsize;
-        }
-        offset += stepsize;
-    }
-
-    // write any last stragglers
-    if (bytes % stepsize) {
-        unsigned long buf;
-        if (read_raw(addr + offset, stepsize, &buf) == stepsize) {
-            memcpy(&buf, static_cast<const char *>(buffer) + offset, bytes % stepsize);
-            if (ptrace(PTRACE_POKEDATA, m_pid, addr + offset, buf)) {
-                LOGE << "WRITE_RAW_PTRACE:" << QString(strerror(errno))
-                     << "WRITING LAST" << stepsize << "BYTES OF" << bytes
-                     << "BYTES FROM" << buffer << "TO" << hexify(addr);
-            } else {
-                bytes_written += stepsize;
-            }
-        }
-    }
-
-    detach();
-    return bytes_written;
-}
-
 USIZE DFInstanceLinux::write_raw(const VIRTADDR addr, const USIZE bytes,
                                  const void *buffer) {
-    // const_cast is safe because process_vm passes the params as is
-    SSIZE bytes_written = process_vm(SYS_process_vm_writev, addr, bytes
-                                     , const_cast<void *>(buffer));
+    struct iovec local_iov = {const_cast<void *>(buffer), bytes};
+    struct iovec remote_iov = {reinterpret_cast<void *>(addr), bytes};
+    SSIZE bytes_written = process_vm_writev(m_pid, &local_iov, 1, &remote_iov, 1, 0);
     if (bytes_written == -1) {
-        if (errno == ENOSYS) {
-            return write_raw_ptrace(addr, bytes, buffer);
-        } else {
-            LOGE << "WRITE_RAW:" << QString(strerror(errno)) << "WRITING" << bytes << "BYTES FROM" << buffer << "TO" << hexify(addr);
-        }
+        LOGE << "WRITE_RAW:" << QString(strerror(errno)) << "WRITING" << bytes << "BYTES FROM" << buffer << "TO" << hexify(addr);
     } else if ((USIZE)bytes_written != bytes) {
         LOGW << "WRITE_RAW: PARTIALLY WROTE:" << bytes_written << "BYTES OF" << bytes << "BYTES FROM" << buffer << "TO" << hexify(addr);
     } else {

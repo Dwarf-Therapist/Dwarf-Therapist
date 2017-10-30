@@ -32,11 +32,9 @@ public:
     virtual ~DFInstanceLinux();
     void find_running_copy();
 
-    USIZE read_raw_ptrace(const VIRTADDR addr, const USIZE bytes, void *buffer);
     USIZE read_raw(const VIRTADDR addr, const USIZE bytes, void *buffer);
 
     // Writing
-    USIZE write_raw_ptrace(const VIRTADDR addr, const USIZE bytes, const void *buffer);
     USIZE write_raw(const VIRTADDR addr, const USIZE bytes, const void *buffer);
 
     bool attach();
@@ -46,8 +44,6 @@ protected:
     bool set_pid();
 
 private:
-    SSIZE process_vm(long number, const VIRTADDR addr
-                     , const USIZE bytes, void *buffer);
     int wait_for_stopped();
     long remote_syscall(int syscall_id,
                           long arg0 = 0, long arg1 = 0, long arg2 = 0,

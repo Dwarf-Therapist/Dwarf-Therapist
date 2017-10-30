@@ -33,7 +33,6 @@ elseif(UNIX)
         find_library(SECURITY_LIB Security)
         find_library(APPKIT_LIB AppKit)
         set(LIBS ${FOUNDATION_LIB} ${SECURITY_LIB} ${APPKIT_LIB})
-
     else()
         set(SOURCES ${SOURCES} src/dfinstancelinux.cpp)
     endif()
