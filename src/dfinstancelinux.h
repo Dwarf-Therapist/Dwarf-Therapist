@@ -23,9 +23,9 @@ THE SOFTWARE.
 
 #ifndef DFINSTANCE_LINUX_H
 #define DFINSTANCE_LINUX_H
-#include "dfinstancenix.h"
+#include "dfinstance.h"
 
-class DFInstanceLinux : public DFInstanceNix {
+class DFInstanceLinux : public DFInstance {
     Q_OBJECT
 public:
     DFInstanceLinux(QObject *parent=0);
@@ -33,9 +33,13 @@ public:
     void find_running_copy();
 
     USIZE read_raw(const VIRTADDR addr, const USIZE bytes, void *buffer);
+    QString read_string(const VIRTADDR addr);
 
     // Writing
     USIZE write_raw(const VIRTADDR addr, const USIZE bytes, const void *buffer);
+    USIZE write_string(const VIRTADDR addr, const QString &str);
+
+    bool df_running();
 
     bool attach();
     bool detach();
@@ -45,17 +49,10 @@ protected:
 
 private:
     int wait_for_stopped();
-    long remote_syscall(int syscall_id,
-                          long arg0 = 0, long arg1 = 0, long arg2 = 0,
-                          long arg3 = 0, long arg4 = 0, long arg5 = 0);
 
-    VIRTADDR mmap_area(VIRTADDR start, USIZE size);
-    VIRTADDR alloc_chunk(USIZE size);
-
-    QFile m_memory_file;
-    VIRTADDR m_inject_addr;
-    VIRTADDR m_alloc_start, m_alloc_end;
-    bool m_warned_pvm;
+    pid_t m_pid;
+    VIRTADDR m_trap_addr;
+    VIRTADDR m_string_assign_addr;
 };
 
-#endif // DFINSTANCE_H
+#endif // DFINSTANCE_LINUX_H

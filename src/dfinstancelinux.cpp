@@ -26,6 +26,13 @@ THE SOFTWARE.
 #include "utils.h"
 
 #include <QDirIterator>
+#include <QTextCodec>
+#include <QCryptographicHash>
+
+#include <fstream>
+#include <regex>
+#include <vector>
+#include <algorithm>
 
 #include <errno.h>
 #include <sys/mman.h>
@@ -35,13 +42,10 @@ THE SOFTWARE.
 #include <sys/wait.h>
 #include <unistd.h>
 #include <sys/uio.h>
+#include <elf.h>
 
 DFInstanceLinux::DFInstanceLinux(QObject* parent)
-    : DFInstanceNix(parent)
-    , m_inject_addr(-1)
-    , m_alloc_start(0)
-    , m_alloc_end(0)
-    , m_warned_pvm(false)
+    : DFInstance(parent)
 {
 }
 
@@ -92,8 +96,6 @@ bool DFInstanceLinux::attach() {
 
 bool DFInstanceLinux::detach() {
     //TRACE << "STARTING DETACH" << m_attach_count;
-    if(m_memory_file.isOpen())
-        m_memory_file.close();
     m_attach_count--;
     if (m_attach_count > 0) {
         TRACE << "NO NEED TO DETACH SKIPPING..." << m_attach_count;
@@ -162,7 +164,88 @@ bool DFInstanceLinux::set_pid(){
     return true;
 }
 
-#define ELF_MAGIC "\x7f" "ELF"
+struct Elf32
+{
+	using Ehdr = Elf32_Ehdr;
+	using Shdr = Elf32_Shdr;
+	using Sym = Elf32_Sym;
+
+	using Addr = Elf32_Addr;
+	using Off = Elf32_Off;
+};
+
+struct Elf64
+{
+	using Ehdr = Elf64_Ehdr;
+	using Shdr = Elf64_Shdr;
+	using Sym = Elf64_Sym;
+
+	using Addr = Elf64_Addr;
+	using Off = Elf64_Off;
+};
+
+template<typename Off>
+static std::string read_string(std::ifstream &file, Off offset)
+{
+	std::string str;
+	file.seekg(offset);
+	while (auto c = file.get())
+		str.push_back(c);
+	return str;
+}
+
+template<typename Elf>
+static typename Elf::Shdr read_section_header(std::ifstream &exe, const typename Elf::Ehdr &ehdr, uint16_t index)
+{
+	typename Elf::Shdr shdr;
+	exe.seekg(ehdr.e_shoff + index * ehdr.e_shentsize);
+	exe.read(reinterpret_cast<char *>(&shdr), sizeof(typename Elf::Shdr));
+	return shdr;
+}
+
+template<typename Elf>
+static uintptr_t find_symbol(std::ifstream &exe, const std::string &symbol)
+{
+	typename Elf::Ehdr ehdr;
+	exe.seekg(0);
+	exe.read(reinterpret_cast<char *>(&ehdr), sizeof(ehdr));
+	auto shstrtab_offset = read_section_header<Elf>(exe, ehdr, ehdr.e_shstrndx).sh_offset;
+	std::map<std::string, typename Elf::Shdr> sections;
+	for (uint16_t i = 0; i < ehdr.e_shnum; ++i) {
+		auto shdr = read_section_header<Elf>(exe, ehdr, i);
+		sections.emplace(read_string(exe, shstrtab_offset + shdr.sh_name), shdr);
+	}
+	auto dynstr_it = sections.find(".dynstr");
+	auto dynsym_it = sections.find(".dynsym");
+	if (dynstr_it != sections.end() && dynsym_it != sections.end()) {
+		const auto &dynstr = dynstr_it->second;
+		const auto &dynsym = dynsym_it->second;
+		std::vector<typename Elf::Sym> symtab (dynsym.sh_size / sizeof(typename Elf::Sym));
+		exe.seekg(dynsym.sh_offset);
+		exe.read(reinterpret_cast<char *>(symtab.data()), dynsym.sh_size);
+		for (const auto &sym: symtab) {
+			if (read_string(exe, dynstr.sh_offset + sym.st_name) == symbol)
+				return sym.st_value;
+		}
+	}
+	return 0;
+}
+
+static constexpr char ElfMagic[4] = { ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 };
+
+static int get_elf_class(std::ifstream &exe)
+{
+	char magic[4];
+	exe.seekg(0);
+	exe.read(magic, 4);
+
+	if (!std::equal (magic, magic+4, ElfMagic))
+		return 0;
+
+	return exe.get();
+}
+
+static constexpr int TrapOpCode = 0xcc;
 
 void DFInstanceLinux::find_running_copy() {
     m_status = DFS_DISCONNECTED;
@@ -170,36 +253,44 @@ void DFInstanceLinux::find_running_copy() {
     TRACE << "attempting to find running copy of DF by executable name";
 
     if(set_pid()){
-        m_memory_file.setFileName(QString("/proc/%1/mem").arg(m_pid));
         TRACE << "USING PID:" << m_pid;
     }else{
         return;
     }
 
-    m_inject_addr = unsigned(-1);
-    m_alloc_start = 0;
-    m_alloc_end = 0;
-
-    m_loc_of_dfexe = QString("/proc/%1/exe").arg(m_pid);
     m_df_dir = QDir(QFileInfo(QString("/proc/%1/cwd").arg(m_pid)).symLinkTarget());
     LOGI << "Dwarf fortress path:" << m_df_dir.absolutePath();
 
-    { // check class from ELF header to find the pointer size
-        QFile exe(m_loc_of_dfexe);
-        if (!exe.open(QIODevice::ReadOnly)) {
-            LOGE << "Failed to open DF executable" << m_loc_of_dfexe;
-            return;
+    std::string proc_path = std::string("/proc/") + std::to_string(m_pid);
+
+    QString md5 = "UNKNOWN";
+    if (auto exe = std::ifstream(proc_path + "/exe")) {
+        // check class from ELF header to find the pointer size
+        switch (get_elf_class(exe)) {
+            case ELFCLASS32:
+                m_pointer_size = 4;
+                break;
+            case ELFCLASS64:
+                m_pointer_size = 8;
+                break;
+            default:
+                LOGE << "invalid ELF header";
+                m_pointer_size = sizeof(VIRTADDR);
         }
-        auto header = exe.read(5);
-        if (header == ELF_MAGIC "\x01")
-            m_pointer_size = 4;
-        else if (header == ELF_MAGIC "\x02")
-            m_pointer_size = 8;
-        else {
-            LOGE << "invalid ELF header" << header;
-            m_pointer_size = sizeof(VIRTADDR);
-        }
-        exe.close();
+
+        // ELF binaries don't seem to store a linker timestamp, so just MD5 the file.
+        QCryptographicHash hash(QCryptographicHash::Md5);
+        char buffer[PAGE_SIZE];
+        exe.seekg(0);
+        while (exe.read(buffer, PAGE_SIZE))
+            hash.addData(buffer, PAGE_SIZE);
+        hash.addData(buffer, exe.gcount());
+        md5 = hexify(hash.result().mid(0, 4)).toLower();
+        TRACE << "GOT MD5:" << md5;
+    }
+    else {
+        LOGE << "Failed to open DF executable";
+        return;
     }
 
     if (m_pointer_size > sizeof(VIRTADDR)) {
@@ -207,132 +298,187 @@ void DFInstanceLinux::find_running_copy() {
         return;
     }
 
+    // look for symbols and instructions
+    std::regex procmaps_re("([0-9a-f]+)-([0-9a-f]+) ([-r][-w][-x][-p]) ([0-9a-f]+) ([0-9a-f]{2}):([0-9a-f]{2}) ([0-9]+)(?:\\s*(.+))");
+    m_trap_addr = m_string_assign_addr = 0;
+    if (auto maps = std::ifstream(proc_path + "/maps")) {
+        std::string line;
+        while (std::getline(maps, line)) {
+            std::smatch res;
+            if (!std::regex_search(line, res, procmaps_re))
+                continue;
+            VIRTADDR start = std::stoull(res[1], nullptr, 16);
+            VIRTADDR end = std::stoull(res[2], nullptr, 16);
+
+            // Scan executable sections for a trap instruction
+            auto perm = res[3].str();
+            if (m_trap_addr == 0 && perm.at(2) == 'x') {
+                char buffer[PAGE_SIZE];
+                for (VIRTADDR offset = start; offset < end; offset += PAGE_SIZE) {
+                    read_raw(offset, PAGE_SIZE, buffer);
+                    char *res = reinterpret_cast<char *>(memchr(buffer, TrapOpCode, PAGE_SIZE));
+                    if (res) {
+                        m_trap_addr = offset+(res-buffer);
+                        LOGD << "found trap instruction at" << hexify(m_trap_addr);
+                        break;
+                    }
+                }
+            }
+            auto filename = res[8].str();
+            // Look for symbol std::string::assign(const char *, std::size_t) in libstdc++
+            if (m_string_assign_addr == 0 && perm.at(2) == 'x' &&
+                    filename.find("libstdc++.so.6") != std::string::npos) {
+                std::ifstream lib(filename);
+                if (!lib) {
+                    LOGE << "Failed to open library" << QString::fromStdString(filename);
+                    continue;
+                }
+                uintptr_t offset = 0;
+                switch (get_elf_class(lib)) {
+                    case ELFCLASS32:
+                        offset = find_symbol<Elf32>(lib, "_ZNSs6assignEPKcj");
+                        break;
+                    case ELFCLASS64:
+                        offset = find_symbol<Elf64>(lib, "_ZNSs6assignEPKcm");
+                        break;
+                }
+                if (offset != 0) {
+                    m_string_assign_addr = start+offset;
+                    LOGD << "found std::string::assign at" << hexify(m_string_assign_addr);
+                }
+                else {
+                    LOGE << "std::string::assign not found";
+                }
+            }
+            if (m_trap_addr != 0 && m_string_assign_addr != 0)
+                break; // we found everything we needed
+        }
+    }
+    else {
+        LOGE << "Failed to open memory maps";
+    }
+
     m_status = DFS_CONNECTED;
-    set_memory_layout(calculate_checksum());
+    set_memory_layout(md5);
 }
 
-/* Support for executing system calls in the context of the game process. */
+bool DFInstanceLinux::df_running(){
+    pid_t cur_pid = m_pid;
+    return (set_pid() && cur_pid == m_pid);
+}
 
-static const char syscall_code[] = {
-    // SYSCALL
-    static_cast<char>(0x0f), static_cast<char>(0x05)
-};
+QString DFInstanceLinux::read_string(VIRTADDR addr) {
+    char buf[1024];
+    read_raw(read_addr(addr), sizeof(buf), (void *)buf);
 
-static_assert(sizeof(syscall_code) <= sizeof(long), "syscall code must fit in long");
+    return QTextCodec::codecForName("IBM437")->toUnicode(buf);
+}
 
-static const VIRTADDR df_exe_base = 0x00400000;
+USIZE DFInstanceLinux::write_string(const VIRTADDR addr, const QString &str) {
+#ifdef __x86_64__
+    static constexpr auto sp = &user_regs_struct::rsp;
+    static constexpr auto ip = &user_regs_struct::rip;
+    static constexpr auto orig_ax = &user_regs_struct::orig_rax;
+    static constexpr auto ip_offset = offsetof(user, regs.rip);
+#else
+    static constexpr auto sp = &user_regs_struct::esp;
+    static constexpr auto ip = &user_regs_struct::eip;
+    static constexpr auto orig_ax = &user_regs_struct::orig_eax;
+    static constexpr auto ip_offset = offsetof(user, regs.eip);
+#endif
 
-long DFInstanceLinux::remote_syscall(int syscall_id,
-     long arg0, long arg1, long arg2,
-     long arg3, long arg4, long arg5)
-{
+    if (m_trap_addr == 0 || m_string_assign_addr == 0) {
+        LOGE << "Cannot write string without trap and std::string::assign addresses.";
+        return 0;
+    }
+
     attach();
 
-    // get the old value of some RAM
-    long old_code_word = ptrace(PTRACE_PEEKTEXT, m_pid, df_exe_base, 0);
-    errno = 0;
-    if (old_code_word == -1 && errno != 0) {
-        LOGE << "could not retrieve old RAM for syscall";
-        return -1;
-    }
-
-    // insert new text
-    long syscall_code_word;
-    memcpy(&syscall_code_word, syscall_code, sizeof(syscall_code));
-    if (ptrace(PTRACE_POKETEXT, m_pid, df_exe_base, syscall_code_word) == -1) {
-        LOGE << "could not insert syscall .text";
-        return -1;
-    }
+    QByteArray str_data = QTextCodec::codecForName("IBM437")->fromUnicode(str);
 
     /* Save the current value of the main thread registers */
-    struct user_regs_struct saved_regs, work_regs;
-
+    struct user_regs_struct saved_regs;
     if (ptrace(PTRACE_GETREGS, m_pid, 0, &saved_regs) == -1) {
         LOGE << "Could not retrieve original register information:" << strerror(errno);
-        return -1;
+        detach();
+        return 0;
     }
 
-    /* Prepare the registers */
-    work_regs = saved_regs;
-    work_regs.rip = df_exe_base;
-    work_regs.rax = syscall_id;
-    work_regs.rdi = arg0;
-    work_regs.rsi = arg1;
-    work_regs.rdx = arg2;
-    work_regs.r10 = arg3;
-    work_regs.r8 = arg4;
-    work_regs.r9 = arg5;
+    struct user_regs_struct work_regs = saved_regs;
+    work_regs.*orig_ax = -1; // prevents syscall restart
+
+    // allocate space for string data and align stack pointer;
+    VIRTADDR str_data_addr = saved_regs.*sp - str_data.size();
+    str_data_addr = (str_data_addr / m_pointer_size) * m_pointer_size;
+    work_regs.*sp = str_data_addr;
+
+    std::vector<VIRTADDR> stack;
+    stack.push_back(m_trap_addr); // return address
+    if (m_pointer_size == 4) {
+        stack.push_back(addr); // this
+        stack.push_back(str_data_addr); // s
+        stack.push_back(str_data.size()); // count
+    }
+#ifdef __x86_64__
+    else if (m_pointer_size == 8) {
+        work_regs.rdi = addr; // this
+        work_regs.rsi = str_data_addr; // s
+        work_regs.rdx = str_data.size(); // count
+    }
+#endif
+    else {
+        LOGE << "architecture not supported";
+        detach();
+        return 0;
+    }
+
+    // Fill stack
+    std::vector<char> stack_buffer (stack.size()*m_pointer_size + str_data.size());
+    auto it = stack_buffer.begin();
+    for (VIRTADDR value: stack) {
+        auto p = reinterpret_cast<char *>(&value);
+        std::copy_n(p, m_pointer_size, it);
+        it += m_pointer_size;
+        work_regs.*sp -= m_pointer_size;
+    }
+    // Write string data
+    std::copy(str_data.begin(), str_data.end(), it);
+    // copy buffer in remote stack
+    write_raw(work_regs.*sp, stack_buffer.size(), stack_buffer.data());
+
+    // call std::string::assign
+    work_regs.*ip = m_string_assign_addr;
 
     /* Upload the registers. Note that after this point,
        if this process crashes before the context is
        restored, the game will immediately crash too. */
     if (ptrace(PTRACE_SETREGS, m_pid, 0, &work_regs) == -1) {
         LOGE << "Could not set register information:" << strerror(errno);
-        return -1;
+        detach();
+        return 0;
     }
 
-    if (ptrace(PTRACE_SINGLESTEP, m_pid, 0, 0) == -1) {
-        LOGE << "Failed to single step:" << strerror(errno);
-        return -1;
-    }
-
-    wait_for_stopped();
-
-    /* Retrieve registers with the syscall result. */
-    if (ptrace(PTRACE_GETREGS, m_pid, 0, &work_regs) == -1) {
-        LOGE << "Could not retrieve register information after stepping:" << strerror(errno);
-        return -1;
-    }
+    // Execute until the trap is reached
+    VIRTADDR pc;
+    do {
+        if (ptrace(PTRACE_CONT, m_pid, 0, 0) == -1) {
+            LOGD << "ptrace continue failed" << strerror(errno);
+            break;
+        }
+        wait_for_stopped();
+        auto ret = ptrace(PTRACE_PEEKUSER, m_pid, ip_offset, 0);
+        if (ret == -1) {
+            LOGD << "ptrace getregs failed" << strerror(errno);
+        }
+        pc = ret;
+    } while (pc != m_trap_addr+1);
 
     /* Restore the registers. */
     if (ptrace(PTRACE_SETREGS, m_pid, 0, &saved_regs) == -1) {
         LOGE << "Could not restore register information:" << strerror(errno);
     }
 
-    // restore the text
-    if (ptrace(PTRACE_POKETEXT, m_pid, df_exe_base, old_code_word) == -1) {
-        LOGE << "Could not restore the injection area:" << strerror(errno);
-    }
-
     detach();
-
-    return work_regs.rax;
+    return str.size();
 }
 
-/* Memory allocation for strings using remote mmap. */
-
-VIRTADDR DFInstanceLinux::mmap_area(VIRTADDR start, USIZE size) {
-    VIRTADDR return_value = remote_syscall(SYS_mmap, start, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-
-    // Raw syscalls can't use errno, so the error is in the result.
-    // No valid return value can be in the -4095..-1 range.
-    if (int(return_value) < 0 && int(return_value) >= -4095) {
-        LOGE << "Injected MMAP failed with error: " << -return_value;
-        return_value = -1;
-    }
-
-    return return_value;
-}
-
-VIRTADDR DFInstanceLinux::alloc_chunk(USIZE size) {
-    if (size > 1048576) {
-        return 0;
-    }
-    if ((m_alloc_end - m_alloc_start) < size) {
-        int apages = (size*2 + 4095)/4096;
-        int asize = apages*4096;
-
-        // Try to request contiguous allocation as a hint
-        VIRTADDR new_block = mmap_area(m_alloc_end, asize);
-        if (int(new_block) == -1)
-            return 0;
-
-        if (new_block != m_alloc_end)
-            m_alloc_start = new_block;
-        m_alloc_end = new_block + asize;
-    }
-
-    VIRTADDR rv = m_alloc_start;
-    m_alloc_start += size;
-    return rv;
-}
