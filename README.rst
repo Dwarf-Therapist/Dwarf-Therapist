@@ -39,6 +39,14 @@ Create a build directory, then, from it, run cmake and make::
 
 Linux users can install Dwarf Therapist by running ``make install``. The destination directory can be changed by passing the ``-DCMAKE_INSTALL_PREFIX=/path/to/dwarftherapist`` option to cmake (e.g. ``cmake -DCMAKE_INSTALL_PREFIX=~/.local ..`` for a user-local installation).
 
+CMake options
+-------------
+
+Add ``-D<option name>=ON|OFF`` to cmake command line to enable or disable an optional feature.
+
+BUILD_MANUAL (default: OFF)
+  Enables building the PDF manual using Latex.
+ 
 Linux
 =====
 There is currently no official package for Linux.
