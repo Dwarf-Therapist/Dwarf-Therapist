@@ -790,7 +790,7 @@ void UberDelegate::paint_mood_cell(const QRect &adjusted, QPainter *p, const QSt
 
     if(color_mood_cells && !dirty){ //dirty is always drawn over mood
         QList<Skill> skills = d->get_moodable_skills().values();
-        if((d->had_mood() || skills.count() > 1 ||  skills.at(0).capped_level() > -1) && d->get_moodable_skills().contains(skill_id)){
+        if(d->get_moodable_skills().contains(skill_id)){
             QColor mood = color_mood;
             if(d->had_mood())
                 mood = color_had_mood;

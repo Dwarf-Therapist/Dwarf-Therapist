@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "global_enums.h"
 #include "utils.h"
 #include <QPointer>
+#include <set>
 
 // forward declaration
 class QSettings;
@@ -54,8 +55,25 @@ public:
 
     int get_int_for_key(QString key, short base = 16);
 
+    struct SkillInfo {
+        int id;
+        QString name;
+        QString noun;
+
+        SkillInfo(int id, const QString &name, const QString &noun)
+            : id(id), name(name), noun(noun) {}
+    };
+    struct CompareBySkillId {
+        using is_transparent = std::true_type;
+        bool operator() (const SkillInfo &s1, const SkillInfo &s2) const { return s1.id < s2.id; }
+        bool operator() (int id, const SkillInfo &skill) const { return id < skill.id; }
+        bool operator() (const SkillInfo &skill, int id) const { return skill.id < id; }
+    };
+
     QList<Labor*> get_ordered_labors() {return m_ordered_labors;}
-    QList<QPair<int, QPair<QString,QString> > > get_ordered_skills() {return m_ordered_skills;}
+    const std::vector<const SkillInfo *> &get_ordered_skills(bool order_by_noun = true) const {
+        return order_by_noun ? m_noun_ordered_skills : m_name_ordered_skills;
+    }
     QHash<int, Trait*> get_traits() {return m_traits;}
     QList<QPair<int, Trait*> > get_ordered_traits() {return m_ordered_traits;}
     QList<QPair<ATTRIBUTES_TYPE, QString> > get_ordered_attribute_names() {return m_ordered_attribute_names;}
@@ -64,7 +82,7 @@ public:
     QList<QPair<QString, Role*> > get_ordered_roles() {return m_ordered_roles;}
     QVector<QString> get_default_roles() {return m_default_roles;}
     QHash<int,QVector<Role*> > get_skill_roles() {return m_skill_roles;}
-    QHash<int,QPair<QString,QString> > get_skills(){return m_skills;}
+    const std::set<SkillInfo, CompareBySkillId> &get_skills(){return m_skills;}
     QList<QPair<int,QString> > get_ordered_beliefs(){return m_ordered_beliefs;}
     QList<QPair<int,QString> > get_ordered_goals(){return m_ordered_goals;}
     QString get_building_name(BUILDING_TYPE b_type, int value = -1);
@@ -103,8 +121,8 @@ public:
     QString get_string_for_key(QString key);
     Profession* get_profession(const short &profession_id);
     QString get_skill_level_name(short level);
-    QString get_skill_name(short skill_id, bool moodable = false, bool noun = false);
-    int get_total_skill_count() {return m_skills.count();}
+    QString get_skill_name(short skill_id, bool noun = true);
+    int get_total_skill_count() {return m_skills.size();}
     int get_total_belief_count() {return m_beliefs.count();}
     int get_total_trait_count() {return m_trait_count;}
 
@@ -149,8 +167,9 @@ private:
     QHash<int,QPair<QString,QString> > m_goals; //id key with pair name and desc
     QList<QPair<int,QString> > m_ordered_goals;
 
-    QHash<int, QPair<QString,QString> > m_skills; //id key with name and noun
-    QList<QPair<int, QPair<QString, QString> > > m_ordered_skills;
+    std::set<SkillInfo, CompareBySkillId> m_skills; //ids
+    std::vector<const SkillInfo *> m_name_ordered_skills;
+    std::vector<const SkillInfo *> m_noun_ordered_skills;
     QHash<int, QString> m_skill_levels;
 
     QHash<ATTRIBUTES_TYPE, QString> m_attribute_names;

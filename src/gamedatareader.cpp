@@ -140,8 +140,7 @@ GameDataReader::GameDataReader(QObject *parent)
         m_data_settings->setArrayIndex(idx);
         QString name = m_data_settings->value("name","unknown").toString();
         QString noun = m_data_settings->value("noun",name).toString();
-        skills << name;
-        m_skills.insert(idx,qMakePair(name,noun));
+        m_skills.emplace(idx, name, noun);
 
         //load moodable skills http://dwarffortresswiki.org/index.php/Mood#Skills_and_workshops
         bool mood = m_data_settings->value("mood",false).toBool();
@@ -159,15 +158,16 @@ GameDataReader::GameDataReader(QObject *parent)
     }
     m_data_settings->endArray();
 
-    qSort(skills);
-    foreach(QString name, skills) {
-        foreach(int skill_id, m_skills.uniqueKeys()) {
-            if (name == m_skills.value(skill_id).first) {
-                m_ordered_skills << QPair<int, QPair<QString,QString> >(skill_id, m_skills.value(skill_id));
-                break;
-            }
-        }
+    m_name_ordered_skills.reserve(m_skills.size());
+    m_noun_ordered_skills.reserve(m_skills.size());
+    for (auto &skill: m_skills) {
+        m_name_ordered_skills.push_back(&skill);
+        m_noun_ordered_skills.push_back(&skill);
     }
+    std::sort(m_name_ordered_skills.begin(), m_name_ordered_skills.end(),
+              [] (const SkillInfo *s1, const SkillInfo *s2) { return s1->name < s2->name; });
+    std::sort(m_noun_ordered_skills.begin(), m_noun_ordered_skills.end(),
+              [] (const SkillInfo *s1, const SkillInfo *s2) { return s1->noun < s2->noun; });
 
     m_data_settings->beginGroup("skill_levels");
     foreach(QString k, m_data_settings->childKeys()) {
@@ -427,14 +427,13 @@ QString GameDataReader::get_skill_level_name(short level) {
     //return get_string_for_key(QString("skill_levels/%1").arg(level));
 }
 
-QString GameDataReader::get_skill_name(short skill_id, bool moodable, bool noun) {
-    QPair<QString,QString> vals = m_skills.value(skill_id);
-    QString name = (noun ? vals.second : vals.first);
-    if(moodable && name == "UNKNOWN"){
-        name = "Craftsdwarf";
+QString GameDataReader::get_skill_name(short skill_id, bool noun) {
+    auto it = m_skills.find(skill_id);
+    if (it == m_skills.end()) {
+        LOGE << "Skill" << skill_id << "not found";
+        return "UNKNOWN";
     }
-
-    return name;
+    return noun ? it->noun : it->name;
 }
 
 Role* GameDataReader::get_role(const QString &name) {

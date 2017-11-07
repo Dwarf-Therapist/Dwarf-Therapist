@@ -538,8 +538,8 @@ void DFInstance::load_role_ratings(){
             attribute_raw_values.append(d->get_attribute(id).get_value());
         }
 
-        foreach(int id, gdr->get_skills().keys()){
-            skill_values.append(d->get_skill(id).get_balanced_level());
+        for (const auto &skill: gdr->get_skills()){
+            skill_values.append(d->get_skill(skill.id).get_balanced_level());
         }
 
         foreach(short val, d->get_traits()->values()){

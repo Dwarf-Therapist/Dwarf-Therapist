@@ -250,22 +250,18 @@ QString SkillColumn::build_skill_desc(Dwarf *d, int skill_id){
     QString skill_str = "";
     short rating = d->get_skill_level(skill_id);
     float raw_rating = d->get_skill_level(skill_id, true, true);
-    if((skill_id != -1 && rating > -1) || d->had_mood()) {
-        if(skill_id == -1){
-            skill_str = tr("%1").arg(gdr->get_skill_name(skill_id,true));
-        }else{
-            skill_str = tr("<h4 style=\"margin:0;\">%1 %2</h4><br/><b>[Raw Level:</b> %3]<br/><b>Experience: </b>%4")
-                    .arg(gdr->get_skill_level_name(rating))
-                    .arg(gdr->get_skill_name(skill_id,true))
-                    .arg(QString::number((int)raw_rating))
-                    .arg(d->get_skill(skill_id).exp_summary());
+    if (skill_id != -1 && rating > -1) {
+        skill_str = tr("<h4 style=\"margin:0;\">%1 %2</h4><br/><b>[Raw Level:</b> %3]<br/><b>Experience: </b>%4")
+            .arg(gdr->get_skill_level_name(rating))
+            .arg(gdr->get_skill_name(skill_id))
+            .arg(QString::number((int)raw_rating))
+            .arg(d->get_skill(skill_id).exp_summary());
 
-            Skill s = d->get_skill(skill_id);
-            if(s.rust_level() > 0){
-                skill_str.append(QString("<br/><font color=%1><b>%2</b></font>")
-                                 .arg(s.rust_color().name())
-                                 .arg(Skill::get_rust_level_desc(s.rust_level())));
-            }
+        Skill s = d->get_skill(skill_id);
+        if(s.rust_level() > 0){
+            skill_str.append(QString("<br/><font color=%1><b>%2</b></font>")
+                    .arg(s.rust_color().name())
+                    .arg(Skill::get_rust_level_desc(s.rust_level())));
         }
     } else {
         // either the skill isn't a valid id, or they have 0 experience in it

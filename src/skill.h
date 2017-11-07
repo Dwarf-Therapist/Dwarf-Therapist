@@ -53,7 +53,7 @@ public:
     int skill_rate() const {return m_skill_rate;}
 
     QString to_string(bool include_level = true, bool include_exp_summary = true, bool use_color = true) const;
-    QString name() {return m_name;}
+    const QString &name() const {return m_name;}
     bool operator<(const Skill *s2) const;
 
     struct less_than_key

@@ -56,20 +56,22 @@ QStandardItem *HighestMoodColumn::build_cell(Dwarf *d) {
     QString pixmap_name(":img/question-frame.png");
 
     QHash<int,Skill> skills = d->get_moodable_skills();
-    if(skills.count() > 1){
+    if (skills.count() > 1) {
         m_sort_val = 1000 + skills.count();
         m_skill_id = -1;
-    }else if(skills.count() <= 1){
+    }
+    else if (skills.isEmpty()) {
+        m_sort_val = 0;
+        m_skill_id = -1;
+        pixmap_name = ":/profession/prof_24.png";
+    }
+    else {
         Skill s = skills.values().at(0);
         m_skill_id = s.id();
-        int img_id = 24;
-        if(s.capped_level() != -1){
-            img_id = gdr->get_mood_skill_prof(s.id()) + 1; //prof images start at 1, id start at 0
-        }
+        int img_id = gdr->get_mood_skill_prof(s.id()) + 1; //prof images start at 1, id start at 0
         pixmap_name = ":/profession/prof_" + QString::number(img_id) + ".png";
 
-        int id = s.id() < 0 ? 0 : s.id();
-        m_sort_val = 50 + (id * 100);
+        m_sort_val = 50 + (s.id() * 100);
         if(d->had_mood())
             m_sort_val = 0 - m_sort_val;
 

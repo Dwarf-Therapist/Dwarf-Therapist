@@ -434,14 +434,13 @@ void roleDialog::draw_skill_context_menu(const QPoint &p) {
     GameDataReader *gdr = GameDataReader::ptr();
     ContextMenuHelper cmh;
 
-    cmh.add_sub_menus(m,gdr->get_ordered_skills().count()/15,false);
-    QPair<int, QPair<QString,QString> > skill_pair;
-    foreach(skill_pair, gdr->get_ordered_skills()) {
-        if(!m_role->skills.count((QString)skill_pair.first)){
-            QMenu *menu_to_use = cmh.find_menu(m,skill_pair.second.first);
-            a = menu_to_use->addAction(skill_pair.second.first, this, SLOT(add_skill()));
-            a->setData(skill_pair.first);
-            a->setToolTip(tr("Include %1 (ID %2) as an aspect for this role.)").arg(skill_pair.second.first).arg(skill_pair.first));
+    cmh.add_sub_menus(m,gdr->get_total_skill_count()/15,false);
+    for (auto skill: gdr->get_ordered_skills()) {
+        if(!m_role->skills.count((QString)skill->id)){
+            QMenu *menu_to_use = cmh.find_menu(m,skill->noun);
+            a = menu_to_use->addAction(skill->noun, this, SLOT(add_skill()));
+            a->setData(skill->id);
+            a->setToolTip(tr("Include %1 (ID %2) as an aspect for this role.)").arg(skill->noun).arg(skill->id));
         }
     }
 
