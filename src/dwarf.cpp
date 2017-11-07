@@ -1716,8 +1716,6 @@ void Dwarf::read_skills() {
             foreach(Skill s, skills_by_level.values(skills_by_level.keys().last())){
                 m_moodable_skills.insert(s.id(),s);
             }
-        }else{
-            m_moodable_skills.insert(-1,Skill());
         }
     }else{
         int mood_skill = m_df->read_short(m_address +m_mem->dwarf_offset("mood_skill"));
@@ -2596,14 +2594,16 @@ QString Dwarf::tooltip_text() {
 
     if(!m_is_animal && s->value("tooltip_show_mood",false).toBool()){
         QStringList skill_names;
-        foreach(int skill_id, m_moodable_skills.keys()){
-            skill_names << gdr->get_skill_name(skill_id, true, true);
+        if (!m_moodable_skills.isEmpty()) {
+            foreach(int skill_id, m_moodable_skills.keys()){
+                skill_names << gdr->get_skill_name(skill_id, true);
+            }
+            skill_names.removeDuplicates();
         }
-        skill_names.removeDuplicates();
-        if(skill_names.count() > 0){
-            tt.append(tr("<b>Highest Moodable Skill:</b> %1")
-                      .arg(skill_names.join(",")));
+        else {
+            skill_names << tr("Craftsdwarf (Bone/Stone/Wood)");
         }
+        tt.append(tr("<b>Highest Moodable Skill:</b> %1").arg(skill_names.join(",")));
     }
 
     if(!personality_summary.isEmpty())

@@ -103,7 +103,7 @@ UnitEmotion::UnitEmotion(VIRTADDR addr, DFInstance *df, QObject *parent)
                     QString key = re.cap(1);
                     QString replace = "";
                     if(key=="[skill]"){
-                        replace = gdr->get_skill_name(m_sub_id,false,(m_thought_id == 11));
+                        replace = gdr->get_skill_name(m_sub_id,(m_thought_id == 11));
                     }else if(key=="[building]"){
                         replace = gdr->get_building_name(static_cast<BUILDING_TYPE>(m_sub_id),m_optional_level);
                     }else if(key=="[syndrome]"){

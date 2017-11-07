@@ -64,7 +64,8 @@ Skill::Skill(short id, uint exp, short rating, int rust, int skill_rate)
     , m_balanced_level(-1)
     , m_rust_level(0)
 {
-    m_name = GameDataReader::ptr()->get_skill_name(m_id,false,true);
+    if (m_id != -1)
+        m_name = GameDataReader::ptr()->get_skill_name(m_id);
     //defaults
     m_rust_rating = "";
     m_capped_level = m_raw_level > 20 ? 20 : m_raw_level;
