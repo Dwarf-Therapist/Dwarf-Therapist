@@ -88,7 +88,7 @@ void ActivityEvent::read_data(){
                         event_type = SQ_WATCH_DEMO;
                     }
                     //squad skill demo leaders and watchers
-                    QString skill_name = gdr->get_skill_name(m_df->read_int(m_address + mem->activity_offset("sq_skill")));
+                    QString skill_name = gdr->get_skill_name(m_df->read_int(m_address + mem->activity_offset("sq_skill")), false);
                     QString job_name = gdr->get_job((int)DwarfJob::ACTIVITY_OFFSET + (int)event_type)->name(skill_name);
                     add_action(histfig_id,event_type, job_name);
                     continue;
