@@ -2602,7 +2602,7 @@ QString Dwarf::tooltip_text() {
     if(!skill_summary.isEmpty())
         html.append(list_with_header.arg(tr("Skills:")).arg(skill_summary));
 
-    if(!m_is_animal && s->value("tooltip_show_mood",false).toBool()){
+    if(!m_is_animal && s->value("tooltip_show_mood",false).toBool() && !had_mood()){
         QStringList skill_names;
         if (!m_moodable_skills.isEmpty()) {
             foreach(int skill_id, m_moodable_skills.keys()){
