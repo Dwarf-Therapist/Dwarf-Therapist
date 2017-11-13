@@ -702,7 +702,7 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
                      << QPointF(0.5, 0.5)
                      << QPointF(0.9, 0.5);
                 p->drawPolygon(poly);
-            }
+            } // fallthrough
             case 13:
             {
                 QPolygonF poly;
@@ -710,7 +710,7 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
                      << QPointF(0.5, 0.5)
                      << QPointF(0.5, 0.9);
                 p->drawPolygon(poly);
-            }
+            } // fallthrough
             case 12:
             {
                 QPolygonF poly;
@@ -718,7 +718,7 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
                      << QPointF(0.5, 0.5)
                      << QPointF(0.5, 0.9);
                 p->drawPolygon(poly);
-            }
+            } // fallthrough
             case 11:
             {
                 QPolygonF poly;
@@ -726,25 +726,34 @@ void UberDelegate::paint_values(const QRect &adjusted, float rating, QString tex
                      << QPointF(0.5, 0.5)
                      << QPointF(0.5, 0.1);
                 p->drawPolygon(poly);
-            }
+            } // fallthrough
             case 10: // accomplished
                 lines << QLineF(QPointF(0.5, 0.1), QPointF(0.9, 0.5));
+                // fallthrough
             case 9: //professional
                 lines << QLineF(QPointF(0.1, 0.5), QPointF(0.5, 0.1));
+                // fallthrough
             case 8: //expert
                 lines << QLineF(QPointF(0.5, 0.9), QPointF(0.1, 0.5));
+                // fallthrough
             case 7: //adept
                 lines << QLineF(QPointF(0.5, 0.9), QPointF(0.9, 0.5));
+                // fallthrough
             case 6: //talented
                 lines << QLineF(QPointF(0.5, 0.5), QPointF(0.5, 0.9));
+                // fallthrough
             case 5: //proficient
                 lines << QLineF(QPointF(0.5, 0.5), QPointF(0.9, 0.5));
+                // fallthrough
             case 4: //skilled
                 lines << QLineF(QPointF(0.5, 0.1), QPointF(0.5, 0.5));
+                // fallthrough
             case 3: //competent
                 lines << QLineF(QPointF(0.1, 0.5), QPointF(0.5, 0.5));
+                // fallthrough
             case 2: //untitled
                 lines << QLineF(QPointF(0.7, 0.3), QPointF(0.3, 0.7));
+                // fallthrough
             case 1: //novice
                 lines << QLineF(QPointF(0.3, 0.3), QPointF(0.7, 0.7));
                 break;
