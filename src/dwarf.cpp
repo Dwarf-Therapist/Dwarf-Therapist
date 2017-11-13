@@ -2552,9 +2552,6 @@ QString Dwarf::tooltip_text() {
                 .arg(m_nice_name).arg(m_translated_name.isEmpty() ? "" : "(" + m_translated_name + ")");
     }
 
-    if(!m_is_animal && s->value("tooltip_show_artifact",true).toBool() && !m_artifact_name.isEmpty())
-        title.append(tr("<center><i><h5 style=\"margin:0;\">Creator of '%2'</h5></i></center>").arg(m_artifact_name));
-
     tt.append(title);
 
 #ifdef QT_DEBUG
@@ -2586,13 +2583,13 @@ QString Dwarf::tooltip_text() {
     }
 
     if(s->value("tooltip_show_orientation",false).toBool())
-        tt.append(tr("<b>Gender/Orientation</b> %1").arg(m_gender_info.full_desc));
+        tt.append(tr("<b>Gender/Orientation</b> %1<br>").arg(m_gender_info.full_desc));
 
     if(!m_is_animal && !m_emotions_desc.isEmpty() && s->value("tooltip_show_thoughts",true).toBool())
-        tt.append(tr("<p style=\"margin:0px;\">%1</p>").arg(m_emotions_desc));
+        tt.append(tr("%1<br>").arg(m_emotions_desc));
 
     if(!skill_summary.isEmpty())
-        tt.append(tr("<h4 style=\"margin:0px;\"><b>Skills:</b></h4><ul style=\"margin:0px;\">%1</ul>").arg(skill_summary));
+        tt.append(tr("<b>Skills:</b><ul style=\"margin:0px;\">%1</ul>").arg(skill_summary));
 
     if(!m_is_animal && s->value("tooltip_show_mood",false).toBool()){
         QStringList skill_names;
@@ -2600,23 +2597,24 @@ QString Dwarf::tooltip_text() {
             skill_names << gdr->get_skill_name(skill_id, true, true);
         }
         skill_names.removeDuplicates();
-        if(skill_names.count() > 0){
-            tt.append(tr("<b>Highest Moodable Skill:</b> %1")
-                      .arg(skill_names.join(",")));
+			if(skill_names.count() > 0 && m_artifact_name.isEmpty()){
+				tt.append(tr("<b>Highest Moodable Skill:</b> %1").arg(skill_names.join(",")));
+			}else {
+				tt.append(tr("<i>Creator of <b>'%2'</b></i>").arg(m_artifact_name));
         }
     }
 
     if(!personality_summary.isEmpty())
-        tt.append(tr("<p style=\"margin:0px;\"><b>Personality:</b> %1</p>").arg(personality_summary));
+        tt.append(tr("<br><b>Personality:</b> %1").arg(personality_summary));
 
     if(!m_pref_tooltip.isEmpty())
         tt.append(tr("<p style=\"margin:0px;\">%1</p>").arg(m_pref_tooltip));
 
     if(!roles_summary.isEmpty())
-        tt.append(tr("<h4 style=\"margin:0px;\"><b>Top %1 Roles:</b></h4>%2").arg(max_roles).arg(roles_summary));
+        tt.append(tr("<b>Top %1 Roles:</b>%2").arg(max_roles).arg(roles_summary));
 
     if(m_is_animal)
-        tt.append(tr("<p style=\"margin:0px;\"><b>Trained Level:</b> %1</p>").arg(get_animal_trained_descriptor(m_animal_type)));
+        tt.append(tr("<b>Trained Level:</b> %1<br>").arg(get_animal_trained_descriptor(m_animal_type)));
 
     if(s->value("tooltip_show_health",false).toBool() && (!m_is_animal || (m_is_animal && s->value("animal_health",false).toBool()))){
 
