@@ -92,13 +92,12 @@ if(UNIX AND NOT APPLE)
     # Installation is currently Linux-only
     install(TARGETS DwarfTherapist
             RUNTIME DESTINATION bin)
-    install(DIRECTORY share/memory_layouts
+    install(DIRECTORY share/
             DESTINATION share/dwarftherapist)
     install(FILES LICENSE.txt README.rst
             DESTINATION share/doc/dwarftherapist)
     install(FILES dist/dwarftherapist.desktop
             DESTINATION share/applications)
-    # TODO: Add higher resolutions icons (from hammer.png?)
-    install(FILES resources/img/dwarftherapist.xpm
-            DESTINATION share/icons)
+    install(DIRECTORY icons
+            DESTINATION share)
 endif()
