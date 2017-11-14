@@ -11,7 +11,7 @@ if(BUILD_MANUAL AND LATEX_FOUND AND LATEX_PDFLATEX_FOUND)
 
     if(UNIX AND NOT APPLE)
         # Installation is currently Linux-only
-        install(FILES "Dwarf Therapist.pdf"
+        install(FILES "${CMAKE_CURRENT_BINARY_DIR}/Dwarf Therapist.pdf"
                 DESTINATION share/doc/dwarftherapist)
     endif()
 endif()
