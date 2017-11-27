@@ -1,3 +1,14 @@
+### Version 39.0 Patch Notes
+
+***
+ - added memory layouts for DF 44.02 (Windows 32/64 and OSX 64)
+ - 64 bits Dwarf-Therapist can now be used with 32 bits Dwarf Fortress
+ - remove requirement for Windows string offsets
+ - fix writing string on Linux leaking memory
+ - replace many uses of skill name with skill "noun"
+ - make space between paragraphs in dwarf tool-tip thinner
+ - hide highest moodable skill in dwarf tool-tip when the dwarf already had a mood
+
 ### Version 38.1 Patch Notes
 
 ***

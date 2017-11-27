@@ -82,7 +82,7 @@ You can also join us in `#dwarftherapist on Freenode`_.
 .. _Splintermind's Dwarf Therapist: https://github.com/splintermind/Dwarf-Therapist/
 .. _original Dwarf Therapist: http://code.google.com/p/dwarftherapist/
 .. _Yama ptrace LSM: https://www.kernel.org/doc/Documentation/security/Yama.txt
-.. _Dwarf Therapist thread: http://www.bay12forums.com/smf/index.php?topic=122968
+.. _Dwarf Therapist thread: http://www.bay12forums.com/smf/index.php?topic=168411
 .. _GitHub issue tracker: https://github.com/Dwarf-Therapist/Dwarf-Therapist/issues
 .. _DFFD: http://dffd.wimbli.com/category.php?id=20
 .. _#dwarftherapist on Freenode: http://webchat.freenode.net/?channels=%23dwarftherapist
