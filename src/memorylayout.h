@@ -105,9 +105,6 @@ public:
     QString checksum() {return m_checksum;}
     QString git_sha() {return m_git_sha;}
     bool is_valid_address(VIRTADDR addr);
-    uint string_buffer_offset();
-    uint string_length_offset();
-    uint string_cap_offset();
 
     QHash<QString,VIRTADDR> get_section_offsets(const MEM_SECTION &section) {
         return m_offsets.value(section);

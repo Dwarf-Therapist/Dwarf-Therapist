@@ -149,21 +149,6 @@ public:
     quint32 current_time() {return m_cur_time;}
     static DFInstance * newInstance();
 
-    // Windows string offsets
-#ifdef Q_OS_WIN
-    static const int STRING_BUFFER_OFFSET = 4;  // Default value for older windows releases
-    static const int STRING_LENGTH_OFFSET = 16; // Relative to STRING_BUFFER_OFFSET
-    static const int STRING_CAP_OFFSET = 20;    // Relative to STRING_BUFFER_OFFSET
-#elif defined(Q_OS_LINUX)
-    static const int STRING_BUFFER_OFFSET = 0;
-    static const int STRING_LENGTH_OFFSET = 0; // Dummy value
-    static const int STRING_CAP_OFFSET = 0;    // Dummy value
-#elif defined(Q_OS_MAC)
-    static const int STRING_BUFFER_OFFSET = 0;
-    static const int STRING_LENGTH_OFFSET = 0; // Dummy value
-    static const int STRING_CAP_OFFSET = 0;    // Dummy value
-#endif
-
     // Methods for when we know how the data is layed out
     void load_game_data();
     void read_raws();

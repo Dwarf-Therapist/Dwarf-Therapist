@@ -49,6 +49,8 @@ THE SOFTWARE.
 #   error Unsupported architecture
 #endif
 
+static constexpr std::size_t STRING_BUFFER_LENGTH = 16;
+
 DFInstanceWindows::DFInstanceWindows(QObject* parent)
     : DFInstance(parent)
     , m_proc(0)
@@ -78,10 +80,10 @@ QString DFInstanceWindows::calculate_checksum(const IMAGE_NT_HEADERS &pe_header)
 }
 
 QString DFInstanceWindows::read_string(VIRTADDR addr) {
-    USIZE len = read_int(addr + memory_layout()->string_length_offset());
-    USIZE cap = read_int(addr + memory_layout()->string_cap_offset());
-    VIRTADDR buffer_addr = addr + memory_layout()->string_buffer_offset();
-    if (cap >= 16)
+    VIRTADDR buffer_addr = addr;
+    USIZE len = read_int(addr + STRING_BUFFER_LENGTH);
+    USIZE cap = read_int(addr + STRING_BUFFER_LENGTH + m_pointer_size);
+    if (cap >= STRING_BUFFER_LENGTH)
         buffer_addr = read_addr(buffer_addr);
 
     char buf[1024];
@@ -117,16 +119,16 @@ USIZE DFInstanceWindows::write_string(VIRTADDR addr, const QString &str) {
     // TODO, don't write strings longer than 15 characters to the string
     // unless it has already been expanded to a bigger allocation
 
-    int cap = read_int(addr + memory_layout()->string_cap_offset());
-    VIRTADDR buffer_addr = addr + memory_layout()->string_buffer_offset();
-    if( cap >= 16 )
+    USIZE cap = read_int(addr + STRING_BUFFER_LENGTH + m_pointer_size);
+    VIRTADDR buffer_addr = addr;
+    if( cap >= STRING_BUFFER_LENGTH )
         buffer_addr = read_addr(buffer_addr);
 
-    int len = qMin<int>(str.length(), cap);
-    write_int(addr + memory_layout()->string_length_offset(), len);
+    USIZE len = qMin<int>(str.length(), cap);
+    write_int(addr + STRING_BUFFER_LENGTH, len);
 
     QByteArray data = QTextCodec::codecForName("IBM 437")->fromUnicode(str);
-    int bytes_written = write_raw(buffer_addr, len, data.data());
+    USIZE bytes_written = write_raw(buffer_addr, len, data.data());
     return bytes_written;
 }
 
