@@ -452,7 +452,7 @@ void ViewManager::setCurrentIndex(int idx) {
 
     int sel_group = 0;
     foreach(GridView *v, m_views) {
-        if (v->name() == tabText(idx)) {
+        if (v->name() == stv->get_view_name()) {
             stv->is_loading_rows = true;
             stv->setSortingEnabled(false);
 
