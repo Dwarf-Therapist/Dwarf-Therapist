@@ -68,7 +68,7 @@ Or, you can create a script that will run Dwarf Therapist as a child of Dwarf Fo
     cd ../dwarftherapist
     exec ./bin/release/DwarfTherapist
 
-Alternatively, you can use the ``dist/dwarftherapist`` wrapper to automatically grant DT permissions to attach to a running DF process.
+Alternatively, you can use the ``dist/ptrace_cap_wrapper/dwarftherapist`` wrapper to automatically grant DT permissions to attach to a running DF process (edit the value of ``_DT_BINARY`` if Dwarf Therapist is not in the path).
 
 Support
 =======
