@@ -96,8 +96,7 @@ if(UNIX AND NOT APPLE)
             DESTINATION share/dwarftherapist)
     install(FILES LICENSE.txt README.rst
             DESTINATION share/doc/dwarftherapist)
-    install(FILES dist/dwarftherapist.desktop
-            DESTINATION share/applications)
-    install(DIRECTORY icons
+    # desktop file and icons
+    install(DIRECTORY dist/xdg/
             DESTINATION share)
 endif()

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Dwarf Therapist
+Comment=Dwarf Viewer and Manager for Dwarf Fortress
+Exec=DwarfTherapist
+TryExec=DwarfTherapist
+Icon=dwarftherapist
+Terminal=false
+Type=Application
+Categories=Game;Qt;
