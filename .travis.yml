@@ -1,62 +1,65 @@
 git:
-    depth: 1
-
+  depth: 1
 dist: trusty
 sudo: false
 language: cpp
 matrix:
-    include:
-        - os: linux
-          language: generic # prevents overwriting of CXX and CC
-          compiler: gcc
-          addons:
-              apt:
-                  sources:
-                      - ubuntu-toolchain-r-test
-                  packages:
-                      - g++-5
-                      - cmake
-                      - ninja-build
-                      - qtbase5-dev
-                      - qtbase5-dev-tools
-                      - qtdeclarative5-dev
-          env: COMPILER=g++ CXX=g++-5 CC=gcc-5
-        - os: linux
-          compiler: clang
-          addons:
-              apt:
-                  packages:
-                      - libc++-dev
-                      - cmake
-                      - ninja-build
-                      - qtbase5-dev
-                      - qtbase5-dev-tools
-                      - qtdeclarative5-dev
-          env: CXXFLAGS="-stdlib=libc++ $CXXFLAGS"
-        - os: osx
-          before_install:
-              - brew update
-              - brew install qt
-              - brew outdated cmake || brew upgrade cmake
-              - brew install ninja
-          env:
-              - CMAKE_PREFIX_PATH=/usr/local/opt/qt
-    allow_failures:
-        - os: osx
-
+  include:
+    - os: linux
+      language: generic
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - cmake
+            - ninja-build
+            - qtbase5-dev
+            - qtbase5-dev-tools
+            - qtdeclarative5-dev
+            - qt5-qmake
+      env:
+        - COMPILER=g++ CXX=g++-5 CC=gcc-5
+        - QT_PREFIX=/usr/lib/x86_64-linux-gnu/qt5
+        - DT_PREFIX=DwarfTherapist.AppDir/usr
+        - CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=$DT_PREFIX"
+        - RELEASE_FILE='DwarfTherapist-*.AppImage'
+    - os: osx
+      before_install:
+        - brew update
+        - brew install qt@5.5
+        - brew outdated cmake || brew upgrade cmake
+        - brew install ninja
+      env:
+        - CXXFLAGS="$CXXFLAGS -mmacosx-version-min=10.9"
+        - QT_PREFIX=/usr/local/opt/qt@5.5
+        - CMAKE_PREFIX_PATH=$QT_PREFIX
+        - RELEASE_FILE='DwarfTherapist-*.dmg'
 env:
-    global:
-        - CXXFLAGS="-Wall -Wextra -Werror=all"
+  global:
+    - CXXFLAGS="-Wall -Wextra -Werror=all"
 script:
-    - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export NPROC=$(nproc);
-      elif [ "$TRAVIS_OS_NAME" == "osx" ]; then export NPROC=$(sysctl -n hw.ncpu);
-      else export NPROC=1; fi
-    - cmake -GNinja ${CMAKE_OPTIONS} . && ninja -j $NPROC -k 0
-
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export NPROC=$(nproc);
+    elif [ "$TRAVIS_OS_NAME" == "osx" ]; then export NPROC=$(sysctl -n hw.ncpu);
+    else export NPROC=1; fi
+  - cmake -GNinja ${CMAKE_OPTIONS} . && ninja -j $NPROC -k 0
 notifications:
-    irc:
-        on_success: change
-        on_failure: change
-        channels:
-            - "chat.freenode.net#dwarftherapist"
-        use_notice: true
+  irc:
+    on_success: change
+    on_failure: change
+    channels:
+      - chat.freenode.net#dwarftherapist
+    use_notice: true
+before_deploy:
+  - ".travis/$TRAVIS_OS_NAME/deploy.sh"
+deploy:
+  provider: releases
+  api_key:
+    secure: GNToBtLthJ5fG6H8ytgou6WZs5LwFulfUpFb54vZREEjGZPTbe+tlCiNu7hqeeT3qnHghPBu8NsXcqyKm3SpGxDRoeLaDRx9qCZwkbxgCkXLQO5jvLXlli2OP9jgI7eDiCdMmJyN+Hweh79H0NLSOqwjevEg9tTc6e/6s077WA2kb6Al0hROyaqijHA5Nmc7k22Kbm2iuYR1Hz/4MirbgxdVRq+STIouBOsTt8C25LuQftgrStzmlflRlrJxFzWp0Fc1yLPYtp4MgrBr9kG9jsjuq0oJQZ0hh1pX2SIs+Cu455VHx/Zau8c6ExTLhVmoFtpdlfoEJXE+7qu6tKi5p0f5j1M2jg1RB/OJqaSfGfzSrIBkSQLTTLX2gwvRmdtmmVSRts7H5Zctc755GtWMq5dGvN5doO+xdr2+5uzAr1z2sAx9pV5dJk3uJxS6CUhqWZECcaQGdY0JAYJPGsfnHoG/CmixHmJLU6+KkypLrQISj/YuUJ5RbnS/tEd4wNKcIjpAqPAH4pbifegB8SOig8QJpUDTziqd9yS4ZllwmCF0Nn+d2Racv6dYqJt1Ezswh6CmZU2NL2uFU4Eku/oQlr1GJgcIcggTKqI+b/RocTCYw/jWSLgEbkYsa8NQ4BNDbSZitw3D+gwVRMTUW4PVcr8R3JGiHKMAjdB9fDnymvI=
+  file_glob: true
+  file: $RELEASE_FILE
+  skip_cleanup: true
+  on:
+    tags: true
