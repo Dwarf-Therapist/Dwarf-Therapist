@@ -1,62 +1,65 @@
 git:
-    depth: 1
-
+  depth: 1
 dist: trusty
 sudo: false
 language: cpp
 matrix:
-    include:
-        - os: linux
-          language: generic # prevents overwriting of CXX and CC
-          compiler: gcc
-          addons:
-              apt:
-                  sources:
-                      - ubuntu-toolchain-r-test
-                  packages:
-                      - g++-5
-                      - cmake
-                      - ninja-build
-                      - qtbase5-dev
-                      - qtbase5-dev-tools
-                      - qtdeclarative5-dev
-          env: COMPILER=g++ CXX=g++-5 CC=gcc-5
-        - os: linux
-          compiler: clang
-          addons:
-              apt:
-                  packages:
-                      - libc++-dev
-                      - cmake
-                      - ninja-build
-                      - qtbase5-dev
-                      - qtbase5-dev-tools
-                      - qtdeclarative5-dev
-          env: CXXFLAGS="-stdlib=libc++ $CXXFLAGS"
-        - os: osx
-          before_install:
-              - brew update
-              - brew install qt
-              - brew outdated cmake || brew upgrade cmake
-              - brew install ninja
-          env:
-              - CMAKE_PREFIX_PATH=/usr/local/opt/qt
-    allow_failures:
-        - os: osx
-
+  include:
+    - os: linux
+      language: generic
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - cmake
+            - ninja-build
+            - qtbase5-dev
+            - qtbase5-dev-tools
+            - qtdeclarative5-dev
+            - qt5-qmake
+      env:
+        - COMPILER=g++ CXX=g++-5 CC=gcc-5
+        - QT_PREFIX=/usr/lib/x86_64-linux-gnu/qt5
+        - DT_PREFIX=DwarfTherapist.AppDir/usr
+        - CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=$DT_PREFIX"
+        - RELEASE_FILE='DwarfTherapist-*.AppImage'
+    - os: osx
+      before_install:
+        - brew update
+        - brew install qt@5.5
+        - brew outdated cmake || brew upgrade cmake
+        - brew install ninja
+      env:
+        - CXXFLAGS="$CXXFLAGS -mmacosx-version-min=10.9"
+        - QT_PREFIX=/usr/local/opt/qt@5.5
+        - CMAKE_PREFIX_PATH=$QT_PREFIX
+        - RELEASE_FILE='DwarfTherapist-*.dmg'
 env:
-    global:
-        - CXXFLAGS="-Wall -Wextra -Werror=all"
+  global:
+    - CXXFLAGS="-Wall -Wextra -Werror=all"
 script:
-    - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export NPROC=$(nproc);
-      elif [ "$TRAVIS_OS_NAME" == "osx" ]; then export NPROC=$(sysctl -n hw.ncpu);
-      else export NPROC=1; fi
-    - cmake -GNinja ${CMAKE_OPTIONS} . && ninja -j $NPROC -k 0
-
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export NPROC=$(nproc);
+    elif [ "$TRAVIS_OS_NAME" == "osx" ]; then export NPROC=$(sysctl -n hw.ncpu);
+    else export NPROC=1; fi
+  - cmake -GNinja ${CMAKE_OPTIONS} . && ninja -j $NPROC -k 0
 notifications:
-    irc:
-        on_success: change
-        on_failure: change
-        channels:
-            - "chat.freenode.net#dwarftherapist"
-        use_notice: true
+  irc:
+    on_success: change
+    on_failure: change
+    channels:
+      - chat.freenode.net#dwarftherapist
+    use_notice: true
+before_deploy:
+  - ".travis/$TRAVIS_OS_NAME/deploy.sh"
+deploy:
+  provider: releases
+  api_key:
+    secure: TT2uoPYSPBoDmQRBV3kmrF70uVzrcbdXg3dq8LQBxlmkG0jmFGtVHyXUTa+dQxQWNjayBbndJwcxi4c/A7PCEpAXBA32QiCgC+kKCQ86DXSs6zkO9aEK6gFh0SsJQJQhxJJK0K5Uby2qt+RWYlXiPtHVCw8jgQno4DDCUrLuyNiVaFbxEba33YHDIdeyNREd5b10sFKHyH2Ux/rMBh1zwMGJeU7DK8K0HkIPeU7MioRbL8RfkBM2daDCP6DCiwWfSVF1WTOZPNaE2vCrMyJgYzid3M7boNmhzLIH5a19s1XrnMYsxSkCm7ht4G9f4q7Evjw5SEToVmbQUBDtgLMmwfp6GvmxIjB3q+v6+0OacVHE/Y6xJ4gHit5J7tw9LqeQr0LejQulBWibipr1X5AglPUxjjjVf6EbuW+CvtMWMLbQchlqnpXCOE2ujnfrk9f50PVGzPmG6zb6v9k6Y9AjAg2pcBLIi5otofm4oqbyJyevQIZ2iW1iHRLLY18ZFjuKwOJSV1+rsi9XgEy1n5SWnFSOC/3fVZpHkjraU6IMdceTit0P2yPZc5+6LTzdYL5fqtluGllbjzdtb7xuukuJYY6VeTjdRQMQ9YR1amGlWUzNviyalp9tmaObs54YcoQmITmJlMhAaBmsQ6im6EMv/t7CtHe9bLYwArZ6/gg2YFY=
+  file_glob: true
+  file: $RELEASE_FILE
+  skip_cleanup: true
+  on:
+    tags: true
