@@ -133,7 +133,7 @@ void DwarfTherapist::setup_search_paths() {
     // /usr/bin/../share/dwarftherapist/game_data.ini
 #ifdef Q_OS_LINUX
     for (auto loc : QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation))
-        paths << loc + "/dwarf-therapist";
+        paths << loc + "/dwarftherapist";
 #else
     paths << QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
 #endif
