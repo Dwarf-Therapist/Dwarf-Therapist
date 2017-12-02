@@ -900,7 +900,7 @@ void MainWindow::open_help(){
     // Dwarf-Therapist/release/../doc/Dwarf Therapist.pdf
     doc_dirs << QString("%1/../doc").arg(appdir);
     // /usr/bin/../share/doc/dwarftherapist/Dwarf Therapist.pdf
-    doc_dirs << QString("%1/../share/dwarftherapist").arg(appdir);
+    doc_dirs << QString("%1/../share/doc/dwarftherapist").arg(appdir);
 
     QUrl url("http://dffd.wimbli.com/file.php?id=7889");
     foreach (const QString &dir, doc_dirs) {
