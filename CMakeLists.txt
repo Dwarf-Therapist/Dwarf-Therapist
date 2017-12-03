@@ -15,6 +15,14 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+if(APPLE AND EXISTS /usr/local/opt/qt@5.5)
+    # This project requires qt v5.5.
+    # On Mac, Homebrew installs this version in /usr/local/opt/qt@5.5
+    # without this it looks in the usual /usr/local prefix.
+    # this must occur before the find_package call below
+    list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt@5.5")
+endif()
+
 find_package(Qt5 REQUIRED COMPONENTS Qml Widgets)
 
 include(CPack)
