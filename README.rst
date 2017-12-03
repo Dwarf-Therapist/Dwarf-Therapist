@@ -28,7 +28,9 @@ The manual for Dwarf Therapist can be downloaded separately.
 Building
 ========
 
-Dwarf-Therapist requires a C++ compiler (with C++14 support), cmake (3.1.0 or newer), and Qt5 (with Widgets and QML modules).
+Dwarf-Therapist requires a C++ compiler (with C++14 support), cmake (3.1.0 or newer), and Qt5.5 (with Widgets and QML modules).
+
+For All Users:
 
 Create a build directory, then, from it, run cmake and make::
 
@@ -37,7 +39,26 @@ Create a build directory, then, from it, run cmake and make::
     cmake ..
     make
 
-Linux users can install Dwarf Therapist by running ``make install``. The destination directory can be changed by passing the ``-DCMAKE_INSTALL_PREFIX=/path/to/dwarftherapist`` option to cmake (e.g. ``cmake -DCMAKE_INSTALL_PREFIX=~/.local ..`` for a user-local installation).
+For Linux Users:
+
+You can install Dwarf Therapist by running ``make install``. The destination directory can be changed by passing the ``-DCMAKE_INSTALL_PREFIX=/path/to/dwarftherapist`` option to cmake (e.g. ``cmake -DCMAKE_INSTALL_PREFIX=~/.local ..`` for a user-local installation).
+
+For Mac users:
+
+Ensure prerequsites are installed::
+
+    brew install qt@5.5
+    brew install cmake
+    brew cask install basictex
+
+After installing basictex, resetting your shell or opening a new terminal might be requried for binaries to be picked up in your path.
+
+After running make, do the following::
+
+    mv build/Dwarf-Therapist.app ~/Applications
+
+This installs the app for your user alone.
+
 
 CMake options
 -------------
