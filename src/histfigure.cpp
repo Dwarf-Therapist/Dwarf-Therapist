@@ -66,10 +66,10 @@ void HistFigure::read_kills(){
     VIRTADDR kills_addr = m_df->read_addr(m_fig_info_addr + m_mem->hist_figure_offset("kills"));
     if(kills_addr==0)
         return;
-    QVector<qint32> kill_events = m_df->enum_vec<qint32>(kills_addr);
-    QVector<qint16> race_ids = m_df->enum_vec<qint16>(kills_addr+m_mem->hist_figure_offset("killed_race_vector"));
-    QVector<qint16> undead_kills = m_df->enum_vec<qint16>(kills_addr+m_mem->hist_figure_offset("killed_undead_vector"));
-    QVector<qint16> cur_site_kills = m_df->enum_vec<qint16>(kills_addr+m_mem->hist_figure_offset("killed_counts_vector"));
+    auto kill_events = m_df->enum_vec<qint32>(kills_addr);
+    auto race_ids = m_df->enum_vec<qint16>(kills_addr+m_mem->hist_figure_offset("killed_race_vector"));
+    auto undead_kills = m_df->enum_vec<quint16>(kills_addr+m_mem->hist_figure_offset("killed_undead_vector"));
+    auto cur_site_kills = m_df->enum_vec<qint32>(kills_addr+m_mem->hist_figure_offset("killed_counts_vector"));
     if(cur_site_kills.count() > 0){
         QHash<int,int> kills; //group by race
         for(int idx=0;idx < race_ids.size();idx++){
