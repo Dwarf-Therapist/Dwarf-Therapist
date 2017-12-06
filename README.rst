@@ -32,14 +32,7 @@ Building
 
 Dwarf-Therapist requires a C++ compiler (with C++14 support), cmake (3.1.0 or newer), and Qt5 (with Widgets and QML modules).
 
-Create a build directory, then, from it, run cmake and make::
-
-    mkdir build
-    cd build
-    cmake ..
-    make
-
-Linux users can install Dwarf Therapist by running ``make install``. The destination directory can be changed by passing the ``-DCMAKE_INSTALL_PREFIX=/path/to/dwarftherapist`` option to cmake (e.g. ``cmake -DCMAKE_INSTALL_PREFIX=~/.local ..`` for a user-local installation).
+Detailed building instructions can be found in `BUILDING.md`_
 
 Linux
 =====
@@ -53,7 +46,7 @@ You can explicitly give Dwarf Therapist permission to ptrace on Debian-based dis
 
     sudo apt-get install libcap2-bin && sudo setcap cap_sys_ptrace=eip ./bin/release/DwarfTherapist
 
-Or, you can create a script that will run Dwarf Therapist as a child of Dwarf Fortress::
+Or, you can create a script that will run Dwarf Fortress as a child of Dwarf Therapist::
 
     #!/bin/bash
     set -e
@@ -75,6 +68,7 @@ You can also join us in `#dwarftherapist on Freenode`_.
 
 .. _Splintermind's Dwarf Therapist: https://github.com/splintermind/Dwarf-Therapist/
 .. _original Dwarf Therapist: http://code.google.com/p/dwarftherapist/
+.. _BUILDING.md: https://github.com/Dwarf-Therapist/Dwarf-Therapist/blob/master/BUILDING.md
 .. _Yama ptrace LSM: https://www.kernel.org/doc/Documentation/security/Yama.txt
 .. _Dwarf Therapist thread: http://www.bay12forums.com/smf/index.php?topic=168411
 .. _GitHub issue tracker: https://github.com/Dwarf-Therapist/Dwarf-Therapist/issues
