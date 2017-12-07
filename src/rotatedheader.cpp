@@ -39,6 +39,7 @@ RotatedHeader::RotatedHeader(Qt::Orientation orientation, QWidget *parent)
     , m_last_sorted_idx(0)
     , m_preferred_height(150)
 {
+    setMinimumSectionSize(0);
     setSectionsClickable(true);
     setSortIndicatorShown(true);
     setMouseTracking(true);
