@@ -68,30 +68,37 @@ public:
 
     bool is_valid() {return m_is_valid;}
 
-    typedef enum {
+    enum GENDER_TYPE {
         SEX_UNK = -1,
         SEX_F = 0,
         SEX_M = 1
-    } GENDER_TYPE;
+    };
     Q_ENUMS(GENDER_TYPE)
 
-    typedef enum {
+    enum SEX_ORIENT_TYPE {
         ORIENT_ASEXUAL,
         ORIENT_BISEXUAL,
         ORIENT_HOMO,
         ORIENT_HETERO
-    } SEX_ORIENT_TYPE;
+    };
     Q_ENUMS(SEX_ORIENT_TYPE)
 
-    typedef enum{
+    enum SEX_COMMITMENT {
+        COMMIT_UNINTERESTED = 0,
+        COMMIT_LOVER = 1,
+        COMMIT_MARRIAGE = 2,
+    };
+    Q_ENUMS(SEX_COMMITMENT)
+
+    enum MISC_STATES {
         STATE_MIGRANT = 7,
         STATE_OUTDOORS = 14,
         STATE_HARDENED = 15,
         STATE_ON_BREAK = 17,
         STATE_CAVE_ADAPT = 19
-    } MISC_STATES;
+    };
 
-    typedef enum{
+    enum TRAINED_LEVEL {
         none=-1, //custom
         semi_wild=0,
         trained=1,
@@ -104,10 +111,10 @@ public:
         unknown_trained=8,
         wild_untamed=9,
         hostile=10 //custom
-    } TRAINED_LEVEL;
+    };
     Q_ENUMS(TRAINED_LEVEL)
 
-    typedef enum{
+    enum UNIT_OCCUPATION {
         OCC_NONE = -1,
         OCC_TAVERN,
         OCC_PERFORMER,
@@ -115,7 +122,7 @@ public:
         OCC_MERC,
         OCC_MONSTER,
         OCC_SCRIBE
-    } UNIT_OCCUPATION;
+    };
 
     static inline QString get_animal_trained_descriptor(const TRAINED_LEVEL &type) {
         switch (type) {
@@ -174,18 +181,17 @@ public:
     struct unit_gender{
         GENDER_TYPE gender;
         SEX_ORIENT_TYPE orientation;
-        bool male_commit;
-        bool female_commit;
-        bool male_interest;
-        bool female_interest;
+        SEX_COMMITMENT male, female;
         QString full_desc;
     };
 
-    Q_INVOKABLE GENDER_TYPE get_gender() {return m_gender_info.gender;}
-    Q_INVOKABLE SEX_ORIENT_TYPE get_orientation() {return m_gender_info.orientation;}
-    QString get_gender_orient_desc() {return m_gender_info.full_desc;}
-    Q_INVOKABLE bool is_male() {return (m_gender_info.gender == SEX_M);}
-    Q_INVOKABLE bool is_female() {return (m_gender_info.gender == SEX_F);}
+    Q_INVOKABLE GENDER_TYPE get_gender() const {return m_gender_info.gender;}
+    Q_INVOKABLE SEX_ORIENT_TYPE get_orientation() const {return m_gender_info.orientation;}
+    QString get_gender_orient_desc() const {return m_gender_info.full_desc;}
+    Q_INVOKABLE SEX_COMMITMENT same_sex_commitment() const { return m_gender_info.gender == SEX_M ? m_gender_info.male : m_gender_info.female; }
+    Q_INVOKABLE SEX_COMMITMENT other_sex_commitment() const { return m_gender_info.gender == SEX_M ? m_gender_info.female : m_gender_info.male; }
+    Q_INVOKABLE bool is_male() const {return (m_gender_info.gender == SEX_M);}
+    Q_INVOKABLE bool is_female() const {return (m_gender_info.gender == SEX_F);}
 
     Q_INVOKABLE bool is_animal() {return m_is_animal;}
     Q_INVOKABLE bool is_pet() {return m_is_pet;}
@@ -748,8 +754,6 @@ private:
     void read_uniform();
     void check_availability();
     void set_validation(QString reason, bool *valid_var = 0, bool valid = false, LOG_LEVEL l = LL_INFO);
-
-    QString get_gender_icon_suffix(bool male_flag, bool female_flag, bool checking_interest = false);
 
     void add_inv_warn(Item *i, bool include_mat_name, Item::ITEM_STATE i_status);
     void process_uncovered(ITEM_TYPE i_type, QString desc, int count, int req_count);
