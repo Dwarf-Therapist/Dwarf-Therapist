@@ -315,7 +315,10 @@ void DFInstanceLinux::find_running_copy() {
             if (m_trap_addr == 0 && perm.at(2) == 'x') {
                 char buffer[PAGE_SIZE];
                 for (VIRTADDR offset = start; offset < end; offset += PAGE_SIZE) {
-                    read_raw(offset, PAGE_SIZE, buffer);
+                    if (read_raw(offset, PAGE_SIZE, buffer) != PAGE_SIZE) {
+                        LOGE << "Failed to read executable section";
+                        break;
+                    }
                     char *res = reinterpret_cast<char *>(memchr(buffer, TrapOpCode, PAGE_SIZE));
                     if (res) {
                         m_trap_addr = offset+(res-buffer);
