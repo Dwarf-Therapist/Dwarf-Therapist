@@ -192,18 +192,20 @@ QString HistFigure::formatted_summary(bool show_no_kills, bool space_notable){
 
 bool HistFigure::read_fake_identity(){
     VIRTADDR rep_info = m_df->read_addr(m_fig_info_addr + m_mem->hist_figure_offset("reputation"));
-    if(rep_info != 0){
-        int cur_ident = m_df->read_int(rep_info + m_mem->hist_figure_offset("current_ident"));
-        m_fake_ident_addr = m_df->find_identity(cur_ident);
-        m_fake_name_addr = m_fake_ident_addr + m_mem->hist_figure_offset("fake_name");
-        m_fake_name = capitalize(m_df->read_string(m_fake_name_addr + m_mem->dwarf_offset("first_name")));
-        m_nick_addrs.append(m_fake_ident_addr + m_mem->hist_figure_offset("fake_name") + m_mem->dwarf_offset("nick_name"));
-        m_fake_nick = m_df->read_string(m_nick_addrs.last());
-        //vamps also use a fake age
-        m_fake_birth_year = m_fake_ident_addr + m_mem->hist_figure_offset("fake_birth_year");
-        m_fake_birth_time = m_fake_ident_addr + m_mem->hist_figure_offset("fake_birth_time");
-    }
-    return (m_fake_ident_addr != 0);
+    if(!rep_info)
+        return false;
+    int cur_ident = m_df->read_int(rep_info + m_mem->hist_figure_offset("current_ident"));
+    m_fake_ident_addr = m_df->find_identity(cur_ident);
+    if (!m_fake_ident_addr)
+        return false;
+    m_fake_name_addr = m_fake_ident_addr + m_mem->hist_figure_offset("fake_name");
+    m_fake_name = capitalize(m_df->read_string(m_fake_name_addr + m_mem->dwarf_offset("first_name")));
+    m_nick_addrs.append(m_fake_name_addr + m_mem->dwarf_offset("nick_name"));
+    m_fake_nick = m_df->read_string(m_nick_addrs.last());
+    //vamps also use a fake age
+    m_fake_birth_year = m_fake_ident_addr + m_mem->hist_figure_offset("fake_birth_year");
+    m_fake_birth_time = m_fake_ident_addr + m_mem->hist_figure_offset("fake_birth_time");
+    return true;
 }
 
 bool HistFigure::has_fake_identity(){
