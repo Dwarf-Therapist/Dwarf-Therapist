@@ -370,11 +370,33 @@ bool DFInstanceLinux::df_running(){
     return (set_pid() && cur_pid == m_pid);
 }
 
-QString DFInstanceLinux::read_string(VIRTADDR addr) {
-    char buf[1024];
-    read_raw(read_addr(addr), sizeof(buf), (void *)buf);
+static std::pair<VIRTADDR, std::size_t> check_string (DFInstance *df, VIRTADDR addr) {
+    constexpr auto error_pair = std::make_pair<VIRTADDR, std::size_t> (0, 0);
+    auto data_addr = df->read_addr(addr);
+    if (!data_addr)
+        return error_pair;
+    auto pointer_size = df->pointer_size();
+    std::vector<char> rep(3 * pointer_size);
+    if (!df->read_raw(data_addr-rep.size(), rep.size(), rep.data()))
+        return error_pair;
+    std::size_t length = 0, capacity = 0;
+    std::copy_n(&rep[0], pointer_size, reinterpret_cast<char *>(&length));
+    std::copy_n(&rep[pointer_size], pointer_size, reinterpret_cast<char *>(&capacity));
+    return length <= capacity ? std::make_pair(data_addr, length) : error_pair;
+}
 
-    return QTextCodec::codecForName("IBM437")->toUnicode(buf);
+QString DFInstanceLinux::read_string(VIRTADDR addr) {
+    auto data = check_string(this, addr);
+    if (data.first) {
+        std::vector<char> buffer(data.second);
+        read_raw(data.first, buffer.size(), buffer.data());
+
+        return QTextCodec::codecForName("IBM437")->toUnicode(buffer.data(), buffer.size());
+    }
+    else {
+        LOGE << "Invalid string at" << hexify(addr);
+        return QString ();
+    }
 }
 
 USIZE DFInstanceLinux::write_string(const VIRTADDR addr, const QString &str) {
@@ -392,6 +414,11 @@ USIZE DFInstanceLinux::write_string(const VIRTADDR addr, const QString &str) {
 
     if (m_trap_addr == 0 || m_string_assign_addr == 0) {
         LOGE << "Cannot write string without trap and std::string::assign addresses.";
+        return 0;
+    }
+
+    if (!check_string(this, addr).first) {
+        LOGE << "Invalid string at" << hexify(addr);
         return 0;
     }
 
