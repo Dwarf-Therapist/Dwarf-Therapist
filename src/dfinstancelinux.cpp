@@ -492,13 +492,24 @@ USIZE DFInstanceLinux::write_string(const VIRTADDR addr, const QString &str) {
     VIRTADDR pc;
     do {
         if (ptrace(PTRACE_CONT, m_pid, 0, 0) == -1) {
-            LOGD << "ptrace continue failed" << strerror(errno);
+            LOGE << "ptrace continue failed" << strerror(errno);
             break;
         }
-        wait_for_stopped();
+        int status = wait_for_stopped();
+        if (WSTOPSIG(status) != SIGTRAP) {
+            LOGD << "std::string::assign interrupted by signal" << WSTOPSIG(status);
+        }
+        if (WSTOPSIG(status) == SIGSEGV) {
+            LOGE << "Fatal error during remote function call.";
+            LOGE << "Trying to restore DF state, but memory may be corrupted.";
+            break;
+        }
+        // TODO: Handle more signals
+        // TODO: Handle program termination
+        // TODO: Catch exceptions
         auto ret = ptrace(PTRACE_PEEKUSER, m_pid, ip_offset, 0);
         if (ret == -1) {
-            LOGD << "ptrace getregs failed" << strerror(errno);
+            LOGE << "ptrace getregs failed" << strerror(errno);
         }
         pc = ret;
     } while (pc != m_trap_addr+1);
