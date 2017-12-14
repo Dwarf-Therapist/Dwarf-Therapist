@@ -440,8 +440,9 @@ Role* GameDataReader::get_role(const QString &name) {
     return m_dwarf_roles.value(name,NULL);
 }
 
-Profession* GameDataReader::get_profession(const short &profession_id) {
-    return m_professions.value(profession_id, 0);
+const Profession* GameDataReader::get_profession(short profession_id) const {
+    static const Profession unknown;
+    return m_professions.value(profession_id, &unknown);
 }
 
 QString GameDataReader::get_goal_desc(int id, bool realized){

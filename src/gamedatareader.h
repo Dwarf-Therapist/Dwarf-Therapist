@@ -77,7 +77,7 @@ public:
     QHash<int, Trait*> get_traits() {return m_traits;}
     QList<QPair<int, Trait*> > get_ordered_traits() {return m_ordered_traits;}
     QList<QPair<ATTRIBUTES_TYPE, QString> > get_ordered_attribute_names() {return m_ordered_attribute_names;}
-    QHash<short, Profession*> get_professions() {return m_professions;}
+    QHash<short, const Profession*> get_professions() const {return m_professions;}
     QHash<QString, Role*>& get_roles(){return m_dwarf_roles;}
     QList<QPair<QString, Role*> > get_ordered_roles() {return m_ordered_roles;}
     QVector<QString> get_default_roles() {return m_default_roles;}
@@ -119,7 +119,7 @@ public:
     ATTRIBUTES_TYPE get_attribute_type(QString name){return m_attributes_by_name.value(name);}
 
     QString get_string_for_key(QString key);
-    Profession* get_profession(const short &profession_id);
+    const Profession* get_profession(short profession_id) const;
     QString get_skill_level_name(short level);
     QString get_skill_name(short skill_id, bool noun = true);
     int get_total_skill_count() {return m_skills.size();}
@@ -179,7 +179,7 @@ private:
     QHash<short, DwarfJob*> m_dwarf_jobs;
     QList<QPair<int, QString> > m_ordered_jobs;
 
-    QHash<short, Profession*> m_professions;
+    QHash<short, const Profession*> m_professions;
 
     QHash<QString, Role*> m_dwarf_roles;
     QList<QPair<QString, Role*> > m_ordered_roles;
