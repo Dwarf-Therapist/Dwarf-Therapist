@@ -29,7 +29,16 @@ THE SOFTWARE.
 
 class Profession {
 public:
-    Profession(QSettings &s)
+    Profession()
+        : m_id(-1)
+        , m_name("UNKNOWN PROFESSION")
+        , m_female_name(m_name)
+        , m_is_military(false)
+        , m_can_assign_labors(true)
+    {
+    }
+
+    Profession(const QSettings &s)
         : m_id(s.value("id", -1).toInt())
         , m_name(s.value("name", "UNKNOWN PROFESSION").toString())
         , m_female_name(s.value("female_name", m_name).toString())

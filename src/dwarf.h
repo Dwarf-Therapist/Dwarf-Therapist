@@ -623,7 +623,7 @@ private:
     QPixmap m_icn_prof;
     QString m_icn_gender;
     int m_raw_prof_id; // id of profession set by game
-    Profession *m_raw_profession;
+    const Profession *m_raw_profession;
     bool m_can_set_labors; // used to prevent cheating
     bool m_locked_mood;
     bool m_stressed_mood;
