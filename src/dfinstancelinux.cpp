@@ -114,7 +114,7 @@ USIZE DFInstanceLinux::read_raw(const VIRTADDR addr, const USIZE bytes, void *bu
     if (bytes_read == -1) {
         LOGE << "READ_RAW:" << QString(strerror(errno)) << "READING" << bytes << "BYTES FROM" << hexify(addr) << "TO" << buffer;
         memset(buffer, 0, bytes);
-        return bytes;
+        return 0;
     }
 
     TRACE << "Read" << bytes_read << "bytes of" << bytes << "bytes from" << hexify(addr) << "to" << buffer;
