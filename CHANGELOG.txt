@@ -1,8 +1,24 @@
+### Version 39.1 Patch Notes
+
+***
+ - added memory layouts for DF 44.02 (Linux 32/64 and OSX 32)
+ - added new professions (Criminal, Peddler, Prophet, Pilgrim, Monk)
+ - completed memory layouts for DF 43.05 OSX (material prefix and reaction_class)
+ - make writing invalid strings on linux safer
+ - added some new profession icons
+ - fix crashing when reading unknown profession
+ - fix missing half the common kill counts
+ - fix reading/writing invalid data when a dwarf has a reputation but no fake identity
+ - fix ref_type offset on 64 bits platform (fix showing quiver content)
+ - fix column width with Qt 5.9.3
+ - fix search paths for external files (manual, layouts, game_data.ini, ...)
+ - cleaned up useless values in memory layouts
+
 ### Version 39.0 Patch Notes
 
 ***
  - added memory layouts for DF 44.02 (Windows 32/64 and OSX 64)
- - 64 bits Dwarf-Therapist can now be used with 32 bits Dwarf Fortress
+ - 64 bits Dwarf-Therapist can now be used with 32 bits Dwarf Fortress (windows and linux only)
  - remove requirement for Windows string offsets
  - fix writing string on Linux leaking memory
  - replace many uses of skill name with skill "noun"
