@@ -53,6 +53,7 @@ notifications:
       - chat.freenode.net#dwarftherapist
     use_notice: true
 before_deploy:
+  - ".travis/deploy.sh"
   - ".travis/$TRAVIS_OS_NAME/deploy.sh"
 deploy:
   provider: releases
