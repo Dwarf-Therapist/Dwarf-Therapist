@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 project(DwarfTherapist)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -85,8 +83,6 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp resources.qrc
     ${SOURCES})
 target_link_libraries(DwarfTherapist Qt5::Widgets Qt5::Qml ${LIBS})
-
-add_subdirectory(doc)
 
 if(UNIX AND NOT APPLE)
     # Installation is currently Linux-only

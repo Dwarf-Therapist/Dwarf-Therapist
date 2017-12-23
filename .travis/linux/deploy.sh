@@ -3,7 +3,7 @@
 ninja install
 
 # Add PDF manual
-wget "http://dffd.bay12games.com/download.php?id=7889&f=Dwarf+Therapist.pdf" -O "$DT_PREFIX/share/doc/Dwarf Therapist.pdf"
+install -m 0644 -D -t "$DT_PREFIX/share/doc/dwarftherapist/" "Dwarf Therapist.pdf"
 
 # Download linuxdeployqt
 wget "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
