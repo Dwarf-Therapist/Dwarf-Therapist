@@ -84,6 +84,11 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     ${SOURCES})
 target_link_libraries(DwarfTherapist Qt5::Widgets Qt5::Qml ${LIBS})
 
+if (APPLE)
+    set_target_properties(DwarfTherapist PROPERTIES
+        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/osx/MacOSXBundleInfo.plist.in)
+endif()
+
 if(UNIX AND NOT APPLE)
     # Installation is currently Linux-only
     install(TARGETS DwarfTherapist
