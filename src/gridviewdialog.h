@@ -40,13 +40,6 @@ class GridViewDialog;
 class GridViewDialog : public QDialog {
     Q_OBJECT
 public:
-    typedef enum {
-        GPDT_TITLE = Qt::UserRole,
-        GPDT_BG_COLOR,
-        GPDT_OVERRIDE_BG_COLOR,
-        GPDT_WIDTH,
-        GPDT_COLUMN_TYPE
-    } GRIDVIEW_PENDING_DATA_TYPE;
     GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent = 0);
     virtual ~GridViewDialog();
 

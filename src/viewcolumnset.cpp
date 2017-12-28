@@ -212,23 +212,11 @@ void ViewColumnSet::add_column(ViewColumn *col,int idx) {
 void ViewColumnSet::reorder_columns(const QStandardItemModel &model) {
     QList<ViewColumn*> new_cols;
     for (int i = 0; i < model.rowCount(); ++i) {
-        // find the VC that matches this item in the GUI list
-        QStandardItem *item = model.item(i, 0);
-        QString title = item->data(GridViewDialog::GPDT_TITLE).toString();
-        COLUMN_TYPE type = static_cast<COLUMN_TYPE>(item->data(GridViewDialog::GPDT_COLUMN_TYPE).toInt());
-        foreach(ViewColumn *vc, m_columns) {
-            if (vc->title() == title && vc->type() == type) {
-                new_cols << vc;
-                break;
-            }
-        }
+        new_cols << model.item(i, 0)->data().value<ViewColumn *>();
     }
     Q_ASSERT(new_cols.size() == m_columns.size());
 
-    m_columns.clear();
-    foreach(ViewColumn *vc, new_cols) {
-        m_columns << vc;
-    }
+    m_columns = std::move(new_cols);
 }
 
 void ViewColumnSet::read_settings(){

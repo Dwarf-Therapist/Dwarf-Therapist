@@ -139,20 +139,9 @@ GridView *GridView::read_from_ini(QSettings &s, QObject *parent) {
 void GridView::reorder_sets(const QStandardItemModel &model) {
     QList<ViewColumnSet*> new_sets;
     for (int i = 0; i < model.rowCount(); ++i) {
-        // find the set that matches this item in the GUI list
-        QStandardItem *item = model.item(i, 0);
-        QString name = item->data(GridViewDialog::GPDT_TITLE).toString();
-        foreach(ViewColumnSet *set, m_sets) {
-            if (set->name() == name) {
-                new_sets << set;
-                break;
-            }
-        }
+        new_sets << model.item(i,0)->data().value<ViewColumnSet *>();
     }
     Q_ASSERT(new_sets.size() == m_sets.size());
 
-    m_sets.clear();
-    foreach(ViewColumnSet *set, new_sets) {
-        m_sets << set;
-    }
+    m_sets = std::move(new_sets);
 }

@@ -68,6 +68,22 @@ THE SOFTWARE.
 #include <QMessageBox>
 #include <QMenu>
 
+// Qt needs to serialize item and during drag and drop
+Q_DECLARE_METATYPE(ViewColumnSet *)
+Q_DECLARE_METATYPE(ViewColumn *)
+
+template<typename T>
+QDataStream &operator<<(QDataStream &out, T *rhs) {
+    out.writeRawData(reinterpret_cast<const char*>(&rhs), sizeof(T *));
+    return out;
+}
+
+template<typename T>
+QDataStream &operator>>(QDataStream &in, T *&rhs) {
+    in.readRawData(reinterpret_cast<char *>(&rhs), sizeof(T *));
+    return in;
+}
+
 GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::GridViewDialog)
@@ -82,6 +98,11 @@ GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent
     , m_active_set(0)
     , m_cmh(0)
 {
+    qRegisterMetaType<ViewColumnSet *>();
+    qRegisterMetaTypeStreamOperators<ViewColumnSet *>();
+    qRegisterMetaType<ViewColumn *>();
+    qRegisterMetaTypeStreamOperators<ViewColumn *>();
+
     ui->setupUi(this);
     ui->list_sets->setModel(m_set_model);
     ui->list_columns->setModel(m_col_model);
@@ -162,8 +183,7 @@ void GridViewDialog::draw_sets() {
         set_item->setBackground(set->bg_color());
         set_item->setForeground(complement(set->bg_color()));
         set_item->setDropEnabled(false);
-        set_item->setData(set->name(), GPDT_TITLE);
-        set_item->setData(set->bg_color(), GPDT_BG_COLOR);
+        set_item->setData(QVariant::fromValue(set));
         m_set_model->appendRow(set_item);
     }
     m_active_set = NULL;
@@ -175,7 +195,7 @@ void GridViewDialog::set_selection_changed(const QItemSelection &selected, const
         return;
     QStandardItem *set_item = m_set_model->itemFromIndex(selected.indexes().at(0));
     foreach(ViewColumnSet *set, m_pending_view->sets()) {
-        if (set->name() == set_item->data(GPDT_TITLE).toString()) {
+        if (set == set_item->data().value<ViewColumnSet *>()) {
             m_active_set = set;
             draw_columns_for_set(m_active_set);
         }
@@ -186,8 +206,7 @@ void GridViewDialog::draw_columns_for_set(ViewColumnSet *set, bool set_changed) 
     m_col_model->clear();
     foreach(ViewColumn *vc, set->columns()) {
         QStandardItem *item = new QStandardItem(vc->title());
-        item->setData(vc->title(), GPDT_TITLE);
-        item->setData(vc->type(), GPDT_COLUMN_TYPE);
+        item->setData(QVariant::fromValue(vc));
 
         QColor new_bg = vc->override_color() ? vc->bg_color() : set->bg_color();
         item->setBackground(new_bg);
@@ -239,7 +258,7 @@ void GridViewDialog::edit_set(const QModelIndex &idx) {
     ViewEditorDialog *d = new ViewEditorDialog(m_active_set,this);
 
     if(d->exec()) {
-        ViewColumnSet *set = m_pending_view->get_set(item->data(GPDT_TITLE).toString());
+        ViewColumnSet *set = item->data().value<ViewColumnSet *>();
         set->set_name(d->ui->le_title->text());
 
         set->set_bg_color(d->background_color());
