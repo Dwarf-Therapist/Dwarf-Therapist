@@ -1,3 +1,9 @@
+### Version 39.1.2 Patch Notes
+
+***
+ - added memory layouts for DF 44.03 (all platforms)
+ - added support for retina display in osx
+
 ### Version 39.1 Patch Notes
 
 ***
