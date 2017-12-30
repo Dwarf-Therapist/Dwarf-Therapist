@@ -275,6 +275,8 @@ void Dwarf::read_data() {
 
     if(m_is_valid){
         m_hist_figure = new HistFigure(m_histfig_id,m_df,this);
+        // use fake identity to match DF
+        find_fake_ident();
         read_squad_info(); //read squad before job
         read_gender_orientation(); //read before profession
         read_profession(); //read profession before building the names, and before job
@@ -606,8 +608,6 @@ void Dwarf::read_curse(){
 
         //TODO: check for removed flags as well
         if(m_curse_flags & eCurse::BLOODSUCKER){ //if(!has_flag(eCurse::BLOODSUCKER, m_curse_rem_flags) && has_flag(eCurse::BLOODSUCKER,m_curse_flags)){
-            //if it's a vampire then find the vampire's fake identity and use that name/age instead to match DF
-            find_true_ident();
             m_curse_type = eCurse::VAMPIRE;
         }
 
@@ -615,7 +615,7 @@ void Dwarf::read_curse(){
     }
 }
 
-void Dwarf::find_true_ident(){
+void Dwarf::find_fake_ident(){
     if(m_hist_figure->has_fake_identity()){
         //save the true name for display
         m_true_name = m_nice_name;

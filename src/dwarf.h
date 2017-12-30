@@ -505,7 +505,7 @@ public:
 
     void recheck_equipment();
 
-    void find_true_ident();
+    void find_fake_ident();
 
     bool had_mood() {return m_had_mood;}
     MOOD_TYPE current_mood() {return m_mood_id;}
