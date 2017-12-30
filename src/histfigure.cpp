@@ -47,7 +47,7 @@ HistFigure::HistFigure(int id, DFInstance *df, QObject *parent)
     m_address = m_df->find_historical_figure(id);
     m_mem = m_df->memory_layout();
     if(m_address){
-        m_nick_addrs.append(m_address + m_mem->hist_figure_offset("hist_name") + m_mem->dwarf_offset("nick_name"));
+        m_nick_addrs.append(m_address + m_mem->hist_figure_offset("hist_name") + m_mem->word_offset("nickname"));
         m_fig_info_addr = m_df->read_addr(m_address + m_mem->hist_figure_offset("hist_fig_info"));
         m_has_fake_identity = read_fake_identity();
         if(!DT->user_settings()->value("options/highlight_cursed", false).toBool() && m_has_fake_identity){
@@ -199,8 +199,8 @@ bool HistFigure::read_fake_identity(){
     if (!m_fake_ident_addr)
         return false;
     m_fake_name_addr = m_fake_ident_addr + m_mem->hist_figure_offset("fake_name");
-    m_fake_name = capitalize(m_df->read_string(m_fake_name_addr + m_mem->dwarf_offset("first_name")));
-    m_nick_addrs.append(m_fake_name_addr + m_mem->dwarf_offset("nick_name"));
+    m_fake_name = capitalize(m_df->read_string(m_fake_name_addr + m_mem->word_offset("first_name")));
+    m_nick_addrs.append(m_fake_name_addr + m_mem->word_offset("nickname"));
     m_fake_nick = m_df->read_string(m_nick_addrs.last());
     //vamps also use a fake age
     m_fake_birth_year = m_fake_ident_addr + m_mem->hist_figure_offset("fake_birth_year");

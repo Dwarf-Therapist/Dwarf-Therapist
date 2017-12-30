@@ -227,7 +227,7 @@ void Dwarf::read_data() {
     read_flags();
     read_race(); //also sets m_is_animal
     read_first_name();
-    read_last_name(m_address + m_mem->dwarf_offset("first_name"));
+    read_last_name(m_address + m_mem->dwarf_offset("name"));
     read_nick_name();
     build_names(); //build names now for logging
     read_states();  //read states before job and validation
@@ -669,7 +669,7 @@ void Dwarf::read_race() {
 }
 
 void Dwarf::read_first_name() {
-    m_first_name = m_df->read_string(m_address + m_mem->dwarf_offset("first_name"));
+    m_first_name = m_df->read_string(m_address + m_mem->dwarf_offset("name") + m_mem->word_offset("first_name"));
     if (m_first_name.size() > 1)
         m_first_name[0] = m_first_name[0].toUpper();
     TRACE << "FIRSTNAME:" << m_first_name;
@@ -688,7 +688,7 @@ void Dwarf::read_last_name(VIRTADDR name_offset) {
 
 
 void Dwarf::read_nick_name() {
-    m_nick_name = m_df->read_string(m_address + m_mem->dwarf_offset("nick_name"));
+    m_nick_name = m_df->read_string(m_address + m_mem->dwarf_offset("name") + m_mem->word_offset("nickname"));
     TRACE << "\tNICKNAME:" << m_nick_name;
     m_pending_nick_name = m_nick_name;
 }
@@ -2267,8 +2267,8 @@ void Dwarf::commit_pending(bool single) {
     m_df->write_raw(addr, 94, buf.data());
 
     if (m_pending_nick_name != m_nick_name){
-        m_df->write_string(m_address + m_mem->dwarf_offset("nick_name"), m_pending_nick_name);
-        m_df->write_string(m_first_soul + m_mem->soul_detail("name") + m_mem->dwarf_offset("nick_name"), m_pending_nick_name);
+        m_df->write_string(m_address + m_mem->dwarf_offset("name") + m_mem->word_offset("nickname"), m_pending_nick_name);
+        m_df->write_string(m_first_soul + m_mem->soul_detail("name") + m_mem->word_offset("nickname"), m_pending_nick_name);
         if(m_hist_figure){
             m_hist_figure->write_nick_name(m_pending_nick_name);
         }
