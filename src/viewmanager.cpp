@@ -292,7 +292,7 @@ void ViewManager::draw_views() {
     QStringList tab_order = DT->user_settings()->value("gui_options/tab_order").toStringList();
     QString default_view_name = tr("Labors Full"); //default view to use if none are found/loaded
     if (tab_order.size() == 0) {
-        tab_order << default_view_name << "Military" << "Social" << "Attributes" << "Roles" << "Animals";
+        tab_order << default_view_name << "Military" << "Other Skills" << "Attributes" << "Roles" << "Animals";
     }
     GridView *v_default = 0; //keep a reference to the default view
     if (tab_order.size() > 0) {
