@@ -261,7 +261,12 @@ void DwarfModel::build_rows() {
             }else if(m_group_by == GB_PROFESSION){
                 m_grouped_dwarves[d->profession()].append(d);
             }else if(m_group_by == GB_SEX){
-                m_grouped_dwarves[d->get_gender_orient_desc()].append(d);
+                m_grouped_dwarves[Dwarf::get_gender_desc(d->get_gender())].append(d);
+            } else if (m_group_by == GB_SEX_ORIENT){
+                auto group = QString("%1 - %2")
+                        .arg(Dwarf::get_gender_desc(d->get_gender()))
+                        .arg(Dwarf::get_orientation_desc(d->get_orientation()));
+                m_grouped_dwarves[group].append(d);
             }else if(m_group_by == GB_MIGRATION_WAVE){
                 m_grouped_dwarves[d->get_migration_desc()].append(d);
             }else if(m_group_by == GB_AGE){
@@ -477,6 +482,8 @@ void DwarfModel::build_row(const QString &key) {
         } else if (m_group_by == GB_AGE){
             agg_first_col->setData(first_dwarf->get_age(), DR_SORT_VALUE);
         } else if (m_group_by == GB_SEX){
+            agg_first_col->setData(Dwarf::get_gender_desc(first_dwarf->get_gender()), DR_SORT_VALUE);
+        } else if (m_group_by == GB_SEX_ORIENT){
             agg_first_col->setData(first_dwarf->get_gender_orient_desc(), DR_SORT_VALUE);
         } else if (m_group_by == GB_SQUAD){
             int squad_id = first_dwarf->squad_id();
@@ -600,6 +607,9 @@ void DwarfModel::build_row(const QString &key) {
             break;
         case GB_AGE:
             sort_val = d->get_age();
+            break;
+        case GB_SEX_ORIENT:
+            sort_val = d->get_gender_orient_desc();
             break;
         case GB_NOTHING:
         default:
