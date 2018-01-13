@@ -69,6 +69,7 @@ public:
         GB_PROFESSION,
         GB_RACE,
         GB_SEX,
+        GB_SEX_ORIENT,
         GB_SQUAD,
         GB_ASSIGNED_LABORS,
         GB_TOTAL_SKILL_LEVELS,

@@ -226,7 +226,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cb_group_by->addItem(tr("Age"), DwarfModel::GB_AGE);
     ui->cb_group_by->addItem(tr("Caste"), DwarfModel::GB_CASTE);
     ui->cb_group_by->addItem(tr("Current Job"), DwarfModel::GB_CURRENT_JOB);
-    ui->cb_group_by->addItem(tr("Gender & Orientation"), DwarfModel::GB_SEX);
     ui->cb_group_by->addItem(tr("Goals"), DwarfModel::GB_GOALS);
     ui->cb_group_by->addItem(tr("Happiness"), DwarfModel::GB_HAPPINESS);
     ui->cb_group_by->addItem(tr("Has Nickname"),DwarfModel::GB_HAS_NICKNAME);
@@ -240,6 +239,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cb_group_by->addItem(tr("Occupation"),DwarfModel::GB_OCCUPATION);
     ui->cb_group_by->addItem(tr("Profession"), DwarfModel::GB_PROFESSION);
     ui->cb_group_by->addItem(tr("Race"), DwarfModel::GB_RACE);
+    ui->cb_group_by->addItem(tr("Sex"), DwarfModel::GB_SEX);
+    ui->cb_group_by->addItem(tr("Sexual Orientation"), DwarfModel::GB_SEX_ORIENT);
     ui->cb_group_by->addItem(tr("Skill Rust"), DwarfModel::GB_SKILL_RUST);
     ui->cb_group_by->addItem(tr("Squad"), DwarfModel::GB_SQUAD);
     ui->cb_group_by->addItem(tr("Total Assigned Labors"),DwarfModel::GB_ASSIGNED_LABORS);
