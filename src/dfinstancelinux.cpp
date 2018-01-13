@@ -264,7 +264,9 @@ void DFInstanceLinux::find_running_copy() {
     std::string proc_path = std::string("/proc/") + std::to_string(m_pid);
 
     QString md5 = "UNKNOWN";
-    if (auto exe = std::ifstream(proc_path + "/exe")) {
+    std::ifstream exe;
+    exe.open(proc_path + "/exe");
+    if (exe) {
         // check class from ELF header to find the pointer size
         switch (get_elf_class(exe)) {
             case ELFCLASS32:
@@ -301,7 +303,9 @@ void DFInstanceLinux::find_running_copy() {
     // look for symbols and instructions
     std::regex procmaps_re("([0-9a-f]+)-([0-9a-f]+) ([-r][-w][-x][-p]) ([0-9a-f]+) ([0-9a-f]{2}):([0-9a-f]{2}) ([0-9]+)(?:\\s*(.+))");
     m_trap_addr = m_string_assign_addr = 0;
-    if (auto maps = std::ifstream(proc_path + "/maps")) {
+    std::ifstream maps;
+    maps.open(proc_path + "/maps");
+    if (maps) {
         std::string line;
         while (std::getline(maps, line)) {
             std::smatch res;

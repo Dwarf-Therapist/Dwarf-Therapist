@@ -428,7 +428,7 @@ QString GameDataReader::get_skill_level_name(short level) {
 }
 
 QString GameDataReader::get_skill_name(short skill_id, bool noun) {
-    auto it = m_skills.find(skill_id);
+    auto it = m_skills.find(SkillInfo(skill_id, "", ""));
     if (it == m_skills.end()) {
         LOGE << "Skill" << skill_id << "not found";
         return "UNKNOWN";
