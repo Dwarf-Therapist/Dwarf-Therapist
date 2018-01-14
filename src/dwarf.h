@@ -185,6 +185,13 @@ public:
         QString full_desc;
     };
 
+    enum GenderInfoOption
+    {
+        Option_SexOnly = 0,
+        Option_ShowOrientation,
+        Option_ShowCommitment,
+    };
+
     Q_INVOKABLE GENDER_TYPE get_gender() const {return m_gender_info.gender;}
     Q_INVOKABLE SEX_ORIENT_TYPE get_orientation() const {return m_gender_info.orientation;}
     QString get_gender_orient_desc() const {return m_gender_info.full_desc;}
