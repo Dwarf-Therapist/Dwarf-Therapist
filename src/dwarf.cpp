@@ -461,6 +461,11 @@ static const char *sex_interest_icon_suffix (Dwarf::SEX_COMMITMENT interest)
 }
 
 void Dwarf::read_gender_orientation() {
+    QSettings *s = DT->user_settings();
+    auto gender_info_option = s->value("options/gender_info", Option_ShowOrientation).toInt();
+    bool show_orientation = gender_info_option >= Option_ShowOrientation;
+    bool show_commitment = !m_is_animal && gender_info_option >= Option_ShowCommitment;
+
     BYTE sex = m_df->read_byte(m_address + m_mem->dwarf_offset("sex"));
     TRACE << "GENDER:" << sex;
     m_gender_info.gender = static_cast<GENDER_TYPE>(sex);
@@ -492,35 +497,35 @@ void Dwarf::read_gender_orientation() {
             same = m_gender_info.female;
         }
 
-        bool use_interest_suffix = !m_is_animal;
 
         if (other && same) {
-            icon_name.append("bi");
-            if (use_interest_suffix) {
+            if (show_orientation)
+                icon_name.append("bi");
+            if (show_commitment) {
                 icon_name.append(sex_interest_icon_suffix(m_gender_info.male));
                 icon_name.append(sex_interest_icon_suffix(m_gender_info.female));
             }
             m_gender_info.orientation = ORIENT_BISEXUAL;
         }
         else if (other) {
-            icon_name.append("hetero");
-            if (use_interest_suffix) {
+            if (show_orientation)
+                icon_name.append("hetero");
+            if (show_commitment)
                 icon_name.append(sex_interest_icon_suffix(other));
-            }
             m_gender_info.orientation = ORIENT_HETERO;
         }
         else if (same) {
-            icon_name.append("homo");
-            if (use_interest_suffix) {
+            if (show_orientation)
+                icon_name.append("homo");
+            if (show_commitment)
                 icon_name.append(sex_interest_icon_suffix(same));
-            }
             m_gender_info.orientation = ORIENT_HOMO;
         }
         else {
-            icon_name.append("asexual");
-            if (use_interest_suffix) {
+            if (show_orientation)
+                icon_name.append("asexual");
+            if (show_commitment)
                 icon_name.append("bg");
-            }
             m_gender_info.orientation = ORIENT_ASEXUAL;
         }
     }
@@ -528,8 +533,10 @@ void Dwarf::read_gender_orientation() {
     m_icn_gender = QString(":img/%1.png").arg(icon_name.join("-"));
 
     QStringList gender_desc;
-    gender_desc << get_gender_desc(m_gender_info.gender) << get_orientation_desc(m_gender_info.orientation);
-    if (!m_is_animal) {
+    gender_desc << get_gender_desc(m_gender_info.gender);
+    if (show_orientation)
+        gender_desc << get_orientation_desc(m_gender_info.orientation);
+    if (show_commitment) {
         static const QStringList preferences = { tr("Not interested in %1"), tr("Likes %1"), tr("Will marry %1") };
         for (const auto &t: {
                 std::make_tuple(m_gender_info.male, tr("males")),

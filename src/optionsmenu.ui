@@ -300,6 +300,27 @@
            </property>
           </widget>
          </item>
+         <item row="8" column="0">
+          <layout class="QHBoxLayout" name="horizontalLayout_12">
+           <item>
+            <widget class="QLabel" name="lbl_gender_info">
+             <property name="text">
+              <string>Show gender information: </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="cb_gender_info">
+             <property name="statusTip">
+              <string>Change how much information about gender is shown: sex only (female/male), or orientation (heterosexual/homosexual/bisexual/asexual), or commitment (ability to marry).</string>
+             </property>
+             <property name="whatsThis">
+              <string>Change how much information about gender is shown: sex only (female/male), or orientation (heterosexual/homosexual/bisexual/asexual), or commitment (ability to marry).</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
         </layout>
        </item>
        <item>

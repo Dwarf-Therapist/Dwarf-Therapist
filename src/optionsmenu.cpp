@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "mainwindow.h"
 #include "truncatingfilelogger.h"
 #include "uberdelegate.h"
+#include "dwarf.h"
 #include "ui_optionsmenu.h"
 
 #include <QMessageBox>
@@ -161,6 +162,10 @@ OptionsMenu::OptionsMenu(QWidget *parent)
 
     ui->horizontal_curse_layout->addWidget(m_curse_color);
 
+    ui->cb_gender_info->addItem(tr("Sex only"), Dwarf::Option_SexOnly);
+    ui->cb_gender_info->addItem(tr("Show orientation"), Dwarf::Option_ShowOrientation);
+    ui->cb_gender_info->addItem(tr("Show orientation + commitment"), Dwarf::Option_ShowCommitment);
+
     ui->cb_skill_drawing_method->addItem("Growing Center Box", UberDelegate::SDM_GROWING_CENTRAL_BOX);
     ui->cb_skill_drawing_method->addItem("Line Glyphs", UberDelegate::SDM_GLYPH_LINES);
     ui->cb_skill_drawing_method->addItem("Growing Fill", UberDelegate::SDM_GROWING_FILL);
@@ -268,6 +273,8 @@ void OptionsMenu::tooltip_thoughts_toggled(bool checked){
 }
 
 void OptionsMenu::read_settings() {
+    int idx;
+
     m_reading_settings = true;
     QSettings *s = DT->user_settings();
     s->beginGroup("options");
@@ -290,7 +297,7 @@ void OptionsMenu::read_settings() {
 
     s->endGroup();
     s->beginGroup("grid");
-    int idx = ui->cb_skill_drawing_method->findData(
+    idx = ui->cb_skill_drawing_method->findData(
                 static_cast<UberDelegate::SKILL_DRAWING_METHOD>(
                     s->value("skill_drawing_method", UberDelegate::SDM_NUMERIC).toInt()));
     if(idx != -1){
@@ -338,6 +345,9 @@ void OptionsMenu::read_settings() {
     temp = s->value("main_font", QFont(DefaultFonts::getMainFontName(), DefaultFonts::getMainFontSize())).value<QFont>();
     m_main_font = qMakePair(temp,temp);
     show_current_font(temp,ui->lbl_current_main_font);
+
+    idx = ui->cb_gender_info->findData(s->value("gender_info", Dwarf::Option_ShowOrientation));
+    ui->cb_gender_info->setCurrentIndex(idx);
 
     ui->cb_read_dwarves_on_startup->setChecked(s->value("read_on_startup", true).toBool());
     ui->cb_auto_connect->setChecked(s->value("auto_connect",false).toBool());
@@ -488,6 +498,7 @@ void OptionsMenu::write_settings() {
         s->setValue("animal_health", ui->cb_animal_health->isChecked());
         s->setValue("tooltip_font", m_tooltip_font.first);
         s->setValue("main_font", m_main_font.first);
+        s->setValue("gender_info", ui->cb_gender_info->currentData());
 
         s->setValue("default_attributes_weight",ui->dsb_attribute_weight->value());
         s->setValue("default_skills_weight",ui->dsb_skill_weight->value());
