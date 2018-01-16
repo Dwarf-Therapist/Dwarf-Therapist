@@ -13,7 +13,7 @@ The Dwarf Therapist guide source and releases have `their own repository <https:
 
 Latest Release
 ========
-The `latest release`_ is always published in the project's `releases`_ page. These releases normally contain packages for Windows and OSX.
+The `latest release`_ is always published in the project's `releases`_ page. These releases normally contain packages for Windows, OSX, and Linux.
 
 Alternate Download (DFFD)
 -------------------------
@@ -29,14 +29,15 @@ The manual for Dwarf Therapist can be downloaded separately.
 
 Building
 ========
-
 Dwarf-Therapist requires a C++ compiler (with C++14 support), cmake (3.1.0 or newer), and Qt5 (with Widgets and QML modules).
 
 Detailed building instructions can be found in `BUILDING.md`_
 
 Linux
 =====
-There is currently no official package for Linux.
+In addition to the AppImage provided on the `releases`_ page, packages for specific distributions can be found at:
+
+- `COPR repository`_ for Fedora users.
 
 Running the program
 -------------------
@@ -76,3 +77,4 @@ You can also join us in `#dwarftherapist on Freenode`_.
 .. _#dwarftherapist on Freenode: http://webchat.freenode.net/?channels=%23dwarftherapist
 .. _releases: https://github.com/Dwarf-Therapist/Dwarf-Therapist/releases
 .. _latest release: https://github.com/Dwarf-Therapist/Dwarf-Therapist/releases/latest
+.. _COPR repository: https://copr.fedorainfracloud.org/coprs/cvuchener/Dwarf-Therapist/
