@@ -1,3 +1,16 @@
+### Version 39.2 Patch Notes
+
+***
+ - added memory layouts for DF 0.44.04 and 0.44.05 (all platforms)
+ - added commitment details for sexual orientation (lover vs. marriage, not for animals)
+ - added choice for sexual orientation details in the option menu (sex only/simple orientation/commitment)
+ - added "Sex" and "Sexual Orientation" grouping (replaces "Gender & Orientation")
+ - renamed "Social & Cultural" grid view to "Other Skills" and add it in the default tabs
+ - fixed sexual orientation
+ - fixed fake identity not being used for non-vampires
+ - fixed reading fake identity names and birth date
+ - fixed a bug when column sets have the same name in the grid view editor
+
 ### Version 39.1.2 Patch Notes
 
 ***
@@ -10,14 +23,14 @@
  - added memory layouts for DF 44.02 (Linux 32/64 and OSX 32)
  - added new professions (Criminal, Peddler, Prophet, Pilgrim, Monk)
  - completed memory layouts for DF 43.05 OSX (material prefix and reaction_class)
- - make writing invalid strings on linux safer
+ - made writing invalid strings on linux safer
  - added some new profession icons
- - fix crashing when reading unknown profession
- - fix missing half the common kill counts
- - fix reading/writing invalid data when a dwarf has a reputation but no fake identity
- - fix ref_type offset on 64 bits platform (fix showing quiver content)
- - fix column width with Qt 5.9.3
- - fix search paths for external files (manual, layouts, game_data.ini, ...)
+ - fixed crashing when reading unknown profession
+ - fixed missing half the common kill counts
+ - fixed reading/writing invalid data when a dwarf has a reputation but no fake identity
+ - fixed ref_type offset on 64 bits platform (fix showing quiver content)
+ - fixed column width with Qt 5.9.3
+ - fixed search paths for external files (manual, layouts, game_data.ini, ...)
  - cleaned up useless values in memory layouts
 
 ### Version 39.0 Patch Notes
