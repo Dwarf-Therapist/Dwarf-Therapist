@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 #include <QDir>
 #include <QPointer>
+#include <memory>
 
 #ifdef Q_OS_WIN
 typedef int PID;
@@ -81,7 +82,7 @@ public:
     const QString layout_subdir();
     DFI_STATUS status() const {return m_status;}
     WORD dwarf_race_id() {return m_dwarf_race_id;}
-    QList<MemoryLayout*> get_layouts() { return m_memory_layouts.values(); }
+    const std::map<QString, std::unique_ptr<MemoryLayout>> &get_layouts() const { return m_memory_layouts; }
     QDir get_df_dir() { return m_df_dir; }
     WORD current_year() {return m_current_year;}
     WORD dwarf_civ_id() {return m_dwarf_civ_id;}
@@ -268,10 +269,10 @@ protected:
     void load_role_ratings();
     bool check_vector(VIRTADDR start, VIRTADDR end, VIRTADDR addr);
 
-    /*! this hash will hold a map of all loaded and valid memory layouts found
+    /*! this map will hold all loaded and valid memory layouts found
         on disk, the key is a QString of the checksum since other OSs will use
         an MD5 of the binary instead of a PE timestamp */
-    QHash<QString, MemoryLayout*> m_memory_layouts; // checksum->layout
+    std::map<QString, std::unique_ptr<MemoryLayout>> m_memory_layouts; // checksum->layout
 
     static PID select_pid(QSet<PID> pids);
 

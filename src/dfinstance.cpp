@@ -95,19 +95,28 @@ DFInstance::DFInstance(QObject* parent)
     // checking before we're connected
     connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
 
-    QDir d(QString("share:memory_layouts/%1").arg(LAYOUT_SUBDIR));
-    d.setNameFilters(QStringList() << "*.ini");
-    d.setFilter(QDir::NoDotAndDotDot | QDir::Readable | QDir::Files);
-    d.setSorting(QDir::Name | QDir::Reversed);
-    QFileInfoList files = d.entryInfoList();
-    foreach(QFileInfo info, files) {
-        MemoryLayout *temp = new MemoryLayout(this,info);
-        if (temp->is_valid()) {
-            LOGI << "adding valid layout" << temp->game_version() << "checksum:" << temp->checksum() << "SHA:" << temp->git_sha();
-            m_memory_layouts.insert(temp->checksum().toLower(), temp);
-        } else {
-            LOGI << "ignoring invalid layout" << info.absoluteFilePath();
-            delete temp;
+    for (auto search_path: QDir::searchPaths("share")) {
+        QDir d(QString("%1/memory_layouts/%2").arg(search_path).arg(LAYOUT_SUBDIR));
+        d.setNameFilters(QStringList() << "*.ini");
+        d.setFilter(QDir::NoDotAndDotDot | QDir::Readable | QDir::Files);
+        d.setSorting(QDir::Name);
+        QFileInfoList files = d.entryInfoList();
+        foreach(QFileInfo info, files) {
+            LOGI << "opening layout" << info.absoluteFilePath();
+            auto layout = std::make_unique<MemoryLayout>(this,info);
+            if (layout->is_valid()) {
+                auto checksum = layout->checksum().toLower();
+                auto ret = m_memory_layouts.emplace(checksum, std::move(layout));
+                if (ret.second) {
+                    const auto &layout = ret.first->second;
+                    LOGI << "adding valid layout" << layout->game_version() << "checksum:" << layout->checksum() << "SHA:" << layout->git_sha();
+                }
+                else {
+                    LOGI << "ignoring already added layout, checksum:" << checksum;
+                }
+            } else {
+                LOGI << "ignoring invalid layout";
+            }
         }
     }
 
@@ -162,10 +171,6 @@ bool DFInstance::check_vector(const VIRTADDR start, const VIRTADDR end, const VI
 }
 
 DFInstance::~DFInstance() {
-    foreach(MemoryLayout *l, m_memory_layouts) {
-        delete(l);
-    }
-    m_memory_layouts.clear();
     m_layout = 0;
 
     delete m_languages;
@@ -1097,24 +1102,25 @@ void DFInstance::set_memory_layout(QString checksum){
 }
 
 MemoryLayout *DFInstance::get_memory_layout(QString checksum) {
-    MemoryLayout *ret_val = NULL;
-    ret_val = m_memory_layouts.value(checksum, NULL);
-
-    if(ret_val == NULL){
+    auto it = m_memory_layouts.find(checksum);
+    if (it == m_memory_layouts.end()){
         LOGI << "Could not find layout for checksum" << checksum;
-    }else if(!ret_val->is_valid()){
+        return nullptr;
+    }
+    else if (!it->second->is_valid()){
         LOGI << "Invalid layout for checksum" << checksum;
     }
-    return ret_val;
+    return it->second.get();
 }
 
 MemoryLayout *DFInstance::find_memory_layout(QString git_sha){
-    foreach(MemoryLayout *ml, m_memory_layouts){
+    for (auto &p: m_memory_layouts) {
+        auto &ml = p.second;
         if(ml->git_sha() == git_sha){
-            return ml;
+            return ml.get();
         }
     }
-    return 0;
+    return nullptr;
 }
 
 bool DFInstance::add_new_layout(const QString & filename, const QString data, QString &result_msg) {
@@ -1146,15 +1152,13 @@ bool DFInstance::add_new_layout(const QString & filename, const QString data, QS
 
     if(ok){
         file_info.refresh();
-        MemoryLayout *temp = new MemoryLayout(this,file_info);
-        if(temp && temp->is_valid()) {
-            LOGI << "adding valid layout" << temp->game_version() << temp->checksum();
-            m_memory_layouts.insert(temp->checksum().toLower(), temp);
+        auto layout = std::make_unique<MemoryLayout>(this, file_info);
+        if(layout && layout->is_valid()) {
+            LOGI << "adding valid layout" << layout->game_version() << layout->checksum();
+            m_memory_layouts[layout->checksum().toLower()] = std::move(layout);
         }else{
             LOGI << "ignoring invalid layout from file:" << filename;
-            delete temp;
         }
-        temp = 0;
     }
 
     return ok;
@@ -1175,19 +1179,19 @@ const QStringList DFInstance::status_err_msg(){
         break;
     case DFS_CONNECTED:
     {
-        if(m_memory_layouts.count() < 1){
+        if(m_memory_layouts.empty()){
             ret << tr("No Layouts Found");
             ret << tr("No valid memory layouts could be found to attempt connection to Dwarf Fortress.");
             ret << tr("View the details below for the directories checked.");
             ret <<  QDir::searchPaths("share").join("\n");
         }else{
             QStringList supported_vers;
-            QList<MemoryLayout *> layouts = m_memory_layouts.values();
-            qSort(layouts);
 
-            foreach(MemoryLayout * l, layouts) {
+            for (const auto &p: m_memory_layouts) {
+                const auto &checksum = p.first;
+                const auto &layout = p.second;
                 supported_vers.append(
-                            QString("%1 (%2)").arg(l->game_version()).arg(l->checksum()));
+                            QString("%1 (%2)").arg(layout->game_version()).arg(checksum));
             }
 
             ret << tr("Unidentified Game Version");

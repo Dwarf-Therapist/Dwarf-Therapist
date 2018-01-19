@@ -11,7 +11,8 @@ SelectParentLayoutDialog::SelectParentLayoutDialog(DFInstance *df, QWidget *pare
 {
     ui->setupUi(this);
 
-    foreach(MemoryLayout * layout, m_df->get_layouts()) {
+    for (const auto &p: m_df->get_layouts()) {
+        auto layout = p.second.get();
         ui->cmb_select_layout->addItem(layout->game_version(), qVariantFromValue(layout));
     }
 
