@@ -973,6 +973,9 @@ void MainWindow::save_gridview_csv()
 
         QList<Dwarf*> dwarves = m_proxy->get_filtered_dwarves();
         foreach(Dwarf *d, dwarves){
+            // The model list all creatures without regard to the gridview animal flags, add a filter here
+            if (gv->show_animals() != d->is_animal())
+                continue;
             row.append(d->nice_name());
             foreach(ViewColumnSet *set, gv->sets()) {
                 foreach(ViewColumn *col, set->columns()) {
