@@ -118,16 +118,20 @@ void ViewManager::reload_views() {
     QList<GridView*> built_in_views;
 
     //custom views
-    QDir d("share:gridviews");
-    d.setNameFilters(QStringList() << "*.dtg");
-    d.setFilter(QDir::NoDotAndDotDot | QDir::Readable | QDir::Files);
-    d.setSorting(QDir::Name);
-    QFileInfoList files = d.entryInfoList();
-    foreach(QFileInfo info, files) {
-        QSettings s(info.absoluteFilePath());
-        load_views(s,view_names,built_in_views);
+    for (auto search_path: QDir::searchPaths("share")) {
+        QDir d(QString("%1/gridviews").arg(search_path));
+        d.setNameFilters(QStringList() << "*.dtg");
+        d.setFilter(QDir::NoDotAndDotDot | QDir::Readable | QDir::Files);
+        d.setSorting(QDir::Name);
+        QFileInfoList files = d.entryInfoList();
+        foreach(QFileInfo info, files) {
+            LOGI << "Loading gridviews from" << info.absoluteFilePath();
+            QSettings s(info.absoluteFilePath(), QSettings::IniFormat);
+            load_views(s,view_names,built_in_views);
+        }
     }
     //packaged default views, if we've already loaded an override for a view, don't include these views
+    LOGI << "Loading built-in default gridviews";
     QSettings s(":config/default_gridviews", QSettings::IniFormat);
     load_views(s,view_names,built_in_views);
 
@@ -181,6 +185,7 @@ void ViewManager::load_views(QSettings &s, QStringList &view_names, QList<GridVi
             m_views << gv;
             built_in_views << gv;
             view_names.append(gv->name());
+            LOGD << "gridview" << gv->name() << "added";
         }else{
             LOGW << "gridview" << gv->name() << "was not loaded because a view with this name already exists";
         }
