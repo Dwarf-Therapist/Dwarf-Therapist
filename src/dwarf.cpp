@@ -252,7 +252,7 @@ void Dwarf::read_data() {
         if (m_df->fortress()->address())
             m_is_citizen = m_df->fortress()->hist_figures().contains(m_histfig_id);
         TRACE << "HIST_FIG_ID:" << m_histfig_id;
-        if(DT->hide_non_citizens() && !m_is_citizen && !m_raw_profession->is_military()){
+        if(DT->hide_non_citizens() && !m_is_citizen && m_occ_type != OCC_MERC){
             set_validation("IGNORING visitor/guest",&validated,false,LL_DEBUG);
         }
     }
@@ -1189,7 +1189,7 @@ void Dwarf::check_availability(){
 
     //check squad assignment
     if(is_adult()){
-        m_can_assign_military = (m_is_citizen || (!m_is_citizen && m_raw_profession->is_military()));
+        m_can_assign_military = m_is_citizen || m_occ_type == OCC_MERC;
     }else{
         m_can_assign_military = false;
     }
