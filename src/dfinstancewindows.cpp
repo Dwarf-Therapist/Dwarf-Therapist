@@ -245,11 +245,11 @@ void DFInstanceWindows::find_running_copy() {
                          | PROCESS_VM_OPERATION
                          | PROCESS_VM_READ
                          | PROCESS_VM_WRITE, false, m_pid);
-    LOGI << "PROC HANDLE:" << m_proc;
     if (!m_proc) {
         DWORD error = GetLastError();
         LOGE << "Error opening process!" << get_error_string(error);
     }
+    LOGI << "PROC HANDLE:" << m_proc;
 
     HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, m_pid);
     if (snapshot == INVALID_HANDLE_VALUE) {
