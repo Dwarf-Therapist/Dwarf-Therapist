@@ -23,8 +23,8 @@ matrix:
       env:
         - COMPILER=g++ CXX=g++-5 CC=gcc-5
         - QT_PREFIX=/usr/lib/x86_64-linux-gnu/qt5
-        - DT_PREFIX=DwarfTherapist.AppDir/usr
-        - CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=$DT_PREFIX"
+        - APPDIR=DwarfTherapist.AppDir
+        - CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=$APPDIR/usr"
         - RELEASE_FILE='DwarfTherapist-*.AppImage'
     - os: osx
       before_install:
