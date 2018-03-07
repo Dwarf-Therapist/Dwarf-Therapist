@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include "unithealth.h"
 #include "healthinfo.h"
 #include "belief.h"
+#include "adaptivecolorfactory.h"
 
 #include <QMainWindow>
 #include <QProgressBar>
@@ -55,6 +56,29 @@ DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
 
     //ui->splitter->setOpaqueResize(true);
     //ui->splitter->setObjectName("details_splitter"); //important!! this name is used to find the splitter and save it's state!!
+
+    {
+        AdaptiveColorFactory adaptive;
+        QPalette palette;
+
+        palette.setColor(QPalette::WindowText, adaptive.gray(0.6157));
+        ui->lbl_translated_name->setPalette(palette);
+
+        palette.setColor(QPalette::WindowText, adaptive.gray(0.5843));
+        ui->lbl_age->setPalette(palette);
+
+        palette.setColor(QPalette::WindowText, adaptive.gray(0.7765));
+        ui->lbl_artifact->setPalette(palette);
+        ui->lbl_profession->setPalette(palette);
+        ui->lbl_current_job->setPalette(palette);
+
+        palette.setColor(QPalette::WindowText, adaptive.gray(0.8824));
+        ui->lbl_noble->setPalette(palette);
+        ui->lbl_noble_position->setPalette(palette);
+        ui->lbl_happiness->setPalette(palette);
+        ui->lbl_happiness_title->setPalette(palette);
+        ui->lbl_squad_name->setPalette(palette);
+    }
 
     int default_size = 60;
 
