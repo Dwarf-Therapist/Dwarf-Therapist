@@ -58,13 +58,8 @@ private:
     void clear_table(QTableWidget &t);
     QString label_gradient(QColor c1, QColor c2);
 
-    void add_personality_row(QString title, int raw_value, QString info, QString tooltip, QColor override = Qt::black);
+    void add_personality_row(QString title, int raw_value, QString info, QString tooltip, QColor override_color = QColor());
     void add_belief_row(int belief_id, Dwarf *d, bool is_cultural = false);
-
-    static QColor color_low;
-    static QColor color_high;
-    static QColor color_mood_high;
-    static QColor color_mood_had;
 };
 
 #endif

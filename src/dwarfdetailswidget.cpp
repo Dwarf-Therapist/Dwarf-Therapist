@@ -42,10 +42,10 @@ THE SOFTWARE.
 #include <QProgressBar>
 #include <QSettings>
 
-QColor DwarfDetailsWidget::color_low = QColor(168, 10, 44, 255);
-QColor DwarfDetailsWidget::color_high = QColor(0, 60, 128, 255);
-QColor DwarfDetailsWidget::color_mood_had = QColor(125, 125, 125, 255);
-QColor DwarfDetailsWidget::color_mood_high = QColor(60, 148, 19, 255);
+static const QColor COLOR_LOW = QColor(168, 10, 44, 255);
+static const QColor COLOR_HIGH = QColor(0, 60, 128, 255);
+static const QColor COLOR_MOOD_HAD = QColor(125, 125, 125, 255);
+static const QColor COLOR_MOOD_HIGH = QColor(60, 148, 19, 255);
 
 DwarfDetailsWidget::DwarfDetailsWidget(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
@@ -223,6 +223,8 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     if(d->id() == m_current_id)
         return;
 
+    AdaptiveColorFactory adaptive;
+
     ui->lbl_gender->setText(QString("<img src='%1'>").arg(d->gender_icon_path()));
     ui->lbl_gender->setToolTip(d->get_gender_orient_desc());
 
@@ -337,12 +339,12 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             tooltip = tr("<center><h4>%1</h4></center>").arg(s.name());
             if(d->get_moodable_skills().contains(s.id())){
                 if(d->had_mood()){
-                    item_skill->setForeground(color_mood_had);
+                    item_skill->setForeground(adaptive.color(COLOR_MOOD_HAD));
                     item_skill->setFont(bold_item_font);
                     tooltip.append(tr("<p>Has already had a mood!</p>"));
                 }
                 else{
-                    item_skill->setForeground(color_mood_high);
+                    item_skill->setForeground(adaptive.color(COLOR_MOOD_HIGH));
                     item_skill->setFont(bold_item_font);
                     if(d->get_moodable_skills().count() > 1){
                         tooltip.append(tr("<p>This is one of multiple possible moodable skills.</p>"));
@@ -358,9 +360,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
             item_level->setData(Qt::UserRole, (float)d->get_skill_level(s.id(),true,true));
             item_level->setTextAlignment(Qt::AlignHCenter);
             if(s.rust_rating() != ""){
-                QColor col_rust = s.rust_color();
-                col_rust.setAlpha(215);
-                item_level->setForeground(col_rust);
+                item_level->setForeground(adaptive.color(s.rust_color()));
                 item_level->setFont(bold_item_font);
             }
             item_level->setToolTip(s.to_string(true,true,false));
@@ -383,7 +383,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
                                        .arg(bonus_xp > 0 ? "more" : "less")
                                        .arg(raw_bonus_xp));
             if(bonus_xp < 0){
-                item_bonus->setForeground(color_low);
+                item_bonus->setForeground(adaptive.color(COLOR_LOW));
             }
 
             QProgressBar *pb = new QProgressBar(ui->tw_skills);
@@ -425,7 +425,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         attribute_rating->setToolTip(a.get_value_display());
 
         if(a.syndrome_names().count() > 0){
-            attribute_name->setForeground(Attribute::color_affected_by_syns());
+            attribute_name->setForeground(adaptive.color(Attribute::color_affected_by_syns()));
             tooltip = tr("<span><center><h4>%1</h4></center>%2</span>").arg(a.get_name()).arg(a.get_syndrome_desc());
         }else{
             tooltip = tr("<span><center><h4>%1</h4></center></span>").arg(a.get_name());
@@ -449,10 +449,10 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         attribute_msg->setToolTip(lvl_msg);
 
         if(a.get_descriptor_rank() <= 3) { //3 is the last bin before the median group
-            attribute_name->setForeground(color_low);
-            attribute_rating->setForeground(color_low);
-            attribute_max->setForeground(color_low);
-            attribute_msg->setForeground(color_low);
+            attribute_name->setForeground(adaptive.color(COLOR_LOW));
+            attribute_rating->setForeground(adaptive.color(COLOR_LOW));
+            attribute_max->setForeground(adaptive.color(COLOR_LOW));
+            attribute_msg->setForeground(adaptive.color(COLOR_LOW));
         }
 
         ui->tw_attributes->setItem(0, 0, attribute_name);
@@ -471,7 +471,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     foreach(int trait_id, traits.uniqueKeys()) {
         if (d->trait_is_active(trait_id))
         {
-            trait_color = QColor(Qt::black);
+            trait_color = QColor(); // invalid color will leave default color
             Trait *t = gdr->get_trait(trait_id);
             short val = traits.value(trait_id);
             //build the info message
@@ -481,7 +481,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
 
             //build the tooltip
             if(d->trait_is_conflicted(trait_id)){
-                trait_color = color_low;
+                trait_color = adaptive.color(COLOR_LOW);
                 foreach(UnitBelief ub, d->trait_conflicts(trait_id)){
                     add_belief_row(ub.belief_id(),d,true); //add the conflicting cultural belief to compare
                     conflicted_beliefs.append(ub.belief_id());
@@ -501,7 +501,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
     foreach(int id, d->goals().uniqueKeys()){
         QString name = "~" + gdr->get_goal_name(id);
         QString desc = gdr->get_goal_desc(id,d->goals().value(id));
-        add_personality_row(name,d->goals().value(id)*100,desc,desc,Trait::goal_color);
+        add_personality_row(name,d->goals().value(id)*100,desc,desc,adaptive.color(Trait::goal_color));
     }
     //add any personal beliefs that haven't already been added when the conflicts were checked
     foreach(UnitBelief ub, d->beliefs()){
@@ -534,7 +534,7 @@ void DwarfDetailsWidget::show_dwarf(Dwarf *d) {
         role_rating->setTextAlignment(Qt::AlignHCenter);
 
         if (val < 50) {
-            role_rating->setForeground(color_low);
+            role_rating->setForeground(adaptive.color(COLOR_LOW));
         }
 
         ui->tw_roles->setItem(0, 0, role_name);
@@ -685,13 +685,13 @@ void DwarfDetailsWidget::add_belief_row(int belief_id, Dwarf *d, bool is_cultura
     QString tooltip = desc;
     QColor col = Trait::belief_color;
     if(is_cultural){
-        col = color_low;
+        col = COLOR_LOW;
         name.append(QString("*<h5 style=\"margin:0px;\">%1</h5>").arg(tr("This is a conflicting cultural belief.")));
     }
-    add_personality_row(name,val,desc,tooltip,col);
+    add_personality_row(name,val,desc,tooltip,AdaptiveColorFactory().color(col));
 }
 
-void DwarfDetailsWidget::add_personality_row(QString title, int raw_value, QString info, QString tooltip, QColor override){
+void DwarfDetailsWidget::add_personality_row(QString title, int raw_value, QString info, QString tooltip, QColor override_color){
     ui->tw_traits->insertRow(0);
     ui->tw_traits->setRowHeight(0, 18);
 
@@ -706,10 +706,10 @@ void DwarfDetailsWidget::add_personality_row(QString title, int raw_value, QStri
     trait_msg->setText(info);
     trait_msg->setToolTip("<span>" + tooltip + "</span>");
 
-    if(override != Qt::black){
-        trait_name->setForeground(override);
-        trait_raw->setForeground(override);
-        trait_msg->setForeground(override);
+    if(override_color.isValid()){
+        trait_name->setForeground(override_color);
+        trait_raw->setForeground(override_color);
+        trait_msg->setForeground(override_color);
     }
 
     ui->tw_traits->setItem(0, 0, trait_name);
