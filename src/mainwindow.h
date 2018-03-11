@@ -149,8 +149,6 @@ public slots:
     void refresh_active_scripts();
     void clear_filter();
 
-    void show_dc_dialog(QStringList msg);
-
 private:
     DFInstance *m_df;
     QLabel *m_lbl_status;
