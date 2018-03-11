@@ -489,7 +489,20 @@ void MainWindow::lost_df_connection(bool show_dialog) {
         LOGE << err_msg;
         set_status_message(err_msg.value(0),"");
         if(show_dialog && DT->user_settings()->value("options/alert_on_lost_connection", true).toBool()){
-            show_dc_dialog(err_msg);
+            QMessageBox mb(QMessageBox::Warning,
+                           err_msg.at(0), // title
+                           err_msg.at(1), // text
+                           QMessageBox::Close | QMessageBox::Retry,
+                           this);
+            QString desc = err_msg.value(2);
+            if(!desc.isEmpty())
+                desc.append("<br><br>");
+            mb.setInformativeText(desc.append(tr("Please re-connect when Dwarf Fortress has been started and a fort has been loaded.")));
+            mb.setDetailedText(err_msg.at(3));
+            if (mb.exec() == QMessageBox::Retry) {
+                ui->act_connect_to_DF->trigger();
+                return; // skip connection timer and retry immediately
+            }
         }
     }
 
@@ -509,22 +522,6 @@ void MainWindow::lost_df_connection(bool show_dialog) {
             ui->act_connect_to_DF->setText(tr("Auto.."));
         }
     }
-}
-
-void MainWindow::show_dc_dialog(QStringList msg){
-    QMessageBox mb(this);
-    mb.setIcon(QMessageBox::Warning);
-    mb.setStandardButtons(QMessageBox::Ok);
-    mb.setWindowTitle(msg.at(0));
-    if(!msg.value(1).isEmpty())
-        mb.setText(msg.at(1));
-    QString desc = msg.value(2);
-    if(!desc.isEmpty())
-        desc.append("<br><br>");
-    mb.setInformativeText(desc.append(tr("Please re-connect when Dwarf Fortress has been started and a fort has been loaded.")));
-    if(!msg.value(3).isEmpty())
-        mb.setDetailedText(msg.at(3));
-    mb.exec();
 }
 
 void MainWindow::read_dwarves() {
