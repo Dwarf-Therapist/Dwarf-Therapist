@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "thought.h"
 #include "emotion.h"
 #include "emotiongroup.h"
+#include "adaptivecolorfactory.h"
 
 #include <QPainter>
 
@@ -77,6 +78,7 @@ void ThoughtsDock::build_tree(){
         thought_node->setData(2,SortableTreeItem::TREE_SORT_COL+2,eg->get_total_occurrances());
 
         //add parent node
+        AdaptiveColorFactory adaptive;
         foreach(EMOTION_TYPE e_type, eg->get_details().uniqueKeys()){
             Emotion *e = GameDataReader::ptr()->get_emotion(e_type);
             if(e){
@@ -95,7 +97,7 @@ void ThoughtsDock::build_tree(){
                         .arg(unit_names.join(unit_names.size() < 20 ? "<br/>" : ", "));
 
                 emotion_node->setData(0, Qt::UserRole, e_type);
-                emotion_node->setData(0,Qt::TextColorRole, e->get_color());
+                emotion_node->setData(0,Qt::TextColorRole, adaptive.color(e->get_color()));
                 emotion_node->setToolTip(0, tooltip);
                 emotion_node->setText(0, emotion_desc);
 
@@ -171,6 +173,8 @@ void ThoughtsItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &
     //only draw summary totals for top level items
     if(!index.parent().isValid())
     {
+        AdaptiveColorFactory adaptive;
+
         painter->save();
 
         QVariantList counts = index.data(Qt::UserRole+1).toList();
@@ -178,16 +182,16 @@ void ThoughtsItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &
         QString curr_text = "";
         //draw the eustress count
         int count = counts.at(2).toInt();
-        curr_text = prependText(painter,option,QColor(Qt::darkGreen),curr_text,QString("%1 ").arg(count==0 ? "-- " : QString("%1").arg(count,2,10,QChar('0'))));
+        curr_text = prependText(painter,option,adaptive.color(Qt::darkGreen),curr_text,QString("%1 ").arg(count==0 ? "-- " : QString("%1").arg(count,2,10,QChar('0'))));
         //spacer
         curr_text = prependText(painter,option,default_pen,curr_text,QString(" / "));
         //draw the neutral count
         count = counts.at(1).toInt();
-        curr_text = prependText(painter,option,QColor(Qt::darkGray),curr_text,QString("%1").arg(count==0 ? " --" : QString("%1").arg(count,2,10,QChar('0'))));
+        curr_text = prependText(painter,option,adaptive.gray(0.5),curr_text,QString("%1").arg(count==0 ? " --" : QString("%1").arg(count,2,10,QChar('0'))));
         curr_text = prependText(painter,option,default_pen,curr_text,QString(" / "));
         //draw the stress count
         count = counts.at(0).toInt();
-        curr_text = prependText(painter,option,QColor(Qt::darkRed),curr_text,QString(" %1").arg(count==0 ? " --" : QString("%1").arg(count,2,10,QChar('0'))));
+        curr_text = prependText(painter,option,adaptive.color(Qt::darkRed),curr_text,QString(" %1").arg(count==0 ? " --" : QString("%1").arg(count,2,10,QChar('0'))));
 
         painter->restore();
     }
