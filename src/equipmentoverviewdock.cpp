@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "equipmentoverviewdock.h"
 #include "equipwarn.h"
 #include "item.h"
+#include "adaptivecolorfactory.h"
 
 #include <QCheckBox>
 #include <QLabel>
@@ -101,6 +102,7 @@ void EquipmentOverviewDock::build_tree(){
             item_type_node->setData(0,SortableTreeItem::TREE_SORT_COL,item_name.toLower());
             item_type_node->setData(2,SortableTreeItem::TREE_SORT_COL+2,ew->get_total_count());
 
+            AdaptiveColorFactory adaptive;
             QPair<QString,Item::ITEM_STATE> warn_key;
             foreach(warn_key, ew->get_details().uniqueKeys()){
                 EquipWarn::warn_count wc = ew->get_details().value(warn_key);
@@ -129,7 +131,7 @@ void EquipmentOverviewDock::build_tree(){
                 item_node->setText(0, detail_name);
 
                 item_node->setToolTip(1, tooltip);
-                item_node->setData(1,Qt::TextColorRole, col);
+                item_node->setData(1,Qt::TextColorRole, adaptive.color(col));
                 item_node->setText(1,wear_desc);
 
                 item_node->setData(2, Qt::UserRole, wc.unit_ids.values());
@@ -210,9 +212,10 @@ void EquipWarnItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem 
         QColor default_pen = painter->pen().color();
         QString curr_text = "";
 
+        AdaptiveColorFactory adaptive;
         foreach(QString wear_level, counts.uniqueKeys()){
             int count = counts.value(wear_level).toInt();
-            QColor col = Item::get_color(static_cast<Item::ITEM_STATE>(wear_level.toInt()));
+            QColor col = adaptive.color(Item::get_color(static_cast<Item::ITEM_STATE>(wear_level.toInt())));
             if(curr_text != ""){
                 curr_text = prependText(painter,option,default_pen,curr_text,QString(" / "));
             }
