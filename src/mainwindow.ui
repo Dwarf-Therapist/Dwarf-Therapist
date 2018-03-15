@@ -381,7 +381,6 @@
     <addaction name="act_go_latest_release"/>
     <addaction name="act_go_forums"/>
     <addaction name="act_go_new_issue"/>
-    <addaction name="act_go_donate"/>
     <addaction name="separator"/>
     <addaction name="act_about"/>
     <addaction name="act_check_update"/>
