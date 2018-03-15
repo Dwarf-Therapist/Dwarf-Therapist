@@ -873,10 +873,10 @@ void MainWindow::draw_custom_profession_context_menu(const QPoint &p) {
 
 // web addresses
 void MainWindow::go_to_forums() {
-    QDesktopServices::openUrl(QUrl("http://www.bay12forums.com/smf/index.php?topic=122968.0"));
+    QDesktopServices::openUrl(QUrl("http://www.bay12forums.com/smf/index.php?topic=168411"));
 }
 void MainWindow::go_to_donate() {
-    QDesktopServices::openUrl(QUrl("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=GM5Z6DYJEVW56&item_name=Donation"));
+    // No current donation link
 }
 void MainWindow::go_to_project_home() {
     QDesktopServices::openUrl(QUrl(DT->project_homepage()));
