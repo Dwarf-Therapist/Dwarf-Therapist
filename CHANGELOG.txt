@@ -1,3 +1,12 @@
+### Version 39.3 Patch Notes
+
+***
+ - added memory layouts for DF 0.44.06 and 0.44.07
+ - added a retry button in the lost connection dialog
+ - added profession icon for monster slayers
+ - changed some colored text to be more adapted to the palette in use
+ - updated links in help menu
+
 ### Version 39.2.1 Patch Notes
 
 ***
