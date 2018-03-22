@@ -40,18 +40,18 @@ THE SOFTWARE.
 #include "defaultfonts.h"
 #include "dtstandarditem.h"
 #include "cellcolordef.h"
+#include "standardpaths.h"
 #include <QMessageBox>
 #include <QSettings>
 #include <QToolTip>
 #include <QTranslator>
 #include <QTimer>
-#include <QStandardPaths>
+#include <QCommandLineParser>
 
 const QString DwarfTherapist::m_url_homepage = QString("https://github.com/%1/%2").arg(REPO_OWNER).arg(REPO_NAME);
 
 DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     : QApplication(argc, argv)
-    , m_user_settings(0)
     , m_main_window(0)
     , m_options_menu(0)
     , m_allow_labor_cheats(false)
@@ -65,16 +65,40 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     , m_arena_mode(false) //manually set this to true to do arena testing (very hackish, all units will be animals)
     , m_log_mgr(0)
 {
+#ifdef Q_OS_LINUX
+    // Linux prefers lower case and no space in package names.
+    setApplicationName("dwarftherapist");
+#else
     setApplicationName("Dwarf Therapist");
-    setOrganizationName("UDP Software");
-    QSettings::setDefaultFormat(QSettings::IniFormat);
+#endif
+    // Do not set organization name to avoid QStandardPaths using
+    // paths like share/dwarftherapist/dwarftherapist/...
+#ifdef Q_OS_OSX
+    setOrganizationDomain("io.github.dwarf-therapist");
+#endif
+    setApplicationDisplayName("Dwarf Therapist");
+    Version v; // current version
+    setApplicationVersion(v.to_string());
 
-    setup_logging();
+    QCommandLineParser parser;
+    parser.addHelpOption();
+    parser.addVersionOption();
+    QCommandLineOption debug_option("debug", tr("Set logging to debug level."));
+    parser.addOption(debug_option);
+    QCommandLineOption trace_option("trace", tr("Set logging to trace level."));
+    parser.addOption(trace_option);
+    QCommandLineOption portable_option("portable", tr("Start in portable mode (look for data and config files relatively to the executable)."));
+    parser.addOption(portable_option);
+    parser.process(*this);
+
+    setup_logging(parser.isSet(debug_option), parser.isSet(trace_option));
     load_translator();
-    setup_search_paths();
+    if (parser.isSet(portable_option))
+        StandardPaths::portable = true;
+    StandardPaths::init_paths();
 
     TRACE << "Creating settings object";
-    m_user_settings = new QSettings(this);
+    m_user_settings = StandardPaths::settings();
 
     TRACE << "Creating options menu";
     m_options_menu = new OptionsMenu;
@@ -115,34 +139,9 @@ DwarfTherapist::~DwarfTherapist(){
     qDeleteAll(m_super_labors);
     m_super_labors.clear();
 
-    delete m_user_settings;
     delete m_options_menu;
     delete m_main_window;
     delete m_log_mgr;
-}
-
-void DwarfTherapist::setup_search_paths() {
-    QStringList paths;
-    QString appdir = QCoreApplication::applicationDirPath();
-    QString working_dir = QDir::current().path();
-
-    // Dwarf Therapist xx.x/share/game_data.ini
-    paths << QString("%1/share").arg(appdir);
-    // Dwarf-Therapist/release/../share/game_data.ini
-    paths << QString("%1/../share").arg(appdir);
-    // /usr/bin/../share/dwarftherapist/game_data.ini
-#ifdef Q_OS_LINUX
-    for (auto loc : QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation))
-        paths << loc + "/dwarftherapist";
-#else
-    paths << QStandardPaths::standardLocations(QStandardPaths::AppDataLocation);
-#endif
-    // cwd/game_data.ini
-    paths << QString("%1").arg(working_dir);
-    // cwd/share/game_data.ini
-    paths << QString("%1/share").arg(working_dir);
-
-    QDir::setSearchPaths("share", paths);
 }
 
 MainWindow* DwarfTherapist::get_main_window(){
@@ -153,11 +152,7 @@ DFInstance* DwarfTherapist::get_DFInstance(){
     return m_main_window->get_DFInstance();
 }
 
-void DwarfTherapist::setup_logging() {
-    QStringList args = arguments();
-    bool debug_logging = args.indexOf("-debug") != -1;
-    bool trace_logging = args.indexOf("-trace") != -1;
-
+void DwarfTherapist::setup_logging(bool debug_logging, bool trace_logging) {
     LOG_LEVEL min_level = LL_INFO;
 
 #ifdef QT_DEBUG
@@ -302,7 +297,7 @@ void DwarfTherapist::load_customizations(){
     {
         for(int idx = 0; idx < size; idx++) {
             m_user_settings->setArrayIndex(idx);
-            SuperLabor *sl = new SuperLabor(*m_user_settings,this);
+            SuperLabor *sl = new SuperLabor(*m_user_settings.get(),this);
             m_super_labors.insert(sl->get_name(),sl);
         }
     }
@@ -333,11 +328,11 @@ void DwarfTherapist::write_custom_professions(){
         CustomProfession *cp;
         //save the custom professions
         foreach(cp, m_custom_professions.values()) {
-            cp->save(*m_user_settings);
+            cp->save(*m_user_settings.get());
         }
         //save the custom profession icons
         foreach(CustomProfession *cp, m_custom_prof_icns.values()){
-            cp->save(*m_user_settings);
+            cp->save(*m_user_settings.get());
         }
         m_user_settings->endGroup();
     }
@@ -350,7 +345,7 @@ void DwarfTherapist::write_super_labors(){
         int idx = 0;
         foreach(SuperLabor *sl, m_super_labors) {
             m_user_settings->setArrayIndex(idx++);
-            sl->save(*m_user_settings);
+            sl->save(*m_user_settings.get());
         }
         m_user_settings->endArray();
     }

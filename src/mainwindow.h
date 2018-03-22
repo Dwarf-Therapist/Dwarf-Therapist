@@ -24,6 +24,7 @@ THE SOFTWARE.
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <memory>
 
 #include "global_enums.h"
 
@@ -57,7 +58,7 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    QSettings *get_settings() {return m_settings;}
+    QSettings *get_settings() {return m_settings.get();}
     QToolBar *get_toolbar();
     DwarfModel *get_model() {return m_model;}
     DwarfModelProxy *get_proxy() {return m_proxy;}
@@ -154,7 +155,7 @@ private:
     QLabel *m_lbl_status;
     QLabel *m_lbl_message;
     QProgressBar *m_progress;
-    QSettings *m_settings;
+    std::unique_ptr<QSettings> m_settings;
     ViewManager *m_view_manager;
     DwarfModel *m_model;
     DwarfModelProxy *m_proxy;

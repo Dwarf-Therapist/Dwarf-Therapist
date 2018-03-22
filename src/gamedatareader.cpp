@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include "thought.h"
 #include "trait.h"
 #include "unithealth.h"
+#include "standardpaths.h"
 
 #include <QMessageBox>
 #include <QFile>
@@ -44,11 +45,12 @@ QStringList GameDataReader::m_months;
 GameDataReader::GameDataReader(QObject *parent)
     : QObject(parent)
 {
+    auto game_data_file = StandardPaths::locate_data("game_data.ini");
     //load override game_data
-    if (QFile::exists("share:game_data.ini")) {
-        m_data_settings = QPointer<QSettings>(new QSettings("share:game_data.ini", QSettings::IniFormat));
+    if (!game_data_file.isEmpty()) {
+        LOGI << "Found custom game_data.ini:" << game_data_file;
+        m_data_settings = QPointer<QSettings>(new QSettings(game_data_file, QSettings::IniFormat));
         m_data_settings->setIniCodec("UTF-8");
-        LOGI << "Found custom game_data.ini:" << m_data_settings->fileName();
     } else {
         //load default game_data
         m_data_settings = QPointer<QSettings>(new QSettings(":config/game_data", QSettings::IniFormat));

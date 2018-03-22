@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "gamedatareader.h"
 #include "labor.h"
+#include "standardpaths.h"
 
 #include <QMessageBox>
 #include <QSettings>
@@ -136,14 +137,14 @@ bool SuperLabor::is_valid() {
 }
 
 void SuperLabor::delete_from_disk() {
-    QSettings s(this);
-    int size = s.beginReadArray("super_labors");
+    auto s = StandardPaths::settings();
+    int size = s->beginReadArray("super_labors");
     for(int idx=0;idx<size;idx++){
-        s.setArrayIndex(idx);
-        if(s.value("id") == m_name)
-            s.remove(m_name);
+        s->setArrayIndex(idx);
+        if(s->value("id") == m_name)
+            s->remove(m_name);
     }
-    s.endArray();
+    s->endArray();
 }
 
 void SuperLabor::save(QSettings &s){

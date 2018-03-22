@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <QSharedPointer>
 #include <QVariant>
 #include <QColor>
+#include <memory>
 #include "global_enums.h"
 
 class QTreeWidgetItem;
@@ -62,7 +63,7 @@ public:
     QList<SuperLabor*> get_super_labors();
 
     MainWindow *get_main_window();
-    QSettings *user_settings() {return m_user_settings;}
+    QSettings *user_settings() {return m_user_settings.get();}
     OptionsMenu *get_options_menu() {return m_options_menu;}
     Dwarf *get_dwarf_by_id(int dwarf_id);
 
@@ -131,7 +132,7 @@ private:
     QMap<QString,CustomProfession*> m_custom_professions;
     QMap<int, CustomProfession*> m_custom_prof_icns;
     QMap<QString,SuperLabor*> m_super_labors;
-    QSettings *m_user_settings;
+    std::unique_ptr<QSettings> m_user_settings;
     MainWindow *m_main_window;
     OptionsMenu *m_options_menu;
 
@@ -153,7 +154,7 @@ private:
     static const QString m_url_homepage;
 
     void setup_search_paths();
-    void setup_logging();
+    void setup_logging(bool debug_logging, bool trace_logging);
     void load_translator();
     void edit_customization(QList<QVariant> data);
     void check_global_color(GLOBAL_COLOR_TYPES key, QString setting_key, QString title, QString desc, QColor col_default);

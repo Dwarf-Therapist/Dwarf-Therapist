@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "dwarf.h"
 #include "material.h"
 #include "item.h"
+#include "standardpaths.h"
 
 #include <QSettings>
 #include <QRegularExpression>
@@ -63,7 +64,7 @@ Role::Role(QSettings &s, QObject *parent)
     , m_cur_pref_len(0)
     , m_updated(false)
 {
-    QSettings *u = new QSettings(this);
+    auto u = StandardPaths::settings();
     parseAspect(s, "attributes", attributes_weight, attributes, u->value("options/default_attributes_weight",1.0).toFloat());
     parseAspect(s, "traits", traits_weight, traits, u->value("options/default_traits_weight",1.0).toFloat());
     parseAspect(s, "skills", skills_weight, skills, u->value("options/default_skills_weight",1.0).toFloat());

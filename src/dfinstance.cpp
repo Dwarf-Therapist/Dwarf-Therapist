@@ -50,6 +50,7 @@ THE SOFTWARE.
 #include "equipwarn.h"
 #include "unitemotion.h"
 #include "rolecalcbase.h"
+#include "standardpaths.h"
 
 #include <QTimer>
 #include <QTime>
@@ -95,7 +96,7 @@ DFInstance::DFInstance(QObject* parent)
     // checking before we're connected
     connect(m_heartbeat_timer, SIGNAL(timeout()), SLOT(heartbeat()));
 
-    for (auto search_path: QDir::searchPaths("share")) {
+    for (auto search_path: StandardPaths::data_locations()) {
         QDir d(QString("%1/memory_layouts/%2").arg(search_path).arg(LAYOUT_SUBDIR));
         d.setNameFilters(QStringList() << "*.ini");
         d.setFilter(QDir::NoDotAndDotDot | QDir::Readable | QDir::Files);
@@ -123,7 +124,7 @@ DFInstance::DFInstance(QObject* parent)
     // if no memory layouts were found that's a critical error
     // continue though, as a layout may be automatically downloaded
     if (m_memory_layouts.size() < 1) {
-        LOGW << "No valid layouts found in the following directories:" << QDir::searchPaths("share");
+        LOGW << "No valid layouts found in the following directories:" << StandardPaths::data_locations();
         //qApp->exit(ERROR_NO_VALID_LAYOUTS);
     }
 
@@ -1127,7 +1128,7 @@ bool DFInstance::add_new_layout(const QString & filename, const QString data, QS
     bool ok = false;
 
     QFileInfo file_info;
-    QDir layouts_dir = QDir(QString("share/memory_layouts/%1").arg(LAYOUT_SUBDIR));
+    QDir layouts_dir = QDir(QString("%1/memory_layouts/%2").arg(StandardPaths::writable_data_location()).arg(LAYOUT_SUBDIR));
     if(!layouts_dir.exists() && !layouts_dir.mkpath(layouts_dir.absolutePath())){
         LOGE << "Failed to create directory path:" << layouts_dir.absolutePath();
         result_msg = tr("Failed to create directory %1").arg(layouts_dir.absolutePath());
@@ -1183,7 +1184,7 @@ const QStringList DFInstance::status_err_msg(){
             ret << tr("No Layouts Found");
             ret << tr("No valid memory layouts could be found to attempt connection to Dwarf Fortress.");
             ret << tr("View the details below for the directories checked.");
-            ret <<  QDir::searchPaths("share").join("\n");
+            ret << StandardPaths::data_locations().join("\n");
         }else{
             QStringList supported_vers;
 

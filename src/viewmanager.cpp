@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include "itemweaponsubtype.h"
 #include "dwarf.h"
 #include "mainwindow.h"
+#include "standardpaths.h"
 #include <QMenu>
 #include <QMessageBox>
 #include <QInputDialog>
@@ -118,7 +119,7 @@ void ViewManager::reload_views() {
     QList<GridView*> built_in_views;
 
     //custom views
-    for (auto search_path: QDir::searchPaths("share")) {
+    for (auto search_path: StandardPaths::data_locations()) {
         QDir d(QString("%1/gridviews").arg(search_path));
         d.setNameFilters(QStringList() << "*.dtg");
         d.setFilter(QDir::NoDotAndDotDot | QDir::Readable | QDir::Files);
