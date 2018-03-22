@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include "multilabor.h"
 #include "superlabor.h"
 #include "customcolor.h"
+#include "standardpaths.h"
 
 #include <QMessageBox>
 #include <QPainter>
@@ -399,10 +400,10 @@ QString CustomProfession::get_save_name(){
 
 
 void CustomProfession::delete_from_disk() {
-    QSettings s(this);
-    s.beginGroup("custom_professions");
-    s.remove(get_save_name());
-    s.endGroup();
+    auto s = StandardPaths::settings();
+    s->beginGroup("custom_professions");
+    s->remove(get_save_name());
+    s->endGroup();
 }
 
 void CustomProfession::save(QSettings &s){

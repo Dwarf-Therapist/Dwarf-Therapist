@@ -1,6 +1,6 @@
 /*
 Dwarf Therapist
-Copyright (c) 2009 Trey Stout (chmod)
+Copyright (c) 2018 Clement Vuchener
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,29 +20,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef DEFINES_H
-#define DEFINES_H
 
-#ifndef DT_VERSION_MAJOR
-    #define DT_VERSION_MAJOR 39
-#endif
+#ifndef STANDARD_PATHS_H
+#define STANDARD_PATHS_H
 
-#ifndef DT_VERSION_MINOR
-    #define DT_VERSION_MINOR 3
-#endif
+#include <QDir>
+#include <QSettings>
+#include <memory>
 
-#ifndef DT_VERSION_PATCH
-    #define DT_VERSION_PATCH 1
-#endif
+class StandardPaths
+{
+public:
+    static bool portable;
 
-#define DEFAULT_CELL_SIZE 16
-#define DEFAULT_SPACER_WIDTH 4
+    static void init_paths();
 
-#define ERROR_NO_VALID_LAYOUTS 500
+    static std::unique_ptr<QSettings> settings();
+    static QString locate_data(const QString &filename);
+    static QStringList data_locations();
+    static QString writable_data_location();
+    static QStringList doc_locations();
 
-#define GLOBAL_SORT_COL_IDX 1
-
-#define REPO_OWNER "Dwarf-Therapist"
-#define REPO_NAME "Dwarf-Therapist"
+private:
+    static QDir appdir;
+    static QDir portable_datadir, portable_configdir;
+};
 
 #endif

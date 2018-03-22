@@ -19,6 +19,7 @@ include(CPack)
 include(InstallRequiredSystemLibraries)
 include_directories(src thirdparty/qtcolorpicker-2.6)
 
+set(EXE_NAME "DwarfTherapist")
 if(WIN32)
     add_definitions(-DUNICODE -D_UNICODE -DNOMINMAX)
     set(SOURCES ${SOURCES} DwarfTherapist.rc src/dfinstancewindows.cpp)
@@ -31,14 +32,23 @@ elseif(UNIX)
         find_library(SECURITY_LIB Security)
         find_library(APPKIT_LIB AppKit)
         set(LIBS ${FOUNDATION_LIB} ${SECURITY_LIB} ${APPKIT_LIB})
-    else()
+
+        set(MACOSX_BUNDLE_GUI_IDENTIFIER "io.github.dwarf-therapist.DwarfTherapist")
+    else() # Linux
         set(SOURCES ${SOURCES} src/dfinstancelinux.cpp)
+        set(EXE_NAME "dwarftherapist")
     endif()
 else()
     message(FATAL_ERROR "unsupported target")
 endif()
 
-add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE  
+# Portable build
+option(BUILD_PORTABLE "Build as portable application (look for files in the application directory)" OFF)
+if(BUILD_PORTABLE)
+    add_definitions(-DBUILD_PORTABLE)
+endif()
+
+add_executable(${EXE_NAME} WIN32 MACOSX_BUNDLE  
     src/itemgenericsubtype.h src/itemtoolsubtype.h src/basedock.cpp
     src/aboutdialog.cpp src/activity.cpp src/activityevent.cpp src/attribute.cpp
     src/belief.cpp src/caste.cpp src/customcolor.cpp src/customprofession.cpp
@@ -82,19 +92,19 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     src/itemarmor.cpp src/itemdefuniform.h src/dwarfjob.h src/uniform.h
     src/contextmenuhelper.cpp src/cellcolordef.h src/mood.cpp src/labor.cpp
     src/subthoughttypes.cpp src/plandetail.h src/eventfilterlineedit.cpp
-    src/roleaspect.h src/adaptivecolorfactory.cpp
+    src/roleaspect.h src/adaptivecolorfactory.cpp src/standardpaths.cpp
     thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp resources.qrc
     ${SOURCES})
-target_link_libraries(DwarfTherapist Qt5::Widgets Qt5::Qml ${LIBS})
+target_link_libraries(${EXE_NAME} Qt5::Widgets Qt5::Qml ${LIBS})
 
 if (APPLE)
-    set_target_properties(DwarfTherapist PROPERTIES
+    set_target_properties(${EXE_NAME} PROPERTIES
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/osx/MacOSXBundleInfo.plist.in)
 endif()
 
 if(UNIX AND NOT APPLE)
     # Installation is currently Linux-only
-    install(TARGETS DwarfTherapist
+    install(TARGETS ${EXE_NAME}
             RUNTIME DESTINATION bin)
     install(DIRECTORY share/
             DESTINATION share/dwarftherapist)

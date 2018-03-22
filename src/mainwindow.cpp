@@ -62,6 +62,7 @@ THE SOFTWARE.
 #include "gridview.h"
 #include "notifierwidget.h"
 #include "updater.h"
+#include "standardpaths.h"
 
 #include <QCompleter>
 #include <QDesktopServices>
@@ -81,7 +82,6 @@ MainWindow::MainWindow(QWidget *parent)
     , m_lbl_status(new QLabel(tr("Disconnected"), this))
     , m_lbl_message(new QLabel(tr("Initializing"), this))
     , m_progress(new QProgressBar(this))
-    , m_settings(0)
     , m_view_manager(0)
     , m_model(new DwarfModel(this))
     , m_proxy(new DwarfModelProxy(this))
@@ -215,7 +215,7 @@ MainWindow::MainWindow(QWidget *parent)
     //the view manager is signalled this way, to ensure that the order of signals is preserved
     connect(DT,SIGNAL(connected()),m_view_manager,SLOT(rebuild_global_sort_keys()));
 
-    m_settings = new QSettings(this);
+    m_settings = StandardPaths::settings();
 
     m_progress->setVisible(false);
     statusBar()->addPermanentWidget(m_lbl_message, 0);
@@ -324,7 +324,6 @@ MainWindow::~MainWindow() {
     delete m_view_manager;
     delete m_proxy;
     delete m_df;
-    delete m_settings;
     delete ui;
 }
 
@@ -891,17 +890,8 @@ void MainWindow::check_latest_version(){
 }
 
 void MainWindow::open_help(){
-    QString appdir = QCoreApplication::applicationDirPath();
-    QStringList doc_dirs;
-    // Dwarf Therapist xx.x/doc/Dwarf Therapist.pdf
-    doc_dirs << QString("%1/doc").arg(appdir);
-    // Dwarf-Therapist/release/../doc/Dwarf Therapist.pdf
-    doc_dirs << QString("%1/../doc").arg(appdir);
-    // /usr/bin/../share/doc/dwarftherapist/Dwarf Therapist.pdf
-    doc_dirs << QString("%1/../share/doc/dwarftherapist").arg(appdir);
-
     QUrl url("http://dffd.wimbli.com/file.php?id=7889");
-    foreach (const QString &dir, doc_dirs) {
+    foreach (const QString &dir, StandardPaths::doc_locations()) {
         QString file = dir + "/Dwarf Therapist.pdf";
         if (QFile::exists(file)) {
             url = QUrl::fromLocalFile(file);
@@ -1019,8 +1009,7 @@ void MainWindow::clear_user_settings() {
         QFile file(m_settings->fileName());
         LOGI << "Removing file:" << m_settings->fileName();
 
-        delete m_settings;
-        m_settings = 0;
+        m_settings.reset(nullptr);
 
         if(!file.remove()) {
             LOGW << "Error removing file!";
