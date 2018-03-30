@@ -413,6 +413,14 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         paint_grid(adjusted, false, p, opt, idx);
     }
         break;
+    case CT_PREFERENCE:
+    {
+        QColor bg = paint_bg(adjusted, p, opt, idx, false, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
+        if (rating > 0)
+            paint_values(adjusted, rating, text_rating, bg, p, opt, idx, 0.0f, 0.0f, 100.0f, 0.0f, 0.0f, true);
+        paint_grid(adjusted, false, p, opt, idx);
+    }
+        break;
     case CT_HEALTH:
     {
         QColor bg = paint_bg(adjusted, p, opt, idx, false, model_idx.data(Qt::BackgroundColorRole).value<QColor>());
