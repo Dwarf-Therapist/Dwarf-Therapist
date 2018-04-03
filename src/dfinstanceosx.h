@@ -54,6 +54,7 @@ private:
     VIRTADDR alloc_chunk(USIZE size);
     VIRTADDR m_alloc_start, m_alloc_end;
     int m_alloc_remaining, m_size_allocated;
+    uid_t m_ruid;
 };
 
 #endif // DFINSTANCE_H
