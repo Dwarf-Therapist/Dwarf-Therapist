@@ -35,7 +35,7 @@ THE SOFTWARE.
 #endif
 
 #ifndef DT_VERSION_PATCH
-    #define DT_VERSION_PATCH 0
+    #define DT_VERSION_PATCH 1
 #endif
 
 #define DEFAULT_CELL_SIZE 16
