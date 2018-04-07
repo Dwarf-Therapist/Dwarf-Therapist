@@ -359,6 +359,8 @@
     <addaction name="act_export_gridviews"/>
     <addaction name="act_import_saved_gridviews"/>
     <addaction name="separator"/>
+    <addaction name="act_open_data_dir"/>
+    <addaction name="separator"/>
     <addaction name="act_print"/>
     <addaction name="separator"/>
     <addaction name="act_clear_user_settings"/>
@@ -1177,6 +1179,14 @@
     <string>Check for Update</string>
    </property>
   </action>
+  <action name="act_open_data_dir">
+   <property name="text">
+    <string>Open data directory</string>
+   </property>
+   <property name="toolTip">
+    <string>Open directory for custom data files in the file explorer</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -1665,6 +1675,22 @@
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>check_latest_version()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>629</x>
+     <y>257</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>act_open_data_dir</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>open_data_dir()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>

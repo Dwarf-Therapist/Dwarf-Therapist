@@ -79,7 +79,7 @@ public:
     // accessors
     VIRTADDR df_base_addr() const {return m_base_addr;}
     const QString df_checksum() {return m_df_checksum;}
-    const QString layout_subdir();
+    static QString layout_subdir();
     DFI_STATUS status() const {return m_status;}
     WORD dwarf_race_id() {return m_dwarf_race_id;}
     const std::map<QString, std::unique_ptr<MemoryLayout>> &get_layouts() const { return m_memory_layouts; }
