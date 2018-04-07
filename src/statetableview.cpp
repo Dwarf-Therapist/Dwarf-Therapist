@@ -552,7 +552,8 @@ void StateTableView::assign_to_squad(){
     foreach(QModelIndex i, sel) {
         id = i.data(DwarfModel::DR_ID).toInt();
         Dwarf *d = m_model->get_dwarf_by_id(id);
-        new_squad->assign_to_squad(d);
+        if (d->can_assign_military())
+            new_squad->assign_to_squad(d);
     }
     disconnect(new_squad,SIGNAL(squad_leader_changed()),this,SLOT(emit_squad_leader_changed()));
     m_model->calculate_pending();
