@@ -119,6 +119,7 @@ public slots:
     void go_to_new_issue();
     void go_to_latest_release();
     void check_latest_version();
+    void open_data_dir();
 
     //help
     void open_help();

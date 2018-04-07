@@ -1497,7 +1497,7 @@ bool DFInstance::authorize() {
     return true;
 }
 
-const QString DFInstance::layout_subdir(){
+QString DFInstance::layout_subdir(){
     return LAYOUT_SUBDIR;
 }
 
