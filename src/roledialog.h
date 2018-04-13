@@ -6,14 +6,14 @@
 #include <memory>
 #include "global_enums.h"
 
-class DFInstance;
 class Dwarf;
 class Material;
 class Plant;
 class RolePreference;
+class RolePreferenceModel;
+class RecursiveFilterProxyModel;
 class QSplitter;
 class QTableWidget;
-class QTreeWidgetItem;
 class Role;
 struct RoleAspect;
 namespace Ui { class roleDialog; }
@@ -23,13 +23,11 @@ class roleDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit roleDialog(QWidget *parent = 0);
+    explicit roleDialog(RolePreferenceModel *pref_model, QWidget *parent = 0);
     ~roleDialog();
     bool event(QEvent *evt);
 
     void load_role(QString role_name);
-
-    void build_pref_tree(DFInstance *df = nullptr);
 
 public slots:
     void selection_changed();
@@ -38,49 +36,8 @@ private:
     std::unique_ptr<Ui::roleDialog> ui;
     Role *m_role;
     Dwarf *m_dwarf;
-
-    //preference main holder
-    std::map<QTreeWidgetItem*,std::vector<std::shared_ptr<RolePreference>>> m_pref_list;
-
-    //specific categories
-    QTreeWidgetItem *m_gems;
-    QTreeWidgetItem *m_glass;
-    QTreeWidgetItem *m_metals;
-    QTreeWidgetItem *m_stone;
-    QTreeWidgetItem *m_wood;
-    QTreeWidgetItem *m_glazes_wares;
-    QTreeWidgetItem *m_plants;
-    QTreeWidgetItem *m_plants_alcohol;
-    QTreeWidgetItem *m_plants_crops;
-    QTreeWidgetItem *m_plants_crops_plantable;
-    QTreeWidgetItem *m_plants_mill;
-    QTreeWidgetItem *m_plants_extract;
-    QTreeWidgetItem *m_trees;
-    QTreeWidgetItem *m_fabrics;
-    QTreeWidgetItem *m_papers;
-    QTreeWidgetItem *m_leathers;
-    QTreeWidgetItem *m_parchments;
-
-    //creature categories
-    QTreeWidgetItem *m_creatures;
-    QTreeWidgetItem *m_hateable;
-    QTreeWidgetItem *m_trainable;
-    QTreeWidgetItem *m_milkable;
-    QTreeWidgetItem *m_extracts;
-    QTreeWidgetItem *m_extracts_fish;
-    QTreeWidgetItem *m_fishable;
-    QTreeWidgetItem *m_shearable;
-    QTreeWidgetItem *m_butcher;
-    QTreeWidgetItem *m_domestic;
-
-    //general categories
-    QTreeWidgetItem *m_general_item;
-    QTreeWidgetItem *m_general_material;
-    QTreeWidgetItem *m_general_creature;
-    QTreeWidgetItem *m_general_trade_good;
-    QTreeWidgetItem *m_general_plant_tree;
-    QTreeWidgetItem *m_general_other;
-    QTreeWidgetItem *m_general_equip;
+    RolePreferenceModel *m_pref_model;
+    RecursiveFilterProxyModel *m_proxy_model;
 
     void load_role_data();
     void decorate_splitter(QSplitter *s);
@@ -88,23 +45,15 @@ private:
     void save_aspects(QTableWidget &table, std::map<QString, RoleAspect> &list);
     void save_prefs(Role *r);
     void insert_row(QTableWidget &table, const RoleAspect &a, QString key);
-    void insert_pref_row(RolePreference *p);
+    void insert_pref_row(const RolePreference *p);
 
     void add_aspect(QString id, QTableWidget &table, std::map<QString, RoleAspect> &list);
 
     void clear_table(QTableWidget &t);
     bool m_override;
 
-    //preferences
-    void load_material_prefs(QVector<Material*> mats);
-    void load_plant_prefs(QVector<Plant *> plants);
-    void load_items(DFInstance *df);
-    void load_creatures(DFInstance *df);
-    void load_weapons(DFInstance *df);
-    QTreeWidgetItem *init_parent_node(QString title);
-    void add_pref_to_tree(QTreeWidgetItem *parent, std::shared_ptr<RolePreference> p);
-
 protected:
+    void showEvent(QShowEvent *);
     void closeEvent(QCloseEvent *){close_pressed();}
     void keyPressEvent(QKeyEvent *e){
         if(e->key()==Qt::Key_Escape)
@@ -134,7 +83,7 @@ private slots:
     void remove_skill();
 
     //void tree_selection_changed(QTreeWidgetItem *current, QTreeWidgetItem *previous);
-    void item_double_clicked(QTreeWidgetItem *item, int col);
+    void item_double_clicked(const QModelIndex &index);
     void draw_prefs_context_menu(const QPoint &);
     void remove_pref();
     void search_prefs(QString);

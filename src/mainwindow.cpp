@@ -63,6 +63,7 @@ THE SOFTWARE.
 #include "notifierwidget.h"
 #include "updater.h"
 #include "standardpaths.h"
+#include "rolepreferencemodel.h"
 
 #include <QCompleter>
 #include <QDesktopServices>
@@ -85,9 +86,10 @@ MainWindow::MainWindow(QWidget *parent)
     , m_view_manager(0)
     , m_model(new DwarfModel(this))
     , m_proxy(new DwarfModelProxy(this))
+    , m_pref_model(new RolePreferenceModel(this))
     , m_about_dialog(new AboutDialog(this))
     , m_script_dialog(new ScriptDialog(this))
-    , m_role_editor(new roleDialog(this))
+    , m_role_editor(new roleDialog(m_pref_model, this))
     , m_optimize_plan_editor(0)
     , m_reading_settings(false)
     , m_show_result_on_equal(false)
@@ -412,6 +414,7 @@ void MainWindow::connect_to_df() {
     }
 
     m_df = DFInstance::newInstance();
+    m_pref_model->set_df_instance(m_df);
     if(m_df){
         //attempt to connect to the process first
         m_df->find_running_copy();
@@ -478,6 +481,7 @@ void MainWindow::lost_df_connection(bool show_dialog) {
         m_df = 0;
         reset();
         set_interface_enabled(false);
+        m_pref_model->set_df_instance(nullptr);
     }else{
         err_msg << tr("Startup Failed");
         err_msg << tr("Dwarf Therapist failed to startup!");
@@ -600,7 +604,7 @@ void MainWindow::read_dwarves() {
     m_dwarf_name_completer->popup()->installEventFilter(filter);
     connect(filter,SIGNAL(enterPressed(QModelIndex)),this,SLOT(apply_filter(QModelIndex)));
 
-    m_role_editor->build_pref_tree (m_df);
+    m_pref_model->set_df_instance(m_df);
 
     if(!m_optimize_plan_editor){
         m_optimize_plan_editor = new optimizereditor(this);
