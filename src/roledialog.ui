@@ -804,7 +804,7 @@
           </layout>
          </item>
          <item>
-          <widget class="QTreeWidget" name="treePrefs">
+          <widget class="QTreeView" name="treePrefs">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -817,20 +817,12 @@
            <property name="showDropIndicator" stdset="0">
             <bool>false</bool>
            </property>
-           <attribute name="headerVisible">
-            <bool>false</bool>
+           <attribute name="headerDefaultSectionSize">
+            <number>0</number>
            </attribute>
-           <attribute name="headerCascadingSectionResizes">
+           <attribute name="headerHighlightSections">
             <bool>true</bool>
            </attribute>
-           <attribute name="headerShowSortIndicator" stdset="0">
-            <bool>true</bool>
-           </attribute>
-           <column>
-            <property name="text">
-             <string notr="true">1</string>
-            </property>
-           </column>
           </widget>
          </item>
         </layout>

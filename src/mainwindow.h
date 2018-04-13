@@ -33,6 +33,7 @@ class DFInstance;
 class Dwarf;
 class DwarfModel;
 class DwarfModelProxy;
+class RolePreferenceModel;
 class NotifierWidget;
 class QCompleter;
 class QLabel;
@@ -160,6 +161,7 @@ private:
     ViewManager *m_view_manager;
     DwarfModel *m_model;
     DwarfModelProxy *m_proxy;
+    RolePreferenceModel *m_pref_model;
     AboutDialog *m_about_dialog;
     ScriptDialog *m_script_dialog;
     roleDialog *m_role_editor;

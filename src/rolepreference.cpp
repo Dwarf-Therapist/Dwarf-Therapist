@@ -37,6 +37,7 @@ RolePreference::RolePreference(PREF_TYPES type, const QString &name)
     : m_type(type)
     , m_name(name)
 {
+    aspect.weight = 0.5;
 }
 
 RolePreference::RolePreference(PREF_TYPES type, const QString &name, const std::set<int> &flags)
@@ -44,6 +45,7 @@ RolePreference::RolePreference(PREF_TYPES type, const QString &name, const std::
     , m_name(name)
     , m_flags(flags)
 {
+    aspect.weight = 0.5;
 }
 
 RolePreference::~RolePreference() noexcept {
