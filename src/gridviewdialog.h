@@ -32,6 +32,7 @@ class QItemSelection;
 class QStandardItemModel;
 class ViewColumnSet;
 class ViewManager;
+class RolePreferenceModel;
 
 namespace Ui {
 class GridViewDialog;
@@ -40,7 +41,7 @@ class GridViewDialog;
 class GridViewDialog : public QDialog {
     Q_OBJECT
 public:
-    GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent = 0);
+    GridViewDialog(ViewManager *mgr, GridView *view, RolePreferenceModel *pref_model, QWidget *parent = 0);
     virtual ~GridViewDialog();
 
     QString name();
@@ -66,6 +67,7 @@ private:
     int m_temp_col;
     ViewColumnSet *m_active_set;
     ContextMenuHelper *m_cmh;
+    RolePreferenceModel *m_pref_model;
 
 private slots:
     //! for redrawing sets in the edit dialog
@@ -121,6 +123,7 @@ private slots:
     void add_custom_prof_column();
     void add_belief_column();
     void add_kills_column();
+    void add_preference_column();
 };
 
 #endif

@@ -29,12 +29,13 @@ THE SOFTWARE.
 #include "gridviewdialog.h"
 #include "truncatingfilelogger.h"
 
-GridViewDock::GridViewDock(ViewManager *mgr, QWidget *parent,
-                           Qt::WindowFlags flags)
+GridViewDock::GridViewDock(ViewManager *mgr, RolePreferenceModel *pref_model,
+                           QWidget *parent, Qt::WindowFlags flags)
     : BaseDock(parent, flags)
     , m_manager(mgr)
     , ui(new Ui::GridViewDock)
     , m_tmp_item(0)
+    , m_pref_model(pref_model)
 {
     ui->setupUi(this);
     setFeatures(QDockWidget::AllDockWidgetFeatures);
@@ -130,7 +131,7 @@ short GridViewDock::current_view_is_custom(){
 
 void GridViewDock::add_new_view() {
     GridView *view = new GridView("", m_manager);
-    GridViewDialog *d = new GridViewDialog(m_manager, view, this);
+    GridViewDialog *d = new GridViewDialog(m_manager, view, m_pref_model, this);
     int accepted = d->exec();
     if (accepted == QDialog::Accepted) {
         GridView *new_view = d->pending_view();
@@ -155,7 +156,7 @@ void GridViewDock::edit_view() {
     if (!view->is_custom()) {
         return; // can't edit non-custom views
     }
-    GridViewDialog *d = new GridViewDialog(m_manager, view, this);
+    GridViewDialog *d = new GridViewDialog(m_manager, view, m_pref_model, this);
     int accepted = d->exec();
     if (accepted == QDialog::Accepted) {
         m_manager->replace_view(view, d->pending_view());

@@ -45,6 +45,7 @@ THE SOFTWARE.
 #include "customprofessioncolumn.h"
 #include "beliefcolumn.h"
 #include "unitkillscolumn.h"
+#include "preferencecolumn.h"
 
 #include "contextmenuhelper.h"
 #include "customprofession.h"
@@ -55,6 +56,7 @@ THE SOFTWARE.
 #include "item.h"
 #include "itemweaponsubtype.h"
 #include "labor.h"
+#include "preferencepickerdialog.h"
 #include "role.h"
 #include "superlabor.h"
 #include "trait.h"
@@ -84,7 +86,7 @@ QDataStream &operator>>(QDataStream &in, T *&rhs) {
     return in;
 }
 
-GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent)
+GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, RolePreferenceModel *pref_model, QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::GridViewDialog)
     , m_view(view)
@@ -97,6 +99,7 @@ GridViewDialog::GridViewDialog(ViewManager *mgr, GridView *view, QWidget *parent
     , m_temp_col(-1)
     , m_active_set(0)
     , m_cmh(0)
+    , m_pref_model(pref_model)
 {
     qRegisterMetaType<ViewColumnSet *>();
     qRegisterMetaTypeStreamOperators<ViewColumnSet *>();
@@ -477,6 +480,10 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     a = m->addAction(tr("Moodable Skill"), this, SLOT(add_highest_moodable_column()));
     a->setToolTip(tr("Adds a single column that shows an icon representing a dwarf's highest moodable skill."));
 
+    //PREFERENCES
+    a = m->addAction(tr("Preferences..."), this, SLOT(add_preference_column()));
+    a->setToolTip(tr("Adds a single column that shows if a dwarf has any matching preference."));
+
     //PROFESSION
     a = m->addAction(tr("Profession"), this, SLOT(add_profession_column()));
     a->setToolTip(tr("Adds a single column that shows an icon representing a dwarf's profession."));
@@ -734,6 +741,19 @@ void GridViewDialog::add_highest_moodable_column(){
     if (!m_active_set)
         return;
     new HighestMoodColumn(tr("Moodable Skill"), m_active_set, m_active_set);
+    draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_preference_column() {
+    if (!m_active_set)
+        return;
+    PreferencePickerDialog dialog(m_pref_model, this);
+    if (dialog.exec() == QDialog::Rejected)
+        return;
+    const RolePreference *pref = dialog.get_selected_preference();
+    if (!pref) // Selection is not valid
+        return;
+    new PreferenceColumn(pref->get_name(), pref->copy(), m_active_set, m_active_set);
     draw_columns_for_set(m_active_set);
 }
 
