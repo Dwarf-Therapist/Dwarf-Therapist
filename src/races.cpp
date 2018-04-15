@@ -28,9 +28,8 @@ THE SOFTWARE.
 #include "truncatingfilelogger.h"
 #include "material.h"
 
-Race::Race(DFInstance *df, VIRTADDR address, int id, QObject *parent)
-    : QObject(parent)
-    , m_address(address)
+Race::Race(DFInstance *df, VIRTADDR address, int id)
+    : m_address(address)
     , m_id(id)
     , m_name(QString::null)
     , m_description(QString::null)
@@ -172,7 +171,7 @@ void Race::load_materials(int idx){
         return;
     //load creature's material list
     if(idx >= 0 && idx < m_materials_addr.size()){
-        Material *m = Material::get_material(m_df, m_materials_addr.at(idx) ,idx, false, this);
+        Material *m = Material::get_material(m_df, m_materials_addr.at(idx) ,idx, false);
         m_creature_mats.insert(idx,m);
     }else{
         for(int idx = 0; idx < m_materials_addr.size(); idx++){
@@ -189,13 +188,15 @@ QHash<int,Material*> Race::get_creature_materials(){
 }
 
 Material * Race::get_creature_material(int index){
+    static Material null_material;
+
     if(!m_creature_mats.contains(index)){
         load_materials(index);
     }
     if(m_creature_mats.contains(index)){
         return m_creature_mats.value(index);
     }else{
-        return new Material(this);
+        return &null_material;
     }
 }
 

@@ -677,7 +677,7 @@ void DFInstance::load_main_vectors(){
     for(i = 0; i < 256; i++){
         VIRTADDR mat_addr = read_addr(addr);
         if(mat_addr){
-            Material* m = Material::get_material(this, mat_addr, i, false, this);
+            Material* m = Material::get_material(this, mat_addr, i, false);
             m_base_materials.append(m);
         }
         addr += m_pointer_size;
@@ -689,7 +689,7 @@ void DFInstance::load_main_vectors(){
     i = 0;
     foreach(VIRTADDR mat, enumerate_vector(addr)){
         //inorganic_raw.material
-        Material* m = Material::get_material(this, mat, i, true, this);
+        Material* m = Material::get_material(this, mat, i, true);
         m_inorganics_vector.append(m);
         i++;
     }

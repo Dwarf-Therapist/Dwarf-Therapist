@@ -23,21 +23,21 @@ THE SOFTWARE.
 #ifndef RACES_H
 #define RACES_H
 
+#include <QCoreApplication>
+
 #include "flagarray.h"
 #include "global_enums.h"
 #include "utils.h"
-
-#include <QObject>
 
 class DFInstance;
 class MemoryLayout;
 class Caste;
 class Material;
 
-class Race : public QObject {
-    Q_OBJECT
+class Race {
+    Q_DECLARE_TR_FUNCTIONS(Race)
 public:
-    Race(DFInstance *df, VIRTADDR address,  int id, QObject *parent = 0);
+    Race(DFInstance *df, VIRTADDR address,  int id);
     virtual ~Race();
 
     static Race* get_race(DFInstance *df, const VIRTADDR &address, int id);

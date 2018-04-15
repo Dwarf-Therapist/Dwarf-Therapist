@@ -26,9 +26,8 @@ THE SOFTWARE.
 #include "memorylayout.h"
 #include "truncatingfilelogger.h"
 
-Plant::Plant(QObject *parent)
-    : QObject(parent)
-    , m_index(-1)
+Plant::Plant()
+    : m_index(-1)
     , m_address(0x0)
     , m_df(0x0)
     , m_mem(0x0)
@@ -36,9 +35,8 @@ Plant::Plant(QObject *parent)
 {
 }
 
-Plant::Plant(DFInstance *df, VIRTADDR address, int index, QObject *parent)
-    : QObject(parent)
-    , m_index(index)
+Plant::Plant(DFInstance *df, VIRTADDR address, int index)
+    : m_index(index)
     , m_address(address)
     , m_df(df)
     , m_mem(df->memory_layout())
@@ -89,7 +87,7 @@ void Plant::load_materials(){
     QVector<VIRTADDR> mats = m_df->enumerate_vector(m_address + m_mem->plant_offset("materials_vector"));
     int i = 0;
     foreach(VIRTADDR mat, mats){
-        m_plant_mats.append(Material::get_material(m_df,mat,i,false,this));
+        m_plant_mats.append(Material::get_material(m_df,mat,i,false));
         i++;
     }
 }
@@ -102,13 +100,15 @@ QVector<Material*> Plant::get_plant_materials(){
 }
 
 Material * Plant::get_plant_material(int index){
+    static Material null_material;
+
     if(m_plant_mats.empty())
         load_materials();
 
     if(index < m_plant_mats.count())
         return m_plant_mats.at(index);
     else
-        return new Material(this);
+        return &null_material;
 }
 
 int Plant::material_count(){
