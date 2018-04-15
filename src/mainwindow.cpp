@@ -112,7 +112,7 @@ MainWindow::MainWindow(QWidget *parent)
     setTabPosition(Qt::AllDockWidgetAreas, QTabWidget::North);
 
     /* docks! */
-    GridViewDock *grid_view_dock = new GridViewDock(m_view_manager, this);
+    GridViewDock *grid_view_dock = new GridViewDock(m_view_manager, m_pref_model, this);
     grid_view_dock->setHidden(true); // hide by default
     grid_view_dock->setFloating(false);
     addDockWidget(Qt::RightDockWidgetArea, grid_view_dock);

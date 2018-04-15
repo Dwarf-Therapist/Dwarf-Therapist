@@ -94,6 +94,7 @@ add_executable(${EXE_NAME} WIN32 MACOSX_BUNDLE
     src/subthoughttypes.cpp src/plandetail.h src/eventfilterlineedit.cpp
     src/adaptivecolorfactory.cpp src/preferencecolumn.cpp src/standardpaths.cpp
     src/rolepreferencemodel.cpp src/recursivefilterproxymodel.cpp
+    src/preferencepickerdialog.cpp
     thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp resources.qrc
     ${SOURCES})
 target_link_libraries(${EXE_NAME} Qt5::Widgets Qt5::Qml Qt5::Concurrent ${LIBS})

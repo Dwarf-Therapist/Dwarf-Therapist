@@ -1,6 +1,6 @@
 /*
 Dwarf Therapist
-Copyright (c) 2009 Trey Stout (chmod)
+Copyright (c) 2018 Clément Vuchener
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,44 +20,41 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef GRID_VIEW_DOCK_H
-#define GRID_VIEW_DOCK_H
+#ifndef PREFERENCE_PICKER_DIALOG_H
+#define PREFERENCE_PICKER_DIALOG_H
 
-#include "basedock.h"
+#include <QDialog>
+#include <memory>
 
-class ViewManager;
-class QListWidgetItem;
+namespace Ui { class PreferencePickerDialog; }
+
+class RolePreference;
 class RolePreferenceModel;
+class RecursiveFilterProxyModel;
 
-namespace Ui {
-    class GridViewDock;
-}
-
-class GridViewDock : public BaseDock {
+class PreferencePickerDialog: public QDialog
+{
     Q_OBJECT
 public:
-    GridViewDock(ViewManager *mgr, RolePreferenceModel *pref_model, QWidget *parent = 0, Qt::WindowFlags flags = 0);
-    ~GridViewDock();
-    void draw_views();
+    PreferencePickerDialog(RolePreferenceModel *model, QWidget *parent = nullptr);
+    ~PreferencePickerDialog() override;
 
-    public slots:
-        void add_new_view();
-        void draw_list_context_menu(const QPoint &pos);
+    // returns nullptr if no preference is selected
+    const RolePreference *get_selected_preference() const;
+
+protected:
+    void showEvent(QShowEvent *) override;
+
+private slots:
+    void search_text(const QString &text);
+    void clear_search();
+    void selection_changed(const QModelIndex &current, const QModelIndex &previous);
+    void item_activated(const QModelIndex &index);
 
 private:
-    ViewManager *m_manager;
-    Ui::GridViewDock *ui;
-    QListWidgetItem *m_tmp_item;
-    RolePreferenceModel *m_pref_model;
-
-    short current_view_is_custom();
-
-    private slots:
-        void edit_view();
-        void edit_view(QListWidgetItem*);
-        void copy_view();
-        void delete_view();
-        void item_clicked(QListWidgetItem*);
+    std::unique_ptr<Ui::PreferencePickerDialog> ui;
+    RolePreferenceModel *m_model;
+    RecursiveFilterProxyModel *m_filter_proxy;
 };
 
 #endif
