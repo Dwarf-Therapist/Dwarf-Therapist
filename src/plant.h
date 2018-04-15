@@ -1,7 +1,7 @@
 #ifndef PLANT_H
 #define PLANT_H
 
-#include <QObject>
+#include <QCoreApplication>
 #include "utils.h"
 #include "flagarray.h"
 
@@ -9,11 +9,11 @@ class DFInstance;
 class Material;
 class MemoryLayout;
 
-class Plant : public QObject {
-    Q_OBJECT
+class Plant {
+    Q_DECLARE_TR_FUNCTIONS(Plant)
 public:
-    Plant(QObject *parent = 0);
-    Plant(DFInstance *df, VIRTADDR address, int index, QObject *parent = 0);
+    Plant();
+    Plant(DFInstance *df, VIRTADDR address, int index);
     virtual ~Plant();
 
     static Plant* get_plant(DFInstance *df, const VIRTADDR &address, int index);

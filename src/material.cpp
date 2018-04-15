@@ -25,9 +25,8 @@ THE SOFTWARE.
 #include "memorylayout.h"
 #include "truncatingfilelogger.h"
 
-Material::Material(QObject *parent)
-    : QObject(parent)
-    , m_index(-1)
+Material::Material()
+    : m_index(-1)
     , m_address(0x0)
     , m_df(0x0)
     , m_mem(0x0)
@@ -37,9 +36,8 @@ Material::Material(QObject *parent)
 {
 }
 
-Material::Material(DFInstance *df, VIRTADDR address, int index, bool inorganic, QObject *parent)
-    : QObject(parent)
-    , m_index(index)
+Material::Material(DFInstance *df, VIRTADDR address, int index, bool inorganic)
+    : m_index(index)
     , m_address(address)
     , m_df(df)
     , m_mem(df->memory_layout())
@@ -54,8 +52,8 @@ Material::~Material() {
     m_state_names.clear();
 }
 
-Material* Material::get_material(DFInstance *df, const VIRTADDR & address, int index, bool inorganic, QObject *parent) {
-    return new Material(df, address, index, inorganic, parent);
+Material* Material::get_material(DFInstance *df, const VIRTADDR & address, int index, bool inorganic) {
+    return new Material(df, address, index, inorganic);
 }
 
 void Material::load_data() {

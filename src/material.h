@@ -23,7 +23,7 @@ THE SOFTWARE.
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include <QObject>
+#include <QCoreApplication>
 #include <set>
 #include "utils.h"
 #include "global_enums.h"
@@ -32,14 +32,14 @@ THE SOFTWARE.
 class DFInstance;
 class MemoryLayout;
 
-class Material : public QObject {
-    Q_OBJECT
+class Material {
+    Q_DECLARE_TR_FUNCTIONS(Material)
 public:
-    Material(QObject *parent = 0);
-    Material(DFInstance *df, VIRTADDR address, int index, bool inorganic = false, QObject *parent = 0);
+    Material();
+    Material(DFInstance *df, VIRTADDR address, int index, bool inorganic = false);
     virtual ~Material();
 
-    static Material* get_material(DFInstance *df, const VIRTADDR &address, int index, bool inorganic = false, QObject *parent = 0);
+    static Material* get_material(DFInstance *df, const VIRTADDR &address, int index, bool inorganic = false);
 
     //! Return the memory address (in hex) of this Material in the remote DF process
     VIRTADDR address() {return m_address;}
