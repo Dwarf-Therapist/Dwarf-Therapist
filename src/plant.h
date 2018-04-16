@@ -41,7 +41,6 @@ private:
     MemoryLayout * m_mem;
     QVector<Material*> m_plant_mats;
     FlagArray m_flags;
-    bool m_is_crop;
 
     QString m_plant_name;
     QString m_plant_name_plural;

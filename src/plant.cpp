@@ -33,7 +33,6 @@ Plant::Plant(QObject *parent)
     , m_df(0x0)
     , m_mem(0x0)
     , m_flags()
-    , m_is_crop(false)
 {
 }
 
@@ -44,7 +43,6 @@ Plant::Plant(DFInstance *df, VIRTADDR address, int index, QObject *parent)
     , m_df(df)
     , m_mem(df->memory_layout())
     , m_flags()
-    , m_is_crop(false)
 {
     load_data();
 }
