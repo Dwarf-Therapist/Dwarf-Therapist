@@ -138,14 +138,8 @@ void Race::read_race() {
 }
 
 void Race::load_caste_ratios(){
-    /* fuck it
     if(!loaded_stats){
-        QVector<int> ratios;
-        QVector<VIRTADDR> addrs = m_df->enumerate_vector(m_pop_ratio_vector);
-
-        foreach(VIRTADDR addr, addrs){
-            ratios << (int)addr;
-        }
+        QVector<int> ratios = m_df->enum_vec<int>(m_pop_ratio_vector);
 
         if(ratios.count() > 0){
             int sum = 0;
@@ -171,7 +165,6 @@ void Race::load_caste_ratios(){
         }
         loaded_stats = true;
     }
-    */
 }
 
 void Race::load_materials(int idx){
