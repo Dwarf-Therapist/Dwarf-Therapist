@@ -29,7 +29,7 @@ class ItemToolSubtype : public ItemSubtype {
     Q_OBJECT
 public:
     ItemToolSubtype(DFInstance *df, VIRTADDR address, QObject *parent = 0)
-        : ItemSubtype(df,address,parent)
+        : ItemSubtype(TOOL,df,address,parent)
     {
         set_base_offsets();
         read_data();
