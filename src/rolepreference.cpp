@@ -76,6 +76,7 @@ std::unique_ptr<RolePreference> RolePreference::parse(QSettings &s, bool &update
     auto item_type = static_cast<ITEM_TYPE>(s.value("item_type",-1).toInt());
     auto exact = s.value("exact",false).toBool();
     auto mat_state = static_cast<MATERIAL_STATES>(s.value("mat_state", ANY_STATE).toInt ());
+    auto mat_reaction = s.value("mat_reaction", QString()).toString();
 
     int flag_count = s.beginReadArray("flags");
     std::set<int> flags;
@@ -114,7 +115,7 @@ std::unique_ptr<RolePreference> RolePreference::parse(QSettings &s, bool &update
 
     //update any general preference material names (eg. Horn -> Horn/Hoof)
     if(pref_type == LIKE_MATERIAL && item_type == NONE && !exact &&
-            !flags.empty() && !s.contains("mat_reaction")) {
+            !flags.empty() && mat_reaction.isEmpty()) {
         auto first_flag = static_cast<MATERIAL_FLAGS>(*flags.begin());
         if (first_flag < NUM_OF_MATERIAL_FLAGS) {
             QString new_name = Material::get_material_flag_desc(first_flag, mat_state);
@@ -131,6 +132,15 @@ std::unique_ptr<RolePreference> RolePreference::parse(QSettings &s, bool &update
         updated = true;
     }
 
+    //update old paper preference (flag -> reaction)
+    if (pref_type == LIKE_MATERIAL && flags.size() == 1 &&
+            flags.find(THREAD_PLANT) != flags.end() &&
+            mat_state == PRESSED) {
+        flags.clear();
+        mat_reaction = "PAPER_SLURRY";
+        updated = true;
+    }
+
     std::unique_ptr<RolePreference> p;
     if (exact) {
         if (pref_type == LIKE_ITEM && item_type != -1)
@@ -144,8 +154,8 @@ std::unique_ptr<RolePreference> RolePreference::parse(QSettings &s, bool &update
         if (pref_type == LIKE_ITEM && item_type != -1)
             p = std::make_unique<GenericItemRolePreference>(id, item_type, flags);
         else if (pref_type == LIKE_MATERIAL) {
-            if (s.contains("mat_reaction"))
-                p = std::make_unique<MaterialReactionRolePreference>(id, mat_state, s.value("mat_reaction").toString(), flags);
+            if (!mat_reaction.isEmpty())
+                p = std::make_unique<MaterialReactionRolePreference>(id, mat_state, mat_reaction, flags);
             else
                 p = std::make_unique<GenericMaterialRolePreference>(id, mat_state, flags);
         }
