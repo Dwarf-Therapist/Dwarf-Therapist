@@ -162,7 +162,6 @@ RolePreferenceModel::RolePreferenceModel(QObject *parent)
                         std::make_tuple(IS_GLASS, ANY_STATE),
                         std::make_tuple(IS_WOOD, ANY_STATE),
                         std::make_tuple(THREAD_PLANT, SOLID), // fabric
-                        std::make_tuple(THREAD_PLANT, PRESSED), // paper
                         std::make_tuple(YARN, ANY_STATE)}){
         auto flag = std::get<0>(t);
         auto state = std::get<1>(t);
@@ -171,7 +170,8 @@ RolePreferenceModel::RolePreferenceModel(QObject *parent)
                 state, flag));
     }
     for (const auto t: {std::make_tuple(tr("Parchments"), PRESSED, "PARCHMENT"),
-                        std::make_tuple(tr("Paper plants"), PRESSED, "PAPER_PLANT")}) {
+                        std::make_tuple(tr("Paper plants"), PRESSED, "PAPER_PLANT"),
+                        std::make_tuple(tr("Papers"), PRESSED, "PAPER_SLURRY")}) {
         auto title = std::get<0>(t);
         auto state = std::get<1>(t);
         auto reaction = std::get<2>(t);
@@ -292,15 +292,15 @@ void RolePreferenceModel::load_material_prefs(QVector<Material*> mats)
             continue;
 
         //check specific flags
-        if(m->flags().has_flag(THREAD_PLANT)) {
-            m_raw_prefs[FABRICS].emplace_back(std::make_shared<ExactMaterialRolePreference>(m, SOLID));
-            m_raw_prefs[PAPERS].emplace_back(std::make_shared<ExactMaterialRolePreference>(m, PRESSED));
+        if(m->flags().has_flag(IS_DYE)) {
+            auto p = std::make_shared<ExactMaterialRolePreference>(m, POWDER);
+            m_raw_prefs[FABRICS].emplace_back(p);
         }
-        else if(m->flags().has_flag(IS_DYE))
-            m_raw_prefs[FABRICS].emplace_back(std::make_shared<ExactMaterialRolePreference>(m, POWDER));
         else {
             auto p = std::make_shared<ExactMaterialRolePreference>(m, SOLID);
-            if (m->flags().has_flag(IS_GEM))
+            if (m->flags().has_flag(THREAD_PLANT))
+                m_raw_prefs[FABRICS].emplace_back(p);
+            else if (m->flags().has_flag(IS_GEM))
                 m_raw_prefs[GEMS].emplace_back(p);
             else if (m->flags().has_flag(IS_GLASS) || m->flags().has_flag(CRYSTAL_GLASSABLE))
                 m_raw_prefs[GLASS].emplace_back(p);
@@ -319,9 +319,15 @@ void RolePreferenceModel::load_material_prefs(QVector<Material*> mats)
         }
 
         //check reactions
-        if (m->has_reaction("PAPER_PLANT")) {
-            auto p = std::make_shared<ExactMaterialRolePreference>(m, PRESSED);
-            m_raw_prefs[PAPERS].emplace_back(p);
+        for (const auto t: {std::make_tuple(PAPERS, PRESSED, "PAPER_PLANT"),
+                            std::make_tuple(PAPERS, PRESSED, "PAPER_SLURRY")}) {
+            auto cat = std::get<0>(t);
+            auto state = std::get<1>(t);
+            auto reaction = std::get<2>(t);
+            if (m->has_reaction(reaction)) {
+                auto p = std::make_shared<ExactMaterialRolePreference>(m, state);
+                m_raw_prefs[cat].emplace_back(p);
+            }
         }
     }
 }
