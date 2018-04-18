@@ -27,147 +27,101 @@ THE SOFTWARE.
 
 #include "dfinstance.h"
 #include "rolepreference.h"
+#include "preference.h"
 #include "material.h"
 #include "plant.h"
 #include "races.h"
 #include "item.h"
 #include "itemweaponsubtype.h"
 
-QString RolePreferenceModel::get_category_name(GenericCategory category)
+RolePreferenceModel::node_t::node_t(std::unique_ptr<GenericRolePreference> &&pref, node_t *parent)
+    : parent(parent)
+    , pref(std::move(pref))
 {
-    switch (category) {
-    case ITEM:
-        return tr("General Items");
-    case EQUIPMENT:
-        return tr("General Equipment");
-    case MATERIAL:
-        return tr("General Materials");
-    case CREATURE:
-        return tr("General Creatures");
-    case TRADE_GOOD:
-        return tr("General Trade Goods");
-    case PLANT_TREE:
-        return tr("General Plants & Trees");
-    case OTHER:
-        return tr("General Other");
-    default:
-        return tr("Missing category name");
-    }
 }
 
-QString RolePreferenceModel::get_category_name(ExactCategory category)
+RolePreferenceModel::node_t::~node_t()
 {
-    switch (category) {
-    case GEMS:
-        return RolePreferenceModel::tr("Gems");
-    case GLASS:
-        return RolePreferenceModel::tr("Glass & Crystals");
-    case METALS:
-        return RolePreferenceModel::tr("Metals");
-    case STONE:
-        return RolePreferenceModel::tr("Stone & Ores");
-    case WOOD:
-        return RolePreferenceModel::tr("Wood");
-    case GLAZES_WARES:
-        return RolePreferenceModel::tr("Glazes & Stoneware");
-    case FABRICS:
-        return RolePreferenceModel::tr("Fabrics & Dyes");
-    case PAPERS:
-        return RolePreferenceModel::tr("Papers");
-    case LEATHERS:
-        return RolePreferenceModel::tr("Leathers");
-    case PARCHMENTS:
-        return RolePreferenceModel::tr("Parchments");
-    case OTHER_MATERIALS:
-        return RolePreferenceModel::tr("Other materials");
-    case PLANTS:
-        return RolePreferenceModel::tr("Plants");
-    case PLANTS_ALCOHOL:
-        return RolePreferenceModel::tr("Plants (Alcohol)");
-    case PLANTS_CROPS:
-        return RolePreferenceModel::tr("Plants (Crops)");
-    case PLANTS_CROPS_PLANTABLE:
-        return RolePreferenceModel::tr("Plants (Crops Plantable)");
-    case PLANTS_MILL:
-        return RolePreferenceModel::tr("Plants (Mill)");
-    case PLANTS_EXTRACT:
-        return RolePreferenceModel::tr("Plants (Extracts)");
-    case TREES:
-        return RolePreferenceModel::tr("Trees");
-    case CREATURES:
-        return RolePreferenceModel::tr("Creatures (Other)");
-    case CREATURES_HATEABLE:
-        return RolePreferenceModel::tr("Creatures (Hateable)");
-    case CREATURES_TRAINABLE:
-        return RolePreferenceModel::tr("Creatures (Trainable)");
-    case CREATURES_MILKABLE:
-        return RolePreferenceModel::tr("Creatures (Milkable)");
-    case CREATURES_EXTRACTS:
-        return RolePreferenceModel::tr("Creatures (Extracts)");
-    case CREATURES_EXTRACTS_FISH:
-        return RolePreferenceModel::tr("Creatures (Fish Extracts)");
-    case CREATURES_FISHABLE:
-        return RolePreferenceModel::tr("Creatures (Fishable)");
-    case CREATURES_SHEARABLE:
-        return RolePreferenceModel::tr("Creatures (Shearable)");
-    case CREATURES_BUTCHER:
-        return RolePreferenceModel::tr("Creatures (Butcherable)");
-    case CREATURES_DOMESTIC:
-        return RolePreferenceModel::tr("Creatures (Domestic)");
-    case WEAPONS_MELEE:
-        return RolePreferenceModel::tr("Weapons (Melee)");
-    case WEAPONS_RANGED:
-        return RolePreferenceModel::tr("Weapons (Ranged)");
-    default:
-        return RolePreferenceModel::tr("Missing category name");
-    }
 }
 
-//setup a list of item exclusions. these are item types that are not found in item preferences
-//weapons are also ignored because we'll handle them manually to split them into ranged and melee categories
-static const std::set<ITEM_TYPE> item_ignore = {
-    BAR, SMALLGEM, BLOCKS, ROUGH, BOULDER, WOOD, CORPSE, CORPSEPIECE, REMAINS,
-    FISH_RAW, VERMIN, IS_PET, SKIN_TANNED, THREAD, CLOTH, BALLISTAARROWHEAD,
-    TRAPPARTS, FOOD, GLOB, ROCK, PIPE_SECTION, ORTHOPEDIC_CAST, EGG, BOOK,
-    SHEET, WEAPON,
-//additionally ignore food types, since they can only be a preference as a consumable
-    MEAT, FISH, CHEESE, PLANT, DRINK, POWDER_MISC, LEAVES_FRUIT, LIQUID_MISC, SEEDS,
+template<typename T, typename... Args>
+RolePreferenceModel::node_t *RolePreferenceModel::node_t::add_category(Args &&... args)
+{
+    sub_categories.emplace_back(std::make_unique<node_t>(
+        std::make_unique<T>(std::forward<Args>(args)...),
+        this
+    ));
+    auto child = sub_categories.back().get();
+    child->row = sub_categories.size()-1;
+    return child;
+}
+
+template<typename T, typename... Args>
+RolePreferenceModel::node_t *RolePreferenceModel::add_top_category(Args &&... args)
+{
+    m_prefs.emplace_back(std::make_unique<node_t>(std::make_unique<T>(std::forward<Args>(args)...)));
+    auto child = m_prefs.back().get();
+    child->row = m_prefs.size()-1;
+    return child;
+}
+
+// Lists for filtering possible material preferences
+static const std::vector<std::pair<MATERIAL_FLAGS, MATERIAL_STATES>> MaterialsByFlag = {
+    { IS_STONE, SOLID }, // sub-category: CRYSTAL_GLASSABLE?
+    { IS_METAL, SOLID },
+    { IS_GEM, SOLID },
+    { IS_WOOD, SOLID },
+    { IS_GLASS, SOLID },
+    { LEATHER, SOLID },
+    { HORN, SOLID },
+    { PEARL, SOLID },
+    { TOOTH, SOLID },
+    { ITEMS_DELICATE, SOLID },
+    { BONE, SOLID },
+    { SHELL, SOLID },
+    { SILK, SOLID },
+    { YARN, SOLID },
+    { THREAD_PLANT, SOLID },
+    // Dyes?
+};
+static const std::vector<std::pair<const char *, MATERIAL_STATES>> MaterialsByReaction = {
+    { "PARCHMENT", PRESSED },
+    { "PAPER_PLANT", PRESSED },
+    { "PAPER_SLURRY", PRESSED },
+};
+
+static const std::set<ITEM_TYPE> ItemTypes = {
+    // Equipment
+    WEAPON, AMMO,
+    ARMOR, SHOES, SHIELD, HELM, GLOVES, PANTS, BACKPACK, QUIVER,
+    // Furniture
+    DOOR, FLOODGATE, BED, CHAIR, WINDOW, CAGE, BARREL, TABLE, COFFIN, STATUE,
+    BOX, BIN, ARMORSTAND, WEAPONRACK, CABINET, HATCH_COVER, GRATE, QUERN,
+    MILLSTONE, TRACTION_BENCH, SLAB,
+    // Craft
+    FIGURINE, AMULET, SCEPTER, CROWN, RING, EARRING, BRACELET, GEM,
+    // Misc
+    CHAIN, FLASK, GOBLET, INSTRUMENT, TOY, BUCKET, ANIMALTRAP, ANVIL, TOTEM,
+    CATAPULTPARTS, BALLISTAPARTS, SIEGEAMMO, TRAPCOMP, COIN, SPLINT, CRUTCH,
+    TOOL,
 };
 
 RolePreferenceModel::RolePreferenceModel(QObject *parent)
     : QAbstractItemModel(parent)
 {
-    //setup general categories
-    auto &general_item = m_general_prefs[ITEM];
-    auto &general_equip = m_general_prefs[EQUIPMENT];
-    auto &general_material = m_general_prefs[MATERIAL];
-    auto &general_creature = m_general_prefs[CREATURE];
-    auto &general_trade_good = m_general_prefs[TRADE_GOOD];
-    auto &general_plant_tree = m_general_prefs[PLANT_TREE];
-    auto &general_other = m_general_prefs[OTHER];
-
-    //also add trees to general category. don't need a flag as trees is a pref category
-    auto p_trees = std::make_unique<RolePreference>(LIKE_TREE, tr("Trees"));
-    //p_trees->add_flag(77); //is tree flag
-    general_plant_tree.emplace_back(std::move(p_trees));
-
+    auto materials = add_top_category<GenericRolePreference>(LIKE_MATERIAL, tr("Materials"));
     //any material types that we want to add to the general category section go here
-    for (const auto t: {std::make_tuple(BONE, ANY_STATE),
-                        std::make_tuple(TOOTH, ANY_STATE),
-                        std::make_tuple(HORN, ANY_STATE),
-                        std::make_tuple(PEARL, ANY_STATE),
-                        std::make_tuple(SHELL, ANY_STATE),
-                        std::make_tuple(LEATHER, ANY_STATE),
-                        std::make_tuple(SILK, ANY_STATE),
-                        std::make_tuple(IS_GLASS, ANY_STATE),
-                        std::make_tuple(IS_WOOD, ANY_STATE),
-                        std::make_tuple(THREAD_PLANT, SOLID), // fabric
-                        std::make_tuple(YARN, ANY_STATE)}){
-        auto flag = std::get<0>(t);
-        auto state = std::get<1>(t);
-        general_material.emplace_back(std::make_unique<GenericMaterialRolePreference>(
+    for (const auto &p: MaterialsByFlag) {
+        auto flag = p.first;
+        auto state = p.second;
+        auto cat = materials->add_category<GenericMaterialRolePreference>(
                 Material::get_material_flag_desc(flag, state),
-                state, flag));
+                state, flag);
+        if (flag == IS_STONE) {
+            cat->add_category<GenericMaterialRolePreference>(
+                tr("Glazes & Stoneware"), SOLID,
+                ITEMS_QUERN, NO_STONE_STOCKPILE);
+        }
     }
     for (const auto t: {std::make_tuple(tr("Parchments"), PRESSED, "PARCHMENT"),
                         std::make_tuple(tr("Paper plants"), PRESSED, "PAPER_PLANT"),
@@ -175,99 +129,84 @@ RolePreferenceModel::RolePreferenceModel(QObject *parent)
         auto title = std::get<0>(t);
         auto state = std::get<1>(t);
         auto reaction = std::get<2>(t);
-        general_material.emplace_back(std::make_unique<MaterialReactionRolePreference>(
-                title, state, reaction));
+        materials->add_category<MaterialReactionRolePreference>(title, state, reaction);
     }
 
+    auto plants = add_top_category<GenericRolePreference>(LIKE_PLANT, tr("Plants"));
     //general category for plants used for alcohol
-    general_plant_tree.emplace_back(std::make_unique<GenericRolePreference>(
-            LIKE_PLANT, tr("Plants (Alcohol)"), P_DRINK));
+    plants->add_category<GenericRolePreference>(LIKE_PLANT, tr("Plants (Alcohol)"), P_DRINK);
     //general category for crops plant or gather
-    general_plant_tree.emplace_back(std::make_unique<GenericRolePreference>(
-            LIKE_PLANT, tr("Plants (Crops)"), P_CROP));
-    //general category for plantable crops
-    general_plant_tree.emplace_back(std::make_unique<GenericRolePreference>(
-            LIKE_PLANT, tr("Plants (Crops Plantable)"), P_CROP, P_SEED));
+    plants->add_category<GenericRolePreference>(LIKE_PLANT, tr("Plants (Crops)"), P_CROP)
+        ->add_category<GenericRolePreference>(LIKE_PLANT, tr("Plants (Crops Plantable)"), P_CROP, P_SEED);
     //general category for millable plants
-    general_plant_tree.emplace_back(std::make_unique<GenericRolePreference>(
-            LIKE_PLANT, tr("Plants (Millable)"), P_MILL));
+    plants->add_category<GenericRolePreference>(LIKE_PLANT, tr("Plants (Millable)"), P_MILL);
     //general category for plants used for processing/threshing
-    general_plant_tree.emplace_back(std::make_unique<GenericRolePreference>(
-            LIKE_PLANT, tr("Plants (Extracts)"), P_HAS_EXTRACTS));
+    plants->add_category<GenericRolePreference>(LIKE_PLANT, tr("Plants (Extracts)"), P_HAS_EXTRACTS);
 
-    //special custom preference for outdoors
-    general_other.emplace_back(std::make_unique<GenericRolePreference>(
-            LIKE_OUTDOORS, tr("Outdoors"), 999));
-
+    auto items = add_top_category<GenericRolePreference>(LIKE_ITEM, tr("Items"));
     // general item preferences
-    general_equip.emplace_back(std::make_unique<GenericRolePreference>(LIKE_ITEM, tr("Clothing (Any)"), IS_CLOTHING));
-    general_equip.emplace_back(std::make_unique<GenericRolePreference>(LIKE_ITEM, tr("Armor (Any)"), IS_ARMOR));
-    general_item.emplace_back(std::make_unique<GenericRolePreference>(LIKE_ITEM, tr("Trade Goods"), IS_TRADE_GOOD));
-
-    for(int idx=0; idx < NUM_OF_ITEM_TYPES; idx++){
-        ITEM_TYPE itype = static_cast<ITEM_TYPE>(idx);
-
-        if(item_ignore.find(itype) == item_ignore.end()){
+    auto clothing = items->add_category<GenericRolePreference>(LIKE_ITEM, tr("Clothing (Any)"), IS_CLOTHING);
+    auto armor = items->add_category<GenericRolePreference>(LIKE_ITEM, tr("Armor (Any)"), IS_ARMOR);
+    auto trade_good = items->add_category<GenericRolePreference>(LIKE_ITEM, tr("Trade Goods"), IS_TRADE_GOOD);
+    for (ITEM_TYPE itype: ItemTypes) {
+        if (itype == WEAPON) {
+            items->add_category<GenericItemRolePreference>(tr("Weapons (Ranged)"), WEAPON, ITEMS_WEAPON_RANGED);
+            items->add_category<GenericItemRolePreference>(tr("Weapons (Melee)"), WEAPON, ITEMS_WEAPON);
+        }
+        else {
             QString name = Item::get_item_name_plural(itype);
-
-            bool is_armor_type = Item::is_armor_type(itype,false);
 
             //add all item types as a group to the general categories
             if(Item::is_trade_good(itype)){
-                general_trade_good.emplace_back(std::make_unique<GenericItemRolePreference>(
-                        name, itype, IS_TRADE_GOOD));
+                trade_good->add_category<GenericItemRolePreference>(
+                        name, itype, IS_TRADE_GOOD);
+            }
+            else if (Item::is_armor_type(itype,false)) {
+                armor->add_category<GenericItemRolePreference>(name, itype);
+                clothing->add_category<GenericItemRolePreference>(
+                        Item::get_item_clothing_name(itype), itype, IS_CLOTHING);
             }
             else {
-                auto p = std::make_unique<GenericItemRolePreference>(name, itype);
-                if (is_armor_type || Item::is_supplies(itype) ||
-                        Item::is_melee_equipment(itype) || Item::is_ranged_equipment(itype))
-                    general_equip.emplace_back(std::move(p));
-                else
-                    general_item.emplace_back(std::move(p));
-            }
-            if(is_armor_type){
-                general_equip.emplace_back(std::make_unique<GenericItemRolePreference>(
-                        Item::get_item_clothing_name(itype), itype, IS_CLOTHING));
+                items->add_category<GenericItemRolePreference>(name, itype);
             }
         }
     }
 
+    auto creatures = add_top_category<GenericRolePreference>(LIKE_CREATURE, tr("Creatures"));
     //add general categories for groups of creatures
-    general_creature.emplace_back(std::make_unique<GenericRolePreference>(
-            LIKE_CREATURE, get_category_name(CREATURES_HATEABLE),
-            HATEABLE));
-    general_creature.emplace_back(std::make_unique<GenericRolePreference>(
-            LIKE_CREATURE, get_category_name(CREATURES_EXTRACTS_FISH),
-            VERMIN_FISH));
-    general_creature.emplace_back(std::make_unique<GenericRolePreference>(
-            LIKE_CREATURE, get_category_name(CREATURES_TRAINABLE),
-            TRAINABLE_HUNTING, TRAINABLE_WAR));
-    general_creature.emplace_back(std::make_unique<GenericRolePreference>(
-            LIKE_CREATURE, get_category_name(CREATURES_MILKABLE),
-            MILKABLE));
-    general_creature.emplace_back(std::make_unique<GenericRolePreference>(
-            LIKE_CREATURE, get_category_name(CREATURES_FISHABLE),
-            FISHABLE));
-    general_creature.emplace_back(std::make_unique<GenericRolePreference>(
-            LIKE_CREATURE, get_category_name(CREATURES_SHEARABLE),
-            SHEARABLE));
-    general_creature.emplace_back(std::make_unique<GenericRolePreference>(
-            LIKE_CREATURE, get_category_name(CREATURES_EXTRACTS),
-            HAS_EXTRACTS));
-    general_creature.emplace_back(std::make_unique<GenericRolePreference>(
-            LIKE_CREATURE, get_category_name(CREATURES_BUTCHER),
-            BUTCHERABLE));
-    general_creature.emplace_back(std::make_unique<GenericRolePreference>(
-            LIKE_CREATURE, get_category_name(CREATURES_DOMESTIC),
-            DOMESTIC));
+    creatures->add_category<GenericRolePreference>(
+            LIKE_CREATURE, tr("Creatures (Hateable)"),
+            HATEABLE);
+    creatures->add_category<GenericRolePreference>(
+            LIKE_CREATURE, tr("Vermin fish"),
+            VERMIN_FISH);
+    creatures->add_category<GenericRolePreference>(
+            LIKE_CREATURE, tr("Creatures (Trainable)"),
+            TRAINABLE);
+    creatures->add_category<GenericRolePreference>(
+            LIKE_CREATURE, tr("Creatures (Milkable)"),
+            MILKABLE);
+    creatures->add_category<GenericRolePreference>(
+            LIKE_CREATURE, tr("Creatures (Fishable)"),
+            FISHABLE);
+    creatures->add_category<GenericRolePreference>(
+            LIKE_CREATURE, tr("Creatures (Shearable)"),
+            SHEARABLE);
+    creatures->add_category<GenericRolePreference>(
+            LIKE_CREATURE, tr("Creatures (Extracts)"),
+            HAS_EXTRACTS)
+        ->add_category<GenericRolePreference>(
+                LIKE_CREATURE, tr("Creatures (Fish Extracts)"),
+                HAS_EXTRACTS, FISHABLE);
+    creatures->add_category<GenericRolePreference>(
+            LIKE_CREATURE, tr("Creatures (Butcherable)"),
+            BUTCHERABLE);
+    creatures->add_category<GenericRolePreference>(
+            LIKE_CREATURE, tr("Creatures (Domestic)"),
+            DOMESTIC);
 
-    // general weapon preferences
-    general_equip.emplace_back(std::make_unique<GenericItemRolePreference>(
-            get_category_name(WEAPONS_RANGED),
-            WEAPON, ITEMS_WEAPON_RANGED));
-    general_equip.emplace_back(std::make_unique<GenericItemRolePreference>(
-            get_category_name(WEAPONS_MELEE),
-            WEAPON, ITEMS_WEAPON));
+    add_top_category<GenericRolePreference>(LIKE_TREE, tr("Trees"));
+    add_top_category<GenericRolePreference>(LIKE_OUTDOORS, tr("Outdoors"), 999);
 }
 
 RolePreferenceModel::~RolePreferenceModel()
@@ -277,58 +216,55 @@ RolePreferenceModel::~RolePreferenceModel()
 void RolePreferenceModel::set_df_instance(DFInstance *df)
 {
     beginResetModel();
-    for (auto &cat: m_raw_prefs)
-        cat.clear();
-    m_item_prefs.clear();
+    clear_exact_prefs(m_prefs);
     m_loaded_raws = false;
     m_df = df;
     endResetModel();
 }
 
-void RolePreferenceModel::load_material_prefs(QVector<Material*> mats)
+void RolePreferenceModel::add_material(Material *m)
 {
-    foreach(Material *m, mats){
-        if(m->is_generated())
-            continue;
+    std::set<MATERIAL_STATES> states;
+    for (const auto &p: MaterialsByFlag) {
+        auto flag = p.first;
+        auto state = p.second;
+        if (m->flags().has_flag(flag))
+            states.insert(state);
+    }
+    for (const auto &p: MaterialsByReaction) {
+        auto reaction = p.first;
+        auto state = p.second;
+        if (m->has_reaction(reaction))
+            states.insert(state);
+    }
+    for (auto state: states) {
+        add_exact_pref(m_prefs,
+                       std::make_shared<ExactMaterialRolePreference>(m, state),
+                       MaterialPreference(m, state));
+    }
+}
 
-        //check specific flags
-        if(m->flags().has_flag(IS_DYE)) {
-            auto p = std::make_shared<ExactMaterialRolePreference>(m, POWDER);
-            m_raw_prefs[FABRICS].emplace_back(p);
+bool RolePreferenceModel::add_exact_pref(std::vector<std::unique_ptr<node_t>> &categories,
+                                         const std::shared_ptr<ExactRolePreference> &role_pref,
+                                         const Preference &pref)
+{
+    bool matched = false;
+    for (auto &category: categories) {
+        if (category->pref->match(&pref, nullptr)) {
+            if (!add_exact_pref(category->sub_categories, role_pref, pref))
+                category->exact_prefs.push_back(role_pref);
+            matched = true;
+            ++category->exact_pref_count;
         }
-        else {
-            auto p = std::make_shared<ExactMaterialRolePreference>(m, SOLID);
-            if (m->flags().has_flag(THREAD_PLANT))
-                m_raw_prefs[FABRICS].emplace_back(p);
-            else if (m->flags().has_flag(IS_GEM))
-                m_raw_prefs[GEMS].emplace_back(p);
-            else if (m->flags().has_flag(IS_GLASS) || m->flags().has_flag(CRYSTAL_GLASSABLE))
-                m_raw_prefs[GLASS].emplace_back(p);
-            else if (m->flags().has_flag(IS_METAL))
-                m_raw_prefs[METALS].emplace_back(p);
-            else if(m->flags().has_flag(IS_WOOD))
-                m_raw_prefs[WOOD].emplace_back(p);
-            else if(m->flags().has_flag(IS_STONE)) {
-                if (m->flags().has_flag(ITEMS_QUERN) && m->flags().has_flag(NO_STONE_STOCKPILE))
-                    m_raw_prefs[GLAZES_WARES].emplace_back(p);
-                else
-                    m_raw_prefs[STONE].emplace_back(p);
-            }
-            else if(m->flags().has_flag(ITEMS_DELICATE))
-                m_raw_prefs[OTHER_MATERIALS].emplace_back(p); //check for coral and amber
-        }
+    }
+    return matched;
+}
 
-        //check reactions
-        for (const auto t: {std::make_tuple(PAPERS, PRESSED, "PAPER_PLANT"),
-                            std::make_tuple(PAPERS, PRESSED, "PAPER_SLURRY")}) {
-            auto cat = std::get<0>(t);
-            auto state = std::get<1>(t);
-            auto reaction = std::get<2>(t);
-            if (m->has_reaction(reaction)) {
-                auto p = std::make_shared<ExactMaterialRolePreference>(m, state);
-                m_raw_prefs[cat].emplace_back(p);
-            }
-        }
+void RolePreferenceModel::clear_exact_prefs(std::vector<std::unique_ptr<node_t>> &categories)
+{
+    for (auto &category: categories) {
+        clear_exact_prefs(category->sub_categories);
+        category->exact_prefs.clear();
     }
 }
 
@@ -343,42 +279,24 @@ void RolePreferenceModel::load_pref_from_raws(QWidget *parent)
 
     auto future = QtConcurrent::run([this] () {
         beginResetModel();
-        for (auto &cat: m_raw_prefs)
-            cat.clear();
-        m_item_prefs.clear();
+        clear_exact_prefs(m_prefs);
 
         // non-plant and non-creature materials
-        load_material_prefs(m_df->get_inorganic_materials());
-        load_material_prefs(m_df->get_base_materials());
+        for (Material *m: m_df->get_inorganic_materials())
+            add_material(m);
+        for (Material *m: m_df->get_base_materials())
+            add_material(m);
 
         // Plants (and plant materials)
         foreach(Plant *p, m_df->get_plants()){
             auto plant_pref = std::make_shared<ExactRolePreference>(p);
+            if(p->flags().has_flag(P_SAPLING) || p->flags().has_flag(P_TREE))
+                add_exact_pref(m_prefs, plant_pref, TreePreference(p));
+            else
+                add_exact_pref(m_prefs, plant_pref, PlantPreference(p));
 
-            if(p->flags().has_flag(P_SAPLING) || p->flags().has_flag(P_TREE)){
-                m_raw_prefs[TREES].emplace_back(plant_pref);
-            }else{
-                m_raw_prefs[PLANTS].emplace_back(plant_pref);
-
-                if(p->flags().has_flag(P_DRINK)){
-                    m_raw_prefs[PLANTS_ALCOHOL].emplace_back(plant_pref);
-                }
-                if(p->flags().has_flag(P_CROP)){
-                    m_raw_prefs[PLANTS_CROPS].emplace_back(plant_pref);
-                    if(p->flags().has_flag(P_SEED)){
-                        m_raw_prefs[PLANTS_CROPS_PLANTABLE].emplace_back(plant_pref);
-                    }
-                }
-            }
-
-            if(p->flags().has_flag(P_MILL)){
-                m_raw_prefs[PLANTS_MILL].emplace_back(plant_pref);
-            }
-            if(p->flags().has_flag(P_HAS_EXTRACTS)){
-                m_raw_prefs[PLANTS_EXTRACT].emplace_back(plant_pref);
-            }
-
-            load_material_prefs(p->get_plant_materials());
+            for (Material *m: p->get_plant_materials())
+                add_material(m);
         }
 
         // Creatures (and creature materials)
@@ -386,115 +304,29 @@ void RolePreferenceModel::load_pref_from_raws(QWidget *parent)
             if(r->flags().has_flag(WAGON))
                 continue;
 
-            auto p = std::make_shared<ExactRolePreference>(r);
+            add_exact_pref(m_prefs,
+                           std::make_shared<ExactRolePreference>(r),
+                           CreaturePreference(r));
 
-            if(r->caste_flag(DOMESTIC)){
-                m_raw_prefs[CREATURES_DOMESTIC].emplace_back(p);
-            }
-
-            if(r->flags().has_flag(HATEABLE)){
-                m_raw_prefs[CREATURES_HATEABLE].emplace_back(p);
-            }else{
-                m_raw_prefs[CREATURES].emplace_back(p);
-            }
-            if(r->caste_flag(FISHABLE)){
-                m_raw_prefs[CREATURES_FISHABLE].emplace_back(p);
-            }
-            if(r->caste_flag(TRAINABLE)){
-                m_raw_prefs[CREATURES_TRAINABLE].emplace_back(p);
-            }
-            if(r->caste_flag(MILKABLE)){
-                m_raw_prefs[CREATURES_MILKABLE].emplace_back(p);
-            }
-            if(r->caste_flag(SHEARABLE)){
-                m_raw_prefs[CREATURES_SHEARABLE].emplace_back(p);
-            }
-            if(r->caste_flag(BUTCHERABLE)){
-                m_raw_prefs[CREATURES_BUTCHER].emplace_back(p);
-            }
-            if(r->caste_flag(HAS_EXTRACTS)){
-                if(r->caste_flag(FISHABLE)){
-                    m_raw_prefs[CREATURES_EXTRACTS_FISH].emplace_back(p);
-                }else{
-                    m_raw_prefs[CREATURES_EXTRACTS].emplace_back(p);
-                }
-            }
-
-            for (Material *m: r->get_creature_materials().values()) {
-                for (auto t: {std::make_tuple(LEATHER, LEATHERS),
-                              std::make_tuple(YARN, FABRICS),
-                              std::make_tuple(SILK, FABRICS)}) {
-                    auto flag = std::get<0>(t);
-                    auto cat = std::get<1>(t);
-                    if (m->flags().has_flag(flag)) {
-                        auto p = std::make_shared<ExactMaterialRolePreference>(m, SOLID);
-                        m_raw_prefs[cat].emplace_back(p);
-                    }
-                }
-                if (m->has_reaction("PARCHMENT")) {
-                    auto p = std::make_shared<ExactMaterialRolePreference>(m, PRESSED);
-                    m_raw_prefs[PARCHMENTS].emplace_back(p);
-                }
-            }
+            for (Material *m: r->get_creature_materials().values())
+                add_material(m);
         }
 
         // Items
         auto item_list = m_df->get_all_item_defs();
-        for(int idx=0; idx < NUM_OF_ITEM_TYPES; idx++){
-            ITEM_TYPE itype = static_cast<ITEM_TYPE>(idx);
-
-            if(item_ignore.find(itype) == item_ignore.end()){
-                QString name = Item::get_item_name_plural(itype);
-
-                bool is_armor_type = Item::is_armor_type(itype,false);
-
-                //specific items
-                int count = item_list.value(itype).count();
-                if(count > 1){
-                    QStringList added_subtypes;
-                    //create a node for the specific item type
-                    m_item_prefs.emplace_back(std::piecewise_construct,
-                            std::forward_as_tuple(name),
-                            std::forward_as_tuple());
-                    auto cat_index = m_item_prefs.size()-1;
-                    //check for clothing
-                    if(is_armor_type){
-                        m_item_prefs.emplace_back(std::piecewise_construct,
-                                std::forward_as_tuple(Item::get_item_clothing_name(itype)),
-                                std::forward_as_tuple());
-                        auto clothing_cat_index = m_item_prefs.size()-1;
-                        for(int sub_id = 0; sub_id < count; sub_id++){
-                            ItemSubtype *stype = m_df->get_item_subtype(itype,sub_id);
-                            auto p = std::make_shared<ExactItemRolePreference>(stype);
-
-                            if(added_subtypes.contains(p->get_name()))
-                                continue;
-                            added_subtypes.append(p->get_name());
-
-                            if(stype->flags().has_flag(IS_ARMOR))
-                                m_item_prefs[cat_index].second.emplace_back(p);
-                            if(stype->flags().has_flag(IS_CLOTHING))
-                                m_item_prefs[clothing_cat_index].second.emplace_back(p);
-                        }
-                    }else{
-                        for(int sub_id = 0; sub_id < count; sub_id++){
-                            auto name = capitalize(m_df->get_preference_item_name(itype,sub_id));
-                            auto p = std::make_shared<ExactItemRolePreference>(name, itype);
-                            m_item_prefs[cat_index].second.emplace_back(p);
-                        }
-                    }
+        for (ITEM_TYPE itype: ItemTypes) {
+            if (Item::has_subtypes(itype)) {
+                for(int sub_id = 0; sub_id < item_list.value(itype).count(); sub_id++){
+                    ItemSubtype *subtype = m_df->get_item_subtype(itype, sub_id);
+                    add_exact_pref(m_prefs,
+                                   std::make_shared<ExactItemRolePreference>(subtype),
+                                   ItemPreference(subtype));
                 }
             }
-        }
-
-        // Weapons
-        foreach(ItemSubtype *i, m_df->get_item_subtypes(WEAPON)){
-            ItemWeaponSubtype *w = qobject_cast<ItemWeaponSubtype*>(i);
-            auto p = std::make_shared<ExactItemRolePreference>(w); //unfortunately a crescent halberd != halberd
-            if(w->flags().has_flag(ITEMS_WEAPON_RANGED)){
-                m_raw_prefs[WEAPONS_RANGED].emplace_back(p);
-            }else{
-                m_raw_prefs[WEAPONS_MELEE].emplace_back(p);
+            else {
+                add_exact_pref(m_prefs,
+                               std::make_shared<ExactItemRolePreference>(Item::get_item_name_plural(itype), itype),
+                               ItemPreference(itype));
             }
         }
 
@@ -506,37 +338,51 @@ void RolePreferenceModel::load_pref_from_raws(QWidget *parent)
     progress.exec();
 }
 
+// In QModelIndex created by this model, the internal pointer is the pointer
+// to the *parent* node_t or nullptr for top level categories.
+
+// casting to non-const void pointer for storing const pointer inside QModelIndex
+template<typename T>
+static inline void *void_cast(const T *ptr) { return static_cast<void *>(const_cast<T *>(ptr)); }
+
 QModelIndex RolePreferenceModel::index(int row, int column, const QModelIndex &parent) const
 {
-    if (parent.isValid()) { // preference item
-        // store the parent index (starting at 1, 0 is reserved for categories) in the internalId
-        return createIndex(row, column, static_cast<quintptr>(1+parent.row()));
+    if (parent.isValid()) {
+        auto grandparent_node = static_cast<const node_t *>(parent.internalPointer());
+        auto parent_node = grandparent_node
+                ? grandparent_node->sub_categories[parent.row()].get()
+                : m_prefs[parent.row()].get();
+        return createIndex(row, column, void_cast(parent_node));
     }
-    else { // category item
-        return createIndex(row, column, static_cast<quintptr>(0));
+    else { // root
+        return createIndex(row, column, nullptr);
     }
 }
 
 QModelIndex RolePreferenceModel::parent(const QModelIndex &index) const
 {
-    int parent_row = (int)index.internalId() - 1;
-    if (parent_row == -1) // category item
+    auto parent_node = static_cast<const node_t *>(index.internalPointer());
+    if (parent_node)
+        return createIndex(parent_node->row, 0, void_cast(parent_node->parent));
+    else
         return QModelIndex();
-    // preference item
-    return createIndex(parent_row, 0, static_cast<quintptr>(0));
 }
 
 int RolePreferenceModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid()) {
-        if (parent.internalId() != 0) // preference item
+        auto grandparent_node = static_cast<const node_t *>(parent.internalPointer());
+        auto &parent_categories = grandparent_node
+                ? grandparent_node->sub_categories
+                : m_prefs;
+        if (parent.row() >= (int)parent_categories.size()) // exact preference
             return 0;
-        // category item
-        return select_category<int>(parent.row(),
-                [] (const auto &cat) { return cat.size(); });
+
+        auto &parent_node = parent_categories[parent.row()];
+        return parent_node->sub_categories.size() + parent_node->exact_prefs.size();
     }
     else { // root item
-        return m_general_prefs.size() + m_raw_prefs.size() + m_item_prefs.size();
+        return m_prefs.size();
     }
 }
 
@@ -547,16 +393,42 @@ int RolePreferenceModel::columnCount(const QModelIndex &) const
 
 QVariant RolePreferenceModel::data(const QModelIndex &index, int role) const
 {
-    if (role != Qt::DisplayRole)
-        return QVariant();
+    struct display_t {
+        QVariant operator() (const node_t *cat) const {
+            return cat->pref->get_name();
+        }
+        QVariant operator() (const ExactRolePreference *pref) const {
+            return pref->get_name();
+        }
+    };
+    struct tooltip_t {
+        QVariant operator() (const node_t *cat) const {
+            return tr("Generic %1 preference for any %2")
+                .arg(Preference::get_pref_desc(cat->pref->get_pref_category()).toLower())
+                .arg(cat->pref->get_name().toLower());
+        }
+        QVariant operator() (const ExactRolePreference *pref) const {
+            return tr("Exact preference for %1").arg(pref->get_name().toLower());
+        }
+    };
+    struct sort_t {
+        QVariant operator() (const node_t *cat) const {
+            return QString("1%1").arg(cat->pref->get_name());
+        }
+        QVariant operator() (const ExactRolePreference *pref) const {
+            return QString("2%1").arg(pref->get_name());
+        }
+    };
 
-    int parent_row = (int)index.internalId() - 1;
-    if (parent_row == -1) { // category item
-        return get_category_name(index.row());
-    }
-    else { // preference item
-        return select_category<QVariant>(parent_row,
-                [&index] (const auto &cat) { return cat[index.row()]->get_name(); });
+    switch (role) {
+    case Qt::DisplayRole:
+        return apply_to_item<QVariant>(display_t(), index);
+    case Qt::ToolTipRole:
+        return apply_to_item<QVariant>(tooltip_t(), index);
+    case SortRole:
+        return apply_to_item<QVariant>(sort_t(), index);
+    default:
+        return QVariant();
     }
 }
 
@@ -570,20 +442,31 @@ QVariant RolePreferenceModel::headerData(int section, Qt::Orientation orientatio
 
 const RolePreference *RolePreferenceModel::getPreference(const QModelIndex &index) const
 {
-    if (!index.isValid() || index.internalId() == 0) // invalid or category item
-        return nullptr;
-    return select_category<RolePreference *>(index.internalId()-1,
-                [&index] (const auto &cat) { return cat[index.row()].get(); });
+    struct get_pref_t {
+        const RolePreference *operator() (const node_t *cat) const {
+            return cat->pref.get();
+        }
+        const RolePreference *operator() (const ExactRolePreference *pref) const {
+            return pref;
+        }
+    };
+    return apply_to_item<const RolePreference *>(get_pref_t(), index);
 }
 
-QString RolePreferenceModel::get_category_name(std::size_t index) const
+template<typename Ret, typename Function>
+Ret RolePreferenceModel::apply_to_item(Function function, const QModelIndex &index) const
 {
-        if (index < m_general_prefs.size())
-            return QString("~%1").arg(get_category_name(static_cast<GenericCategory>(index)));
-        else if ((index -= m_general_prefs.size()) < m_raw_prefs.size())
-            return get_category_name(static_cast<ExactCategory>(index));
-        else if ((index -= m_raw_prefs.size()) < m_item_prefs.size())
-            return m_item_prefs[index].first;
+    if (!index.isValid())
+        return Ret();
+    auto parent_node = static_cast<const node_t *>(index.internalPointer());
+    if (parent_node) {
+        int ncat = parent_node->sub_categories.size();
+        if (index.row() < ncat)
+            return function(parent_node->sub_categories[index.row()].get());
         else
-            return QString();
+            return function(parent_node->exact_prefs[index.row()-ncat].get());
+    }
+    else {
+        return function(m_prefs[index.row()].get());
+    }
 }

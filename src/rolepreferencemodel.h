@@ -26,10 +26,12 @@ THE SOFTWARE.
 #include <QAbstractItemModel>
 #include <memory>
 #include <vector>
-#include <array>
 
 class DFInstance;
 class RolePreference;
+class GenericRolePreference;
+class ExactRolePreference;
+class Preference;
 class Material;
 
 class RolePreferenceModel: public QAbstractItemModel
@@ -56,77 +58,43 @@ public:
     // Returns nullptr for invalid index or categories.
     const RolePreference *getPreference(const QModelIndex &index) const;
 
+    static constexpr auto SortRole = Qt::UserRole+0;
+
 private:
     DFInstance *m_df = nullptr;
 
-    enum GenericCategory {
-        ITEM,
-        EQUIPMENT,
-        MATERIAL,
-        CREATURE,
-        TRADE_GOOD,
-        PLANT_TREE,
-        OTHER,
-        GENERAL_CATEGORY_COUNT
-    };
-    static QString get_category_name(GenericCategory category);
+    struct node_t
+    {
+        const node_t *parent;
+        std::size_t row;
+        std::unique_ptr<GenericRolePreference> pref;
+        std::vector<std::unique_ptr<node_t>> sub_categories;
+        std::vector<std::shared_ptr<ExactRolePreference>> exact_prefs;
+        std::size_t exact_pref_count = 0; // recursive and unique
 
-    enum ExactCategory {
-        GEMS,
-        GLASS,
-        METALS,
-        STONE,
-        WOOD,
-        GLAZES_WARES,
-        FABRICS,
-        PAPERS,
-        LEATHERS,
-        PARCHMENTS,
-        OTHER_MATERIALS,
-        PLANTS,
-        PLANTS_ALCOHOL,
-        PLANTS_CROPS,
-        PLANTS_CROPS_PLANTABLE,
-        PLANTS_MILL,
-        PLANTS_EXTRACT,
-        TREES,
-        CREATURES,
-        CREATURES_HATEABLE,
-        CREATURES_TRAINABLE,
-        CREATURES_MILKABLE,
-        CREATURES_EXTRACTS,
-        CREATURES_EXTRACTS_FISH,
-        CREATURES_FISHABLE,
-        CREATURES_SHEARABLE,
-        CREATURES_BUTCHER,
-        CREATURES_DOMESTIC,
-        WEAPONS_MELEE,
-        WEAPONS_RANGED,
-        EXACT_CATEGORY_COUNT
-    };
-    static QString get_category_name(ExactCategory category);
+        node_t(std::unique_ptr<GenericRolePreference> &&pref, node_t *parent = nullptr);
+        ~node_t();
 
-    std::array<std::vector<std::unique_ptr<RolePreference>>, GENERAL_CATEGORY_COUNT> m_general_prefs;
-    std::array<std::vector<std::shared_ptr<RolePreference>>, EXACT_CATEGORY_COUNT> m_raw_prefs;
-    std::vector<std::pair<QString, std::vector<std::shared_ptr<RolePreference>>>> m_item_prefs;
+        template<typename T, typename... Args>
+        node_t *add_category(Args &&... args);
+    };
+    std::vector<std::unique_ptr<node_t>> m_prefs;
     bool m_loaded_raws = false;
 
-    void load_material_prefs(QVector<Material*> mats);
+    template<typename T, typename... Args>
+    node_t *add_top_category(Args &&... args);
 
+    void add_material(Material *m);
+    static bool add_exact_pref(std::vector<std::unique_ptr<node_t>> &categories,
+                               const std::shared_ptr<ExactRolePreference> &role_pref,
+                               const Preference &pref);
+    static void clear_exact_prefs(std::vector<std::unique_ptr<node_t>> &categories);
+
+    // Function must be callable with either
+    //  a const node_t * if the index is a category
+    //  and const ExactRolePreference * if the index is an exact preference
     template<typename Ret, typename Function>
-    Ret select_category(std::size_t index, Function function) const
-    {
-        if (index < m_general_prefs.size())
-            return function(m_general_prefs[index]);
-        else if ((index -= m_general_prefs.size()) < m_raw_prefs.size())
-            return function(m_raw_prefs[index]);
-        else if ((index -= m_raw_prefs.size()) < m_item_prefs.size())
-            return function(m_item_prefs[index].second);
-        else
-            return Ret();
-    }
-
-    QString get_category_name(std::size_t index) const;
+    Ret apply_to_item(Function function, const QModelIndex &index) const;
 };
 
 #endif
