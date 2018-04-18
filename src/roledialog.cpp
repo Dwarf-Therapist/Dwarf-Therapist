@@ -73,9 +73,10 @@ roleDialog::roleDialog(RolePreferenceModel *pref_model, QWidget *parent)
     // Preference view
     connect(ui->treePrefs, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(item_double_clicked(const QModelIndex &)));
     m_proxy_model->setSourceModel(pref_model);
-    m_proxy_model->sort(0,Qt::AscendingOrder);
+    m_proxy_model->setSortRole(RolePreferenceModel::SortRole);
     ui->treePrefs->setModel(m_proxy_model);
     ui->treePrefs->setSortingEnabled(true);
+    ui->treePrefs->sortByColumn(0, Qt::AscendingOrder);
     ui->treePrefs->collapseAll();
 
     connect(ui->btn_cancel, SIGNAL(clicked()), SLOT(close_pressed()));
@@ -614,7 +615,6 @@ void roleDialog::search_prefs(QString val){
     val = "(" + val.replace(" ", "|") + ")";
     QRegExp filter(val, Qt::CaseInsensitive);
     m_proxy_model->setFilterRegExp(filter);
-    m_proxy_model->setFilterKeyColumn(0);
 }
 
 void roleDialog::clear_search(){
