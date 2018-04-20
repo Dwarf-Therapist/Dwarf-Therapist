@@ -249,7 +249,7 @@ ExactRolePreference::ExactRolePreference(const Race *r)
 }
 
 ExactRolePreference::ExactRolePreference(const Plant *p)
-    : RolePreference(LIKE_PLANT, p->name_plural())
+    : RolePreference(p->flags().has_flag(P_SAPLING) || p->flags().has_flag(P_TREE) ? LIKE_TREE : LIKE_PLANT, p->name_plural())
 {
     if(!p->flags().has_flag(P_SAPLING) && !p->flags().has_flag(P_TREE)){
         for (auto f: {P_DRINK, P_MILL, P_HAS_EXTRACTS}) {
