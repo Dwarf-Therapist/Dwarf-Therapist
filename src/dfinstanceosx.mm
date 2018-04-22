@@ -153,7 +153,7 @@ USIZE DFInstanceOSX::write_raw(VIRTADDR addr, USIZE bytes, const void *buffer) {
 
 bool DFInstanceOSX::set_pid(){
     // reacquire dropped privileges
-    if (-1 == seteuid(new_euid)) {
+    if (-1 == seteuid(0)) {
         int err = errno;
         LOGE << "seteuid failed:" << strerror(err);
         return false;
