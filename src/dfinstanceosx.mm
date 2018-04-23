@@ -61,12 +61,21 @@ DFInstanceOSX::DFInstanceOSX(QObject* parent)
     : DFInstanceNix(parent)
     , m_alloc_start(0)
     , m_alloc_end(0)
+    , m_ruid(getuid())
 {
     // This makes the unauthorized DT instance quit at the proper time.
     // No, fflush(stdout) does not work.
     puts("");
     if(!authorize()) {
         exit(1);
+    }
+    LOGD << "ruid =" << m_ruid << ", euid =" << geteuid();
+
+    // temporarily drop privileges
+    if (-1 == seteuid(m_ruid)) {
+        int err = errno;
+        LOGE << "seteuid failed:" << strerror(err);
+        return;
     }
 }
 
@@ -81,6 +90,13 @@ bool DFInstanceOSX::attach() {
     if(m_attach_count > 0) {
         m_attach_count++;
         return true;
+    }
+
+    // reacquire dropped privileges
+    if (-1 == seteuid(0)) {
+        int err = errno;
+        LOGE << "seteuid(0) failed:" << strerror(err);
+        return false;
     }
 
     result = task_suspend(m_task);
@@ -98,8 +114,8 @@ bool DFInstanceOSX::detach() {
         return true;
     }
 
-    if( m_attach_count > 1 ) {
-        m_attach_count--;
+    m_attach_count--;
+    if( m_attach_count > 0 ) {
         return true;
     }
 
@@ -107,7 +123,13 @@ bool DFInstanceOSX::detach() {
     if ( result != KERN_SUCCESS ) {
         return false;
     }
-    m_attach_count--;
+
+    // temporarily drop privileges
+    if (-1 == seteuid(m_ruid)) {
+        int err = errno;
+        LOGE << "seteuid failed:" << strerror(err);
+        return false;
+    }
     return true;
 }
 
@@ -130,6 +152,13 @@ USIZE DFInstanceOSX::write_raw(VIRTADDR addr, USIZE bytes, const void *buffer) {
 }
 
 bool DFInstanceOSX::set_pid(){
+    // reacquire dropped privileges
+    if (-1 == seteuid(0)) {
+        int err = errno;
+        LOGE << "seteuid failed:" << strerror(err);
+        return false;
+    }
+
     NSAutoreleasePool *authPool = [[NSAutoreleasePool alloc] init];
 
     NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
@@ -150,6 +179,13 @@ bool DFInstanceOSX::set_pid(){
 
     kern_return_t kret = task_for_pid( current_task(), m_pid, &m_task );
     [authPool release];
+
+    // temporarily drop privileges
+    if (-1 == seteuid(m_ruid)) {
+        int err = errno;
+        LOGE << "seteuid failed:" << strerror(err);
+        return false;
+    }
 
     if (m_pid == 0 || ! (kret == KERN_SUCCESS)) {
         LOGE << "can't find running copy";
