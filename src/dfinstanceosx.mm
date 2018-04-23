@@ -310,5 +310,7 @@ bool DFInstanceOSX::checkPermissions() {
 }
 
 int DFInstanceOSX::VM_TYPE_OFFSET(){
-    return 0x4;
+    if(m_pointer_size == 8)
+        return 0x1; // For 64bit
+    return 0x4;     // For 32bit
 }
