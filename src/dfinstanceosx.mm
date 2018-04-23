@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include "memorylayout.h"
 #include "truncatingfilelogger.h"
 #include <stdio.h>
+#include <fstream>
 #include <mach/vm_map.h>
 #include <mach/mach_traps.h>
 #include <mach-o/dyld.h>
@@ -42,6 +43,7 @@ THE SOFTWARE.
 #include <mach/vm_region.h>
 #include <mach/vm_statistics.h>
 #include <mach/task.h>
+#include <mach-o/loader.h>
 
 #define MACH64 (MAC_OS_X_VERSION_MAX_ALLOWED >= 1040)
 
@@ -205,7 +207,22 @@ void DFInstanceOSX::find_running_copy() {
     set_memory_layout(calculate_checksum());
     m_alloc_start = 0;
     m_alloc_end = 0;
-    m_pointer_size = sizeof(VIRTADDR); // TODO: set pointer size
+    
+    std::ifstream dfexe(m_loc_of_dfexe.toUtf8().constData(), std::ios::in | std::ios::binary);
+    if(!dfexe.is_open()) 
+        LOGE << "Failed to open dwarfort.exe (" << m_loc_of_dfexe << ")";
+    else {
+        uint32_t magic_number;
+        dfexe.read(reinterpret_cast<char*>(&magic_number), sizeof(magic_number));
+        if(magic_number == MH_MAGIC)
+            m_pointer_size = 4;
+        else if(magic_number == MH_MAGIC_64)
+            m_pointer_size = 8;
+        else {
+            LOGE << "Failed to read magic number";
+            m_pointer_size = sizeof(VIRTADDR);
+        }
+    }
 }
 
 VIRTADDR DFInstanceOSX::alloc_chunk(USIZE size) {
