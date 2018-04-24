@@ -371,6 +371,11 @@ QModelIndex RolePreferenceModel::parent(const QModelIndex &index) const
         return QModelIndex();
 }
 
+QModelIndex RolePreferenceModel::sibling(int row, int column, const QModelIndex &index) const
+{
+    return createIndex(row, column, index.internalPointer());
+}
+
 int RolePreferenceModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid()) {
