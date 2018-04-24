@@ -117,22 +117,15 @@ CreatureDislike::CreatureDislike(const Race *r)
 {
 }
 
-static FlagArray item_flags(ITEM_TYPE type) {
-    FlagArray flags;
-    if (Item::is_trade_good(type))
-        flags.set_flag(IS_TRADE_GOOD, true);
-    return flags;
-}
-
 ItemPreference::ItemPreference(ITEM_TYPE type)
-    : Preference(LIKE_ITEM, item_flags(type), Item::get_item_name_plural(type))
+    : Preference(LIKE_ITEM, ItemSubtype::item_type_flags(type), Item::get_item_name_plural(type))
     , m_item_type(type)
     , m_item_subtype(nullptr)
 {
 }
 
 ItemPreference::ItemPreference(ITEM_TYPE type, const QString &name)
-    : Preference(LIKE_ITEM, item_flags(type), name)
+    : Preference(LIKE_ITEM, ItemSubtype::item_type_flags(type), name)
     , m_item_type(type)
     , m_item_subtype(nullptr)
 {

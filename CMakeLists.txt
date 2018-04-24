@@ -49,7 +49,7 @@ if(BUILD_PORTABLE)
 endif()
 
 add_executable(${EXE_NAME} WIN32 MACOSX_BUNDLE  
-    src/itemgenericsubtype.h src/itemtoolsubtype.h src/basedock.cpp
+    src/itemtoolsubtype.cpp src/basedock.cpp
     src/aboutdialog.cpp src/activity.cpp src/activityevent.cpp src/attribute.cpp
     src/belief.cpp src/caste.cpp src/customcolor.cpp src/customprofession.cpp
     src/defaultfonts.cpp src/dfinstance.cpp src/basetreedock.cpp

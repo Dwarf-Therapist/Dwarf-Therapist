@@ -1,6 +1,43 @@
 #include "itemsubtype.h"
 
-void ItemSubtype::read_data() {
+#include "item.h"
+
+ItemSubtype::ItemSubtype(ITEM_TYPE itype, DFInstance *df, VIRTADDR address, QObject *parent)
+    : QObject(parent)
+    , m_address(address)
+    , m_df(df)
+    , m_mem(df->memory_layout())
+    , m_iType(itype)
+    , m_subType(-1)
+{
+    m_offset_adj = -1;
+    m_offset_mat = -1;
+    m_offset_preplural = -1;
+    switch (itype) {
+    case ARMOR:
+    case PANTS:
+        //armor can also have a preplural (eg. suits of leather armor) but it's unused for things like preferences
+        m_offset_adj = m_mem->armor_subtype_offset("armor_adjective");
+        m_offset_mat = m_mem->armor_subtype_offset("mat_name");
+        break;
+    case GLOVES:
+    case AMMO:
+    case WEAPON:
+    case TRAPCOMP:
+    case SHOES:
+    case SHIELD:
+    case HELM:
+        m_offset_adj = m_mem->item_subtype_offset("adjective");
+        break;
+    case TOOL:
+        m_offset_adj = m_mem->item_subtype_offset("tool_adjective");
+        break;
+    default:
+        break;
+    }
+
+    set_item_type_flags(m_flags, itype);
+
     if(m_address){
         m_subType = m_df->read_short(m_address + m_mem->item_subtype_offset("sub_type"));
 
@@ -22,29 +59,30 @@ void ItemSubtype::read_data() {
     }
 }
 
-static bool has_adjective(ITEM_TYPE itype) {
-    switch (itype) {
-    case GLOVES:
-    case ARMOR:
-    case AMMO:
-    case WEAPON:
-    case TRAPCOMP:
-    case TOOL:
-    case SHOES:
-    case SHIELD:
-    case PANTS:
-    case HELM:
-        return true;
-    default:
-        return false;
-    }
+ItemSubtype::~ItemSubtype() {
 }
 
-void ItemSubtype::set_base_offsets() {
-    if (has_adjective(m_iType))
-        m_offset_adj = m_mem->item_subtype_offset("adjective");
-    else
-        m_offset_adj = -1;
-    m_offset_mat = -1;
-    m_offset_preplural = -1;
+FlagArray ItemSubtype::item_type_flags(ITEM_TYPE type)
+{
+    FlagArray flags;
+    set_item_type_flags(flags, type);
+    return flags;
+}
+
+void ItemSubtype::set_item_type_flags(FlagArray &flags, ITEM_TYPE type)
+{
+    if (Item::is_trade_good(type))
+        flags.set_flag(ITEM_TYPE_IS_TRADE_GOOD, true);
+    if (Item::is_supplies(type)) {
+        flags.set_flag(ITEM_TYPE_IS_EQUIPMENT, true);
+        flags.set_flag(ITEM_TYPE_IS_SUPPLIES, true);
+    }
+    if (Item::is_melee_equipment(type)) {
+        flags.set_flag(ITEM_TYPE_IS_EQUIPMENT, true);
+        flags.set_flag(ITEM_TYPE_IS_MELEE_EQUIPMENT, true);
+    }
+    if (Item::is_ranged_equipment(type)) {
+        flags.set_flag(ITEM_TYPE_IS_EQUIPMENT, true);
+        flags.set_flag(ITEM_TYPE_IS_RANGED_EQUIPMENT, true);
+    }
 }

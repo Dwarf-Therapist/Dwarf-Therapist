@@ -40,7 +40,6 @@ THE SOFTWARE.
 #include "item.h"
 #include "itemweaponsubtype.h"
 #include "itemarmorsubtype.h"
-#include "itemgenericsubtype.h"
 #include "itemtoolsubtype.h"
 #include "preference.h"
 #include "histfigure.h"
@@ -742,7 +741,7 @@ void DFInstance::load_item_defs(){
                 }else if(itype == TOOL){
                     m_item_subtypes[itype].append(new ItemToolSubtype(this,addr,this));
                 }else{
-                    m_item_subtypes[itype].append(new ItemGenericSubtype(itype,this,addr,this));
+                    m_item_subtypes[itype].append(new ItemSubtype(itype,this,addr,this));
                 }
             }
         }

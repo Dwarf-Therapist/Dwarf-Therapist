@@ -30,14 +30,6 @@ ItemWeaponSubtype::ItemWeaponSubtype(DFInstance *df, VIRTADDR address, QObject *
     , m_single_grasp_size(0)
     , m_multi_grasp_size(0)
 {
-    read_data();
-}
-
-ItemWeaponSubtype::~ItemWeaponSubtype() {
-}
-
-void ItemWeaponSubtype::read_data() {
-    ItemSubtype::read_data();
     //set the group name as the simple plural name (no adjective or preplural)
     QString plural = capitalizeEach(m_df->read_string(m_address + m_mem->item_subtype_offset("name_plural")));
     m_group_name = plural;
@@ -49,8 +41,11 @@ void ItemWeaponSubtype::read_data() {
 
     m_ammo = m_df->read_string(m_address + m_mem->weapon_subtype_offset("ammo"));
     if(m_ammo.isEmpty()){
-        m_flags.set_flag(ITEMS_WEAPON,true);
+        m_flags.set_flag(ITEM_MELEE_WEAPON,true);
     }else{
-        m_flags.set_flag(ITEMS_WEAPON_RANGED,true);
+        m_flags.set_flag(ITEM_RANGED_WEAPON,true);
     }
+}
+
+ItemWeaponSubtype::~ItemWeaponSubtype() {
 }

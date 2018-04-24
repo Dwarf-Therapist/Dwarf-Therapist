@@ -28,43 +28,27 @@ THE SOFTWARE.
 
 ItemArmorSubtype::ItemArmorSubtype(const ITEM_TYPE itype, DFInstance *df, const VIRTADDR address, QObject *parent)
     : ItemSubtype(itype,df,address,parent)
-    , m_offset_props(-1)
-    , m_offset_level(-1)
 {
-    set_base_offsets();
-    read_data();
-}
-
-ItemArmorSubtype::~ItemArmorSubtype(){
-    m_df = 0;
-    m_mem = 0;
-}
-
-QString ItemArmorSubtype::get_layer_name(){
-    switch(m_layer){
-    case 0:
-    {
-        return tr("Under");
-    }break;
-    case 1:
-    {
-        return tr("Over");
-    }break;
-    case 2:
-    {
-        return tr("Armor");
-    }break;
-    case 3:
-    {
-        return tr("Cover");
-    }break;
+    switch(m_iType){
+    case ARMOR:
+        m_offset_props = m_mem->armor_subtype_offset("chest_armor_properties");
+        m_offset_level = m_mem->armor_subtype_offset("armor_level");
+        break;
+    case PANTS:
+        m_offset_props = m_mem->armor_subtype_offset("pants_armor_properties");
+        m_offset_level = m_mem->armor_subtype_offset("armor_level");
+        break;
+    case HELM:
+    case GLOVES:
+    case SHOES:
+        m_offset_props = m_mem->armor_subtype_offset("other_armor_properties");
+        m_offset_level = m_mem->armor_subtype_offset("other_armor_level");
+        break;
     default:
-        return "";
+        m_offset_props = -1;
+        m_offset_level = -1;
+        break;
     }
-}
-
-void ItemArmorSubtype::read_data(){
-    ItemSubtype::read_data();
 
     if(m_offset_props != -1){
         m_layer = m_df->read_int(m_address + m_offset_props + m_mem->armor_subtype_offset("layer"));
@@ -75,14 +59,14 @@ void ItemArmorSubtype::read_data(){
             m_armor_level = 0;
         }
         if(m_armor_level == 0){
-            m_flags.set_flag(IS_CLOTHING,true);
+            m_flags.set_flag(ITEM_IS_CLOTHING,true);
         }
 
         //if it has an armor level over 0 or can be made from metal, bone or shell, consider it armor
         m_armor_flags = FlagArray(m_df, m_address+m_offset_props);
         if(m_armor_level > 0 ||
                 (m_armor_flags.has_flag(ARMOR_METAL) || m_armor_flags.has_flag(ARMOR_BONE) || m_armor_flags.has_flag(ARMOR_SHELL))){
-            m_flags.set_flag(IS_ARMOR,true);
+            m_flags.set_flag(ITEM_IS_ARMOR,true);
         }
 
         if(m_armor_flags.has_flag(ARMOR_CHAIN)){
@@ -90,9 +74,9 @@ void ItemArmorSubtype::read_data(){
             m_name_plural.prepend(tr("Chain "));
         }
 
-        if(!m_flags.has_flag(IS_ARMOR) && !m_flags.has_flag(IS_CLOTHING)){
+        if(!m_flags.has_flag(ITEM_IS_ARMOR) && !m_flags.has_flag(ITEM_IS_CLOTHING)){
             LOGW << m_name_plural << "are neither armor nor clothing. setting to clothing by default...";
-            m_flags.set_flag(IS_CLOTHING,true);
+            m_flags.set_flag(ITEM_IS_CLOTHING,true);
         }
 
     }else{
@@ -104,29 +88,20 @@ void ItemArmorSubtype::read_data(){
     }
 }
 
-void ItemArmorSubtype::set_base_offsets(){
-    switch(m_iType){
-    case ARMOR: case PANTS:
-    {
-        //armor can also have a preplural (eg. suits of leather armor) but it's unused for things like preferences
-        if(m_iType == ARMOR){
-            m_offset_props = m_mem->armor_subtype_offset("chest_armor_properties");
-        }else{
-            m_offset_props = m_mem->armor_subtype_offset("pants_armor_properties");
-        }
-        m_offset_level = m_mem->armor_subtype_offset("armor_level");
-        m_offset_adj = m_mem->armor_subtype_offset("armor_adjective");
-        m_offset_mat = m_mem->armor_subtype_offset("mat_name");
-    }
-        break;
-    case HELM: case GLOVES: case SHOES:
-    {
-        m_offset_props = m_mem->armor_subtype_offset("other_armor_properties");
-        m_offset_level = m_mem->armor_subtype_offset("other_armor_level");
-    }
-        break;
-    default:
-        break;
-    }
+ItemArmorSubtype::~ItemArmorSubtype(){
 }
 
+QString ItemArmorSubtype::get_layer_name(){
+    switch(m_layer){
+    case 0:
+        return tr("Under");
+    case 1:
+        return tr("Over");
+    case 2:
+        return tr("Armor");
+    case 3:
+        return tr("Cover");
+    default:
+        return "";
+    }
+}
