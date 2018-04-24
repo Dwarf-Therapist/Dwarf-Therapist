@@ -54,7 +54,7 @@ public:
     const QString &baby_name_plural() const {return m_baby_name_plural;}
     const QString &child_name() const {return m_child_name;}
     const QString &child_name_plural() const {return m_child_name_plural;}
-    VIRTADDR pref_string_vector() const {return m_pref_string_vector;}
+    const QVector<QString> &pref_strings() const { return m_pref_strings; }
     VIRTADDR pop_ratio_vector() const {return m_pop_ratio_vector;}
     VIRTADDR castes_vector() const {return m_castes_vector;}
     Material *get_creature_material(int index);
@@ -86,7 +86,7 @@ private:
     QList<Caste*> m_castes;
     QHash<int, Material*> m_creature_mats;
 
-    VIRTADDR m_pref_string_vector;
+    QVector<QString> m_pref_strings;
     VIRTADDR m_pop_ratio_vector;
     VIRTADDR m_castes_vector;
 
