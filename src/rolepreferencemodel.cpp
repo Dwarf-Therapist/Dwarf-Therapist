@@ -303,9 +303,11 @@ void RolePreferenceModel::load_pref_from_raws(QWidget *parent)
             if(r->flags().has_flag(WAGON))
                 continue;
 
-            add_exact_pref(m_prefs,
-                           std::make_shared<ExactRolePreference>(r),
-                           CreaturePreference(r));
+            if  (!r->pref_strings().isEmpty() || r->caste_flag(DOMESTIC)) {
+                add_exact_pref(m_prefs,
+                               std::make_shared<ExactRolePreference>(r),
+                               CreaturePreference(r));
+            }
 
             for (Material *m: r->get_creature_materials().values())
                 add_material(m);

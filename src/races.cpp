@@ -111,7 +111,10 @@ void Race::read_race() {
     m_baby_name = capitalizeEach(m_baby_name);
     m_baby_name_plural = capitalizeEach(m_baby_name_plural);
 
-    m_pref_string_vector = m_address + m_mem->race_offset("pref_string_vector");
+    for (VIRTADDR addr: m_df->enumerate_vector(m_address + m_mem->race_offset("pref_string_vector"))) {
+        m_pref_strings.append(m_df->read_string(addr));
+    }
+
     m_pop_ratio_vector = m_address + m_mem->race_offset("pop_ratio_vector");
     m_castes_vector = m_address + m_mem->race_offset("castes_vector");
     m_materials_addr = m_df->enumerate_vector(m_address + m_mem->race_offset("materials_vector"));
