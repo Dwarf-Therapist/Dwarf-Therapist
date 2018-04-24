@@ -51,8 +51,5 @@ private:
 
     int m_offset_props;
     int m_offset_level;
-
-    void set_base_offsets();
-    void read_data();
 };
 #endif // ITEMARMORSUBTYPE_H

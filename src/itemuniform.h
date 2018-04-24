@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 #include "item.h"
 
-class ItemGenericSubtype;
+class ItemSubtype;
 class ItemDefUniform;
 
 class ItemUniform : public Item {
@@ -44,7 +44,7 @@ public:
     ItemSubtype * get_subType();
 
 private:
-    ItemGenericSubtype *m_item_def;
+    ItemSubtype *m_item_def;
     ItemDefUniform *m_uniform_def;
 
     void read_def();

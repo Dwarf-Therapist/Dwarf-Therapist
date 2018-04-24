@@ -46,8 +46,6 @@ private:
     QString m_ammo;
     int m_melee_skill_id;
     int m_ranged_skill_id;
-
-    void read_data();
 };
 
 #endif // ITEMWEAPONSUBTYPE_H

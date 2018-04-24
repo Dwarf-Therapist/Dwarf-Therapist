@@ -30,37 +30,29 @@ THE SOFTWARE.
 #include "memorylayout.h"
 #include "flagarray.h"
 
+enum ITEMDEF_FLAG
+{
+    // Flags added by DT
+    ITEM_INCOMPLETE = 1000,
+    ITEM_MELEE_WEAPON,
+    ITEM_RANGED_WEAPON,
+    ITEM_IS_ARMOR = 1003, // value fixed for backward compatibility
+    ITEM_IS_CLOTHING = 1004,
+    // flags based on the ITEM_TYPE
+    ITEM_TYPE_IS_TRADE_GOOD = 1005,
+    ITEM_TYPE_IS_EQUIPMENT,
+    ITEM_TYPE_IS_MELEE_EQUIPMENT,
+    ITEM_TYPE_IS_RANGED_EQUIPMENT,
+    ITEM_TYPE_IS_SUPPLIES,
+};
+
 class ItemSubtype : public QObject {
     Q_OBJECT
 public:
-    ItemSubtype(ITEM_TYPE itype, DFInstance *df, VIRTADDR address, QObject *parent = 0)
-        : QObject(parent)
-        , m_address(address)
-        , m_df(df)
-        , m_mem(df->memory_layout())
-        , m_iType(itype)
-        , m_subType(-1)
-    {
-        set_base_offsets();
-    }
+    ItemSubtype(ITEM_TYPE itype, DFInstance *df, VIRTADDR address, QObject *parent = 0);
+    virtual ~ItemSubtype();
 
-    ItemSubtype(DFInstance *df, VIRTADDR address, QObject *parent = 0)
-        : QObject(parent)
-        , m_address(address)
-        , m_df(df)
-        , m_mem(df->memory_layout())
-        , m_iType(NONE)
-        , m_subType(-1)
-    {
-        set_base_offsets();
-    }
-
-    virtual ~ItemSubtype(){
-        m_df = 0;
-        m_mem = 0;
-    }
-
-    VIRTADDR address() {return m_address;}
+    VIRTADDR address() const {return m_address;}
     QString name() const {return m_name;}
     QString name_plural() const {return m_name_plural;}
     ITEM_TYPE type() const {return m_iType;}
@@ -69,6 +61,8 @@ public:
 
     void name(QString val){m_name = val;}
     void name_plural(QString val){m_name_plural = val;}
+
+    static FlagArray item_type_flags(ITEM_TYPE type);
 
 protected:
     VIRTADDR m_address;
@@ -84,8 +78,8 @@ protected:
     int m_offset_preplural;
     int m_offset_mat;
 
-    virtual void read_data();
-    virtual void set_base_offsets();
+private:
+    static void set_item_type_flags(FlagArray &flags, ITEM_TYPE type);
 };
 
 #endif // ITEMSUBTYPE_H

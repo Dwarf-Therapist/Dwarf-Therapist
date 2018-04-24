@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 #include "item.h"
 
-class ItemGenericSubtype;
+class ItemSubtype;
 
 class ItemInstrument : public Item {
 public:
@@ -39,7 +39,7 @@ public:
     ItemSubtype * get_subType();
 
 private:
-    ItemGenericSubtype *m_Instrument_def;
+    ItemSubtype *m_Instrument_def;
     void read_def();
 };
 

@@ -28,18 +28,30 @@ THE SOFTWARE.
 class ItemToolSubtype : public ItemSubtype {
     Q_OBJECT
 public:
-    ItemToolSubtype(DFInstance *df, VIRTADDR address, QObject *parent = 0)
-        : ItemSubtype(TOOL,df,address,parent)
-    {
-        set_base_offsets();
-        read_data();
-    }
+    enum Flags {
+        HARD_MAT = 0,
+        METAL_MAT,
+        HAS_EDGE_ATTACK,
+        METAL_WEAPON_MAT,
+        UNIMPROVABLE,
+        SOFT_MAT,
+        WOOD_MAT,
+        INVERTED_TILE,
+        FURNITURE,
+        LEATHER_MAT,
+        SILK_MAT,
+        THREAD_PLANT_MAT,
+        GLASS_MAT,
+        CERAMIC_MAT,
+        STONE_MAT,
+        SHELL_MAT,
+        BONE_MAT,
+        NO_DEFAULT_JOB,
+        INCOMPLETE_ITEM,
+        SHEET_MAT,
+    };
 
-private:
-    void set_base_offsets(){
-        m_offset_adj = m_mem->item_subtype_offset("tool_adjective");
-    }
-
+    ItemToolSubtype(DFInstance *df, VIRTADDR address, QObject *parent = 0);
 };
 
 #endif // ITEMTOOLSUBTYPE_H

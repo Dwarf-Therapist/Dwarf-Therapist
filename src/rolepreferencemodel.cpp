@@ -145,26 +145,25 @@ RolePreferenceModel::RolePreferenceModel(QObject *parent)
 
     auto items = add_top_category<GenericRolePreference>(LIKE_ITEM, tr("Items"));
     // general item preferences
-    auto clothing = items->add_category<GenericRolePreference>(LIKE_ITEM, tr("Clothing (Any)"), IS_CLOTHING);
-    auto armor = items->add_category<GenericRolePreference>(LIKE_ITEM, tr("Armor (Any)"), IS_ARMOR);
-    auto trade_good = items->add_category<GenericRolePreference>(LIKE_ITEM, tr("Trade Goods"), IS_TRADE_GOOD);
+    auto clothing = items->add_category<GenericRolePreference>(LIKE_ITEM, tr("Clothing (Any)"), ITEM_IS_CLOTHING);
+    auto armor = items->add_category<GenericRolePreference>(LIKE_ITEM, tr("Armor (Any)"), ITEM_IS_ARMOR);
+    auto trade_good = items->add_category<GenericRolePreference>(LIKE_ITEM, tr("Trade Goods"), ITEM_TYPE_IS_TRADE_GOOD);
     for (ITEM_TYPE itype: ItemTypes) {
         if (itype == WEAPON) {
-            items->add_category<GenericItemRolePreference>(tr("Weapons (Ranged)"), WEAPON, ITEMS_WEAPON_RANGED);
-            items->add_category<GenericItemRolePreference>(tr("Weapons (Melee)"), WEAPON, ITEMS_WEAPON);
+            items->add_category<GenericItemRolePreference>(tr("Weapons (Ranged)"), WEAPON, ITEM_RANGED_WEAPON);
+            items->add_category<GenericItemRolePreference>(tr("Weapons (Melee)"), WEAPON, ITEM_MELEE_WEAPON);
         }
         else {
             QString name = Item::get_item_name_plural(itype);
 
             //add all item types as a group to the general categories
             if(Item::is_trade_good(itype)){
-                trade_good->add_category<GenericItemRolePreference>(
-                        name, itype, IS_TRADE_GOOD);
+                trade_good->add_category<GenericItemRolePreference>(name, itype);
             }
             else if (Item::is_armor_type(itype,false)) {
-                armor->add_category<GenericItemRolePreference>(name, itype);
+                armor->add_category<GenericItemRolePreference>(name, itype, ITEM_IS_ARMOR);
                 clothing->add_category<GenericItemRolePreference>(
-                        Item::get_item_clothing_name(itype), itype, IS_CLOTHING);
+                        Item::get_item_clothing_name(itype), itype, ITEM_IS_CLOTHING);
             }
             else {
                 items->add_category<GenericItemRolePreference>(name, itype);
@@ -318,6 +317,8 @@ void RolePreferenceModel::load_pref_from_raws(QWidget *parent)
             if (Item::has_subtypes(itype)) {
                 for(int sub_id = 0; sub_id < item_list.value(itype).count(); sub_id++){
                     ItemSubtype *subtype = m_df->get_item_subtype(itype, sub_id);
+                    if (subtype->flags().has_flag(ITEM_INCOMPLETE))
+                        continue;
                     add_exact_pref(m_prefs,
                                    std::make_shared<ExactItemRolePreference>(subtype),
                                    ItemPreference(subtype));

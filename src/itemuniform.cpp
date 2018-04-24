@@ -23,7 +23,7 @@ THE SOFTWARE.
 #include "itemuniform.h"
 #include "gamedatareader.h"
 #include "itemdefuniform.h"
-#include "itemgenericsubtype.h"
+#include "itemsubtype.h"
 
 ItemUniform::ItemUniform(const Item &baseItem)
     :Item(baseItem)
@@ -98,7 +98,7 @@ static bool has_subtype(ITEM_TYPE itype) {
 
 void ItemUniform::read_def(){
     if(m_addr && has_subtype(m_iType)){
-        m_item_def = new ItemGenericSubtype(m_iType,m_df,m_df->read_addr(m_addr+m_df->memory_layout()->item_offset("item_def")),this);
+        m_item_def = new ItemSubtype(m_iType,m_df,m_df->read_addr(m_addr+m_df->memory_layout()->item_offset("item_def")),this);
     }else{
         if(m_uniform_def->mat_flag() != MAT_NONE){
             mat_flags().set_flag(m_uniform_def->mat_flag(),true);
@@ -114,10 +114,10 @@ void ItemUniform::read_def(){
         QVector<VIRTADDR> item_defs = m_df->get_itemdef_vector(m_iType);
         if(!item_defs.empty() && (subtype >=0 && subtype < item_defs.count())){
             //get sub-type name
-            m_item_def = new ItemGenericSubtype(m_iType,m_df,item_defs.at(subtype),this);
+            m_item_def = new ItemSubtype(m_iType,m_df,item_defs.at(subtype),this);
         }else{
             //build a simple subtype and manually set the name
-            m_item_def = new ItemGenericSubtype(m_iType,m_df,0,this);
+            m_item_def = new ItemSubtype(m_iType,m_df,0,this);
             //get base item name
             QString name = Item::get_item_name(m_iType);
             QString name_plural = Item::get_item_name_plural(m_iType);

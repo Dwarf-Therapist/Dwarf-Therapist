@@ -86,20 +86,6 @@ std::unique_ptr<RolePreference> RolePreference::parse(QSettings &s, bool &update
     }
     s.endArray();
 
-    //check and update any missing armor/clothing flags
-    if (Item::is_armor_type(item_type) &&
-            flags.find(IS_ARMOR) == flags.end() &&
-            flags.find(IS_CLOTHING) == flags.end()){
-        flags.insert(IS_ARMOR);
-        updated = true;
-    }
-
-    //add missing trade goods flags
-    if (Item::is_trade_good(item_type) && flags.find(IS_TRADE_GOOD) == flags.end()){
-        flags.insert(IS_TRADE_GOOD);
-        updated = true;
-    }
-
     //add missing trainable, remove old flags
     if (pref_type == LIKE_CREATURE) {
         decltype(flags)::iterator hunting, war;
@@ -139,6 +125,23 @@ std::unique_ptr<RolePreference> RolePreference::parse(QSettings &s, bool &update
         flags.clear();
         mat_reaction = "PAPER_SLURRY";
         updated = true;
+    }
+
+    //update item flags (material flags -> item flags)
+    //if new item flags have the same value as the old material flags used for
+    //item, this should be removed.
+    if (pref_type == LIKE_ITEM) {
+        decltype(flags)::iterator it;
+        if ((it = flags.find(ITEMS_WEAPON)) != flags.end()) {
+            flags.erase(it);
+            flags.insert(ITEM_MELEE_WEAPON);
+            updated = true;
+        }
+        if ((it = flags.find(ITEMS_WEAPON_RANGED)) != flags.end()) {
+            flags.erase(it);
+            flags.insert(ITEM_RANGED_WEAPON);
+            updated = true;
+        }
     }
 
     std::unique_ptr<RolePreference> p;
@@ -284,25 +287,8 @@ ExactItemRolePreference::ExactItemRolePreference(const QString &name, ITEM_TYPE 
 {
 }
 
-static std::set<int> item_flags(const ItemSubtype *i) {
-    std::set<int> flags;
-    if (auto w = dynamic_cast<const ItemWeaponSubtype*>(i)) {
-        for (auto f: {ITEMS_WEAPON, ITEMS_WEAPON_RANGED}) {
-            if (w->flags().has_flag(f))
-                flags.insert(f);
-        }
-    }
-    if (auto a = dynamic_cast<const ItemArmorSubtype*>(i)) {
-        for (auto f: {IS_ARMOR, IS_CLOTHING}) {
-            if (a->flags().has_flag(f))
-                flags.insert(f);
-        }
-    }
-    return flags;
-}
-
 ExactItemRolePreference::ExactItemRolePreference(const ItemSubtype *i)
-    : ExactRolePreference(LIKE_ITEM, i->name_plural(), item_flags(i))
+    : ExactRolePreference(LIKE_ITEM, i->name_plural())
     , ItemRolePreference(i->type())
 {
 }
@@ -335,18 +321,6 @@ ExactMaterialRolePreference::ExactMaterialRolePreference(const Material *m, MATE
     : ExactRolePreference(LIKE_MATERIAL, m->get_material_name(state).trimmed())
     , MaterialRolePreference(state)
 {
-    for (auto f: {IS_GEM, IS_GLASS, CRYSTAL_GLASSABLE, IS_METAL,
-                  IS_WOOD, THREAD_PLANT, IS_DYE, ITEMS_DELICATE}) {
-        if (m->flags().has_flag(f))
-            m_flags.insert(f);
-    }
-    if (m->flags().has_flag(IS_STONE)) {
-        m_flags.insert(IS_STONE);
-        if (m->flags().has_flag(ITEMS_QUERN) && m->flags().has_flag(NO_STONE_STOCKPILE)) {
-            m_flags.insert(ITEMS_QUERN);
-            m_flags.insert(NO_STONE_STOCKPILE);
-        }
-    }
 }
 
 void ExactMaterialRolePreference::write(QSettings &s) const {
