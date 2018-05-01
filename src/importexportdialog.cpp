@@ -254,9 +254,9 @@ bool ImportExportDialog::setup_for_role_export() {
     m_mode = MODE_EXPORT_ROLES;
     QString default_path = QString("%1/%2")
         .arg(_get_dir(QStandardPaths::DesktopLocation))
-        .arg("custom_roles.dtp");
+        .arg("custom_roles.dtr");
     m_path = QFileDialog::getSaveFileName(this, tr("Choose a file to export to"),	default_path,
-        "Dwarf Therapist Roles Exports (*.dtp);;All Files (*.*)");
+        "Dwarf Therapist Roles Exports (*.dtr);;All Files (*.*)");
     if (m_path.isEmpty())
         return false; //cancelled
     LOGI << "exporting custom roles to:" << m_path;
@@ -286,9 +286,9 @@ bool ImportExportDialog::setup_for_role_export() {
 
 bool ImportExportDialog::setup_for_role_import() {
     m_mode = MODE_IMPORT_ROLES;
-    QString default_path = QString("%1/%2").arg(_get_dir(QStandardPaths::DesktopLocation)).arg("custom_roles.dtp");
+    QString default_path = QString("%1/%2").arg(_get_dir(QStandardPaths::DesktopLocation)).arg("custom_roles.dtr");
     m_path = QFileDialog::getOpenFileName(this, tr("Choose a file to import"), default_path,
-        "Dwarf Therapist Roles Imports (*.dtp);;All Files (*.*)");
+        "Dwarf Therapist Roles Imports (*.dtr);;All Files (*.*)");
     if (m_path.isEmpty())
         return false; //cancelled
     LOGI << "importing custom roles from:" << m_path;
