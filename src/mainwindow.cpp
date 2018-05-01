@@ -895,13 +895,15 @@ void MainWindow::open_data_dir() {
     // Create directories if they don't exist
     if (!data_dir.exists())
         data_dir.mkpath(".");
-    for (auto dirname: { QString("memory_layouts/%1").arg(DFInstance::layout_subdir()) }) {
+    for (auto dirname: {
+            QString("gridviews"),
+            QString("memory_layouts/%1").arg(DFInstance::layout_subdir()) }) {
         if (!data_dir.exists(dirname))
             data_dir.mkpath(dirname);
     }
 
-    // Copy READMEs if they don't already exist
-    for (auto filename: { "README.rst", "memory_layouts/README.rst" }) {
+    // Copy the README if it doesn't already exist
+    for (auto filename: { "README.md" }) {
         QFileInfo file(data_dir, filename);
         if (file.exists())
             continue;
