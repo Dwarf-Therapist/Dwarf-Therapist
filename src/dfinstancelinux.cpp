@@ -436,18 +436,30 @@ USIZE DFInstanceLinux::write_string(const VIRTADDR addr, const QString &str) {
 
     struct user_regs_struct work_regs = saved_regs;
     work_regs.*orig_ax = -1; // prevents syscall restart
+    work_regs.*sp = saved_regs.*sp;
 
-    // allocate space for string data and align stack pointer;
-    VIRTADDR str_data_addr = saved_regs.*sp - str_data.size();
-    str_data_addr = (str_data_addr / m_pointer_size) * m_pointer_size;
-    work_regs.*sp = str_data_addr;
+#ifdef __x86_64__
+    if (m_pointer_size == 8) {
+        // x86_64 ABI reserve a 128 byte "red zone" for storing local variable without changing rsp
+        work_regs.rsp -= 128;
+    }
+#endif
 
-    std::vector<VIRTADDR> stack;
-    stack.push_back(m_trap_addr); // return address
+    // allocate space for string and write data in remote stack
+    work_regs.*sp -= str_data.size();
+    VIRTADDR str_data_addr = work_regs.*sp;
+    write_raw(str_data_addr, str_data.size(), str_data.data());
+
+    // prepare stack buffer with return address and arguments
+    std::vector<char> stack;
+    auto add_on_stack = [&stack, pointer_size=m_pointer_size] (VIRTADDR value) {
+        std::copy_n(reinterpret_cast<char *>(&value), pointer_size, std::back_inserter(stack));
+    };
+    add_on_stack(m_trap_addr); // return address
     if (m_pointer_size == 4) {
-        stack.push_back(addr); // this
-        stack.push_back(str_data_addr); // s
-        stack.push_back(str_data.size()); // count
+        add_on_stack(addr); // this
+        add_on_stack(str_data_addr); // s
+        add_on_stack(str_data.size()); // count
     }
 #ifdef __x86_64__
     else if (m_pointer_size == 8) {
@@ -462,19 +474,12 @@ USIZE DFInstanceLinux::write_string(const VIRTADDR addr, const QString &str) {
         return 0;
     }
 
-    // Fill stack
-    std::vector<char> stack_buffer (stack.size()*m_pointer_size + str_data.size());
-    auto it = stack_buffer.begin();
-    for (VIRTADDR value: stack) {
-        auto p = reinterpret_cast<char *>(&value);
-        std::copy_n(p, m_pointer_size, it);
-        it += m_pointer_size;
-        work_regs.*sp -= m_pointer_size;
-    }
-    // Write string data
-    std::copy(str_data.begin(), str_data.end(), it);
+    work_regs.*sp -= stack.size()-m_pointer_size; // reserve space for args
+    work_regs.*sp &= -16; // align on 16 bytes
+    work_regs.*sp -= m_pointer_size; // space for return address
+
     // copy buffer in remote stack
-    write_raw(work_regs.*sp, stack_buffer.size(), stack_buffer.data());
+    write_raw(work_regs.*sp, stack.size(), stack.data());
 
     // call std::string::assign
     work_regs.*ip = m_string_assign_addr;
