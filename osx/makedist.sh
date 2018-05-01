@@ -11,6 +11,8 @@ cp -f ../CHANGELOG.txt /Volumes/Dwarf\ Therapist/
 cp -f ../LICENSE.txt /Volumes/Dwarf\ Therapist/
 cp -f ../README.txt /Volumes/Dwarf\ Therapist/
 rm -f /Volumes/Dwarf\ Therapist/DwarfTherapist.app/Contents/MacOS/log/run.log
+mkdir -p /Volumes/Dwarf\ Therapist/DwarfTherapist.app/Contents/Resources
+cp -R ../share/memory_layouts /Volumes/Dwarf\ Therapist/DwarfTherapist.app/Contents/Resources
 
 macdeployqt /Volumes/Dwarf\ Therapist/DwarfTherapist.app
 
