@@ -106,11 +106,18 @@ if(UNIX AND NOT APPLE)
     # Installation is currently Linux-only
     install(TARGETS ${EXE_NAME}
             RUNTIME DESTINATION bin)
-    install(DIRECTORY share/
-            DESTINATION share/dwarftherapist)
-    install(FILES LICENSE.txt README.rst
-            DESTINATION share/doc/dwarftherapist)
-    # desktop file and icons
-    install(DIRECTORY dist/xdg/
-            DESTINATION share)
+    if (BUILD_PORTABLE)
+        install(DIRECTORY share/
+                DESTINATION share)
+        install(FILES LICENSE.txt README.rst
+                DESTINATION share/doc)
+    else()
+        install(DIRECTORY share/
+                DESTINATION share/dwarftherapist)
+        install(FILES LICENSE.txt README.rst
+                DESTINATION share/doc/dwarftherapist)
+        # desktop file and icons
+        install(DIRECTORY dist/xdg/
+                DESTINATION share)
+    endif()
 endif()
