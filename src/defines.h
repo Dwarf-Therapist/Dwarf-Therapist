@@ -24,15 +24,15 @@ THE SOFTWARE.
 #define DEFINES_H
 
 #ifndef DT_VERSION_MAJOR
-    #define DT_VERSION_MAJOR 39
+    #define DT_VERSION_MAJOR 40
 #endif
 
 #ifndef DT_VERSION_MINOR
-    #define DT_VERSION_MINOR 3
+    #define DT_VERSION_MINOR 0
 #endif
 
 #ifndef DT_VERSION_PATCH
-    #define DT_VERSION_PATCH 1
+    #define DT_VERSION_PATCH 0
 #endif
 
 #define DEFAULT_CELL_SIZE 16

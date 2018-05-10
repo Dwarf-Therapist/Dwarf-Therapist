@@ -1,3 +1,19 @@
+### Version 40.0.0 Patch Notes
+
+***
+ - added memory layouts for DF 0.44.10
+ - changed data directory paths and priority (using Qt's standard paths)
+ - added a "portable" mode that only uses and stores files in the application directory
+ - changed settings directory from "UDP Software" to "Dwarf Therapist"
+ - added a shortcut to the data directory in the file menu
+ - changed exported custom role extension to dtr (instead of dtp)
+ - added preference columns
+ - fixed reading item type on macOS
+ - fixed writing files as root on macOS (drop root privileges when not read DF memory)
+ - fixed unassignable dwarves being assigned to military in multiple selection
+ - fixed caste detection for modded player race
+ - fixed some tool names missing their adjective
+
 ### Version 39.3.1 Patch Notes
 
 ***
