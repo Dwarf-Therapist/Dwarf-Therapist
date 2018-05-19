@@ -1,0 +1,194 @@
+#!/bin/bash
+
+# Name for the created library
+libname="set_ptracer_any.so"
+
+usage=$(cat <<EOF
+Usage: $0 [options] [df_path]
+
+Compile a library ($libname) that disable the kernel.yama.ptrace_scope
+restrictions and patch DF and DFHack launcher scripts to preload it when
+running Dwarf_Fortress executable.
+
+If no df_path parameter is given, this script will try to open a file selection
+dialog (using zenity).
+
+Options are:
+ --32,--64            Force target architecture.
+ --library-only       Only compile and install the library
+ --patch-df-only      Only patch DF launcher
+ --patch-dfhack-only  Only patch DFHack launcher
+ -h,--help            Display this help message.
+EOF
+)
+
+CC=${CC:-gcc}
+CFLAGS=${CFLAGS:--Wall}
+LDFLAGS=${LDFLAGS:-}
+
+args=$(getopt -n "$0" --longoptions "32,64,library-only,patch-df-only,patch-dfhack-only,help" --option "h" -- "$@")
+if [ "$?" -ne 0 ]; then
+    echo "Invalid arguments" >&2
+    echo "$usage"
+    exit 1
+fi
+eval set -- $args
+mode=all
+while [ "$1" != '--' ]; do
+    case "$1" in
+    '--32')
+        forced_arch=32
+        ;;
+    '--64')
+        forced_arch=64
+        ;;
+    '--library-only')
+        mode=library-only
+        ;;
+    '--patch-df-only')
+        mode=patch-df-only
+        ;;
+    '--patch-dfhack-only')
+        mode=patch-dfhack-only
+        ;;
+    '-h'|'--help')
+        echo "$usage"
+        exit 0
+    esac
+    shift
+done
+shift
+
+############################
+# Find Dwarf Fortress path #
+############################
+
+if [ -z "$1" ]; then
+    if command -v zenity > /dev/null; then
+        df_path=$(zenity --title "Select Dwarf Fortress directory" --file-selection --directory)
+        if [ "$?" -ne 0 ]; then
+            exit 1
+        fi
+    else
+        echo "Missing Dwarf Fortress path." >&2
+    fi
+else
+    df_path=$1
+fi
+if [ ! -f "$df_path/df" -o ! -f "$df_path/libs/Dwarf_Fortress" ]; then
+    echo "Dwarf Fortress not found in $df_path." >&2
+    exit 1
+fi
+echo "Using Dwarf Fortress at $df_path" >&2
+
+###################
+# Compile library #
+###################
+
+function install_library
+{
+    if [ -z "${forced_arch+1}" ]; then
+        case $(file "$df_path/libs/Dwarf_Fortress") in
+        *"ELF 32-bit LSB executable"*)
+            arch=32
+            ;;
+        *"ELF 64-bit LSB executable"*)
+            arch=64
+            ;;
+        *)
+            echo "Failed to check Dwarf Fortress architecture." >&2
+            exit 1
+        esac
+        echo "Architecture: $arch-bit (detected)" >&2
+    else
+        arch=$forced_arch
+        echo "Architecture: $arch-bit (forced)" >&2
+    fi
+
+    echo "Compiling $libname..." >&2
+    "$CC" -xc -m$arch $CFLAGS -fPIC $LDFLAGS -shared - -o "$df_path/$libname" << EOF
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/prctl.h>
+
+void set_ptracer_any() __attribute__((constructor));
+
+void set_ptracer_any()
+{
+	if (-1 == prctl(PR_SET_PTRACER, PR_SET_PTRACER_ANY, 0, 0, 0))
+		perror("prctl");
+}
+EOF
+}
+
+#################
+# Patch scripts #
+#################
+
+function backup_file
+{
+    name=$1
+    if [ -e "$name.old" ]; then
+        i=1
+        while [ -e "$name.old.$i" ]; do i=$((i+1)); done
+        newname="$name.old.$i"
+    else
+        newname="$name.old"
+    fi
+    cp -v "$name" "$newname"
+}
+
+function patch_df
+{
+    echo "Patching DF launcher script" >&2
+    backup_file "$df_path/df" || exit 1
+    patch "$df_path/df" - << EOF
+@@ -3,5 +3,6 @@
+ cd "\${DF_DIR}"
+ export SDL_DISABLE_LOCK_KEYS=1 # Work around for bug in Debian/Ubuntu SDL patch.
+ #export SDL_VIDEO_CENTERED=1 # Centre the screen.  Messes up resizing.
++export LD_PRELOAD="\${LD_PRELOAD:+\$LD_PRELOAD:}./$libname"
+ ./libs/Dwarf_Fortress "\$@" # Go, go, go! :)
+EOF
+}
+
+function patch_dfhack
+{
+    if [ -f "$df_path/dfhack" ]; then
+        echo "Patching DFHack launcher script" >&2
+        backup_file "$df_path/dfhack" || exit 1
+        patch "$df_path/dfhack" - << EOF
+@@ -21,6 +21,7 @@
+ cd "\${DF_DIR}"
+ export SDL_DISABLE_LOCK_KEYS=1 # Work around for bug in Debian/Ubuntu SDL patch.
+ #export SDL_VIDEO_CENTERED=1 # Centre the screen.  Messes up resizing.
++PRELOAD_LIB="\${PRELOAD_LIB:+\$PRELOAD_LIB:}./$libname"
+ 
+ # User config files
+ RC=".dfhackrc"
+EOF
+    else
+        echo "dfhack script not found, skipping." >&2
+    fi
+}
+
+#################
+# Apply changes #
+#################
+
+case "$mode" in
+'library-only')
+    install_library
+    ;;
+'patch-df-only')
+    patch_df
+    ;;
+'patch-dfhack-only')
+    patch_dfhack
+    ;;
+*)
+    install_library || exit 1
+    patch_df
+    patch_dfhack
+esac

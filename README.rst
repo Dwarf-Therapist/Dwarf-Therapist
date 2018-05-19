@@ -31,7 +31,7 @@ Building
 ========
 Dwarf-Therapist requires a C++ compiler (with C++14 support), cmake (3.1.0 or newer), and Qt5 (with Widgets and QML modules).
 
-Detailed building instructions can be found in `BUILDING.md`_
+Detailed building instructions can be found in `BUILDING.md`_.
 
 Linux
 =====
@@ -40,24 +40,7 @@ In addition to the AppImage provided on the `releases`_ page, packages for speci
 - `COPR repository`_ for Fedora users.
 - `AUR package`_ for Arch users.
 
-Running the program
--------------------
-On default installations of most Debian-based distributions, you'll most likely need to run Dwarf Therapist with sudo.
-This is due to the `Yama ptrace LSM`_ enabled by default on such distros.
-You can explicitly give Dwarf Therapist permission to ptrace on Debian-based distributions with::
-
-    sudo apt-get install libcap2-bin && sudo setcap cap_sys_ptrace=eip ./bin/release/DwarfTherapist
-
-Or, you can create a script that will run Dwarf Fortress as a child of Dwarf Therapist::
-
-    #!/bin/bash
-    set -e
-    cd df_linux
-    ./df &
-    cd ../dwarftherapist
-    exec ./bin/release/DwarfTherapist
-
-Alternatively, you can use the ``dist/ptrace_cap_wrapper/dwarftherapist`` wrapper to automatically grant DT permissions to attach to a running DF process (edit the value of ``_DT_BINARY`` if Dwarf Therapist is not in the path).
+Some Linux distributions restrict the ability to trace other processes. If Dwarf Therapist fails to connect to Dwarf Fortress, check `ptrace_scope help`_.
 
 Support
 =======
@@ -71,6 +54,7 @@ You can also join us in `#dwarftherapist on Freenode`_.
 .. _Splintermind's Dwarf Therapist: https://github.com/splintermind/Dwarf-Therapist/
 .. _original Dwarf Therapist: http://code.google.com/p/dwarftherapist/
 .. _BUILDING.md: https://github.com/Dwarf-Therapist/Dwarf-Therapist/blob/master/BUILDING.md
+.. _ptrace_scope help: https://github.com/Dwarf-Therapist/Dwarf-Therapist/blob/master/dist/ptrace_scope/README.md
 .. _Yama ptrace LSM: https://www.kernel.org/doc/Documentation/security/Yama.txt
 .. _Dwarf Therapist thread: http://www.bay12forums.com/smf/index.php?topic=168411
 .. _GitHub issue tracker: https://github.com/Dwarf-Therapist/Dwarf-Therapist/issues

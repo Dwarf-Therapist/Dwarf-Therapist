@@ -1,0 +1,21 @@
+#!/bin/bash
+
+ptrace_scope=$(< /proc/sys/kernel/yama/ptrace_scope)
+if [ "$ptrace_scope" -gt 0 ]; then
+	if [ "$ptrace_scope" -gt 2 ]; then
+		notify-send "Dwarf Therapist cannot debug other processes." \
+			"Lower your ptrace_scope level"
+		exit 1
+	fi
+	if command -v setcap > /dev/null; then
+		exe=$(readlink -f "$(command -v "$1")")
+		if ! setcap -v cap_sys_ptrace=eip "$exe" > /dev/null; then
+			pkexec setcap cap_sys_ptrace=eip "$exe"
+		fi
+	else
+		notify-send "Dwarf Therapist cannot set the required capability." \
+			"Install \"setcap\" so the CAP_SYS_PTRACE can be granted to Dwarf Therapist, or lower the ptrace_scope level."
+	fi
+fi
+
+exec "$@"
