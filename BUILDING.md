@@ -52,15 +52,9 @@ or `-DCMAKE_INSTALL_PREFIX=~/.local` to install for the current user only.
 When cmake is configured, run `make` to build and then `make install` or
 `sudo make install` to install Dwarf Therapist at the chosen location.
 
-### Setting capabilities on Debian-based distribution
+### Ptrace permissions
 
-Debian-based distribution have [Yama LSM](https://www.kernel.org/doc/Documentation/security/Yama.txt)
-enabled by default. For Dwarf Therapist to be able to access Dwarf Fortress
-memory, you need to add the `CAP_SYS_PTRACE` capability to Dwarf Therapist
-executable (replace `<install_prefix>` with the installation path):
-
-    sudo apt-get install libcap2-bin
-    sudo setcap cap_sys_ptrace=eip <install_prefix>/bin/DwarfTherapist
+Some Linux distributions restrict the ability to trace other processes. Check your ptrace permission settings, run `sysctl kernel.yama.ptrace_scope`. If the value is 0, Dwarf Therapist should be able to connect to Dwarf Fortress. If the value is higher, read [ptrace_scope help](dist/ptrace_scope/README.md).
 
 macOS
 -----
