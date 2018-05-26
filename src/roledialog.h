@@ -83,11 +83,9 @@ private slots:
     void remove_skill();
 
     //void tree_selection_changed(QTreeWidgetItem *current, QTreeWidgetItem *previous);
-    void item_double_clicked(const QModelIndex &index);
+    void preference_activated(const QModelIndex &index);
     void draw_prefs_context_menu(const QPoint &);
     void remove_pref();
-    void search_prefs(QString);
-    void clear_search();
 
     //update new role ratings
     void calc_new_role();

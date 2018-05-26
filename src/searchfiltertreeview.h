@@ -20,38 +20,49 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef PREFERENCE_PICKER_DIALOG_H
-#define PREFERENCE_PICKER_DIALOG_H
+#ifndef SEARCH_FILTER_TREE_VIEW_H
+#define SEARCH_FILTER_TREE_VIEW_H
 
-#include <QDialog>
+#include <QWidget>
 #include <memory>
 
-namespace Ui { class PreferencePickerDialog; }
-
-class RolePreference;
-class RolePreferenceModel;
+namespace Ui { class SearchFilterTreeView; }
+class QAbstractItemModel;
+class QAbstractItemView;
 class RecursiveFilterProxyModel;
 
-class PreferencePickerDialog: public QDialog
+class SearchFilterTreeView: public QWidget
 {
     Q_OBJECT
+    Q_PROPERTY(bool expand_collapse_hidden
+               READ is_expand_collapse_hidden
+               WRITE set_expand_collapse_hidden)
 public:
-    PreferencePickerDialog(RolePreferenceModel *model, QWidget *parent = nullptr);
-    ~PreferencePickerDialog() override;
+    SearchFilterTreeView(QWidget *parent = nullptr);
+    ~SearchFilterTreeView();
 
-    // returns nullptr if no preference is selected
-    const RolePreference *get_selected_preference() const;
+    void set_model(QAbstractItemModel *model);
 
-protected:
-    void showEvent(QShowEvent *) override;
+    QAbstractItemView *view();
+    const QAbstractItemView *view() const;
 
-private slots:
+    QModelIndex get_selected_item() const;
+
+    bool is_expand_collapse_hidden() const;
+    void set_expand_collapse_hidden(bool hidden);
+
+signals:
     void item_selected(const QModelIndex &index);
     void item_activated(const QModelIndex &index);
 
+public slots:
+    void search_text(const QString &text);
+    void clear_search();
+
 private:
-    std::unique_ptr<Ui::PreferencePickerDialog> ui;
-    RolePreferenceModel *m_model;
+    std::unique_ptr<Ui::SearchFilterTreeView> ui;
+    bool m_expand_collapse_hidden;
+    RecursiveFilterProxyModel *m_filter_proxy;
 };
 
 #endif

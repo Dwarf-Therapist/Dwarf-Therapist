@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SearchFilterTreeView</class>
+ <widget class="QWidget" name="SearchFilterTreeView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="search_label">
+       <property name="text">
+        <string>Search: </string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="search_edit"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="clear_button">
+       <property name="icon">
+        <iconset resource="../resources.qrc">
+         <normaloff>:/img/cross.png</normaloff>:/img/cross.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="collapse_all_button">
+       <property name="icon">
+        <iconset resource="../resources.qrc">
+         <normaloff>:/img/arrow-in.png</normaloff>:/img/arrow-in.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="expand_all_button">
+       <property name="icon">
+        <iconset resource="../resources.qrc">
+         <normaloff>:/img/arrow-out.png</normaloff>:/img/arrow-out.png</iconset>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QTreeView" name="tree_view">
+     <property name="contextMenuPolicy">
+      <enum>Qt::ActionsContextMenu</enum>
+     </property>
+    </widget>
+   </item>
+  </layout>
+  <action name="action_collapse_all">
+   <property name="text">
+    <string>Collapse all</string>
+   </property>
+  </action>
+  <action name="action_expand_all">
+   <property name="text">
+    <string>Expand all</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>action_collapse_all</sender>
+   <signal>triggered()</signal>
+   <receiver>tree_view</receiver>
+   <slot>collapseAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>171</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_expand_all</sender>
+   <signal>triggered()</signal>
+   <receiver>tree_view</receiver>
+   <slot>expandAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>171</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>expand_all_button</sender>
+   <signal>clicked()</signal>
+   <receiver>tree_view</receiver>
+   <slot>expandAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>377</x>
+     <y>24</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>171</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>collapse_all_button</sender>
+   <signal>clicked()</signal>
+   <receiver>tree_view</receiver>
+   <slot>collapseAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>340</x>
+     <y>24</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>171</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

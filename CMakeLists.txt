@@ -145,6 +145,7 @@ add_executable(${EXE_NAME} WIN32 MACOSX_BUNDLE
     src/rolestats.cpp
     src/rotatedheader.cpp
     src/scriptdialog.cpp
+    src/searchfiltertreeview.cpp
     src/selectparentlayoutdialog.cpp
     src/skillcolumn.cpp
     src/skill.cpp
