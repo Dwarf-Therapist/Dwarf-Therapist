@@ -71,13 +71,9 @@ roleDialog::roleDialog(RolePreferenceModel *pref_model, QWidget *parent)
     ui->tw_prefs->setHorizontalHeaderLabels(QStringList() << "Preference" << "Weight" << "Category" << "Item");
 
     // Preference view
-    connect(ui->treePrefs, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(item_double_clicked(const QModelIndex &)));
-    m_proxy_model->setSourceModel(pref_model);
-    m_proxy_model->setSortRole(RolePreferenceModel::SortRole);
-    ui->treePrefs->setModel(m_proxy_model);
-    ui->treePrefs->setSortingEnabled(true);
-    ui->treePrefs->sortByColumn(0, Qt::AscendingOrder);
-    ui->treePrefs->collapseAll();
+    ui->tree_prefs->set_model(pref_model);
+    connect(ui->tree_prefs, &SearchFilterTreeView::item_activated,
+            this, &roleDialog::preference_activated);
 
     connect(ui->btn_cancel, SIGNAL(clicked()), SLOT(close_pressed()));
     connect(ui->btn_save, SIGNAL(clicked()), SLOT(save_pressed()));
@@ -89,9 +85,6 @@ roleDialog::roleDialog(RolePreferenceModel *pref_model, QWidget *parent)
     connect(ui->tw_prefs, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(draw_prefs_context_menu(const QPoint &)));
 
     connect(ui->le_role_name, SIGNAL(textChanged(QString)), SLOT(name_changed(QString)));
-
-    connect(ui->le_search, SIGNAL(textChanged(QString)), this, SLOT(search_prefs(QString)));
-    connect(ui->btnCloseSearch, SIGNAL(clicked()),this,SLOT(clear_search()));
 
     connect(ui->btnRefreshRatings, SIGNAL(clicked()), this, SLOT(selection_changed()));
 
@@ -144,7 +137,6 @@ void roleDialog::load_role(QString role_name){
     clear_table(*ui->tw_prefs);
     clear_table(*ui->tw_skills);
     clear_table(*ui->tw_traits);
-    clear_search();
 
     //load data
     load_role_data();
@@ -604,23 +596,11 @@ void roleDialog::name_changed(QString text){
     }
 }
 
-void roleDialog::item_double_clicked(const QModelIndex &index){
-    const RolePreference *p = m_pref_model->getPreference(m_proxy_model->mapToSource(index));
+void roleDialog::preference_activated(const QModelIndex &index){
+    const RolePreference *p = m_pref_model->getPreference(index);
     if(p && !m_role->has_preference(p->get_name())){
         insert_pref_row(p);
     }
-}
-
-void roleDialog::search_prefs(QString val){
-    val = "(" + val.replace(" ", "|") + ")";
-    QRegExp filter(val, Qt::CaseInsensitive);
-    m_proxy_model->setFilterRegExp(filter);
-}
-
-void roleDialog::clear_search(){
-    ui->le_search->setText("");
-    m_proxy_model->setFilterRegExp(QRegExp());
-    ui->treePrefs->collapseAll();
 }
 
 void roleDialog::calc_new_role(){

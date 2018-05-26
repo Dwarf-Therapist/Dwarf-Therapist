@@ -15,29 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="search_label">
-       <property name="text">
-        <string>Search: </string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="search_edit"/>
-     </item>
-     <item>
-      <widget class="QPushButton" name="clear_button">
-       <property name="icon">
-        <iconset resource="../resources.qrc">
-         <normaloff>:/img/cross.png</normaloff>:/img/cross.png</iconset>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="QTreeView" name="preference_view"/>
+    <widget class="SearchFilterTreeView" name="preference_view" native="true"/>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttons">
@@ -51,6 +29,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SearchFilterTreeView</class>
+   <extends>QWidget</extends>
+   <header>searchfiltertreeview.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../resources.qrc"/>
  </resources>

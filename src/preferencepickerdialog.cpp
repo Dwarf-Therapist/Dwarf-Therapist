@@ -23,8 +23,9 @@ THE SOFTWARE.
 #include "preferencepickerdialog.h"
 #include "ui_preferencepickerdialog.h"
 
-#include <QtConcurrent>
 #include <QProgressDialog>
+#include <QPushButton>
+#include <QtConcurrent>
 
 #include "truncatingfilelogger.h"
 #include "rolepreference.h"
@@ -35,23 +36,18 @@ PreferencePickerDialog::PreferencePickerDialog(RolePreferenceModel *model, QWidg
     : QDialog(parent)
     , ui(std::make_unique<Ui::PreferencePickerDialog>())
     , m_model(model)
-    , m_filter_proxy(new RecursiveFilterProxyModel(this))
 {
     ui->setupUi(this);
 
-    m_filter_proxy->setSourceModel(model);
-    m_filter_proxy->sort(0, Qt::AscendingOrder);
-    ui->preference_view->setModel(m_filter_proxy);
-    ui->preference_view->setSortingEnabled(true);
-    ui->preference_view->collapseAll();
+    ui->preference_view->set_model(model);
 
     // Wait for a valid selection for enabling Ok button
     ui->buttons->button(QDialogButtonBox::Ok)->setEnabled(false);
 
-    connect(ui->search_edit, &QLineEdit::textChanged, this, &PreferencePickerDialog::search_text);
-    connect(ui->clear_button, &QAbstractButton::pressed, this, &PreferencePickerDialog::clear_search);
-    connect(ui->preference_view->selectionModel(), &QItemSelectionModel::currentChanged, this, &PreferencePickerDialog::selection_changed);
-    connect(ui->preference_view, &QAbstractItemView::activated, this, &PreferencePickerDialog::item_activated);
+    connect(ui->preference_view, &SearchFilterTreeView::item_selected,
+            this, &PreferencePickerDialog::item_selected);
+    connect(ui->preference_view, &SearchFilterTreeView::item_activated,
+            this, &PreferencePickerDialog::item_activated);
 }
 
 PreferencePickerDialog::~PreferencePickerDialog()
@@ -60,8 +56,7 @@ PreferencePickerDialog::~PreferencePickerDialog()
 
 const RolePreference *PreferencePickerDialog::get_selected_preference() const
 {
-    QModelIndex current = ui->preference_view->selectionModel()->currentIndex();
-    return m_model->getPreference(m_filter_proxy->mapToSource(current));
+    return m_model->getPreference(ui->preference_view->get_selected_item());
 }
 
 void PreferencePickerDialog::showEvent(QShowEvent *e)
@@ -71,30 +66,15 @@ void PreferencePickerDialog::showEvent(QShowEvent *e)
     m_model->load_pref_from_raws(this);
 }
 
-void PreferencePickerDialog::search_text(const QString &text)
+void PreferencePickerDialog::item_selected(const QModelIndex &index)
 {
-    QString val = text;
-    QRegExp filter("(" + val.replace(" ", "|") + ")", Qt::CaseInsensitive);
-    m_filter_proxy->setFilterRegExp(filter);
-    m_filter_proxy->setFilterKeyColumn(0);
-}
-
-void PreferencePickerDialog::clear_search()
-{
-    ui->search_edit->setText("");
-    m_filter_proxy->setFilterRegExp(QRegExp());
-    ui->preference_view->collapseAll();
-}
-
-void PreferencePickerDialog::selection_changed(const QModelIndex &current, const QModelIndex &)
-{
-    auto pref = m_model->getPreference(m_filter_proxy->mapToSource(current));
+    auto pref = m_model->getPreference(index);
     ui->buttons->button(QDialogButtonBox::Ok)->setEnabled(pref != nullptr);
 }
 
 void PreferencePickerDialog::item_activated(const QModelIndex &index)
 {
-    auto pref = m_model->getPreference(m_filter_proxy->mapToSource(index));
+    auto pref = m_model->getPreference(index);
     if (pref)
         accept();
 }
