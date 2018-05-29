@@ -140,6 +140,7 @@ add_executable(${EXE_NAME} WIN32 MACOSX_BUNDLE
     src/rolecolumn.cpp
     src/role.cpp
     src/roledialog.cpp
+    src/rolemodel.cpp
     src/rolepreference.cpp
     src/rolepreferencemodel.cpp
     src/rolestats.cpp

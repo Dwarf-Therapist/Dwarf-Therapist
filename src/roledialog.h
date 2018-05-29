@@ -1,98 +1,84 @@
-#ifndef ROLEDIALOG_H
-#define ROLEDIALOG_H
+/*
+Dwarf Therapist
+Copyright (c) 2018 Clement Vuchener
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+
+#ifndef ROLE_DIALOG_H
+#define ROLE_DIALOG_H
 
 #include <QDialog>
-#include <QKeyEvent>
+#include <QItemEditorFactory>
+#include <QStandardItemModel>
+#include <QStyledItemDelegate>
 #include <memory>
-#include "global_enums.h"
 
 class Dwarf;
-class Material;
-class Plant;
-class RolePreference;
-class RolePreferenceModel;
-class RecursiveFilterProxyModel;
-class QSplitter;
-class QTableWidget;
 class Role;
-struct RoleAspect;
-namespace Ui { class roleDialog; }
+class RoleModel;
+class RolePreferenceModel;
 
-class roleDialog : public QDialog
+namespace Ui { class RoleDialog; }
+
+class RoleDialog: public QDialog
 {
     Q_OBJECT
-
 public:
-    explicit roleDialog(RolePreferenceModel *pref_model, QWidget *parent = 0);
-    ~roleDialog();
-    bool event(QEvent *evt);
+    RoleDialog(RolePreferenceModel *pref_model, QWidget *parent = nullptr);
+    virtual ~RoleDialog();
 
-    void load_role(QString role_name);
+    void new_role();
+    void open_role(const QString &name);
+    bool save_role(); // validate and save current role, return false if an error happened
+
+    bool event(QEvent *event) override;
 
 public slots:
-    void selection_changed();
-
-private:
-    std::unique_ptr<Ui::roleDialog> ui;
-    Role *m_role;
-    Dwarf *m_dwarf;
-    RolePreferenceModel *m_pref_model;
-    RecursiveFilterProxyModel *m_proxy_model;
-
-    void load_role_data();
-    void decorate_splitter(QSplitter *s);
-    void load_aspects_data(QTableWidget &table, const std::map<QString, RoleAspect> &aspects);
-    void save_aspects(QTableWidget &table, std::map<QString, RoleAspect> &list);
-    void save_prefs(Role *r);
-    void insert_row(QTableWidget &table, const RoleAspect &a, QString key);
-    void insert_pref_row(const RolePreference *p);
-
-    void add_aspect(QString id, QTableWidget &table, std::map<QString, RoleAspect> &list);
-
-    void clear_table(QTableWidget &t);
-    bool m_override;
+    void selection_changed(); // check selected dwarf and update ratings preview
+    void done(int r) override;
 
 protected:
-    void showEvent(QShowEvent *);
-    void closeEvent(QCloseEvent *){close_pressed();}
-    void keyPressEvent(QKeyEvent *e){
-        if(e->key()==Qt::Key_Escape)
-            close_pressed();
-    }
+    void showEvent(QShowEvent *) override;
 
 private slots:
-    void close_pressed();
-    void save_pressed();
-    void save_role(Role *);
-    void copy_pressed();
-    void name_changed(QString text);
+    void attribute_activated(const QModelIndex &);
+    void skill_activated(const QModelIndex &);
+    void facet_activated(const QModelIndex &);
+    void preference_activated(const QModelIndex &);
+    void aspect_tree_context_menu(const QPoint &);
+    void copy_role();
+    void update_role_preview();
 
-    //attributes
-    void draw_attribute_context_menu(const QPoint &);
-    void add_attribute();
-    void remove_attribute();
+    // autoconnect slots:
+    void on_le_role_name_textChanged(const QString &text);
 
-    //traits
-    void draw_trait_context_menu(const QPoint &);
-    void add_trait();
-    void remove_trait();
-
-    //skills
-    void draw_skill_context_menu(const QPoint &);
-    void add_skill();
-    void remove_skill();
-
-    //void tree_selection_changed(QTreeWidgetItem *current, QTreeWidgetItem *previous);
-    void preference_activated(const QModelIndex &index);
-    void draw_prefs_context_menu(const QPoint &);
-    void remove_pref();
-
-    //update new role ratings
-    void calc_new_role();
-
-signals:
-    void role_changed();
+private:
+    std::unique_ptr<Ui::RoleDialog> ui;
+    std::unique_ptr<Role> m_role;
+    Role *m_old_role;
+    Dwarf *m_dwarf;
+    RolePreferenceModel *m_pref_model;
+    QStandardItemModel m_attribute_model, m_skill_model, m_facet_model;
+    std::unique_ptr<RoleModel> m_model;
+    QStyledItemDelegate m_weight_delegate;
+    QItemEditorFactory m_weight_editor_factory;
 };
 
-//Q_DECLARE_METATYPE(Preference*)
-#endif // ROLEDIALOG_H
+#endif

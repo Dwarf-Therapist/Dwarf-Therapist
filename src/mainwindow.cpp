@@ -89,7 +89,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_pref_model(new RolePreferenceModel(this))
     , m_about_dialog(new AboutDialog(this))
     , m_script_dialog(new ScriptDialog(this))
-    , m_role_editor(new roleDialog(m_pref_model, this))
+    , m_role_editor(new RoleDialog(m_pref_model, this))
     , m_optimize_plan_editor(0)
     , m_reading_settings(false)
     , m_show_result_on_equal(false)
@@ -1132,7 +1132,7 @@ void MainWindow::reload_filter_scripts(){
 void MainWindow::add_new_custom_role() {
     if(m_role_editor){
         connect(m_view_manager, SIGNAL(selection_changed()), m_role_editor, SLOT(selection_changed()),Qt::UniqueConnection);
-        m_role_editor->load_role("");
+        m_role_editor->new_role();
         m_role_editor->show();
     }
 }
@@ -1142,7 +1142,7 @@ void MainWindow::edit_custom_role() {
     QString name = a->data().toString();
     if(m_role_editor){
         connect(m_view_manager, SIGNAL(selection_changed()), m_role_editor, SLOT(selection_changed()),Qt::UniqueConnection);
-        m_role_editor->load_role(name);
+        m_role_editor->open_role(name);
         m_role_editor->show();
     }
 }

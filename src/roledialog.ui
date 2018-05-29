@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>roleDialog</class>
- <widget class="QDialog" name="roleDialog">
+ <class>RoleDialog</class>
+ <widget class="QDialog" name="RoleDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -24,6 +24,88 @@
     <normaloff>:/img/hammer.png</normaloff>:/img/hammer.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
+   <item row="1" column="1">
+    <widget class="QTabWidget" name="tab_widget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="aspects_tab">
+      <attribute name="title">
+       <string>Aspects</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QSplitter" name="splitter">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <widget class="QTreeView" name="tree_aspects"/>
+         <widget class="QTabWidget" name="tab_game_data">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <widget class="SearchFilterTreeView" name="attribute_list">
+           <property name="expand_collapse_hidden" stdset="0">
+            <bool>true</bool>
+           </property>
+           <attribute name="title">
+            <string>Attributes</string>
+           </attribute>
+          </widget>
+          <widget class="SearchFilterTreeView" name="skill_list">
+           <property name="expand_collapse_hidden" stdset="0">
+            <bool>true</bool>
+           </property>
+           <attribute name="title">
+            <string>Skills</string>
+           </attribute>
+          </widget>
+          <widget class="SearchFilterTreeView" name="facet_list">
+           <property name="expand_collapse_hidden" stdset="0">
+            <bool>true</bool>
+           </property>
+           <attribute name="title">
+            <string>Facets</string>
+           </attribute>
+          </widget>
+          <widget class="SearchFilterTreeView" name="preference_list">
+           <attribute name="title">
+            <string>Preferences</string>
+           </attribute>
+          </widget>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="script_tab">
+      <attribute name="title">
+       <string>Script</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QTextEdit" name="te_script">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="statusTip">
+          <string>&lt;b&gt;&lt;font color=red&gt;WARNING: Any script set will be used in place of any attributes, skills, traits or preferences specified!!!&lt;/font&gt;&lt;/b&gt;</string>
+         </property>
+         <property name="whatsThis">
+          <string>&lt;b&gt;&lt;font color=red&gt;WARNING: Any script set will be used in place of any attributes, skills, traits or preferences specified!!!&lt;/font&gt;&lt;/b&gt;</string>
+         </property>
+         <property name="acceptRichText">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
    <item row="4" column="1">
     <widget class="QTextEdit" name="txt_status_tip">
      <property name="maximumSize">
@@ -85,16 +167,9 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="btn_save">
-       <property name="text">
-        <string>Save</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="btn_cancel">
-       <property name="text">
-        <string>Cancel</string>
+      <widget class="QDialogButtonBox" name="button_box">
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Save</set>
        </property>
       </widget>
      </item>
@@ -162,7 +237,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btnRefreshRatings">
+      <widget class="QPushButton" name="btn_refresh_ratings">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -257,584 +332,31 @@
      </item>
     </layout>
    </item>
-   <item row="1" column="1">
-    <widget class="QSplitter" name="splitter_main">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="childrenCollapsible">
-      <bool>false</bool>
-     </property>
-     <widget class="QSplitter" name="splitter_aspects_main">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>50</height>
-       </size>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="handleWidth">
-       <number>4</number>
-      </property>
-      <property name="childrenCollapsible">
-       <bool>false</bool>
-      </property>
-      <widget class="QSplitter" name="splitter_aspects_left">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="handleWidth">
-        <number>4</number>
-       </property>
-       <property name="childrenCollapsible">
-        <bool>false</bool>
-       </property>
-       <widget class="QGroupBox" name="gb_attributes">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>50</width>
-          <height>10</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="title">
-         <string>Attributes</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_6">
-         <property name="leftMargin">
-          <number>2</number>
-         </property>
-         <property name="topMargin">
-          <number>2</number>
-         </property>
-         <property name="rightMargin">
-          <number>2</number>
-         </property>
-         <property name="bottomMargin">
-          <number>2</number>
-         </property>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_3">
-           <item>
-            <widget class="QLabel" name="lbl_attributes_weight">
-             <property name="text">
-              <string>Weight</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="dsb_attributes_weight">
-             <property name="toolTip">
-              <string>Attributes weight.</string>
-             </property>
-             <property name="statusTip">
-              <string>This weight is the importance of attributes relative to traits and skills. A higher weight gives more value. Leave at 0 to use default values.</string>
-             </property>
-             <property name="singleStep">
-              <double>0.250000000000000</double>
-             </property>
-             <property name="value">
-              <double>0.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_5">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QTableWidget" name="tw_attributes">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>100</height>
-            </size>
-           </property>
-           <property name="contextMenuPolicy">
-            <enum>Qt::CustomContextMenu</enum>
-           </property>
-           <property name="toolTip">
-            <string>Right click for options.</string>
-           </property>
-           <property name="statusTip">
-            <string>Right click to add/remove skills.</string>
-           </property>
-           <property name="alternatingRowColors">
-            <bool>true</bool>
-           </property>
-           <property name="columnCount">
-            <number>2</number>
-           </property>
-           <attribute name="horizontalHeaderDefaultSectionSize">
-            <number>50</number>
-           </attribute>
-           <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-            <bool>true</bool>
-           </attribute>
-           <attribute name="horizontalHeaderStretchLastSection">
-            <bool>false</bool>
-           </attribute>
-           <column/>
-           <column/>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QGroupBox" name="gb_traits">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>50</width>
-          <height>10</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="title">
-         <string>Traits</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_5">
-         <property name="leftMargin">
-          <number>2</number>
-         </property>
-         <property name="topMargin">
-          <number>2</number>
-         </property>
-         <property name="rightMargin">
-          <number>2</number>
-         </property>
-         <property name="bottomMargin">
-          <number>2</number>
-         </property>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_7">
-           <item>
-            <widget class="QLabel" name="lbl_attributes_weight_3">
-             <property name="text">
-              <string>Weight</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="dsb_traits_weight">
-             <property name="toolTip">
-              <string>Traits weight.</string>
-             </property>
-             <property name="statusTip">
-              <string>This weight is the importance of traits relative to attributes and skills. A higher weight gives more value. Leave at 0 to use default values.</string>
-             </property>
-             <property name="singleStep">
-              <double>0.250000000000000</double>
-             </property>
-             <property name="value">
-              <double>0.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_6">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QTableWidget" name="tw_traits">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="contextMenuPolicy">
-            <enum>Qt::CustomContextMenu</enum>
-           </property>
-           <property name="toolTip">
-            <string>Right click for options.</string>
-           </property>
-           <property name="statusTip">
-            <string>Right click to add/remove skills.</string>
-           </property>
-           <property name="alternatingRowColors">
-            <bool>true</bool>
-           </property>
-           <property name="columnCount">
-            <number>2</number>
-           </property>
-           <attribute name="horizontalHeaderDefaultSectionSize">
-            <number>50</number>
-           </attribute>
-           <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-            <bool>true</bool>
-           </attribute>
-           <attribute name="horizontalHeaderStretchLastSection">
-            <bool>false</bool>
-           </attribute>
-           <column/>
-           <column/>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QGroupBox" name="gb_skills">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>50</width>
-          <height>10</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="title">
-         <string>Skills</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <property name="leftMargin">
-          <number>2</number>
-         </property>
-         <property name="topMargin">
-          <number>2</number>
-         </property>
-         <property name="rightMargin">
-          <number>2</number>
-         </property>
-         <property name="bottomMargin">
-          <number>2</number>
-         </property>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_9">
-           <item>
-            <widget class="QLabel" name="lbl_attributes_weight_4">
-             <property name="text">
-              <string>Weight</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="dsb_skills_weight">
-             <property name="toolTip">
-              <string>Skills weight.</string>
-             </property>
-             <property name="statusTip">
-              <string>This weight is the importance of skills relative to traits and attributes. A higher weight gives more value. Leave at 0 to use default values.</string>
-             </property>
-             <property name="singleStep">
-              <double>0.250000000000000</double>
-             </property>
-             <property name="value">
-              <double>0.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_7">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QTableWidget" name="tw_skills">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="contextMenuPolicy">
-            <enum>Qt::CustomContextMenu</enum>
-           </property>
-           <property name="toolTip">
-            <string>Right click for options.</string>
-           </property>
-           <property name="statusTip">
-            <string>Right click to add/remove skills.</string>
-           </property>
-           <property name="alternatingRowColors">
-            <bool>true</bool>
-           </property>
-           <property name="columnCount">
-            <number>2</number>
-           </property>
-           <attribute name="horizontalHeaderDefaultSectionSize">
-            <number>50</number>
-           </attribute>
-           <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-            <bool>true</bool>
-           </attribute>
-           <attribute name="horizontalHeaderStretchLastSection">
-            <bool>false</bool>
-           </attribute>
-           <column/>
-           <column/>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </widget>
-      <widget class="QSplitter" name="splitter_prefs">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="handleWidth">
-        <number>4</number>
-       </property>
-       <property name="childrenCollapsible">
-        <bool>false</bool>
-       </property>
-       <widget class="QGroupBox" name="gb_prefs">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Ignored">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>10</height>
-         </size>
-        </property>
-        <property name="title">
-         <string>Preferences</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
-         <property name="leftMargin">
-          <number>2</number>
-         </property>
-         <property name="topMargin">
-          <number>2</number>
-         </property>
-         <property name="rightMargin">
-          <number>2</number>
-         </property>
-         <property name="bottomMargin">
-          <number>2</number>
-         </property>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_6">
-           <item>
-            <widget class="QLabel" name="lbl_attributes_weight_5">
-             <property name="text">
-              <string>Weight</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="dsb_prefs_weight">
-             <property name="toolTip">
-              <string>Skills weight.</string>
-             </property>
-             <property name="statusTip">
-              <string>This weight is the importance of preferences relative to traits and attributes. A higher weight gives more value. Leave at 0 to use default values.</string>
-             </property>
-             <property name="singleStep">
-              <double>0.250000000000000</double>
-             </property>
-             <property name="value">
-              <double>0.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QTableWidget" name="tw_prefs">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="contextMenuPolicy">
-            <enum>Qt::CustomContextMenu</enum>
-           </property>
-           <property name="toolTip">
-            <string>Right click for options.</string>
-           </property>
-           <property name="statusTip">
-            <string>Right click to remove preferences.</string>
-           </property>
-           <property name="alternatingRowColors">
-            <bool>true</bool>
-           </property>
-           <property name="columnCount">
-            <number>3</number>
-           </property>
-           <attribute name="horizontalHeaderDefaultSectionSize">
-            <number>50</number>
-           </attribute>
-           <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
-            <bool>true</bool>
-           </attribute>
-           <attribute name="horizontalHeaderStretchLastSection">
-            <bool>false</bool>
-           </attribute>
-           <column/>
-           <column/>
-           <column/>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="SearchFilterTreeView" name="tree_prefs" native="true"/>
-      </widget>
-     </widget>
-     <widget class="QGroupBox" name="grp_script">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Ignored">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>20</height>
-       </size>
-      </property>
-      <property name="statusTip">
-       <string/>
-      </property>
-      <property name="title">
-       <string>Script</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <property name="spacing">
-        <number>1</number>
-       </property>
-       <property name="leftMargin">
-        <number>1</number>
-       </property>
-       <property name="topMargin">
-        <number>1</number>
-       </property>
-       <property name="rightMargin">
-        <number>1</number>
-       </property>
-       <property name="bottomMargin">
-        <number>1</number>
-       </property>
-       <item>
-        <widget class="QTextEdit" name="te_script">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="statusTip">
-          <string>&lt;b&gt;&lt;font color=red&gt;WARNING: Any script set will be used in place of any attributes, skills, traits or preferences specified!!!&lt;/font&gt;&lt;/b&gt;</string>
-         </property>
-         <property name="whatsThis">
-          <string>&lt;b&gt;&lt;font color=red&gt;WARNING: Any script set will be used in place of any attributes, skills, traits or preferences specified!!!&lt;/font&gt;&lt;/b&gt;</string>
-         </property>
-         <property name="acceptRichText">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-   </item>
   </layout>
+  <action name="remove_action">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/img/minus-circle.png</normaloff>:/img/minus-circle.png</iconset>
+   </property>
+   <property name="text">
+    <string>Remove</string>
+   </property>
+  </action>
+  <action name="reset_default_weight_action">
+   <property name="text">
+    <string>Reset default weight</string>
+   </property>
+  </action>
+  <action name="collapse_tree_aspects_action">
+   <property name="text">
+    <string>Collapse all</string>
+   </property>
+  </action>
+  <action name="expand_tree_aspects_action">
+   <property name="text">
+    <string>Expand all</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -847,5 +369,70 @@
  <resources>
   <include location="../resources.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>collapse_tree_aspects_action</sender>
+   <signal>triggered()</signal>
+   <receiver>tree_aspects</receiver>
+   <slot>collapseAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>191</x>
+     <y>323</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>expand_tree_aspects_action</sender>
+   <signal>triggered()</signal>
+   <receiver>tree_aspects</receiver>
+   <slot>expandAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>191</x>
+     <y>323</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>button_box</sender>
+   <signal>accepted()</signal>
+   <receiver>RoleDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>570</x>
+     <y>639</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>334</x>
+     <y>332</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>button_box</sender>
+   <signal>rejected()</signal>
+   <receiver>RoleDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>570</x>
+     <y>639</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>334</x>
+     <y>332</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
