@@ -44,7 +44,7 @@ class ScriptDialog;
 class Updater;
 class ViewManager;
 class optimizereditor;
-class roleDialog;
+class RoleDialog;
 
 namespace Ui
 {
@@ -164,7 +164,7 @@ private:
     RolePreferenceModel *m_pref_model;
     AboutDialog *m_about_dialog;
     ScriptDialog *m_script_dialog;
-    roleDialog *m_role_editor;
+    RoleDialog *m_role_editor;
     optimizereditor *m_optimize_plan_editor;
     bool m_reading_settings;
     bool m_show_result_on_equal; //! used during version checks
