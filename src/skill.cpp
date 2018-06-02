@@ -303,7 +303,7 @@ double Skill::get_balanced_level(){
 
 double Skill::get_rating(bool ensure_non_zero){
     if(m_rating < 0){
-        m_rating = DwarfStats::get_skill_rating(get_balanced_level());
+        m_rating = DwarfStats::skills.rating(get_balanced_level());
         if(m_rating < 0)
             m_rating = 0;
     }

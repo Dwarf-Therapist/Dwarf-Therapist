@@ -345,8 +345,8 @@ public:
     void load_trait_values(QVector<double> &list);
     std::multimap<int, std::unique_ptr<Preference>> *get_preferences(){return &m_preferences;}
 
-    double get_role_pref_match_counts(Role *r, bool load_map = false);
-    double get_role_pref_match_counts(RolePreference *role_pref, Role *r = 0);
+    double get_role_pref_match_counts(const Role *r, bool load_map = false);
+    double get_role_pref_match_counts(const RolePreference *role_pref, const Role *r = 0);
 
     //! return a skill object by skill_id
     Skill get_skill(int skill_id);

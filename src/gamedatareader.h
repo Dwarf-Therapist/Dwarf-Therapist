@@ -92,11 +92,11 @@ public:
     QHash<QString, laborOptimizerPlan*>& get_opt_plans(){return m_opt_plans;}
     laborOptimizerPlan *get_opt_plan(const QString &name);
 
-    Labor *get_labor(const int &labor_id);
-    Trait *get_trait(const int &trait_id);
-    QString get_trait_name(const short &trait_id);
-    Belief *get_belief(const int &belief_id);
-    QString get_belief_name(const int &belief_id);
+    Labor *get_labor(int labor_id);
+    Trait *get_trait(int trait_id);
+    QString get_trait_name(int trait_id);
+    Belief *get_belief(int belief_id);
+    QString get_belief_name(int belief_id);
 
     QMap<short, Thought*> get_thoughts(){return m_unit_thoughts;}
     Thought *get_thought(short id);
@@ -121,7 +121,7 @@ public:
     QString get_string_for_key(QString key);
     const Profession* get_profession(short profession_id) const;
     QString get_skill_level_name(short level);
-    QString get_skill_name(short skill_id, bool noun = true);
+    QString get_skill_name(int skill_id, bool noun = true);
     int get_total_skill_count() {return m_skills.size();}
     int get_total_belief_count() {return m_beliefs.count();}
     int get_total_trait_count() {return m_trait_count;}

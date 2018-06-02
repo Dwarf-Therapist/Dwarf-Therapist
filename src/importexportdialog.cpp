@@ -432,12 +432,6 @@ void ImportExportDialog::accept() {
 }
 
 void ImportExportDialog::export_selected_roles() {
-    QSettings *u = DT->user_settings();
-    float default_attributes_weight = u->value("options/default_attributes_weight",1.0).toFloat();
-    float default_skills_weight = u->value("options/default_skills_weight",1.0).toFloat();
-    float default_traits_weight = u->value("options/default_traits_weight",1.0).toFloat();
-    float default_prefs_weight = u->value("options/default_prefs_weight",1.0).toFloat();
-
     QSettings s(m_path, QSettings::IniFormat);
     s.remove(""); // clear out the file if there was anything there.
     Version v;
@@ -451,7 +445,7 @@ void ImportExportDialog::export_selected_roles() {
     s.beginWriteArray("custom_roles");
     foreach(Role *r, get_roles()) {
         s.setArrayIndex(i++);
-        r->write_to_ini(s, default_attributes_weight, default_traits_weight, default_skills_weight, default_prefs_weight);
+        r->write_to_ini(s);
         exported++;
     }
     s.endArray();
@@ -491,7 +485,7 @@ void ImportExportDialog::import_selected_roles(){
     int imported = 0;
     foreach(Role *r, get_roles()){
         r->is_custom(true);
-        r->create_role_details(*DT->user_settings());
+        r->create_role_details();
         GameDataReader::ptr()->get_roles().insert(r->name(), r);
         imported++;
     }

@@ -100,7 +100,7 @@ void Attribute::set_rating(double rating, bool potential){
 double Attribute::rating(bool potential){
     if(potential){
         if(m_rating_potential < 0){
-            m_rating_potential = DwarfStats::get_attribute_rating(get_balanced_value());
+            m_rating_potential = DwarfStats::attributes.rating(get_balanced_value());
         }
         return m_rating_potential;
     }else{

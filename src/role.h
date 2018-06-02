@@ -30,24 +30,40 @@ THE SOFTWARE.
 #include <QHash>
 #include <memory>
 
-#include "roleaspect.h"
-
 class RolePreference;
 class QSettings;
 class Dwarf;
 
-class Role : public QObject {
+class Role: public QObject {
     Q_OBJECT
 public:
-    Role();
-    Role(QSettings &s, QObject *parent = 0);
-    Role(const Role &r);
+    Role(QObject *parent = nullptr);
+    Role(QSettings &s, QObject *parent = nullptr);
+    Role(const Role &r, QObject *parent = nullptr);
+
     virtual ~Role();
 
-    struct weight_info{
+    struct weight_info {
+        QString default_value_key;
         bool is_default;
-        bool is_neg;
         float weight;
+
+        weight_info(const QString &key);
+
+        float default_value() const;
+        void reset_to_default();
+        void set(float weight);
+    };
+
+    struct aspect_weight {
+        float weight;
+        bool is_neg;
+
+        aspect_weight(float weight = 1.0f, bool is_neg = false)
+            : weight(weight)
+            , is_neg(is_neg)
+        {
+        }
     };
 
     struct simple_rating{
@@ -56,51 +72,66 @@ public:
         QString name;
     };
 
-    QString name(){return m_name;}
-    void name(QString name){m_name = name;}
-    QString script(){return m_script;}
-    void script(QString script){m_script = script;}
-    bool is_custom(){return m_is_custom;}
+    const QString &name() const {return m_name;}
+    void name(const QString &name){m_name = name;}
+    const QString &script() const {return m_script;}
+    void script(const QString &script){m_script = script;}
+    bool is_custom() const {return m_is_custom;}
     void is_custom(bool val){m_is_custom = val;}
-    bool updated(){return m_updated;}
+    bool updated() const {return m_updated;}
 
-    //unfortunately we need to keep all the keys as a string and cast them so we can use the same functions
-    //ie can't pass in a hash with <string, aspect> and <int, aspect>
-    std::map<QString, RoleAspect> attributes;
-    std::map<QString, RoleAspect> skills;
-    std::map<QString, RoleAspect> traits;
-    std::vector<std::unique_ptr<RolePreference>> prefs;
+    std::vector<std::pair<QString, aspect_weight>> attributes;
+    std::vector<std::pair<int, aspect_weight>> skills;
+    std::vector<std::pair<int, aspect_weight>> facets;
+    std::vector<std::pair<int, aspect_weight>> beliefs;
+    std::vector<std::pair<int, aspect_weight>> goals;
+    std::vector<std::pair<std::unique_ptr<RolePreference>, aspect_weight>> prefs;
+
+    bool has_aspects() const {
+        return !attributes.empty() || !skills.empty() || !facets.empty() ||
+                !beliefs.empty() || !goals.empty() || !prefs.empty();
+    }
 
     //global weights
     weight_info attributes_weight;
     weight_info skills_weight;
-    weight_info traits_weight;
+    weight_info facets_weight;
+    weight_info beliefs_weight;
+    weight_info goals_weight;
     weight_info prefs_weight;
 
     QString get_role_details(Dwarf *d = 0);
 
     void set_labors(QList<int> list){m_labors = list;}
-    QList<int> get_labors() {return m_labors;}
+    QList<int> get_labors() const {return m_labors;}
 
-    void create_role_details(QSettings &s, Dwarf *d=0);
+    void create_role_details(Dwarf *d=0);
 
-    void write_to_ini(QSettings &s, float default_attributes_weight, float default_traits_weight, float default_skills_weight, float default_prefs_weight);
+    void write_to_ini(QSettings &s) const;
 
     RolePreference* has_preference(QString name);
     static const QColor color_has_prefs() {return QColor(0, 60, 128, 135);}
 
-protected:
-    void parseAspect(QSettings &s, QString node, weight_info &g_weight, std::map<QString, RoleAspect> &list, float default_weight);
-    void parsePreferences(QSettings &s, QString node, weight_info &g_weight, float default_weight);
+private:
+    template<typename T>
+    void parseAspect(QSettings &s, QString node, weight_info &g_weight, std::vector<std::pair<T, aspect_weight>> &list);
     void validate_pref(RolePreference *p, int first_flag);
-    void write_aspect_group(QSettings &s, QString group_name, weight_info group_weight, float group_default_weight, std::map<QString, RoleAspect> &list);
-    void write_pref_group(QSettings &s, float default_prefs_weight);
+    template<typename T>
+    void write_aspect_group(QSettings &s, const QString &group_name,
+                            const weight_info &group_weight,
+                            const std::vector<std::pair<T, aspect_weight>> &list) const;
 
-    QString get_aspect_details(QString title, weight_info aspect_group_weight, float aspect_default_weight, std::map<QString, RoleAspect> &list);
-    QString get_preference_details(float aspect_default_weight, Dwarf *d=0);
+    template<typename T, typename F>
+    QString get_aspect_details(const QString &title,
+                               const weight_info &aspect_group_weight,
+                               const std::vector<std::pair<T, aspect_weight>> &list,
+                               F id_to_name);
+    QString get_preference_details(Dwarf *d=0);
     void refresh_preferences(Dwarf *d);
     void highlight_pref_matches(Dwarf *d, QString &pref_desc);
-    QString generate_details(QString title, weight_info aspect_group_weight, float aspect_default_weight, QHash<QString, weight_info> weight_infos);
+    QString generate_details(const QString &title,
+                             const weight_info &aspect_group_weight,
+                             const std::vector<std::pair<QString, aspect_weight>> &aspects);
 
     QString m_name;
     QString m_script;
