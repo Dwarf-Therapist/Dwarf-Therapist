@@ -2,6 +2,7 @@
 #define ROLE_MODEL_H
 
 #include <QAbstractItemModel>
+#include <memory>
 
 class Role;
 class RolePreference;
@@ -18,11 +19,12 @@ public:
     QModelIndex add_attribute(const QString &attribute);
     QModelIndex add_skill(int id);
     QModelIndex add_facet(int id);
+    QModelIndex add_belief(int id);
+    QModelIndex add_goal(int id);
     QModelIndex add_preference(const RolePreference *pref);
 
     void remove_item(const QModelIndex &index);
     void reset_default_weight(const QModelIndex &index);
-    void update_default_weights();
 
     // QAbstractItemModel implementation
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
@@ -39,8 +41,6 @@ public:
     {
         ColumnName = 0,
         ColumnWeight,
-        ColumnCategory, // only for preferences
-        ColumnItem, // only for item preferences
         ColumnCount,
     };
 
@@ -51,13 +51,17 @@ public:
         Attributes = 0,
         Skills,
         Facets,
+        Beliefs,
+        Goals,
         Preferences,
         RowCount
     };
 
 private:
     Role *m_role;
-    float m_default_weights[RowCount];
+    struct AspectInfo;
+    template<typename> struct AspectVectorInfo;
+    std::unique_ptr<AspectInfo> m_info[RowCount];
 };
 
 

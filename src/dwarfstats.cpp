@@ -32,12 +32,19 @@ float DwarfStats::m_att_pot_weight;
 float DwarfStats::m_skill_rate_weight;
 int DwarfStats::m_max_unit_kills;
 
-QSharedPointer<RoleStats> DwarfStats::m_skills;
-QSharedPointer<RoleStats> DwarfStats::m_attributes;
-QSharedPointer<RoleStats> DwarfStats::m_attributes_raw;
-QSharedPointer<RoleStats> DwarfStats::m_traits;
-QSharedPointer<RoleStats> DwarfStats::m_preferences;
-QSharedPointer<RoleStats> DwarfStats::m_roles;
+DwarfStats DwarfStats::attributes;
+DwarfStats DwarfStats::attributes_raw;
+DwarfStats DwarfStats::skills(0);
+DwarfStats DwarfStats::facets;
+DwarfStats DwarfStats::beliefs;
+DwarfStats DwarfStats::preferences(0);
+DwarfStats DwarfStats::roles(-1, true);
+
+DwarfStats::DwarfStats(double invalid_value, bool override)
+    : m_invalid_value(invalid_value)
+    , m_override(override)
+{
+}
 
 double DwarfStats::calc_att_potential_value(int value, float max, float cti){
     double potential_value = 0.0;
@@ -61,59 +68,16 @@ double DwarfStats::calc_att_potential_value(int value, float max, float cti){
     return potential_value;
 }
 
-void DwarfStats::init_attributes(QVector<double> attribute_values, QVector<double> attribute_raw_values){
-    if(m_attributes == 0)
-        m_attributes = QSharedPointer<RoleStats>(new RoleStats(attribute_values));
+void DwarfStats::init(const QVector<double> &values)
+{
+    if (!m_stats)
+        m_stats = std::make_unique<RoleStats>(values, m_invalid_value, m_override);
     else
-        m_attributes->set_list(attribute_values);
-    if(m_attributes_raw == 0)
-        m_attributes_raw = QSharedPointer<RoleStats>(new RoleStats(attribute_raw_values));
-    else
-        m_attributes_raw->set_list(attribute_raw_values);
-}
-double DwarfStats::get_attribute_rating(double val,bool raw){
-    if(raw)
-        return m_attributes_raw->get_rating(val);
-    else
-        return m_attributes->get_rating(val);
+        m_stats->set_list(values);
 }
 
-void DwarfStats::init_traits(QVector<double> trait_values){
-    if(m_traits == 0)
-        m_traits = QSharedPointer<RoleStats>(new RoleStats(trait_values));
-    else
-        m_traits->set_list(trait_values);
-}
-double DwarfStats::get_trait_rating(int val){
-    return m_traits->get_rating(val);
+double DwarfStats::rating(double val) const
+{
+    return m_stats->get_rating(val);
 }
 
-void DwarfStats::init_prefs(QVector<double> pref_values){
-    if(m_preferences == 0)
-        m_preferences = QSharedPointer<RoleStats>(new RoleStats(pref_values,0));
-    else
-        m_preferences->set_list(pref_values);
-}
-double DwarfStats::get_preference_rating(double val){
-    return m_preferences->get_rating(val);
-}
-
-void DwarfStats::init_skills(QVector<double> skill_values){
-    if(m_skills == 0)
-        m_skills = QSharedPointer<RoleStats>(new RoleStats(skill_values,0));
-    else
-        m_skills->set_list(skill_values);
-}
-double DwarfStats::get_skill_rating(double val){
-    return m_skills->get_rating(val);
-}
-
-void DwarfStats::init_roles(QVector<double> role_ratings){
-    if(m_roles == 0)
-        m_roles = QSharedPointer<RoleStats>(new RoleStats(role_ratings,-1,true));
-    else
-        m_roles->set_list(role_ratings);
-}
-double DwarfStats::get_role_rating(double val){
-    return m_roles->get_rating(val);
-}

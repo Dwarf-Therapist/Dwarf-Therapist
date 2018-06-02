@@ -1243,12 +1243,6 @@ void MainWindow::write_roles(bool custom){
     }
     s->remove(key);
 
-    //read defaults before we start writing
-    float default_attributes_weight = s->value("options/default_attributes_weight",1.0).toFloat();
-    float default_skills_weight = s->value("options/default_skills_weight",1.0).toFloat();
-    float default_traits_weight = s->value("options/default_traits_weight",1.0).toFloat();
-    float default_prefs_weight = s->value("options/default_prefs_weight",1.0).toFloat();
-
     s->beginWriteArray(key);
     int count = 0;
     foreach(Role *r, GameDataReader::ptr()->get_roles()){
@@ -1256,7 +1250,7 @@ void MainWindow::write_roles(bool custom){
             if(!custom && !r->updated()) //when writing default roles, only write updated roles. this should be merged into game_data.ini
                 continue;
             s->setArrayIndex(count);
-            r->write_to_ini(*s, default_attributes_weight, default_traits_weight, default_skills_weight, default_prefs_weight);
+            r->write_to_ini(*s);
             count++;
         }
     }

@@ -24,9 +24,9 @@ THE SOFTWARE.
 #define DWARFSTATS_H
 
 #include <QVector>
+#include <memory>
 
 class RoleStats;
-template <class T> class QSharedPointer;
 
 class DwarfStats
 {
@@ -42,32 +42,27 @@ public:
     static int get_max_unit_kills(){return m_max_unit_kills;}
     static double calc_att_potential_value(int value, float max, float cti);
 
-    static void init_attributes(QVector<double> attribute_values, QVector<double> attribute_raw_values);
-    static double get_attribute_rating(double val, bool raw = false);
+    static DwarfStats attributes;
+    static DwarfStats attributes_raw;
+    static DwarfStats skills;
+    static DwarfStats facets;
+    static DwarfStats beliefs;
+    static DwarfStats preferences;
+    static DwarfStats roles;
 
-    static void init_traits(QVector<double> trait_values);
-    static double get_trait_rating(int val);
-
-    static void init_prefs(QVector<double> pref_values);
-    static double get_preference_rating(double val);
-
-    static void init_skills(QVector<double> skill_values);
-    static double get_skill_rating(double val);
-
-    static void init_roles(QVector<double> role_ratings);
-    static double get_role_rating(double val);
+    void init(const QVector<double> &values);
+    double rating(double val) const;
 
 private:
+    DwarfStats(double invalid_value = -1, bool override = false);
+
     static float m_att_pot_weight;
     static float m_skill_rate_weight;
     static int m_max_unit_kills;
 
-    static QSharedPointer<RoleStats> m_attributes;
-    static QSharedPointer<RoleStats> m_attributes_raw;
-    static QSharedPointer<RoleStats> m_skills;
-    static QSharedPointer<RoleStats> m_traits;
-    static QSharedPointer<RoleStats> m_preferences;
-    static QSharedPointer<RoleStats> m_roles;
+    double m_invalid_value;
+    bool m_override;
+    std::unique_ptr<RoleStats> m_stats;
 };
 
 #endif // DWARFSTATS_H

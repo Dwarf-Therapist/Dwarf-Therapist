@@ -37,7 +37,6 @@ RolePreference::RolePreference(PREF_TYPES type, const QString &name)
     : m_type(type)
     , m_name(name)
 {
-    aspect.weight = 0.5;
 }
 
 RolePreference::RolePreference(PREF_TYPES type, const QString &name, const std::set<int> &flags)
@@ -45,7 +44,6 @@ RolePreference::RolePreference(PREF_TYPES type, const QString &name, const std::
     , m_name(name)
     , m_flags(flags)
 {
-    aspect.weight = 0.5;
 }
 
 RolePreference::~RolePreference() noexcept {
@@ -65,11 +63,6 @@ std::unique_ptr<RolePreference> RolePreference::parse(QSettings &s, bool &update
     else {
         LOGW << "Missing name in role preference" << s.fileName() << s.group();
         id = "Unknown";
-    }
-    bool is_neg = false;
-    if(!id.isEmpty() && id.indexOf("-") >= 0){
-        id.replace("-","");
-        is_neg = true;
     }
 
     auto pref_type = static_cast<PREF_TYPES>(s.value("pref_category",-1).toInt());
@@ -172,22 +165,13 @@ std::unique_ptr<RolePreference> RolePreference::parse(QSettings &s, bool &update
             p = std::make_unique<GenericRolePreference>(pref_type, id, flags);
     }
 
-    p->aspect.weight = s.value("weight",1.0).toFloat();
-    if (p->aspect.weight < 0)
-        p->aspect.weight = 1.0;
-    p->aspect.is_neg = is_neg;
-
     return p;
 }
 
 void RolePreference::write(QSettings &s) const {
     s.setValue("pref_category",QString::number((int)m_type));
     s.setValue("exact", false); // will be overwritten by subclass if necessary
-
-    QString id = QString("%1%2").arg(aspect.is_neg ? "-" : "").arg(m_name);
-    s.setValue("name",id);
-    if(aspect.weight != 1.0)
-        s.setValue("weight",QString::number(aspect.weight,'g',2));
+    s.setValue("name", m_name);
 
     if (!m_flags.empty()) {
         s.beginWriteArray("flags", m_flags.size());

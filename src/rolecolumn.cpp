@@ -184,14 +184,14 @@ void RoleColumn::read_settings() {
         s->beginGroup("options");
         if(m_role->attributes_weight.is_default)
             m_role->attributes_weight.weight = s->value(QString("default_attributes_weight")).toFloat();
-        if(m_role->traits_weight.is_default)
-            m_role->traits_weight.weight = s->value(QString("default_traits_weight")).toFloat();
+        if(m_role->facets_weight.is_default)
+            m_role->facets_weight.weight = s->value(QString("default_traits_weight")).toFloat();
         if(m_role->skills_weight.is_default)
             m_role->skills_weight.weight = s->value(QString("default_skills_weight")).toFloat();
         if(m_role->prefs_weight.is_default)
             m_role->prefs_weight.weight = s->value(QString("default_prefs_weight")).toFloat();
         s->endGroup();
-        m_role->create_role_details(*s); //rebuild the description
+        m_role->create_role_details(); //rebuild the description
         m_role_name = m_role->name();
     }
 }

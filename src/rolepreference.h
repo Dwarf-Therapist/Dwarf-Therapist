@@ -26,7 +26,6 @@ THE SOFTWARE.
 #include <memory>
 #include <set>
 #include "global_enums.h"
-#include "roleaspect.h"
 
 class QSettings;
 class Preference;
@@ -45,8 +44,6 @@ public:
     const QString &get_name() const { return m_name; }
 
     virtual bool match(const Preference *p, const Dwarf *d) const;
-
-    RoleAspect aspect;
 
     static std::unique_ptr<RolePreference> parse(QSettings &s, bool &updated);
     virtual void write(QSettings &s) const;

@@ -39,7 +39,11 @@
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
-         <widget class="QTreeView" name="tree_aspects"/>
+         <widget class="QTreeView" name="tree_aspects">
+          <property name="mouseTracking">
+           <bool>true</bool>
+          </property>
+         </widget>
          <widget class="QTabWidget" name="tab_game_data">
           <property name="currentIndex">
            <number>0</number>
@@ -66,6 +70,22 @@
            </property>
            <attribute name="title">
             <string>Facets</string>
+           </attribute>
+          </widget>
+          <widget class="SearchFilterTreeView" name="belief_list">
+           <property name="expand_collapse_hidden" stdset="0">
+            <bool>true</bool>
+           </property>
+           <attribute name="title">
+            <string>Beliefs</string>
+           </attribute>
+          </widget>
+          <widget class="SearchFilterTreeView" name="goal_list">
+           <property name="expand_collapse_hidden" stdset="0">
+            <bool>true</bool>
+           </property>
+           <attribute name="title">
+            <string>Goals</string>
            </attribute>
           </widget>
           <widget class="SearchFilterTreeView" name="preference_list">

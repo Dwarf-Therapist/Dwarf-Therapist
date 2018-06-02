@@ -532,7 +532,8 @@ void DFInstance::load_role_ratings(){
     QVector<double> attribute_values;
     QVector<double> attribute_raw_values;
     QVector<double> skill_values;
-    QVector<double> trait_values;
+    QVector<double> facet_values;
+    QVector<double> belief_values;
     QVector<double> pref_values;
 
     GameDataReader *gdr = GameDataReader::ptr();
@@ -548,8 +549,11 @@ void DFInstance::load_role_ratings(){
         }
 
         foreach(short val, d->get_traits()->values()){
-            trait_values.append((double)val);
+            facet_values.append((double)val);
         }
+
+        for(const auto &belief: d->beliefs())
+            belief_values.append(belief.belief_value());
 
         foreach(Role *r, gdr->get_roles().values()){
             if(!r->prefs.empty()){
@@ -560,20 +564,25 @@ void DFInstance::load_role_ratings(){
 
     QTime tr;
     tr.start();
-    LOGV << "Role Trait Info:";
-    DwarfStats::init_traits(trait_values);
-    LOGV << "     - loaded trait role data in" << tr.elapsed() << "ms";
+    LOGV << "Role Facets Info:";
+    DwarfStats::facets.init(facet_values);
+    LOGV << "     - loaded facet role data in" << tr.elapsed() << "ms";
+
+    LOGV << "Role Beliefs Info:";
+    DwarfStats::beliefs.init(belief_values);
+    LOGV << "     - loaded belief role data in" << tr.elapsed() << "ms";
 
     LOGV << "Role Skills Info:";
-    DwarfStats::init_skills(skill_values);
+    DwarfStats::skills.init(skill_values);
     LOGV << "     - loaded skill role data in" << tr.elapsed() << "ms";
 
     LOGV << "Role Attributes Info:";
-    DwarfStats::init_attributes(attribute_values,attribute_raw_values);
+    DwarfStats::attributes.init(attribute_values);
+    DwarfStats::attributes_raw.init(attribute_raw_values);
     LOGV << "     - loaded attribute role data in" << tr.elapsed() << "ms";
 
     LOGV << "Role Preferences Info:";
-    DwarfStats::init_prefs(pref_values);
+    DwarfStats::preferences.init(pref_values);
     LOGV << "     - loaded preference role data in" << tr.elapsed() << "ms";
 
     float role_rating_avg = 0;
@@ -588,7 +597,7 @@ void DFInstance::load_role_ratings(){
         }
     }
     LOGV << "Role Display Info:";
-    DwarfStats::init_roles(all_role_ratings);
+    DwarfStats::roles.init(all_role_ratings);
     foreach(Dwarf *d, m_labor_capable_dwarves){
         d->refresh_role_display_ratings();
     }

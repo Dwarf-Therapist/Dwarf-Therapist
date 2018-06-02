@@ -25,9 +25,11 @@ THE SOFTWARE.
 #define ROLE_DIALOG_H
 
 #include <QDialog>
-#include <QItemEditorFactory>
+#include <QSortFilterProxyModel>
 #include <QStandardItemModel>
 #include <QStyledItemDelegate>
+
+#include <functional>
 #include <memory>
 
 class Dwarf;
@@ -36,6 +38,33 @@ class RoleModel;
 class RolePreferenceModel;
 
 namespace Ui { class RoleDialog; }
+
+class WeightDelegate: public QStyledItemDelegate
+{
+    Q_OBJECT
+public:
+    QWidget *createEditor(QWidget *, const QStyleOptionViewItem &, const QModelIndex &) const override;
+};
+
+class FunctionalFilterProxyModel: public QSortFilterProxyModel
+{
+    Q_OBJECT
+public:
+    template<typename F>
+    FunctionalFilterProxyModel(F filter, QObject *parent = nullptr)
+        : QSortFilterProxyModel(parent)
+        , m_filter(filter)
+    {
+    }
+
+    void update();
+
+protected:
+    bool filterAcceptsRow(int, const QModelIndex &) const override;
+
+private:
+    std::function<bool (const QModelIndex &)> m_filter;
+};
 
 class RoleDialog: public QDialog
 {
@@ -61,10 +90,13 @@ private slots:
     void attribute_activated(const QModelIndex &);
     void skill_activated(const QModelIndex &);
     void facet_activated(const QModelIndex &);
+    void belief_activated(const QModelIndex &);
+    void goal_activated(const QModelIndex &);
     void preference_activated(const QModelIndex &);
     void aspect_tree_context_menu(const QPoint &);
     void copy_role();
     void update_role_preview();
+    void role_changed();
 
     // autoconnect slots:
     void on_le_role_name_textChanged(const QString &text);
@@ -75,10 +107,10 @@ private:
     Role *m_old_role;
     Dwarf *m_dwarf;
     RolePreferenceModel *m_pref_model;
-    QStandardItemModel m_attribute_model, m_skill_model, m_facet_model;
+    QStandardItemModel m_attribute_model, m_skill_model, m_facet_model, m_belief_model, m_goal_model;
+    FunctionalFilterProxyModel m_attribute_proxy, m_skill_proxy, m_facet_proxy, m_belief_proxy, m_goal_proxy;
     std::unique_ptr<RoleModel> m_model;
-    QStyledItemDelegate m_weight_delegate;
-    QItemEditorFactory m_weight_editor_factory;
+    WeightDelegate m_weight_delegate;
 };
 
 #endif

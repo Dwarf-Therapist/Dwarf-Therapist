@@ -1,5 +1,7 @@
 #include "rolemodel.h"
 
+#include <functional>
+
 #include "gamedatareader.h"
 #include "item.h"
 #include "preference.h"
@@ -7,10 +9,142 @@
 #include "rolepreference.h"
 #include "standardpaths.h"
 
+struct RoleModel::AspectInfo
+{
+    QString category_name;
+    Role::weight_info Role::* global_weight;
+    float default_global_weight;
+
+    virtual QString get_name(const Role *, int) const = 0;
+    virtual QString get_tip(const Role *, int) const = 0;
+    virtual Role::aspect_weight &get_weight(Role *, int) const = 0;
+    virtual const Role::aspect_weight &get_weight(const Role *, int) const = 0;
+    virtual void erase(Role *, int) const = 0;
+    virtual std::size_t size(Role *) const = 0;
+};
+
+template<typename T>
+struct RoleModel::AspectVectorInfo: RoleModel::AspectInfo
+{
+    std::vector<std::pair<T, Role::aspect_weight>> Role::* vector;
+
+    std::function<QString (const T &)> get_name_fn;
+    std::function<QString (const T &)> get_tip_fn;
+
+    Role::aspect_weight &get_weight(Role *r, int index) const override
+    {
+        return (r->*vector)[index].second;
+    }
+    const Role::aspect_weight &get_weight(const Role *r, int index) const override
+    {
+        return (r->*vector)[index].second;
+    }
+    void erase(Role *r, int index) const override
+    {
+        (r->*vector).erase((r->*vector).begin() + index);
+    }
+    std::size_t size(Role *r) const override
+    {
+        return (r->*vector).size();
+    }
+    QString get_name(const Role *r, int index) const override
+    {
+        return get_name_fn((r->*vector)[index].first);
+    }
+    QString get_tip(const Role *r, int index) const override
+    {
+        return get_tip_fn((r->*vector)[index].first);
+    }
+};
+
+static bool is_valid_row(int row)
+{
+    return row >= 0 && row < RoleModel::RowCount;
+}
+
 RoleModel::RoleModel(QObject *parent)
     : QAbstractItemModel(parent)
     , m_role(nullptr)
 {
+    auto make_aspect_info = [] (
+            const QString &category_name,
+            Role::weight_info Role::* global_weight,
+            auto Role:: *vector,
+            auto get_name,
+            auto get_tip)
+        {
+            using id_type = typename std::remove_reference<decltype(std::declval<Role>().*vector)>::type::value_type::first_type;
+            auto info = std::make_unique<AspectVectorInfo<id_type>>();
+            info->category_name = category_name;
+            info->global_weight = global_weight;
+            info->vector = vector;
+            info->get_name_fn = get_name;
+            info->get_tip_fn = get_tip;
+            return info;
+        };
+
+    m_info[Attributes] = make_aspect_info(
+            tr("Attributes"),
+            &Role::attributes_weight,
+            &Role::attributes,
+            [] (const QString &id) { return id; },
+            [] (const QString &id) { return RoleModel::tr("Attribute: %1").arg(id); });
+    m_info[Skills] = make_aspect_info(
+            tr("Skills"),
+            &Role::skills_weight,
+            &Role::skills,
+            [] (int id) { return GameDataReader::ptr()->get_skill_name(id); },
+            [] (int id) {
+                return RoleModel::tr("Skill: %1 (ID %2)")
+                        .arg(GameDataReader::ptr()->get_skill_name(id))
+                        .arg(id);
+            });
+    m_info[Facets] = make_aspect_info(
+            tr("Facets"),
+            &Role::facets_weight,
+            &Role::facets,
+            [] (int id) { return GameDataReader::ptr()->get_trait_name(id); },
+            [] (int id) {
+                return RoleModel::tr("Facet: %1 (ID %2)")
+                        .arg(GameDataReader::ptr()->get_trait_name(id))
+                        .arg(id);
+            });
+    m_info[Beliefs] = make_aspect_info(
+            tr("Beliefs"),
+            &Role::beliefs_weight,
+            &Role::beliefs,
+            [] (int id) { return GameDataReader::ptr()->get_belief_name(id); },
+            [] (int id) {
+                return RoleModel::tr("Belief: %1 (ID %2)")
+                    .arg(GameDataReader::ptr()->get_belief_name(id))
+                    .arg(id);
+            });
+    m_info[Goals] = make_aspect_info(
+            tr("Goals"),
+            &Role::goals_weight,
+            &Role::goals,
+            [] (int id) { return GameDataReader::ptr()->get_goal_name(id); },
+            [] (int id) {
+                return RoleModel::tr("Goal: %1 (ID %2)")
+                        .arg(GameDataReader::ptr()->get_goal_name(id))
+                        .arg(id);
+            });
+    m_info[Preferences] = make_aspect_info(
+            tr("Preferences"),
+            &Role::prefs_weight,
+            &Role::prefs,
+            [] (const std::unique_ptr<RolePreference> &pref) { return pref->get_name(); },
+            [] (const std::unique_ptr<RolePreference> &pref) {
+                if (auto ip = dynamic_cast<const ItemRolePreference *>(pref.get()))
+                    return RoleModel::tr("%1 preference: %2 (%3)")
+                            .arg(Preference::get_pref_desc(pref->get_pref_category()))
+                            .arg(pref->get_name())
+                            .arg(Item::get_item_name_plural(ip->get_item_type()));
+                else
+                    return RoleModel::tr("%1 preference: %2")
+                            .arg(Preference::get_pref_desc(pref->get_pref_category()))
+                            .arg(pref->get_name());
+            });
 }
 
 RoleModel::~RoleModel()
@@ -27,11 +161,9 @@ void RoleModel::set_role(Role *role)
 QModelIndex RoleModel::add_attribute(const QString &attribute)
 {
     QModelIndex parent = index(Attributes, 0);
-    // TODO: improve position search
-    auto it = m_role->attributes.lower_bound(attribute);
-    auto pos = std::distance(m_role->attributes.begin(), it);
+    auto pos = m_role->attributes.size();
     beginInsertRows(parent, pos, pos);
-    m_role->attributes.emplace_hint(it, attribute, RoleAspect { 1.0, false });
+    m_role->attributes.emplace_back(attribute, Role::aspect_weight(1.0, false));
     endInsertRows();
     return createIndex(pos, 0, Attributes);
 }
@@ -39,11 +171,9 @@ QModelIndex RoleModel::add_attribute(const QString &attribute)
 QModelIndex RoleModel::add_skill(int id)
 {
     QModelIndex parent = index(Skills, 0);
-    // TODO: improve position search
-    auto it = m_role->skills.lower_bound(QString::number(id));
-    auto pos = std::distance(m_role->skills.begin(), it);
+    auto pos = m_role->skills.size();
     beginInsertRows(parent, pos, pos);
-    m_role->skills.emplace_hint(it, QString::number(id), RoleAspect { 1.0, false });
+    m_role->skills.emplace_back(id, Role::aspect_weight(1.0, false));
     endInsertRows();
     return createIndex(pos, 0, Skills);
 }
@@ -51,80 +181,58 @@ QModelIndex RoleModel::add_skill(int id)
 QModelIndex RoleModel::add_facet(int id)
 {
     QModelIndex parent = index(Facets, 0);
-    // TODO: improve position search
-    auto it = m_role->traits.lower_bound(QString::number(id));
-    auto pos = std::distance(m_role->traits.begin(), it);
+    auto pos = m_role->facets.size();
     beginInsertRows(parent, pos, pos);
-    m_role->traits.emplace_hint(it, QString::number(id), RoleAspect { 1.0, false });
+    m_role->facets.emplace_back(id, Role::aspect_weight(1.0, false));
     endInsertRows();
     return createIndex(pos, 0, Facets);
+}
+
+QModelIndex RoleModel::add_belief(int id)
+{
+    QModelIndex parent = index(Beliefs, 0);
+    auto pos = m_role->beliefs.size();
+    beginInsertRows(parent, pos, pos);
+    m_role->beliefs.emplace_back(id, Role::aspect_weight(1.0, false));
+    endInsertRows();
+    return createIndex(pos, 0, Beliefs);
+}
+
+QModelIndex RoleModel::add_goal(int id)
+{
+    QModelIndex parent = index(Goals, 0);
+    auto pos = m_role->goals.size();
+    beginInsertRows(parent, pos, pos);
+    m_role->goals.emplace_back(id, Role::aspect_weight(1.0, false));
+    endInsertRows();
+    return createIndex(pos, 0, Goals);
 }
 
 QModelIndex RoleModel::add_preference(const RolePreference *pref)
 {
     QModelIndex parent = index(Preferences, 0);
     beginInsertRows(parent, m_role->prefs.size(), m_role->prefs.size());
-    m_role->prefs.emplace_back(pref->copy());
+    m_role->prefs.emplace_back(pref->copy(), Role::aspect_weight(1.0, false));
     endInsertRows();
     return createIndex(m_role->prefs.size()-1, 0, Preferences);
-}
-
-template<typename Key, typename T>
-static void map_erase_pos(std::map<Key, T> &map, int pos)
-{
-    auto it = map.begin();
-    std::advance(it, pos);
-    map.erase(it);
 }
 
 void RoleModel::remove_item(const QModelIndex &index)
 {
     Q_ASSERT(index.isValid() && index.internalId() != RowCount); // root items cannot be removed
-    beginRemoveRows(index.parent(), index.row(), index.row());
-    switch (index.internalId()) {
-    case Attributes:
-        map_erase_pos(m_role->attributes, index.row());
-        break;
-    case Skills:
-        map_erase_pos(m_role->skills, index.row());
-        break;
-    case Facets:
-        map_erase_pos(m_role->traits, index.row());
-        break;
-    case Preferences:
-        m_role->prefs.erase(m_role->prefs.begin() + index.row());
-        break;
+    if (is_valid_row(index.internalId())) {
+        beginRemoveRows(index.parent(), index.row(), index.row());
+        m_info[index.internalId()]->erase(m_role, index.row());
+        endRemoveRows();
     }
-    endRemoveRows();
 }
 
 void RoleModel::reset_default_weight(const QModelIndex &index)
 {
-    Q_ASSERT(index.isValid() && index.internalId() == RowCount); // only for root items
-    auto s = StandardPaths::settings();
-    switch (index.row()) {
-    case Attributes:
-    case Skills:
-    case Facets:
-    case Preferences:
-        m_role->attributes_weight.is_default = true;
-        m_role->attributes_weight.is_neg = false;
-        m_role->attributes_weight.weight = m_default_weights[index.row()];
-        break;
-    default:
-        return;
-    }
+    Q_ASSERT(index.isValid() && index.internalId() == RowCount && is_valid_row(index.row())); // only for root items
+    (m_role->*(m_info[index.row()]->global_weight)).reset_to_default();
     auto weight_cell = createIndex(index.row(), ColumnWeight, RowCount);
     emit dataChanged(weight_cell, weight_cell);
-}
-
-void RoleModel::update_default_weights()
-{
-    auto s = StandardPaths::settings();
-    m_default_weights[Attributes] = s->value("options/default_attributes_weight",1.0).toFloat();
-    m_default_weights[Skills] = s->value("options/default_skills_weight",1.0).toFloat();
-    m_default_weights[Facets] = s->value("options/default_traits_weight",1.0).toFloat();
-    m_default_weights[Preferences] = s->value("options/default_prefs_weight",1.0).toFloat();
 }
 
 // QAbstractItemModel implementation
@@ -155,89 +263,53 @@ int RoleModel::rowCount(const QModelIndex &parent) const
     if (parent.internalId() != RowCount) // leaf
         return 0;
 
-    switch (parent.row()) {
-    case Attributes:
-        return m_role->attributes.size();
-    case Skills:
-        return m_role->skills.size();
-    case Facets:
-        return m_role->traits.size();
-    case Preferences:
-        return m_role->prefs.size();
-    default:
-        return 0;
-    }
+    if (is_valid_row(parent.row()))
+        return m_info[parent.row()]->size(m_role);
+
+    return 0;
 }
 
-int RoleModel::columnCount(const QModelIndex &parent) const
+int RoleModel::columnCount(const QModelIndex &) const
 {
     return ColumnCount;
 }
 
-static QVariant aspect_data(const RoleAspect &aspect, int role)
-{
-    switch (role) {
-    case Qt::DisplayRole:
-    case Qt::EditRole:
-        return (double) (aspect.is_neg ? -1 : +1) * aspect.weight;
-    default:
-        return QVariant();
-    }
-}
-
 QVariant RoleModel::data(const QModelIndex &index, int role) const
 {
-    auto gdr = GameDataReader::ptr();
-
     if (!index.isValid() || !m_role)
         return QVariant();
 
     if (index.internalId() == RowCount) { // Root item
+        if (!is_valid_row(index.row()))
+            return QVariant();
+        const auto &info = m_info[index.row()];
         switch (index.column()) {
         case ColumnName:
-            if (role == Qt::DisplayRole) {
-                switch (index.row()) {
-                case Attributes:
-                    return tr("Attributes");
-                case Skills:
-                    return tr("Skills");
-                case Facets:
-                    return tr("Facets");
-                case Preferences:
-                    return tr("Preferences");
-                default:
-                    return QVariant();
-                }
-            }
+            if (role == Qt::DisplayRole)
+                return info->category_name;
             else
                 return QVariant();
         case ColumnWeight: {
-            const Role::weight_info *w;
-            switch (index.row()) {
-            case Attributes:
-                w = &m_role->attributes_weight;
-                break;
-            case Skills:
-                w = &m_role->skills_weight;
-                break;
-            case Facets:
-                w = &m_role->traits_weight;
-                break;
-            case Preferences:
-                w = &m_role->prefs_weight;
-                break;
-            default:
-                return QVariant();
-            }
+            const auto &w = m_role->*(info->global_weight);
+            float default_value = w.default_value();
+            float value = w.is_default
+                ? default_value
+                : w.weight;
             switch (role) {
             case Qt::DisplayRole:
-                return w->is_default
-                    ? tr("default (%1)").arg(QString::number(m_default_weights[index.row()]))
-                    : QString::number((w->is_neg ? -1 : +1) * w->weight);
+                return w.is_default
+                    ? tr("default (%1)").arg(QString::number(value))
+                    : QString::number(value);
             case Qt::EditRole:
-                return (double) (w->is_default
-                    ? m_default_weights[index.row()]
-                    : (w->is_neg ? -1 : +1) * w->weight);
+                return (double) value;
+            case Qt::ToolTipRole:
+                return tr("%1 weight").arg(info->category_name);
+            case Qt::StatusTipRole:
+                return tr("This weight is the importance of %1 relative to "
+                          "other categories. Set to 0 to use the default "
+                          "value (currently %2). Double-click to change.")
+                    .arg(info->category_name)
+                    .arg(default_value);
             default:
                 return QVariant();
             }
@@ -246,80 +318,36 @@ QVariant RoleModel::data(const QModelIndex &index, int role) const
             return QVariant();
         }
     }
-    else { // leaf item
-        switch (index.internalId()) {
-        case Attributes: {
-            // TODO: improve element access
-            auto it = m_role->attributes.begin();
-            std::advance(it, index.row());
-            switch (index.column()) {
-            case ColumnName:
-                if (role == Qt::DisplayRole)
-                    return it->first;
-                else
-                    return QVariant();
-            case ColumnWeight:
-                return aspect_data(it->second, role);
+    else if (is_valid_row(index.internalId())) { // leaf item
+        const auto &info = m_info[index.internalId()];
+        if (index.row() >= (int) info->size(m_role))
+            return QVariant();
+        switch (index.column()) {
+        case ColumnName:
+            switch (role) {
+            case Qt::DisplayRole:
+                return info->get_name(m_role, index.row());
+            case Qt::ToolTipRole:
+            case Qt::StatusTipRole:
+                return info->get_tip(m_role, index.row());
             default:
                 return QVariant();
             }
-        }
-        case Skills: {
-            // TODO: improve element access
-            auto it = m_role->skills.begin();
-            std::advance(it, index.row());
-            switch (index.column()) {
-            case ColumnName:
-                if (role == Qt::DisplayRole)
-                    return gdr->get_skill_name(it->first.toInt());
-                else
-                    return QVariant();
-            case ColumnWeight:
-                return aspect_data(it->second, role);
-            default:
-                return QVariant();
-            }
-        }
-        case Facets: {
-            // TODO: improve element access
-            auto it = m_role->traits.begin();
-            std::advance(it, index.row());
-            switch (index.column()) {
-            case ColumnName:
-                if (role == Qt::DisplayRole)
-                    return gdr->get_trait_name(it->first.toInt());
-                else
-                    return QVariant();
-            case ColumnWeight:
-                return aspect_data(it->second, role);
-            default:
-                return QVariant();
-            }
-        }
-        case Preferences: {
-            const auto &pref = m_role->prefs[index.row()];
-            switch (index.column()) {
-            case ColumnName:
-                if (role == Qt::DisplayRole)
-                    return pref->get_name();
-                else
-                    return QVariant();
-            case ColumnWeight:
-                return aspect_data(pref->aspect, role);
-            case ColumnCategory:
-                if (role == Qt::DisplayRole)
-                    return Preference::get_pref_desc(pref->get_pref_category());
-                else
-                    return QVariant();
-            case ColumnItem:
-                if (role == Qt::DisplayRole) {
-                    if (auto ip = dynamic_cast<const ItemRolePreference *>(pref.get()))
-                        return Item::get_item_name_plural(ip->get_item_type());
-                    else
-                        return QVariant();
-                }
-                else
-                    return QVariant();
+        case ColumnWeight: {
+            const auto &w = info->get_weight(m_role, index.row());
+            float value = w.is_neg ? -w.weight : w.weight;
+            switch (role) {
+            case Qt::DisplayRole:
+                return QString::number(value);
+            case Qt::EditRole:
+                return (double) value;
+            case Qt::ToolTipRole:
+                return tr("%1 weight").arg(info->get_name(m_role, index.row()));
+            case Qt::StatusTipRole:
+                return tr("This weight is the importance of %1 relative to "
+                          "other %2. Double-click to change.")
+                    .arg(info->get_name(m_role, index.row()))
+                    .arg(info->category_name);
             default:
                 return QVariant();
             }
@@ -328,85 +356,40 @@ QVariant RoleModel::data(const QModelIndex &index, int role) const
             return QVariant();
         }
     }
+    return QVariant();
 }
 
 bool RoleModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    bool ok;
-
     if (!index.isValid() || index.column() != ColumnWeight || role != Qt::EditRole || !m_role)
         return false;
 
+    bool ok;
+    float weight = value.toFloat(&ok);
+    if (!ok)
+        return false;
+
     if (index.internalId() == RowCount) { // global weights
-        Role::weight_info *w;
-        switch (index.row()) {
-        case Attributes:
-            w = &m_role->attributes_weight;
-            break;
-        case Skills:
-            w = &m_role->skills_weight;
-            break;
-        case Facets:
-            w = &m_role->traits_weight;
-            break;
-        case Preferences:
-            w = &m_role->prefs_weight;
-            break;
-        default:
-            return false;
+        if (is_valid_row(index.row())) {
+            auto &w = m_role->*(m_info[index.row()]->global_weight);
+            if (weight == 0.0f)
+                w.reset_to_default();
+            else
+                w.set(weight);
+            emit dataChanged(index, index);
+            return true;
         }
-        float weight = value.toFloat(&ok);
-        if (!ok)
-            return false;
-        if (weight == 0.0f) {
-            w->is_default = true;
-            w->is_neg = false;
-            w->weight = m_default_weights[index.row()];
-        }
-        else {
-            w->is_default = false;
-            w->is_neg = weight < 0.0f;
-            w->weight = fabs(weight);
-        }
-        emit dataChanged(index, index);
-        return true;
     }
     else { // item weights
-        RoleAspect *a = nullptr;
-        // TODO: element access
-        switch (index.internalId()) {
-        case Attributes: {
-            auto it = m_role->attributes.begin();
-            std::advance(it, index.row());
-            a = &it->second;
-            break;
+        if (is_valid_row(index.internalId())) {
+            auto &w = m_info[index.internalId()]->get_weight(m_role, index.row());
+            w.weight = fabs(weight);
+            w.is_neg = weight < 0.0f;
+            emit dataChanged(index, index);
+            return true;
         }
-        case Skills: {
-            auto it = m_role->skills.begin();
-            std::advance(it, index.row());
-            a = &it->second;
-            break;
-        }
-        case Facets: {
-            auto it = m_role->traits.begin();
-            std::advance(it, index.row());
-            a = &it->second;
-            break;
-        }
-        case Preferences:
-            a = &m_role->prefs[index.row()]->aspect;
-            break;
-        }
-        if (!a)
-            return false;
-        float weight = value.toFloat(&ok);
-        if (!ok)
-            return false;
-        a->is_neg = weight < 0.0f;
-        a->weight = fabs(weight);
-        emit dataChanged(index, index);
-        return true;
     }
+    return false;
 }
 
 Qt::ItemFlags RoleModel::flags(const QModelIndex &index) const
@@ -435,10 +418,6 @@ QVariant RoleModel::headerData(int section, Qt::Orientation orientation, int rol
         return tr("Name");
     case ColumnWeight:
         return tr("Weight");
-    case ColumnCategory:
-        return tr("Category");
-    case ColumnItem:
-        return tr("Item");
     default:
         return QVariant();
     }

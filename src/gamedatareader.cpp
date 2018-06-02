@@ -446,7 +446,7 @@ QString GameDataReader::get_skill_level_name(short level) {
     //return get_string_for_key(QString("skill_levels/%1").arg(level));
 }
 
-QString GameDataReader::get_skill_name(short skill_id, bool noun) {
+QString GameDataReader::get_skill_name(int skill_id, bool noun) {
     auto it = m_skills.find(skill_id);
     if (it == m_skills.end()) {
         LOGE << "Skill" << skill_id << "not found";
@@ -484,23 +484,23 @@ QString GameDataReader::get_mood_desc(MOOD_TYPE m_type, bool colored){
     return get_mood(m_type)->get_mood_desc(colored);
 }
 
-Labor *GameDataReader::get_labor(const int &labor_id) {
+Labor *GameDataReader::get_labor(int labor_id) {
     return m_labors.value(labor_id, 0);
 }
 
-Trait *GameDataReader::get_trait(const int &trait_id) {
+Trait *GameDataReader::get_trait(int trait_id) {
     return m_traits.value(trait_id, 0);
 }
 
-Belief *GameDataReader::get_belief(const int &belief_id) {
+Belief *GameDataReader::get_belief(int belief_id) {
     return m_beliefs.value(belief_id, 0);
 }
 
-QString GameDataReader::get_trait_name(const short &trait_id) {
+QString GameDataReader::get_trait_name(int trait_id) {
     return get_trait(trait_id)->get_name();
 }
 
-QString GameDataReader::get_belief_name(const int &belief_id) {
+QString GameDataReader::get_belief_name(int belief_id) {
     return get_belief(belief_id)->name;
 }
 
@@ -670,7 +670,7 @@ void GameDataReader::load_role_mappings(){
         QVector<Role*> roles;
         QList<int> labors;
         for (const auto &p: r->skills){
-            int skill_id = p.first.toInt();
+            int skill_id = p.first;
             roles = m_skill_roles.value(skill_id);
             roles.append(r);
             m_skill_roles.insert(skill_id,roles);
