@@ -505,8 +505,9 @@ void ImportExportDialog::import_selected_roles(){
 }
 
 void ImportExportDialog::import_selected_professions() {
-    int imported = m_profs.count();
-    DT->add_custom_professions(m_profs);
+    auto profs = get_profs();
+    int imported = profs.count();
+    DT->add_custom_professions(profs);
     if (imported)
         QMessageBox::information(this, tr("Import Successful"),
             tr("Imported %n custom profession(s)", "", imported));
