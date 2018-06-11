@@ -139,6 +139,9 @@ public:
 
     QString get_knowledge_desc(int field, int topic);
 
+    int get_happiness_threshold(DWARF_HAPPINESS h) const { return m_happiness_levels[h].threshold; }
+    const QString &get_happiness_desc(DWARF_HAPPINESS h) const { return m_happiness_levels[h].desc; }
+
     bool custom_roles_updated() {return m_cust_roles_updated;}
     void custom_roles_updated(bool val) {m_cust_roles_updated=val;}
     bool default_roles_updated() {return m_def_roles_updated;}
@@ -205,6 +208,11 @@ private:
 
     QList<QString> m_spheres;
     QHash<int,QMap<int,QString> > m_knowledge;
+
+    struct {
+        int threshold;
+        QString desc;
+    } m_happiness_levels[DH_TOTAL_LEVELS];
 
     bool m_cust_roles_updated;
     bool m_def_roles_updated;
