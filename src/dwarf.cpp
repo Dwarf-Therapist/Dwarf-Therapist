@@ -1869,31 +1869,21 @@ void Dwarf::read_emotions(VIRTADDR personality_base){
         m_stress_level = 0;
     }
 
-    QString stress_desc = "";
-    if (m_stress_level >= 500000){
-        m_happiness = DH_MISERABLE;
-        stress_desc = tr(" is utterly harrowed by the nightmare that is their tragic life. ");
-    }else if (m_stress_level >= 250000){
-        m_happiness = DH_VERY_UNHAPPY;
-        stress_desc = tr(" is haggard and drawn due to the tremendous stresses placed on them. ");
-    }else if (m_stress_level >= 100000){
-        m_happiness = DH_UNHAPPY;
-        stress_desc = tr(" is under a great deal of stress. ");
-    }else if (m_stress_level > -100000){
-        m_happiness = DH_FINE;
-    }else if (m_stress_level > -250000){
-        m_happiness = DH_CONTENT;
-    }else if (m_stress_level >  -500000){
-        m_happiness = DH_HAPPY;
-    }else{
-        m_happiness = DH_ECSTATIC;
-    }
+    auto gdr = GameDataReader::ptr();
+    int i = 0;
+    while (i < DH_TOTAL_LEVELS &&
+           m_stress_level < gdr->get_happiness_threshold(static_cast<DWARF_HAPPINESS>(i)))
+         ++i;
+    m_happiness = static_cast<DWARF_HAPPINESS>(i);
+    QString stress_desc = gdr->get_happiness_desc(m_happiness);
     //check for catatonic, it changes the stress desc
     if(m_mood_id == MT_TRAUMA){
-        stress_desc = tr(" has been overthrown by the stresses of day-to-day living. ");
+        stress_desc = tr("has been overthrown by the stresses of day-to-day living");
     }
     if(!stress_desc.trimmed().isEmpty()){
-        m_emotions_desc.prepend("<b>" + capitalize(pronoun + stress_desc) + "</b>");
+        m_emotions_desc.prepend(QString("<b>%1 %2.</b> ")
+                .arg(capitalize(pronoun))
+                .arg(stress_desc));
     }
 
     m_happiness_desc = QString("<b>%1</b> (Stress: %2)")
