@@ -1,3 +1,9 @@
+### Version 40.0.1 Patch Notes
+
+***
+ - added "see dead body" thought
+ - fixed happiness thresholds for 0.44.10 (thresholds can now be configured in game_data.ini for older versions)
+
 ### Version 40.0.0 Patch Notes
 
 ***
