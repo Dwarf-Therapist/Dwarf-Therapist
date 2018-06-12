@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>717</width>
-    <height>526</height>
+    <width>756</width>
+    <height>726</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1251,8 +1251,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>463</width>
-            <height>459</height>
+            <width>720</width>
+            <height>637</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -2166,36 +2166,20 @@
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <layout class="QGridLayout" name="gridLayout_4">
-         <item row="3" column="0">
-          <widget class="QLabel" name="lbl_prefs">
-           <property name="text">
-            <string>Default Preference Weight</string>
+         <item row="3" column="1">
+          <widget class="QDoubleSpinBox" name="dsb_belief_weight">
+           <property name="statusTip">
+            <string>This is the default role belief weight. Belief weights can be overridden in the Dwarf Therapist.ini.</string>
            </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="lbl_traits">
-           <property name="text">
-            <string>Default Trait Weight</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           <property name="singleStep">
+            <double>0.250000000000000</double>
            </property>
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QDoubleSpinBox" name="dsb_trait_weight">
-           <property name="minimumSize">
-            <size>
-             <width>60</width>
-             <height>0</height>
-            </size>
-           </property>
+          <widget class="QDoubleSpinBox" name="dsb_facet_weight">
            <property name="statusTip">
-            <string>This is the default role trait weight. Trait weights can be overridden in the Dwarf Therapist.ini.</string>
+            <string>This is the default role facet weight. Facet weights can be overridden in the Dwarf Therapist.ini.</string>
            </property>
            <property name="singleStep">
             <double>0.250000000000000</double>
@@ -2207,12 +2191,6 @@
          </item>
          <item row="1" column="3">
           <widget class="QDoubleSpinBox" name="dsb_skill_rate_weight">
-           <property name="minimumSize">
-            <size>
-             <width>60</width>
-             <height>0</height>
-            </size>
-           </property>
            <property name="toolTip">
             <string/>
            </property>
@@ -2230,14 +2208,8 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
+         <item row="5" column="1">
           <widget class="QDoubleSpinBox" name="dsb_pref_weight">
-           <property name="minimumSize">
-            <size>
-             <width>60</width>
-             <height>0</height>
-            </size>
-           </property>
            <property name="statusTip">
             <string>This is the default role trait weight. Trait weights can be overridden in the Dwarf Therapist.ini.</string>
            </property>
@@ -2249,24 +2221,8 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="lbl_attributes">
-           <property name="text">
-            <string>Default Attribute Weight</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="3">
           <widget class="QDoubleSpinBox" name="dsb_att_potential_weight">
-           <property name="minimumSize">
-            <size>
-             <width>60</width>
-             <height>0</height>
-            </size>
-           </property>
            <property name="toolTip">
             <string/>
            </property>
@@ -2281,16 +2237,6 @@
            </property>
            <property name="value">
             <double>0.500000000000000</double>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="lbl_skills">
-           <property name="text">
-            <string>Default Skill Weight</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
           </widget>
          </item>
@@ -2321,12 +2267,6 @@
          </item>
          <item row="1" column="1">
           <widget class="QDoubleSpinBox" name="dsb_skill_weight">
-           <property name="minimumSize">
-            <size>
-             <width>60</width>
-             <height>0</height>
-            </size>
-           </property>
            <property name="statusTip">
             <string>This is the default role skill weight. Skill weights can be overridden in the Dwarf Therapist.ini.</string>
            </property>
@@ -2343,12 +2283,6 @@
          </item>
          <item row="0" column="1">
           <widget class="QDoubleSpinBox" name="dsb_attribute_weight">
-           <property name="minimumSize">
-            <size>
-             <width>60</width>
-             <height>0</height>
-            </size>
-           </property>
            <property name="statusTip">
             <string>This is the default role attribute weight. Attribute weights can be overridden in the Dwarf Therapist.ini.</string>
            </property>
@@ -2395,6 +2329,91 @@
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QDoubleSpinBox" name="dsb_goal_weight">
+           <property name="statusTip">
+            <string>This is the default role goal weight. Goal weights can be overridden in the Dwarf Therapist.ini.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="cb_attribute_weight">
+           <property name="toolTip">
+            <string>Check this if you want to use a custom default weight for attributes instead of the built-in value.</string>
+           </property>
+           <property name="statusTip">
+            <string>Check this if you want to use a custom default weight for attributes instead of the built-in value.</string>
+           </property>
+           <property name="text">
+            <string>Overwrite default attribute weight</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="cb_skill_weight">
+           <property name="toolTip">
+            <string>Check this if you want to use a custom default weight for skills instead of the built-in value.</string>
+           </property>
+           <property name="statusTip">
+            <string>Check this if you want to use a custom default weight for skills instead of the built-in value.</string>
+           </property>
+           <property name="text">
+            <string>Overwrite default skill weight</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="cb_facet_weight">
+           <property name="toolTip">
+            <string>Check this if you want to use a custom default weight for facets instead of the built-in value.</string>
+           </property>
+           <property name="statusTip">
+            <string>Check this if you want to use a custom default weight for facets instead of the built-in value.</string>
+           </property>
+           <property name="text">
+            <string>Overwrite default facet weight</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QCheckBox" name="cb_belief_weight">
+           <property name="toolTip">
+            <string>Check this if you want to use a custom default weight for beliefs instead of the built-in value.</string>
+           </property>
+           <property name="statusTip">
+            <string>Check this if you want to use a custom default weight for beliefs instead of the built-in value.</string>
+           </property>
+           <property name="text">
+            <string>Overwrite default belief weight</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QCheckBox" name="cb_goal_weight">
+           <property name="toolTip">
+            <string>Check this if you want to use a custom default weight for goals instead of the built-in value.</string>
+           </property>
+           <property name="statusTip">
+            <string>Check this if you want to use a custom default weight for goals instead of the built-in value.</string>
+           </property>
+           <property name="text">
+            <string>Overwrite default goal weight</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QCheckBox" name="cb_pref_weight">
+           <property name="toolTip">
+            <string>Check this if you want to use a custom default weight for preferences instead of the built-in value.</string>
+           </property>
+           <property name="statusTip">
+            <string>Check this if you want to use a custom default weight for preferences instead of the built-in value.</string>
+           </property>
+           <property name="text">
+            <string>Overwrite default preference weight</string>
            </property>
           </widget>
          </item>

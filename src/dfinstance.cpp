@@ -49,6 +49,7 @@ THE SOFTWARE.
 #include "equipwarn.h"
 #include "unitemotion.h"
 #include "rolecalcbase.h"
+#include "defaultroleweight.h"
 #include "standardpaths.h"
 
 #include <QTimer>
@@ -531,6 +532,8 @@ void DFInstance::load_population_data(){
 void DFInstance::load_role_ratings(){
     if(m_labor_capable_dwarves.size() <= 0)
         return;
+
+    DefaultRoleWeight::update_all();
 
     QVector<double> attribute_values;
     QVector<double> attribute_raw_values;

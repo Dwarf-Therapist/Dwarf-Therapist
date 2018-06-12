@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include "optionsmenu.h"
 #include "customcolor.h"
 #include "defaultfonts.h"
+#include "defaultroleweight.h"
 #include "defines.h"
 #include "dfinstance.h"
 #include "dwarftherapist.h"
@@ -204,6 +205,13 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     connect(ui->chk_show_thoughts,SIGNAL(toggled(bool)),this,SLOT(tooltip_thoughts_toggled(bool)));
 
     connect(ui->btn_reset_updates,SIGNAL(pressed()),this,SLOT(restore_update_defaults()));
+
+    connect(ui->cb_attribute_weight,SIGNAL(toggled(bool)),ui->dsb_attribute_weight,SLOT(setEnabled(bool)));
+    connect(ui->cb_skill_weight,SIGNAL(toggled(bool)),ui->dsb_skill_weight,SLOT(setEnabled(bool)));
+    connect(ui->cb_facet_weight,SIGNAL(toggled(bool)),ui->dsb_facet_weight,SLOT(setEnabled(bool)));
+    connect(ui->cb_belief_weight,SIGNAL(toggled(bool)),ui->dsb_belief_weight,SLOT(setEnabled(bool)));
+    connect(ui->cb_goal_weight,SIGNAL(toggled(bool)),ui->dsb_goal_weight,SLOT(setEnabled(bool)));
+    connect(ui->cb_pref_weight,SIGNAL(toggled(bool)),ui->dsb_pref_weight,SLOT(setEnabled(bool)));
 
     read_settings();
 }
@@ -421,10 +429,25 @@ void OptionsMenu::read_settings() {
     ui->chk_show_skills_use_color->setChecked(s->value("tooltip_show_skills_use_color",true).toBool());
     tooltip_skills_toggled(ui->chk_show_skills->isChecked());
 
-    ui->dsb_attribute_weight->setValue(s->value("default_attributes_weight",0.25).toDouble());
-    ui->dsb_skill_weight->setValue(s->value("default_skills_weight",1.0).toDouble());
-    ui->dsb_trait_weight->setValue(s->value("default_traits_weight",0.20).toDouble());
-    ui->dsb_pref_weight->setValue(s->value("default_prefs_weight",0.15).toDouble());
+    DefaultRoleWeight::update_all();
+    ui->cb_attribute_weight->setChecked(DefaultRoleWeight::attributes.is_overwritten());
+    ui->dsb_attribute_weight->setValue(DefaultRoleWeight::attributes.value());
+    ui->dsb_attribute_weight->setEnabled(DefaultRoleWeight::attributes.is_overwritten());
+    ui->cb_skill_weight->setChecked(DefaultRoleWeight::skills.is_overwritten());
+    ui->dsb_skill_weight->setValue(DefaultRoleWeight::skills.value());
+    ui->dsb_skill_weight->setEnabled(DefaultRoleWeight::skills.is_overwritten());
+    ui->cb_facet_weight->setChecked(DefaultRoleWeight::facets.is_overwritten());
+    ui->dsb_facet_weight->setValue(DefaultRoleWeight::facets.value());
+    ui->dsb_facet_weight->setEnabled(DefaultRoleWeight::facets.is_overwritten());
+    ui->cb_belief_weight->setChecked(DefaultRoleWeight::beliefs.is_overwritten());
+    ui->dsb_belief_weight->setValue(DefaultRoleWeight::beliefs.value());
+    ui->dsb_belief_weight->setEnabled(DefaultRoleWeight::beliefs.is_overwritten());
+    ui->cb_goal_weight->setChecked(DefaultRoleWeight::goals.is_overwritten());
+    ui->dsb_goal_weight->setValue(DefaultRoleWeight::goals.value());
+    ui->dsb_goal_weight->setEnabled(DefaultRoleWeight::goals.is_overwritten());
+    ui->cb_pref_weight->setChecked(DefaultRoleWeight::preferences.is_overwritten());
+    ui->dsb_pref_weight->setValue(DefaultRoleWeight::preferences.value());
+    ui->dsb_pref_weight->setEnabled(DefaultRoleWeight::preferences.is_overwritten());
     ui->dsb_skill_rate_weight->setValue(s->value("default_skill_rate_weight",0.25).toDouble());
     ui->dsb_att_potential_weight->setValue(s->value("default_attribute_potential_weight",0.50).toDouble());
     ui->sb_roles_pane->setValue(s->value("role_count_pane",10).toInt());
@@ -506,10 +529,19 @@ void OptionsMenu::write_settings() {
         s->setValue("main_font", m_main_font.first);
         s->setValue("gender_info", ui->cb_gender_info->currentData());
 
+        s->setValue("overwrite_default_attributes_weight",ui->cb_attribute_weight->isChecked());
         s->setValue("default_attributes_weight",ui->dsb_attribute_weight->value());
+        s->setValue("overwrite_default_skills_weight",ui->cb_skill_weight->isChecked());
         s->setValue("default_skills_weight",ui->dsb_skill_weight->value());
-        s->setValue("default_traits_weight",ui->dsb_trait_weight->value());
+        s->setValue("overwrite_default_traits_weight",ui->cb_facet_weight->isChecked());
+        s->setValue("default_traits_weight",ui->dsb_facet_weight->value());
+        s->setValue("overwrite_default_beliefs_weight",ui->cb_belief_weight->isChecked());
+        s->setValue("default_beliefs_weight",ui->dsb_belief_weight->value());
+        s->setValue("overwrite_default_goals_weight",ui->cb_goal_weight->isChecked());
+        s->setValue("default_goals_weight",ui->dsb_goal_weight->value());
+        s->setValue("overwrite_default_prefs_weight",ui->cb_pref_weight->isChecked());
         s->setValue("default_prefs_weight",ui->dsb_pref_weight->value());
+        DefaultRoleWeight::update_all();
         s->setValue("default_skill_rate_weight",ui->dsb_skill_rate_weight->value());
         s->setValue("default_attribute_potential_weight",ui->dsb_att_potential_weight->value());
 
@@ -664,10 +696,18 @@ void OptionsMenu::restore_defaults() {
     if(idx != -1)
         ui->cb_thought_time->setCurrentIndex(idx);
 
-    ui->dsb_attribute_weight->setValue(0.25);
-    ui->dsb_pref_weight->setValue(0.15);
-    ui->dsb_skill_weight->setValue(1.0);
-    ui->dsb_trait_weight->setValue(0.20);
+    ui->cb_attribute_weight->setChecked(false);
+    ui->dsb_attribute_weight->setValue(DefaultRoleWeight::attributes.default_value());
+    ui->cb_pref_weight->setChecked(false);
+    ui->dsb_pref_weight->setValue(DefaultRoleWeight::preferences.default_value());
+    ui->cb_skill_weight->setChecked(false);
+    ui->dsb_skill_weight->setValue(DefaultRoleWeight::skills.default_value());
+    ui->cb_facet_weight->setChecked(false);
+    ui->dsb_facet_weight->setValue(DefaultRoleWeight::facets.default_value());
+    ui->cb_belief_weight->setChecked(false);
+    ui->dsb_belief_weight->setValue(DefaultRoleWeight::beliefs.default_value());
+    ui->cb_goal_weight->setChecked(false);
+    ui->dsb_goal_weight->setValue(DefaultRoleWeight::goals.default_value());
     ui->dsb_skill_rate_weight->setValue(0.25);
     ui->dsb_att_potential_weight->setValue(0.50);
 

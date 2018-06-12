@@ -68,6 +68,7 @@ add_executable(${EXE_NAME} WIN32 MACOSX_BUNDLE
     src/customprofessioncolumn.cpp
     src/customprofession.cpp
     src/defaultfonts.cpp
+    src/defaultroleweight.cpp
     src/dfinstance.cpp
     src/dtstandarditem.cpp
     src/dwarf.cpp
