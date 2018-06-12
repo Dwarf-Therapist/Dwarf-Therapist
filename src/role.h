@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <QHash>
 #include <memory>
 
+class DefaultRoleWeight;
 class RolePreference;
 class QSettings;
 class Dwarf;
@@ -43,14 +44,18 @@ public:
 
     virtual ~Role();
 
-    struct weight_info {
-        QString default_value_key;
-        bool is_default;
-        float weight;
+    class weight_info {
+        const DefaultRoleWeight &m_default_value;
+        bool m_is_default;
+        float m_weight;
 
-        weight_info(const QString &key);
+    public:
+        float weight() const;
+        float default_weight() const;
+        bool is_default() const { return m_is_default; }
 
-        float default_value() const;
+        weight_info(const DefaultRoleWeight &default_value);
+
         void reset_to_default();
         void set(float weight);
     };

@@ -2,6 +2,7 @@
 
 #include <functional>
 
+#include "defaultroleweight.h"
 #include "gamedatareader.h"
 #include "item.h"
 #include "preference.h"
@@ -291,17 +292,13 @@ QVariant RoleModel::data(const QModelIndex &index, int role) const
                 return QVariant();
         case ColumnWeight: {
             const auto &w = m_role->*(info->global_weight);
-            float default_value = w.default_value();
-            float value = w.is_default
-                ? default_value
-                : w.weight;
             switch (role) {
             case Qt::DisplayRole:
-                return w.is_default
-                    ? tr("default (%1)").arg(QString::number(value))
-                    : QString::number(value);
+                return w.is_default()
+                    ? tr("default (%1)").arg(QString::number(w.weight()))
+                    : QString::number(w.weight());
             case Qt::EditRole:
-                return (double) value;
+                return w.weight();
             case Qt::ToolTipRole:
                 return tr("%1 weight").arg(info->category_name);
             case Qt::StatusTipRole:
@@ -309,7 +306,7 @@ QVariant RoleModel::data(const QModelIndex &index, int role) const
                           "other categories. Set to 0 to use the default "
                           "value (currently %2). Double-click to change.")
                     .arg(info->category_name)
-                    .arg(default_value);
+                    .arg(w.default_weight());
             default:
                 return QVariant();
             }

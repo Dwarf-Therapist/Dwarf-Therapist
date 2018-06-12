@@ -22,6 +22,7 @@ THE SOFTWARE.
 */
 
 #include "role.h"
+#include "defaultroleweight.h"
 #include "dwarftherapist.h"
 #include "gamedatareader.h"
 #include "rolepreference.h"
@@ -34,39 +35,42 @@ THE SOFTWARE.
 #include <QSettings>
 #include <QRegularExpression>
 
-Role::weight_info::weight_info(const QString &key)
-    : default_value_key(key)
-    , is_default(true)
-    , weight(1.0f)
+Role::weight_info::weight_info(const DefaultRoleWeight &default_value)
+    : m_default_value(default_value)
+    , m_is_default(true)
+    , m_weight(1.0f)
 {
 }
 
-float Role::weight_info::default_value() const
+float Role::weight_info::weight() const
 {
-    auto s = StandardPaths::settings();
-    return s->value(default_value_key, 1.0f).toFloat();
+    return m_is_default ? m_default_value.value() : m_weight;
+}
+
+float Role::weight_info::default_weight() const
+{
+    return m_default_value.value();
 }
 
 void Role::weight_info::reset_to_default()
 {
-    is_default = true;
-    weight = default_value();
+    m_is_default = true;
 }
 
 void Role::weight_info::set(float w)
 {
-    is_default = false;
-    weight = w;
+    m_is_default = false;
+    m_weight = w;
 }
 
 Role::Role(QObject *parent)
     : QObject(parent)
-    , attributes_weight("options/default_attributes_weight")
-    , skills_weight("options/default_skills_weight")
-    , facets_weight("options/default_traits_weight")
-    , beliefs_weight("options/default_beliefs_weight")
-    , goals_weight("options/default_goals_weight")
-    , prefs_weight("options/default_prefs_weight")
+    , attributes_weight(DefaultRoleWeight::attributes)
+    , skills_weight(DefaultRoleWeight::skills)
+    , facets_weight(DefaultRoleWeight::facets)
+    , beliefs_weight(DefaultRoleWeight::beliefs)
+    , goals_weight(DefaultRoleWeight::goals)
+    , prefs_weight(DefaultRoleWeight::preferences)
     , m_name("UNKNOWN")
     , m_script("")
     , m_is_custom(false)
@@ -83,12 +87,12 @@ Role::Role(QObject *parent)
 
 Role::Role(QSettings &s, QObject *parent)
     : QObject(parent)
-    , attributes_weight("options/default_attributes_weight")
-    , skills_weight("options/default_skills_weight")
-    , facets_weight("options/default_traits_weight")
-    , beliefs_weight("options/default_beliefs_weight")
-    , goals_weight("options/default_goals_weight")
-    , prefs_weight("options/default_prefs_weight")
+    , attributes_weight(DefaultRoleWeight::attributes)
+    , skills_weight(DefaultRoleWeight::skills)
+    , facets_weight(DefaultRoleWeight::facets)
+    , beliefs_weight(DefaultRoleWeight::beliefs)
+    , goals_weight(DefaultRoleWeight::goals)
+    , prefs_weight(DefaultRoleWeight::preferences)
     , m_name(s.value("name", "UNKNOWN ROLE").toString())
     , m_script(s.value("script","").toString())
     , m_is_custom(false)
@@ -266,8 +270,8 @@ QString Role::generate_details(const QString &title,
         if(aspects.size() > 3)
             group_lines = true;
 
-        if(!aspect_group_weight.is_default)
-            title_formatted.append(tr("<i> (w %1)</i>").arg(aspect_group_weight.weight));
+        if(!aspect_group_weight.is_default())
+            title_formatted.append(tr("<i> (w %1)</i>").arg(aspect_group_weight.weight()));
 
         summary = tr("<p style =\"margin:0; margin-left:10px; padding:0px;\"><b>%1:</b></p>").arg(title_formatted);
         QString w_str;
@@ -395,8 +399,8 @@ void Role::write_aspect_group(QSettings &s, const QString &group_name,
                               const weight_info &group_weight,
                               const std::vector<std::pair<T, aspect_weight>> &list) const {
     if(!list.empty()){
-        if (!group_weight.is_default)
-            s.setValue(group_name + "_weight", QString::number(group_weight.weight,'g',0));
+        if (!group_weight.is_default())
+            s.setValue(group_name + "_weight", QString::number(group_weight.weight(),'g',0));
 
         int count = 0;
         s.beginWriteArray(group_name, list.size());

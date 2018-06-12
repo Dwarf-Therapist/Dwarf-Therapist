@@ -2908,12 +2908,12 @@ double Dwarf::calc_role_rating(Role *m_role){
 
     //use the role's aspect section weights (these are defaulted to the global weights)
     float global_aspect_weight[AspectCount] = {
-        m_role->attributes_weight.weight,
-        m_role->facets_weight.weight,
-        m_role->beliefs_weight.weight,
-        m_role->goals_weight.weight,
-        m_role->skills_weight.weight,
-        m_role->prefs_weight.weight,
+        m_role->attributes_weight.weight(),
+        m_role->facets_weight.weight(),
+        m_role->beliefs_weight.weight(),
+        m_role->goals_weight.weight(),
+        m_role->skills_weight.weight(),
+        m_role->prefs_weight.weight(),
     };
     float global_aspect_weight_total = 0.0f;
     for (int i = 0; i < AspectCount; ++i)

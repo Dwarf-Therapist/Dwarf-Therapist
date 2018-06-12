@@ -64,6 +64,7 @@ THE SOFTWARE.
 #include "updater.h"
 #include "standardpaths.h"
 #include "rolepreferencemodel.h"
+#include "defaultroleweight.h"
 
 #include <QCompleter>
 #include <QDesktopServices>
@@ -250,6 +251,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->cb_group_by->addItem(tr("Total Skill Levels"),DwarfModel::GB_TOTAL_SKILL_LEVELS);
 
     read_settings();
+    DefaultRoleWeight::update_all();
     load_customizations();
     reload_filter_scripts();
     refresh_role_menus();

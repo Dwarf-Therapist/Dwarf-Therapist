@@ -179,18 +179,6 @@ QStandardItem *RoleColumn::build_aggregate(const QString &group_name, const QVec
 void RoleColumn::read_settings() {
     ViewColumn::read_settings();
     if(m_role){
-        //reset role's global weights to the new default weights, but only if they were using them in the first place
-        QSettings *s = DT->user_settings();
-        s->beginGroup("options");
-        if(m_role->attributes_weight.is_default)
-            m_role->attributes_weight.weight = s->value(QString("default_attributes_weight")).toFloat();
-        if(m_role->facets_weight.is_default)
-            m_role->facets_weight.weight = s->value(QString("default_traits_weight")).toFloat();
-        if(m_role->skills_weight.is_default)
-            m_role->skills_weight.weight = s->value(QString("default_skills_weight")).toFloat();
-        if(m_role->prefs_weight.is_default)
-            m_role->prefs_weight.weight = s->value(QString("default_prefs_weight")).toFloat();
-        s->endGroup();
         m_role->create_role_details(); //rebuild the description
         m_role_name = m_role->name();
     }
