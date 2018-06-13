@@ -248,6 +248,9 @@ void OptionsMenu::tooltip_skills_toggled(bool checked){
     ui->lbl_max_tooltip_skills2->setEnabled(checked);
     ui->sb_min_skill_level->setEnabled(checked);
     ui->chk_show_social_skills->setEnabled(checked);
+    ui->chk_show_skills_level->setEnabled(checked);
+    ui->chk_show_skills_exp_summary->setEnabled(checked);
+    ui->chk_show_skills_use_color->setEnabled(checked);
 }
 
 void OptionsMenu::tooltip_roles_toggled(bool checked){
@@ -413,6 +416,9 @@ void OptionsMenu::read_settings() {
     ui->chk_show_skills->setChecked(s->value("tooltip_show_skills", true).toBool());
     ui->sb_min_skill_level->setValue(s->value("min_tooltip_skill_level",1).toInt());
     ui->chk_show_social_skills->setChecked(s->value("tooltip_show_social_skills",true).toBool());
+    ui->chk_show_skills_level->setChecked(s->value("tooltip_show_skills_level",true).toBool());
+    ui->chk_show_skills_exp_summary->setChecked(s->value("tooltip_show_skills_exp_summary",true).toBool());
+    ui->chk_show_skills_use_color->setChecked(s->value("tooltip_show_skills_use_color",true).toBool());
     tooltip_skills_toggled(ui->chk_show_skills->isChecked());
 
     ui->dsb_attribute_weight->setValue(s->value("default_attributes_weight",0.25).toDouble());
@@ -527,6 +533,9 @@ void OptionsMenu::write_settings() {
         s->setValue("tooltip_show_roles", ui->chk_show_roles->isChecked());
         s->setValue("tooltip_show_skills", ui->chk_show_skills->isChecked());
         s->setValue("tooltip_show_social_skills", ui->chk_show_social_skills->isChecked());
+        s->setValue("tooltip_show_skills_level", ui->chk_show_skills_level->isChecked());
+        s->setValue("tooltip_show_skills_exp_summary", ui->chk_show_skills_exp_summary->isChecked());
+        s->setValue("tooltip_show_skills_use_color", ui->chk_show_skills_use_color->isChecked());
         s->setValue("tooltip_show_artifact", ui->chk_show_artifact->isChecked());
         s->setValue("tooltip_show_mood", ui->chk_show_highest_mood->isChecked());
         s->setValue("tooltip_show_thoughts", ui->chk_show_thoughts->isChecked());
@@ -665,6 +674,9 @@ void OptionsMenu::restore_defaults() {
     ui->chk_show_roles->setChecked(true);
     ui->chk_show_skills->setChecked(true);
     ui->chk_show_social_skills->setChecked(true);
+    ui->chk_show_skills_level->setChecked(true);
+    ui->chk_show_skills_exp_summary->setChecked(true);
+    ui->chk_show_skills_use_color->setChecked(true);
     ui->chk_show_health->setChecked(false);
     ui->chk_health_colors->setChecked(true);
     ui->chk_health_symbols->setChecked(false);

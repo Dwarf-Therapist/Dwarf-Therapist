@@ -1699,7 +1699,7 @@
                </item>
               </layout>
              </item>
-             <item row="7" column="0">
+             <item row="10" column="0">
               <layout class="QHBoxLayout" name="horizontalLayout_10">
                <item>
                 <spacer name="horizontalSpacer_7">
@@ -1781,7 +1781,7 @@
                </item>
               </layout>
              </item>
-             <item row="6" column="0">
+             <item row="9" column="0">
               <widget class="QCheckBox" name="chk_show_roles">
                <property name="statusTip">
                 <string extracomment="When checked shows a list of roles and their respective ratings.">When checked shows a list of roles and their respective ratings.</string>
@@ -1804,7 +1804,7 @@
                </property>
               </widget>
              </item>
-             <item row="8" column="0">
+             <item row="11" column="0">
               <widget class="QCheckBox" name="chk_show_buffs">
                <property name="toolTip">
                 <string>When checked, shows the names of beneficial and negative syndromes in the tooltip.</string>
@@ -1840,7 +1840,7 @@
                </property>
               </widget>
              </item>
-             <item row="9" column="0">
+             <item row="12" column="0">
               <layout class="QHBoxLayout" name="horizontalLayout_21">
                <item>
                 <spacer name="horizontalSpacer_8">
@@ -1941,6 +1941,105 @@
                  </property>
                  <property name="text">
                   <string> thoughts/emotions in the tooltip.</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="6" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout_13">
+               <item>
+                <spacer name="horizontalSpacer_17">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Fixed</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="chk_show_skills_level">
+                 <property name="statusTip">
+                  <string>When checked, shows skill level in the tooltip.</string>
+                 </property>
+                 <property name="whatsThis">
+                  <string>When checked, shows skill level in the tooltip.</string>
+                 </property>
+                 <property name="text">
+                  <string>Show skill level</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="7" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout_14">
+               <item>
+                <spacer name="horizontalSpacer_18">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Fixed</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="chk_show_skills_exp_summary">
+                 <property name="statusTip">
+                  <string>When checked, shows skill experience value in the tooltip.</string>
+                 </property>
+                 <property name="whatsThis">
+                  <string>When checked, shows skill experience value in the tooltip.</string>
+                 </property>
+                 <property name="text">
+                  <string>Show skill experience</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="8" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout_15">
+               <item>
+                <spacer name="horizontalSpacer_19">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Fixed</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="chk_show_skills_use_color">
+                 <property name="statusTip">
+                  <string>When checked, highlights rusted skills in the tooltip.</string>
+                 </property>
+                 <property name="whatsThis">
+                  <string>When checked, highlights rusted skills in the tooltip.</string>
+                 </property>
+                 <property name="text">
+                  <string>Use color highlighting for skills</string>
                  </property>
                 </widget>
                </item>
