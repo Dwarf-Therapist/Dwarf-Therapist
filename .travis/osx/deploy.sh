@@ -14,6 +14,11 @@ cp -R "share/memory_layouts" "/Volumes/Dwarf Therapist/DwarfTherapist.app/Conten
 
 "$QT_PREFIX/bin/macdeployqt" "/Volumes/Dwarf Therapist/DwarfTherapist.app"
 
-hdiutil eject "/Volumes/Dwarf Therapist/"
+# Sometimes the disk is not ready after macdeployqt, wait and retry if it fails
+retry=10
+while ! hdiutil eject "/Volumes/Dwarf Therapist/" && [ "$retry" -gt 0 ]; do
+    retry=$((retry-1))
+    sleep 1
+done
 hdiutil convert DwarfTherapist.sparseimage -format UDBZ -o "DwarfTherapist-${TRAVIS_TAG}-${TRAVIS_OS_NAME}64.dmg"
 
