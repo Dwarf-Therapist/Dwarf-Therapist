@@ -9,6 +9,7 @@ ItemSubtype::ItemSubtype(ITEM_TYPE itype, DFInstance *df, VIRTADDR address, QObj
     , m_mem(df->memory_layout())
     , m_iType(itype)
     , m_subType(-1)
+    , m_flags(df, m_mem->item_subtype_field(address, "base_flags"))
 {
     m_offset_adj = -1;
     m_offset_mat = -1;
