@@ -205,6 +205,8 @@ RolePreferenceModel::RolePreferenceModel(QObject *parent)
             DOMESTIC);
 
     add_top_category<GenericRolePreference>(LIKE_TREE, tr("Trees"));
+    add_top_category<GenericRolePreference>(LIKE_COLOR, tr("Colors"));
+    add_top_category<GenericRolePreference>(LIKE_SHAPE, tr("Shapes"));
     add_top_category<GenericRolePreference>(LIKE_OUTDOORS, tr("Outdoors"), 999);
 }
 
@@ -331,6 +333,24 @@ void RolePreferenceModel::load_pref_from_raws(QWidget *parent)
                                std::make_shared<ExactItemRolePreference>(Item::get_item_name_plural(itype), itype),
                                ItemPreference(itype));
             }
+        }
+
+        // Colors
+        auto color_vector = m_df->get_colors();
+        for (int i = 0; i < color_vector.size(); ++i) {
+            auto name = m_df->get_preference_other_name(i, LIKE_COLOR);
+            add_exact_pref(m_prefs,
+                           std::make_shared<ExactRolePreference>(LIKE_COLOR, name),
+                           Preference(LIKE_COLOR, name));
+        }
+
+        // Shapes
+        auto shape_vector = m_df->get_shapes();
+        for (int i = 0; i < shape_vector.size(); ++i) {
+            auto name = m_df->get_preference_other_name(i, LIKE_SHAPE);
+            add_exact_pref(m_prefs,
+                           std::make_shared<ExactRolePreference>(LIKE_SHAPE, name),
+                           Preference(LIKE_SHAPE, name));
         }
 
         m_loaded_raws = true;
