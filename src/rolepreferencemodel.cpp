@@ -319,7 +319,7 @@ void RolePreferenceModel::load_pref_from_raws(QWidget *parent)
             if (Item::has_subtypes(itype)) {
                 for(int sub_id = 0; sub_id < item_list.value(itype).count(); sub_id++){
                     ItemSubtype *subtype = m_df->get_item_subtype(itype, sub_id);
-                    if (subtype->flags().has_flag(ITEM_INCOMPLETE))
+                    if (subtype->flags().has_flag(ITEM_GENERATED))
                         continue;
                     add_exact_pref(m_prefs,
                                    std::make_shared<ExactItemRolePreference>(subtype),
