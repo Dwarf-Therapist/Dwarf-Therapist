@@ -32,6 +32,7 @@ THE SOFTWARE.
 
 enum ITEMDEF_FLAG
 {
+    ITEM_GENERATED = 0,
     // Flags added by DT
     ITEM_INCOMPLETE = 1000,
     ITEM_MELEE_WEAPON,
