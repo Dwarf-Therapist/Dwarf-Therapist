@@ -95,6 +95,7 @@ std::unique_ptr<RolePreference> RolePreference::parse(QSettings &s, bool &update
             flags.insert(TRAINABLE);
             flags.erase(hunting);
             flags.erase(war);
+            LOGD << "update role preference: add TRAINABLE flags";
             updated = true;
         }
     }
@@ -107,6 +108,7 @@ std::unique_ptr<RolePreference> RolePreference::parse(QSettings &s, bool &update
             QString new_name = Material::get_material_flag_desc(first_flag, mat_state);
             if (new_name != id){
                 id = new_name;
+                LOGD << "update role preference: change Horn name";
                 updated = true;
             }
         }
@@ -115,6 +117,7 @@ std::unique_ptr<RolePreference> RolePreference::parse(QSettings &s, bool &update
     //update old outdoor preference category (9) to new (99)
     if(pref_type == 9 && item_type == -1 && flags.find(999) != flags.end()){
         pref_type = LIKE_OUTDOORS;
+        LOGD << "update role preference: new outdoor flag";
         updated = true;
     }
 
@@ -124,6 +127,7 @@ std::unique_ptr<RolePreference> RolePreference::parse(QSettings &s, bool &update
             mat_state == PRESSED) {
         flags.clear();
         mat_reaction = "PAPER_SLURRY";
+        LOGD << "update role preference: use reaction class for paper";
         updated = true;
     }
 
@@ -135,11 +139,13 @@ std::unique_ptr<RolePreference> RolePreference::parse(QSettings &s, bool &update
         if ((it = flags.find(ITEMS_WEAPON)) != flags.end()) {
             flags.erase(it);
             flags.insert(ITEM_MELEE_WEAPON);
+            LOGD << "update role preference: new melee weapon flag";
             updated = true;
         }
         if ((it = flags.find(ITEMS_WEAPON_RANGED)) != flags.end()) {
             flags.erase(it);
             flags.insert(ITEM_RANGED_WEAPON);
+            LOGD << "update role preference: new ranged weapon flag";
             updated = true;
         }
     }
