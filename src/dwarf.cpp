@@ -844,6 +844,8 @@ void Dwarf::read_preferences(){
         return;
     QVector<VIRTADDR> preferences = m_df->enumerate_vector(m_mem->soul_field(m_first_soul, "preferences"));
 
+    auto shape_vector = m_df->get_shapes();
+
     foreach(VIRTADDR pref, preferences){
         auto pref_type = static_cast<PREF_TYPES>(m_df->read_short(pref));
         //0x2 unk
@@ -928,8 +930,16 @@ void Dwarf::read_preferences(){
                 LOGE << "Tree for preference not found" << pref_id;
             }
             break;
-        case LIKE_COLOR:
         case LIKE_SHAPE:
+            if (pref_id < 0 || pref_id >= shape_vector.size()) {
+                LOGE << "Invalid shape id" << pref_id;
+            }
+            else {
+                auto name = m_df->get_shape_name(shape_vector[pref_id]);
+                p = std::make_unique<Preference>(LIKE_SHAPE, name);
+            }
+            break;
+        case LIKE_COLOR:
         case LIKE_POETRY:
         case LIKE_MUSIC:
         case LIKE_DANCE:

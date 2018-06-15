@@ -346,8 +346,8 @@ void RolePreferenceModel::load_pref_from_raws(QWidget *parent)
 
         // Shapes
         auto shape_vector = m_df->get_shapes();
-        for (int i = 0; i < shape_vector.size(); ++i) {
-            auto name = m_df->get_preference_other_name(i, LIKE_SHAPE);
+        for (auto shape: shape_vector) {
+            auto name = m_df->get_shape_name(shape);
             add_exact_pref(m_prefs,
                            std::make_shared<ExactRolePreference>(LIKE_SHAPE, name),
                            Preference(LIKE_SHAPE, name));
