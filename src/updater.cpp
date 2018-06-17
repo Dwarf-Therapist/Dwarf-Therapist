@@ -7,6 +7,7 @@
 #include "mainwindow.h"
 #include "memorylayout.h"
 #include "dfinstance.h"
+#include "standardpaths.h"
 #include "version.h"
 
 #include <QSettings>
@@ -261,8 +262,8 @@ void Updater::layout_downloaded() {
         if(checksum == m_df->df_checksum()){
             //see if we have an existing layout to update
             MemoryLayout *m = m_df->get_memory_layout(checksum);
-            if(m){
-                //if we already have a layout with this checksum, update the layout
+            if(m && m->filepath().startsWith(StandardPaths::writable_data_location())){
+                //if we already have a writable layout with this checksum, update the layout
                 QFile file(m->filepath());
                 if(file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)){
                     QTextStream layout(&file);
