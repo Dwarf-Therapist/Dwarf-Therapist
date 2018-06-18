@@ -48,6 +48,7 @@ class Caste;
 class Uniform;
 class HistFigure;
 class UnitEmotion;
+class UnitNeed;
 
 class Dwarf : public QObject
 {
@@ -248,6 +249,30 @@ public:
 
     //! return the raw happiness score for this dwarf
     Q_INVOKABLE int get_raw_happiness() const {return m_stress_level;}
+
+    // focus and need values
+    enum FOCUS_DEGREE {
+        FOCUS_BADLY_DISTRACTED = 0,
+        FOCUS_DISTRACTED,
+        FOCUS_UNFOCUSED,
+        FOCUS_UNTROUBLED,
+        FOCUS_SOMEWHAT_FOCUSED,
+        FOCUS_QUITE_FOCUSED,
+        FOCUS_VERY_FOCUSED,
+        FOCUS_DEGREE_COUNT
+    };
+    Q_INVOKABLE int get_need_type_focus(int need_id) const;
+    //! return 0 if the dwarf does not have this need
+    Q_INVOKABLE int get_need_type_level(int need_id) const;
+    Q_INVOKABLE int get_need_focus(int need_id, int deity_id) const;
+    Q_INVOKABLE int get_need_level(int need_id, int deity_id) const;
+    Q_INVOKABLE int get_need_focus_degree(int need_id, int deity_id) const;
+    Q_INVOKABLE int get_current_focus() const { return m_current_focus; }
+    Q_INVOKABLE int get_undistracted_focus() const { return m_undistracted_focus; }
+    Q_INVOKABLE int get_focus_degree() const { return m_current_focus_degree; }
+    QString get_focus_adjective() const;
+    auto get_needs(int need_id) const { return m_needs.equal_range(need_id); }
+
     //! return specific attribute values
     Q_INVOKABLE int strength() {return attribute(AT_STRENGTH);}
     Q_INVOKABLE int agility() {return attribute(AT_AGILITY);}
@@ -706,6 +731,12 @@ private:
     unit_gender m_gender_info;
     bool m_is_citizen;
 
+    std::multimap<int, std::unique_ptr<UnitNeed>> m_needs;
+    int m_current_focus;
+    int m_undistracted_focus;
+    int m_current_focus_degree;
+    QString m_focus_desc;
+
     //! inventory grouped by body part /category
     QHash<QString,QList<Item*> > m_inventory_grouped;
     //! inventory coverage ratings
@@ -742,7 +773,6 @@ private:
     void read_states();
     void read_profession();
     void read_labors();
-    void read_happiness(VIRTADDR personality_base);
     void read_current_job();
     bool read_soul();
     void read_soul_aspects();

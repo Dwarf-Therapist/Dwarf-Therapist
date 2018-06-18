@@ -40,6 +40,7 @@ THE SOFTWARE.
 #include "plant.h"
 #include "bodypart.h"
 #include "unitemotion.h"
+#include "unitneed.h"
 
 #include "labor.h"
 #include "preference.h"
@@ -119,6 +120,9 @@ Dwarf::Dwarf(DFInstance *df, VIRTADDR addr, QObject *parent)
     , m_can_assign_military(true)
     , m_active_military(false)
     , m_is_citizen(true)
+    , m_current_focus(0)
+    , m_undistracted_focus(0)
+    , m_current_focus_degree(FOCUS_UNTROUBLED)
     , m_curse_type(eCurse::NONE)
 {
     read_settings();
@@ -1400,6 +1404,68 @@ QString Dwarf::happiness_name(DWARF_HAPPINESS happiness) {
     }
 }
 
+int Dwarf::get_need_type_focus(int need_id) const
+{
+    auto r = m_needs.equal_range(need_id);
+    auto it = std::min_element(r.first, r.second, [] (const auto &a, const auto &b) {
+        return a.second->focus_level() < b.second->focus_level();
+    });
+    return it == r.second ? 0 : it->second->focus_level();
+}
+
+int Dwarf::get_need_type_level(int need_id) const
+{
+    auto r = m_needs.equal_range(need_id);
+    int sum = 0;
+    for (auto it = r.first; it != r.second; ++it) {
+        sum += it->second->need_level();
+    }
+    return sum;
+}
+
+int Dwarf::get_need_focus(int need_id, int deity_id) const
+{
+    auto r = m_needs.equal_range(need_id);
+    for (auto it = r.first; it != r.second; ++it) {
+        if (it->second->deity_id() == deity_id)
+            return it->second->focus_level();
+    }
+    return 0;
+}
+
+int Dwarf::get_need_level(int need_id, int deity_id) const
+{
+    auto r = m_needs.equal_range(need_id);
+    for (auto it = r.first; it != r.second; ++it) {
+        if (it->second->deity_id() == deity_id)
+            return it->second->need_level();
+    }
+    return 0;
+}
+
+int Dwarf::get_need_focus_degree(int need_id, int deity_id) const
+{
+    auto r = m_needs.equal_range(need_id);
+    for (auto it = r.first; it != r.second; ++it) {
+        if (it->second->deity_id() == deity_id)
+            return it->second->focus_degree();
+    }
+    return UnitNeed::NOT_DISTRACTED;
+}
+
+QString Dwarf::get_focus_adjective() const {
+    static const char * const adjectives[FOCUS_DEGREE_COUNT] = {
+        QT_TR_NOOP("badly distracted"),
+        QT_TR_NOOP("distracted"),
+        QT_TR_NOOP("unfocused"),
+        QT_TR_NOOP("untroubled"),
+        QT_TR_NOOP("somewhat focused"),
+        QT_TR_NOOP("quite focused"),
+        QT_TR_NOOP("very focused"),
+    };
+    return tr(adjectives[m_current_focus_degree]);
+}
+
 bool Dwarf::get_flag_value(int bit_pos)
 {
     int idx = bit_pos / 32;
@@ -1972,6 +2038,42 @@ void Dwarf::read_personality() {
 
         //read after traits
         read_emotions(personality_addr);
+
+        // Needs and focus
+        QVector<VIRTADDR> m_need_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("needs"));
+        m_needs.clear();
+        for (VIRTADDR addr: m_need_addrs) {
+            auto need = std::make_unique<UnitNeed>(addr, m_df, this);
+            m_needs.emplace(need->id(), std::move(need));
+        }
+        m_current_focus = m_df->read_int(personality_addr + m_mem->soul_detail("current_focus"));
+        m_undistracted_focus = m_df->read_int(personality_addr + m_mem->soul_detail("undistracted_focus"));
+        int ratio = m_undistracted_focus != 0 ? (m_current_focus*100)/m_undistracted_focus : 100;
+        if (ratio <= 60)
+            m_current_focus_degree = FOCUS_BADLY_DISTRACTED;
+        else if (ratio <= 80)
+            m_current_focus_degree = FOCUS_DISTRACTED;
+        else if (ratio < 100)
+            m_current_focus_degree = FOCUS_UNFOCUSED;
+        else if (ratio == 100)
+            m_current_focus_degree = FOCUS_UNTROUBLED;
+        else if (ratio < 120)
+            m_current_focus_degree = FOCUS_SOMEWHAT_FOCUSED;
+        else if (ratio < 140)
+            m_current_focus_degree = FOCUS_QUITE_FOCUSED;
+        else
+            m_current_focus_degree = FOCUS_VERY_FOCUSED;
+        // TODO: add color
+        m_focus_desc = tr("Overall, %1 is %2 %3.")
+                .arg(m_first_name)
+                .arg(get_focus_adjective())
+                .arg(m_current_focus_degree < FOCUS_SOMEWHAT_FOCUSED
+                        ? tr("by unmet needs")
+                        : tr("with satisfied needs"));
+        for (const auto &p: m_needs) {
+            m_focus_desc.append(" ");
+            m_focus_desc.append(p.second->description());
+        }
     }
 }
 
@@ -2638,6 +2740,9 @@ QString Dwarf::tooltip_text() {
 
     if(!m_is_animal && !m_emotions_desc.isEmpty() && s->value("tooltip_show_thoughts",true).toBool())
         second_column.append(paragraph.arg(m_emotions_desc));
+
+    if(!m_is_animal && !m_focus_desc.isEmpty() /*TODO: add setting*/)
+        second_column.append(paragraph.arg(m_focus_desc));
 
     if(!skill_summary.isEmpty())
         first_column.append(list_with_header.arg(tr("Skills:")).arg(skill_summary));
