@@ -173,6 +173,7 @@ add_executable(${EXE_NAME} WIN32 MACOSX_BUNDLE
     src/unitemotion.cpp
     src/unithealth.cpp
     src/unitkillscolumn.cpp
+    src/unitneed.cpp
     src/unitwound.cpp
     src/updater.cpp
     src/viewcolumncolors.cpp

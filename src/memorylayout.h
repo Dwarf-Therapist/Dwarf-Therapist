@@ -43,6 +43,7 @@ public:
         MEM_JOB,
         MEM_SOUL,
         MEM_VIEWSCR,
+        MEM_NEED,
         MEM_COUNT
     } MEM_SECTION;
 
@@ -83,6 +84,7 @@ public:
         case MEM_JOB: return "job_details";
         case MEM_SOUL: return "soul_details";
         case MEM_VIEWSCR: return "viewscreen_offsets";
+        case MEM_NEED: return "need_offsets";
         case MEM_UNK:
         default:
                        return "UNK";
@@ -149,6 +151,7 @@ public:
     qint16 job_detail(const QString &key) const {return offset(MEM_JOB,key);}
     qint16 soul_detail(const QString &key) const {return offset(MEM_SOUL,key);}
     qint16 viewscreen_offset(const QString &key) const {return offset(MEM_VIEWSCR,key);}
+    qint16 need_offset(const QString &key) const {return offset(MEM_NEED,key);}
 
     VIRTADDR field_address(VIRTADDR object, MEM_SECTION section, const QString &key) const;
 
@@ -235,6 +238,9 @@ public:
     }
     VIRTADDR viewscreen_field(VIRTADDR object, const QString &key) const {
         return field_address(object, MEM_VIEWSCR, key);
+    }
+    VIRTADDR need_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_NEED, key);
     }
 
     QHash<uint, QString> invalid_flags_1() {return get_flags(INVALID_FLAGS_1) ;}

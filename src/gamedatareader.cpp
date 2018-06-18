@@ -394,6 +394,19 @@ GameDataReader::GameDataReader(QObject *parent)
         m_data_settings->endGroup();
     }
     m_data_settings->endGroup();
+
+    // Needs
+    auto need_count = m_data_settings->beginReadArray("needs");
+    m_needs.resize(need_count);
+    for (int i = 0; i < need_count; ++i) {
+        m_data_settings->setArrayIndex(i);
+        m_needs[i].name = m_data_settings->value("name").toString();
+        m_needs[i].positive = m_data_settings->value("positive").toString();
+        m_needs[i].negative = m_data_settings->value("negative").toString();
+        m_needs[i].positive_deity = m_data_settings->value("positive_deity").toString();
+        m_needs[i].negative_deity = m_data_settings->value("negative_deity").toString();
+    }
+    m_data_settings->endArray();
 }
 
 //value here is the base value of the item/building
@@ -743,6 +756,39 @@ QString GameDataReader::get_knowledge_desc(int field, int topic){
         return m_knowledge.value(field).value(topic,"Unknown");
     }
     return "Unknown";
+}
+
+const QString &GameDataReader::get_need_name(int need) const
+{
+    static const QString missing = tr("Missing need name");
+    if (need < 0 || need >= (int) m_needs.size()) {
+        LOGE << "Unknown need index:" << need;
+        return missing;
+    }
+    return m_needs[need].name;
+}
+
+QString GameDataReader::get_need_desc(int need, bool negative, const QString &deity_name) const
+{
+    if (need < 0 || need >= (int) m_needs.size()) {
+        LOGE << "Unknown need index:" << need;
+        return tr("Missing need desc");
+    }
+    else if (!deity_name.isEmpty()) {
+        const auto &desc = negative
+                ? m_needs[need].negative_deity
+                : m_needs[need].positive_deity;
+        if (desc.isEmpty()) {
+            LOGE << "Missing deity-specific description for need" << need;
+            return tr("Missing need desc");
+        }
+        return desc.arg(deity_name);
+    }
+    else {
+        return negative
+                ? m_needs[need].negative
+                : m_needs[need].positive;
+    }
 }
 
 GameDataReader *GameDataReader::m_instance = 0;
