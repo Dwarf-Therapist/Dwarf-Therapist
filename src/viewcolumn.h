@@ -55,7 +55,8 @@ public:
         CST_SKILL_RATE,
         CST_ROLE_RATING,
         CST_LEVEL,
-        CST_MAXIMUM_VALUE
+        CST_MAXIMUM_VALUE,
+        CST_FOCUS,
     } COLUMN_SORT_TYPE;
 
     typedef enum {
@@ -71,6 +72,7 @@ public:
         case CST_ROLE_RATING: return "ROLE_RATING";
         case CST_LEVEL: return "LEVEL";
         case CST_MAXIMUM_VALUE: return "MAXIMUM_VALUE";
+        case CST_FOCUS: return "FOCUS";
         default:
             return "DEFAULT";
         }
@@ -85,6 +87,8 @@ public:
             return CST_LEVEL;
         } else if (name.toUpper() == "MAXIMUM_VALUE") {
             return CST_MAXIMUM_VALUE;
+        } else if (name.toUpper() == "FOCUS") {
+            return CST_FOCUS;
         }
         return CST_DEFAULT;
     }
