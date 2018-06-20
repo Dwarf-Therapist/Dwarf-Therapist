@@ -47,6 +47,7 @@ THE SOFTWARE.
 #include "beliefcolumn.h"
 #include "unitkillscolumn.h"
 #include "preferencecolumn.h"
+#include "needcolumn.h"
 #include "viewcolumnsetcolors.h"
 
 ViewColumnSet::ViewColumnSet(QString name, QObject *parent)
@@ -150,6 +151,9 @@ ViewColumnSet::ViewColumnSet(QSettings &s, QObject *parent, int set_num)
             break;
         case CT_PREFERENCE:
             new PreferenceColumn(s, this, parent);
+            break;
+        case CT_NEED:
+            new NeedColumn(s, this, parent);
             break;
         case CT_DEFAULT:
         default:

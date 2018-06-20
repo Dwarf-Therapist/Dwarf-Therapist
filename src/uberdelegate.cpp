@@ -448,6 +448,15 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
         paint_grid(adjusted, false, p, opt, idx);
     }
         break;
+    case CT_NEED:
+    {
+        paint_bg(adjusted, p, opt, idx, false, state_color);
+        limit = 15.0f;
+        if (rating > 0)
+            paint_values(adjusted, rating, text_rating, state_color, p, opt, idx, 0, 0, limit, 0, 0);
+        paint_grid(adjusted, false, p, opt, idx);
+    }
+        break;
     case CT_SPACER:
     case CT_DEFAULT:
     default:

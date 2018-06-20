@@ -49,6 +49,7 @@ typedef enum {
     CT_BELIEF,
     CT_KILLS,
     CT_PREFERENCE,
+    CT_NEED,
     CT_TOTAL_TYPES
 } COLUMN_TYPE;
 
@@ -76,6 +77,7 @@ static inline void init_column_types() {
     column_types.insert("BELIEF",            CT_BELIEF);
     column_types.insert("KILLS",             CT_KILLS);
     column_types.insert("PREFERENCE",        CT_PREFERENCE);
+    column_types.insert("NEED",              CT_NEED);
 }
 
 static inline COLUMN_TYPE get_column_type(const QString &name) {
