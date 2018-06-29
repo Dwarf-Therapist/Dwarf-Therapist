@@ -1,3 +1,15 @@
+### Version 40.1.0 Patch Notes
+
+***
+ - added memory layouts for DF 0.44.11
+ - added messenger profession (no icon)
+ - split dwarf tool-tip in two columns
+ - added options for skills in dwarf tool-tip
+ - fixed typo in "very unhappy" description
+ - fixed updater updating files in read-only directories
+ - fixed default role preference warnings
+ - fixed writing string to DF memory on Linux (possible rare crashes)
+
 ### Version 40.0.1 Patch Notes
 
 ***
