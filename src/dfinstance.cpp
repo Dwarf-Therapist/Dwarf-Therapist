@@ -340,8 +340,8 @@ QString DFInstance::get_translated_word(VIRTADDR addr){
 }
 
 QString DFInstance::get_name(VIRTADDR addr, bool translate){
-    QString f_name = read_string(addr);
-    QString n_name = read_string(m_layout->dwarf_field(addr, "nick_name"));
+    QString f_name = read_string(m_layout->word_field(addr, "first_name"));
+    QString n_name = read_string(m_layout->word_field(addr, "nickname"));
     if(!n_name.isEmpty()){
         n_name = "'" + n_name + "'";
     }

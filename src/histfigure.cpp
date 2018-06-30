@@ -211,3 +211,11 @@ bool HistFigure::read_fake_identity(){
 bool HistFigure::has_fake_identity(){
     return m_has_fake_identity;
 }
+
+QString HistFigure::get_name(DFInstance *df, int id, bool translated)
+{
+    VIRTADDR addr = df->find_historical_figure(id);
+    if (!addr)
+        return QString();
+    return df->get_name(df->memory_layout()->hist_figure_field(addr, "hist_name"), translated);
+}

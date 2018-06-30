@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "memorylayout.h"
 #include "gamedatareader.h"
 #include "dwarfjob.h"
+#include "histfigure.h"
 
 ActivityEvent::ActivityEvent(DFInstance *df, VIRTADDR addr, QHash<int, QPair<int,QString> > *histfig_actions, QObject *parent)
     :QObject(parent)
@@ -97,10 +98,11 @@ void ActivityEvent::read_data(){
                 if(event_type == PRAY){
                     short sphere_id = m_df->read_short(mem->activity_field(m_address, "pray_sphere"));
                     if(sphere_id == -1){ //no sphere indicates prayer
-                        VIRTADDR histfig_addr = m_df->find_historical_figure(m_df->read_short(mem->activity_field(m_address, "pray_deity")));
-                        if(histfig_addr){
+                        int deity_id = m_df->read_short(mem->activity_field(m_address, "pray_deity"));
+                        QString deity_name = HistFigure::get_name(m_df, deity_id, true);
+                        if(!deity_name.isEmpty()){
                             add_action(histfig_id,event_type,
-                                       tr("Pray to %1").arg(m_df->get_name(m_df->memory_layout()->hist_figure_field(histfig_addr, "hist_name"),true)));
+                                       tr("Pray to %1").arg(deity_name));
                             continue;
                         }
                     }else{
