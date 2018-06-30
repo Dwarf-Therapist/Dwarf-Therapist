@@ -87,6 +87,7 @@ add_executable(${EXE_NAME} WIN32 MACOSX_BUNDLE
     src/eventfilterlineedit.cpp
     src/flagarray.cpp
     src/flagcolumn.cpp
+    src/focuscolumn.cpp
     src/fortressentity.cpp
     src/gamedatareader.cpp
     src/gridview.cpp
