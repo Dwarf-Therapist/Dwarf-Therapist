@@ -62,6 +62,8 @@ public:
     QStringList other_kills();
     QString formatted_summary(bool show_no_kills = false, bool space_notable = false);
 
+    static QString get_name(DFInstance *df, int id, bool translated = true);
+
 private:
     DFInstance *m_df;
     MemoryLayout *m_mem;
