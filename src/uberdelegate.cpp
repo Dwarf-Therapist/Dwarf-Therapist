@@ -192,6 +192,7 @@ void UberDelegate::paint_cell(QPainter *p, const QStyleOptionViewItem &opt, cons
     }
         break;
     case CT_HAPPINESS:
+    case CT_FOCUS:
     {
         paint_bg(adjusted, p, opt, idx, true, state_color);
         if(draw_happiness_icons || (d && d->in_stressed_mood())){
