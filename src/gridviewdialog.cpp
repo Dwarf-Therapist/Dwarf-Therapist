@@ -46,6 +46,8 @@ THE SOFTWARE.
 #include "beliefcolumn.h"
 #include "unitkillscolumn.h"
 #include "preferencecolumn.h"
+#include "focuscolumn.h"
+#include "needcolumn.h"
 
 #include "contextmenuhelper.h"
 #include "customprofession.h"
@@ -424,6 +426,11 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     a = m->addAction(tr("Equipment"), this, SLOT(add_equipment_column()));
     a->setToolTip(tr("Adds a color coded column that shows if a dwarf is fully clothed. Also shows all equipment in the tooltip grouped by body part."));
 
+    //FOCUS
+    a = m->addAction(tr("Focus"), this, SLOT(add_focus_column()));
+    a->setToolTip(tr("Adds a single column that shows a color-coded focus indicator for "
+                     "each dwarf. You can customize the colors used in the options menu."));
+
     //HAPPINESS
     a = m->addAction(tr("Happiness"), this, SLOT(add_happiness_column()));
     a->setToolTip(tr("Adds a single column that shows a color-coded happiness indicator for "
@@ -479,6 +486,17 @@ void GridViewDialog::draw_column_context_menu(const QPoint &p) {
     //MOODABLE SKILL
     a = m->addAction(tr("Moodable Skill"), this, SLOT(add_highest_moodable_column()));
     a->setToolTip(tr("Adds a single column that shows an icon representing a dwarf's highest moodable skill."));
+
+    //NEEDS
+    QMenu *needs = m_cmh->create_title_menu(m,tr("Needs"),tr("Show current need focus and level."));
+    m_cmh->add_sub_menus(needs, 3);
+    for (int i = 0; i < gdr->get_need_count(); ++i) {
+        QString name = gdr->get_need_name(i);
+        QMenu *menu_to_use = m_cmh->find_menu(needs, name);
+        QAction *a = menu_to_use->addAction(name, this, SLOT(add_need_column()));
+        a->setData(i);
+        a->setToolTip(tr("Add a column for need %1 (ID %2)").arg(name).arg(i));
+    }
 
     //PREFERENCES
     a = m->addAction(tr("Preferences..."), this, SLOT(add_preference_column()));
@@ -754,6 +772,23 @@ void GridViewDialog::add_preference_column() {
     if (!pref) // Selection is not valid
         return;
     new PreferenceColumn(pref->get_name(), pref->copy(), m_active_set, m_active_set);
+    draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_focus_column() {
+    if (!m_active_set)
+        return;
+    new FocusColumn(tr("Focus"), m_active_set, m_active_set);
+    draw_columns_for_set(m_active_set);
+}
+
+void GridViewDialog::add_need_column() {
+    if (!m_active_set)
+        return;
+    QAction *a = qobject_cast<QAction *>(QObject::sender());
+    if (!a)
+        return;
+    new NeedColumn(a->text(), a->data().toInt(), m_active_set, m_active_set);
     draw_columns_for_set(m_active_set);
 }
 
