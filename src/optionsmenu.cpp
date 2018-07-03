@@ -395,6 +395,7 @@ void OptionsMenu::read_settings() {
     ui->chk_show_age->setChecked(s->value("tooltip_show_age", true).toBool());
     ui->chk_show_unit_size->setChecked(s->value("tooltip_show_size",true).toBool());
     ui->chk_show_kills->setChecked(s->value("tooltip_show_kills",false).toBool());
+    ui->chk_show_needs->setChecked(s->value("tooltip_show_needs",false).toBool());
 
     idx = ui->cb_thought_time->findData(s->value("tooltip_thought_weeks",-1).toInt());
     if(idx != -1)
@@ -579,6 +580,7 @@ void OptionsMenu::write_settings() {
         s->setValue("tooltip_health_symbols", ui->chk_health_symbols->isChecked());
         s->setValue("tooltip_show_buffs", ui->chk_show_buffs->isChecked());
         s->setValue("tooltip_show_kills", ui->chk_show_kills->isChecked());
+        s->setValue("tooltip_show_needs", ui->chk_show_needs->isChecked());
         s->setValue("tooltip_thought_weeks", ui->cb_thought_time->itemData(ui->cb_thought_time->currentIndex()).toInt());
 
         s->setValue("update_repo_owner", ui->le_repo_owner->text());
@@ -691,6 +693,7 @@ void OptionsMenu::restore_defaults() {
     ui->chk_show_age->setChecked(true);
     ui->chk_show_buffs->setChecked(false);
     ui->chk_show_kills->setChecked(false);
+    ui->chk_show_needs->setChecked(false);
     ui->rad_syn_names->setChecked(true);
     int idx = ui->cb_thought_time->findData(-1);
     if(idx != -1)

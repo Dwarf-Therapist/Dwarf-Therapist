@@ -1534,6 +1534,19 @@
                </property>
               </widget>
              </item>
+             <item row="8" column="0">
+              <widget class="QCheckBox" name="chk_show_needs">
+               <property name="statusTip">
+                <string>When checked, shows current focus and needs in the tooltip.</string>
+               </property>
+               <property name="whatsThis">
+                <string>When checked, shows current focus and needs in the tooltip.</string>
+               </property>
+               <property name="text">
+                <string>Show needs and focus.</string>
+               </property>
+              </widget>
+             </item>
             </layout>
            </item>
            <item>
