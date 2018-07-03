@@ -237,6 +237,26 @@ static const char *skill_doc = R"***(
 <p class="method"><span class="type">int</span> <span class="identifier">total_skill_levels</span>()</p>
 )***";
 
+static const char *need_doc = R"***(
+<p class="method"><span class="type">int</span> <span class="identifier">get_need_type_focus</span>(<span class="type">int</span> <span class="arg">need_id</span>)
+    <span class="comment">**returns the current focus for the given need, or the lowest focus if they are multiple needs with the given id (e.g. prayer).</span></p>
+<p class="method"><span class="type">int</span> <span class="identifier">get_need_type_level</span>(<span class="type">int</span> <span class="arg">need_id</span>)
+    <span class="comment">**returns the need level for the given need, or the sum of all levels if they are multiple needs with the given id (e.g. prayer).</span></p>
+<p class="method"><span class="type">int</span> <span class="identifier">get_need_focus</span>(<span class="type">int</span> <span class="arg">need_id</span>, <span class="type">int</span> <span class="arg">deity_id</span>)
+    <span class="comment">**returns the current focus for the given need and deity (-1 for no deity).</span></p>
+<p class="method"><span class="type">int</span> <span class="identifier">get_need_level</span>(<span class="type">int</span> <span class="arg">need_id</span>, <span class="type">int</span> <span class="arg">deity_id</span>)
+    <span class="comment">**returns the need level for the given need and deity (-1 for no deity).</span></p>
+<p class="method"><span class="type">int</span> <span class="identifier">get_need_focus_degree</span>(<span class="type">int</span> <span class="arg">need_id</span>, <span class="type">int</span> <span class="arg">deity_id</span>)
+    <span class="comment">**returns the current focus degree for the given need and deity (-1 for no deity). 0 = badly distracted, 1 = distracted, 2 = unfocused, 3 = not distracted, 4 = untroubled, 5 = level-headed, 6 = unfettered</span></p>
+<p class="method"><span class="type">int</span> <span class="identifier">get_current_focus</span>()
+    <span class="comment">**returns the current "overall" focus</span></p>
+<p class="method"><span class="type">int</span> <span class="identifier">get_undistracted_focus</span>()
+    <span class="comment">**returns the undistracted (or "untroubled") focus</span></p>
+<p class="method"><span class="type">int</span> <span class="identifier">get_focus_degree</span>()
+    <span class="comment">**returns the current "overall" focus degree
+        (0 = badly distracted, 1 = distracted, 2 = unfocused, 3 = untroubled, 4 = somewhat focused, 5 = quite focused, 6 = very focused)</span></p>
+)***";
+
 ScriptDialog::ScriptDialog(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::ScriptDialog)
@@ -275,6 +295,9 @@ ScriptDialog::ScriptDialog(QWidget *parent)
 
     ui->txt_skill_info->document()->setDefaultStyleSheet(stylesheet);
     ui->txt_skill_info->document()->setHtml(skill_doc);
+
+    ui->txt_need_info->document()->setDefaultStyleSheet(stylesheet);
+    ui->txt_need_info->document()->setHtml(need_doc);
 
     //TODO: convert to tables/trees and add in a search (and sort?) function/options
 
@@ -381,6 +404,16 @@ ScriptDialog::ScriptDialog(QWidget *parent)
     }
     item_list.append("</table>");
     ui->text_items->append(item_list);
+
+    //NEEDS
+    QString need_list = "<b>Needs Reference</b><table border=1 cellpadding=3 cellspacing=0 width=100%>"
+        "<tr><th width=24%>Need ID</th><th>Need</th></tr>";
+    for (int i = 0; i < gdr->get_need_count(); ++i) {
+        need_list.append(row_html.arg(i).arg(gdr->get_need_name(i)));
+    }
+    need_list.append("</table>");
+    ui->text_needs->append(need_list);
+
 
     connect(ui->btn_apply, SIGNAL(clicked()), SLOT(apply_pressed()));
     connect(ui->btn_save, SIGNAL(clicked()), SLOT(save_pressed()));

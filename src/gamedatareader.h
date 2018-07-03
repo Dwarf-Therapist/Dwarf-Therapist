@@ -142,6 +142,7 @@ public:
     int get_happiness_threshold(DWARF_HAPPINESS h) const { return m_happiness_levels[h].threshold; }
     const QString &get_happiness_desc(DWARF_HAPPINESS h) const { return m_happiness_levels[h].desc; }
 
+    int get_need_count() const { return m_needs.size(); }
     const QString &get_need_name(int need) const;
     QString get_need_desc(int need, bool negative = true, const QString &deity_name = QString()) const;
 
