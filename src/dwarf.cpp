@@ -2741,7 +2741,7 @@ QString Dwarf::tooltip_text() {
     if(!m_is_animal && !m_emotions_desc.isEmpty() && s->value("tooltip_show_thoughts",true).toBool())
         second_column.append(paragraph.arg(m_emotions_desc));
 
-    if(!m_is_animal && !m_focus_desc.isEmpty() /*TODO: add setting*/)
+    if(!m_is_animal && !m_focus_desc.isEmpty() && s->value("tooltip_show_needs",false).toBool())
         second_column.append(paragraph.arg(m_focus_desc));
 
     if(!skill_summary.isEmpty())
