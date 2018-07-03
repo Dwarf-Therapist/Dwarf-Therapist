@@ -124,6 +124,8 @@ private slots:
     void add_belief_column();
     void add_kills_column();
     void add_preference_column();
+    void add_focus_column();
+    void add_need_column();
 };
 
 #endif
