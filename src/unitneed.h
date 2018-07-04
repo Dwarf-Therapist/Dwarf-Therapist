@@ -58,15 +58,16 @@ public:
     QString adjective() const;
     QString description() const;
 
+    static QColor degree_color(int degree, bool tooltip = false);
 
 private:
     Dwarf *m_dwarf;
     int m_id;
     int m_deity_id;
+    QString m_deity_name;
     int m_focus_level;
     int m_need_level;
     DEGREE m_focus_degree;
-    QString m_desc;
 };
 
 #endif

@@ -41,6 +41,7 @@ THE SOFTWARE.
 #include "bodypart.h"
 #include "unitemotion.h"
 #include "unitneed.h"
+#include "adaptivecolorfactory.h"
 
 #include "labor.h"
 #include "preference.h"
@@ -1466,6 +1467,59 @@ QString Dwarf::get_focus_adjective() const {
     return tr(adjectives[m_current_focus_degree]);
 }
 
+QColor Dwarf::get_focus_color(int degree, bool tooltip)
+{
+    AdaptiveColorFactory color(
+            tooltip ? QPalette::ToolTipText : QPalette::WindowText,
+            tooltip ? QPalette::ToolTipBase : QPalette::Window);
+    switch (degree) {
+    case FOCUS_BADLY_DISTRACTED:
+        return color.color(Qt::red);
+    case FOCUS_DISTRACTED:
+        return color.color(QColor::fromHsv(30, 255, 255)); // orange instead of yellow
+    case FOCUS_UNFOCUSED:
+        return color.color(QColor::fromHsv(60, 255, 160)); // instead of dark yellow (brown)
+    case FOCUS_UNTROUBLED:
+        return color.gray(0.75);
+    case FOCUS_SOMEWHAT_FOCUSED:
+        return color.gray(1.00);
+    case FOCUS_QUITE_FOCUSED:
+        return color.color(QColor::fromHsv(90, 255, 255)); // yellowish green instead of dark green
+    case FOCUS_VERY_FOCUSED:
+        return color.color(QColor::fromHsv(150, 255, 255)); // blueish green instead of green
+    default:
+        return QColor();
+    }
+}
+
+QString Dwarf::get_focus_desc(bool color) const
+{
+    if (m_is_animal)
+        return QString();
+
+    QString desc = tr("Overall, %1 is %2 %3.")
+        .arg(m_first_name)
+        .arg(get_focus_adjective())
+        .arg(m_current_focus_degree < FOCUS_SOMEWHAT_FOCUSED
+                ? tr("by unmet needs")
+                : tr("with satisfied needs"));
+    if (color) {
+        desc.prepend(QString("<span style=\"color: %1\">")
+                .arg(get_focus_color(m_current_focus_degree, true).name()));
+        desc.append("</span>");
+    }
+    for (const auto &p: m_needs) {
+        desc.append(" ");
+        if (color)
+            desc.append(QString("<span style=\"color: %1\">")
+                    .arg(UnitNeed::degree_color(p.second->focus_degree(), true).name()));
+        desc.append(p.second->description());
+        if (color)
+            desc.append("</span>");
+    }
+    return desc;
+}
+
 bool Dwarf::get_flag_value(int bit_pos)
 {
     int idx = bit_pos / 32;
@@ -2063,17 +2117,6 @@ void Dwarf::read_personality() {
             m_current_focus_degree = FOCUS_QUITE_FOCUSED;
         else
             m_current_focus_degree = FOCUS_VERY_FOCUSED;
-        // TODO: add color
-        m_focus_desc = tr("Overall, %1 is %2 %3.")
-                .arg(m_first_name)
-                .arg(get_focus_adjective())
-                .arg(m_current_focus_degree < FOCUS_SOMEWHAT_FOCUSED
-                        ? tr("by unmet needs")
-                        : tr("with satisfied needs"));
-        for (const auto &p: m_needs) {
-            m_focus_desc.append(" ");
-            m_focus_desc.append(p.second->description());
-        }
     }
 }
 
@@ -2741,8 +2784,9 @@ QString Dwarf::tooltip_text() {
     if(!m_is_animal && !m_emotions_desc.isEmpty() && s->value("tooltip_show_thoughts",true).toBool())
         second_column.append(paragraph.arg(m_emotions_desc));
 
-    if(!m_is_animal && !m_focus_desc.isEmpty() && s->value("tooltip_show_needs",false).toBool())
-        second_column.append(paragraph.arg(m_focus_desc));
+    QString focus_desc = get_focus_desc(true);
+    if(!m_is_animal && !focus_desc.isEmpty() && s->value("tooltip_show_needs",false).toBool())
+        second_column.append(paragraph.arg(focus_desc));
 
     if(!skill_summary.isEmpty())
         first_column.append(list_with_header.arg(tr("Skills:")).arg(skill_summary));
