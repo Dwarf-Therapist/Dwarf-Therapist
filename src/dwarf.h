@@ -271,7 +271,9 @@ public:
     Q_INVOKABLE int get_undistracted_focus() const { return m_undistracted_focus; }
     Q_INVOKABLE int get_focus_degree() const { return m_current_focus_degree; }
     QString get_focus_adjective() const;
-    const QString &get_focus_desc() const { return m_focus_desc; }
+    // set tooltip to true to use colors adapted to tooltip instead of window text.
+    static QColor get_focus_color(int degree, bool tooltip = false);
+    QString get_focus_desc(bool color = true) const;
     auto get_needs(int need_id) const { return m_needs.equal_range(need_id); }
 
     //! return specific attribute values
@@ -736,7 +738,6 @@ private:
     int m_current_focus;
     int m_undistracted_focus;
     int m_current_focus_degree;
-    QString m_focus_desc;
 
     //! inventory grouped by body part /category
     QHash<QString,QList<Item*> > m_inventory_grouped;

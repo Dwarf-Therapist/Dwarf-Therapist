@@ -71,7 +71,8 @@ QStandardItem *NeedColumn::build_cell(Dwarf *d) {
             min_focus_degree = it->second->focus_degree();
             min_adjective = it->second->adjective();
         }
-        need_desc.append(tr("%1 (Focus: %2, Level: %3)")
+        need_desc.append(tr("<span style=\"color: %1\">%2</span> (Focus: %3, Level: %4)")
+                .arg(UnitNeed::degree_color(it->second->focus_degree(), true).name())
                 .arg(it->second->description())
                 .arg(it->second->focus_level())
                 .arg(it->second->need_level()));

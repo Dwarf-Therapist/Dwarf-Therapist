@@ -22,6 +22,7 @@ THE SOFTWARE.
 */
 #include "unitneed.h"
 
+#include "adaptivecolorfactory.h"
 #include "dfinstance.h"
 #include "dwarf.h"
 #include "gamedatareader.h"
@@ -31,9 +32,7 @@ THE SOFTWARE.
 UnitNeed::UnitNeed(VIRTADDR address, DFInstance *df, Dwarf *d)
     : m_dwarf(d)
 {
-    auto gdr = GameDataReader::ptr();
     auto mem = df->memory_layout();
-    QString pronoun = (m_dwarf->get_gender() == Dwarf::SEX_M ? tr("He") : tr("She"));
 
     m_id = df->read_int(mem->need_field(address, "id"));
     m_deity_id = df->read_int(mem->need_field(address, "deity_id"));
@@ -53,13 +52,8 @@ UnitNeed::UnitNeed(VIRTADDR address, DFInstance *df, Dwarf *d)
         m_focus_degree = LEVEL_HEADED;
     else // if (m_focus_level < 400)
         m_focus_degree = UNFETTERED;
-    QString deity_name;
     if (m_deity_id != -1)
-        deity_name = HistFigure::get_name(df, m_deity_id, true);
-    m_desc = tr("%1 is %2 after %3.")
-            .arg(pronoun)
-            .arg(adjective())
-            .arg(gdr->get_need_desc(m_id, m_focus_degree <= NOT_DISTRACTED, deity_name));
+        m_deity_name = HistFigure::get_name(df, m_deity_id, true);
 }
 
 QString UnitNeed::adjective() const
@@ -78,6 +72,35 @@ QString UnitNeed::adjective() const
 
 QString UnitNeed::description() const
 {
-    return m_desc;
+    auto gdr = GameDataReader::ptr();
+    return tr("%1 is %2 after %3.")
+            .arg(m_dwarf->get_gender() == Dwarf::SEX_M ? tr("He") : tr("She"))
+            .arg(adjective())
+            .arg(gdr->get_need_desc(m_id, m_focus_degree <= NOT_DISTRACTED, m_deity_name));
+}
+
+QColor UnitNeed::degree_color(int degree, bool tooltip)
+{
+    AdaptiveColorFactory color(
+            tooltip ? QPalette::ToolTipText : QPalette::WindowText,
+            tooltip ? QPalette::ToolTipBase : QPalette::Window);
+    switch (degree) {
+    case BADLY_DISTRACTED:
+        return color.color(Qt::red);
+    case DISTRACTED:
+        return color.color(QColor::fromHsv(30, 255, 255)); // orange instead of yellow
+    case UNFOCUSED:
+        return color.color(QColor::fromHsv(60, 255, 160)); // instead of dark yellow (brown)
+    case NOT_DISTRACTED:
+        return color.gray(0.75);
+    case UNTROUBLED:
+        return color.gray(1.00);
+    case LEVEL_HEADED:
+        return color.color(QColor::fromHsv(90, 255, 255)); // yellowish green instead of dark green
+    case UNFETTERED:
+        return color.color(QColor::fromHsv(150, 255, 255)); // blueish green instead of green
+    default:
+        return QColor();
+    }
 }
 
