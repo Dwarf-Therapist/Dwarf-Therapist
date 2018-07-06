@@ -310,7 +310,7 @@ void DFInstance::load_game_data()
     load_main_vectors();
 
     //load the currently played race before races and castes so we can load additional information for the current race being played
-    VIRTADDR dwarf_race_index_addr = m_layout->address("dwarf_race_index");
+    VIRTADDR dwarf_race_index_addr = m_layout->global_address("dwarf_race_index");
     LOGD << "dwarf race index" << hexify(dwarf_race_index_addr);
     // which race id is dwarven?
     m_dwarf_race_id = read_short(dwarf_race_index_addr);
@@ -337,7 +337,7 @@ QString DFInstance::get_translated_word(VIRTADDR addr){
 
 QString DFInstance::get_name(VIRTADDR addr, bool translate){
     QString f_name = read_string(addr);
-    QString n_name = read_string(addr + m_layout->dwarf_offset("nick_name"));
+    QString n_name = read_string(m_layout->dwarf_field(addr, "nick_name"));
     if(!n_name.isEmpty()){
         n_name = "'" + n_name + "'";
     }
@@ -358,7 +358,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     }
 
     // we're connected, make sure we have good addresses
-    VIRTADDR creature_vector = m_layout->address("creature_vector");
+    VIRTADDR creature_vector = m_layout->global_address("creature_vector");
 
     //current race's offset was bad
     if (!DT->arena_mode() && m_dwarf_race_id < 0){
@@ -366,7 +366,7 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
     }
 
     // both necessary addresses are valid, so let's try to read the creatures
-    VIRTADDR dwarf_civ_idx_addr = m_layout->address("dwarf_civ_index");
+    VIRTADDR dwarf_civ_idx_addr = m_layout->global_address("dwarf_civ_index");
     LOGD << "loading creatures from " << hexify(creature_vector);
 
     emit progress_message(tr("Loading Units"));
@@ -618,7 +618,7 @@ void DFInstance::load_role_ratings(){
 void DFInstance::load_reactions(){
     attach();
     //LOGI << "Reading reactions names...";
-    VIRTADDR reactions_vector = m_layout->address("reactions_vector");
+    VIRTADDR reactions_vector = m_layout->global_address("reactions_vector");
     if(m_layout->is_valid_address(reactions_vector)){
         QVector<VIRTADDR> reactions = enumerate_vector(reactions_vector);
         //TRACE << "FOUND" << reactions.size() << "reactions";
@@ -637,41 +637,41 @@ void DFInstance::load_reactions(){
 void DFInstance::load_main_vectors(){
     //material templates
     LOGD << "reading material templates";
-    QVector<VIRTADDR> temps = enumerate_vector(m_layout->address("material_templates_vector"));
+    QVector<VIRTADDR> temps = enumerate_vector(m_layout->global_address("material_templates_vector"));
     foreach(VIRTADDR addr, temps){
         m_material_templates.insert(read_string(addr),addr);
     }
 
     //syndromes
     LOGD << "reading syndromes";
-    m_all_syndromes = enumerate_vector(m_layout->address("all_syndromes_vector"));
+    m_all_syndromes = enumerate_vector(m_layout->global_address("all_syndromes_vector"));
 
     //load item types/subtypes
     LOGD << "reading item and subitem types";
-    m_itemdef_vectors.insert(WEAPON,enumerate_vector(m_layout->address("itemdef_weapons_vector")));
-    m_itemdef_vectors.insert(TRAPCOMP,enumerate_vector(m_layout->address("itemdef_trap_vector")));
-    m_itemdef_vectors.insert(TOY,enumerate_vector(m_layout->address("itemdef_toy_vector")));
-    m_itemdef_vectors.insert(TOOL,enumerate_vector(m_layout->address("itemdef_tool_vector")));
-    m_itemdef_vectors.insert(INSTRUMENT,enumerate_vector(m_layout->address("itemdef_instrument_vector")));
-    m_itemdef_vectors.insert(ARMOR,enumerate_vector(m_layout->address("itemdef_armor_vector")));
-    m_itemdef_vectors.insert(AMMO,enumerate_vector(m_layout->address("itemdef_ammo_vector")));
-    m_itemdef_vectors.insert(SIEGEAMMO,enumerate_vector(m_layout->address("itemdef_siegeammo_vector")));
-    m_itemdef_vectors.insert(GLOVES,enumerate_vector(m_layout->address("itemdef_glove_vector")));
-    m_itemdef_vectors.insert(SHOES,enumerate_vector(m_layout->address("itemdef_shoe_vector")));
-    m_itemdef_vectors.insert(SHIELD,enumerate_vector(m_layout->address("itemdef_shield_vector")));
-    m_itemdef_vectors.insert(HELM,enumerate_vector(m_layout->address("itemdef_helm_vector")));
-    m_itemdef_vectors.insert(PANTS,enumerate_vector(m_layout->address("itemdef_pant_vector")));
-    m_itemdef_vectors.insert(FOOD,enumerate_vector(m_layout->address("itemdef_food_vector")));
+    m_itemdef_vectors.insert(WEAPON,enumerate_vector(m_layout->global_address("itemdef_weapons_vector")));
+    m_itemdef_vectors.insert(TRAPCOMP,enumerate_vector(m_layout->global_address("itemdef_trap_vector")));
+    m_itemdef_vectors.insert(TOY,enumerate_vector(m_layout->global_address("itemdef_toy_vector")));
+    m_itemdef_vectors.insert(TOOL,enumerate_vector(m_layout->global_address("itemdef_tool_vector")));
+    m_itemdef_vectors.insert(INSTRUMENT,enumerate_vector(m_layout->global_address("itemdef_instrument_vector")));
+    m_itemdef_vectors.insert(ARMOR,enumerate_vector(m_layout->global_address("itemdef_armor_vector")));
+    m_itemdef_vectors.insert(AMMO,enumerate_vector(m_layout->global_address("itemdef_ammo_vector")));
+    m_itemdef_vectors.insert(SIEGEAMMO,enumerate_vector(m_layout->global_address("itemdef_siegeammo_vector")));
+    m_itemdef_vectors.insert(GLOVES,enumerate_vector(m_layout->global_address("itemdef_glove_vector")));
+    m_itemdef_vectors.insert(SHOES,enumerate_vector(m_layout->global_address("itemdef_shoe_vector")));
+    m_itemdef_vectors.insert(SHIELD,enumerate_vector(m_layout->global_address("itemdef_shield_vector")));
+    m_itemdef_vectors.insert(HELM,enumerate_vector(m_layout->global_address("itemdef_helm_vector")));
+    m_itemdef_vectors.insert(PANTS,enumerate_vector(m_layout->global_address("itemdef_pant_vector")));
+    m_itemdef_vectors.insert(FOOD,enumerate_vector(m_layout->global_address("itemdef_food_vector")));
 
     LOGD << "reading colors, shapes, poems, music and dances";
-    m_color_vector = enumerate_vector(m_layout->address("colors_vector"));
-    m_shape_vector = enumerate_vector(m_layout->address("shapes_vector"));
-    m_poetic_vector = enumerate_vector(m_layout->address("poetic_forms_vector"));
-    m_music_vector = enumerate_vector(m_layout->address("musical_forms_vector"));
-    m_dance_vector = enumerate_vector(m_layout->address("dance_forms_vector"));
+    m_color_vector = enumerate_vector(m_layout->global_address("colors_vector"));
+    m_shape_vector = enumerate_vector(m_layout->global_address("shapes_vector"));
+    m_poetic_vector = enumerate_vector(m_layout->global_address("poetic_forms_vector"));
+    m_music_vector = enumerate_vector(m_layout->global_address("musical_forms_vector"));
+    m_dance_vector = enumerate_vector(m_layout->global_address("dance_forms_vector"));
 
     LOGD << "reading base materials";
-    VIRTADDR addr = m_layout->address("base_materials");
+    VIRTADDR addr = m_layout->global_address("base_materials");
     int i = 0;
     for(i = 0; i < 256; i++){
         VIRTADDR mat_addr = read_addr(addr);
@@ -684,7 +684,7 @@ void DFInstance::load_main_vectors(){
 
     //inorganics
     LOGD << "reading inorganics";
-    addr = m_layout->address("inorganics_vector");
+    addr = m_layout->global_address("inorganics_vector");
     i = 0;
     foreach(VIRTADDR mat, enumerate_vector(addr)){
         //inorganic_raw.material
@@ -695,7 +695,7 @@ void DFInstance::load_main_vectors(){
 
     //plants
     LOGD << "reading plants";
-    addr = m_layout->address("plants_vector");
+    addr = m_layout->global_address("plants_vector");
     i = 0;
     QVector<VIRTADDR> vec = enumerate_vector(addr);
     foreach(VIRTADDR plant, vec){
@@ -761,7 +761,7 @@ ItemSubtype *DFInstance::get_item_subtype(ITEM_TYPE itype, int sub_type){
 
 void DFInstance::load_races_castes(){
     LOGD << "reading races and castes";
-    VIRTADDR races_vector_addr = m_layout->address("races_vector");
+    VIRTADDR races_vector_addr = m_layout->global_address("races_vector");
     QVector<VIRTADDR> races = enumerate_vector(races_vector_addr);
     int idx = 0;
     if (!races.empty()) {
@@ -780,10 +780,10 @@ const QString DFInstance::fortress_name(){
 }
 
 void DFInstance::refresh_data(){
-    VIRTADDR current_year = m_layout->address("current_year");
+    VIRTADDR current_year = m_layout->global_address("current_year");
     LOGD << "loading current year from" << hexify(current_year);
 
-    VIRTADDR current_year_tick = m_layout->address("cur_year_tick");
+    VIRTADDR current_year_tick = m_layout->global_address("cur_year_tick");
     m_cur_year_tick = read_int(current_year_tick);
     m_current_year = read_word(current_year);
     LOGI << "current year:" << m_current_year;
@@ -803,23 +803,23 @@ void DFInstance::load_items(){
 
     //these item vectors appear to contain unclaimed items!
     //load actual weapons and armor
-    m_items_vectors.insert(WEAPON,enumerate_vector(m_layout->address("weapons_vector")));
-    m_items_vectors.insert(SHIELD,enumerate_vector(m_layout->address("shields_vector")));
-    m_items_vectors.insert(PANTS,enumerate_vector(m_layout->address("pants_vector")));
-    m_items_vectors.insert(ARMOR,enumerate_vector(m_layout->address("armor_vector")));
-    m_items_vectors.insert(SHOES,enumerate_vector(m_layout->address("shoes_vector")));
-    m_items_vectors.insert(HELM,enumerate_vector(m_layout->address("helms_vector")));
-    m_items_vectors.insert(GLOVES,enumerate_vector(m_layout->address("gloves_vector")));
+    m_items_vectors.insert(WEAPON,enumerate_vector(m_layout->global_address("weapons_vector")));
+    m_items_vectors.insert(SHIELD,enumerate_vector(m_layout->global_address("shields_vector")));
+    m_items_vectors.insert(PANTS,enumerate_vector(m_layout->global_address("pants_vector")));
+    m_items_vectors.insert(ARMOR,enumerate_vector(m_layout->global_address("armor_vector")));
+    m_items_vectors.insert(SHOES,enumerate_vector(m_layout->global_address("shoes_vector")));
+    m_items_vectors.insert(HELM,enumerate_vector(m_layout->global_address("helms_vector")));
+    m_items_vectors.insert(GLOVES,enumerate_vector(m_layout->global_address("gloves_vector")));
 
     //load other equipment
-    m_items_vectors.insert(QUIVER,enumerate_vector(m_layout->address("quivers_vector")));
-    m_items_vectors.insert(BACKPACK,enumerate_vector(m_layout->address("backpacks_vector")));
-    m_items_vectors.insert(CRUTCH,enumerate_vector(m_layout->address("crutches_vector")));
-    m_items_vectors.insert(FLASK,enumerate_vector(m_layout->address("flasks_vector")));
-    m_items_vectors.insert(AMMO,enumerate_vector(m_layout->address("ammo_vector")));
+    m_items_vectors.insert(QUIVER,enumerate_vector(m_layout->global_address("quivers_vector")));
+    m_items_vectors.insert(BACKPACK,enumerate_vector(m_layout->global_address("backpacks_vector")));
+    m_items_vectors.insert(CRUTCH,enumerate_vector(m_layout->global_address("crutches_vector")));
+    m_items_vectors.insert(FLASK,enumerate_vector(m_layout->global_address("flasks_vector")));
+    m_items_vectors.insert(AMMO,enumerate_vector(m_layout->global_address("ammo_vector")));
 
     //load artifacts
-    m_items_vectors.insert(ARTIFACTS,enumerate_vector(m_layout->address("artifacts_vector")));
+    m_items_vectors.insert(ARTIFACTS,enumerate_vector(m_layout->global_address("artifacts_vector")));
 }
 
 void DFInstance::load_fortress(){
@@ -829,7 +829,7 @@ void DFInstance::load_fortress(){
         delete(m_fortress);
         m_fortress = 0;
     }
-    VIRTADDR addr_fortress = m_layout->address("fortress_entity");
+    VIRTADDR addr_fortress = m_layout->global_address("fortress_entity");
     m_fortress = FortressEntity::get_entity(this,read_addr(addr_fortress));
     if(m_fortress_name_translated.isEmpty())
         load_fortress_name();
@@ -840,11 +840,11 @@ void DFInstance::load_fortress_name(){
     //load the fortress name
     //fortress name is actually in the world data's site list
     //we can access a list of the currently active sites and read the name from there
-    VIRTADDR world_data_addr = read_addr(m_layout->address("world_data"));
+    VIRTADDR world_data_addr = read_addr(m_layout->global_address("world_data"));
     LOGD << "   reading sites...";
-    QVector<VIRTADDR> sites = enumerate_vector(world_data_addr + m_layout->address("active_sites_vector",false));
+    QVector<VIRTADDR> sites = enumerate_vector(m_layout->global_field(world_data_addr, "active_sites_vector"));
     foreach(VIRTADDR site, sites){
-        short t = read_short(site + m_layout->address("world_site_type",false));
+        short t = read_short(m_layout->global_field(site, "world_site_type"));
         if(t==0){ //player fortress type
             m_fortress_name = get_language_word(site);
             m_fortress_name_translated = get_translated_word(site);
@@ -865,7 +865,7 @@ QList<Squad *> DFInstance::load_squads(bool show_progress) {
 
     if(show_progress){
         // we're connected, make sure we have good addresses
-        m_squad_vector = m_layout->address("squad_vector");
+        m_squad_vector = m_layout->global_address("squad_vector");
         if(m_squad_vector == 0xFFFFFFFF) {
             LOGI << "Squads not supported for this version of Dwarf Fortress";
             return squads;
@@ -888,7 +888,7 @@ QList<Squad *> DFInstance::load_squads(bool show_progress) {
 
         int squad_count = 0;
         foreach(VIRTADDR squad_addr, squads_addr) {
-            int id = read_int(squad_addr + m_layout->squad_offset("id")); //check the id before loading the squad
+            int id = read_int(m_layout->squad_field(squad_addr, "id")); //check the id before loading the squad
             if(m_fortress->squad_is_active(id)){
                 Squad *s = new Squad(id, this, squad_addr);
                 LOGI << "FOUND ACTIVE SQUAD" << hexify(squad_addr) << s->name() << " member count: " << s->assigned_count() << " id: " << s->id();
@@ -939,8 +939,8 @@ void DFInstance::send_connection_interrupted(){
 QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
     QVector<VIRTADDR> entries;
     // Check if a viewscreen is the embark screen
-    auto gview = m_layout->address("gview");
-    auto viewscreen_setupdwarfgame_vtable = m_layout->address("viewscreen_setupdwarfgame_vtable");
+    auto gview = m_layout->global_address("gview");
+    auto viewscreen_setupdwarfgame_vtable = m_layout->global_address("viewscreen_setupdwarfgame_vtable");
     auto view_offset = m_layout->viewscreen_offset("view");
     auto child_view_offset = m_layout->viewscreen_offset("child");
     if (gview != static_cast<VIRTADDR>(-1) && view_offset != -1 && child_view_offset != -1) {
@@ -954,7 +954,7 @@ QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
             }
             if (vtable == viewscreen_setupdwarfgame_vtable) {
                 // use embark screen unit list
-                entries = enumerate_vector(current_viewscreen + m_layout->viewscreen_offset("setupdwarfgame_units"));
+                entries = enumerate_vector(m_layout->viewscreen_field(current_viewscreen, "setupdwarfgame_units"));
                 if (report_progress) {
                     LOGI << "using embark viewscreen unit list";
                 }
@@ -966,7 +966,7 @@ QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
     }
     // Use the active unit list, if the embark viewscreen was not found
     if (entries.isEmpty()) {
-        entries = enumerate_vector(m_layout->address("active_creature_vector"));
+        entries = enumerate_vector(m_layout->global_address("active_creature_vector"));
         if (report_progress) {
             LOGI << "using active unit list";
         }
@@ -1242,9 +1242,9 @@ VIRTADDR DFInstance::find_historical_figure(int hist_id){
 }
 
 void DFInstance::load_hist_figures(){
-    QVector<VIRTADDR> hist_figs = enumerate_vector(m_layout->address("historical_figures_vector"));
+    QVector<VIRTADDR> hist_figs = enumerate_vector(m_layout->global_address("historical_figures_vector"));
     foreach(VIRTADDR fig, hist_figs){
-        m_hist_figures.insert(read_int(fig + m_layout->hist_figure_offset("id")),fig);
+        m_hist_figures.insert(read_int(m_layout->hist_figure_field(fig, "id")),fig);
     }
 }
 
@@ -1265,7 +1265,7 @@ void DFInstance::load_activities(){
     qDeleteAll(m_activities);
     m_activities.clear();
     LOGD << "loading activities";
-    QVector<VIRTADDR> activity_addrs = enumerate_vector(m_layout->address("activities_vector"));
+    QVector<VIRTADDR> activity_addrs = enumerate_vector(m_layout->global_address("activities_vector"));
     QMap<int,VIRTADDR> sorted_activities;
     foreach(VIRTADDR addr, activity_addrs){
         sorted_activities.insert(read_int(addr),addr);
@@ -1287,7 +1287,7 @@ VIRTADDR DFInstance::find_occupation(int hist_id){
 }
 
 void DFInstance::load_occupations(){
-    QVector<VIRTADDR> oc_addrs = enumerate_vector(m_layout->address("occupations_vector"));
+    QVector<VIRTADDR> oc_addrs = enumerate_vector(m_layout->global_address("occupations_vector"));
     foreach(VIRTADDR addr, oc_addrs){
         m_occupations.insert(read_int(addr + 0x8),addr);
     }
@@ -1295,7 +1295,7 @@ void DFInstance::load_occupations(){
 
 VIRTADDR DFInstance::find_identity(int id){
     if(m_fake_identities.count() == 0) //lazy load fake identities
-        m_fake_identities = enumerate_vector(m_layout->address("fake_identities_vector"));
+        m_fake_identities = enumerate_vector(m_layout->global_address("fake_identities_vector"));
     foreach(VIRTADDR ident, m_fake_identities){
         int fake_id = read_int(ident);
         if(fake_id==id){
@@ -1307,9 +1307,9 @@ VIRTADDR DFInstance::find_identity(int id){
 
 VIRTADDR DFInstance::find_event(int id){
     if(m_events.count() == 0){
-        QVector<VIRTADDR> all_events_addrs = enumerate_vector(m_layout->address("events_vector"));
+        QVector<VIRTADDR> all_events_addrs = enumerate_vector(m_layout->global_address("events_vector"));
         foreach(VIRTADDR evt_addr, all_events_addrs){
-            m_events.insert(read_int(evt_addr+m_layout->hist_event_offset("id")),evt_addr);
+            m_events.insert(read_int(m_layout->hist_event_field(evt_addr, "id")),evt_addr);
         }
     }
     return m_events.value(id,0);
@@ -1332,7 +1332,7 @@ QString DFInstance::get_preference_item_name(int index, int subtype){
     }else{
         QVector<VIRTADDR> addrs = get_itemdef_vector(itype);
         if(!addrs.empty() && (subtype >=0 && subtype < addrs.count()))
-            return read_string(addrs.at(subtype) + m_layout->item_subtype_offset("name_plural"));
+            return read_string(m_layout->item_subtype_field(addrs.at(subtype), "name_plural"));
     }
 
     return Item::get_item_name_plural(itype);
@@ -1431,10 +1431,10 @@ QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE 
     {
         VIRTADDR hist_figure = find_historical_figure(mat_index);
         if(hist_figure){
-            Race *r = get_race(read_short(hist_figure + m_layout->hist_figure_offset("hist_race")));
+            Race *r = get_race(read_short(m_layout->hist_figure_field(hist_figure, "hist_race")));
             if(r){
                 name = QString(tr("%1's %2"))
-                        .arg(read_string(hist_figure + m_layout->hist_figure_offset("hist_name")))
+                        .arg(read_string(m_layout->hist_figure_field(hist_figure, "hist_name")))
                         .arg(m->get_material_name(mat_state));
             }
         }
@@ -1487,7 +1487,7 @@ Material *DFInstance::find_material(int mat_index, short mat_type){
     } else if (mat_type < 419) {
         VIRTADDR hist_figure = find_historical_figure(mat_index);
         if (hist_figure) {
-            Race *r = get_race(read_short(hist_figure + m_layout->hist_figure_offset("hist_race")));
+            Race *r = get_race(read_short(m_layout->hist_figure_field(hist_figure, "hist_race")));
             if (r)
                 return r->get_creature_material(mat_type-219);
         }

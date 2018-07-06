@@ -219,7 +219,7 @@ void Dwarf::read_data() {
     m_mem = m_df->memory_layout();
     TRACE << "Starting refresh of unit data at" << hexify(m_address);
 
-    int civ_id = m_df->read_int(m_address +m_mem->dwarf_offset("civ"));
+    int civ_id = m_df->read_int(m_mem->dwarf_field(m_address, "civ"));
     TRACE << "  CIV:" << civ_id;
 
     //read the core information we need to validate if we should continue loading this unit
@@ -227,17 +227,17 @@ void Dwarf::read_data() {
     read_flags();
     read_race(); //also sets m_is_animal
     read_first_name();
-    read_last_name(m_address + m_mem->dwarf_offset("name"));
+    read_last_name(m_mem->dwarf_field(m_address, "name"));
     read_nick_name();
     build_names(); //build names now for logging
     read_states();  //read states before job and validation
     read_caste(); //read before age
     read_turn_count(); //load time/date stuff for births/migrations - read before age
-    set_age_and_migration(m_address + m_mem->dwarf_offset("birth_year"), m_address + m_mem->dwarf_offset("birth_time")); //set age before profession, after caste
+    set_age_and_migration(m_mem->dwarf_field(m_address, "birth_year"), m_mem->dwarf_field(m_address, "birth_time")); //set age before profession, after caste
 
-    m_raw_prof_id = m_df->read_byte(m_address + m_mem->dwarf_offset("profession"));
+    m_raw_prof_id = m_df->read_byte(m_mem->dwarf_field(m_address, "profession"));
     m_raw_profession = GameDataReader::ptr()->get_profession(m_raw_prof_id);
-    m_histfig_id = m_df->read_int(m_address + m_mem->dwarf_offset("hist_id"));
+    m_histfig_id = m_df->read_int(m_mem->dwarf_field(m_address, "hist_id"));
 
     bool validated = true;
     //attempt to do some initial filtering on the civilization
@@ -346,7 +346,7 @@ bool Dwarf::validate(){
         if(m_is_animal && (get_flag_value(FLAG_TAME) || get_flag_value(FLAG_CAGED))){ //tame or caged animals
             //exclude cursed animals, this may be unnecessary with the civ check
             //the full curse information hasn't been loaded yet, so just read the curse name
-            QString curse_name = m_df->read_string(m_address + m_mem->dwarf_offset("curse"));
+            QString curse_name = m_df->read_string(m_mem->dwarf_field(m_address, "curse"));
             if(!curse_name.isEmpty()){
                 set_validation("appears to be cursed or undead",&m_is_valid);
                 return false;
@@ -443,7 +443,7 @@ QString Dwarf::get_migration_desc(){
 *******************************************************************************/
 
 void Dwarf::read_id() {
-    m_id = m_df->read_int(m_address + m_mem->dwarf_offset("id"));
+    m_id = m_df->read_int(m_mem->dwarf_field(m_address, "id"));
     TRACE << "UNIT ID:" << m_id;
 }
 
@@ -466,7 +466,7 @@ void Dwarf::read_gender_orientation() {
     bool show_orientation = gender_info_option >= Option_ShowOrientation;
     bool show_commitment = !m_is_animal && gender_info_option >= Option_ShowCommitment;
 
-    BYTE sex = m_df->read_byte(m_address + m_mem->dwarf_offset("sex"));
+    BYTE sex = m_df->read_byte(m_mem->dwarf_field(m_address, "sex"));
     TRACE << "GENDER:" << sex;
     m_gender_info.gender = static_cast<GENDER_TYPE>(sex);
     m_gender_info.orientation = ORIENT_HETERO; //default
@@ -555,7 +555,7 @@ void Dwarf::read_gender_orientation() {
 }
 
 void Dwarf::read_mood(){
-    m_mood_id = static_cast<MOOD_TYPE>(m_df->read_short(m_address + m_mem->dwarf_offset("mood")));
+    m_mood_id = static_cast<MOOD_TYPE>(m_df->read_short(m_mem->dwarf_field(m_address, "mood")));
     int temp_offset = m_mem->dwarf_offset("temp_mood");
     if(m_mood_id == MT_NONE && temp_offset != -1){
         short temp_mood = m_df->read_short(m_address + temp_offset); //check temporary moods
@@ -572,7 +572,7 @@ void Dwarf::read_mood(){
     if(m_mood_id == MT_NONE || (int)m_mood_id > 4){
         if(get_flag_value(FLAG_HAD_MOOD)){
             m_had_mood = true;
-            m_artifact_name = m_df->get_translated_word(m_address + m_mem->dwarf_offset("artifact_name"));
+            m_artifact_name = m_df->get_translated_word(m_mem->dwarf_field(m_address, "artifact_name"));
         }
         //filter out any other temporary combat moods, and set stressed mood flag
         if(m_mood_id != MT_NONE && m_mood_id != MT_MARTIAL && m_mood_id != MT_ENRAGED){
@@ -646,7 +646,7 @@ void Dwarf::read_states(){
 }
 
 void Dwarf::read_curse(){
-    QString curse_name = capitalizeEach(m_df->read_string(m_address + m_mem->dwarf_offset("curse")));
+    QString curse_name = capitalizeEach(m_df->read_string(m_mem->dwarf_field(m_address, "curse")));
 
     if(!curse_name.isEmpty()){
         m_curse_type = eCurse::OTHER;
@@ -687,28 +687,28 @@ HistFigure* Dwarf::hist_figure(){
 }
 
 void Dwarf::read_caste() {
-    m_caste_id = m_df->read_short(m_address + m_mem->dwarf_offset("caste"));
+    m_caste_id = m_df->read_short(m_mem->dwarf_field(m_address, "caste"));
     m_caste = m_race->get_caste_by_id(m_caste_id);
     TRACE << "CASTE:" << m_caste_id;
 }
 
 void Dwarf::read_flags(){
     m_unit_flags.clear();
-    quint32 flags1 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags1"));
+    quint32 flags1 = m_df->read_addr(m_mem->dwarf_field(m_address, "flags1"));
     TRACE << "  FLAGS1:" << hexify(flags1);
-    quint32 flags2 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags2"));
+    quint32 flags2 = m_df->read_addr(m_mem->dwarf_field(m_address, "flags2"));
     TRACE << "  FLAGS2:" << hexify(flags2);
-    quint32 flags3 = m_df->read_addr(m_address + m_mem->dwarf_offset("flags3"));
+    quint32 flags3 = m_df->read_addr(m_mem->dwarf_field(m_address, "flags3"));
     TRACE << "  FLAGS3:" << hexify(flags3);
     m_unit_flags << flags1 << flags2 << flags3;
     m_pending_flags = m_unit_flags;
 
-    m_curse_flags = m_df->read_addr(m_address + m_mem->dwarf_offset("curse_add_flags1"));
-    //    m_curse_flags2 = m_df->read_addr(m_address + m_mem->dwarf_offset("curse_add_flags2"));
+    m_curse_flags = m_df->read_addr(m_mem->dwarf_field(m_address, "curse_add_flags1"));
+    //    m_curse_flags2 = m_df->read_addr(m_mem->dwarf_field(m_address, "curse_add_flags2"));
 }
 
 void Dwarf::read_race() {
-    m_race_id = m_df->read_int(m_address + m_mem->dwarf_offset("race"));
+    m_race_id = m_df->read_int(m_mem->dwarf_field(m_address, "race"));
     m_race = m_df->get_race(m_race_id);
     TRACE << "RACE ID:" << m_race_id;
     if(m_race){
@@ -717,7 +717,7 @@ void Dwarf::read_race() {
 }
 
 void Dwarf::read_first_name() {
-    m_first_name = m_df->read_string(m_address + m_mem->dwarf_offset("name") + m_mem->word_offset("first_name"));
+    m_first_name = m_df->read_string(m_mem->word_field(m_mem->dwarf_field(m_address, "name"), "first_name"));
     if (m_first_name.size() > 1)
         m_first_name[0] = m_first_name[0].toUpper();
     TRACE << "FIRSTNAME:" << m_first_name;
@@ -736,7 +736,7 @@ void Dwarf::read_last_name(VIRTADDR name_offset) {
 
 
 void Dwarf::read_nick_name() {
-    m_nick_name = m_df->read_string(m_address + m_mem->dwarf_offset("name") + m_mem->word_offset("nickname"));
+    m_nick_name = m_df->read_string(m_mem->word_field(m_mem->dwarf_field(m_address, "name"), "nickname"));
     TRACE << "\tNICKNAME:" << m_nick_name;
     m_pending_nick_name = m_nick_name;
 }
@@ -786,7 +786,7 @@ void Dwarf::build_names() {
 
 void Dwarf::read_profession() {
     // first see if there is a custom prof set...
-    VIRTADDR custom_addr = m_address + m_mem->dwarf_offset("custom_profession");
+    VIRTADDR custom_addr = m_mem->dwarf_field(m_address, "custom_profession");
     m_custom_prof_name = m_df->read_string(custom_addr);
     TRACE << "\tCUSTOM PROF:" << m_custom_prof_name;
 
@@ -842,7 +842,7 @@ void Dwarf::read_noble_position(){
 void Dwarf::read_preferences(){
     if(m_is_animal)
         return;
-    QVector<VIRTADDR> preferences = m_df->enumerate_vector(m_first_soul + m_mem->soul_detail("preferences"));
+    QVector<VIRTADDR> preferences = m_df->enumerate_vector(m_mem->soul_field(m_first_soul, "preferences"));
 
     foreach(VIRTADDR pref, preferences){
         auto pref_type = static_cast<PREF_TYPES>(m_df->read_short(pref));
@@ -1012,7 +1012,7 @@ void Dwarf::read_preferences(){
 
 void Dwarf::read_syndromes(){
     m_syndromes.clear();
-    QVector<VIRTADDR> active_unit_syns = m_df->enumerate_vector(m_address + m_mem->dwarf_offset("active_syndrome_vector"));
+    QVector<VIRTADDR> active_unit_syns = m_df->enumerate_vector(m_mem->dwarf_field(m_address, "active_syndrome_vector"));
     //when showing syndromes, be sure to exclude 'vampcurse' and 'werecurse' if we're hiding cursed dwarves
     bool show_cursed = DT->user_settings()->value("options/highlight_cursed",false).toBool();
     bool is_curse = false;
@@ -1129,7 +1129,7 @@ QString Dwarf::get_syndrome_names(bool include_buffs, bool include_sick) {
 
 
 void Dwarf::read_labors() {
-    VIRTADDR addr = m_address + m_mem->dwarf_offset("labors");
+    VIRTADDR addr = m_mem->dwarf_field(m_address, "labors");
     // read a big array of labors in one read, then pick and choose
     // the values we care about
     QByteArray buf(94, 0);
@@ -1196,13 +1196,13 @@ void Dwarf::check_availability(){
 }
 
 void Dwarf::read_current_job(){
-    VIRTADDR addr = m_address + m_mem->dwarf_offset("current_job");
+    VIRTADDR addr = m_mem->dwarf_field(m_address, "current_job");
     VIRTADDR current_job_addr = m_df->read_addr(addr);
     m_current_sub_job_id.clear();
 
     TRACE << "Current job addr: " << hex << current_job_addr;
     if(current_job_addr != 0){
-        m_current_job_id = m_df->read_short(current_job_addr + m_mem->job_detail("id"));
+        m_current_job_id = m_df->read_short(m_mem->job_field(current_job_addr, "id"));
 
         //if drinking blood and we're not showing vamps, change job to drink
         if(m_current_job_id == (int)DwarfJob::JOB_DRINK_BLOOD && DT->user_settings()->value("options/highlight_cursed", false).toBool()==false){
@@ -1230,13 +1230,13 @@ void Dwarf::read_current_job(){
 
             if(m_current_sub_job_id.isEmpty() && job->has_placeholder()){
                 QString material_name;
-                short mat_type = m_df->read_short(current_job_addr + m_mem->job_detail("mat_type"));
-                int mat_index = m_df->read_int(current_job_addr + m_mem->job_detail("mat_index"));
+                short mat_type = m_df->read_short(m_mem->job_field(current_job_addr, "mat_type"));
+                int mat_index = m_df->read_int(m_mem->job_field(current_job_addr, "mat_index"));
                 if(mat_index >= 0 || mat_type >= 0){
                     material_name = m_df->find_material_name(mat_index ,mat_type, NONE);
                 }
                 if(material_name.isEmpty()){
-                    quint32 mat_category = m_df->read_addr(current_job_addr + m_mem->job_detail("mat_category"));
+                    quint32 mat_category = m_df->read_addr(m_mem->job_field(current_job_addr, "mat_category"));
                     material_name = DwarfJob::get_job_mat_category_name(mat_category);
                 }
                 if(!material_name.isEmpty()){
@@ -1294,7 +1294,7 @@ void Dwarf::read_current_job(){
 }
 
 bool Dwarf::read_soul(){
-    VIRTADDR soul_vector = m_address + m_mem->dwarf_offset("souls");
+    VIRTADDR soul_vector = m_mem->dwarf_field(m_address, "souls");
     QVector<VIRTADDR> souls = m_df->enumerate_vector(soul_vector);
     if (souls.size() != 1) {
         LOGI << nice_name() << "has" << souls.size() << "souls!";
@@ -1442,9 +1442,9 @@ quint32 Dwarf::build_flag_mask(int bit){
 }
 
 void Dwarf::read_squad_info() {
-    m_squad_id = m_df->read_int(m_address + m_mem->dwarf_offset("squad_id"));
+    m_squad_id = m_df->read_int(m_mem->dwarf_field(m_address, "squad_id"));
     m_pending_squad_id = m_squad_id;
-    m_squad_position = m_df->read_int(m_address + m_mem->dwarf_offset("squad_position"));
+    m_squad_position = m_df->read_int(m_mem->dwarf_field(m_address, "squad_position"));
     m_pending_squad_position = m_squad_position;
     if(m_pending_squad_id >= 0 && !m_is_animal && is_adult()){
         Squad *s = m_df->get_squad(m_pending_squad_id);
@@ -1498,10 +1498,10 @@ void Dwarf::read_inventory(){
     int shoes_count = 0;
     bool has_pants = false;
 
-    QVector<VIRTADDR> used_items = m_df->enumerate_vector(m_address + m_mem->dwarf_offset("used_items_vector"));
+    QVector<VIRTADDR> used_items = m_df->enumerate_vector(m_mem->dwarf_field(m_address, "used_items_vector"));
     QHash<int,int> item_affection;
     foreach(VIRTADDR item_used, used_items){
-        item_affection.insert(m_df->read_int(item_used),m_df->read_int(item_used+m_mem->dwarf_offset("affection_level")));
+        item_affection.insert(m_df->read_int(item_used),m_df->read_int(m_mem->dwarf_field(item_used, "affection_level")));
     }
 
     short inv_type = -1;
@@ -1509,9 +1509,9 @@ void Dwarf::read_inventory(){
     QString category_name = "";
     int inv_count = 0;
     bool include_mat_name = DT->user_settings()->value("options/docks/equipoverview_include_mats",false).toBool();
-    foreach(VIRTADDR inventory_item_addr, m_df->enumerate_vector(m_address + m_mem->dwarf_offset("inventory"))){
-        inv_type = m_df->read_short(inventory_item_addr + m_mem->dwarf_offset("inventory_item_mode"));
-        bp_id = m_df->read_short(inventory_item_addr + m_mem->dwarf_offset("inventory_item_bodypart"));
+    foreach(VIRTADDR inventory_item_addr, m_df->enumerate_vector(m_mem->dwarf_field(m_address, "inventory"))){
+        inv_type = m_df->read_short(m_mem->dwarf_field(inventory_item_addr, "inventory_item_mode"));
+        bp_id = m_df->read_short(m_mem->dwarf_field(inventory_item_addr, "inventory_item_bodypart"));
 
         if(inv_type == 1 || inv_type == 2 || inv_type == 4 || inv_type == 8 || inv_type == 10){
             if(bp_id >= 0)
@@ -1707,12 +1707,12 @@ float Dwarf::get_coverage_rating(ITEM_TYPE itype){
 
 
 void Dwarf::read_turn_count() {
-    m_turn_count = m_df->read_int(m_address + m_mem->dwarf_offset("turn_count"));
+    m_turn_count = m_df->read_int(m_mem->dwarf_field(m_address, "turn_count"));
     TRACE << "Turn Count:" << m_turn_count;
 }
 
 void Dwarf::read_skills() {
-    VIRTADDR addr = m_first_soul + m_mem->soul_detail("skills");
+    VIRTADDR addr = m_mem->soul_field(m_first_soul, "skills");
     m_total_xp = 0;
     m_skills.clear();
     m_sorted_skills.clear();
@@ -1766,7 +1766,7 @@ void Dwarf::read_skills() {
             }
         }
     }else{
-        int mood_skill = m_df->read_short(m_address +m_mem->dwarf_offset("mood_skill"));
+        int mood_skill = m_df->read_short(m_mem->dwarf_field(m_address, "mood_skill"));
         m_moodable_skills.insert(mood_skill, get_skill(mood_skill));
     }
 }
@@ -1896,11 +1896,11 @@ void Dwarf::read_emotions(VIRTADDR personality_base){
 
 void Dwarf::read_personality() {
     if(!m_is_animal){
-        VIRTADDR personality_addr = m_first_soul + m_mem->soul_detail("personality");
+        VIRTADDR personality_addr = m_mem->soul_field(m_first_soul, "personality");
 
         //read personal beliefs before traits, as a dwarf will have a conflict with either personal beliefs or cultural beliefs
         m_beliefs.clear();
-        QVector<VIRTADDR> beliefs_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("beliefs"));
+        QVector<VIRTADDR> beliefs_addrs = m_df->enumerate_vector(m_mem->soul_field(personality_addr, "beliefs"));
         foreach(VIRTADDR addr, beliefs_addrs){
             int belief_id = m_df->read_int(addr);
             if(belief_id >= 0){
@@ -1910,7 +1910,7 @@ void Dwarf::read_personality() {
             }
         }
 
-        VIRTADDR traits_addr = personality_addr + m_mem->soul_detail("traits");
+        VIRTADDR traits_addr = m_mem->soul_field(personality_addr, "traits");
         m_traits.clear();
         m_conflicting_beliefs.clear();
         int trait_count = GameDataReader::ptr()->get_total_trait_count();
@@ -1955,12 +1955,12 @@ void Dwarf::read_personality() {
             }
         }
 
-        QVector<VIRTADDR> m_goals_addrs = m_df->enumerate_vector(personality_addr + m_mem->soul_detail("goals"));
+        QVector<VIRTADDR> m_goals_addrs = m_df->enumerate_vector(m_mem->soul_field(personality_addr, "goals"));
         m_goals.clear();
         foreach(VIRTADDR addr, m_goals_addrs){
             int goal_type = m_df->read_int(addr + 0x0004);
             if(goal_type >= 0){
-                short val = m_df->read_short(addr + m_mem->soul_detail("goal_realized")); //goal realized
+                short val = m_df->read_short(m_mem->soul_field(addr, "goal_realized")); //goal realized
                 //if we're not showing vampires, and this dwarf is a vampire, keep the goal hidden so they can't be identified from that
                 if(goal_type == 11 && m_curse_type == eCurse::VAMPIRE &&  DT->user_settings()->value("options/highlight_cursed", false).toBool()==false)
                     continue;
@@ -2008,13 +2008,13 @@ UnitBelief Dwarf::get_unit_belief(int belief_id){
 void Dwarf::read_attributes() {
     m_attributes.clear();
     //read the physical attributes
-    VIRTADDR addr = m_address + m_mem->dwarf_offset("physical_attrs");
+    VIRTADDR addr = m_mem->dwarf_field(m_address, "physical_attrs");
     for(int i=0; i<6; i++){
         load_attribute(addr, static_cast<ATTRIBUTES_TYPE>(i));
     }
     //read the mental attributes, but append to our array (augment the key by the number of physical attribs)
     int phys_size = m_attributes.size();
-    addr = m_first_soul + m_mem->soul_detail("mental_attrs");
+    addr = m_mem->soul_field(m_first_soul, "mental_attrs");
     for(int i=0; i<13; i++){
         load_attribute(addr, static_cast<ATTRIBUTES_TYPE>(i+phys_size));
     }
@@ -2286,7 +2286,7 @@ void Dwarf::clear_pending() {
 }
 
 void Dwarf::commit_pending(bool single) {
-    VIRTADDR addr = m_address + m_mem->dwarf_offset("labors");
+    VIRTADDR addr = m_mem->dwarf_field(m_address, "labors");
 
     QByteArray buf(94, 0);
     m_df->read_raw(addr, 94, buf); // set the buffer as it is in-game
@@ -2305,18 +2305,18 @@ void Dwarf::commit_pending(bool single) {
     m_df->write_raw(addr, 94, buf.data());
 
     if (m_pending_nick_name != m_nick_name){
-        m_df->write_string(m_address + m_mem->dwarf_offset("name") + m_mem->word_offset("nickname"), m_pending_nick_name);
-        m_df->write_string(m_first_soul + m_mem->soul_detail("name") + m_mem->word_offset("nickname"), m_pending_nick_name);
+        m_df->write_string(m_mem->word_field(m_mem->dwarf_field(m_address, "name"), "nickname"), m_pending_nick_name);
+        m_df->write_string(m_mem->word_field(m_mem->soul_field(m_first_soul, "name"), "nickname"), m_pending_nick_name);
         if(m_hist_figure){
             m_hist_figure->write_nick_name(m_pending_nick_name);
         }
     }
     if (m_pending_custom_profession != m_custom_prof_name)
-        m_df->write_string(m_address + m_mem->dwarf_offset("custom_profession"), m_pending_custom_profession);
+        m_df->write_string(m_mem->dwarf_field(m_address, "custom_profession"), m_pending_custom_profession);
 
     for(int i=0; i < m_unit_flags.count(); i++){
         if (m_pending_flags.at(i) != m_unit_flags.at(i)){
-            m_df->write_raw(m_address + m_mem->dwarf_offset(QString("flags%1").arg(i+1)), 4, &m_pending_flags[i]);
+            m_df->write_raw(m_mem->dwarf_field(m_address, QString("flags%1").arg(i+1)), 4, &m_pending_flags[i]);
         }
     }
 
@@ -2368,9 +2368,9 @@ void Dwarf::commit_pending(bool single) {
 
 void Dwarf::recheck_equipment(){
     // set the "recheck_equipment" flag if there was a labor change, or squad change
-    BYTE recheck_equipment = m_df->read_byte(m_address + m_mem->dwarf_offset("recheck_equipment"));
+    BYTE recheck_equipment = m_df->read_byte(m_mem->dwarf_field(m_address, "recheck_equipment"));
     recheck_equipment |= 1;
-    m_df->write_raw(m_address + m_mem->dwarf_offset("recheck_equipment"), 1, &recheck_equipment);
+    m_df->write_raw(m_mem->dwarf_field(m_address, "recheck_equipment"), 1, &recheck_equipment);
 }
 
 

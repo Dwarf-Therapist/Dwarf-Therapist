@@ -98,7 +98,7 @@ static bool has_subtype(ITEM_TYPE itype) {
 
 void ItemUniform::read_def(){
     if(m_addr && has_subtype(m_iType)){
-        m_item_def = new ItemSubtype(m_iType,m_df,m_df->read_addr(m_addr+m_df->memory_layout()->item_offset("item_def")),this);
+        m_item_def = new ItemSubtype(m_iType,m_df,m_df->read_addr(m_df->memory_layout()->item_field(m_addr, "item_def")),this);
     }else{
         if(m_uniform_def->mat_flag() != MAT_NONE){
             mat_flags().set_flag(m_uniform_def->mat_flag(),true);

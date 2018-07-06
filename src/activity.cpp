@@ -47,7 +47,7 @@ void Activity::read_data(){
     if(m_address && m_df){
         MemoryLayout *mem = m_df->memory_layout();
         m_id = m_df->read_int(m_address);
-        m_type = static_cast<ACT_CATEGORY>(m_df->read_short(m_address + mem->activity_offset("activity_type")));
+        m_type = static_cast<ACT_CATEGORY>(m_df->read_short(mem->activity_field(m_address, "activity_type")));
         LOGD << "reading activity of type" << m_type;
 
         if(m_type == ACT_UNK_3 || m_type == ACT_UNK_4 || m_type == ACT_UNK_6){
@@ -58,7 +58,7 @@ void Activity::read_data(){
 
         //go through the events backwards, the vector contains events in order from parent to child
         //ie. training->combat training->skill demonstration so the last items are the most specific
-        QVector<VIRTADDR> events = m_df->enumerate_vector(m_address + mem->activity_offset("events"));
+        QVector<VIRTADDR> events = m_df->enumerate_vector(mem->activity_field(m_address, "events"));
         for(int idx=events.count()-1;idx>=0;idx--){
             ActivityEvent *ae = new ActivityEvent(m_df,events.at(idx),&m_histfig_actions,this);
             if(ae){

@@ -67,12 +67,12 @@ void Plant::load_data() {
 }
 
 void Plant::read_plant() {
-    m_plant_name = m_df->read_string(m_address + m_mem->plant_offset("name"));
-    m_plant_name_plural = m_df->read_string(m_address + m_mem->plant_offset("name_plural"));
-    m_leaf_name_plural = m_df->read_string(m_address + m_mem->plant_offset("name_leaf_plural"));
-    m_seed_name_plural = m_df->read_string(m_address + m_mem->plant_offset("name_seed_plural"));
+    m_plant_name = m_df->read_string(m_mem->plant_field(m_address, "name"));
+    m_plant_name_plural = m_df->read_string(m_mem->plant_field(m_address, "name_plural"));
+    m_leaf_name_plural = m_df->read_string(m_mem->plant_field(m_address, "name_leaf_plural"));
+    m_seed_name_plural = m_df->read_string(m_mem->plant_field(m_address, "name_seed_plural"));
 
-    m_flags = FlagArray(m_df,m_address+m_mem->plant_offset("flags"));
+    m_flags = FlagArray(m_df,m_mem->plant_field(m_address, "flags"));
     if(m_flags.has_flag(P_SPRING) || m_flags.has_flag(P_SUMMER) || m_flags.has_flag(P_AUTUMN) || m_flags.has_flag(P_WINTER)){
         m_flags.set_flag(P_CROP,true);
     }
@@ -84,7 +84,7 @@ void Plant::read_plant() {
 void Plant::load_materials(){
     if(!m_df)
         return;
-    QVector<VIRTADDR> mats = m_df->enumerate_vector(m_address + m_mem->plant_offset("materials_vector"));
+    QVector<VIRTADDR> mats = m_df->enumerate_vector(m_mem->plant_field(m_address, "materials_vector"));
     int i = 0;
     foreach(VIRTADDR mat, mats){
         m_plant_mats.append(Material::get_material(m_df,mat,i,false));

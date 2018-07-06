@@ -120,7 +120,7 @@ public:
 
     QHash<QString, VIRTADDR> globals() {return get_section_offsets(MEM_GLOBALS);}
 
-    VIRTADDR address(const QString &key, const bool is_global = true);
+    VIRTADDR global_address(const QString &key) const;
 
     qint16 language_offset(const QString &key) const {return offset(MEM_LANGUAGE,key);}
     qint16 dwarf_offset(const QString &key) const {return offset(MEM_UNIT,key);}
@@ -149,6 +149,93 @@ public:
     qint16 job_detail(const QString &key) const {return offset(MEM_JOB,key);}
     qint16 soul_detail(const QString &key) const {return offset(MEM_SOUL,key);}
     qint16 viewscreen_offset(const QString &key) const {return offset(MEM_VIEWSCR,key);}
+
+    VIRTADDR field_address(VIRTADDR object, MEM_SECTION section, const QString &key) const;
+
+    VIRTADDR global_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_GLOBALS, key);
+    }
+    VIRTADDR language_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_LANGUAGE, key);
+    }
+    VIRTADDR dwarf_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_UNIT, key);
+    }
+    VIRTADDR squad_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_SQUAD, key);
+    }
+    VIRTADDR word_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_WORD, key);
+    }
+    VIRTADDR race_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_RACE, key);
+    }
+    VIRTADDR caste_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_CASTE, key);
+    }
+    VIRTADDR hist_figure_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_HIST_FIG, key);
+    }
+    VIRTADDR hist_event_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_HIST_EVT, key);
+    }
+    VIRTADDR hist_entity_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_HIST_ENT, key);
+    }
+    VIRTADDR weapon_subtype_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_WEP_SUB, key);
+    }
+    VIRTADDR material_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_MAT, key);
+    }
+    VIRTADDR plant_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_PLANT, key);
+    }
+    VIRTADDR item_subtype_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_ITEM_SUB, key);
+    }
+    VIRTADDR descriptor_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_DESC, key);
+    }
+    VIRTADDR health_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_HEALTH, key);
+    }
+    VIRTADDR wound_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_WOUND, key);
+    }
+    VIRTADDR item_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_ITEM, key);
+    }
+    VIRTADDR item_filter_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_ITEM_FILTER, key);
+    }
+    VIRTADDR armor_subtype_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_ARMOR_SUB, key);
+    }
+    VIRTADDR general_ref_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_GEN_REF, key);
+    }
+    VIRTADDR syndrome_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_SYN, key);
+    }
+    VIRTADDR emotion_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_EMOTION, key);
+    }
+    VIRTADDR activity_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_ACTIVITY, key);
+    }
+    VIRTADDR art_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_ART, key);
+    }
+    VIRTADDR job_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_JOB, key);
+    }
+    VIRTADDR soul_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_SOUL, key);
+    }
+    VIRTADDR viewscreen_field(VIRTADDR object, const QString &key) const {
+        return field_address(object, MEM_VIEWSCR, key);
+    }
 
     QHash<uint, QString> invalid_flags_1() {return get_flags(INVALID_FLAGS_1) ;}
     QHash<uint, QString> invalid_flags_2() {return get_flags(INVALID_FLAGS_2);}

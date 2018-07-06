@@ -191,7 +191,7 @@ void UnitHealth::add_info(HealthInfo *hi, QList<HealthInfo *> &info_list){
 
 void UnitHealth::read_health_info(){
     MemoryLayout *mem = m_df->memory_layout();
-    VIRTADDR unit_health_addr = m_df->read_addr(m_dwarf_addr + mem->dwarf_offset("unit_health_info"));
+    VIRTADDR unit_health_addr = m_df->read_addr(mem->dwarf_field(m_dwarf_addr, "unit_health_info"));
 
     quint32 health_flags = 0;
     if(unit_health_addr){
@@ -349,8 +349,8 @@ void UnitHealth::read_health_info(){
         }
 
         //check blood loss
-        int blood_max = m_df->read_short(m_dwarf_addr + mem->dwarf_offset("blood"));
-        int blood_curr = m_df->read_short(m_dwarf_addr + mem->dwarf_offset("blood")+0x4);
+        int blood_max = m_df->read_short(mem->dwarf_field(m_dwarf_addr, "blood"));
+        int blood_curr = m_df->read_short(mem->dwarf_field(m_dwarf_addr, "blood")+0x4);
         float blood_perc = (float)blood_curr / (float)blood_max;
         if(blood_perc > 0){
             add_info(eHealth::HI_BLOOD_LOSS, (blood_perc < 0.25),(blood_perc < 0.50));
@@ -435,10 +435,10 @@ void UnitHealth::read_health_info(){
 void UnitHealth::read_wounds(){
     VIRTADDR addr = m_df->memory_layout()->dwarf_offset("body_component_info");
     body_part_status_flags = m_df->enum_vec<qint32>(m_dwarf_addr +  addr);
-    layer_status_flags = m_df->enum_vec<qint32>(m_dwarf_addr + addr + m_df->memory_layout()->dwarf_offset("layer_status_vector"));
+    layer_status_flags = m_df->enum_vec<qint32>(m_df->memory_layout()->dwarf_field(m_dwarf_addr + addr, "layer_status_vector"));
 
     //add the wounds based on the wounded parts
-    QVector<VIRTADDR> wounds = m_df->enumerate_vector(m_dwarf_addr + m_df->memory_layout()->dwarf_offset("wounds_vector"));
+    QVector<VIRTADDR> wounds = m_df->enumerate_vector(m_df->memory_layout()->dwarf_field(m_dwarf_addr, "wounds_vector"));
     FlagArray caste_flags;
     if(m_dwarf->get_caste()){
         caste_flags = m_dwarf->get_caste()->flags();

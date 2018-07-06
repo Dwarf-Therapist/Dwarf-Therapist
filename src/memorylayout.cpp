@@ -148,6 +148,20 @@ bool MemoryLayout::is_valid_address(VIRTADDR addr){
     return (addr != 0x000);
 }
 
-VIRTADDR MemoryLayout::address(const QString &key, const bool is_global) { //globals
-    return m_offsets.value(MEM_GLOBALS).value(key, -1) + (is_global ? m_df->df_base_addr() : 0);
+VIRTADDR MemoryLayout::global_address(const QString &key) const { //globals
+    auto global = m_offsets.value(MEM_GLOBALS).value(key, -1);
+    if (global == static_cast<VIRTADDR>(-1)) {
+        LOGE << "Missing global" << key;
+        return 0;
+    }
+    return global + m_df->df_base_addr();
+}
+
+VIRTADDR MemoryLayout::field_address(VIRTADDR object, MEM_SECTION section, const QString &key) const {
+    auto offset_value = offset(section, key);
+    if (offset_value == static_cast<VIRTADDR>(-1)) {
+        LOGE << "Missing offset" << section_name(section) << key;
+        return 0;
+    }
+    return object + offset_value;
 }

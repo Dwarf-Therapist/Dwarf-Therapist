@@ -71,16 +71,16 @@ void Caste::load_data() {
 
 void Caste::read_caste() {
     m_tag = m_df->read_string(m_address);
-    m_name = capitalizeEach(m_df->read_string(m_address + m_mem->caste_offset("caste_name")));
-    m_name_plural = capitalizeEach(m_df->read_string(m_address + m_mem->word_offset("noun_plural")));
-    m_description = m_df->read_string(m_address + m_mem->caste_offset("caste_descr"));
+    m_name = capitalizeEach(m_df->read_string(m_mem->caste_field(m_address, "caste_name")));
+    m_name_plural = capitalizeEach(m_df->read_string(m_mem->word_field(m_address, "noun_plural")));
+    m_description = m_df->read_string(m_mem->caste_field(m_address, "caste_descr"));
 
-    m_flags = FlagArray(m_df, m_address + m_mem->caste_offset("flags"));
+    m_flags = FlagArray(m_df, m_mem->caste_field(m_address, "flags"));
 
     if(m_flags.has_flag(BABY))
-        m_baby_age = m_df->read_int(m_address + m_mem->caste_offset("baby_age"));
+        m_baby_age = m_df->read_int(m_mem->caste_field(m_address, "baby_age"));
     if(m_flags.has_flag(CHILD))
-        m_child_age = m_df->read_int(m_address + m_mem->caste_offset("child_age"));
+        m_child_age = m_df->read_int(m_mem->caste_field(m_address, "child_age"));
 
     if(m_child_age < 0)
         m_child_age = 0;
@@ -91,9 +91,9 @@ void Caste::read_caste() {
         m_flags.set_flag(BUTCHERABLE,true);
     }
 
-    m_adult_size = m_df->read_int(m_address + m_mem->caste_offset("adult_size"));
+    m_adult_size = m_df->read_int(m_mem->caste_field(m_address, "adult_size"));
 
-    m_body_addr = m_address + m_mem->caste_offset("body_info");
+    m_body_addr = m_mem->caste_field(m_address, "body_info");
     m_body_parts_addr = m_df->enumerate_vector(m_body_addr);
 
     if(m_flags.has_flag(TRAINABLE_HUNTING) || m_flags.has_flag(TRAINABLE_WAR) ||
@@ -101,7 +101,7 @@ void Caste::read_caste() {
         m_flags.set_flag(TRAINABLE,true);
     }
 
-    VIRTADDR extracts_vector_start = m_address + m_mem->caste_offset("extracts");
+    VIRTADDR extracts_vector_start = m_mem->caste_field(m_address, "extracts");
     if(m_df->read_addr(extracts_vector_start + m_df->pointer_size()) > m_df->read_addr(extracts_vector_start)){
         m_flags.set_flag(HAS_EXTRACTS,true);
     }
@@ -137,7 +137,7 @@ bool Caste::is_geldable(){
 
 void Caste::load_skill_rates(){
     if(m_skill_rates.count() <= 0){
-        VIRTADDR addr = m_address + m_mem->caste_offset("skill_rates");
+        VIRTADDR addr = m_mem->caste_field(m_address, "skill_rates");
         int val;
         int skill_count = GameDataReader::ptr()->get_total_skill_count();
         for(int skill_id=0; skill_id < skill_count; skill_id++){
@@ -161,9 +161,9 @@ int Caste::get_skill_rate(int skill_id){
 
 void Caste::load_attribute_info(){
     //physical attributes (seems mental attribs follow so load them all at once)
-    VIRTADDR base = m_address + m_mem->caste_offset("caste_phys_att_ranges");
-    VIRTADDR base_caps = m_address + m_mem->caste_offset("caste_att_caps");
-    VIRTADDR base_rates = m_address + m_mem->caste_offset("caste_att_rates");
+    VIRTADDR base = m_mem->caste_field(m_address, "caste_phys_att_ranges");
+    VIRTADDR base_caps = m_mem->caste_field(m_address, "caste_att_caps");
+    VIRTADDR base_rates = m_mem->caste_field(m_address, "caste_att_rates");
     int perc = 200; //the percentage of improvement default is 200
     int limit = 5000; //absolute maximum any dwarf can achieve (last raw bin * perc)
     int median = 0;

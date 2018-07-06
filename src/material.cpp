@@ -73,7 +73,7 @@ void Material::load_data() {
             inorganic_flags = FlagArray(m_df,m_address + offset);
             m_is_generated = inorganic_flags.has_flag(1);
         }
-        m_address += m_mem->material_offset("inorganic_materials_vector");
+        m_address = m_mem->material_field(m_address, "inorganic_materials_vector");
     }
 
     TRACE << "Starting refresh of material data at" << hexify(m_address);
@@ -86,22 +86,22 @@ void Material::read_material() {
         return;
 
     //read material names
-    m_state_names.insert(SOLID,m_df->read_string(m_address + m_mem->material_offset("solid_name")));
-    m_state_names.insert(LIQUID,m_df->read_string(m_address + m_mem->material_offset("liquid_name")));
-    m_state_names.insert(GAS,m_df->read_string(m_address + m_mem->material_offset("gas_name")));
-    m_state_names.insert(POWDER,m_df->read_string(m_address + m_mem->material_offset("powder_name")));
-    m_state_names.insert(PASTE,m_df->read_string(m_address + m_mem->material_offset("paste_name")));
-    m_state_names.insert(PRESSED, m_df->read_string(m_address + m_mem->material_offset("pressed_name")));
+    m_state_names.insert(SOLID,m_df->read_string(m_mem->material_field(m_address, "solid_name")));
+    m_state_names.insert(LIQUID,m_df->read_string(m_mem->material_field(m_address, "liquid_name")));
+    m_state_names.insert(GAS,m_df->read_string(m_mem->material_field(m_address, "gas_name")));
+    m_state_names.insert(POWDER,m_df->read_string(m_mem->material_field(m_address, "powder_name")));
+    m_state_names.insert(PASTE,m_df->read_string(m_mem->material_field(m_address, "paste_name")));
+    m_state_names.insert(PRESSED, m_df->read_string(m_mem->material_field(m_address, "pressed_name")));
 
     //QString id = m_df->read_string(m_address);
-    m_prefix = m_df->read_string(m_address + m_mem->material_offset("prefix"));
-    for (auto addr: m_df->enumerate_vector(m_address + m_mem->material_offset("reaction_class"))) {
+    m_prefix = m_df->read_string(m_mem->material_field(m_address, "prefix"));
+    for (auto addr: m_df->enumerate_vector(m_mem->material_field(m_address, "reaction_class"))) {
         QString reaction = m_df->read_string(addr);
         if (reaction.isEmpty() || !m_reactions.insert(reaction).second) {
             LOGW << "Invalid reaction class" << reaction;
         }
     }
-    m_flags = FlagArray(m_df,m_address + m_mem->material_offset("flags"));
+    m_flags = FlagArray(m_df,m_mem->material_field(m_address, "flags"));
 
     //int material_value = m_df->read_int(m_address + 0x244);
 }

@@ -64,16 +64,16 @@ void Word::refresh_data() {
 }
 
 void Word::read_members() {
-    m_base = m_df->read_string(m_address + m_mem->word_offset("base"));
+    m_base = m_df->read_string(m_mem->word_field(m_address, "base"));
     TRACE << "read word " << m_base;
-    m_noun = m_df->read_string(m_address + m_mem->word_offset("noun_singular"));
-    m_plural_noun = m_df->read_string(m_address + m_mem->word_offset("noun_plural"));
-    m_adjective = m_df->read_string(m_address + m_mem->word_offset("adjective"));
-//    m_prefix = m_df->read_string(m_address + m_mem->word_offset("prefix"));
-    m_verb = m_df->read_string(m_address + m_mem->word_offset("verb"));
-    m_present_simple_verb = m_df->read_string(m_address + m_mem->word_offset("present_simple_verb"));
-    m_past_simple_verb = m_df->read_string(m_address + m_mem->word_offset("past_simple_verb"));
-    m_past_participle_verb = m_df->read_string(m_address + m_mem->word_offset("past_participle_verb"));
-    m_present_participle_verb = m_df->read_string(m_address + m_mem->word_offset("present_participle_verb"));
+    m_noun = m_df->read_string(m_mem->word_field(m_address, "noun_singular"));
+    m_plural_noun = m_df->read_string(m_mem->word_field(m_address, "noun_plural"));
+    m_adjective = m_df->read_string(m_mem->word_field(m_address, "adjective"));
+//    m_prefix = m_df->read_string(m_mem->word_field(m_address, "prefix"));
+    m_verb = m_df->read_string(m_mem->word_field(m_address, "verb"));
+    m_present_simple_verb = m_df->read_string(m_mem->word_field(m_address, "present_simple_verb"));
+    m_past_simple_verb = m_df->read_string(m_mem->word_field(m_address, "past_simple_verb"));
+    m_past_participle_verb = m_df->read_string(m_mem->word_field(m_address, "past_participle_verb"));
+    m_present_participle_verb = m_df->read_string(m_mem->word_field(m_address, "present_participle_verb"));
 }
 

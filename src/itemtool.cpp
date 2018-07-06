@@ -30,7 +30,7 @@ ItemSubtype * ItemTool::get_subType(){
 
 void ItemTool::read_def(){
     if(m_addr){
-        m_tool_def = new ItemToolSubtype(m_df, m_df->read_addr(m_addr + m_df->memory_layout()->item_offset("item_def")), this);
+        m_tool_def = new ItemToolSubtype(m_df, m_df->read_addr(m_df->memory_layout()->item_field(m_addr, "item_def")), this);
     }
 }
 

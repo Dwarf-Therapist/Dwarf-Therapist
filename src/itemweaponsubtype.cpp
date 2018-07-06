@@ -31,15 +31,15 @@ ItemWeaponSubtype::ItemWeaponSubtype(DFInstance *df, VIRTADDR address, QObject *
     , m_multi_grasp_size(0)
 {
     //set the group name as the simple plural name (no adjective or preplural)
-    QString plural = capitalizeEach(m_df->read_string(m_address + m_mem->item_subtype_offset("name_plural")));
+    QString plural = capitalizeEach(m_df->read_string(m_mem->item_subtype_field(m_address, "name_plural")));
     m_group_name = plural;
 
-    m_single_grasp_size = m_df->read_int(m_address + m_mem->weapon_subtype_offset("single_size")); //two_hand size
-    m_multi_grasp_size = m_df->read_int(m_address + m_mem->weapon_subtype_offset("multi_size")); //minimum size
-    m_melee_skill_id = m_df->read_short(m_address + m_mem->weapon_subtype_offset("melee_skill"));
-    m_ranged_skill_id = m_df->read_short(m_address + m_mem->weapon_subtype_offset("ranged_skill"));
+    m_single_grasp_size = m_df->read_int(m_mem->weapon_subtype_field(m_address, "single_size")); //two_hand size
+    m_multi_grasp_size = m_df->read_int(m_mem->weapon_subtype_field(m_address, "multi_size")); //minimum size
+    m_melee_skill_id = m_df->read_short(m_mem->weapon_subtype_field(m_address, "melee_skill"));
+    m_ranged_skill_id = m_df->read_short(m_mem->weapon_subtype_field(m_address, "ranged_skill"));
 
-    m_ammo = m_df->read_string(m_address + m_mem->weapon_subtype_offset("ammo"));
+    m_ammo = m_df->read_string(m_mem->weapon_subtype_field(m_address, "ammo"));
     if(m_ammo.isEmpty()){
         m_flags.set_flag(ITEM_MELEE_WEAPON,true);
     }else{
