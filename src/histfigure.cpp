@@ -47,8 +47,8 @@ HistFigure::HistFigure(int id, DFInstance *df, QObject *parent)
     m_address = m_df->find_historical_figure(id);
     m_mem = m_df->memory_layout();
     if(m_address){
-        m_nick_addrs.append(m_address + m_mem->hist_figure_offset("hist_name") + m_mem->word_offset("nickname"));
-        m_fig_info_addr = m_df->read_addr(m_address + m_mem->hist_figure_offset("hist_fig_info"));
+        m_nick_addrs.append(m_mem->word_field(m_mem->hist_figure_field(m_address, "hist_name"), "nickname"));
+        m_fig_info_addr = m_df->read_addr(m_mem->hist_figure_field(m_address, "hist_fig_info"));
         m_has_fake_identity = read_fake_identity();
         if(!DT->user_settings()->value("options/highlight_cursed", false).toBool() && m_has_fake_identity){
             return;
@@ -63,13 +63,13 @@ HistFigure::~HistFigure(){
 }
 
 void HistFigure::read_kills(){
-    VIRTADDR kills_addr = m_df->read_addr(m_fig_info_addr + m_mem->hist_figure_offset("kills"));
+    VIRTADDR kills_addr = m_df->read_addr(m_mem->hist_figure_field(m_fig_info_addr, "kills"));
     if(kills_addr==0)
         return;
     auto kill_events = m_df->enum_vec<qint32>(kills_addr);
-    auto race_ids = m_df->enum_vec<qint16>(kills_addr+m_mem->hist_figure_offset("killed_race_vector"));
-    auto undead_kills = m_df->enum_vec<quint16>(kills_addr+m_mem->hist_figure_offset("killed_undead_vector"));
-    auto cur_site_kills = m_df->enum_vec<qint32>(kills_addr+m_mem->hist_figure_offset("killed_counts_vector"));
+    auto race_ids = m_df->enum_vec<qint16>(m_mem->hist_figure_field(kills_addr, "killed_race_vector"));
+    auto undead_kills = m_df->enum_vec<quint16>(m_mem->hist_figure_field(kills_addr, "killed_undead_vector"));
+    auto cur_site_kills = m_df->enum_vec<qint32>(m_mem->hist_figure_field(kills_addr, "killed_counts_vector"));
     if(cur_site_kills.count() > 0){
         QHash<int,int> kills; //group by race
         for(int idx=0;idx < race_ids.size();idx++){
@@ -107,18 +107,18 @@ void HistFigure::read_kills(){
                 int evt_type = m_df->read_int(m_df->read_addr(vtable_addr) + m_df->VM_TYPE_OFFSET());
                 LOGD << "found historical event type" << evt_type;
                 if(evt_type == 3){ //hist figure died event
-                    int hist_id = m_df->read_int(evt_addr + m_mem->hist_event_offset("killed_hist_id"));
+                    int hist_id = m_df->read_int(m_mem->hist_event_field(evt_addr, "killed_hist_id"));
                     VIRTADDR h_fig_addr =  m_df->find_historical_figure(hist_id);
                     if(h_fig_addr){
-                        VIRTADDR name_addr = h_fig_addr + m_mem->hist_figure_offset("hist_name");
+                        VIRTADDR name_addr = m_mem->hist_figure_field(h_fig_addr, "hist_name");
                         kill_info ki;
                         ki.name = capitalizeEach(m_df->read_string(name_addr).append(" ").append(m_df->get_translated_word(name_addr)));
                         ki.count = 1;
-                        Race *r = m_df->get_race(m_df->read_short(h_fig_addr + m_mem->hist_figure_offset("hist_race")));
+                        Race *r = m_df->get_race(m_df->read_short(m_mem->hist_figure_field(h_fig_addr, "hist_race")));
                         if(r){
                             ki.creature = r->name(ki.count).toLower();
                         }
-                        ki.year = m_df->read_int(evt_addr + m_mem->hist_event_offset("event_year"));
+                        ki.year = m_df->read_int(m_mem->hist_event_field(evt_addr, "event_year"));
                         m_notable_kills.append(ki);
                     }
                 }
@@ -191,20 +191,20 @@ QString HistFigure::formatted_summary(bool show_no_kills, bool space_notable){
 }
 
 bool HistFigure::read_fake_identity(){
-    VIRTADDR rep_info = m_df->read_addr(m_fig_info_addr + m_mem->hist_figure_offset("reputation"));
+    VIRTADDR rep_info = m_df->read_addr(m_mem->hist_figure_field(m_fig_info_addr, "reputation"));
     if(!rep_info)
         return false;
-    int cur_ident = m_df->read_int(rep_info + m_mem->hist_figure_offset("current_ident"));
+    int cur_ident = m_df->read_int(m_mem->hist_figure_field(rep_info, "current_ident"));
     m_fake_ident_addr = m_df->find_identity(cur_ident);
     if (!m_fake_ident_addr)
         return false;
-    m_fake_name_addr = m_fake_ident_addr + m_mem->hist_figure_offset("fake_name");
-    m_fake_name = capitalize(m_df->read_string(m_fake_name_addr + m_mem->word_offset("first_name")));
-    m_nick_addrs.append(m_fake_name_addr + m_mem->word_offset("nickname"));
+    m_fake_name_addr = m_mem->hist_figure_field(m_fake_ident_addr, "fake_name");
+    m_fake_name = capitalize(m_df->read_string(m_mem->word_field(m_fake_name_addr, "first_name")));
+    m_nick_addrs.append(m_mem->word_field(m_fake_name_addr, "nickname"));
     m_fake_nick = m_df->read_string(m_nick_addrs.last());
     //vamps also use a fake age
-    m_fake_birth_year = m_fake_ident_addr + m_mem->hist_figure_offset("fake_birth_year");
-    m_fake_birth_time = m_fake_ident_addr + m_mem->hist_figure_offset("fake_birth_time");
+    m_fake_birth_year = m_mem->hist_figure_field(m_fake_ident_addr, "fake_birth_year");
+    m_fake_birth_time = m_mem->hist_figure_field(m_fake_ident_addr, "fake_birth_time");
     return true;
 }
 

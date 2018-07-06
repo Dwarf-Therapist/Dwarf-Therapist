@@ -47,14 +47,14 @@ Syndrome::Syndrome(DFInstance *df, VIRTADDR addr)
     , m_has_transform(false)
 {
     m_id = m_df->read_int(addr);
-    m_is_sickness = m_df->read_byte(m_addr + m_mem->dwarf_offset("syn_sick_flag"));
+    m_is_sickness = m_df->read_byte(m_mem->dwarf_field(m_addr, "syn_sick_flag"));
 
     VIRTADDR syn_addr = m_df->get_syndrome(m_id);
     if(syn_addr){
         m_name = capitalizeEach(m_df->read_string(syn_addr));
         //SYN_CLASS tokens
         QRegExp rx = QRegExp("[-_\\*~@#\\^]");
-        QVector<VIRTADDR> classes_addr = m_df->enumerate_vector(syn_addr + m_mem->syndrome_offset("syn_classes_vector"));
+        QVector<VIRTADDR> classes_addr = m_df->enumerate_vector(m_mem->syndrome_field(syn_addr, "syn_classes_vector"));
         foreach(VIRTADDR class_addr, classes_addr){
             QString class_name = m_df->read_string(class_addr);
             class_name = class_name.replace(rx," ");
@@ -62,11 +62,11 @@ Syndrome::Syndrome(DFInstance *df, VIRTADDR addr)
                 m_class_names.append(capitalizeEach(class_name.trimmed().toLower()));
         }
 
-        QVector<VIRTADDR> effects = m_df->enumerate_vector(syn_addr + m_mem->syndrome_offset("cie_effects"));
+        QVector<VIRTADDR> effects = m_df->enumerate_vector(m_mem->syndrome_field(syn_addr, "cie_effects"));
         foreach(VIRTADDR ce_addr, effects){
             VIRTADDR vtable = m_df->read_addr(ce_addr);
             int type = m_df->read_int(m_df->read_addr(vtable)+m_df->VM_TYPE_OFFSET());
-            int end = m_df->read_int(ce_addr + m_mem->syndrome_offset("cie_end"));
+            int end = m_df->read_int(m_mem->syndrome_field(ce_addr, "cie_end"));
             if(type==25){
                 //physical attribute changes
                 LOGD << "reading syndrome type" << type << "(phys_att_change)";
@@ -80,7 +80,7 @@ Syndrome::Syndrome(DFInstance *df, VIRTADDR addr)
                 LOGD << "reading syndrome type" << type << "(transformation)";
                 m_has_transform = true;
                 if(m_mem->is_valid_address(m_mem->syndrome_offset("trans_race_id")))
-                    m_transform_race = m_df->read_int(ce_addr + m_mem->syndrome_offset("trans_race_id"));
+                    m_transform_race = m_df->read_int(m_mem->syndrome_field(ce_addr, "trans_race_id"));
             }
         }
     }else{
@@ -131,7 +131,7 @@ void Syndrome::load_attribute_changes(VIRTADDR addr, int start_idx, int count, i
     for(idx = 0; idx <=count; idx++){
         idx_offset = m_df->pointer_size() * idx;
         syn_att_change att_change;
-        att_change.percent = m_df->read_int(addr+m_mem->syndrome_offset("cie_first_perc")+idx_offset);
+        att_change.percent = m_df->read_int(m_mem->syndrome_field(addr, "cie_first_perc")+idx_offset);
         att_change.added = m_df->read_int(addr+add_offset+idx_offset);
         if(end < 0)
             att_change.is_permanent = true;

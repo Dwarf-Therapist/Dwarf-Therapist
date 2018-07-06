@@ -79,11 +79,11 @@ void FortressEntity::read_entity(){
 //    m_translated_name = m_df->get_translated_word(m_address + 0x14);
 
     m_id = m_df->read_int(m_address + m_df->pointer_size());
-    m_histfigs = m_df->enum_vec<qint32>(m_address + m_mem->hist_entity_offset("histfigs"));
+    m_histfigs = m_df->enum_vec<qint32>(m_mem->hist_entity_field(m_address, "histfigs"));
     //load squads
-    m_squads = m_df->enum_vec<qint32>(m_address + m_mem->hist_entity_offset("squads"));
+    m_squads = m_df->enum_vec<qint32>(m_mem->hist_entity_field(m_address, "squads"));
 
-    QVector<VIRTADDR> entities = m_df->enumerate_vector(m_mem->address("historical_entities_vector"));
+    QVector<VIRTADDR> entities = m_df->enumerate_vector(m_mem->global_address("historical_entities_vector"));
     QHash<int, position> positions;
     QString unk_name = tr("Unknown");
     position pos_unk = {unk_name,unk_name,unk_name,m_noble_colors.value(MULTIPLE)};
@@ -101,17 +101,17 @@ void FortressEntity::read_entity(){
         if(ent_type == 0 || ent == m_address){
 
             //load assignments and positions, mapping them to historical figure ids
-            QVector<VIRTADDR> addr_positions = m_df->enumerate_vector(ent + m_mem->hist_entity_offset("positions")); //positions in the fortress
-            QVector<VIRTADDR> addr_assignments = m_df->enumerate_vector(ent + m_mem->hist_entity_offset("assignments")); //assignments to positions
+            QVector<VIRTADDR> addr_positions = m_df->enumerate_vector(m_mem->hist_entity_field(ent, "positions")); //positions in the fortress
+            QVector<VIRTADDR> addr_assignments = m_df->enumerate_vector(m_mem->hist_entity_field(ent, "assignments")); //assignments to positions
 
 
             positions.clear();
             foreach(VIRTADDR pos, addr_positions){
-                position_id = m_df->read_int(pos + m_mem->hist_entity_offset("position_id"));
+                position_id = m_df->read_int(m_mem->hist_entity_field(pos, "position_id"));
                 position p;
-                p.name = m_df->read_string(pos + m_mem->hist_entity_offset("position_name"));
-                p.name_female = m_df->read_string(pos + m_mem->hist_entity_offset("position_female_name"));
-                p.name_male = m_df->read_string(pos + m_mem->hist_entity_offset("position_male_name"));
+                p.name = m_df->read_string(m_mem->hist_entity_field(pos, "position_name"));
+                p.name_female = m_df->read_string(m_mem->hist_entity_field(pos, "position_female_name"));
+                p.name_male = m_df->read_string(m_mem->hist_entity_field(pos, "position_male_name"));
                 raw_name = m_df->read_string(pos);
                 p.highlight = m_noble_colors.value(get_color_type(raw_name));
                 positions.insert(position_id,p);
@@ -120,8 +120,8 @@ void FortressEntity::read_entity(){
             //may be better to check all the different responsibility flags and other flags like succession/appointed etc
             //to get profiles of the different nobility types
             foreach(VIRTADDR assign, addr_assignments){
-                assign_pos_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_position_id")); //position for the assignment
-                hist_id = m_df->read_int(assign + m_mem->hist_entity_offset("assign_hist_id")); //dwarf assigned
+                assign_pos_id = m_df->read_int(m_mem->hist_entity_field(assign, "assign_position_id")); //position for the assignment
+                hist_id = m_df->read_int(m_mem->hist_entity_field(assign, "assign_hist_id")); //dwarf assigned
                 if(hist_id > 0){
                     position p = positions.value(assign_pos_id, pos_unk);
                     m_nobles.insert(hist_id,p);
@@ -130,7 +130,7 @@ void FortressEntity::read_entity(){
         }
     }
 
-    VIRTADDR beliefs_addr = m_address + m_mem->hist_entity_offset("beliefs");
+    VIRTADDR beliefs_addr = m_mem->hist_entity_field(m_address, "beliefs");
     for(int i = 0; i < GameDataReader::ptr()->get_total_belief_count();i++){
         int val = m_df->read_int(beliefs_addr + i * 4);
         if(val > 100)
@@ -143,7 +143,7 @@ void FortressEntity::read_entity(){
 void FortressEntity::refresh_squads(){
     if (!m_address)
         return;
-    m_squads = m_df->enum_vec<qint32>(m_address + m_mem->hist_entity_offset("squads"));
+    m_squads = m_df->enum_vec<qint32>(m_mem->hist_entity_field(m_address, "squads"));
 }
 
 void FortressEntity::load_noble_colors(){

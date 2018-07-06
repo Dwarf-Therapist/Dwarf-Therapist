@@ -75,16 +75,16 @@ void Race::load_data() {
 void Race::read_race() {
     m_df->attach();
     //m_id = m_df->read_int(m_address);
-    m_name = capitalize(m_df->read_string(m_address + m_mem->race_offset("name_singular")));
+    m_name = capitalize(m_df->read_string(m_mem->race_field(m_address, "name_singular")));
     TRACE << "RACE " << m_name << " at " << hexify(m_address);
-    m_name_plural = capitalize(m_df->read_string(m_address + m_mem->race_offset("name_plural")));
-    m_adjective = capitalize(m_df->read_string(m_address + m_mem->race_offset("adjective")));
+    m_name_plural = capitalize(m_df->read_string(m_mem->race_field(m_address, "name_plural")));
+    m_adjective = capitalize(m_df->read_string(m_mem->race_field(m_address, "adjective")));
 
-    m_child_name = capitalize(m_df->read_string(m_address + m_mem->race_offset("child_name_singular")));
-    m_child_name_plural = capitalize(m_df->read_string(m_address + m_mem->race_offset("child_name_plural")));
+    m_child_name = capitalize(m_df->read_string(m_mem->race_field(m_address, "child_name_singular")));
+    m_child_name_plural = capitalize(m_df->read_string(m_mem->race_field(m_address, "child_name_plural")));
 
-    m_baby_name = capitalize(m_df->read_string(m_address + m_mem->race_offset("baby_name_singular")));
-    m_baby_name_plural = capitalize(m_df->read_string(m_address + m_mem->race_offset("baby_name_plural")));
+    m_baby_name = capitalize(m_df->read_string(m_mem->race_field(m_address, "baby_name_singular")));
+    m_baby_name_plural = capitalize(m_df->read_string(m_mem->race_field(m_address, "baby_name_plural")));
 
     if(m_baby_name == "" && m_child_name != "")
         m_baby_name = m_child_name;
@@ -111,16 +111,16 @@ void Race::read_race() {
     m_baby_name = capitalizeEach(m_baby_name);
     m_baby_name_plural = capitalizeEach(m_baby_name_plural);
 
-    for (VIRTADDR addr: m_df->enumerate_vector(m_address + m_mem->race_offset("pref_string_vector"))) {
+    for (VIRTADDR addr: m_df->enumerate_vector(m_mem->race_field(m_address, "pref_string_vector"))) {
         m_pref_strings.append(m_df->read_string(addr));
     }
 
-    m_pop_ratio_vector = m_address + m_mem->race_offset("pop_ratio_vector");
-    m_castes_vector = m_address + m_mem->race_offset("castes_vector");
-    m_materials_addr = m_df->enumerate_vector(m_address + m_mem->race_offset("materials_vector"));
-    m_tissues_addr = m_df->enumerate_vector(m_address + m_mem->race_offset("tissues_vector"));
+    m_pop_ratio_vector = m_mem->race_field(m_address, "pop_ratio_vector");
+    m_castes_vector = m_mem->race_field(m_address, "castes_vector");
+    m_materials_addr = m_df->enumerate_vector(m_mem->race_field(m_address, "materials_vector"));
+    m_tissues_addr = m_df->enumerate_vector(m_mem->race_field(m_address, "tissues_vector"));
 
-    //m_description = m_df->read_string(m_address + m_mem->caste_offset("caste_descr"));
+    //m_description = m_df->read_string(m_mem->caste_field(m_address, "caste_descr"));
     QVector<VIRTADDR> castes = m_df->enumerate_vector(m_castes_vector);
     //LOGD << "RACE " << m_name << " (index:" << m_id << ") with " << castes.size() << "castes";
 
@@ -135,7 +135,7 @@ void Race::read_race() {
         load_caste_ratios();
     }
 
-    m_flags = FlagArray(m_df, m_address + m_mem->race_offset("flags"));
+    m_flags = FlagArray(m_df, m_mem->race_field(m_address, "flags"));
     m_df->detach();
 }
 

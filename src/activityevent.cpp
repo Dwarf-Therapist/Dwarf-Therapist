@@ -60,7 +60,7 @@ void ActivityEvent::read_data(){
         ACT_EVT_TYPE event_type = m_type;
 
         if(event_type == SERVICE_ORDER || event_type == COPY_WRITTEN){ //only a single participant
-            int id = m_df->read_int(m_address + mem->activity_offset("participants"));
+            int id = m_df->read_int(mem->activity_field(m_address, "participants"));
             if(!m_histfig_actions->contains(id)){
                 add_action(id,event_type);
             }
@@ -79,28 +79,28 @@ void ActivityEvent::read_data(){
                 }
                 //squad lead participants, check and change type or cancel if necessary
                 if(event_type == SQ_SKILL_DEMO){
-                    if(m_df->read_int(m_address + mem->activity_offset("sq_train_rounds")) <= 0){
+                    if(m_df->read_int(mem->activity_field(m_address, "sq_train_rounds")) <= 0){
                         continue;
                     }
-                    if(m_df->read_int(m_address + mem->activity_offset("sq_lead")) == histfig_id){ //some squad activities have leaders, check that first
+                    if(m_df->read_int(mem->activity_field(m_address, "sq_lead")) == histfig_id){ //some squad activities have leaders, check that first
                         event_type = SQ_LEAD_DEMO;
                     }else{
                         event_type = SQ_WATCH_DEMO;
                     }
                     //squad skill demo leaders and watchers
-                    QString skill_name = gdr->get_skill_name(m_df->read_int(m_address + mem->activity_offset("sq_skill")), false);
+                    QString skill_name = gdr->get_skill_name(m_df->read_int(mem->activity_field(m_address, "sq_skill")), false);
                     QString job_name = gdr->get_job((int)DwarfJob::ACTIVITY_OFFSET + (int)event_type)->name(skill_name);
                     add_action(histfig_id,event_type, job_name);
                     continue;
                 }
 
                 if(event_type == PRAY){
-                    short sphere_id = m_df->read_short(m_address + mem->activity_offset("pray_sphere"));
+                    short sphere_id = m_df->read_short(mem->activity_field(m_address, "pray_sphere"));
                     if(sphere_id == -1){ //no sphere indicates prayer
-                        VIRTADDR histfig_addr = m_df->find_historical_figure(m_df->read_short(m_address + mem->activity_offset("pray_deity")));
+                        VIRTADDR histfig_addr = m_df->find_historical_figure(m_df->read_short(mem->activity_field(m_address, "pray_deity")));
                         if(histfig_addr){
                             add_action(histfig_id,event_type,
-                                       tr("Pray to %1").arg(m_df->get_name(histfig_addr + m_df->memory_layout()->hist_figure_offset("hist_name"),true)));
+                                       tr("Pray to %1").arg(m_df->get_name(m_df->memory_layout()->hist_figure_field(histfig_addr, "hist_name"),true)));
                             continue;
                         }
                     }else{
@@ -109,17 +109,17 @@ void ActivityEvent::read_data(){
                     }
                 }
                 if(event_type == PONDER){
-                    int field = m_df->read_int(m_address + mem->activity_offset("knowledge_category"));
-                    int topic = m_df->read_int(m_address + mem->activity_offset("knowledge_flag"));
+                    int field = m_df->read_int(mem->activity_field(m_address, "knowledge_category"));
+                    int topic = m_df->read_int(mem->activity_field(m_address, "knowledge_flag"));
                     topic = log2((double)topic);
                     add_action(histfig_id,event_type,gdr->get_knowledge_desc(field,topic));
                     continue;
                 }
                 if(event_type == PERFORM){
-                    ACT_PERF_TYPE p_type = static_cast<ACT_PERF_TYPE>(m_df->read_int(m_address + mem->activity_offset("perf_type")));
-                    QVector<VIRTADDR> p_participants = m_df->enumerate_vector(m_address + mem->activity_offset("perf_participants"));
+                    ACT_PERF_TYPE p_type = static_cast<ACT_PERF_TYPE>(m_df->read_int(mem->activity_field(m_address, "perf_type")));
+                    QVector<VIRTADDR> p_participants = m_df->enumerate_vector(mem->activity_field(m_address, "perf_participants"));
                     foreach(VIRTADDR p_addr, p_participants){
-                        int id = m_df->read_int(p_addr + mem->activity_offset("perf_histfig"));
+                        int id = m_df->read_int(mem->activity_field(p_addr, "perf_histfig"));
                         if(m_histfig_actions->contains(id)){
                             continue;
                         }

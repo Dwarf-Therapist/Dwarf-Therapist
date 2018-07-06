@@ -59,8 +59,8 @@ void Reaction::load_data() {
 void Reaction::read_reaction() {
     m_df->attach();
     m_tag = m_df->read_string(m_address);
-    m_name = capitalize(m_df->read_string(m_address + m_df->memory_layout()->job_detail("reaction")));
-    m_skill_id = m_df->read_short(m_address + m_df->memory_layout()->job_detail("reaction_skill"));
+    m_name = capitalize(m_df->read_string(m_df->memory_layout()->job_field(m_address, "reaction")));
+    m_skill_id = m_df->read_short(m_df->memory_layout()->job_field(m_address, "reaction_skill"));
     m_df->detach();
 }
 

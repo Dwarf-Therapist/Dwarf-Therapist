@@ -35,9 +35,9 @@ public:
         m_token = m_df->read_string(bp_addr);
         build_bp_name();
 
-        m_layers_addr = m_df->enumerate_vector(bp_addr + m_df->memory_layout()->health_offset("layers_vector"));
-        m_parent_id = m_df->read_short(bp_addr + m_df->memory_layout()->health_offset("parent_id"));
-        m_flags = FlagArray(m_df,bp_addr + m_df->memory_layout()->health_offset("body_part_flags"));
+        m_layers_addr = m_df->enumerate_vector(m_df->memory_layout()->health_field(bp_addr, "layers_vector"));
+        m_parent_id = m_df->read_short(m_df->memory_layout()->health_field(bp_addr, "parent_id"));
+        m_flags = FlagArray(m_df,m_df->memory_layout()->health_field(bp_addr, "body_part_flags"));
     }
 
     virtual ~BodyPart(){
@@ -88,9 +88,9 @@ private:
     FlagArray m_flags;
 
     void build_bp_name(){
-        int bp_count = m_df->read_int(bp_addr + m_df->memory_layout()->health_offset("number"));
-        QVector<VIRTADDR> sing_names = m_df->enumerate_vector(bp_addr + m_df->memory_layout()->health_offset("names_vector"));
-        QVector<VIRTADDR> plural_names = m_df->enumerate_vector(bp_addr + m_df->memory_layout()->health_offset("names_plural_vector"));
+        int bp_count = m_df->read_int(m_df->memory_layout()->health_field(bp_addr, "number"));
+        QVector<VIRTADDR> sing_names = m_df->enumerate_vector(m_df->memory_layout()->health_field(bp_addr, "names_vector"));
+        QVector<VIRTADDR> plural_names = m_df->enumerate_vector(m_df->memory_layout()->health_field(bp_addr, "names_plural_vector"));
 
         QString bp_name = m_df->read_string(sing_names.at(0));
         QString bp_name_plural = m_df->read_string(plural_names.at(0));

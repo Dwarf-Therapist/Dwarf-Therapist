@@ -48,6 +48,6 @@ ItemSubtype * ItemAmmo::get_subType(){return m_ammo_def;}
 
 void ItemAmmo::read_def(){
     if(m_addr){
-        m_ammo_def = new ItemSubtype(m_iType,m_df, m_df->read_addr(m_addr + m_df->memory_layout()->item_offset("item_def")), this);
+        m_ammo_def = new ItemSubtype(m_iType,m_df, m_df->read_addr(m_df->memory_layout()->item_field(m_addr, "item_def")), this);
     }
 }

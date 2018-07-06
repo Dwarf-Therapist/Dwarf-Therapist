@@ -31,6 +31,6 @@ ItemSubtype * ItemInstrument::get_subType(){
 
 void ItemInstrument::read_def(){
     if(m_addr){
-        m_Instrument_def = new ItemSubtype(m_iType,m_df, m_df->read_addr(m_addr + m_df->memory_layout()->item_offset("item_def")), this);
+        m_Instrument_def = new ItemSubtype(m_iType,m_df, m_df->read_addr(m_df->memory_layout()->item_field(m_addr, "item_def")), this);
     }
 }

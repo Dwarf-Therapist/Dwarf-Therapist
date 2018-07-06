@@ -65,13 +65,13 @@ UnitEmotion::UnitEmotion(VIRTADDR addr, DFInstance *df, QObject *parent)
     , m_compare_id("")
 {
     MemoryLayout *m_mem = df->memory_layout();
-    m_eType = static_cast<EMOTION_TYPE>(df->read_int(addr+m_mem->emotion_offset("emotion_type")));
-    m_strength = df->read_int(addr+m_mem->emotion_offset("strength"));
-    m_thought_id = df->read_int(addr+m_mem->emotion_offset("thought_id"));
-    m_sub_id = df->read_int(addr+m_mem->emotion_offset("sub_id"));
-    m_optional_level = df->read_int(addr+m_mem->emotion_offset("level"));
-    m_year = df->read_int(addr+m_mem->emotion_offset("year"));
-    m_year_tick = df->read_int(addr+m_mem->emotion_offset("year_tick"));
+    m_eType = static_cast<EMOTION_TYPE>(df->read_int(m_mem->emotion_field(addr, "emotion_type")));
+    m_strength = df->read_int(m_mem->emotion_field(addr, "strength"));
+    m_thought_id = df->read_int(m_mem->emotion_field(addr, "thought_id"));
+    m_sub_id = df->read_int(m_mem->emotion_field(addr, "sub_id"));
+    m_optional_level = df->read_int(m_mem->emotion_field(addr, "level"));
+    m_year = df->read_int(m_mem->emotion_field(addr, "year"));
+    m_year_tick = df->read_int(m_mem->emotion_field(addr, "year_tick"));
     m_date_in_ticks = m_year * df->ticks_per_year + m_year_tick;
 
     GameDataReader *gdr = GameDataReader::ptr();

@@ -112,7 +112,7 @@ void UnitWound::read_wound(){
     MemoryLayout *mem = m_df->memory_layout();
 
     QList<short> desc_index;
-    quint32 general_flags = m_df->read_addr(m_addr + mem->wound_offset("general_flags"));
+    quint32 general_flags = m_df->read_addr(mem->wound_field(m_addr, "general_flags"));
 
     if(general_flags & 1)
         m_severed = true;
@@ -129,22 +129,22 @@ void UnitWound::read_wound(){
 
     m_is_critical = m_severed || m_mortal;
 
-    QVector<VIRTADDR> addr_wounded_parts = m_df->enumerate_vector(m_addr+mem->wound_offset("parts"));
+    QVector<VIRTADDR> addr_wounded_parts = m_df->enumerate_vector(mem->wound_field(m_addr, "parts"));
 
     foreach(VIRTADDR wounded_part, addr_wounded_parts){
         wounded_part_details wpd;
 
-        wpd.body_part_id = m_df->read_short(wounded_part + mem->wound_offset("id"));
-        short layer_id = m_df->read_short(wounded_part + mem->wound_offset("layer"));
+        wpd.body_part_id = m_df->read_short(mem->wound_field(wounded_part, "id"));
+        short layer_id = m_df->read_short(mem->wound_field(wounded_part, "layer"));
 
-        wpd.wound_flags1 = m_df->read_addr(wounded_part + mem->wound_offset("flags1"));
-        wpd.wound_flags2 = m_df->read_addr(wounded_part + mem->wound_offset("flags2"));
+        wpd.wound_flags1 = m_df->read_addr(mem->wound_field(wounded_part, "flags1"));
+        wpd.wound_flags2 = m_df->read_addr(mem->wound_field(wounded_part, "flags2"));
 
-        VIRTADDR addr_effect = wounded_part + mem->wound_offset("effects_vector");
+        VIRTADDR addr_effect = mem->wound_field(wounded_part, "effects_vector");
         wpd.effect_types = m_df->enumerate_vector_short(addr_effect);
 
-        wpd.cur_pen = m_df->read_short(wounded_part + mem->wound_offset("cur_pen"));
-        wpd.pen_max = m_df->read_short(wounded_part + mem->wound_offset("max_pen"));
+        wpd.cur_pen = m_df->read_short(mem->wound_field(wounded_part, "cur_pen"));
+        wpd.pen_max = m_df->read_short(mem->wound_field(wounded_part, "max_pen"));
 
         BodyPartDamage bp = m_unitHealth->get_body_part(wpd.body_part_id);
 
@@ -261,7 +261,7 @@ void UnitWound::read_wound(){
             add_detail(wpd,eHealth::HI_GELDED, wpd.wound_flags2 & 0x00000004);
 
             if(!m_caste_flags.has_flag(NO_PAIN)){
-                wpd.pain = m_df->read_int(wounded_part + mem->wound_offset("pain"));
+                wpd.pain = m_df->read_int(mem->wound_field(wounded_part, "pain"));
                 add_detail(wpd,eHealth::HI_PAIN, (wpd.pain > 50),(wpd.pain > 25),(wpd.pain > 0));
             }
 
@@ -321,7 +321,7 @@ void UnitWound::read_wound(){
         }
 
         //apparently severed parts can still bleed...
-        wpd.bleeding = m_df->read_int(wounded_part + mem->wound_offset("bleeding"));
+        wpd.bleeding = m_df->read_int(mem->wound_field(wounded_part, "bleeding"));
         if(wpd.bleeding){
             add_detail(wpd,eHealth::HI_BLEEDING,(wpd.bleeding >= 3),(wpd.bleeding < 3));
             m_is_critical = true;

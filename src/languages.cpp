@@ -61,8 +61,8 @@ void Languages::load_data() {
     m_language.clear();
     m_words.clear();
 
-    VIRTADDR generic_lang_table = m_mem->address("language_vector");
-    VIRTADDR translation_vector = m_mem->address("translation_vector");
+    VIRTADDR generic_lang_table = m_mem->global_address("language_vector");
+    VIRTADDR translation_vector = m_mem->global_address("translation_vector");
     VIRTADDR word_table_offset = m_mem->language_offset("word_table");
     TRACE << "LANGUAGES VECTOR" << hexify(translation_vector);
     TRACE << "GENERIC LANGUAGE VECTOR" << hexify(generic_lang_table);
@@ -106,10 +106,10 @@ QString Languages::language_word(VIRTADDR addr)
     // front_compound, rear_compound, first_adjective, second_adjective, hypen_compound
     // the_x, of_x
     QVector<QString> words;
-    int language_id = m_df->read_int(addr + m_df->memory_layout()->word_offset("language_id")); //language_name.language
+    int language_id = m_df->read_int(m_df->memory_layout()->word_field(addr, "language_id")); //language_name.language
     //language_name.words
     for (int i=0; i< 7; i++){
-        QString word = word_chunk(m_df->read_int(addr + m_df->memory_layout()->word_offset("words") + i*4), language_id);
+        QString word = word_chunk(m_df->read_int(m_df->memory_layout()->word_field(addr, "words") + i*4), language_id);
         words.append(word);
     }
     QString first, second, third;
@@ -134,9 +134,9 @@ QString Languages::english_word(VIRTADDR addr)
     QVector<QString> words;
     for (int i=0; i< 7; i++){
         //enum for what word type
-        short val = m_df->read_short(addr + m_df->memory_layout()->word_offset("word_type") + 2*i);
+        short val = m_df->read_short(m_df->memory_layout()->word_field(addr, "word_type") + 2*i);
         //words id to lookup based on the word type
-        QString word = word_chunk_declined(m_df->read_int(addr + m_df->memory_layout()->word_offset("words") + i*4), val);
+        QString word = word_chunk_declined(m_df->read_int(m_df->memory_layout()->word_field(addr, "words") + i*4), val);
         words.append(word);
     }
     QString first, second, third;

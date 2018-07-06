@@ -51,7 +51,7 @@ ItemArmorSubtype::ItemArmorSubtype(const ITEM_TYPE itype, DFInstance *df, const 
     }
 
     if(m_offset_props != -1){
-        m_layer = m_df->read_int(m_address + m_offset_props + m_mem->armor_subtype_offset("layer"));
+        m_layer = m_df->read_int(m_mem->armor_subtype_field(m_address + m_offset_props, "layer"));
 
         if(m_offset_level != -1){
             m_armor_level = m_df->read_byte(m_address + m_offset_level);

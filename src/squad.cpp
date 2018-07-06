@@ -68,13 +68,13 @@ void Squad::read_data() {
 }
 
 void Squad::read_id() {
-    m_id = m_df->read_int(m_address + m_mem->squad_offset("id"));
+    m_id = m_df->read_int(m_mem->squad_field(m_address, "id"));
     TRACE << "ID:" << m_id;
 }
 
 void Squad::read_name() {
-    m_name = m_df->get_translated_word(m_address + m_mem->squad_offset("name"));
-    QString alias = m_df->read_string(m_address + m_mem->squad_offset("alias"));
+    m_name = m_df->get_translated_word(m_mem->squad_field(m_address, "name"));
+    QString alias = m_df->read_string(m_mem->squad_field(m_address, "alias"));
     if(alias != "")
         m_name = alias;
     TRACE << "Name:" << m_name;
@@ -84,18 +84,18 @@ void Squad::read_name() {
 
 void Squad::read_members() {
     VIRTADDR addr;
-    m_members_addr = m_df->enumerate_vector(m_address + m_mem->squad_offset("members"));
+    m_members_addr = m_df->enumerate_vector(m_mem->squad_field(m_address, "members"));
     int member_count = 0;
     foreach(addr, m_members_addr){
         if(m_df->read_int(addr)>0)
             member_count++;
     }
 
-    short carry_food = m_df->read_short(m_address+m_mem->squad_offset("carry_food"));
-    short carry_water = m_df->read_short(m_address+m_mem->squad_offset("carry_water"));
+    short carry_food = m_df->read_short(m_mem->squad_field(m_address, "carry_food"));
+    short carry_water = m_df->read_short(m_mem->squad_field(m_address, "carry_water"));
     int ammo_count = 0;
-    foreach(addr, m_df->enumerate_vector(m_address+m_mem->squad_offset("ammunition"))){
-        ammo_count += m_df->read_int(addr+m_mem->squad_offset("ammunition_qty"));
+    foreach(addr, m_df->enumerate_vector(m_mem->squad_field(m_address, "ammunition"))){
+        ammo_count += m_df->read_int(m_mem->squad_field(addr, "ammunition_qty"));
     }
     int ammo_each = 0;
     if(member_count > 0  && ammo_count > 0)
@@ -109,27 +109,27 @@ void Squad::read_members() {
 
         int histfig_id = m_df->read_int(addr);
         m_members.insert(position,histfig_id);
-        read_equip_category(addr+m_mem->squad_offset("armor_vector"),ARMOR,u);
-        read_equip_category(addr+m_mem->squad_offset("helm_vector"),HELM,u);
-        read_equip_category(addr+m_mem->squad_offset("pants_vector"),PANTS,u);
-        read_equip_category(addr+m_mem->squad_offset("gloves_vector"),GLOVES,u);
-        read_equip_category(addr+m_mem->squad_offset("shoes_vector"),SHOES,u);
-        read_equip_category(addr+m_mem->squad_offset("shield_vector"),SHIELD,u);
-        read_equip_category(addr+m_mem->squad_offset("weapon_vector"),WEAPON,u);
+        read_equip_category(m_mem->squad_field(addr, "armor_vector"),ARMOR,u);
+        read_equip_category(m_mem->squad_field(addr, "helm_vector"),HELM,u);
+        read_equip_category(m_mem->squad_field(addr, "pants_vector"),PANTS,u);
+        read_equip_category(m_mem->squad_field(addr, "gloves_vector"),GLOVES,u);
+        read_equip_category(m_mem->squad_field(addr, "shoes_vector"),SHOES,u);
+        read_equip_category(m_mem->squad_field(addr, "shield_vector"),SHIELD,u);
+        read_equip_category(m_mem->squad_field(addr, "weapon_vector"),WEAPON,u);
 
         //add other items
         if(ammo_count > 0){
-            u->add_uniform_item(addr+m_mem->squad_offset("quiver"),QUIVER);
+            u->add_uniform_item(m_mem->squad_field(addr, "quiver"),QUIVER);
             u->add_uniform_item(AMMO,-1,-1,ammo_each);
         }
         if(carry_food)
-            u->add_uniform_item(addr+m_mem->squad_offset("backpack"),BACKPACK);
+            u->add_uniform_item(m_mem->squad_field(addr, "backpack"),BACKPACK);
         if(carry_water)
-            u->add_uniform_item(addr+m_mem->squad_offset("flask"),FLASK);
+            u->add_uniform_item(m_mem->squad_field(addr, "flask"),FLASK);
 
         m_uniforms.insert(position,u);
         LOGD << "checking orders for position" << position;
-        foreach(VIRTADDR ord_addr, m_df->enumerate_vector(addr+m_mem->squad_offset("orders"))){
+        foreach(VIRTADDR ord_addr, m_df->enumerate_vector(m_mem->squad_field(addr, "orders"))){
             read_order(ord_addr, histfig_id);
         }
         position++;
@@ -140,20 +140,20 @@ void Squad::read_orders(){
     //read the squad order
     LOGD << "checking squad order";
     m_squad_order = ORD_UNKNOWN;
-    foreach(VIRTADDR addr, m_df->enumerate_vector(m_address + m_mem->squad_offset("orders"))){
+    foreach(VIRTADDR addr, m_df->enumerate_vector(m_mem->squad_field(m_address, "orders"))){
         read_order(addr,-1);
     }
 
     LOGD << "checking squad schedules";
 
     //read the scheduled orders
-    QVector<VIRTADDR> schedules = m_df->enumerate_vector(m_address + m_mem->squad_offset("schedules"));
-    int32_t idx = m_df->read_mem<int32_t>(m_address + m_mem->squad_offset("alert"));
+    QVector<VIRTADDR> schedules = m_df->enumerate_vector(m_mem->squad_field(m_address, "schedules"));
+    int32_t idx = m_df->read_mem<int32_t>(m_mem->squad_field(m_address, "alert"));
     USIZE sched_size = m_mem->squad_offset("sched_size");
     USIZE month = m_df->current_year_time() / m_df->ticks_per_month;
     VIRTADDR base_addr = schedules.at(idx) + (sched_size * month);
-    QVector<VIRTADDR> orders = m_df->enumerate_vector(base_addr + m_mem->squad_offset("sched_orders"));
-    QVector<VIRTADDR> assigned = m_df->enumerate_vector(base_addr + m_mem->squad_offset("sched_assign"));
+    QVector<VIRTADDR> orders = m_df->enumerate_vector(m_mem->squad_field(base_addr, "sched_orders"));
+    QVector<VIRTADDR> assigned = m_df->enumerate_vector(m_mem->squad_field(base_addr, "sched_assign"));
     for(int pos = 0; pos < assigned.count(); pos ++){
         int order_id = m_df->read_int(assigned.at(pos));
         int histfig_id = m_members.value(pos);
@@ -247,8 +247,8 @@ void Squad::assign_to_squad(Dwarf *d, bool committing){
         }
         if(addr){
             m_df->write_int(addr,d->historical_id());
-            m_df->write_int(d->address() + m_df->memory_layout()->dwarf_offset("squad_id"), m_id);
-            m_df->write_int(d->address() + m_df->memory_layout()->dwarf_offset("squad_position"), position);
+            m_df->write_int(m_df->memory_layout()->dwarf_field(d->address(), "squad_id"), m_id);
+            m_df->write_int(m_df->memory_layout()->dwarf_field(d->address(), "squad_position"), position);
         }
     }else{
         position = find_position(-1); //find the first open position
@@ -275,8 +275,8 @@ bool Squad::remove_from_squad(Dwarf *d, bool committing){
                 return false;
 
             m_df->write_int(addr, -1);
-            m_df->write_int(d->address() + m_df->memory_layout()->dwarf_offset("squad_id"), -1);
-            m_df->write_int(d->address() + m_df->memory_layout()->dwarf_offset("squad_position"), -1);
+            m_df->write_int(m_df->memory_layout()->dwarf_field(d->address(), "squad_id"), -1);
+            m_df->write_int(m_df->memory_layout()->dwarf_field(d->address(), "squad_position"), -1);
 
         }else{
             m_uniforms.value(position)->clear();
@@ -309,7 +309,7 @@ void Squad::rename_squad(QString alias){
 void Squad::commit_pending(){
     if(m_name != m_pending_name){
         if(m_df->fortress()->squad_is_active(m_id)){
-            m_df->write_string(m_address + m_df->memory_layout()->squad_offset("alias"),m_pending_name);
+            m_df->write_string(m_df->memory_layout()->squad_field(m_address, "alias"),m_pending_name);
         }
     }
 }

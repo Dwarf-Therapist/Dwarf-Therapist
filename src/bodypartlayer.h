@@ -39,16 +39,16 @@ public:
         if(!m_layer_name.isEmpty())
             m_layer_name = capitalize(m_layer_name.toLower());
 
-        m_global_layer_id = m_df->read_int(m_addr + mem->health_offset("layer_global_id"));
+        m_global_layer_id = m_df->read_int(mem->health_field(m_addr, "layer_global_id"));
 
         //get the tissue this layer is made from. this id is an index reference in the race's tissue list
-        m_tissue_id = m_df->read_int(m_addr + mem->health_offset("layer_tissue"));
+        m_tissue_id = m_df->read_int(mem->health_field(m_addr, "layer_tissue"));
 
         if(m_race){
             VIRTADDR t_addr = m_race->get_tissue_address(m_tissue_id);
             if(t_addr){
-                m_tissue_name = m_df->read_string(t_addr + mem->health_offset("tissue_name"));
-                m_tissue_flags = FlagArray(m_df,t_addr+mem->health_offset("tissue_flags"));
+                m_tissue_name = m_df->read_string(mem->health_field(t_addr, "tissue_name"));
+                m_tissue_flags = FlagArray(m_df,mem->health_field(t_addr, "tissue_flags"));
 
 //                Material *m = m_df->find_material(m_df->read_int(t_addr+0xb4), m_df->read_short(t_addr+0xb0));
 //                short state_id = m_df->read_short(t_addr + 0xf0);
