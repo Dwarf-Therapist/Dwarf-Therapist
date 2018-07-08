@@ -387,7 +387,7 @@ GameDataReader::GameDataReader(QObject *parent)
             std::make_tuple(DH_FINE, "fine", -10000),
             std::make_tuple(DH_CONTENT, "content", -25000),
             std::make_tuple(DH_HAPPY, "happy", -50000),
-            std::make_tuple(DH_ECSTATIC, "ecstatic", std::numeric_limits<int>::min())}) {
+            std::make_tuple(DH_ECSTATIC, "ecstatic", -100000)}) {
         m_data_settings->beginGroup(std::get<1>(t));
         m_happiness_levels[std::get<0>(t)].threshold = m_data_settings->value("threshold", std::get<2>(t)).toInt();
         m_happiness_levels[std::get<0>(t)].desc = m_data_settings->value("desc").toString();
