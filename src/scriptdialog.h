@@ -36,7 +36,6 @@ class ScriptDialog : public QDialog {
 public:
     ScriptDialog(QWidget *parent = 0);
     virtual ~ScriptDialog();
-    bool event(QEvent *evt);
 
 public slots:
     //! clear the script editing box
