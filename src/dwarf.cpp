@@ -2736,9 +2736,12 @@ QString Dwarf::tooltip_text() {
 
     s->endGroup();
 
-    html.append(QString("<table><tr><td width=\"300\">%1</td><td width=\"600\">%2</td></tr></table>")
-                .arg(first_column)
-                .arg(second_column));
+    if (!second_column.isEmpty())
+        html.append(QString("<table><tr><td width=\"300\">%1</td><td width=\"600\">%2</td></tr></table>")
+                    .arg(first_column)
+                    .arg(second_column));
+    else
+        html.append(first_column);
     return html;
 }
 
