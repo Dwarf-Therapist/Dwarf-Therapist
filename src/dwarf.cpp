@@ -1871,7 +1871,7 @@ void Dwarf::read_emotions(VIRTADDR personality_base){
 
     auto gdr = GameDataReader::ptr();
     int i = 0;
-    while (i < DH_TOTAL_LEVELS &&
+    while (i < DH_TOTAL_LEVELS-1 &&
            m_stress_level < gdr->get_happiness_threshold(static_cast<DWARF_HAPPINESS>(i)))
          ++i;
     m_happiness = static_cast<DWARF_HAPPINESS>(i);
