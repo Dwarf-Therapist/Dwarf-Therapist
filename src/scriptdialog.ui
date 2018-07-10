@@ -84,7 +84,7 @@
         </font>
        </property>
       </widget>
-      <widget class="QTextEdit" name="txt_status_tip">
+      <widget class="QTextEdit" name="txt_script_log">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>

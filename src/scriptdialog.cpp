@@ -441,6 +441,11 @@ bool ScriptDialog::script_is_valid(){
     if(DT->get_dwarves().count()>0){
         m_dwarf = DT->get_dwarves().at(0);
     }
+    AdaptiveColorFactory color;
+    QString error = QString("<font color=\"%1\">%2</font>").arg(color.color(Qt::red).name());
+    QString warning = QString("<font color=\"%1\">%2</font>").arg(color.color(QColor::fromHsv(30, 255, 255)).name());
+    QString success = QString("<font color=\"%1\">%2</font>").arg(color.color(Qt::green).name());
+
     if(!script.isEmpty() && m_dwarf){
         QJSEngine m_engine;
         QJSValue d_obj = m_engine.newQObject(m_dwarf);
@@ -449,24 +454,28 @@ bool ScriptDialog::script_is_valid(){
         if(!ret.isBool()){
             QString err_msg;
             if(ret.isError()) {
-                err_msg = tr("<font color=red>%1: %2<br/>%3</font>")
+                err_msg = tr("%1: %2<br/>%3")
                                  .arg(ret.property("name").toString())
                                  .arg(ret.property("message").toString())
                                  .arg(ret.property("stack").toString().replace("\n", "<br/>"));
             }else{
                 m_engine.globalObject().setProperty("__internal_script_return_value_check", ret);
-                err_msg = tr("<font color=red>Script returned %1 instead of boolean</font>")
+                err_msg = tr("Script returned %1 instead of boolean")
                                  .arg(m_engine.evaluate(QString("typeof __internal_script_return_value_check")).toString());
                 m_engine.globalObject().deleteProperty("__internal_script_return_value_check");
             }
-            ui->script_edit->setStatusTip(err_msg);
-            ui->txt_status_tip->setText(err_msg);
+            ui->txt_script_log->setText(error.arg(err_msg));
             return false;
-        }else{
-            ui->script_edit->setStatusTip(ui->script_edit->whatsThis());
         }
-    }else{
-        ui->script_edit->setStatusTip(ui->script_edit->whatsThis());
+        else {
+            ui->txt_script_log->setText(success.arg(tr("The script is valid.")));
+        }
+    }
+    else if (!m_dwarf) {
+        ui->txt_script_log->setText(warning.arg(tr("Cannot test script without a dwarf.")));
+    }
+    else {
+        ui->txt_script_log->setText(warning.arg(tr("The script is empty.")));
     }
     return true;
 }
@@ -507,12 +516,4 @@ void ScriptDialog::save_pressed() {
 
 void ScriptDialog::close_pressed(){
     this->reject();
-}
-
-bool ScriptDialog::event(QEvent *evt) {
-    if (evt->type() == QEvent::StatusTip) {
-        ui->txt_status_tip->setHtml(static_cast<QStatusTipEvent*>(evt)->tip());
-        return true; // we've handled it, don't pass it
-    }
-    return QWidget::event(evt); // pass the event along the chain
 }
