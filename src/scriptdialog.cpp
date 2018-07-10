@@ -456,7 +456,7 @@ bool ScriptDialog::script_is_valid(){
             }else{
                 m_engine.globalObject().setProperty("__internal_script_return_value_check", ret);
                 err_msg = tr("<font color=red>Script returned %1 instead of boolean</font>")
-                                 .arg(m_engine.evaluate(QString("typeof __internal_scripte_return_value_check")).toString());
+                                 .arg(m_engine.evaluate(QString("typeof __internal_script_return_value_check")).toString());
                 m_engine.globalObject().deleteProperty("__internal_script_return_value_check");
             }
             ui->script_edit->setStatusTip(err_msg);
