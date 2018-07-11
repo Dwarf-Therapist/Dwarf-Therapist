@@ -67,6 +67,7 @@ ViewManager::ViewManager(DwarfModel *dm, DwarfModelProxy *proxy,
     m_add_tab_button->setToolTip(tr("Add an existing view. New views can be copied or created from the [Windows->Docks->Grid Views] dock."));
     draw_add_tab_button();
     setCornerWidget(m_add_tab_button, Qt::TopLeftCorner);
+    m_add_tab_button->setMinimumHeight(m_add_tab_button->minimumSizeHint().height());
 
     connect(tabBar(), SIGNAL(tabMoved(int, int)), SLOT(write_views()));
     connect(tabBar(), SIGNAL(currentChanged(int)), SLOT(setCurrentIndex(int)), Qt::UniqueConnection);
@@ -83,7 +84,6 @@ ViewManager::~ViewManager(){
 
     m_model = 0;
     m_proxy = 0;
-    delete m_add_tab_button;
     m_selected_dwarfs.clear();
 
     delete m_squad_warning;
@@ -394,10 +394,11 @@ GridView *ViewManager::get_active_view() {
 }
 
 void ViewManager::remove_view(GridView *view) {
-    m_views.removeAll(view);
-    for (int i = 0; i < count(); ++i) {
-        if (tabText(i) == view->name())
+    m_views.removeOne(view);
+    for (int i = count()-1; i >= 0; --i) {
+        if (tabText(i) == view->name()) {
             removeTab(i);
+        }
     }
     write_views();
     draw_add_tab_button();
@@ -440,6 +441,11 @@ StateTableView *ViewManager::get_stv(int idx) {
 }
 
 void ViewManager::setCurrentIndex(int idx) {
+    if (idx == -1) {
+        m_model->set_grid_view(nullptr);
+        return;
+    }
+
     if (idx < 0 || idx > count()-1) {
         LOGW << "tab switch to index" << idx << "requested but there are " <<
             "only" << count() << "tabs";
@@ -621,11 +627,6 @@ int ViewManager::add_tab_for_gridview(GridView *v) {
 }
 
 void ViewManager::remove_tab_for_gridview(int idx) {
-    if (count() < 2) {
-        QMessageBox::warning(this, tr("Can't Remove Tab"),
-            tr("Cannot remove the last tab!"));
-        return;
-    }
     foreach(GridView *v, m_views) {
         if (v->name() == tabText(idx)) {
             // find out if there are other dupes of this view still active...
