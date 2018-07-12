@@ -331,8 +331,7 @@ void ViewManager::write_tab_settings() {
         tab_order << view_name;
         DT->user_settings()->setValue(QString("gui_options/%1_group_by").arg(view_name),get_stv(i)->get_last_group_by());
     }
-    if(!tab_order.isEmpty())
-        DT->user_settings()->setValue("gui_options/tab_order", tab_order);
+    DT->user_settings()->setValue("gui_options/tab_order", tab_order);
 }
 
 void ViewManager::write_views() {
