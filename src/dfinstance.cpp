@@ -937,31 +937,36 @@ void DFInstance::send_connection_interrupted(){
 }
 
 QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
-    VIRTADDR active_units = m_layout->address("active_creature_vector");
-    VIRTADDR all_units = m_layout->address("creature_vector");
-
-    //first try the active unit list
-    QVector<VIRTADDR> entries = enumerate_vector(active_units);
-    if(entries.isEmpty()){
-        if(report_progress){
-            LOGI << "no active units (embark) using full unit list";
-        }
-        entries = enumerate_vector(all_units);
-    }else{
-        //there are active units, but are they ours?
-        int civ_offset = m_layout->dwarf_offset("civ");
-        foreach(VIRTADDR entry, entries){
-            if(read_word(entry + civ_offset)==m_dwarf_civ_id){
-                if(report_progress){
-                    LOGI << "using active units";
+    QVector<VIRTADDR> entries;
+    // Check if a viewscreen is the embark screen
+    auto gview = m_layout->address("gview");
+    auto viewscreen_setupdwarfgame_vtable = m_layout->address("viewscreen_setupdwarfgame_vtable");
+    auto view_offset = m_layout->viewscreen_offset("view");
+    auto child_view_offset = m_layout->viewscreen_offset("child");
+    if (gview != static_cast<VIRTADDR>(-1) && view_offset != -1 && child_view_offset != -1) {
+        VIRTADDR current_viewscreen = gview + view_offset;
+        while (current_viewscreen) {
+            auto vtable = read_addr(current_viewscreen);
+            if (report_progress) {
+                LOGD << "Found viewscreen with vtable" << hexify(vtable);
+            }
+            if (vtable == viewscreen_setupdwarfgame_vtable) {
+                // use embark screen unit list
+                entries = enumerate_vector(current_viewscreen + m_layout->viewscreen_offset("setupdwarfgame_units"));
+                if (report_progress) {
+                    LOGI << "using embark viewscreen unit list";
                 }
                 break;
             }
+            current_viewscreen = read_addr(current_viewscreen + child_view_offset);
         }
-        if(report_progress){
-            LOGI << "no active units with our civ (reclaim), using full unit list";
+    }
+    // Use the active unit list, if the embark viewscreen was not found
+    if (entries.isEmpty()) {
+        entries = enumerate_vector(m_layout->address("active_creature_vector"));
+        if (report_progress) {
+            LOGI << "using active unit list";
         }
-        entries = enumerate_vector(all_units);
     }
     if(entries.count() > 0 && m_status == DFS_LAYOUT_OK){
         m_status = DFS_GAME_LOADED;

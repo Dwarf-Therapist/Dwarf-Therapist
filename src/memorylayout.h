@@ -42,6 +42,7 @@ public:
         MEM_ART,
         MEM_JOB,
         MEM_SOUL,
+        MEM_VIEWSCR,
         MEM_COUNT
     } MEM_SECTION;
 
@@ -81,6 +82,7 @@ public:
         case MEM_ART: return "art_offsets";
         case MEM_JOB: return "job_details";
         case MEM_SOUL: return "soul_details";
+        case MEM_VIEWSCR: return "viewscreen_offsets";
         case MEM_UNK:
         default:
                        return "UNK";
@@ -146,6 +148,7 @@ public:
     qint16 art_offset(const QString & key) const {return offset(MEM_ART,key);}
     qint16 job_detail(const QString &key) const {return offset(MEM_JOB,key);}
     qint16 soul_detail(const QString &key) const {return offset(MEM_SOUL,key);}
+    qint16 viewscreen_offset(const QString &key) const {return offset(MEM_VIEWSCR,key);}
 
     QHash<uint, QString> invalid_flags_1() {return get_flags(INVALID_FLAGS_1) ;}
     QHash<uint, QString> invalid_flags_2() {return get_flags(INVALID_FLAGS_2);}
