@@ -945,7 +945,9 @@ QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
     auto child_view_offset = m_layout->viewscreen_offset("child");
     if (gview != static_cast<VIRTADDR>(-1) && view_offset != -1 && child_view_offset != -1) {
         VIRTADDR current_viewscreen = gview + view_offset;
-        while (current_viewscreen) {
+        static constexpr int max_depth = 5;
+        int depth = 0;
+        while (current_viewscreen && depth < max_depth) {
             auto vtable = read_addr(current_viewscreen);
             if (report_progress) {
                 LOGD << "Found viewscreen with vtable" << hexify(vtable);
@@ -959,6 +961,7 @@ QVector<VIRTADDR> DFInstance::get_creatures(bool report_progress){
                 break;
             }
             current_viewscreen = read_addr(current_viewscreen + child_view_offset);
+            ++depth;
         }
     }
     // Use the active unit list, if the embark viewscreen was not found
