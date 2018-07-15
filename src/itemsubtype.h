@@ -36,8 +36,8 @@ enum ITEMDEF_FLAG
     ITEM_INCOMPLETE = 1000,
     ITEM_MELEE_WEAPON,
     ITEM_RANGED_WEAPON,
-    ITEM_IS_ARMOR = 1003, // value fixed for backward compatibility
-    ITEM_IS_CLOTHING = 1004,
+    ITEM_IS_CLOTHING = 1003, // value fixed for backward compatibility
+    ITEM_IS_ARMOR = 1004,
     // flags based on the ITEM_TYPE
     ITEM_TYPE_IS_TRADE_GOOD = 1005,
     ITEM_TYPE_IS_EQUIPMENT,
