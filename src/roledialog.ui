@@ -377,6 +377,18 @@
     <string>Expand all</string>
    </property>
   </action>
+  <action name="edit_weight_action">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/img/script_pencil.png</normaloff>:/img/script_pencil.png</iconset>
+   </property>
+   <property name="text">
+    <string>Edit weight</string>
+   </property>
+   <property name="toolTip">
+    <string>Edit the weight on this line</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
