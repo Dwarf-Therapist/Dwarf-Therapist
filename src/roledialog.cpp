@@ -370,6 +370,7 @@ void RoleDialog::aspect_tree_context_menu(const QPoint &pos)
 
     QMenu menu (ui->tree_aspects);
     if (index.isValid()) {
+        menu.addAction(ui->edit_weight_action);
         if (index.parent().isValid()) {
             menu.addAction(ui->remove_action);
         }
@@ -405,6 +406,10 @@ void RoleDialog::aspect_tree_context_menu(const QPoint &pos)
     }
     else if (result == ui->reset_default_weight_action) {
         m_model->reset_default_weight(index);
+    }
+    else if (result == ui->edit_weight_action) {
+        auto weight_index = m_model->sibling(index.row(), RoleModel::ColumnWeight, index);
+        ui->tree_aspects->edit(weight_index);
     }
 }
 
