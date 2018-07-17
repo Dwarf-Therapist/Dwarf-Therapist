@@ -115,6 +115,9 @@ RoleDialog::RoleDialog(RolePreferenceModel *pref_model, QWidget *parent)
 
     // Setup aspects tree view
     ui->tree_aspects->setItemDelegateForColumn(RoleModel::ColumnWeight, &m_weight_delegate);
+    ui->tree_aspects->setEditTriggers(QAbstractItemView::DoubleClicked
+                                    | QAbstractItemView::EditKeyPressed
+                                    | QAbstractItemView::AnyKeyPressed);
     ui->tree_aspects->setModel(m_model.get());
 
     connect(ui->tree_aspects, &QWidget::customContextMenuRequested,

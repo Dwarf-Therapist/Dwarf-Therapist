@@ -298,7 +298,7 @@ QVariant RoleModel::data(const QModelIndex &index, int role) const
                     ? tr("default (%1)").arg(QString::number(w.weight()))
                     : QString::number(w.weight());
             case Qt::EditRole:
-                return w.weight();
+                return w.is_default() ? 0.0 : w.weight();
             case Qt::ToolTipRole:
                 return tr("%1 weight").arg(info->category_name);
             case Qt::StatusTipRole:
