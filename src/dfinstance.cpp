@@ -51,6 +51,7 @@ THE SOFTWARE.
 #include "rolecalcbase.h"
 #include "defaultroleweight.h"
 #include "standardpaths.h"
+#include "unitneed.h"
 
 #include <QTimer>
 #include <QTime>
@@ -88,6 +89,7 @@ DFInstance::DFInstance(QObject* parent)
     , m_status(DFS_DISCONNECTED)
     , m_languages(0x0)
     , m_fortress(0x0)
+    , m_needs_data(Dwarf::FOCUS_DEGREE_COUNT)
     , m_fortress_name(tr("Embarking"))
     , m_fortress_name_translated("")
     , m_squad_vector(0)
@@ -414,6 +416,8 @@ QVector<Dwarf*> DFInstance::load_dwarves() {
         m_emotion_counts.clear();
         qDeleteAll(m_equip_warning_counts);
         m_equip_warning_counts.clear();
+        m_needs_data.overall_focus.clear();
+        m_needs_data.needs.clear();
 
         t.restart();
         load_role_ratings();
@@ -523,6 +527,17 @@ void DFInstance::load_population_data(){
                 }
                 EquipWarn *eq_warn = m_equip_warning_counts.value(i_type);
                 eq_warn->add_detail(d,wi);
+            }
+
+            //needs
+            m_needs_data.overall_focus.dwarves[d->get_focus_degree()].push_back(d);
+            for (const auto &p: d->get_needs()) {
+                auto need = p.second.get();
+                auto key = std::make_tuple(need->id(), need->deity_id());
+                auto it = m_needs_data.needs.lower_bound(key);
+                if (it->first != key)
+                    it = m_needs_data.needs.emplace_hint(it, key, UnitNeed::DEGREE_COUNT);
+                it->second.dwarves[need->focus_degree()].push_back(d);
             }
         }
     }

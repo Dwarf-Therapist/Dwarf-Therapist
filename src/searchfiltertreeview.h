@@ -50,6 +50,9 @@ public:
     QAbstractItemView *view();
     const QAbstractItemView *view() const;
 
+    QSortFilterProxyModel &filter_proxy();
+    const QSortFilterProxyModel &filter_proxy() const;
+
     QModelIndex get_selected_item() const;
     QItemSelection get_selection() const;
 

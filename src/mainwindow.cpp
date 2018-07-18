@@ -65,6 +65,7 @@ THE SOFTWARE.
 #include "standardpaths.h"
 #include "rolepreferencemodel.h"
 #include "defaultroleweight.h"
+#include "needsdock.h"
 
 #include <QCompleter>
 #include <QDesktopServices>
@@ -153,6 +154,11 @@ MainWindow::MainWindow(QWidget *parent)
     equipoverview_dock->setFloating(false);
     addDockWidget(Qt::RightDockWidgetArea, equipoverview_dock);
 
+    NeedsDock *needs_dock = new NeedsDock(this);
+    needs_dock->setHidden(true);
+    needs_dock->setFloating(false);
+    addDockWidget(Qt::RightDockWidgetArea, needs_dock);
+
     ui->menu_docks->addAction(ui->dock_pending_jobs_list->toggleViewAction());
     ui->menu_docks->addAction(ui->dock_custom_professions->toggleViewAction());
     ui->menu_docks->addAction(grid_view_dock->toggleViewAction());
@@ -163,6 +169,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menu_docks->addAction(thought_dock->toggleViewAction());
     ui->menu_docks->addAction(health_dock->toggleViewAction());
     ui->menu_docks->addAction(equipoverview_dock->toggleViewAction());
+    ui->menu_docks->addAction(needs_dock->toggleViewAction());
 
     ui->menuWindows->addAction(ui->main_toolbar->toggleViewAction());
 
@@ -196,16 +203,25 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(m_view_manager,SIGNAL(group_changed(int)), this, SLOT(display_group(int)));
 
-    connect(pref_dock,SIGNAL(item_selected(QList<QPair<QString,QString> >)),this,SLOT(preference_selected(QList<QPair<QString,QString> >)));
-    connect(thought_dock, SIGNAL(item_selected(QVariantList)), this, SLOT(thought_selected(QVariantList)));
-    connect(health_dock, SIGNAL(item_selected(QList<QPair<int,int> >)), this, SLOT(health_legend_selected(QList<QPair<int,int> >)));
-    connect(equipoverview_dock, SIGNAL(item_selected(QVariantList)), this, SLOT(equipoverview_selected(QVariantList)));
+    connect(pref_dock,SIGNAL(item_selected(QList<QPair<QString,QString> >)),
+            this,SLOT(preference_selected(QList<QPair<QString,QString> >)));
+    connect(thought_dock, SIGNAL(item_selected(QVariantList)),
+            this, SLOT(thought_selected(QVariantList)));
+    connect(health_dock, SIGNAL(item_selected(QList<QPair<int,int> >)),
+            this, SLOT(health_legend_selected(QList<QPair<int,int> >)));
+    connect(equipoverview_dock, SIGNAL(item_selected(QVariantList)),
+            this, SLOT(equipoverview_selected(QVariantList)));
+    connect(needs_dock, SIGNAL(focus_selected(QVariantList)),
+            this, SLOT(focus_selected(QVariantList)));
+    connect(needs_dock, SIGNAL(need_selected(QVariantList, bool)),
+            this, SLOT(need_selected(QVariantList, bool)));
 
     connect(m_role_editor, SIGNAL(finished(int)), this, SLOT(done_editing_role(int)),Qt::UniqueConnection);
 
     connect(this,SIGNAL(lostConnection()),equipoverview_dock,SLOT(clear()));
     connect(this,SIGNAL(lostConnection()),pref_dock,SLOT(clear()));
     connect(this,SIGNAL(lostConnection()),thought_dock,SLOT(clear()));
+    connect(this,SIGNAL(lostConnection()),needs_dock,SLOT(clear()));
 
     connect(ui->btn_clear_filters, SIGNAL(clicked()),this,SLOT(clear_all_filters()));
 
@@ -1449,6 +1465,49 @@ void MainWindow::health_legend_selected(QList<QPair<int, int> > vals){
         m_proxy->apply_script(tr("Health"),filters.join(" && "));
     }else{
         m_proxy->clear_script(tr("Health"));
+    }
+}
+
+void MainWindow::focus_selected(QVariantList list)
+{
+    if (list.isEmpty()) {
+        m_proxy->clear_script(tr("Focus"));
+    }
+    else {
+        QStringList tests;
+        for (const auto &item: list) {
+            int degree = item.toInt();
+            tests.append(QString("d.get_focus_degree() == %1").arg(degree));
+        }
+        m_proxy->apply_script(tr("Focus"), tests.join("||"));
+    }
+}
+
+void MainWindow::need_selected(QVariantList list, bool match_all)
+{
+    if (list.isEmpty()) {
+        m_proxy->clear_script(tr("Needs"));
+    }
+    else {
+        QStringList tests;
+        for (const auto &item: list) {
+            auto item_list = item.toList();
+            auto need_id = item_list.value(0, -1).toInt();
+            auto deity_id = item_list.value(1, -1).toInt();
+            auto degree = item_list.value(2, -1).toInt();
+            if (degree == -1) {
+                tests.append(QString("(d.get_need_level(%1, %2) > 0)")
+                        .arg(need_id)
+                        .arg(deity_id));
+            }
+            else {
+                tests.append(QString("(d.get_need_level(%1, %2) > 0 && d.get_need_focus_degree(%1, %2) == %3)")
+                        .arg(need_id)
+                        .arg(deity_id)
+                        .arg(degree));
+            }
+        }
+        m_proxy->apply_script(tr("Needs"), tests.join(match_all ? "&&" : "||"));
     }
 }
 

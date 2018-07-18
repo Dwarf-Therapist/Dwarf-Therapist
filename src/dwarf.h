@@ -270,10 +270,12 @@ public:
     Q_INVOKABLE int get_current_focus() const { return m_current_focus; }
     Q_INVOKABLE int get_undistracted_focus() const { return m_undistracted_focus; }
     Q_INVOKABLE int get_focus_degree() const { return m_current_focus_degree; }
+    static QString get_focus_adjective(int degree);
     QString get_focus_adjective() const;
     // set tooltip to true to use colors adapted to tooltip instead of window text.
-    static QColor get_focus_color(int degree, bool tooltip = false);
+    static QColor get_focus_color(int degree, bool tooltip = false, bool background = false);
     QString get_focus_desc(bool color = true) const;
+    const auto &get_needs() const { return m_needs; }
     auto get_needs(int need_id) const { return m_needs.equal_range(need_id); }
 
     //! return specific attribute values

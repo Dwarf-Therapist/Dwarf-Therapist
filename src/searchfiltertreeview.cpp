@@ -75,6 +75,21 @@ QAbstractItemView *SearchFilterTreeView::view()
     return ui->tree_view;
 }
 
+const QAbstractItemView *SearchFilterTreeView::view() const
+{
+    return ui->tree_view;
+}
+
+QSortFilterProxyModel &SearchFilterTreeView::filter_proxy()
+{
+    return m_filter_proxy;
+}
+
+const QSortFilterProxyModel &SearchFilterTreeView::filter_proxy() const
+{
+    return m_filter_proxy;
+}
+
 QModelIndex SearchFilterTreeView::get_selected_item() const
 {
     QModelIndex current = ui->tree_view->selectionModel()->currentIndex();
@@ -105,11 +120,6 @@ void SearchFilterTreeView::set_expand_collapse_hidden(bool hidden)
         ui->tree_view->removeAction(ui->action_expand_all);
     }
     m_expand_collapse_hidden = hidden;
-}
-
-const QAbstractItemView *SearchFilterTreeView::view() const
-{
-    return ui->tree_view;
 }
 
 void SearchFilterTreeView::search_text(const QString &text)

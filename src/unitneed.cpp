@@ -58,16 +58,7 @@ UnitNeed::UnitNeed(VIRTADDR address, DFInstance *df, Dwarf *d)
 
 QString UnitNeed::adjective() const
 {
-    static const char * const adjectives[DEGREE_COUNT] = {
-        QT_TR_NOOP("badly distracted"),
-        QT_TR_NOOP("distracted"),
-        QT_TR_NOOP("unfocused"),
-        QT_TR_NOOP("not distracted"),
-        QT_TR_NOOP("untroubled"),
-        QT_TR_NOOP("level-headed"),
-        QT_TR_NOOP("unfettered"),
-    };
-    return tr(adjectives[m_focus_degree]);
+    return degree_adjective(m_focus_degree);
 }
 
 QString UnitNeed::description() const
@@ -79,11 +70,36 @@ QString UnitNeed::description() const
             .arg(gdr->get_need_desc(m_id, m_focus_degree <= NOT_DISTRACTED, m_deity_name));
 }
 
-QColor UnitNeed::degree_color(int degree, bool tooltip)
+QString UnitNeed::degree_adjective(int degree)
 {
-    AdaptiveColorFactory color(
-            tooltip ? QPalette::ToolTipText : QPalette::WindowText,
-            tooltip ? QPalette::ToolTipBase : QPalette::Window);
+    static const char * const adjectives[DEGREE_COUNT] = {
+        QT_TR_NOOP("badly distracted"),
+        QT_TR_NOOP("distracted"),
+        QT_TR_NOOP("unfocused"),
+        QT_TR_NOOP("not distracted"),
+        QT_TR_NOOP("untroubled"),
+        QT_TR_NOOP("level-headed"),
+        QT_TR_NOOP("unfettered"),
+    };
+    if (degree < 0 || degree >= DEGREE_COUNT)
+        return tr("Unknown focus degree");
+    return tr(adjectives[degree]);
+}
+
+QColor UnitNeed::degree_color(int degree, bool tooltip, bool background)
+{
+    QPalette::ColorRole fg, bg;
+    if (tooltip) {
+        fg = QPalette::ToolTipText;
+        bg = QPalette::ToolTipBase;
+    }
+    else {
+        fg = QPalette::WindowText;
+        bg = QPalette::Window;
+    }
+    if (background)
+        std::swap(fg, bg);
+    AdaptiveColorFactory color(fg, bg);
     switch (degree) {
     case BADLY_DISTRACTED:
         return color.color(Qt::red);

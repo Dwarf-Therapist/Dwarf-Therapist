@@ -214,6 +214,8 @@ private slots:
     void thought_selected(QVariantList ids);
     void equipoverview_selected(QVariantList ids);
     void health_legend_selected(QList<QPair<int,int> > vals);
+    void focus_selected(QVariantList);
+    void need_selected(QVariantList, bool);
 
     void toggle_opts_menu();
     void edit_opt();

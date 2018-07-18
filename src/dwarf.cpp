@@ -1454,7 +1454,7 @@ int Dwarf::get_need_focus_degree(int need_id, int deity_id) const
     return UnitNeed::NOT_DISTRACTED;
 }
 
-QString Dwarf::get_focus_adjective() const {
+QString Dwarf::get_focus_adjective(int degree) {
     static const char * const adjectives[FOCUS_DEGREE_COUNT] = {
         QT_TR_NOOP("badly distracted"),
         QT_TR_NOOP("distracted"),
@@ -1464,14 +1464,29 @@ QString Dwarf::get_focus_adjective() const {
         QT_TR_NOOP("quite focused"),
         QT_TR_NOOP("very focused"),
     };
-    return tr(adjectives[m_current_focus_degree]);
+    if (degree < 0 || degree >= FOCUS_DEGREE_COUNT)
+        return QString();
+    return tr(adjectives[degree]);
 }
 
-QColor Dwarf::get_focus_color(int degree, bool tooltip)
+QString Dwarf::get_focus_adjective() const {
+    return get_focus_adjective(m_current_focus_degree);
+}
+
+QColor Dwarf::get_focus_color(int degree, bool tooltip, bool background)
 {
-    AdaptiveColorFactory color(
-            tooltip ? QPalette::ToolTipText : QPalette::WindowText,
-            tooltip ? QPalette::ToolTipBase : QPalette::Window);
+    QPalette::ColorRole fg, bg;
+    if (tooltip) {
+        fg = QPalette::ToolTipText;
+        bg = QPalette::ToolTipBase;
+    }
+    else {
+        fg = QPalette::WindowText;
+        bg = QPalette::Window;
+    }
+    if (background)
+        std::swap(fg, bg);
+    AdaptiveColorFactory color(fg, bg);
     switch (degree) {
     case FOCUS_BADLY_DISTRACTED:
         return color.color(Qt::red);
