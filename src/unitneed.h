@@ -58,7 +58,8 @@ public:
     QString adjective() const;
     QString description() const;
 
-    static QColor degree_color(int degree, bool tooltip = false);
+    static QString degree_adjective(int degree);
+    static QColor degree_color(int degree, bool tooltip = false, bool background = false);
 
 private:
     Dwarf *m_dwarf;

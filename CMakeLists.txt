@@ -125,6 +125,7 @@ add_executable(${EXE_NAME} WIN32 MACOSX_BUNDLE
     src/mood.cpp
     src/multilabor.cpp
     src/needcolumn.cpp
+    src/needsdock.cpp
     src/notificationwidget.cpp
     src/notifierwidget.cpp
     src/optimizereditor.cpp

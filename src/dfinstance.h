@@ -249,6 +249,21 @@ public:
     const QHash<int, EmotionGroup*> get_emotion_stats() {return m_emotion_counts;}
     const QHash<ITEM_TYPE,EquipWarn*> get_equip_warnings(){return m_equip_warning_counts;}
 
+    struct needs_data {
+        struct focus_data {
+            std::vector<std::vector<Dwarf *>> dwarves;
+
+            focus_data(int degree_count) { dwarves.resize(degree_count); }
+            void clear() { for (auto &vec: dwarves) vec.clear(); }
+        };
+        focus_data overall_focus;
+        using need_key = std::tuple<int, int>; // need id, deity id
+        std::map<need_key, focus_data> needs;
+
+        needs_data(int focus_degree_count): overall_focus(focus_degree_count) {}
+    };
+    const needs_data &get_needs_data() const { return m_needs_data; }
+
     const QString fortress_name();
     QList<Squad*> squads() {return m_squads;}
 
@@ -330,6 +345,7 @@ private:
     QHash<ITEM_TYPE,EquipWarn*> m_equip_warning_counts;
     QHash<QPair<QString,QString>, pref_stat*> m_pref_counts;
     QHash<int, EmotionGroup*> m_emotion_counts;
+    needs_data m_needs_data;
 
     QString m_fortress_name;
     QString m_fortress_name_translated;
