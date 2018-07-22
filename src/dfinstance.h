@@ -38,6 +38,10 @@ typedef int PID;
 typedef pid_t PID;
 #endif
 
+#ifndef VECTOR_MAX_SIZE
+#define VECTOR_MAX_SIZE 100000000ul
+#endif
+
 class Dwarf;
 class FortressEntity;
 class ItemSubtype;
@@ -111,8 +115,11 @@ public:
         VIRTADDR start = read_addr(addr);
         VIRTADDR end = read_addr(addr + m_pointer_size);
         USIZE bytes = end - start;
+        USIZE count = bytes / sizeof(T);
         if (bytes % sizeof(T)) {
             LOGE << "VECTOR SIZE IS NOT A MULTIPLE OF TYPE";
+        } else if (count > VECTOR_MAX_SIZE) {
+            LOGE << "Vector at" << hexify(addr) << "too big:" << count;
         } else {
             out.resize(bytes / sizeof(T));
             USIZE bytes_read = read_raw(start, bytes, out.data());
