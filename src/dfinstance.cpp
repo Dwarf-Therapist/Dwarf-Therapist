@@ -267,6 +267,9 @@ QVector<VIRTADDR> DFInstance::enum_vec<VIRTADDR>(VIRTADDR addr) {
     if (bytes % m_pointer_size) {
         LOGE << "POINTER VECTOR SIZE IS NOT A MULTIPLE OF POINTER SIZE";
     }
+    else if (count > VECTOR_MAX_SIZE) {
+        LOGE << "Vector at" << hexify(addr) << "too big:" << count;
+    }
     else if (m_pointer_size == sizeof(VIRTADDR)) {
         out.resize(count);
         USIZE bytes_read = read_raw(start, bytes, out.data());
