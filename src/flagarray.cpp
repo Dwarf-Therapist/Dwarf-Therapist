@@ -15,11 +15,11 @@ FlagArray::FlagArray(DFInstance *df, VIRTADDR base_addr)
     //size of the byte array
     uint32_t size_in_bytes = m_df->read_mem<uint32_t>(base_addr + m_df->pointer_size());
 
-    m_flags = QBitArray(size_in_bytes * 8);
     if(size_in_bytes > 1000){
         LOGW << "aborting reading flags, size too large" << size_in_bytes;
         return;
     }
+    m_flags = QBitArray(size_in_bytes * 8);
     BYTE b;
     int position;
     for(uint i = 0; i < size_in_bytes; i++){
