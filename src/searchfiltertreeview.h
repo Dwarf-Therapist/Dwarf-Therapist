@@ -51,6 +51,7 @@ public:
     const QAbstractItemView *view() const;
 
     QModelIndex get_selected_item() const;
+    QItemSelection get_selection() const;
 
     bool is_expand_collapse_hidden() const;
     void set_expand_collapse_hidden(bool hidden);
@@ -61,6 +62,7 @@ public:
 signals:
     void item_selected(const QModelIndex &index);
     void item_activated(const QModelIndex &index);
+    void item_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
 
 public slots:
     void search_text(const QString &text);
