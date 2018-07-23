@@ -326,11 +326,6 @@ void RolePreferenceModel::load_pref_from_raws(QWidget *parent)
                                    ItemPreference(subtype));
                 }
             }
-            else {
-                add_exact_pref(m_prefs,
-                               std::make_shared<ExactItemRolePreference>(Item::get_item_name_plural(itype), itype),
-                               ItemPreference(itype));
-            }
         }
 
         m_loaded_raws = true;
