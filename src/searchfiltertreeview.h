@@ -26,10 +26,11 @@ THE SOFTWARE.
 #include <QWidget>
 #include <memory>
 
+#include "sortfilterproxymodel.h"
+
 namespace Ui { class SearchFilterTreeView; }
 class QAbstractItemModel;
 class QAbstractItemView;
-class RecursiveFilterProxyModel;
 
 class SearchFilterTreeView: public QWidget
 {
@@ -37,6 +38,9 @@ class SearchFilterTreeView: public QWidget
     Q_PROPERTY(bool expand_collapse_hidden
                READ is_expand_collapse_hidden
                WRITE set_expand_collapse_hidden)
+    Q_PROPERTY(SortFilterProxyModel::Mode filter_mode
+               READ filter_mode
+               WRITE set_filter_mode)
 public:
     SearchFilterTreeView(QWidget *parent = nullptr);
     ~SearchFilterTreeView();
@@ -51,6 +55,9 @@ public:
     bool is_expand_collapse_hidden() const;
     void set_expand_collapse_hidden(bool hidden);
 
+    SortFilterProxyModel::Mode filter_mode() const { return m_filter_proxy.mode(); }
+    void set_filter_mode(SortFilterProxyModel::Mode mode) { m_filter_proxy.set_mode(mode); }
+
 signals:
     void item_selected(const QModelIndex &index);
     void item_activated(const QModelIndex &index);
@@ -62,7 +69,7 @@ public slots:
 private:
     std::unique_ptr<Ui::SearchFilterTreeView> ui;
     bool m_expand_collapse_hidden;
-    RecursiveFilterProxyModel *m_filter_proxy;
+    SortFilterProxyModel m_filter_proxy;
 };
 
 #endif

@@ -30,7 +30,6 @@ THE SOFTWARE.
 #include "truncatingfilelogger.h"
 #include "rolepreference.h"
 #include "rolepreferencemodel.h"
-#include "recursivefilterproxymodel.h"
 
 PreferencePickerDialog::PreferencePickerDialog(RolePreferenceModel *model, QWidget *parent)
     : QDialog(parent)
@@ -39,6 +38,7 @@ PreferencePickerDialog::PreferencePickerDialog(RolePreferenceModel *model, QWidg
 {
     ui->setupUi(this);
 
+    ui->preference_view->set_filter_mode(SortFilterProxyModel::RecursiveMode);
     ui->preference_view->set_model(model);
 
     // Wait for a valid selection for enabling Ok button

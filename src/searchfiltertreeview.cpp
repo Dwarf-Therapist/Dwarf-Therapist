@@ -23,17 +23,14 @@ THE SOFTWARE.
 #include "searchfiltertreeview.h"
 #include "ui_searchfiltertreeview.h"
 
-#include "recursivefilterproxymodel.h"
-
 SearchFilterTreeView::SearchFilterTreeView(QWidget *parent)
     : QWidget(parent)
     , ui(std::make_unique<Ui::SearchFilterTreeView>())
     , m_expand_collapse_hidden(false)
-    , m_filter_proxy(new RecursiveFilterProxyModel(this))
 {
     ui->setupUi(this);
 
-    ui->tree_view->setModel(m_filter_proxy);
+    ui->tree_view->setModel(&m_filter_proxy);
     ui->tree_view->setSortingEnabled(true);
     ui->tree_view->collapseAll();
 
@@ -51,11 +48,11 @@ SearchFilterTreeView::SearchFilterTreeView(QWidget *parent)
 
     connect(ui->tree_view->selectionModel(), &QItemSelectionModel::currentChanged,
             [this] (const QModelIndex &current, const QModelIndex &) {
-                emit item_selected(m_filter_proxy->mapToSource(current));
+                emit item_selected(m_filter_proxy.mapToSource(current));
             });
     connect(ui->tree_view, &QAbstractItemView::activated,
             [this] (const QModelIndex &index) {
-                emit item_activated(m_filter_proxy->mapToSource(index));
+                emit item_activated(m_filter_proxy.mapToSource(index));
             });
 }
 
@@ -65,7 +62,7 @@ SearchFilterTreeView::~SearchFilterTreeView()
 
 void SearchFilterTreeView::set_model(QAbstractItemModel *model)
 {
-    m_filter_proxy->setSourceModel(model);
+    m_filter_proxy.setSourceModel(model);
 }
 
 QAbstractItemView *SearchFilterTreeView::view()
@@ -76,7 +73,7 @@ QAbstractItemView *SearchFilterTreeView::view()
 QModelIndex SearchFilterTreeView::get_selected_item() const
 {
     QModelIndex current = ui->tree_view->selectionModel()->currentIndex();
-    return m_filter_proxy->mapToSource(current);
+    return m_filter_proxy.mapToSource(current);
 }
 
 bool SearchFilterTreeView::is_expand_collapse_hidden() const
@@ -108,13 +105,13 @@ void SearchFilterTreeView::search_text(const QString &text)
 {
     QString val = text;
     QRegExp filter("(" + val.replace(" ", "|") + ")", Qt::CaseInsensitive);
-    m_filter_proxy->setFilterRegExp(filter);
-    m_filter_proxy->setFilterKeyColumn(0);
+    m_filter_proxy.setFilterRegExp(filter);
+    m_filter_proxy.setFilterKeyColumn(0);
 }
 
 void SearchFilterTreeView::clear_search()
 {
     ui->search_edit->setText("");
-    m_filter_proxy->setFilterRegExp(QRegExp());
+    m_filter_proxy.setFilterRegExp(QRegExp());
     ui->tree_view->collapseAll();
 }

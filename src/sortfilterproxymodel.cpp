@@ -20,28 +20,46 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include "recursivefilterproxymodel.h"
+#include "sortfilterproxymodel.h"
 
-RecursiveFilterProxyModel::RecursiveFilterProxyModel(QObject *parent)
+SortFilterProxyModel::SortFilterProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent)
+    , m_mode(StandardMode)
 {
 }
 
-RecursiveFilterProxyModel::~RecursiveFilterProxyModel()
+SortFilterProxyModel::~SortFilterProxyModel()
 {
 }
 
-bool RecursiveFilterProxyModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
+void SortFilterProxyModel::set_mode(Mode mode)
 {
-    if (QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent))
-        return true;
+    m_mode = mode;
+    invalidateFilter();
+}
 
-    QAbstractItemModel *source = sourceModel();
-    QModelIndex index = source->index(source_row, 0, source_parent);
-    int row_count = source->rowCount(index);
-    for (int i = 0; i < row_count; ++i) {
-        if (filterAcceptsRow(i, index))
+bool SortFilterProxyModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
+{
+    switch (m_mode) {
+    case RecursiveMode: {
+        if (QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent))
             return true;
+
+        QAbstractItemModel *source = sourceModel();
+        QModelIndex index = source->index(source_row, 0, source_parent);
+        int row_count = source->rowCount(index);
+        for (int i = 0; i < row_count; ++i) {
+            if (filterAcceptsRow(i, index))
+                return true;
+        }
+        return false;
     }
-    return false;
+    case TopLevelMode:
+        if (source_parent.isValid())
+            return true;
+        return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
+    case StandardMode:
+    default:
+        return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
+    }
 }
