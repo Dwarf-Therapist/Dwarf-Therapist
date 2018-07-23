@@ -20,25 +20,36 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef RECURSIVE_FILTER_PROXY_MODEL_H
-#define RECURSIVE_FILTER_PROXY_MODEL_H
+#ifndef SORT_FILTER_PROXY_MODEL_H
+#define SORT_FILTER_PROXY_MODEL_H
 
 #include <QSortFilterProxyModel>
 
 /**
- * Accept parent row item if any child row is accepted
- *
- * Similar to Qt 5.10 QSortFilterProxyModel with recursive filtering enabled.
+ * Extend QSortFilterProxyModel with several filter modes
  */
-class RecursiveFilterProxyModel: public QSortFilterProxyModel
+class SortFilterProxyModel: public QSortFilterProxyModel
 {
     Q_OBJECT
+    Q_PROPERTY(SortFilterProxyModel::Mode mode READ mode WRITE set_mode)
 public:
-    RecursiveFilterProxyModel(QObject *parent = nullptr);
-    virtual ~RecursiveFilterProxyModel();
+    SortFilterProxyModel(QObject *parent = nullptr);
+    virtual ~SortFilterProxyModel();
+
+    enum Mode {
+        StandardMode, // behave like QSortFilterProxyModel
+        RecursiveMode, // similar to Qt 5.10 recursive filtering, accept parent if any child is accepted
+        TopLevelMode, // only filter top-level items, children are always shown
+    };
+
+    Mode mode() const { return m_mode; };
+    void set_mode(Mode mode);
 
 protected:
     bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
+
+private:
+    Mode m_mode;
 };
 
 #endif

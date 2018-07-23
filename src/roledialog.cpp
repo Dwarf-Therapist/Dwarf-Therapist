@@ -190,6 +190,7 @@ RoleDialog::RoleDialog(RolePreferenceModel *pref_model, QWidget *parent)
     ui->belief_list->set_model(&m_belief_proxy);
     m_goal_proxy.setSourceModel(&m_goal_model);
     ui->goal_list->set_model(&m_goal_proxy);
+    ui->preference_list->set_filter_mode(SortFilterProxyModel::RecursiveMode);
     ui->preference_list->set_model(pref_model);
 
     connect(ui->attribute_list, &SearchFilterTreeView::item_activated,
