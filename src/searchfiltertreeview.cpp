@@ -54,6 +54,11 @@ SearchFilterTreeView::SearchFilterTreeView(QWidget *parent)
             [this] (const QModelIndex &index) {
                 emit item_activated(m_filter_proxy.mapToSource(index));
             });
+    connect(ui->tree_view->selectionModel(), &QItemSelectionModel::selectionChanged,
+            [this] (const QItemSelection &selected, const QItemSelection &deselected) {
+                emit item_selection_changed(m_filter_proxy.mapSelectionToSource(selected),
+                                            m_filter_proxy.mapSelectionToSource(deselected));
+            });
 }
 
 SearchFilterTreeView::~SearchFilterTreeView()
@@ -74,6 +79,12 @@ QModelIndex SearchFilterTreeView::get_selected_item() const
 {
     QModelIndex current = ui->tree_view->selectionModel()->currentIndex();
     return m_filter_proxy.mapToSource(current);
+}
+
+QItemSelection SearchFilterTreeView::get_selection() const
+{
+    QItemSelection selection = ui->tree_view->selectionModel()->selection();
+    return m_filter_proxy.mapSelectionToSource(selection);
 }
 
 bool SearchFilterTreeView::is_expand_collapse_hidden() const
