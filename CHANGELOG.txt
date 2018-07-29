@@ -1,3 +1,18 @@
+### Version 41.0.0 Patch Notes
+
+***
+ - remade custom role dialog editor
+ - added belief and goal in roles
+ - added focus and needs scripting functions
+ - added focus and needs in the dwarf tool-tip (optional)
+ - added focus and need columns
+ - added "Needs" grid view
+ - added "Needs" dock window for focus and need overview
+ - removed generated items from preference list and added incomplete tools
+ - removed duplicate exact item preference when the item has no subtype
+ - fix flagarrays with invalid size allocating memory
+ - fix trying to read vectors with absurdly high size
+
 ### Version 40.1.2 Patch Notes
 
 ***
