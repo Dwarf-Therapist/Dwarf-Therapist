@@ -51,6 +51,7 @@ NeedColumn::NeedColumn(QString title, int need_id, ViewColumnSet *set, QObject *
 
 NeedColumn::NeedColumn(const NeedColumn &to_copy)
     : ViewColumn(to_copy)
+    , m_need_id(to_copy.m_need_id)
 {
 }
 
