@@ -1,3 +1,9 @@
+### Version 41.0.1 Patch Notes
+
+***
+ - fix saving focus and need columns
+ - fix focus offsets on 32 bits platforms
+
 ### Version 41.0.0 Patch Notes
 
 ***
