@@ -36,7 +36,7 @@ FocusColumn::FocusColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
 }
 
 FocusColumn::FocusColumn(QString title, ViewColumnSet *set, QObject *parent)
-    : ViewColumn(title, CT_HAPPINESS, set, parent)
+    : ViewColumn(title, CT_FOCUS, set, parent)
 {
     init_states();
     refresh_color_map();

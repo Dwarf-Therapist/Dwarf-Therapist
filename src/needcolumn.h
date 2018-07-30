@@ -34,6 +34,7 @@ public:
     NeedColumn* clone() override {return new NeedColumn(*this);}
     QStandardItem *build_cell(Dwarf *d) override;
     QStandardItem *build_aggregate(const QString &group_name, const QVector<Dwarf*> &dwarves) override;
+    void write_to_ini(QSettings &s) override;
 
 public slots:
     void refresh_sort(COLUMN_SORT_TYPE sType) override;
