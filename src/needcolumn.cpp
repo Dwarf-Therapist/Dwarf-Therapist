@@ -41,7 +41,7 @@ NeedColumn::NeedColumn(QSettings &s, ViewColumnSet *set, QObject *parent)
 }
 
 NeedColumn::NeedColumn(QString title, int need_id, ViewColumnSet *set, QObject *parent)
-    : ViewColumn(title, CT_HAPPINESS, set, parent)
+    : ViewColumn(title, CT_NEED, set, parent)
     , m_need_id(need_id)
 {
     m_sortable_types << CST_LEVEL << CST_FOCUS;
@@ -176,4 +176,10 @@ void NeedColumn::refresh_sort(const Dwarf *d, QStandardItem *item)
         item->setData(d->get_need_type_focus(m_need_id), DwarfModel::DR_SORT_VALUE);
         break;
     }
+}
+
+void NeedColumn::write_to_ini(QSettings &s)
+{
+    ViewColumn::write_to_ini(s);
+    s.setValue("need_id", m_need_id);
 }
