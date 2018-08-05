@@ -90,11 +90,12 @@ public:
     std::vector<std::pair<int, aspect_weight>> facets;
     std::vector<std::pair<int, aspect_weight>> beliefs;
     std::vector<std::pair<int, aspect_weight>> goals;
+    std::vector<std::pair<int, aspect_weight>> needs;
     std::vector<std::pair<std::unique_ptr<RolePreference>, aspect_weight>> prefs;
 
     bool has_aspects() const {
         return !attributes.empty() || !skills.empty() || !facets.empty() ||
-                !beliefs.empty() || !goals.empty() || !prefs.empty();
+                !beliefs.empty() || !goals.empty() || !needs.empty() || !prefs.empty();
     }
 
     //global weights
@@ -103,6 +104,7 @@ public:
     weight_info facets_weight;
     weight_info beliefs_weight;
     weight_info goals_weight;
+    weight_info needs_weight;
     weight_info prefs_weight;
 
     QString get_role_details(Dwarf *d = 0);

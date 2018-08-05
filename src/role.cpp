@@ -70,6 +70,7 @@ Role::Role(QObject *parent)
     , facets_weight(DefaultRoleWeight::facets)
     , beliefs_weight(DefaultRoleWeight::beliefs)
     , goals_weight(DefaultRoleWeight::goals)
+    , needs_weight(DefaultRoleWeight::needs)
     , prefs_weight(DefaultRoleWeight::preferences)
     , m_name("UNKNOWN")
     , m_script("")
@@ -82,6 +83,7 @@ Role::Role(QObject *parent)
     facets_weight.reset_to_default();
     beliefs_weight.reset_to_default();
     goals_weight.reset_to_default();
+    needs_weight.reset_to_default();
     prefs_weight.reset_to_default();
 }
 
@@ -92,6 +94,7 @@ Role::Role(QSettings &s, QObject *parent)
     , facets_weight(DefaultRoleWeight::facets)
     , beliefs_weight(DefaultRoleWeight::beliefs)
     , goals_weight(DefaultRoleWeight::goals)
+    , needs_weight(DefaultRoleWeight::needs)
     , prefs_weight(DefaultRoleWeight::preferences)
     , m_name(s.value("name", "UNKNOWN ROLE").toString())
     , m_script(s.value("script","").toString())
@@ -112,6 +115,7 @@ Role::Role(QSettings &s, QObject *parent)
     parseAspect(s, "traits", facets_weight, facets);
     parseAspect(s, "beliefs", beliefs_weight, beliefs);
     parseAspect(s, "goals", goals_weight, goals);
+    parseAspect(s, "needs", needs_weight, needs);
     parseAspect(s, "skills", skills_weight, skills);
     parseAspect(s, "preferences", prefs_weight, prefs);
 }
@@ -123,11 +127,13 @@ Role::Role(const Role &r, QObject *parent)
     , facets(r.facets)
     , beliefs(r.beliefs)
     , goals(r.goals)
+    , needs(r.needs)
     , attributes_weight(r.attributes_weight)
     , skills_weight(r.skills_weight)
     , facets_weight(r.facets_weight)
     , beliefs_weight(r.beliefs_weight)
     , goals_weight(r.goals_weight)
+    , needs_weight(r.needs_weight)
     , prefs_weight(r.prefs_weight)
     , m_name(r.m_name)
     , m_script(r.m_script)
@@ -224,6 +230,9 @@ void Role::create_role_details(Dwarf *d){
         role_details += get_aspect_details("Goals",
                                            goals_weight, goals,
                                            [gdr](int id){return gdr->get_goal_name(id);});
+        role_details += get_aspect_details("Needs",
+                                           needs_weight, needs,
+                                           [gdr](int id){return gdr->get_need_name(id);});
         role_details += get_preference_details(d);
     }else{
         role_details = m_script;
@@ -379,6 +388,7 @@ void Role::write_to_ini(QSettings &s) const {
     write_aspect_group(s,"traits",facets_weight,facets);
     write_aspect_group(s,"beliefs",beliefs_weight,beliefs);
     write_aspect_group(s,"goals",goals_weight,goals);
+    write_aspect_group(s,"needs",needs_weight,needs);
     write_aspect_group(s,"skills",skills_weight,skills);
     write_aspect_group(s,"preferences",prefs_weight,prefs);
 }

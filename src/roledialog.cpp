@@ -108,6 +108,7 @@ RoleDialog::RoleDialog(RolePreferenceModel *pref_model, QWidget *parent)
     , m_facet_proxy(AspectFilter<int>{m_role, &Role::facets})
     , m_belief_proxy(AspectFilter<int>{m_role, &Role::beliefs})
     , m_goal_proxy(AspectFilter<int>{m_role, &Role::goals})
+    , m_need_proxy(AspectFilter<int>{m_role, &Role::needs})
     , m_model(std::make_unique<RoleModel>())
 {
     ui->setupUi(this);
@@ -179,6 +180,18 @@ RoleDialog::RoleDialog(RolePreferenceModel *pref_model, QWidget *parent)
         item->setData(p.first);
         m_goal_model.appendRow(item);
     }
+    m_need_model.setHorizontalHeaderLabels({tr("Needs")});
+    for (int i = 0; i < gdr->get_need_count(); ++i) {
+        auto need_name = gdr->get_need_name(i);
+        auto item = new QStandardItem();
+        item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+        item->setText(need_name);
+        item->setToolTip(tr("Include %1 (ID %2) as an aspect for this role.")
+                .arg(need_name)
+                .arg(i));
+        item->setData(i);
+        m_need_model.appendRow(item);
+    }
 
     m_attribute_proxy.setSourceModel(&m_attribute_model);
     ui->attribute_list->set_model(&m_attribute_proxy);
@@ -190,6 +203,8 @@ RoleDialog::RoleDialog(RolePreferenceModel *pref_model, QWidget *parent)
     ui->belief_list->set_model(&m_belief_proxy);
     m_goal_proxy.setSourceModel(&m_goal_model);
     ui->goal_list->set_model(&m_goal_proxy);
+    m_need_proxy.setSourceModel(&m_need_model);
+    ui->need_list->set_model(&m_need_proxy);
     ui->preference_list->set_filter_mode(SortFilterProxyModel::RecursiveMode);
     ui->preference_list->set_model(pref_model);
 
@@ -203,6 +218,8 @@ RoleDialog::RoleDialog(RolePreferenceModel *pref_model, QWidget *parent)
             this, &RoleDialog::belief_activated);
     connect(ui->goal_list, &SearchFilterTreeView::item_activated,
             this, &RoleDialog::goal_activated);
+    connect(ui->need_list, &SearchFilterTreeView::item_activated,
+            this, &RoleDialog::need_activated);
     connect(ui->preference_list, &SearchFilterTreeView::item_activated,
             this, &RoleDialog::preference_activated);
 
@@ -359,6 +376,15 @@ void RoleDialog::goal_activated(const QModelIndex &index)
     m_goal_proxy.update();
 }
 
+void RoleDialog::need_activated(const QModelIndex &index)
+{
+    auto source_index = m_need_proxy.mapToSource(index);
+    auto item = m_need_model.itemFromIndex(source_index);
+    auto id = item->data().toInt();
+    ui->tree_aspects->setCurrentIndex(m_model->add_need(id));
+    m_need_proxy.update();
+}
+
 void RoleDialog::preference_activated(const QModelIndex &index)
 {
     auto pref = m_pref_model->getPreference(index);
@@ -402,6 +428,9 @@ void RoleDialog::aspect_tree_context_menu(const QPoint &pos)
             break;
         case RoleModel::Goals:
             m_goal_proxy.update();
+            break;
+        case RoleModel::Needs:
+            m_need_proxy.update();
             break;
         }
     }
@@ -495,6 +524,7 @@ void RoleDialog::role_changed()
     m_facet_proxy.update();
     m_belief_proxy.update();
     m_goal_proxy.update();
+    m_need_proxy.update();
 
     update_role_preview();
 }

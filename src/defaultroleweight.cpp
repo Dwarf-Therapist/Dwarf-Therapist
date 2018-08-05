@@ -30,6 +30,7 @@ DefaultRoleWeight DefaultRoleWeight::skills("skills", 1.0);
 DefaultRoleWeight DefaultRoleWeight::facets("traits", 0.20);
 DefaultRoleWeight DefaultRoleWeight::beliefs("beliefs", 0.20);
 DefaultRoleWeight DefaultRoleWeight::goals("goals", 0.10);
+DefaultRoleWeight DefaultRoleWeight::needs("needs", 0.10);
 DefaultRoleWeight DefaultRoleWeight::preferences("prefs", 0.15);
 
 DefaultRoleWeight::DefaultRoleWeight(const char *key, float default_value)
@@ -54,6 +55,7 @@ void DefaultRoleWeight::update_all()
     facets.update();
     beliefs.update();
     goals.update();
+    needs.update();
     preferences.update();
 }
 

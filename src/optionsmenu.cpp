@@ -211,6 +211,7 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     connect(ui->cb_facet_weight,SIGNAL(toggled(bool)),ui->dsb_facet_weight,SLOT(setEnabled(bool)));
     connect(ui->cb_belief_weight,SIGNAL(toggled(bool)),ui->dsb_belief_weight,SLOT(setEnabled(bool)));
     connect(ui->cb_goal_weight,SIGNAL(toggled(bool)),ui->dsb_goal_weight,SLOT(setEnabled(bool)));
+    connect(ui->cb_need_weight,SIGNAL(toggled(bool)),ui->dsb_need_weight,SLOT(setEnabled(bool)));
     connect(ui->cb_pref_weight,SIGNAL(toggled(bool)),ui->dsb_pref_weight,SLOT(setEnabled(bool)));
 
     read_settings();
@@ -446,6 +447,9 @@ void OptionsMenu::read_settings() {
     ui->cb_goal_weight->setChecked(DefaultRoleWeight::goals.is_overwritten());
     ui->dsb_goal_weight->setValue(DefaultRoleWeight::goals.value());
     ui->dsb_goal_weight->setEnabled(DefaultRoleWeight::goals.is_overwritten());
+    ui->cb_need_weight->setChecked(DefaultRoleWeight::needs.is_overwritten());
+    ui->dsb_need_weight->setValue(DefaultRoleWeight::needs.value());
+    ui->dsb_need_weight->setEnabled(DefaultRoleWeight::needs.is_overwritten());
     ui->cb_pref_weight->setChecked(DefaultRoleWeight::preferences.is_overwritten());
     ui->dsb_pref_weight->setValue(DefaultRoleWeight::preferences.value());
     ui->dsb_pref_weight->setEnabled(DefaultRoleWeight::preferences.is_overwritten());
@@ -540,6 +544,8 @@ void OptionsMenu::write_settings() {
         s->setValue("default_beliefs_weight",ui->dsb_belief_weight->value());
         s->setValue("overwrite_default_goals_weight",ui->cb_goal_weight->isChecked());
         s->setValue("default_goals_weight",ui->dsb_goal_weight->value());
+        s->setValue("overwrite_default_needs_weight",ui->cb_need_weight->isChecked());
+        s->setValue("default_needs_weight",ui->dsb_need_weight->value());
         s->setValue("overwrite_default_prefs_weight",ui->cb_pref_weight->isChecked());
         s->setValue("default_prefs_weight",ui->dsb_pref_weight->value());
         DefaultRoleWeight::update_all();
@@ -711,6 +717,8 @@ void OptionsMenu::restore_defaults() {
     ui->dsb_belief_weight->setValue(DefaultRoleWeight::beliefs.default_value());
     ui->cb_goal_weight->setChecked(false);
     ui->dsb_goal_weight->setValue(DefaultRoleWeight::goals.default_value());
+    ui->cb_need_weight->setChecked(false);
+    ui->dsb_need_weight->setValue(DefaultRoleWeight::needs.default_value());
     ui->dsb_skill_rate_weight->setValue(0.25);
     ui->dsb_att_potential_weight->setValue(0.50);
 

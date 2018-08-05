@@ -37,6 +37,7 @@ DwarfStats DwarfStats::attributes_raw;
 DwarfStats DwarfStats::skills(0);
 DwarfStats DwarfStats::facets;
 DwarfStats DwarfStats::beliefs;
+DwarfStats DwarfStats::needs;
 DwarfStats DwarfStats::preferences(0);
 DwarfStats DwarfStats::roles(-1, true);
 
