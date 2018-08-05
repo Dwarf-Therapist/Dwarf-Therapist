@@ -555,6 +555,7 @@ void DFInstance::load_role_ratings(){
     QVector<double> skill_values;
     QVector<double> facet_values;
     QVector<double> belief_values;
+    QVector<double> need_values;
     QVector<double> pref_values;
 
     GameDataReader *gdr = GameDataReader::ptr();
@@ -576,6 +577,9 @@ void DFInstance::load_role_ratings(){
         for(const auto &belief: d->beliefs())
             belief_values.append(belief.belief_value());
 
+        for (int i = 0; i < gdr->get_need_count(); ++i)
+            need_values.append(d->get_need_type_level(i));
+
         foreach(Role *r, gdr->get_roles().values()){
             if(!r->prefs.empty()){
                 pref_values.append(d->get_role_pref_match_counts(r,true));
@@ -592,6 +596,10 @@ void DFInstance::load_role_ratings(){
     LOGV << "Role Beliefs Info:";
     DwarfStats::beliefs.init(belief_values);
     LOGV << "     - loaded belief role data in" << tr.elapsed() << "ms";
+
+    LOGV << "Role Needs Info:";
+    DwarfStats::needs.init(need_values);
+    LOGV << "     - loaded need role data in" << tr.elapsed() << "ms";
 
     LOGV << "Role Skills Info:";
     DwarfStats::skills.init(skill_values);

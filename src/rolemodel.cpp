@@ -130,6 +130,16 @@ RoleModel::RoleModel(QObject *parent)
                         .arg(GameDataReader::ptr()->get_goal_name(id))
                         .arg(id);
             });
+    m_info[Needs] = make_aspect_info(
+            tr("Needs"),
+            &Role::needs_weight,
+            &Role::needs,
+            [] (int id) { return GameDataReader::ptr()->get_need_name(id); },
+            [] (int id) {
+                return RoleModel::tr("Need: %1 (ID %2)")
+                        .arg(GameDataReader::ptr()->get_need_name(id))
+                        .arg(id);
+            });
     m_info[Preferences] = make_aspect_info(
             tr("Preferences"),
             &Role::prefs_weight,
@@ -207,6 +217,16 @@ QModelIndex RoleModel::add_goal(int id)
     m_role->goals.emplace_back(id, Role::aspect_weight(1.0, false));
     endInsertRows();
     return createIndex(pos, 0, Goals);
+}
+
+QModelIndex RoleModel::add_need(int id)
+{
+    QModelIndex parent = index(Needs, 0);
+    auto pos = m_role->needs.size();
+    beginInsertRows(parent, pos, pos);
+    m_role->needs.emplace_back(id, Role::aspect_weight(1.0, false));
+    endInsertRows();
+    return createIndex(pos, 0, Needs);
 }
 
 QModelIndex RoleModel::add_preference(const RolePreference *pref)

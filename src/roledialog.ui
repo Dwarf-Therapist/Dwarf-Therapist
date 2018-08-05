@@ -88,6 +88,14 @@
             <string>Goals</string>
            </attribute>
           </widget>
+          <widget class="SearchFilterTreeView" name="need_list">
+           <property name="expand_collapse_hidden" stdset="0">
+            <bool>true</bool>
+           </property>
+           <attribute name="title">
+            <string>Needs</string>
+           </attribute>
+          </widget>
           <widget class="SearchFilterTreeView" name="preference_list">
            <attribute name="title">
             <string>Preferences</string>
