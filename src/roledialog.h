@@ -92,6 +92,7 @@ private slots:
     void facet_activated(const QModelIndex &);
     void belief_activated(const QModelIndex &);
     void goal_activated(const QModelIndex &);
+    void need_activated(const QModelIndex &);
     void preference_activated(const QModelIndex &);
     void aspect_tree_context_menu(const QPoint &);
     void copy_role();
@@ -107,8 +108,8 @@ private:
     Role *m_old_role;
     Dwarf *m_dwarf;
     RolePreferenceModel *m_pref_model;
-    QStandardItemModel m_attribute_model, m_skill_model, m_facet_model, m_belief_model, m_goal_model;
-    FunctionalFilterProxyModel m_attribute_proxy, m_skill_proxy, m_facet_proxy, m_belief_proxy, m_goal_proxy;
+    QStandardItemModel m_attribute_model, m_skill_model, m_facet_model, m_belief_model, m_goal_model, m_need_model;
+    FunctionalFilterProxyModel m_attribute_proxy, m_skill_proxy, m_facet_proxy, m_belief_proxy, m_goal_proxy, m_need_proxy;
     std::unique_ptr<RoleModel> m_model;
     WeightDelegate m_weight_delegate;
 };

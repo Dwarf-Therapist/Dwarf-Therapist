@@ -3064,6 +3064,7 @@ double Dwarf::calc_role_rating(Role *m_role){
         Facets,
         Beliefs,
         Goals,
+        Needs,
         Skills,
         Preferences,
         AspectCount
@@ -3076,6 +3077,7 @@ double Dwarf::calc_role_rating(Role *m_role){
         m_role->facets_weight.weight(),
         m_role->beliefs_weight.weight(),
         m_role->goals_weight.weight(),
+        m_role->needs_weight.weight(),
         m_role->skills_weight.weight(),
         m_role->prefs_weight.weight(),
     };
@@ -3106,6 +3108,11 @@ double Dwarf::calc_role_rating(Role *m_role){
     //GOALS
     rating_aspect[Goals] = calc_rating(m_role->goals, [this] (int id) {
         return m_goals.value(id, 1) <= 0 ? 100.0 : 0.0; // has goal and not realized
+    });
+
+    //NEEDS
+    rating_aspect[Needs] = calc_rating(m_role->needs, [this] (int id) {
+        return DwarfStats::needs.rating(get_need_type_level(id));
     });
 
     //SKILLS
@@ -3146,6 +3153,7 @@ double Dwarf::calc_role_rating(Role *m_role){
     LOGV << "      -facets:" << rating_aspect[Facets];
     LOGV << "      -beliefs:" << rating_aspect[Beliefs];
     LOGV << "      -goals:" << rating_aspect[Goals];
+    LOGV << "      -needs:" << rating_aspect[Needs];
     LOGV << "      -preferences:" << rating_aspect[Preferences];
     LOGV << "      -total:" << rating_total;
     LOGV << "  ------------------------------------------------------";

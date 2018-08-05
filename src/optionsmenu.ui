@@ -36,7 +36,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <property name="iconSize">
       <size>
@@ -1252,7 +1252,7 @@
             <x>0</x>
             <y>0</y>
             <width>720</width>
-            <height>637</height>
+            <height>730</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -2179,16 +2179,6 @@
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <layout class="QGridLayout" name="gridLayout_4">
-         <item row="3" column="1">
-          <widget class="QDoubleSpinBox" name="dsb_belief_weight">
-           <property name="statusTip">
-            <string>This is the default role belief weight. Belief weights can be overridden in the Dwarf Therapist.ini.</string>
-           </property>
-           <property name="singleStep">
-            <double>0.250000000000000</double>
-           </property>
-          </widget>
-         </item>
          <item row="2" column="1">
           <widget class="QDoubleSpinBox" name="dsb_facet_weight">
            <property name="statusTip">
@@ -2198,6 +2188,16 @@
             <double>0.250000000000000</double>
            </property>
            <property name="value">
+            <double>0.250000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QDoubleSpinBox" name="dsb_belief_weight">
+           <property name="statusTip">
+            <string>This is the default role belief weight. Belief weights can be overridden in the Dwarf Therapist.ini.</string>
+           </property>
+           <property name="singleStep">
             <double>0.250000000000000</double>
            </property>
           </widget>
@@ -2221,7 +2221,7 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="1">
+         <item row="6" column="1">
           <widget class="QDoubleSpinBox" name="dsb_pref_weight">
            <property name="statusTip">
             <string>This is the default role trait weight. Trait weights can be overridden in the Dwarf Therapist.ini.</string>
@@ -2350,6 +2350,9 @@
            <property name="statusTip">
             <string>This is the default role goal weight. Goal weights can be overridden in the Dwarf Therapist.ini.</string>
            </property>
+           <property name="singleStep">
+            <double>0.250000000000000</double>
+           </property>
           </widget>
          </item>
          <item row="0" column="0">
@@ -2417,7 +2420,7 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="0">
+         <item row="6" column="0">
           <widget class="QCheckBox" name="cb_pref_weight">
            <property name="toolTip">
             <string>Check this if you want to use a custom default weight for preferences instead of the built-in value.</string>
@@ -2427,6 +2430,29 @@
            </property>
            <property name="text">
             <string>Overwrite default preference weight</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QCheckBox" name="cb_need_weight">
+           <property name="toolTip">
+            <string>Check this if you want to use a custom default weight for needs instead of the built-in value.</string>
+           </property>
+           <property name="statusTip">
+            <string>Check this if you want to use a custom default weight for needs instead of the built-in value.</string>
+           </property>
+           <property name="text">
+            <string>Overwrite default need weight</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QDoubleSpinBox" name="dsb_need_weight">
+           <property name="statusTip">
+            <string>This is the default role need weight. Need weights can be overridden in the Dwarf Therapist.ini.</string>
+           </property>
+           <property name="singleStep">
+            <double>0.250000000000000</double>
            </property>
           </widget>
          </item>

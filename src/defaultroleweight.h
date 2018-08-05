@@ -41,6 +41,7 @@ public:
         facets,
         beliefs,
         goals,
+        needs,
         preferences;
 
     static void update_all();

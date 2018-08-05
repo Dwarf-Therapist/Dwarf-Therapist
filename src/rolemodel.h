@@ -21,6 +21,7 @@ public:
     QModelIndex add_facet(int id);
     QModelIndex add_belief(int id);
     QModelIndex add_goal(int id);
+    QModelIndex add_need(int id);
     QModelIndex add_preference(const RolePreference *pref);
 
     void remove_item(const QModelIndex &index);
@@ -53,6 +54,7 @@ public:
         Facets,
         Beliefs,
         Goals,
+        Needs,
         Preferences,
         RowCount
     };

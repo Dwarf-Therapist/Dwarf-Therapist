@@ -47,6 +47,7 @@ public:
     static DwarfStats skills;
     static DwarfStats facets;
     static DwarfStats beliefs;
+    static DwarfStats needs;
     static DwarfStats preferences;
     static DwarfStats roles;
 
