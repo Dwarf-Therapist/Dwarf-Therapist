@@ -596,7 +596,7 @@ public:
     Q_INVOKABLE int get_max_wear_level(ITEM_TYPE itype = NONE);
     QList<EquipWarn::warn_info> get_equip_warnings(){return m_equip_warnings;}
 
-    bool can_assign_military() {return m_can_assign_military;}
+    Q_INVOKABLE bool can_assign_military() {return m_can_assign_military;}
 
     int optimized_labors;
 

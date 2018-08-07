@@ -143,6 +143,7 @@ static const char *general_doc = R"***(
 <p class="method"><span class="type">float</span> <span class="identifier">get_role_rating</span>(<span class="type">string</span> <span class="arg">role_name</span>)</p>
 
 <h2>Squad &amp; Military Methods</h2>
+<p class="method"><span class="type">bool</span> <span class="identifier">can_assign_military</span>()</p>
 <p class="method"><span class="type">bool</span> <span class="identifier">active_military</span>()</p>
 <p class="method"><span class="type">bool</span> <span class="identifier">squad_id</span>() <span class="comment">**below 0 indicates no squad</span></p>
 <p class="method"><span class="type">int</span> <span class="identifier">squad_position</span>()</p>
