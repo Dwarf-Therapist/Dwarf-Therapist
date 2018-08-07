@@ -367,10 +367,14 @@ void DwarfModel::build_rows() {
                     m_grouped_dwarves[tr("Nobles")].append(d);
                 } else if (d->active_military()) {
                     m_grouped_dwarves[tr("Military (On Duty)")].append(d);
-                } else if (d->squad_id() > -1){
+                } else if (d->squad_id() > -1) {
                     m_grouped_dwarves[tr("Military (Off Duty)")].append(d);
-                }else {
+                } else if (!d->is_citizen() && d->can_assign_military()) {
+                    m_grouped_dwarves[tr("Mercenaries")].append(d);
+                } else if (d->can_assign_military()) {
                     m_grouped_dwarves[tr("Can Activate")].append(d);
+                } else {
+                    m_grouped_dwarves[tr("Cannot Activate")].append(d);
                 }
             }else if(m_group_by == GB_HIGHEST_MOODABLE){
                 QList<Skill> skills = d->get_moodable_skills().values();
