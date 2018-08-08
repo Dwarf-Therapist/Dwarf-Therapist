@@ -361,8 +361,6 @@ void DwarfModel::build_rows() {
             }else if(m_group_by == GB_MILITARY_STATUS){
                 if (d->is_baby() || d->is_child()) {
                     m_grouped_dwarves[tr("Juveniles")].append(d);
-                } else if (d->active_military() && !d->can_set_labors()) { //master level military elites
-                    m_grouped_dwarves[tr("Champions")].append(d);
                 } else if (!d->noble_position().isEmpty()) {
                     m_grouped_dwarves[tr("Nobles")].append(d);
                 } else if (d->active_military()) {
