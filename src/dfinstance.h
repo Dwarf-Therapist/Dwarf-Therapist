@@ -233,6 +233,7 @@ public:
 
     QString get_preference_item_name(int index, int subtype);
     QString get_preference_other_name(int index, PREF_TYPES p_type);
+    QString get_shape_name(VIRTADDR addr);
     QString get_artifact_name(ITEM_TYPE itype,int item_id);
 
     inline Material * get_inorganic_material(int index) {

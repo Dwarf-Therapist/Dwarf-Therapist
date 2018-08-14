@@ -1424,9 +1424,6 @@ QString DFInstance::get_preference_other_name(int index, PREF_TYPES p_type){
     case LIKE_COLOR:
         return get_name(m_color_vector, m_layout->descriptor_offset("color_name"),
                         &DFInstance::read_string);
-    case LIKE_SHAPE:
-        return get_name(m_shape_vector, m_layout->descriptor_offset("shape_name_plural"),
-                        &DFInstance::read_string);
     case LIKE_POETRY:
         return get_name(m_poetic_vector, m_layout->art_offset("name"),
                         &DFInstance::get_translated_word);
@@ -1439,6 +1436,18 @@ QString DFInstance::get_preference_other_name(int index, PREF_TYPES p_type){
     default:
         return "unknown";
     }
+}
+
+QString DFInstance::get_shape_name(VIRTADDR addr)
+{
+    QString name;
+    auto adj_vector = enumerate_vector(m_layout->descriptor_field(addr, "shape_adj"));
+    for (auto adj: adj_vector) {
+        name.append(read_string(adj));
+        name.append(" ");
+    }
+    name.append(read_string(m_layout->descriptor_field(addr, "shape_name_plural")));
+    return name;
 }
 
 QString DFInstance::find_material_name(int mat_index, short mat_type, ITEM_TYPE itype, MATERIAL_STATES mat_state){
