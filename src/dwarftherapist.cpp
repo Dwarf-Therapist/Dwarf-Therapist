@@ -44,6 +44,7 @@ THE SOFTWARE.
 #include "standardpaths.h"
 #include <QMessageBox>
 #include <QSettings>
+#include <QStyleFactory>
 #include <QToolTip>
 #include <QTranslator>
 #include <QTimer>
@@ -272,6 +273,10 @@ void DwarfTherapist::read_settings() {
     }
     m_user_settings->endGroup();//happiness
     m_user_settings->endGroup();//colors
+
+    //set current style
+    if (m_user_settings->contains("style"))
+        setStyle(m_user_settings->value("style").toString());
 
     //set the application fonts
     QApplication::setFont(DT->user_settings()->value("main_font", QFont(DefaultFonts::getMainFontName(), DefaultFonts::getMainFontSize())).value<QFont>());

@@ -321,6 +321,39 @@
            </item>
           </layout>
          </item>
+         <item row="0" column="1">
+          <layout class="QHBoxLayout" name="horizontalLayout_17">
+           <item>
+            <widget class="QLabel" name="lbl_style">
+             <property name="toolTip">
+              <string>Change the global style of the application. The new style may not be applied fully until the application is restarted.</string>
+             </property>
+             <property name="statusTip">
+              <string>Change the global style of the application. The new style may not be applied fully until the application is restarted.</string>
+             </property>
+             <property name="whatsThis">
+              <string>Change the global style of the application. The new style may not be applied fully until the application is restarted.</string>
+             </property>
+             <property name="text">
+              <string>Style: </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="cb_style">
+             <property name="toolTip">
+              <string>Change the global style of the application. The new style may not be applied fully until the application is restarted.</string>
+             </property>
+             <property name="statusTip">
+              <string>Change the global style of the application. The new style may not be applied fully until the application is restarted.</string>
+             </property>
+             <property name="whatsThis">
+              <string>Change the global style of the application. The new style may not be applied fully until the application is restarted.</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
         </layout>
        </item>
        <item>

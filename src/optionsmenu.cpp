@@ -38,6 +38,7 @@ THE SOFTWARE.
 
 #include <QMessageBox>
 #include <QSettings>
+#include <QStyleFactory>
 #include <QFontDialog>
 
 const QStringList OptionsMenu::m_msg_vars = QStringList() << MSG_WARN_READ << MSG_LIVESTOCK;
@@ -48,6 +49,9 @@ OptionsMenu::OptionsMenu(QWidget *parent)
     , m_reading_settings(false)
 {
     ui->setupUi(this);
+
+    ui->cb_style->addItem(tr("Default"));
+    ui->cb_style->addItems(QStyleFactory::keys());
 
     m_general_colors
             << new CustomColor(tr("Skill"),
@@ -354,6 +358,13 @@ void OptionsMenu::read_settings() {
     m_tooltip_font = qMakePair(temp,temp);
     show_current_font(temp,ui->lbl_current_tooltip);
 
+    auto current_style = s->value("style").toString();
+    int current_style_index = ui->cb_style->findText(current_style);
+    if (current_style_index != -1)
+        ui->cb_style->setCurrentIndex(current_style_index);
+    else
+        ui->cb_style->setCurrentIndex(0); // first item is "default" style
+
     temp = s->value("main_font", QFont(DefaultFonts::getMainFontName(), DefaultFonts::getMainFontSize())).value<QFont>();
     m_main_font = qMakePair(temp,temp);
     show_current_font(temp,ui->lbl_current_main_font);
@@ -532,6 +543,10 @@ void OptionsMenu::write_settings() {
         s->setValue("animal_health", ui->cb_animal_health->isChecked());
         s->setValue("tooltip_font", m_tooltip_font.first);
         s->setValue("main_font", m_main_font.first);
+        if (ui->cb_style->currentIndex() == 0)
+            s->remove("style");
+        else
+            s->setValue("style", ui->cb_style->currentText());
         s->setValue("gender_info", ui->cb_gender_info->currentData());
 
         s->setValue("overwrite_default_attributes_weight",ui->cb_attribute_weight->isChecked());
