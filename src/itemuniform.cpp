@@ -117,7 +117,7 @@ void ItemUniform::read_def(){
             m_item_def = new ItemSubtype(m_iType,m_df,item_defs.at(subtype),this);
         }else{
             //build a simple subtype and manually set the name
-            m_item_def = new ItemSubtype(m_iType,m_df,0,this);
+            m_item_def = new ItemSubtype(m_iType,this);
             //get base item name
             QString name = Item::get_item_name(m_iType);
             QString name_plural = Item::get_item_name_plural(m_iType);

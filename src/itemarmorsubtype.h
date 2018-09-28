@@ -48,8 +48,5 @@ private:
     int m_layer;
     FlagArray m_armor_flags;
     quint8 m_armor_level;
-
-    int m_offset_props;
-    int m_offset_level;
 };
 #endif // ITEMARMORSUBTYPE_H

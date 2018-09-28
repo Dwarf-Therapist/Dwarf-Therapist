@@ -50,10 +50,10 @@ enum ITEMDEF_FLAG
 class ItemSubtype : public QObject {
     Q_OBJECT
 public:
+    ItemSubtype(ITEM_TYPE itype, QObject *parent = 0);
     ItemSubtype(ITEM_TYPE itype, DFInstance *df, VIRTADDR address, QObject *parent = 0);
     virtual ~ItemSubtype();
 
-    VIRTADDR address() const {return m_address;}
     QString name() const {return m_name;}
     QString name_plural() const {return m_name_plural;}
     ITEM_TYPE type() const {return m_iType;}
@@ -66,18 +66,11 @@ public:
     static FlagArray item_type_flags(ITEM_TYPE type);
 
 protected:
-    VIRTADDR m_address;
     QString m_name;
     QString m_name_plural;
-    DFInstance * m_df;
-    MemoryLayout * m_mem;
     ITEM_TYPE m_iType;
     short m_subType;
     FlagArray m_flags;
-
-    int m_offset_adj;
-    int m_offset_preplural;
-    int m_offset_mat;
 
 private:
     static void set_item_type_flags(FlagArray &flags, ITEM_TYPE type);
