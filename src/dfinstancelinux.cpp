@@ -166,83 +166,139 @@ bool DFInstanceLinux::set_pid(){
 
 struct Elf32
 {
-	using Ehdr = Elf32_Ehdr;
-	using Shdr = Elf32_Shdr;
-	using Sym = Elf32_Sym;
+    using Ehdr = Elf32_Ehdr;
+    using Shdr = Elf32_Shdr;
+    using Sym = Elf32_Sym;
+    using Rel = Elf32_Rel;
+    using Rela = Elf32_Rela;
 
-	using Addr = Elf32_Addr;
-	using Off = Elf32_Off;
+    static auto RSym(uint32_t info) { return ELF32_R_SYM(info); }
+    static auto RType(uint32_t info) { return ELF32_R_TYPE(info); }
+
+    static constexpr auto JumpSlot = R_386_JMP_SLOT;
+
+    using Addr = Elf32_Addr;
+    using Off = Elf32_Off;
+
 };
 
 struct Elf64
 {
-	using Ehdr = Elf64_Ehdr;
-	using Shdr = Elf64_Shdr;
-	using Sym = Elf64_Sym;
+    using Ehdr = Elf64_Ehdr;
+    using Shdr = Elf64_Shdr;
+    using Sym = Elf64_Sym;
+    using Rel = Elf64_Rel;
+    using Rela = Elf64_Rela;
 
-	using Addr = Elf64_Addr;
-	using Off = Elf64_Off;
+    static auto RSym(uint64_t info) { return ELF64_R_SYM(info); }
+    static auto RType(uint64_t info) { return ELF64_R_TYPE(info); }
+
+    static constexpr auto JumpSlot = R_X86_64_JUMP_SLOT;
+
+    using Addr = Elf64_Addr;
+    using Off = Elf64_Off;
 };
+
+template<typename Elf, typename Rel>
+static uintptr_t search_jump_slot(std::ifstream &exe, const typename Elf::Shdr &reloc, unsigned int symbol_index)
+{
+    std::vector<Rel> reltab (reloc.sh_size / sizeof(Rel));
+    exe.seekg(reloc.sh_offset);
+    exe.read(reinterpret_cast<char *>(reltab.data()), reloc.sh_size);
+    for (const auto &rel: reltab) {
+        if (Elf::RSym(rel.r_info) == symbol_index) {
+            if (Elf::RType(rel.r_info) == Elf::JumpSlot)
+                return rel.r_offset;
+            else {
+                LOGE << "Unexpected relocation type:" << Elf::RType(rel.r_info)
+                     << "for symbol" << symbol_index;
+            }
+        }
+    }
+    return 0;
+}
 
 template<typename Off>
 static std::string read_string(std::ifstream &file, Off offset)
 {
-	std::string str;
-	file.seekg(offset);
-	while (auto c = file.get())
-		str.push_back(c);
-	return str;
+    std::string str;
+    file.seekg(offset);
+    while (auto c = file.get())
+        str.push_back(c);
+    return str;
 }
 
 template<typename Elf>
 static typename Elf::Shdr read_section_header(std::ifstream &exe, const typename Elf::Ehdr &ehdr, uint16_t index)
 {
-	typename Elf::Shdr shdr;
-	exe.seekg(ehdr.e_shoff + index * ehdr.e_shentsize);
-	exe.read(reinterpret_cast<char *>(&shdr), sizeof(typename Elf::Shdr));
-	return shdr;
+    typename Elf::Shdr shdr;
+    exe.seekg(ehdr.e_shoff + index * ehdr.e_shentsize);
+    exe.read(reinterpret_cast<char *>(&shdr), sizeof(typename Elf::Shdr));
+    return shdr;
 }
 
 template<typename Elf>
-static uintptr_t find_symbol(std::ifstream &exe, const std::string &symbol)
+static uintptr_t find_relocation(std::ifstream &exe, const std::string &symbol)
 {
-	typename Elf::Ehdr ehdr;
-	exe.seekg(0);
-	exe.read(reinterpret_cast<char *>(&ehdr), sizeof(ehdr));
-	auto shstrtab_offset = read_section_header<Elf>(exe, ehdr, ehdr.e_shstrndx).sh_offset;
-	std::map<std::string, typename Elf::Shdr> sections;
-	for (uint16_t i = 0; i < ehdr.e_shnum; ++i) {
-		auto shdr = read_section_header<Elf>(exe, ehdr, i);
-		sections.emplace(read_string(exe, shstrtab_offset + shdr.sh_name), shdr);
-	}
-	auto dynstr_it = sections.find(".dynstr");
-	auto dynsym_it = sections.find(".dynsym");
-	if (dynstr_it != sections.end() && dynsym_it != sections.end()) {
-		const auto &dynstr = dynstr_it->second;
-		const auto &dynsym = dynsym_it->second;
-		std::vector<typename Elf::Sym> symtab (dynsym.sh_size / sizeof(typename Elf::Sym));
-		exe.seekg(dynsym.sh_offset);
-		exe.read(reinterpret_cast<char *>(symtab.data()), dynsym.sh_size);
-		for (const auto &sym: symtab) {
-			if (read_string(exe, dynstr.sh_offset + sym.st_name) == symbol)
-				return sym.st_value;
-		}
-	}
-	return 0;
+    // Read headers
+    typename Elf::Ehdr ehdr;
+    exe.seekg(0);
+    exe.read(reinterpret_cast<char *>(&ehdr), sizeof(ehdr));
+    auto shstrtab_offset = read_section_header<Elf>(exe, ehdr, ehdr.e_shstrndx).sh_offset;
+    std::map<std::string, typename Elf::Shdr> sections;
+    for (uint16_t i = 0; i < ehdr.e_shnum; ++i) {
+        auto shdr = read_section_header<Elf>(exe, ehdr, i);
+        sections.emplace(read_string(exe, shstrtab_offset + shdr.sh_name), shdr);
+    }
+    // Search dynamic symbol
+    auto dynstr_it = sections.find(".dynstr");
+    auto dynsym_it = sections.find(".dynsym");
+    int symbol_index = -1;
+    if (dynstr_it != sections.end() && dynsym_it != sections.end()) {
+        const auto &dynstr = dynstr_it->second;
+        const auto &dynsym = dynsym_it->second;
+        std::vector<typename Elf::Sym> symtab (dynsym.sh_size / sizeof(typename Elf::Sym));
+        exe.seekg(dynsym.sh_offset);
+        exe.read(reinterpret_cast<char *>(symtab.data()), dynsym.sh_size);
+        for (auto i = 0u; i < symtab.size(); ++i) {
+            const auto &sym = symtab[i];
+            if (read_string(exe, dynstr.sh_offset + sym.st_name) == symbol) {
+                symbol_index = i;
+                break;
+            }
+        }
+    }
+    if (symbol_index < 0) {
+        LOGE << "Symbol" << QString::fromStdString(symbol) << "not found";
+        return 0;
+    }
+    // Search relocation sections
+    uintptr_t addr = 0;
+    for (const auto &p: sections) {
+        const auto &section = p.second;
+        if (section.sh_type == SHT_RELA)
+            addr = search_jump_slot<Elf, typename Elf::Rela>(exe, section, symbol_index);
+        else if (section.sh_type == SHT_REL)
+            addr = search_jump_slot<Elf, typename Elf::Rel>(exe, section, symbol_index);
+        if (addr)
+            return addr;
+    }
+    LOGE << "Could not find relocation section containing symbol" << symbol_index;
+    return 0;
 }
 
 static constexpr char ElfMagic[4] = { ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 };
 
 static int get_elf_class(std::ifstream &exe)
 {
-	char magic[4];
-	exe.seekg(0);
-	exe.read(magic, 4);
+    char magic[4];
+    exe.seekg(0);
+    exe.read(magic, 4);
 
-	if (!std::equal (magic, magic+4, ElfMagic))
-		return 0;
+    if (!std::equal (magic, magic+4, ElfMagic))
+        return 0;
 
-	return exe.get();
+    return exe.get();
 }
 
 static constexpr int TrapOpCode = 0xcc;
@@ -265,17 +321,28 @@ void DFInstanceLinux::find_running_copy() {
 
     QString md5 = "UNKNOWN";
     if (auto exe = std::ifstream(proc_path + "/exe")) {
-        // check class from ELF header to find the pointer size
+        // check class from ELF header to find the pointer size and string::assign relocation
+        VIRTADDR string_assign_relocation = 0;
         switch (get_elf_class(exe)) {
             case ELFCLASS32:
                 m_pointer_size = 4;
+                string_assign_relocation = find_relocation<Elf32>(exe, "_ZNSs6assignEPKcj");
                 break;
             case ELFCLASS64:
                 m_pointer_size = 8;
+                string_assign_relocation = find_relocation<Elf64>(exe, "_ZNSs6assignEPKcm");
                 break;
             default:
                 LOGE << "invalid ELF header";
                 m_pointer_size = sizeof(VIRTADDR);
+        }
+        if (!string_assign_relocation) {
+            LOGE << "Failed to find std::string::assign relocation";
+            m_string_assign_addr = 0;
+        }
+        else {
+            m_string_assign_addr = read_addr(string_assign_relocation);
+            LOGD << "found std::string::assign at" << hexify(m_string_assign_addr);
         }
 
         // ELF binaries don't seem to store a linker timestamp, so just MD5 the file.
@@ -300,7 +367,7 @@ void DFInstanceLinux::find_running_copy() {
 
     // look for symbols and instructions
     std::regex procmaps_re("([0-9a-f]+)-([0-9a-f]+) ([-r][-w][-x][-p]) ([0-9a-f]+) ([0-9a-f]{2}):([0-9a-f]{2}) ([0-9]+)(?:\\s*(.+))");
-    m_trap_addr = m_string_assign_addr = 0;
+    m_trap_addr = 0;
     if (auto maps = std::ifstream(proc_path + "/maps")) {
         std::string line;
         while (std::getline(maps, line)) {
@@ -327,33 +394,7 @@ void DFInstanceLinux::find_running_copy() {
                     }
                 }
             }
-            auto filename = res[8].str();
-            // Look for symbol std::string::assign(const char *, std::size_t) in libstdc++
-            if (m_string_assign_addr == 0 && perm.at(2) == 'x' &&
-                    filename.find("libstdc++.so.6") != std::string::npos) {
-                std::ifstream lib(filename);
-                if (!lib) {
-                    LOGE << "Failed to open library" << QString::fromStdString(filename);
-                    continue;
-                }
-                uintptr_t offset = 0;
-                switch (get_elf_class(lib)) {
-                    case ELFCLASS32:
-                        offset = find_symbol<Elf32>(lib, "_ZNSs6assignEPKcj");
-                        break;
-                    case ELFCLASS64:
-                        offset = find_symbol<Elf64>(lib, "_ZNSs6assignEPKcm");
-                        break;
-                }
-                if (offset != 0) {
-                    m_string_assign_addr = start+offset;
-                    LOGD << "found std::string::assign at" << hexify(m_string_assign_addr);
-                }
-                else {
-                    LOGE << "std::string::assign not found";
-                }
-            }
-            if (m_trap_addr != 0 && m_string_assign_addr != 0)
+            if (m_trap_addr != 0)
                 break; // we found everything we needed
         }
     }
