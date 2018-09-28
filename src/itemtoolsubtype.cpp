@@ -25,7 +25,8 @@ THE SOFTWARE.
 ItemToolSubtype::ItemToolSubtype(DFInstance *df, VIRTADDR address, QObject *parent)
     : ItemSubtype(TOOL,df,address,parent)
 {
-    FlagArray flags(m_df, m_mem->item_subtype_field(m_address, "tool_flags"));
+    auto mem = df->memory_layout();
+    FlagArray flags(df, mem->item_subtype_field(address, "tool_flags"));
     if (flags.has_flag(INCOMPLETE_ITEM))
         m_flags.set_flag(ITEM_INCOMPLETE, true);
 }

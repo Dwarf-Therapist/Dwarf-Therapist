@@ -2,24 +2,29 @@
 
 #include "item.h"
 
-ItemSubtype::ItemSubtype(ITEM_TYPE itype, DFInstance *df, VIRTADDR address, QObject *parent)
+ItemSubtype::ItemSubtype(ITEM_TYPE itype, QObject *parent)
     : QObject(parent)
-    , m_address(address)
-    , m_df(df)
-    , m_mem(df->memory_layout())
     , m_iType(itype)
     , m_subType(-1)
-    , m_flags(df, m_mem->item_subtype_field(address, "base_flags"))
 {
-    m_offset_adj = -1;
-    m_offset_mat = -1;
-    m_offset_preplural = -1;
+    set_item_type_flags(m_flags, itype);
+}
+
+ItemSubtype::ItemSubtype(ITEM_TYPE itype, DFInstance *df, VIRTADDR address, QObject *parent)
+    : QObject(parent)
+    , m_iType(itype)
+    , m_subType(-1)
+    , m_flags(df, df->memory_layout()->item_subtype_field(address, "base_flags"))
+{
+    auto mem = df->memory_layout();
+    int offset_adj = -1;
+    int offset_mat = -1;
     switch (itype) {
     case ARMOR:
     case PANTS:
         //armor can also have a preplural (eg. suits of leather armor) but it's unused for things like preferences
-        m_offset_adj = m_mem->armor_subtype_offset("armor_adjective");
-        m_offset_mat = m_mem->armor_subtype_offset("mat_name");
+        offset_adj = mem->armor_subtype_offset("armor_adjective");
+        offset_mat = mem->armor_subtype_offset("mat_name");
         break;
     case GLOVES:
     case AMMO:
@@ -28,10 +33,10 @@ ItemSubtype::ItemSubtype(ITEM_TYPE itype, DFInstance *df, VIRTADDR address, QObj
     case SHOES:
     case SHIELD:
     case HELM:
-        m_offset_adj = m_mem->item_subtype_offset("adjective");
+        offset_adj = mem->item_subtype_offset("adjective");
         break;
     case TOOL:
-        m_offset_adj = m_mem->item_subtype_offset("tool_adjective");
+        offset_adj = mem->item_subtype_offset("tool_adjective");
         break;
     default:
         break;
@@ -39,24 +44,27 @@ ItemSubtype::ItemSubtype(ITEM_TYPE itype, DFInstance *df, VIRTADDR address, QObj
 
     set_item_type_flags(m_flags, itype);
 
-    if(m_address){
-        m_subType = m_df->read_short(m_mem->item_subtype_field(m_address, "sub_type"));
+    if(address){
+        m_subType = df->read_short(mem->item_subtype_field(address, "sub_type"));
 
         QString mat_name;
 
-        if(m_offset_mat != -1)
-            mat_name = m_df->read_string(m_address + m_offset_mat);
+        if(offset_mat != -1)
+            mat_name = df->read_string(address + offset_mat);
 
         QStringList name_parts;
-        if(m_offset_adj != -1)
-            name_parts.append(m_df->read_string(m_address + m_offset_adj));
+        if(offset_adj != -1)
+            name_parts.append(df->read_string(address + offset_adj));
         name_parts.append(mat_name);
-        name_parts.append(m_df->read_string(m_mem->item_subtype_field(m_address, "name")));
+        name_parts.append(df->read_string(mem->item_subtype_field(address, "name")));
         m_name = capitalizeEach(name_parts.join(" ")).simplified().trimmed();
 
         name_parts.removeLast();
-        name_parts.append(m_df->read_string(m_mem->item_subtype_field(m_address, "name_plural")));
+        name_parts.append(df->read_string(mem->item_subtype_field(address, "name_plural")));
         m_name_plural = capitalizeEach(name_parts.join(" ")).simplified().trimmed();
+    }
+    else {
+        LOGE << "Null address for ItemSubtype";
     }
 }
 

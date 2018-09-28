@@ -29,32 +29,33 @@ THE SOFTWARE.
 ItemArmorSubtype::ItemArmorSubtype(const ITEM_TYPE itype, DFInstance *df, const VIRTADDR address, QObject *parent)
     : ItemSubtype(itype,df,address,parent)
 {
+    auto mem = df->memory_layout();
+    int offset_props = -1;
+    int offset_level = -1;
     switch(m_iType){
     case ARMOR:
-        m_offset_props = m_mem->armor_subtype_offset("chest_armor_properties");
-        m_offset_level = m_mem->armor_subtype_offset("armor_level");
+        offset_props = mem->armor_subtype_offset("chest_armor_properties");
+        offset_level = mem->armor_subtype_offset("armor_level");
         break;
     case PANTS:
-        m_offset_props = m_mem->armor_subtype_offset("pants_armor_properties");
-        m_offset_level = m_mem->armor_subtype_offset("armor_level");
+        offset_props = mem->armor_subtype_offset("pants_armor_properties");
+        offset_level = mem->armor_subtype_offset("armor_level");
         break;
     case HELM:
     case GLOVES:
     case SHOES:
-        m_offset_props = m_mem->armor_subtype_offset("other_armor_properties");
-        m_offset_level = m_mem->armor_subtype_offset("other_armor_level");
+        offset_props = mem->armor_subtype_offset("other_armor_properties");
+        offset_level = mem->armor_subtype_offset("other_armor_level");
         break;
     default:
-        m_offset_props = -1;
-        m_offset_level = -1;
         break;
     }
 
-    if(m_offset_props != -1){
-        m_layer = m_df->read_int(m_mem->armor_subtype_field(m_address + m_offset_props, "layer"));
+    if(offset_props != -1){
+        m_layer = df->read_int(mem->armor_subtype_field(address + offset_props, "layer"));
 
-        if(m_offset_level != -1){
-            m_armor_level = m_df->read_byte(m_address + m_offset_level);
+        if(offset_level != -1){
+            m_armor_level = df->read_byte(address + offset_level);
         }else{
             m_armor_level = 0;
         }
@@ -63,7 +64,7 @@ ItemArmorSubtype::ItemArmorSubtype(const ITEM_TYPE itype, DFInstance *df, const 
         }
 
         //if it has an armor level over 0 or can be made from metal, bone or shell, consider it armor
-        m_armor_flags = FlagArray(m_df, m_address+m_offset_props);
+        m_armor_flags = FlagArray(df, address+offset_props);
         if(m_armor_level > 0 ||
                 (m_armor_flags.has_flag(ARMOR_METAL) || m_armor_flags.has_flag(ARMOR_BONE) || m_armor_flags.has_flag(ARMOR_SHELL))){
             m_flags.set_flag(ITEM_IS_ARMOR,true);
