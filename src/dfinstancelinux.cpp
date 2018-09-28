@@ -489,7 +489,11 @@ USIZE DFInstanceLinux::write_string(const VIRTADDR addr, const QString &str) {
     // allocate space for string and write data in remote stack
     work_regs.*sp -= str_data.size();
     VIRTADDR str_data_addr = work_regs.*sp;
-    write_raw(str_data_addr, str_data.size(), str_data.data());
+    if (write_raw(str_data_addr, str_data.size(), str_data.data()) != (unsigned int)str_data.size()) {
+        LOGE << "Failed to write string in stack";
+        detach();
+        return 0;
+    }
 
     // prepare stack buffer with return address and arguments
     std::vector<char> stack;
@@ -520,7 +524,11 @@ USIZE DFInstanceLinux::write_string(const VIRTADDR addr, const QString &str) {
     work_regs.*sp -= m_pointer_size; // space for return address
 
     // copy buffer in remote stack
-    write_raw(work_regs.*sp, stack.size(), stack.data());
+    if (write_raw(work_regs.*sp, stack.size(), stack.data()) != stack.size()) {
+        LOGE << "Failed to write arguments in stack";
+        detach();
+        return 0;
+    }
 
     // call std::string::assign
     work_regs.*ip = m_string_assign_addr;
