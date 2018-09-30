@@ -1,6 +1,6 @@
 /*
 Dwarf Therapist
-Copyright (c) 2009 Trey Stout (chmod)
+Copyright (c) 2018 Clement Vuchener
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,35 +20,70 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 #ifndef ROLESTATS_H
 #define ROLESTATS_H
 
-#include <QObject>
-#include <QSharedPointer>
 #include <QVector>
+#include <vector>
 
-class RoleCalcBase;
-
-class RoleStats {
-
+// Abstract base class for normalization methods.
+class RoleStats
+{
 public:
-    RoleStats(const QVector<double> &unsorted, const double invalid_value = -1, const bool override = false);
-    virtual ~RoleStats()
-    {}
+    RoleStats(double invalid_value = -1);
+    virtual ~RoleStats();
 
-    double get_rating(double val);
-    void set_list(const QVector<double> &unsorted);
+    virtual double get_rating(double val) const = 0;
 
-private:
-    double m_total_count;
-    double m_null_rating;
+    virtual void set_list(const QVector<double> &unsorted);
+
+    void log_stats(const QVector<double> &unsorted) const;
+
+protected:
     double m_invalid;
-    bool m_override; //use a very simple range transform only
+    int m_total_count;
+    std::vector<double> m_valid;
     double m_median;
-
-    QSharedPointer<RoleCalcBase> m_calc;
-    QVector<double> m_valid;
-    void set_mode(const QVector<double> &unsorted);
 };
 
-#endif // ROLESTATS_H
+// Use the average of ECDF rank and Stratified MAD.
+class RoleStatsRank: public RoleStats
+{
+public:
+    RoleStatsRank(double invalid_value = -1);
+
+    double get_rating(double val) const override;
+
+    void set_list(const QVector<double> &unsorted) override;
+
+private:
+    double m_stratified_mad;
+};
+
+// Same as RoleStasRank but valid values ratings are transformed between 50%
+// and 100%. Invalid value have ratings below 50%.
+class RoleStatsRankSkewed: public RoleStatsRank
+{
+public:
+    RoleStatsRankSkewed(double invalid_value);
+
+    double get_rating(double val) const override;
+
+    void set_list(const QVector<double> &unsorted) override;
+
+private:
+    double m_invalid_rating;
+};
+
+// Simply transform ratings centering around the median.
+class RoleStatsTransform: public RoleStats
+{
+public:
+    RoleStatsTransform(double invalid_value = -1);
+
+    double get_rating(double val) const override;
+};
+
+#endif
+
