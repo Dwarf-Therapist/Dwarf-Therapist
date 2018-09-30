@@ -154,7 +154,6 @@ add_executable(DwarfTherapist WIN32 MACOSX_BUNDLE
     src/professioncolumn.cpp
     src/races.cpp
     src/reaction.cpp
-    src/rolecalcbase.cpp
     src/rolecolumn.cpp
     src/role.cpp
     src/roledialog.cpp

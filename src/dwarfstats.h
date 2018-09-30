@@ -55,14 +55,16 @@ public:
     double rating(double val) const;
 
 private:
-    DwarfStats(double invalid_value = -1, bool override = false);
+    template<typename T>
+    struct use_method_t {};
+
+    template<typename T>
+    DwarfStats(use_method_t<T>, double invalid_value = -1);
 
     static float m_att_pot_weight;
     static float m_skill_rate_weight;
     static int m_max_unit_kills;
 
-    double m_invalid_value;
-    bool m_override;
     std::unique_ptr<RoleStats> m_stats;
 };
 

@@ -48,7 +48,6 @@ THE SOFTWARE.
 #include "dwarfjob.h"
 #include "equipwarn.h"
 #include "unitemotion.h"
-#include "rolecalcbase.h"
 #include "defaultroleweight.h"
 #include "standardpaths.h"
 #include "unitneed.h"
@@ -631,25 +630,6 @@ void DFInstance::load_role_ratings(){
         d->refresh_role_display_ratings();
     }
     LOGV << "     - loaded role display data in" << tr.elapsed() << "ms";
-
-    if(DT->get_log_manager()->get_appender("core")->minimum_level() <= LL_VERBOSE){
-        float max = 0;
-        float min = 0;
-        float median = 0;
-        if(all_role_ratings.count() > 0){
-            std::sort(all_role_ratings.begin(), all_role_ratings.end());
-            role_rating_avg /= all_role_ratings.count();
-            max = all_role_ratings.last();
-            min = all_role_ratings.first();
-            median = RoleCalcBase::find_median(all_role_ratings);
-        }
-        LOGV << "Overall Role Rating Stats";
-        LOGV << "     - Min: " << min;
-        LOGV << "     - Max: " << max;
-        LOGV << "     - Median: " << median;
-        LOGV << "     - Average: " << role_rating_avg;
-    }
-
 }
 
 

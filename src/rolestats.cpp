@@ -1,6 +1,6 @@
 /*
 Dwarf Therapist
-Copyright (c) 2009 Trey Stout (chmod)
+Copyright (c) 2018 Clement Vuchener
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,126 +22,189 @@ THE SOFTWARE.
 */
 
 #include "rolestats.h"
-#include "rolecalcminmax.h"
-#include "rolecalcrecenter.h"
+
 #include "truncatingfilelogger.h"
 
-using std::unique_copy;
-using std::distance;
-using std::accumulate;
+#include <algorithm>
+#include <cmath>
+#include <array>
+#include <numeric>
 
-RoleStats::RoleStats(const QVector<double> &unsorted, const double invalid_value, const bool override)
-    : m_null_rating(-1)
-    , m_invalid(invalid_value)
-    , m_override(override)
+// Value for M_SQRT2 (sqrt(2)) in GNU libc header.
+static constexpr double Sqrt2 = 1.41421356237309504880;
+
+// Cumulative Distribution Function
+static double cdf(double x, double mean = 0.0, double sdev = 1.0)
 {
-    set_list(unsorted);
+    return (1.0 + std::erf((x - mean) / (sdev * Sqrt2))) / 2.0;
 }
 
-void RoleStats::set_list(const QVector<double> &unsorted){
-    m_total_count = static_cast<double>(unsorted.size());
-    set_mode(unsorted);
+static double percentile(const std::vector<double> &vec, double k)
+{
+    // assume:
+    //  - vec is sorted
+    //  - 0.0 <= k <= 1.0
+    auto index = (vec.size()-1) * k;
+    auto index_floor = static_cast<unsigned int>(std::floor(index));
+    auto dec_part = index - index_floor;
+    if (dec_part == 0.0)
+        return vec[index_floor];
+    else
+        return vec[index_floor] * (1.0-dec_part) + vec[index_floor+1] * dec_part;
 }
 
-void RoleStats::set_mode(const QVector<double> &unsorted){
-    m_valid = unsorted;
-    std::sort(m_valid.begin(), m_valid.end());
-    bool skewed = false;
-    double valid_size = m_valid.size();
-    m_median = RoleCalcBase::find_median(m_valid);
+// Empirical Cumulative Distribution Function
+static double ecdf(const std::vector<double> &vec, double x)
+{
+    auto range = std::equal_range(vec.begin(), vec.end(), x);
+    auto rank = [&vec] (auto it) { return static_cast<double>(std::distance(vec.begin(), it))/(vec.size()-1); };
+    if (range.second == vec.begin())
+        return 0.0;
+    else if (range.first == vec.end())
+        return 1.0;
+    else
+        return (rank(range.first) + rank(std::prev(range.second))) / 2.0;
+}
 
-    if(!m_override){
-        double first_quartile = m_valid.at((int)m_valid.size()/4.0);
-        skewed = (m_median == first_quartile);
-
-        QVector<double>::iterator valid_start = m_valid.begin();
-        if(m_valid.first() <= m_invalid){
-            valid_start = std::upper_bound(m_valid.begin(),m_valid.end(),m_valid.first());
-            m_valid.erase(m_valid.begin(),valid_start);
-        }
-
-        valid_size = static_cast<double>(m_valid.size());
-        if(valid_size <= 0)
-            return;
-
-        if(skewed){
-            //count of distinct valid values
-            QVector<double> uniques(valid_size);
-            QVector<double>::Iterator u_end;
-            u_end = unique_copy(m_valid.begin(),m_valid.end(),uniques.begin());
-            int unique_count = distance(uniques.begin(),u_end);
-            float perc_unique = unique_count / valid_size;
-            if(perc_unique < 0.25){
-                //rankecdf
-                m_calc = QSharedPointer<RoleCalcBase>(new RoleCalcBase(m_valid));
-                LOGV << "     - using only ecdfrank";
-            }else{
-                //rankecdf and min/max
-                m_calc = QSharedPointer<RoleCalcBase>(new RoleCalcMinMax(m_valid));
-                LOGV << "     - using a combination of ecdfrank and minmax";
-            }
-        }else{
-            //rankecdf and recenter
-            LOGV << "     - using a combination of ecdfrank and recenter";
-            m_calc = QSharedPointer<RoleCalcBase>(new RoleCalcRecenter(m_valid));
-        }
-    }else{
-        LOGV << "     - using basic range transform";
+static double range_transform(double val, double min, double mid, double max)
+{
+    if(val <= mid) {
+        if(mid-min == 0)
+            return 0;
+        else
+            return (val-min)/(mid-min)*0.5f;
     }
+    else {
+        if(max-mid == 0)
+            return mid;
+        else
+            return ((val-mid)/(max-mid)*0.5f)+0.5f;
+    }
+}
+
+RoleStats::RoleStats(double invalid_value)
+    : m_invalid(invalid_value)
+{
+}
+
+RoleStats::~RoleStats()
+{
+}
+
+void RoleStats::set_list(const QVector<double> &unsorted)
+{
+    m_total_count = unsorted.size();
+    m_valid.clear();
+    if (m_invalid == -1) {
+        m_valid.reserve(m_total_count);
+        std::copy(unsorted.begin(), unsorted.end(), std::back_inserter(m_valid));
+    }
+    else {
+        for (auto val: unsorted)
+            if (val > m_invalid)
+                m_valid.push_back(val);
+    }
+    std::sort(m_valid.begin(), m_valid.end());
+    m_median = percentile(m_valid, 0.5);
 
     bool print_debug_info = (DT->get_log_manager()->get_appender("core")->minimum_level() <= LL_VERBOSE);
-
-    if(print_debug_info){
-        RoleCalcBase tmp(m_valid);
-        double tmp_total = 0;
-        foreach(double val, m_valid){
-            tmp_total += tmp.base_rating(val);
-        }
-        double tmp_avg = tmp_total / m_valid.size();
-        LOGV << "     - base avg:" << tmp_avg;
-    }
-
-    double total = 0.0;
-    if(skewed && !m_calc.isNull()){
-        for(QVector<double>::const_iterator it = m_valid.begin()
-            ; it != m_valid.end()
-            ; it++){
-            total += m_calc->rating(*it);
-        }
-        m_null_rating = ((m_total_count * 0.5f) - total) / (m_total_count - valid_size);
-        LOGV << "     - null rating:" << m_null_rating;
-    }
-
-    if(print_debug_info){
-        if(total <= 0){
-            foreach(double val, m_valid){
-                total += get_rating(val);
-            }
-        }
-        if(m_null_rating != -1)
-            total += ((m_total_count - valid_size) * m_null_rating);
+    if (print_debug_info) {
+        auto average = std::accumulate(m_valid.begin(), m_valid.end(), 0.0) / m_valid.size();
+        auto min = m_valid.front();
+        auto max = m_valid.back();
         LOGV << "     - total raw values:" << m_total_count;
-        LOGV << "     - median raw values:" << m_median;
-        LOGV << "     - average of valid raw values:" << accumulate(m_valid.begin(),m_valid.end(),0.0) /  valid_size;
-        LOGV << "     - min raw valid value:" << m_valid.first() << "max raw valid value:" << m_valid.last();
-        LOGV << "     - min rating:" << (m_null_rating > 0 ? m_null_rating : get_rating(m_valid.first())) << "max rating:" << get_rating(m_valid.last());
-        LOGV << "     - average of final ratings:" << (total / m_total_count);
-        LOGV << "     ------------------------------";
+        LOGV << "     - valid:" << m_valid.size() << "/" << m_total_count;
+        LOGV << "     - median of valid raw values:" << m_median;
+        LOGV << "     - average of valid raw values:" << average;
+        LOGV << "     - min raw valid value:" << min << "max raw valid value:" << max;
     }
 }
 
-double RoleStats::get_rating(double val){
-    if(!m_calc.isNull()){
-        if(val <= m_invalid && m_null_rating != -1){
-            return m_null_rating;
-        }else{
-            return m_calc->rating(val);
-        }
-    }else{
-        if(m_override){
-            return RoleCalcBase::range_transform(val,m_valid.first(),m_median,m_valid.last());
-        }else{
-            return 0.0;
-        }
+void RoleStats::log_stats(const QVector<double> &unsorted) const
+{
+    auto min = +std::numeric_limits<double>::infinity(),
+         max = -std::numeric_limits<double>::infinity(),
+         average = 0.0;
+    for (auto val: unsorted) {
+        auto r = get_rating(val);
+        if (r < min)
+            min = r;
+        if (r > max)
+            max = r;
+        average += r;
     }
+    average /= unsorted.size();
+    auto min_valid = get_rating(m_valid.front());
+    LOGV << "     - min rating:" << min << "min valid rating:" << min_valid  << "max rating:" << max;
+    LOGV << "     - average of final ratings:" << average;
+    LOGV << "     ------------------------------";
+}
+
+RoleStatsRank::RoleStatsRank(double invalid_value)
+    : RoleStats(invalid_value)
+{
+}
+
+double RoleStatsRank::RoleStatsRank::get_rating(double val) const
+{
+    return (ecdf(m_valid, val) + cdf(val, m_median, m_stratified_mad)) / 2.0;
+}
+
+void RoleStatsRank::set_list(const QVector<double> &unsorted)
+{
+    RoleStats::set_list(unsorted);
+
+    // Compute Stratified MAD (dark magic from Thistleknot)
+    std::array<double, 7> k = { 0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0}, p;
+    std::transform(
+            k.begin(), k.end(),
+            p.begin(),
+            [this] (double k) {
+                auto p = percentile(m_valid, k) - m_median;
+                return p * std::fabs(p);
+            });
+    m_stratified_mad = 0.0;
+    for (auto i = 0u; i < k.size()-1; ++i)
+        m_stratified_mad += (k[i+1]-k[i])*(p[i+1]-p[i]);
+    m_stratified_mad = std::sqrt(m_stratified_mad);
+    LOGV << "     - stratified MAD:" << m_stratified_mad;
+}
+
+RoleStatsRankSkewed::RoleStatsRankSkewed(double invalid_value)
+    : RoleStatsRank(invalid_value)
+{
+}
+
+double RoleStatsRankSkewed::get_rating(double val) const
+{
+    if (val <= m_invalid)
+        return m_invalid_rating;
+    else
+        return 0.5 + RoleStatsRank::get_rating(val) / 2.0;
+}
+
+void RoleStatsRankSkewed::set_list(const QVector<double> &unsorted)
+{
+    RoleStatsRank::set_list(unsorted);
+
+    // Set invalid rating so the average rating is 50%
+    double valid_total = std::accumulate(
+            m_valid.begin(), m_valid.end(), 0.0,
+            [this] (double total, double val) {
+                return total + get_rating(val);
+            });
+    m_invalid_rating = ((m_total_count * 0.5) - valid_total) / (m_total_count - m_valid.size());
+    if (m_invalid_rating < 0.0)
+        m_invalid_rating = 0.0;
+    LOGV << "     - invalid rating:" << m_invalid_rating;
+}
+
+RoleStatsTransform::RoleStatsTransform(double invalid_value)
+    : RoleStats(invalid_value)
+{
+}
+
+double RoleStatsTransform::get_rating(double val) const
+{
+    return range_transform(val, m_valid.front(), m_median, m_valid.back());
 }
