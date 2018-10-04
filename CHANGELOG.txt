@@ -1,13 +1,22 @@
+### Version 41.0.3 Patch Notes
+
+***
+ - added can_assign_military method for scripts
+ - changed military status grouping (remove outdated "Champions" and added "Mercenaries")
+ - added expulsion related thoughts
+ - fixed writing nicknames on some Linux distributions
+ - fixed trying to read itemdef flags for objects not from DF memory
+ 
 ### Version 41.0.2 Patch Notes
 
 ***
- - fix copying need columns
+ - fixed copying need columns
 
 ### Version 41.0.1 Patch Notes
 
 ***
- - fix saving focus and need columns
- - fix focus offsets on 32 bits platforms
+ - fixed saving focus and need columns
+ - fixed focus offsets on 32 bits platforms
 
 ### Version 41.0.0 Patch Notes
 
