@@ -33,13 +33,13 @@ float DwarfStats::m_att_pot_weight;
 float DwarfStats::m_skill_rate_weight;
 int DwarfStats::m_max_unit_kills;
 
-DwarfStats DwarfStats::attributes(use_method_t<RoleStatsRank>{});
-DwarfStats DwarfStats::attributes_raw(use_method_t<RoleStatsRank>{});
-DwarfStats DwarfStats::skills(use_method_t<RoleStatsRankSkewed>{}, 0);
-DwarfStats DwarfStats::facets(use_method_t<RoleStatsRank>{});
-DwarfStats DwarfStats::beliefs(use_method_t<RoleStatsRank>{});
-DwarfStats DwarfStats::needs(use_method_t<RoleStatsRankSkewed>{}, 0);
-DwarfStats DwarfStats::preferences(use_method_t<RoleStatsRankSkewed>{}, 0);
+DwarfStats DwarfStats::attributes(use_method_t<RoleStatsStratifiedMAD>{});
+DwarfStats DwarfStats::attributes_raw(use_method_t<RoleStatsStratifiedMAD>{});
+DwarfStats DwarfStats::skills(use_method_t<RoleStatsSkewed<RoleStatsStratifiedMAD>>{}, 0);
+DwarfStats DwarfStats::facets(use_method_t<RoleStatsStratifiedMAD>{});
+DwarfStats DwarfStats::beliefs(use_method_t<RoleStatsStratifiedMAD>{});
+DwarfStats DwarfStats::needs(use_method_t<RoleStatsSkewed<RoleStatsStratifiedMAD>>{}, 0);
+DwarfStats DwarfStats::preferences(use_method_t<RoleStatsSkewed<RoleStatsRankECDF>>{}, 0);
 DwarfStats DwarfStats::roles(use_method_t<RoleStatsTransform>{});
 
 template<typename T>
