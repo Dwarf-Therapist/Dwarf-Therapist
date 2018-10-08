@@ -140,17 +140,27 @@ void RoleStats::log_stats(const QVector<double> &unsorted) const
     LOGV << "     ------------------------------";
 }
 
-RoleStatsRank::RoleStatsRank(double invalid_value)
+RoleStatsRankECDF::RoleStatsRankECDF(double invalid_value)
     : RoleStats(invalid_value)
 {
 }
 
-double RoleStatsRank::RoleStatsRank::get_rating(double val) const
+double RoleStatsRankECDF::get_rating(double val) const
 {
-    return (ecdf(m_valid, val) + cdf(val, m_median, m_stratified_mad)) / 2.0;
+    return ecdf(m_valid, val);
 }
 
-void RoleStatsRank::set_list(const QVector<double> &unsorted)
+RoleStatsStratifiedMAD::RoleStatsStratifiedMAD(double invalid_value)
+    : RoleStats(invalid_value)
+{
+}
+
+double RoleStatsStratifiedMAD::get_rating(double val) const
+{
+    return cdf(val, m_median, m_stratified_mad);
+}
+
+void RoleStatsStratifiedMAD::set_list(const QVector<double> &unsorted)
 {
     RoleStats::set_list(unsorted);
 
@@ -170,34 +180,41 @@ void RoleStatsRank::set_list(const QVector<double> &unsorted)
     LOGV << "     - stratified MAD:" << m_stratified_mad;
 }
 
-RoleStatsRankSkewed::RoleStatsRankSkewed(double invalid_value)
-    : RoleStatsRank(invalid_value)
+template<typename Parent>
+RoleStatsSkewed<Parent>::RoleStatsSkewed(double invalid_value)
+    : Parent(invalid_value)
 {
 }
 
-double RoleStatsRankSkewed::get_rating(double val) const
+template<typename Parent>
+double RoleStatsSkewed<Parent>::get_rating(double val) const
 {
-    if (val <= m_invalid)
+    if (val <= Parent::m_invalid)
         return m_invalid_rating;
     else
-        return 0.5 + RoleStatsRank::get_rating(val) / 2.0;
+        return 0.5 + Parent::get_rating(val) / 2.0;
 }
 
-void RoleStatsRankSkewed::set_list(const QVector<double> &unsorted)
+template<typename Parent>
+void RoleStatsSkewed<Parent>::set_list(const QVector<double> &unsorted)
 {
-    RoleStatsRank::set_list(unsorted);
+    Parent::set_list(unsorted);
 
     // Set invalid rating so the average rating is 50%
     double valid_total = std::accumulate(
-            m_valid.begin(), m_valid.end(), 0.0,
+            Parent::m_valid.begin(), Parent::m_valid.end(), 0.0,
             [this] (double total, double val) {
                 return total + get_rating(val);
             });
-    m_invalid_rating = ((m_total_count * 0.5) - valid_total) / (m_total_count - m_valid.size());
+    m_invalid_rating = ((Parent::m_total_count * 0.5) - valid_total) /
+                        (Parent::m_total_count - Parent::m_valid.size());
     if (m_invalid_rating < 0.0)
         m_invalid_rating = 0.0;
     LOGV << "     - invalid rating:" << m_invalid_rating;
 }
+
+template class RoleStatsSkewed<RoleStatsRankECDF>;
+template class RoleStatsSkewed<RoleStatsStratifiedMAD>;
 
 RoleStatsTransform::RoleStatsTransform(double invalid_value)
     : RoleStats(invalid_value)

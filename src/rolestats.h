@@ -47,11 +47,18 @@ protected:
     double m_median;
 };
 
-// Use the average of ECDF rank and Stratified MAD.
-class RoleStatsRank: public RoleStats
+class RoleStatsRankECDF: public RoleStats
 {
 public:
-    RoleStatsRank(double invalid_value = -1);
+    RoleStatsRankECDF(double invalid_value = -1);
+
+    double get_rating(double val) const override;
+};
+
+class RoleStatsStratifiedMAD: public RoleStats
+{
+public:
+    RoleStatsStratifiedMAD(double invalid_value = -1);
 
     double get_rating(double val) const override;
 
@@ -61,12 +68,13 @@ private:
     double m_stratified_mad;
 };
 
-// Same as RoleStasRank but valid values ratings are transformed between 50%
+// Same as parent but valid values ratings are transformed between 50%
 // and 100%. Invalid value have ratings below 50%.
-class RoleStatsRankSkewed: public RoleStatsRank
+template<typename Parent>
+class RoleStatsSkewed: public Parent
 {
 public:
-    RoleStatsRankSkewed(double invalid_value);
+    RoleStatsSkewed(double invalid_value);
 
     double get_rating(double val) const override;
 
@@ -75,6 +83,9 @@ public:
 private:
     double m_invalid_rating;
 };
+
+extern template class RoleStatsSkewed<RoleStatsRankECDF>;
+extern template class RoleStatsSkewed<RoleStatsStratifiedMAD>;
 
 // Simply transform ratings centering around the median.
 class RoleStatsTransform: public RoleStats
