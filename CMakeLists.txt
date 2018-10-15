@@ -190,7 +190,7 @@ add_executable(${EXE_NAME} WIN32 MACOSX_BUNDLE
     thirdparty/qtcolorpicker-2.6/qtcolorpicker.cpp
     resources.qrc
     ${SOURCES})
-target_link_libraries(${EXE_NAME} Qt5::Widgets Qt5::Qml Qt5::Concurrent ${LIBS})
+target_link_libraries(${EXE_NAME} Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Qml Qt5::Network Qt5::Concurrent ${LIBS})
 
 if (APPLE)
     set_target_properties(${EXE_NAME} PROPERTIES
