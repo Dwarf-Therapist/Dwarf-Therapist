@@ -38,6 +38,7 @@ Linux
 In addition to the AppImage provided on the `releases`_ page, packages for specific distributions can be found at:
 
 - `COPR repository`_ for Fedora users.
+- `AUR package`_ for Arch users.
 
 Running the program
 -------------------
@@ -78,3 +79,4 @@ You can also join us in `#dwarftherapist on Freenode`_.
 .. _releases: https://github.com/Dwarf-Therapist/Dwarf-Therapist/releases
 .. _latest release: https://github.com/Dwarf-Therapist/Dwarf-Therapist/releases/latest
 .. _COPR repository: https://copr.fedorainfracloud.org/coprs/cvuchener/Dwarf-Therapist/
+.. _AUR package: https://aur.archlinux.org/packages/dwarftherapist/
