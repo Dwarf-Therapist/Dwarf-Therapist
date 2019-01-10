@@ -598,6 +598,8 @@ public:
 
     Q_INVOKABLE bool can_assign_military() {return m_can_assign_military;}
 
+    void add_noble_assignment(int id);
+
     int optimized_labors;
 
     void set_global_sort_key(int group_id, QVariant val){m_global_sort_keys.insert(group_id,val);}
@@ -692,6 +694,7 @@ private:
     QString m_pending_squad_name; //The name of the squad that the dwarf belongs to (if any)
     QList<quint32> m_unit_flags;
     QList<quint32> m_pending_flags;
+    QVector<int> m_pending_assignments;
     short m_age;
     short m_age_in_months;
     uint m_turn_count; // Dwarf turn count from start of fortress (as best we know)

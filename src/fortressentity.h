@@ -70,7 +70,6 @@ public:
     static QMap<QString,NOBLE_COLORS> m_raw_color_map;
     static QMap<QString,NOBLE_COLORS> build_color_map();
 
-private:
     //this could be fleshed out into it's own class if we ever want to use more of what's in a position
     //for now, we just want the position names for display purposes
     struct position{
@@ -80,6 +79,9 @@ private:
         QColor highlight;
     };
 
+    const std::map<int, position> &get_noble_assignments() const { return m_noble_assignments; }
+
+private:
     static QHash<NOBLE_COLORS, QColor> m_noble_colors;
 
     VIRTADDR m_address;
@@ -89,6 +91,7 @@ private:
 
     //key is the historical figure id, and x positions as value(s)
     QMultiHash<int,position> m_nobles;
+    std::map<int, position> m_noble_assignments; // assignment id -> position
 
     //squads this fortress has
     QVector<qint32> m_squads;

@@ -110,6 +110,7 @@ public:
     DwarfModel(QObject *parent = 0);
     virtual ~DwarfModel();
     void set_instance(DFInstance *df) {m_df = QPointer<DFInstance>(df);}
+    DFInstance *get_instance() const { return m_df; }
     void set_grid_view(GridView *v) {m_gridview = v;}
     GridView * current_grid_view() {return m_gridview;}
     void clear_all(bool clr_pend); // reset everything to normal

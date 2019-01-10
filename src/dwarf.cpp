@@ -2414,6 +2414,7 @@ int Dwarf::pending_changes() {
             cnt++;
         }
     }
+    cnt += m_pending_assignments.count();
     return cnt;
 }
 
@@ -2439,6 +2440,8 @@ void Dwarf::clear_pending() {
                 s->assign_to_squad(this); //updates uniform/inventory/squad
         }
     }
+
+    m_pending_assignments.clear();
 
     //refresh any other data that may have been pending commit
     refresh_minimal_data();
@@ -2505,6 +2508,33 @@ void Dwarf::commit_pending(bool single) {
             pen_sq_pos = m_pending_squad_position;
             pen_sq_name = m_pending_squad_name;
         }
+    }
+
+    auto function_call = m_df->make_function_call();
+    if (function_call && *function_call) {
+        if (auto method_address = m_mem->global_address("hist_figure_method_assign_noble")) {
+            LOGD << "Begin assignments";
+            for (int assignment_id: m_pending_assignments) {
+                LOGD << "Assign" << nice_name() << "to" << assignment_id << "int entity" << m_df->fortress()->id();
+                auto ret = function_call->call(method_address,
+                        std::vector<VIRTADDR> {
+                            m_hist_figure->address(), // this
+                            assignment_id, // assignment id
+                            m_df->fortress()->id(), // entity id
+                            100, // link strength
+                            1, // add events
+                        });
+                if (!ret.first) {
+                    LOGE << "Error while calling hist_figure::assign_noble";
+                }
+            }
+        }
+        else {
+            LOGE << "Missing hist_figure::assign_noble address";
+        }
+    }
+    else {
+        LOGE << "Function call not supported";
     }
 
     //set flag to get equipment and recheck our uniform and inventory for missing items
@@ -2625,6 +2655,16 @@ QTreeWidgetItem *Dwarf::get_pending_changes_tree() {
             }
             i->setToolTip(0, i->text(0));
         }
+        i->setData(0, Qt::UserRole, id());
+    }
+    const auto &assignments = m_df->fortress()->get_noble_assignments();
+    for (auto assignment_id: m_pending_assignments) {
+        auto i = new QTreeWidgetItem(d_item);
+        auto position_it = assignments.find(assignment_id);
+        if (position_it != assignments.end())
+            i->setText(0, position_it->second.name);
+        else
+            i->setText(0, tr("Unknown assignment"));
         i->setData(0, Qt::UserRole, id());
     }
     return d_item;
@@ -3264,4 +3304,9 @@ void Dwarf::update_squad_info(int squad_id, int position, QString name){
     //try to update the uniform and inventory
     read_uniform();
     read_inventory();
+}
+
+void Dwarf::add_noble_assignment(int id)
+{
+    m_pending_assignments.push_back(id);
 }

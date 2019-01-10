@@ -124,6 +124,7 @@ private:
     QMenu *m;
     QMenu *customization_menu;
     QMenu *squads_menu;
+    QMenu *nobles_menu;
     QMenu *debug_menu;
 
     QAction *m_prof_name;
@@ -183,6 +184,8 @@ private:
         void set_squad_name();
         void assign_to_squad();
         void remove_squad();
+
+        void assign_noble();
 
 signals:
     void dwarf_focus_changed(Dwarf *d);
