@@ -157,6 +157,17 @@ public:
     quint32 current_time() {return m_cur_time;}
     static DFInstance * newInstance();
 
+    // Call injection
+    class FunctionCall
+    {
+    public:
+        virtual ~FunctionCall() = default;
+        virtual VIRTADDR push_data(void *data, std::size_t len) = 0;
+        virtual std::pair<bool, VIRTADDR> call(VIRTADDR fn_addr, const std::vector<VIRTADDR> &args) = 0;
+        virtual operator bool() const = 0;
+    };
+    virtual std::unique_ptr<FunctionCall> make_function_call() = 0;
+
     // Methods for when we know how the data is layed out
     void load_game_data();
     void read_raws();

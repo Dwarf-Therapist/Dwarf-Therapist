@@ -441,20 +441,8 @@ QString DFInstanceLinux::read_string(VIRTADDR addr) {
 }
 
 USIZE DFInstanceLinux::write_string(const VIRTADDR addr, const QString &str) {
-#ifdef __x86_64__
-    static constexpr auto sp = &user_regs_struct::rsp;
-    static constexpr auto ip = &user_regs_struct::rip;
-    static constexpr auto orig_ax = &user_regs_struct::orig_rax;
-    static constexpr auto ip_offset = offsetof(user, regs.rip);
-#else
-    static constexpr auto sp = &user_regs_struct::esp;
-    static constexpr auto ip = &user_regs_struct::eip;
-    static constexpr auto orig_ax = &user_regs_struct::orig_eax;
-    static constexpr auto ip_offset = offsetof(user, regs.eip);
-#endif
-
-    if (m_trap_addr == 0 || m_string_assign_addr == 0) {
-        LOGE << "Cannot write string without trap and std::string::assign addresses.";
+    if (m_string_assign_addr == 0) {
+        LOGE << "Cannot write string without std::string::assign addresses.";
         return 0;
     }
 
@@ -463,117 +451,217 @@ USIZE DFInstanceLinux::write_string(const VIRTADDR addr, const QString &str) {
         return 0;
     }
 
-    attach();
+    auto call = make_function_call();
+    if (!call || !*call) {
+        LOGE << "Invalid function call object";
+        return 0;
+    }
 
     QByteArray str_data = QTextCodec::codecForName("IBM437")->fromUnicode(str);
-
-    /* Save the current value of the main thread registers */
-    struct user_regs_struct saved_regs;
-    if (ptrace(PTRACE_GETREGS, m_pid, 0, &saved_regs) == -1) {
-        LOGE << "Could not retrieve original register information:" << strerror(errno);
-        detach();
-        return 0;
-    }
-
-    struct user_regs_struct work_regs = saved_regs;
-    work_regs.*orig_ax = -1; // prevents syscall restart
-    work_regs.*sp = saved_regs.*sp;
-
-#ifdef __x86_64__
-    if (m_pointer_size == 8) {
-        // x86_64 ABI reserve a 128 byte "red zone" for storing local variable without changing rsp
-        work_regs.rsp -= 128;
-    }
-#endif
-
-    // allocate space for string and write data in remote stack
-    work_regs.*sp -= str_data.size();
-    VIRTADDR str_data_addr = work_regs.*sp;
-    if (write_raw(str_data_addr, str_data.size(), str_data.data()) != (unsigned int)str_data.size()) {
+    auto str_data_addr = call->push_data(str_data.data(), str_data.size());
+    if (!str_data_addr) {
         LOGE << "Failed to write string in stack";
-        detach();
         return 0;
     }
 
-    // prepare stack buffer with return address and arguments
-    std::vector<char> stack;
-    auto add_on_stack = [&stack, pointer_size=m_pointer_size] (VIRTADDR value) {
-        std::copy_n(reinterpret_cast<char *>(&value), pointer_size, std::back_inserter(stack));
-    };
-    add_on_stack(m_trap_addr); // return address
-    if (m_pointer_size == 4) {
-        add_on_stack(addr); // this
-        add_on_stack(str_data_addr); // s
-        add_on_stack(str_data.size()); // count
-    }
+    auto ret = call->call(m_string_assign_addr,
+            {addr, str_data_addr, (unsigned)str_data.size()});
+    return ret.first ? str.size() : 0;
+}
+
+class DFInstanceLinux::FunctionCall: public DFInstance::FunctionCall
+{
 #ifdef __x86_64__
-    else if (m_pointer_size == 8) {
-        work_regs.rdi = addr; // this
-        work_regs.rsi = str_data_addr; // s
-        work_regs.rdx = str_data.size(); // count
-    }
+    static constexpr auto sp = &user_regs_struct::rsp;
+    static constexpr auto ip = &user_regs_struct::rip;
+    static constexpr auto orig_ax = &user_regs_struct::orig_rax;
+    static constexpr auto ip_offset = offsetof(user, regs.rip);
+    static constexpr auto ax_offset = offsetof(user, regs.rax);
+#else
+    static constexpr auto sp = &user_regs_struct::esp;
+    static constexpr auto ip = &user_regs_struct::eip;
+    static constexpr auto orig_ax = &user_regs_struct::orig_eax;
+    static constexpr auto ip_offset = offsetof(user, regs.eip);
+    static constexpr auto ax_offset = offsetof(user, regs.eax);
 #endif
-    else {
-        LOGE << "architecture not supported";
-        detach();
-        return 0;
+
+    DFInstanceLinux *df;
+    struct user_regs_struct saved_regs, work_regs;
+public:
+    FunctionCall(DFInstanceLinux *df)
+        : df(df)
+    {
+        if (!df || !df->m_trap_addr) {
+            df = nullptr; // set invalid state
+            return;
+        }
+
+        if (!df->attach()) {
+            LOGE << "Failed to attach to DF instance";
+            df = nullptr; // set invalid state
+            return;
+        }
+
+        /* Save the current value of the main thread registers */
+        if (ptrace(PTRACE_GETREGS, df->m_pid, 0, &saved_regs) == -1) {
+            auto errstr = strerror(errno);
+            LOGE << "Could not retrieve original register information:" << errstr;
+            df = nullptr; // set invalid state
+            return;
+        }
+
+        work_regs = saved_regs;
+        work_regs.*orig_ax = -1; // prevents syscall restart
+        work_regs.*sp = saved_regs.*sp;
+
+#ifdef __x86_64__
+        if (df->m_pointer_size == 8) {
+            // x86_64 ABI reserve a 128 byte "red zone" for storing local
+            // variable without changing rsp
+            work_regs.rsp -= 128;
+        }
+#endif
     }
 
-    work_regs.*sp -= stack.size()-m_pointer_size; // reserve space for args
-    work_regs.*sp &= -16; // align on 16 bytes
-    work_regs.*sp -= m_pointer_size; // space for return address
-
-    // copy buffer in remote stack
-    if (write_raw(work_regs.*sp, stack.size(), stack.data()) != stack.size()) {
-        LOGE << "Failed to write arguments in stack";
-        detach();
-        return 0;
+    ~FunctionCall() override
+    {
+        if (df)
+            df->detach();
     }
 
-    // call std::string::assign
-    work_regs.*ip = m_string_assign_addr;
-
-    /* Upload the registers. Note that after this point,
-       if this process crashes before the context is
-       restored, the game will immediately crash too. */
-    if (ptrace(PTRACE_SETREGS, m_pid, 0, &work_regs) == -1) {
-        LOGE << "Could not set register information:" << strerror(errno);
-        detach();
-        return 0;
+    VIRTADDR push_data(void *data, std::size_t len) override
+    {
+        if (!df) {
+            LOGE << "Invalid function call object";
+            return 0;
+        }
+        work_regs.*sp -= len;
+        VIRTADDR data_addr = work_regs.*sp;
+        if (df->write_raw(data_addr, len, data) != len) {
+            LOGE << "Failed to write data in stack";
+            return 0;
+        }
+        return data_addr;
     }
 
-    // Execute until the trap is reached
-    VIRTADDR pc;
-    do {
-        if (ptrace(PTRACE_CONT, m_pid, 0, 0) == -1) {
-            LOGE << "ptrace continue failed" << strerror(errno);
-            break;
+    std::pair<bool, VIRTADDR> call(VIRTADDR fn_addr, const std::vector<VIRTADDR> &args) override
+    {
+        static constexpr std::pair<bool, VIRTADDR> error = {false, 0};
+        if (!df) {
+            LOGE << "Invalid function call object";
+            return error;
         }
-        int status = wait_for_stopped();
-        if (WSTOPSIG(status) != SIGTRAP) {
-            LOGD << "std::string::assign interrupted by signal" << WSTOPSIG(status);
-        }
-        if (WSTOPSIG(status) == SIGSEGV) {
-            LOGE << "Fatal error during remote function call.";
-            LOGE << "Trying to restore DF state, but memory may be corrupted.";
-            break;
-        }
-        // TODO: Handle more signals
-        // TODO: Handle program termination
-        // TODO: Catch exceptions
-        auto ret = ptrace(PTRACE_PEEKUSER, m_pid, ip_offset, 0);
-        if (ret == -1) {
-            LOGE << "ptrace getregs failed" << strerror(errno);
-        }
-        pc = ret;
-    } while (pc != m_trap_addr+1);
 
-    /* Restore the registers. */
-    if (ptrace(PTRACE_SETREGS, m_pid, 0, &saved_regs) == -1) {
-        LOGE << "Could not restore register information:" << strerror(errno);
+        auto old_stack_pointer = work_regs.*sp;
+
+        // prepare stack buffer with return address and arguments
+        std::vector<char> stack;
+        auto add_on_stack = [&stack, len=df->m_pointer_size] (VIRTADDR value) {
+            std::copy_n(reinterpret_cast<char *>(&value), len, std::back_inserter(stack));
+        };
+        add_on_stack(df->m_trap_addr); // return address
+        if (df->m_pointer_size == 4) { // cdecl
+            for (const auto &arg: args)
+                add_on_stack(arg);
+        }
+#ifdef __x86_64__
+        else if (df->m_pointer_size == 8) { // SysV AMD64 ABI
+            for (auto i = 0u; i < args.size(); ++i) {
+                auto val = args[i];
+                switch (i) {
+                case 0: work_regs.rdi = val; break;
+                case 1: work_regs.rsi = val; break;
+                case 2: work_regs.rdx = val; break;
+                case 3: work_regs.rcx = val; break;
+                case 4: work_regs.r8 = val; break;
+                case 5: work_regs.r9 = val; break;
+                default: add_on_stack(val);
+                }
+            }
+        }
+#endif
+        else {
+            LOGE << "architecture not supported";
+            return error;
+        }
+
+        work_regs.*sp -= stack.size()-df->m_pointer_size; // reserve space for args
+        work_regs.*sp &= -16; // align on 16 bytes
+        work_regs.*sp -= df->m_pointer_size; // space for return address
+
+        // copy buffer in remote stack
+        if (df->write_raw(work_regs.*sp, stack.size(), stack.data()) != stack.size()) {
+            LOGE << "Failed to write arguments in stack";
+            return error;
+        }
+
+        // call function
+        work_regs.*ip = fn_addr;
+
+        /* Upload the registers. Note that after this point,
+           if this process crashes before the context is
+           restored, the game will immediately crash too. */
+        if (ptrace(PTRACE_SETREGS, df->m_pid, 0, &work_regs) == -1) {
+            auto errstr = strerror(errno);
+            LOGE << "Could not set register information:" << errstr;
+            return error;
+        }
+
+        // Execute until the trap is reached
+        VIRTADDR pc;
+        do {
+            if (ptrace(PTRACE_CONT, df->m_pid, 0, 0) == -1) {
+                LOGE << "ptrace continue failed" << strerror(errno);
+                break;
+            }
+            int status = df->wait_for_stopped();
+            if (WSTOPSIG(status) != SIGTRAP) {
+                LOGD << "std::string::assign interrupted by signal" << WSTOPSIG(status);
+            }
+            if (WSTOPSIG(status) == SIGSEGV) {
+                LOGE << "Fatal error during remote function call.";
+                LOGE << "Trying to restore DF state, but memory may be corrupted.";
+                break;
+            }
+            // TODO: Handle more signals
+            // TODO: Handle program termination
+            // TODO: Catch exceptions
+            auto ret = ptrace(PTRACE_PEEKUSER, df->m_pid, ip_offset, 0);
+            if (ret == -1) {
+                auto errstr = strerror(errno);
+                LOGE << "ptrace getregs failed" << errstr;
+                break;
+            }
+            pc = ret;
+        } while (pc != df->m_trap_addr+1);
+
+
+        auto ret_value = ptrace(PTRACE_PEEKUSER, df->m_pid, ax_offset, 0);
+        if (ret_value == -1) {
+            auto errstr = strerror(errno);
+            LOGE << "ptrace getregs failed" << errstr;
+        }
+
+        /* Restore the registers. */
+        if (ptrace(PTRACE_SETREGS, df->m_pid, 0, &saved_regs) == -1) {
+            auto errstr = strerror(errno);
+            LOGE << "Could not restore register information:" << errstr;
+        }
+
+        // Restore stack for next calls
+        work_regs.*sp = old_stack_pointer;
+
+        return {true, ret_value};
     }
 
-    detach();
-    return str.size();
+    operator bool() const override
+    {
+        return df;
+    }
+};
+
+std::unique_ptr<DFInstance::FunctionCall> DFInstanceLinux::make_function_call()
+{
+    return std::make_unique<FunctionCall>(this);
 }
 

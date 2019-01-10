@@ -44,6 +44,8 @@ public:
     bool attach();
     bool detach();
 
+    std::unique_ptr<DFInstance::FunctionCall> make_function_call() override;
+
 protected:
     bool set_pid();
 
@@ -53,6 +55,8 @@ private:
     pid_t m_pid;
     VIRTADDR m_trap_addr;
     VIRTADDR m_string_assign_addr;
+
+    class FunctionCall;
 };
 
 #endif // DFINSTANCE_LINUX_H
