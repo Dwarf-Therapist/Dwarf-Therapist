@@ -2519,8 +2519,8 @@ void Dwarf::commit_pending(bool single) {
                 auto ret = function_call->call(method_address,
                         std::vector<VIRTADDR> {
                             m_hist_figure->address(), // this
-                            assignment_id, // assignment id
-                            m_df->fortress()->id(), // entity id
+                            static_cast<VIRTADDR>(assignment_id), // assignment id
+                            static_cast<VIRTADDR>(m_df->fortress()->id()), // entity id
                             100, // link strength
                             1, // add events
                         });

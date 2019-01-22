@@ -52,11 +52,16 @@ public:
     bool attach(){return true;}
     bool detach(){return true;}
 
+    std::unique_ptr<DFInstance::FunctionCall> make_function_call() override;
+
 protected:
     DWORD m_pid;
     HANDLE m_proc;
+    VIRTADDR m_trap_addr;
     QString calculate_checksum(const IMAGE_NT_HEADERS &pe_header);
     bool set_pid();
+
+    class FunctionCall;
 };
 
 #endif // DFINSTANCE_H
