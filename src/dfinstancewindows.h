@@ -61,6 +61,7 @@ protected:
     QString calculate_checksum(const IMAGE_NT_HEADERS &pe_header);
     bool set_pid();
 
+    template<typename, typename>
     class FunctionCall;
 };
 

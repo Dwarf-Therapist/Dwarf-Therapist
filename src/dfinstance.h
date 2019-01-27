@@ -161,9 +161,13 @@ public:
     class FunctionCall
     {
     public:
+        enum class CallType
+        {
+            MethodCall,
+        };
         virtual ~FunctionCall() = default;
         virtual VIRTADDR push_data(void *data, std::size_t len) = 0;
-        virtual std::pair<bool, VIRTADDR> call(VIRTADDR fn_addr, const std::vector<VIRTADDR> &args) = 0;
+        virtual std::pair<bool, VIRTADDR> call(CallType call_type, VIRTADDR fn_addr, const std::vector<VIRTADDR> &args) = 0;
         virtual operator bool() const = 0;
     };
     virtual std::unique_ptr<FunctionCall> make_function_call() = 0;

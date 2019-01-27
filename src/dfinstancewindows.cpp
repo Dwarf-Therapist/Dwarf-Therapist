@@ -357,17 +357,234 @@ void DFInstanceWindows::find_running_copy() {
     return;
 }
 
+struct ParameterStack
+{
+    std::size_t word_size;
+    std::vector<char> vec;
+
+    explicit ParameterStack(std::size_t word_size)
+        : word_size(word_size)
+    {
+    }
+
+    void add(VIRTADDR value)
+    {
+        std::copy_n(reinterpret_cast<char *>(&value), word_size, std::back_inserter(vec));
+    }
+
+    void reserve(std::size_t size)
+    {
+        vec.resize(vec.size() + size);
+    }
+
+    auto data() const { return vec.data(); }
+    auto size() const { return vec.size(); }
+};
+
+struct Win32Context
+{
+    using context_t = CONTEXT;
+    static constexpr auto GetContext = GetThreadContext;
+    static constexpr auto SetContext = SetThreadContext;
+#ifdef Q_OS_WIN64
+    static constexpr auto SP = &CONTEXT::Rsp;
+    static constexpr auto IP = &CONTEXT::Rip;
+    static void debug_context(const CONTEXT &ctx)
+    {
+        LOGD << "CS" << hexify(ctx.SegCs) << "DS" << hexify(ctx.SegDs)
+             << "ES" << hexify(ctx.SegEs) << "FS" << hexify(ctx.SegFs);
+        LOGD << "GS" << hexify(ctx.SegGs) << "SS" << hexify(ctx.SegSs)
+             << "FLAGS" << hexify(ctx.EFlags) << "RIP" << hexify(ctx.Rip);
+        LOGD << "RAX" << hexify(ctx.Rax) << "RCX" << hexify(ctx.Rcx)
+             << "RDX" << hexify(ctx.Rdx) << "RBX" << hexify(ctx.Rbx);
+        LOGD << "RSP" << hexify(ctx.Rsp) << "RBP" << hexify(ctx.Rbp)
+             << "RSI" << hexify(ctx.Rsi) << "RDI" << hexify(ctx.Rdi);
+        LOGD << "R8" << hexify(ctx.R8) << "R9" << hexify(ctx.R9)
+             << "R10" << hexify(ctx.R10) << "R11" << hexify(ctx.R11);
+        LOGD << "R12" << hexify(ctx.R12) << "R13" << hexify(ctx.R13)
+             << "R14" << hexify(ctx.R14) << "R15" << hexify(ctx.R15);
+    }
+#else
+    static constexpr auto SP = &CONTEXT::Esp;
+    static constexpr auto IP = &CONTEXT::Eip;
+    static void debug_context(const CONTEXT &ctx)
+    {
+        LOGD << "CS" << hexify(ctx.SegCs) << "DS" << hexify(ctx.SegDs)
+             << "ES" << hexify(ctx.SegEs) << "FS" << hexify(ctx.SegFs);
+        LOGD << "GS" << hexify(ctx.SegGs) << "SS" << hexify(ctx.SegSs)
+             << "FLAGS" << hexify(ctx.EFlags) << "EIP" << hexify(ctx.Eip);
+        LOGD << "EAX" << hexify(ctx.Eax) << "ECX" << hexify(ctx.Ecx)
+             << "EDX" << hexify(ctx.Edx) << "EBX" << hexify(ctx.Ebx);
+        LOGD << "ESP" << hexify(ctx.Esp) << "EBP" << hexify(ctx.Ebp)
+             << "ESI" << hexify(ctx.Esi) << "EDI" << hexify(ctx.Edi);
+    }
+#endif
+    enum Flags: DWORD {
+        Full = CONTEXT_FULL,
+        All = CONTEXT_ALL,
+    };
+};
+
+#ifdef Q_OS_WIN64
+struct Wow64Context
+{
+    using context_t = WOW64_CONTEXT;
+    static constexpr auto GetContext = Wow64GetThreadContext;
+    static constexpr auto SetContext = Wow64SetThreadContext;
+    static constexpr auto SP = &WOW64_CONTEXT::Esp;
+    static constexpr auto IP = &WOW64_CONTEXT::Eip;
+    static void debug_context(const WOW64_CONTEXT &ctx)
+    {
+        LOGD << "CS" << hexify(ctx.SegCs) << "DS" << hexify(ctx.SegDs)
+             << "ES" << hexify(ctx.SegEs) << "FS" << hexify(ctx.SegFs);
+        LOGD << "GS" << hexify(ctx.SegGs) << "SS" << hexify(ctx.SegSs)
+             << "FLAGS" << hexify(ctx.EFlags) << "EIP" << hexify(ctx.Eip);
+        LOGD << "EAX" << hexify(ctx.Eax) << "ECX" << hexify(ctx.Ecx)
+             << "EDX" << hexify(ctx.Edx) << "EBX" << hexify(ctx.Ebx);
+        LOGD << "ESP" << hexify(ctx.Esp) << "EBP" << hexify(ctx.Ebp)
+             << "ESI" << hexify(ctx.Esi) << "EDI" << hexify(ctx.Edi);
+    }
+    enum Flags: DWORD {
+        Full = WOW64_CONTEXT_FULL,
+        All = WOW64_CONTEXT_ALL,
+    };
+};
+#endif
+
+struct X86CallConventions
+{
+    template<typename ContextType>
+    static void set_parameters(DFInstance::FunctionCall::CallType call_type,
+                               ContextType &ctx,
+                               ParameterStack &stack,
+                               const std::vector<VIRTADDR> &args)
+    {
+        switch (call_type) {
+        case DFInstance::FunctionCall::CallType::MethodCall:
+            // thiscall
+            if (args.size() < 1) {
+                LOGE << "Missing this pointer for thiscall";
+                return;
+            }
+            ctx.Ecx = args[0];
+            for (auto i = 1u; i < args.size(); ++i)
+                stack.add(args[i]);
+        }
+    }
+
+    template<typename ContextType>
+    static VIRTADDR return_value(const ContextType &ctx)
+    {
+        return ctx.Eax;
+    }
+};
+
+#ifdef Q_OS_WIN64
+struct X64CallConventions
+{
+    static void set_parameters(DFInstance::FunctionCall::CallType,
+                               CONTEXT &ctx,
+                               ParameterStack &stack,
+                               const std::vector<VIRTADDR> &args)
+    {
+        // Microsoft x64 convention for all call types
+        stack.reserve(32); // Reserve shadow store
+        for (auto i = 0u; i < args.size(); ++i) {
+            auto val = args[i];
+            switch (i) {
+            case 0: ctx.Rcx = val; break;
+            case 1: ctx.Rdx = val; break;
+            case 2: ctx.R8 = val; break;
+            case 3: ctx.R9 = val; break;
+            default: stack.add(val);
+            }
+        }
+    }
+
+    static VIRTADDR return_value(const CONTEXT &ctx)
+    {
+        return ctx.Rax;
+    }
+};
+#endif
+
+template<typename Context, typename CallConvention>
 class DFInstanceWindows::FunctionCall: public DFInstance::FunctionCall
 {
     DFInstanceWindows *df;
     bool debug_process;
     DWORD thread_id;
     HANDLE thread_handle;
-    CONTEXT saved_ctx, work_ctx;
+    typename Context::context_t saved_ctx, work_ctx;
+
+    DEBUG_EVENT debug_event;
+    DWORD continue_status;
+
+    template<typename EventHandler>
+    bool doDebugLoop(EventHandler event_handler)
+    {
+        do {
+            if (!ContinueDebugEvent(debug_event.dwProcessId, debug_event.dwThreadId, continue_status)) {
+                DWORD error = GetLastError();
+                LOGE << "ContinueDebugEvent failed:" << get_error_string(error);
+                return false;
+            }
+            if (!WaitForDebugEvent(&debug_event, INFINITE)) {
+                DWORD error = GetLastError();
+                LOGE << "WaitForDebugEvent failed:" << get_error_string(error);
+                return false;
+            }
+            LOGD << "Debug event received:" << debug_event.dwDebugEventCode
+                 << "PID" << debug_event.dwProcessId
+                 << "TID" << debug_event.dwThreadId;
+
+            continue_status = DBG_CONTINUE;
+            switch (debug_event.dwDebugEventCode) {
+                case EXCEPTION_DEBUG_EVENT:
+                    switch (debug_event.u.Exception.ExceptionRecord.ExceptionCode) {
+                        case EXCEPTION_BREAKPOINT:
+                        case EXCEPTION_SINGLE_STEP:
+                            break;
+                        default:
+                            LOGW << "DF exception code" << hexify(debug_event.u.Exception.ExceptionRecord.ExceptionCode)
+                                 << (debug_event.u.Exception.dwFirstChance ? "first chance" : "last chance");
+
+                            if (DT->get_log_manager()->get_appender("core")->minimum_level() <= LL_DEBUG) {
+                                if (!Context::GetContext(thread_handle, &work_ctx)) {
+                                    DWORD error = GetLastError();
+                                    LOGE << "GetThreadContext failed:" << get_error_string(error);
+                                }
+                                else {
+                                    auto ip = work_ctx.*Context::IP;
+                                    LOGD << "At address" << hexify(ip)
+                                         << "(with default base:" << hexify(ip-df->m_base_addr) << ")";
+                                    Context::debug_context(work_ctx);
+                                }
+                            }
+                            continue_status = DBG_EXCEPTION_NOT_HANDLED;
+                    }
+                    break;
+                case CREATE_PROCESS_DEBUG_EVENT:
+                    // image file handle need to be closed
+                    if (!CloseHandle(debug_event.u.CreateProcessInfo.hFile)) {
+                        DWORD error = GetLastError();
+                        LOGE << "CloseHandle for image file failed:" << get_error_string(error);
+                    }
+                    break;
+                case EXIT_PROCESS_DEBUG_EVENT:
+                    LOGE << "DF terminated";
+                    break;
+                default:
+                    break;
+            }
+        } while (event_handler(debug_event));
+        return true;
+    }
 
 public:
     FunctionCall(DFInstanceWindows *df)
         : df(df)
+        , thread_id(0)
     {
         if (!df || !df->m_trap_addr) {
             this->df = nullptr;
@@ -381,36 +598,20 @@ public:
             return;
         }
 
-        DEBUG_EVENT event;
-        while (true) {
-            if (!WaitForDebugEvent(&event, INFINITE)) {
-                DWORD error = GetLastError();
-                LOGE << "WaitForDebugEvent failed:" << get_error_string(error);
+        if (!WaitForDebugEvent(&debug_event, INFINITE)) {
+            DWORD error = GetLastError();
+            LOGE << "WaitForDebugEvent failed:" << get_error_string(error);
+            this->df = nullptr;
+            return;
+        }
+        continue_status = DBG_CONTINUE;
+
+        if (!doDebugLoop([](const DEBUG_EVENT &event){return event.dwDebugEventCode != EXCEPTION_DEBUG_EVENT;})) {
                 this->df = nullptr;
                 return;
-            }
-            LOGD << "Debug event received:" << event.dwDebugEventCode
-                 << "PID" << event.dwProcessId
-                 << "TID" << event.dwThreadId;
-            if (event.dwDebugEventCode == CREATE_PROCESS_DEBUG_EVENT) {
-                if (!CloseHandle(event.u.CreateProcessInfo.hFile)) {
-                    DWORD error = GetLastError();
-                    LOGE << "CloseHandle for image file failed:" << get_error_string(error);
-                }
-            }
-
-            if (event.dwDebugEventCode == EXCEPTION_DEBUG_EVENT)
-                break;
-
-            if (!ContinueDebugEvent(event.dwProcessId, event.dwThreadId, DBG_CONTINUE)) {
-                DWORD error = GetLastError();
-                LOGE << "ContinueDebugEvent failed:" << get_error_string(error);
-                this->df = nullptr;
-                return;
-            }
         }
 
-        thread_id = event.dwThreadId;
+        thread_id = debug_event.dwThreadId;
         thread_handle = OpenThread(THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SUSPEND_RESUME, FALSE, thread_id);
         if (thread_handle == NULL) {
             DWORD error = GetLastError();
@@ -419,82 +620,24 @@ public:
             return;
         }
 
-        saved_ctx.ContextFlags = CONTEXT_ALL;
-        if (!GetThreadContext(thread_handle, &saved_ctx)) {
+        saved_ctx.ContextFlags = Context::All;
+        if (!Context::GetContext(thread_handle, &saved_ctx)) {
             DWORD error = GetLastError();
             LOGE << "GetThreadContext failed:" << get_error_string(error);
             this->df = nullptr;
             return;
         }
-        memcpy(&work_ctx, &saved_ctx, sizeof(CONTEXT));
-        work_ctx.ContextFlags = CONTEXT_FULL;
+        memcpy(&work_ctx, &saved_ctx, sizeof(typename Context::context_t));
+        work_ctx.ContextFlags = Context::Full;
     }
 
     ~FunctionCall() override
     {
-        DWORD continue_status = DBG_CONTINUE;
-        DEBUG_EVENT event;
-        event.dwProcessId = df->m_pid;
-        event.dwThreadId = thread_id;
-        while (true) {
-            if (!ContinueDebugEvent(event.dwProcessId, event.dwThreadId, continue_status)) {
-                DWORD errcode = GetLastError();
-                LOGE << "ContinueDebugEvent failed:" << get_error_string(errcode);
-                break;
-            }
-
-            if (!WaitForDebugEvent(&event, INFINITE)) {
-                DWORD errcode = GetLastError();
-                LOGE << "WaitForDebugEvent failed:" << get_error_string(errcode);
-                break;
-            }
-            LOGD << "Debug event received:" << event.dwDebugEventCode
-                 << "PID" << event.dwProcessId
-                 << "TID" << event.dwThreadId;
-
-            if (event.dwDebugEventCode == EXCEPTION_DEBUG_EVENT) {
-               switch (event.u.Exception.ExceptionRecord.ExceptionCode) {
-               case EXCEPTION_BREAKPOINT:
-               case EXCEPTION_SINGLE_STEP:
-                   continue_status = DBG_CONTINUE;
-                   break;
-               default:
-                   LOGW << "DF exception code" << hexify(event.u.Exception.ExceptionRecord.ExceptionCode)
-                        << (event.u.Exception.dwFirstChance ? "first chance" : "last chance");
-
-                   if (!GetThreadContext(thread_handle, &work_ctx)) {
-                       DWORD errcode = GetLastError();
-                       LOGE << "SetThreadContext failed:" << get_error_string(errcode);
-                   }
-                   else {
-                       LOGD << "At address" << hexify(work_ctx.Rip) << "default:" << hexify(work_ctx.Rip-df->m_base_addr);
-                       //LOGD << "CS" << hexify(work_ctx.SegCs) << "DS" << hexify(work_ctx.SegDs)
-                       //     << "ES" << hexify(work_ctx.SegEs) << "FS" << hexify(work_ctx.SegFs);
-                       //LOGD << "GS" << hexify(work_ctx.SegGs) << "SS" << hexify(work_ctx.SegSs)
-                       //     << "FLAGS" << hexify(work_ctx.EFlags) << "RIP" << hexify(work_ctx.Rip);
-                       //LOGD << "RAX" << hexify(work_ctx.Rax) << "RCX" << hexify(work_ctx.Rcx)
-                       //     << "RDX" << hexify(work_ctx.Rdx) << "RBX" << hexify(work_ctx.Rbx);
-                       //LOGD << "RSP" << hexify(work_ctx.Rsp) << "RBP" << hexify(work_ctx.Rbp)
-                       //     << "RSI" << hexify(work_ctx.Rsi) << "RDI" << hexify(work_ctx.Rdi);
-                       //LOGD << "R8" << hexify(work_ctx.R8) << "R9" << hexify(work_ctx.R9)
-                       //     << "R10" << hexify(work_ctx.R10) << "R11" << hexify(work_ctx.R11);
-                       //LOGD << "R12" << hexify(work_ctx.R12) << "R13" << hexify(work_ctx.R13)
-                       //     << "R14" << hexify(work_ctx.R14) << "R15" << hexify(work_ctx.R15);
-                   }
-                   continue_status = DBG_EXCEPTION_NOT_HANDLED;
-               }
-            }
-            else
-                continue_status = DBG_CONTINUE;
-
-            if (event.dwDebugEventCode == EXIT_THREAD_DEBUG_EVENT && event.dwThreadId == thread_id) {
-                LOGD << "Debug thread exited";
-                break;
-            }
-            if (event.dwDebugEventCode == EXIT_PROCESS_DEBUG_EVENT) {
-                LOGE << "DF terminated";
-                return;
-            }
+        if (thread_id != 0) {
+            doDebugLoop([this](const DEBUG_EVENT &event){
+                    // wait for debug thread to exit
+                    return !(event.dwDebugEventCode == EXIT_THREAD_DEBUG_EVENT && event.dwThreadId == thread_id);
+            });
         }
 
         if (thread_handle != NULL) {
@@ -517,7 +660,8 @@ public:
         return 0;
     }
 
-    std::pair<bool, VIRTADDR> call(VIRTADDR fn_addr, const std::vector<VIRTADDR> &args) override
+    std::pair<bool, VIRTADDR> call(DFInstance::FunctionCall::CallType call_type,
+                                   VIRTADDR fn_addr, const std::vector<VIRTADDR> &args) override
     {
         static constexpr std::pair<bool, VIRTADDR> error = {false, 0};
         if (!df) {
@@ -525,156 +669,103 @@ public:
             return error;
         }
 
-        auto old_stack_pointer = work_ctx.Rsp;
+        auto old_stack_pointer = work_ctx.*Context::SP;
 
         // prepare stack buffer with return address and arguments
-        std::vector<char> stack;
-        auto add_on_stack = [&stack, len=df->m_pointer_size] (VIRTADDR value) {
-            std::copy_n(reinterpret_cast<char *>(&value), len, std::back_inserter(stack));
-        };
-        add_on_stack(df->m_trap_addr); // return address
-        if (df->m_pointer_size == 4) {
-            LOGE << "call not implemented for win32";
-            return error;
-        }
-#ifdef Q_OS_WIN64
-        else if (df->m_pointer_size == 8) { // Microsoft x64
-            stack.resize(stack.size()+32); // Reserve shadow store
-            for (auto i = 0u; i < args.size(); ++i) {
-                auto val = args[i];
-                switch (i) {
-                case 0: work_ctx.Rcx = val; break;
-                case 1: work_ctx.Rdx = val; break;
-                case 2: work_ctx.R8 = val; break;
-                case 3: work_ctx.R9 = val; break;
-                default: add_on_stack(val);
-                }
-            }
-        }
-#endif
-        else {
-            LOGE << "architecture not supported";
-            return error;
-        }
+        ParameterStack stack(df->m_pointer_size);
+        stack.add(df->m_trap_addr); // return address
+        CallConvention::set_parameters(call_type, work_ctx, stack, args);
 
-        //work_ctx.Rsp -= stack.size()-df->m_pointer_size; // reserve space for args
-        //work_ctx.Rsp &= -16; // align on 16 bytes
-        //work_ctx.Rsp -= df->m_pointer_size; // space for return address
-        work_ctx.Rsp -= stack.size(); // reserve space for stack data
-        work_ctx.Rsp &= -16; // align on 16 bytes
+        work_ctx.*Context::SP -= stack.size(); // reserve space for stack data
+        work_ctx.*Context::SP &= -16; // align on 16 bytes
 
         // copy buffer in remote stack
-        if (df->write_raw(work_ctx.Rsp, stack.size(), stack.data()) != stack.size()) {
+        if (df->write_raw(work_ctx.*Context::SP, stack.size(), stack.data()) != stack.size()) {
             LOGE << "Failed to write stack";
             return error;
         }
 
         // call function
-        work_ctx.Rip = fn_addr;
+        work_ctx.*Context::IP = fn_addr;
         LOGD << "Calling function at" << hexify(fn_addr);
 
-        const bool singlestep = true;
-        if (singlestep)
-            work_ctx.EFlags |= 0x0100; // trap flag
+#ifdef DEBUG_SINGLESTEP
+        work_ctx.EFlags |= 0x0100; // trap flag
+#endif
 
-        if (!SetThreadContext(thread_handle, &work_ctx)) {
+        if (!Context::SetContext(thread_handle, &work_ctx)) {
             DWORD errcode = GetLastError();
             LOGE << "SetThreadContext failed:" << get_error_string(errcode);
             return error;
         }
 
         bool ok = true;
-        DWORD continue_status = DBG_CONTINUE;
-        DEBUG_EVENT event;
-        event.dwProcessId = df->m_pid;
-        event.dwThreadId = thread_id;
-        do {
-            do {
-                if (!ContinueDebugEvent(event.dwProcessId, event.dwThreadId, continue_status)) {
-                    DWORD errcode = GetLastError();
-                    LOGE << "ContinueDebugEvent failed:" << get_error_string(errcode);
-                    ok = false;
-                    break;
+        if (!doDebugLoop([this, &ok](const DEBUG_EVENT &event) {
+                switch (event.dwDebugEventCode) {
+                case EXIT_THREAD_DEBUG_EVENT:
+                    LOGE << "Debug thread terminated during call";
+                    thread_id = 0;
+                    if (!Context::GetContext(thread_handle, &work_ctx)) {
+                        DWORD error = GetLastError();
+                        LOGE << "GetThreadContext failed:" << get_error_string(error);
+                        ok = false;
+                        return false;
+                    }
+                    {
+                        auto ip = work_ctx.*Context::IP;
+                        LOGD << "Exit at" << hexify(ip)
+                             << "(with default base:" << hexify(ip-df->m_base_addr) << ")";
+                    }
+                    return false;
+                case EXCEPTION_DEBUG_EVENT:
+                    if (!event.u.Exception.dwFirstChance) {
+                        // stop call for last chance exceptions
+                        LOGE << "Call stopped by exception";
+                        ok = false;
+                        return false;
+                    }
+                    if (!Context::GetContext(thread_handle, &work_ctx)) {
+                        DWORD error = GetLastError();
+                        LOGE << "GetThreadContext failed:" << get_error_string(error);
+                        ok = false;
+                        return false;
+                    }
+                    if (work_ctx.*Context::IP == df->m_trap_addr+1) // breakpoint reached
+                        return false;
+#ifdef DEBUG_SINGLESTEP
+                    {
+                        auto ip = work_ctx.*Context::IP;
+                        LOGD << "Singlestep at" << hexify(ip)
+                             << "(with default base:" << hexify(ip-df->m_base_addr) << ")";
+                        Context::debug_context(work_ctx);
+                        work_ctx.EFlags |= 0x0100; // trap flag
+                        if (!Context::SetContext(thread_handle, &work_ctx)) {
+                            DWORD error = GetLastError();
+                            LOGE << "SetThreadContext failed:" << get_error_string(error);
+                            ok = false;
+                            return false;
+                        }
+                    }
+#endif
+                    return true;
+                default:
+                    return true;
                 }
-
-                if (!WaitForDebugEvent(&event, INFINITE)) {
-                    DWORD errcode = GetLastError();
-                    LOGE << "WaitForDebugEvent failed:" << get_error_string(errcode);
-                    ok = false;
-                    break;
-                }
-                LOGD << "Debug event received:" << event.dwDebugEventCode
-                     << "PID" << event.dwProcessId
-                     << "TID" << event.dwThreadId;
-
-                if (event.dwDebugEventCode == EXCEPTION_DEBUG_EVENT) {
-                   switch (event.u.Exception.ExceptionRecord.ExceptionCode) {
-                   case EXCEPTION_BREAKPOINT:
-                   case EXCEPTION_SINGLE_STEP:
-                       continue_status = DBG_CONTINUE;
-                       break;
-                   default:
-                       LOGW << "DF exception code" << hexify(event.u.Exception.ExceptionRecord.ExceptionCode)
-                            << (event.u.Exception.dwFirstChance ? "first chance" : "last chance");
-
-                       if (!GetThreadContext(thread_handle, &work_ctx)) {
-                           DWORD errcode = GetLastError();
-                           LOGE << "SetThreadContext failed:" << get_error_string(errcode);
-                       }
-                       else {
-                           LOGD << "At address" << hexify(work_ctx.Rip) << "default:" << hexify(work_ctx.Rip-df->m_base_addr);
-                       }
-                       continue_status = DBG_EXCEPTION_NOT_HANDLED;
-                   }
-                }
-                else
-                    continue_status = DBG_CONTINUE;
-
-                if (event.dwDebugEventCode == EXIT_THREAD_DEBUG_EVENT) {
-                    LOGE << "DF terminated";
-                    return error;
-                }
-            } while (event.dwDebugEventCode != EXCEPTION_DEBUG_EVENT);
-
-            if (!GetThreadContext(thread_handle, &work_ctx)) {
-                DWORD errcode = GetLastError();
-                LOGE << "SetThreadContext failed:" << get_error_string(errcode);
-                ok = false;
-                break;
-            }
-            if (singlestep) {
-                LOGD << "CS" << hexify(work_ctx.SegCs) << "DS" << hexify(work_ctx.SegDs)
-                     << "ES" << hexify(work_ctx.SegEs) << "FS" << hexify(work_ctx.SegFs);
-                LOGD << "GS" << hexify(work_ctx.SegGs) << "SS" << hexify(work_ctx.SegSs)
-                     << "FLAGS" << hexify(work_ctx.EFlags) << "RIP" << hexify(work_ctx.Rip)
-                     << "Adjusted RIP" << hexify(work_ctx.Rip-df->m_base_addr);
-                LOGD << "RAX" << hexify(work_ctx.Rax) << "RCX" << hexify(work_ctx.Rcx)
-                     << "RDX" << hexify(work_ctx.Rdx) << "RBX" << hexify(work_ctx.Rbx);
-                LOGD << "RSP" << hexify(work_ctx.Rsp) << "RBP" << hexify(work_ctx.Rbp)
-                     << "RSI" << hexify(work_ctx.Rsi) << "RDI" << hexify(work_ctx.Rdi);
-                LOGD << "R8" << hexify(work_ctx.R8) << "R9" << hexify(work_ctx.R9)
-                     << "R10" << hexify(work_ctx.R10) << "R11" << hexify(work_ctx.R11);
-                LOGD << "R12" << hexify(work_ctx.R12) << "R13" << hexify(work_ctx.R13)
-                     << "R14" << hexify(work_ctx.R14) << "R15" << hexify(work_ctx.R15);
-                work_ctx.EFlags |= 0x0100; // trap flag
-                if (!SetThreadContext(thread_handle, &work_ctx)) {
-                    DWORD errcode = GetLastError();
-                    LOGE << "SetThreadContext failed:" << get_error_string(errcode);
-                    ok = false;
-                    break;
-                }
-            }
-        } while (work_ctx.Rip != df->m_trap_addr+1);
+        })) {
+            ok = false;
+        }
+        if (thread_id == 0)
+            return error;
 
         // restore context
-        if (!SetThreadContext(thread_handle, &saved_ctx)) {
+        if (!Context::SetContext(thread_handle, &saved_ctx)) {
             DWORD errcode = GetLastError();
             LOGE << "SetThreadContext failed:" << get_error_string(errcode);
             return error;
         }
 
-        work_ctx.Rsp = old_stack_pointer;
-        return {ok, work_ctx.Rax};
+        work_ctx.*Context::SP = old_stack_pointer;
+        return {ok, CallConvention::return_value(work_ctx)};
     }
 
     operator bool() const override
@@ -685,10 +776,14 @@ public:
 
 std::unique_ptr<DFInstance::FunctionCall> DFInstanceWindows::make_function_call()
 {
-    if (m_pointer_size == 8)
-        return std::make_unique<FunctionCall>(this);
-    else {
-        LOGE << "Function calls not implemented";
-        return nullptr;
-    }
+#ifdef Q_OS_WIN64
+        if (m_pointer_size == 4)
+            return std::make_unique<FunctionCall<Wow64Context, X86CallConventions>>(this);
+        else if (m_pointer_size == 8)
+            return std::make_unique<FunctionCall<Win32Context, X64CallConventions>>(this);
+        else
+            return nullptr;
+#else
+        return std::make_unique<FunctionCall<Win32Context, X86CallConventions>>(this);
+#endif
 }

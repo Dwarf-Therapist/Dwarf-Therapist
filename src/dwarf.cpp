@@ -2516,7 +2516,7 @@ void Dwarf::commit_pending(bool single) {
             LOGD << "Begin assignments";
             for (int assignment_id: m_pending_assignments) {
                 LOGD << "Assign" << nice_name() << "to" << assignment_id << "int entity" << m_df->fortress()->id();
-                auto ret = function_call->call(method_address,
+                auto ret = function_call->call(DFInstance::FunctionCall::CallType::MethodCall, method_address,
                         std::vector<VIRTADDR> {
                             m_hist_figure->address(), // this
                             static_cast<VIRTADDR>(assignment_id), // assignment id
