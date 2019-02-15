@@ -51,7 +51,8 @@
    <item>
     <widget class="QFrame" name="frame_upper">
      <property name="styleSheet">
-      <string>background: white;</string>
+      <string notr="true">background: palette(base);
+color: palette(text)</string>
      </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -139,7 +140,7 @@
       <item>
        <widget class="QLabel" name="lbl_text">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copyright © 2009, 2010 Trey Stout, © 2012–2014 splintermind, other contributors (see CONTRIBUTORS).&lt;/p&gt;&lt;p&gt;Most icons provided by &lt;a href=&quot;http://p.yusukekamiyamane.com/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Yusuke Kamiyamane&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copyright © 2009, 2010 Trey Stout, © 2012–2014 splintermind, other contributors (see CONTRIBUTORS).&lt;/p&gt;&lt;p&gt;Most icons provided by &lt;a href=&quot;http://p.yusukekamiyamane.com/&quot;&gt;Yusuke Kamiyamane&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="textFormat">
          <enum>Qt::RichText</enum>
