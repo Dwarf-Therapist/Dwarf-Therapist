@@ -2,26 +2,6 @@
 <ui version="4.0">
  <class>AboutDialog</class>
  <widget class="QWidget" name="AboutDialog">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>500</width>
-    <height>200</height>
-   </rect>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>500</width>
-    <height>200</height>
-   </size>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>500</width>
-    <height>200</height>
-   </size>
-  </property>
   <property name="windowTitle">
    <string>About Dwarf Therapist</string>
   </property>
@@ -29,10 +9,7 @@
    <iconset resource="../resources.qrc">
     <normaloff>:/img/hammer.png</normaloff>:/img/hammer.png</iconset>
   </property>
-  <property name="styleSheet">
-   <string/>
-  </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2" stretch="5,4">
+  <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0">
    <property name="spacing">
     <number>0</number>
    </property>
@@ -49,96 +26,123 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QFrame" name="frame_upper">
+    <widget class="QWidget" name="widget_upper" native="true">
      <property name="styleSheet">
       <string notr="true">background: palette(base);
 color: palette(text)</string>
      </property>
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
-     <widget class="QLabel" name="label_title">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>20</y>
-        <width>321</width>
-        <height>41</height>
-       </rect>
+     <layout class="QGridLayout" name="gridLayout">
+      <property name="leftMargin">
+       <number>0</number>
       </property>
-      <property name="styleSheet">
-       <string/>
+      <property name="topMargin">
+       <number>0</number>
       </property>
-      <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:22pt;&quot;&gt;Dwarf Therapist &lt;/span&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;%1&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <property name="rightMargin">
+       <number>0</number>
       </property>
-      <property name="textFormat">
-       <enum>Qt::RichText</enum>
+      <property name="bottomMargin">
+       <number>0</number>
       </property>
-      <property name="alignment">
-       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+      <property name="spacing">
+       <number>0</number>
       </property>
-      <property name="openExternalLinks">
-       <bool>false</bool>
-      </property>
-     </widget>
-     <widget class="QLabel" name="lbl_image">
-      <property name="geometry">
-       <rect>
-        <x>370</x>
-        <y>-10</y>
-        <width>131</width>
-        <height>151</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="pixmap">
-       <pixmap resource="../resources.qrc">:/img/dwarf.jpg</pixmap>
-      </property>
-      <property name="scaledContents">
-       <bool>true</bool>
-      </property>
-     </widget>
-     <widget class="QLabel" name="lbl_qt_version">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>70</y>
-        <width>341</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Compiled with Qt %1, running with Qt %2</string>
-      </property>
-     </widget>
+      <item row="1" column="0">
+       <widget class="QLabel" name="lbl_qt_version">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Compiled with Qt %1, running with Qt %2</string>
+        </property>
+        <property name="margin">
+         <number>10</number>
+        </property>
+        <property name="indent">
+         <number>10</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_title">
+        <property name="styleSheet">
+         <string/>
+        </property>
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:22pt;&quot;&gt;Dwarf Therapist &lt;/span&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;%1&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::RichText</enum>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="margin">
+         <number>10</number>
+        </property>
+        <property name="openExternalLinks">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" rowspan="2">
+       <widget class="QWidget" name="widget" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>131</width>
+          <height>94</height>
+         </size>
+        </property>
+        <widget class="QLabel" name="lbl_image">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>131</width>
+           <height>151</height>
+          </rect>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="pixmap">
+          <pixmap resource="../resources.qrc">:/img/dwarf.jpg</pixmap>
+         </property>
+         <property name="scaledContents">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>
-    <widget class="QFrame" name="frame_lower">
-     <property name="styleSheet">
-      <string/>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
+    <widget class="QWidget" name="widget_lower" native="true">
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <widget class="QLabel" name="lbl_text">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="text">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copyright © 2009, 2010 Trey Stout, © 2012–2014 splintermind, other contributors (see CONTRIBUTORS).&lt;/p&gt;&lt;p&gt;Most icons provided by &lt;a href=&quot;http://p.yusukekamiyamane.com/&quot;&gt;Yusuke Kamiyamane&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
