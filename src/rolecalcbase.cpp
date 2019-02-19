@@ -26,37 +26,28 @@ void RoleCalcBase::init_list(){
         m_div = 1;
 }
 
-double RoleCalcBase::pos_upper(double val)const{
-    CIT it = qUpperBound(m_sorted,val);
-    unsigned pos = it-m_begin;
-    return pos-1;
-}
-
-double RoleCalcBase::pos_lower(double val)const{
-    CIT it = qLowerBound(m_sorted,val);
-    unsigned pos = it-m_begin;
-    return pos;
-}
-
 double RoleCalcBase::rating(double val) {
     return base_rating(val) / 2.0f + 0.5;
 }
 
 double RoleCalcBase::base_rating(const double val){
-    return ((pos_upper(val) + pos_lower(val)) / 2.0f) / m_div;
+    auto range = std::equal_range(m_sorted.begin(), m_sorted.end(), val);
+    if (range.second == m_sorted.begin())
+        return 0.0;
+    else if (range.first == m_sorted.end())
+        return 1.0;
+    else
+        return ((std::distance(m_sorted.begin(), range.first) + std::distance(m_sorted.begin(), std::prev(range.second))) / 2.0f) / m_div;
 }
 
 double RoleCalcBase::find_median(QVector<double> v){
-    int idx_mid = (double)v.count() / 2.0f;
-    double m = 0.0;
-    if(v.count() % 2 == 0){
-        std::nth_element(v.begin(),v.begin()+idx_mid,v.end());
-        m = 0.5 * (v.at(idx_mid)+v.at(idx_mid-1));
-    }else{
-        std::nth_element(v.begin(),v.begin()+idx_mid,v.end());
-        m =  v.at(idx_mid);
-    }
-    return m;
+    int idx_mid = v.count() / 2;
+    if (v.isEmpty())
+        return 0.0;
+    else if (v.count() % 2 == 0)
+        return 0.5 * (v.at(idx_mid)+v.at(idx_mid-1));
+    else
+        return v.at(idx_mid);
 }
 
 double RoleCalcBase::range_transform(double val, double min, double mid, double max){
