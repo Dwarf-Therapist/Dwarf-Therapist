@@ -29,12 +29,12 @@ matrix:
     - os: osx
       before_install:
         - brew update
-        - brew install qt@5.5
+        - brew install qt
         - brew outdated cmake || brew upgrade cmake
         - brew install ninja
       env:
         - CXXFLAGS="$CXXFLAGS -mmacosx-version-min=10.9"
-        - QT_PREFIX=/usr/local/opt/qt@5.5
+        - QT_PREFIX=/usr/local/opt/qt
         - CMAKE_PREFIX_PATH=$QT_PREFIX
         - RELEASE_FILE='DwarfTherapist-*.dmg'
 env:
