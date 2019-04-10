@@ -217,7 +217,7 @@ bool DFInstanceWindows::set_pid(){
         return false;
 
     do {
-        if (!_tcscmp(pe32.szExeFile, _T("Dwarf Fortress.exe")))
+        if (!wcscmp(pe32.szExeFile, L"Dwarf Fortress.exe"))
             pids << pe32.th32ProcessID;
     } while (Process32Next(snapshot, &pe32));
 
