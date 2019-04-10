@@ -1,0 +1,112 @@
+Experimental build guides using cygwin: https://www.cygwin.com
+
+Install cygwin and select these packages:
+    cmake
+    gcc-g++
+    git
+    make
+    libQt5Quick-devel
+    libQt5Svg-devel
+    xinit
+    xorg-server
+
+Checkout the DwarfTherapist sources the Linux way.
+
+### Cygwin cross compile for windows using mingw ###
+
+ 1.) Install these additional cygwin packages:
+    mingw64-x86_64-gcc-g++-7.4.0.1
+    mingw64-x86_64-qt5-base-5.9.4-1
+    mingw64-x86_64-qt5-quickcontrols-5.9.4-1
+    mingw64-x86_64-qt5-svg-5.9.4-1
+
+ 2.) Compile
+    Navigate to you dwarf therapist source directory and type the following commands
+    
+    mkdir build
+    cd build
+    cmake -DCMAKE_TOOLCHAIN_FILE=../Toolchain-mingw32.cmake ../
+    make
+
+ 3.) Prepare DT run directory
+    Create a directory "run" and copy "DwarfTherapist.exe" from the
+    build directory to the run directory.
+
+    Copy these files from "/usr/x86_64-w64-mingw32/sys-root/mingw" to the run directory.
+  
+    iconv.dll
+    libbz2-1.dll
+    libfreetype-6.dll
+    libgcc_s_seh-1.dll
+    libglib-2.0-0.dll
+    libharfbuzz-0.dll
+    libintl-8.dll
+    libpcre-1.dll
+    libpcre2-16-0.dll
+    libpng16-16.dll
+    libstdc++-6.dll
+    libwinpthread-1.dll
+    Qt5Core.dll
+    Qt5Gui.dll
+    Qt5Network.dll
+    Qt5Qml.dll
+    Qt5Widgets.dll
+    zlib1.dll
+
+    Create a subdir called "platforms" in the "run directory" and copy "qwindows.dll"
+    from /usr/x86_64-w64-mingw32/sys-root/mingw/lib/qt5/plugins/platforms/
+    to the platforms directory below "run".
+  
+    Copy share/memory_layouts to the DT run directory.
+
+ 4.) Run DT native from windows
+     does connect and can load a fortress
+
+### Cygwin version: ###
+
+This version cannot run as a native windows application, but must be run using
+an X-Server from cygwin. I just did it for fun. It requires to change some of
+the Qt5 Library header files. So if you update your Qt packages this changes may 
+get lost or cause other problems. 
+
+ 1.) Modify files:
+
+    Modify "/usr/include/qt5/QtGui/qwindowdefs_win.h" (next to the end)
+    // Maybe this is a bug in QT5 sources?
+    ....
+    #ifndef _HRESULT_DEFINED
+    #ifdef __CYGWIN__         // # ADDED
+     typedef int HRESULT;    // # ADDED
+    #else                     // # ADDED
+     typedef long HRESULT;   
+    #endif                    // # ADDED
+    #endif
+   ...
+
+   Modify "CMakeLists.txt" from DwarfTherapist and add a "CYGWIN" option.
+   It is important to have the opton "Q_OS_WIN" defined. Otherwise it seems
+   Qt5 is assuming a different platform which causes compile errors. 
+    
+   ...
+   set(EXE_NAME "DwarfTherapist")
+   if(WIN32 OR CYGWIN)
+      if(CYGWIN)
+         add_definitions(-DQ_OS_WIN)
+      endif()
+   ...
+
+ 2.) Compile 
+    Navigate to you dwarf therapist source directory and type the following commands
+   
+    mkdir build
+    cd build
+    cmake ../
+    make
+   
+ 3.) Prepare DT directory
+    Copy Memory_layouts to 
+    ~/.local/share/Dwarf\ Therapist
+   
+ 4.) Run DT
+    startx
+    ./DwarfTherapist.exe
