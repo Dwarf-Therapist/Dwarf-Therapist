@@ -31,9 +31,19 @@ THE SOFTWARE.
 class StandardPaths
 {
 public:
-    static bool portable;
+    enum class Mode {
+        Standard,
+        Portable,
+        Developer,
+    };
 
-    static void init_paths();
+#ifdef BUILD_PORTABLE
+    static constexpr Mode DefaultMode = Mode::Portable;
+#else
+    static constexpr Mode DefaultMode = Mode::Standard;
+#endif
+
+    static void init_paths(Mode mode = DefaultMode, QDir source_datadir = QDir());
 
     static std::unique_ptr<QSettings> settings();
     static QString locate_data(const QString &filename);
@@ -42,8 +52,10 @@ public:
     static QStringList doc_locations();
 
 private:
+    static Mode mode;
+    static QDir source_datadir;
     static QDir appdir;
-    static QDir portable_datadir, portable_configdir;
+    static QDir custom_datadir, custom_configdir;
 };
 
 #endif

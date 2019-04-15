@@ -32,41 +32,55 @@ static constexpr auto AppDataLocation = QStandardPaths::AppDataLocation;
 static constexpr auto AppDataLocation = QStandardPaths::DataLocation;
 #endif
 
-#ifdef BUILD_PORTABLE
-bool StandardPaths::portable = true;
-#else
-bool StandardPaths::portable = false;
-#endif
+constexpr StandardPaths::Mode StandardPaths::DefaultMode;
 
+StandardPaths::Mode StandardPaths::mode;
+QDir StandardPaths::source_datadir;
 QDir StandardPaths::appdir;
-QDir StandardPaths::portable_datadir;
-QDir StandardPaths::portable_configdir;
+QDir StandardPaths::custom_datadir;
+QDir StandardPaths::custom_configdir;
 
-void StandardPaths::init_paths()
+void StandardPaths::init_paths(Mode mode, QDir source_datadir)
 {
+    StandardPaths::mode = mode;
+    StandardPaths::source_datadir = source_datadir;
+
     appdir = QCoreApplication::applicationDirPath();
+    switch (mode) {
+    case Mode::Portable:
 #if (defined Q_OS_WIN)
-    portable_datadir = appdir.filePath("data");
-    portable_configdir = appdir;
+        custom_datadir = appdir.filePath("data");
+        custom_configdir = appdir;
 #elif (defined Q_OS_OSX)
-    portable_datadir = appdir.filePath("../Resources");
-    portable_configdir = appdir.filePath("../Resources");
+        custom_datadir = appdir.filePath("../Resources");
+        custom_configdir = appdir.filePath("../Resources");
 #elif (defined Q_OS_LINUX)
-    portable_datadir = appdir.filePath("../share");
-    portable_configdir = appdir.filePath("../etc");
+        custom_datadir = appdir.filePath("../share");
+        custom_configdir = appdir.filePath("../etc");
 #else
 #   error "Unsupported OS"
 #endif
+        break;
+    case Mode::Developer:
+        custom_datadir = appdir.filePath("share");
+        custom_configdir = appdir;
+        break;
+    default:
+        break;
+    }
 }
 
 std::unique_ptr<QSettings> StandardPaths::settings()
 {
-    if (portable) {
+    switch (mode) {
+    case Mode::Portable:
+    case Mode::Developer: {
         auto ini_file = QString("%1.ini").arg(QCoreApplication::applicationName());
-        return std::make_unique<QSettings>(portable_configdir.filePath(ini_file),
+        return std::make_unique<QSettings>(custom_configdir.filePath(ini_file),
                                            QSettings::IniFormat);
     }
-    else {
+    case Mode::Standard:
+    default:
         // Organization is not set on Linux/Windows to avoid issue with QStandardPaths
         // using "orgname/appname" folder instead "packagename". Force QSettings
         // to use the application name for the configuration directory.
@@ -78,34 +92,54 @@ std::unique_ptr<QSettings> StandardPaths::settings()
 
 QString StandardPaths::locate_data(const QString &filename)
 {
-    if (portable) {
-        QFileInfo file (portable_datadir, filename);
-        return file.exists() ? file.filePath() : QString();
-    }
-    else {
+    switch (mode) {
+    case Mode::Portable:
+        return custom_datadir.exists(filename)
+            ? custom_datadir.filePath(filename)
+            : QString();
+    case Mode::Developer:
+        if (custom_datadir.exists(filename))
+            return custom_datadir.filePath(filename);
+        else if (source_datadir.exists(filename))
+            return source_datadir.filePath(filename);
+        else
+            return QString();
+    case Mode::Standard:
+    default:
         return QStandardPaths::locate(AppDataLocation, filename);
     }
 }
 
 QStringList StandardPaths::data_locations()
 {
-    if (portable)
-        return { portable_datadir.path() };
-    else
+    switch (mode) {
+    case Mode::Portable:
+        return { custom_datadir.path() };
+    case Mode::Developer:
+        return { custom_datadir.path(), source_datadir.path() };
+    case Mode::Standard:
+    default:
         return QStandardPaths::standardLocations(AppDataLocation);
+    }
 }
 
 QString StandardPaths::writable_data_location()
 {
-    if (portable)
-        return portable_datadir.path();
-    else
+    switch (mode) {
+    case Mode::Portable:
+    case Mode::Developer:
+        return custom_datadir.path();
+    case Mode::Standard:
+    default:
         return QStandardPaths::writableLocation(AppDataLocation);
+    }
 }
 
 QStringList StandardPaths::doc_locations()
 {
-    if (portable) {
+    switch (mode) {
+    case Mode::Portable:
+    case Mode::Developer:
 #if (defined Q_OS_WIN)
         return { appdir.filePath("doc") };
 #elif (defined Q_OS_OSX)
@@ -115,8 +149,8 @@ QStringList StandardPaths::doc_locations()
 #else
 #   error "Unsupported OS"
 #endif
-    }
-    else {
+    case Mode::Standard:
+    default: {
 #if (defined Q_OS_WIN)
         auto dirs = QStandardPaths::standardLocations(AppDataLocation);
         for (auto &dir: dirs)
@@ -132,5 +166,6 @@ QStringList StandardPaths::doc_locations()
 #else
 #   error "Unsupported OS"
 #endif
+    }
     }
 }
