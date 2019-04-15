@@ -89,13 +89,20 @@ DwarfTherapist::DwarfTherapist(int &argc, char **argv)
     parser.addOption(trace_option);
     QCommandLineOption portable_option("portable", tr("Start in portable mode (look for data and config files relatively to the executable)."));
     parser.addOption(portable_option);
+    QCommandLineOption devmode_option("devmode", tr("Start in developer mode (look for data and config files relatively to the executable and for static data in <source_datadir>)."), tr("source_datadir"));
+    parser.addOption(devmode_option);
     parser.process(*this);
 
     setup_logging(parser.isSet(debug_option), parser.isSet(trace_option));
     load_translator();
-    if (parser.isSet(portable_option))
-        StandardPaths::portable = true;
-    StandardPaths::init_paths();
+    {
+        auto mode = StandardPaths::DefaultMode;
+        if (parser.isSet(devmode_option))
+            mode = StandardPaths::Mode::Developer;
+        else if (parser.isSet(portable_option))
+            mode = StandardPaths::Mode::Portable;
+        StandardPaths::init_paths(mode, parser.value(devmode_option));
+    }
 
     TRACE << "Creating settings object";
     m_user_settings = StandardPaths::settings();
