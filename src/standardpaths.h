@@ -37,13 +37,15 @@ public:
         Developer,
     };
 
-#ifdef BUILD_PORTABLE
+#if defined BUILD_PORTABLE
     static constexpr Mode DefaultMode = Mode::Portable;
+#elif defined DEVMODE_PATH
+    static constexpr Mode DefaultMode = Mode::Developer;
 #else
     static constexpr Mode DefaultMode = Mode::Standard;
 #endif
 
-    static void init_paths(Mode mode = DefaultMode, QDir source_datadir = QDir());
+    static void init_paths(Mode mode = DefaultMode, QString source_datadir = QString());
 
     static std::unique_ptr<QSettings> settings();
     static QString locate_data(const QString &filename);

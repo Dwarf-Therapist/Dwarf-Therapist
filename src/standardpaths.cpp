@@ -35,15 +35,20 @@ static constexpr auto AppDataLocation = QStandardPaths::DataLocation;
 constexpr StandardPaths::Mode StandardPaths::DefaultMode;
 
 StandardPaths::Mode StandardPaths::mode;
+#ifdef DEVMODE_PATH
+QDir StandardPaths::source_datadir = QDir(DEVMODE_PATH);
+#else
 QDir StandardPaths::source_datadir;
+#endif
 QDir StandardPaths::appdir;
 QDir StandardPaths::custom_datadir;
 QDir StandardPaths::custom_configdir;
 
-void StandardPaths::init_paths(Mode mode, QDir source_datadir)
+void StandardPaths::init_paths(Mode mode, QString source_datadir)
 {
     StandardPaths::mode = mode;
-    StandardPaths::source_datadir = source_datadir;
+    if (!source_datadir.isEmpty())
+        StandardPaths::source_datadir.setPath(source_datadir);
 
     appdir = QCoreApplication::applicationDirPath();
     switch (mode) {

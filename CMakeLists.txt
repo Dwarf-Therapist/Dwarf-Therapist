@@ -47,6 +47,11 @@ option(BUILD_PORTABLE "Build as portable application (look for files in the appl
 if(BUILD_PORTABLE)
     add_definitions(-DBUILD_PORTABLE)
 endif()
+option(BUILD_DEVMODE "Build as devmode, using current source directory as source for data" OFF)
+if (BUILD_DEVMODE)
+    add_definitions("-DDEVMODE_PATH=\"${CMAKE_CURRENT_SOURCE_DIR}/share\"")
+    install(CODE "message(FATAL_ERROR \"Cannot install when built with BUILD_DEVMODE\")")
+endif()
 
 add_executable(${EXE_NAME} WIN32 MACOSX_BUNDLE  
     src/aboutdialog.cpp
