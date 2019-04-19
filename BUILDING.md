@@ -151,9 +151,28 @@ Build using make:
 
     TODO
 
-
 Cygwin / Mingw
 --------------
 
 There is a short guide for building a version for Cygwin and 
 cross compiling using mingw in BUILDING.experimental.
+
+CMake options
+-------------
+
+Add `-D<option name>=<value>` to cmake command line to use those.
+
+### `BUILD_PORTABLE` (default: `OFF`)
+
+If `ON`, build an executable that use `--portable` mode by default. In portable
+mode, Dwarf Therapist only uses and stores files next to the application
+executable. Configuration is stored in the application directory on Windows,
+"../Resources" on macOS, "../etc" on Linux. Data directory is "data" on
+Windows, "../Resources" on macOS, "../share" on Linux.
+
+### `BUILD_DEVMODE` (default: `OFF`)
+
+If `ON` build an executable that use `--devmode` with the current source
+directory by default. Configuration is stored in the application directory and
+user data (written by DT) is stored in "share". This option also disable
+installation.
