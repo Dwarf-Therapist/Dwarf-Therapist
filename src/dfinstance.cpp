@@ -535,7 +535,7 @@ void DFInstance::load_population_data(){
                 auto need = p.second.get();
                 auto key = std::make_tuple(need->id(), need->deity_id());
                 auto it = m_needs_data.needs.lower_bound(key);
-                if (it->first != key)
+                if (it == m_needs_data.needs.end() || it->first != key)
                     it = m_needs_data.needs.emplace_hint(it, key, UnitNeed::DEGREE_COUNT);
                 it->second.dwarves[need->focus_degree()].push_back(d);
             }
