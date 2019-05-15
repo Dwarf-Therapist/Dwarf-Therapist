@@ -3107,7 +3107,7 @@ double Dwarf::calc_role_rating(Role *m_role){
 
     //GOALS
     rating_aspect[Goals] = calc_rating(m_role->goals, [this] (int id) {
-        return m_goals.value(id, 1) <= 0 ? 100.0 : 0.0; // has goal and not realized
+        return m_goals.value(id, 1) <= 0 ? 1.0 : 0.0; // has goal and not realized
     });
 
     //NEEDS
