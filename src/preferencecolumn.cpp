@@ -31,7 +31,7 @@ PreferenceColumn::PreferenceColumn(QSettings &s, ViewColumnSet *set, QObject *pa
     : ViewColumn(s, set, parent)
 {
     s.beginGroup("preference");
-    bool updated;
+    bool updated = false;
     m_pref = RolePreference::parse(s, updated);
     if (updated) {
         LOGW << "Preference column" << title() << "from" << s.fileName() << "needs updating";
