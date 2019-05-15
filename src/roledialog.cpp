@@ -101,7 +101,6 @@ struct AspectFilter
 RoleDialog::RoleDialog(RolePreferenceModel *pref_model, QWidget *parent)
     : QDialog(parent)
     , ui(std::make_unique<Ui::RoleDialog>())
-    , m_dwarf(nullptr)
     , m_pref_model(pref_model)
     , m_attribute_proxy(AspectFilter<QString>{m_role, &Role::attributes})
     , m_skill_proxy(AspectFilter<int>{m_role, &Role::skills})
@@ -298,11 +297,6 @@ bool RoleDialog::event(QEvent *event)
 
 void RoleDialog::selection_changed()
 {
-    QList<Dwarf*> dwarfs = DT->get_main_window()->get_view_manager()->get_selected_dwarfs();
-    if(dwarfs.count() > 0)
-        m_dwarf = dwarfs.at(0);
-    else
-        m_dwarf = nullptr;
     update_role_preview();
 }
 
@@ -470,7 +464,11 @@ void RoleDialog::update_role_preview()
     if (!m_role)
         return;
 
-    if (!m_dwarf) {
+    QList<Dwarf*> dwarfs = DT->get_main_window()->get_view_manager()->get_selected_dwarfs();
+    Dwarf *dwarf = nullptr;
+    if(dwarfs.count() > 0)
+        dwarf = dwarfs.at(0);
+    if (!dwarf) {
         ui->lbl_name->setText("Select a dwarf to view ratings.");
         ui->lbl_current->clear();
         ui->lbl_new->clear();
@@ -482,7 +480,7 @@ void RoleDialog::update_role_preview()
     m_role->script(script);
     if(!script.isEmpty()){
         QJSEngine m_engine;
-        QJSValue d_obj = m_engine.newQObject(m_dwarf);
+        QJSValue d_obj = m_engine.newQObject(dwarf);
         m_engine.globalObject().setProperty("d", d_obj);
         QJSValue ret = m_engine.evaluate(script);
         if(!ret.isNumber()){
@@ -508,11 +506,11 @@ void RoleDialog::update_role_preview()
         ui->te_script->setStatusTip(ui->te_script->whatsThis());
     }
 
-    ui->lbl_name->setText(m_dwarf->nice_name());
+    ui->lbl_name->setText(dwarf->nice_name());
     ui->lbl_current->setText(tr("Current Raw Rating: %1%")
-            .arg(QString::number(m_old_role ? m_dwarf->calc_role_rating(m_old_role) : 0,'g',4)));
+            .arg(QString::number(m_old_role ? dwarf->calc_role_rating(m_old_role) : 0,'g',4)));
     ui->lbl_new->setText(tr("New Raw Rating: %1%")
-            .arg(QString::number(m_role ? m_dwarf->calc_role_rating(m_role.get()) : 0,'g',4)));
+            .arg(QString::number(m_role ? dwarf->calc_role_rating(m_role.get()) : 0,'g',4)));
 }
 
 void RoleDialog::role_changed()
