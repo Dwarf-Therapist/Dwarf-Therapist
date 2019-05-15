@@ -106,7 +106,6 @@ private:
     std::unique_ptr<Ui::RoleDialog> ui;
     std::unique_ptr<Role> m_role;
     Role *m_old_role;
-    Dwarf *m_dwarf;
     RolePreferenceModel *m_pref_model;
     QStandardItemModel m_attribute_model, m_skill_model, m_facet_model, m_belief_model, m_goal_model, m_need_model;
     FunctionalFilterProxyModel m_attribute_proxy, m_skill_proxy, m_facet_proxy, m_belief_proxy, m_goal_proxy, m_need_proxy;
