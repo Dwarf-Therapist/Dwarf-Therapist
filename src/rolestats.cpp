@@ -165,7 +165,7 @@ void RoleStatsStratifiedMAD::set_list(const QVector<double> &unsorted)
     RoleStats::set_list(unsorted);
 
     // Compute Stratified MAD (dark magic from Thistleknot)
-    std::array<double, 7> k = { 0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0}, p;
+    std::array<double, 7> k = {{0.0, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0}}, p;
     std::transform(
             k.begin(), k.end(),
             p.begin(),
